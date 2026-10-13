@@ -1,0 +1,3839 @@
+{
+  "version": 1,
+  "pr": 1081,
+  "sha": "044181bf78e81ddd58dde2dd7cb710404c3ac529",
+  "issue": 1075,
+  "overview": {
+    "title": "PR 解説ページに技術の手引きの画面を足す",
+    "lead": "解説の任意のキー `primers`(技術の節)と `terms`(用語)を書くと、5 つ目の画面「技術の手引き」(`#primer`)で、この PR を読むのに要る技術を、言語・フレームワーク / この PR の実装 のタブに分けて、出てくる場所・確かめているテスト・用語と一緒に読める。`version` は 1 のままで、`primers` の無い解説はそのまま読める。",
+    "before": [
+      {
+        "text": "PR を読むのに要る技術の説明は、`commitStories`・`tests` などの文の中に、出てきたその場で一言ずつ書くしかなかった"
+      },
+      {
+        "text": "振る舞いの画面の 3 列・スクロールの追従は `ImpactScreen` の中に、骨組みの検査は `ImpactTopics.shapeProblemOf`(`impact` の道筋だけ)にあった"
+      },
+      {
+        "text": "検査が中身を足す抜粋は `tests[].excerpt` だけで、強調する行は書けなかった"
+      },
+      {
+        "text": "他の画面から変更の経緯へ移る手段は `go.toCommit`(コミットの先頭を開く)だけだった"
+      }
+    ],
+    "after": [
+      {
+        "text": "`PrimerTopics` が `primers` を kind(`language` / `codebase`)ごとのタブに書いた順で分け、節の用語・タブの用語集・関連・テスト・流れ・出てくる場所の届き方を組む",
+        "message": "build-primers"
+      },
+      {
+        "text": "本文の用語の印(`[[表示|用語の id]]`)は `MarkedText` の 3 つの道筋だけで読み、検査は印の書き損じ・`terms` に無い印・どの印からも指されない用語を落とす",
+        "message": "check-explain"
+      },
+      {
+        "text": "振る舞いと技術の手引きの 2 画面が `TopicColumns`(3 列・今の節・狭い幅の畳み)を共有する",
+        "message": "follow-scroll"
+      },
+      {
+        "text": "骨組みの検査は `ExplainShape` に移り、`primers`・`terms` の下の文の型と、必須のキーの欠け(段の kind ごと)も見る。`impact` は今までどおり構造だけを見る",
+        "message": "shape-check"
+      },
+      {
+        "text": "抜粋は `tests` と `primers` の段のどちらでも検査が中身を足し、`emphasis` で強調する行を書ける",
+        "message": "read-excerpts"
+      },
+      {
+        "text": "出てくる場所の `shas` は、`reachOfIn` が届き方(`line` / `file` / `untouched` / `merge` / `unmapped`)を決め、「差分で見る」は `go.toCommitFile` でそのコミットのそのファイル(届けばその行)へ送る",
+        "message": "to-commit-file"
+      },
+      {
+        "text": "`primers`・`terms` の形が崩れていれば、ページは解説全体を「解説なし」にし、帯に崩れた道筋を「形が想定と違います」と出す",
+        "message": "shape-check"
+      },
+      {
+        "text": "5 つ目のタブを足しても 1280px でヘッダの段が増えないよう、`.top-main` を `flex: 1 1 240px` に、画面の切り替えのタブの横の余白を 10px にした"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "段の種類ごとの必須の欠け",
+        "text": "`ExplainShape.Required` は `{route, kinds}` の表で、段の kind によって必須が変わるキー(抜粋の段の `excerpt` など)を kind ごとに見る。最初は「どの kind でも必須の文」だけで、抜粋の段に `excerpt` が無い解説を置くと 5 画面すべてが出なくなっていた(テストの検証で壊して見つけ、3 つ目のコミットで直した)",
+        "go": {
+          "kind": "message",
+          "id": "shape-check"
+        }
+      },
+      {
+        "title": "行まで送る条件",
+        "text": "「差分で見る」が行まで送るのは、そのコミットが解説の sha までにそのファイルを最後に変え、あいだにマージコミットも改名も無いときだけ。それ以外はファイルまでで、行には印を付けない(行番号がずれているため)",
+        "go": {
+          "kind": "message",
+          "id": "reach"
+        }
+      },
+      {
+        "title": "ページと検査の突き合わせ",
+        "text": "形の道筋(`Routes`)・必須の道筋(`Required`)・印の綴り・印を読む道筋・段の kind・バッククォートの割り方は、ページと検査の 2 か所に書いてある。核の判定表が検査の `Shapes` / `Variants` から導いたものと突き合わせる",
+        "go": {
+          "kind": "message",
+          "id": "derive-shape"
+        }
+      },
+      {
+        "title": "表示確認でしか守られていない配線",
+        "text": "タブの切り替えと位置の保存・復元・最初に開くタブの適用・関連のチップ・用語の光・出てくる場所のボタンの移り先(行 / ファイル / コミット)は DOM の配線で、判定表を通らない。760px 以下で body を `overflow: visible` にしたのは振る舞いの画面にも効く",
+        "go": {
+          "kind": "flow",
+          "id": "read"
+        }
+      },
+      {
+        "title": "ハーネスの層とヘッダ",
+        "text": "変更はすべてハーネスの層。5 つ目のタブで 1280px の変更の経緯とテストのヘッダが 1 段増えたので、この PR で詰めた。1280px のテストの画面ではブランチ名の末尾が「…」で隠れる(ユーザーが受け入れた)",
+        "go": {
+          "kind": "layer",
+          "layer": "ハーネス"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "page",
+      "label": "解説ページ",
+      "role": "地図と解説から 5 画面を組み、技術の手引きの節から変更の経緯・テスト・構造マップへ移らせる"
+    },
+    {
+      "id": "check",
+      "label": "解説の検査",
+      "role": "`primers`・`terms` の形・印・参照を見て、段の抜粋の中身を足し、崩れた解説を置かせない"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "解説ページの枠・解説の検査・2 つの判定表・`pr-explain` スキルの説明と見本"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/skills/pr-explain/templates/index.html",
+      "name": "解説ページ",
+      "role": "gh-pages に置くページの枠。固定スクリプトが地図と解説を 5 画面に組む",
+      "feature": "page",
+      "change": "技術の手引きの画面(`PrimerScreen`)と、その組み立て `PrimerTopics`・用語の印 `TermMarks`・割り方 `CodeSpans`・届き方 `reachOfIn` を足し、3 列を `TopicColumns`、骨組みの検査を `ExplainShape` に切り出した。ヘッダの CSS 2 か所も直した"
+    },
+    {
+      "path": ".github/scripts/build-pr-explain.py",
+      "name": "解説の検査",
+      "role": "`explain.json` の形と参照を見て、抜粋の中身を足して書き出す",
+      "feature": "check",
+      "change": "`primers`・`terms` の型、`MarkedText` の規則、強調の範囲、参照 3 本と印の参照、Variant を辿る `routes_under` と `routes_with`・`read_along` を足した"
+    },
+    {
+      "path": ".github/scripts/build-pr-explain-cases.sh",
+      "name": "検査の判定表",
+      "role": "見本を 1 か所ずつ崩して検査に通し、落ちる分類を確かめる",
+      "feature": "check",
+      "change": "`primers`・`terms`・印・強調・段の抜粋の通る・落ちるケースと、Variant の同じキーの規則が揃っているかを見る 1 件を足した"
+    },
+    {
+      "path": ".github/scripts/pr-explain-core-cases.sh",
+      "name": "ページの核の判定表",
+      "role": "ページの固定スクリプトを `vm` で評価し、DOM に触らない核を確かめる",
+      "feature": "page",
+      "change": "技術の手引きの節・用語・関連・状態・最初のタブ・届き方・強調・骨組みの検査のケースと、ページと検査の突き合わせ(必須の道筋・印・段の kind・割り方)を足した"
+    },
+    {
+      "path": ".github/scripts/pr-explain-pages.sh",
+      "name": "置き場",
+      "role": "gh-pages の PR のフォルダを書き換える。`put-explain` は置く前に解説を検査する",
+      "feature": "check"
+    },
+    {
+      "path": ".claude/skills/pr-explain/templates/explain.json",
+      "name": "見本",
+      "role": "`excerpt` 以外のすべてのキーを使う解説。検査の判定表が崩す元",
+      "feature": "check",
+      "change": "`primers`(2 つの kind・8 つの段)と `terms` を足した",
+      "graph": false
+    },
+    {
+      "path": ".claude/skills/pr-explain/SKILL.md",
+      "name": "解説のスキル",
+      "role": "5 画面と材料・`explain.json` の形・書き方・解説が無いときの出方を持つ",
+      "change": "技術の手引きの画面、`primers`・`terms` の型、用語の印の規則(1 か所に寄せた)、`primers` が無いときの行を足した",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "check-explain",
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "kind": "qry",
+      "name": "解説を検査する",
+      "code": "python3 \"$scripts_dir/build-pr-explain.py\" \"$3\" --pr \"$pr\" --out \"$work/explain.json\" --repo \"$scripts_dir\"",
+      "via": "exec",
+      "payload": "`primers`・`terms` を含む `explain.json`",
+      "returns": "検査に通れば、テストと段の抜粋の中身を足した `explain.json`。落ちれば `[pr-explain-shape]`・`[pr-explain-ref]` などの報告",
+      "status": "changed"
+    },
+    {
+      "id": "read-excerpts",
+      "from": ".github/scripts/build-pr-explain.py",
+      "to": ".github/scripts/build-pr-explain.py",
+      "kind": "qry",
+      "name": "抜粋の中身を足す",
+      "code": "reduce(read_route, routes_with(Shape(\"Excerpt\")), (explain, []))",
+      "via": "call",
+      "payload": "形と参照の検査を通った解説",
+      "returns": "Excerpt を指すすべての道筋の抜粋に `text` を足した写しと、読めなかった違反",
+      "status": "changed"
+    },
+    {
+      "id": "run-cases",
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "kind": "qry",
+      "name": "崩した解説を検査に通す",
+      "code": "python3 \"$builder\" \"$work/case.json\" --pr \"$pr\" --out \"$work/out.json\" --repo \"$repo\"",
+      "via": "exec",
+      "payload": "見本の `primers`・`terms` を 1 か所崩した解説",
+      "returns": "終了コードと報告の分類",
+      "status": "changed"
+    },
+    {
+      "id": "derive-shape",
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "kind": "qry",
+      "name": "形と割り方を導く",
+      "code": "module.routes_under(rule, route)",
+      "via": "call",
+      "payload": "検査の `Shapes` / `Variants` と、割り方を比べる 2 つの文",
+      "returns": "形の道筋(`shapeRoutes`)・必須の道筋と kind(`requiredRoutes`)・印を読む道筋・段の kind・`code_spans_of` の答え",
+      "status": "changed"
+    },
+    {
+      "id": "shape-check",
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "qry",
+      "name": "骨組みを見る",
+      "code": "ExplainShape.problemOf(explain)",
+      "via": "call",
+      "payload": "読み込んだ解説(一覧のキーが配列だと分かった後)",
+      "returns": "型の違う道筋か、必須のキーが欠けた道筋(2 か所以上なら最も外側)。崩れていなければ null",
+      "status": "changed"
+    },
+    {
+      "id": "build-primers",
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "qry",
+      "name": "技術の手引きの節を組む",
+      "code": "PrimerTopics.create({ primers: explain.primers, terms: explain.terms, testAt, flows: lookup.flows, reachOf: reachOfIn(map.commits, explainedAt) })",
+      "via": "call",
+      "payload": "使える解説の `primers`・`terms` と、テスト・流れを引く表",
+      "returns": "`{kind: \"unwritten\"}` か `{kind: \"written\", tabs}`(解説が無ければ `ExplainedMap` が `{kind: \"none\"}` を置く)",
+      "status": "added"
+    },
+    {
+      "id": "reach",
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "qry",
+      "name": "届き方を決める",
+      "code": "reachOf({ sha, path: occurrence.path, lineRange })",
+      "via": "call",
+      "payload": "出てくる場所の 1 つの sha・パス・行の範囲(無ければ null)",
+      "returns": "`{kind: \"line\", lineRange}` / `{kind: \"file\"}` / `{kind: \"untouched\"}` / `{kind: \"merge\"}` / `{kind: \"unmapped\"}`",
+      "status": "added"
+    },
+    {
+      "id": "show-tab",
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "cmd",
+      "name": "タブを切り替える",
+      "code": "showTab(tab)",
+      "via": "call",
+      "payload": "移る先のタブ(`language` / `codebase`)。離れるタブの本文の欄とページ全体の位置を覚え、戻るタブの位置を戻す",
+      "status": "added"
+    },
+    {
+      "id": "follow-scroll",
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "evt",
+      "name": "スクロールで今の節を決め直す",
+      "code": "TopicColumns.subscribe({ main, follow: (top) => parts[currentTab].columns.follow(top) })",
+      "via": "call",
+      "payload": "スクロールしている領域の上端(本文の欄か、ページ全体なら 0)。技術の手引きは今のタブの組へ渡す",
+      "status": "changed"
+    },
+    {
+      "id": "light-term",
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "evt",
+      "name": "用語を光らせる",
+      "code": "lightWhileHoveredOrFocused(mark, () => [columns.side, columns.inlineHolders[index]] …)",
+      "via": "call",
+      "payload": "乗った(フォーカスした)印と、右の欄とその節の畳んだ欄の同じ用語",
+      "status": "added"
+    },
+    {
+      "id": "show-see-also",
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "cmd",
+      "name": "関連の節へ移る",
+      "code": "showSeeAlso(position)",
+      "via": "call",
+      "payload": "`{tab, index, label}`。指したタブへ切り替えてから、その節へ送る",
+      "status": "added"
+    },
+    {
+      "id": "to-commit-file",
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "cmd",
+      "name": "コミットのファイルへ送る",
+      "code": "go.toCommitFile({ sha, path, lineRange: reach.kind === \"line\" ? reach.lineRange : null })",
+      "via": "call",
+      "payload": "sha・パスと、届き方が `line` なら行の範囲(`file` なら null)",
+      "status": "added"
+    },
+    {
+      "id": "to-flow",
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "cmd",
+      "name": "構造マップの流れへ移る",
+      "code": "go.toFlow(flow.id)",
+      "via": "call",
+      "payload": "流れの id。変更の経緯の「影響する操作」と技術の手引きの「構造マップで見る」が同じチップ(`flowChipOf`)で呼ぶ",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "write",
+      "label": "解説を置いたとき",
+      "steps": [
+        "check-explain",
+        "read-excerpts"
+      ]
+    },
+    {
+      "id": "open",
+      "label": "ページを開いたとき",
+      "steps": [
+        "shape-check",
+        "build-primers",
+        "reach"
+      ]
+    },
+    {
+      "id": "read",
+      "label": "技術の手引きを読むとき",
+      "steps": [
+        "show-tab",
+        "follow-scroll",
+        "light-term",
+        "show-see-also",
+        "to-commit-file",
+        "to-flow"
+      ]
+    },
+    {
+      "id": "cases",
+      "label": "判定表を流したとき",
+      "steps": [
+        "run-cases",
+        "derive-shape"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "phase": "core",
+      "role": "`primers` / `terms` の形と検査、技術の手引きの画面を足し、3 列と骨組みの検査を切り出す",
+      "why": "検査・ページの核・画面・見本・スキルは同じ `primers` の形を前提にするので、片方だけ入ると見本が検査に落ちるかページが読めない。そのため 1 コミットで入れた。別ファイル(`tech.html`)にせず同じ `index.html` の画面にしたのは、別ファイルではスクリプトを止める CSP の二重化が要り、画面をまたぐ移動もハッシュの画面名までしか届かないため(Issue で決定)。振る舞いの画面の 3 列を `TopicColumns` に切り出すのを別の PR に分けなかったのは、受け口の形がタブごとの複数組・隠れているあいだの購読・`sendTo` の描き直しという技術の手引きの要件で決まり、先に分けると当て推量になるため。計画は 3 回の検証で直し、デザイン案どおりに作る 5 点(用語の光・強調行・段の並び・出てくる場所の複数のコミット・タブごとの位置)はユーザーに確認して決めた。",
+      "flows": [
+        "write",
+        "open",
+        "read",
+        "cases"
+      ],
+      "review": [
+        "中身は `explain.json` のデータとして書き、固定スクリプトが印の span と Text ノードだけを作ること(自由な SVG や HTML を持たせず、HTML を解釈させない境界を保つ)",
+        "用語は `terms` に 1 回だけ書いて本文から印で指し、節の用語とタブの用語集は印から導いて書かせないこと",
+        "出てくる場所から行まで送るのは、そのコミットが解説の sha までにそのファイルを最後に変え、あいだにマージコミットも改名も無いときだけにしたこと",
+        "760px 以下で body を `overflow: visible` にしてタブの並びを `position: sticky` で上に残すこと(同じ規則が振る舞いの画面にも効く)"
+      ],
+      "before": [
+        {
+          "text": "技術の説明は各画面の文の中に一言ずつ書くしかなく、画面は 4 つだった"
+        }
+      ],
+      "after": [
+        {
+          "text": "`primers` / `terms` を書くと、技術の手引きの 2 つのタブに節・出てくる場所・用語が出る",
+          "message": "build-primers"
+        },
+        {
+          "text": "出てくる場所の「差分で見る」で、変更の経緯のそのコミットのそのファイルへ送る",
+          "message": "to-commit-file"
+        },
+        {
+          "text": "印の書き損じ・`terms` に無い印・指されない用語は、置く前の検査が落とす",
+          "message": "check-explain"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1194,
+          "end": 1199,
+          "text": "骨組みの検査を `ImpactTopics.shapeProblemOf` から `ExplainShape` に出し、primers・terms の文の型も見るようにした。この時点では型の違いだけで、必須の欠けは見ていない(次のコミットで足した)"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1633,
+          "end": 1643,
+          "text": "届き方。行まで届くのは、あいだ(解説の sha を含む)にマージコミットもそのパスを変えたコミットも無いときだけ"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 741,
+          "end": 743,
+          "text": "760px 以下の body を `overflow: visible` に。`auto` のままだと body がスクロールの器になり、タブの並びの sticky が効かない(試作で確かめた)"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 750,
+          "end": 750,
+          "text": "タブの並びを画面の上に残す"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 5004,
+          "end": 5012,
+          "text": "最初の `TopicColumns`。右の欄の頭と中身を添字で引く関数を受け取っていた(次のコミットで、節ごとに頭と中身を持たせる形にした)"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 402,
+          "end": 417,
+          "text": "Primer と Passage の Variant。同じキーは kind をまたいで同じ規則にする(`routes_under` が kind のキーを合わせて辿るため)"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 186,
+          "end": 196,
+          "text": "印の書き方の 2 つの規則。ページは印で先に割るので、バッククォートは印の外の切れ端ごとに数える"
+        }
+      ]
+    },
+    {
+      "sha": "31ebf67894f9e9eadd76d03a06c6214be837deaa",
+      "phase": "revise",
+      "role": "実装の検証(8 観点)の指摘を反映し、1280px のヘッダの段を詰める",
+      "why": "骨組みの検査は型の違いしか見ず、必須の文が欠けた解説で組み立てが落ちうると security と over-guard の両方が指摘したので、primers・terms の下は `Shapes` から機械的に導いたまま、欠けも崩れとして扱う形にした。重複の指摘(道筋のたどり方・id の引き方・行の範囲の判定・流れのチップ・節の頭)は 1 か所に寄せ、用語集も普通の 1 節として `TopicColumns` に渡す。5 つ目のタブで 1280px の変更の経緯とテストのヘッダが 1 段増えたことは計画の外で見つかり、ユーザーの決定でこの PR で詰めた。用語集の表・コード例の見出し・「前からある」の札の地の色は、ユーザーの決定でデザイン案の形に戻した。",
+      "flows": [
+        "open",
+        "read",
+        "cases"
+      ],
+      "review": [
+        "`ExplainShape.Required` で、primers・terms の下の必須の文の欠けも「解説なし」に倒すこと(impact は構造だけのまま)",
+        "`.top-main` を `flex: 1 1 240px` にし、1280px のテストの画面ではブランチ名の末尾が「…」で隠れること(ユーザーが受け入れた)",
+        "色の区分を持たない札に地の色が付き、振る舞いの画面の「変わらない」の札も同じ見た目に変わること(意図した差。main と画素で比べて、差がその札の矩形だけであることを確かめた)",
+        "用語集の article に `data-topic` ではなく `data-glossary` を付け、primers の id と重ならないようにしたこと"
+      ],
+      "before": [
+        {
+          "text": "必須の文が欠けた解説は、ページの組み立てが落ちうる"
+        },
+        {
+          "text": "1280px で変更の経緯は 75px、テストは 87px のヘッダになっていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "必須の文が欠けた解説は「解説なし」になり、帯に欠けた道筋が出る",
+          "message": "shape-check"
+        },
+        {
+          "text": "1280px のヘッダは 5 画面とも main と同じ高さ(変更の経緯 52px・テスト 75px)"
+        },
+        {
+          "text": "流れのチップは `flowChipOf` の 1 つで、変更の経緯と技術の手引きが共有する",
+          "message": "to-flow"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 59,
+          "end": 64,
+          "text": "タブの横の余白(10px)と、折り返しの基準(240px)。理由はそれぞれ直前の 1 行"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 465,
+          "end": 465,
+          "text": "色の区分を持たない札(`data-tone=\"\"`)は `.chip` の地と文字になる。「前からある」と「変わらない」"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1288,
+          "end": 1302,
+          "text": "必須の欠けを見る道筋。この時点では「どの kind でも必須の文」だけで、抜粋の段の `excerpt` は入っていなかった(次のコミットで直した)"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 5076,
+          "end": 5084,
+          "text": "節の頭・右の欄の頭・目次の行を `TopicColumns` が組む。表示確認でしか守られていない理由はここ 1 か所に置いた"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 5421,
+          "end": 5434,
+          "text": "届き方ごとの switch は名前・移り先・注意だけを返し、ボタンと添え書きは外で 1 回組む"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 817,
+          "end": 836,
+          "text": "`with_texts_along`(引数 4 つ)を `read_along` にし、段の読み方を `step_of` と共有した"
+        }
+      ]
+    },
+    {
+      "sha": "044181bf78e81ddd58dde2dd7cb710404c3ac529",
+      "phase": "hard",
+      "role": "壊しても落ちなかった判断に判定表のケースを足し、段の kind ごとに必須の欠けを見る",
+      "why": "テストの検証で実装を 1 か所ずつ壊して走らせたところ、抜粋の段に `excerpt` が無い解説で 5 画面すべてが出なくなることが見つかった(この PR が入れた挙動)。`Required` を「どの kind でも必須の文」に絞った形では、kind ごとに必須のオブジェクトが入る場所が無い。そこで `Required` を `{route, kinds}` にし、Variant の下は kind ごとに必須を見る。バッククォートの割り方は「ページと同じ」と書きながら突き合わせる表が無かったので、核の `CodeSpans` に出して検査の `code_spans_of` と突き合わせる。型の違いと欠けが同時にある入力・印の表示の中のバッククォートは、壊した実装と正しい実装の答えが分かれる入力を選んで足した。",
+      "flows": [
+        "open",
+        "cases"
+      ],
+      "review": [
+        "`Required` の `kinds` が、Variant の下では kind の並び、Shape の下では null で、判定表が `Shapes` / `Variants` から導いたものと突き合わせていること",
+        "型の違いと必須の欠けが同時にある入力を両向き(浅い方が欠け・浅い方が型の違い)で足し、最も外側を選ぶことを固定したこと",
+        "帯の文言を「型が想定と違います」から「形が想定と違います」にしたこと(欠けも含むため)"
+      ],
+      "before": [
+        {
+          "text": "抜粋の段に `excerpt` が無い解説を置くと、`excerptBoxesOf` で落ちて 5 画面すべてが出なかった"
+        },
+        {
+          "text": "ページの `Dom.proseParts` が割り方を変えても、どの判定表も落ちなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "その解説は「解説なし」になり、帯に `primers[].passages[].excerpt` が出る",
+          "message": "shape-check"
+        },
+        {
+          "text": "ページのバッククォートの割り方は核の `CodeSpans` にあり、判定表が検査の `code_spans_of` と同じ答えかを確かめる",
+          "message": "derive-shape"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1293,
+          "end": 1308,
+          "text": "必須を `{route, kinds}` に。抜粋の段の `excerpt` は、kind が excerpt の段にだけ求める"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1320,
+          "end": 1326,
+          "text": "`lacks` は、手前のオブジェクトがそのキーを求める kind のときだけ欠けを見る"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1347,
+          "end": 1361,
+          "text": "`Dom.proseParts` の中にあった割り方を、DOM に触らない核へ出した"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 5645,
+          "end": 5645,
+          "text": "帯の文言。欠けも含むので「型」から「形」に"
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "start": 1026,
+          "end": 1045,
+          "text": "足したケース。抜粋のオブジェクトの欠けと、kind では必須でないときと、型の違いと欠けが同時にある入力の両向き"
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "start": 233,
+          "end": 233,
+          "text": "印の表示の中のバッククォートまで数える実装を落とす(既存のケースは 2 つで偶数なので、壊しても答えが変わらなかった)"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "build",
+      "label": "検査の判定表",
+      "file": ".github/scripts/build-pr-explain-cases.sh"
+    },
+    {
+      "id": "core",
+      "label": "ページの核の判定表",
+      "file": ".github/scripts/pr-explain-core-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "sample-primers",
+      "suite": "build",
+      "name": "技術の手引きの見本は、2 つの kind・excerpt 以外の 8 つの段・印の場所 4 種類(gist・text・引数・注意)・sha 2 つの出てくる場所を使い、どの用語も印から指す",
+      "techniques": [
+        "regression"
+      ],
+      "why": "見本が primers の形を使い切っていないと、検査に形を足したときに見本が古いまま通り、書き手が見本から写せない",
+      "given": "`pr-explain` スキルの見本(`templates/explain.json`)",
+      "when": "`primers` の kind・段の kind・印の場所・出てくる場所の sha の数を数える",
+      "then": "2 つの kind・excerpt 以外の 8 つの段・印の場所 4 種類・sha 2 つの出てくる場所があり、どの用語も印から指されている",
+      "commit": "31ebf67894f9e9eadd76d03a06c6214be837deaa",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 219,
+        "end": 219,
+        "text": "pass|-|sample|技術の手引きの見本は、2 つの kind・excerpt 以外の 8 つの段・印の場所 4 種類(gist・text・引数・注意)・sha 2 つの出てくる場所を使い、どの用語も印から指す|import re; ps = d[\"primers\"]; ss = [x for p in ps for x in p.get(\"passages\", [])]; marked = lambda kinds: any(\"[[\" in x[\"text\"] for x in ss if x[\"kind\"] in kinds); assert sorted({p[\"kind\"] for p in ps}) == [\"codebase\", \"language\"] and sorted({x[\"kind\"] for x in ss}) == sorted([\"text\", \"declaration\", \"parameters\", \"caution\", \"memo\", \"rule\", \"spec\", \"history\"]) and all(\"[[\" in p[\"gist\"] for p in ps) and marked({\"text\"}) and any(\"[[\" in a[\"text\"] for x in ss if x[\"kind\"] == \"parameters\" for a in x[\"parameters\"]) and marked({\"caution\", \"memo\", \"rule\", \"spec\", \"history\"}) and \"[[`\" in json.dumps(ps, ensure_ascii=False) and any(len(o.get(\"shas\", [])) == 2 for p in ps for o in p[\"occurrences\"]) and {t[\"id\"] for t in d[\"terms\"]} == set(re.findall(r\"\\|([A-Za-z0-9_-]+)\\]\\]\", json.dumps(ps, ensure_ascii=False)))"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/explain.json",
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "run-cases"
+      ]
+    },
+    {
+      "id": "kind-status",
+      "suite": "build",
+      "name": "言語・フレームワークの節に status を書く",
+      "techniques": [
+        "error",
+        "equivalence"
+      ],
+      "why": "`status`・`tests`・`flows` はこの PR の実装の節だけが持つ。言語・フレームワークの節に書けると、ページが札もテストも出さないまま黙って捨てる",
+      "given": "見本",
+      "when": "言語・フレームワークの節に `status: \"added\"` を書いて検査する",
+      "then": "`[pr-explain-shape]` で落ちる(知らないキー)",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 237,
+        "end": 237,
+        "text": "deny|shape|sample|言語・フレームワークの節に status を書く|d[\"primers\"][0][\"status\"] = \"added\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "run-cases",
+        "check-explain"
+      ]
+    },
+    {
+      "id": "emphasis-end",
+      "suite": "build",
+      "name": "強調の end が、抜粋の end + 1",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "強調の範囲が抜粋の外にはみ出すと、ページは強調する行を出せない。抜粋の端ちょうどまでは書ける",
+      "given": "見本に 2〜4 行目の段の抜粋を足す",
+      "when": "強調を 3〜5 行目にして検査する",
+      "then": "`[pr-explain-shape]` で落ちる",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 263,
+        "end": 263,
+        "text": "deny|shape|sample|強調の end が、抜粋の end + 1|d[\"primers\"][0][\"passages\"].append({\"kind\": \"excerpt\", \"excerpt\": {\"path\": \"kept.txt\", \"start\": 2, \"end\": 4, \"emphasis\": [{\"start\": 3, \"end\": 5}]}})"
+      },
+      "values": {
+        "columns": [
+          "強調の範囲(抜粋は 2〜4 行目)",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "1〜2 行目(start − 1)",
+              "落ちる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "2 行目だけ・4 行目だけ",
+              "通る"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "3〜5 行目(end + 1)",
+              "落ちる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "4〜3 行目(逆向き)",
+              "落ちる"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "run-cases",
+        "check-explain"
+      ]
+    },
+    {
+      "id": "stray-brackets",
+      "suite": "build",
+      "name": "要するにに、バッククォートの外の印になっていない二重の角括弧",
+      "techniques": [
+        "error"
+      ],
+      "why": "バッククォートの外の印でない二重の角括弧は、印の書き損じと見分けられない。置かせると、読み手には書き手の意図と違う文字が出る",
+      "given": "見本",
+      "when": "要するにの末尾に ` a[[b]]` を足して検査する",
+      "then": "`[pr-explain-shape]` で落ちる",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 267,
+        "end": 267,
+        "text": "deny|shape|sample|要するにに、バッククォートの外の印になっていない二重の角括弧|d[\"primers\"][0][\"gist\"] += \" a[[b]]\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "run-cases",
+        "check-explain"
+      ]
+    },
+    {
+      "id": "mark-in-code",
+      "suite": "build",
+      "name": "バッククォートの中に印の形(id は terms にある)",
+      "techniques": [
+        "error"
+      ],
+      "why": "バッククォートの中に印の形を書くと、書き手はコードのつもりでもページは印にする(印で先に割るため)",
+      "given": "見本(id `json` は terms にある)",
+      "when": "要するにの末尾にバッククォートで囲んだ `json` の印を足して検査する",
+      "then": "`[pr-explain-shape]` で落ちる",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 270,
+        "end": 270,
+        "text": "deny|shape|sample|バッククォートの中に印の形(id は terms にある)|d[\"primers\"][0][\"gist\"] += \" `[[JSON|json]]`\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "run-cases",
+        "check-explain"
+      ]
+    },
+    {
+      "id": "unclosed-in-label",
+      "suite": "build",
+      "name": "印の表示の中の閉じていないバッククォートは数えず、後ろの印はバッククォートの中にならないので通る",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "ページは印で先に割るので、印の表示の中のバッククォートは印の外の数に入らない。印の表示まで数える実装を壊しても、既存のケースはバッククォートが 2 つ(偶数)で答えが変わらなかった(テストの検証の指摘 3)",
+      "given": "見本",
+      "when": "要するにの印を、表示に閉じていないバッククォートを 1 つ持つ印と、普通の印の 2 つに替えて検査する",
+      "then": "通って書き出す",
+      "commit": "044181bf78e81ddd58dde2dd7cb710404c3ac529",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 233,
+        "end": 233,
+        "text": "pass|-|sample|印の表示の中の閉じていないバッククォートは数えず、後ろの印はバッククォートの中にならないので通る|d[\"primers\"][0][\"gist\"] = d[\"primers\"][0][\"gist\"].replace(\"[[JSON|json]]\", \"[[`JSON|json]] と [[JSON|json]]\")"
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "run-cases",
+        "check-explain"
+      ]
+    },
+    {
+      "id": "unmarked-term",
+      "suite": "build",
+      "name": "どの印からも指されない用語がある",
+      "techniques": [
+        "error"
+      ],
+      "why": "どの印からも指されない用語は、技術の手引きのどこにも出ない。書いたのに出ない語を置く前に知らせる",
+      "given": "見本",
+      "when": "`terms` に、どの印も指さない用語を足して検査する",
+      "then": "`[pr-explain-ref]` で落ちる",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 281,
+        "end": 281,
+        "text": "deny|ref|sample|どの印からも指されない用語がある|d[\"terms\"].append({\"id\": \"unused\", \"label\": \"使わない語\", \"text\": \"意味\"})"
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "run-cases",
+        "check-explain"
+      ]
+    },
+    {
+      "id": "excerpt-no-tests",
+      "suite": "build",
+      "name": "tests の無い解説でも、段の抜粋に作業ツリーではなく解説時点の sha の中身が入る",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "前は抜粋の中身を `tests` の下でしか足さず、`tests` が無い解説では読みもしなかった。段の抜粋も、作業ツリーではなく解説時点の sha から読む",
+      "given": "`tests` の無い解説で、段の抜粋が 2〜3 行目を指す(作業ツリーのファイルは解説時点と中身が違う)",
+      "when": "検査して書き出す",
+      "then": "書き出した段の抜粋の `text` が、解説時点の sha の 2〜3 行目",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 365,
+        "end": 368,
+        "emphasis": [
+          {
+            "start": 368,
+            "end": 368
+          }
+        ],
+        "text": "# 技術の手引き(primers)の段の抜粋も、tests の抜粋と同じく解説時点の sha から中身を足す。\nprimer_with_excerpt='d[\"primers\"] = [{\"kind\": \"language\", \"id\": \"p\", \"category\": \"c\", \"label\": \"題\", \"gist\": \"要するに\", \"passages\": [{\"kind\": \"excerpt\", \"excerpt\": {\"path\": \"kept.txt\", \"start\": 2, \"end\": 3}}], \"occurrences\": [{\"path\": \"kept.txt\", \"text\": \"ここ\"}]}]'\nrun_build minimal \"$primer_with_excerpt\" --repo \"$repo\"\nreport pass \"$(inspect_output '\"tests\" not in out and out[\"primers\"][0][\"passages\"][0][\"excerpt\"][\"text\"] == \"two\\nthree\"')\" \"tests の無い解説でも、段の抜粋に作業ツリーではなく解説時点の sha の中身が入る\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "run-cases",
+        "read-excerpts"
+      ]
+    },
+    {
+      "id": "variant-keys",
+      "suite": "build",
+      "name": "どの Variant も、kind をまたいで同じキーは同じ規則を持つ",
+      "techniques": [
+        "regression",
+        "type"
+      ],
+      "why": "`routes_under` は Variant の kind ごとのキーを合わせて辿る。同じキーに kind ごとに別の規則を付けると、印や抜粋を読む道筋とページが形を見る道筋から、片方の規則が黙って消える",
+      "given": "検査の `Variants`(Target・Primer・Passage)",
+      "when": "同じ Variant の同じキーの規則を kind をまたいで比べる",
+      "then": "どれも同じ規則",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/build-pr-explain-cases.sh",
+        "start": 387,
+        "end": 406,
+        "emphasis": [
+          {
+            "start": 390,
+            "end": 391
+          },
+          {
+            "start": 401,
+            "end": 402
+          }
+        ],
+        "text": "# 検査の表そのものを見るケース。検査を 1 回だけ読み込み、ケースごとに `pass` / `deny` を 1 行ずつ出す。\n# - 振る舞い(impact)の型の文字列のキーは、どれも使う人の言葉(`user_text`)で書く。型を足したときに規則を付け忘れると、\n#   コードの名前がそのまま振る舞いの画面に出る。id のキーは文ではないので除く。\n# - Variant の kind ごとのキーは、`routes_under` が kind をまたいで合わせて辿る。同じキーに kind ごとに別の規則を付けると、\n#   合わせた道筋(印・抜粋を読む道筋と、ページが形を見る道筋)からどちらかの規則が黙って消える。\n{ read -r user_text_keys; read -r variant_keys; } < <(python3 - \"$builder\" <<'PY'\nimport importlib.util, sys\nspec = importlib.util.spec_from_file_location(\"build_pr_explain\", sys.argv[1])\nmodule = importlib.util.module_from_spec(spec)\nspec.loader.exec_module(module)\nverdict = lambda holds: \"pass\" if holds else \"deny\"\nroutes = module.routes_under(module.Shapes[\"Explain\"][\"impact\"].value, \"impact\")\ntexts = [rule.rule for _, rule, _ in routes if isinstance(rule, module.Scalar) and rule != module.Id]\nprint(verdict(texts and all(rule == \"user_text\" for rule in texts)))\nrules = [((name, key), field) for name, kinds in module.Variants.items() for fields in kinds.values() for key, field in fields.items()]\nprint(verdict(all(field == other for at, field in rules for other_at, other in rules if at == other_at)))\nPY\n)\nreport pass \"$user_text_keys\" \"振る舞い(impact)の型の文字列のキーは、id を除いてどれも使う人の言葉(user_text)の規則を持つ\"\nreport pass \"$variant_keys\" \"どの Variant も、kind をまたいで同じキーは同じ規則を持つ\""
+      },
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "run-cases"
+      ]
+    },
+    {
+      "id": "hash-primer",
+      "suite": "core",
+      "name": "ハッシュが #primer なら、保存値(テスト)より技術の手引きを優先する",
+      "techniques": [
+        "state"
+      ],
+      "why": "技術の手引きの URL を渡されたら、最後に開いた画面によらずそこを開く",
+      "given": "保存値がテストの画面",
+      "when": "ハッシュ `#primer` で開く画面を選ぶ",
+      "then": "技術の手引き(`primer`)",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 685,
+        "end": 689,
+        "text": "  {\n    label: \"ハッシュが #primer なら、保存値(テスト)より技術の手引きを優先する\",\n    actual: () => ScreenChoice.choose({ hash: \"#primer\", saved: \"test\" }),\n    expected: \"primer\",\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ]
+    },
+    {
+      "id": "required-routes",
+      "suite": "core",
+      "name": "ページが欠けを見る道筋とそれを必須とする kind は、解説の検査の形(Shapes・Variants)の primers・terms の下の必須の文と 1 つのオブジェクトと同じ",
+      "techniques": [
+        "regression"
+      ],
+      "why": "ページの `Required` が検査の必須とずれると、検査を通った解説がページで「解説なし」になるか、崩れた解説で 5 画面が出なくなる",
+      "given": "検査の `Shapes` / `Variants` から導いた、primers・terms の下の必須の文と 1 つのオブジェクトの道筋と、それを必須とする kind",
+      "when": "ページの `ExplainShape.Required` と比べる",
+      "then": "14 件が同じ並び・同じ kind(Variant の下は kind の並び、Shape の下は null)",
+      "commit": "044181bf78e81ddd58dde2dd7cb710404c3ac529",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 745,
+        "end": 749,
+        "text": "  {\n    label: \"ページが欠けを見る道筋とそれを必須とする kind は、解説の検査の形(Shapes・Variants)の primers・terms の下の必須の文と 1 つのオブジェクトと同じ\",\n    actual: () => ExplainShape.Required,\n    expected: checkerRequiredRoutes,\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html",
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "derive-shape",
+        "shape-check"
+      ]
+    },
+    {
+      "id": "label-missing",
+      "suite": "core",
+      "name": "節の題(label)が無ければ、理由はその道筋",
+      "techniques": [
+        "error"
+      ],
+      "why": "必須の文が欠けた解説は、ページの組み立てが落ちる。欠けも「解説なし」に倒し、帯に道筋を出す",
+      "given": "2 つ目の節に題(`label`)が無い解説",
+      "when": "組む",
+      "then": "解説なしで、理由は `primers[].label`",
+      "commit": "31ebf67894f9e9eadd76d03a06c6214be837deaa",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1006,
+        "end": 1010,
+        "text": "  {\n    label: \"節の題(label)が無ければ、理由はその道筋\",\n    actual: () => shapeReasonOf({ primers: [primerOf({ id: \"a\" }), { ...primerOf({ id: \"b\" }), label: undefined }] }),\n    expected: { kind: \"shape\", key: \"primers[].label\" },\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "shape-check"
+      ]
+    },
+    {
+      "id": "excerpt-missing",
+      "suite": "core",
+      "name": "抜粋(excerpt)の段に抜粋のオブジェクトが無ければ、解説なしにして理由をその道筋にする",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "抜粋の段に抜粋のオブジェクトが無いと、コード例を組むところで落ちて 5 画面すべてが出なかった(テストの検証の指摘 1。この PR が入れた挙動)",
+      "given": "段が `{kind: \"excerpt\"}` だけの解説",
+      "when": "組む",
+      "then": "解説なしで、理由は `primers[].passages[].excerpt`",
+      "commit": "044181bf78e81ddd58dde2dd7cb710404c3ac529",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1026,
+        "end": 1030,
+        "text": "  {\n    label: \"抜粋(excerpt)の段に抜粋のオブジェクトが無ければ、解説なしにして理由をその道筋にする\",\n    actual: () => explained(mapOf(), explainOf({ primers: [primerOf({ passages: [{ kind: \"excerpt\" }] })] })).reading,\n    expected: { kind: \"missing\", reason: { kind: \"shape\", key: \"primers[].passages[].excerpt\" } },\n  },"
+      },
+      "values": {
+        "columns": [
+          "段の kind",
+          "抜粋のオブジェクトが無いとき"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "excerpt",
+              "解説なし"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "declaration・parameters",
+              "解説を使う(その kind では必須でない)"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "shape-check"
+      ]
+    },
+    {
+      "id": "outer-lacking",
+      "suite": "core",
+      "name": "型の違いと必須の欠けが同時にあれば、外側の欠け(節の題)を理由にする",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "崩れが 2 か所以上なら、最も外側を理由にする。型の違いを先に返す実装も、欠けを先に返す実装も、既存のケースでは落ちなかった(テストの検証の指摘 2)",
+      "given": "節の題(`label`)が無く、深い段の文が数値の解説",
+      "when": "組む",
+      "then": "理由は外側の `primers[].label`(欠け)",
+      "commit": "044181bf78e81ddd58dde2dd7cb710404c3ac529",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1036,
+        "end": 1040,
+        "text": "  {\n    label: \"型の違いと必須の欠けが同時にあれば、外側の欠け(節の題)を理由にする\",\n    actual: () => shapeReasonOf({ primers: [{ ...primerOf({ passages: [{ kind: \"text\", text: 5 }] }), label: undefined }] }),\n    expected: { kind: \"shape\", key: \"primers[].label\" },\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "shape-check"
+      ]
+    },
+    {
+      "id": "outer-mistyped",
+      "suite": "core",
+      "name": "型の違いと必須の欠けが同時にあれば、外側の型の違い(節の題)を理由にする",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "上の逆向き。欠けを先に返す実装を落とす",
+      "given": "節の題(`label`)が数値で、深い段の文が無い解説",
+      "when": "組む",
+      "then": "理由は外側の `primers[].label`(型の違い)",
+      "commit": "044181bf78e81ddd58dde2dd7cb710404c3ac529",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1041,
+        "end": 1045,
+        "text": "  {\n    label: \"型の違いと必須の欠けが同時にあれば、外側の型の違い(節の題)を理由にする\",\n    actual: () => shapeReasonOf({ primers: [primerOf({ label: 5, passages: [{ kind: \"text\" }] })] }),\n    expected: { kind: \"shape\", key: \"primers[].label\" },\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "shape-check"
+      ]
+    },
+    {
+      "id": "impact-number",
+      "suite": "core",
+      "name": "振る舞いの文(impact の kept の text)が数値でも、解説は使える",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "骨組みの検査で文の種類を見るのは primers・terms の下だけ。振る舞いの文は文字として入れるだけなので、表示できている解説を「解説なし」に変えない",
+      "given": "変わらないことの文が数値の解説",
+      "when": "組む",
+      "then": "解説を使う(`explained`)",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1056,
+        "end": 1060,
+        "text": "  {\n    label: \"振る舞いの文(impact の kept の text)が数値でも、解説は使える\",\n    actual: () => explained(mapOf(), explainOf({ impact: impactOf({ kept: [{ text: 5 }] }) })).reading.kind,\n    expected: \"explained\",\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "shape-check"
+      ]
+    },
+    {
+      "id": "code-spans-unclosed",
+      "suite": "core",
+      "name": "閉じていない `` ` `` のある文は、解説の検査と同じに割る(最後の `` ` `` は文字のまま前の切れ端につなぐ)",
+      "techniques": [
+        "regression"
+      ],
+      "why": "検査の印の規則はページの割り方に依る。ページの割り方が変わっても、どの判定表も落ちなかった(テストの検証の指摘 4)",
+      "given": "バッククォートが 3 つの文(a を囲む対の後に、閉じていないものが 1 つ)",
+      "when": "ページの `CodeSpans.create` と検査の `code_spans_of` で割る",
+      "then": "同じ並び(最後のバッククォートは文字のまま前の切れ端につなぐ)",
+      "commit": "044181bf78e81ddd58dde2dd7cb710404c3ac529",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1105,
+        "end": 1109,
+        "text": "  {\n    label: \"閉じていない `` ` `` のある文は、解説の検査と同じに割る(最後の `` ` `` は文字のまま前の切れ端につなぐ)\",\n    actual: () => CodeSpans.create(\"前 `a` 中 `b\").map((span) => [span.isCode, span.text]),\n    expected: checkerCodeSpans[\"前 `a` 中 `b\"],\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html",
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "derive-shape"
+      ]
+    },
+    {
+      "id": "primer-none",
+      "suite": "core",
+      "name": "解説が無いとき、技術の手引きは「解説なし」",
+      "techniques": [
+        "state"
+      ],
+      "why": "解説が無いときに技術の手引きが空のタブを出さず、出せない旨を出す",
+      "given": "地図だけ(`explain.json` が置かれていない)",
+      "when": "`ExplainedMap.create` で組む",
+      "then": "`primerTopics` は `{kind: \"none\"}`",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1120,
+        "end": 1124,
+        "text": "  {\n    label: \"解説が無いとき、技術の手引きは「解説なし」\",\n    actual: () => ExplainedMap.create(mapOf(), absent).primerTopics,\n    expected: { kind: \"none\" },\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "build-primers"
+      ]
+    },
+    {
+      "id": "primer-unwritten",
+      "suite": "core",
+      "name": "primers が無ければ、impact があっても技術の手引きは「書かれていない」",
+      "techniques": [
+        "state",
+        "equivalence"
+      ],
+      "why": "`primers` を書いていない今の解説では、技術の手引きの画面だけが「書かれていない」になり、ほかの画面は変わらない",
+      "given": "`impact` はあるが `primers` が無い解説",
+      "when": "組む",
+      "then": "`primerTopics` は `{kind: \"unwritten\"}`",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1130,
+        "end": 1134,
+        "text": "  {\n    label: \"primers が無ければ、impact があっても技術の手引きは「書かれていない」\",\n    actual: () => primerTopicsOf({ impact: impactOf({ kept: [{ text: \"変わらない\" }] }) }),\n    expected: { kind: \"unwritten\" },\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "build-primers"
+      ]
+    },
+    {
+      "id": "tab-split",
+      "suite": "core",
+      "name": "言語と実装の節を交互に書くと、タブごとに書いた順で分かれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "タブは kind で分け、タブの中は書いた順。書き手が差分に出てくる順・全体から部品への順で並べたものを崩さない",
+      "given": "言語と実装の節を a(言語)・b(実装)・c(言語)・d(実装)の順に書いた解説",
+      "when": "組む",
+      "then": "言語のタブは a・c、実装のタブは b・d",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1140,
+        "end": 1148,
+        "text": "  {\n    label: \"言語と実装の節を交互に書くと、タブごとに書いた順で分かれる\",\n    actual: () => {\n      const primers = [primerOf({ id: \"a\" }), primerOf({ id: \"b\", kind: \"codebase\" }), primerOf({ id: \"c\" }), primerOf({ id: \"d\", kind: \"codebase\" })];\n      const tabs = primerTopicsOf({ primers }).tabs;\n      return [tabs.language.topics.map((topic) => topic.id), tabs.codebase.topics.map((topic) => topic.id)];\n    },\n    expected: [[\"a\", \"c\"], [\"b\", \"d\"]],\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "build-primers"
+      ]
+    },
+    {
+      "id": "term-order",
+      "suite": "core",
+      "name": "節の用語は、要するに → 段を書いた順(段の中は文 → 引数)の文書の順に並び、JSON のキーの順にも terms の順にもよらない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "節の用語は、読み手が本文で出会う順に並ぶ。JSON にキーを書いた順や `terms` の順で並べる実装を落とす",
+      "given": "キーを passages → gist の順に書き、要するにが t3、引数が t2、text の段が t1 と t3 を指す節",
+      "when": "組む",
+      "then": "節の用語は t3・t2・t1",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1149,
+        "end": 1164,
+        "text": "  {\n    label: \"節の用語は、要するに → 段を書いた順(段の中は文 → 引数)の文書の順に並び、JSON のキーの順にも terms の順にもよらない\",\n    actual: () => {\n      const primer = {\n        kind: \"language\",\n        id: \"p\",\n        category: \"分類\",\n        label: \"題\",\n        occurrences: [{ path: \"a.ts\", text: \"ここ\" }],\n        passages: [{ kind: \"parameters\", parameters: [{ name: \"n\", type: \"T\", text: \"[[二|t2]]\" }] }, { kind: \"text\", text: \"[[一|t1]] と [[三|t3]]\" }],\n        gist: \"[[三|t3]]\",\n      };\n      return tabTopicsOf({ primers: [primer], terms: [termOf(\"t1\"), termOf(\"t2\"), termOf(\"t3\")] }, \"language\")[0].terms.map((term) => term.id);\n    },\n    expected: [\"t3\", \"t2\", \"t1\"],\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "build-primers"
+      ]
+    },
+    {
+      "id": "glossary-order",
+      "suite": "core",
+      "name": "用語集は、タブの節をまたいで最初に出た順に並び、印の無いタブは null",
+      "techniques": [
+        "equivalence",
+        "state"
+      ],
+      "why": "用語集は節をまたいで最初に出た順に重複なく並び、印の無いタブには用語集の節を出さない",
+      "given": "言語の a が t2、c が t1 と t2 を指し、実装の b は印を持たない解説",
+      "when": "組む",
+      "then": "言語の用語集は t2・t1、実装の用語集は null",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1165,
+        "end": 1173,
+        "text": "  {\n    label: \"用語集は、タブの節をまたいで最初に出た順に並び、印の無いタブは null\",\n    actual: () => {\n      const primers = [primerOf({ id: \"a\", gist: \"[[二|t2]]\" }), primerOf({ id: \"b\", kind: \"codebase\" }), primerOf({ id: \"c\", gist: \"[[一|t1]] と [[二|t2]]\" })];\n      const tabs = primerTopicsOf({ primers, terms: [termOf(\"t1\"), termOf(\"t2\")] }).tabs;\n      return [tabs.language.glossary.terms.map((term) => term.id), tabs.codebase.glossary];\n    },\n    expected: [[\"t2\", \"t1\"], null],\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "build-primers"
+      ]
+    },
+    {
+      "id": "see-also",
+      "suite": "core",
+      "name": "関連は書いた順に、指した先のタブ・タブの中の位置・題になる",
+      "techniques": [
+        "state"
+      ],
+      "why": "関連のチップは、もう一方のタブの節も指せる。押したときに移る先(タブとタブの中の位置)と題が要る",
+      "given": "言語の a が d(実装)と b(言語)を関連に挙げる解説",
+      "when": "組む",
+      "then": "a の関連は、実装のタブの 2 つ目(D)と言語のタブの 2 つ目(B)の順",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1186,
+        "end": 1193,
+        "text": "  {\n    label: \"関連は書いた順に、指した先のタブ・タブの中の位置・題になる\",\n    actual: () => {\n      const primers = [primerOf({ id: \"a\", seeAlso: [\"d\", \"b\"] }), primerOf({ id: \"c\", kind: \"codebase\", label: \"C\" }), primerOf({ id: \"b\", label: \"B\" }), primerOf({ id: \"d\", kind: \"codebase\", label: \"D\" })];\n      return tabTopicsOf({ primers }, \"language\")[0].seeAlso;\n    },\n    expected: [{ tab: \"codebase\", index: 1, label: \"D\" }, { tab: \"language\", index: 1, label: \"B\" }],\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "build-primers",
+        "show-see-also"
+      ]
+    },
+    {
+      "id": "status",
+      "suite": "core",
+      "name": "この PR の実装の節の状態は、added / changed / 省略 → added / changed / 前からある(Existing)",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "この PR の実装の節は、追加 / 変更 / 前からある のどれかの札を持つ。省いた節を null にすると札が消える",
+      "given": "status が added・changed・省略 の実装の節",
+      "when": "組む",
+      "then": "added・changed・`existing`",
+      "commit": "31ebf67894f9e9eadd76d03a06c6214be837deaa",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1199,
+        "end": 1203,
+        "text": "  {\n    label: \"この PR の実装の節の状態は、added / changed / 省略 → added / changed / 前からある(Existing)\",\n    actual: () => tabTopicsOf({ primers: [primerOf({ id: \"a\", kind: \"codebase\", status: \"added\" }), primerOf({ id: \"b\", kind: \"codebase\", status: \"changed\" }), primerOf({ id: \"c\", kind: \"codebase\" })] }, \"codebase\").map((topic) => topic.status),\n    expected: [\"added\", \"changed\", \"existing\"],\n  },"
+      },
+      "values": {
+        "columns": [
+          "書いた status",
+          "節の状態",
+          "札"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "added",
+              "added",
+              "追加"
+            ]
+          },
+          {
+            "cells": [
+              "changed",
+              "changed",
+              "変更"
+            ]
+          },
+          {
+            "cells": [
+              "(省略)",
+              "existing",
+              "前からある"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "build-primers"
+      ]
+    },
+    {
+      "id": "first-tab",
+      "suite": "core",
+      "name": "最初に開くタブは、言語に節があれば言語、無くて実装にあれば実装、どちらにも無ければ言語",
+      "techniques": [
+        "state",
+        "boundary"
+      ],
+      "why": "最初に開くタブに節が無いと、読み手は空のタブから始まる",
+      "given": "節の組み合わせが 3 通りの解説",
+      "when": "最初に開くタブを決める",
+      "then": "言語・実装・言語",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1230,
+        "end": 1238,
+        "text": "  {\n    label: \"最初に開くタブは、言語に節があれば言語、無くて実装にあれば実装、どちらにも無ければ言語\",\n    actual: () => [\n      [primerOf({ id: \"b\", kind: \"codebase\" }), primerOf({ id: \"a\" })],\n      [primerOf({ id: \"b\", kind: \"codebase\" })],\n      [primerOf({ id: \"x\", kind: \"framework\" })],\n    ].map((primers) => PrimerTopics.firstTabOf(primerTopicsOf({ primers }))),\n    expected: [\"language\", \"codebase\", \"language\"],\n  },"
+      },
+      "values": {
+        "columns": [
+          "言語の節",
+          "実装の節",
+          "最初に開くタブ"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "ある",
+              "ある",
+              "言語・フレームワーク"
+            ]
+          },
+          {
+            "cells": [
+              "無い",
+              "ある",
+              "この PR の実装"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "無い",
+              "無い",
+              "言語・フレームワーク"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "build-primers",
+        "show-tab"
+      ]
+    },
+    {
+      "id": "reach-latest",
+      "suite": "core",
+      "name": "届く先は shas を書いた順で、解説の sha までにそのファイルを最後に変えたコミットだけが行まで届く",
+      "techniques": [
+        "boundary",
+        "state"
+      ],
+      "why": "行番号は解説の sha の時点のもの。それより前にファイルを変えたコミットへ行を送ると、後の変更で行がずれた位置が光る",
+      "given": "c1・c2 が a.ts を、c3 が b.ts を変えた地図。解説の sha は c3",
+      "when": "出てくる場所の shas を c2・c1 の順に書く",
+      "then": "c2 は行まで、c1 はファイルまで(書いた順)",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1280,
+        "end": 1284,
+        "text": "  {\n    label: \"届く先は shas を書いた順で、解説の sha までにそのファイルを最後に変えたコミットだけが行まで届く\",\n    actual: () => reachesOf({ commits: threeCommits, explainedSha: shaOf(3), path: \"a.ts\", shas: [shaOf(2), shaOf(1)] }),\n    expected: [[shaOf(2), lineReach], [shaOf(1), { kind: \"file\" }]],\n  },"
+      },
+      "values": {
+        "columns": [
+          "コミット",
+          "a.ts を変えたか",
+          "届き方"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "c1",
+              "変えた(c2 が後で変えた)",
+              "ファイルまで"
+            ]
+          },
+          {
+            "cells": [
+              "c2",
+              "変えた(解説の sha までで最後)",
+              "行まで"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "reach"
+      ]
+    },
+    {
+      "id": "reach-rename",
+      "suite": "core",
+      "name": "後のコミットがファイルを別のパスへ移したら、移す前のパスのコミットはファイルまで、移した後のパスは行まで届く",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "ファイルを別のパスへ移したコミットも、移す前のパスの行をずらす。改名を無視する実装を落とす",
+      "given": "c1 が a.ts を変え、c2 が a.ts を z.ts へ移した地図",
+      "when": "a.ts の c1 と、z.ts の c2 の届き方を決める",
+      "then": "a.ts の c1 はファイルまで、z.ts の c2 は行まで",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1290,
+        "end": 1297,
+        "text": "  {\n    label: \"後のコミットがファイルを別のパスへ移したら、移す前のパスのコミットはファイルまで、移した後のパスは行まで届く\",\n    actual: () => [\n      reachesOf({ commits: renamedCommits, explainedSha: shaOf(2), path: \"a.ts\", shas: [shaOf(1)] }),\n      reachesOf({ commits: renamedCommits, explainedSha: shaOf(2), path: \"z.ts\", shas: [shaOf(2)] }),\n    ],\n    expected: [[[shaOf(1), { kind: \"file\" }]], [[shaOf(2), lineReach]]],\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "reach"
+      ]
+    },
+    {
+      "id": "reach-unmapped",
+      "suite": "core",
+      "name": "地図に無い sha は unmapped、行の範囲が無ければ file、解説の sha が地図に無ければ最後に変えたコミットも file",
+      "techniques": [
+        "equivalence",
+        "state"
+      ],
+      "why": "地図に無い sha・行の範囲が無い場所・地図に無い解説の sha では、行まで送れない",
+      "given": "c1〜c3 の地図",
+      "when": "地図に無い sha、行の範囲の無い場所、解説の sha が地図に無い場合の届き方を決める",
+      "then": "unmapped・file・file",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1298,
+        "end": 1306,
+        "text": "  {\n    label: \"地図に無い sha は unmapped、行の範囲が無ければ file、解説の sha が地図に無ければ最後に変えたコミットも file\",\n    actual: () => [\n      reachesOf({ commits: threeCommits, explainedSha: shaOf(3), path: \"a.ts\", shas: [shaOf(8)] }),\n      reachesOf({ commits: threeCommits, explainedSha: shaOf(3), path: \"a.ts\", shas: [shaOf(2)], lineRange: null }),\n      reachesOf({ commits: threeCommits, explainedSha: shaOf(8), path: \"a.ts\", shas: [shaOf(2)] }),\n    ],\n    expected: [[[shaOf(8), { kind: \"unmapped\" }]], [[shaOf(2), { kind: \"file\" }]], [[shaOf(2), { kind: \"file\" }]]],\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "reach"
+      ]
+    },
+    {
+      "id": "reach-merge",
+      "suite": "core",
+      "name": "あいだ(解説の sha を含む)にマージコミットがあれば、最後に変えたコミットでも行まで届かない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "マージコミットを挟むと、ファイルの行がどう変わったかを地図から追えない。安全側に倒して行まで送らない(Issue の親の決定)",
+      "given": "c1 が a.ts を変え、c2 がマージコミットの地図。解説の sha は c2",
+      "when": "c1 の届き方を決める",
+      "then": "ファイルまで",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1307,
+        "end": 1311,
+        "text": "  {\n    label: \"あいだ(解説の sha を含む)にマージコミットがあれば、最後に変えたコミットでも行まで届かない\",\n    actual: () => reachesOf({ commits: mergedCommits, explainedSha: shaOf(2), path: \"a.ts\", shas: [shaOf(1)] }),\n    expected: [[shaOf(1), { kind: \"file\" }]],\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "reach"
+      ]
+    },
+    {
+      "id": "reach-untouched",
+      "suite": "core",
+      "name": "そのパスのファイルを変えていないコミットは、地図にあっても untouched",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "そのパスを変えていないコミットへ送っても、カードが無い。「コミットを見る」にして、別のパスだったかもしれないと添える",
+      "given": "c2 で a.ts を z.ts へ移した地図",
+      "when": "z.ts の c1 の届き方を決める",
+      "then": "untouched",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1317,
+        "end": 1321,
+        "text": "  {\n    label: \"そのパスのファイルを変えていないコミットは、地図にあっても untouched\",\n    actual: () => reachesOf({ commits: renamedCommits, explainedSha: shaOf(2), path: \"z.ts\", shas: [shaOf(1)] }),\n    expected: [[shaOf(1), { kind: \"untouched\" }]],\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "reach"
+      ]
+    },
+    {
+      "id": "reach-merge-sha",
+      "suite": "core",
+      "name": "マージコミットの sha は merge",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "マージコミットには差分が無いので、ファイルへは送れない",
+      "given": "c2 がマージコミットの地図",
+      "when": "c2 の届き方を決める",
+      "then": "merge",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1322,
+        "end": 1326,
+        "text": "  {\n    label: \"マージコミットの sha は merge\",\n    actual: () => reachesOf({ commits: mergedCommits, explainedSha: shaOf(2), path: \"a.ts\", shas: [shaOf(2)] }),\n    expected: [[shaOf(2), { kind: \"merge\" }]],\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "reach"
+      ]
+    },
+    {
+      "id": "excerpt-rows",
+      "suite": "core",
+      "name": "抜粋の行はファイルの行番号で並び、強調の範囲に入る行だけが強調になり、強調を省けばどの行も強調しない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "強調はファイルの行番号で書く。抜粋の中の相対行で読む実装や、強調を省いたときに既定で何かを強調する実装を落とす",
+      "given": "10〜14 行目の抜粋",
+      "when": "強調を 11 行目と 13〜14 行目にして行を組む。強調を省いても組む",
+      "then": "11・13・14 行目だけが強調。省けばどの行も強調しない",
+      "commit": "21802eb219d09ec2587a7c565e03b29a6c82857a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1327,
+        "end": 1335,
+        "text": "  {\n    label: \"抜粋の行はファイルの行番号で並び、強調の範囲に入る行だけが強調になり、強調を省けばどの行も強調しない\",\n    actual: () => {\n      const excerpt = { path: \"a.ts\", start: 10, end: 14, text: \"a\\nb\\nc\\nd\\ne\" };\n      const rows = ExcerptRows.create({ ...excerpt, emphasis: [{ start: 11, end: 11 }, { start: 13, end: 14 }] });\n      return { numbers: rows.map((row) => row.number), emphasized: rows.map((row) => row.isEmphasized), plain: ExcerptRows.create(excerpt).map((row) => row.isEmphasized) };\n    },\n    expected: { numbers: [10, 11, 12, 13, 14], emphasized: [false, true, false, true, true], plain: [false, false, false, false, false] },\n  },"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ]
+    },
+    {
+      "id": "sent-null-line",
+      "suite": "core",
+      "name": "出てくる場所がファイルまでしか届かないとき、変更の経緯へ行の範囲を送らない",
+      "techniques": [
+        "state"
+      ],
+      "todo": true,
+      "why": "届き方の判定は核の判定表が守るが、ファイルまでのときに行の範囲を null にして送るのは DOM の配線で、どの判定表も通らない。`reach.lineRange` をそのまま渡す書き換えで、送った行の判定に undefined が渡る(テストの検証の指摘 5)",
+      "given": "届き方が `file` の出てくる場所",
+      "when": "「差分で見る」を押す",
+      "then": "変更の経緯はそのファイルのカードを開き、どの行にも送った印を付けない",
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "to-commit-file"
+      ]
+    },
+    {
+      "id": "stray-around-mark",
+      "suite": "build",
+      "name": "印をはさんで角括弧が 1 つずつあっても、印の外の切れ端ごとに見るので通る",
+      "techniques": [
+        "boundary"
+      ],
+      "todo": true,
+      "why": "印を消した全文で二重の角括弧を数える実装を、今のケースでは落とせない(テストの検証の指摘 3 の後半)。入力が作為的なので、この PR では足していない",
+      "given": "見本",
+      "when": "要するにを、印の前に角括弧 1 つ・後ろに角括弧 1 つを置いた文にして検査する",
+      "then": "通って書き出す",
+      "targets": [
+        ".github/scripts/build-pr-explain.py"
+      ],
+      "covers": [
+        "run-cases",
+        "check-explain"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "PR の解説ページで、この PR を読むのに要る技術を、出てくる場所と一緒に引けるようになった",
+    "lead": "解説ページに 5 つ目の画面「技術の手引き」が増えました。レビュアーは、差分を読んでいて引っかかった書き方やこのリポジトリの仕組みを、言語・フレームワークとこの PR の実装の 2 つのタブで引き、そこから差分のその箇所へ移れます。",
+    "changed": {
+      "before": [
+        {
+          "text": "言語の書き方やこのリポジトリの仕組みの説明は、各画面の文の中に、出てきたその場で一言ずつ混ざっていた"
+        },
+        {
+          "text": "画面の切り替えは 4 つで、説明から差分のその行へ移る手段は無かった"
+        }
+      ],
+      "after": [
+        {
+          "text": "5 つ目の画面「技術の手引き」で、言語・フレームワークと、この PR の実装を、タブで切り替えて読める",
+          "message": "show-tab"
+        },
+        {
+          "text": "どの節にも、この PR の中で出てくる場所が添い、押すと変更の経緯のそのコミットのそのファイル(行が分かればその行)が開く",
+          "message": "to-commit-file"
+        },
+        {
+          "text": "本文の点線の語にカーソルを合わせると、右の欄の同じ用語の説明が光る",
+          "message": "light-term"
+        },
+        {
+          "text": "この PR の実装の節には、確かめているテストとまだ書かれていないテスト、構造マップの流れへのチップが添う",
+          "message": "to-flow"
+        }
+      ],
+      "text": "ほかの画面の文の書き方は変わりません。技術と用語は技術の手引きの中に 1 回ずつ書き、本文の点線の語からそれを指します。"
+    },
+    "tables": [
+      {
+        "label": "解説の状態ごとの、画面の出方",
+        "gist": "技術の手引きの出方は解説の状態で決まり、技術の手引きの書き方が崩れていると、ほかの 4 画面も解説なしになる。",
+        "text": "崩れた書き方は置く前の検査で止まるので、下の段は検査を通さずに置いたときだけ起きます。",
+        "rowHeads": [
+          {
+            "id": "absent",
+            "label": "解説が無い"
+          },
+          {
+            "id": "unwritten",
+            "label": "技術の手引きが書かれていない"
+          },
+          {
+            "id": "written",
+            "label": "技術の手引きが書かれている"
+          },
+          {
+            "id": "broken",
+            "label": "技術の手引きの書き方が崩れている",
+            "note": "検査を通さずに置いたとき"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "others",
+            "label": "構造マップ・変更の経緯・テスト・振る舞い"
+          },
+          {
+            "id": "primer",
+            "label": "技術の手引き"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "absent",
+            "columnHead": "others",
+            "result": "変更の地図だけで組んだ画面が出る"
+          },
+          {
+            "rowHead": "absent",
+            "columnHead": "primer",
+            "result": "解説が無いので出せない旨が出て、理由は上の帯にある",
+            "was": "技術の手引きの画面は無かった",
+            "tests": [
+              "primer-none"
+            ]
+          },
+          {
+            "rowHead": "unwritten",
+            "columnHead": "others",
+            "result": "解説を使ってそのまま出る",
+            "tests": [
+              "impact-number"
+            ]
+          },
+          {
+            "rowHead": "unwritten",
+            "columnHead": "primer",
+            "result": "書かれていない旨だけが出る",
+            "was": "技術の手引きの画面は無かった",
+            "tests": [
+              "primer-unwritten"
+            ]
+          },
+          {
+            "rowHead": "written",
+            "columnHead": "others",
+            "result": "解説を使ってそのまま出る。技術の手引きから、変更の経緯のコミットとファイル・テスト・構造マップの流れへ移ってこられる"
+          },
+          {
+            "rowHead": "written",
+            "columnHead": "primer",
+            "result": "タブ・目次・節・出てくる場所・用語が出て、節のあるタブ(どちらにもあれば言語・フレームワーク)を開いた状態で始まる",
+            "was": "技術の手引きの画面は無かった",
+            "tests": [
+              "tab-split",
+              "first-tab",
+              "hash-primer"
+            ]
+          },
+          {
+            "rowHead": "broken",
+            "columnHead": "others",
+            "result": "変更の地図だけで組み、上の帯に崩れた箇所が出る",
+            "was": "技術の手引きの書き方は読まれず、ほかの画面は解説を使って出た",
+            "tests": [
+              "label-missing",
+              "excerpt-missing",
+              "outer-lacking"
+            ]
+          },
+          {
+            "rowHead": "broken",
+            "columnHead": "primer",
+            "result": "解説が無いときと同じく、出せない旨が出る",
+            "was": "技術の手引きの画面は無かった",
+            "tests": [
+              "excerpt-missing"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "出てくる場所のコミットごとの、ボタンと開く先",
+        "gist": "どこまで開けるかは、そのコミットがそのファイルをどう変えたかで決まる。行まで開くのは、解説を書いた時点までにそのファイルを最後に変えたコミットだけ。",
+        "text": "開く先が行より手前になるときは、何が起きるかを一言添えます。",
+        "rowHeads": [
+          {
+            "id": "latest",
+            "label": "そのファイルを最後に変えたコミット",
+            "note": "解説を書いた時点まで"
+          },
+          {
+            "id": "earlier",
+            "label": "その後にもファイルが変わったコミット",
+            "note": "マージや名前の変更を挟んだときも"
+          },
+          {
+            "id": "untouched",
+            "label": "そのファイルを変えていないコミット"
+          },
+          {
+            "id": "merge",
+            "label": "マージコミット"
+          },
+          {
+            "id": "unmapped",
+            "label": "変更の地図に無いコミット"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "button",
+            "label": "ボタンの名前"
+          },
+          {
+            "id": "opens",
+            "label": "押したときに開く先"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "latest",
+            "columnHead": "button",
+            "result": "差分で見る",
+            "tests": [
+              "reach-latest"
+            ]
+          },
+          {
+            "rowHead": "latest",
+            "columnHead": "opens",
+            "result": "変更の経緯のそのコミットのそのファイルが開き、その行に印が付いて送られる",
+            "tests": [
+              "reach-latest"
+            ]
+          },
+          {
+            "rowHead": "earlier",
+            "columnHead": "button",
+            "result": "差分で見る",
+            "tests": [
+              "reach-latest",
+              "reach-rename",
+              "reach-merge"
+            ]
+          },
+          {
+            "rowHead": "earlier",
+            "columnHead": "opens",
+            "result": "そのファイルが開くが、行には印を付けない",
+            "note": "後の変更で行がずれているため",
+            "tests": [
+              "reach-latest",
+              "reach-rename",
+              "reach-merge",
+              "sent-null-line"
+            ]
+          },
+          {
+            "rowHead": "untouched",
+            "columnHead": "button",
+            "result": "コミットを見る(当時は別の場所のファイルだったのかもしれない、と添える)",
+            "tests": [
+              "reach-untouched"
+            ]
+          },
+          {
+            "rowHead": "untouched",
+            "columnHead": "opens",
+            "result": "そのコミットの先頭が開く",
+            "tests": [
+              "reach-untouched"
+            ]
+          },
+          {
+            "rowHead": "merge",
+            "columnHead": "button",
+            "result": "コミットを見る(差分が無い、と添える)",
+            "tests": [
+              "reach-merge-sha"
+            ]
+          },
+          {
+            "rowHead": "merge",
+            "columnHead": "opens",
+            "result": "そのコミットの先頭が開く",
+            "tests": [
+              "reach-merge-sha"
+            ]
+          },
+          {
+            "rowHead": "unmapped",
+            "columnHead": "button",
+            "result": "ブランチ全体の流れを見る(差分が無い、と添える)",
+            "tests": [
+              "reach-unmapped"
+            ]
+          },
+          {
+            "rowHead": "unmapped",
+            "columnHead": "opens",
+            "result": "変更の経緯のブランチ全体の流れが開く",
+            "tests": [
+              "reach-unmapped"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "画面の幅ごとの、技術の手引きの読み方",
+        "gist": "出てくる場所と用語がどこに出るか、点線の語に乗ったときにどこが光るか、タブの並びがどう残るかは、画面の幅で決まる。",
+        "text": "この表のマスは、どれも表示確認でしか確かめていません(判定表は画面の配線を通らないため)。",
+        "rowHeads": [
+          {
+            "id": "wide",
+            "label": "広い"
+          },
+          {
+            "id": "middle",
+            "label": "1180px 以下"
+          },
+          {
+            "id": "narrow",
+            "label": "760px 以下"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "side",
+            "label": "出てくる場所と用語"
+          },
+          {
+            "id": "light",
+            "label": "点線の語に乗ったときに光る先"
+          },
+          {
+            "id": "tabs",
+            "label": "タブの並び"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "wide",
+            "columnHead": "side",
+            "result": "右の欄に出て、本文のスクロールに合わせて今の節のものに切り替わる"
+          },
+          {
+            "rowHead": "wide",
+            "columnHead": "light",
+            "result": "右の欄の同じ用語"
+          },
+          {
+            "rowHead": "wide",
+            "columnHead": "tabs",
+            "result": "画面の上に、説明文つきで並ぶ"
+          },
+          {
+            "rowHead": "middle",
+            "columnHead": "side",
+            "result": "右の欄は隠れ、各節の中の「この PR で出てくる場所」を開くと出る"
+          },
+          {
+            "rowHead": "middle",
+            "columnHead": "light",
+            "result": "その節の中に畳んだ欄の同じ用語"
+          },
+          {
+            "rowHead": "middle",
+            "columnHead": "tabs",
+            "result": "画面の上に、説明文つきで並ぶ"
+          },
+          {
+            "rowHead": "narrow",
+            "columnHead": "side",
+            "result": "各節の中に畳んで出て、目次は隠れ、ページ全体をスクロールして読む"
+          },
+          {
+            "rowHead": "narrow",
+            "columnHead": "light",
+            "result": "その節の中に畳んだ欄の同じ用語"
+          },
+          {
+            "rowHead": "narrow",
+            "columnHead": "tabs",
+            "result": "説明文を隠した 1 行になり、スクロールしても画面の上に残る"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "タブを切り替えて戻ったとき",
+        "before": [],
+        "after": [
+          {
+            "text": "切り替える前に読んでいた位置(本文とページ全体の両方)に戻る。初めて開くタブは先頭から",
+            "message": "show-tab"
+          },
+          {
+            "text": "関連のチップを押すと、もう一方のタブの節でも、そのタブへ切り替えてからその節へ送る",
+            "message": "show-see-also"
+          }
+        ],
+        "text": "どちらも画面の配線なので、表示確認でしか確かめていません。",
+        "tests": [
+          "see-also"
+        ]
+      },
+      {
+        "label": "技術の手引きから送られたファイルを、変更の経緯で見るとき",
+        "before": [],
+        "after": [
+          {
+            "text": "送られたファイルのカードが開き、行まで届いたときは「技術の手引きから送った行(◯〜◯ 行目)」、ファイルまでのときは「技術の手引きから送ったファイル」と添えられる",
+            "message": "to-commit-file"
+          },
+          {
+            "text": "ほかのコミットを選び直すと、送った印は外れる"
+          }
+        ],
+        "tests": [
+          "reach-latest",
+          "sent-null-line"
+        ]
+      },
+      {
+        "label": "技術の手引きの書き方が、置く前の検査で止まるとき",
+        "before": [],
+        "after": [
+          {
+            "text": "点線の語の書き方を誤った(印でない二重の角括弧がある・コードの中に印を書いた)ときに止まる",
+            "message": "check-explain"
+          },
+          {
+            "text": "用語集に無い語を指した・どこからも指されない語を用語集に書いたときに止まる"
+          },
+          {
+            "text": "コード例の強調する行が、コード例の範囲からはみ出したときに止まる"
+          }
+        ],
+        "text": "止まった理由は 1 行ずつ出るので、書き直して置き直せます。",
+        "tests": [
+          "stray-brackets",
+          "mark-in-code",
+          "unmarked-term",
+          "emphasis-end",
+          "unclosed-in-label"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "技術の手引きを書いていない今の解説も読め、技術の手引きの画面だけが「書かれていない」と出る",
+        "tests": [
+          "primer-unwritten"
+        ]
+      },
+      {
+        "text": "振る舞いの文が文字でなくても、これまでどおり解説は使える(技術の手引きの文だけを厳しく見る)",
+        "tests": [
+          "impact-number"
+        ]
+      },
+      {
+        "text": "振る舞いの画面の見た目と読み方は、「変わらない」の札に地の色が付いたことのほかは変わらない"
+      },
+      {
+        "text": "1280px の幅では、どの画面の上の帯もこれまでと同じ段の数に収まる(ブランチ名の末尾が省かれることはある)"
+      },
+      {
+        "text": "最初に開く画面は、これまでどおり、アドレスの指定 → 最後に開いた画面 → 構造マップの順で決まる",
+        "tests": [
+          "hash-primer"
+        ]
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "css-has",
+      "category": "css · セレクタ",
+      "label": "`:has()` 疑似クラス",
+      "gist": "`A:has(B)` は「B に当たる子孫を持つ A」を選ぶ。条件は中の要素で書くが、選ばれる[[主語の要素|subject]]は外側の A のまま。`>` を付けた `A:has(> B)` なら直接の子だけを見る。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "この PR では 2 か所で使う。1 つは技術の手引きの画面で、タブの並び(`.primer-tablist`)を直接の子に持つときだけ、グリッドの行を `auto minmax(0, 1fr)` にする。タブの無い画面(解説なし・書かれていない)は行を変えない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 703,
+            "end": 704,
+            "emphasis": [
+              {
+                "start": 704,
+                "end": 704
+              }
+            ],
+            "text": "/* タブの無い画面(解説なし・書かれていない)は行を auto のままにし、タブのある画面だけ 2 行目を残りの高さにする。 */\n.screen[data-screen=\"primer\"]:has(> .primer-tablist) { grid-template-rows: auto minmax(0, 1fr); }"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "もう 1 つは 760px 以下の `@media` で、振る舞いか技術の手引きの画面が出ているときだけ、`html` を主語にしてページ全体の高さとスクロールを変える。JS で `html` にクラスを付け外しせずに済む。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 756,
+            "end": 761,
+            "emphasis": [
+              {
+                "start": 758,
+                "end": 760
+              }
+            ],
+            "text": "@media (max-width: 760px) {\n  /* body を `overflow: auto` にするとスクロールの器になり、タブの並びの sticky が効かない。 */\n  html:has(.screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]):not([hidden])) { height: auto; overflow: auto; }\n  html:has(.screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]):not([hidden])) body { height: auto; overflow: visible; }\n  html:has(.screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]):not([hidden])) .app { height: auto; display: block; }\n  .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]):not([hidden]) { display: block; height: auto; }"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "`:has()` の中に `:has()` は書けない(仕様で禁じている)。対応していないブラウザでは、その規則全体が無視される。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 703,
+            "end": 704
+          },
+          "text": "タブの並びがある技術の手引きの画面だけ、グリッドの行を変える",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 757,
+            "end": 761
+          },
+          "text": "760px 以下で、振る舞いか技術の手引きが出ているときだけページ全体をスクロールさせる",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "sticky-overflow"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "hidden-display",
+      "category": "html · css",
+      "label": "`hidden` 属性と `display`",
+      "gist": "`hidden` 属性が要素を消すのは、[[UA スタイルシート|ua-style]]が `hidden` の付いた要素に当てる `display: none` による。作者の CSS が同じ要素に `display` を書くと、そちらが勝って消えなくなる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "技術の手引きの画面は、タブごとに目次・本文・右の欄の 3 つを持ち、今のタブでないものに `hidden` を付けて隠す(`renderTab`)。ところがこの 3 つは `display: flex` を持つので、`hidden` を付けても出たままになる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 5593,
+            "end": 5604,
+            "emphasis": [
+              {
+                "start": 5599,
+                "end": 5601
+              }
+            ],
+            "text": "    /** 今のタブの 3 列だけを出す。 */\n    const renderTab = () => {\n      for (const [index, tab] of tabs.entries()) {\n        const isCurrent = tab === currentTab;\n        tabButtons[index].setAttribute(\"aria-selected\", String(isCurrent));\n        tabButtons[index].setAttribute(\"tabindex\", isCurrent ? \"0\" : \"-1\");\n        parts[tab].columns.toc.hidden = !isCurrent;\n        parts[tab].stageBody.hidden = !isCurrent;\n        parts[tab].columns.side.hidden = !isCurrent;\n      }\n      tocNote.textContent = PrimerTabTexts[currentTab].tocNote;\n    };"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "そこで、3 つに `[hidden]` が付いたときの `display: none` を作者の CSS に書き足す。[[詳細度|specificity]]が属性セレクタの分だけ上がるので、`display: flex` の規則に勝つ。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 714,
+            "end": 715,
+            "emphasis": [
+              {
+                "start": 715,
+                "end": 715
+              }
+            ],
+            "text": "/* `hidden` 属性(UA の display: none)は、この 3 つが持つ display: flex に負けるので、ここで消す。 */\n.screen[data-screen=\"primer\"] :is(.stage-body, .panel-scroll, .side)[hidden] { display: none; }"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "画面そのもの(`.screen`)も、同じ理由で `.screen[hidden] { display: none; }` を前から持っている。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 714,
+            "end": 715
+          },
+          "text": "タブごとの 3 列のうち、今のタブでないものを消す",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 5593,
+            "end": 5604
+          },
+          "text": "タブを切り替えるたびに、3 つの `hidden` を付け替える",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "aria-tabs"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "sticky-overflow",
+      "category": "css · レイアウト",
+      "label": "`position: sticky` と祖先の `overflow`",
+      "gist": "`position: sticky` の要素は、いちばん近い[[スクロールの器|scroll-container]]の中で、決めた位置(`top: 0` など)に貼り付く。祖先のどれかが `overflow: auto` などでスクロールの器になると、貼り付く先がそこに変わる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "760px 以下では、技術の手引きのタブの並びを `position: sticky; top: 0` で画面の上に残す。ページ全体をスクロールさせるために `html` を `overflow: auto` にするが、`body` まで `overflow: auto` にすると `body` がスクロールの器になる。`body` は高さが中身に合わせて伸びるので自分ではスクロールせず、タブの並びはページと一緒に流れて消える。そこで `body` は `overflow: visible` にする。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 756,
+            "end": 772,
+            "emphasis": [
+              {
+                "start": 759,
+                "end": 759
+              },
+              {
+                "start": 766,
+                "end": 766
+              }
+            ],
+            "text": "@media (max-width: 760px) {\n  /* body を `overflow: auto` にするとスクロールの器になり、タブの並びの sticky が効かない。 */\n  html:has(.screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]):not([hidden])) { height: auto; overflow: auto; }\n  html:has(.screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]):not([hidden])) body { height: auto; overflow: visible; }\n  html:has(.screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]):not([hidden])) .app { height: auto; display: block; }\n  .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]):not([hidden]) { display: block; height: auto; }\n  .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) > .panel.is-left { display: none; }\n  .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) > .stage { overflow: visible; container-type: normal; }\n  .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) .topic-body { padding-inline: 16px; gap: 44px; }\n  .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) :is(.topic-gist, .topic-note) { grid-template-columns: minmax(0, 1fr); gap: 4px; }\n  .screen[data-screen=\"primer\"] > .primer-tablist { position: sticky; top: 0; z-index: 2; background: var(--bg); height: 44px; }\n  /* 上 12px + 名前の行 20px + 下 11px に、並びの下の線 1px を足して 44px。横の余白だけを広い幅の 18px から詰める。 */\n  .primer-tab { padding: 12px 12px 11px; }\n  .primer-tab-desc { display: none; }\n  /* 64px は、上に残るタブの並び(44px)と、広い幅と同じ節の上の余白(20px)の和。 */\n  .screen[data-screen=\"primer\"] .topic { scroll-margin-top: 64px; }\n}"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "送った節がタブの並びの下に隠れないよう、節には `scroll-margin-top` を付ける。`scrollIntoView` で送ると、要素の上端からこの分だけ手前で止まる。"
+        },
+        {
+          "kind": "memo",
+          "text": "64px は、上に残るタブの並び(44px)と、広い幅と同じ節の上の余白(20px)の和。"
+        },
+        {
+          "kind": "caution",
+          "text": "`overflow: hidden` も祖先をスクロールの器にする。sticky が効かないときは、まず祖先の `overflow` を探す。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 757,
+            "end": 760
+          },
+          "text": "body を `overflow: visible` のままにして、ページ全体をスクロールさせる",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 766,
+            "end": 766
+          },
+          "text": "タブの並びを画面の上に残す",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 770,
+            "end": 771
+          },
+          "text": "送った節がタブの並びに隠れないよう 64px 手前で止める",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "css-has"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "map-hasown",
+      "category": "javascript · 組み込み",
+      "label": "`Map` と `Object.hasOwn`",
+      "gist": "id から値を引く表は `Map` で持ち、`has` で有無を見てから `get` で引く。普通のオブジェクトを表に使うときは、`Object.hasOwn` で[[自身のキー|own-key]]かを見る。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`valuesIn` は、id の並びのうち表(`Map`)にあるものだけを、表の値にして id の順に並べる。技術の手引きの節では、関連(`seeAlso`)・テスト・流れ・用語の 4 つをこれで引く。表に無い id は黙って外す(参照切れは置く前の検査が落とす)。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1019,
+            "end": 1020,
+            "emphasis": [
+              {
+                "start": 1020,
+                "end": 1020
+              }
+            ],
+            "text": "  /** id の並びのうち表に有るものを、表の値にして id の順に並べる。表に無い id は外す。 */\n  const valuesIn = (table, ids) => listOf(ids).filter((id) => table.has(id)).map((id) => table.get(id));"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "語彙の表(`Vocabulary.remarkKinds` など)はオブジェクトなので、段の kind が語彙にあるかは `Object.hasOwn` で見る。`in` 演算子や `table[kind] !== undefined` だと、`toString` のような[[プロトタイプ|prototype]]から継いだ名前まで「ある」になる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1465,
+            "end": 1470,
+            "emphasis": [
+              {
+                "start": 1467,
+                "end": 1467
+              }
+            ],
+            "text": "    /** 段を描く形にそろえる。知らない kind の段は外す。 */\n    const passagesOf = (passage, resolve) => {\n      if (Object.hasOwn(Vocabulary.remarkKinds, passage.kind)) {\n        const remark = Vocabulary.remarkKinds[passage.kind];\n        return [{ kind: \"remark\", label: remark.label, isWarn: remark.isWarn, pieces: resolve(passage.text) }];\n      }"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "用語集は、節の用語を `new Map(… [term.id, term])` に通して重複を除く。`Map` は同じキーを後から入れても位置は最初に入れたときのままなので、最初に出た順が残る。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1515,
+            "end": 1519,
+            "emphasis": [
+              {
+                "start": 1517,
+                "end": 1517
+              }
+            ],
+            "text": "    /** タブの節と用語集。用語集は、節の用語を最初に出た順に重複なくつなぐ(1 つも無ければ null)。 */\n    const tabOf = (topics) => {\n      const terms = [...new Map(topics.flatMap((topic) => topic.terms).map((term) => [term.id, term])).values()];\n      return { topics, glossary: terms.length === 0 ? null : { terms } };\n    };"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1019,
+            "end": 1020
+          },
+          "text": "id の並びを表の値にする `valuesIn`",
+          "shas": [
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1465,
+            "end": 1482
+          },
+          "text": "段の kind が注意メモの語彙にあるかを見る",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1491,
+            "end": 1494
+          },
+          "text": "実装の節の状態が語彙にあるかを見る",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1515,
+            "end": 1519
+          },
+          "text": "用語集の重複を除いて、最初に出た順に並べる",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "primer-topics"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "split-capture",
+      "category": "javascript · python · 正規表現",
+      "label": "キャプチャのある正規表現で `split` する",
+      "gist": "正規表現に[[キャプチャ|capture]]があると、`split` は区切りに当たった文字列を捨てず、キャプチャした部分を切れ端のあいだに挟んで返す。JavaScript の `String.prototype.split` も Python の `re.split` も同じふるまい。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "用語の印の綴り(`TermMarks.Pattern`)はキャプチャを 2 つ持つ(表示と用語の id)。そのため `text.split(Pattern)` は「印の外・表示・id・印の外・表示・id・…・印の外」の並びになり、長さはいつも 3 の倍数 + 1。`piecesOf` は 3 つおきに読んで、印の外の[[切れ端|piece]]と印に分ける。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1377,
+            "end": 1386,
+            "emphasis": [
+              {
+                "start": 1382,
+                "end": 1382
+              },
+              {
+                "start": 1384,
+                "end": 1384
+              }
+            ],
+            "text": "    /**\n     * 文を、印の外の文字と印に割る。空の文字は出さず、印になっていない `[[` は文字のまま残す。\n     * @returns `{kind: \"plain\", text}` と `{kind: \"term\", label, id}` の並び(文の順)\n     */\n    const piecesOf = (text) => {\n      const parts = text.split(Pattern);\n      const plainAt = (index) => (parts[index] === \"\" ? [] : [{ kind: \"plain\", text: parts[index] }]);\n      const marks = Array.from({ length: (parts.length - 1) / 3 }, (_, index) => ({ kind: \"term\", label: parts[index * 3 + 1], id: parts[index * 3 + 2] }));\n      return [...plainAt(0), ...marks.flatMap((mark, index) => [mark, ...plainAt(index * 3 + 3)])];\n    };"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "検査の側の `plain_pieces_of` は同じ割り方を Python で書き、`[0::3]` で印の外の切れ端だけを取る。綴り(`TermMarkPattern`)は、核の判定表がページの `Pattern.source` と突き合わせる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/build-pr-explain.py",
+            "start": 180,
+            "end": 182,
+            "emphasis": [
+              {
+                "start": 182,
+                "end": 182
+              }
+            ],
+            "text": "def plain_pieces_of(text: str) -> list[str]:\n    \"\"\"印で割った、印の外の切れ端。`n` 個目の切れ端は `n` 個目の印の前にある(ページの `TermMarks.piecesOf` と同じ割り方)。\"\"\"\n    return TermMarkPattern.split(text)[0::3]"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "キャプチャを持たない `(?:…)` で書くと、区切りの中身は返らない。印の表示と id を取り出すには、キャプチャのまま割る。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1381,
+            "end": 1386
+          },
+          "text": "`TermMarks.piecesOf` が文を印の外と印に割る",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": {
+            "start": 180,
+            "end": 182
+          },
+          "text": "`plain_pieces_of` が印の外の切れ端を取る",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "term-marks"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "aria-tabs",
+      "category": "html · aria",
+      "label": "`role=\"tab\"` と `aria-controls`",
+      "gist": "タブの並びは `role=\"tablist\"`、各タブは `role=\"tab\"`、切り替わる中身は `role=\"tabpanel\"` にし、タブの `aria-controls` とパネルの `aria-labelledby` で互いの id を指す。支援技術は、どのタブがどの[[タブパネル|tabpanel]]を出すかをこれで読む。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "今のタブは `aria-selected=\"true\"` と `tabindex=\"0\"`、ほかは `tabindex=\"-1\"` にする。Tab キーで入るのは今のタブだけで、タブのあいだは左右の矢印キーで移る(`TabMoveKeys`)。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 5576,
+            "end": 5591,
+            "emphasis": [
+              {
+                "start": 5577,
+                "end": 5577
+              }
+            ],
+            "text": "    const tabButtons = tabs.map((tab) => {\n      const button = pressable(\"button\", { class: \"primer-tab\", role: \"tab\", id: `primer-tab-${tab}`, \"aria-controls\": `primer-panel-${tab}`, \"data-tab\": tab }, [\n        el(\"span\", { class: \"primer-tab-label\", text: PrimerTabTexts[tab].label }),\n        el(\"span\", { class: \"primer-tab-count\", text: String(parts[tab].count) }),\n        el(\"span\", { class: \"primer-tab-desc\", text: PrimerTabTexts[tab].description }),\n      ], () => showTab(tab));\n      button.addEventListener(\"keydown\", (event) => {\n        const step = Object.hasOwn(TabMoveKeys, event.key) ? TabMoveKeys[event.key] : 0;\n        if (step === 0) return;\n        event.preventDefault();\n        const next = tabs[(tabs.indexOf(tab) + step + tabs.length) % tabs.length];\n        showTab(next);\n        tabButtons[tabs.indexOf(next)].focus();\n      });\n      return button;\n    });"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "本文の欄(`stageBody`)が[[タブパネル|tabpanel]]で、id は `primer-panel-` にタブの kind を付けたもの。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 5567,
+            "end": 5567,
+            "text": "      const stageBody = el(\"div\", { class: \"stage-body topic-body\", role: \"tabpanel\", id: `primer-panel-${tab}`, \"aria-labelledby\": `primer-tab-${tab}` }, [ledeOf(tab), ...empty, ...columns.articles]);"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "矢印キーで移ったときは、選ぶ(`showTab`)と同時にフォーカスも移す。WAI-ARIA Authoring Practices のタブの「自動で切り替える」型。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 5576,
+            "end": 5591
+          },
+          "text": "タブに `role`・`id`・`aria-controls` を付け、左右の矢印で移る",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 5567,
+            "end": 5567
+          },
+          "text": "本文の欄に `role=\"tabpanel\"` と `aria-labelledby`",
+          "shas": [
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 5596,
+            "end": 5598
+          },
+          "text": "今のタブに `aria-selected` と `tabindex` を付ける",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "hidden-display"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "py-reduce",
+      "category": "python · functools",
+      "label": "`functools.reduce`",
+      "gist": "`reduce(f, items, start)` は、`start` から始めて要素を 1 つずつ `f(途中の結果, 要素)` に通し、最後の結果を返す。途中の結果は[[積み上げる値|accumulator]]と呼ばれる。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "functools.reduce(function, iterable[, initial])"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "function",
+              "type": "Callable",
+              "text": "[[積み上げる値|accumulator]]と要素を受け取り、次の積み上げる値を返す"
+            },
+            {
+              "name": "iterable",
+              "type": "Iterable",
+              "text": "順に通す要素"
+            },
+            {
+              "name": "initial",
+              "type": "object",
+              "text": "最初の積み上げる値",
+              "note": "省けば最初の要素"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "`with_excerpt_texts` は、抜粋を指す道筋(`tests[].excerpt`・`primers[].passages[].excerpt`)ごとに `read_along` で中身を足す。道筋ごとに書き換えた解説を次の道筋へ渡すので、積み上げる値は「ここまでの解説と、読めなかった違反」の組になる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/build-pr-explain.py",
+            "start": 850,
+            "end": 858,
+            "emphasis": [
+              {
+                "start": 858,
+                "end": 858
+              }
+            ],
+            "text": "    def read(excerpt: dict, where: str) -> tuple[dict, list[str]]:\n        text, problem = excerpt_text(repo, sha, excerpt)\n        return (excerpt, [f\"{where}: {problem}\"]) if problem else ({**excerpt, \"text\": text}, [])\n\n    def read_route(sofar: tuple[dict, list[str]], route: str) -> tuple[dict, list[str]]:\n        written, problems = read_along(sofar[0], route, read)\n        return written, sofar[1] + problems\n\n    return reduce(read_route, routes_with(Shape(\"Excerpt\")), (explain, []))"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "`read_along` は引数を書き換えず、`{**value, key: inner}` の形で新しい値を返すので、途中の解説はどれも別の値になる(`rules/coding.md`「イミュータブル」)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": {
+            "start": 858,
+            "end": 858
+          },
+          "text": "道筋ごとに抜粋の中身を足した解説を積み上げる",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": {
+            "start": 64,
+            "end": 64
+          },
+          "text": "`from functools import reduce`",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "py-namedtuple",
+        "excerpt-emphasis"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "py-namedtuple",
+      "category": "python · typing",
+      "label": "`typing.NamedTuple`",
+      "gist": "クラスの形で名前付きのフィールドを書くと、要素に名前でも位置でも触れるタプルの型になる。メソッドも足せ、作った値は書き換えられない。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "[[道筋|route]]の 1 段を表す `Step` は、キー(`key`)・配列の各要素へ進むか(`is_each`)・起点からの綴り(`where`)の 3 つを持つ。`values_at` と `read_along` が `step_of` で同じ読み方を共有する。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/build-pr-explain.py",
+            "start": 698,
+            "end": 716,
+            "emphasis": [
+              {
+                "start": 698,
+                "end": 703
+              }
+            ],
+            "text": "class Step(NamedTuple):\n    \"\"\"道筋(`a[].b`)の 1 段。`key` はキー、`is_each` は配列の各要素へ進むか、`where` は起点からそのキーまでの綴り。\"\"\"\n\n    key: str\n    is_each: bool\n    where: str\n\n    def item_where(self, index: int) -> str:\n        \"\"\"配列の `index` 番目の要素までの綴り。\"\"\"\n        return f\"{self.where}[{index}]\"\n\n\ndef step_of(step: str, where: str) -> Step:\n    \"\"\"道筋の 1 段を読む(`[]` で終わる段は配列の各要素へ進む)。\n\n    @param where 起点からその段の手前までの綴り\n    \"\"\"\n    key = step.removesuffix(\"[]\")\n    return Step(key, step.endswith(\"[]\"), f\"{where}.{key}\" if where else key)"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "検査の規則の型(`Scalar`・`Many`・`Shape`・`Variant`・`Field`)も前から `NamedTuple` で書いてある。同じ中身の値どうしは `==` で等しくなるので、`routes_with(MarkedText)` は規則を `==` で比べて道筋を選べる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": {
+            "start": 698,
+            "end": 716
+          },
+          "text": "道筋の 1 段を読む `Step` と `step_of`",
+          "shas": [
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "route-walk"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "primers-shape",
+      "category": "解説 · 形",
+      "label": "解説の `primers` と `terms`",
+      "status": "added",
+      "gist": "技術の手引きの中身は、解説のトップの `primers`(技術の[[節|topic]])と `terms`(用語)に書く。節は `kind` が `language` か `codebase` の [[Variant|variant]] で、id は kind をまたいで一意。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "節は `gist`(要するに)を必ず持ち、本文は `passages` に段を書いた順に並べる。段の kind は text・declaration・parameters・excerpt と、注意メモの 5 つ(caution・memo・rule・spec・history)。`occurrences`(出てくる場所)は 1 件以上要る。`codebase` の節だけが `status`・`tests`・`flows` を持てる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/build-pr-explain.py",
+            "start": 377,
+            "end": 417,
+            "emphasis": [
+              {
+                "start": 378,
+                "end": 387
+              },
+              {
+                "start": 401,
+                "end": 416
+              }
+            ],
+            "text": "# 技術の節(Primer)の、kind をまたいで同じキー。\nPrimerFields: dict[str, Field] = {\n    \"id\": need(Id),\n    \"category\": need(Text),\n    # 技術の名前は識別子や継ぎ目のある複合語を書くので、見出し(Heading)にしない。\n    \"label\": need(Text),\n    \"gist\": need(MarkedText),\n    \"passages\": may(Many(Variant(\"Passage\"))),\n    \"occurrences\": need(Many(Shape(\"Occurrence\"), least=1)),\n    \"seeAlso\": may(Many(Id, distinct=True)),\n}\n\n# `kind` ごとに持つキー。他の kind のキーが混ざるのも、知らないキーとして落とす。Target はどの kind も、ページ\n# (固定スクリプトの核の `Target`)がここと同じキーを読んで移る先にすることを `pr-explain-core-cases.sh` が確かめる。\n# 同じキーは kind をまたいで同じ規則にする(`routes_under` が kind のキーを合わせて辿るため。`build-pr-explain-cases.sh` の\n# 「どの Variant も、kind をまたいで同じキーは同じ規則を持つ」が確かめる)。\nVariants: dict[str, dict[str, dict[str, Field]]] = {\n    \"Target\": {\n        \"feature\": {\"id\": need(Id)},\n        \"layer\": {\"layer\": need(Text)},\n        \"file\": {\"path\": need(Text)},\n        \"message\": {\"id\": need(Id)},\n        \"flow\": {\"id\": need(Id)},\n    },\n    \"Primer\": {\n        \"language\": PrimerFields,\n        \"codebase\": {\n            **PrimerFields,\n            \"status\": may(Word(PrimerStatuses)),\n            \"tests\": may(Many(Id, distinct=True)),\n            \"flows\": may(Many(Id, distinct=True)),\n        },\n    },\n    \"Passage\": {\n        \"text\": {\"text\": need(MarkedText)},\n        \"declaration\": {\"code\": need(Text)},\n        \"parameters\": {\"parameters\": need(Many(Shape(\"Parameter\"), least=1))},\n        \"excerpt\": {\"excerpt\": need(Shape(\"Excerpt\"))},\n        **{kind: {\"text\": need(MarkedText)} for kind in RemarkKinds},\n    },\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "用語は `terms` に 1 語 1 回だけ書き、本文からは[[用語の印|term-mark]]で指す。節の用語とタブの用語集は印から導くので書かせない(節ごとに書くと、同じ語の意味が食い違う)。"
+        },
+        {
+          "kind": "spec",
+          "text": "出てくる場所の `path`・`lineRange`・`shas` は地図を指す参照なので検査しない。外れたものはページが「地図に無い」と出す(`pr-explain` スキルの「解説の中の参照」)。"
+        },
+        {
+          "kind": "history",
+          "text": "Issue では別ファイル(`tech.html`)にする案もあったが、スクリプトを止める CSP の二重化と、画面をまたぐ移動がハッシュの画面名までしか届かないことから、同じ `index.html` の画面にした。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": {
+            "start": 377,
+            "end": 417
+          },
+          "text": "`PrimerFields` と Variants の Primer / Passage",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "lineRange": {
+            "start": 162,
+            "end": 167
+          },
+          "text": "`explain.json` の形の Primer・Passage・Parameter・Occurrence・LineRange・Term の行",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "lineRange": {
+            "start": 150,
+            "end": 207
+          },
+          "text": "見本の 2 つの kind の節と 4 つの用語",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "primer-topics",
+        "term-marks"
+      ],
+      "tests": [
+        "sample-primers",
+        "kind-status",
+        "unmarked-term"
+      ],
+      "flows": [
+        "write"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "topic-columns",
+      "category": "ページ · 画面",
+      "label": "`TopicColumns`",
+      "status": "added",
+      "gist": "振る舞いと技術の手引きの 2 画面が共有する 3 列(左に目次・中に[[節|topic]]・右に[[今の節|current-topic]]の欄)。節の頭・右の欄の頭・目次の行をここで組み、スクロールに合わせて今の節を決め直す。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "画面は節ごとに、小見出し・札・題の中身・本文・右の欄の中身を返す関数(`sideBlocksOf`)を渡す。`create` は節の要素(`articles`)・目次・右の欄・[[畳んだ欄|inline-side]]の器と、`follow`・`sendTo`・`render` を返す。技術の手引きはタブごとに 1 組ずつ作る。"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "topics",
+              "type": "Topic[]",
+              "text": "[[節|topic]]の並び。用語集も普通の 1 節として渡す"
+            },
+            {
+              "name": "emptySide",
+              "type": "string",
+              "text": "節が 0 件のときに右の欄に出す文"
+            }
+          ]
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 5130,
+            "end": 5176,
+            "emphasis": [
+              {
+                "start": 5154,
+                "end": 5158
+              },
+              {
+                "start": 5167,
+                "end": 5172
+              }
+            ],
+            "text": "      create: ({ topics, emptySide }) => {\n        let current = topics.length === 0 ? null : 0;\n        let shownCurrent = null;\n        const side = el(\"div\", { class: \"side\" });\n        const inlineHolders = topics.map(() => el(\"div\", { class: \"side\" }));\n        const articles = topics.map((topic, index) => el(\"article\", { class: \"topic\", ...topic.attributes }, [\n          headOf(topic),\n          el(\"details\", { class: \"topic-inline\" }, [el(\"summary\", { text: topic.inlineSummary }), inlineHolders[index]]),\n          ...topic.body,\n        ]));\n\n        const render = () => {\n          for (const [index, row] of tocRows.entries()) row.classList.toggle(\"is-current\", index === current);\n          for (const [index, holder] of inlineHolders.entries()) holder.replaceChildren(...topics[index].sideBlocksOf());\n          side.replaceChildren(...(current === null ? [el(\"p\", { class: \"side-note\", text: emptySide })] : [sideHeadOf(topics[current]), ...topics[current].sideBlocksOf()]));\n          if (current !== shownCurrent) side.scrollTop = 0;\n          shownCurrent = current;\n        };\n\n        /**\n         * 節へ送る。今の節はスクロールを待たずにその節にする。\n         *\n         * 今の節が同じでも描き直す(`showMention` が選び直したマスの根拠を、ここで描かせるため)。\n         */\n        const sendTo = (index) => {\n          current = index;\n          render();\n          articles[index].scrollIntoView({ block: \"start\" });\n        };\n        const tocRows = topics.map((topic, index) => pressable(\"button\", { class: \"row plain-button\" }, tocPartsOf(topic), () => sendTo(index)));\n        const tocItems = topics.flatMap((topic, index) => [...(topic.tocDivider === null ? [] : [el(\"div\", { class: \"topic-toc-divider\", text: topic.tocDivider })]), tocRows[index]]);\n        const toc = el(\"div\", { class: \"panel-scroll\" }, tocItems.length > 0 ? tocItems : [emptyOf(\"節がありません。\")]);\n\n        /**\n         * スクロールに合わせて今の節を決め直す。変わったときだけ描き直す。\n         * @param top スクロールしている領域の上端の、表示領域の上端からの距離\n         */\n        const follow = (top) => {\n          const next = TopicScroll.currentOf(articles.map((article) => article.getBoundingClientRect().top - top));\n          if (next === current) return;\n          current = next;\n          render();\n        };\n\n        render();\n        return { articles, toc, inlineHolders, side, follow, sendTo, render };\n      },"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "`subscribe` は、本文の欄の `scroll`(広い幅)と `window` の `scroll`(狭い幅)を両方 `follow` へ渡す。どちらがスクロールしているかは `@media` が決めるので、JS は幅を見ずにイベントの出どころで見分ける。画面が隠れているあいだの `window` の `scroll` は、ほかの画面のものなので見ない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 5182,
+            "end": 5193,
+            "emphasis": [
+              {
+                "start": 5190,
+                "end": 5192
+              }
+            ],
+            "text": "      subscribe: ({ main, follow }) => {\n        const isShown = () => {\n          const screen = main.closest(\".screen\");\n          return screen !== null && !screen.hidden;\n        };\n        // スクロールしているのが本文の欄(広い幅)かページ全体(狭い幅)かは CSS の `@media` が決めるので、イベントの出どころで見分ける。\n        main.addEventListener(\"scroll\", () => follow(main.getBoundingClientRect().top), { passive: true });\n        // ページ全体のスクロールは、その画面が隠れているあいだはほかの画面のものなので見ない。\n        window.addEventListener(\"scroll\", () => {\n          if (isShown()) follow(0);\n        }, { passive: true });\n      },"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "ここの DOM の配線(スクロールの購読・目次の押下・右の欄と畳んだ欄の描き直し)は判定表を通らず、表示確認でしか守られていない。今の節の決め方(`TopicScroll.currentOf`)だけが核の判定表で確かめられている。"
+        },
+        {
+          "kind": "history",
+          "text": "最初のコミットでは、右の欄の頭と中身を添字で引く関数を受け取っていた。検証の重複の指摘で、節ごとに頭と中身を持たせる形にし、用語集も普通の 1 節として渡すようにした。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 5095,
+            "end": 5195
+          },
+          "text": "`TopicColumns` の本体",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 5318,
+            "end": 5351
+          },
+          "text": "振る舞いの画面が 1 組作って購読する",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 5565,
+            "end": 5565
+          },
+          "text": "技術の手引きがタブごとに 1 組作る",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 5626,
+            "end": 5626
+          },
+          "text": "今のタブの組へスクロールを渡す",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "sticky-overflow",
+        "primer-topics"
+      ],
+      "flows": [
+        "read"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "explain-shape",
+      "category": "ページ · 核",
+      "label": "`ExplainShape` の `Routes` と `Required`",
+      "status": "changed",
+      "gist": "ページが解説を使う前に見る[[骨組みの検査|skeleton-check]]。[[道筋|route]]ごとの値の種類(`Routes`)と、欠けてはいけない道筋(`Required`)の 2 つの表で持ち、崩れていれば解説全体を「解説なし」にする。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`problemOf` は、型の違う道筋と必須の欠けた道筋を集め、2 か所以上なら最も外側(段の少ない)のものを返す。帯には「explain.json の ◯ の形が想定と違います」と出る。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1329,
+            "end": 1344,
+            "emphasis": [
+              {
+                "start": 1338,
+                "end": 1342
+              }
+            ],
+            "text": "    return Object.freeze({\n      Routes,\n      Required,\n      /**\n       * ページが組み立てに使う形を見る。\n       * @returns 型の違う道筋か、必須のキー(`Required`)が欠けた道筋(`impact.tables[].outcomes` の形)。崩れが 2 か所以上なら最も外側のもの。\n       *   崩れていなければ null\n       */\n      problemOf: (explain) => {\n        const mistyped = Routes.filter(([route, kind]) => valuesAt(explain, route.split(\".\")).some((value) => !ShapeKinds[kind](value))).map(([route]) => route);\n        const lacking = Required.filter((required) => lacks(explain, required)).map(({ route }) => route);\n        const broken = [...mistyped, ...lacking];\n        if (broken.length === 0) return null;\n        return broken.reduce((outer, candidate) => (depthOf(candidate) < depthOf(outer) ? candidate : outer));\n      },\n    });"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "`Required` の 1 件は `{route, kinds}`。手前のオブジェクトが [[Variant|variant]] なら、そのキーを必須とする kind の並びを持ち、その kind のオブジェクトにだけ求める。抜粋の段の `excerpt` は kind が excerpt の段にだけ必須で、宣言や引数の段には求めない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1289,
+            "end": 1308,
+            "emphasis": [
+              {
+                "start": 1297,
+                "end": 1298
+              },
+              {
+                "start": 1302,
+                "end": 1302
+              }
+            ],
+            "text": "    // 欠けていれば崩れとする道筋。primers・terms の下の必須のキーのうち、値が文(text)か 1 つのオブジェクト(record)のもの。\n    // `kinds` は、手前のオブジェクトが kind で持つキーの決まるもの(Variant)なら、そのキーを必須とする kind の並びで、それ以外の\n    // kind のオブジェクトには求めない。kind に依らないオブジェクト(Shape)なら null で、どれにも求める。Shapes と Variants から\n    // 導いたものと同じ並びで、`pr-explain-core-cases.sh` が突き合わせる。配列は欠けても `listOf` が空として読むので入れない。\n    const Required = Object.freeze([\n      { route: \"primers[].category\", kinds: [\"language\", \"codebase\"] },\n      { route: \"primers[].label\", kinds: [\"language\", \"codebase\"] },\n      { route: \"primers[].gist\", kinds: [\"language\", \"codebase\"] },\n      { route: \"primers[].passages[].text\", kinds: [\"text\", \"caution\", \"memo\", \"rule\", \"spec\", \"history\"] },\n      { route: \"primers[].passages[].code\", kinds: [\"declaration\"] },\n      { route: \"primers[].passages[].parameters[].name\", kinds: null },\n      { route: \"primers[].passages[].parameters[].type\", kinds: null },\n      { route: \"primers[].passages[].parameters[].text\", kinds: null },\n      { route: \"primers[].passages[].excerpt\", kinds: [\"excerpt\"] },\n      { route: \"primers[].passages[].excerpt.path\", kinds: null },\n      { route: \"primers[].occurrences[].path\", kinds: null },\n      { route: \"primers[].occurrences[].text\", kinds: null },\n      { route: \"terms[].label\", kinds: null },\n      { route: \"terms[].text\", kinds: null },\n    ]);"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "2 つの表は、検査の `Shapes` / `Variants` から導いたものと同じ並びにする。核の判定表が `routes_under` で導いて突き合わせるので、検査に形を足したら表にも足す。"
+        },
+        {
+          "kind": "spec",
+          "text": "impact の文は構造だけを見る。文は文字として入れるだけなので、表示できている解説を「解説なし」に変えない(Issue の親の決定)。"
+        },
+        {
+          "kind": "history",
+          "text": "前は `ImpactTopics.shapeProblemOf` が `impact` の道筋だけを `ShapeRoutes` で見ていた。最初のコミットで `ExplainShape` に出して primers・terms の道筋を足し、2 つ目のコミットで必須の欠けを、3 つ目のコミットで kind ごとの必須を足した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1219,
+            "end": 1345
+          },
+          "text": "`ExplainShape` の本体",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa",
+            "044181bf78e81ddd58dde2dd7cb710404c3ac529"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1582,
+            "end": 1589
+          },
+          "text": "`shapeProblemOf` が一覧のキーを見た後に `ExplainShape.problemOf` を呼ぶ",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "lineRange": {
+            "start": 59,
+            "end": 70
+          },
+          "text": "`required_routes_of` が `Shapes` / `Variants` から必須の道筋と kind を導く",
+          "shas": [
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa",
+            "044181bf78e81ddd58dde2dd7cb710404c3ac529"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "route-walk",
+        "primers-shape"
+      ],
+      "tests": [
+        "required-routes",
+        "label-missing",
+        "excerpt-missing",
+        "outer-lacking",
+        "outer-mistyped",
+        "impact-number"
+      ],
+      "flows": [
+        "open"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "term-marks",
+      "category": "ページ · 検査 · 印",
+      "label": "用語の印と `MarkedText`",
+      "status": "added",
+      "gist": "本文の語に[[用語の印|term-mark]]を付けて、`terms` の 1 語を指す。印を読むのは `MarkedText` の道筋(要するに・text と注意メモの段・引数の文)だけで、ページは印と印の外の[[切れ端|piece]]を Text ノードと span で組む(HTML として解釈させない)。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "表示は本文にそのまま出て、点線が付く。乗る(フォーカスする)と、右の欄([[畳んだ欄|inline-side]]なら畳んだ欄)の同じ用語が光る。綴りと、印を読む道筋はページと検査の 2 か所にあり、核の判定表が突き合わせる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1363,
+            "end": 1370,
+            "emphasis": [
+              {
+                "start": 1366,
+                "end": 1366
+              },
+              {
+                "start": 1368,
+                "end": 1368
+              }
+            ],
+            "text": "  /** 技術の手引きの本文に書く用語の印 `[[表示|用語の id]]`。 */\n  const TermMarks = (() => {\n    // 綴りは `build-pr-explain.py` の `TermMarkPattern` と同じで、`pr-explain-core-cases.sh` が突き合わせる。\n    const Pattern = /\\[\\[([^\\[\\]|]+)\\|([A-Za-z0-9][A-Za-z0-9_-]{0,63})\\]\\]/g;\n    // 印を読む道筋。`build-pr-explain.py` の `routes_with(MarkedText)` と同じ綴り・同じ並びで、`pr-explain-core-cases.sh` が突き合わせる。\n    const Routes = Object.freeze([\"primers[].gist\", \"primers[].passages[].text\", \"primers[].passages[].parameters[].text\"]);\n    // 節の中の道筋(`primers[].` を外し、段に割ったもの)。\n    const InPrimer = Routes.map((route) => route.replace(/^primers\\[\\]\\./, \"\").split(\".\"));"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "検査は印の書き方の規則を 2 つ持つ。バッククォートの外にある印でない二重の角括弧と、バッククォートの中に書いた印の形を落とす。ページは印で先に割ってから、印の中と外でそれぞれバッククォートを対にするので、検査もバッククォートを印の外の切れ端ごとに数える。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/build-pr-explain.py",
+            "start": 185,
+            "end": 200,
+            "emphasis": [
+              {
+                "start": 188,
+                "end": 188
+              },
+              {
+                "start": 194,
+                "end": 195
+              }
+            ],
+            "text": "def has_stray_brackets(value: str) -> bool:\n    \"\"\"`` ` `` の外に、印になっていない `[[` / `]]` があるか。ページは印の外の切れ端ごとに `` ` `` を対にするので、切れ端ごとに見る。\"\"\"\n    outside_code = [part for piece in plain_pieces_of(value) for is_code, part in code_spans_of(piece) if not is_code]\n    return any(\"[[\" in part or \"]]\" in part for part in outside_code)\n\n\ndef has_mark_in_code(value: str) -> bool:\n    \"\"\"`` ` `` の中に印の形を書いたか。印の始まりより前にある、印の外の `` ` `` が奇数なら、書き手はコードの中に書いている。\"\"\"\n    plains = plain_pieces_of(value)\n    ticks_before = [sum(piece.count(\"`\") for piece in plains[:index + 1]) for index in range(len(plains) - 1)]\n    return any(count % 2 == 1 for count in ticks_before)\n\n\ndef is_marked_text(value: object) -> bool:\n    \"\"\"空でない文字列で、用語の印の 2 つの規則(`has_stray_brackets` / `has_mark_in_code`)のどちらにも当たらないか。\"\"\"\n    return is_text(value) and not has_stray_brackets(value) and not has_mark_in_code(value)"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "印は primers の中の 4 種類の場所(要するに・text の段・引数の文・注意メモの段)でしか読まない。`commitStories`・`tests`・`impact` などに書いても印にならず、二重の角括弧の文字のまま出る。"
+        },
+        {
+          "kind": "spec",
+          "text": "terms に無い id の印は表示の文字のまま出す。どの印からも指されない用語は、置く前の検査が `[pr-explain-ref]` で落とす。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1363,
+            "end": 1426
+          },
+          "text": "`TermMarks` が印で割り、節の用語を文書の順に集める",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 2347,
+            "end": 2365
+          },
+          "text": "`markedProseOf` が印を `span.primer-mark` にする",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": {
+            "start": 185,
+            "end": 200
+          },
+          "text": "印の書き方の 2 つの規則",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": {
+            "start": 761,
+            "end": 776
+          },
+          "text": "`term_mark_problems` が terms に無い印と、指されない用語を集める",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "lineRange": {
+            "start": 100,
+            "end": 102
+          },
+          "text": "印の書き方の規則(SKILL.md の 1 か所に寄せた)",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "split-capture",
+        "code-spans"
+      ],
+      "tests": [
+        "stray-brackets",
+        "mark-in-code",
+        "unclosed-in-label",
+        "unmarked-term",
+        "term-order",
+        "stray-around-mark"
+      ],
+      "flows": [
+        "read"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "code-spans",
+      "category": "ページ · 核",
+      "label": "`CodeSpans` と `code_spans_of`",
+      "status": "changed",
+      "gist": "文をバッククォートで割り、コードの[[切れ端|piece]]とそうでない切れ端に分ける。閉じていない最後のバッククォートはコードにせず、文字のまま前の切れ端につなぐ。ページと検査が同じ割り方を持ち、[[核|core]]の判定表が突き合わせる。",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1355,
+            "end": 1360,
+            "emphasis": [
+              {
+                "start": 1357,
+                "end": 1358
+              }
+            ],
+            "text": "    create: (text) => {\n      const parts = text.split(\"`\");\n      const hasUnclosed = parts.length % 2 === 0;\n      const paired = hasUnclosed ? [...parts.slice(0, -2), `${parts[parts.length - 2]}\\`${parts[parts.length - 1]}`] : parts;\n      return paired.map((part, index) => ({ isCode: index % 2 === 1, text: part }));\n    },"
+          }
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/build-pr-explain.py",
+            "start": 174,
+            "end": 177,
+            "emphasis": [
+              {
+                "start": 175,
+                "end": 176
+              }
+            ],
+            "text": "    parts = text.split(\"`\")\n    has_unclosed = len(parts) % 2 == 0\n    paired = [*parts[:-2], f\"{parts[-2]}`{parts[-1]}\"] if has_unclosed else parts\n    return [(index % 2 == 1, part) for index, part in enumerate(paired)]"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "検査の印の規則(バッククォートの外か中か)は、ページがどう割るかに依る。ページの割り方が変わると、検査が通す・落とす書き方と、ページで印になる・ならない書き方が黙ってずれるので、割り方を DOM に触らない核へ出して判定表で突き合わせる。"
+        },
+        {
+          "kind": "history",
+          "text": "前は `Dom.prose`(のちの `Dom.proseParts`)の中に同じ割り方が書かれていた。検証で突き合わせる表が無いと指摘され、3 つ目のコミットで `CodeSpans` に出した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1347,
+            "end": 1361
+          },
+          "text": "`CodeSpans.create`",
+          "shas": [
+            "044181bf78e81ddd58dde2dd7cb710404c3ac529"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 2330,
+            "end": 2330
+          },
+          "text": "`Dom.proseParts` が `CodeSpans` を使う",
+          "shas": [
+            "044181bf78e81ddd58dde2dd7cb710404c3ac529"
+          ]
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": {
+            "start": 170,
+            "end": 177
+          },
+          "text": "`code_spans_of`",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "044181bf78e81ddd58dde2dd7cb710404c3ac529"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "term-marks"
+      ],
+      "tests": [
+        "code-spans-unclosed"
+      ],
+      "flows": [
+        "cases"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "primer-topics",
+      "category": "ページ · 核",
+      "label": "`PrimerTopics`",
+      "status": "added",
+      "gist": "解説の `primers` を、kind ごとのタブ(言語・フレームワーク / この PR の実装)に書いた順で分け、[[節|topic]]ごとに用語・関連・テスト・流れと、出てくる場所の[[届き方|reach]]を添える。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "節の用語は、要するに → 段を書いた順(段の中は text → 引数)の文書の順に、印から重複なく並べる。JSON にキーを書いた順にも、`terms` の順にもよらない。タブの用語集は、そのタブの節の用語を最初に出た順につないだもの。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1496,
+            "end": 1519,
+            "emphasis": [
+              {
+                "start": 1508,
+                "end": 1508
+              },
+              {
+                "start": 1517,
+                "end": 1517
+              }
+            ],
+            "text": "    const topicOf = (primer, { termAt, positionAt, testAt, flows, reachOf }) => {\n      const marked = TermMarks.withPieces(primer);\n      const resolve = (pieces) => resolvedPiecesOf(pieces, termAt);\n      return {\n        id: primer.id,\n        kind: primer.kind,\n        category: primer.category,\n        label: primer.label,\n        gist: resolve(marked.gist),\n        passages: listOf(marked.passages).flatMap((passage) => passagesOf(passage, resolve)),\n        occurrences: listOf(primer.occurrences).map((occurrence) => occurrenceOf(occurrence, reachOf)),\n        seeAlso: valuesIn(positionAt, primer.seeAlso),\n        terms: valuesIn(termAt, TermMarks.termIdsOf(marked)),\n        status: statusOf(primer),\n        tests: testEvidenceOf(primer.tests, testAt),\n        flows: valuesIn(flows, primer.flows),\n      };\n    };\n\n    /** タブの節と用語集。用語集は、節の用語を最初に出た順に重複なくつなぐ(1 つも無ければ null)。 */\n    const tabOf = (topics) => {\n      const terms = [...new Map(topics.flatMap((topic) => topic.terms).map((term) => [term.id, term])).values()];\n      return { topics, glossary: terms.length === 0 ? null : { terms } };\n    };"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "この PR の実装の節は、`status` を省けば `Existing`(前からある)になり、言語・フレームワークの節は null(札なし)になる。最初に開くタブは、言語・フレームワークに節があればそれ、無くて実装にあれば実装。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1527,
+            "end": 1536,
+            "emphasis": [
+              {
+                "start": 1533,
+                "end": 1535
+              }
+            ],
+            "text": "      /**\n       * 最初に開くタブ。\n       * @param primerTopics `create` が返した、書かれている技術の手引き\n       * @returns 言語・フレームワークに節があればそれ、無くてこの PR の実装にあればそれ。どちらにも無ければ言語・フレームワーク\n       */\n      firstTabOf: (primerTopics) => {\n        const hasLanguage = primerTopics.tabs[PrimerKinds.Language].topics.length > 0;\n        const hasOnlyCodebase = !hasLanguage && primerTopics.tabs[PrimerKinds.Codebase].topics.length > 0;\n        return hasOnlyCodebase ? PrimerKinds.Codebase : PrimerKinds.Language;\n      },"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "`Existing` の綴り(`existing`)は、検査の技術の節の状態(added・changed)と重ならないことを判定表が確かめる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1447,
+            "end": 1557
+          },
+          "text": "`PrimerTopics` の本体",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1814,
+            "end": 1816
+          },
+          "text": "`ExplainedMap.create` が組む",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "topic-columns",
+        "reach-of"
+      ],
+      "tests": [
+        "primer-none",
+        "primer-unwritten",
+        "tab-split",
+        "term-order",
+        "glossary-order",
+        "see-also",
+        "status",
+        "first-tab"
+      ],
+      "flows": [
+        "open"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "reach-of",
+      "category": "ページ · 核 · 移動",
+      "label": "届き方(`reachOfIn`)と「差分で見る」",
+      "status": "added",
+      "gist": "出てくる場所の 1 つのコミットが、変更の経緯のどこまで開けるか([[届き方|reach]])を決める。行まで送るのは、そのコミットが[[解説の sha|explain-sha]]までにそのファイルを最後に変え、あいだにマージコミットが無いときだけ。",
+      "passages": [
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "commits",
+              "type": "Commit[]",
+              "text": "変更の地図のコミット(古い順)"
+            },
+            {
+              "name": "explainedAt",
+              "type": "number",
+              "text": "[[解説の sha|explain-sha]]が地図のコミットの何番目か",
+              "note": "無ければ -1"
+            }
+          ]
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1703,
+            "end": 1721,
+            "emphasis": [
+              {
+                "start": 1716,
+                "end": 1720
+              }
+            ],
+            "text": "    /**\n     * 出てくる場所の 1 つの sha が、変更の経緯のどこまで届くかを決める関数を作る。\n     * @param commits 地図のコミット(古い順)\n     * @param explainedAt 解説の sha が地図のコミットの何番目か(無ければ -1)\n     * @returns `{sha, path, lineRange}` を受け取り、届き方を返す関数。地図に無い sha は `unmapped`、マージコミットは `merge`、\n     *   そのコミットが `path` のファイルを変えていなければ `untouched`。行まで(`line`)届くのは、`lineRange` があり、そのコミットが\n     *   解説の sha 以前で、あいだ(解説の sha を含む)にマージコミットも `path` を変えたコミットも無いときだけで、ほかは `file`\n     */\n    const reachOfIn = (commits, explainedAt) => ({ sha, path, lineRange }) => {\n      const index = commits.findIndex((commit) => commit.sha === sha);\n      if (index < 0) return { kind: \"unmapped\" };\n      const commit = commits[index];\n      if (commit.merge) return { kind: \"merge\" };\n      if (!commit.files.some((file) => file.path === path)) return { kind: \"untouched\" };\n      const shiftsLines = (later) => later.merge || later.files.some((file) => file.path === path || file.oldPath === path);\n      const isLatestChange = index <= explainedAt && !commits.slice(index + 1, explainedAt + 1).some(shiftsLines);\n      const reachesLine = lineRange !== null && isLatestChange;\n      return reachesLine ? { kind: \"line\", lineRange } : { kind: \"file\" };\n    };"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "行番号は解説の sha の時点のものなので、それより後にそのファイルを変えたコミットや、マージコミットを挟むと行がずれる。そのときはファイルまで(`file`)にして、行には印を付けない。ファイルを別のパスへ移したコミットも、移す前のパスの行をずらしたものとして数える(`oldPath`)。"
+        },
+        {
+          "kind": "text",
+          "text": "届き方ごとに、ボタンの名前と移り先と注意が決まる。`line` と `file` は「差分で見る」で `go.toCommitFile` へ、`untouched` と `merge` は「コミットを見る」でコミットの先頭へ、`unmapped` は「ブランチ全体の流れを見る」。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 5440,
+            "end": 5459,
+            "emphasis": [
+              {
+                "start": 5446,
+                "end": 5446
+              }
+            ],
+            "text": "    /** 出てくる場所の 1 つの sha の、ボタンの名前と押したときの移り先。届かない sha は、何が起きるかの注意(`warning`)を添える。 */\n    const destinationOf = ({ sha, reach }, path) => {\n      const toCommit = () => go.toCommit(sha);\n      switch (reach.kind) {\n        case \"line\":\n        case \"file\":\n          return { label: \"差分で見る\", onPress: () => go.toCommitFile({ sha, path, lineRange: reach.kind === \"line\" ? reach.lineRange : null }), warning: null };\n        case \"untouched\":\n          return { label: \"コミットを見る\", onPress: toCommit, warning: \"このコミットは、このパスのファイルを変えていません。当時は別のパスだったのかもしれません(コミットの先頭を開きます)\" };\n        case \"merge\":\n          return { label: \"コミットを見る\", onPress: toCommit, warning: \"マージコミットなので差分がありません(コミットの先頭を開きます)\" };\n        case \"unmapped\":\n          return { label: \"ブランチ全体の流れを見る\", onPress: toCommit, warning: \"変更の地図に無いコミットなので差分がありません(ブランチ全体の流れを開きます)\" };\n      }\n    };\n    const destinationNodesOf = (destination, path) => {\n      const { label, onPress, warning } = destinationOf(destination, path);\n      const link = commitLinkOf({ sha: destination.sha, label, commitAt: explained.commitAt, onPress });\n      return [link, ...(warning === null ? [] : [el(\"span\", { class: \"warn-text\", text: warning })])];\n    };"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "`file` のときに行の範囲を null にして送るのは DOM の側で、判定表は届き方の判定までしか守らない。`reach.lineRange` をそのまま渡す書き換えは、表示確認でしか見つからない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1703,
+            "end": 1721
+          },
+          "text": "`reachOfIn`",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 5440,
+            "end": 5459
+          },
+          "text": "届き方ごとのボタンの名前・移り先・注意",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 3016,
+            "end": 3026
+          },
+          "text": "変更の経緯の `showFile` がそのファイルのカードを開いて送る",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 2886,
+            "end": 2888
+          },
+          "text": "送ったカードの添え書き",
+          "shas": [
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "primer-topics"
+      ],
+      "tests": [
+        "reach-latest",
+        "reach-rename",
+        "reach-unmapped",
+        "reach-merge",
+        "reach-untouched",
+        "reach-merge-sha",
+        "sent-null-line"
+      ],
+      "flows": [
+        "open",
+        "read"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "route-walk",
+      "category": "ページ · 検査 · 道筋",
+      "label": "道筋のたどり方(`routes_under`・`routeStepOf`)",
+      "status": "changed",
+      "gist": "[[道筋|route]](`primers[].passages[].text` の形)を段に割り、キーへ進むか配列の各要素へ進むかを読む。検査は `Shapes` と `Variants` を辿って道筋を導き、ページは同じ綴りの道筋で値を集める。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`routes_under` は [[Variant|variant]] も辿るようになった。kind ごとのキーを kind の順に合わせて 1 つのオブジェクトの形として辿る(`fields_of`)ので、同じキーは kind をまたいで同じ規則にする。`routes_with(rule)` は規則が `rule` の道筋だけを集め、印を読む道筋(`MarkedText`)と抜粋を読む道筋(Excerpt)を導く。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/build-pr-explain.py",
+            "start": 669,
+            "end": 695,
+            "emphasis": [
+              {
+                "start": 673,
+                "end": 673
+              },
+              {
+                "start": 693,
+                "end": 695
+              }
+            ],
+            "text": "def fields_of(rule: Shape | Variant) -> dict[str, Field]:\n    \"\"\"オブジェクトの規則が持つキー。Variant は kind のキーを kind の順に合わせる(同じキーは kind をまたいで同じ規則)。\"\"\"\n    if isinstance(rule, Shape):\n        return Shapes[rule.name]\n    return {key: field for fields in Variants[rule.name].values() for key, field in fields.items()}\n\n\ndef routes_under(rule: object, route: str) -> list[tuple[str, object, bool]]:\n    \"\"\"規則の下にある道筋を、外側から書いた順に集める(`Shapes` と `Variants` を辿る)。判定表と、印・抜粋の道筋を導く検査\n    (`term_mark_problems`・`with_excerpt_texts`)が使う。\n\n    @param rule `Field` の `value` に書く規則\n    @param route その規則の道筋(`impact` など)。配列の中へ進む段には `[]` を付ける\n    @returns `(道筋, 配列なら要素の規則, 配列か)` の並び\n    \"\"\"\n    is_many = isinstance(rule, Many)\n    inner = rule.item if is_many else rule\n    if not isinstance(inner, (Shape, Variant)):\n        return [(route, inner, is_many)]\n    prefix = f\"{route}[]\" if is_many else route\n    nested = [found for key, field in fields_of(inner).items() for found in routes_under(field.value, f\"{prefix}.{key}\")]\n    return [(route, inner, is_many), *nested]\n\n\ndef routes_with(rule: object) -> list[str]:\n    \"\"\"解説(Explain)の下で、規則が `rule` の道筋を、外側から書いた順に集める。配列なら要素の規則で見る。\"\"\"\n    return [route for key, field in Shapes[\"Explain\"].items() for route, inner, _ in routes_under(field.value, key) if inner == rule]"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "ページの側は、段の読み方を `routeStepOf` の 1 か所に置き、`ExplainShape` と `TermMarks` が使う。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1024,
+            "end": 1025,
+            "text": "  /** 解説の道筋(`a[].b`)の 1 段を、キーと、そのキーの配列の各要素へ進むか(`[]` で終わる段)にする。 */\n  const routeStepOf = (step) => ({ key: step.replace(/\\[\\]$/, \"\"), isEach: step.endsWith(\"[]\") });"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "Variant に kind を足すときは、既存の kind と同じキーに別の規則を付けない。付けると、合わせた道筋から片方の規則が黙って消える(検査の判定表が落とす)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": {
+            "start": 669,
+            "end": 695
+          },
+          "text": "`fields_of`・`routes_under`・`routes_with`",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": {
+            "start": 817,
+            "end": 836
+          },
+          "text": "`read_along` が道筋の先の抜粋を読み直した写しを返す",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1024,
+            "end": 1025
+          },
+          "text": "`routeStepOf`",
+          "shas": [
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "py-namedtuple",
+        "explain-shape"
+      ],
+      "tests": [
+        "variant-keys",
+        "excerpt-no-tests",
+        "required-routes"
+      ],
+      "flows": [
+        "write",
+        "cases"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "excerpt-emphasis",
+      "category": "ページ · 検査 · 抜粋",
+      "label": "抜粋の `emphasis` と `ExcerptRows`",
+      "status": "changed",
+      "gist": "[[抜粋|excerpt]]に、強調する行の範囲(`emphasis`)を書ける。行番号はファイルの行で、抜粋の範囲の中に収める。テストの抜粋と技術の手引きの段の抜粋の両方で効く。",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1428,
+            "end": 1445,
+            "emphasis": [
+              {
+                "start": 1439,
+                "end": 1442
+              }
+            ],
+            "text": "  /** 抜粋の行。 */\n  const ExcerptRows = Object.freeze({\n    /**\n     * 抜粋の行を、ファイルの行番号と強調の有無にする。\n     *\n     * 強調の要素がオブジェクトかどうかは、骨組みの検査が見ている。start / end が数でなくても組み立ては落ちない(どの行が強調に\n     * なるかは比較の型変換しだい。数かどうかは解説の検査が落とす)。\n     * @param excerpt 中身(`text`)を足した抜粋\n     * @returns `{number, text, isEmphasized}` の並び。`number` は抜粋の `start` から数え、強調を省けばどの行も強調しない\n     */\n    create: (excerpt) => {\n      const emphasis = listOf(excerpt.emphasis);\n      return excerpt.text.split(\"\\n\").map((text, index) => {\n        const number = excerpt.start + index;\n        return { number, text, isEmphasized: emphasis.some((span) => isWithin(number, span)) };\n      });\n    },\n  });"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "技術の手引きのコード例(`codeExampleOf`)は、箱の上端にパスと行番号・拡張子の見出しを置く。テストの画面の抜粋(`excerptBlockOf`)は見た目を変えない。どちらも `excerptBoxesOf` を通るので、中身(`text`)が無いときに何も出さない判定は 1 か所にある。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 3408,
+            "end": 3442,
+            "emphasis": [
+              {
+                "start": 3414,
+                "end": 3414
+              },
+              {
+                "start": 3429,
+                "end": 3429
+              },
+              {
+                "start": 3435,
+                "end": 3435
+              }
+            ],
+            "text": "  /**\n   * コードの抜粋の箱。行番号はファイルの行で、強調の範囲に入る行には `is-emphasized` を付ける。\n   * @param excerpt 抜粋(検査が中身の `text` を足したもの)\n   * @returns 箱 1 つの並び。中身(`text`)が足されていなければ空の並び\n   */\n  const excerptBoxesOf = (excerpt) => {\n    if (!isString(excerpt.text)) return [];\n    const grammar = Tokenizer.grammarOf(excerpt.path);\n    const rows = ExcerptRows.create(excerpt).reduce((sofar, row) => {\n      const { node, carry } = codeTextOf(row.text, grammar, sofar.carry);\n      const line = el(\"div\", { class: classesOf(\"excerpt-line\", { \"is-emphasized\": row.isEmphasized }) }, [el(\"span\", { class: \"ln\", text: String(row.number) }), node]);\n      return { carry, nodes: [...sofar.nodes, line] };\n    }, { carry: Tokenizer.Start, nodes: [] });\n    return [el(\"div\", { class: \"excerpt\" }, rows.nodes)];\n  };\n\n  /**\n   * テストの画面のコードの抜粋。小見出しの横に `パス:開始-終了` を出す。\n   * @param title 小見出し\n   * @returns 中身(`text`)が足されていなければ空の並び\n   */\n  const excerptBlockOf = (excerpt, title) => excerptBoxesOf(excerpt).map((box) => el(\"div\", { class: \"side-block\" }, [eyebrowOf(title, `${excerpt.path}:${excerpt.start}-${excerpt.end}`), box]));\n\n  /**\n   * 技術の手引きのコード例。箱の上端に、パス · 行番号と、拡張子(言語名の代わり)の見出しを置く。\n   * @returns 中身(`text`)が足されていなければ空の並び\n   */\n  const codeExampleOf = (excerpt) => excerptBoxesOf(excerpt).map((box) => {\n    const lines = excerpt.start === excerpt.end ? `L${excerpt.start}` : `L${excerpt.start}–${excerpt.end}`;\n    const extension = (excerpt.path.match(/\\.(\\w+)$/) || [])[1] ?? \"\";\n    return el(\"div\", { class: \"primer-code\" }, [\n      el(\"div\", { class: \"primer-code-head\" }, [el(\"span\", { class: \"primer-code-path\", text: `${excerpt.path} · ${lines}` }), el(\"span\", { text: extension })]),\n      box,\n    ]);\n  });"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "強調の要素がオブジェクトかは骨組みの検査が見るが、start / end が数かは見ない。数でないときも組み立ては落ちず、どの行が強調になるかは比較の型変換しだいになる(数かどうかは置く前の検査が落とす)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": {
+            "start": 366,
+            "end": 366
+          },
+          "text": "Excerpt に `emphasis` を足した",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a"
+          ]
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": {
+            "start": 435,
+            "end": 441
+          },
+          "text": "`emphasis_problem` が抜粋の範囲の外の強調を落とす",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1428,
+            "end": 1445
+          },
+          "text": "`ExcerptRows`",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 3408,
+            "end": 3442
+          },
+          "text": "`excerptBoxesOf` と、それを通る 2 つの見た目",
+          "shas": [
+            "21802eb219d09ec2587a7c565e03b29a6c82857a",
+            "31ebf67894f9e9eadd76d03a06c6214be837deaa"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "py-reduce"
+      ],
+      "tests": [
+        "emphasis-end",
+        "excerpt-rows",
+        "excerpt-no-tests"
+      ],
+      "flows": [
+        "write"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "subject",
+      "label": "主語の要素",
+      "text": "セレクタが最終的に選ぶ要素。`A:has(B)` では、条件に B を使っても選ばれるのは A。"
+    },
+    {
+      "id": "ua-style",
+      "label": "UA スタイルシート",
+      "text": "ブラウザが既定で当てる CSS。作者の CSS が同じ性質を書けば、詳細度によらず作者の側が勝つ。"
+    },
+    {
+      "id": "specificity",
+      "label": "詳細度",
+      "text": "同じ要素に当たる作者の規則どうしで、どちらが勝つかを決める重み。id、クラス・属性・疑似クラス、要素の数の順で比べ、同じなら後に書いた方が勝つ。"
+    },
+    {
+      "id": "scroll-container",
+      "label": "スクロールの器",
+      "text": "中身がはみ出したときにスクロールする要素。`overflow` が `auto`・`hidden`・`scroll` の要素がなる。"
+    },
+    {
+      "id": "own-key",
+      "label": "自身のキー",
+      "text": "プロトタイプを辿らず、そのオブジェクトに直接書いたキー。`Object.hasOwn(obj, key)` が真になる。"
+    },
+    {
+      "id": "prototype",
+      "label": "プロトタイプ",
+      "text": "オブジェクトに無いキーを探しに行く先のオブジェクト。普通のオブジェクトは `Object.prototype` を継ぐので、`toString` などを持っているように見える。"
+    },
+    {
+      "id": "capture",
+      "label": "キャプチャ",
+      "text": "正規表現の `(…)` で囲んだ部分。一致した文字列のうち、その部分を取り出せる。`(?:…)` はまとめるだけで取り出さない。"
+    },
+    {
+      "id": "piece",
+      "label": "切れ端",
+      "text": "文を印やバッククォートで割った 1 つ 1 つ。印の外の文字・印・コードのどれか。"
+    },
+    {
+      "id": "tabpanel",
+      "label": "タブパネル",
+      "text": "タブで切り替わって出る中身の領域。技術の手引きでは本文の欄。"
+    },
+    {
+      "id": "accumulator",
+      "label": "積み上げる値",
+      "text": "`reduce` が要素ごとに次へ渡す途中の結果。最後の要素を通した後の値が戻り値になる。"
+    },
+    {
+      "id": "route",
+      "label": "道筋",
+      "text": "解説のトップから値までのキーの並び。配列の中へ進む段には `[]` を付ける(`primers[].gist`)。"
+    },
+    {
+      "id": "topic",
+      "label": "節",
+      "text": "振る舞いと技術の手引きの本文の 1 まとまり。目次の 1 行と、右の欄の 1 つに対応する。"
+    },
+    {
+      "id": "current-topic",
+      "label": "今の節",
+      "text": "上端が読む線(スクロールする領域の上端から 140px)より上に来た最後の節。右の欄と目次の印はこの節に合わせる。"
+    },
+    {
+      "id": "inline-side",
+      "label": "畳んだ欄",
+      "text": "1180px 以下で右の欄を隠したとき、同じ中身を各節の中に入れる、開閉できる欄(`details`)。"
+    },
+    {
+      "id": "variant",
+      "label": "Variant",
+      "text": "`kind` の値ごとに持つキーが決まるオブジェクトの型。検査の `Variants` に kind ごとのキーの表がある。"
+    },
+    {
+      "id": "skeleton-check",
+      "label": "骨組みの検査",
+      "text": "ページが解説を使う前に、組み立てに使う道筋の型と必須のキーの有無だけを見る検査。細かい形は置く前の検査が見る。"
+    },
+    {
+      "id": "term-mark",
+      "label": "用語の印",
+      "text": "本文の語を二重の角括弧で囲み、表示と用語の id を縦線で区切って書く印。terms の 1 語を指す。"
+    },
+    {
+      "id": "core",
+      "label": "核",
+      "text": "ページの固定スクリプトのうち DOM に触らない部分。判定表が node の `vm` で評価して叩く。"
+    },
+    {
+      "id": "reach",
+      "label": "届き方",
+      "text": "出てくる場所の 1 つのコミットから、変更の経緯のどこまで開けるか。行(`line`)・ファイル(`file`)・コミットの先頭(`untouched`・`merge`)・ブランチ全体の流れ(`unmapped`)。"
+    },
+    {
+      "id": "explain-sha",
+      "label": "解説の sha",
+      "text": "解説を書いた時点の head。出てくる場所と抜粋の行番号は、この時点のファイルで数える。"
+    },
+    {
+      "id": "excerpt",
+      "label": "抜粋",
+      "text": "解説の sha のファイルの行の範囲。中身(`text`)は手で写さず、置く前の検査が足す。"
+    }
+  ]
+}
