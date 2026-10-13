@@ -22,6 +22,10 @@ concept・primers の出てくる場所の `path`・`lineRange`・`shas` が地�
 無い最終行も 1 行)。入力に `text` を書いた解説は落とす(手で写した中身が黙って上書きされるのを、書いた側に
 知らせるため)。強調の範囲(`emphasis`)は書いたまま残す。
 
+`.html` / `.sh` / `.bash` の抜粋には、始まりの行の頭で効いている `<script>` / `<style>` / ヒアドキュメントを開いた行を
+`openingLine` として足す。ページが抜粋を途中の行から色分けするためで、規則は `lib/embedded_regions.py`。`text` と同じく
+出力だけのキーで、入力に書いた解説は Excerpt の形に無いキーとして落とす。
+
 見出し(`Heading` を使うキー)は、小文字と大文字の継ぎ目(`[a-z][A-Z]`)がある複合語を、docs に出る語の
 ほかは落とす。大文字だけの略語(UI 案・VRT)はこのリポジトリの語彙なので通す。1 語の識別子・ファイル名・snake_case は
 綴りで識別子と言い切れないので見ない(見出しには書かない)。
@@ -64,6 +68,9 @@ import sys
 from functools import reduce
 from pathlib import Path
 from typing import Callable, NamedTuple
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / "lib"))
+from embedded_regions import opening_lines
 
 # 抜粋の行数の上限。
 MaxExcerptLines = 80
@@ -675,7 +682,7 @@ def fields_of(rule: Shape | Variant) -> dict[str, Field]:
 
 def routes_under(rule: object, route: str) -> list[tuple[str, object, bool]]:
     """規則の下にある道筋を、外側から書いた順に集める(`Shapes` と `Variants` を辿る)。判定表と、印・抜粋の道筋を導く検査
-    (`term_mark_problems`・`with_excerpt_texts`)が使う。
+    (`term_mark_problems`・`with_read_excerpts`)が使う。
 
     @param rule `Field` の `value` に書く規則
     @param route その規則の道筋(`impact` など)。配列の中へ進む段には `[]` を付ける
@@ -801,17 +808,20 @@ def lines_at(repo: str, sha: str, path: str) -> list[str] | None:
     return lines[:-1] if lines[-1] == "" else lines
 
 
-def excerpt_text(repo: str, sha: str, excerpt: dict) -> tuple[str | None, str | None]:
+def read_excerpt(repo: str, sha: str, excerpt: dict) -> tuple[dict, str | None]:
     """抜粋の範囲の中身を読む。
 
-    @returns 中身(行を改行でつないだもの)と、読めなかった理由。どちらか一方だけが None でない
+    @returns 中身(`text`。行を改行でつないだもの)を足した抜粋と、読めなかった理由。埋め込みの中から始まるなら、開いた行
+        (`openingLine`)も足す。読めなければ、抜粋をそのまま返し、理由が None でない
     """
     lines = lines_at(repo, sha, excerpt["path"])
     if lines is None:
-        return None, f"{excerpt['path']} は {sha} に無い"
+        return excerpt, f"{excerpt['path']} は {sha} に無い"
     if excerpt["end"] > len(lines):
-        return None, f"{excerpt['path']} は {len(lines)} 行で、{excerpt['start']}-{excerpt['end']} 行目は収まらない"
-    return "\n".join(lines[excerpt["start"] - 1:excerpt["end"]]), None
+        return excerpt, f"{excerpt['path']} は {len(lines)} 行で、{excerpt['start']}-{excerpt['end']} 行目は収まらない"
+    filled = {**excerpt, "text": "\n".join(lines[excerpt["start"] - 1:excerpt["end"]])}
+    opening = opening_lines(excerpt["path"], lines)[excerpt["start"] - 1]
+    return (filled if opening is None else {**filled, "openingLine": opening}), None
 
 
 def read_along(value: object, route: str, read: Callable[[dict, str], tuple[dict, list[str]]]) -> tuple[object, list[str]]:
@@ -836,9 +846,9 @@ def read_along(value: object, route: str, read: Callable[[dict, str], tuple[dict
     return walk(value, route.split("."), "")
 
 
-def with_excerpt_texts(explain: dict, repo: str) -> tuple[dict, list[str]]:
-    """抜粋(Excerpt を指すすべての道筋)に中身(`text`)を足した解説と、読めなかった抜粋の違反を返す。抜粋の無い解説は、
-    キーの順まで同じまま返す。
+def with_read_excerpts(explain: dict, repo: str) -> tuple[dict, list[str]]:
+    """抜粋(Excerpt を指すすべての道筋)に中身(`text`)と、埋め込みの中から始まるものには開いた行(`openingLine`)を足した
+    解説と、読めなかった抜粋の違反を返す。抜粋の無い解説は、キーの順まで同じまま返す。
 
     @param explain 形と参照の検査を通った解説
     @param repo 解説時点の sha を持つリポジトリ
@@ -848,8 +858,8 @@ def with_excerpt_texts(explain: dict, repo: str) -> tuple[dict, list[str]]:
         return explain, [f"sha {sha} がこのリポジトリに無い(解説時点の head を push・fetch してから)"]
 
     def read(excerpt: dict, where: str) -> tuple[dict, list[str]]:
-        text, problem = excerpt_text(repo, sha, excerpt)
-        return (excerpt, [f"{where}: {problem}"]) if problem else ({**excerpt, "text": text}, [])
+        filled_excerpt, problem = read_excerpt(repo, sha, excerpt)
+        return (excerpt, [f"{where}: {problem}"]) if problem else (filled_excerpt, [])
 
     def read_route(sofar: tuple[dict, list[str]], route: str) -> tuple[dict, list[str]]:
         written, problems = read_along(sofar[0], route, read)
@@ -871,7 +881,7 @@ def collect_violations(explain: object, pr: int, repo: str) -> tuple[dict | None
         return None, [f"[pr-explain-shape] {problem}" for problem in shape]
     meta = [] if explain["pr"] == pr else [f"[pr-explain-meta] pr が公開先の PR #{pr} と違う(今は {explain['pr']})"]
     refs = [f"[pr-explain-ref] {problem}" for problem in reference_problems(explain)]
-    written, code = with_excerpt_texts(explain, repo)
+    written, code = with_read_excerpts(explain, repo)
     violations = meta + refs + [f"[pr-explain-code] {problem}" for problem in code]
     return (None if violations else written), violations
 

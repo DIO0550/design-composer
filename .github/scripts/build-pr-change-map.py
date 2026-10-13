@@ -9,7 +9,9 @@
 - `__tests__/` のテスト名の増減(テスト名は仕様の文なので、増減がそのまま守る仕様の増減になる)と、テスト名を
   調べたファイルの一覧(ページは、一覧に無いファイルのテストを追加とも既存とも言い切らない)
 - コミットごとの件名・本文・作者・日時と、ファイルごとの差分(ページが変更の経緯を出し、解説を書いた
-  時点より後に何が変わったかを出すため)
+  時点より後に何が変わったかを出すため)。`.html` / `.sh` / `.bash` の差分には、hunk ごとに始まりの行の頭で効いている
+  埋め込み(script / style 要素・ヒアドキュメント)を開いた行(`hunkOpeningLines`)を添える(ページが hunk を途中の行から
+  色分けするため。規則は `lib/embedded_regions.py`)
 - 端の少なくとも一方が変更ファイルの依存(どのファイルがどのファイルを使っているか)。merge-base と head の
   両方で探し、足した・残った・消えたを分ける。ページが依存の図にする
 
@@ -51,6 +53,8 @@ from typing import NamedTuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / ".claude/hooks/lib"))
 from ts_sources import COMMENT_LINE, DEFAULT_ROOT, DOMAINS_ROOT, IMPORT_SPECIFIER, INDEX_NAMES, feature_of, resolve_import
+sys.path.insert(0, str(Path(__file__).resolve().parent / "lib"))
+from embedded_regions import has_embeddings, opening_lines
 
 # 層の読む順。内側(依存される側)から外側へ。`src/domains` のカテゴリは import してよい向き
 # (`rules/architecture.md`「domains のカテゴリ」)の順に並べ、`src/features` を挟んで
@@ -365,23 +369,41 @@ def tree_at(revision: str) -> dict[str, str]:
     return {path: meta.split(" ")[2] for meta, path in entries if meta.split(" ")[1] == "blob"}
 
 
+def contents_at(names: list[str]) -> list[bytes | None]:
+    """オブジェクトの名前(blob の名前・`<コミット>:<パス>` など)の中身を、`git cat-file --batch` を 1 回だけ走らせて、頼んだ順に読む。
+
+    `cat-file` そのものが失敗したら `CalledProcessError` で落とす(地図を半端に作らない)。
+
+    @param names オブジェクトの名前
+    @returns 名前ごとの中身(`names` と同じ順)。無いもの・blob でないもの・改行を含む名前(`--batch` は 1 行に 1 つの名前で
+        読むので頼まない)は None
+    """
+    asked = [name for name in names if "\n" not in name]
+    request = "".join(f"{name}\n" for name in asked).encode()
+    output = subprocess.run(["git", "cat-file", "--batch"], input=request, check=True, capture_output=True).stdout
+    found: dict[str, bytes | None] = {}
+    position = 0
+    for name in asked:
+        header_end = output.index(b"\n", position)
+        header = output[position:header_end]
+        position = header_end + 1
+        if header.endswith((b" missing", b" ambiguous")):
+            found[name] = None
+            continue
+        _, kind, size = header.rsplit(b" ", 2)
+        found[name] = output[position : position + int(size)] if kind == b"blob" else None
+        position += int(size) + 1
+    return [found.get(name) for name in names]
+
+
 def read_blobs(names: set[str]) -> dict[str, bytes]:
     """blob の中身を、`git cat-file --batch` を 1 回だけ走らせて読む。
 
     @param names blob の名前
-    @returns 名前 → 中身
+    @returns 名前 → 中身(読めなかったものは除く)
     """
-    request = "".join(f"{name}\n" for name in sorted(names)).encode()
-    output = subprocess.run(["git", "cat-file", "--batch"], input=request, check=True, capture_output=True).stdout
-    blobs: dict[str, bytes] = {}
-    position = 0
-    while position < len(output):
-        header_end = output.index(b"\n", position)
-        name, _, size = output[position:header_end].decode().split(" ")
-        start = header_end + 1
-        blobs[name] = output[start : start + int(size)]
-        position = start + int(size) + 1
-    return blobs
+    ordered = sorted(names)
+    return {name: content for name, content in zip(ordered, contents_at(ordered)) if content is not None}
 
 
 def is_prose(path: str) -> bool:
@@ -575,7 +597,8 @@ def patch_of(sha: str, file: dict) -> dict:
     @param sha コミット(親が 1 つ)
     @param file そのコミットの変更ファイル(`changed_files` の要素)
     @returns `patch`(最初の `@@` から `MaxPatchLines` 行まで。hunk が無ければ空文字。消したファイルとバイナリは
-        None)・`patchLines`(切る前の行数。patch が None なら 0)・`truncated`(切ったか)
+        None)・`patchLines`(切る前の行数。patch が None なら 0)・`truncated`(切ったか)。埋め込みを読む拡張子
+        (`has_embeddings`)で patch が None でなければ、`hunkOpeningLines`(`hunk_opening_lines`)も持つ
     """
     has_no_patch = file["status"] == "D" or file["additions"] is None
     if has_no_patch:
@@ -583,7 +606,35 @@ def patch_of(sha: str, file: dict) -> dict:
     paths = (file["oldPath"], file["path"]) if file["oldPath"] else (file["path"],)
     diff = git("--literal-pathspecs", "diff", "-M", "--no-color", "--no-ext-diff", f"{sha}^", sha, "--", *paths)
     lines = hunk_lines(diff)
-    return {"patch": "\n".join(lines[:MaxPatchLines]), "patchLines": len(lines), "truncated": len(lines) > MaxPatchLines}
+    shown = {"patch": "\n".join(lines[:MaxPatchLines]), "patchLines": len(lines), "truncated": len(lines) > MaxPatchLines}
+    if not has_embeddings(file["path"]):
+        return shown
+    return {**shown, "hunkOpeningLines": hunk_opening_lines(sha, file, lines[:MaxPatchLines])}
+
+
+# ページの `CommitDiff` の `HunkHeader` と同じ読み方。数が食い違うと、ページはすべての hunk を頭から読む。
+HunkStarts = re.compile(r"^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@")
+
+
+def hunk_opening_lines(sha: str, file: dict, lines: list[str]) -> list[dict]:
+    """hunk ごとに、変更前と変更後の始まりの行の頭で効いている埋め込みを開いた行を返す。
+
+    変更前は親の旧パス(rename でなければ同じパス)、変更後はそのコミットのパスの中身から読み、どちらも変更後のパスの
+    拡張子で `opening_lines` に通す。
+
+    @param lines 切った後の patch の行
+    @returns patch の `@@` の順に `{"old", "new"}`。中身が無い側(足したファイルの変更前など)・範囲の外(`-0,0` など)は None
+    """
+    names = [f"{sha}^:{file['oldPath'] or file['path']}", f"{sha}:{file['path']}"]
+    # 変更前も変更後のパスの拡張子で読む。ページが変更前の行も、変更後のパスの文法で色分けするため。
+    old, new =(None if content is None else opening_lines(file["path"], content.decode("utf-8", errors="replace").split("\n")) for content in contents_at(names))
+
+    def at(openings: list[str | None] | None, number: int) -> str | None:
+        is_in_file = openings is not None and 1 <= number <= len(openings)
+        return openings[number - 1] if is_in_file else None
+
+    starts = [match for match in map(HunkStarts.match, lines) if match]
+    return [{"old": at(old, int(match[1])), "new": at(new, int(match[2]))} for match in starts]
 
 
 def commit_files(sha: str) -> list[dict]:

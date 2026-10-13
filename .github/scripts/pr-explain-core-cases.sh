@@ -3,9 +3,10 @@
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
 # 叩いて、地図と解説の合流・振る舞いの節の並び・技術の手引きの節・用語の印・抜粋の強調・出てくる場所のコミットへの
-# 届き方・今の節・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面と、語彙・Target の
-# kind・解説の形の道筋(impact・primers・terms・抜粋の強調)が解説の検査(`build-pr-explain.py`)と揃っていることが期待
-# どおりかを 1 コマンドで確かめる。
+# 届き方・今の節・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、
+# `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・解説の形の道筋(impact・primers・terms・抜粋の
+# 強調)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを
+# 1 コマンドで確かめる。
 #
 # 使い方: bash .github/scripts/pr-explain-core-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -21,6 +22,8 @@ set -uo pipefail
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
 repo_root="$(cd "$scripts_dir/../.." && pwd)"
 template="$repo_root/.claude/skills/pr-explain/templates/index.html"
+work="$(mktemp -d)" || exit 1
+trap 'rm -rf "$work"' EXIT
 
 source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
@@ -86,7 +89,58 @@ print(json.dumps({
 PY
 )" || { echo "NG   解説の検査の語彙を読めない"; exit 1; }
 
-results="$(node - "$template" "$checker" <<'JS'
+# 色分けの埋め込み(要素とヒアドキュメント)について、検査の共有モジュール(`lib/embedded_regions.py`)の語と、各行の頭で
+# 効いている埋め込みを開いた行。argv ではなく `$work` のファイルで渡す(Linux の引数 1 つの上限 131,072 バイトを超えるため)。
+python3 - "$scripts_dir/lib" "$work" "$template" "$scripts_dir/pr-explain-core-cases.sh" "$scripts_dir/build-pr-explain-cases.sh" "$scripts_dir/build-pr-change-map-cases.sh" <<'PY'
+import json, sys
+sys.path.insert(0, sys.argv[1])
+from embedded_regions import EmbeddingElements, ElementExtensions, HeredocDelimiters, HeredocExtensions, opening_lines
+work = sys.argv[2]
+samples = {
+    "heredocs.sh": [
+        "cat <<JSON",
+        '{"a": true}',
+        "JSON",
+        'node - <<"JS"',
+        "const a = 1;",
+        "JS",
+        "python3 - <<'PY'",
+        "x = 1",
+        "PY",
+        "cat <<-'TS'",
+        "\tconst b: T = 1;",
+        "\tTS",
+        "cat <<'CASES'",
+        "const c = 1;",
+        "CASES",
+        "echo done",
+    ],
+    "elements.html": [
+        "<p>a</p>",
+        "<STYLE>",
+        "a { color: red; }",
+        "</style>",
+        '<script type="module">',
+        'const a = "</p>";',
+        "</SCRIPT>",
+        "<script>const b = 1;</script>",
+        "<p>b</p>",
+    ],
+}
+for name, lines in samples.items():
+    open(f"{work}/{name}", "w", encoding="utf-8").write("\n".join(lines) + "\n")
+paths = [*sys.argv[3:], *(f"{work}/{name}" for name in samples)]
+lines_of = lambda path: open(path, encoding="utf-8").read().split("\n")
+json.dump({
+    "elements": list(EmbeddingElements),
+    "heredocs": list(HeredocDelimiters),
+    "extensions": {"elements": list(ElementExtensions), "heredocs": list(HeredocExtensions)},
+    "files": {path: opening_lines(path, lines_of(path)) for path in paths},
+}, open(f"{work}/embeddings.json", "w", encoding="utf-8"))
+PY
+[ "$?" -eq 0 ] || { echo "NG   検査の埋め込みの開いた行を読めない"; exit 1; }
+
+results="$(node - "$template" "$checker" "$work/embeddings.json" <<'JS'
 const fs = require("fs");
 const vm = require("vm");
 
@@ -114,7 +168,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, ReviewCheck, ScreenChoice, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
+const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -151,6 +205,55 @@ const linesOf = (rows) => rows.join("\n");
 // 変更後の 1〜3 行目と 10〜12 行目の 2 つの hunk。4〜9 行目は差分に出ていない。
 const twoHunks = linesOf(["@@ -1,3 +1,3 @@", " a", "-b", "+B", " c", "@@ -10,3 +10,3 @@", " j", "-k", "+K", " l"]);
 const numbersOf = (file) => file.body.hunks.map((hunk) => hunk.notes.map((note) => [note.n, note.text]));
+
+// 色分け。パスの文法で、開いた行(無ければ null)の後から行を読み進めた、行ごとの字句の並び。
+const tokenLinesOf = (path, lines, openingLine = null) => {
+  const grammar = Tokenizer.grammarOf(path);
+  return lines.reduce((sofar, text) => {
+    const { tokens, carry } = Tokenizer.tokenizeLine(text, grammar, sofar.carry);
+    return { carry, lines: [...sofar.lines, tokens] };
+  }, { carry: Tokenizer.startAfter(openingLine, grammar), lines: [] }).lines;
+};
+// 色分けした行の、line 行目(0 始まり)で綴りが word の nth 番目(0 始まり)の字句の色。字句が無ければ、どの色とも違う綴りを返す。
+const colorIn = (tokenLines, line, word, nth = 0) => {
+  const found = tokenLines[line].filter((token) => token.value === word)[nth];
+  return found === undefined ? "字句が無い" : found.cls;
+};
+const colorOf = (path, lines, { line = 0, word, nth = 0, openingLine = null }) => colorIn(tokenLinesOf(path, lines, openingLine), line, word, nth);
+// a.html の差分を地図の開いた行と組み、hunk ごとに、綴りが word の字句の色を行の順に並べる。
+const hunkColorsOf = (patchLines, hunkOpeningLines, word) => {
+  const [file] = diffOf([diffFile("a.html", { patch: linesOf(patchLines), hunkOpeningLines })], []).files;
+  const grammar = Tokenizer.grammarOf("a.html");
+  return file.body.hunks.map((hunk) => CommitDiff.lineTokensOf(hunk, grammar).flatMap((tokens) => tokens.filter((token) => token.value === word).map((token) => token.cls)));
+};
+// 1 行ずつの hunk 2 つ。どちらも前後の行の const だけを持つ。
+const twoScriptHunks = ["@@ -1,1 +1,1 @@", " const a = 1;", "@@ -10,1 +10,1 @@", " const b = 1;"];
+const scriptOpened = { old: "<script>", new: "<script>" };
+
+// 色分けの埋め込みの突き合わせ。前段が書いた、検査の語と、ファイルごとの各行の頭の開いた行。
+const { elements: checkerElements, heredocs: checkerHeredocs, extensions: checkerExtensions, files: checkerOpenings } = JSON.parse(fs.readFileSync(process.argv[4], "utf8"));
+const checkedPaths = Object.keys(checkerOpenings);
+const casesTables = checkedPaths.filter((path) => path.endsWith("-cases.sh"));
+const samplePathOf = (name) => checkedPaths.find((path) => path.endsWith(`/${name}`));
+// ファイルを 1 行目から読み進めたときの、各行の頭の埋め込み(`region`)と、最後の行を読み終えた後の埋め込み。
+const regionsAlong = (path) => {
+  const grammar = Tokenizer.grammarOf(path);
+  const heads = [];
+  const last = fs.readFileSync(path, "utf8").split("\n").reduce((carry, text) => {
+    heads.push(carry.region);
+    return Tokenizer.tokenizeLine(text, grammar, carry).carry;
+  }, Tokenizer.startAfter(null, grammar));
+  return { heads, last: last.region };
+};
+// 検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと食い違う行(1 始まり)。
+const regionMismatchesOf = (path) => {
+  const grammar = Tokenizer.grammarOf(path);
+  const { heads } = regionsAlong(path);
+  const isSame = (opening, index) => JSON.stringify(Tokenizer.startAfter(opening, grammar).region) === JSON.stringify(heads[index]);
+  return checkerOpenings[path].flatMap((opening, index) => (isSame(opening, index) ? [] : [index + 1]));
+};
+// 行の終わりが、区切りの語(引用符で囲むなら閉じた引用符)の付いた `<<` で終わるか。
+const EndsWithHeredocStart = /<<-?[ \t]*(['"]?)[A-Za-z_]\w*\1$/;
 
 // 箱の図の組と依存。graphGroup の箱は `組名/番号.ts`、boxesOf の箱は渡した名前で、lines はその箱の変更行数。
 const graphGroup = (id, lines = [1]) => ({ id, boxes: lines.map((count, index) => ({ path: `${id}/${index}.ts`, lines: count })) });
@@ -1333,6 +1436,346 @@ const cases = [
     },
     expected: { numbers: [10, 11, 12, 13, 14], emphasized: [false, true, false, true, true], plain: [false, false, false, false, false] },
   },
+  {
+    label: "色分け: .ts では TS の語(satisfies)もキーワードになる",
+    actual: () => colorOf("a.ts", ["const a = b satisfies C;"], { word: "satisfies" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: .tsx も TS の規則で読む(satisfies がキーワード)",
+    actual: () => colorOf("a.tsx", ["const a = b satisfies C;"], { word: "satisfies" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: .js では type はキーワードにならず変数になる",
+    actual: () => colorOf("a.js", ["const type = 1;"], { word: "type" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: .css のファイルは CSS の規則で読む(@media がキーワード)",
+    actual: () => colorOf("a.css", ["@media (x) {"], { word: "@media" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: .md と .rs は規則が無く、行全体が色の無い 1 字句になる",
+    actual: () => ["a.md", "a.rs"].map((path) => tokenLinesOf(path, ["const a = f(1);"])[0].map((token) => [token.cls, token.value])),
+    expected: [[[null, "const a = f(1);"]], [[null, "const a = f(1);"]]],
+  },
+  {
+    label: "色分け: JS / TS の大文字で始まる名前は型になる",
+    actual: () => colorOf("a.ts", ["const a: TauriIpc = b;"], { word: "TauriIpc" }),
+    expected: "tok-type",
+  },
+  {
+    label: "色分け: JS / TS の「名前(」は関数になる",
+    actual: () => colorOf("a.ts", ["create(a);"], { word: "create" }),
+    expected: "tok-fn",
+  },
+  {
+    label: "色分け: . の後の名前は、キーワードの綴りでも色を付けない",
+    actual: () => colorOf("a.ts", ["a.from;"], { word: "from" }),
+    expected: null,
+  },
+  {
+    label: "色分け: . の後でも、呼び出しなら関数になる",
+    actual: () => colorOf("a.ts", ["a.map(f);"], { word: "map" }),
+    expected: "tok-fn",
+  },
+  {
+    label: "色分け: 呼び出しでもメンバーでもキーでもない小文字の名前は変数になる",
+    actual: () => colorOf("a.ts", ["return total;"], { word: "total" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: スプレッドの ... の後の名前は、メンバーにせず変数にする",
+    actual: () => colorOf("a.ts", ["f(...rest);"], { word: "rest" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: .ts のオブジェクトのキーは、キーワードの綴りでも色を付けない",
+    actual: () => colorOf("a.ts", ['const s = { type: "x" };'], { word: "type" }),
+    expected: null,
+  },
+  {
+    label: "色分け: { default: 1 } の default もキーとして色を付けない",
+    actual: () => colorOf("a.ts", ["const s = { default: 1 };"], { word: "default" }),
+    expected: null,
+  },
+  {
+    label: "色分け: a?: もキーとして色を付けない",
+    actual: () => colorOf("a.ts", ["type S = { a?: string };"], { word: "a" }),
+    expected: null,
+  },
+  {
+    label: "色分け: 丸括弧の中の name: は変数になる",
+    actual: () => colorOf("a.ts", ["const f = (state: State) => state;"], { word: "state" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: 前の行で開いた丸括弧の中の name: も変数になる",
+    actual: () => colorOf("a.ts", ["f(", "  state: State,", ");"], { line: 1, word: "state" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: 前の行で開いた波括弧の中の name: はキーになる",
+    actual: () => colorOf("a.ts", ["const s = {", "  state: 1,", "};"], { line: 1, word: "state" }),
+    expected: null,
+  },
+  {
+    label: "色分け: 大文字で始まるキーも型にしない",
+    actual: () => colorOf("a.ts", ['const s = { Map: "map" };'], { word: "Map" }),
+    expected: null,
+  },
+  {
+    label: "色分け: const / let / var の直後の name: は変数になる",
+    actual: () => colorOf("a.ts", ["const x: Foo = y;"], { word: "x" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: 三項演算子の ? の後の name : は変数になる",
+    actual: () => colorOf("a.ts", ["const v = ok ? left : right;"], { word: "left" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: 種類の合わない閉じ括弧は外側の括弧を閉じない(文字クラスの } の後でも、波括弧の中の key: はキー)",
+    actual: () => colorOf("a.ts", ["f({ re: /[}]/, key: 1 })"], { word: "key" }),
+    expected: null,
+  },
+  {
+    label: "色分け: Python の else: はキーワードのまま(キーの規則は JS / TS だけ)",
+    actual: () => colorOf("a.py", ["else:"], { word: "else" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: Python の f\"…\" の f は文字列に含まれる",
+    actual: () => colorOf("a.py", ['x = f"a{b}"'], { word: 'f"a{b}"' }),
+    expected: "tok-str",
+  },
+  {
+    label: "色分け: Python の dict は型になる",
+    actual: () => colorOf("a.py", ["x: dict = {}"], { word: "dict" }),
+    expected: "tok-type",
+  },
+  {
+    label: "色分け: Python の str(x) の str は関数になる",
+    actual: () => colorOf("a.py", ["y = str(x)"], { word: "str" }),
+    expected: "tok-fn",
+  },
+  {
+    label: "色分け: CSS の /* */ はコメントで、中の 12px も数値にならない",
+    actual: () => tokenLinesOf("a.css", ["/* 12px */"])[0].map((token) => token.cls),
+    expected: ["tok-com"],
+  },
+  {
+    label: "色分け: CSS の @media はキーワードになる",
+    actual: () => colorOf("a.css", ["@media screen {"], { word: "@media" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: CSS の --x は変数になる",
+    actual: () => colorOf("a.css", ["a { color: var(--x); }"], { word: "--x" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: CSS の display: はキーになる",
+    actual: () => colorOf("a.css", ["a { display: block; }"], { word: "display" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: CSS の var( は関数になる",
+    actual: () => colorOf("a.css", ["a { color: var(--x); }"], { word: "var" }),
+    expected: "tok-fn",
+  },
+  {
+    label: "色分け: CSS の 12px と #1F6F8B は数値になる",
+    actual: () => ["12px", "#1F6F8B"].map((word) => colorOf("a.css", ["a { width: 12px; color: #1F6F8B; }"], { word })),
+    expected: ["tok-num", "tok-num"],
+  },
+  {
+    label: "色分け: CSS の a:hover { の a はキーにならない",
+    actual: () => colorOf("a.css", ["a:hover {"], { word: "a" }),
+    expected: null,
+  },
+  {
+    label: "色分け: CSS の行末が , のセレクタ(a:hover,)の a もキーにならない",
+    actual: () => colorOf("a.css", ["a:hover,"], { word: "a" }),
+    expected: null,
+  },
+  {
+    label: "色分け: CSS の @media (max-width: …) の max-width はキーにならない",
+    actual: () => colorOf("a.css", ["@media (max-width: 10px) {"], { word: "max-width" }),
+    expected: null,
+  },
+  {
+    label: "色分け: script 要素の開きタグの後ろは JS で読む(同じ行の const がキーワード)",
+    actual: () => colorOf("a.html", ["<script>const a = 1;"], { word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: script 要素の閉じタグの後ろは HTML に戻る(同じ行の後ろの const は色なし)",
+    actual: () => colorOf("a.html", ["<script>x</script> const"], { word: "const" }),
+    expected: null,
+  },
+  {
+    label: "色分け: style 要素の開きタグの後ろは CSS で読む(color: がキー)",
+    actual: () => colorOf("a.html", ["<style>a { color: red; }"], { word: "color" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: script 要素の開きタグの次の行の const もキーワードになる(行をまたいで持ち越す)",
+    actual: () => colorOf("a.html", ["<script>", "const a = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: script 要素の中の文字列の style 要素の開きタグでは CSS に切り替わらない(後ろの const がキーワードのまま)",
+    actual: () => colorOf("a.html", ['<script>const s = "<style>"; const b = 1;'], { word: "const", nth: 1 }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 大文字の SCRIPT の開きタグと Script の閉じタグも、大文字小文字を問わず切り替える",
+    actual: () => [0, 1].map((nth) => colorOf("a.html", ["<SCRIPT>const a = 1;</Script> const"], { word: "const", nth })),
+    expected: ["tok-kw", null],
+  },
+  {
+    label: "色分け: JS のヒアドキュメントの次の行から区切りの行までは JS で読む(const がキーワード)",
+    actual: () => colorOf("a.sh", ["cat <<'JS'", "const a = 1;", "JS"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: PY のヒアドキュメントの中は Python で読む(def がキーワード)",
+    actual: () => colorOf("a.sh", ["python3 - <<'PY'", "def f(): pass", "PY"], { line: 1, word: "def" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 引用符の無い区切り(JSON)のヒアドキュメントも読む(true がキーワード)",
+    actual: () => colorOf("a.sh", ["cat <<JSON", '{"a": true}', "JSON"], { line: 1, word: "true" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 二重引用符の区切り(JS)のヒアドキュメントも読む(const がキーワード)",
+    actual: () => colorOf("a.sh", ['node - <<"JS"', "const a = 1;", "JS"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 行頭のタブを除いて閉じる TS のヒアドキュメントは、タブを除いた区切りの行で閉じる(次の行の echo がキーワード)",
+    actual: () => colorOf("a.sh", ["cat <<-'TS'", "\tconst b = 1;", "\tTS", "echo done"], { line: 3, word: "echo" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: - の無い TS のヒアドキュメントは、タブ付きの区切りの行では閉じない(次の行の echo は変数)",
+    actual: () => colorOf("a.sh", ["cat <<'TS'", "\tconst b = 1;", "\tTS", "echo done"], { line: 3, word: "echo" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: 知らない区切り(CASES)のヒアドキュメントの中身はシェルで読む(echo がキーワード)",
+    actual: () => colorOf("a.sh", ["cat <<'CASES'", "echo done", "CASES"], { line: 1, word: "echo" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: ヒアドキュメントの区切りの行そのものは、埋め込みの言語で読まない(JS の行が型の色にならない)",
+    actual: () => colorOf("a.sh", ["cat <<'JS'", "const a = 1;", "JS"], { line: 2, word: "JS" }),
+    expected: null,
+  },
+  {
+    label: "色分け: ヒアドキュメントの区切りの行の後ろはシェルに戻る(echo がキーワード)",
+    actual: () => colorOf("a.sh", ["cat <<'JS'", "const a = 1;", "JS", "echo done"], { line: 3, word: "echo" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: script 要素の開きタグを開いた行として読み始めると JS になる(const がキーワード)",
+    actual: () => colorOf("a.html", ["const a = 1;"], { word: "const", openingLine: "<script>" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 開いた行で開いたコメントは持ち越さない(script 要素の開きタグに続く /* の次の行の const がキーワード)",
+    actual: () => colorOf("a.html", ["const a = 1;"], { word: "const", openingLine: "<script>/*" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 埋め込みを開いていない行(div)からは、頭から読むのと同じになる(const は色なし)",
+    actual: () => colorOf("a.html", ["const a = 1;"], { word: "const", openingLine: "<div>" }),
+    expected: null,
+  },
+  {
+    label: "色分け: 抜粋の openingLine が script 要素の開きタグなら、.html の抜粋の const はキーワードになる",
+    actual: () => colorIn(ExcerptRows.create({ path: "a.html", start: 3, end: 3, text: "const a = 1;", openingLine: "<script>" }).map((row) => row.tokens), 0, "const"),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 抜粋の openingLine が文字列でなければ、頭から読む(const は色なし)",
+    actual: () => colorIn(ExcerptRows.create({ path: "a.html", start: 3, end: 3, text: "const a = 1;", openingLine: ["<script>"] }).map((row) => row.tokens), 0, "const"),
+    expected: null,
+  },
+  {
+    label: "色分け: 抜粋の 1 行目で開いた /* は、2 行目に持ち越す(2 行目はコメント)",
+    actual: () => ExcerptRows.create({ path: "a.html", start: 3, end: 4, text: "/* a\nconst b", openingLine: "<script>" })[1].tokens.map((token) => token.cls),
+    expected: ["tok-com"],
+  },
+  {
+    label: "色分け: n 番目の hunk には、地図の hunkOpeningLines の n 番目が付く(2 つ目だけ script 要素の開きタグなら、2 つ目の const だけキーワード)",
+    actual: () => hunkColorsOf(twoScriptHunks, [{ old: null, new: null }, scriptOpened], "const"),
+    expected: [[null], ["tok-kw"]],
+  },
+  {
+    label: "色分け: 地図の hunkOpeningLines が配列でなければ、どの hunk も頭から読む",
+    actual: () => hunkColorsOf(twoScriptHunks, { length: 2, 0: scriptOpened, 1: scriptOpened }, "const"),
+    expected: [[null], [null]],
+  },
+  {
+    label: "色分け: 地図の hunkOpeningLines の要素の old が文字列で new が数なら、- の行だけ開いた行から読む",
+    actual: () => hunkColorsOf(["@@ -1,1 +1,1 @@", "-const a = 1;", "+const a = 2;"], [{ old: "<script>", new: 1 }], "const"),
+    expected: [["tok-kw", null]],
+  },
+  {
+    label: "色分け: 地図の hunkOpeningLines の長さが hunk の数と違えば、どの hunk も頭から読む",
+    actual: () => hunkColorsOf(twoScriptHunks, [scriptOpened], "const"),
+    expected: [[null], [null]],
+  },
+  {
+    label: "色分け: 変更前と変更後で開いた行が違う hunk で、- の行は変更前の開いた行で読む",
+    actual: () => hunkColorsOf(["@@ -1,2 +1,2 @@", " x = 1;", "-const a = 1;", "+const a = 2;"], [{ old: "<script>", new: null }], "const"),
+    expected: [["tok-kw", null]],
+  },
+  {
+    label: "色分け: 変更前と変更後で開いた行が違う hunk で、+ の行は変更後の開いた行で読む",
+    actual: () => hunkColorsOf(["@@ -1,2 +1,2 @@", " x = 1;", "-const a = 1;", "+const a = 2;"], [{ old: null, new: "<script>" }], "const"),
+    expected: [[null, "tok-kw"]],
+  },
+  {
+    label: "色分け: 消した行で開いた script 要素は、足した行の色に効かない",
+    actual: () => hunkColorsOf(["@@ -1,1 +1,1 @@", "-<script>", "+const a = 1;"], [{ old: null, new: null }], "const"),
+    expected: [[null]],
+  },
+  {
+    label: "色分け: 足した行で開いた script 要素は、消した行の色に効かない",
+    actual: () => hunkColorsOf(["@@ -1,1 +1,1 @@", "+<script>", "-const a = 1;"], [{ old: null, new: null }], "const"),
+    expected: [[null]],
+  },
+  {
+    label: "色分け: 前後の行は、変更前と変更後の両方で読み進める(前後の行で開いた script 要素の後の - と + の const がどちらもキーワード)",
+    actual: () => hunkColorsOf(["@@ -1,2 +1,2 @@", " <script>", "-const a = 1;", "+const a = 2;"], [{ old: null, new: null }], "const"),
+    expected: [["tok-kw", "tok-kw"]],
+  },
+  {
+    label: "色分け: 変更前と変更後で開いた行が違う hunk では、前後の行を変更後の字句で表示する",
+    actual: () => hunkColorsOf(["@@ -1,1 +1,1 @@", " const c = 1;"], [{ old: "<script>", new: null }], "const"),
+    expected: [[null]],
+  },
+  {
+    label: "色分け: YAML の値の大文字の語は型にならない",
+    actual: () => colorOf("a.yml", ["name: PR Explain"], { word: "PR" }),
+    expected: null,
+  },
+  {
+    label: "色分け: シェルの $(dirname \"$0\") の $ は関数にならない",
+    actual: () => colorOf("a.sh", ['dir=$(dirname "$0")'], { word: "$" }),
+    expected: null,
+  },
+  {
+    label: "色分け: シェルでは . の後の語をメンバーにしない(if .merged then . else の else はキーワードのまま)",
+    actual: () => colorOf("a.sh", ["if .merged then . else"], { word: "else" }),
+    expected: "tok-kw",
+  },
   ...Object.keys(checkerVocabulary).map((name) => ({
     label: `語彙 ${name} のキーの集合は、解説の検査とページの表で同じ`,
     actual: () => Object.keys(Vocabulary[name]).toSorted(),
@@ -1345,6 +1788,58 @@ const cases = [
       return [kind, selection !== undefined && keys.some((key) => selection.id.endsWith(`値-${key}`))];
     }),
     expected: Object.keys(checkerTargetKeys).map((kind) => [kind, true]),
+  },  {
+    label: "色分けの埋め込みの要素の名前の集合は、解説の検査とページで同じ",
+    actual: () => Object.keys(Tokenizer.Embeddings.elements).toSorted(),
+    expected: [...checkerElements].sort(),
+  },
+  {
+    label: "色分けの埋め込みのヒアドキュメントの区切りの語の集合は、解説の検査とページで同じ",
+    actual: () => Object.keys(Tokenizer.Embeddings.heredocs).toSorted(),
+    expected: [...checkerHeredocs].sort(),
+  },
+  {
+    label: "解説の検査が開いた行を出す拡張子は、どれもページが同じ埋め込みを読む(開いた行の後の const がキーワード)",
+    actual: () => [
+      ...checkerExtensions.elements.map((extension) => [extension, colorOf(`a${extension}`, ["const a = 1;"], { word: "const", openingLine: "<script>" })]),
+      ...checkerExtensions.heredocs.map((extension) => [extension, colorOf(`a${extension}`, ["const a = 1;"], { word: "const", openingLine: "cat <<'JS'" })]),
+    ],
+    expected: [...checkerExtensions.elements, ...checkerExtensions.heredocs].map((extension) => [extension, "tok-kw"]),
+  },
+  {
+    label: "テンプレートのすべての行で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
+    actual: () => regionMismatchesOf(process.argv[2]),
+    expected: [],
+  },
+  {
+    label: "この判定表のすべての行で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
+    actual: () => regionMismatchesOf(casesTables.find((path) => path.endsWith("/pr-explain-core-cases.sh"))),
+    expected: [],
+  },
+  {
+    label: "解説の検査の判定表と地図の判定表のすべての行で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
+    actual: () => ["/build-pr-explain-cases.sh", "/build-pr-change-map-cases.sh"].map((name) => regionMismatchesOf(casesTables.find((path) => path.endsWith(name)))),
+    expected: [[], []],
+  },
+  {
+    label: "見本のヒアドキュメント(引用符なし・二重引用符・行頭のタブを除いて閉じるもの・TS・JSON・PY・知らない区切り)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
+    actual: () => regionMismatchesOf(samplePathOf("heredocs.sh")),
+    expected: [],
+  },
+  {
+    label: "見本の要素(大文字のタグ・属性付きの開きタグ・同じ行で閉じる要素)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
+    actual: () => regionMismatchesOf(samplePathOf("elements.html")),
+    expected: [],
+  },
+  {
+    label: "判定表 3 本は、どれも最後の行を読み終えた後に埋め込みが閉じている",
+    actual: () => casesTables.map((path) => regionsAlong(path).last),
+    expected: [null, null, null],
+  },
+  {
+    label: "判定表 3 本で、解説の検査が開いた行として返す行は、どれも行の終わりが区切りの語の付いた << で終わる",
+    actual: () => casesTables.map((path) => [...new Set(checkerOpenings[path].filter((opening) => opening !== null))].filter((opening) => !EndsWithHeredocStart.test(opening))),
+    expected: [[], [], []],
   },
 ];
 

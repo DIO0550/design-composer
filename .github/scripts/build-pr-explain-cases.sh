@@ -36,6 +36,37 @@ git -C "$repo" config user.email cases@example.com
 printf 'one\ntwo\nthree\nfour\nfive\n' > "$repo/kept.txt"
 printf 'a\nb' > "$repo/noeol.txt"
 mkdir -p "$repo/sub"
+# 埋め込みの中から始まる抜粋のためのファイル。中身は Python の文字列で書く。この判定表も解説ページで色分けされ、
+# 区切りの語の付いた `<<` が PY のヒアドキュメントの外の行にあると、そこでヒアドキュメントを開いたと読まれるため。
+python3 - "$repo" <<'PY'
+import sys
+files = {
+    "page.html": [
+        "<p>a</p>",
+        "<script>",
+        "const a = 1;",
+        "</script>",
+        "<style>",
+        "a { color: red; }",
+        "</style>",
+        "<p>b</p>",
+    ],
+    "cases.sh": [
+        "cat <<'JS'",
+        "const a = 1;",
+        "JS",
+        "cat <<-'TS'",
+        "\tconst b = 1;",
+        "\tTS",
+        "cat <<'CASES'",
+        "const c = 1;",
+        "CASES",
+        "echo done",
+    ],
+}
+for name, lines in files.items():
+    open(f"{sys.argv[1]}/{name}", "w", encoding="utf-8").write("\n".join(lines) + "\n")
+PY
 git -C "$repo" add -A && git -C "$repo" commit --quiet -m explained
 sha="$(git -C "$repo" rev-parse HEAD)"
 # 解説を書いた後の編集。抜粋は解説時点の sha から読むので載らない(作業ツリーを読む実装なら載る)。
@@ -119,6 +150,7 @@ deny|shape|sample|excerpt の start が end より後|d["tests"][0]["excerpt"] =
 deny|shape|sample|excerpt の start が 0|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 0, "end": 2}
 deny|shape|sample|excerpt が 81 行|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 81}
 deny|shape|sample|入力の excerpt に text を書く|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 2, "text": "one\ntwo"}
+deny|shape|sample|入力の excerpt に openingLine を書く|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 2, "openingLine": "<script>"}
 deny|shape|sample|feature の Target に id が無い|del d["overview"]["highlights"][0]["go"]["id"]
 deny|shape|sample|layer の Target に layer が無い|del d["overview"]["highlights"][1]["go"]["layer"]
 deny|shape|sample|file の Target に path が無い|del d["overview"]["highlights"][2]["go"]["path"]
@@ -320,14 +352,17 @@ run_build() {
   python3 "$builder" "$work/case.json" --pr "$pr" --out "$work/out.json" "$@" >/dev/null 2>&1
 }
 
-# 書き出したものに対する Python の表明。`out` が書き出したもの、`given` が渡した解説。
+# 書き出したものに対する Python の表明。`out` が書き出したもの、`given` が渡した解説、`line_at(パス, n)` は解説時点の sha の
+# そのファイルの n 行目。
 # $1 表明。成り立てば pass
 inspect_output() {
   [ -f "$work/out.json" ] || { echo unwritten; return; }
-  python3 - "$work/case.json" "$work/out.json" "$1" <<'PY'
-import json, sys
+  python3 - "$work/case.json" "$work/out.json" "$1" "$repo" "$sha" <<'PY'
+import json, subprocess, sys
 given = json.load(open(sys.argv[1], encoding="utf-8"))
 out = json.load(open(sys.argv[2], encoding="utf-8"))
+# 解説時点の sha のファイルの n 行目。開いた行の期待値を、この判定表に綴りを写さずフィクスチャから引く。
+line_at = lambda path, number: subprocess.run(["git", "-C", sys.argv[4], "show", f"{sys.argv[5]}:{path}"], capture_output=True, text=True, check=True).stdout.split("\n")[number - 1]
 print("pass" if eval(sys.argv[3]) else "deny")
 PY
 }
@@ -338,7 +373,7 @@ run_build sample "" --repo "$repo"
 report pass "$(inspect_output 'json.dumps(out, ensure_ascii=False) == json.dumps(given, ensure_ascii=False)')" "excerpt が無ければ、書き出すのは渡した解説と同じ JSON(キーの順も同じ)"
 
 run_build sample "$with_excerpt" --repo "$repo"
-report pass "$(inspect_output '"text" in out["tests"][0]["excerpt"] and json.dumps({**out, "tests": [{**out["tests"][0], "excerpt": {k: v for k, v in out["tests"][0]["excerpt"].items() if k != "text"}}, *out["tests"][1:]]}, ensure_ascii=False) == json.dumps(given, ensure_ascii=False)')" "足すのは excerpt の text だけ"
+report pass "$(inspect_output '"text" in out["tests"][0]["excerpt"] and json.dumps({**out, "tests": [{**out["tests"][0], "excerpt": {k: v for k, v in out["tests"][0]["excerpt"].items() if k != "text"}}, *out["tests"][1:]]}, ensure_ascii=False) == json.dumps(given, ensure_ascii=False)')" "埋め込みの無いファイルの抜粋に足すのは text だけ"
 report pass "$(inspect_output 'out["tests"][0]["excerpt"]["text"] == "two\nthree"')" "text は作業ツリーではなく解説時点の sha の中身になる"
 
 printf '{"before": true}\n' > "$work/out.json"
@@ -370,7 +405,33 @@ report pass "$(inspect_output '"tests" not in out and out["primers"][0]["passage
 two_passage_excerpts='ps = d["primers"][0]["passages"]; ex = lambda start, end: {"kind": "excerpt", "excerpt": {"path": "kept.txt", "start": start, "end": end, "emphasis": [{"start": end, "end": end}]}}; d["primers"][0]["passages"] = [ps[0], ex(1, 2), ps[1], ex(4, 5), *ps[2:]]; d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 2, "end": 3, "emphasis": [{"start": 2, "end": 2}]}'
 run_build sample "$two_passage_excerpts" --repo "$repo"
 report pass "$(inspect_output '[out["tests"][0]["excerpt"]["text"], out["primers"][0]["passages"][1]["excerpt"]["text"], out["primers"][0]["passages"][3]["excerpt"]["text"]] == ["two\nthree", "one\ntwo", "four\nfive"]')" "テストの抜粋と、1 節の 2 つの段の抜粋の 3 か所すべてに、それぞれの範囲の中身が入る"
-report pass "$(inspect_output '[excerpt.pop("text") for excerpt in (out["tests"][0]["excerpt"], out["primers"][0]["passages"][1]["excerpt"], out["primers"][0]["passages"][3]["excerpt"])] and json.dumps(out, ensure_ascii=False) == json.dumps(given, ensure_ascii=False)')" "段の抜粋に足すのも text だけで、強調(emphasis)を含め、ほかは渡したとおり"
+report pass "$(inspect_output '[excerpt.pop("text") for excerpt in (out["tests"][0]["excerpt"], out["primers"][0]["passages"][1]["excerpt"], out["primers"][0]["passages"][3]["excerpt"])] and json.dumps(out, ensure_ascii=False) == json.dumps(given, ensure_ascii=False)')" "埋め込みの無いファイルの段の抜粋に足すのも text だけで、強調(emphasis)を含め、ほかは渡したとおり"
+
+# 埋め込み(script / style の要素・JS などのヒアドキュメント)の中から始まる抜粋には、それを開いた行を足す。
+# $1 パス, $2 始まりの行, $3 終わりの行。tests[0] の抜粋をそこへ置いて検査を走らせる
+build_excerpt_on() {
+  run_build sample "d[\"tests\"][0][\"excerpt\"] = {\"path\": \"$1\", \"start\": $2, \"end\": $3}" --repo "$repo"
+}
+opening_of='out["tests"][0]["excerpt"].get("openingLine")'
+build_excerpt_on page.html 3 3
+report pass "$(inspect_output "$opening_of == line_at('page.html', 2)")" "script 要素の中から始まる抜粋に、それを開いた行が足される"
+build_excerpt_on page.html 6 6
+report pass "$(inspect_output "$opening_of == line_at('page.html', 5)")" "style 要素の中から始まる抜粋に、それを開いた行が足される"
+build_excerpt_on page.html 8 8
+report pass "$(inspect_output "$opening_of is None")" "style 要素を閉じた行より後から始まる抜粋には足されない"
+build_excerpt_on page.html 2 3
+report pass "$(inspect_output "$opening_of is None")" "script 要素を開いた行そのものから始まる抜粋には足されない"
+build_excerpt_on cases.sh 2 2
+report pass "$(inspect_output "$opening_of == line_at('cases.sh', 1)")" "JS のヒアドキュメントの中から始まる抜粋に、それを開いた行が足される"
+build_excerpt_on cases.sh 5 5
+report pass "$(inspect_output "$opening_of == line_at('cases.sh', 4)")" "行頭のタブを除いて閉じる TS のヒアドキュメントの中から始まる抜粋に、それを開いた行が足される"
+build_excerpt_on cases.sh 7 7
+report pass "$(inspect_output "$opening_of is None")" "行頭のタブを除いて閉じる TS のヒアドキュメントの、タブ付きの区切りの行より後から始まる抜粋には足されない"
+build_excerpt_on cases.sh 8 8
+report pass "$(inspect_output "$opening_of is None")" "知らない区切り(CASES)のヒアドキュメントの中から始まる抜粋には足されない"
+primer_in_script='d["primers"] = [{"kind": "language", "id": "p", "category": "c", "label": "題", "gist": "要するに", "passages": [{"kind": "excerpt", "excerpt": {"path": "page.html", "start": 3, "end": 3}}], "occurrences": [{"path": "page.html", "text": "ここ"}]}]'
+run_build minimal "$primer_in_script" --repo "$repo"
+report pass "$(inspect_output "out['primers'][0]['passages'][0]['excerpt'].get('openingLine') == line_at('page.html', 2)")" "段の抜粋にも、それを開いた行が足される"
 
 make_case sample 'd["primers"][0]["passages"].append({"kind": "excerpt", "excerpt": {"path": "missing.txt", "start": 1, "end": 1}})'
 code_report="$(python3 "$builder" "$work/case.json" --pr "$pr" --out "$work/out.json" --repo "$repo" 2>&1)"

@@ -78,7 +78,8 @@ Files changed にも混ざるため)。
    bash .github/scripts/pr-explain-pages.sh put-explain <PR 番号> <書いた explain.json>
    ```
 
-   - push の前に `build-pr-explain.py` が検査し、テストの抜粋と、primers の段の抜粋(`excerpt`)に中身(`text`)を足す。
+   - push の前に `build-pr-explain.py` が検査し、テストの抜粋と、primers の段の抜粋(`excerpt`)に中身(`text`)と、`.html` / `.sh` /
+     `.bash` で埋め込み(script / style 要素・ヒアドキュメント)の中から始まるものには開いた行(`openingLine`)を足す。
      落ちたら報告を読んで直す(報告の分類は `build-pr-explain.py` の冒頭)
    - 解説の `sha` は push してから置く。リモートの追跡ブランチに無い sha の解説は置かない
    - 終了コードの意味は `pr-explain-pages.sh` の冒頭。**3** なら `PR Explain` の run の完了を待って
@@ -148,7 +149,7 @@ Files changed にも混ざるため)。
 | Note | `path` `side?`: `new` \| `old`(既定 new)`start`(1 以上)`end`(start 以上)`text`。行番号はそのコミット時点 |
 | Suite | `id` `label` `file` |
 | Test | `id` `suite`(suites の id)`name` `techniques[]`: `boundary` \| `equivalence` \| `error` \| `state` \| `regression` \| `idempotence` \| `type`(1 件以上・重複なし)`why` `given` `when` `then` `todo?: true` `commit?`(sha)`excerpt?: Excerpt` `values?: Values` `targets?`(concepts の path)`covers?`(messages の id) |
-| Excerpt | tests と primers の段の抜粋。`path` `start` `end`(80 行まで)`emphasis?: LineRange[]`(強調する行。ファイルの行番号で、start〜end の中)。`text` は検査が足す出力だけのキーで、入力に書くと落ちる |
+| Excerpt | tests と primers の段の抜粋。`path` `start` `end`(80 行まで)`emphasis?: LineRange[]`(強調する行。ファイルの行番号で、start〜end の中)。`text` は検査が足す出力だけのキーで、入力に書くと落ちる。`openingLine` も検査が足す出力だけのキーで、入力に書くと落ちる |
 | Values | `columns[]`(1 件以上)`rows[{cells[](列と同数), boundary?}]` |
 | Impact | `title` `lead` `changed?: ImpactChange` `tables?: SituationTable[]` `added?: AddedSituation[]` `kept?: KeptLine[]` |
 | ImpactChange | `before: ImpactLine[]`(0 件でよい)`after: ImpactLine[]`(1 件以上)`text?`。前後の文の並びがまったく同じなら落ちる(一部の行が同じなのはよい) |
@@ -231,6 +232,7 @@ layer / file・LayerRole の layer・concept のパス・出てくる場所の `
 | [`templates/index.html`](templates/index.html) | ページの枠(CSS・固定スクリプト・CSP)。固定スクリプトを変えたら CSP の `sha256-` も直す(`check-pr-explain-template.py` が突き合わせる) |
 | [`templates/explain.json`](templates/explain.json) | `excerpt` 以外のすべてのキーと、Target の 5 つの kind・primers の 2 つの kind・Passage の excerpt 以外の 8 つの kind を使う解説の見本 |
 | `.github/scripts/build-pr-explain.py` | 解説の検査と、抜粋の中身の書き足し |
+| `.github/scripts/lib/embedded_regions.py` | 抜粋・差分の hunk の始まりの行で効いている埋め込み(script / style 要素・ヒアドキュメント)を開いた行。検査と地図が使う |
 | `.github/scripts/check-pr-explain-template.py` | 枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査 |
 | `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-explain` / `put-map` / `remove`) |
 | `.github/scripts/build-pr-change-map.py` | 変更の地図(Actions が呼ぶ) |
