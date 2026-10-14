@@ -39,9 +39,8 @@ put() {
   printf '%s\n' "$2" > "$1"
 }
 
-# 埋め込みの開いた行(hunkOpeningLines)を見るファイル(docs/embedded/)を書く。中身は Python の文字列で書く。
-# 区切りの語の付いた `<<` が PY のヒアドキュメントの外の行にあると、この判定表を色分けしたときにそこで
-# ヒアドキュメントを開いたと読まれるため。
+# 埋め込みの開いた行(hunkOpeningLines)を見るファイル(docs/embedded/)を書く。中身は Python の文字列で書く(理由は
+# `pr-explain-core-cases.sh` の冒頭)。
 # $1 base(分岐前に置く中身)か second(second のコミットで変えた後の中身)
 put_embedded() {
   python3 - "$1" <<'PY'
@@ -348,5 +347,24 @@ rename した .sh の hunk の変更前の側は、旧パスの中身から読�
 html と sh 以外のファイルは hunkOpeningLines を持たない|"hunkOpeningLines" not in in_commit[(second, "docs/x.md")]
 patch を切ったファイルは、切った後の patch の hunk と同じ数だけ hunkOpeningLines を持つ|in_commit[(second, "docs/embedded/many.sh")]["truncated"] is True and len(in_commit[(second, "docs/embedded/many.sh")]["hunkOpeningLines"]) == sum(line.startswith("@@ ") for line in in_commit[(second, "docs/embedded/many.sh")]["patch"].split("\n")) > 1
 CASES
+
+# blob の中身を読む手順を、この一時リポジトリの blob の名前で直に叩く。名前は ls-tree が返したものに限るので、読めない名前が
+# 混ざったら除いて続けずに止まる。読める名前だけなら中身を返す(止まるのが名前のせいだと分かるようにする対照)。
+# $@ blob の名前。1 つ目は docs/x.md の blob
+read_blobs_outcome() {
+  python3 - "$builder" "$@" <<'PY'
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("build_pr_change_map", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+print("pass" if module.read_blobs(set(sys.argv[2:])) == {sys.argv[2]: b"x\n"} else "deny")
+PY
+}
+present="$(git rev-parse "$head:docs/x.md")"
+report pass "$(read_blobs_outcome "$present")" "読める blob だけを頼めば、read_blobs はその中身を返す"
+missing_report="$(read_blobs_outcome "$present" "$(printf '0%.0s' {1..40})" 2>&1)"
+missing_stops=deny
+case "$missing_report" in *LookupError*) missing_stops=pass ;; esac
+report pass "$missing_stops" "読めない blob の名前が混ざると、read_blobs は除いて続けずに LookupError で止まる"
 
 exit "$cases_failed"

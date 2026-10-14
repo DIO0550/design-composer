@@ -36,8 +36,7 @@ git -C "$repo" config user.email cases@example.com
 printf 'one\ntwo\nthree\nfour\nfive\n' > "$repo/kept.txt"
 printf 'a\nb' > "$repo/noeol.txt"
 mkdir -p "$repo/sub"
-# 埋め込みの中から始まる抜粋のためのファイル。中身は Python の文字列で書く。この判定表も解説ページで色分けされ、
-# 区切りの語の付いた `<<` が PY のヒアドキュメントの外の行にあると、そこでヒアドキュメントを開いたと読まれるため。
+# 埋め込みの中から始まる抜粋のためのファイル。中身は Python の文字列で書く(理由は `pr-explain-core-cases.sh` の冒頭)。
 python3 - "$repo" <<'PY'
 import sys
 files = {
@@ -352,8 +351,8 @@ run_build() {
   python3 "$builder" "$work/case.json" --pr "$pr" --out "$work/out.json" "$@" >/dev/null 2>&1
 }
 
-# 書き出したものに対する Python の表明。`out` が書き出したもの、`given` が渡した解説、`line_at(パス, n)` は解説時点の sha の
-# そのファイルの n 行目。
+# 書き出したものに対する Python の表明。`out` が書き出したもの、`given` が渡した解説、`line_at(コミット, パス, n)` はそのコミットの
+# そのファイルの n 行目(`sha` は解説時点の sha)。
 # $1 表明。成り立てば pass
 inspect_output() {
   [ -f "$work/out.json" ] || { echo unwritten; return; }
@@ -361,8 +360,9 @@ inspect_output() {
 import json, subprocess, sys
 given = json.load(open(sys.argv[1], encoding="utf-8"))
 out = json.load(open(sys.argv[2], encoding="utf-8"))
-# 解説時点の sha のファイルの n 行目。開いた行の期待値を、この判定表に綴りを写さずフィクスチャから引く。
-line_at = lambda path, number: subprocess.run(["git", "-C", sys.argv[4], "show", f"{sys.argv[5]}:{path}"], capture_output=True, text=True, check=True).stdout.split("\n")[number - 1]
+sha = sys.argv[5]
+# その commit のファイルの n 行目。開いた行の期待値を、この判定表に綴りを写さずフィクスチャから引く。
+line_at = lambda rev, path, number: subprocess.run(["git", "-C", sys.argv[4], "show", f"{rev}:{path}"], capture_output=True, text=True, check=True).stdout.split("\n")[number - 1]
 print("pass" if eval(sys.argv[3]) else "deny")
 PY
 }
@@ -414,24 +414,24 @@ build_excerpt_on() {
 }
 opening_of='out["tests"][0]["excerpt"].get("openingLine")'
 build_excerpt_on page.html 3 3
-report pass "$(inspect_output "$opening_of == line_at('page.html', 2)")" "script 要素の中から始まる抜粋に、それを開いた行が足される"
+report pass "$(inspect_output "$opening_of == line_at(sha, 'page.html', 2)")" "script 要素の中から始まる抜粋に、それを開いた行が足される"
 build_excerpt_on page.html 6 6
-report pass "$(inspect_output "$opening_of == line_at('page.html', 5)")" "style 要素の中から始まる抜粋に、それを開いた行が足される"
+report pass "$(inspect_output "$opening_of == line_at(sha, 'page.html', 5)")" "style 要素の中から始まる抜粋に、それを開いた行が足される"
 build_excerpt_on page.html 8 8
 report pass "$(inspect_output "$opening_of is None")" "style 要素を閉じた行より後から始まる抜粋には足されない"
 build_excerpt_on page.html 2 3
 report pass "$(inspect_output "$opening_of is None")" "script 要素を開いた行そのものから始まる抜粋には足されない"
 build_excerpt_on cases.sh 2 2
-report pass "$(inspect_output "$opening_of == line_at('cases.sh', 1)")" "JS のヒアドキュメントの中から始まる抜粋に、それを開いた行が足される"
+report pass "$(inspect_output "$opening_of == line_at(sha, 'cases.sh', 1)")" "JS のヒアドキュメントの中から始まる抜粋に、それを開いた行が足される"
 build_excerpt_on cases.sh 5 5
-report pass "$(inspect_output "$opening_of == line_at('cases.sh', 4)")" "行頭のタブを除いて閉じる TS のヒアドキュメントの中から始まる抜粋に、それを開いた行が足される"
+report pass "$(inspect_output "$opening_of == line_at(sha, 'cases.sh', 4)")" "行頭のタブを除いて閉じる TS のヒアドキュメントの中から始まる抜粋に、それを開いた行が足される"
 build_excerpt_on cases.sh 7 7
 report pass "$(inspect_output "$opening_of is None")" "行頭のタブを除いて閉じる TS のヒアドキュメントの、タブ付きの区切りの行より後から始まる抜粋には足されない"
 build_excerpt_on cases.sh 8 8
 report pass "$(inspect_output "$opening_of is None")" "知らない区切り(CASES)のヒアドキュメントの中から始まる抜粋には足されない"
 primer_in_script='d["primers"] = [{"kind": "language", "id": "p", "category": "c", "label": "題", "gist": "要するに", "passages": [{"kind": "excerpt", "excerpt": {"path": "page.html", "start": 3, "end": 3}}], "occurrences": [{"path": "page.html", "text": "ここ"}]}]'
 run_build minimal "$primer_in_script" --repo "$repo"
-report pass "$(inspect_output "out['primers'][0]['passages'][0]['excerpt'].get('openingLine') == line_at('page.html', 2)")" "段の抜粋にも、それを開いた行が足される"
+report pass "$(inspect_output "out['primers'][0]['passages'][0]['excerpt'].get('openingLine') == line_at(sha, 'page.html', 2)")" "段の抜粋にも、それを開いた行が足される"
 
 make_case sample 'd["primers"][0]["passages"].append({"kind": "excerpt", "excerpt": {"path": "missing.txt", "start": 1, "end": 1}})'
 code_report="$(python3 "$builder" "$work/case.json" --pr "$pr" --out "$work/out.json" --repo "$repo" 2>&1)"

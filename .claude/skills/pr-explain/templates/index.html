@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-zUl0Oc4we2TTMGZJ3atmeqh00FHFYLvgg+Yt28gGOoU='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ivDCiMwUtB5P0SWaontsl6gwXPADZqe5Ir33FHL9wY8='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -792,17 +792,17 @@ button.change-item:hover { background: var(--track); }
     const JsWords = "const let var function return if else for while do of in new class extends import export from default switch case break continue try catch finally throw typeof instanceof null undefined true false this async await yield delete void super";
     const TsWords = "type interface enum implements satisfies as is keyof readonly declare namespace abstract private public protected infer unique never unknown any boolean string number symbol bigint object asserts override";
     const Identifier = /[A-Za-z_]\w*/y;
-    const ScriptIdentifier = /[A-Za-z_$][\w$]*/y;
+    const JsIdentifier = /[A-Za-z_$][\w$]*/y;
     const Grammars = {
       python: { comment: "#", hashAnywhere: true, strings: ['"""', "'''", '"', "'"], keywords: words("def class return if elif else for while in not and or is None True False import from as with try except finally raise lambda yield pass continue break assert del async await global nonlocal"), identifiers: true, prefixes: /[rRbBfFuU]{1,2}(?=["'])/y, types: words("dict list tuple set frozenset str int float bool bytes object") },
-      js: { comment: "//", block: ["/*", "*/"], strings: ['"', "'", "`"], keywords: words(JsWords), identifier: ScriptIdentifier, identifiers: true, objectKeys: true },
-      ts: { comment: "//", block: ["/*", "*/"], strings: ['"', "'", "`"], keywords: words(`${JsWords} ${TsWords}`), identifier: ScriptIdentifier, identifiers: true, objectKeys: true },
+      js: { comment: "//", block: ["/*", "*/"], strings: ['"', "'", "`"], keywords: words(JsWords), identifier: JsIdentifier, identifiers: true, objectKeys: true },
+      ts: { comment: "//", block: ["/*", "*/"], strings: ['"', "'", "`"], keywords: words(`${JsWords} ${TsWords}`), identifier: JsIdentifier, identifiers: true, objectKeys: true },
       shell: { comment: "#", strings: ['"', "'"], variables: true, heredocs: true, keywords: words("if then else elif fi for in do done while until case esac function return local export set exit trap source echo readonly shift") },
       yaml: { comment: "#", strings: ['"', "'"], keys: true, keywords: words("true false null") },
       html: { block: ["<!--", "-->"], strings: ['"', "'"], tags: true, keywords: words("") },
       css: { block: ["/*", "*/"], strings: ['"', "'"], css: true, keywords: words("") },
     };
-    const LanguageByExtension = { py: "python", js: "js", mjs: "js", cjs: "js", jsx: "js", ts: "ts", tsx: "ts", mts: "ts", json: "js", sh: "shell", bash: "shell", yml: "yaml", yaml: "yaml", html: "html", css: "css" };
+    const LanguageByExtension = { py: "python", js: "js", mjs: "js", jsx: "js", ts: "ts", tsx: "ts", json: "js", sh: "shell", bash: "shell", yml: "yaml", yaml: "yaml", html: "html", css: "css" };
     /** 中を別の言語で読む埋め込み。HTML の要素名(小文字)とシェルのヒアドキュメントの区切りの語から、中の言語を引く。 */
     const Embeddings = Object.freeze({ elements: Object.freeze({ script: "js", style: "css" }), heredocs: Object.freeze({ JS: "js", TS: "ts", PY: "python", JSON: "js" }) });
     const NumberLiteral = /\d+(?:\.\d+)?/y;
@@ -816,13 +816,16 @@ button.change-item:hover { background: var(--track); }
     const CssCustomProperty = /--[\w-]+/y;
     const CssHex = /#[0-9A-Fa-f]{3,8}(?![\w-])/y;
     const CssNumber = /-?(?:\d*\.)?\d+(?:%|[A-Za-z]+)?/y;
-    const CssProperty = /-?[A-Za-z][\w-]*(?=\s*:(?:\s|$|[^{;]*[;}]))/y;
+    const CssPropertyName = /-?[A-Za-z][\w-]*(?=\s*:)/y;
+    const CssColon = /\s*:/y;
+    const DeclarationStops = new Set(["{", ";", "}"]);
     const CssWord = /-?[A-Za-z_][\w-]*/y;
     const KeyAfter = /\s*\??\s*:(?!:)/y;
     // オブジェクトのキーが来る位置。直前の空白でない字(空文字は行頭)か、直前の語で見る。
     const KeyFollows = new Set(["", "{", ",", ";"]);
     const KeyModifiers = new Set(["readonly"]);
     const Closers = { ")": "(", "]": "[", "}": "{" };
+    const Openers = new Set(Object.values(Closers));
 
     /** 字句。`opens` は閉じずに行が終わった文字列・コメントの閉じ記号で、次の行の頭から続ける。 */
     const Token = (cls, value, opens = null) => ({ cls, value, opens });
@@ -834,6 +837,9 @@ button.change-item:hover { background: var(--track); }
      * - `brackets`: 開いたまま閉じていない括弧(`(` `[` `{`)を開いた順に並べた文字列
      */
     const Start = Object.freeze({ open: null, region: null, brackets: "" });
+
+    /** 何も読んでいない位置の、直前の空白でない字(`prevSolid`。空文字は行頭)とその位置(`prevSolidAt`)と直前の語(`prevWord`)。 */
+    const Unread = Object.freeze({ prevSolid: "", prevSolidAt: -1, prevWord: "" });
 
     const matchAt = (pattern, cursor) => {
       pattern.lastIndex = cursor.at;
@@ -883,7 +889,10 @@ button.change-item:hover { background: var(--track); }
     /** `.` の後の名前か。スプレッドの `...` の後は含めない。 */
     const isMemberAt = (cursor) => cursor.prevSolid === "." && cursor.text[cursor.prevSolidAt - 1] !== ".";
 
-    /** JS / TS のオブジェクトのキーか。`const x:`・`case foo:`・`ok ? left :`・丸括弧の中の `name:` はキーにしない。 */
+    /**
+     * JS / TS のオブジェクトのキーか。`const x:`・`case foo:`・`ok ? left :`・丸括弧の中の `name:` はキーにしない。
+     * 行頭の switch の `default:` もキーと区別できないので、キーとして色を付けない。
+     */
     const isKeyAt = (cursor, word, grammar) => {
       KeyAfter.lastIndex = cursor.at + word.length;
       const hasColon = grammar.objectKeys === true && KeyAfter.test(cursor.text);
@@ -904,6 +913,29 @@ button.change-item:hover { background: var(--track); }
       return isType ? "tok-type" : "tok-var";
     };
 
+    /**
+     * 行の各位置から先で最初に来る `{` `;` `}`。CSS の宣言の判定が語ごとに行末まで探し直さないよう、行ごとに 1 度だけ求める。
+     * @returns 位置ごとの字(その位置から先に無ければ空文字)
+     */
+    const declarationStopsOf = (text) => {
+      const stops = new Array(text.length);
+      let next = "";
+      for (let index = text.length - 1; index >= 0; index -= 1) {
+        if (DeclarationStops.has(text[index])) next = text[index];
+        stops[index] = next;
+      }
+      return stops;
+    };
+
+    /** CSS で、位置から始まる `:` が宣言の区切りか。`:` の後が空白か行末、または後で最初に来る `{` `;` `}` が `;` か `}` なら宣言(`a:hover {` はセレクタ)。 */
+    const isDeclarationColonAt = (cursor, from) => {
+      const after = from + matchAt(CssColon, { text: cursor.text, at: from }).length;
+      const next = cursor.text[after];
+      const isSpaceAfter = next === undefined || /\s/.test(next);
+      const stop = cursor.declarationStops[after];
+      return isSpaceAfter || stop === ";" || stop === "}";
+    };
+
     /** CSS の、文字列とコメント以外の字句。 */
     const cssTokenAt = (cursor) => {
       const atRule = matchAt(CssAtRule, cursor) || matchAt(CssImportant, cursor);
@@ -917,8 +949,9 @@ button.change-item:hover { background: var(--track); }
       if (number) return Token("tok-num", number);
       // 丸括弧・角括弧の中(`@media (max-width: …)`・属性セレクタ)と、`:` の直後の名前はプロパティにしない。
       const isDeclarationPlace = cursor.bracket !== "(" && cursor.bracket !== "[" && cursor.prevSolid !== ":";
-      const property = isDeclarationPlace ? matchAt(CssProperty, cursor) : null;
-      if (property) return Token("tok-key", property);
+      const property = isDeclarationPlace ? matchAt(CssPropertyName, cursor) : null;
+      const isProperty = property !== null && isDeclarationColonAt(cursor, cursor.at + property.length);
+      if (isProperty) return Token("tok-key", property);
       const word = matchAt(CssWord, cursor);
       if (!word) return null;
       return Token(cursor.text[cursor.at + word.length] === "(" ? "tok-fn" : null, word);
@@ -958,10 +991,10 @@ button.change-item:hover { background: var(--track); }
      * 色の無い字句を読んだ後の括弧の並び。
      *
      * 閉じ括弧は、一番上の開き括弧と種類が合うときだけ外し、合わなければ無視する。正規表現の文字クラスの `}` が、外側の `{` を
-     * 閉じないため。
+     * 閉じないため。正規表現の `\[` のように対にならない開き括弧は、並びに残ったままになる。
      */
     const bracketsAfter = (brackets, value) => {
-      if (value === "(" || value === "[" || value === "{") return brackets + value;
+      if (Openers.has(value)) return brackets + value;
       const isClosingTop = Object.hasOwn(Closers, value) && brackets.endsWith(Closers[value]);
       return isClosingTop ? brackets.slice(0, -1) : brackets;
     };
@@ -978,7 +1011,10 @@ button.change-item:hover { background: var(--track); }
       return Object.hasOwn(Embeddings.elements, name) ? { kind: "element", name } : null;
     };
 
-    /** 行が開くヒアドキュメント。行の中の最初の `<<` の区切りの語が `Embeddings.heredocs` に無ければ null。 */
+    /**
+     * 行が開くヒアドキュメント。行の中の最初の `<<` の区切りの語が `Embeddings.heredocs` に無ければ null。
+     * `<<` は字句に分けずに行の生の文字で探すので、文字列・コメントの中の `<<` でも開く。
+     */
     const heredocOpenedBy = (text) => {
       const match = HeredocStart.exec(text);
       const isKnown = match !== null && Object.hasOwn(Embeddings.heredocs, match[3]);
@@ -988,25 +1024,37 @@ button.change-item:hover { background: var(--track); }
     /** 1 行を字句に分ける。埋め込みの要素には、行の途中でも出入りする(ヒアドキュメントの開閉は `tokenizeLine` が行ごとに見る)。 */
     const tokensOf = (text, base, carry) => {
       const tokens = [];
-      const lower = text.toLowerCase();
+      // 要素に出入りするのは html の文法の行だけなので、閉じタグを大文字小文字を問わず探すための写しはそのときだけ作る。
+      const lower = base.tags === true ? text.toLowerCase() : null;
+      // その位置から読む文法と、要素の閉じタグ(無ければ -1)で切った行。行の頭と、埋め込みに出入りしたときに 1 度だけ求める
+      // (字句ごとに閉じタグを探し直さない)。閉じ記号は Embeddings.elements のキーから組み立て、script 要素の開きタグ・閉じタグの
+      // 綴りをこのスクリプトに文字のまま書かない。閉じタグの綴りがあるとページのスクリプトがそこで切れ、開きタグの綴りは
+      // check-pr-explain-template.py がスクリプトの 1 本と数える。
+      const readingFrom = (inside, from) => {
+        const grammar = inside === null ? base : grammarIn(inside);
+        const closeAt = inside !== null && inside.kind === "element" ? lower.indexOf(`</${inside.name}`, from) : -1;
+        const view = closeAt < 0 ? text : text.slice(0, closeAt);
+        return { grammar, closeAt, view, declarationStops: grammar.css === true ? declarationStopsOf(view) : null };
+      };
       let { open, region, brackets } = carry;
       let at = 0;
       let lineStart = true;
-      let solid = { prevSolid: "", prevSolidAt: -1, prevWord: "" };
+      let solid = Unread;
       let element = null;
+      let reading = readingFrom(region, 0);
+      // 埋め込みに入る・出るときは、中の言語を何も読んでいないところから読む。
+      const switchTo = (next) => {
+        ({ open, region, brackets } = { ...Start, region: next });
+        solid = Unread;
+        reading = readingFrom(next, at);
+      };
       while (at < text.length) {
-        // 要素の閉じ記号は Embeddings.elements のキーから組み立て、script 要素の開きタグ・閉じタグの綴りをこのスクリプトに文字のまま書かない。
-        // 閉じタグの綴りがあるとページのスクリプトがそこで切れ、開きタグの綴りは check-pr-explain-template.py がスクリプトの 1 本と数える。
-        const isInElement = region !== null && region.kind === "element";
-        const closeAt = isInElement ? lower.indexOf(`</${region.name}`, at) : -1;
-        if (closeAt === at) {
-          ({ open, region, brackets } = Start);
-          solid = { prevSolid: "", prevSolidAt: -1, prevWord: "" };
+        if (reading.closeAt === at) {
+          switchTo(null);
           continue;
         }
-        const view = closeAt > at ? text.slice(0, closeAt) : text;
-        const grammar = region === null ? base : grammarIn(region);
-        const cursor = { text: view, at, prev: at > 0 ? text[at - 1] : "\n", lineStart, bracket: brackets.slice(-1), ...solid };
+        const { grammar, view, declarationStops } = reading;
+        const cursor = { text: view, at, prev: at > 0 ? text[at - 1] : "\n", lineStart, bracket: brackets.slice(-1), declarationStops, ...solid };
         const token = open ? continuationOf(cursor, open) : tokenAt(cursor, grammar) || Token(null, text[at]);
         tokens.push(token);
         at += token.value.length;
@@ -1020,10 +1068,8 @@ button.change-item:hover { background: var(--track); }
         if (isTag) element = elementOpenedBy(token.value);
         const entersElement = grammar.tags === true && token.value === ">" && element !== null;
         if (entersElement) {
-          ({ open, brackets } = Start);
-          region = element;
+          switchTo(element);
           element = null;
-          solid = { prevSolid: "", prevSolidAt: -1, prevWord: "" };
         }
       }
       return { tokens, carry: { open, region, brackets } };
@@ -1033,7 +1079,7 @@ button.change-item:hover { background: var(--track); }
      * 1 行を字句に分ける。ヒアドキュメントは、区切りの語が `Embeddings.heredocs` にあるものを開いた行の次から区切りの行の前まで、
      * その言語で読む(区切りの行はシェルで読む)。
      * @param grammar ファイルの文法(`grammarOf`)。null なら行全体を色の無い 1 字句にし、持ち越しをそのまま返す
-     * @param carry 前の行から持ち越した状態(最初の行は `startAfter` が返すもの)。中身は `Start` の doc
+     * @param carry 前の行から持ち越した状態。中身は `Start` の doc
      * @returns 字句の並び(`cls` が null のものは色を付けない)と、次の行へ持ち越す状態
      */
     const tokenizeLine = (text, grammar, carry) => {
@@ -1061,15 +1107,31 @@ button.change-item:hover { background: var(--track); }
       /**
        * 途中の行から読み始めるときの持ち越し。開いた行を何も開いていない状態から読み、埋め込みだけを残す。
        * @param openingLine 読み始める行の頭で効いている埋め込みを開いた行(検査の `openingLine` / 地図の `hunkOpeningLines`)。無ければ null
-       * @param grammar ファイルの文法(`grammarOf`)
-       * @returns 埋め込みだけを残した持ち越し。開いた行か文法が null のとき・開いた行が埋め込みを開いていないときは、何も開いていない持ち越し
+       * @param grammar ファイルの文法(`grammarOf`。null の文法はどの行でも埋め込みを開かない)
+       * @returns 埋め込みだけを残した持ち越し。開いた行が null のとき・開いた行が埋め込みを開いていないときは、何も開いていない持ち越し
        */
       startAfter: (openingLine, grammar) => {
-        if (openingLine === null || grammar === null) return Start;
+        if (openingLine === null) return Start;
         const { region } = tokenizeLine(openingLine, grammar, Start).carry;
         return region === null ? Start : { ...Start, region };
       },
-      tokenizeLine,
+      /**
+       * 続いた行を、前の行の持ち越しを次の行へ渡しながら字句に分ける。
+       * @param texts 続いた行(改行を含まない)
+       * @param grammar ファイルの文法(`grammarOf`)。null ならどの行も色の無い 1 字句
+       * @param start 1 行目の頭の持ち越し(`startAfter` が返すもの)
+       * @returns 行ごとの字句の並び(`tokens`)と、その行を読み終えた後の持ち越し(`carry`)。`texts` と同じ順
+       */
+      tokenizeLines: (texts, grammar, start) => {
+        const lines = [];
+        let carry = start;
+        for (const text of texts) {
+          const read = tokenizeLine(text, grammar, carry);
+          lines.push(read);
+          carry = read.carry;
+        }
+        return lines;
+      },
     });
   })();
 
@@ -1604,12 +1666,12 @@ button.change-item:hover { background: var(--track); }
     create: (excerpt) => {
       const emphasis = listOf(excerpt.emphasis);
       const grammar = Tokenizer.grammarOf(excerpt.path);
-      const first = Tokenizer.startAfter(isString(excerpt.openingLine) ? excerpt.openingLine : null, grammar);
-      return excerpt.text.split("\n").reduce((sofar, text, index) => {
+      const texts = excerpt.text.split("\n");
+      const read = Tokenizer.tokenizeLines(texts, grammar, Tokenizer.startAfter(isString(excerpt.openingLine) ? excerpt.openingLine : null, grammar));
+      return texts.map((text, index) => {
         const number = excerpt.start + index;
-        const { tokens, carry } = Tokenizer.tokenizeLine(text, grammar, sofar.carry);
-        return { carry, rows: [...sofar.rows, { number, text, isEmphasized: emphasis.some((span) => isWithin(number, span)), tokens }] };
-      }, { carry: first, rows: [] }).rows;
+        return { number, text, isEmphasized: emphasis.some((span) => isWithin(number, span)), tokens: read[index].tokens };
+      });
     },
   });
 
@@ -2030,13 +2092,13 @@ button.change-item:hover { background: var(--track); }
     };
 
     /** 地図の開いた行の 1 つ。オブジェクトのときだけ読み、`old` / `new` はそれぞれ文字列でなければ null にする。 */
-    const openingLinesOf = (found) => {
-      const sideOf = (key) => (isRecord(found) && isString(found[key]) ? found[key] : null);
-      return { old: sideOf("old"), new: sideOf("new") };
+    const openingLinesOf = (fromMap) => {
+      const openingLineOn = (side) => (isRecord(fromMap) && isString(fromMap[side]) ? fromMap[side] : null);
+      return { old: openingLineOn("old"), new: openingLineOn("new") };
     };
 
     // 地図とページは pr-explain.yml の put-map が同じ checkout から一緒に置くので、開いた行は普通は欠けない。ただし外から読む JSON なので、形を確かめてから読む。
-    // 開いた行は hunk の並び順で対応させる。`@@` の読み方はここ(`HunkHeader`)と地図の `HunkStarts` の 2 か所にあり、ずれると隣の hunk の色になるので、数が合わなければすべて頭から読む。
+    // 開いた行は hunk の並び順で対応させる。`@@` の読み方はここ(`HunkHeader`)と地図の `HunkHeader` の 2 か所にあり、ずれると隣の hunk の色になるので、数が合わなければすべて頭から読む。
     /**
      * patch を hunk に分け、n 番目の hunk に地図の開いた行の n 番目を `openingLines` として付ける。`\ No newline at end of file` は
      * 行ではないので落とす。
@@ -2115,24 +2177,24 @@ button.change-item:hover { background: var(--track); }
         };
       },
       /**
-       * コードの表示の行。続けて消した行は 1 つの畳み(`gap`)にまとめる。
-       * @returns `{kind: "line", line}` と `{kind: "gap", lines}`(畳んだ消した行)の並び
-       */
-      /**
        * hunk の行を字句に分ける。変更前は `openingLines.old`、変更後は `openingLines.new` から読み始め、`-` の行は変更前だけ、`+` の
        * 行は変更後だけ、前後の行は両方で読み進める。
        * @param grammar ファイルの文法(`Tokenizer.grammarOf`)
        * @returns 行ごとの字句の並び(`hunk.lines` と同じ順)。前後の行は変更後の字句
        */
       lineTokensOf: (hunk, grammar) => {
-        let carries = { old: Tokenizer.startAfter(hunk.openingLines.old, grammar), new: Tokenizer.startAfter(hunk.openingLines.new, grammar) };
-        return hunk.lines.map((line) => {
-          const old = line.sign === "+" ? null : Tokenizer.tokenizeLine(line.text, grammar, carries.old);
-          const next = line.sign === "-" ? null : Tokenizer.tokenizeLine(line.text, grammar, carries.new);
-          carries = { old: old === null ? carries.old : old.carry, new: next === null ? carries.new : next.carry };
-          return (next ?? old).tokens;
-        });
+        const tokensBy = (lines, openingLine) => {
+          const read = Tokenizer.tokenizeLines(lines.map((line) => line.text), grammar, Tokenizer.startAfter(openingLine, grammar));
+          return new Map(lines.map((line, index) => [line, read[index].tokens]));
+        };
+        const before = tokensBy(hunk.lines.filter((line) => line.sign !== "+"), hunk.openingLines.old);
+        const after = tokensBy(hunk.lines.filter((line) => line.sign !== "-"), hunk.openingLines.new);
+        return hunk.lines.map((line) => after.get(line) ?? before.get(line));
       },
+      /**
+       * コードの表示の行。続けて消した行は 1 つの畳み(`gap`)にまとめる。
+       * @returns `{kind: "line", line}` と `{kind: "gap", lines}`(畳んだ消した行)の並び
+       */
       codeRowsOf: (hunk) => {
         const rows = [];
         for (const line of hunk.lines) {
@@ -3014,8 +3076,8 @@ button.change-item:hover { background: var(--track); }
    */
   const hunkOf = (hunk, { grammar, view, sentLineRange }) => {
     const isCode = view === "code";
-    const tokenLines = CommitDiff.lineTokensOf(hunk, grammar);
-    const textOf = new Map(hunk.lines.map((line, index) => [line, codeTextOf(tokenLines[index])]));
+    const lineTokens = CommitDiff.lineTokensOf(hunk, grammar);
+    const textOf = new Map(hunk.lines.map((line, index) => [line, codeTextOf(lineTokens[index])]));
     const rows = isCode ? CommitDiff.codeRowsOf(hunk) : hunk.lines.map((line) => ({ kind: "line", line }));
     const coveredBy = rows.map((row) => hunk.notes.filter((note) => rowLinesOf(row).some((line) => CommitDiff.hasLine(note, line))));
     const markerOf = new Map(hunk.notes.map((note) => [note, el("span", { class: "marker", text: String(note.n) })]));

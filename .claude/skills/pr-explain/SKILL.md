@@ -78,9 +78,9 @@ Files changed にも混ざるため)。
    bash .github/scripts/pr-explain-pages.sh put-explain <PR 番号> <書いた explain.json>
    ```
 
-   - push の前に `build-pr-explain.py` が検査し、テストの抜粋と、primers の段の抜粋(`excerpt`)に中身(`text`)と、`.html` / `.sh` /
-     `.bash` で埋め込み(script / style 要素・ヒアドキュメント)の中から始まるものには開いた行(`openingLine`)を足す。
-     落ちたら報告を読んで直す(報告の分類は `build-pr-explain.py` の冒頭)
+   - push の前に `build-pr-explain.py` が検査し、テストの抜粋と、primers の段の抜粋(`excerpt`)に中身(`text`)と、埋め込み
+     (script / style 要素・ヒアドキュメント)の中から始まるものには開いた行(`openingLine`)を足す(拡張子と規則は
+     `.github/scripts/lib/embedded_regions.py`)。落ちたら報告を読んで直す(報告の分類は `build-pr-explain.py` の冒頭)
    - 解説の `sha` は push してから置く。リモートの追跡ブランチに無い sha の解説は置かない
    - 終了コードの意味は `pr-explain-pages.sh` の冒頭。**3** なら `PR Explain` の run の完了を待って
      からやり直す。閉じた PR には置かない

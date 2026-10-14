@@ -16,6 +16,11 @@
 #
 # 組み立て(DOM を触る側)はここでは通らない。画面の配線は表示確認で見る。
 #
+# **判定表 3 本(これと `build-pr-explain-cases.sh`・`build-pr-change-map-cases.sh`)は、区切りの語の付いた `<<` を PY / JS の
+# ヒアドキュメントの外の行に書かない**(見本は Python の文字列で 1 行 1 要素に書く)。判定表も解説ページで色分けされ、外の行に
+# あるとそこでヒアドキュメントを開いたと読まれて、後ろの色が崩れるため。最後の 2 ケース(埋め込みが閉じていること・開いた行の形)が
+# これを確かめる。
+#
 # ケースは node の中の表 `cases` に 1 件ずつ並べ、`actual` の値を JSON にして `expected` と比べる。
 set -uo pipefail
 
@@ -207,26 +212,23 @@ const twoHunks = linesOf(["@@ -1,3 +1,3 @@", " a", "-b", "+B", " c", "@@ -10,3 +
 const numbersOf = (file) => file.body.hunks.map((hunk) => hunk.notes.map((note) => [note.n, note.text]));
 
 // 色分け。パスの文法で、開いた行(無ければ null)の後から行を読み進めた、行ごとの字句の並び。
-const tokenLinesOf = (path, lines, openingLine = null) => {
+const lineTokensOf = (path, lines, openingLine = null) => {
   const grammar = Tokenizer.grammarOf(path);
-  return lines.reduce((sofar, text) => {
-    const { tokens, carry } = Tokenizer.tokenizeLine(text, grammar, sofar.carry);
-    return { carry, lines: [...sofar.lines, tokens] };
-  }, { carry: Tokenizer.startAfter(openingLine, grammar), lines: [] }).lines;
+  return Tokenizer.tokenizeLines(lines, grammar, Tokenizer.startAfter(openingLine, grammar)).map((read) => read.tokens);
 };
 // 色分けした行の、line 行目(0 始まり)で綴りが word の nth 番目(0 始まり)の字句の色。字句が無ければ、どの色とも違う綴りを返す。
-const colorIn = (tokenLines, line, word, nth = 0) => {
-  const found = tokenLines[line].filter((token) => token.value === word)[nth];
+const colorIn = (lineTokens, line, word, nth = 0) => {
+  const found = lineTokens[line].filter((token) => token.value === word)[nth];
   return found === undefined ? "字句が無い" : found.cls;
 };
-const colorOf = (path, lines, { line = 0, word, nth = 0, openingLine = null }) => colorIn(tokenLinesOf(path, lines, openingLine), line, word, nth);
+const colorOf = (path, lines, { line = 0, word, nth = 0, openingLine = null }) => colorIn(lineTokensOf(path, lines, openingLine), line, word, nth);
 // a.html の差分を地図の開いた行と組み、hunk ごとに、綴りが word の字句の色を行の順に並べる。
 const hunkColorsOf = (patchLines, hunkOpeningLines, word) => {
   const [file] = diffOf([diffFile("a.html", { patch: linesOf(patchLines), hunkOpeningLines })], []).files;
   const grammar = Tokenizer.grammarOf("a.html");
   return file.body.hunks.map((hunk) => CommitDiff.lineTokensOf(hunk, grammar).flatMap((tokens) => tokens.filter((token) => token.value === word).map((token) => token.cls)));
 };
-// 1 行ずつの hunk 2 つ。どちらも前後の行の const だけを持つ。
+// 文脈の行 1 本だけを持つ hunk 2 つ。
 const twoScriptHunks = ["@@ -1,1 +1,1 @@", " const a = 1;", "@@ -10,1 +10,1 @@", " const b = 1;"];
 const scriptOpened = { old: "<script>", new: "<script>" };
 
@@ -234,16 +236,13 @@ const scriptOpened = { old: "<script>", new: "<script>" };
 const { elements: checkerElements, heredocs: checkerHeredocs, extensions: checkerExtensions, files: checkerOpenings } = JSON.parse(fs.readFileSync(process.argv[4], "utf8"));
 const checkedPaths = Object.keys(checkerOpenings);
 const casesTables = checkedPaths.filter((path) => path.endsWith("-cases.sh"));
-const samplePathOf = (name) => checkedPaths.find((path) => path.endsWith(`/${name}`));
+const checkedPathOf = (name) => checkedPaths.find((path) => path.endsWith(`/${name}`));
 // ファイルを 1 行目から読み進めたときの、各行の頭の埋め込み(`region`)と、最後の行を読み終えた後の埋め込み。
 const regionsAlong = (path) => {
   const grammar = Tokenizer.grammarOf(path);
-  const heads = [];
-  const last = fs.readFileSync(path, "utf8").split("\n").reduce((carry, text) => {
-    heads.push(carry.region);
-    return Tokenizer.tokenizeLine(text, grammar, carry).carry;
-  }, Tokenizer.startAfter(null, grammar));
-  return { heads, last: last.region };
+  const start = Tokenizer.startAfter(null, grammar);
+  const carries = [start, ...Tokenizer.tokenizeLines(fs.readFileSync(path, "utf8").split("\n"), grammar, start).map((read) => read.carry)];
+  return { heads: carries.slice(0, -1).map((carry) => carry.region), last: carries[carries.length - 1].region };
 };
 // 検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと食い違う行(1 始まり)。
 const regionMismatchesOf = (path) => {
@@ -1458,7 +1457,7 @@ const cases = [
   },
   {
     label: "色分け: .md と .rs は規則が無く、行全体が色の無い 1 字句になる",
-    actual: () => ["a.md", "a.rs"].map((path) => tokenLinesOf(path, ["const a = f(1);"])[0].map((token) => [token.cls, token.value])),
+    actual: () => ["a.md", "a.rs"].map((path) => lineTokensOf(path, ["const a = f(1);"])[0].map((token) => [token.cls, token.value])),
     expected: [[[null, "const a = f(1);"]], [[null, "const a = f(1);"]]],
   },
   {
@@ -1563,7 +1562,7 @@ const cases = [
   },
   {
     label: "色分け: CSS の /* */ はコメントで、中の 12px も数値にならない",
-    actual: () => tokenLinesOf("a.css", ["/* 12px */"])[0].map((token) => token.cls),
+    actual: () => lineTokensOf("a.css", ["/* 12px */"])[0].map((token) => token.cls),
     expected: ["tok-com"],
   },
   {
@@ -1607,6 +1606,21 @@ const cases = [
     expected: null,
   },
   {
+    label: "色分け: CSS の : の後に空白の無い宣言も、後ろで最初に来る { ; } が ; か } ならキーになる(color:red; と a{color:red} の color)",
+    actual: () => [["color:red;"], ["a{color:red}"]].map((lines) => colorOf("a.css", lines, { word: "color" })),
+    expected: ["tok-key", "tok-key"],
+  },
+  {
+    label: "色分け: CSS の : の後が空白なら、後ろに ; も } も無くても宣言としてキーになる(行末に ; の無い color: red の color)",
+    actual: () => colorOf("a.css", ["  color: red"], { word: "color" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: CSS の 1 行に宣言とセレクタが並んでも、語ごとにその後ろを見る(a{top:0} b:hover{ の top はキーで、b はキーにならない)",
+    actual: () => ["top", "b"].map((word) => colorOf("a.css", ["a{top:0} b:hover{"], { word })),
+    expected: ["tok-key", null],
+  },
+  {
     label: "色分け: script 要素の開きタグの後ろは JS で読む(同じ行の const がキーワード)",
     actual: () => colorOf("a.html", ["<script>const a = 1;"], { word: "const" }),
     expected: "tok-kw",
@@ -1634,6 +1648,26 @@ const cases = [
   {
     label: "色分け: 大文字の SCRIPT の開きタグと Script の閉じタグも、大文字小文字を問わず切り替える",
     actual: () => [0, 1].map((nth) => colorOf("a.html", ["<SCRIPT>const a = 1;</Script> const"], { word: "const", nth })),
+    expected: ["tok-kw", null],
+  },
+  {
+    label: "色分け: 長い行の途中にある script 要素の閉じタグで HTML に戻る(閉じタグの前の最後の const はキーワード、後ろの const は色なし)",
+    actual: () => [499, 500].map((nth) => colorOf("a.html", [`<script>${"const a = 1; ".repeat(500)}</script> const`], { word: "const", nth })),
+    expected: ["tok-kw", null],
+  },
+  {
+    label: "色分け: 行末の script 要素の閉じタグで閉じると、次の行は HTML で読む(const は色なし)",
+    actual: () => colorOf("a.html", ["<script>const a = 1;</script>", "const"], { line: 1, word: "const" }),
+    expected: null,
+  },
+  {
+    label: "色分け: script 要素の閉じタグの無い長い行は、行末まで JS で読む(行末の const もキーワード)",
+    actual: () => colorOf("a.html", [`<script>${"a = 1; ".repeat(500)}const`], { word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 閉じタグの後に同じ行で開き直した script 要素は、その後ろの閉じタグで閉じる(間の const はキーワード、後ろの const は色なし)",
+    actual: () => [0, 1].map((nth) => colorOf("a.html", ["a = 1;</script><script>const b = 2;</script> const"], { word: "const", nth, openingLine: "<script>" })),
     expected: ["tok-kw", null],
   },
   {
@@ -1712,6 +1746,11 @@ const cases = [
     expected: ["tok-com"],
   },
   {
+    label: "色分け: 規則の無い拡張子(.md)の抜粋は、開いた行があっても各行が色の無い 1 字句になる",
+    actual: () => ExcerptRows.create({ path: "a.md", start: 3, end: 4, text: "const a = 1;\nconst b", openingLine: "<script>" }).map((row) => row.tokens.map((token) => [token.cls, token.value])),
+    expected: [[[null, "const a = 1;"]], [[null, "const b"]]],
+  },
+  {
     label: "色分け: n 番目の hunk には、地図の hunkOpeningLines の n 番目が付く(2 つ目だけ script 要素の開きタグなら、2 つ目の const だけキーワード)",
     actual: () => hunkColorsOf(twoScriptHunks, [{ old: null, new: null }, scriptOpened], "const"),
     expected: [[null], ["tok-kw"]],
@@ -1788,7 +1827,8 @@ const cases = [
       return [kind, selection !== undefined && keys.some((key) => selection.id.endsWith(`値-${key}`))];
     }),
     expected: Object.keys(checkerTargetKeys).map((kind) => [kind, true]),
-  },  {
+  },
+  {
     label: "色分けの埋め込みの要素の名前の集合は、解説の検査とページで同じ",
     actual: () => Object.keys(Tokenizer.Embeddings.elements).toSorted(),
     expected: [...checkerElements].sort(),
@@ -1813,22 +1853,22 @@ const cases = [
   },
   {
     label: "この判定表のすべての行で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
-    actual: () => regionMismatchesOf(casesTables.find((path) => path.endsWith("/pr-explain-core-cases.sh"))),
+    actual: () => regionMismatchesOf(checkedPathOf("pr-explain-core-cases.sh")),
     expected: [],
   },
   {
     label: "解説の検査の判定表と地図の判定表のすべての行で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
-    actual: () => ["/build-pr-explain-cases.sh", "/build-pr-change-map-cases.sh"].map((name) => regionMismatchesOf(casesTables.find((path) => path.endsWith(name)))),
+    actual: () => ["build-pr-explain-cases.sh", "build-pr-change-map-cases.sh"].map((name) => regionMismatchesOf(checkedPathOf(name))),
     expected: [[], []],
   },
   {
     label: "見本のヒアドキュメント(引用符なし・二重引用符・行頭のタブを除いて閉じるもの・TS・JSON・PY・知らない区切り)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
-    actual: () => regionMismatchesOf(samplePathOf("heredocs.sh")),
+    actual: () => regionMismatchesOf(checkedPathOf("heredocs.sh")),
     expected: [],
   },
   {
     label: "見本の要素(大文字のタグ・属性付きの開きタグ・同じ行で閉じる要素)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
-    actual: () => regionMismatchesOf(samplePathOf("elements.html")),
+    actual: () => regionMismatchesOf(checkedPathOf("elements.html")),
     expected: [],
   },
   {

@@ -22,9 +22,9 @@ concept・primers の出てくる場所の `path`・`lineRange`・`shas` が地�
 無い最終行も 1 行)。入力に `text` を書いた解説は落とす(手で写した中身が黙って上書きされるのを、書いた側に
 知らせるため)。強調の範囲(`emphasis`)は書いたまま残す。
 
-`.html` / `.sh` / `.bash` の抜粋には、始まりの行の頭で効いている `<script>` / `<style>` / ヒアドキュメントを開いた行を
-`openingLine` として足す。ページが抜粋を途中の行から色分けするためで、規則は `lib/embedded_regions.py`。`text` と同じく
-出力だけのキーで、入力に書いた解説は Excerpt の形に無いキーとして落とす。
+埋め込み(script / style 要素・ヒアドキュメント)を読む拡張子の抜粋には、始まりの行の頭で効いている埋め込みを開いた行を
+`openingLine` として足す。ページが抜粋を途中の行から色分けするためで、拡張子と規則は `lib/embedded_regions.py`。`text` と
+同じく出力だけのキーで、入力に書いた解説は Excerpt の形に無いキーとして落とす。
 
 見出し(`Heading` を使うキー)は、小文字と大文字の継ぎ目(`[a-z][A-Z]`)がある複合語を、docs に出る語の
 ほかは落とす。大文字だけの略語(UI 案・VRT)はこのリポジトリの語彙なので通す。1 語の識別子・ファイル名・snake_case は
@@ -369,7 +369,7 @@ Shapes: dict[str, dict[str, Field]] = {
         "targets": may(Many(Text)),
         "covers": may(Many(Id)),
     },
-    # `text` はここが足す出力だけのキーなので、入力の形には無い。
+    # `text` と `openingLine` はここが足す出力だけのキーなので、入力の形には無い。
     "Excerpt": {"path": need(Text), "start": need(Count), "end": need(Count), "emphasis": may(Many(Shape("LineRange")))},
     "Values": {"columns": need(Many(Text, least=1)), "rows": need(Many(Shape("Row")))},
     "Row": {"cells": need(Many(Text)), "boundary": may(Scalar("flag"))},
@@ -808,17 +808,17 @@ def lines_at(repo: str, sha: str, path: str) -> list[str] | None:
     return lines[:-1] if lines[-1] == "" else lines
 
 
-def read_excerpt(repo: str, sha: str, excerpt: dict) -> tuple[dict, str | None]:
+def read_excerpt(repo: str, sha: str, excerpt: dict) -> tuple[dict, None] | tuple[None, str]:
     """抜粋の範囲の中身を読む。
 
-    @returns 中身(`text`。行を改行でつないだもの)を足した抜粋と、読めなかった理由。埋め込みの中から始まるなら、開いた行
-        (`openingLine`)も足す。読めなければ、抜粋をそのまま返し、理由が None でない
+    @returns 読めたら、中身(`text`。行を改行でつないだもの)を足した抜粋と None。埋め込みの中から始まるなら、開いた行
+        (`openingLine`)も足す。ファイルが無い・範囲が収まらないときは、None と読めなかった理由
     """
     lines = lines_at(repo, sha, excerpt["path"])
     if lines is None:
-        return excerpt, f"{excerpt['path']} は {sha} に無い"
+        return None, f"{excerpt['path']} は {sha} に無い"
     if excerpt["end"] > len(lines):
-        return excerpt, f"{excerpt['path']} は {len(lines)} 行で、{excerpt['start']}-{excerpt['end']} 行目は収まらない"
+        return None, f"{excerpt['path']} は {len(lines)} 行で、{excerpt['start']}-{excerpt['end']} 行目は収まらない"
     filled = {**excerpt, "text": "\n".join(lines[excerpt["start"] - 1:excerpt["end"]])}
     opening = opening_lines(excerpt["path"], lines)[excerpt["start"] - 1]
     return (filled if opening is None else {**filled, "openingLine": opening}), None
@@ -859,7 +859,7 @@ def with_read_excerpts(explain: dict, repo: str) -> tuple[dict, list[str]]:
 
     def read(excerpt: dict, where: str) -> tuple[dict, list[str]]:
         filled_excerpt, problem = read_excerpt(repo, sha, excerpt)
-        return (excerpt, [f"{where}: {problem}"]) if problem else (filled_excerpt, [])
+        return (excerpt, [f"{where}: {problem}"]) if filled_excerpt is None else (filled_excerpt, [])
 
     def read_route(sofar: tuple[dict, list[str]], route: str) -> tuple[dict, list[str]]:
         written, problems = read_along(sofar[0], route, read)
