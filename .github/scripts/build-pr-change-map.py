@@ -124,6 +124,10 @@ class PathLookup(NamedTuple):
     modules: dict[str, frozenset[str]]
 
 
+class UnreadableBlobs(Exception):
+    """`ls-tree` が返したのに中身を読めない blob があった(リポジトリのオブジェクトが欠けている)。`main` が捕まえて短く報告する。"""
+
+
 def git(*args: str) -> str:
     """git を走らせて標準出力を返す。失敗したら例外のまま落とす(地図を半端に作らない)。
 
@@ -398,7 +402,7 @@ def read_blobs(names: set[str]) -> dict[str, bytes]:
     """blob の中身を、`git cat-file --batch` を 1 回だけ走らせて読む。
 
     名前は `ls-tree` が返した blob に限るので、読めないものがあればリポジトリのオブジェクトが欠けている。除いて続けると
-    依存の辺が黙って消えるので、`LookupError` で落とす(地図を半端に作らない)。
+    依存の辺が黙って消えるので、`UnreadableBlobs` で落とす(地図を半端に作らない)。
 
     @param names blob の名前
     @returns 名前 → 中身
@@ -407,7 +411,7 @@ def read_blobs(names: set[str]) -> dict[str, bytes]:
     contents = dict(zip(ordered, read_objects(ordered)))
     missing = [name for name, content in contents.items() if content is None]
     if missing:
-        raise LookupError(f"blob を読めない: {' '.join(missing)}")
+        raise UnreadableBlobs(f"blob を読めない: {' '.join(missing)}")
     return contents
 
 
@@ -707,6 +711,9 @@ def main(argv: list[str]) -> int:
     except subprocess.CalledProcessError as error:
         stderr = error.stderr.decode(errors="replace") if isinstance(error.stderr, bytes) else error.stderr
         print(f"git が失敗しました: {' '.join(error.cmd)}\n{stderr}", file=sys.stderr)
+        return 1
+    except UnreadableBlobs as error:
+        print(f"地図を作れません: {error}", file=sys.stderr)
         return 1
     json.dump(change_map, sys.stdout, ensure_ascii=False, indent=2)
     print()

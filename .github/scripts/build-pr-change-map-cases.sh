@@ -348,8 +348,8 @@ html と sh 以外のファイルは hunkOpeningLines を持たない|"hunkOpeni
 patch を切ったファイルは、切った後の patch の hunk と同じ数だけ hunkOpeningLines を持つ|in_commit[(second, "docs/embedded/many.sh")]["truncated"] is True and len(in_commit[(second, "docs/embedded/many.sh")]["hunkOpeningLines"]) == sum(line.startswith("@@ ") for line in in_commit[(second, "docs/embedded/many.sh")]["patch"].split("\n")) > 1
 CASES
 
-# blob の中身を読む手順を、この一時リポジトリの blob の名前で直に叩く。名前は ls-tree が返したものに限るので、読めない名前が
-# 混ざったら除いて続けずに止まる。読める名前だけなら中身を返す(止まるのが名前のせいだと分かるようにする対照)。
+# blob の中身を読む手順を、この一時リポジトリの blob の名前で直に叩く。読める名前だけなら中身を返す(下の止まるケースが、
+# blob を読めないせいで止まったと分かるようにする対照)。
 # $@ blob の名前。1 つ目は docs/x.md の blob
 read_blobs_outcome() {
   python3 - "$builder" "$@" <<'PY'
@@ -362,9 +362,16 @@ PY
 }
 present="$(git rev-parse "$head:docs/x.md")"
 report pass "$(read_blobs_outcome "$present")" "読める blob だけを頼めば、read_blobs はその中身を返す"
-missing_report="$(read_blobs_outcome "$present" "$(printf '0%.0s' {1..40})" 2>&1)"
+
+# 変えていない Quiet.ts の blob を消した写しで地図を作る。読めない blob を除いて続けず、traceback ではなく短い報告を出して 1 で終わる。
+broken="$work/broken"
+cp -R "$repo" "$broken"
+quiet_blob="$(git rev-parse "$head:src/utils/Quiet.ts")"
+rm "$broken/.git/objects/${quiet_blob:0:2}/${quiet_blob:2}"
+missing_report="$(cd "$broken" && python3 "$builder" --base "$base" --head "$head" --pr 12 "${branches[@]}" 2>&1 >/dev/null)"
+missing_exit=$?
 missing_stops=deny
-case "$missing_report" in *LookupError*) missing_stops=pass ;; esac
-report pass "$missing_stops" "読めない blob の名前が混ざると、read_blobs は除いて続けずに LookupError で止まる"
+[ "$missing_exit" -eq 1 ] && [ "$missing_report" = "地図を作れません: blob を読めない: $quiet_blob" ] && missing_stops=pass
+report pass "$missing_stops" "読めない blob があると、地図を作らずに読めない名前を 1 行で報告し、1 で終わる"
 
 exit "$cases_failed"

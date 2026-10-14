@@ -1801,6 +1801,196 @@ const cases = [
     expected: [[null]],
   },
   {
+    label: "色分け: J1 .tsx の式が始まる位置(行頭・( [ { , = => ? : && || と return の後)の <名前 はタグとしてキーワードになる",
+    actual: () => ["<b />", "f(<b />)", "[<b />]", "a = {<b />};", "f(a, <b />)", "a = <b />", "() => <b />", "c ? <b /> : null", "c ? null : <b />", "c && <b />", "c || <b />", "return <b />;"].map((line) => colorOf("a.tsx", [line], { word: "<b" })),
+    expected: Array(12).fill("tok-kw"),
+  },
+  {
+    label: "色分け: J2 .tsx の値の後(名前・)・] の後)の < はタグにせず、比較・型引数のまま読む",
+    actual: () => ["a<b", "f<T>(x)", "(a)<b", "xs[0]<b", "b as Array<T>"].map((line) => lineTokensOf("a.tsx", [line])[0].filter((token) => token.value.length > 1 && token.value.startsWith("<")).length),
+    expected: [0, 0, 0, 0, 0],
+  },
+  {
+    label: "色分け: J3 .tsx の総称の矢印関数の型引数(<T,> / <T extends U> / <const T,>)はタグにせず、T は型になる",
+    actual: () => ["const id = <T,>(x: T) => x;", "const id = <T extends U>(x: T) => x;", "const id = <const T,>(x: T) => x;"].map((line) => colorOf("a.tsx", [line], { word: "T" })),
+    expected: ["tok-type", "tok-type", "tok-type"],
+  },
+  {
+    label: "色分け: J4 .tsx で名前の後の extends に = が続くなら、型引数ではなく属性として読む(<a extends=\"x\" /> の <a はタグ)",
+    actual: () => colorOf("a.tsx", ['return <a extends="x" />;'], { word: "<a" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J5 .ts では JSX を読まない(<T>b の型表明の T は型)",
+    actual: () => colorOf("a.ts", ["const a = <T>b;"], { word: "T" }),
+    expected: "tok-type",
+  },
+  {
+    label: "色分け: J6 .jsx も JSX を読む(<div はキーワード)",
+    actual: () => colorOf("a.jsx", ["return <div />;"], { word: "<div" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J7 script 要素の中の JS では JSX を読まない(<b>1 の b は変数)",
+    actual: () => colorOf("a.html", ["<script>", "const a = <b>1;"], { line: 1, word: "b" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: J8 大文字で始まるタグ名も、型にせずキーワードにする",
+    actual: () => colorOf("a.tsx", ["return <SearchGlyph />;"], { word: "<SearchGlyph" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J9 . を含むタグ名(<Foo.Bar)は 1 つの字句になる",
+    actual: () => colorOf("a.tsx", ["return <Foo.Bar />;"], { word: "<Foo.Bar" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J10 閉じタグ(</h3)もキーワードになる",
+    actual: () => colorOf("a.tsx", ["return <h3>a</h3>;"], { word: "</h3" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J11 属性名はキーになる",
+    actual: () => colorOf("a.tsx", ['return <div className="c" />;'], { word: "className" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: J12 ハイフンを含む属性名(aria-label / data-testid)は 1 つの字句のキーになる",
+    actual: () => ["aria-label", "data-testid"].map((word) => colorOf("a.tsx", ['return <span aria-label="x" data-testid="y" />;'], { word })),
+    expected: ["tok-key", "tok-key"],
+  },
+  {
+    label: "色分け: J13 値の無い属性(disabled)もキーになる",
+    actual: () => colorOf("a.tsx", ["return <button disabled />;"], { word: "disabled" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: J14 属性の値の文字列は文字列になる",
+    actual: () => colorOf("a.tsx", ['return <div className="a b" />;'], { word: '"a b"' }),
+    expected: "tok-str",
+  },
+  {
+    label: "色分け: J15 本文の文言は、キーワードや大文字で始まる綴りでも色を付けない",
+    actual: () => colorOf("a.tsx", ["return <h3>Used by return</h3>;"], { word: "Used by return" }),
+    expected: null,
+  },
+  {
+    label: "色分け: J16 本文の引用符は文字列を始めない(' の後の閉じタグはキーワード、\"{…}\" の中は変数)",
+    actual: () => [colorOf("a.tsx", ["return <p>Don't do</p>;"], { word: "</p" }), colorOf("a.tsx", ['return <p>"{note}"</p>;'], { word: "note" })],
+    expected: ["tok-kw", "tok-var"],
+  },
+  {
+    label: "色分け: J17 本文の中の {…} は JS / TS で読み、閉じた後は本文に戻る({count} は変数、後ろの文言は色なし)",
+    actual: () => [colorOf("a.tsx", ["return <p>{count} items</p>;"], { word: "count" }), colorOf("a.tsx", ["return <p>{count} items</p>;"], { word: " items" })],
+    expected: ["tok-var", null],
+  },
+  {
+    label: "色分け: J18 属性の値の {…} は JS / TS で読む(setB は関数)",
+    actual: () => colorOf("a.tsx", ["return <a onClick={() => setB(b)} />;"], { word: "setB" }),
+    expected: "tok-fn",
+  },
+  {
+    label: "色分け: J19 属性の値の {…} を閉じた後は、属性に戻る(後ろの title はキー)",
+    actual: () => colorOf("a.tsx", ['return <a onClick={f} title="x" />;'], { word: "title" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: J20 属性の値の {{ … }} の中のオブジェクトのキーは色を付けない",
+    actual: () => colorOf("a.tsx", ["return <a style={{ color: c }} />;"], { word: "color" }),
+    expected: null,
+  },
+  {
+    label: "色分け: J21 開きタグの中の // はコメントになり、次の行の属性はキーのまま",
+    actual: () => { const lines = lineTokensOf("a.tsx", ["return <button", "  // note", '  type="button"', "/>;"]); return [colorIn(lines, 1, "// note"), colorIn(lines, 2, "type")]; },
+    expected: ["tok-com", "tok-key"],
+  },
+  {
+    label: "色分け: J22 開きタグが行をまたぐと、次の行の属性名もキーになる(キーワードの綴りの type でも)",
+    actual: () => colorOf("a.tsx", ["return (", "  <button", '    type="button"', "  >"], { line: 2, word: "type" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: J23 子の中の文言だけの行は、行をまたいでも色を付けない",
+    actual: () => lineTokensOf("a.tsx", ["return <h3>", "  Used by", "</h3>;"])[1].map((token) => token.cls),
+    expected: [null],
+  },
+  {
+    label: "色分け: J24 自己閉じタグの後は JS / TS に戻る(次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["const a = <b />;", "const c = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J25 閉じタグの後は JS / TS に戻る(次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["const a = <b>x</b>;", "const c = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J26 入れ子の要素を閉じても、外側の要素の子のまま(次の行の文言は色なし)",
+    actual: () => lineTokensOf("a.tsx", ["return <div>", "<b>x</b>", "Used by", "</div>;"])[2].map((token) => token.cls),
+    expected: [null],
+  },
+  {
+    label: "色分け: J27 フラグメントの <> は色を付けず、中の文言も色なし",
+    actual: () => [colorOf("a.tsx", ["return <>Used by</>;"], { word: "<>" }), colorOf("a.tsx", ["return <>Used by</>;"], { word: "Used by" })],
+    expected: [null, null],
+  },
+  {
+    label: "色分け: J28 フラグメントの </> の後は JS / TS に戻る(次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["const a = <>x</>;", "const c = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J29 子の中の {…} に入れた要素を閉じ、{…} を閉じても、外側の要素を閉じた後は JS / TS に戻る",
+    actual: () => colorOf("a.tsx", ["return <ul>", "  {items.map((item) => <li key={item.id}>{item.name}</li>)}", "</ul>;", "const c = 1;"], { line: 3, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J30 要素の途中から読み始めて来た閉じタグはキーワードで、その後は JS / TS のまま(次の行の const はキーワード)",
+    actual: () => { const lines = lineTokensOf("a.tsx", ["  </div>", ");", "const c = 1;"]); return [colorIn(lines, 0, "</div"), colorIn(lines, 2, "const")]; },
+    expected: ["tok-kw", "tok-kw"],
+  },
+  {
+    label: "色分け: J33 .tsx の総称の矢印関数の型引数は、名前に = が続く形(<T = U,>)でもタグにせず、T は型になる",
+    actual: () => colorOf("a.tsx", ["const id = <T = U,>(x: T) => x;"], { word: "T" }),
+    expected: "tok-type",
+  },
+  {
+    label: "色分け: J34 .tsx で名前の後の extends に > か / が続くなら、型引数ではなく属性として読む(<a extends /> と <a extends>x</a> の <a はタグ)",
+    actual: () => ["return <a extends />;", "return <a extends>x</a>;"].map((line) => colorOf("a.tsx", [line], { word: "<a" })),
+    expected: ["tok-kw", "tok-kw"],
+  },
+  {
+    label: "色分け: J35 子の中の自己閉じタグの後は、外側の要素の子に戻る(次の行の文言は色なし)",
+    actual: () => lineTokensOf("a.tsx", ["return <div>", "<br />", "Used by", "</div>;"])[2].map((token) => token.cls),
+    expected: [null],
+  },
+  {
+    label: "色分け: J36 / と > の間に空白のある自己閉じタグ(<br / >)の後も、JS / TS に戻る(次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["const a = <br / >;", "const c = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J37 子の本文が ( 1 文字だけでも括弧として積まない(閉じタグの後の ) は外側の f( を閉じ、次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["f(<p>(</p>);", "const c = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J38 子の {…} の後の本文が [ 1 文字だけでも括弧として積まない(閉じタグの後の ] は外側の [ を閉じ、次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["f([<p>{a}[</p>]);", "const c = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J39 .tsx で名前の後が => なら、型引数ではなくタグとして読む(<T=> の <T はキーワード)",
+    actual: () => colorOf("a.tsx", ["const f = <T=>(x: T) => x;"], { word: "<T" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: J40 .tsx で extends の後が == か /= なら、属性ではなく型引数として読む(<T extends == / <T extends /= の T は型)",
+    actual: () => ["const f = <T extends ==(x: T) => x;", "const f = <T extends /=(x: T) => x;"].map((line) => colorOf("a.tsx", [line], { word: "T" })),
+    expected: ["tok-type", "tok-type"],
+  },
+  {
     label: "色分け: YAML の値の大文字の語は型にならない",
     actual: () => colorOf("a.yml", ["name: PR Explain"], { word: "PR" }),
     expected: null,
