@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-DWIXoIXypftZHKEaN1c77YkiCed/MYmeI8GkXXhaOBM='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-HHcWzx+CEeZEdLxj8b5rEN2HzTmKfXxdgVZZ5bHBrOo='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -785,8 +785,9 @@ button.change-item:hover { background: var(--track); }
   /**
    * コードの色分け。キーワード・文字列・コメント・数値・関数呼び出しに加え、JS / TS / Python は型と変数、YAML はキー、シェルは変数、
    * HTML はタグと属性名、CSS は at ルール・プロパティ・カスタムプロパティに色を付ける簡易なもの。HTML の script / style 要素と、
-   * シェルの JS・TS・PY・JSON のヒアドキュメントの中は、その言語で読む。`.tsx` / `.jsx` の JSX は、タグ名をキーワード、属性名をキー、
-   * 属性の値の文字列を文字列にし、本文は色なし、`{…}` の中は JS / TS で読む。
+   * シェルの JS・TS・PY・JSON のヒアドキュメントの中は、その言語で読む。HTML と `.tsx` / `.jsx` の JSX は、タグ(JSX のフラグメントを
+   * 含む)をキーワード、属性名を値の有無によらずキー、属性の値の文字列を文字列にする。JSX の本文は色なしで、`{…}` の中は JS / TS で
+   * 読む。HTML の本文は、数値と関数呼び出し(`名前(`)のほかは色なし。
    */
   const Tokenizer = (() => {
     const words = (list) => new Set(list.split(" ").filter((word) => word !== ""));
@@ -815,7 +816,10 @@ button.change-item:hover { background: var(--track); }
     const ShellVariable = /\$(?:\{[^}\n]*\}|[A-Za-z_]\w*|[0-9#?@*$])/y;
     const HeredocStart = /<<(-?)[ \t]*(['"]?)([A-Za-z_]\w*)\2/;
     const TagName = /<\/?[A-Za-z][\w-]*/y;
-    const AttributeName = /[A-Za-z_:][\w:.-]*(?==)/y;
+    /** HTML の属性名。値の有無で属性名の色が割れないよう、値の無い属性(`disabled`)もキーにする。`=` が続くかを見ないので、開きタグの中でだけ読む。 */
+    const AttributeName = /[A-Za-z_:][\w:.-]*/y;
+    /** HTML の引用符の無い属性の値(`charset=utf-8` の `utf-8`)。 */
+    const UnquotedAttributeValue = /[^\s"'=<>`]+/y;
     const CssAtRule = /@[\w-]+/y;
     const CssImportant = /!important\b/y;
     const CssCustomProperty = /--[\w-]+/y;
@@ -835,6 +839,7 @@ button.change-item:hover { background: var(--track); }
     const JsxName = String.raw`${JsIdentifier.source}(?:[.:-][\w$]+)*`;
     /** JSX のタグの `<` と名前(`<名前` / `</名前`)と、フラグメントの `<>` / `</>`。 */
     const JsxTag = new RegExp(String.raw`</?(?:${JsxName}|>)`, "y");
+    /** JSX の属性名。`-` `:` でつないだもの(`aria-label` / `xlink:href`)も 1 つの名前にする。HTML の `AttributeName` と同じく、値の無い属性もキーにする。 */
     const JsxAttributeName = new RegExp(String.raw`${JsIdentifier.source}(?:[-:][\w$]+)*`, "y");
     /** JSX の子の中の本文。タグの `<` と式の `{` の手前まで。 */
     const JsxText = /[^<{]+/y;
@@ -846,11 +851,14 @@ button.change-item:hover { background: var(--track); }
      * TypeScript と違い、字句の間のコメントは飛ばさない(名前と `,` の間にコメントがあるとタグと読む)。
      */
     const ArrowTypeParameters = new RegExp(String.raw`<\s*(?:const\s+)?${JsIdentifier.source}(?![\w$])\s*(?:,|=(?![=>])|extends\b(?!\s*(?:=(?![=>])|>|\/(?!=))))`, "y");
-    /** JSX の段。持ち越しの `brackets` に括弧と並べて積む。`OpeningTag` は開きタグの中、`Children` は子の中。 */
-    const JsxLevels = Object.freeze({ OpeningTag: "<", Children: ">" });
-    const isJsxLevel = (bracket) => bracket === JsxLevels.OpeningTag || bracket === JsxLevels.Children;
-    /** 式が始まる位置の、直前の空白でない字(空文字は行頭)。`>` は `=>`、`&` `|` は `&&` `||` の末尾。 */
-    const ExpressionLeads = new Set(["", "(", "[", "{", ",", "=", ">", "?", ":", "&", "|"]);
+    /** タグの段の綴り。`OpeningTag` は開きタグの中(HTML と JSX。HTML では閉じタグの中も)、`Children` は JSX の子の中。 */
+    const TagLevels = Object.freeze({ OpeningTag: "<", Children: ">" });
+    const isTagLevel = (bracket) => bracket === TagLevels.OpeningTag || bracket === TagLevels.Children;
+    /**
+     * 式が始まる位置の、直前の空白でない字(空文字は行頭)。行頭・開き括弧・`,`・`=`・`?`・`:` と、`=>` の `>`、`&&` `||` の
+     * 末尾の `&` `|`。
+     */
+    const ExpressionFollows = new Set(["", "(", "[", "{", ",", "=", ">", "?", ":", "&", "|"]);
 
     /** 字句。`opens` は閉じずに行が終わった文字列・コメントの閉じ記号で、次の行の頭から続ける。 */
     const Token = (cls, value, opens = null) => ({ cls, value, opens });
@@ -859,7 +867,7 @@ button.change-item:hover { background: var(--track); }
      * 何も開いていない持ち越し。持ち越しは次の 3 つ。
      * - `open`: 閉じずに行が終わった文字列・コメント(`{cls, close}`)
      * - `region`: 中を別の言語で読んでいる埋め込み。null か、`{kind: "element", name}` / `{kind: "heredoc", delimiter, stripsTabs}`
-     * - `brackets`: 開いたまま閉じていない括弧(`(` `[` `{`)と、`.tsx` / `.jsx` の JSX の段(`JsxLevels`)を、開いた順に並べた文字列
+     * - `brackets`: 開いたまま閉じていない括弧(`(` `[` `{`)と、HTML・`.tsx` / `.jsx` のタグの段(`TagLevels`)を、開いた順に並べた文字列
      *
      * JSX の段は括弧と交互に入れ子になる(`{ ( <li { …`)ので、別の並びにせず、開いて閉じる括弧と同じ並びに積む。
      */
@@ -912,6 +920,9 @@ button.change-item:hover { background: var(--track); }
       const isComment = isLineCommentStart && isHashAllowedHere;
       return isComment ? Token("tok-com", restOfLine(cursor)) : null;
     };
+
+    /** 引用(接頭辞付きの文字列・コメント・文字列)の字句。どれでもなければ null。 */
+    const quotedAt = (cursor, grammar) => prefixedStringAt(cursor, grammar) || commentAt(cursor, grammar) || stringAt(cursor, grammar);
 
     /** `.` の後の名前か。スプレッドの `...` の後は含めない。 */
     const isMemberAt = (cursor) => cursor.prevSolid === "." && cursor.text[cursor.prevSolidAt - 1] !== ".";
@@ -984,34 +995,56 @@ button.change-item:hover { background: var(--track); }
       return Token(cursor.text[cursor.at + word.length] === "(" ? "tok-fn" : null, word);
     };
 
-    /** 式が始まる位置か(行頭・開き括弧・`,`・`=`・`=>`・`?`・`:`・`&&`・`||`・`return` の後)。 */
-    const isExpressionPlace = (cursor) => ExpressionLeads.has(cursor.prevSolid) || cursor.prevWord === "return";
+    /** 数値と名前の字句。直前の字が名前の字(`\w` `$`)のとき(名前の途中)と、数値でも名前でもないときは null。 */
+    const wordAt = (cursor, grammar) => {
+      if (/[\w$]/.test(cursor.prev)) return null;
+      const number = matchAt(NumberLiteral, cursor);
+      if (number) return Token("tok-num", number);
+      const word = matchAt(grammar.identifier ?? Identifier, cursor);
+      if (!word) return null;
+      return Token(identifierClassOf(cursor, word, grammar), word);
+    };
 
-    /** JSX のタグの字句。名前のあるタグはキーワード、フラグメント(`<>` / `</>`)は色なし。タグでなければ null。 */
+    /** 式が始まる位置か(直前の空白でない字が `ExpressionFollows` にあるか、直前の語が `return`)。 */
+    const isExpressionPlace = (cursor) => ExpressionFollows.has(cursor.prevSolid) || cursor.prevWord === "return";
+
+    /** 綴りの全体が、その字句の形に当たるか。 */
+    const isWhole = (pattern, value) => matchAt(pattern, { text: value, at: 0 }) === value;
+
+    /** 字句がタグ(`pattern` の形)か。文字列・コメントの続きは、行の綴りがタグと同じでも閉じ記号を持ち越すので、タグにしない。 */
+    const isTagToken = (pattern, token) => token.opens === null && isWhole(pattern, token.value);
+
+    /** JSX のタグの綴りが、フラグメント(`<>` / `</>`)か。 */
+    const isFragment = (tag) => tag.endsWith(">");
+
+    /** JSX のタグの綴りが、閉じタグ(`</名前` / `</>`)か。 */
+    const isClosingTag = (tag) => tag.startsWith("</");
+
+    /** JSX のタグの字句。名前のあるタグもフラグメント(`<>` / `</>`)もキーワードにする。タグでなければ null。 */
     const jsxTagAt = (cursor) => {
       const tag = matchAt(JsxTag, cursor);
-      return tag ? Token(tag.endsWith(">") ? null : "tok-kw", tag) : null;
+      return tag ? Token("tok-kw", tag) : null;
     };
 
     /**
-     * JS / TS の位置から JSX に入るタグ。式が始まる位置で、総称の矢印関数の型引数でないときだけタグにする。
+     * 式が始まる位置にある JSX のタグ(開きタグ・閉じタグ・フラグメント)。総称の矢印関数の型引数ならタグにしない。
      *
-     * 読み始めを誤ると、ファイル / hunk の残りを JSX(属性名か本文)として読み、JS / TS へは戻らない。型の位置の総称の関数型
-     * (`=` `{` `:` `,` `(` `|` `&` `=>` の後の `<T>(`)と、前の行の値に続く行頭の `<`(`a` の次の行の `<b`)はタグと読む。
+     * 読み始めを誤ると、後ろを JSX(属性名か本文)として読み、誤って開いた要素を閉じる閉じタグか `/>` まで JS / TS へ戻らない。型の位置の
+     * 総称の関数型(`=` `{` `:` `,` `(` `|` `&` `=>` の後の `<T>(`)と、前の行の値に続く行頭の `<`(`a` の次の行の `<b`)はタグと読む。
      * `<` の直後に空白のあるタグ(`< div>`)は、タグと読まない。
      */
-    const jsxStartAt = (cursor) => {
+    const jsxTagInExpressionAt = (cursor) => {
       const isTagPlace = isExpressionPlace(cursor) && matchAt(ArrowTypeParameters, cursor) === null;
       return isTagPlace ? jsxTagAt(cursor) : null;
     };
 
     /**
      * JSX の段の中の字句。子の中はタグと本文を、開きタグの中は自己閉じ・コメント・文字列・属性名を読む(段は `cursor.bracket`)。
-     * 型引数の付いたタグ(`<Foo<T> />`)は名前の後の `<` から読み違え、子の中に入ったまま戻らない。
+     * 型引数の付いたタグ(`<Foo<T> />`)は名前の後の `<` から読み違えて子の中に入り、その子を閉じる閉じタグまで JS / TS へ戻らない。
      * @returns 字句。どれにも当たらなければ null(呼び出し側が 1 文字だけ進める)
      */
     const jsxTokenAt = (cursor, grammar) => {
-      if (cursor.bracket === JsxLevels.Children) {
+      if (cursor.bracket === TagLevels.Children) {
         const tag = jsxTagAt(cursor);
         if (tag) return tag;
         const text = matchAt(JsxText, cursor);
@@ -1019,11 +1052,30 @@ button.change-item:hover { background: var(--track); }
       }
       const selfClosing = matchAt(JsxSelfClosing, cursor);
       if (selfClosing) return Token(null, selfClosing);
-      // 属性の値の文字列も JS の文字列として読む。JSX ではエスケープにならない `\` をエスケープと読み、行をまたぐ文字列は次の行へ持ち越さない。
-      const quoted = commentAt(cursor, grammar) || stringAt(cursor, grammar);
+      // JSX ではエスケープにならない `\` をエスケープと読み、行をまたぐ属性の値の文字列は次の行へ持ち越さない。
+      const quoted = quotedAt(cursor, grammar);
       if (quoted) return quoted;
       const name = matchAt(JsxAttributeName, cursor);
       return name ? Token("tok-key", name) : null;
+    };
+
+    /**
+     * HTML の字句。開きタグの中は文字列・属性名・引用符の無い属性の値を、それ以外はコメント・タグ・数値と語を読む(段は `cursor.bracket`)。
+     * 本文の引用符は文字列を始めない(`Don't` の `'` から行末までを文字列にしない)。
+     * @returns 字句。どれにも当たらなければ null(呼び出し側が 1 文字だけ進める)
+     */
+    const htmlTokenAt = (cursor, grammar) => {
+      if (cursor.bracket !== TagLevels.OpeningTag) {
+        const tag = matchAt(TagName, cursor);
+        if (tag) return Token("tok-kw", tag);
+        return commentAt(cursor, grammar) || wordAt(cursor, grammar);
+      }
+      const quoted = stringAt(cursor, grammar);
+      if (quoted) return quoted;
+      const isUnquotedValue = cursor.prevSolid === "=";
+      const word = matchAt(isUnquotedValue ? UnquotedAttributeValue : AttributeName, cursor);
+      if (!word) return null;
+      return Token(isUnquotedValue ? null : "tok-key", word);
     };
 
     /**
@@ -1034,21 +1086,14 @@ button.change-item:hover { background: var(--track); }
       const isYamlKeyPosition = grammar.keys === true && cursor.lineStart;
       const key = isYamlKeyPosition ? matchAt(YamlKey, cursor) : null;
       if (key) return Token("tok-key", key);
-      const quoted = prefixedStringAt(cursor, grammar) || commentAt(cursor, grammar) || stringAt(cursor, grammar);
+      const quoted = quotedAt(cursor, grammar);
       if (quoted) return quoted;
       if (grammar.css === true) return cssTokenAt(cursor);
       const variable = grammar.variables === true ? matchAt(ShellVariable, cursor) : null;
       if (variable) return Token("tok-var", variable);
-      const markup = grammar.tags === true ? matchAt(TagName, cursor) || matchAt(AttributeName, cursor) : null;
-      if (markup) return Token(markup.startsWith("<") ? "tok-kw" : "tok-key", markup);
-      const jsx = grammar.jsx === true ? jsxStartAt(cursor) : null;
+      const jsx = grammar.jsx === true ? jsxTagInExpressionAt(cursor) : null;
       if (jsx) return jsx;
-      if (/[\w$]/.test(cursor.prev)) return null;
-      const number = matchAt(NumberLiteral, cursor);
-      if (number) return Token("tok-num", number);
-      const word = matchAt(grammar.identifier ?? Identifier, cursor);
-      if (!word) return null;
-      return Token(identifierClassOf(cursor, word, grammar), word);
+      return wordAt(cursor, grammar);
     };
 
     /** 持ち越しの続き(前の行で閉じなかった文字列・コメント)を、閉じ記号まで 1 字句にする。 */
@@ -1059,39 +1104,62 @@ button.change-item:hover { background: var(--track); }
     };
 
     /**
-     * 色の無い字句を読んだ後の括弧の並び。
+     * 字句を読んだ後の括弧の並び。色の無い字句だけを括弧として見る。
      *
      * 閉じ括弧は、一番上の開き括弧と種類が合うときだけ外し、合わなければ無視する。正規表現の文字クラスの `}` が、外側の `{` を
      * 閉じないため。正規表現の `\[` のように対にならない開き括弧は、並びに残ったままになる。
      */
-    const bracketsAfter = (brackets, value) => {
-      if (Openers.has(value)) return brackets + value;
-      const isClosingTop = Object.hasOwn(Closers, value) && brackets.endsWith(Closers[value]);
+    const bracketsAfter = (brackets, token) => {
+      if (token.cls !== null) return brackets;
+      if (Openers.has(token.value)) return brackets + token.value;
+      const isClosingTop = Object.hasOwn(Closers, token.value) && brackets.endsWith(Closers[token.value]);
       return isClosingTop ? brackets.slice(0, -1) : brackets;
     };
 
     /**
      * `.tsx` / `.jsx` で字句を読んだ後の、括弧と JSX の段の並び。タグは段を積み外しし、開きタグを閉じる `>` は子の段へ移り、
-     * 自己閉じは段を外す。段の中では `{` だけを積み、段の外の色の無い字句は `bracketsAfter` に渡す。
+     * 自己閉じは段を外す。段の中では `{` だけを積み、段の外は `bracketsAfter` に渡す。
      *
      * 段の外で来た閉じタグ(要素の途中から読み始めた)は何も積まない。後ろが子か JS かは分からず、子として読むと `);` 以降を本文にしてしまうため。
      */
     const jsxBracketsAfter = (brackets, token) => {
-      const level = brackets.slice(-1);
+      const top = brackets.slice(-1);
       const outer = brackets.slice(0, -1);
-      const isTag = token.cls === "tok-kw" && token.value.startsWith("<");
-      const isFragment = token.cls === null && (token.value === "<>" || token.value === "</>");
-      if (isTag || isFragment) {
-        if (!token.value.startsWith("</")) return brackets + (isFragment ? JsxLevels.Children : JsxLevels.OpeningTag);
-        return level === JsxLevels.Children ? outer : brackets;
+      if (isTagToken(JsxTag, token)) {
+        if (isClosingTag(token.value)) return top === TagLevels.Children ? outer : brackets;
+        return brackets + (isFragment(token.value) ? TagLevels.Children : TagLevels.OpeningTag);
       }
-      const closesOpeningTag = level === JsxLevels.OpeningTag && token.value === ">";
-      if (closesOpeningTag) return outer + JsxLevels.Children;
-      const selfCloses = level === JsxLevels.OpeningTag && matchAt(JsxSelfClosing, { text: token.value, at: 0 }) === token.value;
+      const closesOpeningTag = top === TagLevels.OpeningTag && token.value === ">";
+      if (closesOpeningTag) return outer + TagLevels.Children;
+      const selfCloses = top === TagLevels.OpeningTag && isWhole(JsxSelfClosing, token.value);
       if (selfCloses) return outer;
-      // 段の中で積むのは式を開く `{` だけ。本文の字句は `(` か `[` 1 文字だけにもなる(`<p>(</p>`)ので、JsxText では積むのを防げない。
-      if (isJsxLevel(level)) return token.value === "{" ? brackets + token.value : brackets;
-      return token.cls === null ? bracketsAfter(brackets, token.value) : brackets;
+      // 本文の字句は `(` か `[` 1 文字だけにもなる(`<p>(</p>`)ので、JsxText では積むのを防げない。
+      if (isTagLevel(top)) return token.value === "{" ? brackets + token.value : brackets;
+      return bracketsAfter(brackets, token);
+    };
+
+    /**
+     * HTML で字句を読んだ後の段。タグの `<名前`(閉じタグの `</名前` も)で開きタグの段に入り、`>` で出る。開きタグの中かどうかだけを
+     * 持ち、要素の入れ子と本文の括弧は数えない(閉じタグを書かない要素があり、本文の括弧は色に効かない)。
+     */
+    const htmlBracketsAfter = (brackets, token) => {
+      if (isTagToken(TagName, token)) return TagLevels.OpeningTag;
+      const closesOpeningTag = brackets === TagLevels.OpeningTag && token.value === ">";
+      return closesOpeningTag ? Start.brackets : brackets;
+    };
+
+    /** 文法ごとの、字句を読んだ後の括弧と段の並び。 */
+    const bracketsAfterIn = (grammar) => {
+      if (grammar.jsx === true) return jsxBracketsAfter;
+      if (grammar.tags === true) return htmlBracketsAfter;
+      return bracketsAfter;
+    };
+
+    /** 文法と段ごとの、字句を読む関数。 */
+    const tokenReaderOf = (grammar, bracket) => {
+      if (grammar.tags === true) return htmlTokenAt;
+      const readsJsx = grammar.jsx === true && isTagLevel(bracket);
+      return readsJsx ? jsxTokenAt : tokenAt;
     };
 
     /** ヒアドキュメントの区切りの行か。`<<-` で開いたものは、行頭のタブを除いて比べる。 */
@@ -1150,8 +1218,7 @@ button.change-item:hover { background: var(--track); }
         }
         const { grammar, view, declarationStops } = reading;
         const cursor = { text: view, at, prev: at > 0 ? text[at - 1] : "\n", lineStart, bracket: brackets.slice(-1), declarationStops, ...solid };
-        const readsJsx = grammar.jsx === true && isJsxLevel(cursor.bracket);
-        const readAt = readsJsx ? jsxTokenAt : tokenAt;
+        const readAt = tokenReaderOf(grammar, cursor.bracket);
         const token = open ? continuationOf(cursor, open) : readAt(cursor, grammar) || Token(null, text[at]);
         tokens.push(token);
         at += token.value.length;
@@ -1160,8 +1227,7 @@ button.change-item:hover { background: var(--track); }
         const trimmed = token.value.trimEnd();
         const isSolid = token.cls !== "tok-com" && trimmed !== "";
         if (isSolid) solid = { prevSolid: trimmed.slice(-1), prevSolidAt: at - 1 - (token.value.length - trimmed.length), prevWord: /^[\w$]+$/.test(token.value) ? token.value : "" };
-        if (grammar.jsx === true) brackets = jsxBracketsAfter(brackets, token);
-        else if (token.cls === null) brackets = bracketsAfter(brackets, token.value);
+        brackets = bracketsAfterIn(grammar)(brackets, token);
         const isTag = grammar.tags === true && token.cls === "tok-kw";
         if (isTag) element = elementOpenedBy(token.value);
         const entersElement = grammar.tags === true && token.value === ">" && element !== null;
@@ -1204,6 +1270,8 @@ button.change-item:hover { background: var(--track); }
       },
       /**
        * 途中の行から読み始めるときの持ち越し。開いた行を何も開いていない状態から読み、埋め込みだけを残す。
+       * 括弧とタグの段(`brackets`)は持ち越さないので、hunk・抜粋が開きタグや JSX の子の途中から始まると、段の外(JSX は JS / TS、
+       * HTML は本文)として読み始める。
        * @param openingLine 読み始める行の頭で効いている埋め込みを開いた行(検査の `openingLine` / 地図の `hunkOpeningLines`)。無ければ null
        * @param grammar ファイルの文法(`grammarOf`。null の文法はどの行でも埋め込みを開かない)
        * @returns 埋め込みだけを残した持ち越し。開いた行が null のとき・開いた行が埋め込みを開いていないときは、何も開いていない持ち越し

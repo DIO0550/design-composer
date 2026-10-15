@@ -367,7 +367,7 @@ report pass "$(read_blobs_outcome "$present")" "読める blob だけを頼め�
 broken="$work/broken"
 cp -R "$repo" "$broken"
 quiet_blob="$(git rev-parse "$head:src/utils/Quiet.ts")"
-rm "$broken/.git/objects/${quiet_blob:0:2}/${quiet_blob:2}"
+rm -f "$broken/.git/objects/${quiet_blob:0:2}/${quiet_blob:2}"
 missing_report="$(cd "$broken" && python3 "$builder" --base "$base" --head "$head" --pr 12 "${branches[@]}" 2>&1 >/dev/null)"
 missing_exit=$?
 missing_stops=deny
