@@ -3309,7 +3309,7 @@
       "commit": "08cbcc305514b5c0dd2242ed3982e5a41a391735",
       "excerpt": {
         "path": ".github/scripts/build-pr-explain-cases.sh",
-        "start": 407,
+        "start": 410,
         "end": 417,
         "emphasis": [
           {
@@ -3317,7 +3317,7 @@
             "end": 417
           }
         ],
-        "text": "report pass \"$(inspect_output '[out[\"tests\"][0][\"excerpt\"][\"text\"], out[\"primers\"][0][\"passages\"][1][\"excerpt\"][\"text\"], out[\"primers\"][0][\"passages\"][3][\"excerpt\"][\"text\"]] == [\"two\\nthree\", \"one\\ntwo\", \"four\\nfive\"]')\" \"テストの抜粋と、1 節の 2 つの段の抜粋の 3 か所すべてに、それぞれの範囲の中身が入る\"\nreport pass \"$(inspect_output '[excerpt.pop(\"text\") for excerpt in (out[\"tests\"][0][\"excerpt\"], out[\"primers\"][0][\"passages\"][1][\"excerpt\"], out[\"primers\"][0][\"passages\"][3][\"excerpt\"])] and json.dumps(out, ensure_ascii=False) == json.dumps(given, ensure_ascii=False)')\" \"埋め込みの無いファイルの段の抜粋に足すのも text だけで、強調(emphasis)を含め、ほかは渡したとおり\"\n\n# 埋め込み(script / style の要素・JS などのヒアドキュメント)の中から始まる抜粋には、それを開いた行を足す。\n# $1 パス, $2 始まりの行, $3 終わりの行。tests[0] の抜粋をそこへ置いて検査を走らせる\nbuild_excerpt_on() {\n  run_build sample \"d[\\\"tests\\\"][0][\\\"excerpt\\\"] = {\\\"path\\\": \\\"$1\\\", \\\"start\\\": $2, \\\"end\\\": $3}\" --repo \"$repo\"\n}\nopening_of='out[\"tests\"][0][\"excerpt\"].get(\"openingLine\")'\nbuild_excerpt_on page.html 3 3\nreport pass \"$(inspect_output \"$opening_of == line_at(sha, 'page.html', 2)\")\" \"script 要素の中から始まる抜粋に、それを開いた行が足される\""
+        "text": "# 埋め込み(script / style の要素・JS などのヒアドキュメント)の中から始まる抜粋には、それを開いた行を足す。\n# $1 パス, $2 始まりの行, $3 終わりの行。tests[0] の抜粋をそこへ置いて検査を走らせる\nbuild_excerpt_on() {\n  run_build sample \"d[\\\"tests\\\"][0][\\\"excerpt\\\"] = {\\\"path\\\": \\\"$1\\\", \\\"start\\\": $2, \\\"end\\\": $3}\" --repo \"$repo\"\n}\nopening_of='out[\"tests\"][0][\"excerpt\"].get(\"openingLine\")'\nbuild_excerpt_on page.html 3 3\nreport pass \"$(inspect_output \"$opening_of == line_at(sha, 'page.html', 2)\")\" \"script 要素の中から始まる抜粋に、それを開いた行が足される\""
       },
       "values": {
         "columns": [
