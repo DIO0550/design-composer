@@ -52,17 +52,20 @@ paragraphs = [f"<p>{n}</p>" for n in range(1, 21)]
 page = ["<p>top</p>", "<script>", *js_lines, "</script>", *paragraphs]
 mid = [f"<p>{n}</p>" for n in range(1, 31)]
 sh = ["cat <<'JS'", *[f"const v{n} = {n};" for n in range(1, 21)], "JS"]
+# second で .txt から .sh へ rename するファイル。
+txt = ["cat <<'JS'", *[f"const w{n} = {n};" for n in range(1, 21)], "JS"]
 def group(n, changed):
     bumped = 3 if changed else None  # 値を変える行
     return ["cat <<'PY'", *[f"x{n}_{k} = {k + 100 if k == bumped else k}" for k in range(1, 7)], "PY"]
 many = lambda changed: [line for n in range(1, 401) for line in group(n, changed)]
 if stage == "base":
-    files = {"page.html": page, "mid.html": mid, "old.sh": sh, "many.sh": many(False)}
+    files = {"page.html": page, "mid.html": mid, "old.sh": sh, "script.txt": txt, "many.sh": many(False)}
 else:
     files = {
         "page.html": [line + " // changed" if index in (9, 44) else line for index, line in enumerate(page)],
         "mid.html": [mid[0], '<script type="module">', *[line.replace("<p>20</p>", "<p>twenty</p>") for line in mid[1:]]],
         "new.sh": [line.replace("= 14;", "= 140;") for line in sh],
+        "script.sh": [line.replace("= 10;", "= 100;") for line in txt],
         "many.sh": many(True),
         "added.html": ["<script>", "const a = 1;", "</script>"],
     }
@@ -212,6 +215,7 @@ put .github/scripts/trailing.py 'w = 1  # see .github/scripts/tool.py'
 printf 'python3 "$scripts_dir/tool.py" # \x82\xa0\xff\n' > .github/scripts/sjis.sh
 python3 -c 'import sys; sys.stdout.write("python3 .github/scripts/tool.py\n" + "x" * 1_000_001 + "\n")' > .github/scripts/huge.sh
 git mv docs/embedded/old.sh docs/embedded/new.sh
+git mv docs/embedded/script.txt docs/embedded/script.sh
 put_embedded second
 git add -A && commit_at 2026-01-04T00:00:00+00:00 -m second
 second="$(git rev-parse HEAD)"
@@ -343,6 +347,7 @@ script の中の hunk は、変更前と変更後の両方で script 要素を�
 同じファイルの script 要素を閉じた後の hunk は、どちらも null|in_commit[(second, "docs/embedded/page.html")]["hunkOpeningLines"][1] == {"old": None, "new": None}
 上に script 要素の開きタグを足したコミットでは、その下の hunk は変更後の側だけ開いた行を持つ|in_commit[(second, "docs/embedded/mid.html")]["hunkOpeningLines"][1] == {"old": None, "new": '<script type="module">'}
 rename した .sh の hunk の変更前の側は、旧パスの中身から読む|in_commit[(second, "docs/embedded/new.sh")]["hunkOpeningLines"] == [{"old": line_at(fork, "docs/embedded/old.sh", 1), "new": line_at(second, "docs/embedded/new.sh", 1)}]
+.txt から .sh へ rename したファイルの hunk は、変更前の側も .sh として読み、ヒアドキュメントを開いた行を持つ|in_commit[(second, "docs/embedded/script.sh")]["oldPath"] == "docs/embedded/script.txt" and in_commit[(second, "docs/embedded/script.sh")]["hunkOpeningLines"] == [{"old": line_at(fork, "docs/embedded/script.txt", 1), "new": line_at(second, "docs/embedded/script.sh", 1)}]
 足した html の hunk の変更前の側は null で、地図は作れる|in_commit[(second, "docs/embedded/added.html")]["status"] == "A" and in_commit[(second, "docs/embedded/added.html")]["hunkOpeningLines"] == [{"old": None, "new": None}]
 html と sh 以外のファイルは hunkOpeningLines を持たない|"hunkOpeningLines" not in in_commit[(second, "docs/x.md")]
 patch を切ったファイルは、切った後の patch の hunk と同じ数だけ hunkOpeningLines を持つ|in_commit[(second, "docs/embedded/many.sh")]["truncated"] is True and len(in_commit[(second, "docs/embedded/many.sh")]["hunkOpeningLines"]) == sum(line.startswith("@@ ") for line in in_commit[(second, "docs/embedded/many.sh")]["patch"].split("\n")) > 1

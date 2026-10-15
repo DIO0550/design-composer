@@ -118,6 +118,9 @@ samples = {
         "cat <<'CASES'",
         "const c = 1;",
         "CASES",
+        "cat << 'JS'",
+        "const d = 1;",
+        "JS",
         "echo done",
     ],
     "elements.html": [
@@ -127,6 +130,7 @@ samples = {
         "</style>",
         '<script type="module">',
         'const a = "</p>";',
+        'const css = "<style>a{}</style>";',
         "</SCRIPT>",
         "<script>const b = 1;</script>",
         "<p>b</p>",
@@ -1506,6 +1510,21 @@ const cases = [
     expected: null,
   },
   {
+    label: "色分け: 1 行の型リテラルで ; の後の b: もキーとして色を付けない",
+    actual: () => colorOf("a.ts", ["type A = { a: string; b: number };"], { word: "b" }),
+    expected: null,
+  },
+  {
+    label: "色分け: readonly の後の name: もキーとして色を付けない",
+    actual: () => colorOf("a.ts", ["interface A { readonly name: string }"], { word: "name" }),
+    expected: null,
+  },
+  {
+    label: "色分け: 「if(」の if は関数にならずキーワードのまま",
+    actual: () => colorOf("a.ts", ["if(x) {}"], { word: "if" }),
+    expected: "tok-kw",
+  },
+  {
     label: "色分け: 丸括弧の中の name: は変数になる",
     actual: () => colorOf("a.ts", ["const f = (state: State) => state;"], { word: "state" }),
     expected: "tok-var",
@@ -1671,6 +1690,11 @@ const cases = [
     expected: ["tok-kw", null],
   },
   {
+    label: "色分け: script 要素の中で閉じていない /* は、閉じタグで HTML に戻ると捨てる(次の行の <b はキーワード)",
+    actual: () => colorOf("a.html", ["<script>/* a</script><p>", "<b>x</b>"], { line: 1, word: "<b" }),
+    expected: "tok-kw",
+  },
+  {
     label: "色分け: JS のヒアドキュメントの次の行から区切りの行までは JS で読む(const がキーワード)",
     actual: () => colorOf("a.sh", ["cat <<'JS'", "const a = 1;", "JS"], { line: 1, word: "const" }),
     expected: "tok-kw",
@@ -1688,6 +1712,11 @@ const cases = [
   {
     label: "色分け: 二重引用符の区切り(JS)のヒアドキュメントも読む(const がキーワード)",
     actual: () => colorOf("a.sh", ['node - <<"JS"', "const a = 1;", "JS"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: << と区切りの語の間に空白のあるヒアドキュメント(<< 'JS')も読む(const がキーワード)",
+    actual: () => colorOf("a.sh", ["cat << 'JS'", "const a = 1;", "JS"], { line: 1, word: "const" }),
     expected: "tok-kw",
   },
   {
@@ -1846,6 +1875,11 @@ const cases = [
     expected: "tok-kw",
   },
   {
+    label: "色分け: JSX の : を含むタグ名(<svg:path)は 1 つの字句になる",
+    actual: () => colorOf("a.tsx", ["return <svg:path d='x' />;"], { word: "<svg:path" }),
+    expected: "tok-kw",
+  },
+  {
     label: "色分け: JSX の閉じタグ(</h3)もキーワードになる",
     actual: () => colorOf("a.tsx", ["return <h3>a</h3>;"], { word: "</h3" }),
     expected: "tok-kw",
@@ -1859,6 +1893,11 @@ const cases = [
     label: "色分け: JSX のハイフンを含む属性名(aria-label / data-testid)は 1 つの字句のキーになる",
     actual: () => ["aria-label", "data-testid"].map((word) => colorOf("a.tsx", ['return <span aria-label="x" data-testid="y" />;'], { word })),
     expected: ["tok-key", "tok-key"],
+  },
+  {
+    label: "色分け: JSX の : を含む属性名(xlink:href)は 1 つの字句のキーになる",
+    actual: () => colorOf("a.tsx", ['return <use xlink:href="#a" />;'], { word: "xlink:href" }),
+    expected: "tok-key",
   },
   {
     label: "色分け: JSX の値の無い属性(disabled)もキーになる",
@@ -2001,6 +2040,11 @@ const cases = [
     expected: ["tok-key", "tok-key", "tok-str"],
   },
   {
+    label: "色分け: HTML のハイフンを含む属性名(aria-label)は 1 つの字句のキーになる",
+    actual: () => colorOf("a.html", ['<div aria-label="x">'], { word: "aria-label" }),
+    expected: "tok-key",
+  },
+  {
     label: "色分け: HTML のタグの外の本文の語は、= が続いてもキーにしない(<p>Done a=b</p> の Done と a は色なし)",
     actual: () => ["Done", "a"].map((word) => colorOf("a.html", ["<p>Done a=b</p>"], { word })),
     expected: [null, null],
@@ -2023,6 +2067,16 @@ const cases = [
   {
     label: "色分け: HTML のコメントの続きの行がタグの綴り(<p)だけでも、開きタグの中に入らない(コメントを閉じた次の行の本文は色なし)",
     actual: () => colorOf("a.html", ["<!--", "<p", "-->", "Done"], { line: 3, word: "Done" }),
+    expected: null,
+  },
+  {
+    label: "色分け: HTML の本文のコメントは 1 つの字句のコメントになる",
+    actual: () => colorOf("a.html", ["<!-- note -->"], { word: "<!-- note -->" }),
+    expected: "tok-com",
+  },
+  {
+    label: "色分け: HTML のコメントの中の script 要素の開きタグでは JS に切り替わらない(次の行の const は色なし)",
+    actual: () => colorOf("a.html", ["<!-- <script> -->", "const a = 1;"], { line: 1, word: "const" }),
     expected: null,
   },
   {
@@ -2064,12 +2118,12 @@ const cases = [
     expected: [...checkerHeredocs].sort(),
   },
   {
-    label: "解説の検査が開いた行を出す拡張子は、どれもページが同じ埋め込みを読む(開いた行の後の const がキーワード)",
-    actual: () => [
-      ...checkerExtensions.elements.map((extension) => [extension, colorOf(`a${extension}`, ["const a = 1;"], { word: "const", openingLine: "<script>" })]),
-      ...checkerExtensions.heredocs.map((extension) => [extension, colorOf(`a${extension}`, ["const a = 1;"], { word: "const", openingLine: "cat <<'JS'" })]),
-    ],
-    expected: [...checkerExtensions.elements, ...checkerExtensions.heredocs].map((extension) => [extension, "tok-kw"]),
+    label: "要素を読む拡張子の集合とヒアドキュメントを読む拡張子の集合は、どちらも解説の検査とページで同じ",
+    actual: () => {
+      const extensionsWhere = (reads) => Tokenizer.Extensions.filter((extension) => reads(Tokenizer.grammarOf(`a.${extension}`))).map((extension) => `.${extension}`).toSorted();
+      return { elements: extensionsWhere((grammar) => grammar.tags === true), heredocs: extensionsWhere((grammar) => grammar.heredocs === true) };
+    },
+    expected: { elements: [...checkerExtensions.elements].sort(), heredocs: [...checkerExtensions.heredocs].sort() },
   },
   {
     label: "テンプレートのすべての行で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
@@ -2087,12 +2141,12 @@ const cases = [
     expected: [[], []],
   },
   {
-    label: "見本のヒアドキュメント(引用符なし・二重引用符・行頭のタブを除いて閉じるもの・TS・JSON・PY・知らない区切り)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
+    label: "見本のヒアドキュメント(引用符なし・二重引用符・行頭のタブを除いて閉じるもの・TS・JSON・PY・知らない区切り・<< と区切りの語の間に空白のあるもの)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
     actual: () => regionMismatchesOf(checkedPathOf("heredocs.sh")),
     expected: [],
   },
   {
-    label: "見本の要素(大文字のタグ・属性付きの開きタグ・同じ行で閉じる要素)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
+    label: "見本の要素(大文字のタグ・属性付きの開きタグ・同じ行で閉じる要素・中の文字列にある別の要素の開きタグと閉じタグ)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
     actual: () => regionMismatchesOf(checkedPathOf("elements.html")),
     expected: [],
   },
