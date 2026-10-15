@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-50qj2r",
   "baseBranch": "main",
   "mergeBase": "6e935be8878a4bbdef70a0925eebffd9618bf57e",
-  "head": "f1aa8df84881dfbcec0a399b913874560a4234c5",
+  "head": "2803acf37eb1a597408b58f721b2193a174f7f2c",
   "groups": [
     {
       "label": "domains / unit",
@@ -101,7 +101,7 @@
           "path": ".claude/skills/pr-explain/templates/index.html",
           "status": "M",
           "oldPath": null,
-          "additions": 1559,
+          "additions": 1561,
           "deletions": 350,
           "changed": true,
           "target": null
@@ -110,7 +110,7 @@
           "path": ".github/scripts/build-pr-change-map-cases.sh",
           "status": "M",
           "oldPath": null,
-          "additions": 73,
+          "additions": 78,
           "deletions": 2,
           "changed": true,
           "target": null
@@ -163,7 +163,7 @@
           "path": ".github/scripts/pr-explain-core-cases.sh",
           "status": "M",
           "oldPath": null,
-          "additions": 1219,
+          "additions": 1273,
           "deletions": 17,
           "changed": true,
           "target": null
@@ -1711,6 +1711,130 @@
           "patchLines": 271,
           "truncated": false,
           "hunkOpeningLines": [
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "2803acf37eb1a597408b58f721b2193a174f7f2c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-15T16:03:26Z",
+      "subject": "pr-explain: 色分けのテストのレビューで落ちなかった判断にケースを足す",
+      "body": "- 突き合わせの見本に、要素の中の別の要素の開きと閉じ・<< と区切りの語の間の空白を足す\n- 埋め込みを読む拡張子を、検査とページで種類ごとの集合として突き合わせる(Tokenizer.Extensions)\n- HTML の本文のコメント・; の後のキー・readonly のキー・if( のキーワード・埋め込みから出るときの持ち越し・\n  名前の綴り(svg:path / xlink:href / aria-label)・拡張子の違う rename の地図のケースを足す\n- KeyAfter の (?!:) を外す(JS / TS に :: は無く、リポジトリの全ファイルで字句が変わらない)\n\nRefs #1075\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019ai7aHcvfuNrZFwAQgJqxt",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 2,
+          "patch": "@@ -2,7 +2,7 @@\n <html lang=\"ja\">\n <head>\n <meta charset=\"utf-8\">\n-<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-HHcWzx+CEeZEdLxj8b5rEN2HzTmKfXxdgVZZ5bHBrOo='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n+<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-CDi5wmTc7PY+Mk7Vi1HLkP8RPw5Nmk/ACNzrgBumkak='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n <title>PR 解説</title>\n <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n@@ -829,7 +829,7 @@ button.change-item:hover { background: var(--track); }\n     const CssColon = /\\s*:/y;\n     const DeclarationStops = new Set([\"{\", \";\", \"}\"]);\n     const CssWord = /-?[A-Za-z_][\\w-]*/y;\n-    const KeyAfter = /\\s*\\??\\s*:(?!:)/y;\n+    const KeyAfter = /\\s*\\??\\s*:/y;\n     // オブジェクトのキーが来る位置。直前の空白でない字(空文字は行頭)か、直前の語で見る。\n     const KeyFollows = new Set([\"\", \"{\", \",\", \";\"]);\n     const KeyModifiers = new Set([\"readonly\"]);\n@@ -1258,6 +1258,8 @@ button.change-item:hover { background: var(--track); }\n \n     return Object.freeze({\n       Embeddings,\n+      /** 色分けの規則を引く拡張子(`.` を除いたもの)。埋め込みを読む拡張子を、解説の検査の拡張子と突き合わせるために出す。 */\n+      Extensions: Object.freeze(Object.keys(LanguageByExtension)),\n       /**\n        * パスの拡張子から色分けの規則を引く。\n        * @param path ファイルのパス",
+          "patchLines": 27,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 1,
+          "patch": "@@ -52,17 +52,20 @@ paragraphs = [f\"<p>{n}</p>\" for n in range(1, 21)]\n page = [\"<p>top</p>\", \"<script>\", *js_lines, \"</script>\", *paragraphs]\n mid = [f\"<p>{n}</p>\" for n in range(1, 31)]\n sh = [\"cat <<'JS'\", *[f\"const v{n} = {n};\" for n in range(1, 21)], \"JS\"]\n+# second で .txt から .sh へ rename するファイル。\n+txt = [\"cat <<'JS'\", *[f\"const w{n} = {n};\" for n in range(1, 21)], \"JS\"]\n def group(n, changed):\n     bumped = 3 if changed else None  # 値を変える行\n     return [\"cat <<'PY'\", *[f\"x{n}_{k} = {k + 100 if k == bumped else k}\" for k in range(1, 7)], \"PY\"]\n many = lambda changed: [line for n in range(1, 401) for line in group(n, changed)]\n if stage == \"base\":\n-    files = {\"page.html\": page, \"mid.html\": mid, \"old.sh\": sh, \"many.sh\": many(False)}\n+    files = {\"page.html\": page, \"mid.html\": mid, \"old.sh\": sh, \"script.txt\": txt, \"many.sh\": many(False)}\n else:\n     files = {\n         \"page.html\": [line + \" // changed\" if index in (9, 44) else line for index, line in enumerate(page)],\n         \"mid.html\": [mid[0], '<script type=\"module\">', *[line.replace(\"<p>20</p>\", \"<p>twenty</p>\") for line in mid[1:]]],\n         \"new.sh\": [line.replace(\"= 14;\", \"= 140;\") for line in sh],\n+        \"script.sh\": [line.replace(\"= 10;\", \"= 100;\") for line in txt],\n         \"many.sh\": many(True),\n         \"added.html\": [\"<script>\", \"const a = 1;\", \"</script>\"],\n     }\n@@ -212,6 +215,7 @@ put .github/scripts/trailing.py 'w = 1  # see .github/scripts/tool.py'\n printf 'python3 \"$scripts_dir/tool.py\" # \\x82\\xa0\\xff\\n' > .github/scripts/sjis.sh\n python3 -c 'import sys; sys.stdout.write(\"python3 .github/scripts/tool.py\\n\" + \"x\" * 1_000_001 + \"\\n\")' > .github/scripts/huge.sh\n git mv docs/embedded/old.sh docs/embedded/new.sh\n+git mv docs/embedded/script.txt docs/embedded/script.sh\n put_embedded second\n git add -A && commit_at 2026-01-04T00:00:00+00:00 -m second\n second=\"$(git rev-parse HEAD)\"\n@@ -343,6 +347,7 @@ script の中の hunk は、変更前と変更後の両方で script 要素を\n 同じファイルの script 要素を閉じた後の hunk は、どちらも null|in_commit[(second, \"docs/embedded/page.html\")][\"hunkOpeningLines\"][1] == {\"old\": None, \"new\": None}\n 上に script 要素の開きタグを足したコミットでは、その下の hunk は変更後の側だけ開いた行を持つ|in_commit[(second, \"docs/embedded/mid.html\")][\"hunkOpeningLines\"][1] == {\"old\": None, \"new\": '<script type=\"module\">'}\n rename した .sh の hunk の変更前の側は、旧パスの中身から読む|in_commit[(second, \"docs/embedded/new.sh\")][\"hunkOpeningLines\"] == [{\"old\": line_at(fork, \"docs/embedded/old.sh\", 1), \"new\": line_at(second, \"docs/embedded/new.sh\", 1)}]\n+.txt から .sh へ rename したファイルの hunk は、変更前の側も .sh として読み、ヒアドキュメントを開いた行を持つ|in_commit[(second, \"docs/embedded/script.sh\")][\"oldPath\"] == \"docs/embedded/script.txt\" and in_commit[(second, \"docs/embedded/script.sh\")][\"hunkOpeningLines\"] == [{\"old\": line_at(fork, \"docs/embedded/script.txt\", 1), \"new\": line_at(second, \"docs/embedded/script.sh\", 1)}]\n 足した html の hunk の変更前の側は null で、地図は作れる|in_commit[(second, \"docs/embedded/added.html\")][\"status\"] == \"A\" and in_commit[(second, \"docs/embedded/added.html\")][\"hunkOpeningLines\"] == [{\"old\": None, \"new\": None}]\n html と sh 以外のファイルは hunkOpeningLines を持たない|\"hunkOpeningLines\" not in in_commit[(second, \"docs/x.md\")]\n patch を切ったファイルは、切った後の patch の hunk と同じ数だけ hunkOpeningLines を持つ|in_commit[(second, \"docs/embedded/many.sh\")][\"truncated\"] is True and len(in_commit[(second, \"docs/embedded/many.sh\")][\"hunkOpeningLines\"]) == sum(line.startswith(\"@@ \") for line in in_commit[(second, \"docs/embedded/many.sh\")][\"patch\"].split(\"\\n\")) > 1",
+          "patchLines": 38,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": "  python3 - \"$1\" <<'PY'",
+              "new": "  python3 - \"$1\" <<'PY'"
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/lib/embedded_regions.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -11,7 +11,7 @@ JS・TS・PY・JSON のヒアドキュメントの中にあるかを知らない\n   外にいれば、行の中の最初の `<<` の区切りの語が `HeredocDelimiters` にあるときだけ開く。`<<` は行の生の文字で探すので、\n   文字列・コメントの中でも開く\n \n-ページと規則が揃っているのは、ヒアドキュメントの開閉と、要素名・区切りの語の集合。要素は、ここが生の行の綴りで探し、\n+ページと規則が揃っているのは、ヒアドキュメントの開閉と、要素名・区切りの語・拡張子の集合。要素は、ここが生の行の綴りで探し、\n ページはタグの字句で探すので、HTML のコメント・属性値の中の綴りで食い違う。1 行のコメント(`<!-- <script> -->`)はここだけが\n 開いたと読み、ページは開いた行を読み直して開いていないと読む(その後ろの本物の要素の中から始まる抜粋・hunk は色が付かない)。\n 複数行のコメントの中の開きタグを開いた行として渡すと、ページはコメントの閉じた後も JS で読む。",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 62,
+          "deletions": 8,
+          "patch": "@@ -118,6 +118,9 @@ samples = {\n         \"cat <<'CASES'\",\n         \"const c = 1;\",\n         \"CASES\",\n+        \"cat << 'JS'\",\n+        \"const d = 1;\",\n+        \"JS\",\n         \"echo done\",\n     ],\n     \"elements.html\": [\n@@ -127,6 +130,7 @@ samples = {\n         \"</style>\",\n         '<script type=\"module\">',\n         'const a = \"</p>\";',\n+        'const css = \"<style>a{}</style>\";',\n         \"</SCRIPT>\",\n         \"<script>const b = 1;</script>\",\n         \"<p>b</p>\",\n@@ -1505,6 +1509,21 @@ const cases = [\n     actual: () => colorOf(\"a.ts\", [\"type S = { a?: string };\"], { word: \"a\" }),\n     expected: null,\n   },\n+  {\n+    label: \"色分け: 1 行の型リテラルで ; の後の b: もキーとして色を付けない\",\n+    actual: () => colorOf(\"a.ts\", [\"type A = { a: string; b: number };\"], { word: \"b\" }),\n+    expected: null,\n+  },\n+  {\n+    label: \"色分け: readonly の後の name: もキーとして色を付けない\",\n+    actual: () => colorOf(\"a.ts\", [\"interface A { readonly name: string }\"], { word: \"name\" }),\n+    expected: null,\n+  },\n+  {\n+    label: \"色分け: 「if(」の if は関数にならずキーワードのまま\",\n+    actual: () => colorOf(\"a.ts\", [\"if(x) {}\"], { word: \"if\" }),\n+    expected: \"tok-kw\",\n+  },\n   {\n     label: \"色分け: 丸括弧の中の name: は変数になる\",\n     actual: () => colorOf(\"a.ts\", [\"const f = (state: State) => state;\"], { word: \"state\" }),\n@@ -1670,6 +1689,11 @@ const cases = [\n     actual: () => [0, 1].map((nth) => colorOf(\"a.html\", [\"a = 1;</script><script>const b = 2;</script> const\"], { word: \"const\", nth, openingLine: \"<script>\" })),\n     expected: [\"tok-kw\", null],\n   },\n+  {\n+    label: \"色分け: script 要素の中で閉じていない /* は、閉じタグで HTML に戻ると捨てる(次の行の <b はキーワード)\",\n+    actual: () => colorOf(\"a.html\", [\"<script>/* a</script><p>\", \"<b>x</b>\"], { line: 1, word: \"<b\" }),\n+    expected: \"tok-kw\",\n+  },\n   {\n     label: \"色分け: JS のヒアドキュメントの次の行から区切りの行までは JS で読む(const がキーワード)\",\n     actual: () => colorOf(\"a.sh\", [\"cat <<'JS'\", \"const a = 1;\", \"JS\"], { line: 1, word: \"const\" }),\n@@ -1690,6 +1714,11 @@ const cases = [\n     actual: () => colorOf(\"a.sh\", ['node - <<\"JS\"', \"const a = 1;\", \"JS\"], { line: 1, word: \"const\" }),\n     expected: \"tok-kw\",\n   },\n+  {\n+    label: \"色分け: << と区切りの語の間に空白のあるヒアドキュメント(<< 'JS')も読む(const がキーワード)\",\n+    actual: () => colorOf(\"a.sh\", [\"cat << 'JS'\", \"const a = 1;\", \"JS\"], { line: 1, word: \"const\" }),\n+    expected: \"tok-kw\",\n+  },\n   {\n     label: \"色分け: 行頭のタブを除いて閉じる TS のヒアドキュメントは、タブを除いた区切りの行で閉じる(次の行の echo がキーワード)\",\n     actual: () => colorOf(\"a.sh\", [\"cat <<-'TS'\", \"\\tconst b = 1;\", \"\\tTS\", \"echo done\"], { line: 3, word: \"echo\" }),\n@@ -1845,6 +1874,11 @@ const cases = [\n     actual: () => colorOf(\"a.tsx\", [\"return <Foo.Bar />;\"], { word: \"<Foo.Bar\" }),\n     expected: \"tok-kw\",\n   },\n+  {\n+    label: \"色分け: JSX の : を含むタグ名(<svg:path)は 1 つの字句になる\",\n+    actual: () => colorOf(\"a.tsx\", [\"return <svg:path d='x' />;\"], { word: \"<svg:path\" }),\n+    expected: \"tok-kw\",\n+  },\n   {\n     label: \"色分け: JSX の閉じタグ(</h3)もキーワードになる\",\n     actual: () => colorOf(\"a.tsx\", [\"return <h3>a</h3>;\"], { word: \"</h3\" }),\n@@ -1860,6 +1894,11 @@ const cases = [\n     actual: () => [\"aria-label\", \"data-testid\"].map((word) => colorOf(\"a.tsx\", ['return <span aria-label=\"x\" data-testid=\"y\" />;'], { word })),\n     expected: [\"tok-key\", \"tok-key\"],\n   },\n+  {\n+    label: \"色分け: JSX の : を含む属性名(xlink:href)は 1 つの字句のキーになる\",\n+    actual: () => colorOf(\"a.tsx\", ['return <use xlink:href=\"#a\" />;'], { word: \"xlink:href\" }),\n+    expected: \"tok-key\",\n+  },\n   {\n     label: \"色分け: JSX の値の無い属性(disabled)もキーになる\",\n     actual: () => colorOf(\"a.tsx\", [\"return <button disabled />;\"], { word: \"disabled\" }),\n@@ -2000,6 +2039,11 @@ const cases = [\n     actual: () => [\"disabled\", \"type\", '\"text\"'].map((word) => colorOf(\"a.html\", ['<input disabled type=\"text\">'], { word })),\n     expected: [\"tok-key\", \"tok-key\", \"tok-str\"],\n   },\n+  {\n+    label: \"色分け: HTML のハイフンを含む属性名(aria-label)は 1 つの字句のキーになる\",\n+    actual: () => colorOf(\"a.html\", ['<div aria-label=\"x\">'], { word: \"aria-label\" }),\n+    expected: \"tok-key\",\n+  },\n   {\n     label: \"色分け: HTML のタグの外の本文の語は、= が続いてもキーにしない(<p>Done a=b</p> の Done と a は色なし)\",\n     actual: () => [\"Done\", \"a\"].map((word) => colorOf(\"a.html\", [\"<p>Done a=b</p>\"], { word })),\n@@ -2025,6 +2069,16 @@ const cases = [\n     actual: () => colorOf(\"a.html\", [\"<!--\", \"<p\", \"-->\", \"Done\"], { line: 3, word: \"Done\" }),\n     expected: null,\n   },\n+  {\n+    label: \"色分け: HTML の本文のコメントは 1 つの字句のコメントになる\",\n+    actual: () => colorOf(\"a.html\", [\"<!-- note -->\"], { word: \"<!-- note -->\" }),\n+    expected: \"tok-com\",\n+  },\n+  {\n+    label: \"色分け: HTML のコメントの中の script 要素の開きタグでは JS に切り替わらない(次の行の const は色なし)\",\n+    actual: () => colorOf(\"a.html\", [\"<!-- <script> -->\", \"const a = 1;\"], { line: 1, word: \"const\" }),\n+    expected: null,\n+  },\n   {\n     label: \"色分け: YAML の値の大文字の語は型にならない\",\n     actual: () => colorOf(\"a.yml\", [\"name: PR Explain\"], { word: \"PR\" }),\n@@ -2064,12 +2118,12 @@ const cases = [\n     expected: [...checkerHeredocs].sort(),\n   },\n   {\n-    label: \"解説の検査が開いた行を出す拡張子は、どれもページが同じ埋め込みを読む(開いた行の後の const がキーワード)\",\n-    actual: () => [\n-      ...checkerExtensions.elements.map((extension) => [extension, colorOf(`a${extension}`, [\"const a = 1;\"], { word: \"const\", openingLine: \"<script>\" })]),\n-      ...checkerExtensions.heredocs.map((extension) => [extension, colorOf(`a${extension}`, [\"const a = 1;\"], { word: \"const\", openingLine: \"cat <<'JS'\" })]),\n-    ],\n-    expected: [...checkerExtensions.elements, ...checkerExtensions.heredocs].map((extension) => [extension, \"tok-kw\"]),\n+    label: \"要素を読む拡張子の集合とヒアドキュメントを読む拡張子の集合は、どちらも解説の検査とページで同じ\",\n+    actual: () => {\n+      const extensionsWhere = (reads) => Tokenizer.Extensions.filter((extension) => reads(Tokenizer.grammarOf(`a.${extension}`))).map((extension) => `.${extension}`).toSorted();\n+      return { elements: extensionsWhere((grammar) => grammar.tags === true), heredocs: extensionsWhere((grammar) => grammar.heredocs === true) };\n+    },\n+    expected: { elements: [...checkerExtensions.elements].sort(), heredocs: [...checkerExtensions.heredocs].sort() },\n   },\n   {\n     label: \"テンプレートのすべての行で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ\",\n@@ -2087,12 +2141,12 @@ const cases = [\n     expected: [[], []],\n   },\n   {\n-    label: \"見本のヒアドキュメント(引用符なし・二重引用符・行頭のタブを除いて閉じるもの・TS・JSON・PY・知らない区切り)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ\",\n+    label: \"見本のヒアドキュメント(引用符なし・二重引用符・行頭のタブを除いて閉じるもの・TS・JSON・PY・知らない区切り・<< と区切りの語の間に空白のあるもの)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ\",\n     actual: () => regionMismatchesOf(checkedPathOf(\"heredocs.sh\")),\n     expected: [],\n   },\n   {\n-    label: \"見本の要素(大文字のタグ・属性付きの開きタグ・同じ行で閉じる要素)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ\",\n+    label: \"見本の要素(大文字のタグ・属性付きの開きタグ・同じ行で閉じる要素・中の文字列にある別の要素の開きタグと閉じタグ)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ\",\n     actual: () => regionMismatchesOf(checkedPathOf(\"elements.html\")),\n     expected: [],\n   },",
+          "patchLines": 151,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": "python3 - \"$scripts_dir/lib\" \"$work\" \"$template\" \"$scripts_dir/pr-explain-core-cases.sh\" \"$scripts_dir/build-pr-explain-cases.sh\" \"$scripts_dir/build-pr-change-map-cases.sh\" <<'PY'",
+              "new": "python3 - \"$scripts_dir/lib\" \"$work\" \"$template\" \"$scripts_dir/pr-explain-core-cases.sh\" \"$scripts_dir/build-pr-explain-cases.sh\" \"$scripts_dir/build-pr-change-map-cases.sh\" <<'PY'"
+            },
+            {
+              "old": "python3 - \"$scripts_dir/lib\" \"$work\" \"$template\" \"$scripts_dir/pr-explain-core-cases.sh\" \"$scripts_dir/build-pr-explain-cases.sh\" \"$scripts_dir/build-pr-change-map-cases.sh\" <<'PY'",
+              "new": "python3 - \"$scripts_dir/lib\" \"$work\" \"$template\" \"$scripts_dir/pr-explain-core-cases.sh\" \"$scripts_dir/build-pr-explain-cases.sh\" \"$scripts_dir/build-pr-change-map-cases.sh\" <<'PY'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            },
             {
               "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
               "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"

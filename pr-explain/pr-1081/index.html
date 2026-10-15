@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-HHcWzx+CEeZEdLxj8b5rEN2HzTmKfXxdgVZZ5bHBrOo='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-CDi5wmTc7PY+Mk7Vi1HLkP8RPw5Nmk/ACNzrgBumkak='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -829,7 +829,7 @@ button.change-item:hover { background: var(--track); }
     const CssColon = /\s*:/y;
     const DeclarationStops = new Set(["{", ";", "}"]);
     const CssWord = /-?[A-Za-z_][\w-]*/y;
-    const KeyAfter = /\s*\??\s*:(?!:)/y;
+    const KeyAfter = /\s*\??\s*:/y;
     // オブジェクトのキーが来る位置。直前の空白でない字(空文字は行頭)か、直前の語で見る。
     const KeyFollows = new Set(["", "{", ",", ";"]);
     const KeyModifiers = new Set(["readonly"]);
@@ -1258,6 +1258,8 @@ button.change-item:hover { background: var(--track); }
 
     return Object.freeze({
       Embeddings,
+      /** 色分けの規則を引く拡張子(`.` を除いたもの)。埋め込みを読む拡張子を、解説の検査の拡張子と突き合わせるために出す。 */
+      Extensions: Object.freeze(Object.keys(LanguageByExtension)),
       /**
        * パスの拡張子から色分けの規則を引く。
        * @param path ファイルのパス
