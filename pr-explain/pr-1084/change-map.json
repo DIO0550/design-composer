@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1084,
+  "headBranch": "claude/magical-cannon-yul8tk",
+  "baseBranch": "main",
+  "mergeBase": "c959c1f7d055f272058828386d9063441e204bc0",
+  "head": "0587cfe6cdc256664e17925f0223ec3de3b1bd55",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1072.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 169,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "0587cfe6cdc256664e17925f0223ec3de3b1bd55",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-16T15:37:23Z",
+      "subject": "📝 [Documentation]: #1070 PR #1072 の振り返りを記録する",
+      "body": "- harness/records/pr-1072.md を足す（指摘 19 件・手戻り・発火）\n\n背景:\nPR #1072（design-document/validation/ の解体）がマージされた。人・bot・\nCI へ届いた指摘は 0 件で、指摘はすべてサブエージェント（plan-reviewer\n7 件・実装検証 10 件）と自己修正（2 件）から出た。\n\n採用理由:\nharness-record の手順どおり、指摘 1 件 = 1 ブロックで分類と出どころを\n語彙から選んで書いた。発火ログに自セッションの見出しが無いので\n「計測対象外（フック不発）」とした。手戻りとフックの発火は、PR を\n出す前に Issue #1070 へ残したもの（コメント 6116806371）とこの\nセッションの履歴から書いた。\n\n代替案:\n- case-law の古い例をこの PR で直す: 判例を書けるのは harness-growth\n  だけなので、材料として記録に残すに留める\n\n影響とトレードオフ:\n差分は harness/records/ の新規 1 ファイルだけ。対策済の行は書いて\nいないので、count.sh の数え直しの起点は動かない。\n\n参考:\nhttps://github.com/DIO0550/design-composer/pull/1072\nhttps://github.com/DIO0550/design-composer/issues/1070#issuecomment-6116806371\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0164KevAoe6oKu7nFAhuTGzh",
+      "files": [
+        {
+          "path": "harness/records/pr-1072.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 169,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,169 @@\n+# PR #1072 design-document/validation/ を解体し、走査を本体・詰め替えを validation-error へ移す\n+\n+- マージ日: 2026-10-16\n+- 関連 Issue: #1070\n+- 差分規模: 8 ファイル / +1247 -786\n+\n+## ゴールと結果\n+\n+ゴールは「検証するという動作だけで立っているモジュール `design-document/validation/` を無くし、違反を集める走査は `DesignDocument` 本体、違反をエラーの形にする詰め替えは `DesignDocumentValidationError`(`validation-error/`)が持つ。`collectErrors` の出力は変えない」。達成した。\n+\n+出力を変えていない証拠として、移動の前に `validate-error-shape`(エラー配列全体を `toStrictEqual`)と並びのテストを足し、移動前のコードで緑を確かめてから動かした。GitHub 上の人のレビューは 0 件(`get_review_comments` / `get_reviews` は空、`get_comments` は bot 3 件と自分のテスト表 1 件)。CI はすべて緑、VRT は差分 0(194 件)。\n+\n+Issue アサインで起動したルーチンのセッションで実装した。Issue には作成側のセッションの「着手」コメントが先にあったが、そちらは実装を進めておらず並行作業にはなっていない。\n+\n+## 指摘\n+\n+### 1. 方針の並びが現行と違う(unknown-type の後でも fill-in-free-parent は出る)\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画は「ノードごと: unknown-type だけ、または schema → 逆転 → fill」と書いたが、現行は型の判定と関係なく fill を続ける。文面どおりに書くと出力が変わっていた。同じノードで両方が出るテストを足した。\n+- 既存ルール: implementation-flow フェーズ 3 手順 3\n+\n+### 2. prop キーの有無を守るテストが無い\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 既存の validate-* は `objectContaining` が中心で、`prop: undefined` とキーの欠落を区別しない。詰め替えを書き換えると `prop: undefined` が混ざっても通る。追加テストを `toStrictEqual` にした。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 3. 移動先に同じ導出(documentNamesOf)が既にある\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 重複名の判定が `DocumentNames.create(DocumentNames.collectNames(...))` を自前で組んでおり、本体の private `documentNamesOf` と同一。移動先では `documentNamesOf` を使うと計画に書いた。\n+- 既存ルール: rules/coding.md「ルール」(同じ処理が2箇所に現れたら共通化する)\n+\n+### 4. 走査関数を本体に置く理由が、ReferenceContext / ComponentSet を第 1 引数に取る関数に対して反証されていない\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「artboards まで要るのはドキュメントだけ」は `collectErrors` と名前の走査にしか成り立たない。戻り値の型が design-document 配下で、そちらへ置くと循環になる、を理由に足した。\n+- 既存ルール: implementation-flow フェーズ 3 手順 8\n+\n+### 5. 新しいテストファイルが既存のテストヘルパーを複製する\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `validate-reference-message` に文言を取り出すヘルパーが既にあった。新しいファイルを立てずに既存ファイルをリネームしてそこへ足す計画に直した。\n+- 既存ルール: rules/testing.md「テスト用ヘルパーの置き場所」\n+\n+### 6. ファイル表の行に、直したあとの文が無い\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: docs/05-architecture.md・本体の doc 2 か所・token-referrer の doc を「直す」とだけ書いていた。差し替える文を計画に確定させた。\n+- 既存ルール: implementation-flow フェーズ 3「変更するファイルと、そこに何を置くか」\n+\n+### 7. 古くなる case-law の記述を後続へ残していない\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `harness/case-law/` の `validation/`・`withLocation` の例がこの PR で実在しなくなるのに、どこにも残す予定が無かった。この記録の「規約への反映」に残す形にした。\n+- 既存ルール: なし\n+\n+### 8. from* 13 個のうち 8 個が既存の from* の語形と揃っていない\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 既存の `from*` は第 1 引数が変換元で、名前の後半がその型。新設分は位置を第 1 引数に取り、後半が引数の型・出どころ・kind の 3 通りに割れていた(`fromCircularRef` は存在しない型を指す)。引数順と 4 つの名前を直した。\n+- 既存ルール: rules/naming.md「メソッド名を既存のドメインに揃える」\n+\n+### 9. テストファイル名 validate-message が中身より狭い\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: ラベルを決めた後でエラー全体を `toStrictEqual` で比べる形に広げた。`validate-error-shape` へ 2 度目のリネームをした。\n+- 既存ルール: rules/testing.md「配置と命名」\n+\n+### 10. 走査を本体へ移したのに、本体のコンパニオン doc と先頭コメントが直っていない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: コンパニオン doc は「調停に徹する」、先頭コメントは「以下の関数は相手を選ぶためのもの」のままで、後ろの走査関数まで対象に読めた。分担の説明は `collectErrors` の doc 1 か所に寄せた。\n+- 既存ルール: claim-verification(comment-premise-drift)\n+\n+### 11. 分担の説明が本体のコンパニオン doc と collectErrors の doc に二重\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 同じ事実(判定は各ドメイン・詰め替えは validation-error・走査はここ)を、片方はフォルダ名、片方は型名で持っていた。指摘 10 と同じ根本原因として束ねて直した。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 12. fromBindingViolation の @returns が違反 3 種のうち 2 種しか書いていない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: `missing-public-prop` も `dangling-binding-prop` になることが抜けていた。移動元からの既存の取りこぼし。\n+- 既存ルール: rules/coding.md「doc に書く項目」\n+\n+### 13. fromDuplicatedName の doc が実在しない見出しを指す\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: `docs/02-data-model.md「名前の一意性」` は存在しない。`docs/03-schema.md「バリデーション仕様」` に直した。移動元からの既存。\n+- 既存ルール: claim-verification(comment-structure-claim)\n+\n+### 14. 関数を分けたときに「部品のルートは呼ばれない」の Why が落ちた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 移動元 `collectFillErrors` の「親を引数で要求するので、部品のルートはそもそも呼ばれない」を移さずに捨てていた。`collectNodeErrors` の `@param parentProps` に戻した。\n+- 既存ルール: rules/coding.md「Why と Why not は別物として書く」\n+\n+### 15. 種類をまたぐ並び 6 か所をどのテストも守っていない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 63 通りのミューテーションのうち、artboard の props ↔ 子、collectErrors の artboard / 循環 / 名前 / 色、名前の重複 / トークン名 / 衝突の入れ替え 6 通りが全テストを通った。validate-order に 3 件足し、6 通りとも落ちることと origin/main でも緑であることを実測した。\n+- 既存ルール: rules/testing.md「API を作り替えるときは、既存テストの観点を先に数える」\n+\n+### 16. validation-error/ に __tests__/ が無い\n+\n+- 分類: `dependency`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: モジュールの基本形(`index.ts` + `__tests__/`)から外れる。`from*` を直接呼ぶテストは計画で却下済み(文言を 2 か所で固定する)なので置かず、PR 本文に理由を書いた。\n+- 既存ルール: rules/architecture.md「モジュールの公開API」\n+\n+### 17. case-law が廃止した withLocation / validation/ を現在形で挙げている\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: `harness/case-law/naming.md` L97 が `withLocation` を `with*` の現存例として、`coding.md` L335 が `validation/` を現在形で語る。harness-growth の管轄なのでこの PR では触らず、下の「規約への反映」に残した。\n+- 既存ルール: なし\n+\n+### 18. hook-canary が通った(フック不発)\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: push 前の `echo hook-canary` が通った。実行中フラグのマーカー無し・自セッション ID の発火ログ見出し無しで、README の表では本当に不発。Issue assigned の routine 起動(3 リポジトリ、作業ディレクトリ `/home/user`)で、#1032 の不発の行と同じ形。pre-push を手で実行して全通過。禁止コマンドの実行は履歴に無し。\n+- 既存ルール: .claude/hooks/README.md「発火しているかを確かめる(カナリア)」\n+\n+### 19. コミット本文が並びのテストの比べ方を実物と違って書いた\n+\n+- 分類: `comment`\n+- 出どころ: `自己修正`\n+- 内容: df3b9ee の本文は「toStrictEqual で比べる」としたが、実際の validate-order の 3 件は `toEqual` + `objectContaining`。PR 解説を書いた general-purpose エージェントが気づいた。push 済みなので書き換えず、Issue に訂正を残した。\n+- 既存ルール: claim-verification(comment-structure-claim)\n+\n+## 手戻り\n+\n+- 計画の検証(plan-reviewer)の 7 件を受け、planner で計画を直した(並び・テストの比べ方・テストファイルの扱いが変わった)。`.claude/agents/plan-reviewer.md` L57 から `validation/` を外す案は、再作成を防ぐ警告として働き続けるので取り下げた\n+- 実装の検証で `from*` の引数順と 4 つの名前を変えた(指摘 8)。計画の段階で 13 個の名前を既存の `from*` の語形と照らしていなかった\n+- テストファイルを 2 回リネームした(`validate-reference-message` → `validate-message` → `validate-error-shape`、指摘 9)\n+- 並びのテスト 3 件を検証の 2 段目のあとで足した(指摘 15)\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録だけを残す回で、集計と介入は harness-growth が行う。\n+\n+harness-growth への材料として、この PR で次の判例の例が実在しなくなった(`validation/` の削除と `withLocation` の廃止)。\n+\n+- `harness/case-law/naming.md` L41 / L97\n+- `harness/case-law/coding.md` L281-287 / L335\n+- `harness/case-law/architecture.md` L35-39",
+          "patchLines": 170,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
