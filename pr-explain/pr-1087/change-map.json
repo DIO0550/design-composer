@@ -1,0 +1,362 @@
+{
+  "version": 2,
+  "pr": 1087,
+  "headBranch": "claude/magical-cannon-zdbyke",
+  "baseBranch": "main",
+  "mergeBase": "c959c1f7d055f272058828386d9063441e204bc0",
+  "head": "e7dd5f5a22245797c6d67ed6426b962e3d35fe90",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/elapsed/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/px/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/type-glyph/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/ts_sources.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-import-rules.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "changed": false
+        },
+        {
+          "path": "rules/architecture.md",
+          "changed": false
+        },
+        {
+          "path": "rules/consistency.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "f6c228ee3ac5f54fbb15c62042858f0f82072d94",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-16T15:53:58Z",
+      "subject": "✨ [New Feature]: #1005 feature の外から入れ子の子 feature を読む import を違反にする",
+      "body": "- import-rule-violations.py に種別 feature-nested-from-outside を足す\n- feature_relation() で import 元が feature の外(owner is None)のとき、\n  読む先がトップレベルの feature なら許し、入れ子の子なら違反として返す\n- scan() の集計と報告順(feature-ancestor の直後)に新しい種別を足す\n\n背景:\napp/ から @/features/editor/features/tokens のような入れ子の子の公開口を\n読んでも、検出器は違反 0 件・exit 0 を返していた。feature_relation() が\nowner is None なら向きを見ずに通していたため。\n\n採用理由:\nrules/consistency.md は「親でしか使わない子は親の配下へ」「2 つ以上の\n階層から必要とされたら 1 つ上へ移す」と書く。app/ が子を読んだ時点で\nその子は親以外からも使われており、置き場所と使われ方が食い違う。\n判定は owner is None の分岐の中にだけ置き、feature から読む経路の\n判定(sibling / ancestor)は変えない。\n\n代替案:\n- feature-sibling に含める: 「兄弟」は feature 同士の関係の語で、\n  app/ は feature ではないので意味が食い違う(Issue でユーザー判断)\n- 分岐を入れ替え parent_feature_of(reached) == owner の None == None で\n  トップレベルを通す: 1 行減るが、外からはトップレベルだけ許すという\n  判断が None 同士の一致という偶然に埋もれる\n- classify() 側で owner is None を見る: 向きを答えるのは\n  feature_relation() の責務で、種別を返す場所を 1 箇所に保つ\n- 種別名 feature-nest-* に揃える: feature-nest-depth は段数を数える\n  名詞句で、こちらは読まれる対象(入れ子の子)の性質を表す。\n  feature-nest-from-outside は「外からネストする」と読めてしまう\n\n影響とトレードオフ:\n現状の src/ には該当する import が 0 件で、既存コードは落ちない。\napp/ 以外の feature の外(components/ libs/ 等)から読んでも同じく\n違反になるが、それらは oxlint の向きの制約で features を読めない。\n\n参考:\n- Issue #1005\n- #668(閉じた PR)の判定表はこのケースを違反として期待していた\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01PwEkpuCmBkZPrsLytaWJ5K",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 2,
+          "patch": "@@ -6,11 +6,12 @@\n 層と方向の対（`services/` → `features/` のように、呼び出し元と禁止パターンが静的に決まる\n もの）は `.oxlintrc.json` の `no-restricted-imports` が見るので、ここでは扱わない。\n \n-報告する違反は 7 つ。\n+報告する違反は 8 つ。\n \n - `feature-public-api` — feature の外から、その feature の公開口以外を読んでいる\n - `feature-sibling` — 子 feature が、親以外の feature を読んでいる（公開口経由でも）\n - `feature-ancestor` — 子 feature が、自分を入れている親を読んでいる\n+- `feature-nested-from-outside` — feature の外から、入れ子の子 feature を読んでいる（公開口経由でも）\n - `feature-nest-depth` — feature の入れ子が 2 段より深い\n - `module-public-api` — `index.ts` を持つフォルダの内部を、そのフォルダの外から読んでいる\n - `domains-category` — `src/domains/` のモジュールがカテゴリのフォルダの下にいない\n@@ -139,13 +140,18 @@ def feature_relation(owner: str | None, reached: str) -> tuple[str, str] | None:\n \n     許すのは**親から直下の子へ**の一方向だけ。子同士を繋ぐのは親の仕事で、子が別の子を\n     直接読むと、同じ階層の中に隠れた上下関係ができる（`rules/consistency.md`）。\n+    feature の外から入ってよいのはトップレベルの feature だけ（`rules/consistency.md`\n+    「feature の構成とネスト」）。\n \n     @param owner import を書いている側の feature。feature の外なら `None`\n     @param reached import 先の feature\n     @returns 違反なら「種別, 理由」の対。許される向きなら `None`\n     \"\"\"\n     if owner is None:\n-        return None\n+        if parent_feature_of(reached) is None:\n+            return None\n+        reason = f\"入れ子の子 {reached} を feature の外から読んでいる（親の公開口を通すか、昇格する）\"\n+        return (\"feature-nested-from-outside\", reason)\n     if parent_feature_of(reached) == owner:\n         return None\n     if owner.startswith(f\"{reached}/features/\"):\n@@ -284,6 +290,7 @@ def scan(root: Path) -> int:\n     bypassing: list[str] = []\n     siblings: list[str] = []\n     ancestor_reads: list[str] = []\n+    nested_reads: list[str] = []\n     for importer, targets in graph.items():\n         for number, target in targets:\n             kind, reason = classify(importer, target, modules)\n@@ -292,6 +299,7 @@ def scan(root: Path) -> int:\n                 \"module-public-api\": bypassing,\n                 \"feature-sibling\": siblings,\n                 \"feature-ancestor\": ancestor_reads,\n+                \"feature-nested-from-outside\": nested_reads,\n             }.get(kind)\n             if collected is not None:\n                 collected.append(f\"{importer}:{number} -> {target}（{reason}）\")\n@@ -309,6 +317,7 @@ def scan(root: Path) -> int:\n         (\"feature-public-api\", crossing),\n         (\"feature-sibling\", siblings),\n         (\"feature-ancestor\", ancestor_reads),\n+        (\"feature-nested-from-outside\", nested_reads),\n         (\"feature-nest-depth\", too_deep),\n         (\"module-public-api\", bypassing),\n         (\"domains-category\", uncategorized),",
+          "patchLines": 58,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e5f15b4be2e6ff57cde71c535293944d5d753861",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-16T15:54:14Z",
+      "subject": "🧪 [Tests]: #1005 feature の外から入れ子の子を読むケースを判定表に足す",
+      "body": "- 外から入れ子の子の公開口・__tests__・__stories__・import type を読むと\n  feature-nested-from-outside になるケースを足す\n- 外から 3 段目を読むと feature-nest-depth と両方出るケースを足す\n- 外から入れ子の子の内部を読むと feature-public-api だけになるケースを足す\n- 対照: 外からトップレベルの __tests__ 公開口は通る / 別のトップレベル\n  feature が入れ子の子を読むのは feature-sibling のまま、を足す\n\n背景:\n#689 の判定表は仕様が決まっていなかったためこのケースを固定していな\nかった。#1005 で違反とすることが決まった。\n\n採用理由:\n新しい分岐を owner is None の外に書く壊し方(parent_feature_of(reached)\n!= owner なら nested-from-outside)は、外から読むケースだけでは素通りする。\nfeature から入れ子の子を読む対照で、外の経路と feature の経路の対を揃える\n(plan-reviewer の指摘)。\n\n代替案:\n- 外から読むケースだけ足す: 上の壊し方を検出できないためやめた\n\n影響とトレードオフ:\n検出器を元の return None に戻すと新しい違反ケース 5 件、判定を\nowner is None の外へ出すと probe-b の対照を含む既存ケース、外から常に\n違反にすると pass の対照 2 件、公開口より先に向きを判定すると内部を\n読むケースが落ちることを、壊して確かめた。\n\n参考:\n- Issue #1005\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01PwEkpuCmBkZPrsLytaWJ5K",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "patch": "@@ -139,6 +139,7 @@ pass|親 feature が直下の子 feature の __stories__ 公開口を読む|src/\n pass|feature が自分の中のモジュールの公開口を読む|src/features/editor/features/sidebar/probe.ts>@/features/editor/features/sidebar/components/layers-panel\n pass|モジュールの中のファイルが同じモジュールの内部を読む|src/features/editor/features/sidebar/components/layers-panel/probe.ts>./row\n pass|feature の外がトップレベル feature の公開口を読む|src/app/probe.ts>@/features/editor\n+pass|feature の外がトップレベル feature の __tests__ 公開口を読む|src/features/editor/__tests__/index.ts>- src/app/probe.ts>@/features/editor/__tests__\n pass|feature 層の直下に置いたファイルは親 feature に属する|src/features/editor/features/probe.ts>@/features/editor/features/sidebar\n pass|feature の中の features という名前の普通のフォルダは feature 層と数えない|src/features/editor/components/features/toolbar/probe.ts>@/features/editor/features/tokens\n pass|feature が自分の __tests__ の中のファイルを直接読む(__tests__ はモジュールと数えない)|src/features/editor/features/tokens/__tests__/fixture.ts>- src/features/editor/features/tokens/probe.ts>./__tests__/fixture\n@@ -157,10 +158,17 @@ feature-sibling|兄弟 feature の公開口を読む|src/features/editor/feature\n feature-sibling|兄弟 feature の __tests__ 公開口を読む|src/features/editor/features/sidebar/probe.ts>@/features/editor/features/tokens/__tests__\n feature-sibling|兄弟 feature の __stories__ 公開口を読む|src/features/editor/features/tokens/probe.ts>@/features/editor/features/sidebar/__stories__\n feature-sibling|トップレベルの feature 同士が読む|src/features/probe-a/index.ts>- src/features/probe-b/index.ts>@/features/probe-a\n+feature-sibling|別のトップレベル feature が入れ子の子の公開口を読むのは、外からではなく feature 間の向きで報告する|src/features/probe-b/index.ts>@/features/editor/features/sidebar\n feature-sibling*2|兄弟が読み合って閉路になっても、出るのは feature-sibling だけ|src/features/editor/features/sidebar/probe.ts>@/features/editor/features/tokens src/features/editor/features/tokens/probe.ts>@/features/editor/features/sidebar\n feature-sibling+feature-nest-depth|祖父 feature が孫 feature を読む|src/features/editor/features/sidebar/features/tree/index.ts>- src/features/editor/probe.ts>@/features/editor/features/sidebar/features/tree\n feature-ancestor|子 feature が親 feature を読む|src/features/editor/features/sidebar/probe.ts>@/features/editor\n feature-ancestor|親が子を読んでいるところへ子から親への辺が増えても、出るのは feature-ancestor だけ|src/features/editor/probe.ts>@/features/editor/features/sidebar src/features/editor/features/sidebar/probe.ts>@/features/editor\n+feature-nested-from-outside|feature の外が入れ子の子 feature の公開口を読む|src/app/probe.ts>@/features/editor/features/tokens\n+feature-nested-from-outside|feature の外が入れ子の子 feature の __tests__ 公開口を読む|src/app/probe.ts>@/features/editor/features/tokens/__tests__\n+feature-nested-from-outside|feature の外が入れ子の子 feature の __stories__ 公開口を読む|src/app/probe.ts>@/features/editor/features/sidebar/__stories__\n+feature-nested-from-outside|feature の外が import type だけで入れ子の子 feature を読む|src/app/probe.ts>type:@/features/editor/features/tokens\n+feature-nested-from-outside+feature-nest-depth|feature の外が 3 段目の feature を読む|src/features/editor/features/sidebar/features/tree/index.ts>- src/app/probe.ts>@/features/editor/features/sidebar/features/tree\n+feature-public-api|feature の外が入れ子の子 feature の内部を読むのは、向きではなく公開口で報告する|src/app/probe.ts>@/features/editor/features/sidebar/components/layers-panel\n feature-nest-depth|入れ子が 3 段目の feature は import が無くても報告する|src/features/editor/features/sidebar/features/tree/index.ts>-\n module-public-api|index.tsx を持つモジュールの内部を、そのフォルダの外から読む|src/components/probe.ts>@/components/type-glyph/glyph-path\n module-public-api|.tsx からモジュールの内部を読む|src/components/probe.tsx>@/components/type-glyph/glyph-path",
+          "patchLines": 26,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "c71c3718aac48c7918e5cddd84326eabdb1815be",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-16T15:54:15Z",
+      "subject": "📝 [Documentation]: #1005 外から読めるのはトップレベルの feature だけと規約と案内に書く",
+      "body": "- rules/consistency.md「feature の構成とネスト」の同じ 1 行に規範と\n  新しい種別名を足す\n- .claude/hooks/README.md の検出器の説明に種別を足し、probe のレシピに\n  違反になる例と通る対照を足す\n- pre-push-import-rules.sh の deny 文言に直し方の 1 文を足す\n\n背景:\ndeny 文言は根拠として rules/consistency.md を指すが、そこに「外から\n読めるのはトップレベルだけ」が無く、読みに行っても理由が見つからない\n(plan-reviewer の指摘)。\n\n採用理由:\nrules/ は常時ロードの行数がラチェット(811/811)で上限に達しているので、\n既存の 1 行を書き換えて行数を増やさない。\n\n代替案:\n- 種別名だけを列挙に足す: 子同士の話をしている文に、外から子を読む\n  種別だけが並び、文の主語と中身がずれるためやめた\n- 判例(harness/case-law/)に置く: 書けるのは harness-growth だけで、\n  これは判例ではなく規範なので rules/ に置く\n\n影響とトレードオフ:\n常時ロードの行数は変わらない(count.sh --ratchet は exit 0)。\n\n参考:\n- Issue #1005\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01PwEkpuCmBkZPrsLytaWJ5K",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 1,
+          "patch": "@@ -55,7 +55,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `src/` のファイル直下の宣言とコンパニオンオブジェクトの直下のメソッドのうち、doc コメントの無いもの・項目の欠けたものを探す。`--all` で全体を見る |\n | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |\n | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh`(CI と `harness/githooks/pre-push`) | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |\n-| `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・親から直下の子以外の feature 間の import（`feature-sibling` / `feature-ancestor`）・3 段目以降の feature（`feature-nest-depth`）・ファイル単位の循環（`import-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |\n+| `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・親から直下の子以外の feature 間の import（`feature-sibling` / `feature-ancestor`）・feature の外から入れ子の子 feature を読む import（`feature-nested-from-outside`）・3 段目以降の feature（`feature-nest-depth`）・ファイル単位の循環（`import-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |\n | `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-discriminant-violations.py` / `lib/story-title-violations.py` / `lib/named-path-violations.py`（報告の形だけ） | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方と、feature の連なりの辿り方（`feature_of()`）。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |\n | `lib/named-path-violations.py` | `pre-push-named-paths.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | コメント（`.ts` / `.tsx`）と Markdown の全文が名指ししているパスのうち、実体を持たないもの（`named-path-missing`）を報告する |\n | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-discriminants.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |\n@@ -499,6 +499,16 @@ printf 'export { EditorScreen } from \"@/features/editor/components/editor-screen\n python3 .claude/hooks/lib/import-rule-violations.py src; echo \"exit=$?\"   # → [feature-public-api] 1 件・exit=1\n rm src/app/probe.ts\n \n+# feature の外から入れ子の子の公開口を読むと落ちること(feature-nested-from-outside。公開口を通っていても通さない)\n+printf 'export { TokenList } from \"@/features/editor/features/tokens\";\\n' > src/app/probe.ts\n+python3 .claude/hooks/lib/import-rule-violations.py src; echo \"exit=$?\"   # → [feature-nested-from-outside] 1 件・exit=1\n+rm src/app/probe.ts\n+\n+# feature の外からでもトップレベル feature の公開口は通ること\n+printf 'export { EditorScreen } from \"@/features/editor\";\\n' > src/app/probe.ts\n+python3 .claude/hooks/lib/import-rule-violations.py src; echo \"exit=$?\"   # → 違反 0 件・exit=0\n+rm src/app/probe.ts\n+\n # 入れ子モジュールの index は通ること(`libs/<x>/fake` を例外リスト無しで通す根拠)\n printf 'import { FakeDocumentIpc } from \"@/libs/document-ipc/fake\";\\nexport const Probe = FakeDocumentIpc;\\n' \\\n   > src/features/editor/probe.ts",
+          "patchLines": 26,
+          "truncated": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-import-rules.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -18,4 +18,4 @@ source \"$hook_dir/lib/pre-push-detector.sh\"\n deny_on_violations \\\n   \"$hook_dir/lib/import-rule-violations.py\" \\\n   \"import 規約\" \\\n-  \"フォルダ外部からの import は index.ts 経由にし、他 feature は公開口（その feature の index.ts、テストは __tests__/index.ts）だけを読んでください。子 feature を繋ぐのは親だけです（rules/architecture.md「モジュールの公開API」「依存方向のルール」/ rules/consistency.md「feature の構成とネスト」）。\"\n+  \"フォルダ外部からの import は index.ts 経由にし、他 feature は公開口（その feature の index.ts、テストは __tests__/index.ts）だけを読んでください。子 feature を繋ぐのは親だけです。feature の外から読めるのはトップレベルの feature だけです（rules/architecture.md「モジュールの公開API」「依存方向のルール」/ rules/consistency.md「feature の構成とネスト」）。\"",
+          "patchLines": 6,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": "rules/consistency.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -47,7 +47,7 @@\n \n **ドメイン軸でまとまっている feature はネストしない。** 複数の画面領域に UI を提供していても、同じドメイン・同じ選択状態に反応して一緒に変わるなら 1 つのまとまり。使われ方で割ると凝集が壊れる。参照元が 2 つ以上ある feature は、共通の親の直下に置き、親が両方へ差し込む。\n \n-子が別の子の中身を必要とするとき、直接 import せず**親が差し込む**。違反は `import-rule-violations.py` が `feature-public-api` / `feature-sibling` / `feature-ancestor` / `feature-nest-depth` として報告する。\n+子が別の子の中身を必要とするとき、直接 import せず**親が差し込む**。feature の外(`app/`)から読めるのはトップレベルの feature だけで、入れ子の子は親の公開口を通す。違反は `import-rule-violations.py` が `feature-public-api` / `feature-sibling` / `feature-ancestor` / `feature-nested-from-outside` / `feature-nest-depth` として報告する。\n \n - 中身を `ReactElement` として親から渡す(`ReactNode` を避ける理由は `rules/coding.md`「列挙した状態の網羅を型で強制する」)\n - 行き先が複数あるなら `Record<行き先, 定義>` で受け取り、**全行き先が揃っていることを型で保証する**",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e7dd5f5a22245797c6d67ed6426b962e3d35fe90",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-16T16:03:54Z",
+      "subject": "📝 [Documentation]: #1005 feature の外の範囲が読めるよう説明を直し、重複する probe を外す",
+      "body": "- feature_relation() の docstring を「feature 同士で許すのは親から直下の\n  子へ」と主語を限定する\n- 種別一覧の feature-nested-from-outside 行を「どの feature にも属さない\n  ファイル(app/ など)から」にする\n- rules/consistency.md の「feature の外(app/)」を「app/ など feature の\n  外」にする(1 行のまま)\n- .claude/hooks/README.md の probe レシピからこの回で足した 2 本を外す\n\n背景:\n実装の検証(comment / naming / solution / over-guard / duplication の\n各 reviewer)で、次の指摘が出た。\n- docstring の「一方向だけ」が外からトップレベルを許す分岐と食い違う\n- 同じ一覧で「feature の外」が 2 つの意味になっている\n- rules の括弧書きが検出器の範囲より狭く読める\n- README の probe が判定表と同じ入力・期待を誰も照合しない形で持つ\n\n採用理由:\n検出器が見るのは feature_of() が None を返すすべての呼び出し元で、\napp/ はその代表例にあたる。範囲は「feature の外」、例は app/ と書き\n分ける。probe は判定表(CI が走らせる)に任せ、README 側の期待が\n古くなる経路を作らない。\n\n代替案:\n- rules から括弧書きを外す: 実際に features を読めるのは app/ だけで、\n  例が無いと読み手がどこの話か掴みにくい\n- 既存の probe(feature-sibling 等)も合わせて整理する: 既存分の\n  整理はスコープ外とし、#1086 で扱う\n\n影響とトレードオフ:\n文面だけの変更で、判定は変わらない(判定表・pre-push・vitest 通過)。\n常時ロードの行数は 811/811 のまま。\n\n参考:\n- Issue #1005 のコメント 6219367977(採否)\n- #1086(種別の一覧の重複)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01PwEkpuCmBkZPrsLytaWJ5K",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 10,
+          "patch": "@@ -499,16 +499,6 @@ printf 'export { EditorScreen } from \"@/features/editor/components/editor-screen\n python3 .claude/hooks/lib/import-rule-violations.py src; echo \"exit=$?\"   # → [feature-public-api] 1 件・exit=1\n rm src/app/probe.ts\n \n-# feature の外から入れ子の子の公開口を読むと落ちること(feature-nested-from-outside。公開口を通っていても通さない)\n-printf 'export { TokenList } from \"@/features/editor/features/tokens\";\\n' > src/app/probe.ts\n-python3 .claude/hooks/lib/import-rule-violations.py src; echo \"exit=$?\"   # → [feature-nested-from-outside] 1 件・exit=1\n-rm src/app/probe.ts\n-\n-# feature の外からでもトップレベル feature の公開口は通ること\n-printf 'export { EditorScreen } from \"@/features/editor\";\\n' > src/app/probe.ts\n-python3 .claude/hooks/lib/import-rule-violations.py src; echo \"exit=$?\"   # → 違反 0 件・exit=0\n-rm src/app/probe.ts\n-\n # 入れ子モジュールの index は通ること(`libs/<x>/fake` を例外リスト無しで通す根拠)\n printf 'import { FakeDocumentIpc } from \"@/libs/document-ipc/fake\";\\nexport const Probe = FakeDocumentIpc;\\n' \\\n   > src/features/editor/probe.ts",
+          "patchLines": 17,
+          "truncated": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -11,7 +11,7 @@\n - `feature-public-api` — feature の外から、その feature の公開口以外を読んでいる\n - `feature-sibling` — 子 feature が、親以外の feature を読んでいる（公開口経由でも）\n - `feature-ancestor` — 子 feature が、自分を入れている親を読んでいる\n-- `feature-nested-from-outside` — feature の外から、入れ子の子 feature を読んでいる（公開口経由でも）\n+- `feature-nested-from-outside` — どの feature にも属さないファイル（`app/` など）から、入れ子の子 feature を読んでいる（公開口経由でも）\n - `feature-nest-depth` — feature の入れ子が 2 段より深い\n - `module-public-api` — `index.ts` を持つフォルダの内部を、そのフォルダの外から読んでいる\n - `domains-category` — `src/domains/` のモジュールがカテゴリのフォルダの下にいない\n@@ -138,8 +138,8 @@ def is_feature_entry(target: str, name: str) -> bool:\n def feature_relation(owner: str | None, reached: str) -> tuple[str, str] | None:\n     \"\"\"他 feature の公開口へ入る辺が、向きとして許されるかを答える。\n \n-    許すのは**親から直下の子へ**の一方向だけ。子同士を繋ぐのは親の仕事で、子が別の子を\n-    直接読むと、同じ階層の中に隠れた上下関係ができる（`rules/consistency.md`）。\n+    feature 同士で許すのは**親から直下の子へ**の一方向だけ。子同士を繋ぐのは親の仕事で、\n+    子が別の子を直接読むと、同じ階層の中に隠れた上下関係ができる（`rules/consistency.md`）。\n     feature の外から入ってよいのはトップレベルの feature だけ（`rules/consistency.md`\n     「feature の構成とネスト」）。\n ",
+          "patchLines": 20,
+          "truncated": false
+        },
+        {
+          "path": "rules/consistency.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -47,7 +47,7 @@\n \n **ドメイン軸でまとまっている feature はネストしない。** 複数の画面領域に UI を提供していても、同じドメイン・同じ選択状態に反応して一緒に変わるなら 1 つのまとまり。使われ方で割ると凝集が壊れる。参照元が 2 つ以上ある feature は、共通の親の直下に置き、親が両方へ差し込む。\n \n-子が別の子の中身を必要とするとき、直接 import せず**親が差し込む**。feature の外(`app/`)から読めるのはトップレベルの feature だけで、入れ子の子は親の公開口を通す。違反は `import-rule-violations.py` が `feature-public-api` / `feature-sibling` / `feature-ancestor` / `feature-nested-from-outside` / `feature-nest-depth` として報告する。\n+子が別の子の中身を必要とするとき、直接 import せず**親が差し込む**。`app/` など feature の外から読めるのはトップレベルの feature だけで、入れ子の子は親の公開口を通す。違反は `import-rule-violations.py` が `feature-public-api` / `feature-sibling` / `feature-ancestor` / `feature-nested-from-outside` / `feature-nest-depth` として報告する。\n \n - 中身を `ReactElement` として親から渡す(`ReactNode` を避ける理由は `rules/coding.md`「列挙した状態の網羅を型で強制する」)\n - 行き先が複数あるなら `Record<行き先, 定義>` で受け取り、**全行き先が揃っていることを型で保証する**",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/components/type-glyph/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/domains/unit/elapsed/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-violations.py",
+      "to": ".claude/hooks/lib/ts_sources.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-import-rules.sh",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-import-rules.sh",
+      "to": ".claude/hooks/lib/pre-push-detector.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-import-rules.sh",
+      "to": "rules/architecture.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-import-rules.sh",
+      "to": "rules/consistency.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    }
+  ]
+}
