@@ -1,24 +1,30 @@
 #!/usr/bin/env python3
-"""PR の解説(`explain.json`、version 1)を検査し、テストのコード抜粋の中身を足して書き出す。
+"""PR の解説(`explain.json`、version 1)を検査し、コード抜粋の中身を足して書き出す。
 
 解説はセッションが `pr-explain` スキルで書き、ページの固定スクリプトが変更の地図(`change-map.json`)と
-合わせて 4 画面に組む。ここが防ぐのはスクリプトの注入ではなく(それは `check-pr-explain-template.py` の
+合わせて 5 画面に組む。ここが防ぐのはスクリプトの注入ではなく(それは `check-pr-explain-template.py` の
 管轄)、**形の崩れと解説の中の参照切れ**(ページが黙って空欄を出す)。報告する違反は 4 つ。
 
 - `pr-explain-shape` — 読めない・形が表と違う(必須の欠け・知らないキー・重複したキー・型・語彙・
-  綴り・一意性・範囲・状況の表のマスの揃い・振る舞いの前後が同じ)
+  綴り・一意性・範囲・状況の表のマスの揃い・振る舞いの前後が同じ・用語の印の書き方・強調の範囲)
 - `pr-explain-meta` — `pr` が公開先の PR と違う
-- `pr-explain-ref` — 解説の中の参照が解説の中に無い(message の from / to・flow の steps など)
+- `pr-explain-ref` — 解説の中の参照が解説の中に無い(message の from / to・flow の steps など)・用語の印が terms に
+  無い・どの印からも指されない用語
 - `pr-explain-code` — 解説時点の `sha` がこのリポジトリに無い・抜粋のパスがその sha に無い・範囲が
   ファイルに収まらない
 
 **地図を指す参照(commitStory の sha・Note のパスと行・Target の layer / file・LayerRole の layer・
-concept が地図にあるか)は見ない。** 地図は push のたびに作り直されるので、解説を書いた時点で
-合っていても後で外れる。外れたものはページが「地図に無い」と出す。
+concept・primers の出てくる場所の `path`・`lineRange`・`shas` が地図にあるか)は見ない。** 地図は push のたびに
+作り直されるので、解説を書いた時点で合っていても後で外れる。外れたものはページが「地図に無い」と出す。
 
-抜粋(`tests[].excerpt`)の中身は手で写させず、`git cat-file blob <sha>:<path>` の行範囲をここで
-`text` として足す。行は改行で割って数える(末尾に改行の無い最終行も 1 行)。入力に `text` を
-書いた解説は落とす(手で写した中身が黙って上書きされるのを、書いた側に知らせるため)。
+抜粋(Excerpt を指すすべての道筋。`tests[].excerpt`・`primers[].passages[].excerpt`)の中身は手で写させず、
+`git cat-file blob <sha>:<path>` の行範囲をここで `text` として足す。行は改行で割って数える(末尾に改行の
+無い最終行も 1 行)。入力に `text` を書いた解説は落とす(手で写した中身が黙って上書きされるのを、書いた側に
+知らせるため)。強調の範囲(`emphasis`)は書いたまま残す。
+
+埋め込み(script / style 要素・ヒアドキュメント)を読む拡張子の抜粋には、始まりの行の頭で効いている埋め込みを開いた行を
+`openingLine` として足す。ページが抜粋を途中の行から色分けするためで、拡張子と規則は `lib/embedded_regions.py`。`text` と
+同じく出力だけのキーで、入力に書いた解説は Excerpt の形に無いキーとして落とす。
 
 見出し(`Heading` を使うキー)は、小文字と大文字の継ぎ目(`[a-z][A-Z]`)がある複合語を、docs に出る語の
 ほかは落とす。大文字だけの略語(UI 案・VRT)はこのリポジトリの語彙なので通す。1 語の識別子・ファイル名・snake_case は
@@ -41,6 +47,13 @@ concept が地図にあるか)は見ない。** 地図は push のたびに作�
 - 1 語の識別子・ファイル名・snake_case は綴りで識別子と言い切れないので、この規則でも捕まらない。書き方の
   規則(`pr-explain` スキル)で受ける
 
+技術の手引き(`primers`)の本文の用語の印 `[[表示|用語の id]]` は、`MarkedText` のキー(`gist`・text と注意メモの段の
+`text`・引数の `text`)だけで読む。印の書き方は `pr-explain` スキルの「共通の規則」が持ち、ここには理由だけを置く。
+
+- ページは印で先に割り、印の中と外でそれぞれ `` `…` `` をコードにするので、印をまたいで `` ` `` は対にならない。そのため
+  `` ` `` は印の外の切れ端ごとに数える
+- `` ` `` の中に書いた印の形は、コードのつもりでも印になる。`` ` `` の外の印でない `[[` / `]]` は、印の書き損じと見分けられない
+
 使い方:
     build-pr-explain.py <explain.json> --pr <番号> --out <書き出す先> [--repo <リポジトリ>]
 
@@ -52,8 +65,12 @@ import json
 import re
 import subprocess
 import sys
+from functools import reduce
 from pathlib import Path
 from typing import Callable, NamedTuple
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / "lib"))
+from embedded_regions import opening_lines
 
 # 抜粋の行数の上限。
 MaxExcerptLines = 80
@@ -153,6 +170,42 @@ def is_text_with_only_docs_joints(value: object) -> bool:
 
 IdPattern = re.compile(r"[A-Za-z0-9][A-Za-z0-9_-]{0,63}")
 ShaPattern = re.compile(r"[0-9a-f]{40}")
+# 用語の印 `[[表示|用語の id]]`。ページの `TermMarks.Pattern` と同じ綴りで、`pr-explain-core-cases.sh` が突き合わせる。
+TermMarkPattern = re.compile(r"\[\[([^\[\]|]+)\|(" + IdPattern.pattern + r")\]\]")
+
+
+def code_spans_of(text: str) -> list[tuple[bool, str]]:
+    """文を `` ` `` で割り、コードか(奇数番目)と切れ端の組にする。閉じていない最後の `` ` `` はコードにせず文字のまま前の
+    切れ端につなぐ。ページの `CodeSpans.create` と同じ割り方で、`pr-explain-core-cases.sh` が突き合わせる。
+    """
+    parts = text.split("`")
+    has_unclosed = len(parts) % 2 == 0
+    paired = [*parts[:-2], f"{parts[-2]}`{parts[-1]}"] if has_unclosed else parts
+    return [(index % 2 == 1, part) for index, part in enumerate(paired)]
+
+
+def plain_pieces_of(text: str) -> list[str]:
+    """印で割った、印の外の切れ端。`n` 個目の切れ端は `n` 個目の印の前にある(ページの `TermMarks.piecesOf` と同じ割り方)。"""
+    return TermMarkPattern.split(text)[0::3]
+
+
+def has_stray_brackets(value: str) -> bool:
+    """`` ` `` の外に、印になっていない `[[` / `]]` があるか。ページは印の外の切れ端ごとに `` ` `` を対にするので、切れ端ごとに見る。"""
+    outside_code = [part for piece in plain_pieces_of(value) for is_code, part in code_spans_of(piece) if not is_code]
+    return any("[[" in part or "]]" in part for part in outside_code)
+
+
+def has_mark_in_code(value: str) -> bool:
+    """`` ` `` の中に印の形を書いたか。印の始まりより前にある、印の外の `` ` `` が奇数なら、書き手はコードの中に書いている。"""
+    plains = plain_pieces_of(value)
+    ticks_before = [sum(piece.count("`") for piece in plains[:index + 1]) for index in range(len(plains) - 1)]
+    return any(count % 2 == 1 for count in ticks_before)
+
+
+def is_marked_text(value: object) -> bool:
+    """空でない文字列で、用語の印の 2 つの規則(`has_stray_brackets` / `has_mark_in_code`)のどちらにも当たらないか。"""
+    return is_text(value) and not has_stray_brackets(value) and not has_mark_in_code(value)
+
 
 # 値の規則と、違反したときの説明。
 ScalarRules: dict[str, tuple[Callable[[object], bool], str]] = {
@@ -165,6 +218,11 @@ ScalarRules: dict[str, tuple[Callable[[object], bool], str]] = {
     "flag": (lambda value: isinstance(value, bool), "true か false"),
     "true": (lambda value: value is True, "true(偽なら書かない)"),
     "version": (lambda value: type(value) is int and value == 1, "1"),
+    "marked_text": (
+        is_marked_text,
+        "空でない文字列(用語の印は [[表示|用語の id]]。` の中に印の形を書かない・` の外に印でない [[ / ]] を書かない・"
+        "閉じていない ` の後ろはコードにならず、そこの [[ / ]] も ` の外として数える)",
+    ),
 }
 
 Text = Scalar("text")
@@ -173,14 +231,18 @@ UserText = Scalar("user_text")
 Id = Scalar("id")
 Sha = Scalar("sha")
 Count = Scalar("count")
+MarkedText = Scalar("marked_text")
 
-# 技法・phase・やりとりの種類・方式・やりとりの状態の語彙。ページの表(固定スクリプトの核の `Vocabulary`)と
-# 同じキーの集合で、`pr-explain-core-cases.sh` が突き合わせる。やりとりの状態は、省けば前からあって変えていないもの。
+# 技法・phase・やりとりの種類・方式・やりとりの状態・技術の節の状態・注意メモの種類の語彙。ページの表(固定スクリプトの
+# 核の `Vocabulary`)と同じキーの集合で、`pr-explain-core-cases.sh` が突き合わせる。やりとりの状態と技術の節の状態は、
+# 省けば前からあって変えていないもの。
 Techniques = ("boundary", "equivalence", "error", "state", "regression", "idempotence", "type")
 Phases = ("prep", "core", "hard", "revise", "fin")
 MessageKinds = ("cmd", "qry", "evt")
 Vias = ("call", "http", "state", "log", "exec", "file")
 MessageStatuses = ("added", "changed", "removed")
+PrimerStatuses = ("added", "changed")
+RemarkKinds = ("caution", "memo", "rule", "spec", "history")
 
 # 前後の組(振る舞いの変わったこと・増えた状況が同じ形で持つ)。これまでは 0 件でよく、これからは 1 件以上。
 ImpactSides: dict[str, Field] = {
@@ -206,6 +268,8 @@ Shapes: dict[str, dict[str, Field]] = {
         "suites": may(Many(Shape("Suite"))),
         "tests": may(Many(Shape("Test"))),
         "impact": may(Shape("Impact")),
+        "primers": may(Many(Variant("Primer"))),
+        "terms": may(Many(Shape("Term"))),
     },
     "Overview": {
         "title": need(Text),
@@ -305,14 +369,34 @@ Shapes: dict[str, dict[str, Field]] = {
         "targets": may(Many(Text)),
         "covers": may(Many(Id)),
     },
-    # `text` はここが足す出力だけのキーなので、入力の形には無い。
-    "Excerpt": {"path": need(Text), "start": need(Count), "end": need(Count)},
+    # `text` と `openingLine` はここが足す出力だけのキーなので、入力の形には無い。
+    "Excerpt": {"path": need(Text), "start": need(Count), "end": need(Count), "emphasis": may(Many(Shape("LineRange")))},
     "Values": {"columns": need(Many(Text, least=1)), "rows": need(Many(Shape("Row")))},
     "Row": {"cells": need(Many(Text)), "boundary": may(Scalar("flag"))},
+    "Parameter": {"name": need(Text), "type": need(Text), "text": need(MarkedText), "note": may(Text)},
+    # `lineRange` は解説の sha の時点の行番号。`shas` は地図と照合しない(地図を指す参照)。
+    "Occurrence": {"path": need(Text), "lineRange": may(Shape("LineRange")), "text": need(Text), "shas": may(Many(Sha, distinct=True))},
+    "LineRange": {"start": need(Count), "end": need(Count)},
+    # 用語の名前(`label`)は、継ぎ目のある複合語(`WebView`)や識別子を書くので見出し(Heading)にしない。
+    "Term": {"id": need(Id), "label": need(Text), "text": need(Text)},
+}
+
+# 技術の節(Primer)の、kind をまたいで同じキー。
+PrimerFields: dict[str, Field] = {
+    "id": need(Id),
+    "category": need(Text),
+    # 技術の名前は識別子や継ぎ目のある複合語を書くので、見出し(Heading)にしない。
+    "label": need(Text),
+    "gist": need(MarkedText),
+    "passages": may(Many(Variant("Passage"))),
+    "occurrences": need(Many(Shape("Occurrence"), least=1)),
+    "seeAlso": may(Many(Id, distinct=True)),
 }
 
 # `kind` ごとに持つキー。他の kind のキーが混ざるのも、知らないキーとして落とす。Target はどの kind も、ページ
 # (固定スクリプトの核の `Target`)がここと同じキーを読んで移る先にすることを `pr-explain-core-cases.sh` が確かめる。
+# 同じキーは kind をまたいで同じ規則にする(`routes_under` が kind のキーを合わせて辿るため。`build-pr-explain-cases.sh` の
+# 「どの Variant も、kind をまたいで同じキーは同じ規則を持つ」が確かめる)。
 Variants: dict[str, dict[str, dict[str, Field]]] = {
     "Target": {
         "feature": {"id": need(Id)},
@@ -321,11 +405,27 @@ Variants: dict[str, dict[str, dict[str, Field]]] = {
         "message": {"id": need(Id)},
         "flow": {"id": need(Id)},
     },
+    "Primer": {
+        "language": PrimerFields,
+        "codebase": {
+            **PrimerFields,
+            "status": may(Word(PrimerStatuses)),
+            "tests": may(Many(Id, distinct=True)),
+            "flows": may(Many(Id, distinct=True)),
+        },
+    },
+    "Passage": {
+        "text": {"text": need(MarkedText)},
+        "declaration": {"code": need(Text)},
+        "parameters": {"parameters": need(Many(Shape("Parameter"), least=1))},
+        "excerpt": {"excerpt": need(Shape("Excerpt"))},
+        **{kind: {"text": need(MarkedText)} for kind in RemarkKinds},
+    },
 }
 
 
 def span_problem(value: dict) -> str | None:
-    """`start` 〜 `end` の範囲が逆向きでないかを見る(Note と Excerpt)。"""
+    """`start` 〜 `end` の範囲が逆向きでないかを見る(Note・Excerpt・LineRange)。"""
     if value["end"] < value["start"]:
         return f"end({value['end']})が start({value['start']})より前"
     return None
@@ -336,6 +436,15 @@ def excerpt_length_problem(value: dict) -> str | None:
     length = value["end"] - value["start"] + 1
     if length > MaxExcerptLines:
         return f"抜粋は {MaxExcerptLines} 行まで(今は {length} 行)"
+    return None
+
+
+def emphasis_problem(value: dict) -> str | None:
+    """抜粋の強調の範囲が、抜粋の行の中に収まっているかを見る。"""
+    is_outside = lambda span: span["start"] < value["start"] or span["end"] > value["end"]
+    outside = [index for index, span in enumerate(value.get("emphasis", [])) if is_outside(span)]
+    if outside:
+        return f"emphasis{outside} が抜粋の {value['start']}-{value['end']} 行目の外にある"
     return None
 
 
@@ -398,7 +507,8 @@ def same_sides_problem(value: dict) -> str | None:
 # キーごとの形が合ったオブジェクトに、キーをまたいで当てる規則。
 CrossChecks: dict[str, tuple[Callable[[dict], str | None], ...]] = {
     "Note": (span_problem,),
-    "Excerpt": (span_problem, excerpt_length_problem),
+    "Excerpt": (span_problem, excerpt_length_problem, emphasis_problem),
+    "LineRange": (span_problem,),
     "Values": (cells_problem,),
     "SituationTable": (repeated_head_ids_problem, outcome_grid_problem),
     "SituationOutcome": (same_was_problem,),
@@ -416,6 +526,9 @@ UniqueKeys = (
     ("commitStories", "sha"),
     ("suites", "id"),
     ("tests", "id"),
+    ("primers", "id"),
+    ("terms", "id"),
+    ("terms", "label"),
 )
 
 
@@ -450,6 +563,9 @@ References = (
     Reference("impact.added[].after[].message", "messages", "id"),
     Reference("impact.added[].tests[]", "tests", "id"),
     Reference("impact.kept[].tests[]", "tests", "id"),
+    Reference("primers[].seeAlso[]", "primers", "id"),
+    Reference("primers[].tests[]", "tests", "id"),
+    Reference("primers[].flows[]", "flows", "id"),
 )
 
 # Target の kind のうち、解説の中の一覧を指すもの(layer / file は地図を指す参照)。
@@ -557,8 +673,16 @@ def shape_problems(explain: object) -> list[str]:
     return problems if problems else uniqueness_problems(explain)
 
 
+def fields_of(rule: Shape | Variant) -> dict[str, Field]:
+    """オブジェクトの規則が持つキー。Variant は kind のキーを kind の順に合わせる(同じキーは kind をまたいで同じ規則)。"""
+    if isinstance(rule, Shape):
+        return Shapes[rule.name]
+    return {key: field for fields in Variants[rule.name].values() for key, field in fields.items()}
+
+
 def routes_under(rule: object, route: str) -> list[tuple[str, object, bool]]:
-    """規則の下にある道筋を、外側から書いた順に集める(`Shapes` を辿る)。検査は使わず、判定表が形を読むのに使う。
+    """規則の下にある道筋を、外側から書いた順に集める(`Shapes` と `Variants` を辿る)。判定表と、印・抜粋の道筋を導く検査
+    (`term_mark_problems`・`with_read_excerpts`)が使う。
 
     @param rule `Field` の `value` に書く規則
     @param route その規則の道筋(`impact` など)。配列の中へ進む段には `[]` を付ける
@@ -566,30 +690,55 @@ def routes_under(rule: object, route: str) -> list[tuple[str, object, bool]]:
     """
     is_many = isinstance(rule, Many)
     inner = rule.item if is_many else rule
-    if not isinstance(inner, Shape):
+    if not isinstance(inner, (Shape, Variant)):
         return [(route, inner, is_many)]
     prefix = f"{route}[]" if is_many else route
-    nested = [found for key, field in Shapes[inner.name].items() for found in routes_under(field.value, f"{prefix}.{key}")]
+    nested = [found for key, field in fields_of(inner).items() for found in routes_under(field.value, f"{prefix}.{key}")]
     return [(route, inner, is_many), *nested]
+
+
+def routes_with(rule: object) -> list[str]:
+    """解説(Explain)の下で、規則が `rule` の道筋を、外側から書いた順に集める。配列なら要素の規則で見る。"""
+    return [route for key, field in Shapes["Explain"].items() for route, inner, _ in routes_under(field.value, key) if inner == rule]
+
+
+class Step(NamedTuple):
+    """道筋(`a[].b`)の 1 段。`key` はキー、`is_each` は配列の各要素へ進むか、`where` は起点からそのキーまでの綴り。"""
+
+    key: str
+    is_each: bool
+    where: str
+
+    def item_where(self, index: int) -> str:
+        """配列の `index` 番目の要素までの綴り。"""
+        return f"{self.where}[{index}]"
+
+
+def step_of(step: str, where: str) -> Step:
+    """道筋の 1 段を読む(`[]` で終わる段は配列の各要素へ進む)。
+
+    @param where 起点からその段の手前までの綴り
+    """
+    key = step.removesuffix("[]")
+    return Step(key, step.endswith("[]"), f"{where}.{key}" if where else key)
 
 
 def values_at(value: object, route: list[str], where: str) -> list[tuple[str, object]]:
     """道筋の先にある値を、道筋の綴りと一緒に集める。途中で欠けているものは飛ばす。
 
     @param value 道筋の起点
-    @param route `.` で割った道筋(`[]` で終わる段は配列の各要素へ進む)
+    @param route `.` で割った道筋
     @param where 起点までの綴り
     """
     if not route:
         return [(where, value)]
-    step, rest = route[0], route[1:]
-    key = step.removesuffix("[]")
-    if key not in value:
+    step = step_of(route[0], where)
+    if step.key not in value:
         return []
-    inner, inner_where = value[key], f"{where}.{key}" if where else key
-    if not step.endswith("[]"):
-        return values_at(inner, rest, inner_where)
-    return [found for index, item in enumerate(inner) for found in values_at(item, rest, f"{inner_where}[{index}]")]
+    inner = value[step.key]
+    if not step.is_each:
+        return values_at(inner, route[1:], step.where)
+    return [found for index, item in enumerate(inner) for found in values_at(item, route[1:], step.item_where(index))]
 
 
 def reference_problems(explain: dict) -> list[str]:
@@ -613,7 +762,25 @@ def reference_problems(explain: dict) -> list[str]:
         for index, test in enumerate(explain.get("tests", []))
         if is_todo_with_code(test)
     ]
-    return problems + todo_with_code
+    return problems + todo_with_code + term_mark_problems(explain)
+
+
+def term_mark_problems(explain: dict) -> list[str]:
+    """用語の印が terms に無いものと、どの印からも指されない用語を集める。
+
+    @param explain 形の検査を通った解説
+    """
+    known = {term["id"] for term in explain.get("terms", [])}
+    marks = [
+        (where, term_id)
+        for route in routes_with(MarkedText)
+        for where, text in values_at(explain, route.split("."), "")
+        for _, term_id in TermMarkPattern.findall(text)
+    ]
+    dangling = [f"{where}: 用語の印 {term_id} が terms に無い" for where, term_id in marks if term_id not in known]
+    marked = {term_id for _, term_id in marks}
+    unmarked = [f"terms[{index}]: 用語 {term['id']} を指す印が無い" for index, term in enumerate(explain.get("terms", [])) if term["id"] not in marked]
+    return dangling + unmarked
 
 
 def is_todo_with_code(test: dict) -> bool:
@@ -641,21 +808,47 @@ def lines_at(repo: str, sha: str, path: str) -> list[str] | None:
     return lines[:-1] if lines[-1] == "" else lines
 
 
-def excerpt_text(repo: str, sha: str, excerpt: dict) -> tuple[str | None, str | None]:
+def read_excerpt(repo: str, sha: str, excerpt: dict) -> tuple[dict, None] | tuple[None, str]:
     """抜粋の範囲の中身を読む。
 
-    @returns 中身(行を改行でつないだもの)と、読めなかった理由。どちらか一方だけが None でない
+    @returns 読めたら、中身(`text`。行を改行でつないだもの)を足した抜粋と None。埋め込みの中から始まるなら、開いた行
+        (`openingLine`)も足す。ファイルが無い・範囲が収まらないときは、None と読めなかった理由
     """
     lines = lines_at(repo, sha, excerpt["path"])
     if lines is None:
         return None, f"{excerpt['path']} は {sha} に無い"
     if excerpt["end"] > len(lines):
         return None, f"{excerpt['path']} は {len(lines)} 行で、{excerpt['start']}-{excerpt['end']} 行目は収まらない"
-    return "\n".join(lines[excerpt["start"] - 1:excerpt["end"]]), None
+    filled = {**excerpt, "text": "\n".join(lines[excerpt["start"] - 1:excerpt["end"]])}
+    opening = opening_lines(excerpt["path"], lines)[excerpt["start"] - 1]
+    return (filled if opening is None else {**filled, "openingLine": opening}), None
 
 
-def with_excerpt_texts(explain: dict, repo: str) -> tuple[dict, list[str]]:
-    """抜粋に中身(`text`)を足した解説と、読めなかった抜粋の違反を返す。
+def read_along(value: object, route: str, read: Callable[[dict, str], tuple[dict, list[str]]]) -> tuple[object, list[str]]:
+    """道筋の先の抜粋を `read` で読み直した写しと、読めなかった違反を返す。途中で欠けているものはそのまま残す。
+
+    @param route 解説の起点からの道筋(`[]` で終わる段は配列の各要素へ進む)
+    @param read 抜粋と、その道筋の綴りを受け取り、中身を足した抜粋と違反を返す
+    """
+
+    def walk(value: object, steps: list[str], where: str) -> tuple[object, list[str]]:
+        if not steps:
+            return read(value, where)
+        step = step_of(steps[0], where)
+        if step.key not in value:
+            return value, []
+        if not step.is_each:
+            inner, problems = walk(value[step.key], steps[1:], step.where)
+            return {**value, step.key: inner}, problems
+        read_items = [walk(item, steps[1:], step.item_where(index)) for index, item in enumerate(value[step.key])]
+        return {**value, step.key: [item for item, _ in read_items]}, [problem for _, problems in read_items for problem in problems]
+
+    return walk(value, route.split("."), "")
+
+
+def with_read_excerpts(explain: dict, repo: str) -> tuple[dict, list[str]]:
+    """抜粋(Excerpt を指すすべての道筋)に中身(`text`)と、埋め込みの中から始まるものには開いた行(`openingLine`)を足した
+    解説と、読めなかった抜粋の違反を返す。抜粋の無い解説は、キーの順まで同じまま返す。
 
     @param explain 形と参照の検査を通った解説
     @param repo 解説時点の sha を持つリポジトリ
@@ -663,12 +856,16 @@ def with_excerpt_texts(explain: dict, repo: str) -> tuple[dict, list[str]]:
     sha = explain["sha"]
     if git(repo, "cat-file", "-e", f"{sha}^{{commit}}").returncode != 0:
         return explain, [f"sha {sha} がこのリポジトリに無い(解説時点の head を push・fetch してから)"]
-    if "tests" not in explain:
-        return explain, []
-    read = [(test, *excerpt_text(repo, sha, test["excerpt"])) if "excerpt" in test else (test, None, None) for test in explain["tests"]]
-    problems = [f"tests[{index}].excerpt: {problem}" for index, (_, _, problem) in enumerate(read) if problem]
-    tests = [test if text is None else {**test, "excerpt": {**test["excerpt"], "text": text}} for test, text, _ in read]
-    return {**explain, "tests": tests}, problems
+
+    def read(excerpt: dict, where: str) -> tuple[dict, list[str]]:
+        filled_excerpt, problem = read_excerpt(repo, sha, excerpt)
+        return (excerpt, [f"{where}: {problem}"]) if filled_excerpt is None else (filled_excerpt, [])
+
+    def read_route(sofar: tuple[dict, list[str]], route: str) -> tuple[dict, list[str]]:
+        written, problems = read_along(sofar[0], route, read)
+        return written, sofar[1] + problems
+
+    return reduce(read_route, routes_with(Shape("Excerpt")), (explain, []))
 
 
 def collect_violations(explain: object, pr: int, repo: str) -> tuple[dict | None, list[str]]:
@@ -684,7 +881,7 @@ def collect_violations(explain: object, pr: int, repo: str) -> tuple[dict | None
         return None, [f"[pr-explain-shape] {problem}" for problem in shape]
     meta = [] if explain["pr"] == pr else [f"[pr-explain-meta] pr が公開先の PR #{pr} と違う(今は {explain['pr']})"]
     refs = [f"[pr-explain-ref] {problem}" for problem in reference_problems(explain)]
-    written, code = with_excerpt_texts(explain, repo)
+    written, code = with_read_excerpts(explain, repo)
     violations = meta + refs + [f"[pr-explain-code] {problem}" for problem in code]
     return (None if violations else written), violations
 

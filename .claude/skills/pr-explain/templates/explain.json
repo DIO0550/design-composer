@@ -5,7 +5,7 @@
   "issue": 1022,
   "overview": {
     "title": "PR の解説を `explain.json` で書き、検査して置く",
-    "lead": "解説は HTML の断片ではなく JSON で書く。ページの固定スクリプトが地図と合わせて 4 画面に組む。",
+    "lead": "解説は HTML の断片ではなく JSON で書く。ページの固定スクリプトが地図と合わせて 5 画面に組む。",
     "before": [
       { "text": "セッションが HTML の断片をページごとに書き、1 ページずつ置いていた" }
     ],
@@ -31,7 +31,7 @@
     { "path": ".github/workflows/pr-explain.yml", "name": "地図の配置", "role": "PR のイベントで地図を作って置く", "feature": "publish" },
     { "path": ".github/scripts/pr-explain-pages.sh", "name": "置き場", "role": "gh-pages の PR のフォルダを書き換える", "feature": "publish", "change": "`put-explain` を足し、ページごとの HTML を置くモードを消した" },
     { "path": ".github/scripts/build-pr-explain.py", "name": "解説の検査", "role": "`explain.json` の形と参照を見て、抜粋の中身を足す", "feature": "publish", "change": "新しく作った" },
-    { "path": ".claude/skills/pr-explain/templates/explain.json", "name": "見本", "role": "`excerpt` 以外のすべてのキーを使う解説", "graph": false }
+    { "path": ".claude/skills/pr-explain/templates/explain.json", "name": "見本", "role": "`excerpt` 以外のすべてのキーと、primers・Passage の kind を使う解説", "graph": false }
   ],
   "messages": [
     { "id": "put-map", "from": ".github/workflows/pr-explain.yml", "to": ".github/scripts/pr-explain-pages.sh", "kind": "cmd", "name": "地図を置く", "code": "pr-explain-pages.sh put-map", "via": "exec", "payload": "`change-map.json` とテンプレート" },
@@ -146,5 +146,62 @@
       { "text": "地図の時点より古い解説も、置くことはできる", "tests": ["stale"] },
       { "text": "PR を閉じると、その PR のページは消える" }
     ]
-  }
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "object-pairs-hook",
+      "category": "python · json",
+      "label": "`object_pairs_hook`",
+      "gist": "[[JSON|json]] のオブジェクトを 1 つ読み終えるたびに呼ばれ、キーと値の組から辞書を作る処理を差し替える引数。",
+      "passages": [
+        { "kind": "text", "text": "`json.loads` は、オブジェクトを読み終えるたびに `object_pairs_hook` を呼ぶ。渡すのは[[キーと値の組|pair]]の並びで、同じキーを 2 回書いていれば 2 組とも届く。" },
+        { "kind": "declaration", "code": "json.loads(s, *, object_pairs_hook=None)" },
+        {
+          "kind": "parameters",
+          "parameters": [
+            { "name": "s", "type": "str", "text": "読む [[JSON|json]] の文字列" },
+            { "name": "object_pairs_hook", "type": "Callable", "text": "[[キーと値の組|pair]]の並びを受け取り、辞書の代わりになる値を返す", "note": "省けば dict" }
+          ]
+        },
+        { "kind": "caution", "text": "既定の `dict` は、後に書いたキーで黙って上書きする。重複を見つけたいときは、組の並びを受け取って [[`Duplicated`|duplicated]] に置き換える。" },
+        { "kind": "memo", "text": "`object_hook` は組ではなく作り終えた辞書を受け取るので、重複はもう見えない。" }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "lineRange": { "start": 568, "end": 571 },
+          "text": "`keep_first_or_mark` が、重複したキーのあるオブジェクトを `Duplicated` に置き換える",
+          "shas": ["89abcdef0123456789abcdef0123456789abcdef", "fedcba9876543210fedcba9876543210fedcba98"]
+        }
+      ],
+      "seeAlso": ["shape-table"]
+    },
+    {
+      "kind": "codebase",
+      "id": "shape-table",
+      "category": "harness · 検査",
+      "label": "形の表",
+      "gist": "解説の形を、キーごとの規則の表(`Shapes`)で持つ。検査も判定表も、この表を[[道筋|route]]で辿る。",
+      "status": "added",
+      "passages": [
+        { "kind": "text", "text": "`value_problems` は規則の種類で分かれ、オブジェクトなら表のキーごとに値を見る。" },
+        { "kind": "rule", "text": "新しいキーは表に足す。検査の関数に条件を書き足さない。" },
+        { "kind": "spec", "text": "知らないキーは、入れ子を含めて落とす(`pr-explain` スキルの「共通の規則」)。" },
+        { "kind": "history", "text": "以前は HTML の断片を、要素・属性ごとに見ていた。" }
+      ],
+      "occurrences": [
+        { "path": ".github/scripts/build-pr-explain.py", "text": "`Shapes` と `Variants`" }
+      ],
+      "seeAlso": ["object-pairs-hook"],
+      "tests": ["unknown-key"],
+      "flows": ["explain"]
+    }
+  ],
+  "terms": [
+    { "id": "json", "label": "JSON", "text": "文字列・数値・配列・オブジェクトを書く、テキストの形式。" },
+    { "id": "pair", "label": "キーと値の組", "text": "オブジェクトの 1 つのキーと、その値を並べた 2 つ組。" },
+    { "id": "duplicated", "label": "Duplicated", "text": "同じキーを 2 回以上書いたオブジェクトの代わりに置く値。形の検査が報告する。" },
+    { "id": "route", "label": "道筋", "text": "トップから値までのキーの並び。配列の中へ進む段には `[]` を付ける。" }
+  ]
 }

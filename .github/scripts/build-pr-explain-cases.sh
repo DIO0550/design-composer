@@ -36,6 +36,36 @@ git -C "$repo" config user.email cases@example.com
 printf 'one\ntwo\nthree\nfour\nfive\n' > "$repo/kept.txt"
 printf 'a\nb' > "$repo/noeol.txt"
 mkdir -p "$repo/sub"
+# 埋め込みの中から始まる抜粋のためのファイル。中身は Python の文字列で書く(理由は `pr-explain-core-cases.sh` の冒頭)。
+python3 - "$repo" <<'PY'
+import sys
+files = {
+    "page.html": [
+        "<p>a</p>",
+        "<script>",
+        "const a = 1;",
+        "</script>",
+        "<style>",
+        "a { color: red; }",
+        "</style>",
+        "<p>b</p>",
+    ],
+    "cases.sh": [
+        "cat <<'JS'",
+        "const a = 1;",
+        "JS",
+        "cat <<-'TS'",
+        "\tconst b = 1;",
+        "\tTS",
+        "cat <<'CASES'",
+        "const c = 1;",
+        "CASES",
+        "echo done",
+    ],
+}
+for name, lines in files.items():
+    open(f"{sys.argv[1]}/{name}", "w", encoding="utf-8").write("\n".join(lines) + "\n")
+PY
 git -C "$repo" add -A && git -C "$repo" commit --quiet -m explained
 sha="$(git -C "$repo" rev-parse HEAD)"
 # 解説を書いた後の編集。抜粋は解説時点の sha から読むので載らない(作業ツリーを読む実装なら載る)。
@@ -119,6 +149,7 @@ deny|shape|sample|excerpt の start が end より後|d["tests"][0]["excerpt"] =
 deny|shape|sample|excerpt の start が 0|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 0, "end": 2}
 deny|shape|sample|excerpt が 81 行|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 81}
 deny|shape|sample|入力の excerpt に text を書く|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 2, "text": "one\ntwo"}
+deny|shape|sample|入力の excerpt に openingLine を書く|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 2, "openingLine": "<script>"}
 deny|shape|sample|feature の Target に id が無い|del d["overview"]["highlights"][0]["go"]["id"]
 deny|shape|sample|layer の Target に layer が無い|del d["overview"]["highlights"][1]["go"]["layer"]
 deny|shape|sample|file の Target に path が無い|del d["overview"]["highlights"][2]["go"]["path"]
@@ -216,6 +247,71 @@ deny|ref|sample|変わらないことの tests が tests に無い|d["impact"]["
 deny|code|sample|解説時点の sha がこのリポジトリに無い|d["sha"] = "f" * 40
 deny|code|sample|抜粋のパスが解説時点の sha に無い|d["tests"][0]["excerpt"] = {"path": "missing.txt", "start": 1, "end": 1}
 deny|code|sample|範囲の終わりがファイルの行数 + 1|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 5, "end": 6}
+pass|-|sample|技術の手引きの見本は、2 つの kind・excerpt 以外の 8 つの段・印の場所 4 種類(gist・text・引数・注意)・sha 2 つの出てくる場所を使い、どの用語も印から指す|import re; ps = d["primers"]; ss = [x for p in ps for x in p.get("passages", [])]; marked = lambda kinds: any("[[" in x["text"] for x in ss if x["kind"] in kinds); assert sorted({p["kind"] for p in ps}) == ["codebase", "language"] and sorted({x["kind"] for x in ss}) == sorted(["text", "declaration", "parameters", "caution", "memo", "rule", "spec", "history"]) and all("[[" in p["gist"] for p in ps) and marked({"text"}) and any("[[" in a["text"] for x in ss if x["kind"] == "parameters" for a in x["parameters"]) and marked({"caution", "memo", "rule", "spec", "history"}) and "[[`" in json.dumps(ps, ensure_ascii=False) and any(len(o.get("shas", [])) == 2 for p in ps for o in p["occurrences"]) and {t["id"] for t in d["terms"]} == set(re.findall(r"\|([A-Za-z0-9_-]+)\]\]", json.dumps(ps, ensure_ascii=False)))
+pass|-|minimal|言語・フレームワークの節は、必須のキーだけでも通る|d["primers"] = [{"kind": "language", "id": "p", "category": "c", "label": "題", "gist": "要するに", "occurrences": [{"path": "a.ts", "text": "ここ"}]}]
+pass|-|sample|技術の節の題に識別子とバッククォートを書ける|d["primers"][0]["label"] = "`hasOpenedDocuments` の型の述語"
+pass|-|sample|用語の名前に、継ぎ目のある複合語(WebView)を書ける|d["terms"][0]["label"] = "WebView"
+pass|-|sample|関連(seeAlso)は、別の kind の節を指せる|d["primers"][0]["seeAlso"] = [d["primers"][1]["id"]]; d["primers"][1]["seeAlso"] = [d["primers"][0]["id"]]
+pass|-|sample|出てくる場所の shas が地図に無い sha でも、行がファイルの外でも落とさない|o = d["primers"][0]["occurrences"][0]; o["shas"] = ["e" * 40, "d" * 40]; o["lineRange"] = {"start": 900, "end": 901}
+pass|-|sample|この PR の実装の節の status に changed を書ける|d["primers"][1]["status"] = "changed"
+pass|-|sample|印の表示をバッククォートで囲んでも通る|d["primers"][0]["gist"] = d["primers"][0]["gist"].replace("[[JSON|json]]", "[[`JSON`|json]]")
+pass|-|sample|段は text → excerpt → text → excerpt の順でも書ける|ps = d["primers"][0]["passages"]; ex = lambda start, end: {"kind": "excerpt", "excerpt": {"path": "kept.txt", "start": start, "end": end}}; d["primers"][0]["passages"] = [ps[0], ex(1, 2), {"kind": "text", "text": "次の段"}, ex(3, 4), *ps[1:]]
+pass|-|sample|強調が抜粋の最初の行だけ・最後の行だけでも通る|d["primers"][0]["passages"].append({"kind": "excerpt", "excerpt": {"path": "kept.txt", "start": 2, "end": 4, "emphasis": [{"start": 2, "end": 2}, {"start": 4, "end": 4}]}})
+pass|-|sample|テストの抜粋にも強調を書ける|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 2, "end": 3, "emphasis": [{"start": 3, "end": 3}]}
+pass|-|sample|対になったバッククォートの中なら、印でない二重の角括弧を書ける|d["primers"][0]["gist"] += " `[[Prototype]]` と `a[b[0]]`"
+pass|-|sample|印より前に対になったバッククォートが 2 つあっても通る|d["primers"][0]["gist"] = d["primers"][0]["gist"].replace("[[JSON|json]]", "`x` [[JSON|json]] `y`")
+pass|-|sample|印の直前の角括弧 1 つは印の外の文字で、通る|d["primers"][0]["gist"] = d["primers"][0]["gist"].replace("[[JSON|json]]", "[[[JSON|json]]")
+pass|-|sample|印の表示の中の閉じていないバッククォートは数えず、後ろの印はバッククォートの中にならないので通る|d["primers"][0]["gist"] = d["primers"][0]["gist"].replace("[[JSON|json]]", "[[`JSON|json]] と [[JSON|json]]")
+deny|shape|sample|primers がオブジェクト|d["primers"] = d["primers"][0]
+deny|shape|sample|primers の kind が語彙の外(framework)|d["primers"][0]["kind"] = "framework"
+deny|shape|sample|primers の要素に kind が無い|del d["primers"][0]["kind"]
+deny|shape|sample|言語・フレームワークの節に status を書く|d["primers"][0]["status"] = "added"
+deny|shape|sample|言語・フレームワークの節に tests を書く|d["primers"][0]["tests"] = ["unknown-key"]
+deny|shape|sample|言語・フレームワークの節に flows を書く|d["primers"][0]["flows"] = ["explain"]
+deny|shape|sample|この PR の実装の節の status に removed を書く|d["primers"][1]["status"] = "removed"
+deny|shape|sample|段の kind が語彙の外(figure)|d["primers"][0]["passages"][0]["kind"] = "figure"
+deny|shape|sample|出てくる場所が 0 件|d["primers"][0]["occurrences"] = []
+deny|shape|sample|出てくる場所が無い|del d["primers"][0]["occurrences"]
+deny|shape|sample|節に要するに(gist)が無い|del d["primers"][0]["gist"]
+deny|shape|sample|引数に知らないキー(default)|d["primers"][0]["passages"][2]["parameters"][0]["default"] = "x"
+deny|shape|sample|出てくる場所の行の start が end より後|d["primers"][0]["occurrences"][0]["lineRange"] = {"start": 5, "end": 4}
+deny|shape|sample|出てくる場所の行の start が 0|d["primers"][0]["occurrences"][0]["lineRange"] = {"start": 0, "end": 4}
+deny|shape|sample|出てくる場所の行に end が無い|d["primers"][0]["occurrences"][0]["lineRange"] = {"start": 4}
+deny|shape|sample|primers の id が kind をまたいで重複|d["primers"][1]["id"] = d["primers"][0]["id"]
+deny|shape|sample|terms の id が重複|d["terms"].append({"id": "json", "label": "別の名前", "text": "意味"})
+deny|shape|sample|terms の label が、別の id で重複|d["terms"].append({"id": "json-again", "label": "JSON", "text": "意味"})
+deny|shape|sample|関連(seeAlso)に同じ id を 2 回|d["primers"][0]["seeAlso"] = ["shape-table", "shape-table"]
+deny|shape|sample|primers の tests に同じ id を 2 回|d["primers"][1]["tests"] = ["unknown-key", "unknown-key"]
+deny|shape|sample|primers の flows に同じ id を 2 回|d["primers"][1]["flows"] = ["explain", "explain"]
+deny|shape|sample|primers の要素に terms を書く(消したキーは書けない)|d["primers"][0]["terms"] = ["json"]
+deny|shape|sample|古い形のキー paragraphs を書く|d["primers"][0]["paragraphs"] = ["段"]
+deny|shape|sample|passages がオブジェクト|d["primers"][0]["passages"] = d["primers"][0]["passages"][0]
+deny|shape|sample|段の抜粋が 81 行|d["primers"][0]["passages"].append({"kind": "excerpt", "excerpt": {"path": "kept.txt", "start": 1, "end": 81}})
+deny|shape|sample|出てくる場所の shas の要素が 40 桁でない|d["primers"][0]["occurrences"][0]["shas"] = ["89abcdef"]
+deny|shape|sample|出てくる場所の shas に同じ sha を 2 回|o = d["primers"][0]["occurrences"][0]; o["shas"] = [o["shas"][0], o["shas"][0]]
+deny|shape|sample|宣言(declaration)の段に code ではなく text を書く|d["primers"][0]["passages"][1] = {"kind": "declaration", "text": "def f(): ..."}
+deny|shape|sample|強調の start が、抜粋の start − 1|d["primers"][0]["passages"].append({"kind": "excerpt", "excerpt": {"path": "kept.txt", "start": 2, "end": 4, "emphasis": [{"start": 1, "end": 2}]}})
+deny|shape|sample|強調の end が、抜粋の end + 1|d["primers"][0]["passages"].append({"kind": "excerpt", "excerpt": {"path": "kept.txt", "start": 2, "end": 4, "emphasis": [{"start": 3, "end": 5}]}})
+deny|shape|sample|強調の start が end より後|d["primers"][0]["passages"].append({"kind": "excerpt", "excerpt": {"path": "kept.txt", "start": 2, "end": 4, "emphasis": [{"start": 4, "end": 3}]}})
+deny|shape|sample|テストの抜粋の強調が範囲の外|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 2, "end": 3, "emphasis": [{"start": 4, "end": 4}]}
+deny|shape|sample|引数の段の引数が 0 件|d["primers"][0]["passages"][2]["parameters"] = []
+deny|shape|sample|要するにに、バッククォートの外の印になっていない二重の角括弧|d["primers"][0]["gist"] += " a[[b]]"
+deny|shape|sample|注意の段の文に、閉じの二重の角括弧だけ|d["primers"][0]["passages"][3]["text"] += " ]]"
+deny|shape|sample|印の id に空白|d["primers"][0]["gist"] += " [[a|b c]]"
+deny|shape|sample|バッククォートの中に印の形(id は terms にある)|d["primers"][0]["gist"] += " `[[JSON|json]]`"
+deny|shape|sample|印がバッククォートの対の途中にある|d["primers"][0]["gist"] += " `a [[JSON|json]] b`"
+deny|shape|sample|閉じていないバッククォートの後ろの、印でない二重の角括弧|d["primers"][0]["gist"] += " x `[[0]]"
+deny|shape|sample|バッククォートの外の、印でない二重の角括弧([[Prototype]])|d["primers"][0]["gist"] += " [[Prototype]]"
+deny|ref|sample|関連(seeAlso)が primers に無い|d["primers"][0]["seeAlso"] = ["nope"]
+deny|ref|sample|要するにの印の id が terms に無い|d["primers"][0]["gist"] = d["primers"][0]["gist"].replace("[[JSON|json]]", "[[JSON|nope]]")
+deny|ref|sample|primers の tests が tests に無い|d["primers"][1]["tests"] = ["nope"]
+deny|ref|sample|primers の flows が flows に無い|d["primers"][1]["flows"] = ["nope"]
+deny|ref|sample|text の段の印の id が terms に無い|d["primers"][0]["passages"][0]["text"] = d["primers"][0]["passages"][0]["text"].replace("|pair]]", "|nope]]")
+deny|ref|sample|引数の文の印の id が terms に無い|d["primers"][0]["passages"][2]["parameters"][0]["text"] = "読む [[JSON|nope]] の文字列"
+deny|ref|sample|注意の段の印の id が terms に無い(kind をまたいで合わせた道筋でも拾う)|d["primers"][0]["passages"][3]["text"] = d["primers"][0]["passages"][3]["text"].replace("|duplicated]]", "|nope]]"); d["terms"] = [t for t in d["terms"] if t["id"] != "duplicated"]
+deny|ref|sample|どの印からも指されない用語がある|d["terms"].append({"id": "unused", "label": "使わない語", "text": "意味"})
+deny|code|sample|段の抜粋のパスが解説時点の sha に無い|d["primers"][0]["passages"].append({"kind": "excerpt", "excerpt": {"path": "missing.txt", "start": 1, "end": 1}})
+deny|code|sample|段の抜粋の範囲の終わりがファイルの行数 + 1|d["primers"][0]["passages"].append({"kind": "excerpt", "excerpt": {"path": "kept.txt", "start": 5, "end": 6}})
 CASES
 )"
 
@@ -255,14 +351,18 @@ run_build() {
   python3 "$builder" "$work/case.json" --pr "$pr" --out "$work/out.json" "$@" >/dev/null 2>&1
 }
 
-# 書き出したものに対する Python の表明。`out` が書き出したもの、`given` が渡した解説。
+# 書き出したものに対する Python の表明。`out` が書き出したもの、`given` が渡した解説、`line_at(コミット, パス, n)` はそのコミットの
+# そのファイルの n 行目(`sha` は解説時点の sha)。
 # $1 表明。成り立てば pass
 inspect_output() {
   [ -f "$work/out.json" ] || { echo unwritten; return; }
-  python3 - "$work/case.json" "$work/out.json" "$1" <<'PY'
-import json, sys
+  python3 - "$work/case.json" "$work/out.json" "$1" "$repo" "$sha" <<'PY'
+import json, subprocess, sys
 given = json.load(open(sys.argv[1], encoding="utf-8"))
 out = json.load(open(sys.argv[2], encoding="utf-8"))
+sha = sys.argv[5]
+# その commit のファイルの n 行目。開いた行の期待値を、この判定表に綴りを写さずフィクスチャから引く。
+line_at = lambda rev, path, number: subprocess.run(["git", "-C", sys.argv[4], "show", f"{rev}:{path}"], capture_output=True, text=True, check=True).stdout.split("\n")[number - 1]
 print("pass" if eval(sys.argv[3]) else "deny")
 PY
 }
@@ -273,7 +373,7 @@ run_build sample "" --repo "$repo"
 report pass "$(inspect_output 'json.dumps(out, ensure_ascii=False) == json.dumps(given, ensure_ascii=False)')" "excerpt が無ければ、書き出すのは渡した解説と同じ JSON(キーの順も同じ)"
 
 run_build sample "$with_excerpt" --repo "$repo"
-report pass "$(inspect_output '"text" in out["tests"][0]["excerpt"] and json.dumps({**out, "tests": [{**out["tests"][0], "excerpt": {k: v for k, v in out["tests"][0]["excerpt"].items() if k != "text"}}, *out["tests"][1:]]}, ensure_ascii=False) == json.dumps(given, ensure_ascii=False)')" "足すのは excerpt の text だけ"
+report pass "$(inspect_output '"text" in out["tests"][0]["excerpt"] and json.dumps({**out, "tests": [{**out["tests"][0], "excerpt": {k: v for k, v in out["tests"][0]["excerpt"].items() if k != "text"}}, *out["tests"][1:]]}, ensure_ascii=False) == json.dumps(given, ensure_ascii=False)')" "埋め込みの無いファイルの抜粋に足すのは text だけ"
 report pass "$(inspect_output 'out["tests"][0]["excerpt"]["text"] == "two\nthree"')" "text は作業ツリーではなく解説時点の sha の中身になる"
 
 printf '{"before": true}\n' > "$work/out.json"
@@ -297,24 +397,73 @@ report pass "$(inspect_output 'out["tests"][0]["excerpt"]["text"] == "two\nthree
 run_build sample 'd["tests"][0]["excerpt"] = {"path": "noeol.txt", "start": 2, "end": 2}' --repo "$repo"
 report pass "$(inspect_output 'out["tests"][0]["excerpt"]["text"] == "b"')" "末尾に改行の無いファイルの最終行まで入る"
 
+# 技術の手引き(primers)の段の抜粋も、tests の抜粋と同じく解説時点の sha から中身を足す。
+primer_with_excerpt='d["primers"] = [{"kind": "language", "id": "p", "category": "c", "label": "題", "gist": "要するに", "passages": [{"kind": "excerpt", "excerpt": {"path": "kept.txt", "start": 2, "end": 3}}], "occurrences": [{"path": "kept.txt", "text": "ここ"}]}]'
+run_build minimal "$primer_with_excerpt" --repo "$repo"
+report pass "$(inspect_output '"tests" not in out and out["primers"][0]["passages"][0]["excerpt"]["text"] == "two\nthree"')" "tests の無い解説でも、段の抜粋に作業ツリーではなく解説時点の sha の中身が入る"
+
+two_passage_excerpts='ps = d["primers"][0]["passages"]; ex = lambda start, end: {"kind": "excerpt", "excerpt": {"path": "kept.txt", "start": start, "end": end, "emphasis": [{"start": end, "end": end}]}}; d["primers"][0]["passages"] = [ps[0], ex(1, 2), ps[1], ex(4, 5), *ps[2:]]; d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 2, "end": 3, "emphasis": [{"start": 2, "end": 2}]}'
+run_build sample "$two_passage_excerpts" --repo "$repo"
+report pass "$(inspect_output '[out["tests"][0]["excerpt"]["text"], out["primers"][0]["passages"][1]["excerpt"]["text"], out["primers"][0]["passages"][3]["excerpt"]["text"]] == ["two\nthree", "one\ntwo", "four\nfive"]')" "テストの抜粋と、1 節の 2 つの段の抜粋の 3 か所すべてに、それぞれの範囲の中身が入る"
+report pass "$(inspect_output '[excerpt.pop("text") for excerpt in (out["tests"][0]["excerpt"], out["primers"][0]["passages"][1]["excerpt"], out["primers"][0]["passages"][3]["excerpt"])] and json.dumps(out, ensure_ascii=False) == json.dumps(given, ensure_ascii=False)')" "埋め込みの無いファイルの段の抜粋に足すのも text だけで、強調(emphasis)を含め、ほかは渡したとおり"
+
+# 埋め込み(script / style の要素・JS などのヒアドキュメント)の中から始まる抜粋には、それを開いた行を足す。
+# $1 パス, $2 始まりの行, $3 終わりの行。tests[0] の抜粋をそこへ置いて検査を走らせる
+build_excerpt_on() {
+  run_build sample "d[\"tests\"][0][\"excerpt\"] = {\"path\": \"$1\", \"start\": $2, \"end\": $3}" --repo "$repo"
+}
+opening_of='out["tests"][0]["excerpt"].get("openingLine")'
+build_excerpt_on page.html 3 3
+report pass "$(inspect_output "$opening_of == line_at(sha, 'page.html', 2)")" "script 要素の中から始まる抜粋に、それを開いた行が足される"
+build_excerpt_on page.html 6 6
+report pass "$(inspect_output "$opening_of == line_at(sha, 'page.html', 5)")" "style 要素の中から始まる抜粋に、それを開いた行が足される"
+build_excerpt_on page.html 8 8
+report pass "$(inspect_output "$opening_of is None")" "style 要素を閉じた行より後から始まる抜粋には足されない"
+build_excerpt_on page.html 2 3
+report pass "$(inspect_output "$opening_of is None")" "script 要素を開いた行そのものから始まる抜粋には足されない"
+build_excerpt_on cases.sh 2 2
+report pass "$(inspect_output "$opening_of == line_at(sha, 'cases.sh', 1)")" "JS のヒアドキュメントの中から始まる抜粋に、それを開いた行が足される"
+build_excerpt_on cases.sh 5 5
+report pass "$(inspect_output "$opening_of == line_at(sha, 'cases.sh', 4)")" "行頭のタブを除いて閉じる TS のヒアドキュメントの中から始まる抜粋に、それを開いた行が足される"
+build_excerpt_on cases.sh 7 7
+report pass "$(inspect_output "$opening_of is None")" "行頭のタブを除いて閉じる TS のヒアドキュメントの、タブ付きの区切りの行より後から始まる抜粋には足されない"
+build_excerpt_on cases.sh 8 8
+report pass "$(inspect_output "$opening_of is None")" "知らない区切り(CASES)のヒアドキュメントの中から始まる抜粋には足されない"
+primer_in_script='d["primers"] = [{"kind": "language", "id": "p", "category": "c", "label": "題", "gist": "要するに", "passages": [{"kind": "excerpt", "excerpt": {"path": "page.html", "start": 3, "end": 3}}], "occurrences": [{"path": "page.html", "text": "ここ"}]}]'
+run_build minimal "$primer_in_script" --repo "$repo"
+report pass "$(inspect_output "out['primers'][0]['passages'][0]['excerpt'].get('openingLine') == line_at(sha, 'page.html', 2)")" "段の抜粋にも、それを開いた行が足される"
+
+make_case sample 'd["primers"][0]["passages"].append({"kind": "excerpt", "excerpt": {"path": "missing.txt", "start": 1, "end": 1}})'
+code_report="$(python3 "$builder" "$work/case.json" --pr "$pr" --out "$work/out.json" --repo "$repo" 2>&1)"
+code_route=deny
+[ "$code_report" = "[pr-explain-code] primers[0].passages[5].excerpt: missing.txt は $sha に無い" ] && code_route=pass
+report pass "$code_route" "読めなかった段の抜粋は、primers[0].passages[n].excerpt の道筋で報告する"
+
 make_case minimal ""
 python3 "$builder" "$work/case.json" --pr "$pr" >/dev/null 2>&1; status=$?
 bad_args=deny
 [ "$status" -eq 2 ] && bad_args=pass
 report pass "$bad_args" "書き出し先(--out)の無い呼び出しは引数の誤り"
 
-# 振る舞い(impact)の型の文字列のキーは、どれも使う人の言葉(`user_text`)で書く。型を足したときに規則を付け忘れると、
-# コードの名前がそのまま振る舞いの画面に出る。id のキーは文ではないので除く。
-user_text_keys="$(python3 - "$builder" <<'PY'
+# 検査の表そのものを見るケース。検査を 1 回だけ読み込み、ケースごとに `pass` / `deny` を 1 行ずつ出す。
+# - 振る舞い(impact)の型の文字列のキーは、どれも使う人の言葉(`user_text`)で書く。型を足したときに規則を付け忘れると、
+#   コードの名前がそのまま振る舞いの画面に出る。id のキーは文ではないので除く。
+# - Variant の kind ごとのキーは、`routes_under` が kind をまたいで合わせて辿る。同じキーに kind ごとに別の規則を付けると、
+#   合わせた道筋(印・抜粋を読む道筋と、ページが形を見る道筋)からどちらかの規則が黙って消える。
+{ read -r user_text_keys; read -r variant_keys; } < <(python3 - "$builder" <<'PY'
 import importlib.util, sys
 spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
+verdict = lambda holds: "pass" if holds else "deny"
 routes = module.routes_under(module.Shapes["Explain"]["impact"].value, "impact")
 texts = [rule.rule for _, rule, _ in routes if isinstance(rule, module.Scalar) and rule != module.Id]
-print("pass" if texts and all(rule == "user_text" for rule in texts) else "deny")
+print(verdict(texts and all(rule == "user_text" for rule in texts)))
+rules = [((name, key), field) for name, kinds in module.Variants.items() for fields in kinds.values() for key, field in fields.items()]
+print(verdict(all(field == other for at, field in rules for other_at, other in rules if at == other_at)))
 PY
-)"
+)
 report pass "$user_text_keys" "振る舞い(impact)の型の文字列のキーは、id を除いてどれも使う人の言葉(user_text)の規則を持つ"
+report pass "$variant_keys" "どの Variant も、kind をまたいで同じキーは同じ規則を持つ"
 
 exit "$cases_failed"

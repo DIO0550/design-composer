@@ -13,7 +13,8 @@
 # base 側にも PR の分岐後のコミットを置く。地図の起点が merge-base でなく base の先端になると、
 # base 側で変わったファイルが PR の変更として出てくる。
 #
-# 表は `ケース名|JSON(変数 m)に対する Python の表明` の 1 行 1 ケース。表明が成り立てば ok。
+# 表は `ケース名|JSON(変数 m)に対する Python の表明` の 1 行 1 ケース。表明が成り立てば ok。表明では
+# `line_at(コミット, パス, n)`(そのコミットのファイルの n 行目)が使える。
 set -uo pipefail
 
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -36,6 +37,41 @@ git config user.email cases@example.com
 put() {
   mkdir -p "$(dirname "$1")"
   printf '%s\n' "$2" > "$1"
+}
+
+# 埋め込みの開いた行(hunkOpeningLines)を見るファイル(docs/embedded/)を書く。中身は Python の文字列で書く(理由は
+# `pr-explain-core-cases.sh` の冒頭)。
+# $1 base(分岐前に置く中身)か second(second のコミットで変えた後の中身)
+put_embedded() {
+  python3 - "$1" <<'PY'
+import os, sys
+stage = sys.argv[1]
+os.makedirs("docs/embedded", exist_ok=True)
+js_lines = [f"const v{n} = {n};" for n in range(1, 27)]
+paragraphs = [f"<p>{n}</p>" for n in range(1, 21)]
+page = ["<p>top</p>", "<script>", *js_lines, "</script>", *paragraphs]
+mid = [f"<p>{n}</p>" for n in range(1, 31)]
+sh = ["cat <<'JS'", *[f"const v{n} = {n};" for n in range(1, 21)], "JS"]
+# second で .txt から .sh へ rename するファイル。
+txt = ["cat <<'JS'", *[f"const w{n} = {n};" for n in range(1, 21)], "JS"]
+def group(n, changed):
+    bumped = 3 if changed else None  # 値を変える行
+    return ["cat <<'PY'", *[f"x{n}_{k} = {k + 100 if k == bumped else k}" for k in range(1, 7)], "PY"]
+many = lambda changed: [line for n in range(1, 401) for line in group(n, changed)]
+if stage == "base":
+    files = {"page.html": page, "mid.html": mid, "old.sh": sh, "script.txt": txt, "many.sh": many(False)}
+else:
+    files = {
+        "page.html": [line + " // changed" if index in (9, 44) else line for index, line in enumerate(page)],
+        "mid.html": [mid[0], '<script type="module">', *[line.replace("<p>20</p>", "<p>twenty</p>") for line in mid[1:]]],
+        "new.sh": [line.replace("= 14;", "= 140;") for line in sh],
+        "script.sh": [line.replace("= 10;", "= 100;") for line in txt],
+        "many.sh": many(True),
+        "added.html": ["<script>", "const a = 1;", "</script>"],
+    }
+for name, lines in files.items():
+    open(f"docs/embedded/{name}", "w", encoding="utf-8").write("\n".join(lines) + "\n")
+PY
 }
 
 # 作者と commit の日時を揃えて commit する。コミットの並びを日時で決めるため。
@@ -74,6 +110,7 @@ put src/services/rename-user/index.ts 'import { Old } from "@/utils/Old";'
 # PR で依存をやめる dropper と、その依存の端にしか出ない変えていない Dropped.ts。
 put src/utils/Dropped.ts 'export const Dropped = 1;'
 put src/services/dropper/index.ts 'import { Dropped } from "@/utils/Dropped";'
+put_embedded base
 git add -A && commit_at 2026-01-01T00:00:00+00:00 -m base
 fork="$(git rev-parse HEAD)"
 
@@ -177,6 +214,9 @@ put .github/scripts/trailing.py 'w = 1  # see .github/scripts/tool.py'
 # UTF-8 として読めないバイトを含むファイル(地図づくりを落とさない)と、長すぎて依存を探しに読まないファイル。
 printf 'python3 "$scripts_dir/tool.py" # \x82\xa0\xff\n' > .github/scripts/sjis.sh
 python3 -c 'import sys; sys.stdout.write("python3 .github/scripts/tool.py\n" + "x" * 1_000_001 + "\n")' > .github/scripts/huge.sh
+git mv docs/embedded/old.sh docs/embedded/new.sh
+git mv docs/embedded/script.txt docs/embedded/script.sh
+put_embedded second
 git add -A && commit_at 2026-01-04T00:00:00+00:00 -m second
 second="$(git rev-parse HEAD)"
 GIT_AUTHOR_DATE=2026-01-05T00:00:00+00:00 GIT_COMMITTER_DATE=2026-01-05T00:00:00+00:00 \
@@ -200,9 +240,11 @@ without_head_branch=$?
 # $1 地図の JSON, $2 Python の表明
 outcome_of() {
   python3 - "$1" "$2" "$fork" "$first" "$side" "$second" "$head" "$without_base_branch" "$without_head_branch" <<'PY'
-import json, sys
+import json, subprocess, sys
 m = json.load(open(sys.argv[1], encoding="utf-8"))
 fork, first, side, second, head = sys.argv[3:8]
+# その commit のファイルの n 行目。開いた行の期待値を、表に綴りを写さずフィクスチャから引く。
+line_at = lambda rev, path, number: subprocess.run(["git", "show", f"{rev}:{path}"], capture_output=True, text=True, check=True).stdout.split("\n")[number - 1]
 without_branch = [int(status) for status in sys.argv[8:10]]
 labels = [group["label"] for group in m["groups"]]
 deps = {(d["from"], d["to"]) for d in m.get("dependencies", [])}
@@ -301,6 +343,40 @@ merge-base と head の両方にある依存は kept|status.get(("src/services/r
 rename したファイルを使われる側に持つ依存は、新しいパスの kept 1 本になる|[(edge, state) for edge, state in status.items() if edge[0] == "src/services/rename-user/index.ts"] == [(("src/services/rename-user/index.ts", "src/utils/New.ts"), "kept")]
 消えた依存の端にしか出ない変えていないファイルも、changed が偽で層に入る|status.get(("src/services/dropper/index.ts", "src/utils/Dropped.ts")) == "removed" and files.get("src/utils/Dropped.ts") == {"path": "src/utils/Dropped.ts", "changed": False}
 ハブを変えた PR では、import している 5 本がすべて依存と層に入る|all(status.get((f"src/services/hub-user-{n}/index.ts", "src/utils/Hub.ts")) == "kept" and files[f"src/services/hub-user-{n}/index.ts"]["changed"] is False for n in range(1, 6))
+script の中の hunk は、変更前と変更後の両方で script 要素を開いた行を持つ|in_commit[(second, "docs/embedded/page.html")]["hunkOpeningLines"][0] == {"old": "<script>", "new": "<script>"}
+同じファイルの script 要素を閉じた後の hunk は、どちらも null|in_commit[(second, "docs/embedded/page.html")]["hunkOpeningLines"][1] == {"old": None, "new": None}
+上に script 要素の開きタグを足したコミットでは、その下の hunk は変更後の側だけ開いた行を持つ|in_commit[(second, "docs/embedded/mid.html")]["hunkOpeningLines"][1] == {"old": None, "new": '<script type="module">'}
+rename した .sh の hunk の変更前の側は、旧パスの中身から読む|in_commit[(second, "docs/embedded/new.sh")]["hunkOpeningLines"] == [{"old": line_at(fork, "docs/embedded/old.sh", 1), "new": line_at(second, "docs/embedded/new.sh", 1)}]
+.txt から .sh へ rename したファイルの hunk は、変更前の側も .sh として読み、ヒアドキュメントを開いた行を持つ|in_commit[(second, "docs/embedded/script.sh")]["oldPath"] == "docs/embedded/script.txt" and in_commit[(second, "docs/embedded/script.sh")]["hunkOpeningLines"] == [{"old": line_at(fork, "docs/embedded/script.txt", 1), "new": line_at(second, "docs/embedded/script.sh", 1)}]
+足した html の hunk の変更前の側は null で、地図は作れる|in_commit[(second, "docs/embedded/added.html")]["status"] == "A" and in_commit[(second, "docs/embedded/added.html")]["hunkOpeningLines"] == [{"old": None, "new": None}]
+html と sh 以外のファイルは hunkOpeningLines を持たない|"hunkOpeningLines" not in in_commit[(second, "docs/x.md")]
+patch を切ったファイルは、切った後の patch の hunk と同じ数だけ hunkOpeningLines を持つ|in_commit[(second, "docs/embedded/many.sh")]["truncated"] is True and len(in_commit[(second, "docs/embedded/many.sh")]["hunkOpeningLines"]) == sum(line.startswith("@@ ") for line in in_commit[(second, "docs/embedded/many.sh")]["patch"].split("\n")) > 1
 CASES
+
+# blob の中身を読む手順を、この一時リポジトリの blob の名前で直に叩く。読める名前だけなら中身を返す(下の止まるケースが、
+# blob を読めないせいで止まったと分かるようにする対照)。
+# $@ blob の名前。1 つ目は docs/x.md の blob
+read_blobs_outcome() {
+  python3 - "$builder" "$@" <<'PY'
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("build_pr_change_map", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+print("pass" if module.read_blobs(set(sys.argv[2:])) == {sys.argv[2]: b"x\n"} else "deny")
+PY
+}
+present="$(git rev-parse "$head:docs/x.md")"
+report pass "$(read_blobs_outcome "$present")" "読める blob だけを頼めば、read_blobs はその中身を返す"
+
+# 変えていない Quiet.ts の blob を消した写しで地図を作る。読めない blob を除いて続けず、traceback ではなく短い報告を出して 1 で終わる。
+broken="$work/broken"
+cp -R "$repo" "$broken"
+quiet_blob="$(git rev-parse "$head:src/utils/Quiet.ts")"
+rm -f "$broken/.git/objects/${quiet_blob:0:2}/${quiet_blob:2}"
+missing_report="$(cd "$broken" && python3 "$builder" --base "$base" --head "$head" --pr 12 "${branches[@]}" 2>&1 >/dev/null)"
+missing_exit=$?
+missing_stops=deny
+[ "$missing_exit" -eq 1 ] && [ "$missing_report" = "地図を作れません: blob を読めない: $quiet_blob" ] && missing_stops=pass
+report pass "$missing_stops" "読めない blob があると、地図を作らずに読めない名前を 1 行で報告し、1 で終わる"
 
 exit "$cases_failed"

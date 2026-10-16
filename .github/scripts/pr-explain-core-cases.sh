@@ -2,9 +2,11 @@
 #
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
-# 叩いて、地図と解説の合流・振る舞いの節の並び・今の節・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・
-# 確認の印の鍵・開く画面と、語彙・Target の kind・impact の形の道筋が解説の検査(`build-pr-explain.py`)と
-# 揃っていることが期待どおりかを 1 コマンドで確かめる。
+# 叩いて、地図と解説の合流・振る舞いの節の並び・技術の手引きの節・用語の印・抜粋の強調・出てくる場所のコミットへの
+# 届き方・今の節・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、
+# `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・解説の形の道筋(impact・primers・terms・抜粋の
+# 強調)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを
+# 1 コマンドで確かめる。
 #
 # 使い方: bash .github/scripts/pr-explain-core-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -14,43 +16,155 @@
 #
 # 組み立て(DOM を触る側)はここでは通らない。画面の配線は表示確認で見る。
 #
+# **判定表 3 本(これと `build-pr-explain-cases.sh`・`build-pr-change-map-cases.sh`)は、区切りの語の付いた `<<` を PY / JS の
+# ヒアドキュメントの外の行に書かない**(見本は Python の文字列で 1 行 1 要素に書く)。判定表も解説ページで色分けされ、外の行に
+# あるとそこでヒアドキュメントを開いたと読まれて、後ろの色が崩れるため。最後の 2 ケース(埋め込みが閉じていること・開いた行の形)が
+# これを確かめる。
+#
 # ケースは node の中の表 `cases` に 1 件ずつ並べ、`actual` の値を JSON にして `expected` と比べる。
 set -uo pipefail
 
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
 repo_root="$(cd "$scripts_dir/../.." && pwd)"
 template="$repo_root/.claude/skills/pr-explain/templates/index.html"
+work="$(mktemp -d)" || exit 1
+trap 'rm -rf "$work"' EXIT
 
 source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
 # 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)と、Target の kind ごとのキー(ページの `Target` と
-# 突き合わせる)と、Shapes の Impact から導いた形の道筋と値の種類(ページの `ImpactTopics.ShapeRoutes` と
-# 突き合わせる)。道筋に出すのはオブジェクト・その配列・id・id の配列で、文のキーは出さない。
+# 突き合わせる)と、Shapes から導いた形の道筋と値の種類(ページの `ExplainShape.Routes` と突き合わせる)。impact の下は
+# オブジェクト・その配列・id・id の配列だけ。primers・terms の下は文(text・sha・marked_text の文字列)も出す。Excerpt の中の
+# 道筋は、Excerpt を指すすべての道筋の下に出す。primers・terms の下の必須の文と 1 つのオブジェクトの道筋と、それを必須とする
+# kind(Variant の下なら kind の並び、Shape の下なら null。ページの `ExplainShape.Required` と突き合わせる)。ほかに、技術の
+# 手引きの kind・段の kind・用語の印の綴りと、印を読む道筋と、`` ` `` の割り方(ページの `CodeSpans` と突き合わせる)。
 checker="$(python3 - "$scripts_dir/build-pr-explain.py" <<'PY'
 import importlib.util, json, sys
 spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
 module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
-vocabulary = {"techniques": module.Techniques, "phases": module.Phases, "messageKinds": module.MessageKinds, "vias": module.Vias, "messageStatuses": module.MessageStatuses}
+vocabulary = {
+    "techniques": module.Techniques,
+    "phases": module.Phases,
+    "messageKinds": module.MessageKinds,
+    "vias": module.Vias,
+    "messageStatuses": module.MessageStatuses,
+    "primerStatuses": module.PrimerStatuses,
+    "remarkKinds": module.RemarkKinds,
+}
 target_keys = {kind: list(fields) for kind, fields in module.Variants["Target"].items()}
-def kind_of(rule, is_many):
-    if isinstance(rule, module.Shape):
+text_rules = (module.Text, module.Heading, module.UserText, module.Sha, module.MarkedText)
+def kind_of(rule, is_many, with_text):
+    if isinstance(rule, (module.Shape, module.Variant)):
         return "records" if is_many else "record"
     if rule == module.Id:
         return "ids" if is_many else "id"
+    if with_text and rule in text_rules:
+        return "texts" if is_many else "text"
     return None
-routes = module.routes_under(module.Shapes["Explain"]["impact"].value, "impact")
-impact_routes = [[route, kind_of(rule, is_many)] for route, rule, is_many in routes if kind_of(rule, is_many) is not None]
-print(json.dumps({"vocabulary": vocabulary, "targetKeys": target_keys, "impactRoutes": impact_routes}))
+def shape_routes_of(rule, route, with_text):
+    return [[found, kind_of(inner, is_many, with_text)] for found, inner, is_many in module.routes_under(rule, route) if kind_of(inner, is_many, with_text) is not None]
+def required_kinds_of(owner, key):
+    if isinstance(owner, module.Shape):
+        return None if module.Shapes[owner.name][key].required else []
+    return [kind for kind, fields in module.Variants[owner.name].items() if key in fields and fields[key].required]
+def required_routes_of(rule, route):
+    found = module.routes_under(rule, route)
+    owners = {at: inner for at, inner, _ in found}
+    kinds_at = lambda at: required_kinds_of(owners[at.rpartition(".")[0].removesuffix("[]")], at.rpartition(".")[2])
+    candidates = [{"route": at, "kinds": kinds_at(at)} for at, inner, is_many in found[1:] if kind_of(inner, is_many, True) in ("text", "record")]
+    return [candidate for candidate in candidates if candidate["kinds"] != []]
+explain = module.Shapes["Explain"]
+routes = [*shape_routes_of(explain["impact"].value, "impact", False), *shape_routes_of(explain["primers"].value, "primers", True), *shape_routes_of(explain["terms"].value, "terms", True)]
+required_routes = [*required_routes_of(explain["primers"].value, "primers"), *required_routes_of(explain["terms"].value, "terms")]
+known = {route for route, _ in routes}
+inside_excerpts = [found for route in module.routes_with(module.Shape("Excerpt")) for found in shape_routes_of(module.Shape("Excerpt"), route, False)[1:]]
+shape_routes = routes + [found for found in inside_excerpts if found[0] not in known]
+print(json.dumps({
+    "vocabulary": vocabulary,
+    "targetKeys": target_keys,
+    "shapeRoutes": shape_routes,
+    "requiredRoutes": required_routes,
+    "primerKinds": list(module.Variants["Primer"]),
+    "passageKinds": list(module.Variants["Passage"]),
+    "termMarkPattern": module.TermMarkPattern.pattern,
+    "markedRoutes": module.routes_with(module.MarkedText),
+    "codeSpans": {text: module.code_spans_of(text) for text in ("前 `a` 中 `b", "``a`` `b`")},
+}))
 PY
 )" || { echo "NG   解説の検査の語彙を読めない"; exit 1; }
 
-results="$(node - "$template" "$checker" <<'JS'
+# 色分けの埋め込み(要素とヒアドキュメント)について、検査の共有モジュール(`lib/embedded_regions.py`)の語と、各行の頭で
+# 効いている埋め込みを開いた行。argv ではなく `$work` のファイルで渡す(Linux の引数 1 つの上限 131,072 バイトを超えるため)。
+python3 - "$scripts_dir/lib" "$work" "$template" "$scripts_dir/pr-explain-core-cases.sh" "$scripts_dir/build-pr-explain-cases.sh" "$scripts_dir/build-pr-change-map-cases.sh" <<'PY'
+import json, sys
+sys.path.insert(0, sys.argv[1])
+from embedded_regions import EmbeddingElements, ElementExtensions, HeredocDelimiters, HeredocExtensions, opening_lines
+work = sys.argv[2]
+samples = {
+    "heredocs.sh": [
+        "cat <<JSON",
+        '{"a": true}',
+        "JSON",
+        'node - <<"JS"',
+        "const a = 1;",
+        "JS",
+        "python3 - <<'PY'",
+        "x = 1",
+        "PY",
+        "cat <<-'TS'",
+        "\tconst b: T = 1;",
+        "\tTS",
+        "cat <<'CASES'",
+        "const c = 1;",
+        "CASES",
+        "cat << 'JS'",
+        "const d = 1;",
+        "JS",
+        "echo done",
+    ],
+    "elements.html": [
+        "<p>a</p>",
+        "<STYLE>",
+        "a { color: red; }",
+        "</style>",
+        '<script type="module">',
+        'const a = "</p>";',
+        'const css = "<style>a{}</style>";',
+        "</SCRIPT>",
+        "<script>const b = 1;</script>",
+        "<p>b</p>",
+    ],
+}
+for name, lines in samples.items():
+    open(f"{work}/{name}", "w", encoding="utf-8").write("\n".join(lines) + "\n")
+paths = [*sys.argv[3:], *(f"{work}/{name}" for name in samples)]
+lines_of = lambda path: open(path, encoding="utf-8").read().split("\n")
+json.dump({
+    "elements": list(EmbeddingElements),
+    "heredocs": list(HeredocDelimiters),
+    "extensions": {"elements": list(ElementExtensions), "heredocs": list(HeredocExtensions)},
+    "files": {path: opening_lines(path, lines_of(path)) for path in paths},
+}, open(f"{work}/embeddings.json", "w", encoding="utf-8"))
+PY
+[ "$?" -eq 0 ] || { echo "NG   検査の埋め込みの開いた行を読めない"; exit 1; }
+
+results="$(node - "$template" "$checker" "$work/embeddings.json" <<'JS'
 const fs = require("fs");
 const vm = require("vm");
 
 const template = fs.readFileSync(process.argv[2], "utf8");
-const { vocabulary: checkerVocabulary, targetKeys: checkerTargetKeys, impactRoutes: checkerImpactRoutes } = JSON.parse(process.argv[3]);
+const {
+  vocabulary: checkerVocabulary,
+  targetKeys: checkerTargetKeys,
+  shapeRoutes: checkerShapeRoutes,
+  requiredRoutes: checkerRequiredRoutes,
+  primerKinds: checkerPrimerKinds,
+  passageKinds: checkerPassageKinds,
+  termMarkPattern: checkerTermMarkPattern,
+  markedRoutes: checkerMarkedRoutes,
+  codeSpans: checkerCodeSpans,
+} = JSON.parse(process.argv[3]);
 const script = (template.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
 if (script === undefined) {
   console.error("固定スクリプトが見つからない");
@@ -63,7 +177,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ImpactTopics, TopicScroll, ReviewCheck, ScreenChoice, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
+const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -100,6 +214,49 @@ const linesOf = (rows) => rows.join("\n");
 // 変更後の 1〜3 行目と 10〜12 行目の 2 つの hunk。4〜9 行目は差分に出ていない。
 const twoHunks = linesOf(["@@ -1,3 +1,3 @@", " a", "-b", "+B", " c", "@@ -10,3 +10,3 @@", " j", "-k", "+K", " l"]);
 const numbersOf = (file) => file.body.hunks.map((hunk) => hunk.notes.map((note) => [note.n, note.text]));
+
+// 色分け。パスの文法で、開いた行(無ければ null)の後から行を読み進めた、行ごとの字句の並び。
+const lineTokensOf = (path, lines, openingLine = null) => {
+  const grammar = Tokenizer.grammarOf(path);
+  return Tokenizer.tokenizeLines(lines, grammar, Tokenizer.startAfter(openingLine, grammar)).map((read) => read.tokens);
+};
+// 色分けした行の、line 行目(0 始まり)で綴りが word の nth 番目(0 始まり)の字句の色。字句が無ければ、どの色とも違う綴りを返す。
+const colorIn = (lineTokens, line, word, nth = 0) => {
+  const found = lineTokens[line].filter((token) => token.value === word)[nth];
+  return found === undefined ? "字句が無い" : found.cls;
+};
+const colorOf = (path, lines, { line = 0, word, nth = 0, openingLine = null }) => colorIn(lineTokensOf(path, lines, openingLine), line, word, nth);
+// a.html の差分を地図の開いた行と組み、hunk ごとに、綴りが word の字句の色を行の順に並べる。
+const hunkColorsOf = (patchLines, hunkOpeningLines, word) => {
+  const [file] = diffOf([diffFile("a.html", { patch: linesOf(patchLines), hunkOpeningLines })], []).files;
+  const grammar = Tokenizer.grammarOf("a.html");
+  return file.body.hunks.map((hunk) => CommitDiff.lineTokensOf(hunk, grammar).flatMap((tokens) => tokens.filter((token) => token.value === word).map((token) => token.cls)));
+};
+// 文脈の行 1 本だけを持つ hunk 2 つ。
+const twoScriptHunks = ["@@ -1,1 +1,1 @@", " const a = 1;", "@@ -10,1 +10,1 @@", " const b = 1;"];
+const scriptOpened = { old: "<script>", new: "<script>" };
+
+// 色分けの埋め込みの突き合わせ。前段が書いた、検査の語と、ファイルごとの各行の頭の開いた行。
+const { elements: checkerElements, heredocs: checkerHeredocs, extensions: checkerExtensions, files: checkerOpenings } = JSON.parse(fs.readFileSync(process.argv[4], "utf8"));
+const checkedPaths = Object.keys(checkerOpenings);
+const casesTables = checkedPaths.filter((path) => path.endsWith("-cases.sh"));
+const checkedPathOf = (name) => checkedPaths.find((path) => path.endsWith(`/${name}`));
+// ファイルを 1 行目から読み進めたときの、各行の頭の埋め込み(`region`)と、最後の行を読み終えた後の埋め込み。
+const regionsAlong = (path) => {
+  const grammar = Tokenizer.grammarOf(path);
+  const start = Tokenizer.startAfter(null, grammar);
+  const carries = [start, ...Tokenizer.tokenizeLines(fs.readFileSync(path, "utf8").split("\n"), grammar, start).map((read) => read.carry)];
+  return { heads: carries.slice(0, -1).map((carry) => carry.region), last: carries[carries.length - 1].region };
+};
+// 検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと食い違う行(1 始まり)。
+const regionMismatchesOf = (path) => {
+  const grammar = Tokenizer.grammarOf(path);
+  const { heads } = regionsAlong(path);
+  const isSame = (opening, index) => JSON.stringify(Tokenizer.startAfter(opening, grammar).region) === JSON.stringify(heads[index]);
+  return checkerOpenings[path].flatMap((opening, index) => (isSame(opening, index) ? [] : [index + 1]));
+};
+// 行の終わりが、区切りの語(引用符で囲むなら閉じた引用符)の付いた `<<` で終わるか。
+const EndsWithHeredocStart = /<<-?[ \t]*(['"]?)[A-Za-z_]\w*\1$/;
 
 // 箱の図の組と依存。graphGroup の箱は `組名/番号.ts`、boxesOf の箱は渡した名前で、lines はその箱の変更行数。
 const graphGroup = (id, lines = [1]) => ({ id, boxes: lines.map((count, index) => ({ path: `${id}/${index}.ts`, lines: count })) });
@@ -173,6 +330,27 @@ const mentionedPlacesOf = (explainTestId) => {
   const result = explained(testedMap, testedExplain(impact));
   return ImpactTopics.mentionsOf(result.impactTopics, explainTestId).map((mention) => [mention.topic, mention.cell, mention.placeText]);
 };
+
+// 技術の手引き(primers)。節は必須のキーだけを持ち、extra で足す・差し替える。
+const primerOf = (extra = {}) => ({ kind: "language", id: "p", category: "分類", label: "題", gist: "要するに", occurrences: [{ path: "a.ts", text: "ここ" }], ...extra });
+const termOf = (id, label = id) => ({ id, label, text: `${label}の意味` });
+const primerTopicsOf = (explain, map = mapOf()) => explained(map, explainOf(explain)).primerTopics;
+const tabTopicsOf = (explain, tab) => primerTopicsOf(explain).tabs[tab].topics;
+const shapeReasonOf = (explain) => explained(mapOf(), explainOf(explain)).reading.reason;
+const passageExcerpt = (extra = {}) => ({ kind: "excerpt", excerpt: { path: "a.ts", start: 10, end: 14, ...extra } });
+// 出てくる場所のコミットへの届き方。地図のコミットの files はパス(改名なら変更前のパスも)だけを見る。
+const commitTouching = (digit, files, extra = {}) => ({ ...commitOf(digit), files, ...extra });
+const reachesOf = ({ commits, explainedSha, path, shas, lineRange = { start: 3, end: 4 } }) => {
+  const occurrence = { path, text: "ここ", shas, ...(lineRange === null ? {} : { lineRange }) };
+  const map = mapOf({ commits, head: commits[commits.length - 1].sha });
+  const topics = primerTopicsOf({ sha: explainedSha, primers: [primerOf({ occurrences: [occurrence] })] }, map).tabs.language.topics;
+  return topics[0].occurrences[0].destinations.map(({ sha, reach }) => [sha, reach]);
+};
+// c1・c2 が a.ts、c3 が b.ts を変えた地図と、c2 が a.ts を z.ts へ移した地図と、c1 の後にマージコミット(2)がある地図。
+const threeCommits = [commitTouching(1, [diffFile("a.ts")]), commitTouching(2, [diffFile("a.ts")]), commitTouching(3, [diffFile("b.ts")])];
+const renamedCommits = [commitTouching(1, [diffFile("a.ts")]), commitTouching(2, [diffFile("z.ts", { oldPath: "a.ts", status: "R" })])];
+const mergedCommits = [commitTouching(1, [diffFile("a.ts")]), commitTouching(2, [], { merge: true })];
+const lineReach = { kind: "line", lineRange: { start: 3, end: 4 } };
 
 const cases = [
   {
@@ -611,6 +789,11 @@ const cases = [
     expected: "impact",
   },
   {
+    label: "ハッシュが #primer なら、保存値(テスト)より技術の手引きを優先する",
+    actual: () => ScreenChoice.choose({ hash: "#primer", saved: "test" }),
+    expected: "primer",
+  },
+  {
     label: "ハッシュが無く、保存値が振る舞いの画面ならそれを開く",
     actual: () => ScreenChoice.choose({ hash: "", saved: "impact" }),
     expected: "impact",
@@ -661,9 +844,14 @@ const cases = [
     expected: { kind: "shape", key: "impact.tables" },
   },
   {
-    label: "ページが形を見る impact の道筋と値の種類は、解説の検査の形(Shapes)から導いたものと同じ",
-    actual: () => ImpactTopics.ShapeRoutes.map(([route, kind]) => [route, kind]),
-    expected: checkerImpactRoutes,
+    label: "ページが形を見る道筋と値の種類は、解説の検査の形(Shapes)から導いたものと同じ",
+    actual: () => ExplainShape.Routes.map(([route, kind]) => [route, kind]),
+    expected: checkerShapeRoutes,
+  },
+  {
+    label: "ページが欠けを見る道筋とそれを必須とする kind は、解説の検査の形(Shapes・Variants)の primers・terms の下の必須の文と 1 つのオブジェクトと同じ",
+    actual: () => ExplainShape.Required,
+    expected: checkerRequiredRoutes,
   },
   {
     label: "解説が無いとき、振る舞いの節は「解説なし」",
@@ -891,6 +1079,1021 @@ const cases = [
     actual: () => TopicScroll.currentOf([]),
     expected: null,
   },
+  {
+    label: "primers がオブジェクトの解説は、理由を primers の型として解説なしにする",
+    actual: () => shapeReasonOf({ primers: {} }),
+    expected: { kind: "shape", key: "primers" },
+  },
+  {
+    label: "primers の要素が null なら、理由は primers",
+    actual: () => shapeReasonOf({ primers: [null] }),
+    expected: { kind: "shape", key: "primers" },
+  },
+  {
+    label: "出てくる場所(occurrences)がオブジェクトなら、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ occurrences: {} })] }),
+    expected: { kind: "shape", key: "primers[].occurrences" },
+  },
+  {
+    label: "段の文(passages の text)が数値なら、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ passages: [{ kind: "text", text: 5 }] })] }),
+    expected: { kind: "shape", key: "primers[].passages[].text" },
+  },
+  {
+    label: "節の題(label)が数値なら、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ label: 5 })] }),
+    expected: { kind: "shape", key: "primers[].label" },
+  },
+  {
+    label: "出てくる場所の shas の要素が数値なら、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ occurrences: [{ path: "a.ts", text: "ここ", shas: [5] }] })] }),
+    expected: { kind: "shape", key: "primers[].occurrences[].shas" },
+  },
+  {
+    label: "節の題(label)が無ければ、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ id: "a" }), { ...primerOf({ id: "b" }), label: undefined }] }),
+    expected: { kind: "shape", key: "primers[].label" },
+  },
+  {
+    label: "用語の意味(terms の text)が無ければ、理由はその道筋",
+    actual: () => shapeReasonOf({ terms: [termOf("t1"), { id: "t2", label: "語" }] }),
+    expected: { kind: "shape", key: "terms[].text" },
+  },
+  {
+    label: "引数の段の引数の文が無ければ、理由はその道筋(段の kind ごとのキーでも、そのオブジェクトで必須なら見る)",
+    actual: () => shapeReasonOf({ primers: [primerOf({ passages: [{ kind: "parameters", parameters: [{ name: "a", type: "T" }] }] })] }),
+    expected: { kind: "shape", key: "primers[].passages[].parameters[].text" },
+  },
+  {
+    label: "段の文は、宣言(declaration)の段に無くても欠けとしない(その kind では必須でない)",
+    actual: () => explained(mapOf(), explainOf({ primers: [primerOf({ passages: [{ kind: "declaration", code: "f()" }] })] })).reading.kind,
+    expected: "explained",
+  },
+  {
+    label: "抜粋(excerpt)の段に抜粋のオブジェクトが無ければ、解説なしにして理由をその道筋にする",
+    actual: () => explained(mapOf(), explainOf({ primers: [primerOf({ passages: [{ kind: "excerpt" }] })] })).reading,
+    expected: { kind: "missing", reason: { kind: "shape", key: "primers[].passages[].excerpt" } },
+  },
+  {
+    label: "抜粋のオブジェクトは、宣言・引数の段に無くても欠けとしない(その kind では必須でない)",
+    actual: () => explained(mapOf(), explainOf({ primers: [primerOf({ passages: [{ kind: "declaration", code: "f()" }, { kind: "parameters", parameters: [{ name: "a", type: "T", text: "文" }] }] })] })).reading.kind,
+    expected: "explained",
+  },
+  {
+    label: "型の違いと必須の欠けが同時にあれば、外側の欠け(節の題)を理由にする",
+    actual: () => shapeReasonOf({ primers: [{ ...primerOf({ passages: [{ kind: "text", text: 5 }] }), label: undefined }] }),
+    expected: { kind: "shape", key: "primers[].label" },
+  },
+  {
+    label: "型の違いと必須の欠けが同時にあれば、外側の型の違い(節の題)を理由にする",
+    actual: () => shapeReasonOf({ primers: [primerOf({ label: 5, passages: [{ kind: "text" }] })] }),
+    expected: { kind: "shape", key: "primers[].label" },
+  },
+  {
+    label: "任意の文(引数の注 note)が無くても、解説は使える",
+    actual: () => explained(mapOf(), explainOf({ primers: [primerOf({ passages: [{ kind: "parameters", parameters: [{ name: "a", type: "T", text: "文" }] }] })] })).reading.kind,
+    expected: "explained",
+  },
+  {
+    label: "用語の意味(terms の text)が数値なら、理由はその道筋",
+    actual: () => shapeReasonOf({ terms: [{ id: "t", label: "語", text: 5 }] }),
+    expected: { kind: "shape", key: "terms[].text" },
+  },
+  {
+    label: "振る舞いの文(impact の kept の text)が数値でも、解説は使える",
+    actual: () => explained(mapOf(), explainOf({ impact: impactOf({ kept: [{ text: 5 }] }) })).reading.kind,
+    expected: "explained",
+  },
+  {
+    label: "passages がオブジェクトなら、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ passages: {} })] }),
+    expected: { kind: "shape", key: "primers[].passages" },
+  },
+  {
+    label: "段の抜粋の強調(emphasis)がオブジェクトなら、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ passages: [passageExcerpt({ emphasis: {} })] })] }),
+    expected: { kind: "shape", key: "primers[].passages[].excerpt.emphasis" },
+  },
+  {
+    label: "テストの抜粋の強調の要素がオブジェクトでなければ、理由はその道筋",
+    actual: () => shapeReasonOf({ suites: [suite("s", "s.test.ts")], tests: [test("a", "s", "名", { excerpt: { path: "a.ts", start: 1, end: 1, emphasis: [null] } })] }),
+    expected: { kind: "shape", key: "tests[].excerpt.emphasis" },
+  },
+  {
+    label: "段の抜粋の強調の要素がオブジェクトでなければ、理由はその道筋",
+    actual: () => shapeReasonOf({ primers: [primerOf({ passages: [passageExcerpt({ emphasis: [null] })] })] }),
+    expected: { kind: "shape", key: "primers[].passages[].excerpt.emphasis" },
+  },
+  {
+    label: "段の抜粋の強調の start / end が数でなくても解説は使え、その抜粋の行は番号どおりに並ぶ",
+    actual: () => {
+      const emphasis = [{ start: "a", end: null }];
+      const reading = explained(mapOf(), explainOf({ primers: [primerOf({ passages: [passageExcerpt({ emphasis })] })] })).reading.kind;
+      return [reading, ExcerptRows.create({ path: "a.ts", start: 10, end: 14, emphasis, text: "a\nb\nc\nd\ne" }).map((row) => row.number)];
+    },
+    expected: ["explained", [10, 11, 12, 13, 14]],
+  },
+  {
+    label: "技術の手引きのタブ(Primer の kind)は、解説の検査の Primer の kind と同じ",
+    actual: () => Object.values(PrimerTopics.PrimerKinds),
+    expected: checkerPrimerKinds,
+  },
+  {
+    label: "ページが描く段の kind は、解説の検査の Passage の kind と同じ並び",
+    actual: () => PrimerTopics.PassageKinds,
+    expected: checkerPassageKinds,
+  },
+  {
+    label: "用語の印の綴りは、解説の検査と同じ",
+    actual: () => TermMarks.Pattern.source,
+    expected: checkerTermMarkPattern,
+  },
+  {
+    label: "閉じていない `` ` `` のある文は、解説の検査と同じに割る(最後の `` ` `` は文字のまま前の切れ端につなぐ)",
+    actual: () => CodeSpans.create("前 `a` 中 `b").map((span) => [span.isCode, span.text]),
+    expected: checkerCodeSpans["前 `a` 中 `b"],
+  },
+  {
+    label: "対になった `` ` `` だけの文は、解説の検査と同じに割る(空の切れ端も出す)",
+    actual: () => CodeSpans.create("``a`` `b`").map((span) => [span.isCode, span.text]),
+    expected: checkerCodeSpans["``a`` `b`"],
+  },
+  {
+    label: "用語の印を読む道筋は、解説の検査が MarkedText の規則を付けた道筋と同じ並び",
+    actual: () => TermMarks.Routes,
+    expected: checkerMarkedRoutes,
+  },
+  {
+    label: "解説が無いとき、技術の手引きは「解説なし」",
+    actual: () => ExplainedMap.create(mapOf(), absent).primerTopics,
+    expected: { kind: "none" },
+  },
+  {
+    label: "退けた解説(pr が違う)は、primers が書いてあっても技術の手引きは「解説なし」",
+    actual: () => primerTopicsOf({ pr: Pr + 1, primers: [primerOf()] }),
+    expected: { kind: "none" },
+  },
+  {
+    label: "primers が無ければ、impact があっても技術の手引きは「書かれていない」",
+    actual: () => primerTopicsOf({ impact: impactOf({ kept: [{ text: "変わらない" }] }) }),
+    expected: { kind: "unwritten" },
+  },
+  {
+    label: "primers が空でも、技術の手引きは「書かれていない」",
+    actual: () => primerTopicsOf({ primers: [] }),
+    expected: { kind: "unwritten" },
+  },
+  {
+    label: "言語と実装の節を交互に書くと、タブごとに書いた順で分かれる",
+    actual: () => {
+      const primers = [primerOf({ id: "a" }), primerOf({ id: "b", kind: "codebase" }), primerOf({ id: "c" }), primerOf({ id: "d", kind: "codebase" })];
+      const tabs = primerTopicsOf({ primers }).tabs;
+      return [tabs.language.topics.map((topic) => topic.id), tabs.codebase.topics.map((topic) => topic.id)];
+    },
+    expected: [["a", "c"], ["b", "d"]],
+  },
+  {
+    label: "節の用語は、要するに → 段を書いた順(段の中は文 → 引数)の文書の順に並び、JSON のキーの順にも terms の順にもよらない",
+    actual: () => {
+      const primer = {
+        kind: "language",
+        id: "p",
+        category: "分類",
+        label: "題",
+        occurrences: [{ path: "a.ts", text: "ここ" }],
+        passages: [{ kind: "parameters", parameters: [{ name: "n", type: "T", text: "[[二|t2]]" }] }, { kind: "text", text: "[[一|t1]] と [[三|t3]]" }],
+        gist: "[[三|t3]]",
+      };
+      return tabTopicsOf({ primers: [primer], terms: [termOf("t1"), termOf("t2"), termOf("t3")] }, "language")[0].terms.map((term) => term.id);
+    },
+    expected: ["t3", "t2", "t1"],
+  },
+  {
+    label: "用語集は、タブの節をまたいで最初に出た順に並び、印の無いタブは null",
+    actual: () => {
+      const primers = [primerOf({ id: "a", gist: "[[二|t2]]" }), primerOf({ id: "b", kind: "codebase" }), primerOf({ id: "c", gist: "[[一|t1]] と [[二|t2]]" })];
+      const tabs = primerTopicsOf({ primers, terms: [termOf("t1"), termOf("t2")] }).tabs;
+      return [tabs.language.glossary.terms.map((term) => term.id), tabs.codebase.glossary];
+    },
+    expected: [["t2", "t1"], null],
+  },
+  {
+    label: "terms に無い印は表示の文字のままになり、節の用語にも用語集にも入らない",
+    actual: () => {
+      const topic = primerTopicsOf({ primers: [primerOf({ gist: "[[一|t1]] と [[無い|ghost]]" })], terms: [termOf("t1", "一")] }).tabs.language;
+      return { gist: topic.topics[0].gist, terms: topic.topics[0].terms.map((term) => term.id), glossary: topic.glossary.terms.map((term) => term.id) };
+    },
+    expected: {
+      gist: [{ kind: "term", label: "一", term: { id: "t1", label: "一", text: "一の意味" } }, { kind: "plain", text: " と " }, { kind: "plain", text: "無い" }],
+      terms: ["t1"],
+      glossary: ["t1"],
+    },
+  },
+  {
+    label: "関連は書いた順に、指した先のタブ・タブの中の位置・題になる",
+    actual: () => {
+      const primers = [primerOf({ id: "a", seeAlso: ["d", "b"] }), primerOf({ id: "c", kind: "codebase", label: "C" }), primerOf({ id: "b", label: "B" }), primerOf({ id: "d", kind: "codebase", label: "D" })];
+      return tabTopicsOf({ primers }, "language")[0].seeAlso;
+    },
+    expected: [{ tab: "codebase", index: 1, label: "D" }, { tab: "language", index: 1, label: "B" }],
+  },
+  {
+    label: "primers に無い関連の id は外す",
+    actual: () => tabTopicsOf({ primers: [primerOf({ id: "a", seeAlso: ["ghost", "b"] }), primerOf({ id: "b", label: "B" })] }, "language")[0].seeAlso,
+    expected: [{ tab: "language", index: 1, label: "B" }],
+  },
+  {
+    label: "この PR の実装の節の状態は、added / changed / 省略 → added / changed / 前からある(Existing)",
+    actual: () => tabTopicsOf({ primers: [primerOf({ id: "a", kind: "codebase", status: "added" }), primerOf({ id: "b", kind: "codebase", status: "changed" }), primerOf({ id: "c", kind: "codebase" })] }, "codebase").map((topic) => topic.status),
+    expected: ["added", "changed", "existing"],
+  },
+  {
+    label: "前からある(Existing)の綴りは、解説の検査の技術の節の状態と重ならない",
+    actual: () => Object.hasOwn(Vocabulary.primerStatuses, PrimerTopics.Existing),
+    expected: false,
+  },
+  {
+    label: "言語・フレームワークの節は状態を持たない(札なし)",
+    actual: () => tabTopicsOf({ primers: [primerOf()] }, "language").map((topic) => topic.status),
+    expected: [null],
+  },
+  {
+    label: "この PR の実装の節のテストは、未実装を無いテストに分け、解説のテストに無い id は外す",
+    actual: () => {
+      const tests = explained(testedMap, { ...testedExplain(undefined), primers: [primerOf({ kind: "codebase", tests: ["t", "ghost", "a"] })] }).primerTopics.tabs.codebase.topics[0].tests;
+      return { verifying: tests.verifying.map((item) => item.test.id), missing: tests.missing.map((item) => item.test.id) };
+    },
+    expected: { verifying: ["a"], missing: ["t"] },
+  },
+  {
+    label: "この PR の実装の節の流れは、書いた順に引き、解説の流れに無い id は外す",
+    actual: () => {
+      const flows = [{ id: "f1", label: "一", steps: ["m"] }, { id: "f2", label: "二", steps: ["m"] }];
+      return tabTopicsOf({ flows, primers: [primerOf({ kind: "codebase", flows: ["f2", "ghost", "f1"] })] }, "codebase")[0].flows.map((flow) => flow.id);
+    },
+    expected: ["f2", "f1"],
+  },
+  {
+    label: "最初に開くタブは、言語に節があれば言語、無くて実装にあれば実装、どちらにも無ければ言語",
+    actual: () => [
+      [primerOf({ id: "b", kind: "codebase" }), primerOf({ id: "a" })],
+      [primerOf({ id: "b", kind: "codebase" })],
+      [primerOf({ id: "x", kind: "framework" })],
+    ].map((primers) => PrimerTopics.firstTabOf(primerTopicsOf({ primers }))),
+    expected: ["language", "codebase", "language"],
+  },
+  {
+    label: "出てくる場所の行の範囲を省けば null、shas を省けば届く先は無い",
+    actual: () => tabTopicsOf({ primers: [primerOf()] }, "language")[0].occurrences,
+    expected: [{ path: "a.ts", lineRange: null, text: "ここ", destinations: [] }],
+  },
+  {
+    label: "段は書いた順にそろえ、知らない kind の段は外す",
+    actual: () => {
+      const passages = [{ kind: "text", text: "前" }, passageExcerpt(), { kind: "figure", text: "図" }, { kind: "caution", text: "注意" }, { kind: "text", text: "後" }];
+      return tabTopicsOf({ primers: [primerOf({ passages })] }, "language")[0].passages.map((passage) => passage.kind);
+    },
+    expected: ["text", "excerpt", "remark", "text"],
+  },
+  {
+    label: "注意(caution)とメモ(memo)の段は、それぞれの種類を色分けの鍵として持つ",
+    actual: () => tabTopicsOf({ primers: [primerOf({ passages: [{ kind: "caution", text: "注意" }, { kind: "memo", text: "メモ" }] })] }, "language")[0].passages.map((passage) => [passage.label, passage.remark]),
+    expected: [["注意", "caution"], ["メモ", "memo"]],
+  },
+  {
+    label: "用語の印は、前後の文字と印に割れ、文の先頭・末尾の印の外に空の文字を出さない",
+    actual: () => [TermMarks.piecesOf("前[[絞り込まれ|narrowing]]ます"), TermMarks.piecesOf("[[絞り込み|narrowing]]")],
+    expected: [
+      [{ kind: "plain", text: "前" }, { kind: "term", label: "絞り込まれ", id: "narrowing" }, { kind: "plain", text: "ます" }],
+      [{ kind: "term", label: "絞り込み", id: "narrowing" }],
+    ],
+  },
+  {
+    label: "印の表示のバッククォートは、そのまま表示に残る",
+    actual: () => TermMarks.piecesOf("[[`Some`|some]]"),
+    expected: [{ kind: "term", label: "`Some`", id: "some" }],
+  },
+  {
+    label: "id に空白がある・表示が空の二重の角括弧は印にならず、文字 1 つのまま",
+    actual: () => [TermMarks.piecesOf("[[a|b c]]"), TermMarks.piecesOf("[[|b]]")],
+    expected: [[{ kind: "plain", text: "[[a|b c]]" }], [{ kind: "plain", text: "[[|b]]" }]],
+  },
+  {
+    label: "印の直前の角括弧 1 つは、印の外の文字になる",
+    actual: () => TermMarks.piecesOf("[[[a|b]]"),
+    expected: [{ kind: "plain", text: "[" }, { kind: "term", label: "a", id: "b" }],
+  },
+  {
+    label: "届く先は shas を書いた順で、解説の sha までにそのファイルを最後に変えたコミットだけが行まで届く",
+    actual: () => reachesOf({ commits: threeCommits, explainedSha: shaOf(3), path: "a.ts", shas: [shaOf(2), shaOf(1)] }),
+    expected: [[shaOf(2), lineReach], [shaOf(1), { kind: "file" }]],
+  },
+  {
+    label: "解説の sha より後のコミットには、行まで届かない",
+    actual: () => reachesOf({ commits: threeCommits, explainedSha: shaOf(1), path: "a.ts", shas: [shaOf(1), shaOf(2)] }),
+    expected: [[shaOf(1), lineReach], [shaOf(2), { kind: "file" }]],
+  },
+  {
+    label: "後のコミットがファイルを別のパスへ移したら、移す前のパスのコミットはファイルまで、移した後のパスは行まで届く",
+    actual: () => [
+      reachesOf({ commits: renamedCommits, explainedSha: shaOf(2), path: "a.ts", shas: [shaOf(1)] }),
+      reachesOf({ commits: renamedCommits, explainedSha: shaOf(2), path: "z.ts", shas: [shaOf(2)] }),
+    ],
+    expected: [[[shaOf(1), { kind: "file" }]], [[shaOf(2), lineReach]]],
+  },
+  {
+    label: "地図に無い sha は unmapped、行の範囲が無ければ file、解説の sha が地図に無ければ最後に変えたコミットも file",
+    actual: () => [
+      reachesOf({ commits: threeCommits, explainedSha: shaOf(3), path: "a.ts", shas: [shaOf(8)] }),
+      reachesOf({ commits: threeCommits, explainedSha: shaOf(3), path: "a.ts", shas: [shaOf(2)], lineRange: null }),
+      reachesOf({ commits: threeCommits, explainedSha: shaOf(8), path: "a.ts", shas: [shaOf(2)] }),
+    ],
+    expected: [[[shaOf(8), { kind: "unmapped" }]], [[shaOf(2), { kind: "file" }]], [[shaOf(2), { kind: "file" }]]],
+  },
+  {
+    label: "あいだ(解説の sha を含む)にマージコミットがあれば、最後に変えたコミットでも行まで届かない",
+    actual: () => reachesOf({ commits: mergedCommits, explainedSha: shaOf(2), path: "a.ts", shas: [shaOf(1)] }),
+    expected: [[shaOf(1), { kind: "file" }]],
+  },
+  {
+    label: "あいだのコミットがほかのファイルだけを変えたなら、行まで届く",
+    actual: () => reachesOf({ commits: [commitTouching(1, [diffFile("a.ts")]), commitTouching(2, [diffFile("b.ts")])], explainedSha: shaOf(2), path: "a.ts", shas: [shaOf(1)] }),
+    expected: [[shaOf(1), lineReach]],
+  },
+  {
+    label: "そのパスのファイルを変えていないコミットは、地図にあっても untouched",
+    actual: () => reachesOf({ commits: renamedCommits, explainedSha: shaOf(2), path: "z.ts", shas: [shaOf(1)] }),
+    expected: [[shaOf(1), { kind: "untouched" }]],
+  },
+  {
+    label: "マージコミットの sha は merge",
+    actual: () => reachesOf({ commits: mergedCommits, explainedSha: shaOf(2), path: "a.ts", shas: [shaOf(2)] }),
+    expected: [[shaOf(2), { kind: "merge" }]],
+  },
+  {
+    label: "抜粋の行はファイルの行番号で並び、強調の範囲に入る行だけが強調になり、強調を省けばどの行も強調しない",
+    actual: () => {
+      const excerpt = { path: "a.ts", start: 10, end: 14, text: "a\nb\nc\nd\ne" };
+      const rows = ExcerptRows.create({ ...excerpt, emphasis: [{ start: 11, end: 11 }, { start: 13, end: 14 }] });
+      return { numbers: rows.map((row) => row.number), emphasized: rows.map((row) => row.isEmphasized), plain: ExcerptRows.create(excerpt).map((row) => row.isEmphasized) };
+    },
+    expected: { numbers: [10, 11, 12, 13, 14], emphasized: [false, true, false, true, true], plain: [false, false, false, false, false] },
+  },
+  {
+    label: "色分け: .ts では TS の語(satisfies)もキーワードになる",
+    actual: () => colorOf("a.ts", ["const a = b satisfies C;"], { word: "satisfies" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: .tsx も TS の規則で読む(satisfies がキーワード)",
+    actual: () => colorOf("a.tsx", ["const a = b satisfies C;"], { word: "satisfies" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: .js では type はキーワードにならず変数になる",
+    actual: () => colorOf("a.js", ["const type = 1;"], { word: "type" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: .css のファイルは CSS の規則で読む(@media がキーワード)",
+    actual: () => colorOf("a.css", ["@media (x) {"], { word: "@media" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: .md と .rs は規則が無く、行全体が色の無い 1 字句になる",
+    actual: () => ["a.md", "a.rs"].map((path) => lineTokensOf(path, ["const a = f(1);"])[0].map((token) => [token.cls, token.value])),
+    expected: [[[null, "const a = f(1);"]], [[null, "const a = f(1);"]]],
+  },
+  {
+    label: "色分け: JS / TS の大文字で始まる名前は型になる",
+    actual: () => colorOf("a.ts", ["const a: TauriIpc = b;"], { word: "TauriIpc" }),
+    expected: "tok-type",
+  },
+  {
+    label: "色分け: JS / TS の「名前(」は関数になる",
+    actual: () => colorOf("a.ts", ["create(a);"], { word: "create" }),
+    expected: "tok-fn",
+  },
+  {
+    label: "色分け: . の後の名前は、キーワードの綴りでも色を付けない",
+    actual: () => colorOf("a.ts", ["a.from;"], { word: "from" }),
+    expected: null,
+  },
+  {
+    label: "色分け: . の後でも、呼び出しなら関数になる",
+    actual: () => colorOf("a.ts", ["a.map(f);"], { word: "map" }),
+    expected: "tok-fn",
+  },
+  {
+    label: "色分け: 呼び出しでもメンバーでもキーでもない小文字の名前は変数になる",
+    actual: () => colorOf("a.ts", ["return total;"], { word: "total" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: スプレッドの ... の後の名前は、メンバーにせず変数にする",
+    actual: () => colorOf("a.ts", ["f(...rest);"], { word: "rest" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: .ts のオブジェクトのキーは、キーワードの綴りでも色を付けない",
+    actual: () => colorOf("a.ts", ['const s = { type: "x" };'], { word: "type" }),
+    expected: null,
+  },
+  {
+    label: "色分け: { default: 1 } の default もキーとして色を付けない",
+    actual: () => colorOf("a.ts", ["const s = { default: 1 };"], { word: "default" }),
+    expected: null,
+  },
+  {
+    label: "色分け: a?: もキーとして色を付けない",
+    actual: () => colorOf("a.ts", ["type S = { a?: string };"], { word: "a" }),
+    expected: null,
+  },
+  {
+    label: "色分け: 1 行の型リテラルで ; の後の b: もキーとして色を付けない",
+    actual: () => colorOf("a.ts", ["type A = { a: string; b: number };"], { word: "b" }),
+    expected: null,
+  },
+  {
+    label: "色分け: readonly の後の name: もキーとして色を付けない",
+    actual: () => colorOf("a.ts", ["interface A { readonly name: string }"], { word: "name" }),
+    expected: null,
+  },
+  {
+    label: "色分け: 「if(」の if は関数にならずキーワードのまま",
+    actual: () => colorOf("a.ts", ["if(x) {}"], { word: "if" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 丸括弧の中の name: は変数になる",
+    actual: () => colorOf("a.ts", ["const f = (state: State) => state;"], { word: "state" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: 前の行で開いた丸括弧の中の name: も変数になる",
+    actual: () => colorOf("a.ts", ["f(", "  state: State,", ");"], { line: 1, word: "state" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: 前の行で開いた波括弧の中の name: はキーになる",
+    actual: () => colorOf("a.ts", ["const s = {", "  state: 1,", "};"], { line: 1, word: "state" }),
+    expected: null,
+  },
+  {
+    label: "色分け: 大文字で始まるキーも型にしない",
+    actual: () => colorOf("a.ts", ['const s = { Map: "map" };'], { word: "Map" }),
+    expected: null,
+  },
+  {
+    label: "色分け: const / let / var の直後の name: は変数になる",
+    actual: () => colorOf("a.ts", ["const x: Foo = y;"], { word: "x" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: 三項演算子の ? の後の name : は変数になる",
+    actual: () => colorOf("a.ts", ["const v = ok ? left : right;"], { word: "left" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: 種類の合わない閉じ括弧は外側の括弧を閉じない(文字クラスの } の後でも、波括弧の中の key: はキー)",
+    actual: () => colorOf("a.ts", ["f({ re: /[}]/, key: 1 })"], { word: "key" }),
+    expected: null,
+  },
+  {
+    label: "色分け: Python の else: はキーワードのまま(キーの規則は JS / TS だけ)",
+    actual: () => colorOf("a.py", ["else:"], { word: "else" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: Python の f\"…\" の f は文字列に含まれる",
+    actual: () => colorOf("a.py", ['x = f"a{b}"'], { word: 'f"a{b}"' }),
+    expected: "tok-str",
+  },
+  {
+    label: "色分け: Python の dict は型になる",
+    actual: () => colorOf("a.py", ["x: dict = {}"], { word: "dict" }),
+    expected: "tok-type",
+  },
+  {
+    label: "色分け: Python の str(x) の str は関数になる",
+    actual: () => colorOf("a.py", ["y = str(x)"], { word: "str" }),
+    expected: "tok-fn",
+  },
+  {
+    label: "色分け: CSS の /* */ はコメントで、中の 12px も数値にならない",
+    actual: () => lineTokensOf("a.css", ["/* 12px */"])[0].map((token) => token.cls),
+    expected: ["tok-com"],
+  },
+  {
+    label: "色分け: CSS の @media はキーワードになる",
+    actual: () => colorOf("a.css", ["@media screen {"], { word: "@media" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: CSS の --x は変数になる",
+    actual: () => colorOf("a.css", ["a { color: var(--x); }"], { word: "--x" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: CSS の display: はキーになる",
+    actual: () => colorOf("a.css", ["a { display: block; }"], { word: "display" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: CSS の var( は関数になる",
+    actual: () => colorOf("a.css", ["a { color: var(--x); }"], { word: "var" }),
+    expected: "tok-fn",
+  },
+  {
+    label: "色分け: CSS の 12px と #1F6F8B は数値になる",
+    actual: () => ["12px", "#1F6F8B"].map((word) => colorOf("a.css", ["a { width: 12px; color: #1F6F8B; }"], { word })),
+    expected: ["tok-num", "tok-num"],
+  },
+  {
+    label: "色分け: CSS の a:hover { の a はキーにならない",
+    actual: () => colorOf("a.css", ["a:hover {"], { word: "a" }),
+    expected: null,
+  },
+  {
+    label: "色分け: CSS の行末が , のセレクタ(a:hover,)の a もキーにならない",
+    actual: () => colorOf("a.css", ["a:hover,"], { word: "a" }),
+    expected: null,
+  },
+  {
+    label: "色分け: CSS の @media (max-width: …) の max-width はキーにならない",
+    actual: () => colorOf("a.css", ["@media (max-width: 10px) {"], { word: "max-width" }),
+    expected: null,
+  },
+  {
+    label: "色分け: CSS の : の後に空白の無い宣言も、後ろで最初に来る { ; } が ; か } ならキーになる(color:red; と a{color:red} の color)",
+    actual: () => [["color:red;"], ["a{color:red}"]].map((lines) => colorOf("a.css", lines, { word: "color" })),
+    expected: ["tok-key", "tok-key"],
+  },
+  {
+    label: "色分け: CSS の : の後が空白なら、後ろに ; も } も無くても宣言としてキーになる(行末に ; の無い color: red の color)",
+    actual: () => colorOf("a.css", ["  color: red"], { word: "color" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: CSS の 1 行に宣言とセレクタが並んでも、語ごとにその後ろを見る(a{top:0} b:hover{ の top はキーで、b はキーにならない)",
+    actual: () => ["top", "b"].map((word) => colorOf("a.css", ["a{top:0} b:hover{"], { word })),
+    expected: ["tok-key", null],
+  },
+  {
+    label: "色分け: script 要素の開きタグの後ろは JS で読む(同じ行の const がキーワード)",
+    actual: () => colorOf("a.html", ["<script>const a = 1;"], { word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: script 要素の閉じタグの後ろは HTML に戻る(同じ行の後ろの const は色なし)",
+    actual: () => colorOf("a.html", ["<script>x</script> const"], { word: "const" }),
+    expected: null,
+  },
+  {
+    label: "色分け: style 要素の開きタグの後ろは CSS で読む(color: がキー)",
+    actual: () => colorOf("a.html", ["<style>a { color: red; }"], { word: "color" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: script 要素の開きタグの次の行の const もキーワードになる(行をまたいで持ち越す)",
+    actual: () => colorOf("a.html", ["<script>", "const a = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: script 要素の中の文字列の style 要素の開きタグでは CSS に切り替わらない(後ろの const がキーワードのまま)",
+    actual: () => colorOf("a.html", ['<script>const s = "<style>"; const b = 1;'], { word: "const", nth: 1 }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 大文字の SCRIPT の開きタグと Script の閉じタグも、大文字小文字を問わず切り替える",
+    actual: () => [0, 1].map((nth) => colorOf("a.html", ["<SCRIPT>const a = 1;</Script> const"], { word: "const", nth })),
+    expected: ["tok-kw", null],
+  },
+  {
+    label: "色分け: 長い行の途中にある script 要素の閉じタグで HTML に戻る(閉じタグの前の最後の const はキーワード、後ろの const は色なし)",
+    actual: () => [499, 500].map((nth) => colorOf("a.html", [`<script>${"const a = 1; ".repeat(500)}</script> const`], { word: "const", nth })),
+    expected: ["tok-kw", null],
+  },
+  {
+    label: "色分け: 行末の script 要素の閉じタグで閉じると、次の行は HTML で読む(const は色なし)",
+    actual: () => colorOf("a.html", ["<script>const a = 1;</script>", "const"], { line: 1, word: "const" }),
+    expected: null,
+  },
+  {
+    label: "色分け: script 要素の閉じタグの無い長い行は、行末まで JS で読む(行末の const もキーワード)",
+    actual: () => colorOf("a.html", [`<script>${"a = 1; ".repeat(500)}const`], { word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 閉じタグの後に同じ行で開き直した script 要素は、その後ろの閉じタグで閉じる(間の const はキーワード、後ろの const は色なし)",
+    actual: () => [0, 1].map((nth) => colorOf("a.html", ["a = 1;</script><script>const b = 2;</script> const"], { word: "const", nth, openingLine: "<script>" })),
+    expected: ["tok-kw", null],
+  },
+  {
+    label: "色分け: script 要素の中で閉じていない /* は、閉じタグで HTML に戻ると捨てる(次の行の <b はキーワード)",
+    actual: () => colorOf("a.html", ["<script>/* a</script><p>", "<b>x</b>"], { line: 1, word: "<b" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: JS のヒアドキュメントの次の行から区切りの行までは JS で読む(const がキーワード)",
+    actual: () => colorOf("a.sh", ["cat <<'JS'", "const a = 1;", "JS"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: PY のヒアドキュメントの中は Python で読む(def がキーワード)",
+    actual: () => colorOf("a.sh", ["python3 - <<'PY'", "def f(): pass", "PY"], { line: 1, word: "def" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 引用符の無い区切り(JSON)のヒアドキュメントも読む(true がキーワード)",
+    actual: () => colorOf("a.sh", ["cat <<JSON", '{"a": true}', "JSON"], { line: 1, word: "true" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 二重引用符の区切り(JS)のヒアドキュメントも読む(const がキーワード)",
+    actual: () => colorOf("a.sh", ['node - <<"JS"', "const a = 1;", "JS"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: << と区切りの語の間に空白のあるヒアドキュメント(<< 'JS')も読む(const がキーワード)",
+    actual: () => colorOf("a.sh", ["cat << 'JS'", "const a = 1;", "JS"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 行頭のタブを除いて閉じる TS のヒアドキュメントは、タブを除いた区切りの行で閉じる(次の行の echo がキーワード)",
+    actual: () => colorOf("a.sh", ["cat <<-'TS'", "\tconst b = 1;", "\tTS", "echo done"], { line: 3, word: "echo" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: - の無い TS のヒアドキュメントは、タブ付きの区切りの行では閉じない(次の行の echo は変数)",
+    actual: () => colorOf("a.sh", ["cat <<'TS'", "\tconst b = 1;", "\tTS", "echo done"], { line: 3, word: "echo" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: 知らない区切り(CASES)のヒアドキュメントの中身はシェルで読む(echo がキーワード)",
+    actual: () => colorOf("a.sh", ["cat <<'CASES'", "echo done", "CASES"], { line: 1, word: "echo" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: ヒアドキュメントの区切りの行そのものは、埋め込みの言語で読まない(JS の行が型の色にならない)",
+    actual: () => colorOf("a.sh", ["cat <<'JS'", "const a = 1;", "JS"], { line: 2, word: "JS" }),
+    expected: null,
+  },
+  {
+    label: "色分け: ヒアドキュメントの区切りの行の後ろはシェルに戻る(echo がキーワード)",
+    actual: () => colorOf("a.sh", ["cat <<'JS'", "const a = 1;", "JS", "echo done"], { line: 3, word: "echo" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: script 要素の開きタグを開いた行として読み始めると JS になる(const がキーワード)",
+    actual: () => colorOf("a.html", ["const a = 1;"], { word: "const", openingLine: "<script>" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 開いた行で開いたコメントは持ち越さない(script 要素の開きタグに続く /* の次の行の const がキーワード)",
+    actual: () => colorOf("a.html", ["const a = 1;"], { word: "const", openingLine: "<script>/*" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 埋め込みを開いていない行(div)からは、頭から読むのと同じになる(const は色なし)",
+    actual: () => colorOf("a.html", ["const a = 1;"], { word: "const", openingLine: "<div>" }),
+    expected: null,
+  },
+  {
+    label: "色分け: 抜粋の openingLine が script 要素の開きタグなら、.html の抜粋の const はキーワードになる",
+    actual: () => colorIn(ExcerptRows.create({ path: "a.html", start: 3, end: 3, text: "const a = 1;", openingLine: "<script>" }).map((row) => row.tokens), 0, "const"),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: 抜粋の openingLine が文字列でなければ、頭から読む(const は色なし)",
+    actual: () => colorIn(ExcerptRows.create({ path: "a.html", start: 3, end: 3, text: "const a = 1;", openingLine: ["<script>"] }).map((row) => row.tokens), 0, "const"),
+    expected: null,
+  },
+  {
+    label: "色分け: 抜粋の 1 行目で開いた /* は、2 行目に持ち越す(2 行目はコメント)",
+    actual: () => ExcerptRows.create({ path: "a.html", start: 3, end: 4, text: "/* a\nconst b", openingLine: "<script>" })[1].tokens.map((token) => token.cls),
+    expected: ["tok-com"],
+  },
+  {
+    label: "色分け: 規則の無い拡張子(.md)の抜粋は、開いた行があっても各行が色の無い 1 字句になる",
+    actual: () => ExcerptRows.create({ path: "a.md", start: 3, end: 4, text: "const a = 1;\nconst b", openingLine: "<script>" }).map((row) => row.tokens.map((token) => [token.cls, token.value])),
+    expected: [[[null, "const a = 1;"]], [[null, "const b"]]],
+  },
+  {
+    label: "色分け: n 番目の hunk には、地図の hunkOpeningLines の n 番目が付く(2 つ目だけ script 要素の開きタグなら、2 つ目の const だけキーワード)",
+    actual: () => hunkColorsOf(twoScriptHunks, [{ old: null, new: null }, scriptOpened], "const"),
+    expected: [[null], ["tok-kw"]],
+  },
+  {
+    label: "色分け: 地図の hunkOpeningLines が配列でなければ、どの hunk も頭から読む",
+    actual: () => hunkColorsOf(twoScriptHunks, { length: 2, 0: scriptOpened, 1: scriptOpened }, "const"),
+    expected: [[null], [null]],
+  },
+  {
+    label: "色分け: 地図の hunkOpeningLines の要素の old が文字列で new が数なら、- の行だけ開いた行から読む",
+    actual: () => hunkColorsOf(["@@ -1,1 +1,1 @@", "-const a = 1;", "+const a = 2;"], [{ old: "<script>", new: 1 }], "const"),
+    expected: [["tok-kw", null]],
+  },
+  {
+    label: "色分け: 地図の hunkOpeningLines の長さが hunk の数と違えば、どの hunk も頭から読む",
+    actual: () => hunkColorsOf(twoScriptHunks, [scriptOpened], "const"),
+    expected: [[null], [null]],
+  },
+  {
+    label: "色分け: 変更前と変更後で開いた行が違う hunk で、- の行は変更前の開いた行で読む",
+    actual: () => hunkColorsOf(["@@ -1,2 +1,2 @@", " x = 1;", "-const a = 1;", "+const a = 2;"], [{ old: "<script>", new: null }], "const"),
+    expected: [["tok-kw", null]],
+  },
+  {
+    label: "色分け: 変更前と変更後で開いた行が違う hunk で、+ の行は変更後の開いた行で読む",
+    actual: () => hunkColorsOf(["@@ -1,2 +1,2 @@", " x = 1;", "-const a = 1;", "+const a = 2;"], [{ old: null, new: "<script>" }], "const"),
+    expected: [[null, "tok-kw"]],
+  },
+  {
+    label: "色分け: 消した行で開いた script 要素は、足した行の色に効かない",
+    actual: () => hunkColorsOf(["@@ -1,1 +1,1 @@", "-<script>", "+const a = 1;"], [{ old: null, new: null }], "const"),
+    expected: [[null]],
+  },
+  {
+    label: "色分け: 足した行で開いた script 要素は、消した行の色に効かない",
+    actual: () => hunkColorsOf(["@@ -1,1 +1,1 @@", "+<script>", "-const a = 1;"], [{ old: null, new: null }], "const"),
+    expected: [[null]],
+  },
+  {
+    label: "色分け: 前後の行は、変更前と変更後の両方で読み進める(前後の行で開いた script 要素の後の - と + の const がどちらもキーワード)",
+    actual: () => hunkColorsOf(["@@ -1,2 +1,2 @@", " <script>", "-const a = 1;", "+const a = 2;"], [{ old: null, new: null }], "const"),
+    expected: [["tok-kw", "tok-kw"]],
+  },
+  {
+    label: "色分け: 変更前と変更後で開いた行が違う hunk では、前後の行を変更後の字句で表示する",
+    actual: () => hunkColorsOf(["@@ -1,1 +1,1 @@", " const c = 1;"], [{ old: "<script>", new: null }], "const"),
+    expected: [[null]],
+  },
+  {
+    label: "色分け: .tsx の式が始まる位置(行頭・( [ { , = => ? : && || と return の後)の <名前 はタグとしてキーワードになる",
+    actual: () => ["<b />", "f(<b />)", "[<b />]", "a = {<b />};", "f(a, <b />)", "a = <b />", "() => <b />", "c ? <b /> : null", "c ? null : <b />", "c && <b />", "c || <b />", "return <b />;"].map((line) => colorOf("a.tsx", [line], { word: "<b" })),
+    expected: Array(12).fill("tok-kw"),
+  },
+  {
+    label: "色分け: .tsx の値の後(名前・)・] の後)の < はタグにせず、比較・型引数のまま読む",
+    actual: () => ["a<b", "f<T>(x)", "(a)<b", "xs[0]<b", "b as Array<T>"].map((line) => lineTokensOf("a.tsx", [line])[0].filter((token) => token.value.length > 1 && token.value.startsWith("<")).length),
+    expected: [0, 0, 0, 0, 0],
+  },
+  {
+    label: "色分け: .tsx の総称の矢印関数の型引数(<T,> / <T extends U> / <const T,>)はタグにせず、T は型になる",
+    actual: () => ["const id = <T,>(x: T) => x;", "const id = <T extends U>(x: T) => x;", "const id = <const T,>(x: T) => x;"].map((line) => colorOf("a.tsx", [line], { word: "T" })),
+    expected: ["tok-type", "tok-type", "tok-type"],
+  },
+  {
+    label: "色分け: .tsx で名前の後の extends に = が続くなら、型引数ではなく属性として読む(<a extends=\"x\" /> の <a はタグ)",
+    actual: () => colorOf("a.tsx", ['return <a extends="x" />;'], { word: "<a" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: .ts では JSX を読まない(<T>b の型表明の T は型)",
+    actual: () => colorOf("a.ts", ["const a = <T>b;"], { word: "T" }),
+    expected: "tok-type",
+  },
+  {
+    label: "色分け: .jsx も JSX を読む(<div はキーワード)",
+    actual: () => colorOf("a.jsx", ["return <div />;"], { word: "<div" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: script 要素の中の JS では JSX を読まない(<b>1 の b は変数)",
+    actual: () => colorOf("a.html", ["<script>", "const a = <b>1;"], { line: 1, word: "b" }),
+    expected: "tok-var",
+  },
+  {
+    label: "色分け: JSX の大文字で始まるタグ名も、型にせずキーワードにする",
+    actual: () => colorOf("a.tsx", ["return <SearchGlyph />;"], { word: "<SearchGlyph" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: JSX の . を含むタグ名(<Foo.Bar)は 1 つの字句になる",
+    actual: () => colorOf("a.tsx", ["return <Foo.Bar />;"], { word: "<Foo.Bar" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: JSX の : を含むタグ名(<svg:path)は 1 つの字句になる",
+    actual: () => colorOf("a.tsx", ["return <svg:path d='x' />;"], { word: "<svg:path" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: JSX の閉じタグ(</h3)もキーワードになる",
+    actual: () => colorOf("a.tsx", ["return <h3>a</h3>;"], { word: "</h3" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: JSX の属性名はキーになる",
+    actual: () => colorOf("a.tsx", ['return <div className="c" />;'], { word: "className" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: JSX のハイフンを含む属性名(aria-label / data-testid)は 1 つの字句のキーになる",
+    actual: () => ["aria-label", "data-testid"].map((word) => colorOf("a.tsx", ['return <span aria-label="x" data-testid="y" />;'], { word })),
+    expected: ["tok-key", "tok-key"],
+  },
+  {
+    label: "色分け: JSX の : を含む属性名(xlink:href)は 1 つの字句のキーになる",
+    actual: () => colorOf("a.tsx", ['return <use xlink:href="#a" />;'], { word: "xlink:href" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: JSX の値の無い属性(disabled)もキーになる",
+    actual: () => colorOf("a.tsx", ["return <button disabled />;"], { word: "disabled" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: JSX の属性の値の文字列は文字列になる",
+    actual: () => colorOf("a.tsx", ['return <div className="a b" />;'], { word: '"a b"' }),
+    expected: "tok-str",
+  },
+  {
+    label: "色分け: JSX の本文の文言は、キーワードや大文字で始まる綴りでも色を付けない",
+    actual: () => colorOf("a.tsx", ["return <h3>Used by return</h3>;"], { word: "Used by return" }),
+    expected: null,
+  },
+  {
+    label: "色分け: JSX の本文の引用符は文字列を始めない(' の後の閉じタグはキーワード、\"{…}\" の中は変数)",
+    actual: () => [colorOf("a.tsx", ["return <p>Don't do</p>;"], { word: "</p" }), colorOf("a.tsx", ['return <p>"{note}"</p>;'], { word: "note" })],
+    expected: ["tok-kw", "tok-var"],
+  },
+  {
+    label: "色分け: JSX の本文の中の {…} は JS / TS で読み、閉じた後は本文に戻る({count} は変数、後ろの文言は色なし)",
+    actual: () => [colorOf("a.tsx", ["return <p>{count} items</p>;"], { word: "count" }), colorOf("a.tsx", ["return <p>{count} items</p>;"], { word: " items" })],
+    expected: ["tok-var", null],
+  },
+  {
+    label: "色分け: JSX の属性の値の {…} は JS / TS で読む(setB は関数)",
+    actual: () => colorOf("a.tsx", ["return <a onClick={() => setB(b)} />;"], { word: "setB" }),
+    expected: "tok-fn",
+  },
+  {
+    label: "色分け: JSX の属性の値の {…} を閉じた後は、属性に戻る(後ろの title はキー)",
+    actual: () => colorOf("a.tsx", ['return <a onClick={f} title="x" />;'], { word: "title" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: JSX の属性の値の {{ … }} の中のオブジェクトのキーは色を付けない",
+    actual: () => colorOf("a.tsx", ["return <a style={{ color: c }} />;"], { word: "color" }),
+    expected: null,
+  },
+  {
+    label: "色分け: JSX の開きタグの中の // はコメントになり、次の行の属性はキーのまま",
+    actual: () => { const lines = lineTokensOf("a.tsx", ["return <button", "  // note", '  type="button"', "/>;"]); return [colorIn(lines, 1, "// note"), colorIn(lines, 2, "type")]; },
+    expected: ["tok-com", "tok-key"],
+  },
+  {
+    label: "色分け: JSX の開きタグが行をまたぐと、次の行の属性名もキーになる(キーワードの綴りの type でも)",
+    actual: () => colorOf("a.tsx", ["return (", "  <button", '    type="button"', "  >"], { line: 2, word: "type" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: JSX の子の中の文言だけの行は、行をまたいでも色を付けない",
+    actual: () => lineTokensOf("a.tsx", ["return <h3>", "  Used by", "</h3>;"])[1].map((token) => token.cls),
+    expected: [null],
+  },
+  {
+    label: "色分け: JSX の自己閉じタグの後は JS / TS に戻る(次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["const a = <b />;", "const c = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: JSX の閉じタグの後は JS / TS に戻る(次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["const a = <b>x</b>;", "const c = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: JSX の入れ子の要素を閉じても、外側の要素の子のまま(次の行の文言は色なし)",
+    actual: () => lineTokensOf("a.tsx", ["return <div>", "<b>x</b>", "Used by", "</div>;"])[2].map((token) => token.cls),
+    expected: [null],
+  },
+  {
+    label: "色分け: JSX のフラグメントの <> と </> はキーワードになり、中の文言は色なし",
+    actual: () => { const [line] = lineTokensOf("a.tsx", ["return <>Used by</>;"]); return ["<>", "</>", "Used by"].map((word) => colorIn([line], 0, word)); },
+    expected: ["tok-kw", "tok-kw", null],
+  },
+  {
+    label: "色分け: JSX のフラグメントの </> の後は JS / TS に戻る(次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["const a = <>x</>;", "const c = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: JSX の子の中の {…} に入れた要素を閉じ、{…} を閉じても、外側の要素を閉じた後は JS / TS に戻る",
+    actual: () => colorOf("a.tsx", ["return <ul>", "  {items.map((item) => <li key={item.id}>{item.name}</li>)}", "</ul>;", "const c = 1;"], { line: 3, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: JSX の要素の途中から読み始めて来た閉じタグはキーワードで、その後は JS / TS のまま(次の行の const はキーワード)",
+    actual: () => { const lines = lineTokensOf("a.tsx", ["  </div>", ");", "const c = 1;"]); return [colorIn(lines, 0, "</div"), colorIn(lines, 2, "const")]; },
+    expected: ["tok-kw", "tok-kw"],
+  },
+  {
+    label: "色分け: .tsx の総称の矢印関数の型引数は、名前に = が続く形(<T = U,>)でもタグにせず、T は型になる",
+    actual: () => colorOf("a.tsx", ["const id = <T = U,>(x: T) => x;"], { word: "T" }),
+    expected: "tok-type",
+  },
+  {
+    label: "色分け: .tsx で名前の後の extends に > か / が続くなら、型引数ではなく属性として読む(<a extends /> と <a extends>x</a> の <a はタグ)",
+    actual: () => ["return <a extends />;", "return <a extends>x</a>;"].map((line) => colorOf("a.tsx", [line], { word: "<a" })),
+    expected: ["tok-kw", "tok-kw"],
+  },
+  {
+    label: "色分け: JSX の子の中の自己閉じタグの後は、外側の要素の子に戻る(次の行の文言は色なし)",
+    actual: () => lineTokensOf("a.tsx", ["return <div>", "<br />", "Used by", "</div>;"])[2].map((token) => token.cls),
+    expected: [null],
+  },
+  {
+    label: "色分け: JSX の / と > の間に空白のある自己閉じタグ(<br / >)の後も、JS / TS に戻る(次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["const a = <br / >;", "const c = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: JSX の子の本文が ( 1 文字だけでも括弧として積まない(閉じタグの後の ) は外側の f( を閉じ、次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["f(<p>(</p>);", "const c = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: JSX の子の {…} の後の本文が [ 1 文字だけでも括弧として積まない(閉じタグの後の ] は外側の [ を閉じ、次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["f([<p>{a}[</p>]);", "const c = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: .tsx で名前の後が => なら、型引数ではなくタグとして読む(<T=> の <T はキーワード)",
+    actual: () => colorOf("a.tsx", ["const f = <T=>(x: T) => x;"], { word: "<T" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: .tsx で extends の後が == か /= なら、属性ではなく型引数として読む(<T extends == / <T extends /= の T は型)",
+    actual: () => ["const f = <T extends ==(x: T) => x;", "const f = <T extends /=(x: T) => x;"].map((line) => colorOf("a.tsx", [line], { word: "T" })),
+    expected: ["tok-type", "tok-type"],
+  },
+  {
+    label: "色分け: .tsx の文字列の続きの行がタグの綴り(<div)だけでも、タグとして段を積まない(文字列を閉じた次の行の const はキーワード)",
+    actual: () => colorOf("a.tsx", ["const s = `", "<div", "`;", "const c = 1;"], { line: 3, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: HTML の値の無い属性(disabled)も、値のある属性(type)と同じくキーになり、属性の値は文字列になる",
+    actual: () => ["disabled", "type", '"text"'].map((word) => colorOf("a.html", ['<input disabled type="text">'], { word })),
+    expected: ["tok-key", "tok-key", "tok-str"],
+  },
+  {
+    label: "色分け: HTML のハイフンを含む属性名(aria-label)は 1 つの字句のキーになる",
+    actual: () => colorOf("a.html", ['<div aria-label="x">'], { word: "aria-label" }),
+    expected: "tok-key",
+  },
+  {
+    label: "色分け: HTML のタグの外の本文の語は、= が続いてもキーにしない(<p>Done a=b</p> の Done と a は色なし)",
+    actual: () => ["Done", "a"].map((word) => colorOf("a.html", ["<p>Done a=b</p>"], { word })),
+    expected: [null, null],
+  },
+  {
+    label: "色分け: HTML の本文の ' は文字列を始めない(後ろの閉じタグ </p はキーワード)",
+    actual: () => colorOf("a.html", ["<p>Don't</p>"], { word: "</p" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: HTML の開きタグが行をまたぐと、次の行の値の無い属性もキーになり、> の後の本文は色なしに戻る",
+    actual: () => { const lines = lineTokensOf("a.html", ["<input", "  disabled", ">", "Done"]); return [colorIn(lines, 1, "disabled"), colorIn(lines, 3, "Done")]; },
+    expected: ["tok-key", null],
+  },
+  {
+    label: "色分け: HTML の引用符の無い属性の値はキーにしない(charset=utf-8 の utf-8 は色なし)",
+    actual: () => colorOf("a.html", ["<meta charset=utf-8>"], { word: "utf-8" }),
+    expected: null,
+  },
+  {
+    label: "色分け: HTML のコメントの続きの行がタグの綴り(<p)だけでも、開きタグの中に入らない(コメントを閉じた次の行の本文は色なし)",
+    actual: () => colorOf("a.html", ["<!--", "<p", "-->", "Done"], { line: 3, word: "Done" }),
+    expected: null,
+  },
+  {
+    label: "色分け: HTML の本文のコメントは 1 つの字句のコメントになる",
+    actual: () => colorOf("a.html", ["<!-- note -->"], { word: "<!-- note -->" }),
+    expected: "tok-com",
+  },
+  {
+    label: "色分け: HTML のコメントの中の script 要素の開きタグでは JS に切り替わらない(次の行の const は色なし)",
+    actual: () => colorOf("a.html", ["<!-- <script> -->", "const a = 1;"], { line: 1, word: "const" }),
+    expected: null,
+  },
+  {
+    label: "色分け: YAML の値の大文字の語は型にならない",
+    actual: () => colorOf("a.yml", ["name: PR Explain"], { word: "PR" }),
+    expected: null,
+  },
+  {
+    label: "色分け: シェルの $(dirname \"$0\") の $ は関数にならない",
+    actual: () => colorOf("a.sh", ['dir=$(dirname "$0")'], { word: "$" }),
+    expected: null,
+  },
+  {
+    label: "色分け: シェルでは . の後の語をメンバーにしない(if .merged then . else の else はキーワードのまま)",
+    actual: () => colorOf("a.sh", ["if .merged then . else"], { word: "else" }),
+    expected: "tok-kw",
+  },
   ...Object.keys(checkerVocabulary).map((name) => ({
     label: `語彙 ${name} のキーの集合は、解説の検査とページの表で同じ`,
     actual: () => Object.keys(Vocabulary[name]).toSorted(),
@@ -903,6 +2106,59 @@ const cases = [
       return [kind, selection !== undefined && keys.some((key) => selection.id.endsWith(`値-${key}`))];
     }),
     expected: Object.keys(checkerTargetKeys).map((kind) => [kind, true]),
+  },
+  {
+    label: "色分けの埋め込みの要素の名前の集合は、解説の検査とページで同じ",
+    actual: () => Object.keys(Tokenizer.Embeddings.elements).toSorted(),
+    expected: [...checkerElements].sort(),
+  },
+  {
+    label: "色分けの埋め込みのヒアドキュメントの区切りの語の集合は、解説の検査とページで同じ",
+    actual: () => Object.keys(Tokenizer.Embeddings.heredocs).toSorted(),
+    expected: [...checkerHeredocs].sort(),
+  },
+  {
+    label: "要素を読む拡張子の集合とヒアドキュメントを読む拡張子の集合は、どちらも解説の検査とページで同じ",
+    actual: () => {
+      const extensionsWhere = (reads) => Tokenizer.Extensions.filter((extension) => reads(Tokenizer.grammarOf(`a.${extension}`))).map((extension) => `.${extension}`).toSorted();
+      return { elements: extensionsWhere((grammar) => grammar.tags === true), heredocs: extensionsWhere((grammar) => grammar.heredocs === true) };
+    },
+    expected: { elements: [...checkerExtensions.elements].sort(), heredocs: [...checkerExtensions.heredocs].sort() },
+  },
+  {
+    label: "テンプレートのすべての行で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
+    actual: () => regionMismatchesOf(process.argv[2]),
+    expected: [],
+  },
+  {
+    label: "この判定表のすべての行で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
+    actual: () => regionMismatchesOf(checkedPathOf("pr-explain-core-cases.sh")),
+    expected: [],
+  },
+  {
+    label: "解説の検査の判定表と地図の判定表のすべての行で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
+    actual: () => ["build-pr-explain-cases.sh", "build-pr-change-map-cases.sh"].map((name) => regionMismatchesOf(checkedPathOf(name))),
+    expected: [[], []],
+  },
+  {
+    label: "見本のヒアドキュメント(引用符なし・二重引用符・行頭のタブを除いて閉じるもの・TS・JSON・PY・知らない区切り・<< と区切りの語の間に空白のあるもの)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
+    actual: () => regionMismatchesOf(checkedPathOf("heredocs.sh")),
+    expected: [],
+  },
+  {
+    label: "見本の要素(大文字のタグ・属性付きの開きタグ・同じ行で閉じる要素・中の文字列にある別の要素の開きタグと閉じタグ)で、解説の検査の開いた行から作った埋め込みが、1 行目から読み進めた埋め込みと同じ",
+    actual: () => regionMismatchesOf(checkedPathOf("elements.html")),
+    expected: [],
+  },
+  {
+    label: "判定表 3 本は、どれも最後の行を読み終えた後に埋め込みが閉じている",
+    actual: () => casesTables.map((path) => regionsAlong(path).last),
+    expected: [null, null, null],
+  },
+  {
+    label: "判定表 3 本で、解説の検査が開いた行として返す行は、どれも行の終わりが区切りの語の付いた << で終わる",
+    actual: () => casesTables.map((path) => [...new Set(checkerOpenings[path].filter((opening) => opening !== null))].filter((opening) => !EndsWithHeredocStart.test(opening))),
+    expected: [[], [], []],
   },
 ];
 

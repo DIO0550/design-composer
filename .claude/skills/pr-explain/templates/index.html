@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-2m2jAbVKSoQpG760733asvFXjwy2enFR6Xz68TUofs4='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-uR945rg3hqGraVxYw+MI9CwpqGjW+7didxgtQtbYzHA='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -38,10 +38,11 @@
   --tok-kw: #8A3FA0;
   --tok-str: #9A5B00;
   --tok-num: #1F6F8B;
-  --tok-com: #8B8F96;
+  --tok-com: #7E828A;
   --tok-fn: #1F4FA3;
   --tok-key: #1F6F8B;
   --tok-var: #8A4307;
+  --tok-type: #1F6F8B;
   --sans: "IBM Plex Sans JP", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   --shadow-raised: 0 1px 2px rgba(29, 31, 36, .10);
@@ -56,10 +57,12 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 14px; min-height: 52px; min-width: 0; border-bottom: 1px solid var(--line); background: var(--panel); position: relative; z-index: 20; white-space: nowrap; }
 .repo { font-family: var(--mono); font-weight: 600; font-size: 14px; flex: none; }
 .segmented { display: flex; gap: 2px; padding: 2px; background: var(--track); border-radius: 8px; flex: none; }
-.segmented a { padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--ink-2); text-decoration: none; }
+/* タブの横の余白は 10px。12px だと、1280px でテストの画面の操作が 2 段目に落ちる。 */
+.segmented a { padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--ink-2); text-decoration: none; }
 .segmented a:hover { color: var(--ink); background: rgba(255, 255, 255, .6); }
 .segmented a[aria-current="page"] { font-weight: 600; color: var(--ink); background: var(--surface); box-shadow: var(--shadow-raised); }
-.top-main { display: flex; align-items: center; gap: 10px; min-width: min(240px, 100%); flex: 1 1 auto; overflow: hidden; }
+/* 折り返すかどうかは基準の 240px で決め、足りない分はブランチ名を省いて詰める。auto だと、240px を超えるブランチ名の長さで段の数が変わる。 */
+.top-main { display: flex; align-items: center; gap: 10px; min-width: min(240px, 100%); flex: 1 1 240px; overflow: hidden; }
 .branch { display: block; font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ink-2); background: var(--chip); border-radius: 6px; padding: 4px 8px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .branch .arrow { color: var(--ink-3); margin: 0 6px; }
 .screen-summary { display: flex; flex: none; }
@@ -210,6 +213,8 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .text-button { padding: 2px 4px; font-size: 12px; color: var(--ink-2); }
 .text-button:hover { color: var(--ink); }
 .file-card { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.file-card.is-sent { border-color: var(--accent-ring); }
+.file-sent-note { padding: 6px 14px; font-size: 11.5px; font-weight: 600; color: var(--accent); background: var(--accent-tint); border-bottom: 1px solid var(--chip); }
 .file-card > summary { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--panel); cursor: pointer; white-space: nowrap; min-width: 0; list-style: none; }
 .file-card > summary::-webkit-details-marker { display: none; }
 .file-card > summary:hover { background: var(--hover); }
@@ -245,8 +250,8 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .code-line .bar.is-start::before { top: 4px; border-top-left-radius: 2px; border-top-right-radius: 2px; }
 .code-line .bar.is-end::before { bottom: 4px; border-bottom-left-radius: 2px; border-bottom-right-radius: 2px; }
 .code-text { white-space: pre; padding-right: 16px; }
-.code-line.is-lit { background: rgba(47, 91, 234, .14); box-shadow: inset 3px 0 0 var(--accent); }
-.code-line.is-lit .bar.is-on::before, .marker.is-lit { background: var(--accent); }
+.code-line.is-lit, .code-line.is-sent { background: rgba(47, 91, 234, .14); box-shadow: inset 3px 0 0 var(--accent); }
+.code-line.is-lit .bar.is-on::before, .code-line.is-sent .bar.is-on::before, .marker.is-lit { background: var(--accent); }
 .note { display: flex; gap: 9px; align-items: flex-start; padding: 9px 11px; border-radius: 9px; background: var(--surface); border: 1px solid var(--line); transition: background .15s, border-color .15s; }
 .note.is-lit { background: rgba(47, 91, 234, .08); border-color: var(--accent-ring); }
 .note-badge { flex: none; width: 18px; height: 18px; margin-top: 1px; border-radius: 9px; background: var(--ink); color: #FFFFFF; font-size: 10.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
@@ -259,11 +264,12 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .file-notes-title { font-size: 11px; font-weight: 600; color: var(--ink-3); }
 .tok-kw { color: var(--tok-kw); }
 .tok-str { color: var(--tok-str); }
-.tok-com { color: var(--tok-com); font-style: italic; }
+.tok-com { color: var(--tok-com); }
 .tok-num { color: var(--tok-num); }
 .tok-fn { color: var(--tok-fn); }
 .tok-key { color: var(--tok-key); }
 .tok-var { color: var(--tok-var); }
+.tok-type { color: var(--tok-type); }
 .graph-canvas { position: relative; overflow: hidden; min-width: 0; background-color: var(--sunken); background-image: radial-gradient(#DCD8CF 1px, transparent 1px); background-size: 20px 20px; cursor: grab; user-select: none; touch-action: none; }
 .graph-canvas.is-dragging { cursor: grabbing; }
 .graph-world { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
@@ -439,6 +445,7 @@ button.gap-card:hover { border-color: var(--mod-mark); }
 .excerpt-line { display: grid; grid-template-columns: 40px max-content; min-width: max-content; }
 .excerpt-line .ln { color: var(--ink-4); text-align: right; padding-right: 10px; user-select: none; }
 .excerpt-line .code-text { padding-right: 14px; }
+.excerpt-line.is-emphasized { background: rgba(47, 91, 234, .05); box-shadow: inset 2px 0 0 var(--accent); }
 .commit-link { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); width: 100%; }
 .commit-link:hover { border-color: var(--ink-4); }
 .commit-link .label { font-size: 11px; color: var(--ink-3); flex: none; }
@@ -457,7 +464,7 @@ button.gap-card:hover { border-color: var(--mod-mark); }
 .status-dot { flex: none; width: 6px; height: 6px; border-radius: 3px; background: var(--tone, var(--line-strong)); }
 .status-letter { flex: none; min-width: 10px; text-align: right; font-family: var(--mono); font-size: 10.5px; font-weight: 600; color: var(--tone-ink, var(--ink-3)); }
 .status-chip { flex: none; font-size: 10px; font-weight: 600; padding: 2px 5px; border-radius: 4px; color: var(--tone-ink); background: var(--tone-tint); white-space: nowrap; }
-.chip[data-tone] { color: var(--tone-ink); background: var(--tone-tint); }
+.chip[data-tone]:not([data-tone=""]) { color: var(--tone-ink); background: var(--tone-tint); }
 .status-tag { flex: none; font-size: 10.5px; font-weight: 600; color: var(--tone-ink); white-space: nowrap; }
 .label-dot { flex: none; width: 5px; height: 5px; border-radius: 3px; background: transparent; }
 .label-dot:not([data-tone=""]) { background: var(--tone); }
@@ -653,19 +660,19 @@ button.change-item:hover { background: var(--track); }
 .sequence-legend > span { display: flex; align-items: center; gap: 5px; }
 .sequence-legend .legend-line { width: 16px; border-top-color: var(--ink-2); }
 .flow-chip:disabled { color: var(--ink-3); border-style: dashed; cursor: default; }
-.stage-body.impact-body { max-width: 860px; gap: 56px; padding-bottom: calc(100cqh - 140px); }
+.stage-body.topic-body { max-width: 860px; gap: 56px; padding-bottom: calc(100cqh - 140px); }
 /* 本文の末尾の余白は「欄の高さ − 読む線(TopicScroll の 140px)」。どの節も読む線まで送れるので、今の節は上端の位置だけで決まる。
    欄の高さは、広い幅では本文の欄(size のコンテナ)の、狭い幅ではコンテナを外すので表示領域の高さになる。 */
-.screen[data-screen="impact"] > .stage { container-type: size; }
-.impact-topic { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 20px; }
-.impact-topic-head { display: flex; flex-direction: column; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
-.impact-topic-head h2 { margin: 0; font-size: 21px; font-weight: 600; line-height: 1.4; text-wrap: balance; overflow-wrap: anywhere; }
-.impact-hash { color: var(--ink-4); font-weight: 400; margin-right: 8px; }
-.impact-eyebrow { font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing: .03em; }
-.impact-gist { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 12px 16px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
-.impact-gist-label { font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--accent); white-space: nowrap; }
-.impact-gist-text { font-size: 14.5px; line-height: 1.7; font-weight: 500; }
-.impact-text { margin: 0; font-size: 14.5px; line-height: 1.9; max-width: 66ch; text-wrap: pretty; }
+.screen:is([data-screen="impact"], [data-screen="primer"]) > .stage { container-type: size; }
+.topic { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 20px; }
+.topic-head { display: flex; flex-direction: column; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+.topic-head h2 { margin: 0; font-size: 21px; font-weight: 600; line-height: 1.4; text-wrap: balance; overflow-wrap: anywhere; }
+.topic-hash { color: var(--ink-4); font-weight: 400; margin-right: 8px; }
+.topic-eyebrow { font-family: var(--mono); font-size: 11px; color: var(--ink-3); letter-spacing: .03em; }
+.topic-gist { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 12px 16px; border-radius: 10px; background: var(--surface); border: 1px solid var(--line); }
+.topic-gist-label { font-size: 11px; font-weight: 600; letter-spacing: .06em; color: var(--accent); white-space: nowrap; }
+.topic-gist-text { font-size: 14.5px; line-height: 1.7; font-weight: 500; }
+.topic-text { margin: 0; font-size: 14.5px; line-height: 1.9; max-width: 66ch; text-wrap: pretty; }
 .impact-table-wrap { overflow-x: auto; }
 .impact-table { width: 100%; min-width: 560px; border-collapse: separate; border-spacing: 8px; margin: -8px; }
 .impact-table th { font-size: 11.5px; font-weight: 600; color: var(--ink-2); text-align: left; padding: 0 4px; vertical-align: bottom; }
@@ -688,28 +695,87 @@ button.change-item:hover { background: var(--track); }
 .impact-kept-text { font-size: 14px; line-height: 1.6; }
 .impact-guard { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; }
 .impact-guard.is-missing { color: var(--mod); }
-.impact-note { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; padding: 12px 16px; border-radius: 10px; background: var(--warn-tint); font-size: 13.5px; line-height: 1.8; }
-.impact-note-label { font-size: 11px; font-weight: 600; letter-spacing: .04em; color: var(--mod); padding-top: 2px; white-space: nowrap; }
-.impact-inline { display: none; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
-.impact-inline > summary { cursor: pointer; padding: 10px 14px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
-.impact-inline > .side { overflow: visible; padding: 0 14px 14px; gap: 18px; }
-/* 振る舞いの画面だけ、狭い幅で右の欄を隠して根拠を各節に畳み(1180px 以下)、さらに目次も隠してページ全体をスクロールする(760px 以下)。
+/* 注意メモは種類ごとに色とアイコンを変える(Docusaurus の注記の形)。アイコンは CSP の img-src data: で読める mask にする。 */
+.topic-note { display: flex; flex-direction: column; gap: 6px; padding: 12px 16px 13px; border-radius: 8px; border: 1px solid var(--note-line); border-left-width: 5px; background: var(--note-bg); color: var(--note-ink); font-size: 13.5px; line-height: 1.8; }
+.topic-note-label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; letter-spacing: .03em; color: var(--note-head); white-space: nowrap; }
+.topic-note-label::before { content: ""; flex: none; width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--note-icon) center / contain no-repeat; mask: var(--note-icon) center / contain no-repeat; }
+.topic-note[data-remark="caution"] { --note-bg: #FFF7E3; --note-line: #E2A400; --note-ink: #4A3500; --note-head: #8F5E00; --note-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2.5 14.5 13.5h-13z'/%3E%3Cpath d='M8 6.5v3'/%3E%3Cpath d='M8 11.4v.1'/%3E%3C/svg%3E"); }
+.topic-note[data-remark="memo"] { --note-bg: #EAF3FC; --note-line: #4A90D9; --note-ink: #14324F; --note-head: #2369B3; --note-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.5 2.5l3 3-8 8h-3v-3z'/%3E%3C/svg%3E"); }
+.topic-note[data-remark="rule"] { --note-bg: #E9F6EC; --note-line: #2E9D5B; --note-ink: #103B22; --note-head: #1F7A44; --note-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 2.5h7.5a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2z'/%3E%3Cpath d='M3 11.5a2 2 0 0 1 2-2h7.5'/%3E%3C/svg%3E"); }
+.topic-note[data-remark="spec"] { --note-bg: #E7F5F6; --note-line: #2C9BAE; --note-ink: #123A41; --note-head: #17707F; --note-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6.2'/%3E%3Cpath d='M8 7.2v4'/%3E%3Cpath d='M8 4.9v.1'/%3E%3C/svg%3E"); }
+.topic-note[data-remark="history"] { --note-bg: #FFF1E5; --note-line: #F08A24; --note-ink: #4A2408; --note-head: #C2600A; --note-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='M8 4.5V8l2.5 1.5'/%3E%3C/svg%3E"); }
+.topic-inline { display: none; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }
+.topic-inline > summary { cursor: pointer; padding: 10px 14px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+.topic-inline > .side { overflow: visible; padding: 0 14px 14px; gap: 18px; }
+/* タブの無い画面(解説なし・書かれていない)は行を auto のままにし、タブのある画面だけ 2 行目を残りの高さにする。 */
+.screen[data-screen="primer"]:has(> .primer-tablist) { grid-template-rows: auto minmax(0, 1fr); }
+.primer-tablist { grid-column: 1 / -1; display: flex; padding: 0 14px; border-bottom: 1px solid var(--line); background: var(--panel); overflow-x: auto; }
+.primer-tab { position: relative; display: grid; grid-template-columns: auto 1fr; align-items: baseline; column-gap: 8px; row-gap: 2px; padding: 12px 18px 11px; border: 0; background: transparent; cursor: pointer; text-align: left; font: inherit; color: var(--ink-2); flex: none; }
+.primer-tab:hover { color: var(--ink); background: var(--hover); }
+.primer-tab-label { font-size: 13.5px; font-weight: 600; }
+.primer-tab-count { font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.primer-tab-desc { grid-column: 1 / -1; font-size: 11.5px; color: var(--ink-3); }
+.primer-tab[aria-selected="true"] { color: var(--ink); }
+.primer-tab[aria-selected="true"]::after { content: ""; position: absolute; left: 12px; right: 12px; bottom: -1px; height: 2px; border-radius: 2px; background: var(--accent); }
+.primer-tab[aria-selected="true"] .primer-tab-desc { color: var(--ink-2); }
+/* `hidden` 属性(UA の display: none)は、この 3 つが持つ display: flex に負けるので、ここで消す。 */
+.screen[data-screen="primer"] :is(.stage-body, .panel-scroll, .side)[hidden] { display: none; }
+.primer-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11.5px; color: var(--ink-2); }
+.primer-legend > span { display: flex; align-items: center; gap: 6px; }
+.topic-toc-divider { margin: 10px 20px 4px; font-size: 10.5px; font-weight: 600; letter-spacing: .06em; color: var(--ink-3); }
+.primer-declaration { margin: 0; padding: 12px 16px; border-radius: 10px; background: var(--sunken); font-family: var(--mono); font-size: 13px; line-height: 1.7; overflow-x: auto; white-space: pre; }
+.primer-parameters { overflow-x: auto; }
+.primer-parameters table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.primer-parameters th { text-align: left; font-size: 11px; font-weight: 600; color: var(--ink-3); letter-spacing: .04em; padding: 6px 10px; border-bottom: 1px solid var(--line-strong); }
+.primer-parameters td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; line-height: 1.7; }
+.primer-parameters td:first-child { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
+.primer-parameters td:nth-child(2) { font-family: var(--mono); font-size: 12px; color: var(--tok-type); }
+.primer-parameter-note { display: inline-block; margin-left: 6px; font-family: var(--sans); font-size: 10px; font-weight: 600; color: var(--ink-3); background: var(--track); border-radius: 4px; padding: 0 5px; }
+.primer-occurrence { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.primer-occurrence-path { font-family: var(--mono); font-size: 11.5px; font-weight: 500; overflow-wrap: anywhere; }
+.primer-terms { margin: 0; display: flex; flex-direction: column; gap: 2px; }
+.primer-term { padding: 8px 10px; border-radius: 8px; transition: background .15s, box-shadow .15s; }
+.primer-term dt { font-size: 12.5px; font-weight: 600; }
+.primer-term dd { margin: 2px 0 0; font-size: 12.5px; line-height: 1.65; color: var(--ink-2); }
+.primer-glossary-wrap { overflow-x: auto; }
+.primer-glossary { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.primer-glossary th { text-align: left; font-size: 11px; color: var(--ink-3); font-weight: 600; padding: 6px 10px; border-bottom: 1px solid var(--line-strong); }
+.primer-glossary td { padding: 9px 10px; border-bottom: 1px solid var(--line); line-height: 1.7; vertical-align: top; }
+.primer-glossary td:first-child { white-space: nowrap; font-weight: 600; }
+/* 用語集の右の欄の文は、右の欄(広い幅)と畳んだ欄(狭い幅)で光る先が違うので、置かれた欄で出し分ける。 */
+.topic-inline .primer-glossary-note.is-side, .primer-glossary-note.is-inline { display: none; }
+.topic-inline .primer-glossary-note.is-inline { display: inline; }
+.primer-code { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.primer-code-head { display: flex; justify-content: space-between; gap: 10px; padding: 7px 14px; border-bottom: 1px solid var(--line); background: var(--sunken); font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.primer-code-path { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.primer-code > .excerpt { border: 0; border-radius: 0; }
+.primer-term.is-lit { background: var(--accent-tint); box-shadow: inset 0 0 0 1px var(--accent-ring); }
+.primer-mark { border-bottom: 1px dotted var(--ink-3); cursor: help; }
+.primer-mark:hover, .primer-mark:focus-visible { background: var(--accent-tint); border-bottom-color: var(--accent); }
+/* 振る舞いと技術の手引きの画面だけ、狭い幅で右の欄を隠して根拠を各節に畳み(1180px 以下)、さらに目次も隠してページ全体をスクロールする(760px 以下)。
    この 2 つの @media は判定表を通らず、表示確認でしか守られていない。 */
 @media (max-width: 1180px) {
-  .screen[data-screen="impact"]:not([hidden]) { display: flex; }
-  .screen[data-screen="impact"] > .panel.is-left { flex: 0 0 220px; }
-  .screen[data-screen="impact"] > .stage { flex: 1 1 auto; }
-  .screen[data-screen="impact"] > .panel.is-right { display: none; }
-  .screen[data-screen="impact"] .impact-inline { display: block; }
+  /* `!important` は、PanelResizer がインラインで書く列(`grid.style.gridTemplateColumns`)に勝たせるため。 */
+  .screen:is([data-screen="impact"], [data-screen="primer"]) { grid-template-columns: 220px minmax(0, 1fr) !important; }
+  .screen:is([data-screen="impact"], [data-screen="primer"]) > .panel.is-right { display: none; }
+  .screen:is([data-screen="impact"], [data-screen="primer"]) .topic-inline { display: block; }
 }
 @media (max-width: 760px) {
-  html:has(.screen[data-screen="impact"]:not([hidden])), html:has(.screen[data-screen="impact"]:not([hidden])) body { height: auto; overflow: auto; }
-  html:has(.screen[data-screen="impact"]:not([hidden])) .app { height: auto; display: block; }
-  .screen[data-screen="impact"]:not([hidden]) { display: block; height: auto; }
-  .screen[data-screen="impact"] > .panel.is-left { display: none; }
-  .screen[data-screen="impact"] > .stage { overflow: visible; container-type: normal; }
-  .screen[data-screen="impact"] .impact-body { padding-inline: 16px; gap: 44px; }
-  .screen[data-screen="impact"] .impact-gist, .screen[data-screen="impact"] .impact-note { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  /* body を `overflow: auto` にするとスクロールの器になり、タブの並びの sticky が効かない。 */
+  html:has(.screen:is([data-screen="impact"], [data-screen="primer"]):not([hidden])) { height: auto; overflow: auto; }
+  html:has(.screen:is([data-screen="impact"], [data-screen="primer"]):not([hidden])) body { height: auto; overflow: visible; }
+  html:has(.screen:is([data-screen="impact"], [data-screen="primer"]):not([hidden])) .app { height: auto; display: block; }
+  .screen:is([data-screen="impact"], [data-screen="primer"]):not([hidden]) { display: block; height: auto; }
+  .screen:is([data-screen="impact"], [data-screen="primer"]) > .panel.is-left { display: none; }
+  .screen:is([data-screen="impact"], [data-screen="primer"]) > .stage { overflow: visible; container-type: normal; }
+  .screen:is([data-screen="impact"], [data-screen="primer"]) .topic-body { padding-inline: 16px; gap: 44px; }
+  .screen:is([data-screen="impact"], [data-screen="primer"]) .topic-gist { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .screen[data-screen="primer"] > .primer-tablist { position: sticky; top: 0; z-index: 2; background: var(--bg); height: 44px; }
+  /* 上 12px + 名前の行 20px + 下 11px に、並びの下の線 1px を足して 44px。横の余白だけを広い幅の 18px から詰める。 */
+  .primer-tab { padding: 12px 12px 11px; }
+  .primer-tab-desc { display: none; }
+  /* 64px は、上に残るタブの並び(44px)と、広い幅と同じ節の上の余白(20px)の和。 */
+  .screen[data-screen="primer"] .topic { scroll-margin-top: 64px; }
 }
 </style>
 </head>
@@ -721,36 +787,106 @@ button.change-item:hover { background: var(--track); }
 (() => {
   "use strict";
 
-  /** コードの色分け。キーワード・文字列・コメント・数値・関数呼び出しに加え、YAML はキー、シェルは変数、HTML はタグと属性名に色を付ける簡易なもの。 */
+  /**
+   * コードの色分け。キーワード・文字列・コメント・数値・関数呼び出しに加え、JS / TS / Python は型と変数、YAML はキー、シェルは変数、
+   * HTML はタグと属性名、CSS は at ルール・プロパティ・カスタムプロパティに色を付ける簡易なもの。HTML の script / style 要素と、
+   * シェルの JS・TS・PY・JSON のヒアドキュメントの中は、その言語で読む。HTML と `.tsx` / `.jsx` の JSX は、タグ(JSX のフラグメントを
+   * 含む)をキーワード、属性名を値の有無によらずキー、属性の値の文字列を文字列にする。JSX の本文は色なしで、`{…}` の中は JS / TS で
+   * 読む。HTML の本文は、数値と関数呼び出し(`名前(`)のほかは色なし。
+   */
   const Tokenizer = (() => {
     const words = (list) => new Set(list.split(" ").filter((word) => word !== ""));
+    const JsWords = "const let var function return if else for while do of in new class extends import export from default switch case break continue try catch finally throw typeof instanceof null undefined true false this async await yield delete void super";
+    const TsWords = "type interface enum implements satisfies as is keyof readonly declare namespace abstract private public protected infer unique never unknown any boolean string number symbol bigint object asserts override";
+    const Identifier = /[A-Za-z_]\w*/y;
+    const JsIdentifier = /[A-Za-z_$][\w$]*/y;
+    const JsGrammar = { comment: "//", block: ["/*", "*/"], strings: ['"', "'", "`"], keywords: words(JsWords), identifier: JsIdentifier, identifiers: true, objectKeys: true };
+    const TsGrammar = { ...JsGrammar, keywords: words(`${JsWords} ${TsWords}`) };
     const Grammars = {
-      python: { comment: "#", hashAnywhere: true, strings: ['"""', "'''", '"', "'"], keywords: words("def class return if elif else for while in not and or is None True False import from as with try except finally raise lambda yield pass continue break assert del async await global nonlocal") },
-      js: { comment: "//", block: ["/*", "*/"], strings: ['"', "'", "`"], keywords: words("const let var function return if else for while of in new class extends import export from default switch case break continue try catch finally throw typeof instanceof null undefined true false this async await yield delete void") },
-      shell: { comment: "#", strings: ['"', "'"], variables: true, keywords: words("if then else elif fi for in do done while until case esac function return local export set exit trap source echo readonly shift") },
+      python: { comment: "#", hashAnywhere: true, strings: ['"""', "'''", '"', "'"], keywords: words("def class return if elif else for while in not and or is None True False import from as with try except finally raise lambda yield pass continue break assert del async await global nonlocal"), identifiers: true, prefixes: /[rRbBfFuU]{1,2}(?=["'])/y, types: words("dict list tuple set frozenset str int float bool bytes object") },
+      js: JsGrammar,
+      jsx: { ...JsGrammar, jsx: true },
+      ts: TsGrammar,
+      tsx: { ...TsGrammar, jsx: true },
+      shell: { comment: "#", strings: ['"', "'"], variables: true, heredocs: true, keywords: words("if then else elif fi for in do done while until case esac function return local export set exit trap source echo readonly shift") },
       yaml: { comment: "#", strings: ['"', "'"], keys: true, keywords: words("true false null") },
       html: { block: ["<!--", "-->"], strings: ['"', "'"], tags: true, keywords: words("") },
+      css: { block: ["/*", "*/"], strings: ['"', "'"], css: true, keywords: words("") },
     };
-    const LanguageByExtension = { py: "python", js: "js", mjs: "js", ts: "js", tsx: "js", jsx: "js", json: "js", sh: "shell", bash: "shell", yml: "yaml", yaml: "yaml", html: "html" };
-    const Identifier = /[A-Za-z_]\w*/y;
+    const LanguageByExtension = { py: "python", js: "js", mjs: "js", jsx: "jsx", ts: "ts", tsx: "tsx", json: "js", sh: "shell", bash: "shell", yml: "yaml", yaml: "yaml", html: "html", css: "css" };
+    /** 中を別の言語で読む埋め込み。HTML の要素名(小文字)とシェルのヒアドキュメントの区切りの語から、中の言語を引く。 */
+    const Embeddings = Object.freeze({ elements: Object.freeze({ script: "js", style: "css" }), heredocs: Object.freeze({ JS: "js", TS: "ts", PY: "python", JSON: "js" }) });
     const NumberLiteral = /\d+(?:\.\d+)?/y;
     const YamlKey = /[ \t]*(?:- )?[\w.$-]+(?=:(?:\s|$))/y;
     const ShellVariable = /\$(?:\{[^}\n]*\}|[A-Za-z_]\w*|[0-9#?@*$])/y;
+    const HeredocStart = /<<(-?)[ \t]*(['"]?)([A-Za-z_]\w*)\2/;
     const TagName = /<\/?[A-Za-z][\w-]*/y;
-    const AttributeName = /[A-Za-z_:][\w:.-]*(?==)/y;
+    /** HTML の属性名。値の有無で属性名の色が割れないよう、値の無い属性(`disabled`)もキーにする。`=` が続くかを見ないので、開きタグの中でだけ読む。 */
+    const AttributeName = /[A-Za-z_:][\w:.-]*/y;
+    /** HTML の引用符の無い属性の値(`charset=utf-8` の `utf-8`)。 */
+    const UnquotedAttributeValue = /[^\s"'=<>`]+/y;
+    const CssAtRule = /@[\w-]+/y;
+    const CssImportant = /!important\b/y;
+    const CssCustomProperty = /--[\w-]+/y;
+    const CssHex = /#[0-9A-Fa-f]{3,8}(?![\w-])/y;
+    const CssNumber = /-?(?:\d*\.)?\d+(?:%|[A-Za-z]+)?/y;
+    const CssPropertyName = /-?[A-Za-z][\w-]*(?=\s*:)/y;
+    const CssColon = /\s*:/y;
+    const DeclarationStops = new Set(["{", ";", "}"]);
+    const CssWord = /-?[A-Za-z_][\w-]*/y;
+    const KeyAfter = /\s*\??\s*:/y;
+    // オブジェクトのキーが来る位置。直前の空白でない字(空文字は行頭)か、直前の語で見る。
+    const KeyFollows = new Set(["", "{", ",", ";"]);
+    const KeyModifiers = new Set(["readonly"]);
+    const Closers = { ")": "(", "]": "[", "}": "{" };
+    const Openers = new Set(Object.values(Closers));
+    /** JSX のタグ名。`.` `:` `-` でつないだもの(`Foo.Bar` / `svg:path` / `my-element`)も 1 つの名前にする。 */
+    const JsxName = String.raw`${JsIdentifier.source}(?:[.:-][\w$]+)*`;
+    /** JSX のタグの `<` と名前(`<名前` / `</名前`)と、フラグメントの `<>` / `</>`。 */
+    const JsxTag = new RegExp(String.raw`</?(?:${JsxName}|>)`, "y");
+    /** JSX の属性名。`-` `:` でつないだもの(`aria-label` / `xlink:href`)も 1 つの名前にする。HTML の `AttributeName` と同じく、値の無い属性もキーにする。 */
+    const JsxAttributeName = new RegExp(String.raw`${JsIdentifier.source}(?:[-:][\w$]+)*`, "y");
+    /** JSX の子の中の本文。タグの `<` と式の `{` の手前まで。 */
+    const JsxText = /[^<{]+/y;
+    /** JSX の自己閉じの `/>`。`/` と `>` の間に空白があってもよい。 */
+    const JsxSelfClosing = /\/\s*>/y;
+    /**
+     * `.tsx` で TypeScript が総称の矢印関数の型引数として読む形。`<` の後の名前(前に `const` があってもよい)に `,` か `=` が続くか、
+     * `extends` が続いてその後が `=` `>` `/` でないもの。`=` に `==` `=>` を、`/` に `/=` を含めないのは TypeScript の字句に合わせる。
+     * TypeScript と違い、字句の間のコメントは飛ばさない(名前と `,` の間にコメントがあるとタグと読む)。
+     */
+    const ArrowTypeParameters = new RegExp(String.raw`<\s*(?:const\s+)?${JsIdentifier.source}(?![\w$])\s*(?:,|=(?![=>])|extends\b(?!\s*(?:=(?![=>])|>|\/(?!=))))`, "y");
+    /** タグの段の綴り。`OpeningTag` は開きタグの中(HTML と JSX。HTML では閉じタグの中も)、`Children` は JSX の子の中。 */
+    const TagLevels = Object.freeze({ OpeningTag: "<", Children: ">" });
+    const isTagLevel = (bracket) => bracket === TagLevels.OpeningTag || bracket === TagLevels.Children;
+    /**
+     * 式が始まる位置の、直前の空白でない字(空文字は行頭)。行頭・開き括弧・`,`・`=`・`?`・`:` と、`=>` の `>`、`&&` `||` の
+     * 末尾の `&` `|`。
+     */
+    const ExpressionFollows = new Set(["", "(", "[", "{", ",", "=", ">", "?", ":", "&", "|"]);
 
     /** 字句。`opens` は閉じずに行が終わった文字列・コメントの閉じ記号で、次の行の頭から続ける。 */
     const Token = (cls, value, opens = null) => ({ cls, value, opens });
+
+    /**
+     * 何も開いていない持ち越し。持ち越しは次の 3 つ。
+     * - `open`: 閉じずに行が終わった文字列・コメント(`{cls, close}`)
+     * - `region`: 中を別の言語で読んでいる埋め込み。null か、`{kind: "element", name}` / `{kind: "heredoc", delimiter, stripsTabs}`
+     * - `brackets`: 開いたまま閉じていない括弧(`(` `[` `{`)と、HTML・`.tsx` / `.jsx` のタグの段(`TagLevels`)を、開いた順に並べた文字列
+     *
+     * JSX の段は括弧と交互に入れ子になる(`{ ( <li { …`)ので、別の並びにせず、開いて閉じる括弧と同じ並びに積む。
+     */
+    const Start = Object.freeze({ open: null, region: null, brackets: "" });
+
+    /** 何も読んでいない位置の、直前の空白でない字(`prevSolid`。空文字は行頭)とその位置(`prevSolidAt`)と直前の語(`prevWord`)。 */
+    const Unread = Object.freeze({ prevSolid: "", prevSolidAt: -1, prevWord: "" });
 
     const matchAt = (pattern, cursor) => {
       pattern.lastIndex = cursor.at;
       const match = pattern.exec(cursor.text);
       return match ? match[0] : null;
     };
-    const restOfLine = (cursor) => {
-      const end = cursor.text.indexOf("\n", cursor.at);
-      return cursor.text.slice(cursor.at, end < 0 ? cursor.text.length : end);
-    };
+    const restOfLine = (cursor) => cursor.text.slice(cursor.at);
 
     /** 文字列の終わりまで。閉じずに行が終わったら、三重引用符とテンプレート文字列だけ次の行へ持ち越す。 */
     const stringAt = (cursor, grammar) => {
@@ -758,12 +894,21 @@ button.change-item:hover { background: var(--track); }
       const quote = grammar.strings.find((candidate) => text.startsWith(candidate, at));
       if (!quote) return null;
       let end = at + quote.length;
-      while (end < text.length && text[end] !== "\n") {
+      while (end < text.length) {
         if (text.startsWith(quote, end)) return Token("tok-str", text.slice(at, end + quote.length));
         end += text[end] === "\\" ? 2 : 1;
       }
       const spansLines = quote.length === 3 || quote === "`";
       return Token("tok-str", text.slice(at, Math.min(end, text.length)), spansLines ? quote : null);
+    };
+
+    /** Python の `f"…"` などの接頭辞を、続く文字列と 1 字句にする。 */
+    const prefixedStringAt = (cursor, grammar) => {
+      const canPrefix = grammar.prefixes !== undefined && !/\w/.test(cursor.prev);
+      const prefix = canPrefix ? matchAt(grammar.prefixes, cursor) : null;
+      if (!prefix) return null;
+      const rest = stringAt({ ...cursor, at: cursor.at + prefix.length }, grammar);
+      return Token("tok-str", prefix + rest.value, rest.opens);
     };
 
     const commentAt = (cursor, grammar) => {
@@ -781,6 +926,163 @@ button.change-item:hover { background: var(--track); }
       return isComment ? Token("tok-com", restOfLine(cursor)) : null;
     };
 
+    /** 引用(接頭辞付きの文字列・コメント・文字列)の字句。どれでもなければ null。 */
+    const quotedAt = (cursor, grammar) => prefixedStringAt(cursor, grammar) || commentAt(cursor, grammar) || stringAt(cursor, grammar);
+
+    /** `.` の後の名前か。スプレッドの `...` の後は含めない。 */
+    const isMemberAt = (cursor) => cursor.prevSolid === "." && cursor.text[cursor.prevSolidAt - 1] !== ".";
+
+    /**
+     * JS / TS のオブジェクトのキーか。`const x:`・`case foo:`・`ok ? left :`・丸括弧の中の `name:` はキーにしない。
+     * 行頭の switch の `default:` もキーと区別できないので、キーとして色を付けない。
+     */
+    const isKeyAt = (cursor, word, grammar) => {
+      KeyAfter.lastIndex = cursor.at + word.length;
+      const hasColon = grammar.objectKeys === true && KeyAfter.test(cursor.text);
+      const followsKeyPlace = KeyFollows.has(cursor.prevSolid) || KeyModifiers.has(cursor.prevWord);
+      return hasColon && followsKeyPlace && cursor.bracket !== "(";
+    };
+
+    /** 識別子の色。メンバー → キー → キーワード → 関数 → 型・変数の順に見る。 */
+    const identifierClassOf = (cursor, word, grammar) => {
+      const isCall = cursor.text[cursor.at + word.length] === "(";
+      const isMember = grammar.identifiers === true && isMemberAt(cursor);
+      if (isMember) return isCall ? "tok-fn" : null;
+      if (isKeyAt(cursor, word, grammar)) return null;
+      if (grammar.keywords.has(word)) return "tok-kw";
+      if (isCall) return "tok-fn";
+      if (grammar.identifiers !== true) return null;
+      const isType = /^[A-Z]/.test(word) || (grammar.types !== undefined && grammar.types.has(word));
+      return isType ? "tok-type" : "tok-var";
+    };
+
+    /**
+     * 行の各位置から先で最初に来る `{` `;` `}`。CSS の宣言の判定が語ごとに行末まで探し直さないよう、行ごとに 1 度だけ求める。
+     * @returns 位置ごとの字(その位置から先に無ければ空文字)
+     */
+    const declarationStopsOf = (text) => {
+      const stops = new Array(text.length);
+      let next = "";
+      for (let index = text.length - 1; index >= 0; index -= 1) {
+        if (DeclarationStops.has(text[index])) next = text[index];
+        stops[index] = next;
+      }
+      return stops;
+    };
+
+    /** CSS で、位置から始まる `:` が宣言の区切りか。`:` の後が空白か行末、または後で最初に来る `{` `;` `}` が `;` か `}` なら宣言(`a:hover {` はセレクタ)。 */
+    const isDeclarationColonAt = (cursor, from) => {
+      const after = from + matchAt(CssColon, { text: cursor.text, at: from }).length;
+      const next = cursor.text[after];
+      const isSpaceAfter = next === undefined || /\s/.test(next);
+      const stop = cursor.declarationStops[after];
+      return isSpaceAfter || stop === ";" || stop === "}";
+    };
+
+    /** CSS の、文字列とコメント以外の字句。 */
+    const cssTokenAt = (cursor) => {
+      const atRule = matchAt(CssAtRule, cursor) || matchAt(CssImportant, cursor);
+      if (atRule) return Token("tok-kw", atRule);
+      const custom = matchAt(CssCustomProperty, cursor);
+      if (custom) return Token("tok-var", custom);
+      const hex = matchAt(CssHex, cursor);
+      if (hex) return Token("tok-num", hex);
+      if (/[\w-]/.test(cursor.prev)) return null;
+      const number = matchAt(CssNumber, cursor);
+      if (number) return Token("tok-num", number);
+      // 丸括弧・角括弧の中(`@media (max-width: …)`・属性セレクタ)と、`:` の直後の名前はプロパティにしない。
+      const isDeclarationPlace = cursor.bracket !== "(" && cursor.bracket !== "[" && cursor.prevSolid !== ":";
+      const property = isDeclarationPlace ? matchAt(CssPropertyName, cursor) : null;
+      const isProperty = property !== null && isDeclarationColonAt(cursor, cursor.at + property.length);
+      if (isProperty) return Token("tok-key", property);
+      const word = matchAt(CssWord, cursor);
+      if (!word) return null;
+      return Token(cursor.text[cursor.at + word.length] === "(" ? "tok-fn" : null, word);
+    };
+
+    /** 数値と名前の字句。直前の字が名前の字(`\w` `$`)のとき(名前の途中)と、数値でも名前でもないときは null。 */
+    const wordAt = (cursor, grammar) => {
+      if (/[\w$]/.test(cursor.prev)) return null;
+      const number = matchAt(NumberLiteral, cursor);
+      if (number) return Token("tok-num", number);
+      const word = matchAt(grammar.identifier ?? Identifier, cursor);
+      if (!word) return null;
+      return Token(identifierClassOf(cursor, word, grammar), word);
+    };
+
+    /** 式が始まる位置か(直前の空白でない字が `ExpressionFollows` にあるか、直前の語が `return`)。 */
+    const isExpressionPlace = (cursor) => ExpressionFollows.has(cursor.prevSolid) || cursor.prevWord === "return";
+
+    /** 綴りの全体が、その字句の形に当たるか。 */
+    const isWhole = (pattern, value) => matchAt(pattern, { text: value, at: 0 }) === value;
+
+    /** 字句がタグ(`pattern` の形)か。文字列・コメントの続きは、行の綴りがタグと同じでも閉じ記号を持ち越すので、タグにしない。 */
+    const isTagToken = (pattern, token) => token.opens === null && isWhole(pattern, token.value);
+
+    /** JSX のタグの綴りが、フラグメント(`<>` / `</>`)か。 */
+    const isFragment = (tag) => tag.endsWith(">");
+
+    /** JSX のタグの綴りが、閉じタグ(`</名前` / `</>`)か。 */
+    const isClosingTag = (tag) => tag.startsWith("</");
+
+    /** JSX のタグの字句。名前のあるタグもフラグメント(`<>` / `</>`)もキーワードにする。タグでなければ null。 */
+    const jsxTagAt = (cursor) => {
+      const tag = matchAt(JsxTag, cursor);
+      return tag ? Token("tok-kw", tag) : null;
+    };
+
+    /**
+     * 式が始まる位置にある JSX のタグ(開きタグ・閉じタグ・フラグメント)。総称の矢印関数の型引数ならタグにしない。
+     *
+     * 読み始めを誤ると、後ろを JSX(属性名か本文)として読み、誤って開いた要素を閉じる閉じタグか `/>` まで JS / TS へ戻らない。型の位置の
+     * 総称の関数型(`=` `{` `:` `,` `(` `|` `&` `=>` の後の `<T>(`)と、前の行の値に続く行頭の `<`(`a` の次の行の `<b`)はタグと読む。
+     * `<` の直後に空白のあるタグ(`< div>`)は、タグと読まない。
+     */
+    const jsxTagInExpressionAt = (cursor) => {
+      const isTagPlace = isExpressionPlace(cursor) && matchAt(ArrowTypeParameters, cursor) === null;
+      return isTagPlace ? jsxTagAt(cursor) : null;
+    };
+
+    /**
+     * JSX の段の中の字句。子の中はタグと本文を、開きタグの中は自己閉じ・コメント・文字列・属性名を読む(段は `cursor.bracket`)。
+     * 型引数の付いたタグ(`<Foo<T> />`)は名前の後の `<` から読み違えて子の中に入り、その子を閉じる閉じタグまで JS / TS へ戻らない。
+     * @returns 字句。どれにも当たらなければ null(呼び出し側が 1 文字だけ進める)
+     */
+    const jsxTokenAt = (cursor, grammar) => {
+      if (cursor.bracket === TagLevels.Children) {
+        const tag = jsxTagAt(cursor);
+        if (tag) return tag;
+        const text = matchAt(JsxText, cursor);
+        return text ? Token(null, text) : null;
+      }
+      const selfClosing = matchAt(JsxSelfClosing, cursor);
+      if (selfClosing) return Token(null, selfClosing);
+      // JSX ではエスケープにならない `\` をエスケープと読み、行をまたぐ属性の値の文字列は次の行へ持ち越さない。
+      const quoted = quotedAt(cursor, grammar);
+      if (quoted) return quoted;
+      const name = matchAt(JsxAttributeName, cursor);
+      return name ? Token("tok-key", name) : null;
+    };
+
+    /**
+     * HTML の字句。開きタグの中は文字列・属性名・引用符の無い属性の値を、それ以外はコメント・タグ・数値と語を読む(段は `cursor.bracket`)。
+     * 本文の引用符は文字列を始めない(`Don't` の `'` から行末までを文字列にしない)。
+     * @returns 字句。どれにも当たらなければ null(呼び出し側が 1 文字だけ進める)
+     */
+    const htmlTokenAt = (cursor, grammar) => {
+      if (cursor.bracket !== TagLevels.OpeningTag) {
+        const tag = matchAt(TagName, cursor);
+        if (tag) return Token("tok-kw", tag);
+        return commentAt(cursor, grammar) || wordAt(cursor, grammar);
+      }
+      const quoted = stringAt(cursor, grammar);
+      if (quoted) return quoted;
+      const isUnquotedValue = cursor.prevSolid === "=";
+      const word = matchAt(isUnquotedValue ? UnquotedAttributeValue : AttributeName, cursor);
+      if (!word) return null;
+      return Token(isUnquotedValue ? null : "tok-key", word);
+    };
+
     /**
      * 位置から始まる字句を 1 つ返す。色の付かない識別子も、途中で切らないよう 1 字句(cls が null)で返す。
      * @returns 字句。どの規則にも当たらなければ null(呼び出し側が 1 文字だけ進める)
@@ -789,19 +1091,14 @@ button.change-item:hover { background: var(--track); }
       const isYamlKeyPosition = grammar.keys === true && cursor.lineStart;
       const key = isYamlKeyPosition ? matchAt(YamlKey, cursor) : null;
       if (key) return Token("tok-key", key);
-      const quoted = commentAt(cursor, grammar) || stringAt(cursor, grammar);
+      const quoted = quotedAt(cursor, grammar);
       if (quoted) return quoted;
+      if (grammar.css === true) return cssTokenAt(cursor);
       const variable = grammar.variables === true ? matchAt(ShellVariable, cursor) : null;
       if (variable) return Token("tok-var", variable);
-      const markup = grammar.tags === true ? matchAt(TagName, cursor) || matchAt(AttributeName, cursor) : null;
-      if (markup) return Token(markup.startsWith("<") ? "tok-kw" : "tok-key", markup);
-      if (/\w/.test(cursor.prev)) return null;
-      const number = matchAt(NumberLiteral, cursor);
-      if (number) return Token("tok-num", number);
-      const word = matchAt(Identifier, cursor);
-      if (!word) return null;
-      if (grammar.keywords.has(word)) return Token("tok-kw", word);
-      return Token(cursor.text[cursor.at + word.length] === "(" ? "tok-fn" : null, word);
+      const jsx = grammar.jsx === true ? jsxTagInExpressionAt(cursor) : null;
+      if (jsx) return jsx;
+      return wordAt(cursor, grammar);
     };
 
     /** 持ち越しの続き(前の行で閉じなかった文字列・コメント)を、閉じ記号まで 1 字句にする。 */
@@ -811,25 +1108,163 @@ button.change-item:hover { background: var(--track); }
       return Token(open.cls, cursor.text.slice(cursor.at, close + open.close.length));
     };
 
-    /** 文字列を字句に分け、次へ持ち越す状態(carry)と一緒に返す。 */
-    const tokenize = (text, grammar, carry) => {
+    /**
+     * 字句を読んだ後の括弧の並び。色の無い字句だけを括弧として見る。
+     *
+     * 閉じ括弧は、一番上の開き括弧と種類が合うときだけ外し、合わなければ無視する。正規表現の文字クラスの `}` が、外側の `{` を
+     * 閉じないため。正規表現の `\[` のように対にならない開き括弧は、並びに残ったままになる。
+     */
+    const bracketsAfter = (brackets, token) => {
+      if (token.cls !== null) return brackets;
+      if (Openers.has(token.value)) return brackets + token.value;
+      const isClosingTop = Object.hasOwn(Closers, token.value) && brackets.endsWith(Closers[token.value]);
+      return isClosingTop ? brackets.slice(0, -1) : brackets;
+    };
+
+    /**
+     * `.tsx` / `.jsx` で字句を読んだ後の、括弧と JSX の段の並び。タグは段を積み外しし、開きタグを閉じる `>` は子の段へ移り、
+     * 自己閉じは段を外す。段の中では `{` だけを積み、段の外は `bracketsAfter` に渡す。
+     *
+     * 段の外で来た閉じタグ(要素の途中から読み始めた)は何も積まない。後ろが子か JS かは分からず、子として読むと `);` 以降を本文にしてしまうため。
+     */
+    const jsxBracketsAfter = (brackets, token) => {
+      const top = brackets.slice(-1);
+      const outer = brackets.slice(0, -1);
+      if (isTagToken(JsxTag, token)) {
+        if (isClosingTag(token.value)) return top === TagLevels.Children ? outer : brackets;
+        return brackets + (isFragment(token.value) ? TagLevels.Children : TagLevels.OpeningTag);
+      }
+      const closesOpeningTag = top === TagLevels.OpeningTag && token.value === ">";
+      if (closesOpeningTag) return outer + TagLevels.Children;
+      const selfCloses = top === TagLevels.OpeningTag && isWhole(JsxSelfClosing, token.value);
+      if (selfCloses) return outer;
+      // 本文の字句は `(` か `[` 1 文字だけにもなる(`<p>(</p>`)ので、JsxText では積むのを防げない。
+      if (isTagLevel(top)) return token.value === "{" ? brackets + token.value : brackets;
+      return bracketsAfter(brackets, token);
+    };
+
+    /**
+     * HTML で字句を読んだ後の段。タグの `<名前`(閉じタグの `</名前` も)で開きタグの段に入り、`>` で出る。開きタグの中かどうかだけを
+     * 持ち、要素の入れ子と本文の括弧は数えない(閉じタグを書かない要素があり、本文の括弧は色に効かない)。
+     */
+    const htmlBracketsAfter = (brackets, token) => {
+      if (isTagToken(TagName, token)) return TagLevels.OpeningTag;
+      const closesOpeningTag = brackets === TagLevels.OpeningTag && token.value === ">";
+      return closesOpeningTag ? Start.brackets : brackets;
+    };
+
+    /** 文法ごとの、字句を読んだ後の括弧と段の並び。 */
+    const bracketsAfterIn = (grammar) => {
+      if (grammar.jsx === true) return jsxBracketsAfter;
+      if (grammar.tags === true) return htmlBracketsAfter;
+      return bracketsAfter;
+    };
+
+    /** 文法と段ごとの、字句を読む関数。 */
+    const tokenReaderOf = (grammar, bracket) => {
+      if (grammar.tags === true) return htmlTokenAt;
+      const readsJsx = grammar.jsx === true && isTagLevel(bracket);
+      return readsJsx ? jsxTokenAt : tokenAt;
+    };
+
+    /** ヒアドキュメントの区切りの行か。`<<-` で開いたものは、行頭のタブを除いて比べる。 */
+    const isClosingLine = (text, heredoc) => (heredoc.stripsTabs ? text.replace(/^\t+/, "") : text) === heredoc.delimiter;
+
+    /** 埋め込みの中を読む文法。 */
+    const grammarIn = (region) => Grammars[region.kind === "element" ? Embeddings.elements[region.name] : Embeddings.heredocs[region.delimiter]];
+
+    /** タグの字句(開きタグの `<` と名前)が開く埋め込みの要素。埋め込みでない要素・閉じタグなら null。 */
+    const elementOpenedBy = (tag) => {
+      const name = tag.slice(1).toLowerCase();
+      return Object.hasOwn(Embeddings.elements, name) ? { kind: "element", name } : null;
+    };
+
+    /**
+     * 行が開くヒアドキュメント。行の中の最初の `<<` の区切りの語が `Embeddings.heredocs` に無ければ null。
+     * `<<` は字句に分けずに行の生の文字で探すので、文字列・コメントの中の `<<` でも開く。
+     */
+    const heredocOpenedBy = (text) => {
+      const match = HeredocStart.exec(text);
+      const isKnown = match !== null && Object.hasOwn(Embeddings.heredocs, match[3]);
+      return isKnown ? { kind: "heredoc", delimiter: match[3], stripsTabs: match[1] === "-" } : null;
+    };
+
+    /** 1 行を字句に分ける。埋め込みの要素には、行の途中でも出入りする(ヒアドキュメントの開閉は `tokenizeLine` が行ごとに見る)。 */
+    const tokensOf = (text, base, carry) => {
       const tokens = [];
-      let { open, lineStart } = carry;
+      // 要素に出入りするのは html の文法の行だけなので、閉じタグを大文字小文字を問わず探すための写しはそのときだけ作る。
+      const lower = base.tags === true ? text.toLowerCase() : null;
+      // その位置から読む文法と、要素の閉じタグ(無ければ -1)で切った行。行の頭と、埋め込みに出入りしたときに 1 度だけ求める
+      // (字句ごとに閉じタグを探し直さない)。閉じ記号は Embeddings.elements のキーから組み立て、script 要素の開きタグ・閉じタグの
+      // 綴りをこのスクリプトに文字のまま書かない。閉じタグの綴りがあるとページのスクリプトがそこで切れ、開きタグの綴りは
+      // check-pr-explain-template.py がスクリプトの 1 本と数える。
+      const readingFrom = (inside, from) => {
+        const grammar = inside === null ? base : grammarIn(inside);
+        const closeAt = inside !== null && inside.kind === "element" ? lower.indexOf(`</${inside.name}`, from) : -1;
+        const view = closeAt < 0 ? text : text.slice(0, closeAt);
+        return { grammar, closeAt, view, declarationStops: grammar.css === true ? declarationStopsOf(view) : null };
+      };
+      let { open, region, brackets } = carry;
       let at = 0;
+      let lineStart = true;
+      let solid = Unread;
+      let element = null;
+      let reading = readingFrom(region, 0);
+      // 埋め込みに入る・出るときは、中の言語を何も読んでいないところから読む。
+      const switchTo = (next) => {
+        ({ open, region, brackets } = { ...Start, region: next });
+        solid = Unread;
+        reading = readingFrom(next, at);
+      };
       while (at < text.length) {
-        const cursor = { text, at, prev: at > 0 ? text[at - 1] : carry.prev, lineStart };
-        const token = open ? continuationOf(cursor, open) : tokenAt(cursor, grammar) || Token(null, text[at]);
+        if (reading.closeAt === at) {
+          switchTo(null);
+          continue;
+        }
+        const { grammar, view, declarationStops } = reading;
+        const cursor = { text: view, at, prev: at > 0 ? text[at - 1] : "\n", lineStart, bracket: brackets.slice(-1), declarationStops, ...solid };
+        const readAt = tokenReaderOf(grammar, cursor.bracket);
+        const token = open ? continuationOf(cursor, open) : readAt(cursor, grammar) || Token(null, text[at]);
         tokens.push(token);
         at += token.value.length;
         open = token.opens === null ? null : { cls: token.cls, close: token.opens };
-        lineStart = token.value.endsWith("\n") || (lineStart && !/\S/.test(token.value));
+        lineStart = lineStart && !/\S/.test(token.value);
+        const trimmed = token.value.trimEnd();
+        const isSolid = token.cls !== "tok-com" && trimmed !== "";
+        if (isSolid) solid = { prevSolid: trimmed.slice(-1), prevSolidAt: at - 1 - (token.value.length - trimmed.length), prevWord: /^[\w$]+$/.test(token.value) ? token.value : "" };
+        brackets = bracketsAfterIn(grammar)(brackets, token);
+        const isTag = grammar.tags === true && token.cls === "tok-kw";
+        if (isTag) element = elementOpenedBy(token.value);
+        const entersElement = grammar.tags === true && token.value === ">" && element !== null;
+        if (entersElement) {
+          switchTo(element);
+          element = null;
+        }
       }
-      return { tokens, carry: { open, lineStart, prev: text.length > 0 ? text[text.length - 1] : carry.prev } };
+      return { tokens, carry: { open, region, brackets } };
+    };
+
+    /**
+     * 1 行を字句に分ける。ヒアドキュメントは、区切りの語が `Embeddings.heredocs` にあるものを開いた行の次から区切りの行の前まで、
+     * その言語で読む(区切りの行はシェルで読む)。
+     * @param grammar ファイルの文法(`grammarOf`)。null なら行全体を色の無い 1 字句にし、持ち越しをそのまま返す
+     * @param carry 前の行から持ち越した状態。中身は `Start` の doc
+     * @returns 字句の並び(`cls` が null のものは色を付けない)と、次の行へ持ち越す状態
+     */
+    const tokenizeLine = (text, grammar, carry) => {
+      if (grammar === null) return { tokens: [Token(null, text)], carry };
+      const closesHeredoc = carry.region !== null && carry.region.kind === "heredoc" && isClosingLine(text, carry.region);
+      if (closesHeredoc) return { tokens: tokensOf(text, grammar, Start).tokens, carry: Start };
+      const read = tokensOf(text, grammar, carry);
+      const canOpenHeredoc = grammar.heredocs === true && carry.region === null;
+      const heredoc = canOpenHeredoc ? heredocOpenedBy(text) : null;
+      return heredoc === null ? read : { tokens: read.tokens, carry: { ...Start, region: heredoc } };
     };
 
     return Object.freeze({
-      /** 1 行目の前の持ち越し(何も開いていない)。 */
-      Start: Object.freeze({ open: null, lineStart: true, prev: "\n" }),
+      Embeddings,
+      /** 色分けの規則を引く拡張子(`.` を除いたもの)。埋め込みを読む拡張子を、解説の検査の拡張子と突き合わせるために出す。 */
+      Extensions: Object.freeze(Object.keys(LanguageByExtension)),
       /**
        * パスの拡張子から色分けの規則を引く。
        * @param path ファイルのパス
@@ -841,11 +1276,35 @@ button.change-item:hover { background: var(--track); }
         return Object.hasOwn(Grammars, language) ? Grammars[language] : null;
       },
       /**
-       * 1 行を字句に分ける。行をまたぐ文字列・コメントだけを持ち越し、行頭の扱いは行ごとにやり直す。
-       * @param carry 前の行から持ち越した状態(最初の行は `Start`)
-       * @returns 字句の並び(`cls` が null のものは色を付けない)と、次の行へ持ち越す状態
+       * 途中の行から読み始めるときの持ち越し。開いた行を何も開いていない状態から読み、埋め込みだけを残す。
+       * 括弧とタグの段(`brackets`)は持ち越さないので、hunk・抜粋が開きタグや JSX の子の途中から始まると、段の外(JSX は JS / TS、
+       * HTML は本文)として読み始める。
+       * @param openingLine 読み始める行の頭で効いている埋め込みを開いた行(検査の `openingLine` / 地図の `hunkOpeningLines`)。無ければ null
+       * @param grammar ファイルの文法(`grammarOf`。null の文法はどの行でも埋め込みを開かない)
+       * @returns 埋め込みだけを残した持ち越し。開いた行が null のとき・開いた行が埋め込みを開いていないときは、何も開いていない持ち越し
        */
-      tokenizeLine: (text, grammar, carry) => tokenize(text, grammar, { ...carry, lineStart: true, prev: "\n" }),
+      startAfter: (openingLine, grammar) => {
+        if (openingLine === null) return Start;
+        const { region } = tokenizeLine(openingLine, grammar, Start).carry;
+        return region === null ? Start : { ...Start, region };
+      },
+      /**
+       * 続いた行を、前の行の持ち越しを次の行へ渡しながら字句に分ける。
+       * @param texts 続いた行(改行を含まない)
+       * @param grammar ファイルの文法(`grammarOf`)。null ならどの行も色の無い 1 字句
+       * @param start 1 行目の頭の持ち越し(`startAfter` が返すもの)
+       * @returns 行ごとの字句の並び(`tokens`)と、その行を読み終えた後の持ち越し(`carry`)。`texts` と同じ順
+       */
+      tokenizeLines: (texts, grammar, start) => {
+        const lines = [];
+        let carry = start;
+        for (const text of texts) {
+          const read = tokenizeLine(text, grammar, carry);
+          lines.push(read);
+          carry = read.carry;
+        }
+        return lines;
+      },
     });
   })();
 
@@ -875,6 +1334,19 @@ button.change-item:hover { background: var(--track); }
       added: { tone: "A", label: "このブランチで追加" },
       changed: { tone: "M", label: "このブランチで変更" },
       removed: { tone: "D", label: "このブランチで削除" },
+    },
+    // 技術の手引き(この PR の実装)の節の状態と色の区分。省いたもの(前からある)はここに無い。
+    primerStatuses: {
+      added: { tone: "A", label: "この PR で追加" },
+      changed: { tone: "M", label: "この PR で変更" },
+    },
+    // 技術の手引きの注意メモの種類と見出し。色はキーごとに CSS の `data-remark` が持つ。キーの順は解説の検査の `RemarkKinds` と同じ。
+    remarkKinds: {
+      caution: { label: "注意" },
+      memo: { label: "メモ" },
+      rule: { label: "規約" },
+      spec: { label: "仕様" },
+      history: { label: "経緯" },
     },
   });
   const MessageKindOrder = Object.keys(Vocabulary.messageKinds);
@@ -917,7 +1389,7 @@ button.change-item:hover { background: var(--track); }
     },
   });
 
-  const Screens = Object.freeze({ Map: "map", Story: "story", Test: "test", Impact: "impact" });
+  const Screens = Object.freeze({ Map: "map", Story: "story", Test: "test", Impact: "impact", Primer: "primer" });
   const isScreen = (value) => Object.values(Screens).includes(value);
 
   /** どの画面を開くか。 */
@@ -940,11 +1412,34 @@ button.change-item:hover { background: var(--track); }
 
   const isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
   const isListOfRecords = (value) => Array.isArray(value) && value.every(isRecord);
+  const isString = (value) => typeof value === "string";
+  const isStringList = (value) => Array.isArray(value) && value.every(isString);
   /** 配列ならそのまま、それ以外(書いていない・型が違う)なら空の配列にする。 */
   const listOf = (value) => (Array.isArray(value) ? value : []);
+  /** id の並びのうち表に有るものを、表の値にして id の順に並べる。表に無い id は外す。 */
+  const valuesIn = (table, ids) => listOf(ids).filter((id) => table.has(id)).map((id) => table.get(id));
+  const optionalText = (value) => (isString(value) ? value : null);
+  /** 行番号が、行の範囲(`{start, end}`。両端を含む)に入るか。 */
+  const isWithin = (number, span) => span.start <= number && number <= span.end;
+  /** 解説の道筋(`a[].b`)の 1 段を、キーと、そのキーの配列の各要素へ進むか(`[]` で終わる段)にする。 */
+  const routeStepOf = (step) => ({ key: step.replace(/\[\]$/, ""), isEach: step.endsWith("[]") });
 
   /** テストを、確かめているものとして数えるか。未実装(提案)と、このブランチで消したものは数えない。 */
   const isVerifying = (test) => test.status !== "todo" && test.status !== "removed";
+
+  /**
+   * 解説のテストの id を、テスト画面と同じテスト(状態つき)にする。解説のテストに無い id は外す。
+   *
+   * 判定なし(テスト名を調べていないファイルのテスト)も確かめているものに数える。追加か既存かが分からないだけで、テストはあるため。
+   * @param ids 根拠に挙げた解説のテストの id(書いていなければ undefined)
+   * @param testAt 解説のテストの id から、テスト画面と同じテストを引く表(`ExplainedMap` の `testAt`)
+   * @returns `verifying`(確かめているもの)・`missing`(未実装で、まだ無いもの)・`isGuarded`(確かめているものが 1 件以上)
+   */
+  const testEvidenceOf = (ids, testAt) => {
+    const found = valuesIn(testAt, ids);
+    const verifying = found.filter(isVerifying);
+    return { verifying, missing: found.filter((test) => test.status === "todo"), isGuarded: verifying.length > 0 };
+  };
 
   /**
    * やりとりの両端が図の箱か。構造マップで選べるのは、両端が箱のやりとりだけ。
@@ -960,69 +1455,9 @@ button.change-item:hover { background: var(--track); }
    * 節を `section` と呼ばないのは、ページでは `section` が画面(`<section class="screen">`)と画面の中の区画(`.section`)を指しているため。
    */
   const ImpactTopics = (() => {
-    // 形を見る道筋と、その先の値の種類。`build-pr-explain.py` の Shapes の Impact から導いたものと同じ並びで、
-    // `pr-explain-core-cases.sh` が突き合わせる。文の値は見ない(描くときに文字として入れるだけなので)。
-    const ShapeKinds = Object.freeze({
-      record: isRecord,
-      records: isListOfRecords,
-      ids: (value) => Array.isArray(value) && value.every((item) => typeof item === "string"),
-      id: (value) => typeof value === "string",
-    });
-    const ShapeRoutes = Object.freeze([
-      ["impact", "record"],
-      ["impact.changed", "record"],
-      ["impact.changed.before", "records"],
-      ["impact.changed.before[].message", "id"],
-      ["impact.changed.after", "records"],
-      ["impact.changed.after[].message", "id"],
-      ["impact.tables", "records"],
-      ["impact.tables[].rowHeads", "records"],
-      ["impact.tables[].rowHeads[].id", "id"],
-      ["impact.tables[].columnHeads", "records"],
-      ["impact.tables[].columnHeads[].id", "id"],
-      ["impact.tables[].outcomes", "records"],
-      ["impact.tables[].outcomes[].rowHead", "id"],
-      ["impact.tables[].outcomes[].columnHead", "id"],
-      ["impact.tables[].outcomes[].tests", "ids"],
-      ["impact.added", "records"],
-      ["impact.added[].before", "records"],
-      ["impact.added[].before[].message", "id"],
-      ["impact.added[].after", "records"],
-      ["impact.added[].after[].message", "id"],
-      ["impact.added[].tests", "ids"],
-      ["impact.kept", "records"],
-      ["impact.kept[].tests", "ids"],
-    ]);
     const Labels = Object.freeze({ changed: "変わったこと", kept: "変わらないこと" });
 
-    /** 道筋の先の値を集める。途中が欠けていれば集めない(欠けは検査の管轄)。`[]` で終わる段は配列の各要素へ進む。 */
-    const valuesAt = (value, steps) => {
-      if (steps.length === 0) return [value];
-      const [step, ...rest] = steps;
-      const key = step.replace(/\[\]$/, "");
-      if (!isRecord(value) || value[key] === undefined) return [];
-      const inner = value[key];
-      if (!step.endsWith("[]")) return valuesAt(inner, rest);
-      return Array.isArray(inner) ? inner.flatMap((item) => valuesAt(item, rest)) : [];
-    };
-    const depthOf = ([route]) => route.split(".").length;
-
-    const optionalText = (value) => (typeof value === "string" ? value : null);
     const linesOf = (lines) => listOf(lines).map((line) => ({ text: line.text, message: optionalText(line.message) }));
-
-    /**
-     * 解説のテストの id を、テスト画面と同じテスト(状態つき)にする。解説のテストに無い id は外す。
-     *
-     * 判定なし(テスト名を調べていないファイルのテスト)も確かめているものに数える。追加か既存かが分からないだけで、テストはあるため。
-     * @param ids 根拠に挙げた解説のテストの id(書いていなければ undefined)
-     * @param testAt 解説のテストの id から、テスト画面と同じテストを引く表(`ExplainedMap` の `testAt`)
-     * @returns `verifying`(確かめているもの)・`missing`(未実装で、まだ無いもの)・`isGuarded`(確かめているものが 1 件以上)
-     */
-    const evidenceOf = (ids, testAt) => {
-      const found = listOf(ids).filter((id) => testAt.has(id)).map((id) => testAt.get(id));
-      const verifying = found.filter(isVerifying);
-      return { verifying, missing: found.filter((test) => test.status === "todo"), isGuarded: verifying.length > 0 };
-    };
 
     /** 前後の行が指すやりとりを、書いた順に重複なく。解説に無い id は外し、両端が図の箱かを添える。 */
     const mechanismsOf = (lines, { messages, entryAt }) => {
@@ -1058,7 +1493,7 @@ button.change-item:hover { background: var(--track); }
         note: optionalText(outcome.note),
         isChanged: typeof outcome.was === "string",
         situation: situationOf({ outcome, row, column }),
-        tests: evidenceOf(outcome.tests, testAt),
+        tests: testEvidenceOf(outcome.tests, testAt),
       };
     };
 
@@ -1087,12 +1522,12 @@ button.change-item:hover { background: var(--track); }
       };
     };
 
-    const addedTopicOf = (added, index, context) => ({ kind: "added", id: `added-${index}`, label: added.label, ...sidesOf(added, context), tests: evidenceOf(added.tests, context.testAt) });
+    const addedTopicOf = (added, index, context) => ({ kind: "added", id: `added-${index}`, label: added.label, ...sidesOf(added, context), tests: testEvidenceOf(added.tests, context.testAt) });
 
     const changedTopicsOf = (changed, context) => (isRecord(changed) ? [{ kind: "changed", id: "changed", label: Labels.changed, ...sidesOf(changed, context) }] : []);
 
     const keptTopicsOf = (kept, { testAt }) => {
-      const lines = listOf(kept).map((line) => ({ text: line.text, tests: evidenceOf(line.tests, testAt) }));
+      const lines = listOf(kept).map((line) => ({ text: line.text, tests: testEvidenceOf(line.tests, testAt) }));
       return lines.length === 0 ? [] : [{ kind: "kept", id: "kept", label: Labels.kept, lines }];
     };
 
@@ -1118,18 +1553,8 @@ button.change-item:hover { background: var(--track); }
     const isMentionedIn = (evidence, explainTestId) => [...evidence.verifying, ...evidence.missing].some((test) => test.test.id === explainTestId);
 
     return Object.freeze({
-      ShapeRoutes,
       /** 使える解説が無いとき。 */
       Unexplained: Object.freeze({ kind: "none" }),
-      /**
-       * ページが組み立てに使う `impact` の形を見る。
-       * @returns 型の違う道筋(`impact.tables[].outcomes` の形)。崩れが 2 か所以上なら最も外側のもの。崩れていなければ null
-       */
-      shapeProblemOf: (explain) => {
-        const broken = ShapeRoutes.filter(([route, kind]) => valuesAt(explain, route.split(".")).some((value) => !ShapeKinds[kind](value)));
-        if (broken.length === 0) return null;
-        return broken.reduce((outer, candidate) => (depthOf(candidate) < depthOf(outer) ? candidate : outer))[0];
-      },
       /**
        * 解説の `impact` を節の並びにする。書かなかった節は作らない(変わらないことが 0 件のときも)。
        * @param impact 形の検査を通った解説の `impact`(書いていなければ undefined)
@@ -1173,9 +1598,9 @@ button.change-item:hover { background: var(--track); }
     });
   })();
 
-  /** 振る舞いの画面の「今の節」。本文のスクロールの位置から、目次と右の欄が指す節を決める。 */
+  /** 振る舞いと技術の手引きの画面の「今の節」。本文のスクロールの位置から、目次と右の欄が指す節を決める。 */
   const TopicScroll = (() => {
-    // 読む線。本文の末尾には「欄の高さ − 読む線」の余白を CSS で取ってあり(`.impact-body`)、どの節も読む線まで送れる。
+    // 読む線。本文の末尾には「欄の高さ − 読む線」の余白を CSS で取ってあり(`.topic-body`)、どの節も読む線まで送れる。
     const ReadingLine = 140;
     return Object.freeze({
       /**
@@ -1187,6 +1612,350 @@ button.change-item:hover { background: var(--track); }
         if (tops.length === 0) return null;
         const passed = tops.findLastIndex((top) => top <= ReadingLine);
         return passed < 0 ? 0 : passed;
+      },
+    });
+  })();
+
+  /** ページが組み立てに使う解説の形。道筋とその先の値の種類(`Routes`)と、欠けてはいけない道筋(`Required`)で持つ。 */
+  const ExplainShape = (() => {
+    // 形を見る道筋と、その先の値の種類。`build-pr-explain.py` の Shapes から導いたものと同じ並びで、`pr-explain-core-cases.sh` が
+    // 突き合わせる。primers・terms の下は Shapes から機械的に導くので、文字列をすべて見る(組み立てが落ちるキーを選り分けない)。
+    // 必須の欠けも kind ごとに見る(`Required`)。`Dom.proseParts` と `TermMarks.piecesOf` は文を文字列として割り、抜粋の段は
+    // `excerptBoxesOf` が `excerpt` の中を読むので、文字列でない値も欠けた値も組み立てを落とし、ページ全体を出なくする。impact は
+    // 構造だけを見る(文は文字として入れるだけなので、表示できている解説を「解説なし」に変えない)。tests の下は Excerpt の中だけ
+    // 見る(`ExcerptRows` が強調の要素を読む)。
+    const ShapeKinds = Object.freeze({
+      record: isRecord,
+      records: isListOfRecords,
+      ids: isStringList,
+      id: isString,
+      texts: isStringList,
+      text: isString,
+    });
+    const Routes = Object.freeze([
+      ["impact", "record"],
+      ["impact.changed", "record"],
+      ["impact.changed.before", "records"],
+      ["impact.changed.before[].message", "id"],
+      ["impact.changed.after", "records"],
+      ["impact.changed.after[].message", "id"],
+      ["impact.tables", "records"],
+      ["impact.tables[].rowHeads", "records"],
+      ["impact.tables[].rowHeads[].id", "id"],
+      ["impact.tables[].columnHeads", "records"],
+      ["impact.tables[].columnHeads[].id", "id"],
+      ["impact.tables[].outcomes", "records"],
+      ["impact.tables[].outcomes[].rowHead", "id"],
+      ["impact.tables[].outcomes[].columnHead", "id"],
+      ["impact.tables[].outcomes[].tests", "ids"],
+      ["impact.added", "records"],
+      ["impact.added[].before", "records"],
+      ["impact.added[].before[].message", "id"],
+      ["impact.added[].after", "records"],
+      ["impact.added[].after[].message", "id"],
+      ["impact.added[].tests", "ids"],
+      ["impact.kept", "records"],
+      ["impact.kept[].tests", "ids"],
+      ["primers", "records"],
+      ["primers[].id", "id"],
+      ["primers[].category", "text"],
+      ["primers[].label", "text"],
+      ["primers[].gist", "text"],
+      ["primers[].passages", "records"],
+      ["primers[].passages[].text", "text"],
+      ["primers[].passages[].code", "text"],
+      ["primers[].passages[].parameters", "records"],
+      ["primers[].passages[].parameters[].name", "text"],
+      ["primers[].passages[].parameters[].type", "text"],
+      ["primers[].passages[].parameters[].text", "text"],
+      ["primers[].passages[].parameters[].note", "text"],
+      ["primers[].passages[].excerpt", "record"],
+      ["primers[].passages[].excerpt.path", "text"],
+      ["primers[].passages[].excerpt.emphasis", "records"],
+      ["primers[].occurrences", "records"],
+      ["primers[].occurrences[].path", "text"],
+      ["primers[].occurrences[].lineRange", "record"],
+      ["primers[].occurrences[].text", "text"],
+      ["primers[].occurrences[].shas", "texts"],
+      ["primers[].seeAlso", "ids"],
+      ["primers[].tests", "ids"],
+      ["primers[].flows", "ids"],
+      ["terms", "records"],
+      ["terms[].id", "id"],
+      ["terms[].label", "text"],
+      ["terms[].text", "text"],
+      ["tests[].excerpt.emphasis", "records"],
+    ]);
+    // 欠けていれば崩れとする道筋。primers・terms の下の必須のキーのうち、値が文(text)か 1 つのオブジェクト(record)のもの。
+    // `kinds` は、手前のオブジェクトが kind で持つキーの決まるもの(Variant)なら、そのキーを必須とする kind の並びで、それ以外の
+    // kind のオブジェクトには求めない。kind に依らないオブジェクト(Shape)なら null で、どれにも求める。Shapes と Variants から
+    // 導いたものと同じ並びで、`pr-explain-core-cases.sh` が突き合わせる。配列は欠けても `listOf` が空として読むので入れない。
+    const Required = Object.freeze([
+      { route: "primers[].category", kinds: ["language", "codebase"] },
+      { route: "primers[].label", kinds: ["language", "codebase"] },
+      { route: "primers[].gist", kinds: ["language", "codebase"] },
+      { route: "primers[].passages[].text", kinds: ["text", "caution", "memo", "rule", "spec", "history"] },
+      { route: "primers[].passages[].code", kinds: ["declaration"] },
+      { route: "primers[].passages[].parameters[].name", kinds: null },
+      { route: "primers[].passages[].parameters[].type", kinds: null },
+      { route: "primers[].passages[].parameters[].text", kinds: null },
+      { route: "primers[].passages[].excerpt", kinds: ["excerpt"] },
+      { route: "primers[].passages[].excerpt.path", kinds: null },
+      { route: "primers[].occurrences[].path", kinds: null },
+      { route: "primers[].occurrences[].text", kinds: null },
+      { route: "terms[].label", kinds: null },
+      { route: "terms[].text", kinds: null },
+    ]);
+
+    /** 道筋の先の値を集める。途中が欠けていれば集めない(必須の欠けは `lacks` が見る)。 */
+    const valuesAt = (value, steps) => {
+      if (steps.length === 0) return [value];
+      const [step, ...rest] = steps;
+      const { key, isEach } = routeStepOf(step);
+      if (!isRecord(value) || value[key] === undefined) return [];
+      const inner = value[key];
+      if (!isEach) return valuesAt(inner, rest);
+      return Array.isArray(inner) ? inner.flatMap((item) => valuesAt(item, rest)) : [];
+    };
+    /** `Required` の 1 件の道筋の最後の段のキーが、その手前のオブジェクトのうち、そのキーを求めるもの(`kinds`)のどれかに無いか。 */
+    const lacks = (explain, { route, kinds }) => {
+      const steps = route.split(".");
+      const key = steps[steps.length - 1];
+      const isAsked = (owner) => isRecord(owner) && (kinds === null || kinds.includes(owner.kind));
+      return valuesAt(explain, steps.slice(0, -1)).some((owner) => isAsked(owner) && owner[key] === undefined);
+    };
+    const depthOf = (route) => route.split(".").length;
+
+    return Object.freeze({
+      Routes,
+      Required,
+      /**
+       * ページが組み立てに使う形を見る。
+       * @returns 型の違う道筋か、必須のキー(`Required`)が欠けた道筋(`impact.tables[].outcomes` の形)。崩れが 2 か所以上なら最も外側のもの。
+       *   崩れていなければ null
+       */
+      problemOf: (explain) => {
+        const mistyped = Routes.filter(([route, kind]) => valuesAt(explain, route.split(".")).some((value) => !ShapeKinds[kind](value))).map(([route]) => route);
+        const lacking = Required.filter((required) => lacks(explain, required)).map(({ route }) => route);
+        const broken = [...mistyped, ...lacking];
+        if (broken.length === 0) return null;
+        return broken.reduce((outer, candidate) => (depthOf(candidate) < depthOf(outer) ? candidate : outer));
+      },
+    });
+  })();
+
+  /** 解説の文の中の `` `…` ``(コード)。 */
+  const CodeSpans = Object.freeze({
+    /**
+     * 文を `` ` `` で割り、コードの切れ端とそうでない切れ端を文の順に並べる。閉じていない最後の `` ` `` はコードにせず、文字のまま
+     * 前の切れ端につなぐ(閉じているかは、渡した文の単位で決まる)。割り方は `build-pr-explain.py` の `code_spans_of` と同じで、
+     * `pr-explain-core-cases.sh` が突き合わせる。
+     * @returns `{isCode, text}` の並び。空の切れ端も出す
+     */
+    create: (text) => {
+      const parts = text.split("`");
+      const hasUnclosed = parts.length % 2 === 0;
+      const paired = hasUnclosed ? [...parts.slice(0, -2), `${parts[parts.length - 2]}\`${parts[parts.length - 1]}`] : parts;
+      return paired.map((part, index) => ({ isCode: index % 2 === 1, text: part }));
+    },
+  });
+
+  /** 技術の手引きの本文に書く用語の印 `[[表示|用語の id]]`。 */
+  const TermMarks = (() => {
+    // 綴りは `build-pr-explain.py` の `TermMarkPattern` と同じで、`pr-explain-core-cases.sh` が突き合わせる。
+    const Pattern = /\[\[([^\[\]|]+)\|([A-Za-z0-9][A-Za-z0-9_-]{0,63})\]\]/g;
+    // 印を読む道筋。`build-pr-explain.py` の `routes_with(MarkedText)` と同じ綴り・同じ並びで、`pr-explain-core-cases.sh` が突き合わせる。
+    const Routes = Object.freeze(["primers[].gist", "primers[].passages[].text", "primers[].passages[].parameters[].text"]);
+    // 節の中の道筋(`primers[].` を外し、段に割ったもの)。
+    const InPrimer = Routes.map((route) => route.replace(/^primers\[\]\./, "").split("."));
+    /** 道筋の並びの最初の段を、並びの順に重複なく。 */
+    const headsOf = (routes) => [...new Set(routes.map(([step]) => step))];
+    /** 最初の段が `step` の道筋の、残りの段。 */
+    const restsOf = (routes, step) => routes.filter(([head]) => head === step).map(([, ...rest]) => rest);
+    const isRouteEnd = (routes) => routes.some((route) => route.length === 0);
+
+    /**
+     * 文を、印の外の文字と印に割る。空の文字は出さず、印になっていない `[[` は文字のまま残す。
+     * @returns `{kind: "plain", text}` と `{kind: "term", label, id}` の並び(文の順)
+     */
+    const piecesOf = (text) => {
+      const parts = text.split(Pattern);
+      const plainAt = (index) => (parts[index] === "" ? [] : [{ kind: "plain", text: parts[index] }]);
+      const marks = Array.from({ length: (parts.length - 1) / 3 }, (_, index) => ({ kind: "term", label: parts[index * 3 + 1], id: parts[index * 3 + 2] }));
+      return [...plainAt(0), ...marks.flatMap((mark, index) => [mark, ...plainAt(index * 3 + 3)])];
+    };
+
+    /**
+     * 道筋の先の値を `replace` で置き換える。途中が欠けていれば、その先は置き換えない。
+     * @returns 置き換えた写し(`value`)と、置き換えた値を文書の順(道筋の段を並びの順に進む)に並べたもの(`ends`)
+     */
+    const replacedAlong = (value, routes, replace) => {
+      if (isRouteEnd(routes)) {
+        const replaced = replace(value);
+        return { value: replaced, ends: [replaced] };
+      }
+      return headsOf(routes).reduce((sofar, step) => {
+        const { key, isEach } = routeStepOf(step);
+        if (sofar.value[key] === undefined) return sofar;
+        const rests = restsOf(routes, step);
+        const items = (isEach ? sofar.value[key] : [sofar.value[key]]).map((item) => replacedAlong(item, rests, replace));
+        const inner = items.map((item) => item.value);
+        return { value: { ...sofar.value, [key]: isEach ? inner : inner[0] }, ends: [...sofar.ends, ...items.flatMap((item) => item.ends)] };
+      }, { value, ends: [] });
+    };
+
+    return Object.freeze({
+      Pattern,
+      Routes,
+      piecesOf,
+      /**
+       * 節の、印を読む道筋の先の文を `piecesOf` の並びに置き換えた写しを返す。
+       * @param primer 形の検査を通った解説の primers の 1 件
+       */
+      withPieces: (primer) => replacedAlong(primer, InPrimer, piecesOf).value,
+      /**
+       * 節の印が指す用語の id を、文書の順(要するに → 段を書いた順。段の中は text → 引数の順)に重複なく並べる。JSON に
+       * キーを書いた順には依らない。
+       * @param primer `withPieces` を通した節
+       */
+      termIdsOf: (primer) => {
+        const pieces = replacedAlong(primer, InPrimer, (written) => written).ends.flat();
+        return [...new Set(pieces.filter((piece) => piece.kind === "term").map((piece) => piece.id))];
+      },
+    });
+  })();
+
+  /** 抜粋の行。 */
+  const ExcerptRows = Object.freeze({
+    /**
+     * 抜粋の行を、ファイルの行番号と強調の有無と字句にする。
+     *
+     * 強調の要素がオブジェクトかどうかは、骨組みの検査が見ている。start / end が数でなくても組み立ては落ちない(どの行が強調に
+     * なるかは比較の型変換しだい。数かどうかは解説の検査が落とす)。
+     * @param excerpt 中身(`text`)と、あれば開いた行(`openingLine`)を足した抜粋
+     * @returns `{number, text, isEmphasized, tokens}` の並び。`number` は抜粋の `start` から数え、強調を省けばどの行も強調しない。
+     *   `tokens` は 1 行目から読み進めた字句で、開いた行が文字列ならその埋め込みの中から読み始める
+     */
+    create: (excerpt) => {
+      const emphasis = listOf(excerpt.emphasis);
+      const grammar = Tokenizer.grammarOf(excerpt.path);
+      const texts = excerpt.text.split("\n");
+      const read = Tokenizer.tokenizeLines(texts, grammar, Tokenizer.startAfter(isString(excerpt.openingLine) ? excerpt.openingLine : null, grammar));
+      return texts.map((text, index) => {
+        const number = excerpt.start + index;
+        return { number, text, isEmphasized: emphasis.some((span) => isWithin(number, span)), tokens: read[index].tokens };
+      });
+    },
+  });
+
+  /**
+   * 技術の手引きの節の並び。解説の `primers` を、kind ごとのタブ(言語・フレームワーク / この PR の実装)に、書いた順で分ける。
+   * 用語は `terms` を印から引き、節の用語とタブの用語集はどちらも印から導く(書かせない)。
+   */
+  const PrimerTopics = (() => {
+    const PrimerKinds = Object.freeze({ Language: "language", Codebase: "codebase" });
+    // この PR の実装の節で、状態を省いたもの(前からある)。言語・フレームワークの節は状態を持たない(null)。
+    const Existing = "existing";
+    // 段の kind。順と綴りは `build-pr-explain.py` の Variants の Passage と同じで、`pr-explain-core-cases.sh` が突き合わせる。
+    const PassageKinds = Object.freeze(["text", "declaration", "parameters", "excerpt", ...Object.keys(Vocabulary.remarkKinds)]);
+
+    /** 印を、用語に解く。terms に無い id の印は、表示の文字のまま(plain)にする。 */
+    const resolvedPiecesOf = (pieces, termAt) => listOf(pieces).map((piece) => {
+      if (piece.kind === "plain") return piece;
+      if (!termAt.has(piece.id)) return { kind: "plain", text: piece.label };
+      return { kind: "term", label: piece.label, term: termAt.get(piece.id) };
+    });
+
+    /** 段を描く形にそろえる。知らない kind の段は外す。 */
+    const passagesOf = (passage, resolve) => {
+      if (Object.hasOwn(Vocabulary.remarkKinds, passage.kind)) {
+        const remark = Vocabulary.remarkKinds[passage.kind];
+        return [{ kind: "remark", remark: passage.kind, label: remark.label, pieces: resolve(passage.text) }];
+      }
+      switch (passage.kind) {
+        case "text":
+          return [{ kind: "text", pieces: resolve(passage.text) }];
+        case "declaration":
+          return [{ kind: "declaration", code: passage.code }];
+        case "parameters":
+          return [{ kind: "parameters", parameters: listOf(passage.parameters).map((parameter) => ({ name: parameter.name, type: parameter.type, pieces: resolve(parameter.text), note: parameter.note ?? null })) }];
+        case "excerpt":
+          return [{ kind: "excerpt", excerpt: passage.excerpt }];
+      }
+      return [];
+    };
+
+    /** 出てくる場所。`destinations` は `shas` を書いた順に、そのコミットへの届き方を添える。 */
+    const occurrenceOf = (occurrence, reachOf) => {
+      const lineRange = occurrence.lineRange ?? null;
+      const destinations = listOf(occurrence.shas).map((sha) => ({ sha, reach: reachOf({ sha, path: occurrence.path, lineRange }) }));
+      return { path: occurrence.path, lineRange, text: occurrence.text, destinations };
+    };
+
+    const statusOf = (primer) => {
+      if (primer.kind !== PrimerKinds.Codebase) return null;
+      return Object.hasOwn(Vocabulary.primerStatuses, primer.status) ? primer.status : Existing;
+    };
+
+    const topicOf = (primer, { termAt, positionAt, testAt, flows, reachOf }) => {
+      const marked = TermMarks.withPieces(primer);
+      const resolve = (pieces) => resolvedPiecesOf(pieces, termAt);
+      return {
+        id: primer.id,
+        kind: primer.kind,
+        category: primer.category,
+        label: primer.label,
+        gist: resolve(marked.gist),
+        passages: listOf(marked.passages).flatMap((passage) => passagesOf(passage, resolve)),
+        occurrences: listOf(primer.occurrences).map((occurrence) => occurrenceOf(occurrence, reachOf)),
+        seeAlso: valuesIn(positionAt, primer.seeAlso),
+        terms: valuesIn(termAt, TermMarks.termIdsOf(marked)),
+        status: statusOf(primer),
+        tests: testEvidenceOf(primer.tests, testAt),
+        flows: valuesIn(flows, primer.flows),
+      };
+    };
+
+    /** タブの節と用語集。用語集は、節の用語を最初に出た順に重複なくつなぐ(1 つも無ければ null)。 */
+    const tabOf = (topics) => {
+      const terms = [...new Map(topics.flatMap((topic) => topic.terms).map((term) => [term.id, term])).values()];
+      return { topics, glossary: terms.length === 0 ? null : { terms } };
+    };
+
+    return Object.freeze({
+      PrimerKinds,
+      Existing,
+      PassageKinds,
+      /** 使える解説が無いとき。 */
+      Unexplained: Object.freeze({ kind: "none" }),
+      /**
+       * 最初に開くタブ。
+       * @param primerTopics `create` が返した、書かれている技術の手引き
+       * @returns 言語・フレームワークに節があればそれ、無くてこの PR の実装にあればそれ。どちらにも無ければ言語・フレームワーク
+       */
+      firstTabOf: (primerTopics) => {
+        const hasLanguage = primerTopics.tabs[PrimerKinds.Language].topics.length > 0;
+        const hasOnlyCodebase = !hasLanguage && primerTopics.tabs[PrimerKinds.Codebase].topics.length > 0;
+        return hasOnlyCodebase ? PrimerKinds.Codebase : PrimerKinds.Language;
+      },
+      /**
+       * 解説の `primers` を、タブごとの節の並びにする。
+       * @param primers 形の検査を通った解説の `primers`(書いていなければ undefined)
+       * @param terms 解説の `terms`(書いていなければ undefined)
+       * @param testAt 解説のテストの id から、テスト画面と同じテストを引く表(`ExplainedMap` の `testAt`)
+       * @param flows 解説の流れを id で引く表
+       * @param reachOf 出てくる場所の 1 つの sha が、変更の経緯のどこまで届くかを返す(`{sha, path, lineRange}` を受け取る)
+       * @returns `{kind: "unwritten"}`(`primers` が無いか空)か `{kind: "written", tabs}`。`tabs` はタブ(kind)ごとの
+       *   `{topics, glossary}`。節の `status` は、この PR の実装の節なら added / changed / `Existing`、言語・フレームワークの節は null
+       */
+      create: ({ primers, terms, testAt, flows, reachOf }) => {
+        const written = listOf(primers);
+        if (written.length === 0) return { kind: "unwritten" };
+        const termAt = new Map(listOf(terms).map((term) => [term.id, { id: term.id, label: term.label, text: term.text }]));
+        const byTab = Object.fromEntries(Object.values(PrimerKinds).map((tab) => [tab, written.filter((primer) => primer.kind === tab)]));
+        const positionAt = new Map(Object.entries(byTab).flatMap(([tab, list]) => list.map((primer, index) => [primer.id, { tab, index, label: primer.label }])));
+        const context = { termAt, positionAt, testAt, flows, reachOf };
+        return { kind: "written", tabs: Object.fromEntries(Object.entries(byTab).map(([tab, list]) => [tab, tabOf(list.map((primer) => topicOf(primer, context)))])) };
       },
     });
   })();
@@ -1212,7 +1981,7 @@ button.change-item:hover { background: var(--track); }
 
     /**
      * ページが組み立てに使う大まかな形だけを見る。細かい形は公開する前に build-pr-explain.py が見ている。
-     * @returns 型の違うキー(`impact` の中は道筋)。違わなければ null
+     * @returns 型が違うか、必須なのに欠けたキー(`impact`・`primers`・`terms`・`tests[].excerpt.emphasis` は道筋)。どちらも無ければ null
      */
     const shapeProblemOf = (explain) => {
       const overview = explain.overview;
@@ -1220,7 +1989,7 @@ button.change-item:hover { background: var(--track); }
       if (typeof explain.sha !== "string") return "sha";
       if (!hasOverview) return "overview";
       const broken = ExplainListKeys.find((key) => isBrokenList(explain[key]));
-      return broken === undefined ? ImpactTopics.shapeProblemOf(explain) : broken;
+      return broken === undefined ? ExplainShape.problemOf(explain) : broken;
     };
 
     /**
@@ -1335,6 +2104,26 @@ button.change-item:hover { background: var(--track); }
       return { kind: "stale", sha: explain.sha, after: commits.length - 1 - explainedAt };
     };
 
+    /**
+     * 出てくる場所の 1 つの sha が、変更の経緯のどこまで届くかを決める関数を作る。
+     * @param commits 地図のコミット(古い順)
+     * @param explainedAt 解説の sha が地図のコミットの何番目か(無ければ -1)
+     * @returns `{sha, path, lineRange}` を受け取り、届き方を返す関数。地図に無い sha は `unmapped`、マージコミットは `merge`、
+     *   そのコミットが `path` のファイルを変えていなければ `untouched`。行まで(`line`)届くのは、`lineRange` があり、そのコミットが
+     *   解説の sha 以前で、あいだ(解説の sha を含む)にマージコミットも `path` を変えたコミットも無いときだけで、ほかは `file`
+     */
+    const reachOfIn = (commits, explainedAt) => ({ sha, path, lineRange }) => {
+      const index = commits.findIndex((commit) => commit.sha === sha);
+      if (index < 0) return { kind: "unmapped" };
+      const commit = commits[index];
+      if (commit.merge) return { kind: "merge" };
+      if (!commit.files.some((file) => file.path === path)) return { kind: "untouched" };
+      const shiftsLines = (later) => later.merge || later.files.some((file) => file.path === path || file.oldPath === path);
+      const isLatestChange = index <= explainedAt && !commits.slice(index + 1, explainedAt + 1).some(shiftsLines);
+      const reachesLine = lineRange !== null && isLatestChange;
+      return reachesLine ? { kind: "line", lineRange } : { kind: "file" };
+    };
+
     const commitsOf = ({ commits, explain, explainedAt }) => {
       const stories = new Map(explainListOf(explain, "commitStories").map((story) => [story.sha, story]));
       return commits.map((commit, index) => {
@@ -1382,13 +2171,13 @@ button.change-item:hover { background: var(--track); }
     });
 
     /**
-     * 地図と解説を合わせる。解説が無い・使えないときも、地図だけで 4 画面の材料を作る。
+     * 地図と解説を合わせる。解説が無い・使えないときも、地図だけで 5 画面の材料を作る。
      * @param map change-map.json の中身(`isReadableMap` が真のもの)
      * @param source 解説の読み込み結果(`readingOf` の source と同じ)
      * @returns 画面が使う材料。解説の状態は `reading`(`explained` / `missing` と理由)と `freshness` に出る。
      *   `explain` は使える解説(無ければ null)、`lookup` はそこから名前で引く一覧、`entryAt` はパスから木の項目を、
-     *   `testAt` は解説のテストの id から `tests` の 1 件を引く表、`impactTopics` は振る舞いの節の並び(`ImpactTopics`。
-     *   振る舞いとテストの 2 画面が読む)
+     *   `testAt` は解説のテストの id から `tests` の 1 件を引く表、`commitAt` は地図のコミットを sha で引く表、`impactTopics` は
+     *   振る舞いの節の並び(`ImpactTopics`。振る舞いとテストの 2 画面が読む)、`primerTopics` は技術の手引きの節の並び(`PrimerTopics`)
      */
     const create = (map, source) => {
       const reading = readingOf(source, map.pr);
@@ -1421,10 +2210,14 @@ button.change-item:hover { background: var(--track); }
         groupings: groupingsOf({ groups: map.groups, entries, explain }),
         unmappedConcepts: concepts.filter((concept) => !mapPaths.has(concept.path)),
         commits,
+        commitAt: new Map(commits.map((commit) => [commit.sha, commit])),
         strayStories: explainListOf(explain, "commitStories").filter((story) => !map.commits.some((commit) => commit.sha === story.sha)),
         tests,
         testAt,
         impactTopics: explain === null ? ImpactTopics.Unexplained : ImpactTopics.create({ impact: explain.impact, testAt, entryAt, messages: lookup.messages }),
+        primerTopics: explain === null
+          ? PrimerTopics.Unexplained
+          : PrimerTopics.create({ primers: explain.primers, terms: explain.terms, testAt, flows: lookup.flows, reachOf: reachOfIn(map.commits, explainedAt) }),
         totals: {
           files: changed.length,
           additions: sumOf(changed.map((entry) => entry.additions)),
@@ -1448,7 +2241,7 @@ button.change-item:hover { background: var(--track); }
     });
   })();
 
-  /** コミットの差分。patch を hunk の行に分け、行への注釈を hunk に割り当て、コードの表示では消した行を畳む。 */
+  /** コミットの差分。patch を hunk の行に分け、行への注釈を hunk に割り当て、行を字句に分け、コードの表示では消した行を畳む。 */
   const CommitDiff = (() => {
     const HunkHeader = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
     const ChangeSigns = new Set(["+", "-"]);
@@ -1462,7 +2255,7 @@ button.change-item:hover { background: var(--track); }
      */
     const hasLine = (note, line) => {
       const number = numberOn(line, sideOf(note));
-      return number !== null && number >= note.start && number <= note.end;
+      return number !== null && isWithin(number, note);
     };
 
     /** hunk の見出しから後の 1 行を、記号と両側の行番号の付いた行にする。 */
@@ -1471,8 +2264,21 @@ button.change-item:hover { background: var(--track); }
       return { sign, oldNo: sign === "+" ? null : next.old, newNo: sign === "-" ? null : next.new, text: raw.slice(1) };
     };
 
-    /** patch を hunk に分ける。`\ No newline at end of file` は行ではないので落とす。 */
-    const hunksOf = (patch) => {
+    /** 地図の開いた行の 1 つ。オブジェクトのときだけ読み、`old` / `new` はそれぞれ文字列でなければ null にする。 */
+    const openingLinesOf = (hunkOpening) => {
+      const openingLineOn = (side) => (isRecord(hunkOpening) && isString(hunkOpening[side]) ? hunkOpening[side] : null);
+      return { old: openingLineOn("old"), new: openingLineOn("new") };
+    };
+
+    // 地図とページは pr-explain.yml の put-map が同じ checkout から一緒に置くので、開いた行は普通は欠けない。ただし外から読む JSON なので、形を確かめてから読む。
+    // 開いた行は hunk の並び順で対応させる。`@@` の読み方はここ(`HunkHeader`)と地図の `HunkHeader` の 2 か所にあり、ずれると隣の hunk の色になるので、数が合わなければすべて頭から読む。
+    /**
+     * patch を hunk に分け、n 番目の hunk に地図の開いた行の n 番目を `openingLines` として付ける。`\ No newline at end of file` は
+     * 行ではないので落とす。
+     * @param hunkOpeningLines 地図のファイルの `hunkOpeningLines`。配列で長さが hunk の数と同じときだけ読み、そうでなければどの hunk も
+     *   `{old: null, new: null}`
+     */
+    const hunksOf = (patch, hunkOpeningLines) => {
       const hunks = [];
       let next = null;
       for (const raw of patch.split("\n")) {
@@ -1488,14 +2294,15 @@ button.change-item:hover { background: var(--track); }
         next = { old: next.old + (line.oldNo === null ? 0 : 1), new: next.new + (line.newNo === null ? 0 : 1) };
         hunks[hunks.length - 1].lines.push(line);
       }
-      return hunks;
+      const fits = Array.isArray(hunkOpeningLines) && hunkOpeningLines.length === hunks.length;
+      return hunks.map((hunk, index) => ({ ...hunk, openingLines: openingLinesOf(fits ? hunkOpeningLines[index] : null) }));
     };
 
     /** 注釈に、ファイルの中で通した番号(`from` の次から)を付ける。 */
     const numbered = (notes, from) => notes.map((note, index) => ({ ...note, side: sideOf(note), n: from + index + 1 }));
 
     const hunkBodyOf = (file, notes) => {
-      const hunks = hunksOf(file.patch);
+      const hunks = hunksOf(file.patch, file.hunkOpeningLines);
       const placedAt = notes.map((note) => hunks.findIndex((hunk) => hunk.lines.some((line) => hasLine(note, line))));
       const placed = hunks.map((hunk, index) => notes.filter((note, noteIndex) => placedAt[noteIndex] === index));
       const firstNumbers = placed.map((group, index) => placed.slice(0, index).reduce((sum, earlier) => sum + earlier.length, 0));
@@ -1531,7 +2338,7 @@ button.change-item:hover { background: var(--track); }
        * @param commit 地図のコミット(マージは files が空)
        * @param story そのコミットの commitStory。無ければ null
        * @returns `files`(本文の `body` は `hunks` / `unchanged`(patch が空)/ `deleted` / `binary`)と、そのコミットに無い
-       *   パスへの注釈 `strayNotes`
+       *   パスへの注釈 `strayNotes`。`hunks` の hunk は `header` / `lines` / `openingLines`(変更前と変更後の開いた行)/ `notes` を持つ
        */
       create: (commit, story) => {
         const hasNotes = story !== null && Array.isArray(story.notes);
@@ -1541,6 +2348,21 @@ button.change-item:hover { background: var(--track); }
           files: commit.files.map((file) => fileOf(file, notes.filter((item) => item.path === file.path))),
           strayNotes: notes.filter((item) => !paths.has(item.path)),
         };
+      },
+      /**
+       * hunk の行を字句に分ける。変更前は `openingLines.old`、変更後は `openingLines.new` から読み始め、`-` の行は変更前だけ、`+` の
+       * 行は変更後だけ、前後の行は両方で読み進める。
+       * @param grammar ファイルの文法(`Tokenizer.grammarOf`)
+       * @returns 行ごとの字句の並び(`hunk.lines` と同じ順)。前後の行は変更後の字句
+       */
+      lineTokensOf: (hunk, grammar) => {
+        const tokensBy = (lines, openingLine) => {
+          const read = Tokenizer.tokenizeLines(lines.map((line) => line.text), grammar, Tokenizer.startAfter(openingLine, grammar));
+          return new Map(lines.map((line, index) => [line, read[index].tokens]));
+        };
+        const before = tokensBy(hunk.lines.filter((line) => line.sign !== "+"), hunk.openingLines.old);
+        const after = tokensBy(hunk.lines.filter((line) => line.sign !== "-"), hunk.openingLines.new);
+        return hunk.lines.map((line) => after.get(line) ?? before.get(line));
       },
       /**
        * コードの表示の行。続けて消した行は 1 つの畳み(`gap`)にまとめる。
@@ -1912,7 +2734,7 @@ button.change-item:hover { background: var(--track); }
   })();
 
   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
-  const core = Object.freeze({ ExplainedMap, ImpactTopics, TopicScroll, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target });
+  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target });
   if (typeof document === "undefined") {
     globalThis.prExplainCore = core;
     return;
@@ -1935,17 +2757,14 @@ button.change-item:hover { background: var(--track); }
       return node;
     },
     /**
-     * 解説の文を要素にする。`` `…` `` で囲んだところは code 要素に入れる(どちらも textContent で入れる)。
-     * 閉じていない `` ` `` は文字のまま残す。
+     * 解説の文を、文字列と code 要素の並びにする。コードの切れ端(割り方は `CodeSpans`)は code 要素に入れる(どちらも textContent
+     * で入れる)。空の文字列は出さない。
      */
-    prose: (tag, props, text) => {
-      const parts = text.split("`");
-      const hasUnclosed = parts.length % 2 === 0;
-      const paired = hasUnclosed ? [...parts.slice(0, -2), `${parts[parts.length - 2]}\`${parts[parts.length - 1]}`] : parts;
-      const children = paired.map((part, index) => (index % 2 === 1 ? Dom.el("code", { text: part }) : part)).filter((child) => child !== "");
-      const cls = typeof props.class === "string" ? `${props.class} prose` : "prose";
-      return Dom.el(tag, { ...props, class: cls }, children);
-    },
+    proseParts: (text) => CodeSpans.create(text).map((span) => (span.isCode ? Dom.el("code", { text: span.text }) : span.text)).filter((child) => child !== ""),
+    /** 解説の文を要素にする(中身は `proseParts`)。 */
+    prose: (tag, props, text) => Dom.el(tag, { ...props, class: Dom.proseClassOf(props) }, Dom.proseParts(text)),
+    /** 文を入れる要素のクラス。`.prose` が中の code 要素の見た目を決める。 */
+    proseClassOf: (props) => (typeof props.class === "string" ? `${props.class} prose` : "prose"),
     /** SVG の要素。属性は setAttribute で付ける。 */
     svg: (tag, attributes, children) => {
       const node = document.createElementNS(SvgNamespace, tag);
@@ -1956,6 +2775,27 @@ button.change-item:hover { background: var(--track); }
   });
   const el = Dom.el;
   const prose = Dom.prose;
+  const proseParts = Dom.proseParts;
+
+  /**
+   * 用語の印を付けた文を要素にする。印の外の文字と印の表示は、それぞれ `proseParts` で入れる(`` ` `` は印をまたいで対にならない)。
+   * @param pieces 用語に解いた文の切れ端(`PrimerTopics` の `gist` などの並び)
+   * @param onMark 印の要素(`span.primer-mark`)と、その用語を受け取る
+   */
+  const markedProseOf = ({ tag, props, pieces, onMark }) => {
+    const children = pieces.flatMap((piece) => {
+      switch (piece.kind) {
+        case "plain":
+          return proseParts(piece.text);
+        case "term": {
+          const mark = el("span", { class: "primer-mark", tabindex: "0", "data-term": piece.term.id }, proseParts(piece.label));
+          onMark(mark, piece.term);
+          return [mark];
+        }
+      }
+    });
+    return el(tag, { ...props, class: Dom.proseClassOf(props) }, children);
+  };
 
   /**
    * 読み手のブラウザにだけ残す値。localStorage は使えない環境(保存の無効化・プライベートブラウズ)で
@@ -1980,15 +2820,16 @@ button.change-item:hover { background: var(--track); }
     },
   });
 
-  const ScreenLabels = { map: "構造マップ", story: "変更の経緯", test: "テスト", impact: "振る舞い" };
+  const ScreenLabels = { map: "構造マップ", story: "変更の経緯", test: "テスト", impact: "振る舞い", primer: "技術の手引き" };
   const ScreenStoreKey = "prExplain.screen";
 
-  /** 画面ごとのパネルの既定の幅。左はどの画面にもあり、右は構造マップ・テスト・振る舞いにある(変更の経緯には無い)。 */
+  /** 画面ごとのパネルの既定の幅。左はどの画面にもあり、右は構造マップ・テスト・振る舞い・技術の手引きにある(変更の経緯には無い)。 */
   const PanelLayouts = {
     map: { left: "clamp(224px, 18vw, 264px)", right: "clamp(320px, 28vw, 404px)" },
     story: { left: "clamp(250px, 24vw, 330px)", right: null },
     test: { left: "clamp(260px, 22vw, 320px)", right: "clamp(330px, 30vw, 430px)" },
     impact: { left: "clamp(220px, 18vw, 260px)", right: "clamp(300px, 26vw, 360px)" },
+    primer: { left: "clamp(220px, 18vw, 260px)", right: "clamp(300px, 26vw, 360px)" },
   };
 
   /** パネルの幅をドラッグで変え、画面ごとに残す。ダブルクリックで既定の幅へ戻す。 */
@@ -2312,13 +3153,16 @@ button.change-item:hover { background: var(--track); }
     })];
   };
 
+  /** 構造マップでその流れを選んだ状態にするチップ。変更の経緯の「影響する操作」と、技術の手引きの「構造マップで見る」が使う。 */
+  const flowChipOf = (flow, go) => pressable("button", { class: "flow-chip", title: "構造マップでこの流れを見る" }, [flow.label, el("span", { class: "arrow", text: "↗" })], () => go.toFlow(flow.id));
+
   /** コミットの解説(なぜ・影響する操作・レビューで見るところ・振る舞いの前後)。 */
   const commitStoryOf = (commit, story) => {
     const commitStory = commit.story;
-    const flows = (Array.isArray(commitStory.flows) ? commitStory.flows : []).map((id) => story.lookup.flows.get(id)).filter((flow) => flow !== undefined);
+    const flows = valuesIn(story.lookup.flows, commitStory.flows);
     const flowChips = flows.length === 0 ? [] : [el("div", { class: "flow-chips" }, [
       el("span", { class: "label", text: "影響する操作" }),
-      ...flows.map((flow) => pressable("button", { class: "flow-chip", title: "構造マップでこの流れを見る" }, [flow.label, el("span", { class: "arrow", text: "↗" })], () => story.go.toFlow(flow.id))),
+      ...flows.map((flow) => flowChipOf(flow, story.go)),
     ])];
     const review = Array.isArray(commitStory.review) ? commitStory.review : [];
     const reviewBlock = review.length === 0 ? [] : [el("div", { class: "section" }, [
@@ -2351,40 +3195,29 @@ button.change-item:hover { background: var(--track); }
     el("div", { class: "note-body" }, [el("span", { class: "note-lines", text: where }), prose("span", { class: "note-text" }, note.text)]),
   ]);
 
+  /**
+   * 載せる(フォーカスする)と、`trigger` と `targetsOf()` を光らせる。
+   * @param targetsOf 光らせる要素の並びを返す。光らせる・消すたびに呼ぶ(描き直された要素も拾うため)
+   */
+  const lightWhileHoveredOrFocused = (trigger, targetsOf) => {
+    const light = (isLit) => () => {
+      for (const target of [trigger, ...targetsOf()]) target.classList.toggle("is-lit", isLit);
+    };
+    trigger.addEventListener("mouseenter", light(true));
+    trigger.addEventListener("mouseleave", light(false));
+    trigger.addEventListener("focus", light(true));
+    trigger.addEventListener("blur", light(false));
+  };
+
   /** 行に付いた注釈のカード。載せる(フォーカスする)と、カードと `targets`(行と番号)を光らせる。 */
   const litNoteOf = (note, targets) => {
     const card = el("div", { class: "note", tabindex: "0" }, [el("span", { class: "note-badge", text: String(note.n) }), prose("span", { class: "note-text" }, note.text)]);
-    const light = (isLit) => () => {
-      for (const target of [card, ...targets]) target.classList.toggle("is-lit", isLit);
-    };
-    card.addEventListener("mouseenter", light(true));
-    card.addEventListener("mouseleave", light(false));
-    card.addEventListener("focus", light(true));
-    card.addEventListener("blur", light(false));
+    lightWhileHoveredOrFocused(card, () => targets);
     return card;
   };
 
-  /** 1 行のコードを色分けした字句にする。 */
-  const codeTextOf = (text, grammar, carry) => {
-    if (grammar === null) return { node: el("span", { class: "code-text", text }), carry };
-    const result = Tokenizer.tokenizeLine(text, grammar, carry);
-    const tokens = result.tokens.map((token) => (token.cls === null ? token.value : el("span", { class: token.cls, text: token.value })));
-    return { node: el("span", { class: "code-text" }, tokens), carry: result.carry };
-  };
-
-  /**
-   * hunk の行を色分けする。行をまたぐ文字列・コメントの持ち越しは、変更前(消した行)と変更後(足した行)で分けて持つ。
-   * @returns 行ごとの code-text の要素(`hunk.lines` と同じ順)
-   */
-  const highlightedLinesOf = (lines, grammar) => {
-    let carries = { old: Tokenizer.Start, new: Tokenizer.Start };
-    return lines.map((line) => {
-      const stream = line.sign === "-" ? "old" : "new";
-      const { node, carry } = codeTextOf(line.text, grammar, carries[stream]);
-      carries = line.sign === " " ? { old: carry, new: carry } : { ...carries, [stream]: carry };
-      return node;
-    });
-  };
+  /** 字句の並びを 1 行の `code-text` の要素にする(色の無い字句は文字のまま置く)。 */
+  const codeTextOf = (tokens) => el("span", { class: "code-text" }, tokens.map((token) => (token.cls === null ? token.value : el("span", { class: token.cls, text: token.value }))));
 
   const rowLinesOf = (row) => (row.kind === "gap" ? row.lines : [row.line]);
 
@@ -2397,7 +3230,7 @@ button.change-item:hover { background: var(--track); }
     return `bar is-on${start}${end}`;
   };
 
-  const diffRowOf = ({ row, text, markers }) => el("div", { class: "code-line", "data-sign": row.line.sign }, [
+  const diffRowOf = ({ row, text, markers, isSent }) => el("div", { class: classesOf("code-line", { "is-sent": isSent }), "data-sign": row.line.sign }, [
     el("span", { class: "ln", text: numberText(row.line.oldNo) }),
     el("span", { class: "ln", text: numberText(row.line.newNo) }),
     el("span", { class: "marks" }, markers),
@@ -2405,23 +3238,31 @@ button.change-item:hover { background: var(--track); }
     text,
   ]);
 
-  const codeRowOf = ({ row, text, markers, bar }) => {
+  const codeRowOf = ({ row, text, markers, bar, isSent }) => {
     if (row.kind === "gap") return el("div", { class: "code-line is-gap" }, [el("span", { class: "ln" }), el("span", { class: "marks" }, markers), el("span", { class: "bar" }), el("span", { class: "code-text tok-com", text: `⋯ ここにあった ${row.lines.length} 行を削除` })]);
-    return el("div", { class: "code-line", "data-sign": row.line.sign }, [el("span", { class: "ln", text: numberText(row.line.newNo) }), el("span", { class: "marks" }, markers), el("span", { class: bar }), text]);
+    return el("div", { class: classesOf("code-line", { "is-sent": isSent }), "data-sign": row.line.sign }, [el("span", { class: "ln", text: numberText(row.line.newNo) }), el("span", { class: "marks" }, markers), el("span", { class: bar }), text]);
   };
 
-  /** hunk の見出しと、行・注釈。注釈の番号は、その注釈の範囲に入る最初の行に付ける。 */
-  const hunkOf = (hunk, { grammar, view }) => {
+  /**
+   * hunk の見出しと、行・注釈。注釈の番号は、その注釈の範囲に入る最初の行に付ける。送った範囲(`sentLineRange`。変更後の
+   * 行番号)に入る行には `is-sent` を付ける(消した行・畳んだ削除には付けない)。
+   */
+  const hunkOf = (hunk, { grammar, view, sentLineRange }) => {
     const isCode = view === "code";
-    const texts = highlightedLinesOf(hunk.lines, grammar);
-    const textOf = new Map(hunk.lines.map((line, index) => [line, texts[index]]));
+    const lineTokens = CommitDiff.lineTokensOf(hunk, grammar);
+    const textOf = new Map(hunk.lines.map((line, index) => [line, codeTextOf(lineTokens[index])]));
     const rows = isCode ? CommitDiff.codeRowsOf(hunk) : hunk.lines.map((line) => ({ kind: "line", line }));
     const coveredBy = rows.map((row) => hunk.notes.filter((note) => rowLinesOf(row).some((line) => CommitDiff.hasLine(note, line))));
     const markerOf = new Map(hunk.notes.map((note) => [note, el("span", { class: "marker", text: String(note.n) })]));
+    const isSentRow = (row) => {
+      const isNewLine = sentLineRange !== null && row.kind === "line" && row.line.newNo !== null;
+      return isNewLine && isWithin(row.line.newNo, sentLineRange);
+    };
     const rowNodes = rows.map((row, index) => {
       const markers = hunk.notes.filter((note) => coveredBy.findIndex((notes) => notes.includes(note)) === index).map((note) => markerOf.get(note));
       const text = row.kind === "gap" ? null : textOf.get(row.line);
-      return isCode ? codeRowOf({ row, text, markers, bar: barClassOf(rows, index) }) : diffRowOf({ row, text, markers });
+      const isSent = isSentRow(row);
+      return isCode ? codeRowOf({ row, text, markers, bar: barClassOf(rows, index), isSent }) : diffRowOf({ row, text, markers, isSent });
     });
     const litTargetsOf = (note) => [...rowNodes.filter((node, index) => coveredBy[index].includes(note)), markerOf.get(note)];
     const firstNew = hunk.lines.find((line) => line.newNo !== null);
@@ -2456,7 +3297,10 @@ button.change-item:hover { background: var(--track); }
       el("span", { class: "file-notes-title", text: "差分に出ていない行への注釈" }),
       ...file.unplaced.map((note) => plainNoteOf(note, lineRangeOf(note))),
     ])];
-    const card = el("details", { class: "file-card", "data-status": file.status }, [
+    const isSent = context.sentFile !== null && context.sentFile.path === file.path;
+    // 送った行の光は注釈に乗ったときの光と同じ見た目なので、送ったカードであることを文で添える。
+    const sentNote = isSent ? [el("div", { class: "file-sent-note", text: context.sentFile.lineRange === null ? "技術の手引きから送ったファイル" : `技術の手引きから送った行(${lineRangeOf(context.sentFile.lineRange)})` })] : [];
+    const card = el("details", { class: classesOf("file-card", { "is-sent": isSent }), "data-status": file.status }, [
       el("summary", {}, [
         el("span", { class: "chev" }),
         el("span", { class: "status", "data-status": file.status, text: file.status }),
@@ -2465,7 +3309,8 @@ button.change-item:hover { background: var(--track); }
         el("span", { class: "spacer" }),
         el("span", { class: "file-counts" }, countsTextOf(file)),
       ]),
-      ...fileBodyOf(file, context),
+      ...sentNote,
+      ...fileBodyOf(file, { ...context, sentLineRange: isSent ? context.sentFile.lineRange : null }),
       ...unplaced,
     ]);
     const key = `${context.sha}:${file.path}`;
@@ -2476,7 +3321,7 @@ button.change-item:hover { background: var(--track); }
 
   /** 実際のコード。差分 / コードの切り替え、すべて開閉、ファイルのカードと、そのコミットに無いパスへの注釈。 */
   const codeSectionOf = (commit, story) => {
-    const { view, closed } = story.state;
+    const { view, closed, sentFile } = story.state;
     const eyebrow = el("span", { class: "eyebrow", text: "実際のコード" });
     const diff = CommitDiff.create(commit, commit.story);
     const strays = diff.strayNotes.length === 0 ? [] : [el("div", { class: "file-notes" }, [
@@ -2484,7 +3329,7 @@ button.change-item:hover { background: var(--track); }
       ...diff.strayNotes.map((note) => plainNoteOf(note, `${note.path} ${lineRangeOf(note)}`)),
     ])];
     if (commit.merge) return el("div", { class: "section" }, [eyebrow, emptyOf("マージコミットなので、差分は出しません。"), ...strays]);
-    const context = { view, closed, sha: commit.sha, lookup: story.lookup, commitUrl: `https://github.com/${Repo}/commit/${commit.sha}`, setOpen: story.actions.setOpen };
+    const context = { view, closed, sentFile, sha: commit.sha, lookup: story.lookup, commitUrl: `https://github.com/${Repo}/commit/${commit.sha}`, setOpen: story.actions.setOpen };
     const cards = diff.files.map((file) => fileCardOf(file, { ...context, grammar: Tokenizer.grammarOf(file.path) }));
     const openAll = (isOpen) => () => {
       for (const card of cards) card.open = isOpen;
@@ -2515,9 +3360,10 @@ button.change-item:hover { background: var(--track); }
     const commits = explained.commits;
     const checkedKey = `prExplain.${explained.map.pr}.checked`;
     const fixed = { explained, commits, go, lookup: explained.lookup, steps: new Map(commits.filter((commit) => !commit.merge).map((commit, index) => [commit.sha, index + 1])) };
-    const commitAt = new Map(commits.map((commit) => [commit.sha, commit]));
+    const commitAt = explained.commitAt;
     const order = [OverviewId, ...commits.toReversed().map((commit) => commit.sha)];
-    let state = { selected: OverviewId, view: "diff", filter: "all", checked: savedChecksOf(BrowserStore.read(checkedKey)), closed: new Set() };
+    // `sentFile` は他の画面から送ったファイル(`{path, lineRange}`。行の範囲が無ければ null)。読み手が選び直したら外す。
+    let state = { selected: OverviewId, view: "diff", filter: "all", checked: savedChecksOf(BrowserStore.read(checkedKey)), closed: new Set(), sentFile: null };
     const body = el("div", { class: "stage-body" });
     const main = el("main", { class: "stage" }, [body]);
     const rows = new Map();
@@ -2535,7 +3381,7 @@ button.change-item:hover { background: var(--track); }
     const withToggled = (set, key, isMember) => new Set(isMember ? [...set, key] : [...set].filter((member) => member !== key));
     const actions = {
       select: (id) => {
-        update({ selected: id });
+        update({ selected: id, sentFile: null });
         main.scrollTop = 0;
         rows.get(id).scrollIntoView({ block: "nearest" });
       },
@@ -2546,7 +3392,8 @@ button.change-item:hover { background: var(--track); }
       },
       setFilter: (filter) => update({ filter }),
       setView: (view) => update({ view }),
-      // 開閉は details が持っているので描き直さない。差分 / コードを切り替えたときに引き継ぐためだけに覚える。
+      // 開閉は details が持っているので、開閉のたびには描き直さない。描き直し(差分 / コードの切り替え・`showFile`)で引き継ぐために
+      // 覚える。`showFile` は送ったカードをここから外して開く。
       setOpen: (key, isOpen) => {
         state = { ...state, closed: withToggled(state.closed, key, !isOpen) };
       },
@@ -2573,12 +3420,24 @@ button.change-item:hover { background: var(--track); }
     return {
       summary: [countsOf(`${explained.totals.commits} commits`, explained.totals.commitLines.additions, explained.totals.commitLines.deletions)],
       controls: [el("span", { class: "hint", text: "↑ ↓ でコミットを移動" })],
+      tablist: null,
       left: panelOf("left", [panelHead("コミット", "新しい順"), el("div", { class: "panel-scroll" }, [overviewRow, el("div", { class: "commit-list" }, commitRows)])]),
       main,
       right: null,
       onKey,
       /** 他の画面から、そのコミットを選んだ状態にする。地図に無い sha なら全体の流れを出す。 */
       select: (sha) => actions.select(commitAt.has(sha) ? sha : OverviewId),
+      /**
+       * 他の画面から、そのコミットのそのファイルを開いた状態にする。`lineRange` があれば、その行に印を付けて送る。渡すのは
+       * `PrimerTopics` が届くと判定したもの(地図にあり、マージでなく、そのパスのファイルを変えたコミット)だけ。
+       */
+      showFile: ({ sha, path, lineRange }) => {
+        update({ selected: sha, sentFile: { path, lineRange }, closed: withToggled(state.closed, `${sha}:${path}`, false) });
+        rows.get(sha).scrollIntoView({ block: "nearest" });
+        const line = body.querySelector(".code-line.is-sent");
+        if (line !== null) line.scrollIntoView({ block: "center" });
+        else body.querySelector(".file-card.is-sent").scrollIntoView({ block: "start" });
+      },
     };
   };
 
@@ -2930,12 +3789,82 @@ button.change-item:hover { background: var(--track); }
 
   /**
    * 別の画面へ移るカード。名前と札(`tag`)に、移る先(`goText`。「テストで見る」など)を矢印付きで添える。
-   * テストと振る舞いの 2 画面が使い、`status` はテストの状態で札の色になる(テストでないカードは null)。
+   * テスト・振る舞い・技術の手引きの 3 画面が使い、`status` はテストの状態で札の色になる(テストでないカードは null)。
    */
   const jumpCardOf = ({ name, tag, status, goText, title, onPress }) => pressable("button", { class: "test-card plain-button", title }, [
     el("span", { class: "test-name", text: name }),
     el("span", { class: "test-facts" }, [el("span", { class: "test-status", ...(status === null ? {} : { "data-status": status }), text: tag }), el("span", { class: "spacer" }), el("span", { class: "review-go", text: `${goText} →` })]),
   ], onPress);
+
+  /** テストの画面でそのテストを開くカード。 */
+  const testJumpCardOf = (test, go) => jumpCardOf({
+    name: test.name,
+    tag: TestStatuses[test.status].long,
+    status: test.status,
+    goText: `${ScreenLabels.test}で見る`,
+    title: "テストの画面でこのテストを見る",
+    onPress: () => go.toTest(test.test.id),
+  });
+
+  /**
+   * 根拠のテストの欄。確かめているテスト(無ければ「この PR では未確認」)と、無いテスト(未実装の提案。あるときだけ)。
+   * @param evidence `testEvidenceOf` が返したもの
+   */
+  const testsBlocksOf = (evidence, go) => [
+    el("div", { class: "side-block" }, [
+      eyebrowOf("確かめているテスト", `${evidence.verifying.length} 件`),
+      ...evidence.verifying.map((test) => testJumpCardOf(test, go)),
+      ...(evidence.isGuarded ? [] : [el("span", { class: "warn-text", text: "この PR では未確認(確かめているテストがありません)" })]),
+    ]),
+    ...(evidence.missing.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("無いテスト", "未実装(提案)"), ...evidence.missing.map((test) => testJumpCardOf(test, go))])]),
+  ];
+
+  /**
+   * コードの抜粋の箱。行番号はファイルの行で、強調の範囲に入る行には `is-emphasized` を付ける。
+   * @param excerpt 抜粋(検査が中身の `text` と、あれば開いた行 `openingLine` を足したもの)
+   * @returns 箱 1 つの並び。中身(`text`)が足されていなければ空の並び
+   */
+  const excerptBoxesOf = (excerpt) => {
+    if (!isString(excerpt.text)) return [];
+    const rows = ExcerptRows.create(excerpt).map((row) => el("div", { class: classesOf("excerpt-line", { "is-emphasized": row.isEmphasized }) }, [el("span", { class: "ln", text: String(row.number) }), codeTextOf(row.tokens)]));
+    return [el("div", { class: "excerpt" }, rows)];
+  };
+
+  /**
+   * テストの画面のコードの抜粋。小見出しの横に `パス:開始-終了` を出す。
+   * @param title 小見出し
+   * @returns 中身(`text`)が足されていなければ空の並び
+   */
+  const excerptBlockOf = (excerpt, title) => excerptBoxesOf(excerpt).map((box) => el("div", { class: "side-block" }, [eyebrowOf(title, `${excerpt.path}:${excerpt.start}-${excerpt.end}`), box]));
+
+  /**
+   * 技術の手引きのコード例。箱の上端に、パス · 行番号と、拡張子(言語名の代わり)の見出しを置く。
+   * @returns 中身(`text`)が足されていなければ空の並び
+   */
+  const codeExampleOf = (excerpt) => excerptBoxesOf(excerpt).map((box) => {
+    const lines = excerpt.start === excerpt.end ? `L${excerpt.start}` : `L${excerpt.start}–${excerpt.end}`;
+    const extension = (excerpt.path.match(/\.(\w+)$/) || [])[1] ?? "";
+    return el("div", { class: "primer-code" }, [
+      el("div", { class: "primer-code-head" }, [el("span", { class: "primer-code-path", text: `${excerpt.path} · ${lines}` }), el("span", { text: extension })]),
+      box,
+    ]);
+  });
+
+  /**
+   * 変更の経緯のコミットへ移るボタン。地図に無い sha なら、件名の位置に「地図に無いコミット」と出す。
+   * @param label 左に添える名前(「追加したコミット」「差分で見る」など)
+   * @param commitAt 地図のコミットを sha で引く表(`ExplainedMap` の `commitAt`)
+   */
+  const commitLinkOf = ({ sha, label, commitAt, onPress }) => {
+    const commit = commitAt.get(sha);
+    const subject = commit === undefined ? "地図に無いコミット" : commit.subject;
+    return pressable("button", { class: "commit-link plain-button", title: "変更の経緯でこのコミットを開く" }, [
+      el("span", { class: "label", text: label }),
+      el("span", { class: "sha", text: shortSha(sha) }),
+      el("span", { class: "subject", text: subject }),
+      el("span", { class: "arrow", text: "↗" }),
+    ], onPress);
+  };
 
   /** テストの画面。左にテストの一覧、中に箱の図、右に全体か、選んだテスト・箱・線の詳しいところを出す。 */
   const TestScreen = (explained, go) => {
@@ -2943,7 +3872,6 @@ button.change-item:hover { background: var(--track); }
     const materials = graphMaterialsOf(explained);
     const { entryAt, graphGroups, groupLabels, groupings, messages } = materials;
     const hasMessages = messages.length > 0;
-    const commitAt = new Map(explained.commits.map((commit) => [commit.sha, commit]));
     const tests = explained.tests.map((item, index) => {
       const covers = item.test !== null && Array.isArray(item.test.covers) ? item.test.covers : [];
       return { ...item, id: index, techniques: item.test === null ? [] : item.test.techniques, covers };
@@ -3322,27 +4250,6 @@ button.change-item:hover { background: var(--track); }
       return el("div", { class: "side-block" }, [eyebrowOf("試している値", hasBoundary ? "「境目」は境界値として選んだ値" : undefined), el("div", { class: "values" }, [grid])]);
     };
 
-    const excerptOf = (excerpt) => {
-      const grammar = Tokenizer.grammarOf(excerpt.path);
-      const lines = excerpt.text.split("\n");
-      const rows = lines.reduce((sofar, text, index) => {
-        const { node, carry } = codeTextOf(text, grammar, sofar.carry);
-        return { carry, nodes: [...sofar.nodes, el("div", { class: "excerpt-line" }, [el("span", { class: "ln", text: String(excerpt.start + index) }), node])] };
-      }, { carry: Tokenizer.Start, nodes: [] });
-      return el("div", { class: "side-block" }, [eyebrowOf("テストコード", `${excerpt.path}:${excerpt.start}-${excerpt.end}`), el("div", { class: "excerpt" }, rows.nodes)]);
-    };
-
-    const commitLinkOf = (sha) => {
-      const commit = commitAt.get(sha);
-      const subject = commit === undefined ? "地図に無いコミット" : commit.subject;
-      return pressable("button", { class: "commit-link plain-button", title: "変更の経緯でこのコミットを開く" }, [
-        el("span", { class: "label", text: "追加したコミット" }),
-        el("span", { class: "sha", text: shortSha(sha) }),
-        el("span", { class: "subject", text: subject }),
-        el("span", { class: "arrow", text: "↗" }),
-      ], () => go.toCommit(sha));
-    };
-
     /** 解説の無いテスト(地図の追加・削除)の対象。押すとその箱を選ぶ。 */
     const targetsOf = (test, model) => {
       const places = [...new Set(test.targets.map((path) => model.layout.unitOf.get(path)).filter((id) => id !== undefined))].map((id) => model.places.get(id));
@@ -3373,9 +4280,8 @@ button.change-item:hover { background: var(--track); }
           return key === null ? el("div", { class: "message-row" }, body) : pressable("button", { class: "message-row plain-button" }, body, () => select({ kind: "edge", id: key }));
         }),
       ])];
-      const hasExcerptText = detail.excerpt !== undefined && typeof detail.excerpt.text === "string";
-      const code = hasExcerptText ? [excerptOf(detail.excerpt)] : [];
-      const commit = typeof detail.commit === "string" ? [commitLinkOf(detail.commit)] : [];
+      const code = detail.excerpt === undefined ? [] : excerptBlockOf(detail.excerpt, "テストコード");
+      const commit = typeof detail.commit === "string" ? [commitLinkOf({ sha: detail.commit, label: "追加したコミット", commitAt: explained.commitAt, onPress: () => go.toCommit(detail.commit) })] : [];
       const mentions = ImpactTopics.mentionsOf(explained.impactTopics, detail.id);
       const mentionBlock = mentions.length === 0 ? [] : [el("div", { class: "side-block" }, [
         eyebrowOf("この状況を確かめている", `${mentions.length} 件`),
@@ -3463,6 +4369,7 @@ button.change-item:hover { background: var(--track); }
     return {
       summary: [],
       controls: [controlNodes.grouping, controlNodes.level, ...gapControl],
+      tablist: null,
       left: panelOf("left", [listHead, listBody]),
       main: graph.element,
       right: panelOf("right", [side]),
@@ -4533,6 +5440,7 @@ button.change-item:hover { background: var(--track); }
     return {
       summary: [countsOf(`${explained.totals.files} files`, explained.totals.additions, explained.totals.deletions)],
       controls: [controlNodes.grouping, controlNodes.level, controlNodes.scope, controlNodes.focus],
+      tablist: null,
       left: panelOf("left", [panelHead("ファイル", `${changedCount} 件の変更`, [el("span", { class: "spacer" }), changedOnlySwitch]), treeBody]),
       main: graph.element,
       right: panelOf("right", [sideBar, side]),
@@ -4591,60 +5499,135 @@ button.change-item:hover { background: var(--track); }
     ],
     itemOf: (line) => el("div", { class: "behavior-item" }, [el("span", { text: line.text })]),
   });
-  const impactTextOf = (text) => (text === null ? [] : [el("p", { class: "impact-text", text })]);
+  const impactTextOf = (text) => (text === null ? [] : [el("p", { class: "topic-text", text })]);
+
+  /**
+   * 節を 3 列(左に目次・中に節・右に今の節の欄)に並べ、本文のスクロールに合わせて今の節を決める。振る舞いと技術の手引きの
+   * 2 画面が使う。狭い幅では右の欄を隠し、同じ中身を各節に畳んで出す(CSS)。節の頭・右の欄の頭・目次の行はここで組む。
+   *
+   * ここの DOM の配線(スクロールの購読・目次の押下・右の欄と畳んだ根拠の描き直し)と、2 画面がそれぞれ足す配線は判定表を
+   * 通らず、表示確認(`rules/ui-verification.md`)でしか守られていない。見た目の比べには比べる写しと解説が要るので、繰り返し走る
+   * 検査にはしていない。
+   */
+  const TopicColumns = (() => {
+    const chipOf = ({ tone, label }) => el("span", { class: "chip", "data-tone": tone, text: label });
+    const headOf = (topic) => el("div", { class: "topic-head" }, [
+      el("div", { class: "section-head" }, [el("span", { class: "topic-eyebrow", text: topic.eyebrow }), ...topic.chips.map(chipOf)]),
+      el("h2", { class: "prose" }, [el("span", { class: "topic-hash", text: "#" }), ...topic.labelPartsOf()]),
+    ]);
+    const sideHeadOf = (topic) => el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: topic.eyebrow }), el("h2", { class: "prose" }, topic.labelPartsOf())]);
+    const tocPartsOf = (topic) => {
+      const dot = topic.dotTone === null ? [] : [el("span", { class: "status-dot", "data-tone": topic.dotTone })];
+      return [el("span", { class: "row-sub", text: topic.tocEyebrow }), el("span", { class: "change-head" }, [...dot, el("span", { class: "row-title prose" }, topic.labelPartsOf())])];
+    };
+
+    return Object.freeze({
+      /**
+       * 節の 3 列を組み、最初に 1 回描く。今の節は、節が 0 件なら null、ほかは最初の節から始める。
+       * @param topics 節の並び。1 件は次のものを持つ
+       *   - `attributes` 節の要素(article)に付ける属性
+       *   - `eyebrow` 節の頭と右の欄の頭の小見出し。`tocEyebrow` 目次の行の小見出し
+       *   - `chips` 節の頭の札(`{tone, label}`)の並び。`dotTone` 目次の行の点の色(点を出さないなら null)
+       *   - `labelPartsOf` 題の中身を返す。節の頭・右の欄の頭・目次の 3 か所に出すので、呼ぶたびに新しく作る
+       *   - `tocDivider` 目次で、その行の前に挟む区切りの文(無ければ null)
+       *   - `inlineSummary` 畳んだ欄の summary の文。`body` 本文の要素の並び
+       *   - `sideBlocksOf` 右の欄と畳んだ欄の中身を返す。呼ぶたびに新しく作る
+       * @param emptySide 節が無いときの右の欄の文
+       * @returns `articles`(節の要素)・`toc`(目次の欄。節が無ければ空の文)・`inlineHolders`(畳んだ欄の中身を入れる要素)・
+       *   `side`(右の欄)と、`follow(top)`(スクロールに合わせて今の節を決め直す)・`sendTo(index)`(節へ送る)・`render()`(描き直す)
+       */
+      create: ({ topics, emptySide }) => {
+        let current = topics.length === 0 ? null : 0;
+        let shownCurrent = null;
+        const side = el("div", { class: "side" });
+        const inlineHolders = topics.map(() => el("div", { class: "side" }));
+        const articles = topics.map((topic, index) => el("article", { class: "topic", ...topic.attributes }, [
+          headOf(topic),
+          el("details", { class: "topic-inline" }, [el("summary", { text: topic.inlineSummary }), inlineHolders[index]]),
+          ...topic.body,
+        ]));
+
+        const render = () => {
+          for (const [index, row] of tocRows.entries()) row.classList.toggle("is-current", index === current);
+          for (const [index, holder] of inlineHolders.entries()) holder.replaceChildren(...topics[index].sideBlocksOf());
+          side.replaceChildren(...(current === null ? [el("p", { class: "side-note", text: emptySide })] : [sideHeadOf(topics[current]), ...topics[current].sideBlocksOf()]));
+          if (current !== shownCurrent) side.scrollTop = 0;
+          shownCurrent = current;
+        };
+
+        /**
+         * 節へ送る。今の節はスクロールを待たずにその節にする。
+         *
+         * 今の節が同じでも描き直す(`showMention` が選び直したマスの根拠を、ここで描かせるため)。
+         */
+        const sendTo = (index) => {
+          current = index;
+          render();
+          articles[index].scrollIntoView({ block: "start" });
+        };
+        const tocRows = topics.map((topic, index) => pressable("button", { class: "row plain-button" }, tocPartsOf(topic), () => sendTo(index)));
+        const tocItems = topics.flatMap((topic, index) => [...(topic.tocDivider === null ? [] : [el("div", { class: "topic-toc-divider", text: topic.tocDivider })]), tocRows[index]]);
+        const toc = el("div", { class: "panel-scroll" }, tocItems.length > 0 ? tocItems : [emptyOf("節がありません。")]);
+
+        /**
+         * スクロールに合わせて今の節を決め直す。変わったときだけ描き直す。
+         * @param top スクロールしている領域の上端の、表示領域の上端からの距離
+         */
+        const follow = (top) => {
+          const next = TopicScroll.currentOf(articles.map((article) => article.getBoundingClientRect().top - top));
+          if (next === current) return;
+          current = next;
+          render();
+        };
+
+        render();
+        return { articles, toc, inlineHolders, side, follow, sendTo, render };
+      },
+      /**
+       * 本文の欄とページ全体のスクロールを `follow` へ渡す。
+       * @param main 本文の欄(`main.stage`)
+       * @param follow スクロールしている領域の上端の位置を受け取る
+       */
+      subscribe: ({ main, follow }) => {
+        const isShown = () => {
+          const screen = main.closest(".screen");
+          return screen !== null && !screen.hidden;
+        };
+        // スクロールしているのが本文の欄(広い幅)かページ全体(狭い幅)かは CSS の `@media` が決めるので、イベントの出どころで見分ける。
+        main.addEventListener("scroll", () => follow(main.getBoundingClientRect().top), { passive: true });
+        // ページ全体のスクロールは、その画面が隠れているあいだはほかの画面のものなので見ない。
+        window.addEventListener("scroll", () => {
+          if (isShown()) follow(0);
+        }, { passive: true });
+      },
+    });
+  })();
 
   /**
    * 振る舞い。左に節の目次、中に使う人から見た変化の節、右に今の節の根拠(テストと仕組み)を出す。
    *
-   * ここの DOM の配線(スクロールの購読・目次とマスの押下・右の欄の切り替え)と狭い幅の `@media` は判定表を通らず、
-   * 表示確認(`rules/ui-verification.md`)でしか守られていない。
+   * 表示確認でしか守られていない DOM の配線(理由は `TopicColumns`): マスの押下と `aria-pressed`。
    */
   const ImpactScreen = (explained, go) => {
     const impactTopics = explained.impactTopics;
     const topics = impactTopics.kind === "written" ? impactTopics.topics : [];
     // `selected` は表ごとに選んでいるマス(節の id → `{row, column}`)。表は最初の「変わった」マス(無ければ先頭のマス)を選んで始める。
-    const firstCells = Object.fromEntries(topics.filter((topic) => topic.kind === "table").map((topic) => [topic.id, ImpactTopics.firstCellOf(topic)]));
-    let state = { current: topics.length === 0 ? null : 0, selected: firstCells };
+    let selected = Object.fromEntries(topics.filter((topic) => topic.kind === "table").map((topic) => [topic.id, ImpactTopics.firstCellOf(topic)]));
 
     /** マスの鍵。`cell` は `{row, column}` を持つもの(マスか選択)。 */
     const cellKeyOf = (topicId, cell) => JSON.stringify([topicId, cell.row, cell.column]);
     const cellNodes = new Map();
-    const tocRows = [];
-    const topicNodes = [];
-    const inlineHolders = [];
-    const side = el("div", { class: "side" });
-    const body = el("div", { class: "stage-body impact-body" });
+    const body = el("div", { class: "stage-body topic-body" });
     const main = el("main", { class: "stage" }, [body]);
-
-    const update = (change) => {
-      state = { ...state, ...change };
-      render();
-    };
 
     /** その表で選んでいるマス。マスが 1 つも無い表は null。 */
     const selectedOutcomeIn = (topic) => {
-      const cell = state.selected[topic.id];
+      const cell = selected[topic.id];
       if (cell === null) return null;
       return topic.outcomes.find((outcome) => outcome.row === cell.row && outcome.column === cell.column);
     };
 
-    const testCardOf = (test) => jumpCardOf({
-      name: test.name,
-      tag: TestStatuses[test.status].long,
-      status: test.status,
-      goText: `${ScreenLabels.test}で見る`,
-      title: "テストの画面でこのテストを見る",
-      onPress: () => go.toTest(test.test.id),
-    });
-
-    const testsBlocksOf = (evidence) => [
-      el("div", { class: "side-block" }, [
-        eyebrowOf("確かめているテスト", `${evidence.verifying.length} 件`),
-        ...evidence.verifying.map(testCardOf),
-        ...(evidence.isGuarded ? [] : [el("span", { class: "warn-text", text: "この PR では未確認(確かめているテストがありません)" })]),
-      ]),
-      ...(evidence.missing.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("無いテスト", "未実装(提案)"), ...evidence.missing.map(testCardOf)])]),
-    ];
+    const testCardOf = (test) => testJumpCardOf(test, go);
 
     /** 仕組みのチップ。両端が図の箱でないやりとりは構造マップで選べないので、押せなくして「図に無い」と出す。 */
     const mechanismChipOf = ({ message, isDrawn }) => {
@@ -4668,10 +5651,10 @@ button.change-item:hover { background: var(--track); }
         case "table": {
           const outcome = selectedOutcomeIn(topic);
           if (outcome === null) return [el("p", { class: "side-note", text: "この表には、書かれたマスがありません。" })];
-          return [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "状況" }), el("span", { class: "side-sub", text: outcome.situation })]), ...testsBlocksOf(outcome.tests)];
+          return [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "状況" }), el("span", { class: "side-sub", text: outcome.situation })]), ...testsBlocksOf(outcome.tests, go)];
         }
         case "added":
-          return [...testsBlocksOf(topic.tests), ...mechanismsBlockOf(topic.mechanisms)];
+          return [...testsBlocksOf(topic.tests, go), ...mechanismsBlockOf(topic.mechanisms)];
         case "kept":
           return topic.lines.map((line) => el("div", { class: "side-block" }, [
             el("span", { class: "side-sub", text: line.text }),
@@ -4680,14 +5663,6 @@ button.change-item:hover { background: var(--track); }
             ...(line.tests.missing.length === 0 ? [] : [eyebrowOf("無いテスト", "未実装(提案)"), ...line.tests.missing.map(testCardOf)]),
           ]));
       }
-    };
-
-    const topicHeadOf = (topic) => {
-      const chip = impactChipOf(topic);
-      return el("div", { class: "impact-topic-head" }, [
-        el("div", { class: "section-head" }, [el("span", { class: "impact-eyebrow", text: ImpactEyebrows[topic.kind] }), ...(chip === null ? [] : [el("span", { class: "chip", "data-tone": chip.tone, text: chip.label })])]),
-        el("h2", {}, [el("span", { class: "impact-hash", text: "#" }), topic.label]),
-      ]);
     };
 
     /** 表のマス。書かれていない組み合わせは空きにする。押すとそのマスを選ぶ(選び直すまで、スクロールしても外さない)。 */
@@ -4700,7 +5675,7 @@ button.change-item:hover { background: var(--track); }
         el("span", { class: "impact-cell-result", text: outcome.result }),
         ...was,
         ...note,
-      ], () => update({ selected: { ...state.selected, [topic.id]: { row: outcome.row, column: outcome.column } } }));
+      ], () => selectCell(topic.id, outcome));
       cellNodes.set(cellKeyOf(topic.id, outcome), node);
       return node;
     };
@@ -4717,7 +5692,7 @@ button.change-item:hover { background: var(--track); }
     const missingNoteOf = (topic) => {
       const count = missingTestsOf(topic).length;
       if (count === 0) return [];
-      return [el("div", { class: "impact-note" }, [el("span", { class: "impact-note-label", text: "まだ書かれていないテスト" }), el("span", { text: `${count} 件あります。中身は根拠の「無いテスト」に出ています。` })])];
+      return [el("div", { class: "topic-note", "data-remark": "caution" }, [el("span", { class: "topic-note-label", text: "まだ書かれていないテスト" }), el("span", { text: `${count} 件あります。中身は根拠の「無いテスト」に出ています。` })])];
     };
 
     const topicBodyOf = (topic) => {
@@ -4725,7 +5700,7 @@ button.change-item:hover { background: var(--track); }
         case "changed":
           return [impactSidesOf(topic), ...impactTextOf(topic.text)];
         case "table": {
-          const gist = topic.gist === null ? [] : [el("div", { class: "impact-gist" }, [el("span", { class: "impact-gist-label", text: "要するに" }), el("span", { class: "impact-gist-text", text: topic.gist })])];
+          const gist = topic.gist === null ? [] : [el("div", { class: "topic-gist" }, [el("span", { class: "topic-gist-label", text: "要するに" }), el("span", { class: "topic-gist-text", text: topic.gist })])];
           return [...gist, situationTableOf(topic), ...impactTextOf(topic.text), ...missingNoteOf(topic)];
         }
         case "added":
@@ -4733,27 +5708,6 @@ button.change-item:hover { background: var(--track); }
         case "kept":
           return [el("ul", { class: "impact-kept" }, topic.lines.map((line) => el("li", {}, [el("span", { class: "impact-kept-text", text: line.text }), guardOf(line.tests)]))), ...missingNoteOf(topic)];
       }
-    };
-
-    const isShown = () => {
-      const screen = main.closest(".screen");
-      return screen !== null && !screen.hidden;
-    };
-
-    /**
-     * スクロールに合わせて今の節を決め直す。
-     * @param top スクロールしている領域の上端の、表示領域の上端からの距離
-     */
-    const follow = (top) => {
-      const current = TopicScroll.currentOf(topicNodes.map((node) => node.getBoundingClientRect().top - top));
-      if (current !== state.current) update({ current });
-    };
-
-    /** 節へ送る。今の節はスクロールを待たずにその節にする。マスを渡したら、そのマスも見える位置へ送る。 */
-    const sendTo = (index, cellNode) => {
-      update({ current: index });
-      topicNodes[index].scrollIntoView({ block: "start" });
-      if (cellNode !== null) cellNode.scrollIntoView({ block: "nearest", inline: "nearest" });
     };
 
     const ledeOfImpact = () => {
@@ -4770,46 +5724,48 @@ button.change-item:hover { background: var(--track); }
       }
     };
 
-    for (const [index, topic] of topics.entries()) {
-      const holder = el("div", { class: "side" });
-      const inline = el("details", { class: "impact-inline" }, [el("summary", { text: "根拠(テストと仕組み)" }), holder]);
-      topicNodes.push(el("article", { class: "impact-topic", "data-topic": topic.id }, [topicHeadOf(topic), inline, ...topicBodyOf(topic)]));
-      inlineHolders.push(holder);
-      tocRows.push(pressable("button", { class: "row plain-button" }, [
-        el("span", { class: "row-sub", text: tocEyebrowOf(topic) }),
-        el("span", { class: "change-head" }, [el("span", { class: "status-dot", "data-tone": isChangeTopic(topic) ? "A" : "" }), el("span", { class: "row-title", text: topic.label })]),
-      ], () => sendTo(index, null)));
-    }
-    body.replaceChildren(...ledeOfImpact(), ...topicNodes);
-    const toc = el("div", { class: "panel-scroll" }, tocRows.length > 0 ? tocRows : [emptyOf("節がありません。")]);
+    const columns = TopicColumns.create({
+      topics: topics.map((topic) => {
+        const chip = impactChipOf(topic);
+        return {
+          attributes: { "data-topic": topic.id },
+          eyebrow: ImpactEyebrows[topic.kind],
+          tocEyebrow: tocEyebrowOf(topic),
+          chips: chip === null ? [] : [chip],
+          dotTone: isChangeTopic(topic) ? "A" : "",
+          labelPartsOf: () => [topic.label],
+          tocDivider: null,
+          inlineSummary: "根拠(テストと仕組み)",
+          body: topicBodyOf(topic),
+          sideBlocksOf: () => evidenceBlocksOf(topic),
+        };
+      }),
+      emptySide: "根拠を出す節がありません。",
+    });
 
-    let shownCurrent = null;
-    const render = () => {
-      for (const [index, row] of tocRows.entries()) row.classList.toggle("is-current", index === state.current);
-      const selectedKeys = new Set(Object.entries(state.selected).filter(([, cell]) => cell !== null).map(([topicId, cell]) => cellKeyOf(topicId, cell)));
+    /** 選んでいるマスに `aria-pressed` を付け直す。 */
+    const renderPressed = () => {
+      const selectedKeys = new Set(Object.entries(selected).filter(([, cell]) => cell !== null).map(([topicId, cell]) => cellKeyOf(topicId, cell)));
       for (const [key, node] of cellNodes) node.setAttribute("aria-pressed", String(selectedKeys.has(key)));
-      for (const [index, holder] of inlineHolders.entries()) holder.replaceChildren(...evidenceBlocksOf(topics[index]));
-      const topic = state.current === null ? null : topics[state.current];
-      const head = topic === null ? [] : [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: ImpactEyebrows[topic.kind] }), el("h2", { text: topic.label })])];
-      side.replaceChildren(...head, ...(topic === null ? [el("p", { class: "side-note", text: "根拠を出す節がありません。" })] : evidenceBlocksOf(topic)));
-      if (state.current !== shownCurrent) side.scrollTop = 0;
-      shownCurrent = state.current;
     };
-    render();
+    /** 表のマスを選び直す。今の節は変えない。 */
+    const selectCell = (topicId, outcome) => {
+      selected = { ...selected, [topicId]: { row: outcome.row, column: outcome.column } };
+      renderPressed();
+      columns.render();
+    };
+    renderPressed();
 
-    // スクロールしているのが本文の欄(広い幅)かページ全体(狭い幅)かは CSS の `@media` が決めるので、イベントの出どころで見分ける。
-    main.addEventListener("scroll", () => follow(main.getBoundingClientRect().top), { passive: true });
-    // ページ全体のスクロールは、振る舞いの画面が隠れているあいだはほかの画面のものなので見ない。
-    window.addEventListener("scroll", () => {
-      if (isShown()) follow(0);
-    }, { passive: true });
+    body.replaceChildren(...ledeOfImpact(), ...columns.articles);
+    TopicColumns.subscribe({ main, follow: columns.follow });
 
     return {
       summary: [],
       controls: [],
-      left: panelOf("left", [panelHead("目次", "変わった → 変わらない"), toc]),
+      tablist: null,
+      left: panelOf("left", [panelHead("目次", "変わった → 変わらない"), columns.toc]),
       main,
-      right: panelOf("right", [panelHead("根拠", "テストと仕組み"), side]),
+      right: panelOf("right", [panelHead("根拠", "テストと仕組み"), columns.side]),
       /**
        * 他の画面から、その節へ送る。表のマスを指していれば、そのマスを選んで見える位置へ送る。
        * @param mention `ImpactTopics.mentionsOf` の 1 件
@@ -4817,16 +5773,271 @@ button.change-item:hover { background: var(--track); }
       showMention: (mention) => {
         const index = topics.findIndex((topic) => topic.id === mention.topic);
         if (mention.cell === null) {
-          sendTo(index, null);
+          columns.sendTo(index);
           return;
         }
-        state = { ...state, selected: { ...state.selected, [mention.topic]: mention.cell } };
-        sendTo(index, cellNodes.get(cellKeyOf(mention.topic, mention.cell)));
+        selected = { ...selected, [mention.topic]: mention.cell };
+        renderPressed();
+        columns.sendTo(index);
+        cellNodes.get(cellKeyOf(mention.topic, mention.cell)).scrollIntoView({ block: "nearest", inline: "nearest" });
       },
     };
   };
 
-  const ScreenBuilders = { map: MapScreen, story: StoryScreen, test: TestScreen, impact: ImpactScreen };
+  // 技術の手引きのタブごとの文言。`chip` は関連のチップに添える、移る先のタブの短い名前。
+  const PrimerTabTexts = {
+    language: {
+      label: "言語・フレームワーク",
+      chip: "言語",
+      description: "言語とフレームワークの書き方",
+      tocNote: "差分に出てくる順",
+      eyebrow: "技術の手引き · 言語・フレームワーク",
+      title: "この PR を読むのに要る、言語とフレームワークの知識",
+      lead: "この PR の差分に出てくる書き方を、出てくる場所と一緒にまとめています。順に読む必要はありません。差分を読んでいて引っかかったところだけ引いてください。このリポジトリ固有の仕組みは「この PR の実装」タブにあります。",
+    },
+    codebase: {
+      label: "この PR の実装",
+      chip: "実装",
+      description: "このリポジトリで決めている形と、この PR で足した仕組み",
+      tocNote: "全体から部品へ",
+      eyebrow: "技術の手引き · この PR の実装",
+      title: "この PR が使っている、このリポジトリの仕組み",
+      lead: "言語の機能ではなく、design-composer の中で決めている形です。全体の流れから入り、部品へ降りる順に並べています。この PR で足したもの・変えたもの・前からあるものを札で分けています。",
+    },
+  };
+  const PrimerSideTitle = "この PR で出てくる場所";
+  const PrimerEmptySide = "出てくる場所を出す節がありません。";
+  const TabMoveKeys = { ArrowRight: 1, ArrowLeft: -1 };
+
+  /** 実装の節の札(状態の色と名前)。状態を省いた節(`PrimerTopics.Existing`)は「前からある」で、色の区分を持たない(`.chip` の地と文字の色)。 */
+  const primerChipOf = (status) => (status === PrimerTopics.Existing ? { tone: "", label: "前からある" } : Vocabulary.primerStatuses[status]);
+
+  /**
+   * 技術の手引き。上にタブ、左に目次、中に今のタブの節、右に今の節の出てくる場所・根拠・用語を出す。
+   *
+   * 表示確認でしか守られていない DOM の配線(理由は `TopicColumns`): タブの切り替えと位置の保存・復元・最初に開くタブの適用・
+   * 関連のチップ・用語の光・出てくる場所のボタンの移り先(行 / ファイル / コミット)。
+   */
+  const PrimerScreen = (explained, go) => {
+    const primerTopics = explained.primerTopics;
+    const main = el("main", { class: "stage" });
+    const left = panelOf("left", []);
+    const right = panelOf("right", []);
+    const screenParts = { summary: [], controls: [], main, left, right };
+
+    const emptyLedeOf = (text) => el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: "技術の手引き" }), emptyOf(text)]);
+    /** 節の無いときの 3 列。本文は小見出しと空の文だけ。 */
+    const emptyScreenOf = (text) => {
+      const columns = TopicColumns.create({ topics: [], emptySide: PrimerEmptySide });
+      main.replaceChildren(el("div", { class: "stage-body topic-body" }, [emptyLedeOf(text)]));
+      left.replaceChildren(panelHead("目次", ""), columns.toc);
+      right.replaceChildren(panelHead(PrimerSideTitle, ""), columns.side);
+      return { ...screenParts, tablist: null };
+    };
+    switch (primerTopics.kind) {
+      case "none":
+        return emptyScreenOf("解説が無いので、技術の手引きは出せません。理由は上の帯に出ています。");
+      case "unwritten":
+        return emptyScreenOf("この解説には、技術の手引きが書かれていません。");
+      case "written":
+        break;
+    }
+
+    const tabs = Object.values(PrimerTopics.PrimerKinds);
+    const termListOf = (terms) => el("dl", { class: "primer-terms" }, terms.map((term) => el("div", { class: "primer-term", "data-term": term.id }, [el("dt", { text: term.label }), prose("dd", {}, term.text)])));
+
+    /** 出てくる場所の 1 つの sha の、ボタンの名前と押したときの移り先。届かない sha は、何が起きるかの注意(`warning`)を添える。 */
+    const destinationOf = ({ sha, reach }, path) => {
+      const toCommit = () => go.toCommit(sha);
+      switch (reach.kind) {
+        case "line":
+        case "file":
+          return { label: "差分で見る", onPress: () => go.toCommitFile({ sha, path, lineRange: reach.kind === "line" ? reach.lineRange : null }), warning: null };
+        case "untouched":
+          return { label: "コミットを見る", onPress: toCommit, warning: "このコミットは、このパスのファイルを変えていません。当時は別のパスだったのかもしれません(コミットの先頭を開きます)" };
+        case "merge":
+          return { label: "コミットを見る", onPress: toCommit, warning: "マージコミットなので差分がありません(コミットの先頭を開きます)" };
+        case "unmapped":
+          return { label: "ブランチ全体の流れを見る", onPress: toCommit, warning: "変更の地図に無いコミットなので差分がありません(ブランチ全体の流れを開きます)" };
+      }
+    };
+    const destinationNodesOf = (destination, path) => {
+      const { label, onPress, warning } = destinationOf(destination, path);
+      const link = commitLinkOf({ sha: destination.sha, label, commitAt: explained.commitAt, onPress });
+      return [link, ...(warning === null ? [] : [el("span", { class: "warn-text", text: warning })])];
+    };
+
+    const occurrencesBlockOf = (topic) => el("div", { class: "side-block" }, [
+      eyebrowOf("出てくる場所", `${topic.occurrences.length} か所`),
+      ...topic.occurrences.map((occurrence) => el("div", { class: "primer-occurrence" }, [
+        el("span", { class: "primer-occurrence-path", text: occurrence.lineRange === null ? occurrence.path : `${occurrence.path} ${lineRangeOf(occurrence.lineRange)}` }),
+        prose("span", { class: "side-sub" }, occurrence.text),
+        ...occurrence.destinations.flatMap((destination) => destinationNodesOf(destination, occurrence.path)),
+      ])),
+    ]);
+
+    /** 節の右の欄(と畳んだ欄)の中身。出てくる場所 → (実装だけ)テスト・構造マップ → 関連 → 用語。 */
+    const topicSideBlocksOf = (topic, showSeeAlso) => {
+      const isCodebase = topic.kind === PrimerTopics.PrimerKinds.Codebase;
+      const showsTests = isCodebase && topic.tests.verifying.length + topic.tests.missing.length > 0;
+      const tests = showsTests ? testsBlocksOf(topic.tests, go) : [];
+      const showsFlows = isCodebase && topic.flows.length > 0;
+      const flows = showsFlows ? [el("div", { class: "side-block" }, [eyebrowOf("構造マップで見る"), el("div", { class: "flow-chips" }, topic.flows.map((flow) => flowChipOf(flow, go)))])] : [];
+      const seeAlsoChips = topic.seeAlso.map((position) => pressable("button", { class: "flow-chip", title: `「${PrimerTabTexts[position.tab].label}」のこの節を見る` }, [
+        ...proseParts(position.label),
+        el("span", { class: "arrow", text: PrimerTabTexts[position.tab].chip }),
+      ], () => showSeeAlso(position)));
+      const seeAlso = seeAlsoChips.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("関連"), el("div", { class: "flow-chips" }, seeAlsoChips)])];
+      const terms = topic.terms.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("用語"), termListOf(topic.terms)])];
+      return [occurrencesBlockOf(topic), ...tests, ...flows, ...seeAlso, ...terms];
+    };
+
+    /** 段を本文の要素にする。抜粋は中身(`text`)が足されたものだけを出す。 */
+    const passageNodesOf = (passage, onMark) => {
+      const marked = (tag, props, pieces) => markedProseOf({ tag, props, pieces, onMark });
+      switch (passage.kind) {
+        case "text":
+          return [marked("p", { class: "topic-text" }, passage.pieces)];
+        case "declaration":
+          return [el("pre", { class: "primer-declaration", text: passage.code })];
+        case "parameters":
+          return [el("div", { class: "primer-parameters" }, [el("table", {}, [
+            el("thead", {}, [el("tr", {}, ["引数", "型", "何を表すか"].map((text) => el("th", { text })))]),
+            el("tbody", {}, passage.parameters.map((parameter) => el("tr", {}, [
+              el("td", {}, [parameter.name, ...(parameter.note === null ? [] : [el("span", { class: "primer-parameter-note", text: parameter.note })])]),
+              el("td", { text: parameter.type }),
+              el("td", {}, [marked("span", {}, parameter.pieces)]),
+            ]))),
+          ])])];
+        case "excerpt":
+          return codeExampleOf(passage.excerpt);
+        case "remark":
+          return [el("div", { class: "topic-note", "data-remark": passage.remark }, [el("span", { class: "topic-note-label", text: passage.label }), marked("span", {}, passage.pieces)])];
+      }
+    };
+
+    const topicBodyOf = (topic, onMark) => [
+      el("div", { class: "topic-gist" }, [el("span", { class: "topic-gist-label", text: "要するに" }), markedProseOf({ tag: "span", props: { class: "topic-gist-text" }, pieces: topic.gist, onMark })]),
+      ...topic.passages.flatMap((passage) => passageNodesOf(passage, onMark)),
+    ];
+
+    const ledeOf = (tab) => {
+      const texts = PrimerTabTexts[tab];
+      const statuses = [...Object.keys(Vocabulary.primerStatuses), PrimerTopics.Existing].map(primerChipOf);
+      const legend = tab === PrimerTopics.PrimerKinds.Codebase ? [el("div", { class: "primer-legend" }, statuses.map((chip) => el("span", {}, [el("span", { class: "status-dot", "data-tone": chip.tone }), chip.label])))] : [];
+      return el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: texts.eyebrow }), el("h1", { text: texts.title }), el("p", { text: texts.lead }), ...legend]);
+    };
+
+    /** タブの末尾の用語集の節。用語集は節の目次の後に REFERENCE の区切りを挟んで並べる。 */
+    const glossaryTopicOf = (glossary) => ({
+      attributes: { "data-glossary": "" },
+      eyebrow: "reference",
+      tocEyebrow: "reference",
+      chips: [],
+      dotTone: null,
+      labelPartsOf: () => ["用語集"],
+      tocDivider: "REFERENCE",
+      inlineSummary: PrimerSideTitle,
+      body: [el("div", { class: "primer-glossary-wrap" }, [el("table", { class: "primer-glossary" }, [
+        el("thead", {}, [el("tr", {}, [el("th", { text: "用語" }), el("th", { text: "意味" })])]),
+        el("tbody", {}, glossary.terms.map((term) => el("tr", {}, [el("td", { text: term.label }), prose("td", {}, term.text)]))),
+      ])])],
+      sideBlocksOf: () => [el("p", { class: "side-sub" }, [
+        el("span", { class: "primer-glossary-note is-side", text: "本文の点線の語にカーソルを合わせると、右の欄の同じ語が光ります。" }),
+        el("span", { class: "primer-glossary-note is-inline", text: "本文の点線の語にカーソルを合わせると、その節の畳んだ欄(この PR で出てくる場所)の中の同じ語が光ります。" }),
+        "ここには、このタブに出てくる語をまとめています。",
+      ])],
+    });
+
+    /**
+     * 1 つのタブの 3 列。節のあとに、用語があれば用語集の節を足す。
+     * @param showSeeAlso 関連のチップを押したときに、指した節(`{tab, index}`)へ移る
+     */
+    const tabColumnsOf = (tab, { topics, glossary }, showSeeAlso) => {
+      // 印に乗ると、右の欄とその節の畳んだ欄の同じ語を光らせる。`columns` は光らせる時点で読むので、組み立ての後でよい。
+      const onMarkIn = (index) => (mark, term) => lightWhileHoveredOrFocused(mark, () => [columns.side, columns.inlineHolders[index]]
+        .flatMap((node) => [...node.querySelectorAll(".primer-term")])
+        .filter((node) => node.dataset.term === term.id));
+      const columnTopics = topics.map((topic, index) => ({
+        attributes: { "data-topic": topic.id },
+        eyebrow: topic.category,
+        tocEyebrow: topic.category,
+        chips: topic.status === null ? [] : [primerChipOf(topic.status)],
+        dotTone: topic.status === null ? null : primerChipOf(topic.status).tone,
+        labelPartsOf: () => proseParts(topic.label),
+        tocDivider: null,
+        inlineSummary: PrimerSideTitle,
+        body: topicBodyOf(topic, onMarkIn(index)),
+        sideBlocksOf: () => topicSideBlocksOf(topic, showSeeAlso),
+      }));
+      const glossaryTopics = glossary === null ? [] : [glossaryTopicOf(glossary)];
+      const columns = TopicColumns.create({ topics: [...columnTopics, ...glossaryTopics], emptySide: PrimerEmptySide });
+      const empty = topics.length === 0 ? [emptyOf("このタブに書かれた技術はありません。")] : [];
+      const stageBody = el("div", { class: "stage-body topic-body", role: "tabpanel", id: `primer-panel-${tab}`, "aria-labelledby": `primer-tab-${tab}` }, [ledeOf(tab), ...empty, ...columns.articles]);
+      // 件数は節だけを数え、用語集を入れない(デザイン案のタブの件数も節だけを数える)。
+      return { columns, stageBody, count: topics.length };
+    };
+
+    let currentTab = PrimerTopics.firstTabOf(primerTopics);
+    let saved = Object.fromEntries(tabs.map((tab) => [tab, { main: 0, page: 0 }]));
+    const parts = Object.fromEntries(tabs.map((tab) => [tab, tabColumnsOf(tab, primerTopics.tabs[tab], (position) => showSeeAlso(position))]));
+    const tocNote = el("span", { class: "panel-sub" });
+    const tabButtons = tabs.map((tab) => {
+      const button = pressable("button", { class: "primer-tab", role: "tab", id: `primer-tab-${tab}`, "aria-controls": `primer-panel-${tab}`, "data-tab": tab }, [
+        el("span", { class: "primer-tab-label", text: PrimerTabTexts[tab].label }),
+        el("span", { class: "primer-tab-count", text: String(parts[tab].count) }),
+        el("span", { class: "primer-tab-desc", text: PrimerTabTexts[tab].description }),
+      ], () => showTab(tab));
+      button.addEventListener("keydown", (event) => {
+        const step = Object.hasOwn(TabMoveKeys, event.key) ? TabMoveKeys[event.key] : 0;
+        if (step === 0) return;
+        event.preventDefault();
+        const next = tabs[(tabs.indexOf(tab) + step + tabs.length) % tabs.length];
+        showTab(next);
+        tabButtons[tabs.indexOf(next)].focus();
+      });
+      return button;
+    });
+
+    /** 今のタブの 3 列だけを出す。 */
+    const renderTab = () => {
+      for (const [index, tab] of tabs.entries()) {
+        const isCurrent = tab === currentTab;
+        tabButtons[index].setAttribute("aria-selected", String(isCurrent));
+        tabButtons[index].setAttribute("tabindex", isCurrent ? "0" : "-1");
+        parts[tab].columns.toc.hidden = !isCurrent;
+        parts[tab].stageBody.hidden = !isCurrent;
+        parts[tab].columns.side.hidden = !isCurrent;
+      }
+      tocNote.textContent = PrimerTabTexts[currentTab].tocNote;
+    };
+
+    /** タブを切り替える。離れるタブの位置(本文の欄とページ全体)を覚え、戻るタブの位置を戻す(初めてなら先頭)。 */
+    const showTab = (tab) => {
+      if (tab === currentTab) return;
+      saved = { ...saved, [currentTab]: { main: main.scrollTop, page: window.scrollY } };
+      currentTab = tab;
+      renderTab();
+      main.scrollTop = saved[tab].main;
+      window.scrollTo(0, saved[tab].page);
+    };
+
+    /** 関連のチップ。指したタブへ切り替えて(位置の保存と復元を通る)から、その節へ送る。 */
+    const showSeeAlso = (position) => {
+      showTab(position.tab);
+      parts[position.tab].columns.sendTo(position.index);
+    };
+
+    main.replaceChildren(...tabs.map((tab) => parts[tab].stageBody));
+    left.replaceChildren(el("div", { class: "panel-head" }, [el("span", { class: "panel-title", text: "目次" }), tocNote]), ...tabs.map((tab) => parts[tab].columns.toc));
+    right.replaceChildren(panelHead(PrimerSideTitle, ""), ...tabs.map((tab) => parts[tab].columns.side));
+    renderTab();
+    TopicColumns.subscribe({ main, follow: (top) => parts[currentTab].columns.follow(top) });
+
+    return { ...screenParts, tablist: el("div", { class: "primer-tablist", role: "tablist", "aria-label": "技術の種類" }, tabButtons) };
+  };
+
+  const ScreenBuilders = { map: MapScreen, story: StoryScreen, test: TestScreen, impact: ImpactScreen, primer: PrimerScreen };
 
   /** 解説が使えない理由を帯の 1 行にする。 */
   const missingTextOf = (reason) => {
@@ -4840,7 +6051,7 @@ button.change-item:hover { background: var(--track); }
       case "pr":
         return `解説なし(explain.json は PR ${JSON.stringify(reason.actual)} のもの)`;
       case "shape":
-        return `解説なし(explain.json の ${reason.key ?? "トップ"} の型が想定と違います)`;
+        return `解説なし(explain.json の ${reason.key ?? "トップ"} の形が想定と違います)`;
     }
   };
 
@@ -4883,7 +6094,7 @@ button.change-item:hover { background: var(--track); }
     );
   };
 
-  /** ヘッダ・帯・4 画面を組み、画面を切り替える。 */
+  /** ヘッダ・帯・5 画面を組み、画面を切り替える。 */
   const Frame = Object.freeze({
     mount: (root, explained) => {
       const pr = explained.map.pr;
@@ -4913,6 +6124,10 @@ button.change-item:hover { background: var(--track); }
           navigateTo(Screens.Impact);
           built.impact.showMention(mention);
         },
+        toCommitFile: (target) => {
+          navigateTo(Screens.Story);
+          built.story.showFile(target);
+        },
       };
       const built = Object.fromEntries(Object.values(Screens).map((screen) => [screen, ScreenBuilders[screen](explained, go)]));
       const tabs = Object.values(Screens).map((screen) => el("a", { href: `#${screen}`, "data-screen": screen, text: ScreenLabels[screen] }));
@@ -4921,7 +6136,8 @@ button.change-item:hover { background: var(--track); }
       const branch = el("span", { class: "branch" }, [explained.map.headBranch, el("span", { class: "arrow", text: "→" }), explained.map.baseBranch]);
       const sections = Object.values(Screens).map((screen) => {
         const parts = built[screen];
-        const grid = el("section", { class: "screen", "data-screen": screen, "aria-label": ScreenLabels[screen] }, [parts.left, parts.main, ...(parts.right === null ? [] : [parts.right])]);
+        const tablist = parts.tablist === null ? [] : [parts.tablist];
+        const grid = el("section", { class: "screen", "data-screen": screen, "aria-label": ScreenLabels[screen] }, [...tablist, parts.left, parts.main, ...(parts.right === null ? [] : [parts.right])]);
         PanelResizer.attach({ screen, grid, panels: parts.right === null ? { left: parts.left } : { left: parts.left, right: parts.right } });
         return grid;
       });
