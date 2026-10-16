@@ -55,7 +55,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `src/` のファイル直下の宣言とコンパニオンオブジェクトの直下のメソッドのうち、doc コメントの無いもの・項目の欠けたものを探す。`--all` で全体を見る |
 | `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
 | `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh`(CI と `harness/githooks/pre-push`) | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
-| `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・親から直下の子以外の feature 間の import（`feature-sibling` / `feature-ancestor`）・3 段目以降の feature（`feature-nest-depth`）・ファイル単位の循環（`import-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |
+| `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 公開 API を迂回する import（`feature-public-api` / `module-public-api`）・親から直下の子以外の feature 間の import（`feature-sibling` / `feature-ancestor`）・feature の外から入れ子の子 feature を読む import（`feature-nested-from-outside`）・3 段目以降の feature（`feature-nest-depth`）・ファイル単位の循環（`import-cycle`）・カテゴリの外に置かれた domains のモジュール（`domains-category`）を報告する |
 | `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-discriminant-violations.py` / `lib/story-title-violations.py` / `lib/named-path-violations.py`（報告の形だけ） | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方と、feature の連なりの辿り方（`feature_of()`）。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |
 | `lib/named-path-violations.py` | `pre-push-named-paths.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | コメント（`.ts` / `.tsx`）と Markdown の全文が名指ししているパスのうち、実体を持たないもの（`named-path-missing`）を報告する |
 | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-discriminants.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |
@@ -497,6 +497,16 @@ rm src/features/editor/probe.tsx
 # feature の外(app 層)からでも落ちること — 呼び出し元ではなく行き先で決めている根拠
 printf 'export { EditorScreen } from "@/features/editor/components/editor-screen";\n' > src/app/probe.ts
 python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-public-api] 1 件・exit=1
+rm src/app/probe.ts
+
+# feature の外から入れ子の子の公開口を読むと落ちること(feature-nested-from-outside。公開口を通っていても通さない)
+printf 'export { TokenList } from "@/features/editor/features/tokens";\n' > src/app/probe.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-nested-from-outside] 1 件・exit=1
+rm src/app/probe.ts
+
+# feature の外からでもトップレベル feature の公開口は通ること
+printf 'export { EditorScreen } from "@/features/editor";\n' > src/app/probe.ts
+python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
 rm src/app/probe.ts
 
 # 入れ子モジュールの index は通ること(`libs/<x>/fake` を例外リスト無しで通す根拠)
