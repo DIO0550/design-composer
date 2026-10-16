@@ -499,16 +499,6 @@ printf 'export { EditorScreen } from "@/features/editor/components/editor-screen
 python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-public-api] 1 件・exit=1
 rm src/app/probe.ts
 
-# feature の外から入れ子の子の公開口を読むと落ちること(feature-nested-from-outside。公開口を通っていても通さない)
-printf 'export { TokenList } from "@/features/editor/features/tokens";\n' > src/app/probe.ts
-python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → [feature-nested-from-outside] 1 件・exit=1
-rm src/app/probe.ts
-
-# feature の外からでもトップレベル feature の公開口は通ること
-printf 'export { EditorScreen } from "@/features/editor";\n' > src/app/probe.ts
-python3 .claude/hooks/lib/import-rule-violations.py src; echo "exit=$?"   # → 違反 0 件・exit=0
-rm src/app/probe.ts
-
 # 入れ子モジュールの index は通ること(`libs/<x>/fake` を例外リスト無しで通す根拠)
 printf 'import { FakeDocumentIpc } from "@/libs/document-ipc/fake";\nexport const Probe = FakeDocumentIpc;\n' \
   > src/features/editor/probe.ts

@@ -11,7 +11,7 @@
 - `feature-public-api` — feature の外から、その feature の公開口以外を読んでいる
 - `feature-sibling` — 子 feature が、親以外の feature を読んでいる（公開口経由でも）
 - `feature-ancestor` — 子 feature が、自分を入れている親を読んでいる
-- `feature-nested-from-outside` — feature の外から、入れ子の子 feature を読んでいる（公開口経由でも）
+- `feature-nested-from-outside` — どの feature にも属さないファイル（`app/` など）から、入れ子の子 feature を読んでいる（公開口経由でも）
 - `feature-nest-depth` — feature の入れ子が 2 段より深い
 - `module-public-api` — `index.ts` を持つフォルダの内部を、そのフォルダの外から読んでいる
 - `domains-category` — `src/domains/` のモジュールがカテゴリのフォルダの下にいない
@@ -138,8 +138,8 @@ def is_feature_entry(target: str, name: str) -> bool:
 def feature_relation(owner: str | None, reached: str) -> tuple[str, str] | None:
     """他 feature の公開口へ入る辺が、向きとして許されるかを答える。
 
-    許すのは**親から直下の子へ**の一方向だけ。子同士を繋ぐのは親の仕事で、子が別の子を
-    直接読むと、同じ階層の中に隠れた上下関係ができる（`rules/consistency.md`）。
+    feature 同士で許すのは**親から直下の子へ**の一方向だけ。子同士を繋ぐのは親の仕事で、
+    子が別の子を直接読むと、同じ階層の中に隠れた上下関係ができる（`rules/consistency.md`）。
     feature の外から入ってよいのはトップレベルの feature だけ（`rules/consistency.md`
     「feature の構成とネスト」）。
 
