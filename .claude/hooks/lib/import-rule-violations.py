@@ -6,11 +6,12 @@
 層と方向の対（`services/` → `features/` のように、呼び出し元と禁止パターンが静的に決まる
 もの）は `.oxlintrc.json` の `no-restricted-imports` が見るので、ここでは扱わない。
 
-報告する違反は 7 つ。
+報告する違反は 8 つ。
 
 - `feature-public-api` — feature の外から、その feature の公開口以外を読んでいる
 - `feature-sibling` — 子 feature が、親以外の feature を読んでいる（公開口経由でも）
 - `feature-ancestor` — 子 feature が、自分を入れている親を読んでいる
+- `feature-nested-from-outside` — feature の外から、入れ子の子 feature を読んでいる（公開口経由でも）
 - `feature-nest-depth` — feature の入れ子が 2 段より深い
 - `module-public-api` — `index.ts` を持つフォルダの内部を、そのフォルダの外から読んでいる
 - `domains-category` — `src/domains/` のモジュールがカテゴリのフォルダの下にいない
@@ -139,13 +140,18 @@ def feature_relation(owner: str | None, reached: str) -> tuple[str, str] | None:
 
     許すのは**親から直下の子へ**の一方向だけ。子同士を繋ぐのは親の仕事で、子が別の子を
     直接読むと、同じ階層の中に隠れた上下関係ができる（`rules/consistency.md`）。
+    feature の外から入ってよいのはトップレベルの feature だけ（`rules/consistency.md`
+    「feature の構成とネスト」）。
 
     @param owner import を書いている側の feature。feature の外なら `None`
     @param reached import 先の feature
     @returns 違反なら「種別, 理由」の対。許される向きなら `None`
     """
     if owner is None:
-        return None
+        if parent_feature_of(reached) is None:
+            return None
+        reason = f"入れ子の子 {reached} を feature の外から読んでいる（親の公開口を通すか、昇格する）"
+        return ("feature-nested-from-outside", reason)
     if parent_feature_of(reached) == owner:
         return None
     if owner.startswith(f"{reached}/features/"):
@@ -284,6 +290,7 @@ def scan(root: Path) -> int:
     bypassing: list[str] = []
     siblings: list[str] = []
     ancestor_reads: list[str] = []
+    nested_reads: list[str] = []
     for importer, targets in graph.items():
         for number, target in targets:
             kind, reason = classify(importer, target, modules)
@@ -292,6 +299,7 @@ def scan(root: Path) -> int:
                 "module-public-api": bypassing,
                 "feature-sibling": siblings,
                 "feature-ancestor": ancestor_reads,
+                "feature-nested-from-outside": nested_reads,
             }.get(kind)
             if collected is not None:
                 collected.append(f"{importer}:{number} -> {target}（{reason}）")
@@ -309,6 +317,7 @@ def scan(root: Path) -> int:
         ("feature-public-api", crossing),
         ("feature-sibling", siblings),
         ("feature-ancestor", ancestor_reads),
+        ("feature-nested-from-outside", nested_reads),
         ("feature-nest-depth", too_deep),
         ("module-public-api", bypassing),
         ("domains-category", uncategorized),
