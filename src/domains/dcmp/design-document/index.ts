@@ -6,7 +6,9 @@ import {
   Component,
   type ComponentAsset,
   ComponentSet,
+  type NamedComponent,
 } from "@/domains/dcmp/component";
+import { ComponentBinding } from "@/domains/dcmp/component-binding";
 import { Constraint } from "@/domains/dcmp/constraint";
 import { DocumentNames } from "@/domains/dcmp/document-names";
 import { ExpandedNode } from "@/domains/dcmp/expanded-node";
@@ -15,6 +17,7 @@ import {
   type FormatVersionCompatibility,
   type FormatVersionOf,
 } from "@/domains/dcmp/format-version";
+import { Layout } from "@/domains/dcmp/layout";
 import { Locking, Lockings } from "@/domains/dcmp/locking";
 import {
   Node,
@@ -25,7 +28,12 @@ import {
 } from "@/domains/dcmp/node";
 import { NodeTree, type NodeTreeUpdate } from "@/domains/dcmp/node-tree";
 import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
-import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
+import {
+  BoxSchema,
+  PrimitiveSchema,
+  PrimitiveTypes,
+  PropDefinitionRecord,
+} from "@/domains/dcmp/primitive-schema";
 import { ReferenceContext } from "@/domains/dcmp/reference-context";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
@@ -44,14 +52,7 @@ import type { DesignDocumentEditError } from "./edit-error";
 import type { DocumentTemplate } from "./template";
 import { TokenReferrer } from "./token-referrer";
 import { DesignDocumentV1 } from "./v1";
-import {
-  collectArtboardErrors,
-  collectCircularRefErrors,
-  collectComponentErrors,
-  collectDocumentNameErrors,
-  collectInvalidColorErrors,
-  type DesignDocumentValidationError,
-} from "./validation";
+import { DesignDocumentValidationError } from "./validation-error";
 
 export { DesignDocumentEditError } from "./edit-error";
 export { DocumentTemplate } from "./template";
@@ -60,7 +61,7 @@ export type { DesignDocumentV1 } from "./v1";
 export type {
   DesignDocumentValidationError,
   DesignDocumentValidationErrorKind,
-} from "./validation";
+} from "./validation-error";
 
 /**
  * アプリが読み書きするドキュメント。今は major 1 のみ。
@@ -97,9 +98,9 @@ export type InsertedCopy = Readonly<{
 }>;
 
 /*
- * 以下の関数は「どの artboard を相手にするか」を選ぶためのもの。
+ * 以下、検証の走査の区切りまでの関数は「どの artboard を相手にするか」を選ぶためのもの。
  * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `DocumentNames` が持っており、
- * ドキュメントに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
+ * ここに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
  *
  * 例外は追従（`followPropEdits`）とグループ化 / 解除（`groupedBox` / `freedChildren`）で、
  * ここだけは `Placement` / `Constraint` / `Size` を組み合わせて編集を作る。子側のドメイン（`Node`）へ置けないのは、`Placement` が
@@ -755,10 +756,252 @@ function rootPropsOf(document: DesignDocument, node: Node): Option<Props> {
   );
 }
 
+// ここから下の `collect*Errors` は、`collectErrors` がどの部品・artboard・名前を検証するかを辿る走査。
+
+/**
+ * 1 ノード分の props のエラーを、未知の型・スキーマ照合・最小 / 最大の逆転の順で集める。
+ *
+ * @param nodeName エラーの位置に使うノード名
+ * @param typed 照らす対象の型名と props（props が未設定なら空として扱う）
+ * @param tokens トークン参照の解決に使うトークン一式
+ * @returns 型が未知なら unknown-type の 1 件だけ。それ以外は宣言違反・値域違反と、軸ごとの
+ *   最小 / 最大の逆転のエラーの並び
+ */
+function collectTypedPropErrors(
+  nodeName: string,
+  typed: Readonly<{ type: string; props?: Props }>,
+  tokens: TokenSet,
+): readonly DesignDocumentValidationError[] {
+  if (!PrimitiveSchema.isPrimitiveType(typed.type)) {
+    return [
+      DesignDocumentValidationError.fromUnknownType({
+        nodeName,
+        type: typed.type,
+      }),
+    ];
+  }
+  const props = typed.props ?? {};
+  const schema: PrimitiveSchema = PrimitiveSchema.forType(typed.type);
+  const schemaErrors = PropDefinitionRecord.collectErrors(
+    schema.props,
+    props,
+    tokens,
+  ).map((error) =>
+    DesignDocumentValidationError.fromPropError(error, nodeName),
+  );
+  const invertedLimitErrors = Size.collectInvertedLimitAxes(
+    ResolvedProps.resolve(typed.type, props),
+  ).map((axis) =>
+    DesignDocumentValidationError.fromInvertedLimitAxis(axis, nodeName),
+  );
+  return [...schemaErrors, ...invertedLimitErrors];
+}
+
+/**
+ * ノードとその子孫のプリミティブについて、スキーマ照合・最小 / 最大の逆転・子を並べない
+ * 親の下の `fill` のエラーをノードごとにこの順で集める（走査は `Node` が持つ）。
+ *
+ * 部品インスタンスの中身は対象外で、検証が見るのは**定義時点の props** だけ（中身は部品の
+ * 定義として照らされる）。
+ *
+ * @param node 起点のノード
+ * @param tokens トークン参照の解決に使うトークン一式
+ * @param parentProps このノードを収めている親の props。親を引数で要求するので、親が決まらない
+ *   位置（部品のルート）はそもそも呼ばれない
+ * @returns 自身と子孫のプリミティブについて、スキーマ照合・最小 / 最大の逆転・子を並べない
+ *   親の下の `fill` のエラーの並び（部品インスタンスは空）
+ */
+function collectNodeErrors(
+  node: Node,
+  tokens: TokenSet,
+  parentProps: Props,
+): readonly DesignDocumentValidationError[] {
+  return Node.collectNestedPrimitives(node, parentProps).flatMap((nested) => {
+    const nodeName = nested.node.name;
+    const typedPropErrors = collectTypedPropErrors(
+      nodeName,
+      nested.node,
+      tokens,
+    );
+    const fillErrors = Layout.collectFillAxesInFreeParent(
+      Layout.fromProps(nested.parentProps),
+      nested.node.props ?? {},
+    ).map((axis) =>
+      DesignDocumentValidationError.fromFillAxisInFreeParent(axis, nodeName),
+    );
+    return [...typedPropErrors, ...fillErrors];
+  });
+}
+
+/**
+ * ノードとその子孫に含まれる部品参照の違反を、位置を付けて集める（走査は `Node` が持つ）。
+ *
+ * @param context 部品とトークンの一式
+ * @param node 起点のノード
+ * @returns 自身と子孫のインスタンスについて、位置の付いたエラーの並び
+ */
+function collectNodeRefErrors(
+  context: ReferenceContext,
+  node: Node,
+): readonly DesignDocumentValidationError[] {
+  return Node.collectRefNodes(node).flatMap((refNode) =>
+    ReferenceContext.collectInstanceViolations(context, refNode).map(
+      (violation) =>
+        DesignDocumentValidationError.fromInstanceViolation(violation, refNode),
+    ),
+  );
+}
+
+/**
+ * 部品の publicProps が宣言している binding をすべて照らす（判定は `ComponentBinding` が持つ）。
+ *
+ * @param components 部品一式
+ * @param named 検証する部品と、エラーの位置に使うその名前
+ * @returns 公開 prop ごとの、位置の付いたエラーの並び
+ */
+function collectBindingErrors(
+  components: ComponentSet,
+  named: NamedComponent,
+): readonly DesignDocumentValidationError[] {
+  return Component.publicPropNames(named.component).flatMap(
+    (publicPropName) => {
+      const binding = Component.binding(named.component, publicPropName);
+      if (!Option.isSome(binding)) {
+        return [];
+      }
+      const violation = ComponentBinding.violation(
+        components,
+        ComponentBinding.create(named.name, binding.value),
+      );
+      if (!Option.isSome(violation)) {
+        return [];
+      }
+      return [
+        DesignDocumentValidationError.fromBindingViolation(
+          violation.value,
+          { component: named.name, prop: publicPropName },
+          binding.value,
+        ),
+      ];
+    },
+  );
+}
+
+/**
+ * 部品1件の props（スキーマ照合と、ルート自身の最小 / 最大の逆転）・子ノード・公開 prop の
+ * 宣言名・binding・参照のエラーを集める。
+ *
+ * @param context 部品とトークンの一式
+ * @param named 検証する部品と、エラーの位置に使うその名前
+ * @returns 位置の付いたエラーの並び
+ */
+function collectComponentErrors(
+  context: ReferenceContext,
+  named: NamedComponent,
+): readonly DesignDocumentValidationError[] {
+  const { name, component } = named;
+  const children = component.children ?? [];
+  const propErrors = collectTypedPropErrors(name, component, context.tokens);
+  const childErrors = children.flatMap((child) =>
+    collectNodeErrors(child, context.tokens, component.props ?? {}),
+  );
+  const publicPropNameErrors = Component.collectInvalidPublicPropNames(
+    component,
+  ).map((publicPropName) =>
+    DesignDocumentValidationError.fromInvalidPublicPropName({
+      component: name,
+      prop: publicPropName,
+    }),
+  );
+  const bindingErrors = collectBindingErrors(context.components, named);
+  const refErrors = children.flatMap((child) =>
+    collectNodeRefErrors(context, child),
+  );
+  return [
+    ...propErrors,
+    ...childErrors,
+    ...publicPropNameErrors,
+    ...bindingErrors,
+    ...refErrors,
+  ];
+}
+
+/**
+ * artboard 1件の props・子ノード・参照のエラーを集める。
+ *
+ * artboard 自身の最小 / 最大の逆転は見ない。サイズは `Artboard.boxProps` で `fixed` に固定され
+ * 描画に効かず、Box として解決すると既定の `hug` 扱いになって誤検出するため。
+ *
+ * @param context 部品とトークンの一式
+ * @param artboard 検証する artboard
+ * @returns 位置の付いたエラーの並び
+ */
+function collectArtboardErrors(
+  context: ReferenceContext,
+  artboard: Artboard,
+): readonly DesignDocumentValidationError[] {
+  // 照らす先が `Artboard.propDefinitions()` ではなく Box スキーマなので、デフォルト解決も
+  // Box の既定（`overflow: visible`）で行う。Box の既定はすべて enum で artboard の
+  // 上書き（`clip`）も値域内なので今は差が出ないが、artboard 固有の既定がトークンを
+  // 指した時点で食い違う（`Artboard.propDefinitions()` を使うと `widthMode` などが
+  // unknown-prop になるため、寄せるなら別の変更として行う）
+  const propErrors = PropDefinitionRecord.collectErrors(
+    BoxSchema.props,
+    artboard.props ?? {},
+    context.tokens,
+  ).map((error) =>
+    DesignDocumentValidationError.fromPropError(error, artboard.name),
+  );
+  const childErrors = artboard.children.flatMap((child) =>
+    collectNodeErrors(
+      child,
+      context.tokens,
+      // artboard 固有の既定を被せた props から読む。`Artboard.propDefinitions()` が
+      // `layout` の既定を差し替えたときに、描画とここで違う親を見ないようにするため
+      Artboard.boxProps(artboard),
+    ),
+  );
+  const refErrors = artboard.children.flatMap((child) =>
+    collectNodeRefErrors(context, child),
+  );
+  return [...propErrors, ...childErrors, ...refErrors];
+}
+
+/**
+ * ドキュメント全体の名前（部品・artboard・ノード・トークン）のエラーを集める。
+ *
+ * @param document 検証するドキュメント
+ * @returns 欠落・識別子違反・重複・トークン名の規則違反・塗り用の 2 種別での名前の衝突の順に
+ *   連ねた、名前のエラーの並び
+ */
+function collectNameErrors(
+  document: DesignDocument,
+): readonly DesignDocumentValidationError[] {
+  const nameViolationErrors = DocumentNames.collectNameViolations(
+    document.components,
+    document.artboards,
+  ).map(DesignDocumentValidationError.fromNameViolation);
+  const duplicateNameErrors = DocumentNames.duplicatedNames(
+    documentNamesOf(document),
+  ).map(DesignDocumentValidationError.fromDuplicatedName);
+  const tokenNameErrors = TokenSet.collectInvalidNameRefs(document.tokens).map(
+    DesignDocumentValidationError.fromInvalidNameRef,
+  );
+  const paintNameConflictErrors = TokenSet.collectPaintNameConflicts(
+    document.tokens,
+  ).map(DesignDocumentValidationError.fromPaintNameConflict);
+  return [
+    ...nameViolationErrors,
+    ...duplicateNameErrors,
+    ...tokenNameErrors,
+    ...paintNameConflictErrors,
+  ];
+}
+
 /**
  * ドキュメントのコンパニオンオブジェクト。ツリーの探索・編集は `NodeTree`、名前の規則は
- * `DocumentNames`、部品への変換は `Component`、検証は `validation/`、版ごとの JSON 表現は
- * `v1/` が持ち、ここは「どの artboard・どの部品を相手にするか」の調停に徹する。
+ * `DocumentNames`、部品への変換は `Component`、版ごとの JSON 表現は `v1/` が持ち、ここは
+ * 「どの artboard・どの部品を相手にするか」を決める。ドキュメントの違反を集めるのは `collectErrors`。
  */
 export const DesignDocument = {
   /**
@@ -2059,8 +2302,10 @@ export const DesignDocument = {
   /**
    * ドキュメントが仕様に適合しない箇所をすべて集める。
    *
-   * 適合の規則そのものは `validation/` が関心ごとに持ち、ここは「どの部品・どの artboard
-   * を検証対象にするか」の取りまとめを行う。
+   * 適合の判定は各ドメイン（`PropDefinitionRecord` / `ReferenceContext` / `ComponentBinding` /
+   * `DocumentNames` / `TokenSet` など）が持ち、違反 1 件をエラーにする詰め替えは
+   * `DesignDocumentValidationError` が持つ。ここは「どの部品・どの artboard・どの名前を検証対象に
+   * するか」の走査を行う。
    *
    * @param document 検証するドキュメント
    * @returns 部品ごとのエラー・artboard ごとのエラー・部品の循環参照・名前のエラー・色トークン
@@ -2076,15 +2321,17 @@ export const DesignDocument = {
 
     const componentErrors = ComponentSet.toNamedComponents(
       document.components,
-    ).flatMap(({ name, component }) =>
-      collectComponentErrors(context, name, component),
-    );
+    ).flatMap((named) => collectComponentErrors(context, named));
     const artboardErrors = document.artboards.flatMap((artboard) =>
       collectArtboardErrors(context, artboard),
     );
-    const circularErrors = collectCircularRefErrors(document.components);
-    const nameErrors = collectDocumentNameErrors(document);
-    const colorErrors = collectInvalidColorErrors(document.tokens);
+    const circularErrors = ComponentSet.circularNames(document.components).map(
+      DesignDocumentValidationError.fromCircularName,
+    );
+    const nameErrors = collectNameErrors(document);
+    const colorErrors = TokenSet.collectInvalidColorPositions(
+      document.tokens,
+    ).map(DesignDocumentValidationError.fromInvalidColorPosition);
 
     return [
       ...componentErrors,

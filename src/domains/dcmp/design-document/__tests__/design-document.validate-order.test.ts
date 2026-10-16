@@ -1,4 +1,6 @@
 import { expect, test } from "vitest";
+import { Fade } from "@/domains/__tests__/gradient-tokens";
+import { TokenSet } from "@/domains/dcmp/token";
 import { DesignDocument, DocumentTemplate } from "../index";
 
 /**
@@ -115,6 +117,107 @@ test("エラーは部品ごとに props・子の行きがけ順・宣言名・bi
       kind: "undeclared-override",
       nodeName: "instance",
       prop: "caption",
+    }),
+  ]);
+});
+
+test("エラーは artboard のエラー・部品の循環参照・名前のエラー・色トークンのエラーの順に並ぶ", () => {
+  const document = DesignDocument.create({
+    tokens: { ...TokenSet.empty(), colors: { bad: "red" } },
+    components: {
+      a: { type: "Box", children: [{ name: "a-inner", ref: "b" }] },
+      b: { type: "Box", children: [{ name: "b-inner", ref: "a" }] },
+    },
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        props: { notAProp: true },
+        children: [
+          { name: "label", type: "Box" },
+          { name: "label", type: "Box" },
+        ],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({ kind: "unknown-prop", nodeName: "screen" }),
+    expect.objectContaining({ kind: "circular-ref", nodeName: "a" }),
+    expect.objectContaining({ kind: "circular-ref", nodeName: "b" }),
+    expect.objectContaining({ kind: "duplicate-name", nodeName: "label" }),
+    expect.objectContaining({ kind: "invalid-color", tokenName: "bad" }),
+  ]);
+});
+
+test("artboard の props のエラーは、その artboard の子のエラーより前に並ぶ", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        props: { notAProp: true },
+        children: [{ name: "plain", type: "Box", props: { "plain-extra": 1 } }],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "unknown-prop",
+      nodeName: "screen",
+      prop: "notAProp",
+    }),
+    expect.objectContaining({
+      kind: "unknown-prop",
+      nodeName: "plain",
+      prop: "plain-extra",
+    }),
+  ]);
+});
+
+// ノード名の規則違反とトークン名の規則違反は同じ invalid-identifier なので、nodeName と
+// tokenName のどちらを持つかで見分ける。
+test("名前のエラーはノード名の規則違反・名前の重複・トークン名の規則違反・colors と gradients の名前の衝突の順に並ぶ", () => {
+  const document = DesignDocument.create({
+    tokens: {
+      ...TokenSet.empty(),
+      colors: { brand: "#3b82f6" },
+      gradients: { brand: Fade },
+      spacing: { Big: 8 },
+    },
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [
+          { name: "LoginForm", type: "Box" },
+          { name: "label", type: "Box" },
+          { name: "label", type: "Box" },
+        ],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document);
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "invalid-identifier",
+      nodeName: "LoginForm",
+    }),
+    expect.objectContaining({ kind: "duplicate-name", nodeName: "label" }),
+    expect.objectContaining({ kind: "invalid-identifier", tokenName: "Big" }),
+    expect.objectContaining({
+      kind: "conflicting-token-name",
+      tokenName: "brand",
     }),
   ]);
 });
