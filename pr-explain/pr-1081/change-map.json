@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-50qj2r",
   "baseBranch": "main",
   "mergeBase": "6e935be8878a4bbdef70a0925eebffd9618bf57e",
-  "head": "2803acf37eb1a597408b58f721b2193a174f7f2c",
+  "head": "e4f7f32a47de8dcfdb4743afd0ced3efa686950a",
   "groups": [
     {
       "label": "domains / unit",
@@ -101,7 +101,7 @@
           "path": ".claude/skills/pr-explain/templates/index.html",
           "status": "M",
           "oldPath": null,
-          "additions": 1561,
+          "additions": 1566,
           "deletions": 350,
           "changed": true,
           "target": null
@@ -1835,6 +1835,76 @@
               "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
               "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
             },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "e4f7f32a47de8dcfdb4743afd0ced3efa686950a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-16T15:27:47Z",
+      "subject": "pr-explain: 技術の手引きの注意メモを種類ごとの色とアイコンにし、抜粋の強調の塗りを薄くする",
+      "body": "注意は黄・メモは青・規約は緑・仕様は青緑・経緯はオレンジ。アイコンは CSS の mask で付ける。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019ai7aHcvfuNrZFwAQgJqxt",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "status": "M",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 16,
+          "patch": "@@ -2,7 +2,7 @@\n <html lang=\"ja\">\n <head>\n <meta charset=\"utf-8\">\n-<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-CDi5wmTc7PY+Mk7Vi1HLkP8RPw5Nmk/ACNzrgBumkak='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n+<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-uR945rg3hqGraVxYw+MI9CwpqGjW+7didxgtQtbYzHA='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n <title>PR 解説</title>\n <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n@@ -445,7 +445,7 @@ button.gap-card:hover { border-color: var(--mod-mark); }\n .excerpt-line { display: grid; grid-template-columns: 40px max-content; min-width: max-content; }\n .excerpt-line .ln { color: var(--ink-4); text-align: right; padding-right: 10px; user-select: none; }\n .excerpt-line .code-text { padding-right: 14px; }\n-.excerpt-line.is-emphasized { background: var(--accent-tint); box-shadow: inset 2px 0 0 var(--accent); }\n+.excerpt-line.is-emphasized { background: rgba(47, 91, 234, .05); box-shadow: inset 2px 0 0 var(--accent); }\n .commit-link { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--ink); width: 100%; }\n .commit-link:hover { border-color: var(--ink-4); }\n .commit-link .label { font-size: 11px; color: var(--ink-3); flex: none; }\n@@ -695,10 +695,15 @@ button.change-item:hover { background: var(--track); }\n .impact-kept-text { font-size: 14px; line-height: 1.6; }\n .impact-guard { font-size: 11.5px; color: var(--ink-3); white-space: nowrap; }\n .impact-guard.is-missing { color: var(--mod); }\n-.topic-note { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; padding: 12px 16px; border-radius: 10px; background: var(--accent-tint); font-size: 13.5px; line-height: 1.8; }\n-.topic-note-label { font-size: 11px; font-weight: 600; letter-spacing: .04em; color: var(--accent); padding-top: 2px; white-space: nowrap; }\n-.topic-note.is-warn { background: var(--warn-tint); }\n-.topic-note.is-warn .topic-note-label { color: var(--mod); }\n+/* 注意メモは種類ごとに色とアイコンを変える(Docusaurus の注記の形)。アイコンは CSP の img-src data: で読める mask にする。 */\n+.topic-note { display: flex; flex-direction: column; gap: 6px; padding: 12px 16px 13px; border-radius: 8px; border: 1px solid var(--note-line); border-left-width: 5px; background: var(--note-bg); color: var(--note-ink); font-size: 13.5px; line-height: 1.8; }\n+.topic-note-label { display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; letter-spacing: .03em; color: var(--note-head); white-space: nowrap; }\n+.topic-note-label::before { content: \"\"; flex: none; width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--note-icon) center / contain no-repeat; mask: var(--note-icon) center / contain no-repeat; }\n+.topic-note[data-remark=\"caution\"] { --note-bg: #FFF7E3; --note-line: #E2A400; --note-ink: #4A3500; --note-head: #8F5E00; --note-icon: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 2.5 14.5 13.5h-13z'/%3E%3Cpath d='M8 6.5v3'/%3E%3Cpath d='M8 11.4v.1'/%3E%3C/svg%3E\"); }\n+.topic-note[data-remark=\"memo\"] { --note-bg: #EAF3FC; --note-line: #4A90D9; --note-ink: #14324F; --note-head: #2369B3; --note-icon: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10.5 2.5l3 3-8 8h-3v-3z'/%3E%3C/svg%3E\"); }\n+.topic-note[data-remark=\"rule\"] { --note-bg: #E9F6EC; --note-line: #2E9D5B; --note-ink: #103B22; --note-head: #1F7A44; --note-icon: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 2.5h7.5a2 2 0 0 1 2 2v9H5a2 2 0 0 1-2-2z'/%3E%3Cpath d='M3 11.5a2 2 0 0 1 2-2h7.5'/%3E%3C/svg%3E\"); }\n+.topic-note[data-remark=\"spec\"] { --note-bg: #E7F5F6; --note-line: #2C9BAE; --note-ink: #123A41; --note-head: #17707F; --note-icon: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6.2'/%3E%3Cpath d='M8 7.2v4'/%3E%3Cpath d='M8 4.9v.1'/%3E%3C/svg%3E\"); }\n+.topic-note[data-remark=\"history\"] { --note-bg: #FFF1E5; --note-line: #F08A24; --note-ink: #4A2408; --note-head: #C2600A; --note-icon: url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='8' cy='8' r='6'/%3E%3Cpath d='M8 4.5V8l2.5 1.5'/%3E%3C/svg%3E\"); }\n .topic-inline { display: none; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); }\n .topic-inline > summary { cursor: pointer; padding: 10px 14px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); }\n .topic-inline > .side { overflow: visible; padding: 0 14px 14px; gap: 18px; }\n@@ -764,7 +769,7 @@ button.change-item:hover { background: var(--track); }\n   .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) > .panel.is-left { display: none; }\n   .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) > .stage { overflow: visible; container-type: normal; }\n   .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) .topic-body { padding-inline: 16px; gap: 44px; }\n-  .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) :is(.topic-gist, .topic-note) { grid-template-columns: minmax(0, 1fr); gap: 4px; }\n+  .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) .topic-gist { grid-template-columns: minmax(0, 1fr); gap: 4px; }\n   .screen[data-screen=\"primer\"] > .primer-tablist { position: sticky; top: 0; z-index: 2; background: var(--bg); height: 44px; }\n   /* 上 12px + 名前の行 20px + 下 11px に、並びの下の線 1px を足して 44px。横の余白だけを広い幅の 18px から詰める。 */\n   .primer-tab { padding: 12px 12px 11px; }\n@@ -1335,13 +1340,13 @@ button.change-item:hover { background: var(--track); }\n       added: { tone: \"A\", label: \"この PR で追加\" },\n       changed: { tone: \"M\", label: \"この PR で変更\" },\n     },\n-    // 技術の手引きの注意メモの種類と、見出し・警告色にするか。キーの順は解説の検査の `RemarkKinds` と同じ。\n+    // 技術の手引きの注意メモの種類と見出し。色はキーごとに CSS の `data-remark` が持つ。キーの順は解説の検査の `RemarkKinds` と同じ。\n     remarkKinds: {\n-      caution: { label: \"注意\", isWarn: true },\n-      memo: { label: \"メモ\", isWarn: false },\n-      rule: { label: \"規約\", isWarn: false },\n-      spec: { label: \"仕様\", isWarn: false },\n-      history: { label: \"経緯\", isWarn: true },\n+      caution: { label: \"注意\" },\n+      memo: { label: \"メモ\" },\n+      rule: { label: \"規約\" },\n+      spec: { label: \"仕様\" },\n+      history: { label: \"経緯\" },\n     },\n   });\n   const MessageKindOrder = Object.keys(Vocabulary.messageKinds);\n@@ -1865,7 +1870,7 @@ button.change-item:hover { background: var(--track); }\n     const passagesOf = (passage, resolve) => {\n       if (Object.hasOwn(Vocabulary.remarkKinds, passage.kind)) {\n         const remark = Vocabulary.remarkKinds[passage.kind];\n-        return [{ kind: \"remark\", label: remark.label, isWarn: remark.isWarn, pieces: resolve(passage.text) }];\n+        return [{ kind: \"remark\", remark: passage.kind, label: remark.label, pieces: resolve(passage.text) }];\n       }\n       switch (passage.kind) {\n         case \"text\":\n@@ -5687,7 +5692,7 @@ button.change-item:hover { background: var(--track); }\n     const missingNoteOf = (topic) => {\n       const count = missingTestsOf(topic).length;\n       if (count === 0) return [];\n-      return [el(\"div\", { class: \"topic-note is-warn\" }, [el(\"span\", { class: \"topic-note-label\", text: \"まだ書かれていないテスト\" }), el(\"span\", { text: `${count} 件あります。中身は根拠の「無いテスト」に出ています。` })])];\n+      return [el(\"div\", { class: \"topic-note\", \"data-remark\": \"caution\" }, [el(\"span\", { class: \"topic-note-label\", text: \"まだ書かれていないテスト\" }), el(\"span\", { text: `${count} 件あります。中身は根拠の「無いテスト」に出ています。` })])];\n     };\n \n     const topicBodyOf = (topic) => {\n@@ -5907,7 +5912,7 @@ button.change-item:hover { background: var(--track); }\n         case \"excerpt\":\n           return codeExampleOf(passage.excerpt);\n         case \"remark\":\n-          return [el(\"div\", { class: classesOf(\"topic-note\", { \"is-warn\": passage.isWarn }) }, [el(\"span\", { class: \"topic-note-label\", text: passage.label }), marked(\"span\", {}, passage.pieces)])];\n+          return [el(\"div\", { class: \"topic-note\", \"data-remark\": passage.remark }, [el(\"span\", { class: \"topic-note-label\", text: passage.label }), marked(\"span\", {}, passage.pieces)])];\n       }\n     };\n ",
+          "patchLines": 94,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -1356,9 +1356,9 @@ const cases = [\n     expected: [\"text\", \"excerpt\", \"remark\", \"text\"],\n   },\n   {\n-    label: \"注意(caution)の段は警告色で、メモ(memo)の段は警告色でない\",\n-    actual: () => tabTopicsOf({ primers: [primerOf({ passages: [{ kind: \"caution\", text: \"注意\" }, { kind: \"memo\", text: \"メモ\" }] })] }, \"language\")[0].passages.map((passage) => [passage.label, passage.isWarn]),\n-    expected: [[\"注意\", true], [\"メモ\", false]],\n+    label: \"注意(caution)とメモ(memo)の段は、それぞれの種類を色分けの鍵として持つ\",\n+    actual: () => tabTopicsOf({ primers: [primerOf({ passages: [{ kind: \"caution\", text: \"注意\" }, { kind: \"memo\", text: \"メモ\" }] })] }, \"language\")[0].passages.map((passage) => [passage.label, passage.remark]),\n+    expected: [[\"注意\", \"caution\"], [\"メモ\", \"memo\"]],\n   },\n   {\n     label: \"用語の印は、前後の文字と印に割れ、文の先頭・末尾の印の外に空の文字を出さない\",",
+          "patchLines": 13,
+          "truncated": false,
+          "hunkOpeningLines": [
             {
               "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
               "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
