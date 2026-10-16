@@ -139,6 +139,7 @@ pass|親 feature が直下の子 feature の __stories__ 公開口を読む|src/
 pass|feature が自分の中のモジュールの公開口を読む|src/features/editor/features/sidebar/probe.ts>@/features/editor/features/sidebar/components/layers-panel
 pass|モジュールの中のファイルが同じモジュールの内部を読む|src/features/editor/features/sidebar/components/layers-panel/probe.ts>./row
 pass|feature の外がトップレベル feature の公開口を読む|src/app/probe.ts>@/features/editor
+pass|feature の外がトップレベル feature の __tests__ 公開口を読む|src/features/editor/__tests__/index.ts>- src/app/probe.ts>@/features/editor/__tests__
 pass|feature 層の直下に置いたファイルは親 feature に属する|src/features/editor/features/probe.ts>@/features/editor/features/sidebar
 pass|feature の中の features という名前の普通のフォルダは feature 層と数えない|src/features/editor/components/features/toolbar/probe.ts>@/features/editor/features/tokens
 pass|feature が自分の __tests__ の中のファイルを直接読む(__tests__ はモジュールと数えない)|src/features/editor/features/tokens/__tests__/fixture.ts>- src/features/editor/features/tokens/probe.ts>./__tests__/fixture
@@ -157,10 +158,17 @@ feature-sibling|兄弟 feature の公開口を読む|src/features/editor/feature
 feature-sibling|兄弟 feature の __tests__ 公開口を読む|src/features/editor/features/sidebar/probe.ts>@/features/editor/features/tokens/__tests__
 feature-sibling|兄弟 feature の __stories__ 公開口を読む|src/features/editor/features/tokens/probe.ts>@/features/editor/features/sidebar/__stories__
 feature-sibling|トップレベルの feature 同士が読む|src/features/probe-a/index.ts>- src/features/probe-b/index.ts>@/features/probe-a
+feature-sibling|別のトップレベル feature が入れ子の子の公開口を読むのは、外からではなく feature 間の向きで報告する|src/features/probe-b/index.ts>@/features/editor/features/sidebar
 feature-sibling*2|兄弟が読み合って閉路になっても、出るのは feature-sibling だけ|src/features/editor/features/sidebar/probe.ts>@/features/editor/features/tokens src/features/editor/features/tokens/probe.ts>@/features/editor/features/sidebar
 feature-sibling+feature-nest-depth|祖父 feature が孫 feature を読む|src/features/editor/features/sidebar/features/tree/index.ts>- src/features/editor/probe.ts>@/features/editor/features/sidebar/features/tree
 feature-ancestor|子 feature が親 feature を読む|src/features/editor/features/sidebar/probe.ts>@/features/editor
 feature-ancestor|親が子を読んでいるところへ子から親への辺が増えても、出るのは feature-ancestor だけ|src/features/editor/probe.ts>@/features/editor/features/sidebar src/features/editor/features/sidebar/probe.ts>@/features/editor
+feature-nested-from-outside|feature の外が入れ子の子 feature の公開口を読む|src/app/probe.ts>@/features/editor/features/tokens
+feature-nested-from-outside|feature の外が入れ子の子 feature の __tests__ 公開口を読む|src/app/probe.ts>@/features/editor/features/tokens/__tests__
+feature-nested-from-outside|feature の外が入れ子の子 feature の __stories__ 公開口を読む|src/app/probe.ts>@/features/editor/features/sidebar/__stories__
+feature-nested-from-outside|feature の外が import type だけで入れ子の子 feature を読む|src/app/probe.ts>type:@/features/editor/features/tokens
+feature-nested-from-outside+feature-nest-depth|feature の外が 3 段目の feature を読む|src/features/editor/features/sidebar/features/tree/index.ts>- src/app/probe.ts>@/features/editor/features/sidebar/features/tree
+feature-public-api|feature の外が入れ子の子 feature の内部を読むのは、向きではなく公開口で報告する|src/app/probe.ts>@/features/editor/features/sidebar/components/layers-panel
 feature-nest-depth|入れ子が 3 段目の feature は import が無くても報告する|src/features/editor/features/sidebar/features/tree/index.ts>-
 module-public-api|index.tsx を持つモジュールの内部を、そのフォルダの外から読む|src/components/probe.ts>@/components/type-glyph/glyph-path
 module-public-api|.tsx からモジュールの内部を読む|src/components/probe.tsx>@/components/type-glyph/glyph-path
