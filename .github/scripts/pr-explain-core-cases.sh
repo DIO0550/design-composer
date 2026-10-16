@@ -1356,9 +1356,9 @@ const cases = [
     expected: ["text", "excerpt", "remark", "text"],
   },
   {
-    label: "注意(caution)の段は警告色で、メモ(memo)の段は警告色でない",
-    actual: () => tabTopicsOf({ primers: [primerOf({ passages: [{ kind: "caution", text: "注意" }, { kind: "memo", text: "メモ" }] })] }, "language")[0].passages.map((passage) => [passage.label, passage.isWarn]),
-    expected: [["注意", true], ["メモ", false]],
+    label: "注意(caution)とメモ(memo)の段は、それぞれの種類を色分けの鍵として持つ",
+    actual: () => tabTopicsOf({ primers: [primerOf({ passages: [{ kind: "caution", text: "注意" }, { kind: "memo", text: "メモ" }] })] }, "language")[0].passages.map((passage) => [passage.label, passage.remark]),
+    expected: [["注意", "caution"], ["メモ", "memo"]],
   },
   {
     label: "用語の印は、前後の文字と印に割れ、文の先頭・末尾の印の外に空の文字を出さない",
