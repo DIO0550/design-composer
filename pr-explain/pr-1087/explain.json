@@ -1,0 +1,394 @@
+{
+  "version": 1,
+  "pr": 1087,
+  "sha": "e7dd5f5a22245797c6d67ed6426b962e3d35fe90",
+  "issue": 1005,
+  "overview": {
+    "title": "feature の外から入れ子の子 feature を読む import を違反として報告する",
+    "lead": "`app/` など feature の外から入れ子の子 feature を直接 import すると、import 規約の検出器が `feature-nested-from-outside` として報告し push を止める。トップレベル feature を読む import はこれまでどおり通る。",
+    "before": [
+      {
+        "text": "`src/app/` から `@/features/editor/features/tokens` を読んでも違反 0 件・exit 0 だった",
+        "message": "relation"
+      },
+      {
+        "text": "`feature_relation()` は import 元が feature の外(`owner is None`)なら向きを見ずに許していた"
+      }
+    ],
+    "after": [
+      {
+        "text": "feature の外から入れ子の子を読むと `[feature-nested-from-outside]` が 1 件出て exit 1 になる",
+        "message": "relation"
+      },
+      {
+        "text": "feature の外からトップレベル feature の公開口を読むのは、これまでどおり違反 0 件",
+        "message": "relation"
+      },
+      {
+        "text": "別のトップレベル feature が入れ子の子を読むのは、これまでどおり `feature-sibling` で報告する"
+      },
+      {
+        "text": "feature の外から入れ子の子の内部を読むのは、これまでどおり `feature-public-api` だけで報告する"
+      },
+      {
+        "text": "push を止めたときの文言と `rules/consistency.md` に「外から読めるのはトップレベルの feature だけ」が入る",
+        "message": "deny"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "向きの判定",
+        "text": "新しい分岐は `owner is None` の中だけにあり、feature 同士の判定は変えていない",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/lib/import-rule-violations.py"
+        }
+      },
+      {
+        "title": "規約の 1 行",
+        "text": "常時ロードが上限(811/811)なので、既存の 1 行を書き換えて規範と種別名を入れた。文面が規範として足りているかを見てほしい",
+        "go": {
+          "kind": "file",
+          "path": "rules/consistency.md"
+        }
+      },
+      {
+        "title": "判定表",
+        "text": "外からの経路と feature からの経路の対照を揃えた",
+        "go": {
+          "kind": "flow",
+          "id": "cases"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "import 規約の検出器・判定表・規約の文面をまとめて変える"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/hooks/lib/import-rule-violations.py",
+      "name": "import 規約の検出器",
+      "role": "`src/` の import を辿り、公開口・feature の向き・入れ子の深さ・循環の違反を報告する",
+      "change": "feature の外から入れ子の子を読む辺を `feature-nested-from-outside` として返し、集計と報告順に足した"
+    },
+    {
+      "path": ".claude/hooks/lib/import-rule-cases.sh",
+      "name": "判定表",
+      "role": "一時ディレクトリに土台のツリーを組み、ケースごとに検出器の報告(種別と件数)を照合する",
+      "change": "8 ケースを足した"
+    },
+    {
+      "path": ".claude/hooks/pre-push-import-rules.sh",
+      "name": "push 前の import 検査",
+      "role": "push のときに検出器を走らせ、違反があれば直し方の文で止める",
+      "change": "直し方の文に 1 文足した"
+    },
+    {
+      "path": "rules/consistency.md",
+      "name": "整合性規約",
+      "role": "feature の構成とネストの規範",
+      "change": "既存の 1 行を書き換え、外から読めるのはトップレベルだけという規範と種別名を入れた"
+    },
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "フックの説明",
+      "role": "検出器が報告する種別の一覧",
+      "change": "種別を足した",
+      "graph": false
+    },
+    {
+      "path": ".claude/hooks/lib/ts_sources.py",
+      "name": "走査の共有部品",
+      "role": "ファイルがどの feature に属するかを答える(feature の外なら None)"
+    }
+  ],
+  "messages": [
+    {
+      "id": "owner",
+      "from": ".claude/hooks/lib/import-rule-violations.py",
+      "to": ".claude/hooks/lib/ts_sources.py",
+      "kind": "qry",
+      "name": "import 元の feature を引く",
+      "code": "feature_of(importer)",
+      "via": "call",
+      "returns": "属する feature。外なら `None`"
+    },
+    {
+      "id": "relation",
+      "from": ".claude/hooks/lib/import-rule-violations.py",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "kind": "qry",
+      "name": "向きを判定する",
+      "code": "feature_relation(owner, reached)",
+      "via": "call",
+      "payload": "import 元の feature と読む先の feature",
+      "returns": "違反なら種別と理由の対。許すなら `None`",
+      "status": "changed"
+    },
+    {
+      "id": "deny",
+      "from": ".claude/hooks/pre-push-import-rules.sh",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "kind": "qry",
+      "name": "push 前に走らせる",
+      "code": "deny_on_violations import-rule-violations.py",
+      "via": "exec",
+      "returns": "`[種別]` の行と終了コード。違反があれば直し方の文で deny",
+      "status": "changed"
+    },
+    {
+      "id": "cases-run",
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "kind": "qry",
+      "name": "ケースごとに走らせる",
+      "code": "python3 import-rule-violations.py src",
+      "via": "exec",
+      "returns": "種別ごとの件数",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "push",
+      "label": "push 前の import 検査",
+      "steps": [
+        "deny",
+        "owner",
+        "relation"
+      ]
+    },
+    {
+      "id": "cases",
+      "label": "判定表の照合",
+      "steps": [
+        "cases-run",
+        "owner",
+        "relation"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "f6c228ee3ac5f54fbb15c62042858f0f82072d94",
+      "phase": "core",
+      "role": "検出器の `feature_relation()` に、外から入れ子の子を読む辺の判定を足す",
+      "why": "穴は「外なら無条件に許す」1 行だったので、その分岐の中だけを直した。feature 同士の判定と同じ関数から種別を返し、種別を返す場所を 1 か所に保つ",
+      "flows": [
+        "push",
+        "cases"
+      ],
+      "review": [
+        "新しい分岐が `owner is None` の中だけにあり、feature 同士の辺の判定が変わっていないか",
+        "`groups` の報告順が `feature-ancestor` の直後・`feature-nest-depth` の前になっているか"
+      ],
+      "before": [
+        {
+          "text": "外から入れ子の子を読んでも違反 0 件"
+        }
+      ],
+      "after": [
+        {
+          "text": "外から入れ子の子を読むと `feature-nested-from-outside` 1 件・exit 1"
+        }
+      ]
+    },
+    {
+      "sha": "e5f15b4be2e6ff57cde71c535293944d5d753861",
+      "phase": "core",
+      "role": "判定表に、外から読むケースと対照を足す",
+      "why": "外から読むケースだけでは、新しい分岐を `owner is None` の外に書く壊し方が素通りする。別のトップレベル feature から読む対照を足して、外の経路と feature の経路の対を揃えた",
+      "flows": [
+        "cases"
+      ],
+      "review": [
+        "対照のケース(トップレベルの `__tests__` 公開口は通る / 別のトップレベル feature からは `feature-sibling`)が、退行を本当に捕まえる位置にあるか"
+      ]
+    },
+    {
+      "sha": "c71c3718aac48c7918e5cddd84326eabdb1815be",
+      "phase": "core",
+      "role": "規約・フックの説明・push を止める文言に規範と種別を書く",
+      "why": "push を止める文言は根拠として `rules/consistency.md` を指すのに、そこに規範が無かった。常時ロードは上限なので、既存の 1 行を書き換えて行数を増やさない",
+      "review": [
+        "`rules/consistency.md` の 1 行に、規範と種別名の両方が読める形で入っているか"
+      ]
+    },
+    {
+      "sha": "e7dd5f5a22245797c6d67ed6426b962e3d35fe90",
+      "phase": "revise",
+      "role": "レビューの指摘で「feature の外」の範囲が読めるよう文面を直し、判定表と重複する確認手順を外す",
+      "why": "検出器が見るのは feature に属さないすべての呼び出し元なので、範囲は「feature の外」、例は `app/` と書き分けた。README の確認手順は判定表と同じ入力・期待で誰も照合しないので外した",
+      "review": [
+        "`feature_relation()` の docstring の「feature 同士で許すのは」が、直後の外からの分岐と食い違わないか"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "import-cases",
+      "label": "import 規約の判定表",
+      "file": ".claude/hooks/lib/import-rule-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "outside-nested",
+      "suite": "import-cases",
+      "name": "feature の外が入れ子の子 feature の公開口を読む",
+      "techniques": [
+        "regression",
+        "equivalence"
+      ],
+      "why": "Issue の再現手順そのもの。元の `return None` に戻すと落ちる",
+      "given": "土台のツリーに `editor` と入れ子の子 `tokens` がある",
+      "when": "`src/app/probe.ts` が `@/features/editor/features/tokens` を読む",
+      "then": "`feature-nested-from-outside` が 1 件",
+      "excerpt": {
+        "path": ".claude/hooks/lib/import-rule-cases.sh",
+        "start": 166,
+        "end": 169,
+        "text": "feature-nested-from-outside|feature の外が入れ子の子 feature の公開口を読む|src/app/probe.ts>@/features/editor/features/tokens\nfeature-nested-from-outside|feature の外が入れ子の子 feature の __tests__ 公開口を読む|src/app/probe.ts>@/features/editor/features/tokens/__tests__\nfeature-nested-from-outside|feature の外が入れ子の子 feature の __stories__ 公開口を読む|src/app/probe.ts>@/features/editor/features/sidebar/__stories__\nfeature-nested-from-outside|feature の外が import type だけで入れ子の子 feature を読む|src/app/probe.ts>type:@/features/editor/features/tokens"
+      },
+      "targets": [
+        ".claude/hooks/lib/import-rule-violations.py"
+      ],
+      "covers": [
+        "relation",
+        "cases-run"
+      ]
+    },
+    {
+      "id": "outside-depth",
+      "suite": "import-cases",
+      "name": "feature の外が 3 段目の feature を読む",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "向きと深さの両方が破れたとき、両方がこの順で出ることを固定する",
+      "given": "3 段目の feature `tree` に index がある",
+      "when": "`src/app/probe.ts` が `tree` を読む",
+      "then": "`feature-nested-from-outside` と `feature-nest-depth` が 1 件ずつ",
+      "excerpt": {
+        "path": ".claude/hooks/lib/import-rule-cases.sh",
+        "start": 170,
+        "end": 170,
+        "text": "feature-nested-from-outside+feature-nest-depth|feature の外が 3 段目の feature を読む|src/features/editor/features/sidebar/features/tree/index.ts>- src/app/probe.ts>@/features/editor/features/sidebar/features/tree"
+      },
+      "targets": [
+        ".claude/hooks/lib/import-rule-violations.py"
+      ],
+      "covers": [
+        "relation"
+      ]
+    },
+    {
+      "id": "outside-internal",
+      "suite": "import-cases",
+      "name": "feature の外が入れ子の子 feature の内部を読むのは、向きではなく公開口で報告する",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "公開口の判定が向きの判定より先に効くことを固定する",
+      "given": "入れ子の子 `sidebar` に内部モジュール `layers-panel` がある",
+      "when": "`src/app/probe.ts` が内部モジュールを直接読む",
+      "then": "`feature-public-api` だけが 1 件",
+      "excerpt": {
+        "path": ".claude/hooks/lib/import-rule-cases.sh",
+        "start": 171,
+        "end": 171,
+        "text": "feature-public-api|feature の外が入れ子の子 feature の内部を読むのは、向きではなく公開口で報告する|src/app/probe.ts>@/features/editor/features/sidebar/components/layers-panel"
+      },
+      "targets": [
+        ".claude/hooks/lib/import-rule-violations.py"
+      ]
+    },
+    {
+      "id": "outside-top-tests",
+      "suite": "import-cases",
+      "name": "feature の外がトップレベル feature の __tests__ 公開口を読む",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "新しい判定がトップレベルまで巻き込まないことの対照。外からは常に違反にする壊し方で落ちる",
+      "given": "`editor/__tests__/index.ts` がある",
+      "when": "`src/app/probe.ts` が `@/features/editor/__tests__` を読む",
+      "then": "違反なし",
+      "excerpt": {
+        "path": ".claude/hooks/lib/import-rule-cases.sh",
+        "start": 142,
+        "end": 142,
+        "text": "pass|feature の外がトップレベル feature の __tests__ 公開口を読む|src/features/editor/__tests__/index.ts>- src/app/probe.ts>@/features/editor/__tests__"
+      },
+      "covers": [
+        "relation"
+      ]
+    },
+    {
+      "id": "feature-to-nested",
+      "suite": "import-cases",
+      "name": "別のトップレベル feature が入れ子の子の公開口を読むのは、外からではなく feature 間の向きで報告する",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "新しい分岐を `owner is None` の外に書く壊し方(親でなければ外から扱い)を捕まえる",
+      "given": "トップレベル feature `probe-b` がある",
+      "when": "`probe-b` が `@/features/editor/features/sidebar` を読む",
+      "then": "`feature-sibling` が 1 件",
+      "excerpt": {
+        "path": ".claude/hooks/lib/import-rule-cases.sh",
+        "start": 161,
+        "end": 161,
+        "text": "feature-sibling|別のトップレベル feature が入れ子の子の公開口を読むのは、外からではなく feature 間の向きで報告する|src/features/probe-b/index.ts>@/features/editor/features/sidebar"
+      },
+      "covers": [
+        "relation"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "アプリの入口から入れ子の子を直接読むと push が止まる",
+    "lead": "push 前の検査と CI が、アプリの入口から入れ子の子の部品を直接読む書き方を止めるようになった。トップレベルの部品を読む書き方は今までどおり通る。",
+    "changed": {
+      "before": [
+        {
+          "text": "アプリの入口から入れ子の子の部品を直接読んでも、検査は何も言わず push できた"
+        }
+      ],
+      "after": [
+        {
+          "text": "同じ書き方をすると、検査が違反 1 件を出して push と CI を止める",
+          "message": "deny"
+        },
+        {
+          "text": "止めたときの文は「外から読めるのはトップレベルだけ」と直し方を示す"
+        }
+      ]
+    },
+    "kept": [
+      {
+        "text": "アプリの入口からトップレベルの部品を読むのは、今までどおり通る",
+        "tests": [
+          "outside-top-tests"
+        ]
+      },
+      {
+        "text": "部品同士の読み方(兄弟・親子)の報告のされ方は変わらない",
+        "tests": [
+          "feature-to-nested"
+        ]
+      },
+      {
+        "text": "部品の内側へ直接入る書き方は、今までどおり公開口の違反として出る",
+        "tests": [
+          "outside-internal"
+        ]
+      }
+    ]
+  }
+}
