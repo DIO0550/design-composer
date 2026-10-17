@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "pr": 1088,
+  "headBranch": "claude/affectionate-hypatia-nha8h2",
+  "baseBranch": "main",
+  "mergeBase": "c959c1f7d055f272058828386d9063441e204bc0",
+  "head": "b1d64443d374db1a93b48bc8c71cd5279ee7e594",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/case-law/testing.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1060.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "b1d64443d374db1a93b48bc8c71cd5279ee7e594",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T00:10:02Z",
+      "subject": "harness: test の再発にフックの段の判例を追記",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01SrfnkPsajFgNieTdi3MhY1",
+      "files": [
+        {
+          "path": "harness/case-law/testing.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "patch": "@@ -16,6 +16,18 @@\n | 行き先ごとの `switch` を全部 `some` にしても通った | 1 件も落ちず |\n | 「ファイルとドキュメントの両方が不正」を作るテストが無く、優先順位を反転しても通った | 1737 件すべて通過 |\n \n+**フックの段(`use-*`)も同じ。** ドメインと通しのテストが通っていても、フックが引数を足して\n+下層へ渡す配線を変えた回は、フックの段を参照するテストが無いまま残る。レビュアーが「ドメインと\n+通しで止まる」と範囲を決めると、この段は誰も壊して確かめない。\n+\n+| 起きたこと | 規模 |\n+|---|---|\n+| `setValue` に引数を足したのに、フックの `__tests__/` 自体が無かった(人の指摘) | ドメイン・通しのテストは通過 |\n+| 状態を扱うフックが `set_token_value` に引数を通したのに、フックのテストを足していなかった(人の指摘) | 同上 |\n+\n+判定の分かれ目: 差分で**処理が変わったファイルごと**に、そのファイルを経由するテストが 1 件\n+あるかを数える。変えた層(ドメイン・フック・コンポーネント)を飛ばして下の層のテストで代用しない。\n+\n **「1 つ選んで壊す」で終えない。** 独立した判断ごとにすべて壊す。配線・フラグ・別ブランチが\n それぞれ別の主張を持つ差分では、1 つだけ確かめると残りが素通りする。\n ",
+          "patchLines": 19,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/pr-1060.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -245,3 +245,5 @@\n ## 規約への反映\n \n 無し。このスキルの管轄は記録までで、数えて介入するかは `harness-growth` が決める。\n+\n+- 対策済: `test` 層=case-law at pr-1088",
+          "patchLines": 6,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
