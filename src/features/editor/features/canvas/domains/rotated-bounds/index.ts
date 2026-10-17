@@ -46,6 +46,19 @@ function rotatedAboutCenter(
 }
 
 /**
+ * 4 角を写した先を囲む軸に平行な矩形。
+ *
+ * @param pointOf 矩形の中の比率（左上 (0, 0)・右下 (1, 1)）で指した角を写す先
+ * @returns 写した 4 角をすべて含む最小の軸に平行な矩形
+ */
+function enclosingCorners(pointOf: (ratio: Offset) => Offset): CanvasBounds {
+  return CanvasBounds.enclosingAll([
+    CanvasBounds.spanning(pointOf({ x: 0, y: 0 }), pointOf({ x: 1, y: 1 })),
+    CanvasBounds.spanning(pointOf({ x: 1, y: 0 }), pointOf({ x: 0, y: 1 })),
+  ]);
+}
+
+/**
  * 4 角を写した先を囲む軸に平行な矩形が、相手の矩形と重なっているか。
  *
  * @param pointOf 矩形の中の比率（左上 (0, 0)・右下 (1, 1)）で指した角を写す先
@@ -56,11 +69,7 @@ function overlapsEnclosing(
   pointOf: (ratio: Offset) => Offset,
   other: CanvasBounds,
 ): boolean {
-  const enclosing = CanvasBounds.enclosingAll([
-    CanvasBounds.spanning(pointOf({ x: 0, y: 0 }), pointOf({ x: 1, y: 1 })),
-    CanvasBounds.spanning(pointOf({ x: 1, y: 0 }), pointOf({ x: 0, y: 1 })),
-  ]);
-  return CanvasBounds.overlaps(enclosing, other);
+  return CanvasBounds.overlaps(enclosingCorners(pointOf), other);
 }
 
 export const RotatedBounds = {
@@ -151,6 +160,36 @@ export const RotatedBounds = {
   relativeTo(bounds: RotatedBounds, origin: CanvasBounds): RotatedBounds {
     return {
       unrotated: CanvasBounds.relativeTo(bounds.unrotated, origin),
+      rotation: bounds.rotation,
+    };
+  },
+
+  /**
+   * 回った 4 角を囲む軸に平行な矩形（画面に見えている外接矩形）。
+   *
+   * @param bounds 回って描かれている矩形
+   * @returns 回った 4 角をすべて含む最小の軸に平行な矩形。向きが 360 度の倍数（0 を含む）
+   *   なら回る前の矩形そのもの
+   */
+  toEnclosing(bounds: RotatedBounds): CanvasBounds {
+    return enclosingCorners((ratio) => RotatedBounds.pointAt(bounds, ratio));
+  },
+
+  /**
+   * 回る前の矩形の左上を、親の左上から見たその位置へ置き直す。大きさと向きは変わらない。
+   *
+   * @param bounds 置き直す矩形
+   * @param parent 原点になる親の矩形
+   * @param offset 親の左上から見た、回る前の矩形の左上の位置（画面上の px）
+   * @returns 回る前の矩形をその位置へ置いた、同じ大きさ・同じ向きの矩形
+   */
+  placedAt(
+    bounds: RotatedBounds,
+    parent: CanvasBounds,
+    offset: Offset,
+  ): RotatedBounds {
+    return {
+      unrotated: CanvasBounds.placedAt(parent, offset, bounds.unrotated),
       rotation: bounds.rotation,
     };
   },
