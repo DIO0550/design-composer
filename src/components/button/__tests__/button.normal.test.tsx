@@ -103,6 +103,16 @@ test("アイコンのボタンは、与えた名前で読まれる", () => {
   expect(screen.getByRole("button", { name: "追加" })).toBeDefined();
 });
 
+test("行内のアイコンのボタンは、中身の綴りではなく与えた名前で読まれる", () => {
+  render(
+    <Button kind={ButtonKinds.InlineIcon} aria-label="等倍に戻す">
+      55%
+    </Button>,
+  );
+
+  expect(screen.getByRole("button", { name: "等倍に戻す" })).toBeDefined();
+});
+
 test("テキストのボタンは、名前を与えなければ中身の綴りで読まれる", () => {
   render(<Button kind={ButtonKinds.Text}>reveal in tree</Button>);
 
