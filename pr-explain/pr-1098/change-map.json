@@ -1,0 +1,1297 @@
+{
+  "version": 2,
+  "pr": 1098,
+  "headBranch": "claude/magical-cannon-6vpydd",
+  "baseBranch": "main",
+  "mergeBase": "72b05b1fcd268810d8a65904d1b772b66e6b8fbb",
+  "head": "c3d70b3e1561674413051911202384d64aa951a9",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 9,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/block-lint-suppress.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/check-doc-comments.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 8,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/check-test-helper-duplication.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 8,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/canary-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-fixtures.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 51,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 190,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 43,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/lint-suppressions.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 31,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/result-option-discriminant-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/test-rules-scan.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/verification-agent-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-doc-comments.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-import-rules.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-named-paths.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-result-option-discriminants.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-story-titles.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-frontend-report.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-lint-suppressions.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-tauri-version-match.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/detector-precondition.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/detector-report.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/lib/check-tally.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": "pnpm-lock.yaml",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "f0d7eba7c0fe7a601fd793130102183d1a584726",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T10:37:45Z",
+      "subject": "✨ [New Feature]: #1006 編集時の検査フックの共通部分 edit-detector.sh を足す",
+      "body": "- .claude/hooks/lib/edit-detector.sh を新設し、python3_usable と\n  detector_report を自分の位置から辿って source する\n- print_unchecked_context(イベント名 / 検査の名前 / 検出器)を置き、\n  permissionDecision を付けない additionalContext で「検査できていません」を出す\n- detector-report.sh の「使う側」に edit-detector.sh を足す\n\n背景:\n#649 で push 前の検査は、検出器が途中で落ちたときに緑にしないようにしたが、\n編集時のフック 3 本は `python3 ... || true` のまま、落ちると黙って通していた。\nオーナーの選択(Issue #1006 の選択肢 A)は「止めずに、検査できていないことを伝える」。\n\n採用理由:\n判定は #649 の detector_report をそのまま使い回し、新しい判定を書かない。\n出力は permissionDecision を付けない hookSpecificOutput.additionalContext にした。\nPreToolUse でも拒否にならずモデルへ届くことを claude -p で実測した。\n文にファイル名と再現コマンドは入れない。block-lint-suppress は編集内容を\n標準入力で渡すため `python3 <検出器> <ファイル>` では再現できず、対象は\n直前に編集した側が知っている。\n\n影響とトレードオフ:\n共通部分は pre-push-detector.sh と同じ深さで .github/scripts/lib を辿るので、\n判定表がフックを一時ディレクトリへ写すときも同じ並びで写す必要がある。\n\n代替案:\n- exit_unchecked(exit 2 + stderr)の使い回し: exit 2 は PreToolUse で拒否になり、\n  選択肢 A に反する\n- systemMessage: ユーザー向けの警告で、AI には届かない\n- stderr に書いて exit 0: exit 0 の stderr は Claude に見えない\n- pre-push-detector.sh へ関数を足す: push のときだけ走る部品で、名前と中身がずれる\n- 引数を 4 つ(ファイルを含む)にする: 同じ型の位置引数が並んで取り違えが\n  型で落ちず、再現コマンドも stdin のフックでは成り立たない\n\n参考:\n- Issue #1006 の計画と却下案(R1〜R11)\n- .github/scripts/lib/detector-report.sh(#649)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Q2e59onTiZnAoRLrVRNuLd",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/edit-detector.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 35,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,35 @@\n+#!/usr/bin/env bash\n+#\n+# 編集時の検査フック（Edit / Write）の共通部分。検出器が異常終了したときに、編集を止めずに\n+# 「検査できていない」ことを編集した側へ伝える。\n+#\n+# 使う側: .claude/hooks/block-lint-suppress.sh（PreToolUse）/ check-doc-comments.sh /\n+#   check-test-helper-duplication.sh（PostToolUse）\n+#\n+# 使い方: source したうえで、`python3_usable` で疎通を見てから検出器を `detector_report` で走らせ、\n+# 1 が返ったら `print_unchecked_context` を呼んで exit 0。\n+#\n+# python3 の疎通と検出器の異常終了の見方は、層 1・2 の `check-added-*` と層 3 の\n+# `pre-push-detector.sh` と同じスクリプトを使う。自分の位置から辿るのは、判定表が\n+# フックを一時ディレクトリへ写して走らせるため。\n+#\n+# `detector-report.sh` の `exit_unchecked` は使わない。exit 2 は PreToolUse では編集の拒否になる。\n+edit_detector_lib_dir=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")/../../../.github/scripts/lib\" && pwd)\"\n+source \"$edit_detector_lib_dir/detector-precondition.sh\"\n+source \"$edit_detector_lib_dir/detector-report.sh\"\n+\n+# 検出器が異常終了して検査できていないことを、`permissionDecision` を付けない\n+# `additionalContext` の JSON として標準出力へ書く。\n+#\n+# ファイル名と再現コマンドは入れない。block-lint-suppress は編集内容を標準入力で渡すので\n+# `python3 <検出器> <ファイル>` では再現できず、対象は直前に編集した側が知っている。\n+#\n+# @param 1 フックのイベント名(`PreToolUse` / `PostToolUse`)\n+# @param 2 検査の名前\n+# @param 3 検出器のパス\n+print_unchecked_context() {\n+  local event=\"$1\" check=\"$2\" detector=\"$3\"\n+  jq -n --arg event \"$event\" \\\n+    --arg message \"${check}の検出器 ${detector} が異常終了したため、この編集は検査できていません(違反が無かったとは限りません)。\" \\\n+    '{hookSpecificOutput: {hookEventName: $event, additionalContext: $message}}'\n+}",
+          "patchLines": 36,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/lib/detector-report.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -13,7 +13,7 @@\n # 報告の行を 1 行以上出したあとに落ちたものは「違反あり」と読む(`check-added-*` では、その行が\n # 追加行に載らなければ緑になる)。塞ぐには全検出器の入口で例外を捕まえて終了コードを分けることになる。\n #\n-# 使う側: `.github/scripts/check-added-*.sh` / `.claude/hooks/lib/pre-push-detector.sh`\n+# 使う側: `.github/scripts/check-added-*.sh` / `.claude/hooks/lib/pre-push-detector.sh` / `.claude/hooks/lib/edit-detector.sh`\n \n # 検出器を python3 で走らせ、検査できたなら標準出力をそのまま書く。検査できなかったなら、\n # 標準出力を標準エラーへ回す(使い方の説明など、落ちた理由を出力に残すため)。",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "1c3d536199026af7bd46c3c246131444a00ac60a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T10:37:59Z",
+      "subject": "🐛 [Bug Fix]: #1006 編集時のフック 3 本で検出器が落ちたら検査できていないことを伝える",
+      "body": "- block-lint-suppress.sh / check-doc-comments.sh / check-test-helper-duplication.sh の\n  `python3 ... || true` を detector_report に置き換える\n- 検出器が報告の行を出さずに 0 以外で終わった、または 0 と 1 以外で終わったら、\n  print_unchecked_context で「検査できていません」を伝えて exit 0 で終える\n- python3 の疎通は `command -v python3` から python3_usable に揃える\n- 各フックの冒頭コメントに、落ちたときは止めずに伝える旨と理由の参照先を足す\n\n背景:\n3 本とも、検出器が traceback で落ちると出力が空になり、何も言わずに通していた\n(実物を一時ツリーへ写して実測)。block-lint-suppress は逆に、要約だけを出して\nexit 1 / 使い方を出して exit 2 で終わる検出器の出力を禁止パターンとして deny していた。\n\n採用理由:\n編集時のフックは層 3(即時フィードバック)で、ゲートは push 前と CI にある。\ndeny にすると、検出器が壊れている間は JS/TS を一切編集できない。黙って通すと、\n壊れていることに push まで気づけない。そのため止めずに伝える(Issue の選択肢 A)。\n報告の行のパターンは実物の出力に合わせた(`^[0-9]+:` / `^doc が規約を満たしていません`\n/ `^本体が同じテストヘルパーが`)。\n\n影響とトレードオフ:\nblock-lint-suppress は、報告の行を出さずに落ちた検出器を deny しなくなる。\n報告の行を出してから落ちた検出器は、これまでどおり「違反あり」と読む\n(detector-report.sh に書かれた残る穴で、スコープ外)。\n\n代替案:\n- 検出器のパスを環境変数で差し替えられるようにする: 本番のフックにも効き、\n  セッションに残った変数 1 つで検査が黙って別物になる\n- 本体を lib の関数へ移す: 3 本は入力の取り出し方が違い、関数が 3 つに割れる\n- `command -v python3` のまま: 起動すると落ちる python3 で、別の原因なのに\n  「検出器が異常終了した」と名指しする\n- python3 が使えないときも unchecked を出す: Issue のスコープは検出器の異常終了で、\n  python3 の有無は環境の前提。層 3 の pre-push-detector.sh と同じく通す\n\n参考:\n- Issue #1006\n- .claude/hooks/README.md「例外(エスケープハッチ)」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Q2e59onTiZnAoRLrVRNuLd",
+      "files": [
+        {
+          "path": ".claude/hooks/block-lint-suppress.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 1,
+          "patch": "@@ -10,9 +10,14 @@\n # 判定そのものは lib/lint-suppressions.py。同じスクリプトを CI の\n # check-added-lint-suppressions.sh が使う(フックが発火しない環境の代替 /\n # .claude/hooks/README.md「強制力の序列」)。\n+#\n+# 検出器が異常終了したら、編集は止めずに「検査できていない」ことを伝える\n+# (理由は README.md「例外(エスケープハッチ)」)。\n set -euo pipefail\n \n hook_dir=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")\" && pwd)\"\n+source \"$hook_dir/lib/edit-detector.sh\"\n+detector=\"$hook_dir/lib/lint-suppressions.py\"\n \n input=\"$(cat)\"\n file=\"$(jq -r '.tool_input.file_path // .tool_input.path // empty' <<< \"$input\")\"\n@@ -43,7 +48,12 @@ esac\n \n [ -z \"$content\" ] && exit 0\n \n-suppressions=\"$(printf '%s' \"$content\" | python3 \"$hook_dir/lib/lint-suppressions.py\" || true)\"\n+python3_usable || exit 0\n+\n+if ! suppressions=\"$(printf '%s' \"$content\" | detector_report '^[0-9]+:' \"$detector\")\"; then\n+  print_unchecked_context PreToolUse \"lint 抑制コメント\" \"$detector\"\n+  exit 0\n+fi\n [ -z \"$suppressions\" ] && exit 0\n \n jq -n --arg lines \"$suppressions\" '{",
+          "patchLines": 29,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/check-doc-comments.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 2,
+          "patch": "@@ -16,9 +16,11 @@\n # function）/ 77 件（export された宣言）あり、触っていない分まで push を止めると、\n # 直す気の無い違反を避けるためのエスケープハッチが増えてフック全体が信用されなくなる\n # （README.md「例外(エスケープハッチ)」）。編集したファイルの分だけを出す。\n+# 検出器が異常終了したら、止めずに「検査できていない」ことを伝える(理由は同じ節)。\n set -euo pipefail\n \n hook_dir=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")\" && pwd)\"\n+source \"$hook_dir/lib/edit-detector.sh\"\n detector=\"$hook_dir/lib/missing-doc-comments.py\"\n \n input=\"$(cat)\"\n@@ -33,9 +35,12 @@ case \"$file\" in\n   *) exit 0 ;;\n esac\n \n-command -v python3 >/dev/null 2>&1 || exit 0\n+python3_usable || exit 0\n \n-report=\"$(python3 \"$detector\" \"$file\" || true)\"\n+if ! report=\"$(detector_report '^doc が規約を満たしていません' \"$detector\" \"$file\")\"; then\n+  print_unchecked_context PostToolUse \"doc コメント\" \"$detector\"\n+  exit 0\n+fi\n [ -n \"$report\" ] || exit 0\n \n jq -Rn --arg msg \"$report\" '{",
+          "patchLines": 27,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/check-test-helper-duplication.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 2,
+          "patch": "@@ -14,9 +14,11 @@\n # ブロックしない（フィードバックのみ）。編集したファイルが絡む分だけを出す。\n # 理由は README.md「例外(エスケープハッチ)」に一本化してある\n # （同じ判断を 2 箇所へ書くと片方だけ古くなる）。\n+# 検出器が異常終了したら、止めずに「検査できていない」ことを伝える(理由は同じ節)。\n set -euo pipefail\n \n hook_dir=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")\" && pwd)\"\n+source \"$hook_dir/lib/edit-detector.sh\"\n detector=\"$hook_dir/lib/duplicate-test-helpers.py\"\n \n input=\"$(cat)\"\n@@ -31,9 +33,12 @@ case \"$(basename \"$(dirname \"$file\")\")\" in\n   *) exit 0 ;;\n esac\n \n-command -v python3 >/dev/null 2>&1 || exit 0\n+python3_usable || exit 0\n \n-report=\"$(python3 \"$detector\" \"$file\" || true)\"\n+if ! report=\"$(detector_report '^本体が同じテストヘルパーが' \"$detector\" \"$file\")\"; then\n+  print_unchecked_context PostToolUse \"テストヘルパーの重複\" \"$detector\"\n+  exit 0\n+fi\n [ -n \"$report\" ] || exit 0\n \n jq -Rn --arg msg \"$report\" '{",
+          "patchLines": 27,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "84cebb90a865b4b9ccd092ef3da5442a8fe5510e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T10:38:20Z",
+      "subject": "🧪 [Tests]: #1006 編集時の検査フックの判定表 edit-detector-cases.sh を足す",
+      "body": "- .claude/hooks/lib/edit-detector-cases.sh を新設し、フック 3 本 × 7 ケース(21 ケース)を流す\n  - 報告なしの traceback / 報告の行なしで exit 1 / 報告なしで exit 2 /\n    報告の行を出して exit 2 → unchecked\n  - 実物の検出器で違反あり → block-lint-suppress は deny、他 2 本は feedback\n  - 実物の検出器で違反なし → pass / 起動できない python3 → pass\n- 結果を deny / unchecked / feedback / pass / exit=<n> / unknown に分け、\n  hookEventName がフックのイベントと一致することまで見る\n- cases-report.sh を使う判定表の数を 8 本から 9 本にする\n\n背景:\nフック 3 本で検出器が落ちたときの扱いを変えたので、その判定を固定する。\n既存の検出器ごとの判定表は検出器を直接呼んでいて、フックを通らない。\n\n採用理由:\n実物のフックを一時ディレクトリへ写し、写しの lib/ に検出器と同じ名前でスタブか\n実物を置いて差し込む。フックの入力の取り出し・絞り込み・報告の行のパターン・\nイベント名までを通しで確かめられる。写す方式には check-added-cases.sh と\npr-explain-pages-cases.sh の前例がある。\nexit 2 の 2 ケースは、pre-push-detector-cases.sh の usage / reports-exit2 と対にした。\ntraceback と exit 1 だけでは scan_completed の「0 と 1 以外」の枝を通らないため。\nunchecked と feedback は「検査できていません」の綴りと報告の見出しで見分ける。\nJSON の形だけでは、常に unchecked を出す壊し方でも通ってしまうため。\n\n影響とトレードオフ:\npython3 と jq が要る。python3 が無いと pass 以外のケースが、jq が無いとすべてのケースが NG になる。\n報告の行を出してから落ちた検出器を「違反あり」と読む穴は固定しない。固定すると、\n直すべき穴を仕様として固定することになる。\nミューテーションでの実測(implementer): python3_usable を command -v に戻す /\nhookEventName を取り違える / `|| true` に戻す / exit 2 で終える /\npermissionDecision を足す、のどれでも NG が出る。\n\n代替案:\n- 検出器のパスを環境変数で差し替えてスタブを渡す: 本番のフックにも差し替え口が残る\n- 既存の検出器ごとの判定表にケースを足す: フックの配線を通らない\n\n参考:\n- .claude/hooks/lib/pre-push-detector-cases.sh\n- Issue #1006 の計画の検証(plan-reviewer の指摘 3・4)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Q2e59onTiZnAoRLrVRNuLd",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -7,7 +7,7 @@\n # 絶対パスで渡すもの・`cd` してから相対で渡すもの、置くのが 1 ファイルか木か）ので、\n # そこは各判定表が持つ。\n #\n-# **共有先を作ったのは、`.claude/hooks/lib/` の中に同じ関数が 2 本並んだため**（いまは 8 本）\n+# **共有先を作ったのは、`.claude/hooks/lib/` の中に同じ関数が 2 本並んだため**（いまは 9 本）\n # （`rules/coding.md`「同じ処理が2箇所に現れたら共通化する」）。`harness/records/count-cases.sh`\n # が共通化を見送っているのは、判定表が 4 つのフォルダに割れていて共有先を置くと判定表 1 本を\n # 単体で読めなくなるからで、同じフォルダに並ぶこれらにはその理由が当たらない。",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 204,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,204 @@\n+#!/usr/bin/env bash\n+#\n+# 編集時の検査フックの共通部分(`edit-detector.sh`)の判定表。それを使うフック 3 本\n+# (`block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh`)へ\n+# 編集の JSON を流し、拒否 / 検査できていない / 違反の報告 / 素通り が期待どおりかを 1 コマンドで確かめる。\n+#\n+# 使い方: bash .claude/hooks/lib/edit-detector-cases.sh\n+# 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n+#\n+# フックは一時ディレクトリへ写したものを走らせ、検出器はその写しの `lib/` に同じ名前で置く\n+# (スタブか実物)。環境変数で検出器を差し替える形にすると、本番のフックにもその差し替え口が残る。\n+#\n+# 1 ケースは `check <期待> <フック> <検出器の種類> <入力> [python3]`。期待の綴りは `classify` が返すもの。\n+# 終了コードと出力の組を実物の検出器から決まった形で作れないので、落ちる検出器はスタブで作る。\n+#\n+# `[python3]` に `broken` を渡すと、起動すると 127 で落ちる python3 を PATH 先頭に置く。\n+# 道具が無い環境では伝えることも無いので pass になる(`command -v python3` で疎通を見る実装は、\n+# 起動して落ちたものを「検査できていない」にする)。\n+#\n+# JSON の組み立てと取り出しに jq、検出器に python3 を使う。python3 が無いと pass 以外のケースが、jq が無いと\n+# すべてのケースが NG になるので、`harness/githooks/pre-push` は両方が揃う環境でだけ走らせる\n+# (カナリアの判定表と同じ)。\n+set -uo pipefail\n+\n+lib_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n+repo_dir=\"$(cd \"$lib_dir/../../..\" && pwd)\"\n+work=\"$(mktemp -d)\"\n+trap 'rm -rf \"$work\"' EXIT\n+\n+source \"$lib_dir/cases-report.sh\"\n+\n+# 判定に要るものだけを、リポジトリと同じ相対位置で一時ディレクトリへ写す。\n+copy_hooks() {\n+  local path\n+  for path in .claude/hooks/block-lint-suppress.sh .claude/hooks/check-doc-comments.sh \\\n+    .claude/hooks/check-test-helper-duplication.sh .claude/hooks/lib/edit-detector.sh \\\n+    .github/scripts/lib/detector-precondition.sh .github/scripts/lib/detector-report.sh; do\n+    mkdir -p \"$work/$(dirname \"$path\")\"\n+    cp \"$repo_dir/$path\" \"$work/$path\"\n+  done\n+}\n+\n+# 違反のある入力と無い入力に使うファイルを置く。\n+#\n+# doc は doc の無い export と doc のある export、テストヘルパーは深さの違う 2 つの `__tests__/` に\n+# 本体が同じヘルパー(`pre-push-detector-cases.sh` の `place_duplicate` と同じ形)と、本体が 1 つしか無いヘルパー。\n+place_sources() {\n+  local folder\n+  mkdir -p \"$work/src\"\n+  printf 'export function openedAt() {\\n  return 1;\\n}\\n' >\"$work/src/undocumented.ts\"\n+  printf '/** 開いた時刻を返す。 */\\nexport function openedAt() {\\n  return 1;\\n}\\n' >\"$work/src/documented.ts\"\n+  for folder in \"$work/src/a/__tests__\" \"$work/src/b/c/__tests__\"; do\n+    mkdir -p \"$folder\"\n+    printf 'function openedAt(path: string) {\\n  return OpenedDocument.create({ path, document: sampleDocument() });\\n}\\n' \\\n+      >\"$folder/setup.ts\"\n+  done\n+  printf 'function closedAt(path: string) {\\n  return ClosedDocument.create({ path, closedBy: sampleUser() });\\n}\\n' \\\n+    >\"$work/src/a/__tests__/single.ts\"\n+}\n+\n+# フックごとの検出器の名前・イベント名・報告の見出し(`additionalContext` に載るもの)・\n+# 報告の行(検出器が違反のときに出す 1 行目)を、`<名前>=<値>` の行で書く。\n+#\n+# $1 フックのファイル名\n+hook_profile() {\n+  case \"$1\" in\n+    block-lint-suppress.sh)\n+      printf 'detector=lint-suppressions.py\\nevent=PreToolUse\\nheading=\\nreport_line=1:// eslint-disable-next-line no-console\\n' ;;\n+    check-doc-comments.sh)\n+      printf 'detector=missing-doc-comments.py\\nevent=PostToolUse\\nheading=doc が規約を満たしていません\\nreport_line=doc が規約を満たしていません:\\n' ;;\n+    check-test-helper-duplication.sh)\n+      printf 'detector=duplicate-test-helpers.py\\nevent=PostToolUse\\nheading=本体が同じテストヘルパーが\\nreport_line=本体が同じテストヘルパーが、__tests__ に 2 つ以上あります。\\n' ;;\n+  esac\n+}\n+\n+# `hook_profile` から 1 項目を取り出す。\n+#\n+# $1 フックのファイル名\n+# $2 項目の名前\n+profile_value() {\n+  hook_profile \"$1\" | sed -n \"s/^$2=//p\"\n+}\n+\n+# フックへ渡す JSON を書く。\n+#\n+# $1 フックのファイル名\n+# $2 違反のある入力なら `violation`、無い入力なら `clean`\n+edit_payload() {\n+  local hook=\"$1\" input=\"$2\"\n+  case \"$hook:$input\" in\n+    block-lint-suppress.sh:violation)\n+      jq -n --arg f \"$work/src/a.ts\" '{tool_name: \"Write\", tool_input: {file_path: $f, content: \"// eslint-disable-next-line no-console\\nconsole.log(1);\\n\"}}' ;;\n+    block-lint-suppress.sh:clean)\n+      jq -n --arg f \"$work/src/a.ts\" '{tool_name: \"Write\", tool_input: {file_path: $f, content: \"console.log(1);\\n\"}}' ;;\n+    check-doc-comments.sh:violation) jq -n --arg f \"$work/src/undocumented.ts\" '{tool_input: {file_path: $f}}' ;;\n+    check-doc-comments.sh:clean) jq -n --arg f \"$work/src/documented.ts\" '{tool_input: {file_path: $f}}' ;;\n+    check-test-helper-duplication.sh:violation) jq -n --arg f \"$work/src/a/__tests__/setup.ts\" '{tool_input: {file_path: $f}}' ;;\n+    check-test-helper-duplication.sh:clean) jq -n --arg f \"$work/src/a/__tests__/single.ts\" '{tool_input: {file_path: $f}}' ;;\n+  esac\n+}\n+\n+# 写しの `lib/` に検出器を置く。種類ごとに終了コードと出力の組が違う。\n+#\n+# $1 フックのファイル名\n+# $2 検出器の種類(`real` は実物。他はスタブ)\n+place_detector() {\n+  local hook=\"$1\" kind=\"$2\"\n+  local name target report_line\n+  name=\"$(profile_value \"$hook\" detector)\"\n+  target=\"$work/.claude/hooks/lib/$name\"\n+  report_line=\"$(profile_value \"$hook\" report_line)\"\n+  case \"$kind\" in\n+    real) cp \"$repo_dir/.claude/hooks/lib/$name\" \"$target\" ;;\n+    crash) printf 'raise RuntimeError(\"判定表: 検出器が途中で落ちる\")\\n' >\"$target\" ;;\n+    silent-exit1) printf 'import sys\\nprint(\"違反は 0 件\")\\nsys.exit(1)\\n' >\"$target\" ;;\n+    usage) printf 'import sys\\nprint(\"使い方: 検査するファイルを渡す\")\\nsys.exit(2)\\n' >\"$target\" ;;\n+    reports-exit2) printf 'import sys\\nprint(%s)\\nsys.exit(2)\\n' \"$(jq -n --arg l \"$report_line\" '$l')\" >\"$target\" ;;\n+  esac\n+}\n+\n+# 起動すると 127 で落ちる python3 を置き、PATH の先頭に足す値を返す。`broken` 以外なら空。\n+#\n+# $1 `broken` なら置く\n+python3_path_prefix() {\n+  [ \"$1\" = \"broken\" ] || return 0\n+  mkdir -p \"$work/broken-bin\"\n+  printf '#!/usr/bin/env bash\\nexit 127\\n' >\"$work/broken-bin/python3\"\n+  chmod +x \"$work/broken-bin/python3\"\n+  printf '%s:' \"$work/broken-bin\"\n+}\n+\n+# フックの出力と終了コードを、`exit=<n>` / `pass` / `deny` / `unchecked` / `feedback` / `unknown` に分ける。\n+#\n+# $1 フックの標準出力\n+# $2 フックの終了コード\n+# $3 期待するイベント名\n+# $4 報告の見出し(空なら `feedback` にはならない)\n+classify() {\n+  local output=\"$1\" status=\"$2\" event=\"$3\" heading=\"$4\"\n+  if [ \"$status\" -ne 0 ]; then\n+    echo \"exit=$status\"\n+    return 0\n+  fi\n+  if [ -z \"$output\" ]; then\n+    echo \"pass\"\n+    return 0\n+  fi\n+  local is_deny='.hookSpecificOutput.permissionDecision == \"deny\" and .hookSpecificOutput.hookEventName == $event'\n+  local is_unchecked='(.hookSpecificOutput | has(\"permissionDecision\") | not)\n+    and .hookSpecificOutput.hookEventName == $event\n+    and (.hookSpecificOutput.additionalContext // \"\" | contains(\"検査できていません\"))'\n+  local is_feedback='$heading != \"\" and .hookSpecificOutput.hookEventName == $event\n+    and (.hookSpecificOutput.additionalContext // \"\" | contains($heading))\n+    and (.hookSpecificOutput.additionalContext // \"\" | contains(\"検査できていません\") | not)'\n+  local kind\n+  for kind in deny unchecked feedback; do\n+    local expression=\"is_$kind\"\n+    if jq -e --arg event \"$event\" --arg heading \"$heading\" \"${!expression}\" <<<\"$output\" >/dev/null 2>&1; then\n+      echo \"$kind\"\n+      return 0\n+    fi\n+  done\n+  echo \"unknown\"\n+}\n+\n+# 1 ケースを判定して報告し、PATH に足したものを消す(後ろのケースへ残さない)。\n+#\n+# $1 期待\n+# $2 フックのファイル名\n+# $3 検出器の種類(`place_detector` が置くもの)\n+# $4 違反のある入力なら `violation`、無い入力なら `clean`\n+# $5 `broken` なら起動できない python3 を PATH 先頭に置く(省略可)\n+# $6 ケース名\n+check() {\n+  local expected=\"$1\" hook=\"$2\" kind=\"$3\" input=\"$4\" python3_state=\"$5\" label=\"$6\"\n+  local output status=0 prefix decision\n+  place_detector \"$hook\" \"$kind\"\n+  prefix=\"$(python3_path_prefix \"$python3_state\")\"\n+  output=\"$(edit_payload \"$hook\" \"$input\" | PATH=\"${prefix}${PATH}\" bash \"$work/.claude/hooks/$hook\" 2>/dev/null)\" || status=$?\n+  decision=\"$(classify \"$output\" \"$status\" \"$(profile_value \"$hook\" event)\" \"$(profile_value \"$hook\" heading)\")\"\n+  rm -rf \"$work/broken-bin\"\n+  report \"$expected\" \"$decision\" \"$hook: $label\"\n+}\n+\n+copy_hooks\n+place_sources\n+\n+for hook in block-lint-suppress.sh check-doc-comments.sh check-test-helper-duplication.sh; do\n+  found=\"feedback\"\n+  [ \"$hook\" = \"block-lint-suppress.sh\" ] && found=\"deny\"\n+  check unchecked \"$hook\" crash violation ok \"報告を出さずに traceback で落ちる検出器なら、拒否せず検査できていないことを伝える\"\n+  check unchecked \"$hook\" silent-exit1 violation ok \"報告の行を出さずに exit 1 で終わる検出器なら、検査できていないことを伝える\"\n+  check unchecked \"$hook\" usage violation ok \"報告を出さずに exit 2 で終わる検出器なら、検査できていないことを伝える\"\n+  check unchecked \"$hook\" reports-exit2 violation ok \"報告の行を出して exit 2 で終わる検出器なら、違反とは読まず検査できていないことを伝える\"\n+  check \"$found\" \"$hook\" real violation ok \"実物の検出器で違反があれば、これまでどおり伝える\"\n+  check pass \"$hook\" real clean ok \"実物の検出器で違反が無ければ、何も出さない\"\n+  check pass \"$hook\" real violation broken \"起動できない python3 しか無ければ、違反があっても何も出さない\"\n+done\n+\n+if [ \"$cases_failed\" -ne 0 ]; then\n+  echo \"判定表と食い違いがあります\"\n+  exit 1\n+fi\n+echo \"編集時の検査フックの共通部分の判定表: 期待どおり\"",
+          "patchLines": 205,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "bcc9cc3abef90d8453b4a503aa2f9bbf1ce005d3",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T10:38:33Z",
+      "subject": "👷 [CI]: #1006 編集時の検査フックの判定表を pre-push と rules-check で走らせる",
+      "body": "- harness/githooks/pre-push の canary_runnable の区間(python3 と jq が揃う環境だけ)に\n  「編集時の検査フックの判定表」を足し、冒頭コメントの「2 つの表」を 3 つにする\n- frontend.yml の rules-check に同じ名前・同じコマンドのステップを足す\n\n背景:\n判定表は置いただけでは誰も走らせない。層 1(CI)と層 2(git hooks)の両方に置いて、\n判定が黙って変わる退行を捕まえる。\n\n採用理由:\nカナリアと push 前の検査フックの判定表と同じく層 3 の部品の判定表なので、同じ区間に並べた。\npython3 か jq が欠けると、判定が変わっていなくても NG を出す。そのため両方が揃う\n環境でだけ走らせる。\n\n影響とトレードオフ:\npre-push と rules-check の所要時間が判定表 1 本分延びる。\nPRE_PUSH_REQUIRE_ALL=1 で pre-push 全体を通しで走らせ、31 件通過・失敗 0 だった。\n\n代替案:\n- 層 1 だけに置く: 手元の pre-push で判定の退行に気づけない\n\n参考:\n- .claude/hooks/README.md「カバー範囲と残る穴」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Q2e59onTiZnAoRLrVRNuLd",
+      "files": [
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -201,6 +201,9 @@ jobs:\n       - name: push 前の検査フックの判定表\n         run: bash .claude/hooks/lib/pre-push-detector-cases.sh\n \n+      - name: 編集時の検査フックの判定表\n+        run: bash .claude/hooks/lib/edit-detector-cases.sh\n+\n       - name: 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表\n         run: bash .claude/hooks/lib/verification-agent-cases.sh\n ",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "patch": "@@ -84,10 +84,10 @@ run_check \"行数のラチェット\" bash harness/records/count.sh --ratchet\n # 上の 2 つが読んでいる数え方そのものの判定表。\n run_check \"集計の判定表\" bash harness/records/count-cases.sh\n \n-# カナリアと push 前の検査フックの共通部分(どちらも層 3 の部品)の判定表。ここへ置く理由は\n-# .claude/hooks/README.md「カバー範囲と残る穴」。\n+# カナリアと push 前の検査フックの共通部分と編集時の検査フックの共通部分(どれも層 3 の部品)の\n+# 判定表。ここへ置く理由は .claude/hooks/README.md「カバー範囲と残る穴」。\n #\n-# python3 と jq のどちらかが欠けると、判定が変わっていなくてもこの 2 つの表は NG を出す\n+# python3 と jq のどちらかが欠けると、判定が変わっていなくてもこの 3 つの表は NG を出す\n # (どのケースが NG になるかは各判定表の冒頭)。判定できないことを理由に\n # push を止めても検査の質は上がらないので、型 / lint / format と同じく飛ばす。\n canary_runnable() {\n@@ -97,6 +97,7 @@ canary_runnable() {\n canary_runnable || skip_following_checks \"python3 が使えない / jq が無い\"\n run_check \"カナリアの判定表\" bash .claude/hooks/lib/canary-cases.sh\n run_check \"push 前の検査フックの判定表\" bash .claude/hooks/lib/pre-push-detector-cases.sh\n+run_check \"編集時の検査フックの判定表\" bash .claude/hooks/lib/edit-detector-cases.sh\n resume_checks\n \n # 作業ツリーを書き換えるサブエージェントの実行中フラグ(層 3 の部品)の判定表。bash だけで走るので飛ばさない。",
+          "patchLines": 22,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "4605741774ab311b602ec6c920ad7f6f14ad868b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T10:38:51Z",
+      "subject": "📝 [Doc]: #1006 編集時の検査フックが検出器の異常終了を伝えることを README に書く",
+      "body": "- .claude/hooks/README.md\n  - フック表の 3 本に、検出器が異常終了したら止めずに伝える旨を足す\n  - lib 表に edit-detector.sh / edit-detector-cases.sh の行を足す\n  - cases-report.sh を使う判定表に edit-detector-cases.sh を足す\n  - 判定表の層の表に edit-detector-cases.sh を足し、層 3 の部品の判定表を 4 本にする\n  - 「例外(エスケープハッチ)」に止めない理由を 1 か所だけ書く\n  - 「動作確認」に判定表を走らせる 1 行を足す\n- harness/githooks/README.md\n  - pre-push の検査と呼んでいるものの列挙に判定表を足し、判定表を 17 本にする\n  - 自分の位置から辿って source する部品に edit-detector.sh を並べる\n  - jq が要る検査の行に判定表を足す\n  - 検出器が途中で落ちたときの層ごとの扱いに、編集時のフック 3 本を足す\n\n背景:\nREADME はフックと判定表の一覧と、層ごとの扱いを持つ。今回の変更でそれらの列挙と件数が\n変わったので、片方だけが古くならないよう同じ回で揃える。\n\n採用理由:\n止めない理由は「例外(エスケープハッチ)」の 1 か所だけに書き、各フックの冒頭コメントは\nそこを参照する。同じ判断を複数箇所へ書くと、片方だけが古くなるため。\n理由の文では「層 1・2 が必ず落とす」とは書き切らない。層 1・2 は検出器を\nファイルのパス / --lines / --all src で呼ぶ。そのため、編集時の呼び方(標準入力 /\n編集した 1 ファイル)でだけ落ちる場合は層 1・2 も拾わない。\n\n影響とトレードオフ:\n「カバー範囲と残る穴」のフック不発の表は変えていない。あの表はフックが発火しない環境の話で、\n今回の変更とは軸が違う。\n\n代替案:\n- 止めない理由を 3 本のフックの冒頭コメントにそれぞれ書く: 同じ判断根拠の重複になる\n\n参考:\n- Issue #1006\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Q2e59onTiZnAoRLrVRNuLd",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 7,
+          "patch": "@@ -9,14 +9,14 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | スクリプト               | イベント                  | 内容                                                                                     |\n | ------------------------ | ------------------------- | ---------------------------------------------------------------------------------------- |\n | `block-npx.sh`           | `PreToolUse` (Bash)       | **npx / pnpm dlx 禁止**。パッケージは `pnpm add` でインストールしてから使用する           |\n-| `block-lint-suppress.sh` | `PreToolUse` (Edit/Write) | **lint 抑制コメント禁止**。`biome-ignore` / `eslint-disable` の追加を拒否する             |\n+| `block-lint-suppress.sh` | `PreToolUse` (Edit/Write) | **lint 抑制コメント禁止**。`biome-ignore` / `eslint-disable` の追加を拒否する。検出器が異常終了したら止めずに「検査できていません」を伝える |\n | `post-edit-lint.sh`      | `PostToolUse` (Edit/Write) | **編集後の自動リント**。oxlint / Biome を `--fix` 付きで実行し、残った診断をフィードバック |\n | `check-test-rules.sh`    | `PostToolUse` (Edit/Write) | **テスト規約検証**(rules/testing.md)。describe 禁止・テストケース内の条件分岐禁止・命名規則・置き場所(`__tests__/` 直下)をチェック |\n | `pre-push-typecheck.sh`  | `PreToolUse` (Bash)       | **push 前の型チェック**。`pnpm run typecheck`(tsc -b)でエラーがあれば push をブロック    |\n | `pre-push-lint.sh`       | `PreToolUse` (Bash)       | **push 前の全体 lint**。oxlint / Biome のエラーがあれば push をブロック                   |\n | `pre-push-test-rules.sh` | `PreToolUse` (Bash)       | **push 前の全体テスト規約検査**。全 `*.test.ts(x)` を検査し違反があれば push をブロック   |\n-| `check-test-helper-duplication.sh` | `PostToolUse` (Edit/Write) | **テストヘルパーの重複検出**(rules/testing.md「テスト用ヘルパーの置き場所」)。プロジェクト全体の `__tests__/` を横断し、本体が一字一句同じヘルパーが 2 つ以上あれば知らせる |\n-| `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。doc の無い宣言と、`@param` / `@returns` / `@throws` が欠けた doc を知らせる |\n+| `check-test-helper-duplication.sh` | `PostToolUse` (Edit/Write) | **テストヘルパーの重複検出**(rules/testing.md「テスト用ヘルパーの置き場所」)。プロジェクト全体の `__tests__/` を横断し、本体が一字一句同じヘルパーが 2 つ以上あれば知らせる。検出器が異常終了したら止めずに「検査できていません」を伝える |\n+| `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。doc の無い宣言と、`@param` / `@returns` / `@throws` が欠けた doc を知らせる。検出器が異常終了したら止めずに「検査できていません」を伝える |\n | `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロック |\n | `pre-push-import-rules.sh` | `PreToolUse` (Bash)     | **push 前の import 規約検査**(rules/architecture.md「モジュールの公開API」「依存方向のルール」)。公開 API を迂回する import・循環参照・カテゴリの外に置かれた domains のモジュールがあれば push をブロック |\n | `pre-push-result-option-discriminants.sh` | `PreToolUse` (Bash) | **push 前の判別子の直読み・直書き検査**(rules/coding.md「エラーと不在の表現」)。`Result` / `Option` の判別子(`ok` / `some`)を、その判別子を型宣言で定義していないファイルで直読みしている・値リテラルで書いていれば push をブロック |\n@@ -59,12 +59,14 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-discriminant-violations.py` / `lib/story-title-violations.py` / `lib/named-path-violations.py`（報告の形だけ） | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方と、feature の連なりの辿り方（`feature_of()`）。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |\n | `lib/named-path-violations.py` | `pre-push-named-paths.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | コメント（`.ts` / `.tsx`）と Markdown の全文が名指ししているパスのうち、実体を持たないもの（`named-path-missing`）を報告する |\n | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-discriminants.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |\n+| `lib/edit-detector.sh` | `block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh` | 編集時の検査フックの共通部分。検出器を `.github/scripts/lib/detector-report.sh` の `detector_report` で走らせ、異常終了したら `print_unchecked_context <イベント名> <検査の名前> <検出器>` が `permissionDecision` の無い `additionalContext` で「検査できていません」を返す(編集は止めない)。python3 の疎通は `detector-precondition.sh` の `python3_usable` で見る |\n | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` が、最後のセグメント（葉に出る表示名）を除いてフォルダ階層から導出した綴りと違うもの（`story-title-tree`）と、`title` をリテラル 1 行として取れないもの（`story-title-missing`）を報告する |\n | `lib/result-option-discriminant-violations.py` | `pre-push-result-option-discriminants.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読みしている箇所（`result-option-read`）と値リテラルで直書きしている箇所（`result-option-write`）を報告する |\n-| `lib/cases-report.sh` | `lib/import-rule-cases.sh`(`report` だけ) / `lib/result-option-discriminant-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` / `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh` / `lib/verification-agent-cases.sh`(`report` だけ) / `lib/pre-push-detector-cases.sh`(`report` だけ) | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |\n+| `lib/cases-report.sh` | `lib/import-rule-cases.sh`(`report` だけ) / `lib/result-option-discriminant-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` / `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh` / `lib/verification-agent-cases.sh`(`report` だけ) / `lib/pre-push-detector-cases.sh`(`report` だけ) / `lib/edit-detector-cases.sh`(`report` だけ) | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |\n | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `import-rule-violations.py` へ判定表を流し、報告された種別と件数が期待どおりかを報告する。検出器が報告する種別のうち、表の期待に 1 度も出ないものがあっても NG。食い違いがあれば exit 1 |\n | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |\n | `lib/pre-push-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `pre-push-test-helper-duplication.sh` へ `CLAUDE_PROJECT_DIR` を一時ディレクトリに向けた JSON を流して `deny_on_all_src_failure` を、スタブの検出器を渡して `deny_on_violations` を判定し、deny(違反 / 検査できなかった)/ pass が期待どおりかを報告する。食い違いがあれば exit 1 |\n+| `lib/edit-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `lib/edit-detector.sh` を使うフック 3 本を一時ディレクトリへ写し、写しの `lib/` に同じ名前で置いたスタブか実物の検出器で、拒否 / 検査できていない / 違反の報告 / 素通りが期待どおりかを報告する。食い違いがあれば exit 1 |\n | `lib/canary-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |\n | `lib/result-option-discriminant-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `result-option-discriminant-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |\n | `lib/story-title-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `story-title-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |\n@@ -156,6 +158,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の\n | `lib/duplicate-test-helpers-cases.sh` | あり | あり(`python3` がある環境だけ) |\n | `lib/canary-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |\n | `lib/pre-push-detector-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |\n+| `lib/edit-detector-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |\n | `lib/verification-agent-cases.sh` | あり | あり |\n | `.github/scripts/check-added-cases.sh` | あり(`lint-suppress` ジョブ) | あり(`python3` がある環境だけ) |\n | `.github/scripts/check-pr-closing-issue-cases.sh` | あり | **無し(残る穴)** |\n@@ -166,13 +169,14 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の\n | `.github/scripts/pr-explain-core-cases.sh` | あり | あり(`python3` と Node 20 以上がある環境だけ) |\n | `harness/githooks/lib/check-tally-cases.sh` | あり | あり |\n \n-- **`canary-cases.sh` と `verification-agent-cases.sh` と `pre-push-detector-cases.sh` の 3 本は、層 3 の部品\n+- **`canary-cases.sh` と `verification-agent-cases.sh` と `pre-push-detector-cases.sh` と `edit-detector-cases.sh` の 4 本は、層 3 の部品\n   (`hook-canary.sh` / `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` /\n-  `lib/pre-push-detector.sh` の `deny_on_all_src_failure` / `deny_on_violations`)を層 2・層 1 で検査する。** ゲートが見ているのは\n+  `lib/pre-push-detector.sh` の `deny_on_all_src_failure` / `deny_on_violations` /\n+  `lib/edit-detector.sh` とそれを使うフック 3 本)を層 2・層 1 で検査する。** ゲートが見ているのは\n   「リポジトリに入っているスクリプトの判定が変わっていないか」で、その部品がどの層で使われるかとは別。\n   push 前手順(`implementation-flow` フェーズ 7)はカナリアの出力を読んで不発かどうかを決め、\n   フェーズ 5・6 は作業ツリーを書き換えるサブエージェントの実行中に git 操作が止まる前提で並べているので、判定が黙って変わると\n-  手順の読みが嘘になる。`deny_on_all_src_failure` / `deny_on_violations` は壊れると層 3 が黙って素通りするだけで、\n+  手順の読みが嘘になる。`deny_on_all_src_failure` / `deny_on_violations` と `lib/edit-detector.sh` は壊れると層 3 が黙って素通りするだけで、\n   git hooks と CI は検出器を直接呼ぶので緑のまま残る\n - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。**\n   当てる 2 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する\n@@ -293,6 +297,9 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前\n   - `useExhaustiveDependencies` / `react-hooks/exhaustive-deps`(useEffect マウント時)\n   - `noUnusedVariables` / `no-unused-vars`(ブランド型 `declare const ... unique symbol` の直前行のみ)\n   - 対象ファイルに `// @lint-suppress-ok` を記載した場合(本当に必要なときのみ)\n+- 編集時の検査フック 3 本(`block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh`)は、**検出器が異常終了しても編集を止めない**(`lib/edit-detector.sh` が「検査できていません」を `additionalContext` で伝えるだけ)\n+  - 層 3 は即時フィードバックの層で、`block-lint-suppress.sh` が deny すると検出器が壊れている間 JS/TS を編集できなくなる(PostToolUse の 2 本は止めても編集が戻らない)。止める役は層 1・2 が持つ\n+  - ただし層 1・2 は検出器を編集時と違う呼び方(ファイルのパス / `--lines` / `--all src`)で呼ぶので、編集時の呼び方(標準入力 / 編集した 1 ファイル)でだけ落ちる場合は層 1・2 も拾わない\n - テスト規約チェックの「条件分岐禁止」が見るのは **`test()` / `it()` のブロック内だけ**(`lib/test-conditionals.awk`)。セットアップやファクトリなどヘルパー関数内の分岐は対象外\n   - `rules/testing.md` が禁じているのは「テストケースが入力によって形を変える」ことであって、セットアップの分岐ではないため\n   - ファイル全体を見ていた頃は、テストが1件も分岐していないファイルでもヘルパーの1行で push が止まっていた。誤検知で止まるフックは、エスケープハッチを足す運用を招いて全体が信用されなくなる\n@@ -436,6 +443,9 @@ bash .claude/hooks/lib/verification-agent-cases.sh; echo \"exit=$?\"\n # カナリアの判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる\n bash .claude/hooks/lib/canary-cases.sh; echo \"exit=$?\"\n \n+# 編集時の検査フックが、検出器が落ちたときに「検査できていません」を伝えるかの判定表(`ok` だけなら期待どおり)。pre-push と CI も走らせる\n+bash .claude/hooks/lib/edit-detector-cases.sh; echo \"exit=$?\"\n+\n # テスト規約の全体検査(git hooks と共有。違反があれば exit 1)\n bash .claude/hooks/lib/test-rules-scan.sh src\n ",
+          "patchLines": 80,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 5,
+          "patch": "@@ -25,7 +25,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の\n \n | フック | 検査 | 呼んでいるもの |\n | --- | --- | --- |\n-| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み・直書き / story の title / 名指ししたパス / テストヘルパーの重複 / import 規約の判定表 / 判別子の直読み・直書きの判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / テストヘルパーの重複の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図の判定表 / 解説ページの置き場の判定表 / 解説の検査の判定表 / 解説ページの枠の検査の判定表 / 解説ページの核の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 / push 前の検査フックの判定表 / 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表 / pre-push の結果行の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-discriminant-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/result-option-discriminant-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |\n+| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み・直書き / story の title / 名指ししたパス / テストヘルパーの重複 / import 規約の判定表 / 判別子の直読み・直書きの判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / テストヘルパーの重複の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図の判定表 / 解説ページの置き場の判定表 / 解説の検査の判定表 / 解説ページの枠の検査の判定表 / 解説ページの核の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 / push 前の検査フックの判定表 / 編集時の検査フックの判定表 / 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表 / pre-push の結果行の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-discriminant-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/result-option-discriminant-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |\n \n | スクリプト | 呼ばれ方 | 内容 |\n | --- | --- | --- |\n@@ -42,17 +42,18 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の\n `.github/scripts/lib/detector-report.sh`、追加行の行番号を取り出す\n `.github/scripts/lib/added-lines.sh`)も同じ場所に置く。`.claude/hooks/lib/` は\n **検査そのもの**の共有場所なので、当てる先と一緒にしておく。前提チェックと異常終了の見分けは\n-層 3 の `.claude/hooks/lib/pre-push-detector.sh` も自分の位置から辿って source する\n+層 3 の `.claude/hooks/lib/pre-push-detector.sh` と `.claude/hooks/lib/edit-detector.sh` も自分の位置から辿って source する\n (層ごとに見方を割らないため)。\n PR の解説ページの判定表 5 本(`build-pr-change-map-cases.sh` / `pr-explain-pages-cases.sh` /\n `build-pr-explain-cases.sh` / `check-pr-explain-template-cases.sh` / `pr-explain-core-cases.sh`)も `.github/scripts/` にある。当てる先が `pr-explain.yml` と\n `pr-explain` スキルから呼ばれるスクリプトで、同じ場所にあるため。\n-**行数のラチェットと判定表 16 本**(`harness/records/count.sh --ratchet` /\n+**行数のラチェットと判定表 17 本**(`harness/records/count.sh --ratchet` /\n `harness/records/count-cases.sh` / `.claude/hooks/lib/import-rule-cases.sh` /\n `.claude/hooks/lib/result-option-discriminant-cases.sh` /\n `.claude/hooks/lib/story-title-cases.sh` / `.claude/hooks/lib/named-path-cases.sh` /\n `.claude/hooks/lib/missing-doc-comments-cases.sh` / `.claude/hooks/lib/duplicate-test-helpers-cases.sh` /\n `.claude/hooks/lib/canary-cases.sh` / `.claude/hooks/lib/pre-push-detector-cases.sh` /\n+`.claude/hooks/lib/edit-detector-cases.sh` /\n `.claude/hooks/lib/verification-agent-cases.sh` /\n `harness/githooks/lib/check-tally-cases.sh` と上の解説ページの 5 本)も\n `.claude/hooks/` 側のフック(`pre-push-*.sh`)に対応物を持たない。判定表をどの層へ置くかと、層 3 へ足さない理由は\n@@ -65,7 +66,7 @@ PR の解説ページの判定表 5 本(`build-pr-change-map-cases.sh` / `pr-exp\n | --- | --- |\n | `pnpm` または `node_modules` | 型 / lint / format |\n | `python3`（起動できないものが PATH に居る場合を含む） | doc コメント（と判定表） / import 規約（と判定表） / 判別子の直読み・直書き（と判定表） / story の title（と判定表） / 名指ししたパス（と判定表） / テストヘルパーの重複（と判定表） / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図・解説ページの置き場・解説の検査・解説ページの枠の検査の判定表 |\n-| `python3`（同上）または `jq` | カナリアの判定表 / push 前の検査フックの判定表 |\n+| `python3`（同上）または `jq` | カナリアの判定表 / push 前の検査フックの判定表 / 編集時の検査フックの判定表 |\n | `python3`（同上）または `node`（起動できないもの・Node 20 未満が PATH に居る場合を含む） | 解説ページの核の判定表 |\n \n **飛ばしたことを出力に「飛ばします」と残し、最後の行の件数にも数える。** 通常の成功と綴りが同じだと、\n@@ -77,7 +78,7 @@ PR の解説ページの判定表 5 本(`build-pr-change-map-cases.sh` / `pr-exp\n とおり呼ぶ前に飛ばす（止めない方針のため）。\n 検出器が起動したあとに途中で落ちた場合も、同じく出力が空になる。こちらは道具の欠けではなく\n 検出器側の欠陥なので、[`lib/detector-report.sh`](../../.github/scripts/lib/detector-report.sh) が\n-見分けて exit 2 を返し、**層 1・層 2 とも落ちる**(層 3 の `deny_on_violations` も deny する)。\n+見分けて exit 2 を返し、**層 1・層 2 とも落ちる**(層 3 の `deny_on_violations` も deny する。編集時のフック 3 本は止めずに「検査できていません」を伝える)。\n \n ## 結果の読み方\n ",
+          "patchLines": 48,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f992c684feb55973ce40e240423b95d54dd22978",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T10:55:25Z",
+      "subject": "♻️ [Refactoring]: #1006 判定表 2 本の足場を cases-fixtures.sh へ寄せる",
+      "body": "- .claude/hooks/lib/cases-fixtures.sh を新設し、判定表の足場を 3 つの関数で持つ\n  - place_failing_detector: crash / summary-exit1 / usage の異常終了スタブを置く\n  - python3_path_prefix: 起動できない python3 を置き、PATH の先頭に足す値を返す\n  - place_duplicate_helpers: 本体が同じテストヘルパーを置く\n- edit-detector-cases.sh と pre-push-detector-cases.sh がこれを source し、\n  自前の写しを消す\n- スタブで作る理由・broken の python3 の意味・command -v を退けた理由の説明を\n  cases-fixtures.sh の 1 か所へ寄せ、各判定表からは参照する\n- edit-detector-cases.sh の語彙を既存の判定表に揃える\n  (silent-exit1 → summary-exit1、classify → verdict)\n- check の書式と doc を実装に合わせる(第 5 引数は ok / broken で必須、第 6 引数はケース名)\n\n背景:\n実装の検証(duplication-reviewer)で、python3_path_prefix が 2 本の判定表に\n一字一句同じ形であること、異常終了スタブとテストヘルパー重複のフィクスチャが\n写されていることを指摘された。片方だけ作り方を変えると、もう片方が古い前提のまま\nok を出し続ける。naming-reviewer からは、silent はカナリアの「不発」を指す語で、\n同じ中身のスタブが pre-push 側で summary-exit1 と呼ばれていることを指摘された。\nharness-reviewer からは、check の doc が第 5 引数を省略可と書いているのに、\n実装では省けないことを指摘された。\n\n採用理由:\ncases-report.sh は「判定の読み取りと報告」の責務なので広げず、足場を持つ別の\nファイルを立てた。置き先は引数で受け、2 本から同じ関数を呼ぶ。\n\n影響とトレードオフ:\n判定表は 2 本とも出力・ケース数が変わらない(edit 21 / pre-push 14、全 ok)。\nusage スタブの文面は 1 つに揃えたが、どの判定もその文面は見ていない。\n\n代替案:\n- cases-report.sh に足場を持たせる: 読み取りと報告の部品に、ケースの前提を置く責務が混ざる\n- 写しのまま残す: rules/coding.md「同じ処理が2箇所に現れたら共通化する」に反する\n\n参考:\n- Issue #1006 の実装の検証(duplication / naming / harness)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Q2e59onTiZnAoRLrVRNuLd",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-fixtures.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 51,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,51 @@\n+#!/usr/bin/env bash\n+#\n+# 検出器を呼ぶフックの判定表(`*-cases.sh`)が共有する、ケースの前提の置き方。落ちる検出器・\n+# 起動できない python3・本体が同じテストヘルパーを、渡されたパスへ置く。\n+#\n+# 使う側: lib/pre-push-detector-cases.sh / lib/edit-detector-cases.sh\n+#\n+# 終了コードと出力の組を実物の検出器から決まった形で作れないので、判定表は検出器をスタブで作る\n+# (ここに置くのは 2 本が共有する落ちる側。報告の行を出すスタブは報告の綴りが違うので各判定表が持つ)。\n+#\n+# 起動できない python3 は、起動すると 127 で落ちる。`command -v python3` で疎通を見る実装は\n+# これを見つけてしまい、検出器を走らせて「落ちた」と読む(起動して見る `python3_usable` は\n+# 無いものと扱う)。\n+\n+# 起動するとすぐ落ちる検出器のスタブを置く。どれも報告の行を出さない。\n+#\n+# $1 落ち方(`crash` は traceback、`summary-exit1` は要約の行だけを出して exit 1、\n+#    `usage` は使い方を出して exit 2)\n+# $2 スタブを書くパス\n+place_failing_detector() {\n+  local failure=\"$1\" target=\"$2\"\n+  case \"$failure\" in\n+    crash) printf 'raise RuntimeError(\"判定表: 検出器が途中で落ちる\")\\n' >\"$target\" ;;\n+    summary-exit1) printf 'import sys\\nprint(\"違反は 0 件\")\\nsys.exit(1)\\n' >\"$target\" ;;\n+    usage) printf 'import sys\\nprint(\"使い方: 検査する対象を渡す\")\\nsys.exit(2)\\n' >\"$target\" ;;\n+  esac\n+}\n+\n+# 起動すると 127 で落ちる python3 を置き、PATH の先頭に足す値を返す。`broken` 以外なら空。\n+#\n+# $1 `broken` なら置く\n+# $2 置き場のディレクトリ(その下の `broken-bin/` に置く。後ろのケースへ残さないよう呼び出し側が消す)\n+python3_path_prefix() {\n+  [ \"$1\" = \"broken\" ] || return 0\n+  mkdir -p \"$2/broken-bin\"\n+  printf '#!/usr/bin/env bash\\nexit 127\\n' >\"$2/broken-bin/python3\"\n+  chmod +x \"$2/broken-bin/python3\"\n+  printf '%s:' \"$2/broken-bin\"\n+}\n+\n+# 深さの違う 2 つの `__tests__/`(`a/__tests__/` と `b/c/__tests__/`)の `setup.ts` に、本体が同じヘルパーを置く。\n+#\n+# $1 置き場のディレクトリ(`src` にあたるもの)\n+place_duplicate_helpers() {\n+  local folder\n+  for folder in \"$1/a/__tests__\" \"$1/b/c/__tests__\"; do\n+    mkdir -p \"$folder\"\n+    printf 'function openedAt(path: string) {\\n  return OpenedDocument.create({ path, document: sampleDocument() });\\n}\\n' \\\n+      >\"$folder/setup.ts\"\n+  done\n+}",
+          "patchLines": 52,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 32,
+          "patch": "@@ -10,12 +10,11 @@\n # フックは一時ディレクトリへ写したものを走らせ、検出器はその写しの `lib/` に同じ名前で置く\n # (スタブか実物)。環境変数で検出器を差し替える形にすると、本番のフックにもその差し替え口が残る。\n #\n-# 1 ケースは `check <期待> <フック> <検出器の種類> <入力> [python3]`。期待の綴りは `classify` が返すもの。\n-# 終了コードと出力の組を実物の検出器から決まった形で作れないので、落ちる検出器はスタブで作る。\n+# 1 ケースは `check <期待> <フック> <検出器の種類> <入力> <python3> <ケース名>`。期待の綴りは `verdict` が返すもの。\n #\n-# `[python3]` に `broken` を渡すと、起動すると 127 で落ちる python3 を PATH 先頭に置く。\n-# 道具が無い環境では伝えることも無いので pass になる(`command -v python3` で疎通を見る実装は、\n-# 起動して落ちたものを「検査できていない」にする)。\n+# `<python3>` は `ok` か `broken`。`broken` は起動できない python3 を PATH 先頭に置く。起動できない\n+# python3 は python3 が無い環境と同じに扱うので pass になり、python3 が起動してから検出器が落ちた\n+# ケース(unchecked)とは分かれる(スタブと起動できない python3 の作り方は `cases-fixtures.sh`)。\n #\n # JSON の組み立てと取り出しに jq、検出器に python3 を使う。python3 が無いと pass 以外のケースが、jq が無いと\n # すべてのケースが NG になるので、`harness/githooks/pre-push` は両方が揃う環境でだけ走らせる\n@@ -28,6 +27,7 @@ work=\"$(mktemp -d)\"\n trap 'rm -rf \"$work\"' EXIT\n \n source \"$lib_dir/cases-report.sh\"\n+source \"$lib_dir/cases-fixtures.sh\"\n \n # 判定に要るものだけを、リポジトリと同じ相対位置で一時ディレクトリへ写す。\n copy_hooks() {\n@@ -43,17 +43,12 @@ copy_hooks() {\n # 違反のある入力と無い入力に使うファイルを置く。\n #\n # doc は doc の無い export と doc のある export、テストヘルパーは深さの違う 2 つの `__tests__/` に\n-# 本体が同じヘルパー(`pre-push-detector-cases.sh` の `place_duplicate` と同じ形)と、本体が 1 つしか無いヘルパー。\n+# 本体が同じヘルパーと、本体が 1 つしか無いヘルパー。\n place_sources() {\n-  local folder\n   mkdir -p \"$work/src\"\n   printf 'export function openedAt() {\\n  return 1;\\n}\\n' >\"$work/src/undocumented.ts\"\n   printf '/** 開いた時刻を返す。 */\\nexport function openedAt() {\\n  return 1;\\n}\\n' >\"$work/src/documented.ts\"\n-  for folder in \"$work/src/a/__tests__\" \"$work/src/b/c/__tests__\"; do\n-    mkdir -p \"$folder\"\n-    printf 'function openedAt(path: string) {\\n  return OpenedDocument.create({ path, document: sampleDocument() });\\n}\\n' \\\n-      >\"$folder/setup.ts\"\n-  done\n+  place_duplicate_helpers \"$work/src\"\n   printf 'function closedAt(path: string) {\\n  return ClosedDocument.create({ path, closedBy: sampleUser() });\\n}\\n' \\\n     >\"$work/src/a/__tests__/single.ts\"\n }\n@@ -102,7 +97,7 @@ edit_payload() {\n # 写しの `lib/` に検出器を置く。種類ごとに終了コードと出力の組が違う。\n #\n # $1 フックのファイル名\n-# $2 検出器の種類(`real` は実物。他はスタブ)\n+# $2 検出器の種類(`real` は実物。`reports-exit2` は報告の行を出して exit 2。他は `place_failing_detector` の落ち方)\n place_detector() {\n   local hook=\"$1\" kind=\"$2\"\n   local name target report_line\n@@ -111,31 +106,18 @@ place_detector() {\n   report_line=\"$(profile_value \"$hook\" report_line)\"\n   case \"$kind\" in\n     real) cp \"$repo_dir/.claude/hooks/lib/$name\" \"$target\" ;;\n-    crash) printf 'raise RuntimeError(\"判定表: 検出器が途中で落ちる\")\\n' >\"$target\" ;;\n-    silent-exit1) printf 'import sys\\nprint(\"違反は 0 件\")\\nsys.exit(1)\\n' >\"$target\" ;;\n-    usage) printf 'import sys\\nprint(\"使い方: 検査するファイルを渡す\")\\nsys.exit(2)\\n' >\"$target\" ;;\n     reports-exit2) printf 'import sys\\nprint(%s)\\nsys.exit(2)\\n' \"$(jq -n --arg l \"$report_line\" '$l')\" >\"$target\" ;;\n+    *) place_failing_detector \"$kind\" \"$target\" ;;\n   esac\n }\n \n-# 起動すると 127 で落ちる python3 を置き、PATH の先頭に足す値を返す。`broken` 以外なら空。\n-#\n-# $1 `broken` なら置く\n-python3_path_prefix() {\n-  [ \"$1\" = \"broken\" ] || return 0\n-  mkdir -p \"$work/broken-bin\"\n-  printf '#!/usr/bin/env bash\\nexit 127\\n' >\"$work/broken-bin/python3\"\n-  chmod +x \"$work/broken-bin/python3\"\n-  printf '%s:' \"$work/broken-bin\"\n-}\n-\n # フックの出力と終了コードを、`exit=<n>` / `pass` / `deny` / `unchecked` / `feedback` / `unknown` に分ける。\n #\n # $1 フックの標準出力\n # $2 フックの終了コード\n # $3 期待するイベント名\n # $4 報告の見出し(空なら `feedback` にはならない)\n-classify() {\n+verdict() {\n   local output=\"$1\" status=\"$2\" event=\"$3\" heading=\"$4\"\n   if [ \"$status\" -ne 0 ]; then\n     echo \"exit=$status\"\n@@ -169,15 +151,15 @@ classify() {\n # $2 フックのファイル名\n # $3 検出器の種類(`place_detector` が置くもの)\n # $4 違反のある入力なら `violation`、無い入力なら `clean`\n-# $5 `broken` なら起動できない python3 を PATH 先頭に置く(省略可)\n+# $5 `broken` なら起動できない python3 を PATH 先頭に置く。置かないなら `ok`\n # $6 ケース名\n check() {\n   local expected=\"$1\" hook=\"$2\" kind=\"$3\" input=\"$4\" python3_state=\"$5\" label=\"$6\"\n   local output status=0 prefix decision\n   place_detector \"$hook\" \"$kind\"\n-  prefix=\"$(python3_path_prefix \"$python3_state\")\"\n+  prefix=\"$(python3_path_prefix \"$python3_state\" \"$work\")\"\n   output=\"$(edit_payload \"$hook\" \"$input\" | PATH=\"${prefix}${PATH}\" bash \"$work/.claude/hooks/$hook\" 2>/dev/null)\" || status=$?\n-  decision=\"$(classify \"$output\" \"$status\" \"$(profile_value \"$hook\" event)\" \"$(profile_value \"$hook\" heading)\")\"\n+  decision=\"$(verdict \"$output\" \"$status\" \"$(profile_value \"$hook\" event)\" \"$(profile_value \"$hook\" heading)\")\"\n   rm -rf \"$work/broken-bin\"\n   report \"$expected\" \"$decision\" \"$hook: $label\"\n }\n@@ -189,7 +171,7 @@ for hook in block-lint-suppress.sh check-doc-comments.sh check-test-helper-dupli\n   found=\"feedback\"\n   [ \"$hook\" = \"block-lint-suppress.sh\" ] && found=\"deny\"\n   check unchecked \"$hook\" crash violation ok \"報告を出さずに traceback で落ちる検出器なら、拒否せず検査できていないことを伝える\"\n-  check unchecked \"$hook\" silent-exit1 violation ok \"報告の行を出さずに exit 1 で終わる検出器なら、検査できていないことを伝える\"\n+  check unchecked \"$hook\" summary-exit1 violation ok \"要約の行だけを出して exit 1 で終わる検出器なら、検査できていないことを伝える\"\n   check unchecked \"$hook\" usage violation ok \"報告を出さずに exit 2 で終わる検出器なら、検査できていないことを伝える\"\n   check unchecked \"$hook\" reports-exit2 violation ok \"報告の行を出して exit 2 で終わる検出器なら、違反とは読まず検査できていないことを伝える\"\n   check \"$found\" \"$hook\" real violation ok \"実物の検出器で違反があれば、これまでどおり伝える\"",
+          "patchLines": 116,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 31,
+          "patch": "@@ -17,13 +17,11 @@\n # 一時ディレクトリへ向けるので、検出器が見る `src` はそこに置いたものだけになる。\n #\n # `deny_on_violations` のケースは `check_violations <期待> <ケース名> <コマンド> <スタブ> [python3]`。\n-# 終了コードと出力の組を実物の検出器から決まった形で作れないので、スタブで作る。\n # 期待は deny を理由の文面で 2 つに分ける(`violation` / `unchecked`)。deny か pass かだけを\n # 見ると、0 以外ならすべて deny にする実装も表を通る。\n #\n-# `[python3]` に `broken` を渡すと、起動すると 127 で落ちる python3 を PATH 先頭に置く。\n-# 道具が無い環境では止めないので pass になる(`command -v python3` で疎通を見る実装は、\n-# 起動して落ちたものを deny にする)。\n+# `[python3]` に `broken` を渡すと、起動できない python3 を PATH 先頭に置く。道具が無い環境では\n+# 止めないので pass になる(スタブと起動できない python3 の作り方は `cases-fixtures.sh`)。\n #\n # JSON の取り出しに jq、検出器に python3 を使う。どちらかが無いと deny 側が NG になるので、\n # `harness/githooks/pre-push` は両方が揃う環境でだけ走らせる(カナリアの判定表と同じ)。\n@@ -35,27 +33,7 @@ work=\"$(mktemp -d)\"\n trap 'rm -rf \"$work\"' EXIT\n \n source \"$lib_dir/cases-report.sh\"\n-\n-# 深さの違う 2 つの `__tests__/` に、本体が同じヘルパーを置く\n-place_duplicate() {\n-  local folder\n-  for folder in \"$work/src/a/__tests__\" \"$work/src/b/c/__tests__\"; do\n-    mkdir -p \"$folder\"\n-    printf 'function openedAt(path: string) {\\n  return OpenedDocument.create({ path, document: sampleDocument() });\\n}\\n' \\\n-      >\"$folder/setup.ts\"\n-  done\n-}\n-\n-# 起動すると 127 で落ちる python3 を置き、PATH の先頭に足す値を返す。`broken` 以外なら空。\n-#\n-# $1 `broken` なら置く\n-python3_path_prefix() {\n-  [ \"$1\" = \"broken\" ] || return 0\n-  mkdir -p \"$work/broken-bin\"\n-  printf '#!/usr/bin/env bash\\nexit 127\\n' >\"$work/broken-bin/python3\"\n-  chmod +x \"$work/broken-bin/python3\"\n-  printf '%s:' \"$work/broken-bin\"\n-}\n+source \"$lib_dir/cases-fixtures.sh\"\n \n # フックへ渡す JSON を書く。\n #\n@@ -76,8 +54,8 @@ check() {\n   local output decision prefix\n   rm -rf \"$work/src\"\n   mkdir -p \"$work/src\"\n-  [ \"$fixture\" = \"duplicate\" ] && place_duplicate\n-  prefix=\"$(python3_path_prefix \"$python3_state\")\"\n+  [ \"$fixture\" = \"duplicate\" ] && place_duplicate_helpers \"$work/src\"\n+  prefix=\"$(python3_path_prefix \"$python3_state\" \"$work\")\"\n   output=\"$(push_payload \"$command\" | CLAUDE_PROJECT_DIR=\"$work\" PATH=\"${prefix}${PATH}\" bash \"$hook\")\"\n   decision=\"pass\"\n   if printf '%s' \"$output\" | jq -e '.hookSpecificOutput.permissionDecision == \"deny\"' >/dev/null 2>&1; then\n@@ -89,13 +67,14 @@ check() {\n \n # `deny_on_violations` のスタブの検出器を置く。名前ごとに終了コードと出力の組が違う。\n place_stub_detectors() {\n+  local failure\n   mkdir -p \"$work/stubs\"\n   printf 'import sys\\nprint(\"[kind] src/a.ts: 違反\")\\nsys.exit(1)\\n' >\"$work/stubs/reports.py\"\n   printf 'print(\"違反は 0 件\")\\n' >\"$work/stubs/clean.py\"\n   printf 'import sys\\nprint(\"[kind] src/a.ts: 違反\")\\nprint(\"x\" * 200000)\\nsys.exit(1)\\n' >\"$work/stubs/large-report.py\"\n-  printf 'raise RuntimeError(\"判定表: 検出器が途中で落ちる\")\\n' >\"$work/stubs/crash.py\"\n-  printf 'import sys\\nprint(\"違反は 0 件\")\\nsys.exit(1)\\n' >\"$work/stubs/summary-exit1.py\"\n-  printf 'import sys\\nprint(\"使い方: 走査するルートを渡す\")\\nsys.exit(2)\\n' >\"$work/stubs/usage.py\"\n+  for failure in crash summary-exit1 usage; do\n+    place_failing_detector \"$failure\" \"$work/stubs/$failure.py\"\n+  done\n   printf 'import sys\\nprint(\"[kind] src/a.ts: 違反\")\\nsys.exit(2)\\n' >\"$work/stubs/reports-exit2.py\"\n }\n \n@@ -109,7 +88,7 @@ place_stub_detectors() {\n check_violations() {\n   local expected=\"$1\" label=\"$2\" command=\"$3\" stub=\"$4\" python3_state=\"${5:-ok}\"\n   local output reason decision prefix\n-  prefix=\"$(python3_path_prefix \"$python3_state\")\"\n+  prefix=\"$(python3_path_prefix \"$python3_state\" \"$work\")\"\n   output=\"$(push_payload \"$command\" | CLAUDE_PROJECT_DIR=\"$work\" PATH=\"${prefix}${PATH}\" \\\n     bash -c 'set -euo pipefail; source \"$1\"; deny_on_violations \"$2\" \"判定表\" \"直してください\"' _ \\\n     \"$lib_dir/pre-push-detector.sh\" \"$work/stubs/$stub.py\" 2>/dev/null)\"",
+          "patchLines": 83,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "51a5d49f28d9c274dab9e6281316a42aef8fca74",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T10:55:40Z",
+      "subject": "♻️ [Refactoring]: #1006 additionalContext の組み立てを edit-detector.sh の 1 関数に寄せる",
+      "body": "- edit-detector.sh に print_additional_context(イベント名 / 文)を置き、\n  検査できていないときの出力と、check-doc-comments.sh /\n  check-test-helper-duplication.sh の違反報告をその上に乗せる\n- print_unchecked_context を print_edit_unchecked_context に、\n  edit_detector_lib_dir を detector_lib_dir に、検査の名前の変数 check を label に改名する\n- edit-detector.sh と pre-push-detector.sh の「層 1・2 と同じスクリプトを source する」\n  理由は harness/githooks/README.md「何が走るか」への参照にし、各自の\n  「自分の位置から辿る理由」だけを残す\n- ファイル名と再現コマンドを入れない理由を、PreToolUse と PostToolUse に分けて書く\n\n背景:\n実装の検証で、同じ hookSpecificOutput.additionalContext の器が 3 か所で組み立てられて\nいること(duplication)、名前が先例(print_push_unchecked_deny / detector_lib_dir /\nlabel)とずれていること(naming)、source する理由が 3 か所に書かれていること\n(duplication)、ファイル名を入れない理由が block-lint-suppress にしか当てはまらないこと\n(comment)を指摘された。\n\n採用理由:\n出力の形を 1 関数に寄せ、フックの形が変わったときに unchecked の経路だけが直る状態を無くす。\n違反報告の出力は変更前とバイト単位で一致することを cmp で確かめた。名前は\npre-push-detector.sh の並び(print_<場面>_<状態>_<JSON の形>)に揃えた。\n\n影響とトレードオフ:\n振る舞いは変えていない。edit-detector-cases.sh は 21 ケースすべて ok。ミューテーション\n(python3_usable を command -v に戻す / hookEventName を取り違える / `|| true` に戻す)では\nNG が出る。\n\n代替案:\n- 違反報告の出力は各フックに残し、unchecked だけを共通にする: 器の形が 2 系統に割れる\n\n参考:\n- Issue #1006 の実装の検証(duplication / naming / comment)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Q2e59onTiZnAoRLrVRNuLd",
+      "files": [
+        {
+          "path": ".claude/hooks/block-lint-suppress.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -51,7 +51,7 @@ esac\n python3_usable || exit 0\n \n if ! suppressions=\"$(printf '%s' \"$content\" | detector_report '^[0-9]+:' \"$detector\")\"; then\n-  print_unchecked_context PreToolUse \"lint 抑制コメント\" \"$detector\"\n+  print_edit_unchecked_context PreToolUse \"lint 抑制コメント\" \"$detector\"\n   exit 0\n fi\n [ -z \"$suppressions\" ] && exit 0",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/check-doc-comments.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 7,
+          "patch": "@@ -38,14 +38,9 @@ esac\n python3_usable || exit 0\n \n if ! report=\"$(detector_report '^doc が規約を満たしていません' \"$detector\" \"$file\")\"; then\n-  print_unchecked_context PostToolUse \"doc コメント\" \"$detector\"\n+  print_edit_unchecked_context PostToolUse \"doc コメント\" \"$detector\"\n   exit 0\n fi\n [ -n \"$report\" ] || exit 0\n \n-jq -Rn --arg msg \"$report\" '{\n-  hookSpecificOutput: {\n-    hookEventName: \"PostToolUse\",\n-    additionalContext: $msg\n-  }\n-}'\n+print_additional_context PostToolUse \"$report\"",
+          "patchLines": 17,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/check-test-helper-duplication.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 7,
+          "patch": "@@ -36,14 +36,9 @@ esac\n python3_usable || exit 0\n \n if ! report=\"$(detector_report '^本体が同じテストヘルパーが' \"$detector\" \"$file\")\"; then\n-  print_unchecked_context PostToolUse \"テストヘルパーの重複\" \"$detector\"\n+  print_edit_unchecked_context PostToolUse \"テストヘルパーの重複\" \"$detector\"\n   exit 0\n fi\n [ -n \"$report\" ] || exit 0\n \n-jq -Rn --arg msg \"$report\" '{\n-  hookSpecificOutput: {\n-    hookEventName: \"PostToolUse\",\n-    additionalContext: $msg\n-  }\n-}'\n+print_additional_context PostToolUse \"$report\"",
+          "patchLines": 17,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 16,
+          "patch": "@@ -7,29 +7,37 @@\n #   check-test-helper-duplication.sh（PostToolUse）\n #\n # 使い方: source したうえで、`python3_usable` で疎通を見てから検出器を `detector_report` で走らせ、\n-# 1 が返ったら `print_unchecked_context` を呼んで exit 0。\n+# 1 が返ったら `print_edit_unchecked_context` を呼んで exit 0。PostToolUse の 2 本は違反の報告も\n+# `print_additional_context` で書く。\n #\n-# python3 の疎通と検出器の異常終了の見方は、層 1・2 の `check-added-*` と層 3 の\n-# `pre-push-detector.sh` と同じスクリプトを使う。自分の位置から辿るのは、判定表が\n-# フックを一時ディレクトリへ写して走らせるため。\n+# python3 の疎通と検出器の異常終了の見方を source する理由は `harness/githooks/README.md`「何が走るか」。\n+# 自分の位置から辿るのは、判定表がフックを一時ディレクトリへ写して走らせるため。\n #\n # `detector-report.sh` の `exit_unchecked` は使わない。exit 2 は PreToolUse では編集の拒否になる。\n-edit_detector_lib_dir=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")/../../../.github/scripts/lib\" && pwd)\"\n-source \"$edit_detector_lib_dir/detector-precondition.sh\"\n-source \"$edit_detector_lib_dir/detector-report.sh\"\n+detector_lib_dir=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")/../../../.github/scripts/lib\" && pwd)\"\n+source \"$detector_lib_dir/detector-precondition.sh\"\n+source \"$detector_lib_dir/detector-report.sh\"\n \n-# 検出器が異常終了して検査できていないことを、`permissionDecision` を付けない\n-# `additionalContext` の JSON として標準出力へ書く。\n+# 編集を止めない文を、`permissionDecision` を付けない `additionalContext` の JSON として標準出力へ書く。\n #\n-# ファイル名と再現コマンドは入れない。block-lint-suppress は編集内容を標準入力で渡すので\n-# `python3 <検出器> <ファイル>` では再現できず、対象は直前に編集した側が知っている。\n+# @param 1 フックのイベント名(`PreToolUse` / `PostToolUse`)\n+# @param 2 編集した側へ伝える文\n+print_additional_context() {\n+  jq -n --arg event \"$1\" --arg message \"$2\" \\\n+    '{hookSpecificOutput: {hookEventName: $event, additionalContext: $message}}'\n+}\n+\n+# 検出器が異常終了して検査できていないことを、`print_additional_context` で書く。\n+#\n+# ファイル名と再現コマンドは入れない。PreToolUse(block-lint-suppress)は編集内容を標準入力で渡すので\n+# 再現コマンドが成り立たない。PostToolUse の 2 本はファイル名を持つが、3 本で同じ文にするので入れない\n+# (対象は直前に編集した側が知っている)。\n #\n # @param 1 フックのイベント名(`PreToolUse` / `PostToolUse`)\n # @param 2 検査の名前\n # @param 3 検出器のパス\n-print_unchecked_context() {\n-  local event=\"$1\" check=\"$2\" detector=\"$3\"\n-  jq -n --arg event \"$event\" \\\n-    --arg message \"${check}の検出器 ${detector} が異常終了したため、この編集は検査できていません(違反が無かったとは限りません)。\" \\\n-    '{hookSpecificOutput: {hookEventName: $event, additionalContext: $message}}'\n+print_edit_unchecked_context() {\n+  local event=\"$1\" label=\"$2\" detector=\"$3\"\n+  print_additional_context \"$event\" \\\n+    \"${label}の検出器 ${detector} が異常終了したため、この編集は検査できていません(違反が無かったとは限りません)。\"\n }",
+          "patchLines": 54,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -12,8 +12,8 @@\n # 使い方: source したうえで `<関数> <検出器> <検査の名前> <直し方の一文>`。\n # 標準入力（フックへ渡される JSON）は関数が読む。\n #\n-# python3 の疎通(両方の関数)と検出器の異常終了(`deny_on_violations`)の見方は、層 1・2 の\n-# `check-added-*` と同じスクリプトを使う。自分の位置から辿るのは、判定表が\n+# python3 の疎通(両方の関数)と検出器の異常終了(`deny_on_violations`)の見方を source する理由は\n+# `harness/githooks/README.md`「何が走るか」。自分の位置から辿るのは、判定表が\n # `CLAUDE_PROJECT_DIR` を一時ディレクトリへ向けるため。\n detector_lib_dir=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")/../../../.github/scripts/lib\" && pwd)\"\n source \"$detector_lib_dir/detector-precondition.sh\"",
+          "patchLines": 11,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "eef80906c03c3d20dfac4fe03f3568162b7d8fd7",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T10:55:53Z",
+      "subject": "📝 [Doc]: #1006 編集時の検査フックの README を検証の指摘に合わせる",
+      "body": "- 「例外(エスケープハッチ)」に 2 行を足す\n  - 起動できない python3 は pre-push-detector.sh と同じく無いものと扱う理由\n  - 報告の行を出したあとに落ちた検出器は違反として読む(detector-report.sh の既知の制限)\n- lib 表に cases-fixtures.sh の行を足し、edit-detector.sh の関数名を改名に追随させる\n- edit-detector.sh が壊れたときの受け皿は push 時の判定表(フック 3 本ごと写して走らせる)\n  である旨を足す\n- 層 2 に足した判定表の所要時間に edit-detector-cases.sh の 1.5 秒(実測)を足す\n\n背景:\n実装の検証(comment / harness)で、python3 が起動できないときに素通りさせる判断の\n理由が書かれていないこと、報告を出してから落ちた場合は「異常終了したら伝える」に\n含まれないこと、層 2 の所要時間の記述が判定表を足しても追随していないことを指摘された。\n\n採用理由:\npython3 の扱いは変えない(却下案 R10)。Issue のスコープは検出器の異常終了で、python3 の\n有無は環境の前提であり、層 1 の check-added-* は require_runnable_detector で落とす。\n判断を変えずに、理由だけを止めない理由と同じ箇所に置いた。\n\n影響とトレードオフ:\n「ここへ載せた 2 本は合わせて 2.2 秒」が何を指すかは、履歴が squash されていて辿れなかった。\nいま測ったどの 2 本を組み合わせても 2.2 秒にならないが、文言はそのまま残した。既存の\n書き方(判定表を足すたびに秒数を書き足す)に倣って、今回の判定表の値だけを足した。\n\n代替案:\n- python3 が起動できないときも「検査できていません」を出す: 却下案 R10 のとおり\n\n参考:\n- Issue #1006 の実装の検証(comment / harness)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Q2e59onTiZnAoRLrVRNuLd",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 3,
+          "patch": "@@ -59,10 +59,11 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/result-option-discriminant-violations.py` / `lib/story-title-violations.py` / `lib/named-path-violations.py`（報告の形だけ） | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方と、feature の連なりの辿り方（`feature_of()`）。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |\n | `lib/named-path-violations.py` | `pre-push-named-paths.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | コメント（`.ts` / `.tsx`）と Markdown の全文が名指ししているパスのうち、実体を持たないもの（`named-path-missing`）を報告する |\n | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-result-option-discriminants.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |\n-| `lib/edit-detector.sh` | `block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh` | 編集時の検査フックの共通部分。検出器を `.github/scripts/lib/detector-report.sh` の `detector_report` で走らせ、異常終了したら `print_unchecked_context <イベント名> <検査の名前> <検出器>` が `permissionDecision` の無い `additionalContext` で「検査できていません」を返す(編集は止めない)。python3 の疎通は `detector-precondition.sh` の `python3_usable` で見る |\n+| `lib/edit-detector.sh` | `block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh` | 編集時の検査フックの共通部分。検出器を `.github/scripts/lib/detector-report.sh` の `detector_report` で走らせ、異常終了したら `print_edit_unchecked_context <イベント名> <検査の名前> <検出器>` が `permissionDecision` の無い `additionalContext` で「検査できていません」を返す(編集は止めない)。PostToolUse の 2 本の違反の報告も同じ形(`print_additional_context <イベント名> <文>`)で書く。python3 の疎通は `detector-precondition.sh` の `python3_usable` で見る |\n | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` が、最後のセグメント（葉に出る表示名）を除いてフォルダ階層から導出した綴りと違うもの（`story-title-tree`）と、`title` をリテラル 1 行として取れないもの（`story-title-missing`）を報告する |\n | `lib/result-option-discriminant-violations.py` | `pre-push-result-option-discriminants.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読みしている箇所（`result-option-read`）と値リテラルで直書きしている箇所（`result-option-write`）を報告する |\n | `lib/cases-report.sh` | `lib/import-rule-cases.sh`(`report` だけ) / `lib/result-option-discriminant-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh` / `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh` / `lib/verification-agent-cases.sh`(`report` だけ) / `lib/pre-push-detector-cases.sh`(`report` だけ) / `lib/edit-detector-cases.sh`(`report` だけ) | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss`）と報告（`report` / `cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |\n+| `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` | 検出器を呼ぶフックの判定表が共有する、ケースの前提の置き方。落ちる検出器のスタブ(`place_failing_detector`)・起動できない python3(`python3_path_prefix`)・本体が同じテストヘルパー(`place_duplicate_helpers`)を、渡されたパスへ置く |\n | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `import-rule-violations.py` へ判定表を流し、報告された種別と件数が期待どおりかを報告する。検出器が報告する種別のうち、表の期待に 1 度も出ないものがあっても NG。食い違いがあれば exit 1 |\n | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。食い違いがあれば exit 1 |\n | `lib/pre-push-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `pre-push-test-helper-duplication.sh` へ `CLAUDE_PROJECT_DIR` を一時ディレクトリに向けた JSON を流して `deny_on_all_src_failure` を、スタブの検出器を渡して `deny_on_violations` を判定し、deny(違反 / 検査できなかった)/ pass が期待どおりかを報告する。食い違いがあれば exit 1 |\n@@ -177,12 +178,13 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の\n   push 前手順(`implementation-flow` フェーズ 7)はカナリアの出力を読んで不発かどうかを決め、\n   フェーズ 5・6 は作業ツリーを書き換えるサブエージェントの実行中に git 操作が止まる前提で並べているので、判定が黙って変わると\n   手順の読みが嘘になる。`deny_on_all_src_failure` / `deny_on_violations` と `lib/edit-detector.sh` は壊れると層 3 が黙って素通りするだけで、\n-  git hooks と CI は検出器を直接呼ぶので緑のまま残る\n+  git hooks と CI は検出器を直接呼ぶので緑のまま残る。受け皿は push 時の判定表で、`lib/edit-detector.sh` は\n+  `edit-detector-cases.sh` がそれを使うフック 3 本ごと一時ディレクトリへ写して走らせる\n - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。**\n   当てる 2 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する\n - **`check-pr-closing-issue-cases.sh` は層 1 だけ。** 再試行と問い合わせ直しの待ち時間を含めて\n   35.7 秒かかる(実測)。`pre-push` 全体は 73.0 秒(実測・`node_modules` のある環境。この判定表と同じ環境で\n-  続けて測った)で、載せると 1.5 倍になる。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 5 本は同じ `pre-push` の回の中で合わせて 16.2 秒(地図 3.4・置き場 5.6・解説の検査 4.3・枠の検査 2.8・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒(実測)。**この穴は残したままなので、\n+  続けて測った)で、載せると 1.5 倍になる。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 5 本は同じ `pre-push` の回の中で合わせて 16.2 秒(地図 3.4・置き場 5.6・解説の検査 4.3・枠の検査 2.8・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒、`lib/edit-detector-cases.sh` は 1.5 秒(実測)。**この穴は残したままなので、\n   `check-pr-closing-issue.sh` を触ったときは手で走らせる**(「動作確認」)\n - 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない\n \n@@ -300,6 +302,8 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前\n - 編集時の検査フック 3 本(`block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh`)は、**検出器が異常終了しても編集を止めない**(`lib/edit-detector.sh` が「検査できていません」を `additionalContext` で伝えるだけ)\n   - 層 3 は即時フィードバックの層で、`block-lint-suppress.sh` が deny すると検出器が壊れている間 JS/TS を編集できなくなる(PostToolUse の 2 本は止めても編集が戻らない)。止める役は層 1・2 が持つ\n   - ただし層 1・2 は検出器を編集時と違う呼び方(ファイルのパス / `--lines` / `--all src`)で呼ぶので、編集時の呼び方(標準入力 / 編集した 1 ファイル)でだけ落ちる場合は層 1・2 も拾わない\n+  - 起動できない python3 は、`lib/pre-push-detector.sh` と同じく python3 が無いものと扱って何も伝えない。ここで扱うのは検出器の異常終了で、python3 の有無は環境の前提(層 1 の `check-added-*` は `require_runnable_detector` で落とす)\n+  - 報告の行を出したあとに落ちた検出器は、違反として読む(`.github/scripts/lib/detector-report.sh` の既知の制限)\n - テスト規約チェックの「条件分岐禁止」が見るのは **`test()` / `it()` のブロック内だけ**(`lib/test-conditionals.awk`)。セットアップやファクトリなどヘルパー関数内の分岐は対象外\n   - `rules/testing.md` が禁じているのは「テストケースが入力によって形を変える」ことであって、セットアップの分岐ではないため\n   - ファイル全体を見ていた頃は、テストが1件も分岐していないファイルでもヘルパーの1行で push が止まっていた。誤検知で止まるフックは、エスケープハッチを足す運用を招いて全体が信用されなくなる",
+          "patchLines": 38,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "c3d70b3e1561674413051911202384d64aa951a9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T11:08:03Z",
+      "subject": "🧪 [Tests]: #1006 報告の綴りを行の途中に含む出力で落ちる検出器のケースを足す",
+      "body": "- edit-detector-cases.sh の place_detector に検出器の種類 report-midline-exit1 を足す\n  (各フックの報告の行の頭に「注: 」を付けた 1 行だけを出して exit 1 で終わるスタブ)\n- フック 3 本に「報告の綴りを行の途中に含む 1 行だけを出して exit 1 で終わる検出器なら、\n  違反とは読まず検査できていないことを伝える」(unchecked)を 1 件ずつ足し、24 ケースにする\n\n背景:\n実装の検証(test-reviewer)で、報告の行のパターンから行頭の ^ を外す・綴りを短くする\nミューテーションが判定表を通ることを指摘された。落ちる側のスタブに「報告の綴りを\n含むが報告の行ではない出力」が 1 件も無いため。\n\n採用理由:\n綴りがフックごとに違うので、スタブは reports-exit2 と同じく判定表の側に置き、\ncases-fixtures.sh には置かない。3 本それぞれパターンの ^ を外すと、新しいケースだけが\nNG になる(lint は deny、他 2 本は feedback)ことを実測した。\n\n影響とトレードオフ:\n判定表の所要時間がケース 3 件分延びる。他のケースの結果は変わらない。\n\n代替案:\n- 共有のスタブにする: 綴りがフックごとに違い、引数で綴りを渡すと共有の意味が薄い\n\n参考:\n- Issue #1006 の実装の検証(test-reviewer の指摘 1)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01Q2e59onTiZnAoRLrVRNuLd",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 1,
+          "patch": "@@ -97,7 +97,9 @@ edit_payload() {\n # 写しの `lib/` に検出器を置く。種類ごとに終了コードと出力の組が違う。\n #\n # $1 フックのファイル名\n-# $2 検出器の種類(`real` は実物。`reports-exit2` は報告の行を出して exit 2。他は `place_failing_detector` の落ち方)\n+# $2 検出器の種類(`real` は実物。`reports-exit2` は報告の行を出して exit 2。`report-midline-exit1` は\n+#    報告の行の頭に文字を足した 1 行(報告の綴りを行の途中に含むが報告の行ではない)を出して exit 1。\n+#    他は `place_failing_detector` の落ち方)\n place_detector() {\n   local hook=\"$1\" kind=\"$2\"\n   local name target report_line\n@@ -107,6 +109,7 @@ place_detector() {\n   case \"$kind\" in\n     real) cp \"$repo_dir/.claude/hooks/lib/$name\" \"$target\" ;;\n     reports-exit2) printf 'import sys\\nprint(%s)\\nsys.exit(2)\\n' \"$(jq -n --arg l \"$report_line\" '$l')\" >\"$target\" ;;\n+    report-midline-exit1) printf 'import sys\\nprint(%s)\\nsys.exit(1)\\n' \"$(jq -n --arg l \"注: $report_line\" '$l')\" >\"$target\" ;;\n     *) place_failing_detector \"$kind\" \"$target\" ;;\n   esac\n }\n@@ -174,6 +177,7 @@ for hook in block-lint-suppress.sh check-doc-comments.sh check-test-helper-dupli\n   check unchecked \"$hook\" summary-exit1 violation ok \"要約の行だけを出して exit 1 で終わる検出器なら、検査できていないことを伝える\"\n   check unchecked \"$hook\" usage violation ok \"報告を出さずに exit 2 で終わる検出器なら、検査できていないことを伝える\"\n   check unchecked \"$hook\" reports-exit2 violation ok \"報告の行を出して exit 2 で終わる検出器なら、違反とは読まず検査できていないことを伝える\"\n+  check unchecked \"$hook\" report-midline-exit1 violation ok \"報告の綴りを行の途中に含む 1 行だけを出して exit 1 で終わる検出器なら、違反とは読まず検査できていないことを伝える\"\n   check \"$found\" \"$hook\" real violation ok \"実物の検出器で違反があれば、これまでどおり伝える\"\n   check pass \"$hook\" real clean ok \"実物の検出器で違反が無ければ、何も出さない\"\n   check pass \"$hook\" real violation broken \"起動できない python3 しか無ければ、違反があっても何も出さない\"",
+          "patchLines": 27,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/block-lint-suppress.sh",
+      "to": ".claude/hooks/lib/edit-detector.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/block-lint-suppress.sh",
+      "to": ".claude/hooks/lib/lint-suppressions.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/check-doc-comments.sh",
+      "to": ".claude/hooks/lib/edit-detector.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/check-doc-comments.sh",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/check-test-helper-duplication.sh",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/check-test-helper-duplication.sh",
+      "to": ".claude/hooks/lib/edit-detector.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/block-lint-suppress.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/check-doc-comments.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/check-test-helper-duplication.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/edit-detector.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/lint-suppressions.py",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".github/scripts/lib/detector-precondition.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".github/scripts/lib/detector-report.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "to": ".claude/hooks/lib/pre-push-detector.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "to": ".claude/hooks/pre-push-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/verification-agent-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-doc-comments.sh",
+      "to": ".claude/hooks/lib/pre-push-detector.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-import-rules.sh",
+      "to": ".claude/hooks/lib/pre-push-detector.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-named-paths.sh",
+      "to": ".claude/hooks/lib/pre-push-detector.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-result-option-discriminants.sh",
+      "to": ".claude/hooks/lib/pre-push-detector.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-story-titles.sh",
+      "to": ".claude/hooks/lib/pre-push-detector.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-test-helper-duplication.sh",
+      "to": ".claude/hooks/lib/pre-push-detector.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-added-lint-suppressions.sh",
+      "to": ".github/scripts/lib/detector-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-added-test-helper-duplication.sh",
+      "to": ".github/scripts/lib/detector-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "added"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/result-option-discriminant-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-frontend-report.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-tauri-version-match.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "pnpm-lock.yaml",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": "harness/githooks/pre-push",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "added"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/result-option-discriminant-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/lib/detector-precondition.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    }
+  ]
+}
