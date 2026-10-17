@@ -1,4 +1,5 @@
 import { type ReactElement, useState } from "react";
+import { Button, ButtonKinds } from "@/components/button";
 import { ColorSwatch, GradientSwatch } from "@/components/color-swatch";
 import { Token, type TokenKind, type TokenRef } from "@/domains/dcmp/token";
 import { TokenSelection } from "@/domains/session/token-selection";
@@ -126,7 +127,9 @@ function SectionHeading({
   const kind = section.kind;
 
   return (
-    <div className="flex items-center justify-between px-3 pt-2 pb-1">
+    // 行内のアイコンの + は字の大きさをこの行から継ぐので、行に UI 案の + の大きさ（12px）を置く。
+    // 外してもテストでは落ちず、気づく手段は Storybook の視覚差分だけ。
+    <div className="flex items-center justify-between px-3 pt-2 pb-1 text-xs">
       <button
         type="button"
         aria-expanded={isOpen}
@@ -144,14 +147,13 @@ function SectionHeading({
       </button>
       {/* 畳んだ節に足しても増えた行が見えないので、開いている節にだけ出す。 */}
       {isOpen ? (
-        <button
-          type="button"
+        <Button
+          kind={ButtonKinds.InlineIcon}
           aria-label={`${kind} にトークンを追加`}
           onClick={() => onAdd(kind)}
-          className="px-1 text-gray-500 text-sm hover:text-gray-900"
         >
           +
-        </button>
+        </Button>
       ) : null}
     </div>
   );

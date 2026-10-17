@@ -1,4 +1,5 @@
 import type { ReactElement } from "react";
+import { Button, ButtonKinds } from "@/components/button";
 import { EditContinuities } from "@/domains/session/edit-continuity";
 import type {
   GradientControl,
@@ -13,9 +14,6 @@ import {
   type SetTokenValue,
   ValueField,
 } from "../value-field";
-
-const StopButtonClass =
-  "flex size-6 shrink-0 items-center justify-center rounded text-gray-600 hover:bg-gray-100 disabled:text-gray-300 disabled:hover:bg-transparent";
 
 /** stop の行の数値の欄の幅。 */
 const StopNumberCellClass = "w-[60px] shrink-0";
@@ -100,16 +98,15 @@ export function GradientFields({
       />
       <div className="flex items-center justify-between">
         <span className="text-gray-600 text-xs">Stops</span>
-        <button
-          type="button"
+        <Button
+          kind={ButtonKinds.Icon}
           aria-label="stop を追加"
           onClick={() =>
             onSetTokenValue(gradient.afterAdd, EditContinuities.Separate)
           }
-          className={StopButtonClass}
         >
           +
-        </button>
+        </Button>
       </div>
       {gradient.stops.map((row) => (
         <div
@@ -130,8 +127,8 @@ export function GradientFields({
             </div>
           ))}
           {/* 2 件以下で消さずに押せない状態で並べるのは docs/06-ui.md「`Tokens` の `gradients`」 */}
-          <button
-            type="button"
+          <Button
+            kind={ButtonKinds.Icon}
             aria-label={row.removeButtonLabel}
             disabled={!Option.isSome(row.afterRemove)}
             onClick={() =>
@@ -139,10 +136,9 @@ export function GradientFields({
                 onSetTokenValue(value, EditContinuities.Separate),
               )
             }
-            className={StopButtonClass}
           >
             −
-          </button>
+          </Button>
         </div>
       ))}
     </div>

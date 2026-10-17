@@ -18,8 +18,10 @@ export const ButtonKinds = {
    * 1 つだけを型で縛らない。1 画面は複数の feature が描いた部品の合成で、1 つだけは合成後の木の性質なので props の型では表せない。
    */
   Emphasis: "Emphasis",
-  /** 綴りを持たないアイコンだけの操作（プライマリと同じ配色の正方形）。 */
+  /** 記号や数値だけを中身に持つ操作。26px の正方形に収まり、枠を持たない（灰の字）。 */
   Icon: "Icon",
+  /** 記号や数値だけを中身に持つ操作のうち、見出しや帯の行の中に置くもの。枠も高さも持たない（灰の字）。字の大きさは置いた行から継ぐ。 */
+  InlineIcon: "InlineIcon",
 } as const;
 
 /** ボタンの種類。 */
@@ -73,9 +75,9 @@ export type ButtonProps = ButtonCommonProps &
         "aria-label"?: string;
       }>
     | Readonly<{
-        kind: typeof ButtonKinds.Icon;
+        kind: typeof ButtonKinds.Icon | typeof ButtonKinds.InlineIcon;
         size?: never;
-        /** アイコンには綴りが無いので、読ませる名前を必ず与える。 */
+        /** 中身の記号・数値は操作を言い表さないので、読ませる名前を必ず与える。 */
         "aria-label": string;
       }>
   );
@@ -83,18 +85,24 @@ export type ButtonProps = ButtonCommonProps &
 /** 箱型の 4 種に共通の、押せないときの枠と文字の色。 */
 const FramedDisabledFace = "disabled:border-[#ebebeb] disabled:text-[#c4c4c4]";
 
-/** プライマリの配色。アイコンも同じ値を使う。 */
-const PrimaryFace = `border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa] enabled:hover:text-[#0866b2] ${FramedDisabledFace}`;
+/**
+ * アイコン 2 種に共通の配色。
+ *
+ * hover は UI 案に無いので、同じ灰の字で描くタブバーの非選択タブの hover の値をその時点で借りた（参照ではつないでいない）。
+ */
+const IconFace =
+  "text-[#767676] enabled:hover:bg-[#f0f0f0] disabled:text-[#c4c4c4]";
 
 /**
  * 種類ごとの、平常・hover・押せないときの配色を指定する Tailwind のクラス。
  *
- * 配色は UI 案（docs/Design Composer.html のボタンは黒の塗りと白地に灰の枠）から意図して離れ、青の枠と白地を基調にしている（#1061 で決めた）。
+ * 配色は UI 案（docs/Design Composer.html のボタンは黒の塗りと白地に灰の枠）から意図して離れ、青の枠と白地を基調にしている（#1061 で決めた）。アイコン 2 種は枠の無い灰の字で、UI 案どおりなのは倍率の −/+ と見出しの +。
+ * 倍率の 55% は UI 案の Default / Context menu では色の指定が無く地の #1e1e1e を継いでいるが、灰に揃えた（#1066）。
  *
  * happy-dom は Tailwind を解決しないので配色はテストでは守れない。視覚差分（components/Button）が拾うのは地の塗りのような面積の大きい変化だけで、枠色・押せないときの文字色はしきい値（`--max-diff-ratio 0.002`）未満で通り、hover は撮られないので、それらは Storybook を目視で確かめる。
  */
 const ButtonKindFaces = {
-  [ButtonKinds.Primary]: PrimaryFace,
+  [ButtonKinds.Primary]: `border-[#0a74c9] bg-[#ffffff] text-[#0a74c9] enabled:hover:bg-[#e7f1fa] enabled:hover:text-[#0866b2] ${FramedDisabledFace}`,
   [ButtonKinds.Secondary]: `border-[#d4d4d4] bg-[#ffffff] text-[#1e1e1e] enabled:hover:bg-[#f5f5f5] ${FramedDisabledFace}`,
   [ButtonKinds.Danger]: `border-[#c4262b] bg-[#ffffff] text-[#c4262b] enabled:hover:bg-[#fdecec] enabled:hover:text-[#a81f24] ${FramedDisabledFace}`,
   [ButtonKinds.Text]:
@@ -102,7 +110,8 @@ const ButtonKindFaces = {
   // 枠を地と同じ色にして持たせるのは、押せないときの枠（UI 案 docs/Design Composer.html の押せない
   // `Create component` が持つ 1px の枠）と幅を揃えるため。押せないときの配色もそのボタンの値。
   [ButtonKinds.Emphasis]: `border-[#0a74c9] bg-[#0a74c9] text-[#ffffff] enabled:hover:border-[#0866b2] enabled:hover:bg-[#0866b2] ${FramedDisabledFace} disabled:bg-[#fafafa]`,
-  [ButtonKinds.Icon]: PrimaryFace,
+  [ButtonKinds.Icon]: IconFace,
+  [ButtonKinds.InlineIcon]: IconFace,
 } as const satisfies Readonly<Record<ButtonKind, string>>;
 
 /** どの種類にも付ける、字の太さ・カーソル・フォーカス枠。 */
@@ -112,16 +121,20 @@ const ButtonCommonClass = `font-normal enabled:cursor-pointer disabled:cursor-de
 const ButtonFramedClass =
   "inline-flex items-center justify-center gap-[7px] border";
 
-/** アイコンの形（30px の正方形）。 */
-const ButtonIconClass = `${ButtonFramedClass} size-[30px] rounded-[5px] text-[13px]`;
+/** アイコンの形（26px の正方形）。 */
+const ButtonIconClass =
+  "inline-flex size-[26px] shrink-0 items-center justify-center rounded-[5px] text-[13px]";
 
 /**
- * テキストの形。文の中に置き、高さを持たない。
+ * 行の中に置き、高さを持たない形。テキストと行内のアイコンが使う。
  *
  * 左右の余白と角丸は hover の地が字に接しないためのもの（角丸は UI 案のエラー文中のコード片の地 `border-radius:3px` に揃える）。
  * 余白は同じ幅の負の margin で打ち消し、平常時の字の位置は余白が無いときと変えない。
  */
-const ButtonTextClass = "-mx-[3px] inline rounded-[3px] px-[3px] text-[11px]";
+const ButtonInlineClass = "-mx-[3px] inline rounded-[3px] px-[3px]";
+
+/** テキストの形。 */
+const ButtonTextClass = `${ButtonInlineClass} text-[11px]`;
 
 /**
  * 箱型の大きさごとの高さ・余白・字の大きさ・角丸。
@@ -143,6 +156,9 @@ function framedSizeClass(size: ButtonSize): string {
 /**
  * 種類と大きさで決まる形。
  *
+ * アイコンの 26px と、行内のアイコンが字の大きさを持たず行から継ぐことは、崩してもテストでは落ちない（happy-dom は Tailwind を解決しない）。
+ * 気づく手段は Storybook（components/Button の「アイコン」「行内のアイコン」と、置いた各画面のストーリー）だけ。
+ *
  * @param props ボタンの props
  * @returns 形を指定するクラス
  */
@@ -152,6 +168,8 @@ function shapeClass(props: ButtonProps): string {
       return ButtonTextClass;
     case ButtonKinds.Icon:
       return ButtonIconClass;
+    case ButtonKinds.InlineIcon:
+      return ButtonInlineClass;
     case ButtonKinds.Primary:
     case ButtonKinds.Secondary:
     case ButtonKinds.Danger:
@@ -161,7 +179,7 @@ function shapeClass(props: ButtonProps): string {
 }
 
 /**
- * アプリの基本のボタン。見た目は種類と大きさだけで決まり、className は受け取らない。
+ * アプリの基本のボタン。見た目は種類と大きさ（行内のアイコン（InlineIcon）では、置いた行の字の大きさ）だけで決まり、className は受け取らない。
  *
  * @param props 種類・大きさ・名前・押したときの手続き・押せるか・添える 1 行・中身
  * @returns 押してもフォームを送信しないボタン

@@ -150,6 +150,39 @@
       "rules": {
         "max-lines": ["error", { "max": 600, "skipBlankLines": true, "skipComments": true }]
       }
+    },
+    {
+      "files": ["src/**/*.tsx"],
+      "plugins": ["react"],
+      "rules": {
+        "react/forbid-elements": ["error", { "forbid": [
+          { "element": "button", "message": "src/components/ の外では生の <button> を書かず、src/components/button の Button を使う(#1066)。基本ボタンに当たらないものは .oxlintrc.json の許可リストへ理由と一緒に足す" }
+        ] }]
+      }
+    },
+    {
+      "files": [
+        // 部品の実装。基本ボタンそのものと、ボタンを内側に持つ汎用の部品
+        "src/components/**",
+        // フックを動かす引き金で、画面の UI ではない
+        "src/**/__tests__/**",
+        // 押せないスロットと形を共有するツールの並びのスロット
+        "src/features/editor/features/canvas/components/canvas-toolbar/index.tsx",
+        // 選択中を自分で持つ artboard の行
+        "src/features/editor/features/sidebar/components/artboard-list/index.tsx",
+        // 選択中を持つトークンの行と、開閉を持つ種別の節の見出し
+        "src/features/editor/features/tokens/components/token-list/index.tsx",
+        // 選択中を自分で持つツリーの行
+        "src/features/editor/features/sidebar/components/document-tree/index.tsx",
+        // 選択中のビューを自分で持つ左ペインのレールの項目
+        "src/features/editor/features/sidebar/components/left-pane-rail/index.tsx",
+        // 名前とフォルダを大きさの違う字で並べる、幅いっぱいの最近のファイルの行
+        "src/features/editor/features/document-start/components/document-start/index.tsx"
+      ],
+      "plugins": ["react"],
+      "rules": {
+        "react/forbid-elements": "off"
+      }
     }
   ]
 }

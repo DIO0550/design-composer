@@ -116,7 +116,7 @@ export const Text: Story = {
   ),
 };
 
-/** 綴りを持たないアイコンだけの操作。 */
+/** 26px の正方形に収まるアイコンの操作。 */
 export const Icon: Story = {
   name: "アイコン",
   render: () => (
@@ -127,6 +127,33 @@ export const Icon: Story = {
       <Button kind={ButtonKinds.Icon} aria-label="追加" disabled={true}>
         +
       </Button>
+    </div>
+  ),
+};
+
+/** 見出しや帯の行の中に置く、記号や数値だけを中身に持つ操作。字の大きさは置いた行から継ぐので、13px の + を持つ見出しの行と 11px の帯に置いて並べる。 */
+export const InlineIcon: Story = {
+  name: "行内のアイコン",
+  render: () => (
+    <div className="flex w-60 flex-col gap-3 text-gray-900">
+      <div className="flex items-center justify-between text-[13px]">
+        <span className="font-semibold text-[11px]">Artboards</span>
+        <Button kind={ButtonKinds.InlineIcon} aria-label="追加">
+          +
+        </Button>
+      </div>
+      <div className="flex items-center gap-1 text-[11px]">
+        <span>Zoom</span>
+        <Button kind={ButtonKinds.InlineIcon} aria-label="等倍に戻す">
+          55%
+        </Button>
+      </div>
+      <div className="flex items-center justify-between text-[13px]">
+        <span className="font-semibold text-[11px]">Artboards</span>
+        <Button kind={ButtonKinds.InlineIcon} aria-label="追加" disabled={true}>
+          +
+        </Button>
+      </div>
     </div>
   ),
 };

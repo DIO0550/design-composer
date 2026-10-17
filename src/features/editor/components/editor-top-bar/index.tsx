@@ -4,6 +4,7 @@ import {
   type ReactNode,
   useContext,
 } from "react";
+import { Button, ButtonKinds } from "@/components/button";
 import type { DocumentError } from "@/domains/session/document-error";
 import type { DocumentSaveState } from "@/domains/session/document-save-state";
 import { OpenedDocument } from "@/domains/session/opened-document";
@@ -203,13 +204,12 @@ function FileInvalidBadge({
   );
 }
 
-/** 倍率の両隣（`−` / `+`）のボタンの形。中央の倍率はこれより横に広いので別に持つ。 */
-const ZoomStepButton = "rounded px-1.5 py-0.5 text-gray-600 hover:bg-gray-100";
-
 /**
  * 倍率の操作（UI 案の `− 55% +`）。右端へ寄るのはこの並び自身の性質なので `ml-auto` を持
- * つ（外すとパンくずの隣へ寄るが、**テストは 1 件も落ちない** — 気づく手段は Storybook の
- * 視覚差分だけ）。
+ * つ。倍率表示を包む span は UI 案の字の大きさ・最小幅・余白を持ち、行内のアイコンの字の大
+ * きさはそこから継ぐ。`ml-auto` を外すとパンくずの隣へ寄り、span の class を外すと倍率表示
+ * の字の大きさと幅が変わるが、**テストは 1 件も落ちない** — 気づく手段は Storybook の視覚差
+ * 分だけ。
  *
  * 倍率の表示そのものを等倍へ戻すボタンにしている。
  *
@@ -232,30 +232,21 @@ function CanvasZoom({
       aria-label="表示倍率"
       className="ml-auto flex items-center gap-0.5"
     >
-      <button
-        type="button"
-        aria-label="縮小"
-        onClick={onZoomOut}
-        className={ZoomStepButton}
-      >
+      <Button kind={ButtonKinds.Icon} aria-label="縮小" onClick={onZoomOut}>
         −
-      </button>
-      <button
-        type="button"
-        aria-label="等倍に戻す"
-        onClick={onReset}
-        className="min-w-11 rounded px-1 py-0.5 text-center tabular-nums hover:bg-gray-100"
-      >
-        {`${CanvasView.scalePercent(view)}%`}
-      </button>
-      <button
-        type="button"
-        aria-label="拡大"
-        onClick={onZoomIn}
-        className={ZoomStepButton}
-      >
+      </Button>
+      <span className="min-w-10 px-1 text-center text-[11px] tabular-nums">
+        <Button
+          kind={ButtonKinds.InlineIcon}
+          aria-label="等倍に戻す"
+          onClick={onReset}
+        >
+          {`${CanvasView.scalePercent(view)}%`}
+        </Button>
+      </span>
+      <Button kind={ButtonKinds.Icon} aria-label="拡大" onClick={onZoomIn}>
         +
-      </button>
+      </Button>
     </div>
   );
 }
