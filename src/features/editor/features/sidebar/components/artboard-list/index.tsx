@@ -198,6 +198,10 @@ export function ArtboardList({
 
   return (
     <section aria-label="artboard 一覧" className="text-sm">
+      {/*
+        行内のアイコンの + は字の大きさをこの行から継ぐので、行に UI 案の + の大きさ（13px）を置く。
+        外してもテストでは落ちず、気づく手段は Storybook の視覚差分だけ。
+      */}
       <div className="mb-2 flex items-center justify-between gap-2 text-[13px]">
         <h3 className="font-semibold text-gray-500 text-xs uppercase">
           Artboards

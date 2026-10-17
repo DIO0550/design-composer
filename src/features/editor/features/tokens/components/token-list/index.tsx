@@ -127,6 +127,8 @@ function SectionHeading({
   const kind = section.kind;
 
   return (
+    // 行内のアイコンの + は字の大きさをこの行から継ぐので、行に UI 案の + の大きさ（12px）を置く。
+    // 外してもテストでは落ちず、気づく手段は Storybook の視覚差分だけ。
     <div className="flex items-center justify-between px-3 pt-2 pb-1 text-xs">
       <button
         type="button"

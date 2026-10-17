@@ -156,6 +156,9 @@ function framedSizeClass(size: ButtonSize): string {
 /**
  * 種類と大きさで決まる形。
  *
+ * アイコンの 26px と、行内のアイコンが字の大きさを持たず行から継ぐことは、崩してもテストでは落ちない（happy-dom は Tailwind を解決しない）。
+ * 気づく手段は Storybook（components/Button の「アイコン」「行内のアイコン」と、置いた各画面のストーリー）だけ。
+ *
  * @param props ボタンの props
  * @returns 形を指定するクラス
  */
