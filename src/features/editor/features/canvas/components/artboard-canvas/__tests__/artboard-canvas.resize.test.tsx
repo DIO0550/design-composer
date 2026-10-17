@@ -12,6 +12,7 @@ import {
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
+import { PointerButtons } from "@/libs/dom-event";
 import {
   artboardList,
   drawn,
@@ -263,6 +264,80 @@ test("ハンドルを掴んで枠の中で離しても、次のクリックは�
     ["title", "home"],
     SelectionDigs.NoDeeper,
   );
+});
+
+test("右ボタンでハンドルを押して引いて離しても、次のクリックは選択に使われる", () => {
+  const onSelect = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onSelect });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(
+    resizeHandleAt({ x: 1, y: 0.5 }),
+    { x: 300, y: 100 },
+    PointerButtons.Secondary,
+  );
+  movePointer(panel, { x: 280, y: 100 });
+  releasePointer(panel, { x: 280, y: 100 });
+  // 右ボタンを離しても click は出ないので、キャンバスの面への click は挟まない
+  fireEvent.click(drawn("title"));
+
+  expect(onSelect).toHaveBeenCalledWith(
+    ["title", "home"],
+    SelectionDigs.NoDeeper,
+  );
+});
+
+test("中ボタンでハンドルを押して引いて離しても、次のクリックは選択に使われる", () => {
+  const onSelect = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onSelect });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(
+    resizeHandleAt({ x: 1, y: 0.5 }),
+    { x: 300, y: 100 },
+    PointerButtons.Middle,
+  );
+  movePointer(panel, { x: 280, y: 100 });
+  releasePointer(panel, { x: 280, y: 100 });
+  // 中ボタンを離しても click は出ないので、キャンバスの面への click は挟まない
+  fireEvent.click(drawn("title"));
+
+  expect(onSelect).toHaveBeenCalledWith(
+    ["title", "home"],
+    SelectionDigs.NoDeeper,
+  );
+});
+
+test("右ボタンでハンドルを押して引いても、大きさは変わらない", () => {
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onResize });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(
+    resizeHandleAt({ x: 1, y: 0.5 }),
+    { x: 300, y: 100 },
+    PointerButtons.Secondary,
+  );
+  movePointer(panel, { x: 340, y: 100 });
+  releasePointer(panel, { x: 340, y: 100 });
+
+  expect(onResize).not.toHaveBeenCalled();
+});
+
+test("中ボタンでハンドルを押して引いても、大きさは変わらない", () => {
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onResize });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(
+    resizeHandleAt({ x: 1, y: 0.5 }),
+    { x: 300, y: 100 },
+    PointerButtons.Middle,
+  );
+  movePointer(panel, { x: 340, y: 100 });
+  releasePointer(panel, { x: 340, y: 100 });
+
+  expect(onResize).not.toHaveBeenCalled();
 });
 
 test("幅のハンドルを掴んで右へ運ぶと、動かした分だけ幅が伸びた大きさが通知される", () => {
