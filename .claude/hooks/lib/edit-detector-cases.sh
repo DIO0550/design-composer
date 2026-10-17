@@ -97,7 +97,9 @@ edit_payload() {
 # 写しの `lib/` に検出器を置く。種類ごとに終了コードと出力の組が違う。
 #
 # $1 フックのファイル名
-# $2 検出器の種類(`real` は実物。`reports-exit2` は報告の行を出して exit 2。他は `place_failing_detector` の落ち方)
+# $2 検出器の種類(`real` は実物。`reports-exit2` は報告の行を出して exit 2。`report-midline-exit1` は
+#    報告の行の頭に文字を足した 1 行(報告の綴りを行の途中に含むが報告の行ではない)を出して exit 1。
+#    他は `place_failing_detector` の落ち方)
 place_detector() {
   local hook="$1" kind="$2"
   local name target report_line
@@ -107,6 +109,7 @@ place_detector() {
   case "$kind" in
     real) cp "$repo_dir/.claude/hooks/lib/$name" "$target" ;;
     reports-exit2) printf 'import sys\nprint(%s)\nsys.exit(2)\n' "$(jq -n --arg l "$report_line" '$l')" >"$target" ;;
+    report-midline-exit1) printf 'import sys\nprint(%s)\nsys.exit(1)\n' "$(jq -n --arg l "注: $report_line" '$l')" >"$target" ;;
     *) place_failing_detector "$kind" "$target" ;;
   esac
 }
@@ -174,6 +177,7 @@ for hook in block-lint-suppress.sh check-doc-comments.sh check-test-helper-dupli
   check unchecked "$hook" summary-exit1 violation ok "要約の行だけを出して exit 1 で終わる検出器なら、検査できていないことを伝える"
   check unchecked "$hook" usage violation ok "報告を出さずに exit 2 で終わる検出器なら、検査できていないことを伝える"
   check unchecked "$hook" reports-exit2 violation ok "報告の行を出して exit 2 で終わる検出器なら、違反とは読まず検査できていないことを伝える"
+  check unchecked "$hook" report-midline-exit1 violation ok "報告の綴りを行の途中に含む 1 行だけを出して exit 1 で終わる検出器なら、違反とは読まず検査できていないことを伝える"
   check "$found" "$hook" real violation ok "実物の検出器で違反があれば、これまでどおり伝える"
   check pass "$hook" real clean ok "実物の検出器で違反が無ければ、何も出さない"
   check pass "$hook" real violation broken "起動できない python3 しか無ければ、違反があっても何も出さない"
