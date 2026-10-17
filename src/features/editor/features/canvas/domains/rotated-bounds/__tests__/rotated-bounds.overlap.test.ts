@@ -9,7 +9,7 @@ const TurnedSquare: RotatedBounds = {
 };
 
 /** 回る前は (100, 50) から 200x100 の横長を 90 度回したもの。回った後は x 150〜250・y 0〜200。 */
-const UprightWide: RotatedBounds = {
+const QuarterTurnedWide: RotatedBounds = {
   unrotated: { left: 100, top: 50, width: 200, height: 100 },
   rotation: 90,
 };
@@ -63,7 +63,7 @@ test("回った矩形をすっぽり覆う矩形と重なる", () => {
 
 test("90 度回した横長は、回る前の左端があった位置の矩形とは重ならない", () => {
   expect(
-    RotatedBounds.overlaps(UprightWide, {
+    RotatedBounds.overlaps(QuarterTurnedWide, {
       left: 100,
       top: 90,
       width: 40,
@@ -74,7 +74,7 @@ test("90 度回した横長は、回る前の左端があった位置の矩形�
 
 test("90 度回した横長は、互いの角がどちらの内側にも無い十字の交差でも重なる", () => {
   expect(
-    RotatedBounds.overlaps(UprightWide, {
+    RotatedBounds.overlaps(QuarterTurnedWide, {
       left: 100,
       top: 90,
       width: 200,
@@ -92,7 +92,7 @@ test("回っていなければ、辺が接するだけでも重なりとみな�
   expect(
     RotatedBounds.overlaps(
       bounds,
-      CanvasBounds.spanning({ x: 300, y: 150 }, { x: 320, y: 170 }),
+      CanvasBounds.spanning({ x: 300, y: 50 }, { x: 320, y: 150 }),
     ),
   ).toBe(true);
 });
@@ -106,7 +106,7 @@ test("1 回り回したものも、辺が接するだけで重なりとみなす
   expect(
     RotatedBounds.overlaps(
       bounds,
-      CanvasBounds.spanning({ x: 300, y: 150 }, { x: 320, y: 170 }),
+      CanvasBounds.spanning({ x: 300, y: 50 }, { x: 320, y: 150 }),
     ),
   ).toBe(true);
 });
