@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1089,
+  "headBranch": "claude/magical-cannon-zdbyke",
+  "baseBranch": "main",
+  "mergeBase": "b8ef14e0234ad0b7e1797b9797ef43dbb109e046",
+  "head": "7db3a9c209c8ff4c76140b5a31d63c412ea9106a",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1087.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 148,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "7db3a9c209c8ff4c76140b5a31d63c412ea9106a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T04:08:12Z",
+      "subject": "📝 [Documentation]: #1005 PR #1087 の振り返りを記録する",
+      "body": "- harness/records/pr-1087.md を足す(指摘 17 件・手戻り・発火)\n\n背景:\nPR #1087 がマージされたので、harness-record の手順でその回の\n指摘・手戻り・フック環境を記録する。\n\n採用理由:\n指摘は元のエージェントごとに 1 ブロックにした。同じ点を複数の\nreviewer が挙げたもの(rules の「feature の外(app/)」の範囲)も\n出どころごとに分けて数えられるようにした。\n\n代替案:\n- 同根の指摘を 1 ブロックに束ねる: count.sh が出どころごとに\n  数えられなくなるためやめた\n\n影響とトレードオフ:\n差分は harness/records/ の 1 ファイルだけ。集計と介入は行わない\n(harness-growth の管轄)。\n\n参考:\n- PR #1087 / Issue #1005\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01PwEkpuCmBkZPrsLytaWJ5K",
+      "files": [
+        {
+          "path": "harness/records/pr-1087.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 148,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,148 @@\n+# PR #1087 feature の外から入れ子の子 feature を読む import を feature-nested-from-outside として報告する\n+\n+- マージ日: 2026-10-17\n+- 関連 Issue: #1005\n+- 差分規模: 5 ファイル / +24 -7\n+\n+## ゴールと結果\n+\n+ゴールは「feature の外(`src/app/`)から入れ子の子 feature の公開口を直接 import すると、`import-rule-violations.py` が新しい種別の違反として報告し非 0 で終わる。トップレベル feature の公開口を読む import はこれまでどおり通る」。達成した(判定表に 8 ケース、現状の `src/` は違反 0 件)。\n+\n+Issue 本文が「違反とするかは文面から決まらない」と書いていたため、フェーズ 1 で止めて選択肢(新種別 / `feature-sibling` に含める / 許可として固定)を Issue に出し、ユーザーの回答(新種別)を得てから計画へ進んだ。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。コメントは自分が投稿したテストケース表と bot の投稿(Storybook プレビュー・CI レポート・VRT)だけ。CI は全件緑で、VRT の差分は 0 件だった(200 件 passed)。\n+\n+## 指摘\n+\n+### 1. 新しく違反にする規範が rules/ に一度も書かれない計画だった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 規範は検出器の docstring と deny 文言にしか入らず、deny 文言が根拠に指す `rules/consistency.md` には無かった。50 行目を 1 行のまま書き換えて規範と種別名を入れた(常時ロード 811/811 のため行数を増やさない)。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(変更するファイル)\n+\n+### 2. 別のトップレベル feature が入れ子の子を読む対照ケースが無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 新しい分岐を `owner is None` の外に書く壊し方(親でなければ外から扱い)を、計画の 8 ケースはすべて通してしまう。`feature-sibling` のままであることを固定するケースを足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 3. 種別名の語幹 `nested` が既存の `feature-nest-depth` とずれる理由が無かった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 名前は維持し、`nest-depth` は段数を数える名詞句、こちらは読まれる対象の性質で、`feature-nest-from-outside` は「外からネストする」と読める、を却下理由として Issue に残した。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 4. `feature_relation()` の docstring「許すのは親から直下の子への一方向だけ」が新しい分岐と食い違った\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 外からトップレベルを許す分岐を足したので文字どおりには偽になった。「feature 同士で許すのは」と主語を限定した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 5. rules/consistency.md の「feature の外(`app/`)」が検出器の範囲より狭く読める\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 検出器は feature に属さないすべての呼び出し元を判定する。「`app/` など feature の外」に直した。同じ点は implementer の返答にも出ていた。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 6. 同上(方式の観点の担当外として)\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 指摘 5 と同じ点を担当外の 1 行として挙げた。方式の結論は「維持」。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 7. 同上(過剰な防御の観点の補足として)\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（over-guard-reviewer）`\n+- 内容: 指摘 5 と同じ点を補足として挙げた。他の層は oxlint が features を禁じているので実害は無い、という見立て。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 8. 種別一覧で「feature の外」が 2 つの意味で使われた\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 隣の `feature-public-api` 行は「その feature の外(別 feature を含む)」、新しい行は「どの feature にも属さない」。新しい行を「どの feature にも属さないファイル(`app/` など)から」にした。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 9. 違反種別の一覧が検出器・hooks README・rules の 3 か所に手で写されている\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 機械で照合されるのは docstring の件数と `groups` だけ。既存の形にこの差分が 1 行ずつ足したもので、不採用として #1086 に切り出した。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 10. `scan()` が種別と受け皿リストの対応を 2 回書いている\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `collected` 辞書と `groups` タプル。判定表の網羅検査が書き忘れを拾うので不採用、#1086 に同梱した。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 11. hooks README に足した probe 2 本が判定表の行と同じ入力・期待だった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: README 側の期待は誰も照合しない。この回で足した 2 本を外した。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 12. 新種別を `feature-sibling` に含めなかった理由がコードに無い\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 不採用。統合すると判定表の対照(別 feature → `feature-sibling` / 外 → 新種別)が落ちるのでテストが守っている。理由は Issue にある。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 13. rules/consistency.md の表に外からの参照の行が無い\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 不採用。常時ロードが 811/811 で、表に足すと同じ節の地の文と二重になる。push 前検査が止めるので読み落としの実害は無い。\n+- 既存ルール: なし\n+\n+### 14. 報告順で新種別を先頭へ動かしても判定表が落ちない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 16 通りのミューテーションのうち生き残った 1 つ。固定されているのは `feature-nest-depth` との前後だけ。既存種別同士の順も固定していないため不採用。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 15. 理由の文字列を空にしても判定表が落ちない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 判定表は意図して種別と件数しか見ない設計で、この差分で生まれた穴ではないため不採用。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 16. Claude Code のフックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が単独で通り、実行中フラグのマーカー・発火ログの見出しとも無かった(README の表で「本当に不発」の枝)。`npx` 不使用・`git add` は個別・作業ツリーを書き換えるサブエージェントの完了後にだけコミット、を手動で確かめ、PR 本文に記録した。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+### 17. 初回の pre-push が node_modules 不在で 3 検査を飛ばし exit 1 になった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: implementer が `pnpm install --frozen-lockfile` を入れて再実行し、すべて通過(失敗 0 / 通過 30 / 飛ばした 0)。`PRE_PUSH_REQUIRE_ALL=1` が飛ばしを失敗として扱った結果で、検査は意図どおり働いた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 7\n+\n+## 手戻り\n+\n+- フェーズ 1 で一度停止した(仕様未決)。ユーザー回答の後に再開\n+- plan-reviewer の指摘 3 件は planner へ戻さず、親で確定して Issue に書いた(指摘が直す内容を具体的に指定しており、他の項目へ波及しないため)\n+- 1 段目の実装検証の採用 4 件で、implementer による修正コミットを 1 つ足した(e7dd5f5)\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録のみ(集計と介入は `harness-growth` の管轄)。",
+          "patchLines": 149,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
