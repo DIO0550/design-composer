@@ -32,16 +32,8 @@ function namesWithin(
   range: RangeSelect,
   view: CanvasView,
 ): readonly string[] {
-  const candidates = DesignDocument.collectArtboardChildNames(
-    designDocument,
-  ).flatMap((name) => {
-    const rotation = DesignDocument.totalRotationOf(designDocument, name);
-    // 向きが引けないのは参照先の部品が無いインスタンスのときだけで、そのときはコンパイル全体が
-    // 失敗してキャンバスに名前の付いた要素が描かれないので、外しても拾わない答えは変わらない
-    return Option.isSome(rotation) ? [{ name, rotation: rotation.value }] : [];
-  });
   return DrawnBounds.collectOverlappingNames(
-    candidates,
+    DesignDocument.collectArtboardChildRotations(designDocument),
     RangeSelect.bounds(range),
     view,
   );
@@ -120,10 +112,9 @@ function captureTargetOf(event: ReactPointerEvent<HTMLElement>): Element {
  * 空き領域か artboard の背景から範囲を引いて、重なったものをまとめて選ぶ（docs/06-ui.md
  * 「範囲選択」）。
  *
- * 拾う候補はドキュメントが答え（artboard 直下の子）、どれが範囲に重なっているかは、向きは
- * ドキュメントが、位置と大きさは実測が答える。ここが持つのは引いている最中の
- * 状態だけで、矩形にするのも閾値の判定も `RangeSelect` / `RangeSelectDrag` にある
- * （rules/hooks.md「hooks はドメインロジックを持たない」）。
+ * 拾う相手の決め方は `namesWithin`。ここが持つのは引いている最中の状態だけで、矩形に
+ * するのも閾値の判定も `RangeSelect` / `RangeSelectDrag` にある（rules/hooks.md「hooks は
+ * ドメインロジックを持たない」）。
  *
  * **引いていないときの `pointerup` では何もしない。** 土台の `pointerup` には別の場所（パ
  * レットの行など）で始まったドラッグの解放も届くため、始めていない操作の終わりで選択を

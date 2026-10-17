@@ -97,6 +97,15 @@ export type InsertedCopy = Readonly<{
   copyName: string;
 }>;
 
+/**
+ * 名前と、その名前のものが画面上で向いている角度（自分と包んでいるものの `rotation` の
+ * 合計 / `DesignDocument.totalRotationOf`）。
+ */
+export type NamedRotation = Readonly<{
+  name: string;
+  rotation: Angle;
+}>;
+
 /*
  * 以下、検証の走査の区切りまでの関数は「どの artboard を相手にするか」を選ぶためのもの。
  * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `DocumentNames` が持っており、
@@ -1255,6 +1264,36 @@ export const DesignDocument = {
     return document.artboards.flatMap((artboard) =>
       artboard.children.map((child) => child.name),
     );
+  },
+
+  /**
+   * すべての artboard の**直下の子**の名前と、画面上の向き（範囲選択が選びうる相手と、
+   * その当たり判定に使う向き / `collectArtboardChildNames` と同じ相手）。
+   *
+   * 参照先の部品が無いインスタンスは向きが決まらないので外す。そのドキュメントはコンパイル
+   * 全体が失敗してキャンバスに名前の付いた要素が描かれないので、外しても選ばれる相手は変わらない。
+   *
+   * @param document 走査するドキュメント
+   * @returns artboard の並び順・子の並び順のままの名前と、artboard と子の角度の合計
+   *   （`totalRotationOf` と同じ値）。1 つも無ければ空
+   */
+  collectArtboardChildRotations(
+    document: DesignDocument,
+  ): readonly NamedRotation[] {
+    return document.artboards.flatMap((artboard) => {
+      const outer = Rotation.fromProps(Artboard.boxProps(artboard));
+      return artboard.children.flatMap((child) => {
+        const own = rootPropsOf(document, child);
+        return Option.isSome(own)
+          ? [
+              {
+                name: child.name,
+                rotation: outer + Rotation.fromProps(own.value),
+              },
+            ]
+          : [];
+      });
+    });
   },
 
   /**
