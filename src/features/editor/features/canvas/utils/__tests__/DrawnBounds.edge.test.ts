@@ -2,7 +2,9 @@ import { afterEach, expect, test } from "vitest";
 import {
   clearDrawn,
   drawNamed,
+  stubLayoutSize,
 } from "@/features/editor/features/canvas/__tests__/canvas-measure";
+import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
 import { DrawnBounds } from "../DrawnBounds";
 
@@ -36,8 +38,12 @@ test("面積を持たないものは、矩形の内側にあっても拾わな�
   drawNamed("home", { left: 60, top: 60, width: 40, height: 40 });
 
   const overlapping = DrawnBounds.collectOverlappingNames(
-    ["collapsed", "home"],
+    [
+      { name: "collapsed", rotation: 0 },
+      { name: "home", rotation: 0 },
+    ],
     { left: 50, top: 50, width: 200, height: 200 },
+    CanvasView.create(),
   );
 
   expect(overlapping).toEqual(["home"]);
@@ -46,12 +52,19 @@ test("面積を持たないものは、矩形の内側にあっても拾わな�
 test("描かれていない名前は拾わない", () => {
   drawNamed("home", { left: 60, top: 60, width: 40, height: 40 });
 
-  const overlapping = DrawnBounds.collectOverlappingNames(["about", "home"], {
-    left: 50,
-    top: 50,
-    width: 200,
-    height: 200,
-  });
+  const overlapping = DrawnBounds.collectOverlappingNames(
+    [
+      { name: "about", rotation: 0 },
+      { name: "home", rotation: 0 },
+    ],
+    {
+      left: 50,
+      top: 50,
+      width: 200,
+      height: 200,
+    },
+    CanvasView.create(),
+  );
 
   expect(overlapping).toEqual(["home"]);
 });
@@ -67,4 +80,24 @@ test("描かれていない名前と面積を持たないものは、測った�
   ]);
 
   expect(drawnBounds).toEqual([{ left: 60, top: 60, width: 40, height: 40 }]);
+});
+
+test("回っていて回る前の大きさが 0 のものは、外接矩形の中心を含む矩形でも拾わない", () => {
+  // 拾う側を 1 件混ぜて期待値をその 1 件だけの並びにする（`[]` では何も拾わない実装でも通る）
+  stubLayoutSize(
+    drawNamed("collapsed", { left: 100, top: 100, width: 40, height: 40 }),
+    { width: 0, height: 0 },
+  );
+  drawNamed("home", { left: 110, top: 110, width: 10, height: 10 });
+
+  const overlapping = DrawnBounds.collectOverlappingNames(
+    [
+      { name: "collapsed", rotation: 45 },
+      { name: "home", rotation: 0 },
+    ],
+    { left: 110, top: 110, width: 20, height: 20 },
+    CanvasView.create(),
+  );
+
+  expect(overlapping).toEqual(["home"]);
 });

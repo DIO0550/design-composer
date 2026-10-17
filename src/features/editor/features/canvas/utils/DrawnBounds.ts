@@ -5,6 +5,9 @@ import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated
 import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
 
+/** 範囲選択が重なりを見る相手の名前と、その画面上の向き（自分と祖先の合計）。 */
+type OverlapCandidate = Readonly<{ name: string; rotation: Angle }>;
+
 /**
  * 名前で指した、キャンバスに描かれているものの実測をまとめる（`CanvasPointer` と同じ形）。
  */
@@ -92,23 +95,34 @@ export const DrawnBounds = {
   /**
    * 名前で指したもののうち、その矩形に重なって描かれているもの（範囲選択が拾う相手）。
    *
-   * 面積を持たないものは外す（`measureWithArea`）。外さないと画面の左上へ引いた範囲が
-   * それらをまとめて拾う。
+   * 回っているものは回った矩形で判定し、回る前の大きさが 0 のものは外す。外さないと
+   * 画面の左上へ引いた範囲が、まだレイアウトされていない / 畳まれているものをまとめて拾う
+   * （`CanvasBounds.hasArea` の doc）。
    *
-   * @param names 見る artboard / ノードの名前
+   * @param candidates 見る artboard / ノードの名前と、その画面上の向き（自分と祖先の合計）
    * @param bounds 重なりを見る矩形（client 座標）
+   * @param view レイアウトの大きさを画面上の大きさへ直す倍率
    * @returns 重なって描かれているものの名前。渡された並びの順を保つ
    */
   collectOverlappingNames(
-    names: readonly string[],
+    candidates: readonly OverlapCandidate[],
     bounds: CanvasBounds,
+    view: CanvasView,
   ): readonly string[] {
-    return names.filter((name) => {
-      const measured = measureWithArea(name);
-      return (
-        Option.isSome(measured) && CanvasBounds.overlaps(measured.value, bounds)
-      );
-    });
+    return candidates
+      .filter((candidate) => {
+        const measured = DrawnBounds.measureRotated(
+          candidate.name,
+          candidate.rotation,
+          view,
+        );
+        return (
+          Option.isSome(measured) &&
+          CanvasBounds.hasArea(measured.value.unrotated) &&
+          RotatedBounds.overlaps(measured.value, bounds)
+        );
+      })
+      .map((candidate) => candidate.name);
   },
 } as const;
 
