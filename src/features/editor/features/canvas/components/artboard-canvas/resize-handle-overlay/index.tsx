@@ -8,6 +8,7 @@ import {
   type ResizeHandleAnchor,
 } from "@/features/editor/features/canvas/domains/node-resize";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
+import { PointerButton } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 import { SelectionColor } from "../artboard-frame-list";
 
@@ -123,7 +124,16 @@ export function ResizeHandleOverlay({
             style={handleStyle(anchor, bounds, grab)}
             onPointerDown={
               Option.isSome(grab)
-                ? (event) => onGrab(grab.value, event)
+                ? (event) => {
+                    /*
+                     * 右・中ボタンでは掴まない。それらの pointerup のあとには click が来ないので、
+                     * 離したあとの飲み込み待ちが残って次の左クリックを食べる。
+                     */
+                    if (!PointerButton.isPrimary(event)) {
+                      return;
+                    }
+                    onGrab(grab.value, event);
+                  }
                 : undefined
             }
           />
