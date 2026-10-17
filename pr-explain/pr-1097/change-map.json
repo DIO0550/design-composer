@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1097,
+  "headBranch": "claude/magical-cannon-ynrnxo",
+  "baseBranch": "main",
+  "mergeBase": "72b05b1fcd268810d8a65904d1b772b66e6b8fbb",
+  "head": "3ef7708298008d0c2827f6738158469adb9c68d0",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1096.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 189,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "3ef7708298008d0c2827f6738158469adb9c68d0",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T10:11:12Z",
+      "subject": "📝 [Doc]: PR #1096 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1096.md を足す(指摘 23 件・手戻り・発火)\n\n背景:\nPR #1096(#1090 回ったノードの移動スナップを外接矩形で当てる)がマージされた。\n人・bot・CI へ届いた指摘を分類ごとに数える材料として、マージのたびに\n1 ファイル残す(harness-record)。\n\n採用理由:\nGitHub 上の人のレビューは 0 件(3 つの取得先をすべて確認)で、指摘はすべて\nサブエージェントと自己修正のもの。指摘 1 件 = 1 ブロックで書き、分類は\n既存の語彙から選んだ。\n\n代替案:\n- 同じ根本原因の指摘(docs の祖先の扱い)を 1 件にまとめる: 出どころが\n  違うと数え方が変わるので、出どころごとに分けて書いた\n\n影響とトレードオフ:\n対策済の行は書いていない(介入していない回に書くと再発数が 0 に戻る)。\n発火は計測対象外(フック不発)と書いた。\n\n参考:\n#1096 / #1090 / #1095\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01MCWSUS6yCp1UjafqxZerS8",
+      "files": [
+        {
+          "path": "harness/records/pr-1096.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 189,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,189 @@\n+# PR #1096 [ui] 回ったノードを運ぶときのスナップを外接矩形の位置で当てる\n+\n+- マージ日: 2026-10-17\n+- 関連 Issue: #1090\n+- 差分規模: 10 ファイル / +312 -71\n+\n+## ゴールと結果\n+\n+ゴールは「回ったノードを運ぶとき、移動スナップの当たりが運んだ先の軸に平行な外接矩形の辺・中心線で判定され、寄せた結果がドキュメント座標へ正しく書かれる」。達成した(Issue の例は `x: 138` → `x: 146`、隙間は 108 → 112)。祖先だけが回っているノードは、運んだ量を親の座標へ戻していない既存の誤りが見つかり、#1095 へ分けた。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。コメントは自分が投稿したテストケース表と bot の投稿(Storybook プレビュー・CI レポート・VRT)だけ。CI は全件緑で、VRT の差分は 0 件だった(201 件 passed)。\n+\n+## 指摘\n+\n+### 1. 寄せ量以外(ガイド線・隙間・等間隔)も外接矩形で計算されるのに、docs・テストが当たりしか扱っていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `SideSnap` に渡す矩形を替えるとガイド線の長さ・隙間・等間隔の判定も変わる。docs の追記を全部に広げ、通しテストに隙間の数値(`[\"112\"]`)を足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(変更するファイル)\n+\n+### 2. docs に足す文の後半(揃え先が回っているとき)にテストが無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 運ぶ側のテストしか無かったので、docs から後半を外し範囲を運ぶ側に限った。\n+- 既存ルール: rules/testing.md「テストケースの根拠は仕様・設計ドキュメントに求める」\n+\n+### 3. `RotatedBounds.placedAt` の第 1 引数が `CanvasBounds` だった\n+\n+- 分類: `ownership`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 第 1 引数の型のコンパニオンに置く規約と、同じファイルの `relativeTo(bounds, origin)` に揃えて `(rotated, parent, offset)` にした。同名の `CanvasBounds.placedAt` / `ResizeEdit.placedAt` を grep した記録も計画に残した。\n+- 既存ルール: rules/architecture.md「ロジックの帰属先」\n+\n+### 4. 30 度の外接矩形のテストを `pointAt` で作ると落ちない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 期待値を実装と同じ経路で作ると回す向きの誤りで落ちない。期待値を数値(w·cos30 + h·sin30 など)で書いた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 5. 先送りした限界(祖先だけが回っているノード)の後続 Issue が無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: planner に食い違いの具体例を試作させ(変更前 `x:0,y:10` / 変更後 `x:3,y:4`、どちらも誤り)、#1095 を #587 の子として立てた。\n+- 既存ルール: AGENTS.md「タスクの分割」\n+\n+### 6. docs/06 に、リサイズは吸い付かないのに移動は吸い付く理由が無かった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「移動は形を変えないので外接矩形で揃えても意味が通る」の Why と、「回って描かれているノード」の定義への参照を足した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 7. テストヘルパーの doc の直す箇所が計画に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `setupSiblings` の `@param badgeRotation` と、`drawnTurnedBadge` は `drawnApart()` のあとに呼ぶ上書きである順序の前提をファイル表に足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3\n+\n+### 8. 「外接矩形を描いて回る前の大きさを差し替える」組み立てが 3 ファイル目に増えた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `setup.tsx` に `drawnTurnedAt` を足し、resize-rotation / range-select-rotation も同じ PR で寄せた。\n+- 既存ルール: rules/testing.md「テスト用ヘルパーの置き場所」\n+\n+### 9. 端数の矩形リテラルが 1 つのテストファイルに 3 回書かれていた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `FractionalUnrotated` として名前を付けた。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 10. docs と doc に、定義・リサイズの理由・docs の列挙を写していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: docs/06 145 行の括弧内(191 行・211 行の再掲)、`snapAt` の doc の列挙(docs の写し)、テスト冒頭のコメント(ヘルパーの doc の写し)。参照に縮めた。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 11. 「画面に見えている外接矩形」は誤り\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（ui-reviewer）`\n+- 内容: 選択の枠もハンドルも回った形に沿って描かれ、外接矩形は画面に出ていない。docs と `toEnclosing` の doc を「画面には描かれない計算上の矩形」に直した。\n+- 既存ルール: rules/ui-verification.md「単一の画面・単一の状態だけを見て断定しない」\n+\n+### 12. docs/06 の隙間の「最大 1 違う」が回ったノードで成り立たない\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 測る矩形を変えたのに、同じ節の数値の保証を見直していなかった。外接矩形と回る前の矩形の差だけ違う旨の但し書きを足した。\n+- 既存ルール: AGENTS.md「規約を直すときは、同じファイルが既に持っている記述・例と突き合わせる」\n+\n+### 13. docs/06 の丸めが効く場合の列挙に回ったノードが無い\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 外接矩形と回る前の矩形の差の半分が非整数のときを足した。\n+- 既存ルール: AGENTS.md「規約を直すときは、同じファイルが既に持っている記述・例と突き合わせる」\n+\n+### 14. docs の定義が祖先の回転を含むので、祖先だけが回る場合も揃うと読める\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 計画時は「docs は既知の不具合の置き場ではない」として書かなかったが、ファイルが未完を「まだ…(#番号)」で書く慣例を持つことを示され、却下を取り消して #1095 付きの 1 行を足した。\n+- 既存ルール: AGENTS.md「規約を直すときは、同じファイルが既に持っている記述・例と突き合わせる」\n+\n+### 15. 同上(コメントの前提の観点から)\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 指摘 14 と同じ点。docs の定義(祖先を含む)と、範囲外とした判断が Issue にしか無いことの食い違いとして挙げた。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 16. `CanvasBounds.placedAt` の Why「実測をそのまま使える」が今の呼び出しとずれた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 唯一の呼び出しが `RotatedBounds.placedAt` になり、回ったノードではレイアウトの大きさ由来になった。差分外のファイルで、implementer が申し送りで気づいていた。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 17. 通しテストのコメントが数値の算出と代替値を並べていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: アサートの値と二重になる。Why 1〜2 行に縮めた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 18. `measureReposition` の `@param context` が倍率の新しい用途を書いていない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: 倍率が `measureRotated` でレイアウトの大きさを画面上の大きさに直すのにも使われるようになった。担当外の 1 行として挙げられ、採用した。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 19. `totalRotationOf` をポインタ移動ごとに引く(祖先の段数ぶん木を走る)\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（performance-reviewer）`\n+- 内容: 性能の所見(信頼度低)。1 フレームを食いつぶす規模ではない見積もりで、掴んだ時点に保存すると導出値の保存になるため不採用。\n+- 既存ルール: なし\n+\n+### 20. 倍率を 1 に固定しても全テストが通る\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: ミューテーションで生き残った。倍率 1.2 の通しテストを足し(`x: 146, y: 14`、倍率を外すと 147)、落ちることを確かめた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 21. `totalRotationOf` を `rotationOf` に替えても全テストが通る\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 区別できる入力が「回った Box の中の回っていない子」しか無く、そこは #1095 の既知の誤りの上に乗る。誤った座標を期待値に固定しないため不採用とし、#1095 に申し送った。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 22. 回っているのにレイアウトの大きさを測れないときの `none` にテストが無い\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: `layoutSizeOf` が `none` になるのは HTMLElement でないときだけで、名前付きの要素はすべて `div` に描かれるため不採用。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 23. Claude Code のフックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が通り、実行中フラグのマーカー・このセッションの発火ログの見出しとも無かった(README の表で「本当に不発」)。セッションがリポジトリの親(`/home/user`)で起動していた。`npx` はリポジトリ外の試作コピーでのみ、`git add` は個別、作業ツリーを書き換えるサブエージェントの完了後にだけコミット、を手動で確かめた。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- 計画: plan-reviewer の指摘 7 件で planner に 1 回作り直させた(指摘 1〜7)\n+- 実装: 1 回目の implementer はそのまま検査を通過。1 段目の実装検証の採用 11 件で 2 回目、test-reviewer の採用 1 件で 3 回目の implementer を起動した\n+- docs に祖先だけが回る場合を書かない、という計画時の却下を実装検証で取り消した(指摘 14)\n+- フックの発火(止めた操作): 無し(フック不発のため、止まる機会が無かった)\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録のみ(集計と介入は `harness-growth` の管轄)。",
+          "patchLines": 190,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
