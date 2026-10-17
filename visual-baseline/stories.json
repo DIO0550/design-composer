@@ -30,6 +30,11 @@
     "name": "アイコン"
   },
   {
+    "id": "components-button--inline-icon",
+    "title": "components/Button",
+    "name": "行内のアイコン"
+  },
+  {
     "id": "components-button--primary",
     "title": "components/Button",
     "name": "プライマリ"
