@@ -1,4 +1,5 @@
 import type { DocumentSelection } from "@/domains/session/document-selection";
+import { stubLayoutSize } from "@/features/editor/features/canvas/__tests__/canvas-measure";
 import { drawnAt, selectionFromArtboards } from "./setup";
 
 /**
@@ -7,9 +8,10 @@ import { drawnAt, selectionFromArtboards } from "./setup";
  *
  * 座標を持つので、期待値の「揃った」がドキュメント上の値どうしの一致として読める。
  *
+ * @param badgeRotation `badge` 自身の `rotation`（度・時計回り）
  * @returns スナップの範囲を確かめられるドキュメントと、未選択の対
  */
-export function setupSiblings(): DocumentSelection {
+export function setupSiblings(badgeRotation = 0): DocumentSelection {
   return selectionFromArtboards(
     [
       {
@@ -20,7 +22,13 @@ export function setupSiblings(): DocumentSelection {
           {
             name: "badge",
             type: "Text",
-            props: { content: "3", placement: "absolute", x: 40, y: 24 },
+            props: {
+              content: "3",
+              placement: "absolute",
+              x: 40,
+              y: 24,
+              rotation: badgeRotation,
+            },
           },
           {
             name: "marker",
@@ -68,4 +76,14 @@ export function drawnApart(): void {
   drawnAt("label", { left: 260, top: 170, width: 40, height: 20 });
   drawnAt("settings", { left: 500, top: 100, width: 360, height: 240 });
   drawnAt("slot", { left: 560, top: 140, width: 80, height: 40 });
+}
+
+/**
+ * `drawnApart` の `badge` を、90 度回った外接矩形へ上書きする（`drawnApart()` のあとに呼ぶ）。
+ *
+ * 回る前の 20x12 を中心 (150, 90) のまま縦に立てた矩形で、レイアウトの大きさは回る前のまま。
+ */
+export function drawnTurnedBadge(): void {
+  const badge = drawnAt("badge", { left: 144, top: 80, width: 12, height: 20 });
+  stubLayoutSize(badge, { width: 20, height: 12 });
 }
