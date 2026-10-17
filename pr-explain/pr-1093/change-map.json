@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1093,
+  "headBranch": "claude/magical-cannon-m0vn5f",
+  "baseBranch": "main",
+  "mergeBase": "bed1d1c17b56f7e84533c83f942e374f07b2dab9",
+  "head": "d595eb4ad3ca4d2bd892928e6886f29b3d5d7081",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1091.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 248,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "d595eb4ad3ca4d2bd892928e6886f29b3d5d7081",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T08:17:40Z",
+      "subject": "📝 [Documentation]: #999 PR #1091 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1091.md を追加（指摘 31 件・手戻り・発火）\n- 人のレビュー 1 件（NonEmptyArray）、plan-reviewer 11 件、観点別の\n  レビュー 14 件、test-reviewer 2 件、自己修正 3 件\n- 発火は計測対象外（フック不発）\n\n背景:\nPR #1091 がマージされたので、harness-record の手順でその回の指摘・\n手戻り・フック環境を残す。\n\n採用理由:\n指摘は 1 件 1 ブロックで、同じ根本原因でも出どころが違うものは分けて\n書いた（count.sh が出どころごとに数えるため）。発火ログは\nこのセッションの分が無く、見出しも無いので「計測対象外」とした。\n\n影響とトレードオフ:\n対策済の行は書いていない（介入は harness-growth の管轄）。\n\n参考:\n- PR #1091 / Issue #999\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01RgkeRNZNnoAdGV4qURH6km",
+      "files": [
+        {
+          "path": "harness/records/pr-1091.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 248,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,248 @@\n+# PR #1091 範囲選択で回ったノードを回った矩形で判定し、回ったノードのリサイズで寄せないことを固定する\n+\n+- マージ日: 2026-10-17\n+- 関連 Issue: #999\n+- 差分規模: 22 ファイル / +870 -148\n+\n+## ゴールと結果\n+\n+ゴールは 2 つ（オーナー回答 1A / 2B / 3A）。\n+- 範囲選択で、回ったノードは回った矩形そのものと範囲が重なったときだけ選ばれる（2B）\n+- 回ったノードの移動スナップが外接矩形へ寄ること（1A）と、回ったノードのリサイズでは寄せないこと（3A）をテストで固定する\n+\n+2B と 3A は達成した。1A は分離した。計画の前提「今も外接矩形で寄る（現状維持）」が実装と合わず、今の `snapAt` は、位置は回る前の左上、大きさは外接矩形という矩形で当たりを見ていたため、#1090 に分けた。\n+\n+GitHub 上の人のレビューは 1 件（`get_reviews` 2 件のうち 1 件は自分の返信、`get_review_comments` のスレッド 1 件）。`get_comments` は自分のテスト表と bot（Storybook プレビュー・CI レポート・VRT）だけだった。CI は 2 回の push のどちらでも全件緑で、VRT の差分は 0 件（200 件 passed）。\n+\n+## 指摘\n+\n+### 1. 空でない配列は UtilityType として定義しておくとよい\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（人）`\n+- 内容: `CanvasBounds.enclosingAll` の引数 `readonly [CanvasBounds, ...CanvasBounds[]]` への指摘。`src/types/NonEmptyArray.ts` を足し、本番コードで同じ綴りを書いていた他の 8 箇所も置き換えた。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 2. 角が相手の内側にあるかだけを見る実装で落ちるテストが無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 却下案 5 の理由（十字の交差を取りこぼす）を、どのテストも守っていなかった。90 度回した横長で十字に交差するケースを足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 3. 回る前の大きさが 0 のケースの入力が、面積の判定を外しても通る取り方だった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 範囲が外接矩形の中心を含んでいないと、面積の判定を外した実装でも「拾わない」になる。範囲が中心を含むように取ると計画に書いた。\n+- 既存ルール: rules/testing.md「既定値・フォールバックがある処理では、既定値と違う答えになる入力を選ぶ」\n+\n+### 4. 表示確認の手段が未決なのに「未決の判断: 無し」と書いていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: Storybook でノードに `rotation` を書けるかを確かめていなかった。`OpenedDocumentEditor` / `AbsoluteNode` で確かめることにし、インスペクタで書けることはコードで確かめた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3（未決の判断）\n+\n+### 5. 向きが引けない名前を落とすと、黙って拾わなくなる\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `totalRotationOf` が `none` の名前を候補から外す計画だった。参照先の部品が無いインスタンスのときはコンパイル全体が失敗し、キャンバスに名前の付いた要素が描かれないことをコードで示し、外しても答えは変わらないと計画に書いた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 7\n+\n+### 6. 共有フィクスチャへ回転をどこで書くのかが曖昧だった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `setupSiblings` は 6 つのテストファイルが使っている。新しいテストの中で戻り値に `applyPropEdit` を当てる、と明記した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3（変更するファイル）\n+\n+### 7. 30 度のリサイズの期待値の出し方が無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 30 度回すと、引いた量は画面上でポインタを動かした距離にならない。法線の向きへ d 引けば幅 +d という計算式を書き、分岐を外すと落ちる配置を数値で決めた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 8. docs/06 に足す 2 項目で「（上記）」の参照の向きが逆になる\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「回って描かれているノード」の定義は、足す位置より後ろの「リサイズハンドル」にある。「下記『リサイズハンドル』」と書くことにした。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 9. totalRotationOf と rotationOf を取り違えても落ちるテストが無い\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 候補は artboard 直下の子だけで、artboard は `rotation` を持たないので、テストでは区別できない。テストでは落とせないことを計画に残した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 10. 4 点を囲む矩形を自前で書く前に既存 API を探していなかった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `CanvasBounds.spanning` / `enclosing` の組み合わせで作る形に変えた。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 11. 引数が無名の型で、名前 targets が中身を表していなかった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: ファイルの中だけの型 `OverlapCandidate` にし、引数名を `candidates` にした。\n+- 既存ルール: rules/naming.md「内容を表さない汎用語を使わない」\n+\n+### 12. 並行 Issue の確認が計画に無かった\n+\n+- 分類: `parallel-issue-work`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: open の #1027 が `artboard-canvas.resize-rotation.test.tsx` を触りうる。open の PR は #1089 だけで衝突しないことを確かめ、計画に残した。\n+- 既存ルール: なし\n+\n+### 13. 移動スナップ（1A）の前提「現状維持」が実装と合っていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `自己修正`\n+- 内容: 期待値 `x: 146` を走らせずに計画へ書いていた（plan-reviewer も「未検証」と注記）。implementer が実測すると `x: 138` だった。今の `snapAt` が外接矩形で寄っていないと分かり、#1090 に分離した。オーナーへの質問でも「1A = 現状維持」と誤って書いていた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 3\n+\n+### 14. 名前と向きの組の組み立てがフックにあり、ポインタが動くたびに候補数 × ノード数の探索になる\n+\n+- 分類: `ownership`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: `namesWithin` が子の名前ごとに `totalRotationOf` で木を探し直していた。`DesignDocument.collectArtboardChildRotations` に移し、1 回の走査にした。\n+- 既存ルール: rules/hooks.md「hooks はドメインロジックを持たない」\n+\n+### 15. ポインタが動くたびに全候補の向きを木から探し直している\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（performance-reviewer）`\n+- 内容: 指摘 14 と同じ根本原因で、計算量の観点から出た指摘（想定 N=1000・C=50 で、1 回のポインタ移動あたり約 5 万回の訪問）。1 回の走査にして O(N) にした。\n+- 既存ルール: なし\n+\n+### 16. 必ず作れる矩形を Option で受け、「none にならない」をコメントで保証していた\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: `CanvasBounds.enclosing` の戻り値の扱い。空でない並びを型で受ける `CanvasBounds.enclosingAll` を足した。\n+- 既存ルール: rules/coding.md「前提をコメントで書くのは、型で閉じたことにならない」\n+\n+### 17. 到達しない Option の分岐が残っていた\n+\n+- 分類: `over-guard`\n+- 出どころ: `レビュー（over-guard-reviewer）`\n+- 内容: 指摘 16 と同じ箇所。`enclosingAll` で解いた。\n+- 既存ルール: rules/coding.md「前提をコメントで書くのは、型で閉じたことにならない」\n+\n+### 18. 比率で指した点の計算が RotatedBounds の 2 箇所にあった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: `CanvasBounds.pointAt` に移した。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 19. 比率で指した点の計算の重複\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 指摘 18 と同じ箇所を、duplication の観点から指摘された。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 20. 「面積 0 は外す」の判定と理由が 2 本の経路に割れた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `collectOverlappingNames` と `measureWithArea` が別々に判定していた。判定と理由の doc を `measureRotatedWithArea` 1 つにまとめた。`measureWithArea` は倍率を受けていないので乗せていない。\n+- 既存ルール: rules/coding.md「規約の適用範囲」（同じ判断根拠の doc の重複）\n+\n+### 21. フックの 2 つの doc に同じ説明があった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `useRangeSelect` の doc を `namesWithin` への参照にした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 22. テストのコメントを書き写していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `DrawnBounds.edge` の新しいテストのコメントが、同じファイルの既存テストのコメントの写しだった。2 回目を消した。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 23. UprightWide の upright が隣のテストと逆の意味だった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: node-resize.rotation の `\"upright\"` は回っていないノードを指す。`QuarterTurnedWide` に改名した。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 24. テストのコメント 6 行が数値の列挙だった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: resize-rotation の新しいテストのコメント。理由 1 行にした。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 25. テスト名は「辺が接する」なのに入力は角の 1 点の接触だった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 0 度・360 度の 2 件。入力を辺で接する形に変えた。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 26. doc が参照先に書かれていない「原点」を主張していた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: `measureWithArea` の doc の「原点の 0×0（`CanvasBounds.hasArea` の doc）」。参照先の書き方に合わせて直した。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 27. docs/06 の「まだ」を外すと決定の根拠が見えない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 不採用にした。仕様書は決まった仕様を書く場所で、「まだ」を外すこと自体が決定の記録になる。harness-reviewer も同じ判断だった。\n+- 既存ルール: なし\n+\n+### 28. 回す向き（時計回り / 反時計回り）を取り違えても落ちるテストが無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 入力が 45 度の正方形と 90 度の横長だけで、+θ と −θ で同じ形になっていた。30 度の横長で重なりのテストと通しのテストを足した。test-reviewer が出した例 (296,176) は ±30 度のどちらでも外側で、向きの符号を守らなかった。implementer が実測で気づき、(260,10) に替えた。\n+- 既存ルール: rules/testing.md「既定値・フォールバックがある処理では、既定値と違う答えになる入力を選ぶ」\n+\n+### 29. インスタンスの向きを部品のルートから読むことをテストが確かめていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 指摘 14 で 1 回の走査に作り直したとき、元の呼び出し先（`totalRotationOf`）が持っていた観点を移し忘れた。インスタンスと overrides のテストを足した。\n+- 既存ルール: rules/testing.md「API を作り替えるときは、既存テストの観点を先に数える」\n+\n+### 30. 呼ばれなくなった公開 API が残った\n+\n+- 分類: `なし`\n+- 出どころ: `自己修正`\n+- 内容: 指摘 14 の結果、`collectArtboardChildNames` は本番コードから呼ばれなくなった。implementer が報告で気づいた。観点を数えて新しいテストへ移し、消した。移す際、古い「子を持たない artboard」のテストは `[]` を期待していて、何も返さない実装でも通る形だったので、対照を置いた。\n+- 既存ルール: rules/testing.md「API を作り替えるときは、既存テストの観点を先に数える」\n+\n+### 31. フックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が通り、実行中フラグのマーカーも発火ログの見出しも無かった（本当の不発）。このセッションは作業ディレクトリ `/home/user`（リポジトリの外）から始まっている。push 前の検査は手で走らせ、禁止の操作をしていないことを見直して確かめた。\n+- 既存ルール: なし\n+\n+## 手戻り\n+\n+- **1A を分離した**（指摘 13）: 計画どおりに実装し、テストを書く段階で前提の誤りが分かった。テスト・コメント・docs の 3 つを #1090 へ移した\n+- **フェーズ 6 の修正が 3 回に分かれた**: 1 段目の 9 件を直したあとに、呼ばれなくなった API が残り（指摘 30）、2 段目（test-reviewer）で観点の抜けが 2 件見つかった（指摘 28・29）。そのつど implementer を起動し直した\n+- **stop フックの報告**: 「未 push」「未コミット」を繰り返し出した。どれも作業中・検査待ちの状態で、対応は要らなかった\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録を残すところまでがこのスキルの管轄で、集計と介入の判断は `harness-growth` が行う。",
+          "patchLines": 249,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
