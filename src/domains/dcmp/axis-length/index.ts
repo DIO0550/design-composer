@@ -1,5 +1,6 @@
 import { PropEdit } from "@/domains/dcmp/node";
 import type { Axis } from "@/domains/unit/axis";
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { Option } from "@/utils/Option";
 
 /**
@@ -18,7 +19,7 @@ export type AxisLength = Readonly<{
  * 通らずに成功を返す（`ResizeEdit` を受ける `DesignDocument.resize`）。掴んだものを
  * 直和で閉じているのに境界で緩めないよう、先頭が必ずある形にする。
  */
-export type AxisLengths = readonly [AxisLength, ...AxisLength[]];
+export type AxisLengths = NonEmptyArray<AxisLength>;
 
 /**
  * ある軸の長さが変わったこと。

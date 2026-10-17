@@ -9,6 +9,7 @@ import {
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { drawNamed } from "@/features/editor/features/canvas/__tests__/canvas-measure";
+import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
 import { useRangeSelect } from "../index";
 
@@ -55,6 +56,7 @@ function RangeSelectHarness({
   const [clicked, setClicked] = useState("click は届いていない");
   const { bounds, dragHandlers } = useRangeSelect({
     designDocument: HomeDocument,
+    view: CanvasView.create(),
     onSelect,
   });
 

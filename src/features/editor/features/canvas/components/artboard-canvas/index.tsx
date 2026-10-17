@@ -158,6 +158,7 @@ export function ArtboardCanvas({
   const textEdit = useTextEdit({ selection, onEditProp });
   const rangeSelect = useRangeSelect({
     designDocument,
+    view,
     onSelect: onSelectInRange,
   });
   const singleName = DocumentSelection.singleName(selection);

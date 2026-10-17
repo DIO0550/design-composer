@@ -14,6 +14,7 @@ import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-b
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";
 
@@ -96,7 +97,7 @@ export const ResizeGrip = {
    * @param grip 掴んだもの
    * @returns 変える軸ぶんの掴み。2 軸なら幅・高さの順
    */
-  grabs(grip: ResizeGrip): readonly [AxisGrab, ...AxisGrab[]] {
+  grabs(grip: ResizeGrip): NonEmptyArray<AxisGrab> {
     switch (grip.kind) {
       case "width":
         return [grip.width];
@@ -664,7 +665,7 @@ export const NodeResize = {
     const moved = Offset.rotate(screenMoved, -resize.rotation.total);
     // 先頭を分けて組み立てるのは、`map` だと並びが空になりうる型へ落ちるため
     const [first, ...rest] = ResizeGrip.grabs(resize.grip);
-    const resized: readonly [ResizedLength, ...ResizedLength[]] = [
+    const resized: NonEmptyArray<ResizedLength> = [
       resizedLength(first, moved, view),
       ...rest.map((grab) => resizedLength(grab, moved, view)),
     ];

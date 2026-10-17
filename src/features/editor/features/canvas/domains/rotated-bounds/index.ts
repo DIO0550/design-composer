@@ -45,6 +45,24 @@ function rotatedAboutCenter(
   );
 }
 
+/**
+ * 4 角を写した先を囲む軸に平行な矩形が、相手の矩形と重なっているか。
+ *
+ * @param pointOf 矩形の中の比率（左上 (0, 0)・右下 (1, 1)）で指した角を写す先
+ * @param other 重なりを見る相手の矩形
+ * @returns 写した 4 角を囲む矩形が相手と少しでも重なっていれば `true`
+ */
+function overlapsEnclosing(
+  pointOf: (ratio: Offset) => Offset,
+  other: CanvasBounds,
+): boolean {
+  const enclosing = CanvasBounds.enclosingAll([
+    CanvasBounds.spanning(pointOf({ x: 0, y: 0 }), pointOf({ x: 1, y: 1 })),
+    CanvasBounds.spanning(pointOf({ x: 1, y: 0 }), pointOf({ x: 0, y: 1 })),
+  ]);
+  return CanvasBounds.overlaps(enclosing, other);
+}
+
 export const RotatedBounds = {
   /**
    * 外接矩形の中心に、回る前の大きさを置き直す（`rotate()` は中心を動かさないので、
@@ -80,13 +98,9 @@ export const RotatedBounds = {
    * @returns その箇所の画面上の点
    */
   pointAt(bounds: RotatedBounds, ratio: Offset): Offset {
-    const unrotated = bounds.unrotated;
     return rotatedAboutCenter(
-      unrotated,
-      {
-        x: unrotated.left + unrotated.width * ratio.x,
-        y: unrotated.top + unrotated.height * ratio.y,
-      },
+      bounds.unrotated,
+      CanvasBounds.pointAt(bounds.unrotated, ratio),
       bounds.rotation,
     );
   },
@@ -101,6 +115,30 @@ export const RotatedBounds = {
    */
   unrotatePoint(bounds: RotatedBounds, point: Offset): Offset {
     return rotatedAboutCenter(bounds.unrotated, point, -bounds.rotation);
+  },
+
+  /**
+   * 回って描かれている矩形が、軸に平行な矩形と重なっているか。辺が接するだけでも重なり
+   * とみなす（`CanvasBounds.overlaps` と同じ）。
+   *
+   * 分離軸定理を、画面の軸と回った矩形の軸のそれぞれで「軸に平行な矩形どうしの重なり」
+   * として見る。どちらの軸でも重なっていれば重なり。
+   *
+   * @param bounds 回って描かれている矩形
+   * @param other 重なりを見る相手の矩形（軸に平行・画面上の px）
+   * @returns 少しでも重なっていれば `true`
+   */
+  overlaps(bounds: RotatedBounds, other: CanvasBounds): boolean {
+    const onScreenAxes = overlapsEnclosing(
+      (ratio) => RotatedBounds.pointAt(bounds, ratio),
+      other,
+    );
+    const onRotatedAxes = overlapsEnclosing(
+      (ratio) =>
+        RotatedBounds.unrotatePoint(bounds, CanvasBounds.pointAt(other, ratio)),
+      bounds.unrotated,
+    );
+    return onScreenAxes && onRotatedAxes;
   },
 
   /**

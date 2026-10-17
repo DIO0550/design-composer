@@ -27,6 +27,7 @@ import {
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { type Corner, Corners } from "@/domains/unit/corner";
 import { type Side, SidePair, SidePairs, Sides } from "@/domains/unit/side";
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { RecordEx } from "@/utils/RecordEx";
@@ -877,7 +878,7 @@ export const PropCollapsedControl = {
    */
   editFrom(collapsed: PropCollapsedControl, value: Option<string>): PropEdit {
     const [first, ...rest] = collapsed.controls;
-    const names: readonly [string, ...string[]] = [
+    const names: NonEmptyArray<string> = [
       first.prop,
       ...rest.map((control) => control.prop),
     ];

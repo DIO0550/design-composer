@@ -6,6 +6,7 @@ import {
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Offset } from "@/domains/unit/offset";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
+import type { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import {
   RangeSelect,
   RangeSelectDrag,
@@ -18,20 +19,23 @@ import { Option } from "@/utils/Option";
 /**
  * その範囲に重なって描かれている、選べるものの名前。
  *
- * 候補はドキュメントが答え（artboard 直下の子）、そのうちどれが重なっているかは
- * 実測が答える（描かれた位置はドキュメントからは分からない）。
+ * 候補はドキュメントが答え（artboard 直下の子）、そのうちどれが重なっているかは、向きは
+ * ドキュメントが、位置と大きさは実測が答える。
  *
- * @param designDocument 候補の出どころ
+ * @param designDocument 候補と向きの出どころ
  * @param range 重なりを見る範囲
+ * @param view レイアウトの大きさを画面上の大きさへ直す倍率
  * @returns 重なって描かれているものの名前。1 つも無ければ空
  */
 function namesWithin(
   designDocument: DesignDocument,
   range: RangeSelect,
+  view: CanvasView,
 ): readonly string[] {
   return DrawnBounds.collectOverlappingNames(
-    DesignDocument.collectArtboardChildNames(designDocument),
+    DesignDocument.collectArtboardChildRotations(designDocument),
     RangeSelect.bounds(range),
+    view,
   );
 }
 
@@ -108,26 +112,26 @@ function captureTargetOf(event: ReactPointerEvent<HTMLElement>): Element {
  * 空き領域か artboard の背景から範囲を引いて、重なったものをまとめて選ぶ（docs/06-ui.md
  * 「範囲選択」）。
  *
- * 拾う候補はドキュメントが答え（artboard 直下の子）、どれが範囲に重なっているかは実測が
- * 答える（描かれた位置はドキュメントからは分からない）。ここが持つのは引いている最中の
- * 状態だけで、矩形にするのも閾値の判定も `RangeSelect` / `RangeSelectDrag` にある
- * （rules/hooks.md「hooks はドメインロジックを持たない」）。
+ * 拾う相手の決め方は `namesWithin`。ここが持つのは引いている最中の状態だけで、矩形に
+ * するのも閾値の判定も `RangeSelect` / `RangeSelectDrag` にある（rules/hooks.md「hooks は
+ * ドメインロジックを持たない」）。
  *
  * **引いていないときの `pointerup` では何もしない。** 土台の `pointerup` には別の場所（パ
  * レットの行など）で始まったドラッグの解放も届くため、始めていない操作の終わりで選択を
  * 空にすると、そのたびに選択が消える。
  *
- * @param params 候補の出どころのドキュメントと、選ぶ相手が決まったときに呼ぶ手
- *   続き
+ * @param params 候補と向きの出どころのドキュメントと、レイアウトの大きさを画面上の大きさ
+ *   へ直す倍率と、選ぶ相手が決まったときに呼ぶ手続き
  * @returns 引いている範囲と、土台へ渡すポインタのハンドラ
  */
 export function useRangeSelect(
   params: Readonly<{
     designDocument: DesignDocument;
+    view: CanvasView;
     onSelect: (names: readonly string[]) => void;
   }>,
 ): RangeSelectControl {
-  const { designDocument, onSelect } = params;
+  const { designDocument, view, onSelect } = params;
   const [drag, dispatch] = useReducer(
     rangeSelectReducer,
     undefined,
@@ -180,7 +184,7 @@ export function useRangeSelect(
          * の `useMemo`）、崩れると 1 回のドラッグで何度も木を作り直すことになる。
          */
         if (range.value.isDrawn) {
-          onSelect(namesWithin(designDocument, range.value));
+          onSelect(namesWithin(designDocument, range.value, view));
         }
       },
       onPointerUp: (event) => {
@@ -198,7 +202,7 @@ export function useRangeSelect(
         if (!range.value.isDrawn) {
           return;
         }
-        onSelect(namesWithin(designDocument, range.value));
+        onSelect(namesWithin(designDocument, range.value, view));
       },
       /*
        * `click` は捕捉した要素（押した要素）に出るので、artboard の背景から引いた回は枠まで

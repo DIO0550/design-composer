@@ -116,14 +116,17 @@ test("幅か高さのどちらかが 0 なら面積を持たない", () => {
   ]);
 });
 
-test("並び全体を含む最小の矩形は、四辺のいちばん外側で決まる", () => {
-  // 左端は 2 つ目、上端と右端は 1 つ目、下端は 2 つ目が決める（1 つの矩形からは決まらない）
-  const spread: readonly CanvasBounds[] = [
-    { left: 10, top: 20, width: 100, height: 40 },
-    { left: 4, top: 50, width: 30, height: 60 },
-  ];
+/**
+ * 左端は 2 つ目、上端と右端は 1 つ目、下端は 2 つ目が決める並び（1 つの矩形からは
+ * 全体が決まらない）。
+ */
+const Spread: readonly [CanvasBounds, CanvasBounds] = [
+  { left: 10, top: 20, width: 100, height: 40 },
+  { left: 4, top: 50, width: 30, height: 60 },
+];
 
-  expect(CanvasBounds.enclosing(spread)).toEqual(
+test("並び全体を含む最小の矩形は、四辺のいちばん外側で決まる", () => {
+  expect(CanvasBounds.enclosing(Spread)).toEqual(
     Option.some({ left: 4, top: 20, width: 106, height: 90 }),
   );
 });
@@ -134,6 +137,33 @@ test("矩形が 1 つだけなら、その矩形がそのまま全体になる",
 
 test("囲む矩形が 1 つも無ければ全体は決まらない", () => {
   expect(CanvasBounds.enclosing([])).toEqual(Option.none);
+});
+
+test("1 つ以上ある矩形をすべて含む最小の矩形は、空になりえないので必ず決まる", () => {
+  expect(CanvasBounds.enclosingAll(Spread)).toEqual({
+    left: 4,
+    top: 20,
+    width: 106,
+    height: 90,
+  });
+});
+
+test("比率 (0, 0) は矩形の左上、(1, 1) は右下を指す", () => {
+  expect([
+    CanvasBounds.pointAt(Bounds, { x: 0, y: 0 }),
+    CanvasBounds.pointAt(Bounds, { x: 1, y: 1 }),
+  ]).toEqual([
+    { x: 10, y: 20 },
+    { x: 110, y: 60 },
+  ]);
+});
+
+test("比率は幅と高さのそれぞれに掛かる", () => {
+  // 縦横で違う比率を渡す（取り違えても同じ値だと落ちないため）
+  expect(CanvasBounds.pointAt(Bounds, { x: 0.5, y: 0.25 })).toEqual({
+    x: 60,
+    y: 30,
+  });
 });
 
 test("矩形をずらすと、位置だけが動いて大きさは変わらない", () => {
