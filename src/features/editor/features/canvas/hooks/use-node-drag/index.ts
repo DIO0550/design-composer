@@ -29,6 +29,7 @@ import {
   type ParentShift,
   RepositionTarget,
 } from "@/features/editor/features/canvas/domains/reposition-target";
+import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import {
   SideSnap,
   type SideSnapped,
@@ -140,8 +141,8 @@ type RepositionMeasure = Readonly<{
   shift: ParentShift;
   /** 今の親の矩形。掴んだ時点の座標はここを原点にしているので、行き先の組み立てに使う。 */
   origin: CanvasBounds;
-  /** 運んでいるノードの矩形。使うのは大きさだけ（位置は運んでいる間ずれている）。 */
-  dragged: CanvasBounds;
+  /** 運んでいるノードの回る前の大きさと向き。位置は使わない。 */
+  dragged: RotatedBounds;
   /** 吸い付く先。 */
   targets: SnapTargets;
 }>;
@@ -153,11 +154,13 @@ type RepositionMeasure = Readonly<{
  * ウトを通すまで決まらない）ため実測でしか決められない。倍率は実測値に乗るのでドキュメン
  * ト上の px へ割り戻し、落とし先が今の親と同じでも分岐しない（2 回測ればずれは 0）。
  *
- * @param context 割り戻しに使う倍率を持つ今の掴み
+ * @param context 運んでいるノードの向きの引き先のドキュメントと、割り戻しに使う倍率を
+ *   持つ今の掴み
  * @param carried 運んでいるノードと、掴んだ時点の場所
  * @param dropped 落とし先の親
  * @returns 置き直しに要る実測。今の親・落とし先・運んでいるノードのどれかが画
- *   面に無ければ `none`（測れないまま座標を書かない）
+ *   面に無い・運んでいるノードの向きが引けない・回っているのにレイアウトの大きさを
+ *   測れないときは `none`（測れないまま座標を書かない）
  */
 function measureReposition(
   context: DropContext,
@@ -167,7 +170,11 @@ function measureReposition(
   const currentBounds = DrawnBounds.measure(carried.at.parentName);
   // 落とし先だけ `DrawnBounds.measure` に寄せない。直下の子の矩形を集めるのに要素が要る
   const droppedElement = CanvasDom.elementOf(dropped.name);
-  const dragged = DrawnBounds.measure(carried.name);
+  const dragged = Option.flatMap(
+    DesignDocument.totalRotationOf(context.document, carried.name),
+    (rotation) =>
+      DrawnBounds.measureRotated(carried.name, rotation, context.view),
+  );
   // 座標を書くにも揃え先を出すにも 3 つとも要るので、1 つでも欠けたら測れなかったとみなす
   const measurable =
     Option.isSome(currentBounds) &&
@@ -200,16 +207,14 @@ function measureReposition(
  * 揃う位置か兄弟の列と同じ間隔になる位置へ寄せる量と、揃った線（辺か中心線）に引く
  * ガイド線。
  *
- * 行き先の矩形は、今の親の左上へ運んだ先の位置を置き、大きさは運んでいるものの実測をその
- * まま採って組み立てる。位置まで実測から採れないのは、運んでいる間は `translate` でずら
- * して見せており（`repositionPreviewDeclarations`）**前回の移動分が既に乗っている**ため。
+ * 回る前の矩形を運んだ先へ置き、それを回した軸に平行な外接矩形を運んでいるものの矩形に
+ * する（当たり・ガイド線・隙間・等間隔すべて。docs/06-ui.md の辺のスナップ）。
  *
- * ずらしても大きさは変わらないので、そちらは実測を使う。ただし回転したノードでは実測が軸に
- * 平行な外接矩形になるため、寄せの当たりが回る前の形とは変わる。happy-dom はレイアウトを
- * 持たないのでテストには出ない。
+ * 置く位置まで実測から採れないのは、運んでいる間は `translate` でずらして見せており
+ * （`repositionPreviewDeclarations`）**前回の移動分が既に乗っている**ため。
  *
- * @param measured 落とし先の実測（寄せの原点と、運んでいるものの大きさ）
- * @param movedTo 今の親の左上から見た、運んだ先の画面上の位置
+ * @param measured 落とし先の実測（寄せの原点と、運んでいるものの回る前の大きさと向き）
+ * @param movedTo 今の親の左上から見た、運んだ先の回る前の矩形の左上（画面上の px）
  * @param targets 今回吸い付く先（吸い付かない回は空）
  * @returns 寄せ量と、揃った線のガイド線・揃え先との隙間（どれも画面上の px。中身は
  *   `SideSnap.toSnapped` の答え）
@@ -219,10 +224,8 @@ function snapAt(
   movedTo: Offset,
   targets: SnapTargets,
 ): SideSnapped {
-  const moving = CanvasBounds.placedAt(
-    measured.origin,
-    movedTo,
-    measured.dragged,
+  const moving = RotatedBounds.toEnclosing(
+    RotatedBounds.placedAt(measured.dragged, measured.origin, movedTo),
   );
   return SideSnap.toSnapped(
     SideSnap.withSiblings(
