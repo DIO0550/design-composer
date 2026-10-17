@@ -131,13 +131,13 @@ export const Icon: Story = {
   ),
 };
 
-/** 見出しや帯の行の中に置くアイコンの操作。字の大きさは置いた行から継ぐので、13px の見出しと 11px の帯に置いて並べる。 */
+/** 見出しや帯の行の中に置く、記号や数値だけを中身に持つ操作。字の大きさは置いた行から継ぐので、13px の + を持つ見出しの行と 11px の帯に置いて並べる。 */
 export const InlineIcon: Story = {
   name: "行内のアイコン",
   render: () => (
     <div className="flex w-60 flex-col gap-3 text-gray-900">
       <div className="flex items-center justify-between text-[13px]">
-        <span>Artboards</span>
+        <span className="font-semibold text-[11px]">Artboards</span>
         <Button kind={ButtonKinds.InlineIcon} aria-label="追加">
           +
         </Button>
@@ -149,7 +149,7 @@ export const InlineIcon: Story = {
         </Button>
       </div>
       <div className="flex items-center justify-between text-[13px]">
-        <span>Artboards</span>
+        <span className="font-semibold text-[11px]">Artboards</span>
         <Button kind={ButtonKinds.InlineIcon} aria-label="追加" disabled={true}>
           +
         </Button>

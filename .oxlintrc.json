@@ -166,17 +166,17 @@
         "src/components/**",
         // フックを動かす引き金で、画面の UI ではない
         "src/**/__tests__/**",
-        // ツールの並びのスロット
+        // 押せないスロットと形を共有するツールの並びのスロット
         "src/features/editor/features/canvas/components/canvas-toolbar/index.tsx",
-        // artboard の行
+        // 選択中を自分で持つ artboard の行
         "src/features/editor/features/sidebar/components/artboard-list/index.tsx",
-        // トークンの行と、種別の節の開閉
+        // 選択中を持つトークンの行と、開閉を持つ種別の節の見出し
         "src/features/editor/features/tokens/components/token-list/index.tsx",
-        // ツリーの行
+        // 選択中を自分で持つツリーの行
         "src/features/editor/features/sidebar/components/document-tree/index.tsx",
-        // 左ペインのレール
+        // 選択中のビューを自分で持つ左ペインのレールの項目
         "src/features/editor/features/sidebar/components/left-pane-rail/index.tsx",
-        // 最近のファイルの行
+        // 名前とフォルダを大きさの違う字で並べる、幅いっぱいの最近のファイルの行
         "src/features/editor/features/document-start/components/document-start/index.tsx"
       ],
       "plugins": ["react"],

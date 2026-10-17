@@ -18,9 +18,9 @@ export const ButtonKinds = {
    * 1 つだけを型で縛らない。1 画面は複数の feature が描いた部品の合成で、1 つだけは合成後の木の性質なので props の型では表せない。
    */
   Emphasis: "Emphasis",
-  /** 26px の正方形に収まる、枠を持たないアイコンの操作（灰の字）。 */
+  /** 記号や数値だけを中身に持つ操作。26px の正方形に収まり、枠を持たない（灰の字）。 */
   Icon: "Icon",
-  /** 見出しや帯の行の中に置く、枠も高さも持たないアイコンの操作（灰の字）。字の大きさは置いた行から継ぐ。 */
+  /** 記号や数値だけを中身に持つ操作のうち、見出しや帯の行の中に置くもの。枠も高さも持たない（灰の字）。字の大きさは置いた行から継ぐ。 */
   InlineIcon: "InlineIcon",
 } as const;
 
@@ -88,7 +88,7 @@ const FramedDisabledFace = "disabled:border-[#ebebeb] disabled:text-[#c4c4c4]";
 /**
  * アイコン 2 種に共通の配色。
  *
- * hover は UI 案に無いので、同じ灰の字で描くタブバーの非選択タブの hover に揃える。
+ * hover は UI 案に無いので、同じ灰の字で描くタブバーの非選択タブの hover の値をその時点で借りた（参照ではつないでいない）。
  */
 const IconFace =
   "text-[#767676] enabled:hover:bg-[#f0f0f0] disabled:text-[#c4c4c4]";
@@ -96,7 +96,8 @@ const IconFace =
 /**
  * 種類ごとの、平常・hover・押せないときの配色を指定する Tailwind のクラス。
  *
- * 配色は UI 案（docs/Design Composer.html のボタンは黒の塗りと白地に灰の枠）から意図して離れ、青の枠と白地を基調にしている（#1061 で決めた）。アイコン 2 種だけは UI 案どおりの枠の無い灰の字（#1066）。
+ * 配色は UI 案（docs/Design Composer.html のボタンは黒の塗りと白地に灰の枠）から意図して離れ、青の枠と白地を基調にしている（#1061 で決めた）。アイコン 2 種は枠の無い灰の字で、UI 案どおりなのは倍率の −/+ と見出しの +。
+ * 倍率の 55% は UI 案の Default / Context menu では色の指定が無く地の #1e1e1e を継いでいるが、灰に揃えた（#1066）。
  *
  * happy-dom は Tailwind を解決しないので配色はテストでは守れない。視覚差分（components/Button）が拾うのは地の塗りのような面積の大きい変化だけで、枠色・押せないときの文字色はしきい値（`--max-diff-ratio 0.002`）未満で通り、hover は撮られないので、それらは Storybook を目視で確かめる。
  */
@@ -175,7 +176,7 @@ function shapeClass(props: ButtonProps): string {
 }
 
 /**
- * アプリの基本のボタン。見た目は種類と大きさ（行内に置く 2 種では、置いた行の字の大きさ）だけで決まり、className は受け取らない。
+ * アプリの基本のボタン。見た目は種類と大きさ（行内のアイコン（InlineIcon）では、置いた行の字の大きさ）だけで決まり、className は受け取らない。
  *
  * @param props 種類・大きさ・名前・押したときの手続き・押せるか・添える 1 行・中身
  * @returns 押してもフォームを送信しないボタン
