@@ -10,12 +10,11 @@
 # フックは一時ディレクトリへ写したものを走らせ、検出器はその写しの `lib/` に同じ名前で置く
 # (スタブか実物)。環境変数で検出器を差し替える形にすると、本番のフックにもその差し替え口が残る。
 #
-# 1 ケースは `check <期待> <フック> <検出器の種類> <入力> [python3]`。期待の綴りは `classify` が返すもの。
-# 終了コードと出力の組を実物の検出器から決まった形で作れないので、落ちる検出器はスタブで作る。
+# 1 ケースは `check <期待> <フック> <検出器の種類> <入力> <python3> <ケース名>`。期待の綴りは `verdict` が返すもの。
 #
-# `[python3]` に `broken` を渡すと、起動すると 127 で落ちる python3 を PATH 先頭に置く。
-# 道具が無い環境では伝えることも無いので pass になる(`command -v python3` で疎通を見る実装は、
-# 起動して落ちたものを「検査できていない」にする)。
+# `<python3>` は `ok` か `broken`。`broken` は起動できない python3 を PATH 先頭に置く。起動できない
+# python3 は python3 が無い環境と同じに扱うので pass になり、python3 が起動してから検出器が落ちた
+# ケース(unchecked)とは分かれる(スタブと起動できない python3 の作り方は `cases-fixtures.sh`)。
 #
 # JSON の組み立てと取り出しに jq、検出器に python3 を使う。python3 が無いと pass 以外のケースが、jq が無いと
 # すべてのケースが NG になるので、`harness/githooks/pre-push` は両方が揃う環境でだけ走らせる
@@ -28,6 +27,7 @@ work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
 source "$lib_dir/cases-report.sh"
+source "$lib_dir/cases-fixtures.sh"
 
 # 判定に要るものだけを、リポジトリと同じ相対位置で一時ディレクトリへ写す。
 copy_hooks() {
@@ -43,17 +43,12 @@ copy_hooks() {
 # 違反のある入力と無い入力に使うファイルを置く。
 #
 # doc は doc の無い export と doc のある export、テストヘルパーは深さの違う 2 つの `__tests__/` に
-# 本体が同じヘルパー(`pre-push-detector-cases.sh` の `place_duplicate` と同じ形)と、本体が 1 つしか無いヘルパー。
+# 本体が同じヘルパーと、本体が 1 つしか無いヘルパー。
 place_sources() {
-  local folder
   mkdir -p "$work/src"
   printf 'export function openedAt() {\n  return 1;\n}\n' >"$work/src/undocumented.ts"
   printf '/** 開いた時刻を返す。 */\nexport function openedAt() {\n  return 1;\n}\n' >"$work/src/documented.ts"
-  for folder in "$work/src/a/__tests__" "$work/src/b/c/__tests__"; do
-    mkdir -p "$folder"
-    printf 'function openedAt(path: string) {\n  return OpenedDocument.create({ path, document: sampleDocument() });\n}\n' \
-      >"$folder/setup.ts"
-  done
+  place_duplicate_helpers "$work/src"
   printf 'function closedAt(path: string) {\n  return ClosedDocument.create({ path, closedBy: sampleUser() });\n}\n' \
     >"$work/src/a/__tests__/single.ts"
 }
@@ -102,7 +97,7 @@ edit_payload() {
 # 写しの `lib/` に検出器を置く。種類ごとに終了コードと出力の組が違う。
 #
 # $1 フックのファイル名
-# $2 検出器の種類(`real` は実物。他はスタブ)
+# $2 検出器の種類(`real` は実物。`reports-exit2` は報告の行を出して exit 2。他は `place_failing_detector` の落ち方)
 place_detector() {
   local hook="$1" kind="$2"
   local name target report_line
@@ -111,22 +106,9 @@ place_detector() {
   report_line="$(profile_value "$hook" report_line)"
   case "$kind" in
     real) cp "$repo_dir/.claude/hooks/lib/$name" "$target" ;;
-    crash) printf 'raise RuntimeError("判定表: 検出器が途中で落ちる")\n' >"$target" ;;
-    silent-exit1) printf 'import sys\nprint("違反は 0 件")\nsys.exit(1)\n' >"$target" ;;
-    usage) printf 'import sys\nprint("使い方: 検査するファイルを渡す")\nsys.exit(2)\n' >"$target" ;;
     reports-exit2) printf 'import sys\nprint(%s)\nsys.exit(2)\n' "$(jq -n --arg l "$report_line" '$l')" >"$target" ;;
+    *) place_failing_detector "$kind" "$target" ;;
   esac
-}
-
-# 起動すると 127 で落ちる python3 を置き、PATH の先頭に足す値を返す。`broken` 以外なら空。
-#
-# $1 `broken` なら置く
-python3_path_prefix() {
-  [ "$1" = "broken" ] || return 0
-  mkdir -p "$work/broken-bin"
-  printf '#!/usr/bin/env bash\nexit 127\n' >"$work/broken-bin/python3"
-  chmod +x "$work/broken-bin/python3"
-  printf '%s:' "$work/broken-bin"
 }
 
 # フックの出力と終了コードを、`exit=<n>` / `pass` / `deny` / `unchecked` / `feedback` / `unknown` に分ける。
@@ -135,7 +117,7 @@ python3_path_prefix() {
 # $2 フックの終了コード
 # $3 期待するイベント名
 # $4 報告の見出し(空なら `feedback` にはならない)
-classify() {
+verdict() {
   local output="$1" status="$2" event="$3" heading="$4"
   if [ "$status" -ne 0 ]; then
     echo "exit=$status"
@@ -169,15 +151,15 @@ classify() {
 # $2 フックのファイル名
 # $3 検出器の種類(`place_detector` が置くもの)
 # $4 違反のある入力なら `violation`、無い入力なら `clean`
-# $5 `broken` なら起動できない python3 を PATH 先頭に置く(省略可)
+# $5 `broken` なら起動できない python3 を PATH 先頭に置く。置かないなら `ok`
 # $6 ケース名
 check() {
   local expected="$1" hook="$2" kind="$3" input="$4" python3_state="$5" label="$6"
   local output status=0 prefix decision
   place_detector "$hook" "$kind"
-  prefix="$(python3_path_prefix "$python3_state")"
+  prefix="$(python3_path_prefix "$python3_state" "$work")"
   output="$(edit_payload "$hook" "$input" | PATH="${prefix}${PATH}" bash "$work/.claude/hooks/$hook" 2>/dev/null)" || status=$?
-  decision="$(classify "$output" "$status" "$(profile_value "$hook" event)" "$(profile_value "$hook" heading)")"
+  decision="$(verdict "$output" "$status" "$(profile_value "$hook" event)" "$(profile_value "$hook" heading)")"
   rm -rf "$work/broken-bin"
   report "$expected" "$decision" "$hook: $label"
 }
@@ -189,7 +171,7 @@ for hook in block-lint-suppress.sh check-doc-comments.sh check-test-helper-dupli
   found="feedback"
   [ "$hook" = "block-lint-suppress.sh" ] && found="deny"
   check unchecked "$hook" crash violation ok "報告を出さずに traceback で落ちる検出器なら、拒否せず検査できていないことを伝える"
-  check unchecked "$hook" silent-exit1 violation ok "報告の行を出さずに exit 1 で終わる検出器なら、検査できていないことを伝える"
+  check unchecked "$hook" summary-exit1 violation ok "要約の行だけを出して exit 1 で終わる検出器なら、検査できていないことを伝える"
   check unchecked "$hook" usage violation ok "報告を出さずに exit 2 で終わる検出器なら、検査できていないことを伝える"
   check unchecked "$hook" reports-exit2 violation ok "報告の行を出して exit 2 で終わる検出器なら、違反とは読まず検査できていないことを伝える"
   check "$found" "$hook" real violation ok "実物の検出器で違反があれば、これまでどおり伝える"
