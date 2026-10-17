@@ -1,0 +1,623 @@
+{
+  "version": 1,
+  "pr": 1098,
+  "sha": "c3d70b3e1561674413051911202384d64aa951a9",
+  "issue": 1006,
+  "overview": {
+    "title": "編集時のフック 3 本で検出器が落ちたら、止めずに「検査できていません」を伝える",
+    "lead": "編集時の検査フックは、検出器が途中で落ちても黙って通していた。落ちたことを `additionalContext` で編集した側へ伝え、編集そのものは止めない。",
+    "before": [
+      {
+        "text": "検出器が traceback で落ちると、3 本とも出力が空になり何も言わずに通していた"
+      },
+      {
+        "text": "要約の行だけを出して exit 1 / 使い方を出して exit 2 で終わる検出器の出力を、`block-lint-suppress.sh` は禁止パターンとして deny していた"
+      },
+      {
+        "text": "起動できない python3 しか無ければ、何も出さずに通していた"
+      }
+    ],
+    "after": [
+      {
+        "text": "検出器が報告の行を出さずに 0 以外で終わる・0 と 1 以外で終わると、3 本とも「検査できていません」を伝えて exit 0 で終える",
+        "message": "unchecked"
+      },
+      {
+        "text": "実物の検出器が違反を報告したときの deny / フィードバックは変わらない",
+        "message": "report"
+      },
+      {
+        "text": "起動できない python3 しか無ければ、これまでどおり何も出さない(層 3 の `pre-push-detector.sh` と揃える)"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "止めずに伝える出口",
+        "text": "PreToolUse でも `permissionDecision` を付けずに `additionalContext` だけを返す。このリポジトリでは初めての形で、拒否にならずモデルへ届くことは `claude -p` で実測した",
+        "go": {
+          "kind": "message",
+          "id": "unchecked"
+        }
+      },
+      {
+        "title": "判定表の差し込み方",
+        "text": "検出器のパスを環境変数で差し替えず、フックを一時ディレクトリへ写してスタブを置く",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/lib/edit-detector-cases.sh"
+        }
+      },
+      {
+        "title": "検出器が落ちたときの流れ",
+        "text": "異常終了の見分けは #649 の判定を使い回している",
+        "go": {
+          "kind": "flow",
+          "id": "crash"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "edit-hooks",
+      "label": "編集時の検査",
+      "role": "編集のたびに検出器を走らせ、違反か「検査できていない」かを編集した側へ伝える"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "編集時の検査フックと、その判定表・配線・README"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/hooks/block-lint-suppress.sh",
+      "name": "lint 抑制の禁止フック",
+      "role": "Edit / Write の前に、追加する内容から lint 抑制コメントを探して deny する",
+      "feature": "edit-hooks",
+      "change": "検出器が落ちたら deny せず「検査できていません」を伝える"
+    },
+    {
+      "path": ".claude/hooks/check-doc-comments.sh",
+      "name": "doc コメントのフック",
+      "role": "編集した `src/` のファイルの doc の欠けを知らせる",
+      "feature": "edit-hooks",
+      "change": "検出器が落ちたら「検査できていません」を伝える"
+    },
+    {
+      "path": ".claude/hooks/check-test-helper-duplication.sh",
+      "name": "テストヘルパー重複のフック",
+      "role": "編集した `__tests__/` のファイルの重複ヘルパーを知らせる",
+      "feature": "edit-hooks",
+      "change": "検出器が落ちたら「検査できていません」を伝える"
+    },
+    {
+      "path": ".claude/hooks/lib/edit-detector.sh",
+      "name": "編集時の検査の共通部分",
+      "role": "異常終了の判定を source し、`additionalContext` の JSON を書く",
+      "feature": "edit-hooks",
+      "change": "新設"
+    },
+    {
+      "path": ".github/scripts/lib/detector-report.sh",
+      "name": "異常終了の判定",
+      "role": "検出器を走らせ、最後まで走ったかを終了コードと報告の行で決める(#649)",
+      "change": "使う側に編集時の共通部分を足した(コードは変えていない)"
+    },
+    {
+      "path": ".claude/hooks/lib/edit-detector-cases.sh",
+      "name": "編集時の判定表",
+      "role": "フック 3 本を一時ディレクトリへ写し、スタブか実物の検出器で 24 ケースを流す",
+      "feature": "edit-hooks",
+      "change": "新設"
+    },
+    {
+      "path": ".claude/hooks/lib/cases-fixtures.sh",
+      "name": "判定表の足場",
+      "role": "異常終了スタブ・起動できない python3・本体が同じテストヘルパーを置く",
+      "change": "新設。push 前の判定表の写しをここへ寄せた"
+    },
+    {
+      "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "name": "push 前の判定表",
+      "role": "push 前の検査フックの共通部分の判定表",
+      "change": "足場を共有した(ケースは変えていない)"
+    }
+  ],
+  "messages": [
+    {
+      "id": "run",
+      "from": ".claude/hooks/block-lint-suppress.sh",
+      "to": ".github/scripts/lib/detector-report.sh",
+      "kind": "qry",
+      "name": "検出器を走らせて結果を問い合わせる",
+      "code": "detector_report '^[0-9]+:' \"$detector\"",
+      "via": "call",
+      "payload": "報告の行の正規表現と検出器",
+      "returns": "最後まで走れば 0 と標準出力、落ちたなら 1",
+      "status": "added"
+    },
+    {
+      "id": "unchecked",
+      "from": ".claude/hooks/block-lint-suppress.sh",
+      "to": ".claude/hooks/lib/edit-detector.sh",
+      "kind": "evt",
+      "name": "検査できていないことを知らせる",
+      "code": "print_edit_unchecked_context PreToolUse \"lint 抑制コメント\" \"$detector\"",
+      "via": "call",
+      "payload": "イベント名・検査の名前・検出器",
+      "returns": "`permissionDecision` の無い `additionalContext` の JSON",
+      "status": "added"
+    },
+    {
+      "id": "report",
+      "from": ".claude/hooks/check-doc-comments.sh",
+      "to": ".claude/hooks/lib/edit-detector.sh",
+      "kind": "evt",
+      "name": "違反を知らせる",
+      "code": "print_additional_context PostToolUse \"$report\"",
+      "via": "call",
+      "payload": "イベント名と検出器の報告",
+      "status": "changed"
+    },
+    {
+      "id": "doc-run",
+      "from": ".claude/hooks/check-doc-comments.sh",
+      "to": ".github/scripts/lib/detector-report.sh",
+      "kind": "qry",
+      "name": "doc の検出器を走らせる",
+      "code": "detector_report '^doc が規約を満たしていません' \"$detector\" \"$file\"",
+      "via": "call",
+      "status": "added"
+    },
+    {
+      "id": "copy",
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/block-lint-suppress.sh",
+      "kind": "cmd",
+      "name": "写したフックへ編集の JSON を流す",
+      "code": "edit_payload \"$hook\" \"$input\" | bash \"$work/.claude/hooks/$hook\"",
+      "via": "exec",
+      "status": "added"
+    },
+    {
+      "id": "stub",
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "kind": "cmd",
+      "name": "落ちる検出器を置く",
+      "code": "place_failing_detector crash \"$path\"",
+      "via": "call",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "crash",
+      "label": "検出器が落ちたときの編集",
+      "steps": [
+        "run",
+        "unchecked"
+      ]
+    },
+    {
+      "id": "violation",
+      "label": "違反があるときの編集",
+      "steps": [
+        "doc-run",
+        "report"
+      ]
+    },
+    {
+      "id": "cases",
+      "label": "判定表の 1 ケース",
+      "steps": [
+        "stub",
+        "copy",
+        "run",
+        "unchecked"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "f0d7eba7c0fe7a601fd793130102183d1a584726",
+      "phase": "prep",
+      "role": "編集時の検査フックの共通部分を足す",
+      "why": "3 本のフックが同じ出口を使えるよう、異常終了の判定(#649)を source して `additionalContext` を書く関数を先に置いた",
+      "review": [
+        "PreToolUse で `permissionDecision` を付けない形が、拒否にならない出口として妥当か"
+      ]
+    },
+    {
+      "sha": "1c3d536199026af7bd46c3c246131444a00ac60a",
+      "phase": "core",
+      "role": "フック 3 本の `|| true` を異常終了の判定に置き換える",
+      "why": "落ちたことを空の出力に畳まず、報告の行の有無と終了コードで見分ける",
+      "flows": [
+        "crash",
+        "violation"
+      ],
+      "review": [
+        "報告の行のパターンが実物の検出器の出力に合っているか",
+        "`python3_usable` で疎通を見る位置が、判定の前にあるか"
+      ],
+      "before": [
+        {
+          "text": "検出器が落ちると何も出さずに通す"
+        }
+      ],
+      "after": [
+        {
+          "text": "検出器が落ちると「検査できていません」を伝える",
+          "message": "unchecked"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/block-lint-suppress.sh",
+          "start": 51,
+          "end": 56,
+          "text": "疎通を見てから判定し、落ちたら伝えて exit 0。exit 2 にすると PreToolUse では拒否になる"
+        }
+      ]
+    },
+    {
+      "sha": "84cebb90a865b4b9ccd092ef3da5442a8fe5510e",
+      "phase": "core",
+      "role": "編集時の判定表を足す",
+      "why": "フック自身の配線(入力の取り出し・パターン・イベント名)まで通して確かめるため、実物のフックを写して走らせる",
+      "flows": [
+        "cases"
+      ],
+      "review": [
+        "unchecked と feedback の見分けが、JSON の形だけでなく文と見出しで行われているか"
+      ]
+    },
+    {
+      "sha": "bcc9cc3abef90d8453b4a503aa2f9bbf1ce005d3",
+      "phase": "hard",
+      "role": "判定表を pre-push と rules-check で走らせる",
+      "why": "置いただけの判定表は誰も走らせないので、層 1・2 の両方に配線した",
+      "review": [
+        "python3 と jq が揃う区間に置いているか"
+      ]
+    },
+    {
+      "sha": "4605741774ab311b602ec6c920ad7f6f14ad868b",
+      "phase": "fin",
+      "role": "README の一覧・件数・止めない理由を揃える",
+      "why": "止めない理由は「例外(エスケープハッチ)」の 1 か所だけに書き、各フックからは参照する",
+      "review": [
+        "「層 1・2 が必ず落とす」と書き切っていないか"
+      ]
+    },
+    {
+      "sha": "f992c684feb55973ce40e240423b95d54dd22978",
+      "phase": "revise",
+      "role": "判定表 2 本の足場を共有する",
+      "why": "duplication-reviewer の指摘。壊れた python3 とスタブの作り方が 2 本に写されていた",
+      "review": [
+        "push 前の判定表のケースが変わっていないか"
+      ]
+    },
+    {
+      "sha": "51a5d49f28d9c274dab9e6281316a42aef8fca74",
+      "phase": "revise",
+      "role": "`additionalContext` の組み立てを 1 関数に寄せ、名前を先例に揃える",
+      "why": "duplication / naming / comment の指摘。器の形が 3 か所に分かれていた",
+      "review": [
+        "PostToolUse 2 本の違反出力が変更前と同じか"
+      ]
+    },
+    {
+      "sha": "eef80906c03c3d20dfac4fe03f3568162b7d8fd7",
+      "phase": "revise",
+      "role": "README に残る判断の理由を足す",
+      "why": "comment / harness の指摘。python3 を素通りさせる理由と、報告のあとに落ちる場合の既知の制限が書かれていなかった",
+      "review": [
+        "python3 の扱いを変えずに理由だけを足しているか"
+      ]
+    },
+    {
+      "sha": "c3d70b3e1561674413051911202384d64aa951a9",
+      "phase": "revise",
+      "role": "報告の綴りを行の途中に含む出力のケースを足す",
+      "why": "test-reviewer の指摘。パターンから `^` を外しても判定表が通っていた",
+      "review": [
+        "`^` を外すと新しいケースだけが落ちるか"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "edit",
+      "label": "編集時の判定表",
+      "file": ".claude/hooks/lib/edit-detector-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "crash",
+      "suite": "edit",
+      "name": "報告を出さずに traceback で落ちる検出器なら、拒否せず検査できていないことを伝える",
+      "techniques": [
+        "error"
+      ],
+      "why": "この PR の中心。落ちても黙って通さない",
+      "given": "検出器が例外で落ちる(3 本それぞれ)",
+      "when": "違反のある編集の JSON をフックへ流す",
+      "then": "`permissionDecision` が無く、イベント名が一致し、`additionalContext` に「検査できていません」を含み、exit 0",
+      "commit": "84cebb90a865b4b9ccd092ef3da5442a8fe5510e",
+      "excerpt": {
+        "path": ".claude/hooks/lib/edit-detector-cases.sh",
+        "start": 173,
+        "end": 184,
+        "emphasis": [
+          {
+            "start": 176,
+            "end": 176
+          }
+        ],
+        "text": "for hook in block-lint-suppress.sh check-doc-comments.sh check-test-helper-duplication.sh; do\n  found=\"feedback\"\n  [ \"$hook\" = \"block-lint-suppress.sh\" ] && found=\"deny\"\n  check unchecked \"$hook\" crash violation ok \"報告を出さずに traceback で落ちる検出器なら、拒否せず検査できていないことを伝える\"\n  check unchecked \"$hook\" summary-exit1 violation ok \"要約の行だけを出して exit 1 で終わる検出器なら、検査できていないことを伝える\"\n  check unchecked \"$hook\" usage violation ok \"報告を出さずに exit 2 で終わる検出器なら、検査できていないことを伝える\"\n  check unchecked \"$hook\" reports-exit2 violation ok \"報告の行を出して exit 2 で終わる検出器なら、違反とは読まず検査できていないことを伝える\"\n  check unchecked \"$hook\" report-midline-exit1 violation ok \"報告の綴りを行の途中に含む 1 行だけを出して exit 1 で終わる検出器なら、違反とは読まず検査できていないことを伝える\"\n  check \"$found\" \"$hook\" real violation ok \"実物の検出器で違反があれば、これまでどおり伝える\"\n  check pass \"$hook\" real clean ok \"実物の検出器で違反が無ければ、何も出さない\"\n  check pass \"$hook\" real violation broken \"起動できない python3 しか無ければ、違反があっても何も出さない\"\ndone"
+      },
+      "targets": [
+        ".claude/hooks/lib/edit-detector.sh"
+      ],
+      "covers": [
+        "run",
+        "unchecked"
+      ]
+    },
+    {
+      "id": "summary",
+      "suite": "edit",
+      "name": "要約の行だけを出して exit 1 で終わる検出器なら、検査できていないことを伝える",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "exit 1 は違反ありとも読めるので、報告の行の有無で見分けることを守る",
+      "given": "報告の行ではない 1 行を出して exit 1",
+      "when": "フックへ流す",
+      "then": "unchecked",
+      "commit": "84cebb90a865b4b9ccd092ef3da5442a8fe5510e",
+      "covers": [
+        "run",
+        "unchecked"
+      ]
+    },
+    {
+      "id": "usage",
+      "suite": "edit",
+      "name": "報告を出さずに exit 2 で終わる検出器なら、検査できていないことを伝える",
+      "techniques": [
+        "error"
+      ],
+      "why": "0 と 1 以外の終わり方の枝を通す",
+      "given": "使い方を出して exit 2",
+      "when": "フックへ流す",
+      "then": "unchecked",
+      "commit": "84cebb90a865b4b9ccd092ef3da5442a8fe5510e",
+      "covers": [
+        "run",
+        "unchecked"
+      ]
+    },
+    {
+      "id": "reports-exit2",
+      "suite": "edit",
+      "name": "報告の行を出して exit 2 で終わる検出器なら、違反とは読まず検査できていないことを伝える",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "報告の行があっても 0 と 1 以外なら違反と読まない",
+      "given": "報告の行を出して exit 2",
+      "when": "フックへ流す",
+      "then": "unchecked",
+      "commit": "84cebb90a865b4b9ccd092ef3da5442a8fe5510e",
+      "covers": [
+        "run",
+        "unchecked"
+      ]
+    },
+    {
+      "id": "midline",
+      "suite": "edit",
+      "name": "報告の綴りを行の途中に含む 1 行だけを出して exit 1 で終わる検出器なら、違反とは読まず検査できていないことを伝える",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "報告の行のパターンが行頭一致であることを守る",
+      "given": "報告の綴りの前に「注: 」を付けた 1 行を出して exit 1",
+      "when": "フックへ流す",
+      "then": "unchecked(`^` を外すと deny / feedback になって落ちる)",
+      "commit": "c3d70b3e1561674413051911202384d64aa951a9",
+      "covers": [
+        "run",
+        "unchecked"
+      ]
+    },
+    {
+      "id": "real-violation",
+      "suite": "edit",
+      "name": "実物の検出器で違反があれば、これまでどおり伝える",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "違反時の振る舞いを変えていないことと、パターンが実物の出力に当たることを守る",
+      "given": "抑制コメントの追加 / doc の無い export / 本体が同じテストヘルパー",
+      "when": "実物の検出器でフックへ流す",
+      "then": "lint は deny、他 2 本は見出しを含み「検査できていません」を含まないフィードバック",
+      "commit": "84cebb90a865b4b9ccd092ef3da5442a8fe5510e",
+      "covers": [
+        "doc-run",
+        "report"
+      ]
+    },
+    {
+      "id": "real-clean",
+      "suite": "edit",
+      "name": "実物の検出器で違反が無ければ、何も出さない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "違反が無い編集では黙る",
+      "given": "違反の無い入力",
+      "when": "実物の検出器でフックへ流す",
+      "then": "出力が空・exit 0",
+      "commit": "84cebb90a865b4b9ccd092ef3da5442a8fe5510e"
+    },
+    {
+      "id": "broken-python",
+      "suite": "edit",
+      "name": "起動できない python3 しか無ければ、違反があっても何も出さない",
+      "techniques": [
+        "state"
+      ],
+      "why": "python3 の有無は環境の前提で、検出器が落ちたとは名指ししない(層 3 と揃える)",
+      "given": "PATH の先頭に 127 で落ちる python3",
+      "when": "違反のある入力をフックへ流す",
+      "then": "出力が空・exit 0",
+      "commit": "84cebb90a865b4b9ccd092ef3da5442a8fe5510e"
+    }
+  ],
+  "impact": {
+    "title": "検出器が壊れていても、編集した側に「検査できていない」と伝わる",
+    "lead": "編集のたびに走る 3 つの検査は、検出器が途中で落ちたときに何も言わずに通していた。これからは、編集を止めずに「検査できていません」とセッションへ伝える。",
+    "changed": {
+      "before": [
+        {
+          "text": "検出器が落ちると、何も言われずに編集が通る"
+        },
+        {
+          "text": "lint 抑制の検査では、落ち方によって編集が拒否されることがあった"
+        }
+      ],
+      "after": [
+        {
+          "text": "検出器が落ちると、編集は通り、「この編集は検査できていません」とセッションへ伝わる",
+          "message": "unchecked"
+        }
+      ]
+    },
+    "kept": [
+      {
+        "text": "検出器が違反を見つけたときの拒否・知らせは変わらない",
+        "tests": [
+          "real-violation"
+        ]
+      },
+      {
+        "text": "違反が無い編集では何も出ない",
+        "tests": [
+          "real-clean"
+        ]
+      },
+      {
+        "text": "python3 が起動できない環境では、これまでどおり何も出ない",
+        "tests": [
+          "broken-python"
+        ]
+      }
+    ]
+  },
+  "primers": [
+    {
+      "id": "context",
+      "kind": "language",
+      "category": "Claude Code のフック",
+      "label": "止めずに文脈を足す出力",
+      "gist": "フックが返す JSON に [[許可の決定|decision]] を入れず、[[追加の文脈|context]] だけを入れると、ツールの実行は止まらず文がモデルへ届く",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "PreToolUse で exit 2 を返すとツールの実行は拒否になる。exit 0 で書いた標準エラーはモデルに見えない。そのため、止めずに伝える出口はこの形だけになる"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/edit-detector.sh",
+            "start": 21,
+            "end": 28,
+            "text": "# 編集を止めない文を、`permissionDecision` を付けない `additionalContext` の JSON として標準出力へ書く。\n#\n# @param 1 フックのイベント名(`PreToolUse` / `PostToolUse`)\n# @param 2 編集した側へ伝える文\nprint_additional_context() {\n  jq -n --arg event \"$1\" --arg message \"$2\" \\\n    '{hookSpecificOutput: {hookEventName: $event, additionalContext: $message}}'\n}"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/edit-detector.sh",
+          "lineRange": {
+            "start": 25,
+            "end": 28
+          },
+          "text": "出力を組み立てる関数",
+          "shas": [
+            "51a5d49f28d9c274dab9e6281316a42aef8fca74"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "scan",
+      "kind": "codebase",
+      "category": "ハーネス",
+      "label": "検出器が最後まで走ったかの判定",
+      "gist": "検出器は違反を見つけたときだけ報告の行を出して exit 1 で終わる。その対偶として、報告の行を出さずに 1 で終わったもの・0 と 1 以外で終わったものを[[検査できなかった|unchecked]]とする",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "caution",
+          "text": "報告の行を出したあとに落ちたものは違反ありと読む(既知の制限)"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/block-lint-suppress.sh",
+          "lineRange": {
+            "start": 53,
+            "end": 56
+          },
+          "text": "lint 抑制の検査での使い方",
+          "shas": [
+            "1c3d536199026af7bd46c3c246131444a00ac60a"
+          ]
+        }
+      ],
+      "tests": [
+        "crash",
+        "summary",
+        "usage",
+        "reports-exit2",
+        "midline"
+      ],
+      "flows": [
+        "crash"
+      ],
+      "seeAlso": [
+        "context"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "decision",
+      "label": "許可の決定",
+      "text": "PreToolUse の出力の `permissionDecision`。`deny` ならツールの実行を拒否する"
+    },
+    {
+      "id": "context",
+      "label": "追加の文脈",
+      "text": "出力の `additionalContext`。ツールの結果の横に足され、モデルが読む"
+    },
+    {
+      "id": "unchecked",
+      "label": "検査できなかった",
+      "text": "検出器が途中で落ち、違反が無かったとは言えない状態"
+    }
+  ]
+}
