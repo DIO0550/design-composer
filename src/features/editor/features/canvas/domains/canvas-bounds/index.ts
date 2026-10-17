@@ -2,6 +2,7 @@ import { CssDirection } from "@/domains/dcmp/css-direction";
 import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
 import { type Side, SidePair, Sides } from "@/domains/unit/side";
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { Option } from "@/utils/Option";
 import { Range } from "@/utils/Range";
 
@@ -309,9 +310,7 @@ export const CanvasBounds = {
    * @param boundsList 含めたい矩形の並び。1 件目は必ずある
    * @returns すべてを含む最小の矩形
    */
-  enclosingAll(
-    boundsList: readonly [CanvasBounds, ...CanvasBounds[]],
-  ): CanvasBounds {
+  enclosingAll(boundsList: NonEmptyArray<CanvasBounds>): CanvasBounds {
     const [first, ...rest] = boundsList;
     const enclosed = rest.reduce(
       (widest, bounds) => ({
