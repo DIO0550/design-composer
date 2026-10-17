@@ -14,9 +14,11 @@
 # ブロックしない（フィードバックのみ）。編集したファイルが絡む分だけを出す。
 # 理由は README.md「例外(エスケープハッチ)」に一本化してある
 # （同じ判断を 2 箇所へ書くと片方だけ古くなる）。
+# 検出器が異常終了したら、止めずに「検査できていない」ことを伝える(理由は同じ節)。
 set -euo pipefail
 
 hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$hook_dir/lib/edit-detector.sh"
 detector="$hook_dir/lib/duplicate-test-helpers.py"
 
 input="$(cat)"
@@ -31,9 +33,12 @@ case "$(basename "$(dirname "$file")")" in
   *) exit 0 ;;
 esac
 
-command -v python3 >/dev/null 2>&1 || exit 0
+python3_usable || exit 0
 
-report="$(python3 "$detector" "$file" || true)"
+if ! report="$(detector_report '^本体が同じテストヘルパーが' "$detector" "$file")"; then
+  print_unchecked_context PostToolUse "テストヘルパーの重複" "$detector"
+  exit 0
+fi
 [ -n "$report" ] || exit 0
 
 jq -Rn --arg msg "$report" '{

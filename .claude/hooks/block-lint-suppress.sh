@@ -10,9 +10,14 @@
 # 判定そのものは lib/lint-suppressions.py。同じスクリプトを CI の
 # check-added-lint-suppressions.sh が使う(フックが発火しない環境の代替 /
 # .claude/hooks/README.md「強制力の序列」)。
+#
+# 検出器が異常終了したら、編集は止めずに「検査できていない」ことを伝える
+# (理由は README.md「例外(エスケープハッチ)」)。
 set -euo pipefail
 
 hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$hook_dir/lib/edit-detector.sh"
+detector="$hook_dir/lib/lint-suppressions.py"
 
 input="$(cat)"
 file="$(jq -r '.tool_input.file_path // .tool_input.path // empty' <<< "$input")"
@@ -43,7 +48,12 @@ esac
 
 [ -z "$content" ] && exit 0
 
-suppressions="$(printf '%s' "$content" | python3 "$hook_dir/lib/lint-suppressions.py" || true)"
+python3_usable || exit 0
+
+if ! suppressions="$(printf '%s' "$content" | detector_report '^[0-9]+:' "$detector")"; then
+  print_unchecked_context PreToolUse "lint 抑制コメント" "$detector"
+  exit 0
+fi
 [ -z "$suppressions" ] && exit 0
 
 jq -n --arg lines "$suppressions" '{
