@@ -2,6 +2,7 @@ import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import { PropEdit } from "@/domains/dcmp/node";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { canvasContent } from "@/features/editor/features/canvas/__tests__/canvas-elements";
@@ -11,6 +12,7 @@ import {
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { stubLayoutSize } from "@/features/editor/features/canvas/__tests__/canvas-measure";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 import { drawnAt, renderCanvas, resizeHandleAt } from "./setup";
 
 /*
@@ -170,4 +172,46 @@ test("90 度回したノードの右辺のハンドルを掴んでいる間は�
   pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 150, y: 200 });
 
   expect(canvasContent().style.cursor).toBe("ns-resize");
+});
+
+test("30 度回したノードは、右辺を親の縁の近くまで引いても縁へ吸い付かない", () => {
+  /*
+   * `turned`（200x100・中心 (150, 100)）を 30 度回すと、外接矩形は (38.40, 6.70) から
+   * 223.21x186.60、回った右辺の中点は (236.60, 150) に来る。右辺の法線の向き
+   * (cos 30°, sin 30°) へ 20 引くと幅は 220 で、外接矩形の右辺は 278.92 になり `home` の
+   * 右の縁（282）から閾値の内側に入る。回ったノードのリサイズでは寄せない（docs/06-ui.md
+   * 「リサイズハンドル」）ので、幅は引いた量のまま
+   */
+  const onResize = vi.fn();
+  const tilted = Result.unwrap(
+    DesignDocument.applyPropEdit(
+      setupSelection().document,
+      "turned",
+      PropEdit.set(["rotation"], 30),
+    ),
+  );
+  renderCanvas({
+    selection: DocumentSelection.fromNames(tilted, ["turned"]),
+    onResize,
+  });
+  drawnAt("home", { left: -78, top: -40, width: 360, height: 240 });
+  const cos = Math.cos(Math.PI / 6);
+  const sin = Math.sin(Math.PI / 6);
+  const enclosingWidth = 200 * cos + 100 * sin;
+  const enclosingHeight = 200 * sin + 100 * cos;
+  const turned = drawnAt("turned", {
+    left: 150 - enclosingWidth / 2,
+    top: 100 - enclosingHeight / 2,
+    width: enclosingWidth,
+    height: enclosingHeight,
+  });
+  stubLayoutSize(turned, { width: 200, height: 100 });
+  const rightEdge = { x: 150 + 100 * cos, y: 100 + 100 * sin };
+
+  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), rightEdge);
+  movePointer(turned, { x: rightEdge.x + 20 * cos, y: rightEdge.y + 20 * sin });
+
+  const [width] = lastEdit(onResize).lengths;
+  expect(width.axis).toBe("width");
+  expect(width.length).toBeCloseTo(220);
 });
