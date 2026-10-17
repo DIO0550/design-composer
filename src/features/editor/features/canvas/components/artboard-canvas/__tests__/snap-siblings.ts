@@ -1,6 +1,5 @@
 import type { DocumentSelection } from "@/domains/session/document-selection";
-import { stubLayoutSize } from "@/features/editor/features/canvas/__tests__/canvas-measure";
-import { drawnAt, selectionFromArtboards } from "./setup";
+import { drawnAt, drawnTurnedAt, selectionFromArtboards } from "./setup";
 
 /**
  * `home` に絶対配置の `badge` / `marker` / `card`（その中に孫の `label`）が並び、
@@ -84,6 +83,9 @@ export function drawnApart(): void {
  * 回る前の 20x12 を中心 (150, 90) のまま縦に立てた矩形で、レイアウトの大きさは回る前のまま。
  */
 export function drawnTurnedBadge(): void {
-  const badge = drawnAt("badge", { left: 144, top: 80, width: 12, height: 20 });
-  stubLayoutSize(badge, { width: 20, height: 12 });
+  drawnTurnedAt(
+    "badge",
+    { left: 144, top: 80, width: 12, height: 20 },
+    { width: 20, height: 12 },
+  );
 }

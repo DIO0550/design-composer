@@ -5,6 +5,14 @@ import { RotatedBounds } from "../index";
 /** 画面の (100, 50) から 200x100 の、正方形でない矩形。中心は (200, 100)。 */
 const Unrotated: CanvasBounds = { left: 100, top: 50, width: 200, height: 100 };
 
+/** 位置も大きさも端数を持つ矩形。 */
+const FractionalUnrotated: CanvasBounds = {
+  left: 1.89,
+  top: 0.1,
+  width: 196.72,
+  height: 0.7,
+};
+
 test("回っていなければ、左上の箇所は矩形の左上に描かれる", () => {
   const bounds = { unrotated: Unrotated, rotation: 0 };
 
@@ -25,10 +33,11 @@ test("回っていなければ、右辺の中点の箇所は矩形の右辺の�
 
 test("回っていなければ、端数を持つ矩形でも左上の箇所は矩形の左上そのものに描かれる", () => {
   // 中心を経由して戻すと (l - cx) + cx が l に戻らない端数が出る
-  const unrotated = { left: 1.89, top: 0.1, width: 196.72, height: 0.7 };
-
   expect(
-    RotatedBounds.pointAt({ unrotated, rotation: 0 }, { x: 0, y: 0 }),
+    RotatedBounds.pointAt(
+      { unrotated: FractionalUnrotated, rotation: 0 },
+      { x: 0, y: 0 },
+    ),
   ).toEqual({ x: 1.89, y: 0.1 });
 });
 
@@ -119,19 +128,21 @@ test("90 度回した横長の矩形の外接矩形は、中心が同じ縦長�
 });
 
 test("回っていなければ、端数を持つ矩形の外接矩形はその矩形そのもの", () => {
-  const unrotated = { left: 1.89, top: 0.1, width: 196.72, height: 0.7 };
-
-  expect(RotatedBounds.toEnclosing({ unrotated, rotation: 0 })).toEqual(
-    unrotated,
-  );
+  expect(
+    RotatedBounds.toEnclosing({
+      unrotated: FractionalUnrotated,
+      rotation: 0,
+    }),
+  ).toEqual(FractionalUnrotated);
 });
 
 test("360 度回した矩形の外接矩形は、回る前の矩形そのもの", () => {
-  const unrotated = { left: 1.89, top: 0.1, width: 196.72, height: 0.7 };
-
-  expect(RotatedBounds.toEnclosing({ unrotated, rotation: 360 })).toEqual(
-    unrotated,
-  );
+  expect(
+    RotatedBounds.toEnclosing({
+      unrotated: FractionalUnrotated,
+      rotation: 360,
+    }),
+  ).toEqual(FractionalUnrotated);
 });
 
 test("30 度回した矩形の外接矩形は、回った 4 角がちょうど収まる大きさになる", () => {

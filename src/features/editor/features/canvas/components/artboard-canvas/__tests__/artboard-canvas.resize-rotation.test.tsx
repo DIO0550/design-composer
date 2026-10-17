@@ -10,10 +10,9 @@ import {
   movePointer,
   pressPointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
-import { stubLayoutSize } from "@/features/editor/features/canvas/__tests__/canvas-measure";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { drawnAt, renderCanvas, resizeHandleAt } from "./setup";
+import { drawnAt, drawnTurnedAt, renderCanvas, resizeHandleAt } from "./setup";
 
 /*
  * 回って描かれているノードのリサイズを、ハンドルを押すところから通す
@@ -86,9 +85,11 @@ function setupSelection(selectedName = "turned"): DocumentSelection {
  * @returns 測定を差し替えたあとの要素
  */
 function drawnTurned(name: string): HTMLElement {
-  const element = drawnAt(name, { left: 100, top: 0, width: 100, height: 200 });
-  stubLayoutSize(element, { width: 200, height: 100 });
-  return element;
+  return drawnTurnedAt(
+    name,
+    { left: 100, top: 0, width: 100, height: 200 },
+    { width: 200, height: 100 },
+  );
 }
 
 /**
@@ -193,13 +194,16 @@ test("30 度回したノードは、右辺を親の縁の近くまで引いて�
   const sin = Math.sin(Math.PI / 6);
   const enclosingWidth = 200 * cos + 100 * sin;
   const enclosingHeight = 200 * sin + 100 * cos;
-  const turned = drawnAt("turned", {
-    left: 150 - enclosingWidth / 2,
-    top: 100 - enclosingHeight / 2,
-    width: enclosingWidth,
-    height: enclosingHeight,
-  });
-  stubLayoutSize(turned, { width: 200, height: 100 });
+  const turned = drawnTurnedAt(
+    "turned",
+    {
+      left: 150 - enclosingWidth / 2,
+      top: 100 - enclosingHeight / 2,
+      width: enclosingWidth,
+      height: enclosingHeight,
+    },
+    { width: 200, height: 100 },
+  );
   const rightEdge = { x: 150 + 100 * cos, y: 100 + 100 * sin };
 
   pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), rightEdge);
