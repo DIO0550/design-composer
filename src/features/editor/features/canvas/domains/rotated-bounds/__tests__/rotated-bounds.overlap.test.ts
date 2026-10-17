@@ -14,6 +14,15 @@ const QuarterTurnedWide: RotatedBounds = {
   rotation: 90,
 };
 
+/**
+ * 回る前は (100, 50) から 200x100、中心 (200, 100) を軸に時計回りへ 30 度回した横長。
+ * 回る前の右下の角は (261.6, 193.3)、右上の角は (311.6, 106.7) に来る。
+ */
+const ThirtyDegreesTurnedWide: RotatedBounds = {
+  unrotated: { left: 100, top: 50, width: 200, height: 100 },
+  rotation: 30,
+};
+
 test("45 度回した矩形は、外接矩形の隅にだけかかる矩形とは重ならない", () => {
   expect(
     RotatedBounds.overlaps(
@@ -109,4 +118,27 @@ test("1 回り回したものも、辺が接するだけで重なりとみなす
       CanvasBounds.spanning({ x: 300, y: 50 }, { x: 320, y: 150 }),
     ),
   ).toBe(true);
+});
+
+test("時計回りに 30 度回した横長は、回る前の右下の角が来た側の矩形と重なる", () => {
+  expect(
+    RotatedBounds.overlaps(ThirtyDegreesTurnedWide, {
+      left: 260,
+      top: 186,
+      width: 4,
+      height: 4,
+    }),
+  ).toBe(true);
+});
+
+test("時計回りに 30 度回した横長は、反時計回りなら角が来る側の矩形とは重ならない", () => {
+  // 上の矩形を中心の高さで上下に折り返した位置。反時計回りに 30 度回したものとは重なる
+  expect(
+    RotatedBounds.overlaps(ThirtyDegreesTurnedWide, {
+      left: 260,
+      top: 10,
+      width: 4,
+      height: 4,
+    }),
+  ).toBe(false);
 });
