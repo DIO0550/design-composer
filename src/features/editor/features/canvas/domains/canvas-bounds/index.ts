@@ -299,8 +299,21 @@ export const CanvasBounds = {
     if (boundsList.length === 0) {
       return Option.none;
     }
-    // 空でないことは上で確かめてあるので、無限大の種は必ず 1 件目で置き換わる
-    const enclosed = boundsList.reduce(
+    const [first, ...rest] = boundsList;
+    return Option.some(CanvasBounds.enclosingAll([first, ...rest]));
+  },
+
+  /**
+   * 1 つ以上の矩形をすべて含む最小の矩形（`enclosing` の、空になりえない並びを受ける形）。
+   *
+   * @param boundsList 含めたい矩形の並び。1 件目は必ずある
+   * @returns すべてを含む最小の矩形
+   */
+  enclosingAll(
+    boundsList: readonly [CanvasBounds, ...CanvasBounds[]],
+  ): CanvasBounds {
+    const [first, ...rest] = boundsList;
+    const enclosed = rest.reduce(
       (widest, bounds) => ({
         left: Math.min(widest.left, bounds.left),
         top: Math.min(widest.top, bounds.top),
@@ -308,18 +321,32 @@ export const CanvasBounds = {
         bottom: Math.max(widest.bottom, CanvasBounds.edge(bounds, Axes.Height)),
       }),
       {
-        left: Number.POSITIVE_INFINITY,
-        top: Number.POSITIVE_INFINITY,
-        right: Number.NEGATIVE_INFINITY,
-        bottom: Number.NEGATIVE_INFINITY,
+        left: first.left,
+        top: first.top,
+        right: CanvasBounds.edge(first, Axes.Width),
+        bottom: CanvasBounds.edge(first, Axes.Height),
       },
     );
-    return Option.some({
+    return {
       left: enclosed.left,
       top: enclosed.top,
       width: enclosed.right - enclosed.left,
       height: enclosed.bottom - enclosed.top,
-    });
+    };
+  },
+
+  /**
+   * 矩形の中の比率で指した点。
+   *
+   * @param bounds 点を指す矩形
+   * @param ratio 矩形の左上を (0, 0)、右下を (1, 1) とした比率
+   * @returns その比率の位置にある点（画面上の px）
+   */
+  pointAt(bounds: CanvasBounds, ratio: Offset): Offset {
+    return {
+      x: bounds.left + bounds.width * ratio.x,
+      y: bounds.top + bounds.height * ratio.y,
+    };
   },
 
   /**
