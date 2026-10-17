@@ -16,9 +16,11 @@
 # function）/ 77 件（export された宣言）あり、触っていない分まで push を止めると、
 # 直す気の無い違反を避けるためのエスケープハッチが増えてフック全体が信用されなくなる
 # （README.md「例外(エスケープハッチ)」）。編集したファイルの分だけを出す。
+# 検出器が異常終了したら、止めずに「検査できていない」ことを伝える(理由は同じ節)。
 set -euo pipefail
 
 hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "$hook_dir/lib/edit-detector.sh"
 detector="$hook_dir/lib/missing-doc-comments.py"
 
 input="$(cat)"
@@ -33,14 +35,12 @@ case "$file" in
   *) exit 0 ;;
 esac
 
-command -v python3 >/dev/null 2>&1 || exit 0
+python3_usable || exit 0
 
-report="$(python3 "$detector" "$file" || true)"
+if ! report="$(detector_report '^doc が規約を満たしていません' "$detector" "$file")"; then
+  print_edit_unchecked_context PostToolUse "doc コメント" "$detector"
+  exit 0
+fi
 [ -n "$report" ] || exit 0
 
-jq -Rn --arg msg "$report" '{
-  hookSpecificOutput: {
-    hookEventName: "PostToolUse",
-    additionalContext: $msg
-  }
-}'
+print_additional_context PostToolUse "$report"

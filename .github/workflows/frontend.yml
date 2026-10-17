@@ -201,6 +201,9 @@ jobs:
       - name: push 前の検査フックの判定表
         run: bash .claude/hooks/lib/pre-push-detector-cases.sh
 
+      - name: 編集時の検査フックの判定表
+        run: bash .claude/hooks/lib/edit-detector-cases.sh
+
       - name: 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表
         run: bash .claude/hooks/lib/verification-agent-cases.sh
 
