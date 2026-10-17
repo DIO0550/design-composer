@@ -22,7 +22,12 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
+import {
+  drawnAt,
+  stubLayoutSize,
+} from "@/features/editor/features/canvas/__tests__/canvas-measure";
 import { resizeAnchorIndexAt } from "@/features/editor/features/canvas/__tests__/canvas-resize";
+import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import type { ResizeHandleAnchor } from "@/features/editor/features/canvas/domains/node-resize";
 import { useCanvasView } from "@/features/editor/features/canvas/hooks/use-canvas-view";
 import { useNodeDrag } from "@/features/editor/features/canvas/hooks/use-node-drag";
@@ -40,6 +45,25 @@ import {
  */
 export { drawn } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 export { drawnAt } from "@/features/editor/features/canvas/__tests__/canvas-measure";
+
+/**
+ * 回って描かれているノードとして描く。外接矩形を描かれた矩形にし、回る前の大きさを
+ * レイアウトの大きさにする（外接矩形からは回る前の大きさが決まらないため）。
+ *
+ * @param name 描かれているノードの名前
+ * @param enclosing 回った 4 角を囲む、描かれていることにする矩形
+ * @param unrotatedSize 回る前の幅と高さ
+ * @returns 測定を差し替えたあとの要素
+ */
+export function drawnTurnedAt(
+  name: string,
+  enclosing: CanvasBounds,
+  unrotatedSize: Readonly<{ width: number; height: number }>,
+): HTMLElement {
+  const element = drawnAt(name, enclosing);
+  stubLayoutSize(element, unrotatedSize);
+  return element;
+}
 
 /**
  * artboard の並びだけを差し替えたドキュメントと、選択の対

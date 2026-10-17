@@ -5,6 +5,14 @@ import { RotatedBounds } from "../index";
 /** 画面の (100, 50) から 200x100 の、正方形でない矩形。中心は (200, 100)。 */
 const Unrotated: CanvasBounds = { left: 100, top: 50, width: 200, height: 100 };
 
+/** 位置も大きさも端数を持つ矩形。 */
+const FractionalUnrotated: CanvasBounds = {
+  left: 1.89,
+  top: 0.1,
+  width: 196.72,
+  height: 0.7,
+};
+
 test("回っていなければ、左上の箇所は矩形の左上に描かれる", () => {
   const bounds = { unrotated: Unrotated, rotation: 0 };
 
@@ -25,10 +33,11 @@ test("回っていなければ、右辺の中点の箇所は矩形の右辺の�
 
 test("回っていなければ、端数を持つ矩形でも左上の箇所は矩形の左上そのものに描かれる", () => {
   // 中心を経由して戻すと (l - cx) + cx が l に戻らない端数が出る
-  const unrotated = { left: 1.89, top: 0.1, width: 196.72, height: 0.7 };
-
   expect(
-    RotatedBounds.pointAt({ unrotated, rotation: 0 }, { x: 0, y: 0 }),
+    RotatedBounds.pointAt(
+      { unrotated: FractionalUnrotated, rotation: 0 },
+      { x: 0, y: 0 },
+    ),
   ).toEqual({ x: 1.89, y: 0.1 });
 });
 
@@ -104,4 +113,60 @@ test("向きだけが違う 2 つは同じ矩形とみなさない", () => {
       { unrotated: Unrotated, rotation: 45 },
     ),
   ).toBe(false);
+});
+
+test("90 度回した横長の矩形の外接矩形は、中心が同じ縦長の矩形になる", () => {
+  const enclosing = RotatedBounds.toEnclosing({
+    unrotated: Unrotated,
+    rotation: 90,
+  });
+
+  expect(enclosing.left).toBeCloseTo(150);
+  expect(enclosing.top).toBeCloseTo(0);
+  expect(enclosing.width).toBeCloseTo(100);
+  expect(enclosing.height).toBeCloseTo(200);
+});
+
+test("回っていなければ、端数を持つ矩形の外接矩形はその矩形そのもの", () => {
+  expect(
+    RotatedBounds.toEnclosing({
+      unrotated: FractionalUnrotated,
+      rotation: 0,
+    }),
+  ).toEqual(FractionalUnrotated);
+});
+
+test("360 度回した矩形の外接矩形は、回る前の矩形そのもの", () => {
+  expect(
+    RotatedBounds.toEnclosing({
+      unrotated: FractionalUnrotated,
+      rotation: 360,
+    }),
+  ).toEqual(FractionalUnrotated);
+});
+
+test("30 度回した矩形の外接矩形は、回った 4 角がちょうど収まる大きさになる", () => {
+  // 幅 200·cos30 + 100·sin30、高さ 200·sin30 + 100·cos30 を、中心 (200, 100) に置いたもの
+  const enclosing = RotatedBounds.toEnclosing({
+    unrotated: Unrotated,
+    rotation: 30,
+  });
+
+  expect(enclosing.left).toBeCloseTo(88.397, 3);
+  expect(enclosing.top).toBeCloseTo(6.699, 3);
+  expect(enclosing.width).toBeCloseTo(223.205, 3);
+  expect(enclosing.height).toBeCloseTo(186.603, 3);
+});
+
+test("親の中の位置へ置き直すと、回る前の矩形の左上がその位置に来て大きさと向きは変わらない", () => {
+  const placed = RotatedBounds.placedAt(
+    { unrotated: Unrotated, rotation: 30 },
+    { left: 10, top: 20, width: 400, height: 300 },
+    { x: 5, y: 7 },
+  );
+
+  expect(placed).toEqual({
+    unrotated: { left: 15, top: 27, width: 200, height: 100 },
+    rotation: 30,
+  });
 });
