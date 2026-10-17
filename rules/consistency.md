@@ -47,7 +47,7 @@
 
 **ドメイン軸でまとまっている feature はネストしない。** 複数の画面領域に UI を提供していても、同じドメイン・同じ選択状態に反応して一緒に変わるなら 1 つのまとまり。使われ方で割ると凝集が壊れる。参照元が 2 つ以上ある feature は、共通の親の直下に置き、親が両方へ差し込む。
 
-子が別の子の中身を必要とするとき、直接 import せず**親が差し込む**。`app/` など feature の外から読めるのはトップレベルの feature だけで、入れ子の子は親の公開口を通す。違反は `import-rule-violations.py` が `feature-public-api` / `feature-sibling` / `feature-ancestor` / `feature-nested-from-outside` / `feature-nest-depth` として報告する。
+子が別の子の中身を必要とするとき、直接 import せず**親が差し込む**。`app/` など feature の外から読めるのはトップレベルの feature だけで、入れ子の子は親の公開口を通す。違反は `import-rule-violations.py` が報告する(種別は検出器の docstring)。
 
 - 中身を `ReactElement` として親から渡す(`ReactNode` を避ける理由は `rules/coding.md`「列挙した状態の網羅を型で強制する」)
 - 行き先が複数あるなら `Record<行き先, 定義>` で受け取り、**全行き先が揃っていることを型で保証する**
