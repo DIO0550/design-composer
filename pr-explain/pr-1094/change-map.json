@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1094,
+  "headBranch": "claude/magical-cannon-oq3ai6",
+  "baseBranch": "main",
+  "mergeBase": "bed1d1c17b56f7e84533c83f942e374f07b2dab9",
+  "head": "ccbc98bfaeeb8ecd8dc137bc3c5f241cfc6aa5a1",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1092.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 207,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "ccbc98bfaeeb8ecd8dc137bc3c5f241cfc6aa5a1",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T08:18:31Z",
+      "subject": "📝 [Documentation]: PR #1092 の記録を harness/records に残す",
+      "body": "- harness/records/pr-1092.md を足す(指摘 21 件・手戻り 4 回・発火は計測対象外)\n\n背景:\nPR #1092(#1066 アイコン系のボタンの置き換えと、生の <button> の lint)が\nマージされたので、harness-record の手順でその回の指摘・手戻りを残す。\n\n採用理由:\n人・bot・CI へ届いた指摘は 0 件で、CI の赤は意図した VRT の差分だけ\nだった。指摘は plan-reviewer と観点別の reviewer、自己修正のものだけ。\n\n影響とトレードオフ:\n集計と介入は harness-growth の管轄なので、規約・フックには触れない。\n\n代替案:\n- 0 件の分類を省いて記録を短くする: 回数の材料が欠けるので、指摘ごとに\n  1 ブロックで残した\n\n参考:\n- PR #1092、Issue #1066 のコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01WjpqfdQU5JxzpMiVkVhUtd",
+      "files": [
+        {
+          "path": "harness/records/pr-1092.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 207,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,207 @@\n+# PR #1092 アイコン系のボタンを基本ボタン(アイコン)へ置き換え、生の <button> を lint で落とす\n+\n+- マージ日: 2026-10-17\n+- 関連 Issue: #1066\n+- 差分規模: 10 ファイル / +169 -64\n+\n+## ゴールと結果\n+\n+ゴールは 2 つあり、どちらも達成した。\n+\n+- アイコン系のボタン 7 個が基本ボタンの種類「アイコン」で描かれ、画面ごとの className で描かれていない状態になる\n+  - 上部バーの倍率 `−` / `+` と stop の `+` / `−` は Icon(26px・枠なし・灰の字)にした\n+  - 倍率表示 `55%` と一覧の見出しの `+` 2 個は、新しく足した InlineIcon にした\n+- `src/components/` の外で生の `<button>` を新しく書くと、検査で落ちる状態になる\n+  - `.oxlintrc.json` に `react/forbid-elements` を入れた\n+  - 許可はファイル単位で、許可したファイルの中の穴は恒久の判断として README に書いた\n+\n+Issue 本文の対象は 9 個だったが、利用者の判断でツールバーのスロット 2 個を外し、7 個にした。\n+\n+判断待ちで 2 回止めた。\n+\n+- 1 回目は、着手の時点で Issue 本文に残っていた未決 2 点\n+- 2 回目は、計画と plan-reviewer の後に新しく出た 4 点\n+- 回答はどちらも「おすすめで」\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。コメントは、自分が投稿したテストケース表と VRT の説明、それに bot の投稿(Storybook プレビュー・CI レポート・VRT)だけ。\n+\n+CI は、VRT が意図した差分(Changed 10 / New 1)で一度赤くなった。ほかはすべて緑。`visual-approved` が付いてマージされた。\n+\n+hover の配色(タブバーの値 `#f0f0f0` を借りた)は、利用者に確認しないまま PR 本文の確認事項に挙げた。覆す指摘は無いまま、マージされた。\n+\n+## 指摘\n+\n+### 1. Issue 本文の未決 2 点を、着手前に利用者へ尋ねて止めた\n+\n+- 分類: `plan`\n+- 出どころ: `自己修正`\n+- 内容: 未決は 2 点。アイコンの見た目(UI 案の灰の字か、30×30 の青枠か)と、ツールバーのスロットを含めるか。Issue に「着手前に決める」とあったので、推測で埋めずに止めた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 1\n+\n+### 2. 計画の段階で、UI 案と合わない点が新しく出た\n+\n+- 分類: `ui`\n+- 出どころ: `自己修正`\n+- 内容: 出たのは `55%` の色、行内の字の大きさ、stop の大きさ、検査の穴。planner の未決 3 点と plan-reviewer の指摘から出た。1 回目の回答の範囲に入らないので、2 回目の判断待ちで止めた。\n+- 既存ルール: rules/ui-verification.md「プロトタイプと違う形にする必要が出たら、実装前に理由を添えて確認する」\n+\n+### 3. `55%` の色の根拠が 1 画面しか見ていなかった\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: UI 案の `55%` は 5 回出る。Default / Context menu では色の指定が無く、Assets / Instance / Tokens では `#767676` と明示している。根拠を直してから利用者に尋ねた。\n+- 既存ルール: rules/ui-verification.md「単一の画面・単一の状態だけを見て断定しない」\n+\n+### 4. 行内の字の大きさを「ばらばら」とまとめていた\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 要素ごとに 13 / 12 / 11px と決まっていた。12px にそろえる案だけでなく、親の行から継ぐ案を並べて尋ね直した。\n+- 既存ルール: rules/ui-verification.md「UIの拠り所は `docs/Design Composer.html`」\n+\n+### 5. 直すコメントがファイル表から漏れていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 漏れていたのは、型テストの理由のコメント、Icon と ButtonIconClass の doc、Icon story の doc。それと、既存の Icon story の見た目が変わること。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(手順 7)\n+\n+### 6. 配色の変化を VRT に頼っていた\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 色の変化と hover は、しきい値の内側に収まるか、撮られない。そこで 7 か所を Storybook で目視する手順を計画に書いた。押せない stop の `−` と hover の確認も含めた。\n+- 既存ルール: rules/ui-verification.md「Storybook の視覚差分(VRT)」\n+\n+### 7. 検査の前提を確かめた記録が計画に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 前提は、`forbid-elements` があること、`plugins` が両側に要ること、correctness 規則が warn で入ること、導入時点の違反が 0 件であること。どれもコマンドと出力を載せていなかった。許可する側・落ちる側の対の確認と、`--fix` の挙動も足した。\n+- 既存ルール: rules/coding.md「外部の挙動は動かして確かめる」\n+\n+### 8. 検査をすり抜ける経路が、README の穴から漏れていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 漏れていたのは、`role=\"button\"` を付けた要素と、置き換えた `+` 2 個が許可したファイルの中で生の `<button>` に戻る形。README の穴に列挙した。\n+- 既存ルール: `harness/case-law/planning.md`(`plan-derived-scope-omission`)\n+\n+### 9. 穴を受け入れるのが恒久の判断か、書かれていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 利用者に尋ね、恒久として受け入れた(後続 Issue は立てない)。\n+- 既存ルール: AGENTS.md「タスクの分割」\n+\n+### 10. 「見出し行の高さは変わらない」と利用者に伝えていた\n+\n+- 分類: `plan`\n+- 出どころ: `自己修正`\n+- 内容: Tailwind v4 の `text-*` は行の高さを比率で持つ。そのため字の大きさを UI 案に合わせると、行の高さも変わる(約 20→18.6 / 20→16 / 24→26px)。planner が確定版で気づき、Issue で訂正した。\n+- 既存ルール: rules/coding.md「外部の挙動は動かして確かめる」\n+\n+### 11. 許可ファイルの件数を README の 2 か所に書き写していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 件数を消し、一覧は `.oxlintrc.json` を参照させる形にした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 12. `IconFace` がタブバーの値をコピーしたうえで「揃える」と書いていた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 値は参照でつながっていない。「その時点で借りた」と分かる書き方に弱めた。定数の共有は、色の語彙を置く場所がまだ無いので見送った。\n+- 既存ルール: rules/coding.md「ルール」(同じ処理が2箇所に現れたら共通化する)\n+\n+### 13. Button の doc が、Text も行の字の大きさを継ぐと読めた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: Text は 11px を自分で持つ。継ぐのは InlineIcon だけなので、doc を限定した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 14. 種類の doc が「アイコン」としか言わず、数値の `55%` と食い違っていた\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: props の doc と同じ「記号や数値だけを中身に持つ操作」にそろえた。改名はしていない。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 15. 「アイコン 2 種は UI 案どおり」が `55%` に当たらなかった\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（ui-reviewer）`\n+- 内容: Default / Context menu の `55%` は、地の色を継いでいる。UI 案どおりの部分と、灰に揃えた逸脱を分けて書いた。\n+- 既存ルール: rules/ui-verification.md「単一の画面・単一の状態だけを見て断定しない」\n+\n+### 16. story の「13px の見出し」が UI 案と合わなかった\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（ui-reviewer）`\n+- 内容: UI 案の見出しは 11px・600 で、13px なのは `+` だけ。doc と story の見出しの字を直した。\n+- 既存ルール: rules/ui-verification.md「UIの拠り所は `docs/Design Composer.html`」\n+\n+### 17. hover の配色を利用者に確認しないまま決めていた\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（ui-reviewer）`\n+- 内容: UI 案に hover は描かれていない。値はタブバーの非選択タブから借りた。判断待ちの項目には入れていなかった。止めずに PR 本文の確認事項に挙げ、覆す指摘は無いままマージされた。\n+- 既存ルール: rules/ui-verification.md「プロトタイプと違う形にする必要が出たら、実装前に理由を添えて確認する」\n+\n+### 18. README の新しい項が、対応する `rules/` の節が無いことを書いていなかった\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 同じ節の表と同じ形で「(対応する規範は `rules/` に無く、lint だけが持つ)」を添えた。\n+- 既存ルール: なし\n+\n+### 19. 許可リストのコメントが対象の名前だけで、基本ボタンに当たらない理由が無かった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 選択中・開閉などの状態を自分で持つ、という理由を各行 1 行で書いた。solution-reviewer が担当外として挙げたもの。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 20. 見た目の判断がテストでは守れず、そのことがコードに書かれていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 26px、字の大きさを行から継ぐこと、包みの span、見出し行の字の大きさは、壊しても vitest が全件通った。class を固定するテストは足さず、気づく手段は Storybook だけだとコメントで開示した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 21. forbid-elements の override を消しても、落ちる検査が無い\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 違反が 0 件なので、設定を消しても lint は通る。判定表は置かず(既存の oxlint 規則と同じ扱い)、README の穴に 1 行足した。\n+- 既存ルール: なし\n+\n+## 手戻り\n+\n+4 回。\n+\n+1. 着手の時点で、Issue の未決 2 点を尋ねて止めた(指摘 1)\n+2. 計画と plan-reviewer の後に、新しく出た 4 点を尋ねて止めた(指摘 2〜9)\n+   - planner で計画を 1 回直した\n+   - 行の高さと件数の訂正もした(指摘 10)\n+   - 件数の訂正: 生 `<button>` のファイル数 9 → 8、テスト内 78/16 → 82/20\n+3. 実装の検証(1 段目、10 エージェント)の指摘 8 件を、implementer で 1 回直した(指摘 11〜19)\n+4. ミューテーションの実測(2 段目)の指摘 2 件を、コメントと README で直した(指摘 20〜21)\n+\n+implementer は、計画から外れずに実装を終えた。\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+`echo hook-canary` は deny されずに通った。このセッションの発火ログ(`design-composer-firings-<session_id>.log`)も、実行中フラグのマーカーも無かった。\n+\n+- セッションの作業ディレクトリは `/home/user` で起動していた\n+- 一括 `git add` は使っていない\n+- planner がリポジトリの外の使い捨てコピーで `npx oxlint` を実行していた(リポジトリへの影響は無い)\n+\n+## 規約への反映\n+\n+無し。集計と介入の判断は `harness-growth` の管轄なので、この記録では行わない。",
+          "patchLines": 208,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
