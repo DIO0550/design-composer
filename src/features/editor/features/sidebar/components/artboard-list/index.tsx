@@ -1,3 +1,4 @@
+import { Button, ButtonKinds } from "@/components/button";
 import { DropLine, ListOrientations } from "@/components/drop-line";
 import { NoMatchMessage } from "@/components/search-field";
 import { TypeGlyph } from "@/components/type-glyph";
@@ -197,18 +198,17 @@ export function ArtboardList({
 
   return (
     <section aria-label="artboard 一覧" className="text-sm">
-      <div className="mb-2 flex items-center justify-between gap-2">
+      <div className="mb-2 flex items-center justify-between gap-2 text-[13px]">
         <h3 className="font-semibold text-gray-500 text-xs uppercase">
           Artboards
         </h3>
-        <button
-          type="button"
+        <Button
+          kind={ButtonKinds.InlineIcon}
           aria-label={AddArtboardLabel}
           onClick={artboardActions.add}
-          className="px-1 text-gray-500 text-sm hover:text-gray-900"
         >
           +
-        </button>
+        </Button>
       </div>
       {artboards.length === 0 ? (
         <p className="text-gray-500">{emptyNoticeOf(listing)}</p>
