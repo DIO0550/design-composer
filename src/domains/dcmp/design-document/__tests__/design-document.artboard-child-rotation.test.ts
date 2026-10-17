@@ -35,7 +35,54 @@ test("回していない artboard 直下の子は、角度 0 で並ぶ", () => {
   ]);
 });
 
-test("artboard の並び順・子の並び順のまま並び、孫は入らない", () => {
+test("部品のルートを回した部品のインスタンスは、部品のルートの角度で並ぶ", () => {
+  const document = DesignDocument.create({
+    components: {
+      tilted: { type: "Box", props: { rotation: 45 }, children: [] },
+    },
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [{ name: "instance", ref: "tilted" }],
+      },
+    ],
+  });
+
+  expect(DesignDocument.collectArtboardChildRotations(document)).toEqual([
+    { name: "instance", rotation: 45 },
+  ]);
+});
+
+test("部品のルートの角度を上書きしたインスタンスは、上書きした角度で並ぶ", () => {
+  const document = DesignDocument.create({
+    components: {
+      tilted: {
+        type: "Box",
+        props: { rotation: 45 },
+        children: [],
+        publicProps: { angle: { node: "tilted", prop: "rotation" } },
+      },
+    },
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          { name: "instance", ref: "tilted", overrides: { angle: 20 } },
+        ],
+      },
+    ],
+  });
+
+  expect(DesignDocument.collectArtboardChildRotations(document)).toEqual([
+    { name: "instance", rotation: 20 },
+  ]);
+});
+
+test("回した子の中の孫は、回していても並びに入らない", () => {
   const document = DesignDocument.create({
     artboards: [
       {
