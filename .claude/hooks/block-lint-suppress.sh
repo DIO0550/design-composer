@@ -51,7 +51,7 @@ esac
 python3_usable || exit 0
 
 if ! suppressions="$(printf '%s' "$content" | detector_report '^[0-9]+:' "$detector")"; then
-  print_unchecked_context PreToolUse "lint 抑制コメント" "$detector"
+  print_edit_unchecked_context PreToolUse "lint 抑制コメント" "$detector"
   exit 0
 fi
 [ -z "$suppressions" ] && exit 0

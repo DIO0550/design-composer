@@ -36,14 +36,9 @@ esac
 python3_usable || exit 0
 
 if ! report="$(detector_report '^本体が同じテストヘルパーが' "$detector" "$file")"; then
-  print_unchecked_context PostToolUse "テストヘルパーの重複" "$detector"
+  print_edit_unchecked_context PostToolUse "テストヘルパーの重複" "$detector"
   exit 0
 fi
 [ -n "$report" ] || exit 0
 
-jq -Rn --arg msg "$report" '{
-  hookSpecificOutput: {
-    hookEventName: "PostToolUse",
-    additionalContext: $msg
-  }
-}'
+print_additional_context PostToolUse "$report"

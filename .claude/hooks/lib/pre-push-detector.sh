@@ -12,8 +12,8 @@
 # 使い方: source したうえで `<関数> <検出器> <検査の名前> <直し方の一文>`。
 # 標準入力（フックへ渡される JSON）は関数が読む。
 #
-# python3 の疎通(両方の関数)と検出器の異常終了(`deny_on_violations`)の見方は、層 1・2 の
-# `check-added-*` と同じスクリプトを使う。自分の位置から辿るのは、判定表が
+# python3 の疎通(両方の関数)と検出器の異常終了(`deny_on_violations`)の見方を source する理由は
+# `harness/githooks/README.md`「何が走るか」。自分の位置から辿るのは、判定表が
 # `CLAUDE_PROJECT_DIR` を一時ディレクトリへ向けるため。
 detector_lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.github/scripts/lib" && pwd)"
 source "$detector_lib_dir/detector-precondition.sh"
