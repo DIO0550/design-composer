@@ -1251,24 +1251,12 @@ export const DesignDocument = {
   },
 
   /**
-   * すべての artboard の**直下の子**の名前（範囲選択が選びうる相手）。
+   * すべての artboard の**直下の子**の名前と、画面上の向き（範囲選択が選びうる相手と、
+   * その当たり判定に使う向き）。
    *
    * 直下だけで止めるのは、キャンバスから選べる階層がそこだから（掘るのはダブルクリック
    * の担当 / docs/06-ui.md「キャンバスのクリックが選ぶ階層」）。孫まで集めると、範囲で払
    * ったときにクリックとは違う階層が選ばれる。
-   *
-   * @param document 走査するドキュメント
-   * @returns artboard の並び順・子の並び順のままの名前。1 つも無ければ空
-   */
-  collectArtboardChildNames(document: DesignDocument): readonly string[] {
-    return document.artboards.flatMap((artboard) =>
-      artboard.children.map((child) => child.name),
-    );
-  },
-
-  /**
-   * すべての artboard の**直下の子**の名前と、画面上の向き（範囲選択が選びうる相手と、
-   * その当たり判定に使う向き / `collectArtboardChildNames` と同じ相手）。
    *
    * 参照先の部品が無いインスタンスは向きが決まらないので外す。そのドキュメントはコンパイル
    * 全体が失敗してキャンバスに名前の付いた要素が描かれないので、外しても選ばれる相手は変わらない。

@@ -88,3 +88,51 @@ test("参照先の部品が無いインスタンスは、向きが決まらな�
     { name: "label", rotation: 15 },
   ]);
 });
+
+test("名前の辞書順ではなく、artboard の並び順・子の並び順のまま並ぶ", () => {
+  // 並べ替えた実装で通らないよう、artboard 名・子の名前・角度のどれも昇順にしない
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "settings",
+        width: 360,
+        height: 240,
+        children: [{ name: "toggle", type: "Text", props: { rotation: 30 } }],
+      },
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          { name: "header", type: "Box", props: { rotation: 20 } },
+          { name: "footer", type: "Box", props: { rotation: 10 } },
+        ],
+      },
+    ],
+  });
+
+  expect(DesignDocument.collectArtboardChildRotations(document)).toEqual([
+    { name: "toggle", rotation: 30 },
+    { name: "header", rotation: 20 },
+    { name: "footer", rotation: 10 },
+  ]);
+});
+
+test("子を持たない artboard からは何も並ばない", () => {
+  // 対照に子を持つ artboard を 1 枚置く。`[]` を期待すると何も返さない実装でも通る
+  const document = DesignDocument.create({
+    artboards: [
+      { name: "home", width: 360, height: 240, children: [] },
+      {
+        name: "about",
+        width: 360,
+        height: 240,
+        children: [{ name: "title", type: "Text", props: {} }],
+      },
+    ],
+  });
+
+  expect(DesignDocument.collectArtboardChildRotations(document)).toEqual([
+    { name: "title", rotation: 0 },
+  ]);
+});
