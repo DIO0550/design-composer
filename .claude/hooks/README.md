@@ -18,7 +18,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `check-test-helper-duplication.sh` | `PostToolUse` (Edit/Write) | **テストヘルパーの重複検出**(rules/testing.md「テスト用ヘルパーの置き場所」)。プロジェクト全体の `__tests__/` を横断し、本体が一字一句同じヘルパーが 2 つ以上あれば知らせる。検出器が異常終了したら止めずに「検査できていません」を伝える |
 | `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。doc の無い宣言と、`@param` / `@returns` / `@throws` が欠けた doc を知らせる。検出器が異常終了したら止めずに「検査できていません」を伝える |
 | `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロック |
-| `pre-push-import-rules.sh` | `PreToolUse` (Bash)     | **push 前の import 規約検査**(rules/architecture.md「モジュールの公開API」「依存方向のルール」)。公開 API を迂回する import・循環参照・カテゴリの外に置かれた domains のモジュールがあれば push をブロック |
+| `pre-push-import-rules.sh` | `PreToolUse` (Bash)     | **push 前の import 規約検査**(rules/architecture.md「モジュールの公開API」「依存方向のルール」)。import 規約の違反(種別は `lib/import-rule-violations.py` の docstring)があれば push をブロック |
 | `pre-push-result-option-discriminants.sh` | `PreToolUse` (Bash) | **push 前の判別子の直読み・直書き検査**(rules/coding.md「エラーと不在の表現」)。`Result` / `Option` の判別子(`ok` / `some`)を、その判別子を型宣言で定義していないファイルで直読みしている・値リテラルで書いていれば push をブロック |
 | `pre-push-story-titles.sh` | `PreToolUse` (Bash)     | **push 前の story の title 検査**(対応する規範は `rules/` に無く、フックだけが持つ)。story の `title` が、最後のセグメント(葉に出る表示名)を除いてフォルダ階層と食い違っていれば push をブロック |
 | `pre-push-named-paths.sh` | `PreToolUse` (Bash)    | **push 前の名指ししたパスの検査**(対応する規範は `rules/` に無く、フックだけが持つ)。コメント・doc が名指ししているパスに当たる実体が無ければ push をブロックする |
