@@ -1,0 +1,387 @@
+{
+  "version": 2,
+  "pr": 1102,
+  "headBranch": "claude/magical-cannon-23pnwu",
+  "baseBranch": "main",
+  "mergeBase": "8c76ffb3064b0639ec35ed2a8b0a514bb9435576",
+  "head": "b39bc47ffbc8085105523056a0c245b3dffd02c0",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resize-edit/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/edit-continuity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection-dig/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/dom-event/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 75,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/__tests__/resize-handle-overlay.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+        "name": "中ボタンでハンドルを押して引いても、大きさは変わらない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+        "name": "中ボタンでハンドルを押して引いて離しても、次のクリックは選択に使われる"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+        "name": "右ボタンでハンドルを押して引いても、大きさは変わらない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+        "name": "右ボタンでハンドルを押して引いて離しても、次のクリックは選択に使われる"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+      "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "ec207d14e17b5244dc571d8093d5fe91b6f57c25",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T15:14:31Z",
+      "subject": "🐛 [Bug fix]: #1012 リサイズハンドルを主ボタン以外で押しても掴まないようにする",
+      "body": "- ResizeHandleOverlay のハンドルの onPointerDown の先頭で PointerButton.isPrimary を見て、主ボタン以外なら何もせず返すようにした\n- 右・中ボタンでハンドルを押して引いたときに、大きさが変わらないこと・次の左クリックが選択に使われることのテストを 4 件足した\n\n背景:\nハンドルの onPointerDown は押されたボタンを見ていなかった。右ボタンで掴んで引いて離すと\nNodeResize.release で resized（直後の click を飲み込む状態）へ入る。ところが右・中ボタンを\n離しても click は出ない（出るのは contextmenu / auxclick）ので状態が残り、次の左クリック\n1 回が選択に使われずに消えていた。右ボタンで引くとリサイズされてしまうことも同じ原因。\n\n採用理由:\n掴み口になる要素自身のハンドラでボタンを見て弾く形にした。枠の上の帯（ArtboardFrame）と\nartboard の見出し（ArtboardLabel）がすでにこの形なので、それに揃えた。弾くときは return\nだけにして、stopPropagation / preventDefault は呼ばない（帯・見出しと同じ）。ハンドルの器は\n土台（canvas-surface）の兄弟なので、範囲選択やパンには今も届かない。右クリックメニューは\nsection の onContextMenu で受けているので、この変更の影響は受けない。\n\n代替案:\n- useNodeResize.grab の中でボタンを見る: 帯と見出しは要素自身のハンドラで判定しているので、\n  揃わなくなるため却下\n- artboard-canvas/index.tsx で onGrab を包んで判定する: 入力の解釈が掴み口から離れた器の側へ\n  分かれてしまうため却下\n- NodeResize.release / reducer で、主ボタン以外なら resized に入れない: 入力ボタンの事情が\n  ドメインへ入る。右ボタンで引くとリサイズされる問題も残るため却下\n- 次の pointerdown の capture で飲み込み待ちを解く（useRangeSelect の consume_click と同じ形）:\n  症状は消えるが、右ボタンで掴めることは直らない。受け口の扱いは #534 の範囲なので却下\n- resize-handle-overlay の単体テストに足す: 単体テストはハンドルの位置とカーソルしか見ていない。\n  飲み込みは配線（ハンドル → 器 → section の onClickCapture）を通さないと確かめられないので、\n  キャンバス側の通しのテストに置いた\n\n影響とトレードオフ:\n中ボタンでハンドルを押すと、変更後はリサイズもパンも始まらない（ハンドルは土台の外にあり、\nパンの capture まで届かない）。今までは中ボタンでもリサイズが始まっていた。パンをどこまで\n届かせるかは土台の当たり判定の話で、今回は扱わない。\nクリックが飲み込まれないことを見るテストは、離したあとに click を 1 回だけ撃つ形にした。\n主ボタンの既存テストと同じく面への click を挟むと、その 1 発が飲まれるだけで、直さなくても\nテストが通ってしまうため。\n\n参考:\nRefs #1012\nRelates to #534\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019cFoeBwX9bRwSrRJdmKFKw",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 75,
+          "deletions": 0,
+          "patch": "@@ -12,6 +12,7 @@ import {\n   releasePointer,\n } from \"@/features/editor/features/canvas/__tests__/canvas-gesture\";\n import type { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-bounds\";\n+import { PointerButtons } from \"@/libs/dom-event\";\n import {\n   artboardList,\n   drawn,\n@@ -265,6 +266,80 @@ test(\"ハンドルを掴んで枠の中で離しても、次のクリックは\n   );\n });\n \n+test(\"右ボタンでハンドルを押して引いて離しても、次のクリックは選択に使われる\", () => {\n+  const onSelect = vi.fn();\n+  renderCanvas({ selection: setupSelection([\"panel\"]), onSelect });\n+  const panel = drawnAt(\"panel\", PanelBounds);\n+\n+  pressPointer(\n+    resizeHandleAt({ x: 1, y: 0.5 }),\n+    { x: 300, y: 100 },\n+    PointerButtons.Secondary,\n+  );\n+  movePointer(panel, { x: 280, y: 100 });\n+  releasePointer(panel, { x: 280, y: 100 });\n+  // 右ボタンを離しても click は出ないので、キャンバスの面への click は挟まない\n+  fireEvent.click(drawn(\"title\"));\n+\n+  expect(onSelect).toHaveBeenCalledWith(\n+    [\"title\", \"home\"],\n+    SelectionDigs.NoDeeper,\n+  );\n+});\n+\n+test(\"中ボタンでハンドルを押して引いて離しても、次のクリックは選択に使われる\", () => {\n+  const onSelect = vi.fn();\n+  renderCanvas({ selection: setupSelection([\"panel\"]), onSelect });\n+  const panel = drawnAt(\"panel\", PanelBounds);\n+\n+  pressPointer(\n+    resizeHandleAt({ x: 1, y: 0.5 }),\n+    { x: 300, y: 100 },\n+    PointerButtons.Middle,\n+  );\n+  movePointer(panel, { x: 280, y: 100 });\n+  releasePointer(panel, { x: 280, y: 100 });\n+  // 中ボタンを離しても click は出ないので、キャンバスの面への click は挟まない\n+  fireEvent.click(drawn(\"title\"));\n+\n+  expect(onSelect).toHaveBeenCalledWith(\n+    [\"title\", \"home\"],\n+    SelectionDigs.NoDeeper,\n+  );\n+});\n+\n+test(\"右ボタンでハンドルを押して引いても、大きさは変わらない\", () => {\n+  const onResize = vi.fn();\n+  renderCanvas({ selection: setupSelection([\"panel\"]), onResize });\n+  const panel = drawnAt(\"panel\", PanelBounds);\n+\n+  pressPointer(\n+    resizeHandleAt({ x: 1, y: 0.5 }),\n+    { x: 300, y: 100 },\n+    PointerButtons.Secondary,\n+  );\n+  movePointer(panel, { x: 340, y: 100 });\n+  releasePointer(panel, { x: 340, y: 100 });\n+\n+  expect(onResize).not.toHaveBeenCalled();\n+});\n+\n+test(\"中ボタンでハンドルを押して引いても、大きさは変わらない\", () => {\n+  const onResize = vi.fn();\n+  renderCanvas({ selection: setupSelection([\"panel\"]), onResize });\n+  const panel = drawnAt(\"panel\", PanelBounds);\n+\n+  pressPointer(\n+    resizeHandleAt({ x: 1, y: 0.5 }),\n+    { x: 300, y: 100 },\n+    PointerButtons.Middle,\n+  );\n+  movePointer(panel, { x: 340, y: 100 });\n+  releasePointer(panel, { x: 340, y: 100 });\n+\n+  expect(onResize).not.toHaveBeenCalled();\n+});\n+\n test(\"幅のハンドルを掴んで右へ運ぶと、動かした分だけ幅が伸びた大きさが通知される\", () => {\n   /*\n    * ハンドルは辺をまたいで置かれるので外半分は要素の矩形の外にあり、帯の当たり判定",
+          "patchLines": 89,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 1,
+          "patch": "@@ -8,6 +8,7 @@ import {\n   type ResizeHandleAnchor,\n } from \"@/features/editor/features/canvas/domains/node-resize\";\n import { RotatedBounds } from \"@/features/editor/features/canvas/domains/rotated-bounds\";\n+import { PointerButton } from \"@/libs/dom-event\";\n import { Option } from \"@/utils/Option\";\n import { SelectionColor } from \"../artboard-frame-list\";\n \n@@ -123,7 +124,16 @@ export function ResizeHandleOverlay({\n             style={handleStyle(anchor, bounds, grab)}\n             onPointerDown={\n               Option.isSome(grab)\n-                ? (event) => onGrab(grab.value, event)\n+                ? (event) => {\n+                    /*\n+                     * 右・中ボタンでは掴まない。それらの pointerup のあとには click が来ないので、\n+                     * 離したあとの飲み込み待ちが残って次の左クリックを食べる。\n+                     */\n+                    if (!PointerButton.isPrimary(event)) {\n+                      return;\n+                    }\n+                    onGrab(grab.value, event);\n+                  }\n                 : undefined\n             }\n           />",
+          "patchLines": 26,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "3326c4e9fc3225be05a480f7ed0f8d465e35d13c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T15:14:31Z",
+      "subject": "📝 [Doc]: #1012 リサイズの掴み口は主ボタンでだけ掴むことを UI 仕様に書く",
+      "body": "- docs/06-ui.md の「リサイズハンドル」に、ハンドルと掴み口（帯）は主ボタンでだけ掴み、右・中ボタンで押しても掴まないことを 1 行足した\n\n背景:\n#1012 で、ハンドルを主ボタン以外で掴まない振る舞いをテストで固定した。キャンバスの掴み口の\nボタンについては仕様に記述が無く、テストが仕様に無い振る舞いを固定する形になっていた\n（rules/testing.md）。\n\n採用理由:\nツリーの行は「コンテキストメニュー」の節に「並べ替えのドラッグは主ボタンだけで始まる」とすでに\n書かれているので、同じ規則を「リサイズハンドル」の節に足して参照でつないだ。帯（ArtboardFrame）は\n以前から主ボタンだけで掴んでいるので、記述と実装はずれない。\n\n代替案:\n- 書かずに、キャンバスの掴み口をまとめて書く別 Issue にする: 今回足したテストの拠り所が無いまま\n  残るため却下\n- artboard の見出し（移動の掴み口）も一緒に書く: 「リサイズハンドル」の節の対象ではないので、\n  今回の範囲から外した\n\n影響とトレードオフ:\nartboard の移動（見出し）が主ボタンだけで掴むことは、まだ仕様に書かれていない。\n\n参考:\nRefs #1012\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019cFoeBwX9bRwSrRJdmKFKw",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -203,6 +203,7 @@ Figma 寄りの直接操作を採用する。\n   - **掴める箇所は、位置を書けるかどうかで変わる**（どの軸を掴めるかは上記のとおり `fixed` かどうかで決まるので、以下は 2 軸とも `fixed` のとき）。artboard と `placement: \"absolute\"` のノードは**8 箇所すべて**を掴める。既定の `placement: \"flow\"` のノードは座標を持たず始点側から縮めるための位置を書けないので（回っているときは終点側を掴んでも反対側は留まらないが、掴める箇所は変えない）、**終点側の辺を含む 5 箇所**（右辺中央・下辺中央・右下の角と、終点側の 1 軸だけを掴める右上・左下の角）が掴め、左上の角・上辺中央・左辺中央は目印として描くだけ（カーソルも変えない）\n   - **座標を書いていない artboard は、掴んだ時点で描かれている位置が起点になる**（移動のドラッグと同じ）。左辺・上辺から変えると座標が書かれるので、以後は自動配置ではなくなる（下記「編集操作の一覧」の artboard 操作）\n   - **掴み口は描いてあるハンドルより広い**。掴める辺は全長を掴める。**この帯は角でも 1 軸**で、2 本の帯が重なる角では幅が優先される（角の四角の外側・帯の内側を押すと、幅が固定なら幅だけが変わる）。角とみなす範囲を決めるのは掴み口全体の設計になるため、そこは #578 に残している\n+  - ハンドルと掴み口（帯）は**主ボタンでだけ掴む**。右・中ボタンで押しても掴まない（ツリーの行と同じ。下記「コンテキストメニュー」）\n   - **辺のスナップ**: 掴んだ辺が揃え先の辺の近くまで来ると、その辺と揃う位置へ吸い付く（長さが変わる。始点側の辺なら反対の辺を留めたまま位置も動く）。吸い付く距離（画面上の px）と書く値の丸め方は、ノードの移動の辺のスナップ（上記）と同じ。ノードの移動と違い**等間隔には吸い付かない**。揃え先どうしが同じ距離なら、ノードは**親 → 子の並び順**、artboard は **`.dcmp` の並び順**で先のものへ寄る（それぞれの移動と同じ）\n     - **寄せるのは掴んだ辺だけ**。掴んでいない辺と中心線は見ない（リサイズで動くのは掴んだ辺だけなので）。揃え先の側も**辺だけ**を見る（中心線と辺は組にしない）。右下などの角では、幅と高さがそれぞれ掴んだ辺で寄る\n     - 吸い付くのは**位置を書ける対象（artboard と `placement: \"absolute\"` のノード）だけ**。揃え先は**リサイズしても動かないもの**に限る",
+          "patchLines": 8,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "599374dce2ce053be31e905206b389d3ba4d85fa",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T15:19:54Z",
+      "subject": "📝 [Doc]: #1012 描いてあるハンドルの上では中ボタンでもパンしないことを UI 仕様に書く",
+      "body": "- docs/06-ui.md「パン」の例外に、掴める描いてあるハンドル（四角）の上では中ボタンでもパンせず、何も起きないことを足した\n- 帯の上の中ボタンはパンになること、揃えるかは #1101 で決めることを併記した\n\n背景:\n#1012 でハンドルを主ボタン以外で掴まないようにした。ハンドルの器は土台（canvas-surface）の\n兄弟で、パンは土台の onPointerDownCapture でしか始まらない。そのため、四角の上で中ボタンを\n押すと、掴みもパンもしない状態になった。一方「パン」節は中ボタンのドラッグでパンするとだけ\n書いており、例外には space の場合しか挙げていなかった。実装検証で structure / harness /\ncomment / ui の 4 つのレビューが、同じずれを指摘した。\n\n採用理由:\n挙動のほうはこの PR で変えず、今の挙動を仕様に例外として書いた。中ボタンでもパンさせるには、\n器を土台の中へ移すなど土台の当たり判定の設計に手を入れる必要があり、#1012 のゴール（主ボタン\n以外で掴まない・次の左クリックを飲まない）の外だから。対象は「掴める」四角に限った。掴めない\n四角は pointerEvents: none で押下が下へ抜け、パンになるため。\n\n代替案:\n- 四角の上でも中ボタンでパンさせる: 帯と揃うが、土台の当たり判定の作り直しになる。\n  #1101 に分けたため、この PR では採らない\n- 仕様に書かずに #1101 に任せる: 「パン」節と実装が食い違ったままになるため却下\n\n影響とトレードオフ:\n四角と帯とで、中ボタンの結果が違うことを仕様として認める形になる。#1101 で揃えたら、この行は\n消す。\n\n参考:\nRefs #1012\nRelates to #1101\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019cFoeBwX9bRwSrRJdmKFKw",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -219,6 +219,7 @@ Figma 寄りの直接操作を採用する。\n - **Text のインライン編集**: 掘りきった Text をさらにダブルクリックすると `content` をその場で編集する。ダブルクリックは 1 階層ずつ掘る操作（上記「キャンバスのクリックが選ぶ階層」）なので、**N 階層目の Text は N 回のダブルクリック**で編集に入る（1 回目〜N-1 回目は掘るのに使われる）\n - **パン**: **space を押しながらのドラッグ**と**中ボタンのドラッグ**で表示を動かす。修飾キーなしのホイールでも動く（そちらは押さずに回すだけ）。space を押している間はキャンバスのどこを掴んでもパンで、artboard やノードは掴めない（掴めることを示さないよう、手のひらのカーソルも space を押している間だけ出す）\n   - **例外は描いてあるハンドル（四角）のうち掴める箇所**。そこは space を押していてもリサイズの掴み口が優先される。辺の全長に広げた帯のほうは土台の上にあるので、space を押している間は掴めない\n+  - 同じ箇所では**中ボタンでもパンしない**（主ボタン以外では掴みもしないので、何も起きない）。帯の上の中ボタンはパンになる。揃えるかは #1101\n   - **空き領域と artboard の背景の左ドラッグはパンではない**（範囲選択になる。上記「範囲選択」）。artboard の枠にフォーカスがあるときの space も選択ではなくパンの構えで、枠をキーボードから選ぶのは Enter だけ\n - **ズーム**: 上部バーの拡大 / 縮小 / 等倍リセットに加えて、**Shift+1 で文書全体**、**Shift+2 で選んでいるもの**が画面に収まる倍率と位置になる（Figma の Zoom to fit / Zoom to selection）\n   - 収める対象の外側には**余白を空ける**。artboard の見出しと選択の枠は箱の外側に描かれるので、端へ密着させると切れて見えるため",
+          "patchLines": 8,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "b39bc47ffbc8085105523056a0c245b3dffd02c0",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-17T15:19:54Z",
+      "subject": "📝 [Doc]: #1012 右ボタンから守っている要素をテストのコメントで名指しする",
+      "body": "- artboard-canvas.context-menu.test.tsx の右ボタンのテストのコメントを、「中身とリサイズの帯は枠の判定で、描いてあるハンドルは自分の判定で守っている（掴むフックはボタンを見ない）」に直した\n\n背景:\nこれまでのコメントは「中身とリサイズの帯を右ボタンから守っているのは枠の判定だけ（掴む側は\nボタンを見ない）」だった。#1012 で、ハンドルの四角は枠を通さず自分の onPointerDown でボタンを\n見るようになった。そのため「だけ」がハンドルも含むように読めてしまい、「掴む側」がフックを\n指すのか要素を指すのかも曖昧になった（comment-reviewer の指摘）。\n\n採用理由:\n守っている要素をそれぞれ名指しし、ボタンを見ないのはフック（grabAt / grabNode）だと書き分けた。\nテスト本体の対象は中身のままで、変えていない。\n\n代替案:\n- 「だけ」を消すだけにする: 「掴む側」の曖昧さが残るため却下\n- 中身のテストからハンドルの記述を外す: 帯とハンドルで守り方が違うことを、読む人が知る場所が\n  無くなるため却下\n\n影響とトレードオフ:\nコメントだけの変更で、テストの振る舞いは変わらない。コメントは 1 行増えた。\n\n参考:\nRefs #1012\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_019cFoeBwX9bRwSrRJdmKFKw",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -103,7 +103,8 @@ test(\"ファイルが不正でなければ同じ右クリックで受け口が\n \n test(\"右ボタンで中身のノードを押して動かしても、ノードは動かない\", () => {\n   /*\n-   * 中身とリサイズの帯を右ボタンから守っているのは枠の判定だけ（掴む側はボタンを見ない）。\n+   * 中身とリサイズの帯は枠の判定で、描いてあるハンドルは自分の判定で右ボタンから守っている\n+   * （掴むフックはボタンを見ない）。\n    * 掴むと、メニューを操作するあいだの動きがそのままノードの移動になる。\n    */\n   const onMoveNode = vi.fn();",
+          "patchLines": 10,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/session/selection-dig/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/__tests__/resize-handle-overlay.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/domains/unit/angle/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    }
+  ]
+}
