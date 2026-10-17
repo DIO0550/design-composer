@@ -1,0 +1,355 @@
+{
+  "version": 1,
+  "pr": 1103,
+  "sha": "8df447e3cdf1982d732b46058959bcf387884b31",
+  "issue": 1086,
+  "overview": {
+    "title": "import 規約の違反種別の一覧を検出器の docstring にまとめ、判定表で照合する",
+    "lead": "種別の綴りを書く場所が、検出器の docstring の一覧と `scan()` の `found` のキーの 2 か所だけになり、両者の並びを判定表が照合する。README・rules・push フックのコメントは参照だけになった。",
+    "before": [
+      {
+        "text": "種別の一覧が docstring・README・`rules/consistency.md` に手で写され、照合されていたのは docstring の件数と `groups` の行数だけだった"
+      },
+      {
+        "text": "docstring の種別名を改名しても、判定表は exit 0 で通っていた"
+      },
+      {
+        "text": "`scan()` は種別→受け皿の対応を `collected` 辞書と `groups` タプルの 2 回書いていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "`scan()` の対応は順序付きの `found` 辞書 1 つで、その並びが報告の順になる",
+        "message": "scan-report"
+      },
+      {
+        "text": "判定表は `found` のキーと docstring の一覧を並びまで照合し、改名・削除・並び替えを NG にする",
+        "message": "extract-kinds"
+      },
+      {
+        "text": "両方の取り出しが 0 件なら「取り出せなかった」として、食い違いとは別の NG を出す",
+        "message": "extract-kinds"
+      },
+      {
+        "text": "README・rules・push フックのコメントは種別を列挙せず、検出器の docstring を参照する"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "取り出しの範囲",
+        "text": "docstring 側はラベルと `n` を使う GNU sed のループで、BSD sed では確かめていない",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/lib/import-rule-cases.sh"
+        }
+      },
+      {
+        "title": "受け皿の辞書",
+        "text": "未知の種別は KeyError で落ちるが、判定表では捕まらず、実ツリーの走査(push 時・CI 時)で落ちる",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/lib/import-rule-violations.py"
+        }
+      },
+      {
+        "title": "ハーネスの層",
+        "text": "変更はすべてハーネスの層にある。アプリのコードは変わっていない",
+        "go": {
+          "kind": "layer",
+          "layer": "ハーネス"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "import 規約の検出器・判定表と、それを説明する README・rules"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/hooks/lib/import-rule-violations.py",
+      "name": "import 規約の検出器",
+      "role": "`src/` の import を走査し、違反を種別ごとに報告する",
+      "change": "受け皿を `found` 辞書 1 つにまとめ、docstring の一覧を唯一の一覧にした"
+    },
+    {
+      "path": ".claude/hooks/lib/import-rule-cases.sh",
+      "name": "判定表",
+      "role": "検出器へ小さなツリーを流し、報告の種別と件数を期待と比べる",
+      "change": "網羅検査の照合を件数から、`found` のキーと docstring の一覧の並びに変えた"
+    },
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "フックの README",
+      "role": "フックと検出器の目次",
+      "change": "検出器と push フックの行から種別の列挙を外した"
+    },
+    {
+      "path": ".claude/hooks/pre-push-import-rules.sh",
+      "name": "push 前の import 規約検査",
+      "role": "push の前に検出器を走らせ、違反があれば止める",
+      "change": "冒頭コメントから種別の部分的な列挙を外した"
+    },
+    {
+      "path": "rules/consistency.md",
+      "name": "整合性規約",
+      "role": "feature の構成とネストの規範",
+      "change": "feature 系 5 種別の列挙を、検出器の docstring への参照にした"
+    }
+  ],
+  "messages": [
+    {
+      "id": "run-detector",
+      "from": ".claude/hooks/pre-push-import-rules.sh",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "kind": "qry",
+      "name": "src を走査する",
+      "code": "python3 lib/import-rule-violations.py",
+      "via": "exec",
+      "returns": "種別ごとの違反の報告と終了コード"
+    },
+    {
+      "id": "scan-report",
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "kind": "qry",
+      "name": "ケースごとに判定する",
+      "code": "python3 \"$detector\" src",
+      "via": "exec",
+      "returns": "`found` の並びで出る `[種別]` の見出し",
+      "status": "changed"
+    },
+    {
+      "id": "extract-kinds",
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "kind": "qry",
+      "name": "種別の一覧を取り出す",
+      "code": "sed -nE … \"$detector\"",
+      "via": "file",
+      "returns": "`found` のキーの並びと docstring の一覧の並び",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "cases",
+      "label": "判定表を走らせたとき",
+      "steps": [
+        "scan-report",
+        "extract-kinds"
+      ]
+    },
+    {
+      "id": "push",
+      "label": "push したとき",
+      "steps": [
+        "run-detector"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "06ccca8b83c0875e25844f46bbfae3c78aa472db",
+      "phase": "core",
+      "role": "受け皿を `found` 辞書 1 つにまとめ、判定表の照合を並びの一致に変える",
+      "why": "判定表は `groups` の行の形を sed で読んでいたので、検出器と判定表は同じコミットで変える必要があった。件数照合では改名を見逃していた。",
+      "flows": [
+        "cases"
+      ],
+      "review": [
+        "`found` の並びは前の `groups` と同じで、報告の順は変わっていない",
+        "`.get(kind)` をやめた結果、未知の種別は KeyError で落ちる"
+      ],
+      "before": [
+        {
+          "text": "判定表は docstring の「N つ」と `groups` の行数を比べていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "判定表は `found` のキーと docstring の一覧を並びまで比べる",
+          "message": "extract-kinds"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "start": 299,
+          "end": 308,
+          "text": "種別→受け皿の対応はここ 1 か所。キーの並びが報告の順"
+        }
+      ]
+    },
+    {
+      "sha": "d858acac7f0b9e15e5d8f518c92c76618066f8f4",
+      "phase": "core",
+      "role": "README と rules から種別の列挙を外す",
+      "why": "照合されない写しは、過去に README だけ古くなったことがある(`harness/records/pr-810.md`)。rules の行は残し、常時ロードの行数は変えていない。",
+      "review": [
+        "`rules/consistency.md` の 50 行目は、規範の前半を残して後半だけを参照にした"
+      ]
+    },
+    {
+      "sha": "736de2f3651139548e9cb0d49274980eec7cfae5",
+      "phase": "revise",
+      "role": "取り出しを docstring の一覧の範囲に絞り、文字種を縛らず、0 件を別の NG にする",
+      "why": "実装の検証で、solution / comment / duplication / harness の 4 本から、根本原因が同じ指摘が重なって出た。取り出しの絞り方が両側で揃っておらず、文字種の制約で数字や `_` を含む種別が黙って落ちていた。",
+      "flows": [
+        "cases"
+      ],
+      "review": [
+        "docstring 側は範囲アドレスではなく、見出しの後の空行を飛ばして `- ` が続く間だけ拾うループにした",
+        "両方 0 件のときだけ「取り出せなかった」を出し、片方だけ 0 件なら「食い違う」に入る"
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "start": 195,
+          "end": 198,
+          "text": "`found` 側は範囲アドレス、docstring 側は見出しから箇条書きが続く間だけを拾う"
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "start": 199,
+          "end": 209,
+          "text": "0 件どうしを一致と読まないための分岐。この分岐を守るケースは判定表に常設していない"
+        }
+      ]
+    },
+    {
+      "sha": "8df447e3cdf1982d732b46058959bcf387884b31",
+      "phase": "revise",
+      "role": "push フックの README 行と冒頭コメントから、種別の部分的な列挙を外す",
+      "why": "日本語で一部の種別だけを要約した列挙で、種別の綴りで grep しても拾えず、`feature-nested-from-outside` にもう追随していなかった(duplication-reviewer の指摘)。",
+      "review": [
+        "README の 357 行と 510〜569 行の probe レシピは、1 ケースごとの期待出力なので残した"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "cases",
+      "label": "import 規約の判定表",
+      "file": ".claude/hooks/lib/import-rule-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "kinds-match",
+      "suite": "cases",
+      "name": "検出器の種別が docstring の一覧と並びまで一致する",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "種別の綴りを書く 2 か所のずれを NG にする",
+      "given": "`found` のキーと docstring の一覧が、同じ 8 種別を同じ並びで持つ",
+      "when": "判定表を走らせる",
+      "then": "照合は通り、8 種別すべてに「期待するケースがある」の ok が出る。削除・改名・並び替えのどれを入れても「食い違う」の NG になる(手の変異で確認)",
+      "commit": "06ccca8b83c0875e25844f46bbfae3c78aa472db",
+      "excerpt": {
+        "path": ".claude/hooks/lib/import-rule-cases.sh",
+        "start": 195,
+        "end": 209,
+        "emphasis": [
+          {
+            "start": 205,
+            "end": 208
+          }
+        ],
+        "text": "reported_kinds=\"$(sed -nE '/^    found: dict\\[str, list\\[str\\]\\] = \\{$/,/^    \\}$/s/^        \"([^\"]+)\": .*,$/\\1/p' \"$detector\")\"\ndocumented_kinds=\"$(sed -nE \\\n  -e '/^報告する違反は次のとおり/{' -e ':blank' -e 'n' -e '/^$/bblank' \\\n  -e ':item' -e 's/^- `([^`]+)` — .*$/\\1/p' -e 'n' -e '/^- /bitem' -e '}' \"$detector\")\"\nnothing_extracted() {\n  [ -z \"$reported_kinds\" ] && [ -z \"$documented_kinds\" ]\n}\nif nothing_extracted; then\n  echo 'NG   検出器の種別を scan() と docstring のどちらからも取り出せなかった'\n  cases_failed=1\nelif [ \"$reported_kinds\" != \"$documented_kinds\" ]; then\n  printf 'NG   検出器の種別が docstring の一覧と食い違う（scan: %s / docstring: %s）\\n' \\\n    \"$(printf '%s' \"$reported_kinds\" | paste -sd ' ' -)\" \"$(printf '%s' \"$documented_kinds\" | paste -sd ' ' -)\"\n  cases_failed=1\nfi"
+      },
+      "targets": [
+        ".claude/hooks/lib/import-rule-cases.sh",
+        ".claude/hooks/lib/import-rule-violations.py"
+      ],
+      "covers": [
+        "extract-kinds"
+      ]
+    },
+    {
+      "id": "nothing-extracted",
+      "suite": "cases",
+      "name": "両方の取り出しが 0 件なら取り出せなかったとして NG",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "0 件どうしの一致を網羅と読まないため",
+      "given": "辞書の宣言行と docstring の見出しが、両方とも崩れている",
+      "when": "判定表を走らせる",
+      "then": "「どちらからも取り出せなかった」の NG で exit 1。判定表には常設せず、手の変異で確かめた",
+      "commit": "736de2f3651139548e9cb0d49274980eec7cfae5",
+      "covers": [
+        "extract-kinds"
+      ]
+    },
+    {
+      "id": "existing-cases",
+      "suite": "cases",
+      "name": "既存の 45 ケースが辞書化のあとも期待どおり",
+      "techniques": [
+        "regression"
+      ],
+      "why": "受け皿のまとめ直しで判定と報告の順が変わっていないこと",
+      "given": "判定表の 45 ケース",
+      "when": "`found` 辞書にまとめた検出器へ流す",
+      "then": "すべて ok。実際の `src` も違反 0 件 / 1059 ファイルのまま",
+      "covers": [
+        "scan-report"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "検出器の種別を足すとき・直すときに揃える場所が減る",
+    "lead": "ハーネスを使うセッションから見ると、違反の種別を足す・改名する・並べ替えるときに直す場所は検出器の中の 2 か所だけになり、どちらかを直し忘れると判定表が止める。",
+    "changed": {
+      "before": [
+        {
+          "text": "種別を足すと、検出器の 2 か所・説明の件数・目次・規約の 5 か所を手で揃える必要があった"
+        },
+        {
+          "text": "説明の種別名を書き換えても、判定表は通っていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "種別を足すときに直すのは、検出器の説明の一覧と受け皿の 2 か所と、判定表のケース",
+          "message": "extract-kinds"
+        },
+        {
+          "text": "一覧と受け皿の名前や並びがずれると、判定表が食い違いとして止める",
+          "message": "extract-kinds"
+        }
+      ]
+    },
+    "added": [
+      {
+        "label": "一覧を取り出せない",
+        "before": [],
+        "after": [
+          {
+            "text": "一覧も受け皿も読み取れなかったときは、食い違いではなく「取り出せなかった」と出して止める"
+          }
+        ],
+        "tests": [
+          "nothing-extracted"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "push の前に止まる違反の種類と、その報告の順は変わらない",
+        "tests": [
+          "existing-cases"
+        ]
+      },
+      {
+        "text": "規約の行数は変わらず、常に読み込む文章の上限検査も通る"
+      }
+    ]
+  }
+}
