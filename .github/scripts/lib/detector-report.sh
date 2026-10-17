@@ -13,7 +13,7 @@
 # 報告の行を 1 行以上出したあとに落ちたものは「違反あり」と読む(`check-added-*` では、その行が
 # 追加行に載らなければ緑になる)。塞ぐには全検出器の入口で例外を捕まえて終了コードを分けることになる。
 #
-# 使う側: `.github/scripts/check-added-*.sh` / `.claude/hooks/lib/pre-push-detector.sh`
+# 使う側: `.github/scripts/check-added-*.sh` / `.claude/hooks/lib/pre-push-detector.sh` / `.claude/hooks/lib/edit-detector.sh`
 
 # 検出器を python3 で走らせ、検査できたなら標準出力をそのまま書く。検査できなかったなら、
 # 標準出力を標準エラーへ回す(使い方の説明など、落ちた理由を出力に残すため)。
