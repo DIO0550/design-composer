@@ -5,6 +5,7 @@ import { PropEdit, type Props } from "@/domains/dcmp/node";
 import { Axes, type Axis } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { Px } from "@/domains/unit/px";
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";
 
@@ -27,12 +28,11 @@ type PlacementPropName =
  * 配置の指定を持つ 5 prop の名前（docs/03「配置の指定」）。
  * `PropEdit.clear` が空でない並びを求めるので、先頭を固定した形で持つ。
  */
-const PlacementPropNames: readonly [PlacementPropName, ...PlacementPropName[]] =
-  [
-    "placement",
-    ...Object.values(OffsetProps),
-    ...Object.values(Axes).map(Constraint.prop),
-  ];
+const PlacementPropNames: NonEmptyArray<PlacementPropName> = [
+  "placement",
+  ...Object.values(OffsetProps),
+  ...Object.values(Axes).map(Constraint.prop),
+];
 
 /**
  * フローから外れ、親からの相対座標で置かれる配置。

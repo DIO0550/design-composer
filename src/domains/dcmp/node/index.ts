@@ -1,3 +1,4 @@
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import {
   Json,
   type JsonCursor,
@@ -32,7 +33,7 @@ export type PropAssignment = Readonly<{
  * 空の並びは「何も書かないのに履歴だけ積む」編集になるので、非空のタプルで受ける。
  */
 export type PropEdit = Readonly<{
-  names: readonly [string, ...string[]];
+  names: NonEmptyArray<string>;
   value: Option<PropValue>;
 }>;
 
@@ -44,7 +45,7 @@ export const PropEdit = {
    * @param value それらの prop に設定する値
    * @returns `names` のすべてへ `value` を書く編集
    */
-  set(names: readonly [string, ...string[]], value: PropValue): PropEdit {
+  set(names: NonEmptyArray<string>, value: PropValue): PropEdit {
     return { names, value: Option.some(value) };
   },
 
@@ -56,7 +57,7 @@ export const PropEdit = {
    * @param names 未設定へ戻す prop の名前
    * @returns `names` のすべてを未設定へ戻す編集
    */
-  clear(names: readonly [string, ...string[]]): PropEdit {
+  clear(names: NonEmptyArray<string>): PropEdit {
     return { names, value: Option.none };
   },
 
