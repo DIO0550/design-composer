@@ -95,9 +95,8 @@ export const DrawnBounds = {
   /**
    * 名前で指したもののうち、その矩形に重なって描かれているもの（範囲選択が拾う相手）。
    *
-   * 回っているものは回った矩形で判定し、回る前の大きさが 0 のものは外す。外さないと
-   * 画面の左上へ引いた範囲が、まだレイアウトされていない / 畳まれているものをまとめて拾う
-   * （`CanvasBounds.hasArea` の doc）。
+   * 回っているものは回った矩形で判定し、面積を持たないもの（`measureRotatedWithArea`）は
+   * 外す。
    *
    * @param candidates 見る artboard / ノードの名前と、その画面上の向き（自分と祖先の合計）
    * @param bounds 重なりを見る矩形（client 座標）
@@ -111,14 +110,13 @@ export const DrawnBounds = {
   ): readonly string[] {
     return candidates
       .filter((candidate) => {
-        const measured = DrawnBounds.measureRotated(
+        const measured = measureRotatedWithArea(
           candidate.name,
           candidate.rotation,
           view,
         );
         return (
           Option.isSome(measured) &&
-          CanvasBounds.hasArea(measured.value.unrotated) &&
           RotatedBounds.overlaps(measured.value, bounds)
         );
       })
@@ -127,11 +125,38 @@ export const DrawnBounds = {
 } as const;
 
 /**
- * 名前で指した要素の矩形のうち、面積を持つもの。
+ * 名前で指した要素の、回る前の矩形が面積を持つときの矩形と向き。
  *
- * 要素が在っても**まだレイアウトされていない / 畳まれている**ときの実測は原点の 0×0 で
- * 返る（`CanvasBounds.hasArea` の doc）。そこに何かがあるとみなすと、原点のまわりへの
- * 操作がそれらを拾ってしまう。
+ * 要素が在っても、描かれる前や器が畳まれているときの実測は大きさ 0 で返る
+ * （`CanvasBounds.hasArea` の doc）。そこに何かがあるとみなすと、見えていないものを範囲
+ * 選択やスナップが拾ってしまう。
+ *
+ * @param name 描かれている artboard / ノードの名前
+ * @param rotation その名前のものの画面上の向き（自分と祖先の合計）
+ * @param view レイアウトの大きさを画面上の大きさへ直す倍率
+ * @returns 回る前の矩形と向き。`measureRotated` が `none` のときと、回る前の矩形が面積を
+ *   持たないときは `none`
+ */
+function measureRotatedWithArea(
+  name: string,
+  rotation: Angle,
+  view: CanvasView,
+): Option<RotatedBounds> {
+  return Option.flatMap(
+    DrawnBounds.measureRotated(name, rotation, view),
+    (measured) =>
+      CanvasBounds.hasArea(measured.unrotated)
+        ? Option.some(measured)
+        : Option.none,
+  );
+}
+
+/**
+ * 名前で指した要素の矩形のうち、面積を持つもの。面積で外す理由は
+ * `measureRotatedWithArea` と同じ。
+ *
+ * `measureRotatedWithArea` には乗せない。向きが 1 回りの倍数なら倍率は読まれないのに、
+ * それを渡すために倍率を受けていない `collectDrawnBounds` へ引数を足すことになる。
  *
  * @param name 描かれている artboard / ノードの名前
  * @returns 描かれている矩形。描かれていない / 面積を持たないなら `none`
