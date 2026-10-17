@@ -2,7 +2,6 @@ import type { Angle } from "@/domains/unit/angle";
 import { Offset } from "@/domains/unit/offset";
 import { SidePairs } from "@/domains/unit/side";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
-import { Option } from "@/utils/Option";
 
 /**
  * 画面上で回って描かれている矩形。回る前の矩形と、その中心まわりの向きの対
@@ -57,14 +56,11 @@ function overlapsEnclosing(
   pointOf: (ratio: Offset) => Offset,
   other: CanvasBounds,
 ): boolean {
-  const enclosing = CanvasBounds.enclosing([
+  const enclosing = CanvasBounds.enclosingAll([
     CanvasBounds.spanning(pointOf({ x: 0, y: 0 }), pointOf({ x: 1, y: 1 })),
     CanvasBounds.spanning(pointOf({ x: 1, y: 0 }), pointOf({ x: 0, y: 1 })),
   ]);
-  // 2 件を渡しているので none にはならない（enclosing が none を返すのは空のときだけ）
-  return (
-    Option.isSome(enclosing) && CanvasBounds.overlaps(enclosing.value, other)
-  );
+  return CanvasBounds.overlaps(enclosing, other);
 }
 
 export const RotatedBounds = {
@@ -102,13 +98,9 @@ export const RotatedBounds = {
    * @returns その箇所の画面上の点
    */
   pointAt(bounds: RotatedBounds, ratio: Offset): Offset {
-    const unrotated = bounds.unrotated;
     return rotatedAboutCenter(
-      unrotated,
-      {
-        x: unrotated.left + unrotated.width * ratio.x,
-        y: unrotated.top + unrotated.height * ratio.y,
-      },
+      bounds.unrotated,
+      CanvasBounds.pointAt(bounds.unrotated, ratio),
       bounds.rotation,
     );
   },
@@ -143,10 +135,7 @@ export const RotatedBounds = {
     );
     const onRotatedAxes = overlapsEnclosing(
       (ratio) =>
-        RotatedBounds.unrotatePoint(bounds, {
-          x: other.left + other.width * ratio.x,
-          y: other.top + other.height * ratio.y,
-        }),
+        RotatedBounds.unrotatePoint(bounds, CanvasBounds.pointAt(other, ratio)),
       bounds.unrotated,
     );
     return onScreenAxes && onRotatedAxes;
