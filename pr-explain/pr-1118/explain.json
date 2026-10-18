@@ -1,0 +1,924 @@
+{
+  "version": 1,
+  "pr": 1118,
+  "sha": "7cd8a0c55b649815d4f88088381193e2ddbed995",
+  "issue": 1101,
+  "overview": {
+    "title": "描いてあるリサイズハンドルの上の中ボタンでもパンする",
+    "lead": "描いてある四角（掴めるリサイズハンドル）の上で中ボタンを押して引くと、帯の上と同じく表示が動くようになった。space を押しながら主ボタンで四角を掴んだときは、これまでどおりリサイズが優先される。",
+    "before": [
+      {
+        "text": "四角の上で中ボタンを押して引いても、掴みもパンもせず何も起きない（器が土台の外にあり、土台の `onPointerDownCapture` へ届かない）"
+      },
+      {
+        "text": "帯の上の中ボタンはパンになり、同じ掴み口でも四角と帯で結果が割れていた"
+      },
+      {
+        "text": "パンはポインタを押した要素（`event.currentTarget`）で捕捉していた"
+      }
+    ],
+    "after": [
+      {
+        "text": "四角は主ボタン以外の押下を `onNonPrimaryPress` で親へ渡す",
+        "message": "handle-non-primary"
+      },
+      {
+        "text": "親は土台と同じ `startPanOnPanInput` に通し、判定は `pansCanvas`（space 中 or 中ボタン）の 1 本のまま",
+        "message": "pan-start"
+      },
+      {
+        "text": "パンの捕捉先は常に土台（`surfaceRef.current`）。四角から始めたパンでも move / up が土台に届く",
+        "message": "pan-move"
+      },
+      {
+        "text": "space + 右ボタンで四角を押しても、土台と同じくパンになる（docs には書かない / #1117）",
+        "message": "pan-start"
+      },
+      {
+        "text": "space + 主ボタンで四角を掴むと、これまでどおりリサイズになり表示は動かない",
+        "message": "handle-grab"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "捕捉先を土台に替えた",
+        "text": "押した要素で捕捉すると Chromium では move / up が四角から親へ流れ、土台に届かない。happy-dom は捕捉先へ送り直さないので、テストは「土台が捕捉している」ことを直接見ている",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts"
+        }
+      },
+      {
+        "title": "パンの入口が 2 つ・判定は 1 本",
+        "text": "土台の capture と四角の両方から同じ関数を呼ぶ。四角側でボタンを見て分岐していないかを見てほしい",
+        "go": {
+          "kind": "flow",
+          "id": "handle-middle-pan"
+        }
+      },
+      {
+        "title": "space と右ボタンの組",
+        "text": "space + 右ボタンでパンになるのは判定を 1 本にした帰結。右クリックのメニューと重なる点は #1117 に切り出し、docs には書いていない",
+        "go": {
+          "kind": "message",
+          "id": "pan-start"
+        }
+      },
+      {
+        "title": "実ブラウザで確かめた範囲",
+        "text": "Chromium（Storybook）でだけ操作して確かめた。Tauri の macOS / Linux が使う WebKit での捕捉の経路は見ていない",
+        "go": {
+          "kind": "layer",
+          "layer": "features / editor/features/canvas"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "pan",
+      "label": "パン",
+      "role": "キャンバスの表示を引いて動かす。四角の上の中ボタンも入口に加わった"
+    },
+    {
+      "id": "resize",
+      "label": "リサイズハンドル",
+      "role": "選んだノードの大きさを変える掴み口。主ボタン以外の押下を掴まずに親へ渡すようになった"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "四角の押下をパンの入口へつなぎ、パンの捕捉先を土台に揃える"
+    },
+    {
+      "layer": "docs",
+      "role": "「パン」の例外を主ボタンに絞り、四角の上の中ボタンがパンになることを書く"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "name": "キャンバス",
+      "role": "土台・中身・ハンドルの器を並べ、押下をパン・範囲選択・掴みへ振り分ける",
+      "feature": "pan",
+      "change": "土台の capture にあったパン開始を `startPanOnPanInput` に切り出し、四角の `onNonPrimaryPress` にも差し込んだ"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "name": "リサイズハンドル",
+      "role": "選んだノードの 8 箇所に四角を描き、主ボタンで掴む",
+      "feature": "resize",
+      "change": "prop `onNonPrimaryPress` を足し、主ボタン以外の押下を掴まずに親へ渡す"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "name": "表示",
+      "role": "倍率と位置を持ち、パンのハンドラを返す",
+      "feature": "pan",
+      "change": "パンの捕捉先を押した要素から土台に替え、土台が無ければパンを始めない"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+      "name": "範囲選択",
+      "role": "空き領域の左ドラッグで範囲を引く。押下のたびに前の操作の飲み込み待ちを解く",
+      "change": "飲み込み待ちを解く処理の doc に、土台の外のハンドルからの押下は通らないことを書き足した（挙動は変えていない）"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "name": "artboard の移動",
+      "role": "見出しを掴んで artboard を運ぶ",
+      "change": "「パンと同じ形」のコメントが崩れたので、捕捉するのは押した見出しそのものと書き直した",
+      "graph": false
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "キャンバス直接操作の「パン」の規則",
+      "change": "例外を「主ボタンで押したとき」に絞り、四角の上の中ボタンはパンになると書いた",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "handle-non-primary",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "kind": "evt",
+      "name": "主ボタン以外の押下を渡す",
+      "code": "onNonPrimaryPress(event)",
+      "via": "call",
+      "payload": "四角で起きた `pointerdown`（中・右ボタン）",
+      "status": "added"
+    },
+    {
+      "id": "handle-grab",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "kind": "cmd",
+      "name": "四角を掴む",
+      "code": "onGrab(grab.value, event)",
+      "via": "call",
+      "payload": "掴んだ箇所と主ボタンの `pointerdown`"
+    },
+    {
+      "id": "range-release",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+      "kind": "cmd",
+      "name": "飲み込み待ちを解く",
+      "code": "rangeSelect.dragHandlers.onPointerDownCapture()",
+      "via": "call",
+      "payload": "なし（土台の capture でだけ呼ぶ）"
+    },
+    {
+      "id": "pan-start",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "kind": "cmd",
+      "name": "パンを始める",
+      "code": "startPanOnPanInput(event) → panHandlers.onPointerDown(event)",
+      "via": "call",
+      "payload": "`pansCanvas` が真になった `pointerdown`（土台の capture か四角から）",
+      "returns": "なし。土台でポインタを捕捉し `drag_start` を送る",
+      "status": "changed"
+    },
+    {
+      "id": "pan-move",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "kind": "cmd",
+      "name": "パンで動かす",
+      "code": "panHandlers.onPointerMove(event)",
+      "via": "call",
+      "payload": "土台が受けた `pointermove`（捕捉しているので土台の外でも届く）"
+    },
+    {
+      "id": "pan-end",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "kind": "cmd",
+      "name": "パンを終える",
+      "code": "panHandlers.onPointerUp(event)",
+      "via": "call",
+      "payload": "土台が受けた `pointerup`。捕捉した土台を解放する"
+    }
+  ],
+  "flows": [
+    {
+      "id": "handle-middle-pan",
+      "label": "四角の上で中ボタンを引いたとき",
+      "steps": [
+        "handle-non-primary",
+        "pan-start",
+        "pan-move",
+        "pan-end"
+      ]
+    },
+    {
+      "id": "surface-pan",
+      "label": "土台の上でパンしたとき",
+      "steps": [
+        "range-release",
+        "pan-start",
+        "pan-move",
+        "pan-end"
+      ]
+    },
+    {
+      "id": "space-grab",
+      "label": "space を押しながら四角を主ボタンで掴んだとき",
+      "steps": [
+        "handle-grab"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "ae13a0b58b09273db871b9447fa9f264edf7b8a4",
+      "phase": "core",
+      "role": "四角の主ボタン以外の押下をパンの入口へ回し、パンの捕捉先を土台にする",
+      "why": "オーナーが「器は土台の外のまま、四角の側で中ボタンを土台のパンへ回す」（A-1）を選んだ。器を土台の中へ移す案は当たり判定の作り直しになり、space の例外まで変わるので却下。回すだけでは捕捉が四角に付いて Chromium で move / up が土台に届かないため、同じコミットで捕捉先を土台へ替えた。",
+      "flows": [
+        "handle-middle-pan",
+        "surface-pan"
+      ],
+      "review": [
+        "四角は判定せずに主ボタン以外を全部渡し、パンにするかは親の `pansCanvas` だけが決めている",
+        "捕捉先を `surfaceRef.current` に替えても、土台から始めたパンは `currentTarget` が土台なので挙動が変わらない",
+        "土台が null のときは捕捉もせず `drag_start` も送らない（ドラッグ中の状態だけが残らない）",
+        "space + 右ボタンでパンになるのは判定を 1 本にした帰結で、テストはあるが docs には書いていない（#1117）"
+      ],
+      "before": [
+        {
+          "text": "四角の上の中ボタンでは何も起きない"
+        },
+        {
+          "text": "パンは押した要素で捕捉する"
+        }
+      ],
+      "after": [
+        {
+          "text": "四角の上の中ボタンでパンになる",
+          "message": "handle-non-primary"
+        },
+        {
+          "text": "パンは常に土台で捕捉する",
+          "message": "pan-start"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "start": 136,
+          "end": 139,
+          "text": "主ボタン以外で `return` していた枝で、戻る前に親へ渡すだけ。ボタンの種類はここでは見ない"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+          "start": 159,
+          "end": 169,
+          "text": "捕捉先を押した要素から土台へ。null のときはパンそのものを始めない（計画検証の指摘 3）"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "start": 347,
+          "end": 347,
+          "text": "土台の capture と同じ入口を四角へ差し込む。子は親から渡された関数を呼ぶだけで、パンの判定を知らない"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 224,
+          "end": 224,
+          "text": "この時点では space + 右ボタンでもパンになると書いていた。次のコミットで外す"
+        }
+      ]
+    },
+    {
+      "sha": "7cd8a0c55b649815d4f88088381193e2ddbed995",
+      "phase": "revise",
+      "role": "実装検証の指摘を反映する（docs をパンの判定に絞る・改名・説明を 1 か所へ・テストのヘルパー）",
+      "why": "harness-reviewer が「ほかの場所と同じく扱う」は言い過ぎ（四角の上の右クリックは空き領域のメニューになる）と指摘したので、docs の言う範囲をパンの判定に絞り、space + 右ボタンの 1 文も外した。食い違いそのものは差分前からあるので #1117 に切り出した。ほかは naming / duplication / comment の指摘を 1 本にまとめて直した。",
+      "flows": [
+        "handle-middle-pan"
+      ],
+      "review": [
+        "docs 224 行が「パンになるか」に絞られ、右クリックのメニューについて何も約束していない",
+        "`startPanIfRequested` から `startPanOnPanInput` への改名が、`PanHandlers` の doc の語「パンを始める入力」と揃っている",
+        "範囲選択の飲み込み待ちの doc に足した「土台の外のハンドルからの押下は通らない」が、挙動の変更ではなく差分前からの事実の書き足しである"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 224,
+          "end": 224,
+          "text": "「ほかの場所と同じく扱う」から「パンになるかはほかの場所と同じ」へ。右クリックのメニューは #1117"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "start": 120,
+          "end": 131,
+          "text": "入口が 2 つあることの説明は `pansCanvas` の doc に 1 回だけ。ブロックコメントは器を土台の中へ移さない理由（Why not）だけにした"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+          "start": 84,
+          "end": 87,
+          "text": "主ボタンで掴む経路も差分前から通っていない。中・右ボタンは click を出さないので実害は無い"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "zoom-pan",
+      "label": "キャンバスのズームとパン",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "middle-moves",
+      "suite": "zoom-pan",
+      "name": "描いてあるハンドルの上で中ボタンを押して引くと、中身が同じだけ移動する",
+      "techniques": [
+        "regression",
+        "equivalence"
+      ],
+      "why": "この PR の本体。四角から親への受け渡し（`onNonPrimaryPress` の呼び出し）を消すか、配線を空関数にすると落ちる（test-reviewer の実測）",
+      "given": "`home` を選び、右辺の中央に四角が (460, 170) で描かれている",
+      "when": "四角の上で中ボタンを押し、土台の上で (+30, -20) 引いて離す",
+      "then": "中身の `transform` が `translate(30px, -20px)` になる",
+      "commit": "ae13a0b58b09273db871b9447fa9f264edf7b8a4",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+        "start": 164,
+        "end": 170,
+        "text": "test(\"描いてあるハンドルの上で中ボタンを押して引くと、中身が同じだけ移動する\", () => {\n  const handle = setupRightHandle();\n\n  dragFromHandle(handle, PointerButtons.Middle);\n\n  expect(canvasTransform()).toContain(\"translate(30px, -20px)\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "handle-non-primary",
+        "pan-start",
+        "pan-move"
+      ]
+    },
+    {
+      "id": "middle-capture",
+      "suite": "zoom-pan",
+      "name": "描いてあるハンドルの上で中ボタンを押すと、土台がポインタを捕捉する",
+      "techniques": [
+        "state"
+      ],
+      "why": "happy-dom は捕捉した要素へ move / up を送り直さないので、移動のテストだけでは四角で捕捉していても通る。捕捉先を `currentTarget` に戻すと、このテスト 1 件だけが落ちる（test-reviewer の実測）",
+      "given": "四角が描かれている",
+      "when": "四角の上で中ボタンを押す",
+      "then": "土台の `hasPointerCapture(PointerId)` が真",
+      "commit": "ae13a0b58b09273db871b9447fa9f264edf7b8a4",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+        "start": 172,
+        "end": 182,
+        "emphasis": [
+          {
+            "start": 181,
+            "end": 181
+          }
+        ],
+        "text": "test(\"描いてあるハンドルの上で中ボタンを押すと、土台がポインタを捕捉する\", () => {\n  /*\n   * happy-dom は捕捉した要素へ move / up を送り直さないので、上の移動のテストだけでは\n   * 押したハンドルのほうで捕捉していても通る。捕捉先そのものを見る。\n   */\n  const handle = setupRightHandle();\n\n  pressPointer(handle, { x: 460, y: 170 }, PointerButtons.Middle);\n\n  expect(canvasSurface().hasPointerCapture(PointerId)).toBe(true);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts"
+      ],
+      "covers": [
+        "pan-start"
+      ]
+    },
+    {
+      "id": "space-resize",
+      "suite": "zoom-pan",
+      "name": "space を押しながら掴めるハンドルを掴んで運ぶと、大きさが通知される",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "space の例外（四角ではリサイズが優先）を守る。#1012 の test-reviewer が、`holdSpace` と `resizeHandleAt` を組み合わせたテストが無いと指摘していた",
+      "given": "四角が描かれ、space を押している",
+      "when": "四角を主ボタンで押し、artboard の上で x=500 まで運んで離す",
+      "then": "大きさの通知が幅 400 で届く",
+      "commit": "ae13a0b58b09273db871b9447fa9f264edf7b8a4",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+        "start": 184,
+        "end": 200,
+        "text": "test(\"space を押しながら掴めるハンドルを掴んで運ぶと、大きさが通知される\", () => {\n  const onResize = vi.fn();\n  const handle = setupRightHandle(onResize);\n  holdSpace();\n\n  pressPointer(handle, { x: 460, y: 170 });\n  movePointer(screen.getByRole(\"button\", { name: \"home\" }), { x: 500, y: 170 });\n  releasePointer(screen.getByRole(\"button\", { name: \"home\" }), {\n    x: 500,\n    y: 170,\n  });\n\n  expect(onResize).toHaveBeenLastCalledWith(\n    ResizeEdit.create([{ axis: \"width\", length: 400 }]),\n    expect.anything(),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx"
+      ],
+      "covers": [
+        "handle-grab"
+      ]
+    },
+    {
+      "id": "space-no-pan",
+      "suite": "zoom-pan",
+      "name": "space を押しながら掴めるハンドルを掴んで運んでも、中身は動かない",
+      "techniques": [
+        "state",
+        "equivalence"
+      ],
+      "why": "主ボタンまで親へ渡すと space 中はパンになってしまう。その壊し方で落ちる（test-reviewer の実測）",
+      "given": "四角が描かれ、space を押している",
+      "when": "四角を主ボタンで押し、土台の上で (+30, -20) 引いて離す",
+      "then": "中身の `transform` が `translate(0px, 0px)` のまま",
+      "commit": "ae13a0b58b09273db871b9447fa9f264edf7b8a4",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+        "start": 202,
+        "end": 209,
+        "text": "test(\"space を押しながら掴めるハンドルを掴んで運んでも、中身は動かない\", () => {\n  const handle = setupRightHandle();\n  holdSpace();\n\n  dragFromHandle(handle);\n\n  expect(canvasTransform()).toContain(\"translate(0px, 0px)\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx"
+      ],
+      "covers": [
+        "handle-grab"
+      ]
+    },
+    {
+      "id": "space-right-pans",
+      "suite": "zoom-pan",
+      "name": "space を押しながら右ボタンでハンドルを押して引くと、中身が動く",
+      "techniques": [
+        "equivalence",
+        "state"
+      ],
+      "why": "判定が土台と四角で 1 本であることを守る。四角側で中ボタンだけを見る実装にすると落ちる（test-reviewer の実測）",
+      "given": "四角が描かれ、space を押している",
+      "when": "四角の上で右ボタンを押し、土台の上で (+30, -20) 引いて離す",
+      "then": "中身の `transform` が `translate(30px, -20px)` になる",
+      "commit": "ae13a0b58b09273db871b9447fa9f264edf7b8a4",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+        "start": 211,
+        "end": 218,
+        "text": "test(\"space を押しながら右ボタンでハンドルを押して引くと、中身が動く\", () => {\n  const handle = setupRightHandle();\n  holdSpace();\n\n  dragFromHandle(handle, PointerButtons.Secondary);\n\n  expect(canvasTransform()).toContain(\"translate(30px, -20px)\");\n});"
+      },
+      "values": {
+        "columns": [
+          "space",
+          "押すボタン",
+          "中身"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "押している",
+              "右",
+              "動く"
+            ]
+          },
+          {
+            "cells": [
+              "押していない",
+              "右",
+              "動かない（次のテスト）"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "押していない",
+              "中",
+              "動く（上のテスト）"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "handle-non-primary",
+        "pan-start"
+      ]
+    },
+    {
+      "id": "right-no-pan",
+      "suite": "zoom-pan",
+      "name": "space を押さずに右ボタンでハンドルを押して引いても、中身は動かない",
+      "techniques": [
+        "boundary",
+        "equivalence"
+      ],
+      "why": "上のテストの対。`pansCanvas` を見ずに受け取った押下を常にパンにする実装はここで落ちる（計画検証の指摘 1。ガードを消すと 20 件以上落ちる）",
+      "given": "四角が描かれ、space は押していない",
+      "when": "四角の上で右ボタンを押し、土台の上で (+30, -20) 引いて離す",
+      "then": "中身の `transform` が `translate(0px, 0px)` のまま",
+      "commit": "ae13a0b58b09273db871b9447fa9f264edf7b8a4",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+        "start": 220,
+        "end": 226,
+        "text": "test(\"space を押さずに右ボタンでハンドルを押して引いても、中身は動かない\", () => {\n  const handle = setupRightHandle();\n\n  dragFromHandle(handle, PointerButtons.Secondary);\n\n  expect(canvasTransform()).toContain(\"translate(0px, 0px)\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "pan-start"
+      ]
+    },
+    {
+      "id": "middle-space-handle",
+      "suite": "zoom-pan",
+      "name": "space を押しながら中ボタンでハンドルを押して引くと、中身が動く",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "space と中ボタンが両方そろう組。判定は「または」なので動くはずだが、テストは無い",
+      "given": "四角が描かれ、space を押している",
+      "when": "四角の上で中ボタンを押して引く",
+      "then": "中身が動く",
+      "todo": true,
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ]
+    },
+    {
+      "id": "surface-null",
+      "suite": "zoom-pan",
+      "name": "土台がまだ無いときに押しても、パンは始まらない",
+      "techniques": [
+        "error"
+      ],
+      "why": "土台が null のガードは消しても 0 件しか落ちない（土台は常に描かれるので観測できない）。守っているのはコードの読みだけ",
+      "given": "土台の要素がまだマウントされていない",
+      "when": "パンを始める押下を受ける",
+      "then": "捕捉もドラッグ中の状態も残らない",
+      "todo": true,
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "リサイズの四角の上でも、中ボタンで表示を動かせるようになった",
+    "lead": "選んだ要素の周りに出る四角の上で中ボタンを押して引くと、ほかの場所と同じく表示が動きます。space を押しながら四角を左ボタンで掴むと、これまでどおり大きさの変更になります。",
+    "changed": {
+      "before": [
+        {
+          "text": "四角の上で中ボタンを押して引いても、何も起きなかった"
+        },
+        {
+          "text": "辺に沿った細い帯の上ならパンになり、四角と帯で結果が違っていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "四角の上で中ボタンを押して引くと、表示が引いた分だけ動く",
+          "message": "handle-non-primary"
+        },
+        {
+          "text": "四角でも帯でも、中ボタンなら同じくパンになる",
+          "message": "pan-start"
+        }
+      ],
+      "text": "引いている間のカーソルは、ほかの場所のパンと同じ握った手になります（Chromium で確認）。"
+    },
+    "tables": [
+      {
+        "label": "四角の上で押したときに起きること",
+        "gist": "決めるのは押したボタンと、space を押しているかの 2 つ。変わったのは左ボタン以外の行。",
+        "text": "左ボタンは space を押していても大きさの変更が優先されます。右ボタンを space なしで押したときのメニューは別の課題（#1117）です。",
+        "rowHeads": [
+          {
+            "id": "primary",
+            "label": "左ボタン"
+          },
+          {
+            "id": "middle",
+            "label": "中ボタン"
+          },
+          {
+            "id": "secondary",
+            "label": "右ボタン"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "free",
+            "label": "space を押していない"
+          },
+          {
+            "id": "space",
+            "label": "space を押している"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "primary",
+            "columnHead": "free",
+            "result": "四角を掴んで大きさを変える"
+          },
+          {
+            "rowHead": "primary",
+            "columnHead": "space",
+            "result": "四角を掴んで大きさを変える。表示は動かない",
+            "tests": [
+              "space-resize",
+              "space-no-pan"
+            ]
+          },
+          {
+            "rowHead": "middle",
+            "columnHead": "free",
+            "result": "表示が動く",
+            "was": "何も起きない",
+            "tests": [
+              "middle-moves",
+              "middle-capture"
+            ]
+          },
+          {
+            "rowHead": "middle",
+            "columnHead": "space",
+            "result": "表示が動く",
+            "was": "何も起きない",
+            "tests": [
+              "middle-space-handle"
+            ]
+          },
+          {
+            "rowHead": "secondary",
+            "columnHead": "free",
+            "result": "表示は動かない",
+            "tests": [
+              "right-no-pan"
+            ]
+          },
+          {
+            "rowHead": "secondary",
+            "columnHead": "space",
+            "result": "表示が動く",
+            "was": "何も起きない",
+            "note": "ほかの場所と同じ。メニューとの重なりは別の課題",
+            "tests": [
+              "space-right-pans"
+            ]
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "space を押しながら四角を左ボタンで掴むと、大きさの変更が優先される",
+        "tests": [
+          "space-resize",
+          "space-no-pan"
+        ]
+      },
+      {
+        "text": "四角の外（空き領域や要素の上）で始めるパンの動きは変わらない"
+      },
+      {
+        "text": "四角を右ボタンや中ボタンで押しても、四角は掴まれない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "capture-handler",
+      "category": "react · イベント",
+      "label": "`onPointerDownCapture` と `stopPropagation`",
+      "gist": "画面のある要素で起きた押下を、その要素より先に祖先の要素で受け取るための仕組み。React では、ハンドラの名前の末尾に `Capture` を付けると[[捕捉の段|capture-phase]]で呼ばれる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "ブラウザのイベントは、外側の要素から押された要素へ降りていく[[捕捉の段|capture-phase]]と、押された要素から外側へ上っていく[[浮上の段|bubble-phase]]の 2 回で配られる。`onPointerDown` は浮上の段で、`onPointerDownCapture` は捕捉の段で呼ばれる。途中のハンドラが `event.stopPropagation()` を呼ぶと、その先へは配られない。"
+        },
+        {
+          "kind": "caution",
+          "text": "どちらの段も通るのは、押された要素の祖先だけ。四角を重ねる器は[[土台|surface]]の兄弟なので、四角で起きた押下は土台の `onPointerDownCapture` を通らない。この PR が四角から親へ関数で渡す形にしたのはそのため。"
+        },
+        {
+          "kind": "memo",
+          "text": "四角から渡された押下で `stopPropagation` を外しても落ちるテストは無い。四角の祖先に `pointerdown` を受けるハンドラが今は無いため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "lineRange": {
+            "start": 240,
+            "end": 243
+          },
+          "text": "土台の捕捉の段で、範囲選択の飲み込み待ちを解いてからパンの入口へ通す",
+          "shas": [
+            "ae13a0b58b09273db871b9447fa9f264edf7b8a4",
+            "7cd8a0c55b649815d4f88088381193e2ddbed995"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "lineRange": {
+            "start": 124,
+            "end": 130
+          },
+          "text": "パンを始めるなら `stopPropagation` で子へ渡さない",
+          "shas": [
+            "ae13a0b58b09273db871b9447fa9f264edf7b8a4"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "pan-entry"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "pointer-capture",
+      "category": "dom · pointer events",
+      "label": "`setPointerCapture`",
+      "gist": "ポインタを押したまま要素の外へ出ても、その後の移動と離す操作を決まった要素に届け続けるための DOM の仕組み。押下のときに要素へ[[ポインタの番号|pointer-id]]を渡して呼ぶ。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "element.setPointerCapture(pointerId)"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "pointerId",
+              "type": "number",
+              "text": "どのポインタを捕まえるか。押下のイベントが持つ[[ポインタの番号|pointer-id]]をそのまま渡す"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "呼んだあとの `pointermove` / `pointerup` は、ポインタがどこにあっても `element` に向けて配られる。離すと暗黙に解放されるが、パンの離す側では `releasePointerCapture` を明示して呼んでいる。捕まえている要素は `element.hasPointerCapture(pointerId)` で確かめられる。"
+        },
+        {
+          "kind": "caution",
+          "text": "押した要素（`event.currentTarget`）で捕まえると、四角から始めたパンでは移動が四角に届き、[[土台|surface]]のハンドラが受け取れない。そこで捕まえる先を常に土台にした。テストを走らせる [[happy-dom|happy-dom]] は捕まえた要素へイベントを送り直さないので、移動のテストだけではこの違いが見えない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+          "lineRange": {
+            "start": 159,
+            "end": 171
+          },
+          "text": "パンを始めるとき、押した要素ではなく土台で捕まえる。土台が無ければ始めない",
+          "shas": [
+            "ae13a0b58b09273db871b9447fa9f264edf7b8a4",
+            "7cd8a0c55b649815d4f88088381193e2ddbed995"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+          "lineRange": {
+            "start": 172,
+            "end": 182
+          },
+          "text": "捕まえている先が土台であることをテストで見る",
+          "shas": [
+            "ae13a0b58b09273db871b9447fa9f264edf7b8a4"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "pan-entry"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "pan-entry",
+      "category": "canvas · パン",
+      "label": "パンの入口",
+      "gist": "パンを始めるかの判定 `pansCanvas` を 1 本に保ったまま、[[土台|surface]]の捕捉の段と四角の 2 か所から同じ `startPanOnPanInput` を呼ぶ。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`pansCanvas` は「space を押している、または中ボタン」で真になり、ボタンが右かどうかは見ない。四角は主ボタン以外の押下を判定せずに `onNonPrimaryPress` で渡すだけで、パンにするかは親が決める。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+            "start": 112,
+            "end": 130,
+            "emphasis": [
+              {
+                "start": 124,
+                "end": 130
+              }
+            ],
+            "text": "  /**\n   * その `pointerdown` がパンを始めるか（docs/06-ui.md「キャンバス直接操作」）。\n   * space を押している間はどこを掴んでもパンで、中ボタンは単独でパン。\n   * 土台の capture と、土台の外にある掴めるハンドル（主ボタン以外の押下だけを渡す）の\n   * 両方から引かれる。\n   */\n  const pansCanvas = (event: ReactPointerEvent<HTMLElement>): boolean =>\n    isSpaceHeld || PointerButton.isMiddle(event);\n  /*\n   * ハンドルの器を土台の中へ移せば例外（space 中の四角はリサイズ優先 / docs/06-ui.md「パン」）は\n   * 消せるが、掴み口と土台の当たり判定の作り直しになる。\n   */\n  const startPanOnPanInput = (event: ReactPointerEvent<HTMLElement>) => {\n    if (!pansCanvas(event)) {\n      return;\n    }\n    event.stopPropagation();\n    panHandlers.onPointerDown(event);\n  };"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "子の feature 部品はパンの判定を知らない。親が関数を差し込む（`rules/consistency.md`「feature の構成とネスト」）。"
+        },
+        {
+          "kind": "spec",
+          "text": "四角を主ボタンで押したときは space を押していてもリサイズが優先され、主ボタン以外でパンになるかはほかの場所と同じ（`docs/06-ui.md`「パン」）。"
+        },
+        {
+          "kind": "history",
+          "text": "器を土台の中へ移せば入口は 1 つで済み、space の例外も消える。当たり判定の作り直しになり仕様も 1 つ変わるので、オーナー判断で採らなかった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "lineRange": {
+            "start": 112,
+            "end": 130
+          },
+          "text": "`pansCanvas` と `startPanOnPanInput`",
+          "shas": [
+            "ae13a0b58b09273db871b9447fa9f264edf7b8a4",
+            "7cd8a0c55b649815d4f88088381193e2ddbed995"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "lineRange": {
+            "start": 341,
+            "end": 347
+          },
+          "text": "四角の `onNonPrimaryPress` に同じ入口を差し込む",
+          "shas": [
+            "ae13a0b58b09273db871b9447fa9f264edf7b8a4",
+            "7cd8a0c55b649815d4f88088381193e2ddbed995"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "lineRange": {
+            "start": 131,
+            "end": 139
+          },
+          "text": "主ボタン以外は掴まずに親へ渡す",
+          "shas": [
+            "ae13a0b58b09273db871b9447fa9f264edf7b8a4",
+            "7cd8a0c55b649815d4f88088381193e2ddbed995"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "capture-handler",
+        "pointer-capture"
+      ],
+      "tests": [
+        "middle-moves",
+        "space-right-pans",
+        "right-no-pan",
+        "space-no-pan",
+        "middle-space-handle"
+      ],
+      "flows": [
+        "handle-middle-pan",
+        "surface-pan"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "capture-phase",
+      "label": "捕捉の段",
+      "text": "イベントが外側の要素から押された要素へ向かって配られる段。祖先が子より先に受け取れる。"
+    },
+    {
+      "id": "bubble-phase",
+      "label": "浮上の段",
+      "text": "イベントが押された要素から外側の祖先へ向かって配られる段。React の普通の `onXxx` はここで呼ばれる。"
+    },
+    {
+      "id": "surface",
+      "label": "土台",
+      "text": "キャンバスでパンと範囲選択を受ける面（`data-testid=\"canvas-surface\"`）。リサイズの四角を重ねる器はこの中ではなく隣に置かれている。"
+    },
+    {
+      "id": "pointer-id",
+      "label": "ポインタの番号",
+      "text": "マウス・指・ペンの 1 本ごとにブラウザが振る番号（`event.pointerId`）。捕まえる・解放するときにどのポインタかを指す。"
+    },
+    {
+      "id": "happy-dom",
+      "label": "happy-dom",
+      "text": "テストでブラウザの代わりに DOM を真似るライブラリ。実際の描画や、捕まえた要素へのイベントの送り直しまではしない。"
+    }
+  ]
+}
