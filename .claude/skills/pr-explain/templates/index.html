@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-9uQ6VfOvVn8teUkh2vOyxgNlROuy55sg8kzvBIlUQN4='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-GllSgqqYbDSzdsYM0VhBpKv+dVZpYqkvvNIRwGHUGbQ='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1398,6 +1398,9 @@ button.change-item:hover { background: var(--track); }
     isScreen,
     /**
      * ハッシュが指す画面を選び、指していなければ構造マップを選ぶ。前に開いた画面は見ない。
+     *
+     * 前に開いた画面を読むと、別の PR の解説も同じ画面で開いてしまうので読まない。
+     * PR ごとのキーで覚える形にはしない。同じ PR を開き直したときに構造マップで開かなくなる。
      * @param hash `location.hash`(`#` の有無は問わない)
      * @returns 開く画面
      */
