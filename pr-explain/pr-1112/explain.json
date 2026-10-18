@@ -1,0 +1,1407 @@
+{
+  "version": 1,
+  "pr": 1112,
+  "sha": "f1e4cc8790b01e727a75cc1a3ecbb13555fad2fd",
+  "issue": 1110,
+  "overview": {
+    "title": "PR 解説ページをハッシュ無しなら構造マップで開き、技術の手引きを言語の初心者に向けて書く",
+    "lead": "解説ページは URL のハッシュだけで開く画面を決め、ハッシュが無ければ前に開いた画面にかかわらず構造マップで開く。あわせて、技術の手引き(`primers`)と用語(`terms`)の読み手を、その言語・フレームワークに初めて触れる人にした。",
+    "before": [
+      {
+        "text": "ハッシュ無しで開くと、`localStorage` の `prExplain.screen`(どの PR でも最後に開いた画面)で開いていた"
+      },
+      {
+        "text": "`ScreenChoice.choose({ hash, saved })` はハッシュ → 保存値 → 構造マップの順に選んでいた"
+      },
+      {
+        "text": "開いたままハッシュを消す・知らない値にすると、保存値(直前の画面)が選ばれて画面が変わらなかった"
+      },
+      {
+        "text": "技術の手引きは、その言語を知っている読み手を前提に書かれていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "ハッシュが画面を指していればその画面、指していなければ構造マップで開く",
+        "message": "cases-choose"
+      },
+      {
+        "text": "`choose(hash)` はハッシュだけを受け取り、`prExplain.screen` の読み書きは無くなった",
+        "message": "cases-choose"
+      },
+      {
+        "text": "開いたままハッシュを消す・知らない値にすると、構造マップへ移る"
+      },
+      {
+        "text": "固定スクリプトが変わったので、CSP の `script-src` のハッシュ値を直した",
+        "message": "check-template"
+      },
+      {
+        "text": "技術の手引きと用語は、構文・組み込みの型・標準ライブラリ・約束事を説明する読み手に向けて書く。見本の言語の節と用語も書き直した",
+        "message": "copy-sample"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "開く画面の選び方",
+        "text": "前に開いた画面を読まないことは判定表では守れず、ブラウザでの表示確認だけが確かめている",
+        "go": {
+          "kind": "message",
+          "id": "cases-choose"
+        }
+      },
+      {
+        "title": "ハッシュを消したときの動き",
+        "text": "開いたままハッシュを消すと構造マップへ移るようになった。ゴールの延長として意図した変化",
+        "go": {
+          "kind": "file",
+          "path": ".claude/skills/pr-explain/templates/index.html"
+        }
+      },
+      {
+        "title": "見本の書き直し",
+        "text": "計画では却下していた見本の書き直しを、検証の指摘で取り消して入れた",
+        "go": {
+          "kind": "flow",
+          "id": "write-explain"
+        }
+      },
+      {
+        "title": "ハーネスの層",
+        "text": "変更はすべて pr-explain スキルとその判定表の中",
+        "go": {
+          "kind": "layer",
+          "layer": "ハーネス"
+        }
+      },
+      {
+        "title": "技術の手引きの読み手",
+        "text": "既知としないものの線引きを 1 か所で定めた",
+        "go": {
+          "kind": "feature",
+          "id": "reader"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "screen",
+      "label": "開く画面",
+      "role": "解説ページを開いたとき・ハッシュが変わったときに出す画面を、ハッシュだけで決める"
+    },
+    {
+      "id": "reader",
+      "label": "技術の手引きの読み手",
+      "role": "技術の手引きと用語を、その言語・フレームワークに初めて触れる人に向けて書かせる"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "解説ページの枠・その判定表・解説を書く手順と見本"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/skills/pr-explain/templates/index.html",
+      "name": "解説ページの枠",
+      "role": "地図と解説から 5 画面を組む固定スクリプトと CSP",
+      "feature": "screen",
+      "change": "`ScreenChoice.choose` をハッシュだけで選ぶ形にし、`ScreenStoreKey`・`openScreen` を消した。CSP のハッシュ値を直した"
+    },
+    {
+      "path": ".github/scripts/pr-explain-core-cases.sh",
+      "name": "核の判定表",
+      "role": "固定スクリプトを node の `vm` で動かし、画面に依らない部品の答えを確かめる",
+      "feature": "screen",
+      "change": "開く画面のケースを、保存値前提の 5 件からハッシュだけの 2 件に置き換えた"
+    },
+    {
+      "path": ".github/scripts/check-pr-explain-template.py",
+      "name": "枠の検査",
+      "role": "枠の CSP の `script-src` のハッシュ値が固定スクリプトと合っているかを見る"
+    },
+    {
+      "path": ".claude/skills/pr-explain/SKILL.md",
+      "name": "解説の手順",
+      "role": "解説を書く手順・形・書き方",
+      "feature": "reader",
+      "change": "ハッシュが無ければ構造マップで開くことと、技術の手引きの読み手を書き足した"
+    },
+    {
+      "path": ".claude/skills/pr-explain/templates/explain.json",
+      "name": "解説の見本",
+      "role": "書き手が写して書き始める解説。検査の判定表の基準にもなる",
+      "feature": "reader",
+      "change": "言語の節と用語を初心者向けに書き直し、用語を 5 語足した"
+    },
+    {
+      "path": ".github/scripts/build-pr-explain-cases.sh",
+      "name": "解説の検査の判定表",
+      "role": "見本を 1 か所ずつ崩して検査が落ちることを確かめる"
+    }
+  ],
+  "messages": [
+    {
+      "id": "cases-choose",
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "qry",
+      "name": "開く画面を問う",
+      "code": "ScreenChoice.choose(\"#story\")",
+      "via": "call",
+      "payload": "ハッシュの文字列(`#` の有無は問わない)",
+      "returns": "開く画面の名前(`story` や `map`)",
+      "status": "changed"
+    },
+    {
+      "id": "check-template",
+      "from": ".github/scripts/check-pr-explain-template.py",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "qry",
+      "name": "CSP のハッシュ値を突き合わせる",
+      "code": "script_problems(template, directives)",
+      "via": "file",
+      "payload": "枠の HTML",
+      "returns": "食い違いの報告(合っていれば空)"
+    },
+    {
+      "id": "copy-sample",
+      "from": ".claude/skills/pr-explain/SKILL.md",
+      "to": ".claude/skills/pr-explain/templates/explain.json",
+      "kind": "qry",
+      "name": "見本を写す",
+      "code": "手順 2: 見本 templates/explain.json をリポジトリの外の作業用ファイルへ写して書く",
+      "via": "file",
+      "returns": "書き始めの解説"
+    },
+    {
+      "id": "check-sample",
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/explain.json",
+      "kind": "qry",
+      "name": "見本を崩して検査する",
+      "code": "sample=\"$repo_root/.claude/skills/pr-explain/templates/explain.json\"",
+      "via": "file",
+      "returns": "崩した見本ごとの検査の結果"
+    }
+  ],
+  "flows": [
+    {
+      "id": "check-page",
+      "label": "枠を検査するとき",
+      "steps": [
+        "check-template",
+        "cases-choose"
+      ]
+    },
+    {
+      "id": "write-explain",
+      "label": "解説を書くとき",
+      "steps": [
+        "copy-sample",
+        "check-sample"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7",
+      "phase": "core",
+      "role": "開く画面をハッシュだけで選び、最後に開いた画面の保存をやめる",
+      "why": "保存値はどの PR のページでも同じ置き場にあるので、別の PR でも前の画面で開いていた。読むのをやめると書き込みは誰も読まない値になるので、読み書きの両方を消した。タブ押下でハッシュを書き換える `history.replaceState` は、再読み込みと URL の共有で同じ画面を開くために残した。",
+      "flows": [
+        "check-page"
+      ],
+      "review": [
+        "開いたままハッシュを消すと構造マップへ移るようになった変化を、意図どおりとしてよいか",
+        "`BrowserStore` はパネルの幅と確認の印が使うので残し、利用者に残った `prExplain.screen` は掃除しない判断でよいか",
+        "判定表のケースを 5 件から 2 件にしたとき、消えた観点が「保存値を使う」仕様と一緒に消えるものだけか"
+      ],
+      "before": [
+        {
+          "text": "`choose({ hash, saved })` がハッシュ → 保存値 → 構造マップの順に選ぶ"
+        },
+        {
+          "text": "タブ押下と `hashchange` は `openScreen` を通り、開いた画面を `prExplain.screen` へ書く"
+        }
+      ],
+      "after": [
+        {
+          "text": "`choose(hash)` がハッシュ → 構造マップの順に選ぶ",
+          "message": "cases-choose"
+        },
+        {
+          "text": "タブ押下と `hashchange` は `show` を直接呼び、何も書かない"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1404,
+          "end": 1408,
+          "text": "保存値の分岐を消し、ハッシュが画面を指さなければ構造マップを返す"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 6157,
+          "end": 6161,
+          "text": "`openScreen` を消し、`navigateTo` はハッシュを書き換えてから `show` を呼ぶだけになった"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 6169,
+          "end": 6169,
+          "text": "ハッシュが変わったときも保存せずに出す。ハッシュを消すと構造マップへ移るのはここ"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 5,
+          "end": 5,
+          "text": "固定スクリプトが変わったので `script-src` のハッシュ値を計算し直した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "start": 771,
+          "end": 786,
+          "text": "ハッシュが画面を指す道と、指さない道(無い・`#` だけ・知らない値)の 2 件"
+        }
+      ]
+    },
+    {
+      "sha": "01c78bd188a25291b81af1c63b85724ef1eb8775",
+      "phase": "core",
+      "role": "技術の手引きと用語の読み手を、その言語・フレームワークに初めて触れる人にする",
+      "why": "技術の手引きは、この PR の技術を知らない人には向いていたが、言語そのものに慣れていない人は想定していなかった。codebase の節も同じ画面にあり同じところで詰まるので当てたが、規約は既知としてよいとした。用語の 1〜2 文の上限は守り、長くなる語は primer へ逃がす。",
+      "review": [
+        "読み手の変更を `primers` と `terms` に限り、`overview`・`impact` の読み手を変えていないこと",
+        "用語の 1〜2 文の上限を残したこと"
+      ],
+      "before": [
+        {
+          "text": "解説全体の読み手は、規約を知っていてこの PR の技術を知らない人"
+        }
+      ],
+      "after": [
+        {
+          "text": "`primers` と `terms` だけは、その言語・フレームワークに初めて触れる人が読み手"
+        }
+      ]
+    },
+    {
+      "sha": "5ad201c118e64bc6c1ff45794ba1aa50ff20b48e",
+      "phase": "revise",
+      "role": "前に開いた画面を読まない理由を `choose` の doc に残す",
+      "why": "検証(comment-reviewer)で、保存値を読まなくした理由が Issue にしか無いと指摘された。保存値を戻すと依頼の不具合がそのまま戻り、判定表では防げないので、Why と、却下した PR ごとのキーの Why not を 1 行ずつ足した。",
+      "review": [
+        "Why と Why not の 2 行が、コードだけを読む人に保存値を戻させない書き方になっているか"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1400,
+          "end": 1403,
+          "text": "読まない理由と、PR ごとのキーにしない理由"
+        }
+      ]
+    },
+    {
+      "sha": "9eb4185b3dfef9a40bbfd8522c39b15e79cbb93e",
+      "phase": "revise",
+      "role": "既知としないものを 1 か所で定め、置き場を kind ごとに書く",
+      "why": "duplication-reviewer が、既知としないものを 3 か所で列挙していて言い回しが割れていると指摘した。harness-reviewer は、置き場の指示が language の節だけを前提にしていて、見本の codebase の節と逆の答えを出すと指摘した。定義を読み手の段落 1 か所に置き、表は参照だけにした。",
+      "review": [
+        "線引き(言語の構文・組み込みの型・標準ライブラリ・約束事は説明し、プログラミング全般の語は説明しない)が依頼の「言語初心者」に合っているか",
+        "差分に出ない語を 1〜2 文に収まる粒度で terms に置く、という行き先で足りるか"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 188,
+          "end": 190,
+          "text": "既知としないものの定義はここ 1 か所"
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 202,
+          "end": 203,
+          "text": "表の行は「上の読み手」を参照するだけにし、置き場を kind ごとに書いた"
+        }
+      ]
+    },
+    {
+      "sha": "f1e4cc8790b01e727a75cc1a3ecbb13555fad2fd",
+      "phase": "revise",
+      "role": "見本の言語の節と用語を初心者向けに書き換える",
+      "why": "solution-reviewer が、書き手は見本を写して書き始めるので、文章だけ直しても見本の書きぶりが効き続けると指摘した。計画の却下理由「判定表が見本を崩して使う」は、判定表が見本の文言に依存していないので当たらないと分かり、段の数・kind・キーを保った文言の書き換えとして入れた。",
+      "flows": [
+        "write-explain"
+      ],
+      "review": [
+        "段の数・kind・キー・id を変えず、文言だけを書き換えていること",
+        "足した 5 語の用語が、どれも本文の印から指されていること"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "start": 157,
+          "end": 168,
+          "text": "言語の節: 何のための引数かから書き、呼ばれる時機・受け取る値・キーワード専用引数を足した"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "start": 201,
+          "end": 211,
+          "text": "用語に stdlib・list・callable・keyword-only・dict を足した"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "core",
+      "label": "核の判定表",
+      "file": ".github/scripts/pr-explain-core-cases.sh"
+    },
+    {
+      "id": "display",
+      "label": "表示確認",
+      "file": ".claude/skills/pr-explain/templates/index.html"
+    }
+  ],
+  "tests": [
+    {
+      "id": "hash-screen",
+      "suite": "core",
+      "name": "開く画面は、ハッシュが画面を指していればその画面",
+      "techniques": [
+        "equivalence",
+        "boundary"
+      ],
+      "why": "ハッシュで画面を指した URL(共有した URL・再読み込み)は、その画面で開かなければならない",
+      "given": "ブラウザに残した値は渡さない(`choose` はハッシュだけを受け取る)",
+      "when": "`#story`・`#test`・`#impact`・`#primer`・`#` の無い `story` で `ScreenChoice.choose` を呼ぶ",
+      "then": "それぞれ `story`・`test`・`impact`・`primer`・`story` が返る(既定の `map` ではない)",
+      "commit": "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 771,
+        "end": 781,
+        "emphasis": [
+          {
+            "start": 774,
+            "end": 778
+          }
+        ],
+        "text": "  {\n    label: \"開く画面は、ハッシュが画面を指していればその画面\",\n    actual: () => [\n      ScreenChoice.choose(\"#story\"),\n      ScreenChoice.choose(\"#test\"),\n      ScreenChoice.choose(\"#impact\"),\n      ScreenChoice.choose(\"#primer\"),\n      ScreenChoice.choose(\"story\"),\n    ],\n    expected: [\"story\", \"test\", \"impact\", \"primer\", \"story\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "values": {
+        "columns": [
+          "ハッシュ",
+          "開く画面"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`#story`",
+              "`story`"
+            ]
+          },
+          {
+            "cells": [
+              "`#test`",
+              "`test`"
+            ]
+          },
+          {
+            "cells": [
+              "`#impact`",
+              "`impact`"
+            ]
+          },
+          {
+            "cells": [
+              "`#primer`",
+              "`primer`"
+            ]
+          },
+          {
+            "cells": [
+              "`story`(`#` 無し)",
+              "`story`"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "cases-choose"
+      ]
+    },
+    {
+      "id": "fallback-map",
+      "suite": "core",
+      "name": "ハッシュが無いか画面を指していなければ構造マップ",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "ハッシュ無しで開いたときは、前に何を開いていても一番左の構造マップで開く",
+      "given": "ブラウザに残した値は渡さない",
+      "when": "空の文字列・`#` だけ・`#nope` で `ScreenChoice.choose` を呼ぶ",
+      "then": "どれも `map` が返る",
+      "commit": "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 782,
+        "end": 786,
+        "emphasis": [
+          {
+            "start": 784,
+            "end": 785
+          }
+        ],
+        "text": "  {\n    label: \"ハッシュが無いか画面を指していなければ構造マップ\",\n    actual: () => [ScreenChoice.choose(\"\"), ScreenChoice.choose(\"#\"), ScreenChoice.choose(\"#nope\")],\n    expected: [\"map\", \"map\", \"map\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "values": {
+        "columns": [
+          "ハッシュ",
+          "開く画面"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "(空)",
+              "`map`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`#`",
+              "`map`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`#nope`",
+              "`map`"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "cases-choose"
+      ]
+    },
+    {
+      "id": "no-read-saved",
+      "suite": "display",
+      "name": "ブラウザに前の画面が残っていても、ハッシュ無しなら構造マップで開く",
+      "techniques": [
+        "regression",
+        "state"
+      ],
+      "why": "依頼の不具合そのもの。`choose` の中で `localStorage` を直接読む・配線で保存値を先に渡す形に戻しても、判定表は通る(test-reviewer が壊して確かめた)",
+      "given": "`localStorage` に `prExplain.screen` = `\"test\"` が残っている",
+      "when": "ハッシュ無しでページを開く",
+      "then": "構造マップで開く。Playwright の表示確認では `map` だったが、自動の検査は無い",
+      "todo": true,
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ]
+    },
+    {
+      "id": "no-write-screen",
+      "suite": "display",
+      "name": "タブを押しても、開いた画面をブラウザに書き残さない",
+      "techniques": [
+        "regression",
+        "state"
+      ],
+      "why": "書き戻しが復活すると、読む側が戻ったときに不具合も戻る。`navigateTo` で書き戻しても判定表は通る",
+      "given": "`localStorage` に `prExplain.screen` が無い",
+      "when": "`#test` で開き、タブで変更の経緯へ移る",
+      "then": "ハッシュは `#story` になり、`prExplain.screen` は書かれない。Playwright の表示確認ではそうなったが、自動の検査は無い",
+      "todo": true,
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ]
+    },
+    {
+      "id": "clear-hash-while-open",
+      "suite": "display",
+      "name": "開いたままハッシュを知らない値にすると、構造マップへ移る",
+      "techniques": [
+        "state"
+      ],
+      "why": "この PR で変わった振る舞い。`hashchange` からの配線は判定表を通らない",
+      "given": "`#impact` で振る舞いの画面を開いている",
+      "when": "アドレス欄のハッシュを `#nope` に書き換える",
+      "then": "構造マップへ移る。Playwright の表示確認では `map` だったが、自動の検査は無い",
+      "todo": true,
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "解説ページは、アドレスで画面を指していなければいつも構造マップで開く",
+    "lead": "どの PR の解説ページも、アドレスの末尾で画面を指していなければ一番左の構造マップから始まります。解説を書くセッションにとっては、技術の手引きの読み手が変わりました。",
+    "changed": {
+      "before": [
+        {
+          "text": "アドレスの末尾に画面の指定が無いと、別の PR も含めて前に最後に開いた画面で開いていた"
+        },
+        {
+          "text": "開いたまま末尾の指定を消しても、直前の画面のまま変わらなかった"
+        },
+        {
+          "text": "技術の手引きは、その言語を知っている人に向けて書いていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "アドレスの末尾に画面の指定が無いと、前に何を開いていても構造マップで開く",
+          "message": "cases-choose"
+        },
+        {
+          "text": "開いたまま末尾の指定を消す・知らない指定にすると、構造マップへ移る"
+        },
+        {
+          "text": "技術の手引きと用語は、その言語に初めて触れる人に向けて、構文や標準の機能から説明して書く",
+          "message": "copy-sample"
+        }
+      ],
+      "text": "解説はどの PR でも構造マップから読み始める作りなので、毎回左端のタブへ戻す手間が無くなります。"
+    },
+    "tables": [
+      {
+        "label": "どの画面で開くか",
+        "gist": "開く画面を決めるのは、アドレスの末尾の指定だけになった。",
+        "text": "列は、そのページをどういう経緯で見ているか。ハッシュとは、アドレスの # から後ろの部分のことです。",
+        "rowHeads": [
+          {
+            "id": "points",
+            "label": "ハッシュが画面を指す",
+            "note": "例: #test"
+          },
+          {
+            "id": "none",
+            "label": "ハッシュが無い"
+          },
+          {
+            "id": "unknown",
+            "label": "ハッシュが画面を指さない",
+            "note": "例: #nope"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "fresh",
+            "label": "初めて開く"
+          },
+          {
+            "id": "visited",
+            "label": "前に別の画面を開いたことがある"
+          },
+          {
+            "id": "while-open",
+            "label": "開いたままアドレスを書き換える"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "points",
+            "columnHead": "fresh",
+            "result": "指した画面で開く",
+            "tests": [
+              "hash-screen"
+            ]
+          },
+          {
+            "rowHead": "points",
+            "columnHead": "visited",
+            "result": "指した画面で開く",
+            "tests": [
+              "hash-screen"
+            ]
+          },
+          {
+            "rowHead": "points",
+            "columnHead": "while-open",
+            "result": "指した画面へ移る",
+            "tests": [
+              "hash-screen"
+            ]
+          },
+          {
+            "rowHead": "none",
+            "columnHead": "fresh",
+            "result": "構造マップで開く",
+            "tests": [
+              "fallback-map"
+            ]
+          },
+          {
+            "rowHead": "none",
+            "columnHead": "visited",
+            "result": "構造マップで開く",
+            "was": "前に最後に開いた画面で開く",
+            "situation": "別の PR の解説でテストの画面を開いたあと、この PR の解説をハッシュ無しで開く",
+            "tests": [
+              "fallback-map",
+              "no-read-saved"
+            ]
+          },
+          {
+            "rowHead": "none",
+            "columnHead": "while-open",
+            "result": "構造マップへ移る",
+            "was": "直前の画面のまま",
+            "tests": [
+              "fallback-map"
+            ]
+          },
+          {
+            "rowHead": "unknown",
+            "columnHead": "fresh",
+            "result": "構造マップで開く",
+            "tests": [
+              "fallback-map"
+            ]
+          },
+          {
+            "rowHead": "unknown",
+            "columnHead": "visited",
+            "result": "構造マップで開く",
+            "was": "前に最後に開いた画面で開く",
+            "tests": [
+              "fallback-map",
+              "no-read-saved"
+            ]
+          },
+          {
+            "rowHead": "unknown",
+            "columnHead": "while-open",
+            "result": "構造マップへ移る",
+            "was": "直前の画面のまま",
+            "tests": [
+              "fallback-map",
+              "clear-hash-while-open"
+            ]
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "タブを押すとアドレスの末尾がその画面の指定になり、再読み込みや共有した URL でも同じ画面が開く",
+        "tests": [
+          "hash-screen",
+          "no-write-screen"
+        ]
+      },
+      {
+        "text": "パネルの幅と、レビューポイントの確認の印は、これまでどおりブラウザに残る"
+      },
+      {
+        "text": "解説を置くときの検査は変わらない。技術の手引きの書きぶりは機械では判定しない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "csp",
+      "category": "HTML · ブラウザ",
+      "label": "Content-Security-Policy",
+      "gist": "ページの中で動いてよいプログラムを、ページ自身がブラウザへ宣言するための仕組み。外から紛れ込んだ[[インラインスクリプト|inline-script]]を動かさないために使う。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "<meta http-equiv=\"Content-Security-Policy\" content=\"script-src 'sha256-…'\">"
+        },
+        {
+          "kind": "text",
+          "text": "`<meta>` 要素の `content` に、`script-src` のような種類ごとに許すものを `;` で区切って並べる。`'sha256-…'` と書くと、ブラウザはページの中の[[インラインスクリプト|inline-script]]ごとに[[ハッシュ値|hash-digest]]を計算し、書いた値と一致したものだけを動かす。"
+        },
+        {
+          "kind": "caution",
+          "text": "スクリプトを 1 文字でも変えると値が合わなくなり、ブラウザはそのスクリプトを動かさない(ページは何も描かれない)。この PR でも `choose` を変えたコミットと、その doc を足したコミットの 2 回、値を計算し直している。"
+        },
+        {
+          "kind": "memo",
+          "text": "ここでの sha256 の[[ハッシュ値|hash-digest]]は、URL の[[ハッシュ|fragment]](`#` から後ろ)とは関係がない。名前が同じなだけで、別のもの。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 5,
+            "end": 5
+          },
+          "text": "枠の CSP。`script-src` の値を固定スクリプトに合わせて直した",
+          "shas": [
+            "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7",
+            "5ad201c118e64bc6c1ff45794ba1aa50ff20b48e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "screen-choice"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "arrow-params",
+      "category": "JavaScript · 構文",
+      "label": "アロー関数と引数の分割代入",
+      "gist": "[[アロー関数|arrow]]は関数を短く書くための構文。引数の位置に `{ hash, saved }` と書くと、渡された[[オブジェクト|object-literal]]から同じ名前のキーの値を取り出して、そのまま引数として使える(分割代入)。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "choose: (hash) => { … }"
+        },
+        {
+          "kind": "text",
+          "text": "この PR は `choose: ({ hash, saved }) => {…}` を `choose: (hash) => {…}` に変えた。前は `choose({ hash: \"#story\", saved: \"test\" })` のように[[オブジェクト|object-literal]]を 1 つ渡して中から 2 つの値を取り出していたが、今は文字列を 1 つそのまま渡す。"
+        },
+        {
+          "kind": "memo",
+          "text": "`Object.freeze({ … })` で包んだ[[オブジェクト|object-literal]]は、あとからキーを足したり値を書き換えたりできなくなる。`ScreenChoice` はこの形で、名前の付いた関数をまとめた入れ物になっている。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1407,
+            "end": 1411
+          },
+          "text": "`choose` の引数を、分割代入のオブジェクトから文字列 1 つにした",
+          "shas": [
+            "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "screen-choice"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "local-storage",
+      "category": "JavaScript · ブラウザ",
+      "label": "`localStorage`",
+      "gist": "ページを閉じても消えない値を、ブラウザの中に残しておくための置き場。[[オリジン|origin]]ごとに 1 つあり、同じオリジンのページはどれも同じ値を読み書きする。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "localStorage.getItem(key)\nlocalStorage.setItem(key, value)"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "key",
+              "type": "string",
+              "text": "値を引くための名前。このページは前に `\"prExplain.screen\"` を使っていた"
+            },
+            {
+              "name": "value",
+              "type": "string",
+              "text": "残す値。文字列しか残せないので、ほかの値は[[JSON|json]]の文字列にしてから渡す",
+              "note": "getItem の戻り値は、無ければ null"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "解説ページはどの PR のものも `dio0550.github.io` という同じ[[オリジン|origin]]にある。だから前は、ある PR で最後に開いた画面が、別の PR のページを開いたときにも読まれていた。この PR はこの値の読み書きをやめた。"
+        },
+        {
+          "kind": "caution",
+          "text": "保存を無効にしたブラウザやプライベートブラウズでは、読み書きで[[例外|exception]]が起きることがある。このページでは `BrowserStore` がそれを受けて「残っていない」として扱う。"
+        },
+        {
+          "kind": "memo",
+          "text": "`BrowserStore` は、パネルの幅とレビューポイントの確認の印を残すのにまだ使っているので消していない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 2801,
+            "end": 2822
+          },
+          "text": "`BrowserStore` が `localStorage` の読み書きを包む。開いた画面のキー `ScreenStoreKey` はこの直後にあったが消した",
+          "shas": [
+            "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "screen-choice"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "location-hash",
+      "category": "JavaScript · ブラウザ",
+      "label": "`location.hash`",
+      "gist": "いま開いている[[URL|url]]の[[ハッシュ|fragment]]を、プログラムから読むための値。ページを読み込み直さずに、ページの中で何を見せるかを URL に持たせるのに使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`location` は[[`window`|window]]の下にある組み込みのオブジェクトで、`location.hash` は URL の `#` から後ろを、`#` を含めた文字列で返す。ハッシュが無いときと、`#` だけのときは空の文字列になる。"
+        },
+        {
+          "kind": "text",
+          "text": "このページは、先頭の `#` を[[正規表現|regex]]で取り除いてから画面の名前と比べる。だから `#story` でも `story` でも同じ画面を指す。"
+        },
+        {
+          "kind": "caution",
+          "text": "ハッシュはサーバーへ送られないので、ハッシュだけ違う URL を開いても同じファイルが返る。画面を切り替えているのはページの中のプログラムで、ブラウザではない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 6160,
+            "end": 6160
+          },
+          "text": "開く画面を、`location.hash` だけを渡して選ぶ",
+          "shas": [
+            "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1408,
+            "end": 1409
+          },
+          "text": "先頭の `#` を取り除き、画面の名前か確かめる",
+          "shas": [
+            "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "hashchange",
+        "replace-state",
+        "screen-choice"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "replace-state",
+      "category": "JavaScript · ブラウザ",
+      "label": "`history.replaceState`",
+      "gist": "ページを読み込み直さずに、アドレス欄の[[URL|url]]だけを書き換えるための関数。いまの[[履歴の項目|history-entry]]を置き換えるので、戻るボタンの行き先は増えない。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "history.replaceState(state, unused, url)"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "state",
+              "type": "any",
+              "text": "その[[履歴の項目|history-entry]]に添えておく値。このページは使わないので `null` を渡す"
+            },
+            {
+              "name": "unused",
+              "type": "string",
+              "text": "昔の名残で、いまのブラウザは使わない。空の文字列を渡す"
+            },
+            {
+              "name": "url",
+              "type": "string",
+              "text": "書き換えたあとの URL。`#test` のように `#` から書くと、いまの URL の[[ハッシュ|fragment]]だけが変わる",
+              "note": "省けば URL は変わらない"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "このページはタブを押すと、ハッシュをその画面のものに書き換えてから画面を出す。再読み込みや URL の共有で同じ画面が開くのは、ブラウザに残した値ではなく、このハッシュのおかげ。"
+        },
+        {
+          "kind": "caution",
+          "text": "`replaceState` でハッシュを変えても、`hashchange` の[[イベント|event]]は起きない。だからタブを押したときは、書き換えたあとで自分で画面を出している。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 6162,
+            "end": 6165
+          },
+          "text": "`navigateTo` はハッシュを書き換えて画面を出すだけになった(保存しない)",
+          "shas": [
+            "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "location-hash",
+        "hashchange"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "hashchange",
+      "category": "JavaScript · ブラウザ",
+      "label": "`hashchange` イベント",
+      "gist": "URL の[[ハッシュ|fragment]]が変わったことを、ページのプログラムに知らせる[[イベント|event]]。アドレス欄でハッシュを書き換えたときや、`#…` へのリンクを押したとき、戻るボタンでハッシュだけが戻ったときに起きる。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "window.addEventListener(\"hashchange\", listener)"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "type",
+              "type": "string",
+              "text": "待つ[[イベント|event]]の名前。ここでは `\"hashchange\"`"
+            },
+            {
+              "name": "listener",
+              "type": "Function",
+              "text": "イベントが起きるたびに呼ぶ[[リスナー|listener]]"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "このページは、ハッシュが変わるたびに `choose` で画面を選び直す。前は選び直すときにもブラウザに残した画面を見ていたので、ハッシュを消しても直前の画面のままだった。いまはハッシュが画面を指していなければ構造マップへ移る。"
+        },
+        {
+          "kind": "caution",
+          "text": "ハッシュが変わっても、ページは読み込み直されない。画面が切り替わるのは、このイベントを受けたプログラムが画面を出し直すから。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 6172,
+            "end": 6172
+          },
+          "text": "ハッシュが変わったら、保存せずに選び直した画面を出す",
+          "shas": [
+            "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "location-hash",
+        "replace-state",
+        "screen-choice"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "node-vm",
+      "category": "Node.js · bash",
+      "label": "`vm` モジュール",
+      "gist": "[[Node.js|node]]で、文字列で持っている JavaScript を、ほかと切り離した置き場で動かすための[[モジュール|module]]。ブラウザ用に書いたプログラムを、ブラウザ無しで試すのに使える。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "const context = vm.createContext({});\nvm.runInContext(script, context);"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "script",
+              "type": "string",
+              "text": "動かす JavaScript の文字列。ここではページの `<script>` の中身を抜き出したもの"
+            },
+            {
+              "name": "context",
+              "type": "object",
+              "text": "`createContext` で作った置き場。動かしたプログラムにとっての[[グローバル|global]]になる"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "判定表は bash のスクリプトで、[[ヒアドキュメント|heredoc]]で書いた JavaScript を `node -` に渡して動かす。その中で `vm` を使ってページの固定スクリプトを動かすと、[[DOM|dom]]の入口の `document` が無いので、ページは画面を組まずに部品を `prExplainCore` として置く。判定表はそれを取り出し、`ScreenChoice.choose(\"#story\")` のように直接呼ぶ。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/pr-explain-core-cases.sh",
+            "start": 173,
+            "end": 179,
+            "emphasis": [
+              {
+                "start": 173,
+                "end": 175
+              }
+            ],
+            "text": "const context = vm.createContext({});\nvm.runInContext(script, context);\nconst core = context.prExplainCore;\nif (core === undefined) {\n  console.error(\"document の無い評価で prExplainCore が置かれていない\");\n  process.exit(2);\n}",
+            "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "画面の組み立て(タブを押す・ハッシュが変わる)はこの方法では動かない。そこはブラウザで開いて確かめる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "lineRange": {
+            "start": 173,
+            "end": 175
+          },
+          "text": "固定スクリプトを `vm` の中で動かし、`prExplainCore` を取り出す"
+        }
+      ],
+      "seeAlso": [
+        "core-cases"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "screen-choice",
+      "category": "解説ページ · 画面",
+      "label": "開く画面の選び方",
+      "gist": "ページを開いたときと[[ハッシュ|fragment]]が変わったときに、どの画面を出すかを `ScreenChoice.choose` が決める。材料はハッシュだけになった。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1395,
+            "end": 1412,
+            "emphasis": [
+              {
+                "start": 1407,
+                "end": 1411
+              }
+            ],
+            "text": "  /** どの画面を開くか。 */\n  const ScreenChoice = Object.freeze({\n    Screens,\n    isScreen,\n    /**\n     * ハッシュが指す画面を選び、指していなければ構造マップを選ぶ。前に開いた画面は見ない。\n     *\n     * 前に開いた画面を読むと、別の PR の解説も同じ画面で開いてしまうので読まない。\n     * PR ごとのキーで覚える形にはしない。同じ PR を開き直したときに構造マップで開かなくなる。\n     * @param hash `location.hash`(`#` の有無は問わない)\n     * @returns 開く画面\n     */\n    choose: (hash) => {\n      const fromHash = hash.replace(/^#/, \"\");\n      if (isScreen(fromHash)) return fromHash;\n      return Screens.Map;\n    },\n  });",
+            "openingLine": "<script>"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "ハッシュが画面の名前を指していればその画面、それ以外は構造マップ。ブラウザに残した値は読まない。"
+        },
+        {
+          "kind": "spec",
+          "text": "SKILL.md「5 画面と材料」: ハッシュが無ければ構造マップで開く(前に開いた画面は覚えない)。"
+        },
+        {
+          "kind": "history",
+          "text": "前は「ハッシュ → 最後に開いた画面として残した値 → 構造マップ」の順に選び、タブを押すたびに開いた画面を `localStorage` に残していた。"
+        },
+        {
+          "kind": "memo",
+          "text": "PR ごとに分けて覚える形にもしていない。同じ PR を開き直したときに構造マップで開かなくなるため(doc の Why not)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1396,
+            "end": 1412
+          },
+          "text": "`ScreenChoice` と、読まない理由の doc",
+          "shas": [
+            "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7",
+            "5ad201c118e64bc6c1ff45794ba1aa50ff20b48e"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 6160,
+            "end": 6177
+          },
+          "text": "タブ・ハッシュの変化・初めの表示の配線",
+          "shas": [
+            "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "lineRange": {
+            "start": 14,
+            "end": 14
+          },
+          "text": "ハッシュが無ければ構造マップで開く、と書き足した",
+          "shas": [
+            "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "arrow-params",
+        "location-hash",
+        "hashchange",
+        "local-storage"
+      ],
+      "tests": [
+        "hash-screen",
+        "fallback-map",
+        "no-read-saved",
+        "no-write-screen",
+        "clear-hash-while-open"
+      ],
+      "flows": [
+        "check-page"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "core-cases",
+      "category": "ハーネス · 判定表",
+      "label": "核の判定表",
+      "gist": "ページの固定スクリプトを[[Node.js|node]]の中で動かし、画面に依らない部品の答えを、表に並べたケースと 1 件ずつ比べる。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "ケースは `label`・`actual`・`expected` の 3 つのキーを持つ[[オブジェクト|object-literal]]で、`actual` を呼んだ結果を[[JSON|json]]の文字列にして `expected` と比べる。食い違えば `NG` とラベルが出る。"
+        },
+        {
+          "kind": "rule",
+          "text": "どのケースも、既定値や素朴な実装と答えが違う入力を選ぶ(判定表の冒頭)。"
+        },
+        {
+          "kind": "history",
+          "text": "この PR で、ブラウザに残した値を前提にした 5 件を、ハッシュだけを渡す 2 件に置き換えた。「残した値を使う」観点は仕様ごと消えた。"
+        },
+        {
+          "kind": "caution",
+          "text": "ブラウザに残した値を読まないことは、この表では守れない。`choose` の中で `localStorage` を直接読んでも、配線で残した値を先に渡しても、表のケースは通る。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "lineRange": {
+            "start": 771,
+            "end": 786
+          },
+          "text": "開く画面の 2 ケース",
+          "shas": [
+            "a94d0a07a5178f1349f3b2bb8145dc3392dfebc7"
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "lineRange": {
+            "start": 2160,
+            "end": 2160
+          },
+          "text": "ケースを 1 件ずつ比べて結果を出す"
+        }
+      ],
+      "seeAlso": [
+        "node-vm",
+        "screen-choice"
+      ],
+      "tests": [
+        "hash-screen",
+        "fallback-map"
+      ],
+      "flows": [
+        "check-page"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "primer-reader",
+      "category": "pr-explain スキル · 書き方",
+      "label": "技術の手引きの読み手",
+      "gist": "技術の手引き(`primers`)と用語(`terms`)だけは、読み手をその言語・フレームワークに初めて触れる人とする。この解説の手引きが、その初めての適用になる。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "rule",
+          "text": "言語ごとの構文・組み込みの型・標準ライブラリ・その技術の約束事は説明し、変数・関数・引数のようなプログラミング全般の語は説明しない。規約は既知としてよい。"
+        },
+        {
+          "kind": "spec",
+          "text": "language の節は `gist` に何のための仕組みか、`passages` に書き方を置く。codebase の節は言語の構文を説明し直さず、印か `seeAlso` で language の節へつなぐ。用語は 1〜2 文に収め、収まらない語は primer にする。"
+        },
+        {
+          "kind": "history",
+          "text": "見本 `templates/explain.json` の言語の節と用語も、同じ読み手に向けて書き直した。書き手は見本を写して書き始めるので、文章だけ直しても見本の書きぶりが効き続けるため。"
+        },
+        {
+          "kind": "memo",
+          "text": "書きぶりは機械で判定できないので、検査は足していない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "lineRange": {
+            "start": 188,
+            "end": 190
+          },
+          "text": "既知としないものの定義",
+          "shas": [
+            "01c78bd188a25291b81af1c63b85724ef1eb8775",
+            "9eb4185b3dfef9a40bbfd8522c39b15e79cbb93e"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "lineRange": {
+            "start": 202,
+            "end": 203
+          },
+          "text": "表の primers と terms の行",
+          "shas": [
+            "01c78bd188a25291b81af1c63b85724ef1eb8775",
+            "9eb4185b3dfef9a40bbfd8522c39b15e79cbb93e"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "lineRange": {
+            "start": 150,
+            "end": 211
+          },
+          "text": "書き直した見本の手引きと用語",
+          "shas": [
+            "f1e4cc8790b01e727a75cc1a3ecbb13555fad2fd"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "csp"
+      ],
+      "flows": [
+        "write-explain"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "inline-script",
+      "label": "インラインスクリプト",
+      "text": "HTML の中に `<script>…</script>` で直接書いたプログラム。別のファイルから読み込むのではなく、ページの中にそのまま入っている。"
+    },
+    {
+      "id": "hash-digest",
+      "label": "ハッシュ値",
+      "text": "データから決まった計算(ここでは sha256)で作る短い値。中身が 1 文字でも変われば別の値になるので、中身が同じかを確かめるのに使う。"
+    },
+    {
+      "id": "fragment",
+      "label": "ハッシュ",
+      "text": "URL の `#` から後ろの部分。サーバーへは送られず、ページの中のどこを見せるかをブラウザ側で決めるのに使う。"
+    },
+    {
+      "id": "arrow",
+      "label": "アロー関数",
+      "text": "`(引数) => { 本体 }` の形で書く関数。`=>` の右が式 1 つだけなら、その値をそのまま返す。"
+    },
+    {
+      "id": "object-literal",
+      "label": "オブジェクト",
+      "text": "`{ キー: 値 }` の形で、名前の付いた値をまとめたもの。`obj.キー` で中の値を読む。"
+    },
+    {
+      "id": "origin",
+      "label": "オリジン",
+      "text": "URL のうち `https://` とホスト名(とポート)の組。ブラウザは保存した値をこの組ごとに分けて持つので、同じホストのページどうしは値を共有する。"
+    },
+    {
+      "id": "json",
+      "label": "JSON",
+      "text": "データを文字で書き表す形式。JavaScript では `JSON.stringify` で値を文字列にし、`JSON.parse` で元の値に戻す。"
+    },
+    {
+      "id": "exception",
+      "label": "例外",
+      "text": "処理を途中で止めて失敗を知らせる仕組み。`try { … } catch { … }` で囲むと、止まらずに `catch` の中へ進む。"
+    },
+    {
+      "id": "url",
+      "label": "URL",
+      "text": "ページの場所を表す文字列。ブラウザのアドレス欄に出ている `https://…` のこと。"
+    },
+    {
+      "id": "window",
+      "label": "window",
+      "text": "ブラウザでページ全体を表す組み込みのオブジェクト。`location`・`history`・`localStorage` もこの下にあり、`window.` を省いて書ける。"
+    },
+    {
+      "id": "regex",
+      "label": "正規表現",
+      "text": "文字列の形を表す書き方。`/^#/` は「先頭にある `#`」を表し、`hash.replace(/^#/, \"\")` で先頭の `#` を取り除ける。"
+    },
+    {
+      "id": "history-entry",
+      "label": "履歴の項目",
+      "text": "戻る・進むボタンで行き来する 1 件 1 件の記録。それぞれが 1 つの URL を持つ。"
+    },
+    {
+      "id": "event",
+      "label": "イベント",
+      "text": "クリックやハッシュの変化のように、ブラウザの中で起きたことの知らせ。種類ごとに `\"click\"` のような名前が付いている。"
+    },
+    {
+      "id": "listener",
+      "label": "リスナー",
+      "text": "イベントが起きたときに呼んでもらうため、`addEventListener` で登録しておく関数。"
+    },
+    {
+      "id": "node",
+      "label": "Node.js",
+      "text": "ブラウザの外で JavaScript を動かす実行環境。`node` コマンドで動かす。"
+    },
+    {
+      "id": "module",
+      "label": "モジュール",
+      "text": "`require(\"vm\")` のように取り込んで使う機能のまとまり。`vm` は Node.js に最初から付いていて、インストールは要らない。"
+    },
+    {
+      "id": "global",
+      "label": "グローバル",
+      "text": "どこからでも名前だけで読める置き場。ブラウザでは `window` がそれにあたり、`vm` の中では渡したオブジェクトがそれになる。"
+    },
+    {
+      "id": "heredoc",
+      "label": "ヒアドキュメント",
+      "text": "bash で、`<<'JS'` の次の行から `JS` だけの行までを、そのままコマンドへ渡す書き方。区切りの語を引用符で囲むと、中の `$` を展開しない。"
+    },
+    {
+      "id": "dom",
+      "label": "DOM",
+      "text": "ページの要素をプログラムから触るための仕組み。ブラウザでは `document` がその入口で、`node` の中には無い。"
+    }
+  ]
+}
