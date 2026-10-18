@@ -158,10 +158,13 @@ test("30 度回した矩形の外接矩形は、回った 4 角がちょうど�
   expect(enclosing.height).toBeCloseTo(186.603, 3);
 });
 
-test("親の中の位置へ置き直すと、回る前の矩形の左上がその位置に来て大きさと向きは変わらない", () => {
+test("回っていない親の中の位置へ置き直すと、回る前の矩形の左上がその位置に来て大きさと向きは変わらない", () => {
   const placed = RotatedBounds.placedAt(
     { unrotated: Unrotated, rotation: 30 },
-    { left: 10, top: 20, width: 400, height: 300 },
+    {
+      unrotated: { left: 10, top: 20, width: 400, height: 300 },
+      rotation: 0,
+    },
     { x: 5, y: 7 },
   );
 
@@ -169,4 +172,55 @@ test("親の中の位置へ置き直すと、回る前の矩形の左上がそ�
     unrotated: { left: 15, top: 27, width: 200, height: 100 },
     rotation: 30,
   });
+});
+
+/** 画面の (200, 110) から 200x100 を 90 度回した親。中心は (300, 160)。 */
+const TurnedParent = {
+  unrotated: { left: 200, top: 110, width: 200, height: 100 },
+  rotation: 90,
+};
+
+/** 画面の (100, 60) から 360x240 の、回っていない親。 */
+const Upright = {
+  unrotated: { left: 100, top: 60, width: 360, height: 240 },
+  rotation: 0,
+};
+
+test("90 度回った親の中の位置へ置き直すと、親と一緒に回った位置に中心が来る", () => {
+  // 回る前の位置 (210, 120) の中心 (220, 126) を、親の中心 (300, 160) まわりに 90 度回す
+  const placed = RotatedBounds.placedAt(
+    { unrotated: { left: 0, top: 0, width: 20, height: 12 }, rotation: 90 },
+    TurnedParent,
+    { x: 10, y: 10 },
+  );
+
+  expect(placed).toEqual({
+    unrotated: { left: 324, top: 74, width: 20, height: 12 },
+    rotation: 90,
+  });
+});
+
+test("どちらも回っていなければ、原点にする矩形の座標で見た位置は左上どうしの差になる", () => {
+  // 縦横で符号を違える（取り違えても片方だけでは落ちないため）
+  const shift = RotatedBounds.originShift(
+    { unrotated: Unrotated, rotation: 0 },
+    { unrotated: { left: 120, top: 35, width: 200, height: 80 }, rotation: 0 },
+  );
+
+  expect(shift).toEqual({ x: -20, y: 15 });
+});
+
+test("90 度回った矩形の回る前の左上の角を、回っていない矩形の座標で見ると、回って描かれた角の位置になる", () => {
+  // 角は回って (350, 60) に描かれる。回る前の左上 (200, 110) を使うと (100, 50) になる
+  expect(RotatedBounds.originShift(TurnedParent, Upright)).toEqual({
+    x: 250,
+    y: 0,
+  });
+});
+
+test("回っていない矩形の左上を 90 度回った矩形の座標で見ると、その向きで測った位置になる", () => {
+  // 原点からの画面上の差 (-100, -50) を、向きを戻して測る。戻さないと (-100, -50) のまま
+  const shift = RotatedBounds.originShift(Upright, TurnedParent);
+
+  expect(shift).toEqual({ x: 0, y: 250 });
 });

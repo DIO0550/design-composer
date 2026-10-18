@@ -235,6 +235,76 @@ export const AbsoluteNode: Story = {
   },
 };
 
+/**
+ * `home` の末尾に 90 度回った Box `home-frame` を足し、その中に絶対配置の `home-frame-chip`
+ * を置いたドキュメント。
+ *
+ * 末尾に置くのは、DOM 順で後ろのほうが上に来るため（`DocumentWithAbsoluteNode` の doc）。
+ */
+const DocumentWithTurnedFrame = DesignDocument.create({
+  tokens: Sample.tokens,
+  components: Sample.components,
+  artboards: Sample.artboards.map((artboard) =>
+    artboard.name === "home"
+      ? {
+          ...artboard,
+          children: [
+            ...artboard.children,
+            {
+              name: "home-frame",
+              type: "Box",
+              props: {
+                placement: "absolute",
+                x: 170,
+                y: 70,
+                widthMode: "fixed",
+                width: 160,
+                heightMode: "fixed",
+                height: 80,
+                rotation: 90,
+                background: "gray-100",
+              },
+              children: [
+                {
+                  name: "home-frame-chip",
+                  type: "Box",
+                  props: {
+                    placement: "absolute",
+                    x: 16,
+                    y: 16,
+                    widthMode: "fixed",
+                    width: 40,
+                    heightMode: "fixed",
+                    height: 20,
+                    background: "primary",
+                  },
+                  children: [],
+                },
+              ],
+            },
+          ],
+        }
+      : artboard,
+  ),
+});
+
+/**
+ * 回った Box の中に絶対配置のノードがある編集画面。
+ *
+ * `home-frame-chip` を選んでから運ぶと、祖先だけが回っているノードの座標の置き直しを
+ * 確かめられる（docs/06-ui.md「キャンバス直接操作」）。画面上でポインタが動いた向きへ動き、
+ * `home-frame` の外接矩形の辺へ吸い付き、`home` へ落とすと付け替わる。
+ */
+export const TurnedFrame: Story = {
+  name: "回った Box の中に絶対配置のノードがある編集画面",
+  args: {
+    ipc: DocumentIpcFake.create({
+      [SamplePath]: DocumentJson.serialize(DocumentWithTurnedFrame),
+    }).ipc,
+    opened: { path: SamplePath, document: DocumentWithTurnedFrame },
+  },
+};
+
 /*
  * 居ない部品へ向け直した `home-login`。`RefNode` と注釈した定数にしてから差し込むのは、
  * `Node` が直和で、注釈なしの literal（`{ ...node, ref }` を含む）だと `type` と `ref` を

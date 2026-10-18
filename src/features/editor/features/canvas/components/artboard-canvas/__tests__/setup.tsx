@@ -345,7 +345,7 @@ export const PreviewDeclarationPrefix = `${RepositionPreviewProperty}:`;
  * 突き合わせでは落ちないため（規則が別のノードへ付くと付け替えが丸ごと壊れる）。
  *
  * @param name ずれて見えるはずのノードの名前
- * @param offset ドキュメント上の px で表した移動量
+ * @param offset 今の親の向きで測った、ドキュメント上の px の移動量
  * @returns そのノードへ差し込まれる規則 1 本
  */
 export function previewRule(name: string, offset: Offset): string {

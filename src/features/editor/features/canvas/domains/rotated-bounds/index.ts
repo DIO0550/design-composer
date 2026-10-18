@@ -176,22 +176,61 @@ export const RotatedBounds = {
   },
 
   /**
-   * 回る前の矩形の左上を、親の左上から見たその位置へ置き直す。大きさと向きは変わらない。
+   * 回る前の矩形を、親の座標（回る前の左上が原点・親の向きで測る）で見た位置へ置き直す。
+   * 大きさと向きは変わらない。
    *
    * @param bounds 置き直す矩形
-   * @param parent 原点になる親の矩形
-   * @param offset 親の左上から見た、回る前の矩形の左上の位置（画面上の px）
-   * @returns 回る前の矩形をその位置へ置いた、同じ大きさ・同じ向きの矩形
+   * @param parent 原点と向きを決める親の、回って描かれている矩形
+   * @param offset 親の座標で見た、回る前の矩形の左上の位置（画面上の px）
+   * @returns 親と一緒に回った位置に中心がある、同じ大きさ・同じ向きの矩形。親が回って
+   *   いなければ回る前の矩形の左上がそのまま `offset` の位置に来る
    */
   placedAt(
     bounds: RotatedBounds,
-    parent: CanvasBounds,
+    parent: RotatedBounds,
     offset: Offset,
   ): RotatedBounds {
+    const placed = CanvasBounds.placedAt(
+      parent.unrotated,
+      offset,
+      bounds.unrotated,
+    );
+    const center = {
+      x: CanvasBounds.midline(placed, SidePairs.Horizontal),
+      y: CanvasBounds.midline(placed, SidePairs.Vertical),
+    };
+    const turned = rotatedAboutCenter(
+      parent.unrotated,
+      center,
+      parent.rotation,
+    );
     return {
-      unrotated: CanvasBounds.placedAt(parent, offset, bounds.unrotated),
+      unrotated: CanvasBounds.movedBy(placed, Offset.delta(center, turned)),
       rotation: bounds.rotation,
     };
+  },
+
+  /**
+   * 別の矩形の座標（回る前の左上が原点・その向きで測る）で見た、この矩形の回る前の
+   * 左上の角の位置。
+   *
+   * 絶対配置の座標の原点はこの角なので、これが**親を付け替えたときに座標を直す量**に
+   * なる。返るのは実測したままの画面上の px で、ドキュメント上の px にするのは倍率を
+   * 知っている側（`CanvasView`）の役目。
+   *
+   * @param bounds 原点の位置を知りたい矩形
+   * @param origin 座標の原点と向きを決める矩形
+   * @returns `origin` の座標で見た `bounds` の回る前の左上の角。どちらも回っていなければ
+   *   左上どうしの差
+   */
+  originShift(bounds: RotatedBounds, origin: RotatedBounds): Offset {
+    return Offset.delta(
+      CanvasBounds.pointAt(origin.unrotated, { x: 0, y: 0 }),
+      RotatedBounds.unrotatePoint(
+        origin,
+        RotatedBounds.pointAt(bounds, { x: 0, y: 0 }),
+      ),
+    );
   },
 
   /**
