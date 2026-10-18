@@ -1,0 +1,2021 @@
+{
+  "version": 1,
+  "pr": 1125,
+  "sha": "d5bff1029dfafd4e349ca59f283112625c88f4e5",
+  "issue": 1116,
+  "overview": {
+    "title": "画面上の向きの合計を 6 桁へ丸め、足し算の端数で「回っている」と判定されないようにする",
+    "lead": "自分と祖先の `rotation` を浮動小数で足した合計に乗る端数を、`Angle.sum` で合計を 1 回だけ小数点以下 6 桁へ丸めて落とす。回っていないノードが回っている側に判定されていた(リサイズのハンドル・揃え先・カーソルの向き・測る大きさ)のが直る。",
+    "before": [
+      {
+        "text": "3 段の入れ子 -0.1 / -0.2 / 0.3 の `totalRotationOf` は `-5.55e-17` で、`isWholeTurns` が false(回っている側)になっていた",
+        "message": "resize-total"
+      },
+      {
+        "text": "359.8 度の Box の中の -719.8 度のノードは合計が `-359.99999999999994` になり、揃え先が空だった",
+        "message": "resize-whole"
+      },
+      {
+        "text": "15.8 度の Box の中の -128.3 度のノードは合計が `-112.50000000000001` になり、左右の辺のカーソルが「ちょうど中間は時計回りの側」の規則から外れて斜めになっていた"
+      },
+      {
+        "text": "`collectArtboardChildRotations` は 7 桁以上の角度(12.3456789)をそのまま返し、doc の「`totalRotationOf` と同じ値」が丸めた後では崩れる形だった",
+        "message": "range-collect"
+      }
+    ],
+    "after": [
+      {
+        "text": "`totalRotationOf` は自分から artboard までの角度を並べ、`Angle.sum` で合計を 1 回だけ 6 桁へ丸めて返す",
+        "message": "sum-total"
+      },
+      {
+        "text": "3 段の入れ子 -0.1 / -0.2 / 0.3 は回っていない向き(`isWholeTurns` が true)になる",
+        "message": "resize-total"
+      },
+      {
+        "text": "359.8 度の中の -719.8 度の絶対配置のノードは、親を揃え先に持つ",
+        "message": "resize-whole"
+      },
+      {
+        "text": "15.8 度の中の -128.3 度のノードの向きは -112.5 で、カーソルは中間の規則どおり縦になる"
+      },
+      {
+        "text": "`collectArtboardChildRotations` も `Angle.sum` を通し、12.3456789 は 12.345679 で並ぶ",
+        "message": "sum-collect"
+      },
+      {
+        "text": "6 桁より細かい角度(0.0000004)を 3 段重ねても、合計してから丸めるので 0.000001 になる(段ごとに丸めて 0 にならない)",
+        "message": "sum-total"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "合計を 1 回だけ丸める",
+        "text": "`Angle.sum` は足し終えてから 1 回だけ丸める。足すたびに丸めると 0.0000004 の入れ子が深さで答えを変える。呼び出し側の再帰が段ごとに丸める形へ戻らないことも、0.0000004 の 3 段の入れ子のテストで守っている",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/unit/angle/index.ts"
+        }
+      },
+      {
+        "title": "丸めで出る -0 を直さない",
+        "text": "小さな負の合計(-5.55e-17)は丸めると -0 になる。`isWholeTurns` も JSON の書き出しも 0 と同じに扱うので、0 へ直す処理は足していない。自信が要る判断なので見てほしい",
+        "go": {
+          "kind": "message",
+          "id": "sum-total"
+        }
+      },
+      {
+        "title": "付け替えの差の丸めは残した",
+        "text": "丸めた合計どうしの差にも端数は出る(512.2 − 152.2 → 360.00000000000006)ので、付け替えの行き先の丸めは消していない",
+        "go": {
+          "kind": "message",
+          "id": "reposition-round"
+        }
+      },
+      {
+        "title": "範囲選択の向きも同じ丸めに通す",
+        "text": "artboard の向きは 0 に固定なので範囲選択には端数が乗らない。それでも「画面上の向きと同じ値」を 7 桁以上の角度で崩さないために丸める",
+        "go": {
+          "kind": "flow",
+          "id": "range"
+        }
+      },
+      {
+        "title": "仕様の画面上の向き",
+        "text": "06-ui に「画面上の向き」を丸めた合計として 1 か所で定義し、カーソルの中間の寄せ方を書き足した",
+        "go": {
+          "kind": "layer",
+          "layer": "docs"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "orientation",
+      "label": "画面上の向き",
+      "role": "自分と祖先の角度の合計を 6 桁へ丸めた値として作る"
+    },
+    {
+      "id": "canvas-ops",
+      "label": "向きを使うキャンバスの操作",
+      "role": "受け取った向きでハンドル・揃え先・カーソル・測る大きさ・付け替えを決める(この PR では変えていない)"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / unit",
+      "role": "角度の合計を 6 桁へ丸めて返す `Angle.sum` を足す"
+    },
+    {
+      "layer": "domains / dcmp",
+      "role": "画面上の向きを作る 2 つの入口を `Angle.sum` へ通す"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "画面上の向きを受け取る側。本体は変えず、テストだけ足し・差し替えた"
+    },
+    {
+      "layer": "docs",
+      "role": "画面上の向きを丸めた合計として定義し、カーソルの中間の寄せ方を書く"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/unit/angle/index.ts",
+      "name": "角度",
+      "role": "角度の判定(1 回りの倍数か)・6 桁の丸め・合計",
+      "feature": "orientation",
+      "change": "`Angle.sum` を足し、`roundToMicrodegree` の理由の例を書き直した"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "デザインドキュメント",
+      "role": "名前から画面上の向き(`totalRotationOf`)と artboard 直下の子の向きを引く",
+      "feature": "orientation",
+      "change": "非公開の `collectSelfAndAncestorRotations` を足し、2 つの入口の足し算を `Angle.sum` に置き換えた"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "name": "リサイズ",
+      "role": "揃え先・ハンドル・カーソルの向きを画面上の向きで決める",
+      "feature": "canvas-ops"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "name": "キャンバス",
+      "role": "選んだノードのリサイズの範囲を引き、描かれた矩形を測らせる",
+      "feature": "canvas-ops"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "name": "ハンドルの重ね描き",
+      "role": "ハンドルを描き、掴めるハンドルのカーソルを選ぶ",
+      "feature": "canvas-ops"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "name": "描かれた矩形の購読",
+      "role": "選んだノードの描かれた矩形を測り直す",
+      "feature": "canvas-ops"
+    },
+    {
+      "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "name": "描かれた矩形の実測",
+      "role": "向きが 1 回りの倍数なら外接矩形、そうでなければレイアウトの大きさから回る前の矩形を測る",
+      "feature": "canvas-ops"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "name": "ノードのドラッグ",
+      "role": "運ぶノードの今の親と落とし先の向きを引き、付け替えの行き先を決めさせる",
+      "feature": "canvas-ops"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+      "name": "付け替えの行き先",
+      "role": "向きの差を 6 桁へ丸め、1 回りの倍数でなければ自分の向きを書き換える",
+      "feature": "canvas-ops"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+      "name": "範囲選択",
+      "role": "artboard 直下の子の向きを引き、範囲に重なる名前を集める",
+      "feature": "canvas-ops"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "リサイズハンドルとドラッグの振る舞いの拠り所",
+      "change": "「画面上の向き」を丸めた合計として定義した",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "sum-total",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "kind": "qry",
+      "name": "自分から外側への角度を合計する",
+      "code": "Option.map(collectSelfAndAncestorRotations(document, name), Angle.sum)",
+      "via": "call",
+      "payload": "自分から artboard までの角度の並び",
+      "returns": "合計を 6 桁へ丸めた角度",
+      "status": "added"
+    },
+    {
+      "id": "sum-collect",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "kind": "qry",
+      "name": "子と artboard の角度を合計する",
+      "code": "Angle.sum([Rotation.fromProps(own.value), outer])",
+      "via": "call",
+      "payload": "子の角度と artboard の角度",
+      "returns": "合計を 6 桁へ丸めた角度",
+      "status": "added"
+    },
+    {
+      "id": "resizable",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "kind": "qry",
+      "name": "リサイズできる範囲を引く",
+      "code": "NodeResize.resizable(selection)",
+      "via": "call",
+      "payload": "選択",
+      "returns": "ハンドル・揃え先・自分の向きと画面上の向き"
+    },
+    {
+      "id": "resize-total",
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "qry",
+      "name": "画面上の向きを引く",
+      "code": "DesignDocument.totalRotationOf(document, name)",
+      "via": "call",
+      "payload": "ドキュメントと名前",
+      "returns": "6 桁へ丸めた合計(前は丸めない合計)",
+      "status": "changed"
+    },
+    {
+      "id": "resize-whole",
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "kind": "qry",
+      "name": "揃え先を出すか見る",
+      "code": "Angle.isWholeTurns(rotation.value.total)",
+      "via": "call",
+      "payload": "画面上の向き",
+      "returns": "1 回りの倍数なら true"
+    },
+    {
+      "id": "drawn-bounds",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "kind": "qry",
+      "name": "選んだノードの描かれた矩形を測る",
+      "code": "useDrawnBounds(singleName, canvasAreaRef, { rotation: resizable.rotation.total, … })",
+      "via": "call",
+      "payload": "名前と画面上の向き",
+      "returns": "回る前の矩形と向き"
+    },
+    {
+      "id": "measure",
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "kind": "qry",
+      "name": "回った矩形を測る",
+      "code": "DrawnBounds.measureRotated(name, basis.rotation, basis.view)",
+      "via": "call",
+      "payload": "名前と画面上の向き",
+      "returns": "回る前の矩形と向き"
+    },
+    {
+      "id": "drawn-whole",
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "kind": "qry",
+      "name": "外接矩形をそのまま使うか見る",
+      "code": "Angle.isWholeTurns(rotation)",
+      "via": "call",
+      "payload": "画面上の向き",
+      "returns": "1 回りの倍数なら true"
+    },
+    {
+      "id": "cursor",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "kind": "qry",
+      "name": "カーソルの向きを決める",
+      "code": "ResizeGrip.orientationOf(grip, rotation)",
+      "via": "call",
+      "payload": "掴んだハンドルと画面上の向き",
+      "returns": "45 度刻みの最も近い向き(ちょうど中間は時計回りの側)"
+    },
+    {
+      "id": "drag-total",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "qry",
+      "name": "今の親の画面上の向きを引く",
+      "code": "DesignDocument.totalRotationOf(context.document, carried.at.parentName)",
+      "via": "call",
+      "payload": "ドキュメントと今の親の名前",
+      "returns": "6 桁へ丸めた合計(前は丸めない合計)",
+      "status": "changed"
+    },
+    {
+      "id": "drag-measure",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "kind": "qry",
+      "name": "落とし先の親の矩形を測る",
+      "code": "DrawnBounds.measureRotated(name, rotation, context.view)",
+      "via": "call",
+      "payload": "落とし先の親の名前と画面上の向き",
+      "returns": "回る前の矩形と向き"
+    },
+    {
+      "id": "drag-target",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+      "kind": "qry",
+      "name": "付け替えの行き先を決める",
+      "code": "RepositionTarget.create(from, carried, dropParent)",
+      "via": "call",
+      "payload": "掴んだ時点の配置と今の親の向き・運んだ量・落とし先の親の向き",
+      "returns": "書く座標と、書き換えるなら自分の向き"
+    },
+    {
+      "id": "reposition-round",
+      "from": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "kind": "qry",
+      "name": "向きの差を丸める",
+      "code": "Angle.roundToMicrodegree(from.parentRotation - dropParent.rotation)",
+      "via": "call",
+      "payload": "今の親と落とし先の親の画面上の向きの差",
+      "returns": "6 桁へ丸めた差"
+    },
+    {
+      "id": "range-collect",
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "qry",
+      "name": "artboard 直下の子の向きを並べる",
+      "code": "DesignDocument.collectArtboardChildRotations(designDocument)",
+      "via": "call",
+      "payload": "ドキュメント",
+      "returns": "名前と、6 桁へ丸めた画面上の向き(前は丸めない合計)",
+      "status": "changed"
+    },
+    {
+      "id": "range-overlap",
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "kind": "qry",
+      "name": "範囲に重なる名前を集める",
+      "code": "DrawnBounds.collectOverlappingNames(rotations, RangeSelect.bounds(range), view)",
+      "via": "call",
+      "payload": "子の名前と向き・範囲",
+      "returns": "重なって描かれているものの名前"
+    }
+  ],
+  "flows": [
+    {
+      "id": "resize",
+      "label": "ノードを選んでリサイズのハンドルを出したとき",
+      "steps": [
+        "resizable",
+        "resize-total",
+        "sum-total",
+        "resize-whole",
+        "drawn-bounds",
+        "measure",
+        "drawn-whole",
+        "cursor"
+      ]
+    },
+    {
+      "id": "drag",
+      "label": "ノードを運んで別の親へ落としたとき",
+      "steps": [
+        "drag-total",
+        "sum-total",
+        "drag-measure",
+        "drag-target",
+        "reposition-round"
+      ]
+    },
+    {
+      "id": "range",
+      "label": "範囲選択で払ったとき",
+      "steps": [
+        "range-collect",
+        "sum-collect",
+        "range-overlap"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "c4741c795133696fe1d28314cb032013e22b6ee3",
+      "phase": "prep",
+      "role": "角度の合計を 6 桁へ丸めて返す `Angle.sum` を足す(まだ呼ばれない)",
+      "why": "角度を何桁で同じとみなすかは #1105 で `Angle` の 6 桁の丸めと決めてあるので、合計もその丸めに通す。合計を作る側(`Angle`)に置けば、判定・ハンドル・カーソル・外接矩形へ流れる値がすべて端数の無い値になる。`isWholeTurns` に許容誤差を付ける案は、直るのが 360 度の倍数の判定だけでカーソルの中間の判定に端数が残るので採らなかった。",
+      "flows": [
+        "resize",
+        "drag",
+        "range"
+      ],
+      "review": [
+        "足し終えてから 1 回だけ丸めていること。足すたびに丸めると 0.0000004 + 0.0000004 が 0 になり、入れ子の深さで答えが変わる",
+        "引数を空でない並びにしていないこと。空の合計 0 は「回っていない」として意味が決まり、防げる誤用が無い"
+      ],
+      "before": [
+        {
+          "text": "角度の合計を丸める関数は無く、呼び出し側が素の `+` で足していた"
+        }
+      ],
+      "after": [
+        {
+          "text": "`Angle.sum(angles)` が合計を `roundToMicrodegree` に 1 回通して返す(この時点では呼び出しは無い)",
+          "message": "sum-total"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "start": 33,
+          "end": 34,
+          "text": "前の例(0.1 度の中の 0.2 度の親から 0.3 度の親へ)は、合計を丸めると差がちょうど 0 になって起きなくなるので、合計の例へ書き直した"
+        },
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "start": 54,
+          "end": 58,
+          "text": "`reduce` で素のまま足し、最後に 1 回だけ丸める"
+        }
+      ]
+    },
+    {
+      "sha": "084ea2ca9322f77e2b7d0ac681f3ff6d0d0955a6",
+      "phase": "prep",
+      "role": "`Angle.sum` の丸めと、足す単位(1 回だけ丸める)をテストする",
+      "why": "丸めない実装は 0.1 + 0.2 のテストで、足すたびに丸める実装(答えが 0 になる)は 0.0000004 × 2 のテストで落ちるように入力を選んだ。空の並びの 0 は、引数を空でもよい並びにした判断を固定する。",
+      "review": [
+        "0.0000004 × 2 → 0.000001 のテストが、足すたびに丸める実装で落ちる入力になっていること"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/unit/angle/__tests__/angle.normal.test.ts",
+          "start": 28,
+          "end": 30,
+          "text": "1 つずつ丸めると 0 + 0 = 0、合計してから丸めると 0.000001"
+        }
+      ]
+    },
+    {
+      "sha": "fa09e97157ff4daa0cd249976118474f69566598",
+      "phase": "core",
+      "role": "画面上の向きを作る 2 つの入口を `Angle.sum` へ通す",
+      "why": "画面上の向きを作っているのは `totalRotationOf` と `collectArtboardChildRotations` だけで、消費側(リサイズ・ドラッグ・範囲選択・付け替え・矩形の実測)は受け取った角度で判定しているだけなので、入口を直せばすべて揃う。再帰の途中で足すと段ごとに丸めることになるので、再帰は角度を並べるだけにして最後に `Angle.sum` へ渡す。",
+      "flows": [
+        "resize",
+        "drag",
+        "range"
+      ],
+      "review": [
+        "再帰が角度を並べるだけになり、足し算と丸めが `Angle.sum` の 1 か所に寄っていること",
+        "`collectArtboardChildRotations` は artboard の向きが 0 固定で端数が乗らないが、doc の「`totalRotationOf` と同じ値」を 7 桁以上の角度で崩さないために同じ丸めへ通していること",
+        "付け替えの行き先の差の丸めを残していること。丸めた合計どうしの差にも端数は出る(512.2 − 152.2)"
+      ],
+      "before": [
+        {
+          "text": "`totalRotationOf` は再帰の中で `rotation + outer` を素のまま足していた",
+          "message": "resize-total"
+        },
+        {
+          "text": "`collectArtboardChildRotations` は `outer + own` を素のまま足していた",
+          "message": "range-collect"
+        }
+      ],
+      "after": [
+        {
+          "text": "`totalRotationOf` は角度の並びを `Angle.sum` で合計し、6 桁へ丸めて返す",
+          "message": "sum-total"
+        },
+        {
+          "text": "`collectArtboardChildRotations` は `Angle.sum([own, outer])` で、足す順を内側から外側に揃える",
+          "message": "sum-collect"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 750,
+          "end": 778,
+          "text": "自分から外側への角度の並び。artboard で止める(このコミットでの名前は `rotationsOutward`。後のコミットで改名)"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1310,
+          "end": 1310,
+          "text": "範囲選択が使う子の向きも同じ丸めに通す"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1589,
+          "end": 1594,
+          "text": "戻り値が「6 桁へ丸めた合計」になったことを doc に書いた"
+        }
+      ]
+    },
+    {
+      "sha": "b8b4b86d248c2ca225e011d1ba3d5c1165cec20d",
+      "phase": "core",
+      "role": "画面上の向きの合計に端数が乗らないことをテストする",
+      "why": "修正前は 3 段の入れ子で `-5.55e-17`、-128.3 / 15.8 で `-112.50000000000001`、artboard 直下で `12.3456789` を返していた。3 件とも修正前の実装で落ちることを確かめた。3 段の入れ子の入力は、計画の検証で、前に考えた -51.2 / 324.2 / -273 が並べ方と足す順しだいで修正前でも 0 ちょうどになると分かったので、どの順でも 0 にならない -0.1 / -0.2 / 0.3 に替えた。",
+      "flows": [
+        "resize",
+        "range"
+      ],
+      "review": [
+        "1 回りの倍数のテストを `toEqual(0)` ではなく `isWholeTurns` で見ていること。丸めで -0 が出うる",
+        "artboard 直下のテストが丸めた値(12.345679)を直に書いていること。`totalRotationOf` と等しいかを比べる形では修正前でも通る"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+          "start": 79,
+          "end": 113,
+          "text": "修正前は合計 -5.551115123125783e-17 で `isWholeTurns` が false"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-child-rotation.test.ts",
+          "start": 187,
+          "end": 204,
+          "text": "修正前は 12.3456789 がそのまま返って落ちる"
+        }
+      ]
+    },
+    {
+      "sha": "7868c77fd4a318b195d80b570125c3614a2a240b",
+      "phase": "core",
+      "role": "1 回りの倍数だけ回ったノードが揃え先を持つことを、リサイズの側から確かめる",
+      "why": "2 段の入れ子でも、360 を超える値なら端数が出る(359.8 / -719.8 → -359.99999999999994)。リサイズの範囲の画面上の向きから揃え先までの経路を、この 1 件で通す。fixture をテストの中に書いたのは、既存の共有 fixture に兄弟を足すと「1 回り回したノード」のテストの期待値まで変わるため。",
+      "flows": [
+        "resize"
+      ],
+      "review": [
+        "カーソルの中間の向きの通しのテストを足していないこと。向きの規則は既存の orientation のテスト(22.5 / 112.5)が守り、値の出どころはデザインドキュメント側のテストが守る"
+      ],
+      "after": [
+        {
+          "text": "359.8 度の Box の中の -719.8 度の絶対配置のノードの揃え先が `[\"card\"]` になる",
+          "message": "resize-whole"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+          "start": 330,
+          "end": 371,
+          "text": "修正前は揃え先が空で落ちることを確かめた"
+        }
+      ]
+    },
+    {
+      "sha": "52843708b9021ae5949975b5ebb32fafcef833e9",
+      "phase": "core",
+      "role": "付け替えの端数のテストを、丸めた合計どうしの差に差し替える",
+      "why": "消した 2 件は、端数を持った合計(0.1 + 0.2 など)が `totalRotationOf` から届く前提の入力だった。合計を丸めた後はその入力はこの経路から来ない。512.2 − 152.2 は丸めた合計どうしでも 360.00000000000006 になる、0.1 刻みで探した最小の組で、付け替えの行き先の差の丸めを外すとこのテストだけが落ちる。0 の判定を外す例は丸めた合計どうしでは作れない(0.01 刻みで ±360 の 72,001 個を全数調べて 0 件)ので消した。",
+      "flows": [
+        "drag"
+      ],
+      "review": [
+        "0 の判定を外す例を、置き換えずに消したこと。差が名目上 0 なら 2 つは同じ 6 桁の小数に丸まっていて、差はちょうど 0 になる"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-target/__tests__/reposition-target.reparent.test.ts",
+          "start": 264,
+          "end": 273,
+          "text": "区切りコメントを「丸めた向きどうしの差・和」に直し、512.2 / 152.2 の組に差し替えた"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-target/__tests__/reposition-target.reparent.test.ts",
+          "side": "old",
+          "start": 265,
+          "end": 273,
+          "text": "0.1 + 0.2 と 0.3 の差。合計を丸めた後はこの経路から来ないので消した"
+        }
+      ]
+    },
+    {
+      "sha": "2f13b9501d02aae3fd87dc9fa69928e1f9efeaf9",
+      "phase": "core",
+      "role": "画面上の向きの合計を 6 桁へ丸めて見ることを 06-ui に書く",
+      "why": "360 度の倍数かの判定は丸めた合計で行うようになったので、仕様にもそう書く。付け替えの段落の「祖先の角度の足し合わせで出る端数」は、合計の丸めが定義の側に移ったので、残る端数の出どころ(差・和)に書き直した。03-schema の「回転」に書く案は、ファイルに書く値の丸めではなく画面での判定の精度なので採らなかった。",
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 139,
+          "end": 139,
+          "text": "付け替えで丸める理由を「向きの差・和で出る端数」に直した"
+        }
+      ]
+    },
+    {
+      "sha": "5dfe6e342d2d7a919142aabbaf73a2b5f25af43a",
+      "phase": "revise",
+      "role": "非公開関数 `rotationsOutward` を `collectSelfAndAncestorRotations` に改名する",
+      "why": "実装の検証(naming-reviewer)で、同じファイルの `holdsForSelfOrAncestor` / `collectAncestorNames` と言い方が割れている、Outward は自分を含まないとも読める、と指摘された。自分を含み artboard で止まる範囲を既にある語幹で名前に出し、並びを返すので `collect*` に揃えた。",
+      "review": [
+        "名前が「自分を含む・artboard まで」の範囲を表せていること"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 759,
+          "end": 759,
+          "text": "改名した定義"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1594,
+          "end": 1597,
+          "text": "呼び出しも改名。行が長くなったので整形で 4 行になった"
+        }
+      ]
+    },
+    {
+      "sha": "6e07b7b43108da7a6e091d33bbee6ac0d5d2c84c",
+      "phase": "revise",
+      "role": "合計の -0 を 0 へ直さない理由をコードに残す",
+      "why": "実装の検証(comment-reviewer)で、-0 を正規化しない判断が Issue にしか無いと指摘された。`Angle.sum([-0.1, -0.2, 0.3])` は -0 を返すが、`isWholeTurns(-0)` は true、`JSON.stringify` は 0 と書くので、見える振る舞いは変わらない。読み手が -0 を見て正規化の要否を一から考え直さないよう、理由をその場に置いた。",
+      "review": [
+        "-0 を 0 へ直す処理を足さない判断に同意できるか"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "start": 50,
+          "end": 51,
+          "text": "-0 を直さない理由"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+          "start": 107,
+          "end": 107,
+          "text": "テストが `toEqual(0)` を使わない理由"
+        }
+      ]
+    },
+    {
+      "sha": "bd3cb8d870c140f88fe5e553870607930f099651",
+      "phase": "revise",
+      "role": "06-ui の「画面上の向き」を 1 か所で定義し、カーソルの中間の寄せ方を書く",
+      "why": "実装の検証(harness-reviewer)で、丸めの文が「回って描かれているノード」の定義の括弧にしか無く、カーソルの向きにも効くことが読めないと指摘された。中間の寄せ方は実装(`orientationOf`)にだけあった。丸めは 360 度の倍数の判定・ハンドル・カーソル・長さのすべてに効くので定義の側に置き、ほかの記述はそれを参照する形にした。",
+      "review": [
+        "「ちょうど中間は時計回りの側」が実装の規則を書き起こしたもので、振る舞いを変えていないこと"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 193,
+          "end": 195,
+          "text": "画面上の向きを丸めた合計として定義し、回って描かれているノードの定義がそれを参照する"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 197,
+          "end": 197,
+          "text": "中間の寄せ方を書き足した"
+        }
+      ]
+    },
+    {
+      "sha": "d5bff1029dfafd4e349ca59f283112625c88f4e5",
+      "phase": "revise",
+      "role": "入れ子の向きを合計してから 1 回だけ丸めることを、画面上の向きの側でテストする",
+      "why": "実装の検証(test-reviewer)で、`collectSelfAndAncestorRotations` を段ごとに `Angle.sum` する形へ壊しても全テストが通ると指摘された。「合計を 1 回だけ丸める」は `Angle.sum` 単体のテストでしか守られておらず、呼び出し側の再帰の形はそこからは見えない。0.0000004 の 3 段の入れ子を足し、壊すと落ち、戻すと通ることを確かめた。",
+      "flows": [
+        "resize"
+      ],
+      "review": [
+        "このテストが、`totalRotationOf` を段ごとに足して丸める再帰の形へ戻す書き換えを止めること"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+          "start": 142,
+          "end": 177,
+          "text": "段ごとに丸めると 0、合計してから丸めると 0.000001"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "angle",
+      "label": "角度",
+      "file": "src/domains/unit/angle/__tests__/angle.normal.test.ts"
+    },
+    {
+      "id": "rotation",
+      "label": "画面上の向き",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts"
+    },
+    {
+      "id": "artboard-child",
+      "label": "artboard 直下の子の向き",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.artboard-child-rotation.test.ts"
+    },
+    {
+      "id": "resize",
+      "label": "リサイズの向き",
+      "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts"
+    },
+    {
+      "id": "reparent",
+      "label": "付け替え",
+      "file": "src/features/editor/features/canvas/domains/reposition-target/__tests__/reposition-target.reparent.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "sum-fraction",
+      "suite": "angle",
+      "name": "足し合わせで端数が出る角度の合計は、端数を落とした値になる",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "合計に乗る浮動小数の端数を落とすことが `Angle.sum` の役目。test-reviewer が `Angle.sum` で丸めない形に壊すと、このテストを含む 6 件が落ちた",
+      "given": "0.1 と 0.2 の並び(素のまま足すと 0.30000000000000004)",
+      "when": "`Angle.sum` で合計する",
+      "then": "0.3 になる",
+      "commit": "084ea2ca9322f77e2b7d0ac681f3ff6d0d0955a6",
+      "excerpt": {
+        "path": "src/domains/unit/angle/__tests__/angle.normal.test.ts",
+        "start": 24,
+        "end": 26,
+        "text": "test(\"足し合わせで端数が出る角度の合計は、端数を落とした値になる\", () => {\n  expect(Angle.sum([0.1, 0.2])).toBe(0.3);\n});"
+      },
+      "values": {
+        "columns": [
+          "並び",
+          "素の合計",
+          "`Angle.sum`"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "0.1, 0.2",
+              "0.30000000000000004",
+              "0.3"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/unit/angle/index.ts"
+      ]
+    },
+    {
+      "id": "sum-once",
+      "suite": "angle",
+      "name": "6 桁より細かい角度は、1 つずつ丸めずに合計してから丸める",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "足すたびに丸めると、6 桁より細かい角度が入れ子の深さで消える。test-reviewer が足すごとに丸める形へ壊すと、このテストだけが落ちた",
+      "given": "0.0000004 を 2 つ並べたもの",
+      "when": "`Angle.sum` で合計する",
+      "then": "0.000001 になる(1 つずつ丸めると 0)",
+      "commit": "084ea2ca9322f77e2b7d0ac681f3ff6d0d0955a6",
+      "excerpt": {
+        "path": "src/domains/unit/angle/__tests__/angle.normal.test.ts",
+        "start": 28,
+        "end": 30,
+        "text": "test(\"6 桁より細かい角度は、1 つずつ丸めずに合計してから丸める\", () => {\n  expect(Angle.sum([0.0000004, 0.0000004])).toBe(0.000001);\n});"
+      },
+      "values": {
+        "columns": [
+          "丸め方",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "合計してから 1 回",
+              "0.000001"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "1 つ足すごと",
+              "0"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/unit/angle/index.ts"
+      ]
+    },
+    {
+      "id": "sum-empty",
+      "suite": "angle",
+      "name": "何も足さない合計は 0 になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "引数を空でもよい並びにした判断を固定する。空の合計 0 は「回っていない」として意味が決まる",
+      "given": "空の並び",
+      "when": "`Angle.sum` で合計する",
+      "then": "0 になる",
+      "commit": "084ea2ca9322f77e2b7d0ac681f3ff6d0d0955a6",
+      "excerpt": {
+        "path": "src/domains/unit/angle/__tests__/angle.normal.test.ts",
+        "start": 32,
+        "end": 34,
+        "text": "test(\"何も足さない合計は 0 になる\", () => {\n  expect(Angle.sum([])).toBe(0);\n});"
+      },
+      "targets": [
+        "src/domains/unit/angle/index.ts"
+      ]
+    },
+    {
+      "id": "three-nested",
+      "suite": "rotation",
+      "name": "3 段の入れ子で角度の合計が 1 回りの倍数になるノードは、回っていない向きになる",
+      "techniques": [
+        "regression",
+        "boundary"
+      ],
+      "why": "この PR の不具合そのもの。並べ方・足す順のどれでも丸める前の合計が 0 にならない入力を選んだので、丸めを外すと必ず落ちる",
+      "given": "artboard 直下の -0.1 度の Box の中の -0.2 度の Box の中にある 0.3 度のノード",
+      "when": "そのノードの画面上の向きを引き、1 回りの倍数かを見る",
+      "then": "1 回りの倍数(回っていない)と判定される。丸めで -0 になりうるので `toEqual(0)` ではなく `isWholeTurns` で見る",
+      "commit": "b8b4b86d248c2ca225e011d1ba3d5c1165cec20d",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+        "start": 79,
+        "end": 114,
+        "emphasis": [
+          {
+            "start": 107,
+            "end": 113
+          }
+        ],
+        "text": "test(\"3 段の入れ子で角度の合計が 1 回りの倍数になるノードは、回っていない向きになる\", () => {\n  const document = DesignDocument.create({\n    artboards: [\n      {\n        name: \"home\",\n        width: 360,\n        height: 240,\n        children: [\n          {\n            name: \"outer\",\n            type: \"Box\",\n            props: { rotation: -0.1 },\n            children: [\n              {\n                name: \"parent\",\n                type: \"Box\",\n                props: { rotation: -0.2 },\n                children: [\n                  { name: \"self\", type: \"Text\", props: { rotation: 0.3 } },\n                ],\n              },\n            ],\n          },\n        ],\n      },\n    ],\n  });\n\n  // 合計は丸めで -0 になりうるので、0 との toEqual ではなく 360 度の倍数かで見る\n  expect(\n    Option.map(\n      DesignDocument.totalRotationOf(document, \"self\"),\n      Angle.isWholeTurns,\n    ),\n  ).toEqual(Option.some(true));\n});"
+      },
+      "values": {
+        "columns": [
+          "実装",
+          "画面上の向き",
+          "1 回りの倍数か"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "修正前(素のまま足す)",
+              "-5.551115123125783e-17",
+              "いいえ"
+            ]
+          },
+          {
+            "cells": [
+              "修正後(合計してから丸める)",
+              "-0",
+              "はい"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts",
+        "src/domains/unit/angle/index.ts"
+      ],
+      "covers": [
+        "resize-total",
+        "sum-total"
+      ]
+    },
+    {
+      "id": "mid-angle",
+      "suite": "rotation",
+      "name": "-128.3 度の子と 15.8 度の Box の合計は、端数の無い -112.5 度になる",
+      "techniques": [
+        "regression",
+        "boundary"
+      ],
+      "why": "45 度刻みのちょうど中間に端数が乗ると、カーソルが「中間は時計回りの側」の規則から外れる。値の出どころをここで守り、向きの規則は既存の orientation のテストが守る",
+      "given": "15.8 度の Box の中の -128.3 度のノード",
+      "when": "そのノードの画面上の向きを引く",
+      "then": "`some(-112.5)` になる(修正前は -112.50000000000001)",
+      "commit": "b8b4b86d248c2ca225e011d1ba3d5c1165cec20d",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+        "start": 116,
+        "end": 140,
+        "text": "test(\"-128.3 度の子と 15.8 度の Box の合計は、端数の無い -112.5 度になる\", () => {\n  const document = DesignDocument.create({\n    artboards: [\n      {\n        name: \"home\",\n        width: 360,\n        height: 240,\n        children: [\n          {\n            name: \"card\",\n            type: \"Box\",\n            props: { rotation: 15.8 },\n            children: [\n              { name: \"badge\", type: \"Text\", props: { rotation: -128.3 } },\n            ],\n          },\n        ],\n      },\n    ],\n  });\n\n  expect(DesignDocument.totalRotationOf(document, \"badge\")).toEqual(\n    Option.some(-112.5),\n  );\n});"
+      },
+      "values": {
+        "columns": [
+          "画面上の向き",
+          "左右の辺のカーソル"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "-112.50000000000001(修正前)",
+              "左上と右下を結ぶ斜め"
+            ]
+          },
+          {
+            "cells": [
+              "-112.5(修正後)",
+              "縦"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "resize-total",
+        "sum-total"
+      ]
+    },
+    {
+      "id": "fine-nested",
+      "suite": "rotation",
+      "name": "6 桁より細かい角度が入れ子で重なったノードの向きは、合計してから 6 桁へ丸める",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "test-reviewer が `collectSelfAndAncestorRotations` を段ごとに `Angle.sum` する形へ壊すと、当初は全テストが通った。その穴を塞ぐために足したテストで、壊すと落ち、戻すと通る",
+      "given": "0.0000004 度の Box の中の 0.0000004 度の Box の中にある 0.0000004 度のノード",
+      "when": "そのノードの画面上の向きを引く",
+      "then": "`some(0.000001)` になる(段ごとに丸めると 0)",
+      "commit": "d5bff1029dfafd4e349ca59f283112625c88f4e5",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+        "start": 142,
+        "end": 177,
+        "text": "test(\"6 桁より細かい角度が入れ子で重なったノードの向きは、合計してから 6 桁へ丸める\", () => {\n  const document = DesignDocument.create({\n    artboards: [\n      {\n        name: \"home\",\n        width: 360,\n        height: 240,\n        children: [\n          {\n            name: \"outer\",\n            type: \"Box\",\n            props: { rotation: 0.0000004 },\n            children: [\n              {\n                name: \"parent\",\n                type: \"Box\",\n                props: { rotation: 0.0000004 },\n                children: [\n                  {\n                    name: \"self\",\n                    type: \"Text\",\n                    props: { rotation: 0.0000004 },\n                  },\n                ],\n              },\n            ],\n          },\n        ],\n      },\n    ],\n  });\n\n  expect(DesignDocument.totalRotationOf(document, \"self\")).toEqual(\n    Option.some(0.000001),\n  );\n});"
+      },
+      "values": {
+        "columns": [
+          "丸め方",
+          "画面上の向き"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "合計してから 1 回",
+              "0.000001"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "段ごと",
+              "0"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "sum-total"
+      ]
+    },
+    {
+      "id": "artboard-child",
+      "suite": "artboard-child",
+      "name": "小数点以下 6 桁より細かく書いた子の角度は、6 桁へ丸めた角度で並ぶ",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "範囲選択が使う向きと画面上の向きを同じ値に保つ。test-reviewer がこちらの合計を元の素の足し算へ戻すと、このテストだけが落ちた",
+      "given": "artboard 直下に 12.3456789 度の Box を 1 つ置いたドキュメント",
+      "when": "artboard 直下の子の向きを並べる",
+      "then": "`[{ name: \"card\", rotation: 12.345679 }]` になる",
+      "commit": "b8b4b86d248c2ca225e011d1ba3d5c1165cec20d",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-child-rotation.test.ts",
+        "start": 187,
+        "end": 204,
+        "text": "test(\"小数点以下 6 桁より細かく書いた子の角度は、6 桁へ丸めた角度で並ぶ\", () => {\n  const document = DesignDocument.create({\n    artboards: [\n      {\n        name: \"home\",\n        width: 360,\n        height: 240,\n        children: [\n          { name: \"card\", type: \"Box\", props: { rotation: 12.3456789 } },\n        ],\n      },\n    ],\n  });\n\n  expect(DesignDocument.collectArtboardChildRotations(document)).toEqual([\n    { name: \"card\", rotation: 12.345679 },\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "range-collect",
+        "sum-collect"
+      ]
+    },
+    {
+      "id": "resize-snap",
+      "suite": "resize",
+      "name": "359.8 度の絶対配置の Box の中にある -719.8 度の絶対配置のノードは、揃え先を持つ",
+      "techniques": [
+        "regression",
+        "boundary"
+      ],
+      "why": "2 段でも 360 を超える値なら端数が出る。リサイズの範囲の画面上の向きから揃え先までの経路を通しで守る",
+      "given": "359.8 度の絶対配置の Box `card` の中に、-719.8 度の絶対配置の Box `badge`",
+      "when": "`badge` を選んでリサイズの範囲を引く",
+      "then": "揃え先が `[\"card\"]` になる(修正前は合計 -359.99999999999994 で空)",
+      "commit": "7868c77fd4a318b195d80b570125c3614a2a240b",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+        "start": 330,
+        "end": 371,
+        "text": "test(\"359.8 度の絶対配置の Box の中にある -719.8 度の絶対配置のノードは、揃え先を持つ\", () => {\n  // 角度を素のまま足すと -359.99999999999994 になり、1 回りの倍数から外れる\n  const placed = (rotation: number) => ({\n    widthMode: \"fixed\",\n    width: 40,\n    heightMode: \"fixed\",\n    height: 20,\n    placement: \"absolute\",\n    x: 10,\n    y: 10,\n    rotation,\n  });\n  const selection = DocumentSelection.fromNames(\n    DesignDocument.create({\n      artboards: [\n        {\n          name: \"home\",\n          width: 360,\n          height: 240,\n          children: [\n            {\n              name: \"card\",\n              type: \"Box\",\n              props: { ...placed(359.8), width: 120, height: 80 },\n              children: [\n                {\n                  name: \"badge\",\n                  type: \"Box\",\n                  props: placed(-719.8),\n                  children: [],\n                },\n              ],\n            },\n          ],\n        },\n      ],\n    }),\n    [\"badge\"],\n  );\n\n  expect(NodeResize.resizable(selection).snapTargetNames).toEqual([\"card\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "resizable",
+        "resize-total",
+        "resize-whole"
+      ]
+    },
+    {
+      "id": "reparent-512",
+      "suite": "reparent",
+      "name": "512.2 度回って描かれる親から 152.2 度の親へ付け替えても、向きを書かない",
+      "techniques": [
+        "regression",
+        "boundary"
+      ],
+      "why": "丸めた合計どうしの差にも端数が出るので、付け替えの行き先の差の丸めは要る。test-reviewer がその丸めを外すと、このテストが落ちた",
+      "given": "今の親の画面上の向き 512.2・落とし先の親 152.2・自分 0",
+      "when": "付け替えの行き先を決める",
+      "then": "向きを書かない(`none`)。丸めない差は 360.00000000000006",
+      "commit": "52843708b9021ae5949975b5ebb32fafcef833e9",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/reposition-target/__tests__/reposition-target.reparent.test.ts",
+        "start": 264,
+        "end": 273,
+        "text": "/* 以下は丸めた向きどうしの差・和に出る浮動小数の端数（丸める理由は `Angle.roundToMicrodegree`）。 */\ntest(\"512.2 度回って描かれる親から 152.2 度の親へ付け替えても、向きを書かない\", () => {\n  expect(\n    writtenRotation({\n      parentRotation: 512.2,\n      dropRotation: 152.2,\n      ownRotation: 0,\n    }),\n  ).toEqual(Option.none);\n});"
+      },
+      "values": {
+        "columns": [
+          "今の親",
+          "落とし先",
+          "丸めない差",
+          "丸めた差"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "512.2",
+              "152.2",
+              "360.00000000000006",
+              "360"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-target/index.ts"
+      ],
+      "covers": [
+        "reposition-round"
+      ]
+    },
+    {
+      "id": "turned-no-snap",
+      "suite": "resize",
+      "name": "回したノードには揃え先が無い",
+      "techniques": [
+        "state"
+      ],
+      "why": "丸めを入れても、本当に回っているノードは回っている側のまま",
+      "given": "回した絶対配置のノード",
+      "when": "そのノードを選んでリサイズの範囲を引く",
+      "then": "揃え先が空",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+        "start": 305,
+        "end": 309,
+        "text": "test(\"回したノードには揃え先が無い\", () => {\n  expect(\n    NodeResize.resizable(setupTurnedSelection(\"tilted\")).snapTargetNames,\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "resizable",
+        "resize-whole"
+      ]
+    },
+    {
+      "id": "whole-turn-snap",
+      "suite": "resize",
+      "name": "1 回り回したノードは回っていないものと同じく揃え先を持つ",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "端数の無い 360 度は、前から回っていないものと同じに扱っていた。丸めでこれが変わらない",
+      "given": "1 回り回したノード",
+      "when": "そのノードを選んでリサイズの範囲を引く",
+      "then": "親と兄弟が揃え先に並ぶ",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+        "start": 324,
+        "end": 328,
+        "text": "test(\"1 回り回したノードは回っていないものと同じく揃え先を持つ\", () => {\n  expect(\n    NodeResize.resizable(setupTurnedSelection(\"stamp\")).snapTargetNames,\n  ).toEqual([\"home\", \"card\", \"tilted\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "resizable",
+        "resize-whole"
+      ]
+    },
+    {
+      "id": "drag-total-todo",
+      "suite": "reparent",
+      "name": "端数が乗る入れ子の親から運んでも、運んでいる間と離したあとの向きが揃う",
+      "techniques": [
+        "regression"
+      ],
+      "why": "ドラッグの側は画面上の向きを受け取るだけで、通しのテストは無い。矩形の実測は happy-dom にレイアウトが無く 0 になるため足していない",
+      "given": "合計に端数が乗る入れ子の親の中のノード",
+      "when": "別の親へ運んで離す",
+      "then": "1 回りの倍数の差なら向きを書かない",
+      "todo": true,
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "drag-total"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "回っていないノードが、回っているように扱われなくなった",
+    "lead": "入れ子にした Box の角度を足すと 1 回りちょうど(または 0 度)になるノードが、計算の小さな誤差で「回っている」扱いになり、リサイズのハンドル・揃え先・カーソル・大きさの測り方が回ったときのものになっていました。角度の合計を小数点以下 6 桁で揃えて見るようにして、見た目どおりに扱うようにしました。",
+    "changed": {
+      "before": [
+        {
+          "text": "-0.1 度の Box の中の -0.2 度の Box の中にある 0.3 度のノードは、合計 0 度なのに回っている扱いになっていた",
+          "message": "resize-total"
+        },
+        {
+          "text": "359.8 度の Box の中の -719.8 度のノードは、1 回りちょうどなのにリサイズで揃え先が出なかった",
+          "message": "resize-whole"
+        },
+        {
+          "text": "15.8 度の Box の中の -128.3 度のノードは、左右の辺のカーソルが斜めの矢印になっていた",
+          "message": "cursor"
+        }
+      ],
+      "after": [
+        {
+          "text": "3 段の入れ子で合計 0 度のノードは、回っていないノードと同じハンドルになる",
+          "message": "resize-total"
+        },
+        {
+          "text": "1 回りちょうどのノードは、リサイズで親を揃え先に持つ",
+          "message": "resize-whole"
+        },
+        {
+          "text": "向きがちょうど 45 度刻みの中間なら、カーソルは時計回りの側(この例では縦の矢印)になる",
+          "message": "cursor"
+        }
+      ],
+      "text": "見た目と扱いが食い違うのは、小数の足し算の誤差が原因でした。揃えた値は画面の判定だけに使い、ファイルに書く角度は変わりません。"
+    },
+    "tables": [
+      {
+        "label": "入れ子の角度ごとの扱い",
+        "gist": "変わったのは、合計がちょうど 1 回りの倍数か、45 度刻みのちょうど中間になる組だけ。",
+        "text": "最後の行は本当に回っているノードで、扱いが変わらないことを確かめるための対照です。",
+        "rowHeads": [
+          {
+            "id": "zero3",
+            "label": "合計 0 度の 3 段の入れ子",
+            "note": "-0.1 度の中の -0.2 度の中の 0.3 度"
+          },
+          {
+            "id": "over360",
+            "label": "1 回りちょうどの 2 段の入れ子",
+            "note": "359.8 度の中の -719.8 度"
+          },
+          {
+            "id": "mid",
+            "label": "45 度刻みの中間の入れ子",
+            "note": "15.8 度の中の -128.3 度"
+          },
+          {
+            "id": "tilted",
+            "label": "回っているノード"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "turned",
+            "label": "回っている扱いか"
+          },
+          {
+            "id": "cursor",
+            "label": "左右の辺のカーソル"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "zero3",
+            "columnHead": "turned",
+            "result": "回っていない扱い",
+            "was": "回っている扱い",
+            "tests": [
+              "three-nested"
+            ]
+          },
+          {
+            "rowHead": "zero3",
+            "columnHead": "cursor",
+            "result": "横の矢印"
+          },
+          {
+            "rowHead": "over360",
+            "columnHead": "turned",
+            "result": "回っていない扱いで、親を揃え先に持つ",
+            "was": "回っている扱いで、揃え先が出ない",
+            "tests": [
+              "resize-snap"
+            ]
+          },
+          {
+            "rowHead": "over360",
+            "columnHead": "cursor",
+            "result": "横の矢印"
+          },
+          {
+            "rowHead": "mid",
+            "columnHead": "turned",
+            "result": "回っている扱い"
+          },
+          {
+            "rowHead": "mid",
+            "columnHead": "cursor",
+            "result": "縦の矢印",
+            "was": "左上と右下を結ぶ斜めの矢印",
+            "note": "ちょうど中間は時計回りの側に寄せる",
+            "tests": [
+              "mid-angle"
+            ]
+          },
+          {
+            "rowHead": "tilted",
+            "columnHead": "turned",
+            "result": "回っている扱いで、揃え先は出ない",
+            "tests": [
+              "turned-no-snap"
+            ]
+          },
+          {
+            "rowHead": "tilted",
+            "columnHead": "cursor",
+            "result": "向きに合わせた 45 度刻みの矢印"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "小数点以下 7 桁より細かい角度を書いたとき",
+        "before": [
+          {
+            "text": "細かい角度は、そのまま足して画面の判定に使っていた"
+          }
+        ],
+        "after": [
+          {
+            "text": "入れ子の角度を全部足してから小数点以下 6 桁に揃えて見る",
+            "message": "sum-total"
+          },
+          {
+            "text": "1 段ずつ揃えないので、ごく小さな角度を何段重ねても合計が消えない",
+            "message": "sum-total"
+          },
+          {
+            "text": "範囲選択で使う向きも、同じ揃え方の値になる",
+            "message": "sum-collect"
+          }
+        ],
+        "text": "揃える幅は 100 万分の 1 度で、半径 1 万ピクセルでも見た目は動きません。",
+        "tests": [
+          "sum-once",
+          "fine-nested",
+          "artboard-child"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "本当に回っているノードは、今までどおり回った枠に沿うハンドルで、揃え先は出ない",
+        "tests": [
+          "turned-no-snap"
+        ]
+      },
+      {
+        "text": "ちょうど 1 回り回したノードは、今までどおり回っていないものと同じに揃え先を持つ",
+        "tests": [
+          "whole-turn-snap"
+        ]
+      },
+      {
+        "text": "別の親へ付け替えるとき、向きの差が 1 回りちょうどなら角度を書かない",
+        "tests": [
+          "reparent-512"
+        ]
+      },
+      {
+        "text": "ファイルに書かれる角度は変わらない。揃えるのは画面で向きを判定するときだけ"
+      },
+      {
+        "text": "運んでいる間と離したあとの向きの揃い方は、通しのテストが無い",
+        "tests": [
+          "drag-total-todo"
+        ]
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "float",
+      "category": "JavaScript · 数値",
+      "label": "浮動小数(IEEE 754)の端数",
+      "gist": "JavaScript の数値 `number` は、小数を[[2 進数|binary]]の有限の桁で近似して持つ[[浮動小数|float]]。10 進で書いた 0.1 や 0.2 はぴったり表せないので、足すと `0.30000000000000004` のような小さな端数が出る。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "数値は [[IEEE 754|ieee754]] の 64 ビットの形で持たれ、どの値も「2 進の仮数 × 2 の累乗」に丸めて保存される。0.1 は 2 進では無限に続く小数なので、保存した時点で少しずれている。ずれた値どうしを足すと、ずれが打ち消し合わずに残ることがある。"
+        },
+        {
+          "kind": "text",
+          "text": "この PR では、角度の合計に端数が乗っていた。-0.1 + -0.2 + 0.3 は `-5.551115123125783e-17`、359.8 + -719.8 は `-359.99999999999994`、15.8 + -128.3 は `-112.50000000000001` になる。数学的には 0・-360・-112.5 なので、判定が「ちょうど」を前提にしていると外れる。"
+        },
+        {
+          "kind": "caution",
+          "text": "端数があるかは値を `===` で比べて初めて分かる。画面に出すときは短く丸めて表示されることが多いので、表示だけを見ても気づけない。"
+        },
+        {
+          "kind": "memo",
+          "text": "端数を消す方法は、ある桁で[[丸める|rounding]]か、許容誤差(ε)を決めて「ほぼ同じ」で比べるかの 2 通りがある。この PR は、角度の精度を 6 桁と決めた既存の丸めに寄せ、許容誤差は持ち込まなかった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "lineRange": {
+            "start": 29,
+            "end": 43
+          },
+          "text": "`roundToMicrodegree` の doc が、端数の例と 6 桁で丸める理由を書いている",
+          "shas": [
+            "c4741c795133696fe1d28314cb032013e22b6ee3"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+          "lineRange": {
+            "start": 79,
+            "end": 114
+          },
+          "text": "-0.1 / -0.2 / 0.3 の入れ子。どの順に足しても丸める前は 0 にならない",
+          "shas": [
+            "b8b4b86d248c2ca225e011d1ba3d5c1165cec20d"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "negative-zero",
+        "math-round",
+        "angle-sum"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "negative-zero",
+      "category": "JavaScript · 数値",
+      "label": "-0(負のゼロ)",
+      "gist": "[[IEEE 754|ieee754]] の数値には符号付きのゼロがあり、`0` とは別に `-0` がある。小さな負の値を[[丸める|rounding]]と `-0` になる。ほとんどの比較では `0` と同じに扱われる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`Math.round(-5.551115123125783e-17 * 1e6) / 1e6` は `-0` を返す。負の小さな値を丸めても符号は残るため。"
+        },
+        {
+          "kind": "text",
+          "text": "`-0 === 0` は `true`、`-0 % 360 === 0` も `true`、`JSON.stringify(-0)` は `\"0\"` を返す。一方、テストの `toEqual(0)` は `Object.is` に近い比べ方をするので `-0` と `0` を区別して落ちる。"
+        },
+        {
+          "kind": "caution",
+          "text": "`-0` が出うる値を `toEqual(0)` で確かめると、振る舞いが正しくても落ちる。この PR のテストは「1 回りの倍数か」で見ている。"
+        },
+        {
+          "kind": "rule",
+          "text": "`Angle.sum` は `-0` を `0` へ直さない。1 回りの倍数の判定と JSON の書き出しで `0` と同じに扱われ、見える振る舞いが変わらないため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "lineRange": {
+            "start": 50,
+            "end": 51
+          },
+          "text": "`-0` を直さない理由",
+          "shas": [
+            "6e07b7b43108da7a6e091d33bbee6ac0d5d2c84c"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+          "lineRange": {
+            "start": 107,
+            "end": 113
+          },
+          "text": "`toEqual(0)` ではなく「1 回りの倍数か」で見るテスト",
+          "shas": [
+            "6e07b7b43108da7a6e091d33bbee6ac0d5d2c84c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "float",
+        "remainder"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "remainder",
+      "category": "JavaScript · 演算子",
+      "label": "剰余演算子 `%`",
+      "gist": "`a % b` は a を b で割った余りを返す演算子。角度が 1 回り(360 度)の倍数かを `angle % 360 === 0` で見るのに使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "余りの符号は割られる側(左)に揃う。`-720 % 360` は `-0`、`-112.5 % 180` は `-112.5`。小数にも使え、[[浮動小数|float]]の端数はそのまま余りに残る(`-359.99999999999994 % 360` は 0 ではない)。"
+        },
+        {
+          "kind": "declaration",
+          "code": "isWholeTurns(angle: Angle): boolean {\n  return angle % Angle.FullTurn === 0;\n}"
+        },
+        {
+          "kind": "memo",
+          "text": "1 回りの倍数の判定は誤差を許さない。この PR はこの判定を変えず、渡す角度の側から端数を落とした。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "lineRange": {
+            "start": 25,
+            "end": 27
+          },
+          "text": "1 回りの倍数かの判定(この PR では変えていない)"
+        }
+      ],
+      "seeAlso": [
+        "float",
+        "negative-zero"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "math-round",
+      "category": "JavaScript · 数値",
+      "label": "`Math.round` で小数点以下 n 桁に丸める",
+      "gist": "`Math.round` は数値を最も近い整数へ[[丸める|rounding]]標準の関数。小数点以下 n 桁で丸めたいときは、10 の n 乗を掛けて整数へ丸め、同じ数で割り戻す。",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/utils/NumberEx.ts",
+            "start": 58,
+            "end": 61,
+            "emphasis": [
+              {
+                "start": 60,
+                "end": 60
+              }
+            ],
+            "text": "  round(value: number, digits: Readonly<{ fractionDigits: number }>): number {\n    const scale = 10 ** digits.fractionDigits;\n    return Math.round(value * scale) / scale;\n  },"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "6 桁なら `Math.round(value * 1e6) / 1e6`。0.30000000000000004 は 0.3 に、-112.50000000000001 は -112.5 に、0.0000012 は 0.000001 に、0.0000004 は 0 になる。"
+        },
+        {
+          "kind": "caution",
+          "text": "ちょうど半分(`x.5`)は正の無限大の側へ丸まるので、負の値のちょうど半分は 0 に近い側へ寄る(`Math.round(-2.5)` は `-2`)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/NumberEx.ts",
+          "lineRange": {
+            "start": 58,
+            "end": 61
+          },
+          "text": "`NumberEx.round`。`Angle.roundToMicrodegree` が 6 桁で呼ぶ(この PR では変えていない)"
+        },
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "lineRange": {
+            "start": 41,
+            "end": 43
+          },
+          "text": "角度を 6 桁へ丸める `roundToMicrodegree`"
+        }
+      ],
+      "seeAlso": [
+        "float",
+        "angle-sum"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "readonly-array",
+      "category": "TypeScript · 型",
+      "label": "`readonly T[]`(読み取り専用の配列型)",
+      "gist": "配列の[[型注釈|type-annotation]]の前に `readonly` を付けると、その配列を書き換える操作(`push` や要素への代入)を型の上で禁止できる。受け取った並びを壊さないことを、関数の宣言に出すために使う。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "sum(angles: readonly Angle[]): Angle"
+        },
+        {
+          "kind": "text",
+          "text": "`readonly Angle[]` には普通の配列 `Angle[]` もそのまま渡せる。逆に、`readonly` の配列を `Angle[]` を求める関数へは渡せない。読むだけの `reduce` や `map` は `readonly` でも使える。"
+        },
+        {
+          "kind": "memo",
+          "text": "`Angle` は `number` の別名で、角度を表す型として名前を付けている。空の配列 `[]` も `readonly Angle[]` として渡せる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "lineRange": {
+            "start": 56,
+            "end": 56
+          },
+          "text": "`Angle.sum` の引数",
+          "shas": [
+            "c4741c795133696fe1d28314cb032013e22b6ee3"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 759,
+            "end": 762
+          },
+          "text": "`collectSelfAndAncestorRotations` の戻り値 `Option<readonly Angle[]>`",
+          "shas": [
+            "fa09e97157ff4daa0cd249976118474f69566598",
+            "5dfe6e342d2d7a919142aabbaf73a2b5f25af43a"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "reduce"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "reduce",
+      "category": "JavaScript · 配列",
+      "label": "`Array.prototype.reduce`",
+      "gist": "配列の要素を先頭から順に 1 つずつ取り出し、[[累積値|accumulator]]に畳み込んで 1 つの値にする標準のメソッド。合計を取るのに使う。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "array.reduce((total, item) => next, initialValue)"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "(total, item) => next",
+              "type": "関数",
+              "text": "1 要素ごとに呼ばれる[[コールバック|callback]]。前回までの[[累積値|accumulator]] `total` と今の要素 `item` を受け取り、次の累積値を返す"
+            },
+            {
+              "name": "initialValue",
+              "type": "初期値",
+              "text": "最初の呼び出しで `total` に入る値。配列が空なら、これがそのまま結果になる",
+              "note": "省くと空の配列で例外"
+            }
+          ]
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/unit/angle/index.ts",
+            "start": 56,
+            "end": 60,
+            "emphasis": [
+              {
+                "start": 58,
+                "end": 58
+              }
+            ],
+            "text": "  sum(angles: readonly Angle[]): Angle {\n    return Angle.roundToMicrodegree(\n      angles.reduce((total, angle) => total + angle, 0),\n    );\n  },"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "`Angle.sum` は初期値 0 から角度を素のまま足し、終わってから 1 回だけ丸める。コールバックの中で丸めると、足すたびに丸めることになり、0.0000004 + 0.0000004 が 0 になる。"
+        },
+        {
+          "kind": "caution",
+          "text": "初期値を省くと、空の配列で `TypeError` になる。`Angle.sum([])` が 0 を返すのは初期値 0 を渡しているから。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "lineRange": {
+            "start": 56,
+            "end": 60
+          },
+          "text": "`Angle.sum` の合計",
+          "shas": [
+            "c4741c795133696fe1d28314cb032013e22b6ee3"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "angle-sum",
+        "readonly-array"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "spread",
+      "category": "JavaScript · 配列",
+      "label": "配列のスプレッド `[a, ...rest]`",
+      "gist": "[[配列リテラル|array-literal]]の中で `...配列` と書くと、その配列の要素を展開して並べられる。元の配列を書き換えずに、先頭へ 1 つ足した新しい配列を作るのに使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`[rotation, ...outer]` は、`outer` の要素の前に `rotation` を置いた新しい配列。`outer` 自体は変わらない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/dcmp/design-document/index.ts",
+            "start": 769,
+            "end": 777,
+            "emphasis": [
+              {
+                "start": 775,
+                "end": 775
+              }
+            ],
+            "text": "  if (!Option.isSome(position)) {\n    return Option.map(own, (rotation) => [rotation]);\n  }\n  return Option.flatMap(own, (rotation) =>\n    Option.map(\n      collectSelfAndAncestorRotations(document, position.value.parentName),\n      (outer) => [rotation, ...outer],\n    ),\n  );"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "自分の角度を先頭に、外側の角度の並びを後ろに並べるので、並びは自分から artboard へ向かう順になる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 775,
+            "end": 775
+          },
+          "text": "自分の角度を外側の並びの前に置く",
+          "shas": [
+            "fa09e97157ff4daa0cd249976118474f69566598"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "option",
+        "screen-orientation"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "option",
+      "category": "TypeScript · 値の不在",
+      "label": "`Option` と `map` / `flatMap`",
+      "gist": "値が「ある(`some`)」か「無い(`none`)」かを 1 つの型で表す[[直和型|union]]。このリポジトリでは `null` / `undefined` の代わりに使い、`src/utils/Option.ts` が作り方と取り回しの関数を持つ。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "type Option<T> = Some<T> | None;"
+        },
+        {
+          "kind": "text",
+          "text": "`Option.map(option, fn)` は、値があれば `fn` を当てた結果を `some` で包み、無ければ `none` のまま返す。`Option.flatMap(option, fn)` は `fn` 自体が `Option` を返すときに使い、二重に包まずにそのまま返す。どちらも「無い」を途中で分岐せずに後ろへ流せる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/dcmp/design-document/index.ts",
+            "start": 1593,
+            "end": 1598,
+            "text": "  totalRotationOf(document: DesignDocument, name: string): Option<Angle> {\n    return Option.map(\n      collectSelfAndAncestorRotations(document, name),\n      Angle.sum,\n    );\n  },"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "`totalRotationOf` は、角度の並びが引ければ `Angle.sum` を当て、どれかの角度が引けなければ `none` を返す。`Option.map` には関数そのもの(`Angle.sum`)を渡している。"
+        },
+        {
+          "kind": "memo",
+          "text": "`Option<T>` の `T` は[[型引数|type-parameter]]で、中に入る値の型を呼び出し側が決める。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1593,
+            "end": 1598
+          },
+          "text": "`totalRotationOf` が角度の並びに `Angle.sum` を当てる",
+          "shas": [
+            "fa09e97157ff4daa0cd249976118474f69566598",
+            "5dfe6e342d2d7a919142aabbaf73a2b5f25af43a"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 769,
+            "end": 777
+          },
+          "text": "自分の角度と外側の並びを `flatMap` / `map` でつなぐ",
+          "shas": [
+            "fa09e97157ff4daa0cd249976118474f69566598"
+          ]
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "lineRange": {
+            "start": 53,
+            "end": 66
+          },
+          "text": "`map` と `flatMap` の定義(この PR では変えていない)"
+        }
+      ],
+      "seeAlso": [
+        "spread",
+        "screen-orientation"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "angle-sum",
+      "category": "domains · 角度",
+      "label": "`Angle.sum`(角度の合計を 1 回だけ丸める)",
+      "gist": "角度の並びを足し、合計を小数点以下 6 桁へ[[丸める|rounding]]。画面上の向きを作る 2 つの入口が、自分で足さずにこれを呼ぶ。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/unit/angle/index.ts",
+            "start": 45,
+            "end": 60,
+            "text": "  /**\n   * 角度の合計を小数点以下 6 桁へ丸めたもの。\n   *\n   * 1 つ足すごとに丸めないのは、6 桁より細かい角度どうし（0.0000004 + 0.0000004）だと\n   * 足す回数（入れ子の深さ）で合計が変わるから。\n   * 小さな負の合計が丸めで -0 になっても 0 へ直さないのは、`isWholeTurns` と JSON の書き出しでは\n   * 0 と同じに扱われるから。\n   *\n   * @param angles 足し合わせる角度の並び\n   * @returns 合計を `roundToMicrodegree` へ通した角度。空の並びなら 0\n   */\n  sum(angles: readonly Angle[]): Angle {\n    return Angle.roundToMicrodegree(\n      angles.reduce((total, angle) => total + angle, 0),\n    );\n  },"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "足し終えてから 1 回だけ丸める。足すたびに丸めると、6 桁より細かい角度(0.0000004)が入れ子の深さで消え、同じ見た目のノードの向きが深さで変わる。"
+        },
+        {
+          "kind": "rule",
+          "text": "丸めで出る `-0` は直さない(1 回りの倍数の判定と JSON の書き出しでは `0` と同じ)。"
+        },
+        {
+          "kind": "spec",
+          "text": "06-ui の「画面上の向き」は、自分と包んでいるノードの `rotation` の合計を小数点以下 6 桁へ丸めたもの。回っているかの判定・ハンドル・カーソル・長さのすべてをこの値で決める。"
+        },
+        {
+          "kind": "history",
+          "text": "6 桁の丸め(`roundToMicrodegree`)は #1105 で付け替えの差のために入った。この PR はそれを合計にも使う。#1116 の 1 回目の着手では、#1105 がまだマージされておらず丸めの関数が main に無かったので、マージを待って再開した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "lineRange": {
+            "start": 45,
+            "end": 60
+          },
+          "text": "定義と、1 回だけ丸める理由・`-0` を直さない理由",
+          "shas": [
+            "c4741c795133696fe1d28314cb032013e22b6ee3",
+            "6e07b7b43108da7a6e091d33bbee6ac0d5d2c84c"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1310,
+            "end": 1310
+          },
+          "text": "artboard 直下の子の向き",
+          "shas": [
+            "fa09e97157ff4daa0cd249976118474f69566598"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1594,
+            "end": 1597
+          },
+          "text": "画面上の向き(`totalRotationOf`)",
+          "shas": [
+            "fa09e97157ff4daa0cd249976118474f69566598",
+            "5dfe6e342d2d7a919142aabbaf73a2b5f25af43a"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "reduce",
+        "math-round",
+        "float",
+        "screen-orientation"
+      ],
+      "tests": [
+        "sum-fraction",
+        "sum-once",
+        "sum-empty",
+        "fine-nested"
+      ],
+      "flows": [
+        "resize",
+        "range"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "screen-orientation",
+      "category": "domains · 画面上の向き",
+      "label": "画面上の向き",
+      "gist": "ノードが画面上で向いている角度。回った Box の中の子は親と一緒に回るので、自分と包んでいるノード・artboard の `rotation` の合計になる。この PR から、合計は `Angle.sum` で 6 桁へ[[丸めた|rounding]]値。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "入口は 2 つ。`DesignDocument.totalRotationOf(document, name)` は 1 つの名前の向きを返し、`DesignDocument.collectArtboardChildRotations(document)` は範囲選択のために artboard 直下の子の向きを並べる。どちらも合計は `Angle.sum` に任せる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/dcmp/design-document/index.ts",
+            "start": 750,
+            "end": 778,
+            "emphasis": [
+              {
+                "start": 772,
+                "end": 777
+              }
+            ],
+            "text": "/**\n * 名前で指したものと、それを包んでいるノード・artboard の角度を、自分から外側へ並べたもの。\n * artboard で止める。\n *\n * @param document 引き先になるドキュメント\n * @param name 起点にする artboard / ノードの名前\n * @returns 自分から外側への角度の並び。自分か包んでいるもののどれかの角度が引けないとき\n *   （`rotationOf` が `none`）は `none`\n */\nfunction collectSelfAndAncestorRotations(\n  document: DesignDocument,\n  name: string,\n): Option<readonly Angle[]> {\n  const own = DesignDocument.rotationOf(document, name);\n  // artboard は誰の子でもないので、親を探す前に止める（探すと木の全体を走る）\n  const isArtboard = Option.isSome(DesignDocument.findArtboard(document, name));\n  const position = isArtboard\n    ? Option.none\n    : DesignDocument.findChildPosition(document, name);\n  if (!Option.isSome(position)) {\n    return Option.map(own, (rotation) => [rotation]);\n  }\n  return Option.flatMap(own, (rotation) =>\n    Option.map(\n      collectSelfAndAncestorRotations(document, position.value.parentName),\n      (outer) => [rotation, ...outer],\n    ),\n  );\n}"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "`collectSelfAndAncestorRotations` は自分から外側へ角度を並べるだけで、足さない。再帰の途中で足すと段ごとに丸めることになるため。artboard に着いたら親を探さずに止める。"
+        },
+        {
+          "kind": "memo",
+          "text": "受け取る側(リサイズの揃え先とカーソル、描かれた矩形の実測、ドラッグ、付け替え、範囲選択)はこの PR で変えていない。付け替えの行き先は、丸めた向きどうしの差にも端数が出る(512.2 − 152.2 → 360.00000000000006)ので、差を自分でもう一度丸める。"
+        },
+        {
+          "kind": "caution",
+          "text": "artboard の `rotation` は型で 0 に固定されているので、範囲選択の向きには端数が乗らない。それでも丸めに通すのは、「画面上の向きと同じ値」という約束を 7 桁以上の角度(12.3456789)で崩さないため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 750,
+            "end": 778
+          },
+          "text": "自分から外側への角度の並び",
+          "shas": [
+            "fa09e97157ff4daa0cd249976118474f69566598",
+            "5dfe6e342d2d7a919142aabbaf73a2b5f25af43a"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1583,
+            "end": 1598
+          },
+          "text": "`totalRotationOf` と、6 桁へ丸めた合計を返すという doc",
+          "shas": [
+            "fa09e97157ff4daa0cd249976118474f69566598",
+            "5dfe6e342d2d7a919142aabbaf73a2b5f25af43a"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "lineRange": {
+            "start": 193,
+            "end": 197
+          },
+          "text": "仕様の「画面上の向き」の定義と、カーソルの中間の寄せ方",
+          "shas": [
+            "2f13b9501d02aae3fd87dc9fa69928e1f9efeaf9",
+            "bd3cb8d870c140f88fe5e553870607930f099651"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "angle-sum",
+        "option",
+        "spread",
+        "remainder"
+      ],
+      "tests": [
+        "three-nested",
+        "mid-angle",
+        "fine-nested",
+        "artboard-child",
+        "resize-snap",
+        "reparent-512",
+        "drag-total-todo"
+      ],
+      "flows": [
+        "resize",
+        "drag",
+        "range"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "binary",
+      "label": "2 進数",
+      "text": "0 と 1 だけで数を表す書き方。コンピュータの数値はこの形で保存されるので、10 進の 0.1 のように 2 進で割り切れない小数は近似になる。"
+    },
+    {
+      "id": "float",
+      "label": "浮動小数",
+      "text": "小数点の位置を指数で動かして、大きな数も小さな数も同じ桁数で表す数の持ち方。桁数が限られるので、多くの小数は近い値で近似される。"
+    },
+    {
+      "id": "ieee754",
+      "label": "IEEE 754",
+      "text": "浮動小数の持ち方と計算の規則を決めた国際規格。JavaScript の `number` はその 64 ビットの形(倍精度)で、符号付きのゼロ(`0` と `-0`)もこの規格が決めている。"
+    },
+    {
+      "id": "rounding",
+      "label": "丸め",
+      "text": "決めた桁より下を切り捨て・切り上げ・四捨五入して、短い値にすること。この PR では小数点以下 6 桁へ四捨五入する。"
+    },
+    {
+      "id": "type-annotation",
+      "label": "型注釈",
+      "text": "`angles: readonly Angle[]` のように、変数や引数の後ろに `:` で型を書くこと。TypeScript はこれを見て、合わない値を渡すコードをコンパイルの時点で止める。"
+    },
+    {
+      "id": "accumulator",
+      "label": "累積値",
+      "text": "`reduce` が要素を 1 つ処理するたびに次へ引き継ぐ途中の結果。合計なら「ここまでの和」。"
+    },
+    {
+      "id": "callback",
+      "label": "コールバック",
+      "text": "別の関数に引数として渡し、その関数の中から呼んでもらう関数。`(total, angle) => total + angle` のように矢印で書くことが多い。"
+    },
+    {
+      "id": "array-literal",
+      "label": "配列リテラル",
+      "text": "`[a, b, c]` のように、角括弧の中に要素を並べて配列をその場で作る書き方。"
+    },
+    {
+      "id": "union",
+      "label": "直和型",
+      "text": "`A | B` と書き、「A か B のどちらか」を表す型。どちらなのかを見分ける目印(`some: true` / `some: false` など)を持たせて使う。"
+    },
+    {
+      "id": "type-parameter",
+      "label": "型引数",
+      "text": "`Option<T>` の `T` のように、型の中で後から決める部分。`Option<number>` と書けば、中に入る値が `number` の `Option` になる。"
+    }
+  ]
+}
