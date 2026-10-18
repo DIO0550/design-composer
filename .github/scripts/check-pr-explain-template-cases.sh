@@ -98,6 +98,6 @@ while IFS='|' read -r expected category label change; do
 done <<<"$cases"
 
 report_documented_kinds "$checker"
-report_covered_kinds "$checker" "$(printf '%s\n' "$cases" | cut -d '|' -f 2 | grep -vx -- '-' | sed 's/^/pr-explain-/')"
+report_covered_kinds "$checker" "$(kinds_in_categories "$cases" pr-explain-)"
 
 exit "$cases_failed"

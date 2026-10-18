@@ -468,6 +468,6 @@ report pass "$user_text_keys" "振る舞い(impact)の型の文字列のキー�
 report pass "$variant_keys" "どの Variant も、kind をまたいで同じキーは同じ規則を持つ"
 
 report_documented_kinds "$builder"
-report_covered_kinds "$builder" "$(printf '%s\n' "$cases" | cut -d '|' -f 2 | grep -vx -- '-' | sed 's/^/pr-explain-/')"
+report_covered_kinds "$builder" "$(kinds_in_categories "$cases" pr-explain-)"
 
 exit "$cases_failed"

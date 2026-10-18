@@ -7,7 +7,8 @@
 # 絶対パスで渡すもの・`cd` してから相対で渡すもの、置くのが 1 ファイルか木か）ので、
 # そこは各判定表が持つ。検出器の種別を docstring の一覧と照合するなら
 # `report_documented_kinds <検出器>`、表の期待がすべての種別を含むかも見るなら
-# `report_covered_kinds <検出器> <期待に出た種別>` を呼ぶ。
+# `report_covered_kinds <検出器> <期待に出た種別>` を呼ぶ。期待に出た種別を表の分類の欄から取るなら
+# `kinds_in_categories <表> <接頭辞>` を使う。
 #
 # **共有先を作ったのは、`.claude/hooks/lib/` の中に同じ関数が 2 本並んだため**
 # （`rules/coding.md`「同じ処理が2箇所に現れたら共通化する」）。`harness/records/count-cases.sh`
@@ -130,6 +131,15 @@ report_documented_kinds() {
     return 0
   fi
   echo 'ok   検出器の種別が docstring の一覧と一致する'
+}
+
+# 表の分類の欄（`|` 区切りの 2 列目）に出た分類を、接頭辞を付けた種別の綴りで 1 行 1 つ出す。
+# 分類の無いケース（`-`）は落とす。
+#
+# $1 判定表（1 行 1 ケース）
+# $2 分類を種別の綴りにする接頭辞
+kinds_in_categories() {
+  printf '%s\n' "$1" | cut -d '|' -f 2 | grep -vx -- '-' | sed "s/^/$2/"
 }
 
 # 検出器が報告する種別ごとに、表の期待に出てくるかを 1 行で出す。出てこない種別があれば
