@@ -4,7 +4,7 @@
   "headBranch": "claude/affectionate-hypatia-46h1sh",
   "baseBranch": "main",
   "mergeBase": "8c76ffb3064b0639ec35ed2a8b0a514bb9435576",
-  "head": "fbc3747dba9921dbaa9bce02f944c556f7919be4",
+  "head": "628a0fa4efa082ee4db1e56eb96ef88d1acb91b0",
   "groups": [
     {
       "label": "ハーネス",
@@ -62,6 +62,26 @@
           "deletions": 0,
           "patch": "@@ -187,3 +187,4 @@ GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_\n ## 規約への反映\n \n 無し。記録のみ(集計と介入は `harness-growth` の管轄)。\n+- 対策済: `ui` 層=case-law at pr-PENDING",
           "patchLines": 5,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "628a0fa4efa082ee4db1e56eb96ef88d1acb91b0",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-18T00:02:03Z",
+      "subject": "📝 [Doc]: 対策済の PR 番号を確定",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_011vrXJEdZvuV3htLjKF9KmR",
+      "files": [
+        {
+          "path": "harness/records/pr-1096.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -187,4 +187,4 @@ GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_\n ## 規約への反映\n \n 無し。記録のみ(集計と介入は `harness-growth` の管轄)。\n-- 対策済: `ui` 層=case-law at pr-PENDING\n+- 対策済: `ui` 層=case-law at pr-1104",
+          "patchLines": 6,
           "truncated": false
         }
       ]
