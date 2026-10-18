@@ -1000,6 +1000,11 @@
     "name": "ファイルが不正になった編集画面"
   },
   {
+    "id": "features-editor-openeddocumenteditor--node-in-rotated-box",
+    "title": "features/editor/OpenedDocumentEditor",
+    "name": "回った Box の中に絶対配置のノードがある編集画面"
+  },
+  {
     "id": "features-editor-openeddocumenteditor--sync-failed",
     "title": "features/editor/OpenedDocumentEditor",
     "name": "同期に失敗した編集画面"
