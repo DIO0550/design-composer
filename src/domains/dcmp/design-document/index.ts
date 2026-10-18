@@ -756,7 +756,7 @@ function holdsForSelfOrAncestor(
  * @returns 自分から外側への角度の並び。自分か包んでいるもののどれかの角度が引けないとき
  *   （`rotationOf` が `none`）は `none`
  */
-function rotationsOutward(
+function collectSelfAndAncestorRotations(
   document: DesignDocument,
   name: string,
 ): Option<readonly Angle[]> {
@@ -771,7 +771,7 @@ function rotationsOutward(
   }
   return Option.flatMap(own, (rotation) =>
     Option.map(
-      rotationsOutward(document, position.value.parentName),
+      collectSelfAndAncestorRotations(document, position.value.parentName),
       (outer) => [rotation, ...outer],
     ),
   );
@@ -1591,7 +1591,10 @@ export const DesignDocument = {
    *   `none`）は `none`
    */
   totalRotationOf(document: DesignDocument, name: string): Option<Angle> {
-    return Option.map(rotationsOutward(document, name), Angle.sum);
+    return Option.map(
+      collectSelfAndAncestorRotations(document, name),
+      Angle.sum,
+    );
   },
 
   /**
