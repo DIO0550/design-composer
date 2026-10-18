@@ -248,6 +248,40 @@ test("倍率を上げても、90 度回った親の中の寄せ量が親の座�
   );
 });
 
+test("倍率を上げても、90 度回った Box の中から回っていない親へ付け替えると、画面上の向きと中心を保つ向きと座標が書かれる", () => {
+  /*
+   * 1.2 倍で画面上の左へ 8.4 運ぶと、倍率で割り戻して 7 になり、1 倍で 7 運んだときと同じ
+   * (217, 14) になる。中心も倍率で割り戻さないと、座標がずれて書かれる
+   */
+  const onRepositionNode = vi.fn();
+  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNode });
+  wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
+  drawnAt("home", { left: 100, top: 60, width: 432, height: 288 });
+  drawnTurnedAt(
+    "frame",
+    { left: 280, top: 60, width: 120, height: 240 },
+    { width: 200, height: 100 },
+  );
+  drawnTurnedAt(
+    "chip",
+    { left: 373.6, top: 72, width: 14.4, height: 24 },
+    { width: 20, height: 12 },
+  );
+
+  dragNodeOnto("chip", drawn("home"), { x: -8.4, y: 0 });
+
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "chip",
+    RepositionEdit.rotatedTo(
+      {
+        parentName: "home",
+        placement: { mode: "absolute", x: 217, y: 14 },
+      },
+      90,
+    ),
+  );
+});
+
 test("360 度回った Box の中のノードは、回っていない Box の中と同じ座標が書かれる", () => {
   const onRepositionNode = vi.fn();
   renderCanvas({ selection: turnedFrameSelection(360), onRepositionNode });
