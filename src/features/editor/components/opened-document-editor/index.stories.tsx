@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, waitFor } from "storybook/test";
 import { ScreenHeightShell } from "@/components/__stories__/screen-height-shell";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import type { RefNode } from "@/domains/dcmp/node";
+import type { Node, RefNode } from "@/domains/dcmp/node";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { ClockFake } from "@/libs/clock/fake";
@@ -70,6 +70,42 @@ export const SyncFailed: Story = {
 };
 
 const Sample = EditorState.document(SampleEditorState);
+
+/**
+ * `Sample` の `home` の子だけを差し替えたドキュメント。
+ *
+ * @param childrenOf 今の `home` の子から、差し替えたあとの子を作る
+ * @returns `home` 以外の artboard とトークン・部品は `Sample` のままのドキュメント
+ */
+function documentWithHomeChildren(
+  childrenOf: (children: readonly Node[]) => readonly Node[],
+): DesignDocument {
+  return DesignDocument.create({
+    tokens: Sample.tokens,
+    components: Sample.components,
+    artboards: Sample.artboards.map((artboard) =>
+      artboard.name === "home"
+        ? { ...artboard, children: childrenOf(artboard.children) }
+        : artboard,
+    ),
+  });
+}
+
+/**
+ * そのドキュメントを開いた編集画面の args。自動保存と監視の相手は、そのドキュメントを
+ * 書いたファイルを 1 つだけ持つ代役にする。
+ *
+ * @param document 開くドキュメント
+ * @returns `ipc` と `opened` の args
+ */
+function argsOpening(document: DesignDocument) {
+  return {
+    ipc: DocumentIpcFake.create({
+      [SamplePath]: DocumentJson.serialize(document),
+    }).ipc,
+    opened: { path: SamplePath, document },
+  };
+}
 
 /*
  * 3 階層の枝を持つドキュメント。掘る操作（docs/06-ui.md「キャンバスのクリックが選ぶ階層」）を
@@ -164,12 +200,7 @@ const DocumentWithDanglingToken = DesignDocument.create({
  */
 export const DocumentErrors: Story = {
   name: "ドキュメント自身が不正な編集画面",
-  args: {
-    ipc: DocumentIpcFake.create({
-      [SamplePath]: DocumentJson.serialize(DocumentWithDanglingToken),
-    }).ipc,
-    opened: { path: SamplePath, document: DocumentWithDanglingToken },
-  },
+  args: argsOpening(DocumentWithDanglingToken),
 };
 
 /*
@@ -182,39 +213,28 @@ export const DocumentErrors: Story = {
  * DOM 順で後ろのほうが上に来て、掴めなくなる（happy-dom では落ちず、VRT も
  * 意図した差分と区別できない）。座標を動かすときはここを見る。
  */
-const DocumentWithAbsoluteNode = DesignDocument.create({
-  tokens: Sample.tokens,
-  components: Sample.components,
-  artboards: Sample.artboards.map((artboard) =>
-    artboard.name === "home"
-      ? {
-          ...artboard,
-          children: [
-            {
-              name: "home-badge",
-              type: "Box",
-              props: {
-                placement: "absolute",
-                x: 296,
-                y: 16,
-                widthMode: "fixed",
-                width: 44,
-                heightMode: "fixed",
-                height: 24,
-                background: "primary",
-                radiusTopLeft: "md",
-                radiusTopRight: "md",
-                radiusBottomRight: "md",
-                radiusBottomLeft: "md",
-              },
-              children: [],
-            },
-            ...artboard.children,
-          ],
-        }
-      : artboard,
-  ),
-});
+const DocumentWithAbsoluteNode = documentWithHomeChildren((children) => [
+  {
+    name: "home-badge",
+    type: "Box",
+    props: {
+      placement: "absolute",
+      x: 296,
+      y: 16,
+      widthMode: "fixed",
+      width: 44,
+      heightMode: "fixed",
+      height: 24,
+      background: "primary",
+      radiusTopLeft: "md",
+      radiusTopRight: "md",
+      radiusBottomRight: "md",
+      radiusBottomLeft: "md",
+    },
+    children: [],
+  },
+  ...children,
+]);
 
 /**
  * 絶対配置のノードが最初から居る編集画面。
@@ -227,12 +247,61 @@ const DocumentWithAbsoluteNode = DesignDocument.create({
  */
 export const AbsoluteNode: Story = {
   name: "絶対配置のノードがある編集画面",
-  args: {
-    ipc: DocumentIpcFake.create({
-      [SamplePath]: DocumentJson.serialize(DocumentWithAbsoluteNode),
-    }).ipc,
-    opened: { path: SamplePath, document: DocumentWithAbsoluteNode },
+  args: argsOpening(DocumentWithAbsoluteNode),
+};
+
+/**
+ * `home` の末尾に 90 度回った Box `home-box` を足し、その中に絶対配置の `home-box-chip`
+ * を置いたドキュメント。
+ *
+ * 末尾に置くのは、DOM 順で後ろのほうが上に来るため（`DocumentWithAbsoluteNode` の doc）。
+ */
+const DocumentWithNodeInRotatedBox = documentWithHomeChildren((children) => [
+  ...children,
+  {
+    name: "home-box",
+    type: "Box",
+    props: {
+      placement: "absolute",
+      x: 170,
+      y: 70,
+      widthMode: "fixed",
+      width: 160,
+      heightMode: "fixed",
+      height: 80,
+      rotation: 90,
+      background: "gray-100",
+    },
+    children: [
+      {
+        name: "home-box-chip",
+        type: "Box",
+        props: {
+          placement: "absolute",
+          x: 16,
+          y: 16,
+          widthMode: "fixed",
+          width: 40,
+          heightMode: "fixed",
+          height: 20,
+          background: "primary",
+        },
+        children: [],
+      },
+    ],
   },
+]);
+
+/**
+ * 回った Box の中に絶対配置のノードがある編集画面。
+ *
+ * `home-box-chip` を選んでから運ぶと、祖先だけが回っているノードの座標の置き直しを
+ * 確かめられる（docs/06-ui.md「キャンバス直接操作」）。画面上でポインタが動いた向きへ動き、
+ * `home-box` の外接矩形の辺へ吸い付き、`home` へ落とすと付け替わる。
+ */
+export const NodeInRotatedBox: Story = {
+  name: "回った Box の中に絶対配置のノードがある編集画面",
+  args: argsOpening(DocumentWithNodeInRotatedBox),
 };
 
 /*
@@ -275,12 +344,7 @@ const DocumentWithMissingComponent = DesignDocument.create({
  */
 export const CompileFailed: Story = {
   name: "コンパイルできないドキュメントの編集画面",
-  args: {
-    ipc: DocumentIpcFake.create({
-      [SamplePath]: DocumentJson.serialize(DocumentWithMissingComponent),
-    }).ipc,
-    opened: { path: SamplePath, document: DocumentWithMissingComponent },
-  },
+  args: argsOpening(DocumentWithMissingComponent),
 };
 
 /**
@@ -329,10 +393,5 @@ export const FileInvalid: Story = {
  */
 export const DeepBranch: Story = {
   name: "入れ子のあるドキュメントの編集画面",
-  args: {
-    ipc: DocumentIpcFake.create({
-      [SamplePath]: DocumentJson.serialize(DocumentWithDeepBranch),
-    }).ipc,
-    opened: { path: SamplePath, document: DocumentWithDeepBranch },
-  },
+  args: argsOpening(DocumentWithDeepBranch),
 };

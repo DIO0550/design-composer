@@ -30,7 +30,7 @@ const InFrontOfArtboards = "z-index:1";
  * 親が中身を切り取る artboard のときだけは付け替えが効いてしまい、**親の種類で挙動が変わ
  * る**。
  *
- * @param offset ドキュメント上の px で表した移動量
+ * @param offset 今の親の向きで測った、ドキュメント上の px の移動量
  * @returns ずらす宣言・当たり判定から外す宣言・前に出す宣言
  */
 export function repositionPreviewDeclarations(offset: Offset): string {

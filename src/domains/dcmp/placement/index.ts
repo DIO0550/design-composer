@@ -100,7 +100,7 @@ export const Placement = {
    * 座標だけを平面上の位置として取り出す。
    *
    * @param placement 座標を読む配置
-   * @returns 親の左上から見た位置
+   * @returns 親の回る前の左上から、親の向きで見た位置
    */
   offset(placement: AbsolutePlacement): Offset {
     return { x: placement.x, y: placement.y };
@@ -126,7 +126,7 @@ export const Placement = {
    *
    * ドラッグ中の見た目を先に動かすのに使う。**丸めた行き先から逆算する**ので、
    * 丸めも込みでプレビューと画面上の位置が一致する（親を付け替える回に書かれる座標は
-   * さらに原点のずれを含むが、見た目はここで決まる / `RepositionDrop`）。
+   * さらに原点のずれと向きの違いを含むが、見た目はここで決まる / `RepositionTarget`）。
    *
    * @param from 動かす前の配置
    * @param to 動かした後の配置

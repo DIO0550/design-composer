@@ -7,6 +7,7 @@ import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import { Placement } from "@/domains/dcmp/placement";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import type { SelectionDig } from "@/domains/session/selection-dig";
@@ -26,7 +27,8 @@ import {
   InsertionParent,
 } from "@/features/editor/features/canvas/domains/node-drop";
 import {
-  type ParentShift,
+  type DropParentCoordinates,
+  type GrabbedPlacement,
   RepositionTarget,
 } from "@/features/editor/features/canvas/domains/reposition-target";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
@@ -135,12 +137,15 @@ const NoSnapTargets: SnapTargets = { stationary: [], siblings: [] };
  * 座標の置き直しに要る実測。
  *
  * 単位が 1 つだけ違う: `origin` / `dragged` / `targets` は実測したままの**画面上の px**、
- * `shift` だけは書かれる座標へ足す量なので**ドキュメント上の px**（倍率で割り戻し済み）。
+ * `dropParent.shift` だけは書かれる座標へ足す量なので**ドキュメント上の px**（倍率で割り戻し済み）。
  */
 type RepositionMeasure = Readonly<{
-  shift: ParentShift;
-  /** 今の親の矩形。掴んだ時点の座標はここを原点にしているので、行き先の組み立てに使う。 */
-  origin: CanvasBounds;
+  dropParent: DropParentCoordinates;
+  /**
+   * 今の親の回って描かれている矩形。掴んだ時点の座標はこの親の座標（`RotatedBounds.placedAt`）
+   * で測っているので、行き先の組み立てに使う。
+   */
+  origin: RotatedBounds;
   /** 運んでいるノードの回る前の大きさと向き。位置は使わない。 */
   dragged: RotatedBounds;
   /** 吸い付く先。 */
@@ -148,36 +153,57 @@ type RepositionMeasure = Readonly<{
 }>;
 
 /**
+ * 座標で運んでいるノード（`CarriedNode`）に、それを測っている今の親の向きを添えたもの。
+ *
+ * 今の親の向きは `repositionCarrying` が 1 回だけ引き、ずらし量と実測の両方へ同じ値を配る。
+ */
+type CarriedNodeWithParentRotation = Readonly<{
+  name: string;
+  parentName: string;
+  /** 掴んだ時点の配置と今の親の向き */
+  from: GrabbedPlacement;
+}>;
+
+/**
  * 座標の置き直しに要るものを、落とし先の親を 1 回だけ実測して揃える。
  *
  * 親の矩形はドキュメントに書かれていない（`hug` / `fill` があるので大きさも位置もレイア
  * ウトを通すまで決まらない）ため実測でしか決められない。倍率は実測値に乗るのでドキュメン
- * ト上の px へ割り戻し、落とし先が今の親と同じでも分岐しない（2 回測ればずれは 0）。
+ * ト上の px へ割り戻し、落とし先が今の親と同じでも分岐しない（2 回測れば原点の位置は 0）。
+ * 揃え先の落とし先の親は、回っていても外接矩形で見る（docs/06-ui.md の辺のスナップ）。
  *
- * @param context 運んでいるノードの向きの引き先のドキュメントと、倍率を持つ今の掴み。
- *   倍率は実測の割り戻しと、回ったノードのレイアウトの大きさを画面上の大きさへ直すのに使う
- * @param carried 運んでいるノードと、掴んだ時点の場所
+ * @param context 運んでいるノードと落とし先の親の向きの引き先のドキュメントと、倍率を持つ
+ *   今の掴み。倍率は実測の割り戻しと、回ったもののレイアウトの大きさを画面上の大きさへ直す
+ *   のに使う
+ * @param node 運んでいるノードと今の親、掴んだ時点の配置と今の親の向き
  * @param dropped 落とし先の親
  * @returns 置き直しに要る実測。今の親・落とし先・運んでいるノードのどれかが画
- *   面に無い・運んでいるノードの向きが引けない・回っているのにレイアウトの大きさを
- *   測れないときは `none`（測れないまま座標を書かない）
+ *   面に無い・運んでいるノードか落とし先の親の向きが引けない・回っているのにレイアウトの
+ *   大きさを測れないときは `none`（測れないまま座標を書かない）
  */
 function measureReposition(
   context: DropContext,
-  carried: CarriedNode,
+  node: CarriedNodeWithParentRotation,
   dropped: DropParent,
 ): Option<RepositionMeasure> {
-  const currentBounds = DrawnBounds.measure(carried.at.parentName);
-  // 落とし先だけ `DrawnBounds.measure` に寄せない。直下の子の矩形を集めるのに要素が要る
-  const droppedElement = CanvasDom.elementOf(dropped.name);
-  const dragged = Option.flatMap(
-    DesignDocument.totalRotationOf(context.document, carried.name),
-    (rotation) =>
-      DrawnBounds.measureRotated(carried.name, rotation, context.view),
+  const measureByName = (name: string): Option<RotatedBounds> =>
+    Option.flatMap(
+      DesignDocument.totalRotationOf(context.document, name),
+      (rotation) => DrawnBounds.measureRotated(name, rotation, context.view),
+    );
+  const currentBounds = DrawnBounds.measureRotated(
+    node.parentName,
+    node.from.parentRotation,
+    context.view,
   );
-  // 座標を書くにも揃え先を出すにも 3 つとも要るので、1 つでも欠けたら測れなかったとみなす
+  const droppedRotated = measureByName(dropped.name);
+  // 落とし先は `DrawnBounds` だけに寄せない。直下の子の矩形を集めるのに要素が要る
+  const droppedElement = CanvasDom.elementOf(dropped.name);
+  const dragged = measureByName(node.name);
+  // 座標を書くにも揃え先を出すにもすべて要るので、1 つでも欠けたら測れなかったとみなす
   const measurable =
     Option.isSome(currentBounds) &&
+    Option.isSome(droppedRotated) &&
     Option.isSome(droppedElement) &&
     Option.isSome(dragged);
   if (!measurable) {
@@ -185,17 +211,16 @@ function measureReposition(
   }
   const droppedBounds = CanvasDom.boundsOf(droppedElement.value);
   const siblings = namedChildrenOf(droppedElement.value)
-    .filter(
-      (child) => child.getAttribute(ElementNameAttribute) !== carried.name,
-    )
+    .filter((child) => child.getAttribute(ElementNameAttribute) !== node.name)
     .map(CanvasDom.boundsOf);
   return Option.some({
-    shift: {
+    dropParent: {
       name: dropped.name,
       shift: CanvasView.toDocumentOffset(
         context.view,
-        CanvasBounds.originShift(currentBounds.value, droppedBounds),
+        RotatedBounds.originShift(currentBounds.value, droppedRotated.value),
       ),
+      rotation: droppedRotated.value.rotation,
     },
     origin: currentBounds.value,
     dragged: dragged.value,
@@ -207,25 +232,34 @@ function measureReposition(
  * 揃う位置か兄弟の列と同じ間隔になる位置へ寄せる量と、揃った線（辺か中心線）に引く
  * ガイド線。
  *
- * 回る前の矩形を運んだ先へ置き、それを回した軸に平行な外接矩形を運んでいるものの矩形に
- * する（docs/06-ui.md の辺のスナップ）。
+ * 回る前の矩形を掴んだ時点の位置へ置き、それを回した軸に平行な外接矩形を画面上で運んだ
+ * 量だけずらして運んでいるものの矩形にする（docs/06-ui.md の辺のスナップ）。運んだ量を
+ * 親の向きへ戻さずに画面のまま足すのは、判定も寄せ量も画面の向きで行うため。
  *
  * 置く位置まで実測から採れないのは、運んでいる間は `translate` でずらして見せており
  * （`repositionPreviewDeclarations`）**前回の移動分が既に乗っている**ため。
  *
  * @param measured 落とし先の実測（寄せの原点と、運んでいるものの回る前の大きさと向き）
- * @param movedTo 今の親の左上から見た、運んだ先の回る前の矩形の左上（画面上の px）
+ * @param carry 今の親の座標で見た、掴んだ時点の回る前の矩形の左上（`grabbedAt`）と、
+ *   画面上で運んだ量（`screenDelta`）。どちらも画面上の px
  * @param targets 今回吸い付く先（吸い付かない回は空）
  * @returns 寄せ量と、揃った線のガイド線・揃え先との隙間（どれも画面上の px。中身は
  *   `SideSnap.toSnapped` の答え）
  */
 function snapAt(
   measured: RepositionMeasure,
-  movedTo: Offset,
+  carry: Readonly<{ grabbedAt: Offset; screenDelta: Offset }>,
   targets: SnapTargets,
 ): SideSnapped {
-  const moving = RotatedBounds.toEnclosing(
-    RotatedBounds.placedAt(measured.dragged, measured.origin, movedTo),
+  const moving = CanvasBounds.movedBy(
+    RotatedBounds.toEnclosing(
+      RotatedBounds.placedAt(
+        measured.dragged,
+        measured.origin,
+        carry.grabbedAt,
+      ),
+    ),
+    carry.screenDelta,
   );
   return SideSnap.toSnapped(
     SideSnap.withSiblings(
@@ -267,23 +301,42 @@ function carriedNode(
  * 掴んでいる絶対配置のノードを、今のポインタまで運んだときの運び方。
  *
  * 運んだ量は画面上の移動量を倍率で割り戻したもので（倍率を変えても掴んだ点に追従する）、
- * そこから書かれる座標と見た目のずらし量を決めるのは `RepositionTarget`。
+ * そこから今の親の向きへ戻して書かれる座標と見た目のずらし量を決めるのは `RepositionTarget`。
  *
  * ⌘ / Ctrl を押しながら動かしている間は吸い付かない（docs/06-ui.md の辺のスナップ）。
  *
- * **落とせる親がポインタの下に無くても、見た目は追従させる**（ずらし量は原点の
- * 付け替えを含まないので親が決まらなくても決まる）。追従を止めると、キャンバスの余白へ
+ * **落とせる親がポインタの下に無くても、見た目は追従させる**（ずらし量は落とし先の親の
+ * 座標への直しを含まないので親が決まらなくても決まる）。追従を止めると、キャンバスの余白へ
  * 一瞬寄っただけで元の位置へ戻り、運べているのか分からなくなる。
  *
  * @param context 今の掴みと、倍率・ポインタ
  * @param carried 運んでいるノードと、掴んだ時点の座標
  * @returns 座標を置き直す運び方。親が無い / 親の矩形と運んでいるノードのどれかを
- *   実測できないときは見た目だけの運び方
+ *   実測できないときは見た目だけの運び方。今の親の向きが引けないときは何も起きない運び方
  */
 function repositionCarrying(
   context: DropContext,
   carried: CarriedNode,
 ): Carrying {
+  const parentRotation = DesignDocument.totalRotationOf(
+    context.document,
+    carried.at.parentName,
+  );
+  /*
+   * 子の配置を引けた親は向きも引けるので、ここへは来ない。0 度とみなして見た目だけ追従
+   * させると、回った親の中では運んだ向きと違う向きへずれて見えるので何もしない。
+   */
+  if (!Option.isSome(parentRotation)) {
+    return Carrying.nothing();
+  }
+  const node: CarriedNodeWithParentRotation = {
+    name: carried.name,
+    parentName: carried.at.parentName,
+    from: {
+      placement: carried.at.placement,
+      parentRotation: parentRotation.value,
+    },
+  };
   const screenDelta = Offset.delta(
     context.grab.origin,
     CanvasPointer.offsetOf(context.event),
@@ -294,13 +347,13 @@ function repositionCarrying(
     namesToRoot(context.event.target),
   );
   const measured = Option.flatMap(parent, (dropped) =>
-    measureReposition(context, carried, dropped),
+    measureReposition(context, node, dropped),
   );
   if (!Option.isSome(measured)) {
     return Carrying.preview({
       name: carried.name,
       offset: RepositionTarget.carriedOffset(
-        carried.at.placement,
+        node.from,
         CanvasView.toDocumentOffset(context.view, screenDelta),
       ),
     });
@@ -315,11 +368,13 @@ function repositionCarrying(
   // 寄せ量とガイド線は 1 回の判定から配る（理由は `DropEdit.reposition` の doc）
   const snap = snapAt(
     measured.value,
-    CanvasView.toScreenPoint(
-      context.view,
-      { x: carried.at.placement.x, y: carried.at.placement.y },
+    {
+      grabbedAt: CanvasView.toScreenOffset(
+        context.view,
+        Placement.offset(carried.at.placement),
+      ),
       screenDelta,
-    ),
+    },
     targets,
   );
   // 寄せ量を運んだ量へ畳んでから渡すので、書かれる座標と見た目のずらし量が同じ材料から出る
@@ -328,9 +383,9 @@ function repositionCarrying(
     DropEdit.reposition(
       carried.name,
       RepositionTarget.create(
-        carried.at.placement,
+        node.from,
         CanvasView.toDocumentOffset(context.view, snapped),
-        measured.value.shift,
+        measured.value.dropParent,
       ),
       snap.guides,
     ),
@@ -437,7 +492,7 @@ export type NodeDragControl = Readonly<{
  * docs/02-data-model.md「基本原則」）。
  *
  * このフックが持つのは DOM の実測とイベントの仲介だけ。「どこへ落ちるか」「いつドラッグ
- * とみなすか」は `node-drop` / `node-drag`、「実測した親のずれからどの座標が書かれるか」
+ * とみなすか」は `node-drop` / `node-drag`、「実測した親の原点と向きからどの座標が書かれるか」
  * は `reposition-target`、「揃う線（辺か中心線）か兄弟の列と同じ間隔になる位置があるなら
  * どれだけ寄せるか」は `side-snap` にある。
  * ⌘ / Ctrl を押している間に揃え先を渡さない（吸い付かせない）のは、修飾キーという入力の事情

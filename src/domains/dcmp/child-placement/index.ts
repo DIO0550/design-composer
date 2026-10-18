@@ -3,8 +3,8 @@ import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 /**
  * 絶対配置の子が「どの親の中の、どの座標に置かれるか」。
  *
- * 座標は**親の左上を原点とする値**なので、親の名前と対でなければ画面上の位置が決まらな
- * い（同じ `x` / `y` でも親が違えば別の場所を指す）。片方だけを持ち回れないよう 1 つの
+ * 座標は**親の回る前の左上を原点に、親の向きで測る値**なので、親の名前と対でなければ画面上の
+ * 位置が決まらない（同じ `x` / `y` でも親が違えば別の場所を指す）。片方だけを持ち回れないよう 1 つの
  * 型にする。
  *
  * `ChildPosition` と対になる型で、**あちらは並びの位置（何番目の子か）、こちらは親の中
@@ -21,7 +21,7 @@ export const ChildPlacement = {
    * 親と、その親から見た座標から組み立てる。
    *
    * @param parentName 置かれる先の親の名前
-   * @param placement その親の左上を原点とした座標
+   * @param placement その親の回る前の左上を原点に、親の向きで測った座標
    * @returns 親と座標の対
    */
   create(parentName: string, placement: AbsolutePlacement): ChildPlacement {
