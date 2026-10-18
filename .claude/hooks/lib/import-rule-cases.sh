@@ -188,17 +188,23 @@ done <<< "$cases"
 
 # 検出器が報告する種別のうち、表の期待に 1 度も出てこないものがあれば NG にする。種別を
 # 足したときに表が追随しないと、その種別は誰にも守られないまま緑になる。種別は `scan()` の
-# `groups` から取り、取れた数が docstring の「報告する違反は N つ」と合わなければ、
-# 取り出しそのものが壊れていると見なす（0 件取れたまま網羅と読まないため）。
-reported_kinds="$(sed -nE 's/^ +\("([a-z-]+)", [a-z_]+\),$/\1/p' "$detector")"
-documented_count="$(sed -nE 's/^報告する違反は ([0-9]+) つ。$/\1/p' "$detector")"
-reported_count="$(printf '%s' "$reported_kinds" | grep -c .)"
-kinds_extracted_as_documented() {
-  [ -n "$documented_count" ] && [ "$reported_count" = "$documented_count" ]
+# `found` 辞書のキーと、docstring の「報告する違反は次のとおり」に続く箇条書き（`- `<種別>` — `
+# の行）から取り、範囲の外の同じ形の行は拾わない。綴りの文字種は縛らず外側の形だけで拾う。
+# 両者が並びまで一致しなければ、どちらかが古いと見なす。どちらも 0 件なら取り出しが壊れて
+# いるので別の NG にする（0 件どうしの一致を網羅と読まないため）。
+reported_kinds="$(sed -nE '/^    found: dict\[str, list\[str\]\] = \{$/,/^    \}$/s/^        "([^"]+)": .*,$/\1/p' "$detector")"
+documented_kinds="$(sed -nE \
+  -e '/^報告する違反は次のとおり/{' -e ':blank' -e 'n' -e '/^$/bblank' \
+  -e ':item' -e 's/^- `([^`]+)` — .*$/\1/p' -e 'n' -e '/^- /bitem' -e '}' "$detector")"
+nothing_extracted() {
+  [ -z "$reported_kinds" ] && [ -z "$documented_kinds" ]
 }
-if ! kinds_extracted_as_documented; then
-  printf 'NG   検出器の種別を %s 件取り出したが、docstring は %s つと書いている\n' \
-    "$reported_count" "${documented_count:-何}"
+if nothing_extracted; then
+  echo 'NG   検出器の種別を scan() と docstring のどちらからも取り出せなかった'
+  cases_failed=1
+elif [ "$reported_kinds" != "$documented_kinds" ]; then
+  printf 'NG   検出器の種別が docstring の一覧と食い違う（scan: %s / docstring: %s）\n' \
+    "$(printf '%s' "$reported_kinds" | paste -sd ' ' -)" "$(printf '%s' "$documented_kinds" | paste -sd ' ' -)"
   cases_failed=1
 fi
 covered_kinds="$(kinds_in "$(printf '%s\n' "$cases" | cut -d '|' -f 1)")"

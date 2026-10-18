@@ -6,7 +6,7 @@
 層と方向の対（`services/` → `features/` のように、呼び出し元と禁止パターンが静的に決まる
 もの）は `.oxlintrc.json` の `no-restricted-imports` が見るので、ここでは扱わない。
 
-報告する違反は 8 つ。
+報告する違反は次のとおり（並びが報告の順）。
 
 - `feature-public-api` — feature の外から、その feature の公開口以外を読んでいる
 - `feature-sibling` — 子 feature が、親以外の feature を読んでいる（公開口経由でも）
@@ -16,6 +16,9 @@
 - `module-public-api` — `index.ts` を持つフォルダの内部を、そのフォルダの外から読んでいる
 - `domains-category` — `src/domains/` のモジュールがカテゴリのフォルダの下にいない
 - `import-cycle` — ファイル単位の循環
+
+種別の綴りは、この一覧と `scan()` の `found` のキーにだけ書く（両者の一致は `import-rule-cases.sh` が
+照合する）。README・rules に写した一覧は照合されないまま片方だけ古くなるため。
 
 **feature 単位の循環は見ない。** 違反なしで通る feature 間の辺は入れ子の段数を必ず 1 増やす
 （親から直下の子だけ）ので、閉路は必ずほかの種別に当たる辺を含み、報告が 2 重になるだけ。
@@ -286,47 +289,33 @@ def scan(root: Path) -> int:
     modules = module_folders(paths)
     graph = {path: imports_of(path, files) for path in paths}
 
-    crossing: list[str] = []
-    bypassing: list[str] = []
-    siblings: list[str] = []
-    ancestor_reads: list[str] = []
-    nested_reads: list[str] = []
-    for importer, targets in graph.items():
-        for number, target in targets:
-            kind, reason = classify(importer, target, modules)
-            collected = {
-                "feature-public-api": crossing,
-                "module-public-api": bypassing,
-                "feature-sibling": siblings,
-                "feature-ancestor": ancestor_reads,
-                "feature-nested-from-outside": nested_reads,
-            }.get(kind)
-            if collected is not None:
-                collected.append(f"{importer}:{number} -> {target}（{reason}）")
-
     file_cycles = [" -> ".join(c) for c in cycles_in({k: [t for _, t in v] for k, v in graph.items()})]
-
-    uncategorized = uncategorized_domains(modules)
     too_deep = sorted(
         f"{FEATURES_ROOT}/{name}（{nest_depth_of(name)} 段目）"
         for name in {feature_of(path) for path in paths}
         if name is not None and nest_depth_of(name) > FEATURE_NEST_LIMIT
     )
 
-    groups = (
-        ("feature-public-api", crossing),
-        ("feature-sibling", siblings),
-        ("feature-ancestor", ancestor_reads),
-        ("feature-nested-from-outside", nested_reads),
-        ("feature-nest-depth", too_deep),
-        ("module-public-api", bypassing),
-        ("domains-category", uncategorized),
-        ("import-cycle", file_cycles),
-    )
-    for kind, lines in groups:
+    found: dict[str, list[str]] = {
+        "feature-public-api": [],
+        "feature-sibling": [],
+        "feature-ancestor": [],
+        "feature-nested-from-outside": [],
+        "feature-nest-depth": too_deep,
+        "module-public-api": [],
+        "domains-category": uncategorized_domains(modules),
+        "import-cycle": file_cycles,
+    }
+    for importer, targets in graph.items():
+        for number, target in targets:
+            kind, reason = classify(importer, target, modules)
+            if kind:
+                found[kind].append(f"{importer}:{number} -> {target}（{reason}）")
+
+    for kind, lines in found.items():
         if lines:
             report(kind, lines)
-    total = sum(len(lines) for _, lines in groups)
+    total = sum(len(lines) for lines in found.values())
     print(f"import 規約の違反 {total} 件 / {len(paths)} ファイル")
     return 1 if total else 0
 
