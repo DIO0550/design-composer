@@ -21,4 +21,7 @@ export {
   pressPointer,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
-export { stubBounds } from "@/features/editor/features/canvas/__tests__/canvas-measure";
+export {
+  stubBounds,
+  stubLayoutSize,
+} from "@/features/editor/features/canvas/__tests__/canvas-measure";

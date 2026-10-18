@@ -1,12 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { vi } from "vitest";
-import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
@@ -118,7 +118,7 @@ type CanvasHandlers = Readonly<{
   onSelect: (names: readonly string[]) => void;
   onSelectInRange: (names: readonly string[]) => void;
   onMoveNode: (name: string, to: ChildPosition) => void;
-  onRepositionNode: (name: string, to: ChildPlacement) => void;
+  onRepositionNode: (name: string, edit: RepositionEdit) => void;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
   onResize: (edit: ResizeEdit, continuity: EditContinuity) => void;
   onEditProp: (edit: PropEdit) => void;

@@ -1,5 +1,6 @@
 import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
+import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import { SelectionDigs } from "@/domains/session/selection-dig";
 import { canvasSurface } from "@/features/editor/features/canvas/__tests__/canvas-elements";
@@ -87,10 +88,13 @@ test("絶対配置のノードを運んで離すと、掴んだ時点の座標�
 
   dragNode("badge", { x: 30, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 70, y: 12 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 70, y: 12 },
+    }),
+  );
 });
 
 test("何度も動かしても、ずれるのは掴んだ時点からの合計になる", () => {
@@ -104,10 +108,13 @@ test("何度も動かしても、ずれるのは掴んだ時点からの合計�
   movePointer(drawn("badge"), { x: 130, y: 88 });
   releasePointer(drawn("badge"), { x: 130, y: 88 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 70, y: 12 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 70, y: 12 },
+    }),
+  );
 });
 
 test("絶対配置のノードを同じ親の中で運んでもツリーの並びは変わらない", () => {
@@ -172,10 +179,13 @@ test("倍率を上げても、動く量は画面上ではなくドキュメン�
    */
   dragNode("badge", { x: 34, y: -13 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 68, y: 13 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 68, y: 13 },
+    }),
+  );
 });
 
 test("親の外へ出る位置で離すと、はみ出した座標がそのまま届く", () => {
@@ -185,10 +195,13 @@ test("親の外へ出る位置で離すと、はみ出した座標がそのま�
   // 親（360×240）の右下より外へ出る量。収めると (316, 216) のような値で止まる
   dragNode("badge", { x: 400, y: 300 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 440, y: 324 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 440, y: 324 },
+    }),
+  );
 });
 
 test("もともと親の外にあるノードを動かしても、親の内側へ戻らない", () => {
@@ -201,10 +214,13 @@ test("もともと親の外にあるノードを動かしても、親の内側�
 
   dragNode("badge", { x: 8, y: 6 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: -96, y: 306 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: -96, y: 306 },
+    }),
+  );
 });
 
 test("親が変わらなければ、2 つの親を実測していてもずれは足されない", () => {
@@ -215,10 +231,13 @@ test("親が変わらなければ、2 つの親を実測していてもずれは
 
   dragNode("badge", { x: 30, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 70, y: 12 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 70, y: 12 },
+    }),
+  );
 });
 
 test("別の artboard の上で離すと、その artboard を親にした置き直しになる", () => {
@@ -230,7 +249,9 @@ test("別の artboard の上で離すと、その artboard を親にした置き
 
   expect(onRepositionNode).toHaveBeenCalledWith(
     "badge",
-    expect.objectContaining({ parentName: "settings" }),
+    expect.objectContaining({
+      to: expect.objectContaining({ parentName: "settings" }),
+    }),
   );
 });
 
@@ -246,10 +267,13 @@ test("親をまたいで離すと、届く座標は 2 つの親の左上のず�
    * `settings` の左上は `home` の左上から (400, 40) 右下にあるので、
    * 同じ画面上の位置は `settings` 基準では (-330, -28) になる。
    */
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "settings",
-    placement: { mode: "absolute", x: -330, y: -28 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "settings",
+      placement: { mode: "absolute", x: -330, y: -28 },
+    }),
+  );
 });
 
 test("倍率を上げると、親の左上のずれもドキュメント上の px へ割り戻される", () => {
@@ -265,10 +289,13 @@ test("倍率を上げると、親の左上のずれもドキュメント上の p
    * 画面上の親のずれ (400, 40) は (333.33…, 33.33…) にあたる。
    * 割り戻さないと (-335, -26) になる。
    */
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "settings",
-    placement: { mode: "absolute", x: -268, y: -19 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "settings",
+      placement: { mode: "absolute", x: -268, y: -19 },
+    }),
+  );
 });
 
 test("親をまたいで離しても、ツリーの移動としては届かない", () => {
@@ -552,10 +579,13 @@ test("落とせる親が無い場所を通っても、戻ってくれば置き�
   movePointer(drawn("settings"), { x: 130, y: 88 });
   releasePointer(drawn("settings"), { x: 130, y: 88 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "settings",
-    placement: { mode: "absolute", x: -330, y: -28 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "settings",
+      placement: { mode: "absolute", x: -330, y: -28 },
+    }),
+  );
 });
 
 test("離すと見た目のずれは消える（座標そのものが動くため）", () => {

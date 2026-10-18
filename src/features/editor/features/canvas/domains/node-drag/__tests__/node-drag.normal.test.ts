@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import type {
   DraggedNode,
   DropTarget,
@@ -41,7 +42,10 @@ const NoGuides: SnapGuides = { horizontal: Option.none, vertical: Option.none };
 
 /** `body` の中の座標へ落ちる側の行き先。見た目のずらし量は行き先と別の値にする。 */
 const SampleRepositionTarget: RepositionTarget = {
-  to: { parentName: "body", placement: { mode: "absolute", x: 40, y: 24 } },
+  written: RepositionEdit.create({
+    parentName: "body",
+    placement: { mode: "absolute", x: 40, y: 24 },
+  }),
   offset: { x: 30, y: -12 },
 };
 

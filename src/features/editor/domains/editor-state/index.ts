@@ -8,6 +8,7 @@ import {
 import type { Node, PropEdit } from "@/domains/dcmp/node";
 import { Placement } from "@/domains/dcmp/placement";
 import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
+import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import {
   Token,
@@ -807,8 +808,9 @@ export const EditorState = {
 
   /**
    * 絶対配置のノードを、指した親の中の座標へ置き直す（docs/06-ui.md「キャンバス直接操作」
-   * の移動のうち、座標が動く側）。指した親が今の親と違えばそこへ付け替わるが、木と座標の
-   * 書き換えを `DesignDocument.reposition` が 1 つにするので undo は 1 回で戻る。
+   * の移動のうち、座標が動く側）。指した親が今の親と違えばそこへ付け替わるが、木と座標（編集が
+   * 指していれば向きも）の書き換えを `DesignDocument.reposition` が 1 つにするので undo は 1 回で
+   * 戻る。
    *
    * 座標を持たないもの（ドキュメントに無い名前・artboard 自身）と、子を受け入れられない
    * 親を指した指定は「その編集が存在しない」ことなので `none`。キャンバスは受け入れられ
@@ -816,19 +818,19 @@ export const EditorState = {
    *
    * @param state 置き直す前の編集状態
    * @param name 置き直すノードの名前
-   * @param to 置き直したあとの親と、その親から見た座標
+   * @param edit 置き直したあとの親と、その親から見た座標。向きを書き換えるなら、その向き
    * @returns 置き直したあとの編集状態。座標を持たない相手・受け入れられない親な
    *   ら `none`
    */
   reposition(
     state: EditorState,
     name: string,
-    to: ChildPlacement,
+    edit: RepositionEdit,
   ): Option<EditorState> {
     const repositioned = DesignDocument.reposition(
       EditorState.document(state),
       name,
-      to,
+      edit,
     );
     return withEditResult(state, repositioned);
   },
@@ -838,7 +840,8 @@ export const EditorState = {
    * （docs/06-ui.md「キャンバス直接操作」の移動のうち、座標が動く側）。
    *
    * 親は変えない（ずらした先が別の親に重なっても付け替えない）。付け替えが起きるのは落とし先
-   * の親が一緒に届くドラッグだけで、キーからは落とし先が決まらない。
+   * の親が一緒に届くドラッグだけで、キーからは落とし先が決まらない。親が変わらないので向きも
+   * 書かない（書かれている `rotation` は数値でない綴りも含めてそのまま残る）。
    *
    * @param state ずらす前の編集状態
    * @param delta 動かす量。ドキュメント上の px
@@ -860,9 +863,11 @@ export const EditorState = {
           EditorState.reposition(
             state,
             name,
-            ChildPlacement.create(
-              current.parentName,
-              Placement.moveBy(current.placement, delta),
+            RepositionEdit.create(
+              ChildPlacement.create(
+                current.parentName,
+                Placement.moveBy(current.placement, delta),
+              ),
             ),
           ),
       ),

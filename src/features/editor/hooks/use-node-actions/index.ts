@@ -1,6 +1,6 @@
-import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { PropEdit } from "@/domains/dcmp/node";
+import type { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
 import type { NodeTemplate } from "@/domains/session/node-template";
@@ -29,8 +29,11 @@ export type NodeActions = Readonly<{
   reveal: (nodeName: string) => void;
   reorder: (from: ChildPosition, toIndex: number) => void;
   move: (name: string, to: ChildPosition) => void;
-  /** 絶対配置のノードを、指した親の中の座標へ置き直す（親の付け替えは）。 */
-  reposition: (name: string, to: ChildPlacement) => void;
+  /**
+   * 絶対配置のノードを、指した親の中の座標へ置き直す。親が違えば付け替え、編集が向きを持てば
+   * 向きも書く。
+   */
+  reposition: (name: string, edit: RepositionEdit) => void;
   /** artboard をキャンバス上の別の位置へ置き直す。 */
   repositionArtboard: (name: string, canvasPosition: Offset) => void;
   resize: (edit: ResizeEdit, continuity: EditContinuity) => void;
@@ -102,7 +105,8 @@ export function useNodeActions(): NodeActions {
      *
      * 落とし先の親も一緒に届くので、親をまたいで運べば付け替わる。
      */
-    reposition: (name, to) => dispatch({ type: "reposition_node", name, to }),
+    reposition: (name, edit) =>
+      dispatch({ type: "reposition_node", name, edit }),
     /**
      * artboard の見出しを掴んだドラッグはキャンバス上の移動。
      */

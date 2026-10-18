@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import {
   canvasContent,
   drawn,
@@ -42,7 +43,10 @@ test("絶対配置のノードを運んで離すと、掴んだ時点の座標�
   expect(onReposition.mock.calls).toEqual([
     [
       "badge",
-      { parentName: "home", placement: { mode: "absolute", x: 70, y: 12 } },
+      RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 70, y: 12 },
+      }),
     ],
   ]);
 });
@@ -57,7 +61,10 @@ test("倍率を上げると、届く座標の動きは画面上ではなくド�
   expect(onReposition.mock.calls).toEqual([
     [
       "badge",
-      { parentName: "home", placement: { mode: "absolute", x: 55, y: 18 } },
+      RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 55, y: 18 },
+      }),
     ],
   ]);
 });
@@ -75,10 +82,10 @@ test("別の親の上で離すと、2 つの親の左上のずれを打ち消し
   expect(onReposition.mock.calls).toEqual([
     [
       "badge",
-      {
+      RepositionEdit.create({
         parentName: "settings",
         placement: { mode: "absolute", x: -330, y: -28 },
-      },
+      }),
     ],
   ]);
 });
@@ -96,10 +103,10 @@ test("倍率を上げると、2 つの親の左上のずれもドキュメント
   expect(onReposition.mock.calls).toEqual([
     [
       "badge",
-      {
+      RepositionEdit.create({
         parentName: "settings",
         placement: { mode: "absolute", x: -145, y: -52 },
-      },
+      }),
     ],
   ]);
 });
@@ -153,7 +160,10 @@ test("親の縁の近くまで運んで離すと、縁に揃う座標が届く",
   expect(onReposition.mock.calls).toEqual([
     [
       "badge",
-      { parentName: "home", placement: { mode: "absolute", x: 0, y: 24 } },
+      RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 0, y: 24 },
+      }),
     ],
   ]);
 });
@@ -170,7 +180,10 @@ test("兄弟の辺の近くまで運んで離すと、その辺に揃う座標�
   expect(onReposition.mock.calls).toEqual([
     [
       "badge",
-      { parentName: "home", placement: { mode: "absolute", x: 150, y: 24 } },
+      RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 150, y: 24 },
+      }),
     ],
   ]);
 });
@@ -186,7 +199,10 @@ test("⌘ を押しながら縁の近くまで運んで離すと、運んだ量�
   expect(onReposition.mock.calls).toEqual([
     [
       "badge",
-      { parentName: "home", placement: { mode: "absolute", x: 3, y: 24 } },
+      RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 3, y: 24 },
+      }),
     ],
   ]);
 });
@@ -203,7 +219,10 @@ test("運んでいるノード自身の辺へは寄らない", () => {
   expect(onReposition.mock.calls).toEqual([
     [
       "badge",
-      { parentName: "home", placement: { mode: "absolute", x: 45, y: 24 } },
+      RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 45, y: 24 },
+      }),
     ],
   ]);
 });

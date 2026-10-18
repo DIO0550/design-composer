@@ -49,7 +49,7 @@ export type DropEdit =
   | Readonly<{
       kind: "reposition";
       name: string;
-      /** 書かれる座標と見た目のずらし量（**ドキュメント上の px**）。 */
+      /** 書き込む座標と向き、見た目のずらし量（座標とずらし量は**ドキュメント上の px**）。 */
       target: RepositionTarget;
       /** 揃った線（辺か中心線）に引くガイド線と揃え先との隙間（**画面上の px**。軸ごとに 0 か 1 つ）。 */
       guides: SnapGuides;
@@ -188,8 +188,8 @@ export const DropEdit = {
    * docs/06-ui.md）だけ残る。
    *
    * @param name 置き直すノードの名前
-   * @param target 落とし先の親から見た座標と、運んでいる間のずらし量（ドキュメ
-   *   ント上の px）
+   * @param target 落とし先の親を基準に書き込む座標と向きと、運んでいる間のずらし量（座標と
+   *   ずらし量はドキュメント上の px）
    * @param guides 揃った線に引くガイド線と揃え先との隙間（画面上の px）
    * @returns 座標の置き直しの落とし方
    */
@@ -264,7 +264,7 @@ export const DropEdit = {
       case "insert":
         return edit.target.position.parentName;
       case "reposition":
-        return edit.target.to.parentName;
+        return edit.target.written.to.parentName;
     }
   },
 } as const;

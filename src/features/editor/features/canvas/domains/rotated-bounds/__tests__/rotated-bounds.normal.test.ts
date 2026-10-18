@@ -224,3 +224,21 @@ test("回っていない矩形の左上を 90 度回った矩形の座標で見�
 
   expect(shift).toEqual({ x: 0, y: 250 });
 });
+
+test("回る前の左上から中心までの差は、大きさの半分になる", () => {
+  const bounds = {
+    unrotated: { left: 100, top: 50, width: 20, height: 12 },
+    rotation: 30,
+  };
+
+  expect(RotatedBounds.centerFromCorner(bounds)).toEqual({ x: 10, y: 6 });
+});
+
+test("大きさが奇数でも、回る前の左上から中心までの差は大きさのちょうど半分になる", () => {
+  const bounds = {
+    unrotated: { left: 100, top: 50, width: 21, height: 13 },
+    rotation: 30,
+  };
+
+  expect(RotatedBounds.centerFromCorner(bounds)).toEqual({ x: 10.5, y: 6.5 });
+});

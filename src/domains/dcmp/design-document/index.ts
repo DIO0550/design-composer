@@ -35,6 +35,7 @@ import {
   PropDefinitionRecord,
 } from "@/domains/dcmp/primitive-schema";
 import { ReferenceContext } from "@/domains/dcmp/reference-context";
+import type { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Rotation } from "@/domains/dcmp/rotation";
@@ -1711,24 +1712,33 @@ export const DesignDocument = {
    * び順の意味が薄いためで、移す先が今の親と必ず違うので `ChildPosition.afterRemoving` は要
    * らない。
    *
+   * 向きは編集が `some` を持つときだけ書く（親が今と同じでも書く）。書かないかどうかを決めるのは
+   * 編集を作る側で、ここは今の向きと比べない。座標と向きは 1 回の編集として書くので、Undo 1 回で
+   * 両方が戻る。
+   *
    * @param document 書き換える対象を含むドキュメント
    * @param name 置き直すノードの名前
-   * @param to 置き直したあとの親と、その親から見た座標
-   * @returns 親と座標を書き換えたドキュメント。その名前のノードが無い（artboard
+   * @param edit 置き直したあとの親と、その親から見た座標。向きを書き換えるなら、その向き
+   * @returns 親と座標（指していれば向きも）を書き換えたドキュメント。その名前のノードが無い（artboard
    *   の名前もノードではない）なら失敗。指した親が子を受け入れられない（無い名前
    *   ・参照ノード・スキーマが子を認めていないプリミティブ）ときと、指した親が自分自身か自分の子孫のときも失敗
    */
   reposition(
     document: DesignDocument,
     name: string,
-    to: ChildPlacement,
+    edit: RepositionEdit,
   ): Result<DesignDocument, DesignDocumentEditError> {
     const current = DesignDocument.findChildPosition(document, name);
     if (!Option.isSome(current)) {
       return Result.err({ kind: "node-not-found", name });
     }
+    const to = edit.to;
+    const placementEdits = Placement.toPropEdits(to.placement);
+    const rotationEdits = Option.isSome(edit.rotation)
+      ? [Rotation.toPropEdit(edit.rotation.value)]
+      : [];
     const write = (moved: DesignDocument) =>
-      applyPropEdits(moved, name, Placement.toPropEdits(to.placement));
+      applyPropEdits(moved, name, [...placementEdits, ...rotationEdits]);
     if (ChildPlacement.hasParent(to, current.value.parentName)) {
       return write(document);
     }

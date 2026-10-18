@@ -6,6 +6,7 @@ import { ReceivedAt } from "@/domains/__tests__/instants";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
+import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { EditContinuities } from "@/domains/session/edit-continuity";
 import { artboardWidth } from "@/features/editor/__tests__/artboard-fixtures";
@@ -255,10 +256,10 @@ function EditorStateHarness() {
           dispatch({
             type: "reposition_node",
             name: "footer",
-            to: {
+            edit: RepositionEdit.create({
               parentName: "home",
               placement: { mode: "absolute", x: 70, y: 12 },
-            },
+            }),
           })
         }
       >

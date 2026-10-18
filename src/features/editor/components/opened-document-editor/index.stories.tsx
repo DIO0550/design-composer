@@ -297,7 +297,8 @@ const DocumentWithNodeInRotatedBox = documentWithHomeChildren((children) => [
  *
  * `home-box-chip` を選んでから運ぶと、祖先だけが回っているノードの座標の置き直しを
  * 確かめられる（docs/06-ui.md「キャンバス直接操作」）。画面上でポインタが動いた向きへ動き、
- * `home-box` の外接矩形の辺へ吸い付き、`home` へ落とすと付け替わる。
+ * `home-box` の外接矩形の辺へ吸い付き、`home` へ落とすと付け替わる。付け替えると
+ * `home-box-chip` の向きと座標が書き換わり、画面上の向きと中心は離す直前のまま保たれる。
  */
 export const NodeInRotatedBox: Story = {
   name: "回った Box の中に絶対配置のノードがある編集画面",

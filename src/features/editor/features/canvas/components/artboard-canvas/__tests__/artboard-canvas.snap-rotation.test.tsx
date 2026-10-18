@@ -1,4 +1,5 @@
 import { expect, test, vi } from "vitest";
+import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import { canvasSurface } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import { wheel } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import {
@@ -26,10 +27,13 @@ test("90 度回ったノードを運び、外接矩形の左辺が兄弟の左�
   // 外接矩形を回る前の矩形として置くと、寄せ先がずれる
   dragNode("badge", { x: 103, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 146, y: 12 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 146, y: 12 },
+    }),
+  );
 });
 
 test("90 度回ったノードを運んで兄弟の左辺へ吸い付いている間、隙間の数値は外接矩形の下辺から測られる", () => {
@@ -77,8 +81,11 @@ test("倍率を上げても、90 度回ったノードは外接矩形の左辺�
 
   dragNode("badge", { x: 125, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 146, y: 14 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 146, y: 14 },
+    }),
+  );
 });
