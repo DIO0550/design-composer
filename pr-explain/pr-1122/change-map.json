@@ -1,0 +1,194 @@
+{
+  "version": 2,
+  "pr": 1122,
+  "headBranch": "claude/magical-cannon-alrjsk",
+  "baseBranch": "main",
+  "mergeBase": "e359e3f8a8939cd9091a7e9e58eff3142e732ea2",
+  "head": "64281f5fd8c4894631f768c9b7f168f7114fe2db",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/verification-agent-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "64281f5fd8c4894631f768c9b7f168f7114fe2db",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-18T08:14:07Z",
+      "subject": "📝 [Documentation]: #1108 cases-report.sh 冒頭から実物と食い違う共有の理由を外す",
+      "body": "- 「count-cases.sh が共通化を見送った理由は同じフォルダに並ぶこれらには当たらない」の文を削除\n- 利用者の一覧は `.claude/hooks/README.md`「配線」の行を参照するよう置き換え\n\n背景:\nこの文は利用者が `.claude/hooks/lib/` だけに並ぶ前提で書かれていたが、\n`.github/scripts/` の判定表 5 本が #1022 の最初の版からフォルダの外の\nこのファイルを source しており、前提が実物と食い違っていた。\n\n採用理由:\n共有先を作った理由(同じ関数が 2 本並んだ)は作った当時の事実なので残し、\nフォルダについての主張だけを外した。利用者の一覧は README の「配線」の表が\n既に 15 本を列挙しているので、コメントでは参照だけにした。\n\n影響とトレードオフ:\ncount-cases.sh / check-tally-cases.sh が「4 フォルダに割れているから共有\nしない」と書いたまま残る。直し方が report() を共有するコード変更になり\n独立にマージできるので #1120 へ分けた。cases-report.sh 側はフォルダに\nついて何も言わなくなるので、2 つが互いを否定する記述にはならない。\n\n代替案:\n- 利用者を本数付きで列挙する: README と二重になり、#1100 で外した\n  「(いまは 9 本)」と同じく件数がずれる\n- 「フォルダの外からも source してよい」と書く: doc でも Why でもない\n- 層の向きが共有を妨げないことを理由として書く: #1120 のマージまで\n  harness の 2 本と正面から逆のことを言う状態になる\n\n参考:\n- Issue #1108 / #1120\n- plan-reviewer の指摘 4 件を採用(Issue #1108 のコメント)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_014wSZZUo1sQSy2kRZ4uUFBS",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 3,
+          "patch": "@@ -11,9 +11,8 @@\n # `kinds_in_categories <表> <接頭辞>` を使う。\n #\n # **共有先を作ったのは、`.claude/hooks/lib/` の中に同じ関数が 2 本並んだため**\n-# （`rules/coding.md`「同じ処理が2箇所に現れたら共通化する」）。`harness/records/count-cases.sh`\n-# が共通化を見送っているのは、判定表が 4 つのフォルダに割れていて共有先を置くと判定表 1 本を\n-# 単体で読めなくなるからで、同じフォルダに並ぶこれらにはその理由が当たらない。\n+# （`rules/coding.md`「同じ処理が2箇所に現れたら共通化する」）。どの判定表がどの関数を使っているかは\n+# `.claude/hooks/README.md`「配線」の `lib/cases-report.sh` の行が持つ。\n #\n # 判定を終了コードで見る理由は `.claude/hooks/README.md`「終了コードまで見る」。\n ",
+          "patchLines": 12,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/cases-report-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/verification-agent-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    }
+  ]
+}
