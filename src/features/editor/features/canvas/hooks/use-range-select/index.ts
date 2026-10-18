@@ -81,7 +81,10 @@ export type RangeSelectControl = Readonly<{
   /** 今引いている範囲の矩形（client 座標）。引いていなければ `none`。 */
   bounds: Option<CanvasBounds>;
   dragHandlers: Readonly<{
-    /** 押した場所によらず、前の操作の飲み込み待ちを解く（土台の capture で受ける）。 */
+    /**
+     * 土台の上なら押した場所によらず、前の操作の飲み込み待ちを解く（土台の capture で受ける）。
+     * 土台の外にあるハンドルからの押下（主ボタンで掴む・主ボタン以外でパンへ渡す）は通らない。
+     */
     onPointerDownCapture: () => void;
     onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
     onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;

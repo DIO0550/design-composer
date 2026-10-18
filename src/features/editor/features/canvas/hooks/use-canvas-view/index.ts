@@ -107,7 +107,8 @@ function useWheelControl(
  *
  * `onPointerDown` だけは spread せず、**パンを始める入力のときだけ**呼び分ける
  * （docs/06-ui.md「キャンバス直接操作」。空き領域の左ドラッグは範囲選択になった）。
- * 土台の外で起きた押下で呼ばれても、ポインタを捕捉するのは土台。
+ * 土台の外で起きた押下で呼ばれても、ポインタを捕捉するのは土台（土台の外のハンドルから
+ * 始めたパンでも move / up を土台のハンドラで受けるため）。
  */
 export type PanHandlers = Readonly<{
   onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
@@ -161,11 +162,7 @@ export function useCanvasView(): CanvasViewControl {
         if (surface === null) {
           return;
         }
-        /*
-         * ポインタが土台の外へ出てもドラッグが続くようにする（キャンバスは画面の端に接する）。
-         * 押した要素ではなく土台で捕捉するのは、土台の外のハンドルから始めたパンでも
-         * move / up を土台のハンドラで受けるため。
-         */
+        // ポインタが土台の外へ出てもドラッグが続くようにする（キャンバスは画面の端に接する）
         surface.setPointerCapture(event.pointerId);
         dispatch({
           type: "drag_start",

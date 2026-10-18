@@ -16,7 +16,7 @@ import {
   releaseSpace,
   wheel,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
-import { PointerButtons } from "@/libs/dom-event";
+import { type PointerButton, PointerButtons } from "@/libs/dom-event";
 import {
   drawnAt,
   renderCanvas,
@@ -44,6 +44,21 @@ function setupRightHandle(onResize = vi.fn()): HTMLElement {
   renderCanvas({ selection: setupSelection(["home"]), onResize });
   drawnAt("home", { left: 100, top: 50, width: 360, height: 240 });
   return resizeHandleAt({ x: 1, y: 0.5 });
+}
+
+/**
+ * 右辺の中央のハンドルを押し、土台の上で (+30, -20) だけ引いて離す。
+ *
+ * @param handle 押すハンドル（`setupRightHandle` が返したもの）
+ * @param button 押すボタン。省けば主ボタン
+ */
+function dragFromHandle(
+  handle: HTMLElement,
+  button: PointerButton = PointerButtons.Primary,
+): void {
+  pressPointer(handle, { x: 460, y: 170 }, button);
+  movePointer(canvasSurface(), { x: 490, y: 150 });
+  releasePointer(canvasSurface(), { x: 490, y: 150 });
 }
 
 test("キャンバスを開いた直後は等倍で表示される", () => {
@@ -149,9 +164,7 @@ test("ズームやパンをしても選択は変わらない", () => {
 test("描いてあるハンドルの上で中ボタンを押して引くと、中身が同じだけ移動する", () => {
   const handle = setupRightHandle();
 
-  pressPointer(handle, { x: 460, y: 170 }, PointerButtons.Middle);
-  movePointer(canvasSurface(), { x: 490, y: 150 });
-  releasePointer(canvasSurface(), { x: 490, y: 150 });
+  dragFromHandle(handle, PointerButtons.Middle);
 
   expect(canvasTransform()).toContain("translate(30px, -20px)");
 });
@@ -190,9 +203,7 @@ test("space を押しながら掴めるハンドルを掴んで運んでも、�
   const handle = setupRightHandle();
   holdSpace();
 
-  pressPointer(handle, { x: 460, y: 170 });
-  movePointer(canvasSurface(), { x: 490, y: 150 });
-  releasePointer(canvasSurface(), { x: 490, y: 150 });
+  dragFromHandle(handle);
 
   expect(canvasTransform()).toContain("translate(0px, 0px)");
 });
@@ -201,9 +212,7 @@ test("space を押しながら右ボタンでハンドルを押して引くと�
   const handle = setupRightHandle();
   holdSpace();
 
-  pressPointer(handle, { x: 460, y: 170 }, PointerButtons.Secondary);
-  movePointer(canvasSurface(), { x: 490, y: 150 });
-  releasePointer(canvasSurface(), { x: 490, y: 150 });
+  dragFromHandle(handle, PointerButtons.Secondary);
 
   expect(canvasTransform()).toContain("translate(30px, -20px)");
 });
@@ -211,9 +220,7 @@ test("space を押しながら右ボタンでハンドルを押して引くと�
 test("space を押さずに右ボタンでハンドルを押して引いても、中身は動かない", () => {
   const handle = setupRightHandle();
 
-  pressPointer(handle, { x: 460, y: 170 }, PointerButtons.Secondary);
-  movePointer(canvasSurface(), { x: 490, y: 150 });
-  releasePointer(canvasSurface(), { x: 490, y: 150 });
+  dragFromHandle(handle, PointerButtons.Secondary);
 
   expect(canvasTransform()).toContain("translate(0px, 0px)");
 });

@@ -112,18 +112,16 @@ export function ArtboardCanvas({
   /**
    * その `pointerdown` がパンを始めるか（docs/06-ui.md「キャンバス直接操作」）。
    * space を押している間はどこを掴んでもパンで、中ボタンは単独でパン。
-   * 土台の capture と、土台の外にある掴めるハンドルの両方から引かれる。
+   * 土台の capture と、土台の外にある掴めるハンドル（主ボタン以外の押下だけを渡す）の
+   * 両方から引かれる。
    */
   const pansCanvas = (event: ReactPointerEvent<HTMLElement>): boolean =>
     isSpaceHeld || PointerButton.isMiddle(event);
   /*
-   * パンの入口は土台の capture と、土台の外にある掴めるハンドルの 2 つで、判定は
-   * `pansCanvas` の 1 本。ハンドルが渡すのは主ボタン以外の押下だけで、主ボタンは
-   * ハンドルが掴むので、space を押していても四角の上ではリサイズが優先される
-   * （docs/06-ui.md「パン」の例外）。ハンドルの器を土台の中へ移せば例外は消せるが、
-   * 掴み口と土台の当たり判定の作り直しになるので今は触らない。
+   * ハンドルの器を土台の中へ移せば例外（space 中の四角はリサイズ優先 / docs/06-ui.md「パン」）は
+   * 消せるが、掴み口と土台の当たり判定の作り直しになる。
    */
-  const startPanIfRequested = (event: ReactPointerEvent<HTMLElement>) => {
+  const startPanOnPanInput = (event: ReactPointerEvent<HTMLElement>) => {
     if (!pansCanvas(event)) {
       return;
     }
@@ -237,10 +235,11 @@ export function ArtboardCanvas({
          * 範囲選択の側が決める / `useRangeSelect`）。
          *
          * 範囲選択の飲み込み待ちを解くのもここ。止められる前に必ず通るのは capture だけ。
+         * 土台の外にあるハンドルからの押下（主ボタンで掴む・主ボタン以外でパンへ渡す）は通らない。
          */
         onPointerDownCapture={(event) => {
           rangeSelect.dragHandlers.onPointerDownCapture();
-          startPanIfRequested(event);
+          startPanOnPanInput(event);
         }}
         /*
          * 空き領域と artboard の背景の左ドラッグは範囲選択。ここまで `pointerdown` が
@@ -344,7 +343,7 @@ export function ArtboardCanvas({
           resizable={resizable}
           isGrabbing={Option.isSome(nodeResize.grabbed)}
           onGrab={nodeResize.grab}
-          onNonPrimaryPress={startPanIfRequested}
+          onNonPrimaryPress={startPanOnPanInput}
         />
       ) : null}
       {Option.isSome(dropTarget) ? (

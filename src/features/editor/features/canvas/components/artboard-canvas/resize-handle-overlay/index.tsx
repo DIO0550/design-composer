@@ -131,7 +131,7 @@ export function ResizeHandleOverlay({
                     /*
                      * 右・中ボタンでは掴まない。それらの pointerup のあとには click が来ないので、
                      * 離したあとの飲み込み待ちが残って次の左クリックを食べる。
-                     * 掴まない押下は親へ渡す（中ボタンなら土台と同じくパン / docs/06-ui.md「パン」）。
+                     * 掴まない押下は親へ渡す。
                      */
                     if (!PointerButton.isPrimary(event)) {
                       onNonPrimaryPress(event);
