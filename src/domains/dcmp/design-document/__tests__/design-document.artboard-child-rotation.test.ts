@@ -183,3 +183,22 @@ test("子を持たない artboard からは何も並ばない", () => {
     { name: "title", rotation: 0 },
   ]);
 });
+
+test("小数点以下 6 桁より細かく書いた子の角度は、6 桁へ丸めた角度で並ぶ", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          { name: "card", type: "Box", props: { rotation: 12.3456789 } },
+        ],
+      },
+    ],
+  });
+
+  expect(DesignDocument.collectArtboardChildRotations(document)).toEqual([
+    { name: "card", rotation: 12.345679 },
+  ]);
+});
