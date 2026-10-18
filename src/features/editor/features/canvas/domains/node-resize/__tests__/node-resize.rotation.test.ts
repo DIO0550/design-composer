@@ -326,3 +326,46 @@ test("1 回り回したノードは回っていないものと同じく揃え先
     NodeResize.resizable(setupTurnedSelection("stamp")).snapTargetNames,
   ).toEqual(["home", "card", "tilted"]);
 });
+
+test("359.8 度の絶対配置の Box の中にある -719.8 度の絶対配置のノードは、揃え先を持つ", () => {
+  // 角度を素のまま足すと -359.99999999999994 になり、1 回りの倍数から外れる
+  const placed = (rotation: number) => ({
+    widthMode: "fixed",
+    width: 40,
+    heightMode: "fixed",
+    height: 20,
+    placement: "absolute",
+    x: 10,
+    y: 10,
+    rotation,
+  });
+  const selection = DocumentSelection.fromNames(
+    DesignDocument.create({
+      artboards: [
+        {
+          name: "home",
+          width: 360,
+          height: 240,
+          children: [
+            {
+              name: "card",
+              type: "Box",
+              props: { ...placed(359.8), width: 120, height: 80 },
+              children: [
+                {
+                  name: "badge",
+                  type: "Box",
+                  props: placed(-719.8),
+                  children: [],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }),
+    ["badge"],
+  );
+
+  expect(NodeResize.resizable(selection).snapTargetNames).toEqual(["card"]);
+});
