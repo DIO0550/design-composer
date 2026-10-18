@@ -100,7 +100,7 @@ export const Placement = {
    * 座標だけを平面上の位置として取り出す。
    *
    * @param placement 座標を読む配置
-   * @returns 親の左上から見た位置
+   * @returns 親の回る前の左上から、親の向きで見た位置
    */
   offset(placement: AbsolutePlacement): Offset {
     return { x: placement.x, y: placement.y };

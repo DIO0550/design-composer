@@ -18,6 +18,19 @@ export type RotatedBounds = Readonly<{
 }>;
 
 /**
+ * 矩形の中心（左右の辺の中間と上下の辺の中間）。
+ *
+ * @param bounds 中心を知りたい矩形
+ * @returns 中心の点（画面上の px）
+ */
+function centerOf(bounds: CanvasBounds): Offset {
+  return {
+    x: CanvasBounds.midline(bounds, SidePairs.Horizontal),
+    y: CanvasBounds.midline(bounds, SidePairs.Vertical),
+  };
+}
+
+/**
  * 回る前の矩形の上の点を、中心まわりに回した位置へ移す。
  *
  * 中心からの差を回すのではなく「回した差と元の差のずれ」を足すのは、0 度で元の点を
@@ -34,11 +47,7 @@ function rotatedAboutCenter(
   point: Offset,
   degrees: number,
 ): Offset {
-  const center = {
-    x: CanvasBounds.midline(bounds, SidePairs.Horizontal),
-    y: CanvasBounds.midline(bounds, SidePairs.Vertical),
-  };
-  const fromCenter = Offset.delta(center, point);
+  const fromCenter = Offset.delta(centerOf(bounds), point);
   return Offset.add(
     point,
     Offset.delta(fromCenter, Offset.rotate(fromCenter, degrees)),
@@ -195,10 +204,7 @@ export const RotatedBounds = {
       offset,
       bounds.unrotated,
     );
-    const center = {
-      x: CanvasBounds.midline(placed, SidePairs.Horizontal),
-      y: CanvasBounds.midline(placed, SidePairs.Vertical),
-    };
+    const center = centerOf(placed);
     const turned = rotatedAboutCenter(
       parent.unrotated,
       center,
@@ -211,7 +217,7 @@ export const RotatedBounds = {
   },
 
   /**
-   * 別の矩形の座標（回る前の左上が原点・その向きで測る）で見た、この矩形の回る前の
+   * 別の矩形の座標（`placedAt` の親の座標と同じ測り方）で見た、この矩形の回る前の
    * 左上の角の位置。
    *
    * 絶対配置の座標の原点はこの角なので、これが**親を付け替えたときに座標を直す量**に

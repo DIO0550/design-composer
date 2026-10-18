@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
 import type { AbsolutePlacement } from "@/domains/dcmp/placement";
 import {
+  type DropParentCoordinates,
   type GrabbedPlacement,
-  type ParentCoordinates,
   RepositionTarget,
 } from "../index";
 
@@ -13,7 +13,7 @@ const GrabbedAt: AbsolutePlacement = { mode: "absolute", x: 40, y: 24 };
 const Grabbed: GrabbedPlacement = { placement: GrabbedAt, parentRotation: 0 };
 
 /** 回っていない今の親へそのまま落とす。 */
-const Home: ParentCoordinates = {
+const Home: DropParentCoordinates = {
   name: "home",
   shift: { x: 0, y: 0 },
   rotation: 0,
@@ -88,7 +88,7 @@ const GrabbedInTurned: GrabbedPlacement = {
 };
 
 /** 90 度回った今の親へそのまま落とす。 */
-const Turned: ParentCoordinates = {
+const Turned: DropParentCoordinates = {
   name: "frame",
   shift: { x: 0, y: 0 },
   rotation: 90,
