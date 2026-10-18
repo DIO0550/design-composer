@@ -138,3 +138,40 @@ test("-128.3 度の子と 15.8 度の Box の合計は、端数の無い -112.5 
     Option.some(-112.5),
   );
 });
+
+test("6 桁より細かい角度が入れ子で重なったノードの向きは、合計してから 6 桁へ丸める", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          {
+            name: "outer",
+            type: "Box",
+            props: { rotation: 0.0000004 },
+            children: [
+              {
+                name: "parent",
+                type: "Box",
+                props: { rotation: 0.0000004 },
+                children: [
+                  {
+                    name: "self",
+                    type: "Text",
+                    props: { rotation: 0.0000004 },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
+
+  expect(DesignDocument.totalRotationOf(document, "self")).toEqual(
+    Option.some(0.000001),
+  );
+});
