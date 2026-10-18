@@ -7,9 +7,12 @@ import 325 箇所が書き換わったのに説明の中の 14 箇所が残り�
 検出器も 1 件も捕まえなかった（#690）。判例の側にも同じ形が出ている
 （`harness/case-law/consistency.md`「検出器の判定表は移動で静かに嘘になる」）。
 
-報告する違反は 1 つ。
+報告する違反は次のとおり（並びが報告の順）。
 
 - `named-path-missing` — 名指ししている先に実体が無い
+
+種別の綴りは、この一覧と `scan()` の `found` のキーにだけ書く（両者の一致は `named-path-cases.sh` が
+照合する）。
 
 **見るのは説明だけで、コードの文字列リテラルは見ない。** `.ts` / `.tsx` はコメントの中、
 `.md` は全文（全文が説明なので。例外は下の probe レシピだけ）。`import` の綴りは typecheck が、公開 API を迂回する向きは
@@ -349,8 +352,12 @@ def scan() -> int:
         if missing_path(spelling, folders)
     ]
 
-    if missing:
-        report("named-path-missing", missing)
+    found: dict[str, list[str]] = {
+        "named-path-missing": missing,
+    }
+    for kind, lines in found.items():
+        if lines:
+            report(kind, lines)
     print(f"名指ししたパスの違反 {len(missing)} 件 / {len(paths)} ファイル")
     return 1 if missing else 0
 

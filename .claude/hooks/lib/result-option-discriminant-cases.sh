@@ -153,4 +153,6 @@ else
   cases_failed=1
 fi
 
+report_documented_kinds "$detector"
+
 exit "$cases_failed"

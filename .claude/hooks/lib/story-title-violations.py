@@ -6,10 +6,13 @@ Storybook のツリーは `title` の綴りだけで組まれる。`title` は�
 を `features/editor/features/` へ移した回で、ツリー上は 37 本が親と横並びのままになった
 （#667 / #669）。
 
-報告する違反は 2 つ。
+報告する違反は次のとおり（並びが報告の順）。
 
 - `story-title-tree` — `title` のツリー上の位置が、フォルダ階層から導出した綴りと違う
 - `story-title-missing` — `title` をリテラル 1 行として一意に取れず、検査できない
+
+種別の綴りは、この一覧と `scan()` の `found` のキーにだけ書く（両者の一致は `story-title-cases.sh` が
+照合する）。
 
 **`title:` の行が 2 本以上あるファイルは、取れないほうへ倒す。** 既定 export の外にある
 `title:`（`args` に切り出したコンポーネントの props など）を story の title と取り違えると、
@@ -104,23 +107,26 @@ def scan(root: Path) -> int:
     unreadable: list[str] = []
 
     for path in paths:
-        found = TITLE.findall(Path(path).read_text(encoding="utf-8"))
-        if len(found) != 1:
-            reason = "が見つからない" if not found else f"が {len(found)} 本あり、どれが story の title か決まらない"
+        titles = TITLE.findall(Path(path).read_text(encoding="utf-8"))
+        if len(titles) != 1:
+            reason = "が見つからない" if not titles else f"が {len(titles)} 本あり、どれが story の title か決まらない"
             unreadable.append(f'{path}（`title: "..."` の行{reason}）')
             continue
-        title = found[0].split("/")
+        title = titles[0].split("/")
         # 葉（最後のセグメント）は表示名なので比べない。
         tree = tree_segments(path.rsplit("/", 1)[0])
         if title[:-1] != tree:
             expected = "/".join(tree + ["<表示名>"])
             mismatched.append(f"{path}: {'/'.join(title)}（フォルダからの導出は {expected}）")
 
-    groups = (("story-title-tree", mismatched), ("story-title-missing", unreadable))
-    for kind, lines in groups:
+    found: dict[str, list[str]] = {
+        "story-title-tree": mismatched,
+        "story-title-missing": unreadable,
+    }
+    for kind, lines in found.items():
         if lines:
             report(kind, lines)
-    total = sum(len(lines) for _, lines in groups)
+    total = sum(len(lines) for lines in found.values())
     print(f"story の title の違反 {total} 件 / {len(paths)} ファイル")
     return 1 if total else 0
 

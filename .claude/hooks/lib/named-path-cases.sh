@@ -160,6 +160,8 @@ miss|相対リンクの段数は見ない(行き先が実在すれば通る)|doc
 miss|git が追跡していないファイルは走査しない|untracked.md|md|features/sidebar
 CASES
 
+report_documented_kinds "$detector"
+
 if [ "$cases_failed" -ne 0 ]; then
   echo "判定表と食い違いがあります"
   exit 1
