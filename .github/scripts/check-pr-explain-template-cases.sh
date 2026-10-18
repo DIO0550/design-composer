@@ -10,6 +10,7 @@
 # 消しても CSP の側で落ちて ok のまま残る。落ちるケースは、報告の行がすべて期待した分類であることまで見る
 # (`all_in_category`)。崩す位置は、正しい値の後ろなど、素朴な実装(先頭だけを見る・1 つ目だけを見る)でも
 # 通らない所を選ぶ。
+# 検出器の種別が docstring の一覧と食い違う・表の分類に 1 度も出ない種別があっても NG。
 #
 # 表は `期待|分類|ケース名|変形` の 1 行 1 ケース。変形はテンプレート(変数 `t`)を書き換える
 # Python の文で、`script` に入れた文字列は固定スクリプトの中身と差し替えてハッシュを埋め直す。
@@ -57,11 +58,7 @@ verdict() {
   esac
 }
 
-while IFS='|' read -r expected category label change; do
-  [ -n "$label" ] || continue
-  make_template "$change"
-  report "$expected" "$(verdict "$category")" "$label"
-done <<'CASES'
+cases="$(cat <<'CASES'
 pass|-|リポジトリのテンプレートは通る|
 deny|csp|固定スクリプトを 1 文字変えてハッシュを直さない|t = t.replace("<script>", "<script> ", 1)
 deny|csp|固定スクリプトが 2 本|t = t.replace("</body>", "<script></script></body>", 1)
@@ -92,5 +89,15 @@ deny|template|固定スクリプトに setHTMLUnsafe|script = body + "\nnode.set
 deny|template|固定スクリプトに parseHTMLUnsafe|script = body + "\nDocument.parseHTMLUnsafe;\n"
 deny|template|コメントに書いた srcdoc|script = body + "\n// srcdoc\n"
 CASES
+)"
+
+while IFS='|' read -r expected category label change; do
+  [ -n "$label" ] || continue
+  make_template "$change"
+  report "$expected" "$(verdict "$category")" "$label"
+done <<<"$cases"
+
+report_documented_kinds "$checker"
+report_covered_kinds "$checker" "$(printf '%s\n' "$cases" | cut -d '|' -f 2 | grep -vx -- '-' | sed 's/^/pr-explain-/')"
 
 exit "$cases_failed"
