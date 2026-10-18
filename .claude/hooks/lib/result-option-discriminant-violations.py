@@ -6,12 +6,14 @@
 いるか（`ok` / `some` という判別子を持つ、という形）を知る場所を定義元 1 つに閉じておくと、
 表現を変えるときに触る場所がそこだけで済む。
 
-見るのは 2 つで、種別を分けて報告する。
+報告する違反は次のとおり（並びが報告の順）。
 
-- **読み側**（`result-option-read`）: `result.ok` のような直読み。判定は `Result.isOk` /
+- `result-option-read` — 読み側。`result.ok` のような直読み。判定は `Result.isOk` /
   `Option.isSome` を通す
-- **作る側・比べる側**（`result-option-write`）: `{ ok: false, error: e }` のような値
+- `result-option-write` — 作る側・比べる側。`{ ok: false, error: e }` のような値
   リテラルでの直書き。テストの期待値も含む。値は `Result.err(e)` / `Option.some(v)` で作る
+
+種別の綴りは、この一覧と `KINDS` にだけ書く（照合は `result-option-discriminant-cases.sh`）。
 
 免除をファイル単位の除外リストにはしない。`src/libs/json-lexical-scanner/index.ts` が
 `ok` を判別子にした別の直和（`ScanOutcome` / `StringScanOutcome`）を持っており、`ok` を
@@ -57,7 +59,7 @@ import re
 import sys
 from pathlib import Path
 
-from ts_sources import report, run, source_files
+from ts_sources import report_violations, run, source_files
 
 # 判別子と、その値を作るコンパニオンオブジェクトの名前。
 #
@@ -67,9 +69,8 @@ from ts_sources import report, run, source_files
 DISCRIMINANTS = {"ok": "Result", "some": "Option"}
 
 # 報告の種別。読み側と作る側を分けて出し、判定表がどちらで止まったかを見分けられるようにする。
-READ = "result-option-read"
-WRITE = "result-option-write"
-KINDS = (READ, WRITE)
+KINDS = ("result-option-read", "result-option-write")
+READ, WRITE = KINDS
 
 # 1 行に閉じている文字列・テンプレートリテラル。閉じていない引用符は、コメントの中の
 # アポストロフィ（`// don't`）でしかないので触らない。
@@ -153,8 +154,8 @@ def violations_in(path: str) -> dict[str, list[str]]:
     """1 ファイルの中の直読みと直書きを探す。
 
     @param path 読み取るファイルのパス
-    @returns 種別（`result-option-read` / `result-option-write`）ごとの、違反 1 件ごとの
-        説明。そのファイルが型宣言で定義している判別子の分は含めない
+    @returns `KINDS` の種別ごとの、違反 1 件ごとの説明。そのファイルが型宣言で定義している
+        判別子の分は含めない
     """
     code = code_lines(Path(path).read_text(encoding="utf-8").splitlines())
     defined = declared_boolean_members(code)
@@ -187,14 +188,12 @@ def scan(root: Path) -> int:
     for path in paths:
         for kind, lines in violations_in(path).items():
             found[kind].extend(lines)
-    for kind, lines in found.items():
-        if lines:
-            report(kind, lines)
+    total = report_violations(found)
     print(
         f"判別子の直読み {len(found[READ])} 件 / 直書き {len(found[WRITE])} 件"
         f" / {len(paths)} ファイル"
     )
-    return 1 if any(found.values()) else 0
+    return 1 if total else 0
 
 
 if __name__ == "__main__":

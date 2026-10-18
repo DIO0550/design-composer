@@ -18,7 +18,7 @@
 - `import-cycle` — ファイル単位の循環
 
 種別の綴りは、この一覧と `scan()` の `found` のキーにだけ書く（両者の一致は `import-rule-cases.sh` が
-照合する）。README・rules に写した一覧は照合されないまま片方だけ古くなるため。
+照合する）。理由は `.claude/hooks/lib/cases-report.sh` の `report_documented_kinds`。
 
 **feature 単位の循環は見ない。** 違反なしで通る feature 間の辺は入れ子の段数を必ず 1 増やす
 （親から直下の子だけ）ので、閉路は必ずほかの種別に当たる辺を含み、報告が 2 重になるだけ。
@@ -51,7 +51,7 @@ from ts_sources import (
     IMPORT_SPECIFIER,
     INDEX_NAMES,
     feature_of,
-    report,
+    report_violations,
     resolve_import,
     run,
     source_files,
@@ -312,10 +312,7 @@ def scan(root: Path) -> int:
             if kind:
                 found[kind].append(f"{importer}:{number} -> {target}（{reason}）")
 
-    for kind, lines in found.items():
-        if lines:
-            report(kind, lines)
-    total = sum(len(lines) for lines in found.values())
+    total = report_violations(found)
     print(f"import 規約の違反 {total} 件 / {len(paths)} ファイル")
     return 1 if total else 0
 

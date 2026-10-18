@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 # push 前の名指ししたパスの検査: git push の実行前にリポジトリの説明（コメントと Markdown）を
-# 走査し、名指ししているパスに当たる実体が無ければ push をブロックする PreToolUse フック。
+# 走査し、名指ししたパスの違反（種別は lib/named-path-violations.py の docstring）があれば push を
+# ブロックする PreToolUse フック。
 #
 # 対応する規範は rules/ に無い。機械で判定できるのでフックだけが持つ
 #   （AGENTS.md「規約の更新」の「ルールに書くくらいならフックにする」）。フォルダを動かしても

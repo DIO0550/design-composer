@@ -103,6 +103,9 @@ resume_checks
 # 作業ツリーを書き換えるサブエージェントの実行中フラグ(層 3 の部品)の判定表。bash だけで走るので飛ばさない。
 run_check "作業ツリーを書き換えるサブエージェントの実行中フラグの判定表" bash .claude/hooks/lib/verification-agent-cases.sh
 
+# 上の判定表が使う、検出器の種別の照合そのものの判定表。bash だけで走るので飛ばさない。
+run_check "検出器の種別の照合の判定表" bash .claude/hooks/lib/cases-report-cases.sh
+
 # 最後の行(結果)を出している集計そのものの判定表。bash だけで走るので飛ばさない。
 run_check "pre-push の結果行の判定表" bash harness/githooks/lib/check-tally-cases.sh
 

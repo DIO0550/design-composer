@@ -7,7 +7,8 @@
 # 使い方: bash .github/scripts/build-pr-explain-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
-# 落ちるケースは、報告の行がすべて期待した分類であることまで見る(`all_in_category`)。
+# 落ちるケースは、報告の行がすべて期待した分類であることまで見る(`all_in_category`)。検出器の種別が
+# docstring の一覧と食い違う・表の分類に 1 度も出ない種別があっても NG。
 #
 # **地図を指す参照を通すケースが要。** 見ない理由は `build-pr-explain.py` の冒頭。
 #
@@ -465,5 +466,8 @@ PY
 )
 report pass "$user_text_keys" "振る舞い(impact)の型の文字列のキーは、id を除いてどれも使う人の言葉(user_text)の規則を持つ"
 report pass "$variant_keys" "どの Variant も、kind をまたいで同じキーは同じ規則を持つ"
+
+report_documented_kinds "$builder"
+report_covered_kinds "$builder" "$(kinds_in_categories "$cases" pr-explain-)"
 
 exit "$cases_failed"

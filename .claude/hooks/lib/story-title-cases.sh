@@ -84,6 +84,8 @@ deny|既定 export の外にも title: があり、どれが story の title か
 miss|葉の名前が実在のコンポーネントと無関係でも通る(意図した取りこぼし)|src/features/editor/components/editor-layout/index.stories.tsx|features/editor/Nonsense
 CASES
 
+report_documented_kinds "$detector"
+
 if [ "$cases_failed" -ne 0 ]; then
   echo "判定表と食い違いがあります"
   exit 1

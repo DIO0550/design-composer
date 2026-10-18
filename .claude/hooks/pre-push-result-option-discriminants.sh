@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 # push 前の判別子の直読み・直書き検査: git push の実行前に `src/` を走査し、`Result` /
-# `Option` の判別子（`ok` / `some`）を定義元の外で直読みしている箇所、または値リテラル
-# （`{ ok: false, error: e }`）で書いている箇所があれば push をブロックする PreToolUse フック。
+# `Option` の判別子（`ok` / `some`）の直読み・直書き（種別は
+# lib/result-option-discriminant-violations.py の docstring）があれば push をブロックする PreToolUse フック。
 #
 # 対応する規約: rules/coding.md「エラーと不在の表現」。在／不在・成否の判定は
 #   `Option.isSome` / `Result.isOk` を通し、判別子を直接読み書きしてよいのは、その判別子を
