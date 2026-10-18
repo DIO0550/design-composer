@@ -153,19 +153,19 @@
       "id": "object-pairs-hook",
       "category": "python · json",
       "label": "`object_pairs_hook`",
-      "gist": "[[JSON|json]] のオブジェクトを 1 つ読み終えるたびに呼ばれ、キーと値の組から辞書を作る処理を差し替える引数。",
+      "gist": "[[JSON|json]] を読み込むとき、オブジェクト(`{…}`)を Python のどんな値にするかを、自分で書いた関数に決めさせるための引数。[[標準ライブラリ|stdlib]]の `json` モジュールにある読み込み関数 `json.loads` に、関数そのものを渡して使う。",
       "passages": [
-        { "kind": "text", "text": "`json.loads` は、オブジェクトを読み終えるたびに `object_pairs_hook` を呼ぶ。渡すのは[[キーと値の組|pair]]の並びで、同じキーを 2 回書いていれば 2 組とも届く。" },
+        { "kind": "text", "text": "`json.loads` は文字列を先頭から読み、オブジェクトを 1 つ読み終えるたびに `object_pairs_hook` に渡した関数を呼ぶ。受け取るのは、そのオブジェクトに書かれた順の[[キーと値の組|pair]]を並べた[[リスト|list]]で、同じキーを 2 回書いていれば 2 組とも届く。入れ子のオブジェクトは内側から先に呼ばれ、関数が返した値がそのまま読み込み結果の中に入る。" },
         { "kind": "declaration", "code": "json.loads(s, *, object_pairs_hook=None)" },
         {
           "kind": "parameters",
           "parameters": [
-            { "name": "s", "type": "str", "text": "読む [[JSON|json]] の文字列" },
-            { "name": "object_pairs_hook", "type": "Callable", "text": "[[キーと値の組|pair]]の並びを受け取り、辞書の代わりになる値を返す", "note": "省けば dict" }
+            { "name": "s", "type": "str", "text": "読む [[JSON|json]] の文字列(`str` は Python の文字列の型)" },
+            { "name": "object_pairs_hook", "type": "Callable", "text": "[[キーと値の組|pair]]の並びを受け取り、そのオブジェクトの代わりに置く値を返す[[呼び出せる値|callable]]。宣言で `*` より後ろにあるので[[キーワード専用引数|keyword-only]]で、`object_pairs_hook=…` と名前を付けて渡す", "note": "省けば dict" }
           ]
         },
-        { "kind": "caution", "text": "既定の `dict` は、後に書いたキーで黙って上書きする。重複を見つけたいときは、組の並びを受け取って [[`Duplicated`|duplicated]] に置き換える。" },
-        { "kind": "memo", "text": "`object_hook` は組ではなく作り終えた辞書を受け取るので、重複はもう見えない。" }
+        { "kind": "caution", "text": "省いたときは組から [[`dict`|dict]] を作るので、同じキーは後に書いた値で黙って上書きされ、重複は読み込み結果から消える。重複を見つけたいときは組の並びを受け取る関数を自分で書き、重複があれば [[`Duplicated`|duplicated]] を返す。" },
+        { "kind": "memo", "text": "名前の似た `object_hook` は、組の並びではなく作り終えた `dict` を受け取る。その時点で重複は上書き済みなので、重複を見つける用途には使えない。" }
       ],
       "occurrences": [
         {
@@ -199,8 +199,13 @@
     }
   ],
   "terms": [
-    { "id": "json", "label": "JSON", "text": "文字列・数値・配列・オブジェクトを書く、テキストの形式。" },
-    { "id": "pair", "label": "キーと値の組", "text": "オブジェクトの 1 つのキーと、その値を並べた 2 つ組。" },
+    { "id": "json", "label": "JSON", "text": "データを文字で書き表す形式。`{…}` のオブジェクト・`[…]` の配列・文字列・数値などを組み合わせて書く。" },
+    { "id": "stdlib", "label": "標準ライブラリ", "text": "Python に最初から付いてくるモジュールの集まり。インストールせずに `import json` のように取り込むだけで使える。" },
+    { "id": "pair", "label": "キーと値の組", "text": "オブジェクトに書いた 1 つのキーとその値。Python では `(キー, 値)` の形のタプル(要素の数が決まった、書き換えられない並び)で届く。" },
+    { "id": "list", "label": "リスト", "text": "Python の組み込みの型 `list` で、値を順番に並べたもの。`[a, b]` と書く。" },
+    { "id": "callable", "label": "呼び出せる値", "text": "`f(…)` の形で呼び出せる値。Python では関数も値なので引数として渡せ、型の注釈では `Callable` と書く。" },
+    { "id": "keyword-only", "label": "キーワード専用引数", "text": "宣言の `*` より後ろに並んだ引数。`object_pairs_hook=f` のように名前を付けてしか渡せず、位置だけで渡すと `TypeError` になる。" },
+    { "id": "dict", "label": "dict", "text": "Python の組み込みの型で、キーから値を引く表(辞書)。1 つのキーには 1 つの値しか持てず、同じキーに入れ直すと前の値は消える。" },
     { "id": "duplicated", "label": "Duplicated", "text": "同じキーを 2 回以上書いたオブジェクトの代わりに置く値。形の検査が報告する。" },
     { "id": "route", "label": "道筋", "text": "トップから値までのキーの並び。配列の中へ進む段には `[]` を付ける。" }
   ]

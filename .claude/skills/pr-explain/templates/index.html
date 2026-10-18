@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-uR945rg3hqGraVxYw+MI9CwpqGjW+7didxgtQtbYzHA='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-GllSgqqYbDSzdsYM0VhBpKv+dVZpYqkvvNIRwGHUGbQ='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1397,15 +1397,16 @@ button.change-item:hover { background: var(--track); }
     Screens,
     isScreen,
     /**
-     * ハッシュ → 保存値 → 構造マップの順に選ぶ。
+     * ハッシュが指す画面を選び、指していなければ構造マップを選ぶ。前に開いた画面は見ない。
+     *
+     * 前に開いた画面を読むと、別の PR の解説も同じ画面で開いてしまうので読まない。
+     * PR ごとのキーで覚える形にはしない。同じ PR を開き直したときに構造マップで開かなくなる。
      * @param hash `location.hash`(`#` の有無は問わない)
-     * @param saved 最後に開いた画面として保存してある値。無ければ null
      * @returns 開く画面
      */
-    choose: ({ hash, saved }) => {
+    choose: (hash) => {
       const fromHash = hash.replace(/^#/, "");
       if (isScreen(fromHash)) return fromHash;
-      if (isScreen(saved)) return saved;
       return Screens.Map;
     },
   });
@@ -2821,7 +2822,6 @@ button.change-item:hover { background: var(--track); }
   });
 
   const ScreenLabels = { map: "構造マップ", story: "変更の経緯", test: "テスト", impact: "振る舞い", primer: "技術の手引き" };
-  const ScreenStoreKey = "prExplain.screen";
 
   /** 画面ごとのパネルの既定の幅。左はどの画面にもあり、右は構造マップ・テスト・振る舞い・技術の手引きにある(変更の経緯には無い)。 */
   const PanelLayouts = {
@@ -6157,16 +6157,11 @@ button.change-item:hover { background: var(--track); }
         summary.replaceChildren(...built[screen].summary);
         controls.replaceChildren(...built[screen].controls);
       };
-      const choose = () => ScreenChoice.choose({ hash: location.hash, saved: BrowserStore.read(ScreenStoreKey) });
-      /** 開いた画面を保存して出す。 */
-      const openScreen = (screen) => {
-        BrowserStore.write(ScreenStoreKey, screen);
-        show(screen);
-      };
+      const choose = () => ScreenChoice.choose(location.hash);
       /** ハッシュをその画面のものに書き換えてから開く。 */
       const navigateTo = (screen) => {
         history.replaceState(null, "", `#${screen}`);
-        openScreen(screen);
+        show(screen);
       };
       for (const tab of tabs) {
         tab.addEventListener("click", (event) => {
@@ -6174,7 +6169,7 @@ button.change-item:hover { background: var(--track); }
           navigateTo(tab.dataset.screen);
         });
       }
-      window.addEventListener("hashchange", () => openScreen(choose()));
+      window.addEventListener("hashchange", () => show(choose()));
       window.addEventListener("keydown", (event) => {
         const onKey = built[current].onKey;
         if (onKey !== undefined) onKey(event);
