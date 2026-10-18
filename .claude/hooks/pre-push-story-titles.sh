@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# push 前の story の title 検査: git push の実行前に `src/` の story を走査し、`title` が
-# フォルダ階層と食い違っていれば push をブロックする PreToolUse フック。
+# push 前の story の title 検査: git push の実行前に `src/` の story を走査し、`title` の
+# 違反（種別は lib/story-title-violations.py の docstring）があれば push をブロックする PreToolUse フック。
 #
 # 対応する規範は rules/ に無い。機械で判定できるのでフックだけが持つ
 #   （AGENTS.md「規約の更新」の「ルールに書くくらいならフックにする」）。Storybook のツリーは
