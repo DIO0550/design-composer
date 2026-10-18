@@ -95,11 +95,14 @@ export function ResizeHandleOverlay({
   resizable,
   isGrabbing,
   onGrab,
+  onNonPrimaryPress,
 }: Readonly<{
   bounds: RotatedBounds;
   resizable: ResizableSelection;
   isGrabbing: boolean;
   onGrab: (grip: ResizeGrip, event: ReactPointerEvent<HTMLElement>) => void;
+  /** 主ボタン以外で掴めるハンドルを押したとき。掴まずに親へ渡す。 */
+  onNonPrimaryPress: (event: ReactPointerEvent<HTMLElement>) => void;
 }>) {
   return (
     /*
@@ -128,8 +131,10 @@ export function ResizeHandleOverlay({
                     /*
                      * 右・中ボタンでは掴まない。それらの pointerup のあとには click が来ないので、
                      * 離したあとの飲み込み待ちが残って次の左クリックを食べる。
+                     * 掴まない押下は親へ渡す。
                      */
                     if (!PointerButton.isPrimary(event)) {
+                      onNonPrimaryPress(event);
                       return;
                     }
                     onGrab(grab.value, event);

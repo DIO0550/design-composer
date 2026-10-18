@@ -30,6 +30,7 @@ const meta = {
     bounds: { unrotated: SelectedBounds, rotation: 0 },
     isGrabbing: false,
     onGrab: () => {},
+    onNonPrimaryPress: () => {},
   },
   decorators: [
     (Story, context) => (

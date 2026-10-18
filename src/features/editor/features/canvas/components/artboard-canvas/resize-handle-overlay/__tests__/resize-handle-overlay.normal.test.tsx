@@ -52,19 +52,37 @@ function handleStyles(
     .map((handle) => read(handle.style));
 }
 
+/** 押下の受け口は何もしないものにして描く。 */
+function renderOverlay({
+  bounds,
+  resizable,
+  isGrabbing,
+}: Readonly<{
+  bounds: RotatedBounds;
+  resizable: ResizableSelection;
+  isGrabbing: boolean;
+}>): void {
+  render(
+    <ResizeHandleOverlay
+      bounds={bounds}
+      resizable={resizable}
+      isGrabbing={isGrabbing}
+      onGrab={() => {}}
+      onNonPrimaryPress={() => {}}
+    />,
+  );
+}
+
 test("ハンドルは四隅と各辺の中間の 8 箇所に、辺をまたぐ位置で置かれる", () => {
   /*
    * 中心が辺に乗るので、左上は矩形の角から半分ぶん外へ出る（100 - 5 = 95）。
    * 位置を 1 箇所だけ見ると x と y の取り違えが残るので、8 箇所を並びごと比べる。
    */
-  render(
-    <ResizeHandleOverlay
-      bounds={PanelBounds}
-      resizable={placed([WidthHandle, HeightHandle])}
-      isGrabbing={false}
-      onGrab={() => {}}
-    />,
-  );
+  renderOverlay({
+    bounds: PanelBounds,
+    resizable: placed([WidthHandle, HeightHandle]),
+    isGrabbing: false,
+  });
 
   expect(
     screen
@@ -87,14 +105,11 @@ test("位置を持つ要素では、掴める箇所ごとの向きのカーソ�
    * 左上・右下は左上 - 右下の斜め、右上・左下は右上 - 左下の斜め。辺の中央はその軸。
    * 8 箇所を並びごと比べるのは、斜め 2 種類を取り違えた実装が 1 箇所だけでは残るため。
    */
-  render(
-    <ResizeHandleOverlay
-      bounds={PanelBounds}
-      resizable={placed([WidthHandle, HeightHandle])}
-      isGrabbing={false}
-      onGrab={() => {}}
-    />,
-  );
+  renderOverlay({
+    bounds: PanelBounds,
+    resizable: placed([WidthHandle, HeightHandle]),
+    isGrabbing: false,
+  });
 
   expect(handleStyles((style) => style.cursor)).toEqual([
     "nwse-resize",
@@ -113,14 +128,11 @@ test("位置を持たない要素では、始点側を含む箇所にカーソ�
    * 反対の辺を留める位置を書けないので、左辺・上辺・左上は掴めない。右辺・下辺・
    * 右下が対照で、8 箇所すべてを殺した実装では落ちる。右上・左下は掴める軸だけが残る。
    */
-  render(
-    <ResizeHandleOverlay
-      bounds={PanelBounds}
-      resizable={unplaced([WidthHandle, HeightHandle])}
-      isGrabbing={false}
-      onGrab={() => {}}
-    />,
-  );
+  renderOverlay({
+    bounds: PanelBounds,
+    resizable: unplaced([WidthHandle, HeightHandle]),
+    isGrabbing: false,
+  });
 
   expect(handleStyles((style) => style.cursor)).toEqual([
     "",
@@ -139,28 +151,22 @@ test("右下の角では、掴める軸の数に応じてカーソルが変わ�
    * 幅だけが固定なら角も 1 軸しか変えられないので、斜めではなく左右のカーソルを出す。
    * 2 軸のときだけ斜めになることは「位置を持つ要素では…」が見る。
    */
-  render(
-    <ResizeHandleOverlay
-      bounds={PanelBounds}
-      resizable={placed([WidthHandle])}
-      isGrabbing={false}
-      onGrab={() => {}}
-    />,
-  );
+  renderOverlay({
+    bounds: PanelBounds,
+    resizable: placed([WidthHandle]),
+    isGrabbing: false,
+  });
 
   expect(handleStyles((style) => style.cursor)[4]).toBe("ew-resize");
 });
 
 test("高さだけが固定なら、右下の角には上下のカーソルが出る", () => {
   // 幅側だけを見ていると、高さ側の枝を消しても気づけない（対で見る）
-  render(
-    <ResizeHandleOverlay
-      bounds={PanelBounds}
-      resizable={placed([HeightHandle])}
-      isGrabbing={false}
-      onGrab={() => {}}
-    />,
-  );
+  renderOverlay({
+    bounds: PanelBounds,
+    resizable: placed([HeightHandle]),
+    isGrabbing: false,
+  });
 
   expect(handleStyles((style) => style.cursor)[4]).toBe("ns-resize");
 });
@@ -170,14 +176,11 @@ test("掴めない軸のハンドルにはカーソルが出ない", () => {
    * 幅だけが固定なら、下辺中央は掴めないのでカーソルも出ない。
    * 右辺中央が対照で、両方とも空になる実装では落ちる。
    */
-  render(
-    <ResizeHandleOverlay
-      bounds={PanelBounds}
-      resizable={placed([WidthHandle])}
-      isGrabbing={false}
-      onGrab={() => {}}
-    />,
-  );
+  renderOverlay({
+    bounds: PanelBounds,
+    resizable: placed([WidthHandle]),
+    isGrabbing: false,
+  });
 
   const cursors = handleStyles((style) => style.cursor);
   expect([cursors[3], cursors[5]]).toEqual(["ew-resize", ""]);
@@ -188,14 +191,11 @@ test("掴めないハンドルだけがポインタを受け取らない", () =>
    * 8 個すべてを透明にすると、下にあるノードは選べるがハンドルも掴めなくなる。
    * 掴める側が `auto` であることまで見ないと、その実装で通ってしまう。
    */
-  render(
-    <ResizeHandleOverlay
-      bounds={PanelBounds}
-      resizable={unplaced([WidthHandle, HeightHandle])}
-      isGrabbing={false}
-      onGrab={() => {}}
-    />,
-  );
+  renderOverlay({
+    bounds: PanelBounds,
+    resizable: unplaced([WidthHandle, HeightHandle]),
+    isGrabbing: false,
+  });
 
   expect(handleStyles((style) => style.pointerEvents)).toEqual([
     "none",
@@ -214,14 +214,11 @@ test("掴んでいる間はハンドルがポインタを受け取らない", ()
    * 掴んだあとの移動と解放を受けるのはキャンバスの器なので、ハンドルが不透明のままだと
    * 追いかけてきたハンドルにポインタが乗った瞬間に器から離脱して取り消しになる。
    */
-  render(
-    <ResizeHandleOverlay
-      bounds={PanelBounds}
-      resizable={placed([WidthHandle, HeightHandle])}
-      isGrabbing={true}
-      onGrab={() => {}}
-    />,
-  );
+  renderOverlay({
+    bounds: PanelBounds,
+    resizable: placed([WidthHandle, HeightHandle]),
+    isGrabbing: true,
+  });
 
   expect(handleStyles((style) => style.pointerEvents)).toEqual(
     Array(8).fill("none"),
@@ -246,14 +243,11 @@ test("回ったノードのハンドルは回った角に置かれる", () => {
    * 右下の角 (300, 150) を中心まわりに 30 度回すと (261.6, 193.3)。外接矩形の右下
    * （軸に平行な 8 点の位置）なら (311.6, 168.3) になる。
    */
-  render(
-    <ResizeHandleOverlay
-      bounds={turnedPanel(30)}
-      resizable={turnedPlaced(30)}
-      isGrabbing={false}
-      onGrab={() => {}}
-    />,
-  );
+  renderOverlay({
+    bounds: turnedPanel(30),
+    resizable: turnedPlaced(30),
+    isGrabbing: false,
+  });
 
   const bottomRight = screen.getAllByTestId("resize-handle")[4];
   expect(Number.parseFloat(bottomRight.style.left)).toBeCloseTo(256.6, 1);
@@ -261,14 +255,11 @@ test("回ったノードのハンドルは回った角に置かれる", () => {
 });
 
 test("回ったノードのハンドルは、四角も要素と同じ角度だけ回る", () => {
-  render(
-    <ResizeHandleOverlay
-      bounds={turnedPanel(30)}
-      resizable={turnedPlaced(30)}
-      isGrabbing={false}
-      onGrab={() => {}}
-    />,
-  );
+  renderOverlay({
+    bounds: turnedPanel(30),
+    resizable: turnedPlaced(30),
+    isGrabbing: false,
+  });
 
   expect(new Set(handleStyles((style) => style.transform))).toEqual(
     new Set(["rotate(30deg)"]),
@@ -277,14 +268,11 @@ test("回ったノードのハンドルは、四角も要素と同じ角度だ�
 
 test("90 度回したノードの幅のハンドルには、縦の矢印のカーソルが出る", () => {
   // 右辺は画面の下へ来るので、伸び縮みするのは縦
-  render(
-    <ResizeHandleOverlay
-      bounds={turnedPanel(90)}
-      resizable={turnedPlaced(90)}
-      isGrabbing={false}
-      onGrab={() => {}}
-    />,
-  );
+  renderOverlay({
+    bounds: turnedPanel(90),
+    resizable: turnedPlaced(90),
+    isGrabbing: false,
+  });
 
   expect(handleStyles((style) => style.cursor)[3]).toBe("ns-resize");
 });
