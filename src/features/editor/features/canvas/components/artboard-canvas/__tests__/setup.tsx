@@ -6,7 +6,6 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { PropEdit } from "@/domains/dcmp/node";
-import type { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
@@ -22,15 +21,13 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
-import {
-  drawnAt,
-  stubLayoutSize,
-} from "@/features/editor/features/canvas/__tests__/canvas-measure";
 import { resizeAnchorIndexAt } from "@/features/editor/features/canvas/__tests__/canvas-resize";
-import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import type { ResizeHandleAnchor } from "@/features/editor/features/canvas/domains/node-resize";
 import { useCanvasView } from "@/features/editor/features/canvas/hooks/use-canvas-view";
-import { useNodeDrag } from "@/features/editor/features/canvas/hooks/use-node-drag";
+import {
+  type RepositionNode,
+  useNodeDrag,
+} from "@/features/editor/features/canvas/hooks/use-node-drag";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
 import { ArtboardCanvas } from "../index";
@@ -40,30 +37,14 @@ import {
 } from "../reposition-preview-style";
 
 /*
- * 名前で引く・測りを差し替えるのはキャンバスのフックの単体テストも使うので、持ち主は
- * feature 直下の `canvas-elements` / `canvas-measure`。ここからは今までどおりの名前で出す。
+ * 名前で引く・測りを差し替えるのはキャンバスのフックの単体テストや feature 直下の共有の描き方
+ * （`canvas-turned-frame`）も使うので、持ち主は feature 直下の `canvas-elements` / `canvas-measure`。ここからは今までどおりの名前で出す。
  */
 export { drawn } from "@/features/editor/features/canvas/__tests__/canvas-elements";
-export { drawnAt } from "@/features/editor/features/canvas/__tests__/canvas-measure";
-
-/**
- * 回って描かれているノードとして描く。外接矩形を描かれた矩形にし、回る前の大きさを
- * レイアウトの大きさにする（外接矩形からは回る前の大きさが決まらないため）。
- *
- * @param name 描かれているノードの名前
- * @param enclosing 回った 4 角を囲む、描かれていることにする矩形
- * @param unrotatedSize 回る前の幅と高さ
- * @returns 測定を差し替えたあとの要素
- */
-export function drawnTurnedAt(
-  name: string,
-  enclosing: CanvasBounds,
-  unrotatedSize: Readonly<{ width: number; height: number }>,
-): HTMLElement {
-  const element = drawnAt(name, enclosing);
-  stubLayoutSize(element, unrotatedSize);
-  return element;
-}
+export {
+  drawnAt,
+  drawnTurnedAt,
+} from "@/features/editor/features/canvas/__tests__/canvas-measure";
 
 /**
  * artboard の並びだけを差し替えたドキュメントと、選択の対
@@ -118,7 +99,7 @@ type CanvasHandlers = Readonly<{
   onSelect: (names: readonly string[]) => void;
   onSelectInRange: (names: readonly string[]) => void;
   onMoveNode: (name: string, to: ChildPosition) => void;
-  onRepositionNode: (name: string, edit: RepositionEdit) => void;
+  onRepositionNode: RepositionNode;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
   onResize: (edit: ResizeEdit, continuity: EditContinuity) => void;
   onEditProp: (edit: PropEdit) => void;

@@ -8,7 +8,7 @@ import {
   RepositionTarget,
 } from "../index";
 
-/**
+/*
  * 向きの違う親へ付け替えるときの行き先。自分の向きも差だけ書き換わり、座標は回る前の左上では
  * なく中心が画面上の同じ位置に来るように直る（docs/06-ui.md「キャンバス直接操作」）。
  */
@@ -18,7 +18,7 @@ const GrabbedInTurned: GrabbedGeometry = {
   placement: { mode: "absolute", x: 10, y: 10 },
   parentRotation: 90,
   ownRotation: 0,
-  centerFromCorner: { x: 10, y: 6 },
+  centerFromTopLeft: { x: 10, y: 6 },
 };
 
 /** 今の親の座標の原点が (250, 0) にある、回っていない落とし先。 */
@@ -33,7 +33,7 @@ const GrabbedInHome: GrabbedGeometry = {
   placement: { mode: "absolute", x: 20, y: 150 },
   parentRotation: 0,
   ownRotation: 0,
-  centerFromCorner: { x: 10, y: 6 },
+  centerFromTopLeft: { x: 10, y: 6 },
 };
 
 /** 今の親の座標の原点が (0, 250) にある、90 度回った落とし先。 */
@@ -171,7 +171,7 @@ test("360 度回った親から回っていない親へ付け替えると、左�
 test("大きさの半分が整数でなくても、付け替えで書かれる座標は整数になる", () => {
   // 21x12 なら中心を保つ分は (-16.5, 4.5) で、丸めないと (216.5, 14.5) の端数が書かれる
   const dropped = RepositionTarget.create(
-    { ...GrabbedInTurned, centerFromCorner: { x: 10.5, y: 6 } },
+    { ...GrabbedInTurned, centerFromTopLeft: { x: 10.5, y: 6 } },
     { x: -7, y: 0 },
     Home,
   );
@@ -208,18 +208,21 @@ function centersAndOrientations(
   dropParent: DropParentCoordinates,
 ) {
   const dropped = RepositionTarget.create(from, carried, dropParent);
-  const turn = from.parentRotation - dropParent.rotation;
+  const rotationGap = from.parentRotation - dropParent.rotation;
   const carriedCorner = Offset.add(
     Placement.offset(from.placement),
     dropped.offset,
   );
   const carriedCenter = Offset.add(
-    Offset.rotate(Offset.add(carriedCorner, from.centerFromCorner), turn),
+    Offset.rotate(
+      Offset.add(carriedCorner, from.centerFromTopLeft),
+      rotationGap,
+    ),
     dropParent.shift,
   );
   const droppedCenter = Offset.add(
     Placement.offset(dropped.written.to.placement),
-    from.centerFromCorner,
+    from.centerFromTopLeft,
   );
   const droppedRotation = Option.isSome(dropped.written.rotation)
     ? dropped.written.rotation.value
@@ -237,7 +240,7 @@ const ThirtyToSeventyFive = [
     placement: { mode: "absolute", x: 40, y: 24 },
     parentRotation: 30,
     ownRotation: 0,
-    centerFromCorner: { x: 10, y: 6 },
+    centerFromTopLeft: { x: 10, y: 6 },
   },
   { x: 28.33, y: -10.83 },
   { name: "card", shift: { x: 13, y: -7 }, rotation: 75 },
@@ -258,10 +261,7 @@ test("向きの違う親へ付け替えても、画面上の向きは運んで�
   expect(droppedOrientation).toBe(carriedOrientation);
 });
 
-/*
- * 以下は浮動小数の端数。親の画面上の向きは祖先の角度を足し合わせて求めるので、0.1 度の中の
- * 0.2 度のような親では差に端数が残る。
- */
+/* 以下は浮動小数の端数（丸める理由は `Angle.roundToMicrodegree`）。 */
 test("0.1 度の中の 0.2 度の親から 0.3 度の親へ付け替えても、向きを書かない", () => {
   expect(
     writtenRotation({

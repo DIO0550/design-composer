@@ -231,7 +231,7 @@ test("回る前の左上から中心までの差は、大きさの半分にな�
     rotation: 30,
   };
 
-  expect(RotatedBounds.centerFromCorner(bounds)).toEqual({ x: 10, y: 6 });
+  expect(RotatedBounds.centerFromTopLeft(bounds)).toEqual({ x: 10, y: 6 });
 });
 
 test("大きさが奇数でも、回る前の左上から中心までの差は大きさのちょうど半分になる", () => {
@@ -240,5 +240,5 @@ test("大きさが奇数でも、回る前の左上から中心までの差は�
     rotation: 30,
   };
 
-  expect(RotatedBounds.centerFromCorner(bounds)).toEqual({ x: 10.5, y: 6.5 });
+  expect(RotatedBounds.centerFromTopLeft(bounds)).toEqual({ x: 10.5, y: 6.5 });
 });

@@ -9,11 +9,11 @@ import {
 } from "@/domains/dcmp/design-document";
 import {
   drag,
+  drawnTurnedFrame,
   movePointer,
   pressPointer,
   releasePointer,
-  stubBounds,
-  stubLayoutSize,
+  turnedFrameDocument,
 } from "@/features/editor/features/canvas/__tests__";
 import {
   drawn,
@@ -174,75 +174,8 @@ test("同じ親の中で運んだときは、包んでいる artboard が変わ�
   expect(drawnParentName("home-badge")).toBe("home");
 });
 
-/**
- * `home` の直下に 90 度回った Box `frame` と絶対配置の `pin` があり、`frame` の中に絶対配置の
- * `chip` と `peg` が並ぶドキュメント。
- *
- * 値はキャンバス単体の `artboard-canvas.drag-rotated-parent` の `setupTurnedFrame(90)` と同じ。
- * あちらは選択との対を返すローカル関数なので、ここではドキュメントだけを同じ値で組む。
- */
-function setupTurnedFrameDocument(): DesignDocument {
-  return DesignDocument.create({
-    tokens: DocumentTemplate.Default.tokens,
-    components: DocumentTemplate.Default.components,
-    artboards: [
-      Artboard.create({
-        name: "home",
-        width: 360,
-        height: 240,
-        children: [
-          {
-            name: "frame",
-            type: "Box",
-            props: {
-              placement: "absolute",
-              x: 100,
-              y: 50,
-              width: 200,
-              height: 100,
-              rotation: 90,
-            },
-            children: [
-              {
-                name: "chip",
-                type: "Text",
-                props: { content: "c", placement: "absolute", x: 10, y: 10 },
-              },
-              {
-                name: "peg",
-                type: "Text",
-                props: { content: "p", placement: "absolute", x: 150, y: 60 },
-              },
-            ],
-          },
-          {
-            name: "pin",
-            type: "Text",
-            props: { content: "x", placement: "absolute", x: 20, y: 150 },
-          },
-        ],
-      }),
-    ],
-  });
-}
-
-/**
- * `setupTurnedFrameDocument` を等倍で描く（`artboard-canvas.drag-rotated-parent` の
- * `drawnTurnedFrame()` と同じ値）。回っているものは外接矩形と回る前の大きさの両方を差し替える。
- */
-function drawnTurnedFrame(): void {
-  stubBounds(drawn("home"), { left: 100, top: 60, width: 360, height: 240 });
-  stubBounds(drawn("frame"), { left: 250, top: 60, width: 100, height: 200 });
-  stubLayoutSize(drawn("frame"), { width: 200, height: 100 });
-  stubBounds(drawn("chip"), { left: 328, top: 70, width: 12, height: 20 });
-  stubLayoutSize(drawn("chip"), { width: 20, height: 12 });
-  stubBounds(drawn("peg"), { left: 278, top: 210, width: 12, height: 20 });
-  stubLayoutSize(drawn("peg"), { width: 20, height: 12 });
-  stubBounds(drawn("pin"), { left: 120, top: 210, width: 20, height: 12 });
-}
-
 test("90 度回った Box の中のノードを回っていない artboard へ運ぶと、中心を保つ位置に 90 度回って描かれる", async () => {
-  await renderOpenedDocument(setupTurnedFrameDocument());
+  await renderOpenedDocument(turnedFrameDocument(90));
   // キャンバスで押すと外側の `frame` が掴まれるので、ツリーで `chip` を選んでから運ぶ
   await userEvent.click(screen.getByRole("button", { name: "chip" }));
   drawnTurnedFrame();

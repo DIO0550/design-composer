@@ -14,7 +14,7 @@ const Grabbed: GrabbedGeometry = {
   placement: GrabbedAt,
   parentRotation: 0,
   ownRotation: 0,
-  centerFromCorner: { x: 10, y: 6 },
+  centerFromTopLeft: { x: 10, y: 6 },
 };
 
 /** 回っていない今の親へそのまま落とす。 */

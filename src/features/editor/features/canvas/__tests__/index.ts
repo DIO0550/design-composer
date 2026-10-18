@@ -25,3 +25,7 @@ export {
   stubBounds,
   stubLayoutSize,
 } from "@/features/editor/features/canvas/__tests__/canvas-measure";
+export {
+  drawnTurnedFrame,
+  turnedFrameDocument,
+} from "@/features/editor/features/canvas/__tests__/canvas-turned-frame";

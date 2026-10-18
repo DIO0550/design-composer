@@ -245,7 +245,7 @@ export const RotatedBounds = {
    * @param bounds 中心を知りたい矩形
    * @returns 回る前の左上から中心へ向かう差（画面上の px）
    */
-  centerFromCorner(bounds: RotatedBounds): Offset {
+  centerFromTopLeft(bounds: RotatedBounds): Offset {
     return Offset.delta(
       CanvasBounds.pointAt(bounds.unrotated, { x: 0, y: 0 }),
       centerOf(bounds.unrotated),

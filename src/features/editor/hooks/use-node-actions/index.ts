@@ -1,6 +1,5 @@
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { PropEdit } from "@/domains/dcmp/node";
-import type { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
 import type { NodeTemplate } from "@/domains/session/node-template";
@@ -8,6 +7,7 @@ import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { Offset } from "@/domains/unit/offset";
 import { useEditor } from "@/features/editor/components/editor-provider";
 import { EditorState } from "@/features/editor/domains/editor-state";
+import type { RepositionNode } from "@/features/editor/features/canvas";
 import { Option } from "@/utils/Option";
 
 /**
@@ -33,7 +33,7 @@ export type NodeActions = Readonly<{
    * 絶対配置のノードを、指した親の中の座標へ置き直す。親が違えば付け替え、編集が向きを持てば
    * 向きも書く。
    */
-  reposition: (name: string, edit: RepositionEdit) => void;
+  reposition: RepositionNode;
   /** artboard をキャンバス上の別の位置へ置き直す。 */
   repositionArtboard: (name: string, canvasPosition: Offset) => void;
   resize: (edit: ResizeEdit, continuity: EditContinuity) => void;

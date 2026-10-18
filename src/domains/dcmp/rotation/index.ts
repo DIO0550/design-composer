@@ -29,6 +29,9 @@ export const Rotation = {
   /**
    * ノードの props へ角度を書き込む編集。
    *
+   * 既定でも 0 を書く形にはしない。向きの違う親へ付け替えて戻す往復で `rotation: 0` が残り、
+   * ファイルが元に戻らない。
+   *
    * @param angle 書き込む角度
    * @returns 既定（`Default`）なら `rotation` を消して未設定へ戻す編集、それ以外はその角度にする編集
    */

@@ -63,6 +63,25 @@ export function drawnAt(name: string, bounds: CanvasBounds): HTMLElement {
 }
 
 /**
+ * 回って描かれているノードとして描く。外接矩形を描かれた矩形にし、回る前の大きさを
+ * レイアウトの大きさにする（外接矩形からは回る前の大きさが決まらないため）。
+ *
+ * @param name 描かれているノードの名前
+ * @param enclosing 回った 4 角を囲む、描かれていることにする矩形
+ * @param unrotatedSize 回る前の幅と高さ
+ * @returns 測定を差し替えたあとの要素
+ */
+export function drawnTurnedAt(
+  name: string,
+  enclosing: CanvasBounds,
+  unrotatedSize: Readonly<{ width: number; height: number }>,
+): HTMLElement {
+  const element = drawnAt(name, enclosing);
+  stubLayoutSize(element, unrotatedSize);
+  return element;
+}
+
+/**
  * キャンバスに描かれていることにする要素を置く。
  * 名前で引ける（`CanvasDom.elementOf`）ようにするだけなので、器の外へ置く。
  *

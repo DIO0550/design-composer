@@ -44,6 +44,14 @@ import { CommandKey } from "@/libs/dom-event";
 import { ElementEx } from "@/utils/ElementEx";
 import { Option } from "@/utils/Option";
 
+/**
+ * 絶対配置のノードを離したときに、置き直しを確定する手続き。
+ *
+ * @param name 置き直すノードの名前
+ * @param edit 書き込む親・座標と、向きを書き換えるならその向き
+ */
+export type RepositionNode = (name: string, edit: RepositionEdit) => void;
+
 /** ドラッグの進み方（docs/06-ui.md「キャンバス直接操作」の移動・座標の置き直しと、挿入）。 */
 type NodeDragAction =
   | Readonly<{ type: "grab"; grab: Grab }>
@@ -393,9 +401,9 @@ function repositionCarrying(
         {
           ...node.from,
           ownRotation: ownRotation.value,
-          centerFromCorner: CanvasView.toDocumentOffset(
+          centerFromTopLeft: CanvasView.toDocumentOffset(
             context.view,
-            RotatedBounds.centerFromCorner(measured.value.dragged),
+            RotatedBounds.centerFromTopLeft(measured.value.dragged),
           ),
         },
         CanvasView.toDocumentOffset(context.view, snapped),
@@ -522,7 +530,7 @@ export function useNodeDrag(
     view: CanvasView;
     onMove: (name: string, to: ChildPosition) => void;
     onInsertAt: (template: NodeTemplate, at: ChildPosition) => void;
-    onReposition: (name: string, edit: RepositionEdit) => void;
+    onReposition: RepositionNode;
   }>,
 ): NodeDragControl {
   const [drag, dispatch] = useReducer(

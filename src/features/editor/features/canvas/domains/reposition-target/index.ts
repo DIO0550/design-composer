@@ -27,7 +27,7 @@ export type GrabbedGeometry = GrabbedPlacement &
     /** 自分の `rotation`（今の親の向きを基準にした角度）。 */
     ownRotation: Angle;
     /** 回る前の左上の角から中心までの差（ドキュメント上の px）。 */
-    centerFromCorner: Offset;
+    centerFromTopLeft: Offset;
   }>;
 
 /**
@@ -99,12 +99,11 @@ export const RepositionTarget = {
    *
    * 今の親と落とし先の親の向きの差が 360 度の倍数でなければ、自分の向きを差だけ書き換え、
    * 座標は回る前の左上ではなく中心が同じ位置に来るように直す。倍数なら向きは書かず、左上を
-   * 保つ（このとき中心も同じ位置に来る）。向きの差と書く向きは小数点以下 6 桁へ丸める
-   * （`Angle.roundToMicrodegree`）。丸めないと、0.1 度の中の 0.2 度の親から 0.3 度の親へ移すときの
-   * ように向きを足し合わせた差に浮動小数の端数が残り、360 度の倍数の判定を外して書く値にも端数が
-   * 出る。
+   * 保つ（このとき中心も同じ位置に来る）。向きの差と書く向きは `Angle.roundToMicrodegree` で
+   * 丸める（丸める理由はそちら）。
    *
-   * @param from 掴んだ時点の配置（今の親の座標）・今の親の向き・自分の向きと大きさ
+   * @param from 掴んだ時点の配置（今の親の座標）・今の親の向き・自分の向き・回る前の左上から
+   *   中心までの差
    * @param carried 画面上で運んだ量（ドキュメント上の px）
    * @param dropParent 落とし先の親と、その座標へ直すための原点の位置と向き
    * @returns 落とし先の親を基準にした書き込む内容（座標と、向きを書き換えるならその向き）と、
@@ -116,32 +115,27 @@ export const RepositionTarget = {
     dropParent: DropParentCoordinates,
   ): RepositionTarget {
     const moved = movedInParent(from, carried);
-    const point = Placement.offset(moved);
-    const turn = Angle.roundToMicrodegree(
+    const rotationGap = Angle.roundToMicrodegree(
       from.parentRotation - dropParent.rotation,
     );
-    const turned = Offset.rotate(point, turn);
-    // 向きの差が 360 度の倍数なら `Offset.rotate` が元と同じ値を返すので 0 になる
-    const centerShift = Offset.delta(
-      from.centerFromCorner,
-      Offset.rotate(from.centerFromCorner, turn),
-    );
+    const center = Offset.add(Placement.offset(moved), from.centerFromTopLeft);
+    // 向きの差が 360 度の倍数なら `Offset.rotate` が元と同じ値を返すので、左上を保つ
     const to = ChildPlacement.create(
       dropParent.name,
       Placement.moveBy(
         moved,
         Offset.add(
-          Offset.add(Offset.delta(point, turned), dropParent.shift),
-          centerShift,
+          Offset.delta(center, Offset.rotate(center, rotationGap)),
+          dropParent.shift,
         ),
       ),
     );
     return {
-      written: Angle.isWholeTurns(turn)
+      written: Angle.isWholeTurns(rotationGap)
         ? RepositionEdit.create(to)
         : RepositionEdit.rotatedTo(
             to,
-            Angle.roundToMicrodegree(from.ownRotation + turn),
+            Angle.roundToMicrodegree(from.ownRotation + rotationGap),
           ),
       offset: offsetToward(from, moved),
     };
