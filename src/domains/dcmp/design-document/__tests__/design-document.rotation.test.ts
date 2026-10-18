@@ -104,6 +104,7 @@ test("3 段の入れ子で角度の合計が 1 回りの倍数になるノード
     ],
   });
 
+  // 合計は丸めで -0 になりうるので、0 との toEqual ではなく 360 度の倍数かで見る
   expect(
     Option.map(
       DesignDocument.totalRotationOf(document, "self"),
