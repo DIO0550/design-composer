@@ -30,8 +30,8 @@ export const Angle = {
    * 角度を小数点以下 6 桁へ丸める。足し引きで出た浮動小数点の端数（0.1 + 0.2 の
    * 0.30000000000000004）を落とす。
    *
-   * 祖先の角度を足し合わせた向きどうしの差に端数が残ると、360 度の倍数の判定（`isWholeTurns`）を
-   * 外し、書く角度にも端数が出る（0.1 度の中の 0.2 度の親から 0.3 度の親へ移すときなど）。
+   * 祖先の角度の合計、合計どうしの差に端数が残ると、360 度の倍数の判定（`isWholeTurns`）を
+   * 外し、書く角度にも端数が出る（-0.1 度・-0.2 度・0.3 度の合計が 0 にならないなど）。
    * 1e-6 度は半径 10,000px でも約 1.7e-4px しか動かさないので、見た目を変えずに端数だけを落とせる。
    * 整数へ丸めないのは、端数のある角度（12.5 度など）をそのまま保つため。
    *
@@ -40,5 +40,20 @@ export const Angle = {
    */
   roundToMicrodegree(angle: Angle): Angle {
     return NumberEx.round(angle, DegreeDigits);
+  },
+
+  /**
+   * 角度の合計を小数点以下 6 桁へ丸めたもの。
+   *
+   * 1 つ足すごとに丸めないのは、6 桁より細かい角度どうし（0.0000004 + 0.0000004）だと
+   * 足す回数（入れ子の深さ）で合計が変わるから。
+   *
+   * @param angles 足し合わせる角度の並び
+   * @returns 合計を `roundToMicrodegree` へ通した角度。空の並びなら 0
+   */
+  sum(angles: readonly Angle[]): Angle {
+    return Angle.roundToMicrodegree(
+      angles.reduce((total, angle) => total + angle, 0),
+    );
   },
 } as const;
