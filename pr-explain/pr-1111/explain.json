@@ -1,0 +1,1911 @@
+{
+  "version": 1,
+  "pr": 1111,
+  "sha": "61613f1cadae0b3268b3d1805cb8ca8a32f4b05e",
+  "issue": 1100,
+  "overview": {
+    "title": "検出器の種別と docstring の一覧を判定表で照合し、件数の手書きをなくす",
+    "lead": "docstring に「報告する違反は N つ」と件数・種別を手で書いていた検出器 5 本で、実装の種別と docstring の一覧を判定表が並びまで照合するようになった。#1086 で import-rule にだけ入れていた照合を `cases-report.sh` に共有し、6 本の判定表から呼ぶ。",
+    "before": [
+      {
+        "text": "story-title / named-path / result-option / build-pr-explain / check-pr-explain-template の docstring は種別と件数を手で持ち、判定表は docstring を読んでいなかった。docstring の種別名を改名しても exit 0 で通った"
+      },
+      {
+        "text": "照合があったのは import-rule だけで、取り出し・照合・網羅の処理は `import-rule-cases.sh` の中に閉じていた"
+      },
+      {
+        "text": "検出器は 4 本とも、種別ごとの報告ループと合計の計算をそれぞれ自前で書いていた"
+      },
+      {
+        "text": "`.claude/hooks/README.md` と各 `pre-push-*.sh` の冒頭が種別の中身を散文で写しており、story-title の行は `story-title-missing` が抜けていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "6 本の判定表の末尾で `report_documented_kinds` が実装と docstring の種別を並びまで照合し、改名・足し忘れ・入れ替え・見出しの削除で NG になる",
+        "message": "st-doc"
+      },
+      {
+        "text": "build-pr-explain / check-pr-explain-template / import-rule の判定表は、どの種別にも期待するケースがあるか(網羅)も `report_covered_kinds` で見る",
+        "message": "bpe-cov"
+      },
+      {
+        "text": "実装と docstring のどちらからも種別が取れないときは、一致ではなく「取り出せなかった」の NG になる"
+      },
+      {
+        "text": "import-rule / story-title / named-path / result-option の報告と合計は `ts_sources.report_violations` 1 か所から出る。named-path の件数と終了コードも `found` 全体から出るので、種別を足しても報告と exit がずれない",
+        "message": "np-report"
+      },
+      {
+        "text": "照合の関数そのものを `cases-report-cases.sh` が小さな検出器で確かめ、pre-push と CI の `rules-check` が走らせる",
+        "message": "push-crc"
+      },
+      {
+        "text": "README と push フックの冒頭は種別を写さず「(種別は `lib/<検出器>.py` の docstring)」を指す"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "照合の 3 つの判断を守る判定表",
+        "text": "0 件どうし・並び・網羅の 3 つは、実物の検出器がそろっている限り NG の枝に届かない。test-reviewer のミューテーションで分かり、却下案 8 を取り消して足した",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/lib/cases-report-cases.sh"
+        }
+      },
+      {
+        "title": "実装の種別を読む 3 つの形",
+        "text": "`reported_kinds` は sed / grep で書式に依存して読む。3 つの形以外で種別を報告すると、照合にも docstring にも出ずに緑のまま通る(既知の取りこぼし。記録のみ)",
+        "go": {
+          "kind": "message",
+          "id": "read-st"
+        }
+      },
+      {
+        "title": "名指ししたパスの件数と終了コード",
+        "text": "報告は `found` から、件数と exit は `missing` から出していた形を、`report_violations` の戻り値 1 つに寄せた",
+        "go": {
+          "kind": "message",
+          "id": "np-report"
+        }
+      },
+      {
+        "title": "push 前の検査の流れ",
+        "text": "判定表がどこで照合を呼び、照合が検出器の何を読むかを 1 本で見る",
+        "go": {
+          "kind": "flow",
+          "id": "push-cases"
+        }
+      },
+      {
+        "title": "ハーネスの層",
+        "text": "変更はすべてハーネスの層にあり、`src/` は触っていない",
+        "go": {
+          "kind": "layer",
+          "layer": "ハーネス"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "kind-check",
+      "label": "種別の照合",
+      "role": "検出器の実装の種別と docstring の一覧・表の期待を突き合わせる"
+    },
+    {
+      "id": "violation-report",
+      "label": "違反の報告",
+      "role": "検出器が種別ごとの違反を出し、合計から終了コードを決める"
+    },
+    {
+      "id": "wiring",
+      "label": "検査の配線",
+      "role": "push 前の検査と CI が判定表を走らせる"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "検出器・判定表・共有の照合・push 前の検査と CI の配線。この PR の変更はすべてここにある"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/hooks/lib/cases-report.sh",
+      "name": "判定表の共有部",
+      "role": "判定表が source する、判定の読み取り・報告と、検出器の種別の照合",
+      "feature": "kind-check",
+      "change": "`reported_kinds` / `documented_kinds` / `nothing_extracted` / `report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories` を足した"
+    },
+    {
+      "path": ".claude/hooks/lib/cases-report-cases.sh",
+      "name": "照合の判定表",
+      "role": "一時ディレクトリに置いた小さな検出器で照合の関数そのものを確かめる",
+      "feature": "kind-check",
+      "change": "新しく置いた(6 ケース)"
+    },
+    {
+      "path": ".claude/hooks/lib/import-rule-cases.sh",
+      "name": "import 規約の判定表",
+      "role": "import 規約の検出器の判定表",
+      "feature": "kind-check",
+      "change": "#1086 で自前に持っていた取り出し・照合・網羅を共有関数の呼び出しに置き換えた"
+    },
+    {
+      "path": ".claude/hooks/lib/story-title-cases.sh",
+      "name": "story の title の判定表",
+      "role": "story の title の検出器の判定表",
+      "feature": "kind-check",
+      "change": "末尾で種別の照合を呼ぶ"
+    },
+    {
+      "path": ".claude/hooks/lib/named-path-cases.sh",
+      "name": "名指ししたパスの判定表",
+      "role": "名指ししたパスの検出器の判定表",
+      "feature": "kind-check",
+      "change": "末尾で種別の照合を呼ぶ"
+    },
+    {
+      "path": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+      "name": "判別子の判定表",
+      "role": "判別子の直読み・直書きの検出器の判定表",
+      "feature": "kind-check",
+      "change": "末尾で種別の照合を呼ぶ"
+    },
+    {
+      "path": ".github/scripts/build-pr-explain-cases.sh",
+      "name": "解説の検査の判定表",
+      "role": "解説の検査の判定表",
+      "feature": "kind-check",
+      "change": "末尾で種別の照合と網羅を呼ぶ"
+    },
+    {
+      "path": ".github/scripts/check-pr-explain-template-cases.sh",
+      "name": "解説ページの枠の判定表",
+      "role": "解説ページの枠の検査の判定表",
+      "feature": "kind-check",
+      "change": "表を `cases=` の変数に移し、種別の照合と網羅を呼ぶ"
+    },
+    {
+      "path": ".claude/hooks/lib/import-rule-violations.py",
+      "name": "import 規約の検出器",
+      "role": "import 規約の違反を種別ごとに報告する",
+      "feature": "violation-report",
+      "change": "一覧を写さない理由を `report_documented_kinds` の doc への参照にし、報告を `report_violations` に寄せた"
+    },
+    {
+      "path": ".claude/hooks/lib/story-title-violations.py",
+      "name": "story の title の検出器",
+      "role": "story の `title` の違反を報告する",
+      "feature": "violation-report",
+      "change": "docstring の件数を外し、種別を複数行の `found` 辞書に置いた"
+    },
+    {
+      "path": ".claude/hooks/lib/named-path-violations.py",
+      "name": "名指ししたパスの検出器",
+      "role": "コメント・doc が名指ししたパスの実在を見る",
+      "feature": "violation-report",
+      "change": "docstring の件数を外し、`found` 辞書を立て、件数と終了コードを `report_violations` の戻り値から出す"
+    },
+    {
+      "path": ".claude/hooks/lib/result-option-discriminant-violations.py",
+      "name": "判別子の検出器",
+      "role": "`Result` / `Option` の判別子の直読み・直書きを報告する",
+      "feature": "violation-report",
+      "change": "docstring を箇条書きの一覧にし、種別を `KINDS` タプル 1 行に置いた"
+    },
+    {
+      "path": ".github/scripts/build-pr-explain.py",
+      "name": "解説の検査",
+      "role": "`explain.json` の形と参照を見る",
+      "feature": "violation-report",
+      "change": "docstring の件数を外した。実装は変えていない"
+    },
+    {
+      "path": ".github/scripts/check-pr-explain-template.py",
+      "name": "解説ページの枠の検査",
+      "role": "枠の CSP と固定スクリプトを見る",
+      "feature": "violation-report",
+      "change": "docstring の件数を外した。実装は変えていない"
+    },
+    {
+      "path": ".claude/hooks/lib/ts_sources.py",
+      "name": "検出器の共有部",
+      "role": "TS ソースの走査と報告の形を検出器に共有する",
+      "feature": "violation-report",
+      "change": "`report_violations` を足した"
+    },
+    {
+      "path": "harness/githooks/pre-push",
+      "name": "push 前の検査",
+      "role": "検出器と判定表をまとめて走らせる",
+      "feature": "wiring",
+      "change": "照合の判定表を足した"
+    },
+    {
+      "path": ".github/workflows/frontend.yml",
+      "name": "CI の規約検査",
+      "role": "`rules-check` ジョブで判定表を走らせる",
+      "feature": "wiring",
+      "change": "照合の判定表のステップを足した"
+    },
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "フックの README",
+      "role": "フック・検出器・判定表の一覧",
+      "change": "種別の写しを docstring への参照に寄せ、`cases-report.sh` の行を書き直した",
+      "graph": false
+    },
+    {
+      "path": "harness/githooks/README.md",
+      "name": "git hooks の README",
+      "role": "pre-push の検査の一覧",
+      "change": "照合の判定表を足し、本数を 17 から 18 にした",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "push-st",
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "kind": "qry",
+      "name": "story の title の判定表を走らせる",
+      "code": "run_check \"story の title の判定表\" bash .claude/hooks/lib/story-title-cases.sh",
+      "via": "exec",
+      "returns": "ok / NG の行と終了コード"
+    },
+    {
+      "id": "push-bpe",
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "kind": "qry",
+      "name": "解説の検査の判定表を走らせる",
+      "code": "run_check \"解説の検査の判定表\" bash .github/scripts/build-pr-explain-cases.sh",
+      "via": "exec",
+      "returns": "ok / NG の行と終了コード"
+    },
+    {
+      "id": "push-np",
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "kind": "qry",
+      "name": "名指ししたパスを検査する",
+      "code": "run_check \"名指ししたパス\" python3 .claude/hooks/lib/named-path-violations.py",
+      "via": "exec",
+      "returns": "種別ごとの報告と終了コード"
+    },
+    {
+      "id": "push-crc",
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "kind": "qry",
+      "name": "照合の判定表を走らせる",
+      "code": "run_check \"検出器の種別の照合の判定表\" bash .claude/hooks/lib/cases-report-cases.sh",
+      "via": "exec",
+      "returns": "ok / NG の行と終了コード",
+      "status": "added"
+    },
+    {
+      "id": "ci-crc",
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "kind": "qry",
+      "name": "CI で照合の判定表を走らせる",
+      "code": "run: bash .claude/hooks/lib/cases-report-cases.sh",
+      "via": "exec",
+      "returns": "終了コード(1 ならジョブが落ちる)",
+      "status": "added"
+    },
+    {
+      "id": "ir-doc",
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "import 規約の種別を照合する",
+      "code": "report_documented_kinds \"$detector\"",
+      "via": "call",
+      "payload": "検出器のパス",
+      "returns": "ok か NG の 1 行。NG なら `cases_failed=1`",
+      "status": "changed"
+    },
+    {
+      "id": "ir-cov",
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "import 規約の網羅を見る",
+      "code": "report_covered_kinds \"$detector\" \"$covered_kinds\"",
+      "via": "call",
+      "payload": "検出器のパスと、表の期待に出た種別",
+      "returns": "種別ごとの ok / NG",
+      "status": "changed"
+    },
+    {
+      "id": "st-doc",
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "story の title の種別を照合する",
+      "code": "report_documented_kinds \"$detector\"",
+      "via": "call",
+      "payload": "検出器のパス",
+      "returns": "ok か NG の 1 行",
+      "status": "added"
+    },
+    {
+      "id": "np-doc",
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "名指ししたパスの種別を照合する",
+      "code": "report_documented_kinds \"$detector\"",
+      "via": "call",
+      "payload": "検出器のパス",
+      "returns": "ok か NG の 1 行",
+      "status": "added"
+    },
+    {
+      "id": "ro-doc",
+      "from": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "判別子の種別を照合する",
+      "code": "report_documented_kinds \"$detector\"",
+      "via": "call",
+      "payload": "検出器のパス",
+      "returns": "ok か NG の 1 行",
+      "status": "added"
+    },
+    {
+      "id": "bpe-doc",
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "解説の検査の種別を照合する",
+      "code": "report_documented_kinds \"$builder\"",
+      "via": "call",
+      "payload": "検出器のパス",
+      "returns": "ok か NG の 1 行",
+      "status": "added"
+    },
+    {
+      "id": "bpe-cov",
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "解説の検査の網羅を見る",
+      "code": "report_covered_kinds \"$builder\" \"$(kinds_in_categories \"$cases\" pr-explain-)\"",
+      "via": "call",
+      "payload": "検出器のパスと、表の分類の欄に `pr-explain-` を付けた種別",
+      "returns": "種別ごとの ok / NG",
+      "status": "added"
+    },
+    {
+      "id": "tpl-doc",
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "枠の検査の種別を照合する",
+      "code": "report_documented_kinds \"$checker\"",
+      "via": "call",
+      "payload": "検出器のパス",
+      "returns": "ok か NG の 1 行",
+      "status": "added"
+    },
+    {
+      "id": "tpl-cov",
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "枠の検査の網羅を見る",
+      "code": "report_covered_kinds \"$checker\" \"$(kinds_in_categories \"$cases\" pr-explain-)\"",
+      "via": "call",
+      "payload": "検出器のパスと、表の分類の欄に `pr-explain-` を付けた種別",
+      "returns": "種別ごとの ok / NG",
+      "status": "added"
+    },
+    {
+      "id": "crc-call",
+      "from": ".claude/hooks/lib/cases-report-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "照合をサブシェルで 1 回呼ぶ",
+      "code": "report_documented_kinds \"$detector\" / report_covered_kinds \"$detector\" \"$(kinds_lines \"$covered\")\"",
+      "via": "call",
+      "payload": "一時ディレクトリに置いた小さな検出器",
+      "returns": "出力の行と、サブシェルの中の `cases_failed`",
+      "status": "added"
+    },
+    {
+      "id": "read-ir",
+      "from": ".claude/hooks/lib/cases-report.sh",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "kind": "qry",
+      "name": "import 規約の種別を読む",
+      "code": "reported_kinds \"$detector\" / documented_kinds \"$detector\"",
+      "via": "file",
+      "returns": "`found` 辞書のキーと docstring の一覧",
+      "status": "changed"
+    },
+    {
+      "id": "read-st",
+      "from": ".claude/hooks/lib/cases-report.sh",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "kind": "qry",
+      "name": "story の title の種別を読む",
+      "code": "reported_kinds \"$detector\" / documented_kinds \"$detector\"",
+      "via": "file",
+      "returns": "`found` 辞書のキーと docstring の一覧",
+      "status": "added"
+    },
+    {
+      "id": "read-np",
+      "from": ".claude/hooks/lib/cases-report.sh",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "kind": "qry",
+      "name": "名指ししたパスの種別を読む",
+      "code": "reported_kinds \"$detector\" / documented_kinds \"$detector\"",
+      "via": "file",
+      "returns": "`found` 辞書のキーと docstring の一覧",
+      "status": "added"
+    },
+    {
+      "id": "read-ro",
+      "from": ".claude/hooks/lib/cases-report.sh",
+      "to": ".claude/hooks/lib/result-option-discriminant-violations.py",
+      "kind": "qry",
+      "name": "判別子の種別を読む",
+      "code": "reported_kinds \"$detector\" / documented_kinds \"$detector\"",
+      "via": "file",
+      "returns": "行頭の `KINDS = (...)` と docstring の一覧",
+      "status": "added"
+    },
+    {
+      "id": "read-bpe",
+      "from": ".claude/hooks/lib/cases-report.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "kind": "qry",
+      "name": "解説の検査の種別を読む",
+      "code": "reported_kinds \"$builder\" / documented_kinds \"$builder\"",
+      "via": "file",
+      "returns": "報告の行の頭 `f\"[<種別>] ` の初出順と docstring の一覧",
+      "status": "added"
+    },
+    {
+      "id": "read-tpl",
+      "from": ".claude/hooks/lib/cases-report.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "kind": "qry",
+      "name": "枠の検査の種別を読む",
+      "code": "reported_kinds \"$checker\" / documented_kinds \"$checker\"",
+      "via": "file",
+      "returns": "報告の行の頭 `f\"[<種別>] ` の初出順と docstring の一覧",
+      "status": "added"
+    },
+    {
+      "id": "ir-report",
+      "from": ".claude/hooks/lib/import-rule-violations.py",
+      "to": ".claude/hooks/lib/ts_sources.py",
+      "kind": "cmd",
+      "name": "import 規約の違反を報告する",
+      "code": "total = report_violations(found)",
+      "via": "call",
+      "payload": "種別ごとの違反の説明",
+      "returns": "全種別の合計件数",
+      "status": "changed"
+    },
+    {
+      "id": "st-report",
+      "from": ".claude/hooks/lib/story-title-violations.py",
+      "to": ".claude/hooks/lib/ts_sources.py",
+      "kind": "cmd",
+      "name": "story の title の違反を報告する",
+      "code": "total = report_violations(found)",
+      "via": "call",
+      "payload": "種別ごとの違反の説明",
+      "returns": "全種別の合計件数",
+      "status": "changed"
+    },
+    {
+      "id": "np-report",
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/lib/ts_sources.py",
+      "kind": "cmd",
+      "name": "名指ししたパスの違反を報告する",
+      "code": "total = report_violations(found)",
+      "via": "call",
+      "payload": "種別ごとの違反の説明",
+      "returns": "全種別の合計件数。件数の表示と終了コードはここから出す",
+      "status": "changed"
+    },
+    {
+      "id": "ro-report",
+      "from": ".claude/hooks/lib/result-option-discriminant-violations.py",
+      "to": ".claude/hooks/lib/ts_sources.py",
+      "kind": "cmd",
+      "name": "判別子の違反を報告する",
+      "code": "total = report_violations(found)",
+      "via": "call",
+      "payload": "種別ごとの違反の説明",
+      "returns": "全種別の合計件数(終了コードに使う)",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "push-cases",
+      "label": "push 前の検査で判定表が種別を照合するとき",
+      "steps": [
+        "push-st",
+        "st-doc",
+        "read-st",
+        "push-crc",
+        "crc-call"
+      ]
+    },
+    {
+      "id": "pr-explain-cases",
+      "label": "解説の検査の判定表が照合と網羅を見るとき",
+      "steps": [
+        "push-bpe",
+        "bpe-doc",
+        "read-bpe",
+        "bpe-cov",
+        "read-bpe"
+      ]
+    },
+    {
+      "id": "detector-report",
+      "label": "検出器が違反を報告するとき",
+      "steps": [
+        "push-np",
+        "np-report"
+      ]
+    },
+    {
+      "id": "ci",
+      "label": "CI の規約検査",
+      "steps": [
+        "ci-crc",
+        "crc-call"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "3999b1c38b83bb1a4be95737100f6a913e72a85e",
+      "phase": "core",
+      "role": "#1086 で import-rule にだけあった種別の照合を `cases-report.sh` の共有関数にする",
+      "why": "照合を 6 本の判定表から使うので、6 本とも既に source している `cases-report.sh` に置いた。最初の計画は取り出しの形ごとに関数を分けて呼び出し側で選ぶ形だったが、plan-reviewer に「result-option と named-path からは 0 件しか取れない」と指摘され、3 つの形をすべて読む `reported_kinds` 1 本にした。1 本の検出器が 2 つの形を持てば出力が連結されて食い違いの NG に倒れる。",
+      "flows": [
+        "push-cases"
+      ],
+      "review": [
+        "`reported_kinds` が読む 3 つの形(複数行の `found` 辞書・行頭の `KINDS`・報告の行の頭)の sed / grep が、字下げや末尾のカンマが崩れたときに黙って通らず「実装: 空」の NG に倒れるか",
+        "一覧を docstring にだけ書く理由と、0 件どうしを一致と読まない理由を `report_documented_kinds` の doc 1 か所に置いた判断",
+        "`cases-report.sh` 冒頭の手で数えた「(いまは 9 本)」を実数に直さず外した判断(直すとまた手で持つ件数が残る)"
+      ],
+      "before": [
+        {
+          "text": "取り出し・照合・網羅は `import-rule-cases.sh` の中にあり、他の判定表からは使えなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "判定表は `report_documented_kinds` / `report_covered_kinds` を呼ぶだけで照合できる",
+          "message": "ir-doc"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "start": 87,
+          "end": 91,
+          "text": "実装の種別を 3 つの形から読む。1 行目が `found` 辞書、2 行目が `KINDS` タプル、3 行目が報告の行の頭(初出順で重複を除く)"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "start": 97,
+          "end": 100,
+          "text": "docstring の「報告する違反は次のとおり」に続く箇条書きから種別を読む。sed のラベルと分岐で、空行を飛ばし、字下げ 2 の継続行を読み飛ばす"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "start": 121,
+          "end": 125,
+          "text": "0 件どうしは一致ではなく別の NG。取り出しが壊れていても緑になる形を塞ぐ"
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "start": 190,
+          "end": 191,
+          "text": "#1086 で置いた 30 行ほどの照合を、共有関数の 2 呼び出しに置き換えた"
+        }
+      ]
+    },
+    {
+      "sha": "4b95e7f07911bbd35533b22a9d0c5523f5bfdd04",
+      "phase": "core",
+      "role": "story-title / named-path / result-option の種別を docstring と照合する",
+      "why": "3 本とも docstring が件数と種別を手で持ち、判定表は docstring を読んでいなかった(写しで docstring を改名して exit 0 を実測)。種別が 1〜2 個の検出器にも足したのは、共有した後の手間が判定表 1 行で、足さない理由が残らないため。story-title / named-path は import-rule と同じ複数行の `found` 辞書、result-option は `KINDS` タプル(#1015 の指摘 11 で綴りを 1 か所にした経緯を守る)。",
+      "flows": [
+        "push-cases"
+      ],
+      "review": [
+        "result-option を `READ, WRITE = KINDS` の展開にした判断(種別を足して名前を足し忘れると import の時点で落ち、判定表が broken として捕まえる)",
+        "story-title の `scan()` のループ変数 `found` を `titles` に改名した箇所で、ほかの参照が残っていないか",
+        "3 本には網羅を足していない判断(表が期待を deny / pass / miss で持ち、種別を持たない)"
+      ],
+      "before": [
+        {
+          "text": "docstring は「報告する違反は 2 つ」のように件数を文の中に持っていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "docstring は「報告する違反は次のとおり(並びが報告の順)」と箇条書きを持ち、判定表が実装と並びまで照合する",
+          "message": "st-doc"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/story-title-violations.py",
+          "start": 122,
+          "end": 125,
+          "text": "`reported_kinds` が読む 4 / 8 字下げの `found` リテラル。キーの並びが報告の順"
+        },
+        {
+          "path": ".claude/hooks/lib/result-option-discriminant-violations.py",
+          "start": 72,
+          "end": 73,
+          "text": "綴りは `KINDS` の 1 行だけ。展開にしたので数がずれれば import で落ちる"
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "start": 355,
+          "end": 362,
+          "text": "この時点では報告は `found` から、件数と終了コードは `missing` から出している。2 つ目の種別を足すと exit 0 になる形で、35d13ee で直した"
+        }
+      ]
+    },
+    {
+      "sha": "a732430e3dfc701aa4d6ed3636519947b79274d7",
+      "phase": "core",
+      "role": "解説の検査と枠の検査の種別を docstring と照合し、網羅も見る",
+      "why": "検出器の実装は変えず、報告の行の頭 `f\"[<種別>] ` を読む形にした。build の `collect_violations` は shape のときに早く返し、`main` も別の行で shape を出すので、`found` 辞書 1 つに畳めない。網羅は 2 本とも表の 2 列目に分類を持っているので、表を書き換えずに取れる。",
+      "flows": [
+        "pr-explain-cases"
+      ],
+      "review": [
+        "template の表を `cases=` の変数に移し `<<<\"$cases\"` で流す組み替えで、ケースの並びと判定が変わっていないか(ok は 29 → 32 で、増えたのは照合 1 と網羅 2)",
+        "build 側には区切りの語の付いた `<<` を足していない(`pr-explain-core-cases.sh` 19〜22 行目の制約)"
+      ],
+      "before": [
+        {
+          "text": "種別を足しても、docstring が追随しているか・表にその種別のケースがあるかは誰も見ていなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "種別ごとに「期待するケースがある」の ok が出て、無ければ NG になる",
+          "message": "bpe-cov"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "start": 8,
+          "end": 18,
+          "text": "件数を文から外し、見出しの行と箇条書き、綴りを書く場所の 1 文にした"
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "start": 94,
+          "end": 101,
+          "text": "表を変数に移したので、ループの後で分類の欄をもう一度読める"
+        }
+      ]
+    },
+    {
+      "sha": "71d9383072dbf150ee8f485c992287c88a625796",
+      "phase": "core",
+      "role": "README と push フックの冒頭から種別の写しを外す",
+      "why": "種別の一覧を docstring と判定表の照合に閉じても、README が中身を写していれば、照合されない写しが片方だけ古くなる。現に story-title の push フックの行は `story-title-missing` が抜けていた。#1086 の import 規約の行と同じ「(種別は `lib/<検出器>.py` の docstring)」に揃えた。",
+      "review": [
+        "README の probe レシピの `[story-title-tree]` などの綴りは、1 ケースごとの期待出力なので残した判断",
+        "`cases-report.sh` の行は使う側 14 本を列挙したままなので、判定表を足したときに手で直す必要が残る"
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 22,
+          "end": 24,
+          "text": "push フックの 3 行。種別の中身の散文を docstring への参照にした"
+        }
+      ]
+    },
+    {
+      "sha": "35d13ee3c13bf3d7873ab369263df82bc336a307",
+      "phase": "revise",
+      "role": "種別ごとの報告と合計を `ts_sources.report_violations` に寄せ、named-path の件数と終了コードのずれを直す",
+      "why": "実装の検証 1 段目で duplication / over-guard が同じ箇所を指摘した。named-path は報告を `found` から、件数と終了コードを `missing` から出しており、写しの `found` に 2 つ目の種別を足すと「[named-path-extra] 1 件」と報告しながら「違反 0 件」・exit 0 になった。報告と合計を 1 つの関数にまとめ、合計をその戻り値からしか出せない形にしたので、報告と終了コードが別の道筋を通らない。同じ 3 行のループは 4 本に並んでいた。",
+      "flows": [
+        "detector-report"
+      ],
+      "review": [
+        "4 本の検出器の出力と終了コードが e12f9e0 の版と同じであること(手で並べて走らせた。判定表には無い)",
+        "result-option は読み・書き別の件数の表示を残し、終了コードだけを合計から出している"
+      ],
+      "before": [
+        {
+          "text": "named-path は `found` に種別を足すと、報告しても exit 0 になる形だった"
+        }
+      ],
+      "after": [
+        {
+          "text": "4 本とも、報告した違反の合計がそのまま件数の表示と終了コードになる",
+          "message": "np-report"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/ts_sources.py",
+          "start": 123,
+          "end": 132,
+          "text": "報告と合計を 1 関数に。戻り値の合計からしか終了コードを出せない"
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "start": 358,
+          "end": 360,
+          "text": "件数と終了コードを `missing` ではなく戻り値から出す"
+        }
+      ]
+    },
+    {
+      "sha": "bd5a40d1372e6245389565997aa1b715ca6d6b27",
+      "phase": "revise",
+      "role": "表の分類の欄から種別を取り出す式を `kinds_in_categories` に寄せる",
+      "why": "実装の検証 1 段目の duplication で、網羅に渡す cut / grep / sed の式が判定表 2 本にそのまま並んだと指摘された。表の列や接頭辞を変えるときに片方だけ直せてしまう。2 本とも source している `cases-report.sh` に置き、出力は変えていない。",
+      "flows": [
+        "pr-explain-cases"
+      ],
+      "review": [
+        "ok は build 226 / template 32 / pr-explain-core 321 のままで、出力が変わっていない"
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "start": 136,
+          "end": 143,
+          "text": "2 列目の分類から `-` を落とし、接頭辞を付けて 1 行 1 つ出す"
+        }
+      ]
+    },
+    {
+      "sha": "59ce59d7ca4155b5529b775390fb408fc1bf6f66",
+      "phase": "revise",
+      "role": "照合の関数そのものの判定表を置き、pre-push と CI に配線する",
+      "why": "test-reviewer のミューテーションで、照合の 3 つの判断(`nothing_extracted` を常に偽にする・並びを見ずに sort してから比べる・網羅の NG を出さない)を壊しても判定表 7 本がすべて緑のままだと分かった。実物の検出器はいま種別がそろっているので NG の枝に原理的に届かない。計画の却下案 8(共有関数の判定表を作らず手で確かめる)を取り消した。手での確認は後に残らないため。",
+      "flows": [
+        "push-cases",
+        "ci"
+      ],
+      "review": [
+        "照合は呼ぶたびに `cases_failed` を立てるので、ケースごとにサブシェルで呼び、出力と `cases_failed` の組で NG / ok / broken を決めている",
+        "フィクスチャの検出器は `KINDS` の形しか書かない。`found` 辞書と報告の行の頭の読み取りは、引き続き実物の検出器の判定表が守る",
+        "pre-push では python3 の要らない bash だけの判定表の並びに置き、python3 の無い環境でも飛ばされない"
+      ],
+      "before": [
+        {
+          "text": "照合の NG の枝は、どの判定表からも届いていなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "3 つの壊し方はそれぞれ `expected=NG got=ok` で exit 1 になる",
+          "message": "crc-call"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 70,
+          "end": 89,
+          "text": "サブシェルの中の `cases_failed` を出力の最後の行に載せて持ち出す。報告と立てたフラグの片方だけなら broken"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 97,
+          "end": 102,
+          "text": "並びの入れ替え・docstring に無い種別・0 件どうし・表の期待に無い種別と、それぞれの対照"
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "start": 106,
+          "end": 107,
+          "text": "照合を使う判定表の後ろに置いた"
+        }
+      ]
+    },
+    {
+      "sha": "61613f1cadae0b3268b3d1805cb8ca8a32f4b05e",
+      "phase": "revise",
+      "role": "`reported_kinds` が `{` を含む頭を拾わない理由を、まだ当たっていない前提として書き直す",
+      "why": "test-reviewer で、この除外を外しても判定表 6 本はすべて ok になると分かった。元の「種別の綴りではないので拾わない」は、今の入力で除外が効いているように読ませていた。除外は残し、`report` を通さずに `f\"[{kind}] \"` を自前で書く検出器が来たときのためだと分かる文にした。",
+      "review": [
+        "「いまこの綴りを持つのは `ts_sources.py` だけ」という今の事実を、理由の文に入れていない"
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "start": 85,
+          "end": 86,
+          "text": "まだ当たっていない前提のための除外であることを書いた"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "crc",
+      "label": "照合の判定表",
+      "file": ".claude/hooks/lib/cases-report-cases.sh"
+    },
+    {
+      "id": "st-cases",
+      "label": "story の title の判定表",
+      "file": ".claude/hooks/lib/story-title-cases.sh"
+    },
+    {
+      "id": "tpl-cases",
+      "label": "解説ページの枠の判定表",
+      "file": ".github/scripts/check-pr-explain-template-cases.sh"
+    },
+    {
+      "id": "np-cases",
+      "label": "名指ししたパスの判定表",
+      "file": ".claude/hooks/lib/named-path-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "crc-match",
+      "suite": "crc",
+      "name": "実装と docstring の種別が並びまで一致する",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "NG のケースの対照。一致するときに ok の行だけが出て `cases_failed` を立てないことを確かめる",
+      "given": "`KINDS = (\"alpha\", \"beta\")` と、docstring の一覧 alpha / beta を持つ小さな検出器",
+      "when": "`report_documented_kinds` をサブシェルで呼ぶ",
+      "then": "ok の 1 行だけが出て、`cases_failed` は 0",
+      "commit": "59ce59d7ca4155b5529b775390fb408fc1bf6f66",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 91,
+        "end": 103,
+        "emphasis": [
+          {
+            "start": 97,
+            "end": 97
+          }
+        ],
+        "text": "while IFS='|' read -r expected label check reported documented covered; do\n  [ -n \"$check\" ] || continue\n  detector=\"$work/detector.py\"\n  place_detector \"$reported\" \"$documented\" \"$detector\"\n  report \"$expected\" \"$(verdict \"$check\" \"$detector\" \"$covered\")\" \"$label\"\ndone <<'CASES'\nok|実装と docstring の種別が並びまで一致する|documented|alpha beta|alpha beta|-\nNG|実装と docstring の種別が並びだけ違う|documented|alpha beta|beta alpha|-\nNG|docstring に無い種別を実装が持つ|documented|alpha beta|alpha|-\nNG|実装と docstring のどちらからも種別を取り出せない|documented|-|-|-\nok|実装の種別をすべて表の期待が含む|covered|alpha beta|alpha beta|alpha beta\nNG|表の期待に無い種別を実装が持つ|covered|alpha beta|alpha beta|alpha\nCASES"
+      },
+      "values": {
+        "columns": [
+          "実装の種別",
+          "docstring の種別",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "alpha beta",
+              "alpha beta",
+              "ok"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "crc-call"
+      ]
+    },
+    {
+      "id": "crc-order",
+      "suite": "crc",
+      "name": "実装と docstring の種別が並びだけ違う",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "並びを見ずに sort してから比べる形に壊しても緑のままだった(test-reviewer の壊し方 2)。並びは報告の順なので照合の対象",
+      "given": "実装 alpha beta、docstring beta alpha の検出器",
+      "when": "`report_documented_kinds` を呼ぶ",
+      "then": "「食い違う」の NG が出て `cases_failed` が 1",
+      "commit": "59ce59d7ca4155b5529b775390fb408fc1bf6f66",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 91,
+        "end": 103,
+        "emphasis": [
+          {
+            "start": 98,
+            "end": 98
+          }
+        ],
+        "text": "while IFS='|' read -r expected label check reported documented covered; do\n  [ -n \"$check\" ] || continue\n  detector=\"$work/detector.py\"\n  place_detector \"$reported\" \"$documented\" \"$detector\"\n  report \"$expected\" \"$(verdict \"$check\" \"$detector\" \"$covered\")\" \"$label\"\ndone <<'CASES'\nok|実装と docstring の種別が並びまで一致する|documented|alpha beta|alpha beta|-\nNG|実装と docstring の種別が並びだけ違う|documented|alpha beta|beta alpha|-\nNG|docstring に無い種別を実装が持つ|documented|alpha beta|alpha|-\nNG|実装と docstring のどちらからも種別を取り出せない|documented|-|-|-\nok|実装の種別をすべて表の期待が含む|covered|alpha beta|alpha beta|alpha beta\nNG|表の期待に無い種別を実装が持つ|covered|alpha beta|alpha beta|alpha\nCASES"
+      },
+      "values": {
+        "columns": [
+          "実装の種別",
+          "docstring の種別",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "alpha beta",
+              "beta alpha",
+              "NG"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "alpha beta",
+              "alpha beta",
+              "ok"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "crc-call"
+      ]
+    },
+    {
+      "id": "crc-extra",
+      "suite": "crc",
+      "name": "docstring に無い種別を実装が持つ",
+      "techniques": [
+        "error"
+      ],
+      "why": "種別を足して docstring の一覧を直し忘れた状態。このゴールが塞ぎたいずれそのもの",
+      "given": "実装 alpha beta、docstring alpha だけの検出器",
+      "when": "`report_documented_kinds` を呼ぶ",
+      "then": "「食い違う」の NG が出て `cases_failed` が 1",
+      "commit": "59ce59d7ca4155b5529b775390fb408fc1bf6f66",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 91,
+        "end": 103,
+        "emphasis": [
+          {
+            "start": 99,
+            "end": 99
+          }
+        ],
+        "text": "while IFS='|' read -r expected label check reported documented covered; do\n  [ -n \"$check\" ] || continue\n  detector=\"$work/detector.py\"\n  place_detector \"$reported\" \"$documented\" \"$detector\"\n  report \"$expected\" \"$(verdict \"$check\" \"$detector\" \"$covered\")\" \"$label\"\ndone <<'CASES'\nok|実装と docstring の種別が並びまで一致する|documented|alpha beta|alpha beta|-\nNG|実装と docstring の種別が並びだけ違う|documented|alpha beta|beta alpha|-\nNG|docstring に無い種別を実装が持つ|documented|alpha beta|alpha|-\nNG|実装と docstring のどちらからも種別を取り出せない|documented|-|-|-\nok|実装の種別をすべて表の期待が含む|covered|alpha beta|alpha beta|alpha beta\nNG|表の期待に無い種別を実装が持つ|covered|alpha beta|alpha beta|alpha\nCASES"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "crc-call"
+      ]
+    },
+    {
+      "id": "crc-empty",
+      "suite": "crc",
+      "name": "実装と docstring のどちらからも種別を取り出せない",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "`nothing_extracted` を常に偽にしても緑のままだった(壊し方 1)。0 件どうしを一致と読むと、取り出しが壊れていても照合が通ったように見える",
+      "given": "`KINDS` も「報告する違反は次のとおり」も持たない検出器",
+      "when": "`report_documented_kinds` を呼ぶ",
+      "then": "「どちらからも取り出せなかった」の NG が出て `cases_failed` が 1",
+      "commit": "59ce59d7ca4155b5529b775390fb408fc1bf6f66",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 91,
+        "end": 103,
+        "emphasis": [
+          {
+            "start": 100,
+            "end": 100
+          }
+        ],
+        "text": "while IFS='|' read -r expected label check reported documented covered; do\n  [ -n \"$check\" ] || continue\n  detector=\"$work/detector.py\"\n  place_detector \"$reported\" \"$documented\" \"$detector\"\n  report \"$expected\" \"$(verdict \"$check\" \"$detector\" \"$covered\")\" \"$label\"\ndone <<'CASES'\nok|実装と docstring の種別が並びまで一致する|documented|alpha beta|alpha beta|-\nNG|実装と docstring の種別が並びだけ違う|documented|alpha beta|beta alpha|-\nNG|docstring に無い種別を実装が持つ|documented|alpha beta|alpha|-\nNG|実装と docstring のどちらからも種別を取り出せない|documented|-|-|-\nok|実装の種別をすべて表の期待が含む|covered|alpha beta|alpha beta|alpha beta\nNG|表の期待に無い種別を実装が持つ|covered|alpha beta|alpha beta|alpha\nCASES"
+      },
+      "values": {
+        "columns": [
+          "実装の種別",
+          "docstring の種別",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "(無し)",
+              "(無し)",
+              "NG"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "crc-call"
+      ]
+    },
+    {
+      "id": "crc-covered",
+      "suite": "crc",
+      "name": "実装の種別をすべて表の期待が含む",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "網羅の NG の対照。すべての種別に期待があるときは ok の行だけになる",
+      "given": "実装 alpha beta、表の期待 alpha beta",
+      "when": "`report_covered_kinds` を呼ぶ",
+      "then": "種別ごとの ok が 2 行出て、`cases_failed` は 0",
+      "commit": "59ce59d7ca4155b5529b775390fb408fc1bf6f66",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 91,
+        "end": 103,
+        "emphasis": [
+          {
+            "start": 101,
+            "end": 101
+          }
+        ],
+        "text": "while IFS='|' read -r expected label check reported documented covered; do\n  [ -n \"$check\" ] || continue\n  detector=\"$work/detector.py\"\n  place_detector \"$reported\" \"$documented\" \"$detector\"\n  report \"$expected\" \"$(verdict \"$check\" \"$detector\" \"$covered\")\" \"$label\"\ndone <<'CASES'\nok|実装と docstring の種別が並びまで一致する|documented|alpha beta|alpha beta|-\nNG|実装と docstring の種別が並びだけ違う|documented|alpha beta|beta alpha|-\nNG|docstring に無い種別を実装が持つ|documented|alpha beta|alpha|-\nNG|実装と docstring のどちらからも種別を取り出せない|documented|-|-|-\nok|実装の種別をすべて表の期待が含む|covered|alpha beta|alpha beta|alpha beta\nNG|表の期待に無い種別を実装が持つ|covered|alpha beta|alpha beta|alpha\nCASES"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "crc-call"
+      ]
+    },
+    {
+      "id": "crc-uncovered",
+      "suite": "crc",
+      "name": "表の期待に無い種別を実装が持つ",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "網羅の NG を出さない形に壊しても緑のままだった(壊し方 3)。種別を足して表が追随しないと、その種別は誰にも守られない",
+      "given": "実装 alpha beta、表の期待 alpha だけ",
+      "when": "`report_covered_kinds` を呼ぶ",
+      "then": "beta の NG が出て `cases_failed` が 1",
+      "commit": "59ce59d7ca4155b5529b775390fb408fc1bf6f66",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 91,
+        "end": 103,
+        "emphasis": [
+          {
+            "start": 102,
+            "end": 102
+          }
+        ],
+        "text": "while IFS='|' read -r expected label check reported documented covered; do\n  [ -n \"$check\" ] || continue\n  detector=\"$work/detector.py\"\n  place_detector \"$reported\" \"$documented\" \"$detector\"\n  report \"$expected\" \"$(verdict \"$check\" \"$detector\" \"$covered\")\" \"$label\"\ndone <<'CASES'\nok|実装と docstring の種別が並びまで一致する|documented|alpha beta|alpha beta|-\nNG|実装と docstring の種別が並びだけ違う|documented|alpha beta|beta alpha|-\nNG|docstring に無い種別を実装が持つ|documented|alpha beta|alpha|-\nNG|実装と docstring のどちらからも種別を取り出せない|documented|-|-|-\nok|実装の種別をすべて表の期待が含む|covered|alpha beta|alpha beta|alpha beta\nNG|表の期待に無い種別を実装が持つ|covered|alpha beta|alpha beta|alpha\nCASES"
+      },
+      "values": {
+        "columns": [
+          "実装の種別",
+          "表の期待",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "alpha beta",
+              "alpha",
+              "NG"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "alpha beta",
+              "alpha beta",
+              "ok"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "crc-call"
+      ]
+    },
+    {
+      "id": "st-kinds",
+      "suite": "st-cases",
+      "name": "検出器の種別が docstring の一覧と一致する",
+      "techniques": [
+        "state"
+      ],
+      "why": "実物の story の title の検出器で、`found` 辞書のキーと docstring の一覧がそろっていることを毎回確かめる。改名・入れ替え・見出しの削除は写しで NG になることを手で確かめた",
+      "given": "リポジトリの `story-title-violations.py`",
+      "when": "判定表の末尾で `report_documented_kinds` を呼ぶ",
+      "then": "ok の 1 行が出る(ok は 22 → 23)",
+      "commit": "4b95e7f07911bbd35533b22a9d0c5523f5bfdd04",
+      "excerpt": {
+        "path": ".claude/hooks/lib/story-title-cases.sh",
+        "start": 86,
+        "end": 92,
+        "emphasis": [
+          {
+            "start": 87,
+            "end": 87
+          }
+        ],
+        "text": "\nreport_documented_kinds \"$detector\"\n\nif [ \"$cases_failed\" -ne 0 ]; then\n  echo \"判定表と食い違いがあります\"\n  exit 1\nfi"
+      },
+      "targets": [
+        ".claude/hooks/lib/story-title-violations.py",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "st-doc",
+        "read-st"
+      ]
+    },
+    {
+      "id": "tpl-covered",
+      "suite": "tpl-cases",
+      "name": "pr-explain-csp を期待するケースがある",
+      "techniques": [
+        "state"
+      ],
+      "why": "枠の検査が報告する種別ごとに、表に期待するケースがあることを確かめる。csp の行を全部消すと NG になることを写しで確かめた",
+      "given": "リポジトリの `check-pr-explain-template.py` と、表の分類の欄",
+      "when": "判定表の末尾で `report_covered_kinds` を呼ぶ",
+      "then": "`pr-explain-csp` と `pr-explain-template` の ok が出る(ok は 29 → 32)",
+      "commit": "a732430e3dfc701aa4d6ed3636519947b79274d7",
+      "excerpt": {
+        "path": ".github/scripts/check-pr-explain-template-cases.sh",
+        "start": 94,
+        "end": 101,
+        "emphasis": [
+          {
+            "start": 100,
+            "end": 101
+          }
+        ],
+        "text": "while IFS='|' read -r expected category label change; do\n  [ -n \"$label\" ] || continue\n  make_template \"$change\"\n  report \"$expected\" \"$(verdict \"$category\")\" \"$label\"\ndone <<<\"$cases\"\n\nreport_documented_kinds \"$checker\"\nreport_covered_kinds \"$checker\" \"$(kinds_in_categories \"$cases\" pr-explain-)\""
+      },
+      "targets": [
+        ".github/scripts/check-pr-explain-template.py",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "tpl-doc",
+        "tpl-cov",
+        "read-tpl"
+      ]
+    },
+    {
+      "id": "np-second-kind",
+      "suite": "np-cases",
+      "name": "名指ししたパスの検出器に 2 つ目の種別を足すと、その違反も件数と終了コードに入る",
+      "techniques": [
+        "regression"
+      ],
+      "why": "35d13ee で直した「報告しても exit 0」の不具合は、写しで再現して手で確かめただけで、判定表には残っていない",
+      "given": "`found` に 2 つ目の種別を足した検出器",
+      "when": "その種別にだけ違反がある木を走査する",
+      "then": "「違反 1 件」と出て exit 1",
+      "todo": true,
+      "targets": [
+        ".claude/hooks/lib/named-path-violations.py",
+        ".claude/hooks/lib/ts_sources.py"
+      ],
+      "covers": [
+        "np-report"
+      ]
+    },
+    {
+      "id": "crc-other-form",
+      "suite": "crc",
+      "name": "3 つの形の外から報告した種別も照合に出る",
+      "techniques": [
+        "error"
+      ],
+      "why": "solution の指摘した既知の取りこぼし。`found` 辞書の外から `report` を直接呼ぶ・f 文字列でない報告の頭を足すと、その種別は照合にも docstring にも出ず緑のまま通る。塞ぐには実行時の検査が要るので記録だけにした",
+      "given": "`found` の外で `report(\"x-extra\", ...)` を呼ぶ検出器",
+      "when": "`report_documented_kinds` を呼ぶ",
+      "then": "食い違いの NG になる(いまは ok)",
+      "todo": true,
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "検出器の種別の説明がずれたまま push できなくなった",
+    "lead": "使う人はこのリポジトリで作業するセッション。検出器に違反の種別を足す・名前を変える・並べ替えたときに、検出器の冒頭の説明を直し忘れると、push 前の検査と CI が止めるようになった。",
+    "changed": {
+      "before": [
+        {
+          "text": "story の題名・名指ししたパス・判別子・解説の検査・解説ページの枠の検出器は、冒頭の説明の種別と件数を手で持っていた。説明を直し忘れても push 前の検査は通った"
+        },
+        {
+          "text": "フックの説明書と push 前の検査の冒頭が種別の中身を写しており、一部は既に抜けていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "冒頭の説明の一覧と、検出器が実際に報告する種別が並びまで食い違うと、push 前の検査が止まる",
+          "message": "st-doc"
+        },
+        {
+          "text": "フックの説明書は種別を写さず、検出器の冒頭の説明を指す"
+        }
+      ],
+      "text": "種別の一覧を書く場所は検出器の冒頭の説明 1 か所になり、そこが実装と照らし合わされる。"
+    },
+    "tables": [
+      {
+        "label": "検出器を書き換えたときの push 前の検査",
+        "gist": "止まるかどうかは、何をずらしたかと、どの検出器かで決まる。",
+        "text": "取り込み規約の検出器は前の回から同じように止まるので、表には入れていない。",
+        "rowHeads": [
+          {
+            "id": "aligned",
+            "label": "説明と実装がそろっている"
+          },
+          {
+            "id": "renamed",
+            "label": "説明の種別名だけを変えた"
+          },
+          {
+            "id": "added",
+            "label": "種別を足し、説明を直し忘れた"
+          },
+          {
+            "id": "swapped",
+            "label": "説明の並びだけを入れ替えた"
+          },
+          {
+            "id": "uncovered",
+            "label": "ある種別を確かめるケースを判定表から全部消した"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "hooks",
+            "label": "story の題名・名指ししたパス・判別子の検出器"
+          },
+          {
+            "id": "explain",
+            "label": "解説の検査・解説ページの枠の検査"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "aligned",
+            "columnHead": "hooks",
+            "result": "通る",
+            "tests": [
+              "st-kinds",
+              "crc-match"
+            ]
+          },
+          {
+            "rowHead": "aligned",
+            "columnHead": "explain",
+            "result": "通る",
+            "tests": [
+              "tpl-covered",
+              "crc-match"
+            ]
+          },
+          {
+            "rowHead": "renamed",
+            "columnHead": "hooks",
+            "result": "止まる",
+            "was": "通る",
+            "tests": [
+              "crc-extra"
+            ]
+          },
+          {
+            "rowHead": "renamed",
+            "columnHead": "explain",
+            "result": "止まる",
+            "was": "通る",
+            "tests": [
+              "crc-extra"
+            ]
+          },
+          {
+            "rowHead": "added",
+            "columnHead": "hooks",
+            "result": "止まる",
+            "was": "通る",
+            "tests": [
+              "crc-extra"
+            ]
+          },
+          {
+            "rowHead": "added",
+            "columnHead": "explain",
+            "result": "止まる",
+            "was": "通る",
+            "tests": [
+              "crc-extra"
+            ]
+          },
+          {
+            "rowHead": "swapped",
+            "columnHead": "hooks",
+            "result": "止まる",
+            "was": "通る",
+            "note": "名指ししたパスは種別が 1 つなので入れ替えは起きない",
+            "tests": [
+              "crc-order"
+            ]
+          },
+          {
+            "rowHead": "swapped",
+            "columnHead": "explain",
+            "result": "止まる",
+            "was": "通る",
+            "tests": [
+              "crc-order"
+            ]
+          },
+          {
+            "rowHead": "uncovered",
+            "columnHead": "hooks",
+            "result": "通る",
+            "note": "この 3 本の判定表は期待を種別で持たないので、網羅は見ない"
+          },
+          {
+            "rowHead": "uncovered",
+            "columnHead": "explain",
+            "result": "止まる",
+            "was": "通る",
+            "tests": [
+              "tpl-covered",
+              "crc-uncovered"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "照合の仕組みそのものが壊れたとき",
+        "before": [],
+        "after": [
+          {
+            "text": "並びを見なくなる・何も読めないのを一致と取る・網羅を見なくなる、のどれでも、照合の判定表が push 前の検査と CI を止める",
+            "message": "crc-call"
+          }
+        ],
+        "text": "実物の検出器は種別がそろっているので、照合が壊れても実物の判定表は緑のまま残る。小さな検出器を自分で置く判定表がそこを受け持つ。",
+        "tests": [
+          "crc-order",
+          "crc-empty",
+          "crc-uncovered"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "書き換えた検出器の報告と終了コードは、変更前と同じ(手で並べて確かめた)"
+      },
+      {
+        "text": "説明と実装がそろっていれば、push 前の検査は前と同じように通る",
+        "tests": [
+          "st-kinds",
+          "crc-match"
+        ]
+      },
+      {
+        "text": "名指ししたパスの検出器に種別を足したときに件数と終了コードがずれないことは、判定表では守っていない",
+        "tests": [
+          "np-second-kind"
+        ]
+      },
+      {
+        "text": "決まった 3 つの書き方の外で種別を報告すると、いまも緑のまま通る",
+        "tests": [
+          "crc-other-form"
+        ]
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "sed-branch",
+      "category": "shell · sed",
+      "label": "`sed` のラベルと分岐",
+      "gist": "`:名前` でラベルを置き、`b名前` でそこへ飛ぶ。`n` で次の行を読む。これで[[箇条書き|bullet]]の続きを状態を持たずに辿れる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`documented_kinds` は見出しの行に当たると `{ … }` の中に入り、`n` で次の行へ進みながら、空行なら `:blank` に、字下げ 2 の継続行なら `:rest` に、次の `- ` 行なら `:item` に飛ぶ。どれでもない行で `}` を抜けて終わる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/cases-report.sh",
+            "start": 99,
+            "end": 102,
+            "text": "documented_kinds() {\n  sed -nE -e '/^報告する違反は次のとおり/{' -e ':blank' -e 'n' -e '/^$/bblank' \\\n    -e ':item' -e 's/^- `([^`]+)` — .*$/\\1/p' -e ':rest' -e 'n' -e '/^  /brest' -e '/^- /bitem' -e '}' \"$1\"\n}"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "`-n` で自動出力を止め、`s/…/\\1/p` で当たった行だけを出す。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "lineRange": {
+            "start": 99,
+            "end": 102
+          },
+          "text": "docstring の一覧から[[種別|kind]]を読む",
+          "shas": [
+            "3999b1c38b83bb1a4be95737100f6a913e72a85e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "three-forms"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "awk-seen",
+      "category": "shell · awk",
+      "label": "`awk '!seen[$0]++'`",
+      "gist": "初めて出た行だけを残す定番の書き方。並べ替えずに重複を除くので、初出の順が保たれる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`seen[$0]` は最初は 0 なので `!0` が真になり行を出す。後置の `++` で 1 になり、2 回目以降は偽になって出さない。"
+        },
+        {
+          "kind": "rule",
+          "text": "`sort -u` で重複を除くと並びが変わる。並びは報告の順で照合の対象なので、ここでは使わない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "lineRange": {
+            "start": 92,
+            "end": 92
+          },
+          "text": "報告の行の頭から取った[[種別|kind]]を初出順にする",
+          "shas": [
+            "3999b1c38b83bb1a4be95737100f6a913e72a85e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "three-forms"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "subshell-flag",
+      "category": "shell · bash",
+      "label": "コマンド置換の中の変数",
+      "gist": "`$( … )` の中は[[サブシェル|subshell]]なので、そこで書き換えた変数は外へ戻らない。外へ持ち出すには出力に載せる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "照合の関数は NG のたびにグローバルの `cases_failed=1` を立てる。`cases-report-cases.sh` はケースごとに `$( … )` の中で `cases_failed=0` から呼び、最後に `failed=$cases_failed` を出力して、外で取り出す。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/cases-report-cases.sh",
+            "start": 70,
+            "end": 89,
+            "emphasis": [
+              {
+                "start": 73,
+                "end": 73
+              },
+              {
+                "start": 78,
+                "end": 80
+              }
+            ],
+            "text": "verdict() {\n  local check=\"$1\" detector=\"$2\" covered=\"$3\" output failed\n  output=\"$(\n    cases_failed=0\n    case \"$check\" in\n      documented) report_documented_kinds \"$detector\" ;;\n      covered) report_covered_kinds \"$detector\" \"$(kinds_lines \"$covered\")\" ;;\n    esac\n    echo \"failed=$cases_failed\"\n  )\"\n  failed=\"$(printf '%s\\n' \"$output\" | sed -n 's/^failed=//p')\"\n  output=\"$(printf '%s\\n' \"$output\" | grep -v '^failed=')\"\n  if [ \"$failed\" = \"1\" ] && printf '%s\\n' \"$output\" | grep -q '^NG '; then\n    echo \"NG\"\n  elif [ \"$failed\" = \"0\" ] && all_in_category \"$output\" '^ok '; then\n    echo \"ok\"\n  else\n    echo \"broken\"\n  fi\n}"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "サブシェルにしないと、前のケースで立った `cases_failed` が次のケースに残り、ok のケースまで NG に見える。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "lineRange": {
+            "start": 70,
+            "end": 89
+          },
+          "text": "照合を 1 回だけ呼び、出力とフラグを組にする",
+          "shas": [
+            "59ce59d7ca4155b5529b775390fb408fc1bf6f66"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "cases-table"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "here-string",
+      "category": "shell · bash",
+      "label": "`<<<` で変数を流す",
+      "gist": "`<<<\"$変数\"` は変数の中身を標準入力として渡す。表を一度変数に入れれば、ループに流した後でも別の列を読み直せる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "枠の検査の判定表は表を `done <<'CASES'` で直接ループへ流していたので、ループの後で分類の欄を読めなかった。表を `cases=\"$(cat <<'CASES' … )\"` に移し、ループには `<<<\"$cases\"` で流す形にした。"
+        },
+        {
+          "kind": "history",
+          "text": "build の判定表は前から `cases=` に表を持っていたので、組み替えは枠の検査の判定表だけ。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "lineRange": {
+            "start": 94,
+            "end": 101
+          },
+          "text": "表をループに流した後、[[網羅|coverage]]のために分類の欄を読み直す",
+          "shas": [
+            "a732430e3dfc701aa4d6ed3636519947b79274d7",
+            "bd5a40d1372e6245389565997aa1b715ca6d6b27"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "cases-table"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "dict-order",
+      "category": "python · dict",
+      "label": "`dict` の並び",
+      "gist": "Python 3.7 からの `dict` は、キーを入れた順に並ぶことが言語仕様で決まっている。`found` のキーの並びがそのまま報告の順になる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`report_violations` は `found.items()` を順に回し、違反のあった[[種別|kind]]だけを報告する。合計は `found.values()` 全体から数える。"
+        },
+        {
+          "kind": "declaration",
+          "code": "def report_violations(found: dict[str, list[str]]) -> int"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "found",
+              "type": "dict[str, list[str]]",
+              "text": "[[種別|kind]]ごとの、違反 1 件ごとの説明。キーの並びが報告の順"
+            }
+          ]
+        },
+        {
+          "kind": "spec",
+          "text": "戻り値はすべての種別を合わせた違反の件数で、検出器はこれを件数の表示と終了コードに使う。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/ts_sources.py",
+          "lineRange": {
+            "start": 123,
+            "end": 132
+          },
+          "text": "報告と合計を 1 か所で出す",
+          "shas": [
+            "35d13ee3c13bf3d7873ab369263df82bc336a307"
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-violations.py",
+          "lineRange": {
+            "start": 122,
+            "end": 128
+          },
+          "text": "`found` のリテラルと呼び出し",
+          "shas": [
+            "4b95e7f07911bbd35533b22a9d0c5523f5bfdd04",
+            "35d13ee3c13bf3d7873ab369263df82bc336a307"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "report-total"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "cases-table",
+      "category": "harness · 判定表",
+      "label": "判定表と共有の照合",
+      "gist": "[[判定表|cases-table-term]]は検出器ごとのケースの表を走らせる bash スクリプト。末尾で `cases-report.sh` の照合を呼び、検出器の[[種別|kind]]が docstring の一覧と並びまで一致するか、表の期待がすべての種別を含むか([[網羅|coverage]])を見る。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`report_documented_kinds` は実装の種別(`reported_kinds`)と docstring の種別(`documented_kinds`)を取り出して文字列のまま比べる。どちらも空なら「取り出せなかった」、違えば「食い違う」の NG で、`cases_failed` を立てる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/cases-report.sh",
+            "start": 112,
+            "end": 135,
+            "emphasis": [
+              {
+                "start": 123,
+                "end": 127
+              },
+              {
+                "start": 128,
+                "end": 133
+              }
+            ],
+            "text": "# 検出器の種別が、docstring の一覧と並びまで一致するかを 1 行で出す。食い違ったら `cases_failed` を立てる。\n#\n# 種別の一覧は検出器の docstring にだけ書き、README・rules へは写さない。写した一覧は照合されないまま\n# 片方だけ古くなる。どちらも 0 件なら取り出しが壊れているので別の NG にする（0 件どうしの一致を\n# 照合が通ったと読まないため）。\n#\n# $1 検出器のパス\nreport_documented_kinds() {\n  local detector=\"$1\" reported documented\n  reported=\"$(reported_kinds \"$detector\")\"\n  documented=\"$(documented_kinds \"$detector\")\"\n  if nothing_extracted \"$reported\" \"$documented\"; then\n    echo 'NG   検出器の種別を実装と docstring のどちらからも取り出せなかった'\n    cases_failed=1\n    return 0\n  fi\n  if [ \"$reported\" != \"$documented\" ]; then\n    printf 'NG   検出器の種別が docstring の一覧と食い違う（実装: %s / docstring: %s）\\n' \\\n      \"$(printf '%s' \"${reported:-空}\" | paste -sd ' ' -)\" \"$(printf '%s' \"${documented:-空}\" | paste -sd ' ' -)\"\n    cases_failed=1\n    return 0\n  fi\n  echo 'ok   検出器の種別が docstring の一覧と一致する'\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "種別の一覧は検出器の docstring にだけ書き、README・rules へは写さない。写した一覧は照合されないまま片方だけ古くなる。"
+        },
+        {
+          "kind": "history",
+          "text": "#1086 では import 規約の判定表の中にだけ同じ処理があった。この PR で共有し、6 本の判定表から呼ぶ。照合そのものは `cases-report-cases.sh` が守る。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "lineRange": {
+            "start": 112,
+            "end": 162
+          },
+          "text": "照合と網羅の関数",
+          "shas": [
+            "3999b1c38b83bb1a4be95737100f6a913e72a85e",
+            "bd5a40d1372e6245389565997aa1b715ca6d6b27"
+          ]
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "lineRange": {
+            "start": 470,
+            "end": 471
+          },
+          "text": "解説の検査の判定表から照合と網羅を呼ぶ",
+          "shas": [
+            "a732430e3dfc701aa4d6ed3636519947b79274d7",
+            "bd5a40d1372e6245389565997aa1b715ca6d6b27"
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "text": "照合そのものの判定表",
+          "shas": [
+            "59ce59d7ca4155b5529b775390fb408fc1bf6f66"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "three-forms",
+        "subshell-flag",
+        "here-string"
+      ],
+      "tests": [
+        "crc-match",
+        "crc-order",
+        "crc-empty",
+        "crc-uncovered",
+        "st-kinds",
+        "tpl-covered"
+      ],
+      "flows": [
+        "push-cases",
+        "pr-explain-cases"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "three-forms",
+      "category": "harness · 判定表",
+      "label": "実装の種別を読む 3 つの形",
+      "gist": "`reported_kinds` は検出器のソースを書式で読み、[[種別|kind]]を実装に書いた順に出す。読む形は 3 つで、検出器ごとにどれか 1 つを使う。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/cases-report.sh",
+            "start": 82,
+            "end": 93,
+            "text": "# 検出器が報告する種別を、実装に書いた順に 1 行 1 つ出す。読む形は 3 つで、`scan()` の\n# `found: dict[str, list[str]] = {` に並ぶキー・行頭の `KINDS = (...)`・報告の行の頭\n# （`f\"[<種別>] `。初出順で重複を除く）。1 本が 2 つの形を持てば連結され、docstring の一覧と\n# 食い違う。`{` を含む頭（`f\"[{kind}] \"`）は拾わない。検出器が `ts_sources.py` の `report` を\n# 通さずに `f\"[{kind}] \"` を自前で書いたときに、それを種別と取り違えないため。\n#\n# $1 検出器のパス\nreported_kinds() {\n  sed -nE '/^    found: dict\\[str, list\\[str\\]\\] = \\{$/,/^    \\}$/s/^        \"([^\"]+)\": .*,$/\\1/p' \"$1\"\n  sed -nE 's/^KINDS = \\((.*)\\)$/\\1/p' \"$1\" | grep -oE '\"[^\"]+\"' | tr -d '\"'\n  grep -oE 'f\"\\[[^]{}\"]+\\] ' \"$1\" | sed -E 's/^f\"\\[(.*)\\] $/\\1/' | awk '!seen[$0]++'\n}"
+          }
+        },
+        {
+          "kind": "spec",
+          "text": "複数行の `found: dict[str, list[str]] = {` リテラル(import 規約・story の title・名指ししたパス)、行頭の `KINDS = (...)`(判別子)、報告の行の頭 `f\"[<種別>] `(解説の検査・枠の検査)。"
+        },
+        {
+          "kind": "caution",
+          "text": "1 本が 2 つの形を持てば出力が連結されて食い違いの NG に倒れる。逆に、3 つの形の外で種別を報告すると、照合にも docstring にも出ずに緑のまま通る(既知の取りこぼし)。"
+        },
+        {
+          "kind": "memo",
+          "text": "`{` を含む頭(`f\"[{kind}] \"`)を拾わないのは、`report` を通さずに自前で同じ書き方をする検出器が来たときのため。今の入力では効いていない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "lineRange": {
+            "start": 89,
+            "end": 93
+          },
+          "text": "3 つの形を順に読む",
+          "shas": [
+            "3999b1c38b83bb1a4be95737100f6a913e72a85e",
+            "61613f1cadae0b3268b3d1805cb8ca8a32f4b05e"
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/result-option-discriminant-violations.py",
+          "lineRange": {
+            "start": 72,
+            "end": 73
+          },
+          "text": "`KINDS` の形",
+          "shas": [
+            "4b95e7f07911bbd35533b22a9d0c5523f5bfdd04"
+          ]
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "lineRange": {
+            "start": 150,
+            "end": 151
+          },
+          "text": "報告の行の頭の形"
+        }
+      ],
+      "seeAlso": [
+        "sed-branch",
+        "awk-seen",
+        "cases-table"
+      ],
+      "tests": [
+        "st-kinds",
+        "crc-other-form"
+      ],
+      "flows": [
+        "push-cases"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "report-total",
+      "category": "harness · 検出器",
+      "label": "報告と合計を 1 か所で出す",
+      "gist": "`ts_sources.report_violations` が[[種別|kind]]ごとの報告と全種別の合計を出す。検出器は戻り値からしか件数と終了コードを出せない。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "named-path は報告を `found` から、件数と終了コードを `missing` から出していた。2 つ目の種別を足すと、報告しながら exit 0 になる。4 本の検出器が同じ関数を呼ぶ形にして、報告と終了コードが別の道筋を通らないようにした。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/named-path-violations.py",
+            "start": 355,
+            "end": 360,
+            "emphasis": [
+              {
+                "start": 358,
+                "end": 360
+              }
+            ],
+            "text": "    found: dict[str, list[str]] = {\n        \"named-path-missing\": missing,\n    }\n    total = report_violations(found)\n    print(f\"名指ししたパスの違反 {total} 件 / {len(paths)} ファイル\")\n    return 1 if total else 0"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "lineRange": {
+            "start": 355,
+            "end": 360
+          },
+          "text": "件数と終了コードを合計から出す",
+          "shas": [
+            "35d13ee3c13bf3d7873ab369263df82bc336a307"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "dict-order"
+      ],
+      "tests": [
+        "np-second-kind"
+      ],
+      "flows": [
+        "detector-report"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "kind",
+      "label": "種別",
+      "text": "検出器が違反を分けて報告する分類。報告の行の頭に `[<種別>]` として出る。"
+    },
+    {
+      "id": "bullet",
+      "label": "箇条書き",
+      "text": "docstring の「報告する違反は次のとおり」に続く、`- ` で始まり種別と説明を並べた行と、その字下げ 2 の継続行。"
+    },
+    {
+      "id": "subshell",
+      "label": "サブシェル",
+      "text": "bash が別プロセスとして走らせる子のシェル。中で変えた変数は親へ戻らない。"
+    },
+    {
+      "id": "coverage",
+      "label": "網羅",
+      "text": "検出器が報告するどの種別にも、判定表にそれを期待するケースがあること。"
+    },
+    {
+      "id": "cases-table-term",
+      "label": "判定表",
+      "text": "`*-cases.sh`。期待と入力を 1 行 1 ケースで並べ、検出器を走らせて結果を ok / NG で出すスクリプト。"
+    }
+  ]
+}
