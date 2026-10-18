@@ -63,6 +63,7 @@ test("ハンドルは四隅と各辺の中間の 8 箇所に、辺をまたぐ�
       resizable={placed([WidthHandle, HeightHandle])}
       isGrabbing={false}
       onGrab={() => {}}
+      onNonPrimaryPress={() => {}}
     />,
   );
 
@@ -93,6 +94,7 @@ test("位置を持つ要素では、掴める箇所ごとの向きのカーソ�
       resizable={placed([WidthHandle, HeightHandle])}
       isGrabbing={false}
       onGrab={() => {}}
+      onNonPrimaryPress={() => {}}
     />,
   );
 
@@ -119,6 +121,7 @@ test("位置を持たない要素では、始点側を含む箇所にカーソ�
       resizable={unplaced([WidthHandle, HeightHandle])}
       isGrabbing={false}
       onGrab={() => {}}
+      onNonPrimaryPress={() => {}}
     />,
   );
 
@@ -145,6 +148,7 @@ test("右下の角では、掴める軸の数に応じてカーソルが変わ�
       resizable={placed([WidthHandle])}
       isGrabbing={false}
       onGrab={() => {}}
+      onNonPrimaryPress={() => {}}
     />,
   );
 
@@ -159,6 +163,7 @@ test("高さだけが固定なら、右下の角には上下のカーソルが�
       resizable={placed([HeightHandle])}
       isGrabbing={false}
       onGrab={() => {}}
+      onNonPrimaryPress={() => {}}
     />,
   );
 
@@ -176,6 +181,7 @@ test("掴めない軸のハンドルにはカーソルが出ない", () => {
       resizable={placed([WidthHandle])}
       isGrabbing={false}
       onGrab={() => {}}
+      onNonPrimaryPress={() => {}}
     />,
   );
 
@@ -194,6 +200,7 @@ test("掴めないハンドルだけがポインタを受け取らない", () =>
       resizable={unplaced([WidthHandle, HeightHandle])}
       isGrabbing={false}
       onGrab={() => {}}
+      onNonPrimaryPress={() => {}}
     />,
   );
 
@@ -220,6 +227,7 @@ test("掴んでいる間はハンドルがポインタを受け取らない", ()
       resizable={placed([WidthHandle, HeightHandle])}
       isGrabbing={true}
       onGrab={() => {}}
+      onNonPrimaryPress={() => {}}
     />,
   );
 
@@ -252,6 +260,7 @@ test("回ったノードのハンドルは回った角に置かれる", () => {
       resizable={turnedPlaced(30)}
       isGrabbing={false}
       onGrab={() => {}}
+      onNonPrimaryPress={() => {}}
     />,
   );
 
@@ -267,6 +276,7 @@ test("回ったノードのハンドルは、四角も要素と同じ角度だ�
       resizable={turnedPlaced(30)}
       isGrabbing={false}
       onGrab={() => {}}
+      onNonPrimaryPress={() => {}}
     />,
   );
 
@@ -283,6 +293,7 @@ test("90 度回したノードの幅のハンドルには、縦の矢印のカ�
       resizable={turnedPlaced(90)}
       isGrabbing={false}
       onGrab={() => {}}
+      onNonPrimaryPress={() => {}}
     />,
   );
 

@@ -116,7 +116,7 @@ export function useArtboardDrag(
     grab: (name, grabbedAt, event) => {
       /*
        * ポインタを捕捉して、キャンバスの外まで引いてもドラッグが続くようにする
-       * （原点より左・上へ運ぶと、器の外へ出る）。パン（`useCanvasView`）と同じ形。
+       * （原点より左・上へ運ぶと、器の外へ出る）。捕捉するのは押した見出しそのもの。
        * 解放は `pointerup` で暗黙に行われるので、離す側では触らない。
        */
       event.currentTarget.setPointerCapture(event.pointerId);
