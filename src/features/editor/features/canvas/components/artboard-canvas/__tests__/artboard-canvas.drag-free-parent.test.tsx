@@ -1,5 +1,6 @@
 import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
+import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import {
   movePointer,
@@ -117,10 +118,13 @@ test("free の Box の中の絶対配置の子を運ぶと、その Box を親�
   dragNode("badge", { x: 30, y: -12 });
 
   // 親が外側の `home` へ流れると、2 つの親の左上のずれ (40, 40) のぶん座標もずれる
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "panel",
-    placement: { mode: "absolute", x: 70, y: 12 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "panel",
+      placement: { mode: "absolute", x: 70, y: 12 },
+    }),
+  );
 });
 
 test("free の artboard の中の絶対配置の子も、運んで離せる", () => {
@@ -129,10 +133,13 @@ test("free の artboard の中の絶対配置の子も、運んで離せる", ()
 
   dragNode("badge", { x: 30, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 70, y: 12 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 70, y: 12 },
+    }),
+  );
 });
 
 test("free の artboard の直下ではフローのノードを運んでも落とせない", () => {
@@ -172,10 +179,13 @@ test("絶対配置の子を free の Box の上で離すと、その Box へ親�
    * `panel` の左上は `home` の左上から (40, 40) 右下にあるので、同じ画面上の位置は
    * `panel` 基準では (0, -44) になる。
    */
-  expect(onRepositionNode).toHaveBeenCalledWith("pin", {
-    parentName: "panel",
-    placement: { mode: "absolute", x: 0, y: -44 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "pin",
+    RepositionEdit.create({
+      parentName: "panel",
+      placement: { mode: "absolute", x: 0, y: -44 },
+    }),
+  );
 });
 
 test("free の Box の上へ運んでいる間、その Box に落とし先の枠が出る", () => {

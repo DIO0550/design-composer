@@ -8,6 +8,7 @@ import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Placement } from "@/domains/dcmp/placement";
+import type { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import type { SelectionDig } from "@/domains/session/selection-dig";
@@ -42,6 +43,14 @@ import { CanvasDom } from "@/libs/canvas-dom";
 import { CommandKey } from "@/libs/dom-event";
 import { ElementEx } from "@/utils/ElementEx";
 import { Option } from "@/utils/Option";
+
+/**
+ * 絶対配置のノードを離したときに、置き直しを確定する手続き。
+ *
+ * @param name 置き直すノードの名前
+ * @param edit 書き込む親・座標と、向きを書き換えるならその向き
+ */
+export type RepositionNode = (name: string, edit: RepositionEdit) => void;
 
 /** ドラッグの進み方（docs/06-ui.md「キャンバス直接操作」の移動・座標の置き直しと、挿入）。 */
 type NodeDragAction =
@@ -301,7 +310,8 @@ function carriedNode(
  * 掴んでいる絶対配置のノードを、今のポインタまで運んだときの運び方。
  *
  * 運んだ量は画面上の移動量を倍率で割り戻したもので（倍率を変えても掴んだ点に追従する）、
- * そこから今の親の向きへ戻して書かれる座標と見た目のずらし量を決めるのは `RepositionTarget`。
+ * そこから今の親の向きへ戻して書かれる座標と向き・見た目のずらし量を決めるのは
+ * `RepositionTarget`。
  *
  * ⌘ / Ctrl を押しながら動かしている間は吸い付かない（docs/06-ui.md の辺のスナップ）。
  *
@@ -312,7 +322,8 @@ function carriedNode(
  * @param context 今の掴みと、倍率・ポインタ
  * @param carried 運んでいるノードと、掴んだ時点の座標
  * @returns 座標を置き直す運び方。親が無い / 親の矩形と運んでいるノードのどれかを
- *   実測できないときは見た目だけの運び方。今の親の向きが引けないときは何も起きない運び方
+ *   実測できないときは見た目だけの運び方。今の親の向きか自分の向きが引けないときは何も
+ *   起きない運び方
  */
 function repositionCarrying(
   context: DropContext,
@@ -322,11 +333,15 @@ function repositionCarrying(
     context.document,
     carried.at.parentName,
   );
+  const ownRotation = DesignDocument.rotationOf(context.document, carried.name);
+  const isOrientationKnown =
+    Option.isSome(parentRotation) && Option.isSome(ownRotation);
   /*
-   * 子の配置を引けた親は向きも引けるので、ここへは来ない。0 度とみなして見た目だけ追従
-   * させると、回った親の中では運んだ向きと違う向きへずれて見えるので何もしない。
+   * 子の配置を引けた親は向きも引け、座標を引けたノードはプリミティブなので自分の向きも
+   * 引けるので、ここへは来ない。0 度とみなして見た目だけ追従させると、回った親の中では
+   * 運んだ向きと違う向きへずれて見えるので何もしない。
    */
-  if (!Option.isSome(parentRotation)) {
+  if (!isOrientationKnown) {
     return Carrying.nothing();
   }
   const node: CarriedNodeWithParentRotation = {
@@ -383,7 +398,14 @@ function repositionCarrying(
     DropEdit.reposition(
       carried.name,
       RepositionTarget.create(
-        node.from,
+        {
+          ...node.from,
+          ownRotation: ownRotation.value,
+          centerFromTopLeft: CanvasView.toDocumentOffset(
+            context.view,
+            RotatedBounds.centerFromTopLeft(measured.value.dragged),
+          ),
+        },
         CanvasView.toDocumentOffset(context.view, snapped),
         measured.value.dropParent,
       ),
@@ -492,8 +514,8 @@ export type NodeDragControl = Readonly<{
  * docs/02-data-model.md「基本原則」）。
  *
  * このフックが持つのは DOM の実測とイベントの仲介だけ。「どこへ落ちるか」「いつドラッグ
- * とみなすか」は `node-drop` / `node-drag`、「実測した親の原点と向きからどの座標が書かれるか」
- * は `reposition-target`、「揃う線（辺か中心線）か兄弟の列と同じ間隔になる位置があるなら
+ * とみなすか」は `node-drop` / `node-drag`、「実測した親の原点と向きからどの座標と向きが書かれる
+ * か」は `reposition-target`、「揃う線（辺か中心線）か兄弟の列と同じ間隔になる位置があるなら
  * どれだけ寄せるか」は `side-snap` にある。
  * ⌘ / Ctrl を押している間に揃え先を渡さない（吸い付かせない）のは、修飾キーという入力の事情
  * なのでこちらが持つ。
@@ -508,7 +530,7 @@ export function useNodeDrag(
     view: CanvasView;
     onMove: (name: string, to: ChildPosition) => void;
     onInsertAt: (template: NodeTemplate, at: ChildPosition) => void;
-    onReposition: (name: string, to: ChildPlacement) => void;
+    onReposition: RepositionNode;
   }>,
 ): NodeDragControl {
   const [drag, dispatch] = useReducer(
@@ -576,7 +598,7 @@ export function useNodeDrag(
         params.onInsertAt(edit.template, edit.target.position);
         return;
       case "reposition":
-        params.onReposition(edit.name, edit.target.to);
+        params.onReposition(edit.name, edit.target.written);
         return;
     }
   };

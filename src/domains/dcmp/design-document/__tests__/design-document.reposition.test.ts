@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { ChildPlacement } from "@/domains/dcmp/child-placement";
-import { Node } from "@/domains/dcmp/node";
+import { Node, PropEdit, type PropValue } from "@/domains/dcmp/node";
+import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
@@ -52,7 +53,34 @@ function reposition(
     DesignDocument.reposition(
       setupDocument(),
       "badge",
-      ChildPlacement.create(parentName, placement),
+      RepositionEdit.create(ChildPlacement.create(parentName, placement)),
+    ),
+  );
+}
+
+/** `setupDocument` の `badge` に `rotation` を書いたドキュメント。 */
+function setupRotatedBadgeDocument(rotation: PropValue): DesignDocument {
+  return Result.unwrap(
+    DesignDocument.applyPropEdit(
+      setupDocument(),
+      "badge",
+      PropEdit.set(["rotation"], rotation),
+    ),
+  );
+}
+
+/** `rotation` を書いた `badge` を、その編集で置き直したあとの `badge` の props。 */
+function repositionRotatedBadge(
+  rotation: PropValue,
+  edit: RepositionEdit,
+): Readonly<Record<string, unknown>> {
+  return badgePropsOf(
+    Result.unwrap(
+      DesignDocument.reposition(
+        setupRotatedBadgeDocument(rotation),
+        "badge",
+        edit,
+      ),
     ),
   );
 }
@@ -138,7 +166,9 @@ test("子を持てない相手を親に指すと parent-not-found エラーに�
     DesignDocument.reposition(
       setupDocument(),
       "badge",
-      ChildPlacement.create("title", { mode: "absolute", x: 52, y: 19 }),
+      RepositionEdit.create(
+        ChildPlacement.create("title", { mode: "absolute", x: 52, y: 19 }),
+      ),
     ),
   ).toEqual(Result.err({ kind: "parent-not-found", name: "title" }));
 });
@@ -149,7 +179,9 @@ test("自分の子孫を親に指すと move-into-descendant エラーになる"
     DesignDocument.reposition(
       setupDocument(),
       "badge",
-      ChildPlacement.create("badge-dot", { mode: "absolute", x: 52, y: 19 }),
+      RepositionEdit.create(
+        ChildPlacement.create("badge-dot", { mode: "absolute", x: 52, y: 19 }),
+      ),
     ),
   ).toEqual(
     Result.err({
@@ -167,7 +199,9 @@ test("artboard の名前を置き直そうとすると node-not-found エラー�
     DesignDocument.reposition(
       setupDocument(),
       "home",
-      ChildPlacement.create("home", { mode: "absolute", x: 52, y: 19 }),
+      RepositionEdit.create(
+        ChildPlacement.create("home", { mode: "absolute", x: 52, y: 19 }),
+      ),
     ),
   ).toEqual(Result.err({ kind: "node-not-found", name: "home" }));
 });
@@ -177,7 +211,79 @@ test("存在しないノードを置き直そうとすると node-not-found エ�
     DesignDocument.reposition(
       setupDocument(),
       "居ない",
-      ChildPlacement.create("home", { mode: "absolute", x: 52, y: 19 }),
+      RepositionEdit.create(
+        ChildPlacement.create("home", { mode: "absolute", x: 52, y: 19 }),
+      ),
     ),
   ).toEqual(Result.err({ kind: "node-not-found", name: "居ない" }));
+});
+
+test("別の親へ向きを指して置き直すと、その向きが書かれる", () => {
+  const props = repositionRotatedBadge(
+    30,
+    RepositionEdit.rotatedTo(
+      ChildPlacement.create("panel", { mode: "absolute", x: 52, y: 19 }),
+      120,
+    ),
+  );
+
+  expect(props.rotation).toBe(120);
+});
+
+test("別の親へ回っていない向きを指して置き直すと、向きは未設定に戻る", () => {
+  const props = repositionRotatedBadge(
+    45,
+    RepositionEdit.rotatedTo(
+      ChildPlacement.create("panel", { mode: "absolute", x: 52, y: 19 }),
+      0,
+    ),
+  );
+
+  expect("rotation" in props).toBe(false);
+});
+
+test("別の親へ 1 回りの向きを指して置き直すと、1 回りのまま書かれる", () => {
+  const props = repositionRotatedBadge(
+    30,
+    RepositionEdit.rotatedTo(
+      ChildPlacement.create("panel", { mode: "absolute", x: 52, y: 19 }),
+      360,
+    ),
+  );
+
+  expect(props.rotation).toBe(360);
+});
+
+test("別の親へ向きを指さずに置き直すと、数値でない向きもそのまま残る", () => {
+  const props = repositionRotatedBadge(
+    "abc",
+    RepositionEdit.create(
+      ChildPlacement.create("panel", { mode: "absolute", x: 52, y: 19 }),
+    ),
+  );
+
+  expect(props.rotation).toBe("abc");
+});
+
+test("同じ親の中で向きを指して置き直しても、その向きが書かれる", () => {
+  const props = repositionRotatedBadge(
+    30,
+    RepositionEdit.rotatedTo(
+      ChildPlacement.create("home", { mode: "absolute", x: 52, y: 19 }),
+      120,
+    ),
+  );
+
+  expect(props.rotation).toBe(120);
+});
+
+test("同じ親の中で向きを指さずに置き直すと、向きは元のまま", () => {
+  const props = repositionRotatedBadge(
+    30,
+    RepositionEdit.create(
+      ChildPlacement.create("home", { mode: "absolute", x: 52, y: 19 }),
+    ),
+  );
+
+  expect(props.rotation).toBe(30);
 });

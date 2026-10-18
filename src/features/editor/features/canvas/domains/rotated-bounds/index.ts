@@ -240,6 +240,19 @@ export const RotatedBounds = {
   },
 
   /**
+   * 回る前の矩形の左上の角から中心までの差（大きさの半分）。向きに依らない。
+   *
+   * @param bounds 中心を知りたい矩形
+   * @returns 回る前の左上から中心へ向かう差（画面上の px）
+   */
+  centerFromTopLeft(bounds: RotatedBounds): Offset {
+    return Offset.delta(
+      CanvasBounds.pointAt(bounds.unrotated, { x: 0, y: 0 }),
+      centerOf(bounds.unrotated),
+    );
+  },
+
+  /**
    * 2 つが同じ位置・同じ大きさ・同じ向きか。測り直した結果を持ち替えるかどうかの判定に
    * 使う（`useDrawnBounds`）。
    *

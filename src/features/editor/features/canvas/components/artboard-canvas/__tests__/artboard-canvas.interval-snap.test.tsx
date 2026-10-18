@@ -1,4 +1,5 @@
 import { expect, test, vi } from "vitest";
+import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import { drawnInHorizontalRow, setupHorizontalRow } from "./interval-siblings";
 import { carryNode, dragNode, renderCanvas, snapGuides } from "./setup";
 
@@ -18,10 +19,13 @@ test("兄弟の列の端から同じ間隔の近くまで運んで離すと、�
 
   dragNode("badge", { x: 123, y: 83 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 160, y: 107 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 160, y: 107 },
+    }),
+  );
 });
 
 test("⌘ を押しながら運ぶと、列の間隔にも吸い付かない", () => {
@@ -31,10 +35,13 @@ test("⌘ を押しながら運ぶと、列の間隔にも吸い付かない", (
 
   dragNode("badge", { x: 123, y: 83 }, "meta");
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 163, y: 107 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 163, y: 107 },
+    }),
+  );
 });
 
 test("列の端の子と縦に重ならない位置では、列の間隔に吸い付かない", () => {
@@ -45,10 +52,13 @@ test("列の端の子と縦に重ならない位置では、列の間隔に吸�
   // 上辺 230 は `second` の下辺（200）より下。横の量は 1 件目と同じなので、重なれば 160 へ寄る
   dragNode("badge", { x: 123, y: 146 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 163, y: 170 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 163, y: 170 },
+    }),
+  );
 });
 
 test("列の間隔へ吸い付いている間は、ガイド線が出ない", () => {

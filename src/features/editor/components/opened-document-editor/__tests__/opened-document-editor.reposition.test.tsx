@@ -9,9 +9,11 @@ import {
 } from "@/domains/dcmp/design-document";
 import {
   drag,
+  drawnTurnedFrame,
   movePointer,
   pressPointer,
   releasePointer,
+  turnedFrameDocument,
 } from "@/features/editor/features/canvas/__tests__";
 import {
   drawn,
@@ -170,4 +172,22 @@ test("同じ親の中で運んだときは、包んでいる artboard が変わ�
   dragBadge();
 
   expect(drawnParentName("home-badge")).toBe("home");
+});
+
+test("90 度回った Box の中のノードを回っていない artboard へ運ぶと、中心を保つ位置に 90 度回って描かれる", async () => {
+  await renderOpenedDocument(turnedFrameDocument(90));
+  // キャンバスで押すと外側の `frame` が掴まれるので、ツリーで `chip` を選んでから運ぶ
+  await userEvent.click(screen.getByRole("button", { name: "chip" }));
+  drawnTurnedFrame();
+
+  pressPointer(drawn("chip"), { x: 100, y: 100 });
+  movePointer(drawn("home"), { x: 93, y: 100 });
+  releasePointer(drawn("home"), { x: 93, y: 100 });
+
+  const moved = drawn("chip");
+  expect([moved.style.left, moved.style.top, moved.style.transform]).toEqual([
+    "217px",
+    "14px",
+    "rotate(90deg)",
+  ]);
 });

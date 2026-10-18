@@ -1,4 +1,5 @@
 import { expect, test, vi } from "vitest";
+import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import {
   movePointer,
   releasePointer,
@@ -29,10 +30,13 @@ test("⌘ を押しながら辺の近くまで運んで離すと、運んだ量�
 
   dragNode("badge", { x: 113, y: -12 }, "meta");
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 153, y: 12 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 153, y: 12 },
+    }),
+  );
 });
 
 test("Ctrl を押しながら辺の近くまで運んでも、吸い付かない", () => {
@@ -42,10 +46,13 @@ test("Ctrl を押しながら辺の近くまで運んでも、吸い付かない
 
   dragNode("badge", { x: 113, y: -12 }, "ctrl");
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 153, y: 12 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 153, y: 12 },
+    }),
+  );
 });
 
 test("⌘ を押しながら辺の近くまで運んでいる間は、ガイド線が出ない", () => {
@@ -77,8 +84,11 @@ test("⌘ を離して動かし直すと、同じ位置でも再び吸い付く"
   movePointer(drawn("badge"), { x: 213, y: 88 });
   releasePointer(drawn("badge"), { x: 213, y: 88 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith("badge", {
-    parentName: "home",
-    placement: { mode: "absolute", x: 150, y: 12 },
-  });
+  expect(onRepositionNode).toHaveBeenCalledWith(
+    "badge",
+    RepositionEdit.create({
+      parentName: "home",
+      placement: { mode: "absolute", x: 150, y: 12 },
+    }),
+  );
 });

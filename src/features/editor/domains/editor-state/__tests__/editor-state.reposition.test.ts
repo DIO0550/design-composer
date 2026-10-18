@@ -1,15 +1,18 @@
 import { expect, test } from "vitest";
 import { ChildPlacement } from "@/domains/dcmp/child-placement";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import { Node } from "@/domains/dcmp/node";
+import { Node, type Props } from "@/domains/dcmp/node";
+import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
 /**
  * 絶対配置の `badge` と、付け替え先の `panel` を持つ状態。
  * 座標は既定と違う値から始める。
+ *
+ * @param badgeProps `badge` に足して書く props（向きを書いて始めるときに使う）
  */
-function setupState(): EditorState {
+function setupState(badgeProps: Props = {}): EditorState {
   return EditorState.create(
     DesignDocument.create({
       artboards: [
@@ -21,7 +24,7 @@ function setupState(): EditorState {
             {
               name: "badge",
               type: "Text",
-              props: { placement: "absolute", x: 40, y: 24 },
+              props: { placement: "absolute", x: 40, y: 24, ...badgeProps },
             },
             { name: "panel", type: "Box", props: {}, children: [] },
           ],
@@ -31,9 +34,11 @@ function setupState(): EditorState {
   );
 }
 
-/** `home` の中の座標を指した置き直し。 */
-function toHome(x: number, y: number): ChildPlacement {
-  return ChildPlacement.create("home", { mode: "absolute", x, y });
+/** `home` の中の座標を指した、向きを書かない置き直し。 */
+function toHome(x: number, y: number): RepositionEdit {
+  return RepositionEdit.create(
+    ChildPlacement.create("home", { mode: "absolute", x, y }),
+  );
 }
 
 /** その状態での `badge` の props。 */
@@ -89,7 +94,9 @@ test("別の親を指して置き直すと、その親の子になる", () => {
     EditorState.reposition(
       setupState(),
       "badge",
-      ChildPlacement.create("panel", { mode: "absolute", x: 8, y: 6 }),
+      RepositionEdit.create(
+        ChildPlacement.create("panel", { mode: "absolute", x: 8, y: 6 }),
+      ),
     ),
   );
 
@@ -102,7 +109,9 @@ test("親をまたいで置き直しても、1 回戻すだけで元の親へ戻
     EditorState.reposition(
       setupState(),
       "badge",
-      ChildPlacement.create("panel", { mode: "absolute", x: 8, y: 6 }),
+      RepositionEdit.create(
+        ChildPlacement.create("panel", { mode: "absolute", x: 8, y: 6 }),
+      ),
     ),
   );
 
@@ -116,7 +125,9 @@ test("子を受け入れられない親を指すと置き直しは存在しな�
     EditorState.reposition(
       setupState(),
       "badge",
-      ChildPlacement.create("居ない親", { mode: "absolute", x: 70, y: 12 }),
+      RepositionEdit.create(
+        ChildPlacement.create("居ない親", { mode: "absolute", x: 70, y: 12 }),
+      ),
     ),
   ).toEqual(Option.none);
 });
@@ -133,6 +144,27 @@ test("ドキュメントに無い名前を指すと置き直しは存在しな�
   expect(
     EditorState.reposition(setupState(), "居ない", toHome(70, 12)),
   ).toEqual(Option.none);
+});
+
+test("向きも書き換えて親をまたいだ置き直しは、1 回戻すと親・座標・向きが全部戻る", () => {
+  const repositioned = Option.unwrap(
+    EditorState.reposition(
+      setupState({ rotation: 30 }),
+      "badge",
+      RepositionEdit.rotatedTo(
+        ChildPlacement.create("panel", { mode: "absolute", x: 8, y: 6 }),
+        120,
+      ),
+    ),
+  );
+
+  const undone = Option.unwrap(EditorState.undo(repositioned));
+
+  expect([
+    badgeParentName(undone),
+    badgeProps(undone).x,
+    badgeProps(undone).rotation,
+  ]).toEqual(["home", 40, 30]);
 });
 
 /*
@@ -191,4 +223,21 @@ test("artboard を選んでいるときは動かない", () => {
   expect(
     EditorState.repositionSelectedNodeBy(selected, { x: 1, y: 0 }),
   ).toEqual(Option.none);
+});
+
+test("向きを書いたノードを動かしても、向きは元のまま", () => {
+  const selected = EditorState.select(setupState({ rotation: 30 }), "badge");
+
+  const moved = EditorState.repositionSelectedNodeBy(selected, { x: 1, y: 0 });
+
+  expect(badgeProps(Option.unwrap(moved)).rotation).toBe(30);
+});
+
+test("数値でない向きを書いたノードを動かしても、その綴りが残る", () => {
+  // 読み直して書くと、数値でない綴りは回っていない向き（0）として読まれて消える
+  const selected = EditorState.select(setupState({ rotation: "abc" }), "badge");
+
+  const moved = EditorState.repositionSelectedNodeBy(selected, { x: 1, y: 0 });
+
+  expect(badgeProps(Option.unwrap(moved)).rotation).toBe("abc");
 });
