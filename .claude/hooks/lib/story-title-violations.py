@@ -45,7 +45,7 @@ import re
 import sys
 from pathlib import Path
 
-from ts_sources import feature_of, report, run, source_files
+from ts_sources import feature_of, report_violations, run, source_files
 
 # `.storybook/main.ts` の glob（`../src/**/*.stories.@(ts|tsx)`）が拾う綴り。
 #
@@ -123,10 +123,7 @@ def scan(root: Path) -> int:
         "story-title-tree": mismatched,
         "story-title-missing": unreadable,
     }
-    for kind, lines in found.items():
-        if lines:
-            report(kind, lines)
-    total = sum(len(lines) for lines in found.values())
+    total = report_violations(found)
     print(f"story の title の違反 {total} 件 / {len(paths)} ファイル")
     return 1 if total else 0
 

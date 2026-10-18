@@ -5,7 +5,7 @@
 `import-rule-violations.py` と `result-option-discriminant-violations.py` と
 `story-title-violations.py` がこれを読む。import の解決(`IMPORT_SPECIFIER` / `resolve_import`)は、
 PR の解説ページの変更の地図(`.github/scripts/build-pr-change-map.py`)も同じものを使う。`named-path-violations.py` は走査の範囲が
-`src/` に収まらないので、報告の形（`report`）と `src/` の綴り（`DEFAULT_ROOT`）だけを読む。
+`src/` に収まらないので、報告の形（`report_violations`）と `src/` の綴り（`DEFAULT_ROOT`）だけを読む。
 
 **ファイル名だけアンダースコア。** `lib/` の綴りはケバブケースだが、ハイフンを含む名前は
 Python のモジュールとして import できない。直接実行されるスクリプトの隣に置いてあるので、
@@ -118,6 +118,18 @@ def report(kind: str, lines: list[str]) -> None:
         print(f"  {line}")
     if len(lines) > MAX_REPORTED:
         print(f"  ... 他 {len(lines) - MAX_REPORTED} 件")
+
+
+def report_violations(found: dict[str, list[str]]) -> int:
+    """違反のあった種別だけを、並びの順に `report` で出力する。
+
+    @param found 種別ごとの、違反 1 件ごとの説明
+    @returns すべての種別を合わせた違反の件数
+    """
+    for kind, lines in found.items():
+        if lines:
+            report(kind, lines)
+    return sum(len(lines) for lines in found.values())
 
 
 def run(scan, doc: str | None) -> int:

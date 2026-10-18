@@ -51,7 +51,7 @@ from ts_sources import (
     IMPORT_SPECIFIER,
     INDEX_NAMES,
     feature_of,
-    report,
+    report_violations,
     resolve_import,
     run,
     source_files,
@@ -312,10 +312,7 @@ def scan(root: Path) -> int:
             if kind:
                 found[kind].append(f"{importer}:{number} -> {target}（{reason}）")
 
-    for kind, lines in found.items():
-        if lines:
-            report(kind, lines)
-    total = sum(len(lines) for lines in found.values())
+    total = report_violations(found)
     print(f"import 規約の違反 {total} 件 / {len(paths)} ファイル")
     return 1 if total else 0
 

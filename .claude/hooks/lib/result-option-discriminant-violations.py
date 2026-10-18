@@ -59,7 +59,7 @@ import re
 import sys
 from pathlib import Path
 
-from ts_sources import report, run, source_files
+from ts_sources import report_violations, run, source_files
 
 # 判別子と、その値を作るコンパニオンオブジェクトの名前。
 #
@@ -154,8 +154,8 @@ def violations_in(path: str) -> dict[str, list[str]]:
     """1 ファイルの中の直読みと直書きを探す。
 
     @param path 読み取るファイルのパス
-    @returns 種別（`result-option-read` / `result-option-write`）ごとの、違反 1 件ごとの
-        説明。そのファイルが型宣言で定義している判別子の分は含めない
+    @returns `KINDS` の種別ごとの、違反 1 件ごとの説明。そのファイルが型宣言で定義している
+        判別子の分は含めない
     """
     code = code_lines(Path(path).read_text(encoding="utf-8").splitlines())
     defined = declared_boolean_members(code)
@@ -188,14 +188,12 @@ def scan(root: Path) -> int:
     for path in paths:
         for kind, lines in violations_in(path).items():
             found[kind].extend(lines)
-    for kind, lines in found.items():
-        if lines:
-            report(kind, lines)
+    total = report_violations(found)
     print(
         f"判別子の直読み {len(found[READ])} 件 / 直書き {len(found[WRITE])} 件"
         f" / {len(paths)} ファイル"
     )
-    return 1 if any(found.values()) else 0
+    return 1 if total else 0
 
 
 if __name__ == "__main__":

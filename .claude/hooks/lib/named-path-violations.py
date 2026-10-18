@@ -75,7 +75,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from ts_sources import DEFAULT_ROOT, report
+from ts_sources import DEFAULT_ROOT, report_violations
 
 # 走査する綴り。`.ts` / `.tsx` はコメントだけを、`.md` は全文を見る。
 CODE_SUFFIXES = (".ts", ".tsx")
@@ -355,11 +355,9 @@ def scan() -> int:
     found: dict[str, list[str]] = {
         "named-path-missing": missing,
     }
-    for kind, lines in found.items():
-        if lines:
-            report(kind, lines)
-    print(f"名指ししたパスの違反 {len(missing)} 件 / {len(paths)} ファイル")
-    return 1 if missing else 0
+    total = report_violations(found)
+    print(f"名指ししたパスの違反 {total} 件 / {len(paths)} ファイル")
+    return 1 if total else 0
 
 
 if __name__ == "__main__":
