@@ -1,19 +1,15 @@
 import { expect, test } from "vitest";
+import { Offset } from "@/domains/unit/offset";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { Option } from "@/utils/Option";
-import { type GrabbedEnds, SideSnap } from "../index";
-import { Moving } from "./moving-bounds";
+import { type GrabbedEnds, SideSnap, type SideSnapped } from "../index";
+import { GrabbedRight, Moving, RightAt144 } from "./moving-bounds";
 
 /*
  * リサイズで掴んだ辺が揃ったときのガイド線（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
- * 掴んだ辺は `Moving`（左 100・右 140・上 100・下 120）の行き先にある。
+ * 掴んだ時点の矩形は `Moving`（左 100・右 140・上 100・下 120）で、ポインタは動かしていない
+ * （掴んだ辺の行き先はその場）。
  */
-
-/** 右辺だけを掴んでいる。 */
-const GrabbedRight: GrabbedEnds = {
-  width: Option.some("end"),
-  height: Option.none,
-};
 
 /** 右下の角を掴んでいる。 */
 const GrabbedBottomRight: GrabbedEnds = {
@@ -21,13 +17,24 @@ const GrabbedBottomRight: GrabbedEnds = {
   height: Option.some("end"),
 };
 
-/** 右辺が 144 にある揃え先（上下の辺は 300 / 320 で遠い）。 */
-const RightAt144: CanvasBounds = { left: 44, top: 300, width: 100, height: 20 };
+/**
+ * 縦のガイド線（左右の辺が揃った側）が縦にまたぐ範囲。
+ *
+ * @param snapped 辺のスナップの答え
+ * @returns 線の上端と長さ。縦の線が無ければ `none`
+ */
+function verticalSpanOfVerticalLine(snapped: SideSnapped) {
+  return Option.map(snapped.guides.horizontal, (guide) => ({
+    top: guide.guideLine.top,
+    height: guide.guideLine.height,
+  }));
+}
 
 test("掴んだ右辺が揃え先の右辺に揃うと、揃え先の右辺に縦のガイド線が出る", () => {
   const snapped = SideSnap.toEdgeSnapped(
     SideSnap.create(Moving, [RightAt144]),
     GrabbedRight,
+    Offset.Origin,
   );
 
   expect(
@@ -45,6 +52,7 @@ test("掴んでいない上下の辺が揃え先の上辺の近くにあって�
   const snapped = SideSnap.toEdgeSnapped(
     SideSnap.create(Moving, [topAt103]),
     GrabbedRight,
+    Offset.Origin,
   );
 
   expect(snapped.guides.vertical).toEqual(Option.none);
@@ -54,15 +62,13 @@ test("ガイド線は伸ばしたあとのものと揃え先の両方をまた�
   const snapped = SideSnap.toEdgeSnapped(
     SideSnap.create(Moving, [RightAt144]),
     GrabbedRight,
+    Offset.Origin,
   );
 
   // 伸ばしたものの上辺 100 から、揃え先の下辺 320 まで
-  expect(
-    Option.map(snapped.guides.horizontal, (guide) => ({
-      top: guide.guideLine.top,
-      height: guide.guideLine.height,
-    })),
-  ).toEqual(Option.some({ top: 100, height: 220 }));
+  expect(verticalSpanOfVerticalLine(snapped)).toEqual(
+    Option.some({ top: 100, height: 220 }),
+  );
 });
 
 test("掴んだ辺が既に揃え先の辺に重なっていて寄せ量が 0 でも、ガイド線は出る", () => {
@@ -76,6 +82,7 @@ test("掴んだ辺が既に揃え先の辺に重なっていて寄せ量が 0 �
   const snapped = SideSnap.toEdgeSnapped(
     SideSnap.create(Moving, [rightAt140]),
     GrabbedRight,
+    Offset.Origin,
   );
 
   expect(Option.isSome(snapped.guides.horizontal)).toBe(true);
@@ -92,6 +99,7 @@ test("掴んだ辺が揃うとみなす距離より離れていれば、ガイ�
   const snapped = SideSnap.toEdgeSnapped(
     SideSnap.create(Moving, [rightAt147]),
     GrabbedRight,
+    Offset.Origin,
   );
 
   expect(snapped.guides.horizontal).toEqual(Option.none);
@@ -109,6 +117,7 @@ test("掴んでいない左辺が揃え先の辺の近くにあっても、ガ�
   const snapped = SideSnap.toEdgeSnapped(
     SideSnap.create(Moving, [leftAt103]),
     GrabbedRight,
+    Offset.Origin,
   );
 
   expect(snapped.guides.horizontal).toEqual(Option.none);
@@ -126,6 +135,7 @@ test("掴んだ辺が揃え先の中心線の近くにあっても、ガイド�
   const snapped = SideSnap.toEdgeSnapped(
     SideSnap.create(Moving, [midlineAt138]),
     GrabbedRight,
+    Offset.Origin,
   );
 
   expect(snapped.guides.horizontal).toEqual(Option.none);
@@ -149,13 +159,11 @@ test("右下の角で幅と高さの両方が揃うと、縦のガイド線は�
   const snapped = SideSnap.toEdgeSnapped(
     SideSnap.create(Moving, [rightAt144Above, bottomAt124]),
     GrabbedBottomRight,
+    Offset.Origin,
   );
 
   // 揃え先の上辺 0 から、寄せたあとの下辺 124 まで（寄せる前の下辺なら 120）
-  expect(
-    Option.map(snapped.guides.horizontal, (guide) => ({
-      top: guide.guideLine.top,
-      height: guide.guideLine.height,
-    })),
-  ).toEqual(Option.some({ top: 0, height: 124 }));
+  expect(verticalSpanOfVerticalLine(snapped)).toEqual(
+    Option.some({ top: 0, height: 124 }),
+  );
 });

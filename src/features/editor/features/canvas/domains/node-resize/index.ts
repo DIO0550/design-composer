@@ -826,9 +826,6 @@ function parentWithSiblingNames(
 /**
  * 掴んだ辺を揃え先の辺へ寄せる量と、揃った線。軸ごとに、その軸で掴んだ辺だけを見る。
  *
- * 行き先の矩形は掴んだ時点の矩形から、掴んだ辺だけを移動量ぶん動かして作る（`withEdgeAt`）。
- * ずらして作ると寄せ量は同じでも、ガイド線の端が移動量の分だけずれる。
- *
  * 画面上で回っているノードには揃え先が無い（`NodeResize.resizable`）ので寄せず、線も出ない。
  *
  * @param held 掴んでいるもの
@@ -840,19 +837,10 @@ function snappedAt(held: ResizeHold, moved: Offset): SideSnapped {
   if (!Option.isSome(held.snapFrom)) {
     return { offset: Offset.Origin, guides: SideSnap.NoGuides };
   }
-  const from = held.snapFrom.value;
-  const destination = ResizeGrip.grabs(held.grip).reduce((bounds, grab) => {
-    const axis = grab.length.axis;
-    return CanvasBounds.withEdgeAt(
-      bounds,
-      { axis, end: grab.end },
-      CanvasBounds.edgeAt(from.moving, axis, grab.end) +
-        Offset.along(moved, axis),
-    );
-  }, from.moving);
   return SideSnap.toEdgeSnapped(
-    SideSnap.create(destination, from.stationary),
+    held.snapFrom.value,
     ResizeGrip.grabbedEnds(held.grip),
+    moved,
   );
 }
 

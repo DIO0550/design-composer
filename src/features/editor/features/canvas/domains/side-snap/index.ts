@@ -1,5 +1,5 @@
 import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
-import type { Offset } from "@/domains/unit/offset";
+import { Offset } from "@/domains/unit/offset";
 import { SidePair, SidePairs } from "@/domains/unit/side";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
@@ -94,12 +94,6 @@ const SidePairByAxis = {
   height: SidePairs.Vertical,
 } as const satisfies Readonly<Record<Axis, SidePair>>;
 
-/** 揃った線が縦横とも無いガイド。 */
-const NoSnapGuides: SnapGuides = {
-  horizontal: Option.none,
-  vertical: Option.none,
-};
-
 /**
  * ガイド線の太さ（px）。
  *
@@ -152,7 +146,10 @@ export const SideSnap = {
    * 揃った線が縦横とも無いガイド。揃え先に届かない・揃え先が無い・まだ動かしていないときに
    * 使う。
    */
-  NoGuides: NoSnapGuides,
+  NoGuides: {
+    horizontal: Option.none,
+    vertical: Option.none,
+  } satisfies SnapGuides,
 
   /**
    * 判定する組を作る。列の間隔を測る兄弟は持たない（`withSiblings` で足す）。
@@ -241,46 +238,41 @@ export const SideSnap = {
    *
    * 揃え先の中心線とも組にしない（中心線と辺は組にしない、は移動と同じ）。
    *
-   * @param snap 判定する組。`moving` は掴んだ辺が行き先にある矩形
+   * @param snap 判定する組。`moving` は掴んだ時点の矩形
    * @param grabbed 軸ごとに掴んだ辺
+   * @param moved 掴んでからのポインタの移動量（画面上の px）。掴んだ辺だけがこの量だけ動く
    * @returns 寄せ量と、揃った辺に引くガイド線・揃え先との隙間。掴んでいない軸・閾値に届く
    *   辺が無い軸は寄せ量 0・線無し
    */
-  toEdgeSnapped(snap: SideSnap, grabbed: GrabbedEnds): SideSnapped {
-    const lines = {
-      width: Option.flatMap(grabbed.width, (end) =>
-        nearestEdge(snap, { axis: Axes.Width, end }),
+  toEdgeSnapped(
+    snap: SideSnap,
+    grabbed: GrabbedEnds,
+    moved: Offset,
+  ): SideSnapped {
+    const destination = withGrabbedEdgesAt(snap.moving, grabbed, (edge) =>
+      Option.some(
+        CanvasBounds.edgeAt(snap.moving, edge.axis, edge.end) +
+          Offset.along(moved, edge.axis),
       ),
-      height: Option.flatMap(grabbed.height, (end) =>
-        nearestEdge(snap, { axis: Axes.Height, end }),
-      ),
-    };
-    // 掴んだ辺だけを動かす。ずらして作ると、角では反対の辺まで寄せ量の分動いて線の端がずれる
-    const snapped = Object.values(Axes).reduce(
-      (bounds, axis) =>
-        Option.unwrapOr(
-          Option.flatMap(grabbed[axis], (end) =>
-            Option.map(lines[axis], (line) =>
-              CanvasBounds.withEdgeAt(
-                bounds,
-                { axis, end },
-                line.stationaryLine,
-              ),
-            ),
-          ),
-          bounds,
-        ),
-      snap.moving,
     );
+    const lineAlong = (axis: Axis): Option<SnappedLine> =>
+      Option.flatMap(grabbed[axis], (end) =>
+        nearestEdge({ ...snap, moving: destination }, { axis, end }),
+      );
+    const lines = {
+      width: lineAlong(Axes.Width),
+      height: lineAlong(Axes.Height),
+    };
+    const snapped = withGrabbedEdgesAt(destination, grabbed, (edge) =>
+      Option.map(lines[edge.axis], (line) => line.stationaryLine),
+    );
+    const guideAlong = (axis: Axis): Option<SnapGuide> =>
+      Option.flatMap(lines[axis], (line) => guideOf(line, snapped));
     return {
       offset: { x: shiftOf(lines.width), y: shiftOf(lines.height) },
       guides: {
-        horizontal: Option.flatMap(lines.width, (line) =>
-          guideOf(line, snapped),
-        ),
-        vertical: Option.flatMap(lines.height, (line) =>
-          guideOf(line, snapped),
-        ),
+        [SidePairByAxis.width]: guideAlong(Axes.Width),
+        [SidePairByAxis.height]: guideAlong(Axes.Height),
       },
     };
   },
@@ -297,6 +289,38 @@ function shiftOf(snapped: Option<Readonly<{ shift: number }>>): number {
 }
 
 /**
+ * 掴んだ辺だけを、辺ごとに受けた行き先へ動かした矩形。掴んでいない軸と、行き先が `none` の
+ * 辺はその場に留まる。
+ *
+ * 矩形ごとずらして作らない。反対の辺まで同じ量だけ動き、ガイド線の端がずれる。
+ *
+ * @param bounds 辺を動かす矩形
+ * @param grabbed 軸ごとに掴んだ辺
+ * @param destinationOf 掴んだ辺 1 本の行き先の座標（画面上の px）。動かさないなら `none`
+ * @returns 掴んだ辺が行き先にある矩形。反対の辺を越えたなら幅・高さは負
+ */
+function withGrabbedEdgesAt(
+  bounds: CanvasBounds,
+  grabbed: GrabbedEnds,
+  destinationOf: (
+    edge: Readonly<{ axis: Axis; end: AxisEnd }>,
+  ) => Option<number>,
+): CanvasBounds {
+  return Object.values(Axes).reduce(
+    (moving, axis) =>
+      Option.unwrapOr(
+        Option.flatMap(grabbed[axis], (end) =>
+          Option.map(destinationOf({ axis, end }), (at) =>
+            CanvasBounds.withEdgeAt(moving, { axis, end }, at),
+          ),
+        ),
+        moving,
+      ),
+    bounds,
+  );
+}
+
+/**
  * 掴んだ辺 1 本に対して、いちばん近い揃え先の同じ向きの辺。
  *
  * @param snap 判定する組
@@ -309,20 +333,19 @@ function nearestEdge(
 ): Option<SnappedLine> {
   const movingLine = CanvasBounds.edgeAt(snap.moving, edge.axis, edge.end);
   const lines = lineTargets(snap).flatMap((stationary) =>
-    Object.values(AxisEnds).map((stationaryEnd): SnappedLine => {
-      const stationaryLine = CanvasBounds.edgeAt(
-        stationary,
-        edge.axis,
-        stationaryEnd,
-      );
-      return {
-        kind: "line",
-        pair: SidePairByAxis[edge.axis],
-        shift: stationaryLine - movingLine,
-        stationaryLine,
-        stationary,
-      };
-    }),
+    Object.values(AxisEnds).map((stationaryEnd) =>
+      snappedLine(
+        { stationary, pair: SidePairByAxis[edge.axis] },
+        {
+          stationaryLine: CanvasBounds.edgeAt(
+            stationary,
+            edge.axis,
+            stationaryEnd,
+          ),
+          movingLine,
+        },
+      ),
+    ),
   );
   return nearestReachable(lines);
 }
@@ -409,13 +432,27 @@ function candidatesAgainst(
     movingLine: CanvasBounds.midline(moving, pair),
   };
   const pairings = [...sidePairings, midlinePairing];
-  return pairings.map(({ stationaryLine, movingLine }) => ({
+  return pairings.map((pairing) => snappedLine(against, pairing));
+}
+
+/**
+ * 揃え先の線と運んでいる / 伸び縮みさせているものの線の組を、揃った線の候補にする。
+ *
+ * @param against 揃え先の矩形と、線を挟む辺の組
+ * @param pairing 揃え先の線と、運んでいる / 伸び縮みさせているものの線の座標（画面上の px）
+ * @returns 2 本の線が重なるまで寄せる量を持つ候補（閾値で絞る前）
+ */
+function snappedLine(
+  against: Readonly<{ stationary: CanvasBounds; pair: SidePair }>,
+  pairing: Readonly<{ stationaryLine: number; movingLine: number }>,
+): SnappedLine {
+  return {
     kind: "line",
-    pair,
-    shift: stationaryLine - movingLine,
-    stationaryLine,
-    stationary,
-  }));
+    pair: against.pair,
+    shift: pairing.stationaryLine - pairing.movingLine,
+    stationaryLine: pairing.stationaryLine,
+    stationary: against.stationary,
+  };
 }
 
 /**
