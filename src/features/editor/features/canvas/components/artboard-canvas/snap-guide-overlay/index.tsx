@@ -98,6 +98,34 @@ function Guide({
 }
 
 /**
+ * 1 つの軸のガイド線だけ。揃え先との隙間は描かない。
+ *
+ * @returns ガイド線。その軸に揃った線が無ければ `null`
+ */
+function GuideLineAlong({
+  guides,
+  pair,
+}: Readonly<{ guides: SnapGuides; pair: SidePair }>): ReactElement | null {
+  const guide = guides[pair];
+  return Option.isSome(guide) ? (
+    <GuideLine bounds={guide.value.guideLine} />
+  ) : null;
+}
+
+/**
+ * 揃った線に引くガイド線だけを出す（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。見た目は
+ * `SnapGuideOverlay` のガイド線と同じで、揃え先との隙間の数値は出さない。
+ */
+export function GuideLineOverlay({ guides }: Readonly<{ guides: SnapGuides }>) {
+  return (
+    <>
+      <GuideLineAlong guides={guides} pair={SidePairs.Horizontal} />
+      <GuideLineAlong guides={guides} pair={SidePairs.Vertical} />
+    </>
+  );
+}
+
+/**
  * 揃った線（辺か中心線）に引くガイド線と、揃え先との隙間の数値（docs/06-ui.md「キャンバス
  * 直接操作」の辺のスナップ。色・太さ・数値の単位の選定理由もそちらにある）。どこへ引くかは
  * `side-snap` が実測から決める。
