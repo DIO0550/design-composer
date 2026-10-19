@@ -1,3 +1,4 @@
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { Artboard } from "@/domains/dcmp/artboard";
@@ -158,4 +159,28 @@ test("左辺を運んだあと 1 回戻すと、幅も左端も掴む前に戻�
     "200px",
     "25px",
   ]);
+});
+
+test("絶対配置の右辺を親の縁の近くまで 2 回運ぶと、描き直されたあとも親の縁にガイド線が出ている", async () => {
+  /*
+   * 1 回目の移動で幅がドキュメントへ届いて描き直され、要素が作り直されて測り方の差し替えも
+   * 外れる。揃え先を動かすたびに測り直す実装だと、2 回目の移動のあとに線が消える
+   * （揃え先を測るのは掴んだ時点だけ / docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
+   */
+  await renderOpenedDocument(setupDocument());
+  await selectInTree("badge");
+  // `home` の右辺は 460、`badge` の右辺は 325
+  stubBounds(drawn("home"), { left: 100, top: 50, width: 360, height: 240 });
+  stubBounds(drawn("badge"), { left: 125, top: 60, width: 200, height: 100 });
+
+  // 右辺が 457 → 458 と来て、どちらも `home` の右辺 460 へ吸い付く
+  pressPointer(drawn("badge"), { x: 323, y: 100 });
+  movePointer(canvasContent(), { x: 455, y: 100 });
+  movePointer(canvasContent(), { x: 456, y: 100 });
+
+  expect(
+    screen
+      .queryAllByTestId("snap-guide")
+      .map((guide) => guide.getAttribute("style") ?? ""),
+  ).toEqual([expect.stringContaining("left: 459px")]);
 });
