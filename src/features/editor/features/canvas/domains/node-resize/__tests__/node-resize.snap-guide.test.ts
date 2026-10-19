@@ -72,6 +72,31 @@ test("右辺を掴んだままポインタが縦にもずれても、ガイド�
   ).toEqual(Option.some({ top: 50, height: 370 }));
 });
 
+test("下辺を掴んだままポインタが横にもずれても、ガイド線は描かれている左辺・右辺と揃え先をまたぐ", () => {
+  // 下辺が 180 にある揃え先（左右の辺は 600 / 640 で遠い）
+  const bottomAt180: CanvasBounds = {
+    left: 600,
+    top: 80,
+    width: 40,
+    height: 100,
+  };
+  const resize = grabbedWithSnap({ x: 0.5, y: 1 }, { x: 200, y: 150 }, [
+    bottomAt180,
+  ]);
+
+  // 横に 30 ずれても高さしか変わらないので、左辺 100 から揃え先の右辺 640 まで
+  const tracked = NodeResize.trackedAt(resize, { x: 230, y: 177 }, setupView());
+
+  expect(
+    Option.flatMap(tracked, ({ guides }) =>
+      Option.map(guides.vertical, (guide) => ({
+        left: guide.guideLine.left,
+        width: guide.guideLine.width,
+      })),
+    ),
+  ).toEqual(Option.some({ left: 100, width: 540 }));
+});
+
 test("揃え先の辺の近くまで運んでいなければ、ガイド線は出ない", () => {
   const resize = grabbedWithSnap({ x: 1, y: 0.5 }, { x: 300, y: 100 }, [
     RightAt340,

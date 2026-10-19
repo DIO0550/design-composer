@@ -17,6 +17,33 @@ const GrabbedBottomRight: GrabbedEnds = {
   height: Option.some("end"),
 };
 
+/** 下辺だけを掴んでいる。 */
+const GrabbedBottom: GrabbedEnds = {
+  width: Option.none,
+  height: Option.some("end"),
+};
+
+/** 下辺が 124 にある揃え先（左右の辺は 600 / 640 で `Moving` から遠い）。 */
+const BottomAt124: CanvasBounds = {
+  left: 600,
+  top: 24,
+  width: 40,
+  height: 100,
+};
+
+/**
+ * 横のガイド線（上下の辺が揃った側）が横にまたぐ範囲。
+ *
+ * @param snapped 辺のスナップの答え
+ * @returns 線の左端と長さ。横の線が無ければ `none`
+ */
+function horizontalSpanOfHorizontalLine(snapped: SideSnapped) {
+  return Option.map(snapped.guides.vertical, (guide) => ({
+    left: guide.guideLine.left,
+    width: guide.guideLine.width,
+  }));
+}
+
 /**
  * 縦のガイド線（左右の辺が揃った側）が縦にまたぐ範囲。
  *
@@ -166,4 +193,72 @@ test("右下の角で幅と高さの両方が揃うと、縦のガイド線は�
   expect(verticalSpanOfVerticalLine(snapped)).toEqual(
     Option.some({ top: 0, height: 124 }),
   );
+});
+
+test("掴んだ下辺が揃え先の下辺に揃うと、揃え先の下辺に横のガイド線が出る", () => {
+  const snapped = SideSnap.toEdgeSnapped(
+    SideSnap.create(Moving, [BottomAt124]),
+    GrabbedBottom,
+    Offset.Origin,
+  );
+
+  expect(
+    Option.map(snapped.guides.vertical, (guide) => ({
+      top: guide.guideLine.top,
+      height: guide.guideLine.height,
+    })),
+  ).toEqual(Option.some({ top: 123, height: 2 }));
+});
+
+test("右下の角で幅と高さの両方が揃うと、横のガイド線は幅を寄せたあとの右辺までまたぐ", () => {
+  // 下辺 124 の揃え先は左 0・右 20 にあり、右辺 144 の揃え先は上下 300 / 320 で遠い
+  const bottomAt124Left: CanvasBounds = {
+    left: 0,
+    top: 24,
+    width: 20,
+    height: 100,
+  };
+
+  const snapped = SideSnap.toEdgeSnapped(
+    SideSnap.create(Moving, [RightAt144, bottomAt124Left]),
+    GrabbedBottomRight,
+    Offset.Origin,
+  );
+
+  // 揃え先の左辺 0 から、寄せたあとの右辺 144 まで（寄せる前の右辺なら 140）
+  expect(horizontalSpanOfHorizontalLine(snapped)).toEqual(
+    Option.some({ left: 0, width: 144 }),
+  );
+});
+
+test("右下の角を反対の辺を越えた先まで運んで幅と高さの両方が揃うと、どちらのガイド線も越えた先の辺までまたぐ", () => {
+  // 右辺 140 → 80・下辺 120 → 90 まで運び、左辺 100・上辺 100 を越える
+  const rightAt78: CanvasBounds = { left: 38, top: 200, width: 40, height: 20 };
+  const bottomAt88: CanvasBounds = {
+    left: 200,
+    top: 48,
+    width: 20,
+    height: 40,
+  };
+
+  const snapped = SideSnap.toEdgeSnapped(
+    SideSnap.create(Moving, [rightAt78, bottomAt88]),
+    GrabbedBottomRight,
+    { x: -60, y: -30 },
+  );
+
+  // 縦の線は越えた先の下辺 88 から、横の線は越えた先の右辺 78 から（0 で止めた矩形なら 100 から）
+  expect({
+    verticalLineTop: Option.map(
+      verticalSpanOfVerticalLine(snapped),
+      (span) => span.top,
+    ),
+    horizontalLineLeft: Option.map(
+      horizontalSpanOfHorizontalLine(snapped),
+      (span) => span.left,
+    ),
+  }).toEqual({
+    verticalLineTop: Option.some(88),
+    horizontalLineLeft: Option.some(78),
+  });
 });
