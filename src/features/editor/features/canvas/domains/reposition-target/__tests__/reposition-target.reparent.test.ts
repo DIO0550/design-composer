@@ -261,22 +261,12 @@ test("向きの違う親へ付け替えても、画面上の向きは運んで�
   expect(droppedOrientation).toBe(carriedOrientation);
 });
 
-/* 以下は浮動小数の端数（丸める理由は `Angle.roundToMicrodegree`）。 */
-test("0.1 度の中の 0.2 度の親から 0.3 度の親へ付け替えても、向きを書かない", () => {
+/* 以下は丸めた向きどうしの差・和に出る浮動小数の端数（丸める理由は `Angle.roundToMicrodegree`）。 */
+test("512.2 度回って描かれる親から 152.2 度の親へ付け替えても、向きを書かない", () => {
   expect(
     writtenRotation({
-      parentRotation: 0.1 + 0.2,
-      dropRotation: 0.3,
-      ownRotation: 0,
-    }),
-  ).toEqual(Option.none);
-});
-
-test("0.1 度の中の 360.1 度の親から 0.2 度の親へ付け替えても、向きを書かない", () => {
-  expect(
-    writtenRotation({
-      parentRotation: 0.1 + 360.1,
-      dropRotation: 0.2,
+      parentRotation: 512.2,
+      dropRotation: 152.2,
       ownRotation: 0,
     }),
   ).toEqual(Option.none);

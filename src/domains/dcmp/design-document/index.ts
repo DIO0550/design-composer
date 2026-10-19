@@ -42,7 +42,7 @@ import { Rotation } from "@/domains/dcmp/rotation";
 import { Size } from "@/domains/dcmp/size";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
-import type { Angle } from "@/domains/unit/angle";
+import { Angle } from "@/domains/unit/angle";
 import { Axes, type Axis } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -748,6 +748,36 @@ function holdsForSelfOrAncestor(
 }
 
 /**
+ * 名前で指したものと、それを包んでいるノード・artboard の角度を、自分から外側へ並べたもの。
+ * artboard で止める。
+ *
+ * @param document 引き先になるドキュメント
+ * @param name 起点にする artboard / ノードの名前
+ * @returns 自分から外側への角度の並び。自分か包んでいるもののどれかの角度が引けないとき
+ *   （`rotationOf` が `none`）は `none`
+ */
+function collectSelfAndAncestorRotations(
+  document: DesignDocument,
+  name: string,
+): Option<readonly Angle[]> {
+  const own = DesignDocument.rotationOf(document, name);
+  // artboard は誰の子でもないので、親を探す前に止める（探すと木の全体を走る）
+  const isArtboard = Option.isSome(DesignDocument.findArtboard(document, name));
+  const position = isArtboard
+    ? Option.none
+    : DesignDocument.findChildPosition(document, name);
+  if (!Option.isSome(position)) {
+    return Option.map(own, (rotation) => [rotation]);
+  }
+  return Option.flatMap(own, (rotation) =>
+    Option.map(
+      collectSelfAndAncestorRotations(document, position.value.parentName),
+      (outer) => [rotation, ...outer],
+    ),
+  );
+}
+
+/**
  * ノードが自身の値として持つ props。部品インスタンスは上書きを当てた部品の根の props。
  *
  * @param document 参照先の部品を引くドキュメント
@@ -1277,7 +1307,7 @@ export const DesignDocument = {
           ? [
               {
                 name: child.name,
-                rotation: outer + Rotation.fromProps(own.value),
+                rotation: Angle.sum([Rotation.fromProps(own.value), outer]),
               },
             ]
           : [];
@@ -1556,26 +1586,14 @@ export const DesignDocument = {
    *
    * @param document 引き先になるドキュメント
    * @param name 向きを知りたい artboard / ノードの名前
-   * @returns 自分と包んでいるノード・artboard の角度の合計。自分か包んでいるもののどれか
-   *   の角度が引けないとき（`rotationOf` が `none`）は `none`
+   * @returns 自分と包んでいるノード・artboard の角度の合計を小数点以下 6 桁へ丸めたもの
+   *   （`Angle.sum`）。自分か包んでいるもののどれかの角度が引けないとき（`rotationOf` が
+   *   `none`）は `none`
    */
   totalRotationOf(document: DesignDocument, name: string): Option<Angle> {
-    const own = DesignDocument.rotationOf(document, name);
-    // artboard は誰の子でもないので、親を探す前に止める（探すと木の全体を走る）
-    const isArtboard = Option.isSome(
-      DesignDocument.findArtboard(document, name),
-    );
-    const position = isArtboard
-      ? Option.none
-      : DesignDocument.findChildPosition(document, name);
-    if (!Option.isSome(position)) {
-      return own;
-    }
-    return Option.flatMap(own, (rotation) =>
-      Option.map(
-        DesignDocument.totalRotationOf(document, position.value.parentName),
-        (outer) => rotation + outer,
-      ),
+    return Option.map(
+      collectSelfAndAncestorRotations(document, name),
+      Angle.sum,
     );
   },
 
