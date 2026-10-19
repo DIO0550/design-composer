@@ -1,7 +1,20 @@
 import { expect, test } from "vitest";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
-import { SideSnap } from "../index";
+import { Option } from "@/utils/Option";
+import { type GrabbedEnds, SideSnap } from "../index";
 import { Moving } from "./moving-bounds";
+
+/** 右辺だけを掴んでいる。 */
+const GrabbedRight: GrabbedEnds = {
+  width: Option.some("end"),
+  height: Option.none,
+};
+
+/** 上辺だけを掴んでいる。 */
+const GrabbedTop: GrabbedEnds = {
+  width: Option.none,
+  height: Option.some("start"),
+};
 
 test("掴んだ右辺が揃え先の右辺の近くにあると、右辺が重なるまで寄せる量になる", () => {
   // 右辺は 144。左辺どうし・左右の組は遠い
@@ -13,7 +26,8 @@ test("掴んだ右辺が揃え先の右辺の近くにあると、右辺が重�
   };
 
   expect(
-    SideSnap.toEdgeShift(SideSnap.create(Moving, [stationary]), "width", "end"),
+    SideSnap.toEdgeSnapped(SideSnap.create(Moving, [stationary]), GrabbedRight)
+      .offset.x,
   ).toBe(4);
 });
 
@@ -26,7 +40,8 @@ test("掴んだ右辺が揃え先の左辺の近くにあると、その辺ど�
   };
 
   expect(
-    SideSnap.toEdgeShift(SideSnap.create(Moving, [stationary]), "width", "end"),
+    SideSnap.toEdgeSnapped(SideSnap.create(Moving, [stationary]), GrabbedRight)
+      .offset.x,
   ).toBe(-3);
 });
 
@@ -40,7 +55,8 @@ test("掴んでいない左辺が揃え先の辺の近くにあっても寄せ�
   };
 
   expect(
-    SideSnap.toEdgeShift(SideSnap.create(Moving, [stationary]), "width", "end"),
+    SideSnap.toEdgeSnapped(SideSnap.create(Moving, [stationary]), GrabbedRight)
+      .offset.x,
   ).toBe(0);
 });
 
@@ -54,7 +70,8 @@ test("掴んだ辺が揃え先の中心線の近くにあっても寄せない",
   };
 
   expect(
-    SideSnap.toEdgeShift(SideSnap.create(Moving, [stationary]), "width", "end"),
+    SideSnap.toEdgeSnapped(SideSnap.create(Moving, [stationary]), GrabbedRight)
+      .offset.x,
   ).toBe(0);
 });
 
@@ -67,7 +84,8 @@ test("掴んだ辺が揃うとみなす距離ちょうどにあれば寄せる",
   };
 
   expect(
-    SideSnap.toEdgeShift(SideSnap.create(Moving, [stationary]), "width", "end"),
+    SideSnap.toEdgeSnapped(SideSnap.create(Moving, [stationary]), GrabbedRight)
+      .offset.x,
   ).toBe(SideSnap.ThresholdPx);
 });
 
@@ -80,7 +98,8 @@ test("掴んだ辺が揃うとみなす距離より 1 でも離れていれば�
   };
 
   expect(
-    SideSnap.toEdgeShift(SideSnap.create(Moving, [stationary]), "width", "end"),
+    SideSnap.toEdgeSnapped(SideSnap.create(Moving, [stationary]), GrabbedRight)
+      .offset.x,
   ).toBe(0);
 });
 
@@ -94,11 +113,8 @@ test("上辺を掴んだときは、上辺が揃え先の辺と重なるまで�
   };
 
   expect(
-    SideSnap.toEdgeShift(
-      SideSnap.create(Moving, [stationary]),
-      "height",
-      "start",
-    ),
+    SideSnap.toEdgeSnapped(SideSnap.create(Moving, [stationary]), GrabbedTop)
+      .offset.y,
   ).toBe(-5);
 });
 
@@ -108,11 +124,10 @@ test("同じ距離の揃え先が 2 つあると、先に並んだほうへ寄�
   const second: CanvasBounds = { left: 37, top: 400, width: 100, height: 20 };
 
   expect(
-    SideSnap.toEdgeShift(
+    SideSnap.toEdgeSnapped(
       SideSnap.create(Moving, [first, second]),
-      "width",
-      "end",
-    ),
+      GrabbedRight,
+    ).offset.x,
   ).toBe(3);
 });
 
@@ -121,10 +136,9 @@ test("兄弟として渡した矩形の辺にも、掴んだ辺が寄る", () =>
   const sibling: CanvasBounds = { left: 44, top: 300, width: 100, height: 20 };
 
   expect(
-    SideSnap.toEdgeShift(
+    SideSnap.toEdgeSnapped(
       SideSnap.withSiblings(SideSnap.create(Moving, []), [sibling]),
-      "width",
-      "end",
-    ),
+      GrabbedRight,
+    ).offset.x,
   ).toBe(4);
 });

@@ -1,4 +1,4 @@
-import { type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
+import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
 import { SidePair, SidePairs } from "@/domains/unit/side";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
@@ -11,10 +11,10 @@ import { Range } from "@/utils/Range";
 /**
  * 辺のスナップ 1 回分（運んでいる / 伸び縮みさせているものの行き先と、揃え先の並び /
  * すべて画面上の px / docs/06-ui.md「キャンバス直接操作」）。運ぶときに揃えるのは辺どうしと
- * 中心線どうしと兄弟の列の間隔、伸び縮みさせるとき（`toEdgeShift`）は掴んだ辺と揃え先の辺だけ。
+ * 中心線どうしと兄弟の列の間隔、伸び縮みさせるとき（`toEdgeSnapped`）は掴んだ辺と揃え先の辺だけ。
  *
- * 寄せ量は**運んでいるものの行き先と、揃え先の並びの両方**で決まり片方だけでは答えが出
- * ないので、対を表す型にして判定をそこへ帰属させる（rules/architecture.md「2つの値が常
+ * 寄せ量は**運んでいる / 伸び縮みさせているものの行き先と、揃え先の並びの両方**で決まり
+ * 片方だけでは答えが出ないので、対を表す型にして判定をそこへ帰属させる（rules/architecture.md「2つの値が常
  * に対で意味を持つなら対を表す型を作る」）。
  */
 export type SideSnap = Readonly<{
@@ -69,10 +69,36 @@ export type GapReadout = Readonly<{
  * 別々の入口にすると、寄る先とガイド線が別々に決まる余地が残る。
  */
 export type SideSnapped = Readonly<{
-  /** 寄せ量（画面上の px）。揃う線も同じ間隔になる位置も無い軸は 0 */
+  /**
+   * 寄せ量（画面上の px）。揃う線も同じ間隔になる位置も無い軸は 0。リサイズでは掴んでいない
+   * 軸も 0
+   */
   offset: Offset;
   guides: SnapGuides;
 }>;
+
+/**
+ * リサイズで掴んだ辺。軸ごとに、掴んだならその軸のどちらの端か、掴んでいなければ `none`。
+ *
+ * 並びにすると、同じ軸を 2 つ書けてしまう。
+ */
+export type GrabbedEnds = Readonly<Record<Axis, Option<AxisEnd>>>;
+
+/**
+ * 軸に沿って伸び縮みする辺の組（幅なら左右の辺、高さなら上下の辺）。
+ *
+ * `unit/side` は辺の組を軸とは別の語彙にしているので、対応はこのモジュールの都合として持つ。
+ */
+const SidePairByAxis = {
+  width: SidePairs.Horizontal,
+  height: SidePairs.Vertical,
+} as const satisfies Readonly<Record<Axis, SidePair>>;
+
+/** 揃った線が縦横とも無いガイド。 */
+const NoSnapGuides: SnapGuides = {
+  horizontal: Option.none,
+  vertical: Option.none,
+};
 
 /**
  * ガイド線の太さ（px）。
@@ -121,6 +147,12 @@ export const SideSnap = {
    * ント上の px だと、拡大するほど広い範囲で吸い付いて狙った位置へ置けない）。
    */
   ThresholdPx: 6,
+
+  /**
+   * 揃った線が縦横とも無いガイド。揃え先に届かない・揃え先が無い・まだ動かしていないときに
+   * 使う。
+   */
+  NoGuides: NoSnapGuides,
 
   /**
    * 判定する組を作る。列の間隔を測る兄弟は持たない（`withSiblings` で足す）。
@@ -203,25 +235,54 @@ export const SideSnap = {
   },
 
   /**
-   * 辺 1 本だけを、揃え先の同じ向きの辺へ寄せる量（docs/06-ui.md「リサイズハンドル」の
-   * 辺のスナップ）。リサイズでは掴んだ辺しか動かないので、他の辺と中心線は見ない。
+   * 掴んだ辺を揃え先の同じ向きの辺へ寄せる量と、揃った辺に引くガイド線（docs/06-ui.md
+   * 「リサイズハンドル」の辺のスナップ）。リサイズでは掴んだ辺しか動かないので、他の辺と
+   * 中心線は見ない。
    *
    * 揃え先の中心線とも組にしない（中心線と辺は組にしない、は移動と同じ）。
    *
    * @param snap 判定する組。`moving` は掴んだ辺が行き先にある矩形
-   * @param axis 掴んだ辺の軸
-   * @param end 掴んだ辺がその軸のどちらの端か
-   * @returns 寄せ量（画面上の px）。閾値に届く辺が無ければ 0
+   * @param grabbed 軸ごとに掴んだ辺
+   * @returns 寄せ量と、揃った辺に引くガイド線・揃え先との隙間。掴んでいない軸・閾値に届く
+   *   辺が無い軸は寄せ量 0・線無し
    */
-  toEdgeShift(snap: SideSnap, axis: Axis, end: AxisEnd): number {
-    const movingLine = CanvasBounds.edgeAt(snap.moving, axis, end);
-    const shifts = lineTargets(snap).flatMap((stationary) =>
-      Object.values(AxisEnds).map((stationaryEnd) => ({
-        shift:
-          CanvasBounds.edgeAt(stationary, axis, stationaryEnd) - movingLine,
-      })),
+  toEdgeSnapped(snap: SideSnap, grabbed: GrabbedEnds): SideSnapped {
+    const lines = {
+      width: Option.flatMap(grabbed.width, (end) =>
+        nearestEdge(snap, { axis: Axes.Width, end }),
+      ),
+      height: Option.flatMap(grabbed.height, (end) =>
+        nearestEdge(snap, { axis: Axes.Height, end }),
+      ),
+    };
+    // 掴んだ辺だけを動かす。ずらして作ると、角では反対の辺まで寄せ量の分動いて線の端がずれる
+    const snapped = Object.values(Axes).reduce(
+      (bounds, axis) =>
+        Option.unwrapOr(
+          Option.flatMap(grabbed[axis], (end) =>
+            Option.map(lines[axis], (line) =>
+              CanvasBounds.withEdgeAt(
+                bounds,
+                { axis, end },
+                line.stationaryLine,
+              ),
+            ),
+          ),
+          bounds,
+        ),
+      snap.moving,
     );
-    return shiftOf(nearestReachable(shifts));
+    return {
+      offset: { x: shiftOf(lines.width), y: shiftOf(lines.height) },
+      guides: {
+        horizontal: Option.flatMap(lines.width, (line) =>
+          guideOf(line, snapped),
+        ),
+        vertical: Option.flatMap(lines.height, (line) =>
+          guideOf(line, snapped),
+        ),
+      },
+    };
   },
 } as const;
 
@@ -233,6 +294,37 @@ export const SideSnap = {
  */
 function shiftOf(snapped: Option<Readonly<{ shift: number }>>): number {
   return Option.isSome(snapped) ? snapped.value.shift : 0;
+}
+
+/**
+ * 掴んだ辺 1 本に対して、いちばん近い揃え先の同じ向きの辺。
+ *
+ * @param snap 判定する組
+ * @param edge 掴んだ辺（軸と、その軸のどちらの端か）
+ * @returns 揃った辺。閾値に届く辺が無ければ `none`
+ */
+function nearestEdge(
+  snap: SideSnap,
+  edge: Readonly<{ axis: Axis; end: AxisEnd }>,
+): Option<SnappedLine> {
+  const movingLine = CanvasBounds.edgeAt(snap.moving, edge.axis, edge.end);
+  const lines = lineTargets(snap).flatMap((stationary) =>
+    Object.values(AxisEnds).map((stationaryEnd): SnappedLine => {
+      const stationaryLine = CanvasBounds.edgeAt(
+        stationary,
+        edge.axis,
+        stationaryEnd,
+      );
+      return {
+        kind: "line",
+        pair: SidePairByAxis[edge.axis],
+        shift: stationaryLine - movingLine,
+        stationaryLine,
+        stationary,
+      };
+    }),
+  );
+  return nearestReachable(lines);
 }
 
 /**
@@ -330,7 +422,7 @@ function candidatesAgainst(
  * 寄せ先に出すスマートガイド。揃った線（辺か中心線）にだけ出す。
  *
  * @param candidate 寄せ先
- * @param moved 寄せたあとの運んでいるものの矩形
+ * @param moved 寄せたあとの運んでいる / 伸び縮みさせているものの矩形
  * @returns ガイド線と揃え先との隙間（画面上の px）。列の間隔へ寄ったなら `none`
  */
 function guideOf(
@@ -351,11 +443,11 @@ function guideOf(
 /**
  * 揃った線（辺か中心線）に引くガイド線を、描く矩形として組み立てる。
  *
- * 線は揃った辺・中心線と同じ向きに伸び、**寄せたあとの運んでいるものと揃え先の両方をまたぐ**
- * 長さで引く（またがないと、何に揃ったのかが見えない）。
+ * 線は揃った辺・中心線と同じ向きに伸び、**寄せたあとの運んでいる / 伸び縮みさせているものと
+ * 揃え先の両方をまたぐ**長さで引く（またがないと、何に揃ったのかが見えない）。
  *
  * @param snapped 揃った線
- * @param moved 寄せたあとの運んでいるものの矩形
+ * @param moved 寄せたあとの運んでいる / 伸び縮みさせているものの矩形
  * @returns 線として描く矩形（画面上の px）
  */
 function guideBounds(snapped: SnappedLine, moved: CanvasBounds): CanvasBounds {
@@ -373,7 +465,7 @@ function guideBounds(snapped: SnappedLine, moved: CanvasBounds): CanvasBounds {
  * 揃え先との隙間に引く短い線を、描く矩形として組み立てる（置き方は docs/06-ui.md）。
  *
  * @param snapped 揃った線
- * @param moved 寄せたあとの運んでいるものの矩形
+ * @param moved 寄せたあとの運んでいる / 伸び縮みさせているものの矩形
  * @returns 短い線として描く矩形（画面上の px）。ガイド線に沿った向きで重なっている /
  *   接しているなら `none`
  */
@@ -395,13 +487,13 @@ function gapBounds(
 }
 
 /**
- * 運んでいるものと揃え先が、揃った線と直交する向きで向かい合う範囲の中央。
+ * 運んでいる / 伸び縮みさせているものと揃え先が、揃った線と直交する向きで向かい合う範囲の中央。
  *
  * 重なりの有無は判定しない。外側で辺が揃ったときの重なりは 1 点で、
  * 寄せたあとの辺は浮動小数の足し引きで作るため、倍率や実測の端数で 1 点が数 ULP 離れて
  * 「重ならない」と判定され、隙間が黙って消える。
  *
- * @param moved 寄せたあとの運んでいるものの矩形
+ * @param moved 寄せたあとの運んでいる / 伸び縮みさせているものの矩形
  * @param snapped 揃った線と揃え先
  * @returns 内側の 2 つの端の真ん中の座標（画面上の px）
  */
