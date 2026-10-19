@@ -236,6 +236,45 @@ export const CanvasBounds = {
   },
 
   /**
+   * 辺 1 本だけを指定した座標へ動かした矩形。反対の辺はその場に留まる。
+   *
+   * 反対の辺を越えても左右・上下を入れ替えないので、幅・高さは負になりうる（`spanning` は
+   * 小さいほうを左上に取り直すので、どちらの辺を動かしたかが残らない）。
+   *
+   * 辺を軸と端の位置引数で受けると引数が 4 つになる。`Side` で受けないのは、軸と端から辺を
+   * 引く対応表（`EdgeSides`）を外へ出すことになるため。
+   *
+   * @param bounds 辺を動かす矩形
+   * @param edge 動かす辺（軸と、その軸のどちらの端か）
+   * @param at 辺の行き先の座標（画面上の px）
+   * @returns その辺だけが `at` にある矩形
+   */
+  withEdgeAt(
+    bounds: CanvasBounds,
+    edge: Readonly<{ axis: Axis; end: AxisEnd }>,
+    at: number,
+  ): CanvasBounds {
+    switch (EdgeSides[edge.axis][edge.end]) {
+      case Sides.Left:
+        return {
+          ...bounds,
+          left: at,
+          width: CanvasBounds.side(bounds, Sides.Right) - at,
+        };
+      case Sides.Right:
+        return { ...bounds, width: at - bounds.left };
+      case Sides.Top:
+        return {
+          ...bounds,
+          top: at,
+          height: CanvasBounds.side(bounds, Sides.Bottom) - at,
+        };
+      case Sides.Bottom:
+        return { ...bounds, height: at - bounds.top };
+    }
+  },
+
+  /**
    * 軸に沿った終端。リサイズハンドルはこの辺に沿って並ぶ。
    *
    * @param bounds 見る矩形
