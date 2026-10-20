@@ -65,8 +65,9 @@ const HandleClickPoint = { x: 200, y: 150 } as const;
  * `HandleClickPoint` で右クリックする。
  *
  * 掴める四角の下は happy-dom では引けない（重なりを持たない）ので、ここで `stubElementsAt` で
- * 並びを置く。置き忘れると下を引くところが `TypeError` になって window のエラーへ回るだけなので、
- * 空き領域として届くことを見るテストは黙って通る。
+ * `HandleClickPoint` に並びを置く。置き忘れると下を引くところが `TypeError` になって window の
+ * エラーへ回るだけで、落ちるのは下にノード・artboard の枠が届くことを見るテストだけ。空き領域
+ * として届くことを見るテストと、既定のメニューを止めることを見るテストは黙って通る。
  *
  * @param beneath 四角の下に置く要素。描いたあとで引くので関数で受け取る
  * @returns 右クリックの受け口と、`contextmenu` が既定の動作を止められなかったか
@@ -76,7 +77,7 @@ function rightClickHandleOver(beneath: () => Element) {
   const onOpenContextMenu = vi.fn();
   renderCanvas({ selection: selectionWithFixedPanel(), onOpenContextMenu });
   const handle = resizeHandleAt({ x: 1, y: 1 });
-  stubElementsAt([handle, beneath()]);
+  stubElementsAt({ at: HandleClickPoint, stack: [handle, beneath()] });
   const notCanceled = fireEvent.contextMenu(handle, {
     clientX: HandleClickPoint.x,
     clientY: HandleClickPoint.y,
