@@ -83,7 +83,7 @@ export type RangeSelectControl = Readonly<{
   dragHandlers: Readonly<{
     /**
      * 土台の上なら押した場所によらず、前の操作の飲み込み待ちを解く（土台の capture で受ける）。
-     * 土台の外にあるハンドルからの押下（主ボタンで掴む・主ボタン以外でパンへ渡す）は通らない。
+     * 土台の外にあるハンドルからの押下（主ボタンで掴む・主ボタン以外はパンの判定へ渡す）は通らない。
      */
     onPointerDownCapture: () => void;
     onPointerDown: (event: ReactPointerEvent<HTMLElement>) => void;
@@ -166,7 +166,7 @@ export function useRangeSelect(
        */
       onPointerDownCapture: () => dispatch({ type: "consume_click" }),
       onPointerDown: (event) => {
-        // 右ボタンのドラッグでは引き始めない（パンは capture 側が先に取る）
+        // 主ボタン以外では引き始めない（中ボタンのパンは capture 側が先に取り、右ボタンはメニューに使う）
         if (!PointerButton.isPrimary(event)) {
           return;
         }

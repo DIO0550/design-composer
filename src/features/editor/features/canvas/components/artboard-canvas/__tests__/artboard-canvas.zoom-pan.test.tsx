@@ -208,13 +208,27 @@ test("space を押しながら掴めるハンドルを掴んで運んでも、�
   expect(canvasTransform()).toContain("translate(0px, 0px)");
 });
 
-test("space を押しながら右ボタンでハンドルを押して引くと、中身が動く", () => {
+test("space を押しながら右ボタンで掴めるハンドルを押して引いても、中身は動かない", () => {
+  // 右ボタンはメニューに使うので、space を押していてもパンにしない（docs/06-ui.md「パン」）
   const handle = setupRightHandle();
   holdSpace();
 
   dragFromHandle(handle, PointerButtons.Secondary);
 
-  expect(canvasTransform()).toContain("translate(30px, -20px)");
+  expect(canvasTransform()).toContain("translate(0px, 0px)");
+});
+
+test("space を押しながら右ボタンで土台を押して引いても、中身は動かない", () => {
+  renderCanvas({ selection: setupSelection() });
+  holdSpace();
+
+  drag(
+    canvasSurface(),
+    { from: { x: 100, y: 100 }, to: { x: 130, y: 80 } },
+    PointerButtons.Secondary,
+  );
+
+  expect(canvasTransform()).toContain("translate(0px, 0px)");
 });
 
 test("space を押さずに右ボタンでハンドルを押して引いても、中身は動かない", () => {
