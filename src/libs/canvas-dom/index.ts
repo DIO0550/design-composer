@@ -1,4 +1,5 @@
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
+import type { Offset } from "@/domains/unit/offset";
 import { Css } from "@/utils/Css";
 import { Option } from "@/utils/Option";
 
@@ -8,7 +9,8 @@ import { Option } from "@/utils/Option";
  * キャンバスの中身はコンパイル結果の HTML を流し込んでおり React の管理下に無いため、
  * ref では掴めず名前の属性を選択子にして引くしかない。引き方はどこでも同じなので、
  * 名前で要素を引く選択子の綴りと、DOM を触るところをここへ閉じ込める（要素の実測は
- * `boundsOf` と `layoutSizeOf`、名前で引いて測るのは `DrawnBounds`、規則の差し込みは `NameStyleRule`）。
+ * `boundsOf` と `layoutSizeOf`、名前で引いて測るのは `DrawnBounds`、規則の差し込みは `NameStyleRule`、
+ * 重ねた層の下を点で引くのは `elementBeneath`）。
  *
  * 名前で引いて 1 つに定まるのは artboard とその配下のノードだけ。名前はドキュメント上で
  * 一意（docs/01-file-format.md「ノードの識別（name）」）でも、部品の中のノードは展開で
@@ -79,5 +81,20 @@ export const CanvasDom = {
           height: element.offsetHeight,
         })
       : Option.none;
+  },
+
+  /**
+   * 重ねた層を飛ばして、その点に描かれているいちばん手前の要素を引く。
+   *
+   * @param layer 飛ばしたい層（この要素と、その中にあるものを飛ばす）
+   * @param at 引く点（窓の座標）
+   * @returns その点で層の外にあるいちばん手前の要素。層の外に何も無ければ `none`
+   */
+  elementBeneath(layer: Element, at: Offset): Option<Element> {
+    return Option.fromNullable(
+      globalThis.document
+        .elementsFromPoint(at.x, at.y)
+        .find((element) => !layer.contains(element)),
+    );
   },
 } as const;

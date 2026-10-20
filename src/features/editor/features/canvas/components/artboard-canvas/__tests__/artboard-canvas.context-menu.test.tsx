@@ -1,5 +1,5 @@
-import { fireEvent } from "@testing-library/react";
-import { expect, test, vi } from "vitest";
+import { fireEvent, screen } from "@testing-library/react";
+import { afterEach, expect, test, vi } from "vitest";
 import {
   artboardHandle,
   canvasContent,
@@ -7,6 +7,10 @@ import {
   textInlineEditorField,
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import { drag } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
+import {
+  clearElementsAt,
+  stubElementsAt,
+} from "@/libs/__tests__/elements-at-point";
 import { PointerButtons } from "@/libs/dom-event";
 import {
   drawn,
@@ -21,6 +25,41 @@ import {
  * キャンバスが決めるのは「どこを押したか」を何として伝えるかだけで、並ぶものと押せるか
  * どうかは編集画面側（`EditMenu`）が決める。
  */
+
+afterEach(clearElementsAt);
+
+/**
+ * `home` に 2 軸とも fixed の Box `panel` を持ち、それを選んだ対（四角が出る）。
+ *
+ * 掴める四角の下は happy-dom では引けない（重なりを持たない）ので、各テストが
+ * `stubElementsAt` で並びを置く。置き忘れると下を引くところが `TypeError` になって window の
+ * エラーへ回るだけなので、空き領域として届くことを見るテストは黙って通る。
+ */
+function selectionWithFixedPanel() {
+  return selectionFromArtboards(
+    [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          {
+            name: "panel",
+            type: "Box",
+            props: {
+              widthMode: "fixed",
+              width: 200,
+              heightMode: "fixed",
+              height: 100,
+            },
+            children: [],
+          },
+        ],
+      },
+    ],
+    ["panel"],
+  );
+}
 
 /** `home` に Text の `title` を 1 つ持つ対。 */
 function selectionWithTitle() {
@@ -154,26 +193,55 @@ test("主ボタンで見出しを押せば同じ操作で artboard が動く", (
   expect(onRepositionArtboard).toHaveBeenCalled();
 });
 
-test("掴めるリサイズハンドルの上で右クリックしても受け口が呼ばれる", () => {
+test("掴める四角の上で右クリックすると、その下に描かれているノードの名前が外へ辿った順で 1 回だけ届く", () => {
   const onOpenContextMenu = vi.fn();
-  renderCanvas({
-    selection: selectionFromArtboards(
-      [{ name: "home", width: 360, height: 240, children: [] }],
-      ["home"],
-    ),
-    onOpenContextMenu,
-  });
+  renderCanvas({ selection: selectionWithFixedPanel(), onOpenContextMenu });
+  const handle = resizeHandleAt({ x: 1, y: 1 });
+  stubElementsAt([handle, drawn("panel")]);
 
-  /*
-   * ハンドルは土台（`canvas-surface`）の外に重なる。土台で受けていると、ここだけ
-   * アプリのメニューが出ずブラウザの既定メニューが出る。
-   */
-  fireEvent.contextMenu(resizeHandleAt({ x: 1, y: 1 }), {
-    clientX: 200,
-    clientY: 200,
-  });
+  fireEvent.contextMenu(handle, { clientX: 200, clientY: 150 });
 
-  expect(onOpenContextMenu).toHaveBeenCalledWith([], { x: 200, y: 200 });
+  expect(onOpenContextMenu).toHaveBeenCalledTimes(1);
+  expect(onOpenContextMenu).toHaveBeenCalledWith(["panel", "home"], {
+    x: 200,
+    y: 150,
+  });
+});
+
+test("掴める四角の下が空き領域なら、名前は 1 つも届かず 1 回だけ届く", () => {
+  const onOpenContextMenu = vi.fn();
+  renderCanvas({ selection: selectionWithFixedPanel(), onOpenContextMenu });
+  const handle = resizeHandleAt({ x: 1, y: 1 });
+  stubElementsAt([handle, canvasSurface()]);
+
+  fireEvent.contextMenu(handle, { clientX: 200, clientY: 150 });
+
+  expect(onOpenContextMenu).toHaveBeenCalledTimes(1);
+  expect(onOpenContextMenu).toHaveBeenCalledWith([], { x: 200, y: 150 });
+});
+
+test("掴める四角の上の右クリックも、ブラウザ既定のメニューを止める", () => {
+  renderCanvas({ selection: selectionWithFixedPanel() });
+  const handle = resizeHandleAt({ x: 1, y: 1 });
+  stubElementsAt([handle, drawn("panel")]);
+
+  expect(fireEvent.contextMenu(handle, { clientX: 200, clientY: 150 })).toBe(
+    false,
+  );
+});
+
+test("掴める四角の下が artboard の枠の背景なら、その artboard の名前だけが届く", () => {
+  const onOpenContextMenu = vi.fn();
+  renderCanvas({ selection: selectionWithFixedPanel(), onOpenContextMenu });
+  const handle = resizeHandleAt({ x: 1, y: 1 });
+  stubElementsAt([handle, screen.getByRole("button", { name: "home" })]);
+
+  fireEvent.contextMenu(handle, { clientX: 200, clientY: 150 });
+
+  expect(onOpenContextMenu).toHaveBeenCalledWith(["home"], {
+    x: 200,
+    y: 150,
+  });
 });
 
 test("右クリックはブラウザ既定のメニューを止める", () => {

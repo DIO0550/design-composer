@@ -215,8 +215,8 @@ export function ArtboardCanvas({
       aria-label="キャンバスの面"
       ref={canvasAreaRef}
       /*
-       * 土台（`canvas-surface`）ではなくこの器で受ける。掴めるリサイズハンドルと文言の
-       * 入力欄は土台の外にあり、土台で受けるとその上だけブラウザの既定メニューが出る。
+       * 土台（`canvas-surface`）ではなくこの器で受ける。掴める四角は下に何も引けなかったとき
+       * 自分のイベントをそのまま上げ、文言の入力欄も土台の外にあるため。
        */
       onContextMenu={(event) => openContextMenu(event, [])}
       /*

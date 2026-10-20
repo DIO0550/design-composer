@@ -1,4 +1,8 @@
-import type { CSSProperties, PointerEvent as ReactPointerEvent } from "react";
+import type {
+  CSSProperties,
+  MouseEvent as ReactMouseEvent,
+  PointerEvent as ReactPointerEvent,
+} from "react";
 import type { Angle } from "@/domains/unit/angle";
 import {
   GripOrientations,
@@ -8,6 +12,7 @@ import {
   type ResizeHandleAnchor,
 } from "@/features/editor/features/canvas/domains/node-resize";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
+import { CanvasDom } from "@/libs/canvas-dom";
 import { PointerButton } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 import { SelectionColor } from "../artboard-frame-list";
@@ -83,6 +88,32 @@ function handleStyle(
 }
 
 /**
+ * 右クリックを、その点で四角の層の下に描かれている要素へ投げ直す。下に何も無ければ
+ * 何もせず、元のイベントがそのまま上がる。
+ *
+ * @param event 四角の器が受けた `contextmenu`
+ */
+function passContextMenuBeneath(event: ReactMouseEvent<HTMLElement>): void {
+  const beneath = CanvasDom.elementBeneath(event.currentTarget, {
+    x: event.clientX,
+    y: event.clientY,
+  });
+  if (!Option.isSome(beneath)) {
+    return;
+  }
+  event.preventDefault();
+  event.stopPropagation();
+  beneath.value.dispatchEvent(
+    new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+      clientX: event.clientX,
+      clientY: event.clientY,
+    }),
+  );
+}
+
+/**
  * 選択中の要素に重ねるリサイズハンドル（docs/06-ui.md「リサイズハンドル」）。
  *
  * 掴んでいる間は**全部をポインタに対して透明にする ** — 移動と解放を受けるのは器（`canvas-content`）
@@ -110,8 +141,15 @@ export function ResizeHandleOverlay({
      * キャンバス全面を覆い、ノードの選択もパンもできなくなる。
      * **`z-10` を落としてもテストは 1 件も落ちない**（happy-dom は重なりを持たない）。
      * 気づく手段は絵を見ることだけ。
+     *
+     * 掴める四角の右クリックは、四角が無い場合と同じ受け口に答えさせるため下の要素へ投げ直す。選択中の名前を
+     * 渡すと四角の外側半分で「ポインタの下」と食い違い、押した時点で透明にすると contextmenu の来る時機が OS で違い戻せない。
      */
-    <div aria-hidden className="pointer-events-none absolute inset-0 z-10">
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 z-10"
+      onContextMenu={passContextMenuBeneath}
+    >
       {NodeResize.HandleAnchors.map((anchor) => {
         /*
          * 掴んでいる間は掴める箇所も `none` 扱いにする。カーソルと当たり判定が
