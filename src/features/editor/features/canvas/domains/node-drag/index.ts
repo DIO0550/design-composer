@@ -5,7 +5,10 @@ import {
   type DropTarget,
 } from "@/features/editor/features/canvas/domains/node-drop";
 import type { RepositionTarget } from "@/features/editor/features/canvas/domains/reposition-target";
-import type { SnapGuides } from "@/features/editor/features/canvas/domains/side-snap";
+import {
+  SideSnap,
+  type SnapGuides,
+} from "@/features/editor/features/canvas/domains/side-snap";
 import { Option } from "@/utils/Option";
 
 /**
@@ -54,12 +57,6 @@ export type DropEdit =
       /** 揃った線（辺か中心線）に引くガイド線と揃え先との隙間（**画面上の px**。軸ごとに 0 か 1 つ）。 */
       guides: SnapGuides;
     }>;
-
-/** 揃った線が 1 つも無い状態（吸い付いていない / そもそも吸い付かない落とし方）。 */
-const NoSnapGuides: SnapGuides = {
-  horizontal: Option.none,
-  vertical: Option.none,
-};
 
 /**
  * 運んでいる間、掴んだノードをどれだけずらして見せるか。
@@ -156,7 +153,7 @@ export const Carrying = {
     switch (carrying.kind) {
       case "nothing":
       case "preview":
-        return NoSnapGuides;
+        return SideSnap.NoGuides;
       case "droppable":
         return DropEdit.snapGuides(carrying.drop);
     }
@@ -245,7 +242,7 @@ export const DropEdit = {
     switch (edit.kind) {
       case "move":
       case "insert":
-        return NoSnapGuides;
+        return SideSnap.NoGuides;
       case "reposition":
         return edit.guides;
     }
@@ -416,7 +413,7 @@ export const NodeDrag = {
   snapGuides(drag: NodeDrag): SnapGuides {
     return drag.kind === "dragging"
       ? Carrying.snapGuides(drag.carrying)
-      : NoSnapGuides;
+      : SideSnap.NoGuides;
   },
 
   /**

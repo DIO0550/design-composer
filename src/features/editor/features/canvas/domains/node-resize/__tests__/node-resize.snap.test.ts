@@ -1,15 +1,13 @@
 import { expect, test } from "vitest";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
-import type { Offset } from "@/domains/unit/offset";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
-import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
 import { Option } from "@/utils/Option";
-import { NodeResize, type ResizeHandleAnchor } from "../index";
+import { NodeResize } from "../index";
 import {
   grabbedAt,
-  heldAt,
-  setupBounds,
+  grabbedWithSnap,
+  resizeEditAt,
   setupResizable,
   setupView,
 } from "./setup";
@@ -22,34 +20,13 @@ import {
 /** 右辺が 340 にある、幅 300 の揃え先（上下の辺は 400 / 420 で遠い）。 */
 const RightAt340: CanvasBounds = { left: 40, top: 400, width: 300, height: 20 };
 
-/**
- * その箇所を押して掴み、掴んだ時点の矩形とその揃え先で辺のスナップの組を載せた状態。
- *
- * @param anchor 押した箇所
- * @param pointerOrigin 押した位置
- * @param stationary 揃え先の矩形の並び
- * @returns 掴んだ状態
- */
-function grabbedWithSnap(
-  anchor: ResizeHandleAnchor,
-  pointerOrigin: Offset,
-  stationary: readonly CanvasBounds[],
-): NodeResize {
-  return NodeResize.grab(
-    NodeResize.withSideSnap(
-      heldAt(setupResizable(), anchor, pointerOrigin),
-      SideSnap.create(setupBounds(), stationary),
-    ),
-  );
-}
-
 test("右辺を掴んで揃え先の右辺の近くまで運ぶと、右辺が揃う幅の編集になる", () => {
   const resize = grabbedWithSnap({ x: 1, y: 0.5 }, { x: 300, y: 100 }, [
     RightAt340,
   ]);
 
   // 寄せが無ければ右辺は 337 で幅 237
-  expect(NodeResize.editAt(resize, { x: 337, y: 100 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 337, y: 100 }, setupView())).toEqual(
     Option.some(ResizeEdit.create([{ axis: "width", length: 240 }])),
   );
 });
@@ -62,7 +39,7 @@ test("辺のスナップの組を載せていない掴みでは、揃え先の�
     { x: 300, y: 100 },
   );
 
-  expect(NodeResize.editAt(resize, { x: 337, y: 100 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 337, y: 100 }, setupView())).toEqual(
     Option.some(ResizeEdit.create([{ axis: "width", length: 237 }])),
   );
 });
@@ -78,7 +55,7 @@ test("掴んだ時点で揃え先の辺の 4px 手前にあると、1px 動か�
     rightAt304,
   ]);
 
-  expect(NodeResize.editAt(resize, { x: 301, y: 100 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 301, y: 100 }, setupView())).toEqual(
     Option.some(ResizeEdit.create([{ axis: "width", length: 204 }])),
   );
 });
@@ -97,7 +74,7 @@ test("右下の角を掴むと、幅と高さがそれぞれ掴んだ辺で揃�
   ]);
 
   // 寄せが無ければ幅 237・高さ 126
-  expect(NodeResize.editAt(resize, { x: 337, y: 176 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 337, y: 176 }, setupView())).toEqual(
     Option.some(
       ResizeEdit.create([
         { axis: "width", length: 240 },
@@ -120,7 +97,7 @@ test("左辺を掴んで揃え先の左辺の近くまで運ぶと、揃う位�
   ]);
 
   // 寄せが無ければ幅 167・位置 x 63。右辺（300）はそのまま留まる
-  expect(NodeResize.editAt(resize, { x: 133, y: 100 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 133, y: 100 }, setupView())).toEqual(
     Option.some(
       ResizeEdit.placedAt([{ axis: "width", length: 170 }], { x: 60, y: 70 }),
     ),
@@ -142,7 +119,7 @@ test("拡大して見ているときは、画面上で揃う長さをドキュ�
   const zoomedIn = CanvasView.zoomIn(CanvasView.create());
 
   // 画面上で 41 伸びる = ドキュメント上で 34.17。寄せが無ければ 38 / 1.2 = 31.67 で 232
-  expect(NodeResize.editAt(resize, { x: 338, y: 100 }, zoomedIn)).toEqual(
+  expect(resizeEditAt(resize, { x: 338, y: 100 }, zoomedIn)).toEqual(
     Option.some(ResizeEdit.create([{ axis: "width", length: 234 }])),
   );
 });
@@ -153,7 +130,7 @@ test("揃え先を外した掴みでは、揃え先の近くまで運んでも�
     grabbedWithSnap({ x: 1, y: 0.5 }, { x: 300, y: 100 }, [RightAt340]),
   );
 
-  expect(NodeResize.editAt(resize, { x: 337, y: 100 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 337, y: 100 }, setupView())).toEqual(
     Option.some(ResizeEdit.create([{ axis: "width", length: 237 }])),
   );
 });

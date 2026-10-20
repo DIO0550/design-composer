@@ -1,12 +1,28 @@
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
+import { Option } from "@/utils/Option";
+import type { GrabbedEnds } from "../index";
 
 /**
- * 左 100・上 100 に置かれた、幅 40・高さ 20 の運んでいるもの。
+ * 左 100・上 100 に置かれた、幅 40・高さ 20 の運んでいる / 伸び縮みさせているもの。
  * 4 辺は 左 100 / 右 140 / 上 100 / 下 120。
  */
 export const Moving: CanvasBounds = {
   left: 100,
   top: 100,
   width: 40,
+  height: 20,
+};
+
+/** リサイズで右辺だけを掴んでいる。 */
+export const GrabbedRight: GrabbedEnds = {
+  width: Option.some("end"),
+  height: Option.none,
+};
+
+/** 右辺が 144 にある揃え先（上下の辺は 300 / 320 で `Moving` から遠い）。 */
+export const RightAt144: CanvasBounds = {
+  left: 44,
+  top: 300,
+  width: 100,
   height: 20,
 };

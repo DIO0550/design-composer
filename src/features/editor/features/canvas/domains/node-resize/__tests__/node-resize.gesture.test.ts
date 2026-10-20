@@ -8,6 +8,7 @@ import { Option } from "@/utils/Option";
 import { NodeResize, type ResizableSelection } from "../index";
 import {
   grabbedAt,
+  resizeEditAt,
   setupFlowResizable,
   setupResizable,
   setupRotatedBounds,
@@ -322,7 +323,7 @@ test("どちらの軸も固定されていなければ、右下の角は掴め�
 
 test("掴んでいなければ編集は決まらない", () => {
   expect(
-    NodeResize.editAt(NodeResize.create(), { x: 320, y: 100 }, setupView()),
+    resizeEditAt(NodeResize.create(), { x: 320, y: 100 }, setupView()),
   ).toEqual(Option.none);
 });
 
@@ -336,7 +337,7 @@ test("右辺を掴んだあと右へ動かすと動かした分だけ幅が伸�
     },
   );
 
-  expect(NodeResize.editAt(resize, { x: 340, y: 100 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 340, y: 100 }, setupView())).toEqual(
     Option.some(ResizeEdit.create([{ axis: "width", length: 240 }])),
   );
 });
@@ -351,7 +352,7 @@ test("右辺を掴んだあと左へ動かすと動かした分だけ幅が縮�
     },
   );
 
-  expect(NodeResize.editAt(resize, { x: 260, y: 100 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 260, y: 100 }, setupView())).toEqual(
     Option.some(ResizeEdit.create([{ axis: "width", length: 160 }])),
   );
 });
@@ -369,7 +370,7 @@ test("右辺を引いても位置は書き換えない", () => {
 
   expect(
     Option.map(
-      NodeResize.editAt(resize, { x: 340, y: 100 }, setupView()),
+      resizeEditAt(resize, { x: 340, y: 100 }, setupView()),
       (edit) => edit.position,
     ),
   ).toEqual(Option.some(Option.none));
@@ -385,7 +386,7 @@ test("左辺を右へ引くと幅が縮み、縮んだぶんだけ位置が右�
     },
   );
 
-  expect(NodeResize.editAt(resize, { x: 130, y: 100 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 130, y: 100 }, setupView())).toEqual(
     Option.some(
       ResizeEdit.placedAt([{ axis: "width", length: 170 }], { x: 60, y: 70 }),
     ),
@@ -402,7 +403,7 @@ test("左辺を左へ引くと幅が増え、増えたぶんだけ位置が左�
     },
   );
 
-  expect(NodeResize.editAt(resize, { x: 80, y: 100 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 80, y: 100 }, setupView())).toEqual(
     Option.some(
       ResizeEdit.placedAt([{ axis: "width", length: 220 }], { x: 10, y: 70 }),
     ),
@@ -419,7 +420,7 @@ test("上辺を下へ引くと高さが縮み、縮んだぶんだけ位置が�
     },
   );
 
-  expect(NodeResize.editAt(resize, { x: 200, y: 75 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 200, y: 75 }, setupView())).toEqual(
     Option.some(
       ResizeEdit.placedAt([{ axis: "height", length: 75 }], { x: 30, y: 95 }),
     ),
@@ -433,7 +434,7 @@ test("左上の角を引くと、幅・高さと位置が 1 回の編集で決�
    */
   const resize = grabbedAt(setupResizable(), { x: 0, y: 0 }, { x: 100, y: 50 });
 
-  expect(NodeResize.editAt(resize, { x: 140, y: 75 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 140, y: 75 }, setupView())).toEqual(
     Option.some(
       ResizeEdit.placedAt(
         [
@@ -449,7 +450,7 @@ test("左上の角を引くと、幅・高さと位置が 1 回の編集で決�
 test("右上の角を引くと、幅は右へ伸び、位置は縦だけ動く", () => {
   const resize = grabbedAt(setupResizable(), { x: 1, y: 0 }, { x: 300, y: 50 });
 
-  expect(NodeResize.editAt(resize, { x: 340, y: 75 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 340, y: 75 }, setupView())).toEqual(
     Option.some(
       ResizeEdit.placedAt(
         [
@@ -469,7 +470,7 @@ test("右下の角を掴んで斜めに動かすと、幅と高さがそれぞ�
     { x: 300, y: 150 },
   );
 
-  expect(NodeResize.editAt(resize, { x: 340, y: 175 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 340, y: 175 }, setupView())).toEqual(
     Option.some(
       ResizeEdit.create([
         { axis: "width", length: 240 },
@@ -489,7 +490,7 @@ test("幅を掴んでいる間は縦の動きで長さが変わらない", () =>
     },
   );
 
-  expect(NodeResize.editAt(resize, { x: 300, y: 400 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 300, y: 400 }, setupView())).toEqual(
     Option.some(ResizeEdit.create([{ axis: "width", length: 200 }])),
   );
 });
@@ -501,7 +502,7 @@ test("角を掴んで片方の軸だけ 0 で止まっても、もう片方は�
     { x: 300, y: 150 },
   );
 
-  expect(NodeResize.editAt(resize, { x: 0, y: 175 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 0, y: 175 }, setupView())).toEqual(
     Option.some(
       ResizeEdit.create([
         { axis: "width", length: 0 },
@@ -523,7 +524,7 @@ test("縮小して見ているときは画面上の移動量より大きく長�
   // 1 段階だけ縮小して見ている状態（倍率 1/1.2）
   const zoomedOut = CanvasView.zoomOut(CanvasView.create());
 
-  expect(NodeResize.editAt(resize, { x: 330, y: 100 }, zoomedOut)).toEqual(
+  expect(resizeEditAt(resize, { x: 330, y: 100 }, zoomedOut)).toEqual(
     Option.some(ResizeEdit.create([{ axis: "width", length: 236 }])),
   );
 });
@@ -538,7 +539,7 @@ test("元の長さより大きく縮めても長さは 0 で止まる", () => {
     },
   );
 
-  expect(NodeResize.editAt(resize, { x: 0, y: 100 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 0, y: 100 }, setupView())).toEqual(
     Option.some(ResizeEdit.create([{ axis: "width", length: 0 }])),
   );
 });
@@ -553,7 +554,7 @@ test("左辺を幅より大きく右へ引くと、長さは 0 で止まり、�
     },
   );
 
-  expect(NodeResize.editAt(resize, { x: 500, y: 100 }, setupView())).toEqual(
+  expect(resizeEditAt(resize, { x: 500, y: 100 }, setupView())).toEqual(
     Option.some(
       ResizeEdit.placedAt([{ axis: "width", length: 0 }], { x: 230, y: 70 }),
     ),
@@ -579,7 +580,7 @@ test("離したあとは編集が決まらなくなる", () => {
     grabbedAt(setupResizable(), { x: 1, y: 0.5 }, { x: 300, y: 100 }),
   );
 
-  expect(NodeResize.editAt(released, { x: 340, y: 100 }, setupView())).toEqual(
+  expect(resizeEditAt(released, { x: 340, y: 100 }, setupView())).toEqual(
     Option.none,
   );
 });

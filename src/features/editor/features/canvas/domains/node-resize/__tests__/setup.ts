@@ -1,9 +1,11 @@
 import { AxisLength } from "@/domains/dcmp/axis-length";
+import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import type { Offset } from "@/domains/unit/offset";
 import { resizeAnchorAt } from "@/features/editor/features/canvas/__tests__/canvas-resize";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import type { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
+import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
 import { Option } from "@/utils/Option";
 import {
   NodeResize,
@@ -81,4 +83,45 @@ export function grabbedAt(
   pointerOrigin: Offset,
 ): NodeResize {
   return NodeResize.grab(heldAt(resizable, anchor, pointerOrigin));
+}
+
+/**
+ * その箇所を押して掴み、掴んだ時点の矩形（`setupBounds`）とその揃え先で辺のスナップの組を
+ * 載せた状態。
+ *
+ * @param anchor 押した箇所
+ * @param pointerOrigin 押した位置
+ * @param stationary 揃え先の矩形の並び
+ * @returns 掴んだ状態
+ */
+export function grabbedWithSnap(
+  anchor: ResizeHandleAnchor,
+  pointerOrigin: Offset,
+  stationary: readonly CanvasBounds[],
+): NodeResize {
+  return NodeResize.grab(
+    NodeResize.withSideSnap(
+      heldAt(setupResizable(), anchor, pointerOrigin),
+      SideSnap.create(setupBounds(), stationary),
+    ),
+  );
+}
+
+/**
+ * 今のポインタ位置で書き込む編集だけ（揃った線を見ないテストが、線を巻き込まないため）。
+ *
+ * @param resize 今のリサイズの状態
+ * @param pointer 今のポインタの位置
+ * @param view 画面上の量をドキュメント上の量へ直す倍率
+ * @returns 書き込む編集。掴んでいなければ `none`
+ */
+export function resizeEditAt(
+  resize: NodeResize,
+  pointer: Offset,
+  view: CanvasView,
+): Option<ResizeEdit> {
+  return Option.map(
+    NodeResize.trackedAt(resize, pointer, view),
+    (tracked) => tracked.edit,
+  );
 }

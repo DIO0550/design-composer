@@ -13,7 +13,12 @@ import { ArrangedArtboard } from "@/features/editor/features/canvas/domains/arra
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
-import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
+import {
+  type GrabbedEnds,
+  SideSnap,
+  type SideSnapped,
+  type SnapGuides,
+} from "@/features/editor/features/canvas/domains/side-snap";
 import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";
@@ -106,6 +111,22 @@ export const ResizeGrip = {
       case "both":
         return [grip.width, grip.height];
     }
+  },
+
+  /**
+   * 掴んだものが動かす辺を、軸ごとに並べ直したもの（辺のスナップに渡す形）。
+   *
+   * @param grip 掴んだもの
+   * @returns 軸ごとに掴んだ端。その軸を変えない掴みなら `none`
+   */
+  grabbedEnds(grip: ResizeGrip): GrabbedEnds {
+    const grabs = ResizeGrip.grabs(grip);
+    const endAlong = (axis: Axis): Option<AxisEnd> =>
+      Option.map(
+        Option.fromNullable(grabs.find((grab) => grab.length.axis === axis)),
+        (grab) => grab.end,
+      );
+    return { width: endAlong(Axes.Width), height: endAlong(Axes.Height) };
   },
 
   /**
@@ -240,8 +261,24 @@ export type ResizeHold = Readonly<{
  */
 export type NodeResize =
   | Readonly<{ kind: "idle" }>
-  | (Readonly<{ kind: "resizing" }> & ResizeHold)
+  | (Readonly<{
+      kind: "resizing";
+      /** 最後に動かした位置で揃った線（画面上の px） */
+      guides: SnapGuides;
+    }> &
+      ResizeHold)
   | Readonly<{ kind: "resized" }>;
+
+/**
+ * ポインタが動いた 1 回分の答え。書き込む編集と、その位置で揃った線。
+ *
+ * 別々の入口にすると、書き込む長さとガイド線が別々に寄せ量を決める余地が残る。
+ */
+export type TrackedResize = Readonly<{
+  edit: ResizeEdit;
+  /** 掴んだ辺が揃った線（画面上の px） */
+  guides: SnapGuides;
+}>;
 
 /** 掴める軸も位置も無い選択。未選択・掴めない対象・凍結中に使う。 */
 const UnresizableSelection: ResizableSelection = {
@@ -567,8 +604,8 @@ export const NodeResize = {
   },
 
   /**
-   * 掴んでいる最中の状態から揃え先を外す。外した状態で `editAt` を通すと、揃え先の近くでも
-   * 寄せない（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
+   * 掴んでいる最中の状態から揃え先を外す。外した状態で `trackedAt` を通すと、揃え先の近くでも
+   * 寄せず、ガイド線も出ない（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
    *
    * `snapFrom` を `none` にはせず揃え先を空にする。`none` は `hold` の直後か、掴んだ時点に
    * 測れなかったことを表しており、吸い付かないことはフロー配置もノードの移動も「揃え先が空」で表している。
@@ -633,11 +670,32 @@ export const NodeResize = {
    * @returns リサイズしている状態
    */
   grab(held: ResizeHold): NodeResize {
-    return { kind: "resizing", ...held };
+    return { kind: "resizing", ...held, guides: SideSnap.NoGuides };
   },
 
   /**
-   * 今のポインタ位置で書き込む長さと位置。掴んでいなければ決まらない
+   * 掴んでいる状態に、最後に動かした位置で揃った線を載せる。
+   *
+   * @param resize 今のリサイズの状態
+   * @param guides 揃った線（`trackedAt` の答え）
+   * @returns 線を差し替えた状態。掴んでいなければ `resize` のまま
+   */
+  withSnapGuides(resize: NodeResize, guides: SnapGuides): NodeResize {
+    return resize.kind === "resizing" ? { ...resize, guides } : resize;
+  },
+
+  /**
+   * 今出すガイド線（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
+   *
+   * @param resize 今のリサイズの状態
+   * @returns 最後に動かした位置で揃った線。掴んでいなければ線の無いガイド
+   */
+  snapGuides(resize: NodeResize): SnapGuides {
+    return resize.kind === "resizing" ? resize.guides : SideSnap.NoGuides;
+  },
+
+  /**
+   * 今のポインタ位置で書き込む長さと位置と、掴んだ辺が揃った線。掴んでいなければ決まらない
    * （ボタンを離したあとのマウス移動）。
    *
    * 長さはポインタの移動量を掴んだものの画面上の向きの分だけ戻し、その軸へ射影した量だけ
@@ -646,21 +704,19 @@ export const NodeResize = {
    * @param resize 今のリサイズの状態
    * @param pointer 今のポインタの位置
    * @param view 画面上の量をドキュメント上の量へ直す倍率
-   * @returns 書き込む編集。掴んでいなければ `none`
+   * @returns 書き込む編集と揃った線。掴んでいなければ `none`
    */
-  editAt(
+  trackedAt(
     resize: NodeResize,
     pointer: Offset,
     view: CanvasView,
-  ): Option<ResizeEdit> {
+  ): Option<TrackedResize> {
     if (resize.kind !== "resizing") {
       return Option.none;
     }
     const pointerMoved = Offset.delta(resize.pointerOrigin, pointer);
-    const screenMoved = Offset.add(
-      pointerMoved,
-      snapOffset(resize, pointerMoved),
-    );
+    const snapped = snappedAt(resize, pointerMoved);
+    const screenMoved = Offset.add(pointerMoved, snapped.offset);
     // 掴んだものの軸に沿って伸びるよう、画面の移動量を回る前の向きへ戻す
     const moved = Offset.rotate(screenMoved, -resize.rotation.total);
     // 先頭を分けて組み立てるのは、`map` だと並びが空になりうる型へ落ちるため
@@ -674,11 +730,12 @@ export const NodeResize = {
       ...resized.slice(1).map((each) => each.length),
     ];
     const position = placedPosition(resize, resized);
-    return Option.some(
-      Option.isSome(position)
+    return Option.some({
+      edit: Option.isSome(position)
         ? ResizeEdit.placedAt(lengths, position.value)
         : ResizeEdit.create(lengths),
-    );
+      guides: snapped.guides,
+    });
   },
 
   /**
@@ -767,36 +824,23 @@ function parentWithSiblingNames(
 }
 
 /**
- * 掴んだ辺を揃え先の辺へ寄せる量。軸ごとに、その軸で掴んだ辺だけを見る。
+ * 掴んだ辺を揃え先の辺へ寄せる量と、揃った線。軸ごとに、その軸で掴んだ辺だけを見る。
  *
- * 行き先の矩形は掴んだ時点の矩形を移動量だけずらして作る。見るのは掴んだ辺だけなので、
- * 反対側の辺が留まっていることは寄せ量に効かない。
- *
- * 画面上で回っているノードには揃え先が無い（`NodeResize.resizable`）ので寄せない。
+ * 画面上で回っているノードには揃え先が無い（`NodeResize.resizable`）ので寄せず、線も出ない。
  *
  * @param held 掴んでいるもの
  * @param moved 掴んでからのポインタの移動量（画面上の px）
- * @returns 寄せ量（画面上の px）。組が載っていない / 掴んだ辺が閾値に届かない軸は 0
+ * @returns 寄せ量（画面上の px）と揃った線。組が載っていなければ寄せ量 0・線無し。掴んだ辺が
+ *   閾値に届かない軸は寄せ量 0・線無し
  */
-function snapOffset(held: ResizeHold, moved: Offset): Offset {
+function snappedAt(held: ResizeHold, moved: Offset): SideSnapped {
   if (!Option.isSome(held.snapFrom)) {
-    return Offset.Origin;
+    return { offset: Offset.Origin, guides: SideSnap.NoGuides };
   }
-  const from = held.snapFrom.value;
-  const snap = SideSnap.create(
-    CanvasBounds.movedBy(from.moving, moved),
-    from.stationary,
-  );
-  return ResizeGrip.grabs(held.grip).reduce<Offset>(
-    (offset, grab) =>
-      Offset.add(
-        offset,
-        axisOffset(
-          grab.length.axis,
-          SideSnap.toEdgeShift(snap, grab.length.axis, grab.end),
-        ),
-      ),
-    Offset.Origin,
+  return SideSnap.toEdgeSnapped(
+    held.snapFrom.value,
+    ResizeGrip.grabbedEnds(held.grip),
+    moved,
   );
 }
 

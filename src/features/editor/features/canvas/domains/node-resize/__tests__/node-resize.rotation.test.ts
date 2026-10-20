@@ -14,6 +14,7 @@ import {
 } from "../index";
 import {
   grabbedAt,
+  resizeEditAt,
   setupBounds,
   setupFlowResizable,
   setupResizable,
@@ -77,7 +78,7 @@ test("30 度回したノードの右下を (+20, +20) 引くと、移動量を�
   };
   const resize = grabbedAt(resizable, { x: 1, y: 1 }, { x: 0, y: 0 });
 
-  const edit = NodeResize.editAt(resize, { x: 20, y: 20 }, setupView());
+  const edit = resizeEditAt(resize, { x: 20, y: 20 }, setupView());
 
   // 画面の軸のままなら 64x44。ノードの向きへ戻すと (27.3, 7.3)
   expect(Option.map(edit, (each) => each.lengths)).toEqual(
@@ -95,7 +96,7 @@ test("90 度回したノードの右辺を画面の下へ引くと幅が伸び�
     { x: 0, y: 0 },
   );
 
-  const edit = NodeResize.editAt(resize, { x: 0, y: 30 }, setupView());
+  const edit = resizeEditAt(resize, { x: 0, y: 30 }, setupView());
 
   expect(Option.map(edit, (each) => each.lengths)).toEqual(
     Option.some([{ axis: "width", length: 230 }]),
@@ -111,7 +112,7 @@ test("回した絶対配置のノードの左上を引くと、右下の角が�
   );
 
   const edit = Option.unwrap(
-    NodeResize.editAt(resize, { x: -12, y: -17 }, setupView()),
+    resizeEditAt(resize, { x: -12, y: -17 }, setupView()),
   );
   const after = appliedBox(edit);
 
@@ -131,7 +132,7 @@ test("回した絶対配置のノードは右辺を引いても、左辺が親�
   );
 
   const edit = Option.unwrap(
-    NodeResize.editAt(resize, { x: 0, y: 20 }, setupView()),
+    resizeEditAt(resize, { x: 0, y: 20 }, setupView()),
   );
   const after = appliedBox({
     ...edit,
@@ -152,7 +153,7 @@ test("回したフロー配置のノードは、位置を書かずに長さだ�
     { x: 0, y: 0 },
   );
 
-  const edit = NodeResize.editAt(resize, { x: 20, y: 20 }, setupView());
+  const edit = resizeEditAt(resize, { x: 20, y: 20 }, setupView());
 
   expect(Option.map(edit, (each) => each.position)).toEqual(
     Option.some(Option.none),
@@ -166,7 +167,7 @@ test("祖先だけが回っているとき、伸びる向きは祖先の向き�
   };
   const resize = grabbedAt(resizable, { x: 1, y: 1 }, { x: 0, y: 0 });
 
-  const edit = NodeResize.editAt(resize, { x: 20, y: 20 }, setupView());
+  const edit = resizeEditAt(resize, { x: 20, y: 20 }, setupView());
 
   expect(edit).toEqual(
     Option.some(
@@ -187,7 +188,7 @@ test("祖先も回っているとき、置き直しは自分の向きだけで�
   );
 
   const edit = Option.unwrap(
-    NodeResize.editAt(resize, { x: -12, y: -17 }, setupView()),
+    resizeEditAt(resize, { x: -12, y: -17 }, setupView()),
   );
   const after = appliedBox(edit);
 

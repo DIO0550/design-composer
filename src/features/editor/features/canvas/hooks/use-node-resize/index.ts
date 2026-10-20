@@ -18,7 +18,10 @@ import {
   type ResizeGrip,
   type ResizeHold,
 } from "@/features/editor/features/canvas/domains/node-resize";
-import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
+import {
+  SideSnap,
+  type SnapGuides,
+} from "@/features/editor/features/canvas/domains/side-snap";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
 import { CommandKey } from "@/libs/dom-event";
@@ -27,6 +30,7 @@ import { Option } from "@/utils/Option";
 /** リサイズの進み方（docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。 */
 type NodeResizeAction =
   | Readonly<{ type: "grab"; held: ResizeHold }>
+  | Readonly<{ type: "track"; guides: SnapGuides }>
   | Readonly<{ type: "release" }>
   | Readonly<{ type: "cancel" }>
   | Readonly<{ type: "consume_click" }>;
@@ -45,6 +49,8 @@ function nodeResizeReducer(
   switch (action.type) {
     case "grab":
       return NodeResize.grab(action.held);
+    case "track":
+      return NodeResize.withSnapGuides(resize, action.guides);
     case "release":
       return NodeResize.release(resize);
     case "cancel":
@@ -121,6 +127,8 @@ export type NodeResizeControl = Readonly<{
    * 掴んで動かしているもの。ハンドルを透明にするかと、その間のカーソルを決める。
    */
   grabbed: Option<ResizeHold>;
+  /** 掴んだ辺が揃った線（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。 */
+  snapGuides: SnapGuides;
   dragHandlers: NodeResizeHandlers;
   /** リサイズ直後の `click` を飲み込む（選択に使わせない / `NodeResize` の `resized`）。 */
   onClickCapture: (event: ReactMouseEvent<HTMLElement>) => void;
@@ -231,28 +239,33 @@ export function useNodeResize(
    * （docs/06-ui.md「リサイズハンドル」）。
    *
    * ⌘ / Ctrl を押している移動では揃え先を外してから通す。外した値は状態へ書き戻さないので、
-   * キーを離して動かし直せば同じ掴みのまま再び吸い付く。
+   * キーを離して動かし直せば同じ掴みのまま再び吸い付く。状態へ書き戻すのは揃った線だけ。
+   *
+   * 編集の通知と線の dispatch を続けて行うが、更新先の持ち主が違う（編集はドキュメント、
+   * 線はこのフックの状態）ので、1 つの state にはまとめない。
    */
   const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
-    const edit = NodeResize.editAt(
+    const tracked = NodeResize.trackedAt(
       CommandKey.isHeld(event) ? NodeResize.withoutSnapTargets(resize) : resize,
       CanvasPointer.offsetOf(event),
       params.view,
     );
-    if (!Option.isSome(edit)) {
+    if (!Option.isSome(tracked)) {
       return;
     }
     const continuity = hasResized.current
       ? EditContinuities.Continued
       : EditContinuities.Separate;
     hasResized.current = true;
-    params.onResize(edit.value, continuity);
+    params.onResize(tracked.value.edit, continuity);
+    dispatch({ type: "track", guides: tracked.value.guides });
   };
 
   return {
     grabAt,
     grab,
     grabbed: NodeResize.grabbed(resize),
+    snapGuides: NodeResize.snapGuides(resize),
     dragHandlers: {
       onPointerMove: trackPointer,
       onPointerUp: () => dispatch({ type: "release" }),
