@@ -23,6 +23,7 @@ import { useNodeResize } from "@/features/editor/features/canvas/hooks/use-node-
 import { useRangeSelect } from "@/features/editor/features/canvas/hooks/use-range-select";
 import { useSpaceHeld } from "@/features/editor/features/canvas/hooks/use-space-held";
 import { useTextEdit } from "@/features/editor/features/canvas/hooks/use-text-edit";
+import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { PointerButton } from "@/libs/dom-event";
 import { DocumentHtml } from "@/services/document-html";
 import { ElementEx } from "@/utils/ElementEx";
@@ -110,9 +111,8 @@ export function ArtboardCanvas({
   const { view, surfaceRef, panHandlers } = canvasView;
   const isSpaceHeld = useSpaceHeld();
   /**
-   * その `pointerdown` がパンを始めるか（docs/06-ui.md「キャンバス直接操作」）。
-   * 中ボタンは単独でパン。space を押している間は主ボタンでどこを掴んでもパン。
-   * 右ボタンは space を押していてもパンにしない（メニューに使う）。
+   * その `pointerdown` がパンを始めるか（docs/06-ui.md「パン」）。
+   * パンを始めるのは中ボタンと、space を押している間の主ボタンだけ。
    * 土台の capture と、土台の外にある掴めるハンドル（主ボタン以外の押下だけを渡す）の
    * 両方から引かれる。
    */
@@ -148,7 +148,7 @@ export function ArtboardCanvas({
     if (isFrozen) {
       return;
     }
-    onOpenContextMenu(names, { x: event.clientX, y: event.clientY });
+    onOpenContextMenu(names, CanvasPointer.offsetOf(event));
   };
   const designDocument = selection.document;
   /*

@@ -209,7 +209,7 @@ test("space を押しながら掴めるハンドルを掴んで運んでも、�
 });
 
 test("space を押しながら右ボタンで掴めるハンドルを押して引いても、中身は動かない", () => {
-  // 右ボタンはメニューに使うので、space を押していてもパンにしない（docs/06-ui.md「パン」）
+  // docs/06-ui.md「パン」
   const handle = setupRightHandle();
   holdSpace();
 

@@ -8,26 +8,26 @@ import { CanvasDom } from "../index";
 
 afterEach(clearElementsAt);
 
-test("重ねた層の中のものを飛ばし、層の外でいちばん手前の要素を返す", () => {
-  const layer = globalThis.document.createElement("div");
+test("重ねた器（overlay）の中のものを飛ばし、器の外でいちばん手前の要素を返す", () => {
+  const overlay = globalThis.document.createElement("div");
   const handle = globalThis.document.createElement("div");
-  layer.append(handle);
+  overlay.append(handle);
   const node = globalThis.document.createElement("div");
   const surface = globalThis.document.createElement("div");
-  stubElementsAt([handle, layer, node, surface]);
+  stubElementsAt([handle, overlay, node, surface]);
 
-  const beneath = CanvasDom.elementBeneath(layer, { x: 10, y: 20 });
+  const beneath = CanvasDom.elementBeneath(overlay, { x: 10, y: 20 });
 
   expect(Option.contains(beneath, node)).toBe(true);
 });
 
-test("その点で層の外に何も無ければ none を返す", () => {
-  const layer = globalThis.document.createElement("div");
+test("その点で器の外に何も無ければ none を返す", () => {
+  const overlay = globalThis.document.createElement("div");
   const handle = globalThis.document.createElement("div");
-  layer.append(handle);
-  stubElementsAt([handle, layer]);
+  overlay.append(handle);
+  stubElementsAt([handle, overlay]);
 
-  const beneath = CanvasDom.elementBeneath(layer, { x: 10, y: 20 });
+  const beneath = CanvasDom.elementBeneath(overlay, { x: 10, y: 20 });
 
   expect(Option.isSome(beneath)).toBe(false);
 });

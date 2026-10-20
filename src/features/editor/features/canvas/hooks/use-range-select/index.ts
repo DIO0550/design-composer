@@ -166,7 +166,7 @@ export function useRangeSelect(
        */
       onPointerDownCapture: () => dispatch({ type: "consume_click" }),
       onPointerDown: (event) => {
-        // 主ボタン以外では引き始めない（中ボタンのパンは capture 側が先に取り、右ボタンはメニューに使う）
+        // 主ボタン以外では引き始めない（中ボタンのパンは capture 側が先に取る。右ボタンの扱いは docs/06-ui.md「パン」）
         if (!PointerButton.isPrimary(event)) {
           return;
         }
