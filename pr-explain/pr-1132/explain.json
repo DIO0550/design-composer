@@ -1,0 +1,575 @@
+{
+  "version": 1,
+  "pr": 1132,
+  "sha": "575ca57d6ec5a62e48adbbb735721d9807a4a965",
+  "issue": 1117,
+  "overview": {
+    "title": "四角の上の右クリックを下にあるもののメニューへ渡し、右ボタンではパンしない",
+    "lead": "描いてあるリサイズハンドル(四角)の上で右クリックすると、四角が無い場合と同じく下にあるもののメニューが出る。space を押していても右ボタンではパンせず、メニューだけが出る。",
+    "before": [
+      {
+        "text": "選んだノードに重なる四角の上で右クリックすると、空き領域のメニュー(ペースト・取り消す・やり直す)が出ていた"
+      },
+      {
+        "text": "space を押しながら右ボタンで引くとパンになり、同時に右クリックのメニューも開いていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "四角の上の右クリックは、その点で四角の器の下にある要素へ投げ直され、ノード・artboard・空き領域の受け口が答える",
+        "message": "pass-beneath"
+      },
+      {
+        "text": "パンを始めるのは中ボタンと、space 中の主ボタンだけになる",
+        "message": "pans-canvas"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "右クリックの投げ直し",
+        "text": "本番コードで合成イベントを投げるのはここが初めて。写す属性は座標だけ",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx"
+        }
+      },
+      {
+        "title": "点で下を引く",
+        "text": "happy-dom に無い問い合わせなので libs に置き、テストでは定義する",
+        "go": {
+          "kind": "message",
+          "id": "element-beneath"
+        }
+      },
+      {
+        "title": "右クリックの流れ",
+        "text": "四角から既存の受け口までを 1 本で見る",
+        "go": {
+          "kind": "flow",
+          "id": "right-click"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "canvas-input",
+      "label": "キャンバスの入力",
+      "role": "押したボタンでパン・メニューへ振り分ける"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "libs",
+      "role": "点に描かれている要素の問い合わせ"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "四角の器の右クリックの投げ直しと、パンの判定"
+    },
+    {
+      "layer": "docs",
+      "role": "パンとコンテキストメニューの仕様"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "name": "四角の器",
+      "role": "選んだものの辺と角に掴める四角を描く",
+      "feature": "canvas-input",
+      "change": "器が受けた右クリックを、下の要素へ投げ直す"
+    },
+    {
+      "path": "src/libs/canvas-dom/index.ts",
+      "name": "キャンバスの実測",
+      "role": "描かれた要素への問い合わせ",
+      "feature": "canvas-input",
+      "change": "`elementBeneath` を足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "name": "キャンバス",
+      "role": "土台・枠・器を組み、パンとメニューの受け口を持つ",
+      "feature": "canvas-input",
+      "change": "`pansCanvas` を中ボタンと space 中の主ボタンに絞った"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "name": "artboard の枠",
+      "role": "右クリックされた要素から名前を外へ辿って届ける",
+      "feature": "canvas-input"
+    },
+    {
+      "path": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+      "name": "ポインタの位置",
+      "role": "イベントから窓の座標を読む",
+      "feature": "canvas-input",
+      "change": "マウスイベント(`contextmenu`)も受けるようにした"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI の仕様",
+      "role": "パンとコンテキストメニューの規則",
+      "change": "右ボタンではパンしないこと、四角はポインタの下のものに数えないことを書いた"
+    }
+  ],
+  "messages": [
+    {
+      "id": "element-beneath",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/libs/canvas-dom/index.ts",
+      "kind": "qry",
+      "name": "器の下の要素を引く",
+      "code": "CanvasDom.elementBeneath(event.currentTarget, CanvasPointer.offsetOf(event))",
+      "via": "call",
+      "returns": "器の外でいちばん手前の要素(無ければ none)",
+      "status": "added"
+    },
+    {
+      "id": "pass-beneath",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "kind": "evt",
+      "name": "右クリックを投げ直す",
+      "code": "beneath.value.dispatchEvent(new MouseEvent(\"contextmenu\", …))",
+      "via": "call",
+      "payload": "clientX / clientY",
+      "status": "added"
+    },
+    {
+      "id": "open-menu",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "kind": "cmd",
+      "name": "メニューを開く",
+      "code": "openContextMenu(event, names)",
+      "via": "call",
+      "payload": "外へ辿った名前と押した点",
+      "status": "changed"
+    },
+    {
+      "id": "pans-canvas",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "kind": "qry",
+      "name": "パンを始めるか",
+      "code": "onNonPrimaryPress(event) → pansCanvas(event)",
+      "via": "call",
+      "returns": "中ボタンか、space 中の主ボタンなら真",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "right-click",
+      "label": "四角の上の右クリック",
+      "steps": [
+        "element-beneath",
+        "pass-beneath",
+        "open-menu"
+      ]
+    },
+    {
+      "id": "pan",
+      "label": "四角の上で主ボタン以外を押す",
+      "steps": [
+        "pans-canvas"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "b6bfc60256bf646e56acc0aa6f8cdef82315d501",
+      "phase": "core",
+      "role": "右ボタンでは space を押していてもパンしない",
+      "why": "パンの判定がボタンを見ていなかった。判定は土台と四角の両方が通る 1 か所にあるので、そこだけ直した。Issue で A 案(右ボタンはメニュー専用)に決まった",
+      "flows": [
+        "pan"
+      ],
+      "review": [
+        "主ボタンの space パンと中ボタンのパンが変わっていないこと"
+      ],
+      "before": [
+        {
+          "text": "space + 右ボタンで引くとパンし、メニューも開く"
+        }
+      ],
+      "after": [
+        {
+          "text": "space + 右ボタンではメニューだけが開く"
+        }
+      ]
+    },
+    {
+      "sha": "015f820c90d15204adb038a32ad9f6991ef6682e",
+      "phase": "core",
+      "role": "四角の上の右クリックを、その下にあるもののメニューへ渡す",
+      "why": "下の要素へ投げ直せば、四角が無い場合と同じ受け口がそのまま答え、名前の辿り方を 2 本持たずに済む",
+      "flows": [
+        "right-click"
+      ],
+      "review": [
+        "引けたときだけ元のイベントを止めていること",
+        "受け口が読むのは target と座標だけで、写す属性が足りていること"
+      ],
+      "before": [
+        {
+          "text": "四角の上の右クリックは空き領域として届く"
+        }
+      ],
+      "after": [
+        {
+          "text": "四角の上の右クリックは、下のノード・artboard・空き領域として届く",
+          "message": "pass-beneath"
+        }
+      ]
+    },
+    {
+      "sha": "9fb301a936de77d3f7ef3ea35c856928647d5747",
+      "phase": "revise",
+      "role": "四角の上の右クリックの対象を仕様書に書く",
+      "why": "harness-reviewer の指摘。リサイズハンドルの節が送る先の「コンテキストメニュー」に答えが無かった"
+    },
+    {
+      "sha": "4c5933898f36ef524b4618fda11e2b3c8ec56e78",
+      "phase": "revise",
+      "role": "四角の右クリックのテストの準備をまとめる",
+      "why": "duplication-reviewer の指摘。押す点と期待する座標を 1 か所で揃える"
+    },
+    {
+      "sha": "93da83a06bc14e567c19f487f11373121b408542",
+      "phase": "revise",
+      "role": "右クリックの座標を `CanvasPointer` で読み、器の語を overlay に揃える",
+      "why": "naming / duplication / comment の指摘。layer はこのリポジトリではノードのツリーを指す"
+    },
+    {
+      "sha": "be7a0e33e098cff910aa5b713cb452cc3fc42a2c",
+      "phase": "hard",
+      "role": "テスト用の `elementsFromPoint` が引かれた点を見るようにする",
+      "why": "test-reviewer が、下を引く点をずらしてもテストが落ちないことを実測した。点が違えば空を返すようにして、点の取り違えを表に出す",
+      "review": [
+        "点を固定・ずらす壊し方で、ノードと枠のテストが落ちること"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "context-menu",
+      "label": "キャンバスの右クリック",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx"
+    },
+    {
+      "id": "zoom-pan",
+      "label": "キャンバスのパン",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx"
+    },
+    {
+      "id": "beneath",
+      "label": "点で下を引く",
+      "file": "src/libs/canvas-dom/__tests__/canvas-dom.beneath.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "cm-node",
+      "suite": "context-menu",
+      "name": "掴める四角の上で右クリックすると、その下に描かれているノードの名前が外へ辿った順で 1 回だけ届く",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "四角の下がノードなら、そのノードのメニューになる",
+      "given": "`panel` を選び、四角の下に `panel` が描かれている",
+      "when": "四角を右クリックする",
+      "then": "`[\"panel\",\"home\"]` と押した点が 1 回だけ届く",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+        "start": 220,
+        "end": 228,
+        "text": "test(\"掴める四角の上で右クリックすると、その下に描かれているノードの名前が外へ辿った順で 1 回だけ届く\", () => {\n  const { onOpenContextMenu } = rightClickHandleOver(() => drawn(\"panel\"));\n\n  expect(onOpenContextMenu).toHaveBeenCalledTimes(1);\n  expect(onOpenContextMenu).toHaveBeenCalledWith(\n    [\"panel\", \"home\"],\n    HandleClickPoint,\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx"
+      ],
+      "covers": [
+        "element-beneath",
+        "pass-beneath",
+        "open-menu"
+      ]
+    },
+    {
+      "id": "cm-empty",
+      "suite": "context-menu",
+      "name": "掴める四角の下が空き領域なら、名前は 1 つも届かず 1 回だけ届く",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "投げ直したあと元のイベントが器へも上がると二重に届く",
+      "given": "四角の下が土台",
+      "when": "四角を右クリックする",
+      "then": "`[]` が 1 回だけ届く",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+        "start": 230,
+        "end": 235,
+        "text": "test(\"掴める四角の下が空き領域なら、名前は 1 つも届かず 1 回だけ届く\", () => {\n  const { onOpenContextMenu } = rightClickHandleOver(canvasSurface);\n\n  expect(onOpenContextMenu).toHaveBeenCalledTimes(1);\n  expect(onOpenContextMenu).toHaveBeenCalledWith([], HandleClickPoint);\n});"
+      },
+      "covers": [
+        "pass-beneath"
+      ]
+    },
+    {
+      "id": "cm-default",
+      "suite": "context-menu",
+      "name": "掴める四角の上の右クリックも、ブラウザ既定のメニューを止める",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "投げ直したとき、元のイベントの既定動作を止めるのは四角だけ",
+      "given": "四角の下がノード",
+      "when": "四角を右クリックする",
+      "then": "既定動作が止まる",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+        "start": 237,
+        "end": 241,
+        "text": "test(\"掴める四角の上の右クリックも、ブラウザ既定のメニューを止める\", () => {\n  const { notCanceled } = rightClickHandleOver(() => drawn(\"panel\"));\n\n  expect(notCanceled).toBe(false);\n});"
+      }
+    },
+    {
+      "id": "cm-artboard",
+      "suite": "context-menu",
+      "name": "掴める四角の下が artboard の枠の背景なら、その artboard の名前だけが届く",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "四角の下が artboard なら artboard のメニューになる",
+      "given": "四角の下が `home` の枠の背景",
+      "when": "四角を右クリックする",
+      "then": "`[\"home\"]` が届く",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+        "start": 243,
+        "end": 249,
+        "text": "test(\"掴める四角の下が artboard の枠の背景なら、その artboard の名前だけが届く\", () => {\n  const { onOpenContextMenu } = rightClickHandleOver(() =>\n    screen.getByRole(\"button\", { name: \"home\" }),\n  );\n\n  expect(onOpenContextMenu).toHaveBeenCalledWith([\"home\"], HandleClickPoint);\n});"
+      },
+      "covers": [
+        "pass-beneath",
+        "open-menu"
+      ]
+    },
+    {
+      "id": "pan-handle",
+      "suite": "zoom-pan",
+      "name": "space を押しながら右ボタンで掴めるハンドルを押して引いても、中身は動かない",
+      "techniques": [
+        "regression",
+        "state"
+      ],
+      "why": "四角の上でも右ボタンはパンにしない",
+      "given": "space を押している",
+      "when": "四角を右ボタンで押して引く",
+      "then": "表示が動かない",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+        "start": 211,
+        "end": 219,
+        "text": "test(\"space を押しながら右ボタンで掴めるハンドルを押して引いても、中身は動かない\", () => {\n  // docs/06-ui.md「パン」\n  const handle = setupRightHandle();\n  holdSpace();\n\n  dragFromHandle(handle, PointerButtons.Secondary);\n\n  expect(canvasTransform()).toContain(\"translate(0px, 0px)\");\n});"
+      },
+      "covers": [
+        "pans-canvas"
+      ]
+    },
+    {
+      "id": "pan-surface",
+      "suite": "zoom-pan",
+      "name": "space を押しながら右ボタンで土台を押して引いても、中身は動かない",
+      "techniques": [
+        "state"
+      ],
+      "why": "土台の上でも右ボタンはパンにしない",
+      "given": "space を押している",
+      "when": "土台を右ボタンで押して引く",
+      "then": "表示が動かない",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+        "start": 221,
+        "end": 232,
+        "text": "test(\"space を押しながら右ボタンで土台を押して引いても、中身は動かない\", () => {\n  renderCanvas({ selection: setupSelection() });\n  holdSpace();\n\n  drag(\n    canvasSurface(),\n    { from: { x: 100, y: 100 }, to: { x: 130, y: 80 } },\n    PointerButtons.Secondary,\n  );\n\n  expect(canvasTransform()).toContain(\"translate(0px, 0px)\");\n});"
+      }
+    },
+    {
+      "id": "beneath-skip",
+      "suite": "beneath",
+      "name": "重ねた器（overlay）の中のものを飛ばし、器の外でいちばん手前の要素を返す",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "器の中を返すと四角へ投げ直して繰り返す",
+      "given": "点に器の中の要素と外の要素が重なっている",
+      "when": "その点で引く",
+      "then": "器の外のいちばん手前の要素",
+      "excerpt": {
+        "path": "src/libs/canvas-dom/__tests__/canvas-dom.beneath.test.ts",
+        "start": 11,
+        "end": 23,
+        "text": "test(\"重ねた器（overlay）の中のものを飛ばし、器の外でいちばん手前の要素を返す\", () => {\n  const overlay = globalThis.document.createElement(\"div\");\n  const handle = globalThis.document.createElement(\"div\");\n  overlay.append(handle);\n  const node = globalThis.document.createElement(\"div\");\n  const surface = globalThis.document.createElement(\"div\");\n  const at = { x: 10, y: 20 };\n  stubElementsAt({ at, stack: [handle, overlay, node, surface] });\n\n  const beneath = CanvasDom.elementBeneath(overlay, at);\n\n  expect(Option.contains(beneath, node)).toBe(true);\n});"
+      },
+      "targets": [
+        "src/libs/canvas-dom/index.ts"
+      ],
+      "covers": [
+        "element-beneath"
+      ]
+    },
+    {
+      "id": "beneath-none",
+      "suite": "beneath",
+      "name": "その点で器の外に何も無ければ none を返す",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "引けないことを none で表す",
+      "given": "点に重なるのが器の中だけ",
+      "when": "その点で引く",
+      "then": "`none`",
+      "excerpt": {
+        "path": "src/libs/canvas-dom/__tests__/canvas-dom.beneath.test.ts",
+        "start": 25,
+        "end": 35,
+        "text": "test(\"その点で器の外に何も無ければ none を返す\", () => {\n  const overlay = globalThis.document.createElement(\"div\");\n  const handle = globalThis.document.createElement(\"div\");\n  overlay.append(handle);\n  const at = { x: 10, y: 20 };\n  stubElementsAt({ at, stack: [handle, overlay] });\n\n  const beneath = CanvasDom.elementBeneath(overlay, at);\n\n  expect(Option.isSome(beneath)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/libs/canvas-dom/index.ts"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "四角の上の右クリックと、space を押しながらの右ボタン",
+    "lead": "選んでいるものの辺や角に出る四角の上でも、右クリックはポインタの下にあるもののメニューを出す。space を押していても、右ボタンでは表示が動かない。",
+    "changed": {
+      "before": [
+        {
+          "text": "四角の上を右クリックすると、下にノードがあっても空き領域のメニューが出ていた"
+        },
+        {
+          "text": "space を押しながら右ボタンで引くと、表示が動き、メニューも同時に開いていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "四角の上を右クリックすると、四角が無い場合と同じく、下にあるノード・artboard・空き領域のメニューが出る",
+          "message": "pass-beneath"
+        },
+        {
+          "text": "space を押しながら右ボタンを使うと、メニューだけが開き、表示は動かない",
+          "message": "pans-canvas"
+        }
+      ]
+    },
+    "tables": [
+      {
+        "label": "四角の上で右クリックしたときに出るメニュー",
+        "gist": "四角の下にあるもので決まる",
+        "rowHeads": [
+          {
+            "id": "inner",
+            "label": "四角の内側半分",
+            "note": "選んだものの上"
+          },
+          {
+            "id": "outer",
+            "label": "四角の外側半分",
+            "note": "選んだものの外"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "node",
+            "label": "下がノード"
+          },
+          {
+            "id": "board",
+            "label": "下が artboard の背景"
+          },
+          {
+            "id": "empty",
+            "label": "下が空き領域"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "inner",
+            "columnHead": "node",
+            "result": "そのノードのメニュー",
+            "was": "空き領域のメニュー",
+            "tests": [
+              "cm-node"
+            ]
+          },
+          {
+            "rowHead": "inner",
+            "columnHead": "board",
+            "result": "artboard のメニュー",
+            "was": "空き領域のメニュー",
+            "tests": [
+              "cm-artboard"
+            ]
+          },
+          {
+            "rowHead": "inner",
+            "columnHead": "empty",
+            "result": "空き領域のメニュー",
+            "tests": [
+              "cm-empty"
+            ]
+          },
+          {
+            "rowHead": "outer",
+            "columnHead": "node",
+            "result": "下のノードのメニュー(選択がそちらへ移る)",
+            "was": "空き領域のメニュー",
+            "tests": [
+              "cm-node"
+            ]
+          },
+          {
+            "rowHead": "outer",
+            "columnHead": "board",
+            "result": "artboard のメニュー",
+            "was": "空き領域のメニュー",
+            "tests": [
+              "cm-artboard"
+            ]
+          },
+          {
+            "rowHead": "outer",
+            "columnHead": "empty",
+            "result": "空き領域のメニュー",
+            "tests": [
+              "cm-empty"
+            ]
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "space を押しながら左ボタンで引くと、これまでどおり表示が動く"
+      },
+      {
+        "text": "中ボタンで引くと、四角の上でもこれまでどおり表示が動く"
+      },
+      {
+        "text": "space を押しながら四角を左ボタンで掴むと、これまでどおり大きさが変わる"
+      },
+      {
+        "text": "右クリックでブラウザ既定のメニューは出ない",
+        "tests": [
+          "cm-default"
+        ]
+      }
+    ]
+  }
+}
