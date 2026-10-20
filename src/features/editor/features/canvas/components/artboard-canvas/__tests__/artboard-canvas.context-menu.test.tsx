@@ -30,10 +30,6 @@ afterEach(clearElementsAt);
 
 /**
  * `home` に 2 軸とも fixed の Box `panel` を持ち、それを選んだ対（四角が出る）。
- *
- * 掴める四角の下は happy-dom では引けない（重なりを持たない）ので、各テストが
- * `stubElementsAt` で並びを置く。置き忘れると下を引くところが `TypeError` になって window の
- * エラーへ回るだけなので、空き領域として届くことを見るテストは黙って通る。
  */
 function selectionWithFixedPanel() {
   return selectionFromArtboards(
@@ -59,6 +55,33 @@ function selectionWithFixedPanel() {
     ],
     ["panel"],
   );
+}
+
+/** 掴める四角を右クリックする点（窓の座標）。受け口へ届く座標もこれと同じになる。 */
+const HandleClickPoint = { x: 200, y: 150 } as const;
+
+/**
+ * `selectionWithFixedPanel` を描き、終点側の角の四角の下に `beneath` を置いて、その四角を
+ * `HandleClickPoint` で右クリックする。
+ *
+ * 掴める四角の下は happy-dom では引けない（重なりを持たない）ので、ここで `stubElementsAt` で
+ * 並びを置く。置き忘れると下を引くところが `TypeError` になって window のエラーへ回るだけなので、
+ * 空き領域として届くことを見るテストは黙って通る。
+ *
+ * @param beneath 四角の下に置く要素。描いたあとで引くので関数で受け取る
+ * @returns 右クリックの受け口と、`contextmenu` が既定の動作を止められなかったか
+ *   （`fireEvent` の戻り。止められたら `false`）
+ */
+function rightClickHandleOver(beneath: () => Element) {
+  const onOpenContextMenu = vi.fn();
+  renderCanvas({ selection: selectionWithFixedPanel(), onOpenContextMenu });
+  const handle = resizeHandleAt({ x: 1, y: 1 });
+  stubElementsAt([handle, beneath()]);
+  const notCanceled = fireEvent.contextMenu(handle, {
+    clientX: HandleClickPoint.x,
+    clientY: HandleClickPoint.y,
+  });
+  return { onOpenContextMenu, notCanceled };
 }
 
 /** `home` に Text の `title` を 1 つ持つ対。 */
@@ -194,54 +217,34 @@ test("主ボタンで見出しを押せば同じ操作で artboard が動く", (
 });
 
 test("掴める四角の上で右クリックすると、その下に描かれているノードの名前が外へ辿った順で 1 回だけ届く", () => {
-  const onOpenContextMenu = vi.fn();
-  renderCanvas({ selection: selectionWithFixedPanel(), onOpenContextMenu });
-  const handle = resizeHandleAt({ x: 1, y: 1 });
-  stubElementsAt([handle, drawn("panel")]);
-
-  fireEvent.contextMenu(handle, { clientX: 200, clientY: 150 });
+  const { onOpenContextMenu } = rightClickHandleOver(() => drawn("panel"));
 
   expect(onOpenContextMenu).toHaveBeenCalledTimes(1);
-  expect(onOpenContextMenu).toHaveBeenCalledWith(["panel", "home"], {
-    x: 200,
-    y: 150,
-  });
-});
-
-test("掴める四角の下が空き領域なら、名前は 1 つも届かず 1 回だけ届く", () => {
-  const onOpenContextMenu = vi.fn();
-  renderCanvas({ selection: selectionWithFixedPanel(), onOpenContextMenu });
-  const handle = resizeHandleAt({ x: 1, y: 1 });
-  stubElementsAt([handle, canvasSurface()]);
-
-  fireEvent.contextMenu(handle, { clientX: 200, clientY: 150 });
-
-  expect(onOpenContextMenu).toHaveBeenCalledTimes(1);
-  expect(onOpenContextMenu).toHaveBeenCalledWith([], { x: 200, y: 150 });
-});
-
-test("掴める四角の上の右クリックも、ブラウザ既定のメニューを止める", () => {
-  renderCanvas({ selection: selectionWithFixedPanel() });
-  const handle = resizeHandleAt({ x: 1, y: 1 });
-  stubElementsAt([handle, drawn("panel")]);
-
-  expect(fireEvent.contextMenu(handle, { clientX: 200, clientY: 150 })).toBe(
-    false,
+  expect(onOpenContextMenu).toHaveBeenCalledWith(
+    ["panel", "home"],
+    HandleClickPoint,
   );
 });
 
+test("掴める四角の下が空き領域なら、名前は 1 つも届かず 1 回だけ届く", () => {
+  const { onOpenContextMenu } = rightClickHandleOver(canvasSurface);
+
+  expect(onOpenContextMenu).toHaveBeenCalledTimes(1);
+  expect(onOpenContextMenu).toHaveBeenCalledWith([], HandleClickPoint);
+});
+
+test("掴める四角の上の右クリックも、ブラウザ既定のメニューを止める", () => {
+  const { notCanceled } = rightClickHandleOver(() => drawn("panel"));
+
+  expect(notCanceled).toBe(false);
+});
+
 test("掴める四角の下が artboard の枠の背景なら、その artboard の名前だけが届く", () => {
-  const onOpenContextMenu = vi.fn();
-  renderCanvas({ selection: selectionWithFixedPanel(), onOpenContextMenu });
-  const handle = resizeHandleAt({ x: 1, y: 1 });
-  stubElementsAt([handle, screen.getByRole("button", { name: "home" })]);
+  const { onOpenContextMenu } = rightClickHandleOver(() =>
+    screen.getByRole("button", { name: "home" }),
+  );
 
-  fireEvent.contextMenu(handle, { clientX: 200, clientY: 150 });
-
-  expect(onOpenContextMenu).toHaveBeenCalledWith(["home"], {
-    x: 200,
-    y: 150,
-  });
+  expect(onOpenContextMenu).toHaveBeenCalledWith(["home"], HandleClickPoint);
 });
 
 test("右クリックはブラウザ既定のメニューを止める", () => {
