@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "pr": 1130,
+  "headBranch": "claude/affectionate-hypatia-sdp8ej",
+  "baseBranch": "main",
+  "mergeBase": "08b535f76b297195f61e7e4f62cf971fc7a5e9e9",
+  "head": "229e045ace25c72a663b2e2920a107ada5712cec",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/case-law/architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 20,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1121.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "229e045ace25c72a663b2e2920a107ada5712cec",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-20T00:02:15Z",
+      "subject": "ハーネス棚卸し: ownership の再発を判例 ownership-by-use へ",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01DCd4VEFEC59i4KP4zd13De",
+      "files": [
+        {
+          "path": "harness/case-law/architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 20,
+          "deletions": 0,
+          "patch": "@@ -18,6 +18,26 @@\n   多くの場合テストが見たいのは綴りではなく**構造**（どのノードのどの prop か）で、\n   構造のまま比べれば綴りを作る必要そのものが消える\n \n+## `ownership-by-use` — 使い手の数で置き場所を決めていた\n+\n+値の規則・部品を「いま使っているのが 1 か所だから」でその場(消費側のファイル内関数・feature\n+内のコンポーネント・props から作る型)に置いた形。人のレビューで 3 回、同じ形で戻された。\n+**使い手の数は置き場所の理由にならない。** 見るのは「その規則・部品は誰の性質か」で、\n+使い手が 1 つでも、持ち主が別にあるなら持ち主へ置く。\n+\n+| NG | OK |\n+|---|---|\n+| 子を包むかの判定を compiled の関数 `isWrapping` に置き、別の feature が借りていた(pr-1021#15) | `Visibility` と同じ形の値ドメイン `dcmp/wrap` を作って移す |\n+| 「回転」という一般概念(角度そのもの)を、`.dcmp` の prop から作る型 `Rotation` が兼ねていた(pr-1026#1) | `unit/angle` に `Angle` を新設し、`dcmp/rotation` は props からの変換だけを持つ |\n+| ドメイン知識を持たない `ActionCard` を、使い手が 1 つなので開始画面のファイル内に置いた(pr-1063#1) | `src/components/` へ置き、配色は tone の列挙にする |\n+\n+- 判定の分かれ目: **ドメイン知識を持たないなら横断層、値の規則なら値の型。** 「使うのはここだけ」\n+  と書いた理由は、持ち主を探した結果ではなく探さなかった印\n+- 一般概念と「ファイルに書かれる綴り」を 1 つの型が兼ねていたら、兼ねている型を割る\n+  (一般概念は `unit/`、綴りの解釈は `dcmp/` に残す)\n+- 計画に「置き場所: ◯◯(使い手が 1 つなので)」と書いたら、`ownership-reasoning` と同じく\n+  他の型にも成り立つ理由になっていないかを先に確かめる\n+\n ## `service-placement` — services に置く前にドメインを探していない\n \n 「複数ドメインに跨る」という感触だけを根拠に `services/` へ置いた形。過去のレビューで",
+          "patchLines": 27,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/pr-1121.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -311,3 +311,4 @@ CI は全件緑で、VRT の差分は 0 件だった(202 件 passed)。\n ## 規約への反映\n \n 無し。このスキルの管轄は記録までで、集計と介入の判断は `harness-growth` が行う。\n+- 対策済: `ownership` 層=case-law at pr-1121",
+          "patchLines": 5,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
