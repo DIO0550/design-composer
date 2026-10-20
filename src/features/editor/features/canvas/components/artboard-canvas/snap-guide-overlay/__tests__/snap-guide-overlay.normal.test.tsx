@@ -3,6 +3,7 @@ import { expect, test } from "vitest";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
 import { SnapGuideOverlay } from "../index";
+import { HorizontalLine, VerticalLine } from "./guide-lines";
 
 /*
  * 揃った線（辺か中心線）に引くガイド線と、揃え先との隙間（docs/06-ui.md「キャンバス直接操作」
@@ -12,12 +13,6 @@ import { SnapGuideOverlay } from "../index";
 
 /** 等倍の表示。画面上の長さがそのままドキュメント上の長さになる。 */
 const SameSize = CanvasView.create();
-
-/** 揃え先の左辺（250）に中心を合わせた縦の線。左右の辺（水平の組）が揃った側。 */
-const VerticalLine = { left: 249, top: 150, width: 2, height: 90 };
-
-/** 揃え先の上辺（150）に中心を合わせた横の線。上下の辺（垂直の組）が揃った側。 */
-const HorizontalLine = { left: 200, top: 149, width: 120, height: 2 };
 
 /** 縦の線に沿って測った隙間の短い線（長さ 64）。 */
 const VerticalGap = { left: 259, top: 176, width: 2, height: 64 };

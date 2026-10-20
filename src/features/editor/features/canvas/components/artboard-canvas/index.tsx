@@ -33,7 +33,7 @@ import { DropPositionLabel } from "./drop-position-label";
 import { RangeSelectOverlay } from "./range-select-overlay";
 import { RepositionPreviewStyle } from "./reposition-preview-style";
 import { ResizeHandleOverlay, resizeCursor } from "./resize-handle-overlay";
-import { SnapGuideOverlay } from "./snap-guide-overlay";
+import { GuideLineOverlay, SnapGuideOverlay } from "./snap-guide-overlay";
 import { StaleCanvasOverlay } from "./stale-canvas-overlay";
 import { TextInlineEditor } from "./text-inline-editor";
 
@@ -360,6 +360,8 @@ export function ArtboardCanvas({
         guides={NodeDrag.snapGuides(nodeDrag.drag)}
         view={view}
       />
+      {/* 隙間の数値はリサイズではまだ出さない（docs/06-ui.md「リサイズハンドル」の辺のスナップ） */}
+      <GuideLineOverlay guides={nodeResize.snapGuides} />
       {/* 座標を動かすドラッグにはドロップ線が出ないので、代わりに実体を先に動かす */}
       <RepositionPreviewStyle
         drag={nodeDrag.drag}

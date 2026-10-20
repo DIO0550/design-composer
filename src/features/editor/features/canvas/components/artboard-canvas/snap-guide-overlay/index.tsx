@@ -71,9 +71,25 @@ function GapLine({ readout }: Readonly<{ readout: GapReadout }>) {
 }
 
 /**
+ * 1 つの軸のガイド線だけ。揃え先との隙間は描かない。
+ *
+ * @returns ガイド線。その軸に揃った線が無ければ `null`
+ */
+function GuideLineAlong({
+  guides,
+  pair,
+}: Readonly<{ guides: SnapGuides; pair: SidePair }>): ReactElement | null {
+  const guide = guides[pair];
+  return Option.isSome(guide) ? (
+    <GuideLine bounds={guide.value.guideLine} />
+  ) : null;
+}
+
+/**
  * 1 つの軸のスマートガイド。ガイド線と、揃え先から離れていれば隙間の短い線と数値。
  *
- * @returns ガイド線と隙間の表示。その軸に揃った線が無ければ `null`
+ * @returns ガイド線と隙間の表示。その軸に揃った線が無ければ線も隙間も出ない（`toGapReadout` も
+ *   `none` を返す）
  */
 function Guide({
   guides,
@@ -83,16 +99,25 @@ function Guide({
   guides: SnapGuides;
   pair: SidePair;
   view: CanvasView;
-}>): ReactElement | null {
-  const guide = guides[pair];
-  if (!Option.isSome(guide)) {
-    return null;
-  }
+}>): ReactElement {
   const readout = SideSnap.toGapReadout(guides, pair, view);
   return (
     <>
-      <GuideLine bounds={guide.value.guideLine} />
+      <GuideLineAlong guides={guides} pair={pair} />
       {Option.isSome(readout) ? <GapLine readout={readout.value} /> : null}
+    </>
+  );
+}
+
+/**
+ * 揃った線に引くガイド線だけを出す（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。見た目は
+ * `SnapGuideOverlay` のガイド線と同じで、揃え先との隙間の数値はまだ出さない。
+ */
+export function GuideLineOverlay({ guides }: Readonly<{ guides: SnapGuides }>) {
+  return (
+    <>
+      <GuideLineAlong guides={guides} pair={SidePairs.Horizontal} />
+      <GuideLineAlong guides={guides} pair={SidePairs.Vertical} />
     </>
   );
 }
