@@ -23,6 +23,7 @@ import { useNodeResize } from "@/features/editor/features/canvas/hooks/use-node-
 import { useRangeSelect } from "@/features/editor/features/canvas/hooks/use-range-select";
 import { useSpaceHeld } from "@/features/editor/features/canvas/hooks/use-space-held";
 import { useTextEdit } from "@/features/editor/features/canvas/hooks/use-text-edit";
+import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { PointerButton } from "@/libs/dom-event";
 import { DocumentHtml } from "@/services/document-html";
 import { ElementEx } from "@/utils/ElementEx";
@@ -110,13 +111,15 @@ export function ArtboardCanvas({
   const { view, surfaceRef, panHandlers } = canvasView;
   const isSpaceHeld = useSpaceHeld();
   /**
-   * その `pointerdown` がパンを始めるか（docs/06-ui.md「キャンバス直接操作」）。
-   * space を押している間はどこを掴んでもパンで、中ボタンは単独でパン。
+   * その `pointerdown` がパンを始めるか（docs/06-ui.md「パン」）。
+   * パンを始めるのは中ボタンと、space を押している間の主ボタンだけ。
    * 土台の capture と、土台の外にある掴めるハンドル（主ボタン以外の押下だけを渡す）の
    * 両方から引かれる。
    */
-  const pansCanvas = (event: ReactPointerEvent<HTMLElement>): boolean =>
-    isSpaceHeld || PointerButton.isMiddle(event);
+  const pansCanvas = (event: ReactPointerEvent<HTMLElement>): boolean => {
+    const pansWithSpace = isSpaceHeld && PointerButton.isPrimary(event);
+    return PointerButton.isMiddle(event) || pansWithSpace;
+  };
   /*
    * ハンドルの器を土台の中へ移せば例外（space 中の四角はリサイズ優先 / docs/06-ui.md「パン」）は
    * 消せるが、掴み口と土台の当たり判定の作り直しになる。
@@ -145,7 +148,7 @@ export function ArtboardCanvas({
     if (isFrozen) {
       return;
     }
-    onOpenContextMenu(names, { x: event.clientX, y: event.clientY });
+    onOpenContextMenu(names, CanvasPointer.offsetOf(event));
   };
   const designDocument = selection.document;
   /*
@@ -212,8 +215,8 @@ export function ArtboardCanvas({
       aria-label="キャンバスの面"
       ref={canvasAreaRef}
       /*
-       * 土台（`canvas-surface`）ではなくこの器で受ける。掴めるリサイズハンドルと文言の
-       * 入力欄は土台の外にあり、土台で受けるとその上だけブラウザの既定メニューが出る。
+       * 土台（`canvas-surface`）ではなくこの器で受ける。掴める四角は下に何も引けなかったとき
+       * 自分のイベントをそのまま上げ、文言の入力欄も土台の外にあるため。
        */
       onContextMenu={(event) => openContextMenu(event, [])}
       /*
@@ -231,11 +234,11 @@ export function ArtboardCanvas({
          * パンは capture で取る。見出しと、中身のノード・リサイズの帯を掴んだ枠は
          * `pointerdown` を止めるので（`artboard-label` / `artboard-frame`）、bubble で待つと
          * そこから始めたパンが届かない。捕捉したら子へは渡さないので、**パンが始まったなら
-         * 範囲選択は始まらない**（右ボタンのように「どちらも始まらない」入力があるかは
-         * 範囲選択の側が決める / `useRangeSelect`）。
+         * 範囲選択は始まらない**（右ボタンはパンも範囲選択も始めない。パンは `pansCanvas`、
+         * 範囲選択は `useRangeSelect` がボタンを見る）。
          *
          * 範囲選択の飲み込み待ちを解くのもここ。止められる前に必ず通るのは capture だけ。
-         * 土台の外にあるハンドルからの押下（主ボタンで掴む・主ボタン以外でパンへ渡す）は通らない。
+         * 土台の外にあるハンドルからの押下（主ボタンで掴む・主ボタン以外はパンの判定へ渡す）は通らない。
          */
         onPointerDownCapture={(event) => {
           rangeSelect.dragHandlers.onPointerDownCapture();

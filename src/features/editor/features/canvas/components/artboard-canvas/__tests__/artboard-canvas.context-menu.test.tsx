@@ -1,5 +1,5 @@
-import { fireEvent } from "@testing-library/react";
-import { expect, test, vi } from "vitest";
+import { fireEvent, screen } from "@testing-library/react";
+import { afterEach, expect, test, vi } from "vitest";
 import {
   artboardHandle,
   canvasContent,
@@ -7,6 +7,10 @@ import {
   textInlineEditorField,
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import { drag } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
+import {
+  clearElementsAt,
+  stubElementsAt,
+} from "@/libs/__tests__/elements-at-point";
 import { PointerButtons } from "@/libs/dom-event";
 import {
   drawn,
@@ -21,6 +25,65 @@ import {
  * キャンバスが決めるのは「どこを押したか」を何として伝えるかだけで、並ぶものと押せるか
  * どうかは編集画面側（`EditMenu`）が決める。
  */
+
+afterEach(clearElementsAt);
+
+/**
+ * `home` に 2 軸とも fixed の Box `panel` を持ち、それを選んだ対（四角が出る）。
+ */
+function selectionWithFixedPanel() {
+  return selectionFromArtboards(
+    [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          {
+            name: "panel",
+            type: "Box",
+            props: {
+              widthMode: "fixed",
+              width: 200,
+              heightMode: "fixed",
+              height: 100,
+            },
+            children: [],
+          },
+        ],
+      },
+    ],
+    ["panel"],
+  );
+}
+
+/** 掴める四角を右クリックする点（窓の座標）。受け口へ届く座標もこれと同じになる。 */
+const HandleClickPoint = { x: 200, y: 150 } as const;
+
+/**
+ * `selectionWithFixedPanel` を描き、終点側の角の四角の下に `beneath` を置いて、その四角を
+ * `HandleClickPoint` で右クリックする。
+ *
+ * 掴める四角の下は happy-dom では引けない（重なりを持たない）ので、ここで `stubElementsAt` で
+ * `HandleClickPoint` に並びを置く。置き忘れると下を引くところが `TypeError` になって window の
+ * エラーへ回るだけで、落ちるのは下にノード・artboard の枠が届くことを見るテストだけ。空き領域
+ * として届くことを見るテストと、既定のメニューを止めることを見るテストは黙って通る。
+ *
+ * @param beneath 四角の下に置く要素。描いたあとで引くので関数で受け取る
+ * @returns 右クリックの受け口と、`contextmenu` が既定の動作を止められなかったか
+ *   （`fireEvent` の戻り。止められたら `false`）
+ */
+function rightClickHandleOver(beneath: () => Element) {
+  const onOpenContextMenu = vi.fn();
+  renderCanvas({ selection: selectionWithFixedPanel(), onOpenContextMenu });
+  const handle = resizeHandleAt({ x: 1, y: 1 });
+  stubElementsAt({ at: HandleClickPoint, stack: [handle, beneath()] });
+  const notCanceled = fireEvent.contextMenu(handle, {
+    clientX: HandleClickPoint.x,
+    clientY: HandleClickPoint.y,
+  });
+  return { onOpenContextMenu, notCanceled };
+}
 
 /** `home` に Text の `title` を 1 つ持つ対。 */
 function selectionWithTitle() {
@@ -154,26 +217,35 @@ test("主ボタンで見出しを押せば同じ操作で artboard が動く", (
   expect(onRepositionArtboard).toHaveBeenCalled();
 });
 
-test("掴めるリサイズハンドルの上で右クリックしても受け口が呼ばれる", () => {
-  const onOpenContextMenu = vi.fn();
-  renderCanvas({
-    selection: selectionFromArtboards(
-      [{ name: "home", width: 360, height: 240, children: [] }],
-      ["home"],
-    ),
-    onOpenContextMenu,
-  });
+test("掴める四角の上で右クリックすると、その下に描かれているノードの名前が外へ辿った順で 1 回だけ届く", () => {
+  const { onOpenContextMenu } = rightClickHandleOver(() => drawn("panel"));
 
-  /*
-   * ハンドルは土台（`canvas-surface`）の外に重なる。土台で受けていると、ここだけ
-   * アプリのメニューが出ずブラウザの既定メニューが出る。
-   */
-  fireEvent.contextMenu(resizeHandleAt({ x: 1, y: 1 }), {
-    clientX: 200,
-    clientY: 200,
-  });
+  expect(onOpenContextMenu).toHaveBeenCalledTimes(1);
+  expect(onOpenContextMenu).toHaveBeenCalledWith(
+    ["panel", "home"],
+    HandleClickPoint,
+  );
+});
 
-  expect(onOpenContextMenu).toHaveBeenCalledWith([], { x: 200, y: 200 });
+test("掴める四角の下が空き領域なら、名前は 1 つも届かず 1 回だけ届く", () => {
+  const { onOpenContextMenu } = rightClickHandleOver(canvasSurface);
+
+  expect(onOpenContextMenu).toHaveBeenCalledTimes(1);
+  expect(onOpenContextMenu).toHaveBeenCalledWith([], HandleClickPoint);
+});
+
+test("掴める四角の上の右クリックも、ブラウザ既定のメニューを止める", () => {
+  const { notCanceled } = rightClickHandleOver(() => drawn("panel"));
+
+  expect(notCanceled).toBe(false);
+});
+
+test("掴める四角の下が artboard の枠の背景なら、その artboard の名前だけが届く", () => {
+  const { onOpenContextMenu } = rightClickHandleOver(() =>
+    screen.getByRole("button", { name: "home" }),
+  );
+
+  expect(onOpenContextMenu).toHaveBeenCalledWith(["home"], HandleClickPoint);
 });
 
 test("右クリックはブラウザ既定のメニューを止める", () => {

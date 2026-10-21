@@ -1,8 +1,8 @@
-import type { PointerEvent as ReactPointerEvent } from "react";
+import type { MouseEvent as ReactMouseEvent } from "react";
 import type { Offset } from "@/domains/unit/offset";
 
 /**
- * キャンバス上のポインタイベントの読み取り。
+ * キャンバス上のポインタ・マウスイベントの読み取り。
  * 1 箇所に集めるのは、`event.clientX` を直に読んでも型・テスト・lint のどれも止めないため。
  */
 export const CanvasPointer = {
@@ -10,10 +10,10 @@ export const CanvasPointer = {
    * イベントが起きた位置。
    * キャンバスの実測（`getBoundingClientRect`）と揃えるため client 座標で読む。
    *
-   * @param event キャンバス上のポインタイベント
+   * @param event キャンバス上のポインタ・マウスイベント（`contextmenu` を含む）
    * @returns client 座標のポインタの位置
    */
-  offsetOf(event: ReactPointerEvent<HTMLElement>): Offset {
+  offsetOf(event: ReactMouseEvent<HTMLElement>): Offset {
     return { x: event.clientX, y: event.clientY };
   },
 } as const;
