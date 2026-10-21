@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1135,
+  "headBranch": "claude/magical-cannon-hs7g8c",
+  "baseBranch": "main",
+  "mergeBase": "bc2fe0fdf2c8fbba8a058fadafaaf4d1ce70bb00",
+  "head": "33800382e23e6a1f5cab1ee1ac67de0f221303df",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1132.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 155,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "33800382e23e6a1f5cab1ee1ac67de0f221303df",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-21T14:12:45Z",
+      "subject": "📝 [Documentation]: harness-record PR #1132 の記録を残す",
+      "body": "- harness/records/pr-1132.md を足す(Issue #1117 の回)\n\n背景:\nマージ後の記録。人のレビューは 0 件、CI は初回で通過。指摘は\nplan-reviewer 8 件・実装の検証 8 件・自己修正 1 件(フック不発)。\n\n採用理由:\nharness-record の手順どおり、指摘 1 件を 1 ブロックで書いた。\n発火ログはこのセッションの分が無いので「計測対象外(フック不発)」とした。\n\n影響とトレードオフ:\n記録の 1 ファイルだけ。規約・フック・スキルは変えない。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01227Jw689mtqnyJTh6EUWzN",
+      "files": [
+        {
+          "path": "harness/records/pr-1132.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 155,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,155 @@\n+# PR #1132 四角の上の右クリックを下にあるもののメニューへ渡し、右ボタンではパンしない\n+\n+- マージ日: 2026-10-21\n+- 関連 Issue: #1117\n+- 差分規模: 10 ファイル / +256 -42\n+\n+## ゴールと結果\n+\n+ゴールは次の 2 つ。どちらも達成した。\n+\n+- 描いてあるリサイズハンドル（四角）の上で右クリックすると、四角が無い場合と同じく、ポインタの下にあるもの（ノード / artboard / 空き領域）のメニューが出る\n+- 右ボタンではパンしない（space を押していても）。パンは space + 主ボタンと中ボタンだけ\n+\n+Issue は「決めること」を 2 つ持っていた。1（四角の上の右クリック）は仕様から決まると判断した。2（space + 右ボタン）は仕様に無かったので、A / B の案を Issue に書いて止め、オーナーの回答（A）を待ってから進めた。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。コメントは、自分が投稿したテストケース表と、bot の投稿（Storybook プレビュー・CI レポート・VRT）だけ。CI は初回の push ですべて通った。\n+\n+## 指摘\n+\n+### 1. 置き換えたテスト「四角の下が空き領域」が、直す前の実装でも通った\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 直す前も `[]` が届いていたので、同じ答えになっていた。下を土台にしたうえで「1 回だけ届く」を見る形に変えた。こうすると `stopPropagation` の漏れで落ちる。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 2. 既定のメニューを止めるテストの入力が、既定の経路と同じ答えを出した\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 下を空き領域にすると、器 section が `preventDefault` するため、四角側を消しても通る、という指摘。下をノードに変えた。ただし試作のミューテーションでは、下に何を置いても元イベントの `preventDefault` 漏れで落ちたので、指摘の前提とは食い違った。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 3. ゴールにある artboard の場合がテスト一覧に無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: ゴールは 3 通り（ノード / artboard / 空き領域）なのに、ケースは 2 通りだけだった。枠の背景の上のケースを足した。\n+- 既存ルール: rules/testing.md「1. 振る舞い(仕様)をテストする」\n+\n+### 4. happy-dom に `elementsFromPoint` が無いことが計画に書かれていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画は「差し替える」と書いていたが、happy-dom 20.8.9 には `elementsFromPoint` そのものが無い。定義する・片付けで消す・`afterEach` で外す、の 3 点を計画に足した。\n+- 既存ルール: なし\n+\n+### 5. 方針の文とファイル表の文が食い違っていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 方針は「元イベントを止める」と無条件で書き、表は「下が無ければ何もしない」と書いていた。「引けたときだけ止める」に統一し、合成イベントに写す属性（`clientX` / `clientY` だけ）も書いた。\n+- 既存ルール: なし\n+\n+### 6. 前提が崩れるコメントがファイル表から漏れていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 漏れていたのは `use-range-select` の 86・169 行目と、`docs/06-ui.md` の 223 行目。86 行目は `index.tsx` 238 行目と同じ文の複製で、169 行目は「右ボタンがパンになる」前提で書かれていた。\n+- 既存ルール: rules/coding.md「ルール」\n+\n+### 7. 投げ直しの Why の置き場所と、合成イベントを component に置く理由が計画に無かった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 本番コードで `dispatchEvent` / `new MouseEvent` を使うのは、この回が初めてだった。器に Why（却下案 1・3 を Why not にした 1〜2 行）を置くことと、`CanvasDom` に寄せない理由を計画に足した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 8. 単体テストだけで足りる理由が書かれていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: ゴールは「メニューが出る」なのに、テストは `onOpenContextMenu` で止まっていた。その先は変えないので、通しのテストは要らない、と 1 行書いた。\n+- 既存ルール: なし\n+\n+### 9. 四角の上の右クリックの対象が仕様書に書かれていなかった\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: docs に書いたのはゴールのうちパンの側だけだった。「リサイズハンドル」の節は右ボタンの扱いを「下記『コンテキストメニュー』」へ送っているのに、送り先に答えが無かった。四角はポインタの下のものに数えない旨を 1 項目足した。\n+- 既存ルール: なし\n+\n+### 10. 引数名 `layer` と「層」が、このリポジトリの Layers（ノードのツリー）とぶつかった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 重ねる要素には、既に `*Overlay` の語があった。`CanvasDom.elementBeneath` の引数・doc・テスト名を overlay /「器」に揃えた。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 11. 右クリックの座標を `CanvasPointer.offsetOf` を通さずに読んでいた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `offsetOf` は pointer イベント専用の型だったので、`contextmenu` からは使えず、`clientX` を直接読む箇所が 2 つになっていた。引数をマウスイベントに広げ、2 箇所から呼ぶようにした。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 12. 四角の右クリックのテスト 4 件が、同じ準備を書き写していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 押す点は期待する座標とつながっているので、1 か所だけ直すとテスト同士の前提が食い違う。「下に何を置くか」を受け取るセットアップ関数にまとめた。\n+- 既存ルール: rules/testing.md「テストの書き方: ネスト禁止」\n+\n+### 13. 「右ボタンはメニューに使う」の理由が 3 箇所に書かれていた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 3 箇所は docs・`pansCanvas` の doc・zoom-pan テストのコメント。理由は docs の 1 箇所に置き、残りは参照だけにした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 14. 器の Why が、2 つの却下案を 1 段落に連ねていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 投げ直す理由の 1 文と、採らなかった 2 案に分けた。同じエージェントの「OS ごとの contextmenu の時機を断言している」は採らなかった。Windows で離した時点に来るのは既知の挙動で、Issue も前提にしているため。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 15. テスト用の `elementsFromPoint` が座標を見ないので、点の取り違えをどのテストも守っていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 次の 2 通りに壊しても、35 件すべて通ることを実測した。`elementBeneath` が引く点を (0,0) に固定する / 四角の器が渡す点をずらす。テスト用の定義を `{ at, stack }` で受け、点が違えば空を返す形にした。直したあと、同じ 2 通りの壊し方でそれぞれ 3 件と 2 件が落ちた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 16. 下に何も無いときの「何もしない」が、画面側のテストで確かめられていない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 採らなかった。実ブラウザでは `elementsFromPoint` が html / body まで返すので、この経路に入らない。同じ報告で、置き忘れたときに黙って通るテストの doc に書き漏れがあると指摘されたので、それは直した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 17. PreToolUse フックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: push 前の `echo hook-canary` が deny されずに通った。実行中フラグのマーカーも、発火ログの見出しも無かった。セッションを始めたときの作業ディレクトリは `/home/user`（リポジトリの外）。不発の間に、サブエージェントが `npx`（作業ツリーの外の一時コピー）と `pnpm dlx playwright@latest install chromium` を実行していた。作業ツリーへの影響は無い。\n+- 既存ルール: なし\n+\n+## 手戻り\n+\n+- 計画を 1 回立て直した（plan-reviewer の指摘 8 件を planner に戻した）。立て直しで変わったのは次の 3 点。\n+  - `onContextMenu` を付ける場所を、四角 1 つ 1 つから `aria-hidden` の器へ移した（四角の div に付けると Biome の `noStaticElementInteractions` に当たると試作で分かった）\n+  - テスト用の定義の置き場所を、`canvas-measure.ts` から `src/libs/__tests__/` へ移した\n+  - 器の ref をやめた\n+- 実装の検証で、直しを implementer に 2 回戻した（1 段目の 6 件と、test-reviewer の 2 件）\n+- push 前に main が先へ進んでいたので、`origin/main` をマージした（衝突なし）\n+- フックの発火で止まった操作: 無し（フックが発火していないため）\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録だけを残す回で、集計と介入の判断は `harness-growth` が行う。",
+          "patchLines": 156,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
