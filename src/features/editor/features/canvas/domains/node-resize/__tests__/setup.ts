@@ -42,6 +42,16 @@ export function setupFlowResizable(): ResizableSelection {
   return { ...setupResizable(), origin: Option.none };
 }
 
+/** 幅だけが固定で、(30, 70) に置かれている要素（高さは掴めない）。 */
+export function setupWidthOnlyResizable(): ResizableSelection {
+  return { ...setupResizable(), lengths: [AxisLength.create("width", 200)] };
+}
+
+/** 高さだけが固定で、(30, 70) に置かれている要素（幅は掴めない）。 */
+export function setupHeightOnlyResizable(): ResizableSelection {
+  return { ...setupResizable(), lengths: [AxisLength.create("height", 100)] };
+}
+
 /** 等倍で見ているキャンバス。 */
 export function setupView(): CanvasView {
   return CanvasView.create();

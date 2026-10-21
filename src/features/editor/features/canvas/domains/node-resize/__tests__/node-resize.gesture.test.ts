@@ -10,9 +10,11 @@ import {
   grabbedAt,
   resizeEditAt,
   setupFlowResizable,
+  setupHeightOnlyResizable,
   setupResizable,
   setupRotatedBounds,
   setupView,
+  setupWidthOnlyResizable,
 } from "./setup";
 
 test("右辺の内側を押すと幅のハンドルを掴む", () => {
@@ -122,10 +124,7 @@ test("要素の外を押すとハンドルは掴めない", () => {
 });
 
 test("出ていないハンドルの辺を押しても掴めない", () => {
-  const widthOnly: ResizableSelection = {
-    ...setupResizable(),
-    lengths: [AxisLength.create("width", 200)],
-  };
+  const widthOnly = setupWidthOnlyResizable();
 
   expect(
     NodeResize.grabAt(widthOnly, setupRotatedBounds(), { x: 150, y: 147 }),
@@ -133,7 +132,7 @@ test("出ていないハンドルの辺を押しても掴めない", () => {
 });
 
 test("右下の角の帯を押すと、幅と高さを終点側から両方掴む", () => {
-  // 描かれた角の四角（角から 5px）の外側・帯（8px）の内側を押す
+  // 描いた角の四角の外側・帯の内側を押す
   const grabbed = NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
     x: 293,
     y: 143,
@@ -222,10 +221,7 @@ test("位置を持たない要素の左下の角の帯では、終点側の高�
 });
 
 test("幅だけが固定の要素の右下の角の帯では、幅だけを掴む", () => {
-  const widthOnly: ResizableSelection = {
-    ...setupResizable(),
-    lengths: [AxisLength.create("width", 200)],
-  };
+  const widthOnly = setupWidthOnlyResizable();
 
   const grabbed = NodeResize.grabAt(widthOnly, setupRotatedBounds(), {
     x: 293,
@@ -241,10 +237,7 @@ test("幅だけが固定の要素の右下の角の帯では、幅だけを掴�
 });
 
 test("高さだけが固定の要素の右下の角の帯では、高さだけを掴む", () => {
-  const heightOnly: ResizableSelection = {
-    ...setupResizable(),
-    lengths: [AxisLength.create("height", 100)],
-  };
+  const heightOnly = setupHeightOnlyResizable();
 
   const grabbed = NodeResize.grabAt(heightOnly, setupRotatedBounds(), {
     x: 293,
@@ -382,10 +375,7 @@ test("位置を持たない要素の右下の角は、2 軸とも終点側で掴
 
 test("幅だけが固定なら、右下の角でも幅しか掴めない", () => {
   // 固定されていない軸まで変えると hug / fill の指定を黙って壊すため
-  const widthOnly: ResizableSelection = {
-    ...setupResizable(),
-    lengths: [AxisLength.create("width", 200)],
-  };
+  const widthOnly = setupWidthOnlyResizable();
 
   expect(
     NodeResize.gripFor(
@@ -402,10 +392,7 @@ test("幅だけが固定なら、右下の角でも幅しか掴めない", () =>
 
 test("高さだけが固定なら、右下の角でも高さしか掴めない", () => {
   // 幅側だけを見ていると、高さ側の枝を消しても気づけない（対で見る）
-  const heightOnly: ResizableSelection = {
-    ...setupResizable(),
-    lengths: [AxisLength.create("height", 100)],
-  };
+  const heightOnly = setupHeightOnlyResizable();
 
   expect(
     NodeResize.gripFor(

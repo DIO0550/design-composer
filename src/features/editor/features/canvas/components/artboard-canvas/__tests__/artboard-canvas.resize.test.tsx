@@ -458,7 +458,7 @@ test("角を掴んでいる間は、器が斜めのカーソルを出す", () =>
 });
 
 test("右下の角の帯を掴んで斜めに運ぶと、幅と高さが 1 回の編集で通知される", () => {
-  // 描かれた角の四角（角から 5px）の外側・帯（8px）の内側を押す
+  // 描いた角の四角の外側・帯の内側を押す
   const onResize = vi.fn();
   renderCanvas({ selection: setupSelection(["panel"]), onResize });
   const panel = drawnAt("panel", PanelBounds);

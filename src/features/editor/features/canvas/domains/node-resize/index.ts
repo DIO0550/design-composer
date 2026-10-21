@@ -30,8 +30,9 @@ import { Option } from "@/utils/Option";
  * 四角だけを掴み口にすると、辺のどこでも掴めていたものが 10px の的になって操作性が落ち
  * るので、四角の掴み口をこの帯に上乗せしている。
  *
- * 2 本の帯が重なる角では掴める軸をすべて掴む。角の範囲は帯の重なりそのもので、角のための
- * 大きさは別に持たない。描いた四角の 10px に合わせると、四角の外側・帯の内側に 1 軸の縁が残る。
+ * 角のための大きさは別に持たず、帯の重なりをそのまま角とする（角の規則は `grabAt`）。描いた
+ * 四角（角を中心に置くので要素の内側へは角から 5px しか届かない）に合わせると、その外側・帯の
+ * 内側に 1 軸の縁が残る。
  */
 const ResizeHandleThicknessPx = 8;
 
@@ -346,18 +347,18 @@ function endAt(ratio: AnchorRatio): Option<AxisEnd> {
  *
  * @param resizable 選択中のものの掴める軸と位置
  * @param axis 見る軸
- * @param end 掴もうとしている端。その軸を掴まない位置なら `none`
+ * @param pointedEnd 掴もうとしている端。その軸を掴まない位置なら `none`
  * @returns 掴めるならその掴み。その軸が固定でない・端が無い・始点側なのに位置を書けない
  *   ときは `none`
  */
 function axisGrabAt(
   resizable: ResizableSelection,
   axis: Axis,
-  end: Option<AxisEnd>,
+  pointedEnd: Option<AxisEnd>,
 ): Option<AxisGrab> {
-  return Option.flatMap(end, (side) =>
+  return Option.flatMap(pointedEnd, (end) =>
     Option.flatMap(AxisLength.find(resizable.lengths, axis), (length) =>
-      grabFor(resizable, length, side),
+      grabFor(resizable, length, end),
     ),
   );
 }
@@ -365,8 +366,6 @@ function axisGrabAt(
 /**
  * その軸をその端から掴む掴み。始点側から縮めるには、反対の辺をその場に留めるための位置が
  * 要る（フロー配置のノードは持たない）。
- *
- * 箇所から引くときも帯から引くときもここを通すので、始点側の可否が 1 箇所で決まる。
  *
  * @param resizable 選択中のものの掴める軸と位置
  * @param length 掴む軸と、その時点の長さ
@@ -627,7 +626,8 @@ export const NodeResize = {
    * 掴める帯とする（描かれている四角より広い / 上の定数を参照）。
    *
    * 2 本の帯が重なる角では掴める軸をすべて掴む。片方しか掴めない（fixed でない / 始点側
-   * なのに位置を書けない）ならその 1 軸（描いたハンドルの角と同じ規則）。
+   * なのに位置を書けない）ならその 1 軸（描いたハンドルの角と同じ規則。docs/06-ui.md
+   * 「リサイズハンドル」）。
    *
    * 回って描かれているものは、押された位置を回る前へ戻してから回る前の矩形で判定する
    * ので、帯は回った辺に沿う。
@@ -635,8 +635,8 @@ export const NodeResize = {
    * @param resizable 選択中のものの掴める軸と位置
    * @param bounds 選択中のものが回って描かれている矩形
    * @param pointer 押された位置
-   * @returns その位置で掴めるもの。回った矩形の外か、どの帯にも入っていないか、入って
-   *   いる帯が始点側なのに位置を書けないときは `none`
+   * @returns その位置で掴めるもの。回った矩形の外か、どの帯でも掴める軸が 1 つも無い
+   *   （帯に入っていない / 始点側なのに位置を書けない / 固定でない）ときは `none`
    */
   grabAt(
     resizable: ResizableSelection,
