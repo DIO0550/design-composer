@@ -1,0 +1,447 @@
+{
+  "version": 1,
+  "pr": 1137,
+  "sha": "a4a7ab48728509a6b67e4cb5288f5ce807e8ebaf",
+  "issue": 1120,
+  "overview": {
+    "title": "判定表 2 本の `report()` を `cases-report.sh` の共有版へ寄せる",
+    "lead": "`count-cases.sh` と `check-tally-cases.sh` が自前の `report()` をやめ、ほかの判定表と同じ `cases-report.sh` の `report()` で結果を出すようになった。判定と終了コードは変わらない。",
+    "before": [
+      {
+        "text": "2 本はそれぞれ自前の `report()` と `failed` を持ち、`exit \"$failed\"` で終えていた"
+      },
+      {
+        "text": "冒頭に「判定表が 4 つのフォルダに割れているので共有しない」という、事実と合わない理由が書かれていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "2 本とも `cases-report.sh` を source し、共有の `report()` で 1 ケース 1 行を出す",
+        "message": "count-source"
+      },
+      {
+        "text": "食い違いは共有の `cases_failed` に立ち、`exit \"$cases_failed\"` で終了コードになる",
+        "message": "tally-source"
+      },
+      {
+        "text": "ok 行は共有版の書式 `ok   <期待> <ケース名>` で出る(NG 行は前と同じ)"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "ok 行の書式の変化",
+        "text": "`check-tally-cases.sh` は期待に長い文を持つので ok 行が長くなる。書式の引数を足す案は却下した",
+        "go": {
+          "kind": "file",
+          "path": "harness/githooks/lib/check-tally-cases.sh"
+        }
+      },
+      {
+        "title": "共有の報告",
+        "text": "失敗フラグを立てることを守る判定表がまだ無い(#1136 に分離)",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/lib/cases-report.sh"
+        }
+      },
+      {
+        "title": "判定表を走らせる流れ",
+        "text": "pre-push と CI は終了コードだけを見る",
+        "go": {
+          "kind": "flow",
+          "id": "run-cases"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "判定表の報告を共有の関数 1 本に揃える"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "harness/records/count-cases.sh",
+      "name": "集計の判定表",
+      "role": "`count.sh` の全モードの判定を確かめる",
+      "change": "自前の `report()`・`failed`・共有しない理由の段落を消し、共有版を source する"
+    },
+    {
+      "path": "harness/githooks/lib/check-tally-cases.sh",
+      "name": "検査の集計の判定表",
+      "role": "push 前の検査の集計(`check-tally.sh`)の判定を確かめる",
+      "change": "自前の `report()`・`failed`・共有しない理由の段落を消し、共有版を source する"
+    },
+    {
+      "path": ".claude/hooks/lib/cases-report.sh",
+      "name": "判定表の共有の報告",
+      "role": "判定表が共有する `report()` と `cases_failed` を持つ(変更なし)"
+    },
+    {
+      "path": "harness/githooks/pre-push",
+      "name": "push 前の検査",
+      "role": "判定表を走らせ、終了コードで通過 / 失敗を決める(変更なし)"
+    },
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "フックの README",
+      "role": "「配線」の表に、どの判定表が共有の報告のどの関数を使うかを書く",
+      "change": "2 本を「`report` だけ」のまとまりに足した",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "count-source",
+      "from": "harness/records/count-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "cmd",
+      "name": "結果を 1 行で報告する",
+      "code": "report <期待> <実際> <ケース名>",
+      "via": "call",
+      "payload": "期待・実際・ケース名",
+      "returns": "食い違えば `cases_failed=1`",
+      "status": "added"
+    },
+    {
+      "id": "tally-source",
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "cmd",
+      "name": "結果を 1 行で報告する",
+      "code": "report <期待> <実際> <ケース名>",
+      "via": "call",
+      "payload": "期待・実際・ケース名",
+      "returns": "食い違えば `cases_failed=1`",
+      "status": "added"
+    },
+    {
+      "id": "prepush-count",
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count-cases.sh",
+      "kind": "qry",
+      "name": "集計の判定表を走らせる",
+      "code": "run_check \"集計の判定表\" bash harness/records/count-cases.sh",
+      "via": "exec",
+      "returns": "終了コード"
+    },
+    {
+      "id": "prepush-tally",
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "kind": "qry",
+      "name": "検査の集計の判定表を走らせる",
+      "code": "run_check \"pre-push の結果行の判定表\" bash harness/githooks/lib/check-tally-cases.sh",
+      "via": "exec",
+      "returns": "終了コード"
+    }
+  ],
+  "flows": [
+    {
+      "id": "run-cases",
+      "label": "push 前に判定表を走らせたとき",
+      "steps": [
+        "prepush-count",
+        "count-source",
+        "prepush-tally",
+        "tally-source"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "57639b82437a9827f1d5ce881071fcd04fb97175",
+      "phase": "core",
+      "role": "`count-cases.sh` を共有の `report()` へ寄せる",
+      "why": "共有しない理由が事実と合わず、書き直して正しくなる理由も無かったので、同じ処理が 2 箇所にある状態を解消した。",
+      "flows": [
+        "run-cases"
+      ],
+      "review": [
+        "source のパスが `records_dir`(絶対パス)から辿られていて、cwd に依らないこと"
+      ],
+      "before": [
+        {
+          "text": "自前の `report()` が `failed` を立てていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "共有の `report()` が `cases_failed` を立てる",
+          "message": "count-source"
+        }
+      ],
+      "notes": [
+        {
+          "path": "harness/records/count-cases.sh",
+          "start": 24,
+          "end": 24,
+          "text": "共有の報告を読み込む。パスを誤ると `set -u` で末尾の `exit` が未定義の変数になり、exit 1 で落ちる"
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "start": 339,
+          "end": 339,
+          "text": "終了コードは共有の `cases_failed` から返す。`failed` へ移し替える案は値の二重保持なので却下"
+        }
+      ]
+    },
+    {
+      "sha": "a4a2862386a0dc365ae4100b4679d87d6858258d",
+      "phase": "core",
+      "role": "`check-tally-cases.sh` を共有の `report()` へ寄せる",
+      "why": "`count-cases.sh` と同じ判断。片方だけ寄せると共有しない理由の段落がもう片方に残り、記述が割れる。",
+      "flows": [
+        "run-cases"
+      ],
+      "review": [
+        "ok 行に長い期待の文が出るようになるのを受け入れてよいか"
+      ],
+      "before": [
+        {
+          "text": "ok 行はケース名だけだった"
+        }
+      ],
+      "after": [
+        {
+          "text": "ok 行に期待も出る",
+          "message": "tally-source"
+        }
+      ],
+      "notes": [
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "start": 19,
+          "end": 19,
+          "text": "`here` は `BASH_SOURCE` から求めた絶対パスなので、どこから走らせても辿れる"
+        }
+      ]
+    },
+    {
+      "sha": "a4a7ab48728509a6b67e4cb5288f5ce807e8ebaf",
+      "phase": "fin",
+      "role": "共有の報告の利用者一覧に 2 本を足す",
+      "why": "`cases-report.sh` の冒頭は、利用者一覧を README「配線」の行に置くと決めている。足さないと一覧が古くなる。",
+      "review": [
+        "括弧の「`report` だけ」が、直前に並べたまとまり全体に掛かる書き方になっていること"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "count",
+      "label": "集計の判定表",
+      "file": "harness/records/count-cases.sh"
+    },
+    {
+      "id": "tally",
+      "label": "検査の集計の判定表",
+      "file": "harness/githooks/lib/check-tally-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "tally-all-pass",
+      "suite": "tally",
+      "name": "すべて通れば exit 0",
+      "techniques": [
+        "regression"
+      ],
+      "why": "共有の `report()` に寄せても、既存のケースが同じ判定のまま通ることを確かめる",
+      "given": "2 つの検査がどちらも通るスタブ",
+      "when": "集計を走らせ、終了コードを共有の `report()` で比べる",
+      "then": "ok 行が出る。全ケースでは ok 23 / NG 0 / exit 0",
+      "excerpt": {
+        "path": "harness/githooks/lib/check-tally-cases.sh",
+        "start": 49,
+        "end": 52,
+        "emphasis": [
+          {
+            "start": 50,
+            "end": 50
+          }
+        ],
+        "text": "tally 'run_check \"型\" true; run_check \"lint\" true'\nreport 0 \"$(status)\" \"すべて通れば exit 0\"\nreport \"pre-push: 結果 すべて通過(失敗 0 / 通過 2 / 飛ばした 0)\" \"$(last_line)\" \\\n  \"すべて通れば最後の行が「すべて通過」になる\""
+      },
+      "targets": [
+        "harness/githooks/lib/check-tally-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "tally-source"
+      ]
+    },
+    {
+      "id": "count-sections",
+      "suite": "count",
+      "name": "予算がずれていても節 1〜3 がすべて出る",
+      "techniques": [
+        "regression"
+      ],
+      "why": "期待を 1 件ずらすと NG 1・exit 1 になることを実測し、失敗が共有の `cases_failed` を通って終了コードに届くことを確かめた",
+      "given": "予算からずらした一時ツリー",
+      "when": "`--shrink` で集計し、節の数を共有の `report()` で比べる",
+      "then": "ok 行が出る。全ケースでは ok 45 / NG 0 / exit 0",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 333,
+        "end": 339,
+        "emphasis": [
+          {
+            "start": 337,
+            "end": 337
+          },
+          {
+            "start": 339,
+            "end": 339
+          }
+        ],
+        "text": "printf '\\n%s\\n' \"--shrink\"\nbuild_tree 1 0\nwrite_finding 10 comment \"レビュー（人）\"\nsections=\"$(run_count --shrink 2>&1 | grep -cE '^[0-9]+\\. ')\"\nreport 3 \"$sections\" \"予算がずれていても節 1〜3 がすべて出る\"\n\nexit \"$cases_failed\""
+      },
+      "targets": [
+        "harness/records/count-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "count-source"
+      ]
+    },
+    {
+      "id": "report-flag",
+      "suite": "count",
+      "name": "共有の report は食い違えば失敗フラグを立てる",
+      "techniques": [
+        "error"
+      ],
+      "why": "共有の `report()` から `cases_failed=1` を消しても、どの判定表も落ちない(test-reviewer で実測)。#1136 に分離した",
+      "given": "共有の `report()` の失敗フラグを立てる行が抜けた状態",
+      "when": "食い違うケースを含む判定表を走らせる",
+      "then": "exit 1 になるべきだが、守るテストが無い",
+      "todo": true,
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "判定表の通過 / 失敗は変わらず、ok 行に期待が出るようになった",
+    "lead": "使う人(push 前の検査を走らせるセッションと CI)から見て、通る・落ちるの結果は前と同じです。変わったのは、通ったケースの行の見え方だけです。",
+    "changed": {
+      "before": [
+        {
+          "text": "通ったケースの行には、ケースの名前だけが出ていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "通ったケースの行に、期待した値とケースの名前が並んで出る",
+          "message": "tally-source"
+        }
+      ],
+      "text": "期待に長い文を持つケースでは行が長くなります。食い違ったケースの行は前と同じ形です。"
+    },
+    "kept": [
+      {
+        "text": "すべてのケースが期待どおりなら、検査は通る",
+        "tests": [
+          "tally-all-pass",
+          "count-sections"
+        ]
+      },
+      {
+        "text": "1 つでも食い違えば、検査は落ちる",
+        "tests": [
+          "count-sections",
+          "report-flag"
+        ]
+      },
+      {
+        "text": "どの場所から走らせても、同じ結果になる"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "bash-source",
+      "category": "bash",
+      "label": "`source`",
+      "gist": "別のファイルに書いたシェルの関数や変数を、今のシェルへ読み込むためのコマンド。読み込んだ関数は、自分で定義したものと同じように呼べる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`source <ファイル>` は、そのファイルを新しいプロセスではなく今のシェルの中で上から実行する。そのため、ファイルの中で定義した関数(`report`)や代入した変数(`cases_failed=0`)が、読み込んだ側にそのまま残る。"
+        },
+        {
+          "kind": "declaration",
+          "code": "source \"$here/../../../.claude/hooks/lib/cases-report.sh\""
+        },
+        {
+          "kind": "caution",
+          "text": "相対パスは今いる場所(cwd)から解釈される。スクリプトの置き場所から辿るため、先にスクリプト自身の絶対パスを求めて前に付ける。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "lineRange": {
+            "start": 19,
+            "end": 19
+          },
+          "text": "共有の報告を読み込む",
+          "shas": [
+            "a4a2862386a0dc365ae4100b4679d87d6858258d"
+          ]
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "lineRange": {
+            "start": 24,
+            "end": 24
+          },
+          "text": "共有の報告を読み込む",
+          "shas": [
+            "57639b82437a9827f1d5ce881071fcd04fb97175"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "set-u"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "set-u",
+      "category": "bash",
+      "label": "`set -u`",
+      "gist": "定義していない変数を読んだら、その場でエラーにするシェルの設定。綴りの誤りや読み込み忘れを黙って空文字にしないためのもの。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "2 本の判定表は冒頭で `set -uo pipefail` を宣言している。source のパスを誤って `cases_failed` が定義されないと、末尾の `exit \"$cases_failed\"` が未定義の変数を読んでエラーになり、判定表は 0 以外で終わる。"
+        },
+        {
+          "kind": "memo",
+          "text": "末尾の `exit` の行そのものを消した場合は、未定義の変数を読まないので、この設定では止まらない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "harness/records/count-cases.sh",
+          "lineRange": {
+            "start": 339,
+            "end": 339
+          },
+          "text": "共有の失敗フラグで終える",
+          "shas": [
+            "57639b82437a9827f1d5ce881071fcd04fb97175"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "bash-source"
+      ]
+    }
+  ]
+}
