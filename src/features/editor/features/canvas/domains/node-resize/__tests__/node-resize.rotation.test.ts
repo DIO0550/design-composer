@@ -219,6 +219,28 @@ test("45 度回したノードの回った右辺の内側を押すと、幅を�
   );
 });
 
+test("45 度回したノードの回った右下の角の帯を押すと、幅と高さの両方を掴む", () => {
+  // 回る前の (293, 143)。描かれた角の四角（角から 5px）の外側・帯（8px）の内側
+  const onCornerBands = RotatedBounds.pointAt(TurnedBounds, {
+    x: 0.965,
+    y: 0.93,
+  });
+
+  const grabbed = NodeResize.grabAt(
+    placedTurned({ own: 45, total: 45 }),
+    TurnedBounds,
+    onCornerBands,
+  );
+
+  expect(Option.map(grabbed, (held) => held.grip)).toEqual(
+    Option.some({
+      kind: "both",
+      width: { length: { axis: "width", length: 200 }, end: "end" },
+      height: { length: { axis: "height", length: 100 }, end: "end" },
+    }),
+  );
+});
+
 test("45 度回したノードの外接矩形の角を押しても、回った矩形の外なので掴まない", () => {
   // 外接矩形の左上は (93.9, -6.1)。その少し内側は外接矩形には入るが、回った矩形の外
   const grabbed = NodeResize.grabAt(

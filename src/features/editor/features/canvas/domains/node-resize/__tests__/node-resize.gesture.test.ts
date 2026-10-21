@@ -132,33 +132,140 @@ test("出ていないハンドルの辺を押しても掴めない", () => {
   ).toEqual(Option.none);
 });
 
-test("角の帯を押しても 1 軸しか掴めない", () => {
-  /*
-   * 2 本の帯が重なる角では、並び順で先にある幅を掴む（近さでは決まらない）。
-   * 角の四角の外側・帯の内側を押したときの話で、四角そのものは 2 軸を掴める。
-   */
+test("右下の角の帯を押すと、幅と高さを終点側から両方掴む", () => {
+  // 描かれた角の四角（角から 5px）の外側・帯（8px）の内側を押す
   const grabbed = NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
-    x: 297,
-    y: 147,
+    x: 293,
+    y: 143,
   });
 
-  expect(Option.map(grabbed, (grab) => grab.grip.kind)).toEqual(
-    Option.some("width"),
+  expect(Option.map(grabbed, (grab) => grab.grip)).toEqual(
+    Option.some({
+      kind: "both",
+      width: { length: { axis: "width", length: 200 }, end: "end" },
+      height: { length: { axis: "height", length: 100 }, end: "end" },
+    }),
   );
 });
 
-test("左上の角の帯でも、掴めるのは並び順で先にある幅だけ", () => {
+test("位置を書ける要素の左上の角の帯を押すと、幅と高さを始点側から両方掴む", () => {
   const grabbed = NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
-    x: 103,
-    y: 53,
+    x: 107,
+    y: 57,
+  });
+
+  expect(Option.map(grabbed, (grab) => grab.grip)).toEqual(
+    Option.some({
+      kind: "both",
+      width: { length: { axis: "width", length: 200 }, end: "start" },
+      height: { length: { axis: "height", length: 100 }, end: "start" },
+    }),
+  );
+});
+
+test("下辺から帯の太さより離れた右辺の角寄りを押すと、幅だけを掴む", () => {
+  const grabbed = NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
+    x: 297,
+    y: 141,
   });
 
   expect(Option.map(grabbed, (grab) => grab.grip)).toEqual(
     Option.some({
       kind: "width",
-      width: { length: { axis: "width", length: 200 }, end: "start" },
+      width: { length: { axis: "width", length: 200 }, end: "end" },
     }),
   );
+});
+
+test("右辺から帯の太さより離れた下辺の角寄りを押すと、高さだけを掴む", () => {
+  const grabbed = NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
+    x: 291,
+    y: 147,
+  });
+
+  expect(Option.map(grabbed, (grab) => grab.grip)).toEqual(
+    Option.some({
+      kind: "height",
+      height: { length: { axis: "height", length: 100 }, end: "end" },
+    }),
+  );
+});
+
+test("位置を持たない要素の右上の角の帯では、終点側の幅だけを掴む", () => {
+  const grabbed = NodeResize.grabAt(
+    setupFlowResizable(),
+    setupRotatedBounds(),
+    { x: 293, y: 57 },
+  );
+
+  expect(Option.map(grabbed, (grab) => grab.grip)).toEqual(
+    Option.some({
+      kind: "width",
+      width: { length: { axis: "width", length: 200 }, end: "end" },
+    }),
+  );
+});
+
+test("位置を持たない要素の左下の角の帯では、終点側の高さだけを掴む", () => {
+  const grabbed = NodeResize.grabAt(
+    setupFlowResizable(),
+    setupRotatedBounds(),
+    { x: 107, y: 143 },
+  );
+
+  expect(Option.map(grabbed, (grab) => grab.grip)).toEqual(
+    Option.some({
+      kind: "height",
+      height: { length: { axis: "height", length: 100 }, end: "end" },
+    }),
+  );
+});
+
+test("幅だけが固定の要素の右下の角の帯では、幅だけを掴む", () => {
+  const widthOnly: ResizableSelection = {
+    ...setupResizable(),
+    lengths: [AxisLength.create("width", 200)],
+  };
+
+  const grabbed = NodeResize.grabAt(widthOnly, setupRotatedBounds(), {
+    x: 293,
+    y: 143,
+  });
+
+  expect(Option.map(grabbed, (grab) => grab.grip)).toEqual(
+    Option.some({
+      kind: "width",
+      width: { length: { axis: "width", length: 200 }, end: "end" },
+    }),
+  );
+});
+
+test("高さだけが固定の要素の右下の角の帯では、高さだけを掴む", () => {
+  const heightOnly: ResizableSelection = {
+    ...setupResizable(),
+    lengths: [AxisLength.create("height", 100)],
+  };
+
+  const grabbed = NodeResize.grabAt(heightOnly, setupRotatedBounds(), {
+    x: 293,
+    y: 143,
+  });
+
+  expect(Option.map(grabbed, (grab) => grab.grip)).toEqual(
+    Option.some({
+      kind: "height",
+      height: { length: { axis: "height", length: 100 }, end: "end" },
+    }),
+  );
+});
+
+test("位置を持たない要素の左上の角の帯では、何も掴まない", () => {
+  expect(
+    NodeResize.grabAt(setupFlowResizable(), setupRotatedBounds(), {
+      x: 107,
+      y: 57,
+    }),
+  ).toEqual(Option.none);
 });
 
 test("右下の角では幅と高さの両方を掴める", () => {
