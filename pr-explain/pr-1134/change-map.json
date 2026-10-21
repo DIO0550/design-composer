@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "pr": 1134,
+  "headBranch": "claude/affectionate-hypatia-no70ux",
+  "baseBranch": "main",
+  "mergeBase": "760016025b35682c34899ef76c5b93a665a4178d",
+  "head": "943e5d355bfc0a5a55ea67ab3eb67e6cfba4a986",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/naming-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1125.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "943e5d355bfc0a5a55ea67ab3eb67e6cfba4a986",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-21T00:02:02Z",
+      "subject": "naming-reviewer に条件式の命名の観点を足し、naming の対策済を記録する",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018H1BKVQW9pXQDovp6mw1WZ",
+      "files": [
+        {
+          "path": ".claude/agents/naming-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "patch": "@@ -35,3 +35,7 @@ model: opus\n - **対象が合っていても、規約の別の判断軸に揃っているか**（`分類: naming-vocabulary-alignment`）。\n   見る形は `.claude/agents/plan-reviewer.md`「新しい名前が、対象が合っていても規約の別の判断軸に\n   揃っていないかを見る」の 3 つ。計画のあとに付いた名前・変わった名前を、差分の最終形で見る\n+- **条件を組んだ式に名前があるか**（`分類: naming`）。`&&` / `||` で 2 つ以上を組んだ式や、添字で隣を引く\n+  比較（`position === 0 || ... >= 直前の ...`）が `if`・フィルタの中へそのまま置かれていないか。\n+  `rules/naming.md`「条件を組んだ式に名前を付ける」を差分の最終形で見る。人のレビューで 2 回\n+  続いた形で、機械判定できず（偽陽性が出る）フックにしなかった",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/pr-1125.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -137,3 +137,4 @@ GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_\n ## 規約への反映\n \n 無し。記録だけを残す回で、集計と介入は `harness-growth` の管轄。\n+- 対策済: `naming` 層=観点 at pr-1125",
+          "patchLines": 5,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
