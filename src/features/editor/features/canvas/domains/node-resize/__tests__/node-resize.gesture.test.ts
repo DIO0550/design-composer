@@ -162,6 +162,21 @@ test("位置を書ける要素の左上の角の帯を押すと、幅と高さ�
   );
 });
 
+test("右上の角の帯を押すと、位置を書ける要素では幅を終点側から・高さを始点側から両方掴む", () => {
+  const grabbed = NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
+    x: 293,
+    y: 57,
+  });
+
+  expect(Option.map(grabbed, (grab) => grab.grip)).toEqual(
+    Option.some({
+      kind: "both",
+      width: { length: { axis: "width", length: 200 }, end: "end" },
+      height: { length: { axis: "height", length: 100 }, end: "start" },
+    }),
+  );
+});
+
 test("下辺から帯の太さより離れた右辺の角寄りを押すと、幅だけを掴む", () => {
   const grabbed = NodeResize.grabAt(setupResizable(), setupRotatedBounds(), {
     x: 297,
