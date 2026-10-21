@@ -6,10 +6,6 @@
 # 見る。**名前は出力全体ではなく内訳の行から探す。** `run_check` の見出しにはどの検査の名前も
 # 出るので、全体から探すと集計を壊しても通る。
 #
-# `report()` を `.claude/hooks/lib/cases-report.sh` と共有しないのは、判定表が 4 つのフォルダに
-# 割れていて、共有先を作ると判定表 1 本を単体で読めなくなるため(`harness/records/count-cases.sh`
-# と同じ判断)。
-#
 # 使い方: bash harness/githooks/lib/check-tally-cases.sh
 # 食い違ったケースがあれば exit 1(`ok` だけなら期待どおり)。
 
@@ -20,22 +16,7 @@ lib="$here/check-tally.sh"
 work="$(mktemp -d)" || exit 1
 trap 'rm -rf "$work"' EXIT
 
-failed=0
-
-# 1 ケースの結果を 1 行で出す。食い違ったら `failed` を立てる。
-#
-# $1 期待
-# $2 実際
-# $3 ケース名
-report() {
-  local expected="$1" actual="$2" label="$3"
-  if [ "$actual" = "$expected" ]; then
-    printf 'ok   %s\n' "$label"
-    return 0
-  fi
-  printf 'NG   expected=%s got=%s  %s\n' "$expected" "$actual" "$label"
-  failed=1
-}
+source "$here/../../../.claude/hooks/lib/cases-report.sh"
 
 # 集計を新しいシェルで走らせ、出力を `$work/out`、終了コードを `$work/status` に残す。
 #
@@ -126,4 +107,4 @@ report "pre-push: 結果 失敗(検査を 1 つも走らせていない)" "$(las
 last_statement="$(grep -vE '^[[:space:]]*(#|$)' "$here/../pre-push" | tail -n 1)"
 report "finish_checks" "$last_statement" "pre-push の最後の文が finish_checks で、その終了コードがフックの終了コードになる"
 
-exit "$failed"
+exit "$cases_failed"
