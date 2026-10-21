@@ -12,9 +12,6 @@
 # 前例は `.github/scripts/check-pr-closing-issue-cases.sh`。終了コードで見る理由も、そこと
 # `.claude/hooks/lib/result-option-discriminant-cases.sh` の冒頭にある。
 #
-# `report()` を前例と共通化しないのは、判定表が 4 つのフォルダに割れていて、共有先を作ると
-# 判定表 1 本を単体で読めなくなるため。
-#
 # 合成側が語彙表(`.claude/skills/harness-record/templates/record.md`)に載っている綴りを使うのは、
 # `count.sh` の畳み方と読み分けがその綴りで固定されていて、架空の分類・出どころでは亜種が
 # 畳まれず、読み分けも踏めないため。
@@ -23,17 +20,8 @@ set -uo pipefail
 records_dir="$(cd "$(dirname "$0")" && pwd)"
 work="$(mktemp -d)" || exit 1
 trap 'rm -rf "${work:?}"' EXIT
-failed=0
 
-report() {
-  local expected="$1" actual="$2" label="$3"
-  if [ "$actual" = "$expected" ]; then
-    printf 'ok   %s\n' "$label"
-    return 0
-  fi
-  printf 'NG   expected=%s got=%s  %s\n' "$expected" "$actual" "$label"
-  failed=1
-}
+source "$records_dir/../../.claude/hooks/lib/cases-report.sh"
 
 # 一時ツリーを作り直す。常時ロードとスキルの行数は count.sh が持つ予算ちょうどに合わせ、
 # ずれを作るケースだけが引数で増減させる。
@@ -348,4 +336,4 @@ write_finding 10 comment "レビュー（人）"
 sections="$(run_count --shrink 2>&1 | grep -cE '^[0-9]+\. ')"
 report 3 "$sections" "予算がずれていても節 1〜3 がすべて出る"
 
-exit "$failed"
+exit "$cases_failed"
