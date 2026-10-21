@@ -1,0 +1,1 @@
+import{n as e}from"./chunk-BneVvdWh.js";var t,n=e((()=>{t={Separate:`separate`,Continued:`continued`}}));export{n,t};
