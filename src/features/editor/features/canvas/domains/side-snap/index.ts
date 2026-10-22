@@ -133,8 +133,11 @@ type SnapCandidate =
       shift: number;
     }>;
 
-/** 揃った線が縦横とも無いガイド（`SideSnap.NoGuides` と `SideSnap.Unsnapped` が指す）。 */
-const NoSnapGuides = {
+/**
+ * 揃った線が縦横とも無いガイド。揃え先に届かない・揃え先が無い・まだ動かしていないときに
+ * 使う。
+ */
+const NoGuides = {
   horizontal: Option.none,
   vertical: Option.none,
 } satisfies SnapGuides;
@@ -148,16 +151,12 @@ export const SideSnap = {
    */
   ThresholdPx: 6,
 
-  /**
-   * 揃った線が縦横とも無いガイド。揃え先に届かない・揃え先が無い・まだ動かしていないときに
-   * 使う。
-   */
-  NoGuides: NoSnapGuides,
+  NoGuides,
 
   /** 寄せず線も出さない答え。 */
   Unsnapped: {
     offset: Offset.Origin,
-    guides: NoSnapGuides,
+    guides: NoGuides,
   } satisfies SideSnapped,
 
   /**
