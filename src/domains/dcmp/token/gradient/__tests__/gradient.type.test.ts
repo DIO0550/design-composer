@@ -9,7 +9,7 @@ test("色を並べる形は linear の1つだけになる", () => {
   expectTypeOf<GradientShape>().toEqualTypeOf<"linear">();
 });
 
-test("グラデーションの CSS 値は角度を deg で書いた linear-gradient() の綴りに限られる", () => {
+test("グラデーションの CSS 値は linear-gradient() で始まり、角度を deg の数値で書いた綴りでなければならない", () => {
   expectTypeOf<"linear-gradient(90deg, #000000 0%, #ffffff 100%)">().toExtend<LinearGradientValue>();
   expectTypeOf<"radial-gradient(90deg, #000000 0%, #ffffff 100%)">().not.toExtend<LinearGradientValue>();
   expectTypeOf<"linear-gradient(90, #000000 0%, #ffffff 100%)">().not.toExtend<LinearGradientValue>();
