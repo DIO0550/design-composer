@@ -1,0 +1,294 @@
+{
+  "version": 1,
+  "pr": 1150,
+  "sha": "da6f98e16461fdc2a8060ae59206847b7856d5d2",
+  "issue": 864,
+  "overview": {
+    "title": "グラデーションの CSS 値の型が閉じていることを型テストで固定する",
+    "lead": "`LinearGradientValue` と `ColorStopValue` を素の `string` へ広げると `pnpm run typecheck` が落ちるようになった。実装は変えていない。",
+    "before": [
+      {
+        "text": "2 つの型を `string` に書き換えても typecheck は exit 0 で通り、綴りの型が閉じていることを何も守っていなかった"
+      }
+    ],
+    "after": [
+      {
+        "text": "`LinearGradientValue` を `string` に広げる・角度の穴を `${string}` にする・`deg` や関数名を緩めると、型テストが落ちる"
+      },
+      {
+        "text": "`GradientStop.cssValue` の戻り値（`ColorStopValue`）を `string` に広げる・位置の穴を `${string}` にする・`%` を落とすと、型テストが落ちる"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "色の変わり目の型は export せずに戻り値から引く",
+        "text": "`ColorStopValue` は消費側が無いので公開 API を増やさず、`ReturnType<typeof GradientStop.cssValue>` で見ている。戻り値の注釈を `string` にしても落ちることを確かめた",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/dcmp/token/gradient/__tests__/gradient.type.test.ts"
+        }
+      },
+      {
+        "title": "色の並びは型で閉じていない",
+        "text": "`LinearGradientValue` の括弧の後半は `${string}` のまま。テスト名も関数名と角度だけを約束するよう狭めた（`da6f98e`）",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/dcmp/token/gradient/index.ts"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "domains / dcmp",
+      "role": "グラデーションの綴りの型に、閉じていることを守る型テストを足す"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/dcmp/token/gradient/__tests__/gradient.type.test.ts",
+      "name": "グラデーションの型テスト",
+      "role": "グラデーションの型が受け付ける綴りと弾く綴りを固定する",
+      "change": "テストを 2 件追加"
+    },
+    {
+      "path": "src/domains/dcmp/token/gradient/index.ts",
+      "name": "グラデーション",
+      "role": "グラデーションのトークンと、CSS の綴りの型を持つ"
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "bb9d2b122b8e3ea35a0fd7bcfb125782599e97ee",
+      "phase": "core",
+      "role": "2 つの綴りの型を守る型テストを足す",
+      "why": "`rules/coding.md`「値の語彙を型で閉じる」は閉じたことを実際に弾かれるかで確かめ `expectTypeOf` で固定するよう求めているが、どちらの型にもテストが無かった。受け付ける綴りを 1 件置くのは、型が `never` に潰れたとき `not.toExtend` がすべて通るのを防ぐため",
+      "review": [
+        "`ReturnType` を `toEqualTypeOf` で比べる形（px の先例）を採らなかった理由に納得できるか（型を `string` に広げると両辺が `string` になって通る）",
+        "数値でない角度・位置（`abcdeg` / `abc%`）を弾く行が、数値の穴だけを広げる退行を捕まえていること"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/token/gradient/__tests__/gradient.type.test.ts",
+          "start": 20,
+          "end": 20,
+          "text": "テストの中だけの別名。`index.ts` の非公開の型と同じ名前で、指す実体も同じ"
+        }
+      ]
+    },
+    {
+      "sha": "da6f98e16461fdc2a8060ae59206847b7856d5d2",
+      "phase": "revise",
+      "role": "T1 のテスト名を閉じている範囲に合わせて狭める",
+      "why": "comment-reviewer の指摘。色の並びは `${string}` のままなので、「綴りに限られる」は綴り全体が閉じているように読めた。assert は変えていない",
+      "review": [
+        "新しいテスト名が assert の範囲（関数名と角度）を超えて約束していないこと"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "gradient-type",
+      "label": "グラデーションの型",
+      "file": "src/domains/dcmp/token/gradient/__tests__/gradient.type.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "linear-gradient-value",
+      "suite": "gradient-type",
+      "name": "グラデーションの CSS 値は linear-gradient() で始まり、角度を deg の数値で書いた綴りでなければならない",
+      "techniques": [
+        "type",
+        "boundary"
+      ],
+      "why": "`LinearGradientValue` が素の `string` や一部だけ広げた形へ退行したら typecheck で落とす",
+      "given": "`LinearGradientValue` = `linear-gradient(${number}deg, ${string})`",
+      "when": "正しい綴り 1 件と、1 か所だけ崩した綴り 3 件を代入できるか見る",
+      "then": "正しい綴りだけが代入でき、関数名・`deg`・角度の数値を崩した綴りは型エラーになる",
+      "commit": "bb9d2b122b8e3ea35a0fd7bcfb125782599e97ee",
+      "excerpt": {
+        "path": "src/domains/dcmp/token/gradient/__tests__/gradient.type.test.ts",
+        "start": 12,
+        "end": 17,
+        "text": "test(\"グラデーションの CSS 値は linear-gradient() で始まり、角度を deg の数値で書いた綴りでなければならない\", () => {\n  expectTypeOf<\"linear-gradient(90deg, #000000 0%, #ffffff 100%)\">().toExtend<LinearGradientValue>();\n  expectTypeOf<\"radial-gradient(90deg, #000000 0%, #ffffff 100%)\">().not.toExtend<LinearGradientValue>();\n  expectTypeOf<\"linear-gradient(90, #000000 0%, #ffffff 100%)\">().not.toExtend<LinearGradientValue>();\n  expectTypeOf<\"linear-gradient(abcdeg, #000000 0%, #ffffff 100%)\">().not.toExtend<LinearGradientValue>();\n});"
+      },
+      "values": {
+        "columns": [
+          "綴り",
+          "代入できるか",
+          "捕まえる退行"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`linear-gradient(90deg, #000000 0%, #ffffff 100%)`",
+              "できる",
+              "型が `never` に潰れる"
+            ]
+          },
+          {
+            "cells": [
+              "`radial-gradient(90deg, …)`",
+              "できない",
+              "関数名を `${string}-gradient` に広げる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`linear-gradient(90, …)`",
+              "できない",
+              "`deg` を落とす"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`linear-gradient(abcdeg, …)`",
+              "できない",
+              "角度の穴を `${string}` に広げる"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/token/gradient/index.ts"
+      ]
+    },
+    {
+      "id": "color-stop-value",
+      "suite": "gradient-type",
+      "name": "色の変わり目の CSS 値は色のあとに位置を % で書いた綴りに限られる",
+      "techniques": [
+        "type",
+        "boundary"
+      ],
+      "why": "非公開の `ColorStopValue`（`GradientStop.cssValue` の戻り値）が退行したら typecheck で落とす",
+      "given": "`ColorStopValue` = `${ColorToken} ${number}%`（`ColorToken` は `string`）",
+      "when": "`ReturnType<typeof GradientStop.cssValue>` に正しい綴り 1 件と崩した綴り 2 件を代入できるか見る",
+      "then": "`#000000 50%` だけが代入でき、`%` が無い・位置が数値でない綴りは型エラーになる",
+      "commit": "bb9d2b122b8e3ea35a0fd7bcfb125782599e97ee",
+      "excerpt": {
+        "path": "src/domains/dcmp/token/gradient/__tests__/gradient.type.test.ts",
+        "start": 19,
+        "end": 24,
+        "text": "test(\"色の変わり目の CSS 値は色のあとに位置を % で書いた綴りに限られる\", () => {\n  type ColorStopValue = ReturnType<typeof GradientStop.cssValue>;\n  expectTypeOf<\"#000000 50%\">().toExtend<ColorStopValue>();\n  expectTypeOf<\"#000000 50\">().not.toExtend<ColorStopValue>();\n  expectTypeOf<\"#000000 abc%\">().not.toExtend<ColorStopValue>();\n});"
+      },
+      "values": {
+        "columns": [
+          "綴り",
+          "代入できるか",
+          "捕まえる退行"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`#000000 50%`",
+              "できる",
+              "型が `never` に潰れる"
+            ]
+          },
+          {
+            "cells": [
+              "`#000000 50`",
+              "できない",
+              "`%` を落とす・型を `string` に広げる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`#000000 abc%`",
+              "できない",
+              "位置の穴を `${string}` に広げる"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/token/gradient/index.ts"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "画面の振る舞いは変わらない",
+    "lead": "この変更は開発中の検査だけを強めるもので、アプリを操作する人から見える変化は無い。",
+    "kept": [
+      {
+        "text": "グラデーションのトークンを書き出したときの見た目と、ファイルに残る中身は前と同じ",
+        "tests": [
+          "linear-gradient-value",
+          "color-stop-value"
+        ]
+      }
+    ]
+  },
+  "primers": [
+    {
+      "id": "template-literal-type",
+      "kind": "language",
+      "category": "TypeScript",
+      "label": "テンプレートリテラル型",
+      "gist": "文字列の形を型で決める仕組み。`${number}` のような穴に当てはまる文字列だけを、その型として受け付ける",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "type LinearGradientValue = `linear-gradient(${number}deg, ${string})`;"
+        },
+        {
+          "kind": "text",
+          "text": "穴が `${number}` なら数として読める綴りだけが入り、`${string}` なら何でも入る。穴を `${string}` に変えると、型の名前は同じまま弾く範囲だけが広がる"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/token/gradient/index.ts",
+          "lineRange": {
+            "start": 90,
+            "end": 93
+          },
+          "text": "色の変わり目と `linear-gradient()` の綴りの型"
+        }
+      ],
+      "seeAlso": [
+        "expect-type"
+      ]
+    },
+    {
+      "id": "expect-type",
+      "kind": "language",
+      "category": "Vitest",
+      "label": "`expectTypeOf` の `toExtend` / `not.toExtend`",
+      "gist": "型どうしの関係をテストに書く仕組み。実行時には何もせず、型検査（このリポジトリでは `tsc -b`）で関係が成り立たないと落ちる",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`expectTypeOf<A>().toExtend<B>()` は A を B に代入できること、`.not.toExtend<B>()` は代入できないことを表す"
+        },
+        {
+          "kind": "caution",
+          "text": "`vitest run` では落ちない。`pnpm run test:run` が通っても、型テストが通ったことにはならない"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/token/gradient/__tests__/gradient.type.test.ts",
+          "lineRange": {
+            "start": 12,
+            "end": 24
+          },
+          "text": "追加した 2 件のテスト",
+          "shas": [
+            "bb9d2b122b8e3ea35a0fd7bcfb125782599e97ee"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "template-literal-type"
+      ]
+    }
+  ]
+}
