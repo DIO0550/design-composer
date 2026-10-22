@@ -54,6 +54,21 @@ test("ファイル名の要素を持つパスが 1 件も残らないドロッ�
   );
 
   fake.dropFiles(["/", "\\"]);
+  // 配られる側を 1 件混ぜる。配る処理ごと壊れていても通る、を防ぐ。
+  fake.dropFiles([Path]);
+
+  expect(received).toStrictEqual([[Path]]);
+});
+
+test("空の並びのドロップは配られない", async () => {
+  const fake = FileDropFake.create();
+  const received: (readonly string[])[] = [];
+  Result.unwrap(
+    await fake.drop.subscribeDropped((paths) => {
+      received.push(paths);
+    }),
+  );
+
   fake.dropFiles([]);
   // 配られる側を 1 件混ぜる。配る処理ごと壊れていても通る、を防ぐ。
   fake.dropFiles([Path]);
