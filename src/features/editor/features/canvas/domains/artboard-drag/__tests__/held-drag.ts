@@ -27,6 +27,14 @@ export const HomeDrawn: CanvasBounds = {
   height: 100,
 };
 
+/** 揃え先に置く artboard が描かれている矩形（画面上の px）。 */
+export const StationaryDrawn: CanvasBounds = {
+  left: 400,
+  top: 300,
+  width: 150,
+  height: 80,
+};
+
 /**
  * 押した位置からその量だけ動かしたポインタの位置。
  *

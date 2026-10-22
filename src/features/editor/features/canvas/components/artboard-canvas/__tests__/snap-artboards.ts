@@ -7,17 +7,28 @@ import {
 import { drag } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { drawn, selectionFromArtboards } from "./setup";
 
+/** 並べる 3 枚の artboard の名前（並び順）と、3 枚に共通の大きさ。 */
+const SampleArtboards = {
+  names: ["first", "second", "third"],
+  width: 200,
+  height: 140,
+} as const;
+
 /**
  * 200 × 140 の artboard を 3 枚、既定の位置（x = 0 / 232 / 464、y = 0）に並べた未選択の対。
  *
  * @returns 3 枚の artboard を持つドキュメントと、未選択の対
  */
 export function setupSelection() {
-  return selectionFromArtboards([
-    { name: "first", width: 200, height: 140, children: [] },
-    { name: "second", width: 200, height: 140, children: [] },
-    { name: "third", width: 200, height: 140, children: [] },
-  ]);
+  const { width, height } = SampleArtboards;
+  return selectionFromArtboards(
+    SampleArtboards.names.map((name) => ({
+      name,
+      width,
+      height,
+      children: [],
+    })),
+  );
 }
 
 /**
@@ -35,8 +46,8 @@ export function drawnFollowingFrame(name: string): void {
     return new DOMRect(
       Number.parseFloat(style.left),
       Number.parseFloat(style.top),
-      200,
-      140,
+      SampleArtboards.width,
+      SampleArtboards.height,
     );
   };
 }
@@ -45,7 +56,7 @@ export function drawnFollowingFrame(name: string): void {
  * 3 枚すべての実測を、それぞれの枠が今置かれている位置に追従させる。
  */
 export function drawnFollowingFrames(): void {
-  for (const name of ["first", "second", "third"]) {
+  for (const name of SampleArtboards.names) {
     drawnFollowingFrame(name);
   }
 }
