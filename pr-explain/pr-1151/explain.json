@@ -1,0 +1,1309 @@
+{
+  "version": 1,
+  "pr": 1151,
+  "sha": "8378138b628883f213ab97b519a1d70df5690dab",
+  "issue": 874,
+  "overview": {
+    "title": "artboard を運んで辺に吸い付いたときもガイド線を出す",
+    "lead": "artboard を見出しから運んでいる間、どの artboard の辺・中心線に揃ったのかが赤いガイド線で見えるようになった。寄せ量とガイド線を 1 回の判定の答え `SideSnapped` として運んでいる間の状態に持たせ、キャンバスが `GuideLineOverlay` で描く。",
+    "before": [
+      {
+        "text": "`ArtboardDrag.snapOffsetAt` は `SideSnap.toSnapped(...)` の `offset` だけを返し、`guides` は捨てていた。運んでいる間の状態は寄せ量 `snap: Offset` だけを持っていた"
+      },
+      {
+        "text": "artboard を運んで他の artboard の辺に吸い付いても、ガイド線は出なかった"
+      },
+      {
+        "text": "寄せず線も出さない答え `{ offset: Offset.Origin, guides: SideSnap.NoGuides }` は `node-resize` がその場で組み立てていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "`ArtboardDrag.snappedAt` が寄せ量とガイド線の対 `SideSnapped` を返し、運んでいる間の状態 `dragging.snapped` にそのまま持つ",
+        "message": "snapped-at"
+      },
+      {
+        "text": "`ArtboardDrag.snapGuides(drag)` が運んでいる間の線を取り出し、`useArtboardDrag` が `snapGuides` として返す",
+        "message": "snap-guides"
+      },
+      {
+        "text": "`ArtboardCanvas` が `<GuideLineOverlay guides={artboardDrag.snapGuides} />` で線だけを描く(隙間の数値は出さない)",
+        "message": "draw-guides"
+      },
+      {
+        "text": "大きさの無い artboard を運んでいる・揃う線が無い・掴んでいないときは `SideSnap.Unsnapped`(寄せず線も出さない答え)になる。`node-resize` も同じ値を使う",
+        "message": "unsnapped-measure"
+      },
+      {
+        "text": "離すと `ArtboardDrag.release()` で最初の状態へ戻り、線は消える",
+        "message": "release"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "隙間の数値は暫定で出さない",
+        "text": "ノードの移動は揃え先との隙間の数値も出すが、artboard の移動は線だけ(リサイズと同じ `GuideLineOverlay`)。UI 案にガイド線自体が描かれていないため未決で、#1149 でオーナーの判断を待っている。数値を出すなら `SnapGuideOverlay` へ差し替え、テスト「揃え先から離れた位置で揃っている間も、揃え先との隙間の数値は出ない」を反転する",
+        "go": {
+          "kind": "message",
+          "id": "draw-guides"
+        }
+      },
+      {
+        "title": "寄せ量とガイド線を対で運ぶ",
+        "text": "寄る先と線が別々の判定で決まらないよう、1 回の判定の答えをそのまま状態に持つ。`moveTo` で線を差し替え忘れると古い線が残る",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts"
+        }
+      },
+      {
+        "title": "寄せず線も出さない答え",
+        "text": "`SideSnap.Unsnapped` を足し、`node-resize` の同じ組み立てを置き換えた(振る舞いは不変)",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts"
+        }
+      },
+      {
+        "title": "運んでいる間の流れ",
+        "text": "ポインタが動くたびに判定し、線を状態から取り出してキャンバスが描くまで",
+        "go": {
+          "kind": "flow",
+          "id": "move"
+        }
+      },
+      {
+        "title": "⌘ / Ctrl はスコープ外",
+        "text": "artboard の移動にはまだ吸い付きを外す仕組みが無く、#1147 に分けた",
+        "go": {
+          "kind": "layer",
+          "layer": "features / editor/features/canvas"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "artboard-move",
+      "label": "artboard の移動",
+      "role": "見出しから artboard を運び、他の artboard の辺・中心線へ吸い付かせ、揃った線にガイド線を出す"
+    },
+    {
+      "id": "side-snap",
+      "label": "辺のスナップ",
+      "role": "寄せ量とガイド線を 1 回の判定で決める。ノードの移動・リサイズと artboard の移動が共有する"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "artboard の移動の状態にガイド線を持たせ、キャンバスに重ねて描く"
+    },
+    {
+      "layer": "docs",
+      "role": "「artboard の移動」にガイド線を出すと書き、隙間の数値の未決を #1149 へ付け替える"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "name": "辺のスナップ",
+      "role": "揃う線を探し、寄せ量とガイド線の対 `SideSnapped` を返す",
+      "feature": "side-snap",
+      "change": "寄せず線も出さない答え `SideSnap.Unsnapped` を足し、`NoGuides` をモジュールの const へ上げて両方から使う"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "name": "ノードのリサイズ",
+      "role": "リサイズの掴み・追従・ガイド線",
+      "feature": "side-snap",
+      "change": "揃え先の組を持たない掴みの答えを `SideSnap.Unsnapped` に置き換えた(振る舞いは不変)"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "name": "artboard の移動の状態",
+      "role": "掴んでから離すまでの状態と、寄せの判定・見せる位置・ガイド線の取り出し",
+      "feature": "artboard-move",
+      "change": "`snapOffsetAt` を `snappedAt` に改名して `SideSnapped` を返す。状態の `snap: Offset` を `snapped: SideSnapped` に替え、`snapGuides(drag)` を足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "name": "artboard の移動のフック",
+      "role": "実測を取って判定を呼び、状態を持ち、描く側へ見せかけの位置と線を返す",
+      "feature": "artboard-move",
+      "change": "判定の答え `snapped` を状態へ送り、`snapGuides` を返す"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "name": "キャンバス",
+      "role": "artboard とノードを描き、ドラッグ中の重ね描きを並べる",
+      "feature": "artboard-move",
+      "change": "artboard の移動のガイド線を `GuideLineOverlay` で重ねる"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "name": "ガイド線の重ね描き",
+      "role": "揃った線と隙間の数値(`SnapGuideOverlay`)、線だけ(`GuideLineOverlay`)を描く",
+      "feature": "side-snap",
+      "change": "`GuideLineOverlay` の doc を自分の振る舞いに絞った"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "画面の仕様",
+      "role": "キャンバス直接操作の仕様",
+      "change": "「artboard の移動」にガイド線を出すと書き、隙間の数値の未決を #1149 へ付け替えた"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/held-drag.ts",
+      "name": "掴んだ artboard の見本",
+      "role": "ドメインのテストが共有する掴んだ状態・実測・運ぶ手順",
+      "feature": "artboard-move",
+      "change": "新しく作った",
+      "graph": false
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-artboards.ts",
+      "name": "吸い付く artboard の並べ方",
+      "role": "キャンバスのテストが共有する 2 枚の artboard の並べ方と実測",
+      "feature": "artboard-move",
+      "change": "新しく作った",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "snapped-at",
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "kind": "qry",
+      "name": "寄せ量とガイド線を求める",
+      "code": "ArtboardDrag.snappedAt(drag, pointer, drawn.value)",
+      "via": "call",
+      "payload": "今の状態・ポインタの位置・運んでいる artboard と揃え先の実測",
+      "returns": "`SideSnapped`(寄せ量とガイド線)",
+      "status": "changed"
+    },
+    {
+      "id": "to-snapped",
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "kind": "qry",
+      "name": "揃う線を判定する",
+      "code": "SideSnap.toSnapped(SideSnap.create(moving, drawn.stationary))",
+      "via": "call",
+      "payload": "行き先の矩形と揃え先",
+      "returns": "`SideSnapped`(以前は `.offset` だけを取っていた)",
+      "status": "changed"
+    },
+    {
+      "id": "unsnapped-measure",
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "kind": "qry",
+      "name": "寄せない答えを取る",
+      "code": "SideSnap.Unsnapped",
+      "via": "call",
+      "returns": "寄せ量 0・線無し",
+      "status": "added"
+    },
+    {
+      "id": "unsnapped-hook",
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "kind": "qry",
+      "name": "測れないときの答えを取る",
+      "code": "SideSnap.Unsnapped",
+      "via": "call",
+      "returns": "寄せ量 0・線無し",
+      "status": "added"
+    },
+    {
+      "id": "unsnapped-resize",
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "kind": "qry",
+      "name": "揃え先の無い掴みの答えを取る",
+      "code": "SideSnap.Unsnapped",
+      "via": "call",
+      "returns": "寄せ量 0・線無し",
+      "status": "changed"
+    },
+    {
+      "id": "move-to",
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "kind": "cmd",
+      "name": "運んだ先を反映する",
+      "code": "ArtboardDrag.moveTo(drag, action.move)",
+      "via": "state",
+      "payload": "`{ pointer, snapped }`",
+      "returns": "運んでいる状態(`snapped` を差し替えたもの)",
+      "status": "changed"
+    },
+    {
+      "id": "snap-guides",
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "kind": "qry",
+      "name": "揃った線を取り出す",
+      "code": "ArtboardDrag.snapGuides(drag)",
+      "via": "call",
+      "returns": "運んでいれば `drag.snapped.guides`、それ以外は `SideSnap.NoGuides`",
+      "status": "added"
+    },
+    {
+      "id": "hook-guides",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "kind": "qry",
+      "name": "運んでいる間の線を受け取る",
+      "code": "artboardDrag.snapGuides",
+      "via": "state",
+      "returns": "`SnapGuides`",
+      "status": "added"
+    },
+    {
+      "id": "draw-guides",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "kind": "cmd",
+      "name": "ガイド線を描く",
+      "code": "<GuideLineOverlay guides={artboardDrag.snapGuides} />",
+      "via": "call",
+      "payload": "`SnapGuides`(縦横それぞれ最大 1 本)",
+      "status": "added"
+    },
+    {
+      "id": "release",
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "kind": "cmd",
+      "name": "離す",
+      "code": "ArtboardDrag.release()",
+      "via": "state",
+      "returns": "最初の状態(線は `NoGuides` になる)"
+    }
+  ],
+  "flows": [
+    {
+      "id": "move",
+      "label": "運んでいる間にポインタが動いたとき",
+      "steps": [
+        "snapped-at",
+        "to-snapped",
+        "move-to",
+        "snap-guides",
+        "hook-guides",
+        "draw-guides"
+      ]
+    },
+    {
+      "id": "unmeasurable",
+      "label": "大きさが測れないとき",
+      "steps": [
+        "snapped-at",
+        "unsnapped-measure",
+        "unsnapped-hook",
+        "move-to"
+      ]
+    },
+    {
+      "id": "drop",
+      "label": "離したとき",
+      "steps": [
+        "release",
+        "snap-guides",
+        "hook-guides"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "a2b25b25e0268150f246b2ec880a78a7b803b1f4",
+      "phase": "prep",
+      "role": "寄せず線も出さない答えを `SideSnap.Unsnapped` にまとめる",
+      "why": "artboard の移動の判定・フック・`node-resize` の 3 箇所に同じ組み立て `{ offset: Offset.Origin, guides: NoGuides }` が出るので、先に 1 つの値にした。リテラルの中で `SideSnap.NoGuides` を自己参照すると型推論が循環して tsc が落ちるため、`NoGuides` の値をモジュールの const へ上げた。",
+      "flows": [
+        "unmeasurable"
+      ],
+      "review": [
+        "`node-resize` の置き換えは振る舞いを変えない重複の解消になっているか"
+      ],
+      "before": [
+        {
+          "text": "`node-resize` が寄せない答えをその場で組み立てていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "`SideSnap.Unsnapped` を返す",
+          "message": "unsnapped-resize"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "start": 158,
+          "end": 161,
+          "text": "`satisfies SideSnapped` で形を確かめつつ、リテラルの型を保つ"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 831,
+          "end": 831,
+          "text": "揃え先の組を持たない掴み。以前と同じ値"
+        }
+      ]
+    },
+    {
+      "sha": "51dc982541c47b18cdf373f9435870caec3c2aab",
+      "phase": "core",
+      "role": "artboard を運んでいる間に揃った線を状態に持つ",
+      "why": "寄せ量と線は同じ判定の答えなので、別々の入口や別々のフィールドにすると寄る先と線が食い違う余地が残る。対の型 `SideSnapped` が既にあるので、状態もそれを持つ。線を描画のたびに導く案は判定が 2 回走り、実測が描画の途中に入るので採らなかった。",
+      "flows": [
+        "move",
+        "unmeasurable"
+      ],
+      "review": [
+        "`moveTo` の 2 つの枝(運んでいる / 閾値を越えた)の両方で `snapped` を差し替えているか",
+        "`carriedScreenOffset` が `drag.snapped.offset` を見るので、見せる位置と吸い付く位置が同じ答えから導かれているか",
+        "大きさの無い実測で `SideSnap.Unsnapped` を返し、線も出さないか"
+      ],
+      "before": [
+        {
+          "text": "`snapOffsetAt` が寄せ量だけを返し、ガイド線は捨てていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "`snappedAt` が `SideSnapped` を返し、状態の `snapped` に持つ",
+          "message": "snapped-at"
+        },
+        {
+          "text": "`snapGuides(drag)` で線を取り出し、フックが返す",
+          "message": "snap-guides"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "start": 101,
+          "end": 101,
+          "text": "運んでいる間は毎回の答えで差し替える。忘れると吸い付いた後の線が残る"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "start": 153,
+          "end": 172,
+          "text": "改名し、`.offset` を取らずに答えをそのまま返す"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "start": 206,
+          "end": 208,
+          "text": "`NodeDrag.snapGuides` / `NodeResize.snapGuides` と同じ名前と形"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "start": 146,
+          "end": 148,
+          "text": "実測が取れなければ寄せない答えを送る"
+        }
+      ]
+    },
+    {
+      "sha": "7facec9d3bb243e49853fdb0fceb47b4ac4e0c19",
+      "phase": "core",
+      "role": "artboard を運んでいる間のガイド線をキャンバスに重ねる",
+      "why": "隙間の数値を出すかは UI 案から決まらないので、リサイズと同じ `GuideLineOverlay` で線だけを出す(#1149)。重ねる部品を 1 つにしてノードと artboard の線を選ぶ案は「どちらが動いているか」の分岐がコンポーネントに入るので採らず、待機中は何も描かない部品を並べた。",
+      "flows": [
+        "move"
+      ],
+      "review": [
+        "隙間の数値を出さない暫定の判断(#1149)に同意できるか"
+      ],
+      "before": [
+        {
+          "text": "artboard の移動の線は描く先が無かった"
+        }
+      ],
+      "after": [
+        {
+          "text": "`GuideLineOverlay` で線だけを描く",
+          "message": "draw-guides"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "start": 366,
+          "end": 368,
+          "text": "リサイズと artboard の移動はどちらも線だけ。コメントに #1149 を書いた"
+        }
+      ]
+    },
+    {
+      "sha": "1e0a3775c9b4f84411e7b6b02d7547465bfc573e",
+      "phase": "prep",
+      "role": "artboard どうしのスナップのキャンバス用ヘルパーを共有する",
+      "why": "ガイド線のキャンバスのテストも同じ 2 枚の並べ方と実測を使うので、既存のテストファイルからヘルパーを `snap-artboards.ts` へ移した。",
+      "review": [
+        "既存のテストの本文と期待値を変えていないか"
+      ]
+    },
+    {
+      "sha": "76d53df59bd0df96e3dcff0bb6df7c12f7b8cd8f",
+      "phase": "core",
+      "role": "artboard の移動のガイド線をテストで固定する",
+      "why": "ドメインでは線の位置と長さを、キャンバスでは線が出る・消える・数値が出ないことを、外から見える形で確かめる。",
+      "flows": [
+        "move",
+        "drop"
+      ],
+      "review": [
+        "線の位置と長さの期待値が、揃え先と運んでいる artboard をまたぐ矩形になっているか"
+      ]
+    },
+    {
+      "sha": "239a9595ecf50abedfc9d8fdf4419be953746f57",
+      "phase": "fin",
+      "role": "artboard の移動でもガイド線を出すと仕様に書く",
+      "why": "「揃った線(ガイド線)はまだ出さない(#874)」をこの PR の振る舞いに差し替える。",
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 179,
+          "end": 179,
+          "text": "縦横それぞれ最大 1 本・離すと消える・隙間の数値はまだ出さない"
+        }
+      ]
+    },
+    {
+      "sha": "36ebe9a0c50e9198f5c41534afeb5c34fb731d72",
+      "phase": "revise",
+      "role": "隙間の数値の未決を「ノードの移動」と指し分けて書く",
+      "why": "「移動では出す」が artboard の移動とも読め、179 行と逆の答えになるという指摘を受けた。",
+      "review": [
+        "179 行と 217 行が同じ答えを書いているか"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 217,
+          "end": 217,
+          "text": "閉じた #879 から #1149 へ付け替え、「ノードの移動」と書き分けた"
+        }
+      ]
+    },
+    {
+      "sha": "a3e18d218f1b09f2e0448adf81dd2d89970d7af4",
+      "phase": "revise",
+      "role": "揃った線の無いガイドの名前を `NoGuides` 1 つに揃える",
+      "why": "同じ値に `NoSnapGuides` と `NoGuides` の 2 つの名前があるという指摘を受け、const も `NoGuides` にしてメンバーは省略記法にした。",
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "start": 140,
+          "end": 143,
+          "text": "モジュールの const。`SideSnap.NoGuides` と `SideSnap.Unsnapped` の両方がここを指す"
+        }
+      ]
+    },
+    {
+      "sha": "3e9519835b595de5b08b17519badead8cac7418c",
+      "phase": "revise",
+      "role": "`GuideLineOverlay` の doc を自分の振る舞いに絞る",
+      "why": "使い道の列挙が doc と呼び出し側のコメントの 2 箇所にあったので、列挙は呼び出し側に残した。"
+    },
+    {
+      "sha": "51fd0bc506c8e4b25cf90fa3d96d6f3611f0983a",
+      "phase": "revise",
+      "role": "スナップのテストの並べ方と揃え先を 1 箇所から組み立てる",
+      "why": "揃え先の矩形リテラルが 8 回、artboard の名前と大きさが 2 箇所に直書きされていたため、`StationaryDrawn` と `SampleArtboards` から組み立てる。",
+      "review": [
+        "入力と期待値が変わっていないか"
+      ]
+    },
+    {
+      "sha": "8378138b628883f213ab97b519a1d70df5690dab",
+      "phase": "hard",
+      "role": "縦の線と大きさの無い artboard の線無しをテストで守る",
+      "why": "test-reviewer のミューテーションで、縦の線を `none` にしても・大きさの無い実測で線を残しても全件通ることが分かったので、それぞれを落とすケースを足した。「離すと線は消える」にも離す前に線が出ている assert を足した。",
+      "flows": [
+        "unmeasurable",
+        "drop"
+      ],
+      "review": [
+        "追加した 2 件が、それぞれ狙ったミューテーションで落ちるか"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "domain-guide",
+      "label": "artboard の移動の状態のガイド線",
+      "file": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap-guide.test.ts"
+    },
+    {
+      "id": "canvas-guide",
+      "label": "キャンバスの artboard の移動のガイド線",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx"
+    },
+    {
+      "id": "domain-snap",
+      "label": "artboard の移動の状態の吸い付き",
+      "file": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap.test.ts"
+    },
+    {
+      "id": "canvas-snap",
+      "label": "キャンバスの artboard の吸い付き",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap.test.tsx"
+    },
+    {
+      "id": "resize-guide",
+      "label": "ノードのリサイズのガイド線",
+      "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "domain-left",
+      "suite": "domain-guide",
+      "name": "揃え先の左辺の近くまで運んでいる間は、その辺に線が出る",
+      "techniques": [
+        "equivalence",
+        "state"
+      ],
+      "why": "判定の答えの線が状態に残り、`snapGuides` で取り出せること。`moveTo` で線を差し替え忘れる・guides を捨てると落ちる",
+      "given": "`home`(左 100・上 40・200×100)を掴み、揃え先(左 400・上 300・150×80)がある",
+      "when": "右へ 103 運び、右辺が 403 まで来る",
+      "then": "`horizontal` の線が揃え先の左辺に、運んでいる artboard の上辺 40 から揃え先の下辺 380 までをまたいで出る",
+      "commit": "76d53df59bd0df96e3dcff0bb6df7c12f7b8cd8f",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap-guide.test.ts",
+        "start": 14,
+        "end": 32,
+        "emphasis": [
+          {
+            "start": 29,
+            "end": 31
+          }
+        ],
+        "text": "test(\"揃え先の左辺の近くまで運んでいる間は、その辺に線が出る\", () => {\n  /*\n   * 右辺が 403 まで来て揃え先の左辺（400）へ 3px 寄る。線は揃え先の左辺に立ち、\n   * 運んでいる artboard（上辺 40）から揃え先（下辺 380）までをまたぐ。\n   */\n  const dragging = moveSnapped(heldDrag(), pointerBy({ x: 103, y: 0 }), {\n    carried: HomeDrawn,\n    stationary: [StationaryDrawn],\n  });\n\n  const guideLine = Option.map(\n    ArtboardDrag.snapGuides(dragging).horizontal,\n    (guide) => guide.guideLine,\n  );\n\n  expect(guideLine).toEqual(\n    Option.some({ left: 399, top: 40, width: 2, height: 340 }),\n  );\n});"
+      },
+      "values": {
+        "columns": [
+          "運んだ量",
+          "右辺",
+          "揃え先の左辺",
+          "線の矩形"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "103",
+              "403",
+              "400",
+              "左 399・上 40・幅 2・高さ 340"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+        "src/features/editor/features/canvas/domains/side-snap/index.ts"
+      ],
+      "covers": [
+        "to-snapped",
+        "move-to",
+        "snap-guides"
+      ]
+    },
+    {
+      "id": "domain-top",
+      "suite": "domain-guide",
+      "name": "揃え先の上辺の近くまで運んでいる間は、その辺に線が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "縦方向(`vertical`)の線も運ばれること。`vertical` だけを欠いても他のテストは通っていた",
+      "given": "左辺のテストと同じ `home` と揃え先",
+      "when": "下へ 158 運び、下辺が 298 まで来る(左右はどの線からも閾値の外)",
+      "then": "`vertical` の線が揃え先の上辺に、運んでいる artboard の左辺 100 から揃え先の右辺 550 までをまたいで出る",
+      "commit": "8378138b628883f213ab97b519a1d70df5690dab",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap-guide.test.ts",
+        "start": 34,
+        "end": 52,
+        "emphasis": [
+          {
+            "start": 49,
+            "end": 51
+          }
+        ],
+        "text": "test(\"揃え先の上辺の近くまで運んでいる間は、その辺に線が出る\", () => {\n  /*\n   * 下辺が 298 まで来て揃え先の上辺（300）へ 2px 寄る。左右はどの線からも閾値の外。\n   * 線は揃え先の上辺に寝て、運んでいる artboard（左辺 100）から揃え先（右辺 550）までをまたぐ。\n   */\n  const dragging = moveSnapped(heldDrag(), pointerBy({ x: 0, y: 158 }), {\n    carried: HomeDrawn,\n    stationary: [StationaryDrawn],\n  });\n\n  const guideLine = Option.map(\n    ArtboardDrag.snapGuides(dragging).vertical,\n    (guide) => guide.guideLine,\n  );\n\n  expect(guideLine).toEqual(\n    Option.some({ left: 100, top: 299, width: 450, height: 2 }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/artboard-drag/index.ts"
+      ],
+      "covers": [
+        "to-snapped",
+        "snap-guides"
+      ]
+    },
+    {
+      "id": "domain-unsized",
+      "suite": "domain-guide",
+      "name": "運んでいる artboard に大きさが無ければ線を出さない",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "まだレイアウトされていない artboard は原点の 0×0 で測れ、そこから行き先を作ると関係の無い辺へ線が出る",
+      "given": "`home` の実測が原点の 0×0 で、揃え先の左辺が 0 にある",
+      "when": "右へ 5 運んで判定する",
+      "then": "線は縦横とも無い(`SideSnap.NoGuides`)",
+      "commit": "8378138b628883f213ab97b519a1d70df5690dab",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap-guide.test.ts",
+        "start": 54,
+        "end": 63,
+        "text": "test(\"運んでいる artboard に大きさが無ければ線を出さない\", () => {\n  // 寄せ量のテスト（artboard-drag.snap.test.ts）と同じ入力。大きさを測れていれば揃え先の左辺へ線が出る\n  const snapped = ArtboardDrag.snappedAt(\n    heldDrag(),\n    pointerBy({ x: 5, y: 0 }),\n    UnlaidOutDrawn,\n  );\n\n  expect(snapped.guides).toEqual(SideSnap.NoGuides);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/artboard-drag/index.ts"
+      ],
+      "covers": [
+        "snapped-at",
+        "unsnapped-measure"
+      ]
+    },
+    {
+      "id": "domain-away",
+      "suite": "domain-guide",
+      "name": "揃う位置まで運んだあと、どこにも届かない位置まで動かし直すと、線が無くなる",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "前の移動の線が残らないこと。運んでいる間の枝で `snapped` を差し替え忘れると落ちる",
+      "given": "揃え先の左辺へ吸い付いて運んでいる",
+      "when": "掴んでから 150 の位置まで動かし直す(行き先の右辺 450)",
+      "then": "線は縦横とも無い",
+      "commit": "76d53df59bd0df96e3dcff0bb6df7c12f7b8cd8f",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap-guide.test.ts",
+        "start": 65,
+        "end": 82,
+        "text": "test(\"揃う位置まで運んだあと、どこにも届かない位置まで動かし直すと、線が無くなる\", () => {\n  /*\n   * 1 回目で 103 運んで 3px 寄せたので、`home` は 100 ずれた 200 に描かれている。\n   * 2 回目は掴んでから 150 の位置で、行き先の右辺は 450 → どの線からも閾値の外。\n   */\n  const stationary = [StationaryDrawn];\n  const dragging = moveSnapped(heldDrag(), pointerBy({ x: 103, y: 0 }), {\n    carried: HomeDrawn,\n    stationary,\n  });\n\n  const away = moveSnapped(dragging, pointerBy({ x: 150, y: 0 }), {\n    carried: { ...HomeDrawn, left: 200 },\n    stationary,\n  });\n\n  expect(ArtboardDrag.snapGuides(away)).toEqual(SideSnap.NoGuides);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/artboard-drag/index.ts"
+      ],
+      "covers": [
+        "move-to",
+        "snap-guides"
+      ]
+    },
+    {
+      "id": "canvas-one",
+      "suite": "canvas-guide",
+      "name": "他の artboard の辺に吸い付いている間は、その辺の位置に線が 1 本出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "フックからキャンバスまで線が配線されていること。配線を `nodeResize` に替えると落ちる",
+      "given": "`first` と `second` の 2 枚が描かれている",
+      "when": "`second` の見出しを掴み、左辺が `first` の右辺 200 の 3px 先まで来るよう運んで離さない",
+      "then": "ガイド線が 1 本、`left: 199px; top: 0px; width: 2px; height: 170px` で出る",
+      "commit": "76d53df59bd0df96e3dcff0bb6df7c12f7b8cd8f",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+        "start": 21,
+        "end": 33,
+        "emphasis": [
+          {
+            "start": 29,
+            "end": 32
+          }
+        ],
+        "text": "test(\"他の artboard の辺に吸い付いている間は、その辺の位置に線が 1 本出る\", () => {\n  renderCanvas({ selection: setupSelection() });\n  drawnFollowingFrames();\n\n  pressPointer(artboardHandle(\"second\"), { x: 0, y: 0 });\n  movePointer(canvasContent(), { x: -29, y: 30 });\n\n  // `first` の右辺に中心を合わせ、`first` の上辺 0 から `second` の下辺 170 までをまたぐ\n  expect(snapGuides()).toHaveLength(1);\n  expect(snapGuides()[0].getAttribute(\"style\")).toContain(\n    \"left: 199px; top: 0px; width: 2px; height: 170px\",\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts"
+      ],
+      "covers": [
+        "hook-guides",
+        "draw-guides"
+      ]
+    },
+    {
+      "id": "canvas-no-gap",
+      "suite": "canvas-guide",
+      "name": "揃え先から離れた位置で揃っている間も、揃え先との隙間の数値は出ない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "隙間の数値は暫定で出さない(#1149)。`SnapGuideOverlay` に替えると落ちる。判断が変わればこのテストを反転する",
+      "given": "`first` の下辺 140 と、運び先の `second` の上辺 200 が 60 離れる",
+      "when": "`first` の右辺に揃えたまま縦に離れた位置へ運ぶ",
+      "then": "線は 1 本出るが、隙間の数値は 0 件",
+      "commit": "76d53df59bd0df96e3dcff0bb6df7c12f7b8cd8f",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+        "start": 35,
+        "end": 45,
+        "text": "test(\"揃え先から離れた位置で揃っている間も、揃え先との隙間の数値は出ない\", () => {\n  renderCanvas({ selection: setupSelection() });\n  drawnFollowingFrames();\n\n  // `first` の下辺 140 と `second` の上辺 200 の間は 60 空いている（ノードの移動なら「60」が出る）\n  pressPointer(artboardHandle(\"second\"), { x: 0, y: 0 });\n  movePointer(canvasContent(), { x: -29, y: 200 });\n\n  expect(snapGuides()).toHaveLength(1);\n  expect(snapGapLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx"
+      ],
+      "covers": [
+        "draw-guides"
+      ]
+    },
+    {
+      "id": "canvas-away",
+      "suite": "canvas-guide",
+      "name": "吸い付いたあとにどの線からも遠い位置へ動かし直すと、線が消える",
+      "techniques": [
+        "state"
+      ],
+      "why": "通しで、前の線が画面に残らないこと",
+      "given": "`second` を `first` の右辺へ吸い付かせている",
+      "when": "どの辺と中心線からも閾値の外の位置へ動かし直す",
+      "then": "ガイド線が 0 本",
+      "commit": "76d53df59bd0df96e3dcff0bb6df7c12f7b8cd8f",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+        "start": 47,
+        "end": 57,
+        "text": "test(\"吸い付いたあとにどの線からも遠い位置へ動かし直すと、線が消える\", () => {\n  renderCanvas({ selection: setupSelection() });\n  drawnFollowingFrames();\n\n  // 2 回目は左辺 292・右辺 492・上辺 40 で、どの artboard の辺と中心線からも閾値の外\n  pressPointer(artboardHandle(\"second\"), { x: 0, y: 0 });\n  movePointer(canvasContent(), { x: -29, y: 30 });\n  movePointer(canvasContent(), { x: 60, y: 40 });\n\n  expect(snapGuides()).toHaveLength(0);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "snapped-at",
+        "move-to",
+        "hook-guides"
+      ]
+    },
+    {
+      "id": "canvas-release",
+      "suite": "canvas-guide",
+      "name": "離すと線は消える",
+      "techniques": [
+        "state"
+      ],
+      "why": "離したあとに線が残らないこと。`release` を送らないと落ちる",
+      "given": "`second` を `first` の右辺へ吸い付かせ、線が 1 本出ている",
+      "when": "その位置で離す",
+      "then": "ガイド線が 0 本",
+      "commit": "8378138b628883f213ab97b519a1d70df5690dab",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+        "start": 59,
+        "end": 69,
+        "emphasis": [
+          {
+            "start": 65,
+            "end": 68
+          }
+        ],
+        "text": "test(\"離すと線は消える\", () => {\n  renderCanvas({ selection: setupSelection() });\n  drawnFollowingFrames();\n\n  pressPointer(artboardHandle(\"second\"), { x: 0, y: 0 });\n  movePointer(canvasContent(), { x: -29, y: 30 });\n  expect(snapGuides()).toHaveLength(1);\n  releasePointer(canvasContent(), { x: -29, y: 30 });\n\n  expect(snapGuides()).toHaveLength(0);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts"
+      ],
+      "covers": [
+        "release",
+        "snap-guides",
+        "hook-guides"
+      ]
+    },
+    {
+      "id": "kept-snap-position",
+      "suite": "domain-snap",
+      "name": "揃え先の辺の近くまで運ぶと、運び先がその辺に揃う位置へ寄る",
+      "techniques": [
+        "regression"
+      ],
+      "why": "状態の形を `snapped` に替えても、見せる位置は寄せ量から変わらず導かれること",
+      "given": "`home` と揃え先",
+      "when": "右へ 103 運ぶ",
+      "then": "見せる位置の x が 200(寄せなければ 203)",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap.test.ts",
+        "start": 15,
+        "end": 25,
+        "text": "test(\"揃え先の辺の近くまで運ぶと、運び先がその辺に揃う位置へ寄る\", () => {\n  // 右辺が 403 まで来る量。揃え先の左辺（400）へ 3px 寄らなければ x は 203 になる\n  const dragging = moveSnapped(heldDrag(), pointerBy({ x: 103, y: 0 }), {\n    carried: HomeDrawn,\n    stationary: [StationaryDrawn],\n  });\n\n  expect(ArtboardDrag.preview(dragging, CanvasView.create())).toEqual(\n    Option.some({ name: \"home\", canvasPosition: { x: 200, y: 40 } }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/artboard-drag/index.ts"
+      ],
+      "covers": [
+        "to-snapped",
+        "move-to"
+      ]
+    },
+    {
+      "id": "kept-snap-written",
+      "suite": "canvas-snap",
+      "name": "他の artboard の辺の近くまで運んで離すと、その辺が揃う座標が書かれる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "離したときに書かれる座標が変わらないこと",
+      "given": "`first` と `second` の 2 枚",
+      "when": "`second` を `first` の右辺の 3px 先まで運んで離す",
+      "then": "`second` の座標として x 200・y 30 が送られる",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap.test.tsx",
+        "start": 20,
+        "end": 32,
+        "text": "test(\"他の artboard の辺の近くまで運んで離すと、その辺が揃う座標が書かれる\", () => {\n  const onRepositionArtboard = vi.fn();\n  renderCanvas({ selection: setupSelection(), onRepositionArtboard });\n  drawnFollowingFrames();\n\n  // 左辺が `first` の右辺（200）の 3px 先まで来る量。寄せが無ければ x は 203 になる\n  dragSecond({ x: -29, y: 30 });\n\n  expect(onRepositionArtboard).toHaveBeenCalledWith(\"second\", {\n    x: 200,\n    y: 30,\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts"
+      ],
+      "covers": [
+        "release"
+      ]
+    },
+    {
+      "id": "kept-resize",
+      "suite": "resize-guide",
+      "name": "辺のスナップの組を載せていない掴みでは、揃え先の近くでもガイド線は出ない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "`node-resize` の置き換え(`SideSnap.Unsnapped`)で振る舞いが変わらないこと",
+      "given": "揃え先の組を載せずに右辺を掴んだリサイズ",
+      "when": "揃え先の近くまで運ぶ",
+      "then": "ガイド線は縦横とも無い",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+        "start": 113,
+        "end": 126,
+        "text": "test(\"辺のスナップの組を載せていない掴みでは、揃え先の近くでもガイド線は出ない\", () => {\n  const resize = grabbedAt(\n    setupResizable(),\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n  );\n\n  const tracked = NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupView());\n\n  expect(Option.map(tracked, ({ guides }) => guides)).toEqual(\n    Option.some(SideSnap.NoGuides),\n  );\n});\n"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "unsnapped-resize"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "artboard を運んで吸い付いたとき、揃った辺に赤いガイド線が出る",
+    "lead": "artboard を見出しから運んでいる間、他の artboard の辺や中心線に吸い付くと、どこに揃ったのかが赤い線で見えるようになりました。吸い付く位置と、離したときに書かれる座標は変わりません。",
+    "changed": {
+      "before": [
+        {
+          "text": "artboard を見出しから運んで他の artboard の辺や中心線に吸い付いても、線は何も出なかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "揃った辺や中心線に赤いガイド線が、縦と横それぞれ最大 1 本出る",
+          "message": "draw-guides"
+        },
+        {
+          "text": "線は運んでいる artboard と揃え先の両方をまたぐ長さで引かれる",
+          "message": "to-snapped"
+        },
+        {
+          "text": "離すと線は消える",
+          "message": "release"
+        }
+      ],
+      "text": "線の位置・長さ・色は、ノードを動かしたときのガイド線と同じです。"
+    },
+    "tables": [
+      {
+        "label": "揃った向きと操作の進み具合",
+        "gist": "線が出るのは運んでいる間だけで、揃った向きごとに 1 本。",
+        "text": "左右の辺や中心線が揃うと縦に立つ線、上下の辺や中心線が揃うと横に寝る線が出ます。",
+        "rowHeads": [
+          {
+            "id": "left-right",
+            "label": "左右の辺が揃う",
+            "note": "中心線を含む"
+          },
+          {
+            "id": "top-bottom",
+            "label": "上下の辺が揃う",
+            "note": "中心線を含む"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "carrying",
+            "label": "運んでいる間"
+          },
+          {
+            "id": "dropped",
+            "label": "離したあと"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "left-right",
+            "columnHead": "carrying",
+            "result": "揃った辺に縦の赤い線が 1 本出る",
+            "was": "線は出ない",
+            "tests": [
+              "domain-left",
+              "canvas-one"
+            ]
+          },
+          {
+            "rowHead": "top-bottom",
+            "columnHead": "carrying",
+            "result": "揃った辺に横の赤い線が 1 本出る",
+            "was": "線は出ない",
+            "tests": [
+              "domain-top"
+            ]
+          },
+          {
+            "rowHead": "left-right",
+            "columnHead": "dropped",
+            "result": "線は出ない",
+            "tests": [
+              "canvas-release"
+            ]
+          },
+          {
+            "rowHead": "top-bottom",
+            "columnHead": "dropped",
+            "result": "線は出ない"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "吸い付いたあとに遠くへ動かし直したとき",
+        "before": [],
+        "after": [
+          {
+            "text": "どの辺からも遠い位置へ動かし直すと、出ていた線は消える",
+            "message": "move-to"
+          }
+        ],
+        "tests": [
+          "domain-away",
+          "canvas-away"
+        ]
+      },
+      {
+        "label": "揃え先から離れた位置で揃ったとき",
+        "before": [],
+        "after": [
+          {
+            "text": "線だけが出て、揃え先との隙間の数値は出ない",
+            "message": "draw-guides"
+          }
+        ],
+        "text": "ノードを動かしたときは隙間の数値も出ますが、artboard を運ぶときは出しません。出すかどうかはまだ決まっていません。",
+        "tests": [
+          "canvas-no-gap"
+        ]
+      },
+      {
+        "label": "まだ描かれていない artboard を運んでいるとき",
+        "before": [],
+        "after": [
+          {
+            "text": "大きさの無い artboard を運んでいる間は、線は出ない",
+            "message": "unsnapped-measure"
+          }
+        ],
+        "tests": [
+          "domain-unsized"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "吸い付く位置と、運んでいる間の見た目の位置は変わらない",
+        "tests": [
+          "kept-snap-position"
+        ]
+      },
+      {
+        "text": "離したときに書かれる座標は変わらない",
+        "tests": [
+          "kept-snap-written"
+        ]
+      },
+      {
+        "text": "ノードのリサイズのガイド線の出方は変わらない",
+        "tests": [
+          "kept-resize"
+        ]
+      },
+      {
+        "text": "ノードを動かしたときのガイド線と隙間の数値は変わらない"
+      },
+      {
+        "text": "⌘ や Ctrl を押しながら artboard を運んでも、これまでどおり吸い付く(吸い付きを外す仕組みは別の課題)"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "discriminated-union",
+      "category": "TypeScript · 型",
+      "label": "判別可能な union",
+      "gist": "取りうる状態を並べ、状態ごとに持つ値を変えるための型の書き方。共通の[[判別子|discriminant]] `kind` の値で、今どの状態かを型の上でも見分ける。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`A | B` は「A か B のどちらか」を表す [[union 型|union]]。各候補に同じ名前の文字列のプロパティ(ここでは `kind`)を持たせると、`if (drag.kind === \"dragging\")` の中では TypeScript が `drag` を `dragging` の候補だけに[[絞り込む|narrowing]]ので、その候補にしか無い `snapped` を読める。"
+        },
+        {
+          "kind": "declaration",
+          "code": "type ArtboardDrag =\n  | Readonly<{ kind: \"idle\" }>\n  | Readonly<{ kind: \"held\"; grab: ArtboardGrab }>\n  | Readonly<{\n      kind: \"dragging\";\n      grab: ArtboardGrab;\n      pointer: Offset;\n      snapped: SideSnapped;\n    }>;"
+        },
+        {
+          "kind": "memo",
+          "text": "`Readonly<…>` は、プロパティを書き換えられない型にする組み込みの型。値を変えるときは `{ ...drag, snapped: move.snapped }` のように新しいオブジェクトを作る。"
+        },
+        {
+          "kind": "caution",
+          "text": "絞り込んでいない `drag` から `drag.snapped` を読むと、型エラーになる。`snapGuides` が `drag.kind === \"dragging\"` を見てから読んでいるのはそのため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "lineRange": {
+            "start": 62,
+            "end": 70
+          },
+          "text": "運んでいる状態(`dragging`)だけが `snapped` を持つ",
+          "shas": [
+            "51dc982541c47b18cdf373f9435870caec3c2aab"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "lineRange": {
+            "start": 206,
+            "end": 208
+          },
+          "text": "`kind` で絞り込んでから `snapped.guides` を読む",
+          "shas": [
+            "51dc982541c47b18cdf373f9435870caec3c2aab"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "side-snapped"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "satisfies",
+      "category": "TypeScript · 型",
+      "label": "`satisfies`",
+      "gist": "値がある型の形に合っているかを確かめつつ、値そのものの細かい型は保つための演算子。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`値 satisfies 型` と書くと、値がその型に当てはまらなければ型エラーになる。`const x: 型 = 値` と[[型注釈|annotation]]を書くのと違い、`x` の型は注釈した型に広がらず、値から推論された型のまま残る。"
+        },
+        {
+          "kind": "declaration",
+          "code": "const NoGuides = {\n  horizontal: Option.none,\n  vertical: Option.none,\n} satisfies SnapGuides;"
+        },
+        {
+          "kind": "caution",
+          "text": "オブジェクトの[[リテラル|literal]]の中で、作っている途中の同じオブジェクト(`SideSnap.NoGuides`)を参照すると、型推論が自分自身を待つ循環になり型エラーになる。そのため `NoGuides` を外の const に出して、`SideSnap` の中では名前で指している。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "lineRange": {
+            "start": 140,
+            "end": 160
+          },
+          "text": "`NoGuides` と `Unsnapped` を `satisfies` で形を確かめて定義する",
+          "shas": [
+            "a2b25b25e0268150f246b2ec880a78a7b803b1f4",
+            "a3e18d218f1b09f2e0448adf81dd2d89970d7af4"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "side-snapped"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "side-snapped",
+      "category": "canvas · 辺のスナップ",
+      "label": "`SideSnapped` と `SideSnap.Unsnapped`",
+      "gist": "辺のスナップ 1 回分の答え。寄せ量(`offset`)と揃った線(`guides`)を対で持ち、寄る先と線が別々に決まる余地を消す。`Unsnapped` は寄せず線も出さない答え。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`SideSnap.toSnapped` が `SideSnapped` を返す。artboard の移動は、この答えをそのまま運んでいる状態の `snapped` に持ち、見せる位置は `snapped.offset` から、線は `snapped.guides` から取る。"
+        },
+        {
+          "kind": "text",
+          "text": "`guides` は[[判別可能な union|discriminated-union-term]]ではなく、`horizontal` / `vertical` の 2 つのキーにそれぞれ線が有るか無いか(`Option`)を持つ。キーは揃った辺の組で、`horizontal`(左右の辺が揃った)の線は縦に伸びる。"
+        },
+        {
+          "kind": "rule",
+          "text": "寄せず線も出さない答えは、その場で組み立てず `SideSnap.Unsnapped` を使う。"
+        },
+        {
+          "kind": "history",
+          "text": "以前の `snapOffsetAt` は `toSnapped(...).offset` だけを返し、線を捨てていた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "lineRange": {
+            "start": 71,
+            "end": 78
+          },
+          "text": "`SideSnapped` の型"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "lineRange": {
+            "start": 153,
+            "end": 173
+          },
+          "text": "`snappedAt` が答えをそのまま返す",
+          "shas": [
+            "51dc982541c47b18cdf373f9435870caec3c2aab"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "lineRange": {
+            "start": 831,
+            "end": 831
+          },
+          "text": "`node-resize` も `Unsnapped` を使う",
+          "shas": [
+            "a2b25b25e0268150f246b2ec880a78a7b803b1f4"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "discriminated-union",
+        "satisfies",
+        "guide-line-overlay"
+      ],
+      "tests": [
+        "domain-left",
+        "domain-top",
+        "domain-unsized",
+        "kept-resize"
+      ],
+      "flows": [
+        "move",
+        "unmeasurable"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "guide-line-overlay",
+      "category": "canvas · 重ね描き",
+      "label": "`GuideLineOverlay`",
+      "gist": "揃った線だけを描き、揃え先との隙間の数値は描かない重ね描き。ノードの移動が使う `SnapGuideOverlay` は線と数値の両方を描く。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "受け取るのは `SnapGuides` だけで、縦横それぞれの線を 1 本ずつ描く。線が無い向きは何も描かないので、待機中の部品を並べておいても重ならない。"
+        },
+        {
+          "kind": "spec",
+          "text": "リサイズと artboard の移動では、隙間の数値はまだ出さない(`docs/06-ui.md`「artboard の移動」「リサイズハンドル」、#1149)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+          "lineRange": {
+            "start": 112,
+            "end": 123
+          },
+          "text": "線だけを描く部品",
+          "shas": [
+            "3e9519835b595de5b08b17519badead8cac7418c"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "lineRange": {
+            "start": 366,
+            "end": 368
+          },
+          "text": "リサイズと artboard の移動の線を重ねる",
+          "shas": [
+            "7facec9d3bb243e49853fdb0fceb47b4ac4e0c19"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "side-snapped"
+      ],
+      "tests": [
+        "canvas-one",
+        "canvas-no-gap"
+      ],
+      "flows": [
+        "move"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "discriminant",
+      "label": "判別子",
+      "text": "union の各候補が共通に持つ、候補ごとに違う固定の値のプロパティ。ここでは `kind`。"
+    },
+    {
+      "id": "union",
+      "label": "union 型",
+      "text": "`A | B` のように縦棒で並べた型で、値がそのどれか 1 つであることを表す。"
+    },
+    {
+      "id": "narrowing",
+      "label": "絞り込み",
+      "text": "`if` などの条件の中で、TypeScript が値の型を候補のうちの一部に狭めること。"
+    },
+    {
+      "id": "annotation",
+      "label": "型注釈",
+      "text": "`const x: T = …` のように、変数や引数の後ろに `: 型` を書いて型を決めること。"
+    },
+    {
+      "id": "literal",
+      "label": "リテラル",
+      "text": "`{ … }` や `\"text\"` のように、値をそのままコードに書いたもの。"
+    },
+    {
+      "id": "discriminated-union-term",
+      "label": "判別可能な union",
+      "text": "判別子で候補を見分けられる union 型。言語の節「判別可能な union」で説明している。"
+    }
+  ]
+}
