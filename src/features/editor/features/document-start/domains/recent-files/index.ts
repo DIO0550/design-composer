@@ -1,3 +1,4 @@
+import type { FilePath } from "@/domains/unit/file-path";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { Option } from "@/utils/Option";
 
@@ -5,7 +6,7 @@ import type { Option } from "@/utils/Option";
  * 最近開いたファイルのパスの並び（新しい順。`docs/06-ui.md`「開く前の画面（開始画面）」）。
  * 重複が無いことと上限を超えないことは `create` が保証する。
  */
-export type RecentFiles = Readonly<{ paths: readonly string[] }>;
+export type RecentFiles = Readonly<{ paths: readonly FilePath[] }>;
 
 /** 一覧に残す件数の上限（`docs/06-ui.md`「開く前の画面（開始画面）」）。 */
 const Limit = 10;
@@ -22,7 +23,7 @@ export const RecentFiles = {
    * @param paths 新しい順に並んだパス。重複や上限超えを含んでいてよい
    * @returns 重複を取り除き、上限までに切り詰めた一覧
    */
-  create(paths: readonly string[]): RecentFiles {
+  create(paths: readonly FilePath[]): RecentFiles {
     return { paths: ArrayEx.distinct(paths).slice(0, Limit) };
   },
 
@@ -33,7 +34,7 @@ export const RecentFiles = {
    * @param path 開いたファイルのパス
    * @returns そのパスを先頭に持つ一覧。既に含まれていれば重複させず先頭へ移す
    */
-  withOpenedPath(recents: RecentFiles, path: string): RecentFiles {
+  withOpenedPath(recents: RecentFiles, path: FilePath): RecentFiles {
     return RecentFiles.create([path, ...recents.paths]);
   },
 
@@ -43,7 +44,7 @@ export const RecentFiles = {
    * @param recents 見る対象の一覧
    * @returns 一覧の先頭のパス。1 件も開いていなければ `none`
    */
-  latest(recents: RecentFiles): Option<string> {
+  latest(recents: RecentFiles): Option<FilePath> {
     return ArrayEx.first(recents.paths);
   },
 } as const;

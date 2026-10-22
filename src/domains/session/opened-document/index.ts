@@ -3,7 +3,7 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { DocumentError } from "@/domains/session/document-error";
-import { FilePath } from "@/utils/FilePath";
+import { FilePath } from "@/domains/unit/file-path";
 import type { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
@@ -20,7 +20,7 @@ import { Result } from "@/utils/Result";
  * 消費側は `DocumentError.collectFrom` で自分で集める前提で書く。
  */
 export type OpenedDocument = Readonly<{
-  path: string;
+  path: FilePath;
   document: DesignDocument;
 }>;
 
@@ -31,7 +31,7 @@ export const OpenedDocument = {
    * @param path このドキュメントの保存先
    * @returns 既定のテンプレートから作ったドキュメントを保存先と対にしたもの
    */
-  createFromTemplate(path: string): OpenedDocument {
+  createFromTemplate(path: FilePath): OpenedDocument {
     return {
       path,
       document: DesignDocument.createFromTemplate(DocumentTemplate.Default),
@@ -53,7 +53,7 @@ export const OpenedDocument = {
    *   その理由（載せる相手のドキュメントが組み立っていないので開けない）
    */
   fromParsed(
-    path: string,
+    path: FilePath,
     parsed: Result<DesignDocument, readonly DocumentError[]>,
   ): Result<OpenedDocument, readonly DocumentError[]> {
     return Result.map(parsed, (document) => ({ path, document }));
@@ -67,9 +67,9 @@ export const OpenedDocument = {
    * ここを通れないため）。
    *
    * @param opened 名前を知りたい、開いているドキュメント
-   * @returns パスの末尾の要素。パスに要素が 1 つも無ければ `none`
+   * @returns パスの末尾の要素
    */
-  fileName(opened: OpenedDocument): Option<string> {
+  fileName(opened: OpenedDocument): string {
     return FilePath.fileName(opened.path);
   },
 

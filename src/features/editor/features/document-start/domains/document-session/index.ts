@@ -2,6 +2,7 @@ import type { DocumentAccessFailure } from "@/domains/session/document-access-fa
 import type { DocumentError } from "@/domains/session/document-error";
 import type { OpenedDocument } from "@/domains/session/opened-document";
 import { OpenedDocuments } from "@/domains/session/opened-documents";
+import type { FilePath } from "@/domains/unit/file-path";
 import type { DocumentDialogError } from "@/libs/document-dialog";
 import type { IndexMove } from "@/types/IndexMove";
 import { Option, type Some } from "@/utils/Option";
@@ -187,7 +188,7 @@ export const DocumentSession = {
    * @param path 移り先のパス
    * @returns 見ている先を移したセッション。移し方は `OpenedDocuments.activate`
    */
-  activate(session: DocumentSession, path: string): DocumentSession {
+  activate(session: DocumentSession, path: FilePath): DocumentSession {
     return withDocuments(
       session,
       Option.map(session.documents, (opened) =>
@@ -219,7 +220,7 @@ export const DocumentSession = {
    * @param path 閉じるパス
    * @returns 閉じたあとのセッション。どれを見るようになるかは `OpenedDocuments.close`
    */
-  close(session: DocumentSession, path: string): DocumentSession {
+  close(session: DocumentSession, path: FilePath): DocumentSession {
     return withDocuments(
       session,
       Option.flatMap(session.documents, (opened) =>
@@ -286,7 +287,7 @@ export const DocumentSession = {
    * @param session 見るセッション
    * @returns 見ているドキュメントのパス。1 つも開いていなければ `none`
    */
-  activePath(session: DocumentSession): Option<string> {
+  activePath(session: DocumentSession): Option<FilePath> {
     return Option.map(session.documents, OpenedDocuments.activePath);
   },
 } as const;

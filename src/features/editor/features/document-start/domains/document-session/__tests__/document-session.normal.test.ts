@@ -1,10 +1,11 @@
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { openedAt } from "@/domains/__tests__/sample-document";
 import { OpenedDocuments } from "@/domains/session/opened-documents";
 import { Option } from "@/utils/Option";
 import { DocumentSession } from "../index";
 
-const Path = "/work/login.dcmp";
+const Path = filePath("/work/login.dcmp");
 const OtherPath = "/work/settings.dcmp";
 
 /** ダイアログを出せなかったことにする理由。中身はこのテストでは問わない。 */

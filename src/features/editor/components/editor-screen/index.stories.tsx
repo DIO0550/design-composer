@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, waitFor } from "storybook/test";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
+import type { FilePath } from "@/domains/unit/file-path";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { DocumentSessionPorts } from "@/features/editor/features/document-start";
@@ -15,10 +17,10 @@ import { DocumentJson } from "@/libs/document-json";
 import { FileDropFake } from "@/libs/file-drop/fake";
 import { EditorScreen } from "./index";
 
-const SamplePath = "/work/sample.dcmp";
-const SettingsPath = "/work/settings.dcmp";
+const SamplePath = filePath("/work/sample.dcmp");
+const SettingsPath = filePath("/work/settings.dcmp");
 /** 置かれていないパス。開けなかった状態を作るのに使う。 */
-const MissingPath = "/work/missing.dcmp";
+const MissingPath = filePath("/work/missing.dcmp");
 
 /** 外の世界の口を差し替えたひと組と、ストーリーから動かす手がかり。 */
 type Harness = Readonly<{
@@ -41,7 +43,7 @@ type Harness = Readonly<{
  */
 function createHarness(
   files: Readonly<Record<string, string>>,
-  storedRecentPaths?: readonly string[],
+  storedRecentPaths?: readonly FilePath[],
 ): Harness {
   const ipc = DocumentIpcFake.create(files);
   const dialog = DocumentDialogFake.create({

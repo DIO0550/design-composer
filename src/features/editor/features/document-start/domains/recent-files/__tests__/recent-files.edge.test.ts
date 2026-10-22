@@ -1,4 +1,6 @@
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
+import type { FilePath } from "@/domains/unit/file-path";
 import { Option } from "@/utils/Option";
 import { RecentFiles } from "../index";
 
@@ -7,8 +9,10 @@ import { RecentFiles } from "../index";
  *
  * @returns `/work/1.dcmp` から `/work/11.dcmp` までの 11 件
  */
-function elevenPaths(): readonly string[] {
-  return Array.from({ length: 11 }, (_, index) => `/work/${index + 1}.dcmp`);
+function elevenPaths(): readonly FilePath[] {
+  return Array.from({ length: 11 }, (_, index) =>
+    filePath(`/work/${index + 1}.dcmp`),
+  );
 }
 
 test("1 件も開いていなければ前回開いていたファイルは無い", () => {
@@ -17,9 +21,9 @@ test("1 件も開いていなければ前回開いていたファイルは無い
 
 test("重複を含む並びから作ると重複が取り除かれる", () => {
   const recents = RecentFiles.create([
-    "/work/a.dcmp",
-    "/work/b.dcmp",
-    "/work/a.dcmp",
+    filePath("/work/a.dcmp"),
+    filePath("/work/b.dcmp"),
+    filePath("/work/a.dcmp"),
   ]);
 
   expect(recents.paths).toStrictEqual(["/work/a.dcmp", "/work/b.dcmp"]);
@@ -35,6 +39,6 @@ test("上限まで並んでいる一覧へ開くと、いちばん古いもの�
   const recents = RecentFiles.create(elevenPaths().slice(0, 10));
 
   expect(
-    RecentFiles.withOpenedPath(recents, "/work/new.dcmp").paths,
+    RecentFiles.withOpenedPath(recents, filePath("/work/new.dcmp")).paths,
   ).toStrictEqual(["/work/new.dcmp", ...elevenPaths().slice(0, 9)]);
 });

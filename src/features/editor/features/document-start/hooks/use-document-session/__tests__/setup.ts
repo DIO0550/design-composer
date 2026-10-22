@@ -1,6 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
+import { filePath } from "@/domains/__tests__/file-paths";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { OpenedDocuments } from "@/domains/session/opened-documents";
+import type { FilePath } from "@/domains/unit/file-path";
 import type { DocumentSession } from "@/features/editor/features/document-start/domains/document-session";
 import type { CommandSourceFailure } from "@/features/editor/features/document-start/hooks/use-document-session";
 import type { AppMenuCommand } from "@/libs/app-menu";
@@ -24,16 +26,16 @@ import { useDocumentSession } from "../index";
  * @param recentPaths 保存されている一覧（新しい順）
  * @returns `app-state.json` に置かれているテキスト
  */
-export function storedRecentPaths(recentPaths: readonly string[]): string {
+export function storedRecentPaths(recentPaths: readonly FilePath[]): string {
   return AppStateJson.serialize({ recentPaths });
 }
 
 /** 既に置いてあるファイル。 */
-export const Path = "/work/login.dcmp";
+export const Path = filePath("/work/login.dcmp");
 /** もう 1 つ置いてあるファイル。複数開いた状態を作るのに使う。 */
-export const OtherPath = "/work/settings.dcmp";
+export const OtherPath = filePath("/work/settings.dcmp");
 /** 新規作成の保存先。まだ置かれていないパス。 */
-export const NewPath = "/work/untitled.dcmp";
+export const NewPath = filePath("/work/untitled.dcmp");
 
 /**
  * 開いているドキュメントのパスを並び順に読む。
@@ -88,9 +90,9 @@ export type SessionObserver = Readonly<{
   /** ウィンドウへファイルを落とし、開く操作が終わるまで待つ。 */
   dropFiles: (paths: readonly string[]) => Promise<void>;
   /** そのパスのタブへ移る。 */
-  activateTab: (path: string) => Promise<void>;
+  activateTab: (path: FilePath) => Promise<void>;
   /** そのパスのタブを閉じる。 */
-  closeTab: (path: string) => Promise<void>;
+  closeTab: (path: FilePath) => Promise<void>;
   /** タブを 1 つ並びの別の位置へ移す。 */
   reorderTab: (move: IndexMove) => Promise<void>;
 }>;

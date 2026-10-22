@@ -3,6 +3,7 @@ import {
   type DocumentAccessFailureReason,
   DocumentAccessFailureReasons,
 } from "@/domains/session/document-access-failure";
+import { FilePath } from "@/domains/unit/file-path";
 import { TauriIpc, type Unsubscribe } from "@/libs/tauri-ipc";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
@@ -78,7 +79,7 @@ function toDocumentAccessFailureReason(
 
 /** 外部（AI・エディタ・git 操作等）による変更の通知。 */
 export type DocumentChanged = Readonly<{
-  path: string;
+  path: FilePath;
   content: string;
 }>;
 
@@ -97,10 +98,13 @@ const DocumentChangedEvent = "document-changed";
  * パース・検証・マイグレーションは呼び出し側（`DocumentJson`）の担当。
  */
 export type DocumentIpc = Readonly<{
-  load(path: string): Promise<Result<string, DocumentIpcError>>;
-  save(path: string, content: string): Promise<Result<void, DocumentIpcError>>;
-  watch(path: string): Promise<Result<void, DocumentIpcError>>;
-  unwatch(path: string): Promise<Result<void, DocumentIpcError>>;
+  load(path: FilePath): Promise<Result<string, DocumentIpcError>>;
+  save(
+    path: FilePath,
+    content: string,
+  ): Promise<Result<void, DocumentIpcError>>;
+  watch(path: FilePath): Promise<Result<void, DocumentIpcError>>;
+  unwatch(path: FilePath): Promise<Result<void, DocumentIpcError>>;
   /**
    * 外部変更の購読を始め、解除関数を返す。
    */
@@ -154,7 +158,8 @@ function toDocumentIpcError(reason: unknown): DocumentIpcError {
  * 監視から届いた値を、パスと中身を持つ通知として読む。
  *
  * @param payload 監視イベントで届いた値
- * @returns パスと中身の対。どちらかが文字列でなければ `none`
+ * @returns パスと中身の対。どちらかが文字列でない・パスがファイル名の要素を持たない
+ *   ときは `none`
  */
 function toDocumentChanged(payload: unknown): Option<DocumentChanged> {
   if (typeof payload !== "object" || payload === null) {
@@ -164,7 +169,10 @@ function toDocumentChanged(payload: unknown): Option<DocumentChanged> {
   if (typeof path !== "string" || typeof content !== "string") {
     return Option.none;
   }
-  return Option.some({ path, content });
+  return Option.map(FilePath.create(path), (filePath) => ({
+    path: filePath,
+    content,
+  }));
 }
 
 /**

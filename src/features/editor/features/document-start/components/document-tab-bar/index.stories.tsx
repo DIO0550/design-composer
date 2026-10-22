@@ -1,11 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { openedAt } from "@/domains/__tests__/sample-document";
 import { OpenedDocuments } from "@/domains/session/opened-documents";
 import { DocumentTabBar } from "./index";
 
-const LoginPath = "/work/login.dcmp";
-const SettingsPath = "/work/settings.dcmp";
-const TokensPath = "/work/design-system/tokens.dcmp";
+const LoginPath = filePath("/work/login.dcmp");
+const SettingsPath = filePath("/work/settings.dcmp");
+const TokensPath = filePath("/work/design-system/tokens.dcmp");
 
 /** 3 つ開いて真ん中を見ている状態。前後の詰まり方と、見ている印の出方を同時に見る。 */
 const ThreeOpened = OpenedDocuments.activate(

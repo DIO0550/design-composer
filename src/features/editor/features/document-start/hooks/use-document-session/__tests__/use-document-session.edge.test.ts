@@ -155,3 +155,32 @@ test("ダイアログを出せなかったときは、その失敗が残る", as
     }),
   );
 });
+
+test("ダイアログがファイル名の要素を持たないパスを返すと、ファイルの選択の失敗が残る", async () => {
+  const observer = renderDocumentSession(
+    {},
+    { open: DialogChoice.chosen("/"), save: DialogChoice.Canceled },
+  );
+
+  await observer.openDocument();
+
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
+      kind: "dialog",
+      error: { message: "選ばれたパスがファイル名を持たない: /" },
+    }),
+  );
+});
+
+test("ファイル名の要素を持たないパスだけを落としても、直前の失敗の表示は消えない", async () => {
+  const observer = renderDocumentSession(
+    {},
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  await observer.openDocument();
+  const failed = DocumentSession.failure(observer.session());
+
+  await observer.dropFiles(["/"]);
+
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(failed);
+});

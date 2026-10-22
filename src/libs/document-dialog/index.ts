@@ -1,9 +1,10 @@
+import { FilePath } from "@/domains/unit/file-path";
 import type { FileFilter, TauriDialog } from "@/libs/tauri-dialog";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
- * ダイアログを出せなかった失敗。
+ * ダイアログを出せなかった・選ばれたパスがファイル名の要素を持たなかった失敗。
  *
  * 分岐すべき失敗が増えたらそのときに直和へ広げる。
  */
@@ -26,9 +27,30 @@ const DefaultFileName = "untitled.dcmp";
  * 「利用者がやめた」と「アプリが壊れている」を区別できなくなる。
  */
 export type DocumentDialog = Readonly<{
-  chooseOpenPath(): Promise<Result<Option<string>, DocumentDialogError>>;
-  chooseSavePath(): Promise<Result<Option<string>, DocumentDialogError>>;
+  chooseOpenPath(): Promise<Result<Option<FilePath>, DocumentDialogError>>;
+  chooseSavePath(): Promise<Result<Option<FilePath>, DocumentDialogError>>;
 }>;
+
+/**
+ * 選ばれたパスを、ファイルのパスとして受け入れる。
+ *
+ * @param chosen ダイアログが返したパス（閉じたなら `none`）
+ * @returns ファイルのパス（閉じたなら `none`）。ファイル名の要素を持たなければ、その旨と
+ *   受け取った原文を持つ失敗
+ */
+function toChosenPath(
+  chosen: Option<string>,
+): Result<Option<FilePath>, DocumentDialogError> {
+  if (!Option.isSome(chosen)) {
+    return Result.ok(Option.none);
+  }
+  const path = FilePath.create(chosen.value);
+  return Option.isSome(path)
+    ? Result.ok(path)
+    : Result.err({
+        message: `選ばれたパスがファイル名を持たない: ${chosen.value}`,
+      });
+}
 
 /**
  * ダイアログを出し、失敗を値として返す。
@@ -38,13 +60,14 @@ export type DocumentDialog = Readonly<{
  *
  * @param chooser 実際にダイアログを出す手続き
  * @returns 選ばれたパス（閉じたなら `none`）。手続きが投げたら、投げた値を文字列にした
- *   `message` を持つ失敗（`Error` なら前に `Error: ` が付く）
+ *   `message` を持つ失敗（`Error` なら前に `Error: ` が付く）。選ばれたパスがファイル名の
+ *   要素を持たなければ、その旨と受け取った原文を持つ失敗
  */
 async function choose(
   chooser: () => Promise<Option<string>>,
-): Promise<Result<Option<string>, DocumentDialogError>> {
+): Promise<Result<Option<FilePath>, DocumentDialogError>> {
   try {
-    return Result.ok(await chooser());
+    return toChosenPath(await chooser());
   } catch (reason) {
     return Result.err({ message: String(reason) });
   }

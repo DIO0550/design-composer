@@ -1,10 +1,11 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { recordActions, renderDocumentStart } from "./setup";
 
-const Path = "/work/settings-ui/app.dcmp";
-const OtherPath = "/work/shop/app.dcmp";
+const Path = filePath("/work/settings-ui/app.dcmp");
+const OtherPath = filePath("/work/shop/app.dcmp");
 
 test("開始画面は、支援技術から名前で辿れる", () => {
   renderDocumentStart();

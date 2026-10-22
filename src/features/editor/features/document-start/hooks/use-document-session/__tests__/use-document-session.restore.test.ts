@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import { DocumentSession } from "@/features/editor/features/document-start/domains/document-session";
@@ -13,7 +14,7 @@ const NoDialogChoices = {
 };
 
 /** 一覧の 2 番目に置く、開けるファイル。先頭だけが開くことを確かめるために使う。 */
-const SecondPath = "/work/shop/app.dcmp";
+const SecondPath = filePath("/work/shop/app.dcmp");
 
 test("保存された一覧の先頭のファイルが起動時に開かれる", async () => {
   const observer = renderDocumentSession(
@@ -188,4 +189,28 @@ test("解釈できなかった一覧は、次に開いたファイルで書き�
   expect(observer.appState.storedContent()).toStrictEqual(
     Option.some(storedRecentPaths([Path])),
   );
+});
+
+test("保存された一覧の先頭がファイル名の要素を持たなければ、次のファイルが起動時に開かれる", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    NoDialogChoices,
+    { storedAppState: `{"recentPaths":["/","${Path}"]}` },
+  );
+
+  await observer.settle();
+
+  expect(DocumentSession.activePath(observer.session())).toStrictEqual(
+    Option.some(Path),
+  );
+});
+
+test("保存された一覧のうちファイル名の要素を持たないパスは一覧に並ばない", async () => {
+  const observer = renderDocumentSession({}, NoDialogChoices, {
+    storedAppState: `{"recentPaths":["/","${Path}"]}`,
+  });
+
+  await observer.settle();
+
+  expect(observer.recentPaths()).toStrictEqual([Path]);
 });

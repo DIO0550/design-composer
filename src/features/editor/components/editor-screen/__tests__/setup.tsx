@@ -1,6 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { dragRowNamed } from "@/components/__tests__/row-drag";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
@@ -26,9 +27,9 @@ import { FileDropFake } from "@/libs/file-drop/fake";
 import { EditorScreen } from "../index";
 
 /** 既に置いてあるファイル。 */
-export const Path = "/work/login.dcmp";
+export const Path = filePath("/work/login.dcmp");
 /** 新規作成やファイルの切り替えで使うもう 1 つのパス。 */
-export const OtherPath = "/work/settings.dcmp";
+export const OtherPath = filePath("/work/settings.dcmp");
 
 /** 画面を描くときに、既定から変えたいもの。 */
 export type ScreenPortOptions = Readonly<{

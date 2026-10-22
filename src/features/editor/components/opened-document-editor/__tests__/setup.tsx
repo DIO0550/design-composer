@@ -1,6 +1,7 @@
 import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { contextMenu } from "@/components/__tests__/context-menu";
+import { filePath } from "@/domains/__tests__/file-paths";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { artboardList, tree } from "@/features/editor/__tests__/pane-regions";
 import {
@@ -20,7 +21,7 @@ import { Option } from "@/utils/Option";
 import { OpenedDocumentEditor } from "../index";
 
 /** 開いているファイル。テストの中で開いているファイルは常に 1 つ。 */
-export const Path = "/work/sample.dcmp";
+export const Path = filePath("/work/sample.dcmp");
 
 /** 編集画面が外部世界とやり取りする口の代役一式。 */
 export type OpenedDocumentFakes = Readonly<{

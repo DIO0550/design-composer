@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import {
   artboardContent,
   artboardDocument,
@@ -12,7 +13,7 @@ import { Option } from "@/utils/Option";
 import { useFileRevert } from "../index";
 
 /** 書き戻す先。テストの中で開いているファイルは常に 1 つ。 */
-const Path = "/work/login.dcmp";
+const Path = filePath("/work/login.dcmp");
 
 /**
  * 書き戻しを張る。

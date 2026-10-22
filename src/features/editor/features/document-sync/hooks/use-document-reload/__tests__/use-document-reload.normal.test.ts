@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { Artboard } from "@/domains/dcmp/artboard";
 import { DesignDocument } from "@/domains/dcmp/design-document";
@@ -25,7 +26,7 @@ test("外部エディタがファイルを書き換えると、その内容が�
 });
 
 test("開いていない別のファイルが書き換わっても取り込まない", async () => {
-  const otherPath = "/work/settings.dcmp";
+  const otherPath = filePath("/work/settings.dcmp");
   const fake = DocumentIpcFake.create({
     [Path]: artboardContent("home"),
     [otherPath]: artboardContent("settings"),
