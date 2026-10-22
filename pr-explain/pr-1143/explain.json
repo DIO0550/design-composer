@@ -1,0 +1,2312 @@
+{
+  "version": 1,
+  "pr": 1143,
+  "sha": "d6c834bb32aba9117aa16baff7026dabadfa3157",
+  "issue": 545,
+  "overview": {
+    "title": "ファイルのパスをブランド型にし、外から来たパスを入口で検証する",
+    "lead": "ファイルのパスを素の `string` からブランド型 `FilePath` に替え、「ファイル名の要素を持つ」(`/` と `\\` で割って空でない要素が 1 つ以上ある)ことを型で保証する。外から来たパスは `libs/` の 4 つの入口でだけ検証され、内側ではファイル名の取得が不在を返さなくなった。",
+    "before": [
+      {
+        "text": "パスは全域で素の `string`。`FilePath.fileName`(`src/utils/`)は `Option<string>` を返し、タブ・パンくず・最近使ったファイルが不在の分岐を持っていた"
+      },
+      {
+        "text": "ダイアログが `/` を返すと、そのまま読み書きへ進み、Rust 側の失敗(開く:「ファイルの読み書きに失敗しました」/ 保存:「パスが正しくありません」)として出ていた"
+      },
+      {
+        "text": "`app-state.json` の `recentPaths` に `/` が混ざると、そのまま一覧に並び、先頭なら起動時に開こうとして失敗の理由が出た"
+      },
+      {
+        "text": "ドロップで `/` を落とすと開こうとして失敗の理由が出た。空の並びが届くと表示中の失敗が消え、一瞬読み込み中になった"
+      },
+      {
+        "text": "`DocumentIpc.save(path, content)` の 2 引数を取り違えても型エラーにならなかった"
+      }
+    ],
+    "after": [
+      {
+        "text": "`FilePath` は `Brand<string, …>` で、作れるのは `FilePath.create(raw): Option<FilePath>` だけ(`as FilePath` はその 1 行)。`fileName` は `string` を返す",
+        "message": "start-filename"
+      },
+      {
+        "text": "開く・保存のダイアログが名前の無いパスを返すと `Err({ message: \"選ばれたパスがファイル名を持たない: <原文>\" })` になり、画面は「ファイルの選択に失敗しました」＋原文",
+        "message": "dialog-create"
+      },
+      {
+        "text": "`recentPaths` の名前の無い 1 件だけを読み込み時に落とす。先頭がそうなら次のファイルが起動時に開く",
+        "message": "state-create"
+      },
+      {
+        "text": "ドロップは名前の無いパスを 1 件ずつ落とし、残りが空なら配らない(元から空の並びも配らない)",
+        "message": "drop-create"
+      },
+      {
+        "text": "Rust からの変更通知でパスに名前が無ければ配らない",
+        "message": "ipc-create"
+      },
+      {
+        "text": "`DocumentIpc.save(\"{}\", path)` のように取り違えると型エラー(`document-ipc.edge` の `@ts-expect-error` で固定)",
+        "message": "autosave-save"
+      },
+      {
+        "text": "通常のパスでは画面の振る舞いは何も変わらない"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "ブランドの根拠の置き直し",
+        "text": "規約はブランド型を「誤用が現れてから」の最終手段とし、数えた誤用は 0 件だった。根拠を「`create` を通った値だけが持つ性質」へ置き直し、オーナーが承認した。`harness/case-law/coding.md` の見送りの判例を覆す回なので、型の doc(`0f2341e`)の理由が妥当かを見てほしい",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/unit/file-path/index.ts"
+        }
+      },
+      {
+        "title": "検証の入口は 4 つの外部境界",
+        "text": "`FilePath.create` を本番で呼ぶのは `file-drop` / `app-state-json` / `document-ipc` / `document-dialog` だけ。名前の無いパスの扱いは入口ごとに違う(落とす・配らない・失敗)",
+        "go": {
+          "kind": "layer",
+          "layer": "libs"
+        }
+      },
+      {
+        "title": "ドロップの空の扱い",
+        "text": "絞った結果が空なら配らない、を `FileDrop` に置いた。Tauri が元から空を送る場合も同じ 1 つの条件で配らなくなる(Tauri が実際に空を送るかは未検証)",
+        "go": {
+          "kind": "flow",
+          "id": "drop"
+        }
+      },
+      {
+        "title": "仕様への例外の追記",
+        "text": "`docs/06-ui.md` の起動時とドロップの項に「名前の無いパスは一覧に入れない / 開く対象に数えず理由も出さない」を足した。理由を出さない判断はオーナー承認の外側でセッションが決めた点",
+        "go": {
+          "kind": "file",
+          "path": "docs/06-ui.md"
+        }
+      },
+      {
+        "title": "表示側の不在の分岐を外した",
+        "text": "タブ・パンくず・最近使ったファイルが `Option` を開かずにファイル名を出す。見た目は通常のパスで変わらない",
+        "go": {
+          "kind": "flow",
+          "id": "show"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "boundary",
+      "label": "入口の検証",
+      "role": "外から来た文字列を、ファイル名の要素を持つパスとして受け入れるか決める"
+    },
+    {
+      "id": "inside",
+      "label": "内側の受け手",
+      "role": "検証済みのパスを受け取り、ファイル名を不在の分岐なしに使う"
+    },
+    {
+      "id": "spec",
+      "label": "仕様",
+      "role": "名前の無いパスを一覧に入れない・ドロップで開かないことを仕様に書く"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / unit",
+      "role": "ファイルのパスの型と、その生成・ファイル名・フォルダ名を新しく持つ"
+    },
+    {
+      "layer": "domains / session",
+      "role": "開いているドキュメントのパスを検証済みの型にし、ファイル名を不在なしで返す"
+    },
+    {
+      "layer": "libs",
+      "role": "4 つの外部境界(ドロップ・ダイアログ・アプリ自身の状態・変更通知)で 1 度だけ検証する"
+    },
+    {
+      "layer": "utils",
+      "role": "型を持たなかった旧 `FilePath.ts` を消す"
+    },
+    {
+      "layer": "features / editor/features/document-start",
+      "role": "開く操作・最近使ったファイル・タブ・開始画面が検証済みのパスを受け取る"
+    },
+    {
+      "layer": "features / editor/features/document-sync",
+      "role": "自動保存・外部変更の取り込み・ファイルへ戻す操作の対象を検証済みのパスにする"
+    },
+    {
+      "layer": "features / editor",
+      "role": "パンくずがファイル名を不在の分岐なしに出す"
+    },
+    {
+      "layer": "docs",
+      "role": "起動時とドロップの項に、名前の無いパスの例外を足す"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/unit/file-path/index.ts",
+      "name": "ファイルのパス",
+      "role": "ファイル名の要素を持つことを確かめた、ファイルの居場所。生成・ファイル名・フォルダ名を 1 つの割り方から答える",
+      "feature": "boundary",
+      "change": "新しく作った。旧 `src/utils/FilePath.ts` の割り方を引き継ぎ、ブランド型と `create` を足した"
+    },
+    {
+      "path": "src/types/Brand.ts",
+      "name": "目印付きの型",
+      "role": "素の型と構造が同じでも取り違えを型で弾くための目印の綴り",
+      "feature": "boundary"
+    },
+    {
+      "path": "src/libs/file-drop/index.ts",
+      "name": "ファイルのドロップ",
+      "role": "ウィンドウへ落とされたパスの並びを配る",
+      "feature": "boundary",
+      "change": "名前の無いパスを 1 件ずつ落とし、残りが空なら配らない"
+    },
+    {
+      "path": "src/libs/document-dialog/index.ts",
+      "name": "ドキュメントのダイアログ",
+      "role": "開く先・保存先を選ばせる",
+      "feature": "boundary",
+      "change": "選ばれたパスを検証し、名前が無ければ原文付きの失敗にする"
+    },
+    {
+      "path": "src/libs/app-state-json/index.ts",
+      "name": "アプリ自身の状態",
+      "role": "最近使ったファイルの一覧を保存するテキストと相互に変換する",
+      "feature": "boundary",
+      "change": "`recentPaths` の名前の無い 1 件だけを落とす"
+    },
+    {
+      "path": "src/libs/document-ipc/index.ts",
+      "name": "ドキュメントの I/O",
+      "role": "Rust 側の読み書き・監視と、外部変更の通知",
+      "feature": "boundary",
+      "change": "引数と通知のパスを検証済みの型にし、名前の無いパスの通知は配らない"
+    },
+    {
+      "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "name": "開く操作のセッション",
+      "role": "ダイアログ・ドロップ・起動時の復元からドキュメントを開き、最近使ったファイルを持つ",
+      "feature": "inside",
+      "change": "パスを扱う箇所を検証済みの型にした(振る舞いは入口の側で変わる)"
+    },
+    {
+      "path": "src/features/editor/features/document-start/domains/recent-files/index.ts",
+      "name": "最近使ったファイル",
+      "role": "開いた順のパスの一覧と、その先頭",
+      "feature": "inside",
+      "change": "一覧の要素を検証済みの型にした"
+    },
+    {
+      "path": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "name": "自動保存",
+      "role": "編集のたびにファイルへ書き出す",
+      "feature": "inside",
+      "change": "保存先を検証済みの型にした"
+    },
+    {
+      "path": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "name": "外部変更の取り込み",
+      "role": "ファイルが外で書き換わったら読み直す",
+      "feature": "inside",
+      "change": "対象のパスを検証済みの型にした"
+    },
+    {
+      "path": "src/domains/session/opened-document/index.ts",
+      "name": "開いているドキュメント",
+      "role": "パスとドキュメントの対",
+      "feature": "inside",
+      "change": "`path` を検証済みの型にし、`fileName` を `string` を返すようにした"
+    },
+    {
+      "path": "src/features/editor/features/document-start/components/document-tab-bar/index.tsx",
+      "name": "タブ",
+      "role": "開いているドキュメントをファイル名で並べる",
+      "feature": "inside",
+      "change": "ファイル名の不在の分岐とコメントを外した"
+    },
+    {
+      "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "name": "開始画面",
+      "role": "最近使ったファイルをファイル名とフォルダ名で出す",
+      "feature": "inside",
+      "change": "ファイル名の不在の分岐とコメントを外した"
+    },
+    {
+      "path": "src/features/editor/components/editor-top-bar/index.tsx",
+      "name": "パンくず",
+      "role": "フォルダ名とファイル名を上の帯に出す",
+      "feature": "inside",
+      "change": "ファイル名の不在の分岐を外した"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "画面の仕様",
+      "role": "起動時に開くファイルとドロップの規則",
+      "feature": "spec",
+      "change": "名前の無いパスの例外を 2 項に足した",
+      "graph": false
+    },
+    {
+      "path": "src/utils/FilePath.ts",
+      "name": "旧パスの関数",
+      "role": "型を持たずにファイル名・フォルダ名を返していた関数の集まり",
+      "change": "削除した(観点は新しいテストへ引き継いだ)",
+      "graph": false
+    },
+    {
+      "path": "src/domains/__tests__/file-paths.ts",
+      "name": "テストのパス",
+      "role": "テストとストーリーが書くパスを検証済みの型にする",
+      "change": "新しく作った",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "drop-create",
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "kind": "qry",
+      "name": "落とされたパスを検証する",
+      "code": "FilePath.create(path)",
+      "via": "call",
+      "payload": "落とされたパス 1 件",
+      "returns": "`Option<FilePath>`。`none` の件は並びから落とす",
+      "status": "added"
+    },
+    {
+      "id": "drop-deliver",
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "kind": "evt",
+      "name": "ドロップを知らせる",
+      "code": "listener(paths.value)",
+      "via": "call",
+      "payload": "名前の要素を持つパスの並び(1 件以上。空なら配らない)",
+      "status": "changed"
+    },
+    {
+      "id": "session-open-dialog",
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-dialog/index.ts",
+      "kind": "qry",
+      "name": "開く先を選ばせる",
+      "code": "dialog.chooseOpenPath()",
+      "via": "call",
+      "returns": "`Result<Option<FilePath>, DocumentDialogError>`(閉じたら `ok(none)`、名前が無ければ `err`)",
+      "status": "changed"
+    },
+    {
+      "id": "dialog-create",
+      "from": "src/libs/document-dialog/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "kind": "qry",
+      "name": "選ばれたパスを検証する",
+      "code": "FilePath.create(chosen.value)",
+      "via": "call",
+      "payload": "ダイアログが返したパス",
+      "returns": "`Option<FilePath>`。`none` なら「選ばれたパスがファイル名を持たない: <原文>」の失敗にする",
+      "status": "added"
+    },
+    {
+      "id": "session-parse-state",
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/app-state-json/index.ts",
+      "kind": "qry",
+      "name": "保存された一覧を読む",
+      "code": "AppStateJson.parse(loaded.value.value)",
+      "via": "call",
+      "payload": "`app-state.json` のテキスト",
+      "returns": "`recentPaths: readonly FilePath[]`(名前の無い件を落としたもの)",
+      "status": "changed"
+    },
+    {
+      "id": "state-create",
+      "from": "src/libs/app-state-json/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "kind": "qry",
+      "name": "一覧のパスを検証する",
+      "code": "FilePath.create(path)",
+      "via": "call",
+      "payload": "`recentPaths` の 1 件",
+      "returns": "`Option<FilePath>`。`none` の件だけ落とす",
+      "status": "added"
+    },
+    {
+      "id": "session-recent",
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/features/editor/features/document-start/domains/recent-files/index.ts",
+      "kind": "qry",
+      "name": "一覧の先頭を引く",
+      "code": "RecentFiles.latest(recents)",
+      "via": "call",
+      "returns": "`Option<FilePath>`",
+      "status": "changed"
+    },
+    {
+      "id": "session-load",
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "kind": "qry",
+      "name": "ファイルを読む",
+      "code": "ipc.load(path)",
+      "via": "call",
+      "payload": "検証済みのパス",
+      "returns": "`Result<string, DocumentIpcError>`",
+      "status": "changed"
+    },
+    {
+      "id": "ipc-create",
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "kind": "qry",
+      "name": "変更通知のパスを検証する",
+      "code": "FilePath.create(path)",
+      "via": "call",
+      "payload": "Rust の変更通知のパス",
+      "returns": "`Option<FilePath>`。`none` なら通知を配らない",
+      "status": "added"
+    },
+    {
+      "id": "ipc-changed",
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "kind": "evt",
+      "name": "外部変更を知らせる",
+      "code": "listener(changed.value)",
+      "via": "call",
+      "payload": "`{ path: FilePath, content: string }`",
+      "status": "changed"
+    },
+    {
+      "id": "autosave-save",
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "kind": "cmd",
+      "name": "ファイルへ書き出す",
+      "code": "ipc.save(path, DocumentJson.serialize(document))",
+      "via": "call",
+      "payload": "検証済みのパスと中身の文字列(取り違えると型エラー)",
+      "returns": "`Result<void, DocumentIpcError>`",
+      "status": "changed"
+    },
+    {
+      "id": "tab-filename",
+      "from": "src/features/editor/features/document-start/components/document-tab-bar/index.tsx",
+      "to": "src/domains/unit/file-path/index.ts",
+      "kind": "qry",
+      "name": "タブのファイル名を引く",
+      "code": "FilePath.fileName(document.path)",
+      "via": "call",
+      "returns": "`string`(不在なし)",
+      "status": "changed"
+    },
+    {
+      "id": "start-filename",
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/domains/unit/file-path/index.ts",
+      "kind": "qry",
+      "name": "最近使ったファイルの名前を引く",
+      "code": "FilePath.fileName(path)",
+      "via": "call",
+      "returns": "`string`(不在なし)",
+      "status": "changed"
+    },
+    {
+      "id": "topbar-filename",
+      "from": "src/features/editor/components/editor-top-bar/index.tsx",
+      "to": "src/domains/session/opened-document/index.ts",
+      "kind": "qry",
+      "name": "パンくずのファイル名を引く",
+      "code": "OpenedDocument.fileName(opened)",
+      "via": "call",
+      "returns": "`string`(不在なし)",
+      "status": "changed"
+    },
+    {
+      "id": "opened-filename",
+      "from": "src/domains/session/opened-document/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "kind": "qry",
+      "name": "開いているファイルの名前を引く",
+      "code": "FilePath.fileName(opened.path)",
+      "via": "call",
+      "returns": "`string`",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "restore",
+      "label": "起動時に前回のファイルを開くとき",
+      "steps": [
+        "session-parse-state",
+        "state-create",
+        "session-recent",
+        "session-load"
+      ]
+    },
+    {
+      "id": "drop",
+      "label": "ファイルを落としたとき",
+      "steps": [
+        "drop-create",
+        "drop-deliver",
+        "session-load"
+      ]
+    },
+    {
+      "id": "dialog",
+      "label": "ダイアログで開くとき",
+      "steps": [
+        "session-open-dialog",
+        "dialog-create",
+        "session-load"
+      ]
+    },
+    {
+      "id": "show",
+      "label": "ファイル名を出すとき",
+      "steps": [
+        "tab-filename",
+        "start-filename",
+        "topbar-filename",
+        "opened-filename"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "phase": "core",
+      "role": "ブランド型 `FilePath` を作り、4 つの入口で検証して内側の型を差し替える",
+      "why": "型の導入と入口・消費側の差し替えは、片方だけ入ると「型はあるが誰も作らない」か「入口で検証しても内側は `string`」になり単独では何も保証しないので、1 コミットにまとめた(Issue のフェーズ 2 で分けないと判断)。割り方は全域関数 `segments` の 1 本だけにし、`create` が「末尾が空でない」ことを条件にすることで、`fileName` は `Option.unwrap` も既定値も `as` も無しに `string` を返せる。",
+      "flows": [
+        "restore",
+        "drop",
+        "dialog",
+        "show"
+      ],
+      "review": [
+        "`as FilePath` が `create` の 1 行だけで、本番で `FilePath.create(` を呼ぶのが `libs/` の 4 入口だけになっているか",
+        "ダイアログの名前の無いパスを `none`(閉じた)ではなく `Err` にした判断。`none` に寄せると「利用者がやめた」と「アプリが壊れている」が区別できなくなる",
+        "ドロップの「絞った結果が空なら配らない」を `FileDrop` に置き、hook には入口の事情を持ち込まない形でよいか",
+        "代役(fake)の外向きの引数を `string` のまま残した点。入口の検証を確かめる `\"/\"` を注入するため"
+      ],
+      "before": [
+        {
+          "text": "パスは素の `string` で、`FilePath.fileName` は `Option<string>`"
+        },
+        {
+          "text": "ダイアログ・ドロップ・保存された一覧のどれから来た `/` も、そのまま読み書きまで進んだ"
+        }
+      ],
+      "after": [
+        {
+          "text": "外から来たパスは `libs/` の 4 入口で 1 度だけ検証される",
+          "message": "drop-create"
+        },
+        {
+          "text": "ファイル名の取得が `string` を返し、表示側の不在の分岐が消える",
+          "message": "tab-filename"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "start": 48,
+          "end": 52,
+          "text": "`as FilePath` はこの 1 行だけ。条件は `lastSegment(raw)` が空でないこと(`raw.length > 0` ではないので `/` や `//` は弾かれる)"
+        },
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "start": 37,
+          "end": 39,
+          "text": "`create` と `fileName` が同じ `lastSegment` を使うので、`create` を通った値の `fileName` は空にならない"
+        },
+        {
+          "path": "src/libs/file-drop/index.ts",
+          "start": 35,
+          "end": 39,
+          "text": "名前の無い件を `flatMap` で落とし、残りが空なら `none`(配らない)。空の並びを配ると表示中の失敗が消えて一瞬読み込み中になると実測したため"
+        },
+        {
+          "path": "src/libs/document-dialog/index.ts",
+          "start": 41,
+          "end": 53,
+          "text": "`Option<string>` を受け、閉じた(`none`)はそのまま `ok(none)`、名前が無ければ原文付きの `err`"
+        },
+        {
+          "path": "src/libs/app-state-json/index.ts",
+          "start": 49,
+          "end": 52,
+          "text": "名前の無い 1 件だけを落とす。文字列以外が混ざったときは今までどおり全体が失敗(`Json.arrayOf(field, Json.string)`)"
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "start": 172,
+          "end": 175,
+          "text": "パスが検証を通らなければ `none` になり、通知は配られない"
+        },
+        {
+          "path": "src/features/editor/components/editor-top-bar/index.tsx",
+          "start": 125,
+          "end": 125,
+          "text": "`Option.isSome(fileName)` の分岐が外れ、そのまま出す"
+        }
+      ]
+    },
+    {
+      "sha": "4d97be4fb8f7f5f4cd6bc3e6a28a1d51c455a34d",
+      "phase": "hard",
+      "role": "起動時の項に、名前の無いパスを最近使ったファイルに入れない例外を書く",
+      "why": "仕様は「開けなかったファイルを一覧から外さない(一時的に読めないだけのことがあるため)」で、前のコミットの「1 件だけ落とす」と食い違っていた(plan-reviewer の指摘 1)。名前の無いパスは二度と開けないので、外さない理由が当たらない。既存の規則は変えず、例外を理由ごと同じ項に書いた。",
+      "flows": [
+        "restore"
+      ],
+      "review": [
+        "先頭が名前の無いパスのとき、理由を出さずに次のファイルが開く判断。オーナーの承認は「一覧が全部消えないように 1 件だけ落とす」までで、理由を出さない点はセッションが決めた"
+      ],
+      "before": [
+        {
+          "text": "仕様は、開けなかったファイルを一覧から外さないとだけ書いていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "名前の無いパスは読み込むときに一覧へ入れず、次のものを先頭として扱う、と書いた",
+          "message": "state-create"
+        }
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 24,
+          "end": 24,
+          "text": "「ただし…」以降が足した例外"
+        }
+      ]
+    },
+    {
+      "sha": "feec3678f74d9a2a44fe1b6c9f37ae06b65defbd",
+      "phase": "revise",
+      "role": "ドロップの項に、名前の無いパスは開く対象に数えず理由も出さない例外を書く",
+      "why": "実装の検証で over-guard と harness の 2 観点が、ドロップで `/` を黙って捨てるのに仕様は「落とした数だけ開く」「開けなかった理由を出す」のままだと指摘した。仕様の突き合わせを起動時の項だけで止めていた。挙動は変えずに仕様の側へ書き足し、書き方を起動時の項に揃えた。",
+      "flows": [
+        "drop"
+      ],
+      "review": [
+        "ルート(`/`)を落としたときは理由が出ず何も起きないが、名前の付いたフォルダを落とすと今も読み込みの失敗として理由が出る。見え方が分かれるのを頻度が低いとして受け入れた"
+      ],
+      "before": [
+        {
+          "text": "仕様は「落とした数だけ開く」だけだった"
+        }
+      ],
+      "after": [
+        {
+          "text": "名前の無いパスは開く対象に数えず理由も出さない。1 件も残らなければ何も起きない、と書いた",
+          "message": "drop-create"
+        }
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 45,
+          "end": 45,
+          "text": "「ただし…」以降が足した例外。失敗として画面に出す案は、`FileDrop` から session まで新しい失敗の経路が要るので採らなかった"
+        }
+      ]
+    },
+    {
+      "sha": "0f2341e31c633d4ef150a125c5c489cd1ae0a704",
+      "phase": "revise",
+      "role": "ブランド型にした理由と、ダイアログの失敗の種類を doc に書く",
+      "why": "実装の検証(comment / duplication)の指摘。判例はブランド化を見送っており、規約もブランド型を最終手段としているので、理由がコードに無いと次に読む人がブランドを外しかねない。`lastSegment` の doc の「空文字を埋めているのではない」は `slice(-1).join(\"\")` の実態と食い違っていたので、主張の側を実態に合わせた。",
+      "review": [
+        "型の doc の 2 段落目(ブランドにする理由と record 型にしない理由)が、判例を覆す根拠として足りているか"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "start": 11,
+          "end": 13,
+          "text": "足した理由。`{ raw: string }` の record にしないのは、IPC の引数・`key`・`title` と文字列のまま使う箇所が多いため"
+        },
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "start": 35,
+          "end": 36,
+          "text": "要素が無ければ空文字になり、`create` がそれを弾く、と実態どおりに書き直した"
+        },
+        {
+          "path": "src/libs/document-dialog/index.ts",
+          "start": 25,
+          "end": 28,
+          "text": "`Err` が「出せなかった」だけでなく「選ばれたパスが名前を持たなかった」も含むことを並べた"
+        }
+      ]
+    },
+    {
+      "sha": "d6c834bb32aba9117aa16baff7026dabadfa3157",
+      "phase": "revise",
+      "role": "空の並びのドロップが配られないことを別のテストに分ける",
+      "why": "test-reviewer の指摘。1 本のテストが「絞った結果が空」と「元から空で届く」の 2 つの仕様を流していて、整理で片方の入力を消すともう片方が黙って素通りする。1 本に 1 つの仕様を置き、どちらの経路を壊してもそれぞれが落ちる形にした。",
+      "flows": [
+        "drop"
+      ],
+      "review": [
+        "2 本とも、対照に有効な 1 件を後から落として「配る処理ごと壊れていても通る」を防いでいるか"
+      ],
+      "notes": [
+        {
+          "path": "src/libs/file-drop/__tests__/file-drop.edge.test.ts",
+          "start": 63,
+          "end": 77,
+          "text": "分けて足したテスト。`fake.dropFiles([])` の後に対照の `[Path]` を落とす"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "fp-normal",
+      "label": "ファイルのパスの正常系",
+      "file": "src/domains/unit/file-path/__tests__/file-path.normal.test.ts"
+    },
+    {
+      "id": "fp-edge",
+      "label": "ファイルのパスの境界",
+      "file": "src/domains/unit/file-path/__tests__/file-path.edge.test.ts"
+    },
+    {
+      "id": "fp-type",
+      "label": "ファイルのパスの型",
+      "file": "src/domains/unit/file-path/__tests__/file-path.type.test.ts"
+    },
+    {
+      "id": "dialog-edge",
+      "label": "ダイアログの境界",
+      "file": "src/libs/document-dialog/__tests__/document-dialog.edge.test.ts"
+    },
+    {
+      "id": "drop-edge",
+      "label": "ドロップの境界",
+      "file": "src/libs/file-drop/__tests__/file-drop.edge.test.ts"
+    },
+    {
+      "id": "state-parse",
+      "label": "アプリ自身の状態の読み取り",
+      "file": "src/libs/app-state-json/__tests__/app-state-json.parse.test.ts"
+    },
+    {
+      "id": "ipc-edge",
+      "label": "ドキュメントの I/O の境界",
+      "file": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts"
+    },
+    {
+      "id": "session-restore",
+      "label": "開く操作のセッションの復元",
+      "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts"
+    },
+    {
+      "id": "session-entry",
+      "label": "開く操作のセッションの入口",
+      "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts"
+    },
+    {
+      "id": "session-edge",
+      "label": "開く操作のセッションの境界",
+      "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts"
+    },
+    {
+      "id": "opened-path",
+      "label": "開いているドキュメントのパス",
+      "file": "src/domains/session/opened-document/__tests__/opened-document.path.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "fp-file-name",
+      "suite": "fp-normal",
+      "name": "ファイルの名前はパスの末尾になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "タブ・パンくず・最近使ったファイルに出すファイル名の規則。旧 `src/utils/` のテストから引き継いだ観点",
+      "given": "`/work/settings-ui/app.dcmp`",
+      "when": "`FilePath.fileName` で名前を引く",
+      "then": "`app.dcmp`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.normal.test.ts",
+        "start": 6,
+        "end": 10,
+        "text": "test(\"ファイルの名前はパスの末尾になる\", () => {\n  expect(FilePath.fileName(filePath(\"/work/settings-ui/app.dcmp\"))).toBe(\n    \"app.dcmp\",\n  );\n});"
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ],
+      "covers": [
+        "tab-filename",
+        "start-filename"
+      ]
+    },
+    {
+      "id": "fp-folder-name",
+      "suite": "fp-normal",
+      "name": "親フォルダの名前はパスの末尾から 2 番目になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "最近使ったファイルで同名のファイルをフォルダ名で見分ける規則",
+      "given": "`/work/settings-ui/app.dcmp`",
+      "when": "`FilePath.folderName` で引く",
+      "then": "`some(\"settings-ui\")`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.normal.test.ts",
+        "start": 12,
+        "end": 16,
+        "text": "test(\"親フォルダの名前はパスの末尾から 2 番目になる\", () => {\n  expect(\n    FilePath.folderName(filePath(\"/work/settings-ui/app.dcmp\")),\n  ).toStrictEqual(Option.some(\"settings-ui\"));\n});"
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ]
+    },
+    {
+      "id": "fp-win-file",
+      "suite": "fp-normal",
+      "name": "Windows の区切りでもファイルの名前が取れる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "パスは動かす OS の綴りで届くので `\\` も区切りとして扱う。区切りを `/` だけにすると、このファイルを含め 4 件が落ちる(test-reviewer の実測)",
+      "given": "`C:\\work\\settings-ui\\app.dcmp`",
+      "when": "`FilePath.fileName` で引く",
+      "then": "`app.dcmp`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.normal.test.ts",
+        "start": 18,
+        "end": 22,
+        "text": "test(\"Windows の区切りでもファイルの名前が取れる\", () => {\n  expect(FilePath.fileName(filePath(\"C:\\\\work\\\\settings-ui\\\\app.dcmp\"))).toBe(\n    \"app.dcmp\",\n  );\n});"
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ]
+    },
+    {
+      "id": "fp-win-folder",
+      "suite": "fp-normal",
+      "name": "Windows の区切りでも親フォルダの名前が取れる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "フォルダ名も同じ割り方から答えることを確かめる",
+      "given": "`C:\\work\\settings-ui\\app.dcmp`",
+      "when": "`FilePath.folderName` で引く",
+      "then": "`some(\"settings-ui\")`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.normal.test.ts",
+        "start": 24,
+        "end": 28,
+        "text": "test(\"Windows の区切りでも親フォルダの名前が取れる\", () => {\n  expect(\n    FilePath.folderName(filePath(\"C:\\\\work\\\\settings-ui\\\\app.dcmp\")),\n  ).toStrictEqual(Option.some(\"settings-ui\"));\n});"
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ]
+    },
+    {
+      "id": "fp-no-normalize",
+      "suite": "fp-normal",
+      "name": "ファイル名の要素を持つ文字列は、綴りを変えずにファイルのパスになる",
+      "techniques": [
+        "equivalence",
+        "boundary"
+      ],
+      "why": "正規化しないこと(#1138 との境目)。`create` で正規化するよう壊すとこの 1 件が落ちる",
+      "given": "`/work//settings-ui/./app.dcmp`",
+      "when": "`FilePath.create` に渡す",
+      "then": "同じ綴りの `some`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.normal.test.ts",
+        "start": 30,
+        "end": 34,
+        "text": "test(\"ファイル名の要素を持つ文字列は、綴りを変えずにファイルのパスになる\", () => {\n  expect(FilePath.create(\"/work//settings-ui/./app.dcmp\")).toStrictEqual(\n    Option.some(\"/work//settings-ui/./app.dcmp\"),\n  );\n});"
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ]
+    },
+    {
+      "id": "fp-no-sep",
+      "suite": "fp-edge",
+      "name": "区切りを含まないパスには親フォルダの名前が無い",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "フォルダ名は不在がありうるので `Option` のまま残る",
+      "given": "`app.dcmp`",
+      "when": "`FilePath.folderName` で引く",
+      "then": "`none`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.edge.test.ts",
+        "start": 6,
+        "end": 8,
+        "text": "test(\"区切りを含まないパスには親フォルダの名前が無い\", () => {\n  expect(FilePath.folderName(filePath(\"app.dcmp\"))).toStrictEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ]
+    },
+    {
+      "id": "fp-root-file",
+      "suite": "fp-edge",
+      "name": "ルート直下のファイルには親フォルダの名前が無い",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "先頭の区切りで生まれる空の要素をフォルダ名にしない",
+      "given": "`/app.dcmp`",
+      "when": "`FilePath.folderName` で引く",
+      "then": "`none`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.edge.test.ts",
+        "start": 10,
+        "end": 12,
+        "text": "test(\"ルート直下のファイルには親フォルダの名前が無い\", () => {\n  expect(FilePath.folderName(filePath(\"/app.dcmp\"))).toStrictEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ]
+    },
+    {
+      "id": "fp-double-sep",
+      "suite": "fp-edge",
+      "name": "区切りが連続していても親フォルダの名前が取れる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "区切りの連続で生まれる空の要素を落としてから数える",
+      "given": "`/work//app.dcmp`",
+      "when": "`FilePath.folderName` で引く",
+      "then": "`some(\"work\")`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.edge.test.ts",
+        "start": 14,
+        "end": 18,
+        "text": "test(\"区切りが連続していても親フォルダの名前が取れる\", () => {\n  expect(FilePath.folderName(filePath(\"/work//app.dcmp\"))).toStrictEqual(\n    Option.some(\"work\"),\n  );\n});"
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ]
+    },
+    {
+      "id": "fp-drive",
+      "suite": "fp-edge",
+      "name": "Windows のドライブ直下ではドライブ名が親フォルダの名前になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "ドライブ名だけを例外にすると、仕様に無い正規化を持ち込むことになる",
+      "given": "`C:\\app.dcmp`",
+      "when": "`FilePath.folderName` で引く",
+      "then": "`some(\"C:\")`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.edge.test.ts",
+        "start": 20,
+        "end": 24,
+        "text": "test(\"Windows のドライブ直下ではドライブ名が親フォルダの名前になる\", () => {\n  expect(FilePath.folderName(filePath(\"C:\\\\app.dcmp\"))).toStrictEqual(\n    Option.some(\"C:\"),\n  );\n});"
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ]
+    },
+    {
+      "id": "fp-nameless",
+      "suite": "fp-edge",
+      "name": "ファイル名の要素を持たない文字列（%j）はファイルのパスにならない",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "不変条件そのもの。`create` の条件を常に `some` にすると 15 件、`raw.length > 0` にすると 14 件が落ちる(test-reviewer の実測)。旧「要素を 1 つも持たないパスにはファイルの名前が無い」と `editor-top-bar.edge` の「区切りだけのパス」の置き換え",
+      "given": "区切りしか無い・空の文字列",
+      "when": "`FilePath.create` に渡す(`test.each` で 4 件)",
+      "then": "どれも `none`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.edge.test.ts",
+        "start": 26,
+        "end": 33,
+        "text": "test.each([\n  \"\",\n  \"/\",\n  \"\\\\\",\n  \"//\",\n])(\"ファイル名の要素を持たない文字列（%j）はファイルのパスにならない\", (raw) => {\n  expect(FilePath.create(raw)).toStrictEqual(Option.none);\n});"
+      },
+      "values": {
+        "columns": [
+          "渡す文字列",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`\"\"`",
+              "`none`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`/`",
+              "`none`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`\\`",
+              "`none`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`//`",
+              "`none`(`raw.length > 0` では弾けない)"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ],
+      "covers": [
+        "drop-create",
+        "dialog-create",
+        "state-create",
+        "ipc-create"
+      ]
+    },
+    {
+      "id": "fp-trailing-sep",
+      "suite": "fp-edge",
+      "name": "区切りで終わっても空でない要素があればファイルのパスになり、その要素がファイル名になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "末尾の区切りだけで弾かない(条件は「空でない要素が 1 つ以上」)",
+      "given": "`/work/app/`",
+      "when": "ファイルのパスにして `FilePath.fileName` で引く",
+      "then": "`app`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.edge.test.ts",
+        "start": 35,
+        "end": 37,
+        "text": "test(\"区切りで終わっても空でない要素があればファイルのパスになり、その要素がファイル名になる\", () => {\n  expect(FilePath.fileName(filePath(\"/work/app/\"))).toBe(\"app\");\n});"
+      },
+      "values": {
+        "columns": [
+          "パス",
+          "ファイルのパスになるか",
+          "ファイル名"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`/work/app/`",
+              "なる",
+              "`app`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`/`",
+              "ならない",
+              "(作れない)"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ]
+    },
+    {
+      "id": "fp-type-brand",
+      "suite": "fp-type",
+      "name": "素の文字列はファイルのパスとして渡せない",
+      "techniques": [
+        "type"
+      ],
+      "why": "検証を通らない `string` を内側へ渡す誤用を型で弾く。ブランドを外すと tsc がこのテストで落ちる",
+      "given": "`string` と `FilePath` の型",
+      "when": "`expectTypeOf<string>().not.toExtend<FilePath>()`",
+      "then": "型検査が通る(`string` は `FilePath` に代入できない)",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.type.test.ts",
+        "start": 4,
+        "end": 6,
+        "text": "test(\"素の文字列はファイルのパスとして渡せない\", () => {\n  expectTypeOf<string>().not.toExtend<FilePath>();\n});"
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ]
+    },
+    {
+      "id": "fp-type-filename",
+      "suite": "fp-type",
+      "name": "ファイル名の取得は不在を返さない",
+      "techniques": [
+        "type"
+      ],
+      "why": "表示側が不在の分岐を書かずに済むことを型で固定する",
+      "given": "`FilePath.fileName`",
+      "when": "戻り値の型を見る",
+      "then": "`string`(`Option` ではない)",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/unit/file-path/__tests__/file-path.type.test.ts",
+        "start": 8,
+        "end": 10,
+        "text": "test(\"ファイル名の取得は不在を返さない\", () => {\n  expectTypeOf(FilePath.fileName).returns.toEqualTypeOf<string>();\n});"
+      },
+      "targets": [
+        "src/domains/unit/file-path/index.ts"
+      ],
+      "covers": [
+        "tab-filename",
+        "start-filename",
+        "opened-filename"
+      ]
+    },
+    {
+      "id": "dialog-open-nameless",
+      "suite": "dialog-edge",
+      "name": "開くダイアログがファイル名の要素を持たないパスを返すと失敗になる",
+      "techniques": [
+        "error"
+      ],
+      "why": "閉じた(`none`)と壊れている(`Err`)を潰さない。不正なパスを `ok(none)` にすると 3 件が落ちる(test-reviewer の実測)",
+      "given": "開くダイアログが `/` を返す代役",
+      "when": "`chooseOpenPath()`",
+      "then": "`Result.isOk` が false",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/libs/document-dialog/__tests__/document-dialog.edge.test.ts",
+        "start": 29,
+        "end": 38,
+        "text": "test(\"開くダイアログがファイル名の要素を持たないパスを返すと失敗になる\", async () => {\n  const fake = DocumentDialogFake.create({\n    open: DialogChoice.chosen(\"/\"),\n    save: DialogChoice.Canceled,\n  });\n\n  const chosen = await fake.dialog.chooseOpenPath();\n\n  expect(Result.isOk(chosen)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/libs/document-dialog/index.ts"
+      ],
+      "covers": [
+        "dialog-create"
+      ]
+    },
+    {
+      "id": "dialog-save-message",
+      "suite": "dialog-edge",
+      "name": "保存のダイアログがファイル名の要素を持たないパスを返すと、その旨と受け取ったパスが失敗に残る",
+      "techniques": [
+        "error"
+      ],
+      "why": "画面に出る原文を固定する。Windows の区切り `\\` でも弾かれることを兼ねる",
+      "given": "保存のダイアログが `\\` を返す代役",
+      "when": "`chooseSavePath()`",
+      "then": "`Result.err({ message: \"選ばれたパスがファイル名を持たない: \\\\\" })`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/libs/document-dialog/__tests__/document-dialog.edge.test.ts",
+        "start": 40,
+        "end": 51,
+        "text": "test(\"保存のダイアログがファイル名の要素を持たないパスを返すと、その旨と受け取ったパスが失敗に残る\", async () => {\n  const fake = DocumentDialogFake.create({\n    open: DialogChoice.Canceled,\n    save: DialogChoice.chosen(\"\\\\\"),\n  });\n\n  const chosen = await fake.dialog.chooseSavePath();\n\n  expect(chosen).toStrictEqual(\n    Result.err({ message: \"選ばれたパスがファイル名を持たない: \\\\\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/libs/document-dialog/index.ts"
+      ],
+      "covers": [
+        "dialog-create"
+      ]
+    },
+    {
+      "id": "drop-one-nameless",
+      "suite": "drop-edge",
+      "name": "ファイル名の要素を持たないパスは、その 1 件だけ配られない",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "名前の無い 1 件だけを落とし、残りは配る。絞らないとこのファイルを含め 4 件が落ちる(test-reviewer の実測)",
+      "given": "購読した代役",
+      "when": "`[\"/\", Path]` を落とす",
+      "then": "`[[Path]]` だけが届く",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/libs/file-drop/__tests__/file-drop.edge.test.ts",
+        "start": 33,
+        "end": 45,
+        "text": "test(\"ファイル名の要素を持たないパスは、その 1 件だけ配られない\", async () => {\n  const fake = FileDropFake.create();\n  const received: (readonly string[])[] = [];\n  Result.unwrap(\n    await fake.drop.subscribeDropped((paths) => {\n      received.push(paths);\n    }),\n  );\n\n  fake.dropFiles([\"/\", Path]);\n\n  expect(received).toStrictEqual([[Path]]);\n});"
+      },
+      "targets": [
+        "src/libs/file-drop/index.ts"
+      ],
+      "covers": [
+        "drop-create",
+        "drop-deliver"
+      ]
+    },
+    {
+      "id": "drop-all-nameless",
+      "suite": "drop-edge",
+      "name": "ファイル名の要素を持つパスが 1 件も残らないドロップは配られない",
+      "techniques": [
+        "boundary",
+        "state"
+      ],
+      "why": "空の並びを配ると表示中の失敗が消えて一瞬読み込み中になるので、絞った結果が空なら配らない。対照に有効な 1 件を後から落とす",
+      "given": "購読した代役",
+      "when": "`[\"/\", \"\\\\\"]` を落とし、続けて `[Path]` を落とす",
+      "then": "`[[Path]]` だけが届く",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/libs/file-drop/__tests__/file-drop.edge.test.ts",
+        "start": 47,
+        "end": 61,
+        "text": "test(\"ファイル名の要素を持つパスが 1 件も残らないドロップは配られない\", async () => {\n  const fake = FileDropFake.create();\n  const received: (readonly string[])[] = [];\n  Result.unwrap(\n    await fake.drop.subscribeDropped((paths) => {\n      received.push(paths);\n    }),\n  );\n\n  fake.dropFiles([\"/\", \"\\\\\"]);\n  // 配られる側を 1 件混ぜる。配る処理ごと壊れていても通る、を防ぐ。\n  fake.dropFiles([Path]);\n\n  expect(received).toStrictEqual([[Path]]);\n});"
+      },
+      "targets": [
+        "src/libs/file-drop/index.ts"
+      ],
+      "covers": [
+        "drop-deliver"
+      ]
+    },
+    {
+      "id": "drop-empty",
+      "suite": "drop-edge",
+      "name": "空の並びのドロップは配られない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "元から空で届く並びも同じ 1 つの条件で配らない。前のテストから分けたので、どちらの経路を壊してもそれぞれが落ちる(空の扱いを壊すと 1〜2 件)",
+      "given": "購読した代役",
+      "when": "`[]` を落とし、続けて `[Path]` を落とす",
+      "then": "`[[Path]]` だけが届く",
+      "commit": "d6c834bb32aba9117aa16baff7026dabadfa3157",
+      "excerpt": {
+        "path": "src/libs/file-drop/__tests__/file-drop.edge.test.ts",
+        "start": 63,
+        "end": 77,
+        "text": "test(\"空の並びのドロップは配られない\", async () => {\n  const fake = FileDropFake.create();\n  const received: (readonly string[])[] = [];\n  Result.unwrap(\n    await fake.drop.subscribeDropped((paths) => {\n      received.push(paths);\n    }),\n  );\n\n  fake.dropFiles([]);\n  // 配られる側を 1 件混ぜる。配る処理ごと壊れていても通る、を防ぐ。\n  fake.dropFiles([Path]);\n\n  expect(received).toStrictEqual([[Path]]);\n});"
+      },
+      "targets": [
+        "src/libs/file-drop/index.ts"
+      ],
+      "covers": [
+        "drop-deliver"
+      ]
+    },
+    {
+      "id": "state-drop-one",
+      "suite": "state-parse",
+      "name": "ファイル名の要素を持たないパスはその 1 件だけ落ち、残りは順序のまま読み取れる",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "外部編集で 1 行壊れただけで一覧が全部消えないように、1 件だけ落とす(オーナー判断)。絞らないと 3 件が落ちる(test-reviewer の実測)",
+      "given": "`{\"recentPaths\":[\"/work/a.dcmp\",\"/\",\"/work/b.dcmp\"]}`",
+      "when": "`AppStateJson.parse`",
+      "then": "`[\"/work/a.dcmp\", \"/work/b.dcmp\"]`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/libs/app-state-json/__tests__/app-state-json.parse.test.ts",
+        "start": 33,
+        "end": 42,
+        "text": "test(\"ファイル名の要素を持たないパスはその 1 件だけ落ち、残りは順序のまま読み取れる\", () => {\n  const parsed = AppStateJson.parse(\n    '{\"recentPaths\":[\"/work/a.dcmp\",\"/\",\"/work/b.dcmp\"]}',\n  );\n\n  expect(Result.unwrap(parsed).recentPaths).toStrictEqual([\n    \"/work/a.dcmp\",\n    \"/work/b.dcmp\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/libs/app-state-json/index.ts"
+      ],
+      "covers": [
+        "state-create",
+        "session-parse-state"
+      ]
+    },
+    {
+      "id": "ipc-nameless-change",
+      "suite": "ipc-edge",
+      "name": "ファイル名の要素を持たないパスの変更通知は配られない",
+      "techniques": [
+        "error"
+      ],
+      "why": "Rust の戻り値も外の世界なので入口で検証する。検証しないとこの 1 件が落ちる(test-reviewer の実測)",
+      "given": "購読した IPC",
+      "when": "`{ path: \"/\" }` と有効な `Path` の通知を続けて届ける",
+      "then": "有効な 1 件だけが届く",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+        "start": 113,
+        "end": 125,
+        "text": "test(\"ファイル名の要素を持たないパスの変更通知は配られない\", async () => {\n  const events = SingleEventIpcFake.create(\"document-changed\");\n  const ipc = DocumentIpc.create(events.ipc);\n  const received: DocumentChanged[] = [];\n  Result.unwrap(\n    await ipc.subscribeChanged((changed) => received.push(changed)),\n  );\n\n  events.deliver({ path: \"/\", content: \"{}\" });\n  events.deliver({ path: Path, content: \"{}\" });\n\n  expect(received).toStrictEqual([{ path: Path, content: \"{}\" }]);\n});"
+      },
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ],
+      "covers": [
+        "ipc-create",
+        "ipc-changed"
+      ]
+    },
+    {
+      "id": "ipc-save-swap",
+      "suite": "ipc-edge",
+      "name": "保存先と中身を取り違えて渡すことはできない",
+      "techniques": [
+        "type"
+      ],
+      "why": "`save(path, content)` の位置引数の取り違えを型で弾く。ブランドを外すと `@ts-expect-error` が要らなくなり、tsc が TS2578 で落ちる",
+      "given": "代役の IPC",
+      "when": "`ipc.save(\"{}\", Path)` と書く(呼ばない)",
+      "then": "型エラー(`@ts-expect-error` が効いている)",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+        "start": 127,
+        "end": 136,
+        "emphasis": [
+          {
+            "start": 132,
+            "end": 133
+          }
+        ],
+        "text": "test(\"保存先と中身を取り違えて渡すことはできない\", () => {\n  const ipc = DocumentIpcFake.create().ipc;\n\n  // 呼ばずに型だけを見る。\n  const swapped = () =>\n    // @ts-expect-error 中身の文字列はファイルのパスとして渡せない\n    ipc.save(\"{}\", Path);\n\n  expectTypeOf(swapped).toBeFunction();\n});"
+      },
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ],
+      "covers": [
+        "autosave-save"
+      ]
+    },
+    {
+      "id": "restore-skip-first",
+      "suite": "session-restore",
+      "name": "保存された一覧の先頭がファイル名の要素を持たなければ、次のファイルが起動時に開かれる",
+      "techniques": [
+        "state"
+      ],
+      "why": "仕様(`docs/06-ui.md` 起動時の項)の例外。名前の無いパスは二度と開けないので、次のものを先頭として扱う",
+      "given": "`{\"recentPaths\":[\"/\", Path]}` が保存されている",
+      "when": "起動して復元を待つ",
+      "then": "見ているドキュメントが `Path`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "start": 194,
+        "end": 206,
+        "text": "test(\"保存された一覧の先頭がファイル名の要素を持たなければ、次のファイルが起動時に開かれる\", async () => {\n  const observer = renderDocumentSession(\n    { [Path]: artboardContent(\"home\") },\n    NoDialogChoices,\n    { storedAppState: `{\"recentPaths\":[\"/\",\"${Path}\"]}` },\n  );\n\n  await observer.settle();\n\n  expect(DocumentSession.activePath(observer.session())).toStrictEqual(\n    Option.some(Path),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "session-parse-state",
+        "state-create",
+        "session-recent",
+        "session-load"
+      ]
+    },
+    {
+      "id": "restore-not-listed",
+      "suite": "session-restore",
+      "name": "保存された一覧のうちファイル名の要素を持たないパスは一覧に並ばない",
+      "techniques": [
+        "state"
+      ],
+      "why": "最近使ったファイルに `/` が出ないこと",
+      "given": "`{\"recentPaths\":[\"/\", Path]}` が保存されている",
+      "when": "起動して復元を待つ",
+      "then": "一覧が `[Path]`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "start": 208,
+        "end": 216,
+        "text": "test(\"保存された一覧のうちファイル名の要素を持たないパスは一覧に並ばない\", async () => {\n  const observer = renderDocumentSession({}, NoDialogChoices, {\n    storedAppState: `{\"recentPaths\":[\"/\",\"${Path}\"]}`,\n  });\n\n  await observer.settle();\n\n  expect(observer.recentPaths()).toStrictEqual([Path]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "session-parse-state",
+        "state-create"
+      ]
+    },
+    {
+      "id": "entry-rest-opened",
+      "suite": "session-entry",
+      "name": "落としたパスにファイル名の要素を持たないものが混ざっても、残りが開かれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ドロップで名前の無いパスを数えず、残りは開く(仕様のドロップの項)",
+      "given": "`Path` に読めるドキュメントがある",
+      "when": "`[\"/\", Path]` を落とす",
+      "then": "開いているのは `[Path]`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+        "start": 196,
+        "end": 205,
+        "text": "test(\"落としたパスにファイル名の要素を持たないものが混ざっても、残りが開かれる\", async () => {\n  const observer = renderDocumentSession(\n    { [Path]: artboardContent(\"home\") },\n    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n  );\n\n  await observer.dropFiles([\"/\", Path]);\n\n  expect(openedPaths(observer.session())).toStrictEqual([Path]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "drop-create",
+        "drop-deliver",
+        "session-load"
+      ]
+    },
+    {
+      "id": "entry-no-failure",
+      "suite": "session-entry",
+      "name": "落としたパスにファイル名の要素を持たないものが混ざっても、失敗は残らない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "名前の無いパスは理由も出さない(これまでは「Is a directory」の失敗が出た)",
+      "given": "`Path` に読めるドキュメントがある",
+      "when": "`[\"/\", Path]` を落とす",
+      "then": "失敗は `none`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+        "start": 207,
+        "end": 218,
+        "text": "test(\"落としたパスにファイル名の要素を持たないものが混ざっても、失敗は残らない\", async () => {\n  const observer = renderDocumentSession(\n    { [Path]: artboardContent(\"home\") },\n    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n  );\n\n  await observer.dropFiles([\"/\", Path]);\n\n  expect(DocumentSession.failure(observer.session())).toStrictEqual(\n    Option.none,\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "drop-create",
+        "drop-deliver"
+      ]
+    },
+    {
+      "id": "edge-dialog-failure",
+      "suite": "session-edge",
+      "name": "ダイアログがファイル名の要素を持たないパスを返すと、ファイルの選択の失敗が残る",
+      "techniques": [
+        "error"
+      ],
+      "why": "画面の 1 行が「ファイルの選択に失敗しました」＋原文になる根拠(`kind: \"dialog\"`)",
+      "given": "開くダイアログが `/` を返す",
+      "when": "開く操作をする",
+      "then": "`{ kind: \"dialog\", error: { message: \"選ばれたパスがファイル名を持たない: /\" } }`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+        "start": 159,
+        "end": 173,
+        "text": "test(\"ダイアログがファイル名の要素を持たないパスを返すと、ファイルの選択の失敗が残る\", async () => {\n  const observer = renderDocumentSession(\n    {},\n    { open: DialogChoice.chosen(\"/\"), save: DialogChoice.Canceled },\n  );\n\n  await observer.openDocument();\n\n  expect(DocumentSession.failure(observer.session())).toStrictEqual(\n    Option.some({\n      kind: \"dialog\",\n      error: { message: \"選ばれたパスがファイル名を持たない: /\" },\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "session-open-dialog",
+        "dialog-create"
+      ]
+    },
+    {
+      "id": "edge-drop-keeps-failure",
+      "suite": "session-edge",
+      "name": "ファイル名の要素を持たないパスだけを落としても、直前の失敗の表示は消えない",
+      "techniques": [
+        "state"
+      ],
+      "why": "全部が名前の無いパスなら何も起きない。空の並びを配っていたころは表示中の失敗が消えた",
+      "given": "読めないファイルを開いて失敗が出ている",
+      "when": "`[\"/\"]` を落とす",
+      "then": "失敗の表示が前と同じ",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+        "start": 175,
+        "end": 186,
+        "text": "test(\"ファイル名の要素を持たないパスだけを落としても、直前の失敗の表示は消えない\", async () => {\n  const observer = renderDocumentSession(\n    {},\n    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },\n  );\n  await observer.openDocument();\n  const failed = DocumentSession.failure(observer.session());\n\n  await observer.dropFiles([\"/\"]);\n\n  expect(DocumentSession.failure(observer.session())).toStrictEqual(failed);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+        "src/libs/file-drop/index.ts"
+      ],
+      "covers": [
+        "drop-deliver"
+      ]
+    },
+    {
+      "id": "opened-file-name",
+      "suite": "opened-path",
+      "name": "開いているファイルの名前はパスの末尾になる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "既存のテストの期待値を `Option.some(\"app.dcmp\")` から `\"app.dcmp\"` に変えた。パンくずのファイル名が不在を返さなくなったこと",
+      "given": "`/work/settings-ui/app.dcmp` で開いたドキュメント",
+      "when": "`OpenedDocument.fileName`",
+      "then": "`app.dcmp`",
+      "commit": "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+      "excerpt": {
+        "path": "src/domains/session/opened-document/__tests__/opened-document.path.test.ts",
+        "start": 12,
+        "end": 16,
+        "text": "test(\"開いているファイルの名前はパスの末尾になる\", () => {\n  expect(OpenedDocument.fileName(openedAt(\"/work/settings-ui/app.dcmp\"))).toBe(\n    \"app.dcmp\",\n  );\n});"
+      },
+      "targets": [
+        "src/domains/session/opened-document/index.ts"
+      ],
+      "covers": [
+        "topbar-filename",
+        "opened-filename"
+      ]
+    },
+    {
+      "id": "folder-drop-todo",
+      "suite": "drop-edge",
+      "name": "名前の付いたフォルダを落とすと、読み込みの失敗として理由が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ルートだけが黙って捨てられ、名前の付いたフォルダは今も失敗の理由が出る、という見え方の分かれ目。受け入れた判断だがテストは無い",
+      "given": "名前の付いたフォルダのパス",
+      "when": "落とす",
+      "then": "開く対象に数えられ、読み込みの失敗として理由が出る",
+      "todo": true,
+      "targets": [
+        "src/libs/file-drop/index.ts"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "名前の無いパスが外から届いたときの出方が変わった",
+    "lead": "ダイアログ・ドロップ・最近使ったファイルの保存内容から、区切りの記号だけのような名前の無いパスが届いたときの画面が変わります。ふつうのパスでは何も変わりません。",
+    "changed": {
+      "before": [
+        {
+          "text": "名前の無いパスも、そのままファイルの読み書きまで進み、読み書きの失敗として理由が出ていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "ダイアログから届いた名前の無いパスは「ファイルの選択に失敗しました」と、受け取ったパスの原文で知らせる",
+          "message": "dialog-create"
+        },
+        {
+          "text": "ドロップと最近使ったファイルでは、名前の無いパスは無かったものとして扱い、理由も出さない",
+          "message": "drop-create"
+        }
+      ],
+      "text": "名前の無いパスは一時的ではなく二度と開けないので、開こうとせず、届いた場所で止めます。"
+    },
+    "tables": [
+      {
+        "label": "パスが届く経路ごとの結果",
+        "gist": "結果を決めるのは、どこからパスが届いたかと、そのパスに名前があるかの 2 つ。",
+        "text": "ふつうのパスの列は変わっていないことを示すための対照です。",
+        "rowHeads": [
+          {
+            "id": "open-dialog",
+            "label": "開くダイアログで選ぶ"
+          },
+          {
+            "id": "save-dialog",
+            "label": "新規作成で保存先を選ぶ"
+          },
+          {
+            "id": "drop",
+            "label": "ウィンドウへ落とす"
+          },
+          {
+            "id": "startup",
+            "label": "起動時に最近使ったファイルを開く",
+            "note": "一覧の先頭のとき"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "named",
+            "label": "ふつうのパス"
+          },
+          {
+            "id": "nameless",
+            "label": "名前の無いパス"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "open-dialog",
+            "columnHead": "named",
+            "result": "そのファイルを開く"
+          },
+          {
+            "rowHead": "open-dialog",
+            "columnHead": "nameless",
+            "result": "「ファイルの選択に失敗しました」と受け取ったパスが出る",
+            "was": "「ファイルの読み書きに失敗しました」とフォルダだという理由が出る",
+            "tests": [
+              "dialog-open-nameless",
+              "edge-dialog-failure"
+            ]
+          },
+          {
+            "rowHead": "save-dialog",
+            "columnHead": "named",
+            "result": "そこへ保存して開く"
+          },
+          {
+            "rowHead": "save-dialog",
+            "columnHead": "nameless",
+            "result": "「ファイルの選択に失敗しました」と受け取ったパスが出る",
+            "was": "「パスが正しくありません」と親フォルダが無いという理由が出る",
+            "tests": [
+              "dialog-save-message"
+            ]
+          },
+          {
+            "rowHead": "drop",
+            "columnHead": "named",
+            "result": "落とした数だけ開く"
+          },
+          {
+            "rowHead": "drop",
+            "columnHead": "nameless",
+            "result": "開く対象に数えず理由も出さない。全部がそうなら何も起きない",
+            "was": "開こうとして、開けなかった理由が出る",
+            "tests": [
+              "drop-one-nameless",
+              "drop-all-nameless",
+              "entry-rest-opened",
+              "entry-no-failure",
+              "edge-drop-keeps-failure"
+            ]
+          },
+          {
+            "rowHead": "startup",
+            "columnHead": "named",
+            "result": "そのファイルを開く"
+          },
+          {
+            "rowHead": "startup",
+            "columnHead": "nameless",
+            "result": "一覧に並ばず、次のファイルが開く",
+            "was": "一覧に並び、開こうとして失敗の理由が出る",
+            "tests": [
+              "state-drop-one",
+              "restore-skip-first",
+              "restore-not-listed"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "空のドロップが届いたとき",
+        "before": [
+          {
+            "text": "表示中の失敗が消え、一瞬読み込み中になる"
+          }
+        ],
+        "after": [
+          {
+            "text": "何も起きず、表示中の失敗もそのまま残る",
+            "message": "drop-deliver"
+          }
+        ],
+        "text": "名前の無いパスを除いた結果が空のときと同じ扱いです。実際に空のドロップが届くことがあるかは確かめていません。",
+        "tests": [
+          "drop-empty",
+          "edge-drop-keeps-failure"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "ふつうのパスでは、タブ・上の帯・最近使ったファイルに出るファイル名とフォルダ名は変わらない",
+        "tests": [
+          "fp-file-name",
+          "fp-folder-name",
+          "fp-win-file",
+          "fp-win-folder",
+          "opened-file-name"
+        ]
+      },
+      {
+        "text": "同じファイルを別の綴りで開くと別のタブになるのは今までどおり(別の課題で扱う)",
+        "tests": [
+          "fp-no-normalize"
+        ]
+      },
+      {
+        "text": "最近使ったファイルの一覧で、壊れているのが 1 件だけなら残りは順序のまま並ぶ",
+        "tests": [
+          "state-drop-one"
+        ]
+      },
+      {
+        "text": "名前の付いたフォルダを落としたときは、今までどおり開けなかった理由が出る",
+        "tests": [
+          "folder-drop-todo"
+        ]
+      },
+      {
+        "text": "ダイアログを閉じたときは何も起きず、失敗にもならない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "brand-type",
+      "category": "TypeScript · 型",
+      "label": "ブランド型",
+      "gist": "中身はただの文字列なのに、型の上では別物として扱わせるための書き方。[[構造的型付け|structural]]の TypeScript では、同じ形の型どうしは自由に代入できてしまう。そこへ[[交差型|intersection]]で「目印」のプロパティを足し、検証を通った値だけが目印を持つことにする。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`T & { readonly __brand: Tag }` は「`T` であり、かつ `__brand` を持つ」型。実行時の値に `__brand` は無く、型の上だけの目印になる。素の `string` は `__brand` を持たないので代入できず、目印付きの型の値は `string` でもあるので、文字列としてはそのまま使える(`key`・`title`・テンプレート文字列に渡せる)。"
+        },
+        {
+          "kind": "declaration",
+          "code": "declare const FilePathBrand: unique symbol;\nexport type FilePath = Brand<string, typeof FilePathBrand>;"
+        },
+        {
+          "kind": "text",
+          "text": "目印の型には [[`unique symbol`|unique-symbol]] を使う。`declare const` で宣言した `unique symbol` は宣言ごとに別の型になるので、別の値に別の目印が付き、目印どうしも取り違えられない。`declare` は「実体はどこかにある」と型だけを宣言する書き方で、JavaScript には何も出力されない。"
+        },
+        {
+          "kind": "text",
+          "text": "目印付きの値を作るには、素の値を [[`as`|as-assertion]] で目印付きの型に言い換えるしかない。だから `as` を書く場所を 1 箇所に絞れば、そこを通った値だけが目印を持つ。"
+        },
+        {
+          "kind": "caution",
+          "text": "[[`as`|as-assertion]] は実行時に何も確かめない。検証をせずに `as` を書けば、型の上では検証済みに見える値が作れてしまう。だからこのリポジトリでは `as` を「その事実を実行時に成立させる処理の戻り値」の 1 行に限る。"
+        },
+        {
+          "kind": "memo",
+          "text": "文字列の形をそのまま型に書く[[テンプレートリテラル型|template-literal]]もあるが、「区切り以外の文字を 1 文字以上含む」のような条件は表せないので、ここでは使っていない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "lineRange": {
+            "start": 5,
+            "end": 15
+          },
+          "text": "目印の `unique symbol` と、ブランド型 `FilePath`",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+            "0f2341e31c633d4ef150a125c5c489cd1ae0a704"
+          ]
+        },
+        {
+          "path": "src/types/Brand.ts",
+          "lineRange": {
+            "start": 22,
+            "end": 22
+          },
+          "text": "交差型で目印を足す `Brand<T, Tag>`(この PR では変えていない)"
+        },
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "lineRange": {
+            "start": 52,
+            "end": 56
+          },
+          "text": "`raw as FilePath` はこの 1 行だけ",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "brand-helper",
+        "smart-constructor",
+        "ts-expect-error"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "ts-expect-error",
+      "category": "TypeScript · 型検査",
+      "label": "`@ts-expect-error` と TS2578",
+      "gist": "「次の行は型エラーになるはず」と宣言するコメント。エラーが出ればそれを黙らせ、出なければ逆にエラー(TS2578)にする。「この書き方は[[型検査|typecheck]]で弾かれる」ことをテストとして固定するのに使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`// @ts-expect-error <理由>` を書いた次の行で型エラーが起きると、TypeScript はそのエラーを報告しない。次の行にエラーが無いと「使われていない `@ts-expect-error` がある」(TS2578)を報告する。似た `@ts-ignore` は、エラーが無くても黙っているので、弾かれなくなったことに気づけない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+            "start": 127,
+            "end": 136,
+            "emphasis": [
+              {
+                "start": 132,
+                "end": 133
+              }
+            ],
+            "text": "test(\"保存先と中身を取り違えて渡すことはできない\", () => {\n  const ipc = DocumentIpcFake.create().ipc;\n\n  // 呼ばずに型だけを見る。\n  const swapped = () =>\n    // @ts-expect-error 中身の文字列はファイルのパスとして渡せない\n    ipc.save(\"{}\", Path);\n\n  expectTypeOf(swapped).toBeFunction();\n});"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "この例は `save(path, content)` に引数を逆に渡す。`Path` は目印付きの型なので `content`(`string`)の位置には入り、`\"{}\"` は素の `string` なので `path` の位置に入らない。ブランドを外すと両方が `string` になって通ってしまい、TS2578 で tsc が落ちる。"
+        },
+        {
+          "kind": "caution",
+          "text": "これは[[型検査|typecheck]]で落ちるテストで、vitest の実行では落ちない。関数を呼ばずに作るだけにしているのは、実行時に代役の `save` を本当に呼ばないため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+          "lineRange": {
+            "start": 127,
+            "end": 136
+          },
+          "text": "保存先と中身の取り違えが型エラーになることを固定する",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "brand-type",
+        "expect-type-of"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "expect-type-of",
+      "category": "vitest · 型のテスト",
+      "label": "`expectTypeOf`",
+      "gist": "vitest に付いている、値ではなく型を確かめるための[[表明|assertion]]。書いた期待が型として成り立たなければ、[[型検査|typecheck]]がその行でエラーを出す。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`expectTypeOf<A>()` か `expectTypeOf(値)` で始め、`.toEqualTypeOf<B>()`(ちょうど同じ型)や `.toExtend<B>()`(`B` に代入できる)を続ける。`.not` を挟むと否定になる。`.returns` は関数の戻り値の型へ進む。実行時には何もしないので、テストとしては tsc で落ちる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/unit/file-path/__tests__/file-path.type.test.ts",
+            "start": 1,
+            "end": 10,
+            "text": "import { expectTypeOf, test } from \"vitest\";\nimport { FilePath } from \"../index\";\n\ntest(\"素の文字列はファイルのパスとして渡せない\", () => {\n  expectTypeOf<string>().not.toExtend<FilePath>();\n});\n\ntest(\"ファイル名の取得は不在を返さない\", () => {\n  expectTypeOf(FilePath.fileName).returns.toEqualTypeOf<string>();\n});"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "1 本目は「素の `string` は `FilePath` に代入できない」、2 本目は「`fileName` の戻り値は `Option` ではなく `string`」。どちらもブランドを外すか戻り値を変えると tsc が落ちる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/unit/file-path/__tests__/file-path.type.test.ts",
+          "lineRange": {
+            "start": 4,
+            "end": 10
+          },
+          "text": "ブランドと、ファイル名が不在を返さないことを型で固定する",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "ts-expect-error",
+        "test-each"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "test-each",
+      "category": "vitest · テスト",
+      "label": "`test.each`",
+      "gist": "同じ手順のテストを、入力だけ変えて何本も並べるための書き方。入力の並びを先に渡し、1 件ごとに 1 本のテストとして走る。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`test.each([a, b, …])(名前, (入力) => { … })` と、呼び出しを 2 段に書く。名前の中の `%j` は、その回の入力を JSON の綴りで埋める[[書式指定|format-spec]](`%s` は文字列のまま)。空文字や `\\` のような見分けにくい入力でも、テスト名で区別できる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/unit/file-path/__tests__/file-path.edge.test.ts",
+            "start": 26,
+            "end": 33,
+            "text": "test.each([\n  \"\",\n  \"/\",\n  \"\\\\\",\n  \"//\",\n])(\"ファイル名の要素を持たない文字列（%j）はファイルのパスにならない\", (raw) => {\n  expect(FilePath.create(raw)).toStrictEqual(Option.none);\n});"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "地図とページがテスト名を突き合わせるときは、`%j` を埋める前の綴りで数える。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/unit/file-path/__tests__/file-path.edge.test.ts",
+          "lineRange": {
+            "start": 26,
+            "end": 33
+          },
+          "text": "名前の無い 4 つの文字列が、どれも `none` になる",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "expect-type-of",
+        "file-path"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "libs-entries",
+      "category": "libs · 外部との境界",
+      "label": "パスの入口",
+      "gist": "外の世界からパスが届く経路は 4 つ(ドロップ・ダイアログ・アプリ自身の状態・変更通知)で、どれも `src/libs/` にある。`FilePath.create` を本番で呼ぶのはこの 4 箇所だけで、名前の無いパスの扱いは入口ごとに決める。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`file-drop` は名前の無い件を落とし、残りが空なら配らない。`app-state-json` は `recentPaths` の名前の無い件だけを落とす。`document-ipc` はその変更通知を配らない。`document-dialog` は原文付きの `Err` にする。落とし方を `FilePath` や `ArrayEx` に共通化しないのは、ダイアログだけは失敗にするなど方針が入口ごとに違い、`FilePath` の性質ではないため。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/libs/document-dialog/index.ts",
+            "start": 42,
+            "end": 54,
+            "text": "function toChosenPath(\n  chosen: Option<string>,\n): Result<Option<FilePath>, DocumentDialogError> {\n  if (!Option.isSome(chosen)) {\n    return Result.ok(Option.none);\n  }\n  const path = FilePath.create(chosen.value);\n  return Option.isSome(path)\n    ? Result.ok(path)\n    : Result.err({\n        message: `選ばれたパスがファイル名を持たない: ${chosen.value}`,\n      });\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "I/O と外部フォーマットの解釈は必ず `src/libs/` 経由(`rules/architecture.md`)。代役(fake)の外向きの引数は `string` のままで、入口の検証を確かめる `\"/\"` を注入できる。"
+        },
+        {
+          "kind": "spec",
+          "text": "起動時の項とドロップの項(`docs/06-ui.md`)に、名前の無いパスは一覧に入れない・開く対象に数えず理由も出さない、と書いてある。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/file-drop/index.ts",
+          "lineRange": {
+            "start": 35,
+            "end": 39
+          },
+          "text": "名前の無い件を落とし、空なら配らない",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        },
+        {
+          "path": "src/libs/document-dialog/index.ts",
+          "lineRange": {
+            "start": 42,
+            "end": 54
+          },
+          "text": "閉じたら `ok(none)`、名前が無ければ `err`",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        },
+        {
+          "path": "src/libs/app-state-json/index.ts",
+          "lineRange": {
+            "start": 49,
+            "end": 52
+          },
+          "text": "`recentPaths` の名前の無い件だけを落とす",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "lineRange": {
+            "start": 172,
+            "end": 175
+          },
+          "text": "名前の無いパスの通知は `none`",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "file-path",
+        "option-result"
+      ],
+      "tests": [
+        "drop-one-nameless",
+        "drop-all-nameless",
+        "drop-empty",
+        "dialog-open-nameless",
+        "dialog-save-message",
+        "state-drop-one",
+        "ipc-nameless-change"
+      ],
+      "flows": [
+        "drop",
+        "dialog",
+        "restore"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "file-path",
+      "category": "domains / unit",
+      "label": "ファイルのパス(`FilePath`)",
+      "gist": "ファイル名の要素を 1 つ以上持つことを確かめた、ファイルの居場所。[[ブランド型|brand]]で、作れるのは `create` だけ。綴りは受け取ったままで、正規化はしない。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`segments`(区切り `/` と `\\` で割り、空の要素を落とした並び)の 1 本から、`create`・`fileName`・`folderName` を答える。`lastSegment` は末尾の要素で、要素が無ければ空文字になる。`create` はこれが空でないことを条件にするので、`create` を通った値の `fileName` は空にならず、`string` をそのまま返せる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/unit/file-path/index.ts",
+            "start": 28,
+            "end": 67,
+            "text": "function segments(path: string): readonly string[] {\n  return path.split(Separator).filter((segment) => segment.length > 0);\n}\n\n/**\n * パスの末尾の要素。\n *\n * 要素が無ければ空文字になる。`create` はこれが空でないことを条件にするので、`FilePath` を\n * 受ける `fileName` からは空は返らない。\n *\n * @param path 末尾を知りたいパス\n * @returns 末尾の要素。要素が 1 つも無ければ空文字列\n */\nfunction lastSegment(path: string): string {\n  return segments(path).slice(-1).join(\"\");\n}\n\nexport const FilePath = {\n  /**\n   * 外から届いた文字列を、ファイルのパスとして受け入れる。\n   *\n   * @param raw ダイアログ・ドロップ・保存されている状態・変更通知から届いたパス\n   * @returns 綴りを変えずにファイルのパスとしたもの。区切りしか無い・空のときは `none`\n   */\n  create(raw: string): Option<FilePath> {\n    return lastSegment(raw).length > 0\n      ? Option.some(raw as FilePath)\n      : Option.none;\n  },\n\n  /**\n   * 末尾のファイルの名前。\n   *\n   * @param path 名前を知りたいパス\n   * @returns パスの末尾の要素\n   */\n  fileName(path: FilePath): string {\n    // 末尾を `Option` で取って `Option.unwrap` で開けることはしない。本番のコードに例外の経路を置かないため。\n    return lastSegment(path);\n  },"
+          }
+        },
+        {
+          "kind": "history",
+          "text": "以前は `src/utils/FilePath.ts` に型の無い関数として `fileName`(`Option<string>`)と `folderName` だけがあった。生成の規則が付いたので `domains/` へ移した。判例(`harness/case-law/coding.md`)はブランド化を見送っていたが、根拠を「誤用の件数」から「`create` を通った値だけが持つ性質」へ置き直してオーナーが承認した。"
+        },
+        {
+          "kind": "caution",
+          "text": "`fileName` を `Option` で取って `Option.unwrap` で開ける形にはしない。本番のコードに例外の経路を置かないため。既定値で埋める形も採らない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "lineRange": {
+            "start": 7,
+            "end": 82
+          },
+          "text": "型とコンパニオン",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36",
+            "0f2341e31c633d4ef150a125c5c489cd1ae0a704"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-tab-bar/index.tsx",
+          "lineRange": {
+            "start": 35,
+            "end": 46
+          },
+          "text": "タブが不在の分岐なしにファイル名を出す",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "brand-type",
+        "smart-constructor",
+        "unit-category"
+      ],
+      "tests": [
+        "fp-file-name",
+        "fp-folder-name",
+        "fp-no-normalize",
+        "fp-nameless",
+        "fp-trailing-sep",
+        "fp-type-brand",
+        "fp-type-filename"
+      ],
+      "flows": [
+        "show"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "smart-constructor",
+      "category": "規約 · 生成",
+      "label": "検証込みの生成",
+      "gist": "制約を持つ値は、コンパニオンの `create` が検証してから作る。失敗しうるなら `Option` / `Result` を返し、「作られた = 制約を満たしている」を成り立たせる(Smart Constructor)。[[ブランド型|brand]]と組むと、検証を通っていない値が型の上で同じ顔をして出回れなくなる。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/unit/file-path/index.ts",
+            "start": 46,
+            "end": 56,
+            "text": "  /**\n   * 外から届いた文字列を、ファイルのパスとして受け入れる。\n   *\n   * @param raw ダイアログ・ドロップ・保存されている状態・変更通知から届いたパス\n   * @returns 綴りを変えずにファイルのパスとしたもの。区切りしか無い・空のときは `none`\n   */\n  create(raw: string): Option<FilePath> {\n    return lastSegment(raw).length > 0\n      ? Option.some(raw as FilePath)\n      : Option.none;\n  },"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "狭い型への `as` は、実行時にその事実を成立させる処理の戻り値 1 箇所のみ(`rules/coding.md`)。完了条件として、本番で `as FilePath` が 1 行・`FilePath.create(` が `libs/` の 4 入口だけであることを数えた。"
+        },
+        {
+          "kind": "memo",
+          "text": "テストとストーリーは `src/domains/__tests__/file-paths.ts` の `filePath(raw)` で作る。中身は `Option.unwrap(FilePath.create(raw))` で、書いたパスが不正ならテストを落とす。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "lineRange": {
+            "start": 52,
+            "end": 56
+          },
+          "text": "`create`",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        },
+        {
+          "path": "src/domains/__tests__/file-paths.ts",
+          "text": "テスト用の `filePath()`",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "file-path",
+        "option-result",
+        "brand-helper"
+      ],
+      "tests": [
+        "fp-nameless",
+        "fp-type-brand"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "brand-helper",
+      "category": "types",
+      "label": "`Brand<T, Tag>`",
+      "gist": "このリポジトリの[[ブランド型|brand]]の綴り。目印の `unique symbol` は使う側で宣言し、`Brand` には書かない。",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/types/Brand.ts",
+            "start": 1,
+            "end": 22,
+            "text": "/**\n * 素の型と構造が同じでも、取り違えを型で弾けるようにするための目印付きの型。テンプレー\n * トリテラル型で構造を狭められない値に使う。\n *\n * 目印までこの型に書くと、ここから作った型がすべて同じ目印を共有してしまう。\n *\n * 値を作れるのは、その事実を実行時に成立させる `create` の中だけ（rules/coding.md「狭い\n * 型への `as` は…戻り値1箇所のみ」）。\n *\n * @example\n * declare const FontWeightBrand: unique symbol;\n * export type FontWeight = Brand<number, typeof FontWeightBrand>;\n *\n * export const FontWeight = {\n *   create(value: number): Option<FontWeight> {\n *     return NumberEx.isWithin(value, { min: 100, max: 900 })\n *       ? Option.some(value as FontWeight)\n *       : Option.none;\n *   },\n * } as const;\n */\nexport type Brand<T, Tag extends symbol> = T & { readonly __brand: Tag };"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "目印まで `Brand` の中に書くと、そこから作った型がすべて同じ目印を共有し、互いに代入できてしまう。だから `FilePath` も自分の `FilePathBrand` を宣言して渡している。"
+        },
+        {
+          "kind": "rule",
+          "text": "ブランド型の綴りは自前で書かず `src/types/Brand.ts` を使う(`rules/coding.md`)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/types/Brand.ts",
+          "lineRange": {
+            "start": 22,
+            "end": 22
+          },
+          "text": "`Brand` の定義(この PR では変えていない)"
+        },
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "lineRange": {
+            "start": 1,
+            "end": 1
+          },
+          "text": "`FilePath` が `Brand` を取り込む",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "brand-type",
+        "file-path"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "option-result",
+      "category": "utils",
+      "label": "`Option` / `Result`",
+      "gist": "このリポジトリは例外を投げず、値が無いかもしれないことを `Option`(`some` か `none`)、失敗しうることを `Result`(`ok` か `err`)で返す。どちらも[[判別可能な共用体|discriminated-union]]で、`Option.isSome` / `Result.isOk` で分ける。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`FilePath.create` は `Option<FilePath>` を返す。ダイアログは「閉じた」を `Option` の `none`、「壊れている」を `Result` の `err` で分けるので、戻り値は `Result<Option<FilePath>, DocumentDialogError>` の二重になる。2 つを 1 つに潰すと、呼び出し側が「利用者がやめた」と「アプリが壊れている」を区別できなくなる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/utils/Option.ts",
+            "start": 1,
+            "end": 16,
+            "text": "/** 値がある状態。 */\nexport type Some<T> = Readonly<{\n  some: true;\n  value: T;\n}>;\n\n/** 値が無い状態。 */\nexport type None = Readonly<{\n  some: false;\n}>;\n\n/**\n * 値が無いことがありうる処理の戻り値（rules/coding.md「エラーと不在の表現」）。\n * `Option.isSome` で分岐すると、ある場合だけ `value` が読める。\n */\nexport type Option<T> = Some<T> | None;"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/Option.ts",
+          "lineRange": {
+            "start": 16,
+            "end": 16
+          },
+          "text": "`Option<T>` の定義(この PR では変えていない)"
+        },
+        {
+          "path": "src/libs/document-dialog/index.ts",
+          "lineRange": {
+            "start": 30,
+            "end": 33
+          },
+          "text": "`Result<Option<FilePath>, DocumentDialogError>`",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "smart-constructor",
+        "libs-entries"
+      ],
+      "tests": [
+        "dialog-open-nameless",
+        "edge-dialog-failure"
+      ],
+      "flows": [
+        "dialog"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "unit-category",
+      "category": "domains · カテゴリ",
+      "label": "`src/domains/unit/`",
+      "gist": "ドキュメントに依らない値そのものの語彙(長さ・辺・時刻)を置くカテゴリで、他のカテゴリを import しない。`FilePath` は編集中の状態を参照せず文字列の規則だけなので、ここに置いた。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "消費側の `libs/` は `src/domains/` を import できるが features は import できないので、feature の `domains/` には置けない。`session/` に置く案も、編集中の状態を参照しないので採らなかった(`libs/clock` → `unit/instant` と同じ前例)。"
+        },
+        {
+          "kind": "rule",
+          "text": "カテゴリの import の向きは `unit` ← `dcmp` ← `compiled` ← `session`(`rules/architecture.md`「domains のカテゴリ」)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "text": "新しく置いたモジュール",
+          "shas": [
+            "41f30a439c13cb5ec7cf46ad991e3f5c68f51a36"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "file-path"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "structural",
+      "label": "構造的型付け",
+      "text": "型の名前ではなく、持っているプロパティの形が合えば代入できる、という TypeScript の型の決め方。名前の違う 2 つの `string` の別名は、互いに自由に代入できる。"
+    },
+    {
+      "id": "intersection",
+      "label": "交差型",
+      "text": "`A & B` と書く型で、「`A` でもあり `B` でもある」値を表す。両方のプロパティを持つことを求める。"
+    },
+    {
+      "id": "unique-symbol",
+      "label": "unique symbol",
+      "text": "`declare const X: unique symbol` のように宣言した、その宣言だけの記号の型。宣言ごとに別の型になるので、目印として取り違えられない。"
+    },
+    {
+      "id": "as-assertion",
+      "label": "as",
+      "text": "`値 as 型` と書いて、値をその型として扱わせる書き方(型アサーション)。実行時には何も確かめない。"
+    },
+    {
+      "id": "template-literal",
+      "label": "テンプレートリテラル型",
+      "text": "`${string}.dcmp` のように文字列の形を型に書く書き方。決まった前後の綴りは表せるが、文字の種類の条件は表せない。"
+    },
+    {
+      "id": "typecheck",
+      "label": "型検査",
+      "text": "コードを実行せずに型の食い違いを見つける作業。このリポジトリでは `pnpm run typecheck`(`tsc -b`)で走り、CI でも落ちる。"
+    },
+    {
+      "id": "assertion",
+      "label": "表明",
+      "text": "テストの中で「こうなっているはず」と書く 1 文。成り立たなければテストが落ちる。"
+    },
+    {
+      "id": "format-spec",
+      "label": "書式指定",
+      "text": "文字列の中に `%s` や `%j` と書いておき、あとから値で埋める印。"
+    },
+    {
+      "id": "brand",
+      "label": "ブランド型",
+      "text": "素の型に型だけの目印を足して、検証を通った値だけを別の型として扱わせる書き方。"
+    },
+    {
+      "id": "discriminated-union",
+      "label": "判別可能な共用体",
+      "text": "`A | B` のどちらかを表す型のうち、共通のプロパティ(`some: true` / `some: false` など)の値でどちらかが分かるもの。"
+    }
+  ]
+}
