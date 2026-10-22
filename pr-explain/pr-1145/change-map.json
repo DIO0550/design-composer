@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1145,
+  "headBranch": "claude/magical-cannon-h1mf8v",
+  "baseBranch": "main",
+  "mergeBase": "72f7d69f1d2b4acaba6d0f8eca5eb95fb1b596cb",
+  "head": "7064bc9323b773c11de01bc1cddbc636307449db",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1137.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 125,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "7064bc9323b773c11de01bc1cddbc636307449db",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-22T14:19:11Z",
+      "subject": "📝 [Doc]: #1120 PR #1137 の記録を harness/records に残す",
+      "body": "- harness/records/pr-1137.md を追加する(指摘 14 件・手戻り・発火)\n\n背景:\n#1137(判定表 2 本の report() を cases-report.sh へ寄せる)がマージされた。\n人・bot・CI へ届いた指摘を分類ごとに数える材料として、harness-record の手順で\n1 ファイル残す。\n\n採用理由:\n指摘は 1 件 1 ブロックで書き、出どころはサブエージェント名で分けた。人の\nレビューは get_reviews / get_review_comments / get_comments の 3 つとも 0 件で、\nCI も初回で通ったので、再発に数える出どころの指摘は無い。\n\n代替案:\n- 対策済の行を書く: 介入していない回に書くと count.sh の窓が閉じ、再発数が\n  0 に戻るため書かない(harness-growth の管轄)\n\n影響とトレードオフ:\n差分は harness/records/ の新規 1 ファイルだけ。発火はこのセッションの\n発火ログに見出しが無いため「計測対象外(フック不発)」とした。\n\n参考:\nRefs #1120\nRelates to #1137\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01ToXUyS34D3mM4wgQ6xE87D",
+      "files": [
+        {
+          "path": "harness/records/pr-1137.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 125,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,125 @@\n+# PR #1137 count-cases.sh / check-tally-cases.sh の report() を cases-report.sh へ寄せる\n+\n+- マージ日: 2026-10-22\n+- 関連 Issue: #1120\n+- 差分規模: 3 ファイル / +6 -37\n+\n+## ゴールと結果\n+\n+ゴールは、`harness/records/count-cases.sh` と `harness/githooks/lib/check-tally-cases.sh` が `.claude/hooks/lib/cases-report.sh` の `report()` を共有し、自前の `report()` と「共有しない理由」の段落を持たないこと。判定結果は変えない。達成した(ok 45 / ok 23・NG 0・exit 0 は変わらず、ok 行の書式だけ共有版の `ok   <期待> <ケース名>` になった)。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。コメントは、自分が投稿したテストケース表と、bot の投稿(Storybook プレビュー・CI レポート・VRT)だけ。CI は初回の push ですべて通った。\n+\n+## 指摘\n+\n+### 1. ゴールを確かめる手段が計画に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: テストケースが退行の確認だけで、ゴール(自前の `report()` と段落が無い)を grep で確かめる完了条件が無かった。`^report\\(\\)|^failed=|\\$failed\\b` と「共有しない|共通化しない」が 0 件、を足した。\n+- 既存ルール: なし\n+\n+### 2. 「ok 行のケース名の並びが前後で一致」の比べ方が決まっていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 変更後の ok 行には空白を含む期待が入るので、フィールド区切りではケース名を切り出せない。変更前のラベルが変更後の同じ順の行の末尾と一致するかを見る、と決めた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 3. 出力を読む人の数え方が足りなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画は読み手を pre-push と frontend.yml だけとしていたが、手で走らせて出力を読む手順が README に 2 つ(`.claude/hooks/README.md` 474〜475 行目・`harness/githooks/README.md` 139 行目)あった。文面は変えなくてよいことと、ok 行が長くなるのを受け入れることを計画に書いた。\n+- 既存ルール: なし\n+\n+### 4. 並行する Issue / PR を確かめた記録が無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: README の配線の行は判定表を足すたびに書き換わる行なので、衝突する作業が無いかの確認を求められた。オープンな PR は 0 件だった。\n+- 既存ルール: なし\n+\n+### 5. 計画と却下案を Issue に書くと計画に明記されていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: planner の返答に Issue への記録が書かれていなかった。記録自体は親が先に Issue へ書いていたので、それを示して閉じた。\n+- 既存ルール: なし\n+\n+### 6. 行番号どおりに消すと空行が 2 行続く箇所ができた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: count-cases.sh と check-tally-cases.sh の両方で起きる。source 行の前後を 1 行ずつにする、と計画に足した。\n+- 既存ルール: なし\n+\n+### 7. README の配線の行で、count-cases.sh だけ「(`report` だけ)」が付いていない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 採らなかった。この行の括弧は直前に並べたまとまり全体に掛かる書き方で、元からある `build-pr-change-map-cases.sh / … / pr-explain-pages-cases.sh(report だけ)` と同じ形のため。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 8. check-tally-cases の ok 行が、期待の長い文を含んで長くなる\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 差分の不備ではない(書式引数の案は計画で却下済み)。読む人が驚かないよう、PR 本文に 1 行書いた。\n+- 既存ルール: なし\n+\n+### 9. コミットの件名「cases-report.sh の利用者一覧」と編集先(README)がずれている\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 採らなかった。cases-report.sh の冒頭が利用者一覧を README のこの行に置くと決めていて、件名はその一覧を指しているため。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 10. 共有の `report()` が失敗フラグを立てることを、どの判定表も守っていない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: `cases-report.sh` の `report()` から `cases_failed=1` を消しても、`cases-report-cases.sh` と今回の 2 本がすべて exit 0 になることを実測した。差分が触っていないファイルの、前からある穴なので #1136 に分けた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 11. 判定表の末尾の `exit \"$cases_failed\"` を消しても、どの検査も気づかない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 失敗するケースを足したうえで `exit 0` にする、または行を消すと exit 0 になる。main 側の `exit \"$failed\"` でも同じ形で、前からある穴。#1136 に任意の案として書いた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 12. 検証エージェントへ、古い origin/main を基準にした差分を渡した\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: fetch しないまま `git diff origin/main...HEAD` を渡したので、#1117 などの無関係な差分(src/ や docs/06-ui.md)が入った。naming / over-guard / harness / solution の各 reviewer が、自分で 3 コミットに絞り直していた。\n+- 既存ルール: なし\n+\n+### 13. PreToolUse フックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: push 前の `echo hook-canary` が deny されずに通った。実行中フラグのマーカーも、発火ログの見出しも無かった。セッション中に禁止コマンド(`git add -A` / `npx` 等)は実行していない。\n+- 既存ルール: なし\n+\n+### 14. implementer の環境に node_modules が無く、初回の pre-push が落ちた\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `PRE_PUSH_REQUIRE_ALL=1` で typecheck / oxlint / biome を飛ばしたぶんが失敗に数えられ、exit 1 になった。`pnpm install --frozen-lockfile` の後は exit 0。\n+- 既存ルール: なし\n+\n+## 手戻り\n+\n+- 計画の検証の指摘 6 件は、すべて完了条件と確認手順を足すもので、方式は変わらなかった。planner へ戻さずに親が Issue へ追記した(理由は Issue #1120 に記録)\n+- 実装は 1 回で計画どおり。実装の検証で採用した指摘はコードを変えるものが無く、implementer へ戻した回も、レビュー指摘による修正 push も無し\n+- フックの発火で止まった操作: 無し(フックが発火していないため)\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録だけを残す回で、集計と介入の判断は `harness-growth` が行う。",
+          "patchLines": 126,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
