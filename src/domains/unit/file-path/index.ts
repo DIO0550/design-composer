@@ -7,6 +7,10 @@ declare const FilePathBrand: unique symbol;
 /**
  * ファイル名の要素を 1 つ以上持つことを確かめた、ファイルの居場所。綴りは受け取ったまま
  * で、正規化はしない。
+ *
+ * `create` を通った値だけがファイル名の要素を持つので、その不変条件をブランドで型に固定する。
+ * `{ raw: string }` の record にはしない。IPC の引数・`key`・`title`・保存する状態の綴りと
+ * 文字列のまま使う箇所が多く、境界ごとに取り出しが要るため。
  */
 export type FilePath = Brand<string, typeof FilePathBrand>;
 
@@ -28,8 +32,8 @@ function segments(path: string): readonly string[] {
 /**
  * パスの末尾の要素。
  *
- * 要素が無ければ末尾 1 件を連ねた結果として空になる。不在の代わりに `""` を埋めているの
- * ではなく、`create` はこれが空でないことを条件にするので、`FilePath` で呼ぶ限り空は返らない。
+ * 要素が無ければ空文字になる。`create` はこれが空でないことを条件にするので、`FilePath` を
+ * 受ける `fileName` からは空は返らない。
  *
  * @param path 末尾を知りたいパス
  * @returns 末尾の要素。要素が 1 つも無ければ空文字列

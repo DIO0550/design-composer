@@ -23,8 +23,9 @@ const DefaultFileName = "untitled.dcmp";
  * .dcmp を選ばせるダイアログ。
  *
  * 選ばずに閉じたことは失敗ではないので `Option`（`none`）で、ダイアログ自体を
- * 出せなかったことは `Result`（`Err`）で表す。2 つを 1 つに潰すと、呼び出し側が
- * 「利用者がやめた」と「アプリが壊れている」を区別できなくなる。
+ * 出せなかったこと・選ばれたパスがファイル名の要素を持たなかったことは `Result`（`Err`）で
+ * 表す。2 つを 1 つに潰すと、呼び出し側が「利用者がやめた」と「アプリが壊れている」を
+ * 区別できなくなる。
  */
 export type DocumentDialog = Readonly<{
   chooseOpenPath(): Promise<Result<Option<FilePath>, DocumentDialogError>>;
