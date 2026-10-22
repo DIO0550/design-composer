@@ -30,9 +30,9 @@ import { Option } from "@/utils/Option";
  * 四角だけを掴み口にすると、辺のどこでも掴めていたものが 10px の的になって操作性が落ち
  * るので、四角の掴み口をこの帯に上乗せしている。
  *
- * **帯は角でも 1 軸のまま。** 2 本の帯が重なる角では `ResizableSelection.lengths` の並び順で
- * 先にある軸（幅が固定なら幅）を掴む。角の付近を 2 軸にするには**どこからを角とみなすか
- * **の設計が要るので見送っている（角の四角の外側・帯の内側を押すと 1 軸しか変わらない）。
+ * 角のための大きさは別に持たず、帯の重なりをそのまま角とする（角の規則は `grabAt`）。描いた
+ * 四角（角を中心に置くので要素の内側へは角から 5px しか届かない）に合わせると、その外側・帯の
+ * 内側に 1 軸の縁が残る。
  */
 const ResizeHandleThicknessPx = 8;
 
@@ -343,33 +343,29 @@ function endAt(ratio: AnchorRatio): Option<AxisEnd> {
 }
 
 /**
- * その軸をその端から掴めるか。
+ * その軸をその端から掴めるか。箇所（比率）から引くときも帯から引くときもここを通す。
  *
  * @param resizable 選択中のものの掴める軸と位置
  * @param axis 見る軸
- * @param ratio 箇所のその軸ぶんの比率
- * @returns 掴めるならその掴み。その軸が固定でない・箇所が中央・始点側なのに位置を
- *   書けないときは `none`
+ * @param pointedEnd 掴もうとしている端。その軸を掴まない位置なら `none`
+ * @returns 掴めるならその掴み。その軸が固定でない・端が無い・始点側なのに位置を書けない
+ *   ときは `none`
  */
 function axisGrabAt(
   resizable: ResizableSelection,
   axis: Axis,
-  ratio: AnchorRatio,
+  pointedEnd: Option<AxisEnd>,
 ): Option<AxisGrab> {
-  const end = endAt(ratio);
-  if (!Option.isSome(end)) {
-    return Option.none;
-  }
-  return Option.flatMap(AxisLength.find(resizable.lengths, axis), (length) =>
-    grabFor(resizable, length, end.value),
+  return Option.flatMap(pointedEnd, (end) =>
+    Option.flatMap(AxisLength.find(resizable.lengths, axis), (length) =>
+      grabFor(resizable, length, end),
+    ),
   );
 }
 
 /**
  * その軸をその端から掴む掴み。始点側から縮めるには、反対の辺をその場に留めるための位置が
  * 要る（フロー配置のノードは持たない）。
- *
- * 箇所から引くときも帯から引くときもここを通すので、始点側の可否が 1 箇所で決まる。
  *
  * @param resizable 選択中のものの掴める軸と位置
  * @param length 掴む軸と、その時点の長さ
@@ -478,8 +474,8 @@ export const NodeResize = {
     anchor: ResizeHandleAnchor,
   ): Option<ResizeGrip> {
     return combinedGrip(
-      axisGrabAt(resizable, Axes.Width, anchor.x),
-      axisGrabAt(resizable, Axes.Height, anchor.y),
+      axisGrabAt(resizable, Axes.Width, endAt(anchor.x)),
+      axisGrabAt(resizable, Axes.Height, endAt(anchor.y)),
     );
   },
 
@@ -629,8 +625,9 @@ export const NodeResize = {
    * ポインタが乗っている帯で掴めるもの。辺から内側へ `ResizeHandleThicknessPx` までを
    * 掴める帯とする（描かれている四角より広い / 上の定数を参照）。
    *
-   * 角では 2 本の帯が重なるので、先にある方（`resizable.lengths` の並び順）を掴む。
-   * **帯は角でも 1 軸**なので、順序を決めておけば足りる（上の定数を参照）。
+   * 2 本の帯が重なる角では掴める軸をすべて掴む。片方しか掴めない（fixed でない / 始点側
+   * なのに位置を書けない）ならその 1 軸（描いたハンドルの角と同じ規則。docs/06-ui.md
+   * 「リサイズハンドル」）。
    *
    * 回って描かれているものは、押された位置を回る前へ戻してから回る前の矩形で判定する
    * ので、帯は回った辺に沿う。
@@ -638,8 +635,8 @@ export const NodeResize = {
    * @param resizable 選択中のものの掴める軸と位置
    * @param bounds 選択中のものが回って描かれている矩形
    * @param pointer 押された位置
-   * @returns その位置で掴めるもの。回った矩形の外か、どの帯にも入っていないか、入って
-   *   いる帯が始点側なのに位置を書けないときは `none`
+   * @returns その位置で掴めるもの。回った矩形の外か、どの帯でも掴める軸が 1 つも無い
+   *   （帯に入っていない / 始点側なのに位置を書けない / 固定でない）ときは `none`
    */
   grabAt(
     resizable: ResizableSelection,
@@ -651,15 +648,11 @@ export const NodeResize = {
     if (!CanvasBounds.contains(unrotated, unrotatedPointer)) {
       return Option.none;
     }
-    const onBand = resizable.lengths.flatMap((handle) => {
-      const end = bandEndAt(unrotated, unrotatedPointer, handle.axis);
-      const grab = Option.flatMap(end, (side) =>
-        grabFor(resizable, handle, side),
-      );
-      return Option.isSome(grab) ? [grab.value] : [];
-    });
-    return Option.map(Option.fromNullable(onBand[0]), (grab) =>
-      NodeResize.hold(resizable, ResizeGrip.create(grab), pointer),
+    const grabOnBand = (axis: Axis): Option<AxisGrab> =>
+      axisGrabAt(resizable, axis, bandEndAt(unrotated, unrotatedPointer, axis));
+    return Option.map(
+      combinedGrip(grabOnBand(Axes.Width), grabOnBand(Axes.Height)),
+      (grip) => NodeResize.hold(resizable, grip, pointer),
     );
   },
 

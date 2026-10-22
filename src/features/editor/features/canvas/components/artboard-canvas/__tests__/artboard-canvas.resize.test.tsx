@@ -457,6 +457,34 @@ test("角を掴んでいる間は、器が斜めのカーソルを出す", () =>
   expect(canvasContent().style.cursor).toBe("nwse-resize");
 });
 
+test("右下の角の帯を掴んで斜めに運ぶと、幅と高さが 1 回の編集で通知される", () => {
+  // 描いた角の四角の外側・帯の内側を押す
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupSelection(["panel"]), onResize });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(panel, { x: 293, y: 143 });
+  movePointer(panel, { x: 333, y: 168 });
+  releasePointer(panel, { x: 333, y: 168 });
+
+  expect(onResize).toHaveBeenLastCalledWith(
+    ResizeEdit.create([
+      { axis: "width", length: 240 },
+      { axis: "height", length: 125 },
+    ]),
+    expect.anything(),
+  );
+});
+
+test("右下の角の帯を掴んでいる間は、器が斜めのカーソルを出す", () => {
+  renderCanvas({ selection: setupSelection(["panel"]) });
+  const panel = drawnAt("panel", PanelBounds);
+
+  pressPointer(panel, { x: 293, y: 143 });
+
+  expect(canvasContent().style.cursor).toBe("nwse-resize");
+});
+
 test("ハンドルを掴み直すと、そこからまた別のまとまりとして届く", () => {
   /*
    * 掴み口は帯（`grabAt`）とハンドル（`grab`）の 2 経路あり、まとまりの始まりは
