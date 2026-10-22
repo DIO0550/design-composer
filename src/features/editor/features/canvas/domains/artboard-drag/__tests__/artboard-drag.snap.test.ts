@@ -1,43 +1,9 @@
 import { expect, test } from "vitest";
 import { Offset } from "@/domains/unit/offset";
-import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
 import { ArtboardDrag } from "../index";
-import { heldDrag } from "./held-drag";
-
-/**
- * 掴んだ時点の `home` が描かれている矩形（等倍・原点で見ているので、画面上の位置が
- * 掴んだ時点の座標と一致する）。
- */
-const HomeDrawn: CanvasBounds = { left: 100, top: 40, width: 200, height: 100 };
-
-/**
- * 押した位置からその量だけ動かしたポインタの位置。
- *
- * @param by 押した位置から動かす量（画面上の px）
- * @returns 画面上のポインタの位置
- */
-function pointerBy(by: Offset): Offset {
-  return Offset.add({ x: 500, y: 300 }, by);
-}
-
-/**
- * 寄せ量を求めて、その位置まで運ぶ（`useArtboardDrag` が 1 回の移動でやることと同じ）。
- *
- * @param drag 今のドラッグの状態（`carried` を描いたときの状態）
- * @param pointer 画面上のポインタの位置
- * @param drawn 運んでいる artboard と揃え先の実測
- * @returns 運んだあとの状態
- */
-function moveSnapped(
-  drag: ArtboardDrag,
-  pointer: Offset,
-  drawn: Parameters<typeof ArtboardDrag.snapOffsetAt>[2],
-): ArtboardDrag {
-  const snap = ArtboardDrag.snapOffsetAt(drag, pointer, drawn);
-  return ArtboardDrag.moveTo(drag, { pointer, snap });
-}
+import { HomeDrawn, heldDrag, moveSnapped, pointerBy } from "./held-drag";
 
 test("揃え先の辺の近くまで運ぶと、運び先がその辺に揃う位置へ寄る", () => {
   // 右辺が 403 まで来る量。揃え先の左辺（400）へ 3px 寄らなければ x は 203 になる
@@ -56,7 +22,7 @@ test("縦と横で別々の揃え先へ寄る", () => {
    * 右辺が 403（左の揃え先の左辺 400 の 3px 先）、上辺が 148（右の揃え先の上辺 150 の
    * 2px 手前）まで来る量。縦横で寄る向きも量も変えて、軸の取り違えを落とす。
    */
-  const snap = ArtboardDrag.snapOffsetAt(
+  const snapped = ArtboardDrag.snappedAt(
     heldDrag(),
     pointerBy({ x: 103, y: 108 }),
     {
@@ -68,12 +34,12 @@ test("縦と横で別々の揃え先へ寄る", () => {
     },
   );
 
-  expect(snap).toEqual({ x: -3, y: 2 });
+  expect(snapped.offset).toEqual({ x: -3, y: 2 });
 });
 
 test("中心線どうしが近ければ、中心線に揃う位置へ寄る", () => {
   // 左右の中心が 648 まで来る量。揃え先の中心（650）までは 2px で、辺どうしはどれも閾値の外
-  const snap = ArtboardDrag.snapOffsetAt(
+  const snapped = ArtboardDrag.snappedAt(
     heldDrag(),
     pointerBy({ x: 448, y: 0 }),
     {
@@ -82,7 +48,7 @@ test("中心線どうしが近ければ、中心線に揃う位置へ寄る", ()
     },
   );
 
-  expect(snap).toEqual({ x: 2, y: 0 });
+  expect(snapped.offset).toEqual({ x: 2, y: 0 });
 });
 
 test("どの辺からも遠ければ、運び先は運んだ量そのまま", () => {
@@ -114,7 +80,7 @@ test("掴んだだけのときは、描かれている矩形をポインタの�
    * 掴んだだけならまだずらして描いていないので、実測がそのまま起点になる。
    * 右辺が 405 まで来る量で、揃え先の左辺（400）へ 5px 寄る。
    */
-  const snap = ArtboardDrag.snapOffsetAt(
+  const snapped = ArtboardDrag.snappedAt(
     heldDrag(),
     pointerBy({ x: 105, y: 0 }),
     {
@@ -123,7 +89,7 @@ test("掴んだだけのときは、描かれている矩形をポインタの�
     },
   );
 
-  expect(snap).toEqual({ x: -5, y: 0 });
+  expect(snapped.offset).toEqual({ x: -5, y: 0 });
 });
 
 test("既に寄せて描かれている途中で動かしても、前回の寄せ量を二重に数えない", () => {
@@ -139,7 +105,7 @@ test("既に寄せて描かれている途中で動かしても、前回の寄�
     stationary,
   });
 
-  const snap = ArtboardDrag.snapOffsetAt(
+  const snapped = ArtboardDrag.snappedAt(
     dragging,
     pointerBy({ x: 105, y: 0 }),
     {
@@ -148,12 +114,12 @@ test("既に寄せて描かれている途中で動かしても、前回の寄�
     },
   );
 
-  expect(snap).toEqual({ x: -5, y: 0 });
+  expect(snapped.offset).toEqual({ x: -5, y: 0 });
 });
 
 test("閾値の内側に揃え先があっても、掴んでいないときは寄せ量が 0", () => {
   // 同じ実測とポインタで、掴んでいれば 3px 寄る（最初のテストの入力）
-  const snap = ArtboardDrag.snapOffsetAt(
+  const snapped = ArtboardDrag.snappedAt(
     ArtboardDrag.create(),
     pointerBy({ x: 103, y: 0 }),
     {
@@ -162,7 +128,7 @@ test("閾値の内側に揃え先があっても、掴んでいないときは�
     },
   );
 
-  expect(snap).toEqual(Offset.Origin);
+  expect(snapped.offset).toEqual(Offset.Origin);
 });
 
 test("運んでいる artboard に大きさが無ければ寄せない", () => {
@@ -170,7 +136,7 @@ test("運んでいる artboard に大きさが無ければ寄せない", () => {
    * まだレイアウトされていない要素の実測は原点の 0×0 で返る。そこから行き先を作ると、
    * 左辺が 5 に来て揃え先の左辺（0）へ吸い付いてしまう。
    */
-  const snap = ArtboardDrag.snapOffsetAt(
+  const snapped = ArtboardDrag.snappedAt(
     heldDrag(),
     pointerBy({ x: 5, y: 0 }),
     {
@@ -179,5 +145,5 @@ test("運んでいる artboard に大きさが無ければ寄せない", () => {
     },
   );
 
-  expect(snap).toEqual(Offset.Origin);
+  expect(snapped.offset).toEqual(Offset.Origin);
 });
