@@ -828,7 +828,7 @@ function parentWithSiblingNames(
  */
 function snappedAt(held: ResizeHold, moved: Offset): SideSnapped {
   if (!Option.isSome(held.snapFrom)) {
-    return { offset: Offset.Origin, guides: SideSnap.NoGuides };
+    return SideSnap.Unsnapped;
   }
   return SideSnap.toEdgeSnapped(
     held.snapFrom.value,

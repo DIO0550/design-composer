@@ -133,6 +133,12 @@ type SnapCandidate =
       shift: number;
     }>;
 
+/** 揃った線が縦横とも無いガイド（`SideSnap.NoGuides` と `SideSnap.Unsnapped` が指す）。 */
+const NoSnapGuides = {
+  horizontal: Option.none,
+  vertical: Option.none,
+} satisfies SnapGuides;
+
 export const SideSnap = {
   /**
    * 揃うとみなす距離（**画面上の px**）。
@@ -146,10 +152,13 @@ export const SideSnap = {
    * 揃った線が縦横とも無いガイド。揃え先に届かない・揃え先が無い・まだ動かしていないときに
    * 使う。
    */
-  NoGuides: {
-    horizontal: Option.none,
-    vertical: Option.none,
-  } satisfies SnapGuides,
+  NoGuides: NoSnapGuides,
+
+  /** 寄せず線も出さない答え。 */
+  Unsnapped: {
+    offset: Offset.Origin,
+    guides: NoSnapGuides,
+  } satisfies SideSnapped,
 
   /**
    * 判定する組を作る。列の間隔を測る兄弟は持たない（`withSiblings` で足す）。
