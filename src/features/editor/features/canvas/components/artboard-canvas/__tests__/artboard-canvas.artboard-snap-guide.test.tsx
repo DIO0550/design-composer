@@ -62,6 +62,7 @@ test("離すと線は消える", () => {
 
   pressPointer(artboardHandle("second"), { x: 0, y: 0 });
   movePointer(canvasContent(), { x: -29, y: 30 });
+  expect(snapGuides()).toHaveLength(1);
   releasePointer(canvasContent(), { x: -29, y: 30 });
 
   expect(snapGuides()).toHaveLength(0);

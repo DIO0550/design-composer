@@ -9,6 +9,7 @@ import {
   moveSnapped,
   pointerBy,
   StationaryDrawn,
+  UnlaidOutDrawn,
 } from "./held-drag";
 
 test("揃え先の辺の近くまで運ぶと、運び先がその辺に揃う位置へ寄る", () => {
@@ -145,10 +146,7 @@ test("運んでいる artboard に大きさが無ければ寄せない", () => {
   const snapped = ArtboardDrag.snappedAt(
     heldDrag(),
     pointerBy({ x: 5, y: 0 }),
-    {
-      carried: { left: 0, top: 0, width: 0, height: 0 },
-      stationary: [{ left: 0, top: 500, width: 100, height: 100 }],
-    },
+    UnlaidOutDrawn,
   );
 
   expect(snapped.offset).toEqual(Offset.Origin);

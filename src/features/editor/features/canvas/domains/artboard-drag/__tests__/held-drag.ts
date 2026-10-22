@@ -36,6 +36,15 @@ export const StationaryDrawn: CanvasBounds = {
 };
 
 /**
+ * まだレイアウトされていない `home` の実測（原点の 0×0）と、その原点の辺の近くに置いた揃え先。
+ * 大きさの無い実測から行き先を作ると、揃え先の左辺（0）へ吸い付いてしまう入力。
+ */
+export const UnlaidOutDrawn = {
+  carried: { left: 0, top: 0, width: 0, height: 0 },
+  stationary: [{ left: 0, top: 500, width: 100, height: 100 }],
+} as const satisfies Parameters<typeof ArtboardDrag.snappedAt>[2];
+
+/**
  * 押した位置からその量だけ動かしたポインタの位置。
  *
  * @param by 押した位置から動かす量（画面上の px）

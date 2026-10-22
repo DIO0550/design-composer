@@ -8,6 +8,7 @@ import {
   moveSnapped,
   pointerBy,
   StationaryDrawn,
+  UnlaidOutDrawn,
 } from "./held-drag";
 
 test("揃え先の左辺の近くまで運んでいる間は、その辺に線が出る", () => {
@@ -28,6 +29,37 @@ test("揃え先の左辺の近くまで運んでいる間は、その辺に線�
   expect(guideLine).toEqual(
     Option.some({ left: 399, top: 40, width: 2, height: 340 }),
   );
+});
+
+test("揃え先の上辺の近くまで運んでいる間は、その辺に線が出る", () => {
+  /*
+   * 下辺が 298 まで来て揃え先の上辺（300）へ 2px 寄る。左右はどの線からも閾値の外。
+   * 線は揃え先の上辺に寝て、運んでいる artboard（左辺 100）から揃え先（右辺 550）までをまたぐ。
+   */
+  const dragging = moveSnapped(heldDrag(), pointerBy({ x: 0, y: 158 }), {
+    carried: HomeDrawn,
+    stationary: [StationaryDrawn],
+  });
+
+  const guideLine = Option.map(
+    ArtboardDrag.snapGuides(dragging).vertical,
+    (guide) => guide.guideLine,
+  );
+
+  expect(guideLine).toEqual(
+    Option.some({ left: 100, top: 299, width: 450, height: 2 }),
+  );
+});
+
+test("運んでいる artboard に大きさが無ければ線を出さない", () => {
+  // 寄せ量のテスト（artboard-drag.snap.test.ts）と同じ入力。大きさを測れていれば揃え先の左辺へ線が出る
+  const snapped = ArtboardDrag.snappedAt(
+    heldDrag(),
+    pointerBy({ x: 5, y: 0 }),
+    UnlaidOutDrawn,
+  );
+
+  expect(snapped.guides).toEqual(SideSnap.NoGuides);
 });
 
 test("揃う位置まで運んだあと、どこにも届かない位置まで動かし直すと、線が無くなる", () => {
