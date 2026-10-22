@@ -1,10 +1,11 @@
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { DocumentIpcFake } from "../fake";
 import type { DocumentChanged } from "../index";
 
-const Path = "/work/login.dcmp";
+const Path = filePath("/work/login.dcmp");
 
 test("ファイルを読み込むとその中身が返る", async () => {
   const fake = DocumentIpcFake.create({ [Path]: `{ "formatVersion": "1.0" }` });

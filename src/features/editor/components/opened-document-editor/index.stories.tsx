@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, waitFor } from "storybook/test";
 import { ScreenHeightShell } from "@/components/__stories__/screen-height-shell";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Node, RefNode } from "@/domains/dcmp/node";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
@@ -10,7 +11,7 @@ import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { OpenedDocumentEditor } from "./index";
 
-const SamplePath = "/work/sample.dcmp";
+const SamplePath = filePath("/work/sample.dcmp");
 
 /** Storybook には Tauri が無いので、自動保存と監視の相手はインメモリの代役にする。 */
 const files = DocumentIpcFake.create({
@@ -63,7 +64,7 @@ export const SyncFailed: Story = {
   args: {
     ipc: DocumentIpcFake.create({}).ipc,
     opened: {
-      path: "/work/missing.dcmp",
+      path: filePath("/work/missing.dcmp"),
       document: EditorState.document(SampleEditorState),
     },
   },

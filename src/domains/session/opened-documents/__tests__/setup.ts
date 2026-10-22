@@ -1,12 +1,13 @@
+import { filePath } from "@/domains/__tests__/file-paths";
 import { openedAt } from "@/domains/__tests__/sample-document";
 import { OpenedDocuments } from "@/domains/session/opened-documents";
 
 /** 並びを作るのに使うパス。中身は `openedAt` が固定で返す。 */
-export const FirstPath = "/work/login.dcmp";
-export const SecondPath = "/work/settings.dcmp";
-export const ThirdPath = "/work/profile.dcmp";
+export const FirstPath = filePath("/work/login.dcmp");
+export const SecondPath = filePath("/work/settings.dcmp");
+export const ThirdPath = filePath("/work/profile.dcmp");
 /** 一度も開いていないパス。 */
-export const UnopenedPath = "/work/unknown.dcmp";
+export const UnopenedPath = filePath("/work/unknown.dcmp");
 
 /**
  * 3 つを開いて真ん中を見ている並びを作る。

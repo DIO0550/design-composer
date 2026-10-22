@@ -12,14 +12,6 @@ test("親フォルダを持たないパスではファイルの名前だけが�
   ).toBe("app.dcmp");
 });
 
-test("区切りだけのパスではファイルの名前も親フォルダの名前も出ない", () => {
-  renderTopBar({ opened: openedAt("/") });
-
-  expect(
-    screen.getByRole("navigation", { name: "ファイルの場所" }).textContent,
-  ).toBe("");
-});
-
 test("書き込みが拒まれている間は保存に失敗したと出る", () => {
   renderTopBar({ saveState: SaveStates.failed });
 

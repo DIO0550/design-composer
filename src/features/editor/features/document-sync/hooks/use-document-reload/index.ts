@@ -1,6 +1,7 @@
 import { useEffect, useEffectEvent, useState } from "react";
 import type { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import { DocumentReload } from "@/domains/session/document-reload";
+import type { FilePath } from "@/domains/unit/file-path";
 import {
   type DocumentChanged,
   type DocumentIpc,
@@ -17,7 +18,7 @@ import { Result } from "@/utils/Result";
  */
 export type DocumentReloadTarget = Readonly<{
   ipc: DocumentIpc;
-  path: string;
+  path: FilePath;
   onReload: (reload: DocumentReload) => void;
 }>;
 

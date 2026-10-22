@@ -1,4 +1,5 @@
 import type { OpenedDocument } from "@/domains/session/opened-document";
+import type { FilePath } from "@/domains/unit/file-path";
 import type { IndexMove } from "@/types/IndexMove";
 import { ArrayEx, type IndexOutOfRange } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -66,7 +67,7 @@ export const OpenedDocuments = {
    * @param opened 読む相手
    * @returns 今見ているドキュメントのパス
    */
-  activePath(opened: OpenedDocuments): string {
+  activePath(opened: OpenedDocuments): FilePath {
     return opened.active.path;
   },
 
@@ -77,7 +78,7 @@ export const OpenedDocuments = {
    * @param path 探すパス
    * @returns 並びのどこかにあれば `true`
    */
-  has(opened: OpenedDocuments, path: string): boolean {
+  has(opened: OpenedDocuments, path: FilePath): boolean {
     return OpenedDocuments.documents(opened).some(
       (document) => document.path === path,
     );
@@ -90,7 +91,7 @@ export const OpenedDocuments = {
    * @param path 移り先のパス
    * @returns そのパスを見ている並び。開いていないパスなら並びは変わらない
    */
-  activate(opened: OpenedDocuments, path: string): OpenedDocuments {
+  activate(opened: OpenedDocuments, path: FilePath): OpenedDocuments {
     const index = OpenedDocuments.documents(opened).findIndex(
       (document) => document.path === path,
     );
@@ -170,7 +171,7 @@ export const OpenedDocuments = {
    * @returns 閉じた後の並び。最後の 1 つを閉じたときだけ `none`。開いていないパスを
    *   渡したときは並びを変えずに返す（`none` にはしない）
    */
-  close(opened: OpenedDocuments, path: string): Option<OpenedDocuments> {
+  close(opened: OpenedDocuments, path: FilePath): Option<OpenedDocuments> {
     if (opened.active.path !== path) {
       return Option.some({
         before: opened.before.filter((document) => document.path !== path),

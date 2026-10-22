@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import {
   DocumentAccessFailure,
@@ -62,7 +63,10 @@ test("外部変更の購読を張れないときは、その失敗がドメイ�
 test("存在しないファイルは監視できず、その失敗が返る", async () => {
   const fake = DocumentIpcFake.create({});
 
-  const observer = await renderDocumentReload(fake.ipc, "/work/missing.dcmp");
+  const observer = await renderDocumentReload(
+    fake.ipc,
+    filePath("/work/missing.dcmp"),
+  );
 
   expect(observer.failure()).toStrictEqual(
     Option.some(

@@ -4,6 +4,7 @@ import {
   type ActionCardContent,
   ActionCardTones,
 } from "@/components/action-card";
+import { FilePath } from "@/domains/unit/file-path";
 import {
   DocumentOpenFailureNotice,
   FailureLine,
@@ -16,7 +17,6 @@ import {
   CommandSources,
   type DocumentSessionActions,
 } from "@/features/editor/features/document-start/hooks/use-document-session";
-import { FilePath } from "@/utils/FilePath";
 import { Option } from "@/utils/Option";
 
 /**
@@ -98,9 +98,6 @@ function StartActions({
  *
  * フルパスは `title` に持たせる。
  *
- * 名前を持たないパス（`/` だけなど）では字を出さずに `title` だけが残る。
- * 出せない名前を綴り直す既定値を置かないのは、`EditorTopBar.Breadcrumb` と同じ扱い。
- *
  * @param path 開く先のパス
  * @param onOpen そのパスを開く手続き
  * @returns 押すとそのファイルを開くボタン
@@ -108,7 +105,10 @@ function StartActions({
 function RecentFileButton({
   path,
   onOpen,
-}: Readonly<{ path: string; onOpen: (path: string) => void }>): ReactElement {
+}: Readonly<{
+  path: FilePath;
+  onOpen: (path: FilePath) => void;
+}>): ReactElement {
   const fileName = FilePath.fileName(path);
   const folderName = FilePath.folderName(path);
 
@@ -120,11 +120,9 @@ function RecentFileButton({
         onClick={() => onOpen(path)}
         className="flex w-full items-baseline gap-2 rounded px-2 py-1.5 text-left hover:bg-[#f0f0f0]"
       >
-        {Option.isSome(fileName) && (
-          <span className="truncate font-medium text-[#1e1e1e] text-sm">
-            {fileName.value}
-          </span>
-        )}
+        <span className="truncate font-medium text-[#1e1e1e] text-sm">
+          {fileName}
+        </span>
         {Option.isSome(folderName) && (
           <span className="truncate text-[#767676] text-xs">
             {folderName.value}
@@ -148,8 +146,8 @@ function RecentFileList({
   paths,
   onOpen,
 }: Readonly<{
-  paths: readonly string[];
-  onOpen: (path: string) => void;
+  paths: readonly FilePath[];
+  onOpen: (path: FilePath) => void;
 }>): ReactNode {
   if (paths.length === 0) {
     return null;
@@ -194,7 +192,7 @@ export function DocumentStart({
 }: Readonly<{
   attempt: OpenAttempt;
   actions: DocumentSessionActions;
-  recentPaths: readonly string[];
+  recentPaths: readonly FilePath[];
   recentFilesFailure: Option<string>;
   commandFailure: Option<CommandSourceFailure>;
   renderErrors: RenderDocumentErrors;

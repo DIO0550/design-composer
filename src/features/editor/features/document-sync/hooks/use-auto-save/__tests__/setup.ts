@@ -1,12 +1,13 @@
 import { act, renderHook } from "@testing-library/react";
 import { vi } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { FileValidity } from "@/domains/session/file-validity";
 import type { DocumentIpc } from "@/libs/document-ipc";
 import { AutoSaveDebounceMs, useAutoSave } from "../index";
 
 /** 自動保存の書き出し先。テストの中で開いているファイルは常に 1 つ。 */
-export const Path = "/work/login.dcmp";
+export const Path = filePath("/work/login.dcmp");
 
 /**
  * 自動保存を張る。

@@ -1,3 +1,4 @@
+import { filePath } from "@/domains/__tests__/file-paths";
 import { Artboard } from "@/domains/dcmp/artboard";
 import {
   DesignDocument,
@@ -111,7 +112,8 @@ export function danglingTokenContent(name: string): string {
  *
  * @param path 保存先のパス
  * @returns そのパスに置かれている、中身が固定のドキュメント
+ * @throws `path` がファイル名の要素を持たないとき（`filePath` と同じ）
  */
 export function openedAt(path: string): OpenedDocument {
-  return { path, document: artboardDocument("home") };
+  return { path: filePath(path), document: artboardDocument("home") };
 }

@@ -1,6 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
+import { filePath } from "@/domains/__tests__/file-paths";
 import type { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import type { DocumentReload } from "@/domains/session/document-reload";
+import type { FilePath } from "@/domains/unit/file-path";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
 import type { DocumentIpc } from "@/libs/document-ipc";
 import type { DocumentIpcFake } from "@/libs/document-ipc/fake";
@@ -8,7 +10,7 @@ import type { Option } from "@/utils/Option";
 import { useDocumentReload } from "../index";
 
 /** 開いているファイル。テストの中で開いているファイルは常に 1 つ。 */
-export const Path = "/work/login.dcmp";
+export const Path = filePath("/work/login.dcmp");
 
 export type ReloadObserver = Readonly<{
   /** 取り込み結果が届いた順に入る。 */
@@ -24,7 +26,7 @@ export type ReloadObserver = Readonly<{
  */
 export async function renderDocumentReload(
   ipc: DocumentIpc,
-  path: string = Path,
+  path: FilePath = Path,
 ): Promise<ReloadObserver> {
   const reloads: DocumentReload[] = [];
   const { result, unmount } = renderHook(() =>
@@ -45,7 +47,7 @@ export async function renderDocumentReload(
 export async function changeExternally(
   fake: DocumentIpcFake,
   content: string,
-  path: string = Path,
+  path: FilePath = Path,
 ): Promise<void> {
   await changeFileExternally({ fake, path, content });
 }

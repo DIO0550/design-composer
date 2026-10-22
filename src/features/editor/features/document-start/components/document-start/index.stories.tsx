@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ScreenHeightShell } from "@/components/__stories__/screen-height-shell";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import { OpenAttempt } from "@/features/editor/features/document-start/domains/document-session";
 import { CommandSources } from "@/features/editor/features/document-start/hooks/use-document-session";
@@ -15,9 +16,9 @@ const Actions = {
 
 /** 一覧の見え方を確かめるための並び。実物は `useDocumentSession` が渡す。 */
 const RecentPaths = [
-  "/work/settings-ui/app.dcmp",
-  "/work/shop/app.dcmp",
-  "/work/design-system/tokens.dcmp",
+  filePath("/work/settings-ui/app.dcmp"),
+  filePath("/work/shop/app.dcmp"),
+  filePath("/work/design-system/tokens.dcmp"),
 ];
 
 const meta = {

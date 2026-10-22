@@ -1,10 +1,14 @@
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { AppStateJson } from "../index";
 
 test("最近使ったファイルの一覧が recentPaths として書き出される", () => {
   expect(
     AppStateJson.serialize({
-      recentPaths: ["/work/login.dcmp", "/work/shop/app.dcmp"],
+      recentPaths: [
+        filePath("/work/login.dcmp"),
+        filePath("/work/shop/app.dcmp"),
+      ],
     }),
   ).toBe('{"recentPaths":["/work/login.dcmp","/work/shop/app.dcmp"]}');
 });

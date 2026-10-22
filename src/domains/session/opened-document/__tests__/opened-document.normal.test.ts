@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import {
   artboardContent,
   artboardDocument,
@@ -8,7 +9,7 @@ import { DocumentJson } from "@/libs/document-json";
 import { Result } from "@/utils/Result";
 import { OpenedDocument } from "../index";
 
-const Path = "/work/login.dcmp";
+const Path = filePath("/work/login.dcmp");
 
 test("読み込んだ内容が正しければ、そのドキュメントを開いた状態になる", () => {
   const opened = OpenedDocument.fromParsed(

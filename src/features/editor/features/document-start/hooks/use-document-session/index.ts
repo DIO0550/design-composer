@@ -1,5 +1,6 @@
 import { useEffect, useEffectEvent, useReducer, useState } from "react";
 import { OpenedDocument } from "@/domains/session/opened-document";
+import type { FilePath } from "@/domains/unit/file-path";
 import {
   type DocumentOpenFailure,
   DocumentSession,
@@ -65,7 +66,7 @@ export type DocumentSessionActions = Readonly<{
   /** ダイアログで保存先を選ばせて、雛形から作る。 */
   createDocument: () => void;
   /** パスが既に決まっているものを開く（ドロップ・最近使ったファイル）。 */
-  openDocumentsAt: (paths: readonly string[]) => void;
+  openDocumentsAt: (paths: readonly FilePath[]) => void;
 }>;
 
 /**
@@ -76,11 +77,11 @@ export type DocumentSessionActions = Readonly<{
  */
 export type DocumentTabActions = Readonly<{
   /** そのパスのドキュメントを見ている状態にする。 */
-  activate: (path: string) => void;
+  activate: (path: FilePath) => void;
   /** タブ列のその位置（パスではなく位置。左端が 0）のドキュメントを見ている状態にする。 */
   activateAt: (index: number) => void;
   /** そのパスのドキュメントを閉じる。 */
-  close: (path: string) => void;
+  close: (path: FilePath) => void;
   /** 開いているドキュメントの 1 つを並びの別の位置へ移す。 */
   reorder: (move: IndexMove) => void;
 }>;
@@ -103,9 +104,9 @@ type DocumentSessionAction =
       recentFilesFailure: Option<string>;
     }>
   | Readonly<{ type: "settled"; outcome: OpenOutcome; recents: RecentFiles }>
-  | Readonly<{ type: "activate"; path: string }>
+  | Readonly<{ type: "activate"; path: FilePath }>
   | Readonly<{ type: "activateAt"; index: number }>
-  | Readonly<{ type: "close"; path: string }>
+  | Readonly<{ type: "close"; path: FilePath }>
   | Readonly<{ type: "closeActive" }>
   | Readonly<{ type: "reorder"; move: IndexMove }>;
 
@@ -212,7 +213,7 @@ function failedWith(failure: DocumentOpenFailure): OpenOutcome {
  */
 async function loadDocument(
   ipc: DocumentIpc,
-  path: string,
+  path: FilePath,
 ): Promise<Result<OpenedDocument, DocumentOpenFailure>> {
   const loaded = await ipc.load(path);
   if (!Result.isOk(loaded)) {
@@ -244,7 +245,7 @@ async function loadDocument(
  */
 async function openAtPaths(
   ipc: DocumentIpc,
-  paths: readonly string[],
+  paths: readonly FilePath[],
 ): Promise<OpenOutcome> {
   const loaded = await Promise.all(
     paths.map((path) => loadDocument(ipc, path)),
@@ -383,7 +384,7 @@ function rememberOpened(
  */
 export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   session: DocumentSession;
-  recentPaths: readonly string[];
+  recentPaths: readonly FilePath[];
   recentFilesFailure: Option<string>;
   actions: DocumentSessionActions;
   tabActions: DocumentTabActions;
@@ -423,7 +424,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
   const createDocument = (): void => {
     begin(() => createWithDialog(ports));
   };
-  const openDocumentsAt = (paths: readonly string[]): void => {
+  const openDocumentsAt = (paths: readonly FilePath[]): void => {
     begin(() => openAtPaths(ports.ipc, paths));
   };
 
@@ -456,7 +457,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
     run[command]();
   });
 
-  const openDropped = useEffectEvent((paths: readonly string[]) => {
+  const openDropped = useEffectEvent((paths: readonly FilePath[]) => {
     openDocumentsAt(paths);
   });
 

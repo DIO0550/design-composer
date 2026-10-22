@@ -122,9 +122,7 @@ function DocumentBreadcrumb({
           <span className={`px-1.5 ${face.separator}`}>/</span>
         </>
       ) : null}
-      {Option.isSome(fileName) ? (
-        <span className={`font-medium ${face.file}`}>{fileName.value}</span>
-      ) : null}
+      <span className={`font-medium ${face.file}`}>{fileName}</span>
     </nav>
   );
 }

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { DocumentSession } from "@/features/editor/features/document-start/domains/document-session";
 import { DialogChoice } from "@/libs/document-dialog/fake";
@@ -11,7 +12,7 @@ import {
 } from "./setup";
 
 /** 既に一覧に載っているもう 1 つのファイル。 */
-const OtherPath = "/work/shop/app.dcmp";
+const OtherPath = filePath("/work/shop/app.dcmp");
 
 test("ダイアログで開いたファイルが一覧の先頭に来る", async () => {
   const observer = renderDocumentSession(

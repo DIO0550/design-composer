@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
+import type { FilePath } from "@/domains/unit/file-path";
 import { type DocumentIpc, toDocumentAccessFailure } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
 import { Result } from "@/utils/Result";
@@ -12,7 +13,7 @@ import { Result } from "@/utils/Result";
  */
 export type FileRevertTarget = Readonly<{
   ipc: DocumentIpc;
-  path: string;
+  path: FilePath;
   document: DesignDocument;
   onReverted: () => void;
 }>;

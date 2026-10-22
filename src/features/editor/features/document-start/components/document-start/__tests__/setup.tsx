@@ -1,6 +1,7 @@
 import { render } from "@testing-library/react";
 import type { ReactNode } from "react";
 import type { DocumentError } from "@/domains/session/document-error";
+import type { FilePath } from "@/domains/unit/file-path";
 import { DocumentStart } from "@/features/editor/features/document-start/components/document-start";
 import { OpenAttempt } from "@/features/editor/features/document-start/domains/document-session";
 import type {
@@ -57,7 +58,7 @@ export function recordActions(): RecordedActions {
 export type StartOverrides = Readonly<{
   attempt?: OpenAttempt;
   actions?: DocumentSessionActions;
-  recentPaths?: readonly string[];
+  recentPaths?: readonly FilePath[];
   recentFilesFailure?: Option<string>;
   commandFailure?: Option<CommandSourceFailure>;
   renderErrors?: (errors: readonly DocumentError[]) => ReactNode;

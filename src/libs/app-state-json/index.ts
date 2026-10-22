@@ -1,5 +1,7 @@
+import { FilePath } from "@/domains/unit/file-path";
 import { JsonText } from "@/libs/json-text";
 import { Json, type JsonDecodeError } from "@/utils/Json";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
@@ -8,7 +10,7 @@ import { Result } from "@/utils/Result";
  */
 export type AppState = Readonly<{
   /** 最近開いたファイルのパス（新しい順）。 */
-  recentPaths: readonly string[];
+  recentPaths: readonly FilePath[];
 }>;
 
 /** アプリ自身の状態として読み取れなかったことと、診断用の原文。 */
@@ -34,8 +36,8 @@ function toAppStateJsonError(
  * JSON の値をアプリ自身の状態として読む。
  *
  * @param value `JsonText.parse` が返した値
- * @returns 読み取れた状態。オブジェクトでない / `recentPaths` が文字列の並びでない
- *   ときは、その位置と理由を持つ失敗
+ * @returns 読み取れた状態（`recentPaths` のうちファイル名の要素を持たないものは落とす）。
+ *   オブジェクトでない / `recentPaths` が文字列の並びでないときは、その位置と理由を持つ失敗
  */
 function toAppState(value: unknown): Result<AppState, AppStateJsonError> {
   const decoded = Result.flatMap(Json.record(Json.create(value)), (cursor) =>
@@ -43,7 +45,12 @@ function toAppState(value: unknown): Result<AppState, AppStateJsonError> {
       Json.required(cursor, "recentPaths", (field) =>
         Json.arrayOf(field, Json.string),
       ),
-      (recentPaths): AppState => ({ recentPaths }),
+      (recentPaths): AppState => ({
+        recentPaths: recentPaths.flatMap((path) => {
+          const filePath = FilePath.create(path);
+          return Option.isSome(filePath) ? [filePath.value] : [];
+        }),
+      }),
     ),
   );
   return Result.mapErr(decoded, toAppStateJsonError);
@@ -55,7 +62,8 @@ export const AppStateJson = {
    * 保存されていたテキストをアプリ自身の状態として読む。
    *
    * @param text 保存されていたテキスト
-   * @returns 読み取れた状態。JSON として読めない / 形が合わないときは、その理由を持つ失敗
+   * @returns 読み取れた状態（ファイル名の要素を持たないパスは一覧から落とす）。JSON として
+   *   読めない / 形が合わないときは、その理由を持つ失敗
    */
   parse(text: string): Result<AppState, AppStateJsonError> {
     return Result.flatMap(

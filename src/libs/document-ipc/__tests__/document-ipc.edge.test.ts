@@ -1,11 +1,13 @@
-import { expect, test } from "vitest";
+import { expect, expectTypeOf, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import type { TauriIpc } from "@/libs/tauri-ipc";
+import { SingleEventIpcFake } from "@/libs/tauri-ipc/fake";
 import { Result } from "@/utils/Result";
 import { DocumentIpcFake } from "../fake";
 import { type DocumentChanged, DocumentIpc } from "../index";
 
-const Path = "/work/login.dcmp";
-const MissingPath = "/work/missing.dcmp";
+const Path = filePath("/work/login.dcmp");
+const MissingPath = filePath("/work/missing.dcmp");
 
 /** コマンドの結果だけを差し替えた IPC。イベントは流れない。 */
 function setupIpc(invoke: TauriIpc["invoke"]): DocumentIpc {
@@ -106,4 +108,29 @@ test("path と content が揃っていない通知は配られない", async () 
   );
 
   expect(received).toStrictEqual([]);
+});
+
+test("ファイル名の要素を持たないパスの変更通知は配られない", async () => {
+  const events = SingleEventIpcFake.create("document-changed");
+  const ipc = DocumentIpc.create(events.ipc);
+  const received: DocumentChanged[] = [];
+  Result.unwrap(
+    await ipc.subscribeChanged((changed) => received.push(changed)),
+  );
+
+  events.deliver({ path: "/", content: "{}" });
+  events.deliver({ path: Path, content: "{}" });
+
+  expect(received).toStrictEqual([{ path: Path, content: "{}" }]);
+});
+
+test("保存先と中身を取り違えて渡すことはできない", () => {
+  const ipc = DocumentIpcFake.create().ipc;
+
+  // 呼ばずに型だけを見る。
+  const swapped = () =>
+    // @ts-expect-error 中身の文字列はファイルのパスとして渡せない
+    ipc.save("{}", Path);
+
+  expectTypeOf(swapped).toBeFunction();
 });

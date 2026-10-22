@@ -29,3 +29,14 @@ test("知らないフィールドがあっても recentPaths は読み取れる"
 
   expect(Result.unwrap(parsed).recentPaths).toStrictEqual(["/work/login.dcmp"]);
 });
+
+test("ファイル名の要素を持たないパスはその 1 件だけ落ち、残りは順序のまま読み取れる", () => {
+  const parsed = AppStateJson.parse(
+    '{"recentPaths":["/work/a.dcmp","/","/work/b.dcmp"]}',
+  );
+
+  expect(Result.unwrap(parsed).recentPaths).toStrictEqual([
+    "/work/a.dcmp",
+    "/work/b.dcmp",
+  ]);
+});

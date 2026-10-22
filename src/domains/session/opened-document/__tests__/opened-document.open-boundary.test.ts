@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { danglingTokenContent } from "@/domains/__tests__/sample-document";
 import { DocumentError } from "@/domains/session/document-error";
 import { DocumentJson } from "@/libs/document-json";
@@ -10,7 +11,7 @@ import { OpenedDocument } from "../index";
  * ドキュメントとして組み立てられたかで分かれ、スキーマ検証の結果では分かれない。
  */
 
-const Path = "/work/login.dcmp";
+const Path = filePath("/work/login.dcmp");
 
 test("テキストが JSON として壊れているファイルは開けず、エラーの位置が分かる", () => {
   const opened = OpenedDocument.fromParsed(

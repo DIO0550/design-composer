@@ -25,3 +25,27 @@ test("ダイアログを出せなかった理由がメッセージに残る", as
     "dialog.save not allowed",
   );
 });
+
+test("開くダイアログがファイル名の要素を持たないパスを返すと失敗になる", async () => {
+  const fake = DocumentDialogFake.create({
+    open: DialogChoice.chosen("/"),
+    save: DialogChoice.Canceled,
+  });
+
+  const chosen = await fake.dialog.chooseOpenPath();
+
+  expect(Result.isOk(chosen)).toBe(false);
+});
+
+test("保存のダイアログがファイル名の要素を持たないパスを返すと、その旨と受け取ったパスが失敗に残る", async () => {
+  const fake = DocumentDialogFake.create({
+    open: DialogChoice.Canceled,
+    save: DialogChoice.chosen("\\"),
+  });
+
+  const chosen = await fake.dialog.chooseSavePath();
+
+  expect(chosen).toStrictEqual(
+    Result.err({ message: "選ばれたパスがファイル名を持たない: \\" }),
+  );
+});

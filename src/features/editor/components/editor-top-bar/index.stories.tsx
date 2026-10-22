@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { filePath } from "@/domains/__tests__/file-paths";
 import {
   DesignDocument,
   DocumentTemplate,
@@ -19,7 +20,7 @@ import {
 } from "./index";
 
 const Opened = {
-  path: "/work/settings-ui/app.dcmp",
+  path: filePath("/work/settings-ui/app.dcmp"),
   document: DesignDocument.createFromTemplate(DocumentTemplate.Default),
 };
 

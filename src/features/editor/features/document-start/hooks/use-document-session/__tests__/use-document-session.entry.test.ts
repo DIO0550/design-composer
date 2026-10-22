@@ -192,3 +192,27 @@ test("複数が読めなかったときは、最初の失敗が残る", async ()
     }),
   );
 });
+
+test("落としたパスにファイル名の要素を持たないものが混ざっても、残りが開かれる", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+  );
+
+  await observer.dropFiles(["/", Path]);
+
+  expect(openedPaths(observer.session())).toStrictEqual([Path]);
+});
+
+test("落としたパスにファイル名の要素を持たないものが混ざっても、失敗は残らない", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+  );
+
+  await observer.dropFiles(["/", Path]);
+
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.none,
+  );
+});
