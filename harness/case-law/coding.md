@@ -273,6 +273,9 @@ function compile(props: ResolvedProps<"Box">): Style { /* ... */ }
 function withoutToken(tokens: TokenSet, ref: TokenRef): TokenSet { /* ... */ }
 ```
 
+**列挙と例示の見分け**: 落とすと入力・出力・画面のどれかが変わるなら列挙(仕様)、変わらないなら例示。
+`@returns` は返り値の型ではなく中身を書き、`Option` / `Result` を返すなら `none` / `err` になる条件を書く。
+
 ## 名前を付けてから結合する
 
 ```typescript
