@@ -15,6 +15,10 @@ pub mod watch;
 mod test_support;
 
 #[cfg(test)]
+mod file_path_edge_test;
+#[cfg(test)]
+mod file_path_normal_test;
+#[cfg(test)]
 mod io_atomicity_test;
 #[cfg(test)]
 mod io_edge_test;
