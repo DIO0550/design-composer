@@ -4,6 +4,7 @@
 //! ここを渡るのは常に生の JSON 文字列で、パース・検証・マイグレーションは TS 側が行う。
 //! この前提は配下のモジュールすべてに掛かる。
 
+pub mod file_path;
 pub mod io;
 pub mod known_content;
 pub mod watch;
