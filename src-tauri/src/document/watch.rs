@@ -71,6 +71,44 @@ pub fn changed_content(known: &KnownContentRegistry, path: &DocumentFilePath) ->
     Some(content)
 }
 
+/// webview から渡されたパスを検査し、通ったときだけ `start` で監視を始める。
+///
+/// 通知の `path` には検査を通ったパスの綴りを載せる。
+///
+/// @returns 検査を通らないときは `InvalidPath` を返し、監視を張らない
+pub fn start_requested(
+    watchers: &DocumentWatchers,
+    known: Arc<KnownContentRegistry>,
+    raw_path: &str,
+    on_change: impl Fn(DocumentChanged) + Send + 'static,
+) -> Result<(), DocumentIoError> {
+    let path = DocumentFilePath::parse(raw_path)?;
+    let notified_path = path.to_string_lossy().into_owned();
+
+    start(watchers, known, &path, move |content| {
+        on_change(DocumentChanged {
+            path: notified_path.clone(),
+            content,
+        });
+    })
+}
+
+/// webview から渡されたパスを検査し、通ったときだけ監視を止めて把握済みの内容を破棄する。
+///
+/// @returns 検査を通らないときは `InvalidPath` を返し、監視にも記録にも触れない
+pub fn stop_requested(
+    watchers: &DocumentWatchers,
+    known: &KnownContentRegistry,
+    raw_path: &str,
+) -> Result<(), DocumentIoError> {
+    let path = DocumentFilePath::parse(raw_path)?;
+    watchers.unwatch(&path);
+    // 記録も破棄する。監視を再開するときに現在の内容を読み直すので、監視していない間に
+    // 起きた変更を「把握済み」として持ち越さないようにする。
+    known.forget(&path);
+    Ok(())
+}
+
 #[tauri::command]
 pub fn watch_document(
     app: AppHandle,
@@ -78,14 +116,7 @@ pub fn watch_document(
     watchers: State<'_, DocumentWatchers>,
     known: State<'_, Arc<KnownContentRegistry>>,
 ) -> Result<(), DocumentIoError> {
-    let emitted_path = path.clone();
-    let path = DocumentFilePath::parse(&path)?;
-
-    start(&watchers, Arc::clone(&known), &path, move |content| {
-        let payload = DocumentChanged {
-            path: emitted_path.clone(),
-            content,
-        };
+    start_requested(&watchers, Arc::clone(&known), &path, move |payload| {
         // 発火に失敗しても伝える先が無い(失敗しているのが通知経路そのもの)。
         let _ = app.emit(DOCUMENT_CHANGED_EVENT, payload);
     })
@@ -97,10 +128,5 @@ pub fn unwatch_document(
     watchers: State<'_, DocumentWatchers>,
     known: State<'_, Arc<KnownContentRegistry>>,
 ) -> Result<(), DocumentIoError> {
-    let path = DocumentFilePath::parse(&path)?;
-    watchers.unwatch(&path);
-    // 記録も破棄する。監視を再開するときに現在の内容を読み直すので、監視していない間に
-    // 起きた変更を「把握済み」として持ち越さないようにする。
-    known.forget(&path);
-    Ok(())
+    stop_requested(&watchers, known.inner().as_ref(), &path)
 }

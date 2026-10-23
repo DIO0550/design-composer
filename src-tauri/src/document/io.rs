@@ -31,6 +31,18 @@ pub fn save(
     known.record_write(path, content, || atomic_write::write_atomic(path, content))
 }
 
+/// webview から渡されたパスを検査し、通ったときだけ `save` する。
+///
+/// @returns 検査を通らないときは `InvalidPath` を返し、ファイルには触れない
+pub fn save_requested(
+    known: &KnownContentRegistry,
+    raw_path: &str,
+    content: &str,
+) -> Result<(), DocumentIoError> {
+    let path = DocumentFilePath::parse(raw_path)?;
+    save(known, &path, content)
+}
+
 #[tauri::command]
 pub fn load_document(path: String) -> Result<String, DocumentIoError> {
     let path = DocumentFilePath::parse(&path)?;
@@ -43,6 +55,5 @@ pub fn save_document(
     content: String,
     known: State<'_, Arc<KnownContentRegistry>>,
 ) -> Result<(), DocumentIoError> {
-    let path = DocumentFilePath::parse(&path)?;
-    save(known.inner().as_ref(), &path, &content)
+    save_requested(known.inner().as_ref(), &path, &content)
 }
