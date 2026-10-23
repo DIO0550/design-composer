@@ -21,8 +21,7 @@ pub struct DocumentFilePath(PathBuf);
 impl DocumentFilePath {
     /// webview から渡された文字列を検査し、ドキュメントのパスとして受け付ける。
     ///
-    /// @returns 検査を通ったパス。相対パス・`..` の要素を含む・ファイル名で終わらない・
-    /// ファイル名に `:` を含む・拡張子が `.dcmp` でないときは `InvalidPath`
+    /// @returns 検査を通ったパス。通らないときは `InvalidPath`
     pub fn parse(raw: &str) -> Result<Self, DocumentIoError> {
         let path = Path::new(raw);
         if !path.is_absolute() {

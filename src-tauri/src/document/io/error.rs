@@ -16,8 +16,8 @@ pub enum DocumentIoError {
     NotFound { message: String },
     /// 読み込み / 書き込みの権限が無い。
     PermissionDenied { message: String },
-    /// ドキュメントとして扱えないパス。相対パス・`..` の要素を含む・ファイル名で終わらない・
-    /// ファイル名に `:` を含む・拡張子が `.dcmp` でない・親ディレクトリやファイル名を取り出せない、のいずれか。
+    /// ドキュメントとして扱えないパス。`DocumentFilePath::parse` が拒否したパスと、
+    /// `io/atomic_write.rs` / `watch/watchers.rs` が親ディレクトリ・ファイル名を取り出せないパス。
     InvalidPath { message: String },
     /// ファイルの中身が UTF-8 として解釈できない。
     InvalidUtf8 { message: String },
