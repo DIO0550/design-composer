@@ -87,7 +87,7 @@ export type ArtboardDragControl = Readonly<{
   }>;
   /** 運んでいる間の見せかけの位置。離すまで確定しないので描く側だけが使う。 */
   preview: Option<ArtboardDragPreview>;
-  /** 運んでいる間に揃った線。離すと出なくなる。 */
+  /** 運んでいる間に揃った線と、揃え先との隙間。離すと出なくなる。 */
   snapGuides: SnapGuides;
 }>;
 

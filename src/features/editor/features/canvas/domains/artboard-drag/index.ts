@@ -198,10 +198,10 @@ export const ArtboardDrag = {
   },
 
   /**
-   * 揃った線に引くガイド線（docs/06-ui.md「artboard の移動」の辺のスナップ）。
+   * 揃った線に引くガイド線と、揃え先との隙間（docs/06-ui.md「artboard の移動」の辺のスナップ）。
    *
    * @param drag 今のドラッグの状態
-   * @returns 最後に動かした位置で揃った線。動かしていない / 揃った線が無いなら縦横とも `none`
+   * @returns 最後に動かした位置で揃った線に引く線と隙間（画面上の px）。動かしていない / 揃った線が無いなら縦横とも `none`
    */
   snapGuides(drag: ArtboardDrag): SnapGuides {
     return drag.kind === "dragging" ? drag.snapped.guides : SideSnap.NoGuides;
