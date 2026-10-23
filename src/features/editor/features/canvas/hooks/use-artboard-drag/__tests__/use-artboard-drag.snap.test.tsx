@@ -3,6 +3,7 @@ import { canvasContent } from "@/features/editor/features/canvas/__tests__/canva
 import {
   movePointer,
   pressPointer,
+  pressPointerHolding,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import {
   clearDrawn,
@@ -39,4 +40,15 @@ test("運んでいる artboard 自身の辺へは寄らない", () => {
   movePointer(canvasContent(), { x: 505, y: 100 });
 
   expect(harnessOutput("preview")).toBe("settings 405,0");
+});
+
+test("⌘ を押しながら他の artboard の辺の近くまで運ぶと、運んだ量そのままの位置が運び先になる", () => {
+  drawSideBySide();
+  renderHarness();
+
+  // 押していなければ 1 件目と同じく x=360 へ寄る量
+  pressPointerHolding(settingsHandle(), { x: 500, y: 100 }, "meta");
+  movePointer(canvasContent(), { x: 463, y: 100 }, "meta");
+
+  expect(harnessOutput("preview")).toBe("settings 363,0");
 });
