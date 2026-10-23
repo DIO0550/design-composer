@@ -7,11 +7,11 @@ import {
 import {
   movePointer,
   pressPointer,
-  pressPointerHolding,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { renderCanvas, snapGuides } from "./setup";
 import {
+  carrySecond,
   dragSecond,
   drawnFollowingFrames,
   setupSelection,
@@ -57,8 +57,7 @@ test("⌘ を押しながら他の artboard の辺の近くまで運んでいる
   drawnFollowingFrames();
 
   // 押していなければ同じ量で線が 1 本出る（artboard-canvas.artboard-snap-guide.test.tsx の 1 件目）
-  pressPointerHolding(artboardHandle("second"), { x: 0, y: 0 }, "meta");
-  movePointer(canvasContent(), { x: -29, y: 30 }, "meta");
+  carrySecond({ x: -29, y: 30 }, "meta");
 
   expect(snapGuides()).toHaveLength(0);
 });
@@ -67,8 +66,7 @@ test("⌘ を押しながら運んでいる間は、見た目も運んだ量そ�
   renderCanvas({ selection: setupSelection() });
   drawnFollowingFrames();
 
-  pressPointerHolding(artboardHandle("second"), { x: 0, y: 0 }, "meta");
-  movePointer(canvasContent(), { x: -29, y: 30 }, "meta");
+  carrySecond({ x: -29, y: 30 }, "meta");
 
   const { style } = artboardFrameContainer(canvasContent(), "second");
   expect([style.left, style.top]).toEqual(["203px", "30px"]);
@@ -80,10 +78,9 @@ test("⌘ を離して動かし直すと、同じ位置でも再び吸い付く"
   drawnFollowingFrames();
 
   // 押している「間」だけ効くことを見るので、1 回のドラッグの中で押していない移動を続ける
-  pressPointerHolding(artboardHandle("second"), { x: 0, y: 0 }, "meta");
-  movePointer(canvasContent(), { x: -29, y: 30 }, "meta");
-  movePointer(canvasContent(), { x: -29, y: 30 });
-  releasePointer(canvasContent(), { x: -29, y: 30 });
+  carrySecond({ x: -29, y: 30 }, "meta");
+  movePointer(artboardHandle("second"), { x: -29, y: 30 });
+  releasePointer(artboardHandle("second"), { x: -29, y: 30 });
 
   expect(onRepositionArtboard).toHaveBeenCalledWith("second", {
     x: 200,
@@ -96,7 +93,7 @@ test("押さずに吸い付かせたあと ⌘ を押して同じ位置で動か
   renderCanvas({ selection: setupSelection(), onRepositionArtboard });
   drawnFollowingFrames();
 
-  // 線の 1 → 0 本と書かれる座標の 2 つで、同じ「外れた」を運んでいる間と離したあとから見る
+  // 運んでいる間は線が 1 → 0 本になり、離したあとは運んだ量そのままの座標が書かれる
   pressPointer(artboardHandle("second"), { x: 0, y: 0 });
   movePointer(canvasContent(), { x: -29, y: 30 });
   expect(snapGuides()).toHaveLength(1);

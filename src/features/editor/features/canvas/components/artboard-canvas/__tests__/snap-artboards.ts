@@ -67,6 +67,22 @@ export function drawnFollowingFrames(): void {
 }
 
 /**
+ * `second` の見出しを掴み、押した位置からその量だけ動かす。
+ * 離す前の見た目を見るので `releasePointer` は撃たない。
+ *
+ * @param by 押した位置から動かす量（画面上の px）
+ * @param pressed 掴んでから動かすまで押している修飾キー。既定は押していない
+ */
+export function carrySecond(
+  by: Offset,
+  pressed: PressedModifier = "none",
+): void {
+  const handle = artboardHandle("second");
+  pressPointerHolding(handle, { x: 0, y: 0 }, pressed);
+  movePointer(handle, by, pressed);
+}
+
+/**
  * `second` の見出しを掴み、押した位置からその量だけ動かして離す。
  *
  * @param by 押した位置から動かす量（画面上の px）
@@ -76,8 +92,6 @@ export function dragSecond(
   by: Offset,
   pressed: PressedModifier = "none",
 ): void {
-  const handle = artboardHandle("second");
-  pressPointerHolding(handle, { x: 0, y: 0 }, pressed);
-  movePointer(handle, by, pressed);
-  releasePointer(handle, by);
+  carrySecond(by, pressed);
+  releasePointer(artboardHandle("second"), by);
 }
