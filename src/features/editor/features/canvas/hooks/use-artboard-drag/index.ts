@@ -157,8 +157,8 @@ export function useArtboardDrag(
          */
         const drawn = Option.flatMap(ArtboardDrag.grabbed(drag), (grab) => {
           /*
-           * ⌘ / Ctrl で吸い付かないことは揃え先を空にして表し、測れない（`none`）とは分ける
-           * （ノードの移動・リサイズと同じ表し方）。空にするのは測る前で、捨てる DOM を測らない。
+           * ⌘ / Ctrl で吸い付かないことは揃え先を空にして表し、測れない（`none`）とは分ける（考え方は
+           * ノードの移動の `NoSnapTargets` と同じ）。空にするのは測る前で、揃え先の DOM は測らない。
            */
           const stationaryNames = CommandKey.isHeld(event)
             ? []
