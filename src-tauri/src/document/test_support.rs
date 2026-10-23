@@ -20,10 +20,19 @@ const CHANGE_TIMEOUT: Duration = Duration::from_secs(10);
 /// 待って何も来ないことしか確かめられないため、テストが遅くなりすぎない範囲に留める。
 const NO_CHANGE_TIMEOUT: Duration = Duration::from_secs(2);
 
-/// `dir` 直下の `file_name` を、ドキュメントのパスとして受け付けた形で返す。
-pub fn document_file_path(dir: &TempDir, file_name: &str) -> DocumentFilePath {
-    let raw = dir.join(file_name);
-    DocumentFilePath::parse(raw.to_str().expect("一時ディレクトリのパスは UTF-8"))
+/// `dir` 配下の `relative`(`/` を含むサブパスも可)を、webview がコマンドへ渡す生の
+/// パス文字列として返す。
+pub fn raw_document_path(dir: &TempDir, relative: &str) -> String {
+    dir.join(relative)
+        .to_str()
+        .expect("一時ディレクトリのパスは UTF-8")
+        .to_string()
+}
+
+/// `dir` 配下の `relative`(`/` を含むサブパスも可)を、ドキュメントのパスとして受け付けた
+/// 形で返す。
+pub fn document_file_path(dir: &TempDir, relative: &str) -> DocumentFilePath {
+    DocumentFilePath::parse(&raw_document_path(dir, relative))
         .expect("ドキュメントのパスとして受け付けられる")
 }
 

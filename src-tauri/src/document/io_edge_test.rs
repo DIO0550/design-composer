@@ -7,7 +7,7 @@ use std::fs;
 use super::io::{self, load_document, DocumentIoError};
 use super::known_content::KnownContentRegistry;
 
-use super::test_support::{document_file_path, TempDir};
+use super::test_support::{document_file_path, raw_document_path, TempDir};
 
 #[test]
 fn 存在しないファイルの読み込みは見つからないことを返す() {
@@ -99,12 +99,8 @@ fn 保存の失敗は自書き込みとして記録されない() {
 #[test]
 fn 拡張子がdcmpでない既存のファイルは中身があっても読み込まずに不正なパスを返す() {
     let dir = TempDir::new("edge");
-    let path = dir.join("notes.txt");
-    fs::write(&path, "secret").expect("中身のあるファイルを用意できる");
-    let raw = path
-        .to_str()
-        .expect("一時ディレクトリのパスは UTF-8")
-        .to_string();
+    fs::write(dir.join("notes.txt"), "secret").expect("中身のあるファイルを用意できる");
+    let raw = raw_document_path(&dir, "notes.txt");
 
     let result = load_document(raw);
 
