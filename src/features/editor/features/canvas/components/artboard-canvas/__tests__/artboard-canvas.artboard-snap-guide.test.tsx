@@ -2,13 +2,15 @@ import { expect, test } from "vitest";
 import {
   artboardHandle,
   canvasContent,
+  canvasSurface,
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
   pressPointer,
   releasePointer,
+  wheel,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
-import { renderCanvas, snapGapLabels, snapGuides } from "./setup";
+import { drawnAt, renderCanvas, snapGapLabels, snapGuides } from "./setup";
 import { drawnFollowingFrames, setupSelection } from "./snap-artboards";
 
 /*
@@ -32,13 +34,36 @@ test("他の artboard の辺に吸い付いている間は、その辺の位置�
   );
 });
 
-test("他の artboard の辺に吸い付いていて、揃え先から離れている間は、揃え先との隙間がドキュメント上の px で出る", () => {
+test("他の artboard の辺に吸い付いていて、揃え先から離れている間は、揃え先との隙間が出る", () => {
   renderCanvas({ selection: setupSelection() });
   drawnFollowingFrames();
 
   // `first` の下辺 140 と `second` の上辺 200 の間は 60 空いている
   pressPointer(artboardHandle("second"), { x: 0, y: 0 });
   movePointer(canvasContent(), { x: -29, y: 200 });
+
+  expect(snapGuides()).toHaveLength(1);
+  expect(snapGapLabels()).toEqual(["60"]);
+});
+
+test("倍率を上げて運んでいる間も、揃え先との隙間はドキュメント上の px で出る", () => {
+  renderCanvas({ selection: setupSelection() });
+  wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
+
+  /*
+   * 1.2 倍で見ているときの描かれた矩形（200 × 140 が 240 × 168、左 232 が 278.4）。
+   * 動かすのは 1 回だけで、その間は描き直す前の実測が読まれるので固定の矩形でよい。
+   */
+  drawnAt("first", { left: 0, top: 0, width: 240, height: 168 });
+  drawnAt("second", { left: 278.4, top: 0, width: 240, height: 168 });
+  drawnAt("third", { left: 556.8, top: 0, width: 240, height: 168 });
+
+  /*
+   * 左辺は 242.4 まで来て `first` の右辺 240 へ吸い付き、上辺は 240 まで下がる。`first` の
+   * 下辺 168 まで画面上で 72、ドキュメント上で 60。倍率を表示へ渡し忘れると画面上の値（72）が出る。
+   */
+  pressPointer(artboardHandle("second"), { x: 0, y: 0 });
+  movePointer(canvasContent(), { x: -36, y: 240 });
 
   expect(snapGuides()).toHaveLength(1);
   expect(snapGapLabels()).toEqual(["60"]);
