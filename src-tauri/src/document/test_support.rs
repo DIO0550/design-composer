@@ -1,8 +1,8 @@
-use std::path::Path;
 use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
 use std::sync::Arc;
 use std::time::Duration;
 
+use super::file_path::DocumentFilePath;
 use super::known_content::KnownContentRegistry;
 use super::watch::{self, DocumentWatchers};
 
@@ -20,6 +20,13 @@ const CHANGE_TIMEOUT: Duration = Duration::from_secs(10);
 /// 待って何も来ないことしか確かめられないため、テストが遅くなりすぎない範囲に留める。
 const NO_CHANGE_TIMEOUT: Duration = Duration::from_secs(2);
 
+/// `dir` 直下の `file_name` を、ドキュメントのパスとして受け付けた形で返す。
+pub fn document_file_path(dir: &TempDir, file_name: &str) -> DocumentFilePath {
+    let raw = dir.join(file_name);
+    DocumentFilePath::from_raw(raw.to_str().expect("一時ディレクトリのパスは UTF-8"))
+        .expect("ドキュメントのパスとして受け付けられる")
+}
+
 /// 変更の通知をチャネルへ流す形で監視を開始する。
 ///
 /// 実装が Tauri へイベントを発火する箇所だけをチャネルへの送信に差し替えることで、
@@ -27,7 +34,7 @@ const NO_CHANGE_TIMEOUT: Duration = Duration::from_secs(2);
 pub fn watch_changes(
     watchers: &DocumentWatchers,
     known: &Arc<KnownContentRegistry>,
-    path: &Path,
+    path: &DocumentFilePath,
 ) -> Receiver<String> {
     let (sender, receiver) = mpsc::channel();
     watch::start(watchers, Arc::clone(known), path, move |content| {

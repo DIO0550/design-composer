@@ -5,12 +5,12 @@
 
 mod watchers;
 
-use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, State};
 
+use super::file_path::DocumentFilePath;
 use super::io::{self, DocumentIoError};
 use super::known_content::KnownContentRegistry;
 
@@ -37,7 +37,7 @@ pub struct DocumentChanged {
 pub fn start(
     watchers: &DocumentWatchers,
     known: Arc<KnownContentRegistry>,
-    path: &Path,
+    path: &DocumentFilePath,
     on_change: impl Fn(String) + Send + 'static,
 ) -> Result<(), DocumentIoError> {
     // 監視を始める前に現在の内容を把握しておく。これが無いと、監視開始直後に届く
@@ -45,7 +45,7 @@ pub fn start(
     let content = io::load(path)?;
     known.record(path, &content);
 
-    let watched = path.to_path_buf();
+    let watched = path.clone();
     watchers.watch(path, move || {
         let Some(content) = changed_content(&known, &watched) else {
             return;
@@ -58,7 +58,7 @@ pub fn start(
 ///
 /// 返した内容は把握済みとして記録するので、OS が 1 回の書き込みに対して複数の
 /// イベントを出しても通知は 1 回で済む。
-pub fn changed_content(known: &KnownContentRegistry, path: &Path) -> Option<String> {
+pub fn changed_content(known: &KnownContentRegistry, path: &DocumentFilePath) -> Option<String> {
     // 読めないときに何も返さないのは、配れる内容が無いため(削除・置き換えの途中がこれに当たる)。
     // `docs/05-architecture.md`「外部編集の検知」は不正なファイルについて
     // 「最後に正常だった状態のレンダリングを保持する」としており、通知しないことが
@@ -78,8 +78,8 @@ pub fn watch_document(
     watchers: State<'_, DocumentWatchers>,
     known: State<'_, Arc<KnownContentRegistry>>,
 ) -> Result<(), DocumentIoError> {
-    let path = PathBuf::from(path);
-    let emitted_path = path.to_string_lossy().into_owned();
+    let emitted_path = path.clone();
+    let path = DocumentFilePath::from_raw(&path)?;
 
     start(&watchers, Arc::clone(&known), &path, move |content| {
         let payload = DocumentChanged {
@@ -96,10 +96,11 @@ pub fn unwatch_document(
     path: String,
     watchers: State<'_, DocumentWatchers>,
     known: State<'_, Arc<KnownContentRegistry>>,
-) {
-    let path = Path::new(&path);
-    watchers.unwatch(path);
+) -> Result<(), DocumentIoError> {
+    let path = DocumentFilePath::from_raw(&path)?;
+    watchers.unwatch(&path);
     // 記録も破棄する。監視を再開するときに現在の内容を読み直すので、監視していない間に
     // 起きた変更を「把握済み」として持ち越さないようにする。
-    known.forget(path);
+    known.forget(&path);
+    Ok(())
 }

@@ -7,12 +7,14 @@ use super::io;
 use super::known_content::KnownContentRegistry;
 use super::watch::DocumentWatchers;
 
-use super::test_support::{assert_no_change, next_change, watch_changes, TempDir};
+use super::test_support::{
+    assert_no_change, document_file_path, next_change, watch_changes, TempDir,
+};
 
 #[test]
 fn 外部がファイルを書き換えると変更が通知される() {
     let dir = TempDir::new("watch-normal");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -26,7 +28,7 @@ fn 外部がファイルを書き換えると変更が通知される() {
 #[test]
 fn アプリ自身の保存では変更が通知されない() {
     let dir = TempDir::new("watch-normal");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -42,7 +44,7 @@ fn アプリ自身の保存では変更が通知されない() {
 #[test]
 fn 内容が変わらない書き込みでは変更が通知されない() {
     let dir = TempDir::new("watch-normal");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -57,7 +59,7 @@ fn 内容が変わらない書き込みでは変更が通知されない() {
 #[test]
 fn 外部の書き込み1回につき通知は1回だけ届く() {
     let dir = TempDir::new("watch-normal");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -73,7 +75,7 @@ fn 外部の書き込み1回につき通知は1回だけ届く() {
 #[test]
 fn 外部が続けて書き換えるとそれぞれの内容が通知される() {
     let dir = TempDir::new("watch-normal");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -89,7 +91,7 @@ fn 外部が続けて書き換えるとそれぞれの内容が通知される()
 #[test]
 fn 監視を止めると変更が通知されなくなる() {
     let dir = TempDir::new("watch-normal");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();

@@ -4,17 +4,17 @@ mod atomic_write;
 mod error;
 
 use std::fs;
-use std::path::Path;
 use std::sync::Arc;
 
 use tauri::State;
 
+use super::file_path::DocumentFilePath;
 use super::known_content::KnownContentRegistry;
 
 pub use error::DocumentIoError;
 
 /// ファイルを UTF-8 文字列として読み込む。
-pub fn load(path: &Path) -> Result<String, DocumentIoError> {
+pub fn load(path: &DocumentFilePath) -> Result<String, DocumentIoError> {
     let bytes = fs::read(path).map_err(|error| DocumentIoError::from_io(path, &error))?;
     String::from_utf8(bytes).map_err(|_| DocumentIoError::invalid_utf8(path))
 }
@@ -25,7 +25,7 @@ pub fn load(path: &Path) -> Result<String, DocumentIoError> {
 /// 割り込むと自アプリの書き込みを外部変更と誤判定するため(#27)。
 pub fn save(
     known: &KnownContentRegistry,
-    path: &Path,
+    path: &DocumentFilePath,
     content: &str,
 ) -> Result<(), DocumentIoError> {
     known.record_write(path, content, || atomic_write::write_atomic(path, content))
@@ -33,7 +33,8 @@ pub fn save(
 
 #[tauri::command]
 pub fn load_document(path: String) -> Result<String, DocumentIoError> {
-    load(Path::new(&path))
+    let path = DocumentFilePath::from_raw(&path)?;
+    load(&path)
 }
 
 #[tauri::command]
@@ -42,5 +43,6 @@ pub fn save_document(
     content: String,
     known: State<'_, Arc<KnownContentRegistry>>,
 ) -> Result<(), DocumentIoError> {
-    save(known.inner().as_ref(), Path::new(&path), &content)
+    let path = DocumentFilePath::from_raw(&path)?;
+    save(known.inner().as_ref(), &path, &content)
 }

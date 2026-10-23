@@ -7,13 +7,14 @@ use std::fs;
 use super::io::{self, DocumentIoError};
 use super::known_content::KnownContentRegistry;
 
-use super::test_support::TempDir;
+use super::test_support::{document_file_path, TempDir};
 
 #[test]
 fn 存在しないファイルの読み込みは見つからないことを返す() {
     let dir = TempDir::new("edge");
 
-    let error = io::load(&dir.join("missing.dcmp")).expect_err("読み込みに失敗する");
+    let error =
+        io::load(&document_file_path(&dir, "missing.dcmp")).expect_err("読み込みに失敗する");
 
     assert!(matches!(error, DocumentIoError::NotFound { .. }));
 }
@@ -23,8 +24,12 @@ fn 存在しないディレクトリ配下への保存は失敗する() {
     let dir = TempDir::new("edge");
     let known = KnownContentRegistry::new();
 
-    let error = io::save(&known, &dir.join("missing/document.dcmp"), r#"{"a":1}"#)
-        .expect_err("保存に失敗する");
+    let error = io::save(
+        &known,
+        &document_file_path(&dir, "missing/document.dcmp"),
+        r#"{"a":1}"#,
+    )
+    .expect_err("保存に失敗する");
 
     assert!(matches!(error, DocumentIoError::NotFound { .. }));
 }
@@ -35,7 +40,7 @@ fn 保存に失敗したとき一時ファイルが残らない() {
     let known = KnownContentRegistry::new();
 
     // 書き込み先をディレクトリにすることで、一時ファイルの作成後に rename を失敗させる
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     fs::create_dir(&path).expect("ディレクトリを作成できる");
 
     io::save(&known, &path, r#"{"a":1}"#).expect_err("保存に失敗する");
@@ -46,7 +51,7 @@ fn 保存に失敗したとき一時ファイルが残らない() {
 #[test]
 fn UTF8として解釈できないファイルの読み込みは不正なUTF8を返す() {
     let dir = TempDir::new("edge");
-    let path = dir.join("broken.dcmp");
+    let path = document_file_path(&dir, "broken.dcmp");
     fs::write(&path, [0xff, 0xfe, 0x00, 0x80]).expect("不正なバイト列を書ける");
 
     let error = io::load(&path).expect_err("読み込みに失敗する");
@@ -57,8 +62,10 @@ fn UTF8として解釈できないファイルの読み込みは不正なUTF8を
 #[test]
 fn ディレクトリを読み込もうとすると失敗する() {
     let dir = TempDir::new("edge");
+    let path = document_file_path(&dir, "folder.dcmp");
+    fs::create_dir(&path).expect("ディレクトリを作成できる");
 
-    let error = io::load(dir.path()).expect_err("読み込みに失敗する");
+    let error = io::load(&path).expect_err("読み込みに失敗する");
 
     assert!(matches!(error, DocumentIoError::Io { .. }));
 }
@@ -66,7 +73,7 @@ fn ディレクトリを読み込もうとすると失敗する() {
 #[test]
 fn 失敗したときのエラーは対象のパスを含む() {
     let dir = TempDir::new("edge");
-    let path = dir.join("missing.dcmp");
+    let path = document_file_path(&dir, "missing.dcmp");
 
     let error = io::load(&path).expect_err("読み込みに失敗する");
 
@@ -81,7 +88,7 @@ fn 失敗したときのエラーは対象のパスを含む() {
 fn 保存の失敗は自書き込みとして記録されない() {
     let dir = TempDir::new("edge");
     let known = KnownContentRegistry::new();
-    let path = dir.join("missing/document.dcmp");
+    let path = document_file_path(&dir, "missing/document.dcmp");
     let content = r#"{"a":1}"#;
 
     io::save(&known, &path, content).expect_err("保存に失敗する");
