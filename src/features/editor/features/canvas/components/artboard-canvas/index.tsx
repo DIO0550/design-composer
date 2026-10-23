@@ -363,9 +363,9 @@ export function ArtboardCanvas({
         guides={NodeDrag.snapGuides(nodeDrag.drag)}
         view={view}
       />
-      {/* 隙間の数値はリサイズと artboard の移動ではまだ出さない（docs/06-ui.md「リサイズハンドル」と「artboard の移動」の辺のスナップ、#1149） */}
+      <SnapGuideOverlay guides={artboardDrag.snapGuides} view={view} />
+      {/* 隙間の数値はリサイズでは出さない（docs/06-ui.md「リサイズハンドル」の辺のスナップ） */}
       <GuideLineOverlay guides={nodeResize.snapGuides} />
-      <GuideLineOverlay guides={artboardDrag.snapGuides} />
       {/* 座標を動かすドラッグにはドロップ線が出ないので、代わりに実体を先に動かす */}
       <RepositionPreviewStyle
         drag={nodeDrag.drag}

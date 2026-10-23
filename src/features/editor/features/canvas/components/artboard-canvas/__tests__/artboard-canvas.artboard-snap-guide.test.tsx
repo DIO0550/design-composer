@@ -12,7 +12,7 @@ import { renderCanvas, snapGapLabels, snapGuides } from "./setup";
 import { drawnFollowingFrames, setupSelection } from "./snap-artboards";
 
 /*
- * artboard の移動で揃ったときのガイド線（docs/06-ui.md「artboard の移動」の辺のスナップ）。
+ * artboard の移動で揃ったときのガイド線と、揃え先との隙間（docs/06-ui.md「artboard の移動」の辺のスナップ）。
  * 運んでいる最中にしか出ないので、離す前に見る。
  *
  * `second`（左 232）を左へ 29 運ぶと左辺は 203 まで来て、`first` の右辺 200 へ吸い付く。
@@ -32,16 +32,16 @@ test("他の artboard の辺に吸い付いている間は、その辺の位置�
   );
 });
 
-test("揃え先から離れた位置で揃っている間も、揃え先との隙間の数値は出ない", () => {
+test("他の artboard の辺に吸い付いていて、揃え先から離れている間は、揃え先との隙間がドキュメント上の px で出る", () => {
   renderCanvas({ selection: setupSelection() });
   drawnFollowingFrames();
 
-  // `first` の下辺 140 と `second` の上辺 200 の間は 60 空いている（ノードの移動なら「60」が出る）
+  // `first` の下辺 140 と `second` の上辺 200 の間は 60 空いている
   pressPointer(artboardHandle("second"), { x: 0, y: 0 });
   movePointer(canvasContent(), { x: -29, y: 200 });
 
   expect(snapGuides()).toHaveLength(1);
-  expect(snapGapLabels()).toEqual([]);
+  expect(snapGapLabels()).toEqual(["60"]);
 });
 
 test("吸い付いたあとにどの線からも遠い位置へ動かし直すと、線が消える", () => {
