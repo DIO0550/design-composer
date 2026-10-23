@@ -1,4 +1,6 @@
-use super::io;
+use std::fs;
+
+use super::io::{self, load_document};
 use super::known_content::KnownContentRegistry;
 
 use super::test_support::{document_file_path, TempDir};
@@ -82,4 +84,20 @@ fn 同じディレクトリの複数のファイルをそれぞれ保存して�
         io::load(&second).expect("読み込みに成功する"),
         r#"{"name":"second"}"#
     );
+}
+
+#[test]
+fn 既存のdcmpファイルの絶対パスを渡すと中身が読み込める() {
+    let dir = TempDir::new("normal");
+    let path = dir.join("document.dcmp");
+    let content = r#"{"version":1}"#;
+    fs::write(&path, content).expect("読み込む対象を用意できる");
+    let raw = path
+        .to_str()
+        .expect("一時ディレクトリのパスは UTF-8")
+        .to_string();
+
+    let loaded = load_document(raw).expect("読み込みに成功する");
+
+    assert_eq!(loaded, content);
 }

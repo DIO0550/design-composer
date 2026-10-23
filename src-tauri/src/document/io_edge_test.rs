@@ -4,7 +4,7 @@
 
 use std::fs;
 
-use super::io::{self, DocumentIoError};
+use super::io::{self, load_document, DocumentIoError};
 use super::known_content::KnownContentRegistry;
 
 use super::test_support::{document_file_path, TempDir};
@@ -94,4 +94,26 @@ fn 保存の失敗は自書き込みとして記録されない() {
     io::save(&known, &path, content).expect_err("保存に失敗する");
 
     assert!(!known.is_known(&path, content));
+}
+
+#[test]
+fn 拡張子がdcmpでない既存のファイルは中身があっても読み込まずに不正なパスを返す() {
+    let dir = TempDir::new("edge");
+    let path = dir.join("notes.txt");
+    fs::write(&path, "secret").expect("中身のあるファイルを用意できる");
+    let raw = path
+        .to_str()
+        .expect("一時ディレクトリのパスは UTF-8")
+        .to_string();
+
+    let result = load_document(raw);
+
+    assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
+}
+
+#[test]
+fn 相対パスの読み込みは不正なパスを返す() {
+    let result = load_document("document.dcmp".to_string());
+
+    assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
 }
