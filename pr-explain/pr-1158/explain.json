@@ -1,0 +1,890 @@
+{
+  "version": 1,
+  "pr": 1158,
+  "sha": "c25750f94d8f8bc8fc691856301f7fff7a9d371c",
+  "issue": 1149,
+  "overview": {
+    "title": "artboard の移動のガイド線に、揃え先との隙間の数値を出す",
+    "lead": "artboard を運んで他の artboard の辺・中心線に揃ったとき、ノードの移動と同じく揃え先との隙間の数値も出るようになった。リサイズは線だけのまま据え置き、その理由を `docs/06-ui.md` に書いた。",
+    "before": [
+      {
+        "text": "artboard の移動で揃うと、ガイド線だけが出て隙間の数値は出なかった(`GuideLineOverlay` で描いていた)",
+        "message": "draw-artboard-line-only"
+      },
+      {
+        "text": "`docs/06-ui.md` は、artboard の移動とリサイズで数値を出すかを「未決 — #1149」としていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "artboard の移動で揃い、揃え先から離れていれば、ガイド線に加えて隙間の短い線と数値が出る(`SnapGuideOverlay` に `view` を渡して描く)",
+        "message": "draw-artboard"
+      },
+      {
+        "text": "数値はドキュメント上の px。倍率を上げて見ていても、画面上の長さではなく倍率で割り戻した値が出る",
+        "message": "gap-readout"
+      },
+      {
+        "text": "線も数値も、離すと消える",
+        "message": "artboard-guides"
+      },
+      {
+        "text": "リサイズは今までどおりガイド線だけを出し、数値は出さない。理由(掴んだ辺だけが動くので、移動と同じ向きに測ると無関係な辺どうしの距離が出る)を `docs/06-ui.md` に書いた",
+        "message": "draw-resize"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "描く部品の差し替え",
+        "text": "本体の変更はこの 2 行だけ。揃った線と隙間は前から `ArtboardDrag.snapGuides` が `SideSnap.toSnapped` 経由で持っていたので、描く側を替えただけで数値が出る",
+        "go": {
+          "kind": "message",
+          "id": "draw-artboard"
+        }
+      },
+      {
+        "title": "リサイズで数値を出さない理由",
+        "text": "据え置きの判断。移動の「ガイド線に沿った向きの隙間」をリサイズに当てると、掴んだ辺と関係の無い辺どうしの距離が出る。大きさは `width` / `height` の欄で見える、という整理に納得できるか",
+        "go": {
+          "kind": "file",
+          "path": "docs/06-ui.md"
+        }
+      },
+      {
+        "title": "倍率の割り戻し",
+        "text": "1.2 倍で運ぶと画面上は 72、出るのは 60。`view` を渡し忘れても等倍のテストは通るので、倍率を変えたテストで守っている",
+        "go": {
+          "kind": "message",
+          "id": "gap-readout"
+        }
+      },
+      {
+        "title": "artboard を運んでいる間",
+        "text": "揃った線と隙間が、どこで決まりどこで描かれるかを 1 本で見る",
+        "go": {
+          "kind": "flow",
+          "id": "artboard-move"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "canvas",
+      "label": "キャンバス直接操作",
+      "role": "artboard の移動で揃ったときに、ガイド線と揃え先との隙間の数値を出す"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "artboard の移動のガイド線を、隙間の数値も出す部品で描くよう差し替える"
+    },
+    {
+      "layer": "docs",
+      "role": "artboard の移動では隙間の数値を出し、リサイズでは出さないことと、その理由を仕様にする"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "name": "キャンバス",
+      "role": "artboard と、運んでいる間のガイド線などの重ね描きを並べる",
+      "feature": "canvas",
+      "change": "artboard の移動のガイド線を `GuideLineOverlay` から `SnapGuideOverlay`(`view` を渡す)に替えた"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "name": "スマートガイドの重ね描き",
+      "role": "揃った線と、揃え先との隙間の短い線・数値を描く。線だけを描く部品も同じファイルにある",
+      "feature": "canvas"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "name": "artboard の移動の受け付け",
+      "role": "ポインタを追い、運んでいる間の見せかけの位置と揃った線を返す",
+      "feature": "canvas",
+      "change": "返す揃った線の doc に、揃え先との隙間を含めた"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "name": "artboard の移動",
+      "role": "掴んでから離すまでの状態と、そこでの寄せ量・揃った線・隙間",
+      "feature": "canvas",
+      "change": "揃った線を説明する doc に、揃え先との隙間を含めた(振る舞いは変えていない)"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "name": "辺のスナップ",
+      "role": "揃う位置・揃った線・揃え先との隙間を実測から決め、隙間をドキュメント上の px の数値にする",
+      "feature": "canvas"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "キャンバス直接操作の辺のスナップを規定する",
+      "change": "artboard の移動は隙間の数値を出す、リサイズは出さない理由を書いた",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "snapped-at",
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "kind": "qry",
+      "name": "寄せ量と揃った線と隙間を求める",
+      "code": "SideSnap.toSnapped(SideSnap.create(moving, drawn.stationary))",
+      "via": "call",
+      "payload": "行き先の矩形と揃え先の実測",
+      "returns": "寄せ量と、軸ごとの揃った線・隙間の短い線(画面上の px)"
+    },
+    {
+      "id": "domain-guides",
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "kind": "qry",
+      "name": "運んでいる間の揃いを読む",
+      "code": "ArtboardDrag.snapGuides(drag)",
+      "via": "call",
+      "payload": "今のドラッグの状態",
+      "returns": "最後に動かした位置の揃った線と隙間。運んでいなければ縦横とも `none`"
+    },
+    {
+      "id": "artboard-guides",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "kind": "qry",
+      "name": "揃った線と隙間を受け取る",
+      "code": "artboardDrag.snapGuides",
+      "via": "state",
+      "returns": "揃った線と隙間(離すと縦横とも `none`)"
+    },
+    {
+      "id": "draw-artboard",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "kind": "cmd",
+      "name": "artboard の移動の揃いを線と数値で描く",
+      "code": "<SnapGuideOverlay guides={artboardDrag.snapGuides} view={view} />",
+      "via": "call",
+      "payload": "揃った線と隙間、倍率を持つ表示",
+      "status": "added"
+    },
+    {
+      "id": "draw-artboard-line-only",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "kind": "cmd",
+      "name": "artboard の移動の揃いを線だけで描く",
+      "code": "<GuideLineOverlay guides={artboardDrag.snapGuides} />",
+      "via": "call",
+      "payload": "揃った線と隙間(隙間は読まない)",
+      "status": "removed"
+    },
+    {
+      "id": "gap-readout",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "kind": "qry",
+      "name": "隙間の数値を求める",
+      "code": "SideSnap.toGapReadout(guides, pair, view)",
+      "via": "call",
+      "payload": "揃った線と隙間・見る軸・倍率を持つ表示",
+      "returns": "隙間の短い線(画面上の px)と数値(ドキュメント上の px)。揃っていない・接している・丸めて 0 なら `none`"
+    },
+    {
+      "id": "draw-resize",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "kind": "cmd",
+      "name": "リサイズの揃いを線だけで描く",
+      "code": "<GuideLineOverlay guides={nodeResize.snapGuides} />",
+      "via": "call",
+      "payload": "掴んだ辺の揃った線"
+    }
+  ],
+  "flows": [
+    {
+      "id": "artboard-move",
+      "label": "artboard を運んでいる間",
+      "steps": [
+        "snapped-at",
+        "domain-guides",
+        "artboard-guides",
+        "draw-artboard",
+        "gap-readout"
+      ]
+    },
+    {
+      "id": "resize",
+      "label": "辺を掴んでリサイズしている間",
+      "steps": [
+        "draw-resize"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "8c077065ab099029aa05b1301eebf1e815a6fd9f",
+      "phase": "prep",
+      "role": "仕様を先に決める: artboard の移動は隙間の数値を出し、リサイズは出さない",
+      "why": "#1149 は「出すか未決」の 2 か所を決める Issue なので、コードより先に仕様の文で答えを固定した。artboard の移動はノードの移動と同じ規則をそのまま当てられる。リサイズは掴んだ辺しか動かず、移動の「ガイド線に沿った向きの隙間」を当てると掴んだ辺と関係の無い辺どうしの距離が出るので、出さない側に倒し、その理由を同じ節に残した。",
+      "review": [
+        "リサイズで出さない理由(右辺を掴んで左右の辺が揃うと、出るのは上下の隙間になる)が、出さない根拠として十分か",
+        "大きさはプロパティパネルの幅・高さの欄(artboard は見出しでも)で見える、という代わりの手段で足りるか"
+      ],
+      "before": [
+        {
+          "text": "artboard の移動とリサイズで数値を出すかは「未決 — #1149」"
+        }
+      ],
+      "after": [
+        {
+          "text": "artboard の移動は数値を出す(軸・測る向き・置き方・丸め・0 以下を出さないことはノードの移動と同じ)"
+        },
+        {
+          "text": "リサイズは出さない。理由を下位の項目に書いた"
+        }
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 179,
+          "end": 179,
+          "text": "artboard の移動の辺のスナップ。数値の扱いはすべてノードの移動と同じ、と列挙して差を作らない"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 217,
+          "end": 218,
+          "text": "リサイズは出さない、とその理由。出すなら測る向きから決め直しになる"
+        }
+      ]
+    },
+    {
+      "sha": "8804c4c4844e8ae580e283e0906c14b84bacc02b",
+      "phase": "core",
+      "role": "artboard の移動のガイド線を、隙間の数値も出す部品で描く",
+      "why": "揃った線と隙間の短い線は、`ArtboardDrag.snappedAt` が `SideSnap.toSnapped` 経由で前から求めて状態に持っていた。足りなかったのは描く側だけなので、`GuideLineOverlay` を `SnapGuideOverlay` に替えて `view` を渡すだけで済む。フックやドメインに揃え先の矩形を足す案は要らなかった。「出ない」を確かめていた既存のテストは「60 が出る」に反転した。",
+      "flows": [
+        "artboard-move"
+      ],
+      "review": [
+        "部品を替えるだけで数値が出るのは、`ArtboardDrag.snapGuides` が隙間の短い線も返しているから(`SideSnap.toSnapped` を通る)",
+        "`SnapGuideOverlay` に真偽値の切り替えを足さず、線だけの `GuideLineOverlay` をリサイズ用に残した(`rules/components.md` の真偽値の props)"
+      ],
+      "before": [
+        {
+          "text": "artboard の移動で揃うと線だけが出た",
+          "message": "draw-artboard-line-only"
+        }
+      ],
+      "after": [
+        {
+          "text": "artboard の移動で揃い離れていれば、線と隙間の数値が出る",
+          "message": "draw-artboard"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "start": 366,
+          "end": 367,
+          "text": "ノードの移動と同じ部品で描く。下の注釈はリサイズだけを指すように書き直した"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "side": "old",
+          "start": 368,
+          "end": 368,
+          "text": "隙間を読まない線だけの描画。ここを外した"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+          "start": 35,
+          "end": 44,
+          "text": "「出ない」を確かめていたテストを「60 が出る」に反転した。入力は同じ"
+        }
+      ]
+    },
+    {
+      "sha": "8f49a6dbf0eb6f5a7a0721c4db6a6727a6d01f8d",
+      "phase": "fin",
+      "role": "揃った線を返す関数の doc に、揃え先との隙間を含める",
+      "why": "描く側が隙間も使うようになったので、「揃った線」とだけ書いた doc が返り値の半分しか言っていない状態になった。リサイズのテストの冒頭の「まだ出さない」も、未決ではなく決めた仕様として書き直した。",
+      "review": [
+        "`ArtboardDrag.snapGuides` の `@returns` が、線と隙間の両方と、どちらも画面上の px であることを言えているか"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "start": 201,
+          "end": 204,
+          "text": "概要と `@returns` に隙間を足した"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/__tests__/snap-guide-overlay.guide-line.test.tsx",
+          "start": 9,
+          "end": 9,
+          "text": "「まだ出さない」を「出さない」と仕様の節への参照に"
+        }
+      ]
+    },
+    {
+      "sha": "c508e6afaeb26f577df1b77685047f81cc40b3e9",
+      "phase": "revise",
+      "role": "comment-reviewer の指摘: 同じ値を説明する残りの doc 7 か所を揃える",
+      "why": "前のコミットで直したのは `snapGuides` の doc だけで、同じ `SideSnapped` を説明する doc が「寄せ量とガイド線」のまま 7 か所残っていた。語を「揃った線に引く線と、揃え先との隙間」に揃え、片方だけ古い説明が残らないようにした。",
+      "review": [
+        "artboard の移動の doc で「ガイド線」とだけ書いて隙間を落としている箇所が残っていないか"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "start": 29,
+          "end": 34,
+          "text": "1 回分の動きの型と、その `snapped`"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "start": 56,
+          "end": 58,
+          "text": "状態の直和の説明"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "start": 150,
+          "end": 152,
+          "text": "`snappedAt` の `@returns`"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "start": 104,
+          "end": 105,
+          "text": "フックの `@returns`"
+        }
+      ]
+    },
+    {
+      "sha": "c25750f94d8f8bc8fc691856301f7fff7a9d371c",
+      "phase": "revise",
+      "role": "test-reviewer の指摘: 倍率を上げて運んでも数値がドキュメント上の px で出ることを固定する",
+      "why": "test-reviewer が `view` を `CanvasView.create()`(等倍)に固定して走らせると全件通った。等倍では画面上の px とドキュメント上の px が同じなので、倍率を渡し忘れても落ちない。1.2 倍で運び、画面上 72 の隙間に「60」が出るテストを足し、固定すると 72 で落ちることを確かめた。等倍のテスト名からは、確かめていない「ドキュメント上の px で」を外した。",
+      "review": [
+        "1.2 倍の実測(240 × 168・左 278.4)と、ポインタを左へ 36・下へ 240 動かす量が、等倍のテストの 29・200 を倍率で揃えたものになっているか",
+        "等倍のテスト名から「ドキュメント上の px で」を外したのは、そのテストが単位を区別できないから"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+          "start": 49,
+          "end": 70,
+          "text": "倍率を渡し忘れると画面上の 72 が出る入力。等倍では区別できない"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+          "start": 37,
+          "end": 37,
+          "text": "等倍のテスト名から、確かめていない単位の主張を外した"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "artboard-snap-guide",
+      "label": "artboard の移動のガイド線",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx"
+    },
+    {
+      "id": "resize-guide",
+      "label": "リサイズのガイド線",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-guide.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "gap-shown",
+      "suite": "artboard-snap-guide",
+      "name": "他の artboard の辺に吸い付いていて、揃え先から離れている間は、揃え先との隙間が出る",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "artboard の移動でも隙間の数値が出ること。描く部品を線だけのものへ戻すと落ちる(test-reviewer が実測)",
+      "given": "`first`(下辺 140)と `second`(上辺 200)が並んで描かれている等倍のキャンバス",
+      "when": "`second` の見出しを掴み、左へ 29・下へ 200 運ぶ(左辺が `first` の右辺 200 へ吸い付く)",
+      "then": "ガイド線が 1 本出て、隙間の数値は `[\"60\"]`",
+      "commit": "8804c4c4844e8ae580e283e0906c14b84bacc02b",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+        "start": 37,
+        "end": 47,
+        "emphasis": [
+          {
+            "start": 46,
+            "end": 46
+          }
+        ],
+        "text": "test(\"他の artboard の辺に吸い付いていて、揃え先から離れている間は、揃え先との隙間が出る\", () => {\n  renderCanvas({ selection: setupSelection() });\n  drawnFollowingFrames();\n\n  // `first` の下辺 140 と `second` の上辺 200 の間は 60 空いている\n  pressPointer(artboardHandle(\"second\"), { x: 0, y: 0 });\n  movePointer(canvasContent(), { x: -29, y: 200 });\n\n  expect(snapGuides()).toHaveLength(1);\n  expect(snapGapLabels()).toEqual([\"60\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx"
+      ],
+      "covers": [
+        "artboard-guides",
+        "draw-artboard",
+        "gap-readout"
+      ]
+    },
+    {
+      "id": "gap-zoomed",
+      "suite": "artboard-snap-guide",
+      "name": "倍率を上げて運んでいる間も、揃え先との隙間はドキュメント上の px で出る",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "数値は倍率で割り戻したドキュメント上の px で出ること。表示へ倍率を渡し忘れると画面上の 72 が出て落ちる(`view` を等倍に固定して確かめた)",
+      "given": "Ctrl + ホイールで 1.2 倍にし、`first`・`second`・`third` が 240 × 168 で描かれている",
+      "when": "`second` を掴み、左へ 36・下へ 240 運ぶ(左辺 242.4 が `first` の右辺 240 へ吸い付く)",
+      "then": "ガイド線が 1 本出て、隙間の数値は画面上の 72 ではなく `[\"60\"]`",
+      "commit": "c25750f94d8f8bc8fc691856301f7fff7a9d371c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+        "start": 49,
+        "end": 70,
+        "emphasis": [
+          {
+            "start": 51,
+            "end": 51
+          },
+          {
+            "start": 69,
+            "end": 69
+          }
+        ],
+        "text": "test(\"倍率を上げて運んでいる間も、揃え先との隙間はドキュメント上の px で出る\", () => {\n  renderCanvas({ selection: setupSelection() });\n  wheel(canvasSurface(), { x: 0, y: -100 }, \"ctrl\");\n\n  /*\n   * 1.2 倍で見ているときの描かれた矩形（200 × 140 が 240 × 168、左 232 が 278.4）。\n   * 動かすのは 1 回だけで、その間は描き直す前の実測が読まれるので固定の矩形でよい。\n   */\n  drawnAt(\"first\", { left: 0, top: 0, width: 240, height: 168 });\n  drawnAt(\"second\", { left: 278.4, top: 0, width: 240, height: 168 });\n  drawnAt(\"third\", { left: 556.8, top: 0, width: 240, height: 168 });\n\n  /*\n   * 左辺は 242.4 まで来て `first` の右辺 240 へ吸い付き、上辺は 240 まで下がる。`first` の\n   * 下辺 168 まで画面上で 72、ドキュメント上で 60。倍率を表示へ渡し忘れると画面上の値（72）が出る。\n   */\n  pressPointer(artboardHandle(\"second\"), { x: 0, y: 0 });\n  movePointer(canvasContent(), { x: -36, y: 240 });\n\n  expect(snapGuides()).toHaveLength(1);\n  expect(snapGapLabels()).toEqual([\"60\"]);\n});"
+      },
+      "values": {
+        "columns": [
+          "倍率",
+          "画面上の隙間",
+          "出る数値"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "1.0",
+              "60",
+              "60"
+            ]
+          },
+          {
+            "cells": [
+              "1.2",
+              "72",
+              "60"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/domains/side-snap/index.ts"
+      ],
+      "covers": [
+        "draw-artboard",
+        "gap-readout"
+      ]
+    },
+    {
+      "id": "artboard-release",
+      "suite": "artboard-snap-guide",
+      "name": "離すと線は消える",
+      "techniques": [
+        "state"
+      ],
+      "why": "離したあとに揃いの表示が残らないこと。数値は同じ揃いの値から描くので、線と一緒に消える",
+      "given": "`second` を運んで `first` の右辺に吸い付かせ、線が 1 本出ている",
+      "when": "ポインタを離す",
+      "then": "ガイド線は 0 本",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+        "start": 84,
+        "end": 94,
+        "text": "test(\"離すと線は消える\", () => {\n  renderCanvas({ selection: setupSelection() });\n  drawnFollowingFrames();\n\n  pressPointer(artboardHandle(\"second\"), { x: 0, y: 0 });\n  movePointer(canvasContent(), { x: -29, y: 30 });\n  expect(snapGuides()).toHaveLength(1);\n  releasePointer(canvasContent(), { x: -29, y: 30 });\n\n  expect(snapGuides()).toHaveLength(0);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts"
+      ],
+      "covers": [
+        "artboard-guides",
+        "domain-guides"
+      ]
+    },
+    {
+      "id": "resize-no-gap",
+      "suite": "resize-guide",
+      "name": "右辺の帯を兄弟の右辺の近くまで運んでいる間、揃え先との隙間の数値は出ない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "リサイズは線だけのまま据え置くこと。リサイズまで `SnapGuideOverlay` で描くと落ちる(test-reviewer が実測)",
+      "given": "`badge`(下辺 120)と `marker`(上辺 160)が描かれ、`badge` を選んでいる",
+      "when": "`badge` の右辺の帯を 218 → 258 と運ぶ(右辺が `marker` の右辺 263 へ吸い付く)",
+      "then": "ガイド線は 1 本、隙間の数値は `[]`(移動なら 40 が出る間隔)",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-guide.test.tsx",
+        "start": 38,
+        "end": 49,
+        "emphasis": [
+          {
+            "start": 48,
+            "end": 48
+          }
+        ],
+        "text": "test(\"右辺の帯を兄弟の右辺の近くまで運んでいる間、揃え先との隙間の数値は出ない\", () => {\n  renderCanvas({ selection: setupSelection([\"badge\"]) });\n  drawnApart();\n  const badge = drawnAt(\"badge\", BadgeBounds);\n\n  // `badge` の下辺 120 と `marker` の上辺 160 の間は 40 空いている（移動なら「40」が出る）\n  pressPointer(badge, { x: 218, y: 100 });\n  movePointer(badge, { x: 258, y: 100 });\n\n  expect(snapGuides()).toHaveLength(1);\n  expect(snapGapLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "draw-resize"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "artboard を運んで揃えたとき、揃え先との隙間の数値も出るようになった",
+    "lead": "要素を運ぶときにはもう出ていた隙間の数値が、artboard を運ぶときにも出るようになりました。大きさを変えるときは、これまでどおり線だけです。",
+    "changed": {
+      "before": [
+        {
+          "text": "artboard を運んで他の artboard の辺や中心線に揃うと、揃った位置に赤い線だけが出ていた",
+          "message": "draw-artboard-line-only"
+        }
+      ],
+      "after": [
+        {
+          "text": "揃った位置の赤い線に加えて、揃え先との間に短い線と、その間隔の数値が出る",
+          "message": "draw-artboard"
+        },
+        {
+          "text": "線も数値も、ポインタを離すと消える",
+          "message": "artboard-guides"
+        }
+      ],
+      "text": "artboard どうしを等間隔に並べたいとき、運びながら間隔を読めます。数値の出し方(どの向きに測るか、0 のときは出さないことなど)は要素を運ぶときと同じです。"
+    },
+    "tables": [
+      {
+        "label": "揃ったときに出るもの",
+        "gist": "何を出すかは操作の種類で決まる。変わったのは artboard を運ぶときの数値だけ。",
+        "rowHeads": [
+          {
+            "id": "node-move",
+            "label": "要素を運ぶ"
+          },
+          {
+            "id": "artboard-move",
+            "label": "artboard を運ぶ"
+          },
+          {
+            "id": "resize",
+            "label": "辺を掴んで大きさを変える"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "line",
+            "label": "揃った位置の線"
+          },
+          {
+            "id": "gap",
+            "label": "揃え先との間隔の数値"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "node-move",
+            "columnHead": "line",
+            "result": "出る"
+          },
+          {
+            "rowHead": "node-move",
+            "columnHead": "gap",
+            "result": "出る"
+          },
+          {
+            "rowHead": "artboard-move",
+            "columnHead": "line",
+            "result": "出る"
+          },
+          {
+            "rowHead": "artboard-move",
+            "columnHead": "gap",
+            "result": "出る",
+            "was": "出ない",
+            "tests": [
+              "gap-shown",
+              "gap-zoomed"
+            ]
+          },
+          {
+            "rowHead": "resize",
+            "columnHead": "line",
+            "result": "出る"
+          },
+          {
+            "rowHead": "resize",
+            "columnHead": "gap",
+            "result": "出ない",
+            "note": "動くのは掴んだ辺だけで、同じ測り方だと関係の無い辺どうしの間隔が出るため。大きさは幅・高さの欄で見える",
+            "tests": [
+              "resize-no-gap"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "拡大・縮小して見ながら artboard を運んだとき",
+        "before": [],
+        "after": [
+          {
+            "text": "数値は画面上の長さではなく、ドキュメント上の大きさで出る(1.2 倍で見て画面上 72 離れていても 60 と出る)",
+            "message": "gap-readout"
+          }
+        ],
+        "text": "artboard を運ぶときに数値が出るのはこの変更からなので、倍率との関係も新しく起きる状況です。",
+        "tests": [
+          "gap-zoomed"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "辺を掴んで大きさを変えている間は、揃った位置の線だけが出て、間隔の数値は出ない",
+        "tests": [
+          "resize-no-gap"
+        ]
+      },
+      {
+        "text": "ポインタを離すと、揃った位置の線は消える",
+        "tests": [
+          "artboard-release"
+        ]
+      },
+      {
+        "text": "要素を運ぶときの線と数値の出方は変わらない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "jsx-element",
+      "category": "react · JSX",
+      "label": "JSX の要素と props",
+      "gist": "React で画面を組むときは、[[コンポーネント|component]]を HTML のタグのような形(`<名前 … />`)で並べ、何を渡すかを[[props|props]]で書く。並べたタグを別のタグに書き換えるだけで、同じ値を別のコンポーネントに描かせられる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`<SnapGuideOverlay guides={a} view={b} />` は「`SnapGuideOverlay` を、`guides` に `a`、`view` に `b` を入れた[[props|props]]で描く」という意味。`{…}` の中は普通の式で、`/>` は子を持たないタグの閉じ方。同じ値 `a` を `<GuideLineOverlay guides={a} />` に渡すと、描くのは別のコンポーネントになる。"
+        },
+        {
+          "kind": "text",
+          "text": "タグを並べる中に `{/* … */}` と書くと、描かれないコメントになる。いくつかの要素を、余計な囲みを足さずに 1 つにまとめて返すときは[[フラグメント|fragment]] `<>…</>` で包む。"
+        },
+        {
+          "kind": "caution",
+          "text": "[[コンポーネント|component]]が受け取らない名前を props に書くと、TypeScript の型検査で落ちる。逆に、受け取る props を渡し忘れても、その props が省略できる型なら落ちない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "lineRange": {
+            "start": 361,
+            "end": 368
+          },
+          "text": "ノードの移動・artboard の移動・リサイズの 3 つの揃いを、それぞれのコンポーネントで描く",
+          "shas": [
+            "8804c4c4844e8ae580e283e0906c14b84bacc02b"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+          "lineRange": {
+            "start": 132,
+            "end": 142
+          },
+          "text": "縦横 2 つの軸を[[フラグメント|fragment]]で並べて返す"
+        }
+      ],
+      "seeAlso": [
+        "two-overlays"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "two-overlays",
+      "category": "canvas · 描画",
+      "label": "`SnapGuideOverlay` と `GuideLineOverlay`",
+      "gist": "どちらも同じ揃いの値(`SnapGuides`)を受け取る[[コンポーネント|component]]。`SnapGuideOverlay` は倍率を持つ表示 `view` も受け取り、ガイド線に加えて揃え先との隙間の短い線と数値を描く。`GuideLineOverlay` はガイド線だけを描く。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "SnapGuideOverlay({ guides, view }: { guides: SnapGuides; view: CanvasView })\nGuideLineOverlay({ guides }: { guides: SnapGuides })"
+        },
+        {
+          "kind": "text",
+          "text": "揃いの値は、軸ごとに「揃った線」と「揃え先との隙間の短い線」(あれば)を持つ。`GuideLineOverlay` は隙間を読まずに捨てる。この PR は、artboard の移動に渡す先を `GuideLineOverlay` から `SnapGuideOverlay` へ替えただけで、値の側は変えていない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+            "start": 112,
+            "end": 142,
+            "emphasis": [
+              {
+                "start": 132,
+                "end": 135
+              }
+            ],
+            "text": "/**\n * 揃った線に引くガイド線だけを出す。見た目は `SnapGuideOverlay` のガイド線と同じで、揃え先との\n * 隙間の数値は出さない。\n */\nexport function GuideLineOverlay({ guides }: Readonly<{ guides: SnapGuides }>) {\n  return (\n    <>\n      <GuideLineAlong guides={guides} pair={SidePairs.Horizontal} />\n      <GuideLineAlong guides={guides} pair={SidePairs.Vertical} />\n    </>\n  );\n}\n\n/**\n * 揃った線（辺か中心線）に引くガイド線と、揃え先との隙間の数値（docs/06-ui.md「キャンバス\n * 直接操作」の辺のスナップ。色・太さ・数値の単位の選定理由もそちらにある）。どこへ引くかは\n * `side-snap` が実測から決める。\n *\n * 並びを `map` しないので、線の同一性を key で作る必要が無い。\n */\nexport function SnapGuideOverlay({\n  guides,\n  view,\n}: Readonly<{ guides: SnapGuides; view: CanvasView }>) {\n  return (\n    <>\n      <Guide guides={guides} pair={SidePairs.Horizontal} view={view} />\n      <Guide guides={guides} pair={SidePairs.Vertical} view={view} />\n    </>\n  );\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "数値を出すかを `SnapGuideOverlay` の真偽値の[[props|props]]で切り替えず、線だけのコンポーネントを別に持つ(`rules/components.md` の、真偽値の props より状態や構成で表す)。"
+        },
+        {
+          "kind": "history",
+          "text": "#1149 まで、artboard の移動とリサイズはどちらも `GuideLineOverlay` で描き、数値を出すかは未決だった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "lineRange": {
+            "start": 366,
+            "end": 368
+          },
+          "text": "artboard の移動は `SnapGuideOverlay`、リサイズは `GuideLineOverlay`",
+          "shas": [
+            "8804c4c4844e8ae580e283e0906c14b84bacc02b"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+          "lineRange": {
+            "start": 112,
+            "end": 142
+          },
+          "text": "2 つのコンポーネントの定義"
+        }
+      ],
+      "seeAlso": [
+        "jsx-element",
+        "gap-readout"
+      ],
+      "tests": [
+        "gap-shown",
+        "resize-no-gap"
+      ],
+      "flows": [
+        "artboard-move",
+        "resize"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "gap-readout",
+      "category": "canvas · 辺のスナップ",
+      "label": "`SideSnap.toGapReadout` と倍率",
+      "gist": "隙間の短い線は描く位置なので画面上の px、数値は人に見せるので[[ドキュメント上の px|document-px]]。`SideSnap.toGapReadout` が `view` の倍率で割り戻し、最も近い整数に丸めて数値にする。",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+            "start": 212,
+            "end": 240,
+            "emphasis": [
+              {
+                "start": 231,
+                "end": 237
+              }
+            ],
+            "text": "  /**\n   * ある軸の揃え先との隙間を、見せる数値と一緒に引く（docs/06-ui.md の辺のスナップ）。\n   *\n   * 引くキーと測る向きを同じ `pair` から取る。キーと向きを別々に渡す形にすると、取り違えた\n   * ときに線の太さが隙間の数値として出る。\n   *\n   * @param guides 軸ごとのスマートガイド\n   * @param pair 見る軸（揃った線を挟む辺の組）\n   * @param view 割り戻しに使う倍率を持つ表示\n   * @returns 隙間の短い線と数値。その軸に揃った線が無い / 揃え先と重なっている・接している /\n   *   ドキュメント上の px へ丸めると 0 になるなら `none`\n   */\n  toGapReadout(\n    guides: SnapGuides,\n    pair: SidePair,\n    view: CanvasView,\n  ): Option<GapReadout> {\n    return Option.flatMap(guides[pair], (guide) =>\n      Option.flatMap(guide.gapLine, (gapLine) => {\n        const length = CanvasView.toRoundedDocumentLength(\n          view,\n          Range.length(\n            CanvasBounds.extentAlong(gapLine, SidePair.perpendicular(pair)),\n          ),\n        );\n        return length > 0 ? Option.some({ gapLine, length }) : Option.none;\n      }),\n    );\n  },"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "揃った線が無い軸、揃え先と接している・重なっている軸、丸めて 0 になる軸では何も返さず、数値は出ない。この判断は要素の移動と artboard の移動で共通になった。"
+        },
+        {
+          "kind": "caution",
+          "text": "等倍では画面上の px と[[ドキュメント上の px|document-px]]が同じ値なので、`view` を渡し間違えても等倍のテストは通る。倍率を変えたテストでしか気づけない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "lineRange": {
+            "start": 224,
+            "end": 240
+          },
+          "text": "隙間の短い線から数値を作る"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "lineRange": {
+            "start": 174,
+            "end": 174
+          },
+          "text": "artboard の移動も同じ `SideSnap.toSnapped` で、隙間の短い線を前から求めていた"
+        }
+      ],
+      "seeAlso": [
+        "two-overlays"
+      ],
+      "tests": [
+        "gap-zoomed"
+      ],
+      "flows": [
+        "artboard-move"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "component",
+      "label": "コンポーネント",
+      "text": "React で画面の一部を描く関数。受け取った値(props)から、描く要素を返す。"
+    },
+    {
+      "id": "props",
+      "label": "props",
+      "text": "コンポーネントに渡す値の組。タグに `名前={値}` の形で書き、コンポーネントは 1 つのオブジェクトとして受け取る。"
+    },
+    {
+      "id": "fragment",
+      "label": "フラグメント",
+      "text": "`<>…</>` と書く、画面には何も足さない囲み。いくつかの要素を 1 つとして返したいときに使う。"
+    },
+    {
+      "id": "document-px",
+      "label": "ドキュメント上の px",
+      "text": "`.dcmp` に書かれる大きさの単位。拡大・縮小して見ていても変わらない。画面上の px はこれに倍率を掛けた長さ。"
+    }
+  ]
+}
