@@ -1,0 +1,805 @@
+{
+  "version": 2,
+  "pr": 1158,
+  "headBranch": "claude/magical-cannon-vl10va",
+  "baseBranch": "main",
+  "mergeBase": "89876a0e4e6ffa9cb7d15c6626274f8788ab8fb6",
+  "head": "c25750f94d8f8bc8fc691856301f7fff7a9d371c",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/offset/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resize-edit/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/edit-continuity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection-dig/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "services",
+      "files": [
+        {
+          "path": "src/services/document-html/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/dom-event/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ElementEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/drop-marker/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/drop-position-label/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/range-select-overlay/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/stale-canvas-overlay/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/text-inline-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 11,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-space-held/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 30,
+          "deletions": 5,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-artboards.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/__tests__/guide-lines.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/__tests__/snap-guide-overlay.guide-line.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap-guide.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/held-drag.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+        "name": "他の artboard の辺に吸い付いていて、揃え先から離れている間は、揃え先との隙間が出る"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+        "name": "倍率を上げて運んでいる間も、揃え先との隙間はドキュメント上の px で出る"
+      }
+    ],
+    "removed": [
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+        "name": "揃え先から離れた位置で揃っている間も、揃え先との隙間の数値は出ない"
+      }
+    ],
+    "files": [
+      "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+      "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/__tests__/snap-guide-overlay.guide-line.test.tsx"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "8c077065ab099029aa05b1301eebf1e815a6fd9f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-23T15:23:49Z",
+      "subject": "📝 [Documentation]: #1149 artboard の移動で隙間の数値を出し、リサイズでは出さない理由を書く",
+      "body": "- 「artboard の移動」の辺のスナップ: 揃え先との隙間の数値も出す、とし、\n  出す軸・測る向き・丸め・0 以下は出さないことをノードの移動と同じとした\n- 「リサイズハンドル」の辺のスナップ: 「未決 — #1149」を消し、出さない\n  ことと、その理由を書いた\n\n背景:\nノードの移動だけが隙間の数値を出し、リサイズと artboard の移動は線だけで、\ndocs は出すかを未決としていた。UI 案にはガイド線自体が描かれておらず、\n拠り所からは決まらないため、オーナーの判断(#1149 の案 C)を仰いだ。\n\n採用理由:\nartboard の移動は運んでいるもの全体が動く点でノードの移動と同じ形で、\n「ガイド線に沿った向きの隙間」の測り方がそのまま当てはまる。リサイズは\n掴んだ辺だけが動くので、同じ測り方では掴んだ辺と関係の無い辺どうしの\n距離が出る(右辺を掴んで左右の辺が揃うと上下の隙間が出る)。\n\n代替案:\n- 両方出す: リサイズで測る向きを決め直す必要があり、この Issue の範囲を\n  超える\n- 両方出さない: artboard の移動で数値を出さない理由が利用者から見えない\n\n影響とトレードオフ:\nリサイズでは揃え先との距離が数値で見えない。大きさは width / height の\n欄(artboard は見出しでも)で見えるので、リサイズで知りたい値は失わない。\n出すことを将来検討するなら、測る向きの定義から別 Issue で決める。\n\n参考:\n- docs/06-ui.md 153〜156 行目(ノードの移動の隙間の測り方)\n- https://github.com/DIO0550/design-composer/issues/1149\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AqSXG1HkzHGjKshb7sSNos",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "patch": "@@ -176,7 +176,7 @@ Figma 寄りの直接操作を採用する。\n     - 揃え方・吸い付く距離（画面上の px）と、同じ揃え先の中で辺を中心線より先に見ることは、ノードの辺のスナップ（上記）と同じ。ただし**等間隔には吸い付かない**。揃え先どうしが同じ距離なら **`.dcmp` の並び順で先の artboard** へ寄る\n     - 書く座標の丸め方もノードと同じ。ただし運んでいる間の見た目は丸めないので、揃う位置が非整数のときは離した瞬間に**ドキュメント上で**最大 0.5px 動く\n     - まだ描かれていない（大きさの無い）artboard は揃え先にしない（非表示の artboard は下記「非表示の artboard」のとおり）\n-    - 揃った線には**ガイド線**を出す。位置・長さ・見た目はノードの移動のガイド線と同じで、縦横それぞれ最大 1 本。離すと消える。揃え先との隙間の数値は**まだ出さない**（出すかは未決 — #1149）\n+    - 揃った線には**ガイド線**を出し、揃え先との隙間の**数値**も出す。ガイド線の位置・長さ・見た目はノードの移動のガイド線と同じで、縦横それぞれ最大 1 本。隙間を出す軸・測る向き・短い線とラベルの置き方・ドキュメント上の px への丸め・0 以下（丸めて 0 になるものを含む）は出さないことも、ノードの移動と同じ。線も数値も離すと消える\n - **非表示の artboard**: `visibility: hidden` の artboard（03-schema「表示 / 非表示」）は、枠・見出し・リサイズハンドルごとキャンバスに描かない\n   - 描かないので、揃え先（上記の辺のスナップ・下記のリサイズのスナップ）にならず、その中身も範囲選択で拾われない\n   - ズーム（下記「ズーム」）で収める対象も描かれている artboard だけ。すべて隠すと Shift+1 は何も起きず、隠した artboard の中を選んでいるときの Shift+2 も何も起きない\n@@ -214,7 +214,8 @@ Figma 寄りの直接操作を採用する。\n       - `flow` のノードはまだ吸い付かない。後ろに並ぶ兄弟・`hug` の親など、揃え先のほうがリサイズにつられて動くため（#881）\n       - 回って描かれているノード（上記）は吸い付かない。揃え先の辺は軸に平行な外接矩形で、回ったノードが伸びる向きと合わないため\n     - 揃え先の位置は**掴んだ時点**の描かれている位置で決める\n-    - 掴んだ辺が揃うと、揃った辺に**ガイド線**を出す。位置・長さ・見た目はノードの移動のガイド線と同じで、揃った軸ごとに最大 1 本。揃え先との隙間の数値は**まだ出さない**（ノードの移動では出す。リサイズと artboard の移動でも出すかは未決 — #1149）\n+    - 掴んだ辺が揃うと、揃った辺に**ガイド線**を出す。位置・長さ・見た目はノードの移動のガイド線と同じで、揃った軸ごとに最大 1 本。揃え先との隙間の数値は**出さない**（ノードの移動と artboard の移動では出す）\n+      - リサイズで動くのは掴んだ辺だけなので、移動の「ガイド線に沿った向きの隙間」をそのまま当てると、掴んだ辺と関係の無い辺どうしの距離が出る（右辺を掴んで左右の辺が揃ったとき、出るのは上下の隙間）。出すなら測る向きから決め直しになる。リサイズで知りたい大きさは、プロパティパネルの `width` / `height` の欄（artboard は見出しでも）で見える\n     - 線がまたぐのは、伸び縮みさせたあとのものと揃え先。掴んでいない軸の長さが `hug` / `fill` で連れて変わる（上記）と、線の端は描き直された辺とずれる（掴んだ時点の長さで引くため）\n     - 掴んだ辺が反対の辺を越えた先で吸い付いても、線は揃え先の辺に出る。掴んだ辺の長さ（幅・高さ）は 0 で止まるので、線と描かれた辺は離れて見える。角でもう一方の軸の線も出ているときは、その線は越えた先の辺までまたぐ（線の長さも、越えた先まで伸ばした矩形で決めるため）\n     - **⌘ / Ctrl を押しながら動かしている間は吸い付かない**（ノードの移動と同じ）。寄せないのでガイド線も出ない。押しているかは**ポインタが動くたびに**見る",
+          "patchLines": 19,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "8804c4c4844e8ae580e283e0906c14b84bacc02b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-23T15:23:58Z",
+      "subject": "✨ [New Feature]: #1149 artboard の移動のガイド線に揃え先との隙間の数値を出す",
+      "body": "- artboard の移動の描画を GuideLineOverlay から SnapGuideOverlay に替えた\n- 「揃え先から離れていても隙間の数値は出ない」テストを反転し、\n  「隙間がドキュメント上の px で出る」(60)を確かめる形にした\n\n背景:\ndocs/06-ui.md「artboard の移動」で、隙間の数値もノードの移動と同じく\n出すと決めた(直前のコミット)。\n\n採用理由:\nArtboardDrag.snapGuides は SideSnap.toSnapped を通しており、揃え先の\n矩形から測った gapLine を既に持っている。出ていなかったのは描く側が\ngapLine を読まない GuideLineOverlay だったからで、描く側の差し替えだけで\n足りる。ドメイン・フックの型と公開 API は変えない。\nテストと実装を同じコミットにしたのは、既存テストが「出ない」を固定して\nおり、どちらか片方だけでは test:run が落ちるため。\n\n代替案:\n- SnapGuideOverlay に隙間を出すかの真偽値 prop を足して GuideLineOverlay\n  を消す: rules/components.md は真偽値 props での出し分けより Composition\n  を優先する。GuideLineAlong を共有する今の 2 コンポーネントの形を崩す\n  理由が無い\n- NodeResize.snapGuides で gapLine を none にして 3 つとも SnapGuideOverlay\n  に揃える: 「リサイズでは出さない」は表示の判断で値の性質ではなく、\n  変更がリサイズのドメインまで広がる\n- artboard 専用のオーバーレイを作る: 見た目と測り方がノードの移動と同じ\n  で重複実装になる\n- 「離すと数値が消える」テストを足す: 数値は線と同じ snapGuides から\n  作られ、既存の「離すと線は消える」と別に守るものが無い(落ちうる assert\n  にならない)\n\n影響とトレードオフ:\nGuideLineOverlay の本番の呼び出しはリサイズの 1 箇所だけになる。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1149\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AqSXG1HkzHGjKshb7sSNos",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -12,7 +12,7 @@ import { renderCanvas, snapGapLabels, snapGuides } from \"./setup\";\n import { drawnFollowingFrames, setupSelection } from \"./snap-artboards\";\n \n /*\n- * artboard の移動で揃ったときのガイド線（docs/06-ui.md「artboard の移動」の辺のスナップ）。\n+ * artboard の移動で揃ったときのガイド線と、揃え先との隙間（docs/06-ui.md「artboard の移動」の辺のスナップ）。\n  * 運んでいる最中にしか出ないので、離す前に見る。\n  *\n  * `second`（左 232）を左へ 29 運ぶと左辺は 203 まで来て、`first` の右辺 200 へ吸い付く。\n@@ -32,16 +32,16 @@ test(\"他の artboard の辺に吸い付いている間は、その辺の位置\n   );\n });\n \n-test(\"揃え先から離れた位置で揃っている間も、揃え先との隙間の数値は出ない\", () => {\n+test(\"他の artboard の辺に吸い付いていて、揃え先から離れている間は、揃え先との隙間がドキュメント上の px で出る\", () => {\n   renderCanvas({ selection: setupSelection() });\n   drawnFollowingFrames();\n \n-  // `first` の下辺 140 と `second` の上辺 200 の間は 60 空いている（ノードの移動なら「60」が出る）\n+  // `first` の下辺 140 と `second` の上辺 200 の間は 60 空いている\n   pressPointer(artboardHandle(\"second\"), { x: 0, y: 0 });\n   movePointer(canvasContent(), { x: -29, y: 200 });\n \n   expect(snapGuides()).toHaveLength(1);\n-  expect(snapGapLabels()).toEqual([]);\n+  expect(snapGapLabels()).toEqual([\"60\"]);\n });\n \n test(\"吸い付いたあとにどの線からも遠い位置へ動かし直すと、線が消える\", () => {",
+          "patchLines": 29,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -363,9 +363,9 @@ export function ArtboardCanvas({\n         guides={NodeDrag.snapGuides(nodeDrag.drag)}\n         view={view}\n       />\n-      {/* 隙間の数値はリサイズと artboard の移動ではまだ出さない（docs/06-ui.md「リサイズハンドル」と「artboard の移動」の辺のスナップ、#1149） */}\n+      <SnapGuideOverlay guides={artboardDrag.snapGuides} view={view} />\n+      {/* 隙間の数値はリサイズでは出さない（docs/06-ui.md「リサイズハンドル」の辺のスナップ） */}\n       <GuideLineOverlay guides={nodeResize.snapGuides} />\n-      <GuideLineOverlay guides={artboardDrag.snapGuides} />\n       {/* 座標を動かすドラッグにはドロップ線が出ないので、代わりに実体を先に動かす */}\n       <RepositionPreviewStyle\n         drag={nodeDrag.drag}",
+          "patchLines": 12,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "8f49a6dbf0eb6f5a7a0721c4db6a6727a6d01f8d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-23T15:24:07Z",
+      "subject": "📝 [Documentation]: #1149 artboard の移動の snapGuides の doc に隙間を含める",
+      "body": "- ArtboardDrag.snapGuides の概要と @returns を NodeDrag.snapGuides と\n  同じ「線と隙間(画面上の px)」の形にした\n- ArtboardDragControl.snapGuides の doc に隙間を足した\n- リサイズのガイド線のテストの冒頭コメントから「まだ」を消し、拠り所を\n  docs/06-ui.md「リサイズハンドル」と明記した\n\n背景:\nartboard の移動で隙間の数値を出すようにした(直前のコミット)ことで、\nsnapGuides が前から持っていた gapLine が消費されるようになった。\n\n採用理由:\ndoc が「揃った線」だけを書いたままだと、隙間を含むことが読めない。\nノードの移動と同じ値を返すので、語形もそちらに揃えた。リサイズ側の\n「まだ出さない」は未決を前提にした書き方で、判断が済んだので外した。\n\n代替案:\n- doc を変えずに残す: 実装と doc が食い違う(rules/coding.md\n  「コメントは実装と一致させる」)\n\n影響とトレードオフ:\nコメントのみの変更で、振る舞いは変わらない。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1149\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AqSXG1HkzHGjKshb7sSNos",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/__tests__/snap-guide-overlay.guide-line.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -6,7 +6,7 @@ import { HorizontalLine, VerticalLine } from \"./guide-lines\";\n \n /*\n  * リサイズで掴んだ辺が揃ったときのガイド線（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。\n- * 線は移動と同じに出し、揃え先との隙間の数値はまだ出さない（docs/06-ui.md）。\n+ * 線はノードの移動と同じに出し、揃え先との隙間の数値は出さない（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。\n  */\n \n test(\"揃った線の数だけガイド線が出る\", () => {",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -198,10 +198,10 @@ export const ArtboardDrag = {\n   },\n \n   /**\n-   * 揃った線に引くガイド線（docs/06-ui.md「artboard の移動」の辺のスナップ）。\n+   * 揃った線に引くガイド線と、揃え先との隙間（docs/06-ui.md「artboard の移動」の辺のスナップ）。\n    *\n    * @param drag 今のドラッグの状態\n-   * @returns 最後に動かした位置で揃った線。動かしていない / 揃った線が無いなら縦横とも `none`\n+   * @returns 最後に動かした位置で揃った線に引く線と隙間（画面上の px）。動かしていない / 揃った線が無いなら縦横とも `none`\n    */\n   snapGuides(drag: ArtboardDrag): SnapGuides {\n     return drag.kind === \"dragging\" ? drag.snapped.guides : SideSnap.NoGuides;",
+          "patchLines": 13,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -87,7 +87,7 @@ export type ArtboardDragControl = Readonly<{\n   }>;\n   /** 運んでいる間の見せかけの位置。離すまで確定しないので描く側だけが使う。 */\n   preview: Option<ArtboardDragPreview>;\n-  /** 運んでいる間に揃った線。離すと出なくなる。 */\n+  /** 運んでいる間に揃った線と、揃え先との隙間。離すと出なくなる。 */\n   snapGuides: SnapGuides;\n }>;\n ",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "c508e6afaeb26f577df1b77685047f81cc40b3e9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-23T15:30:00Z",
+      "subject": "📝 [Documentation]: #1149 SideSnapped を説明する doc に揃え先との隙間を含める",
+      "body": "- ArtboardPointerMove / ArtboardDrag の概要、snapped、snappedAt の概要と\n  @returns、moveTo の @param move を「揃った線に引く線と、揃え先との隙間」\n  に揃えた\n- useArtboardDrag の @returns を同じ書き方に揃えた\n\n背景:\nフェーズ 6 の comment-reviewer の指摘。snapGuides の doc だけを隙間を含む\n形に直し、同じ SideSnapped を作る側・受け取る側の doc が「ガイド線」だけを\n挙げたまま残っていた。\n\n採用理由:\nSideSnapped は SideSnap.toSnapped が作り、各軸の SnapGuide が gapLine を\n持つ。値が隙間を含むのに doc が線だけを挙げると、隙間を持たない値に読める。\n同じ値を指す箇所は語を揃え、1 箇所だけ直した状態を残さない。\n\n代替案:\n- 指摘された箇所(useArtboardDrag の @returns)だけを直す: 同じファイルに\n  同じ値を線だけで書いた doc が残り、食い違いが続く\n\n影響とトレードオフ:\nコメントのみの変更で、振る舞いは変わらない。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1149\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AqSXG1HkzHGjKshb7sSNos",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 9,
+          "patch": "@@ -26,12 +26,12 @@ export type ArtboardGrab = Readonly<{\n /**\n  * ポインタが動いた 1 回分（どちらも画面上の px）。\n  *\n- * 寄せ量とガイド線はポインタの位置から `snappedAt` で求めた 1 回分の答えで、寄せ量は掴んで\n- * からの総量（前回までの寄せ量に足していく差分ではない）。\n+ * 寄せ量・揃った線に引く線・揃え先との隙間はポインタの位置から `snappedAt` で求めた 1 回分の\n+ * 答えで、寄せ量は掴んでからの総量（前回までの寄せ量に足していく差分ではない）。\n  */\n export type ArtboardPointerMove = Readonly<{\n   pointer: Offset;\n-  /** そこで寄せる量と、揃った線に引くガイド線。揃う線が無ければ寄せ量 0・線無し */\n+  /** そこで寄せる量と、揃った線に引く線と、揃え先との隙間。揃う線が無ければ寄せ量 0・線も隙間も無し */\n   snapped: SideSnapped;\n }>;\n \n@@ -53,8 +53,9 @@ export type ArtboardDragPreview = Readonly<{\n \n /**\n  * キャンバス上で artboard を掴んでから離すまでの状態（docs/06-ui.md「キャンバス直接操作」\n- * の artboard の移動）。掴んだものを持つのは離すまで、ポインタの位置と寄せ量・ガイド線（どれも\n- * 画面上の px）を持つのは動かしている間だけ、と状態ごとに持つものが変わるので直和で列挙する。\n+ * の artboard の移動）。掴んだものを持つのは離すまで、ポインタの位置と寄せ量・揃った線に引く線・\n+ * 揃え先との隙間（どれも画面上の px）を持つのは動かしている間だけ、と状態ごとに持つものが変わる\n+ * ので直和で列挙する。\n  *\n  * 「離した直後」の状態は持たない。**掴み口の見出しには飲み込む相手が居ない**ためで（見\n  * 出しは枠の兄弟なので `click` が枠へ上がらない）、無いのに入ると**次のクリックを食べる**。\n@@ -93,7 +94,7 @@ export const ArtboardDrag = {\n    * ポインタが動いた先を反映する。\n    *\n    * @param drag 今のドラッグの状態\n-   * @param move 画面上のポインタの位置と、そこで寄せる量と揃った線\n+   * @param move 画面上のポインタの位置と、そこで寄せる量と、揃った線に引く線と、揃え先との隙間\n    * @returns 閾値を越えていれば運んでいる状態。掴んでいなければそのまま\n    */\n   moveTo(drag: ArtboardDrag, move: ArtboardPointerMove): ArtboardDrag {\n@@ -132,7 +133,7 @@ export const ArtboardDrag = {\n \n   /**\n    * ポインタをそこまで動かしたとき、他の artboard の辺か中心線へ寄せる量と、揃った線に引く\n-   * ガイド線（docs/06-ui.md「キャンバス直接操作」の artboard の移動）。\n+   * 線と、揃え先との隙間（docs/06-ui.md「キャンバス直接操作」の artboard の移動）。\n    *\n    * 行き先の矩形は、今描かれている矩形を「今ずらして描いている量」から「そのポインタまで\n    * 運んだ量」へ付け替えて作る。実測には前回までの運搬ぶんが既に乗っているため。\n@@ -146,8 +147,9 @@ export const ArtboardDrag = {\n    * @param drag `drawn` を描いたときのドラッグの状態\n    * @param pointer 画面上のポインタの位置\n    * @param drawn 運んでいる artboard と揃え先の実測\n-   * @returns 寄せ量とガイド線（画面上の px）。運んでいる artboard に大きさが無い（まだレイアウト\n-   *   されていない）/ 閾値に届く線が無い / 掴んでいないなら寄せ量 0・線無し（`SideSnap.Unsnapped`。\n+   * @returns 寄せ量と、揃った線に引く線と、揃え先との隙間（画面上の px）。運んでいる artboard に\n+   *   大きさが無い（まだレイアウトされていない）/ 閾値に届く線が無い / 掴んでいないなら寄せ量 0・\n+   *   線も隙間も無し（`SideSnap.Unsnapped`。\n    *   掴んでいなければ呼び出し側は測らないので、最後の条件は起点を取り出すための型の上の枝）\n    */\n   snappedAt(",
+          "patchLines": 58,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -101,7 +101,8 @@ export type ArtboardDragControl = Readonly<{\n  *\n  * @param params 揃え先の artboard の並びを引く `document`、倍率を引く表示の状態と、\n  *   離したときに編集を送る先\n- * @returns 掴む手続きと、ポインタを追うハンドラ、運んでいる間の見せかけの位置と、揃った線\n+ * @returns 掴む手続きと、ポインタを追うハンドラ、運んでいる間の見せかけの位置と、揃った線に\n+ *   引く線と、揃え先との隙間\n  */\n export function useArtboardDrag(\n   params: Readonly<{",
+          "patchLines": 10,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "c25750f94d8f8bc8fc691856301f7fff7a9d371c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-23T15:38:56Z",
+      "subject": "🧪 [Tests]: #1149 artboard の移動で倍率を上げても隙間がドキュメント上の px で出ることを固定する",
+      "body": "- 1.2 倍で second を運び、画面上 72 の隙間が「60」で出るテストを足した\n- 等倍のテスト名から「ドキュメント上の px で」を外し、その主張を倍率付きの\n  テストへ移した\n\n背景:\nフェーズ 6 の test-reviewer の指摘。artboard の移動へ渡す view を\nCanvasView.create() に固定しても全件通った。既存のテストは等倍で動かしており、\n画面上の px とドキュメント上の px が一致するので割り戻しを守れていなかった。\n\n採用理由:\nノードの移動の artboard-canvas.snap-gap.test.tsx と同じ形(ctrl + wheel で\n1.2 倍、drawnAt で描かれた矩形を固定)にした。動かすのは 1 回で、その間は\n描き直す前の実測が読まれるので固定の矩形で足りる。view を固定する壊し方で\nこのテストだけが落ちる(期待 60 / 実際 72)ことを確かめた。\n\n代替案:\n- drawnFollowingFrames(snap-artboards.ts)を倍率に対応させる: 1 回しか\n  動かさないテストには不要で、fixture の変更が他のテストへ広がる\n- 等倍のテスト名を残したまま足す: 等倍のテストが守っていない主張を名前に\n  持ち続け、1 テスト 1 振る舞いから外れる\n\n影響とトレードオフ:\nテストのみの変更。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1149\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AqSXG1HkzHGjKshb7sSNos",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 27,
+          "deletions": 2,
+          "patch": "@@ -2,13 +2,15 @@ import { expect, test } from \"vitest\";\n import {\n   artboardHandle,\n   canvasContent,\n+  canvasSurface,\n } from \"@/features/editor/features/canvas/__tests__/canvas-elements\";\n import {\n   movePointer,\n   pressPointer,\n   releasePointer,\n+  wheel,\n } from \"@/features/editor/features/canvas/__tests__/canvas-gesture\";\n-import { renderCanvas, snapGapLabels, snapGuides } from \"./setup\";\n+import { drawnAt, renderCanvas, snapGapLabels, snapGuides } from \"./setup\";\n import { drawnFollowingFrames, setupSelection } from \"./snap-artboards\";\n \n /*\n@@ -32,7 +34,7 @@ test(\"他の artboard の辺に吸い付いている間は、その辺の位置\n   );\n });\n \n-test(\"他の artboard の辺に吸い付いていて、揃え先から離れている間は、揃え先との隙間がドキュメント上の px で出る\", () => {\n+test(\"他の artboard の辺に吸い付いていて、揃え先から離れている間は、揃え先との隙間が出る\", () => {\n   renderCanvas({ selection: setupSelection() });\n   drawnFollowingFrames();\n \n@@ -44,6 +46,29 @@ test(\"他の artboard の辺に吸い付いていて、揃え先から離れて\n   expect(snapGapLabels()).toEqual([\"60\"]);\n });\n \n+test(\"倍率を上げて運んでいる間も、揃え先との隙間はドキュメント上の px で出る\", () => {\n+  renderCanvas({ selection: setupSelection() });\n+  wheel(canvasSurface(), { x: 0, y: -100 }, \"ctrl\");\n+\n+  /*\n+   * 1.2 倍で見ているときの描かれた矩形（200 × 140 が 240 × 168、左 232 が 278.4）。\n+   * 動かすのは 1 回だけで、その間は描き直す前の実測が読まれるので固定の矩形でよい。\n+   */\n+  drawnAt(\"first\", { left: 0, top: 0, width: 240, height: 168 });\n+  drawnAt(\"second\", { left: 278.4, top: 0, width: 240, height: 168 });\n+  drawnAt(\"third\", { left: 556.8, top: 0, width: 240, height: 168 });\n+\n+  /*\n+   * 左辺は 242.4 まで来て `first` の右辺 240 へ吸い付き、上辺は 240 まで下がる。`first` の\n+   * 下辺 168 まで画面上で 72、ドキュメント上で 60。倍率を表示へ渡し忘れると画面上の値（72）が出る。\n+   */\n+  pressPointer(artboardHandle(\"second\"), { x: 0, y: 0 });\n+  movePointer(canvasContent(), { x: -36, y: 240 });\n+\n+  expect(snapGuides()).toHaveLength(1);\n+  expect(snapGapLabels()).toEqual([\"60\"]);\n+});\n+\n test(\"吸い付いたあとにどの線からも遠い位置へ動かし直すと、線が消える\", () => {\n   renderCanvas({ selection: setupSelection() });\n   drawnFollowingFrames();",
+          "patchLines": 56,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-snap-guide.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-artboards.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/domains/session/selection-dig/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/drop-marker/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/drop-position-label/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/range-select-overlay/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/stale-canvas-overlay/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/text-inline-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-space-held/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/services/document-html/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/utils/ElementEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/__tests__/snap-guide-overlay.guide-line.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/__tests__/guide-lines.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/__tests__/snap-guide-overlay.guide-line.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/__tests__/snap-guide-overlay.guide-line.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap-guide.test.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap.test.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/held-drag.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/index.ts",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "status": "kept"
+    }
+  ]
+}
