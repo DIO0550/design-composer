@@ -5,7 +5,7 @@ use super::io::DocumentIoError;
 
 fn is_rejected(raw: &str) -> bool {
     matches!(
-        DocumentFilePath::from_raw(raw),
+        DocumentFilePath::parse(raw),
         Err(DocumentIoError::InvalidPath { .. })
     )
 }
@@ -82,7 +82,7 @@ fn ファイル名にコロンを含むパスは拒否される() {
 #[cfg(unix)]
 #[test]
 fn 拒否したときのメッセージは渡されたパスを含む() {
-    let error = DocumentFilePath::from_raw("/a/b.txt").expect_err("拒否される");
+    let error = DocumentFilePath::parse("/a/b.txt").expect_err("拒否される");
 
     assert!(
         error.message().contains("/a/b.txt"),

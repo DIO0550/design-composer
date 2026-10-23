@@ -11,7 +11,7 @@ use super::io::DocumentIoError;
 ///
 /// `Deserialize` は付けない。tauri はコマンド引数のデシリアライズ失敗を文字列の
 /// `InvokeError` で返すため、TS 側で `invalidPath` ではなく `ipcFailed` に化ける。
-/// 引数は `String` で受け、`from_raw` で `DocumentIoError` として拒否する。
+/// 引数は `String` で受け、`parse` で `DocumentIoError` として拒否する。
 ///
 /// 綴りは正規化せずに保つ。TS は `document-changed` の `path` を開いているパスと
 /// 文字列で比べる(`use-document-reload/index.ts`)ので、綴りを変えると通知が届かなくなる。
@@ -23,7 +23,7 @@ impl DocumentFilePath {
     ///
     /// @returns 検査を通ったパス。相対パス・`..` の要素を含む・ファイル名で終わらない・
     /// ファイル名に `:` を含む・拡張子が `.dcmp` でないときは `InvalidPath`
-    pub fn from_raw(raw: &str) -> Result<Self, DocumentIoError> {
+    pub fn parse(raw: &str) -> Result<Self, DocumentIoError> {
         let path = Path::new(raw);
         if !path.is_absolute() {
             return Err(DocumentIoError::invalid_path(path, "絶対パスではない"));

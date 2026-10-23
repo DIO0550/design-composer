@@ -79,7 +79,7 @@ pub fn watch_document(
     known: State<'_, Arc<KnownContentRegistry>>,
 ) -> Result<(), DocumentIoError> {
     let emitted_path = path.clone();
-    let path = DocumentFilePath::from_raw(&path)?;
+    let path = DocumentFilePath::parse(&path)?;
 
     start(&watchers, Arc::clone(&known), &path, move |content| {
         let payload = DocumentChanged {
@@ -97,7 +97,7 @@ pub fn unwatch_document(
     watchers: State<'_, DocumentWatchers>,
     known: State<'_, Arc<KnownContentRegistry>>,
 ) -> Result<(), DocumentIoError> {
-    let path = DocumentFilePath::from_raw(&path)?;
+    let path = DocumentFilePath::parse(&path)?;
     watchers.unwatch(&path);
     // 記録も破棄する。監視を再開するときに現在の内容を読み直すので、監視していない間に
     // 起きた変更を「把握済み」として持ち越さないようにする。

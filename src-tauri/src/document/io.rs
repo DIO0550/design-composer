@@ -33,7 +33,7 @@ pub fn save(
 
 #[tauri::command]
 pub fn load_document(path: String) -> Result<String, DocumentIoError> {
-    let path = DocumentFilePath::from_raw(&path)?;
+    let path = DocumentFilePath::parse(&path)?;
     load(&path)
 }
 
@@ -43,6 +43,6 @@ pub fn save_document(
     content: String,
     known: State<'_, Arc<KnownContentRegistry>>,
 ) -> Result<(), DocumentIoError> {
-    let path = DocumentFilePath::from_raw(&path)?;
+    let path = DocumentFilePath::parse(&path)?;
     save(known.inner().as_ref(), &path, &content)
 }

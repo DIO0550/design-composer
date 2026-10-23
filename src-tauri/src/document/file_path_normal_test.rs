@@ -11,7 +11,7 @@ use super::file_path::DocumentFilePath;
 #[cfg(unix)]
 #[test]
 fn 拡張子がdcmpの絶対パスは受け付けられる() {
-    let result = DocumentFilePath::from_raw("/a/b.dcmp");
+    let result = DocumentFilePath::parse("/a/b.dcmp");
 
     assert!(result.is_ok());
 }
@@ -19,7 +19,7 @@ fn 拡張子がdcmpの絶対パスは受け付けられる() {
 #[cfg(unix)]
 #[test]
 fn 拡張子が大文字のDCMPでも受け付けられる() {
-    let result = DocumentFilePath::from_raw("/a/b.DCMP");
+    let result = DocumentFilePath::parse("/a/b.DCMP");
 
     assert!(result.is_ok());
 }
@@ -27,7 +27,7 @@ fn 拡張子が大文字のDCMPでも受け付けられる() {
 #[cfg(unix)]
 #[test]
 fn 名前にドット2つを含むだけの要素は親ディレクトリへの移動ではないので受け付けられる() {
-    let result = DocumentFilePath::from_raw("/a/..b.dcmp");
+    let result = DocumentFilePath::parse("/a/..b.dcmp");
 
     assert!(result.is_ok());
 }
@@ -35,7 +35,7 @@ fn 名前にドット2つを含むだけの要素は親ディレクトリへの�
 #[cfg(unix)]
 #[test]
 fn 受け付けたパスは渡された綴りのまま保たれる() {
-    let path = DocumentFilePath::from_raw("/a/./b.dcmp").expect("受け付けられる");
+    let path = DocumentFilePath::parse("/a/./b.dcmp").expect("受け付けられる");
 
     assert_eq!(path.as_os_str(), Path::new("/a/./b.dcmp").as_os_str());
 }
