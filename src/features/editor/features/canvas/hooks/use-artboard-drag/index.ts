@@ -1,6 +1,6 @@
 import { type PointerEvent as ReactPointerEvent, useReducer } from "react";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import { Offset } from "@/domains/unit/offset";
+import type { Offset } from "@/domains/unit/offset";
 import {
   ArtboardDrag,
   type ArtboardDragPreview,
@@ -8,6 +8,10 @@ import {
   type ArtboardSnapMeasure,
 } from "@/features/editor/features/canvas/domains/artboard-drag";
 import type { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import {
+  SideSnap,
+  type SnapGuides,
+} from "@/features/editor/features/canvas/domains/side-snap";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
 import { Option } from "@/utils/Option";
@@ -83,6 +87,8 @@ export type ArtboardDragControl = Readonly<{
   }>;
   /** 運んでいる間の見せかけの位置。離すまで確定しないので描く側だけが使う。 */
   preview: Option<ArtboardDragPreview>;
+  /** 運んでいる間に揃った線。離すと出なくなる。 */
+  snapGuides: SnapGuides;
 }>;
 
 /**
@@ -91,11 +97,11 @@ export type ArtboardDragControl = Readonly<{
  *
  * 運んでいる間はドキュメントを書き換えず、離したときに 1 回だけ編集を送る。運んでいる間の
  * 見た目は `preview` を描く側が使う。他の artboard の辺か中心線の近くでは吸い付く（どれだけ
- * 寄せるかは `ArtboardDrag.snapOffsetAt`。ここが持つのは実測だけ）。
+ * 寄せてどこに線を出すかは `ArtboardDrag.snappedAt`。ここが持つのは実測だけ）。
  *
  * @param params 揃え先の artboard の並びを引く `document`、倍率を引く表示の状態と、
  *   離したときに編集を送る先
- * @returns 掴む手続きと、ポインタを追うハンドラ、運んでいる間の見せかけの位置
+ * @returns 掴む手続きと、ポインタを追うハンドラ、運んでいる間の見せかけの位置と、揃った線
  */
 export function useArtboardDrag(
   params: Readonly<{
@@ -137,10 +143,10 @@ export function useArtboardDrag(
         const drawn = Option.flatMap(ArtboardDrag.grabbed(drag), (grab) =>
           measureDrawn(params.document, grab.name),
         );
-        const snap = Option.isSome(drawn)
-          ? ArtboardDrag.snapOffsetAt(drag, pointer, drawn.value)
-          : Offset.Origin;
-        dispatch({ type: "move", move: { pointer, snap } });
+        const snapped = Option.isSome(drawn)
+          ? ArtboardDrag.snappedAt(drag, pointer, drawn.value)
+          : SideSnap.Unsnapped;
+        dispatch({ type: "move", move: { pointer, snapped } });
       },
       onPointerUp: () => {
         if (Option.isSome(preview)) {
@@ -150,5 +156,6 @@ export function useArtboardDrag(
       },
     },
     preview,
+    snapGuides: ArtboardDrag.snapGuides(drag),
   };
 }

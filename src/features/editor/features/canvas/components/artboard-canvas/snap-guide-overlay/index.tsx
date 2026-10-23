@@ -110,8 +110,8 @@ function Guide({
 }
 
 /**
- * 揃った線に引くガイド線だけを出す（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。見た目は
- * `SnapGuideOverlay` のガイド線と同じで、揃え先との隙間の数値はまだ出さない。
+ * 揃った線に引くガイド線だけを出す。見た目は `SnapGuideOverlay` のガイド線と同じで、揃え先との
+ * 隙間の数値は出さない。
  */
 export function GuideLineOverlay({ guides }: Readonly<{ guides: SnapGuides }>) {
   return (

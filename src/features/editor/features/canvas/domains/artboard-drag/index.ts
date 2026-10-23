@@ -2,7 +2,11 @@ import { Offset } from "@/domains/unit/offset";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { DragThresholdPx } from "@/features/editor/features/canvas/domains/node-drag";
-import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
+import {
+  SideSnap,
+  type SideSnapped,
+  type SnapGuides,
+} from "@/features/editor/features/canvas/domains/side-snap";
 import { Option } from "@/utils/Option";
 
 /**
@@ -22,13 +26,13 @@ export type ArtboardGrab = Readonly<{
 /**
  * ポインタが動いた 1 回分（どちらも画面上の px）。
  *
- * 寄せ量はポインタの位置から `snapOffsetAt` で求めたもので、掴んでからの総量（前回までの
- * 寄せ量に足していく差分ではない）。
+ * 寄せ量とガイド線はポインタの位置から `snappedAt` で求めた 1 回分の答えで、寄せ量は掴んで
+ * からの総量（前回までの寄せ量に足していく差分ではない）。
  */
 export type ArtboardPointerMove = Readonly<{
   pointer: Offset;
-  /** 揃う線へ寄せる量。揃う線が無ければ縦横とも 0 */
-  snap: Offset;
+  /** そこで寄せる量と、揃った線に引くガイド線。揃う線が無ければ寄せ量 0・線無し */
+  snapped: SideSnapped;
 }>;
 
 /**
@@ -49,8 +53,8 @@ export type ArtboardDragPreview = Readonly<{
 
 /**
  * キャンバス上で artboard を掴んでから離すまでの状態（docs/06-ui.md「キャンバス直接操作」
- * の artboard の移動）。掴んだものを持つのは離すまで、ポインタの位置と寄せ量（画面上の
- * px）を持つのは動かしている間だけ、と状態ごとに持つものが変わるので直和で列挙する。
+ * の artboard の移動）。掴んだものを持つのは離すまで、ポインタの位置と寄せ量・ガイド線（どれも
+ * 画面上の px）を持つのは動かしている間だけ、と状態ごとに持つものが変わるので直和で列挙する。
  *
  * 「離した直後」の状態は持たない。**掴み口の見出しには飲み込む相手が居ない**ためで（見
  * 出しは枠の兄弟なので `click` が枠へ上がらない）、無いのに入ると**次のクリックを食べる**。
@@ -62,7 +66,7 @@ export type ArtboardDrag =
       kind: "dragging";
       grab: ArtboardGrab;
       pointer: Offset;
-      snap: Offset;
+      snapped: SideSnapped;
     }>;
 
 export const ArtboardDrag = {
@@ -89,12 +93,12 @@ export const ArtboardDrag = {
    * ポインタが動いた先を反映する。
    *
    * @param drag 今のドラッグの状態
-   * @param move 画面上のポインタの位置と、そこで寄せる量
+   * @param move 画面上のポインタの位置と、そこで寄せる量と揃った線
    * @returns 閾値を越えていれば運んでいる状態。掴んでいなければそのまま
    */
   moveTo(drag: ArtboardDrag, move: ArtboardPointerMove): ArtboardDrag {
     if (drag.kind === "dragging") {
-      return { ...drag, pointer: move.pointer, snap: move.snap };
+      return { ...drag, pointer: move.pointer, snapped: move.snapped };
     }
     if (drag.kind !== "held") {
       return drag;
@@ -106,7 +110,7 @@ export const ArtboardDrag = {
           kind: "dragging",
           grab: drag.grab,
           pointer: move.pointer,
-          snap: move.snap,
+          snapped: move.snapped,
         };
   },
 
@@ -127,8 +131,8 @@ export const ArtboardDrag = {
   },
 
   /**
-   * ポインタをそこまで動かしたとき、他の artboard の辺か中心線へ寄せる量
-   * （docs/06-ui.md「キャンバス直接操作」の artboard の移動）。
+   * ポインタをそこまで動かしたとき、他の artboard の辺か中心線へ寄せる量と、揃った線に引く
+   * ガイド線（docs/06-ui.md「キャンバス直接操作」の artboard の移動）。
    *
    * 行き先の矩形は、今描かれている矩形を「今ずらして描いている量」から「そのポインタまで
    * 運んだ量」へ付け替えて作る。実測には前回までの運搬ぶんが既に乗っているため。
@@ -142,21 +146,21 @@ export const ArtboardDrag = {
    * @param drag `drawn` を描いたときのドラッグの状態
    * @param pointer 画面上のポインタの位置
    * @param drawn 運んでいる artboard と揃え先の実測
-   * @returns 寄せ量（画面上の px）。運んでいる artboard に大きさが無い（まだレイアウトされて
-   *   いない）/ 閾値に届く線が無い / 掴んでいないなら縦横とも 0（掴んでいなければ呼び出し側は
-   *   測らないので、最後の条件は起点を取り出すための型の上の枝）
+   * @returns 寄せ量とガイド線（画面上の px）。運んでいる artboard に大きさが無い（まだレイアウト
+   *   されていない）/ 閾値に届く線が無い / 掴んでいないなら寄せ量 0・線無し（`SideSnap.Unsnapped`。
+   *   掴んでいなければ呼び出し側は測らないので、最後の条件は起点を取り出すための型の上の枝）
    */
-  snapOffsetAt(
+  snappedAt(
     drag: ArtboardDrag,
     pointer: Offset,
     drawn: ArtboardSnapMeasure,
-  ): Offset {
+  ): SideSnapped {
     const grab = ArtboardDrag.grabbed(drag);
     // 大きさの無い実測は原点に返るので、そこから行き先を作ると関係の無い辺へ吸い付く
     const measurable =
       Option.isSome(grab) && CanvasBounds.hasArea(drawn.carried);
     if (!measurable) {
-      return Offset.Origin;
+      return SideSnap.Unsnapped;
     }
     const moving = CanvasBounds.movedBy(
       drawn.carried,
@@ -165,7 +169,7 @@ export const ArtboardDrag = {
         Offset.delta(grab.value.pointerOrigin, pointer),
       ),
     );
-    return SideSnap.toSnapped(SideSnap.create(moving, drawn.stationary)).offset;
+    return SideSnap.toSnapped(SideSnap.create(moving, drawn.stationary));
   },
 
   /**
@@ -194,6 +198,16 @@ export const ArtboardDrag = {
   },
 
   /**
+   * 揃った線に引くガイド線（docs/06-ui.md「artboard の移動」の辺のスナップ）。
+   *
+   * @param drag 今のドラッグの状態
+   * @returns 最後に動かした位置で揃った線。動かしていない / 揃った線が無いなら縦横とも `none`
+   */
+  snapGuides(drag: ArtboardDrag): SnapGuides {
+    return drag.kind === "dragging" ? drag.snapped.guides : SideSnap.NoGuides;
+  },
+
+  /**
    * 離す。掴んでいたものを手放して最初の状態へ戻す。
    *
    * @returns 何も掴んでいない状態
@@ -206,7 +220,7 @@ export const ArtboardDrag = {
 /**
  * 今ずらして描いている画面上の量（ポインタの移動量 + 寄せ量）。
  *
- * 見せる位置（`preview`）と寄せの判定（`snapOffsetAt`）の両方がここから導く。別々に組むと、
+ * 見せる位置（`preview`）と寄せの判定（`snappedAt`）の両方がここから導く。別々に組むと、
  * 片方だけ直したときに見た目と吸い付く位置が食い違う。
  *
  * @param drag 今のドラッグの状態
@@ -214,6 +228,9 @@ export const ArtboardDrag = {
  */
 function carriedScreenOffset(drag: ArtboardDrag): Offset {
   return drag.kind === "dragging"
-    ? Offset.add(Offset.delta(drag.grab.pointerOrigin, drag.pointer), drag.snap)
+    ? Offset.add(
+        Offset.delta(drag.grab.pointerOrigin, drag.pointer),
+        drag.snapped.offset,
+      )
     : Offset.Origin;
 }
