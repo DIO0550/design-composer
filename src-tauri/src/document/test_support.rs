@@ -3,6 +3,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use super::file_path::DocumentFilePath;
+use super::io::DocumentIoError;
 use super::known_content::KnownContentRegistry;
 use super::watch::{self, DocumentWatchers};
 
@@ -51,6 +52,23 @@ pub fn watch_changes(
     })
     .expect("監視を開始できる");
     receiver
+}
+
+/// webview から渡された綴りのまま監視を依頼し、`document-changed` のペイロードを
+/// JSON 文字列にしてチャネルへ流す。
+///
+/// @returns 監視の開始の成否と、ペイロードを受け取るチャネル
+pub fn watch_requested_payloads(
+    watchers: &DocumentWatchers,
+    known: &Arc<KnownContentRegistry>,
+    raw_path: &str,
+) -> (Result<(), DocumentIoError>, Receiver<String>) {
+    let (sender, receiver) = mpsc::channel();
+    let started = watch::start_requested(watchers, Arc::clone(known), raw_path, move |payload| {
+        let json = serde_json::to_string(&payload).expect("ペイロードを JSON にできる");
+        let _ = sender.send(json);
+    });
+    (started, receiver)
 }
 
 /// 次に通知された内容を待って返す。

@@ -8,7 +8,8 @@ use super::known_content::KnownContentRegistry;
 use super::watch::DocumentWatchers;
 
 use super::test_support::{
-    assert_no_change, document_file_path, next_change, watch_changes, TempDir,
+    assert_no_change, document_file_path, next_change, raw_document_path, watch_changes,
+    watch_requested_payloads, TempDir,
 };
 
 #[test]
@@ -101,4 +102,22 @@ fn 監視を止めると変更が通知されなくなる() {
     fs::write(&path, r#"{"version":2}"#).expect("外部からの書き込みができる");
 
     assert_no_change(&changes);
+}
+
+#[test]
+fn 通知のパスは監視を依頼した綴りのまま届く() {
+    let dir = TempDir::new("watch-normal");
+    fs::write(dir.join("document.dcmp"), r#"{"version":1}"#).expect("監視対象を用意できる");
+    let known = Arc::new(KnownContentRegistry::new());
+    let watchers = DocumentWatchers::new();
+    // 正規化すると消える `/./` を綴りに含める
+    let raw = raw_document_path(&dir, "./document.dcmp");
+
+    let (started, payloads) = watch_requested_payloads(&watchers, &known, &raw);
+    started.expect("監視を開始できる");
+    fs::write(dir.join("document.dcmp"), r#"{"version":2}"#).expect("外部からの書き込みができる");
+    let payload: serde_json::Value =
+        serde_json::from_str(&next_change(&payloads)).expect("ペイロードは JSON");
+
+    assert_eq!(payload["path"], raw.as_str());
 }

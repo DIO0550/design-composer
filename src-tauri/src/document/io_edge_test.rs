@@ -5,7 +5,7 @@
 
 use std::fs;
 
-use super::io::{self, load_document, DocumentIoError};
+use super::io::{self, load_document, save_requested, DocumentIoError};
 use super::known_content::KnownContentRegistry;
 
 use super::test_support::{document_file_path, raw_document_path, TempDir};
@@ -113,4 +113,30 @@ fn 相対パスの読み込みは不正なパスを返す() {
     let result = load_document("document.dcmp".to_string());
 
     assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
+}
+
+#[test]
+fn 拡張子がdcmpでない既存のファイルへの保存は不正なパスを返して中身を変えない() {
+    let dir = TempDir::new("edge");
+    fs::write(dir.join("notes.txt"), "secret").expect("中身のあるファイルを用意できる");
+    let known = KnownContentRegistry::new();
+
+    let result = save_requested(&known, &raw_document_path(&dir, "notes.txt"), r#"{"a":1}"#);
+
+    assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
+    assert_eq!(
+        fs::read_to_string(dir.join("notes.txt")).expect("読める"),
+        "secret"
+    );
+}
+
+#[test]
+fn 拡張子がdcmpでない存在しないファイルへの保存はファイルを作らない() {
+    let dir = TempDir::new("edge");
+    let known = KnownContentRegistry::new();
+
+    let result = save_requested(&known, &raw_document_path(&dir, "notes.txt"), r#"{"a":1}"#);
+
+    assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
+    assert!(dir.file_names().is_empty());
 }

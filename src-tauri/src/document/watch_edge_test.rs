@@ -8,7 +8,8 @@ use super::known_content::KnownContentRegistry;
 use super::watch::{self, DocumentWatchers};
 
 use super::test_support::{
-    assert_no_change, document_file_path, next_change, watch_changes, TempDir,
+    assert_no_change, document_file_path, next_change, raw_document_path, watch_changes,
+    watch_requested_payloads, TempDir,
 };
 
 #[test]
@@ -106,6 +107,32 @@ fn 監視していないファイルの停止は何も起こさない() {
     let changes = watch_changes(&watchers, &known, &path);
     fs::write(&path, r#"{"version":2}"#).expect("外部からの書き込みができる");
     assert_eq!(next_change(&changes), r#"{"version":2}"#);
+}
+
+#[test]
+fn 拡張子がdcmpでない既存のファイルは監視されず書き換えても通知されない() {
+    let dir = TempDir::new("watch-edge");
+    fs::write(dir.join("notes.txt"), "v1").expect("監視対象を用意できる");
+    let known = Arc::new(KnownContentRegistry::new());
+    let watchers = DocumentWatchers::new();
+
+    let (result, payloads) =
+        watch_requested_payloads(&watchers, &known, &raw_document_path(&dir, "notes.txt"));
+    fs::write(dir.join("notes.txt"), "v2").expect("外部からの書き込みができる");
+
+    assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
+    assert_no_change(&payloads);
+}
+
+#[test]
+fn 拡張子がdcmpでないファイルの監視の停止は不正なパスを返す() {
+    let dir = TempDir::new("watch-edge");
+    let known = KnownContentRegistry::new();
+    let watchers = DocumentWatchers::new();
+
+    let result = watch::stop_requested(&watchers, &known, &raw_document_path(&dir, "notes.txt"));
+
+    assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
 }
 
 /// 監視対象と同じディレクトリの一時ファイルへ書いてから差し替える。

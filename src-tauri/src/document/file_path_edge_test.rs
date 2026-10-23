@@ -52,6 +52,12 @@ fn dcmpの後ろに別の拡張子が続くファイルは拒否される() {
 
 #[cfg(unix)]
 #[test]
+fn 拡張子がdcmpで始まるだけのファイルは拒否される() {
+    assert!(is_rejected("/a/b.dcmpx"));
+}
+
+#[cfg(unix)]
+#[test]
 fn 末尾がスラッシュのパスは拒否される() {
     assert!(is_rejected("/a/b.dcmp/"));
 }
