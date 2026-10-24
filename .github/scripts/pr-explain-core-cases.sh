@@ -1446,8 +1446,8 @@ const cases = [
     expected: "tok-kw",
   },
   {
-    label: "色分け: .md と .rs は規則が無く、行全体が色の無い 1 字句になる",
-    actual: () => ["a.md", "a.rs"].map((path) => lineTokensOf(path, ["const a = f(1);"])[0].map((token) => [token.cls, token.value])),
+    label: "色分け: .md と .toml は規則が無く、行全体が色の無い 1 字句になる",
+    actual: () => ["a.md", "a.toml"].map((path) => lineTokensOf(path, ["const a = f(1);"])[0].map((token) => [token.cls, token.value])),
     expected: [[[null, "const a = f(1);"]], [[null, "const a = f(1);"]]],
   },
   {
