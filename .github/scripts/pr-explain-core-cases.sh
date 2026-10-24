@@ -1511,6 +1511,41 @@ const cases = [
     expected: ["0xff", "1_000u64", "1.5f32", "0", "10"],
   },
   {
+    label: "色分け: Rust の 1e10_f64 は指数の後ろの _ を読まず、1e10 で切れる",
+    actual: () => lineTokensOf("a.rs", ["f(1e10_f64);"])[0].filter((token) => token.cls === "tok-num").map((token) => token.value),
+    expected: ["1e10"],
+  },
+  {
+    label: "色分け: Rust の指数 1e10 / 2.5E-3 は 1 つの数値になる",
+    actual: () => lineTokensOf("a.rs", ["f(1e10, 2.5E-3);"])[0].filter((token) => token.cls === "tok-num").map((token) => token.value),
+    expected: ["1e10", "2.5E-3"],
+  },
+  {
+    label: "色分け: Rust の 8 進 0o17 / 2 進 0b1010 は 1 つの数値になる",
+    actual: () => lineTokensOf("a.rs", ["f(0o17, 0b1010);"])[0].filter((token) => token.cls === "tok-num").map((token) => token.value),
+    expected: ["0o17", "0b1010"],
+  },
+  {
+    label: "色分け: Rust の 1u128 は接尾辞まで 1 つの数値になる",
+    actual: () => lineTokensOf("a.rs", ["f(1u128);"])[0].filter((token) => token.cls === "tok-num").map((token) => token.value),
+    expected: ["1u128"],
+  },
+  {
+    label: "色分け: Rust の文字リテラル '\\u{1F3A8}' / '\\x7f' は文字列になる",
+    actual: () => ["'\\u{1F3A8}'", "'\\x7f'"].map((word) => colorOf("a.rs", ["let c = ['\\u{1F3A8}', '\\x7f'];"], { word })),
+    expected: ["tok-str", "tok-str"],
+  },
+  {
+    label: "色分け: Rust の属性 #[serde::rename は :: を含むパスまでがキーワードになる",
+    actual: () => colorOf("a.rs", ["#[serde::rename(x)]"], { word: "#[serde::rename" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: Rust のマクロ thread_local!{ の thread_local! は関数になる",
+    actual: () => colorOf("a.rs", ["thread_local!{ static A: u8 = 1; }"], { word: "thread_local!" }),
+    expected: "tok-fn",
+  },
+  {
     label: "色分け: Rust の基本型 u64 / str / bool は型、self / Self はキーワードになる",
     actual: () => ["u64", "str", "bool", "self", "Self"].map((word) => colorOf("a.rs", ["fn f(&self, a: u64, b: &str) -> Self { bool }"], { word })),
     expected: ["tok-type", "tok-type", "tok-type", "tok-kw", "tok-kw"],
@@ -1537,8 +1572,8 @@ const cases = [
   },
   {
     label: "色分け: Rust の /* は次の行の */ で閉じ、その後ろの let はキーワードになる",
-    actual: () => colorOf("a.rs", ["/* a", "b */ let x = 1;"], { line: 1, word: "let" }),
-    expected: "tok-kw",
+    actual: () => [[0, "/* a"], [1, "b */"], [1, "let"]].map(([line, word]) => colorOf("a.rs", ["/* a", "b */ let x = 1;"], { line, word })),
+    expected: ["tok-com", "tok-com", "tok-kw"],
   },
   {
     label: "色分け: Rust の文字リテラル '\"' の中の \" は文字列を開かず、後ろの let はキーワードに戻る",
