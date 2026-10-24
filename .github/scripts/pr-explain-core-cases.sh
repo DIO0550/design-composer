@@ -3,7 +3,7 @@
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
 # 叩いて、地図と解説の合流・振る舞いの節の並び・技術の手引きの節・用語の印・抜粋の強調・出てくる場所のコミットへの
-# 届き方・今の節・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、
+# 届き方・今の節・文字の大きさの段・倍率を変えたあとの読む線の位置・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、
 # `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・解説の形の道筋(impact・primers・terms・抜粋の
 # 強調)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを
 # 1 コマンドで確かめる。
@@ -177,7 +177,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
+const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -1052,18 +1052,78 @@ const cases = [
   },
   {
     label: "今の節は、上端が読む線(上端から 140px。140 を含む)より上に来た最後の節",
-    actual: () => TopicScroll.currentOf([-400, 20, 140, 141]),
+    actual: () => TopicScroll.currentOf([-400, 20, 140, 141], 1),
     expected: 2,
   },
   {
     label: "どの節の上端も読む線(140px)より下なら、今の節は最初の節",
-    actual: () => TopicScroll.currentOf([200, 500, 900]),
+    actual: () => TopicScroll.currentOf([200, 500, 900], 1),
     expected: 0,
   },
   {
     label: "節が無ければ、今の節は null",
-    actual: () => TopicScroll.currentOf([]),
+    actual: () => TopicScroll.currentOf([], 1),
     expected: null,
+  },
+  {
+    label: "今の節は、上端が読む線(140 × 倍率。ちょうどを含む)まで来た最後の節",
+    actual: () => TopicScroll.currentOf([-400, 20, 210, 211], 1.5),
+    expected: 2,
+  },
+  {
+    label: "倍率が 1 より小さいと、読む線も上がる",
+    actual: () => TopicScroll.currentOf([-400, 20, 130], 0.9),
+    expected: 1,
+  },
+  {
+    label: "倍率を上げたあと、読んでいた点(節の上端から 1/4)が新しい読む線に来る",
+    actual: () => TopicScroll.keptTopOf({ before: { top: 40, height: 400, zoom: 1 }, after: { height: 620, zoom: 1.5 } }),
+    expected: 55,
+  },
+  {
+    label: "倍率を下げたあとも、読んでいた点が新しい読む線に来る",
+    actual: () => TopicScroll.keptTopOf({ before: { top: 60, height: 600, zoom: 1.5 }, after: { height: 410, zoom: 1 } }),
+    expected: 37.5,
+  },
+  {
+    label: "読む線が節の下の隙間にあったときは、節の下端を読む線に置く",
+    actual: () => TopicScroll.keptTopOf({ before: { top: -300, height: 400, zoom: 1 }, after: { height: 450, zoom: 1.5 } }),
+    expected: -240,
+  },
+  {
+    label: "節の下端がちょうど読む線にあったときも、節の下端を読む線に置く",
+    actual: () => TopicScroll.keptTopOf({ before: { top: -260, height: 400, zoom: 1 }, after: { height: 450, zoom: 1.5 } }),
+    expected: -240,
+  },
+  {
+    label: "最初の節がまだ読む線に来ていないときは、読む線からの離れを節の高さとの割合で保つ",
+    actual: () => TopicScroll.keptTopOf({ before: { top: 300, height: 400, zoom: 1 }, after: { height: 620, zoom: 1.5 } }),
+    expected: 458,
+  },
+  {
+    label: "開いたときの文字の大きさは 100%",
+    actual: () => TextSize.Initial,
+    expected: 100,
+  },
+  {
+    label: "文字の大きさは、+ で 1 段大きく、− で 1 段小さくなる",
+    actual: () => [TextSize.larger(120), TextSize.smaller(120)],
+    expected: [130, 110],
+  },
+  {
+    label: "文字の大きさは、90% から + を押し続けると 150% で止まる",
+    actual: () => Array.from({ length: 7 }).reduce((sizes) => [...sizes, TextSize.larger(sizes.at(-1))], [90]).slice(1),
+    expected: [100, 110, 120, 130, 140, 150, null],
+  },
+  {
+    label: "文字の大きさは、150% から大きく・90% から小さくはできない",
+    actual: () => [TextSize.larger(150), TextSize.smaller(90)],
+    expected: [null, null],
+  },
+  {
+    label: "文字の大きさは、端の 1 段手前からなら端まで動かせる",
+    actual: () => [TextSize.larger(140), TextSize.smaller(100)],
+    expected: [150, 90],
   },
   {
     label: "primers がオブジェクトの解説は、理由を primers の型として解説なしにする",
