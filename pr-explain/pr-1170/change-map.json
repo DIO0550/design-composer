@@ -1,0 +1,458 @@
+{
+  "version": 2,
+  "pr": 1170,
+  "headBranch": "claude/magical-cannon-tm0r7q",
+  "baseBranch": "main",
+  "mergeBase": "16489bcc3d9f71cc77d43723d83a8dd8120b110e",
+  "head": "079bbdd839c4ca193bf53db01cbdd905d4647bb1",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/px/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "status": "M",
+          "oldPath": null,
+          "additions": 152,
+          "deletions": 29,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 75,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "cce9ac5a509830f01ecd7d467f69d80d7e63426f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T15:18:24Z",
+      "subject": "✨ [New Feature]: #1164 PR 解説ページの上部バーに文字の大きさの −/+ を置く",
+      "body": "- 上部バーに文字の大きさの −/+ と % 表示を置き、90〜150% を 10% 刻みで切り替える\n- 倍率は CSS の zoom で、箱の図(.graph-canvas)を除く各画面の格子の子に掛ける\n- 倍率を変えても、読んでいた節の点が読む線に残るよう本文をずらす(TopicScroll.keptTopOf / TopicColumns.keepReadingOf)\n- 今の節の判定(TopicScroll.currentOf)と follow に倍率を渡し、読む線を 140 × 倍率で比べる\n- 760px 以下の本文末尾の余白を倍率で割って求める\n- 図の −/+ と見た目の宣言を共有し、図に重ねるための指定と :disabled は分ける\n- 固定スクリプトの CSP の sha256 を計算し直す\n\n背景:\nブラウザの拡大(⌘+)はドメイン単位で効いて覚えられるため、*.github.io の\n他のページ(他の PR の解説ページを含む)まで一緒に大きくなる。オーナーから\n「html 単体で大きくしたい」と指摘があった。文字の大きさは px 固定の\nfont-size が 196 箇所あり、ページ内に倍率を変える手段が無かった。\n\n採用理由:\n196 箇所を書き換えずに済み、余白・固定の高さも一緒に拡大される CSS の zoom を、\n格子そのものではなく格子の子に掛けた。格子に掛けるとパネルの縁のドラッグと\n図のドラッグの座標がずれ、図の拡大と二重になる(150% で実測)。\n倍率の持ち主は Frame.mount の整数の percent 1 つで、CSS 変数はそこから書くだけ。\n画面側は getComputedStyle(main).zoom を派生値として読む。\n倍率は覚えない。localStorage もオリジン単位で、覚えると他の PR のページにも効き、\n今回の不満と同じ形になるため(オーナー決定)。\n押したあとに読む位置を保つのは、何もしないと scrollTop が同じ px のまま本文が\n伸びて、読んでいた節が流れ目次も前の節を指すため(実測で 766px ずれた)。\n\n影響とトレードオフ:\n上部バーに操作が増えるので、1440px のテスト画面は 1 段から 2 段になり、\n1280px のテスト・構造マップは 2 段のまま少し高くなる。\n760px 以下ではページ全体がスクロールするので、上部バーも一緒に流れる。\n見えていない画面と手引きの隠れたタブは、倍率を変えても読む位置を保たない。\n確認は Chromium だけで、Safari / Firefox の zoom の座標は見ていない。\n\n代替案:\n- .screens 全体に zoom: パネルの縁 50px のドラッグが +154px、図のドラッグも見た目で約 73% に縮む\n- font-size を calc(Npx * var(--scale)) / rem に: 196 箇所の書き換え。px 固定の height と図の箱幅が文字だけ大きくなって崩れる\n- transform: scale: 配置を組み直さず、スクロールの範囲と幅が合わない\n- 倍率を変えたあと follow を呼ぶだけ / 今の節へ sendTo: 前者は読んでいた点が流れ、後者は長い節で読んでいた位置を失う\n- .zoom-controls をそのまま上部バーで使う: margin-left: auto で右へ寄り、:disabled が図の操作にも掛かる\n- ⌘+ / ⌘− を横取りする: ブラウザ自身の拡大を奪う\n\n参考:\nIssue #1164 の計画コメント(却下案 A〜M と実測値)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015GHGAV8D4m1XJW7AnGZx7G",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "status": "M",
+          "oldPath": null,
+          "additions": 144,
+          "deletions": 25,
+          "patch": "@@ -2,7 +2,7 @@\n <html lang=\"ja\">\n <head>\n <meta charset=\"utf-8\">\n-<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-N2x3itMdDpM/FAYwVbrgjwb2XNeG4/PiMIXQtD0u/jM='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n+<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-ajHWBULXbZmZTITa3pJssV0bWA6qWr+TdqLsWyTkJ14='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n <title>PR 解説</title>\n <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n@@ -77,6 +77,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }\n .band { padding: 7px 14px; font-size: 12px; line-height: 1.6; color: var(--mod); background: var(--warn-tint); border-bottom: 1px solid var(--line); white-space: normal; }\n .screens { min-height: 0; position: relative; }\n .screen { height: 100%; display: grid; min-height: 0; }\n+.screen > :not(.graph-canvas) { zoom: var(--text-size-ratio, 1); }\n .screen[hidden] { display: none; }\n .panel { position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--panel); }\n .panel.is-left { border-right: 1px solid var(--line); }\n@@ -283,12 +284,14 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }\n .canvas-hint { font-size: 11px; color: var(--ink-3); white-space: nowrap; }\n .legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 7px 12px; min-width: 0; flex: 0 1 auto; background: rgba(251, 250, 247, .94); border: 1px solid var(--line); border-radius: 8px; font-size: 11px; color: var(--ink-2); white-space: nowrap; }\n .legend > span { display: flex; align-items: center; gap: 5px; }\n-.zoom-controls { flex: none; margin-left: auto; pointer-events: auto; white-space: nowrap; display: flex; align-items: center; gap: 2px; padding: 3px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }\n-.zoom-controls button { height: 26px; min-width: 28px; padding: 0 9px; border: none; background: transparent; border-radius: 5px; cursor: pointer; font-size: 11px; color: var(--ink); }\n-.zoom-controls button.is-step { font-size: 15px; padding: 0; }\n-.zoom-controls button:hover { background: var(--track); }\n-.zoom-percent { min-width: 44px; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--ink-2); }\n+.zoom-controls, .text-size-controls { flex: none; white-space: nowrap; display: flex; align-items: center; gap: 2px; padding: 3px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }\n+.zoom-controls { margin-left: auto; pointer-events: auto; }\n+.zoom-controls button, .text-size-controls button { height: 26px; min-width: 28px; padding: 0 9px; border: none; background: transparent; border-radius: 5px; cursor: pointer; font-size: 11px; color: var(--ink); }\n+.zoom-controls button.is-step, .text-size-controls button.is-step { font-size: 15px; padding: 0; }\n+.zoom-controls button:hover, .text-size-controls button:hover { background: var(--track); }\n+.zoom-percent, .text-size-percent { min-width: 44px; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--ink-2); }\n .zoom-sep { width: 1px; height: 14px; background: var(--line); margin: 0 2px; }\n+.text-size-controls button:disabled { opacity: .4; cursor: default; }\n .graph-container { position: absolute; border-radius: 14px; background: rgba(255, 255, 255, .5); border: 1px solid var(--line-strong); cursor: pointer; transition: opacity .2s, box-shadow .2s; }\n .graph-container.is-picked { border-color: var(--accent); background: rgba(47, 91, 234, .05); box-shadow: 0 0 0 1px var(--accent), 0 0 0 6px rgba(47, 91, 234, .12); }\n .graph-container.is-dim { opacity: .55; }\n@@ -768,7 +771,9 @@ button.change-item:hover { background: var(--track); }\n   .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]):not([hidden]) { display: block; height: auto; }\n   .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) > .panel.is-left { display: none; }\n   .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) > .stage { overflow: visible; container-type: normal; }\n-  .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) .topic-body { padding-inline: 16px; gap: 44px; }\n+  /* コンテナを外すので `100cqh` は表示領域の高さを倍率の掛かる前の px で返す。倍率で割って欄の中の px に直す\n+     (広い幅の `.topic-body` は欄の中で倍率込みの高さが返るので割らない)。 */\n+  .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) .topic-body { padding-inline: 16px; gap: 44px; padding-bottom: calc(100cqh / var(--text-size-ratio, 1) - 140px); }\n   .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) .topic-gist { grid-template-columns: minmax(0, 1fr); gap: 4px; }\n   .screen[data-screen=\"primer\"] > .primer-tablist { position: sticky; top: 0; z-index: 2; background: var(--bg); height: 44px; }\n   /* 上 12px + 名前の行 20px + 下 11px に、並びの下の線 1px を足して 44px。横の余白だけを広い幅の 18px から詰める。 */\n@@ -1431,6 +1436,39 @@ button.change-item:hover { background: var(--track); }\n   const Screens = Object.freeze({ Map: \"map\", Story: \"story\", Test: \"test\", Impact: \"impact\", Primer: \"primer\" });\n   const isScreen = (value) => Object.values(Screens).includes(value);\n \n+  /**\n+   * 図を除く画面の文字の大きさ。percent(整数)で持ち、90〜150% を 10 刻みで選ぶ。開くたびに 100% から始める。\n+   *\n+   * 覚える形にはしない。localStorage はオリジン単位なので、ほかの PR のページと値が混ざる。\n+   */\n+  const TextSize = (() => {\n+    const Steps = Object.freeze([90, 100, 110, 120, 130, 140, 150]);\n+    const stepAfter = (percent, offset) => {\n+      const next = Steps[Steps.indexOf(percent) + offset];\n+      return next === undefined ? null : next;\n+    };\n+    return Object.freeze({\n+      Steps,\n+      Initial: 100,\n+      /**\n+       * @param percent 今の文字の大きさ\n+       * @returns 1 段大きい文字の大きさ。今が最大(150)なら null\n+       */\n+      larger: (percent) => stepAfter(percent, 1),\n+      /**\n+       * @param percent 今の文字の大きさ\n+       * @returns 1 段小さい文字の大きさ。今が最小(90)なら null\n+       */\n+      smaller: (percent) => stepAfter(percent, -1),\n+      /**\n+       * 文字の大きさを、CSS 変数 `--text-size-ratio` へ書く倍率にする。\n+       * @param percent 文字の大きさ\n+       * @returns 倍率の文字列(110 なら `\"1.1\"`)\n+       */\n+      ratioOf: (percent) => String(percent / 100),\n+    });\n+  })();\n+\n   /** どの画面を開くか。 */\n   const ScreenChoice = Object.freeze({\n     Screens,\n@@ -1640,19 +1678,31 @@ button.change-item:hover { background: var(--track); }\n \n   /** 振る舞いと技術の手引きの画面の「今の節」。本文のスクロールの位置から、目次と右の欄が指す節を決める。 */\n   const TopicScroll = (() => {\n-    // 読む線。本文の末尾には「欄の高さ − 読む線」の余白を CSS で取ってあり(`.topic-body`)、どの節も読む線まで送れる。\n+    // 読む線。本文の欄の CSS px で 140(見た目では 140 × 文字の倍率)。本文の末尾には「欄の高さ − 読む線」の余白を CSS で取ってあり(`.topic-body`)、どの節も読む線まで送れる。\n     const ReadingLine = 140;\n     return Object.freeze({\n       /**\n-       * 読む線(スクロールする領域の上端から 140px)より上に来た最後の節を、今の節にする。\n-       * @param tops 節の上端の、スクロールする領域の上端からの距離(節の順)\n-       * @returns 今の節の添字。上端が読む線(140 を含む)まで来た最後の節で、どれも来ていなければ最初の節。節が無ければ null\n+       * 読む線(スクロールする領域の上端から、見た目で 140 × 倍率 px)より上に来た最後の節を、今の節にする。\n+       * @param tops 節の上端の、スクロールする領域の上端からの距離(見た目の px・節の順)\n+       * @param zoom 本文の欄に掛かっている文字の倍率\n+       * @returns 今の節の添字。上端が読む線(140 × 倍率 を含む)まで来た最後の節で、どれも来ていなければ最初の節。節が無ければ null\n        */\n-      currentOf: (tops) => {\n+      currentOf: (tops, zoom) => {\n         if (tops.length === 0) return null;\n-        const passed = tops.findLastIndex((top) => top <= ReadingLine);\n+        const passed = tops.findLastIndex((top) => top <= ReadingLine * zoom);\n         return passed < 0 ? 0 : passed;\n       },\n+      /**\n+       * 倍率を変える前に読む線にあった今の節の点を、変えたあとの読む線へ置くときの、節の上端の位置を求める。\n+       * 点は節の高さに対する割合で持ち、読む線が節の下の隙間にあったときは節の下端(割合 1)にする。\n+       * @param before 変える前の節の上端(見た目の px)・高さ(見た目の px)・倍率\n+       * @param after 変えたあとの節の高さ(見た目の px)・倍率\n+       * @returns 変えたあとの節の上端の、スクロールする領域の上端からの距離(見た目の px)\n+       */\n+      keptTopOf: ({ before, after }) => {\n+        const share = Math.min((ReadingLine * before.zoom - before.top) / before.height, 1);\n+        return ReadingLine * after.zoom - share * after.height;\n+      },\n     });\n   })();\n \n@@ -2774,7 +2824,7 @@ button.change-item:hover { background: var(--track); }\n   })();\n \n   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */\n-  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target });\n+  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target });\n   if (typeof document === \"undefined\") {\n     globalThis.prExplainCore = core;\n     return;\n@@ -5559,6 +5609,23 @@ button.change-item:hover { background: var(--track); }\n       const dot = topic.dotTone === null ? [] : [el(\"span\", { class: \"status-dot\", \"data-tone\": topic.dotTone })];\n       return [el(\"span\", { class: \"row-sub\", text: topic.tocEyebrow }), el(\"span\", { class: \"change-head\" }, [...dot, el(\"span\", { class: \"row-title prose\" }, topic.labelPartsOf())])];\n     };\n+    /** 本文の欄に掛かっている文字の倍率。子孫の computed `zoom` は 1 を返すので、`zoom` を掛けた本文の欄から読む。 */\n+    const zoomOf = (main) => Number(getComputedStyle(main).zoom);\n+    /** スクロールしているのがページ全体のときの、その上端(0)と送り方。 */\n+    const pageArea = Object.freeze({ topOf: () => 0, scrollBy: (distance) => window.scrollBy(0, distance) });\n+    /** スクロールしているのが本文の欄のときの、その上端と送り方。`scrollTop` は欄の中の CSS px なので倍率で割る。 */\n+    const columnAreaOf = (main) => Object.freeze({\n+      topOf: () => main.getBoundingClientRect().top,\n+      scrollBy: (distance, zoom) => {\n+        main.scrollTop += distance / zoom;\n+      },\n+    });\n+    /**\n+     * いまスクロールしている領域。狭い幅かどうかは `@media` が本文の欄の `overflow` で決めるので、その結果を読む。\n+     *\n+     * `matchMedia` で幅を見ると `@media` の 760 を JS に写すことになり、`scrollHeight > clientHeight` は本文の量で答えが変わる。\n+     */\n+    const readingAreaOf = (main) => (getComputedStyle(main).overflowY === \"visible\" ? pageArea : columnAreaOf(main));\n \n     return Object.freeze({\n       /**\n@@ -5573,7 +5640,8 @@ button.change-item:hover { background: var(--track); }\n        *   - `sideBlocksOf` 右の欄と畳んだ欄の中身を返す。呼ぶたびに新しく作る\n        * @param emptySide 節が無いときの右の欄の文\n        * @returns `articles`(節の要素)・`toc`(目次の欄。節が無ければ空の文)・`inlineHolders`(畳んだ欄の中身を入れる要素)・\n-       *   `side`(右の欄)と、`follow(top)`(スクロールに合わせて今の節を決め直す)・`sendTo(index)`(節へ送る)・`render()`(描き直す)\n+       *   `side`(右の欄)と、`follow(top, zoom)`(スクロールに合わせて今の節を決め直す)・`sendTo(index)`(節へ送る)・`render()`(描き直す)・\n+       *   `currentArticle()`(今の節の要素。節が 0 件なら null)\n        */\n       create: ({ topics, emptySide }) => {\n         let current = topics.length === 0 ? null : 0;\n@@ -5611,21 +5679,24 @@ button.change-item:hover { background: var(--track); }\n         /**\n          * スクロールに合わせて今の節を決め直す。変わったときだけ描き直す。\n          * @param top スクロールしている領域の上端の、表示領域の上端からの距離\n+         * @param zoom 本文の欄に掛かっている文字の倍率\n          */\n-        const follow = (top) => {\n-          const next = TopicScroll.currentOf(articles.map((article) => article.getBoundingClientRect().top - top));\n+        const follow = (top, zoom) => {\n+          const next = TopicScroll.currentOf(articles.map((article) => article.getBoundingClientRect().top - top), zoom);\n           if (next === current) return;\n           current = next;\n           render();\n         };\n \n+        const currentArticle = () => (current === null ? null : articles[current]);\n+\n         render();\n-        return { articles, toc, inlineHolders, side, follow, sendTo, render };\n+        return { articles, toc, inlineHolders, side, follow, sendTo, render, currentArticle };\n       },\n       /**\n        * 本文の欄とページ全体のスクロールを `follow` へ渡す。\n        * @param main 本文の欄(`main.stage`)\n-       * @param follow スクロールしている領域の上端の位置を受け取る\n+       * @param follow スクロールしている領域の上端の位置と、本文の欄に掛かっている文字の倍率を受け取る\n        */\n       subscribe: ({ main, follow }) => {\n         const isShown = () => {\n@@ -5633,12 +5704,34 @@ button.change-item:hover { background: var(--track); }\n           return screen !== null && !screen.hidden;\n         };\n         // スクロールしているのが本文の欄(広い幅)かページ全体(狭い幅)かは CSS の `@media` が決めるので、イベントの出どころで見分ける。\n-        main.addEventListener(\"scroll\", () => follow(main.getBoundingClientRect().top), { passive: true });\n+        main.addEventListener(\"scroll\", () => follow(columnAreaOf(main).topOf(), zoomOf(main)), { passive: true });\n         // ページ全体のスクロールは、その画面が隠れているあいだはほかの画面のものなので見ない。\n         window.addEventListener(\"scroll\", () => {\n-          if (isShown()) follow(0);\n+          if (isShown()) follow(pageArea.topOf(), zoomOf(main));\n         }, { passive: true });\n       },\n+      /**\n+       * 文字の倍率を変えるあいだ、今の節の読んでいた点を読む線に残す包みを作る。\n+       * @param main 本文の欄(`main.stage`)\n+       * @param currentColumns 今の節の 3 列(`create` の戻り値)を返す\n+       * @returns `keepReading(apply)`。`apply` で倍率を変え、今の節を読む線へ送り直して今の節を決め直す\n+       */\n+      keepReadingOf: ({ main, currentColumns }) => (apply) => {\n+        const article = currentColumns().currentArticle();\n+        if (article === null) {\n+          apply();\n+          return;\n+        }\n+        const area = readingAreaOf(main);\n+        const beforeRect = article.getBoundingClientRect();\n+        const before = { top: beforeRect.top - area.topOf(), height: beforeRect.height, zoom: zoomOf(main) };\n+        apply();\n+        const afterRect = article.getBoundingClientRect();\n+        const after = { height: afterRect.height, zoom: zoomOf(main) };\n+        area.scrollBy(afterRect.top - area.topOf() - TopicScroll.keptTopOf({ before, after }), after.zoom);\n+        // ずらす量が 0 のときや、先頭・末尾で止まったときはスクロールのイベントが来ないので、ここで決め直す。\n+        currentColumns().follow(area.topOf(), after.zoom);\n+      },\n     });\n   })();\n \n@@ -5797,11 +5890,13 @@ button.change-item:hover { background: var(--track); }\n \n     body.replaceChildren(...ledeOfImpact(), ...columns.articles);\n     TopicColumns.subscribe({ main, follow: columns.follow });\n+    const keepReading = TopicColumns.keepReadingOf({ main, currentColumns: () => columns });\n \n     return {\n       summary: [],\n       controls: [],\n       tablist: null,\n+      keepReading,\n       left: panelOf(\"left\", [panelHead(\"目次\", \"変わった → 変わらない\"), columns.toc]),\n       main,\n       right: panelOf(\"right\", [panelHead(\"根拠\", \"テストと仕組み\"), columns.side]),\n@@ -6071,9 +6166,10 @@ button.change-item:hover { background: var(--track); }\n     left.replaceChildren(el(\"div\", { class: \"panel-head\" }, [el(\"span\", { class: \"panel-title\", text: \"目次\" }), tocNote]), ...tabs.map((tab) => parts[tab].columns.toc));\n     right.replaceChildren(panelHead(PrimerSideTitle, \"\"), ...tabs.map((tab) => parts[tab].columns.side));\n     renderTab();\n-    TopicColumns.subscribe({ main, follow: (top) => parts[currentTab].columns.follow(top) });\n+    TopicColumns.subscribe({ main, follow: (top, zoom) => parts[currentTab].columns.follow(top, zoom) });\n+    const keepReading = TopicColumns.keepReadingOf({ main, currentColumns: () => parts[currentTab].columns });\n \n-    return { ...screenParts, tablist: el(\"div\", { class: \"primer-tablist\", role: \"tablist\", \"aria-label\": \"技術の種類\" }, tabButtons) };\n+    return { ...screenParts, tablist: el(\"div\", { class: \"primer-tablist\", role: \"tablist\", \"aria-label\": \"技術の種類\" }, tabButtons), keepReading };\n   };\n \n   const ScreenBuilders = { map: MapScreen, story: StoryScreen, test: TestScreen, impact: ImpactScreen, primer: PrimerScreen };\n@@ -6180,10 +6276,33 @@ button.change-item:hover { background: var(--track); }\n         PanelResizer.attach({ screen, grid, panels: parts.right === null ? { left: parts.left } : { left: parts.left, right: parts.right } });\n         return grid;\n       });\n+      const screens = el(\"div\", { class: \"screens\" }, sections);\n+      // 文字の大きさの持ち主はこの整数の percent だけで、CSS 変数・% の表示・端の `disabled` はここから描く。\n+      let textSize = TextSize.Initial;\n+      const textSizePercent = el(\"span\", { class: \"text-size-percent\" });\n+      /** 文字の大きさを 1 段変える。読んでいた節を読む線に残せる画面では、その包みの中で変える。 */\n+      const stepTextSize = (next) => {\n+        if (next === null) return;\n+        const apply = () => applyTextSize(next);\n+        const keepReading = built[current].keepReading;\n+        if (keepReading === undefined) apply();\n+        else keepReading(apply);\n+      };\n+      const smallerButton = pressable(\"button\", { class: \"is-step\", title: \"文字を小さく\", text: \"−\" }, [], () => stepTextSize(TextSize.smaller(textSize)));\n+      const largerButton = pressable(\"button\", { class: \"is-step\", title: \"文字を大きく\", text: \"+\" }, [], () => stepTextSize(TextSize.larger(textSize)));\n+      const applyTextSize = (percent) => {\n+        textSize = percent;\n+        screens.style.setProperty(\"--text-size-ratio\", TextSize.ratioOf(percent));\n+        textSizePercent.textContent = `${percent}%`;\n+        smallerButton.disabled = TextSize.smaller(percent) === null;\n+        largerButton.disabled = TextSize.larger(percent) === null;\n+      };\n+      applyTextSize(TextSize.Initial);\n+      const textSizeControls = el(\"div\", { class: \"text-size-controls\", role: \"group\", \"aria-label\": \"文字の大きさ\" }, [smallerButton, textSizePercent, largerButton]);\n       root.replaceChildren(\n-        el(\"header\", { class: \"top\" }, [el(\"span\", { class: \"repo\", text: RepoName }), el(\"nav\", { class: \"segmented\", \"aria-label\": \"画面\" }, tabs), el(\"div\", { class: \"top-main\" }, [branch, summary]), controls, linksOf(pr, issue)]),\n+        el(\"header\", { class: \"top\" }, [el(\"span\", { class: \"repo\", text: RepoName }), el(\"nav\", { class: \"segmented\", \"aria-label\": \"画面\" }, tabs), el(\"div\", { class: \"top-main\" }, [branch, summary]), controls, textSizeControls, linksOf(pr, issue)]),\n         el(\"div\", { class: \"bands\" }, bandTextsOf(explained).map((text) => el(\"div\", { class: \"band\", role: \"status\", text }))),\n-        el(\"div\", { class: \"screens\" }, sections),\n+        screens,\n       );\n       let current = null;\n       const show = (screen) => {",
+          "patchLines": 298,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "41ec937cfd7f1aa6792763b5524b32b56d85e111",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T15:18:40Z",
+      "subject": "🧪 [Tests]: #1164 文字の大きさの段と、倍率を変えたあとの読む線の位置を判定表で固定する",
+      "body": "- TextSize: 開いたときは 100、+/− で 1 段ずつ、90 から 150 で止まり、端で null\n- TopicScroll.currentOf: 読む線 140 × 倍率のちょうどを含む(1.5)、1 未満の倍率(0.9)\n- TopicScroll.keptTopOf: 上げる向き・下げる向き・節の下の隙間(上限 1)とちょうど 1 の対照・最初の節の手前\n- 既存の currentOf 3 件は倍率 1 を渡し、期待は変えない\n\n背景:\n判定表は DOM を組まないので、核に置いた段の計算と読む線の位置だけが\nここで守れる。つなぎ込みは表示確認(Playwright)で見た。\n\n採用理由:\n各ケースは、倍率を無視する・倍率で割る・<= を < にする・上限 1 を外す・\nafter.height を無視する、の壊し方で答えが変わる入力を選んだ。\n既定値と同じ答えになる入力では、規則を壊しても通ってしまうため。\n\n影響とトレードオフ:\ncurrentOf のシグネチャが (tops, zoom) になったので、既存 3 件も書き換えた。\n\n代替案:\n- 境界を 200 / 211 で挟むだけにする: 210 ちょうどを通らず、<= を < に壊しても落ちない\n\n参考:\nIssue #1164 の計画コメント「テストケース」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015GHGAV8D4m1XJW7AnGZx7G",
+      "files": [
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 65,
+          "deletions": 5,
+          "patch": "@@ -3,7 +3,7 @@\n # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定\n # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を\n # 叩いて、地図と解説の合流・振る舞いの節の並び・技術の手引きの節・用語の印・抜粋の強調・出てくる場所のコミットへの\n-# 届き方・今の節・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、\n+# 届き方・今の節・文字の大きさの段・倍率を変えたあとの読む線の位置・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、\n # `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・解説の形の道筋(impact・primers・terms・抜粋の\n # 強調)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを\n # 1 コマンドで確かめる。\n@@ -177,7 +177,7 @@ if (core === undefined) {\n   console.error(\"document の無い評価で prExplainCore が置かれていない\");\n   process.exit(2);\n }\n-const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;\n+const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;\n \n const Pr = 7;\n const shaOf = (digit) => String(digit).repeat(40);\n@@ -1052,19 +1052,79 @@ const cases = [\n   },\n   {\n     label: \"今の節は、上端が読む線(上端から 140px。140 を含む)より上に来た最後の節\",\n-    actual: () => TopicScroll.currentOf([-400, 20, 140, 141]),\n+    actual: () => TopicScroll.currentOf([-400, 20, 140, 141], 1),\n     expected: 2,\n   },\n   {\n     label: \"どの節の上端も読む線(140px)より下なら、今の節は最初の節\",\n-    actual: () => TopicScroll.currentOf([200, 500, 900]),\n+    actual: () => TopicScroll.currentOf([200, 500, 900], 1),\n     expected: 0,\n   },\n   {\n     label: \"節が無ければ、今の節は null\",\n-    actual: () => TopicScroll.currentOf([]),\n+    actual: () => TopicScroll.currentOf([], 1),\n     expected: null,\n   },\n+  {\n+    label: \"今の節は、上端が読む線(140 × 倍率。ちょうどを含む)まで来た最後の節\",\n+    actual: () => TopicScroll.currentOf([-400, 20, 210, 211], 1.5),\n+    expected: 2,\n+  },\n+  {\n+    label: \"倍率が 1 より小さいと、読む線も上がる\",\n+    actual: () => TopicScroll.currentOf([-400, 20, 130], 0.9),\n+    expected: 1,\n+  },\n+  {\n+    label: \"倍率を上げたあと、読んでいた点(節の上端から 1/4)が新しい読む線に来る\",\n+    actual: () => TopicScroll.keptTopOf({ before: { top: 40, height: 400, zoom: 1 }, after: { height: 620, zoom: 1.5 } }),\n+    expected: 55,\n+  },\n+  {\n+    label: \"倍率を下げたあとも、読んでいた点が新しい読む線に来る\",\n+    actual: () => TopicScroll.keptTopOf({ before: { top: 60, height: 600, zoom: 1.5 }, after: { height: 410, zoom: 1 } }),\n+    expected: 37.5,\n+  },\n+  {\n+    label: \"読む線が節の下の隙間にあったときは、節の下端を読む線に置く\",\n+    actual: () => TopicScroll.keptTopOf({ before: { top: -300, height: 400, zoom: 1 }, after: { height: 450, zoom: 1.5 } }),\n+    expected: -240,\n+  },\n+  {\n+    label: \"節の下端がちょうど読む線にあったときも、節の下端を読む線に置く\",\n+    actual: () => TopicScroll.keptTopOf({ before: { top: -260, height: 400, zoom: 1 }, after: { height: 450, zoom: 1.5 } }),\n+    expected: -240,\n+  },\n+  {\n+    label: \"最初の節がまだ読む線に来ていないときは、読む線からの離れを節の高さとの割合で保つ\",\n+    actual: () => TopicScroll.keptTopOf({ before: { top: 300, height: 400, zoom: 1 }, after: { height: 620, zoom: 1.5 } }),\n+    expected: 458,\n+  },\n+  {\n+    label: \"開いたときの文字の大きさは 100%\",\n+    actual: () => TextSize.Initial,\n+    expected: 100,\n+  },\n+  {\n+    label: \"文字の大きさは、+ で 1 段大きく、− で 1 段小さくなる\",\n+    actual: () => [TextSize.larger(120), TextSize.smaller(120)],\n+    expected: [130, 110],\n+  },\n+  {\n+    label: \"文字の大きさは、90% から + を押し続けると 150% で止まる\",\n+    actual: () => Array.from({ length: 7 }).reduce((sizes) => [...sizes, TextSize.larger(sizes.at(-1))], [90]).slice(1),\n+    expected: [100, 110, 120, 130, 140, 150, null],\n+  },\n+  {\n+    label: \"文字の大きさは、150% から大きく・90% から小さくはできない\",\n+    actual: () => [TextSize.larger(150), TextSize.smaller(90)],\n+    expected: [null, null],\n+  },\n+  {\n+    label: \"文字の大きさは、端の 1 段手前からなら端まで動かせる\",\n+    actual: () => [TextSize.larger(140), TextSize.smaller(100)],\n+    expected: [150, 90],\n+  },\n   {\n     label: \"primers がオブジェクトの解説は、理由を primers の型として解説なしにする\",\n     actual: () => shapeReasonOf({ primers: {} }),",
+          "patchLines": 101,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "dd715b1ae57b01a777a94699cc5b8c39975936b7",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T15:18:40Z",
+      "subject": "📝 [Documentation]: #1164 文字の大きさが効く範囲と、覚えないことを pr-explain スキルに書く",
+      "body": "- 「前に開いた画面は覚えない」の段落に、文字の大きさ(−/+、90〜150%)は箱の図を除く画面に効き、開くたびに 100% に戻ると足す\n\n背景:\n上部バーに文字の大きさの操作を足したので、解説を書く側が範囲を知れるようにする。\n\n採用理由:\n覚えない理由が画面の開き方と同じ(オリジン単位で他の PR のページへ効く)なので、\n同じ段落に並べた。図を除く範囲は、構造マップだけでなくテストの画面の箱の図も\n.graph-canvas なので「箱の図(構造マップとテスト)」と書いた。\n\n影響とトレードオフ:\n5 画面の表は画面ごとの材料の表で、図の −/+ も書いていないので足さない。\n\n代替案:\n- 「図を除く画面に効き」と書く: 構造マップの右パネルの図は .graph-canvas ではなく倍率が効くので、範囲が食い違う\n\n参考:\nIssue #1164\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015GHGAV8D4m1XJW7AnGZx7G",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -11,7 +11,7 @@ diff と Issue だけでは、長いセッションで何を使い、なぜそ\n \n ## 5 画面と材料\n \n-ページは 1 枚で、`#map` / `#story` / `#test` / `#impact` / `#primer` で画面を切り替える。ハッシュが無ければ構造マップで開く(前に開いた画面は覚えない)。どの画面も、Actions が git の差分から\n+ページは 1 枚で、`#map` / `#story` / `#test` / `#impact` / `#primer` で画面を切り替える。ハッシュが無ければ構造マップで開く(前に開いた画面は覚えない)。上部バーの文字の大きさ(−/+、90〜150%)は箱の図(構造マップとテスト)を除く画面に効き、開くたびに 100% に戻る。どの画面も、Actions が git の差分から\n 作る**変更の地図**(`change-map.json`)と、セッションが書く**解説**(`explain.json`)を合わせて組む。\n \n | 画面 | 見るもの | 地図から | 解説から |",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "0cc871b451f6decb50753f7087276d487e58c796",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T15:32:50Z",
+      "subject": "♻️ [Refactoring]: #1164 文字の倍率の語を ratio に揃え、読む線と押せないボタンの宣言を 1 か所にまとめる",
+      "body": "- 文字の倍率を指す引数・フィールド・関数を zoom から ratio に揃える(currentOf / keptTopOf / follow / textRatioOf)\n- 読む線 140 を CSS の中で 1 か所に寄せ、狭い幅では欄の高さの変数 --topic-column-height だけを上書きする\n- TopicScroll の中の「140 × 倍率」を private な lineAt にまとめる\n- 押せないボタンの見た目を .step-buttons / .back-button / .text-size-controls の 1 宣言にまとめる\n- TextSize の doc で段の数字を書き写さず Steps を指し、効く範囲と覚えない理由を書き直す\n- 図の欄を倍率から外す理由、apply 後の実測から取る理由、端で止まるとずれが残る限界をコメントに書く\n- CSP の sha256 を計算し直す\n\n背景:\n実装の検証(naming / duplication / solution / comment / harness)で次の指摘を受けた。\nこのファイルの zoom は図の拡大の語なのに文字の倍率にも使っていた。\n読む線 140 が CSS に 2 回書かれ、片方だけ直すと狭い幅でだけ余白がずれる。\n効く範囲を「図を除く画面」と書いていたが、実際は図の欄だけが外れ、\n構造マップとテストの左右のパネルにも効く。\n覚えない理由「オリジン単位で混ざる」は PR ごとの鍵で消せるので理由にならない。\n\n採用理由:\n倍率の語は既にある --text-size-ratio / TextSize.ratioOf の ratio に寄せ、\n1 つの量が 2 つの名前を持たないようにした。\n140 は「欄の高さ − 読む線」の式を 1 回だけ書き、幅ごとに違うのは欄の高さの\n求め方だけなので、そこを変数にして上書きする。\n覚えない理由は、全 PR で覚えるとブラウザの拡大と同じく他のページへ効き、\nPR ごとに覚えても 1 つの PR のページは開く回数が少なく価値が小さい、に置き換えた。\n\n影響とトレードオフ:\n振る舞いは変えていない。.topic-body の computed padding-bottom を直す前後で\n1280 / 700px・各倍率について比べ、一致した。押せないボタンの opacity / cursor も一致。\n\n代替案:\n- 狭い幅の行に TopicScroll の 140 を指すコメントを足して 2 行のまま残す: 写しが減らない\n- 読む線を CSS 変数にして JS と共有する: JS 側は getComputedStyle を読むことになり、核(判定表で叩く部分)が DOM に依存する\n\n参考:\nIssue #1164 の実装の検証の記録\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015GHGAV8D4m1XJW7AnGZx7G",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "status": "M",
+          "oldPath": null,
+          "additions": 35,
+          "deletions": 31,
+          "patch": "@@ -2,7 +2,7 @@\n <html lang=\"ja\">\n <head>\n <meta charset=\"utf-8\">\n-<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-ajHWBULXbZmZTITa3pJssV0bWA6qWr+TdqLsWyTkJ14='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n+<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-Inv75/7FQRKgITdqZ8NVwoCEsdqskt/VBliw8jgPVxw='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n <title>PR 解説</title>\n <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n@@ -77,6 +77,8 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }\n .band { padding: 7px 14px; font-size: 12px; line-height: 1.6; color: var(--mod); background: var(--warn-tint); border-bottom: 1px solid var(--line); white-space: normal; }\n .screens { min-height: 0; position: relative; }\n .screen { height: 100%; display: grid; min-height: 0; }\n+/* 箱の図の欄は自分の −/+(transform)で拡大するので、文字の倍率を掛けると二重になる。\n+   font-size の書き換えは px 固定の高さや図の箱の幅が崩れ、transform: scale はスクロールの範囲と幅が倍率に合わないので採らない。 */\n .screen > :not(.graph-canvas) { zoom: var(--text-size-ratio, 1); }\n .screen[hidden] { display: none; }\n .panel { position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--panel); }\n@@ -184,7 +186,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }\n .step-buttons { display: flex; gap: 6px; }\n .step-buttons button { border: 1px solid var(--line-strong); background: var(--surface); border-radius: 7px; padding: 5px 10px; font-size: 12px; cursor: pointer; color: var(--ink); }\n .step-buttons button:hover { border-color: var(--ink-4); }\n-.step-buttons button:disabled { opacity: .4; cursor: default; }\n+.step-buttons button:disabled, .back-button:disabled, .text-size-controls button:disabled { opacity: .4; cursor: default; }\n .commit-step { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600; }\n .commit-head h1 { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.4; text-wrap: pretty; overflow-wrap: anywhere; }\n .commit-message { margin: 0; padding: 12px 14px; background: var(--sunken); border-radius: 10px; font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: #3A3D44; white-space: pre-wrap; word-break: break-word; }\n@@ -291,7 +293,6 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }\n .zoom-controls button:hover, .text-size-controls button:hover { background: var(--track); }\n .zoom-percent, .text-size-percent { min-width: 44px; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--ink-2); }\n .zoom-sep { width: 1px; height: 14px; background: var(--line); margin: 0 2px; }\n-.text-size-controls button:disabled { opacity: .4; cursor: default; }\n .graph-container { position: absolute; border-radius: 14px; background: rgba(255, 255, 255, .5); border: 1px solid var(--line-strong); cursor: pointer; transition: opacity .2s, box-shadow .2s; }\n .graph-container.is-picked { border-color: var(--accent); background: rgba(47, 91, 234, .05); box-shadow: 0 0 0 1px var(--accent), 0 0 0 6px rgba(47, 91, 234, .12); }\n .graph-container.is-dim { opacity: .55; }\n@@ -560,7 +561,6 @@ button.gap-card:hover { border-color: var(--mod-mark); }\n .side-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--chip); white-space: nowrap; min-width: 0; }\n .back-button { flex: none; display: flex; align-items: center; gap: 5px; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 7px; padding: 4px 10px 4px 8px; font-size: 12px; color: var(--ink); cursor: pointer; }\n .back-button:hover { border-color: var(--ink-4); }\n-.back-button:disabled { opacity: .4; cursor: default; }\n .side-bar-hint { font-size: 11.5px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; min-width: 0; }\n .highlight-card { display: flex; gap: 10px; align-items: flex-start; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); width: 100%; }\n button.highlight-card:hover { border-color: var(--ink-4); }\n@@ -663,9 +663,9 @@ button.change-item:hover { background: var(--track); }\n .sequence-legend > span { display: flex; align-items: center; gap: 5px; }\n .sequence-legend .legend-line { width: 16px; border-top-color: var(--ink-2); }\n .flow-chip:disabled { color: var(--ink-3); border-style: dashed; cursor: default; }\n-.stage-body.topic-body { max-width: 860px; gap: 56px; padding-bottom: calc(100cqh - 140px); }\n+.stage-body.topic-body { --topic-column-height: 100cqh; max-width: 860px; gap: 56px; padding-bottom: calc(var(--topic-column-height) - 140px); }\n /* 本文の末尾の余白は「欄の高さ − 読む線(TopicScroll の 140px)」。どの節も読む線まで送れるので、今の節は上端の位置だけで決まる。\n-   欄の高さは、広い幅では本文の欄(size のコンテナ)の、狭い幅ではコンテナを外すので表示領域の高さになる。 */\n+   欄の高さ(`--topic-column-height`)は、広い幅では本文の欄(size のコンテナ)の、狭い幅ではコンテナを外すので表示領域の高さになる。 */\n .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) > .stage { container-type: size; }\n .topic { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 20px; }\n .topic-head { display: flex; flex-direction: column; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }\n@@ -773,7 +773,7 @@ button.change-item:hover { background: var(--track); }\n   .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) > .stage { overflow: visible; container-type: normal; }\n   /* コンテナを外すので `100cqh` は表示領域の高さを倍率の掛かる前の px で返す。倍率で割って欄の中の px に直す\n      (広い幅の `.topic-body` は欄の中で倍率込みの高さが返るので割らない)。 */\n-  .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) .topic-body { padding-inline: 16px; gap: 44px; padding-bottom: calc(100cqh / var(--text-size-ratio, 1) - 140px); }\n+  .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) .topic-body { --topic-column-height: calc(100cqh / var(--text-size-ratio, 1)); padding-inline: 16px; gap: 44px; }\n   .screen:is([data-screen=\"impact\"], [data-screen=\"primer\"]) .topic-gist { grid-template-columns: minmax(0, 1fr); gap: 4px; }\n   .screen[data-screen=\"primer\"] > .primer-tablist { position: sticky; top: 0; z-index: 2; background: var(--bg); height: 44px; }\n   /* 上 12px + 名前の行 20px + 下 11px に、並びの下の線 1px を足して 44px。横の余白だけを広い幅の 18px から詰める。 */\n@@ -1437,9 +1437,9 @@ button.change-item:hover { background: var(--track); }\n   const isScreen = (value) => Object.values(Screens).includes(value);\n \n   /**\n-   * 図を除く画面の文字の大きさ。percent(整数)で持ち、90〜150% を 10 刻みで選ぶ。開くたびに 100% から始める。\n+   * 箱の図の欄(構造マップとテスト)を除き、どの画面のパネルと本文にも効く文字の大きさ。percent(整数)で持ち、`Steps` から選ぶ。開くたびに `Initial` から始める。\n    *\n-   * 覚える形にはしない。localStorage はオリジン単位なので、ほかの PR のページと値が混ざる。\n+   * 覚える形にはしない。全 PR で覚えるとブラウザの拡大と同じくほかのページにも効き、PR ごとに覚えても 1 つの PR のページは開く回数が少なく覚える価値が小さい。\n    */\n   const TextSize = (() => {\n     const Steps = Object.freeze([90, 100, 110, 120, 130, 140, 150]);\n@@ -1452,12 +1452,12 @@ button.change-item:hover { background: var(--track); }\n       Initial: 100,\n       /**\n        * @param percent 今の文字の大きさ\n-       * @returns 1 段大きい文字の大きさ。今が最大(150)なら null\n+       * @returns 1 段大きい文字の大きさ。今が `Steps` の最大なら null\n        */\n       larger: (percent) => stepAfter(percent, 1),\n       /**\n        * @param percent 今の文字の大きさ\n-       * @returns 1 段小さい文字の大きさ。今が最小(90)なら null\n+       * @returns 1 段小さい文字の大きさ。今が `Steps` の最小なら null\n        */\n       smaller: (percent) => stepAfter(percent, -1),\n       /**\n@@ -1680,16 +1680,18 @@ button.change-item:hover { background: var(--track); }\n   const TopicScroll = (() => {\n     // 読む線。本文の欄の CSS px で 140(見た目では 140 × 文字の倍率)。本文の末尾には「欄の高さ − 読む線」の余白を CSS で取ってあり(`.topic-body`)、どの節も読む線まで送れる。\n     const ReadingLine = 140;\n+    /** 見た目の px での読む線の位置。 */\n+    const lineAt = (ratio) => ReadingLine * ratio;\n     return Object.freeze({\n       /**\n        * 読む線(スクロールする領域の上端から、見た目で 140 × 倍率 px)より上に来た最後の節を、今の節にする。\n        * @param tops 節の上端の、スクロールする領域の上端からの距離(見た目の px・節の順)\n-       * @param zoom 本文の欄に掛かっている文字の倍率\n+       * @param ratio 本文の欄に掛かっている文字の倍率\n        * @returns 今の節の添字。上端が読む線(140 × 倍率 を含む)まで来た最後の節で、どれも来ていなければ最初の節。節が無ければ null\n        */\n-      currentOf: (tops, zoom) => {\n+      currentOf: (tops, ratio) => {\n         if (tops.length === 0) return null;\n-        const passed = tops.findLastIndex((top) => top <= ReadingLine * zoom);\n+        const passed = tops.findLastIndex((top) => top <= lineAt(ratio));\n         return passed < 0 ? 0 : passed;\n       },\n       /**\n@@ -1700,8 +1702,8 @@ button.change-item:hover { background: var(--track); }\n        * @returns 変えたあとの節の上端の、スクロールする領域の上端からの距離(見た目の px)\n        */\n       keptTopOf: ({ before, after }) => {\n-        const share = Math.min((ReadingLine * before.zoom - before.top) / before.height, 1);\n-        return ReadingLine * after.zoom - share * after.height;\n+        const share = Math.min((lineAt(before.ratio) - before.top) / before.height, 1);\n+        return lineAt(after.ratio) - share * after.height;\n       },\n     });\n   })();\n@@ -5609,15 +5611,15 @@ button.change-item:hover { background: var(--track); }\n       const dot = topic.dotTone === null ? [] : [el(\"span\", { class: \"status-dot\", \"data-tone\": topic.dotTone })];\n       return [el(\"span\", { class: \"row-sub\", text: topic.tocEyebrow }), el(\"span\", { class: \"change-head\" }, [...dot, el(\"span\", { class: \"row-title prose\" }, topic.labelPartsOf())])];\n     };\n-    /** 本文の欄に掛かっている文字の倍率。子孫の computed `zoom` は 1 を返すので、`zoom` を掛けた本文の欄から読む。 */\n-    const zoomOf = (main) => Number(getComputedStyle(main).zoom);\n+    /** 本文の欄に掛かっている文字の倍率。CSS の `zoom` プロパティの computed 値を読む。子孫の値は 1 を返すので、`zoom` を掛けた本文の欄から読む。 */\n+    const textRatioOf = (main) => Number(getComputedStyle(main).zoom);\n     /** スクロールしているのがページ全体のときの、その上端(0)と送り方。 */\n     const pageArea = Object.freeze({ topOf: () => 0, scrollBy: (distance) => window.scrollBy(0, distance) });\n     /** スクロールしているのが本文の欄のときの、その上端と送り方。`scrollTop` は欄の中の CSS px なので倍率で割る。 */\n     const columnAreaOf = (main) => Object.freeze({\n       topOf: () => main.getBoundingClientRect().top,\n-      scrollBy: (distance, zoom) => {\n-        main.scrollTop += distance / zoom;\n+      scrollBy: (distance, ratio) => {\n+        main.scrollTop += distance / ratio;\n       },\n     });\n     /**\n@@ -5640,7 +5642,7 @@ button.change-item:hover { background: var(--track); }\n        *   - `sideBlocksOf` 右の欄と畳んだ欄の中身を返す。呼ぶたびに新しく作る\n        * @param emptySide 節が無いときの右の欄の文\n        * @returns `articles`(節の要素)・`toc`(目次の欄。節が無ければ空の文)・`inlineHolders`(畳んだ欄の中身を入れる要素)・\n-       *   `side`(右の欄)と、`follow(top, zoom)`(スクロールに合わせて今の節を決め直す)・`sendTo(index)`(節へ送る)・`render()`(描き直す)・\n+       *   `side`(右の欄)と、`follow(top, ratio)`(スクロールに合わせて今の節を決め直す)・`sendTo(index)`(節へ送る)・`render()`(描き直す)・\n        *   `currentArticle()`(今の節の要素。節が 0 件なら null)\n        */\n       create: ({ topics, emptySide }) => {\n@@ -5679,10 +5681,10 @@ button.change-item:hover { background: var(--track); }\n         /**\n          * スクロールに合わせて今の節を決め直す。変わったときだけ描き直す。\n          * @param top スクロールしている領域の上端の、表示領域の上端からの距離\n-         * @param zoom 本文の欄に掛かっている文字の倍率\n+         * @param ratio 本文の欄に掛かっている文字の倍率\n          */\n-        const follow = (top, zoom) => {\n-          const next = TopicScroll.currentOf(articles.map((article) => article.getBoundingClientRect().top - top), zoom);\n+        const follow = (top, ratio) => {\n+          const next = TopicScroll.currentOf(articles.map((article) => article.getBoundingClientRect().top - top), ratio);\n           if (next === current) return;\n           current = next;\n           render();\n@@ -5704,14 +5706,15 @@ button.change-item:hover { background: var(--track); }\n           return screen !== null && !screen.hidden;\n         };\n         // スクロールしているのが本文の欄(広い幅)かページ全体(狭い幅)かは CSS の `@media` が決めるので、イベントの出どころで見分ける。\n-        main.addEventListener(\"scroll\", () => follow(columnAreaOf(main).topOf(), zoomOf(main)), { passive: true });\n+        main.addEventListener(\"scroll\", () => follow(columnAreaOf(main).topOf(), textRatioOf(main)), { passive: true });\n         // ページ全体のスクロールは、その画面が隠れているあいだはほかの画面のものなので見ない。\n         window.addEventListener(\"scroll\", () => {\n-          if (isShown()) follow(pageArea.topOf(), zoomOf(main));\n+          if (isShown()) follow(pageArea.topOf(), textRatioOf(main));\n         }, { passive: true });\n       },\n       /**\n        * 文字の倍率を変えるあいだ、今の節の読んでいた点を読む線に残す包みを作る。\n+       * スクロールする領域の先頭・末尾でスクロールが止まると、読んでいた点は読む線まで届かず、そのずれは残る。\n        * @param main 本文の欄(`main.stage`)\n        * @param currentColumns 今の節の 3 列(`create` の戻り値)を返す\n        * @returns `keepReading(apply)`。`apply` で倍率を変え、今の節を読む線へ送り直して今の節を決め直す\n@@ -5724,13 +5727,14 @@ button.change-item:hover { background: var(--track); }\n         }\n         const area = readingAreaOf(main);\n         const beforeRect = article.getBoundingClientRect();\n-        const before = { top: beforeRect.top - area.topOf(), height: beforeRect.height, zoom: zoomOf(main) };\n+        const before = { top: beforeRect.top - area.topOf(), height: beforeRect.height, ratio: textRatioOf(main) };\n         apply();\n+        // ずらす量は apply 後の実測から取る。倍率から計算すると、幅が変わって折り返しが変わった分を取り込めない。\n         const afterRect = article.getBoundingClientRect();\n-        const after = { height: afterRect.height, zoom: zoomOf(main) };\n-        area.scrollBy(afterRect.top - area.topOf() - TopicScroll.keptTopOf({ before, after }), after.zoom);\n+        const after = { height: afterRect.height, ratio: textRatioOf(main) };\n+        area.scrollBy(afterRect.top - area.topOf() - TopicScroll.keptTopOf({ before, after }), after.ratio);\n         // ずらす量が 0 のときや、先頭・末尾で止まったときはスクロールのイベントが来ないので、ここで決め直す。\n-        currentColumns().follow(area.topOf(), after.zoom);\n+        currentColumns().follow(area.topOf(), after.ratio);\n       },\n     });\n   })();\n@@ -6166,7 +6170,7 @@ button.change-item:hover { background: var(--track); }\n     left.replaceChildren(el(\"div\", { class: \"panel-head\" }, [el(\"span\", { class: \"panel-title\", text: \"目次\" }), tocNote]), ...tabs.map((tab) => parts[tab].columns.toc));\n     right.replaceChildren(panelHead(PrimerSideTitle, \"\"), ...tabs.map((tab) => parts[tab].columns.side));\n     renderTab();\n-    TopicColumns.subscribe({ main, follow: (top, zoom) => parts[currentTab].columns.follow(top, zoom) });\n+    TopicColumns.subscribe({ main, follow: (top, ratio) => parts[currentTab].columns.follow(top, ratio) });\n     const keepReading = TopicColumns.keepReadingOf({ main, currentColumns: () => parts[currentTab].columns });\n \n     return { ...screenParts, tablist: el(\"div\", { class: \"primer-tablist\", role: \"tablist\", \"aria-label\": \"技術の種類\" }, tabButtons), keepReading };",
+          "patchLines": 213,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "98b480d45e3cb16f4c2284104ba17ba579cd6ced",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T15:32:50Z",
+      "subject": "🧪 [Tests]: #1164 keptTopOf の判定表のフィールド名を ratio に揃える",
+      "body": "- keptTopOf の 5 件で before / after の zoom: を ratio: に直す\n\n背景:\nテンプレートの文字の倍率の語を zoom から ratio に揃えたため。\n\n採用理由:\n期待値は変えず、名前だけを実装に合わせた。\n\n影響とトレードオフ:\n判定表の観点・件数は変わらない(ok 356 行)。\n\n代替案:\n- 無し(実装側の名前に従うだけ)\n\n参考:\nIssue #1164\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015GHGAV8D4m1XJW7AnGZx7G",
+      "files": [
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 5,
+          "patch": "@@ -1077,27 +1077,27 @@ const cases = [\n   },\n   {\n     label: \"倍率を上げたあと、読んでいた点(節の上端から 1/4)が新しい読む線に来る\",\n-    actual: () => TopicScroll.keptTopOf({ before: { top: 40, height: 400, zoom: 1 }, after: { height: 620, zoom: 1.5 } }),\n+    actual: () => TopicScroll.keptTopOf({ before: { top: 40, height: 400, ratio: 1 }, after: { height: 620, ratio: 1.5 } }),\n     expected: 55,\n   },\n   {\n     label: \"倍率を下げたあとも、読んでいた点が新しい読む線に来る\",\n-    actual: () => TopicScroll.keptTopOf({ before: { top: 60, height: 600, zoom: 1.5 }, after: { height: 410, zoom: 1 } }),\n+    actual: () => TopicScroll.keptTopOf({ before: { top: 60, height: 600, ratio: 1.5 }, after: { height: 410, ratio: 1 } }),\n     expected: 37.5,\n   },\n   {\n     label: \"読む線が節の下の隙間にあったときは、節の下端を読む線に置く\",\n-    actual: () => TopicScroll.keptTopOf({ before: { top: -300, height: 400, zoom: 1 }, after: { height: 450, zoom: 1.5 } }),\n+    actual: () => TopicScroll.keptTopOf({ before: { top: -300, height: 400, ratio: 1 }, after: { height: 450, ratio: 1.5 } }),\n     expected: -240,\n   },\n   {\n     label: \"節の下端がちょうど読む線にあったときも、節の下端を読む線に置く\",\n-    actual: () => TopicScroll.keptTopOf({ before: { top: -260, height: 400, zoom: 1 }, after: { height: 450, zoom: 1.5 } }),\n+    actual: () => TopicScroll.keptTopOf({ before: { top: -260, height: 400, ratio: 1 }, after: { height: 450, ratio: 1.5 } }),\n     expected: -240,\n   },\n   {\n     label: \"最初の節がまだ読む線に来ていないときは、読む線からの離れを節の高さとの割合で保つ\",\n-    actual: () => TopicScroll.keptTopOf({ before: { top: 300, height: 400, zoom: 1 }, after: { height: 620, zoom: 1.5 } }),\n+    actual: () => TopicScroll.keptTopOf({ before: { top: 300, height: 400, ratio: 1 }, after: { height: 620, ratio: 1.5 } }),\n     expected: 458,\n   },\n   {",
+          "patchLines": 33,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "e8f994fe792eb78c1b3c91a17fe7039a0dda9c8a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T15:32:50Z",
+      "subject": "📝 [Documentation]: #1164 文字の大きさが効く範囲を「図の欄を除くパネルと本文」に直す",
+      "body": "- SKILL.md の「箱の図(構造マップとテスト)を除く画面に効き」を、箱の図の欄を除きどの画面のパネルと本文にも効く、に直す\n\n背景:\n倍率から外れるのは .graph-canvas(図の欄)だけで、構造マップとテストの画面でも\n左右のパネルの文字は変わる。前の書き方では、その 2 画面では効かないと読める(harness / comment の検証の指摘)。\n\n採用理由:\n除く単位を画面ではなく欄で書き、実装の選択子 .screen > :not(.graph-canvas) と揃えた。\n\n影響とトレードオフ:\n記述だけの変更。\n\n代替案:\n- 実装側で構造マップとテストのパネルも外す: パネルの文字も読む文字で、外す理由が無い\n\n参考:\nIssue #1164\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015GHGAV8D4m1XJW7AnGZx7G",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -11,7 +11,7 @@ diff と Issue だけでは、長いセッションで何を使い、なぜそ\n \n ## 5 画面と材料\n \n-ページは 1 枚で、`#map` / `#story` / `#test` / `#impact` / `#primer` で画面を切り替える。ハッシュが無ければ構造マップで開く(前に開いた画面は覚えない)。上部バーの文字の大きさ(−/+、90〜150%)は箱の図(構造マップとテスト)を除く画面に効き、開くたびに 100% に戻る。どの画面も、Actions が git の差分から\n+ページは 1 枚で、`#map` / `#story` / `#test` / `#impact` / `#primer` で画面を切り替える。ハッシュが無ければ構造マップで開く(前に開いた画面は覚えない)。上部バーの文字の大きさ(−/+、90〜150%)は箱の図の欄(構造マップとテスト)を除き、どの画面のパネルと本文にも効き、開くたびに 100% に戻る。どの画面も、Actions が git の差分から\n 作る**変更の地図**(`change-map.json`)と、セッションが書く**解説**(`explain.json`)を合わせて組む。\n \n | 画面 | 見るもの | 地図から | 解説から |",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "079bbdd839c4ca193bf53db01cbdd905d4647bb1",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T15:37:29Z",
+      "subject": "🧪 [Tests]: #1164 端で null を返すことと、% から倍率への変換を判定表で守る",
+      "body": "- 150% より大きい段・90% より小さい段が無いことを、=== null の真偽値で確かめる 2 件を足す\n- TextSize.ratioOf(110) が \"1.1\" になる 1 件を足す\n- 配列で [null, null] と比べていた古い 1 件を消す(足した 2 件と同じ仕様で、undefined と区別できない)\n\n背景:\ntest-reviewer のミューテーション実測で、stepAfter が端で undefined を返すように\n壊しても、ratioOf を / 10 に壊しても判定表が落ちなかった。\n判定表は JSON で比べるので、配列の中の undefined が null に化けて区別できない。\nundefined に退行すると、DOM 側の === null の比較が外れて端のボタンが押せ、\n--text-size-ratio が NaN になる。\n\n採用理由:\n配列で包まず真偽値を actual にして、JSON 化で null と undefined が紛れないようにした。\nratioOf は既定の 100 だと「割らない実装」とも紛れるので 110 を選んだ。\n同じ壊し方でそれぞれ NG が出ることを確かめた。\n\n影響とトレードオフ:\n判定表は ok 358 行(足した 3 件・消した 1 件)。\n\n代替案:\n- 古い配列のケースを残す: 足した 2 件と同じ仕様を弱い形で重ねて持つことになる\n\n参考:\nIssue #1164 の実装の検証(test-reviewer)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015GHGAV8D4m1XJW7AnGZx7G",
+      "files": [
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 6,
+          "patch": "@@ -3,7 +3,7 @@\n # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定\n # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を\n # 叩いて、地図と解説の合流・振る舞いの節の並び・技術の手引きの節・用語の印・抜粋の強調・出てくる場所のコミットへの\n-# 届き方・今の節・文字の大きさの段・倍率を変えたあとの読む線の位置・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、\n+# 届き方・今の節・文字の大きさの段と倍率・倍率を変えたあとの読む線の位置・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、\n # `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・解説の形の道筋(impact・primers・terms・抜粋の\n # 強調)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを\n # 1 コマンドで確かめる。\n@@ -1115,16 +1115,26 @@ const cases = [\n     actual: () => Array.from({ length: 7 }).reduce((sizes) => [...sizes, TextSize.larger(sizes.at(-1))], [90]).slice(1),\n     expected: [100, 110, 120, 130, 140, 150, null],\n   },\n-  {\n-    label: \"文字の大きさは、150% から大きく・90% から小さくはできない\",\n-    actual: () => [TextSize.larger(150), TextSize.smaller(90)],\n-    expected: [null, null],\n-  },\n   {\n     label: \"文字の大きさは、端の 1 段手前からなら端まで動かせる\",\n     actual: () => [TextSize.larger(140), TextSize.smaller(100)],\n     expected: [150, 90],\n   },\n+  {\n+    label: \"文字の大きさは、150% より大きい段が無いことを null で答える\",\n+    actual: () => TextSize.larger(150) === null,\n+    expected: true,\n+  },\n+  {\n+    label: \"文字の大きさは、90% より小さい段が無いことを null で答える\",\n+    actual: () => TextSize.smaller(90) === null,\n+    expected: true,\n+  },\n+  {\n+    label: \"文字の大きさ 110% は、倍率 1.1 として書く\",\n+    actual: () => TextSize.ratioOf(110),\n+    expected: \"1.1\",\n+  },\n   {\n     label: \"primers がオブジェクトの解説は、理由を primers の型として解説なしにする\",\n     actual: () => shapeReasonOf({ primers: {} }),",
+          "patchLines": 41,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".claude/skills/pr-explain/templates/explain.json",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    }
+  ]
+}
