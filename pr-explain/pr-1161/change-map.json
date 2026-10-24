@@ -4,7 +4,7 @@
   "headBranch": "claude/affectionate-hypatia-pcy0wa",
   "baseBranch": "main",
   "mergeBase": "89876a0e4e6ffa9cb7d15c6626274f8788ab8fb6",
-  "head": "0fbe16d7ab3bd0bb1a518f591f45b0799b726060",
+  "head": "0f4fb8eeead4c8533c118953e5a4cd2e7426b944",
   "groups": [
     {
       "label": "ハーネス",
@@ -56,6 +56,15 @@
           "oldPath": null,
           "additions": 1,
           "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1143.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
           "changed": true,
           "target": null
         },
@@ -119,6 +128,26 @@
           "deletions": 6,
           "patch": "@@ -28,12 +28,7 @@\n \n ### 例外: Context のアクセサフック\n \n-`useContext` を包むアクセサフックが **Provider の外で呼ばれた場合の `throw` は使ってよい**。\n-実行時に起こりうる失敗ではなく、コンポーネントの配置ミス(プログラミングエラー)であり、\n-呼び出し側が分岐して回復するものではないため。`Option` を返すと、Provider の内側にいることが\n-分かっている消費側すべてに不在の分岐が増える。\n-\n-**既定値を返して埋めるのは禁止**(Provider の付け忘れが画面に出ないまま残るため)。隠さずに落とす。\n+`useContext` を包むアクセサフックが Provider の外で呼ばれた場合の `throw` は使ってよい(配置ミスであり、呼び出し側が回復する失敗ではない)。**既定値を返して埋めるのは禁止**(付け忘れが画面に出ないまま残る)。理由の詳細は判例。\n \n ## 関数のシグネチャ\n ",
           "patchLines": 14,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "0f4fb8eeead4c8533c118953e5a4cd2e7426b944",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T00:02:37Z",
+      "subject": "harness: over-guard の対策済を追記",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01JMAp1tA5aE6wheC975eZ5g",
+      "files": [
+        {
+          "path": "harness/records/pr-1143.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -149,3 +149,4 @@ GitHub 上の人のレビューは 1 件（レビュー本文のみ。`get_revie\n \n - `harness/case-law/coding.md:31` は、この回で書き換えていない。判例の「別 Issue に分けて進める」に従った回で、判例が添えていた「誤用がまだ現れていない」という理由は採らず、「`create` を通った値だけが持つ性質があるか」へ置き直した。判例をどう扱うかは `harness-growth` に回す\n - #9 / #10（仕様の突き合わせを入口の一部で止めた）と #15（セキュリティの観点）は、棚卸しの材料\n+- 対策済: `over-guard` 層=case-law at pr-1161",
+          "patchLines": 5,
           "truncated": false
         }
       ]
