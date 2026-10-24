@@ -4,8 +4,17 @@
   "headBranch": "claude/magical-cannon-4l4bw5",
   "baseBranch": "main",
   "mergeBase": "89876a0e4e6ffa9cb7d15c6626274f8788ab8fb6",
-  "head": "3cf9385746339ddf5810d596bda4aab0fa9337b9",
+  "head": "5cc576042a99e8208651c8f747ee111b89a5bfec",
   "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/px/index.ts",
+          "changed": false
+        }
+      ]
+    },
     {
       "label": "src-tauri",
       "files": [
@@ -148,6 +157,69 @@
           "deletions": 0,
           "changed": true,
           "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "status": "M",
+          "oldPath": null,
+          "additions": 54,
+          "deletions": 15,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 132,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "changed": false
         }
       ]
     }
@@ -677,7 +749,270 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "3e6a888203b63e9085cba7d842fc997ce6e4f617",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T09:08:02Z",
+      "subject": "✨ [New Feature]: #1163 PR 解説ページで Rust(.rs)のコードに色を付ける",
+      "body": "- 拡張子 rs を Rust の文法に結びつける(LanguageByExtension に rs を足す)\n- Rust の文法(キーワード・基本型・行コメント / ブロックコメント・\"…\" の\n  文字列・b\"…\"・数値の接尾辞)と、Rust 専用の読み手 rustTokenAt を足す。\n  生文字列 r#\"…\"# → 文字リテラル 'a' → ライフタイム 'a → 属性 #[名前 →\n  マクロ 名前!( の順に読む\n- 生文字列とブロックコメントで同じ「閉じ記号を探し、無ければ持ち越す」\n  読み手 delimitedAt を共有する(ブロックコメントの振る舞いは変えない)\n- 色: ライフタイムは型、属性の #[名前 はキーワード、マクロは ! ごと関数\n- CSP の script-src の sha256 を取り直す\n- 判定表の「.md と .rs は規則が無い」を「.md と .toml」に書き換える\n\n背景:\nPR #1159 の解説ページを見たオーナーの指摘「色がうまくついてない」。\n色付けは拡張子から言語を引く表に載った言語にしか効かず、rs が無かった。\n#1159 は変更の大半が Rust なので、差分・テストの抜粋・技術の手引きの\n抜粋がほぼすべて地の色だった。\n\n採用理由:\n既存の言語別の読み手(cssTokenAt / jsxTokenAt / htmlTokenAt)と同じく、\n文法に旗(rust: true)を立てて tokenAt から分岐させた。文字列・コメント・\n持ち越し・括弧の仕組みは既存のものを使う。src-tauri の .rs 29 本\n(2221 行)を読ませて、閉じない文字列・色の無い引用符が 0 件だった。\n\n影響とトレードオフ:\n- 普通の文字列は次の行へ持ち越さない。続きの行で \\\" を閉じと読む・\n  hunk が文字列の途中から始まると崩れが広がるため。実例は 0 件\n- 生文字列は持ち越すので、hunk・抜粋が生文字列の途中から始まると閉じの\n  \"# を開きと読む。入れ子のブロックコメントは内側の閉じで外側まで閉じる。\n  どちらも Tokenizer の doc に書いた\n- ライフタイム・属性・マクロの色はオーナーに確認中。違えば rustTokenAt の\n  返すクラスと判定表の該当ケースだけを直す\n\n代替案:\n- 生文字列を Python と同じ prefixes で表す: r#\"{\"a\":1}\"# が中の \" で切れる\n- strings に ' を入れる: State<'_, …> の '_ 以降が行末まで文字列になる\n- Rust 専用の字句解析器を丸ごと書く: 文字列・コメント・持ち越しが二重になる\n- 入れ子のブロックコメントを深さで数える: 持ち越しの形を変える必要があり、\n  src-tauri に /* は 0 件\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1163\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0171eLYm2u3pDsRFVtUxxa3y",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "status": "M",
+          "oldPath": null,
+          "additions": 53,
+          "deletions": 10,
+          "patch": "@@ -2,7 +2,7 @@\n <html lang=\"ja\">\n <head>\n <meta charset=\"utf-8\">\n-<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-GllSgqqYbDSzdsYM0VhBpKv+dVZpYqkvvNIRwGHUGbQ='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n+<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-BH8X6oEPXpvIMR0xZlxcT/hkXmBtL585+de4A1trE/4='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n <title>PR 解説</title>\n <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n@@ -788,11 +788,13 @@ button.change-item:hover { background: var(--track); }\n   \"use strict\";\n \n   /**\n-   * コードの色分け。キーワード・文字列・コメント・数値・関数呼び出しに加え、JS / TS / Python は型と変数、YAML はキー、シェルは変数、\n+   * コードの色分け。キーワード・文字列・コメント・数値・関数呼び出しに加え、JS / TS / Python / Rust は型と変数、YAML はキー、シェルは変数、\n    * HTML はタグと属性名、CSS は at ルール・プロパティ・カスタムプロパティに色を付ける簡易なもの。HTML の script / style 要素と、\n    * シェルの JS・TS・PY・JSON のヒアドキュメントの中は、その言語で読む。HTML と `.tsx` / `.jsx` の JSX は、タグ(JSX のフラグメントを\n    * 含む)をキーワード、属性名を値の有無によらずキー、属性の値の文字列を文字列にする。JSX の本文は色なしで、`{…}` の中は JS / TS で\n-   * 読む。HTML の本文は、数値と関数呼び出し(`名前(`)のほかは色なし。\n+   * 読む。HTML の本文は、数値と関数呼び出し(`名前(`)のほかは色なし。Rust は生文字列・バイト文字列・文字リテラルを文字列、ライフタイムを\n+   * 型、属性の `#[名前` / `#![名前` をキーワード、括弧の続くマクロの `名前!` を関数にし、行をまたいで続けるのは生文字列とブロックコメントだけ。\n+   * Rust の入れ子のブロックコメントは内側の閉じ記号で外側まで閉じ、hunk・抜粋が生文字列の途中から始まると、閉じの `\"#` を開きと読む。\n    */\n   const Tokenizer = (() => {\n     const words = (list) => new Set(list.split(\" \").filter((word) => word !== \"\"));\n@@ -802,6 +804,18 @@ button.change-item:hover { background: var(--track); }\n     const JsIdentifier = /[A-Za-z_$][\\w$]*/y;\n     const JsGrammar = { comment: \"//\", block: [\"/*\", \"*/\"], strings: ['\"', \"'\", \"`\"], keywords: words(JsWords), identifier: JsIdentifier, identifiers: true, objectKeys: true };\n     const TsGrammar = { ...JsGrammar, keywords: words(`${JsWords} ${TsWords}`) };\n+    /** Rust の数値。16 / 8 / 2 進・`_` の区切り・指数と、`u64` `f32` などの型の接尾辞までを 1 つにする。 */\n+    const RustNumber = /(?:0x[0-9A-Fa-f_]+|0o[0-7_]+|0b[01_]+|\\d[\\d_]*(?:\\.\\d[\\d_]*)?(?:[eE][+-]?\\d+)?)(?:[iu](?:8|16|32|64|128|size)|f32|f64)?/y;\n+    /** Rust の生文字列の開き(`r\"` / `r#\"` / `br##\"` など)。閉じは同じ数の `#` が付いた `\"`。 */\n+    const RustRawStringStart = /b?r#*\"/y;\n+    /** Rust の文字リテラル(`'a'` / `'\\n'` / `'\\u{1F3A8}'` / `b'a'`)。絵文字を 1 字と数えるよう `u` を付ける。 */\n+    const RustChar = /b?'(?:\\\\(?:x[0-9A-Fa-f]{2}|u\\{[0-9A-Fa-f_]{1,8}\\}|.)|[^'\\\\\\n])'/yu;\n+    /** Rust のライフタイム(`'a` / `'_` / `'static`)。文字リテラルを先に読むので、`'a'` はここへ来ない。 */\n+    const RustLifetime = /'[A-Za-z_]\\w*(?!')/y;\n+    /** Rust の属性の開きと名前(`#[cfg` / `#![allow`)。 */\n+    const RustAttribute = /#!?\\[\\s*[A-Za-z_][\\w:]*/y;\n+    /** Rust のマクロの呼び出し(`assert!(` / `vec![` の `名前!`)。括弧が続くものだけにして、`a!=b` の `a` を取らない。 */\n+    const RustMacro = /[A-Za-z_]\\w*!(?=[(\\[{])/y;\n     const Grammars = {\n       python: { comment: \"#\", hashAnywhere: true, strings: ['\"\"\"', \"'''\", '\"', \"'\"], keywords: words(\"def class return if elif else for while in not and or is None True False import from as with try except finally raise lambda yield pass continue break assert del async await global nonlocal\"), identifiers: true, prefixes: /[rRbBfFuU]{1,2}(?=[\"'])/y, types: words(\"dict list tuple set frozenset str int float bool bytes object\") },\n       js: JsGrammar,\n@@ -812,8 +826,9 @@ button.change-item:hover { background: var(--track); }\n       yaml: { comment: \"#\", strings: ['\"', \"'\"], keys: true, keywords: words(\"true false null\") },\n       html: { block: [\"<!--\", \"-->\"], strings: ['\"', \"'\"], tags: true, keywords: words(\"\") },\n       css: { block: [\"/*\", \"*/\"], strings: ['\"', \"'\"], css: true, keywords: words(\"\") },\n+      rust: { comment: \"//\", block: [\"/*\", \"*/\"], strings: ['\"'], prefixes: /b(?=\")/y, rust: true, number: RustNumber, identifiers: true, keywords: words(\"as async await break const continue crate dyn else enum extern false fn for if impl in let loop match mod move mut pub ref return self Self static struct super trait true type unsafe use where while\"), types: words(\"bool char str u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize f32 f64\") },\n     };\n-    const LanguageByExtension = { py: \"python\", js: \"js\", mjs: \"js\", jsx: \"jsx\", ts: \"ts\", tsx: \"tsx\", json: \"js\", sh: \"shell\", bash: \"shell\", yml: \"yaml\", yaml: \"yaml\", html: \"html\", css: \"css\" };\n+    const LanguageByExtension = { py: \"python\", js: \"js\", mjs: \"js\", jsx: \"jsx\", ts: \"ts\", tsx: \"tsx\", json: \"js\", sh: \"shell\", bash: \"shell\", yml: \"yaml\", yaml: \"yaml\", html: \"html\", css: \"css\", rs: \"rust\" };\n     /** 中を別の言語で読む埋め込み。HTML の要素名(小文字)とシェルのヒアドキュメントの区切りの語から、中の言語を引く。 */\n     const Embeddings = Object.freeze({ elements: Object.freeze({ script: \"js\", style: \"css\" }), heredocs: Object.freeze({ JS: \"js\", TS: \"ts\", PY: \"python\", JSON: \"js\" }) });\n     const NumberLiteral = /\\d+(?:\\.\\d+)?/y;\n@@ -902,7 +917,7 @@ button.change-item:hover { background: var(--track); }\n       return Token(\"tok-str\", text.slice(at, Math.min(end, text.length)), spansLines ? quote : null);\n     };\n \n-    /** Python の `f\"…\"` などの接頭辞を、続く文字列と 1 字句にする。 */\n+    /** Python の `f\"…\"`・Rust の `b\"…\"` などの接頭辞を、続く文字列と 1 字句にする。 */\n     const prefixedStringAt = (cursor, grammar) => {\n       const canPrefix = grammar.prefixes !== undefined && !/\\w/.test(cursor.prev);\n       const prefix = canPrefix ? matchAt(grammar.prefixes, cursor) : null;\n@@ -911,14 +926,17 @@ button.change-item:hover { background: var(--track); }\n       return Token(\"tok-str\", prefix + rest.value, rest.opens);\n     };\n \n+    /** 位置から、`from` より後で最初に来る閉じ記号 `close` までを 1 字句にする。閉じずに行が終わったら、閉じ記号を次の行へ持ち越す。 */\n+    const delimitedAt = (cursor, { cls, from, close }) => {\n+      const end = cursor.text.indexOf(close, from);\n+      return end >= 0 ? Token(cls, cursor.text.slice(cursor.at, end + close.length)) : Token(cls, restOfLine(cursor), close);\n+    };\n+\n     const commentAt = (cursor, grammar) => {\n       const { text, at } = cursor;\n       const block = grammar.block;\n       const isBlockCommentStart = block !== undefined && text.startsWith(block[0], at);\n-      if (isBlockCommentStart) {\n-        const close = text.indexOf(block[1], at + block[0].length);\n-        return close >= 0 ? Token(\"tok-com\", text.slice(at, close + block[1].length)) : Token(\"tok-com\", restOfLine(cursor), block[1]);\n-      }\n+      if (isBlockCommentStart) return delimitedAt(cursor, { cls: \"tok-com\", from: at + block[0].length, close: block[1] });\n       const isLineCommentStart = grammar.comment !== undefined && text.startsWith(grammar.comment, at);\n       // `#` は Python 以外では行頭か空白の直後だけコメントにする(シェルの `$#`・URL の `#` を取り違えない)。\n       const isHashAllowedHere = grammar.comment !== \"#\" || grammar.hashAnywhere === true || /\\s/.test(cursor.prev);\n@@ -1000,10 +1018,33 @@ button.change-item:hover { background: var(--track); }\n       return Token(cursor.text[cursor.at + word.length] === \"(\" ? \"tok-fn\" : null, word);\n     };\n \n+    /** Rust の生文字列。中の `\\` はエスケープにしない。生文字列でなければ null。 */\n+    const rustRawStringAt = (cursor) => {\n+      const opening = matchAt(RustRawStringStart, cursor);\n+      if (!opening) return null;\n+      const hashes = opening.slice(opening.indexOf(\"r\") + 1, -1);\n+      return delimitedAt(cursor, { cls: \"tok-str\", from: cursor.at + opening.length, close: `\"${hashes}` });\n+    };\n+\n+    /** Rust の、文字列・コメント・数値・名前のほかの字句(生文字列・文字リテラル・ライフタイム・属性・マクロ)。名前の途中と、どれでもなければ null。 */\n+    const rustTokenAt = (cursor) => {\n+      if (/\\w/.test(cursor.prev)) return null;\n+      const raw = rustRawStringAt(cursor);\n+      if (raw) return raw;\n+      const char = matchAt(RustChar, cursor);\n+      if (char) return Token(\"tok-str\", char);\n+      const lifetime = matchAt(RustLifetime, cursor);\n+      if (lifetime) return Token(\"tok-type\", lifetime);\n+      const attribute = matchAt(RustAttribute, cursor);\n+      if (attribute) return Token(\"tok-kw\", attribute);\n+      const macro = matchAt(RustMacro, cursor);\n+      return macro ? Token(\"tok-fn\", macro) : null;\n+    };\n+\n     /** 数値と名前の字句。直前の字が名前の字(`\\w` `$`)のとき(名前の途中)と、数値でも名前でもないときは null。 */\n     const wordAt = (cursor, grammar) => {\n       if (/[\\w$]/.test(cursor.prev)) return null;\n-      const number = matchAt(NumberLiteral, cursor);\n+      const number = matchAt(grammar.number ?? NumberLiteral, cursor);\n       if (number) return Token(\"tok-num\", number);\n       const word = matchAt(grammar.identifier ?? Identifier, cursor);\n       if (!word) return null;\n@@ -1094,6 +1135,8 @@ button.change-item:hover { background: var(--track); }\n       const quoted = quotedAt(cursor, grammar);\n       if (quoted) return quoted;\n       if (grammar.css === true) return cssTokenAt(cursor);\n+      const rust = grammar.rust === true ? rustTokenAt(cursor) : null;\n+      if (rust) return rust;\n       const variable = grammar.variables === true ? matchAt(ShellVariable, cursor) : null;\n       if (variable) return Token(\"tok-var\", variable);\n       const jsx = grammar.jsx === true ? jsxTagInExpressionAt(cursor) : null;",
+          "patchLines": 130,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -1446,8 +1446,8 @@ const cases = [\n     expected: \"tok-kw\",\n   },\n   {\n-    label: \"色分け: .md と .rs は規則が無く、行全体が色の無い 1 字句になる\",\n-    actual: () => [\"a.md\", \"a.rs\"].map((path) => lineTokensOf(path, [\"const a = f(1);\"])[0].map((token) => [token.cls, token.value])),\n+    label: \"色分け: .md と .toml は規則が無く、行全体が色の無い 1 字句になる\",\n+    actual: () => [\"a.md\", \"a.toml\"].map((path) => lineTokensOf(path, [\"const a = f(1);\"])[0].map((token) => [token.cls, token.value])),\n     expected: [[[null, \"const a = f(1);\"]], [[null, \"const a = f(1);\"]]],\n   },\n   {",
+          "patchLines": 11,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T09:08:03Z",
+      "subject": "🧪 [Tests]: #1163 Rust の色付けの判定表を足す",
+      "body": "- .rs を Rust の規則で読む / 生文字列(中の \"・# の数・\\ はエスケープに\n  しない・行をまたいで持ち越す)/ b\"…\"・br\"…\"・b'…' / 文字リテラル\n  ('a' '\\n' '\\'' '🎨' '\"')/ ライフタイム('_ 'a 'static)/ 属性 / マクロと\n  a!=b / :: のパス / 数値の接尾辞と範囲 / 基本型と self・Self / 文書\n  コメント / ブロックコメントの持ち越し / 普通の文字列は持ち越さない /\n  .ts の閉じない \" は持ち越さない、のケースを pr-explain-core-cases.sh に足す\n\n背景:\nRust の読み手の規則は、それぞれ外すと別の綴りの読みが崩れる\n(生文字列は中の \"、ライフタイムは行の残り、'🎨' は u フラグ)。\n規則ごとに落ちうるケースを置く。\n\n採用理由:\n生文字列・文字リテラル・ライフタイム・マクロの先読みは、それぞれ一時的に\n外して該当ケースが落ちることを確かめた。マクロのケースは a!=b(空白なし)\nにした。空白があると先読みを外しても a がマクロにならず、落ちないため。\n\n影響とトレードオフ:\n判定表だけの変更。pre-push と CI(rules-check)が走らせる。\n「fn main() の main は関数、Some( は型」のケースは足していない。\n既存の規則では大文字で始まる名前に ( が続くと関数になり、Rust だけ\n型にする規則は計画に無いため(Issue に記録)。\n\n代替案:\nCommitDiff / ExcerptRows を通す通しのケース: どちらも\nTokenizer.grammarOf(path) を拡張子で引くだけで、Rust 用の経路が無い。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1163\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0171eLYm2u3pDsRFVtUxxa3y",
+      "files": [
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 95,
+          "deletions": 0,
+          "patch": "@@ -1450,6 +1450,101 @@ const cases = [\n     actual: () => [\"a.md\", \"a.toml\"].map((path) => lineTokensOf(path, [\"const a = f(1);\"])[0].map((token) => [token.cls, token.value])),\n     expected: [[[null, \"const a = f(1);\"]], [[null, \"const a = f(1);\"]]],\n   },\n+  {\n+    label: \"色分け: .rs は Rust の規則で読む(fn がキーワード)\",\n+    actual: () => colorOf(\"a.rs\", [\"fn main() {}\"], { word: \"fn\" }),\n+    expected: \"tok-kw\",\n+  },\n+  {\n+    label: \"色分け: Rust の生文字列 r#\\\"…\\\"# は中の \\\" で切れず 1 つの文字列になり、後ろの let はキーワードに戻る\",\n+    actual: () => [[\"r#\\\"{\\\"a\\\":1}\\\"#\", 0], [\"let\", 1]].map(([word, nth]) => colorOf(\"a.rs\", [\"let c = r#\\\"{\\\"a\\\":1}\\\"#; let x = 1;\"], { word, nth })),\n+    expected: [\"tok-str\", \"tok-kw\"],\n+  },\n+  {\n+    label: \"色分け: Rust の生文字列は、# の数が合わない \\\"# では閉じない\",\n+    actual: () => colorOf(\"a.rs\", [\"let s = r##\\\"a\\\"#b\\\"##;\"], { word: \"r##\\\"a\\\"#b\\\"##\" }),\n+    expected: \"tok-str\",\n+  },\n+  {\n+    label: \"色分け: Rust の生文字列の中の \\\\ はエスケープにならない(後ろの let はキーワード)\",\n+    actual: () => [[\"r\\\"a\\\\\\\"\", 0], [\"let\", 1]].map(([word, nth]) => colorOf(\"a.rs\", [\"let t = r\\\"a\\\\\\\"; let x = 1;\"], { word, nth })),\n+    expected: [\"tok-str\", \"tok-kw\"],\n+  },\n+  {\n+    label: \"色分け: Rust の b\\\"a\\\" / br\\\"a\\\" / b'a' は接頭辞ごと 1 つの文字列になる\",\n+    actual: () => [\"b\\\"a\\\"\", \"br\\\"a\\\"\", \"b'a'\"].map((word) => colorOf(\"a.rs\", [\"let a = b\\\"a\\\"; let b = br\\\"a\\\"; let c = b'a';\"], { word })),\n+    expected: [\"tok-str\", \"tok-str\", \"tok-str\"],\n+  },\n+  {\n+    label: \"色分け: Rust の文字リテラル 'a' / '\\\\n' / '\\\\'' / 絵文字は文字列になる\",\n+    actual: () => [\"'a'\", \"'\\\\n'\", \"'\\\\''\", \"'🎨'\"].map((word) => colorOf(\"a.rs\", [\"let c = ['a', '\\\\n', '\\\\'', '🎨'];\"], { word })),\n+    expected: [\"tok-str\", \"tok-str\", \"tok-str\", \"tok-str\"],\n+  },\n+  {\n+    label: \"色分け: Rust のライフタイム '_ は型になり、行の残りを文字列にしない(後ろの Arc が型)\",\n+    actual: () => [\"'_\", \"Arc\"].map((word) => colorOf(\"a.rs\", [\"known: State<'_, Arc<K>>,\"], { word })),\n+    expected: [\"tok-type\", \"tok-type\"],\n+  },\n+  {\n+    label: \"色分け: Rust のライフタイム 'a / 'static は型、文字リテラル 'a' は文字列になる\",\n+    actual: () => [[\"'a\", 0], [\"'a\", 1], [\"'static\", 0], [\"'a'\", 0]].map(([word, nth]) => colorOf(\"a.rs\", [\"fn f<'a>(x: &'a str) -> &'static str { 'a' }\"], { word, nth })),\n+    expected: [\"tok-type\", \"tok-type\", \"tok-type\", \"tok-str\"],\n+  },\n+  {\n+    label: \"色分け: Rust の属性の #[cfg / #![allow はキーワード、中の名前は変数になる\",\n+    actual: () => [[\"#[cfg(unix)]\", \"#[cfg\", \"unix\"], [\"#![allow(non_snake_case)]\", \"#![allow\", \"non_snake_case\"]].map(([line, opening, name]) => [opening, name].map((word) => colorOf(\"a.rs\", [line], { word }))),\n+    expected: [[\"tok-kw\", \"tok-var\"], [\"tok-kw\", \"tok-var\"]],\n+  },\n+  {\n+    label: \"色分け: Rust のマクロ assert! / matches! / vec! は ! ごと関数になり、a!=b の a は変数のまま\",\n+    actual: () => [\"assert!\", \"matches!\", \"vec!\", \"a\"].map((word) => colorOf(\"a.rs\", [\"assert!(a!=b); matches!(x, y); vec![1];\"], { word })),\n+    expected: [\"tok-fn\", \"tok-fn\", \"tok-fn\", \"tok-var\"],\n+  },\n+  {\n+    label: \"色分け: Rust のパスは、大文字で始まる名前が型、「名前(」が関数、ほかが変数になる\",\n+    actual: () => [\"DocumentIoError\", \"invalid_path\", \"io\", \"save\"].map((word) => colorOf(\"a.rs\", [\"DocumentIoError::invalid_path(p); io::save(p);\"], { word })),\n+    expected: [\"tok-type\", \"tok-fn\", \"tok-var\", \"tok-fn\"],\n+  },\n+  {\n+    label: \"色分け: Rust の 0xff / 1_000u64 / 1.5f32 は 1 つの数値、0..10 は 2 つの数値になる\",\n+    actual: () => lineTokensOf(\"a.rs\", [\"f(0xff, 1_000u64, 1.5f32, 0..10);\"])[0].filter((token) => token.cls === \"tok-num\").map((token) => token.value),\n+    expected: [\"0xff\", \"1_000u64\", \"1.5f32\", \"0\", \"10\"],\n+  },\n+  {\n+    label: \"色分け: Rust の基本型 u64 / str / bool は型、self / Self はキーワードになる\",\n+    actual: () => [\"u64\", \"str\", \"bool\", \"self\", \"Self\"].map((word) => colorOf(\"a.rs\", [\"fn f(&self, a: u64, b: &str) -> Self { bool }\"], { word })),\n+    expected: [\"tok-type\", \"tok-type\", \"tok-type\", \"tok-kw\", \"tok-kw\"],\n+  },\n+  {\n+    label: \"色分け: Rust の文書コメント /// / //! はコメントになる\",\n+    actual: () => lineTokensOf(\"a.rs\", [\"/// a\", \"//! c\"]).map((tokens) => tokens.map((token) => [token.cls, token.value])),\n+    expected: [[[\"tok-com\", \"/// a\"]], [[\"tok-com\", \"//! c\"]]],\n+  },\n+  {\n+    label: \"色分け: Rust の行をまたぐ生文字列は次の行へ持ち越す(2 行目の let までが文字列)\",\n+    actual: () => [\"let b\\\"#\", \"let\"].map((word) => colorOf(\"a.rs\", [\"let s = r#\\\"a\", \"let b\\\"#; let x = 1;\"], { line: 1, word })),\n+    expected: [\"tok-str\", \"tok-kw\"],\n+  },\n+  {\n+    label: \"色分け: Rust の普通の文字列は次の行へ持ち越さない(次の行の let はキーワード)\",\n+    actual: () => colorOf(\"a.rs\", [\"let s = \\\"a\", \"let x = 1;\"], { line: 1, word: \"let\" }),\n+    expected: \"tok-kw\",\n+  },\n+  {\n+    label: \"色分け: .ts の閉じていない \\\" は次の行へ持ち越さない(次の行の const はキーワード)\",\n+    actual: () => colorOf(\"a.ts\", [\"const s = \\\"a\", \"const b = 1;\"], { line: 1, word: \"const\" }),\n+    expected: \"tok-kw\",\n+  },\n+  {\n+    label: \"色分け: Rust の /* は次の行の */ で閉じ、その後ろの let はキーワードになる\",\n+    actual: () => colorOf(\"a.rs\", [\"/* a\", \"b */ let x = 1;\"], { line: 1, word: \"let\" }),\n+    expected: \"tok-kw\",\n+  },\n+  {\n+    label: \"色分け: Rust の文字リテラル '\\\"' の中の \\\" は文字列を開かず、後ろの let はキーワードに戻る\",\n+    actual: () => [[\"'\\\"'\", 0], [\"let\", 1]].map(([word, nth]) => colorOf(\"a.rs\", [\"let q = '\\\"'; let x = 1;\"], { word, nth })),\n+    expected: [\"tok-str\", \"tok-kw\"],\n+  },\n   {\n     label: \"色分け: JS / TS の大文字で始まる名前は型になる\",\n     actual: () => colorOf(\"a.ts\", [\"const a: TauriIpc = b;\"], { word: \"TauriIpc\" }),",
+          "patchLines": 102,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "98ab4f9fdffd52c78d845d5477f7bb0e201a98d3",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T09:17:59Z",
+      "subject": "♻️ [Refactoring]: #1163 閉じ記号の走査を delimitedAt にまとめ、Rust の読み手の doc を実物に合わせる",
+      "body": "- continuationOf(持ち越しの続きの行)も delimitedAt を使う形にし、閉じ\n  記号まで読む走査を 1 箇所にまとめる(振る舞いは変えない)\n- RustLifetime から (?!') を外す。正しい文字リテラルは先に RustChar が\n  取るので、効くのは 'ab' のような正しくない入力だけだった\n- RustNumber の doc に「指数の後ろの _ は読まず、1e10_f64 は 1e10 で切る」\n  を足す(正規表現は変えない)\n- Grammars.rust に「' を strings に入れない」理由を 1 行書く\n- Tokenizer の doc を「入れ子のブロックコメントは最初の閉じ記号で閉じ」に\n  直す\n- CSP の script-src の sha256 を取り直す\n\n背景:\nduplication-reviewer / harness-reviewer / over-guard-reviewer /\ncomment-reviewer の指摘。閉じ記号を探す処理が、新しい delimitedAt と\n既存の continuationOf の 2 箇所にあり、片方だけ直すと開いた行と続きの\n行で読み方が割れる。\n\n採用理由:\ncontinuationOf は delimitedAt に探し始める位置(cursor.at)と持ち越しの\n{cls, close} を渡すだけの 1 行になる。RustNumber の doc は「_ を挟む\n接尾辞は 1 つにならない」と書くと実物と合わない(1_u64 / 0xff_u8 は\n数字の側が _ を読むので 1 字句になる)。割れるのは指数の後だけなので、\nそれを書いた。\n\n影響とトレードオフ:\n読み方は変わらない。判定表(pr-explain-core-cases.sh)はすべて通り、\nsrc-tauri の .rs 29 本で閉じない文字列・色の無い引用符は 0 件のまま。\n\n代替案:\nRustNumber の正規表現に _? を足して 1e10_f64 も 1 字句にする: 計画で\n「1 字句の色の違いで後ろの読みは崩れない」として直さないと決めた。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1163#issuecomment-6382384533\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0171eLYm2u3pDsRFVtUxxa3y",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 9,
+          "patch": "@@ -2,7 +2,7 @@\n <html lang=\"ja\">\n <head>\n <meta charset=\"utf-8\">\n-<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-BH8X6oEPXpvIMR0xZlxcT/hkXmBtL585+de4A1trE/4='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n+<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-2zkzkm16AH/mcZF3G5XmaZ1Wmts/GrJlTsygIOgU+6Q='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n <title>PR 解説</title>\n <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n@@ -794,7 +794,7 @@ button.change-item:hover { background: var(--track); }\n    * 含む)をキーワード、属性名を値の有無によらずキー、属性の値の文字列を文字列にする。JSX の本文は色なしで、`{…}` の中は JS / TS で\n    * 読む。HTML の本文は、数値と関数呼び出し(`名前(`)のほかは色なし。Rust は生文字列・バイト文字列・文字リテラルを文字列、ライフタイムを\n    * 型、属性の `#[名前` / `#![名前` をキーワード、括弧の続くマクロの `名前!` を関数にし、行をまたいで続けるのは生文字列とブロックコメントだけ。\n-   * Rust の入れ子のブロックコメントは内側の閉じ記号で外側まで閉じ、hunk・抜粋が生文字列の途中から始まると、閉じの `\"#` を開きと読む。\n+   * Rust の入れ子のブロックコメントは最初の閉じ記号で閉じ、hunk・抜粋が生文字列の途中から始まると、閉じの `\"#` を開きと読む。\n    */\n   const Tokenizer = (() => {\n     const words = (list) => new Set(list.split(\" \").filter((word) => word !== \"\"));\n@@ -804,14 +804,14 @@ button.change-item:hover { background: var(--track); }\n     const JsIdentifier = /[A-Za-z_$][\\w$]*/y;\n     const JsGrammar = { comment: \"//\", block: [\"/*\", \"*/\"], strings: ['\"', \"'\", \"`\"], keywords: words(JsWords), identifier: JsIdentifier, identifiers: true, objectKeys: true };\n     const TsGrammar = { ...JsGrammar, keywords: words(`${JsWords} ${TsWords}`) };\n-    /** Rust の数値。16 / 8 / 2 進・`_` の区切り・指数と、`u64` `f32` などの型の接尾辞までを 1 つにする。 */\n+    /** Rust の数値。16 / 8 / 2 進・`_` の区切り・指数と、`u64` `f32` などの型の接尾辞までを 1 つにする。指数の後ろの `_` は読まず、`1e10_f64` は `1e10` で切る。 */\n     const RustNumber = /(?:0x[0-9A-Fa-f_]+|0o[0-7_]+|0b[01_]+|\\d[\\d_]*(?:\\.\\d[\\d_]*)?(?:[eE][+-]?\\d+)?)(?:[iu](?:8|16|32|64|128|size)|f32|f64)?/y;\n     /** Rust の生文字列の開き(`r\"` / `r#\"` / `br##\"` など)。閉じは同じ数の `#` が付いた `\"`。 */\n     const RustRawStringStart = /b?r#*\"/y;\n     /** Rust の文字リテラル(`'a'` / `'\\n'` / `'\\u{1F3A8}'` / `b'a'`)。絵文字を 1 字と数えるよう `u` を付ける。 */\n     const RustChar = /b?'(?:\\\\(?:x[0-9A-Fa-f]{2}|u\\{[0-9A-Fa-f_]{1,8}\\}|.)|[^'\\\\\\n])'/yu;\n     /** Rust のライフタイム(`'a` / `'_` / `'static`)。文字リテラルを先に読むので、`'a'` はここへ来ない。 */\n-    const RustLifetime = /'[A-Za-z_]\\w*(?!')/y;\n+    const RustLifetime = /'[A-Za-z_]\\w*/y;\n     /** Rust の属性の開きと名前(`#[cfg` / `#![allow`)。 */\n     const RustAttribute = /#!?\\[\\s*[A-Za-z_][\\w:]*/y;\n     /** Rust のマクロの呼び出し(`assert!(` / `vec![` の `名前!`)。括弧が続くものだけにして、`a!=b` の `a` を取らない。 */\n@@ -826,6 +826,7 @@ button.change-item:hover { background: var(--track); }\n       yaml: { comment: \"#\", strings: ['\"', \"'\"], keys: true, keywords: words(\"true false null\") },\n       html: { block: [\"<!--\", \"-->\"], strings: ['\"', \"'\"], tags: true, keywords: words(\"\") },\n       css: { block: [\"/*\", \"*/\"], strings: ['\"', \"'\"], css: true, keywords: words(\"\") },\n+      // `'` は strings に入れない。ライフタイム(`State<'_, …>` の `'_`)から行末までを文字列にしてしまうため。\n       rust: { comment: \"//\", block: [\"/*\", \"*/\"], strings: ['\"'], prefixes: /b(?=\")/y, rust: true, number: RustNumber, identifiers: true, keywords: words(\"as async await break const continue crate dyn else enum extern false fn for if impl in let loop match mod move mut pub ref return self Self static struct super trait true type unsafe use where while\"), types: words(\"bool char str u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize f32 f64\") },\n     };\n     const LanguageByExtension = { py: \"python\", js: \"js\", mjs: \"js\", jsx: \"jsx\", ts: \"ts\", tsx: \"tsx\", json: \"js\", sh: \"shell\", bash: \"shell\", yml: \"yaml\", yaml: \"yaml\", html: \"html\", css: \"css\", rs: \"rust\" };\n@@ -1145,11 +1146,7 @@ button.change-item:hover { background: var(--track); }\n     };\n \n     /** 持ち越しの続き(前の行で閉じなかった文字列・コメント)を、閉じ記号まで 1 字句にする。 */\n-    const continuationOf = (cursor, open) => {\n-      const close = cursor.text.indexOf(open.close, cursor.at);\n-      if (close < 0) return Token(open.cls, cursor.text.slice(cursor.at), open.close);\n-      return Token(open.cls, cursor.text.slice(cursor.at, close + open.close.length));\n-    };\n+    const continuationOf = (cursor, open) => delimitedAt(cursor, { cls: open.cls, from: cursor.at, close: open.close });\n \n     /**\n      * 字句を読んだ後の括弧の並び。色の無い字句だけを括弧として見る。",
+          "patchLines": 56,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "485ae848b621805842f803c0719602b285755056",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T09:28:40Z",
+      "subject": "♻️ [Refactoring]: #1163 rustTokenAt の届かないガードを消し、delimitedAt の doc を実装に合わせる",
+      "body": "- rustTokenAt 冒頭の「直前が名前の途中なら null」を消し、doc からも\n  その記述を消す\n- delimitedAt の doc を「from 以降で最初に来る閉じ記号」にする\n  (indexOf(close, from) は from の位置そのものから探す)\n- CSP の script-src の sha256 を取り直す\n\n背景:\ntest-reviewer の変異テストで、ガードを外しても判定表が落ちなかった。\n名前は wordAt が丸ごと読むので、正しい Rust で名前の途中に止まることが\n無く、効くのは x'a / 1r\"a\" のような Rust として不正な綴りだけだった。\n1 段目のレビューでは前後の読み手と揃えるために残すとしたが、守っている\n入力が無く、テストも書けないので改めた。delimitedAt の doc は、この PR で\n足した関数の記述が「from より後」になっていて実装と食い違っていた。\n\n採用理由:\n守る入力を持たない防御は、読む人に「何を守っているのか」を探させるだけ\nになる。\n\n影響とトレードオフ:\n正しい Rust の読み方は変わらない(判定表 344 件・src-tauri の .rs 29 本で\n確かめた)。不正な綴り x'a などは読み方が変わりうるが、表示が崩れるのは\nその字句だけ。\n\n代替案:\nガードを残し、守る入力(不正な綴り)のケースを足す: 不正な Rust の表示を\n仕様として固定することになる。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1163#issuecomment-6382487621\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0171eLYm2u3pDsRFVtUxxa3y",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 4,
+          "patch": "@@ -2,7 +2,7 @@\n <html lang=\"ja\">\n <head>\n <meta charset=\"utf-8\">\n-<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-2zkzkm16AH/mcZF3G5XmaZ1Wmts/GrJlTsygIOgU+6Q='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n+<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-N2x3itMdDpM/FAYwVbrgjwb2XNeG4/PiMIXQtD0u/jM='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">\n <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n <title>PR 解説</title>\n <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n@@ -927,7 +927,7 @@ button.change-item:hover { background: var(--track); }\n       return Token(\"tok-str\", prefix + rest.value, rest.opens);\n     };\n \n-    /** 位置から、`from` より後で最初に来る閉じ記号 `close` までを 1 字句にする。閉じずに行が終わったら、閉じ記号を次の行へ持ち越す。 */\n+    /** 位置から、`from` 以降で最初に来る閉じ記号 `close` までを 1 字句にする。閉じずに行が終わったら、閉じ記号を次の行へ持ち越す。 */\n     const delimitedAt = (cursor, { cls, from, close }) => {\n       const end = cursor.text.indexOf(close, from);\n       return end >= 0 ? Token(cls, cursor.text.slice(cursor.at, end + close.length)) : Token(cls, restOfLine(cursor), close);\n@@ -1027,9 +1027,8 @@ button.change-item:hover { background: var(--track); }\n       return delimitedAt(cursor, { cls: \"tok-str\", from: cursor.at + opening.length, close: `\"${hashes}` });\n     };\n \n-    /** Rust の、文字列・コメント・数値・名前のほかの字句(生文字列・文字リテラル・ライフタイム・属性・マクロ)。名前の途中と、どれでもなければ null。 */\n+    /** Rust の、文字列・コメント・数値・名前のほかの字句(生文字列・文字リテラル・ライフタイム・属性・マクロ)。どれでもなければ null。 */\n     const rustTokenAt = (cursor) => {\n-      if (/\\w/.test(cursor.prev)) return null;\n       const raw = rustRawStringAt(cursor);\n       if (raw) return raw;\n       const char = matchAt(RustChar, cursor);",
+          "patchLines": 29,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "5cc576042a99e8208651c8f747ee111b89a5bfec",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T09:28:40Z",
+      "subject": "🧪 [Tests]: #1163 Rust のブロックコメント・数値・文字リテラル・属性・マクロの判定表を強める",
+      "body": "- ブロックコメントのケースで、1 行目の /* a と持ち越した 2 行目の b */ が\n  コメントの色になることも見る\n- 1e10_f64 は 1e10 で切れる / 1e10・2.5E-3 は 1 つの数値 / 0o17・0b1010 は\n  1 つの数値 / 1u128 は接尾辞まで 1 つの数値 / '\\u{1F3A8}'・'\\x7f' は文字列 /\n  #[serde::rename の :: を含むパスまでがキーワード / thread_local!{ の\n  thread_local! は関数、のケースを足す\n\n背景:\ntest-reviewer の変異テストで、Rust の文法から block を丸ごと消しても判定表が\n落ちなかった(閉じた後ろの let しか見ておらず、block が無くても let は\nキーワードになる)。doc に名前の出ている指数・8 進・2 進・u128・\\u{…}・\n\\x・:: を含む属性・{ が続くマクロも、壊して落ちるケースが無かった。\n\n採用理由:\n各ケースは、対応する正規表現の分岐を一時的に消して、そのケースだけが\n落ちることを確かめた。\n\n影響とトレードオフ:\n判定表だけの変更。#[serde::rename(x)] は実在の書き方としては珍しいが、\n属性の名前に :: を含むパスを読めることを確かめる入力として使った\n(実在の例は #[tauri::command])。\n\n代替案:\ndoc の例を減らして、テストの無い記述を消す: 数値・文字の形は Rust の\n仕様の範囲で、doc に書いた形を守るほうが読み手に役立つ。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1163#issuecomment-6382487621\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_0171eLYm2u3pDsRFVtUxxa3y",
+      "files": [
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 37,
+          "deletions": 2,
+          "patch": "@@ -1510,6 +1510,41 @@ const cases = [\n     actual: () => lineTokensOf(\"a.rs\", [\"f(0xff, 1_000u64, 1.5f32, 0..10);\"])[0].filter((token) => token.cls === \"tok-num\").map((token) => token.value),\n     expected: [\"0xff\", \"1_000u64\", \"1.5f32\", \"0\", \"10\"],\n   },\n+  {\n+    label: \"色分け: Rust の 1e10_f64 は指数の後ろの _ を読まず、1e10 で切れる\",\n+    actual: () => lineTokensOf(\"a.rs\", [\"f(1e10_f64);\"])[0].filter((token) => token.cls === \"tok-num\").map((token) => token.value),\n+    expected: [\"1e10\"],\n+  },\n+  {\n+    label: \"色分け: Rust の指数 1e10 / 2.5E-3 は 1 つの数値になる\",\n+    actual: () => lineTokensOf(\"a.rs\", [\"f(1e10, 2.5E-3);\"])[0].filter((token) => token.cls === \"tok-num\").map((token) => token.value),\n+    expected: [\"1e10\", \"2.5E-3\"],\n+  },\n+  {\n+    label: \"色分け: Rust の 8 進 0o17 / 2 進 0b1010 は 1 つの数値になる\",\n+    actual: () => lineTokensOf(\"a.rs\", [\"f(0o17, 0b1010);\"])[0].filter((token) => token.cls === \"tok-num\").map((token) => token.value),\n+    expected: [\"0o17\", \"0b1010\"],\n+  },\n+  {\n+    label: \"色分け: Rust の 1u128 は接尾辞まで 1 つの数値になる\",\n+    actual: () => lineTokensOf(\"a.rs\", [\"f(1u128);\"])[0].filter((token) => token.cls === \"tok-num\").map((token) => token.value),\n+    expected: [\"1u128\"],\n+  },\n+  {\n+    label: \"色分け: Rust の文字リテラル '\\\\u{1F3A8}' / '\\\\x7f' は文字列になる\",\n+    actual: () => [\"'\\\\u{1F3A8}'\", \"'\\\\x7f'\"].map((word) => colorOf(\"a.rs\", [\"let c = ['\\\\u{1F3A8}', '\\\\x7f'];\"], { word })),\n+    expected: [\"tok-str\", \"tok-str\"],\n+  },\n+  {\n+    label: \"色分け: Rust の属性 #[serde::rename は :: を含むパスまでがキーワードになる\",\n+    actual: () => colorOf(\"a.rs\", [\"#[serde::rename(x)]\"], { word: \"#[serde::rename\" }),\n+    expected: \"tok-kw\",\n+  },\n+  {\n+    label: \"色分け: Rust のマクロ thread_local!{ の thread_local! は関数になる\",\n+    actual: () => colorOf(\"a.rs\", [\"thread_local!{ static A: u8 = 1; }\"], { word: \"thread_local!\" }),\n+    expected: \"tok-fn\",\n+  },\n   {\n     label: \"色分け: Rust の基本型 u64 / str / bool は型、self / Self はキーワードになる\",\n     actual: () => [\"u64\", \"str\", \"bool\", \"self\", \"Self\"].map((word) => colorOf(\"a.rs\", [\"fn f(&self, a: u64, b: &str) -> Self { bool }\"], { word })),\n@@ -1537,8 +1572,8 @@ const cases = [\n   },\n   {\n     label: \"色分け: Rust の /* は次の行の */ で閉じ、その後ろの let はキーワードになる\",\n-    actual: () => colorOf(\"a.rs\", [\"/* a\", \"b */ let x = 1;\"], { line: 1, word: \"let\" }),\n-    expected: \"tok-kw\",\n+    actual: () => [[0, \"/* a\"], [1, \"b */\"], [1, \"let\"]].map(([line, word]) => colorOf(\"a.rs\", [\"/* a\", \"b */ let x = 1;\"], { line, word })),\n+    expected: [\"tok-com\", \"tok-com\", \"tok-kw\"],\n   },\n   {\n     label: \"色分け: Rust の文字リテラル '\\\"' の中の \\\" は文字列を開かず、後ろの let はキーワードに戻る\",",
+          "patchLines": 53,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+            }
+          ]
+        }
+      ]
     }
   ],
-  "dependencies": []
+  "dependencies": [
+    {
+      "from": ".claude/skills/pr-explain/templates/index.html",
+      "to": ".claude/skills/pr-explain/templates/explain.json",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    }
+  ]
 }
