@@ -3,7 +3,7 @@
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
 # 叩いて、地図と解説の合流・振る舞いの節の並び・技術の手引きの節・用語の印・抜粋の強調・出てくる場所のコミットへの
-# 届き方・今の節・文字の大きさの段・倍率を変えたあとの読む線の位置・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、
+# 届き方・今の節・文字の大きさの段と倍率・倍率を変えたあとの読む線の位置・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、
 # `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・解説の形の道筋(impact・primers・terms・抜粋の
 # 強調)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを
 # 1 コマンドで確かめる。
@@ -1116,14 +1116,24 @@ const cases = [
     expected: [100, 110, 120, 130, 140, 150, null],
   },
   {
-    label: "文字の大きさは、150% から大きく・90% から小さくはできない",
-    actual: () => [TextSize.larger(150), TextSize.smaller(90)],
-    expected: [null, null],
-  },
-  {
     label: "文字の大きさは、端の 1 段手前からなら端まで動かせる",
     actual: () => [TextSize.larger(140), TextSize.smaller(100)],
     expected: [150, 90],
+  },
+  {
+    label: "文字の大きさは、150% より大きい段が無いことを null で答える",
+    actual: () => TextSize.larger(150) === null,
+    expected: true,
+  },
+  {
+    label: "文字の大きさは、90% より小さい段が無いことを null で答える",
+    actual: () => TextSize.smaller(90) === null,
+    expected: true,
+  },
+  {
+    label: "文字の大きさ 110% は、倍率 1.1 として書く",
+    actual: () => TextSize.ratioOf(110),
+    expected: "1.1",
   },
   {
     label: "primers がオブジェクトの解説は、理由を primers の型として解説なしにする",
