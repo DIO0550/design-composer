@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1162,
+  "headBranch": "claude/magical-cannon-lpvm99",
+  "baseBranch": "main",
+  "mergeBase": "72e88813a1419aac0dcecca0388a4cf0c74f274a",
+  "head": "01881dc8dcd2b3b57d5ce7e10fec18e52be3ef30",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1156.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 118,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "01881dc8dcd2b3b57d5ce7e10fec18e52be3ef30",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T01:52:41Z",
+      "subject": "📝 [Documentation]: #1147 PR #1156 の振り返りを記録する",
+      "body": "- harness/records/pr-1156.md を追加\n  (plan 2 / test 2 / duplication 2 / comment 6 / harness 1)\n\n背景:\nPR #1156(artboard を ⌘ / Ctrl で運ぶと吸い付かない)がマージされたので、\nその回のレビュー指摘・手戻り・フックの発火を記録する。\n\n採用理由:\n指摘は出どころの単位ではなく元の指摘ごとに 1 ブロックで書いた。count.sh\nが分類ごとに数えるため。不採用にした指摘も、判断の材料として残している。\n\n代替案:\n- エージェントをまたいで同じ根本原因の指摘を 1 件に束ねる: 束ねるのは\n  対応を決めるときだけで、記録は元の指摘ごとに書く決まりのため採らない\n\n影響とトレードオフ:\n記録 1 ファイルの追加のみ。rules / フック / スキルには触れていない。\n人・bot・CI からの指摘は 0 件で、再発数は増えない。\n\n参考:\n- .claude/skills/harness-record/templates/record.md\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01RNorVpXmwwPwT6sYPoUM7G",
+      "files": [
+        {
+          "path": "harness/records/pr-1156.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 118,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,118 @@\n+# PR #1156 artboard を運んでいる間も ⌘ / Ctrl で吸い付きを外せるようにする\n+\n+- マージ日: 2026-10-24\n+- 関連 Issue: #1147\n+- 差分規模: 5 ファイル / +182 -13\n+\n+## ゴールと結果\n+\n+ゴールは、artboard を見出しから運んでいる間に ⌘ / Ctrl を押していれば吸い付かず（ガイド線も出ない）、押しているかをポインタが動くたびに見ること（ノードの移動・リサイズと同じ）。あわせて `docs/06-ui.md`「artboard の移動」にこの規則を書き足すこと。どちらも達成した。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。コメントは、自分が投稿したテストケース表と、bot の投稿（Storybook プレビュー・CI レポート・VRT）だけだった。CI は初回の push ですべて通った（VRT は 202 件で差分 0 件）。\n+\n+## 指摘\n+\n+### 1. ⌘ を押している回も、他の artboard をすべて測ってから捨てている\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画は `measureDrawn` で揃え先を測ってから空にする形だった。同じフックは「掴んでいない間は測らない」と DOM 計測のコストを気にしている。揃え先の名前を測る前に空にする形へ計画を直した。\n+- 既存ルール: なし\n+\n+### 2. 修飾キーが move にしか載らず、⌘ を押したまま掴む経路をテストが通らない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `dragSecond` の拡張案は修飾キーを `movePointer` にしか渡していなかった。実際によくある「⌘ を押したまま見出しを掴む」経路を通るテストが無かった。押す時点から `pressPointerHolding` で押す形に直した。\n+- 既存ルール: rules/testing.md「1. 振る舞い(仕様)をテストする」\n+\n+### 3. ガイド線が出ないテストが単独では落ちない形になりうる\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 線が 0 本であることは、そもそも線が描かれない setup でも成り立つ。同じ入力で押さなければ 1 本出ることを別ファイルの 1 件目が確かめている、とテストに明記した。同じファイル内にも、1 → 0 本になる対照のテストを置いた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 4. 却下案 B の理由が、前例（リサイズのドメインのメソッド）と半分しか噛み合っていない\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「ドメインに寄せると真偽値引数になる」という理由は、引数を取らないメソッドで置いているリサイズの前例に当たらなかった。理由を 2 つに分けて書き直した。真偽値を渡す案は、入力の事情をドメインに持ち込む。メソッドを置く案は、artboard の実測がフック内の一時値なので当たらない。\n+- 既存ルール: rules/architecture.md「ロジックの帰属先」\n+\n+### 5. 運んで離さない操作を、テストの中で 3 回手で書いている\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 同じ 2 行（掴む・動かす）が 3 箇所にあった。しかも `dragSecond` は見出しの上で、手書きの側は `canvasContent` の上で動かしていた。`carrySecond` を立て、`dragSecond` をその上に乗せた（ノード側の `carryNode` / `dragNode` と同じ形）。\n+- 既存ルール: rules/testing.md「テスト用ヘルパーの置き場所」\n+\n+### 6. docs の追加行が、ノードの規則を一部だけ書き写している\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 不採用にした。追加した行は、既にあるリサイズの行と同じ形に揃えてある。3 つの直接操作の ⌘ 規則を 1 か所の定義へ寄せるのは、仕様書の構成を変えることになり、Issue のゴールを越える。理由は Issue に書いた。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 7. 「吸い付かない」の書き方が 3 つのフックで違うのに、コメントが「同じ表し方」と書いている\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: ノードの移動はフック内の定数、リサイズはドメインのメソッド、今回は空配列で、書き方が 3 通りある。コメントを「考え方はノードの移動の `NoSnapTargets` と同じ」に直した。空の書き方を 1 つに揃える案は採らなかった（揃え先の型が 3 つで違う）。structure-reviewer も同じ点を担当外のメモとして挙げた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 8. コメントの「捨てる DOM を測らない」が言い過ぎている\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（over-guard-reviewer）`\n+- 内容: ⌘ を押していても、運んでいる artboard 自身は測っている。「揃え先の DOM は測らない」に直した。担当外のメモとして挙がったもの。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 9. docs の行に、止まったまま押した / 離したときの扱いが無い\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 不採用にした。6 と根本原因が同じ。harness-reviewer は、「（ノードの移動と同じ）」がこの扱いまで引き継ぐことを実装と突き合わせて確かめている。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 10. 「なぜドメインで判定しないか」の Why not がコードに無い\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 不採用にした。コメントは既にノードの移動の前例を指しており、却下の理由は Issue に残っている。型・テストで守れず、外すと壊れる事情には当たらない（「理由は原則書かない」）。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 11. 最後のテストのコメントが、何を見ているか読みにくい\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 「運んでいる間は線が 1 → 0 本になり、離したあとは運んだ量そのままの座標が書かれる」に書き直した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 12. 「測れない none とは分ける」は、どのテストでも区別できない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 実装を 5 通りに壊し、4 通りで狙ったテストが落ちた。⌘ のときに揃え先を空にせず `none` を返す壊し方では、979 件すべてが通った。担当外のメモとして挙がったが、不採用にした。この区別は表し方の選択についての Why で、テストで守れないものはコメントに書いてよい側に当たる。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 13. フックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が単独で実行しても通った。実行中フラグのマーカーも、このセッションの発火ログも無かった（README の表で「本当に不発」の枝）。親セッションは禁止コマンドを打っていない。planner は scratchpad に複製した作業ツリーで `npx` を使ったと報告している。PR 本文と Issue に記録した。\n+- 既存ルール: なし\n+\n+## 手戻り\n+\n+- 計画の検証で受けた指摘 4 件（1〜4）は、planner で計画を立て直さず、親が採否のコメントを差分として implementer へ渡した。直し方まで決まっていて、新しい判断を伴わなかったため。この判断は Issue に書いた\n+- 実装の検証 1 段目のあと、implementer を 1 回起こし直した。5・7・8・11 の直しで、コミットは 4586b1e と 6c4f641\n+- 実装の途中で、implementer が計画から外れて止まったことは無い\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。集計と介入は harness-growth の管轄で、この記録では行わない。",
+          "patchLines": 119,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
