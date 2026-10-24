@@ -1,11 +1,11 @@
 {
   "version": 1,
   "pr": 1159,
-  "sha": "3cf9385746339ddf5810d596bda4aab0fa9337b9",
+  "sha": "5cc576042a99e8208651c8f747ee111b89a5bfec",
   "issue": 1144,
   "overview": {
-    "title": "ドキュメントの I/O コマンドが受け付けるパスを .dcmp の絶対パスに限る",
-    "lead": "webview から `load_document` / `save_document` / `watch_document` / `unwatch_document` に届いたパスを、Rust 側で検査済みの型 `DocumentFilePath` に変えてから I/O する。拡張子が `.dcmp` でない・相対・`..` の要素を含む・ファイル名で終わらない・ファイル名に `:` を含むパスは `InvalidPath` で拒否し、ファイルにも監視にも触れない。",
+    "title": "ドキュメントの I/O コマンドが受け付けるパスを .dcmp の絶対パスに限る / PR 解説ページで Rust に色を付ける",
+    "lead": "webview から `load_document` / `save_document` / `watch_document` / `unwatch_document` に届いたパスを、Rust 側で検査済みの型 `DocumentFilePath` に変えてから I/O する。拡張子が `.dcmp` でない・相対・`..` の要素を含む・ファイル名で終わらない・ファイル名に `:` を含むパスは `InvalidPath` で拒否し、ファイルにも監視にも触れない。 あわせて(#1163)、PR 解説ページの色分けに Rust の文法と専用の読み手を足し、`.rs` の差分・抜粋にキーワード・文字列・コメント・数値・型・関数の色が付くようにした。",
     "before": [
       {
         "text": "4 コマンドは webview から届いた文字列をそのまま `Path` にして I/O していた。乗っ取られた webview なら `~/.bashrc` の上書きや秘密鍵の読み出しができた"
@@ -15,6 +15,9 @@
       },
       {
         "text": "通知(`document-changed`)の `path` は、`watch_document` が受け取った生の文字列から作っていた"
+      },
+      {
+        "text": "解説ページの色分け(`Tokenizer`)は `LanguageByExtension` に `rs` が無く、`.rs` の差分・テストの抜粋・技術の手引きの抜粋は全部が地の色だった"
       }
     ],
     "after": [
@@ -39,6 +42,22 @@
       },
       {
         "text": "Linux の保存ダイアログで拡張子なしで名付けると `invalidPath` になる(GTK3 は拡張子を補わない)"
+      },
+      {
+        "text": "`.rs` は `Grammars.rust` で読み、`tokenAt` が文字列・コメントの次に `rustTokenAt` を通す。生文字列 → 文字リテラル → ライフタイム → 属性 → マクロの順に試す",
+        "message": "tokenize"
+      },
+      {
+        "text": "ライフタイムは型の色、属性の `#[名前` / `#![名前` はキーワードの色、括弧の続く `名前!` は関数の色(オーナーに確認中)"
+      },
+      {
+        "text": "行をまたいで持ち越すのは生文字列とブロックコメントだけ。普通の `\"…\"` は閉じずに行が終わっても次の行へ持ち越さない"
+      },
+      {
+        "text": "閉じ記号を探して、無ければ次の行へ持ち越す読み手 `delimitedAt` を、ブロックコメント・生文字列・持ち越しの続きの行(`continuationOf`)が共有する。ブロックコメントと続きの行の読み方は変えていない"
+      },
+      {
+        "text": "諦めた範囲: 入れ子のブロックコメントは最初の閉じ記号で閉じる。hunk・抜粋が生文字列の途中から始まると、閉じの `\"#` を開きと読む"
       }
     ],
     "highlights": [
@@ -73,6 +92,22 @@
           "kind": "feature",
           "id": "boundary"
         }
+      },
+      {
+        "title": "Rust の色の決め方(確認中)",
+        "text": "ライフタイム = 型・`#[名前` = キーワード・`名前!` = 関数は、オーナーの回答待ちのまま入れた。違えば `rustTokenAt` の返すクラスと判定表の 4 件だけを直す",
+        "go": {
+          "kind": "file",
+          "path": ".claude/skills/pr-explain/templates/index.html"
+        }
+      },
+      {
+        "title": "閉じ記号の読み手を 1 つに",
+        "text": "ブロックコメントと持ち越しの続きの行は、既存の読み方を `delimitedAt` に寄せた。振る舞いを変えていないことを、差分の 3 箇所(`commentAt`・`rustRawStringAt`・`continuationOf`)で見てほしい",
+        "go": {
+          "kind": "feature",
+          "id": "rust-color"
+        }
       }
     ]
   },
@@ -91,6 +126,11 @@
       "id": "frontend",
       "label": "TS 側の受け手",
       "role": "コマンドを呼び、通知を受け取る。この PR では変えていない"
+    },
+    {
+      "id": "rust-color",
+      "label": "Rust の色付け",
+      "role": "PR 解説ページで、Rust のコードをキーワード・文字列・コメント・数値・型・関数に色分けする"
     }
   ],
   "layerRoles": [
@@ -101,6 +141,10 @@
     {
       "layer": "docs",
       "role": "IPC の説明に、4 コマンドが受け付けるパスの条件を足す"
+    },
+    {
+      "layer": "ハーネス",
+      "role": "PR 解説ページの色分けに Rust の文法と読み手を足し、判定表に Rust のケースを足す"
     }
   ],
   "concepts": [
@@ -164,6 +208,20 @@
       "role": "「Tauri IPC」の節に、4 コマンドが受け付けるパスの条件を書いた",
       "change": "箇条を 1 つ足した",
       "graph": false
+    },
+    {
+      "path": ".claude/skills/pr-explain/templates/index.html",
+      "name": "解説ページの枠",
+      "role": "PR 解説ページの CSS・固定スクリプト・CSP。固定スクリプトの `Tokenizer` が差分と抜粋を色分けする",
+      "feature": "rust-color",
+      "change": "Rust の文法・`rustTokenAt`・`delimitedAt` を足し、CSP の `sha256-` を取り直した"
+    },
+    {
+      "path": ".github/scripts/pr-explain-core-cases.sh",
+      "name": "解説ページの判定表",
+      "role": "固定スクリプトを node で評価し、`Tokenizer` などの答えを期待と比べる",
+      "feature": "rust-color",
+      "change": "Rust の色分けのケースを足し、規則の無い拡張子の例を `.rs` から `.toml` に替えた"
     }
   ],
   "messages": [
@@ -269,6 +327,18 @@
       "code": "listener(changed.value)",
       "via": "call",
       "payload": "通知の `path` と中身。受け手は `path` を開いているパスと文字列で比べる"
+    },
+    {
+      "id": "tokenize",
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "kind": "qry",
+      "name": "行を色分けする",
+      "code": "Tokenizer.tokenizeLines(lines, Tokenizer.grammarOf(path), start)",
+      "via": "exec",
+      "payload": "パス(拡張子で文法を引く)と行の並び",
+      "returns": "行ごとの字句(`{cls, value, opens}`)の並び。`.rs` なら Rust の文法で読む",
+      "status": "changed"
     }
   ],
   "flows": [
@@ -606,6 +676,194 @@
           "text": "拡張子の比較を前方一致に緩める変異を捕まえる"
         }
       ]
+    },
+    {
+      "sha": "3e6a888203b63e9085cba7d842fc997ce6e4f617",
+      "phase": "core",
+      "role": "`.rs` を Rust の文法と専用の読み手で色分けする",
+      "why": "#1159 の解説ページを見たオーナーの指摘(「色がうまくついてない」)。色分けは `LanguageByExtension` に載った言語にしか効かず、#1159 は変更の大半が Rust なので、差分・抜粋がほぼ地の色だった。既存の `cssTokenAt` / `jsxTokenAt` と同じく文法に旗(`rust: true`)を立てて `tokenAt` から分岐させ、文字列・コメント・持ち越しの仕組みは既存のものを使う。src-tauri の .rs 29 本を読ませ、閉じない文字列・色の無い引用符が 0 件だった。",
+      "review": [
+        "`'` を `strings` に入れていない。入れると `State<'_, Arc<K>>` の `'_` から行末までが文字列になる(src-tauri でライフタイムを含む行は 15 行)",
+        "生文字列は Python と同じ `prefixes` では表せない(`r#\"{\"a\":1}\"#` が中の `\"` で切れる)ので、`rustRawStringAt` が `#` の数を数えて閉じを探す",
+        "ライフタイム・属性・マクロの色はオーナーに確認中で、案のまま入れた",
+        "Rust の定数は `Grammars` より前に置く。後ろに置くと `Grammars.rust` が初期化前の定数を読んで落ちる(試作で再現)"
+      ],
+      "before": [
+        {
+          "text": "`.rs` は規則が無く、行全体が色の無い 1 字句だった"
+        }
+      ],
+      "after": [
+        {
+          "text": "`.rs` は `Grammars.rust` で読み、生文字列・文字リテラル・ライフタイム・属性・マクロにも色が付く",
+          "message": "tokenize"
+        },
+        {
+          "text": "ブロックコメントも `delimitedAt` で閉じ記号を探す(振る舞いは同じ)"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 807,
+          "end": 818,
+          "text": "Rust の字句ごとの正規表現。どれも sticky(`y`)で、`matchAt` が今の位置からだけ試す。文字リテラルは絵文字を 1 字と読むよう `u` も付ける"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 829,
+          "end": 829,
+          "text": "`strings` は `\"` だけ。`b\"…\"` は `prefixes` で、生文字列と `'` は `rustTokenAt` で読む"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 929,
+          "end": 933,
+          "text": "閉じ記号を探して、無ければ行の残りを返して閉じ記号を持ち越す。ブロックコメントの枝にあった形を切り出した"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1030,
+          "end": 1042,
+          "text": "生文字列 → 文字リテラル → ライフタイム → 属性 → マクロの順。文字リテラルを先に読むので、`'a'` がライフタイムの `'a` に取られない"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1031,
+          "end": 1031,
+          "text": "直前が名前の途中なら読まないガード。のちの変異テストで守る入力が無いと分かり、485ae84 で消える"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1138,
+          "end": 1139,
+          "text": "`quotedAt`(文字列・コメント)の後に差し込む。`//` のコメントの中の `'` は、ここへ来る前にコメントとして読まれる"
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "start": 1448,
+          "end": 1452,
+          "text": "規則が無い拡張子の例を `.rs` から `.toml` に替えた。`.rs` のままだとこのケースだけが落ちる"
+        }
+      ]
+    },
+    {
+      "sha": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "phase": "core",
+      "role": "Rust の色分けのケースを判定表に足す",
+      "why": "Rust の読み手の規則は、それぞれ外すと別の綴りの読みが崩れる(生文字列は中の `\"`、ライフタイムは行の残り、`'🎨'` は `u` フラグ)。規則ごとに落ちうるケースを置き、生文字列・文字リテラル・ライフタイム・マクロの先読みは一時的に外して落ちることを確かめた。",
+      "review": [
+        "マクロのケースは空白の無い `a!=b` にした。`a != b` では先読みを外しても `a` がマクロにならず、落ちない(plan-reviewer の指摘)",
+        "「`Some(` は型」のケースは足していない。既存の規則では大文字の名前に `(` が続くと関数になり(TS と同じ)、Rust だけ変える規則は計画に無い",
+        "差分・抜粋を通す通しのケースは足していない。どちらも `Tokenizer.grammarOf(path)` を拡張子で引くだけで、Rust 用の経路が無い"
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "start": 1498,
+          "end": 1502,
+          "text": "`a!=b` の `a` が変数のままであることで、マクロの先読み `(?=[(\\[{])` を守る"
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "start": 1528,
+          "end": 1537,
+          "text": "普通の文字列は持ち越さないことと、それが `.ts` にも漏れていないこと(計画の却下案 G を、plan-reviewer の指摘で採った)"
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "start": 1538,
+          "end": 1542,
+          "text": "この時点では閉じた後ろの `let` しか見ていない。`block` を消しても落ちないと分かり、5cc5760 で強める"
+        }
+      ]
+    },
+    {
+      "sha": "98ab4f9fdffd52c78d845d5477f7bb0e201a98d3",
+      "phase": "revise",
+      "role": "閉じ記号の走査を `delimitedAt` にまとめ、Rust の読み手の doc を実物に合わせる",
+      "why": "1 段目のレビュー(duplication / harness / over-guard / comment)の指摘。閉じ記号を探す処理が `delimitedAt` と既存の `continuationOf` の 2 箇所にあり、片方だけ直すと開いた行と続きの行で読み方が割れる。`RustLifetime` の `(?!')` は、正しい文字リテラルを先に `RustChar` が取るので `'ab'` のような不正な入力にしか効かなかった。",
+      "review": [
+        "`continuationOf` は探し始める位置に `cursor.at` を渡すだけの 1 行になった。以前と同じく、続きの行の頭から閉じ記号を探す",
+        "`1e10_f64` が 2 字句に割れるのは直さず、doc に書いた。1 字句の色の違いで、後ろの読みは崩れない"
+      ],
+      "before": [
+        {
+          "text": "持ち越しの続きの行は、`continuationOf` が自前で閉じ記号を探していた"
+        }
+      ],
+      "after": [
+        {
+          "text": "開いた行と続きの行のどちらも `delimitedAt` で閉じ記号を探す"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 1149,
+          "end": 1149,
+          "text": "持ち越しの続き。`from` に `cursor.at` を渡し、行の頭から探す"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 814,
+          "end": 814,
+          "text": "`(?!')` を外した。`'a'` は手前の `RustChar` が先に取る"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 829,
+          "end": 829,
+          "text": "`'` を `strings` に入れない理由(却下案 B)を 1 行で残した"
+        }
+      ]
+    },
+    {
+      "sha": "485ae848b621805842f803c0719602b285755056",
+      "phase": "revise",
+      "role": "`rustTokenAt` の届かないガードを消し、`delimitedAt` の doc を実装に合わせる",
+      "why": "test-reviewer の変異テストで、`rustTokenAt` 冒頭の「直前が名前の途中なら null」を外しても判定表が落ちなかった。名前は `wordAt` が丸ごと読むので、正しい Rust で名前の途中に止まることが無く、効くのは `x'a` のような不正な綴りだけ。1 段目では前後の読み手と揃えるために残すとしたが、守る入力が無くテストも書けないので改めた。",
+      "review": [
+        "`delimitedAt` の doc を「`from` 以降」にした。`indexOf(close, from)` は `from` の位置そのものから探す"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "side": "old",
+          "start": 1032,
+          "end": 1032,
+          "text": "消したガード。正しい Rust では届かない"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "start": 930,
+          "end": 930,
+          "text": "「より後」を「以降」に。持ち越しの続きの行は `from` が行の頭なので、その位置の閉じ記号も見つける必要がある"
+        }
+      ]
+    },
+    {
+      "sha": "5cc576042a99e8208651c8f747ee111b89a5bfec",
+      "phase": "hard",
+      "role": "変異テストで素通りした Rust の字句のケースを足す",
+      "why": "test-reviewer の変異テストで、Rust の文法から `block` を丸ごと消しても判定表が落ちなかった(閉じた後ろの `let` は `block` が無くてもキーワードになる)。doc に名前の出ている指数・8 進・2 進・`u128`・`\\u{…}`・`\\x`・`::` を含む属性・`{` が続くマクロも、壊して落ちるケースが無かった。各ケースは、対応する正規表現の分岐を一時的に消して、そのケースだけが落ちることを確かめた。",
+      "review": [
+        "`#[serde::rename(x)]` は珍しい書き方だが、属性の名前に `::` を含むパスを読めることを確かめる入力として使った(実在の例は `#[tauri::command]`)"
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "start": 1513,
+          "end": 1547,
+          "text": "doc に書いた数値・文字・属性・マクロの形を 1 つずつ入力に含める"
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "start": 1575,
+          "end": 1576,
+          "text": "1 行目の `/* a` と持ち越した 2 行目の `b */` もコメントの色であることを見る。`block` を消すとここで落ちる"
+        }
+      ]
     }
   ],
   "suites": [
@@ -638,6 +896,11 @@
       "id": "watch-normal",
       "label": "監視の正常系",
       "file": "src-tauri/src/document/watch_normal_test.rs"
+    },
+    {
+      "id": "core-cases",
+      "label": "解説ページの判定表(色分け)",
+      "file": ".github/scripts/pr-explain-core-cases.sh"
     }
   ],
   "tests": [
@@ -1400,11 +1663,625 @@
       "covers": [
         "changed"
       ]
+    },
+    {
+      "id": "rs-grammar",
+      "suite": "core-cases",
+      "name": "色分け: .rs は Rust の規則で読む(fn がキーワード)",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "拡張子 `rs` が Rust の文法に結びついていること。`LanguageByExtension` から `rs` を消すと落ちる",
+      "given": "`fn main() {}` の 1 行",
+      "when": "`a.rs` として色分けする",
+      "then": "`fn` がキーワード",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1453,
+        "end": 1457,
+        "text": "  {\n    label: \"色分け: .rs は Rust の規則で読む(fn がキーワード)\",\n    actual: () => colorOf(\"a.rs\", [\"fn main() {}\"], { word: \"fn\" }),\n    expected: \"tok-kw\",\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "no-grammar",
+      "suite": "core-cases",
+      "name": "色分け: .md と .toml は規則が無く、行全体が色の無い 1 字句になる",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "規則の無い拡張子は色を付けない。`.rs` に規則ができたので、例を `.toml` に替えた",
+      "given": "`const a = f(1);` の 1 行",
+      "when": "`a.md` / `a.toml` として色分けする",
+      "then": "どちらも行全体が色の無い 1 字句",
+      "commit": "3e6a888203b63e9085cba7d842fc997ce6e4f617",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1448,
+        "end": 1452,
+        "text": "  {\n    label: \"色分け: .md と .toml は規則が無く、行全体が色の無い 1 字句になる\",\n    actual: () => [\"a.md\", \"a.toml\"].map((path) => lineTokensOf(path, [\"const a = f(1);\"])[0].map((token) => [token.cls, token.value])),\n    expected: [[[null, \"const a = f(1);\"]], [[null, \"const a = f(1);\"]]],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "raw-quote",
+      "suite": "core-cases",
+      "name": "色分け: Rust の生文字列 r#\"…\"# は中の \" で切れず 1 つの文字列になり、後ろの let はキーワードに戻る",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "生文字列の中の `\"` で切れると、後ろが文字列と地の色で入れ替わる",
+      "given": "`let c = r#\"{\"a\":1}\"#; let x = 1;`",
+      "when": "`a.rs` として色分けする",
+      "then": "生文字列全体が文字列、2 つ目の `let` はキーワード",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1458,
+        "end": 1462,
+        "text": "  {\n    label: \"色分け: Rust の生文字列 r#\\\"…\\\"# は中の \\\" で切れず 1 つの文字列になり、後ろの let はキーワードに戻る\",\n    actual: () => [[\"r#\\\"{\\\"a\\\":1}\\\"#\", 0], [\"let\", 1]].map(([word, nth]) => colorOf(\"a.rs\", [\"let c = r#\\\"{\\\"a\\\":1}\\\"#; let x = 1;\"], { word, nth })),\n    expected: [\"tok-str\", \"tok-kw\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "raw-hash",
+      "suite": "core-cases",
+      "name": "色分け: Rust の生文字列は、# の数が合わない \"# では閉じない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "閉じは開きと同じ数の `#` が付いた `\"` だけ",
+      "given": "`r##\"a\"#b\"##`",
+      "when": "`a.rs` として色分けする",
+      "then": "全体が 1 つの文字列",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1463,
+        "end": 1467,
+        "text": "  {\n    label: \"色分け: Rust の生文字列は、# の数が合わない \\\"# では閉じない\",\n    actual: () => colorOf(\"a.rs\", [\"let s = r##\\\"a\\\"#b\\\"##;\"], { word: \"r##\\\"a\\\"#b\\\"##\" }),\n    expected: \"tok-str\",\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ],
+      "values": {
+        "columns": [
+          "開き",
+          "途中の綴り",
+          "閉じたか"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`r##\"`",
+              "`\"#`",
+              "閉じない"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`r##\"`",
+              "`\"##`",
+              "閉じる"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "raw-backslash",
+      "suite": "core-cases",
+      "name": "色分け: Rust の生文字列の中の \\ はエスケープにならない(後ろの let はキーワード)",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "生文字列の `\\` はエスケープではない。エスケープと読むと `\\\"` で閉じず、行の残りが文字列になる",
+      "given": "`let t = r\"a\\\"; let x = 1;`",
+      "when": "`a.rs` として色分けする",
+      "then": "`r\"a\\\"` で閉じ、2 つ目の `let` はキーワード",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1468,
+        "end": 1472,
+        "text": "  {\n    label: \"色分け: Rust の生文字列の中の \\\\ はエスケープにならない(後ろの let はキーワード)\",\n    actual: () => [[\"r\\\"a\\\\\\\"\", 0], [\"let\", 1]].map(([word, nth]) => colorOf(\"a.rs\", [\"let t = r\\\"a\\\\\\\"; let x = 1;\"], { word, nth })),\n    expected: [\"tok-str\", \"tok-kw\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "byte-strings",
+      "suite": "core-cases",
+      "name": "色分け: Rust の b\"a\" / br\"a\" / b'a' は接頭辞ごと 1 つの文字列になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`b` / `br` の接頭辞が文字列から切り離されない",
+      "given": "`b\"a\"` / `br\"a\"` / `b'a'` を含む行",
+      "when": "`a.rs` として色分けする",
+      "then": "どれも接頭辞ごと 1 つの文字列",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1473,
+        "end": 1477,
+        "text": "  {\n    label: \"色分け: Rust の b\\\"a\\\" / br\\\"a\\\" / b'a' は接頭辞ごと 1 つの文字列になる\",\n    actual: () => [\"b\\\"a\\\"\", \"br\\\"a\\\"\", \"b'a'\"].map((word) => colorOf(\"a.rs\", [\"let a = b\\\"a\\\"; let b = br\\\"a\\\"; let c = b'a';\"], { word })),\n    expected: [\"tok-str\", \"tok-str\", \"tok-str\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "char-literals",
+      "suite": "core-cases",
+      "name": "色分け: Rust の文字リテラル 'a' / '\\n' / '\\'' / 絵文字は文字列になる",
+      "techniques": [
+        "equivalence",
+        "boundary"
+      ],
+      "why": "エスケープを含む文字と絵文字も 1 文字として読む。`u` フラグを外すと `'🎨'` が文字列にならない",
+      "given": "`'a'` / `'\\n'` / `'\\''` / `'🎨'` の並び",
+      "when": "`a.rs` として色分けする",
+      "then": "どれも文字列",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1478,
+        "end": 1482,
+        "text": "  {\n    label: \"色分け: Rust の文字リテラル 'a' / '\\\\n' / '\\\\'' / 絵文字は文字列になる\",\n    actual: () => [\"'a'\", \"'\\\\n'\", \"'\\\\''\", \"'🎨'\"].map((word) => colorOf(\"a.rs\", [\"let c = ['a', '\\\\n', '\\\\'', '🎨'];\"], { word })),\n    expected: [\"tok-str\", \"tok-str\", \"tok-str\", \"tok-str\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "lifetime-anon",
+      "suite": "core-cases",
+      "name": "色分け: Rust のライフタイム '_ は型になり、行の残りを文字列にしない(後ろの Arc が型)",
+      "techniques": [
+        "regression"
+      ],
+      "why": "`'` を文字列の開きと読むと、`'_` から行末までが文字列になる(計画の却下案 B)",
+      "given": "`known: State<'_, Arc<K>>,`",
+      "when": "`a.rs` として色分けする",
+      "then": "`'_` と、その後ろの `Arc` が型",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1483,
+        "end": 1487,
+        "text": "  {\n    label: \"色分け: Rust のライフタイム '_ は型になり、行の残りを文字列にしない(後ろの Arc が型)\",\n    actual: () => [\"'_\", \"Arc\"].map((word) => colorOf(\"a.rs\", [\"known: State<'_, Arc<K>>,\"], { word })),\n    expected: [\"tok-type\", \"tok-type\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "lifetime-char",
+      "suite": "core-cases",
+      "name": "色分け: Rust のライフタイム 'a / 'static は型、文字リテラル 'a' は文字列になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "同じ `'a` の綴りでも、閉じの `'` があれば文字、無ければライフタイム",
+      "given": "`fn f<'a>(x: &'a str) -> &'static str { 'a' }`",
+      "when": "`a.rs` として色分けする",
+      "then": "`'a` と `'static` は型、`'a'` は文字列",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1488,
+        "end": 1492,
+        "text": "  {\n    label: \"色分け: Rust のライフタイム 'a / 'static は型、文字リテラル 'a' は文字列になる\",\n    actual: () => [[\"'a\", 0], [\"'a\", 1], [\"'static\", 0], [\"'a'\", 0]].map(([word, nth]) => colorOf(\"a.rs\", [\"fn f<'a>(x: &'a str) -> &'static str { 'a' }\"], { word, nth })),\n    expected: [\"tok-type\", \"tok-type\", \"tok-type\", \"tok-str\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ],
+      "values": {
+        "columns": [
+          "綴り",
+          "色"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`'a`",
+              "型"
+            ]
+          },
+          {
+            "cells": [
+              "`'static`",
+              "型"
+            ]
+          },
+          {
+            "cells": [
+              "`'a'`",
+              "文字列"
+            ],
+            "boundary": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "attribute",
+      "suite": "core-cases",
+      "name": "色分け: Rust の属性の #[cfg / #![allow はキーワード、中の名前は変数になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "属性の開きと名前だけをキーワードにし、括弧の中は普通に読む(属性全体を 1 字句にすると型名に色が付かない。却下案 D)",
+      "given": "`#[cfg(unix)]` / `#![allow(non_snake_case)]`",
+      "when": "`a.rs` として色分けする",
+      "then": "`#[cfg` / `#![allow` がキーワード、中の名前は変数",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1493,
+        "end": 1497,
+        "text": "  {\n    label: \"色分け: Rust の属性の #[cfg / #![allow はキーワード、中の名前は変数になる\",\n    actual: () => [[\"#[cfg(unix)]\", \"#[cfg\", \"unix\"], [\"#![allow(non_snake_case)]\", \"#![allow\", \"non_snake_case\"]].map(([line, opening, name]) => [opening, name].map((word) => colorOf(\"a.rs\", [line], { word }))),\n    expected: [[\"tok-kw\", \"tok-var\"], [\"tok-kw\", \"tok-var\"]],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "macro",
+      "suite": "core-cases",
+      "name": "色分け: Rust のマクロ assert! / matches! / vec! は ! ごと関数になり、a!=b の a は変数のまま",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "マクロは括弧が続くときだけ。空白の無い `a!=b` の `a` をマクロにしない",
+      "given": "`assert!(a!=b); matches!(x, y); vec![1];`",
+      "when": "`a.rs` として色分けする",
+      "then": "3 つのマクロは `!` ごと関数、`a` は変数",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1498,
+        "end": 1502,
+        "text": "  {\n    label: \"色分け: Rust のマクロ assert! / matches! / vec! は ! ごと関数になり、a!=b の a は変数のまま\",\n    actual: () => [\"assert!\", \"matches!\", \"vec!\", \"a\"].map((word) => colorOf(\"a.rs\", [\"assert!(a!=b); matches!(x, y); vec![1];\"], { word })),\n    expected: [\"tok-fn\", \"tok-fn\", \"tok-fn\", \"tok-var\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "numbers",
+      "suite": "core-cases",
+      "name": "色分け: Rust の 0xff / 1_000u64 / 1.5f32 は 1 つの数値、0..10 は 2 つの数値になる",
+      "techniques": [
+        "equivalence",
+        "boundary"
+      ],
+      "why": "16 進・`_` の区切り・型の接尾辞を 1 つの数値にし、範囲の `..` で割る",
+      "given": "`f(0xff, 1_000u64, 1.5f32, 0..10);`",
+      "when": "`a.rs` として色分けし、数値の字句を並べる",
+      "then": "`0xff`・`1_000u64`・`1.5f32`・`0`・`10`",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1508,
+        "end": 1512,
+        "text": "  {\n    label: \"色分け: Rust の 0xff / 1_000u64 / 1.5f32 は 1 つの数値、0..10 は 2 つの数値になる\",\n    actual: () => lineTokensOf(\"a.rs\", [\"f(0xff, 1_000u64, 1.5f32, 0..10);\"])[0].filter((token) => token.cls === \"tok-num\").map((token) => token.value),\n    expected: [\"0xff\", \"1_000u64\", \"1.5f32\", \"0\", \"10\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ],
+      "values": {
+        "columns": [
+          "綴り",
+          "数値の字句"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`0xff`",
+              "`0xff`"
+            ]
+          },
+          {
+            "cells": [
+              "`1_000u64`",
+              "`1_000u64`"
+            ]
+          },
+          {
+            "cells": [
+              "`1.5f32`",
+              "`1.5f32`"
+            ]
+          },
+          {
+            "cells": [
+              "`0..10`",
+              "`0` と `10`"
+            ],
+            "boundary": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "exponent-underscore",
+      "suite": "core-cases",
+      "name": "色分け: Rust の 1e10_f64 は指数の後ろの _ を読まず、1e10 で切れる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "doc に書いた諦める範囲(指数の後ろの `_` は読まない)を固定する",
+      "given": "`f(1e10_f64);`",
+      "when": "`a.rs` として色分けし、数値の字句を並べる",
+      "then": "`1e10` だけ",
+      "commit": "5cc576042a99e8208651c8f747ee111b89a5bfec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1513,
+        "end": 1517,
+        "text": "  {\n    label: \"色分け: Rust の 1e10_f64 は指数の後ろの _ を読まず、1e10 で切れる\",\n    actual: () => lineTokensOf(\"a.rs\", [\"f(1e10_f64);\"])[0].filter((token) => token.cls === \"tok-num\").map((token) => token.value),\n    expected: [\"1e10\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "attribute-path",
+      "suite": "core-cases",
+      "name": "色分け: Rust の属性 #[serde::rename は :: を含むパスまでがキーワードになる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "属性の名前は `::` を含むパスまで(実在の例は `#[tauri::command]`)。`[\\w:]` を `\\w` に狭めると落ちる",
+      "given": "`#[serde::rename(x)]`",
+      "when": "`a.rs` として色分けする",
+      "then": "`#[serde::rename` がキーワード",
+      "commit": "5cc576042a99e8208651c8f747ee111b89a5bfec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1538,
+        "end": 1542,
+        "text": "  {\n    label: \"色分け: Rust の属性 #[serde::rename は :: を含むパスまでがキーワードになる\",\n    actual: () => colorOf(\"a.rs\", [\"#[serde::rename(x)]\"], { word: \"#[serde::rename\" }),\n    expected: \"tok-kw\",\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "macro-brace",
+      "suite": "core-cases",
+      "name": "色分け: Rust のマクロ thread_local!{ の thread_local! は関数になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "マクロの先読みは `(` `[` `{` のどれでもよい",
+      "given": "`thread_local!{ static A: u8 = 1; }`",
+      "when": "`a.rs` として色分けする",
+      "then": "`thread_local!` が関数",
+      "commit": "5cc576042a99e8208651c8f747ee111b89a5bfec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1543,
+        "end": 1547,
+        "text": "  {\n    label: \"色分け: Rust のマクロ thread_local!{ の thread_local! は関数になる\",\n    actual: () => colorOf(\"a.rs\", [\"thread_local!{ static A: u8 = 1; }\"], { word: \"thread_local!\" }),\n    expected: \"tok-fn\",\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "raw-multiline",
+      "suite": "core-cases",
+      "name": "色分け: Rust の行をまたぐ生文字列は次の行へ持ち越す(2 行目の let までが文字列)",
+      "techniques": [
+        "state"
+      ],
+      "why": "生文字列は行をまたげる。閉じ記号を次の行へ持ち越し、そこで閉じる",
+      "given": "1 行目 `let s = r#\"a`、2 行目 `let b\"#; let x = 1;`",
+      "when": "`a.rs` として 2 行を続けて色分けする",
+      "then": "2 行目の `let b\"#` が文字列、その後ろの `let` がキーワード",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1558,
+        "end": 1562,
+        "text": "  {\n    label: \"色分け: Rust の行をまたぐ生文字列は次の行へ持ち越す(2 行目の let までが文字列)\",\n    actual: () => [\"let b\\\"#\", \"let\"].map((word) => colorOf(\"a.rs\", [\"let s = r#\\\"a\", \"let b\\\"#; let x = 1;\"], { line: 1, word })),\n    expected: [\"tok-str\", \"tok-kw\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "plain-no-carry",
+      "suite": "core-cases",
+      "name": "色分け: Rust の普通の文字列は次の行へ持ち越さない(次の行の let はキーワード)",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "普通の文字列は持ち越さない。持ち越すと、hunk が文字列の途中から始まったときに崩れが hunk の終わりまで広がる(plan-reviewer の指摘 1)",
+      "given": "1 行目 `let s = \"a`(閉じない)、2 行目 `let x = 1;`",
+      "when": "`a.rs` として 2 行を続けて色分けする",
+      "then": "2 行目の `let` がキーワード",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1563,
+        "end": 1567,
+        "text": "  {\n    label: \"色分け: Rust の普通の文字列は次の行へ持ち越さない(次の行の let はキーワード)\",\n    actual: () => colorOf(\"a.rs\", [\"let s = \\\"a\", \"let x = 1;\"], { line: 1, word: \"let\" }),\n    expected: \"tok-kw\",\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "ts-no-carry",
+      "suite": "core-cases",
+      "name": "色分け: .ts の閉じていない \" は次の行へ持ち越さない(次の行の const はキーワード)",
+      "techniques": [
+        "regression"
+      ],
+      "why": "Rust の規則が他の言語に漏れていない",
+      "given": "1 行目 `const s = \"a`(閉じない)、2 行目 `const b = 1;`",
+      "when": "`a.ts` として 2 行を続けて色分けする",
+      "then": "2 行目の `const` がキーワード",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1568,
+        "end": 1572,
+        "text": "  {\n    label: \"色分け: .ts の閉じていない \\\" は次の行へ持ち越さない(次の行の const はキーワード)\",\n    actual: () => colorOf(\"a.ts\", [\"const s = \\\"a\", \"const b = 1;\"], { line: 1, word: \"const\" }),\n    expected: \"tok-kw\",\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "block-comment",
+      "suite": "core-cases",
+      "name": "色分け: Rust の /* は次の行の */ で閉じ、その後ろの let はキーワードになる",
+      "techniques": [
+        "state"
+      ],
+      "why": "ブロックコメントは次の行の閉じ記号まで続き、その後ろは普通に読む。`block` を消すと 1 行目と 2 行目の色で落ちる",
+      "given": "1 行目 `/* a`、2 行目 `b */ let x = 1;`",
+      "when": "`a.rs` として 2 行を続けて色分けする",
+      "then": "`/* a` と `b */` がコメント、`let` がキーワード",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1573,
+        "end": 1577,
+        "emphasis": [
+          {
+            "start": 1575,
+            "end": 1576
+          }
+        ],
+        "text": "  {\n    label: \"色分け: Rust の /* は次の行の */ で閉じ、その後ろの let はキーワードになる\",\n    actual: () => [[0, \"/* a\"], [1, \"b */\"], [1, \"let\"]].map(([line, word]) => colorOf(\"a.rs\", [\"/* a\", \"b */ let x = 1;\"], { line, word })),\n    expected: [\"tok-com\", \"tok-com\", \"tok-kw\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
+    },
+    {
+      "id": "char-quote",
+      "suite": "core-cases",
+      "name": "色分け: Rust の文字リテラル '\"' の中の \" は文字列を開かず、後ろの let はキーワードに戻る",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "文字リテラルの中の `\"` が文字列を開かない(読む順で文字リテラルが文字列より先に効く)",
+      "given": "`let q = '\"'; let x = 1;`",
+      "when": "`a.rs` として色分けする",
+      "then": "`'\"'` が文字列、2 つ目の `let` がキーワード",
+      "commit": "669758ba1c7ab954ceb33ceda39d3edf511699ec",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 1578,
+        "end": 1582,
+        "text": "  {\n    label: \"色分け: Rust の文字リテラル '\\\"' の中の \\\" は文字列を開かず、後ろの let はキーワードに戻る\",\n    actual: () => [[\"'\\\"'\", 0], [\"let\", 1]].map(([word, nth]) => colorOf(\"a.rs\", [\"let q = '\\\"'; let x = 1;\"], { word, nth })),\n    expected: [\"tok-str\", \"tok-kw\"],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/index.html"
+      ],
+      "covers": [
+        "tokenize"
+      ]
     }
   ],
   "impact": {
     "title": "ドキュメント以外のファイルは、アプリから読み書きも監視もされなくなった",
-    "lead": "ダイアログやドロップで .dcmp を開く・保存する普段の操作は変わりません。変わったのは、.dcmp として扱えないパスが届いたときで、ファイルに触れずに「パスが正しくありません」として断るようになりました。",
+    "lead": "ダイアログやドロップで .dcmp を開く・保存する普段の操作は変わりません。変わったのは、.dcmp として扱えないパスが届いたときで、ファイルに触れずに「パスが正しくありません」として断るようになりました。 また、この解説ページの中の Rust のコードにも色が付くようになりました。",
     "changed": {
       "before": [
         {
@@ -1542,6 +2419,141 @@
             ]
           }
         ]
+      },
+      {
+        "label": "解説ページで Rust のコードの何に色が付くか",
+        "gist": "差分・テストの抜粋・技術の手引きの抜粋のどこでも、Rust のコードが言葉の種類ごとに色分けされる。",
+        "text": "ライフタイム・属性・マクロの色は確認中で、変わることがあります。",
+        "rowHeads": [
+          {
+            "id": "keyword",
+            "label": "予約された語",
+            "note": "関数や変数の宣言の語など"
+          },
+          {
+            "id": "string",
+            "label": "文字列と文字",
+            "note": "引用符を中に含む生の文字列も含む"
+          },
+          {
+            "id": "comment",
+            "label": "コメント",
+            "note": "行・複数行・説明用のコメント"
+          },
+          {
+            "id": "number",
+            "label": "数値",
+            "note": "16 進や型の接尾辞が付いたもの"
+          },
+          {
+            "id": "name",
+            "label": "名前",
+            "note": "型・関数・変数"
+          },
+          {
+            "id": "lifetime",
+            "label": "ライフタイム"
+          },
+          {
+            "id": "attribute",
+            "label": "属性の開きと名前"
+          },
+          {
+            "id": "macro",
+            "label": "マクロの呼び出し"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "color",
+            "label": "解説ページでの色"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "keyword",
+            "columnHead": "color",
+            "result": "キーワードの色",
+            "was": "地の色",
+            "tests": [
+              "rs-grammar"
+            ]
+          },
+          {
+            "rowHead": "string",
+            "columnHead": "color",
+            "result": "文字列の色。中の引用符で切れない",
+            "was": "地の色",
+            "tests": [
+              "raw-quote",
+              "raw-hash",
+              "byte-strings",
+              "char-literals",
+              "char-quote"
+            ]
+          },
+          {
+            "rowHead": "comment",
+            "columnHead": "color",
+            "result": "コメントの色",
+            "was": "地の色",
+            "tests": [
+              "block-comment"
+            ]
+          },
+          {
+            "rowHead": "number",
+            "columnHead": "color",
+            "result": "数値の色。接尾辞まで 1 つにまとまる",
+            "was": "地の色",
+            "tests": [
+              "numbers",
+              "exponent-underscore"
+            ]
+          },
+          {
+            "rowHead": "name",
+            "columnHead": "color",
+            "result": "型・関数・変数の色に分かれる",
+            "was": "地の色",
+            "tests": [
+              "lifetime-anon"
+            ]
+          },
+          {
+            "rowHead": "lifetime",
+            "columnHead": "color",
+            "result": "型の色",
+            "was": "地の色",
+            "note": "色は確認中",
+            "tests": [
+              "lifetime-anon",
+              "lifetime-char"
+            ]
+          },
+          {
+            "rowHead": "attribute",
+            "columnHead": "color",
+            "result": "キーワードの色。括弧の中は普通に色分けする",
+            "was": "地の色",
+            "note": "色は確認中",
+            "tests": [
+              "attribute",
+              "attribute-path"
+            ]
+          },
+          {
+            "rowHead": "macro",
+            "columnHead": "color",
+            "result": "名前と感嘆符が関数の色",
+            "was": "地の色",
+            "note": "色は確認中",
+            "tests": [
+              "macro",
+              "macro-brace"
+            ]
+          }
+        ]
       }
     ],
     "added": [
@@ -1566,6 +2578,32 @@
           "watch-txt",
           "unwatch-txt"
         ]
+      },
+      {
+        "label": "差分や抜粋の Rust のコードが、行をまたぐ文字列やコメントを含むとき",
+        "before": [
+          {
+            "text": "どの行も地の色だった"
+          }
+        ],
+        "after": [
+          {
+            "text": "生の文字列と複数行のコメントは、閉じるまで次の行も同じ色が続く",
+            "message": "tokenize"
+          },
+          {
+            "text": "普通の文字列が閉じずに行が終わっても、次の行は普通に色分けし直す"
+          },
+          {
+            "text": "差分や抜粋が生の文字列の途中から始まると、閉じの記号を開きと読み、そこから先の色が崩れる。入れ子のコメントは最初の閉じで閉じる"
+          }
+        ],
+        "text": "最後の行は、実際のコードでは起きていない形として諦めた範囲です。",
+        "tests": [
+          "raw-multiline",
+          "plain-no-carry",
+          "block-comment"
+        ]
       }
     ],
     "kept": [
@@ -1587,6 +2625,18 @@
         "text": "名前の途中にドットが 2 つ続くだけの .dcmp は、これまでどおり開ける",
         "tests": [
           "accept-dotdot-name"
+        ]
+      },
+      {
+        "text": "Rust 以外の言語の色付けは変わらない。閉じない文字列を次の行へ持ち越さない読み方もそのまま",
+        "tests": [
+          "ts-no-carry"
+        ]
+      },
+      {
+        "text": "色付けの規則が無い種類のファイルは、これまでどおり色を付けない",
+        "tests": [
+          "no-grammar"
         ]
       }
     ]
@@ -2143,6 +3193,425 @@
         "close",
         "external"
       ]
+    },
+    {
+      "kind": "language",
+      "id": "js-sticky-regex",
+      "category": "javascript · 正規表現",
+      "label": "正規表現の sticky `y` / `u` フラグと先読み",
+      "gist": "文字列の決まった位置から 1 字句ずつ読み進める[[字句の読み手|tokenizer]]で、[[正規表現|regex]]を「今の位置でだけ」試すためのフラグ。`u` は絵文字のような 2 単位の文字を 1 字と数えさせる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "正規表現の後ろに `y`(sticky)を付けると、`exec` は `lastIndex` の位置からだけ照合し、その先を探しに行かない。`lastIndex` に今の位置を入れてから `exec` を呼べば、「ここから始まる字句か」を答えさせられる。`y` が無いと、行の後ろのほうにある一致を拾ってしまう。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 900,
+            "end": 904,
+            "text": "    const matchAt = (pattern, cursor) => {\n      pattern.lastIndex = cursor.at;\n      const match = pattern.exec(cursor.text);\n      return match ? match[0] : null;\n    };",
+            "openingLine": "<script>"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "`u`(unicode)を付けると、`.` や `[^…]` がサロゲートペア(JavaScript の文字列で 2 単位になる絵文字など)を 1 字として読む。`'🎨'` を 1 字の文字リテラルと読ませるため、`RustChar` は `yu` を付けている。"
+        },
+        {
+          "kind": "text",
+          "text": "`(?=…)` は[[先読み|lookahead]]で、後ろにその綴りが続くことを確かめるが、一致には含めない。`RustMacro` は `名前!` の後ろに `(` `[` `{` が続くことだけを確かめ、括弧は字句に入れない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 807,
+            "end": 818,
+            "emphasis": [
+              {
+                "start": 812,
+                "end": 812
+              },
+              {
+                "start": 818,
+                "end": 818
+              }
+            ],
+            "text": "    /** Rust の数値。16 / 8 / 2 進・`_` の区切り・指数と、`u64` `f32` などの型の接尾辞までを 1 つにする。指数の後ろの `_` は読まず、`1e10_f64` は `1e10` で切る。 */\n    const RustNumber = /(?:0x[0-9A-Fa-f_]+|0o[0-7_]+|0b[01_]+|\\d[\\d_]*(?:\\.\\d[\\d_]*)?(?:[eE][+-]?\\d+)?)(?:[iu](?:8|16|32|64|128|size)|f32|f64)?/y;\n    /** Rust の生文字列の開き(`r\"` / `r#\"` / `br##\"` など)。閉じは同じ数の `#` が付いた `\"`。 */\n    const RustRawStringStart = /b?r#*\"/y;\n    /** Rust の文字リテラル(`'a'` / `'\\n'` / `'\\u{1F3A8}'` / `b'a'`)。絵文字を 1 字と数えるよう `u` を付ける。 */\n    const RustChar = /b?'(?:\\\\(?:x[0-9A-Fa-f]{2}|u\\{[0-9A-Fa-f_]{1,8}\\}|.)|[^'\\\\\\n])'/yu;\n    /** Rust のライフタイム(`'a` / `'_` / `'static`)。文字リテラルを先に読むので、`'a'` はここへ来ない。 */\n    const RustLifetime = /'[A-Za-z_]\\w*/y;\n    /** Rust の属性の開きと名前(`#[cfg` / `#![allow`)。 */\n    const RustAttribute = /#!?\\[\\s*[A-Za-z_][\\w:]*/y;\n    /** Rust のマクロの呼び出し(`assert!(` / `vec![` の `名前!`)。括弧が続くものだけにして、`a!=b` の `a` を取らない。 */\n    const RustMacro = /[A-Za-z_]\\w*!(?=[(\\[{])/y;",
+            "openingLine": "<script>"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "`y` の正規表現は `lastIndex` という状態を持ち、同じオブジェクトを使い回す。`matchAt` は呼ぶたびに `lastIndex` を入れ直すので、前の呼び出しの位置が残っていても答えは変わらない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 807,
+            "end": 818
+          },
+          "text": "Rust の字句ごとの正規表現(`RustNumber` 〜 `RustMacro`)",
+          "shas": [
+            "3e6a888203b63e9085cba7d842fc997ce6e4f617",
+            "98ab4f9fdffd52c78d845d5477f7bb0e201a98d3"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 900,
+            "end": 904
+          },
+          "text": "`matchAt` が `lastIndex` を今の位置にして試す"
+        }
+      ],
+      "seeAlso": [
+        "rust-lexical",
+        "codebase-tokenizer"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "csp-hash",
+      "category": "html · セキュリティ",
+      "label": "CSP の `script-src` のハッシュ",
+      "gist": "ページの中で動いてよいスクリプトを、中身の[[ハッシュ|hash]]で 1 本だけに限るための[[CSP|csp]]の書き方。固定スクリプトを 1 字でも変えたらハッシュも変わるので、書き直さないとページのスクリプトが止まる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`<meta http-equiv=\"Content-Security-Policy\" content=\"…\">` の `script-src 'sha256-…'` は、`<script>` 要素の中身の SHA-256 を [[Base64|base64]] にした値と一致するものだけを動かす。ほかのインラインのスクリプトや、外から差し込まれたスクリプトは動かない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 5,
+            "end": 5,
+            "text": "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-N2x3itMdDpM/FAYwVbrgjwb2XNeG4/PiMIXQtD0u/jM='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'\">"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "固定スクリプトを変えたら CSP の `sha256-` も直す。`check-pr-explain-template.py` が中身のハッシュと突き合わせ、ずれていれば Actions の配置が落ちる(`pr-explain` スキルの参照ファイル)。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/check-pr-explain-template.py",
+            "start": 86,
+            "end": 100,
+            "emphasis": [
+              {
+                "start": 98,
+                "end": 98
+              }
+            ],
+            "text": "def script_problems(template: str, directives: dict[str, list[str]]) -> list[str]:\n    \"\"\"固定スクリプトが 1 本で、`script-src` がそのハッシュだけを許しているかを見る。\"\"\"\n    scripts = InlineScript.findall(template)\n    tags = len(ScriptTag.findall(template))\n    is_single_script = tags == 1 and len(scripts) == 1\n    if not is_single_script:\n        return [f\"固定スクリプトは属性の無い <script> 1 本だけにする(今は <script 始まりが {tags} 個)\"]\n    sources = directives.get(\"script-src\", [])\n    hashes = [ScriptHash.fullmatch(source) for source in sources]\n    is_single_hash = len(sources) == 1 and hashes[0] is not None\n    if not is_single_hash:\n        return [f\"script-src は 'sha256-…' 1 つだけにする(今は {' '.join(sources) or '無し'})\"]\n    actual = base64.b64encode(hashlib.sha256(scripts[0].encode(\"utf-8\")).digest()).decode(\"ascii\")\n    if hashes[0].group(1) != actual:\n        return [f\"script-src は sha256-{hashes[0].group(1)} を許しているが、固定スクリプトは sha256-{actual}\"]"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "この PR では `Tokenizer` を変えた 3 コミットのたびにハッシュを取り直している。doc のコメントを 1 字直しただけでも、スクリプトの中身なので値が変わる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 5,
+            "end": 5
+          },
+          "text": "CSP の `script-src` のハッシュ",
+          "shas": [
+            "3e6a888203b63e9085cba7d842fc997ce6e4f617",
+            "98ab4f9fdffd52c78d845d5477f7bb0e201a98d3",
+            "485ae848b621805842f803c0719602b285755056"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "codebase-tokenizer"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "rust-lexical",
+      "category": "rust · 字句",
+      "label": "Rust の生文字列・文字リテラル・ライフタイム・属性・マクロ",
+      "gist": "Rust のコードを色分けするときに、ほかの言語と同じ規則では読めない 5 つの綴り。どれも `'` `#` `!` のような 1 字で始まり、続きの綴りで意味が決まる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "[[生文字列|raw-string]]は `r\"…\"` か `r#\"…\"#` の形で、中の `\\` をエスケープにしない。`#` を増やすと、中に `\"` や `\"#` を書けるようになり、閉じは開きと同じ数の `#` が付いた `\"` だけになる。`b` を前に付けるとバイト列(`b\"…\"` / `br\"…\"`)になる。"
+        },
+        {
+          "kind": "text",
+          "text": "文字リテラルは `'a'` のように `'` で 1 文字を挟む。`'\\n'` や `'\\u{1F3A8}'` のようなエスケープも 1 文字。[[ライフタイム|lifetime]]は `'a` / `'_` / `'static` のように `'` で始まるが閉じの `'` が無い。そのため `'` を文字列の開きと読むと、ライフタイムから行末までが文字列になる。"
+        },
+        {
+          "kind": "text",
+          "text": "[[属性|attribute]]は `#[名前(…)]` の形で項目の前に書く。`#![…]` はファイルやモジュール全体に効く。[[マクロ|macro]]の呼び出しは `名前!(…)` / `名前![…]` / `名前!{…}` の形で、`!` の直後に括弧が来る。`a != b` の `!` は比べる演算子で、マクロではない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/pr-explain-core-cases.sh",
+            "start": 1488,
+            "end": 1502,
+            "text": "  {\n    label: \"色分け: Rust のライフタイム 'a / 'static は型、文字リテラル 'a' は文字列になる\",\n    actual: () => [[\"'a\", 0], [\"'a\", 1], [\"'static\", 0], [\"'a'\", 0]].map(([word, nth]) => colorOf(\"a.rs\", [\"fn f<'a>(x: &'a str) -> &'static str { 'a' }\"], { word, nth })),\n    expected: [\"tok-type\", \"tok-type\", \"tok-type\", \"tok-str\"],\n  },\n  {\n    label: \"色分け: Rust の属性の #[cfg / #![allow はキーワード、中の名前は変数になる\",\n    actual: () => [[\"#[cfg(unix)]\", \"#[cfg\", \"unix\"], [\"#![allow(non_snake_case)]\", \"#![allow\", \"non_snake_case\"]].map(([line, opening, name]) => [opening, name].map((word) => colorOf(\"a.rs\", [line], { word }))),\n    expected: [[\"tok-kw\", \"tok-var\"], [\"tok-kw\", \"tok-var\"]],\n  },\n  {\n    label: \"色分け: Rust のマクロ assert! / matches! / vec! は ! ごと関数になり、a!=b の a は変数のまま\",\n    actual: () => [\"assert!\", \"matches!\", \"vec!\", \"a\"].map((word) => colorOf(\"a.rs\", [\"assert!(a!=b); matches!(x, y); vec![1];\"], { word })),\n    expected: [\"tok-fn\", \"tok-fn\", \"tok-fn\", \"tok-var\"],\n  },",
+            "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "ブロックコメント `/* … */` は Rust では入れ子にできるが、この色分けは最初の閉じ記号で閉じる。src-tauri に `/*` は 1 件も無く、入れ子を数えるには持ち越しの形を変える必要があるため(計画の却下案 C)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "lineRange": {
+            "start": 1458,
+            "end": 1502
+          },
+          "text": "生文字列・文字リテラル・ライフタイム・属性・マクロのケース",
+          "shas": [
+            "669758ba1c7ab954ceb33ceda39d3edf511699ec"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1030,
+            "end": 1042
+          },
+          "text": "`rustTokenAt` が 5 つを決まった順に試す",
+          "shas": [
+            "3e6a888203b63e9085cba7d842fc997ce6e4f617",
+            "485ae848b621805842f803c0719602b285755056"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "rust-cfg",
+        "codebase-tokenizer"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "codebase-tokenizer",
+      "category": "ハーネス · 解説ページ",
+      "label": "解説ページの色分け(`Tokenizer`)と Rust の読み手",
+      "gist": "差分・抜粋の行を[[字句|token]]に割り、字句ごとに色のクラスを付ける固定スクリプトの部品。言語ごとの違いは文法のオブジェクトの旗で表し、Rust は `rust: true` の旗で専用の読み手 `rustTokenAt` を通す。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "拡張子から `LanguageByExtension` で言語を、`Grammars` で文法を引く。`tokenAt` は今の位置で、YAML のキー → 文字列・コメント → 言語ごとの読み手 → 数値と名前、の順に試し、最初に読めたものを字句にする。Rust の文法は `strings` に `\"` だけを持ち、`'` で始まる綴りと生文字列は `rustTokenAt` に任せる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1131,
+            "end": 1145,
+            "emphasis": [
+              {
+                "start": 1138,
+                "end": 1139
+              }
+            ],
+            "text": "    const tokenAt = (cursor, grammar) => {\n      const isYamlKeyPosition = grammar.keys === true && cursor.lineStart;\n      const key = isYamlKeyPosition ? matchAt(YamlKey, cursor) : null;\n      if (key) return Token(\"tok-key\", key);\n      const quoted = quotedAt(cursor, grammar);\n      if (quoted) return quoted;\n      if (grammar.css === true) return cssTokenAt(cursor);\n      const rust = grammar.rust === true ? rustTokenAt(cursor) : null;\n      if (rust) return rust;\n      const variable = grammar.variables === true ? matchAt(ShellVariable, cursor) : null;\n      if (variable) return Token(\"tok-var\", variable);\n      const jsx = grammar.jsx === true ? jsxTagInExpressionAt(cursor) : null;\n      if (jsx) return jsx;\n      return wordAt(cursor, grammar);\n    };",
+            "openingLine": "<script>"
+          }
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1030,
+            "end": 1042,
+            "text": "    /** Rust の、文字列・コメント・数値・名前のほかの字句(生文字列・文字リテラル・ライフタイム・属性・マクロ)。どれでもなければ null。 */\n    const rustTokenAt = (cursor) => {\n      const raw = rustRawStringAt(cursor);\n      if (raw) return raw;\n      const char = matchAt(RustChar, cursor);\n      if (char) return Token(\"tok-str\", char);\n      const lifetime = matchAt(RustLifetime, cursor);\n      if (lifetime) return Token(\"tok-type\", lifetime);\n      const attribute = matchAt(RustAttribute, cursor);\n      if (attribute) return Token(\"tok-kw\", attribute);\n      const macro = matchAt(RustMacro, cursor);\n      return macro ? Token(\"tok-fn\", macro) : null;\n    };",
+            "openingLine": "<script>"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "色のクラスは既存の 8 つ(`tok-kw` / `tok-str` / `tok-com` / `tok-num` / `tok-fn` / `tok-type` / `tok-var` / `tok-key`)だけを使い、CSS は変えない。ライフタイムは型、`#[名前` はキーワード(CSS の `@media` と同じ扱い)、`名前!` は関数。"
+        },
+        {
+          "kind": "caution",
+          "text": "ライフタイム・属性・マクロの色はオーナーに確認中。違えば `rustTokenAt` が返すクラスと、判定表のライフタイム・属性・マクロのケースだけを直す。"
+        },
+        {
+          "kind": "history",
+          "text": "生文字列を Python と同じ `prefixes` で表す案(中の `\"` で切れる)、Rust 専用の字句解析器を丸ごと書く案(文字列・コメント・持ち越しが二重になる)、普通の文字列も持ち越す案(hunk の途中から始まると崩れが広がる)を却下した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 829,
+            "end": 832
+          },
+          "text": "`Grammars.rust` と `rs: \"rust\"`",
+          "shas": [
+            "3e6a888203b63e9085cba7d842fc997ce6e4f617",
+            "98ab4f9fdffd52c78d845d5477f7bb0e201a98d3"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1030,
+            "end": 1042
+          },
+          "text": "`rustTokenAt`",
+          "shas": [
+            "3e6a888203b63e9085cba7d842fc997ce6e4f617",
+            "485ae848b621805842f803c0719602b285755056"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1138,
+            "end": 1139
+          },
+          "text": "`tokenAt` から `rustTokenAt` へ分岐する",
+          "shas": [
+            "3e6a888203b63e9085cba7d842fc997ce6e4f617"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 790,
+            "end": 798
+          },
+          "text": "`Tokenizer` の doc に、Rust で何をどう読むかと諦める範囲",
+          "shas": [
+            "3e6a888203b63e9085cba7d842fc997ce6e4f617",
+            "98ab4f9fdffd52c78d845d5477f7bb0e201a98d3"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "js-sticky-regex",
+        "rust-lexical",
+        "codebase-delimited",
+        "csp-hash"
+      ],
+      "tests": [
+        "rs-grammar",
+        "raw-quote",
+        "char-literals",
+        "lifetime-anon",
+        "attribute",
+        "macro",
+        "numbers",
+        "no-grammar"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "codebase-delimited",
+      "category": "ハーネス · 解説ページ",
+      "label": "閉じ記号の読み手 `delimitedAt` と持ち越し",
+      "gist": "「今の位置から閉じ記号までを 1 字句にし、行の中で閉じなければ閉じ記号を次の行へ[[持ち越す|carry]]」という読み方を 1 つにまとめた関数。ブロックコメント・生文字列・持ち越しの続きの行の 3 箇所が使う。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "字句の `opens` に閉じ記号を入れて返すと、次の行は頭から `continuationOf` で読み始め、その閉じ記号を探す。`from` は探し始める位置で、ブロックコメントは開きの `/*` の後ろ、生文字列は開きの `r#\"` の後ろ、続きの行は行の頭を渡す。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 930,
+            "end": 946,
+            "emphasis": [
+              {
+                "start": 940,
+                "end": 940
+              }
+            ],
+            "text": "    /** 位置から、`from` 以降で最初に来る閉じ記号 `close` までを 1 字句にする。閉じずに行が終わったら、閉じ記号を次の行へ持ち越す。 */\n    const delimitedAt = (cursor, { cls, from, close }) => {\n      const end = cursor.text.indexOf(close, from);\n      return end >= 0 ? Token(cls, cursor.text.slice(cursor.at, end + close.length)) : Token(cls, restOfLine(cursor), close);\n    };\n\n    const commentAt = (cursor, grammar) => {\n      const { text, at } = cursor;\n      const block = grammar.block;\n      const isBlockCommentStart = block !== undefined && text.startsWith(block[0], at);\n      if (isBlockCommentStart) return delimitedAt(cursor, { cls: \"tok-com\", from: at + block[0].length, close: block[1] });\n      const isLineCommentStart = grammar.comment !== undefined && text.startsWith(grammar.comment, at);\n      // `#` は Python 以外では行頭か空白の直後だけコメントにする(シェルの `$#`・URL の `#` を取り違えない)。\n      const isHashAllowedHere = grammar.comment !== \"#\" || grammar.hashAnywhere === true || /\\s/.test(cursor.prev);\n      const isComment = isLineCommentStart && isHashAllowedHere;\n      return isComment ? Token(\"tok-com\", restOfLine(cursor)) : null;\n    };",
+            "openingLine": "<script>"
+          }
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/skills/pr-explain/templates/index.html",
+            "start": 1022,
+            "end": 1028,
+            "text": "    /** Rust の生文字列。中の `\\` はエスケープにしない。生文字列でなければ null。 */\n    const rustRawStringAt = (cursor) => {\n      const opening = matchAt(RustRawStringStart, cursor);\n      if (!opening) return null;\n      const hashes = opening.slice(opening.indexOf(\"r\") + 1, -1);\n      return delimitedAt(cursor, { cls: \"tok-str\", from: cursor.at + opening.length, close: `\"${hashes}` });\n    };",
+            "openingLine": "<script>"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "閉じずに行が終わった普通の `\"…\"` は、Rust でも持ち越さない(`stringAt` が持ち越すのは三重引用符とテンプレート文字列だけ)。続きの行で `\\\"` を閉じと読む・hunk が文字列の途中から始まると崩れが hunk の終わりまで広がる、の 2 つを避けるため。"
+        },
+        {
+          "kind": "history",
+          "text": "最初はブロックコメントの枝と生文字列だけが使い、`continuationOf` は同じ探し方を自前で持っていた。1 段目のレビューで「片方だけ直すと開いた行と続きの行で読み方が割れる」と指摘され、1 行の呼び出しに寄せた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 930,
+            "end": 934
+          },
+          "text": "`delimitedAt`",
+          "shas": [
+            "3e6a888203b63e9085cba7d842fc997ce6e4f617",
+            "485ae848b621805842f803c0719602b285755056"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 940,
+            "end": 940
+          },
+          "text": "ブロックコメントの枝",
+          "shas": [
+            "3e6a888203b63e9085cba7d842fc997ce6e4f617"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "lineRange": {
+            "start": 1147,
+            "end": 1148
+          },
+          "text": "`continuationOf`",
+          "shas": [
+            "98ab4f9fdffd52c78d845d5477f7bb0e201a98d3"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "codebase-tokenizer",
+        "rust-lexical"
+      ],
+      "tests": [
+        "raw-multiline",
+        "plain-no-carry",
+        "block-comment",
+        "ts-no-carry"
+      ]
     }
   ],
   "terms": [
@@ -2205,6 +3674,56 @@
       "id": "newtype-term",
       "label": "newtype",
       "text": "既存の型を 1 つだけ包んで、別の型として区別するための構造体。"
+    },
+    {
+      "id": "tokenizer",
+      "label": "字句の読み手",
+      "text": "文字列を先頭から読み、キーワード・文字列・数値のような意味の切れ目(字句)に割っていく処理。"
+    },
+    {
+      "id": "regex",
+      "label": "正規表現",
+      "text": "文字の並びの形を `/…/` の式で書き、文字列がその形に合うかを調べる仕組み。末尾の英字(フラグ)で照合のしかたを変える。"
+    },
+    {
+      "id": "lookahead",
+      "label": "先読み",
+      "text": "正規表現の `(?=…)`。その位置の後ろに `…` が続くかだけを確かめ、一致した文字には含めない。"
+    },
+    {
+      "id": "hash",
+      "label": "ハッシュ",
+      "text": "任意の長さのデータから計算する、決まった長さの値。中身が 1 字でも違えば別の値になるので、中身が同じかの確認に使う。"
+    },
+    {
+      "id": "csp",
+      "label": "CSP",
+      "text": "Content Security Policy。ページが読み込んだり動かしたりしてよいもの(スクリプト・スタイルの出どころ)をブラウザに指示する仕組み。"
+    },
+    {
+      "id": "base64",
+      "label": "Base64",
+      "text": "バイト列を英数字と `+` `/` `=` だけの文字列にする書き方。"
+    },
+    {
+      "id": "raw-string",
+      "label": "生文字列",
+      "text": "Rust の `r\"…\"` の文字列。中の `\\` をエスケープとして扱わず、書いたままの文字になる。"
+    },
+    {
+      "id": "lifetime",
+      "label": "ライフタイム",
+      "text": "Rust で、参照が有効な範囲に付ける名前。`'a` のように `'` で始まり、型の位置に書く。"
+    },
+    {
+      "id": "token",
+      "label": "字句",
+      "text": "キーワード・名前・文字列・数値のような、コードを意味の切れ目で割った 1 つ 1 つ。"
+    },
+    {
+      "id": "carry",
+      "label": "持ち越し",
+      "text": "行の中で閉じなかった文字列・コメントの閉じ記号を覚えておき、次の行をその続きとして読み始めること。"
     }
   ]
 }
