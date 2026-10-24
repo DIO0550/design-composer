@@ -1,0 +1,169 @@
+{
+  "version": 2,
+  "pr": 1161,
+  "headBranch": "claude/affectionate-hypatia-pcy0wa",
+  "baseBranch": "main",
+  "mergeBase": "89876a0e4e6ffa9cb7d15c6626274f8788ab8fb6",
+  "head": "0fbe16d7ab3bd0bb1a518f591f45b0799b726060",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-doc-comments.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-result-option-discriminants.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": "AGENTS.md",
+          "changed": false
+        },
+        {
+          "path": "harness/case-law/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "rules/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 6,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "0fbe16d7ab3bd0bb1a518f591f45b0799b726060",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-24T00:02:23Z",
+      "subject": "harness: Context アクセサ例外の理由を判例へ移し常時ロードの上限を 796 へ下げる",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01JMAp1tA5aE6wheC975eZ5g",
+      "files": [
+        {
+          "path": "harness/case-law/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 0,
+          "patch": "@@ -341,3 +341,12 @@ export const Money = {\n 前に、そのモジュール自身が `rules/coding.md`「コンパニオンオブジェクトパターン」の形を\n 実際に持っているかを確認する**(持たないモジュールを手本にすると、同じ欠落を新しいモジュールへ\n 複製する)。\n+\n+## `over-guard` — Context のアクセサフックが Provider の外で呼ばれた\n+\n+`rules/coding.md`「例外: Context のアクセサフック」の理由の詳細。\n+\n+- `throw` を許すのは、Provider の外で呼ばれるのが実行時に起こりうる失敗ではなく、コンポーネントの\n+  配置ミス(プログラミングエラー)で、呼び出し側が分岐して回復するものではないため\n+- `Option` を返さないのは、Provider の内側にいると分かっている消費側すべてに不在の分岐が増えるため\n+- 既定値を返して埋めないのは、Provider の付け忘れが画面に出ないまま残るため。隠さずに落とす",
+          "patchLines": 13,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -37,7 +37,7 @@ cd \"$(dirname \"$0\")\"\n \n # 常時ロード(AGENTS.md + rules/)と harness-growth スキルの行数の予算。\n # ラチェット: 足すなら同量削り、縮めたら実測に合わせて下げる。上げない。\n-always_loaded_cap=801\n+always_loaded_cap=796\n growth_skill_cap=100\n \n # 記録を読む awk が共有する関数。",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": "rules/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 6,
+          "patch": "@@ -28,12 +28,7 @@\n \n ### 例外: Context のアクセサフック\n \n-`useContext` を包むアクセサフックが **Provider の外で呼ばれた場合の `throw` は使ってよい**。\n-実行時に起こりうる失敗ではなく、コンポーネントの配置ミス(プログラミングエラー)であり、\n-呼び出し側が分岐して回復するものではないため。`Option` を返すと、Provider の内側にいることが\n-分かっている消費側すべてに不在の分岐が増える。\n-\n-**既定値を返して埋めるのは禁止**(Provider の付け忘れが画面に出ないまま残るため)。隠さずに落とす。\n+`useContext` を包むアクセサフックが Provider の外で呼ばれた場合の `throw` は使ってよい(配置ミスであり、呼び出し側が回復する失敗ではない)。**既定値を返して埋めるのは禁止**(付け忘れが画面に出ないまま残る)。理由の詳細は判例。\n \n ## 関数のシグネチャ\n ",
+          "patchLines": 14,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/missing-doc-comments.py",
+      "to": "rules/coding.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": "rules/coding.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-doc-comments.sh",
+      "to": "rules/coding.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-result-option-discriminants.sh",
+      "to": "rules/coding.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    }
+  ]
+}
