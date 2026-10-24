@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-BH8X6oEPXpvIMR0xZlxcT/hkXmBtL585+de4A1trE/4='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-2zkzkm16AH/mcZF3G5XmaZ1Wmts/GrJlTsygIOgU+6Q='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -794,7 +794,7 @@ button.change-item:hover { background: var(--track); }
    * 含む)をキーワード、属性名を値の有無によらずキー、属性の値の文字列を文字列にする。JSX の本文は色なしで、`{…}` の中は JS / TS で
    * 読む。HTML の本文は、数値と関数呼び出し(`名前(`)のほかは色なし。Rust は生文字列・バイト文字列・文字リテラルを文字列、ライフタイムを
    * 型、属性の `#[名前` / `#![名前` をキーワード、括弧の続くマクロの `名前!` を関数にし、行をまたいで続けるのは生文字列とブロックコメントだけ。
-   * Rust の入れ子のブロックコメントは内側の閉じ記号で外側まで閉じ、hunk・抜粋が生文字列の途中から始まると、閉じの `"#` を開きと読む。
+   * Rust の入れ子のブロックコメントは最初の閉じ記号で閉じ、hunk・抜粋が生文字列の途中から始まると、閉じの `"#` を開きと読む。
    */
   const Tokenizer = (() => {
     const words = (list) => new Set(list.split(" ").filter((word) => word !== ""));
@@ -804,14 +804,14 @@ button.change-item:hover { background: var(--track); }
     const JsIdentifier = /[A-Za-z_$][\w$]*/y;
     const JsGrammar = { comment: "//", block: ["/*", "*/"], strings: ['"', "'", "`"], keywords: words(JsWords), identifier: JsIdentifier, identifiers: true, objectKeys: true };
     const TsGrammar = { ...JsGrammar, keywords: words(`${JsWords} ${TsWords}`) };
-    /** Rust の数値。16 / 8 / 2 進・`_` の区切り・指数と、`u64` `f32` などの型の接尾辞までを 1 つにする。 */
+    /** Rust の数値。16 / 8 / 2 進・`_` の区切り・指数と、`u64` `f32` などの型の接尾辞までを 1 つにする。指数の後ろの `_` は読まず、`1e10_f64` は `1e10` で切る。 */
     const RustNumber = /(?:0x[0-9A-Fa-f_]+|0o[0-7_]+|0b[01_]+|\d[\d_]*(?:\.\d[\d_]*)?(?:[eE][+-]?\d+)?)(?:[iu](?:8|16|32|64|128|size)|f32|f64)?/y;
     /** Rust の生文字列の開き(`r"` / `r#"` / `br##"` など)。閉じは同じ数の `#` が付いた `"`。 */
     const RustRawStringStart = /b?r#*"/y;
     /** Rust の文字リテラル(`'a'` / `'\n'` / `'\u{1F3A8}'` / `b'a'`)。絵文字を 1 字と数えるよう `u` を付ける。 */
     const RustChar = /b?'(?:\\(?:x[0-9A-Fa-f]{2}|u\{[0-9A-Fa-f_]{1,8}\}|.)|[^'\\\n])'/yu;
     /** Rust のライフタイム(`'a` / `'_` / `'static`)。文字リテラルを先に読むので、`'a'` はここへ来ない。 */
-    const RustLifetime = /'[A-Za-z_]\w*(?!')/y;
+    const RustLifetime = /'[A-Za-z_]\w*/y;
     /** Rust の属性の開きと名前(`#[cfg` / `#![allow`)。 */
     const RustAttribute = /#!?\[\s*[A-Za-z_][\w:]*/y;
     /** Rust のマクロの呼び出し(`assert!(` / `vec![` の `名前!`)。括弧が続くものだけにして、`a!=b` の `a` を取らない。 */
@@ -826,6 +826,7 @@ button.change-item:hover { background: var(--track); }
       yaml: { comment: "#", strings: ['"', "'"], keys: true, keywords: words("true false null") },
       html: { block: ["<!--", "-->"], strings: ['"', "'"], tags: true, keywords: words("") },
       css: { block: ["/*", "*/"], strings: ['"', "'"], css: true, keywords: words("") },
+      // `'` は strings に入れない。ライフタイム(`State<'_, …>` の `'_`)から行末までを文字列にしてしまうため。
       rust: { comment: "//", block: ["/*", "*/"], strings: ['"'], prefixes: /b(?=")/y, rust: true, number: RustNumber, identifiers: true, keywords: words("as async await break const continue crate dyn else enum extern false fn for if impl in let loop match mod move mut pub ref return self Self static struct super trait true type unsafe use where while"), types: words("bool char str u8 u16 u32 u64 u128 usize i8 i16 i32 i64 i128 isize f32 f64") },
     };
     const LanguageByExtension = { py: "python", js: "js", mjs: "js", jsx: "jsx", ts: "ts", tsx: "tsx", json: "js", sh: "shell", bash: "shell", yml: "yaml", yaml: "yaml", html: "html", css: "css", rs: "rust" };
@@ -1145,11 +1146,7 @@ button.change-item:hover { background: var(--track); }
     };
 
     /** 持ち越しの続き(前の行で閉じなかった文字列・コメント)を、閉じ記号まで 1 字句にする。 */
-    const continuationOf = (cursor, open) => {
-      const close = cursor.text.indexOf(open.close, cursor.at);
-      if (close < 0) return Token(open.cls, cursor.text.slice(cursor.at), open.close);
-      return Token(open.cls, cursor.text.slice(cursor.at, close + open.close.length));
-    };
+    const continuationOf = (cursor, open) => delimitedAt(cursor, { cls: open.cls, from: cursor.at, close: open.close });
 
     /**
      * 字句を読んだ後の括弧の並び。色の無い字句だけを括弧として見る。
