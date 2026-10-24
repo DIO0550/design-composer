@@ -101,7 +101,7 @@ export type ArtboardDragControl = Readonly<{
   }>;
   /** 運んでいる間の見せかけの位置。離すまで確定しないので描く側だけが使う。 */
   preview: Option<ArtboardDragPreview>;
-  /** 運んでいる間に揃った線。離すと出なくなる。 */
+  /** 運んでいる間に揃った線と、揃え先との隙間。離すと出なくなる。 */
   snapGuides: SnapGuides;
 }>;
 
@@ -116,7 +116,8 @@ export type ArtboardDragControl = Readonly<{
  *
  * @param params 揃え先の artboard の並びを引く `document`、倍率を引く表示の状態と、
  *   離したときに編集を送る先
- * @returns 掴む手続きと、ポインタを追うハンドラ、運んでいる間の見せかけの位置と、揃った線
+ * @returns 掴む手続きと、ポインタを追うハンドラ、運んでいる間の見せかけの位置と、揃った線に
+ *   引く線と、揃え先との隙間
  */
 export function useArtboardDrag(
   params: Readonly<{

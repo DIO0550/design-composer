@@ -26,12 +26,12 @@ export type ArtboardGrab = Readonly<{
 /**
  * ポインタが動いた 1 回分（どちらも画面上の px）。
  *
- * 寄せ量とガイド線はポインタの位置から `snappedAt` で求めた 1 回分の答えで、寄せ量は掴んで
- * からの総量（前回までの寄せ量に足していく差分ではない）。
+ * 寄せ量・揃った線に引く線・揃え先との隙間はポインタの位置から `snappedAt` で求めた 1 回分の
+ * 答えで、寄せ量は掴んでからの総量（前回までの寄せ量に足していく差分ではない）。
  */
 export type ArtboardPointerMove = Readonly<{
   pointer: Offset;
-  /** そこで寄せる量と、揃った線に引くガイド線。揃う線が無ければ寄せ量 0・線無し */
+  /** そこで寄せる量と、揃った線に引く線と、揃え先との隙間。揃う線が無ければ寄せ量 0・線も隙間も無し */
   snapped: SideSnapped;
 }>;
 
@@ -53,8 +53,9 @@ export type ArtboardDragPreview = Readonly<{
 
 /**
  * キャンバス上で artboard を掴んでから離すまでの状態（docs/06-ui.md「キャンバス直接操作」
- * の artboard の移動）。掴んだものを持つのは離すまで、ポインタの位置と寄せ量・ガイド線（どれも
- * 画面上の px）を持つのは動かしている間だけ、と状態ごとに持つものが変わるので直和で列挙する。
+ * の artboard の移動）。掴んだものを持つのは離すまで、ポインタの位置と寄せ量・揃った線に引く線・
+ * 揃え先との隙間（どれも画面上の px）を持つのは動かしている間だけ、と状態ごとに持つものが変わる
+ * ので直和で列挙する。
  *
  * 「離した直後」の状態は持たない。**掴み口の見出しには飲み込む相手が居ない**ためで（見
  * 出しは枠の兄弟なので `click` が枠へ上がらない）、無いのに入ると**次のクリックを食べる**。
@@ -93,7 +94,7 @@ export const ArtboardDrag = {
    * ポインタが動いた先を反映する。
    *
    * @param drag 今のドラッグの状態
-   * @param move 画面上のポインタの位置と、そこで寄せる量と揃った線
+   * @param move 画面上のポインタの位置と、そこで寄せる量と、揃った線に引く線と、揃え先との隙間
    * @returns 閾値を越えていれば運んでいる状態。掴んでいなければそのまま
    */
   moveTo(drag: ArtboardDrag, move: ArtboardPointerMove): ArtboardDrag {
@@ -132,7 +133,7 @@ export const ArtboardDrag = {
 
   /**
    * ポインタをそこまで動かしたとき、他の artboard の辺か中心線へ寄せる量と、揃った線に引く
-   * ガイド線（docs/06-ui.md「キャンバス直接操作」の artboard の移動）。
+   * 線と、揃え先との隙間（docs/06-ui.md「キャンバス直接操作」の artboard の移動）。
    *
    * 行き先の矩形は、今描かれている矩形を「今ずらして描いている量」から「そのポインタまで
    * 運んだ量」へ付け替えて作る。実測には前回までの運搬ぶんが既に乗っているため。
@@ -146,8 +147,9 @@ export const ArtboardDrag = {
    * @param drag `drawn` を描いたときのドラッグの状態
    * @param pointer 画面上のポインタの位置
    * @param drawn 運んでいる artboard と揃え先の実測
-   * @returns 寄せ量とガイド線（画面上の px）。運んでいる artboard に大きさが無い（まだレイアウト
-   *   されていない）/ 閾値に届く線が無い / 掴んでいないなら寄せ量 0・線無し（`SideSnap.Unsnapped`。
+   * @returns 寄せ量と、揃った線に引く線と、揃え先との隙間（画面上の px）。運んでいる artboard に
+   *   大きさが無い（まだレイアウトされていない）/ 閾値に届く線が無い / 掴んでいないなら寄せ量 0・
+   *   線も隙間も無し（`SideSnap.Unsnapped`。
    *   掴んでいなければ呼び出し側は測らないので、最後の条件は起点を取り出すための型の上の枝）
    */
   snappedAt(
@@ -198,10 +200,10 @@ export const ArtboardDrag = {
   },
 
   /**
-   * 揃った線に引くガイド線（docs/06-ui.md「artboard の移動」の辺のスナップ）。
+   * 揃った線に引くガイド線と、揃え先との隙間（docs/06-ui.md「artboard の移動」の辺のスナップ）。
    *
    * @param drag 今のドラッグの状態
-   * @returns 最後に動かした位置で揃った線。動かしていない / 揃った線が無いなら縦横とも `none`
+   * @returns 最後に動かした位置で揃った線に引く線と隙間（画面上の px）。動かしていない / 揃った線が無いなら縦横とも `none`
    */
   snapGuides(drag: ArtboardDrag): SnapGuides {
     return drag.kind === "dragging" ? drag.snapped.guides : SideSnap.NoGuides;
