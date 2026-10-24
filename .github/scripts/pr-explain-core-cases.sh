@@ -1077,27 +1077,27 @@ const cases = [
   },
   {
     label: "倍率を上げたあと、読んでいた点(節の上端から 1/4)が新しい読む線に来る",
-    actual: () => TopicScroll.keptTopOf({ before: { top: 40, height: 400, zoom: 1 }, after: { height: 620, zoom: 1.5 } }),
+    actual: () => TopicScroll.keptTopOf({ before: { top: 40, height: 400, ratio: 1 }, after: { height: 620, ratio: 1.5 } }),
     expected: 55,
   },
   {
     label: "倍率を下げたあとも、読んでいた点が新しい読む線に来る",
-    actual: () => TopicScroll.keptTopOf({ before: { top: 60, height: 600, zoom: 1.5 }, after: { height: 410, zoom: 1 } }),
+    actual: () => TopicScroll.keptTopOf({ before: { top: 60, height: 600, ratio: 1.5 }, after: { height: 410, ratio: 1 } }),
     expected: 37.5,
   },
   {
     label: "読む線が節の下の隙間にあったときは、節の下端を読む線に置く",
-    actual: () => TopicScroll.keptTopOf({ before: { top: -300, height: 400, zoom: 1 }, after: { height: 450, zoom: 1.5 } }),
+    actual: () => TopicScroll.keptTopOf({ before: { top: -300, height: 400, ratio: 1 }, after: { height: 450, ratio: 1.5 } }),
     expected: -240,
   },
   {
     label: "節の下端がちょうど読む線にあったときも、節の下端を読む線に置く",
-    actual: () => TopicScroll.keptTopOf({ before: { top: -260, height: 400, zoom: 1 }, after: { height: 450, zoom: 1.5 } }),
+    actual: () => TopicScroll.keptTopOf({ before: { top: -260, height: 400, ratio: 1 }, after: { height: 450, ratio: 1.5 } }),
     expected: -240,
   },
   {
     label: "最初の節がまだ読む線に来ていないときは、読む線からの離れを節の高さとの割合で保つ",
-    actual: () => TopicScroll.keptTopOf({ before: { top: 300, height: 400, zoom: 1 }, after: { height: 620, zoom: 1.5 } }),
+    actual: () => TopicScroll.keptTopOf({ before: { top: 300, height: 400, ratio: 1 }, after: { height: 620, ratio: 1.5 } }),
     expected: 458,
   },
   {
