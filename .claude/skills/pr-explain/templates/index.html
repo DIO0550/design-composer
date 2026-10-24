@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-2zkzkm16AH/mcZF3G5XmaZ1Wmts/GrJlTsygIOgU+6Q='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-N2x3itMdDpM/FAYwVbrgjwb2XNeG4/PiMIXQtD0u/jM='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -927,7 +927,7 @@ button.change-item:hover { background: var(--track); }
       return Token("tok-str", prefix + rest.value, rest.opens);
     };
 
-    /** 位置から、`from` より後で最初に来る閉じ記号 `close` までを 1 字句にする。閉じずに行が終わったら、閉じ記号を次の行へ持ち越す。 */
+    /** 位置から、`from` 以降で最初に来る閉じ記号 `close` までを 1 字句にする。閉じずに行が終わったら、閉じ記号を次の行へ持ち越す。 */
     const delimitedAt = (cursor, { cls, from, close }) => {
       const end = cursor.text.indexOf(close, from);
       return end >= 0 ? Token(cls, cursor.text.slice(cursor.at, end + close.length)) : Token(cls, restOfLine(cursor), close);
@@ -1027,9 +1027,8 @@ button.change-item:hover { background: var(--track); }
       return delimitedAt(cursor, { cls: "tok-str", from: cursor.at + opening.length, close: `"${hashes}` });
     };
 
-    /** Rust の、文字列・コメント・数値・名前のほかの字句(生文字列・文字リテラル・ライフタイム・属性・マクロ)。名前の途中と、どれでもなければ null。 */
+    /** Rust の、文字列・コメント・数値・名前のほかの字句(生文字列・文字リテラル・ライフタイム・属性・マクロ)。どれでもなければ null。 */
     const rustTokenAt = (cursor) => {
-      if (/\w/.test(cursor.prev)) return null;
       const raw = rustRawStringAt(cursor);
       if (raw) return raw;
       const char = matchAt(RustChar, cursor);
