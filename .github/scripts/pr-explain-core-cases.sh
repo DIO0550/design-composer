@@ -1446,9 +1446,139 @@ const cases = [
     expected: "tok-kw",
   },
   {
-    label: "色分け: .md と .rs は規則が無く、行全体が色の無い 1 字句になる",
-    actual: () => ["a.md", "a.rs"].map((path) => lineTokensOf(path, ["const a = f(1);"])[0].map((token) => [token.cls, token.value])),
+    label: "色分け: .md と .toml は規則が無く、行全体が色の無い 1 字句になる",
+    actual: () => ["a.md", "a.toml"].map((path) => lineTokensOf(path, ["const a = f(1);"])[0].map((token) => [token.cls, token.value])),
     expected: [[[null, "const a = f(1);"]], [[null, "const a = f(1);"]]],
+  },
+  {
+    label: "色分け: .rs は Rust の規則で読む(fn がキーワード)",
+    actual: () => colorOf("a.rs", ["fn main() {}"], { word: "fn" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: Rust の生文字列 r#\"…\"# は中の \" で切れず 1 つの文字列になり、後ろの let はキーワードに戻る",
+    actual: () => [["r#\"{\"a\":1}\"#", 0], ["let", 1]].map(([word, nth]) => colorOf("a.rs", ["let c = r#\"{\"a\":1}\"#; let x = 1;"], { word, nth })),
+    expected: ["tok-str", "tok-kw"],
+  },
+  {
+    label: "色分け: Rust の生文字列は、# の数が合わない \"# では閉じない",
+    actual: () => colorOf("a.rs", ["let s = r##\"a\"#b\"##;"], { word: "r##\"a\"#b\"##" }),
+    expected: "tok-str",
+  },
+  {
+    label: "色分け: Rust の生文字列の中の \\ はエスケープにならない(後ろの let はキーワード)",
+    actual: () => [["r\"a\\\"", 0], ["let", 1]].map(([word, nth]) => colorOf("a.rs", ["let t = r\"a\\\"; let x = 1;"], { word, nth })),
+    expected: ["tok-str", "tok-kw"],
+  },
+  {
+    label: "色分け: Rust の b\"a\" / br\"a\" / b'a' は接頭辞ごと 1 つの文字列になる",
+    actual: () => ["b\"a\"", "br\"a\"", "b'a'"].map((word) => colorOf("a.rs", ["let a = b\"a\"; let b = br\"a\"; let c = b'a';"], { word })),
+    expected: ["tok-str", "tok-str", "tok-str"],
+  },
+  {
+    label: "色分け: Rust の文字リテラル 'a' / '\\n' / '\\'' / 絵文字は文字列になる",
+    actual: () => ["'a'", "'\\n'", "'\\''", "'🎨'"].map((word) => colorOf("a.rs", ["let c = ['a', '\\n', '\\'', '🎨'];"], { word })),
+    expected: ["tok-str", "tok-str", "tok-str", "tok-str"],
+  },
+  {
+    label: "色分け: Rust のライフタイム '_ は型になり、行の残りを文字列にしない(後ろの Arc が型)",
+    actual: () => ["'_", "Arc"].map((word) => colorOf("a.rs", ["known: State<'_, Arc<K>>,"], { word })),
+    expected: ["tok-type", "tok-type"],
+  },
+  {
+    label: "色分け: Rust のライフタイム 'a / 'static は型、文字リテラル 'a' は文字列になる",
+    actual: () => [["'a", 0], ["'a", 1], ["'static", 0], ["'a'", 0]].map(([word, nth]) => colorOf("a.rs", ["fn f<'a>(x: &'a str) -> &'static str { 'a' }"], { word, nth })),
+    expected: ["tok-type", "tok-type", "tok-type", "tok-str"],
+  },
+  {
+    label: "色分け: Rust の属性の #[cfg / #![allow はキーワード、中の名前は変数になる",
+    actual: () => [["#[cfg(unix)]", "#[cfg", "unix"], ["#![allow(non_snake_case)]", "#![allow", "non_snake_case"]].map(([line, opening, name]) => [opening, name].map((word) => colorOf("a.rs", [line], { word }))),
+    expected: [["tok-kw", "tok-var"], ["tok-kw", "tok-var"]],
+  },
+  {
+    label: "色分け: Rust のマクロ assert! / matches! / vec! は ! ごと関数になり、a!=b の a は変数のまま",
+    actual: () => ["assert!", "matches!", "vec!", "a"].map((word) => colorOf("a.rs", ["assert!(a!=b); matches!(x, y); vec![1];"], { word })),
+    expected: ["tok-fn", "tok-fn", "tok-fn", "tok-var"],
+  },
+  {
+    label: "色分け: Rust のパスは、大文字で始まる名前が型、「名前(」が関数、ほかが変数になる",
+    actual: () => ["DocumentIoError", "invalid_path", "io", "save"].map((word) => colorOf("a.rs", ["DocumentIoError::invalid_path(p); io::save(p);"], { word })),
+    expected: ["tok-type", "tok-fn", "tok-var", "tok-fn"],
+  },
+  {
+    label: "色分け: Rust の 0xff / 1_000u64 / 1.5f32 は 1 つの数値、0..10 は 2 つの数値になる",
+    actual: () => lineTokensOf("a.rs", ["f(0xff, 1_000u64, 1.5f32, 0..10);"])[0].filter((token) => token.cls === "tok-num").map((token) => token.value),
+    expected: ["0xff", "1_000u64", "1.5f32", "0", "10"],
+  },
+  {
+    label: "色分け: Rust の 1e10_f64 は指数の後ろの _ を読まず、1e10 で切れる",
+    actual: () => lineTokensOf("a.rs", ["f(1e10_f64);"])[0].filter((token) => token.cls === "tok-num").map((token) => token.value),
+    expected: ["1e10"],
+  },
+  {
+    label: "色分け: Rust の指数 1e10 / 2.5E-3 は 1 つの数値になる",
+    actual: () => lineTokensOf("a.rs", ["f(1e10, 2.5E-3);"])[0].filter((token) => token.cls === "tok-num").map((token) => token.value),
+    expected: ["1e10", "2.5E-3"],
+  },
+  {
+    label: "色分け: Rust の 8 進 0o17 / 2 進 0b1010 は 1 つの数値になる",
+    actual: () => lineTokensOf("a.rs", ["f(0o17, 0b1010);"])[0].filter((token) => token.cls === "tok-num").map((token) => token.value),
+    expected: ["0o17", "0b1010"],
+  },
+  {
+    label: "色分け: Rust の 1u128 は接尾辞まで 1 つの数値になる",
+    actual: () => lineTokensOf("a.rs", ["f(1u128);"])[0].filter((token) => token.cls === "tok-num").map((token) => token.value),
+    expected: ["1u128"],
+  },
+  {
+    label: "色分け: Rust の文字リテラル '\\u{1F3A8}' / '\\x7f' は文字列になる",
+    actual: () => ["'\\u{1F3A8}'", "'\\x7f'"].map((word) => colorOf("a.rs", ["let c = ['\\u{1F3A8}', '\\x7f'];"], { word })),
+    expected: ["tok-str", "tok-str"],
+  },
+  {
+    label: "色分け: Rust の属性 #[serde::rename は :: を含むパスまでがキーワードになる",
+    actual: () => colorOf("a.rs", ["#[serde::rename(x)]"], { word: "#[serde::rename" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: Rust のマクロ thread_local!{ の thread_local! は関数になる",
+    actual: () => colorOf("a.rs", ["thread_local!{ static A: u8 = 1; }"], { word: "thread_local!" }),
+    expected: "tok-fn",
+  },
+  {
+    label: "色分け: Rust の基本型 u64 / str / bool は型、self / Self はキーワードになる",
+    actual: () => ["u64", "str", "bool", "self", "Self"].map((word) => colorOf("a.rs", ["fn f(&self, a: u64, b: &str) -> Self { bool }"], { word })),
+    expected: ["tok-type", "tok-type", "tok-type", "tok-kw", "tok-kw"],
+  },
+  {
+    label: "色分け: Rust の文書コメント /// / //! はコメントになる",
+    actual: () => lineTokensOf("a.rs", ["/// a", "//! c"]).map((tokens) => tokens.map((token) => [token.cls, token.value])),
+    expected: [[["tok-com", "/// a"]], [["tok-com", "//! c"]]],
+  },
+  {
+    label: "色分け: Rust の行をまたぐ生文字列は次の行へ持ち越す(2 行目の let までが文字列)",
+    actual: () => ["let b\"#", "let"].map((word) => colorOf("a.rs", ["let s = r#\"a", "let b\"#; let x = 1;"], { line: 1, word })),
+    expected: ["tok-str", "tok-kw"],
+  },
+  {
+    label: "色分け: Rust の普通の文字列は次の行へ持ち越さない(次の行の let はキーワード)",
+    actual: () => colorOf("a.rs", ["let s = \"a", "let x = 1;"], { line: 1, word: "let" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: .ts の閉じていない \" は次の行へ持ち越さない(次の行の const はキーワード)",
+    actual: () => colorOf("a.ts", ["const s = \"a", "const b = 1;"], { line: 1, word: "const" }),
+    expected: "tok-kw",
+  },
+  {
+    label: "色分け: Rust の /* は次の行の */ で閉じ、その後ろの let はキーワードになる",
+    actual: () => [[0, "/* a"], [1, "b */"], [1, "let"]].map(([line, word]) => colorOf("a.rs", ["/* a", "b */ let x = 1;"], { line, word })),
+    expected: ["tok-com", "tok-com", "tok-kw"],
+  },
+  {
+    label: "色分け: Rust の文字リテラル '\"' の中の \" は文字列を開かず、後ろの let はキーワードに戻る",
+    actual: () => [["'\"'", 0], ["let", 1]].map(([word, nth]) => colorOf("a.rs", ["let q = '\"'; let x = 1;"], { word, nth })),
+    expected: ["tok-str", "tok-kw"],
   },
   {
     label: "色分け: JS / TS の大文字で始まる名前は型になる",

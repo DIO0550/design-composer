@@ -1,6 +1,7 @@
 //! 完了条件「書き込み途中のファイルを外部から読んでも不完全な JSON にならない」の検証。
 
-// テスト名は rules/testing.md に従い仕様の文として日本語で書く。
+// テスト名は rules/testing.md に従い仕様の文として書き、このリポジトリの既存のテストに
+// 合わせて日本語で書く。
 // JSON のようなラテン文字を含むと snake case ではなくなるため、この lint は無効にする。
 #![allow(non_snake_case)]
 
@@ -11,12 +12,12 @@ use std::thread;
 use super::io;
 use super::known_content::KnownContentRegistry;
 
-use super::test_support::{document, TempDir};
+use super::test_support::{document, document_file_path, TempDir};
 
 #[test]
 fn 書き込みを繰り返している最中に読み続けても常に完全なJSONが読める() {
     let dir = TempDir::new("atomicity");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
 
     // アトミックでない書き込みなら途中状態が観測できる程度の大きさにする
@@ -67,7 +68,7 @@ fn 書き込みを繰り返している最中に読み続けても常に完全�
 #[test]
 fn 書き込みを繰り返しても一時ファイルが残らない() {
     let dir = TempDir::new("atomicity");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
 
     for version in 0..20 {
@@ -80,7 +81,7 @@ fn 書き込みを繰り返しても一時ファイルが残らない() {
 #[test]
 fn 複数のスレッドから同じファイルへ書き込んでも読み手には完全なJSONだけが見える() {
     let dir = TempDir::new("atomicity");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
 
     let writable: Vec<String> = (0..4)
         .map(|writer| document(&format!("writer-{writer}"), 2000))

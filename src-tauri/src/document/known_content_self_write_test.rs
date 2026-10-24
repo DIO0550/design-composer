@@ -5,12 +5,12 @@ use std::fs;
 use super::io;
 use super::known_content::KnownContentRegistry;
 
-use super::test_support::TempDir;
+use super::test_support::{document_file_path, TempDir};
 
 #[test]
 fn 保存した内容は自書き込みと判定される() {
     let dir = TempDir::new("self-write");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
     let content = r#"{"version":1}"#;
 
@@ -22,7 +22,7 @@ fn 保存した内容は自書き込みと判定される() {
 #[test]
 fn 外部が書き換えた内容は自書き込みと判定されない() {
     let dir = TempDir::new("self-write");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
 
     io::save(&known, &path, r#"{"version":1}"#).expect("保存に成功する");
@@ -45,7 +45,7 @@ fn 一度も保存していないパスは自書き込みと判定されない()
 #[test]
 fn 同じ内容を何度問い合わせても自書き込みと判定され続ける() {
     let dir = TempDir::new("self-write");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
     let content = r#"{"version":1}"#;
 
@@ -61,7 +61,7 @@ fn 同じ内容を何度問い合わせても自書き込みと判定され続�
 #[test]
 fn 上書き保存すると新しい内容だけが自書き込みと判定される() {
     let dir = TempDir::new("self-write");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
 
     io::save(&known, &path, r#"{"version":1}"#).expect("初回の保存に成功する");
@@ -75,8 +75,8 @@ fn 上書き保存すると新しい内容だけが自書き込みと判定さ�
 fn 別のパスの記録は互いに影響しない() {
     let dir = TempDir::new("self-write");
     let known = KnownContentRegistry::new();
-    let first = dir.join("first.dcmp");
-    let second = dir.join("second.dcmp");
+    let first = document_file_path(&dir, "first.dcmp");
+    let second = document_file_path(&dir, "second.dcmp");
 
     io::save(&known, &first, r#"{"name":"first"}"#).expect("1 つ目の保存に成功する");
     io::save(&known, &second, r#"{"name":"second"}"#).expect("2 つ目の保存に成功する");
@@ -90,7 +90,7 @@ fn 別のパスの記録は互いに影響しない() {
 fn 同じファイルを指す異なる表記のパスでも自書き込みと判定される() {
     let dir = TempDir::new("self-write");
     fs::create_dir(dir.join("sub")).expect("サブディレクトリを作成できる");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
     let content = r#"{"version":1}"#;
 
@@ -104,7 +104,7 @@ fn 同じファイルを指す異なる表記のパスでも自書き込みと�
 #[test]
 fn 記録を破棄すると自書き込みと判定されなくなる() {
     let dir = TempDir::new("self-write");
-    let path = dir.join("document.dcmp");
+    let path = document_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
     let content = r#"{"version":1}"#;
 
