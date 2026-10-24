@@ -14,6 +14,7 @@ import {
 } from "@/features/editor/features/canvas/domains/side-snap";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
+import { CommandKey } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 
 /** ドラッグの状態を進める指示。 */
@@ -53,23 +54,36 @@ function artboardDragReducer(
 }
 
 /**
- * 掴んでいる artboard と、揃え先になる他の artboard の実測。
+ * 揃え先になる artboard の名前。運んでいる artboard 以外のすべてを、ドキュメントの並び順で返す。
  *
  * @param document artboard の並びの引き先
  * @param carriedName 運んでいる artboard の名前
+ * @returns 揃え先の名前の並び
+ */
+function collectStationaryNames(
+  document: DesignDocument,
+  carriedName: string,
+): readonly string[] {
+  // 自身を揃え先に入れると、自分の辺との距離（＝前回からの移動量）へ常に寄って動かなくなる
+  return DesignDocument.collectArtboardNames(document).filter(
+    (name) => name !== carriedName,
+  );
+}
+
+/**
+ * 掴んでいる artboard と、揃え先になる artboard の実測。
+ *
+ * @param carriedName 運んでいる artboard の名前
+ * @param stationaryNames 揃え先として測る artboard の名前の並び
  * @returns 実測。運んでいる artboard がまだ描かれていなければ `none`
  */
 function measureDrawn(
-  document: DesignDocument,
   carriedName: string,
+  stationaryNames: readonly string[],
 ): Option<ArtboardSnapMeasure> {
-  // 自身を揃え先に入れると、自分の辺との距離（＝前回からの移動量）へ常に寄って動かなくなる
-  const others = DesignDocument.collectArtboardNames(document).filter(
-    (name) => name !== carriedName,
-  );
   return Option.map(DrawnBounds.measure(carriedName), (carried) => ({
     carried,
-    stationary: DrawnBounds.collectDrawnBounds(others),
+    stationary: DrawnBounds.collectDrawnBounds(stationaryNames),
   }));
 }
 
@@ -97,7 +111,8 @@ export type ArtboardDragControl = Readonly<{
  *
  * 運んでいる間はドキュメントを書き換えず、離したときに 1 回だけ編集を送る。運んでいる間の
  * 見た目は `preview` を描く側が使う。他の artboard の辺か中心線の近くでは吸い付く（どれだけ
- * 寄せてどこに線を出すかは `ArtboardDrag.snappedAt`。ここが持つのは実測だけ）。
+ * 寄せてどこに線を出すかは `ArtboardDrag.snappedAt`。ここが持つのは実測だけ）。⌘ / Ctrl を
+ * 押しながら動かしたときは吸い付かず、線も出ない（押しているかはポインタが動くたびに見る）。
  *
  * @param params 揃え先の artboard の並びを引く `document`、倍率を引く表示の状態と、
  *   離したときに編集を送る先
@@ -141,9 +156,16 @@ export function useArtboardDrag(
          * 判定に渡すのは閉包の `drag`（実測した DOM を描いたときの状態）。掴んでいない間は
          * 測らない（ポインタが器の上を通るたびに全 artboard を測ることになる）。
          */
-        const drawn = Option.flatMap(ArtboardDrag.grabbed(drag), (grab) =>
-          measureDrawn(params.document, grab.name),
-        );
+        const drawn = Option.flatMap(ArtboardDrag.grabbed(drag), (grab) => {
+          /*
+           * ⌘ / Ctrl で吸い付かないことは揃え先を空にして表し、測れない（`none`）とは分ける（考え方は
+           * ノードの移動の `NoSnapTargets` と同じ）。空にするのは測る前で、揃え先の DOM は測らない。
+           */
+          const stationaryNames = CommandKey.isHeld(event)
+            ? []
+            : collectStationaryNames(params.document, grab.name);
+          return measureDrawn(grab.name, stationaryNames);
+        });
         const snapped = Option.isSome(drawn)
           ? ArtboardDrag.snappedAt(drag, pointer, drawn.value)
           : SideSnap.Unsnapped;

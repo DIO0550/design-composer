@@ -4,7 +4,12 @@ import {
   artboardHandle,
   canvasContent,
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
-import { drag } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
+import {
+  movePointer,
+  type PressedModifier,
+  pressPointerHolding,
+  releasePointer,
+} from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import { drawn, selectionFromArtboards } from "./setup";
 
 /** 並べる 3 枚の artboard の名前（並び順）と、3 枚に共通の大きさ。 */
@@ -62,10 +67,31 @@ export function drawnFollowingFrames(): void {
 }
 
 /**
+ * `second` の見出しを掴み、押した位置からその量だけ動かす。
+ * 離す前の見た目を見るので `releasePointer` は撃たない。
+ *
+ * @param by 押した位置から動かす量（画面上の px）
+ * @param pressed 掴んでから動かすまで押している修飾キー。既定は押していない
+ */
+export function carrySecond(
+  by: Offset,
+  pressed: PressedModifier = "none",
+): void {
+  const handle = artboardHandle("second");
+  pressPointerHolding(handle, { x: 0, y: 0 }, pressed);
+  movePointer(handle, by, pressed);
+}
+
+/**
  * `second` の見出しを掴み、押した位置からその量だけ動かして離す。
  *
  * @param by 押した位置から動かす量（画面上の px）
+ * @param pressed 掴んでから動かすまで押している修飾キー。既定は押していない
  */
-export function dragSecond(by: Offset): void {
-  drag(artboardHandle("second"), { from: { x: 0, y: 0 }, to: by });
+export function dragSecond(
+  by: Offset,
+  pressed: PressedModifier = "none",
+): void {
+  carrySecond(by, pressed);
+  releasePointer(artboardHandle("second"), by);
 }
