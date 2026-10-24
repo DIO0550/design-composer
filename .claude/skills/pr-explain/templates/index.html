@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ajHWBULXbZmZTITa3pJssV0bWA6qWr+TdqLsWyTkJ14='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Inv75/7FQRKgITdqZ8NVwoCEsdqskt/VBliw8jgPVxw='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -77,6 +77,8 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .band { padding: 7px 14px; font-size: 12px; line-height: 1.6; color: var(--mod); background: var(--warn-tint); border-bottom: 1px solid var(--line); white-space: normal; }
 .screens { min-height: 0; position: relative; }
 .screen { height: 100%; display: grid; min-height: 0; }
+/* 箱の図の欄は自分の −/+(transform)で拡大するので、文字の倍率を掛けると二重になる。
+   font-size の書き換えは px 固定の高さや図の箱の幅が崩れ、transform: scale はスクロールの範囲と幅が倍率に合わないので採らない。 */
 .screen > :not(.graph-canvas) { zoom: var(--text-size-ratio, 1); }
 .screen[hidden] { display: none; }
 .panel { position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--panel); }
@@ -184,7 +186,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .step-buttons { display: flex; gap: 6px; }
 .step-buttons button { border: 1px solid var(--line-strong); background: var(--surface); border-radius: 7px; padding: 5px 10px; font-size: 12px; cursor: pointer; color: var(--ink); }
 .step-buttons button:hover { border-color: var(--ink-4); }
-.step-buttons button:disabled { opacity: .4; cursor: default; }
+.step-buttons button:disabled, .back-button:disabled, .text-size-controls button:disabled { opacity: .4; cursor: default; }
 .commit-step { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 600; }
 .commit-head h1 { margin: 0; font-size: 24px; font-weight: 600; line-height: 1.4; text-wrap: pretty; overflow-wrap: anywhere; }
 .commit-message { margin: 0; padding: 12px 14px; background: var(--sunken); border-radius: 10px; font-family: var(--mono); font-size: 12.5px; line-height: 1.7; color: #3A3D44; white-space: pre-wrap; word-break: break-word; }
@@ -291,7 +293,6 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .zoom-controls button:hover, .text-size-controls button:hover { background: var(--track); }
 .zoom-percent, .text-size-percent { min-width: 44px; text-align: center; font-family: var(--mono); font-size: 11px; color: var(--ink-2); }
 .zoom-sep { width: 1px; height: 14px; background: var(--line); margin: 0 2px; }
-.text-size-controls button:disabled { opacity: .4; cursor: default; }
 .graph-container { position: absolute; border-radius: 14px; background: rgba(255, 255, 255, .5); border: 1px solid var(--line-strong); cursor: pointer; transition: opacity .2s, box-shadow .2s; }
 .graph-container.is-picked { border-color: var(--accent); background: rgba(47, 91, 234, .05); box-shadow: 0 0 0 1px var(--accent), 0 0 0 6px rgba(47, 91, 234, .12); }
 .graph-container.is-dim { opacity: .55; }
@@ -560,7 +561,6 @@ button.gap-card:hover { border-color: var(--mod-mark); }
 .side-bar { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--chip); white-space: nowrap; min-width: 0; }
 .back-button { flex: none; display: flex; align-items: center; gap: 5px; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 7px; padding: 4px 10px 4px 8px; font-size: 12px; color: var(--ink); cursor: pointer; }
 .back-button:hover { border-color: var(--ink-4); }
-.back-button:disabled { opacity: .4; cursor: default; }
 .side-bar-hint { font-size: 11.5px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .highlight-card { display: flex; gap: 10px; align-items: flex-start; padding: 11px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); width: 100%; }
 button.highlight-card:hover { border-color: var(--ink-4); }
@@ -663,9 +663,9 @@ button.change-item:hover { background: var(--track); }
 .sequence-legend > span { display: flex; align-items: center; gap: 5px; }
 .sequence-legend .legend-line { width: 16px; border-top-color: var(--ink-2); }
 .flow-chip:disabled { color: var(--ink-3); border-style: dashed; cursor: default; }
-.stage-body.topic-body { max-width: 860px; gap: 56px; padding-bottom: calc(100cqh - 140px); }
+.stage-body.topic-body { --topic-column-height: 100cqh; max-width: 860px; gap: 56px; padding-bottom: calc(var(--topic-column-height) - 140px); }
 /* 本文の末尾の余白は「欄の高さ − 読む線(TopicScroll の 140px)」。どの節も読む線まで送れるので、今の節は上端の位置だけで決まる。
-   欄の高さは、広い幅では本文の欄(size のコンテナ)の、狭い幅ではコンテナを外すので表示領域の高さになる。 */
+   欄の高さ(`--topic-column-height`)は、広い幅では本文の欄(size のコンテナ)の、狭い幅ではコンテナを外すので表示領域の高さになる。 */
 .screen:is([data-screen="impact"], [data-screen="primer"]) > .stage { container-type: size; }
 .topic { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 20px; }
 .topic-head { display: flex; flex-direction: column; gap: 6px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
@@ -773,7 +773,7 @@ button.change-item:hover { background: var(--track); }
   .screen:is([data-screen="impact"], [data-screen="primer"]) > .stage { overflow: visible; container-type: normal; }
   /* コンテナを外すので `100cqh` は表示領域の高さを倍率の掛かる前の px で返す。倍率で割って欄の中の px に直す
      (広い幅の `.topic-body` は欄の中で倍率込みの高さが返るので割らない)。 */
-  .screen:is([data-screen="impact"], [data-screen="primer"]) .topic-body { padding-inline: 16px; gap: 44px; padding-bottom: calc(100cqh / var(--text-size-ratio, 1) - 140px); }
+  .screen:is([data-screen="impact"], [data-screen="primer"]) .topic-body { --topic-column-height: calc(100cqh / var(--text-size-ratio, 1)); padding-inline: 16px; gap: 44px; }
   .screen:is([data-screen="impact"], [data-screen="primer"]) .topic-gist { grid-template-columns: minmax(0, 1fr); gap: 4px; }
   .screen[data-screen="primer"] > .primer-tablist { position: sticky; top: 0; z-index: 2; background: var(--bg); height: 44px; }
   /* 上 12px + 名前の行 20px + 下 11px に、並びの下の線 1px を足して 44px。横の余白だけを広い幅の 18px から詰める。 */
@@ -1437,9 +1437,9 @@ button.change-item:hover { background: var(--track); }
   const isScreen = (value) => Object.values(Screens).includes(value);
 
   /**
-   * 図を除く画面の文字の大きさ。percent(整数)で持ち、90〜150% を 10 刻みで選ぶ。開くたびに 100% から始める。
+   * 箱の図の欄(構造マップとテスト)を除き、どの画面のパネルと本文にも効く文字の大きさ。percent(整数)で持ち、`Steps` から選ぶ。開くたびに `Initial` から始める。
    *
-   * 覚える形にはしない。localStorage はオリジン単位なので、ほかの PR のページと値が混ざる。
+   * 覚える形にはしない。全 PR で覚えるとブラウザの拡大と同じくほかのページにも効き、PR ごとに覚えても 1 つの PR のページは開く回数が少なく覚える価値が小さい。
    */
   const TextSize = (() => {
     const Steps = Object.freeze([90, 100, 110, 120, 130, 140, 150]);
@@ -1452,12 +1452,12 @@ button.change-item:hover { background: var(--track); }
       Initial: 100,
       /**
        * @param percent 今の文字の大きさ
-       * @returns 1 段大きい文字の大きさ。今が最大(150)なら null
+       * @returns 1 段大きい文字の大きさ。今が `Steps` の最大なら null
        */
       larger: (percent) => stepAfter(percent, 1),
       /**
        * @param percent 今の文字の大きさ
-       * @returns 1 段小さい文字の大きさ。今が最小(90)なら null
+       * @returns 1 段小さい文字の大きさ。今が `Steps` の最小なら null
        */
       smaller: (percent) => stepAfter(percent, -1),
       /**
@@ -1680,16 +1680,18 @@ button.change-item:hover { background: var(--track); }
   const TopicScroll = (() => {
     // 読む線。本文の欄の CSS px で 140(見た目では 140 × 文字の倍率)。本文の末尾には「欄の高さ − 読む線」の余白を CSS で取ってあり(`.topic-body`)、どの節も読む線まで送れる。
     const ReadingLine = 140;
+    /** 見た目の px での読む線の位置。 */
+    const lineAt = (ratio) => ReadingLine * ratio;
     return Object.freeze({
       /**
        * 読む線(スクロールする領域の上端から、見た目で 140 × 倍率 px)より上に来た最後の節を、今の節にする。
        * @param tops 節の上端の、スクロールする領域の上端からの距離(見た目の px・節の順)
-       * @param zoom 本文の欄に掛かっている文字の倍率
+       * @param ratio 本文の欄に掛かっている文字の倍率
        * @returns 今の節の添字。上端が読む線(140 × 倍率 を含む)まで来た最後の節で、どれも来ていなければ最初の節。節が無ければ null
        */
-      currentOf: (tops, zoom) => {
+      currentOf: (tops, ratio) => {
         if (tops.length === 0) return null;
-        const passed = tops.findLastIndex((top) => top <= ReadingLine * zoom);
+        const passed = tops.findLastIndex((top) => top <= lineAt(ratio));
         return passed < 0 ? 0 : passed;
       },
       /**
@@ -1700,8 +1702,8 @@ button.change-item:hover { background: var(--track); }
        * @returns 変えたあとの節の上端の、スクロールする領域の上端からの距離(見た目の px)
        */
       keptTopOf: ({ before, after }) => {
-        const share = Math.min((ReadingLine * before.zoom - before.top) / before.height, 1);
-        return ReadingLine * after.zoom - share * after.height;
+        const share = Math.min((lineAt(before.ratio) - before.top) / before.height, 1);
+        return lineAt(after.ratio) - share * after.height;
       },
     });
   })();
@@ -5609,15 +5611,15 @@ button.change-item:hover { background: var(--track); }
       const dot = topic.dotTone === null ? [] : [el("span", { class: "status-dot", "data-tone": topic.dotTone })];
       return [el("span", { class: "row-sub", text: topic.tocEyebrow }), el("span", { class: "change-head" }, [...dot, el("span", { class: "row-title prose" }, topic.labelPartsOf())])];
     };
-    /** 本文の欄に掛かっている文字の倍率。子孫の computed `zoom` は 1 を返すので、`zoom` を掛けた本文の欄から読む。 */
-    const zoomOf = (main) => Number(getComputedStyle(main).zoom);
+    /** 本文の欄に掛かっている文字の倍率。CSS の `zoom` プロパティの computed 値を読む。子孫の値は 1 を返すので、`zoom` を掛けた本文の欄から読む。 */
+    const textRatioOf = (main) => Number(getComputedStyle(main).zoom);
     /** スクロールしているのがページ全体のときの、その上端(0)と送り方。 */
     const pageArea = Object.freeze({ topOf: () => 0, scrollBy: (distance) => window.scrollBy(0, distance) });
     /** スクロールしているのが本文の欄のときの、その上端と送り方。`scrollTop` は欄の中の CSS px なので倍率で割る。 */
     const columnAreaOf = (main) => Object.freeze({
       topOf: () => main.getBoundingClientRect().top,
-      scrollBy: (distance, zoom) => {
-        main.scrollTop += distance / zoom;
+      scrollBy: (distance, ratio) => {
+        main.scrollTop += distance / ratio;
       },
     });
     /**
@@ -5640,7 +5642,7 @@ button.change-item:hover { background: var(--track); }
        *   - `sideBlocksOf` 右の欄と畳んだ欄の中身を返す。呼ぶたびに新しく作る
        * @param emptySide 節が無いときの右の欄の文
        * @returns `articles`(節の要素)・`toc`(目次の欄。節が無ければ空の文)・`inlineHolders`(畳んだ欄の中身を入れる要素)・
-       *   `side`(右の欄)と、`follow(top, zoom)`(スクロールに合わせて今の節を決め直す)・`sendTo(index)`(節へ送る)・`render()`(描き直す)・
+       *   `side`(右の欄)と、`follow(top, ratio)`(スクロールに合わせて今の節を決め直す)・`sendTo(index)`(節へ送る)・`render()`(描き直す)・
        *   `currentArticle()`(今の節の要素。節が 0 件なら null)
        */
       create: ({ topics, emptySide }) => {
@@ -5679,10 +5681,10 @@ button.change-item:hover { background: var(--track); }
         /**
          * スクロールに合わせて今の節を決め直す。変わったときだけ描き直す。
          * @param top スクロールしている領域の上端の、表示領域の上端からの距離
-         * @param zoom 本文の欄に掛かっている文字の倍率
+         * @param ratio 本文の欄に掛かっている文字の倍率
          */
-        const follow = (top, zoom) => {
-          const next = TopicScroll.currentOf(articles.map((article) => article.getBoundingClientRect().top - top), zoom);
+        const follow = (top, ratio) => {
+          const next = TopicScroll.currentOf(articles.map((article) => article.getBoundingClientRect().top - top), ratio);
           if (next === current) return;
           current = next;
           render();
@@ -5704,14 +5706,15 @@ button.change-item:hover { background: var(--track); }
           return screen !== null && !screen.hidden;
         };
         // スクロールしているのが本文の欄(広い幅)かページ全体(狭い幅)かは CSS の `@media` が決めるので、イベントの出どころで見分ける。
-        main.addEventListener("scroll", () => follow(columnAreaOf(main).topOf(), zoomOf(main)), { passive: true });
+        main.addEventListener("scroll", () => follow(columnAreaOf(main).topOf(), textRatioOf(main)), { passive: true });
         // ページ全体のスクロールは、その画面が隠れているあいだはほかの画面のものなので見ない。
         window.addEventListener("scroll", () => {
-          if (isShown()) follow(pageArea.topOf(), zoomOf(main));
+          if (isShown()) follow(pageArea.topOf(), textRatioOf(main));
         }, { passive: true });
       },
       /**
        * 文字の倍率を変えるあいだ、今の節の読んでいた点を読む線に残す包みを作る。
+       * スクロールする領域の先頭・末尾でスクロールが止まると、読んでいた点は読む線まで届かず、そのずれは残る。
        * @param main 本文の欄(`main.stage`)
        * @param currentColumns 今の節の 3 列(`create` の戻り値)を返す
        * @returns `keepReading(apply)`。`apply` で倍率を変え、今の節を読む線へ送り直して今の節を決め直す
@@ -5724,13 +5727,14 @@ button.change-item:hover { background: var(--track); }
         }
         const area = readingAreaOf(main);
         const beforeRect = article.getBoundingClientRect();
-        const before = { top: beforeRect.top - area.topOf(), height: beforeRect.height, zoom: zoomOf(main) };
+        const before = { top: beforeRect.top - area.topOf(), height: beforeRect.height, ratio: textRatioOf(main) };
         apply();
+        // ずらす量は apply 後の実測から取る。倍率から計算すると、幅が変わって折り返しが変わった分を取り込めない。
         const afterRect = article.getBoundingClientRect();
-        const after = { height: afterRect.height, zoom: zoomOf(main) };
-        area.scrollBy(afterRect.top - area.topOf() - TopicScroll.keptTopOf({ before, after }), after.zoom);
+        const after = { height: afterRect.height, ratio: textRatioOf(main) };
+        area.scrollBy(afterRect.top - area.topOf() - TopicScroll.keptTopOf({ before, after }), after.ratio);
         // ずらす量が 0 のときや、先頭・末尾で止まったときはスクロールのイベントが来ないので、ここで決め直す。
-        currentColumns().follow(area.topOf(), after.zoom);
+        currentColumns().follow(area.topOf(), after.ratio);
       },
     });
   })();
@@ -6166,7 +6170,7 @@ button.change-item:hover { background: var(--track); }
     left.replaceChildren(el("div", { class: "panel-head" }, [el("span", { class: "panel-title", text: "目次" }), tocNote]), ...tabs.map((tab) => parts[tab].columns.toc));
     right.replaceChildren(panelHead(PrimerSideTitle, ""), ...tabs.map((tab) => parts[tab].columns.side));
     renderTab();
-    TopicColumns.subscribe({ main, follow: (top, zoom) => parts[currentTab].columns.follow(top, zoom) });
+    TopicColumns.subscribe({ main, follow: (top, ratio) => parts[currentTab].columns.follow(top, ratio) });
     const keepReading = TopicColumns.keepReadingOf({ main, currentColumns: () => parts[currentTab].columns });
 
     return { ...screenParts, tablist: el("div", { class: "primer-tablist", role: "tablist", "aria-label": "技術の種類" }, tabButtons), keepReading };
