@@ -3,8 +3,8 @@
   "pr": 1158,
   "headBranch": "claude/magical-cannon-vl10va",
   "baseBranch": "main",
-  "mergeBase": "89876a0e4e6ffa9cb7d15c6626274f8788ab8fb6",
-  "head": "c25750f94d8f8bc8fc691856301f7fff7a9d371c",
+  "mergeBase": "72e88813a1419aac0dcecca0388a4cf0c74f274a",
+  "head": "5cfc9eb10111d4485a1701096d453c63d6e27007",
   "groups": [
     {
       "label": "domains / unit",
@@ -463,6 +463,15 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "5cfc9eb10111d4485a1701096d453c63d6e27007",
+      "merge": true,
+      "author": "Claude",
+      "date": "2026-10-24T01:58:59Z",
+      "subject": "🔀 [Merge]: #1149 main を取り込み、artboard の移動の docs のコンフリクトを解く",
+      "body": "- docs/06-ui.md「artboard の移動」: このブランチの「隙間の数値も出す」行を\n  残し、main 側の「まだ出さない(未決 — #1149)」行を捨て、#1147 が足した\n  「⌘ / Ctrl を押しながら運んでいる間は吸い付かない」行をその直後に残した\n\n背景:\nmain に #1147(artboard の移動でも ⌘ / Ctrl で吸い付きを外す)が入り、\nこのブランチが書き換えた行の直後に 1 行足されてコンフリクトした。\n\n採用理由:\n2 つの変更は別の規則(隙間の数値 / 修飾キーで吸い付かない)で、両方を残せば\nどちらの振る舞いも失わない。#1147 の実装は ⌘ / Ctrl の間は揃え先を空にし\nSideSnap.Unsnapped を返すので、隙間の数値も線と一緒に出なくなり、\nこのブランチの変更と噛み合う。\n\n代替案:\n- 「⌘ / Ctrl の間はガイド線も数値も出ない」と書き足す: ノードの移動の\n  同じ規則(167 行目)も「ガイド線も出ない」とだけ書いており、数値は線に\n  付くので事実としては足りている。マージで文言を広げない\n\n影響とトレードオフ:\npre-push(失敗 0 / 通過 32)と test:run(5032 件)はマージ後の作業ツリーで\n通過した。⌘ / Ctrl の間に数値が出ないことを直接確かめるテストは無い\n(線が出ないことは #1147 のテストが守る)。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1149\n- #1147\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01AqSXG1HkzHGjKshb7sSNos",
+      "files": []
     }
   ],
   "dependencies": [
@@ -789,6 +798,11 @@
     {
       "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
       "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/libs/dom-event/index.ts",
       "status": "kept"
     },
     {
