@@ -33,6 +33,7 @@ import {
   PrimitiveSchema,
   PrimitiveTypes,
   PropDefinitionRecord,
+  RefNodeSchema,
 } from "@/domains/dcmp/primitive-schema";
 import { ReferenceContext } from "@/domains/dcmp/reference-context";
 import type { RepositionEdit } from "@/domains/dcmp/reposition-edit";
@@ -48,6 +49,7 @@ import { Offset } from "@/domains/unit/offset";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
 import { Option } from "@/utils/Option";
+import { RecordEx } from "@/utils/RecordEx";
 import { Result } from "@/utils/Result";
 import type { DesignDocumentEditError } from "./edit-error";
 import type { DocumentTemplate } from "./template";
@@ -705,6 +707,29 @@ function expandInstance(
 }
 
 /**
+ * インスタンス自身の値として持てない prop を指した編集の失敗。
+ *
+ * @param name 編集しようとしたインスタンスの名前
+ * @param edit 適用できなかった編集
+ * @returns `edit.names` のうち `RefNodeSchema` が宣言していない prop を並べた
+ *   `ref-own-prop-not-allowed`。宣言していない prop が無ければ `edit.names` をそのまま並べる
+ */
+function refOwnPropNotAllowedError(
+  name: string,
+  edit: PropEdit,
+): DesignDocumentEditError {
+  const [undeclared, ...moreUndeclared] = edit.names.filter(
+    (prop) => !RecordEx.has(RefNodeSchema.props, prop),
+  );
+  return {
+    kind: "ref-own-prop-not-allowed",
+    name,
+    props:
+      undeclared === undefined ? edit.names : [undeclared, ...moreUndeclared],
+  };
+}
+
+/**
  * 祖先から継ぐ性質を、自身について答える判定。artboard とノードでは性質の持ち方が違うので
  * 別々に受け取る。
  */
@@ -893,6 +918,29 @@ function collectNodeRefErrors(
 }
 
 /**
+ * ノードとその子孫の部品インスタンスについて、参照ノード直下のインスタンス自身の値を
+ * `RefNodeSchema` に照らしたエラーを集める（走査は `Node` が持つ）。
+ *
+ * @param node 起点のノード
+ * @param tokens トークン参照の解決に使うトークン一式
+ * @returns 自身と子孫のインスタンスについて、そのインスタンスの名前を位置に付けたエラーの並び
+ */
+function collectRefOwnPropErrors(
+  node: Node,
+  tokens: TokenSet,
+): readonly DesignDocumentValidationError[] {
+  return Node.collectRefNodes(node).flatMap((refNode) =>
+    PropDefinitionRecord.collectErrors(
+      RefNodeSchema.props,
+      Node.refOwnPropsOf(refNode),
+      tokens,
+    ).map((error) =>
+      DesignDocumentValidationError.fromPropError(error, refNode.name),
+    ),
+  );
+}
+
+/**
  * 部品の publicProps が宣言している binding をすべて照らす（判定は `ComponentBinding` が持つ）。
  *
  * @param components 部品一式
@@ -929,7 +977,7 @@ function collectBindingErrors(
 
 /**
  * 部品1件の props（スキーマ照合と、ルート自身の最小 / 最大の逆転）・子ノード・公開 prop の
- * 宣言名・binding・参照のエラーを集める。
+ * 宣言名・binding・参照・中のインスタンス自身の値のエラーを集める。
  *
  * @param context 部品とトークンの一式
  * @param named 検証する部品と、エラーの位置に使うその名前
@@ -957,17 +1005,21 @@ function collectComponentErrors(
   const refErrors = children.flatMap((child) =>
     collectNodeRefErrors(context, child),
   );
+  const refOwnPropErrors = children.flatMap((child) =>
+    collectRefOwnPropErrors(child, context.tokens),
+  );
   return [
     ...propErrors,
     ...childErrors,
     ...publicPropNameErrors,
     ...bindingErrors,
     ...refErrors,
+    ...refOwnPropErrors,
   ];
 }
 
 /**
- * artboard 1件の props・子ノード・参照のエラーを集める。
+ * artboard 1件の props・子ノード・参照・中のインスタンス自身の値のエラーを集める。
  *
  * artboard 自身の最小 / 最大の逆転は見ない。サイズは `Artboard.boxProps` で `fixed` に固定され
  * 描画に効かず、Box として解決すると既定の `hug` 扱いになって誤検出するため。
@@ -1004,7 +1056,10 @@ function collectArtboardErrors(
   const refErrors = artboard.children.flatMap((child) =>
     collectNodeRefErrors(context, child),
   );
-  return [...propErrors, ...childErrors, ...refErrors];
+  const refOwnPropErrors = artboard.children.flatMap((child) =>
+    collectRefOwnPropErrors(child, context.tokens),
+  );
+  return [...propErrors, ...childErrors, ...refErrors, ...refOwnPropErrors];
 }
 
 /**
@@ -1552,15 +1607,16 @@ export const DesignDocument = {
    *
    * @param document 引き先になるドキュメント
    * @param name ロックされているかを知りたいノードの名前
-   * @returns 自身か祖先のプリミティブが `locked` なら真。artboard 自身・ドキュメントに無い
-   *   名前は偽。部品インスタンスは `locking` を持たないので、祖先がロックしていなければ偽
+   * @returns 自身か祖先が `locked` なら真。部品インスタンスは参照ノード直下の `locking` を
+   *   自身の値とする（部品の根の値は見ない）。artboard 自身・ドキュメントに無い名前は偽
    */
   isLocked(document: DesignDocument, name: string): boolean {
     return holdsForSelfOrAncestor(document, name, {
       artboard: () => false,
       node: (node) =>
-        Node.isPrimitive(node) &&
-        Locking.fromProps(node.props ?? {}) === Lockings.Locked,
+        Locking.fromProps(
+          Node.isRef(node) ? Node.refOwnPropsOf(node) : Node.propsOf(node),
+        ) === Lockings.Locked,
     });
   },
 
@@ -1686,6 +1742,40 @@ export const DesignDocument = {
         Node.applyPropEdit(found.value, edit),
       ),
     );
+  },
+
+  /**
+   * 名前で指した部品インスタンス自身の値（参照ノード直下の値）を書き換える。公開 prop への
+   * 上書きは変えない（そちらは `applyPropEdit`）。
+   *
+   * インスタンス自身の値は大きさに関わらないので、絶対配置の子の追従は通さない。
+   *
+   * @param document 書き換える対象を含むドキュメント
+   * @param name 書き換えるインスタンスの名前
+   * @param edit 書き込む prop と値（未設定へ戻す編集も含む）
+   * @returns 書き換えたドキュメント。artboard 配下のノードに無い名前（artboard 自身・部品
+   *   定義の中のノードも含む）は `node-not-found`、プリミティブのノードは
+   *   `ref-node-required`、インスタンス自身の値として持てない prop を指す編集は
+   *   `ref-own-prop-not-allowed`
+   */
+  applyRefOwnPropEdit(
+    document: DesignDocument,
+    name: string,
+    edit: PropEdit,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    const found = DesignDocument.findNode(document, name);
+    if (!Option.isSome(found)) {
+      return Result.err({ kind: "node-not-found", name });
+    }
+    const node = found.value;
+    if (!Node.isRef(node)) {
+      return Result.err({ kind: "ref-node-required", name });
+    }
+    const edited = Node.applyRefOwnPropEdit(node, edit);
+    if (!Option.isSome(edited)) {
+      return Result.err(refOwnPropNotAllowedError(name, edit));
+    }
+    return DesignDocument.replaceNode(document, name, edited.value);
   },
 
   /**
@@ -1889,6 +1979,9 @@ export const DesignDocument = {
    * ノードを部品として切り出し、元の位置をその部品への参照に置き換える。
    * 部品名はドキュメントの単一名前空間に加わるため、規則と衝突の両方をここで見る。
    *
+   * 元のノードに書かれたインスタンス自身の値（`locking`）は、値に依らず参照ノードへ移して
+   * 部品の根には残さない（`Node.splitRefOwnProps`。docs/03-schema.md「ロック」）。
+   *
    * @param document 切り出し元のドキュメント
    * @param name 部品にするノードの名前
    * @param componentName 新しく作る部品に付ける名前
@@ -1909,18 +2002,20 @@ export const DesignDocument = {
     if (Option.isSome(unavailable)) {
       return Result.err(unavailable.value);
     }
-    const component = Component.fromNode(found.value);
-    if (!Option.isSome(component)) {
+    const node = found.value;
+    if (!Node.isPrimitive(node)) {
       return Result.err({ kind: "ref-node-not-supported", name });
     }
-    const refNode: RefNode = { name, ref: componentName };
+    const { root, refOwnProps } = Node.splitRefOwnProps(node);
+    const component = Component.fromNode(root);
+    const refNode: RefNode = { name, ref: componentName, ...refOwnProps };
     return Result.map(
       DesignDocument.replaceNode(document, name, refNode),
       (replaced) => ({
         ...replaced,
         components: {
           ...replaced.components,
-          [componentName]: component.value,
+          [componentName]: component,
         },
       }),
     );

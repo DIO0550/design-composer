@@ -1,4 +1,10 @@
-import { Node, PropEdit, Props, type PropValue } from "@/domains/dcmp/node";
+import {
+  Node,
+  type PrimitiveNode,
+  PropEdit,
+  Props,
+  type PropValue,
+} from "@/domains/dcmp/node";
 import { NodeTree } from "@/domains/dcmp/node-tree";
 import {
   Json,
@@ -241,22 +247,18 @@ export const Component = {
   },
 
   /**
-   * ノードを部品の中身にする（`toNode` の逆向き）。
-   * 参照ノードは自身の実体を持たない（既に他の部品を指している）ので部品にできず `none`。
+   * プリミティブのノードを部品の中身にする（`toNode` の逆向き）。参照ノードは自身の実体を
+   * 持たない（既に他の部品を指している）ので受け取らない。
    *
-   * @param node 部品の中身にするノード
-   * @returns ノードの `type` / `props` / `children` を持つ部品定義（ノードの名前は捨てる）。
-   *   参照ノードなら `none`
+   * @param node 部品の中身にするプリミティブのノード
+   * @returns ノードの `type` / `props` / `children` を持つ部品定義（ノードの名前は捨てる）
    */
-  fromNode(node: Node): Option<Component> {
-    if (!Node.isPrimitive(node)) {
-      return Option.none;
-    }
-    return Option.some({
+  fromNode(node: PrimitiveNode): Component {
+    return {
       type: node.type,
       ...(node.props !== undefined ? { props: node.props } : {}),
       ...(node.children !== undefined ? { children: node.children } : {}),
-    });
+    };
   },
 
   /**

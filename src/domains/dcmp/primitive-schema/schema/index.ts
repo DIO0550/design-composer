@@ -2,6 +2,7 @@ import { BoxAlign, BoxAligns } from "@/domains/dcmp/box-align";
 import { Constraints } from "@/domains/dcmp/constraint";
 import { Layout, Layouts } from "@/domains/dcmp/layout";
 import { Locking, Lockings } from "@/domains/dcmp/locking";
+import type { RefOwnPropName } from "@/domains/dcmp/node";
 import { PaintTokenKinds } from "@/domains/dcmp/token";
 import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
 import { Wrap, Wraps } from "@/domains/dcmp/wrap";
@@ -138,11 +139,14 @@ const VisibilityProps = {
 
 /**
  * ノードをキャンバスの直接操作から外すかどうかの props（docs/03「ロック」）。
- * どのプリミティブもキャンバスで選び・動かす対象なので、同じ 1 prop をすべてが持つ。
+ * どのプリミティブもキャンバスで選び・動かす対象なので、同じ 1 prop をすべてが持ち、
+ * 部品インスタンスも `RefNodeSchema` で同じ定義を持つ。
  *
  * ロックは描き方に関わらないが `group` は `appearance` に置く。節を 1 つ増やすと UI 案
  * （docs/Design Composer.html）に無い見出しがパネルへ出るので、既にある節のうち表示 / 非表示
  * の隣に並べる。spread する位置を末尾にする理由は `VisibilityProps` と同じ。
+ * `group` はプリミティブのパネルの節分けにだけ効き、インスタンスの `Instance` 節は `group`
+ * で分けないので効かない。
  */
 const LockingProps = {
   locking: {
@@ -454,6 +458,18 @@ export const EllipseSchema = {
     ...LockingProps,
   },
 } as const satisfies PrimitiveSchema;
+
+/**
+ * 部品インスタンスが参照ノード直下に自身の値として持てる prop の仕様（docs/02-data-model.md
+ * 「部品参照ノード」）。インスタンスはプリミティブではないが、このモジュールに置く。定義の
+ * 本体（`LockingProps`）がここの非公開の部品で、別モジュールに置くとそれを公開するか定義を
+ * 二重に持つことになるため（照らす仕組みの `PropDefinitionRecord` も同じモジュールにある）。
+ */
+export const RefNodeSchema = {
+  props: { ...LockingProps },
+} as const satisfies Readonly<{
+  props: Readonly<Record<RefOwnPropName, PropDefinition>>;
+}>;
 
 /** primitive の型 → その仕様。型を取り違えた引き当てにならないよう対応で持つ。 */
 export const PrimitiveSchemas = {
