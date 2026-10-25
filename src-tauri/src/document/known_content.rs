@@ -4,6 +4,8 @@ use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
+use super::canonical_path::canonical_form;
+
 /// アプリが把握しているファイルの内容を記録し、file watch が検知した変更を
 /// JS 側へ通知すべきかを判定する。
 ///
@@ -27,7 +29,7 @@ impl KnownContentRegistry {
     /// `path` の内容が `content` であることを記録する。
     pub fn record(&self, path: &Path, content: &str) {
         self.known()
-            .insert(registry_key(path), hash_content(content));
+            .insert(canonical_form(path), hash_content(content));
     }
 
     /// `path` へ `content` を書き込む `write` を、記録と不可分に実行する。
@@ -44,7 +46,7 @@ impl KnownContentRegistry {
         content: &str,
         write: impl FnOnce() -> Result<(), E>,
     ) -> Result<(), E> {
-        let key = registry_key(path);
+        let key = canonical_form(path);
         let previous = self.known().insert(key.clone(), hash_content(content));
 
         let Err(error) = write() else {
@@ -65,12 +67,12 @@ impl KnownContentRegistry {
     /// 内容を書いた場合も真を返すが、内容が同一である以上リロードを見送っても
     /// 表示は変わらない。
     pub fn is_known(&self, path: &Path, content: &str) -> bool {
-        self.known().get(&registry_key(path)) == Some(&hash_content(content))
+        self.known().get(&canonical_form(path)) == Some(&hash_content(content))
     }
 
     /// `path` の記録を破棄する(watch の停止時など)。
     pub fn forget(&self, path: &Path) {
-        self.known().remove(&registry_key(path));
+        self.known().remove(&canonical_form(path));
     }
 
     /// ロックを取得する。
@@ -80,32 +82,6 @@ impl KnownContentRegistry {
     /// poisoning は無視して中身を取り出す。
     fn known(&self) -> std::sync::MutexGuard<'_, HashMap<PathBuf, u64>> {
         self.known.lock().unwrap_or_else(|error| error.into_inner())
-    }
-}
-
-/// 記録のキー。
-///
-/// `./doc.dcmp` と `doc.dcmp`、symlink 経由と実体のように、同じファイルを指す
-/// 異なる表記で取りこぼさないよう正規化する。
-fn registry_key(path: &Path) -> PathBuf {
-    if let Ok(canonical) = path.canonicalize() {
-        return canonical;
-    }
-
-    // ファイルがまだ存在しない場合は canonicalize できない。新規ファイルへの
-    // `record_write` は書き込み前に記録するのでここを通り、書き込み後の問い合わせは
-    // 上の分岐を通る。両者が同じキーになるよう、親ディレクトリだけを正規化して組み立てる。
-    let (Some(parent), Some(file_name)) = (path.parent(), path.file_name()) else {
-        return path.to_path_buf();
-    };
-    let parent = if parent.as_os_str().is_empty() {
-        Path::new(".")
-    } else {
-        parent
-    };
-    match parent.canonicalize() {
-        Ok(directory) => directory.join(file_name),
-        Err(_) => path.to_path_buf(),
     }
 }
 

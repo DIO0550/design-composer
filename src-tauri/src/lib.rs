@@ -26,6 +26,7 @@ pub fn run() {
         .manage(Arc::new(KnownContentRegistry::new()))
         .manage(DocumentWatchers::new())
         .invoke_handler(tauri::generate_handler![
+            document::canonical_path::canonicalize_document_path,
             document::io::load_document,
             document::io::save_document,
             document::watch::watch_document,
