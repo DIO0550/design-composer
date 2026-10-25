@@ -119,3 +119,12 @@ test("複数の prop を指す編集に持てない prop が混じっていれ�
 
   expect(edited).toEqual(Result.err(["label"]));
 });
+
+test("持てない prop が 2 つ以上あれば、編集が指す順にすべての名前で失敗する", () => {
+  const edited = Node.applyRefOwnPropEdit(
+    { name: "submit", ref: "primary-button" },
+    PropEdit.set(["label", "gap"], "md"),
+  );
+
+  expect(edited).toEqual(Result.err(["label", "gap"]));
+});
