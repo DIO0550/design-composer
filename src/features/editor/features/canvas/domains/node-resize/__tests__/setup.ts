@@ -1,5 +1,6 @@
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
+import type { DocumentSelection } from "@/domains/session/document-selection";
 import { Offset } from "@/domains/unit/offset";
 import { resizeAnchorAt } from "@/features/editor/features/canvas/__tests__/canvas-resize";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
@@ -92,6 +93,21 @@ export function heldSnapTargetNames(
   grip: ResizeGrip,
 ): readonly string[] {
   return NodeResize.hold(resizable, grip, Offset.Origin).snapTargetNames;
+}
+
+/**
+ * 選んだものをその箇所で掴んだときの揃え先の名前。
+ *
+ * @param selection ドキュメントと選択の対
+ * @param anchor 押した箇所
+ * @returns `NodeResize.hold` が絞った揃え先の名前（掴めなければテストを落とす）
+ */
+export function snapTargetNamesAt(
+  selection: DocumentSelection,
+  anchor: ResizeHandleAnchor,
+): readonly string[] {
+  const resizable = NodeResize.resizable(selection);
+  return heldSnapTargetNames(resizable, gripAt(resizable, anchor));
 }
 
 /**

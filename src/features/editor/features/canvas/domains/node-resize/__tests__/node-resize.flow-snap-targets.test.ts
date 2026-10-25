@@ -2,8 +2,7 @@ import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Props } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import { NodeResize, type ResizeHandleAnchor } from "../index";
-import { gripAt, heldSnapTargetNames } from "./setup";
+import { snapTargetNamesAt } from "./setup";
 
 /*
  * フロー配置のノードの揃え先（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
@@ -81,21 +80,6 @@ function setupSelection(
   );
 }
 
-/**
- * 選んだものをその箇所で掴んだときの揃え先の名前。
- *
- * @param selection ドキュメントと選択の対
- * @param anchor 押した箇所
- * @returns 揃え先の名前
- */
-function snapTargetNamesAt(
-  selection: DocumentSelection,
-  anchor: ResizeHandleAnchor,
-): readonly string[] {
-  const resizable = NodeResize.resizable(selection);
-  return heldSnapTargetNames(resizable, gripAt(resizable, anchor));
-}
-
 test("幅が固定の縦並びの親で右辺を掴むと、揃え先は親と自分以外の直下の子になる", () => {
   // 後ろの兄弟と絶対配置の兄弟を含み、孫の `first-label` は含めない
   expect(
@@ -107,6 +91,7 @@ test("幅が固定の縦並びの親で右辺を掴むと、揃え先は親と�
 });
 
 test("artboard の直下で右辺を掴むと、揃え先は artboard と自分以外の直下の子になる", () => {
+  // 前後の絶対配置の兄弟を含み、自分の子の `target-label` は含めない
   const selection = DocumentSelection.fromNames(
     DesignDocument.create({
       artboards: [
@@ -115,8 +100,30 @@ test("artboard の直下で右辺を掴むと、揃え先は artboard と自分�
           width: 360,
           height: 400,
           children: [
-            { name: "target", type: "Box", props: BothFixed, children: [] },
+            {
+              name: "badge",
+              type: "Box",
+              props: { ...BothFixed, placement: "absolute", x: 10, y: 10 },
+              children: [],
+            },
+            {
+              name: "target",
+              type: "Box",
+              props: BothFixed,
+              children: [
+                {
+                  name: "target-label",
+                  type: "Text",
+                  props: { content: "札" },
+                },
+              ],
+            },
             { name: "after", type: "Box", props: BothFixed, children: [] },
+            {
+              name: "marker",
+              type: "Text",
+              props: { content: "印", placement: "absolute", x: 80, y: 90 },
+            },
           ],
         },
       ],
@@ -126,7 +133,9 @@ test("artboard の直下で右辺を掴むと、揃え先は artboard と自分�
 
   expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual([
     "home",
+    "badge",
     "after",
+    "marker",
   ]);
 });
 
