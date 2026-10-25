@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "pr": 1172,
+  "headBranch": "claude/affectionate-hypatia-beoo2w",
+  "baseBranch": "main",
+  "mergeBase": "16489bcc3d9f71cc77d43723d83a8dd8120b110e",
+  "head": "d02451da0f8250afb7135e4efeb29904ba152c50",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/case-law/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1159.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "d02451da0f8250afb7135e4efeb29904ba152c50",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T00:01:58Z",
+      "subject": "📝 [Documentation]: 性能(ポインタ経路の再計算)の判例を追加",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01ShNtYEFWpu2ciR4Je238RA",
+      "files": [
+        {
+          "path": "harness/case-law/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 0,
+          "patch": "@@ -350,3 +350,19 @@ export const Money = {\n   配置ミス(プログラミングエラー)で、呼び出し側が分岐して回復するものではないため\n - `Option` を返さないのは、Provider の内側にいると分かっている消費側すべてに不在の分岐が増えるため\n - 既定値を返して埋めないのは、Provider の付け忘れが画面に出ないまま残るため。隠さずに落とす\n+\n+## `pointer-path-recompute` — ポインタが動くたびに、木を探し直している\n+\n+分類は `なし`(性能は語彙に無い)。`performance-reviewer` が #1054 #1091 #1096 #1109 で同じ形を挙げた。\n+\n+| NG | OK |\n+|---|---|\n+| 候補ごとに `totalRotationOf` で祖先を辿り、1 回のポインタ移動が「候補数 × ノード数」の探索になる | 1 回の走査で組を集める(`DesignDocument.collectArtboardChildRotations`)。1 回の移動あたり O(ノード数) |\n+| 描画のたびに `documentErrors` を呼び、メモ化していない | 毎回呼ぶ呼び出し側を直す。1 ノードごとの resolve の次数を疑う前に、呼び出しの頻度を見る |\n+\n+- **採否の分かれ目は「次数が上がったか」と「実測があるか」。** 差分が次数を上げていない・1 フレームを\n+  食いつぶす規模でない指摘は、未計測のまま直さない(#1054 #1096 #1109 は不採用)。\n+  次数を上げた指摘(#1091)だけが直す対象\n+- **掴んだ時点の値を保存して引き直しを避ける案は、導出値の保存になる**(`rules/consistency.md`\n+  「更新の入口」)。計測してコストが高いと分かってからにする\n+- 根本原因が差分の外(呼び出し側のメモ化など)にあるときは、差分に継ぎ当てせず Issue に切り出す(#1055)",
+          "patchLines": 20,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/pr-1159.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -317,3 +317,5 @@ GitHub 上の人のレビューは 0 件だった(`get_reviews` / `get_review_co\n ## 規約への反映\n \n 無し。このスキルの管轄は記録まで(集計と介入は `harness-growth`)。\n+\n+- 対策済: `なし` 層=case-law at pr-1159",
+          "patchLines": 6,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
