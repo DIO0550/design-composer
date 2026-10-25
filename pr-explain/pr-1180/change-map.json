@@ -3,8 +3,8 @@
   "pr": 1180,
   "headBranch": "claude/magical-cannon-hp9hno",
   "baseBranch": "main",
-  "mergeBase": "b1e77868b2b704c3d9937e0b0892594260c3fb6d",
-  "head": "c2dd6ae7b3e508f3597cca12aeceeef8f13a1474",
+  "mergeBase": "ee75cc3484f3350ba9111f085357d19612a64b79",
+  "head": "2d42b466c651d087949009edb7de2d4f4abaddac",
   "groups": [
     {
       "label": "domains / unit",
@@ -118,7 +118,7 @@
           "path": "src/libs/document-ipc/fake/index.ts",
           "status": "M",
           "oldPath": null,
-          "additions": 75,
+          "additions": 79,
           "deletions": 16,
           "changed": true,
           "target": null
@@ -127,7 +127,7 @@
           "path": "src/libs/document-ipc/index.ts",
           "status": "M",
           "oldPath": null,
-          "additions": 52,
+          "additions": 53,
           "deletions": 9,
           "changed": true,
           "target": null
@@ -1271,6 +1271,15 @@
       "date": "2026-10-25T04:07:04Z",
       "subject": "Merge remote-tracking branch 'origin/main' into claude/magical-cannon-hp9hno",
       "body": "",
+      "files": []
+    },
+    {
+      "sha": "2d42b466c651d087949009edb7de2d4f4abaddac",
+      "merge": true,
+      "author": "Claude",
+      "date": "2026-10-25T06:20:33Z",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/magical-cannon-hp9hno",
+      "body": "# Conflicts:\n#\tsrc/libs/document-ipc/fake/index.ts\n#\tsrc/libs/document-ipc/index.ts",
       "files": []
     }
   ],
