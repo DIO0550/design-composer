@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1182,
+  "headBranch": "claude/magical-cannon-w83y3t",
+  "baseBranch": "main",
+  "mergeBase": "f8792e2431266798fe0bffda061ab09d650c35f1",
+  "head": "6930282b8e18f38469177f01698b89155e19ff9b",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1178.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 112,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "6930282b8e18f38469177f01698b89155e19ff9b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T05:27:34Z",
+      "subject": "📝 [Documentation]: #1065 PR #1178 の振り返りを記録する",
+      "body": "- harness/records/pr-1178.md を足した(指摘 11 件、手戻り、発火、\n  判例の候補)\n\n背景:\nPR #1178 がマージされたので、harness-record の手順でその回の指摘・\n手戻り・フックの不発を残す。GitHub 上の人のレビューは 0 件で、\nセッション中のオーナーの判断 1 件を レビュー（人） として記録した。\n\n採用理由:\n記録は分類ごとに 1 ブロックにした。count.sh が数えられる形を保つ\nため。線引き(同じ型に実装が 2 つあるときだけ型 + 同名 const +\ncreate)は判例の候補として「規約への反映」に書いた。判例そのものを\n書けるのは harness-growth だけなので、ここでは書かない。\n\n代替案:\n- 指摘 5・7・8・9 を 1 件に束ねる: 出どころが違うので束ねると\n  count.sh で数えられなくなる\n- 判例を直接追記する: AGENTS.md「規範と判例を分ける」により\n  harness-growth の管轄\n\n影響とトレードオフ:\n差分は harness/records/ の新規 1 ファイルだけ。対策済の行は\n書いていないので、再発の窓は閉じない。\n\n参考:\n- https://github.com/DIO0550/design-composer/pull/1178\n- https://github.com/DIO0550/design-composer/issues/1065\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015ViaHQ249de8pMYxpPwh8k",
+      "files": [
+        {
+          "path": "harness/records/pr-1178.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 112,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,112 @@\n+# PR #1178 実装が 1 つしか無い libs の口を素の関数 createX にする\n+\n+- マージ日: 2026-10-25\n+- 関連 Issue: #1065\n+- 差分規模: 16 ファイル / +217 -222\n+\n+## ゴールと結果\n+\n+ゴールは、`src/libs/` の翻訳層 6 個(`AppWindow` / `AppStateIpc` / `DocumentIpc` / `AppMenu` / `FileDrop` / `DocumentDialog`)の生成口を素の関数 `createX` にすること。この 6 個は同じ型に実装が 1 つしか無い。差し替え点の 3 個(`TauriIpc` / `TauriDialog` / `Clock`)はコンパニオンのまま残す。振る舞いは変えない。ゴールは達成した。\n+\n+- `fake/` 側の `XxxFake.create` は #1174 に分けた\n+- GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確かめ、コメントは自分のテストケース表と bot の投稿だけだった\n+- CI は 9 本すべて緑で、VRT の差分は 0 件\n+\n+## 指摘\n+\n+### 1. 推奨した「据え置き」を、オーナーが「アダプターっぽくしていないならコンパニオンの意味は無い」と退けた\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（人）`\n+- 内容: Issue の「決めること」に対し、「型 + 同名 const は utils の名前空間と同じ書き方」を理由に据え置きを推した。オーナーの答えを受けて `fake/` の差し込み先を調べた。すると 6 個は実装が 1 つしか無く、同名 const が何も束ねていないことが分かった。線を「同じ型に実装が 2 つあるか」へ引き直した。\n+- 既存ルール: rules/coding.md「コンパニオンオブジェクトパターン」(ドメインロジックを閉じ込める。I/O の口への適用は書かれていない)\n+\n+### 2. 判例への追記を提案してオーナーの OK を得たが、AGENTS.md「判例を書けるのは harness-growth だけ」と衝突していた\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: 線引きを `harness/case-law/architecture.md` に足す案を、提案の段階で確かめずに含めていた。計画の段階で planner が未決として挙げて気づき、この PR から外した。線引きは Issue と PR 本文に残した。\n+- 既存ルール: AGENTS.md「規範と判例を分ける」\n+\n+### 3. fake を「スコープ外」とした理由が、計画が引いた線引きと食い違っていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 線をそのまま当てると、`XxxFake` 8 個も素の関数にする側に入る。「libs 全体を一度に揃える」という Issue の条件とも割れる。理由を書いたうえで #1174 に分割した(106 箇所 / 28 ファイル、`DialogChoice` のように形の違うものも混ざる)。\n+- 既存ルール: AGENTS.md「タスクの分割」\n+\n+### 4. `document-dialog/fake` の `@param message`(L33-34)が実装を指したまま、直す対象から漏れていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画で直すことにしていた doc は、同じファイルの L52-53 だけだった。「`DocumentDialog` を通すと…`DocumentDialog` 側の規則」も、変更後は型を指す名前になる。直す doc を 5 箇所にした。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 7\n+\n+### 5. 線引きの理由がコードに残らない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 次に読む人が、片方の形へ揃え直すおそれがある。Why を置くと同じ文を複数ファイルへ写すことになるので、採らなかった。判例の候補として、この記録で渡す(下の「規約への反映」)。\n+- 既存ルール: rules/coding.md「規約の適用範囲」(同じ判断根拠を説明する doc の重複)\n+\n+### 6. 判例にするかを棚卸しへ委ねると書いたが、棚卸しが気づく経路が無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: マージ後の記録に判例の候補として書く、と計画に足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 8\n+\n+### 7. 線引きの基準が Issue にしか残っていない(方式は「維持」)\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 重大度は低。方式の変更は求めず、記録で判例の候補として渡し忘れないこと、とだけ言われた。指摘 5 と同じ根本原因。\n+- 既存ルール: なし\n+\n+### 8. 線引きの Why を `tauri-ipc/index.ts` の doc に 1 箇所だけ書く案\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 重大度は低。採らなかった。`TauriIpc` の doc に書いても、翻訳層の側へ口を足す人はそこを読まない。モジュールをまたぐ判断なので、判例の候補として渡すことにした。指摘 5 と同じ根本原因。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 9. 線引きそのものは機械では守れない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 互換用の `export const AppWindow = { create: createAppWindow }` を書き戻しても、`tsc` / lint / biome はすべて通ることを実測した。対処はしていない(rules やフックへ入れる案は却下済み)。PR 本文に「`tsc` が守るのは古い呼び出しが残っていないことだけ」と書いた。\n+- 既存ルール: なし\n+\n+### 10. ダイアログの `.dcmp` の絞り込みと既定のファイル名が、壊してもテストで落ちない(差分の外にある既存の抜け)\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: `chooseOpenPath(DocumentFileFilter)` を `[]` にしても、`DefaultFileName` を `\"x\"` にしても、全 5032 件が通る。この PR の範囲外で、別 Issue にするかはオーナーの判断待ち(#1065 のコメントに記録)。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 11. push 前のカナリアが通った(フック不発環境)\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が deny されずに通った。実行中フラグのマーカーも、このセッションの発火ログも無く、README の表では「本当に不発」の枝に当たる。起動は Issue の assigned で動くルーティンで、作業ディレクトリは `/home/user`(3 リポジトリが並ぶ)だった。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- **方針の推奨を 1 回差し戻された(指摘 1)。** 最初の停止で A / B / C を並べたとき、B を「I/O の口 8 個」と一括りにしていた。`fake/` の差し込み先を見ていれば、差し替え点と翻訳層の区別は最初の提案に入れられた\n+- **判例を追記する案を、承認を得た後に外した(指摘 2)。** オーナーには、外したことと理由を計画のコメントで伝えた\n+- **フック不発環境だったので、止まるはずの操作を手で見直した。** `npx` と一括の `git add` は打っていない。commit は `implementer` の完了後に作り、push は test-reviewer の完了後に行った\n+- 計画と実装の差分は無い(implementer の報告)\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。集計と介入の判断は `harness-growth` の管轄。\n+\n+判例の候補(指摘 5・7・8・9 の根本原因)として、次の線引きを渡す。\n+\n+- 同じ型に実装が 2 つ(本物と `fake/` の代役)あるときだけ、型 + 同名 const + `create` にする\n+- 代役の差し込み先が下の口なら、その上に載る口の実装は 1 つなので、素の関数 `createX` にする",
+          "patchLines": 113,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
