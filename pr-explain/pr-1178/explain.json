@@ -1,0 +1,663 @@
+{
+  "version": 1,
+  "pr": 1178,
+  "sha": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+  "issue": 1065,
+  "overview": {
+    "title": "実装が 1 つしか無い libs の口を素の関数 `createX` にする",
+    "lead": "同じ型に実装が 1 つしか無い 6 つの口は、型 + 同名 const + `create` をやめて素の関数で作るようにした。振る舞いは変えていない。",
+    "before": [
+      {
+        "text": "`App.tsx` は 6 つの口を `AppWindow.create(tauriIpc)` のように、型と同じ名前の const から作っていた"
+      },
+      {
+        "text": "差し替え点(`TauriIpc` / `TauriDialog` / `Clock`)も、翻訳層の 6 個も、同じ「型 + 同名 const + `create`」の形だった"
+      }
+    ],
+    "after": [
+      {
+        "text": "翻訳層の 6 個は `createAppWindow(tauriIpc)` などの素の関数で作る",
+        "message": "create-window"
+      },
+      {
+        "text": "差し替え点の 3 個は `TauriIpc.create()` のように、コンパニオンの形のまま作る",
+        "message": "create-ipc"
+      },
+      {
+        "text": "fake は今までどおり `TauriIpc` / `TauriDialog` の位置へ代役を差し込み、その上で本物の `createX` を動かす",
+        "message": "fake-window"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "線引き",
+        "text": "同じ型に実装が 2 つ(本物と fake の代役)あるかで形を分けた。機械では守れないので、ここが判断の中心",
+        "go": {
+          "kind": "layer",
+          "layer": "libs"
+        }
+      },
+      {
+        "title": "口の組み立て",
+        "text": "差し替え点と翻訳層が 1 行に並ぶ。`createDocumentDialog(TauriDialog.create())`",
+        "go": {
+          "kind": "file",
+          "path": "src/app/App.tsx"
+        }
+      },
+      {
+        "title": "fake の差し込み先",
+        "text": "代役は下の `TauriIpc` に入るので、口そのものの実装は 1 つしか無い",
+        "go": {
+          "kind": "message",
+          "id": "fake-window"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "libs",
+      "role": "6 つの口の生成を素の関数にし、fake の doc を「`createX` が作る口」に合わせた"
+    },
+    {
+      "layer": "app",
+      "role": "起動時に口を組み立てる呼び方を `createX` に書き換えた"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/app/App.tsx",
+      "name": "アプリの入口",
+      "role": "外部世界への口をモジュールスコープで 1 度だけ組み立てる",
+      "change": "6 か所を `createX(...)` の呼び出しにした"
+    },
+    {
+      "path": "src/libs/tauri-ipc/index.ts",
+      "name": "Tauri の口",
+      "role": "コマンドとイベントの差し替え点。fake が同じ型を直接実装する",
+      "change": "変えていない(コンパニオンのまま)"
+    },
+    {
+      "path": "src/libs/tauri-dialog/index.ts",
+      "name": "ダイアログの口",
+      "role": "ファイル選択ダイアログの差し替え点",
+      "change": "変えていない(コンパニオンのまま)"
+    },
+    {
+      "path": "src/libs/app-window/index.ts",
+      "name": "ウィンドウ",
+      "role": "この画面を載せているウィンドウを閉じる",
+      "change": "`createAppWindow` にした"
+    },
+    {
+      "path": "src/libs/app-window/fake/index.ts",
+      "name": "ウィンドウの代役",
+      "role": "`TauriIpc` の位置に代役を差し込み、本物の `createAppWindow` を動かす",
+      "change": "呼び方と doc を合わせた"
+    },
+    {
+      "path": "src/libs/document-ipc/index.ts",
+      "name": "ドキュメントの読み書き",
+      "role": "ファイルの読み書きと監視",
+      "change": "`createDocumentIpc` にした"
+    },
+    {
+      "path": "src/libs/document-dialog/index.ts",
+      "name": "開く・保存ダイアログ",
+      "role": "`.dcmp` の絞り込みとキャンセル・失敗の解釈",
+      "change": "`createDocumentDialog` にした"
+    },
+    {
+      "path": "src/libs/app-menu/index.ts",
+      "name": "メニュー",
+      "role": "メニューの指示を購読する",
+      "change": "`createAppMenu` にした"
+    },
+    {
+      "path": "src/libs/file-drop/index.ts",
+      "name": "ファイルのドロップ",
+      "role": "ドロップされたパスを購読する",
+      "change": "`createFileDrop` にした"
+    },
+    {
+      "path": "src/libs/app-state-ipc/index.ts",
+      "name": "アプリの状態",
+      "role": "最近開いたファイルなどの読み書き",
+      "change": "`createAppStateIpc` にした"
+    }
+  ],
+  "messages": [
+    {
+      "id": "create-ipc",
+      "from": "src/app/App.tsx",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "kind": "cmd",
+      "name": "Tauri の口を作る",
+      "code": "TauriIpc.create()",
+      "via": "call",
+      "returns": "`TauriIpc`"
+    },
+    {
+      "id": "create-window",
+      "from": "src/app/App.tsx",
+      "to": "src/libs/app-window/index.ts",
+      "kind": "cmd",
+      "name": "ウィンドウの口を作る",
+      "code": "createAppWindow(tauriIpc)",
+      "via": "call",
+      "payload": "`TauriIpc`",
+      "returns": "`AppWindow`",
+      "status": "changed"
+    },
+    {
+      "id": "create-document",
+      "from": "src/app/App.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "kind": "cmd",
+      "name": "読み書きの口を作る",
+      "code": "createDocumentIpc(tauriIpc)",
+      "via": "call",
+      "payload": "`TauriIpc`",
+      "returns": "`DocumentIpc`",
+      "status": "changed"
+    },
+    {
+      "id": "create-menu",
+      "from": "src/app/App.tsx",
+      "to": "src/libs/app-menu/index.ts",
+      "kind": "cmd",
+      "name": "メニューの口を作る",
+      "code": "createAppMenu(tauriIpc)",
+      "via": "call",
+      "payload": "`TauriIpc`",
+      "returns": "`AppMenu`",
+      "status": "changed"
+    },
+    {
+      "id": "create-drop",
+      "from": "src/app/App.tsx",
+      "to": "src/libs/file-drop/index.ts",
+      "kind": "cmd",
+      "name": "ドロップの口を作る",
+      "code": "createFileDrop(tauriIpc)",
+      "via": "call",
+      "payload": "`TauriIpc`",
+      "returns": "`FileDrop`",
+      "status": "changed"
+    },
+    {
+      "id": "create-state",
+      "from": "src/app/App.tsx",
+      "to": "src/libs/app-state-ipc/index.ts",
+      "kind": "cmd",
+      "name": "状態の口を作る",
+      "code": "createAppStateIpc(tauriIpc)",
+      "via": "call",
+      "payload": "`TauriIpc`",
+      "returns": "`AppStateIpc`",
+      "status": "changed"
+    },
+    {
+      "id": "create-tauri-dialog",
+      "from": "src/app/App.tsx",
+      "to": "src/libs/tauri-dialog/index.ts",
+      "kind": "cmd",
+      "name": "ダイアログの差し替え点を作る",
+      "code": "TauriDialog.create()",
+      "via": "call",
+      "returns": "`TauriDialog`"
+    },
+    {
+      "id": "create-dialog",
+      "from": "src/app/App.tsx",
+      "to": "src/libs/document-dialog/index.ts",
+      "kind": "cmd",
+      "name": "開く・保存の口を作る",
+      "code": "createDocumentDialog(TauriDialog.create())",
+      "via": "call",
+      "payload": "`TauriDialog`",
+      "returns": "`DocumentDialog`",
+      "status": "changed"
+    },
+    {
+      "id": "fake-window",
+      "from": "src/libs/app-window/fake/index.ts",
+      "to": "src/libs/app-window/index.ts",
+      "kind": "cmd",
+      "name": "代役の上で本物を作る",
+      "code": "createAppWindow(tauriIpc)",
+      "via": "call",
+      "payload": "代役の `TauriIpc`",
+      "returns": "`AppWindow`",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "startup",
+      "label": "アプリの起動時に口を組み立てる",
+      "steps": [
+        "create-ipc",
+        "create-document",
+        "create-tauri-dialog",
+        "create-dialog",
+        "create-menu",
+        "create-drop",
+        "create-state",
+        "create-window"
+      ]
+    },
+    {
+      "id": "fake",
+      "label": "テストで代役を差し込む",
+      "steps": [
+        "fake-window"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+      "phase": "core",
+      "role": "6 つの口の生成を素の関数にし、呼び出し側を一度に揃える",
+      "why": "公開 API の改名なので、テストと実装を分けてコミットすると途中で `tsc` が落ちる。1 つだけ変えると書き方が割れるので、6 個を一度に変えた。",
+      "flows": [
+        "startup",
+        "fake"
+      ],
+      "review": [
+        "差し替え点(`TauriIpc` / `TauriDialog` / `Clock`)だけをコンパニオンに残す線引きが、fake の差し込み先と合っているか",
+        "fake の doc の「`createX` が作る本体」が、実際に動いているものを指しているか"
+      ],
+      "before": [
+        {
+          "text": "`AppWindow.create(tauriIpc)` で作っていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "`createAppWindow(tauriIpc)` で作る",
+          "message": "create-window"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/app/App.tsx",
+          "start": 21,
+          "end": 29,
+          "text": "差し替え点(`TauriIpc.create()` / `TauriDialog.create()`)と翻訳層(`createX`)が並ぶ。形が違うのは線引きどおり"
+        },
+        {
+          "path": "src/libs/app-window/index.ts",
+          "start": 25,
+          "end": 25,
+          "text": "const の中のメソッドを外へ出しただけで、本体と doc は変えていない"
+        },
+        {
+          "path": "src/libs/app-window/fake/index.ts",
+          "start": 8,
+          "end": 9,
+          "text": "`AppWindow` は型だけになったので、実装を指す言い方を `createAppWindow` に直した"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "app-state",
+      "label": "アプリの状態の失敗",
+      "file": "src/libs/app-state-ipc/__tests__/app-state-ipc.edge.test.ts"
+    },
+    {
+      "id": "document",
+      "label": "読み書きの失敗",
+      "file": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts"
+    },
+    {
+      "id": "auto-save",
+      "label": "自動保存の失敗",
+      "file": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "state-no-command",
+      "suite": "app-state",
+      "name": "コマンドが無いときも理由を持つ失敗になる",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "呼び方を変えても、拒まれた理由がそのまま失敗に載ることを確かめる",
+      "given": "どのコマンドも拒む IPC から `createAppStateIpc` で作った口",
+      "when": "状態を読み込む",
+      "then": "`Command load_app_state not found` を持つ `Err` が返る",
+      "commit": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+      "excerpt": {
+        "path": "src/libs/app-state-ipc/__tests__/app-state-ipc.edge.test.ts",
+        "start": 38,
+        "end": 49,
+        "emphasis": [
+          {
+            "start": 39,
+            "end": 39
+          }
+        ],
+        "text": "test(\"コマンドが無いときも理由を持つ失敗になる\", async () => {\n  const ipc = createAppStateIpc({\n    invoke: (command) => Promise.reject(`Command ${command} not found`),\n    listen: (event) => Promise.reject(`Event ${event} not emitted`),\n  });\n\n  const loaded = await ipc.load();\n\n  expect(loaded).toStrictEqual(\n    Result.err({ message: \"Command load_app_state not found\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/libs/app-state-ipc/index.ts"
+      ]
+    },
+    {
+      "id": "state-wrong-type",
+      "suite": "app-state",
+      "name": "読み込みが文字列でも null でもない値を返したら失敗になる",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "外から来た値の形の確認が `createAppStateIpc` の中に残っていることを確かめる",
+      "given": "数値を返す IPC から作った口",
+      "when": "状態を読み込む",
+      "then": "`Err` が返る",
+      "commit": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+      "excerpt": {
+        "path": "src/libs/app-state-ipc/__tests__/app-state-ipc.edge.test.ts",
+        "start": 51,
+        "end": 58,
+        "emphasis": [
+          {
+            "start": 52,
+            "end": 52
+          }
+        ],
+        "text": "test(\"読み込みが文字列でも null でもない値を返したら失敗になる\", async () => {\n  const ipc = createAppStateIpc({\n    invoke: () => Promise.resolve(42),\n    listen: (event) => Promise.reject(`Event ${event} not emitted`),\n  });\n\n  expect(Result.isOk(await ipc.load())).toBe(false);\n});"
+      },
+      "targets": [
+        "src/libs/app-state-ipc/index.ts"
+      ]
+    },
+    {
+      "id": "doc-tauri-rejects",
+      "suite": "document",
+      "name": "Tauri 自身がコマンドを拒むと ipcFailed が返る",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "セットアップの `setupIpc` を `createDocumentIpc` に替えても、拒否の解釈が変わらないことを確かめる",
+      "given": "どのコマンドも文字列で拒む IPC",
+      "when": "ドキュメントを読み込む",
+      "then": "種別 `ipcFailed` の `Err` が返る",
+      "commit": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ]
+    },
+    {
+      "id": "doc-non-string",
+      "suite": "document",
+      "name": "読み込みが文字列以外を返すと ipcFailed が返る",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "読み込んだ中身の形の確認が残っていることを確かめる",
+      "given": "数値を返す IPC",
+      "when": "ドキュメントを読み込む",
+      "then": "種別 `ipcFailed` の `Err` が返る",
+      "commit": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ]
+    },
+    {
+      "id": "doc-listen-fails",
+      "suite": "document",
+      "name": "購読の開始に失敗すると Err が返り、例外は投げない",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "購読の失敗を例外ではなく `Result` へ詰め替える境界が残っていることを確かめる",
+      "given": "`listen` が reject する IPC",
+      "when": "変更通知の購読を始める",
+      "then": "`Err` が返り、例外は投げない",
+      "commit": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ]
+    },
+    {
+      "id": "doc-incomplete-event",
+      "suite": "document",
+      "name": "path と content が揃っていない通知は配られない",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "形の合わない通知を配らない確認が残っていることを確かめる",
+      "given": "中身の欠けた通知を流す IPC",
+      "when": "変更通知を購読する",
+      "then": "購読者は呼ばれない",
+      "commit": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ]
+    },
+    {
+      "id": "doc-no-file-name",
+      "suite": "document",
+      "name": "ファイル名の要素を持たないパスの変更通知は配られない",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "パスの検証(`FilePath.create`)を通らない通知を配らないことを確かめる",
+      "given": "ファイル名の無いパスを流す IPC",
+      "when": "変更通知を購読する",
+      "then": "購読者は呼ばれない",
+      "commit": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ]
+    },
+    {
+      "id": "save-fails",
+      "suite": "auto-save",
+      "name": "書き込みに失敗すると、その失敗が返る",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "セットアップの `denyingIpc` を `createDocumentIpc` に替えても、書き込みの失敗が自動保存へ届くことを確かめる",
+      "given": "書き込みを必ず拒む IPC",
+      "when": "編集してデバウンスの時間を進める",
+      "then": "失敗が返る",
+      "commit": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ]
+    },
+    {
+      "id": "save-recovers",
+      "suite": "auto-save",
+      "name": "失敗した後の書き込みが成功すると、失敗は返らなくなる",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "失敗から立ち直る経路が変わっていないことを確かめる",
+      "given": "一度失敗した自動保存",
+      "when": "次の書き込みが通る",
+      "then": "失敗が消える",
+      "commit": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ]
+    },
+    {
+      "id": "save-undo",
+      "suite": "auto-save",
+      "name": "書き込みに失敗したあと編集を取り消すと、失敗が残らない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "取り消しで未編集に戻ったときに失敗を引きずらないことを確かめる",
+      "given": "書き込みに失敗した自動保存",
+      "when": "編集を取り消す",
+      "then": "失敗が残らない",
+      "commit": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "使う人から見た変化は無い",
+    "lead": "作り方の書き方を揃えただけなので、アプリの動きはどこも変わらない。",
+    "kept": [
+      {
+        "text": "ファイルの読み込みや監視に失敗したとき、これまでと同じ失敗の知らせが出る",
+        "tests": [
+          "doc-tauri-rejects",
+          "doc-non-string",
+          "doc-listen-fails"
+        ]
+      },
+      {
+        "text": "形の崩れたファイル変更の知らせは、これまでどおり画面へ届かない",
+        "tests": [
+          "doc-incomplete-event",
+          "doc-no-file-name"
+        ]
+      },
+      {
+        "text": "自動保存に失敗したときの表示と、そこから立ち直る流れは変わらない",
+        "tests": [
+          "save-fails",
+          "save-recovers",
+          "save-undo"
+        ]
+      },
+      {
+        "text": "最近開いたファイルなどの記憶を読めないときの扱いは変わらない",
+        "tests": [
+          "state-no-command",
+          "state-wrong-type"
+        ]
+      }
+    ]
+  },
+  "primers": [
+    {
+      "id": "ts-function-vs-object",
+      "kind": "language",
+      "category": "TypeScript",
+      "label": "関数の export と、同名の型と値",
+      "gist": "TypeScript では、型と値は別々の [[名前空間|namespace]] にあるので、同じ名前の型と const を並べて export できる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "変更前は `export type AppWindow` と `export const AppWindow` が同じ名前を共有していた。import 側は 1 つの名前で、型としても値としても使えた。"
+        },
+        {
+          "kind": "text",
+          "text": "変更後は値の側が `createAppWindow` という関数になった。型だけを使う import は `import { type AppWindow }` と書き、値として取り込まないことを示す。"
+        },
+        {
+          "kind": "declaration",
+          "code": "export function createAppWindow(tauriIpc: TauriIpc): AppWindow"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/app-window/index.ts",
+          "lineRange": {
+            "start": 25,
+            "end": 25
+          },
+          "text": "素の関数になった生成口",
+          "shas": [
+            "71b0d745cbbfe354de6b0593669ac9f67add7887"
+          ]
+        },
+        {
+          "path": "src/libs/app-window/fake/index.ts",
+          "lineRange": {
+            "start": 3,
+            "end": 3
+          },
+          "text": "型と値を 1 行で取り込む import",
+          "shas": [
+            "71b0d745cbbfe354de6b0593669ac9f67add7887"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "port-vs-translator"
+      ]
+    },
+    {
+      "id": "port-vs-translator",
+      "kind": "codebase",
+      "category": "libs",
+      "label": "差し替え点と翻訳層",
+      "gist": "テストで本物を代役に替える場所が [[差し替え点|port]]。その上に載る口は、代役が下に入るので実装が 1 つしか無い。",
+      "passages": [
+        {
+          "kind": "rule",
+          "text": "同じ型に実装が 2 つ(本物と `fake/` の代役)あるときだけ、型 + 同名 const + `create` にする。1 つなら素の関数 `createX` にする。"
+        },
+        {
+          "kind": "caution",
+          "text": "この線引きは型でも lint でも守れない。互換用の const を書き戻しても検査は通る。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/app/App.tsx",
+          "lineRange": {
+            "start": 21,
+            "end": 29
+          },
+          "text": "差し替え点と翻訳層を組み立てるところ",
+          "shas": [
+            "71b0d745cbbfe354de6b0593669ac9f67add7887"
+          ]
+        },
+        {
+          "path": "src/libs/tauri-ipc/index.ts",
+          "lineRange": {
+            "start": 39,
+            "end": 39
+          },
+          "text": "コンパニオンのまま残した差し替え点"
+        }
+      ],
+      "seeAlso": [
+        "ts-function-vs-object"
+      ],
+      "status": "changed",
+      "flows": [
+        "startup",
+        "fake"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "namespace",
+      "label": "名前空間",
+      "text": "名前が属する区画。TypeScript では型の名前と値の名前が別の区画にあるので、同じ綴りでもぶつからない。"
+    },
+    {
+      "id": "port",
+      "label": "差し替え点",
+      "text": "外部世界との境目にあって、テストでは代役(fake)に入れ替える口。このリポジトリでは `TauriIpc` / `TauriDialog` / `Clock`。"
+    }
+  ]
+}
