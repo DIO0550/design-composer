@@ -1,3 +1,4 @@
+import { BoxAlign } from "@/domains/dcmp/box-align";
 import { CornerRadius } from "@/domains/dcmp/corner-radius";
 import type {
   CssDeclaration as CssDeclarationType,
@@ -8,7 +9,7 @@ import {
   CssDeclaration,
   CssDeclarations,
 } from "@/domains/dcmp/css-declaration";
-import type { CssDirection } from "@/domains/dcmp/css-direction";
+import { CssDirection } from "@/domains/dcmp/css-direction";
 import { Layout } from "@/domains/dcmp/layout";
 import { LengthShorthand } from "@/domains/dcmp/length-shorthand";
 import type { Props, PropValue } from "@/domains/dcmp/node";
@@ -29,6 +30,7 @@ import {
 } from "@/domains/dcmp/token";
 import { Visibility } from "@/domains/dcmp/visibility";
 import { Wrap } from "@/domains/dcmp/wrap";
+import type { Axis } from "@/domains/unit/axis";
 import { Html } from "@/utils/Html";
 import { Option } from "@/utils/Option";
 
@@ -394,6 +396,35 @@ export const BoxElement = {
    */
   childDirection(props: ResolvedProps<"Box">): Option<CssDirection> {
     return Layout.direction(Layout.fromProps(props));
+  },
+
+  /**
+   * 子が交差軸の長さを変えても、子の始点・親・兄弟の位置が動かない軸
+   * （docs/06-ui.md「リサイズハンドル」の辺のスナップ）。答えは `declarations` が出す CSS と
+   * ブラウザの既定値で決まる。祖先は見ない。
+   *
+   * 主軸は答えない。子に `flex-shrink` を出さず既定の 1 が効くので、はみ出すと前の兄弟ごと
+   * 縮んで始点が動く。折り返す Box は `align-content` を出さず既定の stretch で行の位置が配り
+   * 直される。交差軸が hug / fill / 長さ無しの Box は、その長さを子や祖先が決める。
+   *
+   * @param props デフォルト解決済みの Box の props
+   * @returns 子の交差軸。子を並べない（`layout: free`）・折り返す・揃えが center / end・
+   *   交差軸の長さが決まっていない（hug / fill / `fixed` なのに長さが無い）ときは `none`
+   */
+  startPinnedCrossAxis(props: ResolvedProps<"Box">): Option<Axis> {
+    const isPinnable =
+      !Wrap.isWrapping(Wrap.fromProps(props)) &&
+      BoxAlign.isStartForFixedChild(BoxAlign.fromProps(props));
+    if (!isPinnable) {
+      return Option.none;
+    }
+    return Option.flatMap(BoxElement.childDirection(props), (direction) => {
+      const crossAxis = CssDirection.crossAxis(direction);
+      return Option.map(
+        Size.fixedLengthFromProps(props, crossAxis),
+        () => crossAxis,
+      );
+    });
   },
 } as const;
 
