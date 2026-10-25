@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1184,
+  "headBranch": "claude/magical-cannon-hp9hno",
+  "baseBranch": "main",
+  "mergeBase": "62de3447329961450235de78939bcdfc2f59385f",
+  "head": "1a300988eb769283e8ad9d0c94e7fb64395be9be",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1180.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 235,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "1a300988eb769283e8ad9d0c94e7fb64395be9be",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T09:21:35Z",
+      "subject": "📝 [Documentation]: PR #1180 の記録を残す",
+      "body": "- harness/records/pr-1180.md を足す(指摘 29 件、手戻り 4 回、発火は計測対象外)\n\n背景:\nPR #1180(#1138 同じファイルを指す別表記のパスを 1 つの綴りへ寄せてから開く)が\nマージされたため、harness-record の手順で振り返りを残す。\n\n採用理由:\n人・bot・CI へ届いた指摘は 0 件(GitHub の 3 つの置き場を確認)。指摘は\nplan-reviewer(11 件)、実装検証の観点別エージェント、test-reviewer、自己修正から。\nオーナーの「おすすめでいいよ」は判断の承認、「コンフリクト修正してください」は\nmain の #1178 との衝突の解消依頼で、どちらも欠陥の指摘ではないので数えない。\n\n影響とトレードオフ:\n記録 1 ファイルの追加のみ。集計と介入は harness-growth の管轄なので行わない。\n\n代替案:\n衝突の解消依頼を レビュー（人）の指摘として数える: 実装の欠陥ではなく並行する\nマージの結果で、数えると人へ届いた指摘の再発数を歪めるので、手戻りに書いた。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "harness/records/pr-1180.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 235,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,235 @@\n+# PR #1180 同じファイルを指す別表記のパスを、1 つの綴りへ寄せてから開く\n+\n+- マージ日: 2026-10-25\n+- 関連 Issue: #1138\n+- 差分規模: 25 ファイル / +1011 -93\n+\n+## ゴールと結果\n+\n+ゴールは「同じファイルを指す別表記のパス(symlink 経由と実体、絶対パス中の `.` / `//`、大文字小文字を区別しない FS での大小違い)から開いても、TS 側で同じドキュメント(同じタブ・最近使ったファイルの同じ行)として扱われる」。macOS / Windows については達成した(Rust の `canonicalize_document_path` で寄せ、`use-document-session` の 3 箇所で使う)。\n+\n+ずれが 1 つある。Linux の大小を区別しない FS(casefold の ext4、vfat)では大小違いを寄せない。glibc の `realpath` が直さないためで、docs を macOS / Windows に限った(指摘 15)。Rust のテストは CI で走らず、この環境でもクレートはビルドできない。単体の rustc で linux の 11 件を通した。macOS / Windows での実行は未確認。\n+\n+着手直後に、正規化の置き場所が IPC の契約を変えるため、`AGENTS.md`「設計判断の確認」に従って選択肢を挙げて止めた。オーナーの回答は「おすすめでいいよ」で、判断の承認なので指摘には数えない。GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。コメントは、自分が投稿したテストケース表と bot の投稿(Storybook プレビュー・CI レポート・VRT)だけ。CI は全件緑で、VRT の差分は 0 件だった(202 件 passed)。\n+\n+## 指摘\n+\n+### 1. 一覧で寄せられなかった行を落とす決定が、06-ui の「開けなくても一覧から外さない」と食い違っていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: #1157 の判断も先取りしていた。`ipcFailed` で全行が消えると、次に開いた時点で `app-state.json` からも失われる。元の綴りで残す決定に変えた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 7(前提を崩さないか)\n+\n+### 2. fake が別の綴りを load できず、正規化を外してもテストが通る形だった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 別表記の load が notFound で失敗するので、正規化を外してもタブは増えない。本物の不具合(タブが 2 つになる)を再現できない形だった。fake の別の綴りを、読み書き・監視でも実体へ解決させる計画にした。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 3. fake の `aliasPath(alias, target)` が、同じ型の位置引数 2 つの形だった\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: オブジェクト引数 `linkPath({ link, target })` にした。同じファイルを #1140 も直す予定だったので、競合することを計画に残した。\n+- 既存ルール: rules/coding.md「関数のシグネチャ」\n+\n+### 4. Rust の変更を誰もコンパイル・テストしない計画だった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: CI に cargo の工程が無く、この環境でも webkit2gtk が無い。単体の rustc で確かめる手順を計画に足し、PR に明記した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 3(検証手段が成立するか)\n+\n+### 5. docs の直し先(06-ui の :22 / :23、05 の :48)が計画のファイル表に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 最近使ったファイルの重複がまとまること、symlink から開くと実体の名前で並ぶこと、実体が `.dcmp` でない symlink を拒むことが、仕様のどこにも残らない計画だった。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(変更するファイル)\n+\n+### 6. コメントの直し先が行の単位で無く、「復元では一覧を書き出さない」の前提が崩れていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 正規化と重複の除去で、メモリ上の一覧と `app-state.json` がずれるようになった。書き出さないまま、理由を「次に開いたときに揃う」に書き直した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 7. 「規則を `DocumentFilePath` のメソッドにする」案の却下理由が、production の呼び出し元と合っていなかった\n+\n+- 分類: `ownership`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: production の呼び出し元は、すべて `&DocumentFilePath` を渡していた。案は変えず、理由を書き直した。新しい理由は 2 つ。①registry のキーは失敗してはならない。②コンパイルできない Rust の差分を最小にとどめる。\n+- 既存ルール: rules/architecture.md「ロジックの帰属先」\n+\n+### 8. 承認済みの案 A から 2 点を変えたのに、記録が無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 変えた 2 点は、呼ぶ場所(libs → フック)と、ブランド型を入れないこと。Issue と PR に「案 A から変えた点」として残した。\n+- 既存ルール: `AGENTS.md`「設計判断の確認」\n+\n+### 9. テストケースが、拒まれる経路の対の片側しか挙げていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 新規作成の保存先が拒まれる経路、`ipcFailed` の経路、Rust の UTF-8・壊れた symlink のケースが無かった。いずれもケースを足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 10. Rust の自書き込みのテストが既存と重なり、期待値が macOS で落ちる形だった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 重なるテストは足さないことにした。期待値は、正規化したディレクトリから組み立てるようにした(macOS では `/var` が `/private/var` への symlink になるため)。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 11. `unwatch` をスコープ外にした理由が無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: TS は正規化した綴りでしか watch / unwatch しなくなるので、別の綴りを受ける経路が無くなる。この理由を Issue に書いた。後続 Issue は立てない。\n+- 既存ルール: `AGENTS.md`「タスクの分割」\n+\n+### 12. 同期コマンドが起動時の復元で一覧の全行を寄せ、メインスレッドを塞ぎうる\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 方式の結論は「調整」。応答しないネットワークドライブが一覧にあると UI が固まりうる。`#[tauri::command(async)]` にした。\n+- 既存ルール: なし\n+\n+### 13. Windows の UNC パスは `\\\\?\\UNC\\…` のまま返る\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 見た目だけの問題なので、PR に書いて終えた。実機で問題が出たら Issue にする。\n+- 既存ルール: なし\n+\n+### 14. ロックを持ったまま realpath を呼んでいた\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（performance-reviewer）`\n+- 内容: `record` / `is_known` / `forget` が、引数より先にロックを取っていた。キーを先に作る形にした(`record_write` と揃えた)。性能の観点で、対応する規範は無い。\n+- 既存ルール: なし\n+\n+### 15. Linux の glibc realpath は大小違いを直さないのに、docs は OS を限らずに言い切っていた\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: `std::fs::canonicalize` の OS ごとの違いを確かめないまま、仕様の文に一般化していた。docs を macOS / Windows に限り、「Linux では寄せない」と書いた。\n+- 既存ルール: rules/coding.md「外部の挙動は動かして確かめる」\n+\n+### 16. `Option` → `Result` の変換を、既存の `Interop.toResult` を使わずに書いた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `toCanonicalPath` の分岐を、`Interop.toResult` に置き換えた。\n+- 既存ルール: rules/coding.md「ルール」(同じ処理が2箇所に現れたら共通化する)\n+\n+### 17. editor-screen の entry / sync に `LinkPath` を 2 回定義していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `setup.tsx` の `Path` の隣へ寄せた。\n+- 既存ルール: rules/testing.md「テスト用ヘルパーの置き場所」\n+\n+### 18. 仕様の列挙(寄せる範囲)を、TS の doc に書き写していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 寄せる範囲は OS によって違う。列挙は docs/05 の 1 箇所にだけ置き、doc はそこを参照する形にした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 19. `watchers.rs` のキーが `canonical_form` と別の道筋で導出されている\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 採らなかった。`watch` はファイルが無ければ失敗すべきなので、規則が違う(計画の却下案と同じ理由)。\n+- 既存ルール: rules/coding.md「ルール」(同じ処理が2箇所に現れたら共通化する)\n+\n+### 20. `deniedCanonicalPaths` が、中身とも fake の語形とも合っていなかった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: `canonicalizeDenials` に改名した。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 21. `linkPath` が symlink 以外の別の綴りも指している\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: `PathLink` の doc に「symlink に限らず」と足した。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 22. Rust のテストと Windows の分岐が CI で走らないことが、コードに書かれていなかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: `without_verbatim_disk` の doc と、テストの冒頭に 2 行ずつ書いた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 23. `loadRecentFiles` の `@returns` が、寄せた後の一覧だと書いていなかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 戻り値の意味が増えたのに、doc を直し漏らしていた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 24. symlink から開いたものの保存先が実体に変わることが、仕様に無かった\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（security-reviewer）`\n+- 内容: 以前は rename で symlink をふつうのファイルに置き換えていた。docs/05 に 1 行書いた。\n+- 既存ルール: なし\n+\n+### 25. Rust の load / save / watch は、symlink の先の拡張子を見ていない\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（security-reviewer）`\n+- 内容: 採らなかった。守りになっているのは、TS が先に寄せるという順序だけ。差分の前から同じ挙動で、ブランド型は計画で却下済み。\n+- 既存ルール: rules/coding.md「処理の通過を型に刻む」\n+\n+### 26. 寄せる処理の失敗を、元の綴りの成功として返す(参考)\n+\n+- 分類: `over-guard`\n+- 出どころ: `レビュー（over-guard-reviewer）`\n+- 内容: 採らなかった。registry のキーは失敗してはならず、読めるのに canonicalize だけが失敗する環境は確かめられていない。\n+- 既存ルール: なし\n+\n+### 27. 一覧の先頭行だけ寄せない実装でも、全件が通った\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 先頭は `loadDocument` が別に寄せるので、`activePath` を見るテストでは守れない。一覧の側を見るテストを 1 件足した(壊すとその 1 件だけが落ちる)。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 28. fake の読み書き・外部変更の実体への解決を、テストが守っていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: doc が約束している範囲のうち、テストで守られていたのは監視だけだった。読み・書き・外部変更のテストを 3 件足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 29. カナリアが deny されずに通った(フック不発)\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: このセッション ID の検証エージェントのマーカーも、発火ログの見出しも無いので「本当に不発」。push 前の検査は手で走らせた。`git add` はすべてファイルを個別に指定し、`npx` は使っていないことを見直した。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+4 回。\n+\n+1. 計画の検証で 11 件の指摘を受け、planner に計画を直させた(指摘 1〜11)。決定が逆になったのは、一覧で寄せられなかった行の扱い(落とす → 残す)だけ\n+2. 実装の検証(1 段目、10 エージェント)で採用した 11 件を直した(指摘 12〜18・20〜24。採らなかったのは 19・25・26 と 13 の UNC)\n+3. ミューテーションの実測(2 段目)で、テストの抜けが 2 件見つかった(指摘 27・28)。テストを 4 件足した\n+4. PR を出したあとで main に #1178(libs の口を素の関数 `createX` にする)が入り、`src/libs/document-ipc` の 2 ファイルが衝突した。オーナーから「コンフリクト修正してください」と指示を受けて解消した。この PR の欠陥ではないので、指摘には数えない\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。集計と介入の判断は `harness-growth` の管轄なので、この記録では行わない。",
+          "patchLines": 236,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
