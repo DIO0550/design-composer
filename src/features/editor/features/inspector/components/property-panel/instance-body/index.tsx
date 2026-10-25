@@ -46,10 +46,9 @@ const SelectAllInstancesDisabledReason =
 /**
  * インスタンスの節から呼ぶ操作。常に対で要るので 1 つにまとめて受け取る。
  *
- * インスタンス自身の値の編集（`editRefOwnProp`）もここに入れ、`onEdit` と並ぶ別 prop には
- * しない。`instance` は PropertyPanel を素通りして InstanceBody にだけ届くが、`onEdit` は
- * GroupsBody と共有の経路なので、別 prop にするとインスタンスにしか無い操作を
- * PropertyPanel / PropertyPanel.Body の props へ足すことになる。
+ * インスタンス自身の値の編集（`editRefOwnProp`）も `onEdit` と並ぶ別 prop にせずここに入れる。
+ * `onEdit` は GroupsBody と共有の経路で、別 prop にするとインスタンスにしか無い操作が
+ * PropertyPanel / PropertyPanel.Body の props に漏れる。
  */
 export type InstanceActions = Readonly<{
   goToSource: () => void;
@@ -143,6 +142,7 @@ export function InstanceBody({
 
       <section className="flex flex-col gap-2 border-gray-200 border-t pt-3">
         <SectionHeading>{InstanceLabels.instance}</SectionHeading>
+        {/* UI 案に無い行。公開 prop の上書きではなくインスタンスそのものの値なので、Public props ではなくこの節に置く。 */}
         {refOwnProps.map((control) => (
           <PropRow
             key={control.prop}

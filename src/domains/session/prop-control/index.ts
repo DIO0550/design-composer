@@ -14,7 +14,7 @@ import {
   PropDefinition,
   type PropDefinitionRecord,
   type PropShorthand,
-  RefNodeSchema,
+  RefOwnPropDefinitions,
   type ShorthandName,
   ShorthandNames,
 } from "@/domains/dcmp/primitive-schema";
@@ -597,7 +597,7 @@ function sectionsOf(
 }
 
 /**
- * ノードが編集できる prop。参照ノードは公開 prop と `RefNodeSchema` のインスタンス自身の値、
+ * ノードが編集できる prop。参照ノードは公開 prop と `RefOwnPropDefinitions` のインスタンス自身の値、
  * プリミティブはスキーマから引く。
  *
  * @param document 公開 prop の引き先と、解除できるかの判定に使うドキュメント
@@ -617,7 +617,7 @@ function nodeControls(document: DesignDocument, node: Node): SelectionControls {
         document.tokens,
       ),
       refOwnProps: controlsOf(
-        declaredEditableProps(RefNodeSchema.props),
+        declaredEditableProps(RefOwnPropDefinitions),
         Node.refOwnPropsOf(node),
         document.tokens,
       ),

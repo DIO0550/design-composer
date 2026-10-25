@@ -33,7 +33,7 @@ import {
   PrimitiveSchema,
   PrimitiveTypes,
   PropDefinitionRecord,
-  RefNodeSchema,
+  RefOwnPropDefinitions,
 } from "@/domains/dcmp/primitive-schema";
 import { ReferenceContext } from "@/domains/dcmp/reference-context";
 import type { RepositionEdit } from "@/domains/dcmp/reposition-edit";
@@ -49,7 +49,6 @@ import { Offset } from "@/domains/unit/offset";
 import { ArrayEx } from "@/utils/ArrayEx";
 import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
 import { Option } from "@/utils/Option";
-import { RecordEx } from "@/utils/RecordEx";
 import { Result } from "@/utils/Result";
 import type { DesignDocumentEditError } from "./edit-error";
 import type { DocumentTemplate } from "./template";
@@ -681,6 +680,30 @@ function insertIntoParent(
 }
 
 /**
+ * 名前で指した部品インスタンス。インスタンスを対象にする操作（解除・インスタンス自身の値の
+ * 編集）の入口で、失敗の種類を揃えるためにここを通す。
+ *
+ * @param document 引き先になるドキュメント
+ * @param name 引きたいインスタンスの名前
+ * @returns 参照ノード。artboard 配下のノードに無い名前は `node-not-found`、プリミティブの
+ *   ノードは `ref-node-required`
+ */
+function findRefNode(
+  document: DesignDocument,
+  name: string,
+): Result<RefNode, DesignDocumentEditError> {
+  const found = DesignDocument.findNode(document, name);
+  if (!Option.isSome(found)) {
+    return Result.err({ kind: "node-not-found", name });
+  }
+  const node = found.value;
+  if (!Node.isRef(node)) {
+    return Result.err({ kind: "ref-node-required", name });
+  }
+  return Result.ok(node);
+}
+
+/**
  * 解除の対象になる参照ノードを、部品を辿って展開したもの。
  *
  * 解除できるか（`isDetachable`）と解除そのもの（`detach`）の両方がここを通る。
@@ -695,38 +718,11 @@ function expandInstance(
   document: DesignDocument,
   name: string,
 ): Result<ExpandedNode, DesignDocumentEditError> {
-  const found = DesignDocument.findNode(document, name);
-  if (!Option.isSome(found)) {
-    return Result.err({ kind: "node-not-found", name });
-  }
-  const node = found.value;
-  if (!Node.isRef(node)) {
-    return Result.err({ kind: "ref-node-required", name });
-  }
-  return ExpandedNode.fromNode(node, document.components);
-}
-
-/**
- * インスタンス自身の値として持てない prop を指した編集の失敗。
- *
- * @param name 編集しようとしたインスタンスの名前
- * @param edit 適用できなかった編集
- * @returns `edit.names` のうち `RefNodeSchema` が宣言していない prop を並べた
- *   `ref-own-prop-not-allowed`。宣言していない prop が無ければ `edit.names` をそのまま並べる
- */
-function refOwnPropNotAllowedError(
-  name: string,
-  edit: PropEdit,
-): DesignDocumentEditError {
-  const [undeclared, ...moreUndeclared] = edit.names.filter(
-    (prop) => !RecordEx.has(RefNodeSchema.props, prop),
+  return Result.flatMap(
+    findRefNode(document, name),
+    (node): Result<ExpandedNode, DesignDocumentEditError> =>
+      ExpandedNode.fromNode(node, document.components),
   );
-  return {
-    kind: "ref-own-prop-not-allowed",
-    name,
-    props:
-      undeclared === undefined ? edit.names : [undeclared, ...moreUndeclared],
-  };
 }
 
 /**
@@ -803,11 +799,12 @@ function collectSelfAndAncestorRotations(
 }
 
 /**
- * ノードが自身の値として持つ props。部品インスタンスは上書きを当てた部品の根の props。
+ * ノードの描き方を決める props。プリミティブは自身の props、部品インスタンスは上書きを当てた
+ * 部品の根の値（参照ノード直下のインスタンス自身の値は含まない）。
  *
  * @param document 参照先の部品を引くドキュメント
  * @param node props を読むノード
- * @returns 自身の props。参照先の部品が無いインスタンスは `none`
+ * @returns そのノードの props。参照先の部品が無いインスタンスは `none`
  */
 function rootPropsOf(document: DesignDocument, node: Node): Option<Props> {
   if (Node.isPrimitive(node)) {
@@ -899,7 +896,36 @@ function collectNodeErrors(
 }
 
 /**
- * ノードとその子孫に含まれる部品参照の違反を、位置を付けて集める（走査は `Node` が持つ）。
+ * 部品インスタンス 1 件の、部品参照の違反と、参照ノード直下のインスタンス自身の値を
+ * `RefOwnPropDefinitions` に照らしたエラーを、位置を付けて集める。
+ *
+ * @param context 部品とトークンの一式
+ * @param refNode 検証するインスタンス
+ * @returns 参照の違反、続いてインスタンス自身の値のエラーの並び
+ */
+function collectRefNodeErrors(
+  context: ReferenceContext,
+  refNode: RefNode,
+): readonly DesignDocumentValidationError[] {
+  const violationErrors = ReferenceContext.collectInstanceViolations(
+    context,
+    refNode,
+  ).map((violation) =>
+    DesignDocumentValidationError.fromInstanceViolation(violation, refNode),
+  );
+  const refOwnPropErrors = PropDefinitionRecord.collectErrors(
+    RefOwnPropDefinitions,
+    Node.refOwnPropsOf(refNode),
+    context.tokens,
+  ).map((error) =>
+    DesignDocumentValidationError.fromPropError(error, refNode.name),
+  );
+  return [...violationErrors, ...refOwnPropErrors];
+}
+
+/**
+ * ノードとその子孫に含まれる部品インスタンスのエラーを、位置を付けて集める（走査は `Node`
+ * が持つ）。
  *
  * @param context 部品とトークンの一式
  * @param node 起点のノード
@@ -910,33 +936,7 @@ function collectNodeRefErrors(
   node: Node,
 ): readonly DesignDocumentValidationError[] {
   return Node.collectRefNodes(node).flatMap((refNode) =>
-    ReferenceContext.collectInstanceViolations(context, refNode).map(
-      (violation) =>
-        DesignDocumentValidationError.fromInstanceViolation(violation, refNode),
-    ),
-  );
-}
-
-/**
- * ノードとその子孫の部品インスタンスについて、参照ノード直下のインスタンス自身の値を
- * `RefNodeSchema` に照らしたエラーを集める（走査は `Node` が持つ）。
- *
- * @param node 起点のノード
- * @param tokens トークン参照の解決に使うトークン一式
- * @returns 自身と子孫のインスタンスについて、そのインスタンスの名前を位置に付けたエラーの並び
- */
-function collectRefOwnPropErrors(
-  node: Node,
-  tokens: TokenSet,
-): readonly DesignDocumentValidationError[] {
-  return Node.collectRefNodes(node).flatMap((refNode) =>
-    PropDefinitionRecord.collectErrors(
-      RefNodeSchema.props,
-      Node.refOwnPropsOf(refNode),
-      tokens,
-    ).map((error) =>
-      DesignDocumentValidationError.fromPropError(error, refNode.name),
-    ),
+    collectRefNodeErrors(context, refNode),
   );
 }
 
@@ -1005,16 +1005,12 @@ function collectComponentErrors(
   const refErrors = children.flatMap((child) =>
     collectNodeRefErrors(context, child),
   );
-  const refOwnPropErrors = children.flatMap((child) =>
-    collectRefOwnPropErrors(child, context.tokens),
-  );
   return [
     ...propErrors,
     ...childErrors,
     ...publicPropNameErrors,
     ...bindingErrors,
     ...refErrors,
-    ...refOwnPropErrors,
   ];
 }
 
@@ -1056,10 +1052,7 @@ function collectArtboardErrors(
   const refErrors = artboard.children.flatMap((child) =>
     collectNodeRefErrors(context, child),
   );
-  const refOwnPropErrors = artboard.children.flatMap((child) =>
-    collectRefOwnPropErrors(child, context.tokens),
-  );
-  return [...propErrors, ...childErrors, ...refErrors, ...refOwnPropErrors];
+  return [...propErrors, ...childErrors, ...refErrors];
 }
 
 /**
@@ -1605,10 +1598,13 @@ export const DesignDocument = {
    * 名前で指したノードが、自身か包んでいるノードのどれかでロックされているか
    * （docs/03「ロック」。子孫へは書き写さず、祖先を辿って決める）。
    *
+   * `isHidden` と違い部品インスタンスは部品の根の値を読まない。読むと、根に書かれた
+   * `locking` で同じ部品の全インスタンスが連動してロックされる。
+   *
    * @param document 引き先になるドキュメント
    * @param name ロックされているかを知りたいノードの名前
-   * @returns 自身か祖先が `locked` なら真。部品インスタンスは参照ノード直下の `locking` を
-   *   自身の値とする（部品の根の値は見ない）。artboard 自身・ドキュメントに無い名前は偽
+   * @returns 自身か祖先が `locked` なら真。部品インスタンスはインスタンス自身の値（参照
+   *   ノード直下の `locking`）で決める。artboard 自身・ドキュメントに無い名前は偽
    */
   isLocked(document: DesignDocument, name: string): boolean {
     return holdsForSelfOrAncestor(document, name, {
@@ -1627,7 +1623,7 @@ export const DesignDocument = {
    * @param document 引き先になるドキュメント
    * @param name 非表示かを知りたい artboard / ノードの名前
    * @returns 自身か祖先が `hidden` なら真。artboard の名前ならその artboard 自身の表示 /
-   *   非表示を、部品インスタンスなら上書きを当てた部品の根の表示 / 非表示を自身の値とする。
+   *   非表示を、部品インスタンスなら上書きを当てた部品の根の値の表示 / 非表示を見る。
    *   ドキュメントに無い名前・参照先の部品が無いインスタンス自身は偽
    */
   isHidden(document: DesignDocument, name: string): boolean {
@@ -1763,19 +1759,18 @@ export const DesignDocument = {
     name: string,
     edit: PropEdit,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    const found = DesignDocument.findNode(document, name);
-    if (!Option.isSome(found)) {
-      return Result.err({ kind: "node-not-found", name });
-    }
-    const node = found.value;
-    if (!Node.isRef(node)) {
-      return Result.err({ kind: "ref-node-required", name });
-    }
-    const edited = Node.applyRefOwnPropEdit(node, edit);
-    if (!Option.isSome(edited)) {
-      return Result.err(refOwnPropNotAllowedError(name, edit));
-    }
-    return DesignDocument.replaceNode(document, name, edited.value);
+    const edited = Result.flatMap(
+      findRefNode(document, name),
+      (node): Result<RefNode, DesignDocumentEditError> =>
+        Result.mapErr(Node.applyRefOwnPropEdit(node, edit), (props) => ({
+          kind: "ref-own-prop-not-allowed",
+          name,
+          props,
+        })),
+    );
+    return Result.flatMap(edited, (node) =>
+      DesignDocument.replaceNode(document, name, node),
+    );
   },
 
   /**

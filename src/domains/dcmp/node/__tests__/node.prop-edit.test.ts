@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 import { Node, PropEdit, Props } from "../index";
 
 test("設定の編集を適用するとその prop に値が入る", () => {
@@ -81,7 +82,7 @@ test("インスタンス自身の値の編集は自身の値を変え、公開 p
   );
 
   expect(edited).toEqual(
-    Option.some({
+    Result.ok({
       name: "submit",
       ref: "primary-button",
       locking: "locked",
@@ -91,7 +92,7 @@ test("インスタンス自身の値の編集は自身の値を変え、公開 p
 });
 
 test("インスタンス自身の値を消す編集では、そのキーも残らない", () => {
-  const edited = Option.unwrap(
+  const edited = Result.unwrap(
     Node.applyRefOwnPropEdit(
       { name: "submit", ref: "primary-button", locking: "locked" },
       PropEdit.clear(["locking"]),
@@ -101,20 +102,20 @@ test("インスタンス自身の値を消す編集では、そのキーも残�
   expect("locking" in edited).toBe(false);
 });
 
-test("インスタンス自身の値として持てない prop の編集は適用されない", () => {
+test("インスタンス自身の値として持てない prop の編集は、その prop の名前で失敗する", () => {
   const edited = Node.applyRefOwnPropEdit(
     { name: "submit", ref: "primary-button" },
     PropEdit.set(["label"], "保存"),
   );
 
-  expect(Option.isSome(edited)).toBe(false);
+  expect(edited).toEqual(Result.err(["label"]));
 });
 
-test("複数の prop を指す編集に持てない prop が混じっていれば適用されない", () => {
+test("複数の prop を指す編集に持てない prop が混じっていれば、持てない prop の名前だけで失敗する", () => {
   const edited = Node.applyRefOwnPropEdit(
     { name: "submit", ref: "primary-button" },
     PropEdit.set(["locking", "label"], "locked"),
   );
 
-  expect(Option.isSome(edited)).toBe(false);
+  expect(edited).toEqual(Result.err(["label"]));
 });

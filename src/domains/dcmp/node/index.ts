@@ -1,4 +1,5 @@
 import type { NonEmptyArray } from "@/types/NonEmptyArray";
+import { ArrayEx } from "@/utils/ArrayEx";
 import {
   Json,
   type JsonCursor,
@@ -251,7 +252,7 @@ function holdsChildren(
  * @returns `RefOwnPropNames` のどれかなら true
  */
 function isRefOwnPropName(name: string): boolean {
-  return (RefOwnPropNames as readonly string[]).includes(name);
+  return Option.isSome(ArrayEx.findEqual(RefOwnPropNames, name));
 }
 
 /**
@@ -274,8 +275,8 @@ function pickRefOwnProps(source: RefOwnProps): RefOwnProps {
  *
  * @param node 差し替える参照ノード
  * @param refOwnProps 差し替えたあとの値。持てない prop 名のキーは拾わない
- * @returns `name` / `ref` / `overrides` はそのままで、自身の値を `refOwnProps` にした参照
- *   ノード。`refOwnProps` に無い値はキーごと持たない
+ * @returns `name` / `ref` / `overrides` はそのままで、インスタンス自身の値を `refOwnProps`
+ *   にした参照ノード。`refOwnProps` に無い値はキーごと持たない
  */
 function withRefOwnProps(node: RefNode, refOwnProps: RefOwnProps): RefNode {
   return {
@@ -508,25 +509,64 @@ export const Node = {
   /**
    * 参照ノード直下のインスタンス自身の値を書き換える。公開 prop への上書きは変えない。
    *
+   * `overrides` へ書かないのは、そちらが部品の公開 prop の宣言に従う値で、宣言名には
+   * `locking` も付けられるため。インスタンス自身の値は宣言に依らず参照ノードが持つ。
+   *
    * @param node 書き換える参照ノード
    * @param edit 適用する編集
-   * @returns 自身の値に `Props.apply` で編集を適用した参照ノード。`edit.names` に
-   *   インスタンス自身の値として持てない prop が 1 つでもあれば `none`
+   * @returns インスタンス自身の値に `Props.apply` で編集を適用した参照ノード。`edit.names` に
+   *   インスタンス自身の値として持てない prop があれば、その名前を `edit.names` の順に
+   *   並べた `err`
    */
-  applyRefOwnPropEdit(node: RefNode, edit: PropEdit): Option<RefNode> {
-    if (!edit.names.every(isRefOwnPropName)) {
-      return Option.none;
+  applyRefOwnPropEdit(
+    node: RefNode,
+    edit: PropEdit,
+  ): Result<RefNode, NonEmptyArray<string>> {
+    const [notAllowed, ...moreNotAllowed] = edit.names.filter(
+      (name) => !isRefOwnPropName(name),
+    );
+    if (notAllowed !== undefined) {
+      return Result.err([notAllowed, ...moreNotAllowed]);
     }
-    return Option.some(
+    return Result.ok(
       withRefOwnProps(node, Props.apply(Node.refOwnPropsOf(node), edit)),
     );
   },
 
   /**
+   * 部品の根を展開したものに、インスタンス自身の値を当てる（解除の焼き込み）。
+   *
+   * @param node 展開したインスタンス
+   * @param root 部品の根を展開したもの
+   * @returns インスタンス自身の値として持てる prop について、部品の根の値をインスタンス自身の
+   *   値で置き換えた（インスタンスが持たなければ根からも消した）もの。根が `props` を持たず
+   *   インスタンス自身の値も無ければ `root` そのもの
+   */
+  applyRefOwnPropsToRoot<T extends Readonly<{ props?: Props }>>(
+    node: RefNode,
+    root: T,
+  ): T {
+    const refOwnProps = Node.refOwnPropsOf(node);
+    if (root.props === undefined && Object.keys(refOwnProps).length === 0) {
+      return root;
+    }
+    const cleared = Props.apply(
+      root.props ?? {},
+      PropEdit.clear(RefOwnPropNames),
+    );
+    return { ...root, props: { ...cleared, ...refOwnProps } };
+  },
+
+  /**
    * 部品化するプリミティブを、部品の根と参照ノードへ移す値に分ける。
    *
+   * 根にも残すと同じ値をファイルに二重に持ち、根の側はどこからも読まれない（`isLocked`
+   * は根を読まず、解除では参照ノードの値で置き換える）。移さないと、部品化しただけで
+   * キャンバス上のロックが黙って外れる。`unlocked` も移すのは、値で振り分けると根に
+   * 読まれない値が残るため。
+   *
    * @param node 部品化するプリミティブ
-   * @returns 自身の props のうちインスタンス自身の値として持てる prop を、値に依らず
+   * @returns ノードの props のうちインスタンス自身の値として持てる prop を、値に依らず
    *   参照ノード側へ移したもの。残りの props と型・子は根に残る。持てる prop が 1 つも
    *   書かれていなければ根は渡したノードそのもので、参照ノード側は空
    */
@@ -536,9 +576,7 @@ export const Node = {
     if (Object.keys(refOwnProps).length === 0) {
       return { root: node, refOwnProps };
     }
-    const rootProps = Object.fromEntries(
-      Object.entries(props).filter(([name]) => !isRefOwnPropName(name)),
-    );
+    const rootProps = Props.apply(props, PropEdit.clear(RefOwnPropNames));
     const root: PrimitiveNode = {
       name: node.name,
       type: node.type,
