@@ -1,3 +1,4 @@
+import { BoxAlign, BoxAligns } from "@/domains/dcmp/box-align";
 import { Constraints } from "@/domains/dcmp/constraint";
 import { Layout, Layouts } from "@/domains/dcmp/layout";
 import { Locking, Lockings } from "@/domains/dcmp/locking";
@@ -240,8 +241,8 @@ export const BoxSchema = {
     },
     align: {
       domain: "enum",
-      values: ["start", "center", "end", "stretch"],
-      default: "stretch",
+      values: Object.values(BoxAligns),
+      default: BoxAlign.Default,
       group: "layout",
       enabledWhen: FlexOnly,
     },

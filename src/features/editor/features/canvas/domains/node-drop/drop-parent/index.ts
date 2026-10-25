@@ -1,10 +1,6 @@
 import { BoxElement } from "@/domains/compiled/compiled-element";
-import { Artboard } from "@/domains/dcmp/artboard";
 import type { CssDirection } from "@/domains/dcmp/css-direction";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import { Node } from "@/domains/dcmp/node";
-import { NodeTree } from "@/domains/dcmp/node-tree";
-import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Wrap } from "@/domains/dcmp/wrap";
 import { Option } from "@/utils/Option";
 import { DraggedNode } from "../dragged-node";
@@ -39,34 +35,6 @@ type ParentSearchContext = Readonly<{
   /** ポインタの下から根へ向かう順の候補 */
   names: readonly string[];
 }>;
-
-/**
- * その名前が指す artboard / ノードを、子を受け入れる親として Box の props で読む。
- *
- * artboard は常に子を持てる。ノードで子を持てるのは Box だけで、並ぶ向きもその
- * `layout` prop で決まる（docs/03-schema.md）。
- *
- * @param document 名前の引き先になるドキュメント
- * @param name 親として読みたい artboard / ノードの名前
- * @returns 親として解決した Box の props。ドキュメントに無い名前と、
- *   子を持てないノード（参照ノードと、スキーマが子を認めていないプリミティブ）なら `none`
- */
-function parentBoxProps(
-  document: DesignDocument,
-  name: string,
-): Option<ResolvedProps<"Box">> {
-  const artboard = DesignDocument.findArtboard(document, name);
-  if (Option.isSome(artboard)) {
-    return Option.some(Artboard.boxProps(artboard.value));
-  }
-  return Option.flatMap(DesignDocument.findNode(document, name), (node) => {
-    const holdsChildren =
-      Node.isPrimitive(node) && NodeTree.allowsChildren(node);
-    return holdsChildren
-      ? Option.some(ResolvedProps.resolve("Box", node.props ?? {}))
-      : Option.none;
-  });
-}
 
 /**
  * 内側から外へ並べた候補のうち、運んでいるものを受け入れられる最も内側のものを選ぶ。
@@ -110,7 +78,9 @@ function dropParentOf(
   document: DesignDocument,
   name: string,
 ): Option<DropParent> {
-  return Option.map(parentBoxProps(document, name), () => ({ name }));
+  return Option.map(DesignDocument.boxPropsOf(document, name), () => ({
+    name,
+  }));
 }
 
 /**
@@ -125,7 +95,7 @@ function insertionParentOf(
   document: DesignDocument,
   name: string,
 ): Option<InsertionParent> {
-  return Option.flatMap(parentBoxProps(document, name), (props) =>
+  return Option.flatMap(DesignDocument.boxPropsOf(document, name), (props) =>
     Option.map(BoxElement.childDirection(props), (direction) => ({
       name,
       direction,

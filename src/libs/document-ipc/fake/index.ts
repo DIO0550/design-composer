@@ -1,7 +1,11 @@
 import type { TauriIpc } from "@/libs/tauri-ipc";
 import { ipcFailure } from "@/libs/tauri-ipc/fake";
 import { Option } from "@/utils/Option";
-import { DocumentIpc, type DocumentIpcErrorKind } from "../index";
+import {
+  createDocumentIpc,
+  type DocumentIpc,
+  type DocumentIpcErrorKind,
+} from "../index";
 
 /** 別の綴りと、それが指す実体の綴り。symlink に限らず、同じファイルを指す別の綴りを表す。 */
 export type PathLink = Readonly<{ link: string; target: string }>;
@@ -22,8 +26,8 @@ export type CanonicalizeDenial = Readonly<{
  * Rust 側の代役。インメモリのファイル表に対して `docs/05-architecture.md`「Tauri IPC」の
  * 5コマンドと `document-changed` を再現する。
  *
- * 差し込む先は `TauriIpc` の位置なので、`ipc` を通した呼び出しでは `DocumentIpc` 本体（コ
- * マンド名・引数・エラーの解釈）がそのまま動く。
+ * 差し込む先は `TauriIpc` の位置なので、`ipc` を通した呼び出しでは `createDocumentIpc`
+ * が作る本体（コマンド名・引数・エラーの解釈）がそのまま動く。
  */
 export type DocumentIpcFake = Readonly<{
   /** インメモリのファイル表に向いた `DocumentIpc`。 */
@@ -228,7 +232,7 @@ export const DocumentIpcFake = {
     };
 
     return {
-      ipc: DocumentIpc.create(tauriIpc),
+      ipc: createDocumentIpc(tauriIpc),
 
       changeExternally(path, content) {
         contents.set(targetOf(path), content);

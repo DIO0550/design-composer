@@ -218,6 +218,7 @@ function toText(
 }
 
 /**
+/**
  * `load_document` の戻り値を読み込んだ内容として解釈する。
  *
  * @param value `load_document` が返した値
@@ -242,61 +243,59 @@ function toCanonicalPath(value: unknown): Result<FilePath, DocumentIpcError> {
   });
 }
 
-export const DocumentIpc = {
-  /**
-   * ドキュメントのファイルの綴りを寄せ、読み書き・監視する口を作る。
-   *
-   * @param tauriIpc コマンドを呼び、外部変更を購読する IPC
-   * @returns 購読の失敗も、コマンドの失敗と同じ種別つきの失敗へ詰め替える口
-   */
-  create(tauriIpc: TauriIpc): DocumentIpc {
-    const call = TauriIpc.caller<DocumentCommand, DocumentIpcError>(
-      tauriIpc,
-      toDocumentIpcError,
-    );
+/**
+ * ドキュメントのファイルの綴りを寄せ、読み書き・監視する口を作る。
+ *
+ * @param tauriIpc コマンドを呼び、外部変更を購読する IPC
+ * @returns 購読の失敗も、コマンドの失敗と同じ種別つきの失敗へ詰め替える口
+ */
+export function createDocumentIpc(tauriIpc: TauriIpc): DocumentIpc {
+  const call = TauriIpc.caller<DocumentCommand, DocumentIpcError>(
+    tauriIpc,
+    toDocumentIpcError,
+  );
 
-    return {
-      async canonicalize(path) {
-        return Result.flatMap(
-          await call("canonicalize_document_path", { path }),
-          toCanonicalPath,
+  return {
+    async canonicalize(path) {
+      return Result.flatMap(
+        await call("canonicalize_document_path", { path }),
+        toCanonicalPath,
+      );
+    },
+
+    async load(path) {
+      return Result.flatMap(await call("load_document", { path }), toContent);
+    },
+
+    async save(path, content) {
+      return toCompletion(await call("save_document", { path, content }));
+    },
+
+    async watch(path) {
+      return toCompletion(await call("watch_document", { path }));
+    },
+
+    async unwatch(path) {
+      return toCompletion(await call("unwatch_document", { path }));
+    },
+
+    async subscribeChanged(listener) {
+      try {
+        const unsubscribe = await tauriIpc.listen(
+          DocumentChangedEvent,
+          (payload) => {
+            // 形が合わない値は配らない。ドキュメント変更として渡せる中身が無く、
+            // イベントのコールバックには失敗を返す相手もいないため。
+            const changed = toDocumentChanged(payload);
+            if (Option.isSome(changed)) {
+              listener(changed.value);
+            }
+          },
         );
-      },
-
-      async load(path) {
-        return Result.flatMap(await call("load_document", { path }), toContent);
-      },
-
-      async save(path, content) {
-        return toCompletion(await call("save_document", { path, content }));
-      },
-
-      async watch(path) {
-        return toCompletion(await call("watch_document", { path }));
-      },
-
-      async unwatch(path) {
-        return toCompletion(await call("unwatch_document", { path }));
-      },
-
-      async subscribeChanged(listener) {
-        try {
-          const unsubscribe = await tauriIpc.listen(
-            DocumentChangedEvent,
-            (payload) => {
-              // 形が合わない値は配らない。ドキュメント変更として渡せる中身が無く、
-              // イベントのコールバックには失敗を返す相手もいないため。
-              const changed = toDocumentChanged(payload);
-              if (Option.isSome(changed)) {
-                listener(changed.value);
-              }
-            },
-          );
-          return Result.ok(unsubscribe);
-        } catch (reason) {
-          return Result.err(toDocumentIpcError(reason));
-        }
-      },
-    };
-  },
-} as const;
+        return Result.ok(unsubscribe);
+      } catch (reason) {
+        return Result.err(toDocumentIpcError(reason));
+      }
+    },
+  };
+}

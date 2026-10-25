@@ -74,24 +74,22 @@ async function choose(
   }
 }
 
-export const DocumentDialog = {
-  /**
-   * .dcmp を選ばせるダイアログを作る。
-   *
-   * @param dialog 実際にダイアログを出す口。絞り込みと保存の既定の名前はこのモジュールが渡す
-   * @returns `dialog` を通して .dcmp を選ばせるダイアログ
-   */
-  create(dialog: TauriDialog): DocumentDialog {
-    return {
-      chooseOpenPath() {
-        return choose(() => dialog.chooseOpenPath(DocumentFileFilter));
-      },
+/**
+ * .dcmp を選ばせるダイアログを作る。
+ *
+ * @param dialog 実際にダイアログを出す口。絞り込みと保存の既定の名前はこのモジュールが渡す
+ * @returns `dialog` を通して .dcmp を選ばせるダイアログ
+ */
+export function createDocumentDialog(dialog: TauriDialog): DocumentDialog {
+  return {
+    chooseOpenPath() {
+      return choose(() => dialog.chooseOpenPath(DocumentFileFilter));
+    },
 
-      chooseSavePath() {
-        return choose(() =>
-          dialog.chooseSavePath(DocumentFileFilter, DefaultFileName),
-        );
-      },
-    };
-  },
-} as const;
+    chooseSavePath() {
+      return choose(() =>
+        dialog.chooseSavePath(DocumentFileFilter, DefaultFileName),
+      );
+    },
+  };
+}

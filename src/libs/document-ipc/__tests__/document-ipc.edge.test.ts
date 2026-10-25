@@ -4,14 +4,18 @@ import type { TauriIpc } from "@/libs/tauri-ipc";
 import { SingleEventIpcFake } from "@/libs/tauri-ipc/fake";
 import { Result } from "@/utils/Result";
 import { DocumentIpcFake } from "../fake";
-import { type DocumentChanged, DocumentIpc } from "../index";
+import {
+  createDocumentIpc,
+  type DocumentChanged,
+  type DocumentIpc,
+} from "../index";
 
 const Path = filePath("/work/login.dcmp");
 const MissingPath = filePath("/work/missing.dcmp");
 
 /** コマンドの結果だけを差し替えた IPC。イベントは流れない。 */
 function setupIpc(invoke: TauriIpc["invoke"]): DocumentIpc {
-  return DocumentIpc.create({
+  return createDocumentIpc({
     invoke,
     listen: () => Promise.resolve(() => {}),
   });
@@ -111,7 +115,7 @@ test("綴りを寄せた結果がファイル名の要素を持たないと ipcF
 });
 
 test("購読の開始に失敗すると Err が返り、例外は投げない", async () => {
-  const ipc = DocumentIpc.create({
+  const ipc = createDocumentIpc({
     invoke: () => Promise.resolve(undefined),
     listen: () => Promise.reject("Event document-changed not registered"),
   });
@@ -134,7 +138,7 @@ test("path と content が揃っていない通知は配られない", async () 
     { content: "{}" },
   ];
   const received: DocumentChanged[] = [];
-  const ipc = DocumentIpc.create({
+  const ipc = createDocumentIpc({
     invoke: () => Promise.resolve(undefined),
     listen: (_event, handler) => {
       for (const payload of malformedPayloads) {
@@ -153,7 +157,7 @@ test("path と content が揃っていない通知は配られない", async () 
 
 test("ファイル名の要素を持たないパスの変更通知は配られない", async () => {
   const events = SingleEventIpcFake.create("document-changed");
-  const ipc = DocumentIpc.create(events.ipc);
+  const ipc = createDocumentIpc(events.ipc);
   const received: DocumentChanged[] = [];
   Result.unwrap(
     await ipc.subscribeChanged((changed) => received.push(changed)),

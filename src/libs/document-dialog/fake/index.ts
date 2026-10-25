@@ -1,6 +1,6 @@
 import type { TauriDialog } from "@/libs/tauri-dialog";
 import { Option } from "@/utils/Option";
-import { DocumentDialog } from "../index";
+import { createDocumentDialog, type DocumentDialog } from "../index";
 
 /**
  * ダイアログを出したときに起きること。
@@ -31,8 +31,8 @@ export const DialogChoice = {
   /**
    * ダイアログを出せなかったことにする。
    *
-   * @param message 代役が投げる例外の文言。`DocumentDialog` を通すと失敗の `message` に載る
-   *   (綴り方は `DocumentDialog` 側の規則)
+   * @param message 代役が投げる例外の文言。`createDocumentDialog` が作る口を通すと失敗の
+   *   `message` に載る(綴り方はその口の規則)
    * @returns ダイアログを出せなかった結果
    */
   failed(message: string): DialogChoice {
@@ -49,8 +49,8 @@ export type DialogChoices = Readonly<{
 /**
  * ダイアログの代役。利用者の操作をテストごとに決め打ちする。
  *
- * 差し込む先は `TauriDialog` の位置なので、`dialog` を通した呼び出しでは `DocumentDialog`
- * 本体（フィルタ・キャンセルと失敗の解釈）がそのまま動く。
+ * 差し込む先は `TauriDialog` の位置なので、`dialog` を通した呼び出しでは
+ * `createDocumentDialog` が作る本体（フィルタ・キャンセルと失敗の解釈）がそのまま動く。
  */
 export type DocumentDialogFake = Readonly<{ dialog: DocumentDialog }>;
 
@@ -89,6 +89,6 @@ export const DocumentDialogFake = {
       },
     };
 
-    return { dialog: DocumentDialog.create(tauriDialog) };
+    return { dialog: createDocumentDialog(tauriDialog) };
   },
 } as const;

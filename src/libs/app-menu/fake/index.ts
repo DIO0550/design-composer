@@ -1,5 +1,10 @@
 import { SingleEventIpcFake } from "@/libs/tauri-ipc/fake";
-import { AppMenu, type AppMenuCommand, MenuCommandEvent } from "../index";
+import {
+  type AppMenu,
+  type AppMenuCommand,
+  createAppMenu,
+  MenuCommandEvent,
+} from "../index";
 
 /**
  * OS のメニューの代役。利用者がどの項目を選んだかをテストから起こす。
@@ -30,7 +35,7 @@ export const AppMenuFake = {
     const events = SingleEventIpcFake.create(MenuCommandEvent);
 
     return {
-      menu: AppMenu.create(events.ipc),
+      menu: createAppMenu(events.ipc),
       choose: events.deliver,
       deliverUnknown: events.deliver,
       denySubscribe: events.denySubscribe,

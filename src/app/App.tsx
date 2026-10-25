@@ -1,11 +1,11 @@
 import { EditorScreen } from "@/features/editor";
-import { AppMenu } from "@/libs/app-menu";
-import { AppStateIpc } from "@/libs/app-state-ipc";
-import { AppWindow } from "@/libs/app-window";
+import { createAppMenu } from "@/libs/app-menu";
+import { createAppStateIpc } from "@/libs/app-state-ipc";
+import { createAppWindow } from "@/libs/app-window";
 import { Clock } from "@/libs/clock";
-import { DocumentDialog } from "@/libs/document-dialog";
-import { DocumentIpc } from "@/libs/document-ipc";
-import { FileDrop } from "@/libs/file-drop";
+import { createDocumentDialog } from "@/libs/document-dialog";
+import { createDocumentIpc } from "@/libs/document-ipc";
+import { createFileDrop } from "@/libs/file-drop";
 import { TauriDialog } from "@/libs/tauri-dialog";
 import { TauriIpc } from "@/libs/tauri-ipc";
 
@@ -20,12 +20,12 @@ import { TauriIpc } from "@/libs/tauri-ipc";
  */
 const tauriIpc = TauriIpc.create();
 const ports = {
-  ipc: DocumentIpc.create(tauriIpc),
-  dialog: DocumentDialog.create(TauriDialog.create()),
-  menu: AppMenu.create(tauriIpc),
-  drop: FileDrop.create(tauriIpc),
-  appState: AppStateIpc.create(tauriIpc),
-  appWindow: AppWindow.create(tauriIpc),
+  ipc: createDocumentIpc(tauriIpc),
+  dialog: createDocumentDialog(TauriDialog.create()),
+  menu: createAppMenu(tauriIpc),
+  drop: createFileDrop(tauriIpc),
+  appState: createAppStateIpc(tauriIpc),
+  appWindow: createAppWindow(tauriIpc),
 } as const;
 const clock = Clock.create();
 

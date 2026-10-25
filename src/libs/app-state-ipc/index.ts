@@ -72,33 +72,28 @@ function toStoredContent(
   return Result.ok(Option.some(value));
 }
 
-export const AppStateIpc = {
-  /**
-   * アプリ自身の状態を読み書きする口を作る。
-   *
-   * @param tauriIpc コマンドを呼ぶ IPC
-   * @returns `tauriIpc` を通してアプリ自身の状態を読み書きする口
-   */
-  create(tauriIpc: TauriIpc): AppStateIpc {
-    const call = TauriIpc.caller<AppStateCommand, AppStateIpcError>(
-      tauriIpc,
-      toAppStateIpcError,
-    );
+/**
+ * アプリ自身の状態を読み書きする口を作る。
+ *
+ * @param tauriIpc コマンドを呼ぶ IPC
+ * @returns `tauriIpc` を通してアプリ自身の状態を読み書きする口
+ */
+export function createAppStateIpc(tauriIpc: TauriIpc): AppStateIpc {
+  const call = TauriIpc.caller<AppStateCommand, AppStateIpcError>(
+    tauriIpc,
+    toAppStateIpcError,
+  );
 
-    return {
-      async load() {
-        return Result.flatMap(
-          await call("load_app_state", {}),
-          toStoredContent,
-        );
-      },
+  return {
+    async load() {
+      return Result.flatMap(await call("load_app_state", {}), toStoredContent);
+    },
 
-      async save(content) {
-        return Result.map(
-          await call("save_app_state", { content }),
-          () => undefined,
-        );
-      },
-    };
-  },
-} as const;
+    async save(content) {
+      return Result.map(
+        await call("save_app_state", { content }),
+        () => undefined,
+      );
+    },
+  };
+}

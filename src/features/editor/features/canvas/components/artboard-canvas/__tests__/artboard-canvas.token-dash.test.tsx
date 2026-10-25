@@ -136,6 +136,19 @@ function ruleIndexOf(name: string, declaration: string): number {
   });
 }
 
+test("トークンを参照しているノードの破線は、そのノード自身の outline として描かれる", () => {
+  const document = setupDocument();
+
+  renderCanvas({
+    selection: DocumentSelection.fromNames(document, []),
+    tokenSelection: selectingGray900(document),
+  });
+
+  expect(ruleIndexOf("title", "outline:1.5px dashed")).toBeGreaterThanOrEqual(
+    0,
+  );
+});
+
 test("選択中のノードがそのトークンを参照していても、選択の枠が破線に負けない", () => {
   const document = setupDocument();
 
