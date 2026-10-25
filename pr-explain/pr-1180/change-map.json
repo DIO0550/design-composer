@@ -1,0 +1,2154 @@
+{
+  "version": 2,
+  "pr": 1180,
+  "headBranch": "claude/magical-cannon-hp9hno",
+  "baseBranch": "main",
+  "mergeBase": "b1e77868b2b704c3d9937e0b0892594260c3fb6d",
+  "head": "c2dd6ae7b3e508f3597cca12aeceeef8f13a1474",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/unit/file-path/__tests__/file-path.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/file-path/__tests__/file-path.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/file-path/__tests__/file-path.type.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-access-failure/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-documents/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/file-paths.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/sample-document.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/app-menu/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-menu/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-window/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-window/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/clock/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 75,
+          "deletions": 16,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 52,
+          "deletions": 9,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/document-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/tauri-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/tauri-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/__tests__/document-change.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.document-access-failure.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 41,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/libs/document-ipc/index.ts"
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 104,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/libs/document-ipc/index.ts"
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Interop.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/Brand.ts",
+          "changed": false
+        },
+        {
+          "path": "src/types/IndexMove.ts",
+          "changed": false
+        },
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/components/editor-screen/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/pane-regions.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/components/editor-screen/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.shortcut.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/components/editor-screen/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-tab-bar/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/domains/document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/domains/recent-files/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 75,
+          "deletions": 27,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-start/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/domains/recent-files/__tests__/recent-files.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 76,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 44,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 128,
+          "deletions": 2,
+          "changed": true,
+          "target": "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-sync",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.document-invalid.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/__tests__/use-file-revert.normal.test.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/__tests__/row-drag.ts",
+          "changed": false
+        },
+        {
+          "path": "src/components/__tests__/row-names.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "app",
+      "files": [
+        {
+          "path": "src/app/App.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "src-tauri",
+      "files": [
+        {
+          "path": "src-tauri/src/document.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "status": "A",
+          "oldPath": null,
+          "additions": 79,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path_edge_test.rs",
+          "status": "A",
+          "oldPath": null,
+          "additions": 54,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path_normal_test.rs",
+          "status": "A",
+          "oldPath": null,
+          "additions": 136,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/file_path.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/io/error.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/known_content.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 31,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/lib.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/05-architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+        "name": "開いているファイルを別の綴りで落としても、タブは増えない"
+      },
+      {
+        "file": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+        "name": "開いているファイルを別の綴りで落としても、外部変更はそのタブに反映される"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+        "name": "新規作成の保存先の綴りを寄せるのを拒まれると、その失敗が残る"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+        "name": "新規作成の保存先の綴りを寄せるのを拒まれると、書き出さない"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+        "name": "綴りを寄せるのを拒まれたファイルを選ぶと、使えないパスとして失敗する"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+        "name": "綴りを寄せる指示が届かなかったファイルを選ぶと、届かなかったこととして失敗する"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+        "name": "別の綴りで落としたファイルは、実体の綴りで開かれる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+        "name": "開いているファイルを別の綴りで落としても、タブは増えない"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+        "name": "開いているファイルを別の綴りで落とすと、そのタブを見ている状態になる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+        "name": "ダイアログで別の綴りを選ぶと、実体の綴りで開かれる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+        "name": "新規作成の保存先に別の綴りを選ぶと、実体の綴りのドキュメントとして開かれる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+        "name": "別の綴りで開いたファイルは、実体の綴りで一覧に書き出される"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+        "name": "開いたファイルを別の綴りで開き直しても、一覧は増えない"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "name": "保存された一覧のうち、同じファイルの別の綴りは 1 行にまとまる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "name": "保存された一覧の先頭が別の綴りなら、一覧にも実体の綴りで並ぶ"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "name": "保存された一覧の先頭が別の綴りなら、実体の綴りで開かれる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "name": "保存された一覧の先頭の綴りを寄せるのを拒まれると、使えないパスとして失敗する"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "name": "別の綴りをまとめた一覧は、次に開いたときに書き直される"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "name": "綴りを寄せるのを拒まれた行は、元の綴りのまま一覧に残る"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "name": "綴りを寄せる指示が届かなかった行も、元の綴りのまま一覧に残る"
+      },
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+        "name": "綴りを寄せた結果がファイル名の要素を持たないと ipcFailed が返る"
+      },
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+        "name": "綴りを寄せた結果が文字列以外だと ipcFailed が返る"
+      },
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+        "name": "綴りを寄せるのを拒まれると invalidPath が返る"
+      },
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+        "name": "別の綴りで外部から書き換えると、実体を監視している綴りで届く"
+      },
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+        "name": "別の綴りで書くと、実体の中身が変わる"
+      },
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+        "name": "別の綴りで監視すると、実体の外部変更がその綴りで届く"
+      },
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+        "name": "別の綴りで監視を止めると、実体の外部変更が届かなくなる"
+      },
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+        "name": "別の綴りで読むと、実体の中身が返る"
+      },
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+        "name": "別の綴りを寄せると、実体の綴りになる"
+      },
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+        "name": "別の綴りを持たないパスは、寄せても綴りが変わらない"
+      },
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+        "name": "後から別の綴りで監視し直すと、前の綴りには外部変更が届かない"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+      "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+      "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+      "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+      "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "97d3fc3a2a78feb4777fb8288b777b9b69420d9e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T03:22:19Z",
+      "subject": "✨ [New Feature]: #1138 同じファイルを指す別表記を寄せる canonicalize_document_path を追加",
+      "body": "- document/canonical_path.rs を新設し、known_content.rs の registry_key の\n  本体を canonical_form として移した(記録のキーとコマンドで規則を 1 つにする)\n- canonicalize_requested は parse → canonical_form → UTF-8 → 再 parse の順で、\n  実体が .dcmp でない symlink と UTF-8 で表せない結果を InvalidPath で拒む\n- Windows の canonicalize が付ける \\\\?\\C: を C: に戻す(UNC はそのまま)\n- lib.rs の generate_handler! に登録し、file_path.rs / io/error.rs の doc を追随\n\n背景:\nTS はパスを文字列の === で比べるため、symlink 経由と実体・絶対パス中の\n`.` や `//`・大小を区別しない FS の大小違いを別のタブ・別の行として扱う。\nRust 側の watcher は canonicalize したキーで 1 つにまとめるので、2 つの\n綴りで開くと先のタブが外部変更を受け取れず、片方を閉じると両方の監視が止まる。\n\n採用理由:\n正規化には symlink の解決などファイルシステムへの問い合わせが要り、TS の\nドメインの create(純粋関数)には置けない。Rust に正規化済みの綴りを返す\nコマンドを置き、TS はその綴りを以後の識別子にする(Issue の案 A。オーナー承認)。\n規則は既存の registry_key と同じでなければ自書き込みの判定とずれるので、\n本体を移して両方から呼ぶ。\n\n影響とトレードオフ:\n- symlink から開くと実体の綴りになる(タブ名・最近使ったファイルに実体の名前が\n  出る。オーナー承認済み)\n- 実体が .dcmp でない symlink は今まで開けたが、InvalidPath で拒むようになる\n- CI に cargo の工程が無く、この環境では webkit2gtk が無いのでクレートを\n  ビルドできない。単体 rustc に必要なモジュールを載せて確かめた。Windows 向けは\n  型検査だけで、macOS / Windows での実行は未確認\n\n代替案:\n- DocumentFilePath::parse 自体で正規化する: TS の綴りが変わらないのでタブも\n  一覧も直らず、document-changed の綴りが開いているパスとずれる\n- 規則を DocumentFilePath のメソッドにする: production の呼び出し元は\n  すべて &DocumentFilePath だが、registry のキーは失敗してはならず(親が無ければ\n  元の綴りへ戻す)、引数を狭めるとコンパイルできない Rust のテスト 15 行を\n  書き換えることになる。コマンドの戻りは再 parse で DocumentFilePath を通す\n- watchers.rs の canonicalize も寄せる: watch はファイルが無ければ失敗すべきで\n  規則が違う\n- 名前を resolve_document_path にする: TS で resolve はトークン・prop の解決の\n  意味で多用されている。canonical は 0 回で Rust の canonicalize と揃う\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "src-tauri/src/document.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -4,6 +4,7 @@\n //! ここを渡るのは常に生の JSON 文字列で、パース・検証・マイグレーションは TS 側が行う。\n //! この前提は配下のモジュールすべてに掛かる。\n \n+pub mod canonical_path;\n pub mod file_path;\n pub mod io;\n pub mod known_content;",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "status": "A",
+          "oldPath": null,
+          "additions": 74,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,74 @@\n+//! 同じファイルを指す別の綴りを、1 つの綴りへ寄せる。\n+//!\n+//! 寄せた綴りは `KnownContentRegistry` の記録のキーと、TS がタブ・最近使ったファイルを\n+//! 見分けるのに使う綴り(`canonicalize_document_path`)の両方に使う。\n+\n+use std::path::{Component, Path, PathBuf, Prefix};\n+\n+use super::file_path::DocumentFilePath;\n+use super::io::DocumentIoError;\n+\n+/// `path` が指すファイルの綴りを、同じファイルを指す綴りどうしで 1 つに揃える。\n+///\n+/// `./doc.dcmp` と `doc.dcmp`、symlink 経由と実体のように、同じファイルを指す\n+/// 異なる表記を同じ綴りにする。\n+///\n+/// @returns 揃えた綴り。親ディレクトリも正規化できないときは `path` の綴りのまま\n+pub fn canonical_form(path: &Path) -> PathBuf {\n+    if let Ok(canonical) = path.canonicalize() {\n+        return without_verbatim_disk(canonical);\n+    }\n+\n+    // ファイルがまだ存在しない場合は canonicalize できない。新規ファイルへの\n+    // `record_write` は書き込み前に記録するのでここを通り、書き込み後の問い合わせは\n+    // 上の分岐を通る。両者が同じキーになるよう、親ディレクトリだけを正規化して組み立てる。\n+    let (Some(parent), Some(file_name)) = (path.parent(), path.file_name()) else {\n+        return path.to_path_buf();\n+    };\n+    let parent = if parent.as_os_str().is_empty() {\n+        Path::new(\".\")\n+    } else {\n+        parent\n+    };\n+    match parent.canonicalize() {\n+        Ok(directory) => without_verbatim_disk(directory).join(file_name),\n+        Err(_) => path.to_path_buf(),\n+    }\n+}\n+\n+/// Windows の `canonicalize` がドライブに付ける `\\\\?\\C:` を `C:` に戻す。UNC\n+/// (`\\\\?\\UNC\\server\\share`)はそのまま返す。\n+///\n+/// 揃えた綴りは TS へ返り、最近使ったファイルとして `app-state.json` に残るので、\n+/// 接頭辞の無い形にしておく。\n+fn without_verbatim_disk(path: PathBuf) -> PathBuf {\n+    let mut components = path.components();\n+    let Some(Component::Prefix(prefix)) = components.next() else {\n+        return path;\n+    };\n+    let Prefix::VerbatimDisk(drive) = prefix.kind() else {\n+        return path;\n+    };\n+    let rest: PathBuf = components.collect();\n+    PathBuf::from(format!(\"{}:\", char::from(drive))).join(rest)\n+}\n+\n+/// webview から渡されたパスを検査し、`canonical_form` で揃えた綴りを返す。\n+///\n+/// 揃えた綴りも検査し直すので、実体が `.dcmp` でない symlink はここで拒む。\n+///\n+/// @returns 揃えた綴り。渡されたパスか揃えた綴りが検査を通らないとき、揃えた綴りが\n+/// UTF-8 で表せないときは `InvalidPath`\n+pub fn canonicalize_requested(raw_path: &str) -> Result<DocumentFilePath, DocumentIoError> {\n+    let requested = DocumentFilePath::parse(raw_path)?;\n+    let canonical = canonical_form(&requested);\n+    let spelled = canonical\n+        .to_str()\n+        .ok_or_else(|| DocumentIoError::invalid_path(&canonical, \"UTF-8 で表せない\"))?;\n+    DocumentFilePath::parse(spelled)\n+}\n+\n+#[tauri::command]\n+pub fn canonicalize_document_path(path: String) -> Result<String, DocumentIoError> {\n+    canonicalize_requested(&path).map(|canonical| canonical.to_string_lossy().into_owned())\n+}",
+          "patchLines": 75,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/file_path.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -4,7 +4,7 @@ use std::path::{Component, Path, PathBuf};\n \n use super::io::DocumentIoError;\n \n-/// ドキュメントの 4 コマンドが扱ってよいと検査を通ったパス。\n+/// ドキュメントの 5 コマンドが扱ってよいと検査を通ったパス。\n ///\n /// 拡張子が `.dcmp`(大文字小文字は問わない)の絶対パスで、`..` の要素を含まず、\n /// ファイル名で終わり、ファイル名に `:` を含まないものだけを表す。\n@@ -15,6 +15,7 @@ use super::io::DocumentIoError;\n ///\n /// 綴りは正規化せずに保つ。TS は `document-changed` の `path` を開いているパスと\n /// 文字列で比べる(`use-document-reload/index.ts`)ので、綴りを変えると通知が届かなくなる。\n+/// 同じファイルの綴りを寄せるのは `canonical_path.rs` で、TS はその綴りで他の 4 コマンドを呼ぶ。\n #[derive(Debug, Clone, PartialEq, Eq)]\n pub struct DocumentFilePath(PathBuf);\n ",
+          "patchLines": 17,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/io/error.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -17,7 +17,8 @@ pub enum DocumentIoError {\n     /// 読み込み / 書き込みの権限が無い。\n     PermissionDenied { message: String },\n     /// ドキュメントとして扱えないパス。`DocumentFilePath::parse` が拒否したパスと、\n-    /// `io/atomic_write.rs` / `watch/watchers.rs` が親ディレクトリ・ファイル名を取り出せないパス。\n+    /// `io/atomic_write.rs` / `watch/watchers.rs` が親ディレクトリ・ファイル名を取り出せないパスと、\n+    /// `canonical_path.rs` が揃えた綴りを UTF-8 で表せないパス。\n     InvalidPath { message: String },\n     /// ファイルの中身が UTF-8 として解釈できない。\n     InvalidUtf8 { message: String },",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/known_content.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 30,
+          "patch": "@@ -4,6 +4,8 @@ use std::hash::{Hash, Hasher};\n use std::path::{Path, PathBuf};\n use std::sync::Mutex;\n \n+use super::canonical_path::canonical_form;\n+\n /// アプリが把握しているファイルの内容を記録し、file watch が検知した変更を\n /// JS 側へ通知すべきかを判定する。\n ///\n@@ -27,7 +29,7 @@ impl KnownContentRegistry {\n     /// `path` の内容が `content` であることを記録する。\n     pub fn record(&self, path: &Path, content: &str) {\n         self.known()\n-            .insert(registry_key(path), hash_content(content));\n+            .insert(canonical_form(path), hash_content(content));\n     }\n \n     /// `path` へ `content` を書き込む `write` を、記録と不可分に実行する。\n@@ -44,7 +46,7 @@ impl KnownContentRegistry {\n         content: &str,\n         write: impl FnOnce() -> Result<(), E>,\n     ) -> Result<(), E> {\n-        let key = registry_key(path);\n+        let key = canonical_form(path);\n         let previous = self.known().insert(key.clone(), hash_content(content));\n \n         let Err(error) = write() else {\n@@ -65,12 +67,12 @@ impl KnownContentRegistry {\n     /// 内容を書いた場合も真を返すが、内容が同一である以上リロードを見送っても\n     /// 表示は変わらない。\n     pub fn is_known(&self, path: &Path, content: &str) -> bool {\n-        self.known().get(&registry_key(path)) == Some(&hash_content(content))\n+        self.known().get(&canonical_form(path)) == Some(&hash_content(content))\n     }\n \n     /// `path` の記録を破棄する(watch の停止時など)。\n     pub fn forget(&self, path: &Path) {\n-        self.known().remove(&registry_key(path));\n+        self.known().remove(&canonical_form(path));\n     }\n \n     /// ロックを取得する。\n@@ -83,32 +85,6 @@ impl KnownContentRegistry {\n     }\n }\n \n-/// 記録のキー。\n-///\n-/// `./doc.dcmp` と `doc.dcmp`、symlink 経由と実体のように、同じファイルを指す\n-/// 異なる表記で取りこぼさないよう正規化する。\n-fn registry_key(path: &Path) -> PathBuf {\n-    if let Ok(canonical) = path.canonicalize() {\n-        return canonical;\n-    }\n-\n-    // ファイルがまだ存在しない場合は canonicalize できない。新規ファイルへの\n-    // `record_write` は書き込み前に記録するのでここを通り、書き込み後の問い合わせは\n-    // 上の分岐を通る。両者が同じキーになるよう、親ディレクトリだけを正規化して組み立てる。\n-    let (Some(parent), Some(file_name)) = (path.parent(), path.file_name()) else {\n-        return path.to_path_buf();\n-    };\n-    let parent = if parent.as_os_str().is_empty() {\n-        Path::new(\".\")\n-    } else {\n-        parent\n-    };\n-    match parent.canonicalize() {\n-        Ok(directory) => directory.join(file_name),\n-        Err(_) => path.to_path_buf(),\n-    }\n-}\n-\n fn hash_content(content: &str) -> u64 {\n     let mut hasher = DefaultHasher::new();\n     content.hash(&mut hasher);",
+          "patchLines": 75,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/lib.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -26,6 +26,7 @@ pub fn run() {\n         .manage(Arc::new(KnownContentRegistry::new()))\n         .manage(DocumentWatchers::new())\n         .invoke_handler(tauri::generate_handler![\n+            document::canonical_path::canonicalize_document_path,\n             document::io::load_document,\n             document::io::save_document,\n             document::watch::watch_document,",
+          "patchLines": 8,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "17af400b56aa615a114304ad847c977221119167",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T03:22:36Z",
+      "subject": "🧪 [Tests]: #1138 canonicalize_document_path の寄せ方と拒否をテストで固定",
+      "body": "- canonical_path_normal_test.rs: `.` の除去 / 続いた区切り / symlink は実体 /\n  symlink のディレクトリにまだ無いファイル / 親が無ければ元の綴り / 壊れた\n  symlink / 冪等 / (macOS)大小違い / (Windows)\\\\?\\ を持たない\n- canonical_path_edge_test.rs: 相対パス / .dcmp でない / 実体が .dcmp でない\n  symlink / (linux)UTF-8 で表せない、を InvalidPath で拒む\n- document.rs にテストモジュールを宣言\n\n背景:\ncanonical_form は記録のキーと TS の識別子の両方を決めるので、寄せ方の退行は\nタブの重複と自書き込みの誤判定の両方に効く。\n\n採用理由:\n期待値は TempDir を canonicalize した値から組み立て、綴りは文字列で比べる。\nmacOS の一時ディレクトリは /private/var への symlink 配下にあり、Path どうしの\n== は `.` と続いた区切りを読み飛ばすので、そうしないと落ちうるテストにならない。\nそのため `.` / `//` / 冪等は #[cfg(unix)] に限った。\n\n影響とトレードオフ:\n- CI に cargo の工程が無く、この環境でもクレートはビルドできないので、単体の\n  rustc --test に必要なモジュールとスタブを載せて linux の 11 件を走らせた\n- 「壊れた symlink」と「冪等」は linux では canonical_form を恒等にしても通る\n  (/tmp が既に正規化済み・冪等そのものを見るため)\n- macOS / Windows のケースは実行していない\n\n代替案:\n- 「別表記で保存した内容が自書き込みと判定される」を足す: 既存の\n  known_content_self_write_test.rs と同じ観点なので重ねない\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "src-tauri/src/document.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "patch": "@@ -15,6 +15,10 @@ pub mod watch;\n #[cfg(test)]\n mod test_support;\n \n+#[cfg(test)]\n+mod canonical_path_edge_test;\n+#[cfg(test)]\n+mod canonical_path_normal_test;\n #[cfg(test)]\n mod file_path_edge_test;\n #[cfg(test)]",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path_edge_test.rs",
+          "status": "A",
+          "oldPath": null,
+          "additions": 54,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,54 @@\n+//! 寄せる綴りとして拒否するもの。いずれも `InvalidPath` になる。\n+\n+use super::canonical_path::canonicalize_requested;\n+use super::io::DocumentIoError;\n+\n+#[cfg(unix)]\n+use super::test_support::{raw_document_path, TempDir};\n+\n+fn is_rejected(raw: &str) -> bool {\n+    matches!(\n+        canonicalize_requested(raw),\n+        Err(DocumentIoError::InvalidPath { .. })\n+    )\n+}\n+\n+#[test]\n+fn 相対パスは拒否される() {\n+    assert!(is_rejected(\"document.dcmp\"));\n+}\n+\n+#[cfg(unix)]\n+#[test]\n+fn 拡張子がdcmpでないファイルは拒否される() {\n+    let dir = TempDir::new(\"canonical-edge\");\n+    std::fs::write(dir.join(\"notes.txt\"), \"x\").expect(\"ファイルを用意できる\");\n+\n+    assert!(is_rejected(&raw_document_path(&dir, \"notes.txt\")));\n+}\n+\n+#[cfg(unix)]\n+#[test]\n+fn 実体の拡張子がdcmpでないsymlinkは拒否される() {\n+    let dir = TempDir::new(\"canonical-edge\");\n+    std::fs::write(dir.join(\"notes.txt\"), \"x\").expect(\"ファイルを用意できる\");\n+    std::os::unix::fs::symlink(dir.join(\"notes.txt\"), dir.join(\"link.dcmp\"))\n+        .expect(\"symlink を作れる\");\n+\n+    assert!(is_rejected(&raw_document_path(&dir, \"link.dcmp\")));\n+}\n+\n+// macOS は UTF-8 で表せない名前のディレクトリを作れないので Linux に限る。\n+#[cfg(target_os = \"linux\")]\n+#[test]\n+fn 寄せた綴りがutf8で表せなければ拒否される() {\n+    use std::ffi::OsStr;\n+    use std::os::unix::ffi::OsStrExt;\n+\n+    let dir = TempDir::new(\"canonical-edge\");\n+    let not_utf8 = dir.path().join(OsStr::from_bytes(b\"bad\\xffdir\"));\n+    std::fs::create_dir(&not_utf8).expect(\"ディレクトリを用意できる\");\n+    std::os::unix::fs::symlink(&not_utf8, dir.join(\"link\")).expect(\"symlink を作れる\");\n+\n+    assert!(is_rejected(&raw_document_path(&dir, \"link/new.dcmp\")));\n+}",
+          "patchLines": 55,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path_normal_test.rs",
+          "status": "A",
+          "oldPath": null,
+          "additions": 133,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,133 @@\n+//! 同じファイルを指す別の綴りを、1 つの綴りへ寄せる。\n+\n+use std::fs;\n+\n+use super::canonical_path::canonicalize_requested;\n+use super::test_support::{raw_document_path, TempDir};\n+\n+/// `dir` を正規化した綴りの配下に `relative` を置いた、期待する綴り。\n+///\n+/// macOS の一時ディレクトリは `/var` が `/private/var` への symlink なので、期待値も\n+/// 正規化したディレクトリから組み立てる。\n+#[cfg(unix)]\n+fn canonical_in(dir: &TempDir, relative: &str) -> String {\n+    dir.path()\n+        .canonicalize()\n+        .expect(\"一時ディレクトリを正規化できる\")\n+        .join(relative)\n+        .to_str()\n+        .expect(\"一時ディレクトリのパスは UTF-8\")\n+        .to_string()\n+}\n+\n+/// 寄せた綴りを文字列で返す。\n+///\n+/// `Path` どうしの比較は要素ごとに行い `.` や続いた区切りを読み飛ばすので、綴りは文字列で比べる。\n+fn canonicalized(raw: &str) -> String {\n+    canonicalize_requested(raw)\n+        .expect(\"寄せた綴りを返す\")\n+        .to_str()\n+        .expect(\"寄せた綴りは UTF-8\")\n+        .to_string()\n+}\n+\n+#[cfg(unix)]\n+#[test]\n+fn カレントディレクトリを指す要素は取り除かれる() {\n+    let dir = TempDir::new(\"canonical\");\n+    fs::write(dir.join(\"document.dcmp\"), \"{}\").expect(\"ファイルを用意できる\");\n+    let raw = format!(\"{}/./document.dcmp\", dir.path().display());\n+\n+    assert_eq!(canonicalized(&raw), canonical_in(&dir, \"document.dcmp\"));\n+}\n+\n+#[cfg(unix)]\n+#[test]\n+fn 続いた区切りは1つになる() {\n+    let dir = TempDir::new(\"canonical\");\n+    fs::write(dir.join(\"document.dcmp\"), \"{}\").expect(\"ファイルを用意できる\");\n+    let raw = format!(\"{}//document.dcmp\", dir.path().display());\n+\n+    assert_eq!(canonicalized(&raw), canonical_in(&dir, \"document.dcmp\"));\n+}\n+\n+#[cfg(unix)]\n+#[test]\n+fn symlink経由の綴りは実体の綴りになる() {\n+    let dir = TempDir::new(\"canonical\");\n+    fs::write(dir.join(\"real.dcmp\"), \"{}\").expect(\"ファイルを用意できる\");\n+    std::os::unix::fs::symlink(dir.join(\"real.dcmp\"), dir.join(\"link.dcmp\"))\n+        .expect(\"symlink を作れる\");\n+\n+    let canonical = canonicalized(&raw_document_path(&dir, \"link.dcmp\"));\n+\n+    assert_eq!(canonical, canonical_in(&dir, \"real.dcmp\"));\n+}\n+\n+#[cfg(unix)]\n+#[test]\n+fn symlinkのディレクトリにまだ無いファイルはディレクトリだけ実体の綴りになる() {\n+    let dir = TempDir::new(\"canonical\");\n+    fs::create_dir(dir.join(\"real\")).expect(\"ディレクトリを用意できる\");\n+    std::os::unix::fs::symlink(dir.join(\"real\"), dir.join(\"link\")).expect(\"symlink を作れる\");\n+\n+    let canonical = canonicalized(&raw_document_path(&dir, \"link/new.dcmp\"));\n+\n+    assert_eq!(canonical, canonical_in(&dir, \"real/new.dcmp\"));\n+}\n+\n+#[test]\n+fn 親ディレクトリが無ければ渡した綴りのまま返る() {\n+    let dir = TempDir::new(\"canonical\");\n+    let raw = raw_document_path(&dir, \"missing/document.dcmp\");\n+\n+    assert_eq!(canonicalized(&raw), raw);\n+}\n+\n+#[cfg(unix)]\n+#[test]\n+fn 壊れたsymlinkはリンクの綴りのまま返る() {\n+    let dir = TempDir::new(\"canonical\");\n+    std::os::unix::fs::symlink(dir.join(\"gone.dcmp\"), dir.join(\"broken.dcmp\"))\n+        .expect(\"symlink を作れる\");\n+\n+    let canonical = canonicalized(&raw_document_path(&dir, \"broken.dcmp\"));\n+\n+    assert_eq!(canonical, canonical_in(&dir, \"broken.dcmp\"));\n+}\n+\n+#[cfg(unix)]\n+#[test]\n+fn 寄せた綴りをもう一度寄せても変わらない() {\n+    let dir = TempDir::new(\"canonical\");\n+    fs::write(dir.join(\"document.dcmp\"), \"{}\").expect(\"ファイルを用意できる\");\n+    let once = canonicalized(&format!(\"{}/./document.dcmp\", dir.path().display()));\n+\n+    let twice = canonicalized(&once);\n+\n+    assert_eq!(twice, once);\n+}\n+\n+// macOS の既定のボリューム(APFS)は大文字小文字を区別しない前提。区別するボリュームでは\n+// 大小違いは別のファイルになり、このテストは落ちる。\n+#[cfg(target_os = \"macos\")]\n+#[test]\n+fn 大文字小文字だけが違う綴りはディスク上の綴りになる() {\n+    let dir = TempDir::new(\"canonical\");\n+    fs::write(dir.join(\"Document.dcmp\"), \"{}\").expect(\"ファイルを用意できる\");\n+\n+    let canonical = canonicalized(&raw_document_path(&dir, \"DOCUMENT.dcmp\"));\n+\n+    assert_eq!(canonical, canonical_in(&dir, \"Document.dcmp\"));\n+}\n+\n+#[cfg(windows)]\n+#[test]\n+fn 寄せた綴りはドライブの前に接頭辞を持たない() {\n+    let dir = TempDir::new(\"canonical\");\n+    fs::write(dir.join(\"document.dcmp\"), \"{}\").expect(\"ファイルを用意できる\");\n+\n+    let canonical = canonicalized(&raw_document_path(&dir, \"document.dcmp\"));\n+\n+    assert!(!canonical.starts_with(r\"\\\\?\\\"));\n+}",
+          "patchLines": 134,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "b18085e031e637091c0f68f922160fe34b0d4553",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T03:22:51Z",
+      "subject": "✨ [New Feature]: #1138 DocumentIpc に綴りを寄せる canonicalize を追加",
+      "body": "- DocumentCommand に canonicalize_document_path を足し、DocumentIpc に\n  canonicalize(path) を追加した\n- 戻り値は toCanonicalPath で読み、文字列でない値とファイル名の要素を持たない\n  値は ipcFailed にする。文字列かどうかの検査は toText に括り出し toContent と共用\n- fake に linkPath({ link, target }) と denyCanonicalize({ path, kind }) を足した。\n  別の綴りは load / save / watch / unwatch / changeExternally / contentOf /\n  isWatching のすべてで実体へ解決し、監視は実体ごとに 1 つ(張り直すと置き換わる)\n\n背景:\nTS へ入るパスを Rust が寄せた綴りへ揃えるための IPC の口が要る。\n\n採用理由:\n新しい lib とポートを足さず DocumentIpc のメソッドにした。Rust のコマンドは他の\nドキュメントのコマンドと同じ DocumentIoError を返すので、失敗の語彙と詰め替えを\n共有できる。DocumentIpc を作るのは DocumentIpc.create だけなので、メソッドを\n足しても呼び出し側の書き換えは要らない。\nfake の別の綴りを読み込みなどでも実体へ解決させるのは、本物の symlink と同じに\nしないと、正規化を外した実装でも別表記の load が notFound で失敗してタブが\n増えず、テストが不具合を再現できないため。監視を実体ごとに 1 つにするのは\nRust の watch/watchers.rs と同じ置き換えを再現し、Issue の実害(先のタブが\n外部変更を受け取れない)をテストで起こせるようにするため。\n\n影響とトレードオフ:\n- fake の既定は恒等(寄せても綴りは変わらない)なので、既存のテスト・stories は\n  書き換えずに動く\n- denyWrites / holdWrites は渡された綴りのまま見る(別表記を要するテストが無い)\n\n代替案:\n- 正規化専用の lib とポートを DocumentSessionPorts に足す: 7 個目のポートになり\n  App / editor-screen / stories / setup の書き換えが増え、失敗の語彙も重なる\n- fake の語を aliasPath にする: docs/04-tokens.md で alias はトークン間参照の\n  意味で使われているので、symlink の語彙に寄せて linkPath にした\n- aliasPath(alias, target) の位置引数: 同じ型の位置引数 2 つは取り違えても\n  型エラーにならない(rules/coding.md)のでオブジェクト引数にした\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 75,
+          "deletions": 16,
+          "patch": "@@ -1,11 +1,26 @@\n import type { TauriIpc } from \"@/libs/tauri-ipc\";\n import { ipcFailure } from \"@/libs/tauri-ipc/fake\";\n import { Option } from \"@/utils/Option\";\n-import { DocumentIpc } from \"../index\";\n+import { DocumentIpc, type DocumentIpcErrorKind } from \"../index\";\n+\n+/** 別の綴りと、それが指す実体の綴り。 */\n+export type PathLink = Readonly<{ link: string; target: string }>;\n+\n+/** `denyCanonicalize` で再現できる失敗の種別。 */\n+type CanonicalizeDenialKind = Extract<\n+  DocumentIpcErrorKind,\n+  \"invalidPath\" | \"ipcFailed\"\n+>;\n+\n+/** 綴りを寄せられないパスと、そのときに返す失敗の種別。 */\n+export type CanonicalizeDenial = Readonly<{\n+  path: string;\n+  kind: CanonicalizeDenialKind;\n+}>;\n \n /**\n  * Rust 側の代役。インメモリのファイル表に対して `docs/05-architecture.md`「Tauri IPC」の\n- * 4コマンドと `document-changed` を再現する。\n+ * 5コマンドと `document-changed` を再現する。\n  *\n  * 差し込む先は `TauriIpc` の位置なので、`ipc` を通した呼び出しでは `DocumentIpc` 本体（コ\n  * マンド名・引数・エラーの解釈）がそのまま動く。\n@@ -18,13 +33,26 @@ export type DocumentIpcFake = Readonly<{\n    * 監視中のパスなら `document-changed` が届く。\n    */\n   changeExternally(path: string, content: string): void;\n-  /** 現在のファイルの中身。 */\n+  /** 現在のファイルの中身。別の綴りを登録したパスは、その実体の中身を返す。 */\n   contentOf(path: string): Option<string>;\n   /**\n    * そのパスを監視しているか。\n    * 監視の開始 / 停止は Rust 側に残る状態なので、代役の側から見えるようにしておく。\n    */\n   isWatching(path: string): boolean;\n+  /**\n+   * `link` を `target` の別の綴りにする（symlink・`.` を含む綴り・大文字小文字違いの代わり）。\n+   *\n+   * 本物と同じく、読み込み・書き込み・監視・外部変更のどれも実体へ届き、綴りを寄せると\n+   * `target` が返る。解決するのは 1 段だけ（`target` がさらに別の綴りでも辿らない）。\n+   */\n+  linkPath(link: PathLink): void;\n+  /**\n+   * そのパスの綴りを寄せるコマンドを、`kind` の種別で失敗させる。\n+   *\n+   * 既定では寄せても綴りは変わらない（`linkPath` で登録した綴りだけが実体へ寄る）。\n+   */\n+  denyCanonicalize(denial: CanonicalizeDenial): void;\n   /**\n    * そのパスへの書き込みだけを拒むようにする（読み込みと監視はそのまま動く）。\n    *\n@@ -90,12 +118,19 @@ export const DocumentIpcFake = {\n     const contents = new Map(Object.entries(files));\n     const deniedWritePaths = new Set<string>();\n     const heldWrites = new Map<string, Promise<void>>();\n-    const watchedPaths = new Set<string>();\n+    const linkTargets = new Map<string, string>();\n+    const canonicalizeDenials = new Map<string, CanonicalizeDenialKind>();\n+    // 実体から、監視を張ったときの綴りへの表。通知はその綴りで届き、別の綴りで張り直すと\n+    // 置き換わる（Rust の `watch/watchers.rs` が実体ごとに監視を 1 つだけ持つのと同じ）。\n+    const watchedSpellings = new Map<string, string>();\n     const listeners = new Set<(payload: unknown) => void>();\n     let subscribeDenied = false;\n \n-    const notifyChange = (path: string, content: string): void => {\n-      if (!watchedPaths.has(path)) {\n+    const targetOf = (path: string): string => linkTargets.get(path) ?? path;\n+\n+    const notifyChange = (target: string, content: string): void => {\n+      const path = watchedSpellings.get(target);\n+      if (path === undefined) {\n         return;\n       }\n       for (const listener of listeners) {\n@@ -103,8 +138,22 @@ export const DocumentIpcFake = {\n       }\n     };\n \n+    const canonicalizeDocumentPath = (path: string): Promise<unknown> => {\n+      switch (canonicalizeDenials.get(path)) {\n+        case \"invalidPath\":\n+          return Promise.reject({\n+            kind: \"invalidPath\",\n+            message: `${path}: ドキュメントのパスとして扱えない`,\n+          });\n+        case \"ipcFailed\":\n+          return ipcFailure(`canonicalize_document_path: ${path} に届かない`);\n+        case undefined:\n+          return Promise.resolve(targetOf(path));\n+      }\n+    };\n+\n     const loadDocument = (path: string): Promise<unknown> => {\n-      const content = contents.get(path);\n+      const content = contents.get(targetOf(path));\n       return content === undefined ? notFound(path) : Promise.resolve(content);\n     };\n \n@@ -119,10 +168,10 @@ export const DocumentIpcFake = {\n       if (held !== undefined) {\n         // 解放されるまで書き込みを終わらせない（呼び出し側が「書き込み中」を観測できる）\n         return held.then(() => {\n-          contents.set(path, content);\n+          contents.set(targetOf(path), content);\n         });\n       }\n-      contents.set(path, content);\n+      contents.set(targetOf(path), content);\n       // 自アプリの書き込みでは通知しない。Rust 側が自書き込みを識別して\n       // 自己ループを防いでいるので、代役も同じ振る舞いにする。\n       return Promise.resolve(undefined);\n@@ -130,15 +179,15 @@ export const DocumentIpcFake = {\n \n     const watchDocument = (path: string): Promise<unknown> => {\n       // Rust 側は監視開始時に現在の内容を読むため、読めないパスは失敗する。\n-      if (!contents.has(path)) {\n+      if (!contents.has(targetOf(path))) {\n         return notFound(path);\n       }\n-      watchedPaths.add(path);\n+      watchedSpellings.set(targetOf(path), path);\n       return Promise.resolve(undefined);\n     };\n \n     const unwatchDocument = (path: string): Promise<unknown> => {\n-      watchedPaths.delete(path);\n+      watchedSpellings.delete(targetOf(path));\n       return Promise.resolve(undefined);\n     };\n \n@@ -149,6 +198,8 @@ export const DocumentIpcFake = {\n           return ipcFailure(`${command}: path が文字列でない`);\n         }\n         switch (command) {\n+          case \"canonicalize_document_path\":\n+            return canonicalizeDocumentPath(path);\n           case \"load_document\":\n             return loadDocument(path);\n           case \"save_document\":\n@@ -180,16 +231,24 @@ export const DocumentIpcFake = {\n       ipc: DocumentIpc.create(tauriIpc),\n \n       changeExternally(path, content) {\n-        contents.set(path, content);\n-        notifyChange(path, content);\n+        contents.set(targetOf(path), content);\n+        notifyChange(targetOf(path), content);\n       },\n \n       contentOf(path) {\n-        return Option.fromNullable(contents.get(path));\n+        return Option.fromNullable(contents.get(targetOf(path)));\n       },\n \n       isWatching(path) {\n-        return watchedPaths.has(path);\n+        return watchedSpellings.has(targetOf(path));\n+      },\n+\n+      linkPath({ link, target }) {\n+        linkTargets.set(link, target);\n+      },\n+\n+      denyCanonicalize({ path, kind }) {\n+        canonicalizeDenials.set(path, kind);\n       },\n \n       denyWrites(path) {",
+          "patchLines": 174,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 54,
+          "deletions": 9,
+          "patch": "@@ -85,6 +85,7 @@ export type DocumentChanged = Readonly<{\n \n /** `docs/05-architecture.md`「Tauri IPC」が挙げているドキュメントのコマンド名。 */\n export type DocumentCommand =\n+  | \"canonicalize_document_path\"\n   | \"load_document\"\n   | \"save_document\"\n   | \"watch_document\"\n@@ -94,10 +95,15 @@ export type DocumentCommand =\n const DocumentChangedEvent = \"document-changed\";\n \n /**\n- * ドキュメントの永続化 I/O。IPC を渡るのは常に生の JSON 文字列で、\n- * パース・検証・マイグレーションは呼び出し側（`DocumentJson`）の担当。\n+ * ドキュメントの永続化 I/O と、その I/O に渡すパスの綴りを寄せる口。IPC を渡るのは常に\n+ * 生の JSON 文字列で、パース・検証・マイグレーションは呼び出し側（`DocumentJson`）の担当。\n  */\n export type DocumentIpc = Readonly<{\n+  /**\n+   * 同じファイルを指す別の綴り（symlink 経由・`.` や続いた区切りを含む・大文字小文字を\n+   * 区別しないファイルシステムでの大小違い）を、1 つの綴りへ寄せる。\n+   */\n+  canonicalize(path: FilePath): Promise<Result<FilePath, DocumentIpcError>>;\n   load(path: FilePath): Promise<Result<string, DocumentIpcError>>;\n   save(\n     path: FilePath,\n@@ -188,27 +194,59 @@ function toCompletion(\n }\n \n /**\n- * `load_document` の戻り値を読み込んだ内容として解釈する。\n+ * 文字列を返すコマンドの戻り値を、文字列として読む。\n  *\n  * IPC を渡ってくる値に型は無いので、`as` で通さず形を確かめてから返す。\n- * 文字列以外が来るのは Rust 側と TS 側の版がずれたときで、`load` の結果としては扱えない。\n+ * 文字列以外が来るのは Rust 側と TS 側の版がずれたときで、コマンドの結果としては扱えない。\n  *\n- * @param value `load_document` が返した値\n- * @returns 読み込んだ内容。文字列でなければ `ipcFailed`\n+ * @param command 値を返したコマンド\n+ * @param value コマンドが返した値\n+ * @returns 返った文字列。文字列でなければ `ipcFailed`\n  */\n-function toContent(value: unknown): Result<string, DocumentIpcError> {\n+function toText(\n+  command: DocumentCommand,\n+  value: unknown,\n+): Result<string, DocumentIpcError> {\n   if (typeof value !== \"string\") {\n     return Result.err({\n       kind: \"ipcFailed\",\n-      message: `load_document が文字列以外を返した: ${String(value)}`,\n+      message: `${command} が文字列以外を返した: ${String(value)}`,\n     });\n   }\n   return Result.ok(value);\n }\n \n+/**\n+ * `load_document` の戻り値を読み込んだ内容として解釈する。\n+ *\n+ * @param value `load_document` が返した値\n+ * @returns 読み込んだ内容。文字列でなければ `ipcFailed`\n+ */\n+function toContent(value: unknown): Result<string, DocumentIpcError> {\n+  return toText(\"load_document\", value);\n+}\n+\n+/**\n+ * `canonicalize_document_path` の戻り値を寄せた綴りとして解釈する。\n+ *\n+ * @param value `canonicalize_document_path` が返した値\n+ * @returns 寄せた綴り。文字列でない・ファイル名の要素を持たないときは `ipcFailed`\n+ */\n+function toCanonicalPath(value: unknown): Result<FilePath, DocumentIpcError> {\n+  return Result.flatMap(toText(\"canonicalize_document_path\", value), (text) => {\n+    const path = FilePath.create(text);\n+    return Option.isSome(path)\n+      ? Result.ok(path.value)\n+      : Result.err({\n+          kind: \"ipcFailed\",\n+          message: `canonicalize_document_path がファイル名の要素を持たない綴りを返した: ${text}`,\n+        });\n+  });\n+}\n+\n export const DocumentIpc = {\n   /**\n-   * ドキュメントのファイルを読み書き・監視する口を作る。\n+   * ドキュメントのファイルの綴りを寄せ、読み書き・監視する口を作る。\n    *\n    * @param tauriIpc コマンドを呼び、外部変更を購読する IPC\n    * @returns 購読の失敗も、コマンドの失敗と同じ種別つきの失敗へ詰め替える口\n@@ -220,6 +258,13 @@ export const DocumentIpc = {\n     );\n \n     return {\n+      async canonicalize(path) {\n+        return Result.flatMap(\n+          await call(\"canonicalize_document_path\", { path }),\n+          toCanonicalPath,\n+        );\n+      },\n+\n       async load(path) {\n         return Result.flatMap(await call(\"load_document\", { path }), toContent);\n       },",
+          "patchLines": 107,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "867eb15d18cad5709dcad007d31e2f386e1df048",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T03:23:09Z",
+      "subject": "✨ [New Feature]: #1138 開く・新規作成・最近使ったファイルの復元で綴りを寄せる",
+      "body": "- loadDocument は canonicalize した綴りで読み、その綴りを保存先にする。\n  開く経路のすべて(ダイアログ・ドロップ・最近使ったファイル・起動時の復元)が通る\n- createWithDialog は選ばれた保存先を寄せてから雛形を書き出す。寄せられなければ\n  書き出さずに失敗として出す\n- loadRecentFiles は canonicalizeRecentPaths で各行を寄せ、RecentFiles.create の\n  distinct で同じファイルの別表記を 1 行にまとめる。寄せられなかった行は元の綴り\n- 同じ組み立てが 4 箇所になるので accessFailed に括り出した\n- FilePath.create の @param に出どころを追記\n\n背景:\nTS はパスを === で比べるので、別表記のまま OpenedDocument / RecentFiles に\n入るとタブと一覧の行が重複する。OpenedDocument を作るのはこのフックの 3 箇所\nだけなので、ここで寄せればタブと一覧の両方に届く。\n\n採用理由:\nlibs の 3 つの入口ではなく、その消費側であるこのフックで寄せる。AppStateJson.parse\nは同期の純粋関数で IPC を呼べず、FileDrop のリスナーも同期なので非同期を挟むと\n続けて落としたときに順序が入れ替わりうる。ダイアログと IPC を組む手順は\nオーケストレーションで libs には置かない。\n寄せられなかった一覧の行を落とさないのは、docs/06-ui.md が開けなくても一覧から\n外さないとしているため。その失敗はその行を開いたときに loadDocument の正規化が\n改めて返すので握りつぶさない。invalidPath の行を外すかは #1157 で決める。\n\n影響とトレードオフ:\n- 復元時に一覧の行数だけ IPC の問い合わせが増える\n- 復元では一覧を書き出さないので、メモリ上の一覧と app-state.json は綴りと\n  重複の分だけずれる。次に開いたときに rememberOpened が書き出して揃う\n- 承認済みの案 A(libs の 3 つの入口で問い合わせる)から、呼ぶ場所を消費側の\n  フックへ移した。Rust が寄せて TS がその綴りを使う骨格は変えていない\n\n代替案:\n- 一覧で寄せられなかった行を落とす: docs/06-ui.md と食い違い、ipcFailed の\n  ときは全行が消えて、次に開いた時点で app-state.json からも失われる\n- 寄せられなかったことを recentFilesFailure に出す: 「一覧を読み取れなかった」\n  という別の意味の欄になる\n- 正規化済みを表すブランド型 CanonicalFilePath を置く: 本番で OpenedDocument を\n  作るのはこのフックの中だけでどれも正規化を通り、FilePath を使う 24 ファイルへ\n  波及する。ブランド型は誤用が実際に現れてから入れる(rules/coding.md)\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n- https://github.com/DIO0550/design-composer/issues/1157\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -46,7 +46,8 @@ export const FilePath = {\n   /**\n    * 外から届いた文字列を、ファイルのパスとして受け入れる。\n    *\n-   * @param raw ダイアログ・ドロップ・保存されている状態・変更通知から届いたパス\n+   * @param raw ダイアログ・ドロップ・保存されている状態・変更通知・綴りを寄せるコマンドから\n+   *   届いたパス\n    * @returns 綴りを変えずにファイルのパスとしたもの。区切りしか無い・空のときは `none`\n    */\n   create(raw: string): Option<FilePath> {",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 73,
+          "deletions": 25,
+          "patch": "@@ -12,7 +12,11 @@ import type { AppStateIpc } from \"@/libs/app-state-ipc\";\n import { AppStateJson } from \"@/libs/app-state-json\";\n import type { AppWindow } from \"@/libs/app-window\";\n import type { DocumentDialog } from \"@/libs/document-dialog\";\n-import { type DocumentIpc, toDocumentAccessFailure } from \"@/libs/document-ipc\";\n+import {\n+  type DocumentIpc,\n+  type DocumentIpcError,\n+  toDocumentAccessFailure,\n+} from \"@/libs/document-ipc\";\n import { DocumentJson } from \"@/libs/document-json\";\n import type { FileDrop } from \"@/libs/file-drop\";\n import type { Unsubscribe } from \"@/libs/tauri-ipc\";\n@@ -202,28 +206,42 @@ function failedWith(failure: DocumentOpenFailure): OpenOutcome {\n }\n \n /**\n- * 1 つのファイルを読んで、開ける形にする。\n+ * ファイルの中身へ届かなかったことを、開けなかった理由として表す。\n  *\n- * テキストの解釈（マイグレーション判定・パース）は `DocumentJson.parse`、その結果に保存先\n- * を添えるのは `OpenedDocument.fromParsed` の担当で、ここは順序だけを持つ。\n+ * @param error IPC が返した失敗\n+ * @returns 届かなかった理由を持つ、開けなかった理由\n+ */\n+function accessFailed(error: DocumentIpcError): DocumentOpenFailure {\n+  return { kind: \"io\", error: toDocumentAccessFailure(error) };\n+}\n+\n+/**\n+ * 1 つのファイルを、綴りを寄せてから読んで、開ける形にする。\n  *\n- * @param ipc 読み込みに使う口\n+ * 綴りを寄せるのは、同じファイルを別の綴りで開いてもタブと最近使ったファイルが増えない\n+ * ようにするため（`docs/06-ui.md`）。テキストの解釈（マイグレーション判定・パース）は\n+ * `DocumentJson.parse`、その結果に保存先を添えるのは `OpenedDocument.fromParsed` の担当で、\n+ * ここは順序だけを持つ。\n+ *\n+ * @param ipc 綴りを寄せ、読み込むのに使う口\n  * @param path 開く先のパス\n- * @returns 読めて解釈できたドキュメント。読み込み / 解釈が失敗すればその理由\n+ * @returns 寄せた綴りを保存先に持つ、読めて解釈できたドキュメント。綴りを寄せられない・\n+ *   読み込み / 解釈が失敗すればその理由\n  */\n async function loadDocument(\n   ipc: DocumentIpc,\n   path: FilePath,\n ): Promise<Result<OpenedDocument, DocumentOpenFailure>> {\n-  const loaded = await ipc.load(path);\n+  const canonical = await ipc.canonicalize(path);\n+  if (!Result.isOk(canonical)) {\n+    return Result.err(accessFailed(canonical.error));\n+  }\n+  const loaded = await ipc.load(canonical.value);\n   if (!Result.isOk(loaded)) {\n-    return Result.err({\n-      kind: \"io\",\n-      error: toDocumentAccessFailure(loaded.error),\n-    });\n+    return Result.err(accessFailed(loaded.error));\n   }\n   const opened = OpenedDocument.fromParsed(\n-    path,\n+    canonical.value,\n     DocumentJson.parse(loaded.value),\n   );\n   return Result.isOk(opened)\n@@ -280,13 +298,14 @@ async function openWithDialog({\n }\n \n /**\n- * 雛形から新しいドキュメントを作り、選ばれた保存先に置く。\n+ * 雛形から新しいドキュメントを作り、選ばれた保存先の綴りを寄せた先に置く。\n  *\n  * 自動保存も「ファイルに載っている内容」を基準に差分を見るので、最初の 1 回はここで載せて\n  * おく。\n  *\n  * @param ports ダイアログと I/O の相手\n- * @returns 作れた結末。選ばずに閉じたら何も開かずに終わった結末\n+ * @returns 作れた結末。選ばずに閉じたら何も開かずに終わった結末。保存先の綴りを寄せられ\n+ *   なければ、書き出さずにその理由\n  */\n async function createWithDialog({\n   ipc,\n@@ -300,29 +319,55 @@ async function createWithDialog({\n     return NothingOpened;\n   }\n \n-  const created = OpenedDocument.createFromTemplate(chosen.value.value);\n+  const canonical = await ipc.canonicalize(chosen.value.value);\n+  if (!Result.isOk(canonical)) {\n+    return failedWith(accessFailed(canonical.error));\n+  }\n+  const created = OpenedDocument.createFromTemplate(canonical.value);\n   const saved = await ipc.save(\n     created.path,\n     DocumentJson.serialize(created.document),\n   );\n   if (!Result.isOk(saved)) {\n-    return failedWith({\n-      kind: \"io\",\n-      error: toDocumentAccessFailure(saved.error),\n-    });\n+    return failedWith(accessFailed(saved.error));\n   }\n   return { documents: [created], failure: Option.none };\n }\n \n /**\n- * 保存されている最近使ったファイルの一覧を読む。\n+ * 保存されている一覧のパスを、それぞれ綴りを寄せた形にする。\n+ *\n+ * 寄せられなかったパスは落とさずに元の綴りで残す。`docs/06-ui.md` は開けなくても一覧から\n+ * 外さないとしており、その失敗は開いたときに `loadDocument` が改めて返す。\n+ *\n+ * @param ipc 綴りを寄せるのに使う口\n+ * @param paths 保存されていた並び\n+ * @returns 同じ並びで、寄せられたものは寄せた綴りに置き換えたもの\n+ */\n+async function canonicalizeRecentPaths(\n+  ipc: DocumentIpc,\n+  paths: readonly FilePath[],\n+): Promise<readonly FilePath[]> {\n+  return Promise.all(\n+    paths.map(async (path) =>\n+      Result.unwrapOr(await ipc.canonicalize(path), path),\n+    ),\n+  );\n+}\n+\n+/**\n+ * 保存されている最近使ったファイルの一覧を読み、綴りを寄せる。\n+ *\n+ * 寄せた綴りでまとめ直すので、同じファイルの別の綴りは 1 行になる。\n  *\n  * @param appState 読み込み元\n+ * @param ipc 綴りを寄せるのに使う口\n  * @returns 保存されていた一覧。まだ一度も保存していなければ空の一覧。読み出せない /\n  *   解釈できないときは、診断用の原文を持つ失敗\n  */\n async function loadRecentFiles(\n   appState: AppStateIpc,\n+  ipc: DocumentIpc,\n ): Promise<Result<RecentFiles, string>> {\n   const loaded = await appState.load();\n   if (!Result.isOk(loaded)) {\n@@ -332,9 +377,11 @@ async function loadRecentFiles(\n     return Result.ok(RecentFiles.Empty);\n   }\n   const parsed = AppStateJson.parse(loaded.value.value);\n-  return Result.isOk(parsed)\n-    ? Result.ok(RecentFiles.create(parsed.value.recentPaths))\n-    : Result.err(parsed.error.message);\n+  if (!Result.isOk(parsed)) {\n+    return Result.err(parsed.error.message);\n+  }\n+  const paths = await canonicalizeRecentPaths(ipc, parsed.value.recentPaths);\n+  return Result.ok(RecentFiles.create(paths));\n }\n \n /**\n@@ -470,10 +517,11 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{\n      * 読み取れなかったときは空の一覧から始め、その理由を開始画面へ出す。次に開いた\n      * ファイルで保存されている中身は書き直されるので、読めない状態は持ち越さない。\n      *\n-     * 復元そのものでは一覧を書き出さない。開く対象は一覧の先頭なので並びが変わらない。\n+     * 復元そのものでは一覧を書き出さない。保存されている中身との違いは綴りを寄せてまとめた\n+     * 分だけで、次に開いたときに `rememberOpened` が書き出して揃う。\n      */\n     const restore = async (): Promise<void> => {\n-      const loaded = await loadRecentFiles(ports.appState);\n+      const loaded = await loadRecentFiles(ports.appState, ports.ipc);\n       const recents = Result.isOk(loaded) ? loaded.value : RecentFiles.Empty;\n       const recentFilesFailure = Result.isOk(loaded)\n         ? Option.none",
+          "patchLines": 175,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "eda6488e294ef4af03c5faccaafbaf695029ef3f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T03:23:27Z",
+      "subject": "🧪 [Tests]: #1138 DocumentIpc.canonicalize と fake の別の綴りをテストで固定",
+      "body": "- normal: 別の綴りは実体の綴りへ寄る / 別の綴りを持たないパスは変わらない /\n  別の綴りで監視すると実体の外部変更がその綴りで届く / 後から別の綴りで\n  監視し直すと前の綴りには届かない / 別の綴りで監視を止めると届かなくなる\n- edge: 寄せるのを拒まれると invalidPath / 文字列以外は ipcFailed /\n  ファイル名の要素を持たない値は ipcFailed\n\n背景:\nフックと通しのテストは fake の別の綴りの振る舞い(実体への解決と監視の\n置き換え)に頼って不具合を再現する。その前提が崩れると上のテストが黙って\n意味を失うので、fake の振る舞いもここで固定する。\n\n採用理由:\nRust の戻り値は IPC を渡ると型が無いので、文字列以外とファイル名の要素を\n持たない値の両方を ipcFailed として扱うことを確かめる。\n\n影響とトレードオフ:\n監視の置き換えは Rust の watch/watchers.rs の振る舞いを写したもので、Rust 側が\n変わったら fake とこのテストも合わせる必要がある。\n\n代替案:\nfake の振る舞いをテストせずフックのテストだけに任せる: fake が実体へ解決しなく\nなっても、フックのテストは正規化の有無に関わらず通るようになりうる。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 41,
+          "deletions": 0,
+          "patch": "@@ -69,6 +69,47 @@ test(\"読み込みが文字列以外を返すと ipcFailed が返る\", async ()\n   );\n });\n \n+test(\"綴りを寄せるのを拒まれると invalidPath が返る\", async () => {\n+  const fake = DocumentIpcFake.create();\n+  fake.denyCanonicalize({ path: Path, kind: \"invalidPath\" });\n+\n+  const canonical = await fake.ipc.canonicalize(Path);\n+\n+  expect(canonical).toStrictEqual(\n+    Result.err({\n+      kind: \"invalidPath\",\n+      message: `${Path}: ドキュメントのパスとして扱えない`,\n+    }),\n+  );\n+});\n+\n+test(\"綴りを寄せた結果が文字列以外だと ipcFailed が返る\", async () => {\n+  const ipc = setupIpc(() => Promise.resolve(42));\n+\n+  const canonical = await ipc.canonicalize(Path);\n+\n+  expect(canonical).toStrictEqual(\n+    Result.err({\n+      kind: \"ipcFailed\",\n+      message: \"canonicalize_document_path が文字列以外を返した: 42\",\n+    }),\n+  );\n+});\n+\n+test(\"綴りを寄せた結果がファイル名の要素を持たないと ipcFailed が返る\", async () => {\n+  const ipc = setupIpc(() => Promise.resolve(\"/\"));\n+\n+  const canonical = await ipc.canonicalize(Path);\n+\n+  expect(canonical).toStrictEqual(\n+    Result.err({\n+      kind: \"ipcFailed\",\n+      message:\n+        \"canonicalize_document_path がファイル名の要素を持たない綴りを返した: /\",\n+    }),\n+  );\n+});\n+\n test(\"購読の開始に失敗すると Err が返り、例外は投げない\", async () => {\n   const ipc = DocumentIpc.create({\n     invoke: () => Promise.resolve(undefined),",
+          "patchLines": 48,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 68,
+          "deletions": 0,
+          "patch": "@@ -6,6 +6,8 @@ import { DocumentIpcFake } from \"../fake\";\n import type { DocumentChanged } from \"../index\";\n \n const Path = filePath(\"/work/login.dcmp\");\n+/** `Path` を指す別の綴り。 */\n+const LinkPath = filePath(\"/link/login.dcmp\");\n \n test(\"ファイルを読み込むとその中身が返る\", async () => {\n   const fake = DocumentIpcFake.create({ [Path]: `{ \"formatVersion\": \"1.0\" }` });\n@@ -100,3 +102,69 @@ test(\"購読を解除すると外部変更が届かなくなる\", async () => {\n \n   expect(received).toStrictEqual([]);\n });\n+\n+test(\"別の綴りを寄せると、実体の綴りになる\", async () => {\n+  const fake = DocumentIpcFake.create({ [Path]: `{}` });\n+  fake.linkPath({ link: LinkPath, target: Path });\n+\n+  const canonical = await fake.ipc.canonicalize(LinkPath);\n+\n+  expect(canonical).toStrictEqual(Result.ok(Path));\n+});\n+\n+test(\"別の綴りを持たないパスは、寄せても綴りが変わらない\", async () => {\n+  const fake = DocumentIpcFake.create({ [Path]: `{}` });\n+  fake.linkPath({ link: LinkPath, target: Path });\n+\n+  const canonical = await fake.ipc.canonicalize(Path);\n+\n+  expect(canonical).toStrictEqual(Result.ok(Path));\n+});\n+\n+test(\"別の綴りで監視すると、実体の外部変更がその綴りで届く\", async () => {\n+  const fake = DocumentIpcFake.create({ [Path]: `{}` });\n+  fake.linkPath({ link: LinkPath, target: Path });\n+  const received: DocumentChanged[] = [];\n+  Result.unwrap(\n+    await fake.ipc.subscribeChanged((changed) => received.push(changed)),\n+  );\n+  Result.unwrap(await fake.ipc.watch(LinkPath));\n+\n+  fake.changeExternally(Path, `{ \"formatVersion\": \"1.0\" }`);\n+\n+  expect(received).toStrictEqual([\n+    { path: LinkPath, content: `{ \"formatVersion\": \"1.0\" }` },\n+  ]);\n+});\n+\n+test(\"後から別の綴りで監視し直すと、前の綴りには外部変更が届かない\", async () => {\n+  const fake = DocumentIpcFake.create({ [Path]: `{}` });\n+  fake.linkPath({ link: LinkPath, target: Path });\n+  const received: DocumentChanged[] = [];\n+  Result.unwrap(\n+    await fake.ipc.subscribeChanged((changed) => received.push(changed)),\n+  );\n+  Result.unwrap(await fake.ipc.watch(Path));\n+  Result.unwrap(await fake.ipc.watch(LinkPath));\n+\n+  fake.changeExternally(Path, `{ \"formatVersion\": \"1.0\" }`);\n+\n+  expect(received).toStrictEqual([\n+    { path: LinkPath, content: `{ \"formatVersion\": \"1.0\" }` },\n+  ]);\n+});\n+\n+test(\"別の綴りで監視を止めると、実体の外部変更が届かなくなる\", async () => {\n+  const fake = DocumentIpcFake.create({ [Path]: `{}` });\n+  fake.linkPath({ link: LinkPath, target: Path });\n+  const received: DocumentChanged[] = [];\n+  Result.unwrap(\n+    await fake.ipc.subscribeChanged((changed) => received.push(changed)),\n+  );\n+  Result.unwrap(await fake.ipc.watch(Path));\n+\n+  Result.unwrap(await fake.ipc.unwatch(LinkPath));\n+  fake.changeExternally(Path, `{ \"formatVersion\": \"1.0\" }`);\n+\n+  expect(received).toStrictEqual([]);\n+});",
+          "patchLines": 79,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T03:23:28Z",
+      "subject": "🧪 [Tests]: #1138 別の綴りで開いてもタブと最近使ったファイルが増えないことを固定",
+      "body": "- setup.ts: linkedPaths / deniedCanonicalPaths を renderHook より前に fake へ流す\n  (復元は描画直後に走るため)。定数 LinkPath / NewLinkPath を追加\n- entry: 別の綴りで落としてもタブは増えない / そのタブを見る / 実体の綴りで開く\n- normal: ダイアログで別の綴りを選ぶと実体で開く / 新規作成の保存先が別の綴り\n  なら実体のドキュメントとして開く\n- edge: 拒まれたパスは使えないパスとして失敗 / 届かなければ届かなかった失敗 /\n  新規作成の保存先を拒まれると書き出さない / その失敗が残る\n- record: 別の綴りで開き直しても一覧は増えない / 実体の綴りで書き出される\n- restore: 別の綴りは 1 行にまとまる / 先頭が別の綴りなら実体で開く / 拒まれた行と\n  届かなかった行は元の綴りで残る / 先頭が拒まれると使えないパスとして失敗する /\n  まとめた一覧は次に開いたときに書き直される\n\n背景:\nタブと一覧の重複がこのフックで寄せるかどうかだけで決まるので、入口ごとに\n寄せていることを固定する。\n\n採用理由:\n各テストは、正規化を恒等にすると落ちることを確かめた(15 件)。一覧の寄せられ\nなかった行を落とす実装にすると「元の綴りのまま残る」が落ちる。新規作成の保存先は\nfake が別の綴りでも実体へ書くので中身では見分けられず、開いたドキュメントの\nパスで確かめる。\n\n影響とトレードオフ:\n「先頭が拒まれると使えないパスとして失敗する」は、一覧の行を残しても失敗を\n握りつぶしていないことを示すために置いた。\n\n代替案:\n「別の綴りで落としても開けなかった理由は残らない」: 新しい fake は別の綴りでも\nload できるので、正規化を外しても落ちず何も守らない(rules/testing.md)。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 1,
+          "patch": "@@ -14,7 +14,11 @@ import {\n   type DialogChoices,\n   DocumentDialogFake,\n } from \"@/libs/document-dialog/fake\";\n-import { DocumentIpcFake } from \"@/libs/document-ipc/fake\";\n+import {\n+  type CanonicalizeDenial,\n+  DocumentIpcFake,\n+  type PathLink,\n+} from \"@/libs/document-ipc/fake\";\n import { FileDropFake } from \"@/libs/file-drop/fake\";\n import type { IndexMove } from \"@/types/IndexMove\";\n import { Option } from \"@/utils/Option\";\n@@ -36,6 +40,10 @@ export const Path = filePath(\"/work/login.dcmp\");\n export const OtherPath = filePath(\"/work/settings.dcmp\");\n /** 新規作成の保存先。まだ置かれていないパス。 */\n export const NewPath = filePath(\"/work/untitled.dcmp\");\n+/** `Path` を指す別の綴り。`linkedPaths` で `Path` へ繋いで使う。 */\n+export const LinkPath = filePath(\"/link/login.dcmp\");\n+/** `NewPath` を指す別の綴り。`linkedPaths` で `NewPath` へ繋いで使う。 */\n+export const NewLinkPath = filePath(\"/link/untitled.dcmp\");\n \n /**\n  * 開いているドキュメントのパスを並び順に読む。\n@@ -109,6 +117,10 @@ export type SessionPortOptions = Readonly<{\n   denyMenu?: boolean;\n   /** ドロップの購読を張れないようにするか。 */\n   denyDrop?: boolean;\n+  /** 実体を指す別の綴り（symlink などの代わり）。 */\n+  linkedPaths?: readonly PathLink[];\n+  /** 綴りを寄せられないパスと、そのときの失敗の種別。 */\n+  deniedCanonicalPaths?: readonly CanonicalizeDenial[];\n }>;\n \n /**\n@@ -138,6 +150,12 @@ export function renderDocumentSession(\n   if (options.denyDrop === true) {\n     dropFake.denySubscribe();\n   }\n+  for (const link of options.linkedPaths ?? []) {\n+    ipcFake.linkPath(link);\n+  }\n+  for (const denial of options.deniedCanonicalPaths ?? []) {\n+    ipcFake.denyCanonicalize(denial);\n+  }\n \n   const ports = {\n     ipc: ipcFake.ipc,",
+          "patchLines": 48,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 76,
+          "deletions": 0,
+          "patch": "@@ -4,6 +4,10 @@ import {\n   danglingTokenContent,\n   danglingTokenDocument,\n } from \"@/domains/__tests__/sample-document\";\n+import {\n+  DocumentAccessFailure,\n+  DocumentAccessFailureReasons,\n+} from \"@/domains/session/document-access-failure\";\n import { DocumentSession } from \"@/features/editor/features/document-start/domains/document-session\";\n import { DialogChoice } from \"@/libs/document-dialog/fake\";\n import { Option } from \"@/utils/Option\";\n@@ -184,3 +188,75 @@ test(\"ファイル名の要素を持たないパスだけを落としても、\n \n   expect(DocumentSession.failure(observer.session())).toStrictEqual(failed);\n });\n+\n+test(\"綴りを寄せるのを拒まれたファイルを選ぶと、使えないパスとして失敗する\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\") },\n+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },\n+    { deniedCanonicalPaths: [{ path: Path, kind: \"invalidPath\" }] },\n+  );\n+\n+  await observer.openDocument();\n+\n+  expect(DocumentSession.failure(observer.session())).toStrictEqual(\n+    Option.some({\n+      kind: \"io\",\n+      error: DocumentAccessFailure.create(\n+        DocumentAccessFailureReasons.UnusablePath,\n+        `${Path}: ドキュメントのパスとして扱えない`,\n+      ),\n+    }),\n+  );\n+});\n+\n+test(\"綴りを寄せる指示が届かなかったファイルを選ぶと、届かなかったこととして失敗する\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\") },\n+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },\n+    { deniedCanonicalPaths: [{ path: Path, kind: \"ipcFailed\" }] },\n+  );\n+\n+  await observer.openDocument();\n+\n+  expect(DocumentSession.failure(observer.session())).toStrictEqual(\n+    Option.some({\n+      kind: \"io\",\n+      error: DocumentAccessFailure.create(\n+        DocumentAccessFailureReasons.Undelivered,\n+        `canonicalize_document_path: ${Path} に届かない`,\n+      ),\n+    }),\n+  );\n+});\n+\n+test(\"新規作成の保存先の綴りを寄せるのを拒まれると、書き出さない\", async () => {\n+  const observer = renderDocumentSession(\n+    {},\n+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },\n+    { deniedCanonicalPaths: [{ path: NewPath, kind: \"invalidPath\" }] },\n+  );\n+\n+  await observer.createDocument();\n+\n+  expect(observer.files.contentOf(NewPath)).toStrictEqual(Option.none);\n+});\n+\n+test(\"新規作成の保存先の綴りを寄せるのを拒まれると、その失敗が残る\", async () => {\n+  const observer = renderDocumentSession(\n+    {},\n+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },\n+    { deniedCanonicalPaths: [{ path: NewPath, kind: \"invalidPath\" }] },\n+  );\n+\n+  await observer.createDocument();\n+\n+  expect(DocumentSession.failure(observer.session())).toStrictEqual(\n+    Option.some({\n+      kind: \"io\",\n+      error: DocumentAccessFailure.create(\n+        DocumentAccessFailureReasons.UnusablePath,\n+        `${NewPath}: ドキュメントのパスとして扱えない`,\n+      ),\n+    }),\n+  );\n+});",
+          "patchLines": 87,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 44,
+          "deletions": 0,
+          "patch": "@@ -6,6 +6,7 @@ import { AppMenuCommands } from \"@/libs/app-menu\";\n import { DialogChoice } from \"@/libs/document-dialog/fake\";\n import { Option } from \"@/utils/Option\";\n import {\n+  LinkPath,\n   NewPath,\n   OtherPath,\n   openedPaths,\n@@ -216,3 +217,46 @@ test(\"落としたパスにファイル名の要素を持たないものが混\n     Option.none,\n   );\n });\n+\n+test(\"開いているファイルを別の綴りで落としても、タブは増えない\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\") },\n+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n+    { linkedPaths: [{ link: LinkPath, target: Path }] },\n+  );\n+  await observer.dropFiles([Path]);\n+\n+  await observer.dropFiles([LinkPath]);\n+\n+  expect(openedPaths(observer.session())).toStrictEqual([Path]);\n+});\n+\n+test(\"開いているファイルを別の綴りで落とすと、そのタブを見ている状態になる\", async () => {\n+  const observer = renderDocumentSession(\n+    {\n+      [Path]: artboardContent(\"home\"),\n+      [OtherPath]: artboardContent(\"settings\"),\n+    },\n+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n+    { linkedPaths: [{ link: LinkPath, target: Path }] },\n+  );\n+  await observer.dropFiles([Path, OtherPath]);\n+\n+  await observer.dropFiles([LinkPath]);\n+\n+  expect(DocumentSession.activePath(observer.session())).toStrictEqual(\n+    Option.some(Path),\n+  );\n+});\n+\n+test(\"別の綴りで落としたファイルは、実体の綴りで開かれる\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\") },\n+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n+    { linkedPaths: [{ link: LinkPath, target: Path }] },\n+  );\n+\n+  await observer.dropFiles([LinkPath]);\n+\n+  expect(openedPaths(observer.session())).toStrictEqual([Path]);\n+});",
+          "patchLines": 55,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 0,
+          "patch": "@@ -6,6 +6,8 @@ import { DialogChoice } from \"@/libs/document-dialog/fake\";\n import { DocumentJson } from \"@/libs/document-json\";\n import { Option } from \"@/utils/Option\";\n import {\n+  LinkPath,\n+  NewLinkPath,\n   NewPath,\n   OtherPath,\n   openedPaths,\n@@ -149,3 +151,27 @@ test(\"新規作成したドキュメントはそのまま開かれる\", async ()\n \n   expect(openedPaths(observer.session())).toStrictEqual([NewPath]);\n });\n+\n+test(\"ダイアログで別の綴りを選ぶと、実体の綴りで開かれる\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\") },\n+    { open: DialogChoice.chosen(LinkPath), save: DialogChoice.Canceled },\n+    { linkedPaths: [{ link: LinkPath, target: Path }] },\n+  );\n+\n+  await observer.openDocument();\n+\n+  expect(openedPaths(observer.session())).toStrictEqual([Path]);\n+});\n+\n+test(\"新規作成の保存先に別の綴りを選ぶと、実体の綴りのドキュメントとして開かれる\", async () => {\n+  const observer = renderDocumentSession(\n+    {},\n+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewLinkPath) },\n+    { linkedPaths: [{ link: NewLinkPath, target: NewPath }] },\n+  );\n+\n+  await observer.createDocument();\n+\n+  expect(openedPaths(observer.session())).toStrictEqual([NewPath]);\n+});",
+          "patchLines": 37,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 0,
+          "patch": "@@ -5,6 +5,7 @@ import { DocumentSession } from \"@/features/editor/features/document-start/domai\n import { DialogChoice } from \"@/libs/document-dialog/fake\";\n import { Option } from \"@/utils/Option\";\n import {\n+  LinkPath,\n   NewPath,\n   Path,\n   renderDocumentSession,\n@@ -120,3 +121,30 @@ test(\"一覧を書き出せなくても、開いたファイルは一覧の先\n \n   expect(observer.recentPaths()).toStrictEqual([Path]);\n });\n+\n+test(\"開いたファイルを別の綴りで開き直しても、一覧は増えない\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\") },\n+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n+    { linkedPaths: [{ link: LinkPath, target: Path }] },\n+  );\n+  await observer.dropFiles([Path]);\n+\n+  await observer.dropFiles([LinkPath]);\n+\n+  expect(observer.recentPaths()).toStrictEqual([Path]);\n+});\n+\n+test(\"別の綴りで開いたファイルは、実体の綴りで一覧に書き出される\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\") },\n+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n+    { linkedPaths: [{ link: LinkPath, target: Path }] },\n+  );\n+\n+  await observer.dropFiles([LinkPath]);\n+\n+  expect(observer.appState.storedContent()).toStrictEqual(\n+    Option.some(storedRecentPaths([Path])),\n+  );\n+});",
+          "patchLines": 39,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 113,
+          "deletions": 2,
+          "patch": "@@ -1,11 +1,19 @@\n import { expect, test } from \"vitest\";\n import { filePath } from \"@/domains/__tests__/file-paths\";\n import { artboardContent } from \"@/domains/__tests__/sample-document\";\n-import { DocumentAccessFailure } from \"@/domains/session/document-access-failure\";\n+import {\n+  DocumentAccessFailure,\n+  DocumentAccessFailureReasons,\n+} from \"@/domains/session/document-access-failure\";\n import { DocumentSession } from \"@/features/editor/features/document-start/domains/document-session\";\n import { DialogChoice } from \"@/libs/document-dialog/fake\";\n import { Option } from \"@/utils/Option\";\n-import { Path, renderDocumentSession, storedRecentPaths } from \"./setup\";\n+import {\n+  LinkPath,\n+  Path,\n+  renderDocumentSession,\n+  storedRecentPaths,\n+} from \"./setup\";\n \n /** 開かない選択だけを並べたダイアログ。復元は利用者の操作を挟まない。 */\n const NoDialogChoices = {\n@@ -214,3 +222,106 @@ test(\"保存された一覧のうちファイル名の要素を持たないパ\n \n   expect(observer.recentPaths()).toStrictEqual([Path]);\n });\n+\n+test(\"保存された一覧のうち、同じファイルの別の綴りは 1 行にまとまる\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\"), [SecondPath]: artboardContent(\"shop\") },\n+    NoDialogChoices,\n+    {\n+      storedAppState: storedRecentPaths([Path, LinkPath, SecondPath]),\n+      linkedPaths: [{ link: LinkPath, target: Path }],\n+    },\n+  );\n+\n+  await observer.settle();\n+\n+  expect(observer.recentPaths()).toStrictEqual([Path, SecondPath]);\n+});\n+\n+test(\"保存された一覧の先頭が別の綴りなら、実体の綴りで開かれる\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\") },\n+    NoDialogChoices,\n+    {\n+      storedAppState: storedRecentPaths([LinkPath]),\n+      linkedPaths: [{ link: LinkPath, target: Path }],\n+    },\n+  );\n+\n+  await observer.settle();\n+\n+  expect(DocumentSession.activePath(observer.session())).toStrictEqual(\n+    Option.some(Path),\n+  );\n+});\n+\n+test(\"綴りを寄せるのを拒まれた行は、元の綴りのまま一覧に残る\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\"), [SecondPath]: artboardContent(\"shop\") },\n+    NoDialogChoices,\n+    {\n+      storedAppState: storedRecentPaths([Path, SecondPath]),\n+      deniedCanonicalPaths: [{ path: SecondPath, kind: \"invalidPath\" }],\n+    },\n+  );\n+\n+  await observer.settle();\n+\n+  expect(observer.recentPaths()).toStrictEqual([Path, SecondPath]);\n+});\n+\n+test(\"綴りを寄せる指示が届かなかった行も、元の綴りのまま一覧に残る\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\"), [SecondPath]: artboardContent(\"shop\") },\n+    NoDialogChoices,\n+    {\n+      storedAppState: storedRecentPaths([Path, SecondPath]),\n+      deniedCanonicalPaths: [{ path: SecondPath, kind: \"ipcFailed\" }],\n+    },\n+  );\n+\n+  await observer.settle();\n+\n+  expect(observer.recentPaths()).toStrictEqual([Path, SecondPath]);\n+});\n+\n+test(\"保存された一覧の先頭の綴りを寄せるのを拒まれると、使えないパスとして失敗する\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\") },\n+    NoDialogChoices,\n+    {\n+      storedAppState: storedRecentPaths([Path]),\n+      deniedCanonicalPaths: [{ path: Path, kind: \"invalidPath\" }],\n+    },\n+  );\n+\n+  await observer.settle();\n+\n+  expect(DocumentSession.failure(observer.session())).toStrictEqual(\n+    Option.some({\n+      kind: \"io\",\n+      error: DocumentAccessFailure.create(\n+        DocumentAccessFailureReasons.UnusablePath,\n+        `${Path}: ドキュメントのパスとして扱えない`,\n+      ),\n+    }),\n+  );\n+});\n+\n+test(\"別の綴りをまとめた一覧は、次に開いたときに書き直される\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\"), [SecondPath]: artboardContent(\"shop\") },\n+    { open: DialogChoice.chosen(SecondPath), save: DialogChoice.Canceled },\n+    {\n+      storedAppState: storedRecentPaths([Path, LinkPath]),\n+      linkedPaths: [{ link: LinkPath, target: Path }],\n+    },\n+  );\n+  await observer.settle();\n+\n+  await observer.openDocument();\n+\n+  expect(observer.appState.storedContent()).toStrictEqual(\n+    Option.some(storedRecentPaths([SecondPath, Path])),\n+  );\n+});",
+          "patchLines": 129,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "189815048d9f1aecc538437ed54241b4450dc0f1",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T03:23:39Z",
+      "subject": "🧪 [Tests]: #1138 別の綴りで落としても画面のタブと外部変更の反映が保たれることを固定",
+      "body": "- entry: 開いているファイルを別の綴りで落としても、タブ列のタブは増えない\n- sync: 開いているファイルを別の綴りで落としても、実体の外部変更はそのタブに\n  反映される\n\n背景:\nIssue の実害は「同じファイルを 2 つの綴りで開くと、後の watch が先のタブの\n監視を置き換え、先のタブが外部変更を受け取れない」こと。フック単体では監視の\n置き換えまで通しで見られないので、画面を組み立てて確かめる。\n\n採用理由:\nfake は Rust と同じく実体ごとに監視を 1 つだけ持つので、正規化を外すと 2 枚目の\nwatch が置き換わり、通知は別の綴りで届いて元のタブは古いまま残る。この形で\nテストが落ちることを確かめた。別の綴りは描画後に observer.files.linkPath で\n足せるので、setup.tsx は変えていない。\n\n影響とトレードオフ:\n定数 LinkPath を entry と sync の両方に置いている(setup.tsx へ寄せるかは\nレビューで決める)。\n\n代替案:\nフックのテストだけで済ませる: タブ列の表示と document-changed の反映を\n画面の単位で見られない。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 0,
+          "patch": "@@ -1,6 +1,7 @@\n import { screen, within } from \"@testing-library/react\";\n import userEvent from \"@testing-library/user-event\";\n import { expect, test } from \"vitest\";\n+import { filePath } from \"@/domains/__tests__/file-paths\";\n import { artboardContent } from \"@/domains/__tests__/sample-document\";\n import { SampleDocument } from \"@/features/editor/__tests__/sample-document\";\n import { AppStateJson } from \"@/libs/app-state-json\";\n@@ -19,6 +20,9 @@ import {\n   tabBar,\n } from \"./setup\";\n \n+/** `Path` を指す別の綴り。 */\n+const LinkPath = filePath(\"/link/login.dcmp\");\n+\n test(\"起動直後はドキュメントを開くよう案内される\", () => {\n   renderEditorScreen(\n     {},\n@@ -432,3 +436,18 @@ test(\"最後のタブを閉じると、開始画面へ戻る\", async () => {\n     screen.getByText(\"ドキュメントを開くか、新しく作成してください。\"),\n   ).toBeDefined();\n });\n+\n+test(\"開いているファイルを別の綴りで落としても、タブは増えない\", async () => {\n+  const observer = renderEditorScreen(\n+    { [Path]: DocumentJson.serialize(SampleDocument) },\n+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },\n+  );\n+  observer.files.linkPath({ link: LinkPath, target: Path });\n+  await startOpen(observer);\n+\n+  await observer.dropFiles([LinkPath]);\n+\n+  expect(\n+    within(tabBar()).getAllByRole(\"button\", { name: /を閉じる$/ }),\n+  ).toHaveLength(1);\n+});",
+          "patchLines": 37,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 25,
+          "deletions": 0,
+          "patch": "@@ -2,6 +2,7 @@ import { screen, waitFor, within } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n import { dragRowNamed } from \"@/components/__tests__/row-drag\";\n import { rowNames } from \"@/components/__tests__/row-names\";\n+import { filePath } from \"@/domains/__tests__/file-paths\";\n import { artboardContent } from \"@/domains/__tests__/sample-document\";\n import { SampleDocument } from \"@/features/editor/__tests__/sample-document\";\n import { DialogChoice } from \"@/libs/document-dialog/fake\";\n@@ -20,6 +21,9 @@ import {\n   tree,\n } from \"./setup\";\n \n+/** `Path` を指す別の綴り。 */\n+const LinkPath = filePath(\"/link/login.dcmp\");\n+\n test(\"編集した内容が自動保存され、開き直すとその状態が読み戻る\", async () => {\n   const opened = DocumentJson.serialize(SampleDocument);\n   const observer = renderEditorScreen(\n@@ -156,3 +160,24 @@ test(\"背面になったタブで編集した内容も、戻らずにファイ\n     { timeout: 3000 },\n   );\n });\n+\n+/*\n+ * 別の綴りで開いた側が監視を張り直すと、前の綴りへは通知が届かなくなる（Rust は実体ごとに\n+ * 監視を 1 つだけ持つ）。綴りを寄せずにタブが 2 つになると、最初のタブが取り残される。\n+ */\n+test(\"開いているファイルを別の綴りで落としても、外部変更はそのタブに反映される\", async () => {\n+  const observer = renderEditorScreen(\n+    { [Path]: artboardContent(\"home\") },\n+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },\n+  );\n+  observer.files.linkPath({ link: LinkPath, target: Path });\n+  await startOpen(observer);\n+  await observer.dropFiles([LinkPath]);\n+\n+  await changeExternally(observer.files, Path, artboardContent(\"profile\"));\n+  await selectTab(Path);\n+\n+  expect(\n+    within(artboardList()).getByRole(\"button\", { name: \"profile\" }),\n+  ).toBeDefined();\n+});",
+          "patchLines": 43,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "44361ba7434c773cfc1110e680de0615d9b8619f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T03:23:50Z",
+      "subject": "📝 [Documentation]: #1138 綴りを寄せるコマンドと、別の綴りでも同じファイルとして扱う仕様を追記",
+      "body": "- 05-architecture: IPC の表に canonicalize_document_path を追加。受け付ける\n  パスの列挙に加え、寄せた綴りが条件を満たさない・UTF-8 で表せないときも\n  invalidPath で拒むことを追記\n- 06-ui: 最近使ったファイルは symlink から開くと実体の名前で並ぶ / 別の綴りで\n  開き直しても同じファイルとして先頭へ移す / 既に開いているファイルは別の綴り\n  でも増えない、を追記\n\n背景:\n実装で振る舞いが変わった 3 点(新しいコマンド、実体が .dcmp でない symlink の\n拒否、別の綴りの同一視)が仕様に無いままだと、次に読む人が実装を不具合と読む。\n\n採用理由:\nsymlink から開くと実体の名前が出ることはオーナーが受け入れた振る舞いなので、\n仕様に残して根拠を辿れるようにする。\n\n影響とトレードオフ:\n06-ui の「開けなくても一覧から外さない」は変えない。寄せられなかった行も元の\n綴りで残し、invalidPath の行を外すかは #1157 に任せる。\n\n代替案:\nタブの節(:33)だけに書く: 一覧の重複がまとまるのは最近使ったファイルの節の\n仕様にあたるので、両方に書いた。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n- https://github.com/DIO0550/design-composer/issues/1157\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "docs/05-architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "patch": "@@ -32,6 +32,7 @@ Rust に .dcmp の構造を一切教えず、IPC を渡るのは**常に生の J\n \n | 種別 | 名前 | 内容 |\n |---|---|---|\n+| command | `canonicalize_document_path(path) → string` | 同じファイルを指す別の綴り（symlink 経由・`.` や続いた区切りを含む・大文字小文字を区別しないファイルシステムでの大小違い）を 1 つの綴りへ寄せる。TS は寄せた綴りで他のドキュメントのコマンドを呼ぶ |\n | command | `load_document(path) → string` | ファイル読み込み |\n | command | `save_document(path, content)` | アトミック書き込み（tmp + rename）。自書き込みの識別を行う |\n | command | `watch_document(path)` / `unwatch_document(path)` | file watch の開始 / 停止 |\n@@ -45,7 +46,8 @@ Rust に .dcmp の構造を一切教えず、IPC を渡るのは**常に生の J\n - ファイルを開くダイアログ等は Tauri 標準プラグインを使用する\n - ドキュメントを開く / 新しく作る指示は、OS のメニュー（⌘O / ⌘N）とウィンドウへのドロップ、および開く前の画面から届く\n - 見ているタブを閉じる指示（⌘W）も OS のメニューから届く。開いているものが無ければ TS が `close_current_window` でウィンドウを閉じる（タブの有無は TS だけが持つ）。ウィンドウを閉じる項目（Shift+⌘W）は TS へ流さず Rust 側で閉じる\n-- `load_document` / `save_document` / `watch_document` / `unwatch_document` が受け付けるパスは、拡張子が `.dcmp`（大文字小文字は問わない）の絶対パスで、`..` の要素を含まず、ファイル名で終わり、ファイル名に `:` を含まないものだけ。それ以外は `invalidPath` で拒否し、ファイルには触れない\n+- `canonicalize_document_path` / `load_document` / `save_document` / `watch_document` / `unwatch_document` が受け付けるパスは、拡張子が `.dcmp`（大文字小文字は問わない）の絶対パスで、`..` の要素を含まず、ファイル名で終わり、ファイル名に `:` を含まないものだけ。それ以外は `invalidPath` で拒否し、ファイルには触れない\n+- `canonicalize_document_path` は、寄せた綴りが上の条件を満たさないとき（実体が `.dcmp` でない symlink など）と、寄せた綴りを UTF-8 で表せないときも `invalidPath` で拒否する\n \n ## 保存モデル: 自動保存\n ",
+          "patchLines": 18,
+          "truncated": false
+        },
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -19,8 +19,8 @@ Figma 型の3ペイン。\n \n ドキュメントを 1 つも開いていない間は、3 ペインの代わりに開始画面を出す。持つのはアプリ名・`開く` / `新規作成`・最近使ったファイルの一覧・ファイルを落として開ける旨の案内・開けなかった理由・最近使ったファイルを読み取れないときのその旨・メニューやドロップからの操作を受け取れないときのその旨。\n \n-- **最近使ったファイルは、ファイル名と収めているフォルダの名前で並べる。** 同名のファイルを別フォルダで開いたときに区別できるようにするため。1 件も無ければ枠ごと出さない\n-- 一覧は**アプリ自身の状態**として残す（置き場は 05-architecture）。**開いた順に新しいものから**並べ、同じファイルを開き直したら重複させず先頭へ移す。持つのは**10 件まで**で、超えたら古いものから落とす\n+- **最近使ったファイルは、ファイル名と収めているフォルダの名前で並べる。** 同名のファイルを別フォルダで開いたときに区別できるようにするため。symlink から開いたものは実体の名前で並ぶ。1 件も無ければ枠ごと出さない\n+- 一覧は**アプリ自身の状態**として残す（置き場は 05-architecture）。**開いた順に新しいものから**並べ、同じファイルを開き直したら重複させず先頭へ移す（symlink 経由・大文字小文字を区別しないファイルシステムでの大小違いなど、別の綴りで開き直しても同じファイルとして扱う）。持つのは**10 件まで**で、超えたら古いものから落とす\n - **起動したら一覧の先頭のファイルを開く。** 開けなかったときは開始画面に理由を出し、そのファイルを一覧から外さない（一時的に読めないだけのことがあるため）。ただしファイル名の要素を持たないパス（`/` だけなど）は、読み込むときに一覧へ入れず、その次のものを先頭として扱う（一時的ではなく、二度と開けないため）。自動で開くかどうかの設定は持たない\n \n ### 開いているドキュメントの行き来\n@@ -30,7 +30,7 @@ Figma 型の3ペイン。\n - 新しく開いたものは並びの**末尾**に付き、それを見ている状態になる（並べ替えるまでは開いた順に並ぶ）\n - **タブを掴んで別のタブの上で離すと、その位置へ移る。** 掴めるのはタブ 1 枚まるごと（閉じるボタンを含む）。掴んだタブの上で離したときは移動せず、押した扱いになる\n - **並べ替えても見ている先は変わらない**（見る先を移すのは押す操作だけ）。並べ替えた順は覚えない（起動時に開くのは最近使ったファイルの先頭 1 件だけなので、戻す先が無い）\n-- **既に開いているファイルを開き直しても増えない。** そのドキュメントへ移るだけにする（同じパスを 2 つ開くと、自動保存と監視がどちらの内容を書くか決まらない）\n+- **既に開いているファイルを開き直しても増えない**（別の綴りで開き直しても同じ）。そのドキュメントへ移るだけにする（同じパスを 2 つ開くと、自動保存と監視がどちらの内容を書くか決まらない）\n - タブを閉じると並びから外れる。**見ているものを閉じたときは後ろへ、後ろが無ければ前へ移る**\n - 最後の 1 つを閉じると開始画面へ戻る\n - **見えていないドキュメントも、自動保存と外部変更の監視は続く**（05-architecture「保存モデル: 自動保存」）。ページ全体のキーボードショートカットが効くのは**見ているドキュメントだけ**（下のタブの割り当ては、ドキュメントではなくタブ列に効く）",
+          "patchLines": 20,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "8c2136d43c084d32c78e292c3c79311ef34cd870",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T03:40:04Z",
+      "subject": "🚀 [Performance]: #1138 綴りを寄せるコマンドをメインスレッドの外で動かし、realpath をロックの外へ出す",
+      "body": "- canonicalize_document_path を #[tauri::command(async)] にした\n- KnownContentRegistry の record / is_known / forget で、キーを先に作ってから\n  ロックを取る(record_write と同じ書き方)\n- without_verbatim_disk とテストの冒頭に、CI で cargo test が走らず\n  Windows / macOS の分岐が実機未確認であることを書いた\n\n背景:\n起動時の復元は最近使ったファイルの全行(最大 10 行)を寄せる。Tauri v2 の\n同期コマンドはメインスレッドで動くので、応答しないネットワークドライブが\n一覧にあると realpath で UI が固まりうる(solution-reviewer の指摘)。\nまた record などは引数より先にロックを取るので、realpath がロックの区間に\n入っていた(performance-reviewer の指摘)。\n\n採用理由:\nコマンドの中身は変えず属性だけで別スレッドへ出せる。キーの計算を let で\n先に出すのは、ロックの区間を HashMap の操作だけにするため。\n\n影響とトレードオフ:\n既存の 4 コマンドは同期のまま。起動時に行数ぶん並列に呼ぶのはこのコマンド\nだけなので、全体の方針にはしない。\n\n代替案:\n- 復元では先頭の 1 件だけを寄せ、残りは表示後に寄せる: 手順が 2 段になり、\n  async で塞がないことで足りる\n- CI に cargo test を入れる: 差分の外(webkit2gtk の導入を伴う)なので扱わない\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 1,
+          "patch": "@@ -41,6 +41,9 @@ pub fn canonical_form(path: &Path) -> PathBuf {\n ///\n /// 揃えた綴りは TS へ返り、最近使ったファイルとして `app-state.json` に残るので、\n /// 接頭辞の無い形にしておく。\n+///\n+/// CI は cargo test を走らせない(`.github/workflows/frontend.yml`)ので、Windows / macOS\n+/// だけを通る分岐は実機で確かめていない。\n fn without_verbatim_disk(path: PathBuf) -> PathBuf {\n     let mut components = path.components();\n     let Some(Component::Prefix(prefix)) = components.next() else {\n@@ -68,7 +71,9 @@ pub fn canonicalize_requested(raw_path: &str) -> Result<DocumentFilePath, Docume\n     DocumentFilePath::parse(spelled)\n }\n \n-#[tauri::command]\n+// 起動時の復元は最近使ったファイルの全行を寄せる。同期コマンドはメインスレッドで動き、\n+// 応答しないネットワークドライブの realpath で UI が固まりうるので、async で別スレッドへ出す。\n+#[tauri::command(async)]\n pub fn canonicalize_document_path(path: String) -> Result<String, DocumentIoError> {\n     canonicalize_requested(&path).map(|canonical| canonical.to_string_lossy().into_owned())\n }",
+          "patchLines": 21,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path_normal_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -1,4 +1,7 @@\n //! 同じファイルを指す別の綴りを、1 つの綴りへ寄せる。\n+//!\n+//! CI は cargo test を走らせない(`.github/workflows/frontend.yml`)ので、Windows / macOS\n+//! だけのテストは実機で確かめていない。\n \n use std::fs;\n ",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/known_content.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 4,
+          "patch": "@@ -28,8 +28,8 @@ impl KnownContentRegistry {\n \n     /// `path` の内容が `content` であることを記録する。\n     pub fn record(&self, path: &Path, content: &str) {\n-        self.known()\n-            .insert(canonical_form(path), hash_content(content));\n+        let key = canonical_form(path);\n+        self.known().insert(key, hash_content(content));\n     }\n \n     /// `path` へ `content` を書き込む `write` を、記録と不可分に実行する。\n@@ -67,12 +67,14 @@ impl KnownContentRegistry {\n     /// 内容を書いた場合も真を返すが、内容が同一である以上リロードを見送っても\n     /// 表示は変わらない。\n     pub fn is_known(&self, path: &Path, content: &str) -> bool {\n-        self.known().get(&canonical_form(path)) == Some(&hash_content(content))\n+        let key = canonical_form(path);\n+        self.known().get(&key) == Some(&hash_content(content))\n     }\n \n     /// `path` の記録を破棄する(watch の停止時など)。\n     pub fn forget(&self, path: &Path) {\n-        self.known().remove(&canonical_form(path));\n+        let key = canonical_form(path);\n+        self.known().remove(&key);\n     }\n \n     /// ロックを取得する。",
+          "patchLines": 28,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f17d089bc60526e849fb6127359065cabe807249",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T03:40:23Z",
+      "subject": "♻️ [Refactoring]: #1138 寄せた綴りの解釈を Interop.toResult に寄せ、doc を参照の形にする",
+      "body": "- toCanonicalPath の Option → Result の手書きの分岐を Interop.toResult にした\n- DocumentIpc.canonicalize の doc は寄せる範囲の列挙を写さず、\n  docs/05-architecture.md「Tauri IPC」を参照する形にした\n- fake の PathLink の doc に、symlink に限らず別の綴り全般を表すことを足した\n- loadRecentFiles の @returns を、綴りを寄せてまとめた一覧だと分かる形に直した\n\n背景:\nduplication-reviewer が、既存の Interop.toResult を使わずに同じ変換を書いて\nいること、仕様の列挙を doc に一字一句写していることを指摘した。naming-reviewer は\nlinkPath が symlink 以外も指すこと、comment-reviewer は @returns の直し漏れを\n指摘した。\n\n採用理由:\nOption から Result への橋渡しを 1 通りにする。寄せる範囲は OS によって違う\n(大小違いは macOS / Windows だけ)ので、列挙を docs の 1 箇所にだけ置き、\n片方だけ直せる状態を作らない(rules/coding.md「規約の適用範囲」)。\n\n影響とトレードオフ:\n振る舞いは変えていない。\n\n代替案:\n識別子を spelling に寄せる: 名前を変えるより doc の 1 文で足り、却下済みの\nalias へも戻らない。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -362,8 +362,8 @@ async function canonicalizeRecentPaths(\n  *\n  * @param appState 読み込み元\n  * @param ipc 綴りを寄せるのに使う口\n- * @returns 保存されていた一覧。まだ一度も保存していなければ空の一覧。読み出せない /\n- *   解釈できないときは、診断用の原文を持つ失敗\n+ * @returns 保存されていた一覧の綴りを寄せてまとめたもの。まだ一度も保存していなければ\n+ *   空の一覧。読み出せない / 解釈できないときは、診断用の原文を持つ失敗\n  */\n async function loadRecentFiles(\n   appState: AppStateIpc,",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -3,7 +3,7 @@ import { ipcFailure } from \"@/libs/tauri-ipc/fake\";\n import { Option } from \"@/utils/Option\";\n import { DocumentIpc, type DocumentIpcErrorKind } from \"../index\";\n \n-/** 別の綴りと、それが指す実体の綴り。 */\n+/** 別の綴りと、それが指す実体の綴り。symlink に限らず、同じファイルを指す別の綴りを表す。 */\n export type PathLink = Readonly<{ link: string; target: string }>;\n \n /** `denyCanonicalize` で再現できる失敗の種別。 */",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 9,
+          "patch": "@@ -5,6 +5,7 @@ import {\n } from \"@/domains/session/document-access-failure\";\n import { FilePath } from \"@/domains/unit/file-path\";\n import { TauriIpc, type Unsubscribe } from \"@/libs/tauri-ipc\";\n+import { Interop } from \"@/utils/Interop\";\n import { Option } from \"@/utils/Option\";\n import { Result } from \"@/utils/Result\";\n \n@@ -100,8 +101,8 @@ const DocumentChangedEvent = \"document-changed\";\n  */\n export type DocumentIpc = Readonly<{\n   /**\n-   * 同じファイルを指す別の綴り（symlink 経由・`.` や続いた区切りを含む・大文字小文字を\n-   * 区別しないファイルシステムでの大小違い）を、1 つの綴りへ寄せる。\n+   * 同じファイルを指す別の綴りを 1 つの綴りへ寄せる（寄せる範囲は\n+   * `docs/05-architecture.md`「Tauri IPC」）。\n    */\n   canonicalize(path: FilePath): Promise<Result<FilePath, DocumentIpcError>>;\n   load(path: FilePath): Promise<Result<string, DocumentIpcError>>;\n@@ -234,13 +235,10 @@ function toContent(value: unknown): Result<string, DocumentIpcError> {\n  */\n function toCanonicalPath(value: unknown): Result<FilePath, DocumentIpcError> {\n   return Result.flatMap(toText(\"canonicalize_document_path\", value), (text) => {\n-    const path = FilePath.create(text);\n-    return Option.isSome(path)\n-      ? Result.ok(path.value)\n-      : Result.err({\n-          kind: \"ipcFailed\",\n-          message: `canonicalize_document_path がファイル名の要素を持たない綴りを返した: ${text}`,\n-        });\n+    return Interop.toResult<FilePath, DocumentIpcError>(FilePath.create(text), {\n+      kind: \"ipcFailed\",\n+      message: `canonicalize_document_path がファイル名の要素を持たない綴りを返した: ${text}`,\n+    });\n   });\n }\n ",
+          "patchLines": 37,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "fb2ab71699562e4a71be0def8f1e320a7dee3ada",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T03:40:23Z",
+      "subject": "🧪 [Tests]: #1138 LinkPath を editor-screen の setup へ寄せ、canonicalizeDenials に改名",
+      "body": "- editor-screen の entry / sync に 2 回定義していた LinkPath を setup.tsx の\n  Path の隣へ移して export した\n- use-document-session の setup の deniedCanonicalPaths を canonicalizeDenials\n  に改名し、edge / restore の呼び出しを追随した\n\n背景:\nduplication-reviewer が LinkPath の一字一句同じ定義が 2 ファイルにあると指摘した。\nnaming-reviewer は deniedCanonicalPaths が「拒まれた、寄せた後のパス」と読めるのに\n中身は寄せる前のパスと失敗の種別の組で、fake の受け皿・型・メソッドの語形とも\n違うと指摘した。\n\n採用理由:\nLinkPath の doc は「Path を指す別の綴り」なので、Path と同じ場所に置けば片方だけ\n変える余地が無くなる(use-document-session の setup も同じ形)。名前は fake の\ncanonicalizeDenials / CanonicalizeDenial / denyCanonicalize に揃える。\n\n影響とトレードオフ:\nテストの振る舞いは変えていない。\n\n代替案:\nrenderEditorScreen に linkedPaths の引数を持たせる: 呼び出しが 2 箇所だけなので\n定数を寄せれば足りる。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 4,
+          "patch": "@@ -1,7 +1,6 @@\n import { screen, within } from \"@testing-library/react\";\n import userEvent from \"@testing-library/user-event\";\n import { expect, test } from \"vitest\";\n-import { filePath } from \"@/domains/__tests__/file-paths\";\n import { artboardContent } from \"@/domains/__tests__/sample-document\";\n import { SampleDocument } from \"@/features/editor/__tests__/sample-document\";\n import { AppStateJson } from \"@/libs/app-state-json\";\n@@ -11,6 +10,7 @@ import { Option } from \"@/utils/Option\";\n import {\n   closeTab,\n   dragTab,\n+  LinkPath,\n   OtherPath,\n   Path,\n   renderEditorScreen,\n@@ -20,9 +20,6 @@ import {\n   tabBar,\n } from \"./setup\";\n \n-/** `Path` を指す別の綴り。 */\n-const LinkPath = filePath(\"/link/login.dcmp\");\n-\n test(\"起動直後はドキュメントを開くよう案内される\", () => {\n   renderEditorScreen(\n     {},",
+          "patchLines": 26,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 4,
+          "patch": "@@ -2,7 +2,6 @@ import { screen, waitFor, within } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n import { dragRowNamed } from \"@/components/__tests__/row-drag\";\n import { rowNames } from \"@/components/__tests__/row-names\";\n-import { filePath } from \"@/domains/__tests__/file-paths\";\n import { artboardContent } from \"@/domains/__tests__/sample-document\";\n import { SampleDocument } from \"@/features/editor/__tests__/sample-document\";\n import { DialogChoice } from \"@/libs/document-dialog/fake\";\n@@ -12,6 +11,7 @@ import {\n   artboardList,\n   changeExternally,\n   closeTab,\n+  LinkPath,\n   OtherPath,\n   Path,\n   renderEditorScreen,\n@@ -21,9 +21,6 @@ import {\n   tree,\n } from \"./setup\";\n \n-/** `Path` を指す別の綴り。 */\n-const LinkPath = filePath(\"/link/login.dcmp\");\n-\n test(\"編集した内容が自動保存され、開き直すとその状態が読み戻る\", async () => {\n   const opened = DocumentJson.serialize(SampleDocument);\n   const observer = renderEditorScreen(",
+          "patchLines": 26,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -28,6 +28,8 @@ import { EditorScreen } from \"../index\";\n \n /** 既に置いてあるファイル。 */\n export const Path = filePath(\"/work/login.dcmp\");\n+/** `Path` を指す別の綴り。`linkPath` で `Path` へ繋いで使う。 */\n+export const LinkPath = filePath(\"/link/login.dcmp\");\n /** 新規作成やファイルの切り替えで使うもう 1 つのパス。 */\n export const OtherPath = filePath(\"/work/settings.dcmp\");\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -120,7 +120,7 @@ export type SessionPortOptions = Readonly<{\n   /** 実体を指す別の綴り（symlink などの代わり）。 */\n   linkedPaths?: readonly PathLink[];\n   /** 綴りを寄せられないパスと、そのときの失敗の種別。 */\n-  deniedCanonicalPaths?: readonly CanonicalizeDenial[];\n+  canonicalizeDenials?: readonly CanonicalizeDenial[];\n }>;\n \n /**\n@@ -153,7 +153,7 @@ export function renderDocumentSession(\n   for (const link of options.linkedPaths ?? []) {\n     ipcFake.linkPath(link);\n   }\n-  for (const denial of options.deniedCanonicalPaths ?? []) {\n+  for (const denial of options.canonicalizeDenials ?? []) {\n     ipcFake.denyCanonicalize(denial);\n   }\n ",
+          "patchLines": 18,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -193,7 +193,7 @@ test(\"綴りを寄せるのを拒まれたファイルを選ぶと、使えな\n   const observer = renderDocumentSession(\n     { [Path]: artboardContent(\"home\") },\n     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },\n-    { deniedCanonicalPaths: [{ path: Path, kind: \"invalidPath\" }] },\n+    { canonicalizeDenials: [{ path: Path, kind: \"invalidPath\" }] },\n   );\n \n   await observer.openDocument();\n@@ -213,7 +213,7 @@ test(\"綴りを寄せる指示が届かなかったファイルを選ぶと、\n   const observer = renderDocumentSession(\n     { [Path]: artboardContent(\"home\") },\n     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },\n-    { deniedCanonicalPaths: [{ path: Path, kind: \"ipcFailed\" }] },\n+    { canonicalizeDenials: [{ path: Path, kind: \"ipcFailed\" }] },\n   );\n \n   await observer.openDocument();\n@@ -233,7 +233,7 @@ test(\"新規作成の保存先の綴りを寄せるのを拒まれると、書\n   const observer = renderDocumentSession(\n     {},\n     { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },\n-    { deniedCanonicalPaths: [{ path: NewPath, kind: \"invalidPath\" }] },\n+    { canonicalizeDenials: [{ path: NewPath, kind: \"invalidPath\" }] },\n   );\n \n   await observer.createDocument();\n@@ -245,7 +245,7 @@ test(\"新規作成の保存先の綴りを寄せるのを拒まれると、そ\n   const observer = renderDocumentSession(\n     {},\n     { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },\n-    { deniedCanonicalPaths: [{ path: NewPath, kind: \"invalidPath\" }] },\n+    { canonicalizeDenials: [{ path: NewPath, kind: \"invalidPath\" }] },\n   );\n \n   await observer.createDocument();",
+          "patchLines": 36,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -261,7 +261,7 @@ test(\"綴りを寄せるのを拒まれた行は、元の綴りのまま一覧\n     NoDialogChoices,\n     {\n       storedAppState: storedRecentPaths([Path, SecondPath]),\n-      deniedCanonicalPaths: [{ path: SecondPath, kind: \"invalidPath\" }],\n+      canonicalizeDenials: [{ path: SecondPath, kind: \"invalidPath\" }],\n     },\n   );\n \n@@ -276,7 +276,7 @@ test(\"綴りを寄せる指示が届かなかった行も、元の綴りのま\n     NoDialogChoices,\n     {\n       storedAppState: storedRecentPaths([Path, SecondPath]),\n-      deniedCanonicalPaths: [{ path: SecondPath, kind: \"ipcFailed\" }],\n+      canonicalizeDenials: [{ path: SecondPath, kind: \"ipcFailed\" }],\n     },\n   );\n \n@@ -291,7 +291,7 @@ test(\"保存された一覧の先頭の綴りを寄せるのを拒まれると\n     NoDialogChoices,\n     {\n       storedAppState: storedRecentPaths([Path]),\n-      deniedCanonicalPaths: [{ path: Path, kind: \"invalidPath\" }],\n+      canonicalizeDenials: [{ path: Path, kind: \"invalidPath\" }],\n     },\n   );\n ",
+          "patchLines": 27,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "2b579c94959e65f280be7cdd9ede872935f5f33c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T03:40:35Z",
+      "subject": "📝 [Documentation]: #1138 大小違いを寄せるのは macOS / Windows だけで、symlink は実体へ保存することを明記",
+      "body": "- 05 の IPC 表と 06-ui の最近使ったファイルの節で、大小違いを\n  「macOS / Windows での大小違い」に限った\n- 05 に「Linux では大小違いを寄せない」と「symlink 経由で開いたものは実体へ\n  保存する」を足した\n\n背景:\nharness-reviewer が、std::fs::canonicalize は Linux では glibc の realpath で、\n要素を渡された綴りのままつなぐので大小違いを直さない、と指摘した(casefold の\next4 や vfat 上のファイル)。security-reviewer は、寄せた結果として symlink から\n開いたものの保存先がリンクから実体に変わる(以前は rename でリンクを\nふつうのファイルに置き換えていた)のに仕様に無いと指摘した。\n\n採用理由:\n仕様は実装が実際にできることだけを言い切る。Linux で大小違いを寄せるには\nディレクトリを読んで綴りを照合する別の実装が要り、この Issue の範囲を超える。\n\n影響とトレードオフ:\nLinux の大小を区別しないファイルシステムでは、大小違いの綴りでタブと一覧が\n重複しうる(配布対象に Linux が入るなら別 Issue で扱う)。\n\n代替案:\nLinux でも寄せる: ディレクトリの走査と照合を自前で書くことになり、\ncanonicalize 1 つに頼る今の規則から外れる。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "docs/05-architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "patch": "@@ -32,7 +32,7 @@ Rust に .dcmp の構造を一切教えず、IPC を渡るのは**常に生の J\n \n | 種別 | 名前 | 内容 |\n |---|---|---|\n-| command | `canonicalize_document_path(path) → string` | 同じファイルを指す別の綴り（symlink 経由・`.` や続いた区切りを含む・大文字小文字を区別しないファイルシステムでの大小違い）を 1 つの綴りへ寄せる。TS は寄せた綴りで他のドキュメントのコマンドを呼ぶ |\n+| command | `canonicalize_document_path(path) → string` | 同じファイルを指す別の綴り（symlink 経由・`.` や続いた区切りを含む・macOS / Windows での大小違い）を 1 つの綴りへ寄せる。TS は寄せた綴りで他のドキュメントのコマンドを呼ぶ |\n | command | `load_document(path) → string` | ファイル読み込み |\n | command | `save_document(path, content)` | アトミック書き込み（tmp + rename）。自書き込みの識別を行う |\n | command | `watch_document(path)` / `unwatch_document(path)` | file watch の開始 / 停止 |\n@@ -48,6 +48,8 @@ Rust に .dcmp の構造を一切教えず、IPC を渡るのは**常に生の J\n - 見ているタブを閉じる指示（⌘W）も OS のメニューから届く。開いているものが無ければ TS が `close_current_window` でウィンドウを閉じる（タブの有無は TS だけが持つ）。ウィンドウを閉じる項目（Shift+⌘W）は TS へ流さず Rust 側で閉じる\n - `canonicalize_document_path` / `load_document` / `save_document` / `watch_document` / `unwatch_document` が受け付けるパスは、拡張子が `.dcmp`（大文字小文字は問わない）の絶対パスで、`..` の要素を含まず、ファイル名で終わり、ファイル名に `:` を含まないものだけ。それ以外は `invalidPath` で拒否し、ファイルには触れない\n - `canonicalize_document_path` は、寄せた綴りが上の条件を満たさないとき（実体が `.dcmp` でない symlink など）と、寄せた綴りを UTF-8 で表せないときも `invalidPath` で拒否する\n+- Linux では大小違いを寄せない（大小違いの綴りは別のファイルとして扱う）\n+- symlink 経由で開いたものは実体へ保存する（綴りを寄せた結果、保存先も実体の綴りになる）\n \n ## 保存モデル: 自動保存\n ",
+          "patchLines": 18,
+          "truncated": false
+        },
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -20,7 +20,7 @@ Figma 型の3ペイン。\n ドキュメントを 1 つも開いていない間は、3 ペインの代わりに開始画面を出す。持つのはアプリ名・`開く` / `新規作成`・最近使ったファイルの一覧・ファイルを落として開ける旨の案内・開けなかった理由・最近使ったファイルを読み取れないときのその旨・メニューやドロップからの操作を受け取れないときのその旨。\n \n - **最近使ったファイルは、ファイル名と収めているフォルダの名前で並べる。** 同名のファイルを別フォルダで開いたときに区別できるようにするため。symlink から開いたものは実体の名前で並ぶ。1 件も無ければ枠ごと出さない\n-- 一覧は**アプリ自身の状態**として残す（置き場は 05-architecture）。**開いた順に新しいものから**並べ、同じファイルを開き直したら重複させず先頭へ移す（symlink 経由・大文字小文字を区別しないファイルシステムでの大小違いなど、別の綴りで開き直しても同じファイルとして扱う）。持つのは**10 件まで**で、超えたら古いものから落とす\n+- 一覧は**アプリ自身の状態**として残す（置き場は 05-architecture）。**開いた順に新しいものから**並べ、同じファイルを開き直したら重複させず先頭へ移す（symlink 経由・macOS / Windows での大小違いなど、別の綴りで開き直しても同じファイルとして扱う）。持つのは**10 件まで**で、超えたら古いものから落とす\n - **起動したら一覧の先頭のファイルを開く。** 開けなかったときは開始画面に理由を出し、そのファイルを一覧から外さない（一時的に読めないだけのことがあるため）。ただしファイル名の要素を持たないパス（`/` だけなど）は、読み込むときに一覧へ入れず、その次のものを先頭として扱う（一時的ではなく、二度と開けないため）。自動で開くかどうかの設定は持たない\n \n ### 開いているドキュメントの行き来",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "929c47ff5190aa5bdced92c90c023b22b076ae51",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T04:07:03Z",
+      "subject": "🧪 [Tests]: #1138 一覧の先頭行の寄せと、fake の読み書きの実体への解決をテストで固定",
+      "body": "- restore: 保存された一覧の先頭が別の綴りなら、一覧にも実体の綴りで並ぶ\n- document-ipc normal: 別の綴りで読むと実体の中身が返る / 別の綴りで書くと\n  実体の中身が変わる / 別の綴りで外部から書き換えると実体を監視している\n  綴りで届く\n\n背景:\ntest-reviewer のミューテーション実測で、canonicalizeRecentPaths が先頭行だけ\n寄せない実装でも全件が通った(先頭は loadDocument が別に寄せるので、activePath\nを見るテストでは守れない)。fake の linkPath の doc は読み書き・外部変更も実体へ\n届くと約束しているのに、テストで守られていたのは監視だけだった。\n\n採用理由:\n先頭行が別の綴りのまま一覧に残ると、次に開いたときに同じファイルが 2 行並ぶ。\nこれはゴールそのものの退行なので、一覧の側を直接見るテストを置く。fake は\ndoc の主張を絞るより、主張どおりであることをテストで裏付けるほうを選んだ\n(将来、寄せずに load する経路を確かめるテストで fake が黙って本物と違う\n振る舞いをしないように)。\n\n影響とトレードオフ:\n追加した 4 件はどれも、守る箇所を 1 つずつ壊すとその 1 件だけが落ちることを\n作業ツリーの外のコピーで確かめた。holdWrites で止めた書き込みの分岐は、\n別の綴りで通すテストを置いていない。\n\n代替案:\nfake から読み書きの解決を外して doc を監視だけに絞る: 本物の symlink と\n違う振る舞いになり、別表記の load が notFound で失敗して、正規化を外した\n実装でもタブが増えないテストに戻ってしまう。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1138\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_013e6bT4TStj5R3Xcgnu5CbL",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 0,
+          "patch": "@@ -255,6 +255,21 @@ test(\"保存された一覧の先頭が別の綴りなら、実体の綴りで\n   );\n });\n \n+test(\"保存された一覧の先頭が別の綴りなら、一覧にも実体の綴りで並ぶ\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\") },\n+    NoDialogChoices,\n+    {\n+      storedAppState: storedRecentPaths([LinkPath]),\n+      linkedPaths: [{ link: LinkPath, target: Path }],\n+    },\n+  );\n+\n+  await observer.settle();\n+\n+  expect(observer.recentPaths()).toStrictEqual([Path]);\n+});\n+\n test(\"綴りを寄せるのを拒まれた行は、元の綴りのまま一覧に残る\", async () => {\n   const observer = renderDocumentSession(\n     { [Path]: artboardContent(\"home\"), [SecondPath]: artboardContent(\"shop\") },",
+          "patchLines": 22,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 36,
+          "deletions": 0,
+          "patch": "@@ -121,6 +121,42 @@ test(\"別の綴りを持たないパスは、寄せても綴りが変わらな\n   expect(canonical).toStrictEqual(Result.ok(Path));\n });\n \n+test(\"別の綴りで読むと、実体の中身が返る\", async () => {\n+  const fake = DocumentIpcFake.create({ [Path]: `{ \"formatVersion\": \"1.0\" }` });\n+  fake.linkPath({ link: LinkPath, target: Path });\n+\n+  const loaded = await fake.ipc.load(LinkPath);\n+\n+  expect(Result.unwrap(loaded)).toBe(`{ \"formatVersion\": \"1.0\" }`);\n+});\n+\n+test(\"別の綴りで書くと、実体の中身が変わる\", async () => {\n+  const fake = DocumentIpcFake.create({ [Path]: `{}` });\n+  fake.linkPath({ link: LinkPath, target: Path });\n+\n+  Result.unwrap(await fake.ipc.save(LinkPath, `{ \"formatVersion\": \"1.1\" }`));\n+\n+  expect(Result.unwrap(await fake.ipc.load(Path))).toBe(\n+    `{ \"formatVersion\": \"1.1\" }`,\n+  );\n+});\n+\n+test(\"別の綴りで外部から書き換えると、実体を監視している綴りで届く\", async () => {\n+  const fake = DocumentIpcFake.create({ [Path]: `{}` });\n+  fake.linkPath({ link: LinkPath, target: Path });\n+  const received: DocumentChanged[] = [];\n+  Result.unwrap(\n+    await fake.ipc.subscribeChanged((changed) => received.push(changed)),\n+  );\n+  Result.unwrap(await fake.ipc.watch(Path));\n+\n+  fake.changeExternally(LinkPath, `{ \"formatVersion\": \"1.0\" }`);\n+\n+  expect(received).toStrictEqual([\n+    { path: Path, content: `{ \"formatVersion\": \"1.0\" }` },\n+  ]);\n+});\n+\n test(\"別の綴りで監視すると、実体の外部変更がその綴りで届く\", async () => {\n   const fake = DocumentIpcFake.create({ [Path]: `{}` });\n   fake.linkPath({ link: LinkPath, target: Path });",
+          "patchLines": 43,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "c2dd6ae7b3e508f3597cca12aeceeef8f13a1474",
+      "merge": true,
+      "author": "Claude",
+      "date": "2026-10-25T04:07:04Z",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/magical-cannon-hp9hno",
+      "body": "",
+      "files": []
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src-tauri/src/lib.rs",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/__tests__/file-paths.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-document/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-documents/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/unit/file-path/__tests__/file-path.edge.test.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/unit/file-path/__tests__/file-path.normal.test.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/unit/file-path/__tests__/file-path.type.test.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/unit/file-path/index.ts",
+      "to": "src/types/Brand.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/unit/file-path/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/unit/file-path/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/libs/app-state-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.shortcut.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/components/__tests__/row-drag.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/components/__tests__/row-names.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/components/__tests__/row-drag.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/pane-regions.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/components/editor-screen/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/__tests__/document-change.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-menu/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-state-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-window/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/clock/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/file-drop/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.edge.test.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-tab-bar/index.tsx",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/domains/recent-files/__tests__/recent-files.edge.test.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/domains/recent-files/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/domains/session/opened-documents/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/app-menu/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/app-state-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/app-state-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/app-window/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/file-drop/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+      "to": "src/domains/session/document-access-failure/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+      "to": "src/domains/session/opened-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+      "to": "src/domains/session/document-access-failure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/domains/session/opened-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/features/editor/features/document-start/domains/recent-files/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/app-state-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/app-state-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/app-window/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-dialog/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/file-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/index.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.document-invalid.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.normal.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/__tests__/use-file-revert.normal.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/__tests__/document-change.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-json/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.document-access-failure.test.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/libs/tauri-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/libs/tauri-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/domains/session/document-access-failure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/utils/Interop.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    }
+  ]
+}
