@@ -182,8 +182,7 @@ const EllipseDocument = DesignDocument.create({
  * テストが守るのは宣言を出すところまでで、**それが実際に円として描かれることは見えない**
  * （happy-dom は CSS を描かない）。確かめる手段はこのストーリーの視覚差分だけ。
  *
- * 選択の枠が楕円に沿い、四隅のハンドルが枠から離れて見えるのも仕様（docs/06-ui.md「選択」
- * 「リサイズハンドル」）で、これもこの視覚差分だけが見ている。
+ * 選択の枠が楕円に沿うのも仕様（docs/06-ui.md「選択」）で、これもこの視覚差分だけが見ている。
  */
 export const EllipseSelected: Story = {
   name: "Ellipse を選択中",
