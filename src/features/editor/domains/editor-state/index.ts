@@ -32,6 +32,7 @@ import type { Instant } from "@/domains/unit/instant";
 import type { Offset } from "@/domains/unit/offset";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { ReorderStep } from "@/features/editor/domains/reorder-step";
+import { SiblingPositions } from "@/features/editor/domains/sibling-positions";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
 import type { IndexMove } from "@/types/IndexMove";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -721,7 +722,7 @@ export const EditorState = {
    * 同じ親の中で子の順序を入れ替える（docs/06-ui.md「編集操作の一覧」の並べ替え）。
    *
    * ツリービューは隣がいない向きの移動ボタンを出さないが、**キーボードの割り当ては端でも
-   * 押せる**ため、画面の操作から `none` に到達する（`reorderSelectedNode`）。
+   * 押せる**ため、画面の操作から `none` に到達する（`reorderSelectedNodes`）。
    *
    * 選択はノードの name で持っており並べ替えでは変わらないため、そのまま引き継ぐ。
    *
@@ -745,30 +746,35 @@ export const EditorState = {
   },
 
   /**
-   * 選択中のノードを、兄弟の並びの中で 1 つぶん動かす
-   * （docs/06-ui.md「編集操作の一覧」の並べ替え）。
+   * 選択中のノードを、兄弟の並びの中で 1 つぶん動かす。複数選んでいれば、同じ親の兄弟の
+   * ときだけ並び順を保ってまとめて動かす（docs/06-ui.md「編集操作の一覧」の並べ替え・
+   * 「複数選択」）。
    *
    * ツリーのドラッグは掴んだ位置を持っているので `reorderNode` を直に呼ぶ。
    *
    * @param state 動かす前の編集状態
    * @param step 動かす向き
-   * @returns 動かしたあとの編集状態。1 つだけ選んでいないとき（未選択・複数選択）、
-   *   選んでいるものが並びに載っていないとき（artboard 自身）、その向きに隣がいないときは `none`
+   * @returns 動かしたあとの編集状態。未選択のとき、同じ親の兄弟でない選択（親が違う・
+   *   artboard が混ざる）のとき、どれか 1 つでもその向きに隣がいないとき、ファイルが不正な
+   *   間は `none`
    */
-  reorderSelectedNode(
+  reorderSelectedNodes(
     state: EditorState,
     step: ReorderStep,
   ): Option<EditorState> {
-    const from = Option.flatMap(EditorState.singleName(state), (name) =>
-      DesignDocument.findChildPosition(EditorState.document(state), name),
+    const siblings = SiblingPositions.fromSelection(
+      EditorState.documentSelection(state),
     );
-    return Option.flatMap(from, (position) =>
-      EditorState.reorderNode(
-        state,
-        position,
-        ReorderStep.toIndex(step, position),
-      ),
+    if (!Option.isSome(siblings)) {
+      return Option.none;
+    }
+    const reordered = ArrayEx.reduceUntilErr(
+      ReorderStep.toChildReorders(step, siblings.value),
+      EditorState.document(state),
+      (document, reorder) =>
+        DesignDocument.reorderNode(document, reorder.from, reorder.toIndex),
     );
+    return withEditResult(state, reordered);
   },
 
   /**

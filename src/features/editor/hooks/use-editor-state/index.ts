@@ -44,7 +44,7 @@ export type EditorAction =
       toIndex: number;
     }>
   /* 選択から向きだけで並べ替える経路。今の位置を持たない入口のためにある。 */
-  | Readonly<{ type: "reorder_selected_node"; step: ReorderStep }>
+  | Readonly<{ type: "reorder_selected_nodes"; step: ReorderStep }>
   | Readonly<{ type: "move_node"; name: string; to: ChildPosition }>
   | Readonly<{
       type: "reposition_node";
@@ -140,14 +140,14 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
         EditorState.reorderNode(state, action.from, action.toIndex),
         state,
       );
-    case "reorder_selected_node":
+    case "reorder_selected_nodes":
       /*
-       * 1 つだけ選んでいないとき・選んでいるのが artboard のとき・その向きに隣が
-       * いないときは並びが変わらない（EditorState.reorderSelectedNode の `none`）。
-       * 割り当ては選択が無くても端でも押せるため、この `none` には画面の操作から到達する。
+       * 動かせないときは並びが変わらない（EditorState.reorderSelectedNodes の `none`。条件は
+       * その @returns）。割り当ては選択が無くても端でも押せるため、この `none` には画面の
+       * 操作から到達する。
        */
       return Option.unwrapOr(
-        EditorState.reorderSelectedNode(state, action.step),
+        EditorState.reorderSelectedNodes(state, action.step),
         state,
       );
     case "move_node":

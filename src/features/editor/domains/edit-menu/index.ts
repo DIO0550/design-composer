@@ -121,11 +121,11 @@ function isEnabled(state: EditorState, operation: EditOperation): boolean {
       return Option.isSome(EditorState.ungroupSelected(state));
     case "bring-forward":
       return Option.isSome(
-        EditorState.reorderSelectedNode(state, ReorderSteps.TowardFront),
+        EditorState.reorderSelectedNodes(state, ReorderSteps.TowardFront),
       );
     case "send-backward":
       return Option.isSome(
-        EditorState.reorderSelectedNode(state, ReorderSteps.TowardBack),
+        EditorState.reorderSelectedNodes(state, ReorderSteps.TowardBack),
       );
     case "detach-instance":
       return Option.isSome(EditorState.detachInstance(state));

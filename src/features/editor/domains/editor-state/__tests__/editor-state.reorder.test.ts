@@ -92,7 +92,7 @@ test("存在しない親の中の子を動かそうとしても移動が無か�
 test("選んでいるノードを前面へ動かすと、次の兄弟と入れ替わる", () => {
   const selected = EditorState.select(setupState(), "title");
 
-  const reordered = EditorState.reorderSelectedNode(
+  const reordered = EditorState.reorderSelectedNodes(
     selected,
     ReorderSteps.TowardFront,
   );
@@ -107,7 +107,7 @@ test("選んでいるノードを前面へ動かすと、次の兄弟と入れ�
 test("選んでいるノードを背面へ動かすと、前の兄弟と入れ替わる", () => {
   const selected = EditorState.select(setupState(), "footer");
 
-  const reordered = EditorState.reorderSelectedNode(
+  const reordered = EditorState.reorderSelectedNodes(
     selected,
     ReorderSteps.TowardBack,
   );
@@ -123,13 +123,13 @@ test("いちばん前面のノードをさらに前面へ動かそうとして�
   const selected = EditorState.select(setupState(), "footer");
 
   expect(
-    EditorState.reorderSelectedNode(selected, ReorderSteps.TowardFront),
+    EditorState.reorderSelectedNodes(selected, ReorderSteps.TowardFront),
   ).toEqual(Option.none);
 });
 
 test("何も選んでいなければ並べ替えは存在しない", () => {
   expect(
-    EditorState.reorderSelectedNode(setupState(), ReorderSteps.TowardFront),
+    EditorState.reorderSelectedNodes(setupState(), ReorderSteps.TowardFront),
   ).toEqual(Option.none);
 });
 
@@ -138,6 +138,6 @@ test("artboard を選んでいるときは並べ替えは存在しない", () =>
   const selected = EditorState.select(setupState(), "home");
 
   expect(
-    EditorState.reorderSelectedNode(selected, ReorderSteps.TowardFront),
+    EditorState.reorderSelectedNodes(selected, ReorderSteps.TowardFront),
   ).toEqual(Option.none);
 });
