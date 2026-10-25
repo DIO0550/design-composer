@@ -129,3 +129,11 @@ test("負の index を指定して removeAt を呼ぶと範囲外として Err �
     Result.err({ index: -1, length: 2 }),
   );
 });
+
+test("singleDistinct は空の並びでは none を返す", () => {
+  expect(ArrayEx.singleDistinct([])).toEqual(Option.none);
+});
+
+test("singleDistinct は値が null だけの並びでは none を返す", () => {
+  expect(ArrayEx.singleDistinct([null, null])).toEqual(Option.none);
+});

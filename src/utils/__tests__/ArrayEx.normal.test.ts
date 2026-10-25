@@ -232,3 +232,11 @@ test("sortBy は渡した並びを変えない", () => {
 
   expect(items).toEqual([3, 1, 2]);
 });
+
+test("singleDistinct はすべての要素が等しい並びからその値を返す", () => {
+  expect(ArrayEx.singleDistinct(["a", "a", "a"])).toEqual(Option.some("a"));
+});
+
+test("singleDistinct は異なる値が混ざる並びでは none を返す", () => {
+  expect(ArrayEx.singleDistinct(["a", "b", "a"])).toEqual(Option.none);
+});
