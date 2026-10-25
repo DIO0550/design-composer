@@ -183,6 +183,20 @@ export const ArrayEx = {
   },
 
   /**
+   * すべての要素が等しい並びの、その値。
+   *
+   * @param array 見る並び
+   * @returns 空でなく、すべての要素が等しければその値。空の並び・異なる値が混ざる並び・値が
+   *   `null` / `undefined` の並びは `none`。等しさは SameValueZero で見る
+   */
+  singleDistinct<T>(array: readonly T[]): Option<NonNullable<T>> {
+    const distinctItems = ArrayEx.distinct(array);
+    return distinctItems.length === 1
+      ? ArrayEx.first(distinctItems)
+      : Option.none;
+  },
+
+  /**
    * 並びの順に `fn` を重ねて 1 つの値へ畳む。`err` が返ったところで止める。
    *
    * @param array 畳む並び
