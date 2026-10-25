@@ -1382,6 +1382,34 @@ export const DesignDocument = {
   },
 
   /**
+   * その名前が指す artboard / ノードを、子を持てるものとして Box の props で読む。
+   *
+   * artboard は常に子を持てる。ノードで子を持てるのは Box だけで、並ぶ向きもその
+   * `layout` prop で決まる（docs/03-schema.md）。
+   *
+   * @param document 名前の引き先になるドキュメント
+   * @param name 読みたい artboard / ノードの名前
+   * @returns 解決した Box の props。ドキュメントに無い名前と、子を持てないノード
+   *   （参照ノードと、スキーマが子を認めていないプリミティブ）なら `none`
+   */
+  boxPropsOf(
+    document: DesignDocument,
+    name: string,
+  ): Option<ResolvedProps<"Box">> {
+    const artboard = DesignDocument.findArtboard(document, name);
+    if (Option.isSome(artboard)) {
+      return Option.some(Artboard.boxProps(artboard.value));
+    }
+    return Option.flatMap(DesignDocument.findNode(document, name), (node) => {
+      const holdsChildren =
+        Node.isPrimitive(node) && NodeTree.allowsChildren(node);
+      return holdsChildren
+        ? Option.some(ResolvedProps.resolve("Box", node.props ?? {}))
+        : Option.none;
+    });
+  },
+
+  /**
    * その名前のものの子として足すときの位置（並びの末尾）。
    *
    * 足せるかどうかは子の並びを持つかどうかと同じなので `findChildren` に乗せる。挿入の可否は
