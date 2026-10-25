@@ -4,6 +4,10 @@ import {
   danglingTokenContent,
   danglingTokenDocument,
 } from "@/domains/__tests__/sample-document";
+import {
+  DocumentAccessFailure,
+  DocumentAccessFailureReasons,
+} from "@/domains/session/document-access-failure";
 import { DocumentSession } from "@/features/editor/features/document-start/domains/document-session";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { Option } from "@/utils/Option";
@@ -183,4 +187,76 @@ test("ファイル名の要素を持たないパスだけを落としても、�
   await observer.dropFiles(["/"]);
 
   expect(DocumentSession.failure(observer.session())).toStrictEqual(failed);
+});
+
+test("綴りを寄せるのを拒まれたファイルを選ぶと、使えないパスとして失敗する", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+    { deniedCanonicalPaths: [{ path: Path, kind: "invalidPath" }] },
+  );
+
+  await observer.openDocument();
+
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
+      kind: "io",
+      error: DocumentAccessFailure.create(
+        DocumentAccessFailureReasons.UnusablePath,
+        `${Path}: ドキュメントのパスとして扱えない`,
+      ),
+    }),
+  );
+});
+
+test("綴りを寄せる指示が届かなかったファイルを選ぶと、届かなかったこととして失敗する", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+    { deniedCanonicalPaths: [{ path: Path, kind: "ipcFailed" }] },
+  );
+
+  await observer.openDocument();
+
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
+      kind: "io",
+      error: DocumentAccessFailure.create(
+        DocumentAccessFailureReasons.Undelivered,
+        `canonicalize_document_path: ${Path} に届かない`,
+      ),
+    }),
+  );
+});
+
+test("新規作成の保存先の綴りを寄せるのを拒まれると、書き出さない", async () => {
+  const observer = renderDocumentSession(
+    {},
+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },
+    { deniedCanonicalPaths: [{ path: NewPath, kind: "invalidPath" }] },
+  );
+
+  await observer.createDocument();
+
+  expect(observer.files.contentOf(NewPath)).toStrictEqual(Option.none);
+});
+
+test("新規作成の保存先の綴りを寄せるのを拒まれると、その失敗が残る", async () => {
+  const observer = renderDocumentSession(
+    {},
+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },
+    { deniedCanonicalPaths: [{ path: NewPath, kind: "invalidPath" }] },
+  );
+
+  await observer.createDocument();
+
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
+      kind: "io",
+      error: DocumentAccessFailure.create(
+        DocumentAccessFailureReasons.UnusablePath,
+        `${NewPath}: ドキュメントのパスとして扱えない`,
+      ),
+    }),
+  );
 });
