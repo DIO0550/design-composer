@@ -55,32 +55,27 @@ export type FileDrop = Readonly<{
   ): Promise<Result<Unsubscribe, FileDropError>>;
 }>;
 
-export const FileDrop = {
-  /**
-   * ウィンドウへのファイルのドロップを受け取る口を作る。
-   *
-   * @param tauriIpc ドロップのイベントを購読する IPC
-   * @returns ドロップを購読できる口。作っただけでは購読せず、`subscribeDropped` を呼んだ時点で張る
-   */
-  create(tauriIpc: TauriIpc): FileDrop {
-    return {
-      async subscribeDropped(listener) {
-        try {
-          const unsubscribe = await tauriIpc.listen(
-            DragDropEvent,
-            (payload) => {
-              // ファイルのパスを 1 件も持たない通知（ドラッグ中の通過・空の並びなど）は配らない。
-              const paths = toDroppedPaths(payload);
-              if (Option.isSome(paths)) {
-                listener(paths.value);
-              }
-            },
-          );
-          return Result.ok(unsubscribe);
-        } catch (reason) {
-          return Result.err({ message: String(reason) });
-        }
-      },
-    };
-  },
-} as const;
+/**
+ * ウィンドウへのファイルのドロップを受け取る口を作る。
+ *
+ * @param tauriIpc ドロップのイベントを購読する IPC
+ * @returns ドロップを購読できる口。作っただけでは購読せず、`subscribeDropped` を呼んだ時点で張る
+ */
+export function createFileDrop(tauriIpc: TauriIpc): FileDrop {
+  return {
+    async subscribeDropped(listener) {
+      try {
+        const unsubscribe = await tauriIpc.listen(DragDropEvent, (payload) => {
+          // ファイルのパスを 1 件も持たない通知（ドラッグ中の通過・空の並びなど）は配らない。
+          const paths = toDroppedPaths(payload);
+          if (Option.isSome(paths)) {
+            listener(paths.value);
+          }
+        });
+        return Result.ok(unsubscribe);
+      } catch (reason) {
+        return Result.err({ message: String(reason) });
+      }
+    },
+  };
+}

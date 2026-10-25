@@ -1,12 +1,12 @@
 import type { TauriIpc } from "@/libs/tauri-ipc";
 import { ipcFailure } from "@/libs/tauri-ipc/fake";
-import { AppWindow } from "../index";
+import { type AppWindow, createAppWindow } from "../index";
 
 /**
  * Rust 側の代役。`close_current_window` を受けて、ウィンドウが閉じたかどうかだけを持つ。
  *
- * 差し込む先は `TauriIpc` の位置なので、`appWindow` を通した呼び出しでは `AppWindow` 本体
- * （コマンド名・エラーの解釈）がそのまま動く。
+ * 差し込む先は `TauriIpc` の位置なので、`appWindow` を通した呼び出しでは `createAppWindow` が
+ * 作る本体（コマンド名・エラーの解釈）がそのまま動く。
  */
 export type AppWindowFake = Readonly<{
   /** 代役のウィンドウに向いた `AppWindow`。 */
@@ -49,7 +49,7 @@ export const AppWindowFake = {
     };
 
     return {
-      appWindow: AppWindow.create(tauriIpc),
+      appWindow: createAppWindow(tauriIpc),
 
       isWindowClosed() {
         return closed;

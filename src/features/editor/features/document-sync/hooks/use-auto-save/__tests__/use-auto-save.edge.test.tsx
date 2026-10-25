@@ -5,7 +5,11 @@ import {
   DocumentAccessFailureReasons,
 } from "@/domains/session/document-access-failure";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
-import { DocumentIpc, type DocumentIpcError } from "@/libs/document-ipc";
+import {
+  createDocumentIpc,
+  type DocumentIpc,
+  type DocumentIpcError,
+} from "@/libs/document-ipc";
 import { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import type { TauriIpc } from "@/libs/tauri-ipc";
@@ -28,7 +32,7 @@ function denyingIpc(): DocumentIpc {
     invoke: () => Promise.reject(Denied),
     listen: () => Promise.reject("Event not emitted"),
   };
-  return DocumentIpc.create(tauriIpc);
+  return createDocumentIpc(tauriIpc);
 }
 
 test("開いたドキュメントを編集していなければファイルへ書き出さない", async () => {
