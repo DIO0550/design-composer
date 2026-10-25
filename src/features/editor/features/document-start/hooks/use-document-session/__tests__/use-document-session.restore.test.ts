@@ -255,6 +255,21 @@ test("保存された一覧の先頭が別の綴りなら、実体の綴りで�
   );
 });
 
+test("保存された一覧の先頭が別の綴りなら、一覧にも実体の綴りで並ぶ", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    NoDialogChoices,
+    {
+      storedAppState: storedRecentPaths([LinkPath]),
+      linkedPaths: [{ link: LinkPath, target: Path }],
+    },
+  );
+
+  await observer.settle();
+
+  expect(observer.recentPaths()).toStrictEqual([Path]);
+});
+
 test("綴りを寄せるのを拒まれた行は、元の綴りのまま一覧に残る", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },

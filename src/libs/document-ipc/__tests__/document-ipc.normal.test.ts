@@ -121,6 +121,42 @@ test("別の綴りを持たないパスは、寄せても綴りが変わらな�
   expect(canonical).toStrictEqual(Result.ok(Path));
 });
 
+test("別の綴りで読むと、実体の中身が返る", async () => {
+  const fake = DocumentIpcFake.create({ [Path]: `{ "formatVersion": "1.0" }` });
+  fake.linkPath({ link: LinkPath, target: Path });
+
+  const loaded = await fake.ipc.load(LinkPath);
+
+  expect(Result.unwrap(loaded)).toBe(`{ "formatVersion": "1.0" }`);
+});
+
+test("別の綴りで書くと、実体の中身が変わる", async () => {
+  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  fake.linkPath({ link: LinkPath, target: Path });
+
+  Result.unwrap(await fake.ipc.save(LinkPath, `{ "formatVersion": "1.1" }`));
+
+  expect(Result.unwrap(await fake.ipc.load(Path))).toBe(
+    `{ "formatVersion": "1.1" }`,
+  );
+});
+
+test("別の綴りで外部から書き換えると、実体を監視している綴りで届く", async () => {
+  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  fake.linkPath({ link: LinkPath, target: Path });
+  const received: DocumentChanged[] = [];
+  Result.unwrap(
+    await fake.ipc.subscribeChanged((changed) => received.push(changed)),
+  );
+  Result.unwrap(await fake.ipc.watch(Path));
+
+  fake.changeExternally(LinkPath, `{ "formatVersion": "1.0" }`);
+
+  expect(received).toStrictEqual([
+    { path: Path, content: `{ "formatVersion": "1.0" }` },
+  ]);
+});
+
 test("別の綴りで監視すると、実体の外部変更がその綴りで届く", async () => {
   const fake = DocumentIpcFake.create({ [Path]: `{}` });
   fake.linkPath({ link: LinkPath, target: Path });
