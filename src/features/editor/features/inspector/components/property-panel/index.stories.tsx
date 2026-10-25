@@ -205,7 +205,12 @@ const meta = {
     isFrozen: false,
     onClearSelection: fn(),
     onEditProp: fn(),
-    instance: { goToSource: fn(), selectAllInstances: fn(), detach: fn() },
+    instance: {
+      goToSource: fn(),
+      selectAllInstances: fn(),
+      detach: fn(),
+      editRefOwnProp: fn(),
+    },
   },
 } satisfies Meta<typeof PropertyPanelPane>;
 

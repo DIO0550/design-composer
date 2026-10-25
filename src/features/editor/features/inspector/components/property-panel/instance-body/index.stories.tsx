@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { fn } from "storybook/test";
-import { InstanceControls } from "../__stories__/panel-controls";
+import { InstanceControls, LockedControl } from "../__stories__/panel-controls";
 import { PanelFrame } from "../__stories__/panel-frame";
 import { InstanceBody } from "./index";
 
@@ -21,7 +21,12 @@ const meta = {
   ],
   args: {
     onEdit: fn(),
-    actions: { goToSource: fn(), selectAllInstances: fn(), detach: fn() },
+    actions: {
+      goToSource: fn(),
+      selectAllInstances: fn(),
+      detach: fn(),
+      editRefOwnProp: fn(),
+    },
   },
 } satisfies Meta<typeof InstanceBody>;
 
@@ -45,4 +50,10 @@ export const NotDetachable: Story = {
 export const OnlyInstance: Story = {
   name: "同じ部品のインスタンスが 1 つだけ",
   args: { controls: { ...InstanceControls, sourceInstanceCount: 1 } },
+};
+
+/** ロックしたインスタンス。`Instance` 節のロックの行に `locked` が入る。 */
+export const Locked: Story = {
+  name: "ロックしたインスタンス",
+  args: { controls: { ...InstanceControls, refOwnProps: [LockedControl] } },
 };

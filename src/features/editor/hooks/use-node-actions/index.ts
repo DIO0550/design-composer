@@ -38,6 +38,8 @@ export type NodeActions = Readonly<{
   repositionArtboard: (name: string, canvasPosition: Offset) => void;
   resize: (edit: ResizeEdit, continuity: EditContinuity) => void;
   editProp: (edit: PropEdit, continuity: EditContinuity) => void;
+  /** 選択中の部品インスタンス自身の値（ロックなど）を書き換える。 */
+  editRefOwnProp: (edit: PropEdit, continuity: EditContinuity) => void;
   insert: (template: NodeTemplate) => void;
   /** パレットから運んできたものを、落とした先のツリー位置へ挿す。 */
   insertAt: (template: NodeTemplate, at: ChildPosition) => void;
@@ -121,6 +123,12 @@ export function useNodeActions(): NodeActions {
      */
     editProp: (edit, continuity) =>
       dispatch({ type: "apply_prop_edit", edit, continuity }),
+    /**
+     * インスタンス自身の値は公開 prop への上書きと書き込み先が違うので、`editProp` とは別の
+     * アクションで受ける（インスペクタの `Instance` 節から届く）。
+     */
+    editRefOwnProp: (edit, continuity) =>
+      dispatch({ type: "apply_ref_own_prop_edit", edit, continuity }),
     insert: (template) => dispatch({ type: "insert_node", template }),
     /**
      * パレットからのドラッグは、落とした先へ挿すこと（UI 案 docs/Design Composer.html は

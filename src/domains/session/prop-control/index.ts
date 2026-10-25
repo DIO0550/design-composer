@@ -14,6 +14,7 @@ import {
   PropDefinition,
   type PropDefinitionRecord,
   type PropShorthand,
+  RefNodeSchema,
   type ShorthandName,
   ShorthandNames,
 } from "@/domains/dcmp/primitive-schema";
@@ -174,7 +175,8 @@ export type PropControlSection = Readonly<{
 /**
  * 選択中のものに対して右ペインが出す編集欄。インスタンスだけ形が違う（UI 案 docs/Design
  * Composer.html の `Assets · Instance` は `group` ごとのセクションではなく
- * `Public props` の 1 節と出どころの部品を出す）。
+ * `Public props` の 1 節と出どころの部品を出す）。インスタンスの `refOwnProps` は、公開 prop
+ * とは別に参照ノード直下に持つインスタンス自身の値の編集欄。
  */
 export type SelectionControls =
   | Readonly<{ kind: "groups"; sections: readonly PropControlSection[] }>
@@ -182,6 +184,7 @@ export type SelectionControls =
       kind: "instance";
       source: string;
       publicProps: readonly PropControl[];
+      refOwnProps: readonly PropControl[];
       isDetachable: boolean;
       sourceInstanceCount: number;
     }>
@@ -465,7 +468,7 @@ function enabledEditableProps(
 }
 
 /**
- * 見出しで分けない編集欄の並び（インスタンスの `Public props`）。
+ * 見出しで分けない編集欄の並び（インスタンスの `Public props` と、インスタンス自身の値）。
  * 並びは宣言順（docs/03「order フィールドは持たない」）。
  *
  * @param editables 編集できる prop の並び
@@ -594,12 +597,13 @@ function sectionsOf(
 }
 
 /**
- * ノードが編集できる prop。参照ノードは公開 prop、プリミティブはスキーマから引く。
+ * ノードが編集できる prop。参照ノードは公開 prop と `RefNodeSchema` のインスタンス自身の値、
+ * プリミティブはスキーマから引く。
  *
  * @param document 公開 prop の引き先と、解除できるかの判定に使うドキュメント
  * @param node 編集欄を出したいノード
- * @returns 参照ノードなら出どころの部品つきの公開 prop、
- *   プリミティブなら `group` ごとにまとめた編集欄。
+ * @returns 参照ノードなら出どころの部品つきの公開 prop と、インスタンス自身の値の編集欄
+ *   （参照先の部品が無くても出す）、プリミティブなら `group` ごとにまとめた編集欄。
  *   スキーマの分からない `type` ではセクションが空になる
  */
 function nodeControls(document: DesignDocument, node: Node): SelectionControls {
@@ -610,6 +614,11 @@ function nodeControls(document: DesignDocument, node: Node): SelectionControls {
       publicProps: controlsOf(
         publicEditableProps(document.components, node),
         node.overrides ?? {},
+        document.tokens,
+      ),
+      refOwnProps: controlsOf(
+        declaredEditableProps(RefNodeSchema.props),
+        Node.refOwnPropsOf(node),
         document.tokens,
       ),
       isDetachable: DesignDocument.isDetachable(document, node.name),

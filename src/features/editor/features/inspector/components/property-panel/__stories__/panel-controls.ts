@@ -272,6 +272,21 @@ export const BoxSections: readonly PropControlSection[] = [
   },
 ];
 
+/** ロックしていないインスタンス自身のロックの欄。未指定で既定の `unlocked` が効く。 */
+export const LockingControl: PropControl = {
+  prop: "locking",
+  input: { kind: "enum", values: ["unlocked", "locked"] },
+  value: Option.none,
+  defaultValue: Option.some("unlocked"),
+  enabledBy: Option.none,
+};
+
+/** ロックしたインスタンス自身のロックの欄。 */
+export const LockedControl: PropControl = {
+  ...LockingControl,
+  value: Option.some("locked"),
+};
+
 /** インスタンスを選んだときの編集欄。解除でき、同じ部品のインスタンスが他にもある。 */
 export const InstanceControls: Extract<
   SelectionControls,
@@ -280,6 +295,7 @@ export const InstanceControls: Extract<
   kind: "instance",
   source: "primary-button",
   publicProps: [LabelControl, VariantControl],
+  refOwnProps: [LockingControl],
   isDetachable: true,
   sourceInstanceCount: 3,
 };
