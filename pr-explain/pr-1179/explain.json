@@ -1,0 +1,2808 @@
+{
+  "version": 1,
+  "pr": 1179,
+  "sha": "7e7c6a31b39f9e57721722561e882c5d0573556f",
+  "issue": 881,
+  "overview": {
+    "title": "flow 配置のノードもリサイズで揃え先の辺へ吸い付かせる",
+    "lead": "flow 配置のノードも、親の交差軸の 1 軸だけを掴んだとき(縦並びの親なら右辺)に、今の親と、その親の直下にある自分以外の子の辺へ吸い付くようになった。親が子を並べ、折り返さず、`align` が start / stretch、交差軸が長さを書いた fixed のときだけ、掴んだ時点に 1 回判定する。",
+    "before": [
+      {
+        "text": "flow 配置のノードは、どこを掴んでも辺へ吸い付かなかった(`snapTargetNames` が空)"
+      },
+      {
+        "text": "揃え先の名前は `ResizableSelection.snapTargetNames` に生のまま載り、hook が読んでいた",
+        "message": "m-measure"
+      },
+      {
+        "text": "親の Box の props を引く処理は drop-parent の private 関数 `parentBoxProps` にしか無かった"
+      },
+      {
+        "text": "Box の `align` はスキーマに文字列の配列で並べているだけだった"
+      }
+    ],
+    "after": [
+      {
+        "text": "幅を固定した縦並びの親の中の flow のノードは、右辺を掴むと親と兄弟の辺へ吸い付く",
+        "message": "m-still"
+      },
+      {
+        "text": "横並びの親では下辺で吸い付く。主軸・2 軸を変える角・親が wrap / hug / fill / center / end のときは吸い付かない",
+        "message": "m-still"
+      },
+      {
+        "text": "揃え先は直和 `ResizeSnapTargets`(`anyGrip` / `axisOnly` / `none`)で持ち、`NodeResize.hold` が掴み方で絞って `ResizeHold.snapTargetNames` に載せる",
+        "message": "m-hold"
+      },
+      {
+        "text": "hook は `held.snapTargetNames` を実測するだけになった",
+        "message": "m-measure"
+      },
+      {
+        "text": "親の props は `DesignDocument.boxPropsOf` で引き、drop-parent もこれを使う",
+        "message": "m-drop"
+      },
+      {
+        "text": "artboard と絶対配置のノードの吸い付き方は変わらない"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "交差軸だけを答える判定",
+        "text": "答えは `declarations` の CSS とブラウザの既定値(`flex-shrink` と `align-content` を出していない)で決まる。CSS の出力を変えたらここも変わる",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/compiled/compiled-element/index.ts"
+        }
+      },
+      {
+        "title": "掴み方で絞る場所",
+        "text": "ハンドルの経路も帯の経路も `hold` を通るので、絞り込みをここに 1 回だけ置いた。呼び忘れが型で起きない形になっているかを見てほしい",
+        "go": {
+          "kind": "message",
+          "id": "m-hold"
+        }
+      },
+      {
+        "title": "既知の限界",
+        "text": "祖先は見ないので、親が主軸で hug なら 1 軸の掴みでも祖先の折り返しごと揃え先が動きうる。docs/06-ui.md に限界として書いた",
+        "go": {
+          "kind": "file",
+          "path": "docs/06-ui.md"
+        }
+      },
+      {
+        "title": "選択を描いたときの判定",
+        "text": "揃え先は描画のたびに `resizable` で決め直す。増える走査は計測するまで形を変えていない",
+        "go": {
+          "kind": "flow",
+          "id": "f-render"
+        }
+      },
+      {
+        "title": "表示の確認",
+        "text": "Storybook で flow のノードの右辺を artboard の右辺へ運び、赤いガイド線が 1 本出て幅 224 で揃うのを目で確かめた(ハンドルを直接押す経路の通しテストは無い)",
+        "go": {
+          "kind": "feature",
+          "id": "snap"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "snap",
+      "label": "リサイズの辺のスナップ",
+      "role": "flow 配置のノードも、動かない揃え先の辺へ吸い付かせる"
+    },
+    {
+      "id": "align",
+      "label": "Box の揃えの語彙",
+      "role": "Box の `align` を start / center / end / stretch に閉じ、始点に置くかを答える"
+    },
+    {
+      "id": "parent",
+      "label": "親の props の読み出し",
+      "role": "名前から親の Box の props を引く処理を、ドロップとリサイズで共有する"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / dcmp",
+      "role": "Box の揃えの語彙と、名前から親の Box の props を引く入口を足した"
+    },
+    {
+      "layer": "domains / compiled",
+      "role": "親の Box の CSS から、子の交差軸の長さを変えても動かない軸を答える"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "揃え先を直和で持ち、掴み方で絞ってから実測する"
+    },
+    {
+      "layer": "docs",
+      "role": "flow のノードの辺のスナップの規則と、吸い付かない理由を書いた"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "name": "キャンバス",
+      "role": "選択から `NodeResize.resizable` を作り、リサイズの hook に渡す",
+      "feature": "snap"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "name": "リサイズの掴み",
+      "role": "ハンドル・帯を掴んだとき、揃え先と掴んだものを実測して載せる",
+      "feature": "snap",
+      "change": "揃え先を `held.snapTargetNames` から読み、`resizable` 引数を外した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "name": "リサイズ",
+      "role": "掴める軸・揃え先・掴み・寄せ量を決める",
+      "feature": "snap",
+      "change": "揃え先を直和 `ResizeSnapTargets` にし、`hold` で掴み方に合わせて絞る。flow の揃え先を `flowSnapTargets` で決める"
+    },
+    {
+      "path": "src/domains/compiled/compiled-element/index.ts",
+      "name": "描画用の要素",
+      "role": "Box の props から CSS の宣言を出す",
+      "feature": "snap",
+      "change": "`BoxElement.stillCrossAxis` を足した"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "ドキュメント",
+      "role": "名前から artboard・ノードを引く",
+      "feature": "parent",
+      "change": "`boxPropsOf` を足した(drop-parent から移した)"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+      "name": "ドロップ先の親",
+      "role": "運んでいるノードを受け入れる親を決める",
+      "feature": "parent",
+      "change": "private の `parentBoxProps` を消し、`boxPropsOf` を呼ぶ"
+    },
+    {
+      "path": "src/domains/dcmp/box-align/index.ts",
+      "name": "Box の揃え",
+      "role": "Box の `align` の語彙と既定(stretch)",
+      "feature": "align",
+      "change": "新しく作った"
+    },
+    {
+      "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "name": "スキーマ",
+      "role": "プリミティブごとの props の定義",
+      "feature": "align",
+      "change": "Box の `align` の `values` / `default` を `BoxAligns` から導出する"
+    },
+    {
+      "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "name": "描かれた矩形の実測",
+      "role": "名前から描かれている矩形を測る",
+      "feature": "snap"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "辺のスナップの規則",
+      "change": "flow のノードの規則を書いた",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "m-resizable",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "kind": "qry",
+      "name": "リサイズの観点の選択を作る",
+      "code": "NodeResize.resizable(selection)",
+      "via": "call",
+      "payload": "ドキュメントと選択",
+      "returns": "掴める軸・位置・揃え先(`snapTargets: ResizeSnapTargets`)",
+      "status": "changed"
+    },
+    {
+      "id": "m-box-props",
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "qry",
+      "name": "親の Box の props を引く",
+      "code": "DesignDocument.boxPropsOf(document, parentName)",
+      "via": "call",
+      "payload": "親の名前",
+      "returns": "`Option<ResolvedProps<\"Box\">>`",
+      "status": "added"
+    },
+    {
+      "id": "m-still",
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "kind": "qry",
+      "name": "動かない交差軸を問う",
+      "code": "Option.flatMap(DesignDocument.boxPropsOf(document, parentName), BoxElement.stillCrossAxis)",
+      "via": "call",
+      "payload": "親の解決済み props",
+      "returns": "`Option<Axis>`(交差軸か `none`)",
+      "status": "added"
+    },
+    {
+      "id": "m-align",
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/box-align/index.ts",
+      "kind": "qry",
+      "name": "揃えが始点に置くかを問う",
+      "code": "BoxAlign.isStartForFixedChild(BoxAlign.fromProps(props))",
+      "via": "call",
+      "payload": "Box の props",
+      "returns": "start / stretch なら `true`",
+      "status": "added"
+    },
+    {
+      "id": "m-schema",
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/domains/dcmp/box-align/index.ts",
+      "kind": "qry",
+      "name": "揃えの語彙を引く",
+      "code": "Object.values(BoxAligns) / BoxAlign.Default",
+      "via": "call",
+      "returns": "値の並びと既定",
+      "status": "added"
+    },
+    {
+      "id": "m-drop",
+      "from": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "qry",
+      "name": "ドロップ先の親の props を引く",
+      "code": "DesignDocument.boxPropsOf(document, name)",
+      "via": "call",
+      "payload": "候補の名前",
+      "returns": "`Option<ResolvedProps<\"Box\">>`",
+      "status": "added"
+    },
+    {
+      "id": "m-hold",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "kind": "qry",
+      "name": "掴む",
+      "code": "NodeResize.hold(params.resizable, grip, CanvasPointer.offsetOf(event))",
+      "via": "call",
+      "payload": "選択・掴んだハンドル・押した位置",
+      "returns": "掴み方で絞った `snapTargetNames` を持つ `ResizeHold`",
+      "status": "changed"
+    },
+    {
+      "id": "m-grab-at",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "kind": "qry",
+      "name": "帯で掴む",
+      "code": "NodeResize.grabAt(params.resizable, rotated.value, CanvasPointer.offsetOf(event))",
+      "via": "call",
+      "payload": "選択・描かれた矩形・押した位置",
+      "returns": "`hold` を通した `Option<ResizeHold>`"
+    },
+    {
+      "id": "m-measure",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "kind": "qry",
+      "name": "揃え先を実測する",
+      "code": "DrawnBounds.collectDrawnBounds(held.snapTargetNames)",
+      "via": "call",
+      "payload": "掴み方で絞った揃え先の名前",
+      "returns": "揃え先の描かれた矩形",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f-render",
+      "label": "選択を描いたとき",
+      "steps": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-align"
+      ]
+    },
+    {
+      "id": "f-handle",
+      "label": "ハンドルを押して掴んだとき",
+      "steps": [
+        "m-hold",
+        "m-measure"
+      ]
+    },
+    {
+      "id": "f-band",
+      "label": "帯を押して掴んだとき",
+      "steps": [
+        "m-grab-at",
+        "m-measure"
+      ]
+    },
+    {
+      "id": "f-drop",
+      "label": "ノードを運んで親を決めるとき",
+      "steps": [
+        "m-drop"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "452e7e3739081d7e1768af014d54770c7a5fb44a",
+      "phase": "prep",
+      "role": "Box の `align` の語彙を `BoxAlign` として閉じる",
+      "why": "親の揃えが長さを決めた子を始点に置くかを判定するには、綴りを直接比べずに済む語彙が要る。`wrap` / `layout` と同じ定数オブジェクト + `ValueOf` の形にし、スキーマもそこから導出して出どころを 1 つにした。名前を `Align` にしないのは Text の `align`(文字の揃え)とぶつかるため。",
+      "flows": [
+        "f-render"
+      ],
+      "review": [
+        "stretch を start と同じく「始点に置く」側にしている。長さを決めた子は stretch でも引き伸ばされない、という実測に依っている",
+        "スキーマの値の並びと既定は変わっていない(パネルの選択肢・ファイル形式・出力は同じ)"
+      ],
+      "before": [
+        {
+          "text": "`align` はスキーマに文字列の配列で並べているだけだった"
+        }
+      ],
+      "after": [
+        {
+          "text": "`BoxAligns` / `BoxAlign` で語彙を閉じ、スキーマが導出する",
+          "message": "m-schema"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/box-align/index.ts",
+          "start": 11,
+          "end": 19,
+          "text": "定数オブジェクトと、そこから導く union。`as const` で値の綴りを型に残している"
+        },
+        {
+          "path": "src/domains/dcmp/box-align/index.ts",
+          "start": 35,
+          "end": 40,
+          "text": "書いていない・語彙に無い綴りは既定の stretch として読む"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "start": 244,
+          "end": 245,
+          "text": "スキーマの値と既定を語彙から導く。二重管理をやめた"
+        }
+      ]
+    },
+    {
+      "sha": "5f5dffcf695264738970679c013c48e31d1091ab",
+      "phase": "prep",
+      "role": "親の Box の props を引く処理を `DesignDocument.boxPropsOf` へ移す",
+      "why": "リサイズでも親の並び方を読む必要が出た。drop-parent の private 関数をもう 1 つ書くと重複になる。名前を artboard とノードへ振り分けて引けるのは両方を持つ `DesignDocument` だけなので、そこへ移した。",
+      "flows": [
+        "f-drop"
+      ],
+      "review": [
+        "振る舞いは変わらない。drop-parent の既存テストが通ることで置き換えを確かめている",
+        "解決済みの props を返すので、既定の stretch が補われた状態で判定できる"
+      ],
+      "before": [
+        {
+          "text": "親の props は drop-parent の中でしか引けなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "`DesignDocument.boxPropsOf` を drop-parent も使う",
+          "message": "m-drop"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1384,
+          "end": 1410,
+          "text": "移した `boxPropsOf`。artboard は常に Box、ノードは子を持てるプリミティブだけ"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+          "start": 81,
+          "end": 83,
+          "text": "呼び出しを差し替えただけ"
+        }
+      ]
+    },
+    {
+      "sha": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "phase": "core",
+      "role": "子の交差軸の長さを変えても動かない軸を `BoxElement` が答える",
+      "why": "揃え先は掴んだ時点に 1 回だけ決めるので、リサイズにつられて掴んだ辺も揃え先も動かない軸でしか吸い付かせられない。その軸は親が出す CSS とブラウザの既定値で決まるので、CSS を出す `declarations` と同じ companion に置き、出力を変えたら一緒に直る位置にした。主軸・wrap・fill の親は headless Chromium で実測して外した。",
+      "flows": [
+        "f-render"
+      ],
+      "review": [
+        "`flex-shrink` と `align-content` を出していないので既定値が効く、という前提に依っている。CSS の出力を変えるときはこの判定も見直す",
+        "祖先は再帰で見ない(Issue で確定した判断)。fill の親の中では吸い付かない"
+      ],
+      "after": [
+        {
+          "text": "縦並びで幅を固定した親なら幅、横並びで高さを固定した親なら高さを答える",
+          "message": "m-still"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "start": 401,
+          "end": 428,
+          "text": "この時点の名前は `startPinnedCrossAxis`。最後のコミットで `stillCrossAxis` に改めた"
+        }
+      ]
+    },
+    {
+      "sha": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "phase": "core",
+      "role": "flow のノードもリサイズで揃え先の辺へ吸い付かせる",
+      "why": "揃え先の名前と吸い付く軸を別々のフィールドで持つと「軸が無いのに名前がある」が書けるので、直和 1 つにした。掴み方での絞り込みは、ハンドルの経路と帯の経路の両方が通る `hold` に置き、hook が絞り忘れても型が通る形を避けた。",
+      "flows": [
+        "f-render",
+        "f-handle",
+        "f-band"
+      ],
+      "review": [
+        "`ResizeSnapTargets` の 3 つの枝で、矛盾した状態が書けなくなっているか",
+        "`hold` で絞った名前だけを hook が実測している。生の名前を読む経路が残っていないか",
+        "既存テストの見方を `hold` の答えへ移したが、期待値は変えていない"
+      ],
+      "before": [
+        {
+          "text": "flow のノードの揃え先は常に空だった"
+        },
+        {
+          "text": "hook は `resizable.snapTargetNames` を実測していた"
+        }
+      ],
+      "after": [
+        {
+          "text": "条件を満たす flow のノードは `axisOnly` の揃え先を持つ",
+          "message": "m-still"
+        },
+        {
+          "text": "hook は `hold` が絞った `held.snapTargetNames` を実測する",
+          "message": "m-measure"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 231,
+          "end": 262,
+          "text": "直和と、掴み方で名前を絞る `namesFor`。この時点では軸の判定が `ResizeGrip.isSingleAxis`"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 640,
+          "end": 640,
+          "text": "絞り込みは `hold` の 1 箇所だけ"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 907,
+          "end": 926,
+          "text": "flow の揃え先。921 行のコメント(名前を付けると narrowing が効かない)は誤りで、最後のコミットで消した"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "start": 90,
+          "end": 96,
+          "text": "実測するのは掴み方で絞った名前"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 215,
+          "end": 217,
+          "text": "flow のノードの規則。217 行の「角は吸い付かない」は次の次のコミットで直した"
+        }
+      ]
+    },
+    {
+      "sha": "1715ab2ca4b992d9cbb8b33b64b12587b4e17cec",
+      "phase": "revise",
+      "role": "選択から揃え先の名前を引く組み立てをテストの setup へ寄せる",
+      "why": "`resizable` → `hold` で名前を引く同じ組み立てが 3 ファイルに直書きされ、artboard 直下の flow の右辺の観点も 2 ファイルにあった(重複の指摘)。観点を消さず、flow の揃え先を扱うファイルへ寄せた。",
+      "review": [
+        "移した観点に、絶対配置の兄弟を含み自分の子を含まないことを足している"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+          "start": 98,
+          "end": 111,
+          "text": "3 ファイルから使う組み立て"
+        }
+      ]
+    },
+    {
+      "sha": "d87380f72e73ae2aa79755965e78df9068e5ef2f",
+      "phase": "revise",
+      "role": "flow のノードで吸い付かないのは角ではなく 2 軸を変える掴み方だと直す",
+      "why": "docs は「角は吸い付かない」と書いていたが、実装は「掴む軸が 1 つか」で決めており、両軸固定のノードの右上の角などは吸い付く。3 つのレビューが同じ食い違いを指摘したので、振る舞いを変えずに文言を判定に合わせた。",
+      "review": [
+        "祖先の折り返しで揃え先が動くことを、1 軸の掴みでも残る既知の限界として分けて書いた"
+      ],
+      "before": [
+        {
+          "text": "docs は「角は吸い付かない」と書いていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "docs は「2 軸を同時に変える掴み方は吸い付かない」と書き、1 軸だけの角の例を挙げる"
+        }
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 217,
+          "end": 218,
+          "text": "外す理由と、既知の限界を分けた"
+        }
+      ]
+    },
+    {
+      "sha": "7e7c6a31b39f9e57721722561e882c5d0573556f",
+      "phase": "revise",
+      "role": "揃え先の判定の名前をこのリポジトリの語彙に揃える",
+      "why": "pin は docs にも UI 案にも出てこない語で、placed は同じファイルの `placedPosition` とぶつかり、`isSingleAxis` は名前に出ない軸の一致まで見ていた。名前と doc だけを直し、振る舞いは変えない。",
+      "review": [
+        "still は docs の「動かない」と `isStillWhileResizing` に揃えた",
+        "条件に名前を付けても narrowing が効くことを `tsc -b` で確かめてからコメントを消した"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "start": 410,
+          "end": 416,
+          "text": "`stillCrossAxis` と、名前を付けた条件 `placesAtCrossStart`"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 257,
+          "end": 260,
+          "text": "companion から外した private 関数 `grabsOnly`"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 915,
+          "end": 918,
+          "text": "名前を付けた条件でも `axis.value` へ narrowing が効く"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "still-axis",
+      "label": "動かない交差軸",
+      "file": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts"
+    },
+    {
+      "id": "box-align",
+      "label": "Box の揃え",
+      "file": "src/domains/dcmp/box-align/__tests__/box-align.normal.test.ts"
+    },
+    {
+      "id": "box-props",
+      "label": "親の Box の props",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.box-props.test.ts"
+    },
+    {
+      "id": "flow-snap",
+      "label": "flow のノードの揃え先",
+      "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts"
+    },
+    {
+      "id": "snap-targets",
+      "label": "揃え先",
+      "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts"
+    },
+    {
+      "id": "canvas",
+      "label": "キャンバスの通し",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-snap-flow.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "sa-column",
+      "suite": "still-axis",
+      "name": "幅が固定の縦並びの Box では、子の幅の始点が動かない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "主な用途(縦に並んだ兄弟と右端を揃える)が成り立つ親の形",
+      "given": "`layout: column`・`widthMode: fixed`・`width: 320` の Box",
+      "when": "`stillCrossAxis` に渡す",
+      "then": "`some(\"width\")`",
+      "commit": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+        "start": 19,
+        "end": 23,
+        "text": "test(\"幅が固定の縦並びの Box では、子の幅の始点が動かない\", () => {\n  expect(\n    stillAxisOf({ layout: \"column\", widthMode: \"fixed\", width: 320 }),\n  ).toEqual(Option.some(\"width\"));\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-still"
+      ],
+      "values": {
+        "columns": [
+          "親",
+          "交差軸の長さ",
+          "揃え",
+          "答え"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "縦並び",
+              "幅 320 を固定",
+              "stretch(既定)",
+              "幅"
+            ]
+          },
+          {
+            "cells": [
+              "縦並び",
+              "幅を固定・長さ無し",
+              "stretch",
+              "無い"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "縦並び",
+              "高さだけ固定",
+              "stretch",
+              "無い"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "縦並び",
+              "幅 320 を固定",
+              "center / end",
+              "無い"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "sa-row",
+      "suite": "still-axis",
+      "name": "高さが固定の横並びの Box では、子の高さの始点が動かない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "横並びでは交差軸が高さになる",
+      "given": "`layout: row`・`heightMode: fixed`・`height: 200` の Box",
+      "when": "`stillCrossAxis` に渡す",
+      "then": "`some(\"height\")`",
+      "commit": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+        "start": 25,
+        "end": 29,
+        "text": "test(\"高さが固定の横並びの Box では、子の高さの始点が動かない\", () => {\n  expect(\n    stillAxisOf({ layout: \"row\", heightMode: \"fixed\", height: 200 }),\n  ).toEqual(Option.some(\"height\"));\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-still"
+      ]
+    },
+    {
+      "id": "sa-artboard",
+      "suite": "still-axis",
+      "name": "artboard の子は幅の始点が動かない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "artboard 直下の flow のノードも吸い付ける",
+      "given": "幅 375・高さ 812 の artboard",
+      "when": "`Artboard.boxProps` を `stillCrossAxis` に渡す",
+      "then": "`some(\"width\")`",
+      "commit": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+        "start": 31,
+        "end": 37,
+        "text": "test(\"artboard の子は幅の始点が動かない\", () => {\n  const artboard = Artboard.create({ name: \"home\", width: 375, height: 812 });\n\n  expect(BoxElement.stillCrossAxis(Artboard.boxProps(artboard))).toEqual(\n    Option.some(\"width\"),\n  );\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-still"
+      ]
+    },
+    {
+      "id": "sa-start",
+      "suite": "still-axis",
+      "name": "揃えが start の Box でも、子の幅の始点が動かない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "start は stretch と同じく始点に置く",
+      "given": "`align: start` の縦並びで幅が固定の Box",
+      "when": "`stillCrossAxis` に渡す",
+      "then": "`some(\"width\")`",
+      "commit": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+        "start": 39,
+        "end": 48,
+        "text": "test(\"揃えが start の Box でも、子の幅の始点が動かない\", () => {\n  expect(\n    stillAxisOf({\n      layout: \"column\",\n      align: \"start\",\n      widthMode: \"fixed\",\n      width: 320,\n    }),\n  ).toEqual(Option.some(\"width\"));\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-still"
+      ]
+    },
+    {
+      "id": "sa-center",
+      "suite": "still-axis",
+      "name": "揃えが center の Box では、子の始点が動かない軸は無い",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "center では伸ばした量の半分だけ子の始点が戻る",
+      "given": "`align: center` の縦並びで幅が固定の Box",
+      "when": "`stillCrossAxis` に渡す",
+      "then": "`none`",
+      "commit": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+        "start": 50,
+        "end": 59,
+        "text": "test(\"揃えが center の Box では、子の始点が動かない軸は無い\", () => {\n  expect(\n    stillAxisOf({\n      layout: \"column\",\n      align: \"center\",\n      widthMode: \"fixed\",\n      width: 320,\n    }),\n  ).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-still"
+      ]
+    },
+    {
+      "id": "sa-end",
+      "suite": "still-axis",
+      "name": "揃えが end の Box では、子の始点が動かない軸は無い",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "end では右辺が動かず左辺が動く",
+      "given": "`align: end` の縦並びで幅が固定の Box",
+      "when": "`stillCrossAxis` に渡す",
+      "then": "`none`",
+      "commit": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+        "start": 61,
+        "end": 70,
+        "text": "test(\"揃えが end の Box では、子の始点が動かない軸は無い\", () => {\n  expect(\n    stillAxisOf({\n      layout: \"column\",\n      align: \"end\",\n      widthMode: \"fixed\",\n      width: 320,\n    }),\n  ).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-still"
+      ]
+    },
+    {
+      "id": "sa-free",
+      "suite": "still-axis",
+      "name": "子を並べない Box では、子の始点が動かない軸は無い",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`layout: free` の親には交差軸が無い",
+      "given": "`layout: free` で両軸が固定の Box",
+      "when": "`stillCrossAxis` に渡す",
+      "then": "`none`",
+      "commit": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+        "start": 72,
+        "end": 82,
+        "text": "test(\"子を並べない Box では、子の始点が動かない軸は無い\", () => {\n  expect(\n    stillAxisOf({\n      layout: \"free\",\n      widthMode: \"fixed\",\n      width: 320,\n      heightMode: \"fixed\",\n      height: 200,\n    }),\n  ).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-still"
+      ]
+    },
+    {
+      "id": "sa-wrap",
+      "suite": "still-axis",
+      "name": "子を折り返す Box では、子の始点が動かない軸は無い",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "折り返すと `align-content` の既定で行の位置が配り直される",
+      "given": "`wrap: wrap` の横並びで高さが固定の Box",
+      "when": "`stillCrossAxis` に渡す",
+      "then": "`none`",
+      "commit": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+        "start": 84,
+        "end": 93,
+        "text": "test(\"子を折り返す Box では、子の始点が動かない軸は無い\", () => {\n  expect(\n    stillAxisOf({\n      layout: \"row\",\n      wrap: \"wrap\",\n      heightMode: \"fixed\",\n      height: 200,\n    }),\n  ).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-still"
+      ]
+    },
+    {
+      "id": "sa-hug",
+      "suite": "still-axis",
+      "name": "交差軸が hug の Box では、子の始点が動かない軸は無い",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "hug の親は子に合わせて広がり、揃え先の親の辺が動く",
+      "given": "`widthMode: hug` の縦並びの Box",
+      "when": "`stillCrossAxis` に渡す",
+      "then": "`none`",
+      "commit": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+        "start": 95,
+        "end": 99,
+        "text": "test(\"交差軸が hug の Box では、子の始点が動かない軸は無い\", () => {\n  expect(stillAxisOf({ layout: \"column\", widthMode: \"hug\" })).toEqual(\n    Option.none,\n  );\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-still"
+      ]
+    },
+    {
+      "id": "sa-fill",
+      "suite": "still-axis",
+      "name": "交差軸が fill の Box では、子の始点が動かない軸は無い",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "fill の親は祖先の並びで長さが決まり、つられて動きうる",
+      "given": "`widthMode: fill` の縦並びの Box",
+      "when": "`stillCrossAxis` に渡す",
+      "then": "`none`",
+      "commit": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+        "start": 101,
+        "end": 105,
+        "text": "test(\"交差軸が fill の Box では、子の始点が動かない軸は無い\", () => {\n  expect(stillAxisOf({ layout: \"column\", widthMode: \"fill\" })).toEqual(\n    Option.none,\n  );\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-still"
+      ]
+    },
+    {
+      "id": "sa-nolength",
+      "suite": "still-axis",
+      "name": "交差軸が fixed なのに長さを書いていない Box では、子の始点が動かない軸は無い",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "長さが無ければ CSS は auto になり、hug と同じく動く",
+      "given": "`widthMode: fixed` だけで `width` の無い縦並びの Box",
+      "when": "`stillCrossAxis` に渡す",
+      "then": "`none`",
+      "commit": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+        "start": 107,
+        "end": 111,
+        "text": "test(\"交差軸が fixed なのに長さを書いていない Box では、子の始点が動かない軸は無い\", () => {\n  expect(stillAxisOf({ layout: \"column\", widthMode: \"fixed\" })).toEqual(\n    Option.none,\n  );\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-still"
+      ]
+    },
+    {
+      "id": "sa-main",
+      "suite": "still-axis",
+      "name": "縦並びの Box の高さだけが固定でも、主軸の高さは答えない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "主軸は `flex-shrink` の既定で前の兄弟ごと縮むので答えない",
+      "given": "縦並びで高さだけが固定の Box",
+      "when": "`stillCrossAxis` に渡す",
+      "then": "`none`(主軸の高さを返さない)",
+      "commit": "331160b83808c73b8bf96dc489a75916c070bd3f",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+        "start": 113,
+        "end": 117,
+        "text": "test(\"縦並びの Box の高さだけが固定でも、主軸の高さは答えない\", () => {\n  expect(\n    stillAxisOf({ layout: \"column\", heightMode: \"fixed\", height: 200 }),\n  ).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-still"
+      ]
+    },
+    {
+      "id": "ba-default",
+      "suite": "box-align",
+      "name": "揃えを書いていない Box は stretch として読まれる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "スキーマの既定と同じ値を返す",
+      "given": "`align` の無い props",
+      "when": "`BoxAlign.fromProps`",
+      "then": "`stretch`",
+      "commit": "452e7e3739081d7e1768af014d54770c7a5fb44a",
+      "excerpt": {
+        "path": "src/domains/dcmp/box-align/__tests__/box-align.normal.test.ts",
+        "start": 4,
+        "end": 6,
+        "text": "test(\"揃えを書いていない Box は stretch として読まれる\", () => {\n  expect(BoxAlign.fromProps({})).toBe(\"stretch\");\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/box-align/index.ts"
+      ],
+      "covers": [
+        "m-align"
+      ]
+    },
+    {
+      "id": "ba-unknown",
+      "suite": "box-align",
+      "name": "語彙に無い綴りの揃えは stretch として読まれる",
+      "techniques": [
+        "error"
+      ],
+      "why": "外部編集で不正な綴りが入っても判定が止まらない",
+      "given": "`align: baseline` の props",
+      "when": "`BoxAlign.fromProps`",
+      "then": "`stretch`",
+      "commit": "452e7e3739081d7e1768af014d54770c7a5fb44a",
+      "excerpt": {
+        "path": "src/domains/dcmp/box-align/__tests__/box-align.normal.test.ts",
+        "start": 8,
+        "end": 10,
+        "text": "test(\"語彙に無い綴りの揃えは stretch として読まれる\", () => {\n  expect(BoxAlign.fromProps({ align: \"baseline\" })).toBe(\"stretch\");\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/box-align/index.ts"
+      ],
+      "covers": [
+        "m-align"
+      ]
+    },
+    {
+      "id": "ba-start",
+      "suite": "box-align",
+      "name": "start と書いた Box は start として読まれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "書いた値がそのまま読める",
+      "given": "`align: start`",
+      "when": "`BoxAlign.fromProps`",
+      "then": "`start`",
+      "commit": "452e7e3739081d7e1768af014d54770c7a5fb44a",
+      "excerpt": {
+        "path": "src/domains/dcmp/box-align/__tests__/box-align.normal.test.ts",
+        "start": 12,
+        "end": 14,
+        "text": "test(\"start と書いた Box は start として読まれる\", () => {\n  expect(BoxAlign.fromProps({ align: \"start\" })).toBe(\"start\");\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/box-align/index.ts"
+      ],
+      "covers": [
+        "m-align"
+      ]
+    },
+    {
+      "id": "ba-center",
+      "suite": "box-align",
+      "name": "center と書いた Box は center として読まれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "書いた値がそのまま読める",
+      "given": "`align: center`",
+      "when": "`BoxAlign.fromProps`",
+      "then": "`center`",
+      "commit": "452e7e3739081d7e1768af014d54770c7a5fb44a",
+      "excerpt": {
+        "path": "src/domains/dcmp/box-align/__tests__/box-align.normal.test.ts",
+        "start": 16,
+        "end": 18,
+        "text": "test(\"center と書いた Box は center として読まれる\", () => {\n  expect(BoxAlign.fromProps({ align: \"center\" })).toBe(\"center\");\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/box-align/index.ts"
+      ],
+      "covers": [
+        "m-align"
+      ]
+    },
+    {
+      "id": "ba-end",
+      "suite": "box-align",
+      "name": "end と書いた Box は end として読まれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "書いた値がそのまま読める",
+      "given": "`align: end`",
+      "when": "`BoxAlign.fromProps`",
+      "then": "`end`",
+      "commit": "452e7e3739081d7e1768af014d54770c7a5fb44a",
+      "excerpt": {
+        "path": "src/domains/dcmp/box-align/__tests__/box-align.normal.test.ts",
+        "start": 20,
+        "end": 22,
+        "text": "test(\"end と書いた Box は end として読まれる\", () => {\n  expect(BoxAlign.fromProps({ align: \"end\" })).toBe(\"end\");\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/box-align/index.ts"
+      ],
+      "covers": [
+        "m-align"
+      ]
+    },
+    {
+      "id": "ba-start-places",
+      "suite": "box-align",
+      "name": "start は長さを決めた子を始点に置く",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "吸い付きを許す揃え",
+      "given": "`start`",
+      "when": "`BoxAlign.isStartForFixedChild`",
+      "then": "`true`",
+      "commit": "452e7e3739081d7e1768af014d54770c7a5fb44a",
+      "excerpt": {
+        "path": "src/domains/dcmp/box-align/__tests__/box-align.normal.test.ts",
+        "start": 24,
+        "end": 26,
+        "text": "test(\"start は長さを決めた子を始点に置く\", () => {\n  expect(BoxAlign.isStartForFixedChild(\"start\")).toBe(true);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/box-align/index.ts"
+      ],
+      "covers": [
+        "m-align"
+      ]
+    },
+    {
+      "id": "ba-stretch-places",
+      "suite": "box-align",
+      "name": "stretch は長さを決めた子を始点に置く",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "長さを決めた子は stretch でも引き伸ばされず始点に来る(実測)",
+      "given": "`stretch`",
+      "when": "`BoxAlign.isStartForFixedChild`",
+      "then": "`true`",
+      "commit": "452e7e3739081d7e1768af014d54770c7a5fb44a",
+      "excerpt": {
+        "path": "src/domains/dcmp/box-align/__tests__/box-align.normal.test.ts",
+        "start": 28,
+        "end": 30,
+        "text": "test(\"stretch は長さを決めた子を始点に置く\", () => {\n  expect(BoxAlign.isStartForFixedChild(\"stretch\")).toBe(true);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/box-align/index.ts"
+      ],
+      "covers": [
+        "m-align"
+      ]
+    },
+    {
+      "id": "ba-center-not",
+      "suite": "box-align",
+      "name": "center は長さを決めた子を始点に置かない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "吸い付きを外す揃え",
+      "given": "`center`",
+      "when": "`BoxAlign.isStartForFixedChild`",
+      "then": "`false`",
+      "commit": "452e7e3739081d7e1768af014d54770c7a5fb44a",
+      "excerpt": {
+        "path": "src/domains/dcmp/box-align/__tests__/box-align.normal.test.ts",
+        "start": 32,
+        "end": 34,
+        "text": "test(\"center は長さを決めた子を始点に置かない\", () => {\n  expect(BoxAlign.isStartForFixedChild(\"center\")).toBe(false);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/box-align/index.ts"
+      ],
+      "covers": [
+        "m-align"
+      ]
+    },
+    {
+      "id": "ba-end-not",
+      "suite": "box-align",
+      "name": "end は長さを決めた子を始点に置かない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "吸い付きを外す揃え",
+      "given": "`end`",
+      "when": "`BoxAlign.isStartForFixedChild`",
+      "then": "`false`",
+      "commit": "452e7e3739081d7e1768af014d54770c7a5fb44a",
+      "excerpt": {
+        "path": "src/domains/dcmp/box-align/__tests__/box-align.normal.test.ts",
+        "start": 36,
+        "end": 38,
+        "text": "test(\"end は長さを決めた子を始点に置かない\", () => {\n  expect(BoxAlign.isStartForFixedChild(\"end\")).toBe(false);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/box-align/index.ts"
+      ],
+      "covers": [
+        "m-align"
+      ]
+    },
+    {
+      "id": "bp-artboard",
+      "suite": "box-props",
+      "name": "artboard は自分の幅と高さを持つ fixed の Box として読める",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "artboard 直下のノードの親も Box の props で判定できる",
+      "given": "幅 375・高さ 812 の artboard `home`",
+      "when": "`DesignDocument.boxPropsOf(document, \"home\")`",
+      "then": "両軸 `fixed` で幅 375・高さ 812",
+      "commit": "5f5dffcf695264738970679c013c48e31d1091ab",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.box-props.test.ts",
+        "start": 23,
+        "end": 34,
+        "text": "test(\"artboard は自分の幅と高さを持つ fixed の Box として読める\", () => {\n  const props = Option.unwrap(\n    DesignDocument.boxPropsOf(setupDocument(), \"home\"),\n  );\n\n  expect(props).toMatchObject({\n    widthMode: \"fixed\",\n    width: 375,\n    heightMode: \"fixed\",\n    height: 812,\n  });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "m-box-props",
+        "m-drop"
+      ]
+    },
+    {
+      "id": "bp-box",
+      "suite": "box-props",
+      "name": "Box のノードは書いていない prop を既定で補って読める",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "解決済みの props を返すので、既定の stretch で判定できる",
+      "given": "`layout: row` だけを書いた Box `panel`",
+      "when": "`boxPropsOf` で引く",
+      "then": "`align: stretch` が補われている",
+      "commit": "5f5dffcf695264738970679c013c48e31d1091ab",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.box-props.test.ts",
+        "start": 36,
+        "end": 42,
+        "text": "test(\"Box のノードは書いていない prop を既定で補って読める\", () => {\n  const props = Option.unwrap(\n    DesignDocument.boxPropsOf(setupDocument(), \"panel\"),\n  );\n\n  expect(props).toMatchObject({ layout: \"row\", align: \"stretch\" });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "m-box-props",
+        "m-drop"
+      ]
+    },
+    {
+      "id": "bp-text",
+      "suite": "box-props",
+      "name": "Text のノードは Box として読めない",
+      "techniques": [
+        "error"
+      ],
+      "why": "子を持てないノードは親にならない",
+      "given": "Text `title`",
+      "when": "`boxPropsOf` で引く",
+      "then": "`none`",
+      "commit": "5f5dffcf695264738970679c013c48e31d1091ab",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.box-props.test.ts",
+        "start": 44,
+        "end": 48,
+        "text": "test(\"Text のノードは Box として読めない\", () => {\n  expect(DesignDocument.boxPropsOf(setupDocument(), \"title\")).toEqual(\n    Option.none,\n  );\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "m-box-props",
+        "m-drop"
+      ]
+    },
+    {
+      "id": "bp-instance",
+      "suite": "box-props",
+      "name": "部品インスタンスは Box として読めない",
+      "techniques": [
+        "error"
+      ],
+      "why": "参照ノードは子を持てない",
+      "given": "部品インスタンス `home-card`",
+      "when": "`boxPropsOf` で引く",
+      "then": "`none`",
+      "commit": "5f5dffcf695264738970679c013c48e31d1091ab",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.box-props.test.ts",
+        "start": 50,
+        "end": 54,
+        "text": "test(\"部品インスタンスは Box として読めない\", () => {\n  expect(DesignDocument.boxPropsOf(setupDocument(), \"home-card\")).toEqual(\n    Option.none,\n  );\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "m-box-props",
+        "m-drop"
+      ]
+    },
+    {
+      "id": "bp-missing",
+      "suite": "box-props",
+      "name": "ドキュメントに無い名前は Box として読めない",
+      "techniques": [
+        "error"
+      ],
+      "why": "無い名前で例外を投げず `none` で返す",
+      "given": "どこにも無い名前 `missing`",
+      "when": "`boxPropsOf` で引く",
+      "then": "`none`",
+      "commit": "5f5dffcf695264738970679c013c48e31d1091ab",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.box-props.test.ts",
+        "start": 56,
+        "end": 60,
+        "text": "test(\"ドキュメントに無い名前は Box として読めない\", () => {\n  expect(DesignDocument.boxPropsOf(setupDocument(), \"missing\")).toEqual(\n    Option.none,\n  );\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "m-box-props",
+        "m-drop"
+      ]
+    },
+    {
+      "id": "fs-column-right",
+      "suite": "flow-snap",
+      "name": "幅が固定の縦並びの親で右辺を掴むと、揃え先は親と自分以外の直下の子になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "主な用途。後ろの兄弟と絶対配置の兄弟を含み、孫は含めない",
+      "given": "幅を固定した縦並びの親(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "右辺(`x: 1, y: 0.5`)を掴む",
+      "then": "`[\"list\", \"first\", \"after\", \"pin\"]`",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 83,
+        "end": 91,
+        "emphasis": [
+          {
+            "start": 84,
+            "end": 90
+          }
+        ],
+        "text": "test(\"幅が固定の縦並びの親で右辺を掴むと、揃え先は親と自分以外の直下の子になる\", () => {\n  // 後ろの兄弟と絶対配置の兄弟を含み、孫の `first-label` は含めない\n  expect(\n    snapTargetNamesAt(setupSelection({ parent: FixedColumn }), {\n      x: 1,\n      y: 0.5,\n    }),\n  ).toEqual([\"list\", \"first\", \"after\", \"pin\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ],
+      "values": {
+        "columns": [
+          "掴む箇所",
+          "縦並びの親",
+          "横並びの親"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "右辺",
+              "親と兄弟",
+              "空"
+            ]
+          },
+          {
+            "cells": [
+              "下辺",
+              "空",
+              "親と兄弟"
+            ]
+          },
+          {
+            "cells": [
+              "右下の角(両軸固定)",
+              "空",
+              "—"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "右上の角(両軸固定)",
+              "親と兄弟",
+              "—"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "左下の角(両軸固定)",
+              "空",
+              "親と兄弟"
+            ],
+            "boundary": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "fs-artboard-right",
+      "suite": "flow-snap",
+      "name": "artboard の直下で右辺を掴むと、揃え先は artboard と自分以外の直下の子になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "artboard 直下の flow のノードも吸い付く。自分の子は含めない",
+      "given": "artboard `home` の直下に絶対配置の `badge`・`target`(子を持つ)・`after`・絶対配置の `marker` が並び、`target` を選んでいる",
+      "when": "右辺を掴む",
+      "then": "`[\"home\", \"badge\", \"after\", \"marker\"]`",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 93,
+        "end": 140,
+        "emphasis": [
+          {
+            "start": 134,
+            "end": 139
+          }
+        ],
+        "text": "test(\"artboard の直下で右辺を掴むと、揃え先は artboard と自分以外の直下の子になる\", () => {\n  // 前後の絶対配置の兄弟を含み、自分の子の `target-label` は含めない\n  const selection = DocumentSelection.fromNames(\n    DesignDocument.create({\n      artboards: [\n        {\n          name: \"home\",\n          width: 360,\n          height: 400,\n          children: [\n            {\n              name: \"badge\",\n              type: \"Box\",\n              props: { ...BothFixed, placement: \"absolute\", x: 10, y: 10 },\n              children: [],\n            },\n            {\n              name: \"target\",\n              type: \"Box\",\n              props: BothFixed,\n              children: [\n                {\n                  name: \"target-label\",\n                  type: \"Text\",\n                  props: { content: \"札\" },\n                },\n              ],\n            },\n            { name: \"after\", type: \"Box\", props: BothFixed, children: [] },\n            {\n              name: \"marker\",\n              type: \"Text\",\n              props: { content: \"印\", placement: \"absolute\", x: 80, y: 90 },\n            },\n          ],\n        },\n      ],\n    }),\n    [\"target\"],\n  );\n\n  expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual([\n    \"home\",\n    \"badge\",\n    \"after\",\n    \"marker\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "fs-topright",
+      "suite": "flow-snap",
+      "name": "両軸とも固定のノードの右上の角は幅だけを掴むので、揃え先がある",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "片方の軸しか掴めない角は 1 軸の掴みとして扱う",
+      "given": "幅を固定した縦並びの親(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "右上の角(`x: 1, y: 0`)を掴む",
+      "then": "親と兄弟の 4 つ",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 142,
+        "end": 146,
+        "text": "test(\"両軸とも固定のノードの右上の角は幅だけを掴むので、揃え先がある\", () => {\n  expect(\n    snapTargetNamesAt(setupSelection({ parent: FixedColumn }), { x: 1, y: 0 }),\n  ).toEqual([\"list\", \"first\", \"after\", \"pin\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "fs-bottomright-hug",
+      "suite": "flow-snap",
+      "name": "高さが固定でないノードの右下の角は幅だけを掴むので、揃え先がある",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "高さが hug のノードの右下の角は幅だけを掴む",
+      "given": "幅を固定した縦並びの親で、`target` の高さが `hug`(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "右下の角(`x: 1, y: 1`)を掴む",
+      "then": "親と兄弟の 4 つ",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 148,
+        "end": 160,
+        "text": "test(\"高さが固定でないノードの右下の角は幅だけを掴むので、揃え先がある\", () => {\n  const selection = setupSelection({\n    parent: FixedColumn,\n    target: { widthMode: \"fixed\", width: 120, heightMode: \"hug\" },\n  });\n\n  expect(snapTargetNamesAt(selection, { x: 1, y: 1 })).toEqual([\n    \"list\",\n    \"first\",\n    \"after\",\n    \"pin\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "fs-row-bottom",
+      "suite": "flow-snap",
+      "name": "高さが固定の横並びの親で下辺を掴むと、揃え先がある",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "横並びの親では下辺が交差軸",
+      "given": "高さを固定した横並びの親(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "下辺(`x: 0.5, y: 1`)を掴む",
+      "then": "親と兄弟の 4 つ",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 162,
+        "end": 166,
+        "text": "test(\"高さが固定の横並びの親で下辺を掴むと、揃え先がある\", () => {\n  expect(\n    snapTargetNamesAt(setupSelection({ parent: FixedRow }), { x: 0.5, y: 1 }),\n  ).toEqual([\"list\", \"first\", \"after\", \"pin\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "fs-row-bottomleft",
+      "suite": "flow-snap",
+      "name": "高さが固定の横並びの親で左下の角を掴むと、高さだけを掴むので揃え先がある",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "flow は始点側を掴めないので、左下の角は高さだけを掴む",
+      "given": "高さを固定した横並びの親(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "左下の角(`x: 0, y: 1`)を掴む",
+      "then": "親と兄弟の 4 つ",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 168,
+        "end": 172,
+        "text": "test(\"高さが固定の横並びの親で左下の角を掴むと、高さだけを掴むので揃え先がある\", () => {\n  expect(\n    snapTargetNamesAt(setupSelection({ parent: FixedRow }), { x: 0, y: 1 }),\n  ).toEqual([\"list\", \"first\", \"after\", \"pin\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "fs-column-bottom",
+      "suite": "flow-snap",
+      "name": "縦並びの親で下辺を掴むと、揃え先は無い",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "主軸は後ろの兄弟が押され、前の兄弟も縮みうる",
+      "given": "幅を固定した縦並びの親(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "下辺を掴む",
+      "then": "空",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 174,
+        "end": 181,
+        "text": "test(\"縦並びの親で下辺を掴むと、揃え先は無い\", () => {\n  expect(\n    snapTargetNamesAt(setupSelection({ parent: FixedColumn }), {\n      x: 0.5,\n      y: 1,\n    }),\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "fs-column-corner",
+      "suite": "flow-snap",
+      "name": "縦並びの親で右下の角を掴むと、揃え先は無い",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "2 軸を同時に変える掴み方は主軸も変わるので外す",
+      "given": "幅を固定した縦並びの親で、両軸固定の `target`(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "右下の角を掴む",
+      "then": "空",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 183,
+        "end": 187,
+        "text": "test(\"縦並びの親で右下の角を掴むと、揃え先は無い\", () => {\n  expect(\n    snapTargetNamesAt(setupSelection({ parent: FixedColumn }), { x: 1, y: 1 }),\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "fs-column-bottomleft",
+      "suite": "flow-snap",
+      "name": "縦並びの親で左下の角を掴むと、主軸の高さだけを掴むので揃え先は無い",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "1 軸だけの角でも、それが主軸なら外す",
+      "given": "幅を固定した縦並びの親(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "左下の角を掴む",
+      "then": "空",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 189,
+        "end": 193,
+        "text": "test(\"縦並びの親で左下の角を掴むと、主軸の高さだけを掴むので揃え先は無い\", () => {\n  expect(\n    snapTargetNamesAt(setupSelection({ parent: FixedColumn }), { x: 0, y: 1 }),\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "fs-row-right",
+      "suite": "flow-snap",
+      "name": "横並びの親で右辺を掴むと、揃え先は無い",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "横並びでは右辺が主軸",
+      "given": "高さを固定した横並びの親(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "右辺を掴む",
+      "then": "空",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 195,
+        "end": 199,
+        "text": "test(\"横並びの親で右辺を掴むと、揃え先は無い\", () => {\n  expect(\n    snapTargetNamesAt(setupSelection({ parent: FixedRow }), { x: 1, y: 0.5 }),\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "fs-center",
+      "suite": "flow-snap",
+      "name": "揃えが center の親では、右辺を掴んでも揃え先は無い",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "center の親では子の始点ごと動く",
+      "given": "`align: center` の縦並びの親(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "右辺を掴む",
+      "then": "空",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 201,
+        "end": 207,
+        "text": "test(\"揃えが center の親では、右辺を掴んでも揃え先は無い\", () => {\n  const selection = setupSelection({\n    parent: { ...FixedColumn, align: \"center\" },\n  });\n\n  expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "fs-nolength",
+      "suite": "flow-snap",
+      "name": "幅が fixed なのに長さを書いていない親では、右辺を掴んでも揃え先は無い",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "長さが無い親は auto で子に合わせて動く",
+      "given": "`widthMode: fixed` だけで幅の無い縦並びの親(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "右辺を掴む",
+      "then": "空",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 209,
+        "end": 215,
+        "text": "test(\"幅が fixed なのに長さを書いていない親では、右辺を掴んでも揃え先は無い\", () => {\n  const selection = setupSelection({\n    parent: { layout: \"column\", widthMode: \"fixed\" },\n  });\n\n  expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "fs-rotated-parent",
+      "suite": "flow-snap",
+      "name": "回った Box の中にいるノードは、右辺を掴んでも揃え先は無い",
+      "techniques": [
+        "state"
+      ],
+      "why": "回って描かれているノードは、揃え先の辺と伸びる向きが合わない",
+      "given": "30 度回した縦並びの親(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "右辺を掴む",
+      "then": "空",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 217,
+        "end": 223,
+        "text": "test(\"回った Box の中にいるノードは、右辺を掴んでも揃え先は無い\", () => {\n  const selection = setupSelection({\n    parent: { ...FixedColumn, rotation: 30 },\n  });\n\n  expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "fs-rotated-self",
+      "suite": "flow-snap",
+      "name": "自分が回っているノードは、右辺を掴んでも揃え先は無い",
+      "techniques": [
+        "state"
+      ],
+      "why": "自分が回っていても同じく外す",
+      "given": "幅を固定した縦並びの親で、30 度回した `target`(`list` の中に `first`・`target`・`after`・絶対配置の `pin` が並び、`target` を選んでいる)",
+      "when": "右辺を掴む",
+      "then": "空",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+        "start": 225,
+        "end": 231,
+        "text": "test(\"自分が回っているノードは、右辺を掴んでも揃え先は無い\", () => {\n  const selection = setupSelection({\n    parent: FixedColumn,\n    target: { ...BothFixed, rotation: 30 },\n  });\n\n  expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual([]);"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-box-props",
+        "m-still",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "st-abs-corner",
+      "suite": "snap-targets",
+      "name": "絶対配置のノードは、右下の角を掴んでも揃え先が右辺と同じになる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "絶対配置は掴み方に依らず吸い付く(これまでどおり)",
+      "given": "絶対配置の `badge` を選んでいる",
+      "when": "右下の角を掴む",
+      "then": "`[\"home\", \"panel\", \"marker\"]`(右辺と同じ)",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+        "start": 79,
+        "end": 85,
+        "text": "test(\"絶対配置のノードは、右下の角を掴んでも揃え先が右辺と同じになる\", () => {\n  expect(snapTargetNamesAt(setupSelection([\"badge\"]), { x: 1, y: 1 })).toEqual([\n    \"home\",\n    \"panel\",\n    \"marker\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "st-flow-bottom",
+      "suite": "snap-targets",
+      "name": "縦に並ぶフロー配置のノードの下辺を掴むと、揃え先は無い",
+      "techniques": [
+        "regression"
+      ],
+      "why": "これまでの「フロー配置は揃え先が無い」を、主軸の掴みに書き直したもの",
+      "given": "縦に並ぶフロー配置の `panel` を選んでいる",
+      "when": "下辺を掴む",
+      "then": "空",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+        "start": 87,
+        "end": 91,
+        "text": "test(\"縦に並ぶフロー配置のノードの下辺を掴むと、揃え先は無い\", () => {\n  expect(\n    snapTargetNamesAt(setupSelection([\"panel\"]), { x: 0.5, y: 1 }),\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "st-artboard-bottom",
+      "suite": "snap-targets",
+      "name": "artboard の下辺を掴んでも、幅につられて動く artboard は揃え先から外れたまま",
+      "techniques": [
+        "regression"
+      ],
+      "why": "artboard の規則は掴み方に依らず変えない",
+      "given": "artboard `home` を選んでいる",
+      "when": "下辺を掴む",
+      "then": "`[\"intro\", \"settings\"]`(後ろの `about` は外れたまま)",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+        "start": 100,
+        "end": 104,
+        "text": "test(\"artboard の下辺を掴んでも、幅につられて動く artboard は揃え先から外れたまま\", () => {\n  expect(snapTargetNamesAt(setupSelection([\"home\"]), { x: 0.5, y: 1 })).toEqual(\n    [\"intro\", \"settings\"],\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-hold"
+      ]
+    },
+    {
+      "id": "cv-width",
+      "suite": "canvas",
+      "name": "右辺の帯を後ろの兄弟の右辺の近くまで運ぶと、兄弟の右辺に揃う幅が通知される",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "いちばん近い揃え先が親ではなく後ろの兄弟になる入力で、配線を通しで守る",
+      "given": "artboard `home` に縦に並ぶ `header`(右辺 400)・`card`(右辺 300)・`footer`(右辺 340)を描き、`card` を選んでいる",
+      "when": "右辺の帯を 298 で押し、336 まで運んで離す(寄せが無ければ幅 238)",
+      "then": "幅 240(`footer` の右辺 340 に揃う)で通知される",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-snap-flow.test.tsx",
+        "start": 80,
+        "end": 95,
+        "emphasis": [
+          {
+            "start": 91,
+            "end": 94
+          }
+        ],
+        "text": "test(\"右辺の帯を後ろの兄弟の右辺の近くまで運ぶと、兄弟の右辺に揃う幅が通知される\", () => {\n  const onResize = vi.fn();\n  renderCanvas({ selection: setupSelection(), onResize });\n  drawnStacked();\n  const card = drawnAt(\"card\", CardBounds);\n\n  // 右辺が 338 まで来る量。寄せが無ければ幅は 238\n  pressPointer(card, { x: 298, y: 140 });\n  movePointer(card, { x: 336, y: 140 });\n  releasePointer(card, { x: 336, y: 140 });\n\n  expect(onResize).toHaveBeenLastCalledWith(\n    ResizeEdit.create([{ axis: \"width\", length: 240 }]),\n    expect.anything(),\n  );\n});"
+      },
+      "values": {
+        "columns": [
+          "掴む箇所",
+          "運んだ量",
+          "通知される幅"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "右辺の帯",
+              "+38",
+              "240"
+            ]
+          },
+          {
+            "cells": [
+              "右下の角",
+              "+38",
+              "238(高さ 80)"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-resizable",
+        "m-grab-at",
+        "m-measure"
+      ]
+    },
+    {
+      "id": "cv-corner",
+      "suite": "canvas",
+      "name": "右下の角を同じだけ運ぶと、兄弟の右辺には吸い付かない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "2 軸を変える掴みでは吸い付かないことの対照",
+      "given": "artboard `home` に縦に並ぶ `header`(右辺 400)・`card`(右辺 300)・`footer`(右辺 340)を描き、`card` を選んでいる",
+      "when": "右下の角を 298 で押し、336 まで運んで離す",
+      "then": "幅 238・高さ 80 で通知される(寄せない)",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-snap-flow.test.tsx",
+        "start": 97,
+        "end": 114,
+        "text": "test(\"右下の角を同じだけ運ぶと、兄弟の右辺には吸い付かない\", () => {\n  const onResize = vi.fn();\n  renderCanvas({ selection: setupSelection(), onResize });\n  drawnStacked();\n  const card = drawnAt(\"card\", CardBounds);\n\n  pressPointer(card, { x: 298, y: 178 });\n  movePointer(card, { x: 336, y: 178 });\n  releasePointer(card, { x: 336, y: 178 });\n\n  expect(onResize).toHaveBeenLastCalledWith(\n    ResizeEdit.create([\n      { axis: \"width\", length: 238 },\n      { axis: \"height\", length: 80 },\n    ]),\n    expect.anything(),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-grab-at",
+        "m-measure"
+      ]
+    },
+    {
+      "id": "cv-guide",
+      "suite": "canvas",
+      "name": "右辺の帯を後ろの兄弟の右辺の近くまで運んでいる間、兄弟の右辺に線が 1 本出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "運んでいる最中にガイド線が揃え先に出る",
+      "given": "artboard `home` に縦に並ぶ `header`(右辺 400)・`card`(右辺 300)・`footer`(右辺 340)を描き、`card` を選んでいる",
+      "when": "右辺の帯を 298 で押し、336 まで運ぶ(離さない)",
+      "then": "線が 1 本、`left: 339px`・高さ 120px で出る",
+      "commit": "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-snap-flow.test.tsx",
+        "start": 116,
+        "end": 129,
+        "emphasis": [
+          {
+            "start": 125,
+            "end": 128
+          }
+        ],
+        "text": "test(\"右辺の帯を後ろの兄弟の右辺の近くまで運んでいる間、兄弟の右辺に線が 1 本出る\", () => {\n  renderCanvas({ selection: setupSelection() });\n  drawnStacked();\n  const card = drawnAt(\"card\", CardBounds);\n\n  pressPointer(card, { x: 298, y: 140 });\n  movePointer(card, { x: 336, y: 140 });\n\n  // `footer` の右辺に中心を合わせ、`card` の上辺 100 から `footer` の下辺 220 までをまたぐ\n  expect(snapGuides()).toHaveLength(1);\n  expect(snapGuides()[0].getAttribute(\"style\")).toContain(\n    \"left: 339px; top: 100px; width: 2px; height: 120px\",\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-grab-at",
+        "m-measure"
+      ]
+    },
+    {
+      "id": "todo-handle",
+      "suite": "canvas",
+      "name": "フロー配置のノードの右辺のハンドルを直接押して運ぶと、揃え先に吸い付く",
+      "techniques": [
+        "state"
+      ],
+      "why": "ハンドルを直接押す経路(`grab`)で flow のノードを吸い付かせる通しテストは無い。実測の処理(`withMeasuredSnap`)は帯の経路と共通で、絶対配置のテストが守っている",
+      "given": "縦並びの親の中の flow のノードを選んでいる",
+      "when": "右辺のハンドルを押して揃え先の近くまで運ぶ",
+      "then": "揃え先の辺に揃う幅が通知される",
+      "todo": true,
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-hold",
+        "m-measure"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "縦に並んだノードの右端を、リサイズでそろえられるようになった",
+    "lead": "親の中に縦や横に並んでいるノードも、リサイズで辺を運ぶと、近くにある親や兄弟の辺へ吸い付くようになりました。吸い付くのは、運んでもほかのものが動かない掴み方のときだけです。",
+    "changed": {
+      "before": [
+        {
+          "text": "並んでいるノードの辺を運んでも、どこにも吸い付かなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "幅を決めた縦並びの親の中では、ノードの右辺を運ぶと、親と、同じ親の中のほかのノードの辺へ吸い付く",
+          "message": "m-still"
+        },
+        {
+          "text": "高さを決めた横並びの親の中では、下辺を運ぶと同じように吸い付く",
+          "message": "m-still"
+        },
+        {
+          "text": "吸い付いている間は、揃った辺に赤いガイド線が 1 本出る",
+          "message": "m-measure"
+        }
+      ],
+      "text": "並ぶ向きの長さを変えると後ろのノードが押されて揃え先が逃げるので、そちらでは吸い付きません。"
+    },
+    "tables": [
+      {
+        "label": "親の並べ方と掴み方ごとの吸い付き",
+        "gist": "吸い付くのは、親の並ぶ向きと直交する辺を 1 本だけ運ぶとき。",
+        "text": "親の揃えが中央・終点のとき、折り返すとき、親の長さが中身や外側で決まるときは、運ぶと自分の位置や揃え先が動くので吸い付きません。",
+        "rowHeads": [
+          {
+            "id": "column",
+            "label": "縦並び・幅を決めた親",
+            "note": "揃えは始点か引き伸ばし"
+          },
+          {
+            "id": "row",
+            "label": "横並び・高さを決めた親",
+            "note": "揃えは始点か引き伸ばし"
+          },
+          {
+            "id": "centered",
+            "label": "揃えが中央か終点の親"
+          },
+          {
+            "id": "wrapping",
+            "label": "折り返す親"
+          },
+          {
+            "id": "loose",
+            "label": "幅が中身に合わせる・いっぱいに広がる縦並びの親"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "right",
+            "label": "右辺"
+          },
+          {
+            "id": "bottom",
+            "label": "下辺"
+          },
+          {
+            "id": "corner",
+            "label": "右下の角(幅と高さを両方変える)"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "column",
+            "columnHead": "right",
+            "result": "親と兄弟の辺へ吸い付く",
+            "was": "吸い付かない",
+            "tests": [
+              "fs-column-right",
+              "fs-artboard-right",
+              "cv-width",
+              "cv-guide"
+            ]
+          },
+          {
+            "rowHead": "column",
+            "columnHead": "bottom",
+            "result": "吸い付かない",
+            "note": "後ろのノードが押されるため",
+            "tests": [
+              "fs-column-bottom",
+              "st-flow-bottom"
+            ]
+          },
+          {
+            "rowHead": "column",
+            "columnHead": "corner",
+            "result": "吸い付かない",
+            "tests": [
+              "fs-column-corner",
+              "cv-corner"
+            ]
+          },
+          {
+            "rowHead": "row",
+            "columnHead": "right",
+            "result": "吸い付かない",
+            "note": "横並びでは右辺が並ぶ向き",
+            "tests": [
+              "fs-row-right"
+            ]
+          },
+          {
+            "rowHead": "row",
+            "columnHead": "bottom",
+            "result": "親と兄弟の辺へ吸い付く",
+            "was": "吸い付かない",
+            "tests": [
+              "fs-row-bottom"
+            ]
+          },
+          {
+            "rowHead": "row",
+            "columnHead": "corner",
+            "result": "吸い付かない"
+          },
+          {
+            "rowHead": "centered",
+            "columnHead": "right",
+            "result": "吸い付かない",
+            "tests": [
+              "fs-center"
+            ]
+          },
+          {
+            "rowHead": "centered",
+            "columnHead": "bottom",
+            "result": "吸い付かない"
+          },
+          {
+            "rowHead": "centered",
+            "columnHead": "corner",
+            "result": "吸い付かない"
+          },
+          {
+            "rowHead": "wrapping",
+            "columnHead": "right",
+            "result": "吸い付かない",
+            "tests": [
+              "sa-wrap"
+            ]
+          },
+          {
+            "rowHead": "wrapping",
+            "columnHead": "bottom",
+            "result": "吸い付かない",
+            "tests": [
+              "sa-wrap"
+            ]
+          },
+          {
+            "rowHead": "wrapping",
+            "columnHead": "corner",
+            "result": "吸い付かない"
+          },
+          {
+            "rowHead": "loose",
+            "columnHead": "right",
+            "result": "吸い付かない",
+            "tests": [
+              "sa-hug",
+              "sa-fill"
+            ]
+          },
+          {
+            "rowHead": "loose",
+            "columnHead": "bottom",
+            "result": "吸い付かない"
+          },
+          {
+            "rowHead": "loose",
+            "columnHead": "corner",
+            "result": "吸い付かない"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "片方の長さしか変えられない角を掴んだとき",
+        "before": [],
+        "after": [
+          {
+            "text": "縦並びの親の中で、幅だけを変えられる角(高さを決めたノードの右上の角や、高さが中身に合わせるノードの右下の角)を運ぶと、右辺と同じく吸い付く",
+            "message": "m-hold"
+          },
+          {
+            "text": "横並びの親の中で、高さだけを変えられる左下の角を運ぶと、下辺と同じく吸い付く",
+            "message": "m-hold"
+          }
+        ],
+        "text": "角でも変わる長さが 1 つで、それが並ぶ向きと直交していれば、辺を運ぶのと同じです。",
+        "tests": [
+          "fs-topright",
+          "fs-bottomright-hug",
+          "fs-row-bottomleft",
+          "fs-column-bottomleft"
+        ]
+      },
+      {
+        "label": "ハンドルを直接押して運んだとき",
+        "before": [],
+        "after": [
+          {
+            "text": "右辺のハンドルを押して運んでも、帯を押したときと同じく吸い付く",
+            "message": "m-hold"
+          }
+        ],
+        "text": "画面で確かめたが、この経路だけを通しで確かめるテストはまだ無い。",
+        "tests": [
+          "todo-handle"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "artboard と、位置を書いた(絶対配置の)ノードは、これまでどおりどの掴み方でも吸い付く",
+        "tests": [
+          "st-abs-corner",
+          "st-artboard-bottom"
+        ]
+      },
+      {
+        "text": "回って描かれているノードと、回った親の中のノードは吸い付かない",
+        "tests": [
+          "fs-rotated-parent",
+          "fs-rotated-self"
+        ]
+      },
+      {
+        "text": "揃え先に、同じ親の中のノードの子(孫)は入らない",
+        "tests": [
+          "fs-column-right",
+          "fs-artboard-right"
+        ]
+      },
+      {
+        "text": "ノードを運んで親へ落とすときの親の決め方は変わらない",
+        "tests": [
+          "bp-artboard",
+          "bp-box",
+          "bp-text"
+        ]
+      },
+      {
+        "text": "パネルで選べる揃えの選択肢と既定は変わらない",
+        "tests": [
+          "ba-default",
+          "ba-unknown"
+        ]
+      },
+      {
+        "text": "Ctrl を押しながら運ぶ間は吸い付かない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "discriminated-union",
+      "category": "typescript · 型",
+      "label": "判別可能な union と `switch` の網羅",
+      "gist": "取りうる形が決まっている値を、形ごとに違うフィールドを持つ型の[[合併|union]]で表し、どの形かを 1 つの文字列フィールド([[判別子|discriminant]])で見分ける書き方。矛盾した組み合わせを、そもそも書けなくするために使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "各枝のオブジェクト型に、同じ名前のフィールド(ここでは `kind`)を[[リテラル型|literal-type]]で持たせ、`|` で並べる。値の `kind` を `switch` や `if` で調べると、TypeScript はその枝の中で値を該当する形だけに[[絞り込む|narrowing]]ので、その枝にしか無いフィールド(`axis` など)を読める。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+            "start": 219,
+            "end": 225,
+            "text": "export type ResizeSnapTargets =\n  /** artboard と、回っていない `placement: \"absolute\"` のノード。どの掴み方でも効く。 */\n  | Readonly<{ kind: \"anyGrip\"; names: readonly string[] }>\n  /** 条件（`flowSnapTargets`）を満たすフロー配置のノード。`axis` の 1 軸だけを掴んだときに効く。 */\n  | Readonly<{ kind: \"axisOnly\"; axis: Axis; names: readonly string[] }>\n  /** 回っている・掴めない・条件を満たさないフロー配置のノード。 */\n  | Readonly<{ kind: \"none\" }>;"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "`switch` に `default` を書かず、関数の戻り値の型を `undefined` を含まない型(ここでは `readonly string[]`)にしておくと、枝を 1 つ足したときに case を書き忘れれば「値を返さない経路がある」としてコンパイルが落ちる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+            "start": 238,
+            "end": 247,
+            "emphasis": [
+              {
+                "start": 239,
+                "end": 246
+              }
+            ],
+            "text": "  namesFor(targets: ResizeSnapTargets, grip: ResizeGrip): readonly string[] {\n    switch (targets.kind) {\n      case \"anyGrip\":\n        return targets.names;\n      case \"axisOnly\":\n        return grabsOnly(grip, targets.axis) ? targets.names : [];\n      case \"none\":\n        return [];\n    }\n  },"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "`default` を書くと、新しい枝がそこへ黙って落ちるので網羅の検査が効かなくなる。"
+        },
+        {
+          "kind": "memo",
+          "text": "`Readonly<{…}>` はすべてのフィールドを読み取り専用にする組み込みの型。`readonly string[]` は書き換えの関数(`push` など)を持たない配列の型。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "text": "`ResizeSnapTargets` の 3 つの枝と、それを網羅する `namesFor`",
+          "shas": [
+            "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+            "7e7c6a31b39f9e57721722561e882c5d0573556f"
+          ],
+          "lineRange": {
+            "start": 219,
+            "end": 248
+          }
+        }
+      ],
+      "seeAlso": [
+        "snap-targets"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "as-const-valueof",
+      "category": "typescript · 型",
+      "label": "`as const` と `ValueOf`",
+      "gist": "値の一覧を 1 つの定数オブジェクトに書き、そこから「その値のどれか」を表す型を作る書き方。一覧と型を別々に書いて食い違うのを防ぐ。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "オブジェクトの後ろに `as const` を付けると、TypeScript は値を `string` に広げず、`\"start\"` のような[[リテラル型|literal-type]]のまま、読み取り専用として覚える。`typeof BoxAligns` でそのオブジェクトの型を取り出し、`ValueOf` でその値の型を合併にすると `\"start\" | \"center\" | \"end\" | \"stretch\"` になる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "export type ValueOf<T> = T[keyof T];"
+        },
+        {
+          "kind": "text",
+          "text": "`keyof T` は `T` のキーの[[合併|union]]、`T[K]` はキー `K` の値の型。合わせて「どれかのキーの値」の型になる。型の名前(`BoxAlign`)と値の名前(`BoxAlign` の companion)は別の名前空間なので、同じ名前を付けられる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/dcmp/box-align/index.ts",
+            "start": 11,
+            "end": 19,
+            "text": "export const BoxAligns = {\n  Start: \"start\",\n  Center: \"center\",\n  End: \"end\",\n  Stretch: \"stretch\",\n} as const;\n\n/** Box が交差軸のどこへ子を揃えるか。 */\nexport type BoxAlign = ValueOf<typeof BoxAligns>;"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "`Object.values(BoxAligns)` は実行時に値の配列を作る標準の関数で、スキーマの `values` はこれで一覧から作っている。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/box-align/index.ts",
+          "text": "`BoxAligns` と `BoxAlign`・既定の `Default`",
+          "shas": [
+            "452e7e3739081d7e1768af014d54770c7a5fb44a"
+          ],
+          "lineRange": {
+            "start": 11,
+            "end": 26
+          }
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "text": "スキーマの `values` / `default` を語彙から作る",
+          "shas": [
+            "452e7e3739081d7e1768af014d54770c7a5fb44a"
+          ],
+          "lineRange": {
+            "start": 244,
+            "end": 245
+          }
+        }
+      ],
+      "seeAlso": [
+        "discriminated-union"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "option",
+      "category": "typescript · このリポジトリの型",
+      "label": "`Option` と型の絞り込み",
+      "gist": "値が「ある」か「無い」かを、`undefined` ではなく 2 つの枝を持つ[[合併|union]]で返すための型(`src/utils/Option.ts`)。無いときの扱いを呼び出し側に書かせるために使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`Option<T>` は `{ some: true; value: T }` か `{ some: false }` のどちらか。中身を読むときは `Option.isSome(x)` で確かめると、その後ろでは `x.value` が読める([[型の述語|type-predicate]]で[[絞り込む|narrowing]])。`Option.map` は中身があれば関数をかけ、`Option.flatMap` は `Option` を返す関数をつないで、どこかで無ければ全体が無いになる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/compiled/compiled-element/index.ts",
+            "start": 410,
+            "end": 424,
+            "emphasis": [
+              {
+                "start": 417,
+                "end": 423
+              }
+            ],
+            "text": "  stillCrossAxis(props: ResolvedProps<\"Box\">): Option<Axis> {\n    const placesAtCrossStart =\n      !Wrap.isWrapping(Wrap.fromProps(props)) &&\n      BoxAlign.isStartForFixedChild(BoxAlign.fromProps(props));\n    if (!placesAtCrossStart) {\n      return Option.none;\n    }\n    return Option.flatMap(BoxElement.childDirection(props), (direction) => {\n      const crossAxis = CssDirection.crossAxis(direction);\n      return Option.map(\n        Size.fixedLengthFromProps(props, crossAxis),\n        () => crossAxis,\n      );\n    });\n  },"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "TypeScript 4.4 以降では、条件を `const` の変数に入れてから `if` に置いても、中の `Option.isSome(...)` の絞り込みが効く。この PR の最後のコミットで、効かないと書いていたコメントを消した。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+            "start": 910,
+            "end": 919,
+            "emphasis": [
+              {
+                "start": 915,
+                "end": 919
+              }
+            ],
+            "text": "  const axis = Option.flatMap(\n    DesignDocument.boxPropsOf(document, parentName),\n    BoxElement.stillCrossAxis,\n  );\n  const names = parentWithSiblingNames(document, { name, parentName });\n  const hasSnapTargets = Option.isSome(axis) && Option.isSome(names);\n  if (!hasSnapTargets) {\n    return ResizeSnapTargets.None;\n  }\n  return { kind: \"axisOnly\", axis: axis.value, names: names.value };"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "絞り込みが効くのは、条件に入れた変数と調べた値が再代入されない(`const`)ときだけ。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "text": "`stillCrossAxis` が親の向きと長さを `Option` でつなぐ",
+          "shas": [
+            "331160b83808c73b8bf96dc489a75916c070bd3f",
+            "7e7c6a31b39f9e57721722561e882c5d0573556f"
+          ],
+          "lineRange": {
+            "start": 410,
+            "end": 424
+          }
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "text": "`flowSnapTargets` が名前を付けた条件で絞り込む",
+          "shas": [
+            "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+            "7e7c6a31b39f9e57721722561e882c5d0573556f"
+          ],
+          "lineRange": {
+            "start": 901,
+            "end": 920
+          }
+        }
+      ],
+      "seeAlso": [
+        "still-cross-axis"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "css-flex-defaults",
+      "category": "css · flexbox",
+      "label": "flex の既定値 `flex-shrink` と `align-content`",
+      "gist": "CSS の [[flexbox|flexbox]] で、書かなかったプロパティにはブラウザの既定値が効く。この PR では、この 2 つの既定値が「リサイズすると何が動くか」を決めている。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "[[主軸|main-axis]]は子が並ぶ向き、[[交差軸|cross-axis]]はそれと直交する向き。`align-items` は交差軸のどこへ子を置くかで、既定の `stretch` でも幅(縦並びなら)を書いた子は引き伸ばされず始点に置かれる。"
+        },
+        {
+          "kind": "spec",
+          "text": "`flex-shrink` の既定は 1。子の合計が親の主軸の長さを超えると、すべての子が縮む。だから主軸の長さを伸ばすと、前の兄弟まで縮んで辺が動く(実測で 50 → 45.5)。"
+        },
+        {
+          "kind": "spec",
+          "text": "`align-content` の既定は `normal` で、flex の中では `stretch` と同じに振る舞う。`flex-wrap: wrap` で複数行になると、行の位置が配り直され、2 行目の子を伸ばすと上辺も動く(実測で上辺 −10)。"
+        },
+        {
+          "kind": "memo",
+          "text": "このリポジトリの出力(`BoxElement.declarations`)は `flex-shrink` も `align-content` も書いていないので、既定値がそのまま効く。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "docs/06-ui.md",
+          "text": "flow のノードの規則と、主軸・折り返し・2 軸の掴みを外す理由",
+          "shas": [
+            "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+            "d87380f72e73ae2aa79755965e78df9068e5ef2f"
+          ],
+          "lineRange": {
+            "start": 215,
+            "end": 218
+          }
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "text": "`stillCrossAxis` の doc が docs の理由を指す",
+          "shas": [
+            "331160b83808c73b8bf96dc489a75916c070bd3f",
+            "7e7c6a31b39f9e57721722561e882c5d0573556f"
+          ],
+          "lineRange": {
+            "start": 401,
+            "end": 409
+          }
+        }
+      ],
+      "seeAlso": [
+        "still-cross-axis"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "snap-targets",
+      "category": "canvas · リサイズ",
+      "label": "`ResizeSnapTargets`",
+      "status": "added",
+      "gist": "選択中のものの揃え先を、どの掴み方で効くかと一緒に持つ直和([[判別可能な union|discriminated-union-term]])。artboard と絶対配置は `anyGrip`、条件を満たす flow は `axisOnly`、それ以外は `none`。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "前は `snapTargetNames: readonly string[]` を 1 本持っていた。flow で「軸 1 本だけで効く」を足すとき、名前と軸を別のフィールドにすると「軸が無いのに名前がある」が書けてしまうので、直和 1 フィールドにした。"
+        },
+        {
+          "kind": "rule",
+          "text": "生の名前は `ResizeSnapTargets` の外へ出さない。読むのは `hold` が絞った `ResizeHold.snapTargetNames` だけ。"
+        },
+        {
+          "kind": "history",
+          "text": "計画の初版は `snapTargetNames` と `snapAxes` の 2 フィールドだったが、plan-reviewer の指摘で直和に改めた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "text": "型と companion",
+          "shas": [
+            "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+            "7e7c6a31b39f9e57721722561e882c5d0573556f"
+          ],
+          "lineRange": {
+            "start": 213,
+            "end": 248
+          }
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "text": "`nodeSnapTargets` が絶対配置と flow を振り分ける",
+          "shas": [
+            "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+            "7e7c6a31b39f9e57721722561e882c5d0573556f"
+          ],
+          "lineRange": {
+            "start": 876,
+            "end": 890
+          }
+        }
+      ],
+      "seeAlso": [
+        "discriminated-union",
+        "hold-narrowing"
+      ],
+      "tests": [
+        "fs-column-right",
+        "st-abs-corner",
+        "st-artboard-bottom"
+      ],
+      "flows": [
+        "f-render"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "hold-narrowing",
+      "category": "canvas · リサイズ",
+      "label": "`hold` での絞り込み",
+      "status": "changed",
+      "gist": "掴んだ時点に、掴み方(右辺・下辺・角)に合わせて揃え先の名前を絞り、掴みに載せる。`axisOnly` は変える軸がその 1 軸だけのときだけ名前を返す。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "掴む経路はハンドルを直接押す `grab` と帯を押す `grabAt` の 2 本あるが、どちらも `NodeResize.hold` を通る。ここで 1 回だけ絞れば、hook 側で呼び忘れる経路が無い。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+            "start": 625,
+            "end": 638,
+            "emphasis": [
+              {
+                "start": 635,
+                "end": 635
+              }
+            ],
+            "text": "  hold(\n    resizable: ResizableSelection,\n    grip: ResizeGrip,\n    pointerOrigin: Offset,\n  ): ResizeHold {\n    return {\n      grip,\n      pointerOrigin,\n      grabbedAt: resizable.origin,\n      rotation: resizable.rotation,\n      snapTargetNames: ResizeSnapTargets.namesFor(resizable.snapTargets, grip),\n      snapFrom: Option.none,\n    };\n  },"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "1 軸かどうかは `grabsOnly` が見る。`ResizeGrip.grabs` は変える軸ぶんの掴みを返すので、長さが 1 でその軸が一致すれば 1 軸の掴み。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+            "start": 257,
+            "end": 260,
+            "text": "function grabsOnly(grip: ResizeGrip, axis: Axis): boolean {\n  const grabs = ResizeGrip.grabs(grip);\n  return grabs.length === 1 && grabs[0].length.axis === axis;\n}"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "ハンドルを直接押す経路で flow のノードが吸い付くことを通しで確かめるテストは無い。実測の処理は帯の経路と共通。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "text": "`hold` が `snapTargetNames` を載せる",
+          "shas": [
+            "a6a788e8866121fcc6d861bba05f4460e9f034e2"
+          ],
+          "lineRange": {
+            "start": 625,
+            "end": 638
+          }
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "text": "hook は `held.snapTargetNames` を実測するだけ",
+          "shas": [
+            "a6a788e8866121fcc6d861bba05f4460e9f034e2"
+          ],
+          "lineRange": {
+            "start": 81,
+            "end": 98
+          }
+        }
+      ],
+      "seeAlso": [
+        "snap-targets"
+      ],
+      "tests": [
+        "fs-topright",
+        "fs-column-corner",
+        "cv-width",
+        "cv-corner",
+        "todo-handle"
+      ],
+      "flows": [
+        "f-handle",
+        "f-band"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "still-cross-axis",
+      "category": "compiled · 描画用の要素",
+      "label": "`BoxElement.stillCrossAxis`",
+      "status": "added",
+      "gist": "親の Box の props から、子が交差軸の長さを変えても子の始点・親・兄弟が動かない軸を答える。無ければ `none`。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "答えるのは、折り返さず、揃えが start / stretch で、交差軸の長さを書いた fixed の親のときの交差軸。主軸は答えない。理由は [[flexbox|flexbox]] の既定値(`flex-shrink` と `align-content`)にある。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/compiled/compiled-element/index.ts",
+            "start": 401,
+            "end": 424,
+            "emphasis": [
+              {
+                "start": 411,
+                "end": 416
+              }
+            ],
+            "text": "  /**\n   * 子が交差軸の長さを変えても、子の始点・親・兄弟の位置が動かない軸。答えは `declarations`\n   * が出す CSS とブラウザの既定値で決まり、主軸を答えない理由とあわせて docs/06-ui.md\n   * 「リサイズハンドル」の辺のスナップにある。\n   *\n   * @param props デフォルト解決済みの Box の props\n   * @returns 子の交差軸。子を並べない（`layout: free`）・折り返す・揃えが center / end・\n   *   交差軸の長さが決まっていない（hug / fill / `fixed` なのに長さが無い）ときは `none`\n   */\n  stillCrossAxis(props: ResolvedProps<\"Box\">): Option<Axis> {\n    const placesAtCrossStart =\n      !Wrap.isWrapping(Wrap.fromProps(props)) &&\n      BoxAlign.isStartForFixedChild(BoxAlign.fromProps(props));\n    if (!placesAtCrossStart) {\n      return Option.none;\n    }\n    return Option.flatMap(BoxElement.childDirection(props), (direction) => {\n      const crossAxis = CssDirection.crossAxis(direction);\n      return Option.map(\n        Size.fixedLengthFromProps(props, crossAxis),\n        () => crossAxis,\n      );\n    });\n  },"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "答えは `declarations` が出す CSS に依るので、同じ `BoxElement` に置く。CSS の出力を変えたら、ここの答えも合わせる。"
+        },
+        {
+          "kind": "spec",
+          "text": "docs/06-ui.md「リサイズハンドル」の辺のスナップが、外す条件とその理由を持つ。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "text": "判定の本体",
+          "shas": [
+            "331160b83808c73b8bf96dc489a75916c070bd3f",
+            "7e7c6a31b39f9e57721722561e882c5d0573556f"
+          ],
+          "lineRange": {
+            "start": 401,
+            "end": 424
+          }
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "text": "`flowSnapTargets` が親の props を引いて渡す",
+          "shas": [
+            "a6a788e8866121fcc6d861bba05f4460e9f034e2",
+            "7e7c6a31b39f9e57721722561e882c5d0573556f"
+          ],
+          "lineRange": {
+            "start": 910,
+            "end": 913
+          }
+        }
+      ],
+      "seeAlso": [
+        "css-flex-defaults",
+        "option"
+      ],
+      "tests": [
+        "sa-column",
+        "sa-row",
+        "sa-center",
+        "sa-wrap",
+        "sa-hug",
+        "sa-fill",
+        "sa-main"
+      ],
+      "flows": [
+        "f-render"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "union",
+      "label": "合併",
+      "text": "`A | B` と書く型で、A か B のどちらかの値を表す(union 型)。"
+    },
+    {
+      "id": "discriminant",
+      "label": "判別子",
+      "text": "合併のどの枝かを見分けるために、すべての枝が持つ同じ名前のフィールド。値は枝ごとに違うリテラル型にする。"
+    },
+    {
+      "id": "literal-type",
+      "label": "リテラル型",
+      "text": "`\"none\"` や `1` のように、ただ 1 つの値だけを許す型。"
+    },
+    {
+      "id": "narrowing",
+      "label": "絞り込み",
+      "text": "`if` や `switch` で値を調べた後ろで、TypeScript が値の型をより狭い型として扱うこと(narrowing)。"
+    },
+    {
+      "id": "type-predicate",
+      "label": "型の述語",
+      "text": "戻り値の型を `x is T` と書いた関数。`true` を返した後ろでは、`x` を `T` として扱える。"
+    },
+    {
+      "id": "flexbox",
+      "label": "flexbox",
+      "text": "`display: flex` の要素が、子を 1 方向に並べる CSS の仕組み。"
+    },
+    {
+      "id": "main-axis",
+      "label": "主軸",
+      "text": "flexbox で子が並ぶ向き。縦並びなら高さ、横並びなら幅。"
+    },
+    {
+      "id": "cross-axis",
+      "label": "交差軸",
+      "text": "主軸と直交する向き。縦並びなら幅、横並びなら高さ。"
+    },
+    {
+      "id": "discriminated-union-term",
+      "label": "判別可能な union",
+      "text": "判別子のフィールドで枝を見分けられる合併。「判別可能な union と `switch` の網羅」の節が書き方を持つ。"
+    }
+  ]
+}
