@@ -184,9 +184,9 @@ export const DocumentSelection = {
         ? [found.value.ref]
         : [];
     });
-    const isSameSource =
-      refs.length === names.length && ArrayEx.distinct(refs).length === 1;
-    return isSameSource ? ArrayEx.first(refs) : Option.none;
+    return refs.length === names.length
+      ? ArrayEx.singleDistinct(refs)
+      : Option.none;
   },
 
   /**
