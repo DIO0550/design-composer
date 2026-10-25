@@ -230,6 +230,23 @@ test("unlocked と書いたインスタンスは、部品の根がロックし�
   expect(DesignDocument.isLocked(result, "save-button")).toBe(false);
 });
 
+test("部品の根がロックしていても、ロックを書いていないインスタンスは解除後にロックされていない", () => {
+  const document = setupInstanceDocument(
+    { name: "save-button", ref: "frozen-button" },
+    {
+      "frozen-button": {
+        type: "Box",
+        props: { locking: "locked" },
+        children: [],
+      },
+    },
+  );
+
+  const result = Result.unwrap(DesignDocument.detach(document, "save-button"));
+
+  expect(DesignDocument.isLocked(result, "save-button")).toBe(false);
+});
+
 test("部品の中でロックしたインスタンスは、外側のインスタンスを解除した木でもロックされている", () => {
   const document = setupInstanceDocument(
     { name: "home-card", ref: "card" },

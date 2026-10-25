@@ -104,13 +104,13 @@ test("インスタンス自身のロックは部品の根に書かれたロッ�
   expect(expanded.props).toEqual({ locking: "unlocked" });
 });
 
-test("インスタンス自身のロックが書かれていなければ、展開した根は部品のロックのまま", () => {
+test("インスタンス自身のロックが書かれていなければ、展開した根から部品の根のロックは消える", () => {
   const components: ComponentSet = {
-    card: { type: "Box", props: { locking: "locked" } },
+    card: { type: "Box", props: { background: "primary", locking: "locked" } },
   };
   const instance: RefNode = { name: "panel", ref: "card" };
 
   const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
 
-  expect(expanded.props).toEqual({ locking: "locked" });
+  expect(expanded.props).toEqual({ background: "primary" });
 });
