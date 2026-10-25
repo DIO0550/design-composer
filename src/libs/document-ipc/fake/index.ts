@@ -3,7 +3,7 @@ import { ipcFailure } from "@/libs/tauri-ipc/fake";
 import { Option } from "@/utils/Option";
 import { DocumentIpc, type DocumentIpcErrorKind } from "../index";
 
-/** 別の綴りと、それが指す実体の綴り。 */
+/** 別の綴りと、それが指す実体の綴り。symlink に限らず、同じファイルを指す別の綴りを表す。 */
 export type PathLink = Readonly<{ link: string; target: string }>;
 
 /** `denyCanonicalize` で再現できる失敗の種別。 */

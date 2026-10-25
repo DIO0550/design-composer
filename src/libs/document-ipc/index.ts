@@ -5,6 +5,7 @@ import {
 } from "@/domains/session/document-access-failure";
 import { FilePath } from "@/domains/unit/file-path";
 import { TauriIpc, type Unsubscribe } from "@/libs/tauri-ipc";
+import { Interop } from "@/utils/Interop";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
@@ -100,8 +101,8 @@ const DocumentChangedEvent = "document-changed";
  */
 export type DocumentIpc = Readonly<{
   /**
-   * 同じファイルを指す別の綴り（symlink 経由・`.` や続いた区切りを含む・大文字小文字を
-   * 区別しないファイルシステムでの大小違い）を、1 つの綴りへ寄せる。
+   * 同じファイルを指す別の綴りを 1 つの綴りへ寄せる（寄せる範囲は
+   * `docs/05-architecture.md`「Tauri IPC」）。
    */
   canonicalize(path: FilePath): Promise<Result<FilePath, DocumentIpcError>>;
   load(path: FilePath): Promise<Result<string, DocumentIpcError>>;
@@ -234,13 +235,10 @@ function toContent(value: unknown): Result<string, DocumentIpcError> {
  */
 function toCanonicalPath(value: unknown): Result<FilePath, DocumentIpcError> {
   return Result.flatMap(toText("canonicalize_document_path", value), (text) => {
-    const path = FilePath.create(text);
-    return Option.isSome(path)
-      ? Result.ok(path.value)
-      : Result.err({
-          kind: "ipcFailed",
-          message: `canonicalize_document_path がファイル名の要素を持たない綴りを返した: ${text}`,
-        });
+    return Interop.toResult<FilePath, DocumentIpcError>(FilePath.create(text), {
+      kind: "ipcFailed",
+      message: `canonicalize_document_path がファイル名の要素を持たない綴りを返した: ${text}`,
+    });
   });
 }
 

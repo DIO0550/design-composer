@@ -362,8 +362,8 @@ async function canonicalizeRecentPaths(
  *
  * @param appState 読み込み元
  * @param ipc 綴りを寄せるのに使う口
- * @returns 保存されていた一覧。まだ一度も保存していなければ空の一覧。読み出せない /
- *   解釈できないときは、診断用の原文を持つ失敗
+ * @returns 保存されていた一覧の綴りを寄せてまとめたもの。まだ一度も保存していなければ
+ *   空の一覧。読み出せない / 解釈できないときは、診断用の原文を持つ失敗
  */
 async function loadRecentFiles(
   appState: AppStateIpc,
