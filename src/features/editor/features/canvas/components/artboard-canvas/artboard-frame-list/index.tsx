@@ -27,6 +27,9 @@ export const SelectionColor = "#3b82f6";
  *
  * 枠に使えるのは `outline` だけで、`box-shadow` はノードの `shadow` prop がインライン
  * style で使う（docs/03 の対応表）ため奪えない。
+ *
+ * 枠の形はノードの形に沿う（docs/06-ui.md「選択」）。枠を別の要素で重ねて描く矩形の枠には
+ * しない。描き方がノードの outline と重ねた要素の 2 系統に割れる。
  */
 const SelectionOutline = `outline:2px solid ${SelectionColor};outline-offset:1px`;
 
