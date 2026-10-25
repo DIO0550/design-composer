@@ -1,6 +1,7 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { AppStateJson } from "@/libs/app-state-json";
@@ -18,6 +19,9 @@ import {
   startOpen,
   tabBar,
 } from "./setup";
+
+/** `Path` を指す別の綴り。 */
+const LinkPath = filePath("/link/login.dcmp");
 
 test("起動直後はドキュメントを開くよう案内される", () => {
   renderEditorScreen(
@@ -431,4 +435,19 @@ test("最後のタブを閉じると、開始画面へ戻る", async () => {
   expect(
     screen.getByText("ドキュメントを開くか、新しく作成してください。"),
   ).toBeDefined();
+});
+
+test("開いているファイルを別の綴りで落としても、タブは増えない", async () => {
+  const observer = renderEditorScreen(
+    { [Path]: DocumentJson.serialize(SampleDocument) },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  observer.files.linkPath({ link: LinkPath, target: Path });
+  await startOpen(observer);
+
+  await observer.dropFiles([LinkPath]);
+
+  expect(
+    within(tabBar()).getAllByRole("button", { name: /を閉じる$/ }),
+  ).toHaveLength(1);
 });

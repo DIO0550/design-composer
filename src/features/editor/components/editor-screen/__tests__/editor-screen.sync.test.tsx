@@ -2,6 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
+import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { DialogChoice } from "@/libs/document-dialog/fake";
@@ -19,6 +20,9 @@ import {
   startOpen,
   tree,
 } from "./setup";
+
+/** `Path` を指す別の綴り。 */
+const LinkPath = filePath("/link/login.dcmp");
 
 test("編集した内容が自動保存され、開き直すとその状態が読み戻る", async () => {
   const opened = DocumentJson.serialize(SampleDocument);
@@ -155,4 +159,25 @@ test("背面になったタブで編集した内容も、戻らずにファイ�
     },
     { timeout: 3000 },
   );
+});
+
+/*
+ * 別の綴りで開いた側が監視を張り直すと、前の綴りへは通知が届かなくなる（Rust は実体ごとに
+ * 監視を 1 つだけ持つ）。綴りを寄せずにタブが 2 つになると、最初のタブが取り残される。
+ */
+test("開いているファイルを別の綴りで落としても、外部変更はそのタブに反映される", async () => {
+  const observer = renderEditorScreen(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  observer.files.linkPath({ link: LinkPath, target: Path });
+  await startOpen(observer);
+  await observer.dropFiles([LinkPath]);
+
+  await changeExternally(observer.files, Path, artboardContent("profile"));
+  await selectTab(Path);
+
+  expect(
+    within(artboardList()).getByRole("button", { name: "profile" }),
+  ).toBeDefined();
 });
