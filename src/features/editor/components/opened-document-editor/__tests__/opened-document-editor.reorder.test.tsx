@@ -1,9 +1,10 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
-import { renderOpenedDocument, tree } from "./setup";
+import { SampleDocumentWithSameComponentInstances } from "@/features/editor/__tests__/sample-document";
+import { canvasPane, propertyPane, renderOpenedDocument, tree } from "./setup";
 
 test("ツリービューで子を後ろの行の上へ運ぶと兄弟の並びがその順序に変わる", async () => {
   await renderOpenedDocument();
@@ -47,4 +48,18 @@ test("並べ替えても選択していたノードは選択されたままに�
       .getByRole("button", { name: "home-title" })
       .getAttribute("aria-current"),
   ).toBe("true");
+});
+
+test("同じ親の兄弟をまとめて選んでいるときは ⌘[ でまとめて背面へ動く", async () => {
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
+  await userEvent.click(within(canvasPane()).getByText("ログイン"));
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", {
+      name: "Select all 2 instances",
+    }),
+  );
+
+  await userEvent.keyboard("{Meta>}[[{/Meta}");
+
+  expect(rowNames(tree())).toEqual(["home-login", "home-signup", "home-title"]);
 });
