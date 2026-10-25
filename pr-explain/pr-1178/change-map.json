@@ -1,0 +1,1357 @@
+{
+  "version": 2,
+  "pr": 1178,
+  "headBranch": "claude/magical-cannon-w83y3t",
+  "baseBranch": "main",
+  "mergeBase": "fe01e51da140038ffb8cfa19030ede4744247551",
+  "head": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-access-failure/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-save-state/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/file-paths.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/sample-document.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/app-menu/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/app-menu/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 30,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/app-state-ipc/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/app-state-ipc/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 28,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/app-window/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/app-window/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 25,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/clock/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 6,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/document-dialog/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 20,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 44,
+          "deletions": 46,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/document-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/file-drop/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 29,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/tauri-dialog/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/tauri-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/tauri-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/__tests__/document-change.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-menu/__tests__/app-menu.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-menu/__tests__/app-menu.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/__tests__/app-state-ipc.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "changed": true,
+          "target": "src/libs/app-state-ipc/index.ts"
+        },
+        {
+          "path": "src/libs/app-state-ipc/__tests__/app-state-ipc.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-window/__tests__/app-window.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-window/__tests__/app-window.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/__tests__/document-dialog.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/__tests__/document-dialog.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.document-access-failure.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 5,
+          "changed": true,
+          "target": "src/libs/document-ipc/index.ts"
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/__tests__/file-drop.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/__tests__/file-drop.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/components/editor-screen/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.shortcut.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/domains/document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-sync",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.document-invalid.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 2,
+          "changed": true,
+          "target": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/__tests__/use-file-revert.normal.test.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "app",
+      "files": [
+        {
+          "path": "src/app/App.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 12,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/app/main.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/app/__tests__/App.normal.test.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": [
+      "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "src/libs/app-state-ipc/__tests__/app-state-ipc.edge.test.ts",
+      "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "71b0d745cbbfe354de6b0593669ac9f67add7887",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T02:08:19Z",
+      "subject": "♻️ [Refactoring]: #1065 実装が 1 つしか無い libs の口を素の関数 createX にする",
+      "body": "- AppWindow / AppStateIpc / DocumentIpc / AppMenu / FileDrop /\n  DocumentDialog の生成口を `export const X = { create }` から\n  `export function createX(...): X` に変えた。型 X・エラー型・定数は残す\n- 呼び出し側 19 箇所（App.tsx / 各 fake / テスト 3 ファイル）を書き換えた\n- fake の doc で「`X` 本体」と実装を指していた 5 箇所を、\n  `createX` が作る口を指す書き方に直した\n- TauriIpc / TauriDialog / Clock はコンパニオンの形のまま残した\n\n背景:\nPR #1060 のレビューで「この lib の処理はコンパニオンにする必要が無い\nのでは」と指摘を受けた。libs の口はどれも型 + 同名 const + create の\n形で書かれていて、値の規則を持つドメインのコンパニオンと見分けが\n付かなかった。\n\n採用理由:\nオーナーの判断（アダプターっぽくしていないならコンパニオンの意味が\n無い）に従い、線を「同じ型に実装が 2 つ（本物と fake/ の代役）ある\nか」で引いた。fake/ を読むと、6 個の口の代役はどれも下の TauriIpc /\nTauriDialog の位置に差し込まれていて、口そのものの実装は本番でも\nテストでも 1 つしかない。同名 const は何も束ねていないので素の関数に\nした。TauriIpc / TauriDialog / Clock は fake/ が同じ型を直接実装する\n差し替え点（ポート）なので、型 + 同名 const + create に意味がある。\n名前は rules/naming.md「値を組み立てるのは create」に揃えた。\n\n代替案:\n- 据え置く: オーナーの判断で採らなかった\n- 差し替え点 3 個も素の関数にする: 2 実装あるポートで、TauriIpc は\n  caller も持つので対象外にした\n- 互換のため `export const AppWindow = { create: createAppWindow }`\n  を残す: 入口が 2 つになり 1 モジュール内で語彙が混ざる\n- appWindowFrom / fromTauriIpc と名付ける: 引数は変換元ではなく材料\n- fake/ の XxxFake.create も揃える: 呼び出しが 106 箇所 / 28 ファイル\n  あり、DialogChoice のように形の違うものも混ざるので #1174 へ分けた\n- テストと実装でコミットを分ける: 公開 API の改名なので、分けると\n  途中のコミットで tsc が落ちる\n\n影響とトレードオフ:\n振る舞いは変えていない（既存テスト 5 / 8 / 7 件をそのまま通す）。\nlibs の中に「createX の素の関数」と「型 + 同名 const」の 2 通りが並ぶ\nことになり、線引きの理由はコードに書いていない。同じ文を複数ファイル\nへ写すことになるので、判例の候補として harness-record へ渡す。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1065\n- https://github.com/DIO0550/design-composer/pull/1060#discussion_r4240888365\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_015ViaHQ249de8pMYxpPwh8k",
+      "files": [
+        {
+          "path": "src/app/App.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 12,
+          "patch": "@@ -1,11 +1,11 @@\n import { EditorScreen } from \"@/features/editor\";\n-import { AppMenu } from \"@/libs/app-menu\";\n-import { AppStateIpc } from \"@/libs/app-state-ipc\";\n-import { AppWindow } from \"@/libs/app-window\";\n+import { createAppMenu } from \"@/libs/app-menu\";\n+import { createAppStateIpc } from \"@/libs/app-state-ipc\";\n+import { createAppWindow } from \"@/libs/app-window\";\n import { Clock } from \"@/libs/clock\";\n-import { DocumentDialog } from \"@/libs/document-dialog\";\n-import { DocumentIpc } from \"@/libs/document-ipc\";\n-import { FileDrop } from \"@/libs/file-drop\";\n+import { createDocumentDialog } from \"@/libs/document-dialog\";\n+import { createDocumentIpc } from \"@/libs/document-ipc\";\n+import { createFileDrop } from \"@/libs/file-drop\";\n import { TauriDialog } from \"@/libs/tauri-dialog\";\n import { TauriIpc } from \"@/libs/tauri-ipc\";\n \n@@ -20,12 +20,12 @@ import { TauriIpc } from \"@/libs/tauri-ipc\";\n  */\n const tauriIpc = TauriIpc.create();\n const ports = {\n-  ipc: DocumentIpc.create(tauriIpc),\n-  dialog: DocumentDialog.create(TauriDialog.create()),\n-  menu: AppMenu.create(tauriIpc),\n-  drop: FileDrop.create(tauriIpc),\n-  appState: AppStateIpc.create(tauriIpc),\n-  appWindow: AppWindow.create(tauriIpc),\n+  ipc: createDocumentIpc(tauriIpc),\n+  dialog: createDocumentDialog(TauriDialog.create()),\n+  menu: createAppMenu(tauriIpc),\n+  drop: createFileDrop(tauriIpc),\n+  appState: createAppStateIpc(tauriIpc),\n+  appWindow: createAppWindow(tauriIpc),\n } as const;\n const clock = Clock.create();\n ",
+          "patchLines": 37,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 2,
+          "patch": "@@ -5,7 +5,11 @@ import {\n   DocumentAccessFailureReasons,\n } from \"@/domains/session/document-access-failure\";\n import { DocumentSaveState } from \"@/domains/session/document-save-state\";\n-import { DocumentIpc, type DocumentIpcError } from \"@/libs/document-ipc\";\n+import {\n+  createDocumentIpc,\n+  type DocumentIpc,\n+  type DocumentIpcError,\n+} from \"@/libs/document-ipc\";\n import { DocumentIpcFake } from \"@/libs/document-ipc/fake\";\n import { DocumentJson } from \"@/libs/document-json\";\n import type { TauriIpc } from \"@/libs/tauri-ipc\";\n@@ -28,7 +32,7 @@ function denyingIpc(): DocumentIpc {\n     invoke: () => Promise.reject(Denied),\n     listen: () => Promise.reject(\"Event not emitted\"),\n   };\n-  return DocumentIpc.create(tauriIpc);\n+  return createDocumentIpc(tauriIpc);\n }\n \n test(\"開いたドキュメントを編集していなければファイルへ書き出さない\", async () => {",
+          "patchLines": 22,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-menu/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 2,
+          "patch": "@@ -1,5 +1,10 @@\n import { SingleEventIpcFake } from \"@/libs/tauri-ipc/fake\";\n-import { AppMenu, type AppMenuCommand, MenuCommandEvent } from \"../index\";\n+import {\n+  type AppMenu,\n+  type AppMenuCommand,\n+  createAppMenu,\n+  MenuCommandEvent,\n+} from \"../index\";\n \n /**\n  * OS のメニューの代役。利用者がどの項目を選んだかをテストから起こす。\n@@ -30,7 +35,7 @@ export const AppMenuFake = {\n     const events = SingleEventIpcFake.create(MenuCommandEvent);\n \n     return {\n-      menu: AppMenu.create(events.ipc),\n+      menu: createAppMenu(events.ipc),\n       choose: events.deliver,\n       deliverUnknown: events.deliver,\n       denySubscribe: events.denySubscribe,",
+          "patchLines": 21,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-menu/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 30,
+          "patch": "@@ -57,33 +57,31 @@ export type AppMenu = Readonly<{\n   ): Promise<Result<Unsubscribe, AppMenuError>>;\n }>;\n \n-export const AppMenu = {\n-  /**\n-   * OS のメニューの選択を受け取る口を作る。\n-   *\n-   * @param tauriIpc メニューのイベントを購読する IPC\n-   * @returns 指示を購読できる口。作っただけでは購読せず、`subscribeCommand` を呼んだ時点で張る\n-   */\n-  create(tauriIpc: TauriIpc): AppMenu {\n-    return {\n-      async subscribeCommand(listener) {\n-        try {\n-          const unsubscribe = await tauriIpc.listen(\n-            MenuCommandEvent,\n-            (payload) => {\n-              // 語彙に無い値は配らない。指示として渡せる中身が無く、イベントの\n-              // コールバックには失敗を返す相手もいないため。\n-              const command = toAppMenuCommand(payload);\n-              if (Option.isSome(command)) {\n-                listener(command.value);\n-              }\n-            },\n-          );\n-          return Result.ok(unsubscribe);\n-        } catch (reason) {\n-          return Result.err({ message: String(reason) });\n-        }\n-      },\n-    };\n-  },\n-} as const;\n+/**\n+ * OS のメニューの選択を受け取る口を作る。\n+ *\n+ * @param tauriIpc メニューのイベントを購読する IPC\n+ * @returns 指示を購読できる口。作っただけでは購読せず、`subscribeCommand` を呼んだ時点で張る\n+ */\n+export function createAppMenu(tauriIpc: TauriIpc): AppMenu {\n+  return {\n+    async subscribeCommand(listener) {\n+      try {\n+        const unsubscribe = await tauriIpc.listen(\n+          MenuCommandEvent,\n+          (payload) => {\n+            // 語彙に無い値は配らない。指示として渡せる中身が無く、イベントの\n+            // コールバックには失敗を返す相手もいないため。\n+            const command = toAppMenuCommand(payload);\n+            if (Option.isSome(command)) {\n+              listener(command.value);\n+            }\n+          },\n+        );\n+        return Result.ok(unsubscribe);\n+      } catch (reason) {\n+        return Result.err({ message: String(reason) });\n+      }\n+    },\n+  };\n+}",
+          "patchLines": 62,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/__tests__/app-state-ipc.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -2,7 +2,7 @@ import { expect, test } from \"vitest\";\n import { Option } from \"@/utils/Option\";\n import { Result } from \"@/utils/Result\";\n import { AppStateIpcFake } from \"../fake\";\n-import { AppStateIpc } from \"../index\";\n+import { createAppStateIpc } from \"../index\";\n \n test(\"読み込みが拒まれたら理由を持つ失敗になる\", async () => {\n   const fake = AppStateIpcFake.create('{\"recentPaths\":[]}');\n@@ -36,7 +36,7 @@ test(\"書き出しが拒まれたら中身は変わらない\", async () => {\n });\n \n test(\"コマンドが無いときも理由を持つ失敗になる\", async () => {\n-  const ipc = AppStateIpc.create({\n+  const ipc = createAppStateIpc({\n     invoke: (command) => Promise.reject(`Command ${command} not found`),\n     listen: (event) => Promise.reject(`Event ${event} not emitted`),\n   });\n@@ -49,7 +49,7 @@ test(\"コマンドが無いときも理由を持つ失敗になる\", async () =>\n });\n \n test(\"読み込みが文字列でも null でもない値を返したら失敗になる\", async () => {\n-  const ipc = AppStateIpc.create({\n+  const ipc = createAppStateIpc({\n     invoke: () => Promise.resolve(42),\n     listen: (event) => Promise.reject(`Event ${event} not emitted`),\n   });",
+          "patchLines": 27,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -1,14 +1,14 @@\n import type { TauriIpc } from \"@/libs/tauri-ipc\";\n import { ipcFailure } from \"@/libs/tauri-ipc/fake\";\n import { Option } from \"@/utils/Option\";\n-import { AppStateIpc } from \"../index\";\n+import { type AppStateIpc, createAppStateIpc } from \"../index\";\n \n /**\n  * Rust 側の代役。インメモリに 1 つだけ持つ中身に対して `load_app_state` /\n  * `save_app_state` を再現する。\n  *\n- * 差し込む先は `TauriIpc` の位置なので、`ipc` を通した呼び出しでは `AppStateIpc` 本体\n- * （コマンド名・引数・エラーの解釈）がそのまま動く。\n+ * 差し込む先は `TauriIpc` の位置なので、`ipc` を通した呼び出しでは `createAppStateIpc`\n+ * が作る本体（コマンド名・引数・エラーの解釈）がそのまま動く。\n  */\n export type AppStateIpcFake = Readonly<{\n   /** インメモリの中身に向いた `AppStateIpc`。 */\n@@ -80,7 +80,7 @@ export const AppStateIpcFake = {\n     };\n \n     return {\n-      ipc: AppStateIpc.create(tauriIpc),\n+      ipc: createAppStateIpc(tauriIpc),\n \n       storedContent() {\n         return Option.fromNullable(content);",
+          "patchLines": 27,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 28,
+          "patch": "@@ -72,33 +72,28 @@ function toStoredContent(\n   return Result.ok(Option.some(value));\n }\n \n-export const AppStateIpc = {\n-  /**\n-   * アプリ自身の状態を読み書きする口を作る。\n-   *\n-   * @param tauriIpc コマンドを呼ぶ IPC\n-   * @returns `tauriIpc` を通してアプリ自身の状態を読み書きする口\n-   */\n-  create(tauriIpc: TauriIpc): AppStateIpc {\n-    const call = TauriIpc.caller<AppStateCommand, AppStateIpcError>(\n-      tauriIpc,\n-      toAppStateIpcError,\n-    );\n+/**\n+ * アプリ自身の状態を読み書きする口を作る。\n+ *\n+ * @param tauriIpc コマンドを呼ぶ IPC\n+ * @returns `tauriIpc` を通してアプリ自身の状態を読み書きする口\n+ */\n+export function createAppStateIpc(tauriIpc: TauriIpc): AppStateIpc {\n+  const call = TauriIpc.caller<AppStateCommand, AppStateIpcError>(\n+    tauriIpc,\n+    toAppStateIpcError,\n+  );\n \n-    return {\n-      async load() {\n-        return Result.flatMap(\n-          await call(\"load_app_state\", {}),\n-          toStoredContent,\n-        );\n-      },\n+  return {\n+    async load() {\n+      return Result.flatMap(await call(\"load_app_state\", {}), toStoredContent);\n+    },\n \n-      async save(content) {\n-        return Result.map(\n-          await call(\"save_app_state\", { content }),\n-          () => undefined,\n-        );\n-      },\n-    };\n-  },\n-} as const;\n+    async save(content) {\n+      return Result.map(\n+        await call(\"save_app_state\", { content }),\n+        () => undefined,\n+      );\n+    },\n+  };\n+}",
+          "patchLines": 57,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-window/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -1,12 +1,12 @@\n import type { TauriIpc } from \"@/libs/tauri-ipc\";\n import { ipcFailure } from \"@/libs/tauri-ipc/fake\";\n-import { AppWindow } from \"../index\";\n+import { type AppWindow, createAppWindow } from \"../index\";\n \n /**\n  * Rust 側の代役。`close_current_window` を受けて、ウィンドウが閉じたかどうかだけを持つ。\n  *\n- * 差し込む先は `TauriIpc` の位置なので、`appWindow` を通した呼び出しでは `AppWindow` 本体\n- * （コマンド名・エラーの解釈）がそのまま動く。\n+ * 差し込む先は `TauriIpc` の位置なので、`appWindow` を通した呼び出しでは `createAppWindow` が\n+ * 作る本体（コマンド名・エラーの解釈）がそのまま動く。\n  */\n export type AppWindowFake = Readonly<{\n   /** 代役のウィンドウに向いた `AppWindow`。 */\n@@ -49,7 +49,7 @@ export const AppWindowFake = {\n     };\n \n     return {\n-      appWindow: AppWindow.create(tauriIpc),\n+      appWindow: createAppWindow(tauriIpc),\n \n       isWindowClosed() {\n         return closed;",
+          "patchLines": 25,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/app-window/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 25,
+          "patch": "@@ -13,29 +13,27 @@ export type AppWindow = Readonly<{\n   close(): Promise<Result<void, AppWindowError>>;\n }>;\n \n-export const AppWindow = {\n-  /**\n-   * この画面を載せているウィンドウを操作する口を作る。\n-   *\n-   * 失敗は Rust の `tauri::Error` もコマンドに届く前の Tauri 自身の失敗も文字列で reject\n-   * されるので、形で見分けずに原文へ詰め替える。\n-   *\n-   * @param tauriIpc コマンドを呼ぶ IPC\n-   * @returns `tauriIpc` を通してウィンドウを操作する口\n-   */\n-  create(tauriIpc: TauriIpc): AppWindow {\n-    const call = TauriIpc.caller<AppWindowCommand, AppWindowError>(\n-      tauriIpc,\n-      (reason) => ({ message: String(reason) }),\n-    );\n+/**\n+ * この画面を載せているウィンドウを操作する口を作る。\n+ *\n+ * 失敗は Rust の `tauri::Error` もコマンドに届く前の Tauri 自身の失敗も文字列で reject\n+ * されるので、形で見分けずに原文へ詰め替える。\n+ *\n+ * @param tauriIpc コマンドを呼ぶ IPC\n+ * @returns `tauriIpc` を通してウィンドウを操作する口\n+ */\n+export function createAppWindow(tauriIpc: TauriIpc): AppWindow {\n+  const call = TauriIpc.caller<AppWindowCommand, AppWindowError>(\n+    tauriIpc,\n+    (reason) => ({ message: String(reason) }),\n+  );\n \n-    return {\n-      async close() {\n-        return Result.map(\n-          await call(\"close_current_window\", {}),\n-          () => undefined,\n-        );\n-      },\n-    };\n-  },\n-} as const;\n+  return {\n+    async close() {\n+      return Result.map(\n+        await call(\"close_current_window\", {}),\n+        () => undefined,\n+      );\n+    },\n+  };\n+}",
+          "patchLines": 53,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/document-dialog/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 6,
+          "patch": "@@ -1,6 +1,6 @@\n import type { TauriDialog } from \"@/libs/tauri-dialog\";\n import { Option } from \"@/utils/Option\";\n-import { DocumentDialog } from \"../index\";\n+import { createDocumentDialog, type DocumentDialog } from \"../index\";\n \n /**\n  * ダイアログを出したときに起きること。\n@@ -31,8 +31,8 @@ export const DialogChoice = {\n   /**\n    * ダイアログを出せなかったことにする。\n    *\n-   * @param message 代役が投げる例外の文言。`DocumentDialog` を通すと失敗の `message` に載る\n-   *   (綴り方は `DocumentDialog` 側の規則)\n+   * @param message 代役が投げる例外の文言。`createDocumentDialog` が作る口を通すと失敗の\n+   *   `message` に載る(綴り方はその口の規則)\n    * @returns ダイアログを出せなかった結果\n    */\n   failed(message: string): DialogChoice {\n@@ -49,8 +49,8 @@ export type DialogChoices = Readonly<{\n /**\n  * ダイアログの代役。利用者の操作をテストごとに決め打ちする。\n  *\n- * 差し込む先は `TauriDialog` の位置なので、`dialog` を通した呼び出しでは `DocumentDialog`\n- * 本体（フィルタ・キャンセルと失敗の解釈）がそのまま動く。\n+ * 差し込む先は `TauriDialog` の位置なので、`dialog` を通した呼び出しでは\n+ * `createDocumentDialog` が作る本体（フィルタ・キャンセルと失敗の解釈）がそのまま動く。\n  */\n export type DocumentDialogFake = Readonly<{ dialog: DocumentDialog }>;\n \n@@ -89,6 +89,6 @@ export const DocumentDialogFake = {\n       },\n     };\n \n-    return { dialog: DocumentDialog.create(tauriDialog) };\n+    return { dialog: createDocumentDialog(tauriDialog) };\n   },\n } as const;",
+          "patchLines": 38,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/document-dialog/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 20,
+          "patch": "@@ -74,24 +74,22 @@ async function choose(\n   }\n }\n \n-export const DocumentDialog = {\n-  /**\n-   * .dcmp を選ばせるダイアログを作る。\n-   *\n-   * @param dialog 実際にダイアログを出す口。絞り込みと保存の既定の名前はこのモジュールが渡す\n-   * @returns `dialog` を通して .dcmp を選ばせるダイアログ\n-   */\n-  create(dialog: TauriDialog): DocumentDialog {\n-    return {\n-      chooseOpenPath() {\n-        return choose(() => dialog.chooseOpenPath(DocumentFileFilter));\n-      },\n+/**\n+ * .dcmp を選ばせるダイアログを作る。\n+ *\n+ * @param dialog 実際にダイアログを出す口。絞り込みと保存の既定の名前はこのモジュールが渡す\n+ * @returns `dialog` を通して .dcmp を選ばせるダイアログ\n+ */\n+export function createDocumentDialog(dialog: TauriDialog): DocumentDialog {\n+  return {\n+    chooseOpenPath() {\n+      return choose(() => dialog.chooseOpenPath(DocumentFileFilter));\n+    },\n \n-      chooseSavePath() {\n-        return choose(() =>\n-          dialog.chooseSavePath(DocumentFileFilter, DefaultFileName),\n-        );\n-      },\n-    };\n-  },\n-} as const;\n+    chooseSavePath() {\n+      return choose(() =>\n+        dialog.chooseSavePath(DocumentFileFilter, DefaultFileName),\n+      );\n+    },\n+  };\n+}",
+          "patchLines": 43,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 5,
+          "patch": "@@ -4,14 +4,18 @@ import type { TauriIpc } from \"@/libs/tauri-ipc\";\n import { SingleEventIpcFake } from \"@/libs/tauri-ipc/fake\";\n import { Result } from \"@/utils/Result\";\n import { DocumentIpcFake } from \"../fake\";\n-import { type DocumentChanged, DocumentIpc } from \"../index\";\n+import {\n+  createDocumentIpc,\n+  type DocumentChanged,\n+  type DocumentIpc,\n+} from \"../index\";\n \n const Path = filePath(\"/work/login.dcmp\");\n const MissingPath = filePath(\"/work/missing.dcmp\");\n \n /** コマンドの結果だけを差し替えた IPC。イベントは流れない。 */\n function setupIpc(invoke: TauriIpc[\"invoke\"]): DocumentIpc {\n-  return DocumentIpc.create({\n+  return createDocumentIpc({\n     invoke,\n     listen: () => Promise.resolve(() => {}),\n   });\n@@ -70,7 +74,7 @@ test(\"読み込みが文字列以外を返すと ipcFailed が返る\", async ()\n });\n \n test(\"購読の開始に失敗すると Err が返り、例外は投げない\", async () => {\n-  const ipc = DocumentIpc.create({\n+  const ipc = createDocumentIpc({\n     invoke: () => Promise.resolve(undefined),\n     listen: () => Promise.reject(\"Event document-changed not registered\"),\n   });\n@@ -93,7 +97,7 @@ test(\"path と content が揃っていない通知は配られない\", async ()\n     { content: \"{}\" },\n   ];\n   const received: DocumentChanged[] = [];\n-  const ipc = DocumentIpc.create({\n+  const ipc = createDocumentIpc({\n     invoke: () => Promise.resolve(undefined),\n     listen: (_event, handler) => {\n       for (const payload of malformedPayloads) {\n@@ -112,7 +116,7 @@ test(\"path と content が揃っていない通知は配られない\", async ()\n \n test(\"ファイル名の要素を持たないパスの変更通知は配られない\", async () => {\n   const events = SingleEventIpcFake.create(\"document-changed\");\n-  const ipc = DocumentIpc.create(events.ipc);\n+  const ipc = createDocumentIpc(events.ipc);\n   const received: DocumentChanged[] = [];\n   Result.unwrap(\n     await ipc.subscribeChanged((changed) => received.push(changed)),",
+          "patchLines": 48,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -1,14 +1,14 @@\n import type { TauriIpc } from \"@/libs/tauri-ipc\";\n import { ipcFailure } from \"@/libs/tauri-ipc/fake\";\n import { Option } from \"@/utils/Option\";\n-import { DocumentIpc } from \"../index\";\n+import { createDocumentIpc, type DocumentIpc } from \"../index\";\n \n /**\n  * Rust 側の代役。インメモリのファイル表に対して `docs/05-architecture.md`「Tauri IPC」の\n  * 4コマンドと `document-changed` を再現する。\n  *\n- * 差し込む先は `TauriIpc` の位置なので、`ipc` を通した呼び出しでは `DocumentIpc` 本体（コ\n- * マンド名・引数・エラーの解釈）がそのまま動く。\n+ * 差し込む先は `TauriIpc` の位置なので、`ipc` を通した呼び出しでは `createDocumentIpc`\n+ * が作る本体（コマンド名・引数・エラーの解釈）がそのまま動く。\n  */\n export type DocumentIpcFake = Readonly<{\n   /** インメモリのファイル表に向いた `DocumentIpc`。 */\n@@ -177,7 +177,7 @@ export const DocumentIpcFake = {\n     };\n \n     return {\n-      ipc: DocumentIpc.create(tauriIpc),\n+      ipc: createDocumentIpc(tauriIpc),\n \n       changeExternally(path, content) {\n         contents.set(path, content);",
+          "patchLines": 27,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 44,
+          "deletions": 46,
+          "patch": "@@ -206,54 +206,52 @@ function toContent(value: unknown): Result<string, DocumentIpcError> {\n   return Result.ok(value);\n }\n \n-export const DocumentIpc = {\n-  /**\n-   * ドキュメントのファイルを読み書き・監視する口を作る。\n-   *\n-   * @param tauriIpc コマンドを呼び、外部変更を購読する IPC\n-   * @returns 購読の失敗も、コマンドの失敗と同じ種別つきの失敗へ詰め替える口\n-   */\n-  create(tauriIpc: TauriIpc): DocumentIpc {\n-    const call = TauriIpc.caller<DocumentCommand, DocumentIpcError>(\n-      tauriIpc,\n-      toDocumentIpcError,\n-    );\n+/**\n+ * ドキュメントのファイルを読み書き・監視する口を作る。\n+ *\n+ * @param tauriIpc コマンドを呼び、外部変更を購読する IPC\n+ * @returns 購読の失敗も、コマンドの失敗と同じ種別つきの失敗へ詰め替える口\n+ */\n+export function createDocumentIpc(tauriIpc: TauriIpc): DocumentIpc {\n+  const call = TauriIpc.caller<DocumentCommand, DocumentIpcError>(\n+    tauriIpc,\n+    toDocumentIpcError,\n+  );\n \n-    return {\n-      async load(path) {\n-        return Result.flatMap(await call(\"load_document\", { path }), toContent);\n-      },\n+  return {\n+    async load(path) {\n+      return Result.flatMap(await call(\"load_document\", { path }), toContent);\n+    },\n \n-      async save(path, content) {\n-        return toCompletion(await call(\"save_document\", { path, content }));\n-      },\n+    async save(path, content) {\n+      return toCompletion(await call(\"save_document\", { path, content }));\n+    },\n \n-      async watch(path) {\n-        return toCompletion(await call(\"watch_document\", { path }));\n-      },\n+    async watch(path) {\n+      return toCompletion(await call(\"watch_document\", { path }));\n+    },\n \n-      async unwatch(path) {\n-        return toCompletion(await call(\"unwatch_document\", { path }));\n-      },\n+    async unwatch(path) {\n+      return toCompletion(await call(\"unwatch_document\", { path }));\n+    },\n \n-      async subscribeChanged(listener) {\n-        try {\n-          const unsubscribe = await tauriIpc.listen(\n-            DocumentChangedEvent,\n-            (payload) => {\n-              // 形が合わない値は配らない。ドキュメント変更として渡せる中身が無く、\n-              // イベントのコールバックには失敗を返す相手もいないため。\n-              const changed = toDocumentChanged(payload);\n-              if (Option.isSome(changed)) {\n-                listener(changed.value);\n-              }\n-            },\n-          );\n-          return Result.ok(unsubscribe);\n-        } catch (reason) {\n-          return Result.err(toDocumentIpcError(reason));\n-        }\n-      },\n-    };\n-  },\n-} as const;\n+    async subscribeChanged(listener) {\n+      try {\n+        const unsubscribe = await tauriIpc.listen(\n+          DocumentChangedEvent,\n+          (payload) => {\n+            // 形が合わない値は配らない。ドキュメント変更として渡せる中身が無く、\n+            // イベントのコールバックには失敗を返す相手もいないため。\n+            const changed = toDocumentChanged(payload);\n+            if (Option.isSome(changed)) {\n+              listener(changed.value);\n+            }\n+          },\n+        );\n+        return Result.ok(unsubscribe);\n+      } catch (reason) {\n+        return Result.err(toDocumentIpcError(reason));\n+      }\n+    },\n+  };\n+}",
+          "patchLines": 99,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/file-drop/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -1,5 +1,5 @@\n import { SingleEventIpcFake } from \"@/libs/tauri-ipc/fake\";\n-import { DragDropEvent, FileDrop } from \"../index\";\n+import { createFileDrop, DragDropEvent, type FileDrop } from \"../index\";\n \n /**\n  * ウィンドウへのドロップの代役。落とされたファイルをテストから起こす。\n@@ -30,7 +30,7 @@ export const FileDropFake = {\n     const events = SingleEventIpcFake.create(DragDropEvent);\n \n     return {\n-      drop: FileDrop.create(events.ipc),\n+      drop: createFileDrop(events.ipc),\n \n       dropFiles(paths) {\n         // 本物と同じ形（位置も添える）で配る。",
+          "patchLines": 16,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/file-drop/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 29,
+          "patch": "@@ -55,32 +55,27 @@ export type FileDrop = Readonly<{\n   ): Promise<Result<Unsubscribe, FileDropError>>;\n }>;\n \n-export const FileDrop = {\n-  /**\n-   * ウィンドウへのファイルのドロップを受け取る口を作る。\n-   *\n-   * @param tauriIpc ドロップのイベントを購読する IPC\n-   * @returns ドロップを購読できる口。作っただけでは購読せず、`subscribeDropped` を呼んだ時点で張る\n-   */\n-  create(tauriIpc: TauriIpc): FileDrop {\n-    return {\n-      async subscribeDropped(listener) {\n-        try {\n-          const unsubscribe = await tauriIpc.listen(\n-            DragDropEvent,\n-            (payload) => {\n-              // ファイルのパスを 1 件も持たない通知（ドラッグ中の通過・空の並びなど）は配らない。\n-              const paths = toDroppedPaths(payload);\n-              if (Option.isSome(paths)) {\n-                listener(paths.value);\n-              }\n-            },\n-          );\n-          return Result.ok(unsubscribe);\n-        } catch (reason) {\n-          return Result.err({ message: String(reason) });\n-        }\n-      },\n-    };\n-  },\n-} as const;\n+/**\n+ * ウィンドウへのファイルのドロップを受け取る口を作る。\n+ *\n+ * @param tauriIpc ドロップのイベントを購読する IPC\n+ * @returns ドロップを購読できる口。作っただけでは購読せず、`subscribeDropped` を呼んだ時点で張る\n+ */\n+export function createFileDrop(tauriIpc: TauriIpc): FileDrop {\n+  return {\n+    async subscribeDropped(listener) {\n+      try {\n+        const unsubscribe = await tauriIpc.listen(DragDropEvent, (payload) => {\n+          // ファイルのパスを 1 件も持たない通知（ドラッグ中の通過・空の並びなど）は配らない。\n+          const paths = toDroppedPaths(payload);\n+          if (Option.isSome(paths)) {\n+            listener(paths.value);\n+          }\n+        });\n+        return Result.ok(unsubscribe);\n+      } catch (reason) {\n+        return Result.err({ message: String(reason) });\n+      }\n+    },\n+  };\n+}",
+          "patchLines": 57,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/app/App.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/features/editor/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/app-state-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/app-window/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/clock/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/document-dialog/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/file-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/tauri-dialog/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/__tests__/App.normal.test.tsx",
+      "to": "src/app/App.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/main.tsx",
+      "to": "src/app/App.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.shortcut.test.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-menu/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-state-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-window/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/file-drop/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/app-menu/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/app-state-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/app-window/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/file-drop/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "to": "src/libs/document-dialog/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/app-menu/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/app-state-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/app-window/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/file-drop/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/app-state-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/app-window/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-dialog/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/file-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.document-invalid.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/domains/session/document-access-failure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/domains/session/document-save-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.normal.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/__tests__/use-file-revert.normal.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/__tests__/document-change.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/__tests__/app-menu.edge.test.ts",
+      "to": "src/libs/app-menu/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/__tests__/app-menu.edge.test.ts",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/__tests__/app-menu.normal.test.ts",
+      "to": "src/libs/app-menu/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/__tests__/app-menu.normal.test.ts",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/fake/index.ts",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/fake/index.ts",
+      "to": "src/libs/tauri-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/__tests__/app-state-ipc.edge.test.ts",
+      "to": "src/libs/app-state-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/__tests__/app-state-ipc.edge.test.ts",
+      "to": "src/libs/app-state-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/__tests__/app-state-ipc.edge.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/__tests__/app-state-ipc.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/__tests__/app-state-ipc.normal.test.ts",
+      "to": "src/libs/app-state-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/fake/index.ts",
+      "to": "src/libs/app-state-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/fake/index.ts",
+      "to": "src/libs/tauri-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/fake/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/fake/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-window/__tests__/app-window.edge.test.ts",
+      "to": "src/libs/app-window/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-window/__tests__/app-window.normal.test.ts",
+      "to": "src/libs/app-window/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-window/fake/index.ts",
+      "to": "src/libs/app-window/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-window/fake/index.ts",
+      "to": "src/libs/tauri-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-window/fake/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-window/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-window/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/__tests__/document-dialog.edge.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/__tests__/document-dialog.normal.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/fake/index.ts",
+      "to": "src/libs/document-dialog/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/fake/index.ts",
+      "to": "src/libs/tauri-dialog/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/fake/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/index.ts",
+      "to": "src/libs/tauri-dialog/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.document-access-failure.test.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/libs/tauri-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/libs/tauri-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/domains/session/document-access-failure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/__tests__/file-drop.edge.test.ts",
+      "to": "src/libs/file-drop/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/__tests__/file-drop.normal.test.ts",
+      "to": "src/libs/file-drop/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/fake/index.ts",
+      "to": "src/libs/file-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/fake/index.ts",
+      "to": "src/libs/tauri-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    }
+  ]
+}
