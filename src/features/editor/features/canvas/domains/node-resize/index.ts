@@ -116,18 +116,6 @@ export const ResizeGrip = {
   },
 
   /**
-   * その 1 軸だけを変える掴み方か。
-   *
-   * @param grip 掴んだもの
-   * @param axis 見る軸
-   * @returns 変える軸がその 1 軸だけなら `true`。角で 2 軸を変える・別の軸を変えるなら `false`
-   */
-  isSingleAxis(grip: ResizeGrip, axis: Axis): boolean {
-    const grabs = ResizeGrip.grabs(grip);
-    return grabs.length === 1 && grabs[0].length.axis === axis;
-  },
-
-  /**
    * 掴んだものが動かす辺を、軸ごとに並べ直したもの（辺のスナップに渡す形）。
    *
    * @param grip 掴んだもの
@@ -231,11 +219,7 @@ export type ResizeRotation = Readonly<{
 export type ResizeSnapTargets =
   /** artboard と、回っていない `placement: "absolute"` のノード。どの掴み方でも効く。 */
   | Readonly<{ kind: "anyGrip"; names: readonly string[] }>
-  /**
-   * 条件を満たすフロー配置のノード。`axis`（親の交差軸）の 1 軸だけを掴んだときに効く。
-   *
-   * 角では主軸の長さも変わり、親が主軸で hug なら祖先の並び（折り返し）ごと揃え先が動くので外す。
-   */
+  /** 条件（`flowSnapTargets`）を満たすフロー配置のノード。`axis` の 1 軸だけを掴んだときに効く。 */
   | Readonly<{ kind: "axisOnly"; axis: Axis; names: readonly string[] }>
   /** 回っている・掴めない・条件を満たさないフロー配置のノード。 */
   | Readonly<{ kind: "none" }>;
@@ -256,12 +240,24 @@ const ResizeSnapTargets = {
       case "anyGrip":
         return targets.names;
       case "axisOnly":
-        return ResizeGrip.isSingleAxis(grip, targets.axis) ? targets.names : [];
+        return grabsOnly(grip, targets.axis) ? targets.names : [];
       case "none":
         return [];
     }
   },
 } as const;
+
+/**
+ * その 1 軸だけを変える掴み方か。
+ *
+ * @param grip 掴んだもの
+ * @param axis 見る軸
+ * @returns 変える軸がその 1 軸だけなら `true`。角で 2 軸を変える・別の軸を変えるなら `false`
+ */
+function grabsOnly(grip: ResizeGrip, axis: Axis): boolean {
+  const grabs = ResizeGrip.grabs(grip);
+  return grabs.length === 1 && grabs[0].length.axis === axis;
+}
 
 /**
  * リサイズの観点から見た選択。掴める軸の長さと、ドキュメントへ書ける今の位置と、掴んだ辺を
@@ -554,10 +550,9 @@ export const NodeResize = {
    * 揃え先は、artboard なら他の artboard のうち幅を変えても動かないもの
    * （`ArrangedArtboard.isShiftedByWidth` を外す）、`placement: "absolute"` のノードなら
    * 今の親と、その直下にある自分以外の子（孫は含めない。絶対配置はフローから外れるので、
-   * 親の大きさにも兄弟の配置にも関わらない）。フロー配置のノードは、親が交差軸の始点を
-   * 動かさない（`BoxElement.startPinnedCrossAxis`）ときだけ、その軸を掴んだときの揃え先として
-   * 同じ名前を持つ。画面上で回っているノード（自分と祖先の合計が 360 の倍数でない）は揃え先を
-   * 持たない（docs/06-ui.md「辺のスナップ」）。
+   * 親の大きさにも兄弟の配置にも関わらない）。フロー配置のノードは `flowSnapTargets` の条件を
+   * 満たすときだけ同じ名前を持つ。画面上で回っているノード（自分と祖先の合計が 360 の倍数で
+   * ない）は揃え先を持たない（docs/06-ui.md「辺のスナップ」）。
    *
    * @param selection ハンドルを出す対象を決める、ドキュメントと選択の対
    * @returns 掴める軸のハンドルと、ドキュメントへ書ける今の位置と、揃え先。単一選択
@@ -608,7 +603,7 @@ export const NodeResize = {
         Placement.offset(child.placement),
       ),
       snapTargets: Angle.isWholeTurns(rotation.value.total)
-        ? placedSnapTargets(selection.document, { name, placement })
+        ? nodeSnapTargets(selection.document, { name, placement })
         : ResizeSnapTargets.None,
       rotation: rotation.value,
     };
@@ -872,14 +867,13 @@ function parentWithSiblingNames(
 }
 
 /**
- * 回っていないノードの揃え先。絶対配置ならどの掴み方でも、フロー配置なら条件を満たすとき
- * だけ親の交差軸で。
+ * 回っていないノードの揃え先。絶対配置ならどの掴み方でも効き、フロー配置なら `flowSnapTargets`。
  *
  * @param document 引き先になるドキュメント
  * @param selected 自分の名前と、絶対配置なら今の親と位置（`DesignDocument.childPlacementOf`）
  * @returns 揃え先。親が子の並びを持たなければ揃え先は無い
  */
-function placedSnapTargets(
+function nodeSnapTargets(
   document: DesignDocument,
   selected: Readonly<{ name: string; placement: Option<ChildPlacement> }>,
 ): ResizeSnapTargets {
@@ -902,7 +896,7 @@ function placedSnapTargets(
  * @param document 引き先になるドキュメント
  * @param name 自分の名前
  * @returns 親の交差軸だけで効く揃え先。親が引けない・交差軸の始点が動きうる
- *   （`BoxElement.startPinnedCrossAxis` が `none`）なら揃え先は無い
+ *   （`BoxElement.stillCrossAxis` が `none`）なら揃え先は無い
  */
 function flowSnapTargets(
   document: DesignDocument,
@@ -915,11 +909,11 @@ function flowSnapTargets(
   const parentName = position.value.parentName;
   const axis = Option.flatMap(
     DesignDocument.boxPropsOf(document, parentName),
-    BoxElement.startPinnedCrossAxis,
+    BoxElement.stillCrossAxis,
   );
   const names = parentWithSiblingNames(document, { name, parentName });
-  // 名前を付けた変数にすると narrowing が効かないので、条件はここへ直に書く
-  if (!Option.isSome(axis) || !Option.isSome(names)) {
+  const hasSnapTargets = Option.isSome(axis) && Option.isSome(names);
+  if (!hasSnapTargets) {
     return ResizeSnapTargets.None;
   }
   return { kind: "axisOnly", axis: axis.value, names: names.value };
