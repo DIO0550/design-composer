@@ -16,6 +16,10 @@ pub mod watch;
 mod test_support;
 
 #[cfg(test)]
+mod canonical_path_edge_test;
+#[cfg(test)]
+mod canonical_path_normal_test;
+#[cfg(test)]
 mod file_path_edge_test;
 #[cfg(test)]
 mod file_path_normal_test;
