@@ -1,0 +1,1057 @@
+{
+  "version": 1,
+  "pr": 1177,
+  "sha": "3e98dde4d37fe96a764522b1d9f2ee38ba8e2221",
+  "issue": 980,
+  "overview": {
+    "title": "選択の枠がノードの形に沿うことを docs/06 に書く",
+    "lead": "角丸の Box や Ellipse を選んだとき、選択の枠は形に沿って描かれている。この今の描き方(案 A)を仕様として docs/06 に書き、リサイズハンドルとの位置関係を「枠の上」から「辺の上」に直した。描画するコードは変えず、コメントの整理とテストを 1 件足しただけ。",
+    "before": [
+      {
+        "text": "docs/06 は矩形でないノードの選択の枠の形を決めていなかった(Ellipse を足した #514 で、枠が楕円に沿うことが分かった)"
+      },
+      {
+        "text": "docs/06 はハンドルを「選択の枠の上に中心が来る」と書いていたが、`outline-offset` の分だけ枠は辺の外にあり、矩形でも厳密には成り立たず、Ellipse の四隅では大きく外れていた"
+      },
+      {
+        "text": "トークンの参照元の破線は、色の部分文字列しかテストで見ておらず、`outline` を `border` に替えても通っていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "docs/06「選択」: 選択の枠・参照元の破線・ドロップ先の親に出す枠は、選んだものの形に沿って描く(角丸の隅に沿い、楕円になり、回っていれば形ごと回る)",
+        "message": "rule"
+      },
+      {
+        "text": "docs/06「選択」: 形に沿うのは `outline` が `border-radius` に沿う WebView の上だけ。沿わない WebView では矩形になり、下限は決めていない(#1175)"
+      },
+      {
+        "text": "docs/06「リサイズハンドル」: ハンドルは選んだものの辺の上に中心が来る。枠とは数 px ずれ、形が矩形から欠けるところでは枠から離れる。ハンドルは形の上へ寄せない",
+        "message": "handles"
+      },
+      {
+        "text": "参照元の破線がノード自身の `outline` として描かれることをテストで固定した",
+        "message": "rule"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "仕様に書いた 2 か所",
+        "text": "「選択」に足した項目と、「リサイズハンドル」の本文を枠基準から辺基準へ直したところ。本文の変更はフェーズ 4 では見送ったが、子項目と食い違うとレビュー 3 観点から指摘されて直した",
+        "go": {
+          "kind": "file",
+          "path": "docs/06-ui.md"
+        }
+      },
+      {
+        "title": "ハンドルと枠の位置関係",
+        "text": "コードの doc は docs/06 を指すだけにし、「数 px」と「outline-offset の分」の二重の書き方を 1 つにした",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx"
+        }
+      },
+      {
+        "title": "Ellipse の視覚差分",
+        "text": "形に沿う枠を見ているのはこのストーリーの VRT だけ。撮影したらハンドルが出ていなかった(幅・高さの扱いを書いていない Ellipse に出ない不具合。#1176 に分けた)ので、doc からハンドルの記述を外した",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx"
+        }
+      },
+      {
+        "title": "参照元の破線のテスト",
+        "text": "test-reviewer の実測で、破線を border に替えても 0 件しか落ちなかった。足したテストだけが落ちることを確かめた",
+        "go": {
+          "kind": "message",
+          "id": "rule"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "selection-frame",
+      "label": "選択の枠",
+      "role": "キャンバスで選んだもの・参照元・ドロップ先に、ノード自身の outline で枠を描く"
+    },
+    {
+      "id": "resize-handle",
+      "label": "リサイズハンドル",
+      "role": "選んだものの辺と角に掴める四角を重ねて置く"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "docs",
+      "role": "選択の枠の形とハンドルとの位置関係を、使う人に見える仕様として書く"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "コメントを docs/06 への参照と採らなかった案だけにし、参照元の破線のテストを 1 件足す"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "docs/06-ui.md",
+      "name": "画面の仕様",
+      "role": "キャンバスの選択とリサイズハンドルの見せ方を決める",
+      "change": "「選択」に形に沿う枠の項目を足し、「リサイズハンドル」の本文を辺基準に直して位置関係の子項目を足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "name": "キャンバスの本体",
+      "role": "選択とトークンの選択を枠の一覧へ渡す",
+      "feature": "selection-frame"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "name": "枠の一覧",
+      "role": "選択の枠・ドロップ先の枠・参照元の破線の宣言を持ち、名前で引く規則として差し込む",
+      "feature": "selection-frame",
+      "change": "選択の枠の doc に、枠は形に沿う(docs/06 を参照)ことと、重ねた要素で描く矩形の枠にしない理由を足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx",
+      "name": "名前で引く規則",
+      "role": "ノード名の属性を選択子にした style 要素を 1 本差し込む",
+      "feature": "selection-frame"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "name": "キャンバス",
+      "role": "選んだものの回った矩形を測り、ハンドルの層へ渡す",
+      "feature": "resize-handle"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "name": "ハンドルの層",
+      "role": "回った矩形の角と辺の中点にハンドルを置く",
+      "feature": "resize-handle",
+      "change": "ハンドル 1 個の doc の「選択の枠がハンドルの真ん中を通る」を外し、位置関係は docs/06 を参照する 1 文にした"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "name": "キャンバスのストーリー",
+      "role": "VRT が撮るキャンバスの状態",
+      "feature": "selection-frame",
+      "change": "Ellipse を選択中のストーリーの doc に、枠が楕円に沿うのも仕様でこの視覚差分だけが見ていることを足した"
+    }
+  ],
+  "messages": [
+    {
+      "id": "frames",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "kind": "cmd",
+      "name": "枠を描かせる",
+      "code": "<ArtboardFrameList selection={selection} tokenSelection={tokenSelection} …>",
+      "via": "call",
+      "payload": "選択・トークンの選択・ドラッグ中のドロップ先"
+    },
+    {
+      "id": "rule",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx",
+      "kind": "cmd",
+      "name": "名前で引く規則を差し込む",
+      "code": "<NameStyleRule name={name} declarations={SelectionOutline} />",
+      "via": "call",
+      "payload": "ノード名と、`outline` の宣言(選択は実線の青、参照元は破線の水色、ドロップ先は破線の緑)"
+    },
+    {
+      "id": "handles",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "kind": "cmd",
+      "name": "ハンドルを置く",
+      "code": "<ResizeHandleOverlay bounds={handleBounds.value} resizable={resizable} …>",
+      "via": "call",
+      "payload": "選んだものが回って描かれている矩形と、掴める軸"
+    }
+  ],
+  "flows": [
+    {
+      "id": "select-node",
+      "label": "ノードを 1 つ選んだとき",
+      "steps": [
+        "frames",
+        "rule",
+        "handles"
+      ]
+    },
+    {
+      "id": "select-token",
+      "label": "トークンを選んだとき",
+      "steps": [
+        "frames",
+        "rule"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "b86068298c5fa403af74ff18fbd1bd2523722d10",
+      "phase": "core",
+      "role": "選択の枠がノードの形に沿うことを docs/06 に書く",
+      "why": "オーナーの回答で案 A(今のまま形に沿う枠)に決まった。描き方を変えない案なので、決めた仕様を docs に書くことがこの PR の本体になる。外接する矩形の枠(案 B)は、枠を重ねた要素で描くことになり描き方が 2 系統に割れるので採らなかった。",
+      "flows": [
+        "select-node",
+        "select-token"
+      ],
+      "review": [
+        "参照元の破線とドロップ先の親に出す枠も同じ規則にしたこと。どちらも同じ outline の仕組みで描かれている",
+        "WebView の下限を docs に書かず #1175 へ分けたこと"
+      ],
+      "before": [
+        {
+          "text": "矩形でないノードの枠の形を仕様が決めていなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "枠は選んだものの形に沿う、と仕様にある",
+          "message": "rule"
+        }
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 84,
+          "end": 85,
+          "text": "足した項目。子項目で、形に沿うのは outline が border-radius に沿う WebView の上だけと断っている"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 194,
+          "end": 195,
+          "text": "この時点では本文(枠の上に中心)を残して子項目で補った。次の 1d82d80 で本文ごと辺基準に直す"
+        }
+      ]
+    },
+    {
+      "sha": "1982cb42489670d49093d1f652c534697be679ab",
+      "phase": "core",
+      "role": "枠とハンドルのコメントを、形に沿う枠の決定に合わせる",
+      "why": "ハンドルの doc が「選択の枠がハンドルの真ん中を通る」と書いており、Ellipse の四隅で嘘になる(plan-reviewer の指摘で、矩形でも outline-offset と線幅の分 2px ずれていた)。選択の枠の doc に、矩形の枠にしない理由を残し、#979 で出た「Ellipse の枠を矩形に直す」案が再浮上したときに止める。",
+      "flows": [
+        "select-node"
+      ],
+      "review": [
+        "テストを足さなかった理由: 形に沿うかは happy-dom では描かれず、outline 以外で描かないことは既存テストが規則の文字列で見ている"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "start": 30,
+          "end": 33,
+          "text": "この段落は次の 7b68f5a で docs/06 への参照と Why not だけに縮める"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "start": 57,
+          "end": 62,
+          "text": "合わせているのは枠ではなく辺、と書き直した。7b68f5a で docs/06 への参照に置き換える"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "start": 184,
+          "end": 186,
+          "text": "ハンドルが四隅で離れるとも書いたが、撮影したらハンドルが出ておらず 3e98dde で外す"
+        }
+      ]
+    },
+    {
+      "sha": "1d82d800a9494765e694942a740f71e8e9861268",
+      "phase": "revise",
+      "role": "ハンドルの本文を辺基準にし、枠の記述をレビューに合わせる",
+      "why": "子項目に「矩形でも数 px ずれる」を足した時点で、本文の「選択の枠の上に中心が来る」はどの形でも偽の規範になった(solution / harness / comment の 3 観点が同じ根本原因を指摘)。本文を 1 語置き換えるだけで、理由の文はそのまま成り立つ。",
+      "flows": [
+        "select-node"
+      ],
+      "review": [
+        "本文を「選んだものの辺の上に中心が来る」にしたこと。フェーズ 4 で直さないと決めた判断を変えている",
+        "ハンドルを形の上へ寄せない理由(角は 2 軸を同時に変えるので矩形の角で読ませる)を docs に足したこと",
+        "「丸めた角」を「角丸の付いた隅」に直したこと。docs/06 の「丸める」は数値の丸めに使われている"
+      ],
+      "before": [
+        {
+          "text": "ハンドルは選択の枠の上に中心が来る、と書かれていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "ハンドルは選んだものの辺の上に中心が来て、枠とは数 px ずれる",
+          "message": "handles"
+        }
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 84,
+          "end": 84,
+          "text": "角丸の Box が隅に沿う根拠として UI 案の Default 画面を添え、末尾の理由の文はコードの Why not に一本化して外した"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 193,
+          "end": 195,
+          "text": "本文の基準を枠から辺へ。子項目は選択の枠との位置関係(数 px のずれ・欠けた隅で離れる)に絞った"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "side": "old",
+          "start": 193,
+          "end": 193,
+          "text": "子項目と常に食い違っていた本文"
+        }
+      ]
+    },
+    {
+      "sha": "7b68f5a7e4cbed7dd977902198f8da50eed64880",
+      "phase": "revise",
+      "role": "枠とハンドルのコメントから docs/06 の写しを外す",
+      "why": "duplication-reviewer の指摘。仕様の文とハンドルとの位置関係を docs とコメントの両方に書いており、docs は「数 px」、コメントは「outline-offset の分」とすでにずれていた。仕様は docs に、outline か重ねた要素かという実装の選択はコードに置き、互いに参照だけにする。",
+      "review": [
+        "選択の枠の doc の Why not で、却下した案を「重ねた要素で描く矩形の枠」と名指ししたこと。「矩形の枠にはしない」だけだと、矩形のノードに枠を出さないと読めると指摘された"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "start": 31,
+          "end": 32,
+          "text": "docs/06 への参照と、採らなかった案だけを残した"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "start": 57,
+          "end": 58,
+          "text": "位置関係は docs/06「リサイズハンドル」を見る 1 文にした"
+        }
+      ]
+    },
+    {
+      "sha": "b3d6ccdbc109e4897f5e42d16ba5e5e71b8aca46",
+      "phase": "hard",
+      "role": "参照元の破線がノード自身の outline で描かれることを固定する",
+      "why": "docs/06 に参照元の破線も形に沿う(ノード自身の outline で描く)と書いたが、既存テストは破線の色の部分文字列しか見ておらず、border に替えても全件通った(test-reviewer の実測)。既存のテスト名は選択の枠が破線に負けない順序を指しているので、assert を強めず別のテストにした。",
+      "flows": [
+        "select-token"
+      ],
+      "review": [
+        "outline-offset の数値は固定しなかったこと。docs は「数 px 外側」としか言っておらず、0 にしても落ちるテストは無い"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+          "start": 139,
+          "end": 150,
+          "text": "規則の文字列が outline:1.5px dashed を含むかを見る。破線を border へ替えると、このテストだけが落ちる"
+        }
+      ]
+    },
+    {
+      "sha": "3e98dde4d37fe96a764522b1d9f2ee38ba8e2221",
+      "phase": "fin",
+      "role": "Ellipse を選択中のストーリーの doc からハンドルの記述を外す",
+      "why": "push 前に Storybook を撮ったら、枠は楕円に沿っていたがハンドルが 1 つも出ていなかった。幅・高さの扱いを書いていない Ellipse にハンドルを出す判定が、スキーマの既定値を当てていないため。描画の判定の修正はこの PR と独立にマージできるので #1176 に分け、doc は写っているものだけを書く。",
+      "review": [
+        "ストーリーの Ellipse に幅の扱いを書き足してハンドルを出す形にしなかったこと。不具合をストーリー側で隠すことになる"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "start": 185,
+          "end": 185,
+          "text": "枠が楕円に沿うことだけを書く。#1176 を直したらハンドルの記述を戻す"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "side": "old",
+          "start": 185,
+          "end": 186,
+          "text": "実際には写っていなかった「四隅のハンドルが枠から離れる」"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "token-dash",
+      "label": "トークンの参照元の破線",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx"
+    },
+    {
+      "id": "multi-selection",
+      "label": "複数選択の枠",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.multi-selection.test.tsx"
+    },
+    {
+      "id": "drag-move",
+      "label": "ノードの移動とドロップ先",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-move.test.tsx"
+    },
+    {
+      "id": "resize",
+      "label": "リサイズハンドル",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx"
+    },
+    {
+      "id": "resize-rotation",
+      "label": "回ったノードのリサイズ",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx"
+    },
+    {
+      "id": "vrt",
+      "label": "ストーリーの視覚差分",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "referrer-outline",
+      "suite": "token-dash",
+      "name": "トークンを参照しているノードの破線は、そのノード自身の outline として描かれる",
+      "techniques": [
+        "regression",
+        "equivalence"
+      ],
+      "why": "参照元の破線が形に沿うのは、ノード自身の outline で描くから。border や重ねた要素に替えると形に沿わなくなる(border は箱の大きさも変える)が、既存テストはそれを見逃していた",
+      "given": "`gray-900` を `title` だけが参照するドキュメントで、`gray-900` を選んでいる",
+      "when": "キャンバスを描く",
+      "then": "`title` を指す規則に `outline:1.5px dashed` が入っている",
+      "commit": "b3d6ccdbc109e4897f5e42d16ba5e5e71b8aca46",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+        "start": 139,
+        "end": 150,
+        "emphasis": [
+          {
+            "start": 147,
+            "end": 149
+          }
+        ],
+        "text": "test(\"トークンを参照しているノードの破線は、そのノード自身の outline として描かれる\", () => {\n  const document = setupDocument();\n\n  renderCanvas({\n    selection: DocumentSelection.fromNames(document, []),\n    tokenSelection: selectingGray900(document),\n  });\n\n  expect(ruleIndexOf(\"title\", \"outline:1.5px dashed\")).toBeGreaterThanOrEqual(\n    0,\n  );\n});"
+      },
+      "values": {
+        "columns": [
+          "test-reviewer が試した壊し方",
+          "落ちた既存テスト",
+          "扱い"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "ハンドルの位置に outline-offset の補正を足す",
+              "5 件",
+              "守れている"
+            ]
+          },
+          {
+            "cells": [
+              "選択の枠を重ねた別の要素で描く",
+              "10 件",
+              "守れている"
+            ]
+          },
+          {
+            "cells": [
+              "ドロップ先の枠を border で描く",
+              "4 件",
+              "守れている"
+            ]
+          },
+          {
+            "cells": [
+              "参照元の破線を border で描く",
+              "0 件",
+              "このテストを足し、これだけが落ちることを確かめた"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "選択の枠の outline-offset を 0 にする",
+              "0 件",
+              "docs が数値を言わないので見送り"
+            ]
+          },
+          {
+            "cells": [
+              "Ellipse の border-radius を 0 にする",
+              "0 件",
+              "happy-dom は描かない。VRT だけが見ている"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx"
+      ],
+      "covers": [
+        "rule"
+      ]
+    },
+    {
+      "id": "referrer-order",
+      "suite": "token-dash",
+      "name": "選択中のノードがそのトークンを参照していても、選択の枠が破線に負けない",
+      "techniques": [
+        "state"
+      ],
+      "why": "選択の枠と参照元の破線は同じ outline を奪い合うので、差し込む順で選択の枠が勝たなければならない",
+      "given": "`title` を選び、`title` が参照する `gray-900` も選んでいる",
+      "when": "キャンバスを描く",
+      "then": "選択の枠の規則が、破線の規則より後に差し込まれている",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+        "start": 152,
+        "end": 164,
+        "emphasis": [
+          {
+            "start": 160,
+            "end": 163
+          }
+        ],
+        "text": "test(\"選択中のノードがそのトークンを参照していても、選択の枠が破線に負けない\", () => {\n  const document = setupDocument();\n\n  renderCanvas({\n    selection: DocumentSelection.fromNames(document, [\"title\"]),\n    tokenSelection: selectingGray900(document),\n  });\n\n  expect(ruleIndexOf(\"title\", \"dashed #0d99ff\")).toBeGreaterThanOrEqual(0);\n  expect(ruleIndexOf(\"title\", \"solid #3b82f6\")).toBeGreaterThan(\n    ruleIndexOf(\"title\", \"dashed #0d99ff\"),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx"
+      ],
+      "covers": [
+        "rule"
+      ]
+    },
+    {
+      "id": "multi-outline",
+      "suite": "multi-selection",
+      "name": "複数選んでいると選んだものすべてに枠が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "選択の枠がノード自身の outline(実線)として差し込まれることを、規則の文字列で見ている既存テストの 1 つ",
+      "given": "2 枚の artboard にまたがる 2 つのインスタンスを選んでいる",
+      "when": "キャンバスを描く",
+      "then": "両方の名前を指す規則に `outline:2px solid` が入っている",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.multi-selection.test.tsx",
+        "start": 45,
+        "end": 52,
+        "text": "test(\"複数選んでいると選んだものすべてに枠が出る\", () => {\n  renderCanvas({ selection: setupMultiSelected() });\n\n  const styles = injectedStyles();\n\n  expect(styles).toContain('[data-name=\"home-login\"]{outline:2px solid');\n  expect(styles).toContain('[data-name=\"settings-login\"]{outline:2px solid');\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx"
+      ],
+      "covers": [
+        "frames",
+        "rule"
+      ]
+    },
+    {
+      "id": "drop-outline",
+      "suite": "drag-move",
+      "name": "受け入れ先の上では、その Box が枠で示される",
+      "techniques": [
+        "state"
+      ],
+      "why": "ドロップ先の親に出す枠もノード自身の outline(破線)で描かれ、形に沿う",
+      "given": "`title` を選んでいる",
+      "when": "`title` を掴んで `panel` の上へ運ぶ",
+      "then": "`panel` を指す規則に `outline:2px dashed` が入っている",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-move.test.tsx",
+        "start": 108,
+        "end": 115,
+        "text": "test(\"受け入れ先の上では、その Box が枠で示される\", () => {\n  renderCanvas({ selection: setupSelection() });\n\n  pressPointer(drawn(\"title\"), { x: 100, y: 100 });\n  movePointer(drawn(\"panel\"), { x: 100, y: 150 });\n\n  expect(injectedStyles()).toContain('[data-name=\"panel\"]{outline:2px dashed');\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx"
+      ],
+      "covers": [
+        "rule"
+      ]
+    },
+    {
+      "id": "handle-edge",
+      "suite": "resize",
+      "name": "測り直すと、幅のハンドルは要素の右辺の上へ置かれる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "ハンドルの中心は枠ではなく辺の上に来る(docs/06 で書き直した本文)。outline-offset の補正を足すと、この種のテストが落ちる",
+      "given": "`panel` を選び、右辺が x=300 に描かれている",
+      "when": "測り直す",
+      "then": "右辺の中点のハンドルの左端が `295px`(中心が 300)",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+        "start": 363,
+        "end": 375,
+        "emphasis": [
+          {
+            "start": 374,
+            "end": 374
+          }
+        ],
+        "text": "test(\"測り直すと、幅のハンドルは要素の右辺の上へ置かれる\", () => {\n  /*\n   * 測定 → 描画の配線。ハンドルが出ているだけでは、測った矩形を使わずに置いていても\n   * 通ってしまう。器の矩形は happy-dom では 0 なので、client 座標がそのまま\n   * 器からの相対になる。右辺 300 の上に中心が来るので、左端は 5px ぶん手前。\n   */\n  renderCanvas({ selection: setupSelection([\"panel\"]) });\n  drawnAt(\"panel\", PanelBounds);\n\n  fireEvent(globalThis.window, new Event(\"resize\"));\n\n  expect(resizeHandleAt({ x: 1, y: 0.5 }).style.left).toBe(\"295px\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx"
+      ],
+      "covers": [
+        "handles"
+      ]
+    },
+    {
+      "id": "handle-rotated",
+      "suite": "resize-rotation",
+      "name": "測り直すと、90 度回したノードの右辺のハンドルは回った右辺の中点（画面の下）へ置かれる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "ハンドルは外接矩形ではなく回った矩形の辺に乗る。docs/06 の注記で「外接矩形の四隅」と書かなかった根拠",
+      "given": "90 度回したノードを選んでいる",
+      "when": "測り直す",
+      "then": "右辺のハンドルが画面の下(回った右辺の中点)に置かれる",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+        "start": 145,
+        "end": 155,
+        "text": "test(\"測り直すと、90 度回したノードの右辺のハンドルは回った右辺の中点（画面の下）へ置かれる\", () => {\n  // 外接矩形の右辺の中点なら (200, 100)。器の矩形は happy-dom では 0\n  renderCanvas({ selection: setupSelection() });\n  drawnTurned(\"turned\");\n\n  fireEvent(globalThis.window, new Event(\"resize\"));\n\n  const rightEdge = resizeHandleAt({ x: 1, y: 0.5 });\n  expect(Number.parseFloat(rightEdge.style.left)).toBeCloseTo(145);\n  expect(Number.parseFloat(rightEdge.style.top)).toBeCloseTo(195);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx"
+      ],
+      "covers": [
+        "handles"
+      ]
+    },
+    {
+      "id": "shape-follow",
+      "suite": "vrt",
+      "name": "Ellipse を選ぶと、選択の枠が楕円に沿って描かれる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "形に沿うのは描画の結果で、happy-dom は CSS を描かないのでテストでは確かめられない。見ているのは Ellipse を選択中のストーリーの VRT だけ",
+      "given": "Ellipse を 1 つ選んでいる",
+      "when": "キャンバスを描く",
+      "then": "選択の枠が楕円の輪郭に沿う",
+      "todo": true,
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "画面の見え方も操作も変わらない。選択の枠の形を仕様として書いた",
+    "lead": "キャンバスでものを選んだときの見え方と、ハンドルで大きさを変える操作は、これまでと同じです。これまで仕様に書かれていなかった選択の枠の形と、ハンドルとの位置関係を書き足しました。",
+    "tables": [
+      {
+        "label": "選んだものの形ごとの、枠とハンドル",
+        "gist": "枠は選んだものの形に沿い、ハンドルは形に関係なく選んだものの矩形の辺と角に置かれる。",
+        "text": "どのマスもこれまでの見え方のままで、仕様に書いて固定したものです。",
+        "rowHeads": [
+          {
+            "id": "rect",
+            "label": "角丸の無い矩形"
+          },
+          {
+            "id": "rounded",
+            "label": "角丸の Box"
+          },
+          {
+            "id": "ellipse",
+            "label": "Ellipse"
+          },
+          {
+            "id": "rotated",
+            "label": "回って描かれているもの"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "frame",
+            "label": "選択の枠"
+          },
+          {
+            "id": "handle",
+            "label": "ハンドル"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "rect",
+            "columnHead": "frame",
+            "result": "辺から数ピクセル外側に、矩形の枠が出る",
+            "tests": [
+              "multi-outline"
+            ]
+          },
+          {
+            "rowHead": "rect",
+            "columnHead": "handle",
+            "result": "辺の上に中心が来る。枠とは数ピクセルずれる",
+            "tests": [
+              "handle-edge"
+            ]
+          },
+          {
+            "rowHead": "rounded",
+            "columnHead": "frame",
+            "result": "角丸の付いた隅に沿って曲がる",
+            "note": "枠を角丸に沿わせられる表示部品の上で"
+          },
+          {
+            "rowHead": "rounded",
+            "columnHead": "handle",
+            "result": "四隅のハンドルは矩形の角に置かれ、角丸の隅では枠から離れて見える"
+          },
+          {
+            "rowHead": "ellipse",
+            "columnHead": "frame",
+            "result": "楕円になる",
+            "tests": [
+              "shape-follow"
+            ]
+          },
+          {
+            "rowHead": "ellipse",
+            "columnHead": "handle",
+            "result": "四隅で枠から離れる。ただし幅と高さの扱いを書いていない Ellipse には、今はハンドルが出ない(別に直す)"
+          },
+          {
+            "rowHead": "rotated",
+            "columnHead": "frame",
+            "result": "形ごと回る"
+          },
+          {
+            "rowHead": "rotated",
+            "columnHead": "handle",
+            "result": "回った辺の上に中心が来る",
+            "tests": [
+              "handle-rotated"
+            ]
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "ハンドルを掴める場所と、掴んで運んだときの大きさの変わり方は変わらない",
+        "tests": [
+          "handle-edge",
+          "handle-rotated"
+        ]
+      },
+      {
+        "text": "選んだものすべてに、これまでどおり青い実線の枠が出る",
+        "tests": [
+          "multi-outline"
+        ]
+      },
+      {
+        "text": "選択中のトークンを参照しているものの破線も、そのもの自身の枠として描かれ、形に沿う",
+        "tests": [
+          "referrer-outline"
+        ]
+      },
+      {
+        "text": "選んでいるものがトークンを参照していても、選択の枠が破線に隠れない",
+        "tests": [
+          "referrer-order"
+        ]
+      },
+      {
+        "text": "運んでいるときのドロップ先の親に出る緑の破線の枠も、形に沿う",
+        "tests": [
+          "drop-outline"
+        ]
+      },
+      {
+        "text": "枠を角丸に沿わせられない古い WebView では、枠は矩形のまま出る。対応する下限はまだ決めていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "css-outline",
+      "category": "css",
+      "label": "`outline` と `outline-offset`",
+      "gist": "要素のまわりに、配置に影響しない線を引くための CSS の[[プロパティ|css-property]]。`border` と違って要素の大きさを変えないので、選択や強調のように後から重ねる印に向く。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`outline` は線の太さ・種類・色をまとめて書く(`outline:2px solid #3b82f6`)。線は[[ボーダーボックス|border-box]]の外側に描かれ、周りの要素を押しのけない。`outline-offset` はその線を外側へどれだけ離すかで、`1px` なら箱から 1px 空けて描く。"
+        },
+        {
+          "kind": "spec",
+          "text": "今のブラウザでは、`outline` は要素の [[`border-radius`|border-radius]] に沿って曲がる。Chromium は 94、Safari は 16.4 からで、それより古い WebKit では角丸を無視して矩形に描く。"
+        },
+        {
+          "kind": "caution",
+          "text": "`border` に替えると線の分だけ要素が大きくなり、中身の配置がずれる。`box-shadow` でも形に沿う線は引けるが、このリポジトリではノードの影の prop が使っているので枠には使えない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "lineRange": {
+            "start": 34,
+            "end": 34
+          },
+          "text": "選択の枠(`outline-offset:1px`)",
+          "shas": [
+            "1982cb42489670d49093d1f652c534697be679ab",
+            "7b68f5a7e4cbed7dd977902198f8da50eed64880"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "lineRange": {
+            "start": 52,
+            "end": 53
+          },
+          "text": "参照元の破線(`outline:1.5px dashed`)"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "lineRange": {
+            "start": 84,
+            "end": 85
+          },
+          "text": "形に沿うのは `outline` が `border-radius` に沿う WebView の上だけ、という仕様",
+          "shas": [
+            "b86068298c5fa403af74ff18fbd1bd2523722d10",
+            "1d82d800a9494765e694942a740f71e8e9861268"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "name-rule"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "happy-dom-css",
+      "category": "vitest · happy-dom",
+      "label": "happy-dom は CSS を描かない",
+      "gist": "テストは[[happy-dom|happy-dom]]の上で動く。DOM の木と属性は本物と同じに扱えるが、レイアウトや描画はしないので、線が角丸に沿うかのような見た目は確かめられない。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "そのためテストは、差し込んだ `style` 要素の文字列(どの名前を指し、どの宣言を持つか)と、その並び順を見る。同じ選択子・同じ詳細度の規則は後に書いたほうが勝つので、順で「どちらが見えるか」を判定できる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+            "start": 121,
+            "end": 137,
+            "text": "/**\n * 名前を指す規則のうち、その宣言を持つものが何番目に差し込まれたか。\n *\n * 同じ選択子・同じ詳細度の規則は後に書いたほうが勝つので、どちらが見えるかは\n * 差し込む順で決まる。happy-dom は CSS を解決しないため、順そのものを見る。\n *\n * @param name 規則が指している artboard / ノードの名前\n * @param declaration 探したい宣言の一部\n * @returns その規則の位置。見つからなければ -1\n */\nfunction ruleIndexOf(name: string, declaration: string): number {\n  const styles = [...canvasContent().querySelectorAll(\"style\")];\n  return styles.findIndex((style) => {\n    const text = style.textContent ?? \"\";\n    return text.includes(`\"${name}\"`) && text.includes(declaration);\n  });\n}"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "見た目そのものは Storybook のストーリーを撮って比べる [[VRT|vrt]] が見る。Ellipse の枠が楕円に沿うことを見ているのはそこだけ。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+          "lineRange": {
+            "start": 139,
+            "end": 150
+          },
+          "text": "破線が `outline` の宣言であることを、規則の文字列で見る",
+          "shas": [
+            "b3d6ccdbc109e4897f5e42d16ba5e5e71b8aca46"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "lineRange": {
+            "start": 180,
+            "end": 186
+          },
+          "text": "円として描かれることも、枠が楕円に沿うことも、この視覚差分だけが見ている",
+          "shas": [
+            "1982cb42489670d49093d1f652c534697be679ab",
+            "3e98dde4d37fe96a764522b1d9f2ee38ba8e2221"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "css-outline"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "name-rule",
+      "category": "canvas · 枠",
+      "label": "名前で引く規則で描く枠",
+      "gist": "キャンバスの中身は文字列の HTML なので、ノードへ class を足せない。そこでノード名の属性を選択子にした規則を 1 本差し込み、ノード自身の [[`outline`|outline-term]] として枠を描く。枠が形に沿うのはこのため。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx",
+            "start": 14,
+            "end": 19,
+            "text": "export function NameStyleRule({\n  name,\n  declarations,\n}: Readonly<{ name: string; declarations: string }>) {\n  return <style>{`${CanvasDom.selectorOf(name)}{${declarations}}`}</style>;\n}"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "選択の枠・ドロップ先の親の枠・参照元の破線の 3 つが同じ仕組みで差し込まれる。参照元の破線を先に、選択の枠を後に差し込むので、両方が当たるノードでは選択の枠が勝つ。"
+        },
+        {
+          "kind": "rule",
+          "text": "枠を重ねた別の要素で描く矩形の枠にはしない。描き方がノードの `outline` と重ねた要素の 2 系統に割れる(選択の枠の doc の Why not)。"
+        },
+        {
+          "kind": "history",
+          "text": "Ellipse を足した #514 で、枠が楕円に沿って描かれることが分かった。この PR で、それを仕様(docs/06「選択」)として採った。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "lineRange": {
+            "start": 25,
+            "end": 34
+          },
+          "text": "選択の枠の宣言と、矩形の枠にしない理由",
+          "shas": [
+            "1982cb42489670d49093d1f652c534697be679ab",
+            "7b68f5a7e4cbed7dd977902198f8da50eed64880"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "lineRange": {
+            "start": 112,
+            "end": 133
+          },
+          "text": "破線 → 選択の枠 → ドロップ先の順に差し込む"
+        }
+      ],
+      "seeAlso": [
+        "css-outline",
+        "handle-place"
+      ],
+      "tests": [
+        "referrer-outline",
+        "referrer-order",
+        "multi-outline",
+        "drop-outline"
+      ],
+      "flows": [
+        "select-node",
+        "select-token"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "handle-place",
+      "category": "canvas · ハンドル",
+      "label": "ハンドルは辺の上に置く",
+      "gist": "ハンドルは枠とは別の重ねた層にあり、選んだものの回った矩形の角と辺の中点に中心を置く。枠の線ではなく辺を基準にするので、枠とは `outline-offset` と線幅の分だけずれる。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+            "start": 54,
+            "end": 78,
+            "emphasis": [
+              {
+                "start": 76,
+                "end": 77
+              }
+            ],
+            "text": "/**\n * ハンドル 1 個の見た目と位置。\n *\n * 中心を回った辺の上に置き（`- HandleSizePx / 2`）、四角も要素と同じ角度だけ回す。選択の枠\n * との位置関係は docs/06-ui.md「リサイズハンドル」。\n *\n * artboard は `overflow:hidden` を持つが、このオーバーレイは artboard の外にあるのではみ出した\n * 半分が切られない。\n *\n * @param anchor 出す箇所\n * @param bounds 選択中のものが回って描かれている矩形（器からの相対）\n * @param grab その箇所で今つかめるもの。掴めないなら `none`\n * @returns その箇所へ置くためのスタイル\n */\nfunction handleStyle(\n  anchor: ResizeHandleAnchor,\n  bounds: RotatedBounds,\n  grab: Option<ResizeGrip>,\n): CSSProperties {\n  const center = RotatedBounds.pointAt(bounds, anchor);\n  return {\n    position: \"absolute\",\n    left: `${center.x - HandleSizePx / 2}px`,\n    top: `${center.y - HandleSizePx / 2}px`,\n    width: `${HandleSizePx}px`,"
+          }
+        },
+        {
+          "kind": "spec",
+          "text": "形が矩形から欠けるところ(Ellipse の四隅、角丸の付いた隅)ではハンドルが枠から離れる。ハンドルは形の上へ寄せない。角のハンドルは 2 軸を同時に変えるもので、矩形の角にあることでその意味が伝わる(docs/06「リサイズハンドル」)。"
+        },
+        {
+          "kind": "caution",
+          "text": "幅・高さの扱いを書いていない Ellipse には、今はハンドルが出ない(#1176)。ハンドルを出す判定がスキーマの既定値を当てていないため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "lineRange": {
+            "start": 54,
+            "end": 67
+          },
+          "text": "位置関係は docs/06 を見る、とだけ書いた doc",
+          "shas": [
+            "1982cb42489670d49093d1f652c534697be679ab",
+            "7b68f5a7e4cbed7dd977902198f8da50eed64880"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "lineRange": {
+            "start": 193,
+            "end": 195
+          },
+          "text": "辺の上に中心が来る、と直した本文と、枠との位置関係の子項目",
+          "shas": [
+            "b86068298c5fa403af74ff18fbd1bd2523722d10",
+            "1d82d800a9494765e694942a740f71e8e9861268"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "name-rule"
+      ],
+      "tests": [
+        "handle-edge",
+        "handle-rotated"
+      ],
+      "flows": [
+        "select-node"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "css-property",
+      "label": "プロパティ",
+      "text": "CSS で見た目の 1 項目を指す名前。`outline:2px solid` のように「名前:値」の形の宣言で書く。"
+    },
+    {
+      "id": "border-box",
+      "label": "ボーダーボックス",
+      "text": "要素の中身・内側の余白・`border` までを合わせた箱。`outline` はこの外側に描かれる。"
+    },
+    {
+      "id": "border-radius",
+      "label": "border-radius",
+      "text": "要素の角を丸める CSS のプロパティ。`50%` にすると楕円になる。"
+    },
+    {
+      "id": "happy-dom",
+      "label": "happy-dom",
+      "text": "Node.js の上でブラウザの DOM を真似るライブラリ。Vitest のテストがこの上で動く。レイアウトと描画はしない。"
+    },
+    {
+      "id": "vrt",
+      "label": "VRT",
+      "text": "見た目の回帰テスト。Storybook のストーリーを撮った画像を main の画像と比べ、差分があれば PR で知らせる。"
+    },
+    {
+      "id": "outline-term",
+      "label": "outline",
+      "text": "要素の外側に、配置に影響せずに引く線。技術の手引きの「`outline` と `outline-offset`」の節を見る。"
+    }
+  ]
+}
