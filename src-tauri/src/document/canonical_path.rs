@@ -41,6 +41,9 @@ pub fn canonical_form(path: &Path) -> PathBuf {
 ///
 /// 揃えた綴りは TS へ返り、最近使ったファイルとして `app-state.json` に残るので、
 /// 接頭辞の無い形にしておく。
+///
+/// CI は cargo test を走らせない(`.github/workflows/frontend.yml`)ので、Windows / macOS
+/// だけを通る分岐は実機で確かめていない。
 fn without_verbatim_disk(path: PathBuf) -> PathBuf {
     let mut components = path.components();
     let Some(Component::Prefix(prefix)) = components.next() else {
@@ -68,7 +71,9 @@ pub fn canonicalize_requested(raw_path: &str) -> Result<DocumentFilePath, Docume
     DocumentFilePath::parse(spelled)
 }
 
-#[tauri::command]
+// 起動時の復元は最近使ったファイルの全行を寄せる。同期コマンドはメインスレッドで動き、
+// 応答しないネットワークドライブの realpath で UI が固まりうるので、async で別スレッドへ出す。
+#[tauri::command(async)]
 pub fn canonicalize_document_path(path: String) -> Result<String, DocumentIoError> {
     canonicalize_requested(&path).map(|canonical| canonical.to_string_lossy().into_owned())
 }

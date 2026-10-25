@@ -1,4 +1,7 @@
 //! 同じファイルを指す別の綴りを、1 つの綴りへ寄せる。
+//!
+//! CI は cargo test を走らせない(`.github/workflows/frontend.yml`)ので、Windows / macOS
+//! だけのテストは実機で確かめていない。
 
 use std::fs;
 

@@ -28,8 +28,8 @@ impl KnownContentRegistry {
 
     /// `path` の内容が `content` であることを記録する。
     pub fn record(&self, path: &Path, content: &str) {
-        self.known()
-            .insert(canonical_form(path), hash_content(content));
+        let key = canonical_form(path);
+        self.known().insert(key, hash_content(content));
     }
 
     /// `path` へ `content` を書き込む `write` を、記録と不可分に実行する。
@@ -67,12 +67,14 @@ impl KnownContentRegistry {
     /// 内容を書いた場合も真を返すが、内容が同一である以上リロードを見送っても
     /// 表示は変わらない。
     pub fn is_known(&self, path: &Path, content: &str) -> bool {
-        self.known().get(&canonical_form(path)) == Some(&hash_content(content))
+        let key = canonical_form(path);
+        self.known().get(&key) == Some(&hash_content(content))
     }
 
     /// `path` の記録を破棄する(watch の停止時など)。
     pub fn forget(&self, path: &Path) {
-        self.known().remove(&canonical_form(path));
+        let key = canonical_form(path);
+        self.known().remove(&key);
     }
 
     /// ロックを取得する。
