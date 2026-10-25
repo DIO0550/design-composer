@@ -1,5 +1,7 @@
+import { BoxElement } from "@/domains/compiled/compiled-element";
 import type { Artboard } from "@/domains/dcmp/artboard";
 import { AxisLength, type AxisLengths } from "@/domains/dcmp/axis-length";
+import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node, type Props } from "@/domains/dcmp/node";
 import { Placement } from "@/domains/dcmp/placement";
@@ -114,6 +116,18 @@ export const ResizeGrip = {
   },
 
   /**
+   * その 1 軸だけを変える掴み方か。
+   *
+   * @param grip 掴んだもの
+   * @param axis 見る軸
+   * @returns 変える軸がその 1 軸だけなら `true`。角で 2 軸を変える・別の軸を変えるなら `false`
+   */
+  isSingleAxis(grip: ResizeGrip, axis: Axis): boolean {
+    const grabs = ResizeGrip.grabs(grip);
+    return grabs.length === 1 && grabs[0].length.axis === axis;
+  },
+
+  /**
    * 掴んだものが動かす辺を、軸ごとに並べ直したもの（辺のスナップに渡す形）。
    *
    * @param grip 掴んだもの
@@ -209,23 +223,60 @@ export type ResizeRotation = Readonly<{
 }>;
 
 /**
+ * 掴んだ辺を揃える先と、それが効く掴み方（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
+ * 名前は**リサイズしても動かないもの**だけで、並びは近さが同じときに先に寄る順。
+ *
+ * 掴み方で絞る前の名前を生のまま読めないよう直和にし、絞るのは `NodeResize.hold` が行う。
+ */
+export type ResizeSnapTargets =
+  /** artboard と、回っていない `placement: "absolute"` のノード。どの掴み方でも効く。 */
+  | Readonly<{ kind: "anyGrip"; names: readonly string[] }>
+  /**
+   * 条件を満たすフロー配置のノード。`axis`（親の交差軸）の 1 軸だけを掴んだときに効く。
+   *
+   * 角では主軸の長さも変わり、親が主軸で hug なら祖先の並び（折り返し）ごと揃え先が動くので外す。
+   */
+  | Readonly<{ kind: "axisOnly"; axis: Axis; names: readonly string[] }>
+  /** 回っている・掴めない・条件を満たさないフロー配置のノード。 */
+  | Readonly<{ kind: "none" }>;
+
+const ResizeSnapTargets = {
+  /** 揃え先の無い対象。 */
+  None: { kind: "none" },
+
+  /**
+   * その掴み方で揃える先の名前。
+   *
+   * @param targets 選択中のものの揃え先
+   * @param grip 掴んだもの
+   * @returns 揃え先の名前。`axisOnly` でその軸の 1 軸だけを掴んでいないときと、`none` では空
+   */
+  namesFor(targets: ResizeSnapTargets, grip: ResizeGrip): readonly string[] {
+    switch (targets.kind) {
+      case "anyGrip":
+        return targets.names;
+      case "axisOnly":
+        return ResizeGrip.isSingleAxis(grip, targets.axis) ? targets.names : [];
+      case "none":
+        return [];
+    }
+  },
+} as const;
+
+/**
  * リサイズの観点から見た選択。掴める軸の長さと、ドキュメントへ書ける今の位置と、掴んだ辺を
  * 揃える先。
  *
  * 始点側の辺を掴めるかは「その軸が固定か」だけでは決まらず、反対の辺を留めるための位置を
- * 書けるかにも依るので、対で 1 つの型にする。揃え先も位置を書ける対象にしか無いので、
- * 同じ分岐で決める。
+ * 書けるかにも依るので、対で 1 つの型にする。揃え先も置かれ方（artboard / 絶対配置 /
+ * フロー配置）で決まるので、同じ分岐で決める。
  */
 export type ResizableSelection = Readonly<{
   lengths: readonly AxisLength[];
   /** 掴んだ時点の位置。ドキュメントへ位置を書けない対象（フロー配置）なら `none`。 */
   origin: Option<Offset>;
-  /**
-   * 掴んだ辺を揃える先の名前（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
-   * **リサイズしても動かないもの**だけで、並びは近さが同じときに先に寄る順。位置を書けない
-   * 対象（フロー配置）と、画面上で回っている対象（`NodeResize.resizable`）なら空。
-   */
-  snapTargetNames: readonly string[];
+  /** 掴んだ辺を揃える先（`ResizeSnapTargets`）。 */
+  snapTargets: ResizeSnapTargets;
   rotation: ResizeRotation;
 }>;
 
@@ -239,12 +290,17 @@ export type ResizeHold = Readonly<{
   grabbedAt: Option<Offset>;
   rotation: ResizeRotation;
   /**
+   * この掴み方で揃える先の名前（`ResizableSelection.snapTargets` を掴み方で絞ったもの）。
+   * 並びは近さが同じときに先に寄る順。
+   */
+  snapTargetNames: readonly string[];
+  /**
    * 掴んだ時点の辺のスナップの組（`moving` は掴んだ時点の矩形）。`hold` の直後と、掴んだ
-   * 時点の矩形を測れなかったときは `none`。揃え先が無い対象（フロー配置）と、揃え先を外した
-   * 値（`withoutSnapTargets`）では `stationary` が空の組になる。
+   * 時点の矩形を測れなかったときは `none`。揃え先が無い掴み（`snapTargetNames` が空）と、
+   * 揃え先を外した値（`withoutSnapTargets`）では `stationary` が空の組になる。
    *
-   * 揃え先はリサイズしても動かないものに絞っている（`ResizableSelection.snapTargetNames`）
-   * ので、動かすたびには測り直さない。
+   * 揃え先はリサイズしても動かないものに絞っている（`ResizeSnapTargets`）ので、動かすたびには
+   * 測り直さない。
    */
   snapFrom: Option<SideSnap>;
 }>;
@@ -284,7 +340,7 @@ export type TrackedResize = Readonly<{
 const UnresizableSelection: ResizableSelection = {
   lengths: [],
   origin: Option.none,
-  snapTargetNames: [],
+  snapTargets: ResizeSnapTargets.None,
   rotation: { own: 0, total: 0 },
 };
 
@@ -498,13 +554,15 @@ export const NodeResize = {
    * 揃え先は、artboard なら他の artboard のうち幅を変えても動かないもの
    * （`ArrangedArtboard.isShiftedByWidth` を外す）、`placement: "absolute"` のノードなら
    * 今の親と、その直下にある自分以外の子（孫は含めない。絶対配置はフローから外れるので、
-   * 親の大きさにも兄弟の配置にも関わらない）。画面上で回っているノード（自分と祖先の
-   * 合計が 360 の倍数でない）は揃え先を持たない（docs/06-ui.md「辺のスナップ」）。
+   * 親の大きさにも兄弟の配置にも関わらない）。フロー配置のノードは、親が交差軸の始点を
+   * 動かさない（`BoxElement.startPinnedCrossAxis`）ときだけ、その軸を掴んだときの揃え先として
+   * 同じ名前を持つ。画面上で回っているノード（自分と祖先の合計が 360 の倍数でない）は揃え先を
+   * 持たない（docs/06-ui.md「辺のスナップ」）。
    *
    * @param selection ハンドルを出す対象を決める、ドキュメントと選択の対
-   * @returns 掴める軸のハンドルと、ドキュメントへ書ける今の位置と、揃え先の名前。単一選択
+   * @returns 掴める軸のハンドルと、ドキュメントへ書ける今の位置と、揃え先。単一選択
    *   でないとき・ロック中のノード（docs/03「ロック」）・非表示のノード（docs/03「表示 /
-   *   非表示」。包んでいるノード・artboard が非表示のものを含む）は掴める軸も揃え先も空
+   *   非表示」。包んでいるノード・artboard が非表示のものを含む）は掴める軸が空で揃え先も無い
    */
   resizable(selection: DocumentSelection): ResizableSelection {
     const selected = DocumentSelection.singleName(selection);
@@ -522,11 +580,14 @@ export const NodeResize = {
       return {
         lengths: artboardHandles(artboards[index]),
         origin: Option.some(ArrangedArtboard.positionAt(artboards, index)),
-        snapTargetNames: artboards
-          .filter((_, other) =>
-            isStillWhileResizing(artboards, { resized: index, other }),
-          )
-          .map((artboard) => artboard.name),
+        snapTargets: {
+          kind: "anyGrip",
+          names: artboards
+            .filter((_, other) =>
+              isStillWhileResizing(artboards, { resized: index, other }),
+            )
+            .map((artboard) => artboard.name),
+        },
         rotation: rotation.value,
       };
     }
@@ -546,17 +607,9 @@ export const NodeResize = {
       origin: Option.map(placement, (child) =>
         Placement.offset(child.placement),
       ),
-      snapTargetNames: Angle.isWholeTurns(rotation.value.total)
-        ? Option.unwrapOr(
-            Option.flatMap(placement, (child) =>
-              parentWithSiblingNames(selection.document, {
-                name,
-                parentName: child.parentName,
-              }),
-            ),
-            [],
-          )
-        : [],
+      snapTargets: Angle.isWholeTurns(rotation.value.total)
+        ? placedSnapTargets(selection.document, { name, placement })
+        : ResizeSnapTargets.None,
       rotation: rotation.value,
     };
   },
@@ -567,7 +620,9 @@ export const NodeResize = {
    * ハンドルを直に押した経路も帯の経路もここを通すので、掴んだ時点の位置の取り方が
    * 2 箇所へ散らない。
    *
-   * @param resizable 選択中のものの掴める軸と位置
+   * 揃え先もここで掴み方に合わせて絞る（`ResizeSnapTargets`）。
+   *
+   * @param resizable 選択中のものの掴める軸と位置と揃え先
    * @param grip 掴んだもの
    * @param pointerOrigin 押された位置
    * @returns 掴んでいるもの
@@ -582,6 +637,7 @@ export const NodeResize = {
       pointerOrigin,
       grabbedAt: resizable.origin,
       rotation: resizable.rotation,
+      snapTargetNames: ResizeSnapTargets.namesFor(resizable.snapTargets, grip),
       snapFrom: Option.none,
     };
   },
@@ -591,8 +647,7 @@ export const NodeResize = {
    * 近くで吸い付く（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
    *
    * @param held 掴んだもの
-   * @param snap 掴んだ時点の矩形（`moving`）と、`ResizableSelection.snapTargetNames` の
-   *   揃え先の実測
+   * @param snap 掴んだ時点の矩形（`moving`）と、`ResizeHold.snapTargetNames` の揃え先の実測
    * @returns その組を載せた掴み
    */
   withSideSnap(held: ResizeHold, snap: SideSnap): ResizeHold {
@@ -604,7 +659,7 @@ export const NodeResize = {
    * 寄せず、ガイド線も出ない（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
    *
    * `snapFrom` を `none` にはせず揃え先を空にする。`none` は `hold` の直後か、掴んだ時点に
-   * 測れなかったことを表しており、吸い付かないことはフロー配置もノードの移動も「揃え先が空」で表している。
+   * 測れなかったことを表しており、吸い付かないことは揃え先の無い掴みもノードの移動も「揃え先が空」で表している。
    *
    * @param resize 今のリサイズの状態
    * @returns 揃え先を空にした状態。掴んでいない / 組が載っていなければ `resize` のまま
@@ -776,8 +831,8 @@ function resizeRotationOf(
 /**
  * その artboard が、並びの中の 1 枚をリサイズしても動かない揃え先になるか。
  *
- * 高さだけを変えるときも、幅につられて動くものを外す。揃え先は掴んだ時点に 1 回だけ決め、
- * 角では幅と高さを同時に変えるため。
+ * 高さだけを変えるときも、幅につられて動くものを外す（docs/06-ui.md「辺のスナップ」の
+ * artboard の項）。
  *
  * @param artboards artboard の並び（`.dcmp` の並び順）
  * @param pair リサイズする artboard（`resized`）と、揃え先になるかを知りたい artboard
@@ -817,9 +872,64 @@ function parentWithSiblingNames(
 }
 
 /**
+ * 回っていないノードの揃え先。絶対配置ならどの掴み方でも、フロー配置なら条件を満たすとき
+ * だけ親の交差軸で。
+ *
+ * @param document 引き先になるドキュメント
+ * @param selected 自分の名前と、絶対配置なら今の親と位置（`DesignDocument.childPlacementOf`）
+ * @returns 揃え先。親が子の並びを持たなければ揃え先は無い
+ */
+function placedSnapTargets(
+  document: DesignDocument,
+  selected: Readonly<{ name: string; placement: Option<ChildPlacement> }>,
+): ResizeSnapTargets {
+  if (!Option.isSome(selected.placement)) {
+    return flowSnapTargets(document, selected.name);
+  }
+  const names = parentWithSiblingNames(document, {
+    name: selected.name,
+    parentName: selected.placement.value.parentName,
+  });
+  return Option.isSome(names)
+    ? { kind: "anyGrip", names: names.value }
+    : ResizeSnapTargets.None;
+}
+
+/**
+ * フロー配置のノードの揃え先（docs/06-ui.md「辺のスナップ」）。親が交差軸の始点を動かさない
+ * ときだけ、その軸を掴んだときに今の親と、その直下にある自分以外の子へ揃える。
+ *
+ * @param document 引き先になるドキュメント
+ * @param name 自分の名前
+ * @returns 親の交差軸だけで効く揃え先。親が引けない・交差軸の始点が動きうる
+ *   （`BoxElement.startPinnedCrossAxis` が `none`）なら揃え先は無い
+ */
+function flowSnapTargets(
+  document: DesignDocument,
+  name: string,
+): ResizeSnapTargets {
+  const position = DesignDocument.findChildPosition(document, name);
+  if (!Option.isSome(position)) {
+    return ResizeSnapTargets.None;
+  }
+  const parentName = position.value.parentName;
+  const axis = Option.flatMap(
+    DesignDocument.boxPropsOf(document, parentName),
+    BoxElement.startPinnedCrossAxis,
+  );
+  const names = parentWithSiblingNames(document, { name, parentName });
+  // 名前を付けた変数にすると narrowing が効かないので、条件はここへ直に書く
+  if (!Option.isSome(axis) || !Option.isSome(names)) {
+    return ResizeSnapTargets.None;
+  }
+  return { kind: "axisOnly", axis: axis.value, names: names.value };
+}
+
+/**
  * 掴んだ辺を揃え先の辺へ寄せる量と、揃った線。軸ごとに、その軸で掴んだ辺だけを見る。
  *
- * 画面上で回っているノードには揃え先が無い（`NodeResize.resizable`）ので寄せず、線も出ない。
+ * 掴み方に揃え先が無い（`ResizeHold.snapTargetNames` が空）と、組の `stationary` も空なので
+ * 寄せず、線も出ない。
  *
  * @param held 掴んでいるもの
  * @param moved 掴んでからのポインタの移動量（画面上の px）

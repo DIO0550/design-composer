@@ -59,7 +59,7 @@ type Story = StoryObj<typeof meta>;
 const BothAxesResizable: ResizableSelection = {
   lengths: [AxisLength.create("width", 220), AxisLength.create("height", 120)],
   origin: Option.some({ x: 0, y: 0 }),
-  snapTargetNames: [],
+  snapTargets: { kind: "none" },
   rotation: { own: 0, total: 0 },
 };
 
@@ -93,7 +93,7 @@ export const WidthOnly: Story = {
     resizable: {
       lengths: [AxisLength.create("width", 220)],
       origin: Option.some({ x: 0, y: 0 }),
-      snapTargetNames: [],
+      snapTargets: { kind: "none" },
       rotation: { own: 0, total: 0 },
     },
   },

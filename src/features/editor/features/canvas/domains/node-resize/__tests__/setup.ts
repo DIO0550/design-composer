@@ -1,6 +1,6 @@
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
-import type { Offset } from "@/domains/unit/offset";
+import { Offset } from "@/domains/unit/offset";
 import { resizeAnchorAt } from "@/features/editor/features/canvas/__tests__/canvas-resize";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
@@ -10,6 +10,7 @@ import { Option } from "@/utils/Option";
 import {
   NodeResize,
   type ResizableSelection,
+  type ResizeGrip,
   type ResizeHandleAnchor,
   type ResizeHold,
 } from "../index";
@@ -32,7 +33,7 @@ export function setupResizable(): ResizableSelection {
       AxisLength.create("height", 100),
     ],
     origin: Option.some({ x: 30, y: 70 }),
-    snapTargetNames: [],
+    snapTargets: { kind: "none" },
     rotation: { own: 0, total: 0 },
   };
 }
@@ -57,6 +58,42 @@ export function setupView(): CanvasView {
   return CanvasView.create();
 }
 
+/** 幅 200 を右辺（終点側）で掴んだもの。掴める軸を持たない選択にもそのまま渡せる。 */
+export const RightEdgeGrip: ResizeGrip = {
+  kind: "width",
+  width: { length: AxisLength.create("width", 200), end: "end" },
+};
+
+/**
+ * その箇所で掴めるもの。
+ *
+ * @param resizable 掴む対象
+ * @param anchor 押した箇所
+ * @returns その箇所で掴めるもの（掴めなければテストを落とす）
+ */
+export function gripAt(
+  resizable: ResizableSelection,
+  anchor: ResizeHandleAnchor,
+): ResizeGrip {
+  return Option.unwrap(
+    NodeResize.gripFor(resizable, Option.unwrap(resizeAnchorAt(anchor))),
+  );
+}
+
+/**
+ * その掴み方で掴んだときの揃え先の名前。
+ *
+ * @param resizable 掴む対象
+ * @param grip 掴んだもの
+ * @returns `NodeResize.hold` が絞った揃え先の名前
+ */
+export function heldSnapTargetNames(
+  resizable: ResizableSelection,
+  grip: ResizeGrip,
+): readonly string[] {
+  return NodeResize.hold(resizable, grip, Offset.Origin).snapTargetNames;
+}
+
 /**
  * その箇所を押して掴んだもの。
  *
@@ -70,13 +107,7 @@ export function heldAt(
   anchor: ResizeHandleAnchor,
   pointerOrigin: Offset,
 ): ResizeHold {
-  return NodeResize.hold(
-    resizable,
-    Option.unwrap(
-      NodeResize.gripFor(resizable, Option.unwrap(resizeAnchorAt(anchor))),
-    ),
-    pointerOrigin,
-  );
+  return NodeResize.hold(resizable, gripAt(resizable, anchor), pointerOrigin);
 }
 
 /**
