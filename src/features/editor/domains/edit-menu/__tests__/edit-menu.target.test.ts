@@ -72,3 +72,26 @@ test("ロック中のノードの上を押したときは artboard になる", (
     ]),
   ).toBe(EditMenuTargets.Artboard);
 });
+
+test("ロック中のインスタンスの上を押したときは artboard になる", () => {
+  const document = DesignDocument.create({
+    components: {
+      badge: {
+        type: "Box",
+        children: [{ name: "badge-label", type: "Text" }],
+      },
+    },
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [{ name: "home-badge", ref: "badge", locking: "locked" }],
+      },
+    ],
+  });
+
+  expect(
+    EditMenuTarget.fromNames(document, ["badge-label", "home-badge", "home"]),
+  ).toBe(EditMenuTargets.Artboard);
+});

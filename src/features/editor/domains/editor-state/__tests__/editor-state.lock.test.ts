@@ -5,6 +5,7 @@ import { EditContinuities } from "@/domains/session/edit-continuity";
 import { SelectionDigs } from "@/domains/session/selection-dig";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
+import { InstanceNames, stateWithDeepBranch } from "./setup";
 
 /*
  * ロックしたノードがキャンバスの選択・直接操作の対象から外れ、ツリーからは選べること
@@ -162,4 +163,84 @@ test("ロックした Box の中でグループ解除すると、外した子が
   );
 
   expect(EditorState.singleName(ungrouped)).toEqual(Option.some("grouped"));
+});
+
+/**
+ * `stateWithDeepBranch` の部品インスタンス `home-login` を選び、インスタンス自身の値で
+ * ロックした状態。
+ *
+ * @returns ロックしたインスタンスを選んでいるエディタの状態
+ */
+function stateWithLockedInstance(): EditorState {
+  return Option.unwrap(
+    EditorState.applyRefOwnPropEdit(
+      EditorState.select(stateWithDeepBranch(), "home-login"),
+      PropEdit.set(["locking"], "locked"),
+      EditContinuities.Separate,
+    ),
+  );
+}
+
+test("ロックしたインスタンスの中身をクリックすると artboard が選ばれる", () => {
+  const state = EditorState.selectAt(
+    EditorState.clearSelection(stateWithLockedInstance()),
+    InstanceNames,
+    SelectionDigs.NoDeeper,
+  );
+
+  expect(EditorState.singleName(state)).toEqual(Option.some("home"));
+});
+
+test("範囲に入ったロック中のインスタンスは選ばれず、隣のノードだけが選ばれる", () => {
+  const state = EditorState.selectInRange(
+    EditorState.clearSelection(stateWithLockedInstance()),
+    ["home-login", "sibling-panel"],
+  );
+
+  expect(EditorState.singleName(state)).toEqual(Option.some("sibling-panel"));
+});
+
+test("ロックしたインスタンスもツリーから名前で選べる", () => {
+  const state = EditorState.select(
+    EditorState.clearSelection(stateWithLockedInstance()),
+    "home-login",
+  );
+
+  expect(EditorState.singleName(state)).toEqual(Option.some("home-login"));
+});
+
+test("ロックを外したインスタンスはキャンバスのクリックで選べるようになる", () => {
+  const unlocked = Option.unwrap(
+    EditorState.applyRefOwnPropEdit(
+      stateWithLockedInstance(),
+      PropEdit.set(["locking"], "unlocked"),
+      EditContinuities.Separate,
+    ),
+  );
+
+  const state = EditorState.selectAt(
+    EditorState.clearSelection(unlocked),
+    InstanceNames,
+    SelectionDigs.NoDeeper,
+  );
+
+  expect(EditorState.singleName(state)).toEqual(Option.some("home-login"));
+});
+
+test("プリミティブを選んでいるときはインスタンス自身の値を書き換えられない", () => {
+  const edited = EditorState.applyRefOwnPropEdit(
+    EditorState.select(stateWithDeepBranch(), "sibling-panel"),
+    PropEdit.set(["locking"], "locked"),
+    EditContinuities.Separate,
+  );
+
+  expect(edited).toEqual(Option.none);
+});
+
+test("インスタンスのロックは Undo 1 回で書く前へ戻る", () => {
+  const undone = Option.unwrap(EditorState.undo(stateWithLockedInstance()));
+
+  expect(
+    DesignDocument.isLocked(EditorState.document(undone), "home-login"),
+  ).toBe(false);
 });

@@ -62,3 +62,30 @@ test("artboard 直下のロックした Box の中を押すと、Box もその�
 
   expect(name).toEqual(Option.none);
 });
+
+test("artboard 直下のロックしたインスタンスの中を押すと、インスタンスもその中身も選ばない", () => {
+  const document = DesignDocument.create({
+    components: {
+      badge: {
+        type: "Box",
+        children: [{ name: "badge-label", type: "Text" }],
+      },
+    },
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [{ name: "home-badge", ref: "badge", locking: "locked" }],
+      },
+    ],
+  });
+
+  const name = DocumentSelection.nodeNameAt(
+    DocumentSelection.fromNames(document, []),
+    ["badge-label", "home-badge", "home"],
+    SelectionDigs.Deepest,
+  );
+
+  expect(name).toEqual(Option.none);
+});

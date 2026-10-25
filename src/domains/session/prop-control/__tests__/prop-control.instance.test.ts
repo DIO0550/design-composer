@@ -264,3 +264,71 @@ test("上書きしていない公開 prop constructor は、今の値を持た�
 
   expect(control.value).toEqual(Option.none);
 });
+
+test("インスタンスを選ぶとインスタンス自身のロックの欄が 1 つ出る", () => {
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+  });
+
+  expect(
+    instanceOf(selection).refOwnProps.map((control) => control.prop),
+  ).toEqual(["locking"]);
+});
+
+test("ロックを書いていないインスタンスのロックの欄は値を持たず、既定は unlocked", () => {
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+  });
+  const control = controlNamed(instanceOf(selection).refOwnProps, "locking");
+
+  expect([control.value, control.defaultValue]).toEqual([
+    Option.none,
+    Option.some("unlocked"),
+  ]);
+});
+
+test("ロックしたインスタンスのロックの欄には locked が乗る", () => {
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+    locking: "locked",
+  });
+
+  expect(
+    controlNamed(instanceOf(selection).refOwnProps, "locking").value,
+  ).toEqual(Option.some("locked"));
+});
+
+test("公開 prop の上書きに書いたロックは、ロックの欄の値にならない", () => {
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+    overrides: { locking: "locked" },
+  });
+
+  expect(
+    controlNamed(instanceOf(selection).refOwnProps, "locking").value,
+  ).toEqual(Option.none);
+});
+
+test("語彙に無い綴りのロックを書いたインスタンスは、その綴りもロックの欄の選択肢に並ぶ", () => {
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+    locking: "frozen",
+  });
+
+  expect(
+    controlNamed(instanceOf(selection).refOwnProps, "locking").input,
+  ).toEqual({ kind: "enum", values: ["frozen", "unlocked", "locked"] });
+});
+
+test("存在しない部品を指すインスタンスにもロックの欄が出る", () => {
+  const selection = setupInstanceSelection({ name: "action", ref: "missing" });
+
+  expect(
+    instanceOf(selection).refOwnProps.map((control) => control.prop),
+  ).toEqual(["locking"]);
+});

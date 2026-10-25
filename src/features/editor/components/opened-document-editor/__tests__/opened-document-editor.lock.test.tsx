@@ -133,3 +133,53 @@ test("キャンバスで範囲を引くと、範囲に入ったロック中の�
 
   expect(currentRowNames(tree())).toEqual(["home-panel"]);
 });
+
+/**
+ * `home` に、部品 `primary-button` のインスタンス `home-login` とロックしていない
+ * `home-panel` が並ぶドキュメント。
+ *
+ * @param locking `home-login` 自身に書くロック。省けば書かない
+ */
+function setupInstanceDocument(locking?: string): DesignDocument {
+  return DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    components: DocumentTemplate.Default.components,
+    artboards: [
+      Artboard.create({
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          {
+            name: "home-login",
+            ref: "primary-button",
+            ...(locking === undefined ? {} : { locking }),
+          },
+          { name: "home-panel", type: "Box", props: {}, children: [] },
+        ],
+      }),
+    ],
+  });
+}
+
+test("インスペクタでインスタンスをロックすると、キャンバスで押してもインスタンスではなく artboard が選ばれる", async () => {
+  await renderOpenedDocument(setupInstanceDocument());
+  await selectInTree("home-login");
+  await userEvent.click(segmentOf("Locking", "locked"));
+  await selectInTree("home-panel");
+
+  await userEvent.click(renderedElement(canvasPane(), "home-login"));
+
+  expect(within(rightPaneHeading()).getByText("home")).toBeDefined();
+});
+
+test("ツリーで選んだロック中のインスタンスは、インスペクタでロックを外すとキャンバスで選べる", async () => {
+  await renderOpenedDocument(setupInstanceDocument("locked"));
+  await selectInTree("home-login");
+  await userEvent.click(segmentOf("Locking", "unlocked"));
+  await selectInTree("home-panel");
+
+  await userEvent.click(renderedElement(canvasPane(), "home-login"));
+
+  expect(currentRowNames(tree())).toEqual(["home-login"]);
+});

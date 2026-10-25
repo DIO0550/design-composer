@@ -68,7 +68,7 @@ export function sectionsOf(
  * インスタンスの編集欄。インスタンス以外を選んでいたらテストを落とす。
  *
  * @param selection 選択の出どころ
- * @returns 出どころの部品と公開 prop を持つ編集欄
+ * @returns 出どころの部品・公開 prop・インスタンス自身の値を持つ編集欄
  */
 export function instanceOf(
   selection: DocumentSelection,

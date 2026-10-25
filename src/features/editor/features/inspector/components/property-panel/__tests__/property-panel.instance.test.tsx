@@ -1,13 +1,15 @@
-import { screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test, vi } from "vitest";
+import { segmentOf } from "@/components/__tests__/segmented-controls";
 import type { ComponentSet } from "@/domains/dcmp/component";
 import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
+import { PropEdit } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import type { InstanceActions } from "../index";
+import { type InstanceActions, PropertyPanel } from "../index";
 import { renderPanel } from "./setup";
 
 /**
@@ -123,6 +125,7 @@ test("元の部品へ移動できる", async () => {
     goToSource,
     selectAllInstances: vi.fn(),
     detach: vi.fn(),
+    editRefOwnProp: vi.fn(),
   });
 
   await userEvent.click(
@@ -138,6 +141,7 @@ test("インスタンスを解除できる", async () => {
     goToSource: vi.fn(),
     selectAllInstances: vi.fn(),
     detach,
+    editRefOwnProp: vi.fn(),
   });
 
   await userEvent.click(
@@ -235,6 +239,7 @@ test("まとめて選ぶボタンを押すとまとめて選ぶ操作が呼ば�
     goToSource: vi.fn(),
     selectAllInstances,
     detach: vi.fn(),
+    editRefOwnProp: vi.fn(),
   });
 
   await userEvent.click(
@@ -273,4 +278,62 @@ test("数えるのは artboard 配下だけで、部品定義の中の参照は�
   expect(
     screen.getByRole("button", { name: "Select all 2 instances" }),
   ).toBeDefined();
+});
+
+test("インスタンスの節にインスタンス自身のロックの行が出る", () => {
+  renderSelected("home-login");
+
+  const instanceSection = screen
+    .getByRole("heading", { name: "Instance" })
+    .closest("section");
+  expect(
+    within(instanceSection ?? document.body).getByRole("group", {
+      name: "Locking",
+    }),
+  ).toBeDefined();
+});
+
+test("ロックの行で locked を選ぶと、インスタンス自身の値の編集が届く", async () => {
+  const editRefOwnProp = vi.fn();
+  renderSelected("home-login", {
+    goToSource: vi.fn(),
+    selectAllInstances: vi.fn(),
+    detach: vi.fn(),
+    editRefOwnProp,
+  });
+
+  await userEvent.click(segmentOf("Locking", "locked"));
+
+  expect(editRefOwnProp.mock.calls[0]?.[0]).toEqual(
+    PropEdit.set(["locking"], "locked"),
+  );
+});
+
+test("ロックの行で locked を選んでも、公開 prop の編集は届かない", async () => {
+  const onEditProp = vi.fn();
+  render(
+    <PropertyPanel.Body
+      selection={DocumentSelection.fromNames(setupDocument(), ["home-login"])}
+      isFrozen={false}
+      instance={{
+        goToSource: vi.fn(),
+        selectAllInstances: vi.fn(),
+        detach: vi.fn(),
+        editRefOwnProp: vi.fn(),
+      }}
+      onEditProp={onEditProp}
+      onClearSelection={vi.fn()}
+    />,
+  );
+
+  await userEvent.click(segmentOf("Locking", "locked"));
+
+  expect(onEditProp).not.toHaveBeenCalled();
+});
+
+test("公開 prop の件数にはインスタンス自身のロックの行を数えない", () => {
+  /* `primary-button` の公開 prop は `label` の 1 件。ロックの行まで数えると 2 になって落ちる。 */
+  renderSelected("home-login");
+
+  expect(screen.getByText("1")).toBeDefined();
 });
