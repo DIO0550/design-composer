@@ -40,9 +40,8 @@ export const BoxAlign = {
   },
 
   /**
-   * 交差軸の長さを決めた子を、交差軸の始点に置く揃えか。
-   *
-   * stretch は長さを決めた子を引き伸ばさないので、start と同じ位置に来る。
+   * 交差軸の長さを決めた子を、交差軸の始点に置く揃えか（docs/06-ui.md「リサイズハンドル」の
+   * 辺のスナップ）。
    *
    * @param align 判定する揃え
    * @returns start / stretch なら `true`。center / end なら `false`
