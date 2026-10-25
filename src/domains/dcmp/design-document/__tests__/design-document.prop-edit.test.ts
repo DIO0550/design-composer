@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Node } from "@/domains/dcmp/node";
+import { Node, PropEdit } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
@@ -100,4 +100,71 @@ test("prop を編集しても元のドキュメントは変わらない", () => 
 
   const artboard = Option.unwrap(DesignDocument.findArtboard(document, "home"));
   expect(artboard.props).toEqual({ background: "white" });
+});
+
+test("インスタンス自身の値を編集するとロックされ、公開 prop の上書きは変わらない", () => {
+  const overridden = Result.unwrap(
+    DesignDocument.applyPropEdit(
+      setupDocument(),
+      "home-action",
+      PropEdit.set(["label"], "送信"),
+    ),
+  );
+
+  const edited = Result.unwrap(
+    DesignDocument.applyRefOwnPropEdit(
+      overridden,
+      "home-action",
+      PropEdit.set(["locking"], "locked"),
+    ),
+  );
+
+  const node = Option.unwrap(DesignDocument.findNode(edited, "home-action"));
+  expect([
+    DesignDocument.isLocked(edited, "home-action"),
+    Node.isRef(node) && node.overrides,
+  ]).toEqual([true, { label: "送信" }]);
+});
+
+test("プリミティブのノードのインスタンス自身の値は編集できない", () => {
+  const edited = DesignDocument.applyRefOwnPropEdit(
+    setupDocument(),
+    "home-title",
+    PropEdit.set(["locking"], "locked"),
+  );
+
+  expect(edited).toEqual(
+    Result.err({ kind: "ref-node-required", name: "home-title" }),
+  );
+});
+
+test("artboard 配下のノードに無い名前のインスタンス自身の値は編集できない", () => {
+  const document = setupDocument();
+  const edit = PropEdit.set(["locking"], "locked");
+
+  expect(
+    ["missing", "home", "button-label"].map((name) =>
+      DesignDocument.applyRefOwnPropEdit(document, name, edit),
+    ),
+  ).toEqual([
+    Result.err({ kind: "node-not-found", name: "missing" }),
+    Result.err({ kind: "node-not-found", name: "home" }),
+    Result.err({ kind: "node-not-found", name: "button-label" }),
+  ]);
+});
+
+test("インスタンス自身の値として持てない prop は編集できない", () => {
+  const edited = DesignDocument.applyRefOwnPropEdit(
+    setupDocument(),
+    "home-action",
+    PropEdit.set(["label"], "送信"),
+  );
+
+  expect(edited).toEqual(
+    Result.err({
+      kind: "ref-own-prop-not-allowed",
+      name: "home-action",
+      props: ["label"],
+    }),
+  );
 });

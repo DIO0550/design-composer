@@ -154,3 +154,59 @@ test("fixed のノードに書いた最小 / 最大はエラーにならず読�
     }),
   ]);
 });
+
+/** `screen` の直下に、指したロックを書いたインスタンスを 1 つ置く。 */
+function setupInstanceDocument(locking: string): DesignDocument {
+  return DesignDocument.create({
+    components: { "primary-button": { type: "Box" } },
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [{ name: "login", ref: "primary-button", locking }],
+      },
+    ],
+  });
+}
+
+test("インスタンスに語彙に無い綴りのロックを書くと enum-violation エラーになる", () => {
+  const errors = DesignDocument.collectErrors(setupInstanceDocument("frozen"));
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "enum-violation",
+      nodeName: "login",
+      prop: "locking",
+    }),
+  ]);
+});
+
+test("インスタンスに正当なロックを書いてもエラーにならない", () => {
+  expect(DesignDocument.collectErrors(setupInstanceDocument("locked"))).toEqual(
+    [],
+  );
+});
+
+test("部品定義の中のインスタンスに書いたロックも検証の対象になる", () => {
+  const document = DesignDocument.create({
+    components: {
+      "primary-button": { type: "Box" },
+      card: {
+        type: "Box",
+        children: [
+          { name: "card-action", ref: "primary-button", locking: "frozen" },
+        ],
+      },
+    },
+    artboards: [{ name: "screen", width: 375, height: 812, children: [] }],
+  });
+
+  expect(DesignDocument.collectErrors(document)).toEqual([
+    expect.objectContaining({
+      kind: "enum-violation",
+      nodeName: "card-action",
+      prop: "locking",
+    }),
+  ]);
+});

@@ -81,3 +81,36 @@ test("ルートと内部ノードの両方への上書きが同時に反映さ�
     ],
   });
 });
+
+test("インスタンス自身のロックは展開した根の props に入る", () => {
+  const components: ComponentSet = {
+    card: { type: "Box", props: { background: "primary" } },
+  };
+  const instance: RefNode = { name: "panel", ref: "card", locking: "locked" };
+
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
+
+  expect(expanded.props).toEqual({ background: "primary", locking: "locked" });
+});
+
+test("インスタンス自身のロックは部品の根に書かれたロックに勝つ", () => {
+  const components: ComponentSet = {
+    card: { type: "Box", props: { locking: "locked" } },
+  };
+  const instance: RefNode = { name: "panel", ref: "card", locking: "unlocked" };
+
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
+
+  expect(expanded.props).toEqual({ locking: "unlocked" });
+});
+
+test("インスタンス自身のロックが書かれていなければ、展開した根は部品のロックのまま", () => {
+  const components: ComponentSet = {
+    card: { type: "Box", props: { locking: "locked" } },
+  };
+  const instance: RefNode = { name: "panel", ref: "card" };
+
+  const expanded = Result.unwrap(ExpandedNode.fromNode(instance, components));
+
+  expect(expanded.props).toEqual({ locking: "locked" });
+});

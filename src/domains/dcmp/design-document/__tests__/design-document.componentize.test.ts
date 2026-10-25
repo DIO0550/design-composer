@@ -83,3 +83,55 @@ test("createComponent は元のドキュメントを変更しない", () => {
   expect(document.artboards[0].children).toEqual([box]);
   expect(document.components).toEqual({});
 });
+
+/** `screen` の直下に、指した props を持つ Box `box-1` を 1 つ置く。 */
+function setupBoxDocument(props: Readonly<Record<string, string>>) {
+  return DesignDocument.create({
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [{ name: "box-1", type: "Box", props }],
+      },
+    ],
+  });
+}
+
+test("ロックしたノードを部品化すると、参照ノードがロックされ部品の根にはロックが残らない", () => {
+  const document = setupBoxDocument({ locking: "locked", gap: "md" });
+
+  const result = Result.unwrap(
+    DesignDocument.createComponent(document, "box-1", "card"),
+  );
+
+  expect([result.artboards[0].children, result.components.card]).toEqual([
+    [{ name: "box-1", ref: "card", locking: "locked" }],
+    { type: "Box", props: { gap: "md" } },
+  ]);
+});
+
+test("ロックが書かれていないノードを部品化すると、参照ノードにもロックを書かない", () => {
+  const document = setupBoxDocument({ gap: "md" });
+
+  const result = Result.unwrap(
+    DesignDocument.createComponent(document, "box-1", "card"),
+  );
+
+  expect(result.artboards[0].children).toEqual([
+    { name: "box-1", ref: "card" },
+  ]);
+});
+
+test("unlocked と明示したノードを部品化すると、その値を参照ノードへ移し部品の根に残さない", () => {
+  const document = setupBoxDocument({ locking: "unlocked" });
+
+  const result = Result.unwrap(
+    DesignDocument.createComponent(document, "box-1", "card"),
+  );
+
+  expect([result.artboards[0].children, result.components.card]).toEqual([
+    [{ name: "box-1", ref: "card", locking: "unlocked" }],
+    { type: "Box" },
+  ]);
+});

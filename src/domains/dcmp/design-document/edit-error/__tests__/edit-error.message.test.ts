@@ -94,3 +94,13 @@ test("index-out-of-range は指定された index と配列長を含むメッセ
     }),
   ).toBe("index 5 is out of bounds for length 2");
 });
+
+test("ref-own-prop-not-allowed は参照ノード名と持てない prop 名を含むメッセージになる", () => {
+  expect(
+    DesignDocumentEditError.message({
+      kind: "ref-own-prop-not-allowed",
+      name: "login",
+      props: ["label", "gap"],
+    }),
+  ).toBe('ref node "login" cannot hold "label", "gap" as its own value');
+});

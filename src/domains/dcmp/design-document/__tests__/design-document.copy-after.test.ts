@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { PropEdit } from "@/domains/dcmp/node";
 import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
 
@@ -133,4 +134,20 @@ test("無い名前を指すと複製できない", () => {
   expect(DesignDocument.insertCopyAfter(setupDocument(), "missing")).toEqual(
     Result.err({ kind: "node-not-found", name: "missing" }),
   );
+});
+
+test("ロックしたインスタンスを複製すると、複製もロックされている", () => {
+  const locked = Result.unwrap(
+    DesignDocument.applyRefOwnPropEdit(
+      setupDocument(),
+      "login",
+      PropEdit.set(["locking"], "locked"),
+    ),
+  );
+
+  const { document } = Result.unwrap(
+    DesignDocument.insertCopyAfter(locked, "login"),
+  );
+
+  expect(DesignDocument.isLocked(document, "login-2")).toBe(true);
 });

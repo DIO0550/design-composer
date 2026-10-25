@@ -71,3 +71,23 @@ test("ネスト先の部品自身の子要素はそのままの構造を保つ",
     props: { content: "Card" },
   });
 });
+
+test("部品の中でロックしたインスタンスは、展開した木でもその根にロックが入る", () => {
+  const lockedFieldComponents: ComponentSet = {
+    ...components,
+    form: {
+      type: "Box",
+      children: [{ name: "form-field", ref: "text-field", locking: "locked" }],
+    },
+  };
+  const instance: RefNode = { name: "signup-form", ref: "form" };
+
+  const expanded = Result.unwrap(
+    ExpandedNode.fromNode(instance, lockedFieldComponents),
+  );
+
+  expect(expanded.children?.[0]?.props).toEqual({
+    layout: "column",
+    locking: "locked",
+  });
+});

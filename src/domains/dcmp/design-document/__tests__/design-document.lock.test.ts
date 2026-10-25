@@ -110,3 +110,53 @@ test("選びうる名前からは artboard 自身・部品定義の中のノー�
 
   expect(names).toEqual(["free-title"]);
 });
+
+/** `home` の直下に、部品 `primary-button` のインスタンスを 1 つ置く。 */
+function setupInstanceDocument(
+  instance: Readonly<{
+    locking?: string;
+    overrides?: Readonly<Record<string, string>>;
+  }>,
+): DesignDocument {
+  return DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    components: DocumentTemplate.Default.components,
+    artboards: [
+      {
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          { name: "login", ref: "primary-button", ...instance },
+          { name: "free-title", type: "Text" },
+        ],
+      },
+    ],
+  });
+}
+
+test("ロックと書いたインスタンスはロックされている", () => {
+  const document = setupInstanceDocument({ locking: "locked" });
+
+  expect(DesignDocument.isLocked(document, "login")).toBe(true);
+});
+
+test("公開 prop の上書きにロックと書いたインスタンスはロックされていない", () => {
+  const document = setupInstanceDocument({ overrides: { locking: "locked" } });
+
+  expect(DesignDocument.isLocked(document, "login")).toBe(false);
+});
+
+test("ロックしたインスタンスは選びうる名前から落ちる", () => {
+  const document = setupInstanceDocument({ locking: "locked" });
+
+  expect(
+    DesignDocument.collectUnlockedNodeNames(document, ["login", "free-title"]),
+  ).toEqual(["free-title"]);
+});
+
+test("語彙に無い綴りのロックを書いたインスタンスはロックされていない", () => {
+  const document = setupInstanceDocument({ locking: "frozen" });
+
+  expect(DesignDocument.isLocked(document, "login")).toBe(false);
+});

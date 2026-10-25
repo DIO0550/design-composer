@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { Option } from "@/utils/Option";
-import { PropEdit, Props } from "../index";
+import { Node, PropEdit, Props } from "../index";
 
 test("設定の編集を適用するとその prop に値が入る", () => {
   expect(Props.apply({}, PropEdit.set(["gap"], "md"))).toEqual({ gap: "md" });
@@ -72,4 +72,49 @@ test("写す編集は、指した prop のうち書かれているものだけ�
 
 test("指した prop が 1 つも書かれていなければ、写す編集は空", () => {
   expect(PropEdit.collectWritten({ gap: "md" }, ["layout"])).toEqual([]);
+});
+
+test("インスタンス自身の値の編集は自身の値を変え、公開 prop の上書きを変えない", () => {
+  const edited = Node.applyRefOwnPropEdit(
+    { name: "submit", ref: "primary-button", overrides: { label: "保存" } },
+    PropEdit.set(["locking"], "locked"),
+  );
+
+  expect(edited).toEqual(
+    Option.some({
+      name: "submit",
+      ref: "primary-button",
+      locking: "locked",
+      overrides: { label: "保存" },
+    }),
+  );
+});
+
+test("インスタンス自身の値を消す編集では、そのキーも残らない", () => {
+  const edited = Option.unwrap(
+    Node.applyRefOwnPropEdit(
+      { name: "submit", ref: "primary-button", locking: "locked" },
+      PropEdit.clear(["locking"]),
+    ),
+  );
+
+  expect("locking" in edited).toBe(false);
+});
+
+test("インスタンス自身の値として持てない prop の編集は適用されない", () => {
+  const edited = Node.applyRefOwnPropEdit(
+    { name: "submit", ref: "primary-button" },
+    PropEdit.set(["label"], "保存"),
+  );
+
+  expect(Option.isSome(edited)).toBe(false);
+});
+
+test("複数の prop を指す編集に持てない prop が混じっていれば適用されない", () => {
+  const edited = Node.applyRefOwnPropEdit(
+    { name: "submit", ref: "primary-button" },
+    PropEdit.set(["locking", "label"], "locked"),
+  );
+
+  expect(Option.isSome(edited)).toBe(false);
 });

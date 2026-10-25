@@ -95,3 +95,68 @@ test("props は名前の昇順で書き出される", () => {
     "layout",
   ]);
 });
+
+test("参照ノード直下のロックはインスタンス自身の値として読み込まれる", () => {
+  const node = Result.unwrap(
+    Node.fromJson(
+      Json.create(
+        { name: "submit", ref: "primary-button", locking: "locked" },
+        "node",
+      ),
+    ),
+  );
+
+  expect(node).toEqual({
+    name: "submit",
+    ref: "primary-button",
+    locking: "locked",
+  });
+});
+
+test("ロックを持つ参照ノードは name・ref・locking・overrides の順で書き出される", () => {
+  const written = Node.toJson({
+    name: "submit",
+    ref: "primary-button",
+    overrides: { label: "保存" },
+    locking: "locked",
+  });
+
+  expect(Object.keys(written)).toEqual(["name", "ref", "locking", "overrides"]);
+});
+
+test("ロックが設定されていない参照ノードはロックを書き出さない", () => {
+  expect(Node.toJson({ name: "submit", ref: "primary-button" })).toEqual({
+    name: "submit",
+    ref: "primary-button",
+  });
+});
+
+test("参照ノード直下のロックがオブジェクトなら型違いとして読み込めない", () => {
+  const result = Node.fromJson(
+    Json.create(
+      { name: "submit", ref: "primary-button", locking: { on: true } },
+      "node",
+    ),
+  );
+
+  expect(Result.isOk(result) ? [] : result.error).toEqual([
+    expect.objectContaining({ kind: "invalid-type", path: "node.locking" }),
+  ]);
+});
+
+test("参照ノード直下のロックは語彙に無い綴りでも読み込まれる", () => {
+  const node = Result.unwrap(
+    Node.fromJson(
+      Json.create(
+        { name: "submit", ref: "primary-button", locking: "frozen" },
+        "node",
+      ),
+    ),
+  );
+
+  expect(node).toEqual({
+    name: "submit",
+    ref: "primary-button",
+    locking: "frozen",
+  });
+});

@@ -154,3 +154,27 @@ test("insertNodeCopy は元のドキュメントを変更しない", () => {
     { name: "label", type: "Text" },
   ]);
 });
+
+test("ロックしたインスタンスの複製を挿すと、複製もロックされている", () => {
+  const document = DesignDocument.create({
+    components: { "primary-button": { type: "Box" } },
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [{ name: "primary-button-1", ref: "primary-button" }],
+      },
+    ],
+  });
+
+  const result = Result.unwrap(
+    DesignDocument.insertNodeCopy(
+      document,
+      { parentName: "screen", index: 1 },
+      { name: "primary-button-1", ref: "primary-button", locking: "locked" },
+    ),
+  );
+
+  expect(DesignDocument.isLocked(result, "primary-button-2")).toBe(true);
+});
