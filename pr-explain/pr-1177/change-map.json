@@ -1,0 +1,623 @@
+{
+  "version": 2,
+  "pr": 1177,
+  "headBranch": "claude/magical-cannon-c5avw0",
+  "baseBranch": "main",
+  "mergeBase": "16489bcc3d9f71cc77d43723d83a8dd8120b110e",
+  "head": "3e98dde4d37fe96a764522b1d9f2ee38ba8e2221",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection-dig/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "services",
+      "files": [
+        {
+          "path": "src/services/document-html/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/dom-event/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/__stories__/sample-canvas-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/range-select-overlay/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/arranged-artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/__tests__/resize-handle-overlay.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+        "name": "トークンを参照しているノードの破線は、そのノード自身の outline として描かれる"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "b86068298c5fa403af74ff18fbd1bd2523722d10",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T02:15:00Z",
+      "subject": "📝 [Documentation]: #980 選択の枠がノードの形に沿うことを docs/06 に書く",
+      "body": "- 「選択」に、キャンバスの選択の枠は選んだものの形に沿って描く\n  (角丸の Box は角に沿い、Ellipse は楕円、回ったものは形ごと回る)項目を足す\n- 同項目に、枠は outline で描くので沿うのは outline が border-radius に\n  沿う WebView の上だけで、WebView の下限は決めていないことを子項目で足す\n- 「リサイズハンドル」の「選択の枠の上に中心が来る」の下に、\n  ハンドルの中心は辺の上なので形が矩形から欠けるところでは枠から離れる\n  こと、矩形でも outline-offset の分の数 px のずれを許容することを足す\n\n背景:\n#514 (PR #979) で Ellipse を足したところ、選択の枠が楕円に沿って描かれる\nことが分かった。枠はノード自身の outline で、Chromium の outline は\nborder-radius に沿う。仕様 (docs/06) も UI 案も矩形でないノードの枠の形を\n決めておらず、ハンドルの「選択の枠の上に中心が来る」が四隅で成り立たない\n状態のままマージされていた。\n\n採用理由:\nオーナーの回答で案 A (今のまま形に沿う枠) に決めた。角丸の Box と\nEllipse を同じ規則で扱え、枠の描き方を 1 つに保てる。掴める位置は\n選んだものの矩形 (回っていれば回った矩形) のままで、操作は変わらない。\n06:191 の本文は直さず子項目で補った。辺をまたぐという意図は保たれており、\n本文まで書き換えると差分が広がるため。\n\n代替案:\n- 外接する矩形の枠 (Figma の流儀): 枠を重ねた要素で描くことになり、\n  描き方が outline と重ねた要素の 2 系統に割れる。角丸の Box の扱いも\n  決め直しになる\n- 四隅のハンドルを形の上 (楕円の 45 度の位置) へ寄せる: 角のハンドルは\n  2 軸を同時に変えるもので、矩形の角にあることで意味が伝わる\n- 注記に「外接矩形の四隅」と書く: docs/06:146 で外接矩形は「回った形を\n  囲む画面の軸に平行な矩形」という別の意味。ハンドルは回った矩形に乗る\n- docs/03 の Ellipse 節に書く: キャンバスの見せ方は 06 の管轄で、形に\n  沿うのは角丸の Box も同じ\n- 「辺の中点のハンドルは枠の上に来る」と言い切る: 角丸が辺の半分を\n  超えると辺の中点も形から欠ける\n\n影響とトレードオフ:\n振る舞いは変わらない (仕様を現状に合わせた)。outline が角丸に沿わない\n古い WebKit (Safari 16.4 相当未満) では枠が矩形になる。下限は #1175 で\n決める。角丸の Box でハンドルが枠から離れる様子を写す VRT は無い\n(md の角丸では差が数 px で見る価値が低い)。\n\n参考:\n- Issue #980 / #514 / PR #979 / #1175\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01V2NKh16RDrtFwPqLt3jWtL",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "patch": "@@ -81,6 +81,8 @@ Figma 型の3ペイン。\n - 選択状態は非永続（実行時のみ）。外部編集によるリロード後の選択復元は name によるベストエフォート\n - 選択は「なし」「1 つ」「複数」の 3 つの状態を取る\n - **Esc で選択を「なし」へ戻す**（下記「編集操作の一覧」）。artboard を選び直したときも前のノードの選択は外れる\n+- **キャンバスの選択の枠は、選んだものの形に沿って描く。** 角丸の Box では丸めた角に沿い、Ellipse では楕円になり、回って描かれているものでは形ごと回る（下記「リサイズハンドル」）。選択中のトークンを参照しているノードに出す破線（UI 案 `Tokens` 画面）と、ドロップ先の枠（下記「キャンバス直接操作」）も同じ。矩形でない形も角丸の Box と同じ規則で扱い、枠の描き方を 1 つにするため（リサイズハンドルとの食い違いは下記「リサイズハンドル」）\n+  - 枠はノード自身の outline で描くので、形に沿うのは outline が `border-radius` に沿う WebView の上で描いたとき（沿わない WebView では矩形になる。対応する WebView の下限は決めていない）\n \n ### キャンバスのクリックが選ぶ階層\n \n@@ -189,6 +191,8 @@ Figma 寄りの直接操作を採用する。\n   - **非表示のノード（03-schema「表示 / 非表示」。包んでいるノード・artboard が非表示のものを含む）にもハンドルを出さない**（ツリーから選んでいても）。描かれていないので辺を置く場所が無い。選択の枠も同じ理由で出ない\n   - ハンドルは**四隅と各辺の中間の 8 箇所**に出す（図形編集ツールの一般的な流儀。辺いっぱいの帯ではない）。UI 案 `docs/Design Composer.html` は Figma に倣って四隅の 4 個だけだが、そこからは意図的に離れている\n   - ハンドルは**選択の枠の上に中心が来る**ように置く（辺をまたぐ）。要素の内側へ寄せると、枠のすぐ内側にあるノードと重なって見分けが付かなくなる\n+    - ハンドルの中心は選んだものの矩形（回っていれば回った矩形）の辺の上に来るので、**形が矩形から欠けているところ（Ellipse の四隅、角丸の Box の丸めた角）では枠から離れる**。掴める箇所と掴んだときの振る舞いは矩形のものと変わらない（枠の形は上記「選択」）\n+    - 枠は辺から数 px 外側に描くので、矩形のものでもハンドルの中心と枠は数 px ずれる。ハンドルが辺をまたぐことは変わらないので、このずれは許容する\n   - **掴める軸のハンドルの上では、カーソルがその軸のリサイズを表す形に変わる**。2 軸を同時に変えられる角では斜めのカーソルになる。掴めないハンドルではカーソルを変えない（できない操作を示唆しないため）\n   - **四隅は幅と高さを同時に変える**。回っていなければ、右下は原点（枠の左上）が動かないので長さを増やすだけで済むが、左辺・上辺を含む角は**反対側の辺をその場に留めるために位置も一緒に動く**。長さと位置は 1 回の編集として書くので、undo 1 回で両方が戻る\n   - **画面上の向き**は、自分と包んでいるノードの `rotation` の合計を小数点以下 6 桁へ丸めたもの（浮動小数の足し合わせで出る端数を落とす）。以下で回っているか（360 度の倍数か）を見るのも、ハンドル・カーソル・長さを決めるのも、この丸めた値で行う",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "1982cb42489670d49093d1f652c534697be679ab",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T02:15:00Z",
+      "subject": "📝 [Documentation]: #980 枠とハンドルの doc を形に沿う枠の決定に合わせる",
+      "body": "- resize-handle-overlay の handleStyle の doc: 「選択の枠がハンドルの真ん中を\n  辺に沿って通る」を、合わせているのは枠ではなく辺で、枠は outline-offset\n  の分だけ外にあり、矩形でない形では四隅で枠から離れる、に直す\n- artboard-frame-list の SelectionOutline の doc に、outline は (WebView が\n  対応していれば) border-radius に沿うので枠も形に沿うこと、矩形の枠に\n  しない理由を足す\n- artboard-canvas の EllipseSelected ストーリーの doc に、楕円に沿う枠と\n  四隅で離れるハンドルも仕様で、この視覚差分だけが見ていることを足す\n\n背景:\n直前のコミットで docs/06 に「選択の枠は形に沿う」を書いた。handleStyle の\ndoc は矩形を前提に「枠がハンドルの真ん中を通る」と書いており、Ellipse の\n四隅では嘘になる。矩形でも outline-offset (1px) と線幅 (2px) の分、\n線の中心は辺から 2px 外にあり、厳密には成り立っていなかった\n(plan-reviewer の指摘)。\n\n採用理由:\nSelectionOutline の doc に Why not (矩形の枠にしない) を残した。今の doc は\n「box-shadow が使えないので outline」しか書いておらず、#979 で出た\n「Ellipse の枠を矩形に直す」案が再浮上したときに止める記述が無いため。\n\n代替案:\n- テストを足す: 形に沿うかは happy-dom では描画されず確かめられない。\n  outline 以外で描かないことは既存テスト (artboard-canvas の 6 ファイル\n  9 行が outline の規則文字列を見ている) が固定している\n- 角丸の Box にハンドルが出たストーリーを足す: 描画は変えておらず、\n  md の角丸では差が数 px で見る価値が低い\n\n影響とトレードオフ:\nコメントのみで振る舞い・VRT は変わらない。\n\n参考:\n- Issue #980 / docs/06-ui.md「選択」「リサイズハンドル」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01V2NKh16RDrtFwPqLt3jWtL",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "patch": "@@ -27,6 +27,10 @@ export const SelectionColor = \"#3b82f6\";\n  *\n  * 枠に使えるのは `outline` だけで、`box-shadow` はノードの `shadow` prop がインライン\n  * style で使う（docs/03 の対応表）ため奪えない。\n+ *\n+ * outline は（WebView が対応していれば）`border-radius` に沿うので、角丸の Box・Ellipse では\n+ * 枠も形に沿う（docs/06-ui.md「選択」。ドロップ先の枠・参照元の破線も同じ）。矩形の枠には\n+ * しない。枠を別の要素で重ねて描くことになり、描き方が 2 系統に割れる。\n  */\n const SelectionOutline = `outline:2px solid ${SelectionColor};outline-offset:1px`;\n ",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -181,6 +181,9 @@ const EllipseDocument = DesignDocument.create({\n  * Ellipse は `border-radius: 50%` で丸く描かれる（docs/03-schema.md「Ellipse 自体」）。\n  * テストが守るのは宣言を出すところまでで、**それが実際に円として描かれることは見えない**\n  * （happy-dom は CSS を描かない）。確かめる手段はこのストーリーの視覚差分だけ。\n+ *\n+ * 選択の枠が楕円に沿い、四隅のハンドルが枠から離れて見えるのも仕様（docs/06-ui.md「選択」\n+ * 「リサイズハンドル」）で、これもこの視覚差分だけが見ている。\n  */\n export const EllipseSelected: Story = {\n   name: \"Ellipse を選択中\",",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 3,
+          "patch": "@@ -54,9 +54,12 @@ export function resizeCursor(\n /**\n  * ハンドル 1 個の見た目と位置。\n  *\n- * 中心を回った辺の上に置き（`- HandleSizePx / 2`）、四角も要素と同じ角度だけ回すので、選択の\n- * 枠がハンドルの真ん中を辺に沿って通る。artboard は `overflow:hidden` を持つが、このオーバー\n- * レイは artboard の外にあるのではみ出した半分が切られない。\n+ * 中心を回った辺の上に置き（`- HandleSizePx / 2`）、四角も要素と同じ角度だけ回す。合わせて\n+ * いるのは選択の枠ではなく辺で、枠は `outline-offset` の分だけ外側にあり、矩形でない形では\n+ * 四隅で枠から離れる（docs/06-ui.md「リサイズハンドル」）。\n+ *\n+ * artboard は `overflow:hidden` を持つが、このオーバーレイは artboard の外にあるのではみ出した\n+ * 半分が切られない。\n  *\n  * @param anchor 出す箇所\n  * @param bounds 選択中のものが回って描かれている矩形（器からの相対）",
+          "patchLines": 16,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "1d82d800a9494765e694942a740f71e8e9861268",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T02:19:23Z",
+      "subject": "📝 [Documentation]: #980 ハンドルの本文を辺基準にし、枠の記述をレビューに合わせる",
+      "body": "- 「リサイズハンドル」の本文を「選択の枠の上に中心が来る」から\n  「選んだものの辺の上に中心が来る」に直し、子項目は選択の枠との\n  位置関係 (数 px のずれ / 枠が形に沿うとき欠けた隅で離れる) に絞る\n- 子項目に、ハンドルを形の上へ寄せない理由 (角は 2 軸を同時に変える\n  位置として矩形の角で読ませる) を足す\n- 「選択」の項目で「丸めた角」を「角丸の付いた隅」に、「ドロップ先の枠」を\n  「ドロップ先の親に出す枠」にし、角丸の Box が角に沿う根拠として UI 案\n  Default 画面を添える。末尾の理由の文は外す\n\n背景:\nフェーズ 6 のレビューで、本文の「選択の枠の上に中心が来る」が子項目の\n「辺の上」「矩形でも数 px ずれる」と食い違い、どの形のノードでも成り立た\nない規範になっていると指摘された (solution / harness / comment の 3 件、\n同じ根本原因)。前のコミットでは差分を広げないために本文を残したが、\n子項目で「矩形でもずれる」と書いた時点で本文は例外ではなく常に偽になった。\n\n採用理由:\n本文の基準を枠から辺へ 1 語置き換えるだけで済み、理由の文 (枠のすぐ\n内側のノードと重ならない) は辺の言い方でもそのまま成り立つ。\n「丸める」は docs/06 で数値の丸めに 21 回使われており、同じ節の\n「rotation を 6 桁へ丸めた」と並ぶため、隅を指す既存の語にそろえた。\n理由の文 (描き方を 1 つにする) は SelectionOutline の doc と二重に\nなっていたので、実装の選択である Why not はコード側だけに置く。\n\n代替案:\n- 「下限は #1175 で決める」と docs に添える: docs に Issue 番号を\n  書かない既存の運用 (#514 のレビューで (#514) を外した) に合わせて\n  見送った\n- 本文はそのまま子項目で補う: 子項目が本文を常に打ち消す形になり、\n  本文だけ読んだ人がずれを不具合として直しにいく\n\n影響とトレードオフ:\n仕様の文言だけの変更で、振る舞いは変わらない。「ドロップ先の枠」という\n語はストーリー名・テストの補助関数に残っていて、docs の語とは揃って\nいない (今回の範囲外)。\n\n参考:\n- Issue #980 フェーズ 6 のコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01V2NKh16RDrtFwPqLt3jWtL",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -81,7 +81,7 @@ Figma 型の3ペイン。\n - 選択状態は非永続（実行時のみ）。外部編集によるリロード後の選択復元は name によるベストエフォート\n - 選択は「なし」「1 つ」「複数」の 3 つの状態を取る\n - **Esc で選択を「なし」へ戻す**（下記「編集操作の一覧」）。artboard を選び直したときも前のノードの選択は外れる\n-- **キャンバスの選択の枠は、選んだものの形に沿って描く。** 角丸の Box では丸めた角に沿い、Ellipse では楕円になり、回って描かれているものでは形ごと回る（下記「リサイズハンドル」）。選択中のトークンを参照しているノードに出す破線（UI 案 `Tokens` 画面）と、ドロップ先の枠（下記「キャンバス直接操作」）も同じ。矩形でない形も角丸の Box と同じ規則で扱い、枠の描き方を 1 つにするため（リサイズハンドルとの食い違いは下記「リサイズハンドル」）\n+- **キャンバスの選択の枠は、選んだものの形に沿って描く。** 角丸の Box では角丸の付いた隅に沿い（UI 案の `Default` 画面でも、選択の枠は角丸のカード自身の outline として描かれている）、Ellipse では楕円になり、回って描かれているものでは形ごと回る（下記「リサイズハンドル」）。選択中のトークンを参照しているノードに出す破線（UI 案 `Tokens` 画面）と、ドロップ先の親に出す枠（下記「キャンバス直接操作」）も同じ。リサイズハンドルとの位置関係は下記「リサイズハンドル」\n   - 枠はノード自身の outline で描くので、形に沿うのは outline が `border-radius` に沿う WebView の上で描いたとき（沿わない WebView では矩形になる。対応する WebView の下限は決めていない）\n \n ### キャンバスのクリックが選ぶ階層\n@@ -190,9 +190,9 @@ Figma 寄りの直接操作を採用する。\n   - **ロック中のノードにはハンドルを出さない**（ツリーから選んでいても）。大きさはプロパティパネルからは変えられる\n   - **非表示のノード（03-schema「表示 / 非表示」。包んでいるノード・artboard が非表示のものを含む）にもハンドルを出さない**（ツリーから選んでいても）。描かれていないので辺を置く場所が無い。選択の枠も同じ理由で出ない\n   - ハンドルは**四隅と各辺の中間の 8 箇所**に出す（図形編集ツールの一般的な流儀。辺いっぱいの帯ではない）。UI 案 `docs/Design Composer.html` は Figma に倣って四隅の 4 個だけだが、そこからは意図的に離れている\n-  - ハンドルは**選択の枠の上に中心が来る**ように置く（辺をまたぐ）。要素の内側へ寄せると、枠のすぐ内側にあるノードと重なって見分けが付かなくなる\n-    - ハンドルの中心は選んだものの矩形（回っていれば回った矩形）の辺の上に来るので、**形が矩形から欠けているところ（Ellipse の四隅、角丸の Box の丸めた角）では枠から離れる**。掴める箇所と掴んだときの振る舞いは矩形のものと変わらない（枠の形は上記「選択」）\n-    - 枠は辺から数 px 外側に描くので、矩形のものでもハンドルの中心と枠は数 px ずれる。ハンドルが辺をまたぐことは変わらないので、このずれは許容する\n+  - ハンドルは**選んだものの辺の上に中心が来る**ように置く（辺をまたぐ）。要素の内側へ寄せると、枠のすぐ内側にあるノードと重なって見分けが付かなくなる\n+    - 選択の枠は辺から数 px 外側に描くので、ハンドルの中心と枠は数 px ずれる（矩形のものでも）\n+    - 枠が形に沿うとき（上記「選択」）は、**形が矩形から欠けているところ（Ellipse の四隅、角丸の付いた隅）でハンドルが枠から離れる**。掴める箇所と掴んだときの振る舞いは変わらない。ハンドルを形の上へは寄せない。角のハンドルは 2 軸を同時に変えるもので、矩形の角にあることでその意味が伝わるため\n   - **掴める軸のハンドルの上では、カーソルがその軸のリサイズを表す形に変わる**。2 軸を同時に変えられる角では斜めのカーソルになる。掴めないハンドルではカーソルを変えない（できない操作を示唆しないため）\n   - **四隅は幅と高さを同時に変える**。回っていなければ、右下は原点（枠の左上）が動かないので長さを増やすだけで済むが、左辺・上辺を含む角は**反対側の辺をその場に留めるために位置も一緒に動く**。長さと位置は 1 回の編集として書くので、undo 1 回で両方が戻る\n   - **画面上の向き**は、自分と包んでいるノードの `rotation` の合計を小数点以下 6 桁へ丸めたもの（浮動小数の足し合わせで出る端数を落とす）。以下で回っているか（360 度の倍数か）を見るのも、ハンドル・カーソル・長さを決めるのも、この丸めた値で行う",
+          "patchLines": 22,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "7b68f5a7e4cbed7dd977902198f8da50eed64880",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T02:19:23Z",
+      "subject": "📝 [Documentation]: #980 枠とハンドルの doc から docs/06 の写しを外す",
+      "body": "- SelectionOutline の doc: 形に沿う対象の列挙と WebView の条件を消し、\n  docs/06「選択」への参照と Why not (重ねた要素で描く矩形の枠にしない)\n  だけにする\n- handleStyle の doc: outline-offset・四隅で離れる、の説明を消し、\n  選択の枠との位置関係は docs/06「リサイズハンドル」を参照する 1 文にする\n\n背景:\nduplication-reviewer の指摘。前のコミットで、仕様の文 (形に沿う・\n対象の列挙・WebView の条件) とハンドルと枠の位置関係を、docs とコメントの\n両方に完結した形で書いていた。docs は「数 px」、コメントは\n「outline-offset の分」と、すでに書き方がずれていた。\n\n採用理由:\nrules/coding.md「規約の適用範囲」の、同じ判断根拠の説明を片方だけ\n直せる状態にしない、に合わせた。利用者に見える仕様は docs に、\noutline か重ねた要素かという実装上の選択 (Why not) はコードに置き、\n互いに参照だけにする。「矩形の枠にはしない」は矩形のノードに枠を出さない\nと読めると comment-reviewer に指摘されたので、却下した案を名指しした。\n\n影響とトレードオフ:\nコメントのみで振る舞いは変わらない。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01V2NKh16RDrtFwPqLt3jWtL",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 3,
+          "patch": "@@ -28,9 +28,8 @@ export const SelectionColor = \"#3b82f6\";\n  * 枠に使えるのは `outline` だけで、`box-shadow` はノードの `shadow` prop がインライン\n  * style で使う（docs/03 の対応表）ため奪えない。\n  *\n- * outline は（WebView が対応していれば）`border-radius` に沿うので、角丸の Box・Ellipse では\n- * 枠も形に沿う（docs/06-ui.md「選択」。ドロップ先の枠・参照元の破線も同じ）。矩形の枠には\n- * しない。枠を別の要素で重ねて描くことになり、描き方が 2 系統に割れる。\n+ * 枠の形はノードの形に沿う（docs/06-ui.md「選択」）。枠を別の要素で重ねて描く矩形の枠には\n+ * しない。描き方がノードの outline と重ねた要素の 2 系統に割れる。\n  */\n const SelectionOutline = `outline:2px solid ${SelectionColor};outline-offset:1px`;\n ",
+          "patchLines": 12,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 3,
+          "patch": "@@ -54,9 +54,8 @@ export function resizeCursor(\n /**\n  * ハンドル 1 個の見た目と位置。\n  *\n- * 中心を回った辺の上に置き（`- HandleSizePx / 2`）、四角も要素と同じ角度だけ回す。合わせて\n- * いるのは選択の枠ではなく辺で、枠は `outline-offset` の分だけ外側にあり、矩形でない形では\n- * 四隅で枠から離れる（docs/06-ui.md「リサイズハンドル」）。\n+ * 中心を回った辺の上に置き（`- HandleSizePx / 2`）、四角も要素と同じ角度だけ回す。選択の枠\n+ * との位置関係は docs/06-ui.md「リサイズハンドル」。\n  *\n  * artboard は `overflow:hidden` を持つが、このオーバーレイは artboard の外にあるのではみ出した\n  * 半分が切られない。",
+          "patchLines": 12,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "b3d6ccdbc109e4897f5e42d16ba5e5e71b8aca46",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T02:35:08Z",
+      "subject": "🧪 [Tests]: #980 参照元の破線がノード自身の outline で描かれることを固定する",
+      "body": "- artboard-canvas.token-dash に「トークンを参照しているノードの破線は、\n  そのノード自身の outline として描かれる」を足す。参照元ノードの規則が\n  outline:1.5px dashed を含むことを見る\n\n背景:\ndocs/06「選択」に、選択の枠・ドロップ先の親に出す枠・参照元の破線は\nノード自身の outline で描く (形に沿う) と書いた。選択の枠とドロップ先の\n枠は既存テスト (6 ファイル 9 行) が outline の規則文字列まで見ているが、\n参照元の破線は「dashed #0d99ff」の部分文字列しか見ておらず、\nTokenReferrerOutline を border に替えても vitest が全件通った\n(test-reviewer の実測)。\n\n採用理由:\n既存テストの assert を強めず、新しいテストを足した。既存のテスト名は\n選択の枠が破線に負けない順序の仕様を指しており、1 テスト 1 振る舞いを\n崩さないため。TokenReferrerOutline を border へ替えると新しいテストだけが\n落ちることを確かめた。\n\n代替案:\n- 選択の枠の outline-offset まで assert で固定する: docs は「数 px 外側」と\n  しか言っておらず、数値は実装に任せている。1px の差を固定する価値が低い\n- テストを足さず VRT (TokenSelected) に任せる: border に替えると箱の\n  大きさも変わるが、VRT の閾値で見逃しうる\n\n影響とトレードオフ:\nテストを 1 件足しただけで、実装は変わらない。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01V2NKh16RDrtFwPqLt3jWtL",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 0,
+          "patch": "@@ -136,6 +136,19 @@ function ruleIndexOf(name: string, declaration: string): number {\n   });\n }\n \n+test(\"トークンを参照しているノードの破線は、そのノード自身の outline として描かれる\", () => {\n+  const document = setupDocument();\n+\n+  renderCanvas({\n+    selection: DocumentSelection.fromNames(document, []),\n+    tokenSelection: selectingGray900(document),\n+  });\n+\n+  expect(ruleIndexOf(\"title\", \"outline:1.5px dashed\")).toBeGreaterThanOrEqual(\n+    0,\n+  );\n+});\n+\n test(\"選択中のノードがそのトークンを参照していても、選択の枠が破線に負けない\", () => {\n   const document = setupDocument();\n ",
+          "patchLines": 20,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "3e98dde4d37fe96a764522b1d9f2ee38ba8e2221",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T02:45:40Z",
+      "subject": "📝 [Documentation]: #980 EllipseSelected の doc からハンドルの記述を外す",
+      "body": "- EllipseSelected の doc の「四隅のハンドルが枠から離れて見える」を外し、\n  選択の枠が楕円に沿うことだけを書く\n\n背景:\npush 前に Storybook を撮影したところ、EllipseSelected では選択の枠は\n楕円に沿って描かれていたが、リサイズハンドルが 1 つも出ていなかった。\noval は widthMode / heightMode を書いておらず、ハンドルを出す判定\n(node-resize の nodeHandles) がスキーマの既定値 (Ellipse は fixed) を\n当てずに書かれた props だけを見ているため。\n\n採用理由:\ndoc は実際に写っているものだけを書く。ハンドルが出ない不具合は描画の\n判定の修正で、この Issue (枠の形を仕様に書く) とは独立にマージできる\nので #1176 に分けた。直したらハンドルの記述を doc に戻す。\n\n代替案:\n- この PR で nodeHandles に既定値を当てる: 判定の振る舞いが変わり、\n  テストと VRT の差分を伴う。範囲を広げずに別 Issue で扱う\n- ストーリーの oval に widthMode: \"fixed\" を書いてハンドルを出す: 不具合を\n  ストーリー側で隠すことになる\n\n影響とトレードオフ:\nコメントのみで振る舞いは変わらない。\n\n参考:\n- Issue #980 / #1176\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01V2NKh16RDrtFwPqLt3jWtL",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 2,
+          "patch": "@@ -182,8 +182,7 @@ const EllipseDocument = DesignDocument.create({\n  * テストが守るのは宣言を出すところまでで、**それが実際に円として描かれることは見えない**\n  * （happy-dom は CSS を描かない）。確かめる手段はこのストーリーの視覚差分だけ。\n  *\n- * 選択の枠が楕円に沿い、四隅のハンドルが枠から離れて見えるのも仕様（docs/06-ui.md「選択」\n- * 「リサイズハンドル」）で、これもこの視覚差分だけが見ている。\n+ * 選択の枠が楕円に沿うのも仕様（docs/06-ui.md「選択」）で、これもこの視覚差分だけが見ている。\n  */\n export const EllipseSelected: Story = {\n   name: \"Ellipse を選択中\",",
+          "patchLines": 10,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/domains/session/selection-dig/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/arranged-artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/services/document-html/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/__stories__/sample-canvas-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/range-select-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/__tests__/resize-handle-overlay.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/domains/unit/angle/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    }
+  ]
+}
