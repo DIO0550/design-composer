@@ -1,14 +1,14 @@
 import type { TauriIpc } from "@/libs/tauri-ipc";
 import { ipcFailure } from "@/libs/tauri-ipc/fake";
 import { Option } from "@/utils/Option";
-import { AppStateIpc } from "../index";
+import { type AppStateIpc, createAppStateIpc } from "../index";
 
 /**
  * Rust 側の代役。インメモリに 1 つだけ持つ中身に対して `load_app_state` /
  * `save_app_state` を再現する。
  *
- * 差し込む先は `TauriIpc` の位置なので、`ipc` を通した呼び出しでは `AppStateIpc` 本体
- * （コマンド名・引数・エラーの解釈）がそのまま動く。
+ * 差し込む先は `TauriIpc` の位置なので、`ipc` を通した呼び出しでは `createAppStateIpc`
+ * が作る本体（コマンド名・引数・エラーの解釈）がそのまま動く。
  */
 export type AppStateIpcFake = Readonly<{
   /** インメモリの中身に向いた `AppStateIpc`。 */
@@ -80,7 +80,7 @@ export const AppStateIpcFake = {
     };
 
     return {
-      ipc: AppStateIpc.create(tauriIpc),
+      ipc: createAppStateIpc(tauriIpc),
 
       storedContent() {
         return Option.fromNullable(content);

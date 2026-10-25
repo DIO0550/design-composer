@@ -57,33 +57,31 @@ export type AppMenu = Readonly<{
   ): Promise<Result<Unsubscribe, AppMenuError>>;
 }>;
 
-export const AppMenu = {
-  /**
-   * OS のメニューの選択を受け取る口を作る。
-   *
-   * @param tauriIpc メニューのイベントを購読する IPC
-   * @returns 指示を購読できる口。作っただけでは購読せず、`subscribeCommand` を呼んだ時点で張る
-   */
-  create(tauriIpc: TauriIpc): AppMenu {
-    return {
-      async subscribeCommand(listener) {
-        try {
-          const unsubscribe = await tauriIpc.listen(
-            MenuCommandEvent,
-            (payload) => {
-              // 語彙に無い値は配らない。指示として渡せる中身が無く、イベントの
-              // コールバックには失敗を返す相手もいないため。
-              const command = toAppMenuCommand(payload);
-              if (Option.isSome(command)) {
-                listener(command.value);
-              }
-            },
-          );
-          return Result.ok(unsubscribe);
-        } catch (reason) {
-          return Result.err({ message: String(reason) });
-        }
-      },
-    };
-  },
-} as const;
+/**
+ * OS のメニューの選択を受け取る口を作る。
+ *
+ * @param tauriIpc メニューのイベントを購読する IPC
+ * @returns 指示を購読できる口。作っただけでは購読せず、`subscribeCommand` を呼んだ時点で張る
+ */
+export function createAppMenu(tauriIpc: TauriIpc): AppMenu {
+  return {
+    async subscribeCommand(listener) {
+      try {
+        const unsubscribe = await tauriIpc.listen(
+          MenuCommandEvent,
+          (payload) => {
+            // 語彙に無い値は配らない。指示として渡せる中身が無く、イベントの
+            // コールバックには失敗を返す相手もいないため。
+            const command = toAppMenuCommand(payload);
+            if (Option.isSome(command)) {
+              listener(command.value);
+            }
+          },
+        );
+        return Result.ok(unsubscribe);
+      } catch (reason) {
+        return Result.err({ message: String(reason) });
+      }
+    },
+  };
+}

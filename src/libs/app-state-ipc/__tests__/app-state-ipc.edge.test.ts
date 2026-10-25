@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { AppStateIpcFake } from "../fake";
-import { AppStateIpc } from "../index";
+import { createAppStateIpc } from "../index";
 
 test("読み込みが拒まれたら理由を持つ失敗になる", async () => {
   const fake = AppStateIpcFake.create('{"recentPaths":[]}');
@@ -36,7 +36,7 @@ test("書き出しが拒まれたら中身は変わらない", async () => {
 });
 
 test("コマンドが無いときも理由を持つ失敗になる", async () => {
-  const ipc = AppStateIpc.create({
+  const ipc = createAppStateIpc({
     invoke: (command) => Promise.reject(`Command ${command} not found`),
     listen: (event) => Promise.reject(`Event ${event} not emitted`),
   });
@@ -49,7 +49,7 @@ test("コマンドが無いときも理由を持つ失敗になる", async () =>
 });
 
 test("読み込みが文字列でも null でもない値を返したら失敗になる", async () => {
-  const ipc = AppStateIpc.create({
+  const ipc = createAppStateIpc({
     invoke: () => Promise.resolve(42),
     listen: (event) => Promise.reject(`Event ${event} not emitted`),
   });

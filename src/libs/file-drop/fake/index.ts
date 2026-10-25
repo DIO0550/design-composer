@@ -1,5 +1,5 @@
 import { SingleEventIpcFake } from "@/libs/tauri-ipc/fake";
-import { DragDropEvent, FileDrop } from "../index";
+import { createFileDrop, DragDropEvent, type FileDrop } from "../index";
 
 /**
  * ウィンドウへのドロップの代役。落とされたファイルをテストから起こす。
@@ -30,7 +30,7 @@ export const FileDropFake = {
     const events = SingleEventIpcFake.create(DragDropEvent);
 
     return {
-      drop: FileDrop.create(events.ipc),
+      drop: createFileDrop(events.ipc),
 
       dropFiles(paths) {
         // 本物と同じ形（位置も添える）で配る。
