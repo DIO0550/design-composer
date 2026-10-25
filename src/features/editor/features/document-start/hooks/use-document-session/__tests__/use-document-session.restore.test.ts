@@ -261,7 +261,7 @@ test("綴りを寄せるのを拒まれた行は、元の綴りのまま一覧�
     NoDialogChoices,
     {
       storedAppState: storedRecentPaths([Path, SecondPath]),
-      deniedCanonicalPaths: [{ path: SecondPath, kind: "invalidPath" }],
+      canonicalizeDenials: [{ path: SecondPath, kind: "invalidPath" }],
     },
   );
 
@@ -276,7 +276,7 @@ test("綴りを寄せる指示が届かなかった行も、元の綴りのま�
     NoDialogChoices,
     {
       storedAppState: storedRecentPaths([Path, SecondPath]),
-      deniedCanonicalPaths: [{ path: SecondPath, kind: "ipcFailed" }],
+      canonicalizeDenials: [{ path: SecondPath, kind: "ipcFailed" }],
     },
   );
 
@@ -291,7 +291,7 @@ test("保存された一覧の先頭の綴りを寄せるのを拒まれると�
     NoDialogChoices,
     {
       storedAppState: storedRecentPaths([Path]),
-      deniedCanonicalPaths: [{ path: Path, kind: "invalidPath" }],
+      canonicalizeDenials: [{ path: Path, kind: "invalidPath" }],
     },
   );
 

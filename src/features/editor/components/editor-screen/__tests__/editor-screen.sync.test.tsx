@@ -2,7 +2,6 @@ import { screen, waitFor, within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
-import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { DialogChoice } from "@/libs/document-dialog/fake";
@@ -12,6 +11,7 @@ import {
   artboardList,
   changeExternally,
   closeTab,
+  LinkPath,
   OtherPath,
   Path,
   renderEditorScreen,
@@ -20,9 +20,6 @@ import {
   startOpen,
   tree,
 } from "./setup";
-
-/** `Path` を指す別の綴り。 */
-const LinkPath = filePath("/link/login.dcmp");
 
 test("編集した内容が自動保存され、開き直すとその状態が読み戻る", async () => {
   const opened = DocumentJson.serialize(SampleDocument);

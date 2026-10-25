@@ -120,7 +120,7 @@ export type SessionPortOptions = Readonly<{
   /** 実体を指す別の綴り（symlink などの代わり）。 */
   linkedPaths?: readonly PathLink[];
   /** 綴りを寄せられないパスと、そのときの失敗の種別。 */
-  deniedCanonicalPaths?: readonly CanonicalizeDenial[];
+  canonicalizeDenials?: readonly CanonicalizeDenial[];
 }>;
 
 /**
@@ -153,7 +153,7 @@ export function renderDocumentSession(
   for (const link of options.linkedPaths ?? []) {
     ipcFake.linkPath(link);
   }
-  for (const denial of options.deniedCanonicalPaths ?? []) {
+  for (const denial of options.canonicalizeDenials ?? []) {
     ipcFake.denyCanonicalize(denial);
   }
 

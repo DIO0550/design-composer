@@ -28,6 +28,8 @@ import { EditorScreen } from "../index";
 
 /** 既に置いてあるファイル。 */
 export const Path = filePath("/work/login.dcmp");
+/** `Path` を指す別の綴り。`linkPath` で `Path` へ繋いで使う。 */
+export const LinkPath = filePath("/link/login.dcmp");
 /** 新規作成やファイルの切り替えで使うもう 1 つのパス。 */
 export const OtherPath = filePath("/work/settings.dcmp");
 

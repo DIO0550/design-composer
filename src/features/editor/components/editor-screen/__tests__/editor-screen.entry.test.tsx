@@ -1,7 +1,6 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { AppStateJson } from "@/libs/app-state-json";
@@ -11,6 +10,7 @@ import { Option } from "@/utils/Option";
 import {
   closeTab,
   dragTab,
+  LinkPath,
   OtherPath,
   Path,
   renderEditorScreen,
@@ -19,9 +19,6 @@ import {
   startOpen,
   tabBar,
 } from "./setup";
-
-/** `Path` を指す別の綴り。 */
-const LinkPath = filePath("/link/login.dcmp");
 
 test("起動直後はドキュメントを開くよう案内される", () => {
   renderEditorScreen(

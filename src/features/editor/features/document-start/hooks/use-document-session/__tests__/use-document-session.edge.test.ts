@@ -193,7 +193,7 @@ test("綴りを寄せるのを拒まれたファイルを選ぶと、使えな�
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },
     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
-    { deniedCanonicalPaths: [{ path: Path, kind: "invalidPath" }] },
+    { canonicalizeDenials: [{ path: Path, kind: "invalidPath" }] },
   );
 
   await observer.openDocument();
@@ -213,7 +213,7 @@ test("綴りを寄せる指示が届かなかったファイルを選ぶと、�
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },
     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
-    { deniedCanonicalPaths: [{ path: Path, kind: "ipcFailed" }] },
+    { canonicalizeDenials: [{ path: Path, kind: "ipcFailed" }] },
   );
 
   await observer.openDocument();
@@ -233,7 +233,7 @@ test("新規作成の保存先の綴りを寄せるのを拒まれると、書�
   const observer = renderDocumentSession(
     {},
     { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },
-    { deniedCanonicalPaths: [{ path: NewPath, kind: "invalidPath" }] },
+    { canonicalizeDenials: [{ path: NewPath, kind: "invalidPath" }] },
   );
 
   await observer.createDocument();
@@ -245,7 +245,7 @@ test("新規作成の保存先の綴りを寄せるのを拒まれると、そ�
   const observer = renderDocumentSession(
     {},
     { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },
-    { deniedCanonicalPaths: [{ path: NewPath, kind: "invalidPath" }] },
+    { canonicalizeDenials: [{ path: NewPath, kind: "invalidPath" }] },
   );
 
   await observer.createDocument();
