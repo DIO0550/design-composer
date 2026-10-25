@@ -1,3 +1,4 @@
+import { BoxAlign } from "@/domains/dcmp/box-align";
 import { CornerRadius } from "@/domains/dcmp/corner-radius";
 import type {
   CssDeclaration as CssDeclarationType,
@@ -8,7 +9,7 @@ import {
   CssDeclaration,
   CssDeclarations,
 } from "@/domains/dcmp/css-declaration";
-import type { CssDirection } from "@/domains/dcmp/css-direction";
+import { CssDirection } from "@/domains/dcmp/css-direction";
 import { Layout } from "@/domains/dcmp/layout";
 import { LengthShorthand } from "@/domains/dcmp/length-shorthand";
 import type { Props, PropValue } from "@/domains/dcmp/node";
@@ -29,6 +30,7 @@ import {
 } from "@/domains/dcmp/token";
 import { Visibility } from "@/domains/dcmp/visibility";
 import { Wrap } from "@/domains/dcmp/wrap";
+import type { Axis } from "@/domains/unit/axis";
 import { Html } from "@/utils/Html";
 import { Option } from "@/utils/Option";
 
@@ -394,6 +396,31 @@ export const BoxElement = {
    */
   childDirection(props: ResolvedProps<"Box">): Option<CssDirection> {
     return Layout.direction(Layout.fromProps(props));
+  },
+
+  /**
+   * 子が交差軸の長さを変えても、子の始点・親・兄弟の位置が動かない軸。答えは `declarations`
+   * が出す CSS とブラウザの既定値で決まり、主軸を答えない理由とあわせて docs/06-ui.md
+   * 「リサイズハンドル」の辺のスナップにある。
+   *
+   * @param props デフォルト解決済みの Box の props
+   * @returns 子の交差軸。子を並べない（`layout: free`）・折り返す・揃えが center / end・
+   *   交差軸の長さが決まっていない（hug / fill / `fixed` なのに長さが無い）ときは `none`
+   */
+  stillCrossAxis(props: ResolvedProps<"Box">): Option<Axis> {
+    const placesAtCrossStart =
+      !Wrap.isWrapping(Wrap.fromProps(props)) &&
+      BoxAlign.isStartForFixedChild(BoxAlign.fromProps(props));
+    if (!placesAtCrossStart) {
+      return Option.none;
+    }
+    return Option.flatMap(BoxElement.childDirection(props), (direction) => {
+      const crossAxis = CssDirection.crossAxis(direction);
+      return Option.map(
+        Size.fixedLengthFromProps(props, crossAxis),
+        () => crossAxis,
+      );
+    });
   },
 } as const;
 

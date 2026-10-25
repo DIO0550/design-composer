@@ -80,23 +80,19 @@ function selectionBounds(selection: DocumentSelection): Option<CanvasBounds> {
 
 /**
  * 掴んだものに、掴んだ時点の辺のスナップの組を載せる（docs/06-ui.md「リサイズハンドル」の
- * 辺のスナップ）。揃え先を決めるのは `NodeResize.resizable`、ここは実測だけ。
+ * 辺のスナップ）。揃え先を決めるのは `NodeResize.resizable` と `NodeResize.hold`、ここは
+ * 実測だけ。
  *
- * @param held 掴んだもの
+ * @param held 掴んだもの。揃え先の名前（`snapTargetNames`）を持つ
  * @param grabbed 選択中のものが掴んだ時点に描かれている矩形
- * @param resizable 揃え先の名前を持つ、選択中のもの
  * @returns 揃え先の実測を載せた掴み
  */
-function withMeasuredSnap(
-  held: ResizeHold,
-  grabbed: CanvasBounds,
-  resizable: ResizableSelection,
-): ResizeHold {
+function withMeasuredSnap(held: ResizeHold, grabbed: CanvasBounds): ResizeHold {
   return NodeResize.withSideSnap(
     held,
     SideSnap.create(
       grabbed,
-      DrawnBounds.collectDrawnBounds(resizable.snapTargetNames),
+      DrawnBounds.collectDrawnBounds(held.snapTargetNames),
     ),
   );
 }
@@ -194,9 +190,7 @@ export function useNodeResize(
     );
     dispatch({
       type: "grab",
-      held: Option.isSome(bounds)
-        ? withMeasuredSnap(held, bounds.value, params.resizable)
-        : held,
+      held: Option.isSome(bounds) ? withMeasuredSnap(held, bounds.value) : held,
     });
   };
 
@@ -226,7 +220,7 @@ export function useNodeResize(
     hasResized.current = false;
     dispatch({
       type: "grab",
-      held: withMeasuredSnap(grabbed.value, bounds.value, params.resizable),
+      held: withMeasuredSnap(grabbed.value, bounds.value),
     });
     return true;
   };

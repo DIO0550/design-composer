@@ -19,6 +19,7 @@ import {
   setupFlowResizable,
   setupResizable,
   setupView,
+  snapTargetNamesAt,
 } from "./setup";
 
 /*
@@ -327,26 +328,26 @@ test("回った Box の中のノードは、自分の向きと祖先を合わせ
 
 test("回したノードには揃え先が無い", () => {
   expect(
-    NodeResize.resizable(setupTurnedSelection("tilted")).snapTargetNames,
+    snapTargetNamesAt(setupTurnedSelection("tilted"), { x: 1, y: 0.5 }),
   ).toEqual([]);
 });
 
 test("回った Box の中のノードにも揃え先が無い", () => {
   expect(
-    NodeResize.resizable(setupTurnedSelection("badge")).snapTargetNames,
+    snapTargetNamesAt(setupTurnedSelection("badge"), { x: 1, y: 0.5 }),
   ).toEqual([]);
 });
 
 test("回った Box の中の、自分は回していないノードにも揃え先が無い", () => {
   // 自分の向きで見ると回っていないので、合計で見ていなければ揃え先を持ってしまう
   expect(
-    NodeResize.resizable(setupTurnedSelection("upright")).snapTargetNames,
+    snapTargetNamesAt(setupTurnedSelection("upright"), { x: 1, y: 0.5 }),
   ).toEqual([]);
 });
 
 test("1 回り回したノードは回っていないものと同じく揃え先を持つ", () => {
   expect(
-    NodeResize.resizable(setupTurnedSelection("stamp")).snapTargetNames,
+    snapTargetNamesAt(setupTurnedSelection("stamp"), { x: 1, y: 0.5 }),
   ).toEqual(["home", "card", "tilted"]);
 });
 
@@ -390,5 +391,5 @@ test("359.8 度の絶対配置の Box の中にある -719.8 度の絶対配置�
     ["badge"],
   );
 
-  expect(NodeResize.resizable(selection).snapTargetNames).toEqual(["card"]);
+  expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual(["card"]);
 });
