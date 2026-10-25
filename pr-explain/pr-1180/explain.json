@@ -1,0 +1,2191 @@
+{
+  "version": 1,
+  "pr": 1180,
+  "sha": "c2dd6ae7b3e508f3597cca12aeceeef8f13a1474",
+  "issue": 1138,
+  "overview": {
+    "title": "同じファイルを指す別表記のパスを、1 つの綴りへ寄せてから開く",
+    "lead": "symlink 経由と実体、絶対パス中の `.` / `//`、macOS / Windows での大小違いのように同じファイルを指す別の綴りで開いても、同じタブ・最近使ったファイルの同じ行として扱うようにした。綴りを寄せるのは Rust の新しいコマンド `canonicalize_document_path` で、TS は `use-document-session` の 3 か所でその綴りを以後の識別子にする。",
+    "before": [
+      {
+        "text": "TS はパスを文字列の `===` で比べるので、同じファイルを別の綴りで開くと 2 枚目のタブになっていた"
+      },
+      {
+        "text": "Rust の監視は `canonicalize` したキーで実体ごとに 1 つなので、2 枚目のタブが監視を張り直すと、先のタブには外部変更が届かなくなっていた。片方を閉じると両方の監視が止まった"
+      },
+      {
+        "text": "最近使ったファイルにも、同じファイルが綴りの数だけ別の行として並んでいた"
+      },
+      {
+        "text": "symlink から開いたものを保存すると、一時ファイルの rename で symlink 自体を普通のファイルに置き換えていた"
+      },
+      {
+        "text": "実体が `.dcmp` でない symlink でも、名前が `.dcmp` なら開けた"
+      }
+    ],
+    "after": [
+      {
+        "text": "開く経路(ダイアログ・ドロップ・起動時の復元)はすべて `loadDocument` で綴りを寄せてから読み、寄せた綴りをタブのパスにする",
+        "message": "load-canonicalize"
+      },
+      {
+        "text": "新規作成は保存先の綴りを寄せてから書き出す。寄せられなければ書き出さずに失敗として出す",
+        "message": "create-canonicalize"
+      },
+      {
+        "text": "起動時に読んだ最近使ったファイルの各行を寄せてからまとめ直すので、同じファイルの別の綴りは 1 行になる。寄せられなかった行は元の綴りのまま残す",
+        "message": "restore-canonicalize"
+      },
+      {
+        "text": "寄せる規則は Rust の `canonical_form` 1 つで、自書き込みの記録のキーと同じ規則を使う",
+        "message": "registry-key"
+      },
+      {
+        "text": "寄せた綴りが受け付けるパスでない(実体が `.dcmp` でない symlink など)・UTF-8 で表せないときは `invalidPath` で拒む",
+        "message": "canonicalize-command"
+      },
+      {
+        "text": "symlink 経由で開いたものは、寄せた結果として実体の綴りへ保存する"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "一覧で寄せられなかった行",
+        "text": "計画では落とす案だったが、`docs/06-ui.md`「開けなくても一覧から外さない」に合わせて元の綴りで残すことにした。その行を開いたときに `loadDocument` が改めて失敗を返す",
+        "go": {
+          "kind": "message",
+          "id": "restore-canonicalize"
+        }
+      },
+      {
+        "title": "Rust の確かめ方",
+        "text": "Rust のテストは CI で走らず、この環境でもクレートはビルドできない。単体の `rustc --test` で linux の 11 件を通しただけで、macOS の大小違いと Windows の `\\\\?\\` の除去は実機で未確認",
+        "go": {
+          "kind": "file",
+          "path": "src-tauri/src/document/canonical_path.rs"
+        }
+      },
+      {
+        "title": "代役の監視の置き換え",
+        "text": "画面の通しのテストが寄せ忘れを捕まえられるのは、代役が Rust と同じく実体ごとに監視を 1 つだけ持つから。代役を変えるときはここを崩さない",
+        "go": {
+          "kind": "file",
+          "path": "src/libs/document-ipc/fake/index.ts"
+        }
+      },
+      {
+        "title": "開く流れ",
+        "text": "寄せる → 読む → 監視する、の順を 1 本で見る",
+        "go": {
+          "kind": "flow",
+          "id": "open"
+        }
+      },
+      {
+        "title": "Rust の層",
+        "text": "規則の本体とコマンドはここに集まる",
+        "go": {
+          "kind": "layer",
+          "layer": "src-tauri"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "canonicalize",
+      "label": "綴りの寄せ",
+      "role": "同じファイルを指す別の綴りを、Rust が 1 つの綴りへ寄せ、TS はその綴りでタブと最近使ったファイルを見分ける"
+    },
+    {
+      "id": "test-double",
+      "label": "IPC の代役",
+      "role": "テストで別の綴り(symlink の代わり)と、寄せるコマンドの失敗を再現する"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "src-tauri",
+      "role": "綴りを寄せる規則とコマンドを持ち、自書き込みの記録のキーも同じ規則で作る"
+    },
+    {
+      "layer": "libs",
+      "role": "寄せるコマンドの口を足し、戻り値を形を確かめてからパスにする。代役は別の綴りを実体へ解決する"
+    },
+    {
+      "layer": "features / editor/features/document-start",
+      "role": "開く・新規作成・起動時の復元の 3 か所で綴りを寄せ、寄せた綴りをタブと一覧に使う"
+    },
+    {
+      "layer": "features / editor",
+      "role": "画面を組んだ通しのテストで、別の綴りで落としてもタブが増えず外部変更が届くことを確かめる"
+    },
+    {
+      "layer": "docs",
+      "role": "IPC の表に寄せるコマンドを足し、別の綴りでも同じファイルとして扱う仕様を書く"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src-tauri/src/document/canonical_path.rs",
+      "name": "綴りを寄せる規則",
+      "role": "同じファイルを指す綴りを 1 つに揃え、webview からのパスを検査してから揃えた綴りを返す",
+      "feature": "canonicalize",
+      "change": "新しく作った。`known_content.rs` の `registry_key` の本体を `canonical_form` として移し、`canonicalize_document_path` を足した"
+    },
+    {
+      "path": "src-tauri/src/document/known_content.rs",
+      "name": "自書き込みの記録",
+      "role": "アプリが書いた内容を記録し、監視が検知した変更を通知すべきかを判定する",
+      "feature": "canonicalize",
+      "change": "`registry_key` を消して `canonical_form` を呼ぶ。キーを作ってからロックを取るようにした"
+    },
+    {
+      "path": "src-tauri/src/document/watch/watchers.rs",
+      "name": "監視の表",
+      "role": "`canonicalize` した実体ごとに監視を 1 つだけ持つ。別の綴りで張り直すと前の監視を置き換える",
+      "feature": "canonicalize"
+    },
+    {
+      "path": "src/libs/document-ipc/index.ts",
+      "name": "ドキュメントの IPC",
+      "role": "ドキュメントのコマンドを呼び、戻り値と失敗を TS の型へ詰め替える",
+      "feature": "canonicalize",
+      "change": "`canonicalize` を足し、戻り値を文字列とファイル名の要素の有無で確かめる `toCanonicalPath` を置いた"
+    },
+    {
+      "path": "src/libs/document-ipc/fake/index.ts",
+      "name": "IPC の代役",
+      "role": "インメモリのファイル表でドキュメントのコマンドと外部変更を再現する",
+      "feature": "test-double",
+      "change": "`linkPath` で別の綴りを登録でき、読み書き・監視・外部変更が実体へ届く。監視の表を実体 → 綴りにし、`denyCanonicalize` で寄せる失敗を再現する"
+    },
+    {
+      "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "name": "ドキュメントのセッション",
+      "role": "開く・新規作成・起動時の復元を受け、開いているドキュメントと最近使ったファイルを持つ",
+      "feature": "canonicalize",
+      "change": "`loadDocument`・`createWithDialog`・`loadRecentFiles` で綴りを寄せる。失敗の詰め替えを `accessFailed` に括り出した"
+    },
+    {
+      "path": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "name": "外部変更の反映",
+      "role": "開いたドキュメントのパスで監視を張り、届いた外部変更で読み直す",
+      "feature": "canonicalize"
+    },
+    {
+      "path": "docs/05-architecture.md",
+      "name": "IPC の仕様",
+      "role": "寄せるコマンドと、受け付けるパス・Linux では大小違いを寄せないこと・symlink は実体へ保存することを書く",
+      "change": "IPC の表に行を足し、受け付けるパスの項を書き足した",
+      "graph": false
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "開始画面とタブの仕様",
+      "role": "最近使ったファイルとタブで、別の綴りでも同じファイルとして扱うことを書く",
+      "change": "symlink から開くと実体の名前で並ぶこと、別の綴りで開き直しても増えないことを足した",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "load-canonicalize",
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "kind": "qry",
+      "name": "開く前に綴りを寄せる",
+      "code": "ipc.canonicalize(path)",
+      "via": "call",
+      "payload": "ダイアログ・ドロップ・一覧の先頭から届いたパス",
+      "returns": "寄せた綴りの `FilePath`。失敗なら `DocumentIpcError`",
+      "status": "added"
+    },
+    {
+      "id": "load",
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "kind": "qry",
+      "name": "寄せた綴りで読む",
+      "code": "ipc.load(canonical.value)",
+      "via": "call",
+      "payload": "寄せた綴り",
+      "returns": "ファイルの中身",
+      "status": "changed"
+    },
+    {
+      "id": "create-canonicalize",
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "kind": "qry",
+      "name": "新規作成の保存先を寄せる",
+      "code": "ipc.canonicalize(chosen.value.value)",
+      "via": "call",
+      "payload": "保存ダイアログで選ばれたパス",
+      "returns": "寄せた綴り。失敗なら書き出さない",
+      "status": "added"
+    },
+    {
+      "id": "create-save",
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "kind": "cmd",
+      "name": "寄せた保存先へ雛形を書く",
+      "code": "ipc.save(created.path, DocumentJson.serialize(created.document))",
+      "via": "call",
+      "payload": "寄せた綴りと雛形の JSON",
+      "status": "changed"
+    },
+    {
+      "id": "restore-canonicalize",
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "kind": "qry",
+      "name": "一覧の各行を寄せる",
+      "code": "Result.unwrapOr(await ipc.canonicalize(path), path)",
+      "via": "call",
+      "payload": "`app-state.json` から読んだ一覧の各行",
+      "returns": "寄せた綴り。寄せられなければ元の綴り",
+      "status": "added"
+    },
+    {
+      "id": "canonicalize-command",
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src-tauri/src/document/canonical_path.rs",
+      "kind": "qry",
+      "name": "綴りを寄せるコマンド",
+      "code": "call(\"canonicalize_document_path\", { path })",
+      "via": "call",
+      "payload": "パスの文字列",
+      "returns": "寄せた綴りの文字列。拒めば `invalidPath`",
+      "status": "added"
+    },
+    {
+      "id": "registry-key",
+      "from": "src-tauri/src/document/known_content.rs",
+      "to": "src-tauri/src/document/canonical_path.rs",
+      "kind": "qry",
+      "name": "記録のキーを作る",
+      "code": "canonical_form(path)",
+      "via": "call",
+      "payload": "記録・判定・破棄するパス",
+      "returns": "揃えた綴り",
+      "status": "changed"
+    },
+    {
+      "id": "watch",
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "kind": "cmd",
+      "name": "開いたパスで監視を張る",
+      "code": "ipc.watch(path)",
+      "via": "call",
+      "payload": "開いているドキュメントのパス(寄せた綴り)"
+    },
+    {
+      "id": "watch-command",
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src-tauri/src/document/watch/watchers.rs",
+      "kind": "cmd",
+      "name": "監視を張るコマンド",
+      "code": "call(\"watch_document\", { path })",
+      "via": "call",
+      "payload": "パスの文字列。実体ごとに 1 つの監視へ置き換わる"
+    }
+  ],
+  "flows": [
+    {
+      "id": "open",
+      "label": "ファイルを開いたとき",
+      "steps": [
+        "load-canonicalize",
+        "canonicalize-command",
+        "load",
+        "watch",
+        "watch-command"
+      ]
+    },
+    {
+      "id": "create",
+      "label": "新規作成したとき",
+      "steps": [
+        "create-canonicalize",
+        "canonicalize-command",
+        "create-save"
+      ]
+    },
+    {
+      "id": "restore",
+      "label": "起動して一覧を復元したとき",
+      "steps": [
+        "restore-canonicalize",
+        "canonicalize-command",
+        "load-canonicalize",
+        "load"
+      ]
+    },
+    {
+      "id": "self-write",
+      "label": "自分の書き込みを見分けるとき",
+      "steps": [
+        "registry-key"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "97d3fc3a2a78feb4777fb8288b777b9b69420d9e",
+      "phase": "core",
+      "role": "Rust に、同じファイルを指す別表記を寄せるコマンドを足す",
+      "why": "正規化には symlink の解決などファイルシステムへの問い合わせが要り、TS のドメインの `create`(純粋関数)には置けない。Rust が寄せた綴りを返し、TS はそれを識別子にする(Issue の案 A)。規則は既存の `registry_key` とずれると自書き込みの判定と食い違うので、本体を `canonical_form` へ移して両方から呼ぶ。",
+      "flows": [
+        "open",
+        "self-write"
+      ],
+      "review": [
+        "寄せた綴りをもう一度 `DocumentFilePath::parse` に通すので、実体が `.dcmp` でない symlink は拒まれる。今まで開けたものが開けなくなる振る舞いの変更",
+        "`canonical_form` を `DocumentFilePath` のメソッドにしなかった。記録のキーは失敗してはいけない(親が無ければ元の綴りへ戻す)ので、その型だけの性質ではない",
+        "`without_verbatim_disk` はドライブの `\\\\?\\C:` だけを戻し、UNC は触らない。Windows 実機では未確認"
+      ],
+      "before": [
+        {
+          "text": "正規化は `known_content.rs` の中だけにあり、TS からは呼べなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "`canonicalize_document_path` が検査済みの寄せた綴りを返す",
+          "message": "canonicalize-command"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "start": 62,
+          "end": 69,
+          "text": "検査 → 寄せる → UTF-8 → もう一度検査。2 回目の検査が、実体の拡張子を見る"
+        },
+        {
+          "path": "src-tauri/src/document/known_content.rs",
+          "side": "old",
+          "start": 86,
+          "end": 110,
+          "text": "ここにあった規則をそのまま `canonical_form` へ移した"
+        }
+      ]
+    },
+    {
+      "sha": "17af400b56aa615a114304ad847c977221119167",
+      "phase": "core",
+      "role": "寄せ方と拒否を Rust のテストで固定する",
+      "why": "CI では cargo が走らないので、単体の `rustc --test` で動かせる形にしておく。macOS / Windows だけの分岐は `cfg` で分け、実機で確かめていないことを冒頭に書く。",
+      "review": [
+        "期待値は正規化したディレクトリから組み立てる。macOS の一時ディレクトリは `/var` が `/private/var` への symlink なので",
+        "綴りは文字列で比べる。`Path` どうしの比較は `.` や続いた区切りを読み飛ばし、何も守らないため"
+      ]
+    },
+    {
+      "sha": "b18085e031e637091c0f68f922160fe34b0d4553",
+      "phase": "core",
+      "role": "`DocumentIpc` に寄せる口を足し、代役に別の綴りを再現させる",
+      "why": "口を `DocumentIpc` に 1 つ足すだけにし、ポートは増やさない。代役は別の綴りを読み書き・監視でも実体へ解決しないと、寄せる処理を外しても別の綴りの `load` が失敗するだけでテストが通ってしまう(計画レビューの指摘)。",
+      "flows": [
+        "open"
+      ],
+      "review": [
+        "代役の監視の表は実体 → 張った綴り。別の綴りで張り直すと置き換わるのは Rust の `watchers.rs` と同じで、画面の通しのテストはこれに頼って寄せ忘れを捕まえる",
+        "代役の既定は恒等なので、既存のテストは書き換えていない"
+      ],
+      "notes": [
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "start": 122,
+          "end": 125,
+          "text": "監視は実体ごとに 1 つ。Rust と同じ置き換えを再現する"
+        },
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "start": 185,
+          "end": 185,
+          "text": "別の綴りで張ると前の綴りを置き換える"
+        }
+      ]
+    },
+    {
+      "sha": "867eb15d18cad5709dcad007d31e2f386e1df048",
+      "phase": "core",
+      "role": "開く・新規作成・最近使ったファイルの復元で綴りを寄せる",
+      "why": "各 libs の入口で寄せる案は捨てた。`AppStateJson.parse` は同期の純粋関数で IPC を呼べず、ドロップのリスナーに非同期を挟むと続けて落としたときに順序が入れ替わりうる。開く経路はすべて `loadDocument` を通るので、そこと新規作成・一覧の読み込みの 3 か所で足りる。",
+      "flows": [
+        "open",
+        "create",
+        "restore"
+      ],
+      "review": [
+        "`loadDocument` は寄せた綴りで読み、寄せた綴りを保存先に持たせる。読む綴りだけでなく保存先も変わる",
+        "一覧で寄せられなかった行は落とさず元の綴りで残す。`invalidPath` の行を外すかは #1157 に任せた",
+        "復元そのものでは一覧を書き出さない。違いは寄せてまとめた分だけで、次に開いたときに揃う"
+      ],
+      "before": [
+        {
+          "text": "選ばれた・落とされた綴りのままタブと一覧に入っていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "開く経路はすべて寄せた綴りでタブになる",
+          "message": "load-canonicalize"
+        },
+        {
+          "text": "一覧は寄せてからまとめ直す",
+          "message": "restore-canonicalize"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "start": 235,
+          "end": 241,
+          "text": "寄せてから読む。寄せた綴りが以後の識別子になる"
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "start": 347,
+          "end": 356,
+          "text": "寄せられなければ元の綴り。全行が `ipcFailed` でも一覧は消えない"
+        }
+      ]
+    },
+    {
+      "sha": "eda6488e294ef4af03c5faccaafbaf695029ef3f",
+      "phase": "core",
+      "role": "寄せる口と代役の別の綴りをテストで固定する",
+      "why": "戻り値の形の確かめ(文字列でない・ファイル名の要素を持たない)と、代役の監視の置き換えを、口の単位で先に固める。",
+      "review": [
+        "「後から別の綴りで監視し直すと、前の綴りには外部変更が届かない」が、代役の置き換えを直接守るテスト"
+      ]
+    },
+    {
+      "sha": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "phase": "core",
+      "role": "別の綴りで開いてもタブと最近使ったファイルが増えないことを固定する",
+      "why": "ゴールそのもの(タブと一覧が増えない)と、寄せられないときの失敗の出方を、セッションのフックの単位で確かめる。計画レビューの指摘で、対になる失敗側(新規作成で拒まれる・届かない)も足した。",
+      "flows": [
+        "open",
+        "create",
+        "restore"
+      ],
+      "review": [
+        "「別の綴りで落としても開けなかった理由は残らない」は足していない。新しい代役は別の綴りでも読めるので、寄せる処理を外しても落ちないため"
+      ]
+    },
+    {
+      "sha": "189815048d9f1aecc538437ed54241b4450dc0f1",
+      "phase": "core",
+      "role": "画面を組んだ通しで、タブの数と外部変更の反映を固定する",
+      "why": "Issue に書いた実害は、先のタブに外部変更が届かなくなること。画面全体で再現して守る。",
+      "flows": [
+        "open"
+      ],
+      "review": [
+        "同期のテストは、代役が Rust の監視の置き換えを再現していることに頼っている(寄せる処理を外すと、2 枚目のタブが監視を奪って落ちる)"
+      ]
+    },
+    {
+      "sha": "44361ba7434c773cfc1110e680de0615d9b8619f",
+      "phase": "core",
+      "role": "寄せるコマンドと、別の綴りでも同じファイルとして扱う仕様を docs に書く",
+      "why": "IPC の表と受け付けるパスの項は `docs/05-architecture.md` が正本。開始画面とタブの振る舞いは `docs/06-ui.md` に足す。",
+      "review": [
+        "`docs/06-ui.md` の「開けなくても一覧から外さない」の行は変えていない"
+      ]
+    },
+    {
+      "sha": "8c2136d43c084d32c78e292c3c79311ef34cd870",
+      "phase": "revise",
+      "role": "寄せるコマンドをメインスレッドの外で動かし、realpath をロックの外へ出す",
+      "why": "起動時の復元は一覧の全行(最大 10 行)を寄せる。同期コマンドはメインスレッドで動くので、応答しないネットワークドライブがあると UI が固まりうる(実装レビューの指摘)。記録のキーも同じ理由で、ロックを持ったまま realpath を呼ばない。",
+      "flows": [
+        "restore",
+        "self-write"
+      ],
+      "review": [
+        "`record` / `is_known` / `forget` はキーを先に作ってからロックを取る。`record_write` と同じ書き方"
+      ],
+      "notes": [
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "start": 74,
+          "end": 77,
+          "text": "`async` にすると Tauri が別スレッドで動かす"
+        },
+        {
+          "path": "src-tauri/src/document/known_content.rs",
+          "start": 31,
+          "end": 32,
+          "text": "キーを作ってからロックを取る"
+        }
+      ]
+    },
+    {
+      "sha": "f17d089bc60526e849fb6127359065cabe807249",
+      "phase": "revise",
+      "role": "寄せた綴りの解釈を既存の変換に寄せ、doc を参照の形にする",
+      "why": "`Option` から `Result` への変換を書き直していた(重複の指摘)。`DocumentIpc.canonicalize` の doc が docs の列挙を写していたので、要約と参照にした。",
+      "review": [
+        "`toCanonicalPath` は `Interop.toResult` で、ファイル名の要素を持たない綴りを `ipcFailed` にする"
+      ]
+    },
+    {
+      "sha": "fb2ab71699562e4a71be0def8f1e320a7dee3ada",
+      "phase": "revise",
+      "role": "テスト用の別の綴りを共通の準備へ寄せ、拒否の一覧を改名する",
+      "why": "画面の 2 つのテストファイルに同じ定数があった。`deniedCanonicalPaths` は中身(パスと種別)とも代役の語形とも合わないので `canonicalizeDenials` にした。",
+      "review": [
+        "名前だけの変更で、テストの観点は変わらない"
+      ]
+    },
+    {
+      "sha": "2b579c94959e65f280be7cdd9ede872935f5f33c",
+      "phase": "revise",
+      "role": "大小違いを寄せるのは macOS / Windows だけで、symlink は実体へ保存することを docs に書く",
+      "why": "Linux の glibc `realpath` は大小違いを直さないのに、docs は OS を限らずに書いていた。symlink から開いたものの保存先が実体になる(以前は rename で symlink を置き換えていた)ことも仕様に無かった。",
+      "review": [
+        "Linux の大小を区別しない FS(casefold の ext4・vfat)では大小違いを寄せない、と言い切っている"
+      ]
+    },
+    {
+      "sha": "929c47ff5190aa5bdced92c90c023b22b076ae51",
+      "phase": "hard",
+      "role": "一覧の先頭行の寄せと、代役の読み書きの実体への解決をテストで固定する",
+      "why": "test-reviewer の実測で、`canonicalizeRecentPaths` が先頭行だけ寄せない実装でも全件が通った(先頭は `loadDocument` が別に寄せるので、開いたタブを見るテストでは守れない)。代役の doc が約束する読み書き・外部変更の解決も、テストで守られていたのは監視だけだった。",
+      "flows": [
+        "restore"
+      ],
+      "review": [
+        "足した 4 件は、守る箇所を 1 つずつ壊すとその 1 件だけが落ちることを確かめてある"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "rust-normal",
+      "label": "寄せ方(Rust)",
+      "file": "src-tauri/src/document/canonical_path_normal_test.rs"
+    },
+    {
+      "id": "rust-edge",
+      "label": "拒否(Rust)",
+      "file": "src-tauri/src/document/canonical_path_edge_test.rs"
+    },
+    {
+      "id": "ipc-normal",
+      "label": "IPC の口と代役",
+      "file": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts"
+    },
+    {
+      "id": "ipc-edge",
+      "label": "IPC の口の失敗",
+      "file": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts"
+    },
+    {
+      "id": "session-entry",
+      "label": "ドロップで開く",
+      "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts"
+    },
+    {
+      "id": "session-normal",
+      "label": "ダイアログと新規作成",
+      "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.normal.test.ts"
+    },
+    {
+      "id": "session-edge",
+      "label": "寄せられないとき",
+      "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts"
+    },
+    {
+      "id": "session-record",
+      "label": "最近使ったファイルの記録",
+      "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.record.test.ts"
+    },
+    {
+      "id": "session-restore",
+      "label": "起動時の復元",
+      "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts"
+    },
+    {
+      "id": "screen-entry",
+      "label": "画面の通し(開く)",
+      "file": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx"
+    },
+    {
+      "id": "screen-sync",
+      "label": "画面の通し(外部変更)",
+      "file": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "rust-dot",
+      "suite": "rust-normal",
+      "name": "カレントディレクトリを指す要素は取り除かれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`app-state.json` を外部編集して `/x/./a.dcmp` と書いても、同じファイルとして扱うため",
+      "given": "一時ディレクトリに `document.dcmp` がある",
+      "when": "`<dir>/./document.dcmp` を寄せる",
+      "then": "`.` の無い、正規化したディレクトリの綴りになる",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "excerpt": {
+        "path": "src-tauri/src/document/canonical_path_normal_test.rs",
+        "start": 37,
+        "end": 45,
+        "text": "#[cfg(unix)]\n#[test]\nfn カレントディレクトリを指す要素は取り除かれる() {\n    let dir = TempDir::new(\"canonical\");\n    fs::write(dir.join(\"document.dcmp\"), \"{}\").expect(\"ファイルを用意できる\");\n    let raw = format!(\"{}/./document.dcmp\", dir.path().display());\n\n    assert_eq!(canonicalized(&raw), canonical_in(&dir, \"document.dcmp\"));\n}"
+      },
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ]
+    },
+    {
+      "id": "rust-double-slash",
+      "suite": "rust-normal",
+      "name": "続いた区切りは1つになる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`/x//a.dcmp` のような綴りも同じファイルとして扱うため",
+      "given": "一時ディレクトリに `document.dcmp` がある",
+      "when": "`<dir>//document.dcmp` を寄せる",
+      "then": "区切りが 1 つの綴りになる",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ]
+    },
+    {
+      "id": "rust-symlink",
+      "suite": "rust-normal",
+      "name": "symlink経由の綴りは実体の綴りになる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "symlink のファイルを落としても、実体と同じタブ・同じ行になるため",
+      "given": "`link.dcmp` が `real.dcmp` を指す",
+      "when": "`link.dcmp` を寄せる",
+      "then": "`real.dcmp` の綴りになる",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "excerpt": {
+        "path": "src-tauri/src/document/canonical_path_normal_test.rs",
+        "start": 57,
+        "end": 68,
+        "text": "#[cfg(unix)]\n#[test]\nfn symlink経由の綴りは実体の綴りになる() {\n    let dir = TempDir::new(\"canonical\");\n    fs::write(dir.join(\"real.dcmp\"), \"{}\").expect(\"ファイルを用意できる\");\n    std::os::unix::fs::symlink(dir.join(\"real.dcmp\"), dir.join(\"link.dcmp\"))\n        .expect(\"symlink を作れる\");\n\n    let canonical = canonicalized(&raw_document_path(&dir, \"link.dcmp\"));\n\n    assert_eq!(canonical, canonical_in(&dir, \"real.dcmp\"));\n}"
+      },
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ],
+      "covers": [
+        "canonicalize-command"
+      ]
+    },
+    {
+      "id": "rust-new-in-link-dir",
+      "suite": "rust-normal",
+      "name": "symlinkのディレクトリにまだ無いファイルはディレクトリだけ実体の綴りになる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "新規作成の保存先はまだ無いので `canonicalize` できない。親だけ寄せないと、書いた後の綴りと食い違う",
+      "given": "`link` が `real` ディレクトリを指し、`new.dcmp` はまだ無い",
+      "when": "`link/new.dcmp` を寄せる",
+      "then": "`real/new.dcmp` の綴りになる",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ]
+    },
+    {
+      "id": "rust-missing-parent",
+      "suite": "rust-normal",
+      "name": "親ディレクトリが無ければ渡した綴りのまま返る",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "記録のキーは失敗してはいけないので、寄せられないときは元の綴りへ戻す",
+      "given": "存在しないフォルダの下のパス",
+      "when": "寄せる",
+      "then": "渡した綴りのまま返る",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ]
+    },
+    {
+      "id": "rust-broken-link",
+      "suite": "rust-normal",
+      "name": "壊れたsymlinkはリンクの綴りのまま返る",
+      "techniques": [
+        "error"
+      ],
+      "why": "リンク先が消えた symlink は寄せずに返し、読み込みが `notFound` として失敗を出す",
+      "given": "`broken.dcmp` が存在しない `gone.dcmp` を指す",
+      "when": "`broken.dcmp` を寄せる",
+      "then": "リンクの綴りのまま返る",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ]
+    },
+    {
+      "id": "rust-idempotent",
+      "suite": "rust-normal",
+      "name": "寄せた綴りをもう一度寄せても変わらない",
+      "techniques": [
+        "idempotence"
+      ],
+      "why": "起動時の復元で寄せた綴りを、開くときの `loadDocument` がもう一度寄せる",
+      "given": "一度寄せた綴り",
+      "when": "もう一度寄せる",
+      "then": "同じ綴りになる",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ]
+    },
+    {
+      "id": "rust-case-macos",
+      "suite": "rust-normal",
+      "name": "大文字小文字だけが違う綴りはディスク上の綴りになる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "macOS の既定のボリュームは大小を区別しないので、大小違いも同じファイル。macOS 実機では走らせていない",
+      "given": "`Document.dcmp` がある(macOS)",
+      "when": "`DOCUMENT.dcmp` を寄せる",
+      "then": "`Document.dcmp` の綴りになる",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ]
+    },
+    {
+      "id": "rust-windows-prefix",
+      "suite": "rust-normal",
+      "name": "寄せた綴りはドライブの前に接頭辞を持たない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "Windows の `canonicalize` は `\\\\?\\C:` を付け、それが最近使ったファイルに残る。Windows でしか走らず、未検証",
+      "given": "Windows で `document.dcmp` がある",
+      "when": "寄せる",
+      "then": "`\\\\?\\` で始まらない",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ]
+    },
+    {
+      "id": "rust-relative",
+      "suite": "rust-edge",
+      "name": "相対パスは拒否される",
+      "techniques": [
+        "error"
+      ],
+      "why": "受け付けるパスは絶対パスだけ(`docs/05-architecture.md`)",
+      "given": "なし",
+      "when": "`document.dcmp` を寄せる",
+      "then": "`InvalidPath`",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ]
+    },
+    {
+      "id": "rust-not-dcmp",
+      "suite": "rust-edge",
+      "name": "拡張子がdcmpでないファイルは拒否される",
+      "techniques": [
+        "error"
+      ],
+      "why": "寄せるコマンドも他のコマンドと同じ検査を通す",
+      "given": "`notes.txt` がある",
+      "when": "`notes.txt` を寄せる",
+      "then": "`InvalidPath`",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ]
+    },
+    {
+      "id": "rust-link-to-txt",
+      "suite": "rust-edge",
+      "name": "実体の拡張子がdcmpでないsymlinkは拒否される",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "寄せた綴りをもう一度検査するので、名前だけ `.dcmp` のリンクは拒む。今まで開けたものが開けなくなる変更",
+      "given": "`link.dcmp` が `notes.txt` を指す",
+      "when": "`link.dcmp` を寄せる",
+      "then": "`InvalidPath`",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "excerpt": {
+        "path": "src-tauri/src/document/canonical_path_edge_test.rs",
+        "start": 30,
+        "end": 39,
+        "text": "#[cfg(unix)]\n#[test]\nfn 実体の拡張子がdcmpでないsymlinkは拒否される() {\n    let dir = TempDir::new(\"canonical-edge\");\n    std::fs::write(dir.join(\"notes.txt\"), \"x\").expect(\"ファイルを用意できる\");\n    std::os::unix::fs::symlink(dir.join(\"notes.txt\"), dir.join(\"link.dcmp\"))\n        .expect(\"symlink を作れる\");\n\n    assert!(is_rejected(&raw_document_path(&dir, \"link.dcmp\")));\n}"
+      },
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ],
+      "covers": [
+        "canonicalize-command"
+      ]
+    },
+    {
+      "id": "rust-not-utf8",
+      "suite": "rust-edge",
+      "name": "寄せた綴りがutf8で表せなければ拒否される",
+      "techniques": [
+        "error"
+      ],
+      "why": "TS へは文字列で返すので、UTF-8 で表せない綴りは返せない",
+      "given": "名前が UTF-8 でないディレクトリへの symlink(linux)",
+      "when": "その下の `new.dcmp` を寄せる",
+      "then": "`InvalidPath`",
+      "commit": "17af400b56aa615a114304ad847c977221119167",
+      "targets": [
+        "src-tauri/src/document/canonical_path.rs"
+      ]
+    },
+    {
+      "id": "ipc-link-canonical",
+      "suite": "ipc-normal",
+      "name": "別の綴りを寄せると、実体の綴りになる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "代役で、別の綴りが実体へ寄ることを再現できていること",
+      "given": "`LinkPath` が `Path` を指す",
+      "when": "`LinkPath` を寄せる",
+      "then": "`Path` が返る",
+      "commit": "eda6488e294ef4af03c5faccaafbaf695029ef3f",
+      "targets": [
+        "src/libs/document-ipc/index.ts",
+        "src/libs/document-ipc/fake/index.ts"
+      ],
+      "covers": [
+        "canonicalize-command"
+      ]
+    },
+    {
+      "id": "ipc-identity",
+      "suite": "ipc-normal",
+      "name": "別の綴りを持たないパスは、寄せても綴りが変わらない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "代役の既定は恒等で、既存のテストが書き換えなしで通る前提",
+      "given": "`LinkPath` が `Path` を指す",
+      "when": "`Path` を寄せる",
+      "then": "`Path` のまま返る",
+      "commit": "eda6488e294ef4af03c5faccaafbaf695029ef3f",
+      "targets": [
+        "src/libs/document-ipc/fake/index.ts"
+      ],
+      "covers": [
+        "canonicalize-command"
+      ]
+    },
+    {
+      "id": "ipc-link-load",
+      "suite": "ipc-normal",
+      "name": "別の綴りで読むと、実体の中身が返る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "代役の doc の約束。外すと、寄せずに読む経路のテストで代役が本物と違う振る舞いをする",
+      "given": "`LinkPath` が `Path` を指す",
+      "when": "`LinkPath` を読む",
+      "then": "`Path` の中身が返る",
+      "commit": "929c47ff5190aa5bdced92c90c023b22b076ae51",
+      "targets": [
+        "src/libs/document-ipc/fake/index.ts"
+      ]
+    },
+    {
+      "id": "ipc-link-save",
+      "suite": "ipc-normal",
+      "name": "別の綴りで書くと、実体の中身が変わる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "symlink 経由の保存が実体へ届く、という本物の振る舞いを代役が再現していること",
+      "given": "`LinkPath` が `Path` を指す",
+      "when": "`LinkPath` へ保存する",
+      "then": "`Path` を読むと保存した中身",
+      "commit": "929c47ff5190aa5bdced92c90c023b22b076ae51",
+      "targets": [
+        "src/libs/document-ipc/fake/index.ts"
+      ]
+    },
+    {
+      "id": "ipc-link-external",
+      "suite": "ipc-normal",
+      "name": "別の綴りで外部から書き換えると、実体を監視している綴りで届く",
+      "techniques": [
+        "state"
+      ],
+      "why": "外部変更は実体に起き、監視を張った綴りで届く",
+      "given": "`Path` で監視している",
+      "when": "`LinkPath` で外部変更する",
+      "then": "`Path` の綴りで通知が届く",
+      "commit": "929c47ff5190aa5bdced92c90c023b22b076ae51",
+      "targets": [
+        "src/libs/document-ipc/fake/index.ts"
+      ]
+    },
+    {
+      "id": "ipc-link-watch",
+      "suite": "ipc-normal",
+      "name": "別の綴りで監視すると、実体の外部変更がその綴りで届く",
+      "techniques": [
+        "state"
+      ],
+      "why": "通知の綴りは監視を張った綴りで、開いているパスと文字列で比べられる",
+      "given": "`LinkPath` で監視している",
+      "when": "`Path` で外部変更する",
+      "then": "`LinkPath` の綴りで届く",
+      "commit": "eda6488e294ef4af03c5faccaafbaf695029ef3f",
+      "targets": [
+        "src/libs/document-ipc/fake/index.ts"
+      ],
+      "covers": [
+        "watch-command"
+      ]
+    },
+    {
+      "id": "ipc-watch-replace",
+      "suite": "ipc-normal",
+      "name": "後から別の綴りで監視し直すと、前の綴りには外部変更が届かない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "Rust の監視が実体ごとに 1 つで置き換わることの再現。画面の同期のテストが寄せ忘れを捕まえられるのはこれのおかげで、この置き換えを外しても同期のテストは落ちない(確認済み)。代役の置き換えを直接守るのはこのテスト",
+      "given": "`Path` で監視した後に `LinkPath` でも監視する",
+      "when": "`Path` で外部変更する",
+      "then": "`LinkPath` にだけ届く",
+      "commit": "eda6488e294ef4af03c5faccaafbaf695029ef3f",
+      "excerpt": {
+        "path": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+        "start": 176,
+        "end": 191,
+        "emphasis": [
+          {
+            "start": 183,
+            "end": 184
+          }
+        ],
+        "text": "test(\"後から別の綴りで監視し直すと、前の綴りには外部変更が届かない\", async () => {\n  const fake = DocumentIpcFake.create({ [Path]: `{}` });\n  fake.linkPath({ link: LinkPath, target: Path });\n  const received: DocumentChanged[] = [];\n  Result.unwrap(\n    await fake.ipc.subscribeChanged((changed) => received.push(changed)),\n  );\n  Result.unwrap(await fake.ipc.watch(Path));\n  Result.unwrap(await fake.ipc.watch(LinkPath));\n\n  fake.changeExternally(Path, `{ \"formatVersion\": \"1.0\" }`);\n\n  expect(received).toStrictEqual([\n    { path: LinkPath, content: `{ \"formatVersion\": \"1.0\" }` },\n  ]);\n});"
+      },
+      "targets": [
+        "src/libs/document-ipc/fake/index.ts",
+        "src-tauri/src/document/watch/watchers.rs"
+      ],
+      "covers": [
+        "watch-command"
+      ]
+    },
+    {
+      "id": "ipc-link-unwatch",
+      "suite": "ipc-normal",
+      "name": "別の綴りで監視を止めると、実体の外部変更が届かなくなる",
+      "techniques": [
+        "state"
+      ],
+      "why": "Rust の `unwatch` も `canonicalize` したキーで止める",
+      "given": "`Path` で監視している",
+      "when": "`LinkPath` で監視を止めて外部変更する",
+      "then": "何も届かない",
+      "commit": "eda6488e294ef4af03c5faccaafbaf695029ef3f",
+      "targets": [
+        "src/libs/document-ipc/fake/index.ts"
+      ]
+    },
+    {
+      "id": "ipc-denied",
+      "suite": "ipc-edge",
+      "name": "綴りを寄せるのを拒まれると invalidPath が返る",
+      "techniques": [
+        "error"
+      ],
+      "why": "Rust が拒んだ種別を、そのまま TS の失敗の種別として受け取る",
+      "given": "`Path` の寄せを `invalidPath` で拒む代役",
+      "when": "`Path` を寄せる",
+      "then": "`invalidPath` の失敗",
+      "commit": "eda6488e294ef4af03c5faccaafbaf695029ef3f",
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ],
+      "covers": [
+        "canonicalize-command"
+      ]
+    },
+    {
+      "id": "ipc-not-string",
+      "suite": "ipc-edge",
+      "name": "綴りを寄せた結果が文字列以外だと ipcFailed が返る",
+      "techniques": [
+        "error"
+      ],
+      "why": "Rust と TS の版がずれたとき、`as` で通さずに失敗にする",
+      "given": "`42` を返す IPC",
+      "when": "寄せる",
+      "then": "`ipcFailed`(文字列以外を返した)",
+      "commit": "eda6488e294ef4af03c5faccaafbaf695029ef3f",
+      "values": {
+        "columns": [
+          "コマンドの戻り値",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`42`",
+              "`ipcFailed`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`\"/\"`",
+              "`ipcFailed`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "実体の綴り",
+              "その綴りの `FilePath`"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ],
+      "covers": [
+        "canonicalize-command"
+      ]
+    },
+    {
+      "id": "ipc-no-file-name",
+      "suite": "ipc-edge",
+      "name": "綴りを寄せた結果がファイル名の要素を持たないと ipcFailed が返る",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "`FilePath` はファイル名の要素を持つことを型で約束しているので、`/` だけの綴りは通さない",
+      "given": "`\"/\"` を返す IPC",
+      "when": "寄せる",
+      "then": "`ipcFailed`(ファイル名の要素を持たない)",
+      "commit": "eda6488e294ef4af03c5faccaafbaf695029ef3f",
+      "targets": [
+        "src/libs/document-ipc/index.ts"
+      ]
+    },
+    {
+      "id": "entry-no-new-tab",
+      "suite": "session-entry",
+      "name": "開いているファイルを別の綴りで落としても、タブは増えない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ゴールそのもの。`loadDocument` で寄せる処理を外すと落ちるテストの 1 つ(test-reviewer の実測で 11 件)",
+      "given": "`Path` を開いていて、`LinkPath` が `Path` を指す",
+      "when": "`LinkPath` を落とす",
+      "then": "開いているのは `Path` の 1 つだけ",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+        "start": 221,
+        "end": 232,
+        "text": "test(\"開いているファイルを別の綴りで落としても、タブは増えない\", async () => {\n  const observer = renderDocumentSession(\n    { [Path]: artboardContent(\"home\") },\n    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n    { linkedPaths: [{ link: LinkPath, target: Path }] },\n  );\n  await observer.dropFiles([Path]);\n\n  await observer.dropFiles([LinkPath]);\n\n  expect(openedPaths(observer.session())).toStrictEqual([Path]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "load-canonicalize"
+      ]
+    },
+    {
+      "id": "entry-activate",
+      "suite": "session-entry",
+      "name": "開いているファイルを別の綴りで落とすと、そのタブを見ている状態になる",
+      "techniques": [
+        "state"
+      ],
+      "why": "既に開いているファイルを開き直したらそのタブへ移る(`docs/06-ui.md`)。別の綴りでも同じ",
+      "given": "`Path` と `OtherPath` を開き、`OtherPath` を見ている",
+      "when": "`LinkPath` を落とす",
+      "then": "`Path` を見ている",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "load-canonicalize"
+      ]
+    },
+    {
+      "id": "entry-real-path",
+      "suite": "session-entry",
+      "name": "別の綴りで落としたファイルは、実体の綴りで開かれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "寄せた綴りがタブのパス(保存先)になる。保存先を元の綴りにすると落ちるテストの 1 つ(実測で 8 件)",
+      "given": "`LinkPath` が `Path` を指し、何も開いていない",
+      "when": "`LinkPath` を落とす",
+      "then": "`Path` で開いている",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "load-canonicalize",
+        "load"
+      ]
+    },
+    {
+      "id": "normal-dialog",
+      "suite": "session-normal",
+      "name": "ダイアログで別の綴りを選ぶと、実体の綴りで開かれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ダイアログもドロップと同じ `loadDocument` を通る",
+      "given": "開くダイアログが `LinkPath` を返す",
+      "when": "開く",
+      "then": "`Path` で開いている",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "load-canonicalize"
+      ]
+    },
+    {
+      "id": "normal-create-link",
+      "suite": "session-normal",
+      "name": "新規作成の保存先に別の綴りを選ぶと、実体の綴りのドキュメントとして開かれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "新規作成は `loadDocument` を通らないので、保存先を別に寄せる",
+      "given": "保存ダイアログが `NewLinkPath`(`NewPath` を指す)を返す",
+      "when": "新規作成する",
+      "then": "`NewPath` のドキュメントとして開いている",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "create-canonicalize",
+        "create-save"
+      ]
+    },
+    {
+      "id": "edge-open-denied",
+      "suite": "session-edge",
+      "name": "綴りを寄せるのを拒まれたファイルを選ぶと、使えないパスとして失敗する",
+      "techniques": [
+        "error"
+      ],
+      "why": "寄せられないときは読まずに、その失敗を開けなかった理由として出す(握りつぶさない)",
+      "given": "`Path` の寄せを `invalidPath` で拒む",
+      "when": "ダイアログで `Path` を開く",
+      "then": "使えないパスの失敗が残る",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+        "start": 192,
+        "end": 210,
+        "text": "test(\"綴りを寄せるのを拒まれたファイルを選ぶと、使えないパスとして失敗する\", async () => {\n  const observer = renderDocumentSession(\n    { [Path]: artboardContent(\"home\") },\n    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },\n    { canonicalizeDenials: [{ path: Path, kind: \"invalidPath\" }] },\n  );\n\n  await observer.openDocument();\n\n  expect(DocumentSession.failure(observer.session())).toStrictEqual(\n    Option.some({\n      kind: \"io\",\n      error: DocumentAccessFailure.create(\n        DocumentAccessFailureReasons.UnusablePath,\n        `${Path}: ドキュメントのパスとして扱えない`,\n      ),\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "load-canonicalize"
+      ]
+    },
+    {
+      "id": "edge-open-undelivered",
+      "suite": "session-edge",
+      "name": "綴りを寄せる指示が届かなかったファイルを選ぶと、届かなかったこととして失敗する",
+      "techniques": [
+        "error"
+      ],
+      "why": "`ipcFailed` は使えないパスとは別の理由として出す",
+      "given": "`Path` の寄せを `ipcFailed` で失敗させる",
+      "when": "ダイアログで `Path` を開く",
+      "then": "届かなかった失敗が残る",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "load-canonicalize"
+      ]
+    },
+    {
+      "id": "edge-create-no-write",
+      "suite": "session-edge",
+      "name": "新規作成の保存先の綴りを寄せるのを拒まれると、書き出さない",
+      "techniques": [
+        "error"
+      ],
+      "why": "寄せられない保存先へ雛形を書くと、寄せた綴りと食い違うファイルが残る",
+      "given": "`NewPath` の寄せを `invalidPath` で拒む",
+      "when": "`NewPath` へ新規作成する",
+      "then": "`NewPath` にファイルが無い",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "create-canonicalize"
+      ]
+    },
+    {
+      "id": "edge-create-failure",
+      "suite": "session-edge",
+      "name": "新規作成の保存先の綴りを寄せるのを拒まれると、その失敗が残る",
+      "techniques": [
+        "error"
+      ],
+      "why": "書き出さなかった理由を開始画面に出す",
+      "given": "`NewPath` の寄せを `invalidPath` で拒む",
+      "when": "`NewPath` へ新規作成する",
+      "then": "使えないパスの失敗が残る",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "create-canonicalize"
+      ]
+    },
+    {
+      "id": "record-no-dup",
+      "suite": "session-record",
+      "name": "開いたファイルを別の綴りで開き直しても、一覧は増えない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "最近使ったファイルは開いたドキュメントのパスで記録するので、寄せた綴りなら重ならない",
+      "given": "`Path` を開いている",
+      "when": "`LinkPath` を落とす",
+      "then": "一覧は `Path` の 1 行",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "load-canonicalize"
+      ]
+    },
+    {
+      "id": "record-stored",
+      "suite": "session-record",
+      "name": "別の綴りで開いたファイルは、実体の綴りで一覧に書き出される",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "次の起動で並ぶ一覧も実体の綴りになる",
+      "given": "`LinkPath` が `Path` を指す",
+      "when": "`LinkPath` を落とす",
+      "then": "`app-state.json` に `Path` が書かれる",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "load-canonicalize"
+      ]
+    },
+    {
+      "id": "restore-merge",
+      "suite": "session-restore",
+      "name": "保存された一覧のうち、同じファイルの別の綴りは 1 行にまとまる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "古い版で残った別の綴りの行を、起動時にまとめる。一覧を寄せない実装で落ちる 2 件の 1 つ",
+      "given": "保存された一覧が `Path`・`LinkPath`・`SecondPath`",
+      "when": "起動する",
+      "then": "一覧は `Path`・`SecondPath`",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "start": 226,
+        "end": 239,
+        "text": "test(\"保存された一覧のうち、同じファイルの別の綴りは 1 行にまとまる\", async () => {\n  const observer = renderDocumentSession(\n    { [Path]: artboardContent(\"home\"), [SecondPath]: artboardContent(\"shop\") },\n    NoDialogChoices,\n    {\n      storedAppState: storedRecentPaths([Path, LinkPath, SecondPath]),\n      linkedPaths: [{ link: LinkPath, target: Path }],\n    },\n  );\n\n  await observer.settle();\n\n  expect(observer.recentPaths()).toStrictEqual([Path, SecondPath]);\n});"
+      },
+      "values": {
+        "columns": [
+          "保存された一覧",
+          "並ぶ一覧"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`Path`, `LinkPath`, `SecondPath`",
+              "`Path`, `SecondPath`"
+            ]
+          },
+          {
+            "cells": [
+              "`LinkPath`",
+              "`Path`"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "restore-canonicalize"
+      ]
+    },
+    {
+      "id": "restore-open-head",
+      "suite": "session-restore",
+      "name": "保存された一覧の先頭が別の綴りなら、実体の綴りで開かれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "起動時に開く先頭も、寄せた綴りのタブになる",
+      "given": "保存された一覧が `LinkPath` だけ",
+      "when": "起動する",
+      "then": "`Path` を見ている",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "restore-canonicalize",
+        "load-canonicalize"
+      ]
+    },
+    {
+      "id": "restore-head-row",
+      "suite": "session-restore",
+      "name": "保存された一覧の先頭が別の綴りなら、一覧にも実体の綴りで並ぶ",
+      "techniques": [
+        "regression"
+      ],
+      "why": "先頭は `loadDocument` が別に寄せるので、開いたタブを見るテストでは一覧の先頭行の寄せを守れなかった(先頭だけ寄せない実装でも全件が通った)",
+      "given": "保存された一覧が `LinkPath` だけ",
+      "when": "起動する",
+      "then": "一覧は `Path`",
+      "commit": "929c47ff5190aa5bdced92c90c023b22b076ae51",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "restore-canonicalize"
+      ]
+    },
+    {
+      "id": "restore-denied-kept",
+      "suite": "session-restore",
+      "name": "綴りを寄せるのを拒まれた行は、元の綴りのまま一覧に残る",
+      "techniques": [
+        "error"
+      ],
+      "why": "開けなくても一覧から外さない(`docs/06-ui.md`)。寄せられなかった行を落とす実装で落ちる 3 件の 1 つ",
+      "given": "一覧が `Path`・`SecondPath` で、`SecondPath` の寄せを `invalidPath` で拒む",
+      "when": "起動する",
+      "then": "一覧は `Path`・`SecondPath`",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "restore-canonicalize"
+      ]
+    },
+    {
+      "id": "restore-undelivered-kept",
+      "suite": "session-restore",
+      "name": "綴りを寄せる指示が届かなかった行も、元の綴りのまま一覧に残る",
+      "techniques": [
+        "error"
+      ],
+      "why": "一時的に IPC が失敗しただけで一覧が消えないため",
+      "given": "一覧が `Path`・`SecondPath` で、`SecondPath` の寄せを `ipcFailed` で失敗させる",
+      "when": "起動する",
+      "then": "一覧は `Path`・`SecondPath`",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "restore-canonicalize"
+      ]
+    },
+    {
+      "id": "restore-head-denied",
+      "suite": "session-restore",
+      "name": "保存された一覧の先頭の綴りを寄せるのを拒まれると、使えないパスとして失敗する",
+      "techniques": [
+        "error"
+      ],
+      "why": "一覧では残した行の失敗は、開いたときに `loadDocument` が改めて返す",
+      "given": "一覧が `Path` で、その寄せを `invalidPath` で拒む",
+      "when": "起動する",
+      "then": "使えないパスの失敗が残る",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "restore-canonicalize",
+        "load-canonicalize"
+      ]
+    },
+    {
+      "id": "restore-rewritten",
+      "suite": "session-restore",
+      "name": "別の綴りをまとめた一覧は、次に開いたときに書き直される",
+      "techniques": [
+        "state"
+      ],
+      "why": "復元そのものでは一覧を書き出さないので、まとめた一覧がいつファイルへ揃うかを守る",
+      "given": "一覧が `Path`・`LinkPath` で起動した",
+      "when": "`SecondPath` を開く",
+      "then": "`SecondPath`・`Path` が書き出される",
+      "commit": "d3a980ec6dcb5acfb7201c788f69cb7e1317232b",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "restore-canonicalize"
+      ]
+    },
+    {
+      "id": "screen-no-new-tab",
+      "suite": "screen-entry",
+      "name": "開いているファイルを別の綴りで落としても、タブは増えない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "画面のタブ列で見てもタブが 1 枚のままであること",
+      "given": "`Path` を開いた画面で、`LinkPath` が `Path` を指す",
+      "when": "`LinkPath` を落とす",
+      "then": "タブ列の閉じるボタンは 1 つ",
+      "commit": "189815048d9f1aecc538437ed54241b4450dc0f1",
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "load-canonicalize"
+      ]
+    },
+    {
+      "id": "screen-sync",
+      "suite": "screen-sync",
+      "name": "開いているファイルを別の綴りで落としても、外部変更はそのタブに反映される",
+      "techniques": [
+        "regression",
+        "state"
+      ],
+      "why": "Issue に書いた実害の再現。寄せずに 2 枚目のタブができると、2 枚目が監視を張り直して先のタブに外部変更が届かなくなる。この検出は代役が Rust の監視の置き換えを再現していることに頼っている",
+      "given": "`Path` を開いた画面で、`LinkPath` が `Path` を指す",
+      "when": "`LinkPath` を落とし、`Path` を外部で書き換えて `Path` のタブを選ぶ",
+      "then": "書き換えた内容(`profile` のアートボード)が出ている",
+      "commit": "189815048d9f1aecc538437ed54241b4450dc0f1",
+      "excerpt": {
+        "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+        "start": 161,
+        "end": 180,
+        "emphasis": [
+          {
+            "start": 171,
+            "end": 173
+          }
+        ],
+        "text": "/*\n * 別の綴りで開いた側が監視を張り直すと、前の綴りへは通知が届かなくなる（Rust は実体ごとに\n * 監視を 1 つだけ持つ）。綴りを寄せずにタブが 2 つになると、最初のタブが取り残される。\n */\ntest(\"開いているファイルを別の綴りで落としても、外部変更はそのタブに反映される\", async () => {\n  const observer = renderEditorScreen(\n    { [Path]: artboardContent(\"home\") },\n    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },\n  );\n  observer.files.linkPath({ link: LinkPath, target: Path });\n  await startOpen(observer);\n  await observer.dropFiles([LinkPath]);\n\n  await changeExternally(observer.files, Path, artboardContent(\"profile\"));\n  await selectTab(Path);\n\n  expect(\n    within(artboardList()).getByRole(\"button\", { name: \"profile\" }),\n  ).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+        "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+        "src/libs/document-ipc/fake/index.ts"
+      ],
+      "covers": [
+        "load-canonicalize",
+        "watch",
+        "watch-command"
+      ]
+    },
+    {
+      "id": "dialog-reopen",
+      "suite": "session-normal",
+      "name": "開いているファイルをダイアログで別の綴りで選んでも、タブは増えない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ダイアログもドロップと同じ `loadDocument` を通るので守られているはずだが、ダイアログで開き直す側は直接確かめていない",
+      "given": "`Path` を開いていて、開くダイアログが `LinkPath` を返す",
+      "when": "開く",
+      "then": "開いているのは `Path` の 1 つだけ",
+      "todo": true,
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "load-canonicalize"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "同じファイルを別の道筋で開いても、タブと最近使ったファイルが 1 つにまとまるようになった",
+    "lead": "リンク(エイリアス)経由と実体、余分な区切りを含む道筋、macOS / Windows での大文字小文字違いのように、同じファイルを指す別の書き方で開いたときの振る舞いが変わりました。",
+    "changed": {
+      "before": [
+        {
+          "text": "同じファイルを別の書き方で開くと、2 枚目のタブが開いていた"
+        },
+        {
+          "text": "そのあと外部のエディタでファイルを書き換えると、先に開いたタブには反映されなかった"
+        },
+        {
+          "text": "最近使ったファイルにも、同じファイルが書き方の数だけ並んでいた"
+        },
+        {
+          "text": "リンクから開いたものを保存すると、リンク自体が普通のファイルに置き換わっていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "同じファイルなら書き方が違っても、既に開いているタブへ移るだけになる",
+          "message": "load-canonicalize"
+        },
+        {
+          "text": "外部の書き換えは、そのタブに反映される",
+          "message": "watch"
+        },
+        {
+          "text": "最近使ったファイルは 1 行にまとまり、リンクから開いたものは実体の名前で並ぶ",
+          "message": "restore-canonicalize"
+        },
+        {
+          "text": "リンクから開いたものは、リンク先の実体へ保存される"
+        }
+      ],
+      "text": "Linux では大文字小文字だけが違う書き方は、今までどおり別のファイルとして扱います。"
+    },
+    "tables": [
+      {
+        "label": "開き方ごとの結果",
+        "gist": "結果を決めるのは、どの操作で開いたかと、その書き方が同じファイルにまとめられるかの 2 つ。",
+        "text": "まとめられない書き方は、中身がドキュメントでないファイルを指すリンクや、アプリの内側への指示が届かなかったときに起きます。",
+        "rowHeads": [
+          {
+            "id": "drop",
+            "label": "ウィンドウへ落とす"
+          },
+          {
+            "id": "dialog",
+            "label": "開くダイアログで選ぶ"
+          },
+          {
+            "id": "restore",
+            "label": "起動時に一覧から開く",
+            "note": "一覧の先頭を開く"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "first",
+            "label": "別の書き方で初めて開く"
+          },
+          {
+            "id": "again",
+            "label": "同じファイルが別の書き方でもう 1 つある"
+          },
+          {
+            "id": "denied",
+            "label": "まとめられない書き方"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "drop",
+            "columnHead": "first",
+            "result": "実体の名前のタブで開く",
+            "was": "落とした書き方のタブで開く",
+            "tests": [
+              "entry-real-path"
+            ]
+          },
+          {
+            "rowHead": "drop",
+            "columnHead": "again",
+            "result": "既に開いているタブへ移り、タブは増えない",
+            "was": "2 枚目のタブが開き、先のタブに外部の書き換えが届かなくなる",
+            "situation": "開いているファイルを、リンク経由など別の書き方で落とした",
+            "tests": [
+              "entry-no-new-tab",
+              "entry-activate",
+              "screen-no-new-tab",
+              "screen-sync",
+              "record-no-dup"
+            ]
+          },
+          {
+            "rowHead": "drop",
+            "columnHead": "denied",
+            "result": "開かず、開けなかった理由を出す",
+            "was": "リンク先がドキュメントでなくても開こうとする",
+            "tests": [
+              "edge-open-denied"
+            ]
+          },
+          {
+            "rowHead": "dialog",
+            "columnHead": "first",
+            "result": "実体の名前のタブで開く",
+            "was": "選んだ書き方のタブで開く",
+            "tests": [
+              "normal-dialog"
+            ]
+          },
+          {
+            "rowHead": "dialog",
+            "columnHead": "again",
+            "result": "既に開いているタブへ移り、タブは増えない",
+            "was": "2 枚目のタブが開く",
+            "tests": [
+              "dialog-reopen"
+            ]
+          },
+          {
+            "rowHead": "dialog",
+            "columnHead": "denied",
+            "result": "開かず、使えない場所か、指示が届かなかったことを理由に出す",
+            "was": "リンク先がドキュメントでなくても開こうとする",
+            "tests": [
+              "edge-open-denied",
+              "edge-open-undelivered"
+            ]
+          },
+          {
+            "rowHead": "restore",
+            "columnHead": "first",
+            "result": "実体の名前で開き、一覧にも実体の名前で並ぶ",
+            "was": "保存されていた書き方で開き、そのまま並ぶ",
+            "tests": [
+              "restore-open-head",
+              "restore-head-row"
+            ]
+          },
+          {
+            "rowHead": "restore",
+            "columnHead": "again",
+            "result": "一覧の 2 行が 1 行にまとまる",
+            "was": "同じファイルが 2 行並ぶ",
+            "situation": "前の版で、同じファイルが別の書き方で 2 行保存されていた",
+            "tests": [
+              "restore-merge",
+              "restore-rewritten"
+            ]
+          },
+          {
+            "rowHead": "restore",
+            "columnHead": "denied",
+            "result": "先頭なら開けなかった理由を出す。どの行も一覧からは外さない",
+            "tests": [
+              "restore-head-denied",
+              "restore-denied-kept",
+              "restore-undelivered-kept"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "新規作成の保存先がリンクの先だったとき",
+        "before": [],
+        "after": [
+          {
+            "text": "実体の名前のドキュメントとして開く",
+            "message": "create-canonicalize"
+          },
+          {
+            "text": "保存先をまとめられなければ、ファイルを作らずに理由を出す",
+            "message": "create-canonicalize"
+          }
+        ],
+        "text": "新しく作るファイルはまだ無いので、入れ物のフォルダだけを実体へまとめます。",
+        "tests": [
+          "normal-create-link",
+          "edge-create-no-write",
+          "edge-create-failure"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "開けなかったファイルも、最近使ったファイルの一覧から外さない",
+        "tests": [
+          "restore-denied-kept",
+          "restore-undelivered-kept"
+        ]
+      },
+      {
+        "text": "起動して一覧を読んだだけでは一覧を書き直さない。次にファイルを開いたときに書き直す",
+        "tests": [
+          "restore-rewritten"
+        ]
+      },
+      {
+        "text": "リンクでも区切りの重なりでもない普通の道筋は、そのままの書き方で開く",
+        "tests": [
+          "ipc-identity"
+        ]
+      },
+      {
+        "text": "Linux では大文字小文字だけが違う書き方を別のファイルとして扱う"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "path-canonicalize",
+      "category": "rust · std",
+      "label": "`Path::canonicalize`",
+      "gist": "ファイルの道筋を、OS に問い合わせて[[正規化|canonical-path]]した[[絶対パス|absolute-path]]にする、Rust の[[標準ライブラリ|rust-std]]のメソッド。[[symlink|symlink]]を辿り、`.` や続いた区切りを取り除く。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "pub fn canonicalize(&self) -> std::io::Result<PathBuf>"
+        },
+        {
+          "kind": "text",
+          "text": "中身は `std::fs::canonicalize` と同じで、Unix では C の[[realpath|realpath]]を呼ぶ。戻り値は [[`io::Result`|io-result]]で、ファイルが存在しない・途中のディレクトリに入れないときは `Err` になる。"
+        },
+        {
+          "kind": "caution",
+          "text": "存在しないファイルは正規化できない。新規作成の保存先のようにまだ無いファイルは、親ディレクトリだけを正規化してファイル名を付け直す(`canonical_form` の後半)。"
+        },
+        {
+          "kind": "memo",
+          "text": "大文字小文字の違いを直すかは OS 次第。macOS と Windows はディスク上の綴りへ直すが、Linux の glibc の realpath は直さない。"
+        },
+        {
+          "kind": "memo",
+          "text": "Windows では戻り値の先頭に[[`\\\\?\\` の接頭辞|verbatim-prefix]]が付く。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src-tauri/src/document/canonical_path.rs",
+            "start": 17,
+            "end": 37,
+            "emphasis": [
+              {
+                "start": 18,
+                "end": 20
+              }
+            ],
+            "text": "pub fn canonical_form(path: &Path) -> PathBuf {\n    if let Ok(canonical) = path.canonicalize() {\n        return without_verbatim_disk(canonical);\n    }\n\n    // ファイルがまだ存在しない場合は canonicalize できない。新規ファイルへの\n    // `record_write` は書き込み前に記録するのでここを通り、書き込み後の問い合わせは\n    // 上の分岐を通る。両者が同じキーになるよう、親ディレクトリだけを正規化して組み立てる。\n    let (Some(parent), Some(file_name)) = (path.parent(), path.file_name()) else {\n        return path.to_path_buf();\n    };\n    let parent = if parent.as_os_str().is_empty() {\n        Path::new(\".\")\n    } else {\n        parent\n    };\n    match parent.canonicalize() {\n        Ok(directory) => without_verbatim_disk(directory).join(file_name),\n        Err(_) => path.to_path_buf(),\n    }\n}"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "lineRange": {
+            "start": 17,
+            "end": 37
+          },
+          "text": "`canonical_form` が、ファイルか親ディレクトリを正規化する",
+          "shas": [
+            "97d3fc3a2a78feb4777fb8288b777b9b69420d9e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "verbatim-disk",
+        "canonicalize-route"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "verbatim-disk",
+      "category": "rust · std",
+      "label": "`Component::Prefix` と `Prefix::VerbatimDisk`",
+      "gist": "Windows の道筋の先頭(ドライブなど)を、種類ごとの[[列挙型|enum]]として読み分けるための型。`Path::components` が道筋を要素に割ると、Windows では最初の要素が `Component::Prefix` になる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`prefix.kind()` は `Prefix` を返し、`\\\\?\\C:` のような[[`\\\\?\\` の接頭辞|verbatim-prefix]]付きのドライブは `Prefix::VerbatimDisk(b'C')`、接頭辞の無い `C:` は `Prefix::Disk(b'C')`、`\\\\?\\UNC\\server\\share` は `Prefix::VerbatimUNC` になる。ドライブ文字は `u8` で届くので `char::from` で文字にする。"
+        },
+        {
+          "kind": "text",
+          "text": "`let Some(…) = … else { return … };` は [[let-else|let-else]] の構文で、形が合わなければ早めに返す。"
+        },
+        {
+          "kind": "caution",
+          "text": "Unix の道筋には `Prefix` が現れないので、この関数は Unix では何もしない。Windows でしか通らない分岐は、CI でも手元でも走らせていない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src-tauri/src/document/canonical_path.rs",
+            "start": 47,
+            "end": 57,
+            "text": "fn without_verbatim_disk(path: PathBuf) -> PathBuf {\n    let mut components = path.components();\n    let Some(Component::Prefix(prefix)) = components.next() else {\n        return path;\n    };\n    let Prefix::VerbatimDisk(drive) = prefix.kind() else {\n        return path;\n    };\n    let rest: PathBuf = components.collect();\n    PathBuf::from(format!(\"{}:\", char::from(drive))).join(rest)\n}"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "lineRange": {
+            "start": 47,
+            "end": 57
+          },
+          "text": "`without_verbatim_disk` が `\\\\?\\C:` を `C:` に戻す",
+          "shas": [
+            "97d3fc3a2a78feb4777fb8288b777b9b69420d9e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "path-canonicalize"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "tauri-command-async",
+      "category": "rust · tauri",
+      "label": "`#[tauri::command(async)]`",
+      "gist": "Rust の関数を、webview の JavaScript から `invoke` で呼べる[[コマンド|tauri-command]]にする[[属性マクロ|attribute-macro]]。`async` を付けると、同期の関数でもメインスレッドではなく別のスレッドで動く。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "引数は JSON から受け取り(`path: String`)、戻り値の `Result<String, DocumentIoError>` は `Ok` なら Promise の解決値、`Err` なら Promise の拒否として JavaScript へ届く。コマンドは `generate_handler!` に並べて登録する。"
+        },
+        {
+          "kind": "caution",
+          "text": "`async` を付けない同期のコマンドはメインスレッドで動く。起動時の復元は一覧の全行を寄せるので、応答しないネットワークドライブの realpath で画面が固まりうる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src-tauri/src/document/canonical_path.rs",
+            "start": 74,
+            "end": 79,
+            "text": "// 起動時の復元は最近使ったファイルの全行を寄せる。同期コマンドはメインスレッドで動き、\n// 応答しないネットワークドライブの realpath で UI が固まりうるので、async で別スレッドへ出す。\n#[tauri::command(async)]\npub fn canonicalize_document_path(path: String) -> Result<String, DocumentIoError> {\n    canonicalize_requested(&path).map(|canonical| canonical.to_string_lossy().into_owned())\n}"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "lineRange": {
+            "start": 74,
+            "end": 79
+          },
+          "text": "`canonicalize_document_path` を別スレッドで動くコマンドにする",
+          "shas": [
+            "97d3fc3a2a78feb4777fb8288b777b9b69420d9e",
+            "8c2136d43c084d32c78e292c3c79311ef34cd870"
+          ]
+        },
+        {
+          "path": "src-tauri/src/lib.rs",
+          "text": "`generate_handler!` への登録",
+          "shas": [
+            "97d3fc3a2a78feb4777fb8288b777b9b69420d9e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "canonicalize-route"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "promise-all",
+      "category": "typescript · 標準",
+      "label": "`Promise.all`",
+      "gist": "いくつもの[[Promise|promise]]をまとめて待ち、全部の結果を元の並び順の配列で受け取るための標準の関数。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "Promise.all<T>(values: Iterable<T | PromiseLike<T>>): Promise<Awaited<T>[]>"
+        },
+        {
+          "kind": "text",
+          "text": "渡した Promise は同時に進み、どれが先に終わっても結果は渡した順に並ぶ。`paths.map(async (path) => …)` は、各行の Promise の配列を作る書き方。"
+        },
+        {
+          "kind": "caution",
+          "text": "どれか 1 つが拒否されると全体が拒否される。ここでは `ipc.canonicalize` が拒否ではなく `Result` の失敗を返し、`Result.unwrapOr` で元の綴りへ戻すので、1 行の失敗で一覧が消えることはない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+            "start": 347,
+            "end": 356,
+            "text": "async function canonicalizeRecentPaths(\n  ipc: DocumentIpc,\n  paths: readonly FilePath[],\n): Promise<readonly FilePath[]> {\n  return Promise.all(\n    paths.map(async (path) =>\n      Result.unwrapOr(await ipc.canonicalize(path), path),\n    ),\n  );\n}"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "lineRange": {
+            "start": 347,
+            "end": 356
+          },
+          "text": "`canonicalizeRecentPaths` が一覧の各行を同時に寄せる",
+          "shas": [
+            "867eb15d18cad5709dcad007d31e2f386e1df048"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "canonicalize-route"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "canonicalize-route",
+      "category": "document-start · 開く",
+      "label": "綴りを寄せる 3 か所",
+      "gist": "TS が綴りを寄せるのは `use-document-session` の 3 か所だけで、寄せた綴りがタブのパス・保存先・最近使ったファイルの行になる。寄せる規則は Rust の `canonical_form` 1 つ([[`Path::canonicalize`|canonicalize-term]]を使う)。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`loadDocument` は開く経路のすべて(ダイアログ・ドロップ・起動時の先頭)が通る。`createWithDialog` は新規作成の保存先を寄せ、寄せられなければ書き出さない。`loadRecentFiles` は一覧の各行を寄せてから `RecentFiles.create` でまとめ直す。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+            "start": 231,
+            "end": 250,
+            "emphasis": [
+              {
+                "start": 235,
+                "end": 238
+              }
+            ],
+            "text": "async function loadDocument(\n  ipc: DocumentIpc,\n  path: FilePath,\n): Promise<Result<OpenedDocument, DocumentOpenFailure>> {\n  const canonical = await ipc.canonicalize(path);\n  if (!Result.isOk(canonical)) {\n    return Result.err(accessFailed(canonical.error));\n  }\n  const loaded = await ipc.load(canonical.value);\n  if (!Result.isOk(loaded)) {\n    return Result.err(accessFailed(loaded.error));\n  }\n  const opened = OpenedDocument.fromParsed(\n    canonical.value,\n    DocumentJson.parse(loaded.value),\n  );\n  return Result.isOk(opened)\n    ? Result.ok(opened.value)\n    : Result.err({ kind: \"unparsable\", errors: opened.error });\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "寄せられなかった一覧の行は落とさない(`docs/06-ui.md`「開けなくても一覧から外さない」)。その失敗は、その行を開いたときに `loadDocument` が返す。"
+        },
+        {
+          "kind": "spec",
+          "text": "寄せる範囲は `docs/05-architecture.md`「Tauri IPC」。Linux では大小違いを寄せない。"
+        },
+        {
+          "kind": "history",
+          "text": "計画では libs の 3 つの入口(ダイアログ・ドロップ・`app-state.json` の解釈)で寄せる案だったが、解釈は同期の純粋関数で IPC を呼べず、ドロップのリスナーに非同期を挟むと順序が入れ替わりうるのでやめた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "lineRange": {
+            "start": 231,
+            "end": 250
+          },
+          "text": "`loadDocument`",
+          "shas": [
+            "867eb15d18cad5709dcad007d31e2f386e1df048"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "lineRange": {
+            "start": 322,
+            "end": 326
+          },
+          "text": "`createWithDialog` の保存先",
+          "shas": [
+            "867eb15d18cad5709dcad007d31e2f386e1df048"
+          ]
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "lineRange": {
+            "start": 236,
+            "end": 263
+          },
+          "text": "`toCanonicalPath` と `canonicalize`",
+          "shas": [
+            "b18085e031e637091c0f68f922160fe34b0d4553",
+            "f17d089bc60526e849fb6127359065cabe807249"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "path-canonicalize",
+        "promise-all",
+        "fake-link"
+      ],
+      "tests": [
+        "entry-no-new-tab",
+        "entry-real-path",
+        "normal-create-link",
+        "restore-merge",
+        "restore-denied-kept",
+        "dialog-reopen"
+      ],
+      "flows": [
+        "open",
+        "create",
+        "restore"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "fake-link",
+      "category": "libs · テストの代役",
+      "label": "代役の別の綴り",
+      "gist": "IPC の代役は `linkPath({ link, target })` で別の綴りを登録でき、読み書き・監視・外部変更をすべて実体へ解決する。監視は実体ごとに 1 つで、別の綴りで張り直すと置き換わる(Rust の `watchers.rs` と同じ)。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/libs/document-ipc/fake/index.ts",
+            "start": 121,
+            "end": 153,
+            "text": "    const linkTargets = new Map<string, string>();\n    const canonicalizeDenials = new Map<string, CanonicalizeDenialKind>();\n    // 実体から、監視を張ったときの綴りへの表。通知はその綴りで届き、別の綴りで張り直すと\n    // 置き換わる（Rust の `watch/watchers.rs` が実体ごとに監視を 1 つだけ持つのと同じ）。\n    const watchedSpellings = new Map<string, string>();\n    const listeners = new Set<(payload: unknown) => void>();\n    let subscribeDenied = false;\n\n    const targetOf = (path: string): string => linkTargets.get(path) ?? path;\n\n    const notifyChange = (target: string, content: string): void => {\n      const path = watchedSpellings.get(target);\n      if (path === undefined) {\n        return;\n      }\n      for (const listener of listeners) {\n        listener({ path, content });\n      }\n    };\n\n    const canonicalizeDocumentPath = (path: string): Promise<unknown> => {\n      switch (canonicalizeDenials.get(path)) {\n        case \"invalidPath\":\n          return Promise.reject({\n            kind: \"invalidPath\",\n            message: `${path}: ドキュメントのパスとして扱えない`,\n          });\n        case \"ipcFailed\":\n          return ipcFailure(`canonicalize_document_path: ${path} に届かない`);\n        case undefined:\n          return Promise.resolve(targetOf(path));\n      }\n    };"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "画面の同期のテストが寄せ忘れを捕まえられるのは、この置き換えのおかげ。置き換えを外しても同期のテストは落ちないので、置き換えを直接守るのは「後から別の綴りで監視し直すと…」のテスト。"
+        },
+        {
+          "kind": "memo",
+          "text": "`denyCanonicalize` で寄せるコマンドを `invalidPath` か `ipcFailed` で失敗させられる。既定は恒等なので、既存のテストは書き換えていない。解決は 1 段だけで、`target` がさらに別の綴りでも辿らない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "lineRange": {
+            "start": 121,
+            "end": 153
+          },
+          "text": "実体への解決・監視の表・寄せるコマンドの再現",
+          "shas": [
+            "b18085e031e637091c0f68f922160fe34b0d4553"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "canonicalize-route"
+      ],
+      "tests": [
+        "ipc-watch-replace",
+        "ipc-link-load",
+        "ipc-link-save",
+        "screen-sync"
+      ],
+      "flows": [
+        "open"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "canonical-path",
+      "label": "正規化",
+      "text": "同じファイルを指すいろいろな書き方を、決まった 1 つの書き方に揃えること。"
+    },
+    {
+      "id": "absolute-path",
+      "label": "絶対パス",
+      "text": "ルート(`/` や `C:\\`)から始まる、どこから見ても同じ場所を指す道筋。"
+    },
+    {
+      "id": "rust-std",
+      "label": "標準ライブラリ",
+      "text": "Rust に最初から付いてくるライブラリ。`std::path` や `std::fs` のように `std::` から始まる。"
+    },
+    {
+      "id": "symlink",
+      "label": "symlink",
+      "text": "別のファイルやフォルダを指す、名前だけの特別なファイル(シンボリックリンク)。開くと指している先が開く。"
+    },
+    {
+      "id": "realpath",
+      "label": "realpath",
+      "text": "Unix の C ライブラリの関数で、symlink を辿り `.` や `..` を取り除いた絶対パスを返す。"
+    },
+    {
+      "id": "io-result",
+      "label": "io::Result",
+      "text": "`std::io::Result<T>` のことで、成功なら `Ok(T)`、ファイル操作の失敗なら `Err(io::Error)` を持つ型。"
+    },
+    {
+      "id": "verbatim-prefix",
+      "label": "\\\\?\\ の接頭辞",
+      "text": "Windows の道筋の先頭に付く印で、OS に道筋を解釈させずそのまま使わせる。長い道筋を扱えるが、人が読む表示には向かない。"
+    },
+    {
+      "id": "enum",
+      "label": "列挙型",
+      "text": "取りうる形を並べて定義する Rust の型(`enum`)。形ごとに違う値を持てて、`match` や `let` で形を見分ける。"
+    },
+    {
+      "id": "let-else",
+      "label": "let-else",
+      "text": "`let パターン = 値 else { … };` の構文。値がパターンに合えば変数を作って進み、合わなければ `else` の中で必ず抜ける。"
+    },
+    {
+      "id": "tauri-command",
+      "label": "コマンド",
+      "text": "Tauri で、webview の JavaScript から `invoke(\"名前\", 引数)` で呼べる Rust の関数。"
+    },
+    {
+      "id": "attribute-macro",
+      "label": "属性マクロ",
+      "text": "`#[…]` の形で関数などの前に書き、コンパイル時にその定義へコードを書き足す Rust の仕組み。"
+    },
+    {
+      "id": "promise",
+      "label": "Promise",
+      "text": "JavaScript で、あとで値が届く処理を表す値。`await` で届くのを待つ。"
+    },
+    {
+      "id": "canonicalize-term",
+      "label": "Path::canonicalize",
+      "text": "Rust の標準ライブラリで、道筋を OS に問い合わせて正規化した絶対パスにするメソッド。"
+    }
+  ]
+}
