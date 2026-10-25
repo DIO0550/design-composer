@@ -1,11 +1,30 @@
 import type { TauriIpc } from "@/libs/tauri-ipc";
 import { ipcFailure } from "@/libs/tauri-ipc/fake";
 import { Option } from "@/utils/Option";
-import { createDocumentIpc, type DocumentIpc } from "../index";
+import {
+  createDocumentIpc,
+  type DocumentIpc,
+  type DocumentIpcErrorKind,
+} from "../index";
+
+/** 別の綴りと、それが指す実体の綴り。symlink に限らず、同じファイルを指す別の綴りを表す。 */
+export type PathLink = Readonly<{ link: string; target: string }>;
+
+/** `denyCanonicalize` で再現できる失敗の種別。 */
+type CanonicalizeDenialKind = Extract<
+  DocumentIpcErrorKind,
+  "invalidPath" | "ipcFailed"
+>;
+
+/** 綴りを寄せられないパスと、そのときに返す失敗の種別。 */
+export type CanonicalizeDenial = Readonly<{
+  path: string;
+  kind: CanonicalizeDenialKind;
+}>;
 
 /**
  * Rust 側の代役。インメモリのファイル表に対して `docs/05-architecture.md`「Tauri IPC」の
- * 4コマンドと `document-changed` を再現する。
+ * 5コマンドと `document-changed` を再現する。
  *
  * 差し込む先は `TauriIpc` の位置なので、`ipc` を通した呼び出しでは `createDocumentIpc`
  * が作る本体（コマンド名・引数・エラーの解釈）がそのまま動く。
@@ -18,13 +37,26 @@ export type DocumentIpcFake = Readonly<{
    * 監視中のパスなら `document-changed` が届く。
    */
   changeExternally(path: string, content: string): void;
-  /** 現在のファイルの中身。 */
+  /** 現在のファイルの中身。別の綴りを登録したパスは、その実体の中身を返す。 */
   contentOf(path: string): Option<string>;
   /**
    * そのパスを監視しているか。
    * 監視の開始 / 停止は Rust 側に残る状態なので、代役の側から見えるようにしておく。
    */
   isWatching(path: string): boolean;
+  /**
+   * `link` を `target` の別の綴りにする（symlink・`.` を含む綴り・大文字小文字違いの代わり）。
+   *
+   * 本物と同じく、読み込み・書き込み・監視・外部変更のどれも実体へ届き、綴りを寄せると
+   * `target` が返る。解決するのは 1 段だけ（`target` がさらに別の綴りでも辿らない）。
+   */
+  linkPath(link: PathLink): void;
+  /**
+   * そのパスの綴りを寄せるコマンドを、`kind` の種別で失敗させる。
+   *
+   * 既定では寄せても綴りは変わらない（`linkPath` で登録した綴りだけが実体へ寄る）。
+   */
+  denyCanonicalize(denial: CanonicalizeDenial): void;
   /**
    * そのパスへの書き込みだけを拒むようにする（読み込みと監視はそのまま動く）。
    *
@@ -90,12 +122,19 @@ export const DocumentIpcFake = {
     const contents = new Map(Object.entries(files));
     const deniedWritePaths = new Set<string>();
     const heldWrites = new Map<string, Promise<void>>();
-    const watchedPaths = new Set<string>();
+    const linkTargets = new Map<string, string>();
+    const canonicalizeDenials = new Map<string, CanonicalizeDenialKind>();
+    // 実体から、監視を張ったときの綴りへの表。通知はその綴りで届き、別の綴りで張り直すと
+    // 置き換わる（Rust の `watch/watchers.rs` が実体ごとに監視を 1 つだけ持つのと同じ）。
+    const watchedSpellings = new Map<string, string>();
     const listeners = new Set<(payload: unknown) => void>();
     let subscribeDenied = false;
 
-    const notifyChange = (path: string, content: string): void => {
-      if (!watchedPaths.has(path)) {
+    const targetOf = (path: string): string => linkTargets.get(path) ?? path;
+
+    const notifyChange = (target: string, content: string): void => {
+      const path = watchedSpellings.get(target);
+      if (path === undefined) {
         return;
       }
       for (const listener of listeners) {
@@ -103,8 +142,22 @@ export const DocumentIpcFake = {
       }
     };
 
+    const canonicalizeDocumentPath = (path: string): Promise<unknown> => {
+      switch (canonicalizeDenials.get(path)) {
+        case "invalidPath":
+          return Promise.reject({
+            kind: "invalidPath",
+            message: `${path}: ドキュメントのパスとして扱えない`,
+          });
+        case "ipcFailed":
+          return ipcFailure(`canonicalize_document_path: ${path} に届かない`);
+        case undefined:
+          return Promise.resolve(targetOf(path));
+      }
+    };
+
     const loadDocument = (path: string): Promise<unknown> => {
-      const content = contents.get(path);
+      const content = contents.get(targetOf(path));
       return content === undefined ? notFound(path) : Promise.resolve(content);
     };
 
@@ -119,10 +172,10 @@ export const DocumentIpcFake = {
       if (held !== undefined) {
         // 解放されるまで書き込みを終わらせない（呼び出し側が「書き込み中」を観測できる）
         return held.then(() => {
-          contents.set(path, content);
+          contents.set(targetOf(path), content);
         });
       }
-      contents.set(path, content);
+      contents.set(targetOf(path), content);
       // 自アプリの書き込みでは通知しない。Rust 側が自書き込みを識別して
       // 自己ループを防いでいるので、代役も同じ振る舞いにする。
       return Promise.resolve(undefined);
@@ -130,15 +183,15 @@ export const DocumentIpcFake = {
 
     const watchDocument = (path: string): Promise<unknown> => {
       // Rust 側は監視開始時に現在の内容を読むため、読めないパスは失敗する。
-      if (!contents.has(path)) {
+      if (!contents.has(targetOf(path))) {
         return notFound(path);
       }
-      watchedPaths.add(path);
+      watchedSpellings.set(targetOf(path), path);
       return Promise.resolve(undefined);
     };
 
     const unwatchDocument = (path: string): Promise<unknown> => {
-      watchedPaths.delete(path);
+      watchedSpellings.delete(targetOf(path));
       return Promise.resolve(undefined);
     };
 
@@ -149,6 +202,8 @@ export const DocumentIpcFake = {
           return ipcFailure(`${command}: path が文字列でない`);
         }
         switch (command) {
+          case "canonicalize_document_path":
+            return canonicalizeDocumentPath(path);
           case "load_document":
             return loadDocument(path);
           case "save_document":
@@ -180,16 +235,24 @@ export const DocumentIpcFake = {
       ipc: createDocumentIpc(tauriIpc),
 
       changeExternally(path, content) {
-        contents.set(path, content);
-        notifyChange(path, content);
+        contents.set(targetOf(path), content);
+        notifyChange(targetOf(path), content);
       },
 
       contentOf(path) {
-        return Option.fromNullable(contents.get(path));
+        return Option.fromNullable(contents.get(targetOf(path)));
       },
 
       isWatching(path) {
-        return watchedPaths.has(path);
+        return watchedSpellings.has(targetOf(path));
+      },
+
+      linkPath({ link, target }) {
+        linkTargets.set(link, target);
+      },
+
+      denyCanonicalize({ path, kind }) {
+        canonicalizeDenials.set(path, kind);
       },
 
       denyWrites(path) {

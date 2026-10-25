@@ -6,6 +6,8 @@ import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
 import {
+  LinkPath,
+  NewLinkPath,
   NewPath,
   OtherPath,
   openedPaths,
@@ -143,6 +145,30 @@ test("新規作成したドキュメントはそのまま開かれる", async ()
   const observer = renderDocumentSession(
     {},
     { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewPath) },
+  );
+
+  await observer.createDocument();
+
+  expect(openedPaths(observer.session())).toStrictEqual([NewPath]);
+});
+
+test("ダイアログで別の綴りを選ぶと、実体の綴りで開かれる", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.chosen(LinkPath), save: DialogChoice.Canceled },
+    { linkedPaths: [{ link: LinkPath, target: Path }] },
+  );
+
+  await observer.openDocument();
+
+  expect(openedPaths(observer.session())).toStrictEqual([Path]);
+});
+
+test("新規作成の保存先に別の綴りを選ぶと、実体の綴りのドキュメントとして開かれる", async () => {
+  const observer = renderDocumentSession(
+    {},
+    { open: DialogChoice.Canceled, save: DialogChoice.chosen(NewLinkPath) },
+    { linkedPaths: [{ link: NewLinkPath, target: NewPath }] },
   );
 
   await observer.createDocument();

@@ -12,7 +12,11 @@ import type { AppStateIpc } from "@/libs/app-state-ipc";
 import { AppStateJson } from "@/libs/app-state-json";
 import type { AppWindow } from "@/libs/app-window";
 import type { DocumentDialog } from "@/libs/document-dialog";
-import { type DocumentIpc, toDocumentAccessFailure } from "@/libs/document-ipc";
+import {
+  type DocumentIpc,
+  type DocumentIpcError,
+  toDocumentAccessFailure,
+} from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
 import type { FileDrop } from "@/libs/file-drop";
 import type { Unsubscribe } from "@/libs/tauri-ipc";
@@ -202,28 +206,42 @@ function failedWith(failure: DocumentOpenFailure): OpenOutcome {
 }
 
 /**
- * 1 つのファイルを読んで、開ける形にする。
+ * ファイルの中身へ届かなかったことを、開けなかった理由として表す。
  *
- * テキストの解釈（マイグレーション判定・パース）は `DocumentJson.parse`、その結果に保存先
- * を添えるのは `OpenedDocument.fromParsed` の担当で、ここは順序だけを持つ。
+ * @param error IPC が返した失敗
+ * @returns 届かなかった理由を持つ、開けなかった理由
+ */
+function accessFailed(error: DocumentIpcError): DocumentOpenFailure {
+  return { kind: "io", error: toDocumentAccessFailure(error) };
+}
+
+/**
+ * 1 つのファイルを、綴りを寄せてから読んで、開ける形にする。
  *
- * @param ipc 読み込みに使う口
+ * 綴りを寄せるのは、同じファイルを別の綴りで開いてもタブと最近使ったファイルが増えない
+ * ようにするため（`docs/06-ui.md`）。テキストの解釈（マイグレーション判定・パース）は
+ * `DocumentJson.parse`、その結果に保存先を添えるのは `OpenedDocument.fromParsed` の担当で、
+ * ここは順序だけを持つ。
+ *
+ * @param ipc 綴りを寄せ、読み込むのに使う口
  * @param path 開く先のパス
- * @returns 読めて解釈できたドキュメント。読み込み / 解釈が失敗すればその理由
+ * @returns 寄せた綴りを保存先に持つ、読めて解釈できたドキュメント。綴りを寄せられない・
+ *   読み込み / 解釈が失敗すればその理由
  */
 async function loadDocument(
   ipc: DocumentIpc,
   path: FilePath,
 ): Promise<Result<OpenedDocument, DocumentOpenFailure>> {
-  const loaded = await ipc.load(path);
+  const canonical = await ipc.canonicalize(path);
+  if (!Result.isOk(canonical)) {
+    return Result.err(accessFailed(canonical.error));
+  }
+  const loaded = await ipc.load(canonical.value);
   if (!Result.isOk(loaded)) {
-    return Result.err({
-      kind: "io",
-      error: toDocumentAccessFailure(loaded.error),
-    });
+    return Result.err(accessFailed(loaded.error));
   }
   const opened = OpenedDocument.fromParsed(
-    path,
+    canonical.value,
     DocumentJson.parse(loaded.value),
   );
   return Result.isOk(opened)
@@ -280,13 +298,14 @@ async function openWithDialog({
 }
 
 /**
- * 雛形から新しいドキュメントを作り、選ばれた保存先に置く。
+ * 雛形から新しいドキュメントを作り、選ばれた保存先の綴りを寄せた先に置く。
  *
  * 自動保存も「ファイルに載っている内容」を基準に差分を見るので、最初の 1 回はここで載せて
  * おく。
  *
  * @param ports ダイアログと I/O の相手
- * @returns 作れた結末。選ばずに閉じたら何も開かずに終わった結末
+ * @returns 作れた結末。選ばずに閉じたら何も開かずに終わった結末。保存先の綴りを寄せられ
+ *   なければ、書き出さずにその理由
  */
 async function createWithDialog({
   ipc,
@@ -300,29 +319,55 @@ async function createWithDialog({
     return NothingOpened;
   }
 
-  const created = OpenedDocument.createFromTemplate(chosen.value.value);
+  const canonical = await ipc.canonicalize(chosen.value.value);
+  if (!Result.isOk(canonical)) {
+    return failedWith(accessFailed(canonical.error));
+  }
+  const created = OpenedDocument.createFromTemplate(canonical.value);
   const saved = await ipc.save(
     created.path,
     DocumentJson.serialize(created.document),
   );
   if (!Result.isOk(saved)) {
-    return failedWith({
-      kind: "io",
-      error: toDocumentAccessFailure(saved.error),
-    });
+    return failedWith(accessFailed(saved.error));
   }
   return { documents: [created], failure: Option.none };
 }
 
 /**
- * 保存されている最近使ったファイルの一覧を読む。
+ * 保存されている一覧のパスを、それぞれ綴りを寄せた形にする。
+ *
+ * 寄せられなかったパスは落とさずに元の綴りで残す。`docs/06-ui.md` は開けなくても一覧から
+ * 外さないとしており、その失敗は開いたときに `loadDocument` が改めて返す。
+ *
+ * @param ipc 綴りを寄せるのに使う口
+ * @param paths 保存されていた並び
+ * @returns 同じ並びで、寄せられたものは寄せた綴りに置き換えたもの
+ */
+async function canonicalizeRecentPaths(
+  ipc: DocumentIpc,
+  paths: readonly FilePath[],
+): Promise<readonly FilePath[]> {
+  return Promise.all(
+    paths.map(async (path) =>
+      Result.unwrapOr(await ipc.canonicalize(path), path),
+    ),
+  );
+}
+
+/**
+ * 保存されている最近使ったファイルの一覧を読み、綴りを寄せる。
+ *
+ * 寄せた綴りでまとめ直すので、同じファイルの別の綴りは 1 行になる。
  *
  * @param appState 読み込み元
- * @returns 保存されていた一覧。まだ一度も保存していなければ空の一覧。読み出せない /
- *   解釈できないときは、診断用の原文を持つ失敗
+ * @param ipc 綴りを寄せるのに使う口
+ * @returns 保存されていた一覧の綴りを寄せてまとめたもの。まだ一度も保存していなければ
+ *   空の一覧。読み出せない / 解釈できないときは、診断用の原文を持つ失敗
  */
 async function loadRecentFiles(
   appState: AppStateIpc,
+  ipc: DocumentIpc,
 ): Promise<Result<RecentFiles, string>> {
   const loaded = await appState.load();
   if (!Result.isOk(loaded)) {
@@ -332,9 +377,11 @@ async function loadRecentFiles(
     return Result.ok(RecentFiles.Empty);
   }
   const parsed = AppStateJson.parse(loaded.value.value);
-  return Result.isOk(parsed)
-    ? Result.ok(RecentFiles.create(parsed.value.recentPaths))
-    : Result.err(parsed.error.message);
+  if (!Result.isOk(parsed)) {
+    return Result.err(parsed.error.message);
+  }
+  const paths = await canonicalizeRecentPaths(ipc, parsed.value.recentPaths);
+  return Result.ok(RecentFiles.create(paths));
 }
 
 /**
@@ -470,10 +517,11 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
      * 読み取れなかったときは空の一覧から始め、その理由を開始画面へ出す。次に開いた
      * ファイルで保存されている中身は書き直されるので、読めない状態は持ち越さない。
      *
-     * 復元そのものでは一覧を書き出さない。開く対象は一覧の先頭なので並びが変わらない。
+     * 復元そのものでは一覧を書き出さない。保存されている中身との違いは綴りを寄せてまとめた
+     * 分だけで、次に開いたときに `rememberOpened` が書き出して揃う。
      */
     const restore = async (): Promise<void> => {
-      const loaded = await loadRecentFiles(ports.appState);
+      const loaded = await loadRecentFiles(ports.appState, ports.ipc);
       const recents = Result.isOk(loaded) ? loaded.value : RecentFiles.Empty;
       const recentFilesFailure = Result.isOk(loaded)
         ? Option.none

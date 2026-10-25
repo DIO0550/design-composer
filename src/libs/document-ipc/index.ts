@@ -5,6 +5,7 @@ import {
 } from "@/domains/session/document-access-failure";
 import { FilePath } from "@/domains/unit/file-path";
 import { TauriIpc, type Unsubscribe } from "@/libs/tauri-ipc";
+import { Interop } from "@/utils/Interop";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
@@ -85,6 +86,7 @@ export type DocumentChanged = Readonly<{
 
 /** `docs/05-architecture.md`「Tauri IPC」が挙げているドキュメントのコマンド名。 */
 export type DocumentCommand =
+  | "canonicalize_document_path"
   | "load_document"
   | "save_document"
   | "watch_document"
@@ -94,10 +96,15 @@ export type DocumentCommand =
 const DocumentChangedEvent = "document-changed";
 
 /**
- * ドキュメントの永続化 I/O。IPC を渡るのは常に生の JSON 文字列で、
- * パース・検証・マイグレーションは呼び出し側（`DocumentJson`）の担当。
+ * ドキュメントの永続化 I/O と、その I/O に渡すパスの綴りを寄せる口。IPC を渡るのは常に
+ * 生の JSON 文字列で、パース・検証・マイグレーションは呼び出し側（`DocumentJson`）の担当。
  */
 export type DocumentIpc = Readonly<{
+  /**
+   * 同じファイルを指す別の綴りを 1 つの綴りへ寄せる（寄せる範囲は
+   * `docs/05-architecture.md`「Tauri IPC」）。
+   */
+  canonicalize(path: FilePath): Promise<Result<FilePath, DocumentIpcError>>;
   load(path: FilePath): Promise<Result<string, DocumentIpcError>>;
   save(
     path: FilePath,
@@ -188,26 +195,56 @@ function toCompletion(
 }
 
 /**
- * `load_document` の戻り値を読み込んだ内容として解釈する。
+ * 文字列を返すコマンドの戻り値を、文字列として読む。
  *
  * IPC を渡ってくる値に型は無いので、`as` で通さず形を確かめてから返す。
- * 文字列以外が来るのは Rust 側と TS 側の版がずれたときで、`load` の結果としては扱えない。
+ * 文字列以外が来るのは Rust 側と TS 側の版がずれたときで、コマンドの結果としては扱えない。
  *
- * @param value `load_document` が返した値
- * @returns 読み込んだ内容。文字列でなければ `ipcFailed`
+ * @param command 値を返したコマンド
+ * @param value コマンドが返した値
+ * @returns 返った文字列。文字列でなければ `ipcFailed`
  */
-function toContent(value: unknown): Result<string, DocumentIpcError> {
+function toText(
+  command: DocumentCommand,
+  value: unknown,
+): Result<string, DocumentIpcError> {
   if (typeof value !== "string") {
     return Result.err({
       kind: "ipcFailed",
-      message: `load_document が文字列以外を返した: ${String(value)}`,
+      message: `${command} が文字列以外を返した: ${String(value)}`,
     });
   }
   return Result.ok(value);
 }
 
 /**
- * ドキュメントのファイルを読み書き・監視する口を作る。
+/**
+ * `load_document` の戻り値を読み込んだ内容として解釈する。
+ *
+ * @param value `load_document` が返した値
+ * @returns 読み込んだ内容。文字列でなければ `ipcFailed`
+ */
+function toContent(value: unknown): Result<string, DocumentIpcError> {
+  return toText("load_document", value);
+}
+
+/**
+ * `canonicalize_document_path` の戻り値を寄せた綴りとして解釈する。
+ *
+ * @param value `canonicalize_document_path` が返した値
+ * @returns 寄せた綴り。文字列でない・ファイル名の要素を持たないときは `ipcFailed`
+ */
+function toCanonicalPath(value: unknown): Result<FilePath, DocumentIpcError> {
+  return Result.flatMap(toText("canonicalize_document_path", value), (text) => {
+    return Interop.toResult<FilePath, DocumentIpcError>(FilePath.create(text), {
+      kind: "ipcFailed",
+      message: `canonicalize_document_path がファイル名の要素を持たない綴りを返した: ${text}`,
+    });
+  });
+}
+
+/**
+ * ドキュメントのファイルの綴りを寄せ、読み書き・監視する口を作る。
  *
  * @param tauriIpc コマンドを呼び、外部変更を購読する IPC
  * @returns 購読の失敗も、コマンドの失敗と同じ種別つきの失敗へ詰め替える口
@@ -219,6 +256,13 @@ export function createDocumentIpc(tauriIpc: TauriIpc): DocumentIpc {
   );
 
   return {
+    async canonicalize(path) {
+      return Result.flatMap(
+        await call("canonicalize_document_path", { path }),
+        toCanonicalPath,
+      );
+    },
+
     async load(path) {
       return Result.flatMap(await call("load_document", { path }), toContent);
     },

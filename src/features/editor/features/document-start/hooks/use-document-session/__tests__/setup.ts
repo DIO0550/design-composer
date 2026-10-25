@@ -14,7 +14,11 @@ import {
   type DialogChoices,
   DocumentDialogFake,
 } from "@/libs/document-dialog/fake";
-import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import {
+  type CanonicalizeDenial,
+  DocumentIpcFake,
+  type PathLink,
+} from "@/libs/document-ipc/fake";
 import { FileDropFake } from "@/libs/file-drop/fake";
 import type { IndexMove } from "@/types/IndexMove";
 import { Option } from "@/utils/Option";
@@ -36,6 +40,10 @@ export const Path = filePath("/work/login.dcmp");
 export const OtherPath = filePath("/work/settings.dcmp");
 /** 新規作成の保存先。まだ置かれていないパス。 */
 export const NewPath = filePath("/work/untitled.dcmp");
+/** `Path` を指す別の綴り。`linkedPaths` で `Path` へ繋いで使う。 */
+export const LinkPath = filePath("/link/login.dcmp");
+/** `NewPath` を指す別の綴り。`linkedPaths` で `NewPath` へ繋いで使う。 */
+export const NewLinkPath = filePath("/link/untitled.dcmp");
 
 /**
  * 開いているドキュメントのパスを並び順に読む。
@@ -109,6 +117,10 @@ export type SessionPortOptions = Readonly<{
   denyMenu?: boolean;
   /** ドロップの購読を張れないようにするか。 */
   denyDrop?: boolean;
+  /** 実体を指す別の綴り（symlink などの代わり）。 */
+  linkedPaths?: readonly PathLink[];
+  /** 綴りを寄せられないパスと、そのときの失敗の種別。 */
+  canonicalizeDenials?: readonly CanonicalizeDenial[];
 }>;
 
 /**
@@ -137,6 +149,12 @@ export function renderDocumentSession(
   }
   if (options.denyDrop === true) {
     dropFake.denySubscribe();
+  }
+  for (const link of options.linkedPaths ?? []) {
+    ipcFake.linkPath(link);
+  }
+  for (const denial of options.canonicalizeDenials ?? []) {
+    ipcFake.denyCanonicalize(denial);
   }
 
   const ports = {

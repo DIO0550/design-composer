@@ -4,7 +4,7 @@ use std::path::{Component, Path, PathBuf};
 
 use super::io::DocumentIoError;
 
-/// ドキュメントの 4 コマンドが扱ってよいと検査を通ったパス。
+/// ドキュメントの 5 コマンドが扱ってよいと検査を通ったパス。
 ///
 /// 拡張子が `.dcmp`(大文字小文字は問わない)の絶対パスで、`..` の要素を含まず、
 /// ファイル名で終わり、ファイル名に `:` を含まないものだけを表す。
@@ -15,6 +15,7 @@ use super::io::DocumentIoError;
 ///
 /// 綴りは正規化せずに保つ。TS は `document-changed` の `path` を開いているパスと
 /// 文字列で比べる(`use-document-reload/index.ts`)ので、綴りを変えると通知が届かなくなる。
+/// 同じファイルの綴りを寄せるのは `canonical_path.rs` で、TS はその綴りで他の 4 コマンドを呼ぶ。
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DocumentFilePath(PathBuf);
 

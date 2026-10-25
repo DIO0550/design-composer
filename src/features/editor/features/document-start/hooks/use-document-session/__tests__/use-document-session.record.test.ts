@@ -5,6 +5,7 @@ import { DocumentSession } from "@/features/editor/features/document-start/domai
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { Option } from "@/utils/Option";
 import {
+  LinkPath,
   NewPath,
   Path,
   renderDocumentSession,
@@ -119,4 +120,31 @@ test("一覧を書き出せなくても、開いたファイルは一覧の先�
   await observer.openDocument();
 
   expect(observer.recentPaths()).toStrictEqual([Path]);
+});
+
+test("開いたファイルを別の綴りで開き直しても、一覧は増えない", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+    { linkedPaths: [{ link: LinkPath, target: Path }] },
+  );
+  await observer.dropFiles([Path]);
+
+  await observer.dropFiles([LinkPath]);
+
+  expect(observer.recentPaths()).toStrictEqual([Path]);
+});
+
+test("別の綴りで開いたファイルは、実体の綴りで一覧に書き出される", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+    { linkedPaths: [{ link: LinkPath, target: Path }] },
+  );
+
+  await observer.dropFiles([LinkPath]);
+
+  expect(observer.appState.storedContent()).toStrictEqual(
+    Option.some(storedRecentPaths([Path])),
+  );
 });

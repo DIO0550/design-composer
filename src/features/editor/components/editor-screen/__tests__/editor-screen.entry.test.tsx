@@ -10,6 +10,7 @@ import { Option } from "@/utils/Option";
 import {
   closeTab,
   dragTab,
+  LinkPath,
   OtherPath,
   Path,
   renderEditorScreen,
@@ -431,4 +432,19 @@ test("最後のタブを閉じると、開始画面へ戻る", async () => {
   expect(
     screen.getByText("ドキュメントを開くか、新しく作成してください。"),
   ).toBeDefined();
+});
+
+test("開いているファイルを別の綴りで落としても、タブは増えない", async () => {
+  const observer = renderEditorScreen(
+    { [Path]: DocumentJson.serialize(SampleDocument) },
+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
+  );
+  observer.files.linkPath({ link: LinkPath, target: Path });
+  await startOpen(observer);
+
+  await observer.dropFiles([LinkPath]);
+
+  expect(
+    within(tabBar()).getAllByRole("button", { name: /を閉じる$/ }),
+  ).toHaveLength(1);
 });

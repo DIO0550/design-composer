@@ -6,6 +6,7 @@ import { AppMenuCommands } from "@/libs/app-menu";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { Option } from "@/utils/Option";
 import {
+  LinkPath,
   NewPath,
   OtherPath,
   openedPaths,
@@ -215,4 +216,47 @@ test("落としたパスにファイル名の要素を持たないものが混�
   expect(DocumentSession.failure(observer.session())).toStrictEqual(
     Option.none,
   );
+});
+
+test("開いているファイルを別の綴りで落としても、タブは増えない", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+    { linkedPaths: [{ link: LinkPath, target: Path }] },
+  );
+  await observer.dropFiles([Path]);
+
+  await observer.dropFiles([LinkPath]);
+
+  expect(openedPaths(observer.session())).toStrictEqual([Path]);
+});
+
+test("開いているファイルを別の綴りで落とすと、そのタブを見ている状態になる", async () => {
+  const observer = renderDocumentSession(
+    {
+      [Path]: artboardContent("home"),
+      [OtherPath]: artboardContent("settings"),
+    },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+    { linkedPaths: [{ link: LinkPath, target: Path }] },
+  );
+  await observer.dropFiles([Path, OtherPath]);
+
+  await observer.dropFiles([LinkPath]);
+
+  expect(DocumentSession.activePath(observer.session())).toStrictEqual(
+    Option.some(Path),
+  );
+});
+
+test("別の綴りで落としたファイルは、実体の綴りで開かれる", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+    { linkedPaths: [{ link: LinkPath, target: Path }] },
+  );
+
+  await observer.dropFiles([LinkPath]);
+
+  expect(openedPaths(observer.session())).toStrictEqual([Path]);
 });

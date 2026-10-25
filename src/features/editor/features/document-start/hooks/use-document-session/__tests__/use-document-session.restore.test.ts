@@ -1,11 +1,19 @@
 import { expect, test } from "vitest";
 import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
-import { DocumentAccessFailure } from "@/domains/session/document-access-failure";
+import {
+  DocumentAccessFailure,
+  DocumentAccessFailureReasons,
+} from "@/domains/session/document-access-failure";
 import { DocumentSession } from "@/features/editor/features/document-start/domains/document-session";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { Option } from "@/utils/Option";
-import { Path, renderDocumentSession, storedRecentPaths } from "./setup";
+import {
+  LinkPath,
+  Path,
+  renderDocumentSession,
+  storedRecentPaths,
+} from "./setup";
 
 /** 開かない選択だけを並べたダイアログ。復元は利用者の操作を挟まない。 */
 const NoDialogChoices = {
@@ -213,4 +221,122 @@ test("保存された一覧のうちファイル名の要素を持たないパ�
   await observer.settle();
 
   expect(observer.recentPaths()).toStrictEqual([Path]);
+});
+
+test("保存された一覧のうち、同じファイルの別の綴りは 1 行にまとまる", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
+    NoDialogChoices,
+    {
+      storedAppState: storedRecentPaths([Path, LinkPath, SecondPath]),
+      linkedPaths: [{ link: LinkPath, target: Path }],
+    },
+  );
+
+  await observer.settle();
+
+  expect(observer.recentPaths()).toStrictEqual([Path, SecondPath]);
+});
+
+test("保存された一覧の先頭が別の綴りなら、実体の綴りで開かれる", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    NoDialogChoices,
+    {
+      storedAppState: storedRecentPaths([LinkPath]),
+      linkedPaths: [{ link: LinkPath, target: Path }],
+    },
+  );
+
+  await observer.settle();
+
+  expect(DocumentSession.activePath(observer.session())).toStrictEqual(
+    Option.some(Path),
+  );
+});
+
+test("保存された一覧の先頭が別の綴りなら、一覧にも実体の綴りで並ぶ", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    NoDialogChoices,
+    {
+      storedAppState: storedRecentPaths([LinkPath]),
+      linkedPaths: [{ link: LinkPath, target: Path }],
+    },
+  );
+
+  await observer.settle();
+
+  expect(observer.recentPaths()).toStrictEqual([Path]);
+});
+
+test("綴りを寄せるのを拒まれた行は、元の綴りのまま一覧に残る", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
+    NoDialogChoices,
+    {
+      storedAppState: storedRecentPaths([Path, SecondPath]),
+      canonicalizeDenials: [{ path: SecondPath, kind: "invalidPath" }],
+    },
+  );
+
+  await observer.settle();
+
+  expect(observer.recentPaths()).toStrictEqual([Path, SecondPath]);
+});
+
+test("綴りを寄せる指示が届かなかった行も、元の綴りのまま一覧に残る", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
+    NoDialogChoices,
+    {
+      storedAppState: storedRecentPaths([Path, SecondPath]),
+      canonicalizeDenials: [{ path: SecondPath, kind: "ipcFailed" }],
+    },
+  );
+
+  await observer.settle();
+
+  expect(observer.recentPaths()).toStrictEqual([Path, SecondPath]);
+});
+
+test("保存された一覧の先頭の綴りを寄せるのを拒まれると、使えないパスとして失敗する", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    NoDialogChoices,
+    {
+      storedAppState: storedRecentPaths([Path]),
+      canonicalizeDenials: [{ path: Path, kind: "invalidPath" }],
+    },
+  );
+
+  await observer.settle();
+
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
+      kind: "io",
+      error: DocumentAccessFailure.create(
+        DocumentAccessFailureReasons.UnusablePath,
+        `${Path}: ドキュメントのパスとして扱えない`,
+      ),
+    }),
+  );
+});
+
+test("別の綴りをまとめた一覧は、次に開いたときに書き直される", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
+    { open: DialogChoice.chosen(SecondPath), save: DialogChoice.Canceled },
+    {
+      storedAppState: storedRecentPaths([Path, LinkPath]),
+      linkedPaths: [{ link: LinkPath, target: Path }],
+    },
+  );
+  await observer.settle();
+
+  await observer.openDocument();
+
+  expect(observer.appState.storedContent()).toStrictEqual(
+    Option.some(storedRecentPaths([SecondPath, Path])),
+  );
 });
