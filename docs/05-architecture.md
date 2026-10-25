@@ -32,7 +32,7 @@ Rust に .dcmp の構造を一切教えず、IPC を渡るのは**常に生の J
 
 | 種別 | 名前 | 内容 |
 |---|---|---|
-| command | `canonicalize_document_path(path) → string` | 同じファイルを指す別の綴り（symlink 経由・`.` や続いた区切りを含む・大文字小文字を区別しないファイルシステムでの大小違い）を 1 つの綴りへ寄せる。TS は寄せた綴りで他のドキュメントのコマンドを呼ぶ |
+| command | `canonicalize_document_path(path) → string` | 同じファイルを指す別の綴り（symlink 経由・`.` や続いた区切りを含む・macOS / Windows での大小違い）を 1 つの綴りへ寄せる。TS は寄せた綴りで他のドキュメントのコマンドを呼ぶ |
 | command | `load_document(path) → string` | ファイル読み込み |
 | command | `save_document(path, content)` | アトミック書き込み（tmp + rename）。自書き込みの識別を行う |
 | command | `watch_document(path)` / `unwatch_document(path)` | file watch の開始 / 停止 |
@@ -48,6 +48,8 @@ Rust に .dcmp の構造を一切教えず、IPC を渡るのは**常に生の J
 - 見ているタブを閉じる指示（⌘W）も OS のメニューから届く。開いているものが無ければ TS が `close_current_window` でウィンドウを閉じる（タブの有無は TS だけが持つ）。ウィンドウを閉じる項目（Shift+⌘W）は TS へ流さず Rust 側で閉じる
 - `canonicalize_document_path` / `load_document` / `save_document` / `watch_document` / `unwatch_document` が受け付けるパスは、拡張子が `.dcmp`（大文字小文字は問わない）の絶対パスで、`..` の要素を含まず、ファイル名で終わり、ファイル名に `:` を含まないものだけ。それ以外は `invalidPath` で拒否し、ファイルには触れない
 - `canonicalize_document_path` は、寄せた綴りが上の条件を満たさないとき（実体が `.dcmp` でない symlink など）と、寄せた綴りを UTF-8 で表せないときも `invalidPath` で拒否する
+- Linux では大小違いを寄せない（大小違いの綴りは別のファイルとして扱う）
+- symlink 経由で開いたものは実体へ保存する（綴りを寄せた結果、保存先も実体の綴りになる）
 
 ## 保存モデル: 自動保存
 
