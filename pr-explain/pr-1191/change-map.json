@@ -1,0 +1,3302 @@
+{
+  "version": 2,
+  "pr": 1191,
+  "headBranch": "claude/magical-cannon-hyterw",
+  "baseBranch": "main",
+  "mergeBase": "002a731c5c6b90ead604da2cad1afafc036214d4",
+  "head": "e49efe8d777769702791de54b494709943d84d75",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/instant/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/offset/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/axis-length/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/box-align/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-position/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/constraint/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/token-referrer/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/document-names/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/layout/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/locking/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reposition-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resize-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/gradient/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/visibility/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/wrap/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/session/edit-continuity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/file-validity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-documents/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection-dig/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-dig.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.current-artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.single-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.source-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.edit-from.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/document-errors.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/instants.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/utils/NumberEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/ArrayEx.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/utils/ArrayEx.ts"
+        },
+        {
+          "path": "src/utils/__tests__/ArrayEx.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/utils/ArrayEx.ts"
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/IndexMove.ts",
+          "changed": false
+        },
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/__stories__/sample-editor-state.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/canvas-dock/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-left-pane/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-provider/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-right-pane/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 20,
+          "deletions": 14,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/domains/reorder-step/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 49,
+          "deletions": 10,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/domains/sibling-positions/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 54,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/domains/token-template/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-shortcuts/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 6,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-reorder-shortcut/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/types/ChildReorder.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/types/OpenedContextMenu.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/artboard-fixtures.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/primary-color-token.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/right-pane-heading.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-provider/__tests__/editor-provider.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reorder.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 2,
+          "changed": true,
+          "target": "src/features/editor/components/opened-document-editor/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/components/opened-document-editor/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.empty-area.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 70,
+          "deletions": 7,
+          "changed": true,
+          "target": "src/features/editor/domains/edit-menu/index.ts"
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.target.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard-reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-dig.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.clipboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.context-menu-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.duplicate.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 2,
+          "changed": true,
+          "target": "src/features/editor/domains/editor-state/index.ts"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.group-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.instance-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.move.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-remove.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 141,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/domains/editor-state/index.ts"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 20,
+          "changed": true,
+          "target": "src/features/editor/domains/editor-state/index.ts"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reload.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.remove-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.remove.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.rename.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 5,
+          "changed": true,
+          "target": "src/features/editor/domains/editor-state/index.ts"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reveal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.revert.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/frozen-state.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/reorder-step/__tests__/reorder-step.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/domains/reorder-step/index.ts"
+        },
+        {
+          "path": "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 55,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/domains/sibling-positions/index.ts"
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-editor-state/index.ts"
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.artboard.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.group.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.rename.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.tree-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-reorder-shortcut/__tests__/use-reorder-shortcut.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/__stories__/sample-canvas-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/interval-slot/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-zone/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-turned-frame.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-free-parent.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-move.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-placement.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drop-position.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.frozen.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.grab-dig.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.range-select-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-snap-flow.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.text-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/interval-siblings.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/resize-snap-siblings.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-siblings.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/domains/recent-files/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/inspector",
+      "files": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.frozen.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.heading.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.shorthand.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/sidebar",
+      "files": [
+        {
+          "path": "src/features/editor/features/sidebar/__stories__/sample-sidebar-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/layers-panel/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.editing.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.filter.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.type-display.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.disclosure.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.filter.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.reorder.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.type-display.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/layers-panel/__tests__/layers-panel.filter.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/tokens",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/context-menu/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/__tests__/row-drag.ts",
+          "changed": false
+        },
+        {
+          "path": "src/components/__tests__/row-names.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "hooks",
+      "files": [
+        {
+          "path": "src/hooks/use-key-shortcut/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reorder.test.tsx",
+        "name": "同じ親の兄弟をまとめて選んでいるときは ⌘[ でまとめて背面へ動く"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+        "name": "複数選択の一員の行のメニューの Send backward を押すと、選んだものがまとめて背面へ動く"
+      },
+      {
+        "file": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+        "name": "同じ親の兄弟を複数選んでいるときは、動かせる向きの並べ替えと削除が押せる"
+      },
+      {
+        "file": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+        "name": "最前面にいるものを含む兄弟を複数選んでいるときは、前面へが押せない"
+      },
+      {
+        "file": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+        "name": "親が違うノードを複数選んでいるときは、削除だけが押せる"
+      },
+      {
+        "file": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+        "name": "1 つでも最前面にいるものを選んでいると、前面へは動かせない"
+      },
+      {
+        "file": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+        "name": "1 つでも最背面にいるものを選んでいると、背面へは動かせない"
+      },
+      {
+        "file": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+        "name": "まとめて前面へ動かしてから背面へ動かすと、元の並びに戻る"
+      },
+      {
+        "file": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+        "name": "まとめて動かしたあと、1 回の取り消しで元の並びに戻る"
+      },
+      {
+        "file": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+        "name": "まとめて動かしても、選んでいたノードは選ばれたままになる"
+      },
+      {
+        "file": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+        "name": "親が違うノードを選んでいると、まとめては動かせない"
+      },
+      {
+        "file": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+        "name": "隣り合う兄弟をまとめて前面へ動かすと、並び順を保ったまま 1 つ前面へずれる"
+      },
+      {
+        "file": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+        "name": "隣り合う兄弟をまとめて背面へ動かすと、並び順を保ったまま 1 つ背面へずれる"
+      },
+      {
+        "file": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+        "name": "離れた兄弟をまとめて前面へ動かすと、それぞれ 1 つずつ前面へずれる"
+      },
+      {
+        "file": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+        "name": "離れた兄弟をまとめて背面へ動かすと、それぞれ 1 つずつ背面へずれる"
+      },
+      {
+        "file": "src/features/editor/domains/reorder-step/__tests__/reorder-step.normal.test.ts",
+        "name": "兄弟をまとめて前面へ動かすときは、前面にいるものから順に 1 つ後ろへ動かす"
+      },
+      {
+        "file": "src/features/editor/domains/reorder-step/__tests__/reorder-step.normal.test.ts",
+        "name": "兄弟をまとめて背面へ動かすときは、背面にいるものから順に 1 つ前へ動かす"
+      },
+      {
+        "file": "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+        "name": "artboard とその子を選んでいると、兄弟の位置は無い"
+      },
+      {
+        "file": "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+        "name": "何も選んでいなければ、兄弟の位置は無い"
+      },
+      {
+        "file": "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+        "name": "同じ親の兄弟を前面にいるものから選んでも、親と、背面から順の位置が返る"
+      },
+      {
+        "file": "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+        "name": "親が違うノードを選んでいると、兄弟の位置は無い"
+      },
+      {
+        "file": "src/utils/__tests__/ArrayEx.edge.test.ts",
+        "name": "singleDistinct は値が null だけの並びでは none を返す"
+      },
+      {
+        "file": "src/utils/__tests__/ArrayEx.edge.test.ts",
+        "name": "singleDistinct は空の並びでは none を返す"
+      },
+      {
+        "file": "src/utils/__tests__/ArrayEx.normal.test.ts",
+        "name": "singleDistinct はすべての要素が等しい並びからその値を返す"
+      },
+      {
+        "file": "src/utils/__tests__/ArrayEx.normal.test.ts",
+        "name": "singleDistinct は異なる値が混ざる並びでは none を返す"
+      }
+    ],
+    "removed": [
+      {
+        "file": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+        "name": "複数選択中は削除だけが押せる"
+      },
+      {
+        "file": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+        "name": "複数選んでいる間は並べ替えられない"
+      }
+    ],
+    "files": [
+      "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reorder.test.tsx",
+      "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+      "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+      "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+      "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+      "src/features/editor/domains/reorder-step/__tests__/reorder-step.normal.test.ts",
+      "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+      "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "src/utils/__tests__/ArrayEx.edge.test.ts",
+      "src/utils/__tests__/ArrayEx.normal.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "d1c6c58516e6f767e4e3c66acc4152a2e99bc6e0",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T10:33:23Z",
+      "subject": "✨ [New Feature]: #1185 ArrayEx に全要素が等しい並びの値を返す singleDistinct を追加",
+      "body": "- ArrayEx.singleDistinct(array): Option<NonNullable<T>> を追加\n- 空・異なる値が混ざる・null / undefined だけの並びは none を返す\n\n背景:\n複数選択中の並べ替え(#1185)では、選んだノードの親が全員同じかを判定する。\nDocumentSelection.sourceName にも「全員が同じ値のときその値」を求める\n同じ骨格が既にあり、この差分で 2 か所目になる(duplication-reviewer の指摘)。\n\n採用理由:\nrules/coding.md「同じ処理が2箇所に現れたら共通化する」に従い、ドメイン\n知識を持たない配列の操作として utils に置く。名前は用途(同じ親・同じ\n部品)ではなく操作で付けた。等しさは既存の distinct と同じ SameValueZero で\n見て、先頭の取り出しは ArrayEx.first を通す(戻り値が NonNullable を\n約束するため)。\n\n代替案:\n- uniform という名前: padding の UniformSides などで既に別の意味に\n  使われているのでやめた\n- 呼び出し側ごとに distinct().length === 1 を書く: 2 か所目で共通化が\n  規約上の義務になる\n\n影響とトレードオフ:\n既存の挙動は変わらない(追加のみ)。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1185\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01VYrydWoy6DkTvRLudVbhHc",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "patch": "@@ -182,6 +182,20 @@ export const ArrayEx = {\n     return array.filter((item, index) => indexOfEqual(array, item) === index);\n   },\n \n+  /**\n+   * すべての要素が等しい並びの、その値。\n+   *\n+   * @param array 見る並び\n+   * @returns 空でなく、すべての要素が等しければその値。空の並び・異なる値が混ざる並び・値が\n+   *   `null` / `undefined` の並びは `none`。等しさは SameValueZero で見る\n+   */\n+  singleDistinct<T>(array: readonly T[]): Option<NonNullable<T>> {\n+    const distinctItems = ArrayEx.distinct(array);\n+    return distinctItems.length === 1\n+      ? ArrayEx.first(distinctItems)\n+      : Option.none;\n+  },\n+\n   /**\n    * 並びの順に `fn` を重ねて 1 つの値へ畳む。`err` が返ったところで止める。\n    *",
+          "patchLines": 21,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "ae9b609af3ade26c40c8b7a72ea0c6e4aa8a47e9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T10:33:29Z",
+      "subject": "🧪 [Tests]: #1185 ArrayEx.singleDistinct の正常系と空・null の並びのテストを追加",
+      "body": "- normal: 全要素が等しければその値 / 異なる値が混ざれば none\n- edge: 空の並びは none / null だけの並びは none\n\n背景:\nsingleDistinct の doc は、null / undefined だけの並びで none を返すと\n約束している。test-reviewer が実装を Option.some(distinctItems[0]) に\n壊しても全件が通ることを実測し、この枝を守るテストが無いと指摘した。\n\n採用理由:\n戻り値の型 Option<NonNullable<T>> の前提になる枝なので、テストで固定する。\n足したテストは、上の壊し方で落ちることを確かめてある。\n\n代替案:\n- doc から null の約束を外す: NonNullable を返す型と食い違うのでやめた\n\n影響とトレードオフ:\nテストの追加のみ。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1185\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01VYrydWoy6DkTvRLudVbhHc",
+      "files": [
+        {
+          "path": "src/utils/__tests__/ArrayEx.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "patch": "@@ -129,3 +129,11 @@ test(\"負の index を指定して removeAt を呼ぶと範囲外として Err \n     Result.err({ index: -1, length: 2 }),\n   );\n });\n+\n+test(\"singleDistinct は空の並びでは none を返す\", () => {\n+  expect(ArrayEx.singleDistinct([])).toEqual(Option.none);\n+});\n+\n+test(\"singleDistinct は値が null だけの並びでは none を返す\", () => {\n+  expect(ArrayEx.singleDistinct([null, null])).toEqual(Option.none);\n+});",
+          "patchLines": 12,
+          "truncated": false
+        },
+        {
+          "path": "src/utils/__tests__/ArrayEx.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "patch": "@@ -232,3 +232,11 @@ test(\"sortBy は渡した並びを変えない\", () => {\n \n   expect(items).toEqual([3, 1, 2]);\n });\n+\n+test(\"singleDistinct はすべての要素が等しい並びからその値を返す\", () => {\n+  expect(ArrayEx.singleDistinct([\"a\", \"a\", \"a\"])).toEqual(Option.some(\"a\"));\n+});\n+\n+test(\"singleDistinct は異なる値が混ざる並びでは none を返す\", () => {\n+  expect(ArrayEx.singleDistinct([\"a\", \"b\", \"a\"])).toEqual(Option.none);\n+});",
+          "patchLines": 12,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "3086d37255111236d978615297b3e280282d5f4f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T10:33:38Z",
+      "subject": "♻️ [Refactoring]: #1185 DocumentSelection.sourceName の「全員が同じ部品か」を singleDistinct で求める",
+      "body": "- distinct().length === 1 と first の組を ArrayEx.singleDistinct に置き換え\n- 条件が 1 つになったので変数 isSameSource を消した\n\n背景:\n#1185 で SiblingPositions.fromSelection が同じ判定(全員が同じ親か)を\n持つことになり、同じ骨格が 2 か所に現れた。\n\n採用理由:\n共通化した操作へ寄せ、片方だけ直せる状態を作らない。全員を引けたか\n(件数の一致)は引き方が呼び出し側ごとに違うので、ここに残す。\n\n代替案:\n- 件数の一致まで含めて共通化する: findNode + isRef と findChildPosition\n  で引き方が違い、畳むと引数が増えるだけなのでやめた\n\n影響とトレードオフ:\n振る舞いは変わらない(既存の source-name テストがそのまま通る)。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1185\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01VYrydWoy6DkTvRLudVbhHc",
+      "files": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -184,9 +184,9 @@ export const DocumentSelection = {\n         ? [found.value.ref]\n         : [];\n     });\n-    const isSameSource =\n-      refs.length === names.length && ArrayEx.distinct(refs).length === 1;\n-    return isSameSource ? ArrayEx.first(refs) : Option.none;\n+    return refs.length === names.length\n+      ? ArrayEx.singleDistinct(refs)\n+      : Option.none;\n   },\n \n   /**",
+          "patchLines": 13,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "4aa77d1f18f4b785e17a0b5703bf6072b10b7853",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T10:33:47Z",
+      "subject": "✨ [New Feature]: #1185 選んだノードが同じ親の兄弟であるときの位置を表す SiblingPositions を追加",
+      "body": "- 型 SiblingPositions { parentName; indices: readonly [number, ...number[]] }\n- fromSelection(selection): 全員が同じ親の兄弟のとき、親と小さい順の位置を\n  返す。未選択・位置を持たない名前(artboard など)が混ざる・親が 2 つ以上\n  なら none\n\n背景:\n#1185 で、複数選択中の ⌘] / ⌘[ を「全員が同じ親の兄弟のときだけ」有効に\nすることをオーナーが承認した(#966)。並べ替えにはその判定と、親の中での\n位置が要る。\n\n採用理由:\n「親が 1 つ」と「位置が 1 つ以上」を構造で持たせ、判定を通っていない値を\n並べ替えに渡せないようにする(Parse, don't validate)。非空タプルは\nArrayEx.first の Option を通して組み、分割代入で空を見落とす形にしない。\n位置を小さい順にするのはここだけで、当てる順は ReorderStep が決める。\n名前に並べ替えの語彙を入れていないので、グループ化(#1187)も同じ判定を\nそのまま使える。\n\n代替案:\n- DocumentSelection.siblingPositions として src/domains に置く: 使う\n  feature が editor だけなので、まず feature の domains に置く\n  (rules/architecture.md)\n- readonly ChildPosition[] を返す: 親が 1 つで空でないことが型に出ない\n\n影響とトレードオフ:\n新規の追加のみ。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1185\n- https://github.com/DIO0550/design-composer/issues/966\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01VYrydWoy6DkTvRLudVbhHc",
+      "files": [
+        {
+          "path": "src/features/editor/domains/sibling-positions/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 54,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,54 @@\n+import type { ChildPosition } from \"@/domains/dcmp/child-position\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { DocumentSelection } from \"@/domains/session/document-selection\";\n+import { ArrayEx } from \"@/utils/ArrayEx\";\n+import { Option } from \"@/utils/Option\";\n+\n+/**\n+ * 同じ親の兄弟として並んでいる、選んだノードたちの位置（docs/06-ui.md「複数選択」の並べ替え）。\n+ *\n+ * 親が 1 つに決まっていることと、位置が 1 つ以上あることを構造で持つ。位置は小さい順\n+ * （背面から前面へ）に並ぶ。\n+ */\n+export type SiblingPositions = Readonly<{\n+  /** 選んだノードすべての親の名前。 */\n+  parentName: string;\n+  /** 選んだノードそれぞれの、親の子の並びの中での位置。小さい順。 */\n+  indices: readonly [number, ...number[]];\n+}>;\n+\n+export const SiblingPositions = {\n+  /**\n+   * 選んでいるノードがすべて同じ親の兄弟であるときの、それぞれの位置。\n+   *\n+   * @param selection 選択とドキュメントの出どころ\n+   * @returns 親と、小さい順に並べた位置。未選択のとき、位置を持たない名前（artboard 自身・\n+   *   部品定義の中のノード・ドキュメントに無い名前）が混ざるとき、親が 2 つ以上あるときは\n+   *   `none`\n+   */\n+  fromSelection(selection: DocumentSelection): Option<SiblingPositions> {\n+    const names = DocumentSelection.names(selection);\n+    const positions = names.flatMap((name): readonly ChildPosition[] => {\n+      const found = DesignDocument.findChildPosition(selection.document, name);\n+      return Option.isSome(found) ? [found.value] : [];\n+    });\n+    if (positions.length !== names.length) {\n+      return Option.none;\n+    }\n+    const indices = ArrayEx.sortBy(\n+      positions.map((position) => position.index),\n+      (index) => index,\n+    );\n+    return Option.flatMap(\n+      ArrayEx.singleDistinct(positions.map((position) => position.parentName)),\n+      (parentName) =>\n+        Option.map(\n+          ArrayEx.first(indices),\n+          (first): SiblingPositions => ({\n+            parentName,\n+            indices: [first, ...ArrayEx.dropFirst(indices)],\n+          }),\n+        ),\n+    );\n+  },\n+} as const;",
+          "patchLines": 55,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "9a4214d243985bf100fd9ebc231d28dfd5a3da67",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T10:34:03Z",
+      "subject": "🧪 [Tests]: #1185 SiblingPositions.fromSelection の同じ親・親違い・artboard・未選択のテストを追加",
+      "body": "- 前面にいるものから選んでも、親と背面から順の位置が返る\n- 親が違うノード(a と inner-1)を選んでいると none\n- artboard とその子を選んでいると none\n- 何も選んでいなければ none\n\n背景:\nplan-reviewer が、入力によっては判定を外しても通るテストになると指摘した\n(端にいるノードを選ぶと、親の判定を外しても別の理由で none になる)。\n\n採用理由:\n親違いは、親の判定を外すと some になる入力(どちらも位置を持つ a と\ninner-1)を選んだ。artboard は今の UI の経路では複数選択に入らないので、\nartboard を受け付ける DocumentSelection.fromNames で組み立てる。\ntest-reviewer の実測で、親の判定・件数の一致・並べ替えの 3 つは、どれを\n外してもここで落ちることを確かめた。\n\n代替案:\n- EditorState の層だけで確かめる: 並べ替えの順と artboard の弾き方は\n  通しのテストでは選ぶ入力が限られ、ここでしか落ちないのでやめた\n\n影響とトレードオフ:\nテストの追加のみ。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1185\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01VYrydWoy6DkTvRLudVbhHc",
+      "files": [
+        {
+          "path": "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 55,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,55 @@\n+import { expect, test } from \"vitest\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { DocumentSelection } from \"@/domains/session/document-selection\";\n+import { Option } from \"@/utils/Option\";\n+import { SiblingPositions } from \"../index\";\n+\n+/** home の下に a, b, group。group の子は inner-1, inner-2。 */\n+function setupDocument(): DesignDocument {\n+  return DesignDocument.create({\n+    artboards: [\n+      {\n+        name: \"home\",\n+        width: 360,\n+        height: 240,\n+        children: [\n+          { name: \"a\", type: \"Box\" },\n+          { name: \"b\", type: \"Box\" },\n+          {\n+            name: \"group\",\n+            type: \"Box\",\n+            children: [\n+              { name: \"inner-1\", type: \"Box\" },\n+              { name: \"inner-2\", type: \"Box\" },\n+            ],\n+          },\n+        ],\n+      },\n+    ],\n+  });\n+}\n+\n+function siblingsOf(names: readonly string[]): Option<SiblingPositions> {\n+  return SiblingPositions.fromSelection(\n+    DocumentSelection.fromNames(setupDocument(), names),\n+  );\n+}\n+\n+test(\"同じ親の兄弟を前面にいるものから選んでも、親と、背面から順の位置が返る\", () => {\n+  expect(Option.unwrap(siblingsOf([\"group\", \"a\"]))).toEqual({\n+    parentName: \"home\",\n+    indices: [0, 2],\n+  });\n+});\n+\n+test(\"親が違うノードを選んでいると、兄弟の位置は無い\", () => {\n+  expect(Option.isSome(siblingsOf([\"a\", \"inner-1\"]))).toBe(false);\n+});\n+\n+test(\"artboard とその子を選んでいると、兄弟の位置は無い\", () => {\n+  expect(Option.isSome(siblingsOf([\"home\", \"a\"]))).toBe(false);\n+});\n+\n+test(\"何も選んでいなければ、兄弟の位置は無い\", () => {\n+  expect(Option.isSome(siblingsOf([]))).toBe(false);\n+});",
+          "patchLines": 56,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "a0ed8618bc66a1b5ceecc3c5992beb47a2df156b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T10:34:14Z",
+      "subject": "✨ [New Feature]: #1185 兄弟をまとめて 1 段動かす指定を当てる順に返す ReorderStep.toChildReorders を追加",
+      "body": "- 型 ChildReorder { from: ChildPosition; toIndex } を features/editor/types\n  に追加\n- ReorderStep.toChildReorders(step, positions): 前面へなら小さい順の位置を\n  逆から、背面へならそのまま読み、各位置に toIndex を当てて返す\n- 向きの符号はモジュール内の offsetOf の switch 1 つに寄せ、toIndex も\n  そこから求める\n\n背景:\n複数選択中の並べ替え(#1185)では「1 段」を、選んだノードがそれぞれ 1 つ\nずつずれる意味にした。既存の DesignDocument.reorderNode をノードの数だけ\n順に当てて実現する。当てる順を誤ると、選んだもの同士が入れ替わる。\n\n採用理由:\n前面へは前面にいるものから当てる。こうすると先の移動が、後に当てる子の\n位置を動かさない。from.index は前の指定を当てたあとの並びで読む値で、\nこの順なら元の位置と一致する。戻り値を ChildPosition と toIndex の対に\nしたのは、reorderNode の引数がそのまま揃い、呼び出し側で親の名前を\n組み直さずに済むため。向きの符号を 1 か所にしたのは、toIndex と当てる\n順の片方だけを直せる状態を無くすため(duplication-reviewer の指摘)。\n\n代替案:\n- 選んだ群が、外側の選んでいない兄弟 1 つを越える(案 B): 前面へ\n  動かしてから背面へ動かしても元の並びに戻らない([a,x,b,y] で a・b を\n  ⌘] → ⌘[ とすると [x,a,b,y] になる)\n- IndexMove で返す: 親を持たないので、呼び出し側で ChildPosition を\n  組み直すことになる\n- dcmp に reorderNodes を足す: 向きは編集操作の語彙で dcmp は持てない\n- ArrayEx に複数の要素をずらす操作を足す: 3 層に API が増えるだけ\n\n影響とトレードオフ:\ntoIndex の振る舞いは変わらない。既存の reorder_node などの (from, toIndex)\nは ChildReorder に揃えていない。この Issue のゴールの外なので見送った。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1185\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01VYrydWoy6DkTvRLudVbhHc",
+      "files": [
+        {
+          "path": "src/features/editor/domains/reorder-step/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 49,
+          "deletions": 10,
+          "patch": "@@ -1,4 +1,6 @@\n import type { ChildPosition } from \"@/domains/dcmp/child-position\";\n+import type { SiblingPositions } from \"@/features/editor/domains/sibling-positions\";\n+import type { ChildReorder } from \"@/features/editor/types/ChildReorder\";\n import type { ValueOf } from \"@/types/ValueOf\";\n \n /**\n@@ -12,14 +14,29 @@ export const ReorderSteps = {\n /** 並べ替えの向き。 */\n export type ReorderStep = ValueOf<typeof ReorderSteps>;\n \n+/**\n+ * この向きの 1 歩で、兄弟の並びの中の index がいくつ動くか。\n+ *\n+ * 前面へが `+1` なのは、並びの末尾が最前面だから（docs/06-ui.md「キャンバス直接操作」）。\n+ * 規則そのものは並び側の約束だが、`ChildPosition` は `dcmp`（ファイルに書かれる中身）で\n+ * 編集操作の語彙を知れないため、向きを持つこちら側が持つ。\n+ *\n+ * @param step 動かす向き\n+ * @returns 前面へなら `1`、背面へなら `-1`\n+ */\n+function offsetOf(step: ReorderStep): number {\n+  switch (step) {\n+    case \"toward-front\":\n+      return 1;\n+    case \"toward-back\":\n+      return -1;\n+  }\n+}\n+\n export const ReorderStep = {\n   /**\n    * この 1 歩ぶん動かした先の、兄弟の並びの中での index。\n    *\n-   * 前面へが `+1` なのは、並びの末尾が最前面だから（docs/06-ui.md「キャンバス直接操作」）。\n-   * 規則そのものは並び側の約束だが、`ChildPosition` は `dcmp`（ファイルに書かれる中身）で\n-   * 編集操作の語彙を知れないため、向きを持つこちら側が持つ。\n-   *\n    * 並びの外へ出る index も返す。動かせるかどうかは並びの長さを知っている側\n    * （`DesignDocument.reorderNode`）が失敗として答える。\n    *\n@@ -28,11 +45,33 @@ export const ReorderStep = {\n    * @returns 動かした先の index\n    */\n   toIndex(step: ReorderStep, from: ChildPosition): number {\n-    switch (step) {\n-      case \"toward-front\":\n-        return from.index + 1;\n-      case \"toward-back\":\n-        return from.index - 1;\n-    }\n+    return from.index + offsetOf(step);\n+  },\n+\n+  /**\n+   * 兄弟たちをそれぞれこの 1 歩ぶん動かす指定を、当てる順に並べる（docs/06-ui.md「複数選択」の\n+   * 並べ替え）。選んだものの中でいちばん前面（背面へなら背面）にあるものから並ぶ。\n+   *\n+   * `from.index` は前の指定を当てたあとの並びで読む値で、この順に当てれば元の位置と一致する\n+   * （先に動くものは、後に当てる子の位置を動かさない）。\n+   *\n+   * 選んだ群が外側の選んでいない兄弟 1 つを越える動かし方は採らない。前面へ動かしてから\n+   * 背面へ動かしても元の並びに戻らないため。\n+   *\n+   * @param step 動かす向き\n+   * @param from 動かす兄弟たちの親と、小さい順の位置\n+   * @returns 当てる順に並べた指定\n+   */\n+  toChildReorders(\n+    step: ReorderStep,\n+    from: SiblingPositions,\n+  ): readonly ChildReorder[] {\n+    const ascending: readonly number[] = from.indices;\n+    // 動く向きの先にいるものから当てる。位置は小さい順なので、前面へなら逆から読む\n+    const ordered = offsetOf(step) > 0 ? [...ascending].reverse() : ascending;\n+    return ordered.map((index) => {\n+      const position: ChildPosition = { parentName: from.parentName, index };\n+      return { from: position, toIndex: ReorderStep.toIndex(step, position) };\n+    });\n   },\n } as const;",
+          "patchLines": 81,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/types/ChildReorder.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,14 @@\n+import type { ChildPosition } from \"@/domains/dcmp/child-position\";\n+\n+/**\n+ * 兄弟をまとめて並べ替えるときの、子 1 つぶんの動かし方（`ReorderStep.toChildReorders` が\n+ * 当てる順に並べて返すもの）。\n+ *\n+ * 並べて返すには 1 件ごとに位置と行き先が対で要るため 1 つの型にまとめる。\n+ */\n+export type ChildReorder = Readonly<{\n+  /** 動かす子の親と、動かす前の位置。 */\n+  from: ChildPosition;\n+  /** 動かしたあとにその子が来る位置。 */\n+  toIndex: number;\n+}>;",
+          "patchLines": 15,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e6d6d00de54074aeee5530598b825430b5240e92",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T10:34:21Z",
+      "subject": "🧪 [Tests]: #1185 ReorderStep.toChildReorders の当てる順のテストを追加",
+      "body": "- まとめて前面へは、前面にいるものから順に 1 つ後ろへ動かす並びになる\n- まとめて背面へは、背面にいるものから順に 1 つ前へ動かす並びになる\n\n背景:\n当てる順を誤ると、隣り合う選択で選んだもの同士が入れ替わり、何も変わら\nないように見える。\n\n採用理由:\n順そのものを ReorderStep の層で固定する。test-reviewer の実測で、前面へも\n逆から読まない・常に逆から読む・条件を反転、のどの壊し方でもここで\n落ちることを確かめた。\n\n代替案:\n- EditorState の結果の並びだけで確かめる: 隣り合う選択(E2・E4)でしか\n  差が出ず、壊れた箇所がどこかを示せないので、両方に置いた\n\n影響とトレードオフ:\nテストの追加のみ。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1185\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01VYrydWoy6DkTvRLudVbhHc",
+      "files": [
+        {
+          "path": "src/features/editor/domains/reorder-step/__tests__/reorder-step.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 0,
+          "patch": "@@ -27,3 +27,27 @@ test(\"並びの外へ出る先も、そのまま返す\", () => {\n     }),\n   ).toBe(-1);\n });\n+\n+test(\"兄弟をまとめて前面へ動かすときは、前面にいるものから順に 1 つ後ろへ動かす\", () => {\n+  expect(\n+    ReorderStep.toChildReorders(ReorderSteps.TowardFront, {\n+      parentName: \"Card\",\n+      indices: [0, 2],\n+    }),\n+  ).toEqual([\n+    { from: { parentName: \"Card\", index: 2 }, toIndex: 3 },\n+    { from: { parentName: \"Card\", index: 0 }, toIndex: 1 },\n+  ]);\n+});\n+\n+test(\"兄弟をまとめて背面へ動かすときは、背面にいるものから順に 1 つ前へ動かす\", () => {\n+  expect(\n+    ReorderStep.toChildReorders(ReorderSteps.TowardBack, {\n+      parentName: \"Card\",\n+      indices: [1, 3],\n+    }),\n+  ).toEqual([\n+    { from: { parentName: \"Card\", index: 1 }, toIndex: 0 },\n+    { from: { parentName: \"Card\", index: 3 }, toIndex: 2 },\n+  ]);\n+});",
+          "patchLines": 28,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "1dce1f9bb2ec09d3b77e3b93747e71fa0ca8e351",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T10:34:40Z",
+      "subject": "✨ [New Feature]: #1185 同じ親の兄弟を複数選んでいるとき ⌘] / ⌘[ でまとめて並べ替える",
+      "body": "- EditorState.reorderSelectedNode を reorderSelectedNodes に改名し、\n  SiblingPositions.fromSelection → ReorderStep.toChildReorders →\n  ArrayEx.reduceUntilErr(DesignDocument.reorderNode) → withEditResult で\n  書き直した\n- アクション reorder_selected_node を reorder_selected_nodes に改名した\n  (reducer・use-edit-actions・use-reorder-shortcut の doc を含む)\n- メニューの前面へ / 背面へは、この答えをそのまま映すので、同じ親の兄弟を\n  複数選んでいるときにも押せるようになる\n- 改名に合わせて既存テストの呼び出しを直した。挙動が変わる 2 件も書き換えた\n  - multi-selection の「複数選んでいる間は並べ替えられない」を消した\n    (観点は multi-reorder の「親が違うと動かせない」へ移す)\n  - edit-menu.node の「複数選択中は削除だけ」を、同じ親の兄弟なら\n    動かせる向きと削除が押せる形に書き換え、端・親違いのケースを足した\n\n背景:\n#966 から分けた #1185。複数選択中の並べ替えは、全員が同じ親の兄弟の\nときだけ行う。選んだもの同士の並び順は保ち、1 つでも端にいれば何も\n変えず、取り消しは 1 回で全部戻す、とオーナーが承認した。\n\n採用理由:\nreduceUntilErr で順に当てるので、1 つでも端に当たれば全体が err になり、\n一部だけ動いた状態は作れない。途中のドキュメントは Result の中に閉じ、\nwithEditResult を通るのは成功したときの最後の 1 回だけなので、履歴は\n1 件で取り消しも 1 回で戻る。並べ替えでは名前が変わらないので、選択は\nそのまま残る。メニュー・キーボード・reducer は EditorState の答えを\n映すだけで、判定を二重に持たない。\nテストを実装と同じコミットに入れたのは、改名で型が通らなくなる呼び出しと、\n仕様変更で期待値が逆になる 2 件だけ。分けると間のコミットで typecheck か\nテストが落ちる。\n\n代替案:\n- 名前を reorderSelected にする: harness/records/pr-432.md で、\n  reorderArtboard と並ぶと「選んでいる何を」動かすか読めないとして\n  一度退けた名前\n- 名前を reorderSelectedNode のまま残す: 複数を動かす中身と単数の名前が\n  食い違う\n- 動かせるものだけ動かす: 承認された仕様(一部だけ動かさない)に反する\n\n影響とトレードオフ:\n1 つだけ選んでいるときの並べ替えは、位置 1 つの SiblingPositions として\n同じ経路を通る(既存の reorder テストは中身を変えずに通る)。ツリーの行の\nドラッグ(reorder_node)は変えていない。複数選んでいても、掴んだ 1 行\nだけを動かす。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1185\n- https://github.com/DIO0550/design-composer/issues/966\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01VYrydWoy6DkTvRLudVbhHc",
+      "files": [
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 70,
+          "deletions": 7,
+          "patch": "@@ -1,4 +1,5 @@\n import { expect, test } from \"vitest\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n import { Option } from \"@/utils/Option\";\n import { EditorState } from \"../../editor-state\";\n import {\n@@ -29,6 +30,49 @@ function nodeOperations(state: EditorState): readonly EditOperation[] {\n   return operationsIn(EditMenu.create(state, EditMenuTargets.Node));\n }\n \n+/**\n+ * メニューの中で押せる操作。\n+ *\n+ * @param menu 見ているメニュー\n+ * @returns 押せる操作を並ぶ順に\n+ */\n+function enabledOperations(menu: EditMenu): readonly EditOperation[] {\n+  return menu.sections\n+    .flat()\n+    .filter((row) => row.isEnabled)\n+    .map((row) => row.operation);\n+}\n+\n+/**\n+ * `home` に `title` と `panel` が並び、`panel` の中に `inner-a` と `inner-b` がいる状態。\n+ *\n+ * @returns その並びを持つエディタの状態\n+ */\n+function stateWithNestedPanel(): EditorState {\n+  return EditorState.create(\n+    DesignDocument.create({\n+      artboards: [\n+        {\n+          name: \"home\",\n+          width: 375,\n+          height: 812,\n+          children: [\n+            { name: \"title\", type: \"Text\" },\n+            {\n+              name: \"panel\",\n+              type: \"Box\",\n+              children: [\n+                { name: \"inner-a\", type: \"Box\" },\n+                { name: \"inner-b\", type: \"Box\" },\n+              ],\n+            },\n+          ],\n+        },\n+      ],\n+    }),\n+  );\n+}\n+\n test(\"ノードを選んでいるときは複製・コピー・ペースト・名前を変更・グループ化・グループ解除・前面へ・背面へ・インスタンスを解除・削除が並ぶ\", () => {\n   expect(nodeOperations(stateSelecting(\"panel\"))).toEqual([\n     EditOperations.Duplicate,\n@@ -192,16 +236,35 @@ test(\"1 つだけ選んでいるときは削除が押せる\", () => {\n   expect(isRowEnabled(menu, EditOperations.Delete)).toBe(true);\n });\n \n-test(\"複数選択中は削除だけが押せる\", () => {\n+test(\"同じ親の兄弟を複数選んでいるときは、動かせる向きの並べ替えと削除が押せる\", () => {\n   const menu = EditMenu.create(\n     EditorState.selectNodes(setupState(), [\"title\", \"panel\"]),\n     EditMenuTargets.Node,\n   );\n \n-  expect(\n-    menu.sections\n-      .flat()\n-      .filter((row) => row.isEnabled)\n-      .map((row) => row.operation),\n-  ).toEqual([EditOperations.Delete]);\n+  expect(enabledOperations(menu)).toEqual([\n+    EditOperations.BringForward,\n+    EditOperations.Delete,\n+  ]);\n+});\n+\n+test(\"最前面にいるものを含む兄弟を複数選んでいるときは、前面へが押せない\", () => {\n+  const menu = EditMenu.create(\n+    EditorState.selectNodes(setupState(), [\"panel\", \"login\"]),\n+    EditMenuTargets.Node,\n+  );\n+\n+  expect([\n+    isRowEnabled(menu, EditOperations.BringForward),\n+    isRowEnabled(menu, EditOperations.SendBackward),\n+  ]).toEqual([false, true]);\n+});\n+\n+test(\"親が違うノードを複数選んでいるときは、削除だけが押せる\", () => {\n+  const menu = EditMenu.create(\n+    EditorState.selectNodes(stateWithNestedPanel(), [\"title\", \"inner-a\"]),\n+    EditMenuTargets.Node,\n+  );\n+\n+  expect(enabledOperations(menu)).toEqual([EditOperations.Delete]);\n });",
+          "patchLines": 99,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -121,11 +121,11 @@ function isEnabled(state: EditorState, operation: EditOperation): boolean {\n       return Option.isSome(EditorState.ungroupSelected(state));\n     case \"bring-forward\":\n       return Option.isSome(\n-        EditorState.reorderSelectedNode(state, ReorderSteps.TowardFront),\n+        EditorState.reorderSelectedNodes(state, ReorderSteps.TowardFront),\n       );\n     case \"send-backward\":\n       return Option.isSome(\n-        EditorState.reorderSelectedNode(state, ReorderSteps.TowardBack),\n+        EditorState.reorderSelectedNodes(state, ReorderSteps.TowardBack),\n       );\n     case \"detach-instance\":\n       return Option.isSome(EditorState.detachInstance(state));",
+          "patchLines": 14,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 2,
+          "patch": "@@ -138,7 +138,10 @@ test(\"ファイルが不正な間は、選んでいるノードを並べ替え\n   );\n \n   expect(\n-    EditorState.reorderSelectedNode(frozen(selected), ReorderSteps.TowardFront),\n+    EditorState.reorderSelectedNodes(\n+      frozen(selected),\n+      ReorderSteps.TowardFront,\n+    ),\n   ).toStrictEqual(Option.none);\n });\n \n@@ -150,7 +153,7 @@ test(\"ファイルが不正でなければ、選んでいるノードを並べ\n \n   expect(\n     Option.isSome(\n-      EditorState.reorderSelectedNode(selected, ReorderSteps.TowardFront),\n+      EditorState.reorderSelectedNodes(selected, ReorderSteps.TowardFront),\n     ),\n   ).toBe(true);\n });",
+          "patchLines": 21,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 20,
+          "patch": "@@ -8,7 +8,6 @@ import { PropEdit } from \"@/domains/dcmp/node\";\n import { ResizeEdit } from \"@/domains/dcmp/resize-edit\";\n import { DocumentSelection } from \"@/domains/session/document-selection\";\n import { EditContinuities } from \"@/domains/session/edit-continuity\";\n-import { ReorderSteps } from \"@/features/editor/domains/reorder-step\";\n import { Option } from \"@/utils/Option\";\n import { EditorState } from \"../index\";\n \n@@ -118,25 +117,6 @@ test(\"複数選んでいる間は prop を編集できない\", () => {\n   ).toBe(false);\n });\n \n-test(\"複数選んでいる間は並べ替えられない\", () => {\n-  expect(\n-    Option.isSome(\n-      EditorState.reorderSelectedNode(\n-        setupSingleSelected(),\n-        ReorderSteps.TowardFront,\n-      ),\n-    ),\n-  ).toBe(true);\n-  expect(\n-    Option.isSome(\n-      EditorState.reorderSelectedNode(\n-        setupMultiSelected(),\n-        ReorderSteps.TowardFront,\n-      ),\n-    ),\n-  ).toBe(false);\n-});\n-\n test(\"複数選んでいる間は座標を動かせない\", () => {\n   const single = EditorState.select(setupState(), \"home-badge\");\n   const multi = EditorState.selectNodes(setupState(), [",
+          "patchLines": 34,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 5,
+          "patch": "@@ -92,7 +92,7 @@ test(\"存在しない親の中の子を動かそうとしても移動が無か\n test(\"選んでいるノードを前面へ動かすと、次の兄弟と入れ替わる\", () => {\n   const selected = EditorState.select(setupState(), \"title\");\n \n-  const reordered = EditorState.reorderSelectedNode(\n+  const reordered = EditorState.reorderSelectedNodes(\n     selected,\n     ReorderSteps.TowardFront,\n   );\n@@ -107,7 +107,7 @@ test(\"選んでいるノードを前面へ動かすと、次の兄弟と入れ\n test(\"選んでいるノードを背面へ動かすと、前の兄弟と入れ替わる\", () => {\n   const selected = EditorState.select(setupState(), \"footer\");\n \n-  const reordered = EditorState.reorderSelectedNode(\n+  const reordered = EditorState.reorderSelectedNodes(\n     selected,\n     ReorderSteps.TowardBack,\n   );\n@@ -123,13 +123,13 @@ test(\"いちばん前面のノードをさらに前面へ動かそうとして\n   const selected = EditorState.select(setupState(), \"footer\");\n \n   expect(\n-    EditorState.reorderSelectedNode(selected, ReorderSteps.TowardFront),\n+    EditorState.reorderSelectedNodes(selected, ReorderSteps.TowardFront),\n   ).toEqual(Option.none);\n });\n \n test(\"何も選んでいなければ並べ替えは存在しない\", () => {\n   expect(\n-    EditorState.reorderSelectedNode(setupState(), ReorderSteps.TowardFront),\n+    EditorState.reorderSelectedNodes(setupState(), ReorderSteps.TowardFront),\n   ).toEqual(Option.none);\n });\n \n@@ -138,6 +138,6 @@ test(\"artboard を選んでいるときは並べ替えは存在しない\", () =>\n   const selected = EditorState.select(setupState(), \"home\");\n \n   expect(\n-    EditorState.reorderSelectedNode(selected, ReorderSteps.TowardFront),\n+    EditorState.reorderSelectedNodes(selected, ReorderSteps.TowardFront),\n   ).toEqual(Option.none);\n });",
+          "patchLines": 42,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 20,
+          "deletions": 14,
+          "patch": "@@ -32,6 +32,7 @@ import type { Instant } from \"@/domains/unit/instant\";\n import type { Offset } from \"@/domains/unit/offset\";\n import { EditHistory } from \"@/features/editor/domains/edit-history\";\n import { ReorderStep } from \"@/features/editor/domains/reorder-step\";\n+import { SiblingPositions } from \"@/features/editor/domains/sibling-positions\";\n import { TokenTemplate } from \"@/features/editor/domains/token-template\";\n import type { IndexMove } from \"@/types/IndexMove\";\n import { ArrayEx } from \"@/utils/ArrayEx\";\n@@ -721,7 +722,7 @@ export const EditorState = {\n    * 同じ親の中で子の順序を入れ替える（docs/06-ui.md「編集操作の一覧」の並べ替え）。\n    *\n    * ツリービューは隣がいない向きの移動ボタンを出さないが、**キーボードの割り当ては端でも\n-   * 押せる**ため、画面の操作から `none` に到達する（`reorderSelectedNode`）。\n+   * 押せる**ため、画面の操作から `none` に到達する（`reorderSelectedNodes`）。\n    *\n    * 選択はノードの name で持っており並べ替えでは変わらないため、そのまま引き継ぐ。\n    *\n@@ -745,30 +746,35 @@ export const EditorState = {\n   },\n \n   /**\n-   * 選択中のノードを、兄弟の並びの中で 1 つぶん動かす\n-   * （docs/06-ui.md「編集操作の一覧」の並べ替え）。\n+   * 選択中のノードを、兄弟の並びの中で 1 つぶん動かす。複数選んでいれば、同じ親の兄弟の\n+   * ときだけ並び順を保ってまとめて動かす（docs/06-ui.md「編集操作の一覧」の並べ替え・\n+   * 「複数選択」）。\n    *\n    * ツリーのドラッグは掴んだ位置を持っているので `reorderNode` を直に呼ぶ。\n    *\n    * @param state 動かす前の編集状態\n    * @param step 動かす向き\n-   * @returns 動かしたあとの編集状態。1 つだけ選んでいないとき（未選択・複数選択）、\n-   *   選んでいるものが並びに載っていないとき（artboard 自身）、その向きに隣がいないときは `none`\n+   * @returns 動かしたあとの編集状態。未選択のとき、同じ親の兄弟でない選択（親が違う・\n+   *   artboard が混ざる）のとき、どれか 1 つでもその向きに隣がいないとき、ファイルが不正な\n+   *   間は `none`\n    */\n-  reorderSelectedNode(\n+  reorderSelectedNodes(\n     state: EditorState,\n     step: ReorderStep,\n   ): Option<EditorState> {\n-    const from = Option.flatMap(EditorState.singleName(state), (name) =>\n-      DesignDocument.findChildPosition(EditorState.document(state), name),\n+    const siblings = SiblingPositions.fromSelection(\n+      EditorState.documentSelection(state),\n     );\n-    return Option.flatMap(from, (position) =>\n-      EditorState.reorderNode(\n-        state,\n-        position,\n-        ReorderStep.toIndex(step, position),\n-      ),\n+    if (!Option.isSome(siblings)) {\n+      return Option.none;\n+    }\n+    const reordered = ArrayEx.reduceUntilErr(\n+      ReorderStep.toChildReorders(step, siblings.value),\n+      EditorState.document(state),\n+      (document, reorder) =>\n+        DesignDocument.reorderNode(document, reorder.from, reorder.toIndex),\n     );\n+    return withEditResult(state, reordered);\n   },\n \n   /**",
+          "patchLines": 66,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 2,
+          "patch": "@@ -18,7 +18,10 @@ export type EditActions = Readonly<{\n   redo: () => void;\n   /** 選んでいるものを、ノードならサブツリーごと・artboard なら 1 枚ごと消す。 */\n   removeSelected: () => void;\n-  /** 選んでいるノードを兄弟の並びの中で 1 つぶん動かす。 */\n+  /**\n+   * 選んでいるノードを兄弟の並びの中で 1 つぶん動かす。複数なら同じ親の兄弟のときだけ、\n+   * 並び順を保ってまとめて。\n+   */\n   reorderSelected: (step: ReorderStep) => void;\n   /** 選んでいる絶対配置のノードの座標をずらす。 */\n   repositionSelectedBy: (delta: Offset) => void;\n@@ -50,7 +53,7 @@ export function useEditActions(): EditActions {\n     redo: () => dispatch({ type: \"redo\" }),\n     removeSelected: () => dispatch({ type: \"remove_selected\" }),\n     reorderSelected: (step) =>\n-      dispatch({ type: \"reorder_selected_node\", step }),\n+      dispatch({ type: \"reorder_selected_nodes\", step }),\n     repositionSelectedBy: (delta) =>\n       dispatch({ type: \"reposition_selected_node\", delta }),\n     startRenaming: () => dispatch({ type: \"start_renaming\" }),",
+          "patchLines": 21,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -293,7 +293,7 @@ function EditorStateHarness() {\n         type=\"button\"\n         onClick={() =>\n           dispatch({\n-            type: \"reorder_selected_node\",\n+            type: \"reorder_selected_nodes\",\n             step: ReorderSteps.TowardFront,\n           })\n         }",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 6,
+          "patch": "@@ -44,7 +44,7 @@ export type EditorAction =\n       toIndex: number;\n     }>\n   /* 選択から向きだけで並べ替える経路。今の位置を持たない入口のためにある。 */\n-  | Readonly<{ type: \"reorder_selected_node\"; step: ReorderStep }>\n+  | Readonly<{ type: \"reorder_selected_nodes\"; step: ReorderStep }>\n   | Readonly<{ type: \"move_node\"; name: string; to: ChildPosition }>\n   | Readonly<{\n       type: \"reposition_node\";\n@@ -140,14 +140,14 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {\n         EditorState.reorderNode(state, action.from, action.toIndex),\n         state,\n       );\n-    case \"reorder_selected_node\":\n+    case \"reorder_selected_nodes\":\n       /*\n-       * 1 つだけ選んでいないとき・選んでいるのが artboard のとき・その向きに隣が\n-       * いないときは並びが変わらない（EditorState.reorderSelectedNode の `none`）。\n-       * 割り当ては選択が無くても端でも押せるため、この `none` には画面の操作から到達する。\n+       * 動かせないときは並びが変わらない（EditorState.reorderSelectedNodes の `none`。条件は\n+       * その @returns）。割り当ては選択が無くても端でも押せるため、この `none` には画面の\n+       * 操作から到達する。\n        */\n       return Option.unwrapOr(\n-        EditorState.reorderSelectedNode(state, action.step),\n+        EditorState.reorderSelectedNodes(state, action.step),\n         state,\n       );\n     case \"move_node\":",
+          "patchLines": 29,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-reorder-shortcut/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -22,7 +22,8 @@ const ReorderKeys = {\n \n /**\n  * 選んでいるノードを兄弟の並びの中で 1 つぶん動かす操作を、キーボードから行えるようにする\n- * （docs/06-ui.md「編集操作の一覧」の並べ替え）。\n+ * （docs/06-ui.md「編集操作の一覧」の並べ替え・「複数選択」）。複数選んでいれば、同じ親の\n+ * 兄弟のときだけまとめて動く。\n  *\n  * このフックが持つのは「どのキーがどちらの向きか」だけで、ページ全体で受けることと入力\n  * 中は無視することは `useKeyShortcuts` に任せる。",
+          "patchLines": 10,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "a41c6c158417e9a18639fa6330bd97ddf4ea263f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T10:34:49Z",
+      "subject": "🧪 [Tests]: #1185 複数選択中の並べ替えの EditorState のテストを追加",
+      "body": "- 離れた兄弟 / 隣り合う兄弟を、前面へ・背面へまとめて動かす(4 件)\n- 1 つでも最前面・最背面にいると動かせない(対照: 端にいないものだけなら\n  動かせる)\n- 親が違うノードを選んでいると動かせない(対照: 同じ名前・同じ向きで、\n  それぞれ 1 つだけなら動かせる)\n- 1 回の取り消しで元に戻る / 選択はそのまま残る / 前面へ → 背面へで元の\n  並びに戻る\n\n背景:\n仕様の中心(並び順を保つ・端なら何もしない・親違いは無効・取り消し 1 回)\nを EditorState の公開 API で固定する。前例は editor-state.multi-remove。\n\n採用理由:\n離れた兄弟のケースは、案 A([x,a,y,b,group])と案 B([x,y,a,b,group])\nで答えが分かれるので、選んだ意味をここで区別できる。前面へ → 背面へで\n元に戻るテストは、案 A を選んだ理由そのものを固定する。端と親違いは、\n片方だけなら動かせる対照を置き、既定の none で通ってしまう形を避けた。\ntest-reviewer の実測で、err を握りつぶして続ける・1 件ずつ履歴を分ける・\n先頭の 1 つだけ動かす、のどれを入れてもここで落ちることを確かめた。\n\n代替案:\n- 消した multi-selection の「並べ替えられない」を残して期待値だけ反転\n  する: 使っていた選択(home-login, home-signup)では新しい仕様で動かせて\n  しまい、親違いの観点にならない\n\n影響とトレードオフ:\nテストの追加のみ。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1185\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01VYrydWoy6DkTvRLudVbhHc",
+      "files": [
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 141,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,141 @@\n+import { expect, test } from \"vitest\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { DocumentSelection } from \"@/domains/session/document-selection\";\n+import {\n+  type ReorderStep,\n+  ReorderSteps,\n+} from \"@/features/editor/domains/reorder-step\";\n+import { Option } from \"@/utils/Option\";\n+import { EditorState } from \"../index\";\n+import { childNames } from \"./setup\";\n+\n+/** home の下に a, x, b, y, group（左が背面）。group の子は inner-1, inner-2。 */\n+function setupState(): EditorState {\n+  return EditorState.create(\n+    DesignDocument.create({\n+      artboards: [\n+        {\n+          name: \"home\",\n+          width: 360,\n+          height: 240,\n+          children: [\n+            { name: \"a\", type: \"Box\" },\n+            { name: \"x\", type: \"Box\" },\n+            { name: \"b\", type: \"Box\" },\n+            { name: \"y\", type: \"Box\" },\n+            {\n+              name: \"group\",\n+              type: \"Box\",\n+              children: [\n+                { name: \"inner-1\", type: \"Box\" },\n+                { name: \"inner-2\", type: \"Box\" },\n+              ],\n+            },\n+          ],\n+        },\n+      ],\n+    }),\n+  );\n+}\n+\n+function reorderSelected(\n+  names: readonly string[],\n+  step: ReorderStep,\n+): Option<EditorState> {\n+  return EditorState.reorderSelectedNodes(\n+    EditorState.selectNodes(setupState(), names),\n+    step,\n+  );\n+}\n+\n+test(\"離れた兄弟をまとめて前面へ動かすと、それぞれ 1 つずつ前面へずれる\", () => {\n+  const reordered = Option.unwrap(\n+    reorderSelected([\"a\", \"b\"], ReorderSteps.TowardFront),\n+  );\n+\n+  expect(childNames(reordered, \"home\")).toEqual([\"x\", \"a\", \"y\", \"b\", \"group\"]);\n+});\n+\n+test(\"隣り合う兄弟をまとめて前面へ動かすと、並び順を保ったまま 1 つ前面へずれる\", () => {\n+  const reordered = Option.unwrap(\n+    reorderSelected([\"a\", \"x\"], ReorderSteps.TowardFront),\n+  );\n+\n+  expect(childNames(reordered, \"home\")).toEqual([\"b\", \"a\", \"x\", \"y\", \"group\"]);\n+});\n+\n+test(\"離れた兄弟をまとめて背面へ動かすと、それぞれ 1 つずつ背面へずれる\", () => {\n+  const reordered = Option.unwrap(\n+    reorderSelected([\"x\", \"y\"], ReorderSteps.TowardBack),\n+  );\n+\n+  expect(childNames(reordered, \"home\")).toEqual([\"x\", \"a\", \"y\", \"b\", \"group\"]);\n+});\n+\n+test(\"隣り合う兄弟をまとめて背面へ動かすと、並び順を保ったまま 1 つ背面へずれる\", () => {\n+  const reordered = Option.unwrap(\n+    reorderSelected([\"b\", \"y\"], ReorderSteps.TowardBack),\n+  );\n+\n+  expect(childNames(reordered, \"home\")).toEqual([\"a\", \"b\", \"y\", \"x\", \"group\"]);\n+});\n+\n+test(\"1 つでも最前面にいるものを選んでいると、前面へは動かせない\", () => {\n+  expect(Option.isSome(reorderSelected([\"a\"], ReorderSteps.TowardFront))).toBe(\n+    true,\n+  );\n+  expect(\n+    Option.isSome(reorderSelected([\"a\", \"group\"], ReorderSteps.TowardFront)),\n+  ).toBe(false);\n+});\n+\n+test(\"1 つでも最背面にいるものを選んでいると、背面へは動かせない\", () => {\n+  expect(Option.isSome(reorderSelected([\"b\"], ReorderSteps.TowardBack))).toBe(\n+    true,\n+  );\n+  expect(\n+    Option.isSome(reorderSelected([\"a\", \"b\"], ReorderSteps.TowardBack)),\n+  ).toBe(false);\n+});\n+\n+test(\"親が違うノードを選んでいると、まとめては動かせない\", () => {\n+  expect([\n+    Option.isSome(reorderSelected([\"a\"], ReorderSteps.TowardFront)),\n+    Option.isSome(reorderSelected([\"inner-1\"], ReorderSteps.TowardFront)),\n+  ]).toEqual([true, true]);\n+  expect(\n+    Option.isSome(reorderSelected([\"a\", \"inner-1\"], ReorderSteps.TowardFront)),\n+  ).toBe(false);\n+});\n+\n+test(\"まとめて動かしたあと、1 回の取り消しで元の並びに戻る\", () => {\n+  const reordered = Option.unwrap(\n+    reorderSelected([\"a\", \"b\"], ReorderSteps.TowardFront),\n+  );\n+\n+  const undone = Option.unwrap(EditorState.undo(reordered));\n+\n+  expect(childNames(undone, \"home\")).toEqual([\"a\", \"x\", \"b\", \"y\", \"group\"]);\n+});\n+\n+test(\"まとめて動かしても、選んでいたノードは選ばれたままになる\", () => {\n+  const reordered = Option.unwrap(\n+    reorderSelected([\"a\", \"b\"], ReorderSteps.TowardFront),\n+  );\n+\n+  expect(\n+    DocumentSelection.names(EditorState.documentSelection(reordered)),\n+  ).toEqual([\"a\", \"b\"]);\n+});\n+\n+test(\"まとめて前面へ動かしてから背面へ動かすと、元の並びに戻る\", () => {\n+  const forward = Option.unwrap(\n+    reorderSelected([\"a\", \"b\"], ReorderSteps.TowardFront),\n+  );\n+\n+  const backward = Option.unwrap(\n+    EditorState.reorderSelectedNodes(forward, ReorderSteps.TowardBack),\n+  );\n+\n+  expect(childNames(backward, \"home\")).toEqual([\"a\", \"x\", \"b\", \"y\", \"group\"]);\n+});",
+          "patchLines": 142,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "cbf24b3ee837090699480a39153b4ad47a75b894",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T10:34:57Z",
+      "subject": "🧪 [Tests]: #1185 ⌘[ と行のメニューからまとめて背面へ動かす通しのテストを追加",
+      "body": "- インスタンスを「Select all 2 instances」でまとめて選び ⌘[ を押すと、\n  ツリーが [home-login, home-signup, home-title] になる\n- 複数選択の一員の行のメニューで Send backward を押しても同じ並びになる\n\n背景:\nEditorState の振る舞いは単体で固定してある。キーボードとメニューから\nreducer を通って reorderSelectedNodes へ届く配線が切れていないかは、\n画面を組み立てて押さないと分からない。\n\n採用理由:\n入口が 2 つ(キーボードとツリーの行のメニュー)なので両方に置く。\ntest-reviewer の実測で、reducer の reorder_selected_nodes を常に何も\nしない形に壊すと、この 2 件が落ちることを確かめた。⌘[ は既存のテストに\n合わせて \"{Meta>}[[{/Meta}\" と書く(user-event は [ 1 文字をキー指定の\n始まりと読むため)。\n\n代替案:\n- 単体のテストだけにする: 配線の切断を捕まえられない\n  (判例 plan-integration-coverage)\n\n影響とトレードオフ:\nテストの追加のみ。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1185\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01VYrydWoy6DkTvRLudVbhHc",
+      "files": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reorder.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 2,
+          "patch": "@@ -1,9 +1,10 @@\n-import { screen } from \"@testing-library/react\";\n+import { screen, within } from \"@testing-library/react\";\n import userEvent from \"@testing-library/user-event\";\n import { expect, test } from \"vitest\";\n import { dragRowNamed } from \"@/components/__tests__/row-drag\";\n import { rowNames } from \"@/components/__tests__/row-names\";\n-import { renderOpenedDocument, tree } from \"./setup\";\n+import { SampleDocumentWithSameComponentInstances } from \"@/features/editor/__tests__/sample-document\";\n+import { canvasPane, propertyPane, renderOpenedDocument, tree } from \"./setup\";\n \n test(\"ツリービューで子を後ろの行の上へ運ぶと兄弟の並びがその順序に変わる\", async () => {\n   await renderOpenedDocument();\n@@ -48,3 +49,17 @@ test(\"並べ替えても選択していたノードは選択されたままに\n       .getAttribute(\"aria-current\"),\n   ).toBe(\"true\");\n });\n+\n+test(\"同じ親の兄弟をまとめて選んでいるときは ⌘[ でまとめて背面へ動く\", async () => {\n+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);\n+  await userEvent.click(within(canvasPane()).getByText(\"ログイン\"));\n+  await userEvent.click(\n+    within(propertyPane()).getByRole(\"button\", {\n+      name: \"Select all 2 instances\",\n+    }),\n+  );\n+\n+  await userEvent.keyboard(\"{Meta>}[[{/Meta}\");\n+\n+  expect(rowNames(tree())).toEqual([\"home-login\", \"home-signup\", \"home-title\"]);\n+});",
+          "patchLines": 31,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 0,
+          "patch": "@@ -149,3 +149,18 @@ test(\"複数選択の一員の行のメニューの Delete を押すと、選ん\n \n   expect(rowNames(tree())).toEqual([\"home-title\"]);\n });\n+\n+test(\"複数選択の一員の行のメニューの Send backward を押すと、選んだものがまとめて背面へ動く\", async () => {\n+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);\n+  await userEvent.click(within(canvasPane()).getByText(\"ログイン\"));\n+  await userEvent.click(\n+    within(propertyPane()).getByRole(\"button\", {\n+      name: \"Select all 2 instances\",\n+    }),\n+  );\n+\n+  rightClickInTree(\"home-signup\");\n+  await userEvent.click(menuRow(\"Send backward\"));\n+\n+  expect(rowNames(tree())).toEqual([\"home-login\", \"home-signup\", \"home-title\"]);\n+});",
+          "patchLines": 19,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e49efe8d777769702791de54b494709943d84d75",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-25T10:35:07Z",
+      "subject": "📝 [Doc]: #1185 06-ui.md に複数選択中の並べ替えの仕様を書く",
+      "body": "- 「複数選択」: 複数選択中に行える編集を「削除と並べ替え」にし、#966 の\n  対象から並べ替えを外した\n- 「複数選択」: 並べ替えの箇条を足した(同じ親の兄弟のときだけ / 1 つ\n  ずつずれて並び順は保つ / 1 つでも端なら何も変えない / 1 回の取り消しで\n  戻り選択は残る / 入口はキーボードとツリーの行のメニュー)\n- 並べ替えの行: ツリーの行のドラッグは、複数選んでいても掴んだ 1 行だけを\n  動かすと明記した\n- コンテキストメニュー: 押せない例と押せる操作に、複数選択中の前面へ /\n  背面へを足した\n\n背景:\n06-ui.md は複数選択中の編集を削除だけと定めていた。#1185 で並べ替えを\n解禁したので、仕様書を実装に合わせる。\n\n採用理由:\n条件は「複数選択」の節の 1 か所で定義し、メニューの節は「上記『複数選択』の\n並べ替えができないとき」と指すだけにした。最初は条件を書き写したが、\nartboard と端の場合が漏れていた(ui-reviewer・harness-reviewer・\ncomment-reviewer が同じ箇所を指摘)。ドラッグを明記したのは、キーボード /\nメニューとの非対称を仕様として決めておくため(plan-reviewer の指摘)。\n\n代替案:\n- 「artboard が混ざっているとき」を外す(仕様書の手段では作れない状態):\n  選択の型としては作れて実装もそれを弾いているので、書いておくほうが\n  振る舞いと一致する\n\n影響とトレードオフ:\nコピー・props 編集・グループ化は、引き続き #966 の子 Issue\n(#1186〜#1188)を指す。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1185\n- https://github.com/DIO0550/design-composer/issues/966\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01VYrydWoy6DkTvRLudVbhHc",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 4,
+          "patch": "@@ -116,12 +116,16 @@ Figma 型の3ペイン。\n \n - **N の数え方**: artboard の配下にあり選択できるインスタンスの数。部品定義の中にある参照ノードはキャンバスに描かれても選択の対象にならないため数えない。`Assets` の一覧が出す使用数（`×N`）は部品定義の中の参照も数えるので、**2 つの数は食い違うことがある**\n - そのインスタンスしか無い（N が 1 以下の）ときはボタンを押せない（押しても選択が変わらないため）\n-- **複数選択中に行える編集操作は削除だけ**。コピー・並べ替え・props 編集・リサイズ・部品化・インスタンスの解除・挿入・グループ化・グループ解除はいずれも 1 つだけ選んでいるときの操作とする（コピー・並べ替え・props 編集・グループ化の複数対応は #966）。コンテキストメニューでの扱いは下記「コンテキストメニュー」\n+- **複数選択中に行える編集操作は削除と並べ替え**（並べ替えは同じ親の兄弟のときだけ。下記）。コピー・props 編集・リサイズ・部品化・インスタンスの解除・挿入・グループ化・グループ解除はいずれも 1 つだけ選んでいるときの操作とする（コピー・props 編集・グループ化の複数対応は #966）。コンテキストメニューでの扱いは下記「コンテキストメニュー」\n - **複数選択中の削除は、選んだものをすべて消す**。キーボード（`Delete` / `Backspace`）と、ツリーの行のコンテキストメニューから行える（キャンバスのノードの右クリックは選択を 1 つに戻す / 下記「コンテキストメニュー」）\n   - **親と子を同時に選んでいるときは、いちばん外側のものだけを消す**（子は親のサブツリーと一緒に消える）。選んだ順には依らない\n   - **全部消せるか、何も変えないかのどちらか**。一部だけ消えた状態は作らない\n   - artboard をまたいだ選択でもまとめて消せる\n   - 1 回の編集として扱うので、**1 回の取り消しで全部戻る**。消したものは選択から外れ、取り消しても選択は戻らない（1 つだけ選んで消したときと同じ）\n+- **複数選択中の並べ替えは、選んだものがすべて同じ親の兄弟のときだけ行える**（親が違うもの・artboard が混ざっているときはできない）。キーボード（下記「編集操作の一覧」の並べ替えと同じ割り当て）と、ツリーの行のコンテキストメニューから行える（キャンバスのノードの右クリックで行えない理由は削除と同じ）\n+  - 選んだものが**それぞれ 1 つずつ**前面 / 背面へずれ、選んだもの同士の並び順は保つ\n+  - **1 つでもその向きの端にいれば、何も変えない**\n+  - 1 回の編集として扱うので、**1 回の取り消しで全部戻る**。選択はそのまま残る\n - **インスペクタ**: 帯に選択数を出し、本文には編集欄を出さない（選択の解除だけを残す）\n - **キャンバス**: 選んだものすべてに選択の枠を出す（非表示のノードは描かれないので枠も出ない。下記「リサイズハンドル」）。リサイズハンドルは 1 つだけ選んでいるときに出す\n - **ツリービュー**: 映すのは 1 枚の artboard の中身なので、選択が artboard をまたぐときは**今見ている artboard のぶんだけ**が選択表示になる。今見ている artboard は選択の先頭が載っている 1 枚。絞り込んでいる間は、そのうち一致して残った行だけが選択表示になる（上記「絞り込み」）\n@@ -248,7 +252,7 @@ Figma 寄りの直接操作を採用する。\n |---|---|\n | 挿入 | プリミティブまたは部品インスタンス（ref）を選択位置に追加 |\n | 削除 | 選択ノード（サブツリーごと）を削除。複数選択中は選んだものすべて（上記「複数選択」） |\n-| 並べ替え | 同一親内の子順序の変更（ドラッグ・ツリービュー・キーボード・コンテキストメニュー）。キーボードは選択中のノードを 1 つ前面（⌘] / Ctrl+]）／背面（⌘[ / Ctrl+[）へ動かす。隣がいない向きへは動かない。絞り込んでいる間にドラッグが使えないことは上記「絞り込み」 |\n+| 並べ替え | 同一親内の子順序の変更（ドラッグ・ツリービュー・キーボード・コンテキストメニュー）。キーボードは選択中のノードを 1 つ前面（⌘] / Ctrl+]）／背面（⌘[ / Ctrl+[）へ動かす。隣がいない向きへは動かない。複数選んでいるときのキーボードとメニューは上記「複数選択」。ツリーの行のドラッグは、複数選んでいても掴んだ 1 行だけを動かす。絞り込んでいる間にドラッグが使えないことは上記「絞り込み」 |\n | props 編集 | プロパティパネル経由。トークン参照 prop はトークン一覧からの選択式。**数値・文言の欄は、フォーカスを得てから離すまでが undo 1 回ぶん**（打鍵ごとには積まない。リサイズハンドルの「掴んでから離すまで」と同じ畳み方。上記「キャンバス直接操作」）。選択式の欄は畳まず、1 回の選び直しがそのまま 1 件。欄にフォーカスがある間に undo が効かないことは下記「キーボードの割り当て」 |\n | artboard 操作 | 追加・削除・配列順の並べ替え・キャンバス上の移動（見出しのドラッグ。上記「キャンバス直接操作」）。並べ替えが動かすのは自動配置される artboard だけで、座標を持つ artboard の位置は配列順に依らない。**キャンバス上の移動と、左辺・上辺からのリサイズは座標を書く**ので、その artboard は以後 並べ替えでは動かなくなる |\n | tokens 編集 | 種別ごとの一覧・追加・変更・削除の UI を持つ。gradients の見せ方は下記「`Tokens` の `gradients`」。ピッカーで選ぶ色は、ピッカーを開いてから、開き直すか閉じてほかへ移るまでに動かした分が undo 1 回ぶん（動かすたびには積まない。colors / shadows / gradients の stop で共通） |\n@@ -313,9 +317,9 @@ Figma 寄りの直接操作を採用する。\n - **行にはキーボードの割り当てを併記する。** 出すのは**動いている OS の綴り**1 つだけ（UI 案が描いているのは macOS の窓なので `⌘`。Windows では `Ctrl` 側 / 上記「並べ替え」の表記と同じ 2 つを 1 行に並べない）。**OS による出し分けは #480**（それまでは UI 案の綴りを固定で出す）。**割り当てを持たない操作では欄ごと出さない** — 空欄にすると「割り当てが無い」と「載せないと決めた」が読み分けられなくなる\n - **削除の行に出すのは `Delete` だけ。** `Backspace` も同じ操作を受けるが（上記の割り当て）、2 つ並べると行の幅が割り当てのために伸びる\n - **割り当ては UI 案どおり。** 複製は `⌘D`、**グループ化 / 解除は `⌘G` / `Shift+⌘G`、名前を変更は `⌘R`**（webview の再読み込みと重なるが、割り当てが当たった押下は既定動作を止めるので再読み込みは起きない。止まらないのは入力中で、そのときはどの割り当ても通さない / 上記「編集操作の一覧」）\n-- **できない操作は消さずに押せない状態で並べる。** 隣がいない向きへの前面へ / 背面へ（上記「並べ替え」）、インスタンス以外を選んでいるときの解除、Box 以外を選んでいるときのグループ解除が該当する。消すと並びが対象ごとに動いて、同じ操作が毎回違う位置に出る\n+- **できない操作は消さずに押せない状態で並べる。** 隣がいない向きへの前面へ / 背面へ（上記「並べ替え」）、上記「複数選択」の並べ替えができないときの前面へ / 背面へ、インスタンス以外を選んでいるときの解除、Box 以外を選んでいるときのグループ解除が該当する。消すと並びが対象ごとに動いて、同じ操作が毎回違う位置に出る\n - **押せない行は、操作の名前も割り当ても同じ淡色** `#c4c4c4`（UI 案 `Context menu` が押せない 3 行をこの色で描いている。`Assets · Instance` の `Create component` が押せないときの文字色と同じ）。有効な行の割り当ても同じ色だが、有効な行は操作の名前が濃いので行全体の濃さで読み分けられる。**ボタン側が持つ背景・枠と「できない理由」の一文はメニューでは持たない**（行に一文を入れると高さが行ごとに変わる）\n-- **複数選択中もメニューは出る。** 押せるのは取り消す・やり直す・削除だけで、残り（複製・コピー・ペースト・名前を変更・グループ化 / 解除・前面へ / 背面へ・部品にする・解除）はどれも押せない（上記「複数選択」が 1 つだけ選んでいるときの操作とするものに、メニューで足した複製・名前を変更を加えたもの。どれを複数対応にするかは上記「複数選択」）\n+- **複数選択中もメニューは出る。** 押せるのは取り消す・やり直す・削除と、前面へ / 背面へ（上記「複数選択」の条件のとき）で、残り（複製・コピー・ペースト・名前を変更・グループ化 / 解除・部品にする・解除）はどれも押せない（上記「複数選択」が 1 つだけ選んでいるときの操作とするものに、メニューで足した複製・名前を変更を加えたもの。どれを複数対応にするかは上記「複数選択」）\n - **複数選択のままメニューが出るのは、空き領域とツリーから。** ノードと artboard の右クリックは上記のとおり選択を変えるので、キャンバスから出すメニューは単一選択のものになる（空き領域は選択に手を付けないので、複数選択のまま取り消す・やり直すを押せる）\n - **ペーストの貼り先は選択から決まる**ので、選択が無いときは押せない。Figma はポインタの位置に貼るが、こちらは座標ではなくツリー上の位置で貼り先が決まるため、そこは寄せていない\n - **部品にするは `Assets` の下端、インスタンスを解除はインスペクタの `Instance` 節**にも入口がある。どちらもその場所にしかない欄を伴う（部品にするは名前を打つ欄）のに対し、メニュー側は選択に対してできることの一覧。役割が違うので両方に置く",
+          "patchLines": 39,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/index.tsx",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/box-align/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/constraint/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/document-names/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/layout/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/locking/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node-tree/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/gradient/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/visibility/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/wrap/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.canvas-dig.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.current-artboard.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.lock.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.single-selection.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.source-name.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/session/selection-dig/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/session/selection-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/session/selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-documents/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.edit-from.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/setup.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/selection-dig/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/selection-state/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/unit/file-path/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__stories__/sample-editor-state.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/artboard-fixtures.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/primary-color-token.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/domains/edit-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-edit-actions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-left-pane/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-left-pane/index.tsx",
+      "to": "src/features/editor/domains/edit-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-provider/__tests__/editor-provider.edge.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-provider/index.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-provider/index.tsx",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-right-pane/index.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reorder.test.tsx",
+      "to": "src/components/__tests__/row-drag.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reorder.test.tsx",
+      "to": "src/components/__tests__/row-names.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reorder.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reorder.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+      "to": "src/components/__tests__/row-names.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+      "to": "src/features/editor/__tests__/right-pane-heading.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/domains/edit-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-history/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.artboard.test.ts",
+      "to": "src/features/editor/domains/edit-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.empty-area.test.ts",
+      "to": "src/features/editor/domains/edit-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.empty-area.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+      "to": "src/features/editor/domains/edit-menu/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+      "to": "src/features/editor/domains/edit-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.target.test.ts",
+      "to": "src/features/editor/domains/edit-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/setup.ts",
+      "to": "src/features/editor/domains/edit-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/setup.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/index.ts",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard-reposition.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-dig.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-selection.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.clipboard.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize-edge.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.context-menu-selection.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.duplicate.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/domains/__tests__/instants.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/features/editor/__tests__/artboard-fixtures.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/frozen-state.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group-edge.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-edge.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.instance-selection.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.instance-selection.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.move.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-remove.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reload.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.remove-edge.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.remove.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.rename.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize-continuity.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reveal.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.revert.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.selection.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.token.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/frozen-state.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/child-placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/child-position/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/reposition-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/document-error/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/document-reload/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/file-validity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/node-template/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/selection-dig/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/selection-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/unit/instant/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/edit-history/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/sibling-positions/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/token-template/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/reorder-step/__tests__/reorder-step.normal.test.ts",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/reorder-step/index.ts",
+      "to": "src/domains/dcmp/child-position/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/reorder-step/index.ts",
+      "to": "src/features/editor/domains/sibling-positions/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/reorder-step/index.ts",
+      "to": "src/features/editor/types/ChildReorder.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/reorder-step/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+      "to": "src/features/editor/domains/sibling-positions/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/sibling-positions/index.ts",
+      "to": "src/domains/dcmp/child-position/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/sibling-positions/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/sibling-positions/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/sibling-positions/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/sibling-positions/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__stories__/sample-canvas-document.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-turned-frame.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-free-parent.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-move.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-placement.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drop-position.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.frozen.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.grab-dig.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.multi-selection.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.normal.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.range-select-rotation.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-snap-flow.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.text-edit.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/interval-siblings.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/resize-snap-siblings.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-siblings.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.stories.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.stories.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.stories.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/interval-slot/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/drop-zone/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.edge.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.normal.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/setup.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/domains/recent-files/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.frozen.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.heading.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.multi-selection.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.normal.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.shorthand.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.stories.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/__stories__/sample-sidebar-document.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.editing.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.filter.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.normal.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.type-display.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/setup.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/index.stories.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.disclosure.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.filter.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.normal.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.reorder.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.type-display.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/setup.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/index.stories.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/layers-panel/__tests__/layers-panel.filter.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/layers-panel/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/index.ts",
+      "to": "src/features/editor/components/editor-provider/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/index.ts",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-shortcuts/index.ts",
+      "to": "src/features/editor/hooks/use-edit-actions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-shortcuts/index.ts",
+      "to": "src/features/editor/hooks/use-reorder-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/setup.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/__tests__/document-errors.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/__tests__/instants.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/dcmp/reposition-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/features/editor/__tests__/artboard-fixtures.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/features/editor/hooks/use-editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.artboard.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.artboard.test.tsx",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.group.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.group.test.tsx",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.rename.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.rename.test.tsx",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.tree-edit.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.tree-edit.test.tsx",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/dcmp/child-position/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/dcmp/reposition-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/session/document-reload/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/session/node-template/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/session/selection-dig/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/unit/instant/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/features/editor/domains/token-template/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-reorder-shortcut/__tests__/use-reorder-shortcut.normal.test.tsx",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-reorder-shortcut/__tests__/use-reorder-shortcut.normal.test.tsx",
+      "to": "src/features/editor/hooks/use-reorder-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-reorder-shortcut/index.ts",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-reorder-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/types/ChildReorder.ts",
+      "to": "src/domains/dcmp/child-position/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/types/OpenedContextMenu.ts",
+      "to": "src/features/editor/domains/edit-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/ArrayEx.ts",
+      "to": "src/utils/NumberEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/ArrayEx.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/ArrayEx.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.edge.test.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.edge.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.normal.test.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.normal.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    }
+  ]
+}
