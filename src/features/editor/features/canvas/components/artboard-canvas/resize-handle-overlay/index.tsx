@@ -54,9 +54,12 @@ export function resizeCursor(
 /**
  * ハンドル 1 個の見た目と位置。
  *
- * 中心を回った辺の上に置き（`- HandleSizePx / 2`）、四角も要素と同じ角度だけ回すので、選択の
- * 枠がハンドルの真ん中を辺に沿って通る。artboard は `overflow:hidden` を持つが、このオーバー
- * レイは artboard の外にあるのではみ出した半分が切られない。
+ * 中心を回った辺の上に置き（`- HandleSizePx / 2`）、四角も要素と同じ角度だけ回す。合わせて
+ * いるのは選択の枠ではなく辺で、枠は `outline-offset` の分だけ外側にあり、矩形でない形では
+ * 四隅で枠から離れる（docs/06-ui.md「リサイズハンドル」）。
+ *
+ * artboard は `overflow:hidden` を持つが、このオーバーレイは artboard の外にあるのではみ出した
+ * 半分が切られない。
  *
  * @param anchor 出す箇所
  * @param bounds 選択中のものが回って描かれている矩形（器からの相対）

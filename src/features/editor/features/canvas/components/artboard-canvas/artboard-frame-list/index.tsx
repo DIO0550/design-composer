@@ -27,6 +27,10 @@ export const SelectionColor = "#3b82f6";
  *
  * 枠に使えるのは `outline` だけで、`box-shadow` はノードの `shadow` prop がインライン
  * style で使う（docs/03 の対応表）ため奪えない。
+ *
+ * outline は（WebView が対応していれば）`border-radius` に沿うので、角丸の Box・Ellipse では
+ * 枠も形に沿う（docs/06-ui.md「選択」。ドロップ先の枠・参照元の破線も同じ）。矩形の枠には
+ * しない。枠を別の要素で重ねて描くことになり、描き方が 2 系統に割れる。
  */
 const SelectionOutline = `outline:2px solid ${SelectionColor};outline-offset:1px`;
 
