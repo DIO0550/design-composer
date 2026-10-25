@@ -6,6 +6,8 @@ import { DocumentIpcFake } from "../fake";
 import type { DocumentChanged } from "../index";
 
 const Path = filePath("/work/login.dcmp");
+/** `Path` を指す別の綴り。 */
+const LinkPath = filePath("/link/login.dcmp");
 
 test("ファイルを読み込むとその中身が返る", async () => {
   const fake = DocumentIpcFake.create({ [Path]: `{ "formatVersion": "1.0" }` });
@@ -96,6 +98,72 @@ test("購読を解除すると外部変更が届かなくなる", async () => {
   Result.unwrap(await fake.ipc.watch(Path));
 
   unsubscribe();
+  fake.changeExternally(Path, `{ "formatVersion": "1.0" }`);
+
+  expect(received).toStrictEqual([]);
+});
+
+test("別の綴りを寄せると、実体の綴りになる", async () => {
+  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  fake.linkPath({ link: LinkPath, target: Path });
+
+  const canonical = await fake.ipc.canonicalize(LinkPath);
+
+  expect(canonical).toStrictEqual(Result.ok(Path));
+});
+
+test("別の綴りを持たないパスは、寄せても綴りが変わらない", async () => {
+  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  fake.linkPath({ link: LinkPath, target: Path });
+
+  const canonical = await fake.ipc.canonicalize(Path);
+
+  expect(canonical).toStrictEqual(Result.ok(Path));
+});
+
+test("別の綴りで監視すると、実体の外部変更がその綴りで届く", async () => {
+  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  fake.linkPath({ link: LinkPath, target: Path });
+  const received: DocumentChanged[] = [];
+  Result.unwrap(
+    await fake.ipc.subscribeChanged((changed) => received.push(changed)),
+  );
+  Result.unwrap(await fake.ipc.watch(LinkPath));
+
+  fake.changeExternally(Path, `{ "formatVersion": "1.0" }`);
+
+  expect(received).toStrictEqual([
+    { path: LinkPath, content: `{ "formatVersion": "1.0" }` },
+  ]);
+});
+
+test("後から別の綴りで監視し直すと、前の綴りには外部変更が届かない", async () => {
+  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  fake.linkPath({ link: LinkPath, target: Path });
+  const received: DocumentChanged[] = [];
+  Result.unwrap(
+    await fake.ipc.subscribeChanged((changed) => received.push(changed)),
+  );
+  Result.unwrap(await fake.ipc.watch(Path));
+  Result.unwrap(await fake.ipc.watch(LinkPath));
+
+  fake.changeExternally(Path, `{ "formatVersion": "1.0" }`);
+
+  expect(received).toStrictEqual([
+    { path: LinkPath, content: `{ "formatVersion": "1.0" }` },
+  ]);
+});
+
+test("別の綴りで監視を止めると、実体の外部変更が届かなくなる", async () => {
+  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  fake.linkPath({ link: LinkPath, target: Path });
+  const received: DocumentChanged[] = [];
+  Result.unwrap(
+    await fake.ipc.subscribeChanged((changed) => received.push(changed)),
+  );
+  Result.unwrap(await fake.ipc.watch(Path));
+
+  Result.unwrap(await fake.ipc.unwatch(LinkPath));
   fake.changeExternally(Path, `{ "formatVersion": "1.0" }`);
 
   expect(received).toStrictEqual([]);

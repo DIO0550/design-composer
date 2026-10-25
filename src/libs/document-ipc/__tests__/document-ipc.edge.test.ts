@@ -69,6 +69,47 @@ test("読み込みが文字列以外を返すと ipcFailed が返る", async () 
   );
 });
 
+test("綴りを寄せるのを拒まれると invalidPath が返る", async () => {
+  const fake = DocumentIpcFake.create();
+  fake.denyCanonicalize({ path: Path, kind: "invalidPath" });
+
+  const canonical = await fake.ipc.canonicalize(Path);
+
+  expect(canonical).toStrictEqual(
+    Result.err({
+      kind: "invalidPath",
+      message: `${Path}: ドキュメントのパスとして扱えない`,
+    }),
+  );
+});
+
+test("綴りを寄せた結果が文字列以外だと ipcFailed が返る", async () => {
+  const ipc = setupIpc(() => Promise.resolve(42));
+
+  const canonical = await ipc.canonicalize(Path);
+
+  expect(canonical).toStrictEqual(
+    Result.err({
+      kind: "ipcFailed",
+      message: "canonicalize_document_path が文字列以外を返した: 42",
+    }),
+  );
+});
+
+test("綴りを寄せた結果がファイル名の要素を持たないと ipcFailed が返る", async () => {
+  const ipc = setupIpc(() => Promise.resolve("/"));
+
+  const canonical = await ipc.canonicalize(Path);
+
+  expect(canonical).toStrictEqual(
+    Result.err({
+      kind: "ipcFailed",
+      message:
+        "canonicalize_document_path がファイル名の要素を持たない綴りを返した: /",
+    }),
+  );
+});
+
 test("購読の開始に失敗すると Err が返り、例外は投げない", async () => {
   const ipc = DocumentIpc.create({
     invoke: () => Promise.resolve(undefined),
