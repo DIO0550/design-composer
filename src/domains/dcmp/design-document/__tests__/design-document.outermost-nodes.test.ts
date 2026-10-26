@@ -1,50 +1,11 @@
 import { expect, test } from "vitest";
 import { Option } from "@/utils/Option";
 import { DesignDocument } from "../index";
+import { copySourceDocument } from "./copy-setup";
 
 /*
  * 名前で指したものの最上位のノード（docs/06-ui.md「複数選択」のコピーと複製の対象）。
  */
-
-/**
- * `screen` に Text・子を持つ Box・Text が並び、別の artboard `about` にも Text を 1 つ持つ
- * ドキュメント。部品定義の中にもノードを 1 つ持つ。
- */
-function setupDocument(): DesignDocument {
-  return DesignDocument.create({
-    components: {
-      "primary-button": {
-        type: "Box",
-        children: [{ name: "button-label", type: "Text" }],
-      },
-    },
-    artboards: [
-      {
-        name: "screen",
-        width: 375,
-        height: 812,
-        children: [
-          { name: "title", type: "Text" },
-          {
-            name: "card",
-            type: "Box",
-            children: [
-              { name: "caption", type: "Text" },
-              { name: "note", type: "Text" },
-            ],
-          },
-          { name: "footer", type: "Text" },
-        ],
-      },
-      {
-        name: "about",
-        width: 375,
-        height: 812,
-        children: [{ name: "about-title", type: "Text" }],
-      },
-    ],
-  });
-}
 
 /**
  * 最上位に残ったノードの名前。
@@ -54,7 +15,7 @@ function setupDocument(): DesignDocument {
  */
 function outermostNamesOf(names: readonly string[]): Option<readonly string[]> {
   return Option.map(
-    DesignDocument.findOutermostNodes(setupDocument(), names),
+    DesignDocument.findOutermostNodes(copySourceDocument(), names),
     (nodes) => nodes.map((node) => node.name),
   );
 }
