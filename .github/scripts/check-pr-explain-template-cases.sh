@@ -44,7 +44,7 @@ PY
 # $1 期待する分類。pass / deny のほか、食い違いの形を返す。
 verdict() {
   local category="$1" output status
-  output="$(python3 "$checker" "$work/template.html" 2>&1)"; status=$?
+  output="$(git -C "$repo_root" ls-files | python3 "$checker" "$work/template.html" --tracked 2>&1)"; status=$?
   case "$status" in
     0) echo pass ;;
     1)
@@ -88,6 +88,8 @@ deny|template|固定スクリプトに createContextualFragment|script = body + 
 deny|template|固定スクリプトに setHTMLUnsafe|script = body + "\nnode.setHTMLUnsafe;\n"
 deny|template|固定スクリプトに parseHTMLUnsafe|script = body + "\nDocument.parseHTMLUnsafe;\n"
 deny|template|コメントに書いた srcdoc|script = body + "\n// srcdoc\n"
+deny|language|追跡している .rs が色を付ける表から外れる|script = body.replace(', rs: "rust"', "", 1)
+deny|language|追跡している .py が色を付ける表から外れる|script = body.replace('py: "python", ', "", 1)
 CASES
 )"
 

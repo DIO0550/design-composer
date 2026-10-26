@@ -237,7 +237,7 @@ layer / file・LayerRole の layer・concept のパス・出てくる場所の `
 | [`templates/explain.json`](templates/explain.json) | `excerpt` 以外のすべてのキーと、Target の 5 つの kind・primers の 2 つの kind・Passage の excerpt 以外の 8 つの kind を使う解説の見本 |
 | `.github/scripts/build-pr-explain.py` | 解説の検査と、抜粋の中身の書き足し |
 | `.github/scripts/lib/embedded_regions.py` | 抜粋・差分の hunk の始まりの行で効いている埋め込み(script / style 要素・ヒアドキュメント)を開いた行。検査と地図が使う |
-| `.github/scripts/check-pr-explain-template.py` | 枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査 |
+| `.github/scripts/check-pr-explain-template.py` | 枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査。`--tracked` では、追跡ファイルの拡張子が色付けの表(`LanguageByExtension`)か `NotHighlighted` のどちらかにあるかも見る |
 | `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-explain` / `put-map` / `remove`) |
 | `.github/scripts/build-pr-change-map.py` | 変更の地図(Actions が呼ぶ) |
 | `.github/workflows/pr-explain.yml` | 枠と地図の配置と、PR が閉じたときの削除 |
