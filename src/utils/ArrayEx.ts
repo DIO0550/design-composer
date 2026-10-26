@@ -1,3 +1,4 @@
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { NumberEx } from "@/utils/NumberEx";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
@@ -124,6 +125,21 @@ export const ArrayEx = {
         measure(item) < measure(smallest) ? item : smallest,
       ),
     );
+  },
+
+  /**
+   * 空でない並びを、空でないことが型に出た並びにする。
+   *
+   * @param array 確かめる並び
+   * @returns 同じ要素を同じ順に持つ空でない並び。空の並びなら `none`
+   */
+  toNonEmpty<T>(array: readonly T[]): Option<NonEmptyArray<T>> {
+    if (array.length === 0) {
+      return Option.none;
+    }
+    const [first, ...rest] = array;
+    const nonEmpty: NonEmptyArray<T> = [first, ...rest];
+    return Option.some(nonEmpty);
   },
 
   /**

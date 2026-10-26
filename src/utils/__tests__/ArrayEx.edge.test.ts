@@ -137,3 +137,7 @@ test("singleDistinct は空の並びでは none を返す", () => {
 test("singleDistinct は値が null だけの並びでは none を返す", () => {
   expect(ArrayEx.singleDistinct([null, null])).toEqual(Option.none);
 });
+
+test("空の並びは空でない並びにならない", () => {
+  expect(ArrayEx.toNonEmpty([])).toEqual(Option.none);
+});

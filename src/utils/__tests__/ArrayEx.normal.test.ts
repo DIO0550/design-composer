@@ -240,3 +240,9 @@ test("singleDistinct はすべての要素が等しい並びからその値を�
 test("singleDistinct は異なる値が混ざる並びでは none を返す", () => {
   expect(ArrayEx.singleDistinct(["a", "b", "a"])).toEqual(Option.none);
 });
+
+test("要素がある並びは、同じ要素を同じ順に持つ空でない並びになる", () => {
+  expect(ArrayEx.toNonEmpty(["b", "a", "c"])).toEqual(
+    Option.some(["b", "a", "c"]),
+  );
+});
