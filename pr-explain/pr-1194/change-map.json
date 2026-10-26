@@ -1,0 +1,179 @@
+{
+  "version": 2,
+  "pr": 1194,
+  "headBranch": "claude/affectionate-hypatia-ue0w3z",
+  "baseBranch": "main",
+  "mergeBase": "002a731c5c6b90ead604da2cad1afafc036214d4",
+  "head": "8a08297ba4db2fbb577e3aa080f6381b04956845",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "changed": false
+        },
+        {
+          "path": "harness/records/pr-1179.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "8a08297ba4db2fbb577e3aa080f6381b04956845",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-26T00:03:48Z",
+      "subject": "🔧 [Harness]: PR 解説ページの色付けの表に無い拡張子を追跡ファイルから検出する",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01LWJwuVKaBmHZW2znKh9saP",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -237,7 +237,7 @@ layer / file・LayerRole の layer・concept のパス・出てくる場所の `\n | [`templates/explain.json`](templates/explain.json) | `excerpt` 以外のすべてのキーと、Target の 5 つの kind・primers の 2 つの kind・Passage の excerpt 以外の 8 つの kind を使う解説の見本 |\n | `.github/scripts/build-pr-explain.py` | 解説の検査と、抜粋の中身の書き足し |\n | `.github/scripts/lib/embedded_regions.py` | 抜粋・差分の hunk の始まりの行で効いている埋め込み(script / style 要素・ヒアドキュメント)を開いた行。検査と地図が使う |\n-| `.github/scripts/check-pr-explain-template.py` | 枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査 |\n+| `.github/scripts/check-pr-explain-template.py` | 枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査。`--tracked` では、追跡ファイルの拡張子が色付けの表(`LanguageByExtension`)か `NotHighlighted` のどちらかにあるかも見る |\n | `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-explain` / `put-map` / `remove`) |\n | `.github/scripts/build-pr-change-map.py` | 変更の地図(Actions が呼ぶ) |\n | `.github/workflows/pr-explain.yml` | 枠と地図の配置と、PR が閉じたときの削除 |",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "patch": "@@ -44,7 +44,7 @@ PY\n # $1 期待する分類。pass / deny のほか、食い違いの形を返す。\n verdict() {\n   local category=\"$1\" output status\n-  output=\"$(python3 \"$checker\" \"$work/template.html\" 2>&1)\"; status=$?\n+  output=\"$(git -C \"$repo_root\" ls-files | python3 \"$checker\" \"$work/template.html\" --tracked 2>&1)\"; status=$?\n   case \"$status\" in\n     0) echo pass ;;\n     1)\n@@ -88,6 +88,8 @@ deny|template|固定スクリプトに createContextualFragment|script = body +\n deny|template|固定スクリプトに setHTMLUnsafe|script = body + \"\\nnode.setHTMLUnsafe;\\n\"\n deny|template|固定スクリプトに parseHTMLUnsafe|script = body + \"\\nDocument.parseHTMLUnsafe;\\n\"\n deny|template|コメントに書いた srcdoc|script = body + \"\\n// srcdoc\\n\"\n+deny|language|追跡している .rs が色を付ける表から外れる|script = body.replace(', rs: \"rust\"', \"\", 1)\n+deny|language|追跡している .py が色を付ける表から外れる|script = body.replace('py: \"python\", ', \"\", 1)\n CASES\n )\"\n ",
+          "patchLines": 18,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 3,
+          "patch": "@@ -15,6 +15,8 @@\n   (固定スクリプトは 1 本)\n - `pr-explain-template` — 固定スクリプトが `ForbiddenWords` の語を使っている。語として見るので、\n   コメントの中の綴りも落とす\n+- `pr-explain-language` — `--tracked` で標準入力に渡した追跡ファイルの拡張子が、`LanguageByExtension` にも\n+  `NotHighlighted` にも無い。拡張子を足したら、色を付けるか付けないかをどちらかの表で決める\n \n 種別の綴りは、この一覧と報告の行の頭(`[<種別>] `)にだけ書く(照合は `check-pr-explain-template-cases.sh`)。\n \n@@ -23,7 +25,9 @@\n 動かせるようになる。\n \n 使い方:\n-    check-pr-explain-template.py <テンプレート>\n+    check-pr-explain-template.py <テンプレート> [--tracked]\n+\n+`--tracked` を付けると、標準入力のパス(1 行 1 件。`git ls-files` の出力)の拡張子も見る。\n \n 違反が無ければ終了コード 0。違反があれば標準出力へ報告して 1。引数の誤りは 2。\n \"\"\"\n@@ -67,6 +71,13 @@ Policy = {\n     \"form-action\": frozenset({\"'none'\"}),\n }\n \n+# 色を付けない拡張子。ここにも `LanguageByExtension` にも無い拡張子が追跡ファイルに現れたら違反にする\n+# (`.rs` が表に無いまま Rust の差分が無彩色で出ていた)。\n+NotHighlighted = frozenset({\"md\", \"png\", \"svg\", \"ico\", \"icns\", \"lock\", \"toml\", \"awk\"})\n+\n+LanguageTable = re.compile(r\"const LanguageByExtension = \\{([^}]*)\\}\")\n+TableKey = re.compile(r\"(\\w+)\\s*:\")\n+\n # 出どころをちょうどこのとおりに書かなければならないディレクティブ。\n RequiredExactly = (\"default-src\", \"connect-src\")\n \n@@ -141,14 +152,26 @@ def word_problems(template: str) -> list[str]:\n     return [f\"固定スクリプトが {word} を使っている(textContent と createElement で組む)\" for word in ForbiddenWords if word_pattern(word).search(script)]\n \n \n+def language_problems(template: str, tracked_paths: list[str]) -> list[str]:\n+    \"\"\"追跡ファイルの拡張子のうち、色を付ける表にも付けない表にも無いものを集める。\"\"\"\n+    table = LanguageTable.search(template)\n+    highlighted = set(TableKey.findall(table.group(1))) if table else set()\n+    extensions = {Path(path).suffix.lstrip(\".\") for path in tracked_paths if Path(path).suffix}\n+    unknown = sorted(extensions - highlighted - NotHighlighted)\n+    return [f\".{extension} を追跡しているが、LanguageByExtension にも NotHighlighted にも無い(色を付けるか付けないかを決める)\" for extension in unknown]\n+\n+\n def main(argv: list[str]) -> int:\n-    is_valid_call = len(argv) == 2 and Path(argv[1]).is_file()\n+    is_tracked_call = len(argv) == 3 and argv[2] == \"--tracked\"\n+    is_valid_call = (len(argv) == 2 or is_tracked_call) and Path(argv[1]).is_file()\n     if not is_valid_call:\n-        print(\"使い方: check-pr-explain-template.py <テンプレート>\", file=sys.stderr)\n+        print(\"使い方: check-pr-explain-template.py <テンプレート> [--tracked]\", file=sys.stderr)\n         return 2\n     template = Path(argv[1]).read_text(encoding=\"utf-8\")\n     violations = [f\"[pr-explain-csp] {problem}\" for problem in csp_problems(template)]\n     violations += [f\"[pr-explain-template] {problem}\" for problem in word_problems(template)]\n+    if is_tracked_call:\n+        violations += [f\"[pr-explain-language] {problem}\" for problem in language_problems(template, sys.stdin.read().splitlines())]\n     for violation in violations:\n         print(violation)\n     return 1 if violations else 0",
+          "patchLines": 63,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/pr-1179.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -247,3 +247,4 @@ GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_\n ## 規約への反映\n \n 無し。このスキルの管轄は記録までで、集計と介入は `harness-growth` が別の機会に行う。\n+- 対策済: `harness` 層=hook at pr-1179",
+          "patchLines": 5,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    }
+  ]
+}
