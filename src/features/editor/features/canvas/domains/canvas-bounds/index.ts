@@ -3,6 +3,7 @@ import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import type { Offset } from "@/domains/unit/offset";
 import { type Side, SidePair, Sides } from "@/domains/unit/side";
 import type { NonEmptyArray } from "@/types/NonEmptyArray";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { Range } from "@/utils/Range";
 
@@ -321,11 +322,10 @@ export const CanvasBounds = {
    *   が決まらない）
    */
   enclosing(boundsList: readonly CanvasBounds[]): Option<CanvasBounds> {
-    if (boundsList.length === 0) {
-      return Option.none;
-    }
-    const [first, ...rest] = boundsList;
-    return Option.some(CanvasBounds.enclosingAll([first, ...rest]));
+    return Option.map(
+      ArrayEx.toNonEmpty(boundsList),
+      CanvasBounds.enclosingAll,
+    );
   },
 
   /**
