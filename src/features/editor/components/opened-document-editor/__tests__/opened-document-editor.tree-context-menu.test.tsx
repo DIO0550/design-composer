@@ -11,6 +11,7 @@ import {
   menuRow,
   propertyPane,
   renderOpenedDocument,
+  selectArtboard,
   selectInTree,
   tree,
 } from "./setup";
@@ -163,4 +164,48 @@ test("複数選択の一員の行のメニューの Send backward を押すと�
   await userEvent.click(menuRow("Send backward"));
 
   expect(rowNames(tree())).toEqual(["home-login", "home-signup", "home-title"]);
+});
+
+test("複数選択の一員の行のメニューの Duplicate を押すと、それぞれの直後に複製が並ぶ", async () => {
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
+  await userEvent.click(within(canvasPane()).getByText("ログイン"));
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", {
+      name: "Select all 2 instances",
+    }),
+  );
+
+  rightClickInTree("home-signup");
+  await userEvent.click(menuRow("Duplicate"));
+
+  expect(rowNames(tree())).toEqual([
+    "home-title",
+    "home-login",
+    "home-login-2",
+    "home-signup",
+    "home-signup-2",
+  ]);
+});
+
+test("複数選択の一員の行のメニューの Copy を押してから artboard に貼ると、2 つとも末尾に並ぶ", async () => {
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
+  await userEvent.click(within(canvasPane()).getByText("ログイン"));
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", {
+      name: "Select all 2 instances",
+    }),
+  );
+  rightClickInTree("home-signup");
+  await userEvent.click(menuRow("Copy"));
+
+  await selectArtboard("home");
+  await userEvent.keyboard("{Control>}v{/Control}");
+
+  expect(rowNames(tree())).toEqual([
+    "home-title",
+    "home-login",
+    "home-signup",
+    "home-login-2",
+    "home-signup-2",
+  ]);
 });

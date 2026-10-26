@@ -60,10 +60,10 @@ function TreeEditHarness() {
       >
         削除する
       </button>
-      <button type="button" onClick={() => dispatch({ type: "copy_node" })}>
+      <button type="button" onClick={() => dispatch({ type: "copy_selected" })}>
         コピーする
       </button>
-      <button type="button" onClick={() => dispatch({ type: "paste_node" })}>
+      <button type="button" onClick={() => dispatch({ type: "paste_copied" })}>
         貼り付ける
       </button>
     </>

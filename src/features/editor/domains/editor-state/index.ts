@@ -35,13 +35,14 @@ import { ReorderStep } from "@/features/editor/domains/reorder-step";
 import { SiblingPositions } from "@/features/editor/domains/sibling-positions";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
 import type { IndexMove } from "@/types/IndexMove";
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
  * エディタ画面が保持する状態（docs/06-ui.md「画面構成」「選択」）。選択はドキュメントの
- * 中の名前でしか意味を持たないため同じ器に持ち、`copiedNode`（アプリ内クリップボード）と
+ * 中の名前でしか意味を持たないため同じ器に持ち、`copiedNodes`（アプリ内クリップボード）と
  * `isRenaming`（名前を編集中か）も同じく非永続なのでここに置く。
  *
  * ドキュメント自身の不正は持たず `EditorState.documentErrors` で導出する。
@@ -54,7 +55,7 @@ export type EditorState = Readonly<{
   history: EditHistory;
   selection: SelectionState;
   selectedToken: Option<TokenRef>;
-  copiedNode: Option<Node>;
+  copiedNodes: Option<NonEmptyArray<Node>>;
   /**
    * 選んでいるものの名前を編集中か（docs/06-ui.md「名前の変更」）。
    *
@@ -131,19 +132,6 @@ function selectableArtboardName(
   return Option.isSome(DesignDocument.findArtboard(document, name))
     ? Option.some(name)
     : Option.none;
-}
-
-/**
- * 選択中のノード。
- * 選択できるものには artboard も含まれるが、artboard はノードではないので `none`。
- *
- * @param state 選択の出どころになるエディタの状態
- * @returns 選択中のノード。未選択と、選択が artboard のときは `none`
- */
-function selectedNode(state: EditorState): Option<Node> {
-  return Option.flatMap(EditorState.singleName(state), (name) =>
-    DesignDocument.findNode(EditorState.document(state), name),
-  );
 }
 
 /**
@@ -245,7 +233,7 @@ function withEdit(
 /**
  * ドキュメントへの編集の結果を見て、成功したものだけを `withEdit` へ渡す。
  *
- * 結果から文書以外の値も取り出す操作（`duplicateSelected` の `copyName`・`ungroupSelected`
+ * 結果から文書以外の値も取り出す操作（`duplicateSelected` の `copyNames`・`ungroupSelected`
  * の `freedNames`）は、取り出すために成否の分岐が要るので、ここを通さず `withEdit` を直に呼ぶ。
  *
  * @param state 入れる先のエディタの状態
@@ -278,7 +266,7 @@ export const EditorState = {
       history: EditHistory.create(document),
       selection: SelectionState.None,
       selectedToken: Option.none,
-      copiedNode: Option.none,
+      copiedNodes: Option.none,
       isRenaming: false,
       fileValidity: FileValidity.valid,
     };
@@ -551,7 +539,7 @@ export const EditorState = {
   },
 
   /**
-   * 名前で指したものをまとめて選ぶ（グループ解除で外した子・テストの組み立て）。
+   * 名前で指したものをまとめて選ぶ（グループ解除で外した子・複製したもの・テストの組み立て）。
    *
    * 選べないもの（ドキュメントに無い名前・部品定義の中の参照ノード）は落とす。ロック中のノ
    * ードは落とさない（ツリーからは選べるので / docs/03「ロック」）。キャンバスの範囲選択は
@@ -925,43 +913,50 @@ export const EditorState = {
   },
 
   /**
-   * 選択中のノードをサブツリーごとクリップボードへ入れる（docs/06-ui.md「編集操作の一覧」
-   * のコピー & ペースト）。
+   * 選んでいるもののうち最上位のノードを、それぞれサブツリーごとクリップボードへ入れる
+   * （docs/06-ui.md「編集操作の一覧」のコピー & ペースト /「複数選択」）。どれを入れるかは
+   * `DesignDocument.findOutermostNodes`。
    *
    * artboard を入れないのは、貼る先が「選択位置の子」で artboard はどのノードの子にもな
    * れないため。入れるのは切り離された複製なので、この後に元のノードを消しても貼れる
    * （ドキュメントは変わらない）。
    *
    * @param state コピーする前の状態
-   * @returns クリップボードを選択中のノードに差し替えた状態。1 つだけ選んでいないとき
-   *   （未選択・複数選択）と、選択が artboard のときは `none`
+   * @returns クリップボードを選んでいる最上位のノード（選んだ順）に差し替えた状態。未選択と、
+   *   最上位に artboard が混ざるときは `none`
    */
-  copyNode(state: EditorState): Option<EditorState> {
-    return Option.map(selectedNode(state), (node) => ({
+  copySelected(state: EditorState): Option<EditorState> {
+    const copied = DesignDocument.findOutermostNodes(
+      EditorState.document(state),
+      DocumentSelection.names(EditorState.documentSelection(state)),
+    );
+    return Option.map(copied, (nodes) => ({
       ...state,
-      copiedNode: Option.some(node),
+      copiedNodes: Option.some(nodes),
     }));
   },
 
   /**
-   * クリップボードの中身を選択位置の子として貼る（docs/06-ui.md「編集操作の一覧」）。
+   * クリップボードの中身を選択位置の子として、写した順に貼る（docs/06-ui.md「編集操作の
+   * 一覧」/「複数選択」）。
    *
-   * 名前の付け替えは `DesignDocument.insertNodeCopy` が挿入と一体で行うため、ここでは順
+   * 名前の付け替えは `DesignDocument.insertNodeCopies` が挿入と一体で行うため、ここでは順
    * 序を組み立てない。
    *
    * 選択は動かさない。
    *
    * @param state 貼る前の状態
-   * @returns 貼ったあとの状態。クリップボードが空・`insertPosition` が `none`・ファイルが
-   *   不正な間は `none`（`insertNodeCopy` の失敗は、位置を選択から作るので起こらない）
+   * @returns 貼ったあとの状態。クリップボードが空・`insertPosition` が `none`（複数選択中は
+   *   貼り先が 1 つに決まらない）・ファイルが不正な間は `none`（`insertNodeCopies` の失敗は、
+   *   位置を選択から作るので起こらない）
    */
-  pasteNode(state: EditorState): Option<EditorState> {
-    return Option.flatMap(state.copiedNode, (node) =>
+  pasteCopied(state: EditorState): Option<EditorState> {
+    return Option.flatMap(state.copiedNodes, (nodes) =>
       Option.flatMap(EditorState.insertPosition(state), (at) => {
-        const pasted = DesignDocument.insertNodeCopy(
+        const pasted = DesignDocument.insertNodeCopies(
           EditorState.document(state),
           at,
-          node,
+          nodes,
         );
         return withEditResult(state, pasted);
       }),
@@ -969,28 +964,27 @@ export const EditorState = {
   },
 
   /**
-   * 選んでいるノードの複製を同じ親の中の直後へ挿し、複製を選び直す（docs/06-ui.md「編集
-   * 操作の一覧」の複製）。クリップボードは経由しない。
+   * 選んでいるもののうち最上位のノードそれぞれの複製を、同じ親の中の直後へ挿し、複製を
+   * まとめて選び直す（docs/06-ui.md「編集操作の一覧」の複製 /「複数選択」）。クリップボード
+   * は経由しない。複数選んでいても 1 回の編集なので、1 回の取り消しで全部戻る。
    *
    * 選択を複製へ移すのは、続けて複製したときに作った順で並ぶようにするため。元を選んだ
    * ままだと、新しい複製ほど元の直後へ割り込み、並びが作った順の逆になる。
    *
    * @param state 複製する前のエディタの状態
-   * @returns 複製したあとのエディタの状態。1 つだけ選んでいないとき（未選択・複数選択）、
-   *   選択が artboard のとき、ファイルが不正な間は `none`
+   * @returns 複製したあとのエディタの状態。未選択・最上位に artboard が混ざるとき・ファイルが
+   *   不正な間は `none`
    */
   duplicateSelected(state: EditorState): Option<EditorState> {
-    return Option.flatMap(EditorState.singleName(state), (name) => {
-      const copied = DesignDocument.insertCopyAfter(
-        EditorState.document(state),
-        name,
-      );
-      return Result.isOk(copied)
-        ? Option.map(withEdit(state, copied.value.document), (edited) =>
-            EditorState.select(edited, copied.value.copyName),
-          )
-        : Option.none;
-    });
+    const copied = DesignDocument.insertCopiesAfter(
+      EditorState.document(state),
+      DocumentSelection.names(EditorState.documentSelection(state)),
+    );
+    return Option.flatMap(copied, ({ document, copyNames }) =>
+      Option.map(withEdit(state, document), (edited) =>
+        EditorState.selectNodes(edited, copyNames),
+      ),
+    );
   },
 
   /**

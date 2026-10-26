@@ -51,7 +51,7 @@ test("続けて複製すると、複製の複製がその直後に並ぶ", () =>
 
 test("複製してもクリップボードの中身は変わらない", () => {
   const copied = Option.unwrap(
-    EditorState.copyNode(
+    EditorState.copySelected(
       EditorState.select(stateWithDeepBranch(), "home-login"),
     ),
   );
@@ -60,8 +60,8 @@ test("複製してもクリップボードの中身は変わらない", () => {
     EditorState.duplicateSelected(EditorState.select(copied, "sibling-panel")),
   );
 
-  expect(duplicated.copiedNode).toEqual(
-    Option.some(nodeNamed(copied, "home-login")),
+  expect(duplicated.copiedNodes).toEqual(
+    Option.some([nodeNamed(copied, "home-login")]),
   );
 });
 
@@ -88,13 +88,4 @@ test("何も選んでいないときは複製できない", () => {
   expect(EditorState.duplicateSelected(stateWithDeepBranch())).toEqual(
     Option.none,
   );
-});
-
-test("複数選んでいるときは複製できない", () => {
-  const selected = EditorState.selectNodes(stateWithDeepBranch(), [
-    "outer-panel",
-    "sibling-panel",
-  ]);
-
-  expect(EditorState.duplicateSelected(selected)).toEqual(Option.none);
 });

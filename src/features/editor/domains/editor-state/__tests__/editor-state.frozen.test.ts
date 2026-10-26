@@ -250,20 +250,20 @@ test("ファイルが不正な間は、戻した編集を redo できない", ()
 
 test("ファイルが不正な間は、コピーしたノードを貼り付けられない", () => {
   const selected = EditorState.select(openedState(), "home-title");
-  const copied = Option.unwrap(EditorState.copyNode(selected));
+  const copied = Option.unwrap(EditorState.copySelected(selected));
   const atInsertable = EditorState.select(copied, "home");
 
-  expect(EditorState.pasteNode(frozen(atInsertable))).toStrictEqual(
+  expect(EditorState.pasteCopied(frozen(atInsertable))).toStrictEqual(
     Option.none,
   );
 });
 
 test("ファイルが不正でなければ、コピーしたノードを貼り付けられる", () => {
   const selected = EditorState.select(openedState(), "home-title");
-  const copied = Option.unwrap(EditorState.copyNode(selected));
+  const copied = Option.unwrap(EditorState.copySelected(selected));
   const atInsertable = EditorState.select(copied, "home");
 
-  expect(Option.isSome(EditorState.pasteNode(atInsertable))).toBe(true);
+  expect(Option.isSome(EditorState.pasteCopied(atInsertable))).toBe(true);
 });
 
 test("ファイルが不正な間は、選んでいるノードを複製できない", () => {
@@ -292,7 +292,7 @@ test("ファイルが不正な間は、選んでいるトークンを削除で�
 test("ファイルが不正な間でも、ノードのコピーはできる", () => {
   const selected = EditorState.select(openedState(), "home-title");
 
-  expect(Option.isSome(EditorState.copyNode(frozen(selected)))).toBe(true);
+  expect(Option.isSome(EditorState.copySelected(frozen(selected)))).toBe(true);
 });
 
 test("ファイルが不正な間でも、選択は変えられる", () => {

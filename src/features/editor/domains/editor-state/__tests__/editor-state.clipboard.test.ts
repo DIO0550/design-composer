@@ -40,25 +40,25 @@ function copyThenPaste(
   state: EditorState,
   pasteTarget: string,
 ): Option<EditorState> {
-  return Option.flatMap(EditorState.copyNode(state), (copied) =>
-    EditorState.pasteNode(EditorState.select(copied, pasteTarget)),
+  return Option.flatMap(EditorState.copySelected(state), (copied) =>
+    EditorState.pasteCopied(EditorState.select(copied, pasteTarget)),
   );
 }
 
 test("ノードを選んでコピーするとクリップボードにそのノードが入る", () => {
   const state = EditorState.select(setupState(), "title");
 
-  const copied = Option.unwrap(EditorState.copyNode(state));
+  const copied = Option.unwrap(EditorState.copySelected(state));
 
-  expect(copied.copiedNode).toEqual(
-    Option.some({ name: "title", type: "Text" }),
+  expect(copied.copiedNodes).toEqual(
+    Option.some([{ name: "title", type: "Text" }]),
   );
 });
 
 test("コピーしてもドキュメントは変わらない", () => {
   const state = EditorState.select(setupState(), "title");
 
-  const copied = Option.unwrap(EditorState.copyNode(state));
+  const copied = Option.unwrap(EditorState.copySelected(state));
 
   expect(EditorState.document(copied)).toEqual(EditorState.document(state));
 });
@@ -66,11 +66,11 @@ test("コピーしてもドキュメントは変わらない", () => {
 test("artboard を選んでいるときはコピーできない", () => {
   const state = EditorState.select(setupState(), "home");
 
-  expect(EditorState.copyNode(state)).toEqual(Option.none);
+  expect(EditorState.copySelected(state)).toEqual(Option.none);
 });
 
 test("何も選んでいないときはコピーできない", () => {
-  expect(EditorState.copyNode(setupState())).toEqual(Option.none);
+  expect(EditorState.copySelected(setupState())).toEqual(Option.none);
 });
 
 test("コピーしたノードを artboard へ貼ると子の末尾に連番の名前で並ぶ", () => {
@@ -115,7 +115,7 @@ test("同じものを続けて貼ると別々の名前で並ぶ", () => {
   const state = EditorState.select(setupState(), "title");
   const once = Option.unwrap(copyThenPaste(state, "home"));
 
-  const twice = Option.unwrap(EditorState.pasteNode(once));
+  const twice = Option.unwrap(EditorState.pasteCopied(once));
 
   expect(
     Option.unwrap(
@@ -126,11 +126,11 @@ test("同じものを続けて貼ると別々の名前で並ぶ", () => {
 
 test("コピー元を消してから貼ると元の名前のまま入る", () => {
   const state = EditorState.select(setupState(), "title");
-  const copied = Option.unwrap(EditorState.copyNode(state));
+  const copied = Option.unwrap(EditorState.copySelected(state));
   const removed = Option.unwrap(EditorState.removeSelected(copied));
 
   const pasted = Option.unwrap(
-    EditorState.pasteNode(EditorState.select(removed, "home")),
+    EditorState.pasteCopied(EditorState.select(removed, "home")),
   );
 
   expect(
@@ -149,7 +149,7 @@ test("子を持てないノードを選んでいるときは貼れない", () =>
 test("何もコピーしていないときは貼れない", () => {
   const state = EditorState.select(setupState(), "home");
 
-  expect(EditorState.pasteNode(state)).toEqual(Option.none);
+  expect(EditorState.pasteCopied(state)).toEqual(Option.none);
 });
 
 test("貼っても選択は動かない", () => {
@@ -162,7 +162,7 @@ test("貼っても選択は動かない", () => {
 
 test("外部変更を取り込んでもクリップボードの中身は残る", () => {
   const state = EditorState.select(setupState(), "title");
-  const copied = Option.unwrap(EditorState.copyNode(state));
+  const copied = Option.unwrap(EditorState.copySelected(state));
 
   const reloaded = EditorState.applyReload(
     copied,
@@ -175,7 +175,7 @@ test("外部変更を取り込んでもクリップボードの中身は残る",
     ReceivedAt,
   );
 
-  expect(reloaded.copiedNode).toEqual(
-    Option.some({ name: "title", type: "Text" }),
+  expect(reloaded.copiedNodes).toEqual(
+    Option.some([{ name: "title", type: "Text" }]),
   );
 });

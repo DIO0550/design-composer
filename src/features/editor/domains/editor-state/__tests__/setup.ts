@@ -1,3 +1,4 @@
+import { documentWithChildInEachArtboard } from "@/domains/__tests__/sample-document";
 import {
   DesignDocument,
   DocumentTemplate,
@@ -34,6 +35,16 @@ export function stateWithNestedBox(): EditorState {
       ],
     }),
   );
+}
+
+/**
+ * `home` と `about` の 2 枚の artboard に、Text を 1 つずつ（`home-title` / `about-title`）
+ * 持つ状態。
+ *
+ * @returns artboard をまたいで選べる並びを持つエディタの状態
+ */
+export function stateWithChildInEachArtboard(): EditorState {
+  return EditorState.create(documentWithChildInEachArtboard());
 }
 
 /**

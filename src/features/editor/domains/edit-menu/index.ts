@@ -110,9 +110,9 @@ function isEnabled(state: EditorState, operation: EditOperation): boolean {
     case "duplicate":
       return Option.isSome(EditorState.duplicateSelected(state));
     case "copy":
-      return Option.isSome(EditorState.copyNode(state));
+      return Option.isSome(EditorState.copySelected(state));
     case "paste":
-      return Option.isSome(EditorState.pasteNode(state));
+      return Option.isSome(EditorState.pasteCopied(state));
     case "rename":
       return Option.isSome(EditorState.startRenaming(state));
     case "group":

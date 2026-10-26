@@ -67,9 +67,16 @@ function setupSingleSelected(): EditorState {
 
 const Width: AxisLength = { axis: "width", length: 120 };
 
-test("複数選んでいる間はコピーできない", () => {
-  expect(Option.isSome(EditorState.copyNode(setupSingleSelected()))).toBe(true);
-  expect(Option.isSome(EditorState.copyNode(setupMultiSelected()))).toBe(false);
+test("複数選んでいる間は貼れない", () => {
+  const copied = Option.unwrap(
+    EditorState.copySelected(EditorState.select(setupState(), "home-badge")),
+  );
+  // 先頭の home-panel は子を持てるので、先頭へ貼る実装ならここで貼れてしまう
+  const multi = EditorState.selectNodes(copied, ["home-panel", "home-login"]);
+  const single = EditorState.select(copied, "home-panel");
+
+  expect(Option.isSome(EditorState.pasteCopied(single))).toBe(true);
+  expect(Option.isSome(EditorState.pasteCopied(multi))).toBe(false);
 });
 
 test("複数選んでいる間はインスタンスを解除できない", () => {

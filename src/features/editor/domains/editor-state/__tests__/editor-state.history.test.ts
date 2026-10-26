@@ -92,7 +92,7 @@ test("選択の切り替えは履歴に積まれない", () => {
 
 test("コピーは履歴に積まれない", () => {
   const copied = Option.unwrap(
-    EditorState.copyNode(EditorState.select(stateWithNestedBox(), "title")),
+    EditorState.copySelected(EditorState.select(stateWithNestedBox(), "title")),
   );
 
   expect(Option.isSome(EditorState.undo(copied))).toBe(false);
