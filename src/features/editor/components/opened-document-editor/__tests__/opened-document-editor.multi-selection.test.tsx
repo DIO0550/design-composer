@@ -16,8 +16,10 @@ import {
   drawn,
   propertyPane,
   renderOpenedDocument,
+  renderWithSameComponentInstancesSelected,
   selectArtboard,
   selectInTree,
+  selectSameComponentInstances,
   tree,
 } from "./setup";
 
@@ -30,27 +32,13 @@ import {
  */
 
 test("インスタンスを選んでまとめて選ぶと、ツリーの複数行が選択状態になる", async () => {
-  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
-  await userEvent.click(within(canvasPane()).getByText("ログイン"));
-
-  await userEvent.click(
-    within(propertyPane()).getByRole("button", {
-      name: "Select all 2 instances",
-    }),
-  );
+  await renderWithSameComponentInstancesSelected();
 
   expect(currentRowNames(tree())).toEqual(["home-login", "home-signup"]);
 });
 
 test("インスタンスを選んでまとめて選ぶと、キャンバスの複数のノードが強調される", async () => {
-  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
-  await userEvent.click(within(canvasPane()).getByText("ログイン"));
-
-  await userEvent.click(
-    within(propertyPane()).getByRole("button", {
-      name: "Select all 2 instances",
-    }),
-  );
+  await renderWithSameComponentInstancesSelected();
 
   const highlighted = highlightedNames(canvasPane());
 
@@ -59,14 +47,7 @@ test("インスタンスを選んでまとめて選ぶと、キャンバスの�
 });
 
 test("まとめて選ぶと右ペインが選択数に切り替わる", async () => {
-  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
-  await userEvent.click(within(canvasPane()).getByText("ログイン"));
-
-  await userEvent.click(
-    within(propertyPane()).getByRole("button", {
-      name: "Select all 2 instances",
-    }),
-  );
+  await renderWithSameComponentInstancesSelected();
 
   expect(
     within(propertyPane()).getByRole("heading", { name: "2 selected" }),
@@ -74,13 +55,7 @@ test("まとめて選ぶと右ペインが選択数に切り替わる", async ()
 });
 
 test("まとめて選んで Delete を押すと、選んだものがすべてツリーから消える", async () => {
-  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
-  await userEvent.click(within(canvasPane()).getByText("ログイン"));
-  await userEvent.click(
-    within(propertyPane()).getByRole("button", {
-      name: "Select all 2 instances",
-    }),
-  );
+  await renderWithSameComponentInstancesSelected();
 
   await userEvent.keyboard("{Delete}");
 
@@ -88,13 +63,7 @@ test("まとめて選んで Delete を押すと、選んだものがすべてツ
 });
 
 test("まとめて選んで Ctrl+D を押すと、それぞれの直後に複製が並ぶ", async () => {
-  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
-  await userEvent.click(within(canvasPane()).getByText("ログイン"));
-  await userEvent.click(
-    within(propertyPane()).getByRole("button", {
-      name: "Select all 2 instances",
-    }),
-  );
+  await renderWithSameComponentInstancesSelected();
 
   await userEvent.keyboard("{Control>}d{/Control}");
 
@@ -108,13 +77,7 @@ test("まとめて選んで Ctrl+D を押すと、それぞれの直後に複製
 });
 
 test("まとめて選んで Ctrl+D を押すと、複製の行がまとめて選択状態になる", async () => {
-  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
-  await userEvent.click(within(canvasPane()).getByText("ログイン"));
-  await userEvent.click(
-    within(propertyPane()).getByRole("button", {
-      name: "Select all 2 instances",
-    }),
-  );
+  await renderWithSameComponentInstancesSelected();
 
   await userEvent.keyboard("{Control>}d{/Control}");
 
@@ -122,13 +85,7 @@ test("まとめて選んで Ctrl+D を押すと、複製の行がまとめて選
 });
 
 test("まとめて選んで Ctrl+C を押し、artboard を選んで Ctrl+V を押すと、2 つとも末尾に並ぶ", async () => {
-  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
-  await userEvent.click(within(canvasPane()).getByText("ログイン"));
-  await userEvent.click(
-    within(propertyPane()).getByRole("button", {
-      name: "Select all 2 instances",
-    }),
-  );
+  await renderWithSameComponentInstancesSelected();
   await userEvent.keyboard("{Control>}c{/Control}");
 
   await selectArtboard("home");
@@ -147,12 +104,7 @@ test("まとめて選んだまま Ctrl+V を押しても、ツリーは変わら
   await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
   await selectInTree("home-title");
   await userEvent.keyboard("{Control>}c{/Control}");
-  await userEvent.click(within(canvasPane()).getByText("ログイン"));
-  await userEvent.click(
-    within(propertyPane()).getByRole("button", {
-      name: "Select all 2 instances",
-    }),
-  );
+  await selectSameComponentInstances();
 
   await userEvent.keyboard("{Control>}v{/Control}");
 
@@ -239,13 +191,7 @@ test("範囲を引いてまとめて選ぶと右ペインが選択数に切り�
 });
 
 test("まとめて選んだあとにツリーで1つ選び直すと単一選択に戻る", async () => {
-  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
-  await userEvent.click(within(canvasPane()).getByText("ログイン"));
-  await userEvent.click(
-    within(propertyPane()).getByRole("button", {
-      name: "Select all 2 instances",
-    }),
-  );
+  await renderWithSameComponentInstancesSelected();
 
   await userEvent.click(within(tree()).getByText("home-signup"));
 
