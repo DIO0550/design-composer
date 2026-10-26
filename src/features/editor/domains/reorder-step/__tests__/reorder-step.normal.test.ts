@@ -27,3 +27,27 @@ test("並びの外へ出る先も、そのまま返す", () => {
     }),
   ).toBe(-1);
 });
+
+test("兄弟をまとめて前面へ動かすときは、前面にいるものから順に 1 つ後ろへ動かす", () => {
+  expect(
+    ReorderStep.toChildReorders(ReorderSteps.TowardFront, {
+      parentName: "Card",
+      indices: [0, 2],
+    }),
+  ).toEqual([
+    { from: { parentName: "Card", index: 2 }, toIndex: 3 },
+    { from: { parentName: "Card", index: 0 }, toIndex: 1 },
+  ]);
+});
+
+test("兄弟をまとめて背面へ動かすときは、背面にいるものから順に 1 つ前へ動かす", () => {
+  expect(
+    ReorderStep.toChildReorders(ReorderSteps.TowardBack, {
+      parentName: "Card",
+      indices: [1, 3],
+    }),
+  ).toEqual([
+    { from: { parentName: "Card", index: 1 }, toIndex: 0 },
+    { from: { parentName: "Card", index: 3 }, toIndex: 2 },
+  ]);
+});

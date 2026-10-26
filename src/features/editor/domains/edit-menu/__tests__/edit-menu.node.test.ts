@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../../editor-state";
 import {
@@ -27,6 +28,49 @@ import {
  */
 function nodeOperations(state: EditorState): readonly EditOperation[] {
   return operationsIn(EditMenu.create(state, EditMenuTargets.Node));
+}
+
+/**
+ * メニューの中で押せる操作。
+ *
+ * @param menu 見ているメニュー
+ * @returns 押せる操作を並ぶ順に
+ */
+function enabledOperations(menu: EditMenu): readonly EditOperation[] {
+  return menu.sections
+    .flat()
+    .filter((row) => row.isEnabled)
+    .map((row) => row.operation);
+}
+
+/**
+ * `home` に `title` と `panel` が並び、`panel` の中に `inner-a` と `inner-b` がいる状態。
+ *
+ * @returns その並びを持つエディタの状態
+ */
+function stateWithNestedPanel(): EditorState {
+  return EditorState.create(
+    DesignDocument.create({
+      artboards: [
+        {
+          name: "home",
+          width: 375,
+          height: 812,
+          children: [
+            { name: "title", type: "Text" },
+            {
+              name: "panel",
+              type: "Box",
+              children: [
+                { name: "inner-a", type: "Box" },
+                { name: "inner-b", type: "Box" },
+              ],
+            },
+          ],
+        },
+      ],
+    }),
+  );
 }
 
 test("ノードを選んでいるときは複製・コピー・ペースト・名前を変更・グループ化・グループ解除・前面へ・背面へ・インスタンスを解除・削除が並ぶ", () => {
@@ -192,16 +236,35 @@ test("1 つだけ選んでいるときは削除が押せる", () => {
   expect(isRowEnabled(menu, EditOperations.Delete)).toBe(true);
 });
 
-test("複数選択中は削除だけが押せる", () => {
+test("同じ親の兄弟を複数選んでいるときは、動かせる向きの並べ替えと削除が押せる", () => {
   const menu = EditMenu.create(
     EditorState.selectNodes(setupState(), ["title", "panel"]),
     EditMenuTargets.Node,
   );
 
-  expect(
-    menu.sections
-      .flat()
-      .filter((row) => row.isEnabled)
-      .map((row) => row.operation),
-  ).toEqual([EditOperations.Delete]);
+  expect(enabledOperations(menu)).toEqual([
+    EditOperations.BringForward,
+    EditOperations.Delete,
+  ]);
+});
+
+test("最前面にいるものを含む兄弟を複数選んでいるときは、前面へが押せない", () => {
+  const menu = EditMenu.create(
+    EditorState.selectNodes(setupState(), ["panel", "login"]),
+    EditMenuTargets.Node,
+  );
+
+  expect([
+    isRowEnabled(menu, EditOperations.BringForward),
+    isRowEnabled(menu, EditOperations.SendBackward),
+  ]).toEqual([false, true]);
+});
+
+test("親が違うノードを複数選んでいるときは、削除だけが押せる", () => {
+  const menu = EditMenu.create(
+    EditorState.selectNodes(stateWithNestedPanel(), ["title", "inner-a"]),
+    EditMenuTargets.Node,
+  );
+
+  expect(enabledOperations(menu)).toEqual([EditOperations.Delete]);
 });

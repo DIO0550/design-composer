@@ -138,7 +138,10 @@ test("ファイルが不正な間は、選んでいるノードを並べ替え�
   );
 
   expect(
-    EditorState.reorderSelectedNode(frozen(selected), ReorderSteps.TowardFront),
+    EditorState.reorderSelectedNodes(
+      frozen(selected),
+      ReorderSteps.TowardFront,
+    ),
   ).toStrictEqual(Option.none);
 });
 
@@ -150,7 +153,7 @@ test("ファイルが不正でなければ、選んでいるノードを並べ�
 
   expect(
     Option.isSome(
-      EditorState.reorderSelectedNode(selected, ReorderSteps.TowardFront),
+      EditorState.reorderSelectedNodes(selected, ReorderSteps.TowardFront),
     ),
   ).toBe(true);
 });

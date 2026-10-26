@@ -8,7 +8,6 @@ import { PropEdit } from "@/domains/dcmp/node";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { EditContinuities } from "@/domains/session/edit-continuity";
-import { ReorderSteps } from "@/features/editor/domains/reorder-step";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -113,25 +112,6 @@ test("複数選んでいる間は prop を編集できない", () => {
         setupMultiSelected(),
         edit,
         EditContinuities.Separate,
-      ),
-    ),
-  ).toBe(false);
-});
-
-test("複数選んでいる間は並べ替えられない", () => {
-  expect(
-    Option.isSome(
-      EditorState.reorderSelectedNode(
-        setupSingleSelected(),
-        ReorderSteps.TowardFront,
-      ),
-    ),
-  ).toBe(true);
-  expect(
-    Option.isSome(
-      EditorState.reorderSelectedNode(
-        setupMultiSelected(),
-        ReorderSteps.TowardFront,
       ),
     ),
   ).toBe(false);

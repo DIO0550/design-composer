@@ -149,3 +149,18 @@ test("複数選択の一員の行のメニューの Delete を押すと、選ん
 
   expect(rowNames(tree())).toEqual(["home-title"]);
 });
+
+test("複数選択の一員の行のメニューの Send backward を押すと、選んだものがまとめて背面へ動く", async () => {
+  await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
+  await userEvent.click(within(canvasPane()).getByText("ログイン"));
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", {
+      name: "Select all 2 instances",
+    }),
+  );
+
+  rightClickInTree("home-signup");
+  await userEvent.click(menuRow("Send backward"));
+
+  expect(rowNames(tree())).toEqual(["home-login", "home-signup", "home-title"]);
+});

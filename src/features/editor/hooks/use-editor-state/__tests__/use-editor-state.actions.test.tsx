@@ -293,7 +293,7 @@ function EditorStateHarness() {
         type="button"
         onClick={() =>
           dispatch({
-            type: "reorder_selected_node",
+            type: "reorder_selected_nodes",
             step: ReorderSteps.TowardFront,
           })
         }

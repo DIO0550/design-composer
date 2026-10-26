@@ -18,7 +18,10 @@ export type EditActions = Readonly<{
   redo: () => void;
   /** 選んでいるものを、ノードならサブツリーごと・artboard なら 1 枚ごと消す。 */
   removeSelected: () => void;
-  /** 選んでいるノードを兄弟の並びの中で 1 つぶん動かす。 */
+  /**
+   * 選んでいるノードを兄弟の並びの中で 1 つぶん動かす。複数なら同じ親の兄弟のときだけ、
+   * 並び順を保ってまとめて。
+   */
   reorderSelected: (step: ReorderStep) => void;
   /** 選んでいる絶対配置のノードの座標をずらす。 */
   repositionSelectedBy: (delta: Offset) => void;
@@ -50,7 +53,7 @@ export function useEditActions(): EditActions {
     redo: () => dispatch({ type: "redo" }),
     removeSelected: () => dispatch({ type: "remove_selected" }),
     reorderSelected: (step) =>
-      dispatch({ type: "reorder_selected_node", step }),
+      dispatch({ type: "reorder_selected_nodes", step }),
     repositionSelectedBy: (delta) =>
       dispatch({ type: "reposition_selected_node", delta }),
     startRenaming: () => dispatch({ type: "start_renaming" }),
