@@ -53,6 +53,7 @@ function rightPaneParts({
           goToSource: onGoToSource,
           selectAllInstances: node.selectAllInstances,
           detach: node.detachInstance,
+          editRefOwnProp: node.editRefOwnProp,
         }}
       />
     ),

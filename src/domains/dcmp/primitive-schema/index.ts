@@ -19,6 +19,7 @@ export {
   PrimitiveSchema,
   PrimitiveSchemas,
   PrimitiveTypes,
+  RefOwnPropDefinitions,
   TextSchema,
 } from "./schema";
 export type { TokenPropName } from "./token-props";

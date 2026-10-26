@@ -83,6 +83,11 @@ export type EditorAction =
       continuity: EditContinuity;
     }>
   | Readonly<{
+      type: "apply_ref_own_prop_edit";
+      edit: PropEdit;
+      continuity: EditContinuity;
+    }>
+  | Readonly<{
       type: "resize";
       edit: ResizeEdit;
       continuity: EditContinuity;
@@ -291,6 +296,13 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       // 選択が無ければ編集は存在しない（EditorState.applyPropEdit の `none`）。
       return Option.unwrapOr(
         EditorState.applyPropEdit(state, action.edit, action.continuity),
+        state,
+      );
+    case "apply_ref_own_prop_edit":
+      // 単一選択のインスタンスが無い・持てない prop を指す・ファイルが不正な間は編集が
+      // 存在しない（EditorState.applyRefOwnPropEdit の `none`）。
+      return Option.unwrapOr(
+        EditorState.applyRefOwnPropEdit(state, action.edit, action.continuity),
         state,
       );
     case "resize":

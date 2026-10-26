@@ -1,4 +1,5 @@
 import type { NonEmptyArray } from "@/types/NonEmptyArray";
+import { ArrayEx } from "@/utils/ArrayEx";
 import {
   Json,
   type JsonCursor,
@@ -173,15 +174,40 @@ export type PrimitiveNode = Readonly<{
   children?: readonly Node[];
 }>;
 
-/** 部品のインスタンス。参照先の名前と、公開 prop への上書きを持つ。 */
+/**
+ * 参照ノードがインスタンス自身の値として直下に持てる prop の名前（docs/02-data-model.md
+ * 「部品参照ノード」）。読み・書き・分割はこの並びの走査で行い、名前を直接書かない。
+ */
+const RefOwnPropNames = ["locking"] as const;
+
+/** 参照ノードがインスタンス自身の値として直下に持てる prop の名前。 */
+export type RefOwnPropName = (typeof RefOwnPropNames)[number];
+
+/** 参照ノード直下に書かれたインスタンス自身の値。未設定の prop はキーごと持たない。 */
+export type RefOwnProps = Readonly<Partial<Record<RefOwnPropName, PropValue>>>;
+
+/**
+ * 部品のインスタンス。参照先の名前と、公開 prop への上書き（`overrides`）と、それとは別に
+ * インスタンス自身の値（`RefOwnProps`）を持つ。
+ */
 export type RefNode = Readonly<{
   name: string;
   ref: string;
   overrides?: Props;
-}>;
+}> &
+  RefOwnProps;
 
 /** ツリーに並ぶノード。プリミティブか部品インスタンスのどちらか。 */
 export type Node = PrimitiveNode | RefNode;
+
+/**
+ * 部品化するプリミティブを、部品の根になる側と、参照ノードへ移すインスタンス自身の値に
+ * 分けたもの。
+ */
+export type RefOwnPropsSplit = Readonly<{
+  root: PrimitiveNode;
+  refOwnProps: RefOwnProps;
+}>;
 
 /**
  * プリミティブのノードと、それを直下に収めている親の props。
@@ -196,7 +222,7 @@ export type NestedPrimitive = Readonly<{
 
 /** ノードが JSON 上で持ちうるフィールド(docs/01-file-format.md)。 */
 const PrimitiveNodeFields = ["name", "type", "props", "children"] as const;
-const RefNodeFields = ["name", "ref", "overrides"] as const;
+const RefNodeFields = ["name", "ref", ...RefOwnPropNames, "overrides"] as const;
 
 /**
  * 名前を 1 ノードずつ決め直すときの決め方。
@@ -217,6 +243,48 @@ function holdsChildren(
   node: Node,
 ): node is PrimitiveNode & Readonly<{ children: readonly Node[] }> {
   return !Node.isRef(node) && node.children !== undefined;
+}
+
+/**
+ * 参照ノードがインスタンス自身の値として持てる prop の名前か。
+ *
+ * @param name 見る prop の名前
+ * @returns `RefOwnPropNames` のどれかなら true
+ */
+function isRefOwnPropName(name: string): boolean {
+  return Option.isSome(ArrayEx.findEqual(RefOwnPropNames, name));
+}
+
+/**
+ * 値の並びから、インスタンス自身の値として持てる prop だけを拾う。
+ *
+ * @param source 拾う元の値
+ * @returns `RefOwnPropNames` の順に、`source` に書かれている値だけを持つもの
+ */
+function pickRefOwnProps(source: RefOwnProps): RefOwnProps {
+  return Object.fromEntries(
+    RefOwnPropNames.flatMap((name) => {
+      const value = source[name];
+      return value === undefined ? [] : [[name, value] as const];
+    }),
+  );
+}
+
+/**
+ * 参照ノードのインスタンス自身の値を差し替えたもの。
+ *
+ * @param node 差し替える参照ノード
+ * @param refOwnProps 差し替えたあとの値。持てない prop 名のキーは拾わない
+ * @returns `name` / `ref` / `overrides` はそのままで、インスタンス自身の値を `refOwnProps`
+ *   にした参照ノード。`refOwnProps` に無い値はキーごと持たない
+ */
+function withRefOwnProps(node: RefNode, refOwnProps: RefOwnProps): RefNode {
+  return {
+    name: node.name,
+    ref: node.ref,
+    ...pickRefOwnProps(refOwnProps),
+    ...(node.overrides !== undefined ? { overrides: node.overrides } : {}),
+  };
 }
 
 /** 名前を付け替えた兄弟の並びと、付け替え終えた時点で使われている名前。 */
@@ -401,7 +469,8 @@ export const Node = {
   },
 
   /**
-   * プリミティブのノードに書かれている props。
+   * プリミティブのノードに書かれている props そのもの。参照ノード直下のインスタンス自身の
+   * 値は `refOwnPropsOf` で読む。
    *
    * @param node 見るノード
    * @returns 書かれている props。`props` を持たなければ空
@@ -411,8 +480,19 @@ export const Node = {
   },
 
   /**
-   * ノードの prop を書き換える。参照ノードが持つのは自分の props ではなく
-   * 部品への上書き(`overrides`)なので、同じ編集でも書き込み先が変わる。
+   * 参照ノード直下に書かれたインスタンス自身の値。公開 prop への上書き（`overrides`）は
+   * 含まない。
+   *
+   * @param node 見る参照ノード
+   * @returns 直下に書かれている値だけ。1 つも書かれていなければ空
+   */
+  refOwnPropsOf(node: RefNode): RefOwnProps {
+    return pickRefOwnProps(node);
+  },
+
+  /**
+   * ノードの prop を書き換える。参照ノードへの prop の編集は公開 prop への上書き
+   * （`overrides`）へ書く。直下のインスタンス自身の値は `applyRefOwnPropEdit` で書く。
    *
    * @param node 書き換えるノード
    * @param edit 適用する編集
@@ -424,6 +504,86 @@ export const Node = {
       return { ...node, overrides: Props.apply(node.overrides ?? {}, edit) };
     }
     return { ...node, props: Props.apply(node.props ?? {}, edit) };
+  },
+
+  /**
+   * 参照ノード直下のインスタンス自身の値を書き換える。公開 prop への上書きは変えない。
+   *
+   * `overrides` へ書かないのは、そちらが部品の公開 prop の宣言に従う値で、宣言名には
+   * `locking` も付けられるため。インスタンス自身の値は宣言に依らず参照ノードが持つ。
+   *
+   * @param node 書き換える参照ノード
+   * @param edit 適用する編集
+   * @returns インスタンス自身の値に `Props.apply` で編集を適用した参照ノード。`edit.names` に
+   *   インスタンス自身の値として持てない prop があれば、その名前を `edit.names` の順に
+   *   並べた `err`
+   */
+  applyRefOwnPropEdit(
+    node: RefNode,
+    edit: PropEdit,
+  ): Result<RefNode, NonEmptyArray<string>> {
+    const [notAllowed, ...moreNotAllowed] = edit.names.filter(
+      (name) => !isRefOwnPropName(name),
+    );
+    if (notAllowed !== undefined) {
+      return Result.err([notAllowed, ...moreNotAllowed]);
+    }
+    return Result.ok(
+      withRefOwnProps(node, Props.apply(Node.refOwnPropsOf(node), edit)),
+    );
+  },
+
+  /**
+   * 部品の根を展開したものに、インスタンス自身の値を当てる（解除の焼き込み）。
+   *
+   * @param node 展開したインスタンス
+   * @param root 部品の根を展開したもの
+   * @returns インスタンス自身の値として持てる prop について、部品の根の値をインスタンス自身の
+   *   値で置き換えた（インスタンスが持たなければ根からも消した）もの。根が `props` を持たず
+   *   インスタンス自身の値も無ければ `root` そのもの
+   */
+  applyRefOwnPropsToRoot<T extends Readonly<{ props?: Props }>>(
+    node: RefNode,
+    root: T,
+  ): T {
+    const refOwnProps = Node.refOwnPropsOf(node);
+    if (root.props === undefined && Object.keys(refOwnProps).length === 0) {
+      return root;
+    }
+    const cleared = Props.apply(
+      root.props ?? {},
+      PropEdit.clear(RefOwnPropNames),
+    );
+    return { ...root, props: { ...cleared, ...refOwnProps } };
+  },
+
+  /**
+   * 部品化するプリミティブを、部品の根と参照ノードへ移す値に分ける。
+   *
+   * 根にも残すと同じ値をファイルに二重に持ち、根の側はどこからも読まれない（`isLocked`
+   * は根を読まず、解除では参照ノードの値で置き換える）。移さないと、部品化しただけで
+   * キャンバス上のロックが黙って外れる。`unlocked` も移すのは、値で振り分けると根に
+   * 読まれない値が残るため。
+   *
+   * @param node 部品化するプリミティブ
+   * @returns ノードの props のうちインスタンス自身の値として持てる prop を、値に依らず
+   *   参照ノード側へ移したもの。残りの props と型・子は根に残る。持てる prop が 1 つも
+   *   書かれていなければ根は渡したノードそのもので、参照ノード側は空
+   */
+  splitRefOwnProps(node: PrimitiveNode): RefOwnPropsSplit {
+    const props = Node.propsOf(node);
+    const refOwnProps = pickRefOwnProps(props);
+    if (Object.keys(refOwnProps).length === 0) {
+      return { root: node, refOwnProps };
+    }
+    const rootProps = Props.apply(props, PropEdit.clear(RefOwnPropNames));
+    const root: PrimitiveNode = {
+      name: node.name,
+      type: node.type,
+      ...(Object.keys(rootProps).length > 0 ? { props: rootProps } : {}),
+      ...(node.children !== undefined ? { children: node.children } : {}),
+    };
+    return { root, refOwnProps };
   },
 
   /**
@@ -517,13 +677,15 @@ export const Node = {
    *
    * @param node 書き出すノード(子孫も含めて書き出す)
    * @returns ノードの JSON 表現。`props` / `overrides` / `children` は未設定か空なら現れない。
-   *   `props` / `overrides` のキーは `Props.toJson` のとおり昇順
+   *   `props` / `overrides` のキーは `Props.toJson` のとおり昇順。参照ノードのインスタンス
+   *   自身の値は `ref` と `overrides` の間に、書かれているものだけが現れる
    */
   toJson(node: Node): JsonObject {
     if (Node.isRef(node)) {
       return {
         name: node.name,
         ref: node.ref,
+        ...Node.refOwnPropsOf(node),
         ...Json.nonEmptyField(
           "overrides",
           node.overrides === undefined
@@ -571,6 +733,29 @@ function primitiveNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
 }
 
 /**
+ * 参照ノード直下のインスタンス自身の値を読む。値が語彙にあるかは見ない
+ * （`DesignDocument.collectErrors` がスキーマに照らす）。
+ *
+ * @param record 読み出し元のオブジェクトを指しているカーソル
+ * @returns 書かれている値だけを持つもの。値が prop の値として読めなければ
+ *   `PropValue.fromJson` の `err` をすべて集めたもの
+ */
+function refOwnPropsFromJson(
+  record: JsonRecordCursor,
+): JsonDecoded<RefOwnProps> {
+  const decoded = RefOwnPropNames.map((name) =>
+    Result.map(
+      Json.optional(record, name, PropValue.fromJson),
+      (value): readonly (readonly [RefOwnPropName, PropValue])[] =>
+        Option.isSome(value) ? [[name, value.value]] : [],
+    ),
+  );
+  return Result.map(Json.collect(decoded), (entries) =>
+    Object.fromEntries(entries.flat()),
+  );
+}
+
+/**
  * 部品インスタンスとして読む。未知のフィールドはエラーにする。
  *
  * @param record 読み出し元のオブジェクトを指しているカーソル
@@ -579,13 +764,15 @@ function primitiveNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
  */
 function refNodeFromJson(record: JsonRecordCursor): JsonDecoded<Node> {
   return Json.knownFields(
-    Json.combine3(
+    Json.combine4(
       Json.required(record, "name", Json.string),
       Json.required(record, "ref", Json.string),
+      refOwnPropsFromJson(record),
       Json.optional(record, "overrides", Props.fromJson),
-      (name, ref, overrides) => ({
+      (name, ref, refOwnProps, overrides) => ({
         name,
         ref,
+        ...refOwnProps,
         ...(Option.isSome(overrides) ? { overrides: overrides.value } : {}),
       }),
     ),

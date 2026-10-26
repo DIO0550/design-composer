@@ -17,6 +17,7 @@ function noopInstanceActions(): InstanceActions {
     goToSource: vi.fn(),
     selectAllInstances: vi.fn(),
     detach: vi.fn(),
+    editRefOwnProp: vi.fn(),
   };
 }
 

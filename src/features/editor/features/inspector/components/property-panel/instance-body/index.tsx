@@ -43,11 +43,18 @@ const DetachDisabledReason = "参照先の部品が見つからないため解�
 const SelectAllInstancesDisabledReason =
   "このインスタンスしか無いため、まとめて選んでも選択は変わりません";
 
-/** インスタンスの節から呼ぶ操作。常に対で要るので 1 つにまとめて受け取る。 */
+/**
+ * インスタンスの節から呼ぶ操作。常に対で要るので 1 つにまとめて受け取る。
+ *
+ * インスタンス自身の値の編集（`editRefOwnProp`）も `onEdit` と並ぶ別 prop にせずここに入れる。
+ * `onEdit` は GroupsBody と共有の経路で、別 prop にするとインスタンスにしか無い操作が
+ * PropertyPanel / PropertyPanel.Body の props に漏れる。
+ */
 export type InstanceActions = Readonly<{
   goToSource: () => void;
   selectAllInstances: () => void;
   detach: () => void;
+  editRefOwnProp: (edit: PropEdit, continuity: EditContinuity) => void;
 }>;
 
 /**
@@ -107,7 +114,7 @@ export function InstanceBody({
   onEdit: (edit: PropEdit, continuity: EditContinuity) => void;
   actions: InstanceActions;
 }>) {
-  const { source, publicProps } = controls;
+  const { source, publicProps, refOwnProps } = controls;
   const isSelectAllInstancesEnabled = controls.sourceInstanceCount > 1;
 
   return (
@@ -135,6 +142,14 @@ export function InstanceBody({
 
       <section className="flex flex-col gap-2 border-gray-200 border-t pt-3">
         <SectionHeading>{InstanceLabels.instance}</SectionHeading>
+        {/* UI 案に無い行。公開 prop の上書きではなくインスタンスそのものの値なので、Public props ではなくこの節に置く。 */}
+        {refOwnProps.map((control) => (
+          <PropRow
+            key={control.prop}
+            control={control}
+            onEdit={actions.editRefOwnProp}
+          />
+        ))}
         <Button
           kind={ButtonKinds.Primary}
           size={ButtonSizes.Regular}

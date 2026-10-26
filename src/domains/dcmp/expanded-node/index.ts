@@ -48,6 +48,8 @@ export const ExpandedNodeError = {
 /**
  * 部品インスタンスを定義の中身へ展開する。
  * `expanding` は展開中の部品名で、自分自身へ戻ったら循環参照として失敗にする。
+ * インスタンス自身の値（参照ノード直下の値）として持てる prop は、部品の根の値を捨てて
+ * インスタンス自身の値で置き換える（`Node.applyRefOwnPropsToRoot`）。
  *
  * @param node 展開対象のノード
  * @param components 参照先の引き先になる部品一式
@@ -84,10 +86,9 @@ function expandNode(
   if (!Option.isSome(component)) {
     return Result.err({ kind: "component-not-found", component: node.ref });
   }
-  const overridden = Component.applyOverrides(
-    component.value,
-    node.ref,
-    node.overrides ?? {},
+  const overridden = Node.applyRefOwnPropsToRoot(
+    node,
+    Component.applyOverrides(component.value, node.ref, node.overrides ?? {}),
   );
   const nextExpanding = new Set(expanding).add(node.ref);
   return Result.map(

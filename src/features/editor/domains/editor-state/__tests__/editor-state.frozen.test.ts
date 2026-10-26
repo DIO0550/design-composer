@@ -368,3 +368,29 @@ test("ファイルが不正でなければ、落とし先を指して挿せる",
     ),
   ).toBe(true);
 });
+
+test("ファイルが不正な間は、選んでいるインスタンスのロックを変えられない", () => {
+  const selected = EditorState.select(stateWithDeepBranch(), "home-login");
+
+  expect(
+    EditorState.applyRefOwnPropEdit(
+      frozen(selected),
+      PropEdit.set(["locking"], "locked"),
+      EditContinuities.Separate,
+    ),
+  ).toStrictEqual(Option.none);
+});
+
+test("ファイルが不正でなければ、選んでいるインスタンスのロックを変えられる", () => {
+  const selected = EditorState.select(stateWithDeepBranch(), "home-login");
+
+  expect(
+    Option.isSome(
+      EditorState.applyRefOwnPropEdit(
+        selected,
+        PropEdit.set(["locking"], "locked"),
+        EditContinuities.Separate,
+      ),
+    ),
+  ).toBe(true);
+});

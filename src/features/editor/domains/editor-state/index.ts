@@ -1245,6 +1245,32 @@ export const EditorState = {
   },
 
   /**
+   * 選択中の部品インスタンス自身の値（参照ノード直下の値）を書き換える（docs/03-schema.md
+   * 「ロック」）。続き方の扱いは `applyPropEdit` と同じ。
+   *
+   * @param state 値を書き換えるエディタの状態
+   * @param edit 書き換える prop と値
+   * @param continuity 直前の編集との続き方
+   * @returns 値を書き換えたエディタの状態。選択が無い・単一選択でない・ファイルが不正な間・
+   *   選択が部品インスタンスでない（artboard・プリミティブ）・インスタンス自身の値として
+   *   持てない prop を指す編集（`DesignDocument.applyRefOwnPropEdit` の失敗）は `none`
+   */
+  applyRefOwnPropEdit(
+    state: EditorState,
+    edit: PropEdit,
+    continuity: EditContinuity,
+  ): Option<EditorState> {
+    return Option.flatMap(EditorState.singleName(state), (name) => {
+      const edited = DesignDocument.applyRefOwnPropEdit(
+        EditorState.document(state),
+        name,
+        edit,
+      );
+      return withEditResult(state, edited, continuity);
+    });
+  },
+
+  /**
    * 選択中の artboard / ノードの大きさと位置を変える（docs/06-ui.md「キャンバス直接操作」
    * のリサイズハンドル）。
    *

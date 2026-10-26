@@ -188,3 +188,80 @@ test("解除しても元のドキュメントは変更されない", () => {
     { name: "save-button", ref: "primary-button" },
   ]);
 });
+
+/** `screen` の直下に、指したインスタンスを 1 つ置く。 */
+function setupInstanceDocument(
+  instance: Readonly<{ name: string; ref: string; locking?: string }>,
+  instanceComponents: ComponentSet,
+): DesignDocument {
+  return DesignDocument.create({
+    components: instanceComponents,
+    artboards: [
+      { name: "screen", width: 375, height: 812, children: [instance] },
+    ],
+  });
+}
+
+test("ロックしたインスタンスを解除すると、展開した根がロックされている", () => {
+  const document = setupInstanceDocument(
+    { name: "save-button", ref: "primary-button", locking: "locked" },
+    components,
+  );
+
+  const result = Result.unwrap(DesignDocument.detach(document, "save-button"));
+
+  expect(DesignDocument.isLocked(result, "save-button")).toBe(true);
+});
+
+test("unlocked と書いたインスタンスは、部品の根がロックしていても解除後にロックされていない", () => {
+  const document = setupInstanceDocument(
+    { name: "save-button", ref: "frozen-button", locking: "unlocked" },
+    {
+      "frozen-button": {
+        type: "Box",
+        props: { locking: "locked" },
+        children: [],
+      },
+    },
+  );
+
+  const result = Result.unwrap(DesignDocument.detach(document, "save-button"));
+
+  expect(DesignDocument.isLocked(result, "save-button")).toBe(false);
+});
+
+test("部品の根がロックしていても、ロックを書いていないインスタンスは解除後にロックされていない", () => {
+  const document = setupInstanceDocument(
+    { name: "save-button", ref: "frozen-button" },
+    {
+      "frozen-button": {
+        type: "Box",
+        props: { locking: "locked" },
+        children: [],
+      },
+    },
+  );
+
+  const result = Result.unwrap(DesignDocument.detach(document, "save-button"));
+
+  expect(DesignDocument.isLocked(result, "save-button")).toBe(false);
+});
+
+test("部品の中でロックしたインスタンスは、外側のインスタンスを解除した木でもロックされている", () => {
+  const document = setupInstanceDocument(
+    { name: "home-card", ref: "card" },
+    {
+      ...components,
+      card: {
+        type: "Box",
+        children: [
+          { name: "card-action", ref: "primary-button", locking: "locked" },
+        ],
+      },
+    },
+  );
+
+  const result = Result.unwrap(DesignDocument.detach(document, "home-card"));
+
+  expect(DesignDocument.isLocked(result, "card-action-2")).toBe(true);
+});
