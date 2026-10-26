@@ -923,7 +923,7 @@ export const EditorState = {
    * （ドキュメントは変わらない）。
    *
    * @param state コピーする前の状態
-   * @returns クリップボードを選んでいる最上位のノード（選んだ順）に差し替えた状態。
+   * @returns クリップボードを選んでいる最上位のノード（選択の並び順）に差し替えた状態。
    *   `findOutermostNodes` が `none` のときは `none`
    */
   copySelected(state: EditorState): Option<EditorState> {
