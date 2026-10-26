@@ -233,8 +233,9 @@ function withEdit(
 /**
  * ドキュメントへの編集の結果を見て、成功したものだけを `withEdit` へ渡す。
  *
- * 結果から文書以外の値も取り出す操作（`duplicateSelected` の `copyNames`・`ungroupSelected`
- * の `freedNames`）は、取り出すために成否の分岐が要るので、ここを通さず `withEdit` を直に呼ぶ。
+ * ここを通さず `withEdit` を直に呼ぶ操作がある。`ungroupSelected` は結果から `freedNames` も
+ * 取り出すので成否の分岐が要り、`duplicateSelected` は `insertCopiesAfter` が `Result` ではなく
+ * `Option` を返すので、ここの入力に合わない。
  *
  * @param state 入れる先のエディタの状態
  * @param edited `DesignDocument` の編集操作が返した、編集後のドキュメントか失敗
@@ -922,8 +923,8 @@ export const EditorState = {
    * （ドキュメントは変わらない）。
    *
    * @param state コピーする前の状態
-   * @returns クリップボードを選んでいる最上位のノード（選んだ順）に差し替えた状態。未選択と、
-   *   最上位に artboard が混ざるときは `none`
+   * @returns クリップボードを選んでいる最上位のノード（選んだ順）に差し替えた状態。
+   *   `findOutermostNodes` が `none` のときは `none`
    */
   copySelected(state: EditorState): Option<EditorState> {
     const copied = DesignDocument.findOutermostNodes(
@@ -972,8 +973,8 @@ export const EditorState = {
    * ままだと、新しい複製ほど元の直後へ割り込み、並びが作った順の逆になる。
    *
    * @param state 複製する前のエディタの状態
-   * @returns 複製したあとのエディタの状態。未選択・最上位に artboard が混ざるとき・ファイルが
-   *   不正な間は `none`
+   * @returns 複製したあとのエディタの状態。`DesignDocument.findOutermostNodes` が `none` の
+   *   とき・ファイルが不正な間は `none`
    */
   duplicateSelected(state: EditorState): Option<EditorState> {
     const copied = DesignDocument.insertCopiesAfter(

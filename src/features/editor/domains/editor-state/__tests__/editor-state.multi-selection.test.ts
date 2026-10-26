@@ -71,7 +71,7 @@ test("複数選んでいる間は貼れない", () => {
   const copied = Option.unwrap(
     EditorState.copySelected(EditorState.select(setupState(), "home-badge")),
   );
-  // 先頭の home-panel は子を持てるので、先頭へ貼る実装ならここで貼れてしまう
+  // 選んだ順の先頭の home-panel は子を持てるので、先頭へ貼る実装ならここで貼れてしまう
   const multi = EditorState.selectNodes(copied, ["home-panel", "home-login"]);
   const single = EditorState.select(copied, "home-panel");
 

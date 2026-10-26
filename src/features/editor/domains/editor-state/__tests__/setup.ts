@@ -86,6 +86,9 @@ export function stateWithComponentDefinitions(): EditorState {
  * 2 階層だと「artboard 直下の子」と「いちばん内側」が同じ名前になり、掘る量を
  * 取り違えた実装でも同じ答えが出る。
  *
+ * 複数選択のコピー・複製のテストは、ここを含めツリーの並びと逆の順に選ぶ。ツリーの順に
+ * 並べ直す実装と区別するため。
+ *
  * @returns その並びを持つエディタの状態
  */
 export function stateWithDeepBranch(): EditorState {

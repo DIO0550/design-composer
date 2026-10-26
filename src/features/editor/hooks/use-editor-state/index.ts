@@ -272,7 +272,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       return Option.unwrapOr(EditorState.ungroupSelected(state), state);
     case "copy_selected":
       /*
-       * コピーできる対象が無ければ（未選択・最上位に artboard が混ざるとき）クリップボードは
+       * コピーできる対象が無ければ（DesignDocument.findOutermostNodes が `none`）クリップボードは
        * 変わらない（EditorState.copySelected の `none`）。ボタンは押せなくしているが、
        * ショートカットはいつでも押せるためこの `none` には画面の操作から到達する。
        */
@@ -287,8 +287,8 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       return Option.unwrapOr(EditorState.pasteCopied(state), state);
     case "duplicate_selected":
       /*
-       * 未選択・最上位に artboard が混ざるとき・ファイルが不正な間は木は変わらない
-       * （EditorState.duplicateSelected の `none`）。到達しうる理由は copy_selected と同じ。
+       * 複製できる対象が無ければ（DesignDocument.findOutermostNodes が `none`）、また
+       * ファイルが不正な間は木は変わらない（EditorState.duplicateSelected の `none`）。到達しうる理由は copy_selected と同じ。
        */
       return Option.unwrapOr(EditorState.duplicateSelected(state), state);
     case "apply_prop_edit":

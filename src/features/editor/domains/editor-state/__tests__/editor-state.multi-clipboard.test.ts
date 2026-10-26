@@ -6,9 +6,8 @@ import { childNames, stateWithDeepBranch } from "./setup";
 
 /*
  * 複数選んでいるときのコピーと、1 つだけ選んでいるときのペースト（docs/06-ui.md「複数選択」）。
- * 名前の付け替えは `design-document.node-copies.test.ts` が持つ。
- *
- * 選ぶ順はツリーの並びと逆にする。ツリーの順に並べ直す実装と区別するため。
+ * 名前の付け替えは `design-document.node-copies.test.ts` が持つ。選ぶ順は
+ * `stateWithDeepBranch` の doc。
  */
 
 /**
@@ -26,6 +25,18 @@ function copyNodes(names: readonly string[]): EditorState {
 }
 
 /**
+ * クリップボードに入っているノードの名前。
+ *
+ * @param state 見る状態
+ * @returns 入っているノードの名前を並び順のまま。空なら `none`
+ */
+function copiedNamesOf(state: EditorState): Option<readonly string[]> {
+  return Option.map(state.copiedNodes, (nodes) =>
+    nodes.map((node) => node.name),
+  );
+}
+
+/**
  * `home-login` と `outer-panel` をこの順にまとめてコピーし、`sibling-panel` を 1 つだけ
  * 選んで貼った状態。
  */
@@ -39,17 +50,15 @@ function pasteIntoSiblingPanel(): EditorState {
 test("複数選んでコピーすると、選んだ順にクリップボードへ入る", () => {
   const copied = copyNodes(["sibling-panel", "outer-panel"]);
 
-  expect(
-    Option.map(copied.copiedNodes, (nodes) => nodes.map((node) => node.name)),
-  ).toEqual(Option.some(["sibling-panel", "outer-panel"]));
+  expect(copiedNamesOf(copied)).toEqual(
+    Option.some(["sibling-panel", "outer-panel"]),
+  );
 });
 
 test("親と子を選んでコピーすると、親のサブツリーだけが入る", () => {
   const copied = copyNodes(["inner-panel", "outer-panel"]);
 
-  expect(
-    Option.map(copied.copiedNodes, (nodes) => nodes.map((node) => node.name)),
-  ).toEqual(Option.some(["outer-panel"]));
+  expect(copiedNamesOf(copied)).toEqual(Option.some(["outer-panel"]));
 });
 
 test("1 つだけ選んで貼ると、写した順に末尾へ全部並ぶ", () => {

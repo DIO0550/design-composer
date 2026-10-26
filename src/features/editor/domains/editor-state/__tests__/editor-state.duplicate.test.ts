@@ -5,7 +5,7 @@ import { childNames, nodeNamed, stateWithDeepBranch } from "./setup";
 
 /*
  * 選んでいるノードを複製する（docs/06-ui.md「編集操作の一覧」の複製）。直後へ入ることと
- * 名前の付け替えは `design-document.copy-after.test.ts` が持つ。ここで見るのは、対象が選択
+ * 名前の付け替えは `design-document.copies-after.test.ts` が持つ。ここで見るのは、対象が選択
  * からどう決まり、履歴・選択・クリップボードがどうなるか。
  *
  * 複製元の `sibling-panel` は後ろに `home-login` を持つので、末尾へ入れる実装と区別できる。
