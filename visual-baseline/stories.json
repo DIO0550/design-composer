@@ -625,6 +625,11 @@
     "name": "インスタンスを選択中"
   },
   {
+    "id": "features-editor-features-inspector-propertypanel-instancebody--locked",
+    "title": "features/editor/features/inspector/PropertyPanel/InstanceBody",
+    "name": "ロックしたインスタンス"
+  },
+  {
     "id": "features-editor-features-inspector-propertypanel-instancebody--not-detachable",
     "title": "features/editor/features/inspector/PropertyPanel/InstanceBody",
     "name": "解除できないインスタンス"
