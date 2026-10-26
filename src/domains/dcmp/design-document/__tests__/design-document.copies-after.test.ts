@@ -3,7 +3,7 @@ import { documentWithChildInEachArtboard } from "@/domains/__tests__/sample-docu
 import { PropEdit } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { DesignDocument } from "../index";
+import { DesignDocument, type InsertedCopies } from "../index";
 import { copySourceDocument } from "./copy-setup";
 
 /*
@@ -148,6 +148,32 @@ test("複製の名前は、指した順に並ぶ", () => {
   );
 
   expect(copyNames).toEqual(["footer-2", "title-2"]);
+});
+
+/**
+ * `title` を一度複製して `title-2` を作ったうえで、`title` と `title-2` をまとめて複製する。
+ *
+ * @returns 2 度目の複製の結果
+ */
+function copyOriginalAndItsCopy(): InsertedCopies {
+  const { document } = Option.unwrap(
+    DesignDocument.insertCopiesAfter(copySourceDocument(), ["title"]),
+  );
+  return Option.unwrap(
+    DesignDocument.insertCopiesAfter(document, ["title", "title-2"]),
+  );
+}
+
+test("まとめて複製すると、先に作った複製の名前を避けて次の連番が付く", () => {
+  expect(copyOriginalAndItsCopy().copyNames).toEqual(["title-3", "title-4"]);
+});
+
+test("まとめて複製しても、ドキュメントの名前は重ならない", () => {
+  const duplicateNameErrors = DesignDocument.collectErrors(
+    copyOriginalAndItsCopy().document,
+  ).filter((error) => error.kind === "duplicate-name");
+
+  expect(duplicateNameErrors).toEqual([]);
 });
 
 test("同じ名前を 2 回指しても複製は 1 つ", () => {
