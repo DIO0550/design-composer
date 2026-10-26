@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1195,
+  "headBranch": "claude/magical-cannon-hyterw",
+  "baseBranch": "main",
+  "mergeBase": "12b5b76e92649674353702e03551a7a09991bd2c",
+  "head": "7a2a8f68a1d690502585746a4ab91c8b5e08759d",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1191.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 179,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "7a2a8f68a1d690502585746a4ab91c8b5e08759d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-26T13:52:33Z",
+      "subject": "📝 [Doc]: PR #1191 の記録を残す",
+      "body": "- harness/records/pr-1191.md を追加(指摘 20 件)\n\n背景:\nPR #1191(#1185 複数選択中の並べ替え)がマージされた。harness-record の\n手順で、その回のレビュー指摘・手戻り・フックの環境を記録する。\n\n採用理由:\n人・bot・CI からの指摘は 0 件だった。サブエージェント由来の指摘は、\n観点ごとに 1 件 1 ブロックで書いた。指摘 2 つ以上の観点が同じ箇所を\n挙げたものは、最初に返した観点を出どころにし、残りは内容に書いた。\n\n代替案:\n- 発火を「無し」と書く: 発火ログに見出しはあるが、実際には多数の\n  エージェントとスキルを起動しており、hook-canary も通っていた。\n  事実と食い違うので、計測対象外にした\n\n影響とトレードオフ:\nharness/records/ の 1 ファイルだけを追加する。対策済の行は書いていない。\n\n参考:\n- https://github.com/DIO0550/design-composer/pull/1191\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01VYrydWoy6DkTvRLudVbhHc",
+      "files": [
+        {
+          "path": "harness/records/pr-1191.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 179,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,179 @@\n+# PR #1191 同じ親の兄弟を複数選んでいるとき ⌘] / ⌘[ でまとめて並べ替える\n+\n+- マージ日: 2026-10-26\n+- 関連 Issue: #1185(親 #966)\n+- 差分規模: 23 ファイル / +526 -79\n+\n+## ゴールと結果\n+\n+複数のノードを選んでいて全員が同じ親の兄弟なら、⌘] / ⌘[ とツリーの行のメニューで、まとめて 1 段ずつ前面 / 背面へ動かせるようにする。達成した。\n+\n+- 選んだもの同士の並び順は保つ\n+- 1 つでも端にいれば何も変えない\n+- 取り消しは 1 回で全部戻る\n+- 親が違うものや artboard が混ざっているときは無効\n+\n+#966 は、着手前にオーナーへ判断を仰いだ(各操作の推奨案と、操作ごとに分けるかどうか)。回答は「おすすめでいいよ」の 1 回だけで、選択肢への回答なので指摘には数えていない。#966 は #1185〜#1188 の 4 つに分け、この PR は #1185 だけを閉じる。\n+\n+GitHub 上の人のレビューは 0 件。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。コメントは自分のテストケース表と bot の投稿だけだった。CI は全件緑で、VRT の差分は 0 件(202 件)。\n+\n+## 指摘\n+\n+### 1. 改名先 `reorderSelected` は、過去に退けられた名前に戻していた\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `harness/records/pr-432.md` で `reorderArtboard` と並ぶと読めないとして退けた名前だった。`reorderSelectedNodes` にした(naming-vocabulary-alignment)。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 2. 位置の並び `readonly number[]` が空を型で許していた\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 空のまま渡ると、何も変わらない編集が履歴に積まれる。非空タプルにした(illegal-state)。\n+- 既存ルール: rules/coding.md「不正な状態を型で表現できなくする」\n+\n+### 3. `IndexMove` で返すと、呼び出し側で親の名前を組み直すことになっていた\n+\n+- 分類: `ownership`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 常に対で渡る 2 値を、呼び出し側で組み立てる形だった。`ChildPosition` と `toIndex` の対 `ChildReorder` で返すようにした。\n+- 既存ルール: rules/architecture.md「ロジックの帰属先」\n+\n+### 4. 古い doc(`IndexMove.ts`)を PR 本文に書くだけで済ませる計画だった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 据え置く作業は、後続の Issue を起票してリンクする。#1190 を起票した(plan-split-followup-omission)。\n+- 既存ルール: AGENTS.md「タスクの分割」\n+\n+### 5. 却下案の理由「使う側が 1 つだけ」が、並行する #1187 で崩れることを見ていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 置き場所の根拠を「使う feature の数」に直した。docs 119 行目は #1186〜#1188 も書き換えるので、その方針も計画に書いた(plan-rejection-reasoning)。\n+- 既存ルール: rules/architecture.md「配置の判断基準」\n+\n+### 6. ツリーのドラッグとの非対称(掴んだ 1 行だけ動く)が決まっていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「未決: 無し」と書いていたのに、docs 251 行目の入口のうちドラッグの扱いが未決だった。docs に明記すると決めた(plan-open-decision-declaration)。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3「未決の判断」\n+\n+### 7. Issue に書いた計画のファイル表に、新規テストと行番号が抜けていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 渡した計画と Issue の記述が一致していなかった。Issue を正として書き直した(plan-file-omission)。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3「変更するファイルと、そこに何を置くか」\n+\n+### 8. 親違いのテストの入力が、端にいるせいで判定を外しても通る形だった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: たとえば `inner-2` は group の末尾なので、親の判定を外しても端で none になって通る。親の判定を外すと some になる入力(`a` と `inner-1`)に変えた(test-default-input)。\n+- 既存ルール: rules/testing.md「assert は『落ちうるか』と『1つの仕様か』で見る」\n+\n+### 9. 消すテストの観点の移し先と、親違いの複数選択の対照が書かれていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: multi-selection の「並べ替えられない」の観点は E7 へ移した。M3「親が違えば削除だけ」を足した(plan-migration-mapping / test-coverage-branch-asymmetry)。\n+- 既存ルール: rules/testing.md「API を作り替えるときは、既存テストの観点を先に数える」\n+\n+### 10. 向き(+1 と当てる順)を 2 つの switch で別々に持っていた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `toIndex` と `applyingRank` が同じ事実を別々に符号で書いていた。小さい順の並べ替えも 2 回やっていた。`offsetOf` 1 つにまとめた。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 11. 「全員が同じ値ならその値」の判定が `DocumentSelection.sourceName` と 2 か所になった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `ArrayEx.singleDistinct` を足し、両方から使うようにした。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 12. none になる条件の列挙を 3 か所に書き写していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: reducer のコメントは、EditorState の `@returns` を参照する形にした(duplication-rationale)。\n+- 既存ルール: rules/coding.md「規約の適用範囲」(同じ判断根拠の doc の重複)\n+\n+### 13. 非空タプルを、型では確かめていない分割代入で作っていた\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（over-guard-reviewer）`\n+- 内容: `noUncheckedIndexedAccess` が無いので、空でも `number` として通る。`ArrayEx.first` の Option を通す形にした。structure-reviewer も同じ箇所を指摘した。\n+- 既存ルール: rules/coding.md「生成時に検証し、不正な値を存在させない」\n+\n+### 14. `ChildReorder` と同じ (from, toIndex) の組が既存の経路に残っている\n+\n+- 分類: `ownership`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: doc の「まとめる」という主張を、戻り値の用途に絞った。既存の経路をこの型に揃えるのはゴールの外なので見送った。solution-reviewer も同じ指摘をした。\n+- 既存ルール: rules/architecture.md「ロジックの帰属先」\n+\n+### 15. docs 320 行目の「押せない」場合の列挙が、artboard と端を落としていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 条件を 125〜127 行目で定義しながら、一部だけを書き写していた。上の節を指す形に直した。ui-reviewer と comment-reviewer も同じ箇所を指摘した(comment-enumeration-drift)。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 16. docs の「artboard が混ざっているとき」は、仕様書の手段では作れない\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 不採用。選択の型としては作れて、実装もそれを弾いているので、書いておくほうが振る舞いと一致すると判断した。\n+- 既存ルール: なし\n+\n+### 17. `applyingRank` の `@returns` がコードの言い換えになっていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 指摘 10 の修正で、関数ごと消えた(comment-excess)。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 18. 案 B を採らない理由がコードに無く、「端」の意味が曖昧だった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: Why not を 1 行足し、「選んだものの中でいちばん前面」と書き直した(comment-missing-issue-only)。\n+- 既存ルール: rules/coding.md「Why と Why not は別物として書く」\n+\n+### 19. `singleDistinct` の null の枝を守るテストが無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 17 通りに壊したうち、落ちなかったのはこの 1 か所だけだった。`Option.some(distinctItems[0])` に壊しても全件通った。テストを足し、壊すと落ちることを確かめた(test-coverage-branch)。\n+- 既存ルール: rules/testing.md「assert は『落ちうるか』と『1つの仕様か』で見る」\n+\n+### 20. PreToolUse フックが動いていない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: push 前に実行した `echo hook-canary` が deny されずに通った。push 前の検査は git hooks の pre-push が実行し、32 件すべて通った。PR 本文と Discord 通知にこのことを書いた(hook-environment)。\n+- 既存ルール: なし\n+\n+## 手戻り\n+\n+- plan-reviewer の指摘 9 件(指摘 1〜9)で、planner に計画を 1 回立て直させた。\n+- 実装の検証(1 段目)で 9 観点を回し、採用した指摘(指摘 10〜15・17・18)を implementer に 1 回で直させた。重大・高の指摘は 0 件で、性能と命名の観点は指摘 0 件だった。\n+- test-reviewer(2 段目)の指摘 19 で、テストを 1 件足した。\n+- implementer が修正中に、Python の置換で `reorder-step/index.ts` を一度壊した。置換対象の文字列が空で、ファイル全体に挿入された。ファイルごと書き直し、検査を走らせ直した。\n+- #1185 を自分にアサインしたことで、issues.assigned のルーティンが別のセッションで起動した可能性がある。このセッションからは確かめられず、不明。\n+- Discord 通知の 1 通目が 400 で弾かれた(2000 文字の上限を超えたとみられる)。3 通に分けて送り直した。\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+発火ログには見出しの `session` 行があるが、発火行は 0 件だった。このセッションは実際には planner・plan-reviewer・implementer・9 つの観点別エージェント・test-reviewer・pr-explain スキルを起動している。また `echo hook-canary` が通っており、PreToolUse 系のフックが動いていなかった。そのため「無し」ではなく「計測対象外」とした。\n+\n+## 規約への反映\n+\n+無し。このスキルの管轄は記録までで、集計と介入は `harness-growth` が別の機会に行う。",
+          "patchLines": 180,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
