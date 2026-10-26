@@ -15,6 +15,8 @@
   (固定スクリプトは 1 本)
 - `pr-explain-template` — 固定スクリプトが `ForbiddenWords` の語を使っている。語として見るので、
   コメントの中の綴りも落とす
+- `pr-explain-language` — `--tracked` で標準入力に渡した追跡ファイルの拡張子が、`LanguageByExtension` にも
+  `NotHighlighted` にも無い。拡張子を足したら、色を付けるか付けないかをどちらかの表で決める
 
 種別の綴りは、この一覧と報告の行の頭(`[<種別>] `)にだけ書く(照合は `check-pr-explain-template-cases.sh`)。
 
@@ -23,7 +25,9 @@
 動かせるようになる。
 
 使い方:
-    check-pr-explain-template.py <テンプレート>
+    check-pr-explain-template.py <テンプレート> [--tracked]
+
+`--tracked` を付けると、標準入力のパス(1 行 1 件。`git ls-files` の出力)の拡張子も見る。
 
 違反が無ければ終了コード 0。違反があれば標準出力へ報告して 1。引数の誤りは 2。
 """
@@ -66,6 +70,13 @@ Policy = {
     "base-uri": frozenset({"'none'"}),
     "form-action": frozenset({"'none'"}),
 }
+
+# 色を付けない拡張子。ここにも `LanguageByExtension` にも無い拡張子が追跡ファイルに現れたら違反にする
+# (`.rs` が表に無いまま Rust の差分が無彩色で出ていた)。
+NotHighlighted = frozenset({"md", "png", "svg", "ico", "icns", "lock", "toml", "awk"})
+
+LanguageTable = re.compile(r"const LanguageByExtension = \{([^}]*)\}")
+TableKey = re.compile(r"(\w+)\s*:")
 
 # 出どころをちょうどこのとおりに書かなければならないディレクティブ。
 RequiredExactly = ("default-src", "connect-src")
@@ -141,14 +152,26 @@ def word_problems(template: str) -> list[str]:
     return [f"固定スクリプトが {word} を使っている(textContent と createElement で組む)" for word in ForbiddenWords if word_pattern(word).search(script)]
 
 
+def language_problems(template: str, tracked_paths: list[str]) -> list[str]:
+    """追跡ファイルの拡張子のうち、色を付ける表にも付けない表にも無いものを集める。"""
+    table = LanguageTable.search(template)
+    highlighted = set(TableKey.findall(table.group(1))) if table else set()
+    extensions = {Path(path).suffix.lstrip(".") for path in tracked_paths if Path(path).suffix}
+    unknown = sorted(extensions - highlighted - NotHighlighted)
+    return [f".{extension} を追跡しているが、LanguageByExtension にも NotHighlighted にも無い(色を付けるか付けないかを決める)" for extension in unknown]
+
+
 def main(argv: list[str]) -> int:
-    is_valid_call = len(argv) == 2 and Path(argv[1]).is_file()
+    is_tracked_call = len(argv) == 3 and argv[2] == "--tracked"
+    is_valid_call = (len(argv) == 2 or is_tracked_call) and Path(argv[1]).is_file()
     if not is_valid_call:
-        print("使い方: check-pr-explain-template.py <テンプレート>", file=sys.stderr)
+        print("使い方: check-pr-explain-template.py <テンプレート> [--tracked]", file=sys.stderr)
         return 2
     template = Path(argv[1]).read_text(encoding="utf-8")
     violations = [f"[pr-explain-csp] {problem}" for problem in csp_problems(template)]
     violations += [f"[pr-explain-template] {problem}" for problem in word_problems(template)]
+    if is_tracked_call:
+        violations += [f"[pr-explain-language] {problem}" for problem in language_problems(template, sys.stdin.read().splitlines())]
     for violation in violations:
         print(violation)
     return 1 if violations else 0
