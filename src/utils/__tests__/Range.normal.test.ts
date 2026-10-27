@@ -34,6 +34,19 @@ test("下端と上端が同じ範囲には、その1つの値だけが入る", (
   expect(Range.contains(range, 401)).toBe(false);
 });
 
+test("一部が重なる 2 つの範囲の重なる区間は、内側の 2 つの端で挟んだ区間", () => {
+  expect(Range.intersection({ min: 0, max: 20 }, { min: 15, max: 40 })).toEqual(
+    { min: 15, max: 20 },
+  );
+});
+
+test("離れている 2 つの範囲の重なる区間は、下端が上端より大きい", () => {
+  // 0 へ詰めると、離れた 2 つの間の中央が取れなくなる
+  expect(Range.intersection({ min: 0, max: 20 }, { min: 30, max: 40 })).toEqual(
+    { min: 30, max: 20 },
+  );
+});
+
 test("一部が重なる 2 つの範囲は、重なっている部分の長さを返す", () => {
   expect(
     Range.intersectionLength({ min: 0, max: 20 }, { min: 15, max: 40 }),

@@ -24,6 +24,21 @@ export const Range = {
   },
 
   /**
+   * 2 つの範囲が重なっている区間。
+   *
+   * @param range 見る範囲
+   * @param other 重なりを見る相手の範囲
+   * @returns 2 つの内側の端で挟んだ区間。端が接するだけなら長さ 0、離れているなら下端が
+   *   上端より大きい
+   */
+  intersection(range: Range, other: Range): Range {
+    return {
+      min: Math.max(range.min, other.min),
+      max: Math.min(range.max, other.max),
+    };
+  },
+
+  /**
    * 2 つの範囲が重なっている長さ。
    *
    * @param range 見る範囲
@@ -31,10 +46,7 @@ export const Range = {
    * @returns 重なっている部分の長さ。離れている / 端が接するだけなら 0
    */
   intersectionLength(range: Range, other: Range): number {
-    return Math.max(
-      0,
-      Math.min(range.max, other.max) - Math.max(range.min, other.min),
-    );
+    return Math.max(0, Range.length(Range.intersection(range, other)));
   },
 
   /**

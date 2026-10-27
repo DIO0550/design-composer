@@ -62,14 +62,7 @@ export const Facing = {
    *   後ろ / 重なっているなら負
    */
   distanceTo(facing: Facing, between: Between): number {
-    const fromExtent = CanvasBounds.extentAlong(between.from, facing.pair);
-    const toExtent = CanvasBounds.extentAlong(between.to, facing.pair);
-    switch (facing.end) {
-      case AxisEnds.End:
-        return roundToMicroPx(toExtent.min - fromExtent.max);
-      case AxisEnds.Start:
-        return roundToMicroPx(fromExtent.min - toExtent.max);
-    }
+    return roundToMicroPx(Range.length(spanAhead(facing, between)));
   },
 
   /**
@@ -84,11 +77,7 @@ export const Facing = {
    * @returns 直交する軸の範囲の重なりを小数 6 桁へ丸めて 0 より大きければ `true`
    */
   overlapsAcross(facing: Facing, between: Between): boolean {
-    const across = SidePair.perpendicular(facing.pair);
-    const overlap = Range.intersectionLength(
-      CanvasBounds.extentAlong(between.from, across),
-      CanvasBounds.extentAlong(between.to, across),
-    );
+    const overlap = Range.length(acrossIntersection(facing, between));
     return roundToMicroPx(overlap) > 0;
   },
 
@@ -104,16 +93,10 @@ export const Facing = {
     if (Facing.distanceTo(facing, between) <= 0) {
       return Option.none;
     }
-    const fromExtent = CanvasBounds.extentAlong(between.from, facing.pair);
-    const toExtent = CanvasBounds.extentAlong(between.to, facing.pair);
-    const span =
-      facing.end === AxisEnds.End
-        ? { min: fromExtent.max, max: toExtent.min }
-        : { min: toExtent.max, max: fromExtent.min };
     return Option.some({
       along: facing.pair,
       at: overlapCenterAcross(facing, between),
-      span,
+      span: spanAhead(facing, between),
     });
   },
 } as const;
@@ -122,8 +105,8 @@ export const Facing = {
  * 長さを小数 6 桁へ丸める（画面上の px）。
  *
  * 吸い付いたあとの辺は「左 + 幅」で作り直すので数 ULP ずれ、接した相手が外れる / 接する
- * だけが重なりになる（倍率 1.1 で約 4%）。許容幅で比べないのは、`ArrayEx.minBy` の同じ距離
- * の比較と `interval === 0` も書き直すことになるため。
+ * だけが重なりになる。許容幅で比べないのは、`ArrayEx.minBy` の同じ距離の比較と
+ * `interval === 0` も書き直すことになるため。
  *
  * @param length 丸める長さ
  * @returns 小数 6 桁へ丸めた長さ
@@ -133,21 +116,48 @@ function roundToMicroPx(length: number): number {
 }
 
 /**
+ * 進む向きに、`from` の進む側の辺から `to` の手前の辺までの区間（画面上の px）。
+ *
+ * @param facing 進む向き
+ * @param between 進み始める矩形と測る相手
+ * @returns 2 つの辺で挟んだ区間。後ろ / 重なっているなら下端が上端より大きい
+ */
+function spanAhead(facing: Facing, between: Between): Range {
+  const fromExtent = CanvasBounds.extentAlong(between.from, facing.pair);
+  const toExtent = CanvasBounds.extentAlong(between.to, facing.pair);
+  switch (facing.end) {
+    case AxisEnds.End:
+      return { min: fromExtent.max, max: toExtent.min };
+    case AxisEnds.Start:
+      return { min: toExtent.max, max: fromExtent.min };
+  }
+}
+
+/**
  * 直交する軸で 2 つが重なる範囲の中央。
  *
  * 重なりの有無は見ない。外側で辺が揃うと重なる範囲は幅 0 で、ここで重なりを見ると
- * #453 の隙間が消える（docs/06-ui.md の辺のスナップ）。
+ * 揃え先との隙間が消える（docs/06-ui.md の辺のスナップ）。
  *
  * @param facing 進む向き
  * @param between 2 つの矩形
  * @returns 内側の 2 つの端の真ん中の座標（画面上の px）
  */
 function overlapCenterAcross(facing: Facing, between: Between): number {
+  return Range.center(acrossIntersection(facing, between));
+}
+
+/**
+ * 直交する軸で 2 つが重なる区間（画面上の px）。
+ *
+ * @param facing 進む向き
+ * @param between 2 つの矩形
+ * @returns 内側の 2 つの端で挟んだ区間。離れているなら下端が上端より大きい
+ */
+function acrossIntersection(facing: Facing, between: Between): Range {
   const across = SidePair.perpendicular(facing.pair);
-  const fromExtent = CanvasBounds.extentAlong(between.from, across);
-  const toExtent = CanvasBounds.extentAlong(between.to, across);
-  return Range.center({
-    min: Math.max(fromExtent.min, toExtent.min),
-    max: Math.min(fromExtent.max, toExtent.max),
-  });
+  return Range.intersection(
+    CanvasBounds.extentAlong(between.from, across),
+    CanvasBounds.extentAlong(between.to, across),
+  );
 }
