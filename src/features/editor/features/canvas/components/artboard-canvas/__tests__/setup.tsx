@@ -224,6 +224,19 @@ export function snapGapLabels(): readonly string[] {
 }
 
 /**
+ * 出ている Alt / Option の距離の数値。どの向きの数値かは見ない。向きは `facing-distances` の
+ * 単体で見る。
+ *
+ * @returns 出ている数値の並び（ラベルの文字列を文字列の昇順に並べたもの）。出ていなければ空
+ */
+export function facingDistanceLabels(): readonly string[] {
+  return screen
+    .queryAllByTestId("facing-distance-label")
+    .map((label) => label.textContent ?? "")
+    .sort();
+}
+
+/**
  * その箇所に出ているハンドル。
  *
  * @param anchor 引きたい箇所（`0` が始点側、`1` が終点側、`0.5` が辺の中央）
