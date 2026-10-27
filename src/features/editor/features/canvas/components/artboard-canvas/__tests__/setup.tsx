@@ -213,27 +213,17 @@ export function snapGuides(): readonly HTMLElement[] {
 }
 
 /**
- * 出ている揃え先との隙間の数値。
+ * 出ている、2 つの矩形の間の数値（揃え先との隙間か Alt / Option の距離）。
  *
+ * @param testId 見る線の `data-testid`（揃え先との隙間なら `snap-gap`）
  * @returns 出ている数値の並び（ラベルの文字列）。出ていなければ空
  */
-export function snapGapLabels(): readonly string[] {
+export function distanceLabels(
+  testId: "snap-gap" | "facing-distance",
+): readonly string[] {
   return screen
-    .queryAllByTestId("snap-gap-label")
+    .queryAllByTestId(`${testId}-label`)
     .map((label) => label.textContent ?? "");
-}
-
-/**
- * 出ている Alt / Option の距離の数値。どの向きの数値かは見ない。向きは `facing-distances` の
- * 単体で見る。
- *
- * @returns 出ている数値の並び（ラベルの文字列を文字列の昇順に並べたもの）。出ていなければ空
- */
-export function facingDistanceLabels(): readonly string[] {
-  return screen
-    .queryAllByTestId("facing-distance-label")
-    .map((label) => label.textContent ?? "")
-    .sort();
 }
 
 /**

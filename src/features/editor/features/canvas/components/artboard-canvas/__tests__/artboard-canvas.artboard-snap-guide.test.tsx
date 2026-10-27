@@ -10,7 +10,7 @@ import {
   releasePointer,
   wheel,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
-import { drawnAt, renderCanvas, snapGapLabels, snapGuides } from "./setup";
+import { distanceLabels, drawnAt, renderCanvas, snapGuides } from "./setup";
 import { drawnFollowingFrames, setupSelection } from "./snap-artboards";
 
 /*
@@ -43,7 +43,7 @@ test("他の artboard の辺に吸い付いていて、揃え先から離れて�
   movePointer(canvasContent(), { x: -29, y: 200 });
 
   expect(snapGuides()).toHaveLength(1);
-  expect(snapGapLabels()).toEqual(["60"]);
+  expect(distanceLabels("snap-gap")).toEqual(["60"]);
 });
 
 test("倍率を上げて運んでいる間も、揃え先との隙間はドキュメント上の px で出る", () => {
@@ -66,7 +66,7 @@ test("倍率を上げて運んでいる間も、揃え先との隙間はドキ�
   movePointer(canvasContent(), { x: -36, y: 240 });
 
   expect(snapGuides()).toHaveLength(1);
-  expect(snapGapLabels()).toEqual(["60"]);
+  expect(distanceLabels("snap-gap")).toEqual(["60"]);
 });
 
 test("吸い付いたあとにどの線からも遠い位置へ動かし直すと、線が消える", () => {

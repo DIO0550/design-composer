@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { canvasSurface } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import { wheel } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
-import { carryNode, dragNode, renderCanvas, snapGapLabels } from "./setup";
+import { carryNode, distanceLabels, dragNode, renderCanvas } from "./setup";
 import { drawnApart, setupSiblings } from "./snap-siblings";
 
 /*
@@ -19,7 +19,7 @@ test("兄弟の辺へ吸い付いている間、揃え先との隙間がドキ�
    */
   carryNode("badge", { x: 113, y: -12 });
 
-  expect(snapGapLabels()).toEqual(["116"]);
+  expect(distanceLabels("snap-gap")).toEqual(["116"]);
 });
 
 test("離すと隙間の数値は消える", () => {
@@ -29,7 +29,7 @@ test("離すと隙間の数値は消える", () => {
   // 上のテストと同じ量を運んで離す（運んでいる間だけの提示なので、離したあとは残らない）
   dragNode("badge", { x: 113, y: -12 });
 
-  expect(snapGapLabels()).toHaveLength(0);
+  expect(distanceLabels("snap-gap")).toHaveLength(0);
 });
 
 test("倍率を上げて運んでいる間も、隙間の数値はドキュメント上の px で出る", () => {
@@ -44,5 +44,5 @@ test("倍率を上げて運んでいる間も、隙間の数値はドキュメ�
    */
   carryNode("badge", { x: 105, y: -12 });
 
-  expect(snapGapLabels()).toEqual(["93"]);
+  expect(distanceLabels("snap-gap")).toEqual(["93"]);
 });

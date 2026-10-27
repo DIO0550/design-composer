@@ -10,7 +10,7 @@ import {
   HomeBounds,
   setupSelection,
 } from "./resize-snap-siblings";
-import { drawnAt, renderCanvas, snapGapLabels, snapGuides } from "./setup";
+import { distanceLabels, drawnAt, renderCanvas, snapGuides } from "./setup";
 
 /*
  * リサイズで掴んだ辺が揃ったときのガイド線（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
@@ -45,7 +45,7 @@ test("右辺の帯を兄弟の右辺の近くまで運んでいる間、揃え�
   movePointer(badge, { x: 258, y: 100 });
 
   expect(snapGuides()).toHaveLength(1);
-  expect(snapGapLabels()).toEqual([]);
+  expect(distanceLabels("snap-gap")).toEqual([]);
 });
 
 test("離すと線は消える", () => {

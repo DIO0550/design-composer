@@ -4,11 +4,11 @@ import { canvasSurface } from "@/features/editor/features/canvas/__tests__/canva
 import { wheel } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import {
   carryNode,
+  distanceLabels,
   dragNode,
   drawnAt,
   drawnTurnedAt,
   renderCanvas,
-  snapGapLabels,
 } from "./setup";
 import { drawnApart, drawnTurnedBadge, setupSiblings } from "./snap-siblings";
 
@@ -44,7 +44,7 @@ test("90 度回ったノードを運んで兄弟の左辺へ吸い付いてい�
   // 上のテストと同じ量を運び、隙間は外接矩形で測る
   carryNode("badge", { x: 103, y: -12 });
 
-  expect(snapGapLabels()).toEqual(["112"]);
+  expect(distanceLabels("snap-gap")).toEqual(["112"]);
 });
 
 /**
