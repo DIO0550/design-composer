@@ -178,7 +178,7 @@ export const SideSnap = {
     const horizontal = nearestAlong(snap, SidePairs.Horizontal);
     const vertical = nearestAlong(snap, SidePairs.Vertical);
     const offset = { x: shiftOf(horizontal), y: shiftOf(vertical) };
-    const moved = CanvasBounds.movedBy(snap.moving, offset);
+    const moved = SideSnap.movedBy(snap, offset);
     return {
       offset,
       guides: {
@@ -190,6 +190,20 @@ export const SideSnap = {
         ),
       },
     };
+  },
+
+  /**
+   * 寄せたあとの、運んでいるものの矩形。
+   *
+   * ガイド線・隙間と、同じ位置から別に測る線（Alt / Option の距離）が同じ矩形を使うよう、
+   * 式をここ 1 か所に置く。別の式で作ると数 ULP ずれ、隙間と同じ線が別の線になる。
+   *
+   * @param snap 判定する組
+   * @param offset `toSnapped` が答えた寄せ量（画面上の px）
+   * @returns 運んでいるものの矩形を寄せ量だけ動かしたもの（画面上の px）
+   */
+  movedBy(snap: SideSnap, offset: Offset): CanvasBounds {
+    return CanvasBounds.movedBy(snap.moving, offset);
   },
 
   /**

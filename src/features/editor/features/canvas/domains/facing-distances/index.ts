@@ -6,8 +6,9 @@ import type { ThinLine } from "@/features/editor/features/canvas/domains/thin-li
 import { Option } from "@/utils/Option";
 
 /**
- * 運んでいるものから上下左右それぞれ、最初に当たる相手までの短い線（Alt / Option の距離 /
- * docs/06-ui.md「キャンバス直接操作」）。画面上の px。
+ * 運んでいるものから上下左右それぞれ、最初に当たる相手までの短い線（画面上の px）。
+ * 中身は線だが、名前は docs/06-ui.md「キャンバス直接操作」の機能名「Alt / Option の距離」
+ * （線と数値をまとめた呼び名）から借りている。
  *
  * キーは進む向きの 2 辺の組と進む側（`vertical` の `start` なら上へ進む）。
  */
@@ -23,6 +24,25 @@ const None = {
 
 export const FacingDistances = {
   None,
+
+  /**
+   * 上下左右それぞれの線を、向きごとの関数から組む。
+   *
+   * @param lineToward 進む向きを受けて、その向きの線を返す関数
+   * @returns 4 つの向きそれぞれに `lineToward` の答えを入れたもの
+   */
+  fromFacings(
+    lineToward: (facing: Facing) => Option<ThinLine>,
+  ): FacingDistances {
+    const along = (pair: SidePair) => ({
+      start: lineToward({ pair, end: AxisEnds.Start }),
+      end: lineToward({ pair, end: AxisEnds.End }),
+    });
+    return {
+      horizontal: along(SidePairs.Horizontal),
+      vertical: along(SidePairs.Vertical),
+    };
+  },
 
   /**
    * 運んでいるものから上下左右それぞれ、落とし先の親の縁か兄弟のうち最初に当たる相手までの
@@ -43,7 +63,7 @@ export const FacingDistances = {
     parentBounds: CanvasBounds;
     siblings: readonly CanvasBounds[];
   }>): FacingDistances {
-    const toward = (facing: Facing): Option<ThinLine> => {
+    return FacingDistances.fromFacings((facing) => {
       // 親の縁を手前・奥の両方とも候補にする。向きの側の縁だけにすると、外側から縁に
       // 接したときにその縁を突き抜けて奥の縁まで測る
       const edges = SidePair.sides(facing.pair).map((side) =>
@@ -54,14 +74,6 @@ export const FacingDistances = {
         Facing.firstReached(facing, { from: moved, candidates }),
         (to) => Facing.shortLineTo(facing, { from: moved, to }),
       );
-    };
-    const along = (pair: SidePair) => ({
-      start: toward({ pair, end: AxisEnds.Start }),
-      end: toward({ pair, end: AxisEnds.End }),
     });
-    return {
-      horizontal: along(SidePairs.Horizontal),
-      vertical: along(SidePairs.Vertical),
-    };
   },
 } as const;

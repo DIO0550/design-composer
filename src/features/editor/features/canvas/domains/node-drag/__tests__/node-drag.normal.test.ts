@@ -6,7 +6,7 @@ import type {
   DraggedNode,
   DropTarget,
 } from "@/features/editor/features/canvas/domains/node-drop";
-import type { RepositionGuides } from "@/features/editor/features/canvas/domains/reposition-guides";
+import type { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
 import type { RepositionTarget } from "@/features/editor/features/canvas/domains/reposition-target";
 import type { SnapGuides } from "@/features/editor/features/canvas/domains/side-snap";
 import { Option } from "@/utils/Option";
@@ -45,9 +45,9 @@ const SampleGuides: SnapGuides = {
 };
 
 /** 揃った線と隙間だけがあり、Alt / Option の距離は測っていない状態。 */
-const SampleRepositionGuides: RepositionGuides = {
+const SampleRepositionLines: RepositionLines = {
   snap: SampleGuides,
-  distances: FacingDistances.None,
+  distanceLines: FacingDistances.None,
 };
 
 /** 左と下に距離がある状態。下は `SampleGuides` の隙間と同じ線。 */
@@ -219,7 +219,7 @@ test("座標を置き直す落とし方では挿さる位置を持たない", ()
   const edit = DropEdit.reposition(
     "title",
     SampleRepositionTarget,
-    SampleRepositionGuides,
+    SampleRepositionLines,
   );
 
   expect(Option.isSome(DropEdit.insertionTarget(edit))).toBe(false);
@@ -230,7 +230,7 @@ test("座標を置き直す落とし方でも、子になる親の名前は答�
   const edit = DropEdit.reposition(
     "title",
     SampleRepositionTarget,
-    SampleRepositionGuides,
+    SampleRepositionLines,
   );
 
   expect(DropEdit.dropParentName(edit)).toBe("body");
@@ -244,7 +244,7 @@ test("座標を置き直す落とし方は、揃った線に引くガイド線�
   const edit = DropEdit.reposition(
     "title",
     SampleRepositionTarget,
-    SampleRepositionGuides,
+    SampleRepositionLines,
   );
 
   expect(DropEdit.snapGuides(edit)).toEqual(SampleGuides);
@@ -254,7 +254,7 @@ test("座標を置き直す落とし方は、揃え先との隙間と同じ線�
   // 下の距離は隙間と同じ線なので除かれ、左だけが残る
   const edit = DropEdit.reposition("title", SampleRepositionTarget, {
     snap: SampleGuides,
-    distances: SampleDistances,
+    distanceLines: SampleDistances,
   });
 
   expect(DropEdit.facingDistances(edit)).toEqual({
@@ -273,7 +273,7 @@ test("運んでいる間は、座標を置き直す落とし方の距離を答�
     Carrying.droppable(
       DropEdit.reposition("title", SampleRepositionTarget, {
         snap: SampleGuides,
-        distances: SampleDistances,
+        distanceLines: SampleDistances,
       }),
     ),
   );
@@ -300,7 +300,7 @@ test("運んでいる間は、揃った線に引くガイド線を答える", ()
       DropEdit.reposition(
         "title",
         SampleRepositionTarget,
-        SampleRepositionGuides,
+        SampleRepositionLines,
       ),
     ),
   );
@@ -336,7 +336,7 @@ test("座標を置き直す落とし方のときだけ、ずらして見せる�
       DropEdit.reposition(
         "title",
         SampleRepositionTarget,
-        SampleRepositionGuides,
+        SampleRepositionLines,
       ),
     ),
   );

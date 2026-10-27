@@ -5,7 +5,7 @@ import {
   DraggedNode,
   type DropTarget,
 } from "@/features/editor/features/canvas/domains/node-drop";
-import { RepositionGuides } from "@/features/editor/features/canvas/domains/reposition-guides";
+import { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
 import type { RepositionTarget } from "@/features/editor/features/canvas/domains/reposition-target";
 import {
   SideSnap,
@@ -57,7 +57,7 @@ export type DropEdit =
       /** 書き込む座標と向き、見た目のずらし量（座標とずらし量は**ドキュメント上の px**）。 */
       target: RepositionTarget;
       /** 揃った線のガイド線と揃え先との隙間、Alt / Option の距離の短い線（**画面上の px**）。 */
-      guides: RepositionGuides;
+      lines: RepositionLines;
     }>;
 
 /**
@@ -144,38 +144,6 @@ export const Carrying = {
         return DropEdit.repositionPreview(carrying.drop);
     }
   },
-
-  /**
-   * 揃った線（辺か中心線）に引くガイド線と、揃え先との隙間。
-   *
-   * @param carrying 今の運び方
-   * @returns 引く線と隙間（画面上の px）。揃った線が無ければ縦横とも `none`
-   */
-  snapGuides(carrying: Carrying): SnapGuides {
-    switch (carrying.kind) {
-      case "nothing":
-      case "preview":
-        return SideSnap.NoGuides;
-      case "droppable":
-        return DropEdit.snapGuides(carrying.drop);
-    }
-  },
-
-  /**
-   * 上下左右それぞれ、最初に当たる相手までの距離の短い線（Alt / Option の距離）。
-   *
-   * @param carrying 今の運び方
-   * @returns 向きごとの短い線（画面上の px）。落とせないなら全部 `none`
-   */
-  facingDistances(carrying: Carrying): FacingDistances {
-    switch (carrying.kind) {
-      case "nothing":
-      case "preview":
-        return FacingDistances.None;
-      case "droppable":
-        return DropEdit.facingDistances(carrying.drop);
-    }
-  },
 } as const;
 
 export const DropEdit = {
@@ -196,24 +164,23 @@ export const DropEdit = {
   /**
    * 落とし先の親の中の座標へ置き直す編集。既存ノードにしか起きない。
    *
-   * `target` と `guides`（吸い付きの線と Alt / Option の距離）を作る場所を `useNodeDrag` の
-   * 1 箇所へ閉じている。
+   * `target` の寄せ量と `lines` は同じ 1 回の判定（`RepositionLines.toSnapped`）から作る。
    *
-   * 線は丸める前の実測から引くので、書かれる座標との差は丸めのぶん（最大 0.5px /
-   * docs/06-ui.md）だけ残る。
+   * 線は丸める前の実測から引くので、書かれる座標との差は丸めのぶん（docs/06-ui.md の辺の
+   * スナップ）だけ残る。
    *
    * @param name 置き直すノードの名前
    * @param target 落とし先の親を基準に書き込む座標と向きと、運んでいる間のずらし量（座標と
    *   ずらし量はドキュメント上の px）
-   * @param guides 吸い付いた線・揃え先との隙間と、Alt / Option の距離（除く前。画面上の px）
+   * @param lines 吸い付いた線・揃え先との隙間と、Alt / Option の距離（除く前。画面上の px）
    * @returns 座標の置き直しの落とし方
    */
   reposition(
     name: string,
     target: RepositionTarget,
-    guides: RepositionGuides,
+    lines: RepositionLines,
   ): DropEdit {
-    return { kind: "reposition", name, target, guides };
+    return { kind: "reposition", name, target, lines };
   },
 
   /**
@@ -257,13 +224,10 @@ export const DropEdit = {
    * @returns 引く線と隙間（画面上の px）。ツリーへの移動・挿入なら縦横とも `none`
    */
   snapGuides(edit: DropEdit): SnapGuides {
-    switch (edit.kind) {
-      case "move":
-      case "insert":
-        return SideSnap.NoGuides;
-      case "reposition":
-        return edit.guides.snap;
-    }
+    return Option.unwrapOr(
+      Option.map(DropEdit.repositionLines(edit), (lines) => lines.snap),
+      SideSnap.NoGuides,
+    );
   },
 
   /**
@@ -274,12 +238,29 @@ export const DropEdit = {
    * @returns 向きごとの短い線（画面上の px）。ツリーへの移動・挿入なら全部 `none`
    */
   facingDistances(edit: DropEdit): FacingDistances {
+    return Option.unwrapOr(
+      Option.map(
+        DropEdit.repositionLines(edit),
+        RepositionLines.distanceLinesExceptGaps,
+      ),
+      FacingDistances.None,
+    );
+  },
+
+  /**
+   * 座標の置き直しで運んでいる間に出す線（除く前）。
+   *
+   * @param edit 今の落とし方
+   * @returns 吸い付いた線・揃え先との隙間・Alt / Option の距離。ツリーへの移動・挿入なら
+   *   `none`
+   */
+  repositionLines(edit: DropEdit): Option<RepositionLines> {
     switch (edit.kind) {
       case "move":
       case "insert":
-        return FacingDistances.None;
+        return Option.none;
       case "reposition":
-        return RepositionGuides.distancesExceptGaps(edit.guides);
+        return Option.some(edit.lines);
     }
   },
 
@@ -446,9 +427,10 @@ export const NodeDrag = {
    * @returns 引く線と隙間（画面上の px）。動かしていない / 揃った線が無いなら縦横とも `none`
    */
   snapGuides(drag: NodeDrag): SnapGuides {
-    return drag.kind === "dragging"
-      ? Carrying.snapGuides(drag.carrying)
-      : SideSnap.NoGuides;
+    return Option.unwrapOr(
+      Option.map(NodeDrag.drop(drag), DropEdit.snapGuides),
+      SideSnap.NoGuides,
+    );
   },
 
   /**
@@ -459,9 +441,10 @@ export const NodeDrag = {
    * @returns 向きごとの短い線（画面上の px）。動かしていない / 落とせないなら全部 `none`
    */
   facingDistances(drag: NodeDrag): FacingDistances {
-    return drag.kind === "dragging"
-      ? Carrying.facingDistances(drag.carrying)
-      : FacingDistances.None;
+    return Option.unwrapOr(
+      Option.map(NodeDrag.drop(drag), DropEdit.facingDistances),
+      FacingDistances.None,
+    );
   },
 
   /**

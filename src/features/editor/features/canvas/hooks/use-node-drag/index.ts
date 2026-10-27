@@ -15,7 +15,6 @@ import type { SelectionDig } from "@/domains/session/selection-dig";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
-import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import {
   Carrying,
   DropEdit,
@@ -28,6 +27,7 @@ import {
   DropZone,
   InsertionParent,
 } from "@/features/editor/features/canvas/domains/node-drop";
+import { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
 import {
   type DropParentCoordinates,
   type GrabbedPlacement,
@@ -176,11 +176,9 @@ type CarriedNodeWithParentRotation = Readonly<{
 /**
  * 座標の置き直しに要るものを、落とし先の親を 1 回だけ実測して揃える。
  *
- * 親の矩形はドキュメントに書かれていない（`hug` / `fill` があるので大きさも位置もレイア
- * ウトを通すまで決まらない）ため実測でしか決められない。倍率は実測値に乗るのでドキュメン
- * ト上の px へ割り戻し、落とし先が今の親と同じでも分岐しない（2 回測れば原点の位置は 0）。
- * 落とし先の親は、揃え先としても距離の相手としても、回っていても外接矩形で見る（docs/06-ui.md
- * の辺のスナップ）。
+ * 親の矩形はレイアウトを通すまで決まらない（`hug` / `fill`）ので実測し、倍率は割り戻す
+ * （落とし先が今の親と同じでも分岐しない）。落とし先の親は、揃え先としても距離の相手として
+ * も、回っていても外接矩形で見る（docs/06-ui.md の辺のスナップ）。
  *
  * @param context 運んでいるノードと落とし先の親の向きの引き先のドキュメントと、倍率を持つ
  *   今の掴み。倍率は実測の割り戻しと、回ったもののレイアウトの大きさを画面上の大きさへ直す
@@ -383,22 +381,19 @@ function repositionCarrying(
     ),
     screenDelta,
   });
-  // 寄せ量・ガイド線・距離は 1 回の判定から配る（理由は `DropEdit.reposition` の doc）
-  const snap = SideSnap.toSnapped(
+  const distanceTargets = AltKey.isHeld(context.event)
+    ? Option.some({
+        parentBounds: measured.value.parentBounds,
+        siblings: measured.value.siblings,
+      })
+    : Option.none;
+  const snap = RepositionLines.toSnapped(
     SideSnap.withSiblings(
       SideSnap.create(destination, targets.stationary),
       targets.siblings,
     ),
+    distanceTargets,
   );
-  const distances = AltKey.isHeld(context.event)
-    ? FacingDistances.create({
-        // toSnapped の中と同じ式で作る。別の式で作ると #453 の隙間と同じ線が数 ULP ずれ、
-        // 隙間と重なる距離を除けなくなる
-        moved: CanvasBounds.movedBy(destination, snap.offset),
-        parentBounds: measured.value.parentBounds,
-        siblings: measured.value.siblings,
-      })
-    : FacingDistances.None;
   // 寄せ量を運んだ量へ畳んでから渡すので、書かれる座標と見た目のずらし量が同じ材料から出る
   const snapped = Offset.add(screenDelta, snap.offset);
   return Carrying.droppable(
@@ -416,7 +411,7 @@ function repositionCarrying(
         CanvasView.toDocumentOffset(context.view, snapped),
         measured.value.dropParent,
       ),
-      { snap: snap.guides, distances },
+      snap.lines,
     ),
   );
 }
@@ -520,13 +515,9 @@ export type NodeDragControl = Readonly<{
  * の置き直し（親をまたげば付け替え）として解釈する（docs/06-ui.md「キャンバス直接操作」/
  * docs/02-data-model.md「基本原則」）。
  *
- * このフックが持つのは DOM の実測とイベントの仲介だけ。「どこへ落ちるか」「いつドラッグ
- * とみなすか」は `node-drop` / `node-drag`、「実測した親の原点と向きからどの座標と向きが書かれる
- * か」は `reposition-target`、「揃う線（辺か中心線）か兄弟の列と同じ間隔になる位置があるなら
- * どれだけ寄せるか」は `side-snap`、上下左右の相手までの距離は `facing-distances` にある。
- * ⌘ / Ctrl を押している間に揃え先を渡さない（吸い付かせない）のは、修飾キーという入力の事情
- * なのでこちらが持つ。Alt / Option を押している間だけ距離を測るのも同じく入力の事情なので
- * こちらが持つ。
+ * このフックが持つのは DOM の実測・イベントの仲介と、修飾キーの解釈（⌘ / Ctrl なら揃え先を
+ * 渡さない、Alt / Option なら距離を測る）だけで、落ちる先・書く座標・寄せ量と線は
+ * `node-drop` / `node-drag` / `reposition-target` / `reposition-lines` が決める。
  *
  * @param params 掴むものと落とし先を決める `selection` / `view` と、確定したときに呼ぶ
  *   `onMove` / `onInsertAt` / `onReposition`
