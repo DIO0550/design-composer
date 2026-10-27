@@ -113,3 +113,44 @@ test("接して並ぶ 2 つの先に離れた子があっても、接した子�
     },
   ]);
 });
+
+test("端数で数 ULP 重なって見えても、接している兄弟の間は間隔を測らず、その先の子までも隣にしない", () => {
+  // 1 つ目の右辺は 0.1 + 0.2 = 0.30000000000000004 で、2 つ目の左辺 0.3 より先にある
+  const first: CanvasBounds = { left: 0.1, top: 0, width: 0.2, height: 20 };
+  const second: CanvasBounds = { left: 0.3, top: 0, width: 10, height: 20 };
+  const third: CanvasBounds = { left: 20.3, top: 0, width: 10, height: 20 };
+
+  expect(
+    IntervalSlot.collect([first, second, third], SidePairs.Horizontal),
+  ).toEqual([
+    {
+      pair: SidePairs.Horizontal,
+      neighbor: third,
+      end: AxisEnds.End,
+      interval: 10,
+    },
+  ]);
+});
+
+test("端数で数 ULP 離れて見えても、接している兄弟の間は間隔を測らない", () => {
+  // 2 つ目の左辺 0.30000000000000004 は、1 つ目の右辺 0.3 より数 ULP だけ先にある
+  const first: CanvasBounds = { left: 0, top: 0, width: 0.3, height: 20 };
+  const second: CanvasBounds = {
+    left: 0.30000000000000004,
+    top: 0,
+    width: 10,
+    height: 20,
+  };
+  const third: CanvasBounds = { left: 20.3, top: 0, width: 10, height: 20 };
+
+  expect(
+    IntervalSlot.collect([first, second, third], SidePairs.Horizontal),
+  ).toEqual([
+    {
+      pair: SidePairs.Horizontal,
+      neighbor: third,
+      end: AxisEnds.End,
+      interval: 10,
+    },
+  ]);
+});
