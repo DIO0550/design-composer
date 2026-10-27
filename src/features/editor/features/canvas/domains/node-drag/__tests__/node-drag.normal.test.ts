@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
+import { SidePairs } from "@/domains/unit/side";
 import type {
   DraggedNode,
   DropTarget,
@@ -32,7 +33,11 @@ const SampleDrop = DropEdit.intoTree(MovingTitle, SampleDropTarget);
 const SampleGuides: SnapGuides = {
   horizontal: Option.some({
     guideLine: { left: 249, top: 72, width: 2, height: 168 },
-    gapLine: Option.some({ left: 259, top: 84, width: 2, height: 116 }),
+    gapLine: Option.some({
+      along: SidePairs.Vertical,
+      at: 260,
+      span: { min: 84, max: 200 },
+    }),
   }),
   vertical: Option.none,
 };

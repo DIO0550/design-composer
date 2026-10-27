@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { SidePairs } from "@/domains/unit/side";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
 import { OverlayStage } from "../__stories__/overlay-stage";
@@ -59,11 +60,19 @@ export const WithGaps: Story = {
     guides: {
       horizontal: Option.some({
         guideLine: { left: 159, top: 40, width: 2, height: 160 },
-        gapLine: Option.some({ left: 179, top: 80, width: 2, height: 64 }),
+        gapLine: Option.some({
+          along: SidePairs.Vertical,
+          at: 180,
+          span: { min: 80, max: 144 },
+        }),
       }),
       vertical: Option.some({
         guideLine: { left: 60, top: 199, width: 280, height: 2 },
-        gapLine: Option.some({ left: 200, top: 199, width: 100, height: 2 }),
+        gapLine: Option.some({
+          along: SidePairs.Horizontal,
+          at: 200,
+          span: { min: 200, max: 300 },
+        }),
       }),
     },
     view: CanvasView.create(),

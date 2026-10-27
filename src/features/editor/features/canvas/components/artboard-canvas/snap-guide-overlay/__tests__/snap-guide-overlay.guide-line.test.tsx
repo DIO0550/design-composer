@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
+import { SidePairs } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 import { GuideLineOverlay } from "../index";
 import { HorizontalLine, VerticalLine } from "./guide-lines";
@@ -53,7 +54,11 @@ test("揃え先から離れていても、隙間の数値は出さない", () =>
       guides={{
         horizontal: Option.some({
           guideLine: VerticalLine,
-          gapLine: Option.some({ left: 259, top: 200, width: 2, height: 40 }),
+          gapLine: Option.some({
+            along: SidePairs.Vertical,
+            at: 260,
+            span: { min: 200, max: 240 },
+          }),
         }),
         vertical: Option.none,
       }}

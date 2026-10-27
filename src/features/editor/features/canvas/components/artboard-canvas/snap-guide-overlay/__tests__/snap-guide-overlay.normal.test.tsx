@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
+import { SidePairs } from "@/domains/unit/side";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { Option } from "@/utils/Option";
 import { SnapGuideOverlay } from "../index";
@@ -8,17 +9,25 @@ import { HorizontalLine, VerticalLine } from "./guide-lines";
 /*
  * 揃った線（辺か中心線）に引くガイド線と、揃え先との隙間（docs/06-ui.md「キャンバス直接操作」
  * の辺のスナップ）。どこへ引くかは実測から `side-snap` が決めるので、ここが見るのは渡された
- * 矩形をそのまま線として出すかどうかと、隙間の数値をどの単位で出すか。
+ * 線を描く矩形にして出すかどうかと、隙間の数値をどの単位で出すか。
  */
 
 /** 等倍の表示。画面上の長さがそのままドキュメント上の長さになる。 */
 const SameSize = CanvasView.create();
 
 /** 縦の線に沿って測った隙間の短い線（長さ 64）。 */
-const VerticalGap = { left: 259, top: 176, width: 2, height: 64 };
+const VerticalGap = {
+  along: SidePairs.Vertical,
+  at: 260,
+  span: { min: 176, max: 240 },
+};
 
 /** 横の線に沿って測った隙間の短い線（長さ 48）。 */
-const HorizontalGap = { left: 272, top: 159, width: 48, height: 2 };
+const HorizontalGap = {
+  along: SidePairs.Horizontal,
+  at: 160,
+  span: { min: 272, max: 320 },
+};
 
 /** 揃え先と重なっていて、隙間を持たない縦の線。 */
 const VerticalOnly = Option.some({
