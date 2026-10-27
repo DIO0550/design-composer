@@ -1,10 +1,7 @@
 import { expect, test } from "vitest";
-import { AxisEnds } from "@/domains/unit/axis";
-import { SidePairs } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 import { Facing } from "../index";
-
-const Right: Facing = { pair: SidePairs.Horizontal, end: AxisEnds.End };
+import { Right } from "./facings";
 
 test("端数で数 ULP 重なって見えても、接している相手には距離 0 で当たる", () => {
   // 右辺は 0.1 + 0.2 = 0.30000000000000004 で、相手の左辺 0.3 より先にある

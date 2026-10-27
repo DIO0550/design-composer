@@ -1,11 +1,9 @@
 import { expect, test } from "vitest";
-import { AxisEnds } from "@/domains/unit/axis";
 import { SidePairs } from "@/domains/unit/side";
 import { ThinLine } from "@/features/editor/features/canvas/domains/thin-line";
 import { Option } from "@/utils/Option";
 import { Facing } from "../index";
-
-const Down: Facing = { pair: SidePairs.Vertical, end: AxisEnds.End };
+import { Down } from "./facings";
 
 /** 左上 (0, 0) の、幅 40・高さ 10 の矩形。 */
 const From = { left: 0, top: 0, width: 40, height: 10 };

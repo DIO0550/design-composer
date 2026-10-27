@@ -1,17 +1,11 @@
 import { expect, test } from "vitest";
-import { AxisEnds } from "@/domains/unit/axis";
-import { SidePairs } from "@/domains/unit/side";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { Option } from "@/utils/Option";
 import { Facing } from "../index";
+import { Down, Left, Right, Up } from "./facings";
 
 /** 進み始める、左上 (0, 0) の 10 四方の矩形。 */
 const From: CanvasBounds = { left: 0, top: 0, width: 10, height: 10 };
-
-const Right: Facing = { pair: SidePairs.Horizontal, end: AxisEnds.End };
-const Left: Facing = { pair: SidePairs.Horizontal, end: AxisEnds.Start };
-const Up: Facing = { pair: SidePairs.Vertical, end: AxisEnds.Start };
-const Down: Facing = { pair: SidePairs.Vertical, end: AxisEnds.End };
 
 test("右へ進むと、右にいる相手に当たる", () => {
   const right = { left: 20, top: 0, width: 10, height: 10 };
