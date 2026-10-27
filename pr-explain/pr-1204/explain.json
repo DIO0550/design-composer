@@ -1,0 +1,2301 @@
+{
+  "version": 1,
+  "pr": 1204,
+  "sha": "4eedf564fc00a2b556876b91314f9d1c312ce7b8",
+  "issue": 960,
+  "overview": {
+    "title": "ノードを運んでいる間、Alt / Option で上下左右のいちばん近い相手までの距離を出す",
+    "lead": "座標を置き直すドラッグの最中に Alt / Option を押していると、上下左右それぞれで最初に当たる相手(落とし先の親の縁か、同じ親の兄弟)までの距離が、揃え先との隙間と同じ見た目の短い線と数値で出る。そのために、向きに進んで相手を探す規則・細い線・数値にする規則を `interval-slot` と `side-snap` の非公開から共有のドメインへ移した。",
+    "before": [
+      {
+        "text": "運んでいる間に出る数値は、辺が揃ったときの揃え先との隙間だけ。揃っていない相手との距離は出せなかった"
+      },
+      {
+        "text": "接しているかの判定は浮動小数をそのまま比べていたので、吸い付いたあとの辺が数 ULP ずれると、接した相手が外れたり接するだけが重なりになったりした"
+      },
+      {
+        "text": "向きに進んで相手を探す規則は `interval-slot` の、細い線と隙間の数値は `side-snap` の非公開関数にあった"
+      }
+    ],
+    "after": [
+      {
+        "text": "Alt / Option を押しながら運ぶと、ポインタが動くたびに上下左右それぞれ最初に当たる相手までの距離を測る",
+        "message": "read-alt"
+      },
+      {
+        "text": "寄せ量・吸い付きの線・距離は `RepositionLines.toSnapped` の 1 回の判定から作る。寄せたあとの矩形を作る式はドメインの中の 1 か所だけ",
+        "message": "snap-and-measure"
+      },
+      {
+        "text": "親の縁は向きごとに手前と奥の 2 本を候補にし、縁を突き抜けて測らない。相手に接している向きには何も出さない",
+        "message": "edges"
+      },
+      {
+        "text": "揃え先との隙間が同じ線を既に出している向きは、距離を出さず隙間だけを出す(読むたびに計算し、除いた結果は保存しない)",
+        "message": "except-gaps"
+      },
+      {
+        "text": "見た目は揃え先との隙間と同じ赤い短い線と数値。数値はドキュメント上の px を最も近い整数へ丸め、丸めて 0 なら出さない",
+        "message": "readout"
+      },
+      {
+        "text": "接している・重なっているかは、距離と重なりの長さを小数 6 桁へ丸めて見る。等間隔の吸い付きと揃え先との隙間の判定にも効く",
+        "message": "interval"
+      },
+      {
+        "text": "使われなくなった `Range.gapBetween` とそのテストを消した"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "未決: 別の相手へ同じ列に重なる線",
+        "text": "揃え先との隙間と Alt の距離が、別の相手へ同じ縦(横)の列に重なると、どの数値がどこまでかが読めない(Issue の Q4)。人の判断待ちのまま、今はそのまま重ねて出す",
+        "go": {
+          "kind": "flow",
+          "id": "draw-distances"
+        }
+      },
+      {
+        "title": "親の縁を 2 本とも候補にする",
+        "text": "向きの側の縁 1 本だけだと、外側から縁に接したときに奥の縁まで突き抜けて測る。手前の縁も入れると、接していれば距離 0 で止まり何も出さない",
+        "go": {
+          "kind": "message",
+          "id": "edges"
+        }
+      },
+      {
+        "title": "寄せたあとの矩形を作る入口",
+        "text": "フェーズ 6 で 3 本のレビューが同じ根本原因として挙げた(フックとテストが同じ式を写していた)。1 つの入口に寄せ、式をドメインの中に閉じた",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/index.ts"
+        }
+      },
+      {
+        "title": "小数 6 桁への丸め",
+        "text": "接しているかの判定が浮動小数の端数で割れるのを落とす。等間隔の吸い付きの判定も同じ丸めに変わった(振る舞いの変化)",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/domains/facing/index.ts"
+        }
+      },
+      {
+        "title": "線の一致は許容幅なしで比べる",
+        "text": "隙間と距離の線の一致は浮動小数を `===` で比べる。同じ入力から同じ式で作った線どうしだけを比べる前提で、位置の比較を外しても落ちるのは細い線の単体テストだけ",
+        "go": {
+          "kind": "message",
+          "id": "equals"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "alt-distance",
+      "label": "Alt / Option の距離",
+      "role": "運んでいる間に Alt / Option を押すと、上下左右の最寄りの相手までの距離を測って描く"
+    },
+    {
+      "id": "shared-geometry",
+      "label": "向きの探索と細い線の共有",
+      "role": "向きに進んで相手を探す規則・細い線・数値にする規則を、等間隔と揃え先との隙間と Alt の距離で 1 つにする"
+    },
+    {
+      "id": "test-support",
+      "label": "テストの操作",
+      "role": "テストの操作で Alt / Option を押せるようにする"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "libs",
+      "role": "DOM イベントの Alt / Option の押下に名前を付けて読む(`AltKey`)"
+    },
+    {
+      "layer": "utils",
+      "role": "範囲の重なる区間と中央を返す操作を足し、使われなくなった間の計算を消す"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "距離を測るドメイン・束ねる入口・描く重ね描きと、共有へ移した探索・細い線・数値の規則"
+    },
+    {
+      "layer": "components",
+      "role": "テストの操作の修飾キーに Alt を足す"
+    },
+    {
+      "layer": "docs",
+      "role": "キャンバス直接操作の節に Alt / Option の距離を書き、丸めの規則を 1 か所にまとめる"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/libs/dom-event/alt-key/index.ts",
+      "name": "Alt の押下",
+      "role": "その操作で Alt / Option が押されていたかを読む",
+      "feature": "alt-distance",
+      "change": "新しく作った。`CommandKey` と同じ形"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "name": "ノードを運ぶフック",
+      "role": "実測から寄せる前の行き先と揃え先を作り、⌘ と Alt の押下を解釈して入口へ渡す",
+      "feature": "alt-distance",
+      "change": "Alt を押していれば距離を測る相手を渡す。寄せたあとの矩形はもう作らない"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "name": "置き直しの線",
+      "role": "寄せ量・吸い付きの線・距離を 1 回の判定から作り、隙間と同じ線の向きを読むたびに除く",
+      "feature": "alt-distance",
+      "change": "新しく作った(実装中に `RepositionGuides` から改名)"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "name": "上下左右の距離",
+      "role": "運んでいるものから 4 つの向きそれぞれ、最初に当たる相手までの短い線",
+      "feature": "alt-distance",
+      "change": "新しく作った"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "name": "ノードのドラッグ",
+      "role": "運んでいる状態と落とし方。置き直しの枝が線を持つ",
+      "feature": "alt-distance",
+      "change": "置き直しの枝に吸い付きの線と距離を束ねて持たせ、除いたあとの距離を読むアクセサを足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "name": "キャンバス",
+      "role": "運んでいる間の重ね描きを並べる",
+      "feature": "alt-distance",
+      "change": "ノードの吸い付きの線の直後に距離の重ね描きを置いた"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx",
+      "name": "距離の重ね描き",
+      "role": "距離のある向きだけ短い線と数値を描く",
+      "feature": "alt-distance",
+      "change": "新しく作った"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "name": "吸い付きの線の重ね描き",
+      "role": "ガイド線と、隙間・距離の短い線と数値を描く部品",
+      "feature": "shared-geometry",
+      "change": "隙間の部品を `DistanceLine` に改名して公開し、`testId` で隙間と距離を描き分ける"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/facing/index.ts",
+      "name": "進む向き",
+      "role": "矩形から向きに進んで最初に当たる相手・距離・重なり・短い線を答える。判定は小数 6 桁へ丸めて見る",
+      "feature": "shared-geometry",
+      "change": "`interval-slot` と `side-snap` の非公開関数を移して作った"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "name": "細い線",
+      "role": "ガイド線・隙間と距離の短い線を、向き・位置・範囲で持ち、描く矩形にする",
+      "feature": "shared-geometry",
+      "change": "`side-snap` の線の矩形化を移して作った。線の一致の比較を足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/distance-readout/index.ts",
+      "name": "距離の数値",
+      "role": "短い線に、ドキュメント上の px へ丸めた長さを添える",
+      "feature": "shared-geometry",
+      "change": "`side-snap` の `GapReadout` を移して改名した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "name": "辺の吸い付き",
+      "role": "揃え先への寄せ量とガイド線・揃え先との隙間を求める",
+      "feature": "shared-geometry",
+      "change": "隙間の線と数値を共有モジュールへ載せ替え、寄せたあとの矩形を作る `movedBy` を公開した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/interval-slot/index.ts",
+      "name": "等間隔の位置",
+      "role": "兄弟の列の端から同じ間隔の位置を集める",
+      "feature": "shared-geometry",
+      "change": "探索を `Facing` に載せ替えた。接しているかの判定が 6 桁丸めになった"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "name": "キャンバスの矩形",
+      "role": "画面上の矩形の判定と変換",
+      "feature": "shared-geometry",
+      "change": "1 辺を厚さ 0 の矩形にする `sideBounds` を足した"
+    },
+    {
+      "path": "src/utils/Range.ts",
+      "name": "範囲",
+      "role": "数の区間の汎用操作",
+      "feature": "shared-geometry",
+      "change": "重なる区間と中央を足し、`gapBetween` を消した"
+    },
+    {
+      "path": "src/components/__tests__/pointer-gesture.ts",
+      "name": "ポインタの操作",
+      "role": "テストでポインタを操作するときの修飾キー",
+      "feature": "test-support",
+      "change": "`alt` と `meta+alt` を足した",
+      "graph": false
+    },
+    {
+      "path": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+      "name": "キャンバスの操作",
+      "role": "テストでキャンバスを操作するヘルパー",
+      "feature": "test-support",
+      "change": "ホイールのイベントに `altKey` を載せる(happy-dom の初期化が持たないことを実測)",
+      "graph": false
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "キャンバス直接操作の仕様",
+      "feature": "alt-distance",
+      "change": "Alt / Option の距離の節を足し、丸めの規則と理由を辺のスナップの節 1 か所にした",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "read-alt",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/libs/dom-event/alt-key/index.ts",
+      "kind": "qry",
+      "name": "Alt の押下を読む",
+      "code": "AltKey.isHeld(context.event)",
+      "via": "call",
+      "payload": "ポインタのイベント",
+      "returns": "押されていれば真",
+      "status": "added"
+    },
+    {
+      "id": "snap-and-measure",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "kind": "qry",
+      "name": "吸い付きと距離を 1 回で求める",
+      "code": "RepositionLines.toSnapped(snap, distanceTargets)",
+      "via": "call",
+      "payload": "寄せる前の行き先と揃え先、距離を測る相手(Alt を押していなければ `none`)",
+      "returns": "寄せ量と、吸い付きの線・揃え先との隙間・距離",
+      "status": "added"
+    },
+    {
+      "id": "snap",
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "kind": "qry",
+      "name": "寄せ量と吸い付きの線を求める",
+      "code": "SideSnap.toSnapped(snap)",
+      "via": "call",
+      "returns": "寄せ量とガイド線・揃え先との隙間",
+      "status": "added"
+    },
+    {
+      "id": "moved",
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "kind": "qry",
+      "name": "寄せたあとの矩形を作る",
+      "code": "SideSnap.movedBy(snap, snapped.offset)",
+      "via": "call",
+      "returns": "隙間を測ったのと同じ式で作った矩形",
+      "status": "added"
+    },
+    {
+      "id": "measure",
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "kind": "qry",
+      "name": "上下左右の距離の線を引く",
+      "code": "FacingDistances.create({ moved, parentBounds, siblings })",
+      "via": "call",
+      "payload": "寄せたあとの運んでいるもの・落とし先の親・その親の直下の兄弟",
+      "returns": "向きごとの短い線",
+      "status": "added"
+    },
+    {
+      "id": "edges",
+      "from": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "kind": "qry",
+      "name": "親の縁を厚さ 0 の矩形にする",
+      "code": "CanvasBounds.sideBounds(parentBounds, side)",
+      "via": "call",
+      "payload": "親の矩形と、進む向きの 2 辺それぞれ",
+      "returns": "その辺 1 本の矩形",
+      "status": "added"
+    },
+    {
+      "id": "first-reached",
+      "from": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing/index.ts",
+      "kind": "qry",
+      "name": "最初に当たる相手を探す",
+      "code": "Facing.firstReached(facing, { from: moved, candidates })",
+      "via": "call",
+      "payload": "親の縁 2 本と兄弟",
+      "returns": "最初に当たる相手。無ければ `none`",
+      "status": "added"
+    },
+    {
+      "id": "short-line",
+      "from": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing/index.ts",
+      "kind": "qry",
+      "name": "相手までの短い線を引く",
+      "code": "Facing.shortLineTo(facing, { from: moved, to })",
+      "via": "call",
+      "returns": "向かい合う範囲の中央の短い線。接している・重なっているなら `none`",
+      "status": "added"
+    },
+    {
+      "id": "carry",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "kind": "cmd",
+      "name": "置き直しの落とし方に線を載せる",
+      "code": "DropEdit.reposition(carried.name, target, snap.lines)",
+      "via": "call",
+      "payload": "落とす名前・寄せた行き先・吸い付きの線と距離(除く前)",
+      "status": "changed"
+    },
+    {
+      "id": "read-distances",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "kind": "qry",
+      "name": "描く距離を読む",
+      "code": "NodeDrag.facingDistances(nodeDrag.drag)",
+      "via": "state",
+      "returns": "隙間と同じ線の向きを除いた距離。置き直しで運んでいる間でなければ全部 `none`",
+      "status": "added"
+    },
+    {
+      "id": "except-gaps",
+      "from": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "kind": "qry",
+      "name": "隙間と同じ線の向きを除く",
+      "code": "RepositionLines.distanceLinesExceptGaps(lines)",
+      "via": "call",
+      "returns": "除いたあとの距離(毎回計算する)",
+      "status": "added"
+    },
+    {
+      "id": "equals",
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "kind": "qry",
+      "name": "2 本の線が同じか比べる",
+      "code": "ThinLine.equals(gapLine.value, distanceLine)",
+      "via": "call",
+      "returns": "向き・位置・範囲がすべて一致すれば真",
+      "status": "added"
+    },
+    {
+      "id": "render",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx",
+      "kind": "cmd",
+      "name": "距離を描く",
+      "code": "<FacingDistanceOverlay distances={…} view={view} />",
+      "via": "state",
+      "payload": "除いたあとの距離と表示の倍率",
+      "status": "added"
+    },
+    {
+      "id": "readout",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/distance-readout/index.ts",
+      "kind": "qry",
+      "name": "見せる数値にする",
+      "code": "DistanceReadout.create(line, view)",
+      "via": "call",
+      "returns": "線と、ドキュメント上の px へ丸めた長さ。丸めて 0 なら `none`",
+      "status": "added"
+    },
+    {
+      "id": "draw-line",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "kind": "cmd",
+      "name": "短い線と数値を描く",
+      "code": "<DistanceLine readout={readout} testId=\"facing-distance\" />",
+      "via": "state",
+      "status": "added"
+    },
+    {
+      "id": "gap-line",
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing/index.ts",
+      "kind": "qry",
+      "name": "揃え先との隙間の線を引く",
+      "code": "Facing.shortLineTo({ pair: along, end }, between)",
+      "via": "call",
+      "returns": "隙間の短い線。重なっている・接しているなら `none`",
+      "status": "changed"
+    },
+    {
+      "id": "gap-readout",
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/features/editor/features/canvas/domains/distance-readout/index.ts",
+      "kind": "qry",
+      "name": "隙間を数値にする",
+      "code": "DistanceReadout.create(line, view)",
+      "via": "call",
+      "returns": "線と長さ",
+      "status": "changed"
+    },
+    {
+      "id": "interval",
+      "from": "src/features/editor/features/canvas/domains/interval-slot/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing/index.ts",
+      "kind": "qry",
+      "name": "隣の子と間隔を求める",
+      "code": "Facing.firstReached / Facing.distanceTo / Facing.overlapsAcross",
+      "via": "call",
+      "returns": "隣の子と、6 桁へ丸めた間隔",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "carry-with-alt",
+      "label": "Alt を押しながらポインタを動かす",
+      "steps": [
+        "read-alt",
+        "snap-and-measure",
+        "snap",
+        "moved",
+        "measure",
+        "edges",
+        "first-reached",
+        "short-line",
+        "carry"
+      ]
+    },
+    {
+      "id": "draw-distances",
+      "label": "運んでいる間に距離を描き直す",
+      "steps": [
+        "read-distances",
+        "except-gaps",
+        "equals",
+        "render",
+        "readout",
+        "draw-line"
+      ]
+    },
+    {
+      "id": "snap-gap",
+      "label": "揃え先との隙間を出す(載せ替え)",
+      "steps": [
+        "snap",
+        "gap-line",
+        "gap-readout"
+      ]
+    },
+    {
+      "id": "interval",
+      "label": "等間隔の位置を探す(載せ替え)",
+      "steps": [
+        "interval"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "269fabcc91a8e1eb928fcbc5e8ddcff5fb8c5e2c",
+      "phase": "prep",
+      "role": "ガイド線と隙間の細い線を共有の型に切り出す",
+      "why": "Alt の距離も揃え先との隙間と同じ見た目の短い線を引く(Q3)。線を矩形にする規則が `side-snap` の非公開にあると 2 か所に写すことになるので、振る舞いを変えずに先に出した。",
+      "review": [
+        "線を向き・位置・範囲で持つ形にしたので、数値を線の太さから取り違える余地が無くなっているか"
+      ]
+    },
+    {
+      "sha": "a8651b3648e4a76d09d89260814e19e797dae6d2",
+      "phase": "prep",
+      "role": "細い線の矩形と一致の比較をテストする",
+      "why": "切り出した型の振る舞い(太さ 2・中心合わせ・一致)を単体で固定する。"
+    },
+    {
+      "sha": "e566a2dd8ff9e4f8399b3b603218709ecb6a6fa9",
+      "phase": "prep",
+      "role": "向きに進んで相手を探す規則を共有のドメインに切り出す",
+      "why": "Alt の距離は等間隔と同じ「最初に当たる相手」の探索を使う。`facing-distances` 側で書き直すと探索が 2 つになる(却下 6)ので移した。このとき判定を小数 6 桁へ丸める形にした。",
+      "review": [
+        "丸めは距離と重なりの判定だけで、線の位置と数値は丸める前の値のまま使っているか"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/facing/index.ts",
+          "start": 124,
+          "end": 133,
+          "text": "丸める理由はここ 1 か所。許容幅(ε)で比べる案は、同じ距離の比較と間隔 0 の判定まで書き直すことになるので採らなかった"
+        }
+      ]
+    },
+    {
+      "sha": "e6a74131c7aff1532171ede70d565ea8719c04ee",
+      "phase": "prep",
+      "role": "探索・端数の扱い・短い線をテストする",
+      "why": "端数で数 ULP ずれる入力を、丸めを外すと落ちる値で選んだ(試作で確認)。"
+    },
+    {
+      "sha": "d6b21a6f478b9d1f58bb5c8b96ac6745575d7d7b",
+      "phase": "prep",
+      "role": "線を数値にする規則を共有のドメインに切り出す",
+      "why": "隙間と Alt の距離の両方が「線の長さをドキュメント上の px へ丸める」を使う。隙間だけを指す `GapReadout` の名前は嘘になるので `DistanceReadout` に改名した(却下 26)。"
+    },
+    {
+      "sha": "6e8aa004581ce40c3501206e05ef1fb6a071cb47",
+      "phase": "prep",
+      "role": "数値の割り戻しと丸めをテストする",
+      "why": "`side-snap.gap` にあった数値の規則のテスト 2 件をここへ移し、横に伸びる線を太さで測らないことを足した。"
+    },
+    {
+      "sha": "41dbfb70e41567c61520fb888ffa60a4a93762c1",
+      "phase": "prep",
+      "role": "等間隔の探索を共有のドメインに載せ替える",
+      "why": "公開 API は変えない。振る舞いの変化は 1 つで、数 ULP 離れて / 重なって見える兄弟を接しているとみなし、間隔が 6 桁へ丸まる(docs の等間隔の節と一致する向き)。",
+      "flows": [
+        "interval"
+      ],
+      "review": [
+        "等間隔に吸い付く条件(端の子と重なるか)も 6 桁丸めに変わる。テストは足していない"
+      ],
+      "before": [
+        {
+          "text": "端数で数 ULP 離れて見える兄弟の間に、ごく小さな間隔を測ることがあった"
+        }
+      ],
+      "after": [
+        {
+          "text": "6 桁へ丸めて 0 なら接しているとみなし、間隔を測らない",
+          "message": "interval"
+        }
+      ]
+    },
+    {
+      "sha": "806f1f28b28934651724af94409335da93eddc21",
+      "phase": "prep",
+      "role": "端数でずれても接している兄弟は間隔を測らないことをテストする",
+      "why": "載せ替えで変わった振る舞いを固定する。丸めを外すと 2 件とも落ちることを確かめた。"
+    },
+    {
+      "sha": "6221f317598217bbfde99744603d6a4e417c5c26",
+      "phase": "prep",
+      "role": "揃え先との隙間を共有モジュールへ載せ替える",
+      "why": "隙間の線は `Facing.shortLineTo`、数値は `DistanceReadout.create` から作る。数値を線の範囲から取るので、キーと向きの取り違え(PR #961 で塞いだもの)が起きない形になった。",
+      "flows": [
+        "snap-gap"
+      ]
+    },
+    {
+      "sha": "ce03f0c63d7a482a7a87b0906e7117d43705a67b",
+      "phase": "prep",
+      "role": "使われなくなった範囲の間の計算を消す",
+      "why": "呼び出し元は `side-snap` の 1 か所だけで、載せ替えで 0 件になった。"
+    },
+    {
+      "sha": "f4565b8c98160e47d12040a8ec9a032e35074c28",
+      "phase": "core",
+      "role": "矩形の 1 辺を厚さ 0 の矩形にする操作を足す",
+      "why": "親の縁を兄弟と同じ探索に入れるため、縁を矩形として渡す。矩形から別の表現を作る規則なので `CanvasBounds` のコンパニオンに置いた(却下 23)。"
+    },
+    {
+      "sha": "3a7f25ea7f6b5de644c2cb07e69cdf5bb6169dff",
+      "phase": "core",
+      "role": "4 辺それぞれの縁の矩形をテストする",
+      "why": "下辺・右辺だけが位置を動かすので、4 辺を別々に固定する。"
+    },
+    {
+      "sha": "bbba3607a918215914973a46dd2277c40cd595ba",
+      "phase": "core",
+      "role": "上下左右それぞれ最初に当たる相手までの線を出す",
+      "why": "Q1(向きごとに 1 本)のとおり、親の縁と兄弟を同じ並びに入れて最初に当たるものを採る。v3 の計画では向きの側の縁 1 本だったが、外側から縁に接すると奥の縁まで突き抜けて測ると 3 回目の検証で分かり、両側の 2 本にした。",
+      "flows": [
+        "carry-with-alt"
+      ],
+      "review": [
+        "親の縁を手前・奥の 2 本とも候補にしたことで、親の外にいるときも縁を突き抜けないか",
+        "兄弟と縁が同じ距離なら縁を採る(並びの先)ことが、docs の規則と一致しているか"
+      ],
+      "after": [
+        {
+          "text": "4 つの向きそれぞれで、親の縁 2 本と兄弟から最初に当たる相手までの短い線を引く",
+          "message": "measure"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+          "start": 47,
+          "end": 52,
+          "text": "縁を 2 本とも並びの先に入れる。手前の縁は後ろにあれば外れ、接していれば距離 0 で当たって線を引かない"
+        }
+      ]
+    },
+    {
+      "sha": "f2fbd6aa028f8fbf393dda7adc4d1ef46f4b49b0",
+      "phase": "core",
+      "role": "相手の決め方をテストする",
+      "why": "normal に 5 件、edge に 9 件。縁を突き抜けない 2 件は、丸め無しと縁 1 本のどちらの実装でも落ちる入力で作った。"
+    },
+    {
+      "sha": "7fd46ebab90a85c3de54790ffc537187a6ebf4c5",
+      "phase": "core",
+      "role": "吸い付きの線と距離を束ねる型を足す",
+      "why": "Q2 の除外を、除いた結果として保存せず、読むたびに計算する形にした(v3 では保存していて、除く前と除いたあとが食い違う組が書けた)。",
+      "flows": [
+        "draw-distances"
+      ],
+      "review": [
+        "線の一致を許容幅なしで比べてよい前提(同じ入力から同じ式で作った線)が、後の入口の一本化で保たれているか"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-guides/index.ts",
+          "start": 21,
+          "end": 35,
+          "text": "隙間の線と距離の線が `ThinLine.equals` で一致した向きだけを除く。後のコミットで `reposition-lines` に改名"
+        }
+      ]
+    },
+    {
+      "sha": "a9e3d5ebf2a66b759a4358137021a513fed9c8b4",
+      "phase": "core",
+      "role": "揃え先との隙間と同じ線の向きは距離を出さないことをテストする",
+      "why": "実物の吸い付きと距離を通して確かめる。4 回目の検証の指摘で、親の縁との隙間(端数のある親)と横向きの除外を足した。"
+    },
+    {
+      "sha": "2478c9c565281493cea59dbbadf875f24739c10a",
+      "phase": "core",
+      "role": "Alt / Option の押下を読む入口を足す",
+      "why": "DOM イベントの生の値に名前を付けるのは `libs/dom-event` の境界(前例 `CommandKey`、却下 14)。"
+    },
+    {
+      "sha": "0eca8ced508e60e84ed903f4ec7455e6c514c7da",
+      "phase": "core",
+      "role": "Alt の押下の読み取りをテストする",
+      "why": "押されている / いないの 2 件。"
+    },
+    {
+      "sha": "63e77928659d913e2f9e998016a938b670f7e3b9",
+      "phase": "core",
+      "role": "運んでいる間に Alt を押していれば距離を測り、落とし方に載せる",
+      "why": "押しているかはポインタが動くたびに見る(⌘ / Ctrl と同じ)。この時点では寄せたあとの矩形をフックの中で作り直していて、後のコミットでドメインの入口へ寄せた。",
+      "flows": [
+        "carry-with-alt"
+      ],
+      "before": [
+        {
+          "text": "置き直しの落とし方は吸い付きの線だけを持っていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "置き直しの落とし方が、吸い付きの線と距離(除く前)を束ねて持つ",
+          "message": "carry"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "start": 393,
+          "end": 401,
+          "text": "寄せたあとの矩形を `toSnapped` の中と同じ式で作り直している。式がずれると隙間と同じ線が数 ULP ずれて除けなくなる(フェーズ 6 の F1 で入口へ寄せた)"
+        }
+      ]
+    },
+    {
+      "sha": "20bec4e93499ba0f926979f4d002b4402fb4bf85",
+      "phase": "core",
+      "role": "距離を描く重ね描きを足す",
+      "why": "`SnapGuideOverlay` の中で出すと、artboard の移動にも「距離なし」を渡させることになる(却下 15)ので別の部品にした。線と数値の部品は隙間と共有する。"
+    },
+    {
+      "sha": "92f9d602ea7e2e20cae6174886a245d5ff29940a",
+      "phase": "core",
+      "role": "距離のある向きだけ描くことをテストする",
+      "why": "丸めて 0 になる向きは出ないことを、対照の向きを 1 本置いて確かめる。"
+    },
+    {
+      "sha": "1930ec1c1d2ba85f16193a76287b0ce1e9455ec7",
+      "phase": "core",
+      "role": "キャンバスに距離の重ね描きを置く",
+      "why": "ノードの吸い付きの線の直後に置き、運んでいる間にだけ出る。",
+      "flows": [
+        "draw-distances"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "start": 367,
+          "end": 370,
+          "text": "置き直しで運んでいる間でなければ `NodeDrag.facingDistances` が全部 `none` を返すので、何も描かれない"
+        }
+      ]
+    },
+    {
+      "sha": "29db186901a69264e1963fa2d8d6ea5329282c91",
+      "phase": "core",
+      "role": "テストの操作で Alt / Option を押せるようにする",
+      "why": "修飾キーを軸ごとのオブジェクトにする案は、文字列で渡している行が 43 あるので採らず、`alt` と `meta+alt` を足した(却下 12)。happy-dom のホイールのイベントは初期化で `altKey` を持たないので、プロパティで載せた。"
+    },
+    {
+      "sha": "d1c120e0960d2d65336869eb690b7b3676222355",
+      "phase": "core",
+      "role": "Alt を押しながら運ぶ操作を通しでテストする",
+      "why": "実物のフック・ドメイン・描画を通す。倍率 1.2 で親の縁に外側から吸い付く入力は、丸め無しと縁 1 本のどちらでも落ちるよう、ポインタの位置を 64.9 から 63.4 に直した。",
+      "review": [
+        "倍率に端数がある入力が、丸めを外した実装と縁 1 本の実装の両方で落ちるか"
+      ]
+    },
+    {
+      "sha": "ece675daf9873def6ffeefb606876a730384d91f",
+      "phase": "core",
+      "role": "Alt / Option の距離を仕様に書く",
+      "why": "⌘ の節と同じ深さに Alt の節を足した。Figma の Alt + ドラッグ(複製)とはぶつかることも 1 行書いた。"
+    },
+    {
+      "sha": "67f23e94e288c4bc1e33c75f29be3243e96c555c",
+      "phase": "revise",
+      "role": "進む側の区間と重なりを 1 か所で求める",
+      "why": "フェーズ 6 の F3・F4。距離と短い線が進む側の辺の選び方を 2 回書いていたので非公開関数 1 つにし、重なる区間は `Range` の汎用操作にした。"
+    },
+    {
+      "sha": "ae9209fcbe94ffce03464c324a752adfcacb0d32",
+      "phase": "revise",
+      "role": "探索のテストの向きの定数を共有ファイルに寄せる",
+      "why": "フェーズ 6 の F11。3 ファイルに同じ定数があった。"
+    },
+    {
+      "sha": "3d747acef30a3d9d22ed00384f8556641bae5959",
+      "phase": "revise",
+      "role": "吸い付きと距離を 1 つの入口で作り、置き直しの線に改名する",
+      "why": "フェーズ 6 の F1(3 本のレビューが同じ根本原因)。寄せたあとの矩形を作る式が `toSnapped` の中・フック・テストの 3 か所にあり、フックの式だけ変えてもテストは落ちなかった。入口を 1 つにし、式をドメインの中に閉じた。`SideSnap` に置かないのは、artboard の移動・リサイズに距離を持ち込まないため。F5・F6・F7 の名前と重複の整理もここで行った。",
+      "flows": [
+        "carry-with-alt",
+        "draw-distances"
+      ],
+      "review": [
+        "寄せ量に端数がある入力で、別の式にすると落ちるテストが入っているか",
+        "改名した `RepositionLines` / `distanceLines` が、このリポジトリの guide(吸い付きのガイド線と隙間)と別の語として読めるか"
+      ],
+      "before": [
+        {
+          "text": "フックが寄せ量を受け取ったあとに、寄せたあとの矩形を自分で作り直して距離を測っていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "フックは距離を測る相手を渡すだけで、寄せ量・線・距離は入口が 1 回の判定から返す",
+          "message": "snap-and-measure"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+          "start": 51,
+          "end": 69,
+          "text": "寄せたあとの矩形は `SideSnap.movedBy` で、隙間を測ったのと同じ式から作る"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "start": 384,
+          "end": 396,
+          "text": "フックに残るのは Alt と ⌘ の解釈だけ(入力欄の事情はコントロール側)"
+        }
+      ]
+    },
+    {
+      "sha": "b78341ca74e93640c303fbae5caa7229ef64b77f",
+      "phase": "revise",
+      "role": "距離のテストの親と運んでいるものを共有ファイルに寄せる",
+      "why": "フェーズ 6 の F11。normal と edge に同じ定数が doc ごとあった。"
+    },
+    {
+      "sha": "7440a410980b70d009c343164b2a3c74aad05ecb",
+      "phase": "revise",
+      "role": "隙間と距離のラベルを読むヘルパーを 1 本にまとめる",
+      "why": "フェーズ 6 の F12。2 本のヘルパーは testId と並べ替えだけが違った。"
+    },
+    {
+      "sha": "4eedf564fc00a2b556876b91314f9d1c312ce7b8",
+      "phase": "revise",
+      "role": "仕様の Alt の節の重複と、実装と逆に読める文言を直す",
+      "why": "フェーズ 6 の F8〜F10・F13。丸めの規則と理由が 3 か所にあり、親の縁を相手にしない条件の括弧書きは、一部だけはみ出した場面で実装と逆の答えになっていた。",
+      "review": [
+        "丸めの規則と理由が辺のスナップの隙間の行 1 か所にだけあり、等間隔と Alt の節は参照になっているか"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 159,
+          "end": 159,
+          "text": "丸める理由はこの行だけに置き、等間隔の行と Alt の節からは参照する"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "canvas-alt",
+      "label": "キャンバスの通し(Alt の距離)",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx"
+    },
+    {
+      "id": "reposition-lines",
+      "label": "置き直しの線",
+      "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts"
+    },
+    {
+      "id": "distances-normal",
+      "label": "上下左右の距離(正常系)",
+      "file": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.normal.test.ts"
+    },
+    {
+      "id": "distances-edge",
+      "label": "上下左右の距離(境界)",
+      "file": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.edge.test.ts"
+    },
+    {
+      "id": "facing-edge",
+      "label": "進む向き(端数)",
+      "file": "src/features/editor/features/canvas/domains/facing/__tests__/facing.edge.test.ts"
+    },
+    {
+      "id": "interval-edge",
+      "label": "等間隔の位置(境界)",
+      "file": "src/features/editor/features/canvas/domains/interval-slot/__tests__/interval-slot.edge.test.ts"
+    },
+    {
+      "id": "thin-line",
+      "label": "細い線",
+      "file": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts"
+    },
+    {
+      "id": "overlay",
+      "label": "距離の重ね描き",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/__tests__/facing-distance-overlay.normal.test.tsx"
+    },
+    {
+      "id": "node-drag",
+      "label": "ノードのドラッグ",
+      "file": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts"
+    },
+    {
+      "id": "alt-key",
+      "label": "Alt の押下",
+      "file": "src/libs/dom-event/alt-key/__tests__/alt-key.normal.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "g-alt-shows",
+      "suite": "canvas-alt",
+      "name": "Alt を押しながら運んでいる間、上下左右それぞれ最初に当たる相手までの距離が出る",
+      "techniques": [
+        "state",
+        "equivalence"
+      ],
+      "why": "機能の中心。親の縁 3 方向と兄弟 1 方向が混ざる配置で、相手の選び方を実物のフック・ドメイン・描画を通して見る",
+      "given": "`home` の中に `badge` と兄弟 `card` / `marker` がある",
+      "when": "Alt を押しながら `badge` を (113, -12) 運ぶ(左辺が `marker` へ寄る)",
+      "then": "距離の数値が昇順で `12` `150` `190` `66`(上・左・右は親の縁、下は `card`)",
+      "commit": "d1c120e0960d2d65336869eb690b7b3676222355",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "start": 33,
+        "end": 41,
+        "text": "test(\"Alt を押しながら運んでいる間、上下左右それぞれ最初に当たる相手までの距離が出る\", () => {\n  renderCanvas({ selection: setupSiblings() });\n  drawnApart();\n\n  // 上は `home` の上辺まで 12、左は左辺まで 150、右は右辺まで 190、下は `card` の上辺まで 66\n  carryNode(\"badge\", { x: 113, y: -12 }, \"alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"12\", \"150\", \"190\", \"66\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+        "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx"
+      ],
+      "covers": [
+        "read-alt",
+        "snap-and-measure",
+        "measure",
+        "carry",
+        "read-distances",
+        "render",
+        "draw-line"
+      ]
+    },
+    {
+      "id": "g-no-alt",
+      "suite": "canvas-alt",
+      "name": "Alt を押さずに運んでいる間は、距離が出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "Alt を押しているときだけ測る判断を守る(test-reviewer のミューテーションでは、この判断を壊すと少なくとも 1 件のテストが落ちた)",
+      "given": "1 件目と同じ配置",
+      "when": "Alt を押さずに同じ量運ぶ",
+      "then": "距離の数値は 1 つも出ない",
+      "commit": "d1c120e0960d2d65336869eb690b7b3676222355",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "start": 43,
+        "end": 50,
+        "text": "test(\"Alt を押さずに運んでいる間は、距離が出ない\", () => {\n  renderCanvas({ selection: setupSiblings() });\n  drawnApart();\n\n  carryNode(\"badge\", { x: 113, y: -12 });\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "read-alt"
+      ]
+    },
+    {
+      "id": "g-snap-kept",
+      "suite": "canvas-alt",
+      "name": "Alt を押したままでも吸い付き、離すと吸い付いた位置の座標が書かれる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "Alt は表示を足すだけで、吸い付きと書かれる座標は変えない",
+      "given": "1 件目と同じ配置",
+      "when": "Alt を押しながら (113, -12) 運んで離す",
+      "then": "`badge` の座標 (150, 12) が書かれる",
+      "commit": "d1c120e0960d2d65336869eb690b7b3676222355",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "start": 52,
+        "end": 66,
+        "text": "test(\"Alt を押したままでも吸い付き、離すと吸い付いた位置の座標が書かれる\", () => {\n  const onRepositionNode = vi.fn();\n  renderCanvas({ selection: setupSiblings(), onRepositionNode });\n  drawnApart();\n\n  dragNode(\"badge\", { x: 113, y: -12 }, \"alt\");\n\n  expect(onRepositionNode).toHaveBeenCalledWith(\n    \"badge\",\n    RepositionEdit.create({\n      parentName: \"home\",\n      placement: { mode: \"absolute\", x: 150, y: 12 },\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-lines/index.ts"
+      ],
+      "covers": [
+        "snap-and-measure",
+        "snap",
+        "carry"
+      ]
+    },
+    {
+      "id": "g-gap-kept",
+      "suite": "canvas-alt",
+      "name": "Alt を押したままでも、揃え先との隙間の数値は変わらない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "Q2 で揃え先との隙間の表示は変えないと決めた",
+      "given": "1 件目と同じ配置",
+      "when": "Alt を押しながら (113, -12) 運ぶ",
+      "then": "揃え先との隙間は `116` のまま",
+      "commit": "d1c120e0960d2d65336869eb690b7b3676222355",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "start": 68,
+        "end": 75,
+        "text": "test(\"Alt を押したままでも、揃え先との隙間の数値は変わらない\", () => {\n  renderCanvas({ selection: setupSiblings() });\n  drawnApart();\n\n  carryNode(\"badge\", { x: 113, y: -12 }, \"alt\");\n\n  expect(distanceLabels(\"snap-gap\")).toEqual([\"116\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/side-snap/index.ts"
+      ],
+      "covers": [
+        "snap",
+        "gap-line",
+        "gap-readout"
+      ]
+    },
+    {
+      "id": "g-except-gap",
+      "suite": "canvas-alt",
+      "name": "揃え先との隙間が同じ線を出している向きには、距離を出さず隙間だけを出す",
+      "techniques": [
+        "state"
+      ],
+      "why": "Q2 の除外を通しで見る。下は揃え先 `card` との隙間 66 と同じ線になるので距離からは消える",
+      "given": "1 件目と同じ配置",
+      "when": "Alt を押しながら (60, -12) 運ぶ(左辺が `card` へ寄る)",
+      "then": "隙間は `66`、距離は `100` `12` `240` だけ",
+      "commit": "d1c120e0960d2d65336869eb690b7b3676222355",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "start": 77,
+        "end": 89,
+        "text": "test(\"揃え先との隙間が同じ線を出している向きには、距離を出さず隙間だけを出す\", () => {\n  renderCanvas({ selection: setupSiblings() });\n  drawnApart();\n\n  /*\n   * 左辺が `card` の左辺（200）へ寄り、左右 200〜220・上下 72〜84 になる。下は揃え先 `card`\n   * との隙間 66（docs/06-ui.md の辺のスナップ）が出ているので、距離は上 12・左 100・右 240 だけ。\n   */\n  carryNode(\"badge\", { x: 60, y: -12 }, \"alt\");\n\n  expect(distanceLabels(\"snap-gap\")).toEqual([\"66\"]);\n  expect(sortedFacingDistanceLabels()).toEqual([\"100\", \"12\", \"240\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-lines/index.ts"
+      ],
+      "covers": [
+        "except-gaps",
+        "equals"
+      ]
+    },
+    {
+      "id": "g-meta-alt",
+      "suite": "canvas-alt",
+      "name": "⌘ と Alt を一緒に押していると、吸い付かない位置から距離を測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "⌘ で吸い付かないときこそ数値が要る(却下した案「⌘+Alt では出さない」の裏返し)",
+      "given": "1 件目と同じ配置",
+      "when": "⌘ と Alt を押しながら (113, -12) 運ぶ",
+      "then": "距離は `12` `153` `187` `66`、隙間は出ない",
+      "commit": "d1c120e0960d2d65336869eb690b7b3676222355",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "start": 91,
+        "end": 100,
+        "text": "test(\"⌘ と Alt を一緒に押していると、吸い付かない位置から距離を測る\", () => {\n  renderCanvas({ selection: setupSiblings() });\n  drawnApart();\n\n  // 吸い付かないので左右 253〜273。左は 153、右は 187 になる\n  carryNode(\"badge\", { x: 113, y: -12 }, \"meta+alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"12\", \"153\", \"187\", \"66\"]);\n  expect(distanceLabels(\"snap-gap\")).toEqual([]);\n});"
+      },
+      "values": {
+        "columns": [
+          "押しているキー",
+          "左",
+          "右",
+          "隙間"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "Alt",
+              "150",
+              "190",
+              "116"
+            ]
+          },
+          {
+            "cells": [
+              "⌘ + Alt",
+              "153",
+              "187",
+              "出ない"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "read-alt",
+        "snap-and-measure"
+      ]
+    },
+    {
+      "id": "g-release-key",
+      "suite": "canvas-alt",
+      "name": "Alt を離して動かし直すと、距離は消える",
+      "techniques": [
+        "state"
+      ],
+      "why": "押下はポインタが動くたびに見るので、離して動かせば消える",
+      "given": "Alt を押しながら運んでいる",
+      "when": "Alt を離してポインタを動かす",
+      "then": "距離は出ない",
+      "commit": "d1c120e0960d2d65336869eb690b7b3676222355",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "start": 102,
+        "end": 110,
+        "text": "test(\"Alt を離して動かし直すと、距離は消える\", () => {\n  renderCanvas({ selection: setupSiblings() });\n  drawnApart();\n\n  carryNode(\"badge\", { x: 113, y: -12 }, \"alt\");\n  movePointer(drawn(\"badge\"), { x: 213, y: 88 }, \"none\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "read-alt"
+      ]
+    },
+    {
+      "id": "g-drop",
+      "suite": "canvas-alt",
+      "name": "離すと距離は消える",
+      "techniques": [
+        "state"
+      ],
+      "why": "距離は運んでいる最中だけのもの",
+      "given": "Alt を押しながら運んでいる",
+      "when": "離す",
+      "then": "距離は出ない",
+      "commit": "d1c120e0960d2d65336869eb690b7b3676222355",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "start": 112,
+        "end": 119,
+        "text": "test(\"離すと距離は消える\", () => {\n  renderCanvas({ selection: setupSiblings() });\n  drawnApart();\n\n  dragNode(\"badge\", { x: 113, y: -12 }, \"alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-drag/index.ts"
+      ],
+      "covers": [
+        "read-distances"
+      ]
+    },
+    {
+      "id": "g-outside-edge",
+      "suite": "canvas-alt",
+      "name": "倍率に端数があっても、親の縁に外側から吸い付いた向きには距離を出さない",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "中心の 2 つの判断(6 桁へ丸める・親の縁を 2 本とも候補にする)を通しで守る。丸めを外すと下辺まで突き抜けた `75` と左右が、縁 1 本にすると `75` が出て落ちる",
+      "given": "倍率 1.2。対照として親の内側では 4 向きとも出る",
+      "when": "`badge` の下辺が `home` の上辺へ外側から吸い付く位置まで運ぶ(上辺は 48.00000000000001)",
+      "then": "距離は 1 つも出ず、隙間は `marker` までの `117` が出たまま",
+      "commit": "d1c120e0960d2d65336869eb690b7b3676222355",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "start": 121,
+        "end": 140,
+        "emphasis": [
+          {
+            "start": 136,
+            "end": 139
+          }
+        ],
+        "text": "test(\"倍率に端数があっても、親の縁に外側から吸い付いた向きには距離を出さない\", () => {\n  renderCanvas({ selection: setupSiblings() });\n  drawnApart();\n  wheel(canvasSurface(), { x: 0, y: -100 }, \"ctrl\");\n\n  // 対照。1.2 倍で親の内側にいる間は 4 向きとも出る\n  carryNode(\"badge\", { x: 97.9, y: -20 }, \"alt\");\n  expect(sortedFacingDistanceLabels()).toEqual([\"125\", \"158\", \"58\", \"7\"]);\n\n  /*\n   * 下辺が `home` の上辺（60）へ外側から吸い付く（上辺は 48.00000000000001 で、下辺は数 ULP\n   * だけ `home` の内側に入る）。下へ進むと上辺に接し、左右は `home` と縦に幅を持って重ならない\n   * ので、どの向きにも距離は出ない。丸めずに比べると接した上辺を外して奥の下辺まで測り、\n   * 縁を 1 本だけ見ると下辺まで突き抜ける。隙間は `marker` の上辺まで出たまま。\n   */\n  movePointer(drawn(\"badge\"), { x: 197.9, y: 63.4 }, \"alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n  expect(distanceLabels(\"snap-gap\")).toEqual([\"117\"]);\n});"
+      },
+      "values": {
+        "columns": [
+          "実装",
+          "距離のラベル"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "この PR",
+              "(なし)"
+            ]
+          },
+          {
+            "cells": [
+              "丸め無し",
+              "`125` `158` `75`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "縁 1 本",
+              "`75`"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+        "src/features/editor/features/canvas/domains/facing/index.ts"
+      ],
+      "covers": [
+        "edges",
+        "first-reached",
+        "short-line"
+      ]
+    },
+    {
+      "id": "r-same-gap",
+      "suite": "reposition-lines",
+      "name": "揃え先との隙間が同じ線を出している向きには、距離を出さない",
+      "techniques": [
+        "state"
+      ],
+      "why": "Q2 の除外を、実物の吸い付きと距離を通してドメインで見る。除外を外すと落ちる",
+      "given": "親 0〜200 × 0〜100、下に兄弟(左辺 50)、運んでいるものは左辺 52",
+      "when": "吸い付かせて距離も測り、隙間と同じ線を除く",
+      "then": "下だけ `none`。上・左・右は残る",
+      "commit": "a9e3d5ebf2a66b759a4358137021a513fed9c8b4",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "start": 39,
+        "end": 69,
+        "text": "test(\"揃え先との隙間が同じ線を出している向きには、距離を出さない\", () => {\n  // 左辺が Below へ寄り（-2）、揃え先 Below との隙間（上下 20〜60）が出る\n  expect(\n    distanceLinesAt({\n      moving: Moving,\n      parentBounds: Parent,\n      siblings: [Below],\n    }),\n  ).toEqual({\n    horizontal: {\n      start: Option.some({\n        along: SidePairs.Horizontal,\n        at: 15,\n        span: { min: 0, max: 50 },\n      }),\n      end: Option.some({\n        along: SidePairs.Horizontal,\n        at: 15,\n        span: { min: 70, max: 200 },\n      }),\n    },\n    vertical: {\n      start: Option.some({\n        along: SidePairs.Vertical,\n        at: 60,\n        span: { min: 0, max: 10 },\n      }),\n      end: Option.none,\n    },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-lines/index.ts"
+      ],
+      "covers": [
+        "snap-and-measure",
+        "except-gaps",
+        "equals"
+      ]
+    },
+    {
+      "id": "r-nearer",
+      "suite": "reposition-lines",
+      "name": "揃え先より近い兄弟がいる向きには、距離を出す",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "除くのは同じ線だけ。相手が違えば向きが同じでも出す(Q4 の重なりはこの場面で起きる)",
+      "given": "1 件目に、下へ進むと先に当たる兄弟を足す",
+      "when": "同じく除く",
+      "then": "下は手前の兄弟までの線(範囲 20〜30)",
+      "commit": "a9e3d5ebf2a66b759a4358137021a513fed9c8b4",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "start": 71,
+        "end": 88,
+        "text": "test(\"揃え先より近い兄弟がいる向きには、距離を出す\", () => {\n  // Below との隙間は出たまま、下へ進むと先に手前の兄弟（上下 30〜40）に当たる\n  const nearer = { left: 60, top: 30, width: 30, height: 10 };\n\n  expect(\n    distanceLinesAt({\n      moving: Moving,\n      parentBounds: Parent,\n      siblings: [Below, nearer],\n    }).vertical.end,\n  ).toEqual(\n    Option.some({\n      along: SidePairs.Vertical,\n      at: 65,\n      span: { min: 20, max: 30 },\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-lines/index.ts"
+      ],
+      "covers": [
+        "except-gaps"
+      ]
+    },
+    {
+      "id": "r-parent-edge",
+      "suite": "reposition-lines",
+      "name": "親の縁との隙間が同じ線を出している向きにも、距離を出さない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "4 回目の計画検証の指摘で足した。端数のある親で、縁の矩形を作る式がずれると落ちる",
+      "given": "端数のある親の下(外)に運んでいるもの。左辺を親の左辺に揃える",
+      "when": "同じく除く",
+      "then": "上向き(親の縁まで)は `none`、対照の向きは出る",
+      "commit": "a9e3d5ebf2a66b759a4358137021a513fed9c8b4",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "start": 90,
+        "end": 108,
+        "text": "test(\"親の縁との隙間が同じ線を出している向きにも、距離を出さない\", () => {\n  /*\n   * 親の下（外）にいて、左辺が親の左辺へ寄る（-0.9）。揃え先との隙間は親の下辺との間（上下\n   * 100.8〜110）に出て、上へ進んだ距離も親の下辺に当たって同じ線になる。親の座標に端数を\n   * 持たせ、縁の矩形を別の式で作ると線がずれることを見る。\n   */\n  const parentBounds = { left: 0.1, top: 0.1, width: 200.3, height: 100.7 };\n  // 右へ進むと当たる兄弟（上下 80〜130）。辺も中心線も運んでいるものから 6 より離す\n  const right = { left: 40, top: 80, width: 20, height: 50 };\n\n  const distances = distanceLinesAt({\n    moving: { left: 1, top: 110, width: 20, height: 10 },\n    parentBounds,\n    siblings: [right],\n  });\n\n  expect(distances.vertical.start).toEqual(Option.none);\n  expect(Option.isSome(distances.horizontal.end)).toBe(true);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+        "src/features/editor/features/canvas/domains/canvas-bounds/index.ts"
+      ],
+      "covers": [
+        "edges",
+        "except-gaps"
+      ]
+    },
+    {
+      "id": "r-horizontal",
+      "suite": "reposition-lines",
+      "name": "横に測った隙間が同じ線を出している向きにも、距離を出さない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "縦横の取り違え(隙間の軸と距離の向きの対応)を守る",
+      "given": "上下の辺が揃い、横の隙間が出る配置",
+      "when": "同じく除く",
+      "then": "その横の向きは `none`、対照は出る",
+      "commit": "a9e3d5ebf2a66b759a4358137021a513fed9c8b4",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "start": 110,
+        "end": 128,
+        "text": "test(\"横に測った隙間が同じ線を出している向きにも、距離を出さない\", () => {\n  // 上辺が右の兄弟（上下 32〜52）へ寄り（+2）、揃え先のその兄弟との隙間（左右 70〜120）が出る\n  const right = { left: 120, top: 32, width: 30, height: 20 };\n\n  const distances = distanceLinesAt({\n    moving: { left: 50, top: 30, width: 20, height: 10 },\n    parentBounds: Parent,\n    siblings: [right],\n  });\n\n  expect(distances.horizontal.end).toEqual(Option.none);\n  expect(distances.horizontal.start).toEqual(\n    Option.some({\n      along: SidePairs.Horizontal,\n      at: 37,\n      span: { min: 0, max: 50 },\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-lines/index.ts"
+      ],
+      "covers": [
+        "except-gaps"
+      ]
+    },
+    {
+      "id": "r-fraction",
+      "suite": "reposition-lines",
+      "name": "寄せ量に端数があっても、揃え先との隙間と同じ線の向きには距離を出さない",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "フェーズ 6 の F1 で足した。寄せたあとの矩形を隙間と別の式で作ると線が数 ULP ずれ、下の距離が残って落ちる",
+      "given": "寄せ量が -0.10000000000000142 になる配置",
+      "when": "同じく除く",
+      "then": "下は `none`、上は出る",
+      "commit": "3d747acef30a3d9d22ed00384f8556641bae5959",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "start": 130,
+        "end": 143,
+        "text": "test(\"寄せ量に端数があっても、揃え先との隙間と同じ線の向きには距離を出さない\", () => {\n  /*\n   * 左辺が Below の左辺へ寄る量は -0.10000000000000142。寄せたあとの矩形を隙間と別の式で\n   * 作ると線の位置が数 ULP ずれ、下の距離が隙間と別の線として残る。\n   */\n  const distances = distanceLinesAt({\n    moving: { left: 50.1, top: 10.1, width: 19.7, height: 10 },\n    parentBounds: Parent,\n    siblings: [Below],\n  });\n\n  expect(distances.vertical.end).toEqual(Option.none);\n  expect(Option.isSome(distances.vertical.start)).toBe(true);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-lines/index.ts"
+      ],
+      "covers": [
+        "moved",
+        "equals"
+      ]
+    },
+    {
+      "id": "d-no-siblings",
+      "suite": "distances-normal",
+      "name": "兄弟が無ければ、上下左右とも親の縁までの線になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "4 方向それぞれの縁の位置・範囲・中央を全体で固定する",
+      "given": "親 0〜200 × 0〜100、運んでいるもの 50〜70 × 40〜50",
+      "when": "距離を作る",
+      "then": "左 0〜50・右 70〜200(高さ 45)、上 0〜40・下 50〜100(幅 60)",
+      "commit": "f2fbd6aa028f8fbf393dda7adc4d1ef46f4b49b0",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.normal.test.ts",
+        "start": 7,
+        "end": 40,
+        "text": "test(\"兄弟が無ければ、上下左右とも親の縁までの線になる\", () => {\n  expect(\n    FacingDistances.create({\n      moved: Moved,\n      parentBounds: Parent,\n      siblings: [],\n    }),\n  ).toEqual({\n    horizontal: {\n      start: Option.some({\n        along: SidePairs.Horizontal,\n        at: 45,\n        span: { min: 0, max: 50 },\n      }),\n      end: Option.some({\n        along: SidePairs.Horizontal,\n        at: 45,\n        span: { min: 70, max: 200 },\n      }),\n    },\n    vertical: {\n      start: Option.some({\n        along: SidePairs.Vertical,\n        at: 60,\n        span: { min: 0, max: 40 },\n      }),\n      end: Option.some({\n        along: SidePairs.Vertical,\n        at: 60,\n        span: { min: 50, max: 100 },\n      }),\n    },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing-distances/index.ts"
+      ],
+      "covers": [
+        "measure",
+        "edges",
+        "short-line"
+      ]
+    },
+    {
+      "id": "d-touching-sibling",
+      "suite": "distances-edge",
+      "name": "兄弟に接している向きには、兄弟も親の縁も線を引かない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "接している相手で止まり、その先の縁まで飛ばさない",
+      "given": "運んでいるものの右に接する兄弟",
+      "when": "距離を作る",
+      "then": "右は `none`、対照に左は親の縁まで",
+      "commit": "f2fbd6aa028f8fbf393dda7adc4d1ef46f4b49b0",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.edge.test.ts",
+        "start": 43,
+        "end": 60,
+        "text": "test(\"兄弟に接している向きには、兄弟も親の縁も線を引かない\", () => {\n  const touching = { left: 70, top: 40, width: 20, height: 10 };\n\n  const distances = FacingDistances.create({\n    moved: Moved,\n    parentBounds: Parent,\n    siblings: [touching],\n  });\n\n  expect(distances.horizontal.end).toEqual(Option.none);\n  expect(distances.horizontal.start).toEqual(\n    Option.some({\n      along: SidePairs.Horizontal,\n      at: 45,\n      span: { min: 0, max: 50 },\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing-distances/index.ts"
+      ],
+      "covers": [
+        "first-reached",
+        "short-line"
+      ]
+    },
+    {
+      "id": "d-tie-edge",
+      "suite": "distances-edge",
+      "name": "兄弟と親の縁が同じ距離なら、親の縁までの線になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "同じ距離なら並びの先(縁を先に並べる)。線の中央で兄弟と縁を見分ける",
+      "given": "右の縁と同じ距離に兄弟",
+      "when": "距離を作る",
+      "then": "右の線の中央は 45(兄弟なら 47.5)",
+      "commit": "f2fbd6aa028f8fbf393dda7adc4d1ef46f4b49b0",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.edge.test.ts",
+        "start": 114,
+        "end": 131,
+        "text": "test(\"兄弟と親の縁が同じ距離なら、親の縁までの線になる\", () => {\n  // 兄弟までなら、上下に向かい合う範囲 45〜50 の中央 47.5 に引く\n  const sibling = { left: 200, top: 45, width: 20, height: 20 };\n\n  expect(\n    FacingDistances.create({\n      moved: Moved,\n      parentBounds: Parent,\n      siblings: [sibling],\n    }).horizontal.end,\n  ).toEqual(\n    Option.some({\n      along: SidePairs.Horizontal,\n      at: 45,\n      span: { min: 70, max: 200 },\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing-distances/index.ts"
+      ],
+      "covers": [
+        "first-reached"
+      ]
+    },
+    {
+      "id": "d-outside",
+      "suite": "distances-edge",
+      "name": "親の外にいる向きは手前の縁まで測り、奥の縁まで突き抜けない",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "3 回目の計画検証で見つかった突き抜けを塞ぐ。縁 1 本の実装なら下は -10〜100 になって落ちる",
+      "given": "親の上(-20〜-10)にいる",
+      "when": "距離を作る",
+      "then": "下だけ -10〜0、他の 3 方向は `none`",
+      "commit": "f2fbd6aa028f8fbf393dda7adc4d1ef46f4b49b0",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.edge.test.ts",
+        "start": 133,
+        "end": 152,
+        "text": "test(\"親の外にいる向きは手前の縁まで測り、奥の縁まで突き抜けない\", () => {\n  // 親の上（上下 -20〜-10）にいる。下へ進むと親の上辺 0 に当たり、下辺 100 までは測らない\n  expect(\n    FacingDistances.create({\n      moved: { left: 50, top: -20, width: 20, height: 10 },\n      parentBounds: Parent,\n      siblings: [],\n    }),\n  ).toEqual({\n    horizontal: { start: Option.none, end: Option.none },\n    vertical: {\n      start: Option.none,\n      end: Option.some({\n        along: SidePairs.Vertical,\n        at: 60,\n        span: { min: -10, max: 0 },\n      }),\n    },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+        "src/features/editor/features/canvas/domains/canvas-bounds/index.ts"
+      ],
+      "covers": [
+        "edges",
+        "first-reached"
+      ]
+    },
+    {
+      "id": "d-outside-ulp",
+      "suite": "distances-edge",
+      "name": "端数で数 ULP 外側から重なって見えても、親の縁に外側から接している向きには線を引かない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "丸めと縁 2 本の組み合わせを単体で守る。丸め無しでも縁 1 本でも落ちる",
+      "given": "下辺が 1.0658e-14(親の上辺 0 より数 ULP 下)",
+      "when": "距離を作る",
+      "then": "4 方向とも `none`。対照に 1 離せば下は -1〜0",
+      "commit": "f2fbd6aa028f8fbf393dda7adc4d1ef46f4b49b0",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.edge.test.ts",
+        "start": 154,
+        "end": 177,
+        "text": "test(\"端数で数 ULP 外側から重なって見えても、親の縁に外側から接している向きには線を引かない\", () => {\n  // 下辺は -11.99999999999999 + 12 = 1.0658e-14 で、親の上辺 0 より数 ULP 下にある\n  expect(\n    FacingDistances.create({\n      moved: { left: 50, top: -11.99999999999999, width: 20, height: 12 },\n      parentBounds: Parent,\n      siblings: [],\n    }),\n  ).toEqual(FacingDistances.None);\n  // 1 離れていれば、親の上辺までの線を引く\n  expect(\n    FacingDistances.create({\n      moved: { left: 50, top: -13, width: 20, height: 12 },\n      parentBounds: Parent,\n      siblings: [],\n    }).vertical.end,\n  ).toEqual(\n    Option.some({\n      along: SidePairs.Vertical,\n      at: 60,\n      span: { min: -1, max: 0 },\n    }),\n  );\n});"
+      },
+      "values": {
+        "columns": [
+          "運んでいるものの上辺",
+          "下辺",
+          "下向きの線"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "-11.99999999999999",
+              "1.0658e-14",
+              "引かない"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "-13",
+              "-1",
+              "-1〜0"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+        "src/features/editor/features/canvas/domains/facing/index.ts"
+      ],
+      "covers": [
+        "edges",
+        "first-reached"
+      ]
+    },
+    {
+      "id": "f-ulp-touch",
+      "suite": "facing-edge",
+      "name": "端数で数 ULP 重なって見えても、接している相手には距離 0 で当たる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "`0.1 + 0.2` の右辺 0.30000000000000004 と、左辺 0.3 の相手。丸めを外すと当たらず落ちる",
+      "given": "左右 0.1〜0.30000000000000004 の矩形と、左辺 0.3 の相手",
+      "when": "右へ進んで最初の相手を探す",
+      "then": "その相手に当たる",
+      "commit": "e6a74131c7aff1532171ede70d565ea8719c04ee",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/facing/__tests__/facing.edge.test.ts",
+        "start": 6,
+        "end": 14,
+        "text": "test(\"端数で数 ULP 重なって見えても、接している相手には距離 0 で当たる\", () => {\n  // 右辺は 0.1 + 0.2 = 0.30000000000000004 で、相手の左辺 0.3 より先にある\n  const from = { left: 0.1, top: 0, width: 0.2, height: 10 };\n  const to = { left: 0.3, top: 0, width: 10, height: 10 };\n\n  expect(Facing.firstReached(Right, { from, candidates: [to] })).toEqual(\n    Option.some(to),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing/index.ts"
+      ],
+      "covers": [
+        "first-reached"
+      ]
+    },
+    {
+      "id": "i-ulp-apart",
+      "suite": "interval-edge",
+      "name": "端数で数 ULP 離れて見えても、接している兄弟の間は間隔を測らない",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "載せ替えで変わった等間隔の振る舞い。丸めを外すと間隔 5.55e-17 の位置が増えて落ちる",
+      "given": "右辺 0.3 と左辺 0.30000000000000004 の兄弟、その先に離れた子",
+      "when": "等間隔の位置を集める",
+      "then": "接した組の間隔は測らず、位置は 1 件",
+      "commit": "806f1f28b28934651724af94409335da93eddc21",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/interval-slot/__tests__/interval-slot.edge.test.ts",
+        "start": 135,
+        "end": 156,
+        "text": "test(\"端数で数 ULP 離れて見えても、接している兄弟の間は間隔を測らない\", () => {\n  // 2 つ目の左辺 0.30000000000000004 は、1 つ目の右辺 0.3 より数 ULP だけ先にある\n  const first: CanvasBounds = { left: 0, top: 0, width: 0.3, height: 20 };\n  const second: CanvasBounds = {\n    left: 0.30000000000000004,\n    top: 0,\n    width: 10,\n    height: 20,\n  };\n  const third: CanvasBounds = { left: 20.3, top: 0, width: 10, height: 20 };\n\n  expect(\n    IntervalSlot.collect([first, second, third], SidePairs.Horizontal),\n  ).toEqual([\n    {\n      pair: SidePairs.Horizontal,\n      neighbor: third,\n      end: AxisEnds.End,\n      interval: 10,\n    },\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/interval-slot/index.ts"
+      ],
+      "covers": [
+        "interval"
+      ]
+    },
+    {
+      "id": "t-not-equal",
+      "suite": "thin-line",
+      "name": "位置だけ違う線は等しくない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "線の一致から位置の比較を外すと、ミューテーション 29 件のうちこの単体だけが落ちる(通しと除外のテストでは落ちない)。除外の正しさをこの 1 件が支えている",
+      "given": "向きと範囲が同じで、位置だけ違う 2 本",
+      "when": "一致を比べる",
+      "then": "等しくない",
+      "commit": "a8651b3648e4a76d09d89260814e19e797dae6d2",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+        "start": 34,
+        "end": 41,
+        "text": "test(\"位置だけ違う線は等しくない\", () => {\n  expect(\n    ThinLine.equals(\n      { along: SidePairs.Vertical, at: 60, span: { min: 20, max: 60 } },\n      { along: SidePairs.Vertical, at: 61, span: { min: 20, max: 60 } },\n    ),\n  ).toBe(false);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/thin-line/index.ts"
+      ],
+      "covers": [
+        "equals"
+      ]
+    },
+    {
+      "id": "o-round-zero",
+      "suite": "overlay",
+      "name": "ドキュメント上の px へ丸めると 0 になる向きは出ない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "隙間と同じく、丸めて 0 の数値は出さない。対照の向きを 1 本置いて、出ない理由が入力に無いことを確かめる",
+      "given": "丸めて 0 になる線と、対照の線",
+      "when": "重ね描きを描く",
+      "then": "対照の向きだけ線と数値が出る",
+      "commit": "92f9d602ea7e2e20cae6174886a245d5ff29940a",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/__tests__/facing-distance-overlay.normal.test.tsx",
+        "start": 77,
+        "end": 97,
+        "text": "test(\"ドキュメント上の px へ丸めると 0 になる向きは出ない\", () => {\n  // 上は画面上 0.4 で丸めると 0。右は対照として出る\n  render(\n    <FacingDistanceOverlay\n      distances={{\n        horizontal: { start: Option.none, end: Option.some(RightLine) },\n        vertical: {\n          start: Option.some({ ...UpLine, span: { min: 39.6, max: 40 } }),\n          end: Option.none,\n        },\n      }}\n      view={SameSize}\n    />,\n  );\n\n  expect(\n    screen\n      .queryAllByTestId(\"facing-distance-label\")\n      .map((label) => label.textContent),\n  ).toEqual([\"130\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx"
+      ],
+      "covers": [
+        "readout",
+        "draw-line"
+      ]
+    },
+    {
+      "id": "n-except",
+      "suite": "node-drag",
+      "name": "座標を置き直す落とし方は、揃え先との隙間と同じ線を除いた距離を答える",
+      "techniques": [
+        "state"
+      ],
+      "why": "落とし方が持つのは除く前で、読む側が除いたものを答える",
+      "given": "左と下に距離、下は隙間と同じ線",
+      "when": "落とし方の距離を読む",
+      "then": "左だけ",
+      "commit": "63e77928659d913e2f9e998016a938b670f7e3b9",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+        "start": 253,
+        "end": 267,
+        "text": "test(\"座標を置き直す落とし方は、揃え先との隙間と同じ線を除いた距離を答える\", () => {\n  // 下の距離は隙間と同じ線なので除かれ、左だけが残る\n  const edit = DropEdit.reposition(\"title\", SampleRepositionTarget, {\n    snap: SampleGuides,\n    distanceLines: SampleDistances,\n  });\n\n  expect(DropEdit.facingDistances(edit)).toEqual({\n    ...FacingDistances.None,\n    horizontal: {\n      start: SampleDistances.horizontal.start,\n      end: Option.none,\n    },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-drag/index.ts"
+      ],
+      "covers": [
+        "carry",
+        "except-gaps"
+      ]
+    },
+    {
+      "id": "a-held",
+      "suite": "alt-key",
+      "name": "Alt / Option が押されていれば押下として扱う",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "DOM イベントの生の値に名前を付けた境界",
+      "given": "`altKey` が真のイベント",
+      "when": "押下を読む",
+      "then": "真",
+      "commit": "0eca8ced508e60e84ed903f4ec7455e6c514c7da",
+      "excerpt": {
+        "path": "src/libs/dom-event/alt-key/__tests__/alt-key.normal.test.ts",
+        "start": 4,
+        "end": 6,
+        "text": "test(\"Alt / Option が押されていれば押下として扱う\", () => {\n  expect(AltKey.isHeld({ altKey: true })).toBe(true);\n});"
+      },
+      "targets": [
+        "src/libs/dom-event/alt-key/index.ts"
+      ],
+      "covers": [
+        "read-alt"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "運んでいる間に Alt / Option を押すと、上下左右のいちばん近い相手までの距離が出るようになった",
+    "lead": "キャンバスでノードの座標を置き直すように運んでいる最中だけの変化です。Alt / Option を押していると、上下左右それぞれで最初に当たる相手(落とし先の親の縁か、同じ親の中のほかの要素)までの距離が、揃え先との隙間と同じ赤い短い線と数値で出ます。",
+    "changed": {
+      "before": [
+        {
+          "text": "運んでいる間に出る数値は、辺が揃ったときの揃え先との隙間だけだった"
+        },
+        {
+          "text": "揃っていない相手との距離は見られなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "Alt / Option を押しながら動かすと、上下左右それぞれ最初に当たる相手までの距離が出る",
+          "message": "read-alt"
+        },
+        {
+          "text": "向きごとに 1 本だけで、手前にほかの要素があれば親の縁までは出さない",
+          "message": "first-reached"
+        },
+        {
+          "text": "揃え先との隙間と同じ線になる向きは、隙間だけが出る",
+          "message": "except-gaps"
+        },
+        {
+          "text": "見た目は揃え先との隙間と同じ赤い短い線と数値",
+          "message": "draw-line"
+        }
+      ],
+      "text": "揃っていない相手との距離を見ながら置けるようになります。吸い付き・ガイド線・揃え先との隙間・離したあとに書かれる座標は変わりません。"
+    },
+    "tables": [
+      {
+        "label": "押しているキーと向きの状況ごとに出るもの",
+        "gist": "出るかどうかは、Alt を押しているかと、その向きの相手との関係の 2 つで決まる。",
+        "text": "押しているかはポインタが動くたびに見ます。止まったまま押しても、次に動かすまで変わりません。",
+        "rowHeads": [
+          {
+            "id": "apart",
+            "label": "相手と離れている向き"
+          },
+          {
+            "id": "same-as-gap",
+            "label": "揃え先との隙間が同じ相手まで出ている向き"
+          },
+          {
+            "id": "touching",
+            "label": "相手に接している向き",
+            "note": "親の縁に外側から接しているときも"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "none",
+            "label": "Alt を押していない"
+          },
+          {
+            "id": "alt",
+            "label": "Alt を押している"
+          },
+          {
+            "id": "meta-alt",
+            "label": "⌘ / Ctrl と Alt を押している"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "apart",
+            "columnHead": "none",
+            "result": "何も出ない",
+            "tests": [
+              "g-no-alt"
+            ]
+          },
+          {
+            "rowHead": "apart",
+            "columnHead": "alt",
+            "result": "相手までの距離が出る",
+            "was": "何も出ない",
+            "tests": [
+              "g-alt-shows",
+              "d-no-siblings"
+            ]
+          },
+          {
+            "rowHead": "apart",
+            "columnHead": "meta-alt",
+            "result": "吸い付かない位置からの距離が出る",
+            "was": "何も出ない",
+            "tests": [
+              "g-meta-alt"
+            ]
+          },
+          {
+            "rowHead": "same-as-gap",
+            "columnHead": "none",
+            "result": "隙間だけが出る"
+          },
+          {
+            "rowHead": "same-as-gap",
+            "columnHead": "alt",
+            "result": "隙間だけが出る(距離は重ねない)",
+            "tests": [
+              "g-except-gap",
+              "r-same-gap",
+              "r-parent-edge",
+              "r-horizontal",
+              "r-fraction"
+            ]
+          },
+          {
+            "rowHead": "same-as-gap",
+            "columnHead": "meta-alt",
+            "result": "吸い付かないので隙間は出ず、距離が出る",
+            "was": "何も出ない",
+            "situation": "⌘ / Ctrl を押すと吸い付かないので、揃え先との隙間がそもそも出ない",
+            "tests": [
+              "g-meta-alt"
+            ]
+          },
+          {
+            "rowHead": "touching",
+            "columnHead": "none",
+            "result": "何も出ない"
+          },
+          {
+            "rowHead": "touching",
+            "columnHead": "alt",
+            "result": "何も出ない(縁を突き抜けて奥まで測らない)",
+            "tests": [
+              "g-outside-edge",
+              "d-touching-sibling",
+              "d-outside-ulp"
+            ]
+          },
+          {
+            "rowHead": "touching",
+            "columnHead": "meta-alt",
+            "result": "何も出ない"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "Alt の線と揃え先との隙間の線が、別の相手へ同じ列に重なるとき",
+        "before": [],
+        "after": [
+          {
+            "text": "揃え先との隙間(遠い相手まで)と Alt の距離(近い相手まで)が同じ縦や横の列に重なり、色と太さも同じなので、どの数値がどこまでかが読みにくい",
+            "message": "except-gaps"
+          }
+        ],
+        "text": "扱いは決まっていません(人の判断待ち)。案は、重なる隙間を Alt の間だけ隠す・Alt 側を出さない・このまま重ねる、の 3 つです。",
+        "tests": [
+          "r-nearer"
+        ]
+      },
+      {
+        "label": "等間隔の並びで、ごくわずかな端数で接して見える要素があるとき",
+        "before": [
+          {
+            "text": "接して並べた 2 つの間に、ごく小さな間隔を測ることがあった"
+          }
+        ],
+        "after": [
+          {
+            "text": "接しているとみなし、その間隔は測らない",
+            "message": "interval"
+          }
+        ],
+        "text": "隣どうしが接しているかの見方を、揃え先との隙間と Alt の距離にそろえました。",
+        "tests": [
+          "i-ulp-apart"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "Alt を押していても吸い付き、離すと吸い付いた位置の座標が書かれる",
+        "tests": [
+          "g-snap-kept"
+        ]
+      },
+      {
+        "text": "Alt を押していても、揃え先との隙間の数値は変わらない",
+        "tests": [
+          "g-gap-kept"
+        ]
+      },
+      {
+        "text": "離すと距離は消える。Alt を離して動かし直しても消える",
+        "tests": [
+          "g-drop",
+          "g-release-key"
+        ]
+      },
+      {
+        "text": "ツリーへの移動・挿入と、落とせる親が無い場所では距離を出さない"
+      },
+      {
+        "text": "選択しているだけのときと、artboard の移動・リサイズ中には、まだ出ない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "alt-key-event",
+      "category": "dom · イベント",
+      "label": "`altKey`",
+      "gist": "[[ポインタイベント|pointer-event]]やキーボードのイベントが、それが起きた瞬間に Alt(macOS では Option)が押されていたかを持つ真偽値。[[修飾キー|modifier-key]]の状態を、キーそのもののイベントを待たずに読むための仕組み。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "readonly altKey: boolean  // MouseEvent / PointerEvent / KeyboardEvent / WheelEvent"
+        },
+        {
+          "kind": "text",
+          "text": "値はイベントが起きた時点の状態で、あとから変わらない。この PR は運んでいる間のポインタの移動のたびにこの値を読むので、止まったまま Alt を押しても、次にポインタが動くまで距離は出ない(⌘ / Ctrl の `metaKey` / `ctrlKey` と同じ流儀)。"
+        },
+        {
+          "kind": "caution",
+          "text": "テストで使う happy-dom 20.8.9 のホイールのイベントは、初期化の引数に渡した `altKey` を持たない(実測)。テストの操作では `Object.defineProperty` でイベントに載せている。"
+        },
+        {
+          "kind": "rule",
+          "text": "DOM イベントの生の値に名前を付けるのは `libs/dom-event` の境界で、キャンバス側は `event.altKey` を直に読まない(前例 `CommandKey`)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/dom-event/alt-key/index.ts",
+          "lineRange": {
+            "start": 9,
+            "end": 11
+          },
+          "text": "`AltKey.isHeld` が `altKey` をそのまま返す",
+          "shas": [
+            "2478c9c565281493cea59dbbadf875f24739c10a"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+          "lineRange": {
+            "start": 62,
+            "end": 62
+          },
+          "text": "ホイールのイベントに `altKey` を載せる",
+          "shas": [
+            "29db186901a69264e1963fa2d8d6ea5329282c91"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "reposition-lines"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "float-ulp",
+      "category": "javascript · 数",
+      "label": "浮動小数の端数",
+      "gist": "JavaScript の `number` は[[浮動小数|float]]なので、`0.1 + 0.2` が `0.30000000000000004` になるように、足し引きのたびに最後の桁で[[ULP|ulp]]ほどの誤差が出る。「接しているか」を `=== 0` や `<= 0` で見ると、この誤差で答えが割れる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "吸い付いたあとの矩形の辺は「左 + 幅」のように計算し直すので、数学的には接している 2 つの辺が、数 ULP 離れて(または重なって)見えることがある。倍率が 1 でないと起きやすい。"
+        },
+        {
+          "kind": "text",
+          "text": "この PR は距離と重なりの長さを `NumberEx.round(length, { fractionDigits: 6 })` で小数 6 桁へ丸めてから判定する。数 ULP は 6 桁よりずっと小さいので 0 へ丸まり、0.001 のような実際の重なりは残る。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/facing/__tests__/facing.edge.test.ts",
+            "start": 6,
+            "end": 14,
+            "text": "test(\"端数で数 ULP 重なって見えても、接している相手には距離 0 で当たる\", () => {\n  // 右辺は 0.1 + 0.2 = 0.30000000000000004 で、相手の左辺 0.3 より先にある\n  const from = { left: 0.1, top: 0, width: 0.2, height: 10 };\n  const to = { left: 0.3, top: 0, width: 10, height: 10 };\n\n  expect(Facing.firstReached(Right, { from, candidates: [to] })).toEqual(\n    Option.some(to),\n  );\n});"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "許容幅(ε)で比べる案もあるが、「同じ距離なら並びの先」の比較や「間隔が 0 か」の判定まで書き直すことになるので採らなかった。丸める前例はこのリポジトリの角度の丸めにある。"
+        },
+        {
+          "kind": "caution",
+          "text": "丸めるのは判定だけで、線の位置と数値は丸める前の値のまま使う。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/facing/index.ts",
+          "lineRange": {
+            "start": 104,
+            "end": 116
+          },
+          "text": "`roundToMicroPx` と、丸める理由",
+          "shas": [
+            "e566a2dd8ff9e4f8399b3b603218709ecb6a6fa9"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "facing"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "readonly-record",
+      "category": "typescript · 型",
+      "label": "`Readonly<Record<K, V>>`",
+      "gist": "キーの集合 `K` から値 `V` への表を表す型。`K` が[[ユニオン型|union]]なら、表を作るときに全部のキーが揃っていないとコンパイルが通らない。`Readonly` は書き換えを型で禁じる。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "type FacingDistances = Readonly<Record<SidePair, Readonly<Record<AxisEnd, Option<ThinLine>>>>>"
+        },
+        {
+          "kind": "text",
+          "text": "`SidePair` は `\"horizontal\" | \"vertical\"`、`AxisEnd` は `\"start\" | \"end\"` なので、上下左右の 4 つの向きが必ず揃った表になる。値は向きごとの線で、無い向きは `Option` の `none`。"
+        },
+        {
+          "kind": "memo",
+          "text": "`as const satisfies FacingDistances` と書くと、表の形を型で確かめつつ、値のリテラルの型を保てる(`None` の定義)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+          "lineRange": {
+            "start": 15,
+            "end": 17
+          },
+          "text": "4 つの向きの線の表",
+          "shas": [
+            "bbba3607a918215914973a46dd2277c40cd595ba"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "facing-distances"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "exhaustive-switch",
+      "category": "typescript · 制御",
+      "label": "`default` の無い `switch`",
+      "gist": "[[ユニオン型|union]]の値で分ける `switch` に `default` を書かず、関数の戻り値の型に `undefined` を含めないと、case が 1 つ抜けたときに「値を返さない経路がある」としてコンパイルが落ちる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`spanAhead` は進む側(`AxisEnds.End` / `AxisEnds.Start`)で区間の向きを変える。2 つの case だけを書き、戻り値を `Range` にしているので、進む側の値が増えれば TS2366 で気づける。`CanvasBounds.sideBounds` も 4 辺を同じ形で分けている。"
+        },
+        {
+          "kind": "rule",
+          "text": "列挙した状態の出し分けは `default` を置かずに書く(`rules/coding.md`「列挙した状態の網羅を型で強制する」)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/facing/index.ts",
+          "lineRange": {
+            "start": 125,
+            "end": 134
+          },
+          "text": "進む側で区間の向きを変える",
+          "shas": [
+            "67f23e94e288c4bc1e33c75f29be3243e96c555c"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+          "lineRange": {
+            "start": 99,
+            "end": 110
+          },
+          "text": "4 辺それぞれの厚さ 0 の矩形",
+          "shas": [
+            "f4565b8c98160e47d12040a8ec9a032e35074c28"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "facing",
+      "category": "canvas · 探索",
+      "label": "進む向き(`Facing`)",
+      "gist": "矩形から上下左右のどれかへ進んで、最初に当たる相手・距離・短い線を答える[[コンパニオンオブジェクト|companion]]。等間隔・揃え先との隙間・Alt の距離の 3 つが同じ規則を使う。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "相手になるのは、進む向きと直交する軸で**幅を持って重なる**ものだけ(接するだけなら別の行)。後ろにいる・重なっているものは当たらず、同じ距離なら並びの先を採る。判定は[[小数 6 桁への丸め|micro-px]]を通す。"
+        },
+        {
+          "kind": "text",
+          "text": "短い線は、2 つが直交する軸で重なる範囲の中央に引く。重なりの有無は見ないので、外側で辺が揃って重なりが幅 0 でも、その 1 点に線を引ける(揃え先との隙間が消えないため)。"
+        },
+        {
+          "kind": "history",
+          "text": "探索は `interval-slot` の、中央と細い線は `side-snap` の非公開関数にあった。この PR で移し、型名 `Facing` は前からの意味(向きと進む側)のまま、起点を含めなかった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/facing/index.ts",
+          "lineRange": {
+            "start": 36,
+            "end": 54
+          },
+          "text": "`firstReached` が、直交する軸で重なり前にある相手から最も近いものを返す",
+          "shas": [
+            "e566a2dd8ff9e4f8399b3b603218709ecb6a6fa9",
+            "67f23e94e288c4bc1e33c75f29be3243e96c555c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "float-ulp",
+        "facing-distances"
+      ],
+      "tests": [
+        "f-ulp-touch",
+        "i-ulp-apart"
+      ],
+      "flows": [
+        "interval",
+        "snap-gap"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "facing-distances",
+      "category": "canvas · 距離",
+      "label": "上下左右の距離(`FacingDistances`)",
+      "gist": "運んでいるものから 4 つの向きそれぞれ、最初に当たる相手までの短い線の表。相手の候補は、親の縁 2 本([[厚さ 0 の矩形|zero-thick]])と、同じ親の直下の兄弟。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+            "start": 57,
+            "end": 78,
+            "emphasis": [
+              {
+                "start": 67,
+                "end": 72
+              }
+            ],
+            "text": "  create({\n    moved,\n    parentBounds,\n    siblings,\n  }: Readonly<{\n    moved: CanvasBounds;\n    parentBounds: CanvasBounds;\n    siblings: readonly CanvasBounds[];\n  }>): FacingDistances {\n    return FacingDistances.fromFacings((facing) => {\n      // 親の縁を手前・奥の両方とも候補にする。向きの側の縁だけにすると、外側から縁に\n      // 接したときにその縁を突き抜けて奥の縁まで測る\n      const edges = SidePair.sides(facing.pair).map((side) =>\n        CanvasBounds.sideBounds(parentBounds, side),\n      );\n      const candidates = [...edges, ...siblings];\n      return Option.flatMap(\n        Facing.firstReached(facing, { from: moved, candidates }),\n        (to) => Facing.shortLineTo(facing, { from: moved, to }),\n      );\n    });\n  },"
+          }
+        },
+        {
+          "kind": "spec",
+          "text": "縁を突き抜けて測らない。親の外側から縁に接していれば手前の縁に距離 0 で当たり、その向きには何も出さない(docs/06-ui.md の Alt / Option の距離)。"
+        },
+        {
+          "kind": "history",
+          "text": "計画 v3 では向きの側の縁 1 本だけで、外側から縁に接すると奥の縁まで測っていた。3 回目の計画検証で 2 本にした。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+          "lineRange": {
+            "start": 66,
+            "end": 77
+          },
+          "text": "縁 2 本と兄弟を候補に、最初に当たる相手まで線を引く",
+          "shas": [
+            "bbba3607a918215914973a46dd2277c40cd595ba",
+            "3d747acef30a3d9d22ed00384f8556641bae5959"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "readonly-record",
+        "facing",
+        "reposition-lines"
+      ],
+      "tests": [
+        "d-no-siblings",
+        "d-touching-sibling",
+        "d-tie-edge",
+        "d-outside",
+        "d-outside-ulp",
+        "g-outside-edge"
+      ],
+      "flows": [
+        "carry-with-alt"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "reposition-lines",
+      "category": "canvas · 入口",
+      "label": "置き直しの線(`RepositionLines`)",
+      "gist": "座標を置き直して運んでいる間の、寄せ量・吸い付きの線・距離を 1 回の判定から作る入口と、[[揃え先との隙間|snap-gap]]と同じ線になる向きを除く計算。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`toSnapped` は吸い付きを求め、Alt を押していれば(距離を測る相手が `some` なら)寄せたあとの矩形から距離を測る。寄せたあとの矩形は隙間を測ったのと同じ `SideSnap.movedBy` で作るので、同じ相手への隙間と距離は浮動小数まで同じ線になる。"
+        },
+        {
+          "kind": "text",
+          "text": "`distanceLinesExceptGaps` は、向きごとに隙間の線と距離の線を `ThinLine.equals` で比べ、一致した向きを `none` にする。除いた結果は保存せず、読むたびに計算する。"
+        },
+        {
+          "kind": "rule",
+          "text": "導出できる値を保存しない(`rules/consistency.md`)。除いた結果を持つと、除く前と除いたあとが食い違う組が書ける。"
+        },
+        {
+          "kind": "history",
+          "text": "最初は `RepositionGuides` で、寄せたあとの矩形をフック・テスト・`toSnapped` の 3 か所で同じ式で作っていた。フェーズ 6 で入口を 1 つにし、guide(ガイド線)と紛れないよう改名した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+          "lineRange": {
+            "start": 51,
+            "end": 69
+          },
+          "text": "`toSnapped`: 寄せ量と線・距離を 1 回の判定から作る",
+          "shas": [
+            "3d747acef30a3d9d22ed00384f8556641bae5959"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+          "lineRange": {
+            "start": 80,
+            "end": 96
+          },
+          "text": "`distanceLinesExceptGaps`: 隙間と同じ線の向きを除く",
+          "shas": [
+            "7fd46ebab90a85c3de54790ffc537187a6ebf4c5",
+            "3d747acef30a3d9d22ed00384f8556641bae5959"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "thin-line",
+        "facing-distances",
+        "alt-key-event"
+      ],
+      "tests": [
+        "r-same-gap",
+        "r-nearer",
+        "r-parent-edge",
+        "r-horizontal",
+        "r-fraction",
+        "g-except-gap"
+      ],
+      "flows": [
+        "carry-with-alt",
+        "draw-distances"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "thin-line",
+      "category": "canvas · 描画",
+      "label": "細い線(`ThinLine`)",
+      "gist": "ガイド線・揃え先との隙間・Alt の距離の短い線を、伸びる向き・中心の位置・伸びる範囲で持つ値。描くときに太さ 2 の矩形にする。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "数値は伸びる範囲の長さから取るので、横に伸びる線の太さ 2 を長さとして読む取り違えが起きない。"
+        },
+        {
+          "kind": "caution",
+          "text": "`equals` は浮動小数を許容幅なしで比べる。同じ入力から同じ式で作った線どうしだけを比べる前提で、その前提は置き直しの線の入口が守っている。位置の比較を外しても落ちるのは細い線の単体テストだけ(test-reviewer)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+          "lineRange": {
+            "start": 58,
+            "end": 65
+          },
+          "text": "`equals`: 向き・中心・範囲の両端をすべて比べる",
+          "shas": [
+            "269fabcc91a8e1eb928fcbc5e8ddcff5fb8c5e2c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "reposition-lines"
+      ],
+      "tests": [
+        "t-not-equal"
+      ],
+      "flows": [
+        "draw-distances"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "pointer-event",
+      "label": "ポインタイベント",
+      "text": "マウス・ペン・タッチの操作をまとめて扱うブラウザのイベント。押す・動かす・離すのたびに届き、そのときの座標や修飾キーの状態を持つ。"
+    },
+    {
+      "id": "modifier-key",
+      "label": "修飾キー",
+      "text": "Shift・Ctrl・Alt(Option)・⌘ のように、ほかの操作と一緒に押して意味を変えるキー。"
+    },
+    {
+      "id": "float",
+      "label": "浮動小数",
+      "text": "小数を 2 進数の有効桁と指数で表す数の形式。JavaScript の数はすべてこれで、10 進の 0.1 のような値はちょうどには表せない。"
+    },
+    {
+      "id": "ulp",
+      "label": "ULP",
+      "text": "その数の大きさで表せる隣どうしの数の差(unit in the last place)。0.3 付近ではおよそ 5.5e-17 で、計算の誤差はこの数個分になる。"
+    },
+    {
+      "id": "union",
+      "label": "ユニオン型",
+      "text": "`\"start\" | \"end\"` のように、取りうる値を `|` で並べた TypeScript の型。並べた値以外は代入できない。"
+    },
+    {
+      "id": "companion",
+      "label": "コンパニオンオブジェクト",
+      "text": "型と同じ名前の定数オブジェクトに、その型を作る・判定する・変換する関数を集める、このリポジトリの書き方。"
+    },
+    {
+      "id": "micro-px",
+      "label": "小数 6 桁への丸め",
+      "text": "距離と重なりの長さを 0.000001 px の位へ丸めてから比べること。数 ULP の誤差は 0 になり、0.001 のような実際の重なりは残る。"
+    },
+    {
+      "id": "zero-thick",
+      "label": "厚さ 0 の矩形",
+      "text": "親の 1 辺を、その辺の位置に置いた幅か高さが 0 の矩形にしたもの。兄弟と同じ探索に入れるために使う。"
+    },
+    {
+      "id": "snap-gap",
+      "label": "揃え先との隙間",
+      "text": "辺が揃ってガイド線が出たときに、揃え先との間に出る短い線と数値(docs/06-ui.md の辺のスナップ)。"
+    }
+  ]
+}
