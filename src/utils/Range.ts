@@ -1,5 +1,3 @@
-import { Option } from "@/utils/Option";
-
 /**
  * 下端と上端を含む数値の範囲（閉区間）。
  *
@@ -37,19 +35,6 @@ export const Range = {
       0,
       Math.min(range.max, other.max) - Math.max(range.min, other.min),
     );
-  },
-
-  /**
-   * 離れている 2 つの範囲の間。どちらが前にあるかは問わない。
-   *
-   * @param range 見る範囲
-   * @param other 間を見る相手の範囲
-   * @returns 前の範囲の上端から後ろの範囲の下端まで。重なっている / 端が接するだけなら `none`
-   */
-  gapBetween(range: Range, other: Range): Option<Range> {
-    const min = Math.min(range.max, other.max);
-    const max = Math.max(range.min, other.min);
-    return min < max ? Option.some({ min, max }) : Option.none;
   },
 
   /**
