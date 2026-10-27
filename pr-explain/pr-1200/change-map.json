@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1200,
+  "headBranch": "claude/affectionate-hypatia-pfc2es",
+  "baseBranch": "main",
+  "mergeBase": "06fecb59462b2ef9c0ed7eb919b8733f4c33f9ac",
+  "head": "a6ad8ed3c41dff2354b311cfb75159ccf5b9caec",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/plan-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "a6ad8ed3c41dff2354b311cfb75159ccf5b9caec",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-27T00:02:38Z",
+      "subject": "harness: plan-reviewer に libs の I/O の口へコンパニオンを付ける前の確認を追加",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_01F6KKXYu34PcL7i4kBEyvg9",
+      "files": [
+        {
+          "path": ".claude/agents/plan-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -66,6 +66,8 @@ model: inherit\n   I/O が `libs/` の外に出ていないか\n - **名前の付いていない型が隠れていないか。** 引数が 4 つ以上になる中間関数、\n   常に対で渡る 2 値、タプルでの受け渡しは「型がまだ無い」サイン\n+- **`libs/` の I/O の口に型 + 同名コンパニオンを付ける計画なら、同じ型の実装が 2 つ以上あるか。**\n+  実装が 1 つだけなら同名 const は何も束ねない（`分類: type`）\n - **計画に新しく登場する識別子名を、実装前に grep させたか。** `rules/naming.md`「その名前が\n   既に別の意味を持っていないか確認する」は書かれているが、この観点は今まで\n   実装の検証（コードを書いたあと）でしか見ておらず、指摘は毎回そこで",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
