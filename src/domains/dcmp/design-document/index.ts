@@ -46,7 +46,9 @@ import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
 import { Angle } from "@/domains/unit/angle";
 import { Axes, type Axis } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { ArrayEx } from "@/utils/ArrayEx";
+import { Interop } from "@/utils/Interop";
 import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
@@ -88,15 +90,15 @@ export type UngroupedBox = Readonly<{
 }>;
 
 /**
- * ノードの複製を元の直後へ挿した結果（`DesignDocument.insertCopyAfter`）。
+ * 複数のノードの複製を、それぞれ元の直後へ挿した結果（`DesignDocument.insertCopiesAfter`）。
  *
  * 呼び出し側は付け替えた名前も挿した位置も知らないので、複製を選び直せるよう
  * `UngroupedBox` と同じく対で返す。
  */
-export type InsertedCopy = Readonly<{
+export type InsertedCopies = Readonly<{
   document: DesignDocument;
-  /** 挿した複製の根に付いた名前。子孫の名前も同じ規則で付け替わっている。 */
-  copyName: string;
+  /** 挿した複製の根に付いた名前。並びは複製元を指した順。 */
+  copyNames: readonly string[];
 }>;
 
 /**
@@ -612,6 +614,64 @@ function renamedCopy(document: DesignDocument, node: Node): Node {
 }
 
 /**
+ * ノードの複製をツリー上の位置へ挿入する。
+ *
+ * 名前はドキュメント全体で一意でなければならない（docs/01-file-format.md「ノードの識別（name）」）
+ * ので、挿す前に部分木の名前をまとめて付け替える。
+ *
+ * @param document 挿入先のドキュメント
+ * @param at 挿入する位置（`DesignDocument.insertNode` と同じ）
+ * @param node 複製元のノード。自分と子孫の名前は `renamedCopy` で付け替える
+ * @returns 名前を付け替えた複製を挿入したドキュメント。位置の条件で `insertNode` と同じ
+ *   `err`。付け替えてから挿すので `duplicate-name` にはならない
+ */
+function insertNodeCopy(
+  document: DesignDocument,
+  at: ChildPosition,
+  node: Node,
+): Result<DesignDocument, DesignDocumentEditError> {
+  return DesignDocument.insertNode(document, at, renamedCopy(document, node));
+}
+
+/** 1 件の複製を元の直後へ挿した結果（`insertCopyAfter`）。 */
+type InsertedCopy = Readonly<{
+  document: DesignDocument;
+  /** 挿した複製の根に付いた名前。子孫の名前も同じ規則で付け替わっている。 */
+  copyName: string;
+}>;
+
+/**
+ * 名前で指したノードの複製を、同じ親の中の直後へ挿す。
+ *
+ * @param document 挿入先のドキュメント
+ * @param name 複製元のノードの名前。自分と子孫の名前は `renamedCopy` で付け替える
+ * @returns 複製を挿したドキュメントと、複製の根に付いた名前。artboard の名前・部品定義の
+ *   中のノードの名前・無い名前は `node-not-found`
+ */
+function insertCopyAfter(
+  document: DesignDocument,
+  name: string,
+): Result<InsertedCopy, DesignDocumentEditError> {
+  const source = Option.flatMap(
+    DesignDocument.findNode(document, name),
+    (node) =>
+      Option.map(DesignDocument.findChildPosition(document, name), (at) => ({
+        node,
+        at,
+      })),
+  );
+  if (!Option.isSome(source)) {
+    return Result.err({ kind: "node-not-found", name });
+  }
+  const { node, at } = source.value;
+  const copy = renamedCopy(document, node);
+  return Result.map(
+    DesignDocument.insertNode(document, { ...at, index: at.index + 1 }, copy),
+    (inserted) => ({ document: inserted, copyName: copy.name }),
+  );
+}
+
+/**
  * 新しい名前を単一名前空間へ加えられないときの理由。
  *
  * 加える側（`createComponent`）と、加えられるかだけを知りたい側
@@ -676,6 +736,26 @@ function insertIntoParent(
 ): Result<DesignDocument, DesignDocumentEditError> {
   return updateChildrenOfParent(document, at.parentName, (children) =>
     NodeTree.insertAt(children, at.index, node),
+  );
+}
+
+/**
+ * 名前の並びのうち、祖先が同じ並びに無いもの（指したものの最上位）。
+ *
+ * @param document 祖先を引くドキュメント
+ * @param names 絞り込む名前の並び。重複は 1 つとして扱う
+ * @returns 祖先が並びに無い名前だけを、渡された順のまま残した並び
+ */
+function outermostNames(
+  document: DesignDocument,
+  names: readonly string[],
+): readonly string[] {
+  const distinctNames = ArrayEx.distinct(names);
+  return distinctNames.filter(
+    (name) =>
+      !DesignDocument.collectAncestorNames(document, name).some((ancestor) =>
+        distinctNames.includes(ancestor),
+      ),
   );
 }
 
@@ -1183,7 +1263,7 @@ export const DesignDocument = {
    * @param at 挿入する位置。親は artboard でもノードでもよく、`index` は挿入する前の子の
    *   並びで見た位置（子の数と同じなら末尾）
    * @param node 挿入するノード。自分と子孫の名前は付け替えない（既にある名前と衝突しうる
-   *   複製を挿すなら `insertNodeCopy`）
+   *   複製を挿すなら `insertNodeCopies`）
    * @returns 挿入したドキュメント。親の名前が artboard にも artboard 配下のノードにも無い
    *   （部品定義の中のノードも含む）なら `parent-not-found`、親が参照ノードか、スキーマが
    *   子を認めていないプリミティブなら `children-not-allowed`、`index` が 0 以上子の数以下の整数でなければ
@@ -1204,58 +1284,68 @@ export const DesignDocument = {
   },
 
   /**
-   * ノードの複製をツリー上の位置へ挿入する（docs/06-ui.md「編集操作の一覧」の
-   * コピー & ペースト）。
-   *
-   * 名前はドキュメント全体で一意でなければならない（docs/01-file-format.md「ノードの識別（name）」）
-   * ので、挿す前に部分木の名前をまとめて付け替える。
+   * 複数のノードの複製を、ツリー上の位置から並べて挿入する（docs/06-ui.md「編集操作の一覧」と
+   * 「複数選択」のコピー & ペースト）。
    *
    * @param document 挿入先のドキュメント
-   * @param at 挿入する位置（`insertNode` と同じ）
-   * @param node 複製元のノード。自分と子孫の名前は `DocumentNames.renameSubtree` で
-   *   ドキュメントの名前と衝突しない名前へ付け替える
-   * @returns 名前を付け替えた複製を挿入したドキュメント。位置の条件で `insertNode` と同じ
-   *   `err`。付け替えてから挿すので `duplicate-name` にはならない
+   * @param at 1 件目を挿す位置（`insertNode` と同じ）。2 件目以降はその後ろへ続ける
+   * @param nodes 複製元のノード。渡した順に並ぶ。自分と子孫の名前は 1 件ずつ、そのときの
+   *   ドキュメントと衝突しない名前へ付け替える（docs/01-file-format.md「ノードの識別（name）」）
+   *   ので、複製どうしでも衝突しない
+   * @returns すべての複製を挿入したドキュメント。位置の条件で `insertNode` と同じ `err` に
+   *   なり、そのときは何も挿さない。付け替えてから挿すので `duplicate-name` にはならない
    */
-  insertNodeCopy(
+  insertNodeCopies(
     document: DesignDocument,
     at: ChildPosition,
-    node: Node,
+    nodes: NonEmptyArray<Node>,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    return DesignDocument.insertNode(document, at, renamedCopy(document, node));
+    const positionedNodes = nodes.map((node, shift) => ({
+      node,
+      at: { ...at, index: at.index + shift },
+    }));
+    return ArrayEx.reduceUntilErr(
+      positionedNodes,
+      document,
+      (current, positioned) =>
+        insertNodeCopy(current, positioned.at, positioned.node),
+    );
   },
 
   /**
-   * 名前で指したノードの複製を、同じ親の中の直後へ挿す（docs/06-ui.md「編集操作の一覧」の
-   * 複製）。
+   * 名前で指したノードそれぞれの複製を、それぞれ同じ親の中の直後へ挿す（docs/06-ui.md
+   * 「編集操作の一覧」と「複数選択」の複製）。複製するのは指したものの最上位
+   * （`findOutermostNodes`）で、自分と子孫の名前はドキュメントと衝突しない名前へ付け替える。
+   *
+   * `Result` にはしない。`none` は失敗ではなく写す相手（`findOutermostNodes`）の在否なので、
+   * そこへ当てる失敗の種類を足すことになる。
    *
    * @param document 挿入先のドキュメント
-   * @param name 複製元のノードの名前。自分と子孫の名前は `insertNodeCopy` と同じ規則で
-   *   付け替える
-   * @returns 複製を挿したドキュメントと、複製の根に付いた名前。artboard の名前・部品定義の
-   *   中のノードの名前・無い名前は `node-not-found`
+   * @param names 複製元のノードの名前。祖先が同じ並びにある名前は祖先と一緒に複製されるので
+   *   落とし、重複は 1 つとして扱う
+   * @returns 複製を挿したドキュメントと、複製の根に付いた名前（最上位を指した順）。
+   *   `findOutermostNodes` が `none` のときは `none` で、何も複製しない
    */
-  insertCopyAfter(
+  insertCopiesAfter(
     document: DesignDocument,
-    name: string,
-  ): Result<InsertedCopy, DesignDocumentEditError> {
-    const source = Option.flatMap(
-      DesignDocument.findNode(document, name),
-      (node) =>
-        Option.map(DesignDocument.findChildPosition(document, name), (at) => ({
-          node,
-          at,
+    names: readonly string[],
+  ): Option<InsertedCopies> {
+    const nodes = DesignDocument.findOutermostNodes(document, names);
+    if (!Option.isSome(nodes)) {
+      return Option.none;
+    }
+    const initial: InsertedCopies = { document, copyNames: [] };
+    // 見つかったノードだけを指すので `insertCopyAfter` は err にならない
+    const inserted = ArrayEx.reduceUntilErr(
+      nodes.value,
+      initial,
+      (current, node) =>
+        Result.map(insertCopyAfter(current.document, node.name), (copy) => ({
+          document: copy.document,
+          copyNames: [...current.copyNames, copy.copyName],
         })),
     );
-    if (!Option.isSome(source)) {
-      return Result.err({ kind: "node-not-found", name });
-    }
-    const { node, at } = source.value;
-    const copy = renamedCopy(document, node);
-    return Result.map(
-      DesignDocument.insertNode(document, { ...at, index: at.index + 1 }, copy),
-      (inserted) => ({ document: inserted, copyName: copy.name }),
-    );
+    return Interop.toOption(inserted);
   },
 
   /**
@@ -1575,6 +1665,31 @@ export const DesignDocument = {
       }
     }
     return Option.none;
+  },
+
+  /**
+   * 名前で指したものの最上位のノード（docs/06-ui.md「複数選択」のコピーと複製の対象）。
+   *
+   * artboard が 1 つでも混ざったら全体を `none` にする。一部だけ写すと貼るまで足りないことに
+   * 気づけないので、複数選択の削除と同じく全部か無かにする。
+   *
+   * @param document 引き先になるドキュメント
+   * @param names 指したものの名前。祖先が同じ並びにある名前は落とし、重複は 1 つとして扱う
+   * @returns 最上位に残った名前のノードを、渡された順のまま並べたもの。空の並び・最上位に
+   *   artboard の名前・部品定義の中のノードの名前・無い名前が入るときは `none`
+   */
+  findOutermostNodes(
+    document: DesignDocument,
+    names: readonly string[],
+  ): Option<NonEmptyArray<Node>> {
+    const outermost = outermostNames(document, names);
+    const nodes = outermost.flatMap((name) => {
+      const node = DesignDocument.findNode(document, name);
+      return Option.isSome(node) ? [node.value] : [];
+    });
+    return nodes.length === outermost.length
+      ? ArrayEx.toNonEmpty(nodes)
+      : Option.none;
   },
 
   /**
@@ -2232,15 +2347,10 @@ export const DesignDocument = {
     document: DesignDocument,
     names: readonly string[],
   ): Result<DesignDocument, DesignDocumentEditError> {
-    const distinctNames = ArrayEx.distinct(names);
-    const outermostNames = distinctNames.filter(
-      (name) =>
-        !DesignDocument.collectAncestorNames(document, name).some((ancestor) =>
-          distinctNames.includes(ancestor),
-        ),
-    );
-    return ArrayEx.reduceUntilErr(outermostNames, document, (current, name) =>
-      DesignDocument.remove(current, name),
+    return ArrayEx.reduceUntilErr(
+      outermostNames(document, names),
+      document,
+      (current, name) => DesignDocument.remove(current, name),
     );
   },
 

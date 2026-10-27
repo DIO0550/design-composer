@@ -7,6 +7,7 @@ import { artboardList, tree } from "@/features/editor/__tests__/pane-regions";
 import {
   SampleDocument,
   SampleDocumentWithDanglingToken,
+  SampleDocumentWithSameComponentInstances,
 } from "@/features/editor/__tests__/sample-document";
 import { renderedElement } from "@/features/editor/features/canvas/__tests__";
 import {
@@ -198,6 +199,32 @@ export { artboardList, tree };
 /** ツリーの行を名前で押して選ぶ。同じ名前はキャンバスにも出るのでツリーに絞る。 */
 export async function selectInTree(name: string): Promise<void> {
   await userEvent.click(within(tree()).getByRole("button", { name }));
+}
+
+/**
+ * `SampleDocumentWithSameComponentInstances` の 2 つのインスタンス（`home-login` /
+ * `home-signup`）をまとめて選ぶ。キャンバスの「ログイン」を押し、右ペインの
+ * `Select all 2 instances` を押す。
+ */
+export async function selectSameComponentInstances(): Promise<void> {
+  await userEvent.click(within(canvasPane()).getByText("ログイン"));
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", {
+      name: "Select all 2 instances",
+    }),
+  );
+}
+
+/**
+ * `SampleDocumentWithSameComponentInstances` を開き、2 つのインスタンスをまとめて選んだ
+ * 編集画面を描画する（`selectSameComponentInstances`）。
+ */
+export async function renderWithSameComponentInstancesSelected(): Promise<DocumentIpcFake> {
+  const ipc = await renderOpenedDocument(
+    SampleDocumentWithSameComponentInstances,
+  );
+  await selectSameComponentInstances();
+  return ipc;
 }
 
 /** artboard の一覧から選ぶ。artboard はツリーの行ではないのでこちらから押す。 */

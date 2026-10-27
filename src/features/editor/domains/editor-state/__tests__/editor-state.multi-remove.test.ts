@@ -1,13 +1,8 @@
 import { expect, test } from "vitest";
-import { documentWithChildInEachArtboard } from "@/domains/__tests__/sample-document";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
-import { stateWithNestedBox } from "./setup";
-
-function stateWithChildInEachArtboard(): EditorState {
-  return EditorState.create(documentWithChildInEachArtboard());
-}
+import { stateWithChildInEachArtboard, stateWithNestedBox } from "./setup";
 
 function hasNode(state: EditorState, name: string): boolean {
   return Option.isSome(

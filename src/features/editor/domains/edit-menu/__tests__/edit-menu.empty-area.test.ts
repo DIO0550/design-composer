@@ -24,7 +24,9 @@ test("空き領域ではペースト・取り消す・やり直すが並ぶ", ()
 });
 
 test("コピー済みでも選択が無いときはペーストが押せない", () => {
-  const copied = Option.unwrap(EditorState.copyNode(stateSelecting("title")));
+  const copied = Option.unwrap(
+    EditorState.copySelected(stateSelecting("title")),
+  );
   const menu = EditMenu.create(
     EditorState.clearSelection(copied),
     EditMenuTargets.EmptyArea,
@@ -34,7 +36,9 @@ test("コピー済みでも選択が無いときはペーストが押せない",
 });
 
 test("コピー済みで貼り先のあるノードを選んでいれば、空き領域からでもペーストが押せる", () => {
-  const copied = Option.unwrap(EditorState.copyNode(stateSelecting("title")));
+  const copied = Option.unwrap(
+    EditorState.copySelected(stateSelecting("title")),
+  );
   const menu = EditMenu.create(
     EditorState.select(copied, "panel"),
     EditMenuTargets.EmptyArea,
@@ -79,7 +83,9 @@ test("複数選択のまま空き領域を右クリックしても取り消す�
 });
 
 test("複数選択のまま空き領域を右クリックするとペーストは押せない", () => {
-  const copied = Option.unwrap(EditorState.copyNode(stateSelecting("title")));
+  const copied = Option.unwrap(
+    EditorState.copySelected(stateSelecting("title")),
+  );
   const menu = EditMenu.create(
     EditorState.selectNodes(copied, ["panel", "login"]),
     EditMenuTargets.EmptyArea,

@@ -5,7 +5,7 @@ import { childNames, nodeNamed, stateWithDeepBranch } from "./setup";
 
 /*
  * 選んでいるノードを複製する（docs/06-ui.md「編集操作の一覧」の複製）。直後へ入ることと
- * 名前の付け替えは `design-document.copy-after.test.ts` が持つ。ここで見るのは、対象が選択
+ * 名前の付け替えは `design-document.copies-after.test.ts` が持つ。ここで見るのは、対象が選択
  * からどう決まり、履歴・選択・クリップボードがどうなるか。
  *
  * 複製元の `sibling-panel` は後ろに `home-login` を持つので、末尾へ入れる実装と区別できる。
@@ -51,7 +51,7 @@ test("続けて複製すると、複製の複製がその直後に並ぶ", () =>
 
 test("複製してもクリップボードの中身は変わらない", () => {
   const copied = Option.unwrap(
-    EditorState.copyNode(
+    EditorState.copySelected(
       EditorState.select(stateWithDeepBranch(), "home-login"),
     ),
   );
@@ -60,8 +60,8 @@ test("複製してもクリップボードの中身は変わらない", () => {
     EditorState.duplicateSelected(EditorState.select(copied, "sibling-panel")),
   );
 
-  expect(duplicated.copiedNode).toEqual(
-    Option.some(nodeNamed(copied, "home-login")),
+  expect(duplicated.copiedNodes).toEqual(
+    Option.some([nodeNamed(copied, "home-login")]),
   );
 });
 
@@ -88,13 +88,4 @@ test("何も選んでいないときは複製できない", () => {
   expect(EditorState.duplicateSelected(stateWithDeepBranch())).toEqual(
     Option.none,
   );
-});
-
-test("複数選んでいるときは複製できない", () => {
-  const selected = EditorState.selectNodes(stateWithDeepBranch(), [
-    "outer-panel",
-    "sibling-panel",
-  ]);
-
-  expect(EditorState.duplicateSelected(selected)).toEqual(Option.none);
 });

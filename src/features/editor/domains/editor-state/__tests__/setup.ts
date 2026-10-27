@@ -1,3 +1,4 @@
+import { documentWithChildInEachArtboard } from "@/domains/__tests__/sample-document";
 import {
   DesignDocument,
   DocumentTemplate,
@@ -34,6 +35,16 @@ export function stateWithNestedBox(): EditorState {
       ],
     }),
   );
+}
+
+/**
+ * `home` と `about` の 2 枚の artboard に、Text を 1 つずつ（`home-title` / `about-title`）
+ * 持つ状態。
+ *
+ * @returns artboard をまたいで選べる並びを持つエディタの状態
+ */
+export function stateWithChildInEachArtboard(): EditorState {
+  return EditorState.create(documentWithChildInEachArtboard());
 }
 
 /**
@@ -74,6 +85,9 @@ export function stateWithComponentDefinitions(): EditorState {
  * **いちばん外側・1 つ内側・いちばん内側がすべて別の名前**でなければならないため。
  * 2 階層だと「artboard 直下の子」と「いちばん内側」が同じ名前になり、掘る量を
  * 取り違えた実装でも同じ答えが出る。
+ *
+ * 複数選択のコピー・複製のテストは、ここを含めツリーの並びと逆の順に選ぶ。ツリーの順に
+ * 並べ直す実装と区別するため。
  *
  * @returns その並びを持つエディタの状態
  */

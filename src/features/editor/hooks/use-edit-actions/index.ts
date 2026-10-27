@@ -12,7 +12,10 @@ import type { ReorderStep } from "@/features/editor/domains/reorder-step";
 export type EditActions = Readonly<{
   copy: () => void;
   paste: () => void;
-  /** 選んでいるノードの複製を直後へ挿し、複製を選ぶ。 */
+  /**
+   * 選んでいるものの最上位のノード（`DesignDocument.findOutermostNodes`）それぞれの複製を
+   * 直後へ挿し、複製を選ぶ。
+   */
   duplicateSelected: () => void;
   undo: () => void;
   redo: () => void;
@@ -46,8 +49,8 @@ export function useEditActions(): EditActions {
   const { dispatch } = useEditor();
 
   return {
-    copy: () => dispatch({ type: "copy_node" }),
-    paste: () => dispatch({ type: "paste_node" }),
+    copy: () => dispatch({ type: "copy_selected" }),
+    paste: () => dispatch({ type: "paste_copied" }),
     duplicateSelected: () => dispatch({ type: "duplicate_selected" }),
     undo: () => dispatch({ type: "undo" }),
     redo: () => dispatch({ type: "redo" }),

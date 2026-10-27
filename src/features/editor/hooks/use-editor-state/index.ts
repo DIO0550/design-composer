@@ -74,8 +74,8 @@ export type EditorAction =
   | Readonly<{ type: "create_component"; componentName: string }>
   | Readonly<{ type: "group_selected" }>
   | Readonly<{ type: "ungroup_selected" }>
-  | Readonly<{ type: "copy_node" }>
-  | Readonly<{ type: "paste_node" }>
+  | Readonly<{ type: "copy_selected" }>
+  | Readonly<{ type: "paste_copied" }>
   | Readonly<{ type: "duplicate_selected" }>
   | Readonly<{
       type: "apply_prop_edit";
@@ -270,26 +270,25 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
        * 到達しうる理由は group_selected と同じ。
        */
       return Option.unwrapOr(EditorState.ungroupSelected(state), state);
-    case "copy_node":
+    case "copy_selected":
       /*
-       * コピーできる対象が無ければクリップボードは変わらない
-       * （EditorState.copyNode の `none`）。ボタンは選択が無いと押せないが、
+       * コピーできる対象が無ければ（DesignDocument.findOutermostNodes が `none`）クリップボードは
+       * 変わらない（EditorState.copySelected の `none`）。ボタンは押せなくしているが、
        * ショートカットはいつでも押せるためこの `none` には画面の操作から到達する。
        */
-      return Option.unwrapOr(EditorState.copyNode(state), state);
-    case "paste_node":
+      return Option.unwrapOr(EditorState.copySelected(state), state);
+    case "paste_copied":
       /*
-       * クリップボードが空・挿せる位置が無ければ木は変わらない
-       * （EditorState.pasteNode の `none`）。到達しうる理由は copy_node と同じ。
+       * クリップボードが空・挿せる位置が無ければ（複数選択中も含む）木は変わらない
+       * （EditorState.pasteCopied の `none`）。到達しうる理由は copy_selected と同じ。
        * ファイルが不正な間も `none`。コピーは通るが貼り付けは止まる
        * （クリップボードはドキュメントを変えない）。
        */
-      return Option.unwrapOr(EditorState.pasteNode(state), state);
+      return Option.unwrapOr(EditorState.pasteCopied(state), state);
     case "duplicate_selected":
       /*
-       * 1 つだけ選んでいないとき・選んでいるのが artboard のとき・ファイルが不正な間は
-       * 木は変わらない（EditorState.duplicateSelected の `none`）。到達しうる理由は
-       * copy_node と同じ。
+       * 複製できる対象が無ければ（DesignDocument.findOutermostNodes が `none`）、また
+       * ファイルが不正な間は木は変わらない（EditorState.duplicateSelected の `none`）。到達しうる理由は copy_selected と同じ。
        */
       return Option.unwrapOr(EditorState.duplicateSelected(state), state);
     case "apply_prop_edit":
