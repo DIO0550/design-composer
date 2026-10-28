@@ -70,10 +70,47 @@ export const FacingDistances = {
         CanvasBounds.sideBounds(parentBounds, side),
       );
       const candidates = [...edges, ...siblings];
-      return Option.flatMap(
-        Facing.firstReached(facing, { from: moved, candidates }),
-        (to) => Facing.shortLineTo(facing, { from: moved, to }),
-      );
+      return lineToFirstReached(facing, moved, candidates);
     });
   },
+
+  /**
+   * 上下左右それぞれ、`others` のうち最初に当たる相手までの短い線。親の縁は候補にしない
+   * （docs/06-ui.md の artboard の移動の Alt / Option の距離）。
+   *
+   * @param moved 寄せたあとの運んでいるものの矩形
+   * @param others 距離を測る相手の矩形
+   * @returns 向きごとの短い線（すべて画面上の px）。当たる相手が無い / 最初に当たる相手に
+   *   接している向きは `none`（重なっている相手は飛ばす）
+   */
+  createAmong({
+    moved,
+    others,
+  }: Readonly<{
+    moved: CanvasBounds;
+    others: readonly CanvasBounds[];
+  }>): FacingDistances {
+    return FacingDistances.fromFacings((facing) =>
+      lineToFirstReached(facing, moved, others),
+    );
+  },
 } as const;
+
+/**
+ * 進む向きで、候補のうち最初に当たる相手までの短い線。
+ *
+ * @param facing 進む向き
+ * @param moved 寄せたあとの運んでいるものの矩形
+ * @param candidates 当たる相手の候補
+ * @returns 最初に当たる相手までの短い線。当たる相手が無い / 最初に当たる相手に接しているなら `none`
+ */
+function lineToFirstReached(
+  facing: Facing,
+  moved: CanvasBounds,
+  candidates: readonly CanvasBounds[],
+): Option<ThinLine> {
+  return Option.flatMap(
+    Facing.firstReached(facing, { from: moved, candidates }),
+    (to) => Facing.shortLineTo(facing, { from: moved, to }),
+  );
+}
