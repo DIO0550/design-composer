@@ -2,11 +2,13 @@ import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { SidePair, SidePairs } from "@/domains/unit/side";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
-import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import type { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import { DistanceReadout } from "@/features/editor/features/canvas/domains/distance-readout";
+import { Facing } from "@/features/editor/features/canvas/domains/facing";
 import { IntervalSlot } from "@/features/editor/features/canvas/domains/interval-slot";
+import { ThinLine } from "@/features/editor/features/canvas/domains/thin-line";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
-import { Range } from "@/utils/Range";
 
 /**
  * 辺のスナップ 1 回分（運んでいる / 伸び縮みさせているものの行き先と、揃え先の並び /
@@ -31,15 +33,18 @@ export type SideSnap = Readonly<{
 
 /**
  * 揃った線 1 つ分のスマートガイド。揃った線（辺か中心線）に引くガイド線と、揃え先との
- * 隙間に引く短い線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ。どちらも描く矩形・
- * 画面上の px）。
+ * 隙間に引く短い線（docs/06-ui.md「キャンバス直接操作」の辺のスナップ。`guideLine` は描く
+ * 矩形、`gapLine` は細い線（`ThinLine`）。どちらも画面上の px）。
  *
  * 隙間を軸ごとの別の並びで持つと、線の無い軸に隙間がある状態が書けてしまう。
  */
 export type SnapGuide = Readonly<{
   guideLine: CanvasBounds;
-  /** 揃え先との隙間に引く短い線。揃え先と重なっている / 接しているなら `none` */
-  gapLine: Option<CanvasBounds>;
+  /**
+   * 揃え先との隙間に引く短い線。揃え先と重なっている / 接している（小数 6 桁へ丸めて 0 以下）
+   * なら `none`
+   */
+  gapLine: Option<ThinLine>;
 }>;
 
 /**
@@ -51,17 +56,6 @@ export type SnapGuide = Readonly<{
  * 並びにすると「同じ軸に 2 本」が型で書けてしまう。
  */
 export type SnapGuides = Readonly<Record<SidePair, Option<SnapGuide>>>;
-
-/**
- * 揃え先との隙間の見せ方。隙間に引く短い線と、その中点に出す数値。
- *
- * 単位が 1 つだけ違う: `gapLine` は描く矩形なので**画面上の px**、`length` は人に見せる値なので
- * **ドキュメント上の px**（最も近い整数・1 以上）。
- */
-export type GapReadout = Readonly<{
-  gapLine: CanvasBounds;
-  length: number;
-}>;
 
 /**
  * 辺のスナップ 1 回分の答え（docs/06-ui.md「キャンバス直接操作」の辺のスナップ。中心線を含む）。
@@ -93,17 +87,6 @@ const SidePairByAxis = {
   width: SidePairs.Horizontal,
   height: SidePairs.Vertical,
 } as const satisfies Readonly<Record<Axis, SidePair>>;
-
-/**
- * ガイド線の太さ（px）。
- *
- * 挿入位置に引く線（`DropZone` の `MarkerThicknessPx`）と同じ太さ・同じ中心合わせにして、
- * キャンバスに出る線の流儀を割らない（2 つは排他なので、太さが同じでも混ざらない）。
- *
- * **揃えているのは値ではなく見せ方の約束**なので、拠り所は docs/06-ui.md 側に置いてある
- * （片方だけ変えてもここは落ちない）。
- */
-const GuideThicknessPx = 2;
 
 /**
  * ある向きで揃った線（辺か中心線）1 つ分。
@@ -195,7 +178,7 @@ export const SideSnap = {
     const horizontal = nearestAlong(snap, SidePairs.Horizontal);
     const vertical = nearestAlong(snap, SidePairs.Vertical);
     const offset = { x: shiftOf(horizontal), y: shiftOf(vertical) };
-    const moved = CanvasBounds.movedBy(snap.moving, offset);
+    const moved = SideSnap.movedBy(snap, offset);
     return {
       offset,
       guides: {
@@ -210,32 +193,37 @@ export const SideSnap = {
   },
 
   /**
-   * ある軸の揃え先との隙間を、見せる数値と一緒に引く（docs/06-ui.md の辺のスナップ）。
+   * 寄せたあとの、運んでいるものの矩形。
    *
-   * 引くキーと測る向きを同じ `pair` から取る。キーと向きを別々に渡す形にすると、取り違えた
-   * ときに線の太さが隙間の数値として出る。
+   * ガイド線・隙間と、同じ位置から別に測る線（Alt / Option の距離）が同じ矩形を使うよう、
+   * 式をここ 1 か所に置く。別の式で作ると数 ULP ずれ、隙間と同じ線が別の線になる。
+   *
+   * @param snap 判定する組
+   * @param offset `toSnapped` が答えた寄せ量（画面上の px）
+   * @returns 運んでいるものの矩形を寄せ量だけ動かしたもの（画面上の px）
+   */
+  movedBy(snap: SideSnap, offset: Offset): CanvasBounds {
+    return CanvasBounds.movedBy(snap.moving, offset);
+  },
+
+  /**
+   * ある軸の揃え先との隙間を、見せる数値と一緒に引く（docs/06-ui.md の辺のスナップ）。
    *
    * @param guides 軸ごとのスマートガイド
    * @param pair 見る軸（揃った線を挟む辺の組）
    * @param view 割り戻しに使う倍率を持つ表示
-   * @returns 隙間の短い線と数値。その軸に揃った線が無い / 揃え先と重なっている・接している /
-   *   ドキュメント上の px へ丸めると 0 になるなら `none`
+   * @returns 隙間の短い線と数値。その軸に揃った線が無い / 揃え先と重なっている・接している
+   *   （小数 6 桁へ丸めて 0 以下）/ ドキュメント上の px へ丸めると 0 になるなら `none`
    */
   toGapReadout(
     guides: SnapGuides,
     pair: SidePair,
     view: CanvasView,
-  ): Option<GapReadout> {
+  ): Option<DistanceReadout> {
     return Option.flatMap(guides[pair], (guide) =>
-      Option.flatMap(guide.gapLine, (gapLine) => {
-        const length = CanvasView.toRoundedDocumentLength(
-          view,
-          Range.length(
-            CanvasBounds.extentAlong(gapLine, SidePair.perpendicular(pair)),
-          ),
-        );
-        return length > 0 ? Option.some({ gapLine, length }) : Option.none;
-      }),
+      Option.flatMap(guide.gapLine, (line) =>
+        DistanceReadout.create(line, view),
+      ),
     );
   },
 
@@ -478,7 +466,7 @@ function guideOf(
     case "line":
       return Option.some({
         guideLine: guideBounds(candidate, moved),
-        gapLine: gapBounds(candidate, moved),
+        gapLine: gapLineOf(candidate, moved),
       });
     case "interval":
       return Option.none;
@@ -500,85 +488,29 @@ function guideBounds(snapped: SnappedLine, moved: CanvasBounds): CanvasBounds {
   const ends = [moved, snapped.stationary].flatMap((bounds) =>
     across.map((side) => CanvasBounds.side(bounds, side)),
   );
-  return thinLineBounds(snapped.pair, {
+  return ThinLine.toBounds({
+    along: SidePair.perpendicular(snapped.pair),
     at: snapped.stationaryLine,
     span: { min: Math.min(...ends), max: Math.max(...ends) },
   });
 }
 
 /**
- * 揃え先との隙間に引く短い線を、描く矩形として組み立てる（置き方は docs/06-ui.md）。
+ * 揃え先との隙間に引く短い線（置き方は docs/06-ui.md）。
  *
  * @param snapped 揃った線
  * @param moved 寄せたあとの運んでいる / 伸び縮みさせているものの矩形
- * @returns 短い線として描く矩形（画面上の px）。ガイド線に沿った向きで重なっている /
- *   接しているなら `none`
+ * @returns 短い線（画面上の px）。ガイド線に沿った向きで重なっている / 接している（小数 6 桁
+ *   へ丸めて 0 以下）なら `none`
  */
-function gapBounds(
+function gapLineOf(
   snapped: SnappedLine,
   moved: CanvasBounds,
-): Option<CanvasBounds> {
+): Option<ThinLine> {
   const along = SidePair.perpendicular(snapped.pair);
-  const gap = Range.gapBetween(
-    CanvasBounds.extentAlong(moved, along),
-    CanvasBounds.extentAlong(snapped.stationary, along),
+  const between = { from: moved, to: snapped.stationary };
+  return Option.or(
+    Facing.shortLineTo({ pair: along, end: AxisEnds.End }, between),
+    Facing.shortLineTo({ pair: along, end: AxisEnds.Start }, between),
   );
-  return Option.map(gap, (span) =>
-    thinLineBounds(snapped.pair, {
-      at: facingCenter(moved, snapped),
-      span,
-    }),
-  );
-}
-
-/**
- * 運んでいる / 伸び縮みさせているものと揃え先が、揃った線と直交する向きで向かい合う範囲の中央。
- *
- * 重なりの有無は判定しない。外側で辺が揃ったときの重なりは 1 点で、
- * 寄せたあとの辺は浮動小数の足し引きで作るため、倍率や実測の端数で 1 点が数 ULP 離れて
- * 「重ならない」と判定され、隙間が黙って消える。
- *
- * @param moved 寄せたあとの運んでいる / 伸び縮みさせているものの矩形
- * @param snapped 揃った線と揃え先
- * @returns 内側の 2 つの端の真ん中の座標（画面上の px）
- */
-function facingCenter(moved: CanvasBounds, snapped: SnappedLine): number {
-  const movedExtent = CanvasBounds.extentAlong(moved, snapped.pair);
-  const stationaryExtent = CanvasBounds.extentAlong(
-    snapped.stationary,
-    snapped.pair,
-  );
-  return Range.center({
-    min: Math.max(movedExtent.min, stationaryExtent.min),
-    max: Math.min(movedExtent.max, stationaryExtent.max),
-  });
-}
-
-/**
- * 揃った組の向きに伸びる細い線（ガイド線・隙間の短い線）を、描く矩形として組み立てる。
- * 太さのぶんは線の中心を `at` に合わせて振り分ける（`DropZone` の挿入線と同じ）。
- *
- * @param pair 揃った線を挟む辺の組（水平の組なら縦に伸びる線になる）
- * @param line 線の中心の座標と、線が伸びる範囲（どちらも画面上の px）
- * @returns 線として描く矩形（画面上の px）
- */
-function thinLineBounds(
-  pair: SidePair,
-  line: Readonly<{ at: number; span: Range }>,
-): CanvasBounds {
-  const start = line.at - GuideThicknessPx / 2;
-  const length = Range.length(line.span);
-  return pair === SidePairs.Horizontal
-    ? {
-        left: start,
-        top: line.span.min,
-        width: GuideThicknessPx,
-        height: length,
-      }
-    : {
-        left: line.span.min,
-        top: start,
-        width: length,
-        height: GuideThicknessPx,
-      };
 }

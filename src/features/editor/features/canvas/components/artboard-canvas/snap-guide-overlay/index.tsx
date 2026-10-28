@@ -2,11 +2,12 @@ import type { ReactElement } from "react";
 import { type SidePair, SidePairs } from "@/domains/unit/side";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import type { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import type { DistanceReadout } from "@/features/editor/features/canvas/domains/distance-readout";
 import {
-  type GapReadout,
   SideSnap,
   type SnapGuides,
 } from "@/features/editor/features/canvas/domains/side-snap";
+import { ThinLine } from "@/features/editor/features/canvas/domains/thin-line";
 import { Option } from "@/utils/Option";
 
 /**
@@ -29,8 +30,8 @@ function fixedAt(bounds: CanvasBounds) {
  *
  * `pointer-events-none` を外すと、線の下を通った `pointermove` の `target` が線になり、
  * 落とし先の親を辿れなくなる（`useNodeDrag` は `event.target` から名前を辿る）。
- * **外しても絵は変わらないので、テストでも視覚差分でも気づけない。** 隙間の短い線と
- * 数値も同じ。
+ * **外しても絵は変わらないので、テストでも視覚差分でも気づけない。** 隙間と Alt / Option
+ * の距離の短い線と数値も同じ。
  *
  * ズーム / パンの変形の**外側**に置き、実測した client 座標をそのまま `position: fixed`
  * で使う（`DropMarker` と同じ理由 — 変形の内側は React の管理外なので線を差し込めない）。
@@ -47,21 +48,27 @@ function GuideLine({ bounds }: Readonly<{ bounds: CanvasBounds }>) {
 }
 
 /**
- * 揃え先との隙間に引く短い線と、その中点に置く数値。
+ * 2 つの矩形の間に引く短い線と、その中点に置く数値（揃え先との隙間と Alt / Option の距離）。
  *
  * 数値を短い線の子にして中央へ寄せるので、中点の座標を計算しない。寄せる class を外しても
  * テストは 1 件も落ちない（happy-dom はレイアウトを持たない）。気づく手段は story の視覚差分だけ。
  */
-function GapLine({ readout }: Readonly<{ readout: GapReadout }>) {
+export function DistanceLine({
+  readout,
+  testId,
+}: Readonly<{
+  readout: DistanceReadout;
+  testId: "snap-gap" | "facing-distance";
+}>) {
   return (
     <div
-      data-testid="snap-gap"
+      data-testid={testId}
       aria-hidden
       className="pointer-events-none fixed z-10 bg-[#d13438]"
-      style={fixedAt(readout.gapLine)}
+      style={fixedAt(ThinLine.toBounds(readout.line))}
     >
       <span
-        data-testid="snap-gap-label"
+        data-testid={`${testId}-label`}
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-[3px] bg-[#d13438] px-1.5 py-0.5 font-medium text-[10px] text-white"
       >
         {readout.length}
@@ -104,7 +111,9 @@ function Guide({
   return (
     <>
       <GuideLineAlong guides={guides} pair={pair} />
-      {Option.isSome(readout) ? <GapLine readout={readout.value} /> : null}
+      {Option.isSome(readout) ? (
+        <DistanceLine readout={readout.value} testId="snap-gap" />
+      ) : null}
     </>
   );
 }

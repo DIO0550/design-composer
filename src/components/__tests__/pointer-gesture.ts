@@ -19,19 +19,28 @@ export const PointerId = 1;
 /** 画面上の位置。 */
 export type PointerPoint = Readonly<{ x: number; y: number }>;
 
-/** 操作と一緒に押されている修飾キー（コマンドキーにあたる 2 つだけを見分ける）。 */
-export type PressedModifier = "none" | "ctrl" | "meta";
+/**
+ * 操作と一緒に押されている修飾キー（コマンドキーにあたる 2 つと Alt / Option。⌘ と Alt の
+ * 同時押しは `meta+alt`）。
+ */
+export type PressedModifier = "none" | "ctrl" | "meta" | "alt" | "meta+alt";
 
 /**
  * 押されている修飾キーを、イベントが持つ修飾キーの組へ読み替える。
  *
  * @param pressed 押されている修飾キー
- * @returns イベントへ載せる `ctrlKey` / `metaKey`
+ * @returns イベントへ載せる `ctrlKey` / `metaKey` / `altKey`
  */
 export function modifierKeysOf(
   pressed: PressedModifier,
-): Readonly<{ ctrlKey: boolean; metaKey: boolean }> {
-  return { ctrlKey: pressed === "ctrl", metaKey: pressed === "meta" };
+): Readonly<{ ctrlKey: boolean; metaKey: boolean; altKey: boolean }> {
+  const isMetaHeld = pressed === "meta" || pressed === "meta+alt";
+  const isAltHeld = pressed === "alt" || pressed === "meta+alt";
+  return {
+    ctrlKey: pressed === "ctrl",
+    metaKey: isMetaHeld,
+    altKey: isAltHeld,
+  };
 }
 
 /**

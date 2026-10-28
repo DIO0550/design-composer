@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { SidePairs } from "@/domains/unit/side";
+import { SidePairs, Sides } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 import { CanvasBounds } from "../index";
 
@@ -171,6 +171,45 @@ test("4 辺のうち指定した辺の座標が返る", () => {
     CanvasBounds.side(Bounds, "top"),
     CanvasBounds.side(Bounds, "bottom"),
   ]).toEqual([10, 110, 20, 60]);
+});
+
+/** 左 10・上 20 に置かれた、幅 30・高さ 40 の矩形。 */
+const SideSource: CanvasBounds = { left: 10, top: 20, width: 30, height: 40 };
+
+test("上辺は、左右の幅を保った高さ 0 の矩形になる", () => {
+  expect(CanvasBounds.sideBounds(SideSource, Sides.Top)).toEqual({
+    left: 10,
+    top: 20,
+    width: 30,
+    height: 0,
+  });
+});
+
+test("下辺は、下辺の位置に置いた高さ 0 の矩形になる", () => {
+  expect(CanvasBounds.sideBounds(SideSource, Sides.Bottom)).toEqual({
+    left: 10,
+    top: 60,
+    width: 30,
+    height: 0,
+  });
+});
+
+test("左辺は、上下の高さを保った幅 0 の矩形になる", () => {
+  expect(CanvasBounds.sideBounds(SideSource, Sides.Left)).toEqual({
+    left: 10,
+    top: 20,
+    width: 0,
+    height: 40,
+  });
+});
+
+test("右辺は、右辺の位置に置いた幅 0 の矩形になる", () => {
+  expect(CanvasBounds.sideBounds(SideSource, Sides.Right)).toEqual({
+    left: 40,
+    top: 20,
+    width: 0,
+    height: 40,
+  });
 });
 
 test("横に並ぶときの交差軸の範囲は上端から下端までになる", () => {

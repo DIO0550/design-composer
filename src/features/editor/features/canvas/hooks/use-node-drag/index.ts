@@ -27,20 +27,18 @@ import {
   DropZone,
   InsertionParent,
 } from "@/features/editor/features/canvas/domains/node-drop";
+import { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
 import {
   type DropParentCoordinates,
   type GrabbedPlacement,
   RepositionTarget,
 } from "@/features/editor/features/canvas/domains/reposition-target";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
-import {
-  SideSnap,
-  type SideSnapped,
-} from "@/features/editor/features/canvas/domains/side-snap";
+import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
 import { CanvasDom } from "@/libs/canvas-dom";
-import { CommandKey } from "@/libs/dom-event";
+import { AltKey, CommandKey } from "@/libs/dom-event";
 import { ElementEx } from "@/utils/ElementEx";
 import { Option } from "@/utils/Option";
 
@@ -145,7 +143,7 @@ const NoSnapTargets: SnapTargets = { stationary: [], siblings: [] };
 /**
  * 座標の置き直しに要る実測。
  *
- * 単位が 1 つだけ違う: `origin` / `dragged` / `targets` は実測したままの**画面上の px**、
+ * 単位が 1 つだけ違う: `origin` / `dragged` / `parentBounds` / `siblings` は実測したままの**画面上の px**、
  * `dropParent.shift` だけは書かれる座標へ足す量なので**ドキュメント上の px**（倍率で割り戻し済み）。
  */
 type RepositionMeasure = Readonly<{
@@ -157,8 +155,10 @@ type RepositionMeasure = Readonly<{
   origin: RotatedBounds;
   /** 運んでいるノードの回る前の大きさと向き。位置は使わない。 */
   dragged: RotatedBounds;
-  /** 吸い付く先。 */
-  targets: SnapTargets;
+  /** 落とし先の親の外接矩形 */
+  parentBounds: CanvasBounds;
+  /** その親の直下の、運んでいるもの以外の子 */
+  siblings: readonly CanvasBounds[];
 }>;
 
 /**
@@ -176,10 +176,9 @@ type CarriedNodeWithParentRotation = Readonly<{
 /**
  * 座標の置き直しに要るものを、落とし先の親を 1 回だけ実測して揃える。
  *
- * 親の矩形はドキュメントに書かれていない（`hug` / `fill` があるので大きさも位置もレイア
- * ウトを通すまで決まらない）ため実測でしか決められない。倍率は実測値に乗るのでドキュメン
- * ト上の px へ割り戻し、落とし先が今の親と同じでも分岐しない（2 回測れば原点の位置は 0）。
- * 揃え先の落とし先の親は、回っていても外接矩形で見る（docs/06-ui.md の辺のスナップ）。
+ * 親の矩形はレイアウトを通すまで決まらない（`hug` / `fill`）ので実測し、倍率は割り戻す
+ * （落とし先が今の親と同じでも分岐しない）。落とし先の親は、揃え先としても距離の相手として
+ * も、回っていても外接矩形で見る（docs/06-ui.md の辺のスナップ）。
  *
  * @param context 運んでいるノードと落とし先の親の向きの引き先のドキュメントと、倍率を持つ
  *   今の掴み。倍率は実測の割り戻しと、回ったもののレイアウトの大きさを画面上の大きさへ直す
@@ -233,13 +232,13 @@ function measureReposition(
     },
     origin: currentBounds.value,
     dragged: dragged.value,
-    targets: { stationary: [droppedBounds], siblings },
+    parentBounds: droppedBounds,
+    siblings,
   });
 }
 
 /**
- * 揃う位置か兄弟の列と同じ間隔になる位置へ寄せる量と、揃った線（辺か中心線）に引く
- * ガイド線。
+ * 寄せる前の、運んでいるものの行き先の矩形。
  *
  * 回る前の矩形を掴んだ時点の位置へ置き、それを回した軸に平行な外接矩形を画面上で運んだ
  * 量だけずらして運んでいるものの矩形にする（docs/06-ui.md の辺のスナップ）。運んだ量を
@@ -251,16 +250,13 @@ function measureReposition(
  * @param measured 落とし先の実測（寄せの原点と、運んでいるものの回る前の大きさと向き）
  * @param carry 今の親の座標で見た、掴んだ時点の回る前の矩形の左上（`grabbedAt`）と、
  *   画面上で運んだ量（`screenDelta`）。どちらも画面上の px
- * @param targets 今回吸い付く先（吸い付かない回は空）
- * @returns 寄せ量と、揃った線のガイド線・揃え先との隙間（どれも画面上の px。中身は
- *   `SideSnap.toSnapped` の答え）
+ * @returns 運んでいるものの外接矩形（画面上の px）
  */
-function snapAt(
+function destinationBounds(
   measured: RepositionMeasure,
   carry: Readonly<{ grabbedAt: Offset; screenDelta: Offset }>,
-  targets: SnapTargets,
-): SideSnapped {
-  const moving = CanvasBounds.movedBy(
+): CanvasBounds {
+  return CanvasBounds.movedBy(
     RotatedBounds.toEnclosing(
       RotatedBounds.placedAt(
         measured.dragged,
@@ -269,12 +265,6 @@ function snapAt(
       ),
     ),
     carry.screenDelta,
-  );
-  return SideSnap.toSnapped(
-    SideSnap.withSiblings(
-      SideSnap.create(moving, targets.stationary),
-      targets.siblings,
-    ),
   );
 }
 
@@ -314,6 +304,7 @@ function carriedNode(
  * `RepositionTarget`。
  *
  * ⌘ / Ctrl を押しながら動かしている間は吸い付かない（docs/06-ui.md の辺のスナップ）。
+ * Alt / Option を押している間は上下左右の距離も測る（docs/06-ui.md）。
  *
  * **落とせる親がポインタの下に無くても、見た目は追従させる**（ずらし量は落とし先の親の
  * 座標への直しを含まないので親が決まらなくても決まる）。追従を止めると、キャンバスの余白へ
@@ -379,18 +370,29 @@ function repositionCarrying(
    */
   const targets = CommandKey.isHeld(context.event)
     ? NoSnapTargets
-    : measured.value.targets;
-  // 寄せ量とガイド線は 1 回の判定から配る（理由は `DropEdit.reposition` の doc）
-  const snap = snapAt(
-    measured.value,
-    {
-      grabbedAt: CanvasView.toScreenOffset(
-        context.view,
-        Placement.offset(carried.at.placement),
-      ),
-      screenDelta,
-    },
-    targets,
+    : {
+        stationary: [measured.value.parentBounds],
+        siblings: measured.value.siblings,
+      };
+  const destination = destinationBounds(measured.value, {
+    grabbedAt: CanvasView.toScreenOffset(
+      context.view,
+      Placement.offset(carried.at.placement),
+    ),
+    screenDelta,
+  });
+  const distanceTargets = AltKey.isHeld(context.event)
+    ? Option.some({
+        parentBounds: measured.value.parentBounds,
+        siblings: measured.value.siblings,
+      })
+    : Option.none;
+  const snap = RepositionLines.toSnapped(
+    SideSnap.withSiblings(
+      SideSnap.create(destination, targets.stationary),
+      targets.siblings,
+    ),
+    distanceTargets,
   );
   // 寄せ量を運んだ量へ畳んでから渡すので、書かれる座標と見た目のずらし量が同じ材料から出る
   const snapped = Offset.add(screenDelta, snap.offset);
@@ -409,7 +411,7 @@ function repositionCarrying(
         CanvasView.toDocumentOffset(context.view, snapped),
         measured.value.dropParent,
       ),
-      snap.guides,
+      snap.lines,
     ),
   );
 }
@@ -513,12 +515,9 @@ export type NodeDragControl = Readonly<{
  * の置き直し（親をまたげば付け替え）として解釈する（docs/06-ui.md「キャンバス直接操作」/
  * docs/02-data-model.md「基本原則」）。
  *
- * このフックが持つのは DOM の実測とイベントの仲介だけ。「どこへ落ちるか」「いつドラッグ
- * とみなすか」は `node-drop` / `node-drag`、「実測した親の原点と向きからどの座標と向きが書かれる
- * か」は `reposition-target`、「揃う線（辺か中心線）か兄弟の列と同じ間隔になる位置があるなら
- * どれだけ寄せるか」は `side-snap` にある。
- * ⌘ / Ctrl を押している間に揃え先を渡さない（吸い付かせない）のは、修飾キーという入力の事情
- * なのでこちらが持つ。
+ * このフックが持つのは DOM の実測・イベントの仲介と、修飾キーの解釈（⌘ / Ctrl なら揃え先を
+ * 渡さない、Alt / Option なら距離を測る）だけで、落ちる先・書く座標・寄せ量と線は
+ * `node-drop` / `node-drag` / `reposition-target` / `reposition-lines` が決める。
  *
  * @param params 掴むものと落とし先を決める `selection` / `view` と、確定したときに呼ぶ
  *   `onMove` / `onInsertAt` / `onReposition`

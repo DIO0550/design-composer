@@ -91,6 +91,26 @@ export const CanvasBounds = {
   },
 
   /**
+   * その辺 1 本を、厚さ 0 の矩形にしたもの。
+   *
+   * @param bounds 辺を取り出す矩形
+   * @param side 取り出す辺
+   * @returns 上下の辺なら幅を保った高さ 0、左右の辺なら高さを保った幅 0 の矩形（画面上の px）
+   */
+  sideBounds(bounds: CanvasBounds, side: Side): CanvasBounds {
+    switch (side) {
+      case Sides.Top:
+        return { ...bounds, height: 0 };
+      case Sides.Bottom:
+        return { ...bounds, top: CanvasBounds.side(bounds, side), height: 0 };
+      case Sides.Left:
+        return { ...bounds, width: 0 };
+      case Sides.Right:
+        return { ...bounds, left: CanvasBounds.side(bounds, side), width: 0 };
+    }
+  },
+
+  /**
    * 親の矩形の左上から測った位置に、指定した大きさで置いた矩形。絶対配置の子の**行き先
    * **を画面上の矩形として組み立てるのに使う。
    *

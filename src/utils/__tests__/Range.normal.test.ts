@@ -1,5 +1,4 @@
 import { expect, test } from "vitest";
-import { Option } from "../Option";
 import { Range } from "../Range";
 
 test("下端と上端はどちらも範囲に入っているとみなされる", () => {
@@ -35,6 +34,19 @@ test("下端と上端が同じ範囲には、その1つの値だけが入る", (
   expect(Range.contains(range, 401)).toBe(false);
 });
 
+test("一部が重なる 2 つの範囲の重なる区間は、内側の 2 つの端で挟んだ区間", () => {
+  expect(Range.intersection({ min: 0, max: 20 }, { min: 15, max: 40 })).toEqual(
+    { min: 15, max: 20 },
+  );
+});
+
+test("離れている 2 つの範囲の重なる区間は、下端が上端より大きい", () => {
+  // 0 へ詰めると、離れた 2 つの間の中央が取れなくなる
+  expect(Range.intersection({ min: 0, max: 20 }, { min: 30, max: 40 })).toEqual(
+    { min: 30, max: 20 },
+  );
+});
+
 test("一部が重なる 2 つの範囲は、重なっている部分の長さを返す", () => {
   expect(
     Range.intersectionLength({ min: 0, max: 20 }, { min: 15, max: 40 }),
@@ -58,19 +70,6 @@ test("離れている 2 つの範囲は、重なりの長さが 0 になる", ()
   expect(
     Range.intersectionLength({ min: 0, max: 20 }, { min: 30, max: 40 }),
   ).toBe(0);
-});
-
-test("離れている 2 つの範囲の間は、前の範囲の上端から後ろの範囲の下端まで", () => {
-  expect(Range.gapBetween({ min: 0, max: 20 }, { min: 30, max: 40 })).toEqual(
-    Option.some({ min: 20, max: 30 }),
-  );
-});
-
-test("後ろの範囲を先に渡しても、2 つの範囲の間は同じになる", () => {
-  // 引数の順で上端・下端を取る実装だと { min: 40, max: 0 } のような向きの逆な範囲になる
-  expect(Range.gapBetween({ min: 30, max: 40 }, { min: 0, max: 20 })).toEqual(
-    Option.some({ min: 20, max: 30 }),
-  );
 });
 
 test("範囲の長さは、上端から下端を引いたもの", () => {

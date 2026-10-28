@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { SidePairs } from "@/domains/unit/side";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import { ThinLine } from "@/features/editor/features/canvas/domains/thin-line";
 import { Option } from "@/utils/Option";
 import { SideSnap, type SnapGuides } from "../index";
 import { Moving } from "./moving-bounds";
@@ -24,10 +25,13 @@ test("揃え先のほうが狭いとき、縦の隙間の短い線は揃え先�
   };
 
   expect(
-    Option.unwrap(
-      SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides
-        .horizontal,
-    ).gapLine,
+    Option.map(
+      Option.unwrap(
+        SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides
+          .horizontal,
+      ).gapLine,
+      ThinLine.toBounds,
+    ),
   ).toEqual(Option.some({ left: 113, top: 120, width: 2, height: 180 }));
 });
 
@@ -40,10 +44,13 @@ test("揃え先が上に離れているとき、隙間は揃え先の下辺か�
   };
 
   expect(
-    Option.unwrap(
-      SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides
-        .horizontal,
-    ).gapLine,
+    Option.map(
+      Option.unwrap(
+        SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides
+          .horizontal,
+      ).gapLine,
+      ThinLine.toBounds,
+    ),
   ).toEqual(Option.some({ left: 123, top: 50, width: 2, height: 50 }));
 });
 
@@ -57,10 +64,13 @@ test("運んでいるものの左辺が揃え先の右辺と揃うとき、短�
   };
 
   expect(
-    Option.unwrap(
-      SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides
-        .horizontal,
-    ).gapLine,
+    Option.map(
+      Option.unwrap(
+        SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides
+          .horizontal,
+      ).gapLine,
+      ThinLine.toBounds,
+    ),
   ).toEqual(Option.some({ left: 96, top: 120, width: 2, height: 180 }));
 });
 
@@ -74,9 +84,13 @@ test("上辺どうしが揃い、揃え先が右に離れているとき、横�
   };
 
   expect(
-    Option.unwrap(
-      SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides.vertical,
-    ).gapLine,
+    Option.map(
+      Option.unwrap(
+        SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides
+          .vertical,
+      ).gapLine,
+      ThinLine.toBounds,
+    ),
   ).toEqual(Option.some({ left: 140, top: 113, width: 160, height: 2 }));
 });
 
@@ -90,10 +104,13 @@ test("中心線で揃ったときも、隙間は揃え先との間に出る", ()
   };
 
   expect(
-    Option.unwrap(
-      SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides
-        .horizontal,
-    ).gapLine,
+    Option.map(
+      Option.unwrap(
+        SideSnap.toSnapped(SideSnap.create(Moving, [stationary])).guides
+          .horizontal,
+      ).gapLine,
+      ThinLine.toBounds,
+    ),
   ).toEqual(Option.some({ left: 122, top: 120, width: 2, height: 180 }));
 });
 
@@ -157,10 +174,13 @@ test("隙間は、もう一方の軸の寄せも畳んだ位置で測る", () =>
   const alongY: CanvasBounds = { left: 500, top: 95, width: 40, height: 200 };
 
   expect(
-    Option.unwrap(
-      SideSnap.toSnapped(SideSnap.create(Moving, [alongX, alongY])).guides
-        .horizontal,
-    ).gapLine,
+    Option.map(
+      Option.unwrap(
+        SideSnap.toSnapped(SideSnap.create(Moving, [alongX, alongY])).guides
+          .horizontal,
+      ).gapLine,
+      ThinLine.toBounds,
+    ),
   ).toEqual(Option.some({ left: 123, top: 115, width: 2, height: 185 }));
 });
 
@@ -194,11 +214,15 @@ test("倍率と実測に端数があっても、外側で辺が揃えば隙間�
 });
 
 test("左右の辺が揃った軸の隙間の数値は、短い線の高さを倍率で割り戻したもの", () => {
-  // 線の太さ（2）で測る実装なら 1、割り戻さない実装なら 180 になる
+  // 揃った線のキーと違う軸を読む実装なら none で落ちる
   const guides: SnapGuides = {
     horizontal: Option.some({
       guideLine: { left: 103, top: 100, width: 2, height: 220 },
-      gapLine: Option.some({ left: 113, top: 120, width: 2, height: 180 }),
+      gapLine: Option.some({
+        along: SidePairs.Vertical,
+        at: 114,
+        span: { min: 120, max: 300 },
+      }),
     }),
     vertical: Option.none,
   };
@@ -218,7 +242,11 @@ test("上下の辺が揃った軸の隙間の数値は、短い線の幅", () =>
     horizontal: Option.none,
     vertical: Option.some({
       guideLine: { left: 100, top: 103, width: 220, height: 2 },
-      gapLine: Option.some({ left: 140, top: 113, width: 160, height: 2 }),
+      gapLine: Option.some({
+        along: SidePairs.Horizontal,
+        at: 114,
+        span: { min: 140, max: 300 },
+      }),
     }),
   };
 
@@ -227,39 +255,4 @@ test("上下の辺が揃った軸の隙間の数値は、短い線の幅", () =>
       SideSnap.toGapReadout(guides, SidePairs.Vertical, CanvasView.create()),
     ).length,
   ).toBe(160);
-});
-
-test("ドキュメント上の px へ丸めると 0 になる隙間は、数値を出さない", () => {
-  // 画面上は 0.4 離れているので短い線はある。丸めた 0 をそのまま出す実装なら落ちる
-  const guides: SnapGuides = {
-    horizontal: Option.some({
-      guideLine: { left: 103, top: 100, width: 2, height: 220 },
-      gapLine: Option.some({ left: 113, top: 120, width: 2, height: 0.4 }),
-    }),
-    vertical: Option.none,
-  };
-
-  expect(
-    SideSnap.toGapReadout(guides, SidePairs.Horizontal, CanvasView.create()),
-  ).toEqual(Option.none);
-});
-
-test("隙間の数値は、割り戻して端数が出ても最も近い整数で出る", () => {
-  // 100 / 1.5 = 66.67。丸めずに出す実装なら 66.666… が出る
-  const guides: SnapGuides = {
-    horizontal: Option.some({
-      guideLine: { left: 103, top: 100, width: 2, height: 220 },
-      gapLine: Option.some({ left: 113, top: 120, width: 2, height: 100 }),
-    }),
-    vertical: Option.none,
-  };
-
-  expect(
-    Option.unwrap(
-      SideSnap.toGapReadout(guides, SidePairs.Horizontal, {
-        ...CanvasView.create(),
-        scale: 1.5,
-      }),
-    ).length,
-  ).toBe(67);
 });

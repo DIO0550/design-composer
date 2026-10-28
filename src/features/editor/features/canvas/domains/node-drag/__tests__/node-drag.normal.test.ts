@@ -1,9 +1,12 @@
 import { expect, test } from "vitest";
 import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
+import { SidePairs } from "@/domains/unit/side";
+import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import type {
   DraggedNode,
   DropTarget,
 } from "@/features/editor/features/canvas/domains/node-drop";
+import type { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
 import type { RepositionTarget } from "@/features/editor/features/canvas/domains/reposition-target";
 import type { SnapGuides } from "@/features/editor/features/canvas/domains/side-snap";
 import { Option } from "@/utils/Option";
@@ -32,9 +35,39 @@ const SampleDrop = DropEdit.intoTree(MovingTitle, SampleDropTarget);
 const SampleGuides: SnapGuides = {
   horizontal: Option.some({
     guideLine: { left: 249, top: 72, width: 2, height: 168 },
-    gapLine: Option.some({ left: 259, top: 84, width: 2, height: 116 }),
+    gapLine: Option.some({
+      along: SidePairs.Vertical,
+      at: 260,
+      span: { min: 84, max: 200 },
+    }),
   }),
   vertical: Option.none,
+};
+
+/** 揃った線と隙間だけがあり、Alt / Option の距離は測っていない状態。 */
+const SampleRepositionLines: RepositionLines = {
+  snap: SampleGuides,
+  distanceLines: FacingDistances.None,
+};
+
+/** 左と下に距離がある状態。下は `SampleGuides` の隙間と同じ線。 */
+const SampleDistances: FacingDistances = {
+  horizontal: {
+    start: Option.some({
+      along: SidePairs.Horizontal,
+      at: 78,
+      span: { min: 20, max: 60 },
+    }),
+    end: Option.none,
+  },
+  vertical: {
+    start: Option.none,
+    end: Option.some({
+      along: SidePairs.Vertical,
+      at: 260,
+      span: { min: 84, max: 200 },
+    }),
+  },
 };
 
 /** 揃った線が 1 つも無い状態。 */
@@ -186,7 +219,7 @@ test("座標を置き直す落とし方では挿さる位置を持たない", ()
   const edit = DropEdit.reposition(
     "title",
     SampleRepositionTarget,
-    SampleGuides,
+    SampleRepositionLines,
   );
 
   expect(Option.isSome(DropEdit.insertionTarget(edit))).toBe(false);
@@ -197,7 +230,7 @@ test("座標を置き直す落とし方でも、子になる親の名前は答�
   const edit = DropEdit.reposition(
     "title",
     SampleRepositionTarget,
-    SampleGuides,
+    SampleRepositionLines,
   );
 
   expect(DropEdit.dropParentName(edit)).toBe("body");
@@ -211,10 +244,47 @@ test("座標を置き直す落とし方は、揃った線に引くガイド線�
   const edit = DropEdit.reposition(
     "title",
     SampleRepositionTarget,
-    SampleGuides,
+    SampleRepositionLines,
   );
 
   expect(DropEdit.snapGuides(edit)).toEqual(SampleGuides);
+});
+
+test("座標を置き直す落とし方は、揃え先との隙間と同じ線を除いた距離を答える", () => {
+  // 下の距離は隙間と同じ線なので除かれ、左だけが残る
+  const edit = DropEdit.reposition("title", SampleRepositionTarget, {
+    snap: SampleGuides,
+    distanceLines: SampleDistances,
+  });
+
+  expect(DropEdit.facingDistances(edit)).toEqual({
+    ...FacingDistances.None,
+    horizontal: {
+      start: SampleDistances.horizontal.start,
+      end: Option.none,
+    },
+  });
+});
+
+test("運んでいる間は、座標を置き直す落とし方の距離を答える", () => {
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.droppable(
+      DropEdit.reposition("title", SampleRepositionTarget, {
+        snap: SampleGuides,
+        distanceLines: SampleDistances,
+      }),
+    ),
+  );
+
+  expect(NodeDrag.facingDistances(dragging)).toEqual({
+    ...FacingDistances.None,
+    horizontal: {
+      start: SampleDistances.horizontal.start,
+      end: Option.none,
+    },
+  });
 });
 
 test("ツリーへ落とす落とし方では、揃った線のガイド線を引かない", () => {
@@ -227,7 +297,11 @@ test("運んでいる間は、揃った線に引くガイド線を答える", ()
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
     Carrying.droppable(
-      DropEdit.reposition("title", SampleRepositionTarget, SampleGuides),
+      DropEdit.reposition(
+        "title",
+        SampleRepositionTarget,
+        SampleRepositionLines,
+      ),
     ),
   );
 
@@ -259,7 +333,11 @@ test("座標を置き直す落とし方のときだけ、ずらして見せる�
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
     Carrying.droppable(
-      DropEdit.reposition("title", SampleRepositionTarget, SampleGuides),
+      DropEdit.reposition(
+        "title",
+        SampleRepositionTarget,
+        SampleRepositionLines,
+      ),
     ),
   );
 

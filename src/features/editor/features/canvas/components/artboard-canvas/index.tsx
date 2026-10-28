@@ -31,6 +31,7 @@ import { Option } from "@/utils/Option";
 import { CanvasBody } from "./canvas-body";
 import { DropMarker } from "./drop-marker";
 import { DropPositionLabel } from "./drop-position-label";
+import { FacingDistanceOverlay } from "./facing-distance-overlay";
 import { RangeSelectOverlay } from "./range-select-overlay";
 import { RepositionPreviewStyle } from "./reposition-preview-style";
 import { ResizeHandleOverlay, resizeCursor } from "./resize-handle-overlay";
@@ -361,6 +362,10 @@ export function ArtboardCanvas({
       {/* 吸い付いた辺は運んでいる間しか分からないので、離す前に線で見せる */}
       <SnapGuideOverlay
         guides={NodeDrag.snapGuides(nodeDrag.drag)}
+        view={view}
+      />
+      <FacingDistanceOverlay
+        distances={NodeDrag.facingDistances(nodeDrag.drag)}
         view={view}
       />
       <SnapGuideOverlay guides={artboardDrag.snapGuides} view={view} />

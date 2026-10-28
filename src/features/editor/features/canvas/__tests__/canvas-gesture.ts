@@ -59,5 +59,6 @@ export function wheel(
   const keys = modifierKeysOf(modifier);
   Object.defineProperty(event, "ctrlKey", { value: keys.ctrlKey });
   Object.defineProperty(event, "metaKey", { value: keys.metaKey });
+  Object.defineProperty(event, "altKey", { value: keys.altKey });
   fireEvent(element, event);
 }
