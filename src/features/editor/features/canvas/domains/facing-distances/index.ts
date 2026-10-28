@@ -51,8 +51,8 @@ export const FacingDistances = {
    * @param moved 寄せたあとの運んでいるものの矩形
    * @param parentBounds 落とし先の親の矩形
    * @param siblings その親の直下の、運んでいるもの以外の子
-   * @returns 向きごとの短い線（すべて画面上の px）。当たる相手が無い / 相手に接している・
-   *   重なっている向きは `none`
+   * @returns 向きごとの短い線（すべて画面上の px）。当たる相手が無い / 最初に当たる相手に
+   *   接している向きは `none`（重なっている相手は飛ばす）
    */
   create({
     moved,
