@@ -102,7 +102,8 @@ export const FacingDistances = {
  * @param facing 進む向き
  * @param moved 寄せたあとの運んでいるものの矩形
  * @param candidates 当たる相手の候補
- * @returns 最初に当たる相手までの短い線。当たる相手が無い / 最初に当たる相手に接しているなら `none`
+ * @returns 最初に当たる相手までの短い線。当たる相手が無い / 最初に当たる相手に接しているなら
+ *   `none`（重なっている相手は飛ばす）
  */
 function lineToFirstReached(
   facing: Facing,
