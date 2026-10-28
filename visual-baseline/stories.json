@@ -405,6 +405,11 @@
     "name": "子がいない親へ落ちる"
   },
   {
+    "id": "features-editor-features-canvas-artboardcanvas-facingdistanceoverlay--three-sides",
+    "title": "features/editor/features/canvas/ArtboardCanvas/FacingDistanceOverlay",
+    "name": "上・左・右の距離"
+  },
+  {
     "id": "features-editor-features-canvas-artboardcanvas-namestylerule--drop-parent",
     "title": "features/editor/features/canvas/ArtboardCanvas/NameStyleRule",
     "name": "ドロップ先の枠"
