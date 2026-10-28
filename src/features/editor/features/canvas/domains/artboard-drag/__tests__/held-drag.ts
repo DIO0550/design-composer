@@ -1,6 +1,10 @@
 import { Offset } from "@/domains/unit/offset";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
-import { ArtboardDrag, type ArtboardPointerInput } from "../index";
+import {
+  ArtboardDrag,
+  type ArtboardPointerInput,
+  type ArtboardRepositionMeasure,
+} from "../index";
 
 /**
  * `home` を掴んだ状態。
@@ -27,7 +31,7 @@ export const HomeDrawn: CanvasBounds = {
   height: 100,
 };
 
-/** 揃え先に置く artboard が描かれている矩形（画面上の px）。 */
+/** 他の artboard（揃え先・距離の相手）として置く artboard が描かれている矩形（画面上の px）。 */
 export const StationaryDrawn: CanvasBounds = {
   left: 400,
   top: 300,
@@ -42,7 +46,7 @@ export const StationaryDrawn: CanvasBounds = {
 export const UnlaidOutDrawn = {
   carried: { left: 0, top: 0, width: 0, height: 0 },
   others: [{ left: 0, top: 500, width: 100, height: 100 }],
-} as const satisfies Parameters<typeof ArtboardDrag.snappedAt>[2];
+} as const satisfies ArtboardRepositionMeasure;
 
 /**
  * 押した位置からその量だけ動かしたポインタの 1 回分の入力。
@@ -50,7 +54,7 @@ export const UnlaidOutDrawn = {
  * @param by 押した位置から動かす量（画面上の px）
  * @returns 画面上のポインタの位置と、吸い付くか・測るか（既定は吸い付いて測らない）
  */
-export function pointerBy(
+export function pointerInputBy(
   by: Offset,
   { snaps = true, measuresDistances = false } = {},
 ): ArtboardPointerInput {
@@ -72,7 +76,7 @@ export function pointerBy(
 export function moveSnapped(
   drag: ArtboardDrag,
   input: ArtboardPointerInput,
-  drawn: Parameters<typeof ArtboardDrag.snappedAt>[2],
+  drawn: ArtboardRepositionMeasure,
 ): ArtboardDrag {
   const snapped = ArtboardDrag.snappedAt(drag, input, drawn);
   return ArtboardDrag.moveTo(drag, { pointer: input.pointer, snapped });

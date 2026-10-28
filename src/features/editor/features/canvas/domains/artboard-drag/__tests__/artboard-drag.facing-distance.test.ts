@@ -7,7 +7,7 @@ import {
   HomeDrawn,
   heldDrag,
   moveSnapped,
-  pointerBy,
+  pointerInputBy,
   StationaryDrawn,
 } from "./held-drag";
 
@@ -26,7 +26,7 @@ test("測る回は、相手のいる向きに最初に当たる相手までの�
   // 吸い付いたあとの右辺（400）から測る。吸い付く前（403）から測ると 403〜450 になる
   const dragging = moveSnapped(
     heldDrag(),
-    pointerBy({ x: 103, y: 0 }, { measuresDistances: true }),
+    pointerInputBy({ x: 103, y: 0 }, { measuresDistances: true }),
     { carried: HomeDrawn, others: [StationaryDrawn, RightDrawn] },
   );
 
@@ -40,7 +40,7 @@ test("測る回は、相手のいる向きに最初に当たる相手までの�
 });
 
 test("測らない回は、距離が出ない", () => {
-  const dragging = moveSnapped(heldDrag(), pointerBy({ x: 103, y: 0 }), {
+  const dragging = moveSnapped(heldDrag(), pointerInputBy({ x: 103, y: 0 }), {
     carried: HomeDrawn,
     others: [StationaryDrawn, RightDrawn],
   });
@@ -51,7 +51,7 @@ test("測らない回は、距離が出ない", () => {
 test("吸い付かない回は、吸い付かない位置から測る", () => {
   const dragging = moveSnapped(
     heldDrag(),
-    pointerBy({ x: 103, y: 0 }, { snaps: false, measuresDistances: true }),
+    pointerInputBy({ x: 103, y: 0 }, { snaps: false, measuresDistances: true }),
     { carried: HomeDrawn, others: [StationaryDrawn, RightDrawn] },
   );
 
@@ -72,7 +72,7 @@ test("揃え先との隙間が同じ線を出している向きには距離を�
   const above = { left: 200, top: -100, width: 100, height: 50 };
   const dragging = moveSnapped(
     heldDrag(),
-    pointerBy({ x: 103, y: 0 }, { measuresDistances: true }),
+    pointerInputBy({ x: 103, y: 0 }, { measuresDistances: true }),
     { carried: HomeDrawn, others: [above, RightDrawn] },
   );
 
