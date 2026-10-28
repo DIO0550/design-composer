@@ -1,6 +1,6 @@
 import { Offset } from "@/domains/unit/offset";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
-import { ArtboardDrag } from "../index";
+import { ArtboardDrag, type ArtboardPointerInput } from "../index";
 
 /**
  * `home` を掴んだ状態。
@@ -41,32 +41,39 @@ export const StationaryDrawn: CanvasBounds = {
  */
 export const UnlaidOutDrawn = {
   carried: { left: 0, top: 0, width: 0, height: 0 },
-  stationary: [{ left: 0, top: 500, width: 100, height: 100 }],
+  others: [{ left: 0, top: 500, width: 100, height: 100 }],
 } as const satisfies Parameters<typeof ArtboardDrag.snappedAt>[2];
 
 /**
- * 押した位置からその量だけ動かしたポインタの位置。
+ * 押した位置からその量だけ動かしたポインタの 1 回分の入力。
  *
  * @param by 押した位置から動かす量（画面上の px）
- * @returns 画面上のポインタの位置
+ * @returns 画面上のポインタの位置と、吸い付くか・測るか（既定は吸い付いて測らない）
  */
-export function pointerBy(by: Offset): Offset {
-  return Offset.add({ x: 500, y: 300 }, by);
+export function pointerBy(
+  by: Offset,
+  { snaps = true, measuresDistances = false } = {},
+): ArtboardPointerInput {
+  return {
+    pointer: Offset.add({ x: 500, y: 300 }, by),
+    snaps,
+    measuresDistances,
+  };
 }
 
 /**
  * 寄せ量とガイド線を求めて、その位置まで運ぶ（`useArtboardDrag` が 1 回の移動でやることと同じ）。
  *
  * @param drag 今のドラッグの状態（`carried` を描いたときの状態）
- * @param pointer 画面上のポインタの位置
- * @param drawn 運んでいる artboard と揃え先の実測
+ * @param input 画面上のポインタの位置と、吸い付くか・測るか
+ * @param drawn 運んでいる artboard と他の artboard の実測
  * @returns 運んだあとの状態
  */
 export function moveSnapped(
   drag: ArtboardDrag,
-  pointer: Offset,
+  input: ArtboardPointerInput,
   drawn: Parameters<typeof ArtboardDrag.snappedAt>[2],
 ): ArtboardDrag {
-  const snapped = ArtboardDrag.snappedAt(drag, pointer, drawn);
-  return ArtboardDrag.moveTo(drag, { pointer, snapped });
+  const snapped = ArtboardDrag.snappedAt(drag, input, drawn);
+  return ArtboardDrag.moveTo(drag, { pointer: input.pointer, snapped });
 }

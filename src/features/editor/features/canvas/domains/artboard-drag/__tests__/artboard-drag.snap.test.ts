@@ -16,7 +16,7 @@ test("揃え先の辺の近くまで運ぶと、運び先がその辺に揃う�
   // 右辺が 403 まで来る量。揃え先の左辺（400）へ 3px 寄らなければ x は 203 になる
   const dragging = moveSnapped(heldDrag(), pointerBy({ x: 103, y: 0 }), {
     carried: HomeDrawn,
-    stationary: [StationaryDrawn],
+    others: [StationaryDrawn],
   });
 
   expect(ArtboardDrag.preview(dragging, CanvasView.create())).toEqual(
@@ -34,7 +34,7 @@ test("縦と横で別々の揃え先へ寄る", () => {
     pointerBy({ x: 103, y: 108 }),
     {
       carried: HomeDrawn,
-      stationary: [
+      others: [
         { left: 400, top: 500, width: 150, height: 80 },
         { left: 1000, top: 150, width: 150, height: 80 },
       ],
@@ -51,7 +51,7 @@ test("中心線どうしが近ければ、中心線に揃う位置へ寄る", ()
     pointerBy({ x: 448, y: 0 }),
     {
       carried: HomeDrawn,
-      stationary: [{ left: 600, top: 400, width: 100, height: 100 }],
+      others: [{ left: 600, top: 400, width: 100, height: 100 }],
     },
   );
 
@@ -61,7 +61,7 @@ test("中心線どうしが近ければ、中心線に揃う位置へ寄る", ()
 test("どの辺からも遠ければ、運び先は運んだ量そのまま", () => {
   const dragging = moveSnapped(heldDrag(), pointerBy({ x: 50, y: 30 }), {
     carried: HomeDrawn,
-    stationary: [StationaryDrawn],
+    others: [StationaryDrawn],
   });
 
   expect(ArtboardDrag.preview(dragging, CanvasView.create())).toEqual(
@@ -74,7 +74,7 @@ test("倍率を上げていると、寄せたあとの運び先はドキュメ�
   const zoomed = CanvasView.zoomIn(CanvasView.zoomIn(CanvasView.create()));
   const dragging = moveSnapped(heldDrag(), pointerBy({ x: 103, y: 0 }), {
     carried: HomeDrawn,
-    stationary: [StationaryDrawn],
+    others: [StationaryDrawn],
   });
 
   const moved = Option.unwrap(ArtboardDrag.preview(dragging, zoomed));
@@ -92,7 +92,7 @@ test("掴んだだけのときは、描かれている矩形をポインタの�
     pointerBy({ x: 105, y: 0 }),
     {
       carried: HomeDrawn,
-      stationary: [StationaryDrawn],
+      others: [StationaryDrawn],
     },
   );
 
@@ -106,10 +106,10 @@ test("既に寄せて描かれている途中で動かしても、前回の寄�
    * 実測に乗っている前回の運搬ぶん（100）を差し引かないと、行き先が 305 から始まって
    * どこにも届かず寄らない。
    */
-  const stationary = [StationaryDrawn];
+  const others = [StationaryDrawn];
   const dragging = moveSnapped(heldDrag(), pointerBy({ x: 103, y: 0 }), {
     carried: HomeDrawn,
-    stationary,
+    others,
   });
 
   const snapped = ArtboardDrag.snappedAt(
@@ -117,7 +117,7 @@ test("既に寄せて描かれている途中で動かしても、前回の寄�
     pointerBy({ x: 105, y: 0 }),
     {
       carried: { ...HomeDrawn, left: 200 },
-      stationary,
+      others,
     },
   );
 
@@ -131,7 +131,7 @@ test("閾値の内側に揃え先があっても、掴んでいないときは�
     pointerBy({ x: 103, y: 0 }),
     {
       carried: HomeDrawn,
-      stationary: [StationaryDrawn],
+      others: [StationaryDrawn],
     },
   );
 

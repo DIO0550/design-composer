@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
-import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
+import { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
 import { Option } from "@/utils/Option";
 import { ArtboardDrag } from "../index";
 import { heldDrag } from "./held-drag";
@@ -9,7 +9,7 @@ test("閾値を越えて動かすと、掴んだ時点の位置に移動量を�
   // 縦横を別の量にする（取り違えても同じ答えになる入力を避ける）
   const dragging = ArtboardDrag.moveTo(heldDrag(), {
     pointer: { x: 560, y: 380 },
-    snapped: SideSnap.Unsnapped,
+    snapped: RepositionLines.Unsnapped,
   });
 
   expect(ArtboardDrag.preview(dragging, CanvasView.create())).toEqual(
@@ -21,7 +21,7 @@ test("閾値までの動きでは運んでいるものが決まらない", () =>
   // 3px は閾値（4px）未満なのでクリックとして扱う
   const held = ArtboardDrag.moveTo(heldDrag(), {
     pointer: { x: 503, y: 300 },
-    snapped: SideSnap.Unsnapped,
+    snapped: RepositionLines.Unsnapped,
   });
 
   expect(ArtboardDrag.preview(held, CanvasView.create())).toEqual(Option.none);
@@ -36,7 +36,7 @@ test("倍率を上げても、動く量はドキュメント上の px になる"
   const zoomed = CanvasView.zoomIn(CanvasView.zoomIn(CanvasView.create()));
   const dragging = ArtboardDrag.moveTo(heldDrag(), {
     pointer: { x: 620, y: 300 },
-    snapped: SideSnap.Unsnapped,
+    snapped: RepositionLines.Unsnapped,
   });
 
   const moved = Option.unwrap(ArtboardDrag.preview(dragging, zoomed));

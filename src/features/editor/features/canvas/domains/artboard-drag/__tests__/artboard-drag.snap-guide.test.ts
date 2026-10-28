@@ -18,7 +18,7 @@ test("揃え先の左辺の近くまで運んでいる間は、その辺に線�
    */
   const dragging = moveSnapped(heldDrag(), pointerBy({ x: 103, y: 0 }), {
     carried: HomeDrawn,
-    stationary: [StationaryDrawn],
+    others: [StationaryDrawn],
   });
 
   const guideLine = Option.map(
@@ -38,7 +38,7 @@ test("揃え先の上辺の近くまで運んでいる間は、その辺に線�
    */
   const dragging = moveSnapped(heldDrag(), pointerBy({ x: 0, y: 158 }), {
     carried: HomeDrawn,
-    stationary: [StationaryDrawn],
+    others: [StationaryDrawn],
   });
 
   const guideLine = Option.map(
@@ -59,7 +59,7 @@ test("運んでいる artboard に大きさが無ければ線を出さない", (
     UnlaidOutDrawn,
   );
 
-  expect(snapped.guides).toEqual(SideSnap.NoGuides);
+  expect(snapped.lines.snap).toEqual(SideSnap.NoGuides);
 });
 
 test("揃う位置まで運んだあと、どこにも届かない位置まで動かし直すと、線が無くなる", () => {
@@ -67,15 +67,15 @@ test("揃う位置まで運んだあと、どこにも届かない位置まで�
    * 1 回目で 103 運んで 3px 寄せたので、`home` は 100 ずれた 200 に描かれている。
    * 2 回目は掴んでから 150 の位置で、行き先の右辺は 450 → どの線からも閾値の外。
    */
-  const stationary = [StationaryDrawn];
+  const others = [StationaryDrawn];
   const dragging = moveSnapped(heldDrag(), pointerBy({ x: 103, y: 0 }), {
     carried: HomeDrawn,
-    stationary,
+    others,
   });
 
   const away = moveSnapped(dragging, pointerBy({ x: 150, y: 0 }), {
     carried: { ...HomeDrawn, left: 200 },
-    stationary,
+    others,
   });
 
   expect(ArtboardDrag.snapGuides(away)).toEqual(SideSnap.NoGuides);
