@@ -11,6 +11,7 @@ import {
   dragNode,
   drawn,
   renderCanvas,
+  sortedFacingDistanceLabels,
 } from "./setup";
 import { drawnApart, setupSiblings } from "./snap-siblings";
 
@@ -22,13 +23,6 @@ import { drawnApart, setupSiblings } from "./snap-siblings";
  * 右 270 になる（artboard-canvas.snap-gap.test.tsx の 1 件目）。`home` は左右 100〜460・
  * 上下 60〜300、`card` は左右 200〜320・上下 150〜210。
  */
-
-/**
- * 出ている Alt / Option の距離の数値を、文字列の昇順に並べたもの。向きは `facing-distances` の
- * 単体で見るので、ここでは並びを見ない。
- */
-const sortedFacingDistanceLabels = () =>
-  [...distanceLabels("facing-distance")].sort();
 
 test("Alt を押しながら運んでいる間、上下左右それぞれ最初に当たる相手までの距離が出る", () => {
   renderCanvas({ selection: setupSiblings() });
