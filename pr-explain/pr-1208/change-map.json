@@ -1,0 +1,228 @@
+{
+  "version": 2,
+  "pr": 1208,
+  "headBranch": "claude/magical-cannon-eu1b3s",
+  "baseBranch": "main",
+  "mergeBase": "8e40b6f952cea69cb1e885a347c6a0a4cb83c127",
+  "head": "73a3029770db29045d4b2d0b0969ed312b5178ef",
+  "groups": [
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/opened-documents/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ReorderDrag.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/IndexMove.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-artboard-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-tab-bar/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/domains/document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-tab-bar/__tests__/document-tab-bar.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/sidebar",
+      "files": [
+        {
+          "path": "src/features/editor/features/sidebar/types/LeftPaneArtboardActions.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/tab-bar/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/tab-bar/__tests__/tab-bar.reorder.test.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "hooks",
+      "files": [
+        {
+          "path": "src/hooks/use-reorder-drag/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "73a3029770db29045d4b2d0b0969ed312b5178ef",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-28T13:38:33Z",
+      "subject": "📝 [Documentation]: #1190 IndexMove の doc から使い手の数の主張を消す",
+      "body": "- 「並べ替え（ReorderDrag）が今の唯一の使い手」という記述を削った\n- 用途で名付けない理由は、例として「並べ替えのような」を添えて残した\n- types/ に置く理由を「どの層からも同じ 1 つを import できるから」に直した\n\n背景:\ndoc は ReorderDrag が唯一の使い手だと書いていたが、実際には tab-bar /\nuse-artboard-actions / use-editor-state など本番コード 11 ファイルが\nimport している。#1185 の計画検証で見つかり、スコープ外として切り出した。\n\n採用理由:\n使い手の数はいつでも変わる一時的な事実なので、理由の根拠から外した。\n「用途では名付けない」の Why は残した。消すと用途名（ReorderMove 等）への\n改名が再浮上する。退けている用途を示していたのが削った「並べ替え」だけ\nだったため、例示として「並べ替えのような」を足した。例示なので使い手の\n範囲は主張しない。\ntypes/ に置く理由は、元の「横断層と feature の両方から」が\nsrc/domains/session/opened-documents からの import と合わず、言い換えた案は\n前半と後半が同じことを言っていたため、import できることそのものを理由にした。\n\n影響とトレードオフ:\nコメントのみの変更で、型・公開 API・振る舞いは変わらない。テストは足して\nいない（落ちうる assert が書けない）。\n\n代替案:\n- 2 段落目をまるごと消す: 用途で名付けない理由と types/ に置く理由まで消え、\n  改名・移動がまた起きる\n- 今の使い手を列挙する: 使い手が増減するたびに古くなる\n- 「横断層と feature の両方から」を残す: src/domains からの import と合わない\n\n参考:\n- Issue #1190、関連 #1185\n- rules/coding.md「理由の根拠に、いま直されつつある一時的な事実を置かない」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2Mww5bEWJXj7puQjL7",
+      "files": [
+        {
+          "path": "src/types/IndexMove.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -3,8 +3,8 @@\n  * め 1 つの型にまとめる（同じ型の数が 2 つ並ぶので、位置引数だと取り違えても型エラーに\n  * ならない）。\n  *\n- * 並べ替え（`ReorderDrag`）が今の唯一の使い手だが、中身は「index から index へ」でしか\n- * ないので用途では名付けない。`types/` に置くのはロジックを持たない純粋な型だからで、ど\n- * の層からも import できるので横断層と feature の両方から同じ 1 つを指せる。\n+ * 中身は「index から index へ」でしかないので、並べ替えのような用途では名付けない。\n+ * `types/` に置くのは、ロジックを持たない純粋な型で、どの層からも同じ 1 つを import\n+ * できるから。\n  */\n export type IndexMove = Readonly<{ fromIndex: number; toIndex: number }>;",
+          "patchLines": 12,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/tab-bar/__tests__/tab-bar.reorder.test.tsx",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/tab-bar/index.tsx",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-documents/index.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-tab-bar/__tests__/document-tab-bar.normal.test.tsx",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-tab-bar/index.tsx",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/types/LeftPaneArtboardActions.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-artboard-actions/index.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/hooks/use-reorder-drag/index.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/ReorderDrag.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    }
+  ]
+}
