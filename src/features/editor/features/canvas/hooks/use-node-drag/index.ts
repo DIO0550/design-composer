@@ -27,7 +27,10 @@ import {
   DropZone,
   InsertionParent,
 } from "@/features/editor/features/canvas/domains/node-drop";
-import { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
+import {
+  type DistanceTargets,
+  RepositionLines,
+} from "@/features/editor/features/canvas/domains/reposition-lines";
 import {
   type DropParentCoordinates,
   type GrabbedPlacement,
@@ -381,8 +384,9 @@ function repositionCarrying(
     ),
     screenDelta,
   });
-  const distanceTargets = AltKey.isHeld(context.event)
+  const distanceTargets: Option<DistanceTargets> = AltKey.isHeld(context.event)
     ? Option.some({
+        kind: "within-parent",
         parentBounds: measured.value.parentBounds,
         siblings: measured.value.siblings,
       })

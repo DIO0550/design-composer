@@ -22,7 +22,7 @@ function distanceLinesAt({
 }>) {
   const snapped = RepositionLines.toSnapped(
     SideSnap.withSiblings(SideSnap.create(moving, [parentBounds]), siblings),
-    Option.some({ parentBounds, siblings }),
+    Option.some({ kind: "within-parent", parentBounds, siblings }),
   );
   return RepositionLines.distanceLinesExceptGaps(snapped.lines);
 }
