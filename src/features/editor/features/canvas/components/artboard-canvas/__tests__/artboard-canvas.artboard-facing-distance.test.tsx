@@ -28,7 +28,7 @@ import {
  * `second` は枠に追従させる。`second` を (0, 100) 運ぶと左右 232〜432・上下 100〜240 で、
  * どの辺からも吸い付く距離の外にあり、左に `first`、下に `third` が当たる。
  */
-function drawnApart(): void {
+function drawnWithThirdBelow(): void {
   drawnAt("first", { left: 0, top: 0, width: 200, height: 140 });
   drawnFollowingFrame("second");
   drawnAt("third", { left: 250, top: 400, width: 200, height: 140 });
@@ -36,7 +36,7 @@ function drawnApart(): void {
 
 test("Alt を押しながら運んでいる間、向きごとに最初に当たる他の artboard までの距離が出る", () => {
   renderCanvas({ selection: setupSelection() });
-  drawnApart();
+  drawnWithThirdBelow();
 
   // 左は `first` の右辺まで 32、下は `third` の上辺まで 160
   carrySecond({ x: 0, y: 100 }, "alt");
@@ -46,7 +46,7 @@ test("Alt を押しながら運んでいる間、向きごとに最初に当た�
 
 test("Alt を押さずに運んでいる間は、距離が出ない", () => {
   renderCanvas({ selection: setupSelection() });
-  drawnApart();
+  drawnWithThirdBelow();
 
   carrySecond({ x: 0, y: 100 });
 
@@ -122,7 +122,7 @@ test("まだ描かれていない（大きさの無い）artboard までは測�
 
 test("Alt を離して動かし直すと、距離は消える", () => {
   renderCanvas({ selection: setupSelection() });
-  drawnApart();
+  drawnWithThirdBelow();
 
   carrySecond({ x: 0, y: 100 }, "alt");
   movePointer(artboardHandle("second"), { x: 0, y: 110 }, "none");
@@ -132,7 +132,7 @@ test("Alt を離して動かし直すと、距離は消える", () => {
 
 test("離すと距離は消える", () => {
   renderCanvas({ selection: setupSelection() });
-  drawnApart();
+  drawnWithThirdBelow();
 
   dragSecond({ x: 0, y: 100 }, "alt");
 
