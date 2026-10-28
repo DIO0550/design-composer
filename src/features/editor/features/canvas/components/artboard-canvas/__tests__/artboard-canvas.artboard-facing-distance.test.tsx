@@ -1,6 +1,12 @@
 import { expect, test, vi } from "vitest";
-import { artboardHandle } from "@/features/editor/features/canvas/__tests__/canvas-elements";
-import { movePointer } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
+import {
+  artboardHandle,
+  canvasSurface,
+} from "@/features/editor/features/canvas/__tests__/canvas-elements";
+import {
+  movePointer,
+  wheel,
+} from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 import {
   distanceLabels,
   drawnAt,
@@ -40,6 +46,27 @@ test("Alt を押しながら運んでいる間、向きごとに最初に当た�
 
   // 左は `first` の右辺まで 32、下は `third` の上辺まで 160
   carrySecond({ x: 0, y: 100 }, "alt");
+
+  expect(sortedFacingDistanceLabels()).toEqual(["160", "32"]);
+});
+
+test("倍率を上げて運んでいる間も、距離はドキュメント上の px で出る", () => {
+  renderCanvas({ selection: setupSelection() });
+  wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
+
+  /*
+   * 1.2 倍で見ているときの描かれた矩形（`drawnWithThirdBelow` と同じ並びを 1.2 倍したもの）。
+   * 動かすのは 1 回だけで、その間は描き直す前の実測が読まれるので固定の矩形でよい。
+   */
+  drawnAt("first", { left: 0, top: 0, width: 240, height: 168 });
+  drawnAt("second", { left: 278.4, top: 0, width: 240, height: 168 });
+  drawnAt("third", { left: 300, top: 480, width: 240, height: 168 });
+
+  /*
+   * 画面上で (0, 120) 運ぶと、左の `first` まで画面上で 38.4・ドキュメント上で 32、下の
+   * `third` まで画面上で 192・ドキュメント上で 160。倍率を表示へ渡し忘れると画面上の値が出る。
+   */
+  carrySecond({ x: 0, y: 120 }, "alt");
 
   expect(sortedFacingDistanceLabels()).toEqual(["160", "32"]);
 });
