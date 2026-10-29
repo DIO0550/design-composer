@@ -1,9 +1,10 @@
 import type { AxisResize } from "@/domains/dcmp/axis-length";
-import type { Props } from "@/domains/dcmp/node";
-import type { Axis } from "@/domains/unit/axis";
+import { PropEdit, type Props } from "@/domains/dcmp/node";
+import { Axes, type Axis } from "@/domains/unit/axis";
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import type { ValueOf } from "@/types/ValueOf";
 import { ArrayEx } from "@/utils/ArrayEx";
-import type { Option } from "@/utils/Option";
+import { Option } from "@/utils/Option";
 
 /**
  * 絶対配置の子が、親の長さの変化にどう追従するか(docs/03「配置の指定」の追従の表)。
@@ -59,6 +60,32 @@ export const Constraint = {
       Object.values(Constraints),
       props[ConstraintProps[axis]],
     );
+  },
+
+  /**
+   * 軸ごとに全員へ同じ追従が書かれていれば、その追従を別のノードへ書く編集（絶対配置の
+   * ノードをまとめて包むときに、追従を Box へ写す）。
+   *
+   * @param propsList 写し元の props の並び（デフォルト解決済みでないもの）
+   * @returns 全員に同じ追従が書かれた軸ごとに、その値を設定する編集を width・height の順で。
+   *   1 つでも書かれていない・違う値が混ざる軸は含めない
+   */
+  collectSharedPropEdits(propsList: NonEmptyArray<Props>): readonly PropEdit[] {
+    return Object.values(Axes).flatMap((axis) => {
+      const constraints = propsList.map((props) =>
+        Constraint.fromProps(props, axis),
+      );
+      const written = constraints.flatMap((constraint) =>
+        Option.isSome(constraint) ? [constraint.value] : [],
+      );
+      const shared =
+        written.length === propsList.length
+          ? ArrayEx.singleDistinct(written)
+          : Option.none;
+      return Option.isSome(shared)
+        ? [PropEdit.set([Constraint.prop(axis)], shared.value)]
+        : [];
+    });
   },
 
   /**
