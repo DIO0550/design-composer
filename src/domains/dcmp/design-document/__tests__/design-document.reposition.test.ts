@@ -5,6 +5,7 @@ import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
+import { childNames } from "./group-setup";
 
 /**
  * 絶対配置の `badge`（子を 1 つ持つ）と、付け替え先になる `panel`（子が 2 つ）、
@@ -89,17 +90,8 @@ function repositionRotatedBadge(
 function badgePropsOf(
   document: DesignDocument,
 ): Readonly<Record<string, unknown>> {
-  const node = Option.unwrap(DesignDocument.findNode(document, "badge"));
-  return Node.isPrimitive(node) ? (node.props ?? {}) : {};
-}
-
-/** そのドキュメントでの、名前で指した親の子の名前の並び。 */
-function childNamesOf(
-  document: DesignDocument,
-  parentName: string,
-): readonly string[] {
-  return Option.unwrap(DesignDocument.findChildren(document, parentName)).map(
-    (child) => child.name,
+  return Node.writtenPropsOf(
+    Option.unwrap(DesignDocument.findNode(document, "badge")),
   );
 }
 
@@ -119,23 +111,19 @@ test("同じ親を指した置き直しでは、ツリーの並びが変わら�
   // 末尾へ移す実装にすると `badge` が最後へ回るので、同じ親では移さないことを見る
   const repositioned = reposition("home", { mode: "absolute", x: 52, y: 19 });
 
-  expect(childNamesOf(repositioned, "home")).toEqual([
-    "badge",
-    "panel",
-    "title",
-  ]);
+  expect(childNames(repositioned, "home")).toEqual(["badge", "panel", "title"]);
 });
 
 test("別の親を指して置き直すと、その親の子になる", () => {
   const repositioned = reposition("panel", { mode: "absolute", x: 52, y: 19 });
 
-  expect(childNamesOf(repositioned, "panel")).toContain("badge");
+  expect(childNames(repositioned, "panel")).toContain("badge");
 });
 
 test("別の親を指して置き直すと、その親の末尾の子になる", () => {
   const repositioned = reposition("panel", { mode: "absolute", x: 52, y: 19 });
 
-  expect(childNamesOf(repositioned, "panel")).toEqual([
+  expect(childNames(repositioned, "panel")).toEqual([
     "panel-head",
     "panel-body",
     "badge",
@@ -145,7 +133,7 @@ test("別の親を指して置き直すと、その親の末尾の子になる",
 test("別の親を指して置き直すと、元の親からは居なくなる", () => {
   const repositioned = reposition("panel", { mode: "absolute", x: 52, y: 19 });
 
-  expect(childNamesOf(repositioned, "home")).toEqual(["panel", "title"]);
+  expect(childNames(repositioned, "home")).toEqual(["panel", "title"]);
 });
 
 test("別の親を指して置き直すと、その親から見た座標が書かれる", () => {

@@ -1,8 +1,7 @@
 import { expect, test } from "vitest";
-import type { Node } from "@/domains/dcmp/node";
-import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
+import { childNames } from "./group-setup";
 
 /*
  * 同じ親の兄弟をまとめて Box で包む（docs/06-ui.md「複数選択」のグループ化）。ここで見るのは
@@ -39,22 +38,6 @@ function setupDocument(): DesignDocument {
       },
     ],
   });
-}
-
-/**
- * 名前で指した artboard / ノードの子の名前。
- *
- * @param document 引き先のドキュメント
- * @param parentName 子を読みたい artboard / ノードの名前
- * @returns 子の名前を並び順のまま
- */
-function childNames(
-  document: DesignDocument,
-  parentName: string,
-): readonly string[] {
-  return Option.unwrap(DesignDocument.findChildren(document, parentName)).map(
-    (child: Node) => child.name,
-  );
 }
 
 test("同じ親の兄弟を 2 つ包むと、いちばん前面にいたものの位置に新しい Box が入り、選んだものがその子になる", () => {
