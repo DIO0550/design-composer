@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { PropEdit } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { type AbsolutePlacement, Placement } from "../index";
 
@@ -59,4 +60,10 @@ test("2 つの配置の差は、前から後への移動量になる", () => {
 
   // 縦横で符号を違えて、取り違えと符号の反転を落とす
   expect(Placement.delta(from, to)).toEqual({ x: -30, y: 12 });
+});
+
+test("絶対配置にする編集は、placement を absolute にする 1 件になる", () => {
+  expect(Placement.absoluteModePropEdit()).toEqual(
+    PropEdit.set(["placement"], "absolute"),
+  );
 });
