@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { PropEdit } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { Size } from "../index";
 
@@ -117,4 +118,17 @@ test("fill のサイズは固定の長さを持たない", () => {
   expect(Size.fixedLengthFromProps({ widthMode: "fill" }, "width")).toEqual(
     Option.none,
   );
+});
+
+test("並びのどれかで fill の軸は、モードだけを fill にする編集になり、下限・上限は含まない", () => {
+  expect(
+    Size.collectFillModePropEdits([
+      { widthMode: "hug", heightMode: "fill", maxHeight: 200 },
+      { widthMode: "fill", minWidth: 120 },
+      {},
+    ]),
+  ).toEqual([
+    PropEdit.set(["widthMode"], "fill"),
+    PropEdit.set(["heightMode"], "fill"),
+  ]);
 });
