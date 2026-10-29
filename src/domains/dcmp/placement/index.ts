@@ -203,6 +203,15 @@ export const Placement = {
   },
 
   /**
+   * 絶対配置にする編集（`clearPropEdit` の対）。座標は `toPropEdits` で別に書く。
+   *
+   * @returns `placement` を `absolute` に設定する編集 1 件
+   */
+  absoluteModePropEdit(): PropEdit {
+    return PropEdit.set(["placement"], "absolute");
+  },
+
+  /**
    * 配置の指定をすべて未設定へ戻す編集。戻したノードはフローで置かれる。
    *
    * @returns 配置の 5 prop を消去する編集 1 件
