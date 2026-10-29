@@ -107,7 +107,7 @@ test("ref-own-prop-not-allowed は参照ノード名と持てない prop 名を�
 
 test("different-parents は、同じ親を持たないことを述べるメッセージになる", () => {
   expect(DesignDocumentEditError.message({ kind: "different-parents" })).toBe(
-    "nodes to group do not share the same parent",
+    "nodes do not share the same parent",
   );
 });
 

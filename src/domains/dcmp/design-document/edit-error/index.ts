@@ -68,7 +68,7 @@ export const DesignDocumentEditError = {
       case "invalid-name":
         return `name "${error.name}" is not a valid identifier`;
       case "different-parents":
-        return "nodes to group do not share the same parent";
+        return "nodes do not share the same parent";
       case "mixed-placement":
         return "nodes to group mix absolute and flow placement";
       case "index-out-of-range":
