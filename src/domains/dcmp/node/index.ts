@@ -480,6 +480,17 @@ export const Node = {
   },
 
   /**
+   * ノードの種類を問わず、そのノードに書かれている props。
+   *
+   * @param node 見るノード
+   * @returns プリミティブなら `propsOf` と同じ。部品インスタンスは空（インスタンス自身の値は
+   *   `refOwnPropsOf` で読む）
+   */
+  writtenPropsOf(node: Node): Props {
+    return Node.isPrimitive(node) ? Node.propsOf(node) : {};
+  },
+
+  /**
    * 参照ノード直下に書かれたインスタンス自身の値。公開 prop への上書き（`overrides`）は
    * 含まない。
    *
