@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { PropEdit } from "@/domains/dcmp/node";
 import { BoxAlign } from "../index";
 
 test("揃えを書いていない Box は stretch として読まれる", () => {
@@ -35,4 +36,11 @@ test("center は長さを決めた子を始点に置かない", () => {
 
 test("end は長さを決めた子を始点に置かない", () => {
   expect(BoxAlign.isStartForFixedChild("end")).toBe(false);
+});
+
+test("書かれている align だけを、同じ値で書く編集になる", () => {
+  expect([
+    BoxAlign.collectWrittenPropEdits({ align: "center", gap: "md" }),
+    BoxAlign.collectWrittenPropEdits({ gap: "md" }),
+  ]).toEqual([[PropEdit.set(["align"], "center")], []]);
 });
