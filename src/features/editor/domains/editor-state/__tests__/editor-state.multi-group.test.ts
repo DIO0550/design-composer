@@ -8,8 +8,10 @@ import { childNames } from "./setup";
 /*
  * 複数選んでいるノードをまとめて Box で包む（docs/06-ui.md「複数選択」のグループ化）。
  * 木の付け替えそのものは `design-document.group-siblings.test.ts` が持つ。ここで見るのは、
- * 対象が選択からどう決まり、履歴と選択がどうなるか。成立しない選択はどれも、1 つだけ
- * 選んだときに `some` になることを対照に置く。
+ * 対象が選択からどう決まり、履歴と選択がどうなるか。成立しない選択のうち、親が違う・配置が
+ * 混ざるの 2 つには、1 つだけ選んだときに `some` になることを対照に置く。artboard が混ざる
+ * 選択は `selectNodes` / `selectInRange` が artboard 名を落とすので作れず、
+ * `design-document.group-siblings.test.ts` が持つ。
  */
 
 /**
