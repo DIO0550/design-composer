@@ -175,6 +175,16 @@ function collectAxesWhere(
   );
 }
 
+/**
+ * その軸のモードを `fill` にする編集。
+ *
+ * @param axis `fill` にする軸
+ * @returns その軸のモードの prop を `fill` に設定する編集 1 件
+ */
+function fillModePropEdit(axis: Axis): PropEdit {
+  return PropEdit.set([Size.modeProp(axis)], "fill");
+}
+
 export const Size = {
   /**
    * props からその軸のサイズを組み立てる。
@@ -272,9 +282,27 @@ export const Size = {
    */
   collectFillPropEdits(props: Props): readonly PropEdit[] {
     return Size.collectFillAxes(props).flatMap((axis) => [
-      PropEdit.set([Size.modeProp(axis)], "fill"),
+      fillModePropEdit(axis),
       ...PropEdit.collectWritten(props, Object.values(Size.limitProps(axis))),
     ]);
+  },
+
+  /**
+   * 並びのどれかで `fill` になっている軸を、モードだけ別のノードへ書く編集（複数のノードを
+   * まとめて包むときに、`fill` を Box へ引き継ぐ）。
+   *
+   * 下限・上限は写さない。メンバーごとに違う値を 1 つの Box へ合わせる規則が無いため。
+   *
+   * @param propsList 写し元の props の並び（デフォルト解決済みでないもの）
+   * @returns どれかが `fill` の軸ごとに、モードを `fill` にする編集を width・height の順で。
+   *   どれも `fill` でなければ空
+   */
+  collectFillModePropEdits(propsList: readonly Props[]): readonly PropEdit[] {
+    return Object.values(Axes)
+      .filter((axis) =>
+        propsList.some((props) => Size.collectFillAxes(props).includes(axis)),
+      )
+      .map(fillModePropEdit);
   },
 
   /**
