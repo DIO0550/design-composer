@@ -30,7 +30,7 @@ export type EditActions = Readonly<{
   repositionSelectedBy: (delta: Offset) => void;
   /** 選んでいるものの名前の編集に入る。 */
   startRenaming: () => void;
-  /** 選んでいるノードを新しい Box の中へ入れる。 */
+  /** 選んでいるノード（複数なら同じ親の兄弟）を新しい Box の中へ入れる。 */
   groupSelected: () => void;
   /** 選んでいる Box を外して、その子を親へ戻す。 */
   ungroupSelected: () => void;
