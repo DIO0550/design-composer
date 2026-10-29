@@ -258,10 +258,8 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
       );
     case "group_selected":
       /*
-       * 何も選んでいないとき・選んでいるのが artboard のとき・親が違うとき・配置が混ざる
-       * とき・ファイルが不正な間は木は変わらない（EditorState.groupSelected の `none`）。
-       * ⌘G は何も選んでいなくても、条件を満たさない複数選択でも押せるため、この `none` には
-       * 画面の操作から到達する。
+       * 包めない間は木は変わらない（どんなときかは EditorState.groupSelected の `none`）。
+       * ⌘G は包めない選択のままでも押せるため、この `none` には画面の操作から到達する。
        */
       return Option.unwrapOr(EditorState.groupSelected(state), state);
     case "ungroup_selected":
