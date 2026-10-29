@@ -1,6 +1,6 @@
 import { CssDeclaration } from "@/domains/dcmp/css-declaration";
 import { type CssDirection, CssDirections } from "@/domains/dcmp/css-direction";
-import type { Props } from "@/domains/dcmp/node";
+import { PropEdit, type Props } from "@/domains/dcmp/node";
 import { Size } from "@/domains/dcmp/size";
 import type { Axis } from "@/domains/unit/axis";
 import type { ValueOf } from "@/types/ValueOf";
@@ -44,6 +44,21 @@ export const Layout = {
       ArrayEx.findEqual(Object.values(Layouts), props.layout),
       Layout.Default,
     );
+  },
+
+  /**
+   * 並べ方の指定のうち書かれているものを、別のノードへ同じ値で書く編集（複数のノードを
+   * まとめて包むときに、親の並べ方を Box へ写す）。
+   *
+   * `gap` もここで写すのは、`layout` が決める向きに沿った間隔だから。
+   *
+   * @param props 写し元の props（デフォルト解決済みでないもの。書かれている prop だけを
+   *   写すため）
+   * @returns `layout` と `gap` のうち書かれているものを、同じ値で設定する編集。1 件も書かれて
+   *   いなければ空
+   */
+  collectWrittenPropEdits(props: Props): readonly PropEdit[] {
+    return PropEdit.collectWritten(props, ["layout", "gap"]);
   },
 
   /**
