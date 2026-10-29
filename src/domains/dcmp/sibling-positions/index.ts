@@ -8,7 +8,7 @@ import { Option } from "@/utils/Option";
  * 並べ替え・グループ化）。
  *
  * 親が 1 つに決まっていることと、位置が 1 つ以上あることを構造で持つ。位置は重複せず、
- * 小さい順（背面から前面へ）に並ぶ。
+ * 小さい順に並ぶ。
  */
 export type SiblingPositions = Readonly<{
   /** 兄弟すべての親の名前。 */
@@ -42,21 +42,21 @@ export const SiblingPositions = {
   },
 
   /**
-   * 兄弟をすべて抜いた並びで見た、いちばん前面にいた兄弟の位置（グループ化で、まとめた
+   * 兄弟をすべて抜いた並びで見た、位置がいちばん大きかった兄弟の位置（グループ化で、まとめた
    * Box を挿す位置）。
    *
-   * いちばん前面の兄弟より背面にいた兄弟は、抜けるとそのぶんだけ位置を手前へ詰める
-   * （`[1, 3]` を抜いた並びでは、3 にいたものの位置は 2）。
+   * それより小さい位置にいた兄弟が抜けると、そのぶんだけ位置が小さくなる（`[1, 3]` を抜いた
+   * 並びでは、3 にいたものの位置は 2）。
    *
    * @param siblings 抜く兄弟の位置
-   * @returns 同じ親の中で、末尾の位置から自分以外の兄弟の数を引いた位置
+   * @returns 同じ親の中で、いちばん大きい位置から、抜く兄弟のうちそれ以外の兄弟の数を引いた位置
    */
-  frontmostAfterRemoving(siblings: SiblingPositions): ChildPosition {
+  lastAfterRemoving(siblings: SiblingPositions): ChildPosition {
     const { indices } = siblings;
-    const frontmost = indices[indices.length - 1];
+    const last = indices[indices.length - 1];
     return {
       parentName: siblings.parentName,
-      index: frontmost - (indices.length - 1),
+      index: last - (indices.length - 1),
     };
   },
 } as const;

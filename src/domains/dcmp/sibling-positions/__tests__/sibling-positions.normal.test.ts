@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { Option } from "@/utils/Option";
 import { SiblingPositions } from "../index";
 
-test("同じ親の位置を前面にあるものから渡しても、背面から順に並ぶ", () => {
+test("同じ親の位置を大きいものから渡しても、小さい順に並ぶ", () => {
   expect(
     Option.unwrap(
       SiblingPositions.fromChildPositions([
@@ -35,9 +35,9 @@ test("同じ位置が 2 回渡されても、位置は 1 つにまとまる", ()
   ).toEqual({ parentName: "home", indices: [1] });
 });
 
-test("離れた兄弟を抜いた並びでは、いちばん前面にいたものの位置は、それより背面で抜けた数だけ手前になる", () => {
+test("離れた兄弟を抜いた並びでは、位置がいちばん大きかった兄弟の位置は、それより小さい位置で抜けた数だけ小さくなる", () => {
   expect(
-    SiblingPositions.frontmostAfterRemoving({
+    SiblingPositions.lastAfterRemoving({
       parentName: "home",
       indices: [1, 3],
     }),
@@ -46,7 +46,7 @@ test("離れた兄弟を抜いた並びでは、いちばん前面にいたも�
 
 test("兄弟が 1 つだけなら、抜いた並びでもその位置のまま", () => {
   expect(
-    SiblingPositions.frontmostAfterRemoving({
+    SiblingPositions.lastAfterRemoving({
       parentName: "home",
       indices: [2],
     }),
