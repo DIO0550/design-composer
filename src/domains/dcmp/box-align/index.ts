@@ -1,4 +1,4 @@
-import type { Props } from "@/domains/dcmp/node";
+import { PropEdit, type Props } from "@/domains/dcmp/node";
 import type { ValueOf } from "@/types/ValueOf";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -37,6 +37,17 @@ export const BoxAlign = {
       ArrayEx.findEqual(Object.values(BoxAligns), props.align),
       BoxAlign.Default,
     );
+  },
+
+  /**
+   * 揃えの指定が書かれていれば、別のノードへ同じ値で書く編集（複数のノードをまとめて包む
+   * ときに、親の揃えを Box へ写す）。
+   *
+   * @param props 写し元の props（デフォルト解決済みでないもの）
+   * @returns `align` が書かれていれば同じ値で設定する編集 1 件。書かれていなければ空
+   */
+  collectWrittenPropEdits(props: Props): readonly PropEdit[] {
+    return PropEdit.collectWritten(props, ["align"]);
   },
 
   /**
