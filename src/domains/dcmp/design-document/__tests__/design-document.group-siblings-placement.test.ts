@@ -244,6 +244,19 @@ test("絶対配置とフローの兄弟が混ざっていると包めない", ()
   ]).toStrictEqual([Result.err({ kind: "mixed-placement" }), true]);
 });
 
+test("絶対配置とフローの兄弟が混ざっていると、Box 名が使えなくても mixed-placement になる", () => {
+  const absoluteFirst: Node = {
+    name: "first",
+    type: "Text",
+    props: { placement: "absolute", x: 40, y: 10 },
+  };
+  const mixed = setupDocument({}, [absoluteFirst, FlowPair[1]]);
+
+  expect(
+    DesignDocument.groupIntoBox(mixed, ["first", "second"], "Box 1"),
+  ).toStrictEqual(Result.err({ kind: "mixed-placement" }));
+});
+
 test("部品インスタンスと絶対配置の兄弟が混ざっていると包めない", () => {
   const document = setupDocument({}, [
     {

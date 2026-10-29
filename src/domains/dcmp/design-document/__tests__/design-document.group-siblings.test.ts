@@ -100,6 +100,12 @@ test("ドキュメントに無い名前が混ざると包めない", () => {
   ).toStrictEqual(Result.err({ kind: "node-not-found", name: "missing" }));
 });
 
+test("ドキュメントに無い名前が混ざると、Box 名が使えなくても node-not-found になる", () => {
+  expect(
+    DesignDocument.groupIntoBox(setupDocument(), ["a", "missing"], "Box 1"),
+  ).toStrictEqual(Result.err({ kind: "node-not-found", name: "missing" }));
+});
+
 test("既に使われている名前の Box では、兄弟をまとめて包めない", () => {
   expect(
     DesignDocument.groupIntoBox(setupDocument(), ["a", "b"], "group"),

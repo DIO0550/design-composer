@@ -59,3 +59,9 @@ test("ドキュメントに無い名前と親の違うノードが同時に混�
     Result.err({ kind: "node-not-found", name: "missing" }),
   );
 });
+
+test("ドキュメントに無い名前が 2 つ混ざると、渡された順で最初の名前の node-not-found になる", () => {
+  expect(siblingsOf(["m1", "b", "m2"])).toStrictEqual(
+    Result.err({ kind: "node-not-found", name: "m1" }),
+  );
+});
