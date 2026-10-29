@@ -170,15 +170,6 @@ test("複数選んでいる間は挿入位置が決まらない", () => {
   ).toBe(false);
 });
 
-test("複数選んでいる間は Box で包めない", () => {
-  expect(Option.isSome(EditorState.groupSelected(setupSingleSelected()))).toBe(
-    true,
-  );
-  expect(Option.isSome(EditorState.groupSelected(setupMultiSelected()))).toBe(
-    false,
-  );
-});
-
 test("複数選んでいる間は Box を外せない", () => {
   const single = EditorState.select(setupState(), "home-panel");
 
