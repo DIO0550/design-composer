@@ -7,6 +7,7 @@ import {
   drawn,
   menuRow,
   renderOpenedDocument,
+  renderWithSameComponentInstancesSelected,
   selectInTree,
   tree,
 } from "./setup";
@@ -27,6 +28,19 @@ test("⌘G を押すと、選んでいるノードが新しい Box の子にな�
   await userEvent.keyboard("{Meta>}g{/Meta}");
 
   expect(rowNames(tree())).toEqual(["box", "home-title", "home-login"]);
+});
+
+test("同じ部品のインスタンスをまとめて選んで ⌘G を押すと、2 つが新しい Box の子になる", async () => {
+  await renderWithSameComponentInstancesSelected();
+
+  await userEvent.keyboard("{Meta>}g{/Meta}");
+
+  expect(rowNames(tree())).toEqual([
+    "home-title",
+    "box",
+    "home-login",
+    "home-signup",
+  ]);
 });
 
 test("⌘G を押すと、新しい Box が選ばれる", async () => {
