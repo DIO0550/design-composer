@@ -28,7 +28,6 @@ import {
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { type Corner, Corners } from "@/domains/unit/corner";
 import { type Side, SidePair, SidePairs, Sides } from "@/domains/unit/side";
-import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { RecordEx } from "@/utils/RecordEx";
@@ -886,11 +885,11 @@ export const PropCollapsedControl = {
    * @returns 値が無いなら書き込み先を未設定へ戻す編集、あれば全部を同じ値にする編集
    */
   editFrom(collapsed: PropCollapsedControl, value: Option<string>): PropEdit {
-    const [first, ...rest] = collapsed.controls;
-    const names: NonEmptyArray<string> = [
-      first.prop,
-      ...rest.map((control) => control.prop),
-    ];
+    const [first] = collapsed.controls;
+    const names = ArrayEx.mapNonEmpty(
+      collapsed.controls,
+      (control) => control.prop,
+    );
     return Option.isSome(value)
       ? PropEdit.set(names, parseInputValue(first.input, value.value))
       : PropEdit.clear(names);

@@ -23,6 +23,7 @@ import {
 } from "@/features/editor/features/canvas/domains/side-snap";
 import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import type { ValueOf } from "@/types/ValueOf";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
@@ -762,16 +763,13 @@ export const NodeResize = {
     const screenMoved = Offset.add(pointerMoved, snapped.offset);
     // 掴んだものの軸に沿って伸びるよう、画面の移動量を回る前の向きへ戻す
     const moved = Offset.rotate(screenMoved, -resize.rotation.total);
-    // 先頭を分けて組み立てるのは、`map` だと並びが空になりうる型へ落ちるため
-    const [first, ...rest] = ResizeGrip.grabs(resize.grip);
-    const resized: NonEmptyArray<ResizedLength> = [
-      resizedLength(first, moved, view),
-      ...rest.map((grab) => resizedLength(grab, moved, view)),
-    ];
-    const lengths: AxisLengths = [
-      resized[0].length,
-      ...resized.slice(1).map((each) => each.length),
-    ];
+    const resized = ArrayEx.mapNonEmpty(ResizeGrip.grabs(resize.grip), (grab) =>
+      resizedLength(grab, moved, view),
+    );
+    const lengths: AxisLengths = ArrayEx.mapNonEmpty(
+      resized,
+      (each) => each.length,
+    );
     const position = placedPosition(resize, resized);
     return Option.some({
       edit: Option.isSome(position)
