@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import type { AxisResize } from "@/domains/dcmp/axis-length";
+import { PropEdit } from "@/domains/dcmp/node";
 import { Axes } from "@/domains/unit/axis";
 import { Option } from "@/utils/Option";
 import { Constraint, Constraints } from "../index";
@@ -84,5 +85,21 @@ test("横の追従は constraintX、縦の追従は constraintY に書かれる"
   expect([Constraint.prop(Axes.Width), Constraint.prop(Axes.Height)]).toEqual([
     "constraintX",
     "constraintY",
+  ]);
+});
+
+test("全員に同じ追従が書かれた軸だけを書き、1 つでも書かれていない・違う軸は書かない", () => {
+  expect([
+    Constraint.collectSharedPropEdits([
+      { constraintX: "max", constraintY: "center" },
+      { constraintX: "max", constraintY: "stretch" },
+    ]),
+    Constraint.collectSharedPropEdits([
+      { constraintX: "max", constraintY: "center" },
+      { constraintY: "center" },
+    ]),
+  ]).toEqual([
+    [PropEdit.set(["constraintX"], "max")],
+    [PropEdit.set(["constraintY"], "center")],
   ]);
 });
