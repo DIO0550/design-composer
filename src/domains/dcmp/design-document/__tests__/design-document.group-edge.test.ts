@@ -39,25 +39,25 @@ function setupDocument(): DesignDocument {
 
 test("ドキュメントに無い名前は包めない", () => {
   expect(
-    DesignDocument.groupIntoBox(setupDocument(), "missing", "box"),
+    DesignDocument.groupIntoBox(setupDocument(), ["missing"], "box"),
   ).toStrictEqual(Result.err({ kind: "node-not-found", name: "missing" }));
 });
 
 test("artboard は包めない", () => {
   expect(
-    DesignDocument.groupIntoBox(setupDocument(), "screen", "box"),
+    DesignDocument.groupIntoBox(setupDocument(), ["screen"], "box"),
   ).toStrictEqual(Result.err({ kind: "node-not-found", name: "screen" }));
 });
 
 test("既に使われている名前の Box では包めない", () => {
   expect(
-    DesignDocument.groupIntoBox(setupDocument(), "title", "panel"),
+    DesignDocument.groupIntoBox(setupDocument(), ["title"], "panel"),
   ).toStrictEqual(Result.err({ kind: "duplicate-name", name: "panel" }));
 });
 
 test("識別子の規則を満たさない名前の Box では包めない", () => {
   expect(
-    DesignDocument.groupIntoBox(setupDocument(), "title", "Box 1"),
+    DesignDocument.groupIntoBox(setupDocument(), ["title"], "Box 1"),
   ).toStrictEqual(Result.err({ kind: "invalid-name", name: "Box 1" }));
 });
 

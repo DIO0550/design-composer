@@ -1,5 +1,6 @@
 import { Artboard } from "@/domains/dcmp/artboard";
 import { AxisLength, AxisResize } from "@/domains/dcmp/axis-length";
+import { BoxAlign } from "@/domains/dcmp/box-align";
 import { ChildPlacement } from "@/domains/dcmp/child-placement";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import {
@@ -40,6 +41,7 @@ import type { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Rotation } from "@/domains/dcmp/rotation";
+import { SiblingPositions } from "@/domains/dcmp/sibling-positions";
 import { Size } from "@/domains/dcmp/size";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
 import { Visibilities, Visibility } from "@/domains/dcmp/visibility";
@@ -115,8 +117,9 @@ export type NamedRotation = Readonly<{
  * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `DocumentNames` が持っており、
  * ここに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
  *
- * 例外は追従（`followPropEdits`）とグループ化 / 解除（`groupedBox` / `freedChildren`）で、
- * ここだけは `Placement` / `Constraint` / `Size` を組み合わせて編集を作る。子側のドメイン（`Node`）へ置けないのは、`Placement` が
+ * 例外は追従（`followPropEdits`）とグループ化 / 解除（`groupedBox` / `groupedSiblingsBox` /
+ * `freedChildren`）で、ここだけは `Placement` / `Constraint` / `Size` / `Layout` /
+ * `BoxAlign` / `Offset` を組み合わせて編集を作る。子側のドメイン（`Node`）へ置けないのは、`Placement` が
  * `PropEdit` を `Node` から import しており、逆向きの import が循環になるため。
  */
 
@@ -284,8 +287,18 @@ function applyNodePropEdits(node: Node, edits: readonly PropEdit[]): Node {
 }
 
 /**
- * ノードを包む Box と、その唯一の子になったノード（docs/06-ui.md「編集操作の一覧」の
- * グループ化）。
+ * ノードに書かれている props。
+ *
+ * @param node 見るノード
+ * @returns プリミティブならその props。部品インスタンスは空
+ */
+function writtenPropsOf(node: Node): Props {
+  return Node.isPrimitive(node) ? Node.propsOf(node) : {};
+}
+
+/**
+ * 1 つだけ包むときの、ノードを包む Box と、その唯一の子になったノード（docs/06-ui.md
+ * 「編集操作の一覧」のグループ化）。
  *
  * 包んでも見た目が変わらないよう、Box がノードの外側の指定を引き継ぐ。絶対配置のノードなら
  * 配置の 5 prop を Box へ移してノードをフローに戻す。`fill` の軸は、配置に依らず Box も
@@ -293,14 +306,15 @@ function applyNodePropEdits(node: Node, edits: readonly PropEdit[]): Node {
  * そのまま書ける。消すと外したときに戻らない）。
  *
  * フローのノードの配置は移さない。読み捨てられている座標が Box へ移ると、フローの Box を
- * 外しても子へ戻らず、⌘G → ⌘⇧G で元のノードに戻らなくなる。
+ * 外しても子へ戻らず、⌘G → ⌘⇧G で元のノードに戻らなくなる。親の並べ方も写さない。子が
+ * 1 つなら向き・間隔・揃えは見た目を変えない。
  *
  * @param node 包むノード
  * @param boxName 新しく作る Box に付ける名前
  * @returns 包んだ Box。引き継ぐ指定が無ければ props を持たない
  */
 function groupedBox(node: Node, boxName: string): Node {
-  const props = Node.isPrimitive(node) ? Node.propsOf(node) : {};
+  const props = writtenPropsOf(node);
   const isAbsolute = Option.isSome(absolutePlacementOf(node));
   const placementEdits = isAbsolute
     ? Placement.collectWrittenPropEdits(props)
@@ -317,6 +331,131 @@ function groupedBox(node: Node, boxName: string): Node {
     ...placementEdits,
     ...Size.collectFillPropEdits(props),
   ]);
+}
+
+/**
+ * 1 つのノードを新しい Box で包む（`DesignDocument.groupIntoBox` の 1 つだけ包む経路）。
+ *
+ * @param document 包む先のドキュメント
+ * @param name 包むノードの名前
+ * @param boxName 新しく作る Box に付ける名前
+ * @returns 元の位置が新しい Box に変わったドキュメント。ノードが無ければ `node-not-found`、
+ *   Box 名が使えなければ `unusableNameError` の失敗
+ */
+function groupSoleNode(
+  document: DesignDocument,
+  name: string,
+  boxName: string,
+): Result<DesignDocument, DesignDocumentEditError> {
+  const found = DesignDocument.findNode(document, name);
+  if (!Option.isSome(found)) {
+    return Result.err({ kind: "node-not-found", name });
+  }
+  const unusable = unusableNameError(document, boxName);
+  if (Option.isSome(unusable)) {
+    return Result.err(unusable.value);
+  }
+  return DesignDocument.replaceNode(
+    document,
+    name,
+    groupedBox(found.value, boxName),
+  );
+}
+
+/**
+ * 同じ親の兄弟をまとめて包む Box（docs/06-ui.md「複数選択」のグループ化）。
+ *
+ * 全員フローなら、親に書かれた並べ方（`layout` / `gap` / `align`）と、どれかが `fill` の軸の
+ * モードを Box が持ち、兄弟はそのまま子になる。全員絶対配置なら、Box は兄弟の各軸の最小の
+ * 座標に絶対配置で置かれ、全員一致の追従だけを持ち、兄弟は Box の座標を引いた位置になる。
+ *
+ * @param members 包む兄弟。元の並び順
+ * @param parentProps 兄弟の親に書かれている props（デフォルト解決済みでないもの）
+ * @param boxName 新しく作る Box に付ける名前
+ * @returns 包んだ Box。絶対配置とフローの兄弟が混ざっていれば `mixed-placement`
+ *   （部品インスタンスはフローとして数える）
+ */
+function groupedSiblingsBox(
+  members: NonEmptyArray<Node>,
+  parentProps: Props,
+  boxName: string,
+): Result<Node, DesignDocumentEditError> {
+  // 先頭を分けて組み立てるのは、`map` だと並びが空になりうる型へ落ちるため
+  const [first, ...rest] = members;
+  const propsList: NonEmptyArray<Props> = [
+    writtenPropsOf(first),
+    ...rest.map(writtenPropsOf),
+  ];
+  const placements = ArrayEx.toNonEmpty(
+    members.flatMap((member) => {
+      const placement = absolutePlacementOf(member);
+      return Option.isSome(placement) ? [placement.value] : [];
+    }),
+  );
+  if (!Option.isSome(placements)) {
+    const arrangementEdits = [
+      ...Layout.collectWrittenPropEdits(parentProps),
+      ...BoxAlign.collectWrittenPropEdits(parentProps),
+    ];
+    const fillEdits = Size.collectFillModePropEdits(propsList);
+    const flowBox: Node = {
+      name: boxName,
+      type: PrimitiveTypes.Box,
+      children: members,
+    };
+    return Result.ok(
+      applyNodePropEdits(flowBox, [...arrangementEdits, ...fillEdits]),
+    );
+  }
+  if (placements.value.length !== members.length) {
+    return Result.err({ kind: "mixed-placement" });
+  }
+  const boxOffset = Offset.topLeftOf(placements.value);
+  const towardBox = Offset.scale(boxOffset, -1);
+  const children = members.map((member) => {
+    const placement = absolutePlacementOf(member);
+    return Option.isSome(placement)
+      ? applyNodePropEdits(
+          member,
+          Placement.toPropEdits(Placement.moveBy(placement.value, towardBox)),
+        )
+      : member;
+  });
+  const placementEdits = [
+    Placement.absoluteModePropEdit(),
+    ...Placement.toPropEdits({ mode: "absolute", ...boxOffset }),
+  ];
+  const constraintEdits = Constraint.collectSharedPropEdits(propsList);
+  const absoluteBox: Node = {
+    name: boxName,
+    type: PrimitiveTypes.Box,
+    children,
+  };
+  return Result.ok(
+    applyNodePropEdits(absoluteBox, [...placementEdits, ...constraintEdits]),
+  );
+}
+
+/**
+ * 子を持つ artboard / ノードに書かれている props（Box が親の指定を写すときの写し元）。
+ *
+ * `Artboard.boxProps` / `boxPropsOf` を使わないのは、解決済みで既定値まで含むため。写すと
+ * 書かれていない `layout` などまで Box に書く（docs/02「明示的に設定した props のみを保存する」）。
+ *
+ * @param document 引き先になるドキュメント
+ * @param parentName 親の名前（artboard 名でもよい）
+ * @returns artboard かプリミティブのノードなら書かれている props。それ以外と無い名前は空
+ */
+function writtenBoxPropsOf(
+  document: DesignDocument,
+  parentName: string,
+): Props {
+  const artboard = DesignDocument.findArtboard(document, parentName);
+  if (Option.isSome(artboard)) {
+    return artboard.value.props ?? {};
+  }
+  const node = DesignDocument.findNode(document, parentName);
+  return Option.isSome(node) ? writtenPropsOf(node.value) : {};
 }
 
 /**
@@ -1596,6 +1735,44 @@ export const DesignDocument = {
   },
 
   /**
+   * 名前で指したノードがすべて同じ親の兄弟であるときの、それぞれの位置
+   * （docs/06-ui.md「複数選択」の並べ替え・グループ化）。
+   *
+   * @param document 引き先になるドキュメント
+   * @param names 位置を知りたいノードの名前。重複は 1 つとして扱う
+   * @returns 親と、小さい順に並べた位置。位置を持たない名前（artboard 自身・部品定義の中の
+   *   ノード・無い名前）があれば渡された順で最初のものの `node-not-found`、それが無く親が
+   *   2 つ以上あれば `different-parents`
+   */
+  findSiblingPositions(
+    document: DesignDocument,
+    names: NonEmptyArray<string>,
+  ): Result<SiblingPositions, DesignDocumentEditError> {
+    const positionOf = (
+      name: string,
+    ): Result<ChildPosition, DesignDocumentEditError> =>
+      Interop.toResult(DesignDocument.findChildPosition(document, name), {
+        kind: "node-not-found",
+        name,
+      });
+    const [first, ...rest] = names;
+    const positions = Result.flatMap(positionOf(first), (firstPosition) =>
+      ArrayEx.reduceUntilErr<
+        string,
+        NonEmptyArray<ChildPosition>,
+        DesignDocumentEditError
+      >(rest, [firstPosition], (collected, name) =>
+        Result.map(positionOf(name), (position) => [...collected, position]),
+      ),
+    );
+    return Result.flatMap(positions, (collected) =>
+      Interop.toResult(SiblingPositions.fromChildPositions(collected), {
+        kind: "different-parents",
+      }),
+    );
+  },
+
+  /**
    * 名前で指したノードを包んでいるものの名前を、内側から外側へ並べたもの。
    * 末尾は必ずその artboard になる。
    *
@@ -2183,37 +2360,64 @@ export const DesignDocument = {
   },
 
   /**
-   * ノードを新しい Box の中へ入れる（docs/06-ui.md「編集操作の一覧」のグループ化）。
+   * ノードを新しい Box の中へ入れる（docs/06-ui.md「編集操作の一覧」のグループ化・
+   * 「複数選択」）。
    *
-   * 新しい Box は元のノードが居た位置へ入り、そのノードを唯一の子にする。Box が引き継ぐ
-   * 指定は `groupedBox` のとおりで、それ以外の props は持たせない（スキーマ既定の `hug` が
-   * 包んだ中身に合う）。
+   * 1 つなら Box は元のノードが居た位置へ入り、そのノードを唯一の子にする（引き継ぐ指定は
+   * `groupedBox`）。同じ親の兄弟が 2 つ以上なら、Box はいちばん前面にいたものの位置へ入り、
+   * 兄弟を元の並び順で子にする（引き継ぐ指定は `groupedSiblingsBox`）。それ以外の props は
+   * 持たせない（スキーマ既定の `hug` が包んだ中身に合う）。
    *
    * @param document 包む先のドキュメント
-   * @param name 包むノードの名前
+   * @param names 包むノードの名前。重複は 1 つとして扱う
    * @param boxName 新しく作る Box に付ける名前
-   * @returns 元の位置が新しい Box に変わり、その子が元のノードになったドキュメント。
-   *   ノードが無い・artboard を指しているときは `node-not-found`、Box 名が識別子の規則を
-   *   満たさなければ `invalid-name`、既に使われていれば `duplicate-name`
+   * @returns 包んだドキュメント。この順で判定し、位置を持たない名前（無い名前・artboard・
+   *   部品定義の中のノード）があれば渡された順で最初のものの `node-not-found`、親が違えば
+   *   `different-parents`、絶対配置とフローが混ざれば `mixed-placement`、Box 名が識別子の
+   *   規則を満たさなければ `invalid-name`、既に使われていれば `duplicate-name`
    */
   groupIntoBox(
     document: DesignDocument,
-    name: string,
+    names: NonEmptyArray<string>,
     boxName: string,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    const found = DesignDocument.findNode(document, name);
-    if (!Option.isSome(found)) {
-      return Result.err({ kind: "node-not-found", name });
+    const siblings = DesignDocument.findSiblingPositions(document, names);
+    if (!Result.isOk(siblings)) {
+      return siblings;
+    }
+    const { parentName, indices } = siblings.value;
+    if (indices.length === 1) {
+      return groupSoleNode(document, names[0], boxName);
+    }
+    const children = Option.unwrapOr(
+      DesignDocument.findChildren(document, parentName),
+      [],
+    );
+    const [firstIndex, ...restIndices] = indices;
+    const members: NonEmptyArray<Node> = [
+      children[firstIndex],
+      ...restIndices.map((index) => children[index]),
+    ];
+    const box = groupedSiblingsBox(
+      members,
+      writtenBoxPropsOf(document, parentName),
+      boxName,
+    );
+    if (!Result.isOk(box)) {
+      return box;
     }
     const unusable = unusableNameError(document, boxName);
     if (Option.isSome(unusable)) {
       return Result.err(unusable.value);
     }
-    return DesignDocument.replaceNode(
-      document,
-      name,
-      groupedBox(found.value, boxName),
-    );
+    const at = SiblingPositions.frontmostAfterRemoving(siblings.value);
+    return updateChildrenOfParent(document, parentName, (tree) => {
+      const remaining = members.reduce(
+        (current, member) => NodeTree.spliceByName(current, member.name, []),
+        tree,
+      );
+      return NodeTree.insertAt(remaining, at.index, box.value);
+    });
   },
 
   /**

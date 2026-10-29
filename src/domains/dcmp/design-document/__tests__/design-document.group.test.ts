@@ -17,7 +17,7 @@ test("ノードを包むと、そのノードが居た位置に新しい Box が
   });
 
   const grouped = Result.unwrap(
-    DesignDocument.groupIntoBox(document, "title", "box"),
+    DesignDocument.groupIntoBox(document, ["title"], "box"),
   );
 
   expect(grouped.artboards[0].children).toEqual([
@@ -42,7 +42,7 @@ test("包んでも前後の兄弟の並び順は変わらない", () => {
   });
 
   const grouped = Result.unwrap(
-    DesignDocument.groupIntoBox(document, "target", "box"),
+    DesignDocument.groupIntoBox(document, ["target"], "box"),
   );
 
   expect(grouped.artboards[0].children.map((child) => child.name)).toEqual([
@@ -66,7 +66,7 @@ test("入れ子の中にいるノードも包める", () => {
   });
 
   const grouped = Result.unwrap(
-    DesignDocument.groupIntoBox(document, "label", "box"),
+    DesignDocument.groupIntoBox(document, ["label"], "box"),
   );
 
   expect(grouped.artboards[0].children).toEqual([
@@ -91,7 +91,7 @@ test("フローで fill を持たないノードを包んだ Box は props を�
   });
 
   const grouped = Result.unwrap(
-    DesignDocument.groupIntoBox(document, "title", "box"),
+    DesignDocument.groupIntoBox(document, ["title"], "box"),
   );
   const box = Option.unwrap(DesignDocument.findNode(grouped, "box"));
 

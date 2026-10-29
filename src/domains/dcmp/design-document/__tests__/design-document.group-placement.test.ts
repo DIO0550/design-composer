@@ -39,7 +39,7 @@ test("絶対配置のノードを包むと、Box がそのノードの配置を�
   ]);
 
   const grouped = Result.unwrap(
-    DesignDocument.groupIntoBox(document, "title", "box"),
+    DesignDocument.groupIntoBox(document, ["title"], "box"),
   );
 
   expect(propsOf(grouped, "box")).toEqual({
@@ -67,7 +67,7 @@ test("絶対配置のノードを包むと、包まれたノードは配置の p
   ]);
 
   const grouped = Result.unwrap(
-    DesignDocument.groupIntoBox(document, "title", "box"),
+    DesignDocument.groupIntoBox(document, ["title"], "box"),
   );
 
   expect(propsOf(grouped, "title")).toEqual({ content: "見出し" });
@@ -83,7 +83,7 @@ test("フローのノードを包んでも、ノードに書かれた座標は�
   ]);
 
   const grouped = Result.unwrap(
-    DesignDocument.groupIntoBox(document, "title", "box"),
+    DesignDocument.groupIntoBox(document, ["title"], "box"),
   );
 
   expect([propsOf(grouped, "box"), propsOf(grouped, "title")]).toEqual([
@@ -364,7 +364,7 @@ test("絶対配置のノードを包んでから外すと、元のノードに�
   const document = setupDocument([title]);
 
   const grouped = Result.unwrap(
-    DesignDocument.groupIntoBox(document, "title", "box"),
+    DesignDocument.groupIntoBox(document, ["title"], "box"),
   );
   const { document: ungrouped } = Result.unwrap(
     DesignDocument.ungroupBox(grouped, "box"),
