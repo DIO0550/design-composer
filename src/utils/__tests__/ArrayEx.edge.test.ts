@@ -141,3 +141,11 @@ test("singleDistinct は値が null だけの並びでは none を返す", () =>
 test("空の並びは空でない並びにならない", () => {
   expect(ArrayEx.toNonEmpty([])).toEqual(Option.none);
 });
+
+test("写せない要素があれば、並びで最初に写せなかった要素の失敗になる", () => {
+  expect(
+    ArrayEx.mapNonEmptyUntilErr([1, -2, -3], (item) =>
+      item > 0 ? Result.ok(item) : Result.err(item),
+    ),
+  ).toEqual(Result.err(-2));
+});
