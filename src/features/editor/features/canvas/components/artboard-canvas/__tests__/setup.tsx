@@ -227,6 +227,16 @@ export function distanceLabels(
 }
 
 /**
+ * 出ている Alt / Option の距離の数値を、文字列の昇順に並べたもの。向きは `facing-distances` の
+ * 単体で見るので、通しでは並びを見ない。
+ *
+ * @returns 出ている距離の数値の並び（文字列の昇順）。出ていなければ空
+ */
+export function sortedFacingDistanceLabels(): readonly string[] {
+  return [...distanceLabels("facing-distance")].sort();
+}
+
+/**
  * その箇所に出ているハンドル。
  *
  * @param anchor 引きたい箇所（`0` が始点側、`1` が終点側、`0.5` が辺の中央）

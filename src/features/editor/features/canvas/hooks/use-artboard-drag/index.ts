@@ -5,16 +5,15 @@ import {
   ArtboardDrag,
   type ArtboardDragPreview,
   type ArtboardPointerMove,
-  type ArtboardSnapMeasure,
+  type ArtboardRepositionMeasure,
 } from "@/features/editor/features/canvas/domains/artboard-drag";
 import type { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
-import {
-  SideSnap,
-  type SnapGuides,
-} from "@/features/editor/features/canvas/domains/side-snap";
+import type { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
+import { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
+import type { SnapGuides } from "@/features/editor/features/canvas/domains/side-snap";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
-import { CommandKey } from "@/libs/dom-event";
+import { AltKey, CommandKey } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 
 /** ドラッグの状態を進める指示。 */
@@ -54,13 +53,14 @@ function artboardDragReducer(
 }
 
 /**
- * 揃え先になる artboard の名前。運んでいる artboard 以外のすべてを、ドキュメントの並び順で返す。
+ * 吸い付く先・距離を測る相手になる artboard の名前。運んでいる artboard 以外のすべてを、
+ * ドキュメントの並び順で返す。
  *
  * @param document artboard の並びの引き先
  * @param carriedName 運んでいる artboard の名前
- * @returns 揃え先の名前の並び
+ * @returns 吸い付く先・距離を測る相手の名前の並び
  */
-function collectStationaryNames(
+function collectOtherNames(
   document: DesignDocument,
   carriedName: string,
 ): readonly string[] {
@@ -71,23 +71,23 @@ function collectStationaryNames(
 }
 
 /**
- * 掴んでいる artboard と、揃え先になる artboard の実測。
+ * 掴んでいる artboard と、他の artboard の実測。
  *
  * @param carriedName 運んでいる artboard の名前
- * @param stationaryNames 揃え先として測る artboard の名前の並び
+ * @param otherNames 吸い付く先・距離の相手として測る artboard の名前の並び
  * @returns 実測。運んでいる artboard がまだ描かれていなければ `none`
  */
 function measureDrawn(
   carriedName: string,
-  stationaryNames: readonly string[],
-): Option<ArtboardSnapMeasure> {
+  otherNames: readonly string[],
+): Option<ArtboardRepositionMeasure> {
   return Option.map(DrawnBounds.measure(carriedName), (carried) => ({
     carried,
-    stationary: DrawnBounds.collectDrawnBounds(stationaryNames),
+    others: DrawnBounds.collectDrawnBounds(otherNames),
   }));
 }
 
-/** artboard を掴む側（見出し）と、ポインタを追う側（キャンバス）へ渡すもの。 */
+/** artboard を掴む側（見出し）と、ポインタを追う側（キャンバス）と、運んでいる間の線を描く側へ渡すもの。 */
 export type ArtboardDragControl = Readonly<{
   /** 見出しを押したときに掴む。掴んだ時点の描画位置を起点にする。 */
   grab: (
@@ -103,6 +103,11 @@ export type ArtboardDragControl = Readonly<{
   preview: Option<ArtboardDragPreview>;
   /** 運んでいる間に揃った線と、揃え先との隙間。離すと出なくなる。 */
   snapGuides: SnapGuides;
+  /**
+   * 運んでいる間に Alt / Option を押していれば出す、他の artboard までの距離（揃え先との隙間と
+   * 同じ線の向きは除く）。離すと出なくなる。
+   */
+  facingDistances: FacingDistances;
 }>;
 
 /**
@@ -112,12 +117,14 @@ export type ArtboardDragControl = Readonly<{
  * 運んでいる間はドキュメントを書き換えず、離したときに 1 回だけ編集を送る。運んでいる間の
  * 見た目は `preview` を描く側が使う。他の artboard の辺か中心線の近くでは吸い付く（どれだけ
  * 寄せてどこに線を出すかは `ArtboardDrag.snappedAt`。ここが持つのは実測だけ）。⌘ / Ctrl を
- * 押しながら動かしたときは吸い付かず、線も出ない（押しているかはポインタが動くたびに見る）。
+ * 押しながら動かしたときは吸い付かず、揃ったガイド線も出ない（押しているかはポインタが動くたびに見る）。
+ * Alt / Option を押しながら動かしている間は、上下左右それぞれで最初に当たる他の artboard までの
+ * 距離を出す（押しているかはポインタが動くたびに見る）。
  *
  * @param params 揃え先の artboard の並びを引く `document`、倍率を引く表示の状態と、
  *   離したときに編集を送る先
  * @returns 掴む手続きと、ポインタを追うハンドラ、運んでいる間の見せかけの位置と、揃った線に
- *   引く線と、揃え先との隙間
+ *   引く線と、揃え先との隙間と、Alt / Option の距離
  */
 export function useArtboardDrag(
   params: Readonly<{
@@ -155,20 +162,24 @@ export function useArtboardDrag(
         /*
          * 判定に渡すのは閉包の `drag`（実測した DOM を描いたときの状態）。掴んでいない間は
          * 測らない（ポインタが器の上を通るたびに全 artboard を測ることになる）。
+         *
+         * ⌘ / Ctrl を押していても他の artboard は測る。同じ実測を距離の相手にも使うため（吸い付かない
+         * ことは `snaps` で表し、測れない（`none`）とは分ける）。
          */
-        const drawn = Option.flatMap(ArtboardDrag.grabbed(drag), (grab) => {
-          /*
-           * ⌘ / Ctrl で吸い付かないことは揃え先を空にして表し、測れない（`none`）とは分ける（考え方は
-           * ノードの移動の `NoSnapTargets` と同じ）。空にするのは測る前で、揃え先の DOM は測らない。
-           */
-          const stationaryNames = CommandKey.isHeld(event)
-            ? []
-            : collectStationaryNames(params.document, grab.name);
-          return measureDrawn(grab.name, stationaryNames);
-        });
+        const drawn = Option.flatMap(ArtboardDrag.grabbed(drag), (grab) =>
+          measureDrawn(
+            grab.name,
+            collectOtherNames(params.document, grab.name),
+          ),
+        );
+        const input = {
+          pointer,
+          snaps: !CommandKey.isHeld(event),
+          measuresDistances: AltKey.isHeld(event),
+        };
         const snapped = Option.isSome(drawn)
-          ? ArtboardDrag.snappedAt(drag, pointer, drawn.value)
-          : SideSnap.Unsnapped;
+          ? ArtboardDrag.snappedAt(drag, input, drawn.value)
+          : RepositionLines.Unsnapped;
         dispatch({ type: "move", move: { pointer, snapped } });
       },
       onPointerUp: () => {
@@ -180,5 +191,6 @@ export function useArtboardDrag(
     },
     preview,
     snapGuides: ArtboardDrag.snapGuides(drag),
+    facingDistances: ArtboardDrag.facingDistances(drag),
   };
 }

@@ -1,4 +1,4 @@
-import type { Offset } from "@/domains/unit/offset";
+import { Offset } from "@/domains/unit/offset";
 import { SidePair } from "@/domains/unit/side";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
@@ -10,8 +10,8 @@ import { ThinLine } from "@/features/editor/features/canvas/domains/thin-line";
 import { Option } from "@/utils/Option";
 
 /**
- * 座標の置き直しで運んでいる間に出す線。吸い付いた線と揃え先との隙間、Alt / Option の距離
- * （除く前）。すべて画面上の px。
+ * ノードの座標の置き直しと artboard の移動で運んでいる間に出す線。吸い付いた線と揃え先との
+ * 隙間、Alt / Option の距離（除く前）。すべて画面上の px。
  */
 export type RepositionLines = Readonly<{
   snap: SnapGuides;
@@ -21,15 +21,18 @@ export type RepositionLines = Readonly<{
 /**
  * Alt / Option の距離を測る相手（画面上の px）。
  */
-export type DistanceTargets = Readonly<{
-  /** 落とし先の親の矩形 */
-  parentBounds: CanvasBounds;
-  /** その親の直下の、運んでいるもの以外の子 */
-  siblings: readonly CanvasBounds[];
-}>;
+export type DistanceTargets =
+  /** ノード: 落とし先の親の矩形と、その親の直下の運んでいるもの以外の子 */
+  | Readonly<{
+      kind: "within-parent";
+      parentBounds: CanvasBounds;
+      siblings: readonly CanvasBounds[];
+    }>
+  /** artboard: 運んでいる artboard 以外の、描かれていて大きさを持つ artboard（`.dcmp` の並び順） */
+  | Readonly<{ kind: "among-artboards"; others: readonly CanvasBounds[] }>;
 
 /**
- * 座標の置き直し 1 回分の吸い付きの答え。
+ * ノードの座標の置き直しと artboard の移動 1 回分の吸い付きの答え。
  */
 export type RepositionSnapped = Readonly<{
   /** 寄せ量（画面上の px） */
@@ -38,11 +41,18 @@ export type RepositionSnapped = Readonly<{
 }>;
 
 export const RepositionLines = {
+  /** 寄せず、線も距離も出さない答え。 */
+  Unsnapped: {
+    offset: Offset.Origin,
+    lines: { snap: SideSnap.NoGuides, distanceLines: FacingDistances.None },
+  } satisfies RepositionSnapped,
+
   /**
    * 寄せ量と、寄せたあとの位置に出す線を 1 回の判定から作る。
    *
    * 寄せ量と線・距離を別々に作ると、離した位置と線がずれる。`SideSnap` に置かないのは、
-   * 吸い付きを使う artboard の移動・リサイズに Alt / Option の距離を持ち込まないため。
+   * 距離が吸い付きの性質ではないため（吸い付かない回（⌘ / Ctrl）にも測る。docs/06-ui.md の
+   * Alt / Option の距離）。
    *
    * @param snap 寄せる前の運んでいるものと揃え先（吸い付かない回は揃え先が空）
    * @param distanceTargets 距離を測る相手。測らない回は `none`
@@ -55,10 +65,7 @@ export const RepositionLines = {
     const snapped = SideSnap.toSnapped(snap);
     const distanceLines = Option.unwrapOr(
       Option.map(distanceTargets, (targets) =>
-        FacingDistances.create({
-          moved: SideSnap.movedBy(snap, snapped.offset),
-          ...targets,
-        }),
+        distanceLinesFrom(SideSnap.movedBy(snap, snapped.offset), targets),
       ),
       FacingDistances.None,
     );
@@ -95,3 +102,29 @@ export const RepositionLines = {
     });
   },
 } as const;
+
+/**
+ * 寄せたあとの運んでいるものから、測る相手までの Alt / Option の距離を引く。
+ *
+ * kind が分けているのは何を置き直しているか（親の中のノード / キャンバス上の artboard）で、
+ * FacingDistances は相手の並びから線を引くだけでノードと artboard を区別しない。
+ *
+ * @param moved 寄せたあとの運んでいるものの矩形
+ * @param targets 距離を測る相手
+ * @returns 向きごとの短い線
+ */
+function distanceLinesFrom(
+  moved: CanvasBounds,
+  targets: DistanceTargets,
+): FacingDistances {
+  switch (targets.kind) {
+    case "within-parent":
+      return FacingDistances.create({
+        moved,
+        parentBounds: targets.parentBounds,
+        siblings: targets.siblings,
+      });
+    case "among-artboards":
+      return FacingDistances.createAmong({ moved, others: targets.others });
+  }
+}
