@@ -253,6 +253,18 @@ function withEditResult(
     : Option.none;
 }
 
+/**
+ * 選んでいるものの名前を、1 つ以上あることが型に出た並びで読む。
+ *
+ * @param state 選択の出どころになるエディタの状態
+ * @returns 選んでいるものの名前。何も選んでいなければ `none`
+ */
+function selectedNames(state: EditorState): Option<NonEmptyArray<string>> {
+  return ArrayEx.toNonEmpty(
+    DocumentSelection.names(EditorState.documentSelection(state)),
+  );
+}
+
 export const EditorState = {
   /**
    * 選択なしの状態から始める（選択は非永続なので開いた直後は何も選ばれていない）。
@@ -752,12 +764,8 @@ export const EditorState = {
     step: ReorderStep,
   ): Option<EditorState> {
     const document = EditorState.document(state);
-    const siblings = Option.flatMap(
-      ArrayEx.toNonEmpty(
-        DocumentSelection.names(EditorState.documentSelection(state)),
-      ),
-      (names) =>
-        Interop.toOption(DesignDocument.findSiblingPositions(document, names)),
+    const siblings = Option.flatMap(selectedNames(state), (names) =>
+      Interop.toOption(DesignDocument.findSiblingPositions(document, names)),
     );
     if (!Option.isSome(siblings)) {
       return Option.none;
@@ -1174,10 +1182,7 @@ export const EditorState = {
    *   親が違うとき、絶対配置とフローが混ざるとき、ファイルが不正な間は `none`
    */
   groupSelected(state: EditorState): Option<EditorState> {
-    const names = ArrayEx.toNonEmpty(
-      DocumentSelection.names(EditorState.documentSelection(state)),
-    );
-    return Option.flatMap(names, (selected) => {
+    return Option.flatMap(selectedNames(state), (selected) => {
       const document = EditorState.document(state);
       const boxName = DesignDocument.uniqueName(
         document,
