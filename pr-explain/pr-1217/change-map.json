@@ -1,0 +1,3599 @@
+{
+  "version": 2,
+  "pr": 1217,
+  "headBranch": "claude/magical-cannon-umn86x",
+  "baseBranch": "main",
+  "mergeBase": "68f4203700adc49d65424bccd3993255ccb985d9",
+  "head": "2b17739a02d12e54e7c6bd1e784d2a775da5e25a",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/axis/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/offset/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/axis-length/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-position/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/constraint/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/edit-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 36,
+          "deletions": 32,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/design-document/template/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/token-referrer/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/v1/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/document-names/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/format-version/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/layout/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/locking/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reference-context/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reposition-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resize-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resolved-props/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/rotation/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/visibility/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/artboard-edit-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/copy-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.ancestors.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.append-position.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-child-rotation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.box-props.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.child-position.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.children.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.componentize-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.componentize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.constraint.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.copies-after.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.detach-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.detach.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.detachable.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 135,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/design-document/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.format-version.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.found-node-names.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.migration.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.name-uniqueness.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.node-copies.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.outermost-nodes.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.remove-all-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.remove-all.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rename-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rename.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.replace-node.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.template.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-paint.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-validation-range.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.tree-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.tree.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.type.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.usable-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-binding.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-color.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-default.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-duplicate-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-fill.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-identifier.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-missing-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-override.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-paint.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-prototype-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-public-prop-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-ref-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-ref.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-unknown.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.visibility.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/text-node-setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / compiled",
+      "files": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/edit-continuity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection-dig/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-error/__tests__/document-error.validation-location.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/__tests__/document-reload.invalid.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-dig.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.current-artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.single-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.source-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/file-validity/__tests__/file-validity.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/__tests__/node-template.name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/__tests__/node-template.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-document/__tests__/opened-document.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.edit-from.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/__tests__/token-selection.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/__tests__/token-selection.referrer.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/token-refs.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "services",
+      "files": [
+        {
+          "path": "src/services/document-html/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/document-html/__tests__/document-html.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/document-html/__tests__/document-html.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/document-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/dom-event/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.format-version.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.parse-error.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.parse.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.roundtrip.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.serialize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.template.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.type.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Interop.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Json.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/NonEmptyArray.ts",
+          "changed": false
+        },
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/__stories__/sample-editor-state.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-left-pane/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-provider/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/sibling-positions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/artboard-fixtures.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/primary-color-token.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-provider/__tests__/editor-provider.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard-reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 9,
+          "changed": true,
+          "target": "src/features/editor/components/opened-document-editor/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.target.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard-reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.clipboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.context-menu-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.instance-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.move.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-clipboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-remove.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reload.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.remove-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.remove.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.artboard.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.group.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.instance-lock.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.rename.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-top-bar/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/assets",
+      "files": [
+        {
+          "path": "src/features/editor/features/assets/__stories__/sample-assets-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/create-component/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/domains/componentization/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/create-component/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/domains/componentization/__tests__/componentization.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/domains/componentization/__tests__/componentization.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/assets-panel/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/component-list/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/__stories__/sample-canvas-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/arranged-artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 36,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-resize.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-turned-frame.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.frozen.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 3,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.text-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/__tests__/resize-handle-overlay.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/__tests__/dragged-node.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.gesture.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 59,
+          "deletions": 3,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/domains/node-resize/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.orientation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-sync",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/inspector",
+      "files": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__stories__/panel-controls.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.frozen.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.heading.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.shorthand.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/sidebar",
+      "files": [
+        {
+          "path": "src/features/editor/features/sidebar/__stories__/sample-sidebar-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.editing.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.filter.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.type-display.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.disclosure.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.filter.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.reorder.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.type-display.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/layers-panel/__tests__/layers-panel.filter.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/tokens",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/__stories__/sample-token-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/__tests__/gradient-documents.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.reveal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.title.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-list/__tests__/token-list.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/__tests__/render.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/__tests__/token-used-by.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/__tests__/token-used-by.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+        "name": "artboard はその幅を答える"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+        "name": "artboard はその高さを答える"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+        "name": "fill を明示した Ellipse の軸は、長さが書いてあっても答えない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+        "name": "スキーマに無い type のノードは、fixed と長さを書いていても答えない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+        "name": "スキーマに無い大きさの prop を書いた Text は、fixed と長さを書いていても答えない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+        "name": "ドキュメントに無い名前は長さを答えない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+        "name": "モードを fixed にしただけの Box は、長さも既定も無いので答えない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+        "name": "大きさのモードを書いていない Ellipse は、書かれた幅を答える"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+        "name": "大きさのモードを書いていない Ellipse は、書かれた高さを答える"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+        "name": "部品インスタンスは長さを答えない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+        "name": "長さだけを書いた Box は、既定のモードが hug なので答えない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+        "name": "長さもモードも書いていない Ellipse は、既定の長さを答える"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+        "name": "モードを書いていない Ellipse の右辺を運ぶと、描かれる幅が動かした分だけ広がる"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+        "name": "モードを書いていない Ellipse を選ぶとハンドルが描かれる"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+        "name": "大きさのモードを持たない Text を選んでもハンドルは描かれない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+        "name": "スキーマに無い type のノードはハンドルが出ない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+        "name": "スキーマに無い widthMode を書いた Text はハンドルが出ない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+        "name": "モードを書いていない Ellipse は、書かれた長さで幅と高さの両方のハンドルが出る"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+        "name": "モードを書かずに長さだけを書いた Box は、既定が hug なのでハンドルが出ない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+        "name": "何も書いていない Ellipse は、既定の長さで幅と高さの両方のハンドルが出る"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+        "name": "大きさのモードを持たない Text はハンドルが出ない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+        "name": "高さを fill にした Ellipse は幅のハンドルだけが出る"
+      }
+    ],
+    "removed": [
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+        "name": "モードを指定していないノードを選んでもハンドルは描かれない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+        "name": "モードを指定していないノードはハンドルが出ない"
+      }
+    ],
+    "files": [
+      "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+      "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "41455cd515ef5dd48b1b49c73df17be75d974687",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-30T14:58:44Z",
+      "subject": "♻️ [Refactoring]: #1176 axisLengthOf を DesignDocument.fixedLengthOf として公開する",
+      "body": "- 非公開の axisLengthOf を、中身を変えずに DesignDocument のメソッド\n  fixedLengthOf(document, name, axis) として公開した\n- @returns に「fixed なのに長さも既定も無いときは none」を書き足した\n- 追従（withResizeFollowUp）の呼び出しと doc の言及を新しい名前に揃えた\n\n背景:\nリサイズハンドルの出し分け（node-resize）が、スキーマの既定値を当てずに\nファイルの props をそのまま読んでいた。このため widthMode を書いていない\nEllipse にハンドルが出なかった。既定を当てて固定長を読む導出は、\ndesign-document の axisLengthOf が既に持っている。\n\n採用理由:\nハンドル側に同じ導出（isPrimitive → ResolvedProps.forNode →\nSize.fixedLengthFromProps）を書くと 2 箇所に並ぶので、既にある 1 箇所を\n公開して両方から呼ぶ。改名したのは、同名の型 AxisLength（{axis, length}）が\nあり、Option<number> を返す関数の名前と食い違うため。\n\n代替案:\n- 置き場を Size にする: size → resolved-props → primitive-schema →\n  layout → size の循環になる\n- ResolvedProps にノードを受け取る関数を置く: 循環はしない。ただし、\n  スキーマに依らない汎用の型に長さの規則を集めることになる\n- Node に置く: resolved-props が node を import しているので循環する\n\n影響とトレードオフ:\nDesignDocument の公開 API が 1 つ増える。振る舞いは変えていない。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1176\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SBuKax7hzhMoDV4aM",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 35,
+          "deletions": 32,
+          "patch": "@@ -176,33 +176,6 @@ function applyPropEdits(\n   );\n }\n \n-/**\n- * 名前で指した artboard / ノードが今持っている、軸ごとの長さ。\n- *\n- * @param document 引き先になるドキュメント\n- * @param name 長さを知りたい artboard / ノードの名前\n- * @param axis どちらの軸の長さか\n- * @returns その軸の長さ。名前が無い / 部品インスタンス / スキーマに無い type /\n- *   `hug` `fill` のときは `none`\n- */\n-function axisLengthOf(\n-  document: DesignDocument,\n-  name: string,\n-  axis: Axis,\n-): Option<number> {\n-  const artboard = DesignDocument.findArtboard(document, name);\n-  if (Option.isSome(artboard)) {\n-    return Option.some(artboard.value[axis]);\n-  }\n-  const node = DesignDocument.findNode(document, name);\n-  if (!Option.isSome(node) || !Node.isPrimitive(node.value)) {\n-    return Option.none;\n-  }\n-  return Option.flatMap(ResolvedProps.forNode(node.value), (props) =>\n-    Size.fixedLengthFromProps(props, axis),\n-  );\n-}\n-\n /**\n  * 1 つの子を、親の長さの変化へ追従させる編集\n  * （docs/03「配置の指定」の追従の表）。\n@@ -374,7 +347,7 @@ function freedChildren(box: PrimitiveNode): readonly Node[] {\n  * @param name 大きさが変わったかもしれない artboard / ノードの名前\n  * @param edited その編集の結果\n  * @returns 子を追従させたドキュメント。長さが変わっていない・長さが読めない\n- *   （`axisLengthOf` が答えない）ときは `edited` のまま\n+ *   （`fixedLengthOf` が答えない）ときは `edited` のまま\n  */\n function withResizeFollowUp(\n   before: DesignDocument,\n@@ -383,10 +356,13 @@ function withResizeFollowUp(\n ): Result<DesignDocument, DesignDocumentEditError> {\n   return Result.flatMap(edited, (after) => {\n     const resizes = Object.values(Axes).flatMap((axis) => {\n-      const resize = Option.flatMap(axisLengthOf(before, name, axis), (from) =>\n-        Option.flatMap(axisLengthOf(after, name, axis), (to) =>\n-          AxisResize.create({ axis, before: from, after: to }),\n-        ),\n+      const resize = Option.flatMap(\n+        DesignDocument.fixedLengthOf(before, name, axis),\n+        (from) =>\n+          Option.flatMap(\n+            DesignDocument.fixedLengthOf(after, name, axis),\n+            (to) => AxisResize.create({ axis, before: from, after: to }),\n+          ),\n       );\n       return Option.isSome(resize) ? [resize.value] : [];\n     });\n@@ -1754,6 +1730,33 @@ export const DesignDocument = {\n     });\n   },\n \n+  /**\n+   * 名前で指した artboard / ノードが今持っている、軸ごとの長さ。\n+   *\n+   * @param document 引き先になるドキュメント\n+   * @param name 長さを知りたい artboard / ノードの名前\n+   * @param axis どちらの軸の長さか\n+   * @returns その軸の長さ。名前が無い / 部品インスタンス / スキーマに無い type /\n+   *   `hug` `fill` / `fixed` なのに長さも既定も無いときは `none`\n+   */\n+  fixedLengthOf(\n+    document: DesignDocument,\n+    name: string,\n+    axis: Axis,\n+  ): Option<number> {\n+    const artboard = DesignDocument.findArtboard(document, name);\n+    if (Option.isSome(artboard)) {\n+      return Option.some(artboard.value[axis]);\n+    }\n+    const node = DesignDocument.findNode(document, name);\n+    if (!Option.isSome(node) || !Node.isPrimitive(node.value)) {\n+      return Option.none;\n+    }\n+    return Option.flatMap(ResolvedProps.forNode(node.value), (props) =>\n+      Size.fixedLengthFromProps(props, axis),\n+    );\n+  },\n+\n   /**\n    * 名前で指したものの向き（docs/03「回転」）。\n    *",
+          "patchLines": 95,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "c65abddd993303c1ba8752e91d0aadd9e8318369",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-30T14:58:56Z",
+      "subject": "🧪 [Tests]: #1176 DesignDocument.fixedLengthOf の振る舞いをテストする",
+      "body": "- design-document.fixed-length.test.ts を新しく作り、11 件を置いた\n  - artboard は幅・高さを答える\n  - モードを書いていない Ellipse は書かれた長さ（140 / 72）を答え、\n    何も書いていなければ既定の 100 を答える\n  - 長さだけを書いた Box（既定は hug）、fixed だけを書いた Box、\n    fill を明示した Ellipse は答えない\n  - 部品インスタンス、スキーマに無い type、無い名前は答えない\n\n背景:\nfixedLengthOf を公開 API にしたので、その API 自身のテストが要る。\nこれまでは追従のテストを通して間接的にしか守られていなかった。\n\n採用理由:\nどのケースも、既定値とは違う答えになる入力を選んだ。140 / 72 は既定の\n100 と違う。fill の明示は、Ellipse の既定 fixed より明示値が勝つことを\n見る。長さを書いた Box は、「モードが書かれていなければ fixed とみなす」\n誤った実装を落とす。\n\n代替案:\n幅と高さを 1 つのテストでまとめて確かめる案は採らなかった。\n1 テスト 1 振る舞い（rules/testing.md）に合わせるため。\n\n影響とトレードオフ:\nテストを足しただけで、本番コードは変えていない。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1176\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SBuKax7hzhMoDV4aM",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 123,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,123 @@\n+import { expect, test } from \"vitest\";\n+import { Option } from \"@/utils/Option\";\n+import { DesignDocument } from \"../index\";\n+\n+/**\n+ * 大きさの書き方が違うノードを、360 x 240 の artboard `home` の直下に並べたドキュメント。\n+ * `instance` は部品 `chip` のインスタンス、`unknown` はスキーマに無い type。\n+ */\n+function setupDocument(): DesignDocument {\n+  return DesignDocument.create({\n+    components: {\n+      chip: {\n+        type: \"Box\",\n+        props: { widthMode: \"fixed\", width: 80 },\n+        children: [],\n+      },\n+    },\n+    artboards: [\n+      {\n+        name: \"home\",\n+        width: 360,\n+        height: 240,\n+        children: [\n+          {\n+            name: \"oval\",\n+            type: \"Ellipse\",\n+            props: { width: 140, height: 72 },\n+          },\n+          { name: \"dot\", type: \"Ellipse\", props: {} },\n+          {\n+            name: \"stretched\",\n+            type: \"Ellipse\",\n+            props: { widthMode: \"fill\", width: 140 },\n+          },\n+          {\n+            name: \"plain\",\n+            type: \"Box\",\n+            props: { width: 120, height: 80 },\n+            children: [],\n+          },\n+          {\n+            name: \"unsized\",\n+            type: \"Box\",\n+            props: { widthMode: \"fixed\" },\n+            children: [],\n+          },\n+          {\n+            name: \"unknown\",\n+            type: \"Unknown\",\n+            props: { widthMode: \"fixed\", width: 120 },\n+          },\n+          { name: \"instance\", ref: \"chip\" },\n+        ],\n+      },\n+    ],\n+  });\n+}\n+\n+test(\"artboard はその幅を答える\", () => {\n+  expect(\n+    DesignDocument.fixedLengthOf(setupDocument(), \"home\", \"width\"),\n+  ).toEqual(Option.some(360));\n+});\n+\n+test(\"artboard はその高さを答える\", () => {\n+  expect(\n+    DesignDocument.fixedLengthOf(setupDocument(), \"home\", \"height\"),\n+  ).toEqual(Option.some(240));\n+});\n+\n+test(\"大きさのモードを書いていない Ellipse は、書かれた幅を答える\", () => {\n+  expect(\n+    DesignDocument.fixedLengthOf(setupDocument(), \"oval\", \"width\"),\n+  ).toEqual(Option.some(140));\n+});\n+\n+test(\"大きさのモードを書いていない Ellipse は、書かれた高さを答える\", () => {\n+  expect(\n+    DesignDocument.fixedLengthOf(setupDocument(), \"oval\", \"height\"),\n+  ).toEqual(Option.some(72));\n+});\n+\n+test(\"長さもモードも書いていない Ellipse は、既定の長さを答える\", () => {\n+  expect(DesignDocument.fixedLengthOf(setupDocument(), \"dot\", \"width\")).toEqual(\n+    Option.some(100),\n+  );\n+});\n+\n+test(\"長さだけを書いた Box は、既定のモードが hug なので答えない\", () => {\n+  expect(\n+    DesignDocument.fixedLengthOf(setupDocument(), \"plain\", \"width\"),\n+  ).toEqual(Option.none);\n+});\n+\n+test(\"モードを fixed にしただけの Box は、長さも既定も無いので答えない\", () => {\n+  expect(\n+    DesignDocument.fixedLengthOf(setupDocument(), \"unsized\", \"width\"),\n+  ).toEqual(Option.none);\n+});\n+\n+test(\"fill を明示した Ellipse の軸は、長さが書いてあっても答えない\", () => {\n+  expect(\n+    DesignDocument.fixedLengthOf(setupDocument(), \"stretched\", \"width\"),\n+  ).toEqual(Option.none);\n+});\n+\n+test(\"部品インスタンスは長さを答えない\", () => {\n+  expect(\n+    DesignDocument.fixedLengthOf(setupDocument(), \"instance\", \"width\"),\n+  ).toEqual(Option.none);\n+});\n+\n+test(\"スキーマに無い type のノードは、fixed と長さを書いていても答えない\", () => {\n+  expect(\n+    DesignDocument.fixedLengthOf(setupDocument(), \"unknown\", \"width\"),\n+  ).toEqual(Option.none);\n+});\n+\n+test(\"ドキュメントに無い名前は長さを答えない\", () => {\n+  expect(\n+    DesignDocument.fixedLengthOf(setupDocument(), \"missing\", \"width\"),\n+  ).toEqual(Option.none);\n+});",
+          "patchLines": 124,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "ec954696ea7c4d2a9c04b50bd665b95b8c2161cc",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-30T14:59:07Z",
+      "subject": "🐛 [Bug fix]: #1176 モードを書いていない Ellipse にリサイズハンドルを出す",
+      "body": "- 非公開の artboardHandles / propsHandles / nodeHandles を消した。\n  artboard とノードの両方の枝が、fixedLengthsOf(document, name) を通す\n- fixedLengthsOf は軸ごとに DesignDocument.fixedLengthOf を呼び、\n  some を返した軸だけをハンドルにする\n- 使わなくなった import（Node / Props / Size）を外した\n\n背景:\npropsHandles は、ファイルに書かれた props をそのまま\nSize.fixedLengthFromProps に渡していて、スキーマの既定値を当てていな\nかった。このため、widthMode / heightMode の既定が fixed の Ellipse で、\nモードを書いていないとハンドルが 1 つも出なかった。Box は既定が hug なので、\n既定を当てなくても結果が変わらず、表に出ていなかった。\n\n採用理由:\n既定を当てて固定長を読む導出は fixedLengthOf の 1 箇所にまとめた。\nartboard の長さも fixedLengthOf が答えるので、artboardHandles を残すと\n同じ事実を 2 箇所で導くことになる。それで両方の枝を 1 つの関数に寄せた。\nartboard も含むので、関数の名前は nodeHandles ではなく fixedLengthsOf にした。\n\n代替案:\n- node-resize の側で isPrimitive → ResolvedProps.forNode を書き直す:\n  fixedLengthOf と導出が重複する\n- ストーリーの oval にモードを書く: 不具合を隠すだけになる\n- 既定値をファイルへ書き戻す: 導出できる値をファイルへ書かない\n  （rules/consistency.md）に反する\n\n影響とトレードオフ:\n- 長さもモードも書いていない Ellipse は、既定の 100 でハンドルを持つ\n- スキーマに無い widthMode を書いた Text と、スキーマに無い type のノードは\n  ハンドルを失う。どちらも描画は既定を当てた props から作るので、\n  これまでは「掴めるのに何も起きない」状態だった。描画と揃う向きの変化\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1176\n- docs/06-ui.md「リサイズハンドル」\n- docs/03-schema.md「Ellipse」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SBuKax7hzhMoDV4aM",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 36,
+          "patch": "@@ -3,10 +3,8 @@ import type { Artboard } from \"@/domains/dcmp/artboard\";\n import { AxisLength, type AxisLengths } from \"@/domains/dcmp/axis-length\";\n import type { ChildPlacement } from \"@/domains/dcmp/child-placement\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n-import { Node, type Props } from \"@/domains/dcmp/node\";\n import { Placement } from \"@/domains/dcmp/placement\";\n import { ResizeEdit } from \"@/domains/dcmp/resize-edit\";\n-import { Size } from \"@/domains/dcmp/size\";\n import { DocumentSelection } from \"@/domains/session/document-selection\";\n import { Angle } from \"@/domains/unit/angle\";\n import { Axes, type Axis, type AxisEnd, AxisEnds } from \"@/domains/unit/axis\";\n@@ -341,46 +339,29 @@ const UnresizableSelection: ResizableSelection = {\n };\n \n /**\n- * artboard は 2 軸とも `fixed` 固定なので、常にどちらの辺も掴める（docs/03）。\n+ * 名前で指した artboard / ノードの、掴める軸のハンドル（docs/06-ui.md「`hug` / `fill` では\n+ * ハンドルを出さない」）。artboard は 2 軸とも `fixed` 固定なので、常にどちらの辺も掴める\n+ * （docs/03）。\n  *\n- * @param artboard ハンドルを出したい artboard\n- * @returns 幅と高さの 2 件のハンドル\n- */\n-function artboardHandles(artboard: Artboard): readonly AxisLength[] {\n-  return [\n-    AxisLength.create(\"width\", artboard.width),\n-    AxisLength.create(\"height\", artboard.height),\n-  ];\n-}\n-\n-/**\n- * `fixed` の軸だけを掴める（docs/06-ui.md「`hug` / `fill` ではハンドルを出さない」）。\n+ * 参照ノードに出さないのは、インスタンスが上書きできるのが publicProps に宣言のある prop\n+ * だけで、宣言の追加は AI / JSON 編集の担当だから（docs/06-ui.md「部品化」）。出すと\n+ * 「掴めるのに何も起きない」操作になる。\n  *\n- * モードが `fixed` でも長さが未設定なら出さない。\n- *\n- * @param props ハンドルの出し分けに使う props\n- * @returns `fixed` で長さも設定されている軸のハンドルだけの並び\n+ * @param document 引き先になるドキュメント\n+ * @param name ハンドルを出したい artboard / ノードの名前\n+ * @returns `fixed` の軸のハンドルの並び。部品インスタンス・スキーマに無い type・`hug` /\n+ *   `fill` の軸・長さも既定も無い軸は出さない\n  */\n-function propsHandles(props: Props): readonly AxisLength[] {\n+function fixedLengthsOf(\n+  document: DesignDocument,\n+  name: string,\n+): readonly AxisLength[] {\n   return Object.values(Axes).flatMap((axis) => {\n-    const length = Size.fixedLengthFromProps(props, axis);\n+    const length = DesignDocument.fixedLengthOf(document, name, axis);\n     return Option.isSome(length) ? [AxisLength.create(axis, length.value)] : [];\n   });\n }\n \n-/**\n- * 参照ノードにはハンドルを出さない。インスタンスが上書きできるのは publicProps に宣言の\n- * ある prop だけで、宣言の追加は AI / JSON 編集の担当（docs/06-ui.md「部品化」）。\n- *\n- * 出すと「掴めるのに何も起きない」操作になる。\n- *\n- * @param node ハンドルを出したいノード\n- * @returns 掴める軸のハンドルの並び。参照ノードなら空\n- */\n-function nodeHandles(node: Node): readonly AxisLength[] {\n-  return Node.isRef(node) ? [] : propsHandles(node.props ?? {});\n-}\n-\n /**\n  * その比率が指す端。\n  *\n@@ -573,7 +554,7 @@ export const NodeResize = {\n     const index = artboards.findIndex((artboard) => artboard.name === name);\n     if (index >= 0) {\n       return {\n-        lengths: artboardHandles(artboards[index]),\n+        lengths: fixedLengthsOf(selection.document, name),\n         origin: Option.some(ArrangedArtboard.positionAt(artboards, index)),\n         snapTargets: {\n           kind: \"anyGrip\",\n@@ -598,7 +579,7 @@ export const NodeResize = {\n     }\n     const placement = DesignDocument.childPlacementOf(selection.document, name);\n     return {\n-      lengths: nodeHandles(node.value),\n+      lengths: fixedLengthsOf(selection.document, name),\n       origin: Option.map(placement, (child) =>\n         Placement.offset(child.placement),\n       ),",
+          "patchLines": 91,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "b343ef327e5ee5f939b3d284e57c52f140fa0991",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-30T14:59:18Z",
+      "subject": "🧪 [Tests]: #1176 既定を当てたモードでハンドルを出し分けるテストを足す",
+      "body": "- setupSelection にノードを足した\n  - モードを書かない Ellipse（140 / 72）\n  - 何も書かない Ellipse\n  - 高さを fill にした Ellipse\n  - 長さだけを書いた Box\n  - スキーマに無い widthMode を書いた Text\n  - スキーマに無い type のノード\n- それぞれのハンドルの出方を確かめるテストを 6 件足した\n- 既存の「モードを指定していないノードはハンドルが出ない」を\n  「大きさのモードを持たない Text はハンドルが出ない」に改名した\n\n背景:\n修正前のテストは、モードを書いていない Text と Box だけを見ていた。\nどちらも既定を当てても当てなくても答えが同じなので、既定を当て忘れても\n落ちなかった。\n\n採用理由:\n軸ごとのハンドルの数と長さを守るのはこのファイルの役割にした（描画の\nテストは、出るか出ないかだけを見る）。追加した 6 件のうち、長さだけを\n書いた Box 以外の 5 件は、修正前の実装に戻すと落ちることを確かめた。\n長さだけを書いた Box は、「モード未記載は fixed」とみなす退行を止める\nためのテスト。\n\n代替案:\n既存テストの名前を残す案は採らなかった。修正後は、Ellipse では成り\n立たない文になるため。\n\n影響とトレードオフ:\n既存の観点（部品インスタンス、fixed でも長さが無い軸）は残している。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1176\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SBuKax7hzhMoDV4aM",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 59,
+          "deletions": 3,
+          "patch": "@@ -5,8 +5,11 @@ import { Option } from \"@/utils/Option\";\n import { NodeResize } from \"../index\";\n \n /**\n- * `home` に、2 軸とも固定の `panel`、幅だけ固定の `column`、モードを持たない `title`、\n- * 幅を固定と書きながら長さの無い `broken`、部品インスタンスの `action`、\n+ * `home` に、2 軸とも固定の `panel`、幅だけ固定の `column`、大きさのモードを持たない Text の\n+ * `title`、幅を固定と書きながら長さの無い `broken`、部品インスタンスの `action`、\n+ * モードを書かずに長さだけを書いた Ellipse の `oval`、何も書かない Ellipse の `dot`、\n+ * 高さだけ `fill` の Ellipse の `bar`、モードを書かずに長さだけを書いた Box の `plain`、\n+ * スキーマに無い `widthMode` を書いた Text の `caption`、スキーマに無い type の `mystery`、\n  * 絶対配置の `badge`、2 軸とも固定でロックした `locked-panel`（中に 2 軸とも固定の\n  * `locked-child`）、2 軸とも固定で非表示の `hidden-panel`（中に 2 軸とも固定の `hidden-child`）\n  * が並ぶドキュメント。`home` の次に座標を持たない `about` が続く。\n@@ -51,6 +54,29 @@ function setupSelection(\n               children: [],\n             },\n             { name: \"action\", ref: \"card\" },\n+            {\n+              name: \"oval\",\n+              type: \"Ellipse\",\n+              props: { width: 140, height: 72 },\n+            },\n+            { name: \"dot\", type: \"Ellipse\", props: {} },\n+            { name: \"bar\", type: \"Ellipse\", props: { heightMode: \"fill\" } },\n+            {\n+              name: \"plain\",\n+              type: \"Box\",\n+              props: { width: 120, height: 80 },\n+              children: [],\n+            },\n+            {\n+              name: \"caption\",\n+              type: \"Text\",\n+              props: { content: \"注記\", widthMode: \"fixed\", width: 120 },\n+            },\n+            {\n+              name: \"mystery\",\n+              type: \"Unknown\",\n+              props: { widthMode: \"fixed\", width: 120 },\n+            },\n             {\n               name: \"badge\",\n               type: \"Box\",\n@@ -144,7 +170,7 @@ test(\"片方の軸だけ fixed のノードはその軸のハンドルだけが\n   expect(handlesOf(\"column\")).toEqual([\"width\"]);\n });\n \n-test(\"モードを指定していないノードはハンドルが出ない\", () => {\n+test(\"大きさのモードを持たない Text はハンドルが出ない\", () => {\n   expect(handlesOf(\"title\")).toEqual([]);\n });\n \n@@ -156,6 +182,36 @@ test(\"部品インスタンスにはハンドルが出ない\", () => {\n   expect(handlesOf(\"action\")).toEqual([]);\n });\n \n+test(\"モードを書いていない Ellipse は、書かれた長さで幅と高さの両方のハンドルが出る\", () => {\n+  expect(NodeResize.resizable(setupSelection([\"oval\"])).lengths).toEqual([\n+    { axis: \"width\", length: 140 },\n+    { axis: \"height\", length: 72 },\n+  ]);\n+});\n+\n+test(\"何も書いていない Ellipse は、既定の長さで幅と高さの両方のハンドルが出る\", () => {\n+  expect(NodeResize.resizable(setupSelection([\"dot\"])).lengths).toEqual([\n+    { axis: \"width\", length: 100 },\n+    { axis: \"height\", length: 100 },\n+  ]);\n+});\n+\n+test(\"高さを fill にした Ellipse は幅のハンドルだけが出る\", () => {\n+  expect(handlesOf(\"bar\")).toEqual([\"width\"]);\n+});\n+\n+test(\"モードを書かずに長さだけを書いた Box は、既定が hug なのでハンドルが出ない\", () => {\n+  expect(handlesOf(\"plain\")).toEqual([]);\n+});\n+\n+test(\"スキーマに無い widthMode を書いた Text はハンドルが出ない\", () => {\n+  expect(handlesOf(\"caption\")).toEqual([]);\n+});\n+\n+test(\"スキーマに無い type のノードはハンドルが出ない\", () => {\n+  expect(handlesOf(\"mystery\")).toEqual([]);\n+});\n+\n test(\"artboard は常に幅と高さの両方のハンドルが出る\", () => {\n   expect(handlesOf(\"home\")).toEqual([\"width\", \"height\"]);\n });",
+          "patchLines": 90,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "92d72835d3bc8ce250788e366faf92b8c17d8c4c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-30T14:59:26Z",
+      "subject": "🧪 [Tests]: #1176 モードを書いていない Ellipse に描かれるハンドルをテストする",
+      "body": "- setup にモードを書いていない Ellipse を足した\n- それを選ぶとハンドルが 8 箇所描かれるテストを足した\n- 既存のテストとそこの doc を、Text に限った表現に改名した\n\n背景:\nキャンバスへの描画まで、既定が当たったハンドルが届くかを守るテストが\n無かった。\n\n採用理由:\n幅だけが fixed でもハンドルは 8 個描かれる。このテストが見ているのは、\n既定が当たったかどうか（0 本か 8 本か）だけ。2 軸とも出ることは、\nnode-resize.handles のテストが守っている。修正前の実装に戻すと、\nこのテストは落ちる。\n\n代替案:\n軸の数までここで確かめる案は採らなかった。描画は 8 箇所に固定なので、\nここでは軸の数を区別できない。\n\n影響とトレードオフ:\nテストを足しただけで、本番コードは変えていない。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1176\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SBuKax7hzhMoDV4aM",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 3,
+          "patch": "@@ -24,8 +24,9 @@ import {\n \n /**\n  * `home` に、2 軸とも固定の `panel`、幅だけ固定の `banner`、\n- * モードを指定していない `title`、部品インスタンスの `action`、\n- * 2 軸とも固定で親から見た座標を持つ `badge` が並ぶ状態。\n+ * 大きさのモードを持たない Text の `title`、部品インスタンスの `action`、\n+ * 2 軸とも固定で親から見た座標を持つ `badge`、モードを書かずに長さだけを書いた Ellipse の\n+ * `oval` が並ぶ状態。\n  */\n function setupSelection(\n   selectedNames: readonly string[] = [],\n@@ -71,6 +72,11 @@ function setupSelection(\n             },\n             children: [],\n           },\n+          {\n+            name: \"oval\",\n+            type: \"Ellipse\",\n+            props: { width: 140, height: 72 },\n+          },\n         ],\n       },\n     ],\n@@ -103,7 +109,13 @@ test(\"幅だけが fixed のノードを選んでもハンドルが描かれる\"\n   expect(resizeHandles()).toHaveLength(8);\n });\n \n-test(\"モードを指定していないノードを選んでもハンドルは描かれない\", () => {\n+test(\"モードを書いていない Ellipse を選ぶとハンドルが描かれる\", () => {\n+  renderCanvas({ selection: setupSelection([\"oval\"]) });\n+\n+  expect(resizeHandles()).toHaveLength(8);\n+});\n+\n+test(\"大きさのモードを持たない Text を選んでもハンドルは描かれない\", () => {\n   renderCanvas({ selection: setupSelection([\"title\"]) });\n \n   expect(resizeHandles()).toHaveLength(0);",
+          "patchLines": 39,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "2863e0a30eb4b3e2dc73ef31819e2f51c8035d28",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-30T14:59:34Z",
+      "subject": "🧪 [Tests]: #1176 モードを書いていない Ellipse をハンドルでリサイズする通しのテストを足す",
+      "body": "- setup に ring を足した（Ellipse、width: 200 / height: 100、モードは書かない）\n- dragRightEdge に、掴むノードの名前を指す引数を足した（既定は \"panel\"）\n- ring の右辺を運ぶと、描かれる幅が 200px から 240px に広がるテストを足した\n- PanelBounds を GrabbedBounds に改名し、setupDocument / dragRightEdge の\n  doc を、ring を足した形に揃えた\n\n背景:\nハンドルが出るだけでなく、掴んだ操作がドキュメントの書き換えと再描画まで\n届くことを確かめたかった。経路は onResize → resize アクション →\nDesignDocument.resize → 再コンパイル。\n\n採用理由:\n画面全体を組み立てる OpenedDocumentEditor で、パネルと同じ手順を通す。\n修正前の実装に戻すと、ハンドルが出ないので 200px のまま落ちる。\n\n代替案:\nDrawnBounds という名前は採らなかった。src/libs/canvas-dom に同じ名前が\n既にあるため。\n\n影響とトレードオフ:\n既存の badge のスナップのテストは、ring が揃え先に加わっても通る。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1176\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SBuKax7hzhMoDV4aM",
+      "files": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 9,
+          "patch": "@@ -24,10 +24,13 @@ import { drawn, renderOpenedDocument, selectInTree } from \"./setup\";\n  * は通知の値までは固定するが、それが履歴でどう扱われるかは見ない。\n  */\n \n-/** 画面の (100, 50) に 200x100 で描かれている、という前提。右辺 x=300。 */\n-const PanelBounds = { left: 100, top: 50, width: 200, height: 100 };\n+/** 掴むノードが画面の (100, 50) に 200x100 で描かれている、という前提。右辺 x=300。 */\n+const GrabbedBounds = { left: 100, top: 50, width: 200, height: 100 };\n \n-/** 2 軸とも固定の `panel` と、そこへ座標も持たせた `badge` を持つドキュメント。 */\n+/**\n+ * 2 軸とも固定の `panel` と、そこへ座標も持たせた `badge` と、モードを書かずに長さだけを\n+ * 書いた Ellipse の `ring` を持つドキュメント。\n+ */\n function setupDocument(): DesignDocument {\n   return DesignDocument.create({\n     tokens: DocumentTemplate.Default.tokens,\n@@ -63,6 +66,11 @@ function setupDocument(): DesignDocument {\n             },\n             children: [],\n           },\n+          {\n+            name: \"ring\",\n+            type: \"Ellipse\",\n+            props: { width: 200, height: 100 },\n+          },\n         ],\n       }),\n     ],\n@@ -70,14 +78,16 @@ function setupDocument(): DesignDocument {\n }\n \n /**\n- * `panel` の右辺を掴んで、**途中で 2 回以上動かして**から離す。\n+ * ノードの右辺を掴んで、**途中で 2 回以上動かして**から離す。\n  *\n  * 1 回しか動かさないと、刻みごとに履歴を積む実装でも undo 1 回で掴む前へ戻るため、\n  * 直したい症状が出ない（`artboard-canvas.artboard-drag.test.tsx` が同じ性質を使っている）。\n+ *\n+ * @param name 右辺を掴むノードの名前\n  */\n-function dragRightEdge(): void {\n-  stubBounds(drawn(\"panel\"), PanelBounds);\n-  pressPointer(drawn(\"panel\"), { x: 298, y: 100 });\n+function dragRightEdge(name = \"panel\"): void {\n+  stubBounds(drawn(name), GrabbedBounds);\n+  pressPointer(drawn(name), { x: 298, y: 100 });\n   movePointer(canvasContent(), { x: 318, y: 100 });\n   movePointer(canvasContent(), { x: 338, y: 100 });\n   releasePointer(canvasContent(), { x: 338, y: 100 });\n@@ -92,6 +102,15 @@ test(\"キャンバスで右辺を運ぶと、描かれる幅が動かした分\n   expect(drawn(\"panel\").style.width).toBe(\"240px\");\n });\n \n+test(\"モードを書いていない Ellipse の右辺を運ぶと、描かれる幅が動かした分だけ広がる\", async () => {\n+  await renderOpenedDocument(setupDocument());\n+  await selectInTree(\"ring\");\n+\n+  dragRightEdge(\"ring\");\n+\n+  expect(drawn(\"ring\").style.width).toBe(\"240px\");\n+});\n+\n test(\"運んだあと 1 回戻すと、描かれる幅が掴む前に戻る\", async () => {\n   await renderOpenedDocument(setupDocument());\n   await selectInTree(\"panel\");\n@@ -107,7 +126,7 @@ test(\"続けて 2 回運ぶと、1 回戻るのは直前のドラッグの前ま\n   await renderOpenedDocument(setupDocument());\n   await selectInTree(\"panel\");\n   dragRightEdge();\n-  stubBounds(drawn(\"panel\"), { ...PanelBounds, width: 240 });\n+  stubBounds(drawn(\"panel\"), { ...GrabbedBounds, width: 240 });\n   pressPointer(drawn(\"panel\"), { x: 338, y: 100 });\n   movePointer(canvasContent(), { x: 358, y: 100 });\n   movePointer(canvasContent(), { x: 378, y: 100 });\n@@ -125,7 +144,7 @@ test(\"続けて 2 回運ぶと、1 回戻るのは直前のドラッグの前ま\n  * 右辺のドラッグと同じ理由で 2 回動かす（1 回だと刻みごとに履歴を積む実装でも通る）。\n  */\n function dragLeftEdge(): void {\n-  stubBounds(drawn(\"badge\"), PanelBounds);\n+  stubBounds(drawn(\"badge\"), GrabbedBounds);\n   pressPointer(drawn(\"badge\"), { x: 103, y: 100 });\n   movePointer(canvasContent(), { x: 118, y: 100 });\n   movePointer(canvasContent(), { x: 133, y: 100 });",
+          "patchLines": 84,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "86a5b0e575ab0357e07c5d3cf7895b2b5c9e601b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-30T14:59:42Z",
+      "subject": "📝 [Doc]: #1176 EllipseSelected の doc に、ハンドルが楕円から離れて見える記述を戻す",
+      "body": "- 3e98dde（#980）で外した 1 文を、原文のまま戻した: 「選択の枠が楕円に\n  沿い、四隅のハンドルが枠から離れて見えるのも仕様（docs/06-ui.md「選択」\n  「リサイズハンドル」）で、これもこの視覚差分だけが見ている。」\n\n背景:\n#980 の時点ではハンドルが 1 つも描かれていなかった。実物と食い違うので、\nこの記述を外していた。\n\n採用理由:\n修正後に Storybook（1280x720）で撮り、次の 3 点を確かめてから戻した。\n- ハンドルが 8 個ある\n- 四隅のハンドルが楕円の外接矩形の角にあり、枠から離れて見える\n- はみ出しが無い\n\n代替案:\noval に widthMode を書いて、ハンドルを出す案は採らなかった。不具合を\nストーリー側で隠すことになる（3e98dde と同じ判断）。\n\n影響とトレードオフ:\nVRT では EllipseSelected にハンドル 8 個ぶんの差分が出る。意図した差分。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1176\n- docs/06-ui.md「リサイズハンドル」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SBuKax7hzhMoDV4aM",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -182,7 +182,8 @@ const EllipseDocument = DesignDocument.create({\n  * テストが守るのは宣言を出すところまでで、**それが実際に円として描かれることは見えない**\n  * （happy-dom は CSS を描かない）。確かめる手段はこのストーリーの視覚差分だけ。\n  *\n- * 選択の枠が楕円に沿うのも仕様（docs/06-ui.md「選択」）で、これもこの視覚差分だけが見ている。\n+ * 選択の枠が楕円に沿い、四隅のハンドルが枠から離れて見えるのも仕様（docs/06-ui.md「選択」\n+ * 「リサイズハンドル」）で、これもこの視覚差分だけが見ている。\n  */\n export const EllipseSelected: Story = {\n   name: \"Ellipse を選択中\",",
+          "patchLines": 10,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "7d02e87386a2e3c84343532295bfd20dac947f6c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-30T15:04:09Z",
+      "subject": "📝 [Doc]: #1176 fixedLengthsOf の doc を委譲先への参照に縮める",
+      "body": "- fixedLengthsOf の @returns の書き方を変えた。答えない条件を並べるのを\n  やめ、「DesignDocument.fixedLengthOf が none を返す軸は出さない」という\n  参照にした\n- 部品インスタンスに出さない理由（publicProps）を 2 行に畳んだ\n- fixedLengthOf の doc の 1 文目を「fixed の軸に今持っている長さ」に直した。\n  あわせて、artboard は 2 軸とも fixed なので常に答えることを書いた\n\n背景:\n実装の検証で 3 件の指摘を受けた。\n- duplication-reviewer: 判定を委譲したのに、答えない条件の列挙が委譲元と\n  委譲先の 2 箇所に残っている\n- comment-reviewer: 理由の段落が 3 行あり、規約の 1〜2 行を超える\n- naming-reviewer: fixedLengthOf の 1 文目が、名前の「fixed」の限定を\n  書いていない\n\n採用理由:\n条件が変わったときに直す場所を、fixedLengthOf の doc の 1 箇所にした。\nnode-resize 側には、この層に固有の Why（部品インスタンスに出さない理由）\nだけを残した。artboard の説明はもともと fixedLengthOf 側に無かった。\nnode-resize から消すだけでは、この事実がどこにも書かれなくなるので、\nfixedLengthOf の doc へ移した。\n\n代替案:\nartboard の一文を消すだけにする案は採らなかった。fixedLengthOf が\nartboard に常に答えることが、どこにも書かれなくなるため。\n\n影響とトレードオフ:\ndoc だけの変更で、振る舞いは変えていない。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1176\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SBuKax7hzhMoDV4aM",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -1731,7 +1731,8 @@ export const DesignDocument = {\n   },\n \n   /**\n-   * 名前で指した artboard / ノードが今持っている、軸ごとの長さ。\n+   * 名前で指した artboard / ノードが、`fixed` の軸に今持っている長さ。artboard は 2 軸とも\n+   * `fixed` 固定なので常に答える（docs/03-schema.md）。\n    *\n    * @param document 引き先になるドキュメント\n    * @param name 長さを知りたい artboard / ノードの名前",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 7,
+          "patch": "@@ -340,17 +340,15 @@ const UnresizableSelection: ResizableSelection = {\n \n /**\n  * 名前で指した artboard / ノードの、掴める軸のハンドル（docs/06-ui.md「`hug` / `fill` では\n- * ハンドルを出さない」）。artboard は 2 軸とも `fixed` 固定なので、常にどちらの辺も掴める\n- * （docs/03）。\n+ * ハンドルを出さない」）。\n  *\n- * 参照ノードに出さないのは、インスタンスが上書きできるのが publicProps に宣言のある prop\n- * だけで、宣言の追加は AI / JSON 編集の担当だから（docs/06-ui.md「部品化」）。出すと\n- * 「掴めるのに何も起きない」操作になる。\n+ * 部品インスタンスに出さないのは、上書きできるのが publicProps に宣言のある prop だけで、宣言の\n+ * 追加は AI / JSON 編集の担当だから（docs/06-ui.md「部品化」）。出すと掴めるのに何も起きない。\n  *\n  * @param document 引き先になるドキュメント\n  * @param name ハンドルを出したい artboard / ノードの名前\n- * @returns `fixed` の軸のハンドルの並び。部品インスタンス・スキーマに無い type・`hug` /\n- *   `fill` の軸・長さも既定も無い軸は出さない\n+ * @returns `fixed` の軸のハンドルの並び。`DesignDocument.fixedLengthOf` が `none` を返す軸は\n+ *   出さない\n  */\n function fixedLengthsOf(\n   document: DesignDocument,",
+          "patchLines": 23,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "2b17739a02d12e54e7c6bd1e784d2a775da5e25a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-30T15:11:15Z",
+      "subject": "🧪 [Tests]: #1176 スキーマに無い大きさの prop を書いた Text のテストを fixedLengthOf に足す",
+      "body": "- setupDocument に label を足した（Text、widthMode: \"fixed\" / width: 120）\n- fixedLengthOf が label の幅を答えないことを確かめるテストを足した\n\n背景:\ntest-reviewer が実装を壊して確かめたところ、生の props が既定を当てた\nprops に混ざっても、落ちるのは node-resize.handles のテスト 1 件だけで、\n規則を持つドメイン側のテストは 1 件も落ちなかった。fixedLengthOf は\n追従（withResizeFollowUp）からも呼ばれるので、ドメイン側でもこの\n振る舞いを固定する。\n\n採用理由:\nスキーマに無い type のテスト（mystery）と対になる形にした。type が無い\n場合は、手前の forNode で none になる。Text は type がスキーマにあるので\nforNode を通り、別の経路を守る。足したテストは、生の props を既定の\n下に混ぜる壊し方で落ちることを確かめた（このとき既存の unknown のテストは\n通ったまま）。\n\n代替案:\nnode-resize 側のテストだけで守る案は採らなかった。node-resize が\nfixedLengthOf を使わなくなると、守るテストが無くなるため。\n\n影響とトレードオフ:\nテストを足しただけで、本番コードは変えていない。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1176\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SBuKax7hzhMoDV4aM",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 1,
+          "patch": "@@ -4,7 +4,8 @@ import { DesignDocument } from \"../index\";\n \n /**\n  * 大きさの書き方が違うノードを、360 x 240 の artboard `home` の直下に並べたドキュメント。\n- * `instance` は部品 `chip` のインスタンス、`unknown` はスキーマに無い type。\n+ * `instance` は部品 `chip` のインスタンス、`unknown` はスキーマに無い type、`label` は\n+ * スキーマに無い `widthMode` / `width` を書いた Text。\n  */\n function setupDocument(): DesignDocument {\n   return DesignDocument.create({\n@@ -49,6 +50,11 @@ function setupDocument(): DesignDocument {\n             type: \"Unknown\",\n             props: { widthMode: \"fixed\", width: 120 },\n           },\n+          {\n+            name: \"label\",\n+            type: \"Text\",\n+            props: { widthMode: \"fixed\", width: 120 },\n+          },\n           { name: \"instance\", ref: \"chip\" },\n         ],\n       },\n@@ -116,6 +122,12 @@ test(\"スキーマに無い type のノードは、fixed と長さを書いて\n   ).toEqual(Option.none);\n });\n \n+test(\"スキーマに無い大きさの prop を書いた Text は、fixed と長さを書いていても答えない\", () => {\n+  expect(\n+    DesignDocument.fixedLengthOf(setupDocument(), \"label\", \"width\"),\n+  ).toEqual(Option.none);\n+});\n+\n test(\"ドキュメントに無い名前は長さを答えない\", () => {\n   expect(\n     DesignDocument.fixedLengthOf(setupDocument(), \"missing\", \"width\"),",
+          "patchLines": 35,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/__tests__/sample-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/__tests__/token-refs.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/artboard-edit-setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/copy-setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.ancestors.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.append-position.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-child-rotation.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-reposition.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.box-props.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.child-position.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.children.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.componentize-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.componentize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.constraint.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.copies-after.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detach-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detach.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detachable.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.format-version.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.found-node-names.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-placement.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.lock.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.migration.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.name-uniqueness.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.node-copies.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.outermost-nodes.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.placement.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.prop-edit.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.remove-all-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.remove-all.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.rename-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.rename.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.replace-node.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.reposition.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.resize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.template.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-paint.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-validation-range.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.tree-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.tree.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.type.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.usable-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-binding.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-color.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-default.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-duplicate-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-fill.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-identifier.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-missing-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-override.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-paint.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-placement.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-prototype-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-public-prop-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-ref-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-ref.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-unknown.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.visibility.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/text-node-setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/child-placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/child-position/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/constraint/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/edit-error/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/template/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/v1/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/document-names/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/expanded-node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/format-version/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/layout/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/locking/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/node-tree/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/reference-context/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/reposition-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/rotation/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/visibility/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/types/NonEmptyArray.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Interop.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-error/__tests__/document-error.validation-location.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-error/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-reload/__tests__/document-reload.invalid.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-reload/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.canvas-dig.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.current-artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.lock.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.single-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.source-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/file-validity/__tests__/file-validity.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/node-template/__tests__/node-template.name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/node-template/__tests__/node-template.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/node-template/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-document/__tests__/opened-document.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-document/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.edit-from.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/token-selection/__tests__/token-selection.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/token-selection/__tests__/token-selection.referrer.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/token-selection/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__stories__/sample-editor-state.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/artboard-fixtures.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/primary-color-token.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/sample-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-left-pane/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-provider/__tests__/editor-provider.edge.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-provider/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-top-bar/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard-reposition.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-history/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-history/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.target.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard-reposition.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.clipboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.context-menu-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.instance-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.move.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-clipboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-remove.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reload.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.remove-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.remove.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize-continuity.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.token.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/sibling-positions/__tests__/sibling-positions.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/sibling-positions/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/__stories__/sample-assets-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/assets-panel/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/component-list/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/domains/componentization/__tests__/componentization.edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/domains/componentization/__tests__/componentization.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/domains/componentization/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__stories__/sample-canvas-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-resize.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-turned-frame.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.frozen.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.multi-selection.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/session/selection-dig/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.text-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/__stories__/sample-canvas-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/__tests__/resize-handle-overlay.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/dragged-node/__tests__/dragged-node.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.gesture.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.orientation.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/child-placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/arranged-artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/types/NonEmptyArray.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__stories__/panel-controls.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.frozen.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.heading.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.multi-selection.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.shorthand.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/__stories__/sample-sidebar-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.editing.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.filter.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.type-display.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.disclosure.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.filter.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.reorder.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.type-display.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/layers-panel/__tests__/layers-panel.filter.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/__stories__/sample-token-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/__tests__/gradient-documents.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.edge.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.reveal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.title.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-list/__tests__/token-list.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-used-by/__tests__/render.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-used-by/__tests__/token-used-by.edge.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-used-by/__tests__/token-used-by.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-used-by/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.artboard.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.group.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.instance-lock.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.rename.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.format-version.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.parse-error.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.parse.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.roundtrip.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.serialize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.template.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.type.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/__tests__/document-html.edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/__tests__/document-html.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    }
+  ]
+}
