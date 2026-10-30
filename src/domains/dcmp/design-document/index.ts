@@ -177,33 +177,6 @@ function applyPropEdits(
 }
 
 /**
- * 名前で指した artboard / ノードが今持っている、軸ごとの長さ。
- *
- * @param document 引き先になるドキュメント
- * @param name 長さを知りたい artboard / ノードの名前
- * @param axis どちらの軸の長さか
- * @returns その軸の長さ。名前が無い / 部品インスタンス / スキーマに無い type /
- *   `hug` `fill` のときは `none`
- */
-function axisLengthOf(
-  document: DesignDocument,
-  name: string,
-  axis: Axis,
-): Option<number> {
-  const artboard = DesignDocument.findArtboard(document, name);
-  if (Option.isSome(artboard)) {
-    return Option.some(artboard.value[axis]);
-  }
-  const node = DesignDocument.findNode(document, name);
-  if (!Option.isSome(node) || !Node.isPrimitive(node.value)) {
-    return Option.none;
-  }
-  return Option.flatMap(ResolvedProps.forNode(node.value), (props) =>
-    Size.fixedLengthFromProps(props, axis),
-  );
-}
-
-/**
  * 1 つの子を、親の長さの変化へ追従させる編集
  * （docs/03「配置の指定」の追従の表）。
  *
@@ -374,7 +347,7 @@ function freedChildren(box: PrimitiveNode): readonly Node[] {
  * @param name 大きさが変わったかもしれない artboard / ノードの名前
  * @param edited その編集の結果
  * @returns 子を追従させたドキュメント。長さが変わっていない・長さが読めない
- *   （`axisLengthOf` が答えない）ときは `edited` のまま
+ *   （`fixedLengthOf` が答えない）ときは `edited` のまま
  */
 function withResizeFollowUp(
   before: DesignDocument,
@@ -383,10 +356,13 @@ function withResizeFollowUp(
 ): Result<DesignDocument, DesignDocumentEditError> {
   return Result.flatMap(edited, (after) => {
     const resizes = Object.values(Axes).flatMap((axis) => {
-      const resize = Option.flatMap(axisLengthOf(before, name, axis), (from) =>
-        Option.flatMap(axisLengthOf(after, name, axis), (to) =>
-          AxisResize.create({ axis, before: from, after: to }),
-        ),
+      const resize = Option.flatMap(
+        DesignDocument.fixedLengthOf(before, name, axis),
+        (from) =>
+          Option.flatMap(
+            DesignDocument.fixedLengthOf(after, name, axis),
+            (to) => AxisResize.create({ axis, before: from, after: to }),
+          ),
       );
       return Option.isSome(resize) ? [resize.value] : [];
     });
@@ -1752,6 +1728,33 @@ export const DesignDocument = {
           Visibilities.Hidden,
         ),
     });
+  },
+
+  /**
+   * 名前で指した artboard / ノードが今持っている、軸ごとの長さ。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 長さを知りたい artboard / ノードの名前
+   * @param axis どちらの軸の長さか
+   * @returns その軸の長さ。名前が無い / 部品インスタンス / スキーマに無い type /
+   *   `hug` `fill` / `fixed` なのに長さも既定も無いときは `none`
+   */
+  fixedLengthOf(
+    document: DesignDocument,
+    name: string,
+    axis: Axis,
+  ): Option<number> {
+    const artboard = DesignDocument.findArtboard(document, name);
+    if (Option.isSome(artboard)) {
+      return Option.some(artboard.value[axis]);
+    }
+    const node = DesignDocument.findNode(document, name);
+    if (!Option.isSome(node) || !Node.isPrimitive(node.value)) {
+      return Option.none;
+    }
+    return Option.flatMap(ResolvedProps.forNode(node.value), (props) =>
+      Size.fixedLengthFromProps(props, axis),
+    );
   },
 
   /**
