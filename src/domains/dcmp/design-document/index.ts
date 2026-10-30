@@ -1731,7 +1731,8 @@ export const DesignDocument = {
   },
 
   /**
-   * 名前で指した artboard / ノードが今持っている、軸ごとの長さ。
+   * 名前で指した artboard / ノードが、`fixed` の軸に今持っている長さ。artboard は 2 軸とも
+   * `fixed` 固定なので常に答える（docs/03-schema.md）。
    *
    * @param document 引き先になるドキュメント
    * @param name 長さを知りたい artboard / ノードの名前

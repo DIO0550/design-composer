@@ -340,17 +340,15 @@ const UnresizableSelection: ResizableSelection = {
 
 /**
  * 名前で指した artboard / ノードの、掴める軸のハンドル（docs/06-ui.md「`hug` / `fill` では
- * ハンドルを出さない」）。artboard は 2 軸とも `fixed` 固定なので、常にどちらの辺も掴める
- * （docs/03）。
+ * ハンドルを出さない」）。
  *
- * 参照ノードに出さないのは、インスタンスが上書きできるのが publicProps に宣言のある prop
- * だけで、宣言の追加は AI / JSON 編集の担当だから（docs/06-ui.md「部品化」）。出すと
- * 「掴めるのに何も起きない」操作になる。
+ * 部品インスタンスに出さないのは、上書きできるのが publicProps に宣言のある prop だけで、宣言の
+ * 追加は AI / JSON 編集の担当だから（docs/06-ui.md「部品化」）。出すと掴めるのに何も起きない。
  *
  * @param document 引き先になるドキュメント
  * @param name ハンドルを出したい artboard / ノードの名前
- * @returns `fixed` の軸のハンドルの並び。部品インスタンス・スキーマに無い type・`hug` /
- *   `fill` の軸・長さも既定も無い軸は出さない
+ * @returns `fixed` の軸のハンドルの並び。`DesignDocument.fixedLengthOf` が `none` を返す軸は
+ *   出さない
  */
 function fixedLengthsOf(
   document: DesignDocument,
