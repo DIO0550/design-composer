@@ -4,7 +4,8 @@ import { DesignDocument } from "../index";
 
 /**
  * 大きさの書き方が違うノードを、360 x 240 の artboard `home` の直下に並べたドキュメント。
- * `instance` は部品 `chip` のインスタンス、`unknown` はスキーマに無い type。
+ * `instance` は部品 `chip` のインスタンス、`unknown` はスキーマに無い type、`label` は
+ * スキーマに無い `widthMode` / `width` を書いた Text。
  */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
@@ -47,6 +48,11 @@ function setupDocument(): DesignDocument {
           {
             name: "unknown",
             type: "Unknown",
+            props: { widthMode: "fixed", width: 120 },
+          },
+          {
+            name: "label",
+            type: "Text",
             props: { widthMode: "fixed", width: 120 },
           },
           { name: "instance", ref: "chip" },
@@ -113,6 +119,12 @@ test("部品インスタンスは長さを答えない", () => {
 test("スキーマに無い type のノードは、fixed と長さを書いていても答えない", () => {
   expect(
     DesignDocument.fixedLengthOf(setupDocument(), "unknown", "width"),
+  ).toEqual(Option.none);
+});
+
+test("スキーマに無い大きさの prop を書いた Text は、fixed と長さを書いていても答えない", () => {
+  expect(
+    DesignDocument.fixedLengthOf(setupDocument(), "label", "width"),
   ).toEqual(Option.none);
 });
 
