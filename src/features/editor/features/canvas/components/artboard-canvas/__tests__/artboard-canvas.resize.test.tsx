@@ -24,8 +24,9 @@ import {
 
 /**
  * `home` に、2 軸とも固定の `panel`、幅だけ固定の `banner`、
- * モードを指定していない `title`、部品インスタンスの `action`、
- * 2 軸とも固定で親から見た座標を持つ `badge` が並ぶ状態。
+ * 大きさのモードを持たない Text の `title`、部品インスタンスの `action`、
+ * 2 軸とも固定で親から見た座標を持つ `badge`、モードを書かずに長さだけを書いた Ellipse の
+ * `oval` が並ぶ状態。
  */
 function setupSelection(
   selectedNames: readonly string[] = [],
@@ -71,6 +72,11 @@ function setupSelection(
             },
             children: [],
           },
+          {
+            name: "oval",
+            type: "Ellipse",
+            props: { width: 140, height: 72 },
+          },
         ],
       },
     ],
@@ -103,7 +109,13 @@ test("幅だけが fixed のノードを選んでもハンドルが描かれる"
   expect(resizeHandles()).toHaveLength(8);
 });
 
-test("モードを指定していないノードを選んでもハンドルは描かれない", () => {
+test("モードを書いていない Ellipse を選ぶとハンドルが描かれる", () => {
+  renderCanvas({ selection: setupSelection(["oval"]) });
+
+  expect(resizeHandles()).toHaveLength(8);
+});
+
+test("大きさのモードを持たない Text を選んでもハンドルは描かれない", () => {
   renderCanvas({ selection: setupSelection(["title"]) });
 
   expect(resizeHandles()).toHaveLength(0);
