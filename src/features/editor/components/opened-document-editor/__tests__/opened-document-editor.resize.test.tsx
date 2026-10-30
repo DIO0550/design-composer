@@ -24,10 +24,13 @@ import { drawn, renderOpenedDocument, selectInTree } from "./setup";
  * は通知の値までは固定するが、それが履歴でどう扱われるかは見ない。
  */
 
-/** 画面の (100, 50) に 200x100 で描かれている、という前提。右辺 x=300。 */
-const PanelBounds = { left: 100, top: 50, width: 200, height: 100 };
+/** 掴むノードが画面の (100, 50) に 200x100 で描かれている、という前提。右辺 x=300。 */
+const GrabbedBounds = { left: 100, top: 50, width: 200, height: 100 };
 
-/** 2 軸とも固定の `panel` と、そこへ座標も持たせた `badge` を持つドキュメント。 */
+/**
+ * 2 軸とも固定の `panel` と、そこへ座標も持たせた `badge` と、モードを書かずに長さだけを
+ * 書いた Ellipse の `ring` を持つドキュメント。
+ */
 function setupDocument(): DesignDocument {
   return DesignDocument.create({
     tokens: DocumentTemplate.Default.tokens,
@@ -63,6 +66,11 @@ function setupDocument(): DesignDocument {
             },
             children: [],
           },
+          {
+            name: "ring",
+            type: "Ellipse",
+            props: { width: 200, height: 100 },
+          },
         ],
       }),
     ],
@@ -70,14 +78,16 @@ function setupDocument(): DesignDocument {
 }
 
 /**
- * `panel` の右辺を掴んで、**途中で 2 回以上動かして**から離す。
+ * ノードの右辺を掴んで、**途中で 2 回以上動かして**から離す。
  *
  * 1 回しか動かさないと、刻みごとに履歴を積む実装でも undo 1 回で掴む前へ戻るため、
  * 直したい症状が出ない（`artboard-canvas.artboard-drag.test.tsx` が同じ性質を使っている）。
+ *
+ * @param name 右辺を掴むノードの名前
  */
-function dragRightEdge(): void {
-  stubBounds(drawn("panel"), PanelBounds);
-  pressPointer(drawn("panel"), { x: 298, y: 100 });
+function dragRightEdge(name = "panel"): void {
+  stubBounds(drawn(name), GrabbedBounds);
+  pressPointer(drawn(name), { x: 298, y: 100 });
   movePointer(canvasContent(), { x: 318, y: 100 });
   movePointer(canvasContent(), { x: 338, y: 100 });
   releasePointer(canvasContent(), { x: 338, y: 100 });
@@ -90,6 +100,15 @@ test("キャンバスで右辺を運ぶと、描かれる幅が動かした分�
   dragRightEdge();
 
   expect(drawn("panel").style.width).toBe("240px");
+});
+
+test("モードを書いていない Ellipse の右辺を運ぶと、描かれる幅が動かした分だけ広がる", async () => {
+  await renderOpenedDocument(setupDocument());
+  await selectInTree("ring");
+
+  dragRightEdge("ring");
+
+  expect(drawn("ring").style.width).toBe("240px");
 });
 
 test("運んだあと 1 回戻すと、描かれる幅が掴む前に戻る", async () => {
@@ -107,7 +126,7 @@ test("続けて 2 回運ぶと、1 回戻るのは直前のドラッグの前ま
   await renderOpenedDocument(setupDocument());
   await selectInTree("panel");
   dragRightEdge();
-  stubBounds(drawn("panel"), { ...PanelBounds, width: 240 });
+  stubBounds(drawn("panel"), { ...GrabbedBounds, width: 240 });
   pressPointer(drawn("panel"), { x: 338, y: 100 });
   movePointer(canvasContent(), { x: 358, y: 100 });
   movePointer(canvasContent(), { x: 378, y: 100 });
@@ -125,7 +144,7 @@ test("続けて 2 回運ぶと、1 回戻るのは直前のドラッグの前ま
  * 右辺のドラッグと同じ理由で 2 回動かす（1 回だと刻みごとに履歴を積む実装でも通る）。
  */
 function dragLeftEdge(): void {
-  stubBounds(drawn("badge"), PanelBounds);
+  stubBounds(drawn("badge"), GrabbedBounds);
   pressPointer(drawn("badge"), { x: 103, y: 100 });
   movePointer(canvasContent(), { x: 118, y: 100 });
   movePointer(canvasContent(), { x: 133, y: 100 });
