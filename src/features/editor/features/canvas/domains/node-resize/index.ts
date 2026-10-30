@@ -3,10 +3,8 @@ import type { Artboard } from "@/domains/dcmp/artboard";
 import { AxisLength, type AxisLengths } from "@/domains/dcmp/axis-length";
 import type { ChildPlacement } from "@/domains/dcmp/child-placement";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import { Node, type Props } from "@/domains/dcmp/node";
 import { Placement } from "@/domains/dcmp/placement";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
-import { Size } from "@/domains/dcmp/size";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { Angle } from "@/domains/unit/angle";
 import { Axes, type Axis, type AxisEnd, AxisEnds } from "@/domains/unit/axis";
@@ -341,44 +339,27 @@ const UnresizableSelection: ResizableSelection = {
 };
 
 /**
- * artboard は 2 軸とも `fixed` 固定なので、常にどちらの辺も掴める（docs/03）。
+ * 名前で指した artboard / ノードの、掴める軸のハンドル（docs/06-ui.md「`hug` / `fill` では
+ * ハンドルを出さない」）。artboard は 2 軸とも `fixed` 固定なので、常にどちらの辺も掴める
+ * （docs/03）。
  *
- * @param artboard ハンドルを出したい artboard
- * @returns 幅と高さの 2 件のハンドル
+ * 参照ノードに出さないのは、インスタンスが上書きできるのが publicProps に宣言のある prop
+ * だけで、宣言の追加は AI / JSON 編集の担当だから（docs/06-ui.md「部品化」）。出すと
+ * 「掴めるのに何も起きない」操作になる。
+ *
+ * @param document 引き先になるドキュメント
+ * @param name ハンドルを出したい artboard / ノードの名前
+ * @returns `fixed` の軸のハンドルの並び。部品インスタンス・スキーマに無い type・`hug` /
+ *   `fill` の軸・長さも既定も無い軸は出さない
  */
-function artboardHandles(artboard: Artboard): readonly AxisLength[] {
-  return [
-    AxisLength.create("width", artboard.width),
-    AxisLength.create("height", artboard.height),
-  ];
-}
-
-/**
- * `fixed` の軸だけを掴める（docs/06-ui.md「`hug` / `fill` ではハンドルを出さない」）。
- *
- * モードが `fixed` でも長さが未設定なら出さない。
- *
- * @param props ハンドルの出し分けに使う props
- * @returns `fixed` で長さも設定されている軸のハンドルだけの並び
- */
-function propsHandles(props: Props): readonly AxisLength[] {
+function fixedLengthsOf(
+  document: DesignDocument,
+  name: string,
+): readonly AxisLength[] {
   return Object.values(Axes).flatMap((axis) => {
-    const length = Size.fixedLengthFromProps(props, axis);
+    const length = DesignDocument.fixedLengthOf(document, name, axis);
     return Option.isSome(length) ? [AxisLength.create(axis, length.value)] : [];
   });
-}
-
-/**
- * 参照ノードにはハンドルを出さない。インスタンスが上書きできるのは publicProps に宣言の
- * ある prop だけで、宣言の追加は AI / JSON 編集の担当（docs/06-ui.md「部品化」）。
- *
- * 出すと「掴めるのに何も起きない」操作になる。
- *
- * @param node ハンドルを出したいノード
- * @returns 掴める軸のハンドルの並び。参照ノードなら空
- */
-function nodeHandles(node: Node): readonly AxisLength[] {
-  return Node.isRef(node) ? [] : propsHandles(node.props ?? {});
 }
 
 /**
@@ -573,7 +554,7 @@ export const NodeResize = {
     const index = artboards.findIndex((artboard) => artboard.name === name);
     if (index >= 0) {
       return {
-        lengths: artboardHandles(artboards[index]),
+        lengths: fixedLengthsOf(selection.document, name),
         origin: Option.some(ArrangedArtboard.positionAt(artboards, index)),
         snapTargets: {
           kind: "anyGrip",
@@ -598,7 +579,7 @@ export const NodeResize = {
     }
     const placement = DesignDocument.childPlacementOf(selection.document, name);
     return {
-      lengths: nodeHandles(node.value),
+      lengths: fixedLengthsOf(selection.document, name),
       origin: Option.map(placement, (child) =>
         Placement.offset(child.placement),
       ),
