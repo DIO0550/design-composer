@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-hooP4WMaFQ3IhKF6A9ORVJLOJs3oYwQFYY4CpoIbeoc='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-02SeN2v9q3JeVGu8lVC+xPs7rYkY0Ung8y/WMBux5v0='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1605,11 +1605,12 @@ button.change-item:hover { background: var(--track); }
 
     const addedTopicOf = (added, index, context) => ({ kind: "added", id: `added-${index}`, label: added.label, ...sidesOf(added, context), tests: testEvidenceOf(added.tests, context.testAt) });
 
+    /** 仕様の場所(変わったこと・変わらないことで共通のパス・位置・文)。 */
+    const specOf = (spec) => ({ path: spec.path, locator: spec.locator, text: spec.text });
+
     /** 変えた仕様の場所。`destinations` は `shas` を書いた順の届く先で、行の範囲を持たないのでファイルまでしか届かない。 */
     const changedSpecOf = (spec, destinationsOf) => ({
-      path: spec.path,
-      locator: spec.locator,
-      text: spec.text,
+      ...specOf(spec),
       destinations: destinationsOf({ path: spec.path, lineRange: null, shas: listOf(spec.shas) }),
     });
 
@@ -1622,7 +1623,7 @@ button.change-item:hover { background: var(--track); }
 
     const keptTopicsOf = (impact, { testAt }) => {
       const lines = listOf(impact.kept).map((line) => ({ text: line.text, tests: testEvidenceOf(line.tests, testAt) }));
-      const specs = listOf(impact.keptSpecs).map((spec) => ({ path: spec.path, locator: spec.locator, text: spec.text }));
+      const specs = listOf(impact.keptSpecs).map(specOf);
       return lines.length === 0 ? [] : [{ kind: "kept", id: "kept", label: Labels.kept, specs, lines }];
     };
 
@@ -2228,7 +2229,7 @@ button.change-item:hover { background: var(--track); }
      *   行まで(`line`)届くのは、`lineRange` があり、そのコミットが解説の sha 以前で、あいだ(解説の sha を含む)にマージコミットも
      *   `path` を変えたコミットも無いときだけで、ほかは `file`
      */
-    const destinationsIn = (commits, explainedAt) => {
+    const destinationsOfIn = (commits, explainedAt) => {
       const reachOf = ({ sha, path, lineRange }) => {
         const index = commits.findIndex((commit) => commit.sha === sha);
         if (index < 0) return { kind: "unmapped" };
@@ -2317,7 +2318,7 @@ button.change-item:hover { background: var(--track); }
       const tests = testsOf({ mapTests: map.tests, explain, targetOf, addedFiles });
       const entryAt = new Map(entries.map((entry) => [entry.path, entry]));
       const testAt = new Map(tests.filter((test) => test.test !== null).map((test) => [test.test.id, test]));
-      const destinationsOf = destinationsIn(map.commits, explainedAt);
+      const destinationsOf = destinationsOfIn(map.commits, explainedAt);
       return Object.freeze({
         map: { pr: map.pr, head: map.head, mergeBase: map.mergeBase, headBranch: map.headBranch, baseBranch: map.baseBranch },
         reading,
@@ -3418,7 +3419,7 @@ button.change-item:hover { background: var(--track); }
     ])];
     const isSent = context.sentFile !== null && context.sentFile.path === file.path;
     // 送った行の光は注釈に乗ったときの光と同じ見た目なので、送ったカードであることを文で添える。
-    const sentNote = isSent ? [el("div", { class: "file-sent-note", text: context.sentFile.lineRange === null ? "技術の手引きから送ったファイル" : `技術の手引きから送った行(${lineRangeOf(context.sentFile.lineRange)})` })] : [];
+    const sentNote = isSent ? [el("div", { class: "file-sent-note", text: context.sentFile.lineRange === null ? "ほかの画面から送ったファイル" : `ほかの画面から送った行(${lineRangeOf(context.sentFile.lineRange)})` })] : [];
     const card = el("details", { class: classesOf("file-card", { "is-sent": isSent }), "data-status": file.status }, [
       el("summary", {}, [
         el("span", { class: "chev" }),
@@ -3970,6 +3971,11 @@ button.change-item:hover { background: var(--track); }
     ]);
   });
 
+  const CommitLinkTitle = "変更の経緯でこのコミットを開く";
+
+  /** 届かない先の注意(`destinationLinkOf` の `warning`)の要素。注意が無ければ空の並び。 */
+  const warningNodesOf = (warning) => (warning === null ? [] : [el("span", { class: "warn-text", text: warning })]);
+
   /**
    * 変更の経緯のコミットへ移るボタン。地図に無い sha なら、件名の位置に「地図に無いコミット」と出す。
    * @param label 左に添える名前(「追加したコミット」「差分で見る」など)
@@ -3978,7 +3984,7 @@ button.change-item:hover { background: var(--track); }
   const commitLinkOf = ({ sha, label, commitAt, onPress }) => {
     const commit = commitAt.get(sha);
     const subject = commit === undefined ? "地図に無いコミット" : commit.subject;
-    return pressable("button", { class: "commit-link plain-button", title: "変更の経緯でこのコミットを開く" }, [
+    return pressable("button", { class: "commit-link plain-button", title: CommitLinkTitle }, [
       el("span", { class: "label", text: label }),
       el("span", { class: "sha", text: shortSha(sha) }),
       el("span", { class: "subject", text: subject }),
@@ -5830,28 +5836,34 @@ button.change-item:hover { background: var(--track); }
       return el("span", { class: "ref-card-meta" }, [
         el("span", { class: "sha", text: shortSha(destination.sha) }),
         // コミットの件名は出さない(振る舞いの画面にコードの名前を持ち込まないため。理由の正本は `build-pr-explain.py` の冒頭)。
-        pressable("button", { class: "review-go plain-button", title: "変更の経緯でこのコミットを開く", text: `${label} →` }, [], onPress),
-        ...(warning === null ? [] : [el("span", { class: "warn-text", text: warning })]),
+        pressable("button", { class: "review-go plain-button", title: CommitLinkTitle, text: `${label} →` }, [], onPress),
+        ...warningNodesOf(warning),
       ]);
     };
 
-    /** 仕様の場所のカード。パスと位置、どう変えたか(変えていないか)と、変えた仕様なら届く先ごとの移るボタン。 */
-    const specCardOf = (spec) => el("div", { class: "ref-card" }, [
+    /** 仕様の場所のカードの中身。パスと位置と、どう変えたか(変えていないか)。 */
+    const specLinesOf = (spec) => [
       el("span", { class: "ref-card-head" }, [`${spec.path} `, el("span", { class: "ref-card-locator", text: spec.locator })]),
       el("span", { class: "side-sub", text: spec.text }),
-      ...listOf(spec.destinations).map(destinationMetaOf),
-    ]);
+    ];
+    /** 変わらないことの仕様の場所のカード。 */
+    const keptSpecCardOf = (spec) => el("div", { class: "ref-card" }, specLinesOf(spec));
+    /** 変えた仕様の場所のカード。中身に、届く先ごとの移るボタンを足す。 */
+    const changedSpecCardOf = (spec) => el("div", { class: "ref-card" }, [...specLinesOf(spec), ...spec.destinations.map(destinationMetaOf)]);
 
     const relatedIssueCardOf = (related) => el("div", { class: "ref-card" }, [
       el("span", { class: "ref-card-head", text: `Issue #${related.issue}` }),
       el("span", { class: "side-sub", text: related.text }),
     ]);
 
-    /** 仕様の欄。仕様の場所があれば見出しは「仕様」で、関連 Issue も同じ欄に並べる。関連 Issue だけなら見出しは「関連 Issue」。 */
-    const specBlocksOf = (specs, relatedIssues) => {
-      const cards = [...specs.map(specCardOf), ...relatedIssues.map(relatedIssueCardOf)];
+    /**
+     * 仕様の欄。仕様の場所があれば見出しは「仕様」で、関連 Issue も同じ欄に並べる。関連 Issue だけなら見出しは「関連 Issue」。
+     * @param specCards 仕様の場所のカード(`changedSpecCardOf` / `keptSpecCardOf` で作ったもの)
+     */
+    const specBlocksOf = (specCards, relatedIssues) => {
+      const cards = [...specCards, ...relatedIssues.map(relatedIssueCardOf)];
       if (cards.length === 0) return [];
-      return [el("div", { class: "side-block" }, [eyebrowOf(specs.length > 0 ? "仕様" : "関連 Issue"), ...cards])];
+      return [el("div", { class: "side-block" }, [eyebrowOf(specCards.length > 0 ? "仕様" : "関連 Issue"), ...cards])];
     };
 
     /**
@@ -5861,7 +5873,7 @@ button.change-item:hover { background: var(--track); }
     const evidenceBlocksOf = (topic) => {
       switch (topic.kind) {
         case "changed": {
-          const blocks = [...specBlocksOf(topic.specs, topic.relatedIssues), ...mechanismsBlockOf(topic.mechanisms)];
+          const blocks = [...specBlocksOf(topic.specs.map(changedSpecCardOf), topic.relatedIssues), ...mechanismsBlockOf(topic.mechanisms)];
           return blocks.length > 0 ? blocks : [el("p", { class: "side-note", text: "仕様の場所・関連 Issue・前後の行が指すやりとりは、どれも書かれていません。" })];
         }
         case "table": {
@@ -5872,7 +5884,7 @@ button.change-item:hover { background: var(--track); }
         case "added":
           return [...testsBlocksOf(topic.tests, go), ...mechanismsBlockOf(topic.mechanisms)];
         case "kept":
-          return [...specBlocksOf(topic.specs, []), ...topic.lines.map((line) => el("div", { class: "side-block" }, [
+          return [...specBlocksOf(topic.specs.map(keptSpecCardOf), []), ...topic.lines.map((line) => el("div", { class: "side-block" }, [
             el("span", { class: "side-sub", text: line.text }),
             guardOf(line.tests),
             ...line.tests.verifying.map(testCardOf),
@@ -6067,7 +6079,7 @@ button.change-item:hover { background: var(--track); }
     const destinationNodesOf = (destination) => {
       const { label, onPress, warning } = destinationLinkOf(destination, go);
       const link = commitLinkOf({ sha: destination.sha, label, commitAt: explained.commitAt, onPress });
-      return [link, ...(warning === null ? [] : [el("span", { class: "warn-text", text: warning })])];
+      return [link, ...warningNodesOf(warning)];
     };
 
     const occurrencesBlockOf = (topic) => el("div", { class: "side-block" }, [

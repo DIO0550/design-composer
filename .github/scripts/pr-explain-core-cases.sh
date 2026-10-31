@@ -54,16 +54,16 @@ vocabulary = {
 }
 target_keys = {kind: list(fields) for kind, fields in module.Variants["Target"].items()}
 text_rules = (module.Text, module.Heading, module.UserText, module.Sha, module.MarkedText)
-def kind_of(rule, is_many, texts):
+def kind_of(rule, is_many, listed_text_rules):
     if isinstance(rule, (module.Shape, module.Variant)):
         return "records" if is_many else "record"
     if rule == module.Id:
         return "ids" if is_many else "id"
-    if rule in texts:
+    if rule in listed_text_rules:
         return "texts" if is_many else "text"
     return None
-def shape_routes_of(rule, route, texts):
-    return [[found, kind_of(inner, is_many, texts)] for found, inner, is_many in module.routes_under(rule, route) if kind_of(inner, is_many, texts) is not None]
+def shape_routes_of(rule, route, listed_text_rules):
+    return [[found, kind_of(inner, is_many, listed_text_rules)] for found, inner, is_many in module.routes_under(rule, route) if kind_of(inner, is_many, listed_text_rules) is not None]
 def required_kinds_of(owner, key):
     if isinstance(owner, module.Shape):
         return None if module.Shapes[owner.name][key].required else []
@@ -340,9 +340,11 @@ const shapeReasonOf = (explain) => explained(mapOf(), explainOf(explain)).readin
 const passageExcerpt = (extra = {}) => ({ kind: "excerpt", excerpt: { path: "a.ts", start: 10, end: 14, ...extra } });
 // 出てくる場所のコミットへの届き方。地図のコミットの files はパス(改名なら変更前のパスも)だけを見る。
 const commitTouching = (digit, files, extra = {}) => ({ ...commitOf(digit), files, ...extra });
+// 地図の head は最後のコミット。
+const mapEndingWith = (commits) => mapOf({ commits, head: commits[commits.length - 1].sha });
 const reachesOf = ({ commits, explainedSha, path, shas, lineRange = { start: 3, end: 4 } }) => {
   const occurrence = { path, text: "ここ", shas, ...(lineRange === null ? {} : { lineRange }) };
-  const map = mapOf({ commits, head: commits[commits.length - 1].sha });
+  const map = mapEndingWith(commits);
   const topics = primerTopicsOf({ sha: explainedSha, primers: [primerOf({ occurrences: [occurrence] })] }, map).tabs.language.topics;
   return topics[0].occurrences[0].destinations.map(({ sha, reach }) => [sha, reach]);
 };
@@ -353,7 +355,7 @@ const mergedCommits = [commitTouching(1, [diffFile("a.ts")]), commitTouching(2, 
 const lineReach = { kind: "line", lineRange: { start: 3, end: 4 } };
 // 振る舞いの仕様の場所。地図のコミットと解説の sha を決め、変わったことに extra を足した節を引く。
 const changedSpecTopicOf = ({ commits, explainedSha, extra }) => {
-  const map = mapOf({ commits, head: commits[commits.length - 1].sha });
+  const map = mapEndingWith(commits);
   return topicsOf(impactOf({ changed: { before: [], after: [{ text: "後" }], ...extra } }), { map, explain: { sha: explainedSha } })[0];
 };
 const specOf = (path, locator, shas) => ({ path, locator, text: `${locator}を変えた`, shas });
@@ -942,7 +944,7 @@ const cases = [
     label: "仕様の場所・その sha・関連 Issue・変わらないことの仕様の場所の形の崩れは、崩れた道筋を理由にする",
     actual: () => {
       const after = [{ text: "後" }];
-      const reasonOf = (impact) => explained(mapOf(), explainOf({ impact: impactOf(impact) })).reading.reason;
+      const reasonOf = (impact) => shapeReasonOf({ impact: impactOf(impact) });
       return [
         reasonOf({ changed: { before: [], after, specs: {} } }),
         reasonOf({ changed: { before: [], after, specs: [specOf("docs/a.md", "甲", [5])] } }),
