@@ -226,6 +226,7 @@ pass|-|sample|仕様の場所のパスに継ぎ目のある複合語を書ける
 pass|-|sample|振る舞いの仕様の場所・関連 Issue・変わらないことの仕様の場所がどれも無い解説は通る|del d["impact"]["changed"]["specs"]; del d["impact"]["changed"]["relatedIssues"]; del d["impact"]["keptSpecs"]
 pass|-|sample|関連 Issue に材料の Issue と同じ番号を書ける|d["impact"]["changed"]["relatedIssues"][0]["issue"] = d["issue"]
 pass|-|sample|同じパスでも位置が違えば仕様の場所を 2 つ書ける|s = d["impact"]["changed"]["specs"]; s.append({**s[0], "locator": "別の節"}); k = d["impact"]["keptSpecs"]; k.append({**k[0], "locator": "別の節"})
+pass|-|sample|位置が同じでもパスが違えば仕様の場所を 2 つ書ける|s = d["impact"]["changed"]["specs"]; s.append({**s[0], "path": "docs/06-ui.md"}); k = d["impact"]["keptSpecs"]; k.append({**k[0], "path": "docs/06-ui.md"})
 pass|-|sample|変わったことと変わらないことに同じ仕様の場所を書ける|s = d["impact"]["changed"]["specs"][0]; d["impact"]["keptSpecs"][0].update(path=s["path"], locator=s["locator"])
 deny|shape|sample|仕様の場所に shas が無い|del d["impact"]["changed"]["specs"][0]["shas"]
 deny|shape|sample|仕様の場所の shas が空|d["impact"]["changed"]["specs"][0]["shas"] = []
@@ -234,11 +235,13 @@ deny|shape|sample|仕様の場所の shas に同じ sha を 2 回|s = d["impact"
 deny|shape|sample|変わらないことの仕様の場所に shas を書く|d["impact"]["keptSpecs"][0]["shas"] = [d["impact"]["changed"]["specs"][0]["shas"][0]]
 deny|shape|sample|仕様の場所に位置(locator)が無い|del d["impact"]["changed"]["specs"][0]["locator"]
 deny|shape|sample|仕様の場所にパス(path)が無い|del d["impact"]["changed"]["specs"][0]["path"]
+deny|shape|sample|仕様の場所に文(text)が無い|del d["impact"]["changed"]["specs"][0]["text"]
 deny|shape|sample|仕様の場所の文にバッククォート|d["impact"]["changed"]["specs"][0]["text"] = "`put-explain` の記述を書き換えた"
 deny|shape|sample|仕様の場所の位置が識別子|d["impact"]["changed"]["specs"][0]["locator"] = "buildPrExplain の節"
 deny|shape|sample|変わらないことの仕様の場所の位置が識別子|d["impact"]["keptSpecs"][0]["locator"] = "buildPrExplain の節"
 deny|shape|sample|関連 Issue の番号が 0|d["impact"]["changed"]["relatedIssues"][0]["issue"] = 0
 deny|shape|sample|関連 Issue の番号が文字列|d["impact"]["changed"]["relatedIssues"][0]["issue"] = "#996"
+deny|shape|sample|関連 Issue に番号(issue)が無い|del d["impact"]["changed"]["relatedIssues"][0]["issue"]
 deny|shape|sample|関連 Issue に文(text)が無い|del d["impact"]["changed"]["relatedIssues"][0]["text"]
 deny|shape|sample|関連 Issue の文が識別子|d["impact"]["changed"]["relatedIssues"][0]["text"] = "putExplain で先送りした件"
 deny|shape|sample|増えた状況に仕様の場所(specs)を書く|d["impact"]["added"][0]["specs"] = [dict(d["impact"]["changed"]["specs"][0])]
