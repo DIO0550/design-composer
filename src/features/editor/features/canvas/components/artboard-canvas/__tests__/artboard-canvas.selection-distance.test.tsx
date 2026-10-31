@@ -220,7 +220,8 @@ test("Alt を押したままウィンドウの大きさが変わると、測り�
 test("大きさの無いノードを選んでいると、距離は出ない", () => {
   renderCanvas({ selection: selectionDistanceTree(["row"]) });
   drawSelectionDistanceTree();
-  drawnAt("row", { left: 140, top: 100, width: 0, height: 0 });
+  // 片方の辺だけ 0 にする。両方 0 だと、面積を見ずに測っても線が出ない
+  drawnAt("row", { left: 140, top: 100, width: 0, height: 60 });
 
   enterPointer(canvasSurface());
   holdAlt();
