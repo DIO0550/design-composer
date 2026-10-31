@@ -116,7 +116,8 @@
       ],
       "relatedIssues": [
         { "issue": 1010, "text": "変更前の手順で、書き間違えた解説の扱いを先送りしていた件" }
-      ]
+      ],
+      "primers": ["shape-table", "object-pairs-hook"]
     },
     "tables": [
       {
@@ -149,7 +150,8 @@
           { "text": "置いたうえで、解説より後のコミットがあることを知らせる", "message": "put-explain" }
         ],
         "text": "古い解説でも、どこまでが解説済みかが分かれば読めます。",
-        "tests": ["stale"]
+        "tests": ["stale"],
+        "primers": ["shape-table"]
       }
     ],
     "kept": [
