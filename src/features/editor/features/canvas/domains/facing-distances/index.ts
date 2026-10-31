@@ -6,7 +6,7 @@ import { ThinLine } from "@/features/editor/features/canvas/domains/thin-line";
 import { Option } from "@/utils/Option";
 
 /**
- * 運んでいるものから上下左右それぞれ、最初に当たる相手までの短い線（画面上の px）。
+ * 起点（`from`）から上下左右それぞれ、最初に当たる相手までの短い線（画面上の px）。
  * 中身は線だが、名前は docs/06-ui.md「キャンバス直接操作」の機能名「Alt / Option の距離」
  * （線と数値をまとめた呼び名）から借りている。
  *
@@ -45,21 +45,21 @@ export const FacingDistances = {
   },
 
   /**
-   * 運んでいるものから上下左右それぞれ、落とし先の親の縁か兄弟のうち最初に当たる相手までの
-   * 短い線を引く（相手の選び方は docs/06-ui.md の Alt / Option の距離）。
+   * 起点から上下左右それぞれ、それを囲む親の縁か兄弟のうち最初に当たる相手までの短い線を
+   * 引く（相手の選び方は docs/06-ui.md の Alt / Option の距離）。
    *
-   * @param moved 寄せたあとの運んでいるものの矩形
-   * @param parentBounds 落とし先の親の矩形
-   * @param siblings その親の直下の、運んでいるもの以外の子
+   * @param from 距離を測り始める矩形
+   * @param parentBounds `from` を囲む親の矩形（運んでいる間は落とし先の親）
+   * @param siblings その親の直下の、`from` 以外の子
    * @returns 向きごとの短い線（すべて画面上の px）。当たる相手が無い / 最初に当たる相手に
    *   接している向きは `none`（重なっている相手は飛ばす）
    */
   create({
-    moved,
+    from,
     parentBounds,
     siblings,
   }: Readonly<{
-    moved: CanvasBounds;
+    from: CanvasBounds;
     parentBounds: CanvasBounds;
     siblings: readonly CanvasBounds[];
   }>): FacingDistances {
@@ -70,28 +70,28 @@ export const FacingDistances = {
         CanvasBounds.sideBounds(parentBounds, side),
       );
       const candidates = [...edges, ...siblings];
-      return lineToFirstReached(facing, moved, candidates);
+      return lineToFirstReached(facing, from, candidates);
     });
   },
 
   /**
    * 上下左右それぞれ、`others` のうち最初に当たる相手までの短い線。親の縁は候補にしない
-   * （docs/06-ui.md の artboard の移動の Alt / Option の距離）。
+   * （docs/06-ui.md の artboard の移動と、選択しているだけのときの Alt / Option の距離）。
    *
-   * @param moved 寄せたあとの運んでいるものの矩形
+   * @param from 距離を測り始める矩形
    * @param others 距離を測る相手の矩形
    * @returns 向きごとの短い線（すべて画面上の px）。当たる相手が無い / 最初に当たる相手に
    *   接している向きは `none`（重なっている相手は飛ばす）
    */
   createAmong({
-    moved,
+    from,
     others,
   }: Readonly<{
-    moved: CanvasBounds;
+    from: CanvasBounds;
     others: readonly CanvasBounds[];
   }>): FacingDistances {
     return FacingDistances.fromFacings((facing) =>
-      lineToFirstReached(facing, moved, others),
+      lineToFirstReached(facing, from, others),
     );
   },
 
@@ -119,18 +119,18 @@ export const FacingDistances = {
  * 進む向きで、候補のうち最初に当たる相手までの短い線。
  *
  * @param facing 進む向き
- * @param moved 寄せたあとの運んでいるものの矩形
+ * @param from 距離を測り始める矩形
  * @param candidates 当たる相手の候補
  * @returns 最初に当たる相手までの短い線。当たる相手が無い / 最初に当たる相手に接しているなら
  *   `none`（重なっている相手は飛ばす）
  */
 function lineToFirstReached(
   facing: Facing,
-  moved: CanvasBounds,
+  from: CanvasBounds,
   candidates: readonly CanvasBounds[],
 ): Option<ThinLine> {
   return Option.flatMap(
-    Facing.firstReached(facing, { from: moved, candidates }),
-    (to) => Facing.shortLineTo(facing, { from: moved, to }),
+    Facing.firstReached(facing, { from, candidates }),
+    (to) => Facing.shortLineTo(facing, { from, to }),
   );
 }

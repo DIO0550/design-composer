@@ -2,11 +2,11 @@ import { expect, test } from "vitest";
 import { SidePairs } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 import { FacingDistances } from "../index";
-import { Moved } from "./sample-bounds";
+import { From } from "./sample-bounds";
 
 /*
  * 親の縁を候補にせず、渡された相手だけを測る距離（docs/06-ui.md の artboard の移動の
- * Alt / Option の距離）。運んでいるものは左右 50〜70・上下 40〜50。
+ * Alt / Option の距離）。起点は左右 50〜70・上下 40〜50。
  */
 
 test("上下左右それぞれ、直交する向きで重なる相手のうち最初に当たるものまでの線になる", () => {
@@ -19,7 +19,7 @@ test("上下左右それぞれ、直交する向きで重なる相手のうち�
 
   expect(
     FacingDistances.createAmong({
-      moved: Moved,
+      from: From,
       others: [farAbove, nearAbove, below, left, right],
     }),
   ).toEqual({
@@ -53,9 +53,7 @@ test("上下左右それぞれ、直交する向きで重なる相手のうち�
 test("右にだけ相手がいれば、他の 3 向きには線を引かない", () => {
   const right = { left: 120, top: 30, width: 10, height: 15 };
 
-  expect(
-    FacingDistances.createAmong({ moved: Moved, others: [right] }),
-  ).toEqual({
+  expect(FacingDistances.createAmong({ from: From, others: [right] })).toEqual({
     horizontal: {
       start: Option.none,
       end: Option.some({
@@ -69,21 +67,21 @@ test("右にだけ相手がいれば、他の 3 向きには線を引かない",
 });
 
 test("直交する向きで接するだけの相手は相手にならない", () => {
-  // 左右 70〜80 で、運んでいるものの右辺（70）に接するだけ
+  // 左右 70〜80 で、起点の右辺（70）に接するだけ
   const touchingAbove = { left: 70, top: 0, width: 10, height: 10 };
 
   expect(
-    FacingDistances.createAmong({ moved: Moved, others: [touchingAbove] }),
+    FacingDistances.createAmong({ from: From, others: [touchingAbove] }),
   ).toEqual(FacingDistances.None);
 });
 
-test("運んでいるものと重なっている相手は相手にならず、その先の相手までの線になる", () => {
+test("起点と重なっている相手は相手にならず、その先の相手までの線になる", () => {
   const overlapping = { left: 40, top: 30, width: 20, height: 15 };
   const beyond = { left: 50, top: 0, width: 20, height: 10 };
 
   expect(
     FacingDistances.createAmong({
-      moved: Moved,
+      from: From,
       others: [overlapping, beyond],
     }).vertical.start,
   ).toEqual(
@@ -102,7 +100,7 @@ test("相手に接している向きには線を引かない", () => {
 
   expect(
     FacingDistances.createAmong({
-      moved: Moved,
+      from: From,
       others: [touching, beyond],
     }).vertical.start,
   ).toEqual(Option.none);
@@ -115,7 +113,7 @@ test("同じ距離に 2 つあれば、並びが先の相手までの線にな�
 
   expect(
     FacingDistances.createAmong({
-      moved: Moved,
+      from: From,
       others: [first, second],
     }).vertical.start,
   ).toEqual(

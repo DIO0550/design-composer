@@ -120,11 +120,14 @@ function distanceLinesFrom(
   switch (targets.kind) {
     case "within-parent":
       return FacingDistances.create({
-        moved,
+        from: moved,
         parentBounds: targets.parentBounds,
         siblings: targets.siblings,
       });
     case "among-artboards":
-      return FacingDistances.createAmong({ moved, others: targets.others });
+      return FacingDistances.createAmong({
+        from: moved,
+        others: targets.others,
+      });
   }
 }
