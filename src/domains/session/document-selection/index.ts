@@ -180,14 +180,28 @@ export const DocumentSelection = {
     names: readonly string[],
     dig: SelectionDig,
   ): Option<string> {
-    const artboardName = ArrayEx.first(
+    return Option.or(
+      DocumentSelection.nodeNameAt(selection, names, dig),
+      DocumentSelection.artboardNameAt(selection, names),
+    );
+  },
+
+  /**
+   * キャンバスで押された・指している位置を載せている artboard の名前。
+   *
+   * @param selection artboard を引くドキュメントの出どころ
+   * @param names 押された・指している位置から外へ辿った名前（内→外）
+   * @returns `names` のうち最初の artboard の名前。artboard が無ければ（部品定義の中の名前
+   *   だけ・空の並び）`none`
+   */
+  artboardNameAt(
+    selection: DocumentSelection,
+    names: readonly string[],
+  ): Option<string> {
+    return ArrayEx.first(
       names.filter((name) =>
         Option.isSome(DesignDocument.findArtboard(selection.document, name)),
       ),
-    );
-    return Option.or(
-      DocumentSelection.nodeNameAt(selection, names, dig),
-      artboardName,
     );
   },
 

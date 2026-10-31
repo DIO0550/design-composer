@@ -96,3 +96,21 @@ test("名前を 1 つも辿れなければ、何も選ばない", () => {
 
   expect(name).toEqual(Option.none);
 });
+
+test("押された位置を載せている artboard は、辿った名前のうちの artboard になる", () => {
+  const name = DocumentSelection.artboardNameAt(setupSelection(), [
+    "label",
+    "card",
+    "home",
+  ]);
+
+  expect(name).toEqual(Option.some("home"));
+});
+
+test("辿った名前に artboard が無ければ、載せている artboard は無い", () => {
+  const name = DocumentSelection.artboardNameAt(setupSelection(), [
+    "primary-button-label",
+  ]);
+
+  expect(name).toEqual(Option.none);
+});
