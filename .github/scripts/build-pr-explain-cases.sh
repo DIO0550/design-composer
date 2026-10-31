@@ -186,7 +186,7 @@ pass|-|sample|名前の 1 語の識別子(Result)は検査しない|d["concepts"
 pass|-|sample|名前に大文字だけの略語(UI 案・VRT)は書ける|d["concepts"][0]["name"] = "UI 案"; d["features"][0]["label"] = "VRT"
 pass|-|sample|説明文(concept の role)の識別子は検査しない|d["concepts"][0]["role"] = "TokenTemplate を組み立てる"
 pass|-|sample|テスト名(test の name)の識別子は検査しない|d["tests"][0]["name"] = "sortBy で並べ替えたとき順序が保たれる"
-pass|-|sample|振る舞い(impact)の見本(任意のキーをすべて使う)は通る|assert set(d["impact"]) == {"title", "lead", "changed", "tables", "added", "kept", "keptSpecs"} and {"specs", "relatedIssues"} <= set(d["impact"]["changed"]) and "note" in d["impact"]["tables"][0]["rowHeads"][1] and any("situation" in o for o in d["impact"]["tables"][0]["outcomes"])
+pass|-|sample|振る舞い(impact)の見本(任意のキーをすべて使う)は通る|assert set(d["impact"]) == {"title", "lead", "changed", "tables", "added", "kept", "keptSpecs"} and {"specs", "relatedIssues", "primers"} <= set(d["impact"]["changed"]) and "primers" in d["impact"]["added"][0] and "note" in d["impact"]["tables"][0]["rowHeads"][1] and any("situation" in o for o in d["impact"]["tables"][0]["outcomes"])
 pass|-|sample|振る舞いが題と要約だけでも通る|d["impact"] = {"title": "題", "lead": "要約"}
 pass|-|sample|状況の表の行と列で同じ id を使える(軸ごとに別の名前空間)|ids = {"mapped": "passing", "unmapped": "failing"}; t = d["impact"]["tables"][0]; [h.update(id=ids[h["id"]]) for h in t["columnHeads"]]; [o.update(columnHead=ids[o["columnHead"]]) for o in t["outcomes"]]
 pass|-|sample|変わらないことのテストが未実装のものだけでも通る|d["impact"]["kept"][0]["tests"] = ["stale"]
@@ -215,6 +215,12 @@ deny|shape|sample|増えた状況の前後がまったく同じ|a = d["impact"][
 deny|shape|sample|マスの tests に同じテストを 2 回|d["impact"]["tables"][0]["outcomes"][1]["tests"] = ["unknown-key", "unknown-key"]
 deny|shape|sample|増えた状況の tests に同じテストを 2 回|d["impact"]["added"][0]["tests"] = ["stale", "stale"]
 deny|shape|sample|変わらないことの tests に同じテストを 2 回|d["impact"]["kept"][0]["tests"] = ["unknown-key", "unknown-key"]
+deny|shape|sample|変わったことの技術の手引きの節に同じ id を 2 回|d["impact"]["changed"]["primers"] = ["shape-table", "shape-table"]
+deny|shape|sample|増えた状況の技術の手引きの節に同じ id を 2 回|d["impact"]["added"][0]["primers"] = ["shape-table", "shape-table"]
+deny|shape|sample|変わったことの技術の手引きの節が配列でない|d["impact"]["changed"]["primers"] = "shape-table"
+deny|shape|sample|増えた状況の技術の手引きの節が配列でない|d["impact"]["added"][0]["primers"] = "shape-table"
+deny|shape|sample|変わらないことの行に技術の手引きの節(primers)を書く|d["impact"]["kept"][0]["primers"] = ["shape-table"]
+deny|shape|sample|状況の表のマスに技術の手引きの節(primers)を書く|d["impact"]["tables"][0]["outcomes"][0]["primers"] = ["shape-table"]
 deny|shape|sample|増えた状況に before が無い|del d["impact"]["added"][0]["before"]
 deny|shape|sample|増えた状況のこれからが空|d["impact"]["added"][0]["after"] = []
 deny|shape|sample|列の見出しに注(note)を書く(注を持てるのは行の見出しだけ)|d["impact"]["tables"][0]["columnHeads"][0]["note"] = "注"
@@ -273,6 +279,8 @@ deny|ref|sample|増えた状況のこれまでの message が messages に無い
 deny|ref|sample|増えた状況のこれからの message が messages に無い|d["impact"]["added"][0]["after"][0]["message"] = "nope"
 deny|ref|sample|増えた状況の tests が tests に無い|d["impact"]["added"][0]["tests"] = ["nope"]
 deny|ref|sample|変わらないことの tests が tests に無い|d["impact"]["kept"][1]["tests"] = ["nope"]
+deny|ref|sample|変わったことの技術の手引きの節が primers に無い|d["impact"]["changed"]["primers"] = ["nope"]
+deny|ref|sample|増えた状況の技術の手引きの節が primers に無い|d["impact"]["added"][0]["primers"] = ["nope"]
 deny|code|sample|解説時点の sha がこのリポジトリに無い|d["sha"] = "f" * 40
 deny|code|sample|抜粋のパスが解説時点の sha に無い|d["tests"][0]["excerpt"] = {"path": "missing.txt", "start": 1, "end": 1}
 deny|code|sample|範囲の終わりがファイルの行数 + 1|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 5, "end": 6}

@@ -19,13 +19,14 @@ diff と Issue だけでは、長いセッションで何を使い、なぜそ�
 | 構造マップ(`#map`) | 左に変更ファイルと concepts の木。中に、それを層(または機能)ごとの組にまとめた箱の図と、やりとり(または依存)の線。組は抽象度で畳む・開く。右に概要(highlights・組ごとの変更・やりとり一覧)か、選んだ箱・線・やりとりの詳細(要するに・受け取るもの / 送り出すもの・使っている / 使われている)と、やりとりの流れ(シーケンス図) | `groups`・`dependencies` | `overview.highlights`・`features`・`layerRoles`・`concepts`・`messages`・`flows` |
 | 変更の経緯(`#story`) | コミットを新しい順に並べた一覧と、ブランチ全体の流れ(題・要約・これまで / このブランチのあと・変更の順番・レビューポイント)、コミットごとの説明(なぜ・影響する操作・レビューで見るところ・振る舞いの前後)と差分・行への注釈 | `commits`(件名・本文・作者・日時・ファイルごとの差分) | `overview`・`commitStories`(操作の名前は `flows`、ファイルの呼び名は `concepts`) |
 | テスト(`#test`) | suite ごとのテストの一覧と、構造マップと同じ組・箱の図の上で、テストが確かめている箱・やりとりと、その抜け。テストごとの前提 / 操作 / 期待・値の表・確かめているやりとり・この状況を確かめている(振る舞いの節)・テストコード・追加したコミット | `tests.added` / `tests.removed`・テスト名を調べたファイル(`tests.files`)・テストファイルの対象(`target`) | `suites`・`tests`(線は `messages`。無ければ依存) |
-| 振る舞い(`#impact`) | 使う人から見て何が変わったかを、コードの名前を出さずに(根拠の仕様の場所のパスを除く)1 画面で。左に節の目次(変わった節に印)、中に題・要約と、変わったこと(これまで / これから)・状況の表(行 × 列のマス。変わったマスに印。最初の変わったマスを選んだ状態で始まる)・増えた状況・変わらないこと(テストで守っているか)の節、右に今の節の根拠(仕様の場所(差分で見る)・関連 Issue・確かめているテスト・無いテスト・仕組みのやりとり)。右の欄は本文のスクロールに合わせて今の節に切り替わり、幅が狭いと各節の中に畳んで出る | テストの追加 / 既存の判定(テスト画面と同じ)・やりとりの両端が図の箱か・コミットの変更ファイル(仕様の差分で見るがファイルへ届くか) | `impact`(根拠は `tests`・`messages`) |
+| 振る舞い(`#impact`) | 使う人から見て何が変わったかを、コードの名前を出さずに(根拠の仕様の場所のパスと技術の手引きの節の題を除く)1 画面で。左に節の目次(変わった節に印)、中に題・要約と、変わったこと(これまで / これから)・状況の表(行 × 列のマス。変わったマスに印。最初の変わったマスを選んだ状態で始まる)・増えた状況・変わらないこと(テストで守っているか)の節、右に今の節の根拠(仕様の場所(差分で見る)・関連 Issue・確かめているテスト・無いテスト・仕組み(やりとり・技術の手引きの節))。右の欄は本文のスクロールに合わせて今の節に切り替わり、幅が狭いと各節の中に畳んで出る | テストの追加 / 既存の判定(テスト画面と同じ)・やりとりの両端が図の箱か・コミットの変更ファイル(仕様の差分で見るがファイルへ届くか) | `impact`(根拠は `tests`・`messages`・`primers`) |
 | 技術の手引き(`#primer`) | この PR を読むのに要る技術を、出てくる場所と一緒に。上にタブ(言語・フレームワーク / この PR の実装)、左に目次(REFERENCE の後に用語集)、中に節(要するに → 本文の段を書いた順)、右に今の節の出てくる場所(差分で見る。届かないときは、コミットを見る / ブランチ全体の流れを見る)・確かめているテスト / 無いテスト・構造マップで見る・関連・用語。点線の語に乗ると、右の欄の同じ語が光る。幅が狭いと各節に畳み(光るのは畳んだ欄の同じ語)、760px 以下ではタブの並びが上に残る | コミットの変更ファイル(差分で見るがファイル・行へ届くか)・テストの判定 | `primers`・`terms`(根拠は `tests`・`flows`) |
 
 画面をまたいで移れる。変更の経緯の「影響する操作」を押すと構造マップでその流れを選んだ状態に、テストの
 「追加したコミット」を押すと変更の経緯でそのコミットを開いた状態になる。振る舞いの「テストで見る」はテストの
-画面でそのテストを選んだ状態に(観点の絞り込みは解く)、仕組みのチップは構造マップでそのやりとりを選んだ状態に
-(表示範囲の絞り込みは外す。両端が図の箱でないやりとりは押せず「図に無い」)、テストの「この状況を確かめている」
+画面でそのテストを選んだ状態に(観点の絞り込みは解く)、仕組みのやりとりのチップは構造マップでそのやりとりを選んだ状態に
+(表示範囲の絞り込みは外す。両端が図の箱でないやりとりは押せず「図に無い」)、技術の手引きのチップは技術の手引きの
+そのタブのその節に、テストの「この状況を確かめている」
 は振る舞いのその節(表ならそのマスを選んだ状態)になる。振る舞いの仕様の「差分で見る」は、変更の経緯のそのコミットの
 そのファイル(行までは光らない。届かないときは技術の手引きと同じ)になる。技術の手引きでは、出てくる場所の「差分で見る」が変更の経緯の
 そのコミットのそのファイル(カードを開いて送る)に、テストがテストの画面に、構造マップで見るが流れに、関連がもう一方の
@@ -114,7 +115,7 @@ Files changed にも混ざるため)。
   書かない。** `` `…` `` で囲んで書くこともできない(振る舞いの画面は文を書いたまま出す)。検査(`UserText`)が
   捕まえるのは、見出しと同じ継ぎ目のある複合語(docs に出る語を除く)と `` ` `` だけで、1 語の識別子・ファイル名・
   snake_case は書く側で避ける。例外は仕様の場所の `path`(ファイルの場所として書いたまま出る。`Text`)と `shas`(`Sha`)。
-  例外の正本と、検査が何を守るか(根拠に出るテスト名・やりとりの名前・仕様の場所のパスは対象外)は `build-pr-explain.py` の冒頭
+  例外の正本と、検査が何を守るか(根拠に出るテスト名・やりとりの名前・仕様の場所のパス・技術の手引きの節の題は対象外)は `build-pr-explain.py` の冒頭
 - id は `^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$`、sha は小文字 40 桁
 - 知らないキーと重複したキーは、入れ子を含めて落ちる
 - 任意の配列は、省けば `[]` と同じ
@@ -154,13 +155,13 @@ Files changed にも混ざるため)。
 | Excerpt | tests と primers の段の抜粋。`path` `start` `end`(80 行まで)`emphasis?: LineRange[]`(強調する行。ファイルの行番号で、start〜end の中)。`text` は検査が足す出力だけのキーで、入力に書くと落ちる。`openingLine` も検査が足す出力だけのキーで、入力に書くと落ちる |
 | Values | `columns[]`(1 件以上)`rows[{cells[](列と同数), boundary?}]` |
 | Impact | `title` `lead` `changed?: ImpactChange` `tables?: SituationTable[]` `added?: AddedSituation[]` `kept?: KeptLine[]` `keptSpecs?: KeptSpec[]`(書くなら `kept` を 1 行以上。同じ `path` と `locator` の組を 2 回書かない) |
-| ImpactChange | `before: ImpactLine[]`(0 件でよい)`after: ImpactLine[]`(1 件以上)`text?` `specs?: ChangedSpec[]`(同じ `path` と `locator` の組を 2 回書かない)`relatedIssues?: RelatedIssue[]`(同じ `issue` を 2 回書かない)。前後の文の並びがまったく同じなら落ちる(一部の行が同じなのはよい) |
+| ImpactChange | `before: ImpactLine[]`(0 件でよい)`after: ImpactLine[]`(1 件以上)`text?` `specs?: ChangedSpec[]`(同じ `path` と `locator` の組を 2 回書かない)`relatedIssues?: RelatedIssue[]`(同じ `issue` を 2 回書かない)`primers?`(primers の id。重複なし。kind をまたいでよい。仕組みのチップになる)。前後の文の並びがまったく同じなら落ちる(一部の行が同じなのはよい) |
 | ImpactLine | `text` `message?`(messages の id。仕組みのチップになる) |
 | SituationTable | `label` `gist?`(要するに)`text?` `rowHeads: SituationRowHead[]`(1 件以上)`columnHeads: SituationColumnHead[]`(1 件以上)`outcomes: SituationOutcome[]`。マスは行の見出し × 列の見出しの組み合わせをちょうど 1 つずつ(欠け・重複・見出しに無い id は落ちる) |
 | SituationRowHead | `id`(行の見出しの中で一意)`label` `note?`(Note(行への注釈)とは別の 1 行の注。マスの状況に「行 · 列(注)」と添える) |
 | SituationColumnHead | `id`(列の見出しの中で一意。行の見出しと同じ id は書ける)`label` |
 | SituationOutcome | `rowHead` `columnHead`(見出しの id)`result` `was?`(これまで。書いたマスが「変わった」になる。`result` と同じなら落ちる)`situation?`(マスの状況の文。書かなければ見出しから「行 · 列(行の注)」と組む)`note?`(Note(行への注釈)とは別の、マスへの 1 行の注)`tests?`(tests の id。重複なし) |
-| AddedSituation | `label` `before: ImpactLine[]`(0 件でよい)`after: ImpactLine[]`(1 件以上)`text?` `tests?`(tests の id。重複なし)。前後の規則は ImpactChange と同じ |
+| AddedSituation | `label` `before: ImpactLine[]`(0 件でよい)`after: ImpactLine[]`(1 件以上)`text?` `tests?`(tests の id。重複なし)`primers?`(ImpactChange と同じ)。前後の規則は ImpactChange と同じ |
 | KeptLine | `text` `tests?`(tests の id。重複なし) |
 | ChangedSpec | 変えた仕様の場所。`path`(ファイルの場所)`locator`(ファイルの中の位置。見出しの言葉で、行番号は書かない)`text`(どう変えたか)`shas`(sha。1 件以上・重複なし。地図と照合しない) |
 | KeptSpec | 変えていない仕様の場所。`path` `locator` `text`(何を変えていないか)。`shas` は持たない |
@@ -178,7 +179,7 @@ todo のテストは commit も excerpt も持たない。
 
 **解説の中の参照**は満たさなければ置けない(message の from / to、flow の steps、commitStory の flows、
 Behavior の message、test の suite / covers / targets、concept の feature、Target の feature / message /
-flow、ImpactLine の message、SituationOutcome・AddedSituation・KeptLine の tests、primers の seeAlso / tests / flows、
+flow、ImpactLine の message、SituationOutcome・AddedSituation・KeptLine の tests、ImpactChange・AddedSituation の primers、primers の seeAlso / tests / flows、
 用語の印 → terms。terms はどれかの印から指す)。**地図を指す参照**(commitStory の sha・Note のパスと行・Target の
 layer / file・LayerRole の layer・concept のパス・出てくる場所の `path`・`lineRange`・`shas`・仕様の場所の `path`・`shas`)は検査せず、外れたものは
 ページが「地図に無い」と出す(理由は `build-pr-explain.py` の冒頭)。
@@ -197,7 +198,7 @@ layer / file・LayerRole の layer・concept のパス・出てくる場所の `
 | キー | 書くこと | 書かないこと |
 | --- | --- | --- |
 | `overview` | `title` は PR の題、`lead` は何ができるようになったかの 1〜2 文。`before` / `after` は操作・状況ごとの振る舞いを 1 つ 1 行で(空・エラー・境界の状況も)。関わるやりとりがあれば `message` で指す。読み手はレビュアーで、`` `…` `` で実装の名前を指してよい | 実装の手順 |
-| `impact` | 使う人(アプリを操作する人・ハーネスなら使うセッション)から見て変わったことを、操作と画面の言葉だけで。`changed` は変わったことの前後、`tables` は結果が 2 つの軸(例: タブがあるか × 開く操作の進み具合)で決まるときの行 × 列の表(変わったマスにだけ `was`)、`added` はこの PR で初めて起きうるようになった状況、`kept` は巻き込まれそうで変わらないこと。根拠は `tests` で指す。仕様(docs など)を変えたなら `changed.specs` に、変えていない仕様は `keptSpecs` に、場所(`locator`。見出しの言葉で「「タブ」の ⌘W の行」のように)と、変えた点・変えていない点を 1 文で書く。`changed.relatedIssues` は変更前に先送りしていた件など、経緯に関わる Issue と関わりを 1 文で。`overview` が「何を変えたか」をレビュアーに向けて書くのに対し、ここは「使う人に何が起きるか」を書く | コードの名前(共通の規則) |
+| `impact` | 使う人(アプリを操作する人・ハーネスなら使うセッション)から見て変わったことを、操作と画面の言葉だけで。`changed` は変わったことの前後、`tables` は結果が 2 つの軸(例: タブがあるか × 開く操作の進み具合)で決まるときの行 × 列の表(変わったマスにだけ `was`)、`added` はこの PR で初めて起きうるようになった状況、`kept` は巻き込まれそうで変わらないこと。根拠は `tests` で指す。仕様(docs など)を変えたなら `changed.specs` に、変えていない仕様は `keptSpecs` に、場所(`locator`。見出しの言葉で「「タブ」の ⌘W の行」のように)と、変えた点・変えていない点を 1 文で書く。`changed.relatedIssues` は変更前に先送りしていた件など、経緯に関わる Issue と関わりを 1 文で。仕組みを技術の手引きの節で説明しているなら `changed.primers` / `added[].primers` でその節を指す。`overview` が「何を変えたか」をレビュアーに向けて書くのに対し、ここは「使う人に何が起きるか」を書く | コードの名前(共通の規則) |
 | `overview.highlights` | 特に見てほしい箇所(自信のない判断・未決のまま入れたもの・目で見ないと分からない表示)と、押したときに図のどこへ移るか(`go`) | 「全体を見てください」 |
 | `features` / `layerRoles` | 機能・層がこの PR で担う役割を 1 文。`layerRoles` の `layer` の綴りは地図の `groups[].label` に揃える | |
 | `concepts` | 箱にしたいファイルと、その短い名前(`name`。概念の名前(docs の語彙)で、図の表示名になる)・役割・何を変えたか(`change`)。変更していないファイルも名指しすると箱になる。図に出さず木にだけ出すなら `graph: false` | 変更ファイルの列挙だけ(箱は地図からも出る) |

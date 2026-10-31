@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ZzBC9tmR1dpvE3xsSHP0xDyPoaqOVOcKJQ5rm9fN8xM='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-DSBHhadVlYuOTAWc7Hd5t7YQoYMN4lTielB8RjlGLXM='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1546,7 +1546,7 @@ button.change-item:hover { background: var(--track); }
       return ids.map((id) => ({ message: messages.get(id), isDrawn: isDrawnMessage(messages.get(id), entryAt) }));
     };
 
-    /** 前後の組(変わったこと・増えた状況が同じ形で持つ)。前後の行と、それが指すやりとり(仕組み)にする。 */
+    /** 前後の組(変わったこと・増えた状況が同じ形で持つ)。前後の行と、それが指すやりとり(仕組みの欄のやりとりのチップになる)にする。 */
     const sidesOf = (source, context) => {
       const before = linesOf(source.before);
       const after = linesOf(source.after);
@@ -1603,7 +1603,14 @@ button.change-item:hover { background: var(--track); }
       };
     };
 
-    const addedTopicOf = (added, index, context) => ({ kind: "added", id: `added-${index}`, label: added.label, ...sidesOf(added, context), tests: testEvidenceOf(added.tests, context.testAt) });
+    const addedTopicOf = (added, index, context) => ({
+      kind: "added",
+      id: `added-${index}`,
+      label: added.label,
+      ...sidesOf(added, context),
+      tests: testEvidenceOf(added.tests, context.testAt),
+      primers: valuesIn(context.primerPositionAt, added.primers),
+    });
 
     /** 仕様の場所(変わったこと・変わらないことで共通のパス・位置・文)。 */
     const specOf = (spec) => ({ path: spec.path, locator: spec.locator, text: spec.text });
@@ -1618,7 +1625,8 @@ button.change-item:hover { background: var(--track); }
       if (!isRecord(changed)) return [];
       const specs = listOf(changed.specs).map((spec) => changedSpecOf(spec, context.destinationsOf));
       const relatedIssues = listOf(changed.relatedIssues).map((related) => ({ issue: related.issue, text: related.text }));
-      return [{ kind: "changed", id: "changed", label: Labels.changed, ...sidesOf(changed, context), specs, relatedIssues }];
+      const primers = valuesIn(context.primerPositionAt, changed.primers);
+      return [{ kind: "changed", id: "changed", label: Labels.changed, ...sidesOf(changed, context), specs, relatedIssues, primers }];
     };
 
     const keptTopicsOf = (impact, { testAt }) => {
@@ -1658,11 +1666,13 @@ button.change-item:hover { background: var(--track); }
        * @param entryAt パスから木の項目を引く表(やりとりの両端が図の箱かを見る)
        * @param messages 解説のやりとりを id で引く表
        * @param destinationsOf ファイルの場所(`{path, lineRange, shas}`)から、sha を書いた順の届く先を返す
-       * @returns `{kind: "unwritten"}`(`impact` が無い)か `{kind: "written", title, lead, topics}`
+       * @param primerPositionAt 技術の手引きの節の id から、その節の位置を引く表(`PrimerTopics.positionsOf`)
+       * @returns `{kind: "unwritten"}`(`impact` が無い)か `{kind: "written", title, lead, topics}`。変わったことと増えた状況の節の
+       *   `primers` は、指した技術の手引きの節の位置(`{tab, index, label}`)を書いた順に並べたもの(`primers` に無い id は外す)
        */
-      create: ({ impact, testAt, entryAt, messages, destinationsOf }) => {
+      create: ({ impact, testAt, entryAt, messages, destinationsOf, primerPositionAt }) => {
         if (impact === undefined) return { kind: "unwritten" };
-        const context = { testAt, entryAt, messages, destinationsOf };
+        const context = { testAt, entryAt, messages, destinationsOf, primerPositionAt };
         const topics = [
           ...changedTopicsOf(impact.changed, context),
           ...listOf(impact.tables).map((table, index) => tableTopicOf(table, index, context)),
@@ -1754,6 +1764,7 @@ button.change-item:hover { background: var(--track); }
       ["impact.changed.specs", "records"],
       ["impact.changed.specs[].shas", "texts"],
       ["impact.changed.relatedIssues", "records"],
+      ["impact.changed.primers", "ids"],
       ["impact.tables", "records"],
       ["impact.tables[].rowHeads", "records"],
       ["impact.tables[].rowHeads[].id", "id"],
@@ -1769,6 +1780,7 @@ button.change-item:hover { background: var(--track); }
       ["impact.added[].after", "records"],
       ["impact.added[].after[].message", "id"],
       ["impact.added[].tests", "ids"],
+      ["impact.added[].primers", "ids"],
       ["impact.kept", "records"],
       ["impact.kept[].tests", "ids"],
       ["impact.keptSpecs", "records"],
@@ -2038,10 +2050,21 @@ button.change-item:hover { background: var(--track); }
       return { topics, glossary: terms.length === 0 ? null : { terms } };
     };
 
+    /** 解説の `primers` を、kind ごとのタブに書いた順で分ける。知らない kind の節はどのタブにも入れない。 */
+    const byTabOf = (primers) => Object.fromEntries(Object.values(PrimerKinds).map((tab) => [tab, listOf(primers).filter((primer) => primer.kind === tab)]));
+
+    /**
+     * 節の id から、その節の位置を引く表。
+     * @param primers 形の検査を通った解説の `primers`(書いていなければ undefined)
+     * @returns 節の id → `{tab, index, label}`(タブ・タブの中の位置・題)。書いていなければ空の表
+     */
+    const positionsOf = (primers) => new Map(Object.entries(byTabOf(primers)).flatMap(([tab, list]) => list.map((primer, index) => [primer.id, { tab, index, label: primer.label }])));
+
     return Object.freeze({
       PrimerKinds,
       Existing,
       PassageKinds,
+      positionsOf,
       /** 使える解説が無いとき。 */
       Unexplained: Object.freeze({ kind: "none" }),
       /**
@@ -2068,9 +2091,8 @@ button.change-item:hover { background: var(--track); }
         const written = listOf(primers);
         if (written.length === 0) return { kind: "unwritten" };
         const termAt = new Map(listOf(terms).map((term) => [term.id, { id: term.id, label: term.label, text: term.text }]));
-        const byTab = Object.fromEntries(Object.values(PrimerKinds).map((tab) => [tab, written.filter((primer) => primer.kind === tab)]));
-        const positionAt = new Map(Object.entries(byTab).flatMap(([tab, list]) => list.map((primer, index) => [primer.id, { tab, index, label: primer.label }])));
-        const context = { termAt, positionAt, testAt, flows, destinationsOf };
+        const byTab = byTabOf(written);
+        const context = { termAt, positionAt: positionsOf(written), testAt, flows, destinationsOf };
         return { kind: "written", tabs: Object.fromEntries(Object.entries(byTab).map(([tab, list]) => [tab, tabOf(list.map((primer) => topicOf(primer, context)))])) };
       },
     });
@@ -2297,7 +2319,7 @@ button.change-item:hover { background: var(--track); }
      * @returns 画面が使う材料。解説の状態は `reading`(`explained` / `missing` と理由)と `freshness` に出る。
      *   `explain` は使える解説(無ければ null)、`lookup` はそこから名前で引く一覧、`entryAt` はパスから木の項目を、
      *   `testAt` は解説のテストの id から `tests` の 1 件を引く表、`commitAt` は地図のコミットを sha で引く表、`impactTopics` は
-     *   振る舞いの節の並び(`ImpactTopics`。振る舞いとテストの 2 画面が読む)、`primerTopics` は技術の手引きの節の並び(`PrimerTopics`)
+     *   振る舞いの節の並び(`ImpactTopics`。振る舞いとテストの 2 画面が読む。指した技術の手引きの節は、解説の `primers` から引いた位置で持つ)、`primerTopics` は技術の手引きの節の並び(`PrimerTopics`)
      */
     const create = (map, source) => {
       const reading = readingOf(source, map.pr);
@@ -2335,7 +2357,9 @@ button.change-item:hover { background: var(--track); }
         strayStories: explainListOf(explain, "commitStories").filter((story) => !map.commits.some((commit) => commit.sha === story.sha)),
         tests,
         testAt,
-        impactTopics: explain === null ? ImpactTopics.Unexplained : ImpactTopics.create({ impact: explain.impact, testAt, entryAt, messages: lookup.messages, destinationsOf }),
+        impactTopics: explain === null
+          ? ImpactTopics.Unexplained
+          : ImpactTopics.create({ impact: explain.impact, testAt, entryAt, messages: lookup.messages, destinationsOf, primerPositionAt: PrimerTopics.positionsOf(explain.primers) }),
         primerTopics: explain === null
           ? PrimerTopics.Unexplained
           : PrimerTopics.create({ primers: explain.primers, terms: explain.terms, testAt, flows: lookup.flows, destinationsOf }),
@@ -3275,6 +3299,17 @@ button.change-item:hover { background: var(--track); }
 
   /** 構造マップでその流れを選んだ状態にするチップ。変更の経緯の「影響する操作」と、技術の手引きの「構造マップで見る」が使う。 */
   const flowChipOf = (flow, go) => pressable("button", { class: "flow-chip", title: "構造マップでこの流れを見る" }, [flow.label, el("span", { class: "arrow", text: "↗" })], () => go.toFlow(flow.id));
+
+  /**
+   * 技術の手引きの節へ移るチップ。節の題に、移る先のタブの短い名前を添える。振る舞いの「仕組みを知りたいとき」と、技術の手引きの「関連」が使う。
+   * @param position 節の位置(`PrimerTopics.positionsOf` の値)
+   * @param title チップに乗ったときに出す文
+   * @param onPress 押したときに、節の位置を受け取ってその節へ送る処理
+   */
+  const primerTopicChipOf = (position, title, onPress) => pressable("button", { class: "flow-chip", title }, [
+    ...proseParts(position.label),
+    el("span", { class: "arrow", text: PrimerTabTexts[position.tab].chip }),
+  ], () => onPress(position));
 
   /** コミットの解説(なぜ・影響する操作・レビューで見るところ・振る舞いの前後)。 */
   const commitStoryOf = (commit, story) => {
@@ -5799,7 +5834,7 @@ button.change-item:hover { background: var(--track); }
    *
    * 表示確認でしか守られていない DOM の配線(理由は `TopicColumns`): マスの押下と `aria-pressed`、仕様の欄の見出しの
    * 出し分け(「仕様」/「関連 Issue」)、仕様の場所のカード(変わらないことのカードを含む)、変えた仕様の場所のカードの届く先ごとの
-   * ボタンと、その「差分で見る」の移り先(ファイル / コミット)。
+   * ボタンと、その「差分で見る」の移り先(ファイル / コミット)、技術の手引きのチップと、その移り先(タブと節)。
    */
   const ImpactScreen = (explained, go) => {
     const impactTopics = explained.impactTopics;
@@ -5822,14 +5857,21 @@ button.change-item:hover { background: var(--track); }
 
     const testCardOf = (test) => testJumpCardOf(test, go);
 
-    /** 仕組みのチップ。両端が図の箱でないやりとりは構造マップで選べないので、押せなくして「図に無い」と出す。 */
+    /** 仕組みのやりとりのチップ。両端が図の箱でないやりとりは構造マップで選べないので、押せなくして「図に無い」と出す。 */
     const mechanismChipOf = ({ message, isDrawn }) => {
       const title = isDrawn ? "構造マップでこのやりとりを見る" : "両端が図の箱でないので、構造マップでは選べません";
       const chip = pressable("button", { class: "flow-chip", title }, [message.name, el("span", { class: "arrow", text: isDrawn ? "↗" : "図に無い" })], () => go.toMessage(message.id));
       chip.disabled = !isDrawn;
       return chip;
     };
-    const mechanismsBlockOf = (mechanisms) => (mechanisms.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("仕組みを知りたいとき", "構造マップ"), el("div", { class: "flow-chips" }, mechanisms.map(mechanismChipOf))])]);
+    /** 仕組みの欄。やりとりのチップ → 技術の手引きのチップの順に並べ、見出しの注記「構造マップ」はやりとりのチップがあるときだけ出す。 */
+    const mechanismsBlockOf = (topic) => {
+      const chips = [...topic.mechanisms.map(mechanismChipOf), ...topic.primers.map((position) => primerTopicChipOf(position, `技術の手引きの「${PrimerTabTexts[position.tab].label}」でこの節を見る`, go.toPrimer))];
+      if (chips.length === 0) return [];
+      // 技術の手引きの行き先はチップの「言語」/「実装」で示し、注記には足さない(デザイン案の見出しは注記を持たず、そこから新しく離れないため)。
+      const note = topic.mechanisms.length === 0 ? undefined : "構造マップ";
+      return [el("div", { class: "side-block" }, [eyebrowOf("仕組みを知りたいとき", note), el("div", { class: "flow-chips" }, chips)])];
+    };
 
     /** 届く先の sha のチップと移るボタン。届かない先は注意を添える。 */
     const destinationMetaOf = (destination) => {
@@ -5874,8 +5916,8 @@ button.change-item:hover { background: var(--track); }
     const evidenceBlocksOf = (topic) => {
       switch (topic.kind) {
         case "changed": {
-          const blocks = [...specBlocksOf(topic.specs.map(changedSpecCardOf), topic.relatedIssues), ...mechanismsBlockOf(topic.mechanisms)];
-          return blocks.length > 0 ? blocks : [el("p", { class: "side-note", text: "仕様の場所・関連 Issue・前後の行が指すやりとりは、どれも書かれていません。" })];
+          const blocks = [...specBlocksOf(topic.specs.map(changedSpecCardOf), topic.relatedIssues), ...mechanismsBlockOf(topic)];
+          return blocks.length > 0 ? blocks : [el("p", { class: "side-note", text: "仕様の場所・関連 Issue・前後の行が指すやりとり・技術の手引きの節は、どれも書かれていません。" })];
         }
         case "table": {
           const outcome = selectedOutcomeIn(topic);
@@ -5883,7 +5925,7 @@ button.change-item:hover { background: var(--track); }
           return [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "状況" }), el("span", { class: "side-sub", text: outcome.situation })]), ...testsBlocksOf(outcome.tests, go)];
         }
         case "added":
-          return [...testsBlocksOf(topic.tests, go), ...mechanismsBlockOf(topic.mechanisms)];
+          return [...testsBlocksOf(topic.tests, go), ...mechanismsBlockOf(topic)];
         case "kept":
           return [...specBlocksOf(topic.specs.map(keptSpecCardOf), []), ...topic.lines.map((line) => el("div", { class: "side-block" }, [
             el("span", { class: "side-sub", text: line.text }),
@@ -6015,7 +6057,7 @@ button.change-item:hover { background: var(--track); }
     };
   };
 
-  // 技術の手引きのタブごとの文言。`chip` は関連のチップに添える、移る先のタブの短い名前。
+  // 技術の手引きのタブごとの文言。`chip` は技術の手引きの節へ移るチップ(`primerTopicChipOf`)に添える、移る先のタブの短い名前。
   const PrimerTabTexts = {
     language: {
       label: "言語・フレームワーク",
@@ -6047,7 +6089,7 @@ button.change-item:hover { background: var(--track); }
    * 技術の手引き。上にタブ、左に目次、中に今のタブの節、右に今の節の出てくる場所・根拠・用語を出す。
    *
    * 表示確認でしか守られていない DOM の配線(理由は `TopicColumns`): タブの切り替えと位置の保存・復元・最初に開くタブの適用・
-   * 関連のチップ・用語の光・出てくる場所のボタンの移り先(行 / ファイル / コミット)。
+   * 関連のチップ・ほかの画面から節へ送る入口・用語の光・出てくる場所のボタンの移り先(行 / ファイル / コミット)。
    */
   const PrimerScreen = (explained, go) => {
     const primerTopics = explained.primerTopics;
@@ -6099,10 +6141,7 @@ button.change-item:hover { background: var(--track); }
       const tests = showsTests ? testsBlocksOf(topic.tests, go) : [];
       const showsFlows = isCodebase && topic.flows.length > 0;
       const flows = showsFlows ? [el("div", { class: "side-block" }, [eyebrowOf("構造マップで見る"), el("div", { class: "flow-chips" }, topic.flows.map((flow) => flowChipOf(flow, go)))])] : [];
-      const seeAlsoChips = topic.seeAlso.map((position) => pressable("button", { class: "flow-chip", title: `「${PrimerTabTexts[position.tab].label}」のこの節を見る` }, [
-        ...proseParts(position.label),
-        el("span", { class: "arrow", text: PrimerTabTexts[position.tab].chip }),
-      ], () => showSeeAlso(position)));
+      const seeAlsoChips = topic.seeAlso.map((position) => primerTopicChipOf(position, `「${PrimerTabTexts[position.tab].label}」のこの節を見る`, showSeeAlso));
       const seeAlso = seeAlsoChips.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("関連"), el("div", { class: "flow-chips" }, seeAlsoChips)])];
       const terms = topic.terms.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("用語"), termListOf(topic.terms)])];
       return [occurrencesBlockOf(topic), ...tests, ...flows, ...seeAlso, ...terms];
@@ -6228,14 +6267,19 @@ button.change-item:hover { background: var(--track); }
       tocNote.textContent = PrimerTabTexts[currentTab].tocNote;
     };
 
-    /** タブを切り替える。離れるタブの位置(本文の欄とページ全体)を覚え、戻るタブの位置を戻す(初めてなら先頭)。 */
-    const showTab = (tab) => {
-      if (tab === currentTab) return;
-      saved = { ...saved, [currentTab]: { main: main.scrollTop, page: window.scrollY } };
+    /** 今のタブをそのタブにし、そのタブの覚えた位置(本文の欄とページ全体)を戻す(初めてなら先頭)。離れるタブの位置は覚えない。 */
+    const restoreTab = (tab) => {
       currentTab = tab;
       renderTab();
       main.scrollTop = saved[tab].main;
       window.scrollTo(0, saved[tab].page);
+    };
+
+    /** この画面の中でタブを切り替える。離れるタブの位置(本文の欄とページ全体)を覚えてから、戻るタブの位置を戻す。 */
+    const showTab = (tab) => {
+      if (tab === currentTab) return;
+      saved = { ...saved, [currentTab]: { main: main.scrollTop, page: window.scrollY } };
+      restoreTab(tab);
     };
 
     /** 関連のチップ。指したタブへ切り替えて(位置の保存と復元を通る)から、その節へ送る。 */
@@ -6251,7 +6295,21 @@ button.change-item:hover { background: var(--track); }
     TopicColumns.subscribe({ main, follow: (top, ratio) => parts[currentTab].columns.follow(top, ratio) });
     const keepReading = TopicColumns.keepReadingOf({ main, currentColumns: () => parts[currentTab].columns });
 
-    return { ...screenParts, tablist: el("div", { class: "primer-tablist", role: "tablist", "aria-label": "技術の種類" }, tabButtons), keepReading };
+    return {
+      ...screenParts,
+      tablist: el("div", { class: "primer-tablist", role: "tablist", "aria-label": "技術の種類" }, tabButtons),
+      keepReading,
+      /**
+       * ほかの画面から、その節へ送る。タブが違えばそのタブの覚えた位置を戻してから送り、離れるタブの位置は覚えない。
+       *
+       * 送られてきた時点のページ全体のスクロール量は送ってきた画面のもので、離れるタブの位置ではないため。
+       * @param position 節の位置(`PrimerTopics.positionsOf` の値)
+       */
+      showTopic: (position) => {
+        if (position.tab !== currentTab) restoreTab(position.tab);
+        parts[position.tab].columns.sendTo(position.index);
+      },
+    };
   };
 
   const ScreenBuilders = { map: MapScreen, story: StoryScreen, test: TestScreen, impact: ImpactScreen, primer: PrimerScreen };
@@ -6344,6 +6402,10 @@ button.change-item:hover { background: var(--track); }
         toCommitFile: (target) => {
           navigateTo(Screens.Story);
           built.story.showFile(target);
+        },
+        toPrimer: (position) => {
+          navigateTo(Screens.Primer);
+          built.primer.showTopic(position);
         },
       };
       const built = Object.fromEntries(Object.values(Screens).map((screen) => [screen, ScreenBuilders[screen](explained, go)]));
