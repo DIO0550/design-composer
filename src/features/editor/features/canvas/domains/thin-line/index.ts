@@ -24,7 +24,7 @@ const ThicknessPx = 2;
  * 同じ線上に重なるとみなす、直交する向きの位置の差（画面上の px。倍率によらない）。
  * 値の拠り所は docs/06-ui.md の Alt / Option の距離。
  */
-const CoincidingPx = 8;
+const CoincidingThresholdPx = 8;
 
 export const ThinLine = {
   /**
@@ -62,9 +62,9 @@ export const ThinLine = {
    */
   isCoinciding(line: ThinLine, other: ThinLine): boolean {
     const isSameAlong = line.along === other.along;
-    const isSpanOverlapping =
+    const isSpanIntersecting =
       Range.intersectionLength(line.span, other.span) > 0;
-    const isAtClose = Math.abs(line.at - other.at) <= CoincidingPx;
-    return isSameAlong && isSpanOverlapping && isAtClose;
+    const isAtClose = Math.abs(line.at - other.at) <= CoincidingThresholdPx;
+    return isSameAlong && isSpanIntersecting && isAtClose;
   },
 } as const;
