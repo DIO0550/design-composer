@@ -12,18 +12,21 @@ export {
 } from "@/features/editor/__tests__/pane-regions";
 
 import { type AppMenuCommand, AppMenuCommands } from "@/libs/app-menu";
-import { AppMenuFake } from "@/libs/app-menu/fake";
-import { AppStateIpcFake } from "@/libs/app-state-ipc/fake";
-import { AppWindowFake } from "@/libs/app-window/fake";
-import { ClockFake } from "@/libs/clock/fake";
+import { createAppMenuFake } from "@/libs/app-menu/fake";
+import { createAppStateIpcFake } from "@/libs/app-state-ipc/fake";
+import { createAppWindowFake } from "@/libs/app-window/fake";
+import { createClockFake } from "@/libs/clock/fake";
 import {
+  createDocumentDialogFake,
   DialogChoice,
   type DialogChoices,
-  DocumentDialogFake,
 } from "@/libs/document-dialog/fake";
-import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import {
+  createDocumentIpcFake,
+  type DocumentIpcFake,
+} from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
-import { FileDropFake } from "@/libs/file-drop/fake";
+import { createFileDropFake } from "@/libs/file-drop/fake";
 import { EditorScreen } from "../index";
 
 /** 既に置いてあるファイル。 */
@@ -69,12 +72,12 @@ export function renderEditorScreen(
   choices: DialogChoices,
   options: ScreenPortOptions = {},
 ): ScreenObserver {
-  const ipcFake = DocumentIpcFake.create(files);
-  const dialogFake = DocumentDialogFake.create(choices);
-  const menuFake = AppMenuFake.create();
-  const dropFake = FileDropFake.create();
-  const appStateFake = AppStateIpcFake.create(options.storedAppState);
-  const appWindowFake = AppWindowFake.create();
+  const ipcFake = createDocumentIpcFake(files);
+  const dialogFake = createDocumentDialogFake(choices);
+  const menuFake = createAppMenuFake();
+  const dropFake = createFileDropFake();
+  const appStateFake = createAppStateIpcFake(options.storedAppState);
+  const appWindowFake = createAppWindowFake();
   if (options.denyAppStateLoad === true) {
     appStateFake.denyLoad();
   }
@@ -84,7 +87,7 @@ export function renderEditorScreen(
 
   render(
     <EditorScreen
-      clock={ClockFake.create().clock}
+      clock={createClockFake().clock}
       ports={{
         ipc: ipcFake.ipc,
         dialog: dialogFake.dialog,

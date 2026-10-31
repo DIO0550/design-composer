@@ -6,7 +6,7 @@ import {
   danglingTokenDocument,
 } from "@/domains/__tests__/sample-document";
 import { FileValidity } from "@/domains/session/file-validity";
-import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { Option } from "@/utils/Option";
 import { Path, renderAutoSave, waitDebounce } from "./setup";
 
@@ -31,7 +31,7 @@ test("ドキュメント自身が不正でも、その内容がファイルへ�
   vi.useFakeTimers();
   const opened = artboardDocument("home");
   const invalid = danglingTokenDocument("home");
-  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   const { rerender } = renderAutoSave({
     ipc: fake.ipc,
     document: opened,

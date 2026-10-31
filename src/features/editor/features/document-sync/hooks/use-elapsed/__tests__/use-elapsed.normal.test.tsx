@@ -4,7 +4,7 @@ import { useState } from "react";
 import { expect, test } from "vitest";
 import { Instant } from "@/domains/unit/instant";
 import type { Clock } from "@/libs/clock";
-import { ClockFake } from "@/libs/clock/fake";
+import { createClockFake } from "@/libs/clock/fake";
 import { Option } from "@/utils/Option";
 import { useElapsed } from "../index";
 
@@ -47,7 +47,7 @@ function elapsedText(): string {
 }
 
 test("起点が無いあいだは経過時間を返さない", () => {
-  const clock = ClockFake.create(StartEpochMs);
+  const clock = createClockFake(StartEpochMs);
 
   render(<ElapsedHarness clock={clock.clock} initialSince={Option.none} />);
 
@@ -55,7 +55,7 @@ test("起点が無いあいだは経過時間を返さない", () => {
 });
 
 test("起点があると経過時間を返す", () => {
-  const clock = ClockFake.create(StartEpochMs + 4000);
+  const clock = createClockFake(StartEpochMs + 4000);
 
   render(
     <ElapsedHarness
@@ -68,7 +68,7 @@ test("起点があると経過時間を返す", () => {
 });
 
 test("時計が進むと経過時間も進む", () => {
-  const clock = ClockFake.create(StartEpochMs + 4000);
+  const clock = createClockFake(StartEpochMs + 4000);
   render(
     <ElapsedHarness
       clock={clock.clock}
@@ -84,7 +84,7 @@ test("時計が進むと経過時間も進む", () => {
 });
 
 test("起点が無いあいだは時計を購読しない", () => {
-  const clock = ClockFake.create(StartEpochMs);
+  const clock = createClockFake(StartEpochMs);
 
   render(<ElapsedHarness clock={clock.clock} initialSince={Option.none} />);
 
@@ -92,7 +92,7 @@ test("起点が無いあいだは時計を購読しない", () => {
 });
 
 test("起点が消えると時計の購読も解除される", async () => {
-  const clock = ClockFake.create(StartEpochMs);
+  const clock = createClockFake(StartEpochMs);
   render(
     <ElapsedHarness
       clock={clock.clock}
@@ -106,7 +106,7 @@ test("起点が消えると時計の購読も解除される", async () => {
 });
 
 test("起点が消えると経過時間も返さなくなる", async () => {
-  const clock = ClockFake.create(StartEpochMs + 4000);
+  const clock = createClockFake(StartEpochMs + 4000);
   render(
     <ElapsedHarness
       clock={clock.clock}
@@ -125,7 +125,7 @@ test("起点が消えると経過時間も返さなくなる", async () => {
  * 数字を見るテストでは気づけない（代役の購読回数でだけ見える）。
  */
 test("起点が変わらないまま再レンダーしても時計を購読し直さない", async () => {
-  const clock = ClockFake.create(StartEpochMs);
+  const clock = createClockFake(StartEpochMs);
   render(
     <ElapsedHarness
       clock={clock.clock}

@@ -1,4 +1,4 @@
-import { SingleEventIpcFake } from "@/libs/tauri-ipc/fake";
+import { createSingleEventIpcFake } from "@/libs/tauri-ipc/fake";
 import { createFileDrop, DragDropEvent, type FileDrop } from "../index";
 
 /**
@@ -20,25 +20,23 @@ export type FileDropFake = Readonly<{
   denySubscribe(): void;
 }>;
 
-export const FileDropFake = {
-  /**
-   * ドロップの代役を作る。
-   *
-   * @returns 代役の口と、ドロップを起こす手段
-   */
-  create(): FileDropFake {
-    const events = SingleEventIpcFake.create(DragDropEvent);
+/**
+ * ドロップの代役を作る。
+ *
+ * @returns 代役の口と、ドロップを起こす手段
+ */
+export function createFileDropFake(): FileDropFake {
+  const events = createSingleEventIpcFake(DragDropEvent);
 
-    return {
-      drop: createFileDrop(events.ipc),
+  return {
+    drop: createFileDrop(events.ipc),
 
-      dropFiles(paths) {
-        // 本物と同じ形（位置も添える）で配る。
-        events.deliver({ paths: [...paths], position: { x: 0, y: 0 } });
-      },
+    dropFiles(paths) {
+      // 本物と同じ形（位置も添える）で配る。
+      events.deliver({ paths: [...paths], position: { x: 0, y: 0 } });
+    },
 
-      deliverUnknown: events.deliver,
-      denySubscribe: events.denySubscribe,
-    };
-  },
-} as const;
+    deliverUnknown: events.deliver,
+    denySubscribe: events.denySubscribe,
+  };
+}

@@ -1,11 +1,11 @@
 import { expect, test } from "vitest";
-import { FileDropFake } from "@/libs/file-drop/fake";
+import { createFileDropFake } from "@/libs/file-drop/fake";
 import { Result } from "@/utils/Result";
 
 const Path = "/work/login.dcmp";
 
 test("パスの並びを持たない通知は配られない", async () => {
-  const fake = FileDropFake.create();
+  const fake = createFileDropFake();
   const received: (readonly string[])[] = [];
   Result.unwrap(
     await fake.drop.subscribeDropped((paths) => {
@@ -22,7 +22,7 @@ test("パスの並びを持たない通知は配られない", async () => {
 });
 
 test("購読を張れなければ失敗が返る", async () => {
-  const fake = FileDropFake.create();
+  const fake = createFileDropFake();
   fake.denySubscribe();
 
   const subscribed = await fake.drop.subscribeDropped(() => {});
@@ -31,7 +31,7 @@ test("購読を張れなければ失敗が返る", async () => {
 });
 
 test("ファイル名の要素を持たないパスは、その 1 件だけ配られない", async () => {
-  const fake = FileDropFake.create();
+  const fake = createFileDropFake();
   const received: (readonly string[])[] = [];
   Result.unwrap(
     await fake.drop.subscribeDropped((paths) => {
@@ -45,7 +45,7 @@ test("ファイル名の要素を持たないパスは、その 1 件だけ配�
 });
 
 test("ファイル名の要素を持つパスが 1 件も残らないドロップは配られない", async () => {
-  const fake = FileDropFake.create();
+  const fake = createFileDropFake();
   const received: (readonly string[])[] = [];
   Result.unwrap(
     await fake.drop.subscribeDropped((paths) => {
@@ -61,7 +61,7 @@ test("ファイル名の要素を持つパスが 1 件も残らないドロッ�
 });
 
 test("空の並びのドロップは配られない", async () => {
-  const fake = FileDropFake.create();
+  const fake = createFileDropFake();
   const received: (readonly string[])[] = [];
   Result.unwrap(
     await fake.drop.subscribeDropped((paths) => {

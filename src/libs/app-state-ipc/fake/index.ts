@@ -32,67 +32,65 @@ function denied(reason: string): Promise<never> {
   return Promise.reject({ message: `app-state.json: ${reason}` });
 }
 
-export const AppStateIpcFake = {
-  /**
-   * 保存済みの中身を決めて代役を作る。
-   *
-   * @param stored 既に保存されている生のテキスト。省略すると「まだ一度も保存していない」
-   * @returns 代役の口と、保存されている中身を見る手段
-   */
-  create(stored?: string): AppStateIpcFake {
-    let content = stored;
-    let loadDenied = false;
-    let saveDenied = false;
+/**
+ * 保存済みの中身を決めて代役を作る。
+ *
+ * @param stored 既に保存されている生のテキスト。省略すると「まだ一度も保存していない」
+ * @returns 代役の口と、保存されている中身を見る手段
+ */
+export function createAppStateIpcFake(stored?: string): AppStateIpcFake {
+  let content = stored;
+  let loadDenied = false;
+  let saveDenied = false;
 
-    const loadAppState = (): Promise<unknown> => {
-      if (loadDenied) {
-        return denied("読み込みが拒まれた");
+  const loadAppState = (): Promise<unknown> => {
+    if (loadDenied) {
+      return denied("読み込みが拒まれた");
+    }
+    return Promise.resolve(content ?? null);
+  };
+
+  const saveAppState = (written: unknown): Promise<unknown> => {
+    if (typeof written !== "string") {
+      return ipcFailure("save_app_state: content が文字列でない");
+    }
+    if (saveDenied) {
+      return denied("書き込みが拒まれた");
+    }
+    content = written;
+    return Promise.resolve(undefined);
+  };
+
+  const tauriIpc: TauriIpc = {
+    invoke(command, args) {
+      switch (command) {
+        case "load_app_state":
+          return loadAppState();
+        case "save_app_state":
+          return saveAppState(args.content);
+        default:
+          return ipcFailure(`Command ${command} not found`);
       }
-      return Promise.resolve(content ?? null);
-    };
+    },
 
-    const saveAppState = (written: unknown): Promise<unknown> => {
-      if (typeof written !== "string") {
-        return ipcFailure("save_app_state: content が文字列でない");
-      }
-      if (saveDenied) {
-        return denied("書き込みが拒まれた");
-      }
-      content = written;
-      return Promise.resolve(undefined);
-    };
+    listen(event) {
+      return ipcFailure(`Event ${event} not emitted`);
+    },
+  };
 
-    const tauriIpc: TauriIpc = {
-      invoke(command, args) {
-        switch (command) {
-          case "load_app_state":
-            return loadAppState();
-          case "save_app_state":
-            return saveAppState(args.content);
-          default:
-            return ipcFailure(`Command ${command} not found`);
-        }
-      },
+  return {
+    ipc: createAppStateIpc(tauriIpc),
 
-      listen(event) {
-        return ipcFailure(`Event ${event} not emitted`);
-      },
-    };
+    storedContent() {
+      return Option.fromNullable(content);
+    },
 
-    return {
-      ipc: createAppStateIpc(tauriIpc),
+    denyLoad() {
+      loadDenied = true;
+    },
 
-      storedContent() {
-        return Option.fromNullable(content);
-      },
-
-      denyLoad() {
-        loadDenied = true;
-      },
-
-      denySave() {
-        saveDenied = true;
-      },
-    };
-  },
-} as const;
+    denySave() {
+      saveDenied = true;
+    },
+  };
+}

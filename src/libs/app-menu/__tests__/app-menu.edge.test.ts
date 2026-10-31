@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
 import { type AppMenuCommand, AppMenuCommands } from "@/libs/app-menu";
-import { AppMenuFake } from "@/libs/app-menu/fake";
+import { createAppMenuFake } from "@/libs/app-menu/fake";
 import { Result } from "@/utils/Result";
 
 test("語彙に無い指示は配られない", async () => {
-  const fake = AppMenuFake.create();
+  const fake = createAppMenuFake();
   const received: AppMenuCommand[] = [];
   Result.unwrap(
     await fake.menu.subscribeCommand((command) => {
@@ -20,7 +20,7 @@ test("語彙に無い指示は配られない", async () => {
 });
 
 test("購読を張れなければ失敗が返る", async () => {
-  const fake = AppMenuFake.create();
+  const fake = createAppMenuFake();
   fake.denySubscribe();
 
   const subscribed = await fake.menu.subscribeCommand(() => {});
@@ -33,7 +33,7 @@ test("購読を張れなければ失敗が返る", async () => {
  * 綴りだけを変えても一緒に動いてしまい、Rust 側とずれたことに気づけない。
  */
 test("Rust 側が流す綴りの指示は、どれも語彙にある指示として配られる", async () => {
-  const fake = AppMenuFake.create();
+  const fake = createAppMenuFake();
   const received: AppMenuCommand[] = [];
   Result.unwrap(
     await fake.menu.subscribeCommand((command) => {

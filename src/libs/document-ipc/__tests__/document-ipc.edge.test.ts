@@ -1,9 +1,9 @@
 import { expect, expectTypeOf, test } from "vitest";
 import { filePath } from "@/domains/__tests__/file-paths";
 import type { TauriIpc } from "@/libs/tauri-ipc";
-import { SingleEventIpcFake } from "@/libs/tauri-ipc/fake";
+import { createSingleEventIpcFake } from "@/libs/tauri-ipc/fake";
 import { Result } from "@/utils/Result";
-import { DocumentIpcFake } from "../fake";
+import { createDocumentIpcFake } from "../fake";
 import {
   createDocumentIpc,
   type DocumentChanged,
@@ -22,7 +22,7 @@ function setupIpc(invoke: TauriIpc["invoke"]): DocumentIpc {
 }
 
 test("存在しないファイルを読み込むと notFound が返る", async () => {
-  const fake = DocumentIpcFake.create();
+  const fake = createDocumentIpcFake();
 
   const loaded = await fake.ipc.load(MissingPath);
 
@@ -35,7 +35,7 @@ test("存在しないファイルを読み込むと notFound が返る", async (
 });
 
 test("存在しないファイルの監視を始めると notFound が返る", async () => {
-  const fake = DocumentIpcFake.create();
+  const fake = createDocumentIpcFake();
 
   const watched = await fake.ipc.watch(MissingPath);
 
@@ -74,7 +74,7 @@ test("読み込みが文字列以外を返すと ipcFailed が返る", async () 
 });
 
 test("綴りを寄せるのを拒まれると invalidPath が返る", async () => {
-  const fake = DocumentIpcFake.create();
+  const fake = createDocumentIpcFake();
   fake.denyCanonicalize({ path: Path, kind: "invalidPath" });
 
   const canonical = await fake.ipc.canonicalize(Path);
@@ -156,7 +156,7 @@ test("path と content が揃っていない通知は配られない", async () 
 });
 
 test("ファイル名の要素を持たないパスの変更通知は配られない", async () => {
-  const events = SingleEventIpcFake.create("document-changed");
+  const events = createSingleEventIpcFake("document-changed");
   const ipc = createDocumentIpc(events.ipc);
   const received: DocumentChanged[] = [];
   Result.unwrap(
@@ -170,7 +170,7 @@ test("ファイル名の要素を持たないパスの変更通知は配られ�
 });
 
 test("保存先と中身を取り違えて渡すことはできない", () => {
-  const ipc = DocumentIpcFake.create().ipc;
+  const ipc = createDocumentIpcFake().ipc;
 
   // 呼ばずに型だけを見る。
   const swapped = () =>

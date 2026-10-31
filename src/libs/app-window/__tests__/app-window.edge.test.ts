@@ -1,9 +1,9 @@
 import { expect, test } from "vitest";
 import { Result } from "@/utils/Result";
-import { AppWindowFake } from "../fake";
+import { createAppWindowFake } from "../fake";
 
 test("閉じるのを拒まれたら、拒まれた理由を持つ失敗になる", async () => {
-  const fake = AppWindowFake.create();
+  const fake = createAppWindowFake();
   fake.denyClose();
 
   const closed = await fake.appWindow.close();

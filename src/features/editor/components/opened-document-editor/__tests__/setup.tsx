@@ -15,8 +15,11 @@ import {
   LeftPaneViewLabels,
 } from "@/features/editor/features/sidebar";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
-import { ClockFake } from "@/libs/clock/fake";
-import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import { type ClockFake, createClockFake } from "@/libs/clock/fake";
+import {
+  createDocumentIpcFake,
+  type DocumentIpcFake,
+} from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
 import { OpenedDocumentEditor } from "../index";
@@ -45,10 +48,10 @@ export type OpenedDocumentFakes = Readonly<{
 export async function renderOpenedDocumentWithClock(
   document: DesignDocument = SampleDocument,
 ): Promise<OpenedDocumentFakes> {
-  const ipc = DocumentIpcFake.create({
+  const ipc = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(document),
   });
-  const clock = ClockFake.create();
+  const clock = createClockFake();
 
   render(
     <OpenedDocumentEditor

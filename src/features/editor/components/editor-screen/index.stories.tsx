@@ -6,15 +6,18 @@ import type { FilePath } from "@/domains/unit/file-path";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import type { DocumentSessionPorts } from "@/features/editor/features/document-start";
-import { AppMenuFake } from "@/libs/app-menu/fake";
-import { AppStateIpcFake } from "@/libs/app-state-ipc/fake";
+import { createAppMenuFake } from "@/libs/app-menu/fake";
+import { createAppStateIpcFake } from "@/libs/app-state-ipc/fake";
 import { AppStateJson } from "@/libs/app-state-json";
-import { AppWindowFake } from "@/libs/app-window/fake";
-import { ClockFake } from "@/libs/clock/fake";
-import { DialogChoice, DocumentDialogFake } from "@/libs/document-dialog/fake";
-import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import { createAppWindowFake } from "@/libs/app-window/fake";
+import { createClockFake } from "@/libs/clock/fake";
+import {
+  createDocumentDialogFake,
+  DialogChoice,
+} from "@/libs/document-dialog/fake";
+import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
-import { FileDropFake } from "@/libs/file-drop/fake";
+import { createFileDropFake, type FileDropFake } from "@/libs/file-drop/fake";
 import { EditorScreen } from "./index";
 
 const SamplePath = filePath("/work/sample.dcmp");
@@ -45,13 +48,13 @@ function createHarness(
   files: Readonly<Record<string, string>>,
   storedRecentPaths?: readonly FilePath[],
 ): Harness {
-  const ipc = DocumentIpcFake.create(files);
-  const dialog = DocumentDialogFake.create({
+  const ipc = createDocumentIpcFake(files);
+  const dialog = createDocumentDialogFake({
     open: DialogChoice.chosen(SamplePath),
     save: DialogChoice.chosen("/work/untitled.dcmp"),
   });
-  const drop = FileDropFake.create();
-  const appState = AppStateIpcFake.create(
+  const drop = createFileDropFake();
+  const appState = createAppStateIpcFake(
     storedRecentPaths === undefined
       ? undefined
       : AppStateJson.serialize({ recentPaths: storedRecentPaths }),
@@ -61,10 +64,10 @@ function createHarness(
     ports: {
       ipc: ipc.ipc,
       dialog: dialog.dialog,
-      menu: AppMenuFake.create().menu,
+      menu: createAppMenuFake().menu,
       drop: drop.drop,
       appState: appState.ipc,
-      appWindow: AppWindowFake.create().appWindow,
+      appWindow: createAppWindowFake().appWindow,
     },
     drop,
   };
@@ -82,7 +85,7 @@ const openFailed = createHarness(SampleFiles);
 const restored = createHarness(SampleFiles, [SamplePath]);
 
 /** 時計も Storybook には無いので代役にする。 */
-const clock = ClockFake.create();
+const clock = createClockFake();
 
 const meta = {
   title: "features/editor/EditorScreen",

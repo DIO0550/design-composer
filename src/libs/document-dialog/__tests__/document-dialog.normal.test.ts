@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { DialogChoice, DocumentDialogFake } from "../fake";
+import { createDocumentDialogFake, DialogChoice } from "../fake";
 
 test("開くファイルを選ぶと、そのパスが返る", async () => {
-  const fake = DocumentDialogFake.create({
+  const fake = createDocumentDialogFake({
     open: DialogChoice.chosen("/work/login.dcmp"),
     save: DialogChoice.Canceled,
   });
@@ -15,7 +15,7 @@ test("開くファイルを選ぶと、そのパスが返る", async () => {
 });
 
 test("保存先を選ぶと、そのパスが返る", async () => {
-  const fake = DocumentDialogFake.create({
+  const fake = createDocumentDialogFake({
     open: DialogChoice.Canceled,
     save: DialogChoice.chosen("/work/untitled.dcmp"),
   });
@@ -28,7 +28,7 @@ test("保存先を選ぶと、そのパスが返る", async () => {
 });
 
 test("ファイルを選ばずに閉じると、選ばれたパスは無い", async () => {
-  const fake = DocumentDialogFake.create({
+  const fake = createDocumentDialogFake({
     open: DialogChoice.Canceled,
     save: DialogChoice.Canceled,
   });

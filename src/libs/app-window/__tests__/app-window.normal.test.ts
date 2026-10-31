@@ -1,8 +1,8 @@
 import { expect, test } from "vitest";
-import { AppWindowFake } from "../fake";
+import { createAppWindowFake } from "../fake";
 
 test("閉じると、ウィンドウが閉じる", async () => {
-  const fake = AppWindowFake.create();
+  const fake = createAppWindowFake();
 
   await fake.appWindow.close();
 

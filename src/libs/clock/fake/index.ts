@@ -31,47 +31,45 @@ export type ClockFake = Readonly<{
 
 const MillisecondsPerSecond = 1000;
 
-export const ClockFake = {
-  /**
-   * 手で進める時計を作る。
-   *
-   * @param startEpochMs 始まりの時刻（UNIX epoch からのミリ秒）。省くと UNIX epoch の始まり
-   * @returns 代役の時計と、それを進める手段
-   */
-  create(startEpochMs = 0): ClockFake {
-    const listeners = new Set<() => void>();
-    let epochMs = startEpochMs;
-    let subscribedCount = 0;
+/**
+ * 手で進める時計を作る。
+ *
+ * @param startEpochMs 始まりの時刻（UNIX epoch からのミリ秒）。省くと UNIX epoch の始まり
+ * @returns 代役の時計と、それを進める手段
+ */
+export function createClockFake(startEpochMs = 0): ClockFake {
+  const listeners = new Set<() => void>();
+  let epochMs = startEpochMs;
+  let subscribedCount = 0;
 
-    return {
-      clock: {
-        now() {
-          return Instant.create(epochMs);
-        },
-
-        subscribeSeconds(listener) {
-          subscribedCount += 1;
-          listeners.add(listener);
-          return () => {
-            listeners.delete(listener);
-          };
-        },
+  return {
+    clock: {
+      now() {
+        return Instant.create(epochMs);
       },
 
-      advanceSeconds(seconds) {
-        epochMs += seconds * MillisecondsPerSecond;
-        for (const listener of listeners) {
-          listener();
-        }
+      subscribeSeconds(listener) {
+        subscribedCount += 1;
+        listeners.add(listener);
+        return () => {
+          listeners.delete(listener);
+        };
       },
+    },
 
-      isSubscribed() {
-        return listeners.size > 0;
-      },
+    advanceSeconds(seconds) {
+      epochMs += seconds * MillisecondsPerSecond;
+      for (const listener of listeners) {
+        listener();
+      }
+    },
 
-      subscribedCount() {
-        return subscribedCount;
-      },
-    };
-  },
-} as const;
+    isSubscribed() {
+      return listeners.size > 0;
+    },
+
+    subscribedCount() {
+      return subscribedCount;
+    },
+  };
+}

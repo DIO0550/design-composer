@@ -3,11 +3,11 @@ import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { Artboard } from "@/domains/dcmp/artboard";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { changeExternally, Path, renderDocumentReload } from "./setup";
 
 test("外部エディタがファイルを書き換えると、その内容が取り込まれる", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   const observer = await renderDocumentReload(fake.ipc);
 
   await changeExternally(fake, artboardContent("settings"));
@@ -27,7 +27,7 @@ test("外部エディタがファイルを書き換えると、その内容が�
 
 test("開いていない別のファイルが書き換わっても取り込まない", async () => {
   const otherPath = filePath("/work/settings.dcmp");
-  const fake = DocumentIpcFake.create({
+  const fake = createDocumentIpcFake({
     [Path]: artboardContent("home"),
     [otherPath]: artboardContent("settings"),
   });
@@ -41,7 +41,7 @@ test("開いていない別のファイルが書き換わっても取り込ま�
 });
 
 test("画面を閉じた後の外部変更は取り込まれない", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   const observer = await renderDocumentReload(fake.ipc);
 
   observer.unmount();
