@@ -3,8 +3,8 @@
   "pr": 1214,
   "headBranch": "claude/magical-cannon-ol710s",
   "baseBranch": "main",
-  "mergeBase": "54857b9a89b594361432718185f723584ee87a22",
-  "head": "75bc66a40fe98e255dc11a18e8d8b23b71b61d16",
+  "mergeBase": "700e49a33812b5c88425ae3c514336f953e7ddf0",
+  "head": "14261009e0e38c7ad1bfad52f2b3af3626cd2e03",
   "groups": [
     {
       "label": "domains / unit",
@@ -97,7 +97,7 @@
           "path": "src/domains/dcmp/constraint/index.ts",
           "status": "M",
           "oldPath": null,
-          "additions": 30,
+          "additions": 32,
           "deletions": 3,
           "changed": true,
           "target": null
@@ -127,7 +127,7 @@
           "path": "src/domains/dcmp/design-document/index.ts",
           "status": "M",
           "oldPath": null,
-          "additions": 218,
+          "additions": 240,
           "deletions": 23,
           "changed": true,
           "target": null
@@ -239,7 +239,7 @@
           "path": "src/domains/dcmp/sibling-positions/index.ts",
           "status": "A",
           "oldPath": null,
-          "additions": 62,
+          "additions": 64,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -419,7 +419,7 @@
           "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
           "status": "M",
           "oldPath": null,
-          "additions": 1,
+          "additions": 2,
           "deletions": 1,
           "changed": true,
           "target": "src/domains/dcmp/design-document/index.ts"
@@ -880,7 +880,7 @@
           "path": "src/domains/session/prop-control/index.ts",
           "status": "M",
           "oldPath": null,
-          "additions": 5,
+          "additions": 6,
           "deletions": 6,
           "changed": true,
           "target": null
@@ -1186,7 +1186,7 @@
           "path": "src/features/editor/domains/editor-state/index.ts",
           "status": "M",
           "oldPath": null,
-          "additions": 25,
+          "additions": 30,
           "deletions": 12,
           "changed": true,
           "target": null
@@ -1567,7 +1567,7 @@
           "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
           "status": "M",
           "oldPath": null,
-          "additions": 1,
+          "additions": 2,
           "deletions": 1,
           "changed": true,
           "target": "src/features/editor/hooks/use-editor-state/index.ts"
@@ -1730,7 +1730,7 @@
           "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
           "status": "M",
           "oldPath": null,
-          "additions": 8,
+          "additions": 11,
           "deletions": 10,
           "changed": true,
           "target": null
@@ -3579,6 +3579,115 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "0c722b7b84d13c8af36e5f793dd8aaf3c284d500",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T00:29:43Z",
+      "subject": "🎨 [Accessibility]: #1187 グループ化で足した関数の本体を、処理のまとまりごとに空行で区切る",
+      "body": "- この PR で足した・書き換えた関数の本体に、処理のまとまりの間の空行を入れる\n  - DesignDocument: groupIntoBox / findSiblingPositions / groupedBox /\n    groupedSiblingsBox / writtenParentOf\n  - Constraint.collectSharedPropEdits、SiblingPositions.fromChildPositions /\n    lastAfterRemoving\n  - EditorState.groupSelected / reorderSelectedNodes\n  - prop-control の editFrom、node-resize の trackedAt\n- 空行以外は変えていない（git diff -w --ignore-blank-lines が空）\n\n背景:\nPR #1214 へのオーナーのレビュー「全体的に空行がなくて読みにくいから直して」。\n特に groupIntoBox は、「値を求める → 失敗なら返す」の組が 6 つ切れ目なく\n続いていて、どこまでが 1 つの段階なのかを目で分解する必要があった。\n\n採用理由:\n- 区切る単位は「値を求める → 失敗なら返す」の 1 組と、組み立て、最後の\n  return。groupIntoBox なら、兄弟の位置 → 親 → メンバー → Box の組み立て →\n  名前の検査 → 挿入、の段階がそのまま空行の位置になり、doc の @returns の\n  判定順と見比べられる\n- 1〜2 文しかない関数（mapNonEmpty・childrenAt・selectedNames など）は区切る\n  まとまりが無いので、そのままにした\n\n代替案:\n- 段階ごとに private 関数へ切り出す案は採らない。指摘は読みやすさの区切りで、\n  関数を増やすと呼び出しを辿る手間が増えるうえ、振る舞いの変更と同じ重さの\n  レビューが要るため\n- この PR で触っていない既存の関数まで区切る案も採らない。PR の範囲が広がり、\n  差分がグループ化と関係のない行で埋まるため\n\n影響とトレードオフ:\n空行の追加だけで、振る舞いは変わらない（全テストが通る）。\n\n参考:\n- PR #1214 のレビュー（オーナー）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2Q9fpeRiMQNAfGcG38",
+      "files": [
+        {
+          "path": "src/domains/dcmp/constraint/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -78,10 +78,12 @@ export const Constraint = {\n       const written = constraints.flatMap((constraint) =>\n         Option.isSome(constraint) ? [constraint.value] : [],\n       );\n+\n       const shared =\n         written.length === propsList.length\n           ? ArrayEx.singleDistinct(written)\n           : Option.none;\n+\n       return Option.isSome(shared)\n         ? [PropEdit.set([Constraint.prop(axis)], shared.value)]\n         : [];",
+          "patchLines": 13,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 0,
+          "patch": "@@ -315,11 +315,13 @@ function groupedBox(node: Node, boxName: string): Node {\n   const content = isAbsolute\n     ? applyNodePropEdits(node, [Placement.clearPropEdit()])\n     : node;\n+\n   const box: Node = {\n     name: boxName,\n     type: PrimitiveTypes.Box,\n     children: [content],\n   };\n+\n   return applyNodePropEdits(box, [\n     ...placementEdits,\n     ...Size.collectFillPropEdits(props),\n@@ -345,6 +347,7 @@ function groupedSiblingsBox(\n   boxName: string,\n ): Result<Node, DesignDocumentEditError> {\n   const propsList = ArrayEx.mapNonEmpty(members, Node.writtenPropsOf);\n+\n   const placedMembers = ArrayEx.toNonEmpty(\n     members.flatMap((member) => {\n       const placement = absolutePlacementOf(member);\n@@ -353,24 +356,29 @@ function groupedSiblingsBox(\n         : [];\n     }),\n   );\n+\n   if (!Option.isSome(placedMembers)) {\n     const layoutEdits = [\n       ...Layout.collectWrittenPropEdits(parentProps),\n       ...BoxAlign.collectWrittenPropEdits(parentProps),\n     ];\n     const fillEdits = Size.collectFillModePropEdits(propsList);\n+\n     const flowBox: Node = {\n       name: boxName,\n       type: PrimitiveTypes.Box,\n       children: members,\n     };\n+\n     return Result.ok(\n       applyNodePropEdits(flowBox, [...layoutEdits, ...fillEdits]),\n     );\n   }\n+\n   if (placedMembers.value.length !== members.length) {\n     return Result.err({ kind: \"mixed-placement\" });\n   }\n+\n   const boxOffset = Offset.topLeftOf(\n     ArrayEx.mapNonEmpty(placedMembers.value, ({ placement }) => placement),\n   );\n@@ -381,16 +389,19 @@ function groupedSiblingsBox(\n       Placement.toPropEdits(Placement.moveBy(placement, towardBox)),\n     ),\n   );\n+\n   const placementEdits = [\n     Placement.absoluteModePropEdit(),\n     ...Placement.toPropEdits({ mode: \"absolute\", ...boxOffset }),\n   ];\n   const constraintEdits = Constraint.collectSharedPropEdits(propsList);\n+\n   const absoluteBox: Node = {\n     name: boxName,\n     type: PrimitiveTypes.Box,\n     children,\n   };\n+\n   return Result.ok(\n     applyNodePropEdits(absoluteBox, [...placementEdits, ...constraintEdits]),\n   );\n@@ -426,6 +437,7 @@ function writtenParentOf(\n       props: artboard.value.props ?? {},\n     });\n   }\n+\n   const parent = Option.flatMap(\n     DesignDocument.findNode(document, parentName),\n     (node): Option<WrittenParent> =>\n@@ -436,6 +448,7 @@ function writtenParentOf(\n           })\n         : Option.none,\n   );\n+\n   return Interop.toResult(parent, {\n     kind: \"parent-not-found\",\n     name: parentName,\n@@ -1759,7 +1772,9 @@ export const DesignDocument = {\n         kind: \"node-not-found\",\n         name,\n       });\n+\n     const positions = ArrayEx.mapNonEmptyUntilErr(names, positionOf);\n+\n     return Result.flatMap(positions, (collected) =>\n       Interop.toResult(SiblingPositions.fromChildPositions(collected), {\n         kind: \"different-parents\",\n@@ -2380,15 +2395,18 @@ export const DesignDocument = {\n     if (!Result.isOk(siblings)) {\n       return siblings;\n     }\n+\n     const { parentName, indices } = siblings.value;\n     const parent = writtenParentOf(document, parentName);\n     if (!Result.isOk(parent)) {\n       return parent;\n     }\n+\n     const members = childrenAt(parent.value.children, indices);\n     if (!Result.isOk(members)) {\n       return members;\n     }\n+\n     const [sole, ...rest] = members.value;\n     const box =\n       rest.length === 0\n@@ -2397,16 +2415,20 @@ export const DesignDocument = {\n     if (!Result.isOk(box)) {\n       return box;\n     }\n+\n     const unusable = unusableNameError(document, boxName);\n     if (Option.isSome(unusable)) {\n       return Result.err(unusable.value);\n     }\n+\n     const at = SiblingPositions.lastAfterRemoving(siblings.value);\n+\n     return updateChildrenOfParent(document, parentName, (tree) => {\n       const remaining = members.value.reduce(\n         (current, member) => NodeTree.spliceByName(current, member.name, []),\n         tree,\n       );\n+\n       return NodeTree.insertAt(remaining, at.index, box.value);\n     });\n   },",
+          "patchLines": 138,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/sibling-positions/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -31,6 +31,7 @@ export const SiblingPositions = {\n       positions.map((position) => position.index),\n       (index) => index,\n     );\n+\n     return Option.flatMap(\n       ArrayEx.singleDistinct(positions.map((position) => position.parentName)),\n       (parentName) =>\n@@ -54,6 +55,7 @@ export const SiblingPositions = {\n   lastAfterRemoving(siblings: SiblingPositions): ChildPosition {\n     const { indices } = siblings;\n     const last = indices[indices.length - 1];\n+\n     return {\n       parentName: siblings.parentName,\n       index: last - (indices.length - 1),",
+          "patchLines": 16,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/session/prop-control/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -890,6 +890,7 @@ export const PropCollapsedControl = {\n       collapsed.controls,\n       (control) => control.prop,\n     );\n+\n     return Option.isSome(value)\n       ? PropEdit.set(names, parseInputValue(first.input, value.value))\n       : PropEdit.clear(names);",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "patch": "@@ -767,15 +767,18 @@ export const EditorState = {\n     const siblings = Option.flatMap(selectedNames(state), (names) =>\n       Interop.toOption(DesignDocument.findSiblingPositions(document, names)),\n     );\n+\n     if (!Option.isSome(siblings)) {\n       return Option.none;\n     }\n+\n     const reordered = ArrayEx.reduceUntilErr(\n       ReorderStep.toChildReorders(step, siblings.value),\n       document,\n       (current, reorder) =>\n         DesignDocument.reorderNode(current, reorder.from, reorder.toIndex),\n     );\n+\n     return withEditResult(state, reordered);\n   },\n \n@@ -1188,7 +1191,9 @@ export const EditorState = {\n         document,\n         NodeTemplate.baseName({ kind: \"primitive\", type: PrimitiveTypes.Box }),\n       );\n+\n       const grouped = DesignDocument.groupIntoBox(document, selected, boxName);\n+\n       return Option.map(withEditResult(state, grouped), (edited) =>\n         EditorState.select(edited, boxName),\n       );",
+          "patchLines": 29,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -758,11 +758,13 @@ export const NodeResize = {\n     if (resize.kind !== \"resizing\") {\n       return Option.none;\n     }\n+\n     const pointerMoved = Offset.delta(resize.pointerOrigin, pointer);\n     const snapped = snappedAt(resize, pointerMoved);\n     const screenMoved = Offset.add(pointerMoved, snapped.offset);\n     // 掴んだものの軸に沿って伸びるよう、画面の移動量を回る前の向きへ戻す\n     const moved = Offset.rotate(screenMoved, -resize.rotation.total);\n+\n     const resized = ArrayEx.mapNonEmpty(ResizeGrip.grabs(resize.grip), (grab) =>\n       resizedLength(grab, moved, view),\n     );\n@@ -771,6 +773,7 @@ export const NodeResize = {\n       (each) => each.length,\n     );\n     const position = placedPosition(resize, resized);\n+\n     return Option.some({\n       edit: Option.isSome(position)\n         ? ResizeEdit.placedAt(lengths, position.value)",
+          "patchLines": 22,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "cb319131776e8ef920241a940f4aeb69eb689092",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T00:29:44Z",
+      "subject": "🎨 [Accessibility]: #1187 この PR で書き換えたテストのヘルパーを、まとまりごとに空行で区切る",
+      "body": "- design-document.group-size.test.ts の setupGrouped: return の前に空行\n- use-editor-state.actions.test.tsx の footerCoordinates: 不在のときに返す\n  分岐のあとに空行\n- 空行以外は変えていない\n\n背景:\nPR #1214 へのオーナーのレビュー「全体的に空行がなくて読みにくいから直して」。\nこの PR が書き換えたテストの行を見直した。\n\n採用理由:\nテストの本体は、準備・操作・確かめの間に既に空行があるか、expect 1 つだけ\nだった（新規の 2 ファイルを含む）。区切りが無かったのは、この 2 つの\nヘルパーだけだった。\n\n代替案:\n1 文のテストに空行を足す案は採らない。区切るまとまりが無いため。\n\n影響とトレードオフ:\n空行の追加だけ。\n\n参考:\n- PR #1214 のレビュー（オーナー）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2Q9fpeRiMQNAfGcG38",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -26,6 +26,7 @@ function setupGrouped(props: Props): DesignDocument {\n       },\n     ],\n   });\n+\n   return Result.unwrap(DesignDocument.groupIntoBox(document, [\"card\"], \"box\"));\n }\n ",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -74,6 +74,7 @@ function footerCoordinates(state: EditorState): string {\n   if (!Option.isSome(found)) {\n     return \"無し\";\n   }\n+\n   const props = Node.writtenPropsOf(found.value);\n   return `${props.x},${props.y}`;\n }",
+          "patchLines": 8,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "14261009e0e38c7ad1bfad52f2b3af3626cd2e03",
+      "merge": true,
+      "author": "Claude",
+      "date": "2026-10-31T00:29:44Z",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/magical-cannon-ol710s",
+      "body": "",
+      "files": []
     }
   ],
   "dependencies": [
