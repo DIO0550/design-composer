@@ -4,7 +4,7 @@ import type { PrimitiveType } from "@/domains/dcmp/primitive-schema";
 import type { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import type { Size } from "../index";
 
-type SizeReaderProps = Parameters<typeof Size.fromProps>[0] &
+type ResolvedPropsReaderInput = Parameters<typeof Size.fromProps>[0] &
   Parameters<typeof Size.fixedLengthFromProps>[0] &
   Parameters<typeof Size.declarationsFromProps>[0] &
   Parameters<typeof Size.collectInvertedLimitAxes>[0];
@@ -32,9 +32,11 @@ test("既定を当てる前の props のまま流れてきた値は、下限と�
 });
 
 test("既定を当てた props はサイズの読み出しに渡せる", () => {
-  expectTypeOf<ResolvedProps<"Box">>().toExtend<SizeReaderProps>();
-  expectTypeOf<ResolvedProps<"Ellipse">>().toExtend<SizeReaderProps>();
-  expectTypeOf<ResolvedProps<PrimitiveType>>().toExtend<SizeReaderProps>();
+  expectTypeOf<ResolvedProps<"Box">>().toExtend<ResolvedPropsReaderInput>();
+  expectTypeOf<ResolvedProps<"Ellipse">>().toExtend<ResolvedPropsReaderInput>();
+  expectTypeOf<
+    ResolvedProps<PrimitiveType>
+  >().toExtend<ResolvedPropsReaderInput>();
 });
 
 test("fill を集める・写す入口は、書かれたままの props を受け取る", () => {
