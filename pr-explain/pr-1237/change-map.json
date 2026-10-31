@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1237,
+  "headBranch": "claude/magical-cannon-o3exlr",
+  "baseBranch": "main",
+  "mergeBase": "8d06cf6cb5d5e2feef306293cef8350611656af1",
+  "head": "a5353a1b41618235bc35399e78d00f3ac18efb5b",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1235.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 94,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "a5353a1b41618235bc35399e78d00f3ac18efb5b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T14:49:49Z",
+      "subject": "📝 [Documentation]: PR #1235 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1235.md を追加した（#1174、libs の fake/ の生成口を\n  素の関数 createXxxFake にした回）\n- 指摘 8 件を記録した: plan 4（plan-reviewer）、comment 1\n  （comment-reviewer）、test 1（test-reviewer）、duplication 1\n  （duplication-reviewer）、harness 1（自己修正）\n- 人のレビューは 0 件、bot は Copilot の 1 件（指摘なし）、CI は全通過\n\n背景:\nマージ後に harness-record で記録を 1 ファイル残す手順に従った。\n手戻りやフック不発は記憶からしか取れないので、Issue #1174 に\n残した内容とこのセッションの履歴から書いた。\n\n採用理由:\n判例の候補（同じ型に実装が 1 つなら fake でも素の関数 createX）は、\n#1178 に続く 2 回目の適用として「規約への反映」に書いた。介入は\nharness-growth の管轄なので、対策済の行は書いていない。\n\n影響とトレードオフ:\n差分は harness/records/ の新規 1 ファイルだけ。記録 PR は Issue を\n持たない例外に当たるので、Closes は書かない。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PkUoUnasduaPTTiSB",
+      "files": [
+        {
+          "path": "harness/records/pr-1235.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 94,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,94 @@\n+# PR #1235 libs の fake/ の生成口を素の関数 createXxxFake にする\n+\n+- マージ日: 2026-10-31\n+- 関連 Issue: #1174\n+- 差分規模: 34 ファイル / +548 -544\n+\n+## ゴールと結果\n+\n+ゴールは、`src/libs/*/fake/` の `XxxFake` 8 個(`AppMenuFake` / `AppStateIpcFake` / `AppWindowFake` / `ClockFake` / `DocumentDialogFake` / `DocumentIpcFake` / `FileDropFake` / `SingleEventIpcFake`)の生成口を素の関数 `createXxxFake` にすること。これで libs の「型 + 同名 const + `create`」は差し替え点 3 個(`TauriIpc` / `TauriDialog` / `Clock`)だけになる。振る舞いは変えない。ゴールは達成した。\n+\n+- フェーズ 1 で 1 回止めた。Issue の「決めること」が未決だったためで、A(据え置き)/ B(素の関数)を並べて B を推した。オーナーは「おすすめでいいよ」と答えて B に決まった。推奨は差し戻されていないので、指摘には数えない\n+- GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確かめた。コメントは自分のテストケース表と bot の投稿だけだった\n+- bot のレビューは Copilot の 1 件で、「Approval recommended / No open issues」だった。指摘は無い\n+- CI は 9 本すべて緑だった。VRT の差分は 0 件(204 passed)。テストは 691 files / 5414 tests で、変更前と同じ件数\n+\n+## 指摘\n+\n+### 1. ゴール確認の 4 本目(「同名の型 + const + `create` が 3 つだけ」)に判定コマンドが無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `export const X = {` だけで数えると、`create` を持たない同名コンパニオン(`CanvasDom` / `DocumentJson` / `DialogChoice` など)まで拾って 3 にならない。判定を「`index.ts` ごとに同名 const と `create(` の両方を持つもの」のループと決めて、計画に足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 2\n+\n+### 2. 「直さない doc」の一覧から 2 行が漏れていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画に挙げていたのは 2 行だけだった。漏れていたのは `app-menu/fake` L12 と `file-drop/fake` L7 の「口そのものは `SingleEventIpcFake` の形。」で、コメント行を grep すると 4 行出る。どちらも型を指しているので直さない。一覧を 4 行にして網羅させた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 7\n+\n+### 3. スコープ外にした「判例への線引きの追記」の引き継ぎ先が書かれていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: マージ後のこの記録に、判例の候補として書くと決めた(下の「規約への反映」)。#1178 の指摘 6 と同じ形の抜け。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 8\n+\n+### 4. 34 ファイルを一括で書き換える計画なのに、並行する PR を確かめた記録が無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: オープン PR は 0 件で、実害は無かった。確認日時を Issue に足した。実装の前に main が 54e2d4f から 6f8cff0 へ進んでいたので、件数を数え直した(115 / 28 は変化なし)。\n+- 既存ルール: なし\n+\n+### 5. コミット本文の内訳(「テスト 26・ストーリー 2」)が実数と合っていなかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 実数は「テスト 24・ストーリー 2・`SingleEventIpcFake` を呼ぶ fake 定義 2」で、26 はテストと fake 定義を足した数だった。「型のメンバーを指す doc 4 行」も、うち 2 行は型そのものを指していた。push 前だったので、`--amend` で本文だけ直した。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」(コミット本文の主張は `claim-verification` の対象)\n+\n+### 6. 互換の同名 const を書き戻しても、どの検査も止めない(2 回目)\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 8 ファイルに `export const XxxFake = { create: createXxxFake }` を書き戻すと、tsc / oxlint / biome / import 検査 / doc 検査はすべて通った。doc 検査(`missing-doc-comments.py`)は、同名の `type` に doc があれば const を素通しする作りだった。#1178 の指摘 9 に続く 2 回目の実測。対処はしていない。\n+- 既存ルール: なし\n+\n+### 7. 「コマンドもイベントも持たない」既定の reject が 4 つの fake に別々に書かれている(差分の外にある既存の重複)\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 4 つの fake は `app-window` / `app-state-ipc` / `document-ipc` / `tauri-ipc` で、`ipcFailure(\"Command … not found\")` / `(\"Event … not emitted\")` を別々に書いている。`document-ipc/fake` の `listen` も、`createSingleEventIpcFake` と同じ形をしている。今回の差分はこれを悪化させていないので、スコープ外とした。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 8. push 前のカナリアが通った(フック不発環境)\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が deny されずに通った。実行中フラグのマーカーも、このセッションの発火ログも無く、README の表では「本当に不発」の枝に当たる。起動は Issue の assigned で動くルーティンで、作業ディレクトリは `/home/user`(3 リポジトリが並ぶ)だった。#1178 と同じ環境。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- **plan-reviewer の指摘 4 件は、planner へ戻さずに親が Issue で確定した。** どれも計画への宣言の追記だけで、ファイル表もテスト方針も変わらなかったため。理由は Issue のフェーズ 4 のコメントに書いた\n+- **計画のあとに main が進んだので、ブランチを合わせて件数を数え直した(指摘 4)**\n+- **コミット本文を push 前に 1 回直した(指摘 5)。** コードは変えていない\n+- **フック不発環境だったので、止まるはずの操作を手で見直した。** `npx` と一括の `git add` は打っていない(add は対象ファイルを明示した)。commit は `implementer` の完了後に、push は test-reviewer の完了後に行った\n+- 計画と実装の差分は無い(implementer の報告)\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。集計と介入の判断は `harness-growth` の管轄。\n+\n+判例の候補として、次の線引きを渡す。#1178 に続いて 2 回目の適用になる(指摘 3・6)。\n+\n+- 同じ型に実装が 1 つしか無い口は、本番の口でも `fake/` の代役でも素の関数 `createX` にする\n+- 型 + 同名 const + `create` は、本物と代役の 2 つの実装がある差し替え点だけにする\n+- 互換の同名 const を書き戻しても検査が通ることも、2 回目の実測(指摘 6)",
+          "patchLines": 95,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
