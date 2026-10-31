@@ -11,6 +11,7 @@ import {
   dragNode,
   drawn,
   renderCanvas,
+  snapGuides,
   sortedFacingDistanceLabels,
 } from "./setup";
 import { drawnApart, setupSiblings } from "./snap-siblings";
@@ -59,27 +60,30 @@ test("Alt を押したままでも吸い付き、離すと吸い付いた位置�
   );
 });
 
-test("Alt を押したままでも、揃え先との隙間の数値は変わらない", () => {
+test("Alt を押して運んでいる間、距離と同じ線上に重なる揃え先との隙間は出さず、ガイド線は出したまま", () => {
   renderCanvas({ selection: setupSiblings() });
   drawnApart();
 
+  // `marker` との隙間 116 は、下の `card` までの距離 66 と同じ線上に重なる
   carryNode("badge", { x: 113, y: -12 }, "alt");
 
-  expect(distanceLabels("snap-gap")).toEqual(["116"]);
+  expect(distanceLabels("snap-gap")).toEqual([]);
+  expect(sortedFacingDistanceLabels()).toEqual(["12", "150", "190", "66"]);
+  expect(snapGuides()).toHaveLength(1);
 });
 
-test("揃え先との隙間が同じ線を出している向きには、距離を出さず隙間だけを出す", () => {
+test("揃え先との隙間と同じ線になる向きは、距離だけを出す", () => {
   renderCanvas({ selection: setupSiblings() });
   drawnApart();
 
   /*
    * 左辺が `card` の左辺（200）へ寄り、左右 200〜220・上下 72〜84 になる。下は揃え先 `card`
-   * との隙間 66（docs/06-ui.md の辺のスナップ）が出ているので、距離は上 12・左 100・右 240 だけ。
+   * との隙間と同じ線になるので、隙間を出さず距離 66 を出す。
    */
   carryNode("badge", { x: 60, y: -12 }, "alt");
 
-  expect(distanceLabels("snap-gap")).toEqual(["66"]);
-  expect(sortedFacingDistanceLabels()).toEqual(["100", "12", "240"]);
+  expect(distanceLabels("snap-gap")).toEqual([]);
+  expect(sortedFacingDistanceLabels()).toEqual(["100", "12", "240", "66"]);
 });
 
 test("⌘ と Alt を一緒に押していると、吸い付かない位置から距離を測る", () => {

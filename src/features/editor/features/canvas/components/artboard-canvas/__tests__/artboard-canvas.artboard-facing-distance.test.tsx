@@ -94,7 +94,7 @@ test("Alt を押したままでも吸い付き、離すと吸い付いた位置�
   });
 });
 
-test("Alt を押したままでも、揃え先との隙間の数値は変わらない", () => {
+test("Alt を押していても、距離と同じ線上に重ならない揃え先との隙間は出したまま", () => {
   renderCanvas({ selection: setupSelection() });
   drawnFollowingFrames();
 
@@ -102,22 +102,23 @@ test("Alt を押したままでも、揃え先との隙間の数値は変わら�
   carrySecond({ x: -29, y: 200 }, "alt");
 
   expect(distanceLabels("snap-gap")).toEqual(["60"]);
+  expect(sortedFacingDistanceLabels()).toEqual([]);
 });
 
-test("揃え先との隙間が同じ線を出している向きには、距離を出さず隙間だけを出す", () => {
+test("揃え先との隙間と同じ線になる向きは、距離だけを出す", () => {
   renderCanvas({ selection: setupSelection() });
   drawnAt("first", { left: 0, top: 0, width: 200, height: 140 });
   drawnFollowingFrame("second");
   drawnAt("third", { left: 464, top: 230, width: 200, height: 140 });
 
   /*
-   * 左辺が `first` の左辺 0 へ寄り、左右 0〜200・上下 200〜340。上は `first` との隙間 60 が
-   * 同じ線を出しているので距離を出さず、右の `third` の左辺までの 264 だけを出す。
+   * 左辺が `first` の左辺 0 へ寄り、左右 0〜200・上下 200〜340。上は `first` との隙間 60 と
+   * 同じ線になるので隙間を出さず、上の距離 60 と右の `third` の左辺までの 264 を出す。
    */
   carrySecond({ x: -229, y: 200 }, "alt");
 
-  expect(distanceLabels("snap-gap")).toEqual(["60"]);
-  expect(sortedFacingDistanceLabels()).toEqual(["264"]);
+  expect(distanceLabels("snap-gap")).toEqual([]);
+  expect(sortedFacingDistanceLabels()).toEqual(["264", "60"]);
 });
 
 test("⌘ と Alt を一緒に押していると、吸い付かない位置から距離を測り、隙間は出ない", () => {

@@ -64,19 +64,23 @@ test("吸い付かない回は、吸い付かない位置から測る", () => {
   );
 });
 
-test("揃え先との隙間が同じ線を出している向きには距離を出さず、他の向きには出す", () => {
-  /*
-   * 左辺が 203 まで来て上の相手の左辺（200）へ 3px 寄り、左右 200〜400 になる。上の相手との
-   * 隙間（上下 -50〜40）が同じ線を出すので上は除き、右の相手までは出す。
-   */
+/**
+ * 左辺が 203 まで来て上の相手の左辺（200）へ 3px 寄り、左右 200〜400 になる位置まで運んだ状態。
+ * 上の相手との隙間（上下 -50〜40）と、上へ進んだ距離が同じ線になる。
+ *
+ * @returns Alt / Option を押して運んでいる状態
+ */
+function draggingAlignedWithAbove() {
   const above = { left: 200, top: -100, width: 100, height: 50 };
-  const dragging = moveSnapped(
+  return moveSnapped(
     heldDrag(),
     pointerInputBy({ x: 103, y: 0 }, { measuresDistances: true }),
     { carried: HomeDrawn, others: [above, RightDrawn] },
   );
+}
 
-  expect(ArtboardDrag.facingDistances(dragging)).toEqual({
+test("揃え先との隙間と同じ線になる向きにも、距離を出す", () => {
+  expect(ArtboardDrag.facingDistances(draggingAlignedWithAbove())).toEqual({
     horizontal: {
       start: Option.none,
       end: Option.some({
@@ -85,6 +89,23 @@ test("揃え先との隙間が同じ線を出している向きには距離を�
         span: { min: 400, max: 450 },
       }),
     },
-    vertical: { start: Option.none, end: Option.none },
+    vertical: {
+      start: Option.some({
+        along: SidePairs.Vertical,
+        at: 250,
+        span: { min: -50, max: 40 },
+      }),
+      end: Option.none,
+    },
+  });
+});
+
+test("同じ線の距離が出ているとき、ガイドはガイド線を残して隙間を出さない", () => {
+  const guides = ArtboardDrag.snapGuides(draggingAlignedWithAbove());
+
+  // ガイド線は上の相手の左辺（左右 200）に、上の相手から運んでいるものまで引く
+  expect(Option.unwrap(guides.horizontal)).toEqual({
+    guideLine: { left: 199, top: -100, width: 2, height: 240 },
+    gapLine: Option.none,
   });
 });

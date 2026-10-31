@@ -30,13 +30,13 @@ export type ArtboardGrab = Readonly<{
 /**
  * ポインタが動いた 1 回分（どちらも画面上の px）。
  *
- * 寄せ量・揃った線に引く線・揃え先との隙間・Alt / Option の距離（除く前）はポインタの位置から
+ * 寄せ量・揃った線に引く線・揃え先との隙間（除く前）・Alt / Option の距離はポインタの位置から
  * `snappedAt` で求めた 1 回分の答えで、寄せ量は掴んでからの総量（前回までの寄せ量に足していく差分ではない）。
  */
 export type ArtboardPointerMove = Readonly<{
   pointer: Offset;
   /**
-   * そこで寄せる量と、揃った線に引く線と、揃え先との隙間と、Alt / Option の距離（除く前）。
+   * そこで寄せる量と、揃った線に引く線と、揃え先との隙間（除く前）と、Alt / Option の距離。
    * 揃う線が無ければ寄せ量 0・線も隙間も無し。測らない回は距離も無し
    */
   snapped: RepositionSnapped;
@@ -74,7 +74,7 @@ export type ArtboardDragPreview = Readonly<{
 /**
  * キャンバス上で artboard を掴んでから離すまでの状態（docs/06-ui.md「キャンバス直接操作」
  * の artboard の移動）。掴んだものを持つのは離すまで、ポインタの位置と寄せ量・揃った線に引く線・
- * 揃え先との隙間・Alt / Option の距離（除く前）（どれも画面上の px）を持つのは動かしている間
+ * 揃え先との隙間（除く前）・Alt / Option の距離（どれも画面上の px）を持つのは動かしている間
  * だけ、と状態ごとに持つものが変わるので直和で列挙する。
  *
  * 「離した直後」の状態は持たない。**掴み口の見出しには飲み込む相手が居ない**ためで（見
@@ -114,8 +114,8 @@ export const ArtboardDrag = {
    * ポインタが動いた先を反映する。
    *
    * @param drag 今のドラッグの状態
-   * @param move 画面上のポインタの位置と、そこで寄せる量と、揃った線に引く線と、揃え先との隙間と、
-   *   Alt / Option の距離（除く前）
+   * @param move 画面上のポインタの位置と、そこで寄せる量と、揃った線に引く線と、揃え先との隙間（除く前）と、
+   *   Alt / Option の距離
    * @returns 閾値を越えていれば運んでいる状態。掴んでいなければそのまま
    */
   moveTo(drag: ArtboardDrag, move: ArtboardPointerMove): ArtboardDrag {
@@ -169,7 +169,7 @@ export const ArtboardDrag = {
    * @param drag `drawn` を描いたときのドラッグの状態
    * @param input 画面上のポインタの位置と、吸い付くか・距離を測るか
    * @param drawn 運んでいる artboard と他の artboard の実測
-   * @returns 寄せ量と、揃った線に引く線と、揃え先との隙間と、距離（除く前）（画面上の px）。
+   * @returns 寄せ量と、揃った線に引く線と、揃え先との隙間（除く前）と、距離（画面上の px）。
    *   閾値に届く線が無いなら寄せ量 0・線も隙間も無し。運んでいる artboard に大きさが無い（まだ
    *   レイアウトされていない）/ 掴んでいないなら寄せ量 0・線も隙間も距離も無し
    *   （`RepositionLines.Unsnapped`。
@@ -230,26 +230,27 @@ export const ArtboardDrag = {
 
   /**
    * 揃った線に引くガイド線と、揃え先との隙間（docs/06-ui.md「artboard の移動」の辺のスナップ）。
+   * Alt / Option の距離と同じ線上に重なる隙間は除く。
    *
    * @param drag 今のドラッグの状態
    * @returns 最後に動かした位置で揃った線に引く線と隙間（画面上の px）。動かしていない / 揃った線が無いなら縦横とも `none`
    */
   snapGuides(drag: ArtboardDrag): SnapGuides {
     return drag.kind === "dragging"
-      ? drag.snapped.lines.snap
+      ? RepositionLines.snapGuidesExceptCoincidingGaps(drag.snapped.lines)
       : SideSnap.NoGuides;
   },
 
   /**
    * 上下左右それぞれ、最初に当たる他の artboard までの距離の短い線（docs/06-ui.md の
-   * artboard の移動）。揃え先との隙間と同じ線になる向きは除く。
+   * artboard の移動）。
    *
    * @param drag 今のドラッグの状態
    * @returns 向きごとの短い線（画面上の px）。動かしていない / 測っていないなら全部 `none`
    */
   facingDistances(drag: ArtboardDrag): FacingDistances {
     return drag.kind === "dragging"
-      ? RepositionLines.distanceLinesExceptGaps(drag.snapped.lines)
+      ? drag.snapped.lines.distanceLines
       : FacingDistances.None;
   },
 

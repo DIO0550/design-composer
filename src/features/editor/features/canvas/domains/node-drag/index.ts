@@ -172,7 +172,7 @@ export const DropEdit = {
    * @param name 置き直すノードの名前
    * @param target 落とし先の親を基準に書き込む座標と向きと、運んでいる間のずらし量（座標と
    *   ずらし量はドキュメント上の px）
-   * @param lines 吸い付いた線・揃え先との隙間と、Alt / Option の距離（除く前。画面上の px）
+   * @param lines 吸い付いた線・揃え先との隙間（除く前）と、Alt / Option の距離（画面上の px）
    * @returns 座標の置き直しの落とし方
    */
   reposition(
@@ -218,21 +218,25 @@ export const DropEdit = {
 
   /**
    * 揃った線に引くガイド線と、揃え先との隙間。ツリーへ落とすときは引かない
-   * （辺の吸い付きが起きるのは座標の置き直しだけ / docs/06-ui.md）。
+   * （辺の吸い付きが起きるのは座標の置き直しだけ / docs/06-ui.md）。Alt / Option の距離と
+   * 同じ線上に重なる隙間は除く。
    *
    * @param edit 今の落とし方
    * @returns 引く線と隙間（画面上の px）。ツリーへの移動・挿入なら縦横とも `none`
    */
   snapGuides(edit: DropEdit): SnapGuides {
     return Option.unwrapOr(
-      Option.map(DropEdit.repositionLines(edit), (lines) => lines.snap),
+      Option.map(
+        DropEdit.repositionLines(edit),
+        RepositionLines.snapGuidesExceptCoincidingGaps,
+      ),
       SideSnap.NoGuides,
     );
   },
 
   /**
    * 上下左右それぞれ、最初に当たる相手までの距離の短い線。ツリーへ落とすときは測らない
-   * （docs/06-ui.md の Alt / Option の距離）。揃え先との隙間と同じ線になる向きは除く。
+   * （docs/06-ui.md の Alt / Option の距離）。
    *
    * @param edit 今の落とし方
    * @returns 向きごとの短い線（画面上の px）。ツリーへの移動・挿入なら全部 `none`
@@ -241,14 +245,14 @@ export const DropEdit = {
     return Option.unwrapOr(
       Option.map(
         DropEdit.repositionLines(edit),
-        RepositionLines.distanceLinesExceptGaps,
+        (lines) => lines.distanceLines,
       ),
       FacingDistances.None,
     );
   },
 
   /**
-   * 座標の置き直しで運んでいる間に出す線（除く前）。
+   * 座標の置き直しで運んでいる間に出す線（揃え先との隙間は除く前）。
    *
    * @param edit 今の落とし方
    * @returns 吸い付いた線・揃え先との隙間・Alt / Option の距離。ツリーへの移動・挿入なら
@@ -420,6 +424,7 @@ export const NodeDrag = {
 
   /**
    * 揃った線に引くガイド線と、揃え先との隙間（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。
+   * Alt / Option の距離と同じ線上に重なる隙間は除く。
    *
    * 押しただけで線が出ると、クリックのたびに一瞬線が走る。
    *

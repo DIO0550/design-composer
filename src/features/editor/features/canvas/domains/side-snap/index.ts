@@ -196,7 +196,7 @@ export const SideSnap = {
    * 寄せたあとの、運んでいるものの矩形。
    *
    * ガイド線・隙間と、同じ位置から別に測る線（Alt / Option の距離）が同じ矩形を使うよう、
-   * 式をここ 1 か所に置く。別の式で作ると数 ULP ずれ、隙間と同じ線が別の線になる。
+   * 式をここ 1 か所に置く。
    *
    * @param snap 判定する組
    * @param offset `toSnapped` が答えた寄せ量（画面上の px）
@@ -212,8 +212,8 @@ export const SideSnap = {
    * @param guides 軸ごとのスマートガイド
    * @param pair 見る軸（揃った線を挟む辺の組）
    * @param view 割り戻しに使う倍率を持つ表示
-   * @returns 隙間の短い線と数値。その軸に揃った線が無い / 揃え先と重なっている・接している
-   *   （小数 6 桁へ丸めて 0 以下）/ ドキュメント上の px へ丸めると 0 になるなら `none`
+   * @returns 隙間の短い線と数値。その軸に揃った線が無い / その軸の隙間（`gapLine`）が `none` /
+   *   ドキュメント上の px へ丸めると 0 になるなら `none`
    */
   toGapReadout(
     guides: SnapGuides,

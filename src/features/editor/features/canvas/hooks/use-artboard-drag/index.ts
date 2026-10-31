@@ -101,11 +101,13 @@ export type ArtboardDragControl = Readonly<{
   }>;
   /** 運んでいる間の見せかけの位置。離すまで確定しないので描く側だけが使う。 */
   preview: Option<ArtboardDragPreview>;
-  /** 運んでいる間に揃った線と、揃え先との隙間。離すと出なくなる。 */
+  /**
+   * 運んでいる間に揃った線と、揃え先との隙間（Alt / Option の距離と同じ線上に重なる隙間は
+   * 除く）。離すと出なくなる。
+   */
   snapGuides: SnapGuides;
   /**
-   * 運んでいる間に Alt / Option を押していれば出す、他の artboard までの距離（揃え先との隙間と
-   * 同じ線の向きは除く）。離すと出なくなる。
+   * 運んでいる間に Alt / Option を押していれば出す、他の artboard までの距離。離すと出なくなる。
    */
   facingDistances: FacingDistances;
 }>;
