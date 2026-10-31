@@ -2,7 +2,7 @@ import { type AxisEnd, AxisEnds } from "@/domains/unit/axis";
 import { SidePair, SidePairs } from "@/domains/unit/side";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { Facing } from "@/features/editor/features/canvas/domains/facing";
-import type { ThinLine } from "@/features/editor/features/canvas/domains/thin-line";
+import { ThinLine } from "@/features/editor/features/canvas/domains/thin-line";
 import { Option } from "@/utils/Option";
 
 /**
@@ -92,6 +92,27 @@ export const FacingDistances = {
   }>): FacingDistances {
     return FacingDistances.fromFacings((facing) =>
       lineToFirstReached(facing, moved, others),
+    );
+  },
+
+  /**
+   * 上下左右のどれかの線が、`line` と同じ線上に重なるか（重なりの判定は `ThinLine.isCoinciding`）。
+   *
+   * @param distances 向きごとの短い線
+   * @param line 比べる線（画面上の px）
+   * @returns 4 つの向きのどれかの線が `line` と同じ線上に重なれば真。線の無い向きは見ない
+   */
+  hasCoinciding(distances: FacingDistances, line: ThinLine): boolean {
+    const lines = [
+      distances.horizontal.start,
+      distances.horizontal.end,
+      distances.vertical.start,
+      distances.vertical.end,
+    ];
+    return lines.some(
+      (distanceLine) =>
+        Option.isSome(distanceLine) &&
+        ThinLine.isCoinciding(distanceLine.value, line),
     );
   },
 } as const;
