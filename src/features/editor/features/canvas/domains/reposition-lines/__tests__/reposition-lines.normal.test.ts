@@ -169,6 +169,28 @@ test("Alt / Option で距離を測らない回は、隙間をそのまま出す"
   );
 });
 
+test("丸めると 0 になる 0.5px 未満の距離の線でも、同じ線上に重なれば隙間を出さない", () => {
+  // 距離の線は上下 59.7〜60（長さ 0.3）で、隙間（上下 20〜60）と 0.3 だけ範囲が重なる
+  const guides = RepositionLines.snapGuidesExceptCoincidingGaps({
+    snap: { horizontal: Option.some(HandGuide), vertical: Option.none },
+    distanceLines: {
+      ...FacingDistances.None,
+      vertical: {
+        start: Option.none,
+        end: Option.some({
+          along: SidePairs.Vertical,
+          at: 60,
+          span: { min: 59.7, max: 60 },
+        }),
+      },
+    },
+  });
+
+  expect(guides.horizontal).toEqual(
+    Option.some({ guideLine: HandGuide.guideLine, gapLine: Option.none }),
+  );
+});
+
 test("隙間と同じ向きの距離が反対側にあり範囲が離れているなら、隙間は出たまま", () => {
   const guides = RepositionLines.snapGuidesExceptCoincidingGaps({
     snap: { horizontal: Option.some(HandGuide), vertical: Option.none },
