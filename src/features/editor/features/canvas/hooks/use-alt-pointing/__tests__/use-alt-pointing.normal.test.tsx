@@ -139,3 +139,59 @@ test("選択欄にフォーカスがあるときに Alt を押しても、指し
 
   expect(result.current.pointing).toEqual(Option.none);
 });
+
+test("右の Alt を押しても、指し先が返る", () => {
+  const { result } = renderHook(() => useAltPointing());
+  act(() => result.current.trackPointer(OnRow));
+
+  fireEvent.keyDown(globalThis.document, {
+    code: "AltRight",
+    key: "Alt",
+    altKey: true,
+  });
+
+  expect(result.current.pointing).toEqual(Option.some(OnRow));
+});
+
+test("左右の Alt を押して片方だけ離しても、指し先は返ったまま", () => {
+  const { result } = renderHook(() => useAltPointing());
+  act(() => result.current.trackPointer(OnRow));
+  holdAlt();
+  fireEvent.keyDown(globalThis.document, {
+    code: "AltRight",
+    key: "Alt",
+    altKey: true,
+  });
+
+  // 右を押したままなので、左を離した keyup も Alt を押している
+  fireEvent.keyUp(globalThis.document, {
+    code: "AltLeft",
+    key: "Alt",
+    altKey: true,
+  });
+
+  expect(result.current.pointing).toEqual(Option.some(OnRow));
+});
+
+test("一度も指し先を伝えないまま Alt を押すと、キャンバスの外を指していることになる", () => {
+  const { result } = renderHook(() => useAltPointing());
+
+  holdAlt();
+
+  expect(result.current.pointing).toEqual(Option.some(Pointing.Outside));
+});
+
+test("Alt を押していない間は、指し先が変わっても再レンダーしない", () => {
+  const rendered: Option<Pointing>[] = [];
+  const { result } = renderHook(() => {
+    const control = useAltPointing();
+    rendered.push(control.pointing);
+    return control;
+  });
+  const renderedBefore = rendered.length;
+
+  act(() => result.current.trackPointer(OnRow));
+  act(() => result.current.trackPointer(OnChip));
+
+  expect(rendered.length).toBe(renderedBefore);
+});
