@@ -86,3 +86,57 @@ test("測る組が変わると、新しい組で測り直す", () => {
     }),
   );
 });
+
+/**
+ * 指し先を差し替えながら描き、各レンダーで返した線をすべて残す。測り直す前のレンダーに
+ * 何を返したかは、最後の値だけを見ても分からない。
+ *
+ * @param initial 最初の指し先
+ * @returns 指し先を差し替える手続きと、それまでに返した線の並び
+ */
+function renderRecordingDistances(initial: Pointing) {
+  const returned: FacingDistances[] = [];
+  const selection = selectionDistanceTree(["row"]);
+  const { rerender } = renderHook<FacingDistances, { pointing: Pointing }>(
+    ({ pointing }) => {
+      const distances = useSelectionDistances(selection, Option.some(pointing));
+      returned.push(distances);
+      return distances;
+    },
+    { initialProps: { pointing: initial } },
+  );
+  return { rerender, returned };
+}
+
+/** `row` と兄弟 `chip` の横並びの線。 */
+function rowBesideChip(): FacingDistances {
+  return DrawnDistancePair.toDistances({
+    kind: "beside",
+    from: SelectionDistanceTreeBounds.row,
+    to: SelectionDistanceTreeBounds.chip,
+  });
+}
+
+test("測る組が別の組に変わった回は、測り直す前にも前の組の線を返さない", () => {
+  drawRowAndAround();
+  const { rerender, returned } = renderRecordingDistances(
+    Pointing.create(["chip", "card", "home"], SelectionDigs.NoDeeper),
+  );
+  const changedAt = returned.length;
+
+  rerender({ pointing: Pointing.Nothing });
+
+  expect(returned.slice(changedAt)).not.toContainEqual(rowBesideChip());
+});
+
+test("測る組が無くなった回は、測り直す前にも前の組の線を返さない", () => {
+  drawRowAndAround();
+  const { rerender, returned } = renderRecordingDistances(
+    Pointing.create(["chip", "card", "home"], SelectionDigs.NoDeeper),
+  );
+  const changedAt = returned.length;
+
+  rerender({ pointing: Pointing.Outside });
+
+  expect(returned.slice(changedAt)).not.toContainEqual(rowBesideChip());
+});
