@@ -1,0 +1,758 @@
+{
+  "version": 2,
+  "pr": 1234,
+  "headBranch": "claude/magical-cannon-x5iz0c",
+  "baseBranch": "main",
+  "mergeBase": "83d68b3527db74c2bc1d281a336aa788adea5ca3",
+  "head": "a9af74263637b432bdc0ea51aabaf900657b3620",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/canary-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 39,
+          "deletions": 16,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/result-option-discriminant-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/test-rules-scan.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/verification-agent-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-frontend-report.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-lint-suppressions.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-tauri-version-match.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/detector-precondition.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/lib/check-tally.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": "pnpm-lock.yaml",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "684fc59edb846eef5968f631f539f55d72eb7178",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T13:39:58Z",
+      "subject": "🧪 [Tests]: #1136 report() が失敗フラグを立てることを判定表で確かめる",
+      "body": "- cases-report-cases.sh の verdict() を、任意の呼び出しを判定する\n  verdict_of と、照合の振り分けだけの verdict に分けた\n- report 自身の表(REPORT_CASES)を足した。一致なら ok の行だけで\n  cases_failed を立てない / 食い違えば NG の行を出して立てる、の 2 件\n- report 自身のケースは、食い違ったときに cases_failed を直に立てる\n- 冒頭 doc と末尾の echo を、report 自身を含む実体に合わせた\n\n背景:\nreport() から cases_failed=1 を消しても、cases-report.sh を source する\n判定表はすべて NG の行を出したまま exit 0 で通っていた。\ncases-report-cases.sh が見ていたのは種別の照合だけで、report 自身の\nケースが無かった。report に頼る判定表は 17 本あり、この 1 か所が\n壊れると全部が同時に何も守らなくなる。\n\n採用理由:\n新しいケースの結果も report で出すだけだと、cases_failed=1 を消す\n壊し方では外側の report も立てないので exit 0 のままになる(写しで\n実測)。そのため report 自身のケースだけは、食い違いで直に\ncases_failed を立てる。直に立てる前例は\nresult-option-discriminant-cases.sh にある。\nverdict_of は既存の verdict の本体を \"$@\" に置き換えたもので、\n照合と report のどちらも同じ「出力の行と cases_failed を組にする」\n判定で読める。\n\n影響とトレードオフ:\n写しで report() を壊して確かめた。NG の枝の cases_failed=1 を消すと\n2 件目が NG expected=NG got=broken、ok の枝でも立てると 1 件目が\nNG expected=ok got=broken になり、どちらも exit 1。\n判定表の末尾の exit \"$cases_failed\" を壊す形の穴はこのコミットでは\n塞がない(#1233 に分けた)。\n\n代替案:\n- 既存の表に照合の種類 report を足し、種別の列に期待と判定を入れる:\n  列名と中身が食い違い、要らない place_detector がケースごとに走る\n- 別ファイルに分ける: pre-push・frontend.yml・README へ配線が増える\n- 自分の出力の NG 行を数え直して exit を決める: report の出力の形に\n  依存する箇所が増える\n\n参考:\n- Issue #1136(計画・却下案・plan-reviewer の指摘と対応)\n- 分割した Issue #1233\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QtLrnwvM7sGdYrPqt",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 39,
+          "deletions": 16,
+          "patch": "@@ -1,8 +1,9 @@\n #!/usr/bin/env bash\n #\n-# 検出器の種別の照合（`cases-report.sh` の `report_documented_kinds` / `report_covered_kinds`）の判定表。\n-# 一時ディレクトリへ小さな検出器を置いて照合を呼び、NG を出して `cases_failed` を立てるか、ok だけを\n-# 出すかが期待どおりかを 1 コマンドで確かめる。\n+# 検出器の種別の照合（`cases-report.sh` の `report_documented_kinds` / `report_covered_kinds`）と\n+# `report` 自身（NG なら `cases_failed` を立て、ok なら立てない）の判定表。一時ディレクトリへ小さな\n+# 検出器を置いて照合を呼び、NG を出して `cases_failed` を立てるか、ok だけを出すかが期待どおりかを\n+# 1 コマンドで確かめる。\n #\n # 使い方: bash .claude/hooks/lib/cases-report-cases.sh\n # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n@@ -11,12 +12,13 @@\n # から。** 並びを見なくなる・0 件どうしを一致と読む・網羅を見なくなる、のどれに壊しても、その判定表は\n # 緑のまま残る。\n #\n-# 照合は 1 回の呼び出しごとに `cases_failed` を立てるので、ケースごとにサブシェルで呼び、そこでの\n+# 照合と `report` は 1 回の呼び出しごとに `cases_failed` を立てるので、ケースごとにサブシェルで呼び、そこでの\n # `cases_failed` と出力の行を組にして判定を決める。\n #\n # 表は `期待|ケース名|照合|実装の種別|docstring の種別|表の期待に出た種別` の 1 行 1 ケース。種別は\n # 空白区切りで、`-` は 1 つも持たない。照合は `documented`（`report_documented_kinds`）か\n-# `covered`（`report_covered_kinds`）。期待は 2 つ。\n+# `covered`（`report_covered_kinds`）。`report` 自身の表は `期待|ケース名|report に渡す期待|report に渡す判定`\n+# の 1 行 1 ケース。期待は 2 つで、どちらの表も同じ。\n #\n # | 期待 | 意味 |\n # | --- | --- |\n@@ -61,20 +63,15 @@ place_detector() {\n   } >\"$target\"\n }\n \n-# 照合をサブシェルで 1 回呼び、出力と `cases_failed` から NG / ok / broken を決める。\n+# 関数をサブシェルで 1 回呼び、出力と `cases_failed` から NG / ok / broken を決める。\n # NG の行と `cases_failed` の片方だけなら broken（報告と終了コードが食い違う）。\n #\n-# $1 照合（`documented` / `covered`）\n-# $2 検出器のパス\n-# $3 表の期待に出た種別\n-verdict() {\n-  local check=\"$1\" detector=\"$2\" covered=\"$3\" output failed\n+# $@ 呼び出す関数と引数\n+verdict_of() {\n+  local output failed\n   output=\"$(\n     cases_failed=0\n-    case \"$check\" in\n-      documented) report_documented_kinds \"$detector\" ;;\n-      covered) report_covered_kinds \"$detector\" \"$(kinds_lines \"$covered\")\" ;;\n-    esac\n+    \"$@\"\n     echo \"failed=$cases_failed\"\n   )\"\n   failed=\"$(printf '%s\\n' \"$output\" | sed -n 's/^failed=//p')\"\n@@ -88,6 +85,19 @@ verdict() {\n   fi\n }\n \n+# 照合を 1 回呼んだときの NG / ok / broken。\n+#\n+# $1 照合（`documented` / `covered`）\n+# $2 検出器のパス\n+# $3 表の期待に出た種別\n+verdict() {\n+  local check=\"$1\" detector=\"$2\" covered=\"$3\"\n+  case \"$check\" in\n+    documented) verdict_of report_documented_kinds \"$detector\" ;;\n+    covered) verdict_of report_covered_kinds \"$detector\" \"$(kinds_lines \"$covered\")\" ;;\n+  esac\n+}\n+\n while IFS='|' read -r expected label check reported documented covered; do\n   [ -n \"$check\" ] || continue\n   detector=\"$work/detector.py\"\n@@ -102,8 +112,21 @@ ok|実装の種別をすべて表の期待が含む|covered|alpha beta|alpha bet\n NG|表の期待に無い種別を実装が持つ|covered|alpha beta|alpha beta|alpha\n CASES\n \n+while IFS='|' read -r expected label report_expected report_decision; do\n+  [ -n \"$label\" ] || continue\n+  decision=\"$(verdict_of report \"$report_expected\" \"$report_decision\" \"report のケース\")\"\n+  report \"$expected\" \"$decision\" \"$label\"\n+  # 食い違いを外側の `report` に任せず、ここで直に `cases_failed` を立てる。外側の `report` も同じ壊れ方を\n+  # していると、NG の行が出ても `cases_failed` が立たず exit 0 で通る。\n+  # 出力の NG 行を数え直す形は採らない（出力の形に依存する）。\n+  [ \"$decision\" = \"$expected\" ] || cases_failed=1\n+done <<'REPORT_CASES'\n+ok|期待と判定が一致すると ok の行だけを出し、cases_failed を立てない|deny|deny\n+NG|期待と判定が食い違うと NG の行を出し、cases_failed を立てる|deny|pass\n+REPORT_CASES\n+\n if [ \"$cases_failed\" -ne 0 ]; then\n   echo \"判定表と食い違いがあります\"\n   exit 1\n fi\n-echo \"検出器の種別の照合の判定表: 期待どおり\"\n+echo \"判定表の共通部分の判定表: 期待どおり\"",
+          "patchLines": 98,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "c58f0d1400726f458b0ecf7db6257cbbb840135e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T13:39:58Z",
+      "subject": "📝 [Documentation]: #1136 cases-report-cases.sh の説明に report 自身のケースを足す",
+      "body": "- .claude/hooks/README.md の配線表で、lib/cases-report-cases.sh の\n  内容に「report 自身が、食い違いで NG を出して cases_failed を立てるか、\n  一致すれば ok だけで立てないかも報告する」を足した\n\n背景:\n前のコミットで cases-report-cases.sh が report 自身のケースを持つように\nなり、配線表の説明が種別の照合だけを挙げたままだった。\n\n採用理由:\n説明の列は判定表が何を確かめているかの列挙なので、項目を足す形にした。\n末尾の「食い違いがあれば exit 1」はそのまま成り立つので残した。\n\n影響とトレードオフ:\n使用関数の一覧(lib/cases-report.sh の行)は変えていない。\ncases-report-cases.sh の欄に report は既にあり、新しく使う共有関数も\n無い(verdict_of はファイルの中だけの関数)。\n\n代替案:\ncases-report.sh の行(共有側)へ書く案は採らない。そちらは関数の説明で、\nどの判定表が何を確かめるかは判定表の行が持つ。\n\n参考:\n- Issue #1136\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QtLrnwvM7sGdYrPqt",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -63,7 +63,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring が持つ |\n | `lib/result-option-discriminant-violations.py` | `pre-push-result-option-discriminants.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読み・直書きしている箇所を報告する。種別の一覧と意味は検出器の docstring が持つ |\n | `lib/cases-report.sh` | `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh`(`decide`・`normalize_miss`・`report`) / `lib/result-option-discriminant-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh`(それに `report_documented_kinds`) / `lib/import-rule-cases.sh`(`report`・`report_documented_kinds`・`report_covered_kinds`) / `lib/cases-report-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`) / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`kinds_in_categories`) / `lib/verification-agent-cases.sh` / `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `.github/scripts/pr-explain-pages-cases.sh` / `harness/records/count-cases.sh` / `harness/githooks/lib/check-tally-cases.sh`(`report` だけ) | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss` / `all_in_category`）と報告（`report` / `cases_failed`）と、検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |\n-| `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 一時ディレクトリに置いた小さな検出器で `report_documented_kinds` / `report_covered_kinds` を呼び、並びだけの食い違い・docstring に無い種別・0 件どうし・表の期待に無い種別で NG を出して `cases_failed` を立てるか、一致すれば ok だけになるかを報告する。食い違いがあれば exit 1 |\n+| `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 一時ディレクトリに置いた小さな検出器で `report_documented_kinds` / `report_covered_kinds` を呼び、並びだけの食い違い・docstring に無い種別・0 件どうし・表の期待に無い種別で NG を出して `cases_failed` を立てるか、一致すれば ok だけになるかを報告する。`report` 自身が、期待と判定の食い違いで NG を出して `cases_failed` を立てるか、一致すれば ok だけで立てないかも報告する。食い違いがあれば exit 1 |\n | `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` | 検出器を呼ぶフックの判定表が共有する、ケースの前提の置き方。落ちる検出器のスタブ(`place_failing_detector`)・起動できない python3(`python3_path_prefix`)・本体が同じテストヘルパー(`place_duplicate_helpers`)を、渡されたパスへ置く |\n | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `import-rule-violations.py` へ判定表を流し、報告された種別と件数が期待どおりかを報告する。検出器が報告する種別のうち、表の期待に 1 度も出ないものがあっても NG。`scan()` の種別の並びが docstring の一覧と食い違っても NG。食い違いがあれば exit 1 |\n | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。検出器の種別の並びが docstring の一覧と食い違っても NG。食い違いがあれば exit 1 |",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "fb467060af2d385a224d40a4ce180f6e8f14db49",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T13:39:58Z",
+      "subject": "♻️ [Refactoring]: #1136 検査の見出しを「判定表の共通部分の判定表」へ改名する",
+      "body": "- harness/githooks/pre-push の run_check の見出しと、その上のコメントを\n  直した\n- .github/workflows/frontend.yml の rules-check のステップ名を直した\n- harness/githooks/README.md の pre-push の検査一覧の綴りを直した\n\n背景:\ncases-report-cases.sh が種別の照合に加えて report 自身も確かめるように\nなり、「検出器の種別の照合の判定表」という見出しが実体の一部しか\n指さなくなった(rules/naming.md「名前と実体を一致させる」)。\n\n採用理由:\ncases-report.sh の doc「判定表が共有する…」と、既存の\n「push 前の検査フックの共通部分の判定表」(末尾の echo 行)の語形に\n寄せて「判定表の共通部分の判定表」にした。見出しと echo 行は同じ綴り\nにした。\n\n影響とトレードオフ:\n既存 2 本(push 前 / 編集時)は見出しから「共通部分」を外し、echo 行\nだけに入れている。それに倣うと見出しが「判定表の判定表」になって\n何の判定表か読めないので、見出しの並びと語形が揃わないことは\n受け入れた。\nharness/records/ の過去の記録と cases-report.sh 冒頭の説明は変えて\nいない(前者は当時の記録、後者は lib 自身の説明で改名の対象外)。\n\n代替案:\n- 名前を据え置く: 差分は最小だが名前と実体がずれる\n- 「判定表の報告と照合の判定表」: 既存の語形と揃わない\n\n参考:\n- Issue #1136(plan-reviewer の指摘 1・2 と対応)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QtLrnwvM7sGdYrPqt",
+      "files": [
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -207,7 +207,7 @@ jobs:\n       - name: 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表\n         run: bash .claude/hooks/lib/verification-agent-cases.sh\n \n-      - name: 検出器の種別の照合の判定表\n+      - name: 判定表の共通部分の判定表\n         run: bash .claude/hooks/lib/cases-report-cases.sh\n \n       - name: pre-push の結果行の判定表",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -25,7 +25,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の\n \n | フック | 検査 | 呼んでいるもの |\n | --- | --- | --- |\n-| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み・直書き / story の title / 名指ししたパス / テストヘルパーの重複 / import 規約の判定表 / 判別子の直読み・直書きの判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / テストヘルパーの重複の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図の判定表 / 解説ページの置き場の判定表 / 解説の検査の判定表 / 解説ページの枠の検査の判定表 / 解説ページの核の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 / push 前の検査フックの判定表 / 編集時の検査フックの判定表 / 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表 / 検出器の種別の照合の判定表 / pre-push の結果行の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-discriminant-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/result-option-discriminant-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |\n+| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み・直書き / story の title / 名指ししたパス / テストヘルパーの重複 / import 規約の判定表 / 判別子の直読み・直書きの判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / テストヘルパーの重複の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図の判定表 / 解説ページの置き場の判定表 / 解説の検査の判定表 / 解説ページの枠の検査の判定表 / 解説ページの核の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 / push 前の検査フックの判定表 / 編集時の検査フックの判定表 / 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表 / 判定表の共通部分の判定表 / pre-push の結果行の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-discriminant-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/result-option-discriminant-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |\n \n | スクリプト | 呼ばれ方 | 内容 |\n | --- | --- | --- |",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -103,8 +103,8 @@ resume_checks\n # 作業ツリーを書き換えるサブエージェントの実行中フラグ(層 3 の部品)の判定表。bash だけで走るので飛ばさない。\n run_check \"作業ツリーを書き換えるサブエージェントの実行中フラグの判定表\" bash .claude/hooks/lib/verification-agent-cases.sh\n \n-# 上の判定表が使う、検出器の種別の照合そのものの判定表。bash だけで走るので飛ばさない。\n-run_check \"検出器の種別の照合の判定表\" bash .claude/hooks/lib/cases-report-cases.sh\n+# 上の判定表が共有する、報告と検出器の種別の照合そのものの判定表。bash だけで走るので飛ばさない。\n+run_check \"判定表の共通部分の判定表\" bash .claude/hooks/lib/cases-report-cases.sh\n \n # 最後の行(結果)を出している集計そのものの判定表。bash だけで走るので飛ばさない。\n run_check \"pre-push の結果行の判定表\" bash harness/githooks/lib/check-tally-cases.sh",
+          "patchLines": 11,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "37ecca90c857d8c801fe24729fe4030562161ea8",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T13:49:21Z",
+      "subject": "📝 [Documentation]: #1136 cases-report-cases.sh の冒頭で表ごとに呼ぶものを書き分ける",
+      "body": "- 冒頭 doc の「一時ディレクトリへ小さな検出器を置いて照合を呼び」を、\n  照合の表は検出器を置いて照合を呼び、report の表は検出器を置かずに\n  report だけを呼ぶ、の形に分けた\n\n背景:\nreport 自身の表を足したあとも、冒頭の説明が照合の表だけを前提に\n書かれたままで、report の表も検出器を置くように読めた\n(comment-reviewer の指摘)。\n\n採用理由:\n2 つの表は呼ぶものも前提の置き方も違うので、1 文にまとめず表ごとに\n書いた。確かめる中身(NG なら cases_failed を立てる / ok だけを出す)は\n共通なので、後半は「どちらも」で 1 つにした。\n\n影響とトレードオフ:\n説明だけの変更で、判定表の挙動は変わらない。\n\n代替案:\n「照合と report の判定を…」と一文を広げる案は採らない。何を呼ぶかが\n書かれず、検出器を置くのがどちらの表かが読めないまま残る。\n\n参考:\n- Issue #1136(実装の検証の 1 段目と対応)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QtLrnwvM7sGdYrPqt",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -1,9 +1,9 @@\n #!/usr/bin/env bash\n #\n # 検出器の種別の照合（`cases-report.sh` の `report_documented_kinds` / `report_covered_kinds`）と\n-# `report` 自身（NG なら `cases_failed` を立て、ok なら立てない）の判定表。一時ディレクトリへ小さな\n-# 検出器を置いて照合を呼び、NG を出して `cases_failed` を立てるか、ok だけを出すかが期待どおりかを\n-# 1 コマンドで確かめる。\n+# `report` 自身（NG なら `cases_failed` を立て、ok なら立てない）の判定表。照合の表は一時ディレクトリへ\n+# 小さな検出器を置いて照合を呼び、`report` の表は検出器を置かずに `report` だけを呼ぶ。どちらも NG を\n+# 出して `cases_failed` を立てるか、ok だけを出すかが期待どおりかを 1 コマンドで確かめる。\n #\n # 使い方: bash .claude/hooks/lib/cases-report-cases.sh\n # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。",
+          "patchLines": 13,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "143d7f9b5b912fd8d0d8ecb6e0ba851e5f069597",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T13:49:22Z",
+      "subject": "📝 [Documentation]: #1136 配線表の cases-report-cases.sh の行からケース名の写しを外す",
+      "body": "- .claude/hooks/README.md の lib/cases-report-cases.sh の行を、何を呼ぶか\n  (report_documented_kinds / report_covered_kinds の照合と report 自身)\n  と「確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ」、\n  「食い違いがあれば exit 1」だけにした\n\n背景:\n内容の列が判定表のケース名(並びだけの食い違い・docstring に無い種別…)\nを書き写していて、report 自身のケースを足したことで写しが増えた。\n表と README を照合する検査は無いので、ケースを足すたびに片方だけが\n古くなる(duplication-reviewer の指摘)。\n\n採用理由:\n同じ表の lib/verification-agent-cases.sh の行が「確かめる項目は判定表の\n冒頭コメントと各ケースの名前が持つ」と参照で済ませているので、その形に\n揃えた(rules/coding.md「規約の適用範囲」: 同じ説明の重複を作らない)。\n\n影響とトレードオフ:\nREADME だけを読んでも、どの壊れ方を捕まえるかの一覧は分からなくなる。\n一覧は判定表のケース名にあり、そちらだけが実際に走る。\n\n代替案:\nケース名の写しを残して report のケースを書き足したままにする案は\n採らない。写しが 2 か所に増え、片方だけを直せる状態が広がる。\n\n参考:\n- Issue #1136(実装の検証の 1 段目と対応)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QtLrnwvM7sGdYrPqt",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -63,7 +63,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring が持つ |\n | `lib/result-option-discriminant-violations.py` | `pre-push-result-option-discriminants.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `Result` / `Option` の判別子（`ok` / `some`）を、その判別子を型宣言で定義していないファイルで直読み・直書きしている箇所を報告する。種別の一覧と意味は検出器の docstring が持つ |\n | `lib/cases-report.sh` | `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh`(`decide`・`normalize_miss`・`report`) / `lib/result-option-discriminant-cases.sh` / `lib/story-title-cases.sh` / `lib/named-path-cases.sh`(それに `report_documented_kinds`) / `lib/import-rule-cases.sh`(`report`・`report_documented_kinds`・`report_covered_kinds`) / `lib/cases-report-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`) / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`kinds_in_categories`) / `lib/verification-agent-cases.sh` / `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `.github/scripts/pr-explain-pages-cases.sh` / `harness/records/count-cases.sh` / `harness/githooks/lib/check-tally-cases.sh`(`report` だけ) | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss` / `all_in_category`）と報告（`report` / `cases_failed`）と、検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |\n-| `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 一時ディレクトリに置いた小さな検出器で `report_documented_kinds` / `report_covered_kinds` を呼び、並びだけの食い違い・docstring に無い種別・0 件どうし・表の期待に無い種別で NG を出して `cases_failed` を立てるか、一致すれば ok だけになるかを報告する。`report` 自身が、期待と判定の食い違いで NG を出して `cases_failed` を立てるか、一致すれば ok だけで立てないかも報告する。食い違いがあれば exit 1 |\n+| `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 一時ディレクトリに置いた小さな検出器で `report_documented_kinds` / `report_covered_kinds` を呼ぶ照合と、`report` 自身を呼び、`cases_failed` の立ち方と出力の行が期待どおりかを報告する。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |\n | `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` | 検出器を呼ぶフックの判定表が共有する、ケースの前提の置き方。落ちる検出器のスタブ(`place_failing_detector`)・起動できない python3(`python3_path_prefix`)・本体が同じテストヘルパー(`place_duplicate_helpers`)を、渡されたパスへ置く |\n | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `import-rule-violations.py` へ判定表を流し、報告された種別と件数が期待どおりかを報告する。検出器が報告する種別のうち、表の期待に 1 度も出ないものがあっても NG。`scan()` の種別の並びが docstring の一覧と食い違っても NG。食い違いがあれば exit 1 |\n | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードで報告する。検出器の種別の並びが docstring の一覧と食い違っても NG。食い違いがあれば exit 1 |",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "a9af74263637b432bdc0ea51aabaf900657b3620",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T13:49:22Z",
+      "subject": "♻️ [Refactoring]: #1136 検査の見出しを「判定表の報告と種別の照合の判定表」へ改める",
+      "body": "- harness/githooks/pre-push の run_check の見出しを直した\n- .github/workflows/frontend.yml の rules-check のステップ名を直した\n- harness/githooks/README.md の pre-push の検査一覧の綴りを直した\n- cases-report-cases.sh 末尾の echo 行を直した\n\n背景:\n前の改名で付けた「判定表の共通部分の判定表」は、実際に確かめている\n範囲より広く読めた。既存 2 本(push 前 / 編集時)の「共通部分」は\nファイル全体を指している。一方この表が見ているのは cases-report.sh の\nうち report と種別の照合だけで、decide / normalize_miss /\nkinds_in_categories は見ていない(naming-reviewer の指摘)。\n\n採用理由:\n.claude/hooks/README.md の lib/cases-report.sh の行が役割を分けている語\n(報告 / 検出器の種別の照合)をそのまま使い、範囲を名前に出した。\n「判定表の判定表」という重なりも残らない。pre-push の上のコメント\n(「報告と検出器の種別の照合そのものの判定表」)は新しい名前と合うので\n直していない。\n\n影響とトレードオフ:\nCI のステップ名が変わるので、ブランチ保護の必須チェックにステップ名を\n使っている場合は追随が要る(ジョブ名 rules-check は変わらない)。\n\n代替案:\n- 「共通部分」を残し、冒頭 doc に見ない関数を書き足す: 名前が範囲より\n  広いまま残り、ステップ名だけを見る読み手には届かない\n- 改名前の「検出器の種別の照合の判定表」に戻す: report 自身が抜ける\n\n参考:\n- Issue #1136(実装の検証の 1 段目と対応。計画で採った案 a を覆した)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QtLrnwvM7sGdYrPqt",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -129,4 +129,4 @@ if [ \"$cases_failed\" -ne 0 ]; then\n   echo \"判定表と食い違いがあります\"\n   exit 1\n fi\n-echo \"判定表の共通部分の判定表: 期待どおり\"\n+echo \"判定表の報告と種別の照合の判定表: 期待どおり\"",
+          "patchLines": 6,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -207,7 +207,7 @@ jobs:\n       - name: 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表\n         run: bash .claude/hooks/lib/verification-agent-cases.sh\n \n-      - name: 判定表の共通部分の判定表\n+      - name: 判定表の報告と種別の照合の判定表\n         run: bash .claude/hooks/lib/cases-report-cases.sh\n \n       - name: pre-push の結果行の判定表",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -25,7 +25,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の\n \n | フック | 検査 | 呼んでいるもの |\n | --- | --- | --- |\n-| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み・直書き / story の title / 名指ししたパス / テストヘルパーの重複 / import 規約の判定表 / 判別子の直読み・直書きの判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / テストヘルパーの重複の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図の判定表 / 解説ページの置き場の判定表 / 解説の検査の判定表 / 解説ページの枠の検査の判定表 / 解説ページの核の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 / push 前の検査フックの判定表 / 編集時の検査フックの判定表 / 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表 / 判定表の共通部分の判定表 / pre-push の結果行の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-discriminant-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/result-option-discriminant-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |\n+| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / 判別子の直読み・直書き / story の title / 名指ししたパス / テストヘルパーの重複 / import 規約の判定表 / 判別子の直読み・直書きの判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / テストヘルパーの重複の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図の判定表 / 解説ページの置き場の判定表 / 解説の検査の判定表 / 解説ページの枠の検査の判定表 / 解説ページの核の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 / push 前の検査フックの判定表 / 編集時の検査フックの判定表 / 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表 / 判定表の報告と種別の照合の判定表 / pre-push の結果行の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/result-option-discriminant-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/result-option-discriminant-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |\n \n | スクリプト | 呼ばれ方 | 内容 |\n | --- | --- | --- |",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -104,7 +104,7 @@ resume_checks\n run_check \"作業ツリーを書き換えるサブエージェントの実行中フラグの判定表\" bash .claude/hooks/lib/verification-agent-cases.sh\n \n # 上の判定表が共有する、報告と検出器の種別の照合そのものの判定表。bash だけで走るので飛ばさない。\n-run_check \"判定表の共通部分の判定表\" bash .claude/hooks/lib/cases-report-cases.sh\n+run_check \"判定表の報告と種別の照合の判定表\" bash .claude/hooks/lib/cases-report-cases.sh\n \n # 最後の行(結果)を出している集計そのものの判定表。bash だけで走るので飛ばさない。\n run_check \"pre-push の結果行の判定表\" bash harness/githooks/lib/check-tally-cases.sh",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/cases-report-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/result-option-discriminant-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-frontend-report.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-tauri-version-match.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "pnpm-lock.yaml",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": "harness/githooks/pre-push",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/result-option-discriminant-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/lib/detector-precondition.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    }
+  ]
+}
