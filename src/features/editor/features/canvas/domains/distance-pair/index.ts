@@ -107,10 +107,9 @@ function counterpartAt(
   pointing: Extract<Pointing, { kind: "on-frame" }>,
   selected: SelectedNode,
 ): Option<string> {
-  const pointedArtboard = ArrayEx.first(
-    pointing.names.filter((name) =>
-      Option.isSome(DesignDocument.findArtboard(selection.document, name)),
-    ),
+  const pointedArtboard = DocumentSelection.artboardNameAt(
+    selection,
+    pointing.names,
   );
   if (!Option.contains(pointedArtboard, selected.artboard)) {
     return Option.none;
@@ -189,6 +188,24 @@ export const DistancePair = {
         }
       }
     });
+  },
+
+  /**
+   * 2 つの組が同じ 2 つを測るか。
+   *
+   * @param a 比べる組
+   * @param b 比べる組
+   * @returns 種類が同じで、2 つの名前がどちらも等しければ真
+   */
+  equals(a: DistancePair, b: DistancePair): boolean {
+    switch (a.kind) {
+      case "within":
+        return (
+          b.kind === "within" && a.inner === b.inner && a.outer === b.outer
+        );
+      case "beside":
+        return b.kind === "beside" && a.from === b.from && a.to === b.to;
+    }
   },
 
   /**

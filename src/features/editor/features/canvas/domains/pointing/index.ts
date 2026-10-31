@@ -5,7 +5,8 @@ import type { SelectionDig } from "@/domains/session/selection-dig";
  * しているだけのときの Alt / Option の距離の相手を決める材料）。
  *
  * - `outside`: キャンバスの外
- * - `nothing`: キャンバスの中で、artboard の枠の外（空き領域・見出し・リサイズハンドル）
+ * - `nothing`: キャンバスの中で、artboard の枠の外（空き領域・見出し）か、選んでいるノードの
+ *   リサイズハンドル（四角。帯は除く）の上
  * - `on-frame`: artboard の枠の上。`names` は指している位置から外へ辿った名前（内→外。
  *   末尾は artboard）、`dig` はその時点の押し方から決まった掘る量
  */
@@ -21,7 +22,10 @@ export type Pointing =
 /** キャンバスの外を指している。 */
 const Outside = { kind: "outside" } as const satisfies Pointing;
 
-/** キャンバスの中で、artboard の枠の外を指している。 */
+/**
+ * キャンバスの中で、artboard の枠の外か、選んでいるノードのリサイズハンドルの上を指して
+ * いる。
+ */
 const Nothing = { kind: "nothing" } as const satisfies Pointing;
 
 export const Pointing = {
@@ -47,7 +51,8 @@ export const Pointing = {
    * @returns 種類が同じで、枠の上なら名前の並びと掘る量まで同じなら真
    */
   equals(a: Pointing, b: Pointing): boolean {
-    if (a.kind !== "on-frame" || b.kind !== "on-frame") {
+    const isBothOnFrame = a.kind === "on-frame" && b.kind === "on-frame";
+    if (!isBothOnFrame) {
       return a.kind === b.kind;
     }
     const isSameNames =
