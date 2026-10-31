@@ -8,7 +8,8 @@
 報告する違反は次のとおり(並びが報告の順)。
 
 - `pr-explain-shape` — 読めない・形が表と違う(必須の欠け・知らないキー・重複したキー・型・語彙・
-  綴り・一意性・範囲・状況の表のマスの揃い・振る舞いの前後が同じ・用語の印の書き方・強調の範囲)
+  綴り・一意性・範囲・状況の表のマスの揃い・振る舞いの前後が同じ・振る舞いの仕様の場所と関連 Issue の重複・
+  行の無い変わらないことの仕様・用語の印の書き方・強調の範囲)
 - `pr-explain-meta` — `pr` が公開先の PR と違う
 - `pr-explain-ref` — 解説の中の参照が解説の中に無い(message の from / to・flow の steps など)・用語の印が terms に
   無い・どの印からも指されない用語
@@ -18,7 +19,7 @@
 種別の綴りは、この一覧と報告の行の頭(`[<種別>] `)にだけ書く(照合は `build-pr-explain-cases.sh`)。
 
 **地図を指す参照(commitStory の sha・Note のパスと行・Target の layer / file・LayerRole の layer・
-concept・primers の出てくる場所の `path`・`lineRange`・`shas` が地図にあるか)は見ない。** 地図は push のたびに
+concept・primers の出てくる場所の `path`・`lineRange`・`shas`・振る舞いの仕様の場所の `path`・`shas` が地図にあるか)は見ない。** 地図は push のたびに
 作り直されるので、解説を書いた時点で合っていても後で外れる。外れたものはページが「地図に無い」と出す。
 
 抜粋(Excerpt を指すすべての道筋。`tests[].excerpt`・`primers[].passages[].excerpt`)の中身は手で写させず、
@@ -40,14 +41,14 @@ concept・primers の出てくる場所の `path`・`lineRange`・`shas` が地�
 - docs(`docs/*.md`)に出る語は通す。`.dcmp` のキー名や製品名は仕様の語で、言い換えるとかえって伝わらない
   ため。一覧を手で持たず docs を正本にする
 
-振る舞い(`impact`)の文字列は、すべて使う人の言葉(`UserText`)で書く。見出しと同じ継ぎ目の規則に加えて
+振る舞い(`impact`)の文字列は、仕様の場所の `path`(ファイルの場所)と `shas` を除いて、使う人の言葉(`UserText`)で書く。見出しと同じ継ぎ目の規則に加えて
 `` ` `` も落とす。振る舞いの画面はコードの名前を出さずに読ませる画面で、文はどれも書いたまま描く。
 「コードの名前を出さない」が何を守るかは、ここを正本にする(`pr-explain` スキルはここを指す)。
 
-- **検査で守るのは `impact` の文字列。** ページはそれに固定の文言と、`impact` の文字列から導いた文(マスの状況の
-  「行 · 列(注)」・件数)を足すだけなので、そこにも名前は入らない
+- **検査で守るのは `impact` の文字列。** ページはそれに固定の文言と、`impact` の値から導いた文(マスの状況の
+  「行 · 列(注)」・件数・sha の頭 7 桁・「Issue #番号」)を足すだけで、コミットの件名は出さないので、そこにも名前は入らない
 - 例外は根拠として添える名前で、テスト名(`tests[].name`。検査しない)とやりとりの名前(`messages[].name`。
-  見出しの規則)はそのまま出る
+  見出しの規則)と仕様の場所のパス(`changed.specs[].path`・`keptSpecs[].path`。`Text`)はそのまま出る
 - 1 語の識別子・ファイル名・snake_case は綴りで識別子と言い切れないので、この規則でも捕まらない。書き方の
   規則(`pr-explain` スキル)で受ける
 
@@ -255,6 +256,14 @@ ImpactSides: dict[str, Field] = {
     "text": may(UserText),
 }
 
+# 根拠として挙げる仕様の場所(振る舞いの変わったこと・変わらないことが同じ形で持つ)。`locator` はファイルの中の位置を
+# 見出しの言葉で書く(行番号は持たない)。
+CitedSpec: dict[str, Field] = {
+    "path": need(Text),
+    "locator": need(UserText),
+    "text": need(UserText),
+}
+
 # 解説の形(`pr-explain` スキルの「explain.json の形」の表を、検査が読む形にしたもの)。
 Shapes: dict[str, dict[str, Field]] = {
     "Explain": {
@@ -290,8 +299,13 @@ Shapes: dict[str, dict[str, Field]] = {
         "tables": may(Many(Shape("SituationTable"))),
         "added": may(Many(Shape("AddedSituation"))),
         "kept": may(Many(Shape("KeptLine"))),
+        "keptSpecs": may(Many(Shape("KeptSpec"))),
     },
-    "ImpactChange": ImpactSides,
+    "ImpactChange": {
+        **ImpactSides,
+        "specs": may(Many(Shape("ChangedSpec"))),
+        "relatedIssues": may(Many(Shape("RelatedIssue"))),
+    },
     "ImpactLine": {"text": need(UserText), "message": may(Id)},
     "SituationTable": {
         "label": need(UserText),
@@ -314,6 +328,10 @@ Shapes: dict[str, dict[str, Field]] = {
     },
     "AddedSituation": {"label": need(UserText), **ImpactSides, "tests": may(Many(Id, distinct=True))},
     "KeptLine": {"text": need(UserText), "tests": may(Many(Id, distinct=True))},
+    # `shas` は地図と照合しない(地図を指す参照)。
+    "ChangedSpec": {**CitedSpec, "shas": need(Many(Sha, least=1, distinct=True))},
+    "KeptSpec": CitedSpec,
+    "RelatedIssue": {"issue": need(Count), "text": need(UserText)},
     "Highlight": {"title": need(Heading), "text": need(Text), "go": need(Variant("Target"))},
     "Feature": {"id": need(Id), "label": need(Heading), "role": need(Text)},
     "LayerRole": {"layer": need(Text), "role": need(Text)},
@@ -508,6 +526,39 @@ def same_sides_problem(value: dict) -> str | None:
     return None
 
 
+def repeated_specs_problem_in(value: dict, key: str) -> str | None:
+    """`value[key]` の仕様の場所に、パスと位置(`path`・`locator`)の組を 2 回書いていないかを見る。書いていなければ None。"""
+    twice = repeated([(spec["path"], spec["locator"]) for spec in value.get(key, [])])
+    if twice:
+        return f"{key} の {', '.join(f'{path}「{locator}」' for path, locator in twice)} を 2 回以上書いている"
+    return None
+
+
+def repeated_specs_problem(changed: dict) -> str | None:
+    """変わったことの仕様の場所に、パスと位置の組を 2 回書いていないかを見る。"""
+    return repeated_specs_problem_in(changed, "specs")
+
+
+def repeated_issue_numbers_problem(changed: dict) -> str | None:
+    """変わったことの関連 Issue に、同じ番号を 2 回書いていないかを見る。"""
+    twice = repeated([related["issue"] for related in changed.get("relatedIssues", [])])
+    if twice:
+        return f"relatedIssues の Issue {', '.join(f'#{issue}' for issue in twice)} を 2 回以上書いている"
+    return None
+
+
+def kept_specs_problem(impact: dict) -> str | None:
+    """変わらないことの仕様の場所が、行(`kept`)のある節にだけ書かれ、パスと位置の組を 2 回書いていないかを見る。
+
+    行が 0 件なら変わらないことの節を作らないので、仕様の場所だけを書いても描かれない。
+    """
+    if "keptSpecs" not in impact:
+        return None
+    if not impact.get("kept"):
+        return "keptSpecs は kept を 1 行以上書いたときだけ書く(行の無い変わらないことの節は作らない)"
+    return repeated_specs_problem_in(impact, "keptSpecs")
+
+
 # キーごとの形が合ったオブジェクトに、キーをまたいで当てる規則。
 CrossChecks: dict[str, tuple[Callable[[dict], str | None], ...]] = {
     "Note": (span_problem,),
@@ -516,7 +567,8 @@ CrossChecks: dict[str, tuple[Callable[[dict], str | None], ...]] = {
     "Values": (cells_problem,),
     "SituationTable": (repeated_head_ids_problem, outcome_grid_problem),
     "SituationOutcome": (same_was_problem,),
-    "ImpactChange": (same_sides_problem,),
+    "Impact": (kept_specs_problem,),
+    "ImpactChange": (same_sides_problem, repeated_specs_problem, repeated_issue_numbers_problem),
     "AddedSituation": (same_sides_problem,),
 }
 
