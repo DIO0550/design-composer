@@ -103,16 +103,14 @@ export const FacingDistances = {
    * @returns 4 つの向きのどれかの線が `line` と同じ線上に重なれば真。線の無い向きは見ない
    */
   hasCoinciding(distances: FacingDistances, line: ThinLine): boolean {
-    const lines = [
-      distances.horizontal.start,
-      distances.horizontal.end,
-      distances.vertical.start,
-      distances.vertical.end,
-    ];
-    return lines.some(
-      (distanceLine) =>
-        Option.isSome(distanceLine) &&
-        ThinLine.isCoinciding(distanceLine.value, line),
+    const drawnLines = Object.values(SidePairs).flatMap((pair) =>
+      Object.values(AxisEnds).flatMap((end) => {
+        const distanceLine = distances[pair][end];
+        return Option.isSome(distanceLine) ? [distanceLine.value] : [];
+      }),
+    );
+    return drawnLines.some((distanceLine) =>
+      ThinLine.isCoinciding(distanceLine, line),
     );
   },
 } as const;
