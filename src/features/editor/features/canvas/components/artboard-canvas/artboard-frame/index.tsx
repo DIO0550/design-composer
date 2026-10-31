@@ -8,6 +8,8 @@ import {
   SelectionDigs,
 } from "@/domains/session/selection-dig";
 import type { ArrangedArtboard } from "@/features/editor/features/canvas/domains/arranged-artboard";
+import { Pointing } from "@/features/editor/features/canvas/domains/pointing";
+import type { AltPointingControl } from "@/features/editor/features/canvas/hooks/use-alt-pointing";
 import type { ArtboardDragControl } from "@/features/editor/features/canvas/hooks/use-artboard-drag";
 import type { NodeDragControl } from "@/features/editor/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/editor/features/canvas/hooks/use-node-resize";
@@ -28,13 +30,14 @@ import { ArtboardLabel } from "../artboard-label";
 const ActivationKeys: readonly KeyName[] = [KeyNames.Enter];
 
 /**
- * クリックと掴むときに共通の、押し方から読んだ掘る量。⌘ / Ctrl を押しながらだけが、押され
- * た位置のいちばん内側まで一度に掘る（docs/06-ui.md「キャンバスのクリックが選ぶ階層」）。
+ * クリック・掴むとき・Alt / Option の距離の相手を決めるときに共通の、押し方から読んだ掘る
+ * 量。⌘ / Ctrl を押しながらだけが、押された位置のいちばん内側まで一度に掘る（docs/06-ui.md
+ * 「キャンバスのクリックが選ぶ階層」）。
  *
  * 修飾キーの有無という入力の事情を掘る量へ読み替えるのはここまでで、どれを選ぶか・掴む
- * かは `DocumentSelection.nodeNameAt` が決める。
+ * か・測るかは `DocumentSelection.nodeNameAt` / `nameToSelectAt` が決める。
  *
- * @param event 枠で受けた `click` か `pointerdown`
+ * @param event 枠で受けた `click` か `pointerdown` か `pointermove`
  * @returns ⌘ / Ctrl を押していれば `Deepest`、押していなければ `NoDeeper`
  */
 function pressDig(event: MouseEvent<HTMLElement>): SelectionDig {
@@ -59,6 +62,7 @@ export function ArtboardFrame({
   nodeDrag,
   nodeResize,
   textEdit,
+  altPointing,
 }: Readonly<{
   arranged: ArrangedArtboard;
   isSelected: boolean;
@@ -72,6 +76,7 @@ export function ArtboardFrame({
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
   textEdit: TextEditControl;
+  altPointing: AltPointingControl;
 }>) {
   const { artboard, canvasPosition } = arranged;
   /*
@@ -83,7 +88,7 @@ export function ArtboardFrame({
     Option.isSome(preview) && preview.value.name === artboard.element.name;
   const drawnAt = isDragged ? preview.value.canvasPosition : canvasPosition;
   /**
-   * 押された位置から外へ辿った名前。
+   * 押された・指している位置から外へ辿った名前。
    */
   const element = artboard.element;
   const namesAt = (target: EventTarget): readonly string[] =>
@@ -185,6 +190,12 @@ export function ArtboardFrame({
           onSelect(names, SelectionDigs.OneDeeper);
         }}
         onKeyDown={activate}
+        onPointerMove={(event) =>
+          altPointing.trackPointer(
+            Pointing.create(namesAt(event.target), pressDig(event)),
+          )
+        }
+        onPointerLeave={() => altPointing.trackPointer(Pointing.Nothing)}
         // 土台へ渡さないのは、そちらが空き領域として扱うため
         onContextMenu={(event: MouseEvent<HTMLElement>) => {
           event.stopPropagation();

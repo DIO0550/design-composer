@@ -52,6 +52,7 @@ const meta = {
   args: {
     tokenSelection: TokenSelection.create(SampleCanvasDocument, Option.none),
     isFrozen: false,
+    isContextMenuOpen: false,
     onSelect: fn(),
     onSelectInRange: fn(),
     onResize: fn(),

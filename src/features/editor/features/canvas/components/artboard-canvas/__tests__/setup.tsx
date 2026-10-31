@@ -85,13 +85,14 @@ export function withOnlySelected(
 }
 
 /**
- * キャンバスが描くのに要る値。トークンと凍結は見たいテストだけが渡せばよいので、
- * `renderCanvas` が既定（トークン未選択 / 凍結していない）を埋める。
+ * キャンバスが描くのに要る値。トークン・凍結・メニューは見たいテストだけが渡せばよいので、
+ * `renderCanvas` が既定（トークン未選択 / 凍結していない / メニューを開いていない）を埋める。
  */
 type CanvasValues = Readonly<{
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
   isFrozen: boolean;
+  isContextMenuOpen: boolean;
 }>;
 
 /** キャンバスが外へ渡す操作。テストは見たいものだけを渡し、残りは呼ばれても何もしない。 */
@@ -139,7 +140,7 @@ type CanvasProps = Readonly<{ selection: DocumentSelection }> &
 /**
  * 描く値とハンドラを既定で埋めたキャンバス。
  *
- * @param props 描く値（`selection` は必須、トークンと凍結は既定あり）と、
+ * @param props 描く値（`selection` は必須、トークン・凍結・メニューは既定あり）と、
  *   確かめたい操作だけのハンドラ
  * @returns 既定を埋めたキャンバスの要素
  */
@@ -151,6 +152,7 @@ function canvasElement(props: CanvasProps) {
         Option.none,
       )}
       isFrozen={false}
+      isContextMenuOpen={false}
       onSelect={vi.fn()}
       onSelectInRange={vi.fn()}
       onMoveNode={vi.fn()}
@@ -167,7 +169,7 @@ function canvasElement(props: CanvasProps) {
 /**
  * キャンバスを描く。
  *
- * @param props 描く値（`selection` は必須、トークンと凍結は既定あり）と、
+ * @param props 描く値（`selection` は必須、トークン・凍結・メニューは既定あり）と、
  *   確かめたい操作だけのハンドラ
  * @returns `render` の戻り値に、同じ器のまま別の選択で描き直す `rerenderWith` を足したもの
  */

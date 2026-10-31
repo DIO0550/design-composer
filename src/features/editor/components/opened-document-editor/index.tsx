@@ -175,6 +175,7 @@ function EditorPanes({
             selection={documentSelection}
             tokenSelection={tokenSelection}
             isFrozen={isFrozen}
+            isContextMenuOpen={Option.isSome(contextMenu)}
             canvasView={canvasView}
             nodeDrag={nodeDrag}
             onSelect={node.selectAt}

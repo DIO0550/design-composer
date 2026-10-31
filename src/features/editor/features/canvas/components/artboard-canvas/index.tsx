@@ -15,12 +15,15 @@ import type { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { NodeDrag } from "@/features/editor/features/canvas/domains/node-drag";
 import { NodeResize } from "@/features/editor/features/canvas/domains/node-resize";
+import { Pointing } from "@/features/editor/features/canvas/domains/pointing";
+import { useAltPointing } from "@/features/editor/features/canvas/hooks/use-alt-pointing";
 import { useArtboardDrag } from "@/features/editor/features/canvas/hooks/use-artboard-drag";
 import type { CanvasViewControl } from "@/features/editor/features/canvas/hooks/use-canvas-view";
 import { useDrawnBounds } from "@/features/editor/features/canvas/hooks/use-drawn-bounds";
 import type { NodeDragControl } from "@/features/editor/features/canvas/hooks/use-node-drag";
 import { useNodeResize } from "@/features/editor/features/canvas/hooks/use-node-resize";
 import { useRangeSelect } from "@/features/editor/features/canvas/hooks/use-range-select";
+import { useSelectionDistances } from "@/features/editor/features/canvas/hooks/use-selection-distances";
 import { useSpaceHeld } from "@/features/editor/features/canvas/hooks/use-space-held";
 import { useTextEdit } from "@/features/editor/features/canvas/hooks/use-text-edit";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
@@ -77,7 +80,7 @@ function canvasCursor(
  *
  * どちらも両方の親が状態を持つ。
  *
- * props が 11 個あるが Composition へは割っていない（描くものはコンパイル結果の HTML で呼
+ * props が 12 個あるが Composition へは割っていない（描くものはコンパイル結果の HTML で呼
  * び出し側が組み立てられず、`EditorState` を丸ごと受けると feature として切り出せない。
  * `selection` と `tokenSelection` を束ねる型も作らない）。中央ペインの凍結（ハンドルの抑止
  * ・`inert`・スクリム）はここが自分で出す — 左右と違い器は中央に淡色も `inert` も付けない。
@@ -86,6 +89,7 @@ export function ArtboardCanvas({
   selection,
   tokenSelection,
   isFrozen,
+  isContextMenuOpen,
   canvasView,
   nodeDrag,
   onSelect,
@@ -98,6 +102,8 @@ export function ArtboardCanvas({
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
   isFrozen: boolean;
+  /** 右クリックのメニューを開いているか（開いている間は Alt / Option の距離を出さない）。 */
+  isContextMenuOpen: boolean;
   canvasView: CanvasViewControl;
   nodeDrag: NodeDragControl;
   onSelect: (names: readonly string[], dig: SelectionDig) => void;
@@ -172,6 +178,25 @@ export function ArtboardCanvas({
     view,
     onSelect: onSelectInRange,
   });
+  const altPointing = useAltPointing();
+  /*
+   * ほかの操作の最中・メニューを開いている間・凍結中は、選択しているだけのときの Alt /
+   * Option の距離を出さず測りもしない（docs/06-ui.md「キャンバス直接操作」）。
+   */
+  const suspendsAltDistance =
+    isFrozen ||
+    isContextMenuOpen ||
+    isSpaceHeld ||
+    CanvasView.isDragging(view) ||
+    NodeDrag.isDragging(nodeDrag.drag) ||
+    Option.isSome(nodeResize.grabbed) ||
+    Option.isSome(artboardDrag.preview) ||
+    Option.isSome(rangeSelect.bounds) ||
+    Option.isSome(textEdit.edit);
+  const selectionDistances = useSelectionDistances(
+    selection,
+    suspendsAltDistance ? Option.none : altPointing.pointing,
+  );
   const singleName = DocumentSelection.singleName(selection);
   /*
    * ハンドルは選択中のものの辺へ重ねるので、描かれている位置を実測して追いかける。
@@ -226,6 +251,8 @@ export function ArtboardCanvas({
        * 土台や `canvas-content` で受けるとその回を飲み込めず、状態が次のクリックまで残る。
        */
       onClickCapture={nodeResize.onClickCapture}
+      onPointerEnter={() => altPointing.trackPointer(Pointing.Nothing)}
+      onPointerLeave={() => altPointing.trackPointer(Pointing.Outside)}
       className="relative flex h-full flex-col overflow-hidden"
     >
       <div
@@ -332,6 +359,7 @@ export function ArtboardCanvas({
             nodeDrag={nodeDrag}
             nodeResize={nodeResize}
             textEdit={textEdit}
+            altPointing={altPointing}
           />
         </div>
       </div>
@@ -373,6 +401,7 @@ export function ArtboardCanvas({
         distances={artboardDrag.facingDistances}
         view={view}
       />
+      <FacingDistanceOverlay distances={selectionDistances} view={view} />
       {/* 隙間の数値はリサイズでは出さない（docs/06-ui.md「リサイズハンドル」の辺のスナップ） */}
       <GuideLineOverlay guides={nodeResize.snapGuides} />
       {/* 座標を動かすドラッグにはドロップ線が出ないので、代わりに実体を先に動かす */}
