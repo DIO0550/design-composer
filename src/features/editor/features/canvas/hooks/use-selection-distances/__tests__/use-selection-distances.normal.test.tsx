@@ -12,6 +12,7 @@ import {
 import { DrawnDistancePair } from "@/features/editor/features/canvas/domains/distance-pair";
 import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import { Pointing } from "@/features/editor/features/canvas/domains/pointing";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { useSelectionDistances } from "..";
 
@@ -139,4 +140,41 @@ test("測る組が無くなった回は、測り直す前にも前の組の線�
   rerender({ pointing: Pointing.Outside });
 
   expect(returned.slice(changedAt)).not.toContainEqual(rowBesideChip());
+});
+
+test("測る組の片方だけが別の名前に変わった回は、測り直す前にも前の組の線を返さない", () => {
+  // `row` から `card` の縁まで → `row` から `home` の縁まで
+  drawRowAndAround();
+  drawNamed("home", SelectionDistanceTreeBounds.home);
+  const { rerender, returned } = renderRecordingDistances(Pointing.Nothing);
+  const changedAt = returned.length;
+
+  rerender({ pointing: Pointing.create(["home"], SelectionDigs.NoDeeper) });
+
+  expect(returned.slice(changedAt)).not.toContainEqual(
+    DrawnDistancePair.toDistances({
+      kind: "within",
+      inner: SelectionDistanceTreeBounds.row,
+      outer: SelectionDistanceTreeBounds.card,
+    }),
+  );
+});
+
+test("測る組が変わっても測った矩形が前と同じなら、新しい組の線を返す", () => {
+  // `card` と `home` を同じ矩形に描くので、組の名前だけが変わる
+  drawRowAndAround();
+  drawNamed("home", SelectionDistanceTreeBounds.card);
+  const { rerender, returned } = renderRecordingDistances(Pointing.Nothing);
+
+  rerender({ pointing: Pointing.create(["home"], SelectionDigs.NoDeeper) });
+
+  expect(ArrayEx.last(returned)).toEqual(
+    Option.some(
+      DrawnDistancePair.toDistances({
+        kind: "within",
+        inner: SelectionDistanceTreeBounds.row,
+        outer: SelectionDistanceTreeBounds.card,
+      }),
+    ),
+  );
 });

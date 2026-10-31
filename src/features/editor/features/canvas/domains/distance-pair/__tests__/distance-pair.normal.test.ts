@@ -179,3 +179,30 @@ test("同じ名前でも、組の種類が違えば等しくない", () => {
 
   expect(isEqual).toBe(false);
 });
+
+test("内側の縁を測る組で、包む側だけが違えば等しくない", () => {
+  const isEqual = DistancePair.equals(
+    { kind: "within", inner: "row", outer: "card" },
+    { kind: "within", inner: "row", outer: "home" },
+  );
+
+  expect(isEqual).toBe(false);
+});
+
+test("内側の縁を測る組で、包まれる側だけが違えば等しくない", () => {
+  const isEqual = DistancePair.equals(
+    { kind: "within", inner: "row", outer: "card" },
+    { kind: "within", inner: "chip", outer: "card" },
+  );
+
+  expect(isEqual).toBe(false);
+});
+
+test("横並びの組で、測り始める側だけが違えば等しくない", () => {
+  const isEqual = DistancePair.equals(
+    { kind: "beside", from: "row", to: "chip" },
+    { kind: "beside", from: "title", to: "chip" },
+  );
+
+  expect(isEqual).toBe(false);
+});
