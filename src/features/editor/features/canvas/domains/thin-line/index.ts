@@ -53,24 +53,6 @@ export const ThinLine = {
   },
 
   /**
-   * 2 本の線が同じ向き・同じ位置・同じ範囲か。
-   *
-   * 浮動小数を許容幅なしで比べる。同じ入力から同じ式で作った線どうしだけを比べる前提。
-   *
-   * @param line 見る線
-   * @param other 比べる相手の線
-   * @returns 向き・中心の座標・範囲の両端がすべて一致すれば真
-   */
-  equals(line: ThinLine, other: ThinLine): boolean {
-    return (
-      line.along === other.along &&
-      line.at === other.at &&
-      line.span.min === other.span.min &&
-      line.span.max === other.span.max
-    );
-  },
-
-  /**
    * 2 本の線が同じ線上に重なるか（docs/06-ui.md の Alt / Option の距離）。
    *
    * @param line 見る線
