@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import {
   DistancePair,
@@ -6,31 +6,32 @@ import {
 } from "@/features/editor/features/canvas/domains/distance-pair";
 import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import type { Pointing } from "@/features/editor/features/canvas/domains/pointing";
+import { useMeasured } from "@/features/editor/features/canvas/hooks/use-measured";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
 import { Option } from "@/utils/Option";
 
+/** 測った組と、それを描かれている矩形に置き換えたもの。 */
+type MeasuredPair = Readonly<{ pair: DistancePair; drawn: DrawnDistancePair }>;
+
 /**
- * 2 つの測った結果が同じ矩形を指しているか。
+ * 2 つの測った結果が、同じ組の同じ矩形か。
  *
- * @param previous 前に持っていた結果
- * @param next 測り直した結果
- * @returns どちらも不在か、同じ組の同じ矩形を指していれば `true`
+ * @param measured 比べる結果
+ * @param other 比べる結果
+ * @returns 組の名前と矩形がどちらも等しければ `true`
  */
-function isSame(
-  previous: Option<DrawnDistancePair>,
-  next: Option<DrawnDistancePair>,
-): boolean {
-  if (!Option.isSome(previous) || !Option.isSome(next)) {
-    return Option.isSome(previous) === Option.isSome(next);
-  }
-  return DrawnDistancePair.equals(previous.value, next.value);
+function isSameMeasured(measured: MeasuredPair, other: MeasuredPair): boolean {
+  return (
+    DistancePair.equals(measured.pair, other.pair) &&
+    DrawnDistancePair.equals(measured.drawn, other.drawn)
+  );
 }
 
 /**
  * 選択しているだけのときの Alt / Option の距離（docs/06-ui.md「キャンバス直接操作」）。
  *
- * 測り方は `useDrawnBounds` と同じく依存配列を持たず毎コミット測り直し、ウィンドウの大き
- * さの変化を購読する（理由はそちらの doc）。測り直した矩形が前と同じなら同じ参照を返す。
+ * 測り直し方は `useMeasured`。線を返すのは、測った組が今の組と同じときだけ。組が無くなっ
+ * た回・別の組に変わった回は、測り直す前の矩形を返さない。
  *
  * @param selection 選択とドキュメントの出どころ
  * @param pointing Alt / Option を押している間のポインタの指し先。出さない間は `none`
@@ -44,33 +45,28 @@ export function useSelectionDistances(
   const pair = Option.flatMap(pointing, (current) =>
     DistancePair.create(selection, current),
   );
-  const [drawn, setDrawn] = useState<Option<DrawnDistancePair>>(Option.none);
-
-  useLayoutEffect(() => {
-    const remeasure = () => {
-      setDrawn((previous) => {
-        const next = Option.flatMap(pair, (current) =>
+  const measured = useMeasured(
+    () =>
+      Option.flatMap(pair, (current) =>
+        Option.map(
           DistancePair.measure(current, DrawnBounds.measureWithArea),
-        );
-        return isSame(previous, next) ? previous : next;
-      });
-    };
-
-    remeasure();
-    globalThis.window.addEventListener("resize", remeasure);
-    return () => globalThis.window.removeEventListener("resize", remeasure);
-  });
+          (drawn) => ({ pair: current, drawn }),
+        ),
+      ),
+    isSameMeasured,
+  );
 
   const distances = useMemo(
     () =>
-      Option.isSome(drawn)
-        ? DrawnDistancePair.toDistances(drawn.value)
+      Option.isSome(measured)
+        ? DrawnDistancePair.toDistances(measured.value.drawn)
         : FacingDistances.None,
-    [drawn],
+    [measured],
   );
-  /*
-   * 組が無くなった回は、測り直す前の矩形を返さない。layout effect が描く前に消すので画面に
-   * は出ないが、返す値がその場の組で決まる形にしておけば、測り直しの順番に頼らずに済む。
-   */
-  return Option.isSome(pair) ? distances : FacingDistances.None;
+  const isMeasuredForPair = Option.equals(
+    pair,
+    Option.map(measured, (current) => current.pair),
+    DistancePair.equals,
+  );
+  return isMeasuredForPair ? distances : FacingDistances.None;
 }
