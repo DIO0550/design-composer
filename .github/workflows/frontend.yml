@@ -207,7 +207,7 @@ jobs:
       - name: 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表
         run: bash .claude/hooks/lib/verification-agent-cases.sh
 
-      - name: 判定表の共通部分の判定表
+      - name: 判定表の報告と種別の照合の判定表
         run: bash .claude/hooks/lib/cases-report-cases.sh
 
       - name: pre-push の結果行の判定表
