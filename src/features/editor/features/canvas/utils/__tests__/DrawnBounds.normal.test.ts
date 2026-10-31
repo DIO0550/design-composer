@@ -125,3 +125,11 @@ test("回って描かれているものは、回った矩形に重なる矩形�
 
   expect(overlapping).toEqual(["turned"]);
 });
+
+test("面積を持って描かれている名前は、その矩形で測れる", () => {
+  drawNamed("home", { left: 12, top: 34, width: 200, height: 100 });
+
+  expect(DrawnBounds.measureWithArea("home")).toEqual(
+    Option.some({ left: 12, top: 34, width: 200, height: 100 }),
+  );
+});
