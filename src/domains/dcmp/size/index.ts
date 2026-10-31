@@ -164,9 +164,8 @@ function declarations(
 /**
  * props からその軸のサイズを組み立てる（`Size.fromProps` の本体）。
  *
- * ここと `collectAxesWhere` は `Props` を受け、既定を当てた props を求める型は公開の読み出し
- * だけに付ける。fill 系は書かれたままの props を通す（`fill` はどの型の既定にもならず、写す
- * には書かれた下限・上限だけが要る）。
+ * 引数を `ResolvedProps` にするのは公開の読み出しだけで、ここは fill 系と共有するため
+ * `Props` を受ける。
  *
  * @param props 読み取り元の props。モードが書かれていなければ `none` になる
  * @param axis どちらの軸のサイズを読むか
