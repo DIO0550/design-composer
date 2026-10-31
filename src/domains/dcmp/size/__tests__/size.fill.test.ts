@@ -1,5 +1,7 @@
 import { expect, test } from "vitest";
 import { PropEdit } from "@/domains/dcmp/node";
+import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
+import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Size } from "../index";
 
 test("幅だけ fill なら幅の軸だけが返る", () => {
@@ -33,6 +35,15 @@ test("fill 以外のサイズ指定の軸は返らない", () => {
 test("サイズが決まらない軸は fill として返らない", () => {
   expect(
     Size.collectFillAxes({ widthMode: "fixed", heightMode: "hug" }),
+  ).toEqual([]);
+});
+
+test("どの型でも、モードを書いていない軸は既定を当てても fill にならない", () => {
+  expect(
+    Object.values(PrimitiveTypes).filter(
+      (type) =>
+        Size.collectFillAxes(ResolvedProps.resolve(type, {})).length > 0,
+    ),
   ).toEqual([]);
 });
 

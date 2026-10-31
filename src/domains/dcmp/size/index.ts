@@ -3,7 +3,10 @@ import {
   type CssProperty,
 } from "@/domains/dcmp/css-declaration";
 import { CssDirection } from "@/domains/dcmp/css-direction";
+import { Layout } from "@/domains/dcmp/layout";
 import { PropEdit, type Props, type PropValue } from "@/domains/dcmp/node";
+import type { PrimitiveType } from "@/domains/dcmp/primitive-schema";
+import type { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Axes, type Axis } from "@/domains/unit/axis";
 import { Px } from "@/domains/unit/px";
 import { Option } from "@/utils/Option";
@@ -159,19 +162,46 @@ function declarations(
 }
 
 /**
+ * props からその軸のサイズを組み立てる（`Size.fromProps` の本体）。
+ *
+ * 引数を `ResolvedProps` にするのは公開の読み出しだけで、ここは fill 系と共有するため
+ * `Props` を受ける。
+ *
+ * @param props 読み取り元の props。モードが書かれていなければ `none` になる
+ * @param axis どちらの軸のサイズを読むか
+ * @returns その軸のサイズ。モードが無い・綴りが読めないときと、`fixed` なのに長さが数値で
+ *   ないときは `none`
+ */
+function sizeOf(props: Props, axis: Axis): Option<Size> {
+  const mode = props[Size.modeProp(axis)];
+  const limits = SizeLimits.fromProps(props, axis);
+  if (mode === "hug") {
+    return Option.some({ mode: "hug", limits });
+  }
+  if (mode === "fill") {
+    return Option.some({ mode: "fill", limits });
+  }
+  const length = props[axis];
+  if (mode === "fixed" && typeof length === "number") {
+    return Option.some({ mode: "fixed", length });
+  }
+  return Option.none;
+}
+
+/**
  * サイズが判定を満たす軸。
  *
  * @param props 見るノードの props
  * @param predicate 軸ごとのサイズに対する判定
- * @returns 判定を満たす軸を width・height の順で。サイズが決まらない（`Size.fromProps` が
- *   `none`）軸は含めない
+ * @returns 判定を満たす軸を width・height の順で。サイズが決まらない（`sizeOf` が `none`）
+ *   軸は含めない
  */
 function collectAxesWhere(
   props: Props,
   predicate: (size: Size) => boolean,
 ): readonly Axis[] {
   return Object.values(Axes).filter((axis) =>
-    Option.contains(Option.map(Size.fromProps(props, axis), predicate), true),
+    Option.contains(Option.map(sizeOf(props, axis), predicate), true),
   );
 }
 
@@ -189,28 +219,16 @@ export const Size = {
   /**
    * props からその軸のサイズを組み立てる。
    *
-   * 決まらないのはモードが書かれていないときとスキーマ違反のときで、後者の不正は
+   * 決まらないのはその型がモードの prop を持たないときとスキーマ違反のときで、後者の不正は
    * `DesignDocument.collectErrors` が出す。
    *
-   * @param props 読み取り元の props。モードが書かれていなければ既定を読まず `none` になる
+   * @param props 読み取り元の props。デフォルト解決済みのもの
    * @param axis どちらの軸のサイズを読むか
-   * @returns その軸のサイズ。モードの綴りが読めないときと、`fixed` なのに長さが数値で
-   *   ないときは `none`
+   * @returns その軸のサイズ。その型がモードの prop を持たないとき・モードの綴りが読めない
+   *   ときと、`fixed` なのに長さが数値でないときは `none`
    */
-  fromProps(props: Props, axis: Axis): Option<Size> {
-    const mode = props[Size.modeProp(axis)];
-    const limits = SizeLimits.fromProps(props, axis);
-    if (mode === "hug") {
-      return Option.some({ mode: "hug", limits });
-    }
-    if (mode === "fill") {
-      return Option.some({ mode: "fill", limits });
-    }
-    const length = props[axis];
-    if (mode === "fixed" && typeof length === "number") {
-      return Option.some({ mode: "fixed", length });
-    }
-    return Option.none;
+  fromProps(props: ResolvedProps<PrimitiveType>, axis: Axis): Option<Size> {
+    return sizeOf(props, axis);
   },
 
   /**
@@ -237,6 +255,27 @@ export const Size = {
   },
 
   /**
+   * 子を並べない親の下で `fill` になっている軸（docs/03「サイズ指定の原則」。Figma と同じく
+   * `fill` は子を並べる親の下でだけ意味を持つ）。
+   *
+   * スキーマの `enabledWhen` で閉じられないのは、条件が**親の** prop だから（docs/03
+   * 「`enabledWhen` は単純な等値・不等値のみ」）。
+   *
+   * @param props 見るノードの props（デフォルト解決済みでなくてよい）
+   * @param parentLayout その props を持つノードの親の配置モード
+   * @returns `fill` になっている軸を width・height の順で。親が子を並べるときは空
+   */
+  collectFillAxesInFreeParent(
+    props: Props,
+    parentLayout: Layout,
+  ): readonly Axis[] {
+    if (Option.isSome(Layout.direction(parentLayout))) {
+      return [];
+    }
+    return Size.collectFillAxes(props);
+  },
+
+  /**
    * その軸の下限・上限が載る prop 名。
    *
    * @param axis どちらの軸の prop 名か
@@ -255,14 +294,13 @@ export const Size = {
    * 下限が上限を超えている軸（docs/03「バリデーション仕様」。並びとサイズが決まらない軸の
    * 扱いは `collectAxesWhere` のとおり）。
    *
-   * 引数を `ResolvedProps` にはしない。size → resolved-props → primitive-schema → schema →
-   * layout → size の循環になるため、解決済みであることは doc で求める。
-   *
-   * @param props 見るノードの props。デフォルト解決済みのもの（`widthMode` を書いていない
-   *   ノードを既定のモードで見るため。解決していないと `fromProps` が `none` になり見落とす）
+   * @param props 見るノードの props。デフォルト解決済みのもの（モードを書いていないノードも
+   *   既定のモードで見る）
    * @returns `hug` / `fill` で下限が上限より大きい軸。`fixed` の軸は含めない
    */
-  collectInvertedLimitAxes(props: Props): readonly Axis[] {
+  collectInvertedLimitAxes(
+    props: ResolvedProps<PrimitiveType>,
+  ): readonly Axis[] {
     return collectAxesWhere(
       props,
       (size) => size.mode !== "fixed" && SizeLimits.isInverted(size.limits),
@@ -311,11 +349,14 @@ export const Size = {
    * モードと長さがどの prop に載っているかを知っているのはこのモジュールなので、
    * 軸で引く側が 2 つの prop 名を組み立てずに済む。
    *
-   * @param props 読み取り元の props。モードが書かれていなければ既定を読まず `none` になる
+   * @param props 読み取り元の props。デフォルト解決済みのもの
    * @param axis どちらの軸の長さを読むか
    * @returns その軸の長さ。`hug` / `fill` と、`fixed` なのに長さが無いときは `none`
    */
-  fixedLengthFromProps(props: Props, axis: Axis): Option<number> {
+  fixedLengthFromProps(
+    props: ResolvedProps<PrimitiveType>,
+    axis: Axis,
+  ): Option<number> {
     return Option.flatMap(Size.fromProps(props, axis), fixedLength);
   },
 
@@ -326,7 +367,7 @@ export const Size = {
    * 下限・上限は親の向きに依らないので、`fill` がフローの外にあって伸長の宣言を出さない
    * ときも出す。
    *
-   * @param props 読み取り元の props。モードが書かれていなければ既定を読まず空になる
+   * @param props 読み取り元の props。デフォルト解決済みのもの
    * @param axis どちらの軸のサイズか
    * @param flexParentDirection flex アイテムとして並ぶ親の向き。フローに参加して
    *   いない位置（親を持たない / 親が `layout: free` / 自身が絶対配置）では `none`。
@@ -335,7 +376,7 @@ export const Size = {
    *   フローの外にあって下限・上限も無いときは空
    */
   declarationsFromProps(
-    props: Props,
+    props: ResolvedProps<PrimitiveType>,
     axis: Axis,
     flexParentDirection: Option<CssDirection>,
   ): readonly CssDeclaration[] {
