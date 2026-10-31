@@ -1,0 +1,1167 @@
+{
+  "version": 1,
+  "pr": 1226,
+  "sha": "af598e994127d84f39011a55fd83fe3f36cef780",
+  "issue": 1221,
+  "overview": {
+    "title": "サイズのモードを読む入口に、既定を当てる前の props を渡せなくする",
+    "lead": "`Size` のモードを読む 4 つの入口の引数を `ResolvedProps<PrimitiveType>` にし、既定を当てていない `Props` を渡すコードを tsc で止める(#1176 の再発防止)。アプリの振る舞いは変えない。",
+    "before": [
+      {
+        "text": "`Size.fromProps` / `fixedLengthFromProps` / `declarationsFromProps` / `collectInvertedLimitAxes` は `Props` を受け、既定を当てていない生の props(`node.props ?? {}`)を渡しても型は通っていた"
+      },
+      {
+        "text": "生の props を渡すと、モードを書いていないノードは既定のモードで読まれず `none` になる(#1176: 既定が fixed の楕円にハンドルが出なかった)"
+      },
+      {
+        "text": "自由配置の親の下の fill の検出は `Layout.collectFillAxesInFreeParent(parentLayout, props)` にあり、layout が size を import していた",
+        "message": "old-validate-fill"
+      }
+    ],
+    "after": [
+      {
+        "text": "4 つの入口に `Props` 型の値を渡すと TS2345 で止まる。`ResolvedProps.resolve` / `forNode` の戻り値はそのまま渡せる",
+        "message": "inverted"
+      },
+      {
+        "text": "fill を集める・写す入口(`collectFillAxes` / `collectFillPropEdits` / `collectFillModePropEdits` / `collectFillAxesInFreeParent`)は書かれたままの `Props` を受けたまま"
+      },
+      {
+        "text": "自由配置の親の下の fill の検出は `Size.collectFillAxesInFreeParent(props, parentLayout)` になり、親が並べるかは `Layout.direction` に問い合わせる",
+        "message": "validate-fill"
+      },
+      {
+        "text": "本体は非公開の `sizeOf(props: Props, axis)` で、公開の `fromProps` と fill 系の `collectAxesWhere` が共有する"
+      },
+      {
+        "text": "共通の既定キーを手で全部書いたリテラルは、既定を当てていなくても通る(構造で弾く型の限界)"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "循環を外すための移動",
+        "text": "`collectFillAxesInFreeParent` を `Layout` から `Size` へ移した。#847 で `Layout` に置いた判断を逆にしており、人の承認を得て案 A として採った。親が並べるかの判定は `Layout.direction` のままなので、`Size` が持つのは fill の側の規則だけになっているかを見てほしい",
+        "go": {
+          "kind": "message",
+          "id": "validate-fill"
+        }
+      },
+      {
+        "title": "公開の入口と非公開の本体",
+        "text": "型を狭めたのは公開の 4 入口だけで、本体の `sizeOf` は `Props` を受ける。fill 系が書かれたままの props で同じ本体を通る形が、型の抜け道になっていないかを見てほしい",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/dcmp/size/index.ts"
+        }
+      },
+      {
+        "title": "弾けない形",
+        "text": "`ResolvedProps<PrimitiveType>` は全型に共通する既定持ちのキーを必須にするだけなので、それらを手で全部書いたリテラルは通る。ブランド型(案 B)を採らなかった判断の裏返し",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/dcmp/resolved-props/index.ts"
+        }
+      },
+      {
+        "title": "ドキュメントの検証",
+        "text": "検証の流れで、既定を当てて逆転を集める呼び出しと、書かれたままの props で fill を集める呼び出しが並ぶ",
+        "go": {
+          "kind": "flow",
+          "id": "validate"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "domains / dcmp",
+      "role": "サイズのモードを読む入口の引数を、既定を当てた props に狭める。fill の検出を配置モードからサイズへ移す"
+    },
+    {
+      "layer": "domains / compiled",
+      "role": "サイズの宣言を作る入口の呼び出し側。既に既定を当てた値を渡しているので変更なし"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/dcmp/size/index.ts",
+      "name": "サイズ",
+      "role": "軸ごとのサイズ(hug / fill / fixed と下限・上限)を props から組み立て、宣言・検証に使う",
+      "change": "4 入口の引数を `ResolvedProps<PrimitiveType>` に。本体を非公開の `sizeOf` へ。`collectFillAxesInFreeParent` を受け入れた"
+    },
+    {
+      "path": "src/domains/dcmp/layout/index.ts",
+      "name": "配置モード",
+      "role": "親が子をどう並べるか(free / row / column)",
+      "change": "`collectFillAxesInFreeParent` と size の import を消した"
+    },
+    {
+      "path": "src/domains/dcmp/resolved-props/index.ts",
+      "name": "既定を当てた props",
+      "role": "スキーマの既定を補った props と、その型"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "ドキュメントの検証",
+      "role": "ノードごとのエラーを集め、リサイズの編集を作る",
+      "change": "fill の検出の呼び出し先を `Size` に変え、引数の順を入れ替えた"
+    },
+    {
+      "path": "src/domains/compiled/compiled-element/index.ts",
+      "name": "描画用の要素",
+      "role": "ノードを CSS の宣言を持つ要素にする。サイズの宣言を作る入口を呼ぶ"
+    },
+    {
+      "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "name": "スキーマ",
+      "role": "型ごとの prop と既定。配置モードを import しているので、循環の途中にあった"
+    }
+  ],
+  "messages": [
+    {
+      "id": "resolve",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "kind": "qry",
+      "name": "既定を当てる",
+      "code": "ResolvedProps.resolve(typed.type, props)",
+      "via": "call",
+      "payload": "ノードの型と書かれた props",
+      "returns": "既定を補った props"
+    },
+    {
+      "id": "inverted",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "下限と上限の逆転を集める",
+      "code": "Size.collectInvertedLimitAxes(ResolvedProps.resolve(typed.type, props))",
+      "via": "call",
+      "payload": "既定を当てた props",
+      "returns": "下限が上限を超えている軸",
+      "status": "changed"
+    },
+    {
+      "id": "validate-fill",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "自由配置の親の下の fill を集める",
+      "code": "Size.collectFillAxesInFreeParent(nested.node.props ?? {}, Layout.fromProps(nested.parentProps))",
+      "via": "call",
+      "payload": "書かれたままの props と親の配置モード",
+      "returns": "fill になっている軸。親が並べるときは空",
+      "status": "added"
+    },
+    {
+      "id": "ask-direction",
+      "from": "src/domains/dcmp/size/index.ts",
+      "to": "src/domains/dcmp/layout/index.ts",
+      "kind": "qry",
+      "name": "親が子を並べる向き",
+      "code": "Layout.direction(parentLayout)",
+      "via": "call",
+      "payload": "親の配置モード",
+      "returns": "並べる向き。自由配置なら none",
+      "status": "added"
+    },
+    {
+      "id": "old-validate-fill",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/layout/index.ts",
+      "kind": "qry",
+      "name": "自由配置の親の下の fill を集める(移す前)",
+      "code": "Layout.collectFillAxesInFreeParent(Layout.fromProps(nested.parentProps), nested.node.props ?? {})",
+      "via": "call",
+      "payload": "親の配置モードと書かれたままの props",
+      "returns": "fill になっている軸",
+      "status": "removed"
+    },
+    {
+      "id": "old-collect-fill",
+      "from": "src/domains/dcmp/layout/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "fill の軸を集める(移す前)",
+      "code": "Size.collectFillAxes(props)",
+      "via": "call",
+      "payload": "書かれたままの props",
+      "returns": "fill の軸",
+      "status": "removed"
+    },
+    {
+      "id": "fixed-length",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "固定の長さを読む",
+      "code": "Size.fixedLengthFromProps(props, resize.axis)",
+      "via": "call",
+      "payload": "既定を当てた props と軸",
+      "returns": "fixed のときの長さ",
+      "status": "changed"
+    },
+    {
+      "id": "declarations",
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "サイズの宣言を作る",
+      "code": "Size.declarationsFromProps(props, \"width\", flexParentDirection)",
+      "via": "call",
+      "payload": "既定を当てた props・軸・親の向き",
+      "returns": "CSS の宣言",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "validate",
+      "label": "ドキュメントを検証するとき",
+      "steps": [
+        "resolve",
+        "inverted",
+        "validate-fill",
+        "ask-direction"
+      ]
+    },
+    {
+      "id": "read-size",
+      "label": "リサイズ・描画でサイズを読むとき",
+      "steps": [
+        "fixed-length",
+        "declarations"
+      ]
+    },
+    {
+      "id": "old-validate",
+      "label": "移す前の fill の検証",
+      "steps": [
+        "old-validate-fill",
+        "old-collect-fill"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "3dad266ad3800903cf0914f5366dbe44a9a08679",
+      "phase": "core",
+      "role": "4 入口の引数を既定を当てた props にし、循環を外すため fill の検出を Size へ移す",
+      "why": "#1217 で呼び出しは直したが、型が生の props を受けるので同じ不具合を新しい入口が黙って再発させられた。`ResolvedProps<PrimitiveType>` なら構造で弾けて新しい型も要らない。ただ size から resolved-props を import すると size → resolved-props → primitive-schema → schema → layout → size の循環になる。原因の辺は layout → size(`collectFillAxesInFreeParent`)だけなので、それを `Size` へ移して外した。`import type` だけにする案は、検出器が型 import も辺に数えるので落ちる(実行で確認)。",
+      "flows": [
+        "validate",
+        "read-size",
+        "old-validate"
+      ],
+      "review": [
+        "`collectFillAxesInFreeParent` を `Size` に置いても、親が並べるかの判定は `Layout.direction` に任せたままで、`Size` が親の配置の規則を持ち込んでいないか",
+        "非公開の `sizeOf` が `Props` を受けるのは fill 系と共有するためで、公開の 4 入口を経由しない読み出しの抜け道になっていないか",
+        "33 件のテストを `ResolvedProps.resolve(\"Box\", …)` で包んでも期待値が変わらないこと(Box の既定 hug が、書かれたモードを上書きしないこと)"
+      ],
+      "before": [
+        {
+          "text": "4 入口は `Props` を受け、生の props を渡しても型が通る"
+        },
+        {
+          "text": "layout が size を import し、fill の検出を `Layout` が持つ",
+          "message": "old-validate-fill"
+        }
+      ],
+      "after": [
+        {
+          "text": "4 入口に `Props` を渡すと TS2345 で止まる",
+          "message": "inverted"
+        },
+        {
+          "text": "fill の検出は `Size` が持ち、親の向きを `Layout` に問い合わせる",
+          "message": "validate-fill"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 6,
+          "end": 9,
+          "text": "layout と resolved-props を import する。layout → size の辺を消したので循環にならない"
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 176,
+          "end": 190,
+          "text": "元の `fromProps` の本体をそのまま移した。`Props` を受けるので fill 系の `collectAxesWhere` からも呼べる"
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 231,
+          "end": 233,
+          "text": "公開の入口は型を狭めて本体へ渡すだけ"
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 269,
+          "end": 277,
+          "text": "`Layout` から移した。引数を (props, parentLayout) の順にして、`Size` の他の入口と同じく props を先頭に置いた"
+        },
+        {
+          "path": "src/domains/dcmp/layout/index.ts",
+          "side": "old",
+          "start": 85,
+          "end": 93,
+          "text": "移す前。ここが layout → size の辺の唯一の原因だった"
+        }
+      ]
+    },
+    {
+      "sha": "967f453cf7b762ed5549c80715bd06b66cb9c0b9",
+      "phase": "revise",
+      "role": "移したテストのファイル名と型テストの型名を既存の語に揃える",
+      "why": "naming-reviewer の指摘。同じ規則はエラー種別・メソッドとも `fill-in-free-parent` と in 付きで綴られており、in を落とした綴りは新しいテストファイルだけだった。型名 `SizeReaderProps` は fill 系の読み出しまで含むように読めた。",
+      "review": [
+        "`ResolvedPropsReaderInput` が「既定を当てた props を求める読み出しの入力」だけを指す名前として読めるか"
+      ]
+    },
+    {
+      "sha": "d18a1bd6902d46405864d91f174aedace5698873",
+      "phase": "revise",
+      "role": "どの型の既定も fill にならないことを、コメントではなくテストで守る",
+      "why": "fill 系の入口が書かれたままの props を受けて正しいのは、どの型のモードの既定にも fill が無い間だけで、その前提はコメントにしか無かった(solution-reviewer の指摘)。既定が fill の型が増えると #1176 と同じ形で fill を見落とすのに、型もテストも落ちない。前提をテストへ移し、コメントは何を受けるかだけにした。",
+      "review": [
+        "全型を既定だけで解決して fill の軸が出ないことを見る形で、既定が fill になったときに落ちるか(Ellipse の widthMode の既定を fill にして Received [\"Ellipse\"] で落ちることを確認済み)"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/size/__tests__/size.fill.test.ts",
+          "start": 41,
+          "end": 48,
+          "text": "型を手で並べず `PrimitiveTypes` を使う。落ちたときにどの型かが出るよう、空でない型を集めて [] と比べる"
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 167,
+          "end": 168,
+          "text": "理由をテストへ移したので、doc は何を受けるかの 1 文だけ"
+        }
+      ]
+    },
+    {
+      "sha": "af598e994127d84f39011a55fd83fe3f36cef780",
+      "phase": "fin",
+      "role": "`Size.fromProps` の doc を、既定を当てた後の不在の理由に直す",
+      "why": "引数が既定を当てた props になり、モードを書いていないノードにも既定が当たる。モードが無いのは、その型のスキーマがモードの prop を持たないときだけになった。個別の型の名前(Text)は、サイズの prop が付いた時点で嘘になるので書かない。",
+      "review": [
+        "doc の「その型がモードの prop を持たないとき」が、今の Text の場合を言い当てつつ型名に依存していないか"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "start": 222,
+          "end": 228,
+          "text": "「モードが書かれていないとき」から「その型がモードの prop を持たないとき」へ"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "size-type",
+      "label": "サイズの入口の型",
+      "file": "src/domains/dcmp/size/__tests__/size.type.test.ts"
+    },
+    {
+      "id": "size-fill",
+      "label": "サイズの fill",
+      "file": "src/domains/dcmp/size/__tests__/size.fill.test.ts"
+    },
+    {
+      "id": "size-fill-free",
+      "label": "自由配置の親の下の fill",
+      "file": "src/domains/dcmp/size/__tests__/size.fill-in-free-parent.test.ts"
+    },
+    {
+      "id": "size-inverted",
+      "label": "下限と上限の逆転",
+      "file": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "type-from-props",
+      "suite": "size-type",
+      "name": "既定を当てる前の props のまま流れてきた値は、サイズを組み立てる入口に渡せない",
+      "techniques": [
+        "type",
+        "regression"
+      ],
+      "why": "#1176 は生の props を渡して既定のモードが読まれなかった。同じ形を新しい呼び出しで再発させないため",
+      "given": "`Props` 型の値",
+      "when": "`Size.fromProps` の第 1 引数の型に代入できるかを `expectTypeOf` で見る",
+      "then": "代入できない(`not.toExtend`)。引数を `Props` に戻すと tsc で落ちる(test-reviewer が実測)",
+      "commit": "3dad266ad3800903cf0914f5366dbe44a9a08679",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.type.test.ts",
+        "start": 12,
+        "end": 14,
+        "text": "test(\"既定を当てる前の props のまま流れてきた値は、サイズを組み立てる入口に渡せない\", () => {\n  expectTypeOf<Props>().not.toExtend<Parameters<typeof Size.fromProps>[0]>();\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ]
+    },
+    {
+      "id": "type-fixed-length",
+      "suite": "size-type",
+      "name": "既定を当てる前の props のまま流れてきた値は、固定の長さを読む入口に渡せない",
+      "techniques": [
+        "type",
+        "regression"
+      ],
+      "why": "#1176 で実際に生の props が渡ったのはこの入口(既定が fixed の楕円にハンドルが出なかった)",
+      "given": "`Props` 型の値",
+      "when": "`Size.fixedLengthFromProps` の第 1 引数の型に代入できるかを見る",
+      "then": "代入できない",
+      "commit": "3dad266ad3800903cf0914f5366dbe44a9a08679",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.type.test.ts",
+        "start": 16,
+        "end": 20,
+        "text": "test(\"既定を当てる前の props のまま流れてきた値は、固定の長さを読む入口に渡せない\", () => {\n  expectTypeOf<Props>().not.toExtend<\n    Parameters<typeof Size.fixedLengthFromProps>[0]\n  >();\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "fixed-length"
+      ]
+    },
+    {
+      "id": "type-declarations",
+      "suite": "size-type",
+      "name": "既定を当てる前の props のまま流れてきた値は、サイズの宣言を作る入口に渡せない",
+      "techniques": [
+        "type"
+      ],
+      "why": "既定を当てないと、モードを書いていないノードのサイズの宣言が出ない",
+      "given": "`Props` 型の値",
+      "when": "`Size.declarationsFromProps` の第 1 引数の型に代入できるかを見る",
+      "then": "代入できない",
+      "commit": "3dad266ad3800903cf0914f5366dbe44a9a08679",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.type.test.ts",
+        "start": 22,
+        "end": 26,
+        "text": "test(\"既定を当てる前の props のまま流れてきた値は、サイズの宣言を作る入口に渡せない\", () => {\n  expectTypeOf<Props>().not.toExtend<\n    Parameters<typeof Size.declarationsFromProps>[0]\n  >();\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "declarations"
+      ]
+    },
+    {
+      "id": "type-inverted",
+      "suite": "size-type",
+      "name": "既定を当てる前の props のまま流れてきた値は、下限と上限の逆転を集める入口に渡せない",
+      "techniques": [
+        "type"
+      ],
+      "why": "既定を当てないと、モードを書いていないノードの逆転を見落とす",
+      "given": "`Props` 型の値",
+      "when": "`Size.collectInvertedLimitAxes` の引数の型に代入できるかを見る",
+      "then": "代入できない",
+      "commit": "3dad266ad3800903cf0914f5366dbe44a9a08679",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.type.test.ts",
+        "start": 28,
+        "end": 32,
+        "text": "test(\"既定を当てる前の props のまま流れてきた値は、下限と上限の逆転を集める入口に渡せない\", () => {\n  expectTypeOf<Props>().not.toExtend<\n    Parameters<typeof Size.collectInvertedLimitAxes>[0]\n  >();\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "inverted"
+      ]
+    },
+    {
+      "id": "type-resolved-accepted",
+      "suite": "size-type",
+      "name": "既定を当てた props はサイズの読み出しに渡せる",
+      "techniques": [
+        "type",
+        "equivalence"
+      ],
+      "why": "狭めすぎると、型が決まった値も全型の値も渡せなくなる(`<\"Box\">` に絞ると正側と design-document の呼び出しが落ちる)",
+      "given": "`ResolvedProps<\"Box\">` / `<\"Ellipse\">` / `<PrimitiveType>`",
+      "when": "4 入口の引数の交差型 `ResolvedPropsReaderInput` に代入できるかを見る",
+      "then": "3 つとも代入できる",
+      "commit": "3dad266ad3800903cf0914f5366dbe44a9a08679",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.type.test.ts",
+        "start": 34,
+        "end": 40,
+        "emphasis": [
+          {
+            "start": 37,
+            "end": 39
+          }
+        ],
+        "text": "test(\"既定を当てた props はサイズの読み出しに渡せる\", () => {\n  expectTypeOf<ResolvedProps<\"Box\">>().toExtend<ResolvedPropsReaderInput>();\n  expectTypeOf<ResolvedProps<\"Ellipse\">>().toExtend<ResolvedPropsReaderInput>();\n  expectTypeOf<\n    ResolvedProps<PrimitiveType>\n  >().toExtend<ResolvedPropsReaderInput>();\n});"
+      },
+      "values": {
+        "columns": [
+          "渡す型",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`ResolvedProps<\"Box\">`",
+              "通る"
+            ]
+          },
+          {
+            "cells": [
+              "`ResolvedProps<\"Ellipse\">`",
+              "通る"
+            ]
+          },
+          {
+            "cells": [
+              "`ResolvedProps<PrimitiveType>`",
+              "通る"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`Props`",
+              "通らない(上の 4 件)"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts",
+        "src/domains/dcmp/resolved-props/index.ts"
+      ]
+    },
+    {
+      "id": "type-fill-raw",
+      "suite": "size-type",
+      "name": "fill を集める・写す入口は、書かれたままの props を受け取る",
+      "techniques": [
+        "type"
+      ],
+      "why": "fill 系は書かれた値だけを写す入口で、呼び出し側は `Node.writtenPropsOf` などの書かれたままの props を渡す。巻き込んで狭めないため",
+      "given": "`Props` 型の値",
+      "when": "fill 系 4 入口の引数の型に代入できるかを見る",
+      "then": "すべて代入できる。4 入口を `ResolvedProps` にすると 43/44/47/50 行が落ちる(test-reviewer が実測)",
+      "commit": "3dad266ad3800903cf0914f5366dbe44a9a08679",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.type.test.ts",
+        "start": 42,
+        "end": 53,
+        "text": "test(\"fill を集める・写す入口は、書かれたままの props を受け取る\", () => {\n  expectTypeOf<Props>().toExtend<Parameters<typeof Size.collectFillAxes>[0]>();\n  expectTypeOf<Props>().toExtend<\n    Parameters<typeof Size.collectFillPropEdits>[0]\n  >();\n  expectTypeOf<Props>().toExtend<\n    Parameters<typeof Size.collectFillModePropEdits>[0][number]\n  >();\n  expectTypeOf<Props>().toExtend<\n    Parameters<typeof Size.collectFillAxesInFreeParent>[0]\n  >();\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "validate-fill"
+      ]
+    },
+    {
+      "id": "fill-no-default",
+      "suite": "size-fill",
+      "name": "どの型でも、モードを書いていない軸は既定を当てても fill にならない",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "fill 系が書かれたままの props を受けて正しいのは、どの型の既定にも fill が無い間だけ。その前提をテストで守る",
+      "given": "`PrimitiveTypes` のすべての型",
+      "when": "空の props に既定を当てて `Size.collectFillAxes` を呼ぶ",
+      "then": "fill の軸を返す型が 1 つも無い(Box・Ellipse の heightMode の既定を fill にすると落ちる)",
+      "commit": "d18a1bd6902d46405864d91f174aedace5698873",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.fill.test.ts",
+        "start": 41,
+        "end": 48,
+        "text": "test(\"どの型でも、モードを書いていない軸は既定を当てても fill にならない\", () => {\n  expect(\n    Object.values(PrimitiveTypes).filter(\n      (type) =>\n        Size.collectFillAxes(ResolvedProps.resolve(type, {})).length > 0,\n    ),\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts",
+        "src/domains/dcmp/resolved-props/index.ts"
+      ]
+    },
+    {
+      "id": "free-parent-fill",
+      "suite": "size-fill-free",
+      "name": "自由配置の親の下で両軸とも fill なら幅・高さの順で返る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "fill は子を並べる親の下でだけ意味を持つ(docs/03「サイズ指定の原則」)。自由配置の親の下の fill は検証エラーにする",
+      "given": "両軸とも fill の props",
+      "when": "自由配置の親で `Size.collectFillAxesInFreeParent` を呼ぶ",
+      "then": "[\"width\", \"height\"]。ガードを外すと 6 件、反転で 113 件が落ちる(test-reviewer が実測)",
+      "commit": "3dad266ad3800903cf0914f5366dbe44a9a08679",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.fill-in-free-parent.test.ts",
+        "start": 5,
+        "end": 12,
+        "text": "test(\"自由配置の親の下で両軸とも fill なら幅・高さの順で返る\", () => {\n  expect(\n    Size.collectFillAxesInFreeParent(\n      { widthMode: \"fill\", heightMode: \"fill\" },\n      Layouts.Free,\n    ),\n  ).toEqual([\"width\", \"height\"]);\n});"
+      },
+      "values": {
+        "columns": [
+          "親の配置",
+          "返る軸"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "free",
+              "width, height"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "row",
+              "なし"
+            ]
+          },
+          {
+            "cells": [
+              "column",
+              "なし"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts",
+        "src/domains/dcmp/layout/index.ts"
+      ],
+      "covers": [
+        "validate-fill",
+        "ask-direction"
+      ]
+    },
+    {
+      "id": "free-parent-row",
+      "suite": "size-fill-free",
+      "name": "横並びの親の下では両軸とも fill でも軸は返らない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "子を並べる親の下の fill は正しい指定なので、エラーにしない",
+      "given": "両軸とも fill の props",
+      "when": "横並びの親で呼ぶ",
+      "then": "空",
+      "commit": "3dad266ad3800903cf0914f5366dbe44a9a08679",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.fill-in-free-parent.test.ts",
+        "start": 14,
+        "end": 21,
+        "text": "test(\"横並びの親の下では両軸とも fill でも軸は返らない\", () => {\n  expect(\n    Size.collectFillAxesInFreeParent(\n      { widthMode: \"fill\", heightMode: \"fill\" },\n      Layouts.Row,\n    ),\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts",
+        "src/domains/dcmp/layout/index.ts"
+      ],
+      "covers": [
+        "ask-direction"
+      ]
+    },
+    {
+      "id": "free-parent-column",
+      "suite": "size-fill-free",
+      "name": "縦並びの親の下では両軸とも fill でも軸は返らない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "向きによらず、並べる親なら同じ扱い",
+      "given": "両軸とも fill の props",
+      "when": "縦並びの親で呼ぶ",
+      "then": "空",
+      "commit": "3dad266ad3800903cf0914f5366dbe44a9a08679",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.fill-in-free-parent.test.ts",
+        "start": 23,
+        "end": 30,
+        "text": "test(\"縦並びの親の下では両軸とも fill でも軸は返らない\", () => {\n  expect(\n    Size.collectFillAxesInFreeParent(\n      { widthMode: \"fill\", heightMode: \"fill\" },\n      Layouts.Column,\n    ),\n  ).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts",
+        "src/domains/dcmp/layout/index.ts"
+      ],
+      "covers": [
+        "ask-direction"
+      ]
+    },
+    {
+      "id": "inverted-hug-width",
+      "suite": "size-inverted",
+      "name": "hug の幅で最小が最大より大きいとき、幅が逆転として返る",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "既存のテスト。入力を `ResolvedProps.resolve(\"Box\", …)` で包んでも期待値が変わらないことで、引数の型を変えても振る舞いが変わらないことを示す(33 件の代表)",
+      "given": "幅が hug で minWidth 500・maxWidth 100 の props に Box の既定を当てたもの",
+      "when": "`Size.collectInvertedLimitAxes` を呼ぶ",
+      "then": "[\"width\"]",
+      "excerpt": {
+        "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+        "start": 5,
+        "end": 16,
+        "text": "test(\"hug の幅で最小が最大より大きいとき、幅が逆転として返る\", () => {\n  expect(\n    Size.collectInvertedLimitAxes(\n      ResolvedProps.resolve(\"Box\", {\n        widthMode: \"hug\",\n        minWidth: 500,\n        maxWidth: 100,\n        heightMode: \"hug\",\n      }),\n    ),\n  ).toEqual([\"width\"]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "inverted"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "アプリの動きは変わらず、サイズの読み違いを書いた時点で止められるようになった",
+    "lead": "アプリを操作する人から見て変わることはありません。変わったのはコードを書く人(セッション)の側で、ノードに書かれた値を既定で補わないままサイズを読ませるコードが、型の検査で止まるようになりました。",
+    "changed": {
+      "before": [
+        {
+          "text": "サイズを読む処理に、既定で補う前の値を渡しても型の検査は通った"
+        },
+        {
+          "text": "そのため、サイズのモードを書いていない楕円にリサイズのハンドルが出ない、といった不具合を新しい処理で再び作れた"
+        }
+      ],
+      "after": [
+        {
+          "text": "既定で補う前の値をサイズを読む処理に渡すと、型の検査で止まる",
+          "message": "fixed-length"
+        },
+        {
+          "text": "既定で補った値はそのまま渡せる",
+          "message": "declarations"
+        }
+      ],
+      "text": "止まるのは、既定で補う前の値として流れてきたものだけです。全型に共通する既定を手で全部書いた値は通ります。"
+    },
+    "tables": [
+      {
+        "label": "サイズを読む処理に値を渡したときの結果",
+        "gist": "止まるかを決めるのは、読む処理の種類と、渡す値が既定で補われているかの 2 つ。",
+        "text": "fill を集める処理は書かれた値だけを見る処理なので、補う前の値を受け取るまま変えていません。",
+        "rowHeads": [
+          {
+            "id": "read",
+            "label": "サイズを組み立てる・固定の長さを読む・宣言を作る・逆転を集める"
+          },
+          {
+            "id": "fill",
+            "label": "fill を集める・写す",
+            "note": "自由配置の親の下の fill の検出を含む"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "raw",
+            "label": "既定で補う前の値"
+          },
+          {
+            "id": "resolved",
+            "label": "既定で補った値"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "read",
+            "columnHead": "raw",
+            "result": "型の検査で止まる",
+            "was": "通り、モードを書いていない軸は読めないまま扱われる",
+            "tests": [
+              "type-from-props",
+              "type-fixed-length",
+              "type-declarations",
+              "type-inverted"
+            ]
+          },
+          {
+            "rowHead": "read",
+            "columnHead": "resolved",
+            "result": "通り、既定のモードで読まれる",
+            "tests": [
+              "type-resolved-accepted",
+              "inverted-hug-width"
+            ]
+          },
+          {
+            "rowHead": "fill",
+            "columnHead": "raw",
+            "result": "通り、書かれた fill だけを見る",
+            "tests": [
+              "type-fill-raw"
+            ]
+          },
+          {
+            "rowHead": "fill",
+            "columnHead": "resolved",
+            "result": "通り、既定が fill の型は無いので結果は同じ",
+            "tests": [
+              "fill-no-default"
+            ]
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "自由配置の枠の中で fill にした要素は、これまでどおりエラーになる。並べる枠の中ならエラーにならない",
+        "tests": [
+          "free-parent-fill",
+          "free-parent-row",
+          "free-parent-column"
+        ]
+      },
+      {
+        "text": "最小が最大より大きいサイズは、これまでどおりエラーになる",
+        "tests": [
+          "inverted-hug-width"
+        ]
+      },
+      {
+        "text": "楕円のリサイズのハンドル、要素の幅・高さの描画は変わらない"
+      },
+      {
+        "text": "どの型も、サイズのモードを書かなければ fill にはならない",
+        "tests": [
+          "fill-no-default"
+        ]
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "import-type",
+      "category": "TypeScript · モジュール",
+      "label": "`import type`",
+      "gist": "型としてだけ使う名前を取り込む書き方。[[コンパイル|compile]]後の JavaScript からは消え、実行時にはそのモジュールを読み込まない。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`import type { ResolvedProps } from \"…\"` と書くと、`ResolvedProps` は型の位置(引数の型・戻り値の型など)でしか使えない。値として呼ぼうとするとコンパイルエラーになる。`import { Layout, type Props }` のように、1 つの import の中で名前ごとに `type` を付けることもできる。"
+        },
+        {
+          "kind": "caution",
+          "text": "実行時の読み込みは消えても、ファイルどうしの依存は残る。このリポジトリの[[循環|cycle]]の検査は型だけの import も辺として数えるので、`import type` に変えても循環は外れない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "lineRange": {
+            "start": 6,
+            "end": 9
+          },
+          "text": "`Layout` は値として、`PrimitiveType` と `ResolvedProps` は型としてだけ取り込む",
+          "shas": [
+            "3dad266ad3800903cf0914f5366dbe44a9a08679"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "cycle-removal"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "generic-union",
+      "category": "TypeScript · 型",
+      "label": "型引数に union を渡す",
+      "gist": "`ResolvedProps<T>` のように型に引数を取る[[ジェネリクス|generics]]へ、`\"Box\" | \"Text\" | \"Ellipse\"` のような[[直和|union]]を渡すと、全部の型に共通する性質だけを持つ型になる。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "export type ResolvedProps<T extends PrimitiveType> = Props &\n  Readonly<Record<DefaultedKeys<SchemaPropsOf<T>>, PropValue>>;"
+        },
+        {
+          "kind": "text",
+          "text": "`&` は[[交差型|intersection]]で、両方の型の条件を同時に満たす値の型。`Record<K, V>` はキー `K` を必ず持ち、値が `V` のオブジェクトの型。`Readonly<…>` はそのプロパティを書き換えられなくする。`T` に直和を渡すと、`K` は全部の型が既定を持つキーに絞られる。"
+        },
+        {
+          "kind": "caution",
+          "text": "`Props` は任意のキーを持てる型なので、必須のキーが欠けている `Props` 型の値は代入できない。一方、必須のキーを手で全部書いた[[オブジェクトリテラル|literal]]は通る。弾けるのは「既定を当てる前の値として流れてきたもの」までで、書いた中身の正しさまでは見ない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/resolved-props/index.ts",
+          "lineRange": {
+            "start": 21,
+            "end": 22
+          },
+          "text": "既定を当てた props の型。この PR では変えていない"
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "lineRange": {
+            "start": 230,
+            "end": 230
+          },
+          "text": "`fromProps` の引数に `ResolvedProps<PrimitiveType>` を使う",
+          "shas": [
+            "3dad266ad3800903cf0914f5366dbe44a9a08679"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "resolved-props",
+        "expect-type-of"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "expect-type-of",
+      "category": "Vitest · 型テスト",
+      "label": "`expectTypeOf` と `Parameters<typeof f>`",
+      "gist": "関数の引数にどんな型を渡せるかを、実行せずに[[コンパイル|compile]]時の検査で確かめるテストの書き方。期待と違えば tsc が落ちる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`typeof Size.fromProps` は値 `Size.fromProps` の型(関数の型)を取り出す。`Parameters<…>` はその関数の引数の型を並びとして返し、`[0]` で 1 つ目を取る。`expectTypeOf<A>().toExtend<B>()` は「`A` の値を `B` へ代入できる」、`.not.toExtend<B>()` は「代入できない」を表明する。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/dcmp/size/__tests__/size.type.test.ts",
+            "start": 7,
+            "end": 14,
+            "text": "type ResolvedPropsReaderInput = Parameters<typeof Size.fromProps>[0] &\n  Parameters<typeof Size.fixedLengthFromProps>[0] &\n  Parameters<typeof Size.declarationsFromProps>[0] &\n  Parameters<typeof Size.collectInvertedLimitAxes>[0];\n\ntest(\"既定を当てる前の props のまま流れてきた値は、サイズを組み立てる入口に渡せない\", () => {\n  expectTypeOf<Props>().not.toExtend<Parameters<typeof Size.fromProps>[0]>();\n});"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "4 つの入口の引数の型を `&` で[[交差型|intersection]]にしておくと、1 回の表明で 4 つすべてに渡せることを確かめられる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/size/__tests__/size.type.test.ts",
+          "lineRange": {
+            "start": 7,
+            "end": 53
+          },
+          "text": "4 入口が `Props` を弾き、既定を当てた props を受け、fill 系は `Props` を受けることを固定する",
+          "shas": [
+            "3dad266ad3800903cf0914f5366dbe44a9a08679",
+            "967f453cf7b762ed5549c80715bd06b66cb9c0b9"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "generic-union"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "resolved-props",
+      "category": "domains · dcmp",
+      "label": "既定を当てた props",
+      "gist": "ノードに書かれた props へ、型ごとの[[スキーマ|schema]]の既定を補ったもの。`ResolvedProps.resolve(type, props)` が作り、その戻り値だけがこの型を持つ。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "モードを書いていない Box は hug、Ellipse は fixed(長さ 100)として読まれる。既定を当てずに読むとモードが無いので、サイズが決まらない(`none`)扱いになる。#1176 はこれで、既定が fixed の楕円にリサイズのハンドルが出なかった。"
+        },
+        {
+          "kind": "rule",
+          "text": "モードを読む入口は既定を当てた props を受ける。書かれた値だけを写す fill 系の入口は、書かれたままの props を受ける。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は循環を避けるため引数を `Props` のままにし、「デフォルト解決済みのもの」を doc で求めていた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1066,
+            "end": 1070
+          },
+          "text": "検証で既定を当ててから逆転を集める"
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "lineRange": {
+            "start": 230,
+            "end": 232
+          },
+          "text": "公開の入口が型を狭め、本体の `sizeOf` へ渡す",
+          "shas": [
+            "3dad266ad3800903cf0914f5366dbe44a9a08679"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "generic-union",
+        "size-of"
+      ],
+      "tests": [
+        "type-from-props",
+        "type-resolved-accepted",
+        "fill-no-default"
+      ],
+      "flows": [
+        "validate",
+        "read-size"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "size-of",
+      "category": "domains · dcmp",
+      "label": "非公開の本体 `sizeOf`",
+      "gist": "公開の `fromProps` と fill 系の `collectAxesWhere` が共有する、サイズを組み立てる本体。モジュールの外からは呼べない。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "型を狭めたのは公開の入口だけで、本体は `Props` を受ける。fill 系は書かれたままの props でこの本体を通る。fill 系が書かれたままで正しいのは、どの型の既定にも fill が無い間だけで、それはテストで守る。"
+        },
+        {
+          "kind": "caution",
+          "text": "既定が fill になる型を足すと、モードを書いていないノードの fill を fill 系が見落とす。そのときは「どの型でも、モードを書いていない軸は既定を当てても fill にならない」のテストが落ちる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "lineRange": {
+            "start": 164,
+            "end": 189
+          },
+          "text": "`sizeOf` と、何を受けるかだけを書いた doc",
+          "shas": [
+            "3dad266ad3800903cf0914f5366dbe44a9a08679",
+            "d18a1bd6902d46405864d91f174aedace5698873"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "resolved-props"
+      ],
+      "tests": [
+        "fill-no-default",
+        "type-fill-raw"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "cycle-removal",
+      "category": "domains · dcmp · 依存",
+      "label": "循環を外すための移動",
+      "gist": "size から resolved-props を取り込むと size → resolved-props → primitive-schema → schema → layout → size の[[循環|cycle]]になる。原因の辺 layout → size を作っていた `collectFillAxesInFreeParent` を `Size` へ移して外した。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "移したあとも、親が子を並べるかは `Layout.direction` が答える。`Size` が持つのは「並べない親の下の fill の軸」という fill の側の規則で、`fillDeclarations` や `flexParentDirection` を受ける宣言の側と同じ持ち方になる。"
+        },
+        {
+          "kind": "history",
+          "text": "#847 で `Layout` に置いた判断を逆にした。人に確認し、案 A として採った。"
+        },
+        {
+          "kind": "spec",
+          "text": "fill は子を並べる親の下でだけ意味を持つ(docs/03「サイズ指定の原則」)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "lineRange": {
+            "start": 268,
+            "end": 276
+          },
+          "text": "移した先。引数は (props, parentLayout) の順",
+          "shas": [
+            "3dad266ad3800903cf0914f5366dbe44a9a08679"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1100,
+            "end": 1103
+          },
+          "text": "呼び出し側。呼び先と引数の順だけを変えた",
+          "shas": [
+            "3dad266ad3800903cf0914f5366dbe44a9a08679"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/layout/index.ts",
+          "text": "`Size` の import と `collectFillAxesInFreeParent` を消した",
+          "shas": [
+            "3dad266ad3800903cf0914f5366dbe44a9a08679"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "import-type"
+      ],
+      "tests": [
+        "free-parent-fill",
+        "free-parent-row",
+        "free-parent-column"
+      ],
+      "flows": [
+        "validate",
+        "old-validate"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "compile",
+      "label": "コンパイル",
+      "text": "TypeScript を JavaScript に変換すること。このとき型の検査(tsc)が走り、型が合わなければエラーになる。"
+    },
+    {
+      "id": "cycle",
+      "label": "循環",
+      "text": "モジュール A が B を、B が … を取り込み、最後に A へ戻ってくる依存のつながり。このリポジトリでは全面禁止で、検出器が落とす。"
+    },
+    {
+      "id": "generics",
+      "label": "ジェネリクス",
+      "text": "型に引数を取らせる仕組み。`ResolvedProps<\"Box\">` のように `<…>` で型を渡す。`T extends X` は渡せる型を `X` に収まるものに限る。"
+    },
+    {
+      "id": "union",
+      "label": "直和",
+      "text": "`A | B` と書く、A か B のどちらかである値の型。union 型とも言う。"
+    },
+    {
+      "id": "intersection",
+      "label": "交差型",
+      "text": "`A & B` と書く、A と B の両方の条件を同時に満たす値の型。"
+    },
+    {
+      "id": "literal",
+      "label": "オブジェクトリテラル",
+      "text": "`{ widthMode: \"hug\" }` のように、コードにその場で書いたオブジェクトの値。"
+    },
+    {
+      "id": "schema",
+      "label": "スキーマ",
+      "text": "ノードの型ごとに、持てる prop・値の範囲・既定を決めた定義。"
+    }
+  ]
+}
