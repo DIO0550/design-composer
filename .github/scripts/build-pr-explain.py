@@ -48,7 +48,8 @@ concept・primers の出てくる場所の `path`・`lineRange`・`shas`・振�
 - **検査で守るのは `impact` の文字列。** ページはそれに固定の文言と、`impact` の値から導いた文(マスの状況の
   「行 · 列(注)」・件数・sha の頭 7 桁・「Issue #番号」)を足すだけで、コミットの件名は出さないので、そこにも名前は入らない
 - 例外は根拠として添える名前で、テスト名(`tests[].name`。検査しない)とやりとりの名前(`messages[].name`。
-  見出しの規則)と仕様の場所のパス(`changed.specs[].path`・`keptSpecs[].path`。`Text`)はそのまま出る
+  見出しの規則)と仕様の場所のパス(`changed.specs[].path`・`keptSpecs[].path`。`Text`)と技術の手引きの節の題
+  (`primers[].label`。`` `…` `` はコードとして描く)はそのまま出る
 - 1 語の識別子・ファイル名・snake_case は綴りで識別子と言い切れないので、この規則でも捕まらない。書き方の
   規則(`pr-explain` スキル)で受ける
 
@@ -305,6 +306,7 @@ Shapes: dict[str, dict[str, Field]] = {
         **ImpactSides,
         "specs": may(Many(Shape("ChangedSpec"))),
         "relatedIssues": may(Many(Shape("RelatedIssue"))),
+        "primers": may(Many(Id, distinct=True)),
     },
     "ImpactLine": {"text": need(UserText), "message": may(Id)},
     "SituationTable": {
@@ -326,7 +328,12 @@ Shapes: dict[str, dict[str, Field]] = {
         "note": may(UserText),
         "tests": may(Many(Id, distinct=True)),
     },
-    "AddedSituation": {"label": need(UserText), **ImpactSides, "tests": may(Many(Id, distinct=True))},
+    "AddedSituation": {
+        "label": need(UserText),
+        **ImpactSides,
+        "tests": may(Many(Id, distinct=True)),
+        "primers": may(Many(Id, distinct=True)),
+    },
     "KeptLine": {"text": need(UserText), "tests": may(Many(Id, distinct=True))},
     # `shas` は地図と照合しない(地図を指す参照)。
     "ChangedSpec": {**CitedSpec, "shas": need(Many(Sha, least=1, distinct=True))},
@@ -614,10 +621,12 @@ References = (
     Reference("concepts[].feature", "features", "id"),
     Reference("impact.changed.before[].message", "messages", "id"),
     Reference("impact.changed.after[].message", "messages", "id"),
+    Reference("impact.changed.primers[]", "primers", "id"),
     Reference("impact.tables[].outcomes[].tests[]", "tests", "id"),
     Reference("impact.added[].before[].message", "messages", "id"),
     Reference("impact.added[].after[].message", "messages", "id"),
     Reference("impact.added[].tests[]", "tests", "id"),
+    Reference("impact.added[].primers[]", "primers", "id"),
     Reference("impact.kept[].tests[]", "tests", "id"),
     Reference("primers[].seeAlso[]", "primers", "id"),
     Reference("primers[].tests[]", "tests", "id"),
