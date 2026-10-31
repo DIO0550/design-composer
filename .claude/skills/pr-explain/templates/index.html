@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-02SeN2v9q3JeVGu8lVC+xPs7rYkY0Ung8y/WMBux5v0='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-ZzBC9tmR1dpvE3xsSHP0xDyPoaqOVOcKJQ5rm9fN8xM='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -5797,8 +5797,9 @@ button.change-item:hover { background: var(--track); }
   /**
    * 振る舞い。左に節の目次、中に使う人から見た変化の節、右に今の節の根拠(仕様・関連 Issue・テスト・仕組み)を出す。
    *
-   * 表示確認でしか守られていない DOM の配線(理由は `TopicColumns`): マスの押下と `aria-pressed`、仕様の「差分で見る」の移り先
-   * (ファイル / コミット)。
+   * 表示確認でしか守られていない DOM の配線(理由は `TopicColumns`): マスの押下と `aria-pressed`、仕様の欄の見出しの
+   * 出し分け(「仕様」/「関連 Issue」)、仕様の場所のカード(変わらないことのカードを含む)、変えた仕様の場所のカードの届く先ごとの
+   * ボタンと、その「差分で見る」の移り先(ファイル / コミット)。
    */
   const ImpactScreen = (explained, go) => {
     const impactTopics = explained.impactTopics;
