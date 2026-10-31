@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1224,
+  "headBranch": "claude/magical-cannon-r4xsox",
+  "baseBranch": "main",
+  "mergeBase": "8b1a744893c4c31494a87d3ab2e9d43977105a2b",
+  "head": "6cf7dd2fa317e974f8131994074c27f180bc8406",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1219.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 69,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "6cf7dd2fa317e974f8131994074c27f180bc8406",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T07:11:25Z",
+      "subject": "📝 [Documentation]: PR #1219 の振り返りを記録する",
+      "body": "- harness/records/pr-1219.md を追加した（指摘 5 件・手戻り 1 件・発火は計測対象外）\n\n背景:\nPR #1219（Issue #1175、WebView の下限を設けない）がマージされたので、\nharness-record の手順でその回の指摘・手戻り・フックの発火を残す。\n\n採用理由:\n記録は PR ごとに 1 ファイルとし、集計と介入は harness-growth に任せる。\n対策済の行は介入していないので書かない。\n\n影響とトレードオフ:\n差分は harness/records/ の新規 1 ファイルだけで、規約・フック・スキルは\n変えていない。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGHiCZy8ES1sJzKA",
+      "files": [
+        {
+          "path": "harness/records/pr-1219.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 69,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,69 @@\n+# PR #1219 選択の枠について WebView の下限を設けないことを仕様に書く\n+\n+- マージ日: 2026-10-31\n+- 関連 Issue: #1175\n+- 差分規模: 1 ファイル / +1 -1\n+\n+## ゴールと結果\n+\n+ゴールは「WebView の下限を設けないことが決まり、その決定が仕様（docs/06-ui.md）から読める」。達成した。\n+\n+フェーズ 1 で 1 度止めた。下限を設けるかの判断と、設ける場合の macOS 実機での確認が要り、この環境（Linux のコンテナ・Chromium のみ）では確かめられないため。A（設けない）/ B（`minimumSystemVersion` を設ける）を Issue に書いて判断を仰いだ。オーナーの回答は「おすすめでいい」で、案 A に決まった。差分が無いと PR の `Closes` で閉じられず、docs の「下限は決めていない」も決定後は事実と食い違う。そこで注記を決定に書き換える差分を出した。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。\n+\n+- レビューは Copilot の概要 1 件（「No open issues」）だけで、指摘は無かった\n+- PR へのコメントは、自分が投稿したテストケース表と、bot の投稿（Storybook プレビュー・CI レポート・VRT）だけだった\n+- CI は全件緑で、VRT の差分は 0 件だった（204 件 passed）\n+\n+## 指摘\n+\n+### 1. 却下案の理由が docs の実際の運用と合っていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「(#1175) を添えない」理由を「06-ui.md の番号は未解決のものに付ける」としていた。しかし閉じた Issue の番号も付いていた（#960 / #1201 / #418 / #112）。理由を PR #1177 で `(#514)` を外した前例に差し替えた。\n+- 既存ルール: なし\n+\n+### 2. 根拠に挙げた docs の行番号がずれていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「枠が形に沿うとき」の箇条を `06-ui.md:220` と書いたが、実際は :222 だった。並行する PR（#1214）がこの行より後ろを触っていたので、行番号ではなく節名と文言で指す形に直した。\n+- 既存ルール: なし\n+\n+### 3. 書き換える範囲の書き方が案文と食い違っていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画は「括弧内を書き換える」としていたが、案文は括弧を外して 2 文にし、決定を太字にしていた。計画の記述を案文に揃えた（案文そのものは変えていない）。\n+- 既存ルール: なし\n+\n+### 4. 理由の主語が選択の枠だけで、直前の行が「同じ」とする残りの枠に及ぶか読めなかった\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 直前の行は、トークンを参照しているノードの破線とドロップ先の親の枠も同じ描き方だとしている（コードでも 3 つとも outline）。理由を「選んだものの外周に枠が出る」から「どの枠も対象の外周に出る」に広げた（低・採用）。\n+- 既存ルール: なし\n+\n+### 5. 判断を仰いだコメントの却下理由が、配布物の実際と合っていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `自己修正`\n+- 内容: 案 B の却下理由に「Linux（WebKitGTK）は配布物で縛れない」と書いた。しかし release-desktop.yml の配布物は macOS と Windows だけだった。planner が気づき、Issue に訂正を書いた（結論は変わらない）。\n+- 既存ルール: rules/coding.md「外部の挙動は動かして確かめる」\n+\n+## 手戻り\n+\n+- implementer の 1 回目の pre-push は exit 1 だった。node_modules が無く、typecheck / oxlint / biome を飛ばして失敗に数えたため。`pnpm install --frozen-lockfile` 後に走らせ直すと、32 件すべて通った\n+- 計画からの外れは無し\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+`echo hook-canary` が deny されずに通った。実行中フラグのマーカーと、このセッションの発火ログ（見出しを含む）のどちらも無かった。`.claude/hooks/README.md` の表では本当の不発（`hook-environment`）にあたる。セッションをリポジトリの外（`/home/user`）で起動したため、プロジェクトの設定が読み込まれなかったとみられる（未確認）。禁止コマンドを実行していないことは、実行履歴で見直した。\n+\n+## 規約への反映\n+\n+無し。記録だけを残す回で、集計と介入の判断は harness-growth の管轄のため。",
+          "patchLines": 70,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
