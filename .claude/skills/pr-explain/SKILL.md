@@ -161,7 +161,7 @@ Files changed にも混ざるため)。
 | SituationRowHead | `id`(行の見出しの中で一意)`label` `note?`(Note(行への注釈)とは別の 1 行の注。マスの状況に「行 · 列(注)」と添える) |
 | SituationColumnHead | `id`(列の見出しの中で一意。行の見出しと同じ id は書ける)`label` |
 | SituationOutcome | `rowHead` `columnHead`(見出しの id)`result` `was?`(これまで。書いたマスが「変わった」になる。`result` と同じなら落ちる)`situation?`(マスの状況の文。書かなければ見出しから「行 · 列(行の注)」と組む)`note?`(Note(行への注釈)とは別の、マスへの 1 行の注)`tests?`(tests の id。重複なし) |
-| AddedSituation | `label` `before: ImpactLine[]`(0 件でよい)`after: ImpactLine[]`(1 件以上)`text?` `tests?`(tests の id。重複なし)`primers?`(primers の id。重複なし。kind をまたいでよい。仕組みのチップになる)。前後の規則は ImpactChange と同じ |
+| AddedSituation | `label` `before: ImpactLine[]`(0 件でよい)`after: ImpactLine[]`(1 件以上)`text?` `tests?`(tests の id。重複なし)`primers?`(ImpactChange と同じ)。前後の規則は ImpactChange と同じ |
 | KeptLine | `text` `tests?`(tests の id。重複なし) |
 | ChangedSpec | 変えた仕様の場所。`path`(ファイルの場所)`locator`(ファイルの中の位置。見出しの言葉で、行番号は書かない)`text`(どう変えたか)`shas`(sha。1 件以上・重複なし。地図と照合しない) |
 | KeptSpec | 変えていない仕様の場所。`path` `locator` `text`(何を変えていないか)。`shas` は持たない |
