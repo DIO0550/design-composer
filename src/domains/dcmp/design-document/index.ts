@@ -315,11 +315,13 @@ function groupedBox(node: Node, boxName: string): Node {
   const content = isAbsolute
     ? applyNodePropEdits(node, [Placement.clearPropEdit()])
     : node;
+
   const box: Node = {
     name: boxName,
     type: PrimitiveTypes.Box,
     children: [content],
   };
+
   return applyNodePropEdits(box, [
     ...placementEdits,
     ...Size.collectFillPropEdits(props),
@@ -345,6 +347,7 @@ function groupedSiblingsBox(
   boxName: string,
 ): Result<Node, DesignDocumentEditError> {
   const propsList = ArrayEx.mapNonEmpty(members, Node.writtenPropsOf);
+
   const placedMembers = ArrayEx.toNonEmpty(
     members.flatMap((member) => {
       const placement = absolutePlacementOf(member);
@@ -353,24 +356,29 @@ function groupedSiblingsBox(
         : [];
     }),
   );
+
   if (!Option.isSome(placedMembers)) {
     const layoutEdits = [
       ...Layout.collectWrittenPropEdits(parentProps),
       ...BoxAlign.collectWrittenPropEdits(parentProps),
     ];
     const fillEdits = Size.collectFillModePropEdits(propsList);
+
     const flowBox: Node = {
       name: boxName,
       type: PrimitiveTypes.Box,
       children: members,
     };
+
     return Result.ok(
       applyNodePropEdits(flowBox, [...layoutEdits, ...fillEdits]),
     );
   }
+
   if (placedMembers.value.length !== members.length) {
     return Result.err({ kind: "mixed-placement" });
   }
+
   const boxOffset = Offset.topLeftOf(
     ArrayEx.mapNonEmpty(placedMembers.value, ({ placement }) => placement),
   );
@@ -381,16 +389,19 @@ function groupedSiblingsBox(
       Placement.toPropEdits(Placement.moveBy(placement, towardBox)),
     ),
   );
+
   const placementEdits = [
     Placement.absoluteModePropEdit(),
     ...Placement.toPropEdits({ mode: "absolute", ...boxOffset }),
   ];
   const constraintEdits = Constraint.collectSharedPropEdits(propsList);
+
   const absoluteBox: Node = {
     name: boxName,
     type: PrimitiveTypes.Box,
     children,
   };
+
   return Result.ok(
     applyNodePropEdits(absoluteBox, [...placementEdits, ...constraintEdits]),
   );
@@ -426,6 +437,7 @@ function writtenParentOf(
       props: artboard.value.props ?? {},
     });
   }
+
   const parent = Option.flatMap(
     DesignDocument.findNode(document, parentName),
     (node): Option<WrittenParent> =>
@@ -436,6 +448,7 @@ function writtenParentOf(
           })
         : Option.none,
   );
+
   return Interop.toResult(parent, {
     kind: "parent-not-found",
     name: parentName,
@@ -1759,7 +1772,9 @@ export const DesignDocument = {
         kind: "node-not-found",
         name,
       });
+
     const positions = ArrayEx.mapNonEmptyUntilErr(names, positionOf);
+
     return Result.flatMap(positions, (collected) =>
       Interop.toResult(SiblingPositions.fromChildPositions(collected), {
         kind: "different-parents",
@@ -2380,15 +2395,18 @@ export const DesignDocument = {
     if (!Result.isOk(siblings)) {
       return siblings;
     }
+
     const { parentName, indices } = siblings.value;
     const parent = writtenParentOf(document, parentName);
     if (!Result.isOk(parent)) {
       return parent;
     }
+
     const members = childrenAt(parent.value.children, indices);
     if (!Result.isOk(members)) {
       return members;
     }
+
     const [sole, ...rest] = members.value;
     const box =
       rest.length === 0
@@ -2397,16 +2415,20 @@ export const DesignDocument = {
     if (!Result.isOk(box)) {
       return box;
     }
+
     const unusable = unusableNameError(document, boxName);
     if (Option.isSome(unusable)) {
       return Result.err(unusable.value);
     }
+
     const at = SiblingPositions.lastAfterRemoving(siblings.value);
+
     return updateChildrenOfParent(document, parentName, (tree) => {
       const remaining = members.value.reduce(
         (current, member) => NodeTree.spliceByName(current, member.name, []),
         tree,
       );
+
       return NodeTree.insertAt(remaining, at.index, box.value);
     });
   },

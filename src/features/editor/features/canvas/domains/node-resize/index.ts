@@ -758,11 +758,13 @@ export const NodeResize = {
     if (resize.kind !== "resizing") {
       return Option.none;
     }
+
     const pointerMoved = Offset.delta(resize.pointerOrigin, pointer);
     const snapped = snappedAt(resize, pointerMoved);
     const screenMoved = Offset.add(pointerMoved, snapped.offset);
     // 掴んだものの軸に沿って伸びるよう、画面の移動量を回る前の向きへ戻す
     const moved = Offset.rotate(screenMoved, -resize.rotation.total);
+
     const resized = ArrayEx.mapNonEmpty(ResizeGrip.grabs(resize.grip), (grab) =>
       resizedLength(grab, moved, view),
     );
@@ -771,6 +773,7 @@ export const NodeResize = {
       (each) => each.length,
     );
     const position = placedPosition(resize, resized);
+
     return Option.some({
       edit: Option.isSome(position)
         ? ResizeEdit.placedAt(lengths, position.value)

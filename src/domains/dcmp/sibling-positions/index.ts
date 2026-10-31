@@ -31,6 +31,7 @@ export const SiblingPositions = {
       positions.map((position) => position.index),
       (index) => index,
     );
+
     return Option.flatMap(
       ArrayEx.singleDistinct(positions.map((position) => position.parentName)),
       (parentName) =>
@@ -54,6 +55,7 @@ export const SiblingPositions = {
   lastAfterRemoving(siblings: SiblingPositions): ChildPosition {
     const { indices } = siblings;
     const last = indices[indices.length - 1];
+
     return {
       parentName: siblings.parentName,
       index: last - (indices.length - 1),

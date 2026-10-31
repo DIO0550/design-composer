@@ -890,6 +890,7 @@ export const PropCollapsedControl = {
       collapsed.controls,
       (control) => control.prop,
     );
+
     return Option.isSome(value)
       ? PropEdit.set(names, parseInputValue(first.input, value.value))
       : PropEdit.clear(names);

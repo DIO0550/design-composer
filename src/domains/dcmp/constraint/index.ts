@@ -78,10 +78,12 @@ export const Constraint = {
       const written = constraints.flatMap((constraint) =>
         Option.isSome(constraint) ? [constraint.value] : [],
       );
+
       const shared =
         written.length === propsList.length
           ? ArrayEx.singleDistinct(written)
           : Option.none;
+
       return Option.isSome(shared)
         ? [PropEdit.set([Constraint.prop(axis)], shared.value)]
         : [];

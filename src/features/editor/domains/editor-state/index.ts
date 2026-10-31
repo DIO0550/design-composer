@@ -767,15 +767,18 @@ export const EditorState = {
     const siblings = Option.flatMap(selectedNames(state), (names) =>
       Interop.toOption(DesignDocument.findSiblingPositions(document, names)),
     );
+
     if (!Option.isSome(siblings)) {
       return Option.none;
     }
+
     const reordered = ArrayEx.reduceUntilErr(
       ReorderStep.toChildReorders(step, siblings.value),
       document,
       (current, reorder) =>
         DesignDocument.reorderNode(current, reorder.from, reorder.toIndex),
     );
+
     return withEditResult(state, reordered);
   },
 
@@ -1188,7 +1191,9 @@ export const EditorState = {
         document,
         NodeTemplate.baseName({ kind: "primitive", type: PrimitiveTypes.Box }),
       );
+
       const grouped = DesignDocument.groupIntoBox(document, selected, boxName);
+
       return Option.map(withEditResult(state, grouped), (edited) =>
         EditorState.select(edited, boxName),
       );
