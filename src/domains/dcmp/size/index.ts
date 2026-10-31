@@ -219,13 +219,13 @@ export const Size = {
   /**
    * props からその軸のサイズを組み立てる。
    *
-   * 決まらないのはモードが書かれていないときとスキーマ違反のときで、後者の不正は
+   * 決まらないのはその型がモードの prop を持たないときとスキーマ違反のときで、後者の不正は
    * `DesignDocument.collectErrors` が出す。
    *
    * @param props 読み取り元の props。デフォルト解決済みのもの
    * @param axis どちらの軸のサイズを読むか
-   * @returns その軸のサイズ。モードの綴りが読めないときと、`fixed` なのに長さが数値で
-   *   ないときは `none`
+   * @returns その軸のサイズ。その型がモードの prop を持たないとき・モードの綴りが読めない
+   *   ときと、`fixed` なのに長さが数値でないときは `none`
    */
   fromProps(props: ResolvedProps<PrimitiveType>, axis: Axis): Option<Size> {
     return sizeOf(props, axis);
