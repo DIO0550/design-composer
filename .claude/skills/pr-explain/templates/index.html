@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-Inv75/7FQRKgITdqZ8NVwoCEsdqskt/VBliw8jgPVxw='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-hooP4WMaFQ3IhKF6A9ORVJLOJs3oYwQFYY4CpoIbeoc='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -734,8 +734,11 @@ button.change-item:hover { background: var(--track); }
 .primer-parameters td:first-child { font-family: var(--mono); font-weight: 600; white-space: nowrap; }
 .primer-parameters td:nth-child(2) { font-family: var(--mono); font-size: 12px; color: var(--tok-type); }
 .primer-parameter-note { display: inline-block; margin-left: 6px; font-family: var(--sans); font-size: 10px; font-weight: 600; color: var(--ink-3); background: var(--track); border-radius: 4px; padding: 0 5px; }
-.primer-occurrence { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
-.primer-occurrence-path { font-family: var(--mono); font-size: 11.5px; font-weight: 500; overflow-wrap: anywhere; }
+.ref-card { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.ref-card-head { font-family: var(--mono); font-size: 11.5px; font-weight: 500; overflow-wrap: anywhere; }
+.ref-card-locator { color: var(--ink-3); font-weight: 400; }
+.ref-card-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 11.5px; }
+.ref-card-meta .sha { font-family: var(--mono); font-size: 11px; color: var(--ink-2); background: var(--chip); border-radius: 4px; padding: 1px 6px; }
 .primer-terms { margin: 0; display: flex; flex-direction: column; gap: 2px; }
 .primer-term { padding: 8px 10px; border-radius: 8px; transition: background .15s, box-shadow .15s; }
 .primer-term dt { font-size: 12.5px; font-weight: 600; }
@@ -1602,11 +1605,25 @@ button.change-item:hover { background: var(--track); }
 
     const addedTopicOf = (added, index, context) => ({ kind: "added", id: `added-${index}`, label: added.label, ...sidesOf(added, context), tests: testEvidenceOf(added.tests, context.testAt) });
 
-    const changedTopicsOf = (changed, context) => (isRecord(changed) ? [{ kind: "changed", id: "changed", label: Labels.changed, ...sidesOf(changed, context) }] : []);
+    /** 変えた仕様の場所。`destinations` は `shas` を書いた順の届く先で、行の範囲を持たないのでファイルまでしか届かない。 */
+    const changedSpecOf = (spec, destinationsOf) => ({
+      path: spec.path,
+      locator: spec.locator,
+      text: spec.text,
+      destinations: destinationsOf({ path: spec.path, lineRange: null, shas: listOf(spec.shas) }),
+    });
 
-    const keptTopicsOf = (kept, { testAt }) => {
-      const lines = listOf(kept).map((line) => ({ text: line.text, tests: testEvidenceOf(line.tests, testAt) }));
-      return lines.length === 0 ? [] : [{ kind: "kept", id: "kept", label: Labels.kept, lines }];
+    const changedTopicsOf = (changed, context) => {
+      if (!isRecord(changed)) return [];
+      const specs = listOf(changed.specs).map((spec) => changedSpecOf(spec, context.destinationsOf));
+      const relatedIssues = listOf(changed.relatedIssues).map((related) => ({ issue: related.issue, text: related.text }));
+      return [{ kind: "changed", id: "changed", label: Labels.changed, ...sidesOf(changed, context), specs, relatedIssues }];
+    };
+
+    const keptTopicsOf = (impact, { testAt }) => {
+      const lines = listOf(impact.kept).map((line) => ({ text: line.text, tests: testEvidenceOf(line.tests, testAt) }));
+      const specs = listOf(impact.keptSpecs).map((spec) => ({ path: spec.path, locator: spec.locator, text: spec.text }));
+      return lines.length === 0 ? [] : [{ kind: "kept", id: "kept", label: Labels.kept, specs, lines }];
     };
 
     /**
@@ -1634,21 +1651,22 @@ button.change-item:hover { background: var(--track); }
       /** 使える解説が無いとき。 */
       Unexplained: Object.freeze({ kind: "none" }),
       /**
-       * 解説の `impact` を節の並びにする。書かなかった節は作らない(変わらないことが 0 件のときも)。
+       * 解説の `impact` を節の並びにする。書かなかった節は作らない(変わらないことの行が 0 件のときは、仕様の場所を書いていても)。
        * @param impact 形の検査を通った解説の `impact`(書いていなければ undefined)
        * @param testAt 解説のテストの id から、テスト画面と同じテストを引く表(`ExplainedMap` の `testAt`)
        * @param entryAt パスから木の項目を引く表(やりとりの両端が図の箱かを見る)
        * @param messages 解説のやりとりを id で引く表
+       * @param destinationsOf ファイルの場所(`{path, lineRange, shas}`)から、sha を書いた順の届く先を返す
        * @returns `{kind: "unwritten"}`(`impact` が無い)か `{kind: "written", title, lead, topics}`
        */
-      create: ({ impact, testAt, entryAt, messages }) => {
+      create: ({ impact, testAt, entryAt, messages, destinationsOf }) => {
         if (impact === undefined) return { kind: "unwritten" };
-        const context = { testAt, entryAt, messages };
+        const context = { testAt, entryAt, messages, destinationsOf };
         const topics = [
           ...changedTopicsOf(impact.changed, context),
           ...listOf(impact.tables).map((table, index) => tableTopicOf(table, index, context)),
           ...listOf(impact.added).map((added, index) => addedTopicOf(added, index, context)),
-          ...keptTopicsOf(impact.kept, context),
+          ...keptTopicsOf(impact, context),
         ];
         return { kind: "written", title: impact.title, lead: impact.lead, topics };
       },
@@ -1714,7 +1732,8 @@ button.change-item:hover { background: var(--track); }
     // 突き合わせる。primers・terms の下は Shapes から機械的に導くので、文字列をすべて見る(組み立てが落ちるキーを選り分けない)。
     // 必須の欠けも kind ごとに見る(`Required`)。`Dom.proseParts` と `TermMarks.piecesOf` は文を文字列として割り、抜粋の段は
     // `excerptBoxesOf` が `excerpt` の中を読むので、文字列でない値も欠けた値も組み立てを落とし、ページ全体を出なくする。impact は
-    // 構造だけを見る(文は文字として入れるだけなので、表示できている解説を「解説なし」に変えない)。tests の下は Excerpt の中だけ
+    // 構造と、短くして描く sha の並び(`impact.changed.specs[].shas`。文字列でないと組み立てが落ちる)だけを見る(文は文字として
+    // 入れるだけなので、表示できている解説を「解説なし」に変えない)。tests の下は Excerpt の中だけ
     // 見る(`ExcerptRows` が強調の要素を読む)。
     const ShapeKinds = Object.freeze({
       record: isRecord,
@@ -1731,6 +1750,9 @@ button.change-item:hover { background: var(--track); }
       ["impact.changed.before[].message", "id"],
       ["impact.changed.after", "records"],
       ["impact.changed.after[].message", "id"],
+      ["impact.changed.specs", "records"],
+      ["impact.changed.specs[].shas", "texts"],
+      ["impact.changed.relatedIssues", "records"],
       ["impact.tables", "records"],
       ["impact.tables[].rowHeads", "records"],
       ["impact.tables[].rowHeads[].id", "id"],
@@ -1748,6 +1770,7 @@ button.change-item:hover { background: var(--track); }
       ["impact.added[].tests", "ids"],
       ["impact.kept", "records"],
       ["impact.kept[].tests", "ids"],
+      ["impact.keptSpecs", "records"],
       ["primers", "records"],
       ["primers[].id", "id"],
       ["primers[].category", "text"],
@@ -1977,10 +2000,10 @@ button.change-item:hover { background: var(--track); }
       return [];
     };
 
-    /** 出てくる場所。`destinations` は `shas` を書いた順に、そのコミットへの届き方を添える。 */
-    const occurrenceOf = (occurrence, reachOf) => {
+    /** 出てくる場所。`destinations` は `shas` を書いた順の届く先(sha・パス・届き方)。 */
+    const occurrenceOf = (occurrence, destinationsOf) => {
       const lineRange = occurrence.lineRange ?? null;
-      const destinations = listOf(occurrence.shas).map((sha) => ({ sha, reach: reachOf({ sha, path: occurrence.path, lineRange }) }));
+      const destinations = destinationsOf({ path: occurrence.path, lineRange, shas: listOf(occurrence.shas) });
       return { path: occurrence.path, lineRange, text: occurrence.text, destinations };
     };
 
@@ -1989,7 +2012,7 @@ button.change-item:hover { background: var(--track); }
       return Object.hasOwn(Vocabulary.primerStatuses, primer.status) ? primer.status : Existing;
     };
 
-    const topicOf = (primer, { termAt, positionAt, testAt, flows, reachOf }) => {
+    const topicOf = (primer, { termAt, positionAt, testAt, flows, destinationsOf }) => {
       const marked = TermMarks.withPieces(primer);
       const resolve = (pieces) => resolvedPiecesOf(pieces, termAt);
       return {
@@ -1999,7 +2022,7 @@ button.change-item:hover { background: var(--track); }
         label: primer.label,
         gist: resolve(marked.gist),
         passages: listOf(marked.passages).flatMap((passage) => passagesOf(passage, resolve)),
-        occurrences: listOf(primer.occurrences).map((occurrence) => occurrenceOf(occurrence, reachOf)),
+        occurrences: listOf(primer.occurrences).map((occurrence) => occurrenceOf(occurrence, destinationsOf)),
         seeAlso: valuesIn(positionAt, primer.seeAlso),
         terms: valuesIn(termAt, TermMarks.termIdsOf(marked)),
         status: statusOf(primer),
@@ -2036,17 +2059,17 @@ button.change-item:hover { background: var(--track); }
        * @param terms 解説の `terms`(書いていなければ undefined)
        * @param testAt 解説のテストの id から、テスト画面と同じテストを引く表(`ExplainedMap` の `testAt`)
        * @param flows 解説の流れを id で引く表
-       * @param reachOf 出てくる場所の 1 つの sha が、変更の経緯のどこまで届くかを返す(`{sha, path, lineRange}` を受け取る)
+       * @param destinationsOf ファイルの場所(`{path, lineRange, shas}`)から、sha を書いた順の届く先を返す
        * @returns `{kind: "unwritten"}`(`primers` が無いか空)か `{kind: "written", tabs}`。`tabs` はタブ(kind)ごとの
        *   `{topics, glossary}`。節の `status` は、この PR の実装の節なら added / changed / `Existing`、言語・フレームワークの節は null
        */
-      create: ({ primers, terms, testAt, flows, reachOf }) => {
+      create: ({ primers, terms, testAt, flows, destinationsOf }) => {
         const written = listOf(primers);
         if (written.length === 0) return { kind: "unwritten" };
         const termAt = new Map(listOf(terms).map((term) => [term.id, { id: term.id, label: term.label, text: term.text }]));
         const byTab = Object.fromEntries(Object.values(PrimerKinds).map((tab) => [tab, written.filter((primer) => primer.kind === tab)]));
         const positionAt = new Map(Object.entries(byTab).flatMap(([tab, list]) => list.map((primer, index) => [primer.id, { tab, index, label: primer.label }])));
-        const context = { termAt, positionAt, testAt, flows, reachOf };
+        const context = { termAt, positionAt, testAt, flows, destinationsOf };
         return { kind: "written", tabs: Object.fromEntries(Object.entries(byTab).map(([tab, list]) => [tab, tabOf(list.map((primer) => topicOf(primer, context)))])) };
       },
     });
@@ -2197,23 +2220,27 @@ button.change-item:hover { background: var(--track); }
     };
 
     /**
-     * 出てくる場所の 1 つの sha が、変更の経緯のどこまで届くかを決める関数を作る。
+     * ファイルの場所(出てくる場所・仕様の場所)の sha ごとに、変更の経緯のどこまで届くかを決める関数を作る。
      * @param commits 地図のコミット(古い順)
      * @param explainedAt 解説の sha が地図のコミットの何番目か(無ければ -1)
-     * @returns `{sha, path, lineRange}` を受け取り、届き方を返す関数。地図に無い sha は `unmapped`、マージコミットは `merge`、
-     *   そのコミットが `path` のファイルを変えていなければ `untouched`。行まで(`line`)届くのは、`lineRange` があり、そのコミットが
-     *   解説の sha 以前で、あいだ(解説の sha を含む)にマージコミットも `path` を変えたコミットも無いときだけで、ほかは `file`
+     * @returns `{path, lineRange, shas}` を受け取り、`shas` を書いた順の届く先 `{sha, path, reach}` を返す関数。届き方(`reach`)は、
+     *   地図に無い sha は `unmapped`、マージコミットは `merge`、そのコミットが `path` のファイルを変えていなければ `untouched`。
+     *   行まで(`line`)届くのは、`lineRange` があり、そのコミットが解説の sha 以前で、あいだ(解説の sha を含む)にマージコミットも
+     *   `path` を変えたコミットも無いときだけで、ほかは `file`
      */
-    const reachOfIn = (commits, explainedAt) => ({ sha, path, lineRange }) => {
-      const index = commits.findIndex((commit) => commit.sha === sha);
-      if (index < 0) return { kind: "unmapped" };
-      const commit = commits[index];
-      if (commit.merge) return { kind: "merge" };
-      if (!commit.files.some((file) => file.path === path)) return { kind: "untouched" };
-      const shiftsLines = (later) => later.merge || later.files.some((file) => file.path === path || file.oldPath === path);
-      const isLatestChange = index <= explainedAt && !commits.slice(index + 1, explainedAt + 1).some(shiftsLines);
-      const reachesLine = lineRange !== null && isLatestChange;
-      return reachesLine ? { kind: "line", lineRange } : { kind: "file" };
+    const destinationsIn = (commits, explainedAt) => {
+      const reachOf = ({ sha, path, lineRange }) => {
+        const index = commits.findIndex((commit) => commit.sha === sha);
+        if (index < 0) return { kind: "unmapped" };
+        const commit = commits[index];
+        if (commit.merge) return { kind: "merge" };
+        if (!commit.files.some((file) => file.path === path)) return { kind: "untouched" };
+        const shiftsLines = (later) => later.merge || later.files.some((file) => file.path === path || file.oldPath === path);
+        const isLatestChange = index <= explainedAt && !commits.slice(index + 1, explainedAt + 1).some(shiftsLines);
+        const reachesLine = lineRange !== null && isLatestChange;
+        return reachesLine ? { kind: "line", lineRange } : { kind: "file" };
+      };
+      return ({ path, lineRange, shas }) => shas.map((sha) => ({ sha, path, reach: reachOf({ sha, path, lineRange }) }));
     };
 
     const commitsOf = ({ commits, explain, explainedAt }) => {
@@ -2290,6 +2317,7 @@ button.change-item:hover { background: var(--track); }
       const tests = testsOf({ mapTests: map.tests, explain, targetOf, addedFiles });
       const entryAt = new Map(entries.map((entry) => [entry.path, entry]));
       const testAt = new Map(tests.filter((test) => test.test !== null).map((test) => [test.test.id, test]));
+      const destinationsOf = destinationsIn(map.commits, explainedAt);
       return Object.freeze({
         map: { pr: map.pr, head: map.head, mergeBase: map.mergeBase, headBranch: map.headBranch, baseBranch: map.baseBranch },
         reading,
@@ -2306,10 +2334,10 @@ button.change-item:hover { background: var(--track); }
         strayStories: explainListOf(explain, "commitStories").filter((story) => !map.commits.some((commit) => commit.sha === story.sha)),
         tests,
         testAt,
-        impactTopics: explain === null ? ImpactTopics.Unexplained : ImpactTopics.create({ impact: explain.impact, testAt, entryAt, messages: lookup.messages }),
+        impactTopics: explain === null ? ImpactTopics.Unexplained : ImpactTopics.create({ impact: explain.impact, testAt, entryAt, messages: lookup.messages, destinationsOf }),
         primerTopics: explain === null
           ? PrimerTopics.Unexplained
-          : PrimerTopics.create({ primers: explain.primers, terms: explain.terms, testAt, flows: lookup.flows, reachOf: reachOfIn(map.commits, explainedAt) }),
+          : PrimerTopics.create({ primers: explain.primers, terms: explain.terms, testAt, flows: lookup.flows, destinationsOf }),
         totals: {
           files: changed.length,
           additions: sumOf(changed.map((entry) => entry.additions)),
@@ -3520,7 +3548,8 @@ button.change-item:hover { background: var(--track); }
       select: (sha) => actions.select(commitAt.has(sha) ? sha : OverviewId),
       /**
        * 他の画面から、そのコミットのそのファイルを開いた状態にする。`lineRange` があれば、その行に印を付けて送る。渡すのは
-       * `PrimerTopics` が届くと判定したもの(地図にあり、マージでなく、そのパスのファイルを変えたコミット)だけ。
+       * `ExplainedMap` の届く先(技術の手引きの出てくる場所・振る舞いの仕様の場所)が届くと判定したもの(地図にあり、マージでなく、
+       * そのパスのファイルを変えたコミット)だけ。
        */
       showFile: ({ sha, path, lineRange }) => {
         update({ selected: sha, sentFile: { path, lineRange }, closed: withToggled(state.closed, `${sha}:${path}`, false) });
@@ -3955,6 +3984,26 @@ button.change-item:hover { background: var(--track); }
       el("span", { class: "subject", text: subject }),
       el("span", { class: "arrow", text: "↗" }),
     ], onPress);
+  };
+
+  /**
+   * ファイルの場所の 1 つの届く先の、ボタンの名前と押したときの移り先。届かない先は、何が起きるかの注意(`warning`)を添える。
+   * @param destination `{sha, path, reach}`(`ExplainedMap` の届く先)
+   * @param go 画面をまたぐ移動
+   */
+  const destinationLinkOf = ({ sha, path, reach }, go) => {
+    const toCommit = () => go.toCommit(sha);
+    switch (reach.kind) {
+      case "line":
+      case "file":
+        return { label: "差分で見る", onPress: () => go.toCommitFile({ sha, path, lineRange: reach.kind === "line" ? reach.lineRange : null }), warning: null };
+      case "untouched":
+        return { label: "コミットを見る", onPress: toCommit, warning: "このコミットは、このパスのファイルを変えていません。当時は別のパスだったのかもしれません(コミットの先頭を開きます)" };
+      case "merge":
+        return { label: "コミットを見る", onPress: toCommit, warning: "マージコミットなので差分がありません(コミットの先頭を開きます)" };
+      case "unmapped":
+        return { label: "ブランチ全体の流れを見る", onPress: toCommit, warning: "変更の地図に無いコミットなので差分がありません(ブランチ全体の流れを開きます)" };
+    }
   };
 
   /** テストの画面。左にテストの一覧、中に箱の図、右に全体か、選んだテスト・箱・線の詳しいところを出す。 */
@@ -5740,9 +5789,10 @@ button.change-item:hover { background: var(--track); }
   })();
 
   /**
-   * 振る舞い。左に節の目次、中に使う人から見た変化の節、右に今の節の根拠(テストと仕組み)を出す。
+   * 振る舞い。左に節の目次、中に使う人から見た変化の節、右に今の節の根拠(仕様・関連 Issue・テスト・仕組み)を出す。
    *
-   * 表示確認でしか守られていない DOM の配線(理由は `TopicColumns`): マスの押下と `aria-pressed`。
+   * 表示確認でしか守られていない DOM の配線(理由は `TopicColumns`): マスの押下と `aria-pressed`、仕様の「差分で見る」の移り先
+   * (ファイル / コミット)。
    */
   const ImpactScreen = (explained, go) => {
     const impactTopics = explained.impactTopics;
@@ -5774,6 +5824,36 @@ button.change-item:hover { background: var(--track); }
     };
     const mechanismsBlockOf = (mechanisms) => (mechanisms.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("仕組みを知りたいとき", "構造マップ"), el("div", { class: "flow-chips" }, mechanisms.map(mechanismChipOf))])]);
 
+    /** 届く先の sha のチップと移るボタン。届かない先は注意を添える。 */
+    const destinationMetaOf = (destination) => {
+      const { label, onPress, warning } = destinationLinkOf(destination, go);
+      return el("span", { class: "ref-card-meta" }, [
+        el("span", { class: "sha", text: shortSha(destination.sha) }),
+        // コミットの件名は出さない(振る舞いの画面にコードの名前を持ち込まないため。理由の正本は `build-pr-explain.py` の冒頭)。
+        pressable("button", { class: "review-go plain-button", title: "変更の経緯でこのコミットを開く", text: `${label} →` }, [], onPress),
+        ...(warning === null ? [] : [el("span", { class: "warn-text", text: warning })]),
+      ]);
+    };
+
+    /** 仕様の場所のカード。パスと位置、どう変えたか(変えていないか)と、変えた仕様なら届く先ごとの移るボタン。 */
+    const specCardOf = (spec) => el("div", { class: "ref-card" }, [
+      el("span", { class: "ref-card-head" }, [`${spec.path} `, el("span", { class: "ref-card-locator", text: spec.locator })]),
+      el("span", { class: "side-sub", text: spec.text }),
+      ...listOf(spec.destinations).map(destinationMetaOf),
+    ]);
+
+    const relatedIssueCardOf = (related) => el("div", { class: "ref-card" }, [
+      el("span", { class: "ref-card-head", text: `Issue #${related.issue}` }),
+      el("span", { class: "side-sub", text: related.text }),
+    ]);
+
+    /** 仕様の欄。仕様の場所があれば見出しは「仕様」で、関連 Issue も同じ欄に並べる。関連 Issue だけなら見出しは「関連 Issue」。 */
+    const specBlocksOf = (specs, relatedIssues) => {
+      const cards = [...specs.map(specCardOf), ...relatedIssues.map(relatedIssueCardOf)];
+      if (cards.length === 0) return [];
+      return [el("div", { class: "side-block" }, [eyebrowOf(specs.length > 0 ? "仕様" : "関連 Issue"), ...cards])];
+    };
+
     /**
      * 節の根拠の要素。右の欄と、狭い幅で各節に畳んだ根拠の両方がこれを出す。
      * @param topic 根拠を出す節(表なら、その表で選んでいるマスの根拠)
@@ -5781,8 +5861,8 @@ button.change-item:hover { background: var(--track); }
     const evidenceBlocksOf = (topic) => {
       switch (topic.kind) {
         case "changed": {
-          const blocks = mechanismsBlockOf(topic.mechanisms);
-          return blocks.length > 0 ? blocks : [el("p", { class: "side-note", text: "前後の行が指しているやりとりはありません。" })];
+          const blocks = [...specBlocksOf(topic.specs, topic.relatedIssues), ...mechanismsBlockOf(topic.mechanisms)];
+          return blocks.length > 0 ? blocks : [el("p", { class: "side-note", text: "仕様の場所・関連 Issue・前後の行が指すやりとりは、どれも書かれていません。" })];
         }
         case "table": {
           const outcome = selectedOutcomeIn(topic);
@@ -5792,12 +5872,12 @@ button.change-item:hover { background: var(--track); }
         case "added":
           return [...testsBlocksOf(topic.tests, go), ...mechanismsBlockOf(topic.mechanisms)];
         case "kept":
-          return topic.lines.map((line) => el("div", { class: "side-block" }, [
+          return [...specBlocksOf(topic.specs, []), ...topic.lines.map((line) => el("div", { class: "side-block" }, [
             el("span", { class: "side-sub", text: line.text }),
             guardOf(line.tests),
             ...line.tests.verifying.map(testCardOf),
             ...(line.tests.missing.length === 0 ? [] : [eyebrowOf("無いテスト", "未実装(提案)"), ...line.tests.missing.map(testCardOf)]),
-          ]));
+          ]))];
       }
     };
 
@@ -5871,7 +5951,7 @@ button.change-item:hover { background: var(--track); }
           dotTone: isChangeTopic(topic) ? "A" : "",
           labelPartsOf: () => [topic.label],
           tocDivider: null,
-          inlineSummary: "根拠(テストと仕組み)",
+          inlineSummary: "根拠(仕様とテスト)",
           body: topicBodyOf(topic),
           sideBlocksOf: () => evidenceBlocksOf(topic),
         };
@@ -5903,7 +5983,7 @@ button.change-item:hover { background: var(--track); }
       keepReading,
       left: panelOf("left", [panelHead("目次", "変わった → 変わらない"), columns.toc]),
       main,
-      right: panelOf("right", [panelHead("根拠", "テストと仕組み"), columns.side]),
+      right: panelOf("right", [panelHead("根拠", "仕様とテスト"), columns.side]),
       /**
        * 他の画面から、その節へ送る。表のマスを指していれば、そのマスを選んで見える位置へ送る。
        * @param mention `ImpactTopics.mentionsOf` の 1 件
@@ -5984,33 +6064,18 @@ button.change-item:hover { background: var(--track); }
     const tabs = Object.values(PrimerTopics.PrimerKinds);
     const termListOf = (terms) => el("dl", { class: "primer-terms" }, terms.map((term) => el("div", { class: "primer-term", "data-term": term.id }, [el("dt", { text: term.label }), prose("dd", {}, term.text)])));
 
-    /** 出てくる場所の 1 つの sha の、ボタンの名前と押したときの移り先。届かない sha は、何が起きるかの注意(`warning`)を添える。 */
-    const destinationOf = ({ sha, reach }, path) => {
-      const toCommit = () => go.toCommit(sha);
-      switch (reach.kind) {
-        case "line":
-        case "file":
-          return { label: "差分で見る", onPress: () => go.toCommitFile({ sha, path, lineRange: reach.kind === "line" ? reach.lineRange : null }), warning: null };
-        case "untouched":
-          return { label: "コミットを見る", onPress: toCommit, warning: "このコミットは、このパスのファイルを変えていません。当時は別のパスだったのかもしれません(コミットの先頭を開きます)" };
-        case "merge":
-          return { label: "コミットを見る", onPress: toCommit, warning: "マージコミットなので差分がありません(コミットの先頭を開きます)" };
-        case "unmapped":
-          return { label: "ブランチ全体の流れを見る", onPress: toCommit, warning: "変更の地図に無いコミットなので差分がありません(ブランチ全体の流れを開きます)" };
-      }
-    };
-    const destinationNodesOf = (destination, path) => {
-      const { label, onPress, warning } = destinationOf(destination, path);
+    const destinationNodesOf = (destination) => {
+      const { label, onPress, warning } = destinationLinkOf(destination, go);
       const link = commitLinkOf({ sha: destination.sha, label, commitAt: explained.commitAt, onPress });
       return [link, ...(warning === null ? [] : [el("span", { class: "warn-text", text: warning })])];
     };
 
     const occurrencesBlockOf = (topic) => el("div", { class: "side-block" }, [
       eyebrowOf("出てくる場所", `${topic.occurrences.length} か所`),
-      ...topic.occurrences.map((occurrence) => el("div", { class: "primer-occurrence" }, [
-        el("span", { class: "primer-occurrence-path", text: occurrence.lineRange === null ? occurrence.path : `${occurrence.path} ${lineRangeOf(occurrence.lineRange)}` }),
+      ...topic.occurrences.map((occurrence) => el("div", { class: "ref-card" }, [
+        el("span", { class: "ref-card-head", text: occurrence.lineRange === null ? occurrence.path : `${occurrence.path} ${lineRangeOf(occurrence.lineRange)}` }),
         prose("span", { class: "side-sub" }, occurrence.text),
-        ...occurrence.destinations.flatMap((destination) => destinationNodesOf(destination, occurrence.path)),
+        ...occurrence.destinations.flatMap(destinationNodesOf),
       ])),
     ]);
 

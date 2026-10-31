@@ -2,8 +2,8 @@
 #
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
-# 叩いて、地図と解説の合流・振る舞いの節の並び・技術の手引きの節・用語の印・抜粋の強調・出てくる場所のコミットへの
-# 届き方・今の節・文字の大きさの段と倍率・倍率を変えたあとの読む線の位置・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、
+# 叩いて、地図と解説の合流・振る舞いの節の並び・技術の手引きの節・用語の印・抜粋の強調・出てくる場所と仕様の場所の
+# コミットへの届き方・今の節・文字の大きさの段と倍率・倍率を変えたあとの読む線の位置・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、
 # `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・解説の形の道筋(impact・primers・terms・抜粋の
 # 強調)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを
 # 1 コマンドで確かめる。
@@ -34,7 +34,7 @@ source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
 # 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)と、Target の kind ごとのキー(ページの `Target` と
 # 突き合わせる)と、Shapes から導いた形の道筋と値の種類(ページの `ExplainShape.Routes` と突き合わせる)。impact の下は
-# オブジェクト・その配列・id・id の配列だけ。primers・terms の下は文(text・sha・marked_text の文字列)も出す。Excerpt の中の
+# オブジェクト・その配列・id・id の配列と sha の配列だけ。primers・terms の下は文(text・sha・marked_text の文字列)も出す。Excerpt の中の
 # 道筋は、Excerpt を指すすべての道筋の下に出す。primers・terms の下の必須の文と 1 つのオブジェクトの道筋と、それを必須とする
 # kind(Variant の下なら kind の並び、Shape の下なら null。ページの `ExplainShape.Required` と突き合わせる)。ほかに、技術の
 # 手引きの kind・段の kind・用語の印の綴りと、印を読む道筋と、`` ` `` の割り方(ページの `CodeSpans` と突き合わせる)。
@@ -54,16 +54,16 @@ vocabulary = {
 }
 target_keys = {kind: list(fields) for kind, fields in module.Variants["Target"].items()}
 text_rules = (module.Text, module.Heading, module.UserText, module.Sha, module.MarkedText)
-def kind_of(rule, is_many, with_text):
+def kind_of(rule, is_many, texts):
     if isinstance(rule, (module.Shape, module.Variant)):
         return "records" if is_many else "record"
     if rule == module.Id:
         return "ids" if is_many else "id"
-    if with_text and rule in text_rules:
+    if rule in texts:
         return "texts" if is_many else "text"
     return None
-def shape_routes_of(rule, route, with_text):
-    return [[found, kind_of(inner, is_many, with_text)] for found, inner, is_many in module.routes_under(rule, route) if kind_of(inner, is_many, with_text) is not None]
+def shape_routes_of(rule, route, texts):
+    return [[found, kind_of(inner, is_many, texts)] for found, inner, is_many in module.routes_under(rule, route) if kind_of(inner, is_many, texts) is not None]
 def required_kinds_of(owner, key):
     if isinstance(owner, module.Shape):
         return None if module.Shapes[owner.name][key].required else []
@@ -72,13 +72,13 @@ def required_routes_of(rule, route):
     found = module.routes_under(rule, route)
     owners = {at: inner for at, inner, _ in found}
     kinds_at = lambda at: required_kinds_of(owners[at.rpartition(".")[0].removesuffix("[]")], at.rpartition(".")[2])
-    candidates = [{"route": at, "kinds": kinds_at(at)} for at, inner, is_many in found[1:] if kind_of(inner, is_many, True) in ("text", "record")]
+    candidates = [{"route": at, "kinds": kinds_at(at)} for at, inner, is_many in found[1:] if kind_of(inner, is_many, text_rules) in ("text", "record")]
     return [candidate for candidate in candidates if candidate["kinds"] != []]
 explain = module.Shapes["Explain"]
-routes = [*shape_routes_of(explain["impact"].value, "impact", False), *shape_routes_of(explain["primers"].value, "primers", True), *shape_routes_of(explain["terms"].value, "terms", True)]
+routes = [*shape_routes_of(explain["impact"].value, "impact", (module.Sha,)), *shape_routes_of(explain["primers"].value, "primers", text_rules), *shape_routes_of(explain["terms"].value, "terms", text_rules)]
 required_routes = [*required_routes_of(explain["primers"].value, "primers"), *required_routes_of(explain["terms"].value, "terms")]
 known = {route for route, _ in routes}
-inside_excerpts = [found for route in module.routes_with(module.Shape("Excerpt")) for found in shape_routes_of(module.Shape("Excerpt"), route, False)[1:]]
+inside_excerpts = [found for route in module.routes_with(module.Shape("Excerpt")) for found in shape_routes_of(module.Shape("Excerpt"), route, ())[1:]]
 shape_routes = routes + [found for found in inside_excerpts if found[0] not in known]
 print(json.dumps({
     "vocabulary": vocabulary,
@@ -351,6 +351,14 @@ const threeCommits = [commitTouching(1, [diffFile("a.ts")]), commitTouching(2, [
 const renamedCommits = [commitTouching(1, [diffFile("a.ts")]), commitTouching(2, [diffFile("z.ts", { oldPath: "a.ts", status: "R" })])];
 const mergedCommits = [commitTouching(1, [diffFile("a.ts")]), commitTouching(2, [], { merge: true })];
 const lineReach = { kind: "line", lineRange: { start: 3, end: 4 } };
+// 振る舞いの仕様の場所。地図のコミットと解説の sha を決め、変わったことに extra を足した節を引く。
+const changedSpecTopicOf = ({ commits, explainedSha, extra }) => {
+  const map = mapOf({ commits, head: commits[commits.length - 1].sha });
+  return topicsOf(impactOf({ changed: { before: [], after: [{ text: "後" }], ...extra } }), { map, explain: { sha: explainedSha } })[0];
+};
+const specOf = (path, locator, shas) => ({ path, locator, text: `${locator}を変えた`, shas });
+// c1 が docs/b.md、c2 が docs/a.md、c3 が両方を変えた地図。
+const specCommits = [commitTouching(1, [diffFile("docs/b.md")]), commitTouching(2, [diffFile("docs/a.md")]), commitTouching(3, [diffFile("docs/a.md"), diffFile("docs/b.md")])];
 
 const cases = [
   {
@@ -871,6 +879,83 @@ const cases = [
     label: "変わらないこと(kept)が空なら、その節は出ない",
     actual: () => topicsOf(impactOf({ changed: { before: [], after: [{ text: "後" }] }, kept: [] })).map((topic) => topic.id),
     expected: ["changed"],
+  },
+  {
+    label: "変わったことの仕様の場所は書いた順に、パス・位置・文と、sha を書いた順の届く先(sha・パス・届き方)を持つ",
+    actual: () => changedSpecTopicOf({ commits: specCommits, explainedSha: shaOf(3), extra: { specs: [specOf("docs/b.md", "乙", [shaOf(3), shaOf(1)]), specOf("docs/a.md", "甲", [shaOf(2)])] } }).specs,
+    expected: [
+      { path: "docs/b.md", locator: "乙", text: "乙を変えた", destinations: [{ sha: shaOf(3), path: "docs/b.md", reach: { kind: "file" } }, { sha: shaOf(1), path: "docs/b.md", reach: { kind: "file" } }] },
+      { path: "docs/a.md", locator: "甲", text: "甲を変えた", destinations: [{ sha: shaOf(2), path: "docs/a.md", reach: { kind: "file" } }] },
+    ],
+  },
+  {
+    label: "仕様の場所の届く先は、技術の手引きの出てくる場所なら行まで届くコミットでも、ファイルで止まる",
+    actual: () => {
+      const map = mapOf({ commits: threeCommits, head: shaOf(3) });
+      const occurrence = { path: "a.ts", text: "ここ", shas: [shaOf(2)], lineRange: { start: 3, end: 4 } };
+      const explain = explainOf({ sha: shaOf(3), primers: [primerOf({ occurrences: [occurrence] })], impact: impactOf({ changed: { before: [], after: [{ text: "後" }], specs: [specOf("a.ts", "甲", [shaOf(2)])] } }) });
+      const result = explained(map, explain);
+      return [result.primerTopics.tabs.language.topics[0].occurrences[0].destinations[0].reach, result.impactTopics.topics[0].specs[0].destinations[0].reach];
+    },
+    expected: [lineReach, { kind: "file" }],
+  },
+  {
+    label: "仕様の場所の sha は、地図に無ければ unmapped、マージコミットなら merge、そのファイルを変えていなければ untouched",
+    actual: () => {
+      const commits = [commitTouching(1, [diffFile("docs/a.md")]), commitTouching(2, [], { merge: true }), commitTouching(3, [diffFile("docs/b.md")])];
+      const topic = changedSpecTopicOf({ commits, explainedSha: shaOf(3), extra: { specs: [specOf("docs/a.md", "甲", [shaOf(8), shaOf(2), shaOf(3), shaOf(1)])] } });
+      return topic.specs[0].destinations.map(({ sha, reach }) => [sha, reach.kind]);
+    },
+    expected: [[shaOf(8), "unmapped"], [shaOf(2), "merge"], [shaOf(3), "untouched"], [shaOf(1), "file"]],
+  },
+  {
+    label: "関連 Issue は、番号の大小によらず書いた順に番号と文を持つ",
+    actual: () => changedSpecTopicOf({ commits: specCommits, explainedSha: shaOf(3), extra: { relatedIssues: [{ issue: 30, text: "後の番号" }, { issue: 4, text: "前の番号" }] } }).relatedIssues,
+    expected: [{ issue: 30, text: "後の番号" }, { issue: 4, text: "前の番号" }],
+  },
+  {
+    label: "変わらないことの節は、仕様の場所を書いた順に持ち、届く先は持たない",
+    actual: () => {
+      const keptSpecs = [{ path: "docs/b.md", locator: "乙", text: "乙は変えていない" }, { path: "docs/a.md", locator: "甲", text: "甲は変えていない" }];
+      return topicsOf(impactOf({ kept: [{ text: "変わらない" }], keptSpecs }))[0].specs;
+    },
+    expected: [{ path: "docs/b.md", locator: "乙", text: "乙は変えていない" }, { path: "docs/a.md", locator: "甲", text: "甲は変えていない" }],
+  },
+  {
+    label: "変わらないことの行が 0 件なら、仕様の場所を書いていても節を作らない(行が空でも、行を書かなくても)",
+    actual: () => {
+      const keptSpecs = [{ path: "docs/a.md", locator: "甲", text: "甲は変えていない" }];
+      const changed = { before: [], after: [{ text: "後" }] };
+      return [topicsOf(impactOf({ changed, kept: [], keptSpecs })), topicsOf(impactOf({ changed, keptSpecs }))].map((topics) => topics.map((topic) => topic.id));
+    },
+    expected: [["changed"], ["changed"]],
+  },
+  {
+    label: "書いていない節では、仕様の場所も関連 Issue も空の並び",
+    actual: () => {
+      const [changed, kept] = topicsOf(impactOf({ changed: { before: [], after: [{ text: "後" }] }, kept: [{ text: "変わらない" }] }));
+      return [changed.specs, changed.relatedIssues, kept.specs];
+    },
+    expected: [[], [], []],
+  },
+  {
+    label: "仕様の場所・その sha・関連 Issue・変わらないことの仕様の場所の形の崩れは、崩れた道筋を理由にする",
+    actual: () => {
+      const after = [{ text: "後" }];
+      const reasonOf = (impact) => explained(mapOf(), explainOf({ impact: impactOf(impact) })).reading.reason;
+      return [
+        reasonOf({ changed: { before: [], after, specs: {} } }),
+        reasonOf({ changed: { before: [], after, specs: [specOf("docs/a.md", "甲", [5])] } }),
+        reasonOf({ changed: { before: [], after, relatedIssues: "#996" } }),
+        reasonOf({ kept: [{ text: "変わらない" }], keptSpecs: {} }),
+      ];
+    },
+    expected: [
+      { kind: "shape", key: "impact.changed.specs" },
+      { kind: "shape", key: "impact.changed.specs[].shas" },
+      { kind: "shape", key: "impact.changed.relatedIssues" },
+      { kind: "shape", key: "impact.keptSpecs" },
+    ],
   },
   {
     label: "列ごとに書いた 2 × 3 のマスは、行の見出し × 列の見出しの順に並ぶ",
