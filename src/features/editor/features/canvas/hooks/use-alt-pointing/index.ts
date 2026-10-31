@@ -1,22 +1,32 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Pointing } from "@/features/editor/features/canvas/domains/pointing";
-import { KeyShortcut, KeyTriggers } from "@/hooks/use-key-shortcut";
+import {
+  type HeldModifierKey,
+  useModifierKeyHold,
+} from "@/features/editor/features/canvas/hooks/use-modifier-key-hold";
+import { KeyTriggers } from "@/hooks/use-key-shortcut";
 import { AltKey } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 
 /**
- * 選択しているだけのときの Alt / Option の距離を出す修飾キー。
+ * そのキー操作の時点で、左右どちらの Alt / Option も押していないか。
  *
- * 押下の判定と「フォーカスのある要素に食われるか」を `KeyShortcut` へ委ねるために、割り
- * 当てと同じ形で持つ（`useSpaceHeld` のパンの修飾キーと同じ）。
+ * @param event 見るキー操作
+ * @returns どちらも押していなければ真
  */
-const DistanceModifierKeyCodes: readonly string[] = ["AltLeft", "AltRight"];
+function releasesAlt(event: KeyboardEvent): boolean {
+  return !AltKey.isHeld(event);
+}
 
-const DistanceModifierKey: KeyShortcut = {
-  kind: KeyTriggers.PhysicalKey,
-  codes: DistanceModifierKeyCodes,
-  withCommandKey: false,
-  withShiftKey: false,
+/** 選択しているだけのときの Alt / Option の距離を出す修飾キー。 */
+const DistanceModifierKey: HeldModifierKey = {
+  shortcut: {
+    kind: KeyTriggers.PhysicalKey,
+    codes: ["AltLeft", "AltRight"],
+    withCommandKey: false,
+    withShiftKey: false,
+  },
+  isReleasedBy: releasesAlt,
 };
 
 /** Alt / Option を押している間の、ポインタの指し先と、指し先を伝える口。 */
@@ -38,9 +48,10 @@ function keepIfSame(
   previous: Option<Pointing>,
   next: Pointing,
 ): Option<Pointing> {
-  const isSame =
-    Option.isSome(previous) && Pointing.equals(previous.value, next);
-  return isSame ? previous : Option.some(next);
+  const pointing = Option.some(next);
+  return Option.equals(previous, pointing, Pointing.equals)
+    ? previous
+    : pointing;
 }
 
 /**
@@ -48,8 +59,7 @@ function keepIfSame(
  * 操作」の、選択しているだけのときの Alt / Option の距離）。
  *
  * 指し先はキーを押していない間も覚えておく。ポインタを置いてから Alt を押しても、押した
- * 時点で出せるようにするため。フォーカスのある要素がキーを受け取る間（`isConsumedBy`）は
- * 押しても出さず、ウィンドウを離れたら解く（戻ってきたときに離した Alt の keyup は届かない）。
+ * 時点で出せるようにするため。押していない間に指し先が変わっても再レンダーしない。
  *
  * @returns 押している間の指し先と、指し先を伝える口
  */
@@ -57,31 +67,13 @@ export function useAltPointing(): AltPointingControl {
   const lastPointing = useRef<Pointing>(Pointing.Outside);
   const [pointing, setPointing] = useState<Option<Pointing>>(Option.none);
 
-  useEffect(() => {
-    const hold = (event: KeyboardEvent) => {
-      const startsDistance =
-        DistanceModifierKeyCodes.includes(event.code) &&
-        !KeyShortcut.isConsumedBy(DistanceModifierKey, event.target);
-      if (startsDistance) {
-        setPointing((previous) => keepIfSame(previous, lastPointing.current));
-      }
-    };
-    const release = (event: KeyboardEvent) => {
-      if (!AltKey.isHeld(event)) {
-        setPointing(Option.none);
-      }
-    };
-    const clear = () => setPointing(Option.none);
-
-    globalThis.document.addEventListener("keydown", hold);
-    globalThis.document.addEventListener("keyup", release);
-    globalThis.window.addEventListener("blur", clear);
-    return () => {
-      globalThis.document.removeEventListener("keydown", hold);
-      globalThis.document.removeEventListener("keyup", release);
-      globalThis.window.removeEventListener("blur", clear);
-    };
+  const changeHold = useCallback((isHeld: boolean) => {
+    const last = lastPointing.current;
+    setPointing((previous) =>
+      isHeld ? keepIfSame(previous, last) : Option.none,
+    );
   }, []);
+  useModifierKeyHold(DistanceModifierKey, changeHold);
 
   const trackPointer = useCallback((next: Pointing) => {
     lastPointing.current = next;
