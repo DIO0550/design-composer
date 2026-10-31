@@ -337,6 +337,10 @@ const termOf = (id, label = id) => ({ id, label, text: `${label}の意味` });
 const primerTopicsOf = (explain, map = mapOf()) => explained(map, explainOf(explain)).primerTopics;
 const tabTopicsOf = (explain, tab) => primerTopicsOf(explain).tabs[tab].topics;
 const shapeReasonOf = (explain) => explained(mapOf(), explainOf(explain)).reading.reason;
+// 技術の手引きの節: 書いた順は a(言語)・c(実装)・b(言語)・d(実装)で、タブの中の位置は a・c が 0、b・d が 1。
+const fourPrimers = [primerOf({ id: "a", label: "A" }), primerOf({ kind: "codebase", id: "c", label: "C" }), primerOf({ id: "b", label: "B" }), primerOf({ kind: "codebase", id: "d", label: "D" })];
+const primerPositionsIn = (impact) => topicsOf(impact, { map: mapOf(), explain: { primers: fourPrimers } })[0].primers;
+const changedWithPrimers = (primers) => ({ before: [], after: [{ text: "後" }], primers });
 const passageExcerpt = (extra = {}) => ({ kind: "excerpt", excerpt: { path: "a.ts", start: 10, end: 14, ...extra } });
 // 出てくる場所のコミットへの届き方。地図のコミットの files はパス(改名なら変更前のパスも)だけを見る。
 const commitTouching = (digit, files, extra = {}) => ({ ...commitOf(digit), files, ...extra });
@@ -1121,6 +1125,41 @@ const cases = [
     label: "増えた状況の仕組みも、前後の行が指すやりとりを書いた順に並べる",
     actual: () => topicsOf(impactOf({ added: [{ label: "増えた", before: [{ text: "前", message: "m3" }], after: [{ text: "後", message: "m1" }] }] }), mechanismExplain)[0].mechanisms.map((mechanism) => mechanism.message.id),
     expected: ["m3", "m1"],
+  },
+  {
+    label: "変わったことの技術の手引きの節は、書いた順に、指した先のタブ・タブの中の位置・題になる",
+    actual: () => primerPositionsIn(impactOf({ changed: changedWithPrimers(["d", "b"]) })),
+    expected: [{ tab: "codebase", index: 1, label: "D" }, { tab: "language", index: 1, label: "B" }],
+  },
+  {
+    label: "primers に無い id は、変わったことの技術の手引きの節に入れない",
+    actual: () => primerPositionsIn(impactOf({ changed: changedWithPrimers(["ghost", "b"]) })),
+    expected: [{ tab: "language", index: 1, label: "B" }],
+  },
+  {
+    label: "primers に無い id は、増えた状況の技術の手引きの節にも入れない",
+    actual: () => primerPositionsIn(impactOf({ added: [{ ...addedOf("増えた"), primers: ["ghost", "b"] }] })),
+    expected: [{ tab: "language", index: 1, label: "B" }],
+  },
+  {
+    label: "増えた状況の技術の手引きの節も、書いた順に、指した先のタブ・タブの中の位置・題になる",
+    actual: () => primerPositionsIn(impactOf({ added: [{ ...addedOf("増えた"), primers: ["d", "a"] }] })),
+    expected: [{ tab: "codebase", index: 1, label: "D" }, { tab: "language", index: 0, label: "A" }],
+  },
+  {
+    label: "技術の手引きの節を書いていない変わったこと・増えた状況では、技術の手引きの節の並びは空",
+    actual: () => topicsOf(impactOf({ changed: changedWithPrimers(undefined), added: [addedOf("増えた")] }), { map: mapOf(), explain: { primers: fourPrimers } }).map((topic) => topic.primers),
+    expected: [[], []],
+  },
+  {
+    label: "変わったことの技術の手引きの節(primers)が文字列なら、理由はその道筋",
+    actual: () => shapeReasonOf({ impact: impactOf({ changed: changedWithPrimers("a") }) }),
+    expected: { kind: "shape", key: "impact.changed.primers" },
+  },
+  {
+    label: "増えた状況の技術の手引きの節の要素が文字列でなければ、理由はその道筋",
+    actual: () => shapeReasonOf({ impact: impactOf({ added: [{ ...addedOf("増えた"), primers: [5] }] }) }),
+    expected: { kind: "shape", key: "impact.added[].primers" },
   },
   {
     label: "テストから、それを根拠に挙げている節(表ならマス、変わらないことなら行)を節の順に引く",
