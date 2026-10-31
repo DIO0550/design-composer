@@ -518,9 +518,9 @@ export const EditorState = {
    * キャンバスで押された位置から、掘る量ぶんだけ内側へ入ったものを選ぶ（docs/06-ui.md「選
    * 択」）。
    *
-   * どのノードを選ぶかは `DocumentSelection.nodeNameAt` が決める（ドラッグで掴むものと同じ
-   * 規則）。ここが持つのは、選べるノードが無いところ（枠の上・ロック中のノードの上）を押
-   * したときに artboard 自身へ倒すことだけ。
+   * 何を選ぶかは `DocumentSelection.nameToSelectAt` が決める（選べるノードが無いところ
+   * ＝枠の上・ロック中のノードの上を押したときは artboard 自身）。Alt / Option の距離の相手
+   * も同じものを引く。
    *
    * どれも選べなければ選択は外れる。
    *
@@ -534,20 +534,15 @@ export const EditorState = {
     names: readonly string[],
     dig: SelectionDig,
   ): EditorState {
-    const document = EditorState.document(state);
-    const artboardCandidate = ArrayEx.first(
-      names.filter((name) =>
-        Option.isSome(selectableArtboardName(document, name)),
-      ),
-    );
-    const dug = DocumentSelection.nodeNameAt(
-      EditorState.documentSelection(state),
-      names,
-      dig,
-    );
     return {
       ...state,
-      selection: SelectionState.fromName(Option.or(dug, artboardCandidate)),
+      selection: SelectionState.fromName(
+        DocumentSelection.nameToSelectAt(
+          EditorState.documentSelection(state),
+          names,
+          dig,
+        ),
+      ),
     };
   },
 
