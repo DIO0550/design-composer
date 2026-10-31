@@ -1,5 +1,5 @@
 import type { ChildPosition } from "@/domains/dcmp/child-position";
-import type { SiblingPositions } from "@/features/editor/domains/sibling-positions";
+import type { SiblingPositions } from "@/domains/dcmp/sibling-positions";
 import type { ChildReorder } from "@/features/editor/types/ChildReorder";
 import type { ValueOf } from "@/types/ValueOf";
 

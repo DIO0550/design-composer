@@ -246,3 +246,17 @@ test("要素がある並びは、同じ要素を同じ順に持つ空でない�
     Option.some(["b", "a", "c"]),
   );
 });
+
+test("空でない並びを写すと、各要素を写した値が同じ順に並ぶ", () => {
+  expect(ArrayEx.mapNonEmpty(["b", "a", "c"], (item) => `${item}!`)).toEqual([
+    "b!",
+    "a!",
+    "c!",
+  ]);
+});
+
+test("どの要素も写せれば、写した値が同じ順に並ぶ", () => {
+  expect(
+    ArrayEx.mapNonEmptyUntilErr([1, 2, 3], (item) => Result.ok(item * 10)),
+  ).toEqual(Result.ok([10, 20, 30]));
+});

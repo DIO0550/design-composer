@@ -46,3 +46,14 @@ test("プリミティブのノードに書かれている props が返る", () =
 test("props を持たないプリミティブのノードは空の props になる", () => {
   expect(Node.propsOf({ name: "title", type: "Text" })).toEqual({});
 });
+
+test("部品インスタンスに書かれている props は、上書きや自身の値があっても空になる", () => {
+  expect(
+    Node.writtenPropsOf({
+      name: "save-button",
+      ref: "primary-button",
+      overrides: { label: "保存" },
+      locking: "locked",
+    }),
+  ).toEqual({});
+});

@@ -43,10 +43,11 @@ function toHome(x: number, y: number): RepositionEdit {
 
 /** その状態での `badge` の props。 */
 function badgeProps(state: EditorState): Readonly<Record<string, unknown>> {
-  const node = Option.unwrap(
-    DesignDocument.findNode(EditorState.document(state), "badge"),
+  return Node.writtenPropsOf(
+    Option.unwrap(
+      DesignDocument.findNode(EditorState.document(state), "badge"),
+    ),
   );
-  return Node.isPrimitive(node) ? (node.props ?? {}) : {};
 }
 
 /** その状態で `badge` がいる親の名前。 */

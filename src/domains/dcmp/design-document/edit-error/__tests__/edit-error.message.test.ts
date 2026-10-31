@@ -104,3 +104,15 @@ test("ref-own-prop-not-allowed は参照ノード名と持てない prop 名を�
     }),
   ).toBe('ref node "login" cannot hold "label", "gap" as its own value');
 });
+
+test("different-parents は、同じ親を持たないことを述べるメッセージになる", () => {
+  expect(DesignDocumentEditError.message({ kind: "different-parents" })).toBe(
+    "nodes do not share the same parent",
+  );
+});
+
+test("mixed-placement は、配置が混ざっていることを述べるメッセージになる", () => {
+  expect(DesignDocumentEditError.message({ kind: "mixed-placement" })).toBe(
+    "nodes to group mix absolute and flow placement",
+  );
+});

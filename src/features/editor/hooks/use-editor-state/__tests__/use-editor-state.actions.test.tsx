@@ -74,7 +74,8 @@ function footerCoordinates(state: EditorState): string {
   if (!Option.isSome(found)) {
     return "無し";
   }
-  const props = Node.isPrimitive(found.value) ? (found.value.props ?? {}) : {};
+
+  const props = Node.writtenPropsOf(found.value);
   return `${props.x},${props.y}`;
 }
 

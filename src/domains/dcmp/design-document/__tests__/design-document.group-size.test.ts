@@ -26,7 +26,8 @@ function setupGrouped(props: Props): DesignDocument {
       },
     ],
   });
-  return Result.unwrap(DesignDocument.groupIntoBox(document, "card", "box"));
+
+  return Result.unwrap(DesignDocument.groupIntoBox(document, ["card"], "box"));
 }
 
 test("幅が fill のノードを包むと、Box の幅も fill になる", () => {

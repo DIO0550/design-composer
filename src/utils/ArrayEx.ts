@@ -143,6 +143,44 @@ export const ArrayEx = {
   },
 
   /**
+   * 空でない並びの各要素を写した、空でない並び。
+   *
+   * @param array 写す前の並び
+   * @param fn 要素から写した先の値を作る
+   * @returns 各要素を `fn` で写した値を同じ順に持つ並び
+   */
+  mapNonEmpty<T, U>(
+    array: NonEmptyArray<T>,
+    fn: (item: T) => U,
+  ): NonEmptyArray<U> {
+    const [first, ...rest] = array;
+    return [fn(first), ...rest.map(fn)];
+  },
+
+  /**
+   * 空でない並びの各要素を、失敗しうる手続きで並びの順に写す。`err` が返ったところで止める。
+   *
+   * @param array 写す前の並び
+   * @param fn 要素から写した先の値を作る。作れなければ `err`
+   * @returns 各要素を写した値を同じ順に持つ並び。途中で `err` が返ればその `err`
+   *   （以降の要素は写さない）
+   */
+  mapNonEmptyUntilErr<T, U, E>(
+    array: NonEmptyArray<T>,
+    fn: (item: T) => Result<U, E>,
+  ): Result<NonEmptyArray<U>, E> {
+    const [first, ...rest] = array;
+    return Result.flatMap(fn(first), (mappedFirst) =>
+      ArrayEx.reduceUntilErr<T, NonEmptyArray<U>, E>(
+        rest,
+        [mappedFirst],
+        (mapped, item) =>
+          Result.map(fn(item), (value): NonEmptyArray<U> => [...mapped, value]),
+      ),
+    );
+  },
+
+  /**
    * 先頭を除いた並び。
    *
    * @param array 除く前の並び

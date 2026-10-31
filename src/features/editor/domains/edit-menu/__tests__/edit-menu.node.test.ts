@@ -238,7 +238,7 @@ test("1 つだけ選んでいるときは削除が押せる", () => {
   expect(isRowEnabled(menu, EditOperations.Delete)).toBe(true);
 });
 
-test("同じ親の兄弟を複数選んでいるときは、複製・コピー・動かせる向きの並べ替え・削除が押せる", () => {
+test("同じ親の兄弟を複数選んでいるときは、複製・コピー・グループ化・動かせる向きの並べ替え・削除が押せる", () => {
   const menu = EditMenu.create(
     EditorState.selectNodes(setupState(), ["title", "panel"]),
     EditMenuTargets.Node,
@@ -247,6 +247,7 @@ test("同じ親の兄弟を複数選んでいるときは、複製・コピー�
   expect(enabledOperations(menu)).toEqual([
     EditOperations.Duplicate,
     EditOperations.Copy,
+    EditOperations.Group,
     EditOperations.BringForward,
     EditOperations.Delete,
   ]);
@@ -264,7 +265,7 @@ test("最前面にいるものを含む兄弟を複数選んでいるときは�
   ]).toEqual([false, true]);
 });
 
-test("親が違うノードを複数選んでいるときは、複製・コピー・削除が押せる", () => {
+test("親が違うノードを複数選んでいるときは、複製・コピー・削除だけが押せ、グループ化と並べ替えは押せない", () => {
   const menu = EditMenu.create(
     EditorState.selectNodes(stateWithNestedPanel(), ["title", "inner-a"]),
     EditMenuTargets.Node,

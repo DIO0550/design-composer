@@ -68,3 +68,12 @@ test("負の角度は反時計回りに回す", () => {
   expect(rotated.x).toBeCloseTo(0);
   expect(rotated.y).toBeCloseTo(-30);
 });
+
+test("左上は各成分の最小になる", () => {
+  expect(
+    Offset.topLeftOf([
+      { x: 40, y: 10 },
+      { x: 20, y: 30 },
+    ]),
+  ).toEqual({ x: 20, y: 10 });
+});

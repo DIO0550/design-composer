@@ -1,5 +1,6 @@
 import { Angle } from "@/domains/unit/angle";
 import type { Axis } from "@/domains/unit/axis";
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 
 /**
  * 平面上の位置、またはその差。
@@ -74,6 +75,19 @@ export const Offset = {
     return {
       x: offset.x * cos - offset.y * sin,
       y: offset.x * sin + offset.y * cos,
+    };
+  },
+
+  /**
+   * 点の集まりを囲む範囲の左上。
+   *
+   * @param offsets 囲む点
+   * @returns 横と縦それぞれで最も小さい成分を持つ位置。成分は別々の点から来てよい
+   */
+  topLeftOf(offsets: NonEmptyArray<Offset>): Offset {
+    return {
+      x: Math.min(...offsets.map((offset) => offset.x)),
+      y: Math.min(...offsets.map((offset) => offset.y)),
     };
   },
 

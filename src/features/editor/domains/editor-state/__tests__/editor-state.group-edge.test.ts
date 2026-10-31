@@ -5,8 +5,9 @@ import { stateWithDeepBranch } from "./setup";
 
 /*
  * グループ化・グループ解除が成立しない相手（docs/06-ui.md「編集操作の一覧」）。
- * 複数選択中に成立しないことは `editor-state.multi-selection.test.ts`、ファイルが不正な間に
- * 成立しないことは `editor-state.frozen.test.ts` が、どちらも対照つきで持つ。
+ * 複数選択中に成立しない条件（親が違う・配置が混ざる）は `editor-state.multi-group.test.ts`、
+ * ファイルが不正な間に成立しないことは `editor-state.frozen.test.ts` が、どちらも対照つきで
+ * 持つ。
  */
 
 test("何も選んでいないときはグループ化できない", () => {

@@ -147,6 +147,20 @@ test("複数選択の一員の行のメニューの Send backward を押すと�
   expect(rowNames(tree())).toEqual(["home-login", "home-signup", "home-title"]);
 });
 
+test("複数選択の一員の行のメニューの Group を押すと、選んだものが新しい Box の子になる", async () => {
+  await renderWithSameComponentInstancesSelected();
+
+  rightClickInTree("home-signup");
+  await userEvent.click(menuRow("Group"));
+
+  expect(rowNames(tree())).toEqual([
+    "home-title",
+    "box",
+    "home-login",
+    "home-signup",
+  ]);
+});
+
 test("複数選択の一員の行のメニューの Duplicate を押すと、それぞれの直後に複製が並ぶ", async () => {
   await renderWithSameComponentInstancesSelected();
 

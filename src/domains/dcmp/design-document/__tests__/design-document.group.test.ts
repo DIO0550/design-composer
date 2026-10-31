@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { Node } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 /*
  * 選択を Box で包む / 包んでいた Box を外す（docs/06-ui.md「編集操作の一覧」のグループ化・
@@ -17,7 +17,7 @@ test("ノードを包むと、そのノードが居た位置に新しい Box が
   });
 
   const grouped = Result.unwrap(
-    DesignDocument.groupIntoBox(document, "title", "box"),
+    DesignDocument.groupIntoBox(document, ["title"], "box"),
   );
 
   expect(grouped.artboards[0].children).toEqual([
@@ -42,7 +42,7 @@ test("包んでも前後の兄弟の並び順は変わらない", () => {
   });
 
   const grouped = Result.unwrap(
-    DesignDocument.groupIntoBox(document, "target", "box"),
+    DesignDocument.groupIntoBox(document, ["target"], "box"),
   );
 
   expect(grouped.artboards[0].children.map((child) => child.name)).toEqual([
@@ -66,7 +66,7 @@ test("入れ子の中にいるノードも包める", () => {
   });
 
   const grouped = Result.unwrap(
-    DesignDocument.groupIntoBox(document, "label", "box"),
+    DesignDocument.groupIntoBox(document, ["label"], "box"),
   );
 
   expect(grouped.artboards[0].children).toEqual([
@@ -91,7 +91,35 @@ test("フローで fill を持たないノードを包んだ Box は props を�
   });
 
   const grouped = Result.unwrap(
-    DesignDocument.groupIntoBox(document, "title", "box"),
+    DesignDocument.groupIntoBox(document, ["title"], "box"),
+  );
+  const box = Option.unwrap(DesignDocument.findNode(grouped, "box"));
+
+  expect(Node.isPrimitive(box) && box.props).toBeUndefined();
+});
+
+test("親に並べ方が書かれていても、その中の 1 つだけを包んだ Box は親の並べ方を写さず props を持たない", () => {
+  const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [
+          {
+            name: "panel",
+            type: "Box",
+            props: { layout: "row", gap: "md", align: "center" },
+            children: [{ name: "title", type: "Text" }],
+          },
+        ],
+      },
+    ],
+  });
+
+  const grouped = Result.unwrap(
+    DesignDocument.groupIntoBox(document, ["title"], "box"),
   );
   const box = Option.unwrap(DesignDocument.findNode(grouped, "box"));
 

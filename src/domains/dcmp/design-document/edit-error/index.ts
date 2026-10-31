@@ -4,8 +4,8 @@ import { TokenEditError } from "@/domains/dcmp/token";
 import type { NonEmptyArray } from "@/types/NonEmptyArray";
 
 /**
- * ドキュメントの編集操作（挿入・削除・並べ替え・移動・部品化・解除・インスタンス自身の値の
- * 編集・tokens 編集）が失敗する理由。呼び出し側が種類で分岐できるよう、メッセージ文字列
+ * ドキュメントの編集操作（挿入・削除・並べ替え・移動・グループ化・部品化・解除・インスタンス
+ * 自身の値の編集・tokens 編集）が失敗する理由。呼び出し側が種類で分岐できるよう、メッセージ文字列
  * ではなく直和で列挙する。
  *
  * `NodeTreeEditError` / `TokenEditError` / `ExpandedNodeError` をそのまま含む。いずれの
@@ -28,7 +28,13 @@ export type DesignDocumentEditError =
       props: NonEmptyArray<string>;
     }>
   | Readonly<{ kind: "duplicate-name"; name: string }>
-  | Readonly<{ kind: "invalid-name"; name: string }>;
+  | Readonly<{ kind: "invalid-name"; name: string }>
+  /*
+   * 次の 2 つが名前を持たないのは、どれか 1 つではなく集まりの性質だから。代表の名前は
+   * 渡し方の順で変わる値になる。
+   */
+  | Readonly<{ kind: "different-parents" }>
+  | Readonly<{ kind: "mixed-placement" }>;
 
 export const DesignDocumentEditError = {
   /**
@@ -61,6 +67,10 @@ export const DesignDocumentEditError = {
         return `name "${error.name}" is already used`;
       case "invalid-name":
         return `name "${error.name}" is not a valid identifier`;
+      case "different-parents":
+        return "nodes do not share the same parent";
+      case "mixed-placement":
+        return "nodes to group mix absolute and flow placement";
       case "index-out-of-range":
         return `index ${error.index} is out of bounds for length ${error.length}`;
       case "invalid-token-name":

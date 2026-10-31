@@ -32,11 +32,11 @@ import type { Instant } from "@/domains/unit/instant";
 import type { Offset } from "@/domains/unit/offset";
 import { EditHistory } from "@/features/editor/domains/edit-history";
 import { ReorderStep } from "@/features/editor/domains/reorder-step";
-import { SiblingPositions } from "@/features/editor/domains/sibling-positions";
 import { TokenTemplate } from "@/features/editor/domains/token-template";
 import type { IndexMove } from "@/types/IndexMove";
 import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { ArrayEx } from "@/utils/ArrayEx";
+import { Interop } from "@/utils/Interop";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
@@ -251,6 +251,18 @@ function withEditResult(
   return Result.isOk(edited)
     ? withEdit(state, edited.value, continuity)
     : Option.none;
+}
+
+/**
+ * 選んでいるものの名前を、1 つ以上あることが型に出た並びで読む。
+ *
+ * @param state 選択の出どころになるエディタの状態
+ * @returns 選んでいるものの名前。何も選んでいなければ `none`
+ */
+function selectedNames(state: EditorState): Option<NonEmptyArray<string>> {
+  return ArrayEx.toNonEmpty(
+    DocumentSelection.names(EditorState.documentSelection(state)),
+  );
 }
 
 export const EditorState = {
@@ -751,18 +763,22 @@ export const EditorState = {
     state: EditorState,
     step: ReorderStep,
   ): Option<EditorState> {
-    const siblings = SiblingPositions.fromSelection(
-      EditorState.documentSelection(state),
+    const document = EditorState.document(state);
+    const siblings = Option.flatMap(selectedNames(state), (names) =>
+      Interop.toOption(DesignDocument.findSiblingPositions(document, names)),
     );
+
     if (!Option.isSome(siblings)) {
       return Option.none;
     }
+
     const reordered = ArrayEx.reduceUntilErr(
       ReorderStep.toChildReorders(step, siblings.value),
-      EditorState.document(state),
-      (document, reorder) =>
-        DesignDocument.reorderNode(document, reorder.from, reorder.toIndex),
+      document,
+      (current, reorder) =>
+        DesignDocument.reorderNode(current, reorder.from, reorder.toIndex),
     );
+
     return withEditResult(state, reordered);
   },
 
@@ -1155,8 +1171,8 @@ export const EditorState = {
   },
 
   /**
-   * 選んでいるノードを新しい Box の中へ入れ、その Box を選び直す（docs/06-ui.md「編集操作
-   * の一覧」のグループ化）。
+   * 選んでいるノード（複数なら同じ親の兄弟）を新しい Box の中へ入れ、その Box を選び直す
+   * （docs/06-ui.md「編集操作の一覧」のグループ化・「複数選択」）。
    *
    * 木の付け替えは `DesignDocument.groupIntoBox` が持ち、ここは対象を選択から決め、Box の
    * 名前を採り、履歴へ積んで選択を移すところまで。
@@ -1165,17 +1181,19 @@ export const EditorState = {
    * にするため。包まれた側を選んだままにすると、次の解除の対象が Box ではなくなる。
    *
    * @param state 包む前のエディタの状態
-   * @returns 包んだあとのエディタの状態。1 つだけ選んでいるのでないとき、artboard を選んで
-   *   いるとき、ファイルが不正な間は `none`
+   * @returns 包んだあとのエディタの状態。何も選んでいないとき、artboard を選んでいるとき、
+   *   親が違うとき、絶対配置とフローが混ざるとき、ファイルが不正な間は `none`
    */
   groupSelected(state: EditorState): Option<EditorState> {
-    return Option.flatMap(EditorState.singleName(state), (name) => {
+    return Option.flatMap(selectedNames(state), (selected) => {
       const document = EditorState.document(state);
       const boxName = DesignDocument.uniqueName(
         document,
         NodeTemplate.baseName({ kind: "primitive", type: PrimitiveTypes.Box }),
       );
-      const grouped = DesignDocument.groupIntoBox(document, name, boxName);
+
+      const grouped = DesignDocument.groupIntoBox(document, selected, boxName);
+
       return Option.map(withEditResult(state, grouped), (edited) =>
         EditorState.select(edited, boxName),
       );
