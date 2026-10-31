@@ -63,3 +63,8 @@ test("unwrap は none に対して例外を投げる", () => {
 test("unwrap は falsy な値 0 もそのまま取り出す", () => {
   expect(Option.unwrap(Option.some(0))).toBe(0);
 });
+
+test("equals は片方だけ値を持てば、比べ方にかかわらず false", () => {
+  expect(Option.equals(Option.some("a"), Option.none, () => true)).toBe(false);
+  expect(Option.equals(Option.none, Option.some("a"), () => true)).toBe(false);
+});

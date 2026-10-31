@@ -100,3 +100,15 @@ test("回っていて回る前の大きさが 0 のものは、外接矩形の�
 
   expect(overlapping).toEqual(["home"]);
 });
+
+test("大きさ 0 で描かれているものは、面積を持つものとしては測れない", () => {
+  drawNamed("collapsed", { left: 100, top: 100, width: 0, height: 0 });
+
+  expect(DrawnBounds.measureWithArea("collapsed")).toEqual(Option.none);
+});
+
+test("描かれていない名前は、面積を持つものとしては測れない", () => {
+  drawNamed("home", { left: 12, top: 34, width: 200, height: 100 });
+
+  expect(DrawnBounds.measureWithArea("about")).toEqual(Option.none);
+});

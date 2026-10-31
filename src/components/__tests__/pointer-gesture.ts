@@ -136,13 +136,12 @@ export function releasePointer(element: Element, at: PointerPoint): void {
 }
 
 /**
- * ポインタがその要素へ入ったことにする。
+ * ポインタが窓の外からその要素へ入ったことにする（`leavePointer` と対）。
  *
- * `pointerOver` ではなく `pointerEnter` を撃つ。`pointerOver` は `relatedTarget` を付けな
- * いと React が「文書の外から入った」と解釈して**祖先にも enter を配り**、付けると
- * happy-dom では**どこにも届かなくなる**（実測）。
- *
- * `pointerEnter` は狙った要素にだけ正確に届く。
+ * `fireEvent.pointerEnter` は `relatedTarget` の無い `pointerOver` も一緒に撃ち、React はそれ
+ * を窓の外から入ったと読むので、**祖先にも enter が届く**（実測）。`relatedTarget` を
+ * 付けた `pointerOver` は happy-dom では**どこにも届かない**（実測）ので、祖先の中での移動は
+ * `leavePointerInto` で起こす。
  *
  * @param element 入った先の要素
  */
@@ -151,15 +150,31 @@ export function enterPointer(element: Element): void {
 }
 
 /**
- * ポインタがその要素から出たことにする。
+ * ポインタがその要素から窓の外へ出たことにする（`enterPointer` と対）。
  *
- * `pointerEnter` と対で、React が合成する enter / leave に合わせて撃つ
- * （生の `dispatchEvent` では React のリスナーへ届かない）。
+ * React が合成する enter / leave に合わせて撃つ（生の `dispatchEvent` では React のリスナーへ
+ * 届かない）。React はこれを窓の外へ出たと読むので、**祖先にも leave が届く**。祖先の中に
+ * 留まる移動は `leavePointerInto` で起こす。
  *
  * @param element 出た元の要素
  */
 export function leavePointer(element: Element): void {
   fireEvent.pointerLeave(element, { pointerId: PointerId });
+}
+
+/**
+ * ポインタがある要素から別の要素へ移ったことにする。leave が届くのは、移った先を含まない
+ * 側の要素だけで（共通の祖先には届かない）、移った先には enter が届く。
+ *
+ * `pointerOut` を `relatedTarget` 付きで撃つ。`enterPointer` の doc のとおり over は
+ * `relatedTarget` を付けると happy-dom でどこにも届かなくなるが、out は付けても届き、React
+ * がそこから enter / leave を合成する（実測）。
+ *
+ * @param from 出た元の要素
+ * @param to 移った先の要素
+ */
+export function leavePointerInto(from: Element, to: Element): void {
+  fireEvent.pointerOut(from, { pointerId: PointerId, relatedTarget: to });
 }
 
 /**

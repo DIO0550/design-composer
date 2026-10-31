@@ -138,8 +138,9 @@ export const DocumentSelection = {
 
   /**
    * キャンバスで押された位置から、掘る量ぶんだけ内側へ入ったノードの名前（docs/06-ui.md
-   * 「キャンバスのクリックが選ぶ階層」「キャンバス直接操作」の移動）。クリックで選ぶもの
-   * と、ドラッグで掴むものの両方がこれを使う。
+   * 「キャンバスのクリックが選ぶ階層」「キャンバス直接操作」の移動）。ドラッグで掴むものは
+   * これで決まる。クリックで選ぶもの・Alt / Option の距離の相手は、artboard へ倒すことを
+   * 足した `nameToSelectAt` で決まる。
    *
    * 候補はドキュメントの木にあるノードだけで、artboard 自身と部品定義の中のノード名は入
    * らない（掘ってもインスタンス自身で止まる）。ロック中のノードとその子孫も入らない
@@ -160,6 +161,47 @@ export const DocumentSelection = {
       dig,
       DesignDocument.collectUnlockedNodeNames(selection.document, names),
       DocumentSelection.singleName(selection),
+    );
+  },
+
+  /**
+   * キャンバスで押された位置から、クリックが選ぶものの名前（docs/06-ui.md「キャンバスのク
+   * リックが選ぶ階層」）。選べるノードは `nodeNameAt` で決め、無ければ押された位置を載せて
+   * いる artboard へ倒す。ロック中のノードは返さない。
+   *
+   * @param selection 候補を引くドキュメントと、掘る起点になる今の選択
+   * @param names 押された位置から外へ辿った名前（内→外）
+   * @param dig 押し方から決まった掘る量
+   * @returns 掘った先のノード、無ければ `names` のうち最初の artboard の名前。どちらも無けれ
+   *   ば（部品定義の中の名前だけ・空の並び）`none`
+   */
+  nameToSelectAt(
+    selection: DocumentSelection,
+    names: readonly string[],
+    dig: SelectionDig,
+  ): Option<string> {
+    return Option.or(
+      DocumentSelection.nodeNameAt(selection, names, dig),
+      DocumentSelection.artboardNameAt(selection, names),
+    );
+  },
+
+  /**
+   * キャンバスで押された・指している位置を載せている artboard の名前。
+   *
+   * @param selection artboard を引くドキュメントの出どころ
+   * @param names 押された・指している位置から外へ辿った名前（内→外）
+   * @returns `names` のうち最初の artboard の名前。artboard が無ければ（部品定義の中の名前
+   *   だけ・空の並び）`none`
+   */
+  artboardNameAt(
+    selection: DocumentSelection,
+    names: readonly string[],
+  ): Option<string> {
+    return ArrayEx.first(
+      names.filter((name) =>
+        Option.isSome(DesignDocument.findArtboard(selection.document, name)),
+      ),
     );
   },
 

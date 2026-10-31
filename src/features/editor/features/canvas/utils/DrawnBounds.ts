@@ -62,6 +62,22 @@ export const DrawnBounds = {
   },
 
   /**
+   * 名前で指した要素の矩形のうち、面積を持つもの（client 座標）。面積で外す理由は
+   * `measureRotatedWithArea` と同じ。
+   *
+   * `measureRotatedWithArea` には乗せない。向きが 1 回りの倍数なら倍率は読まれないのに、
+   * それを渡すために倍率を受けていない `collectDrawnBounds` へ引数を足すことになる。
+   *
+   * @param name 描かれている artboard / ノードの名前
+   * @returns 描かれている矩形。描かれていない / 面積を持たないなら `none`
+   */
+  measureWithArea(name: string): Option<CanvasBounds> {
+    return Option.flatMap(DrawnBounds.measure(name), (bounds) =>
+      CanvasBounds.hasArea(bounds) ? Option.some(bounds) : Option.none,
+    );
+  },
+
+  /**
    * 名前で指したもののうち、大きさを持って描かれているものの矩形（client 座標）。
    *
    * @param names 測りたい artboard / ノードの名前
@@ -69,7 +85,7 @@ export const DrawnBounds = {
    */
   collectDrawnBounds(names: readonly string[]): readonly CanvasBounds[] {
     return names.flatMap((name) => {
-      const measured = measureWithArea(name);
+      const measured = DrawnBounds.measureWithArea(name);
       return Option.isSome(measured) ? [measured.value] : [];
     });
   },
@@ -148,21 +164,5 @@ function measureRotatedWithArea(
       CanvasBounds.hasArea(measured.unrotated)
         ? Option.some(measured)
         : Option.none,
-  );
-}
-
-/**
- * 名前で指した要素の矩形のうち、面積を持つもの。面積で外す理由は
- * `measureRotatedWithArea` と同じ。
- *
- * `measureRotatedWithArea` には乗せない。向きが 1 回りの倍数なら倍率は読まれないのに、
- * それを渡すために倍率を受けていない `collectDrawnBounds` へ引数を足すことになる。
- *
- * @param name 描かれている artboard / ノードの名前
- * @returns 描かれている矩形。描かれていない / 面積を持たないなら `none`
- */
-function measureWithArea(name: string): Option<CanvasBounds> {
-  return Option.flatMap(DrawnBounds.measure(name), (bounds) =>
-    CanvasBounds.hasArea(bounds) ? Option.some(bounds) : Option.none,
   );
 }

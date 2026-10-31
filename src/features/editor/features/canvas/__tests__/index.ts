@@ -12,13 +12,17 @@ export {
   hasNoTextInlineEditorField,
   highlightedNames,
   renderedElement,
+  sortedFacingDistanceLabels,
   textInlineEditorField,
   tokenReferrerNames,
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 export {
   drag,
+  enterPointer,
+  holdAlt,
   movePointer,
   pressPointer,
+  releaseAlt,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 export {

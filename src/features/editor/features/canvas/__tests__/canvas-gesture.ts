@@ -8,7 +8,7 @@ import type { Offset } from "@/domains/unit/offset";
  *
  * ポインタそのものの操作は左ペインの並べ替えでも同じものが要るので、横断層
  * （`components/__tests__/pointer-gesture`）へ移して**そのまま再輸出**する。ここが自前で持
- * つのはホイール（キャンバス固有）だけ。
+ * つのはキャンバス固有のホイールと、space（パン）・Alt / Option（距離）のキーだけ。
  */
 
 import {
@@ -18,7 +18,9 @@ import {
 
 export {
   drag,
+  enterPointer,
   leavePointer,
+  leavePointerInto,
   movePointer,
   PointerId,
   type PressedModifier,
@@ -38,6 +40,28 @@ export function holdSpace(): void {
 
 export function releaseSpace(): void {
   fireEvent.keyUp(globalThis.document, { code: "Space", key: " " });
+}
+
+/**
+ * Alt / Option を押す / 離す（選択しているだけのときの距離の修飾キー）。
+ *
+ * フックは押したかを物理キー（`code`）で、離したかを `altKey` で見るので、押すほうは
+ * `code`、離すほうは `altKey: false` が効く。
+ *
+ * @param target キーを受け取る要素（フォーカスのある要素）。既定は文書全体
+ */
+export function holdAlt(
+  target: Element | Document = globalThis.document,
+): void {
+  fireEvent.keyDown(target, { code: "AltLeft", key: "Alt", altKey: true });
+}
+
+export function releaseAlt(): void {
+  fireEvent.keyUp(globalThis.document, {
+    code: "AltLeft",
+    key: "Alt",
+    altKey: false,
+  });
 }
 
 /**

@@ -4,6 +4,7 @@ import type { SelectionDig } from "@/domains/session/selection-dig";
 import { TokenSelection } from "@/domains/session/token-selection";
 import { ArrangedArtboard } from "@/features/editor/features/canvas/domains/arranged-artboard";
 import { NodeDrag } from "@/features/editor/features/canvas/domains/node-drag";
+import type { AltPointingControl } from "@/features/editor/features/canvas/hooks/use-alt-pointing";
 import type { ArtboardDragControl } from "@/features/editor/features/canvas/hooks/use-artboard-drag";
 import type { NodeDragControl } from "@/features/editor/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/editor/features/canvas/hooks/use-node-resize";
@@ -73,6 +74,7 @@ export function ArtboardFrameList({
   nodeDrag,
   nodeResize,
   textEdit,
+  altPointing,
 }: Readonly<{
   compiled: CompiledDocument;
   selection: DocumentSelection;
@@ -86,6 +88,7 @@ export function ArtboardFrameList({
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
   textEdit: TextEditControl;
+  altPointing: AltPointingControl;
 }>) {
   const dropParentName = NodeDrag.dropParentName(nodeDrag.drag);
   /*
@@ -166,6 +169,7 @@ export function ArtboardFrameList({
               nodeDrag={nodeDrag}
               nodeResize={nodeResize}
               textEdit={textEdit}
+              altPointing={altPointing}
             />
           ))}
         </ul>

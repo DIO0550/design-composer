@@ -37,10 +37,15 @@ import {
 } from "../reposition-preview-style";
 
 /*
- * 名前で引く・測りを差し替えるのはキャンバスのフックの単体テストや feature 直下の共有の描き方
- * （`canvas-turned-frame`）も使うので、持ち主は feature 直下の `canvas-elements` / `canvas-measure`。ここからは今までどおりの名前で出す。
+ * 名前で引く・距離の数値を読む・測りを差し替えるのはキャンバスのフックの単体テストや feature
+ * 直下の共有の描き方（`canvas-turned-frame`）、編集画面の通しも使うので、持ち主は feature 直下
+ * の `canvas-elements` / `canvas-measure`。ここからは今までどおりの名前で出す。
  */
-export { drawn } from "@/features/editor/features/canvas/__tests__/canvas-elements";
+export {
+  distanceLabels,
+  drawn,
+  sortedFacingDistanceLabels,
+} from "@/features/editor/features/canvas/__tests__/canvas-elements";
 export {
   drawnAt,
   drawnTurnedAt,
@@ -85,13 +90,14 @@ export function withOnlySelected(
 }
 
 /**
- * キャンバスが描くのに要る値。トークンと凍結は見たいテストだけが渡せばよいので、
- * `renderCanvas` が既定（トークン未選択 / 凍結していない）を埋める。
+ * キャンバスが描くのに要る値。トークン・凍結・メニューは見たいテストだけが渡せばよいので、
+ * `renderCanvas` が既定（トークン未選択 / 凍結していない / メニューを開いていない）を埋める。
  */
 type CanvasValues = Readonly<{
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
   isFrozen: boolean;
+  isContextMenuOpen: boolean;
 }>;
 
 /** キャンバスが外へ渡す操作。テストは見たいものだけを渡し、残りは呼ばれても何もしない。 */
@@ -139,7 +145,7 @@ type CanvasProps = Readonly<{ selection: DocumentSelection }> &
 /**
  * 描く値とハンドラを既定で埋めたキャンバス。
  *
- * @param props 描く値（`selection` は必須、トークンと凍結は既定あり）と、
+ * @param props 描く値（`selection` は必須、トークン・凍結・メニューは既定あり）と、
  *   確かめたい操作だけのハンドラ
  * @returns 既定を埋めたキャンバスの要素
  */
@@ -151,6 +157,7 @@ function canvasElement(props: CanvasProps) {
         Option.none,
       )}
       isFrozen={false}
+      isContextMenuOpen={false}
       onSelect={vi.fn()}
       onSelectInRange={vi.fn()}
       onMoveNode={vi.fn()}
@@ -167,7 +174,7 @@ function canvasElement(props: CanvasProps) {
 /**
  * キャンバスを描く。
  *
- * @param props 描く値（`selection` は必須、トークンと凍結は既定あり）と、
+ * @param props 描く値（`selection` は必須、トークン・凍結・メニューは既定あり）と、
  *   確かめたい操作だけのハンドラ
  * @returns `render` の戻り値に、同じ器のまま別の選択で描き直す `rerenderWith` を足したもの
  */
@@ -210,30 +217,6 @@ export function resizeHandles(): readonly HTMLElement[] {
  */
 export function snapGuides(): readonly HTMLElement[] {
   return screen.queryAllByTestId("snap-guide");
-}
-
-/**
- * 出ている、2 つの矩形の間の数値（揃え先との隙間か Alt / Option の距離）。
- *
- * @param testId 見る線の `data-testid`（揃え先との隙間なら `snap-gap`）
- * @returns 出ている数値の並び（ラベルの文字列）。出ていなければ空
- */
-export function distanceLabels(
-  testId: "snap-gap" | "facing-distance",
-): readonly string[] {
-  return screen
-    .queryAllByTestId(`${testId}-label`)
-    .map((label) => label.textContent ?? "");
-}
-
-/**
- * 出ている Alt / Option の距離の数値を、文字列の昇順に並べたもの。向きは `facing-distances` の
- * 単体で見るので、通しでは並びを見ない。
- *
- * @returns 出ている距離の数値の並び（文字列の昇順）。出ていなければ空
- */
-export function sortedFacingDistanceLabels(): readonly string[] {
-  return [...distanceLabels("facing-distance")].sort();
 }
 
 /**

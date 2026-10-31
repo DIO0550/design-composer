@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { useRef } from "react";
 import { afterEach, expect, test } from "vitest";
 import {
@@ -124,4 +124,21 @@ test("回った要素は、レイアウトの大きさに倍率を掛けた矩�
 
   // 器の左上（10, 20）を原点に置き直すので、(150, 100) は (140, 80) になる
   expect(screen.getByTestId("bounds").textContent).toBe("140,80,200,80");
+});
+
+test("測る対象を変えたあとにウィンドウの大きさが変わると、新しい対象を測り直す", () => {
+  /*
+   * 前後の対象を同じ矩形に描いておく。前の対象を測り直しても値が変わらないので、
+   * 再レンダーが起きず、新しい対象を測り直したかどうかだけが結果に出る。
+   */
+  const bounds = { left: 12, top: 34, width: 200, height: 100 };
+  drawNamed("home", bounds);
+  const about = drawNamed("about", bounds);
+  const { rerender } = render(<BoundsProbe target={Option.some("home")} />);
+  rerender(<BoundsProbe target={Option.some("about")} />);
+
+  stubBounds(about, { left: 20, top: 40, width: 400, height: 200 });
+  fireEvent(globalThis.window, new Event("resize"));
+
+  expect(screen.getByTestId("bounds").textContent).toBe("10,20,400,200");
 });
