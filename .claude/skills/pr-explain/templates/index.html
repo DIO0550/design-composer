@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-mY95Hku4zgwBs+f9JdVoIyQSqRCKsxM0pfj8ClVUqFw='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-DSBHhadVlYuOTAWc7Hd5t7YQoYMN4lTielB8RjlGLXM='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1546,7 +1546,7 @@ button.change-item:hover { background: var(--track); }
       return ids.map((id) => ({ message: messages.get(id), isDrawn: isDrawnMessage(messages.get(id), entryAt) }));
     };
 
-    /** 前後の組(変わったこと・増えた状況が同じ形で持つ)。前後の行と、それが指すやりとり(仕組み)にする。 */
+    /** 前後の組(変わったこと・増えた状況が同じ形で持つ)。前後の行と、それが指すやりとり(仕組みの欄のやりとりのチップになる)にする。 */
     const sidesOf = (source, context) => {
       const before = linesOf(source.before);
       const after = linesOf(source.after);
@@ -1668,8 +1668,7 @@ button.change-item:hover { background: var(--track); }
        * @param destinationsOf ファイルの場所(`{path, lineRange, shas}`)から、sha を書いた順の届く先を返す
        * @param primerPositionAt 技術の手引きの節の id から、その節の位置を引く表(`PrimerTopics.positionsOf`)
        * @returns `{kind: "unwritten"}`(`impact` が無い)か `{kind: "written", title, lead, topics}`。変わったことと増えた状況の節の
-       *   `primers` は、指した技術の手引きの節の位置(`{tab, index, label}`)を書いた順に並べたもの(`primers` に無い id は外す)。
-       *   名前は解説のキーに合わせた(`PrimerTopics` の節の `seeAlso` と同じ)
+       *   `primers` は、指した技術の手引きの節の位置(`{tab, index, label}`)を書いた順に並べたもの(`primers` に無い id は外す)
        */
       create: ({ impact, testAt, entryAt, messages, destinationsOf, primerPositionAt }) => {
         if (impact === undefined) return { kind: "unwritten" };
@@ -2065,6 +2064,7 @@ button.change-item:hover { background: var(--track); }
       PrimerKinds,
       Existing,
       PassageKinds,
+      positionsOf,
       /** 使える解説が無いとき。 */
       Unexplained: Object.freeze({ kind: "none" }),
       /**
@@ -2072,7 +2072,6 @@ button.change-item:hover { background: var(--track); }
        * @param primerTopics `create` が返した、書かれている技術の手引き
        * @returns 言語・フレームワークに節があればそれ、無くてこの PR の実装にあればそれ。どちらにも無ければ言語・フレームワーク
        */
-      positionsOf,
       firstTabOf: (primerTopics) => {
         const hasLanguage = primerTopics.tabs[PrimerKinds.Language].topics.length > 0;
         const hasOnlyCodebase = !hasLanguage && primerTopics.tabs[PrimerKinds.Codebase].topics.length > 0;
@@ -3300,6 +3299,17 @@ button.change-item:hover { background: var(--track); }
 
   /** 構造マップでその流れを選んだ状態にするチップ。変更の経緯の「影響する操作」と、技術の手引きの「構造マップで見る」が使う。 */
   const flowChipOf = (flow, go) => pressable("button", { class: "flow-chip", title: "構造マップでこの流れを見る" }, [flow.label, el("span", { class: "arrow", text: "↗" })], () => go.toFlow(flow.id));
+
+  /**
+   * 技術の手引きの節へ移るチップ。節の題に、移る先のタブの短い名前を添える。振る舞いの「仕組みを知りたいとき」と、技術の手引きの「関連」が使う。
+   * @param position 節の位置(`PrimerTopics.positionsOf` の値)
+   * @param title チップに乗ったときに出す文
+   * @param onPress 押したときに、節の位置を受け取ってその節へ送る処理
+   */
+  const primerTopicChipOf = (position, title, onPress) => pressable("button", { class: "flow-chip", title }, [
+    ...proseParts(position.label),
+    el("span", { class: "arrow", text: PrimerTabTexts[position.tab].chip }),
+  ], () => onPress(position));
 
   /** コミットの解説(なぜ・影響する操作・レビューで見るところ・振る舞いの前後)。 */
   const commitStoryOf = (commit, story) => {
@@ -5854,17 +5864,13 @@ button.change-item:hover { background: var(--track); }
       chip.disabled = !isDrawn;
       return chip;
     };
-    /** 技術の手引きの節へ移るチップ。技術の手引きの「関連」のチップと同じ形で、移る先のタブの短い名前を添える。 */
-    const primerTopicChipOf = (position) => pressable("button", { class: "flow-chip", title: `技術の手引きの「${PrimerTabTexts[position.tab].label}」でこの節を見る` }, [
-      ...proseParts(position.label),
-      el("span", { class: "arrow", text: PrimerTabTexts[position.tab].chip }),
-    ], () => go.toPrimer(position));
-    /** 仕組みの欄。やりとりのチップ → 技術の手引きのチップの順に並べ、見出しの注記には出ている行き先だけを書く。 */
+    /** 仕組みの欄。やりとりのチップ → 技術の手引きのチップの順に並べ、見出しの注記「構造マップ」はやりとりのチップがあるときだけ出す。 */
     const mechanismsBlockOf = (topic) => {
-      const destinations = [...(topic.mechanisms.length === 0 ? [] : ["構造マップ"]), ...(topic.primers.length === 0 ? [] : ["技術の手引き"])];
-      if (destinations.length === 0) return [];
-      const chips = [...topic.mechanisms.map(mechanismChipOf), ...topic.primers.map(primerTopicChipOf)];
-      return [el("div", { class: "side-block" }, [eyebrowOf("仕組みを知りたいとき", destinations.join(" · ")), el("div", { class: "flow-chips" }, chips)])];
+      const chips = [...topic.mechanisms.map(mechanismChipOf), ...topic.primers.map((position) => primerTopicChipOf(position, `技術の手引きの「${PrimerTabTexts[position.tab].label}」でこの節を見る`, go.toPrimer))];
+      if (chips.length === 0) return [];
+      // 技術の手引きの行き先はチップの「言語」/「実装」で示し、注記には足さない(デザイン案の見出しは注記を持たず、そこから新しく離れないため)。
+      const note = topic.mechanisms.length === 0 ? undefined : "構造マップ";
+      return [el("div", { class: "side-block" }, [eyebrowOf("仕組みを知りたいとき", note), el("div", { class: "flow-chips" }, chips)])];
     };
 
     /** 届く先の sha のチップと移るボタン。届かない先は注意を添える。 */
@@ -6051,7 +6057,7 @@ button.change-item:hover { background: var(--track); }
     };
   };
 
-  // 技術の手引きのタブごとの文言。`chip` は関連のチップに添える、移る先のタブの短い名前。
+  // 技術の手引きのタブごとの文言。`chip` は技術の手引きの節へ移るチップ(`primerTopicChipOf`)に添える、移る先のタブの短い名前。
   const PrimerTabTexts = {
     language: {
       label: "言語・フレームワーク",
@@ -6135,10 +6141,7 @@ button.change-item:hover { background: var(--track); }
       const tests = showsTests ? testsBlocksOf(topic.tests, go) : [];
       const showsFlows = isCodebase && topic.flows.length > 0;
       const flows = showsFlows ? [el("div", { class: "side-block" }, [eyebrowOf("構造マップで見る"), el("div", { class: "flow-chips" }, topic.flows.map((flow) => flowChipOf(flow, go)))])] : [];
-      const seeAlsoChips = topic.seeAlso.map((position) => pressable("button", { class: "flow-chip", title: `「${PrimerTabTexts[position.tab].label}」のこの節を見る` }, [
-        ...proseParts(position.label),
-        el("span", { class: "arrow", text: PrimerTabTexts[position.tab].chip }),
-      ], () => showSeeAlso(position)));
+      const seeAlsoChips = topic.seeAlso.map((position) => primerTopicChipOf(position, `「${PrimerTabTexts[position.tab].label}」のこの節を見る`, showSeeAlso));
       const seeAlso = seeAlsoChips.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("関連"), el("div", { class: "flow-chips" }, seeAlsoChips)])];
       const terms = topic.terms.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("用語"), termListOf(topic.terms)])];
       return [occurrencesBlockOf(topic), ...tests, ...flows, ...seeAlso, ...terms];
@@ -6232,7 +6235,7 @@ button.change-item:hover { background: var(--track); }
 
     let currentTab = PrimerTopics.firstTabOf(primerTopics);
     let saved = Object.fromEntries(tabs.map((tab) => [tab, { main: 0, page: 0 }]));
-    const parts = Object.fromEntries(tabs.map((tab) => [tab, tabColumnsOf(tab, primerTopics.tabs[tab], (position) => showTopic(position))]));
+    const parts = Object.fromEntries(tabs.map((tab) => [tab, tabColumnsOf(tab, primerTopics.tabs[tab], (position) => showSeeAlso(position))]));
     const tocNote = el("span", { class: "panel-sub" });
     const tabButtons = tabs.map((tab) => {
       const button = pressable("button", { class: "primer-tab", role: "tab", id: `primer-tab-${tab}`, "aria-controls": `primer-panel-${tab}`, "data-tab": tab }, [
@@ -6264,18 +6267,23 @@ button.change-item:hover { background: var(--track); }
       tocNote.textContent = PrimerTabTexts[currentTab].tocNote;
     };
 
-    /** タブを切り替える。離れるタブの位置(本文の欄とページ全体)を覚え、戻るタブの位置を戻す(初めてなら先頭)。 */
-    const showTab = (tab) => {
-      if (tab === currentTab) return;
-      saved = { ...saved, [currentTab]: { main: main.scrollTop, page: window.scrollY } };
+    /** 今のタブをそのタブにし、そのタブの覚えた位置(本文の欄とページ全体)を戻す(初めてなら先頭)。離れるタブの位置は覚えない。 */
+    const restoreTab = (tab) => {
       currentTab = tab;
       renderTab();
       main.scrollTop = saved[tab].main;
       window.scrollTo(0, saved[tab].page);
     };
 
-    /** 関連のチップ・ほかの画面から、指したタブへ切り替えて(位置の保存と復元を通る)から、その節へ送る。 */
-    const showTopic = (position) => {
+    /** この画面の中でタブを切り替える。離れるタブの位置(本文の欄とページ全体)を覚えてから、戻るタブの位置を戻す。 */
+    const showTab = (tab) => {
+      if (tab === currentTab) return;
+      saved = { ...saved, [currentTab]: { main: main.scrollTop, page: window.scrollY } };
+      restoreTab(tab);
+    };
+
+    /** 関連のチップ。指したタブへ切り替えて(位置の保存と復元を通る)から、その節へ送る。 */
+    const showSeeAlso = (position) => {
       showTab(position.tab);
       parts[position.tab].columns.sendTo(position.index);
     };
@@ -6292,10 +6300,15 @@ button.change-item:hover { background: var(--track); }
       tablist: el("div", { class: "primer-tablist", role: "tablist", "aria-label": "技術の種類" }, tabButtons),
       keepReading,
       /**
-       * ほかの画面から、その節へ送る。
+       * ほかの画面から、その節へ送る。タブが違えばそのタブの覚えた位置を戻してから送り、離れるタブの位置は覚えない。
+       *
+       * 送られてきた時点のページ全体のスクロール量は送ってきた画面のもので、離れるタブの位置ではないため。
        * @param position 節の位置(`PrimerTopics.positionsOf` の値)
        */
-      showTopic,
+      showTopic: (position) => {
+        if (position.tab !== currentTab) restoreTab(position.tab);
+        parts[position.tab].columns.sendTo(position.index);
+      },
     };
   };
 
