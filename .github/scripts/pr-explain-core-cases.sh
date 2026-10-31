@@ -1149,6 +1149,11 @@ const cases = [
     expected: [{ tab: "codebase", index: 1, label: "D" }, { tab: "language", index: 0, label: "A" }],
   },
   {
+    label: "増えた状況が 2 つ以上あるとき、どの増えた状況も自分が書いた技術の手引きの節を引く",
+    actual: () => topicsWithPrimersOf(impactOf({ added: [addedOf("増えた 1"), addedWithPrimers(["d"])] }))[1].primers,
+    expected: [{ tab: "codebase", index: 1, label: "D" }],
+  },
+  {
     label: "技術の手引きの節を書いていない変わったこと・増えた状況では、技術の手引きの節の並びは空",
     actual: () => topicsWithPrimersOf(impactOf({ changed: changedWithPrimers(undefined), added: [addedOf("増えた")] })).map((topic) => topic.primers),
     expected: [[], []],
