@@ -1,0 +1,360 @@
+{
+  "version": 1,
+  "pr": 1235,
+  "sha": "3221d37996b11102cefca3f5ea5b38e31fe6725d",
+  "issue": 1174,
+  "overview": {
+    "title": "libs の代役の生成口を素の関数にする",
+    "lead": "`src/libs/*/fake/` の代役 8 個を、`XxxFake.create(...)` ではなく `createXxxFake(...)` で作るようにした。振る舞いは変わらない。",
+    "before": [
+      {
+        "text": "テストとストーリーは代役を `ClockFake.create(0)` のように、型と同名の const のメンバーから作っていた",
+        "message": "make-fake"
+      },
+      {
+        "text": "libs で「型 + 同名 const + `create`」の形を持つものが 11 個あった(差し替え点 3 + 代役 8)"
+      }
+    ],
+    "after": [
+      {
+        "text": "テストとストーリーは代役を `createClockFake(0)` のように、素の関数で作る",
+        "message": "make-fake"
+      },
+      {
+        "text": "「型 + 同名 const + `create`」の形は差し替え点の `TauriIpc` / `TauriDialog` / `Clock` だけになった"
+      },
+      {
+        "text": "戻り値の型名 `ClockFake` などはそのまま残り、型として使う側は `type` で import する"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "時計の代役",
+        "text": "差し替え点は `Clock` の側にあり、代役はそれを中に持つレコード。`ClockFake` という型そのものの実装は 1 つなので素の関数にした",
+        "go": {
+          "kind": "file",
+          "path": "src/libs/clock/fake/index.ts"
+        }
+      },
+      {
+        "title": "残した同名コンパニオン",
+        "text": "`document-dialog/fake` の `DialogChoice` は値の規則を持つのでスコープ外として残した",
+        "go": {
+          "kind": "file",
+          "path": "src/libs/document-dialog/fake/index.ts"
+        }
+      },
+      {
+        "title": "代役を作る流れ",
+        "text": "テストの準備から代役の口を受け取るまで",
+        "go": {
+          "kind": "flow",
+          "id": "setup"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "libs",
+      "role": "代役 8 個の生成口を素の関数にした。テストの呼び出しの綴りも直した"
+    },
+    {
+      "layer": "features / editor",
+      "role": "ストーリー 2 つとテストの準備で、代役を作る綴りだけを直した"
+    },
+    {
+      "layer": "features / editor/features/document-sync",
+      "role": "フックのテストで、代役を作る綴りだけを直した"
+    },
+    {
+      "layer": "features / editor/features/document-start",
+      "role": "文書を開く流れのテストの準備で、代役を作る綴りだけを直した"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/libs/clock/fake/index.ts",
+      "name": "時計の代役",
+      "role": "手で進める時計と、進める手段・購読の様子を返す",
+      "change": "`ClockFake.create` を `createClockFake` にした"
+    },
+    {
+      "path": "src/libs/document-ipc/fake/index.ts",
+      "name": "文書の入出力の代役",
+      "role": "メモリ上のファイル表で文書の読み書きと監視を代わりに行う",
+      "change": "`DocumentIpcFake.create` を `createDocumentIpcFake` にした"
+    },
+    {
+      "path": "src/libs/tauri-ipc/fake/index.ts",
+      "name": "イベント 1 種類の代役",
+      "role": "イベントを 1 種類だけ配る `TauriIpc` の代役",
+      "change": "`SingleEventIpcFake.create` を `createSingleEventIpcFake` にした"
+    },
+    {
+      "path": "src/libs/app-menu/fake/index.ts",
+      "name": "メニューの代役",
+      "role": "イベント 1 種類の代役の上でメニューの口を作る",
+      "change": "生成口を `createAppMenuFake` にした"
+    },
+    {
+      "path": "src/libs/file-drop/fake/index.ts",
+      "name": "ドロップの代役",
+      "role": "イベント 1 種類の代役の上でドロップの口を作る",
+      "change": "生成口を `createFileDropFake` にした"
+    },
+    {
+      "path": "src/libs/document-dialog/fake/index.ts",
+      "name": "ダイアログの代役",
+      "role": "あらかじめ決めた選択を返すダイアログの代役",
+      "change": "生成口を `createDocumentDialogFake` にした。`DialogChoice` は残した"
+    },
+    {
+      "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "name": "編集画面のテストの準備",
+      "role": "7 種類の代役をまとめて作り、編集画面を描く",
+      "change": "代役を作る綴りを直した"
+    },
+    {
+      "path": "src/features/editor/features/document-sync/hooks/use-elapsed/__tests__/use-elapsed.normal.test.tsx",
+      "name": "経過時間のテスト",
+      "role": "時計の代役を進めて経過時間の表示を確かめる",
+      "change": "代役を作る綴りを直した"
+    }
+  ],
+  "messages": [
+    {
+      "id": "make-fake",
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/clock/fake/index.ts",
+      "kind": "cmd",
+      "name": "時計の代役を作る",
+      "code": "createClockFake()",
+      "via": "call",
+      "returns": "`ClockFake`(時計と進める手段)",
+      "status": "changed"
+    },
+    {
+      "id": "make-ipc-fake",
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "kind": "cmd",
+      "name": "文書の入出力の代役を作る",
+      "code": "createDocumentIpcFake(files)",
+      "via": "call",
+      "returns": "`DocumentIpcFake`",
+      "status": "changed"
+    },
+    {
+      "id": "make-single-event",
+      "from": "src/libs/app-menu/fake/index.ts",
+      "to": "src/libs/tauri-ipc/fake/index.ts",
+      "kind": "cmd",
+      "name": "イベント 1 種類の代役を作る",
+      "code": "createSingleEventIpcFake(MenuCommandEvent)",
+      "via": "call",
+      "returns": "`SingleEventIpcFake`",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "setup",
+      "label": "編集画面のテストで代役を揃える",
+      "steps": [
+        "make-ipc-fake",
+        "make-fake"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "3221d37996b11102cefca3f5ea5b38e31fe6725d",
+      "phase": "core",
+      "role": "代役 8 個の生成口と、その呼び出し 115 箇所を一度に書き換える",
+      "why": "公開している生成口の改名なので、定義と呼び出しを分けると途中のコミットで型検査が落ちる。置換はスクリプトで当てて、件数を grep で検算した",
+      "flows": [
+        "setup"
+      ],
+      "review": [
+        "8 つの fake の差分が、const を関数にした包み直しとインデントだけになっているか",
+        "互換のための同名 const を残していないか(入口が 1 つか)",
+        "型としても使う箇所で `type XxxFake` の import が残っているか"
+      ],
+      "before": [
+        {
+          "text": "代役は `XxxFake.create(...)` で作る",
+          "message": "make-fake"
+        }
+      ],
+      "after": [
+        {
+          "text": "代役は `createXxxFake(...)` で作る",
+          "message": "make-fake"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/libs/clock/fake/index.ts",
+          "start": 40,
+          "end": 40,
+          "text": "doc はそのまま、`create` メソッドを素の関数にした。既定値 `startEpochMs = 0` も元のまま"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "elapsed",
+      "label": "経過時間の表示",
+      "file": "src/features/editor/features/document-sync/hooks/use-elapsed/__tests__/use-elapsed.normal.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "elapsed-advances",
+      "suite": "elapsed",
+      "name": "時計が進むと経過時間も進む",
+      "techniques": [
+        "state"
+      ],
+      "why": "改名のあとも、テストが関数を通して実物の時計の代役に届いていることを示す。test-reviewer が代役の `advanceSeconds` を壊すと、このテストが落ちた",
+      "given": "起点から 4 秒後の時刻で始まる時計の代役",
+      "when": "時計を 1 秒進める",
+      "then": "経過時間が 5 秒と出る",
+      "excerpt": {
+        "path": "src/features/editor/features/document-sync/hooks/use-elapsed/__tests__/use-elapsed.normal.test.tsx",
+        "start": 70,
+        "end": 84,
+        "emphasis": [
+          {
+            "start": 71,
+            "end": 71
+          }
+        ],
+        "text": "test(\"時計が進むと経過時間も進む\", () => {\n  const clock = createClockFake(StartEpochMs + 4000);\n  render(\n    <ElapsedHarness\n      clock={clock.clock}\n      initialSince={Option.some(Instant.create(StartEpochMs))}\n    />,\n  );\n\n  act(() => {\n    clock.advanceSeconds(1);\n  });\n\n  expect(elapsedText()).toBe(\"5:seconds\");\n});"
+      },
+      "targets": [
+        "src/libs/clock/fake/index.ts"
+      ],
+      "covers": [
+        "make-fake"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "アプリを使う人から見た変化は無い",
+    "lead": "テストとストーリーのための部品の作り方を揃えただけで、アプリの画面と操作はどれも変わらない。",
+    "kept": [
+      {
+        "text": "文書を開く・保存する・外で書き換えられた文書を読み直す、の振る舞いは変わらない",
+        "tests": [
+          "elapsed-advances"
+        ]
+      },
+      {
+        "text": "保存してからの経過時間の表示は、これまでどおり時計に合わせて進む",
+        "tests": [
+          "elapsed-advances"
+        ]
+      },
+      {
+        "text": "部品カタログの見た目と並びは変わらない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "id": "function-declaration",
+      "kind": "language",
+      "category": "TypeScript",
+      "label": "関数宣言とオブジェクトのメソッド",
+      "gist": "値を作る入口を、[[オブジェクト|object-literal]]のメソッドとして書くか、`export function` の関数宣言として書くかの違い。呼び出し方が `X.create()` か `createX()` かだけが変わる",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "export function createClockFake(startEpochMs = 0): ClockFake { ... }"
+        },
+        {
+          "kind": "text",
+          "text": "`startEpochMs = 0` は既定値付きの引数で、省いて呼ぶと 0 になる。型と関数は名前の置き場が別なので、型 `ClockFake` と関数 `createClockFake` は同じファイルに並べられる"
+        },
+        {
+          "kind": "memo",
+          "text": "型と同じ名前の const も書けてしまう(TypeScript は型と値の名前を別に持つ)。そのため互換の const を書き戻しても型検査は通る"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/clock/fake/index.ts",
+          "lineRange": {
+            "start": 40,
+            "end": 40
+          },
+          "text": "時計の代役の生成口",
+          "shas": [
+            "3221d37996b11102cefca3f5ea5b38e31fe6725d"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "libs-line"
+      ]
+    },
+    {
+      "id": "libs-line",
+      "kind": "codebase",
+      "category": "libs の口",
+      "label": "差し替え点と素の関数の線",
+      "gist": "同じ型に本物と代役の 2 つの実装がある差し替え点だけを「型 + 同名 const + `create`」にし、実装が 1 つしか無いものは素の関数 `createX` にする",
+      "passages": [
+        {
+          "kind": "rule",
+          "text": "#1065 で本番の口 6 個に当てた線を、この PR で代役 8 個にも当てた。本番かテストかでは例外にしない"
+        },
+        {
+          "kind": "history",
+          "text": "線引きは判例にまだ入っていない。マージ後の振り返りで判例の候補として渡す"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/clock/index.ts",
+          "lineRange": {
+            "start": 24,
+            "end": 30
+          },
+          "text": "差し替え点として残る `Clock` のコンパニオン"
+        },
+        {
+          "path": "src/libs/clock/fake/index.ts",
+          "lineRange": {
+            "start": 40,
+            "end": 40
+          },
+          "text": "素の関数にした時計の代役",
+          "shas": [
+            "3221d37996b11102cefca3f5ea5b38e31fe6725d"
+          ]
+        }
+      ],
+      "status": "changed",
+      "tests": [
+        "elapsed-advances"
+      ],
+      "flows": [
+        "setup"
+      ],
+      "seeAlso": [
+        "function-declaration"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "object-literal",
+      "label": "オブジェクトリテラル",
+      "text": "`{ create() { ... } }` のように波括弧で直接書いたオブジェクト。ここでは名前空間の代わりに使っていた"
+    }
+  ]
+}
