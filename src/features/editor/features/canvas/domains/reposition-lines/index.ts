@@ -1,17 +1,16 @@
 import { Offset } from "@/domains/unit/offset";
-import { SidePair } from "@/domains/unit/side";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import {
   SideSnap,
+  type SnapGuide,
   type SnapGuides,
 } from "@/features/editor/features/canvas/domains/side-snap";
-import { ThinLine } from "@/features/editor/features/canvas/domains/thin-line";
 import { Option } from "@/utils/Option";
 
 /**
  * ノードの座標の置き直しと artboard の移動で運んでいる間に出す線。吸い付いた線と揃え先との
- * 隙間、Alt / Option の距離（除く前）。すべて画面上の px。
+ * 隙間（除く前）、Alt / Option の距離。すべて画面上の px。
  */
 export type RepositionLines = Readonly<{
   snap: SnapGuides;
@@ -76,30 +75,27 @@ export const RepositionLines = {
   },
 
   /**
-   * Alt / Option の距離のうち、揃え先との隙間が同じ線を既に出している向きを除いたもの
-   * （docs/06-ui.md の Alt / Option の距離。同じ線と数値を 2 つ重ねない）。
+   * 揃え先とのガイドのうち、Alt / Option の距離と同じ線上に重なる隙間を除いたもの
+   * （docs/06-ui.md の Alt / Option の距離）。ガイド線は残す。
    *
    * 除いた結果を持たずに毎回計算する。持つと、除く前と除いたあとが食い違う組が書ける。
    *
    * @param lines 運んでいる間に出す線
-   * @returns 隙間と同じ線になる向きを `none` にした距離
+   * @returns 距離と同じ線上に重なる隙間を `none` にしたガイド
    */
-  distanceLinesExceptGaps(lines: RepositionLines): FacingDistances {
-    return FacingDistances.fromFacings((facing) => {
-      const gapLine = Option.flatMap(
-        lines.snap[SidePair.perpendicular(facing.pair)],
-        (guide) => guide.gapLine,
-      );
-      return Option.flatMap(
-        lines.distanceLines[facing.pair][facing.end],
-        (distanceLine) => {
-          const isSameAsGap =
-            Option.isSome(gapLine) &&
-            ThinLine.equals(gapLine.value, distanceLine);
-          return isSameAsGap ? Option.none : Option.some(distanceLine);
-        },
-      );
+  snapGuidesExceptCoincidingGaps(lines: RepositionLines): SnapGuides {
+    const exceptCoinciding = (guide: SnapGuide): SnapGuide => ({
+      guideLine: guide.guideLine,
+      gapLine: Option.flatMap(guide.gapLine, (gapLine) =>
+        FacingDistances.hasCoinciding(lines.distanceLines, gapLine)
+          ? Option.none
+          : Option.some(gapLine),
+      ),
     });
+    return {
+      horizontal: Option.map(lines.snap.horizontal, exceptCoinciding),
+      vertical: Option.map(lines.snap.vertical, exceptCoinciding),
+    };
   },
 } as const;
 
