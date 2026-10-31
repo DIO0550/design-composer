@@ -339,8 +339,10 @@ const tabTopicsOf = (explain, tab) => primerTopicsOf(explain).tabs[tab].topics;
 const shapeReasonOf = (explain) => explained(mapOf(), explainOf(explain)).reading.reason;
 // 技術の手引きの節: 書いた順は a(言語)・c(実装)・b(言語)・d(実装)で、タブの中の位置は a・c が 0、b・d が 1。
 const fourPrimers = [primerOf({ id: "a", label: "A" }), primerOf({ kind: "codebase", id: "c", label: "C" }), primerOf({ id: "b", label: "B" }), primerOf({ kind: "codebase", id: "d", label: "D" })];
-const primerPositionsIn = (impact) => topicsOf(impact, { map: mapOf(), explain: { primers: fourPrimers } })[0].primers;
+const topicsWithPrimersOf = (impact) => topicsOf(impact, { map: mapOf(), explain: { primers: fourPrimers } });
+const primerPositionsIn = (impact) => topicsWithPrimersOf(impact)[0].primers;
 const changedWithPrimers = (primers) => ({ before: [], after: [{ text: "後" }], primers });
+const addedWithPrimers = (primers) => ({ ...addedOf("増えた"), primers });
 const passageExcerpt = (extra = {}) => ({ kind: "excerpt", excerpt: { path: "a.ts", start: 10, end: 14, ...extra } });
 // 出てくる場所のコミットへの届き方。地図のコミットの files はパス(改名なら変更前のパスも)だけを見る。
 const commitTouching = (digit, files, extra = {}) => ({ ...commitOf(digit), files, ...extra });
@@ -1138,17 +1140,17 @@ const cases = [
   },
   {
     label: "primers に無い id は、増えた状況の技術の手引きの節にも入れない",
-    actual: () => primerPositionsIn(impactOf({ added: [{ ...addedOf("増えた"), primers: ["ghost", "b"] }] })),
+    actual: () => primerPositionsIn(impactOf({ added: [addedWithPrimers(["ghost", "b"])] })),
     expected: [{ tab: "language", index: 1, label: "B" }],
   },
   {
     label: "増えた状況の技術の手引きの節も、書いた順に、指した先のタブ・タブの中の位置・題になる",
-    actual: () => primerPositionsIn(impactOf({ added: [{ ...addedOf("増えた"), primers: ["d", "a"] }] })),
+    actual: () => primerPositionsIn(impactOf({ added: [addedWithPrimers(["d", "a"])] })),
     expected: [{ tab: "codebase", index: 1, label: "D" }, { tab: "language", index: 0, label: "A" }],
   },
   {
     label: "技術の手引きの節を書いていない変わったこと・増えた状況では、技術の手引きの節の並びは空",
-    actual: () => topicsOf(impactOf({ changed: changedWithPrimers(undefined), added: [addedOf("増えた")] }), { map: mapOf(), explain: { primers: fourPrimers } }).map((topic) => topic.primers),
+    actual: () => topicsWithPrimersOf(impactOf({ changed: changedWithPrimers(undefined), added: [addedOf("増えた")] })).map((topic) => topic.primers),
     expected: [[], []],
   },
   {
@@ -1158,7 +1160,7 @@ const cases = [
   },
   {
     label: "増えた状況の技術の手引きの節の要素が文字列でなければ、理由はその道筋",
-    actual: () => shapeReasonOf({ impact: impactOf({ added: [{ ...addedOf("増えた"), primers: [5] }] }) }),
+    actual: () => shapeReasonOf({ impact: impactOf({ added: [addedWithPrimers([5])] }) }),
     expected: { kind: "shape", key: "impact.added[].primers" },
   },
   {
