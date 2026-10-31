@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import { SidePairs } from "@/domains/unit/side";
+import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import type {
   DraggedNode,
@@ -9,6 +10,7 @@ import type {
 import type { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
 import type { RepositionTarget } from "@/features/editor/features/canvas/domains/reposition-target";
 import type { SnapGuides } from "@/features/editor/features/canvas/domains/side-snap";
+import type { ThinLine } from "@/features/editor/features/canvas/domains/thin-line";
 import { Option } from "@/utils/Option";
 import { Carrying, DropEdit, NodeDrag } from "../index";
 
@@ -31,15 +33,26 @@ const SampleDropTarget: DropTarget = {
 /** ツリーへ挿す側の落とし方。座標の置き直しは別のファイルで見る。 */
 const SampleDrop = DropEdit.intoTree(MovingTitle, SampleDropTarget);
 
+/** `SampleGuides` の、左右の辺が揃った縦のガイド線。 */
+const SampleGuideLine: CanvasBounds = {
+  left: 249,
+  top: 72,
+  width: 2,
+  height: 168,
+};
+
+/** `SampleGuides` の、揃え先との隙間の線。 */
+const SampleGapLine: ThinLine = {
+  along: SidePairs.Vertical,
+  at: 260,
+  span: { min: 84, max: 200 },
+};
+
 /** 左右の辺が揃って縦線が 1 本と、揃え先との隙間が出ている状態。運んでいる間だけの提示。 */
 const SampleGuides: SnapGuides = {
   horizontal: Option.some({
-    guideLine: { left: 249, top: 72, width: 2, height: 168 },
-    gapLine: Option.some({
-      along: SidePairs.Vertical,
-      at: 260,
-      span: { min: 84, max: 200 },
-    }),
+    guideLine: SampleGuideLine,
+    gapLine: Option.some(SampleGapLine),
   }),
   vertical: Option.none,
 };
@@ -62,12 +75,14 @@ const SampleDistances: FacingDistances = {
   },
   vertical: {
     start: Option.none,
-    end: Option.some({
-      along: SidePairs.Vertical,
-      at: 260,
-      span: { min: 84, max: 200 },
-    }),
+    end: Option.some(SampleGapLine),
   },
+};
+
+/** 揃った線と隙間があり、Alt / Option の距離も測った状態。 */
+const SampleMeasuredRepositionLines: RepositionLines = {
+  snap: SampleGuides,
+  distanceLines: SampleDistances,
 };
 
 /** 揃った線が 1 つも無い状態。 */
@@ -251,23 +266,25 @@ test("座標を置き直す落とし方は、揃った線に引くガイド線�
 });
 
 test("座標を置き直す落とし方は、Alt / Option の距離をすべて答える", () => {
-  const edit = DropEdit.reposition("title", SampleRepositionTarget, {
-    snap: SampleGuides,
-    distanceLines: SampleDistances,
-  });
+  const edit = DropEdit.reposition(
+    "title",
+    SampleRepositionTarget,
+    SampleMeasuredRepositionLines,
+  );
 
   expect(DropEdit.facingDistances(edit)).toEqual(SampleDistances);
 });
 
 test("座標を置き直す落とし方は、Alt / Option の距離と同じ線上に重なる隙間を除き、ガイド線は残したガイドを答える", () => {
-  const edit = DropEdit.reposition("title", SampleRepositionTarget, {
-    snap: SampleGuides,
-    distanceLines: SampleDistances,
-  });
+  const edit = DropEdit.reposition(
+    "title",
+    SampleRepositionTarget,
+    SampleMeasuredRepositionLines,
+  );
 
   expect(DropEdit.snapGuides(edit)).toEqual({
     horizontal: Option.some({
-      guideLine: { left: 249, top: 72, width: 2, height: 168 },
+      guideLine: SampleGuideLine,
       gapLine: Option.none,
     }),
     vertical: Option.none,
@@ -279,10 +296,11 @@ test("運んでいる間は、座標を置き直す落とし方の距離を答�
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
     Carrying.droppable(
-      DropEdit.reposition("title", SampleRepositionTarget, {
-        snap: SampleGuides,
-        distanceLines: SampleDistances,
-      }),
+      DropEdit.reposition(
+        "title",
+        SampleRepositionTarget,
+        SampleMeasuredRepositionLines,
+      ),
     ),
   );
 

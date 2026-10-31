@@ -11,23 +11,29 @@ import { Option } from "@/utils/Option";
 import { RepositionLines } from "../index";
 
 /**
- * 親とその直下の兄弟へ吸い付かせ、Alt / Option の距離も測ったときに出すガイド。
+ * 親とその直下の兄弟へ吸い付かせたときに出すガイド。
  *
- * @param placement 寄せる前の運んでいるもの・落とし先の親・その親の直下の兄弟
+ * @param placement 寄せる前の運んでいるもの・落とし先の親・その親の直下の兄弟と、
+ *   Alt / Option の距離を測るか
  * @returns Alt / Option の距離と同じ線上に重なる隙間を除いたガイド
  */
 function snapGuidesAt({
   moving,
   parentBounds,
   siblings,
+  measuresDistances,
 }: Readonly<{
   moving: CanvasBounds;
   parentBounds: CanvasBounds;
   siblings: readonly CanvasBounds[];
+  measuresDistances: boolean;
 }>) {
+  const distanceTargets = measuresDistances
+    ? Option.some({ kind: "within-parent" as const, parentBounds, siblings })
+    : Option.none;
   const snapped = RepositionLines.toSnapped(
     SideSnap.withSiblings(SideSnap.create(moving, [parentBounds]), siblings),
-    Option.some({ kind: "within-parent", parentBounds, siblings }),
+    distanceTargets,
   );
   return RepositionLines.snapGuidesExceptCoincidingGaps(snapped.lines);
 }
@@ -41,17 +47,20 @@ const Below: CanvasBounds = { left: 50, top: 60, width: 30, height: 20 };
 /** 寄せる前の運んでいるもの（左右 52〜72・上下 10〜20）。 */
 const Moving: CanvasBounds = { left: 52, top: 10, width: 20, height: 10 };
 
-/** 手で組むガイドの隙間（縦に伸びる・左右 60・上下 20〜60）。 */
-const HandGap: ThinLine = {
+/**
+ * `Moving` の左辺が `Below` へ寄ったときの、揃え先 `Below` との隙間の線（縦に伸びる・左右 60・
+ * 上下 20〜60）。手で組むガイドの隙間にも使う。
+ */
+const BelowGap: ThinLine = {
   along: SidePairs.Vertical,
   at: 60,
   span: { min: 20, max: 60 },
 };
 
-/** 手で組むガイド（左右 60 に縦のガイド線、`HandGap` の隙間）。 */
+/** 手で組むガイド（左右 60 に縦のガイド線、`BelowGap` の隙間）。 */
 const HandGuide: SnapGuide = {
   guideLine: { left: 59, top: 0, width: 2, height: 100 },
-  gapLine: Option.some(HandGap),
+  gapLine: Option.some(BelowGap),
 };
 
 test("揃え先と同じ相手までの距離が出ている向きでは、隙間を出さずガイド線は残す", () => {
@@ -60,9 +69,14 @@ test("揃え先と同じ相手までの距離が出ている向きでは、隙�
     moving: Moving,
     parentBounds: Parent,
     siblings: [Below],
+    measuresDistances: true,
   });
 
-  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);
+  // ガイド線は Below の左辺（左右 50）に、運んでいるもの（上下 10〜20）から Below まで引く
+  expect(Option.unwrap(guides.horizontal)).toEqual({
+    guideLine: { left: 49, top: 10, width: 2, height: 70 },
+    gapLine: Option.none,
+  });
 });
 
 test("揃え先より近い兄弟までの距離が、直交方向 5px の差で同じ線上に重なると、隙間を出さない", () => {
@@ -73,6 +87,7 @@ test("揃え先より近い兄弟までの距離が、直交方向 5px の差で
     moving: Moving,
     parentBounds: Parent,
     siblings: [Below, nearer],
+    measuresDistances: true,
   });
 
   expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);
@@ -86,6 +101,7 @@ test("直交方向の差がちょうど 8px の兄弟までの距離なら、隙
     moving: Moving,
     parentBounds: Parent,
     siblings: [Below, nearer],
+    measuresDistances: true,
   });
 
   expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);
@@ -99,14 +115,11 @@ test("直交方向の差が 8px を超える兄弟までの距離なら、隙間
     moving: Moving,
     parentBounds: Parent,
     siblings: [Below, nearer],
+    measuresDistances: true,
   });
 
   expect(Option.unwrap(guides.horizontal).gapLine).toEqual(
-    Option.some({
-      along: SidePairs.Vertical,
-      at: 60,
-      span: { min: 20, max: 60 },
-    }),
+    Option.some(BelowGap),
   );
 });
 
@@ -123,6 +136,7 @@ test("親の縁との隙間も、同じ線上に重なる距離が出ていれ�
     moving: { left: 1, top: 110, width: 20, height: 10 },
     parentBounds,
     siblings: [right],
+    measuresDistances: true,
   });
 
   expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);
@@ -136,27 +150,22 @@ test("横に測った隙間も、同じ線上に重なる距離が出ていれ�
     moving: { left: 50, top: 30, width: 20, height: 10 },
     parentBounds: Parent,
     siblings: [right],
+    measuresDistances: true,
   });
 
   expect(Option.unwrap(guides.vertical).gapLine).toEqual(Option.none);
 });
 
 test("Alt / Option で距離を測らない回は、隙間をそのまま出す", () => {
-  const snapped = RepositionLines.toSnapped(
-    SideSnap.withSiblings(SideSnap.create(Moving, [Parent]), [Below]),
-    Option.none,
-  );
+  const guides = snapGuidesAt({
+    moving: Moving,
+    parentBounds: Parent,
+    siblings: [Below],
+    measuresDistances: false,
+  });
 
-  expect(
-    Option.unwrap(
-      RepositionLines.snapGuidesExceptCoincidingGaps(snapped.lines).horizontal,
-    ).gapLine,
-  ).toEqual(
-    Option.some({
-      along: SidePairs.Vertical,
-      at: 60,
-      span: { min: 20, max: 60 },
-    }),
+  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(
+    Option.some(BelowGap),
   );
 });
 
@@ -177,7 +186,7 @@ test("隙間と同じ向きの距離が反対側にあり範囲が離れてい�
   });
 
   expect(Option.unwrap(guides.horizontal).gapLine).toEqual(
-    Option.some(HandGap),
+    Option.some(BelowGap),
   );
 });
 
@@ -198,6 +207,6 @@ test("直交する向きの距離が近い位置にあっても、隙間は出�
   });
 
   expect(Option.unwrap(guides.horizontal).gapLine).toEqual(
-    Option.some(HandGap),
+    Option.some(BelowGap),
   );
 });

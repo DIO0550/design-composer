@@ -103,5 +103,9 @@ test("揃え先との隙間と同じ線になる向きにも、距離を出す",
 test("同じ線の距離が出ているとき、ガイドはガイド線を残して隙間を出さない", () => {
   const guides = ArtboardDrag.snapGuides(draggingAlignedWithAbove());
 
-  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);
+  // ガイド線は上の相手の左辺（左右 200）に、上の相手から運んでいるものまで引く
+  expect(Option.unwrap(guides.horizontal)).toEqual({
+    guideLine: { left: 199, top: -100, width: 2, height: 240 },
+    gapLine: Option.none,
+  });
 });
