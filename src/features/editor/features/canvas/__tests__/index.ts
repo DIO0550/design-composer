@@ -17,8 +17,10 @@ export {
 } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 export {
   drag,
+  holdAlt,
   movePointer,
   pressPointer,
+  releaseAlt,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
 export {
