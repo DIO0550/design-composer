@@ -78,10 +78,14 @@ export const RepositionLines = {
    * 揃え先とのガイドのうち、Alt / Option の距離と同じ線上に重なる隙間を除いたもの
    * （docs/06-ui.md の Alt / Option の距離）。ガイド線は残す。
    *
+   * 比べるのは丸める前の距離の線。表示で丸めて消える距離（ドキュメント上で 0.5px 未満）でも、
+   * 同じ線上に重なる隙間は除く。倍率を持たないので表示される数値を知らないため
+   * （docs/06-ui.md の Alt / Option の距離の子項目）。
+   *
    * 除いた結果を持たずに毎回計算する。持つと、除く前と除いたあとが食い違う組が書ける。
    *
    * @param lines 運んでいる間に出す線
-   * @returns 距離と同じ線上に重なる隙間を `none` にしたガイド
+   * @returns ガイド線は残し、Alt / Option の距離と同じ線上に重なる隙間（`gapLine`）を `none` にしたガイド
    */
   snapGuidesExceptCoincidingGaps(lines: RepositionLines): SnapGuides {
     const exceptCoinciding = (guide: SnapGuide): SnapGuide => ({

@@ -41,8 +41,8 @@ export type SideSnap = Readonly<{
 export type SnapGuide = Readonly<{
   guideLine: CanvasBounds;
   /**
-   * 揃え先との隙間に引く短い線。揃え先と重なっている / 接している（小数 6 桁へ丸めて 0 以下）/
-   * Alt / Option の距離と同じ線上に重なるので表示から外した隙間（`RepositionLines`）なら `none`
+   * 揃え先との隙間に引く短い線。揃え先と重なっている / 接している（小数 6 桁へ丸めて 0 以下）
+   * なら `none`
    */
   gapLine: Option<ThinLine>;
 }>;
@@ -212,9 +212,8 @@ export const SideSnap = {
    * @param guides 軸ごとのスマートガイド
    * @param pair 見る軸（揃った線を挟む辺の組）
    * @param view 割り戻しに使う倍率を持つ表示
-   * @returns 隙間の短い線と数値。その軸に揃った線が無い / 揃え先と重なっている・接している
-   *   （小数 6 桁へ丸めて 0 以下）/ Alt / Option の距離と同じ線上に重なるので表示から外した
-   *   （`RepositionLines`）/ ドキュメント上の px へ丸めると 0 になるなら `none`
+   * @returns 隙間の短い線と数値。その軸に揃った線が無い / その軸の隙間（`gapLine`）が `none` /
+   *   ドキュメント上の px へ丸めると 0 になるなら `none`
    */
   toGapReadout(
     guides: SnapGuides,
