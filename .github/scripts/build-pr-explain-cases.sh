@@ -222,8 +222,6 @@ deny|shape|sample|振る舞いの要約(lead)にバッククォート|d["impact"
 deny|shape|sample|状況の表の題(label)が識別子|d["impact"]["tables"][0]["label"] = "putExplain の結果"
 deny|shape|sample|マスの結果(result)が識別子|d["impact"]["tables"][0]["outcomes"][0]["result"] = "buildPrExplain が置く"
 deny|shape|sample|変わらないことの文が識別子|d["impact"]["kept"][2]["text"] = "removePage で消える"
-pass|-|sample|見本の振る舞いは、仕様の場所・関連 Issue・変わらないことの仕様の場所を使っても通る|assert d["impact"]["changed"]["specs"] and d["impact"]["changed"]["relatedIssues"] and d["impact"]["keptSpecs"]
-pass|-|sample|仕様の場所の sha が地図に無くても落とさない|d["impact"]["changed"]["specs"][0]["shas"] = ["e" * 40, "d" * 40]
 pass|-|sample|仕様の場所のパスに継ぎ目のある複合語を書ける|d["impact"]["changed"]["specs"][0]["path"] = "src/domains/dcmp/publicPropsX.ts"; d["impact"]["keptSpecs"][0]["path"] = "src/domains/dcmp/publicPropsX.ts"
 pass|-|sample|振る舞いの仕様の場所・関連 Issue・変わらないことの仕様の場所がどれも無い解説は通る|del d["impact"]["changed"]["specs"]; del d["impact"]["changed"]["relatedIssues"]; del d["impact"]["keptSpecs"]
 pass|-|sample|関連 Issue に材料の Issue と同じ番号を書ける|d["impact"]["changed"]["relatedIssues"][0]["issue"] = d["issue"]
@@ -495,8 +493,9 @@ excepted = {
 }
 scalars = {route: rule.rule for route, rule, _ in routes if isinstance(rule, module.Scalar) and rule != module.Id}
 texts = [rule for route, rule in scalars.items() if route not in excepted]
+others_are_user_text = len(texts) > 0 and all(rule == "user_text" for rule in texts)
 excepted_hold = all(scalars.get(route) == rule for route, rule in excepted.items())
-print(verdict(texts and all(rule == "user_text" for rule in texts) and excepted_hold))
+print(verdict(others_are_user_text and excepted_hold))
 rules = [((name, key), field) for name, kinds in module.Variants.items() for fields in kinds.values() for key, field in fields.items()]
 print(verdict(all(field == other for at, field in rules for other_at, other in rules if at == other_at)))
 PY

@@ -256,6 +256,14 @@ ImpactSides: dict[str, Field] = {
     "text": may(UserText),
 }
 
+# 根拠として挙げる仕様の場所(振る舞いの変わったこと・変わらないことが同じ形で持つ)。`locator` はファイルの中の位置を
+# 見出しの言葉で書く(行番号は持たない)。
+CitedSpec: dict[str, Field] = {
+    "path": need(Text),
+    "locator": need(UserText),
+    "text": need(UserText),
+}
+
 # 解説の形(`pr-explain` スキルの「explain.json の形」の表を、検査が読む形にしたもの)。
 Shapes: dict[str, dict[str, Field]] = {
     "Explain": {
@@ -320,14 +328,9 @@ Shapes: dict[str, dict[str, Field]] = {
     },
     "AddedSituation": {"label": need(UserText), **ImpactSides, "tests": may(Many(Id, distinct=True))},
     "KeptLine": {"text": need(UserText), "tests": may(Many(Id, distinct=True))},
-    # `locator` はファイルの中の位置を見出しの言葉で書く(行番号は持たない)。`shas` は地図と照合しない(地図を指す参照)。
-    "ChangedSpec": {
-        "path": need(Text),
-        "locator": need(UserText),
-        "text": need(UserText),
-        "shas": need(Many(Sha, least=1, distinct=True)),
-    },
-    "KeptSpec": {"path": need(Text), "locator": need(UserText), "text": need(UserText)},
+    # `shas` は地図と照合しない(地図を指す参照)。
+    "ChangedSpec": {**CitedSpec, "shas": need(Many(Sha, least=1, distinct=True))},
+    "KeptSpec": CitedSpec,
     "RelatedIssue": {"issue": need(Count), "text": need(UserText)},
     "Highlight": {"title": need(Heading), "text": need(Text), "go": need(Variant("Target"))},
     "Feature": {"id": need(Id), "label": need(Heading), "role": need(Text)},
@@ -523,25 +526,25 @@ def same_sides_problem(value: dict) -> str | None:
     return None
 
 
-def repeated_places(specs: list[dict]) -> list[tuple[str, str]]:
-    """仕様の場所のうち、パスと位置(`path`・`locator`)の組が 2 回以上出たもの。"""
-    return repeated([(spec["path"], spec["locator"]) for spec in specs])
+def repeated_specs_problem_in(value: dict, key: str) -> str | None:
+    """`value[key]` の仕様の場所に、パスと位置(`path`・`locator`)の組を 2 回書いていないかを見る。書いていなければ None。"""
+    twice = repeated([(spec["path"], spec["locator"]) for spec in value.get(key, [])])
+    if twice:
+        return f"{key} の {', '.join(f'{path}「{locator}」' for path, locator in twice)} を 2 回以上書いている"
+    return None
 
 
-def spelled_places(places: list[tuple[str, str]]) -> str:
-    """仕様の場所の組を、報告に出す綴りにする。"""
-    return ", ".join(f"{path}「{locator}」" for path, locator in places)
+def repeated_specs_problem(changed: dict) -> str | None:
+    """変わったことの仕様の場所に、パスと位置の組を 2 回書いていないかを見る。"""
+    return repeated_specs_problem_in(changed, "specs")
 
 
-def repeated_evidence_problem(changed: dict) -> str | None:
-    """変わったことの仕様の場所(パスと位置の組)と関連 Issue(番号)を、それぞれ 2 回書いていないかを見る。"""
-    places = repeated_places(changed.get("specs", []))
-    issues = repeated([related["issue"] for related in changed.get("relatedIssues", [])])
-    problems = [
-        *([f"specs の {spelled_places(places)} を 2 回以上書いている"] if places else []),
-        *([f"relatedIssues の Issue {', '.join(f'#{issue}' for issue in issues)} を 2 回以上書いている"] if issues else []),
-    ]
-    return " / ".join(problems) if problems else None
+def repeated_issue_numbers_problem(changed: dict) -> str | None:
+    """変わったことの関連 Issue に、同じ番号を 2 回書いていないかを見る。"""
+    twice = repeated([related["issue"] for related in changed.get("relatedIssues", [])])
+    if twice:
+        return f"relatedIssues の Issue {', '.join(f'#{issue}' for issue in twice)} を 2 回以上書いている"
+    return None
 
 
 def kept_specs_problem(impact: dict) -> str | None:
@@ -553,8 +556,7 @@ def kept_specs_problem(impact: dict) -> str | None:
         return None
     if not impact.get("kept"):
         return "keptSpecs は kept を 1 行以上書いたときだけ書く(行の無い変わらないことの節は作らない)"
-    places = repeated_places(impact["keptSpecs"])
-    return f"keptSpecs の {spelled_places(places)} を 2 回以上書いている" if places else None
+    return repeated_specs_problem_in(impact, "keptSpecs")
 
 
 # キーごとの形が合ったオブジェクトに、キーをまたいで当てる規則。
@@ -566,7 +568,7 @@ CrossChecks: dict[str, tuple[Callable[[dict], str | None], ...]] = {
     "SituationTable": (repeated_head_ids_problem, outcome_grid_problem),
     "SituationOutcome": (same_was_problem,),
     "Impact": (kept_specs_problem,),
-    "ImpactChange": (same_sides_problem, repeated_evidence_problem),
+    "ImpactChange": (same_sides_problem, repeated_specs_problem, repeated_issue_numbers_problem),
     "AddedSituation": (same_sides_problem,),
 }
 
