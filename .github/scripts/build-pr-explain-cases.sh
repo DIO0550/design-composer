@@ -117,7 +117,7 @@ verdict() {
 cases="$(cat <<'CASES'
 pass|-|sample|見本(Target の 5 つの kind をすべて使う)は通る|assert sorted(h["go"]["kind"] for h in d["overview"]["highlights"]) == ["feature", "file", "flow", "layer", "message"]
 pass|-|minimal|必須のキーだけの解説は通る|
-pass|-|sample|地図にしか無いもの(commitStory の sha・Note のパスと行・Target の layer / file・LayerRole・concept)は落とさない|d["commitStories"][0]["sha"] = "e" * 40; d["tests"][0]["commit"] = "e" * 40; d["commitStories"][0]["notes"][0].update(path="no/such.ts", start=900, end=901); d["overview"]["highlights"][1]["go"]["layer"] = "地図に無い層"; d["overview"]["highlights"][2]["go"]["path"] = "no/such"; d["layerRoles"][0]["layer"] = "地図に無い層"; d["concepts"].append({"path": "no/such.ts", "name": "無い", "role": "地図に無い"})
+pass|-|sample|地図にしか無いもの(commitStory の sha・Note のパスと行・Target の layer / file・LayerRole・concept・仕様の場所の sha)は落とさない|d["impact"]["changed"]["specs"][0]["shas"] = ["d" * 40]; d["commitStories"][0]["sha"] = "e" * 40; d["tests"][0]["commit"] = "e" * 40; d["commitStories"][0]["notes"][0].update(path="no/such.ts", start=900, end=901); d["overview"]["highlights"][1]["go"]["layer"] = "地図に無い層"; d["overview"]["highlights"][2]["go"]["path"] = "no/such"; d["layerRoles"][0]["layer"] = "地図に無い層"; d["concepts"].append({"path": "no/such.ts", "name": "無い", "role": "地図に無い"})
 deny|shape|sample|JSON として読めない|raw = "{"
 deny|shape|sample|version が 1 でない|d["version"] = 2
 deny|shape|sample|必須のキー(overview)が無い|del d["overview"]
@@ -186,7 +186,7 @@ pass|-|sample|名前の 1 語の識別子(Result)は検査しない|d["concepts"
 pass|-|sample|名前に大文字だけの略語(UI 案・VRT)は書ける|d["concepts"][0]["name"] = "UI 案"; d["features"][0]["label"] = "VRT"
 pass|-|sample|説明文(concept の role)の識別子は検査しない|d["concepts"][0]["role"] = "TokenTemplate を組み立てる"
 pass|-|sample|テスト名(test の name)の識別子は検査しない|d["tests"][0]["name"] = "sortBy で並べ替えたとき順序が保たれる"
-pass|-|sample|振る舞い(impact)の見本(任意のキーをすべて使う)は通る|assert set(d["impact"]) == {"title", "lead", "changed", "tables", "added", "kept"} and "note" in d["impact"]["tables"][0]["rowHeads"][1] and any("situation" in o for o in d["impact"]["tables"][0]["outcomes"])
+pass|-|sample|振る舞い(impact)の見本(任意のキーをすべて使う)は通る|assert set(d["impact"]) == {"title", "lead", "changed", "tables", "added", "kept", "keptSpecs"} and {"specs", "relatedIssues"} <= set(d["impact"]["changed"]) and "note" in d["impact"]["tables"][0]["rowHeads"][1] and any("situation" in o for o in d["impact"]["tables"][0]["outcomes"])
 pass|-|sample|振る舞いが題と要約だけでも通る|d["impact"] = {"title": "題", "lead": "要約"}
 pass|-|sample|状況の表の行と列で同じ id を使える(軸ごとに別の名前空間)|ids = {"mapped": "passing", "unmapped": "failing"}; t = d["impact"]["tables"][0]; [h.update(id=ids[h["id"]]) for h in t["columnHeads"]]; [o.update(columnHead=ids[o["columnHead"]]) for o in t["outcomes"]]
 pass|-|sample|変わらないことのテストが未実装のものだけでも通る|d["impact"]["kept"][0]["tests"] = ["stale"]
@@ -222,6 +222,33 @@ deny|shape|sample|振る舞いの要約(lead)にバッククォート|d["impact"
 deny|shape|sample|状況の表の題(label)が識別子|d["impact"]["tables"][0]["label"] = "putExplain の結果"
 deny|shape|sample|マスの結果(result)が識別子|d["impact"]["tables"][0]["outcomes"][0]["result"] = "buildPrExplain が置く"
 deny|shape|sample|変わらないことの文が識別子|d["impact"]["kept"][2]["text"] = "removePage で消える"
+pass|-|sample|見本の振る舞いは、仕様の場所・関連 Issue・変わらないことの仕様の場所を使っても通る|assert d["impact"]["changed"]["specs"] and d["impact"]["changed"]["relatedIssues"] and d["impact"]["keptSpecs"]
+pass|-|sample|仕様の場所の sha が地図に無くても落とさない|d["impact"]["changed"]["specs"][0]["shas"] = ["e" * 40, "d" * 40]
+pass|-|sample|仕様の場所のパスに継ぎ目のある複合語を書ける|d["impact"]["changed"]["specs"][0]["path"] = "src/domains/dcmp/publicPropsX.ts"; d["impact"]["keptSpecs"][0]["path"] = "src/domains/dcmp/publicPropsX.ts"
+pass|-|sample|振る舞いの仕様の場所・関連 Issue・変わらないことの仕様の場所がどれも無い解説は通る|del d["impact"]["changed"]["specs"]; del d["impact"]["changed"]["relatedIssues"]; del d["impact"]["keptSpecs"]
+pass|-|sample|関連 Issue に材料の Issue と同じ番号を書ける|d["impact"]["changed"]["relatedIssues"][0]["issue"] = d["issue"]
+pass|-|sample|同じパスでも位置が違えば仕様の場所を 2 つ書ける|s = d["impact"]["changed"]["specs"]; s.append({**s[0], "locator": "別の節"}); k = d["impact"]["keptSpecs"]; k.append({**k[0], "locator": "別の節"})
+pass|-|sample|変わったことと変わらないことに同じ仕様の場所を書ける|s = d["impact"]["changed"]["specs"][0]; d["impact"]["keptSpecs"][0].update(path=s["path"], locator=s["locator"])
+deny|shape|sample|仕様の場所に shas が無い|del d["impact"]["changed"]["specs"][0]["shas"]
+deny|shape|sample|仕様の場所の shas が空|d["impact"]["changed"]["specs"][0]["shas"] = []
+deny|shape|sample|仕様の場所の sha が 40 桁でない|d["impact"]["changed"]["specs"][0]["shas"] = ["89abcdef"]
+deny|shape|sample|仕様の場所の shas に同じ sha を 2 回|s = d["impact"]["changed"]["specs"][0]; s["shas"] = [s["shas"][0], s["shas"][0]]
+deny|shape|sample|変わらないことの仕様の場所に shas を書く|d["impact"]["keptSpecs"][0]["shas"] = [d["impact"]["changed"]["specs"][0]["shas"][0]]
+deny|shape|sample|仕様の場所に位置(locator)が無い|del d["impact"]["changed"]["specs"][0]["locator"]
+deny|shape|sample|仕様の場所にパス(path)が無い|del d["impact"]["changed"]["specs"][0]["path"]
+deny|shape|sample|仕様の場所の文にバッククォート|d["impact"]["changed"]["specs"][0]["text"] = "`put-explain` の記述を書き換えた"
+deny|shape|sample|仕様の場所の位置が識別子|d["impact"]["changed"]["specs"][0]["locator"] = "buildPrExplain の節"
+deny|shape|sample|変わらないことの仕様の場所の位置が識別子|d["impact"]["keptSpecs"][0]["locator"] = "buildPrExplain の節"
+deny|shape|sample|関連 Issue の番号が 0|d["impact"]["changed"]["relatedIssues"][0]["issue"] = 0
+deny|shape|sample|関連 Issue の番号が文字列|d["impact"]["changed"]["relatedIssues"][0]["issue"] = "#996"
+deny|shape|sample|関連 Issue に文(text)が無い|del d["impact"]["changed"]["relatedIssues"][0]["text"]
+deny|shape|sample|関連 Issue の文が識別子|d["impact"]["changed"]["relatedIssues"][0]["text"] = "putExplain で先送りした件"
+deny|shape|sample|増えた状況に仕様の場所(specs)を書く|d["impact"]["added"][0]["specs"] = [dict(d["impact"]["changed"]["specs"][0])]
+deny|shape|sample|変わったことの仕様の場所で、同じパスと位置を 2 回書く|s = d["impact"]["changed"]["specs"]; s.append({**s[0], "text": "別の文"})
+deny|shape|sample|関連 Issue で同じ番号を 2 回書く|r = d["impact"]["changed"]["relatedIssues"]; r.append({**r[0], "text": "別の文"})
+deny|shape|sample|変わらないことの仕様の場所で、同じパスと位置を 2 回書く|k = d["impact"]["keptSpecs"]; k.append({**k[0], "text": "別の文"})
+deny|shape|sample|変わらないことの行(kept)を書かずに、変わらないことの仕様の場所を書く|del d["impact"]["kept"]
+deny|shape|sample|変わらないことの行(kept)が空なのに、変わらないことの仕様の場所を書く|d["impact"]["kept"] = []
 deny|meta|sample|pr が公開先と違う|d["pr"] = d["pr"] + 1
 deny|ref|sample|message の from が concepts に無い|d["messages"][0]["from"] = "no/such"
 deny|ref|sample|message の to が concepts に無い|d["messages"][0]["to"] = "no/such"
@@ -447,8 +474,10 @@ bad_args=deny
 report pass "$bad_args" "書き出し先(--out)の無い呼び出しは引数の誤り"
 
 # 検査の表そのものを見るケース。検査を 1 回だけ読み込み、ケースごとに `pass` / `deny` を 1 行ずつ出す。
-# - 振る舞い(impact)の型の文字列のキーは、どれも使う人の言葉(`user_text`)で書く。型を足したときに規則を付け忘れると、
-#   コードの名前がそのまま振る舞いの画面に出る。id のキーは文ではないので除く。
+# - 振る舞い(impact)の型の文字列のキーは、id と決めた 4 本(下の `excepted`)を除いて使う人の言葉(`user_text`)で書く。
+#   型を足したときに規則を付け忘れると、コードの名前がそのまま振る舞いの画面に出る。id のキーは文ではないので除く。
+#   4 本は仕様の場所のパス(ファイルの場所)・sha・関連 Issue の番号で、使う人の言葉ではない。4 本が実在し、決めた規則を
+#   持つことも見る(道筋の名前を変えたときに、除く側だけが黙って空振りしないため)。
 # - Variant の kind ごとのキーは、`routes_under` が kind をまたいで合わせて辿る。同じキーに kind ごとに別の規則を付けると、
 #   合わせた道筋(印・抜粋を読む道筋と、ページが形を見る道筋)からどちらかの規則が黙って消える。
 { read -r user_text_keys; read -r variant_keys; } < <(python3 - "$builder" <<'PY'
@@ -458,13 +487,21 @@ module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(module)
 verdict = lambda holds: "pass" if holds else "deny"
 routes = module.routes_under(module.Shapes["Explain"]["impact"].value, "impact")
-texts = [rule.rule for _, rule, _ in routes if isinstance(rule, module.Scalar) and rule != module.Id]
-print(verdict(texts and all(rule == "user_text" for rule in texts)))
+excepted = {
+    "impact.changed.specs[].path": "text",
+    "impact.changed.specs[].shas": "sha",
+    "impact.changed.relatedIssues[].issue": "count",
+    "impact.keptSpecs[].path": "text",
+}
+scalars = {route: rule.rule for route, rule, _ in routes if isinstance(rule, module.Scalar) and rule != module.Id}
+texts = [rule for route, rule in scalars.items() if route not in excepted]
+excepted_hold = all(scalars.get(route) == rule for route, rule in excepted.items())
+print(verdict(texts and all(rule == "user_text" for rule in texts) and excepted_hold))
 rules = [((name, key), field) for name, kinds in module.Variants.items() for fields in kinds.values() for key, field in fields.items()]
 print(verdict(all(field == other for at, field in rules for other_at, other in rules if at == other_at)))
 PY
 )
-report pass "$user_text_keys" "振る舞い(impact)の型の文字列のキーは、id を除いてどれも使う人の言葉(user_text)の規則を持つ"
+report pass "$user_text_keys" "振る舞い(impact)の型の文字列のキーは、id と決めた 4 本(仕様の場所のパス 2 本・sha・関連 Issue の番号)を除いてどれも使う人の言葉(user_text)の規則を持ち、4 本は決めた規則(text / sha / count)を持つ"
 report pass "$variant_keys" "どの Variant も、kind をまたいで同じキーは同じ規則を持つ"
 
 report_documented_kinds "$builder"
