@@ -179,10 +179,7 @@ export function ArtboardCanvas({
     onSelect: onSelectInRange,
   });
   const altPointing = useAltPointing();
-  /*
-   * ほかの操作の最中・メニューを開いている間・凍結中は、選択しているだけのときの Alt /
-   * Option の距離を出さず測りもしない（docs/06-ui.md「キャンバス直接操作」）。
-   */
+  // 出さないとき（docs/06-ui.md「キャンバス直接操作」の、選択しているだけのときの Alt / Option の距離）
   const suspendsAltDistance =
     isFrozen ||
     isContextMenuOpen ||
@@ -252,6 +249,7 @@ export function ArtboardCanvas({
        */
       onClickCapture={nodeResize.onClickCapture}
       onPointerEnter={() => altPointing.trackPointer(Pointing.Nothing)}
+      // キャンバスを出たときだけ outside。枠を出ただけは nothing（枠の leave）
       onPointerLeave={() => altPointing.trackPointer(Pointing.Outside)}
       className="relative flex h-full flex-col overflow-hidden"
     >
