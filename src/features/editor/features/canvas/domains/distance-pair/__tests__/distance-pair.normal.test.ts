@@ -152,3 +152,30 @@ test("artboard 直下のノードの親は artboard になる", () => {
     Option.some({ kind: "within", inner: "title", outer: "home" }),
   );
 });
+
+test("同じ 2 つを測る組は、等しい", () => {
+  const isEqual = DistancePair.equals(
+    { kind: "beside", from: "row", to: "chip" },
+    { kind: "beside", from: "row", to: "chip" },
+  );
+
+  expect(isEqual).toBe(true);
+});
+
+test("相手が 1 つでも違えば、等しくない", () => {
+  const isEqual = DistancePair.equals(
+    { kind: "beside", from: "row", to: "chip" },
+    { kind: "beside", from: "row", to: "title" },
+  );
+
+  expect(isEqual).toBe(false);
+});
+
+test("同じ名前でも、組の種類が違えば等しくない", () => {
+  const isEqual = DistancePair.equals(
+    { kind: "within", inner: "row", outer: "card" },
+    { kind: "beside", from: "row", to: "card" },
+  );
+
+  expect(isEqual).toBe(false);
+});
