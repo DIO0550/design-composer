@@ -1,0 +1,1624 @@
+{
+  "version": 2,
+  "pr": 1227,
+  "headBranch": "claude/magical-cannon-lxtz94",
+  "baseBranch": "main",
+  "mergeBase": "3acb2aac909f54f76083107ee87783d52c0c7a76",
+  "head": "406a1a8f6f7c507103b7367e0ea8515c26f379e8",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/axis/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/offset/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/side/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reposition-edit/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/node-template/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/dom-event/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Range.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 9,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-readout/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 20,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/facing/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/interval-slot/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 6,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/range-select/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 21,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 11,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-facing-distance.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 6,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 6,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-artboards.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-siblings.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/__tests__/facing-distance-overlay.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.facing-distance.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 29,
+          "deletions": 8,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/domains/artboard-drag/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap-guide.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/held-drag.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.without-parent.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/facing/__tests__/facing.short-line.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 55,
+          "deletions": 35,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/domains/node-drag/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 166,
+          "deletions": 75,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/domains/reposition-lines/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/__tests__/moving-bounds.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.gap.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.guide.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.interval.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.resize-guide.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 41,
+          "deletions": 5,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/domains/thin-line/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-facing-distance.test.tsx",
+        "name": "Alt を押していても、距離と同じ線上に重ならない揃え先との隙間は出したまま"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-facing-distance.test.tsx",
+        "name": "揃え先との隙間と同じ線になる向きは、距離だけを出す"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "name": "Alt を押して運んでいる間、距離と同じ線上に重なる揃え先との隙間は出さず、ガイド線は出したまま"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "name": "揃え先との隙間と同じ線になる向きは、距離だけを出す"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.facing-distance.test.ts",
+        "name": "同じ線の距離が出ているとき、ガイドはガイド線を残して隙間を出さない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.facing-distance.test.ts",
+        "name": "揃え先との隙間と同じ線になる向きにも、距離を出す"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+        "name": "座標を置き直す落とし方は、Alt / Option の距離と同じ線上に重なる隙間を除き、ガイド線は残したガイドを答える"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+        "name": "座標を置き直す落とし方は、Alt / Option の距離をすべて答える"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "Alt / Option で距離を測らない回は、隙間をそのまま出す"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "丸めると 0 になる 0.5px 未満の距離の線でも、同じ線上に重なれば隙間を出さない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "揃え先と同じ相手までの距離が出ている向きでは、隙間を出さずガイド線は残す"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "揃え先より近い兄弟までの距離が、直交方向 5px の差で同じ線上に重なると、隙間を出さない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "横に測った隙間も、同じ線上に重なる距離が出ていれば出さない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "直交する向きの距離が近い位置にあっても、隙間は出たまま"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "直交方向の差が 8px を超える兄弟までの距離なら、隙間を出したまま"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "直交方向の差がちょうど 8px の兄弟までの距離なら、隙間を出さない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "親の縁との隙間も、同じ線上に重なる距離が出ていれば出さない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "隙間と同じ向きの距離が反対側にあり範囲が離れているなら、隙間は出たまま"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+        "name": "位置の大小を入れ替えても答えは同じ"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+        "name": "位置の差が 8.5px なら、同じ線上に重ならない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+        "name": "同じ向きで範囲が重なり、位置の差がちょうど 8px なら、同じ線上に重なる"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+        "name": "向きが違う線は、位置の差が 0 で範囲が重なっていても、同じ線上に重ならない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+        "name": "範囲が端で接するだけなら、位置の差が 0 でも、同じ線上に重ならない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+        "name": "範囲が離れていれば、位置の差が 0 でも、同じ線上に重ならない"
+      }
+    ],
+    "removed": [
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-facing-distance.test.tsx",
+        "name": "Alt を押したままでも、揃え先との隙間の数値は変わらない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-facing-distance.test.tsx",
+        "name": "揃え先との隙間が同じ線を出している向きには、距離を出さず隙間だけを出す"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "name": "Alt を押したままでも、揃え先との隙間の数値は変わらない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+        "name": "揃え先との隙間が同じ線を出している向きには、距離を出さず隙間だけを出す"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.facing-distance.test.ts",
+        "name": "揃え先との隙間が同じ線を出している向きには距離を出さず、他の向きには出す"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+        "name": "座標を置き直す落とし方は、揃え先との隙間と同じ線を除いた距離を答える"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "寄せ量に端数があっても、揃え先との隙間と同じ線の向きには距離を出さない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "揃え先との隙間が同じ線を出している向きには、距離を出さない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "揃え先より近い兄弟がいる向きには、距離を出す"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "横に測った隙間が同じ線を出している向きにも、距離を出さない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+        "name": "親の縁との隙間が同じ線を出している向きにも、距離を出さない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+        "name": "位置だけ違う線は等しくない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+        "name": "向き・位置・範囲がすべて同じ線は等しい"
+      }
+    ],
+    "files": [
+      "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-facing-distance.test.tsx",
+      "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+      "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.facing-distance.test.ts",
+      "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+      "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+      "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "89bd674340d7df859f5d8021441d3e894b859b17",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T09:50:20Z",
+      "subject": "✨ [New Feature]: #1206 2 本の細い線が同じ線上に重なるかを ThinLine で判定する",
+      "body": "- ThinLine.isCoinciding を追加する。同じ向きに伸び、伸びる範囲が重なり（端で\n  接するだけは含まない）、直交する向きの位置の差が画面上の 8px 以内なら真\n- しきい値は非公開の定数 CoincidingPx（画面上の px。ThicknessPx の隣）\n\n背景:\n揃え先との隙間（#453）と Alt / Option の距離（#960）は、どちらも相手と向かい合う\n範囲の中央に引くので、相手が違っても同じ縦線・横線に重なって数値が読めなくなる。\n#1206 で「Alt を押している間は、Alt の線と同じ線上に重なる隙間を出さない」（案 A）\nと決め、その「同じ線上に重なる」の判定が要る。\n\n採用理由:\n判定に使うのは along / at / span という ThinLine 固有のフィールドと、画面上の px の\n定数（ThicknessPx と同じ性質）なので ThinLine に置く。しきい値は人の決定で 8px\n（画面上の px）。線はもともと画面上の px なので倍率で換算しない。\n範囲が端で接するだけを含めないのは、Range.intersectionLength が接するとき 0 を返し、\n離れた 2 本を同じ線上とみなさないため。\n\n影響とトレードオフ:\n既存の ThinLine.equals はまだ残す（呼び出し側を差し替えたあとのコミットで消す）。\n\n代替案:\n- RepositionLines のローカル関数 / src/utils/Range に置く: ThinLine の向きと\n  画面 px のしきい値というドメインの語彙が Range に入る\n- SideSnap.ThresholdPx（6px）を流用する: 吸い付く手応えと、数値が読めるかは意味が違う\n- 名前を isNearlyOverlapping にする: 既存の overlap 系（CanvasBounds.overlaps 等）は\n  「矩形が幅を持って重なる」意味で、区別がつかない\n\n参考:\n- Issue #1206（決定 Q1 案 A / Q2 a、計画 v2）\n- docs/06-ui.md の Alt / Option の距離\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 0,
+          "patch": "@@ -20,6 +20,12 @@ export type ThinLine = Readonly<{\n  */\n const ThicknessPx = 2;\n \n+/**\n+ * 同じ線上に重なるとみなす、直交する向きの位置の差（画面上の px。倍率によらない）。\n+ * 値の拠り所は docs/06-ui.md の Alt / Option の距離。\n+ */\n+const CoincidingPx = 8;\n+\n export const ThinLine = {\n   /**\n    * 線を描く矩形にする。太さのぶんは線の中心を `at` に合わせて振り分ける（`DropZone` の\n@@ -63,4 +69,20 @@ export const ThinLine = {\n       line.span.max === other.span.max\n     );\n   },\n+\n+  /**\n+   * 2 本の線が同じ線上に重なるか（docs/06-ui.md の Alt / Option の距離）。\n+   *\n+   * @param line 見る線\n+   * @param other 比べる相手の線\n+   * @returns 同じ向きに伸び、伸びる範囲が重なり（端で接するだけは含まない）、直交する向きの\n+   *   位置の差が画面上の 8px 以内なら真\n+   */\n+  isCoinciding(line: ThinLine, other: ThinLine): boolean {\n+    const isSameAlong = line.along === other.along;\n+    const isSpanOverlapping =\n+      Range.intersectionLength(line.span, other.span) > 0;\n+    const isAtClose = Math.abs(line.at - other.at) <= CoincidingPx;\n+    return isSameAlong && isSpanOverlapping && isAtClose;\n+  },\n } as const;",
+          "patchLines": 34,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "09ed601d3a3c21ca6ca7ca0e5a7324fd67d751cb",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T09:50:34Z",
+      "subject": "🧪 [Tests]: #1206 細い線が同じ線上に重なるかの判定をテストで固定する",
+      "body": "- ThinLine.isCoinciding のテストを 6 件足す（8px ちょうど / 8.5px / 位置の大小の\n  入れ替え / 向き違い / 範囲が端で接するだけ / 範囲が離れている）\n- ThinLine.equals のテスト 2 件を消す（equals は後のコミットで消す）\n\n背景:\n同じ線上に重なるかは「同じ向き」「範囲の重なり」「位置の差 8px 以内」の 3 条件で、\nどれか 1 つを外した実装でも、残りの条件で答えが合う入力ではテストが通ってしまう。\n\n採用理由:\n「向き違い」「端で接するだけ」「範囲が離れている」の入力は、他の 2 条件（位置の差 0・\n範囲が重なる / 同じ向き）を満たすものにした。別の条件で偽になって通るだけの入力に\nしないため（plan-reviewer の指摘 A4）。しきい値はちょうど 8px と 8.5px の両側を置く。\n\n影響とトレードオフ:\nequals のテストは equals を消すコミットより先に消える。equals は本番で 1 か所しか\n使っておらず、その呼び出しは次の差し替えで無くなるので、間の 1 コミットだけ\nテストが無い状態になる。\n\n代替案:\n- equals のテストを残して、消すコミットで一緒に消す: テストと実装を同じコミットで\n  変えないという分割の規則を優先した\n\n参考:\n- Issue #1206 計画 v2（テストケース 1〜6）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 41,
+          "deletions": 5,
+          "patch": "@@ -22,20 +22,56 @@ test(\"横に伸びる線は、中心を位置に合わせた高さ 2 の矩形\n   ).toEqual({ left: 272, top: 159, width: 48, height: 2 });\n });\n \n-test(\"向き・位置・範囲がすべて同じ線は等しい\", () => {\n+test(\"同じ向きで範囲が重なり、位置の差がちょうど 8px なら、同じ線上に重なる\", () => {\n   expect(\n-    ThinLine.equals(\n+    ThinLine.isCoinciding(\n       { along: SidePairs.Vertical, at: 60, span: { min: 20, max: 60 } },\n+      { along: SidePairs.Vertical, at: 68, span: { min: 20, max: 30 } },\n+    ),\n+  ).toBe(true);\n+});\n+\n+test(\"位置の差が 8.5px なら、同じ線上に重ならない\", () => {\n+  expect(\n+    ThinLine.isCoinciding(\n+      { along: SidePairs.Vertical, at: 60, span: { min: 20, max: 60 } },\n+      { along: SidePairs.Vertical, at: 68.5, span: { min: 20, max: 30 } },\n+    ),\n+  ).toBe(false);\n+});\n+\n+test(\"位置の大小を入れ替えても答えは同じ\", () => {\n+  expect(\n+    ThinLine.isCoinciding(\n+      { along: SidePairs.Vertical, at: 68, span: { min: 20, max: 30 } },\n       { along: SidePairs.Vertical, at: 60, span: { min: 20, max: 60 } },\n     ),\n   ).toBe(true);\n });\n \n-test(\"位置だけ違う線は等しくない\", () => {\n+test(\"向きが違う線は、位置の差が 0 で範囲が重なっていても、同じ線上に重ならない\", () => {\n+  expect(\n+    ThinLine.isCoinciding(\n+      { along: SidePairs.Vertical, at: 60, span: { min: 20, max: 60 } },\n+      { along: SidePairs.Horizontal, at: 60, span: { min: 20, max: 60 } },\n+    ),\n+  ).toBe(false);\n+});\n+\n+test(\"範囲が端で接するだけなら、位置の差が 0 でも、同じ線上に重ならない\", () => {\n+  expect(\n+    ThinLine.isCoinciding(\n+      { along: SidePairs.Vertical, at: 60, span: { min: 20, max: 60 } },\n+      { along: SidePairs.Vertical, at: 60, span: { min: 60, max: 80 } },\n+    ),\n+  ).toBe(false);\n+});\n+\n+test(\"範囲が離れていれば、位置の差が 0 でも、同じ線上に重ならない\", () => {\n   expect(\n-    ThinLine.equals(\n+    ThinLine.isCoinciding(\n       { along: SidePairs.Vertical, at: 60, span: { min: 20, max: 60 } },\n-      { along: SidePairs.Vertical, at: 61, span: { min: 20, max: 60 } },\n+      { along: SidePairs.Vertical, at: 60, span: { min: 70, max: 80 } },\n     ),\n   ).toBe(false);\n });",
+          "patchLines": 62,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "90af56b6742152a035cc134f46e7cb7090409d87",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T09:50:43Z",
+      "subject": "✨ [New Feature]: #1206 4 つの向きの距離のどれかが線と同じ線上に重なるかを答える",
+      "body": "- FacingDistances.hasCoinciding(distances, line) を追加する。上下左右のどれかの\n  線が line と同じ線上に重なれば真（線の無い向きは見ない）\n- 2 本の比較は ThinLine.isCoinciding に任せる\n\n背景:\n揃え先との隙間を出すかは「Alt / Option の距離（4 つの向き）のどれかと同じ線上に\n重なるか」で決まる（#1206 案 A）。隙間は 1 本、距離は向きごとに最大 4 本ある。\n\n採用理由:\n4 つの向きを走査する知識は、向きごとの線を持つ FacingDistances に置く（fromFacings\nと同じ置き方）。呼び出し側（RepositionLines）が horizontal / vertical × start / end\nを並べると、向きの並びの知識が FacingDistances の外に漏れる。\n\n影響とトレードオフ:\n単体テストは置かない。次のコミットの RepositionLines のテスト（同じ向き・反対側・\n直交する向き）で、この走査を通る経路を見る。\n\n代替案:\n- 判定を RepositionLines の中で 4 向きを並べて書く: 上記のとおり向きの知識が漏れる\n\n参考:\n- Issue #1206 計画 v2\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 1,
+          "patch": "@@ -2,7 +2,7 @@ import { type AxisEnd, AxisEnds } from \"@/domains/unit/axis\";\n import { SidePair, SidePairs } from \"@/domains/unit/side\";\n import { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-bounds\";\n import { Facing } from \"@/features/editor/features/canvas/domains/facing\";\n-import type { ThinLine } from \"@/features/editor/features/canvas/domains/thin-line\";\n+import { ThinLine } from \"@/features/editor/features/canvas/domains/thin-line\";\n import { Option } from \"@/utils/Option\";\n \n /**\n@@ -94,6 +94,27 @@ export const FacingDistances = {\n       lineToFirstReached(facing, moved, others),\n     );\n   },\n+\n+  /**\n+   * 上下左右のどれかの線が、`line` と同じ線上に重なるか（重なりの判定は `ThinLine.isCoinciding`）。\n+   *\n+   * @param distances 向きごとの短い線\n+   * @param line 比べる線（画面上の px）\n+   * @returns 4 つの向きのどれかの線が `line` と同じ線上に重なれば真。線の無い向きは見ない\n+   */\n+  hasCoinciding(distances: FacingDistances, line: ThinLine): boolean {\n+    const lines = [\n+      distances.horizontal.start,\n+      distances.horizontal.end,\n+      distances.vertical.start,\n+      distances.vertical.end,\n+    ];\n+    return lines.some(\n+      (distanceLine) =>\n+        Option.isSome(distanceLine) &&\n+        ThinLine.isCoinciding(distanceLine.value, line),\n+    );\n+  },\n } as const;\n \n /**",
+          "patchLines": 37,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "7f3a592986afc5d0dde31482b4fe3708c9093717",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T09:51:02Z",
+      "subject": "✨ [New Feature]: #1206 Alt の距離と同じ線上に重なる揃え先との隙間を出さない",
+      "body": "- RepositionLines.distanceLinesExceptGaps を消し、snapGuidesExceptCoincidingGaps を\n  足す。ガイド線（guideLine）は残し、Alt / Option の距離のどれかと同じ線上に重なる\n  隙間（gapLine）だけを none にする\n- DropEdit.snapGuides / ArtboardDrag.snapGuides は新しいメソッドを通し、\n  facingDistances は距離をそのまま返す（ノードの移動と artboard の移動の両方）\n- RepositionLines のテストを新しい規則に合わせて書き換え・追加する（39 / 71 / 90 /\n  110 を書き換え、130 を削除、8px ちょうど / 8px 超 / Alt なし / 反対側 / 直交を追加）\n- 「（除く前）」などの doc を、除く対象が隙間に変わったことに合わせて直す\n\n背景:\n運んでいるものの左辺が上の title に揃って隙間「82」が出ているとき、同じ向きにより\n近い login があると Alt の距離「25」も出る。2 本とも向かい合う範囲の中央に引くので\n同じ縦線に重なり、25 の線は 82 の線に埋もれ、82 の線は login を突き抜けて見える\n（Storybook の OpenedDocumentEditor / AbsoluteNode）。#960 Q2 の除外は「同じ相手\n（同じ線）」だけで、相手が違うこの重なりは扱っていなかった。\n\n採用理由:\n#1206 で案 A（Alt を押している間は、Alt の線と同じ線上に重なる隙間を出さない）に\n決まった。Alt は「測りたい」という明示の操作なので、そのとき欲しい最寄りの距離を\n読めるようにする。\n同じ線も「同じ線上に重なる」に含まれるので、#960 Q2（同じ線なら Alt 側を出さない）\nは向きが逆になり、隙間のほうを消す。同じ線のときは線も数値も一致するので見た目は\n変わらず、規則を 1 本にできる。\n除いた結果は保存せず毎回計算する（持つと、除く前と除いたあとが食い違う組が書ける）。\n判定を隙間と距離の対を持つ RepositionLines に置き、ノードと artboard の両方がそこを\n通るので、同じ規則が 2 か所に分かれない。\nartboard の移動にも効かせるのは、docs/06-ui.md が artboard の移動の Alt を「ノードの\n移動と同じ」と決めていて、同じ RepositionLines を通るため。\n\n影響とトレードオフ:\n- #960 Q2 の「#453 の表示は変えない」を、同じ線上に重なるときだけ破る\n- 丸めると 0 になる距離（ドキュメント上で 0.5px 未満）の向きでは、距離を描かないのに\n  重なる隙間も外れ、その線上に数値が 1 つも出ない。防ぐには倍率を snapGuides の\n  系統に通す必要があり、起きるのはほぼ接している向きだけなので受け入れた\n- reposition-lines の「寄せ量に端数があっても…」は消した。厳密に等しいかの比較を\n  守るテストで、8px の許容幅があると movedBy の共有を壊しても落ちなくなる\n- node-drag / artboard-drag / artboard-canvas の既存テストは、このコミットでは\n  新しい期待値に揃っていない（後続のテストのコミットで揃える）。型は通る\n\n代替案:\n- Q2 を残し、案 A は相手が違う重なりだけに当てる: 同じ線は見た目が一致するので\n  規則が 2 本になるだけ\n- overlay（component）で隙間を外す: UI にドメインの判定を書くことになる\n- 判定を SideSnap に置く: SideSnap は距離を知らない\n- NodeDrag / ArtboardDrag のそれぞれに置く: 同じ規則が重複する\n- しきい値をドキュメント上の px にする: 決定は画面上の px で、線ももともと画面上の px\n- 案 B（Alt 側を出さない）/ ラベルをずらして両方出す: 回答で却下 / 選択肢外\n\n参考:\n- Issue #1206（決定と計画 v2）、#960 Q2・Q4\n- docs/06-ui.md の Alt / Option の距離\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 9,
+          "patch": "@@ -30,13 +30,13 @@ export type ArtboardGrab = Readonly<{\n /**\n  * ポインタが動いた 1 回分（どちらも画面上の px）。\n  *\n- * 寄せ量・揃った線に引く線・揃え先との隙間・Alt / Option の距離（除く前）はポインタの位置から\n+ * 寄せ量・揃った線に引く線・揃え先との隙間（除く前）・Alt / Option の距離はポインタの位置から\n  * `snappedAt` で求めた 1 回分の答えで、寄せ量は掴んでからの総量（前回までの寄せ量に足していく差分ではない）。\n  */\n export type ArtboardPointerMove = Readonly<{\n   pointer: Offset;\n   /**\n-   * そこで寄せる量と、揃った線に引く線と、揃え先との隙間と、Alt / Option の距離（除く前）。\n+   * そこで寄せる量と、揃った線に引く線と、揃え先との隙間（除く前）と、Alt / Option の距離。\n    * 揃う線が無ければ寄せ量 0・線も隙間も無し。測らない回は距離も無し\n    */\n   snapped: RepositionSnapped;\n@@ -74,7 +74,7 @@ export type ArtboardDragPreview = Readonly<{\n /**\n  * キャンバス上で artboard を掴んでから離すまでの状態（docs/06-ui.md「キャンバス直接操作」\n  * の artboard の移動）。掴んだものを持つのは離すまで、ポインタの位置と寄せ量・揃った線に引く線・\n- * 揃え先との隙間・Alt / Option の距離（除く前）（どれも画面上の px）を持つのは動かしている間\n+ * 揃え先との隙間（除く前）・Alt / Option の距離（どれも画面上の px）を持つのは動かしている間\n  * だけ、と状態ごとに持つものが変わるので直和で列挙する。\n  *\n  * 「離した直後」の状態は持たない。**掴み口の見出しには飲み込む相手が居ない**ためで（見\n@@ -114,8 +114,8 @@ export const ArtboardDrag = {\n    * ポインタが動いた先を反映する。\n    *\n    * @param drag 今のドラッグの状態\n-   * @param move 画面上のポインタの位置と、そこで寄せる量と、揃った線に引く線と、揃え先との隙間と、\n-   *   Alt / Option の距離（除く前）\n+   * @param move 画面上のポインタの位置と、そこで寄せる量と、揃った線に引く線と、揃え先との隙間（除く前）と、\n+   *   Alt / Option の距離\n    * @returns 閾値を越えていれば運んでいる状態。掴んでいなければそのまま\n    */\n   moveTo(drag: ArtboardDrag, move: ArtboardPointerMove): ArtboardDrag {\n@@ -169,7 +169,7 @@ export const ArtboardDrag = {\n    * @param drag `drawn` を描いたときのドラッグの状態\n    * @param input 画面上のポインタの位置と、吸い付くか・距離を測るか\n    * @param drawn 運んでいる artboard と他の artboard の実測\n-   * @returns 寄せ量と、揃った線に引く線と、揃え先との隙間と、距離（除く前）（画面上の px）。\n+   * @returns 寄せ量と、揃った線に引く線と、揃え先との隙間（除く前）と、距離（画面上の px）。\n    *   閾値に届く線が無いなら寄せ量 0・線も隙間も無し。運んでいる artboard に大きさが無い（まだ\n    *   レイアウトされていない）/ 掴んでいないなら寄せ量 0・線も隙間も距離も無し\n    *   （`RepositionLines.Unsnapped`。\n@@ -230,26 +230,27 @@ export const ArtboardDrag = {\n \n   /**\n    * 揃った線に引くガイド線と、揃え先との隙間（docs/06-ui.md「artboard の移動」の辺のスナップ）。\n+   * Alt / Option の距離と同じ線上に重なる隙間は除く。\n    *\n    * @param drag 今のドラッグの状態\n    * @returns 最後に動かした位置で揃った線に引く線と隙間（画面上の px）。動かしていない / 揃った線が無いなら縦横とも `none`\n    */\n   snapGuides(drag: ArtboardDrag): SnapGuides {\n     return drag.kind === \"dragging\"\n-      ? drag.snapped.lines.snap\n+      ? RepositionLines.snapGuidesExceptCoincidingGaps(drag.snapped.lines)\n       : SideSnap.NoGuides;\n   },\n \n   /**\n    * 上下左右それぞれ、最初に当たる他の artboard までの距離の短い線（docs/06-ui.md の\n-   * artboard の移動）。揃え先との隙間と同じ線になる向きは除く。\n+   * artboard の移動）。\n    *\n    * @param drag 今のドラッグの状態\n    * @returns 向きごとの短い線（画面上の px）。動かしていない / 測っていないなら全部 `none`\n    */\n   facingDistances(drag: ArtboardDrag): FacingDistances {\n     return drag.kind === \"dragging\"\n-      ? RepositionLines.distanceLinesExceptGaps(drag.snapped.lines)\n+      ? drag.snapped.lines.distanceLines\n       : FacingDistances.None;\n   },\n ",
+          "patchLines": 76,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 6,
+          "patch": "@@ -172,7 +172,7 @@ export const DropEdit = {\n    * @param name 置き直すノードの名前\n    * @param target 落とし先の親を基準に書き込む座標と向きと、運んでいる間のずらし量（座標と\n    *   ずらし量はドキュメント上の px）\n-   * @param lines 吸い付いた線・揃え先との隙間と、Alt / Option の距離（除く前。画面上の px）\n+   * @param lines 吸い付いた線・揃え先との隙間（除く前）と、Alt / Option の距離（画面上の px）\n    * @returns 座標の置き直しの落とし方\n    */\n   reposition(\n@@ -218,21 +218,25 @@ export const DropEdit = {\n \n   /**\n    * 揃った線に引くガイド線と、揃え先との隙間。ツリーへ落とすときは引かない\n-   * （辺の吸い付きが起きるのは座標の置き直しだけ / docs/06-ui.md）。\n+   * （辺の吸い付きが起きるのは座標の置き直しだけ / docs/06-ui.md）。Alt / Option の距離と\n+   * 同じ線上に重なる隙間は除く。\n    *\n    * @param edit 今の落とし方\n    * @returns 引く線と隙間（画面上の px）。ツリーへの移動・挿入なら縦横とも `none`\n    */\n   snapGuides(edit: DropEdit): SnapGuides {\n     return Option.unwrapOr(\n-      Option.map(DropEdit.repositionLines(edit), (lines) => lines.snap),\n+      Option.map(\n+        DropEdit.repositionLines(edit),\n+        RepositionLines.snapGuidesExceptCoincidingGaps,\n+      ),\n       SideSnap.NoGuides,\n     );\n   },\n \n   /**\n    * 上下左右それぞれ、最初に当たる相手までの距離の短い線。ツリーへ落とすときは測らない\n-   * （docs/06-ui.md の Alt / Option の距離）。揃え先との隙間と同じ線になる向きは除く。\n+   * （docs/06-ui.md の Alt / Option の距離）。\n    *\n    * @param edit 今の落とし方\n    * @returns 向きごとの短い線（画面上の px）。ツリーへの移動・挿入なら全部 `none`\n@@ -241,14 +245,14 @@ export const DropEdit = {\n     return Option.unwrapOr(\n       Option.map(\n         DropEdit.repositionLines(edit),\n-        RepositionLines.distanceLinesExceptGaps,\n+        (lines) => lines.distanceLines,\n       ),\n       FacingDistances.None,\n     );\n   },\n \n   /**\n-   * 座標の置き直しで運んでいる間に出す線（除く前）。\n+   * 座標の置き直しで運んでいる間に出す線（揃え先との隙間は除く前）。\n    *\n    * @param edit 今の落とし方\n    * @returns 吸い付いた線・揃え先との隙間・Alt / Option の距離。ツリーへの移動・挿入なら\n@@ -420,6 +424,7 @@ export const NodeDrag = {\n \n   /**\n    * 揃った線に引くガイド線と、揃え先との隙間（docs/06-ui.md「キャンバス直接操作」の辺のスナップ）。\n+   * Alt / Option の距離と同じ線上に重なる隙間は除く。\n    *\n    * 押しただけで線が出ると、クリックのたびに一瞬線が走る。\n    *",
+          "patchLines": 63,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 129,
+          "deletions": 69,
+          "patch": "@@ -1,17 +1,22 @@\n import { expect, test } from \"vitest\";\n import { SidePairs } from \"@/domains/unit/side\";\n import type { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-bounds\";\n-import { SideSnap } from \"@/features/editor/features/canvas/domains/side-snap\";\n+import { FacingDistances } from \"@/features/editor/features/canvas/domains/facing-distances\";\n+import {\n+  SideSnap,\n+  type SnapGuide,\n+} from \"@/features/editor/features/canvas/domains/side-snap\";\n+import type { ThinLine } from \"@/features/editor/features/canvas/domains/thin-line\";\n import { Option } from \"@/utils/Option\";\n import { RepositionLines } from \"../index\";\n \n /**\n- * 親とその直下の兄弟へ吸い付かせ、Alt / Option の距離も測ったときに出す距離。\n+ * 親とその直下の兄弟へ吸い付かせ、Alt / Option の距離も測ったときに出すガイド。\n  *\n  * @param placement 寄せる前の運んでいるもの・落とし先の親・その親の直下の兄弟\n- * @returns 揃え先との隙間と同じ線を除いた距離\n+ * @returns Alt / Option の距離と同じ線上に重なる隙間を除いたガイド\n  */\n-function distanceLinesAt({\n+function snapGuidesAt({\n   moving,\n   parentBounds,\n   siblings,\n@@ -24,7 +29,7 @@ function distanceLinesAt({\n     SideSnap.withSiblings(SideSnap.create(moving, [parentBounds]), siblings),\n     Option.some({ kind: \"within-parent\", parentBounds, siblings }),\n   );\n-  return RepositionLines.distanceLinesExceptGaps(snapped.lines);\n+  return RepositionLines.snapGuidesExceptCoincidingGaps(snapped.lines);\n }\n \n /** 落とし先の親（左右 0〜200・上下 0〜100）。 */\n@@ -36,108 +41,163 @@ const Below: CanvasBounds = { left: 50, top: 60, width: 30, height: 20 };\n /** 寄せる前の運んでいるもの（左右 52〜72・上下 10〜20）。 */\n const Moving: CanvasBounds = { left: 52, top: 10, width: 20, height: 10 };\n \n-test(\"揃え先との隙間が同じ線を出している向きには、距離を出さない\", () => {\n-  // 左辺が Below へ寄り（-2）、揃え先 Below との隙間（上下 20〜60）が出る\n-  expect(\n-    distanceLinesAt({\n-      moving: Moving,\n-      parentBounds: Parent,\n-      siblings: [Below],\n-    }),\n-  ).toEqual({\n-    horizontal: {\n-      start: Option.some({\n-        along: SidePairs.Horizontal,\n-        at: 15,\n-        span: { min: 0, max: 50 },\n-      }),\n-      end: Option.some({\n-        along: SidePairs.Horizontal,\n-        at: 15,\n-        span: { min: 70, max: 200 },\n-      }),\n-    },\n-    vertical: {\n-      start: Option.some({\n-        along: SidePairs.Vertical,\n-        at: 60,\n-        span: { min: 0, max: 10 },\n-      }),\n-      end: Option.none,\n-    },\n+/** 手で組むガイドの隙間（縦に伸びる・左右 60・上下 20〜60）。 */\n+const HandGap: ThinLine = {\n+  along: SidePairs.Vertical,\n+  at: 60,\n+  span: { min: 20, max: 60 },\n+};\n+\n+/** 手で組むガイド（左右 60 に縦のガイド線、`HandGap` の隙間）。 */\n+const HandGuide: SnapGuide = {\n+  guideLine: { left: 59, top: 0, width: 2, height: 100 },\n+  gapLine: Option.some(HandGap),\n+};\n+\n+test(\"揃え先と同じ相手までの距離が出ている向きでは、隙間を出さずガイド線は残す\", () => {\n+  // 左辺が Below へ寄り（-2）、揃え先 Below との隙間（上下 20〜60）と下へ進んだ距離が同じ線になる\n+  const guides = snapGuidesAt({\n+    moving: Moving,\n+    parentBounds: Parent,\n+    siblings: [Below],\n   });\n+\n+  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);\n });\n \n-test(\"揃え先より近い兄弟がいる向きには、距離を出す\", () => {\n-  // Below との隙間は出たまま、下へ進むと先に手前の兄弟（上下 30〜40）に当たる\n+test(\"揃え先より近い兄弟までの距離が、直交方向 5px の差で同じ線上に重なると、隙間を出さない\", () => {\n+  // 隙間は左右 60、下へ進むと先に手前の兄弟（上下 30〜40）に当たる距離は左右 65\n   const nearer = { left: 60, top: 30, width: 30, height: 10 };\n \n-  expect(\n-    distanceLinesAt({\n-      moving: Moving,\n-      parentBounds: Parent,\n-      siblings: [Below, nearer],\n-    }).vertical.end,\n-  ).toEqual(\n+  const guides = snapGuidesAt({\n+    moving: Moving,\n+    parentBounds: Parent,\n+    siblings: [Below, nearer],\n+  });\n+\n+  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);\n+});\n+\n+test(\"直交方向の差がちょうど 8px の兄弟までの距離なら、隙間を出さない\", () => {\n+  // 隙間は左右 60、手前の兄弟（左右 66〜120）までの距離は左右 68\n+  const nearer = { left: 66, top: 30, width: 54, height: 10 };\n+\n+  const guides = snapGuidesAt({\n+    moving: Moving,\n+    parentBounds: Parent,\n+    siblings: [Below, nearer],\n+  });\n+\n+  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);\n+});\n+\n+test(\"直交方向の差が 8px を超える兄弟までの距離なら、隙間を出したまま\", () => {\n+  // 隙間は左右 60、手前の兄弟（左右 67〜120）までの距離は左右 68.5\n+  const nearer = { left: 67, top: 30, width: 53, height: 10 };\n+\n+  const guides = snapGuidesAt({\n+    moving: Moving,\n+    parentBounds: Parent,\n+    siblings: [Below, nearer],\n+  });\n+\n+  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(\n     Option.some({\n       along: SidePairs.Vertical,\n-      at: 65,\n-      span: { min: 20, max: 30 },\n+      at: 60,\n+      span: { min: 20, max: 60 },\n     }),\n   );\n });\n \n-test(\"親の縁との隙間が同じ線を出している向きにも、距離を出さない\", () => {\n+test(\"親の縁との隙間も、同じ線上に重なる距離が出ていれば出さない\", () => {\n   /*\n    * 親の下（外）にいて、左辺が親の左辺へ寄る（-0.9）。揃え先との隙間は親の下辺との間（上下\n-   * 100.8〜110）に出て、上へ進んだ距離も親の下辺に当たって同じ線になる。親の座標に端数を\n-   * 持たせ、縁の矩形を別の式で作ると線がずれることを見る。\n+   * 100.8〜110）に出て、上へ進んだ距離も親の下辺に当たって同じ線になる。\n    */\n   const parentBounds = { left: 0.1, top: 0.1, width: 200.3, height: 100.7 };\n   // 右へ進むと当たる兄弟（上下 80〜130）。辺も中心線も運んでいるものから 6 より離す\n   const right = { left: 40, top: 80, width: 20, height: 50 };\n \n-  const distances = distanceLinesAt({\n+  const guides = snapGuidesAt({\n     moving: { left: 1, top: 110, width: 20, height: 10 },\n     parentBounds,\n     siblings: [right],\n   });\n \n-  expect(distances.vertical.start).toEqual(Option.none);\n-  expect(Option.isSome(distances.horizontal.end)).toBe(true);\n+  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);\n });\n \n-test(\"横に測った隙間が同じ線を出している向きにも、距離を出さない\", () => {\n+test(\"横に測った隙間も、同じ線上に重なる距離が出ていれば出さない\", () => {\n   // 上辺が右の兄弟（上下 32〜52）へ寄り（+2）、揃え先のその兄弟との隙間（左右 70〜120）が出る\n   const right = { left: 120, top: 32, width: 30, height: 20 };\n \n-  const distances = distanceLinesAt({\n+  const guides = snapGuidesAt({\n     moving: { left: 50, top: 30, width: 20, height: 10 },\n     parentBounds: Parent,\n     siblings: [right],\n   });\n \n-  expect(distances.horizontal.end).toEqual(Option.none);\n-  expect(distances.horizontal.start).toEqual(\n+  expect(Option.unwrap(guides.vertical).gapLine).toEqual(Option.none);\n+});\n+\n+test(\"Alt / Option で距離を測らない回は、隙間をそのまま出す\", () => {\n+  const snapped = RepositionLines.toSnapped(\n+    SideSnap.withSiblings(SideSnap.create(Moving, [Parent]), [Below]),\n+    Option.none,\n+  );\n+\n+  expect(\n+    Option.unwrap(\n+      RepositionLines.snapGuidesExceptCoincidingGaps(snapped.lines).horizontal,\n+    ).gapLine,\n+  ).toEqual(\n     Option.some({\n-      along: SidePairs.Horizontal,\n-      at: 37,\n-      span: { min: 0, max: 50 },\n+      along: SidePairs.Vertical,\n+      at: 60,\n+      span: { min: 20, max: 60 },\n     }),\n   );\n });\n \n-test(\"寄せ量に端数があっても、揃え先との隙間と同じ線の向きには距離を出さない\", () => {\n-  /*\n-   * 左辺が Below の左辺へ寄る量は -0.10000000000000142。寄せたあとの矩形を隙間と別の式で\n-   * 作ると線の位置が数 ULP ずれ、下の距離が隙間と別の線として残る。\n-   */\n-  const distances = distanceLinesAt({\n-    moving: { left: 50.1, top: 10.1, width: 19.7, height: 10 },\n-    parentBounds: Parent,\n-    siblings: [Below],\n+test(\"隙間と同じ向きの距離が反対側にあり範囲が離れているなら、隙間は出たまま\", () => {\n+  const guides = RepositionLines.snapGuidesExceptCoincidingGaps({\n+    snap: { horizontal: Option.some(HandGuide), vertical: Option.none },\n+    distanceLines: {\n+      ...FacingDistances.None,\n+      vertical: {\n+        start: Option.some({\n+          along: SidePairs.Vertical,\n+          at: 60,\n+          span: { min: 0, max: 10 },\n+        }),\n+        end: Option.none,\n+      },\n+    },\n   });\n \n-  expect(distances.vertical.end).toEqual(Option.none);\n-  expect(Option.isSome(distances.vertical.start)).toBe(true);\n+  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(\n+    Option.some(HandGap),\n+  );\n+});\n+\n+test(\"直交する向きの距離が近い位置にあっても、隙間は出たまま\", () => {\n+  const guides = RepositionLines.snapGuidesExceptCoincidingGaps({\n+    snap: { horizontal: Option.some(HandGuide), vertical: Option.none },\n+    distanceLines: {\n+      ...FacingDistances.None,\n+      horizontal: {\n+        start: Option.none,\n+        end: Option.some({\n+          along: SidePairs.Horizontal,\n+          at: 60,\n+          span: { min: 20, max: 60 },\n+        }),\n+      },\n+    },\n+  });\n+\n+  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(\n+    Option.some(HandGap),\n+  );\n });",
+          "patchLines": 264,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 21,
+          "patch": "@@ -1,17 +1,16 @@\n import { Offset } from \"@/domains/unit/offset\";\n-import { SidePair } from \"@/domains/unit/side\";\n import type { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-bounds\";\n import { FacingDistances } from \"@/features/editor/features/canvas/domains/facing-distances\";\n import {\n   SideSnap,\n+  type SnapGuide,\n   type SnapGuides,\n } from \"@/features/editor/features/canvas/domains/side-snap\";\n-import { ThinLine } from \"@/features/editor/features/canvas/domains/thin-line\";\n import { Option } from \"@/utils/Option\";\n \n /**\n  * ノードの座標の置き直しと artboard の移動で運んでいる間に出す線。吸い付いた線と揃え先との\n- * 隙間、Alt / Option の距離（除く前）。すべて画面上の px。\n+ * 隙間（除く前）、Alt / Option の距離。すべて画面上の px。\n  */\n export type RepositionLines = Readonly<{\n   snap: SnapGuides;\n@@ -76,30 +75,27 @@ export const RepositionLines = {\n   },\n \n   /**\n-   * Alt / Option の距離のうち、揃え先との隙間が同じ線を既に出している向きを除いたもの\n-   * （docs/06-ui.md の Alt / Option の距離。同じ線と数値を 2 つ重ねない）。\n+   * 揃え先とのガイドのうち、Alt / Option の距離と同じ線上に重なる隙間を除いたもの\n+   * （docs/06-ui.md の Alt / Option の距離）。ガイド線は残す。\n    *\n    * 除いた結果を持たずに毎回計算する。持つと、除く前と除いたあとが食い違う組が書ける。\n    *\n    * @param lines 運んでいる間に出す線\n-   * @returns 隙間と同じ線になる向きを `none` にした距離\n+   * @returns 距離と同じ線上に重なる隙間を `none` にしたガイド\n    */\n-  distanceLinesExceptGaps(lines: RepositionLines): FacingDistances {\n-    return FacingDistances.fromFacings((facing) => {\n-      const gapLine = Option.flatMap(\n-        lines.snap[SidePair.perpendicular(facing.pair)],\n-        (guide) => guide.gapLine,\n-      );\n-      return Option.flatMap(\n-        lines.distanceLines[facing.pair][facing.end],\n-        (distanceLine) => {\n-          const isSameAsGap =\n-            Option.isSome(gapLine) &&\n-            ThinLine.equals(gapLine.value, distanceLine);\n-          return isSameAsGap ? Option.none : Option.some(distanceLine);\n-        },\n-      );\n+  snapGuidesExceptCoincidingGaps(lines: RepositionLines): SnapGuides {\n+    const exceptCoinciding = (guide: SnapGuide): SnapGuide => ({\n+      guideLine: guide.guideLine,\n+      gapLine: Option.flatMap(guide.gapLine, (gapLine) =>\n+        FacingDistances.hasCoinciding(lines.distanceLines, gapLine)\n+          ? Option.none\n+          : Option.some(gapLine),\n+      ),\n     });\n+    return {\n+      horizontal: Option.map(lines.snap.horizontal, exceptCoinciding),\n+      vertical: Option.map(lines.snap.vertical, exceptCoinciding),\n+    };\n   },\n } as const;\n ",
+          "patchLines": 66,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 3,
+          "patch": "@@ -101,11 +101,13 @@ export type ArtboardDragControl = Readonly<{\n   }>;\n   /** 運んでいる間の見せかけの位置。離すまで確定しないので描く側だけが使う。 */\n   preview: Option<ArtboardDragPreview>;\n-  /** 運んでいる間に揃った線と、揃え先との隙間。離すと出なくなる。 */\n+  /**\n+   * 運んでいる間に揃った線と、揃え先との隙間（Alt / Option の距離と同じ線上に重なる隙間は\n+   * 除く）。離すと出なくなる。\n+   */\n   snapGuides: SnapGuides;\n   /**\n-   * 運んでいる間に Alt / Option を押していれば出す、他の artboard までの距離（揃え先との隙間と\n-   * 同じ線の向きは除く）。離すと出なくなる。\n+   * 運んでいる間に Alt / Option を押していれば出す、他の artboard までの距離。離すと出なくなる。\n    */\n   facingDistances: FacingDistances;\n }>;",
+          "patchLines": 17,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "60e558130b1deb6284ea53ce9b8adeee0701edd0",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T09:51:10Z",
+      "subject": "🔥 [Remove]: #1206 使われなくなった ThinLine.equals を消す",
+      "body": "- ThinLine.equals とその doc（許容幅なしで比べる前提）を消す\n\n背景:\n本番での呼び出しは RepositionLines の 1 か所だけで、隙間の除外を「同じ線上に\n重なる」（ThinLine.isCoinciding）へ切り替えたので 0 件になった。\n\n採用理由:\n残すと、浮動小数を許容幅なしで比べる比較が、同じ入力から同じ式で作った線どうし\nという前提ごと残る。呼び出しが無いまま前提だけが誤用を誘う。\n\n影響とトレードオフ:\n公開 API が 1 つ減る。テストは前のコミットで消してある。\n\n代替案:\n- 将来のために残す: 呼び出しの無い操作を先回りで持たない\n\n参考:\n- Issue #1206 計画 v2\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 18,
+          "patch": "@@ -52,24 +52,6 @@ export const ThinLine = {\n         };\n   },\n \n-  /**\n-   * 2 本の線が同じ向き・同じ位置・同じ範囲か。\n-   *\n-   * 浮動小数を許容幅なしで比べる。同じ入力から同じ式で作った線どうしだけを比べる前提。\n-   *\n-   * @param line 見る線\n-   * @param other 比べる相手の線\n-   * @returns 向き・中心の座標・範囲の両端がすべて一致すれば真\n-   */\n-  equals(line: ThinLine, other: ThinLine): boolean {\n-    return (\n-      line.along === other.along &&\n-      line.at === other.at &&\n-      line.span.min === other.span.min &&\n-      line.span.max === other.span.max\n-    );\n-  },\n-\n   /**\n    * 2 本の線が同じ線上に重なるか（docs/06-ui.md の Alt / Option の距離）。\n    *",
+          "patchLines": 25,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "6eb34167cd067f8dc3f524d5a151d516866b6872",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T09:51:19Z",
+      "subject": "📝 [Doc]: #1206 揃え先との隙間が none になる条件に、Alt の距離と重なる場合を足す",
+      "body": "- SnapGuide.gapLine の doc と SideSnap.toGapReadout の @returns に「Alt / Option の\n  距離と同じ線上に重なるので表示から外した隙間（RepositionLines）」を足す\n- SideSnap.movedBy の Why から「別の式で作ると数 ULP ずれ、隙間と同じ線が別の線に\n  なる」の文を消す\n\n背景:\n隙間が none になる経路が 1 つ増えた（RepositionLines.snapGuidesExceptCoincidingGaps）。\ngapLine を読む側が「揃え先と重なっている / 接しているときだけ none」と読むと、\nAlt を押している間に隙間が消える理由が辿れない。\n\n採用理由:\nULP の文は、隙間と距離を厳密に等しいかで比べていたときの理由で、8px の許容幅で\n比べる今は判定に効かない（前提が崩れた Why を残さない）。式を 1 か所に置く理由\n（ガイド線・隙間と距離が同じ矩形を使う）は変わらないので残す。\n\n影響とトレードオフ:\nコメントだけの変更で、振る舞いは変わらない。\n\n代替案:\n- ULP の文を残す: 理由の根拠が無くなった文は、次に読む人を誤らせる\n\n参考:\n- Issue #1206 計画 v2\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "patch": "@@ -41,8 +41,8 @@ export type SideSnap = Readonly<{\n export type SnapGuide = Readonly<{\n   guideLine: CanvasBounds;\n   /**\n-   * 揃え先との隙間に引く短い線。揃え先と重なっている / 接している（小数 6 桁へ丸めて 0 以下）\n-   * なら `none`\n+   * 揃え先との隙間に引く短い線。揃え先と重なっている / 接している（小数 6 桁へ丸めて 0 以下）/\n+   * Alt / Option の距離と同じ線上に重なるので表示から外した隙間（`RepositionLines`）なら `none`\n    */\n   gapLine: Option<ThinLine>;\n }>;\n@@ -196,7 +196,7 @@ export const SideSnap = {\n    * 寄せたあとの、運んでいるものの矩形。\n    *\n    * ガイド線・隙間と、同じ位置から別に測る線（Alt / Option の距離）が同じ矩形を使うよう、\n-   * 式をここ 1 か所に置く。別の式で作ると数 ULP ずれ、隙間と同じ線が別の線になる。\n+   * 式をここ 1 か所に置く。\n    *\n    * @param snap 判定する組\n    * @param offset `toSnapped` が答えた寄せ量（画面上の px）\n@@ -213,7 +213,8 @@ export const SideSnap = {\n    * @param pair 見る軸（揃った線を挟む辺の組）\n    * @param view 割り戻しに使う倍率を持つ表示\n    * @returns 隙間の短い線と数値。その軸に揃った線が無い / 揃え先と重なっている・接している\n-   *   （小数 6 桁へ丸めて 0 以下）/ ドキュメント上の px へ丸めると 0 になるなら `none`\n+   *   （小数 6 桁へ丸めて 0 以下）/ Alt / Option の距離と同じ線上に重なるので表示から外した\n+   *   （`RepositionLines`）/ ドキュメント上の px へ丸めると 0 になるなら `none`\n    */\n   toGapReadout(\n     guides: SnapGuides,",
+          "patchLines": 30,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "67d10b82f7fad1b70b4bf65ca071dea7e833af58",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T09:51:34Z",
+      "subject": "🧪 [Tests]: #1206 ノードと artboard の移動で、隙間を除き距離はすべて出すことを固定する",
+      "body": "- node-drag.normal: 「座標を置き直す落とし方は、Alt / Option の距離をすべて答える」に\n  書き換え、「運んでいる間は…距離を答える」の期待値を全部の距離に変える。「同じ線上に\n  重なる隙間を除き、ガイド線は残したガイドを答える」を足す。fixture のコメントに、\n  隙間のほうが除かれることを書き足す\n- artboard-drag.facing-distance: 「揃え先との隙間と同じ線になる向きにも、距離を出す」に\n  書き換え、「同じ線の距離が出ているとき、ガイドはガイド線を残して隙間を出さない」を\n  足す。2 件で同じ fixture を使うので組み立てを補助関数にまとめる\n\n背景:\n前のコミットで、除く対象が「距離」から「隙間」に変わった。ノードの移動\n（DropEdit）と artboard の移動（ArtboardDrag）は同じ RepositionLines を通るが、\nそれぞれの入口が新しいメソッドを呼んでいることは、入口ごとのテストでしか守れない。\n\n採用理由:\n隙間を除いたあともガイド線（guideLine）が残ることを、ガイドの値そのもので見る。\n「隙間が無い」だけを見ると、軸ごと none にする壊し方でも通ってしまう。\n\n影響とトレードオフ:\n距離の側の期待値は「除かない」に変わったので、距離の除外を壊す壊し方は無くなった。\n除外の判定そのものは RepositionLines のテストが持つ。\n\n代替案:\n- 入口のテストを置かず RepositionLines のテストだけにする: 入口が古い lines.snap を\n  返したままでも通ってしまう\n\n参考:\n- Issue #1206 計画 v2（既存テストの対応表、新規 12・13）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.facing-distance.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 25,
+          "deletions": 8,
+          "patch": "@@ -64,19 +64,23 @@ test(\"吸い付かない回は、吸い付かない位置から測る\", () => {\n   );\n });\n \n-test(\"揃え先との隙間が同じ線を出している向きには距離を出さず、他の向きには出す\", () => {\n-  /*\n-   * 左辺が 203 まで来て上の相手の左辺（200）へ 3px 寄り、左右 200〜400 になる。上の相手との\n-   * 隙間（上下 -50〜40）が同じ線を出すので上は除き、右の相手までは出す。\n-   */\n+/**\n+ * 左辺が 203 まで来て上の相手の左辺（200）へ 3px 寄り、左右 200〜400 になる位置まで運んだ状態。\n+ * 上の相手との隙間（上下 -50〜40）と、上へ進んだ距離が同じ線になる。\n+ *\n+ * @returns Alt / Option を押して運んでいる状態\n+ */\n+function draggingAlignedWithAbove() {\n   const above = { left: 200, top: -100, width: 100, height: 50 };\n-  const dragging = moveSnapped(\n+  return moveSnapped(\n     heldDrag(),\n     pointerInputBy({ x: 103, y: 0 }, { measuresDistances: true }),\n     { carried: HomeDrawn, others: [above, RightDrawn] },\n   );\n+}\n \n-  expect(ArtboardDrag.facingDistances(dragging)).toEqual({\n+test(\"揃え先との隙間と同じ線になる向きにも、距離を出す\", () => {\n+  expect(ArtboardDrag.facingDistances(draggingAlignedWithAbove())).toEqual({\n     horizontal: {\n       start: Option.none,\n       end: Option.some({\n@@ -85,6 +89,19 @@ test(\"揃え先との隙間が同じ線を出している向きには距離を\n         span: { min: 400, max: 450 },\n       }),\n     },\n-    vertical: { start: Option.none, end: Option.none },\n+    vertical: {\n+      start: Option.some({\n+        along: SidePairs.Vertical,\n+        at: 250,\n+        span: { min: -50, max: 40 },\n+      }),\n+      end: Option.none,\n+    },\n   });\n });\n+\n+test(\"同じ線の距離が出ているとき、ガイドはガイド線を残して隙間を出さない\", () => {\n+  const guides = ArtboardDrag.snapGuides(draggingAlignedWithAbove());\n+\n+  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);\n+});",
+          "patchLines": 52,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 16,
+          "patch": "@@ -50,7 +50,7 @@ const SampleRepositionLines: RepositionLines = {\n   distanceLines: FacingDistances.None,\n };\n \n-/** 左と下に距離がある状態。下は `SampleGuides` の隙間と同じ線。 */\n+/** 左と下に距離がある状態。下は `SampleGuides` の隙間と同じ線（隙間のほうが除かれる）。 */\n const SampleDistances: FacingDistances = {\n   horizontal: {\n     start: Option.some({\n@@ -250,19 +250,27 @@ test(\"座標を置き直す落とし方は、揃った線に引くガイド線\n   expect(DropEdit.snapGuides(edit)).toEqual(SampleGuides);\n });\n \n-test(\"座標を置き直す落とし方は、揃え先との隙間と同じ線を除いた距離を答える\", () => {\n-  // 下の距離は隙間と同じ線なので除かれ、左だけが残る\n+test(\"座標を置き直す落とし方は、Alt / Option の距離をすべて答える\", () => {\n   const edit = DropEdit.reposition(\"title\", SampleRepositionTarget, {\n     snap: SampleGuides,\n     distanceLines: SampleDistances,\n   });\n \n-  expect(DropEdit.facingDistances(edit)).toEqual({\n-    ...FacingDistances.None,\n-    horizontal: {\n-      start: SampleDistances.horizontal.start,\n-      end: Option.none,\n-    },\n+  expect(DropEdit.facingDistances(edit)).toEqual(SampleDistances);\n+});\n+\n+test(\"座標を置き直す落とし方は、Alt / Option の距離と同じ線上に重なる隙間を除き、ガイド線は残したガイドを答える\", () => {\n+  const edit = DropEdit.reposition(\"title\", SampleRepositionTarget, {\n+    snap: SampleGuides,\n+    distanceLines: SampleDistances,\n+  });\n+\n+  expect(DropEdit.snapGuides(edit)).toEqual({\n+    horizontal: Option.some({\n+      guideLine: { left: 249, top: 72, width: 2, height: 168 },\n+      gapLine: Option.none,\n+    }),\n+    vertical: Option.none,\n   });\n });\n \n@@ -278,13 +286,7 @@ test(\"運んでいる間は、座標を置き直す落とし方の距離を答\n     ),\n   );\n \n-  expect(NodeDrag.facingDistances(dragging)).toEqual({\n-    ...FacingDistances.None,\n-    horizontal: {\n-      start: SampleDistances.horizontal.start,\n-      end: Option.none,\n-    },\n-  });\n+  expect(NodeDrag.facingDistances(dragging)).toEqual(SampleDistances);\n });\n \n test(\"ツリーへ落とす落とし方では、揃った線のガイド線を引かない\", () => {",
+          "patchLines": 60,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f9a6382bb1cfcdf16dfd4d08d7fa8304956ac711",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T09:51:45Z",
+      "subject": "🧪 [Tests]: #1206 キャンバスの通しで、Alt の距離と重なる隙間が出ないことを固定する",
+      "body": "- artboard-canvas.facing-distance:\n  - 「Alt を押したままでも、揃え先との隙間の数値は変わらない」を「Alt を押して運んで\n    いる間、距離と同じ線上に重なる揃え先との隙間は出さず、ガイド線は出したまま」に\n    書き換える（#1206 の場面。隙間 116 と下の距離 66 が同じ縦線に重なる）\n  - 「…距離を出さず隙間だけを出す」を「揃え先との隙間と同じ線になる向きは、距離だけを\n    出す」に書き換える\n- artboard-canvas.artboard-facing-distance:\n  - 「Alt を押したままでも…変わらない」を「Alt を押していても、距離と同じ線上に重なら\n    ない揃え先との隙間は出したまま」に改名し、距離が 1 本も出ないことの assert を足す\n  - 「…距離を出さず隙間だけを出す」を「揃え先との隙間と同じ線になる向きは、距離だけを\n    出す」に書き換える\n\n背景:\n隙間と距離の線は、ポインタの実測からドメインを通り、overlay で snap-gap /\nfacing-distance の要素になる。ドメインの単体テストだけでは、画面に出る要素の\n組み合わせ（隙間が消え、ガイド線と距離は出る）を見られない。\n\n採用理由:\n画面に出るものとして、snap-gap のラベル・距離のラベル・ガイド線の本数を見る。\n重ならない隙間が出たままになる対照は、既存の 1.2 倍の assert（距離 0 本なら隙間 117\nは出たまま）と、artboard 側の改名したテスト（距離 [] で隙間 60）が持つ。\nartboard 側の旧名「変わらない」は新しい仕様と食い違うので、通るテストでも名前を\n直した。\n\n影響とトレードオフ:\n同じ線のときの見た目は変わらないが、要素の data-testid が snap-gap から\nfacing-distance に変わるので、期待値は書き換わる。\n\n代替案:\n- opened-document-editor の通しも足す: 配線は artboard-canvas の通しが覆っている\n\n参考:\n- Issue #1206 計画 v2（既存テストの対応表）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-facing-distance.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 6,
+          "patch": "@@ -94,7 +94,7 @@ test(\"Alt を押したままでも吸い付き、離すと吸い付いた位置\n   });\n });\n \n-test(\"Alt を押したままでも、揃え先との隙間の数値は変わらない\", () => {\n+test(\"Alt を押していても、距離と同じ線上に重ならない揃え先との隙間は出したまま\", () => {\n   renderCanvas({ selection: setupSelection() });\n   drawnFollowingFrames();\n \n@@ -102,22 +102,23 @@ test(\"Alt を押したままでも、揃え先との隙間の数値は変わら\n   carrySecond({ x: -29, y: 200 }, \"alt\");\n \n   expect(distanceLabels(\"snap-gap\")).toEqual([\"60\"]);\n+  expect(sortedFacingDistanceLabels()).toEqual([]);\n });\n \n-test(\"揃え先との隙間が同じ線を出している向きには、距離を出さず隙間だけを出す\", () => {\n+test(\"揃え先との隙間と同じ線になる向きは、距離だけを出す\", () => {\n   renderCanvas({ selection: setupSelection() });\n   drawnAt(\"first\", { left: 0, top: 0, width: 200, height: 140 });\n   drawnFollowingFrame(\"second\");\n   drawnAt(\"third\", { left: 464, top: 230, width: 200, height: 140 });\n \n   /*\n-   * 左辺が `first` の左辺 0 へ寄り、左右 0〜200・上下 200〜340。上は `first` との隙間 60 が\n-   * 同じ線を出しているので距離を出さず、右の `third` の左辺までの 264 だけを出す。\n+   * 左辺が `first` の左辺 0 へ寄り、左右 0〜200・上下 200〜340。上は `first` との隙間 60 と\n+   * 同じ線になるので隙間を出さず、上の距離 60 と右の `third` の左辺までの 264 を出す。\n    */\n   carrySecond({ x: -229, y: 200 }, \"alt\");\n \n-  expect(distanceLabels(\"snap-gap\")).toEqual([\"60\"]);\n-  expect(sortedFacingDistanceLabels()).toEqual([\"264\"]);\n+  expect(distanceLabels(\"snap-gap\")).toEqual([]);\n+  expect(sortedFacingDistanceLabels()).toEqual([\"264\", \"60\"]);\n });\n \n test(\"⌘ と Alt を一緒に押していると、吸い付かない位置から距離を測り、隙間は出ない\", () => {",
+          "patchLines": 38,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 6,
+          "patch": "@@ -11,6 +11,7 @@ import {\n   dragNode,\n   drawn,\n   renderCanvas,\n+  snapGuides,\n   sortedFacingDistanceLabels,\n } from \"./setup\";\n import { drawnApart, setupSiblings } from \"./snap-siblings\";\n@@ -59,27 +60,30 @@ test(\"Alt を押したままでも吸い付き、離すと吸い付いた位置\n   );\n });\n \n-test(\"Alt を押したままでも、揃え先との隙間の数値は変わらない\", () => {\n+test(\"Alt を押して運んでいる間、距離と同じ線上に重なる揃え先との隙間は出さず、ガイド線は出したまま\", () => {\n   renderCanvas({ selection: setupSiblings() });\n   drawnApart();\n \n+  // `marker` との隙間 116 は、下の `card` までの距離 66 と同じ線上に重なる\n   carryNode(\"badge\", { x: 113, y: -12 }, \"alt\");\n \n-  expect(distanceLabels(\"snap-gap\")).toEqual([\"116\"]);\n+  expect(distanceLabels(\"snap-gap\")).toEqual([]);\n+  expect(sortedFacingDistanceLabels()).toEqual([\"12\", \"150\", \"190\", \"66\"]);\n+  expect(snapGuides()).toHaveLength(1);\n });\n \n-test(\"揃え先との隙間が同じ線を出している向きには、距離を出さず隙間だけを出す\", () => {\n+test(\"揃え先との隙間と同じ線になる向きは、距離だけを出す\", () => {\n   renderCanvas({ selection: setupSiblings() });\n   drawnApart();\n \n   /*\n    * 左辺が `card` の左辺（200）へ寄り、左右 200〜220・上下 72〜84 になる。下は揃え先 `card`\n-   * との隙間 66（docs/06-ui.md の辺のスナップ）が出ているので、距離は上 12・左 100・右 240 だけ。\n+   * との隙間と同じ線になるので、隙間を出さず距離 66 を出す。\n    */\n   carryNode(\"badge\", { x: 60, y: -12 }, \"alt\");\n \n-  expect(distanceLabels(\"snap-gap\")).toEqual([\"66\"]);\n-  expect(sortedFacingDistanceLabels()).toEqual([\"100\", \"12\", \"240\"]);\n+  expect(distanceLabels(\"snap-gap\")).toEqual([]);\n+  expect(sortedFacingDistanceLabels()).toEqual([\"100\", \"12\", \"240\", \"66\"]);\n });\n \n test(\"⌘ と Alt を一緒に押していると、吸い付かない位置から距離を測る\", () => {",
+          "patchLines": 45,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "c371e90a96f209edb3a63e0c61fd60cb03eb7a06",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T09:51:56Z",
+      "subject": "📝 [Doc]: #1206 仕様書に、Alt の距離と同じ線上に重なる隙間を出さないことを書く",
+      "body": "- 辺のスナップの節（166 行目）の末尾に「そのとき、Alt / Option の距離と同じ線上に\n  重なる隙間は出さない（下記）」を足す\n- Alt / Option の距離の節（188 行目）の「押しても吸い付き・ガイド線・揃え先との隙間は\n  変わらない」「同じ線を既に出している向きは、隙間だけを出す」を、「押しても吸い付きと\n  ガイド線は変わらない」「Alt / Option の距離と同じ線上に重なる揃え先との隙間は出さない」\n  （理由つき）に置き換える\n- 「同じ線上に重なる」の定義（同じ向き・範囲が重なる・画面上の 8px 以内・倍率によらない・\n  同じ線も含む）と、丸めて 0 になる距離の向きでは隙間も出ないことを子項目で足す\n- artboard の移動（210 行目）も同じ趣旨に直す\n\n背景:\n#1206 で、Alt を押している間は Alt の線と同じ線上に重なる隙間を出さない（案 A）、\n重なりの判定は画面上の 8px 以内（Q2 a）と決まった。旧文の「隙間は変わらない」\n「隙間だけを出す」は新しい振る舞いと逆になる。\n\n採用理由:\n語は「同じ線上に重なる」にした。「同じ列」は 157・171 行目で等間隔の「兄弟の列」を\n指しているので、同じ節に別の意味で置くと読み違える（plan-reviewer の指摘 A3）。\n丸めて 0 になる向きで数値が 1 つも出ないことは、「何が出ないか」を決める仕様書の\n守備範囲なので書いた。\n\n影響とトレードオフ:\n#960 Q2 の「同じ線なら隙間だけを出す」は、この文で「距離のほうを出す」に変わる。\n\n代替案:\n- 「同じ列に重なる」と書く: 上記のとおり既存の語とぶつかる\n\n参考:\n- Issue #1206（決定と計画 v2）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 3,
+          "patch": "@@ -163,7 +163,7 @@ Figma 寄りの直接操作を採用する。\n       - 線は**揃え先の辺か中心線の位置**に、**揃った 2 つの矩形（寄せたあとの運んでいるものと揃え先）をまたぐ長さ**で引く。相手をまたがないと、何に揃ったのかが見えないため\n       - **寄せ量が 0 でも出す。** 既に辺か中心線が重なっている状態は「いちばん揃っている」ので、そこで線が消えると揃った瞬間だけ手がかりが無くなる\n       - 線は太さ 2px・色 `#d13438`（UI 案 `docs/Design Composer.html` のエラー色）で、**中心を揃った辺か中心線の座標に合わせる**。挿入位置のドロップ線と同じ太さ・同じ中心合わせにするのは、キャンバスに出る線の流儀を割らないため。2 つは排他（ツリーへの挿入と座標の置き直しは同時に起きない）なので、色だけで見分けられればよい。青系（選択の枠・トークン参照）と緑系（落とし先の枠）は運んでいる間に同時に出るため使わない\n-      - **揃え先との隙間を数値で出す**（Figma のスマートガイドと同じ）。出すのはガイド線が出ている軸だけで、測るのは寄せたあとの運んでいるものと揃え先の、**ガイド線に沿った向きの隙間**（左右の辺か中心線が揃ったなら縦の隙間）。その向きで 2 つが**重なっている・接している（隙間を小数 6 桁へ丸めて 0 以下）なら出さない**（揃え先が落とし先の親の縁で、運んでいるものがその内側にあるときもこれに当たる）。丸めるのは、浮動小数の端数で接している 2 つが離れて / 重なって見えるのを落とすため。揃っていない相手との距離は Alt / Option を押している間に出す（下記）\n+      - **揃え先との隙間を数値で出す**（Figma のスマートガイドと同じ）。出すのはガイド線が出ている軸だけで、測るのは寄せたあとの運んでいるものと揃え先の、**ガイド線に沿った向きの隙間**（左右の辺か中心線が揃ったなら縦の隙間）。その向きで 2 つが**重なっている・接している（隙間を小数 6 桁へ丸めて 0 以下）なら出さない**（揃え先が落とし先の親の縁で、運んでいるものがその内側にあるときもこれに当たる）。丸めるのは、浮動小数の端数で接している 2 つが離れて / 重なって見えるのを落とすため。揃っていない相手との距離は Alt / Option を押している間に出す（下記）。そのとき、Alt / Option の距離と同じ線上に重なる隙間は出さない（下記）\n         - 隙間には**短い線**を引き、その中点に数値のラベルを置く。短い線は 2 つの矩形が**もう一方の向きで重なる範囲の中央**に引く（相手と向かい合う範囲の真ん中）。辺どうしが外側で揃ったとき（左辺↔右辺など）は重なりが揃った線の上の 1 点なので、短い線はガイド線に重なる\n         - 数値は**ドキュメント上の px** を最も近い整数へ丸めて出す（`x` / `y` の欄と同じ単位。画面上の px で出すと倍率を変えるたびに数値が変わる）。丸めて 0 になる隙間は、0 以下の隙間と同じく出さない。揃え先の位置は描かれた位置の実測から取るので、倍率が 1 でないときや揃え先の辺が非整数の位置にあるときは、離したあとの座標から計算した隙間と最大 1 違うことがある。回って描かれているノードは外接矩形から測るので、座標（回る前の矩形）から計算した隙間とは、さらにその側の外接矩形と回る前の矩形の辺の差だけ違う\n         - 短い線の太さ・色はガイド線と同じ。ラベルは背景 `#d13438`・白文字（Figma の赤いラベルの配色をガイド線の色で）\n@@ -185,7 +185,9 @@ Figma 寄りの直接操作を採用する。\n       - 親の縁も、もう一方の軸で運んでいるものと幅を持って重なるときだけ相手にする（もう一方の軸で親と重ならない（外へ出きっている）なら、その向きの縁には当たらない）\n       - 親の縁は手前の縁も奥の縁も候補にし、**縁を突き抜けて測らない**。運んでいるものとの間に親の縁を挟む子は相手にならず、親の外側から縁に接しているなら、その向きには何も出さない\n       - **相手に接している向きには何も出さない**。親の縁からはみ出している向きは、その縁が後ろにあるので縁を相手にしない（先に子があればその子まで出す）\n-      - 測るのは**吸い付いたあとの位置**から（⌘ / Ctrl も押していれば吸い付かない位置から）。Alt / Option を押しても、吸い付き・ガイド線・揃え先との隙間は変わらない。揃え先との隙間が同じ線を既に出している向きは、隙間だけを出す（同じ線と数値を 2 つ重ねない）\n+      - 測るのは**吸い付いたあとの位置**から（⌘ / Ctrl も押していれば吸い付かない位置から）。Alt / Option を押しても、吸い付きとガイド線は変わらない。**Alt / Option の距離と同じ線上に重なる揃え先との隙間は出さない**（どちらも相手と向かい合う範囲の中央に引くので、相手が違っても同じ線上に重なり、線と数値が読めなくなる）\n+        - 同じ線上に重なるとは、同じ向きに伸びる 2 本の短い線の伸びる範囲が重なり（端で接するだけは含まない）、直交する向きの位置の差が**画面上の 8px 以内**のこと（倍率によらない）。揃え先と同じ相手を測った向き（同じ線になる）もこれに当たり、距離のほうを出す\n+        - 距離がドキュメント上の px へ丸めて 0 になる向き（相手までドキュメント上で 0.5px 未満）は、距離を出さないうえに、その線と同じ線上に重なる隙間も出さない（その線上には数値が出ない）\n       - 見た目は揃え先との隙間と同じ（短い線を相手と向かい合う範囲の中央に引き、その中点に数値）。UI 案に無い表示で、確認して採った\n       - 数値の単位と丸め、実測なので離したあとの座標から計算した距離と最大 1 違うこと、回っているものを外接矩形で見ること、接している・重なっているかを丸めた距離で見ることは揃え先との隙間と同じ\n       - 押しているかを見るタイミングは ⌘ / Ctrl と同じ\n@@ -207,7 +209,7 @@ Figma 寄りの直接操作を採用する。\n     - まだ描かれていない（大きさの無い）artboard は相手にしない（非表示は下記）\n     - 次は、ノードの移動の Alt / Option の距離と同じ\n       - もう一方の軸で幅を持って重なる相手だけを見ること（接するだけなら当たらない）、運んでいるものと重なっている相手は相手にならないこと、相手に接している向きには何も出さないこと\n-      - 測る位置（⌘ / Ctrl も押していれば吸い付かない位置）と、押しても吸い付き・ガイド線・揃え先との隙間は変わらないこと、隙間と同じ線の向きを除くこと\n+      - 測る位置（⌘ / Ctrl も押していれば吸い付かない位置）と、押しても吸い付き・ガイド線は変わらないこと、Alt / Option の距離と同じ線上に重なる揃え先との隙間を出さないこと（丸めて 0 になる距離の向きを含む）\n       - 見た目と数値の丸め、実測なので離したあとの座標から計算した距離と最大 1 違うこと、接している・重なっているかを丸めた距離で見ること\n       - 押しているかを見るタイミングと、押したまま運んでも複製しないこと\n - **非表示の artboard**: `visibility: hidden` の artboard（03-schema「表示 / 非表示」）は、枠・見出し・リサイズハンドルごとキャンバスに描かない",
+          "patchLines": 29,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "6a4ed1bba252039d3d6faf7ff4ad92fef036a6fb",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T10:05:25Z",
+      "subject": "📝 [Doc]: #1206 隙間が消える理由を「重なることがある」に弱め、接している向きとの境目を書く",
+      "body": "- 188 行目の理由「相手が違っても同じ線上に重なり」を「相手が違っても同じ線上に\n  重なることがあり、そうなると線と数値が読めなくなる」に直す\n- 丸めて 0 の子項目に、隙間を除くかを倍率を持たないドメインで丸める前の距離の線で\n  決めること、接している向き（距離 0）は距離の線そのものが無いので隙間は消えない\n  ことを足す\n\n背景:\n実装の検証で harness-reviewer と ui-reviewer が、旧文は「常に重なる」と読め、すぐ下の\n定義（範囲が重なり 8px 以内）と強さが食い違うと指摘した。harness-reviewer はさらに、\n接している向き（0）と丸めて 0 になる向き（0.5px 未満）で隙間の見え方が逆になるのに、\n後者しか書いていないと指摘した。\n\n採用理由:\n相手が違えば向かい合う範囲も違うので、重なるのは条件が揃ったときだけ。\n0 と 0.5px 未満の境目は、Facing.shortLineTo が接している向きで線を作らないことから\n来る。意図して採った挙動として残し、読み手が推し量らずに済むようにする。\n\n影響とトレードオフ:\n文書だけの変更で、振る舞いは変わらない。\n\n代替案:\n- 接している向きでも隙間を消す: 仕様と実装の両方を変えることになり、決定の範囲を\n  越える\n\n参考:\n- Issue #1206 実装の検証（フェーズ 6）の採否\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -185,9 +185,9 @@ Figma 寄りの直接操作を採用する。\n       - 親の縁も、もう一方の軸で運んでいるものと幅を持って重なるときだけ相手にする（もう一方の軸で親と重ならない（外へ出きっている）なら、その向きの縁には当たらない）\n       - 親の縁は手前の縁も奥の縁も候補にし、**縁を突き抜けて測らない**。運んでいるものとの間に親の縁を挟む子は相手にならず、親の外側から縁に接しているなら、その向きには何も出さない\n       - **相手に接している向きには何も出さない**。親の縁からはみ出している向きは、その縁が後ろにあるので縁を相手にしない（先に子があればその子まで出す）\n-      - 測るのは**吸い付いたあとの位置**から（⌘ / Ctrl も押していれば吸い付かない位置から）。Alt / Option を押しても、吸い付きとガイド線は変わらない。**Alt / Option の距離と同じ線上に重なる揃え先との隙間は出さない**（どちらも相手と向かい合う範囲の中央に引くので、相手が違っても同じ線上に重なり、線と数値が読めなくなる）\n+      - 測るのは**吸い付いたあとの位置**から（⌘ / Ctrl も押していれば吸い付かない位置から）。Alt / Option を押しても、吸い付きとガイド線は変わらない。**Alt / Option の距離と同じ線上に重なる揃え先との隙間は出さない**（どちらも相手と向かい合う範囲の中央に引くので、相手が違っても同じ線上に重なることがあり、そうなると線と数値が読めなくなる）\n         - 同じ線上に重なるとは、同じ向きに伸びる 2 本の短い線の伸びる範囲が重なり（端で接するだけは含まない）、直交する向きの位置の差が**画面上の 8px 以内**のこと（倍率によらない）。揃え先と同じ相手を測った向き（同じ線になる）もこれに当たり、距離のほうを出す\n-        - 距離がドキュメント上の px へ丸めて 0 になる向き（相手までドキュメント上で 0.5px 未満）は、距離を出さないうえに、その線と同じ線上に重なる隙間も出さない（その線上には数値が出ない）\n+        - 距離がドキュメント上の px へ丸めて 0 になる向き（相手までドキュメント上で 0.5px 未満）は、距離を出さないうえに、その線と同じ線上に重なる隙間も出さない（その線上には数値が出ない）。隙間を除くかは倍率を持たないドメインで、丸める前の距離の線で決めるため。接している向き（距離 0）はそもそも距離の線が無いので、隙間は消えない\n       - 見た目は揃え先との隙間と同じ（短い線を相手と向かい合う範囲の中央に引き、その中点に数値）。UI 案に無い表示で、確認して採った\n       - 数値の単位と丸め、実測なので離したあとの座標から計算した距離と最大 1 違うこと、回っているものを外接矩形で見ること、接している・重なっているかを丸めた距離で見ることは揃え先との隙間と同じ\n       - 押しているかを見るタイミングは ⌘ / Ctrl と同じ",
+          "patchLines": 12,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "15ba1e82fb0285f29744f73e19e3f50db61fc7cc",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T10:05:35Z",
+      "subject": "📝 [Doc]: #1206 隙間を除く条件の説明を、除く入口の doc に寄せる",
+      "body": "- SnapGuide.gapLine の doc を変更前の文に戻す（RepositionLines を通したときの none の\n  条件を、型の契約として書かない）\n- SideSnap.toGapReadout の @returns を「その軸の隙間（gapLine）が none なら none」に\n  縮め、条件の一覧を gapLine の 1 か所に置く\n- RepositionLines.snapGuidesExceptCoincidingGaps の doc に、比べるのは丸める前の距離の\n  線で、表示で丸めて消える距離でも重なる隙間は除くことと、その理由を足す\n\n背景:\ncomment-reviewer から、gapLine の doc に足した条件は RepositionLines を通る経路でしか\n成り立たないと指摘があった（NodeResize.snapGuides や SideSnap.toSnapped の生の\nガイドは除外を通らない）。duplication-reviewer からは、gapLine と toGapReadout の\n2 か所に同じ条件の一覧を書き写していて片方だけ直せると指摘があった。\n\n採用理由:\n除外を決めるのは snapGuidesExceptCoincidingGaps だけなので、説明もそこに置く。\n丸める前の距離で比べる理由（ドメインは倍率を持たず、表示される数値を知らない）は\n型やテストで守れず、消すと「隙間が消えたのに距離も出ていない」理由を次に読む人が\n辿れないので書いた。\n\n影響とトレードオフ:\nコメントだけの変更で、振る舞いは変わらない。\n\n代替案:\n- gapLine の doc に条件を残す: 型を共有するリサイズ側に誤った前提を与える\n\n参考:\n- Issue #1206 実装の検証（フェーズ 6）の採否\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 1,
+          "patch": "@@ -78,10 +78,14 @@ export const RepositionLines = {\n    * 揃え先とのガイドのうち、Alt / Option の距離と同じ線上に重なる隙間を除いたもの\n    * （docs/06-ui.md の Alt / Option の距離）。ガイド線は残す。\n    *\n+   * 比べるのは丸める前の距離の線。表示で丸めて消える距離（ドキュメント上で 0.5px 未満）でも、\n+   * 同じ線上に重なる隙間は除く。倍率を持たないので表示される数値を知らないため\n+   * （docs/06-ui.md の Alt / Option の距離の子項目）。\n+   *\n    * 除いた結果を持たずに毎回計算する。持つと、除く前と除いたあとが食い違う組が書ける。\n    *\n    * @param lines 運んでいる間に出す線\n-   * @returns 距離と同じ線上に重なる隙間を `none` にしたガイド\n+   * @returns ガイド線は残し、Alt / Option の距離と同じ線上に重なる隙間（`gapLine`）を `none` にしたガイド\n    */\n   snapGuidesExceptCoincidingGaps(lines: RepositionLines): SnapGuides {\n     const exceptCoinciding = (guide: SnapGuide): SnapGuide => ({",
+          "patchLines": 16,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 5,
+          "patch": "@@ -41,8 +41,8 @@ export type SideSnap = Readonly<{\n export type SnapGuide = Readonly<{\n   guideLine: CanvasBounds;\n   /**\n-   * 揃え先との隙間に引く短い線。揃え先と重なっている / 接している（小数 6 桁へ丸めて 0 以下）/\n-   * Alt / Option の距離と同じ線上に重なるので表示から外した隙間（`RepositionLines`）なら `none`\n+   * 揃え先との隙間に引く短い線。揃え先と重なっている / 接している（小数 6 桁へ丸めて 0 以下）\n+   * なら `none`\n    */\n   gapLine: Option<ThinLine>;\n }>;\n@@ -212,9 +212,8 @@ export const SideSnap = {\n    * @param guides 軸ごとのスマートガイド\n    * @param pair 見る軸（揃った線を挟む辺の組）\n    * @param view 割り戻しに使う倍率を持つ表示\n-   * @returns 隙間の短い線と数値。その軸に揃った線が無い / 揃え先と重なっている・接している\n-   *   （小数 6 桁へ丸めて 0 以下）/ Alt / Option の距離と同じ線上に重なるので表示から外した\n-   *   （`RepositionLines`）/ ドキュメント上の px へ丸めると 0 になるなら `none`\n+   * @returns 隙間の短い線と数値。その軸に揃った線が無い / その軸の隙間（`gapLine`）が `none` /\n+   *   ドキュメント上の px へ丸めると 0 になるなら `none`\n    */\n   toGapReadout(\n     guides: SnapGuides,",
+          "patchLines": 23,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "dd36fc8636d6f3acd147d9f5d62c59b29d2fa6e5",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T10:05:45Z",
+      "subject": "♻️ [Refactoring]: #1206 4 つの向きの距離の走査を fromFacings と同じ並びに揃える",
+      "body": "- FacingDistances.hasCoinciding で 4 向きを手で並べるのをやめ、SidePairs × AxisEnds で\n  走査する\n- 線のある向きだけの並びを先に作り、その上で ThinLine.isCoinciding を some する\n  （述語の中の `&&` を無くす）\n\n背景:\nnaming-reviewer から、述語の中の「Option.isSome && isCoinciding」は条件を組んだ式に\n名前が無いと指摘があった（rules/naming.md）。duplication-reviewer からは、同じ\nFacingDistances の 4 向きを fromFacings と overlay は SidePairs × AxisEnds で、\nhasCoinciding だけが手書きで並べていて、並べ忘れても型エラーにならないと指摘があった。\n\n採用理由:\n線のある向きだけを先に取り出すと `&&` 自体が消え、名前を足す必要が無くなる。\n走査を SidePairs / AxisEnds から作れば、向きの並べ方が 1 通りに揃う。\nOption の並びから値だけを取る操作は ArrayEx / Option に無かったので、リポジトリで\n広く使われている `Option.isSome(x) ? [x.value] : []` の flatMap で書いた。\n\n影響とトレードオフ:\n振る舞いは変えない（4 向きのどれかが同じ線上に重なれば真）。\n\n代替案:\n- 述語を名前付きの変数に入れるだけにする: 4 向きの手書きの並びが残る\n- Option.filter / values を utils に足す: 呼び出しが 1 か所で、先回りの追加になる\n\n参考:\n- Issue #1206 実装の検証（フェーズ 6）の採否\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 10,
+          "patch": "@@ -103,16 +103,14 @@ export const FacingDistances = {\n    * @returns 4 つの向きのどれかの線が `line` と同じ線上に重なれば真。線の無い向きは見ない\n    */\n   hasCoinciding(distances: FacingDistances, line: ThinLine): boolean {\n-    const lines = [\n-      distances.horizontal.start,\n-      distances.horizontal.end,\n-      distances.vertical.start,\n-      distances.vertical.end,\n-    ];\n-    return lines.some(\n-      (distanceLine) =>\n-        Option.isSome(distanceLine) &&\n-        ThinLine.isCoinciding(distanceLine.value, line),\n+    const drawnLines = Object.values(SidePairs).flatMap((pair) =>\n+      Object.values(AxisEnds).flatMap((end) => {\n+        const distanceLine = distances[pair][end];\n+        return Option.isSome(distanceLine) ? [distanceLine.value] : [];\n+      }),\n+    );\n+    return drawnLines.some((distanceLine) =>\n+      ThinLine.isCoinciding(distanceLine, line),\n     );\n   },\n } as const;",
+          "patchLines": 25,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "41ccc0be16f17c1fec86ed27bfc56cf605c9c33d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T10:05:54Z",
+      "subject": "🚚 [Move]: #1206 同じ線上の判定の定数と局所変数を、既存の語に揃えて改名する",
+      "body": "- 非公開の定数 CoincidingPx を CoincidingThresholdPx に改名する\n- ThinLine.isCoinciding の局所変数 isSpanOverlapping を isSpanIntersecting に改名する\n\n背景:\nnaming-reviewer から 2 点の指摘があった。既存の *Px 定数（ThicknessPx /\nSideSnap.ThresholdPx / DragThresholdPx）はどれも「何の長さか」を表す名詞で終わるのに、\nCoincidingPx だけが形容詞で終わり、何の px かが読めない。また、同じ canvas feature の\nCanvasBounds.overlaps は「接するだけでも重なり」とする語なので、接するだけを偽にする\n変数に overlap を使うと境界の扱いが逆になる。\n\n採用理由:\nしきい値であることを ThresholdPx に揃えて名前に出す。範囲の判定は呼んでいる\nRange.intersectionLength の語に揃える。\n\n影響とトレードオフ:\nどちらも非公開・局所の名前で、公開 API と振る舞いは変わらない。旧名は src / docs /\nharness / .claude にこのファイル以外の参照が無い。\n\n代替案:\n- isSpanOverlapping のまま doc で補う: 共通化するときに端の扱いを取り違えやすい\n\n参考:\n- Issue #1206 実装の検証（フェーズ 6）の採否\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -24,7 +24,7 @@ const ThicknessPx = 2;\n  * 同じ線上に重なるとみなす、直交する向きの位置の差（画面上の px。倍率によらない）。\n  * 値の拠り所は docs/06-ui.md の Alt / Option の距離。\n  */\n-const CoincidingPx = 8;\n+const CoincidingThresholdPx = 8;\n \n export const ThinLine = {\n   /**\n@@ -62,9 +62,9 @@ export const ThinLine = {\n    */\n   isCoinciding(line: ThinLine, other: ThinLine): boolean {\n     const isSameAlong = line.along === other.along;\n-    const isSpanOverlapping =\n+    const isSpanIntersecting =\n       Range.intersectionLength(line.span, other.span) > 0;\n-    const isAtClose = Math.abs(line.at - other.at) <= CoincidingPx;\n-    return isSameAlong && isSpanOverlapping && isAtClose;\n+    const isAtClose = Math.abs(line.at - other.at) <= CoincidingThresholdPx;\n+    return isSameAlong && isSpanIntersecting && isAtClose;\n   },\n } as const;",
+          "patchLines": 22,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "be87640d5f8eca904e5c567f45963df4187c3c15",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T10:06:05Z",
+      "subject": "🧪 [Tests]: #1206 隙間を除くテストで、ガイド線が残ることも確かめ、fixture を名前で共有する",
+      "body": "- reposition-lines: 「ガイド線は残す」テストで guideLine も assert する。隙間の線の\n  定数 HandGap を BelowGap に改名して期待値の直書き 2 か所から参照する。snapGuidesAt に\n  距離を測るかを渡し、「距離を測らない回」のテストもそこから組む\n- artboard-drag.facing-distance: 「ガイド線を残して」のテストで guideLine も assert する\n- node-drag.normal: SampleGuideLine / SampleGapLine を足して SampleGuides をそこから組み、\n  SampleDistances の下向きは SampleGapLine を共有して「同じ線」を値で示す。距離込みの\n  対の組み立て 3 回を SampleMeasuredRepositionLines にまとめる\n\n背景:\nduplication-reviewer から、テスト名に「ガイド線は残す」とあるのに gapLine しか\n見ていないこと、期待値が fixture と同じ値の直書きになっていて片方だけ直せることを\n指摘された。\n\n採用理由:\ngapLine だけを見ると、軸ごと none にして隙間ごとガイド線を消す壊し方でも通る。\nguideLine の期待値は、実物の toSnapped を動かして出した値で書いた。\n「隙間と同じ線」を値の共有で示すと、fixture の座標を直したときに同じ線であることが\n崩れない。\n\n影響とトレードオフ:\nテストの観点は増減しない（assert を足しただけで、テストの件数は変わらない）。\n\n代替案:\n- コメントで「同じ値」と書くだけにする: 値がずれても気づけない\n\n参考:\n- Issue #1206 実装の検証（フェーズ 6）の採否\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.facing-distance.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 1,
+          "patch": "@@ -103,5 +103,9 @@ test(\"揃え先との隙間と同じ線になる向きにも、距離を出す\",\n test(\"同じ線の距離が出ているとき、ガイドはガイド線を残して隙間を出さない\", () => {\n   const guides = ArtboardDrag.snapGuides(draggingAlignedWithAbove());\n \n-  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);\n+  // ガイド線は上の相手の左辺（左右 200）に、上の相手から運んでいるものまで引く\n+  expect(Option.unwrap(guides.horizontal)).toEqual({\n+    guideLine: { left: 199, top: -100, width: 2, height: 240 },\n+    gapLine: Option.none,\n+  });\n });",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 42,
+          "deletions": 24,
+          "patch": "@@ -1,6 +1,7 @@\n import { expect, test } from \"vitest\";\n import { RepositionEdit } from \"@/domains/dcmp/reposition-edit\";\n import { SidePairs } from \"@/domains/unit/side\";\n+import type { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-bounds\";\n import { FacingDistances } from \"@/features/editor/features/canvas/domains/facing-distances\";\n import type {\n   DraggedNode,\n@@ -9,6 +10,7 @@ import type {\n import type { RepositionLines } from \"@/features/editor/features/canvas/domains/reposition-lines\";\n import type { RepositionTarget } from \"@/features/editor/features/canvas/domains/reposition-target\";\n import type { SnapGuides } from \"@/features/editor/features/canvas/domains/side-snap\";\n+import type { ThinLine } from \"@/features/editor/features/canvas/domains/thin-line\";\n import { Option } from \"@/utils/Option\";\n import { Carrying, DropEdit, NodeDrag } from \"../index\";\n \n@@ -31,15 +33,26 @@ const SampleDropTarget: DropTarget = {\n /** ツリーへ挿す側の落とし方。座標の置き直しは別のファイルで見る。 */\n const SampleDrop = DropEdit.intoTree(MovingTitle, SampleDropTarget);\n \n+/** `SampleGuides` の、左右の辺が揃った縦のガイド線。 */\n+const SampleGuideLine: CanvasBounds = {\n+  left: 249,\n+  top: 72,\n+  width: 2,\n+  height: 168,\n+};\n+\n+/** `SampleGuides` の、揃え先との隙間の線。 */\n+const SampleGapLine: ThinLine = {\n+  along: SidePairs.Vertical,\n+  at: 260,\n+  span: { min: 84, max: 200 },\n+};\n+\n /** 左右の辺が揃って縦線が 1 本と、揃え先との隙間が出ている状態。運んでいる間だけの提示。 */\n const SampleGuides: SnapGuides = {\n   horizontal: Option.some({\n-    guideLine: { left: 249, top: 72, width: 2, height: 168 },\n-    gapLine: Option.some({\n-      along: SidePairs.Vertical,\n-      at: 260,\n-      span: { min: 84, max: 200 },\n-    }),\n+    guideLine: SampleGuideLine,\n+    gapLine: Option.some(SampleGapLine),\n   }),\n   vertical: Option.none,\n };\n@@ -62,14 +75,16 @@ const SampleDistances: FacingDistances = {\n   },\n   vertical: {\n     start: Option.none,\n-    end: Option.some({\n-      along: SidePairs.Vertical,\n-      at: 260,\n-      span: { min: 84, max: 200 },\n-    }),\n+    end: Option.some(SampleGapLine),\n   },\n };\n \n+/** 揃った線と隙間があり、Alt / Option の距離も測った状態。 */\n+const SampleMeasuredRepositionLines: RepositionLines = {\n+  snap: SampleGuides,\n+  distanceLines: SampleDistances,\n+};\n+\n /** 揃った線が 1 つも無い状態。 */\n const NoGuides: SnapGuides = { horizontal: Option.none, vertical: Option.none };\n \n@@ -251,23 +266,25 @@ test(\"座標を置き直す落とし方は、揃った線に引くガイド線\n });\n \n test(\"座標を置き直す落とし方は、Alt / Option の距離をすべて答える\", () => {\n-  const edit = DropEdit.reposition(\"title\", SampleRepositionTarget, {\n-    snap: SampleGuides,\n-    distanceLines: SampleDistances,\n-  });\n+  const edit = DropEdit.reposition(\n+    \"title\",\n+    SampleRepositionTarget,\n+    SampleMeasuredRepositionLines,\n+  );\n \n   expect(DropEdit.facingDistances(edit)).toEqual(SampleDistances);\n });\n \n test(\"座標を置き直す落とし方は、Alt / Option の距離と同じ線上に重なる隙間を除き、ガイド線は残したガイドを答える\", () => {\n-  const edit = DropEdit.reposition(\"title\", SampleRepositionTarget, {\n-    snap: SampleGuides,\n-    distanceLines: SampleDistances,\n-  });\n+  const edit = DropEdit.reposition(\n+    \"title\",\n+    SampleRepositionTarget,\n+    SampleMeasuredRepositionLines,\n+  );\n \n   expect(DropEdit.snapGuides(edit)).toEqual({\n     horizontal: Option.some({\n-      guideLine: { left: 249, top: 72, width: 2, height: 168 },\n+      guideLine: SampleGuideLine,\n       gapLine: Option.none,\n     }),\n     vertical: Option.none,\n@@ -279,10 +296,11 @@ test(\"運んでいる間は、座標を置き直す落とし方の距離を答\n     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),\n     { x: 100, y: 140 },\n     Carrying.droppable(\n-      DropEdit.reposition(\"title\", SampleRepositionTarget, {\n-        snap: SampleGuides,\n-        distanceLines: SampleDistances,\n-      }),\n+      DropEdit.reposition(\n+        \"title\",\n+        SampleRepositionTarget,\n+        SampleMeasuredRepositionLines,\n+      ),\n     ),\n   );\n ",
+          "patchLines": 122,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 38,
+          "deletions": 29,
+          "patch": "@@ -11,23 +11,29 @@ import { Option } from \"@/utils/Option\";\n import { RepositionLines } from \"../index\";\n \n /**\n- * 親とその直下の兄弟へ吸い付かせ、Alt / Option の距離も測ったときに出すガイド。\n+ * 親とその直下の兄弟へ吸い付かせたときに出すガイド。\n  *\n- * @param placement 寄せる前の運んでいるもの・落とし先の親・その親の直下の兄弟\n+ * @param placement 寄せる前の運んでいるもの・落とし先の親・その親の直下の兄弟と、\n+ *   Alt / Option の距離を測るか\n  * @returns Alt / Option の距離と同じ線上に重なる隙間を除いたガイド\n  */\n function snapGuidesAt({\n   moving,\n   parentBounds,\n   siblings,\n+  measuresDistances,\n }: Readonly<{\n   moving: CanvasBounds;\n   parentBounds: CanvasBounds;\n   siblings: readonly CanvasBounds[];\n+  measuresDistances: boolean;\n }>) {\n+  const distanceTargets = measuresDistances\n+    ? Option.some({ kind: \"within-parent\" as const, parentBounds, siblings })\n+    : Option.none;\n   const snapped = RepositionLines.toSnapped(\n     SideSnap.withSiblings(SideSnap.create(moving, [parentBounds]), siblings),\n-    Option.some({ kind: \"within-parent\", parentBounds, siblings }),\n+    distanceTargets,\n   );\n   return RepositionLines.snapGuidesExceptCoincidingGaps(snapped.lines);\n }\n@@ -41,17 +47,20 @@ const Below: CanvasBounds = { left: 50, top: 60, width: 30, height: 20 };\n /** 寄せる前の運んでいるもの（左右 52〜72・上下 10〜20）。 */\n const Moving: CanvasBounds = { left: 52, top: 10, width: 20, height: 10 };\n \n-/** 手で組むガイドの隙間（縦に伸びる・左右 60・上下 20〜60）。 */\n-const HandGap: ThinLine = {\n+/**\n+ * `Moving` の左辺が `Below` へ寄ったときの、揃え先 `Below` との隙間の線（縦に伸びる・左右 60・\n+ * 上下 20〜60）。手で組むガイドの隙間にも使う。\n+ */\n+const BelowGap: ThinLine = {\n   along: SidePairs.Vertical,\n   at: 60,\n   span: { min: 20, max: 60 },\n };\n \n-/** 手で組むガイド（左右 60 に縦のガイド線、`HandGap` の隙間）。 */\n+/** 手で組むガイド（左右 60 に縦のガイド線、`BelowGap` の隙間）。 */\n const HandGuide: SnapGuide = {\n   guideLine: { left: 59, top: 0, width: 2, height: 100 },\n-  gapLine: Option.some(HandGap),\n+  gapLine: Option.some(BelowGap),\n };\n \n test(\"揃え先と同じ相手までの距離が出ている向きでは、隙間を出さずガイド線は残す\", () => {\n@@ -60,9 +69,14 @@ test(\"揃え先と同じ相手までの距離が出ている向きでは、隙\n     moving: Moving,\n     parentBounds: Parent,\n     siblings: [Below],\n+    measuresDistances: true,\n   });\n \n-  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);\n+  // ガイド線は Below の左辺（左右 50）に、運んでいるもの（上下 10〜20）から Below まで引く\n+  expect(Option.unwrap(guides.horizontal)).toEqual({\n+    guideLine: { left: 49, top: 10, width: 2, height: 70 },\n+    gapLine: Option.none,\n+  });\n });\n \n test(\"揃え先より近い兄弟までの距離が、直交方向 5px の差で同じ線上に重なると、隙間を出さない\", () => {\n@@ -73,6 +87,7 @@ test(\"揃え先より近い兄弟までの距離が、直交方向 5px の差で\n     moving: Moving,\n     parentBounds: Parent,\n     siblings: [Below, nearer],\n+    measuresDistances: true,\n   });\n \n   expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);\n@@ -86,6 +101,7 @@ test(\"直交方向の差がちょうど 8px の兄弟までの距離なら、隙\n     moving: Moving,\n     parentBounds: Parent,\n     siblings: [Below, nearer],\n+    measuresDistances: true,\n   });\n \n   expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);\n@@ -99,14 +115,11 @@ test(\"直交方向の差が 8px を超える兄弟までの距離なら、隙間\n     moving: Moving,\n     parentBounds: Parent,\n     siblings: [Below, nearer],\n+    measuresDistances: true,\n   });\n \n   expect(Option.unwrap(guides.horizontal).gapLine).toEqual(\n-    Option.some({\n-      along: SidePairs.Vertical,\n-      at: 60,\n-      span: { min: 20, max: 60 },\n-    }),\n+    Option.some(BelowGap),\n   );\n });\n \n@@ -123,6 +136,7 @@ test(\"親の縁との隙間も、同じ線上に重なる距離が出ていれ\n     moving: { left: 1, top: 110, width: 20, height: 10 },\n     parentBounds,\n     siblings: [right],\n+    measuresDistances: true,\n   });\n \n   expect(Option.unwrap(guides.horizontal).gapLine).toEqual(Option.none);\n@@ -136,27 +150,22 @@ test(\"横に測った隙間も、同じ線上に重なる距離が出ていれ\n     moving: { left: 50, top: 30, width: 20, height: 10 },\n     parentBounds: Parent,\n     siblings: [right],\n+    measuresDistances: true,\n   });\n \n   expect(Option.unwrap(guides.vertical).gapLine).toEqual(Option.none);\n });\n \n test(\"Alt / Option で距離を測らない回は、隙間をそのまま出す\", () => {\n-  const snapped = RepositionLines.toSnapped(\n-    SideSnap.withSiblings(SideSnap.create(Moving, [Parent]), [Below]),\n-    Option.none,\n-  );\n+  const guides = snapGuidesAt({\n+    moving: Moving,\n+    parentBounds: Parent,\n+    siblings: [Below],\n+    measuresDistances: false,\n+  });\n \n-  expect(\n-    Option.unwrap(\n-      RepositionLines.snapGuidesExceptCoincidingGaps(snapped.lines).horizontal,\n-    ).gapLine,\n-  ).toEqual(\n-    Option.some({\n-      along: SidePairs.Vertical,\n-      at: 60,\n-      span: { min: 20, max: 60 },\n-    }),\n+  expect(Option.unwrap(guides.horizontal).gapLine).toEqual(\n+    Option.some(BelowGap),\n   );\n });\n \n@@ -177,7 +186,7 @@ test(\"隙間と同じ向きの距離が反対側にあり範囲が離れてい\n   });\n \n   expect(Option.unwrap(guides.horizontal).gapLine).toEqual(\n-    Option.some(HandGap),\n+    Option.some(BelowGap),\n   );\n });\n \n@@ -198,6 +207,6 @@ test(\"直交する向きの距離が近い位置にあっても、隙間は出\n   });\n \n   expect(Option.unwrap(guides.horizontal).gapLine).toEqual(\n-    Option.some(HandGap),\n+    Option.some(BelowGap),\n   );\n });",
+          "patchLines": 169,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "406a1a8f6f7c507103b7367e0ea8515c26f379e8",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T10:34:13Z",
+      "subject": "🧪 [Tests]: #1206 丸めると 0 になる短い距離の線でも、重なる隙間を除くことを固定する",
+      "body": "- reposition-lines.normal に「丸めると 0 になる 0.5px 未満の距離の線でも、同じ線上に\n  重なれば隙間を出さない」を足す（長さ 0.3 の距離の線と、同じ線上の隙間を手で組む）\n\n背景:\ntest-reviewer のミューテーションで、hasCoinciding を「長さ 0.5 以上の線だけを見る」に\n壊しても canvas の全テストが通った。snapGuidesExceptCoincidingGaps の doc と\ndocs/06-ui.md に書いた「表示で丸めて消える距離でも、重なる隙間は除く」という判断が、\nテストでは守られていなかった。\n\n採用理由:\n距離の線は、端で接するだけにならないよう隙間と 0.3 だけ重なる範囲にした。\n同じ壊し方を入れ直し、このテストだけが落ちる（1 failed / 1101 passed）ことを確かめた。\n「距離の線が無ければ隙間は残る」の対照は、既存の「距離を測らない回は、隙間をそのまま\n出す」が同じ意味を持つので足していない。\n\n影響とトレードオフ:\n将来「表示されない距離では隙間を消さない」に変えるときは、このテストを書き換える\nことになる（Issue #1206 で人の確認を待っている判断）。\n\n代替案:\n- 倍率込みの通しテストで見る: 判定はドメインで倍率を持たずに決まるので、\n  ドメインの単位で見るほうが入力が少なく済む\n\n参考:\n- Issue #1206 実装の検証（test-reviewer の指摘）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 0,
+          "patch": "@@ -169,6 +169,28 @@ test(\"Alt / Option で距離を測らない回は、隙間をそのまま出す\"\n   );\n });\n \n+test(\"丸めると 0 になる 0.5px 未満の距離の線でも、同じ線上に重なれば隙間を出さない\", () => {\n+  // 距離の線は上下 59.7〜60（長さ 0.3）で、隙間（上下 20〜60）と 0.3 だけ範囲が重なる\n+  const guides = RepositionLines.snapGuidesExceptCoincidingGaps({\n+    snap: { horizontal: Option.some(HandGuide), vertical: Option.none },\n+    distanceLines: {\n+      ...FacingDistances.None,\n+      vertical: {\n+        start: Option.none,\n+        end: Option.some({\n+          along: SidePairs.Vertical,\n+          at: 60,\n+          span: { min: 59.7, max: 60 },\n+        }),\n+      },\n+    },\n+  });\n+\n+  expect(guides.horizontal).toEqual(\n+    Option.some({ guideLine: HandGuide.guideLine, gapLine: Option.none }),\n+  );\n+});\n+\n test(\"隙間と同じ向きの距離が反対側にあり範囲が離れているなら、隙間は出たまま\", () => {\n   const guides = RepositionLines.snapGuidesExceptCoincidingGaps({\n     snap: { horizontal: Option.some(HandGuide), vertical: Option.none },",
+          "patchLines": 29,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": "docs/06-ui.md",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-facing-distance.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-facing-distance.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-facing-distance.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-facing-distance.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-artboards.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+      "to": "src/domains/dcmp/reposition-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.facing-distance.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-siblings.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/__tests__/facing-distance-overlay.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/snap-guide-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.facing-distance.test.ts",
+      "to": "src/domains/unit/side/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.facing-distance.test.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/held-drag.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.facing-distance.test.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.facing-distance.test.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.facing-distance.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap-guide.test.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap-guide.test.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/artboard-drag.snap.test.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/__tests__/held-drag.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/distance-readout/index.ts",
+      "to": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.edge.test.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.without-parent.test.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "to": "src/domains/unit/side/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "to": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing/__tests__/facing.short-line.test.ts",
+      "to": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing/index.ts",
+      "to": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+      "to": "src/domains/dcmp/reposition-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+      "to": "src/domains/unit/side/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "to": "src/domains/session/node-template/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/range-select/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+      "to": "src/domains/unit/side/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/__tests__/reposition-lines.normal.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/domains/unit/side/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/__tests__/moving-bounds.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.edge.test.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.gap.test.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.gap.test.ts",
+      "to": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.guide.test.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.interval.test.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.resize-guide.test.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/__tests__/side-snap.resize.test.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/domains/unit/side/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/features/editor/features/canvas/domains/distance-readout/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/features/editor/features/canvas/domains/interval-slot/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+      "to": "src/domains/unit/side/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/thin-line/__tests__/thin-line.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "to": "src/domains/unit/side/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/thin-line/index.ts",
+      "to": "src/utils/Range.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/artboard-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    }
+  ]
+}
