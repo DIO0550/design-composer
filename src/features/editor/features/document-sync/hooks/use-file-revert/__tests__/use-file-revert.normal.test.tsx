@@ -7,7 +7,10 @@ import {
 } from "@/domains/__tests__/sample-document";
 import { DocumentAccessFailureReasons } from "@/domains/session/document-access-failure";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
-import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import {
+  createDocumentIpcFake,
+  type DocumentIpcFake,
+} from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
 import { useFileRevert } from "../index";
@@ -38,7 +41,7 @@ function renderFileRevert(fake: DocumentIpcFake) {
 }
 
 test("書き戻すと、表示中の内容でファイルが上書きされる", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   const { control } = renderFileRevert(fake);
 
   await act(async () => {
@@ -51,7 +54,7 @@ test("書き戻すと、表示中の内容でファイルが上書きされる",
 });
 
 test("書き込みが終わるまでは、書き出しの最中として読める", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   const release = fake.holdWrites(Path);
   const { control } = renderFileRevert(fake);
 
@@ -67,7 +70,7 @@ test("書き込みが終わるまでは、書き出しの最中として読め�
 });
 
 test("書き込みが終わると書き出し済みに戻る", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   /*
    * 書き込みを止めてから始める。止めずに始めると保存状態が初期値の `Saved` から
    * 動かないまま終わり、書き戻しが何もしなくてもこの assert が通る
@@ -87,7 +90,7 @@ test("書き込みが終わると書き出し済みに戻る", async () => {
 });
 
 test("書き込みが終わると、書き戻せたことが呼び出し側へ伝わる", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   const { control, notice } = renderFileRevert(fake);
 
   await act(async () => {
@@ -98,7 +101,7 @@ test("書き込みが終わると、書き戻せたことが呼び出し側へ�
 });
 
 test("書き込みが拒まれると、拒まれた理由が保存状態に残る", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   fake.denyWrites(Path);
   const { control } = renderFileRevert(fake);
 
@@ -117,7 +120,7 @@ test("書き込みが拒まれると、拒まれた理由が保存状態に残�
 });
 
 test("書き込みが拒まれたときは、書き戻せたことを伝えない", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   fake.denyWrites(Path);
   const { control, notice } = renderFileRevert(fake);
 

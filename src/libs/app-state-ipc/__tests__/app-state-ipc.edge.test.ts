@@ -1,11 +1,11 @@
 import { expect, test } from "vitest";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { AppStateIpcFake } from "../fake";
+import { createAppStateIpcFake } from "../fake";
 import { createAppStateIpc } from "../index";
 
 test("読み込みが拒まれたら理由を持つ失敗になる", async () => {
-  const fake = AppStateIpcFake.create('{"recentPaths":[]}');
+  const fake = createAppStateIpcFake('{"recentPaths":[]}');
   fake.denyLoad();
 
   const loaded = await fake.ipc.load();
@@ -16,7 +16,7 @@ test("読み込みが拒まれたら理由を持つ失敗になる", async () =>
 });
 
 test("書き出しが拒まれたら理由を持つ失敗になる", async () => {
-  const fake = AppStateIpcFake.create();
+  const fake = createAppStateIpcFake();
   fake.denySave();
 
   const saved = await fake.ipc.save('{"recentPaths":[]}');
@@ -27,7 +27,7 @@ test("書き出しが拒まれたら理由を持つ失敗になる", async () =>
 });
 
 test("書き出しが拒まれたら中身は変わらない", async () => {
-  const fake = AppStateIpcFake.create('{"recentPaths":[]}');
+  const fake = createAppStateIpcFake('{"recentPaths":[]}');
   fake.denySave();
 
   await fake.ipc.save('{"recentPaths":["/work/login.dcmp"]}');

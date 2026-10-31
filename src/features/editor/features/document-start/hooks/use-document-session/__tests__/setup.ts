@@ -6,20 +6,24 @@ import type { FilePath } from "@/domains/unit/file-path";
 import type { DocumentSession } from "@/features/editor/features/document-start/domains/document-session";
 import type { CommandSourceFailure } from "@/features/editor/features/document-start/hooks/use-document-session";
 import type { AppMenuCommand } from "@/libs/app-menu";
-import { AppMenuFake } from "@/libs/app-menu/fake";
-import { AppStateIpcFake } from "@/libs/app-state-ipc/fake";
-import { AppStateJson } from "@/libs/app-state-json";
-import { AppWindowFake } from "@/libs/app-window/fake";
+import { createAppMenuFake } from "@/libs/app-menu/fake";
 import {
+  type AppStateIpcFake,
+  createAppStateIpcFake,
+} from "@/libs/app-state-ipc/fake";
+import { AppStateJson } from "@/libs/app-state-json";
+import { createAppWindowFake } from "@/libs/app-window/fake";
+import {
+  createDocumentDialogFake,
   type DialogChoices,
-  DocumentDialogFake,
 } from "@/libs/document-dialog/fake";
 import {
   type CanonicalizeDenial,
-  DocumentIpcFake,
+  createDocumentIpcFake,
+  type DocumentIpcFake,
   type PathLink,
 } from "@/libs/document-ipc/fake";
-import { FileDropFake } from "@/libs/file-drop/fake";
+import { createFileDropFake } from "@/libs/file-drop/fake";
 import type { IndexMove } from "@/types/IndexMove";
 import { Option } from "@/utils/Option";
 import { useDocumentSession } from "../index";
@@ -133,11 +137,11 @@ export function renderDocumentSession(
   choices: DialogChoices,
   options: SessionPortOptions = {},
 ): SessionObserver {
-  const ipcFake = DocumentIpcFake.create(files);
-  const dialogFake = DocumentDialogFake.create(choices);
-  const menuFake = AppMenuFake.create();
-  const dropFake = FileDropFake.create();
-  const appStateFake = AppStateIpcFake.create(options.storedAppState);
+  const ipcFake = createDocumentIpcFake(files);
+  const dialogFake = createDocumentDialogFake(choices);
+  const menuFake = createAppMenuFake();
+  const dropFake = createFileDropFake();
+  const appStateFake = createAppStateIpcFake(options.storedAppState);
   if (options.denyAppStateLoad === true) {
     appStateFake.denyLoad();
   }
@@ -163,7 +167,7 @@ export function renderDocumentSession(
     menu: menuFake.menu,
     drop: dropFake.drop,
     appState: appStateFake.ipc,
-    appWindow: AppWindowFake.create().appWindow,
+    appWindow: createAppWindowFake().appWindow,
   };
   const { result } = renderHook(() => useDocumentSession(ports));
 

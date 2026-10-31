@@ -34,48 +34,46 @@ export type SingleEventIpcFake = Readonly<{
   denySubscribe(): void;
 }>;
 
-export const SingleEventIpcFake = {
-  /**
-   * 配るイベントを 1 つ決めて代役を作る。
-   *
-   * @param event 配るイベントの名前。これ以外の購読は本物と同じく reject する
-   * @returns 代役の口と、イベントを起こす手段
-   */
-  create(event: string): SingleEventIpcFake {
-    const listeners = new Set<(payload: unknown) => void>();
-    let subscribeDenied = false;
+/**
+ * 配るイベントを 1 つ決めて代役を作る。
+ *
+ * @param event 配るイベントの名前。これ以外の購読は本物と同じく reject する
+ * @returns 代役の口と、イベントを起こす手段
+ */
+export function createSingleEventIpcFake(event: string): SingleEventIpcFake {
+  const listeners = new Set<(payload: unknown) => void>();
+  let subscribeDenied = false;
 
-    const ipc: TauriIpc = {
-      invoke(command) {
-        return ipcFailure(`Command ${command} not found`);
-      },
+  const ipc: TauriIpc = {
+    invoke(command) {
+      return ipcFailure(`Command ${command} not found`);
+    },
 
-      listen(listened, handler) {
-        if (listened !== event) {
-          return ipcFailure(`Event ${listened} not emitted`);
-        }
-        if (subscribeDenied) {
-          return ipcFailure(`${listened}: 購読を開始できない`);
-        }
-        listeners.add(handler);
-        return Promise.resolve(() => {
-          listeners.delete(handler);
-        });
-      },
-    };
+    listen(listened, handler) {
+      if (listened !== event) {
+        return ipcFailure(`Event ${listened} not emitted`);
+      }
+      if (subscribeDenied) {
+        return ipcFailure(`${listened}: 購読を開始できない`);
+      }
+      listeners.add(handler);
+      return Promise.resolve(() => {
+        listeners.delete(handler);
+      });
+    },
+  };
 
-    return {
-      ipc,
+  return {
+    ipc,
 
-      deliver(payload) {
-        for (const listener of listeners) {
-          listener(payload);
-        }
-      },
+    deliver(payload) {
+      for (const listener of listeners) {
+        listener(payload);
+      }
+    },
 
-      denySubscribe() {
-        subscribeDenied = true;
-      },
-    };
-  },
-} as const;
+    denySubscribe() {
+      subscribeDenied = true;
+    },
+  };
+}

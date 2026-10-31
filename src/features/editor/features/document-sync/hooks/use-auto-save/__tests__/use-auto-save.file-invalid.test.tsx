@@ -3,7 +3,7 @@ import { SampleSyntaxError } from "@/domains/__tests__/document-errors";
 import { ReceivedAt } from "@/domains/__tests__/instants";
 import { artboardDocument } from "@/domains/__tests__/sample-document";
 import { FileValidity } from "@/domains/session/file-validity";
-import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
 import { AutoSaveDebounceMs } from "../index";
@@ -30,7 +30,7 @@ const Invalid: FileValidity = {
 test("ファイルが不正な間は、編集してもファイルへ書き出さない", async () => {
   vi.useFakeTimers();
   const broken = "{ 壊れた";
-  const fake = DocumentIpcFake.create({ [Path]: broken });
+  const fake = createDocumentIpcFake({ [Path]: broken });
   const { rerender } = renderAutoSave({
     ipc: fake.ipc,
     document: artboardDocument("home"),
@@ -51,7 +51,7 @@ test("編集の直後にファイルが不正になると、デバウンス中�
   vi.useFakeTimers();
   const opened = artboardDocument("home");
   const broken = "{ 壊れた";
-  const fake = DocumentIpcFake.create({
+  const fake = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(opened),
   });
   /*
@@ -77,7 +77,7 @@ test("ファイルが直ると、その後の編集はファイルへ書き出�
   vi.useFakeTimers();
   const opened = artboardDocument("home");
   const edited = artboardDocument("settings");
-  const fake = DocumentIpcFake.create({
+  const fake = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(opened),
   });
   const { rerender } = renderAutoSave({

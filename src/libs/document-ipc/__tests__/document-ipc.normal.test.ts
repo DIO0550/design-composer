@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import { filePath } from "@/domains/__tests__/file-paths";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { DocumentIpcFake } from "../fake";
+import { createDocumentIpcFake } from "../fake";
 import type { DocumentChanged } from "../index";
 
 const Path = filePath("/work/login.dcmp");
@@ -10,7 +10,7 @@ const Path = filePath("/work/login.dcmp");
 const LinkPath = filePath("/link/login.dcmp");
 
 test("ファイルを読み込むとその中身が返る", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{ "formatVersion": "1.0" }` });
+  const fake = createDocumentIpcFake({ [Path]: `{ "formatVersion": "1.0" }` });
 
   const loaded = await fake.ipc.load(Path);
 
@@ -18,7 +18,7 @@ test("ファイルを読み込むとその中身が返る", async () => {
 });
 
 test("保存した内容が次の読み込みで返る", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{ "formatVersion": "1.0" }` });
+  const fake = createDocumentIpcFake({ [Path]: `{ "formatVersion": "1.0" }` });
 
   Result.unwrap(await fake.ipc.save(Path, `{ "formatVersion": "1.1" }`));
 
@@ -28,7 +28,7 @@ test("保存した内容が次の読み込みで返る", async () => {
 });
 
 test("まだ無いパスへ保存するとファイルが作られる", async () => {
-  const fake = DocumentIpcFake.create();
+  const fake = createDocumentIpcFake();
 
   Result.unwrap(await fake.ipc.save(Path, `{}`));
 
@@ -36,7 +36,7 @@ test("まだ無いパスへ保存するとファイルが作られる", async ()
 });
 
 test("監視中のファイルが外部から書き換わると、パスと中身が届く", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
   const received: DocumentChanged[] = [];
   Result.unwrap(
     await fake.ipc.subscribeChanged((changed) => received.push(changed)),
@@ -51,7 +51,7 @@ test("監視中のファイルが外部から書き換わると、パスと中�
 });
 
 test("自アプリの保存は外部変更として届かない", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
   const received: DocumentChanged[] = [];
   Result.unwrap(
     await fake.ipc.subscribeChanged((changed) => received.push(changed)),
@@ -64,7 +64,7 @@ test("自アプリの保存は外部変更として届かない", async () => {
 });
 
 test("監視していないファイルの外部変更は届かない", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
   const received: DocumentChanged[] = [];
   Result.unwrap(
     await fake.ipc.subscribeChanged((changed) => received.push(changed)),
@@ -76,7 +76,7 @@ test("監視していないファイルの外部変更は届かない", async ()
 });
 
 test("監視を止めると外部変更が届かなくなる", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
   const received: DocumentChanged[] = [];
   Result.unwrap(
     await fake.ipc.subscribeChanged((changed) => received.push(changed)),
@@ -90,7 +90,7 @@ test("監視を止めると外部変更が届かなくなる", async () => {
 });
 
 test("購読を解除すると外部変更が届かなくなる", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
   const received: DocumentChanged[] = [];
   const unsubscribe = Result.unwrap(
     await fake.ipc.subscribeChanged((changed) => received.push(changed)),
@@ -104,7 +104,7 @@ test("購読を解除すると外部変更が届かなくなる", async () => {
 });
 
 test("別の綴りを寄せると、実体の綴りになる", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
   fake.linkPath({ link: LinkPath, target: Path });
 
   const canonical = await fake.ipc.canonicalize(LinkPath);
@@ -113,7 +113,7 @@ test("別の綴りを寄せると、実体の綴りになる", async () => {
 });
 
 test("別の綴りを持たないパスは、寄せても綴りが変わらない", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
   fake.linkPath({ link: LinkPath, target: Path });
 
   const canonical = await fake.ipc.canonicalize(Path);
@@ -122,7 +122,7 @@ test("別の綴りを持たないパスは、寄せても綴りが変わらな�
 });
 
 test("別の綴りで読むと、実体の中身が返る", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{ "formatVersion": "1.0" }` });
+  const fake = createDocumentIpcFake({ [Path]: `{ "formatVersion": "1.0" }` });
   fake.linkPath({ link: LinkPath, target: Path });
 
   const loaded = await fake.ipc.load(LinkPath);
@@ -131,7 +131,7 @@ test("別の綴りで読むと、実体の中身が返る", async () => {
 });
 
 test("別の綴りで書くと、実体の中身が変わる", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
   fake.linkPath({ link: LinkPath, target: Path });
 
   Result.unwrap(await fake.ipc.save(LinkPath, `{ "formatVersion": "1.1" }`));
@@ -142,7 +142,7 @@ test("別の綴りで書くと、実体の中身が変わる", async () => {
 });
 
 test("別の綴りで外部から書き換えると、実体を監視している綴りで届く", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
   fake.linkPath({ link: LinkPath, target: Path });
   const received: DocumentChanged[] = [];
   Result.unwrap(
@@ -158,7 +158,7 @@ test("別の綴りで外部から書き換えると、実体を監視してい�
 });
 
 test("別の綴りで監視すると、実体の外部変更がその綴りで届く", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
   fake.linkPath({ link: LinkPath, target: Path });
   const received: DocumentChanged[] = [];
   Result.unwrap(
@@ -174,7 +174,7 @@ test("別の綴りで監視すると、実体の外部変更がその綴りで�
 });
 
 test("後から別の綴りで監視し直すと、前の綴りには外部変更が届かない", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
   fake.linkPath({ link: LinkPath, target: Path });
   const received: DocumentChanged[] = [];
   Result.unwrap(
@@ -191,7 +191,7 @@ test("後から別の綴りで監視し直すと、前の綴りには外部変�
 });
 
 test("別の綴りで監視を止めると、実体の外部変更が届かなくなる", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: `{}` });
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
   fake.linkPath({ link: LinkPath, target: Path });
   const received: DocumentChanged[] = [];
   Result.unwrap(

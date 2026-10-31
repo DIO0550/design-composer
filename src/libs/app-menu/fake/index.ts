@@ -1,4 +1,4 @@
-import { SingleEventIpcFake } from "@/libs/tauri-ipc/fake";
+import { createSingleEventIpcFake } from "@/libs/tauri-ipc/fake";
 import {
   type AppMenu,
   type AppMenuCommand,
@@ -25,20 +25,18 @@ export type AppMenuFake = Readonly<{
   denySubscribe(): void;
 }>;
 
-export const AppMenuFake = {
-  /**
-   * メニューの代役を作る。
-   *
-   * @returns 代役の口と、利用者の操作を起こす手段
-   */
-  create(): AppMenuFake {
-    const events = SingleEventIpcFake.create(MenuCommandEvent);
+/**
+ * メニューの代役を作る。
+ *
+ * @returns 代役の口と、利用者の操作を起こす手段
+ */
+export function createAppMenuFake(): AppMenuFake {
+  const events = createSingleEventIpcFake(MenuCommandEvent);
 
-    return {
-      menu: createAppMenu(events.ipc),
-      choose: events.deliver,
-      deliverUnknown: events.deliver,
-      denySubscribe: events.denySubscribe,
-    };
-  },
-} as const;
+  return {
+    menu: createAppMenu(events.ipc),
+    choose: events.deliver,
+    deliverUnknown: events.deliver,
+    denySubscribe: events.denySubscribe,
+  };
+}

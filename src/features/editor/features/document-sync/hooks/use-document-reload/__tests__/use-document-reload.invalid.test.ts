@@ -5,12 +5,12 @@ import {
   DocumentAccessFailure,
   DocumentAccessFailureReasons,
 } from "@/domains/session/document-access-failure";
-import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { Option } from "@/utils/Option";
 import { changeExternally, Path, renderDocumentReload } from "./setup";
 
 test("外部エディタが不正な JSON を保存すると、エラー一覧として届く", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   const observer = await renderDocumentReload(fake.ipc);
 
   await changeExternally(fake, '{ "formatVersion": ');
@@ -30,7 +30,7 @@ test("外部エディタが不正な JSON を保存すると、エラー一覧�
 });
 
 test("不正な JSON を直して保存すると、そのドキュメントが取り込まれる", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   const observer = await renderDocumentReload(fake.ipc);
 
   await changeExternally(fake, '{ "formatVersion": ');
@@ -43,7 +43,7 @@ test("不正な JSON を直して保存すると、そのドキュメントが�
 });
 
 test("外部変更の購読を張れないときは、その失敗がドメインの語彙で返る", async () => {
-  const fake = DocumentIpcFake.create({ [Path]: artboardContent("home") });
+  const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   fake.denySubscribe();
 
   const observer = await renderDocumentReload(fake.ipc);
@@ -61,7 +61,7 @@ test("外部変更の購読を張れないときは、その失敗がドメイ�
 });
 
 test("存在しないファイルは監視できず、その失敗が返る", async () => {
-  const fake = DocumentIpcFake.create({});
+  const fake = createDocumentIpcFake({});
 
   const observer = await renderDocumentReload(
     fake.ipc,

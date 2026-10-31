@@ -111,171 +111,171 @@ function permissionDenied(path: string): Promise<never> {
   });
 }
 
-export const DocumentIpcFake = {
-  /**
-   * Rust 側の代役を作る。
-   *
-   * @param files 始めから在るファイルの、パスから中身への表。省くとファイルが 1 つも無い
-   * @returns 代役の口と、外部変更を起こす手段・ファイル表の様子を見る手段
-   */
-  create(files: Readonly<Record<string, string>> = {}): DocumentIpcFake {
-    const contents = new Map(Object.entries(files));
-    const deniedWritePaths = new Set<string>();
-    const heldWrites = new Map<string, Promise<void>>();
-    const linkTargets = new Map<string, string>();
-    const canonicalizeDenials = new Map<string, CanonicalizeDenialKind>();
-    // 実体から、監視を張ったときの綴りへの表。通知はその綴りで届き、別の綴りで張り直すと
-    // 置き換わる（Rust の `watch/watchers.rs` が実体ごとに監視を 1 つだけ持つのと同じ）。
-    const watchedSpellings = new Map<string, string>();
-    const listeners = new Set<(payload: unknown) => void>();
-    let subscribeDenied = false;
+/**
+ * Rust 側の代役を作る。
+ *
+ * @param files 始めから在るファイルの、パスから中身への表。省くとファイルが 1 つも無い
+ * @returns 代役の口と、外部変更を起こす手段・ファイル表の様子を見る手段
+ */
+export function createDocumentIpcFake(
+  files: Readonly<Record<string, string>> = {},
+): DocumentIpcFake {
+  const contents = new Map(Object.entries(files));
+  const deniedWritePaths = new Set<string>();
+  const heldWrites = new Map<string, Promise<void>>();
+  const linkTargets = new Map<string, string>();
+  const canonicalizeDenials = new Map<string, CanonicalizeDenialKind>();
+  // 実体から、監視を張ったときの綴りへの表。通知はその綴りで届き、別の綴りで張り直すと
+  // 置き換わる（Rust の `watch/watchers.rs` が実体ごとに監視を 1 つだけ持つのと同じ）。
+  const watchedSpellings = new Map<string, string>();
+  const listeners = new Set<(payload: unknown) => void>();
+  let subscribeDenied = false;
 
-    const targetOf = (path: string): string => linkTargets.get(path) ?? path;
+  const targetOf = (path: string): string => linkTargets.get(path) ?? path;
 
-    const notifyChange = (target: string, content: string): void => {
-      const path = watchedSpellings.get(target);
-      if (path === undefined) {
-        return;
-      }
-      for (const listener of listeners) {
-        listener({ path, content });
-      }
-    };
+  const notifyChange = (target: string, content: string): void => {
+    const path = watchedSpellings.get(target);
+    if (path === undefined) {
+      return;
+    }
+    for (const listener of listeners) {
+      listener({ path, content });
+    }
+  };
 
-    const canonicalizeDocumentPath = (path: string): Promise<unknown> => {
-      switch (canonicalizeDenials.get(path)) {
-        case "invalidPath":
-          return Promise.reject({
-            kind: "invalidPath",
-            message: `${path}: ドキュメントのパスとして扱えない`,
-          });
-        case "ipcFailed":
-          return ipcFailure(`canonicalize_document_path: ${path} に届かない`);
-        case undefined:
-          return Promise.resolve(targetOf(path));
-      }
-    };
-
-    const loadDocument = (path: string): Promise<unknown> => {
-      const content = contents.get(targetOf(path));
-      return content === undefined ? notFound(path) : Promise.resolve(content);
-    };
-
-    const saveDocument = (path: string, content: unknown): Promise<unknown> => {
-      if (typeof content !== "string") {
-        return ipcFailure("save_document: content が文字列でない");
-      }
-      if (deniedWritePaths.has(path)) {
-        return permissionDenied(path);
-      }
-      const held = heldWrites.get(path);
-      if (held !== undefined) {
-        // 解放されるまで書き込みを終わらせない（呼び出し側が「書き込み中」を観測できる）
-        return held.then(() => {
-          contents.set(targetOf(path), content);
+  const canonicalizeDocumentPath = (path: string): Promise<unknown> => {
+    switch (canonicalizeDenials.get(path)) {
+      case "invalidPath":
+        return Promise.reject({
+          kind: "invalidPath",
+          message: `${path}: ドキュメントのパスとして扱えない`,
         });
-      }
-      contents.set(targetOf(path), content);
-      // 自アプリの書き込みでは通知しない。Rust 側が自書き込みを識別して
-      // 自己ループを防いでいるので、代役も同じ振る舞いにする。
-      return Promise.resolve(undefined);
-    };
+      case "ipcFailed":
+        return ipcFailure(`canonicalize_document_path: ${path} に届かない`);
+      case undefined:
+        return Promise.resolve(targetOf(path));
+    }
+  };
 
-    const watchDocument = (path: string): Promise<unknown> => {
-      // Rust 側は監視開始時に現在の内容を読むため、読めないパスは失敗する。
-      if (!contents.has(targetOf(path))) {
-        return notFound(path);
-      }
-      watchedSpellings.set(targetOf(path), path);
-      return Promise.resolve(undefined);
-    };
+  const loadDocument = (path: string): Promise<unknown> => {
+    const content = contents.get(targetOf(path));
+    return content === undefined ? notFound(path) : Promise.resolve(content);
+  };
 
-    const unwatchDocument = (path: string): Promise<unknown> => {
-      watchedSpellings.delete(targetOf(path));
-      return Promise.resolve(undefined);
-    };
-
-    const tauriIpc: TauriIpc = {
-      invoke(command, args) {
-        const { path } = args;
-        if (typeof path !== "string") {
-          return ipcFailure(`${command}: path が文字列でない`);
-        }
-        switch (command) {
-          case "canonicalize_document_path":
-            return canonicalizeDocumentPath(path);
-          case "load_document":
-            return loadDocument(path);
-          case "save_document":
-            return saveDocument(path, args.content);
-          case "watch_document":
-            return watchDocument(path);
-          case "unwatch_document":
-            return unwatchDocument(path);
-          default:
-            return ipcFailure(`Command ${command} not found`);
-        }
-      },
-
-      listen(event, handler) {
-        if (event !== "document-changed") {
-          return ipcFailure(`Event ${event} not emitted`);
-        }
-        if (subscribeDenied) {
-          return ipcFailure(`${event}: 購読を開始できない`);
-        }
-        listeners.add(handler);
-        return Promise.resolve(() => {
-          listeners.delete(handler);
-        });
-      },
-    };
-
-    return {
-      ipc: createDocumentIpc(tauriIpc),
-
-      changeExternally(path, content) {
+  const saveDocument = (path: string, content: unknown): Promise<unknown> => {
+    if (typeof content !== "string") {
+      return ipcFailure("save_document: content が文字列でない");
+    }
+    if (deniedWritePaths.has(path)) {
+      return permissionDenied(path);
+    }
+    const held = heldWrites.get(path);
+    if (held !== undefined) {
+      // 解放されるまで書き込みを終わらせない（呼び出し側が「書き込み中」を観測できる）
+      return held.then(() => {
         contents.set(targetOf(path), content);
-        notifyChange(targetOf(path), content);
-      },
+      });
+    }
+    contents.set(targetOf(path), content);
+    // 自アプリの書き込みでは通知しない。Rust 側が自書き込みを識別して
+    // 自己ループを防いでいるので、代役も同じ振る舞いにする。
+    return Promise.resolve(undefined);
+  };
 
-      contentOf(path) {
-        return Option.fromNullable(contents.get(targetOf(path)));
-      },
+  const watchDocument = (path: string): Promise<unknown> => {
+    // Rust 側は監視開始時に現在の内容を読むため、読めないパスは失敗する。
+    if (!contents.has(targetOf(path))) {
+      return notFound(path);
+    }
+    watchedSpellings.set(targetOf(path), path);
+    return Promise.resolve(undefined);
+  };
 
-      isWatching(path) {
-        return watchedSpellings.has(targetOf(path));
-      },
+  const unwatchDocument = (path: string): Promise<unknown> => {
+    watchedSpellings.delete(targetOf(path));
+    return Promise.resolve(undefined);
+  };
 
-      linkPath({ link, target }) {
-        linkTargets.set(link, target);
-      },
+  const tauriIpc: TauriIpc = {
+    invoke(command, args) {
+      const { path } = args;
+      if (typeof path !== "string") {
+        return ipcFailure(`${command}: path が文字列でない`);
+      }
+      switch (command) {
+        case "canonicalize_document_path":
+          return canonicalizeDocumentPath(path);
+        case "load_document":
+          return loadDocument(path);
+        case "save_document":
+          return saveDocument(path, args.content);
+        case "watch_document":
+          return watchDocument(path);
+        case "unwatch_document":
+          return unwatchDocument(path);
+        default:
+          return ipcFailure(`Command ${command} not found`);
+      }
+    },
 
-      denyCanonicalize({ path, kind }) {
-        canonicalizeDenials.set(path, kind);
-      },
+    listen(event, handler) {
+      if (event !== "document-changed") {
+        return ipcFailure(`Event ${event} not emitted`);
+      }
+      if (subscribeDenied) {
+        return ipcFailure(`${event}: 購読を開始できない`);
+      }
+      listeners.add(handler);
+      return Promise.resolve(() => {
+        listeners.delete(handler);
+      });
+    },
+  };
 
-      denyWrites(path) {
-        deniedWritePaths.add(path);
-      },
+  return {
+    ipc: createDocumentIpc(tauriIpc),
 
-      denySubscribe() {
-        subscribeDenied = true;
-      },
+    changeExternally(path, content) {
+      contents.set(targetOf(path), content);
+      notifyChange(targetOf(path), content);
+    },
 
-      holdWrites(path) {
-        let release = (): void => {};
-        heldWrites.set(
-          path,
-          new Promise<void>((resolve) => {
-            release = resolve;
-          }),
-        );
-        return () => {
-          heldWrites.delete(path);
-          release();
-        };
-      },
-    };
-  },
-} as const;
+    contentOf(path) {
+      return Option.fromNullable(contents.get(targetOf(path)));
+    },
+
+    isWatching(path) {
+      return watchedSpellings.has(targetOf(path));
+    },
+
+    linkPath({ link, target }) {
+      linkTargets.set(link, target);
+    },
+
+    denyCanonicalize({ path, kind }) {
+      canonicalizeDenials.set(path, kind);
+    },
+
+    denyWrites(path) {
+      deniedWritePaths.add(path);
+    },
+
+    denySubscribe() {
+      subscribeDenied = true;
+    },
+
+    holdWrites(path) {
+      let release = (): void => {};
+      heldWrites.set(
+        path,
+        new Promise<void>((resolve) => {
+          release = resolve;
+        }),
+      );
+      return () => {
+        heldWrites.delete(path);
+        release();
+      };
+    },
+  };
+}

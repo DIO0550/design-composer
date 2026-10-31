@@ -72,23 +72,23 @@ function chosenPath(choice: DialogChoice): Promise<Option<string>> {
   }
 }
 
-export const DocumentDialogFake = {
-  /**
-   * ダイアログの代役を作る。
-   *
-   * @param choices 開く / 保存それぞれのダイアログの結果。何度出しても同じ結果になる
-   * @returns `choices` のとおりに答える `DocumentDialog`
-   */
-  create(choices: DialogChoices): DocumentDialogFake {
-    const tauriDialog: TauriDialog = {
-      chooseOpenPath() {
-        return chosenPath(choices.open);
-      },
-      chooseSavePath() {
-        return chosenPath(choices.save);
-      },
-    };
+/**
+ * ダイアログの代役を作る。
+ *
+ * @param choices 開く / 保存それぞれのダイアログの結果。何度出しても同じ結果になる
+ * @returns `choices` のとおりに答える `DocumentDialog`
+ */
+export function createDocumentDialogFake(
+  choices: DialogChoices,
+): DocumentDialogFake {
+  const tauriDialog: TauriDialog = {
+    chooseOpenPath() {
+      return chosenPath(choices.open);
+    },
+    chooseSavePath() {
+      return chosenPath(choices.save);
+    },
+  };
 
-    return { dialog: createDocumentDialog(tauriDialog) };
-  },
-} as const;
+  return { dialog: createDocumentDialog(tauriDialog) };
+}

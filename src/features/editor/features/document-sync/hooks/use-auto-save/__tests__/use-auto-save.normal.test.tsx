@@ -1,7 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { artboardDocument } from "@/domains/__tests__/sample-document";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
-import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
 import { AutoSaveDebounceMs } from "../index";
@@ -15,7 +15,7 @@ test("編集するとデバウンス時間の経過後にその内容がファ�
   vi.useFakeTimers();
   const opened = artboardDocument("home");
   const edited = artboardDocument("settings");
-  const fake = DocumentIpcFake.create({
+  const fake = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(opened),
   });
   const { rerender } = renderAutoSave({ ipc: fake.ipc, document: opened });
@@ -32,7 +32,7 @@ test("編集が続いている間は書き出されず、止まってから最�
   vi.useFakeTimers();
   const opened = artboardDocument("home");
   const last = artboardDocument("profile");
-  const fake = DocumentIpcFake.create({
+  const fake = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(opened),
   });
   const { rerender } = renderAutoSave({ ipc: fake.ipc, document: opened });
@@ -55,7 +55,7 @@ test("編集が続いている間は書き出されず、止まってから最�
 test("編集してから書き出されるまでの間は保存中になる", async () => {
   vi.useFakeTimers();
   const opened = artboardDocument("home");
-  const fake = DocumentIpcFake.create({
+  const fake = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(opened),
   });
   const { result, rerender } = renderAutoSave({
@@ -71,7 +71,7 @@ test("編集してから書き出されるまでの間は保存中になる", as
 test("書き出しが終わると保存済みに戻る", async () => {
   vi.useFakeTimers();
   const opened = artboardDocument("home");
-  const fake = DocumentIpcFake.create({
+  const fake = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(opened),
   });
   const { result, rerender } = renderAutoSave({
@@ -88,7 +88,7 @@ test("書き出しが終わると保存済みに戻る", async () => {
 test("編集を取り消して元のドキュメントへ戻すと、その内容が書き出される", async () => {
   vi.useFakeTimers();
   const opened = artboardDocument("home");
-  const fake = DocumentIpcFake.create({
+  const fake = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(opened),
   });
   const { rerender } = renderAutoSave({ ipc: fake.ipc, document: opened });

@@ -17,47 +17,45 @@ export type AppWindowFake = Readonly<{
   denyClose(): void;
 }>;
 
-export const AppWindowFake = {
-  /**
-   * 開いているウィンドウ 1 つの代役を作る。
-   *
-   * @returns 代役の口と、ウィンドウが閉じたかを見る手段
-   */
-  create(): AppWindowFake {
-    let closed = false;
-    let closeDenied = false;
+/**
+ * 開いているウィンドウ 1 つの代役を作る。
+ *
+ * @returns 代役の口と、ウィンドウが閉じたかを見る手段
+ */
+export function createAppWindowFake(): AppWindowFake {
+  let closed = false;
+  let closeDenied = false;
 
-    const closeCurrentWindow = (): Promise<unknown> => {
-      // 本物の `tauri::Error` も文字列で reject されるので、同じ形で拒む。
-      if (closeDenied) {
-        return ipcFailure("close_current_window: ウィンドウを閉じられない");
-      }
-      closed = true;
-      return Promise.resolve(undefined);
-    };
+  const closeCurrentWindow = (): Promise<unknown> => {
+    // 本物の `tauri::Error` も文字列で reject されるので、同じ形で拒む。
+    if (closeDenied) {
+      return ipcFailure("close_current_window: ウィンドウを閉じられない");
+    }
+    closed = true;
+    return Promise.resolve(undefined);
+  };
 
-    const tauriIpc: TauriIpc = {
-      invoke(command) {
-        return command === "close_current_window"
-          ? closeCurrentWindow()
-          : ipcFailure(`Command ${command} not found`);
-      },
+  const tauriIpc: TauriIpc = {
+    invoke(command) {
+      return command === "close_current_window"
+        ? closeCurrentWindow()
+        : ipcFailure(`Command ${command} not found`);
+    },
 
-      listen(event) {
-        return ipcFailure(`Event ${event} not emitted`);
-      },
-    };
+    listen(event) {
+      return ipcFailure(`Event ${event} not emitted`);
+    },
+  };
 
-    return {
-      appWindow: createAppWindow(tauriIpc),
+  return {
+    appWindow: createAppWindow(tauriIpc),
 
-      isWindowClosed() {
-        return closed;
-      },
+    isWindowClosed() {
+      return closed;
+    },
 
-      denyClose() {
-        closeDenied = true;
-      },
-    };
-  },
-} as const;
+    denyClose() {
+      closeDenied = true;
+    },
+  };
+}

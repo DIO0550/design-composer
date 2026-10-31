@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { type AppMenuCommand, AppMenuCommands } from "@/libs/app-menu";
-import { AppMenuFake } from "@/libs/app-menu/fake";
+import { type AppMenuFake, createAppMenuFake } from "@/libs/app-menu/fake";
 import { Result } from "@/utils/Result";
 
 /**
@@ -11,7 +11,7 @@ import { Result } from "@/utils/Result";
 async function subscribeMenu(): Promise<
   Readonly<{ fake: AppMenuFake; received: AppMenuCommand[] }>
 > {
-  const fake = AppMenuFake.create();
+  const fake = createAppMenuFake();
   const received: AppMenuCommand[] = [];
   Result.unwrap(
     await fake.menu.subscribeCommand((command) => {
@@ -46,7 +46,7 @@ test("タブを閉じるが選ばれると、閉じる指示が届く", async ()
 });
 
 test("購読を解除すると、その後に選ばれても届かない", async () => {
-  const fake = AppMenuFake.create();
+  const fake = createAppMenuFake();
   const received: AppMenuCommand[] = [];
   const unsubscribe = Result.unwrap(
     await fake.menu.subscribeCommand((command) => {

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { FileDropFake } from "@/libs/file-drop/fake";
+import { createFileDropFake, type FileDropFake } from "@/libs/file-drop/fake";
 import { Result } from "@/utils/Result";
 
 const Path = "/work/login.dcmp";
@@ -13,7 +13,7 @@ const OtherPath = "/work/settings.dcmp";
 async function subscribeDrop(): Promise<
   Readonly<{ fake: FileDropFake; received: (readonly string[])[] }>
 > {
-  const fake = FileDropFake.create();
+  const fake = createFileDropFake();
   const received: (readonly string[])[] = [];
   Result.unwrap(
     await fake.drop.subscribeDropped((paths) => {
@@ -40,7 +40,7 @@ test("複数のファイルが落とされると、並びのまま届く", async
 });
 
 test("購読を解除すると、その後に落とされても届かない", async () => {
-  const fake = FileDropFake.create();
+  const fake = createFileDropFake();
   const received: (readonly string[])[] = [];
   const unsubscribe = Result.unwrap(
     await fake.drop.subscribeDropped((paths) => {

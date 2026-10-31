@@ -6,20 +6,20 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Node, RefNode } from "@/domains/dcmp/node";
 import { SampleEditorState } from "@/features/editor/__stories__/sample-editor-state";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { ClockFake } from "@/libs/clock/fake";
-import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import { createClockFake } from "@/libs/clock/fake";
+import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { OpenedDocumentEditor } from "./index";
 
 const SamplePath = filePath("/work/sample.dcmp");
 
 /** Storybook には Tauri が無いので、自動保存と監視の相手はインメモリの代役にする。 */
-const files = DocumentIpcFake.create({
+const files = createDocumentIpcFake({
   [SamplePath]: DocumentJson.serialize(EditorState.document(SampleEditorState)),
 });
 
 /** 時計も Storybook には無いので代役にする。進めないので経過時間は動かない。 */
-const clock = ClockFake.create();
+const clock = createClockFake();
 
 const meta = {
   title: "features/editor/OpenedDocumentEditor",
@@ -62,7 +62,7 @@ export const Default: Story = {
 export const SyncFailed: Story = {
   name: "同期に失敗した編集画面",
   args: {
-    ipc: DocumentIpcFake.create({}).ipc,
+    ipc: createDocumentIpcFake({}).ipc,
     opened: {
       path: filePath("/work/missing.dcmp"),
       document: EditorState.document(SampleEditorState),
@@ -101,7 +101,7 @@ function documentWithHomeChildren(
  */
 function argsOpening(document: DesignDocument) {
   return {
-    ipc: DocumentIpcFake.create({
+    ipc: createDocumentIpcFake({
       [SamplePath]: DocumentJson.serialize(document),
     }).ipc,
     opened: { path: SamplePath, document },
@@ -353,7 +353,7 @@ export const CompileFailed: Story = {
  * 凍結のストーリー専用の代役。`play` から壊しにいくので、他のストーリーとファイル表を
  * 共有しない（共有すると、先に描かれたストーリーまで壊れたファイルを掴む）。
  */
-const brokenFiles = DocumentIpcFake.create({
+const brokenFiles = createDocumentIpcFake({
   [SamplePath]: DocumentJson.serialize(EditorState.document(SampleEditorState)),
 });
 

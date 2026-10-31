@@ -10,7 +10,7 @@ import {
   type DocumentIpc,
   type DocumentIpcError,
 } from "@/libs/document-ipc";
-import { DocumentIpcFake } from "@/libs/document-ipc/fake";
+import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import type { TauriIpc } from "@/libs/tauri-ipc";
 import { Option } from "@/utils/Option";
@@ -38,7 +38,7 @@ function denyingIpc(): DocumentIpc {
 test("開いたドキュメントを編集していなければファイルへ書き出さない", async () => {
   vi.useFakeTimers();
   const openedFileContent = `{ "外部が書いた体裁": true }`;
-  const fake = DocumentIpcFake.create({ [Path]: openedFileContent });
+  const fake = createDocumentIpcFake({ [Path]: openedFileContent });
 
   renderAutoSave({ ipc: fake.ipc, document: artboardDocument("home") });
   await waitDebounce();
@@ -49,7 +49,7 @@ test("開いたドキュメントを編集していなければファイルへ�
 test("デバウンス時間が経つ前は編集内容がファイルへ書き出されない", async () => {
   vi.useFakeTimers();
   const opened = artboardDocument("home");
-  const fake = DocumentIpcFake.create({
+  const fake = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(opened),
   });
   const { rerender } = renderAutoSave({ ipc: fake.ipc, document: opened });
@@ -65,7 +65,7 @@ test("デバウンス時間が経つ前は編集内容がファイルへ書き�
 test("書き出される前に画面を閉じると、その編集はファイルへ書き出されない", async () => {
   vi.useFakeTimers();
   const opened = artboardDocument("home");
-  const fake = DocumentIpcFake.create({
+  const fake = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(opened),
   });
   const { rerender, unmount } = renderAutoSave({
@@ -109,7 +109,7 @@ test("失敗した後の書き込みが成功すると、失敗は返らなく�
   vi.useFakeTimers();
   const opened = artboardDocument("home");
   const denying = denyingIpc();
-  const fake = DocumentIpcFake.create({
+  const fake = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(opened),
   });
   const { result, rerender } = renderAutoSave({
@@ -128,7 +128,7 @@ test("失敗した後の書き込みが成功すると、失敗は返らなく�
 test("書き出される前に編集を取り消すと、保存中のまま止まらない", async () => {
   vi.useFakeTimers();
   const opened = artboardDocument("home");
-  const fake = DocumentIpcFake.create({
+  const fake = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(opened),
   });
   const { result, rerender } = renderAutoSave({
