@@ -26,6 +26,7 @@ function setupGrouped(props: Props): DesignDocument {
       },
     ],
   });
+
   return Result.unwrap(DesignDocument.groupIntoBox(document, ["card"], "box"));
 }
 
