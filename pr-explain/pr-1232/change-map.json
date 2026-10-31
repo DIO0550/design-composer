@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1232,
+  "headBranch": "claude/magical-cannon-lxtz94",
+  "baseBranch": "main",
+  "mergeBase": "83d68b3527db74c2bc1d281a336aa788adea5ca3",
+  "head": "6ff1a8f404230b3c4349bd8a9f211f58ddc59e88",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1227.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 166,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "6ff1a8f404230b3c4349bd8a9f211f58ddc59e88",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-10-31T13:12:21Z",
+      "subject": "📝 [Doc]: PR #1227 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1227.md を足す(Issue #1206、指摘 17 件・手戻り・発火)\n\n背景:\nPR #1227 がマージされたので、harness-record の手順でその回の指摘・手戻り・フックの\n発火を分類タグ付きで残す。\n\n採用理由:\n人・bot・CI へ届いた指摘は 0 件で、指摘はすべてサブエージェント由来(plan 3・naming 4・\ncomment 4・duplication 3・test 2・ui 1)。発火ログにこのセッションの見出しが無いので、\n発火は「計測対象外(フック不発)」と書いた。\n\n影響とトレードオフ:\n記録 1 ファイルだけで、規約・フック・スキルには触れない。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RTbMiFu6BvhMfKdev",
+      "files": [
+        {
+          "path": "harness/records/pr-1227.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 166,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,166 @@\n+# PR #1227 Alt を押している間は、Alt の距離と同じ線上に重なる揃え先との隙間を出さない\n+\n+- マージ日: 2026-10-31\n+- 関連 Issue: #1206\n+- 差分規模: 14 ファイル / +398 -192\n+\n+## ゴールと結果\n+\n+ゴールは「Alt / Option を押して運んでいる間、揃え先との隙間と Alt の距離が同じ線上に重なる場面では Alt の距離だけを出し(ガイド線は残す)、どの数値がどこからどこまでかが読める」。これは達成した。\n+\n+- 「同じ線上に重なる」の判定: 同じ向き・範囲が重なる・画面上の位置の差 8px 以内\n+- 隙間を除く入口: `RepositionLines.snapGuidesExceptCoincidingGaps` に置いた。ノードの移動と artboard の移動の両方がここを通る\n+- #960 Q2(同じ線なら Alt 側を出さない)は向きが逆になった。同じ線のときの見た目は変わらない\n+\n+計画中に親が採った判断が 2 つあり、人の回答が無いままマージされた(Issue #1206 で質問中)。\n+\n+- artboard の移動にも効かせる\n+- 丸めて 0 になる距離の向きでは隙間も消える\n+\n+GitHub 上の人のレビューは 0 件。3 つとも引いて確かめた。\n+\n+- `get_review_comments`: スレッド 0 本\n+- `get_reviews`: `copilot-pull-request-reviewer[bot]` の 1 件だけ。「No open issues」で、上の 2 点が人の判断待ちだと書いているだけ\n+- `get_comments`: bot の投稿と、自分のテストケース表だけ\n+\n+セッション中に人から受けたのは「推奨で実装していいよ」(Q1・Q2 への回答)だけで、指摘は無かった。CI は 9 件すべて緑で、VRT の差分は 0 件。\n+\n+## 指摘\n+\n+### 1. 既存テストの書き換え・削除を件数だけで書き、どのテストがどう変わるかが無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 書き換える 10 件と削除する 3 件の対応表を、計画 v2 で書いた。通しテスト 62 は新しい規則で落ち、テスト名の約束が新仕様と逆になる。97 は通り続けるが、名前が食い違う。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 1・2\n+\n+### 2. docs/06-ui.md の書き換えを、文の単位で列挙していなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 188・210 行目には「揃え先との隙間は変わらない」「同じ線の向きは隙間だけを出す」が残りうる。置き換える文を列挙した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3「行の単位で直す記述」\n+\n+### 3. 「同じ列」が docs で等間隔の「兄弟の列」を指す既存の語とぶつかった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: docs の語を「同じ線上に重なる」に変えた。コードの `isNearlyOverlapping` も、既存の overlap 系(矩形が重なる)と区別できないので `isCoinciding` に変えた。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 4. RepositionLines の単位で、範囲が離れている場合と直交する向きの場合のテストが無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 範囲の交差や向きの条件を外しても、落ちるのは `ThinLine` 単体のテストだけになっていた。反対側の距離と直交する距離の 2 件を足した。ThinLine の入力も、他の条件を満たしたものにした。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 5. 「0.5px 未満」の単位を書いておらず、並行 PR の確認記録も無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 0.5px はドキュメント上の px(`toRoundedDocumentLength`)と明記した。オープンな PR は #1226(size ドメイン)だけで、重ならないことを Issue に書いた。\n+- 既存ルール: なし\n+\n+### 6. 計画中に親が採った 2 つの判断を、人の回答なしに確定扱いにした\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（ui-reviewer）`\n+- 内容: 計画 v1 で「親の判断で採った。違えば指摘して」と書いたまま、実装まで進めた。判断は 2 つ。\n+  - artboard の移動にも効かせる(決定コメントではスコープ外にしていた)\n+  - 丸めて 0 の距離の向きで隙間も消える\n+  Issue で改めて質問し、PR 本文に「確認待ち」と明記した。回答の前にマージされた。\n+- 既存ルール: rules/ui-verification.md「プロトタイプと違う形にする必要が出たら、実装前に理由を添えて確認する」\n+\n+### 7. docs の理由「相手が違っても同じ線上に重なり」が「常に重なる」と読めた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: すぐ下の定義(範囲が重なり 8px 以内)と、言い切りの強さが食い違っていた。「重なることがあり」に直した。ui-reviewer からも同じ指摘があった。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 8. 接している向き(0)と丸めて 0 の向きで、見え方が逆になることが docs に無かった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 接している向きは距離の線そのものが無いので、隙間は消えない。丸めて 0 の向きでは隙間が消える。この境目を docs に一言書いた。\n+- 既存ルール: なし\n+\n+### 9. SnapGuide.gapLine の doc に、RepositionLines を通る経路でしか成り立たない none の条件を書いた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: リサイズの経路は除外を通らないのに、型の契約に読めた。説明は `snapGuidesExceptCoincidingGaps` の doc に寄せた。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 10. 丸める前の距離の線で比べる理由が、コードのどこにも無かった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 理由は「ドメインは倍率を持たないので、表示される数値を知らない」。これを doc に書いた。over-guard-reviewer と solution-reviewer も、同じ経路を低の指摘として挙げた。\n+- 既存ルール: rules/coding.md「Why と Why not は別物として書く」\n+\n+### 11. gapLine と toGapReadout の 2 か所に、none の条件の一覧を書き写していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `toGapReadout` の `@returns` を「gapLine が none なら none」に縮め、条件の一覧は gapLine の 1 か所に置いた。\n+- 既存ルール: rules/coding.md「規約の適用範囲」(同じ判断根拠の doc の重複)\n+\n+### 12. hasCoinciding が 4 向きを手で並べ、fromFacings・overlay と走査の書き方が割れていた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `SidePairs × AxisEnds` の走査に揃えた。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 13. テストの期待値が fixture と同じ値の直書きで、組み立ても 3 回繰り返していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `BelowGap` / `SampleGapLine` / `SampleMeasuredRepositionLines` などの名前付き定数にした。「同じ線」であることを値の共有で示した。テスト名が「ガイド線は残す」なのに gapLine しか見ていなかったので、guideLine の assert も足した。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 14. hasCoinciding の述語の中で、`&&` を組んだ式に名前が無かった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 線のある向きだけを先に取り出して `&&` を消した(指摘 12 と同じコミット)。\n+- 既存ルール: rules/naming.md「条件を組んだ式に名前を付ける」\n+\n+### 15. 定数 CoincidingPx が何の px かを表していなかった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 既存の `ThresholdPx` / `DragThresholdPx` に揃えて `CoincidingThresholdPx` にした。\n+- 既存ルール: rules/naming.md「メソッド名を既存のドメインに揃える」\n+\n+### 16. 局所変数 isSpanOverlapping が、CanvasBounds.overlaps と境界の扱いが逆だった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: `CanvasBounds.overlaps` は、接するだけでも重なりとみなす。こちらは接するだけを偽にするので、`Range.intersectionLength` の語に揃えて `isSpanIntersecting` にした。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 17. 丸めて 0 の距離でも隙間を除く判断が、どのテストにも守られていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 23 件のミューテーションのうち、`hasCoinciding` を「長さ 0.5 以上の線だけを見る」に壊した 1 件だけが落ちなかった。テストを足し、同じ壊し方で落ちることを確かめた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+## 手戻り\n+\n+- **計画 v1 の語**: 「同じ列」/ `isNearlyOverlapping` だった。plan-reviewer の指摘で、v2 で付け直した(指摘 3)\n+- **コミットの分け方**: `ThinLine.equals` を消すと呼び出し側の型が落ちる。そこで `isCoinciding` だけを足した中間の版を `git update-index --cacheinfo` で index に載せてコミットし、`equals` の削除を後ろのコミットに分けた\n+- **表示確認**: implementer は「Playwright が無い」として行わなかった。実際は導入済みで、親が Storybook(`OpenedDocumentEditor / AbsoluteNode`)で確かめた\n+- **Discord 通知**: 2000 字の上限を超えて 400 が返った。2 通に分けて送り直した\n+- **フック不発**: `echo hook-canary` が 2 回とも通った。実行中フラグのマーカーも、このセッションの発火ログの見出しも無かった(`hook-environment`)。セッションの開始ディレクトリがリポジトリの外(`/home/user`)だったためと見られる。不発のあいだに禁止コマンドを実行していないかを見直したが、該当は無かった。test-reviewer と implementer の実行中に Stop フックから「未コミットの変更がある」と 2 回促されたが、コミットしなかった\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。介入の判断は `harness-growth` の棚卸しで行う。",
+          "patchLines": 167,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
