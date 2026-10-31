@@ -50,7 +50,7 @@ const SampleRepositionLines: RepositionLines = {
   distanceLines: FacingDistances.None,
 };
 
-/** 左と下に距離がある状態。下は `SampleGuides` の隙間と同じ線。 */
+/** 左と下に距離がある状態。下は `SampleGuides` の隙間と同じ線（隙間のほうが除かれる）。 */
 const SampleDistances: FacingDistances = {
   horizontal: {
     start: Option.some({
@@ -250,19 +250,27 @@ test("座標を置き直す落とし方は、揃った線に引くガイド線�
   expect(DropEdit.snapGuides(edit)).toEqual(SampleGuides);
 });
 
-test("座標を置き直す落とし方は、揃え先との隙間と同じ線を除いた距離を答える", () => {
-  // 下の距離は隙間と同じ線なので除かれ、左だけが残る
+test("座標を置き直す落とし方は、Alt / Option の距離をすべて答える", () => {
   const edit = DropEdit.reposition("title", SampleRepositionTarget, {
     snap: SampleGuides,
     distanceLines: SampleDistances,
   });
 
-  expect(DropEdit.facingDistances(edit)).toEqual({
-    ...FacingDistances.None,
-    horizontal: {
-      start: SampleDistances.horizontal.start,
-      end: Option.none,
-    },
+  expect(DropEdit.facingDistances(edit)).toEqual(SampleDistances);
+});
+
+test("座標を置き直す落とし方は、Alt / Option の距離と同じ線上に重なる隙間を除き、ガイド線は残したガイドを答える", () => {
+  const edit = DropEdit.reposition("title", SampleRepositionTarget, {
+    snap: SampleGuides,
+    distanceLines: SampleDistances,
+  });
+
+  expect(DropEdit.snapGuides(edit)).toEqual({
+    horizontal: Option.some({
+      guideLine: { left: 249, top: 72, width: 2, height: 168 },
+      gapLine: Option.none,
+    }),
+    vertical: Option.none,
   });
 });
 
@@ -278,13 +286,7 @@ test("運んでいる間は、座標を置き直す落とし方の距離を答�
     ),
   );
 
-  expect(NodeDrag.facingDistances(dragging)).toEqual({
-    ...FacingDistances.None,
-    horizontal: {
-      start: SampleDistances.horizontal.start,
-      end: Option.none,
-    },
-  });
+  expect(NodeDrag.facingDistances(dragging)).toEqual(SampleDistances);
 });
 
 test("ツリーへ落とす落とし方では、揃った線のガイド線を引かない", () => {
