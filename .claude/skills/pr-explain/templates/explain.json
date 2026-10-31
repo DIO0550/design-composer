@@ -160,7 +160,7 @@
     "keptSpecs": [
       {
         "path": ".claude/skills/pr-explain/SKILL.md",
-        "locator": "「解説が無いとき・古いとき」の解説が地図より古い行",
+        "locator": "「解説が無いとき・古いとき」の「解説の sha が地図の head より前」の行",
         "text": "地図より古い解説も置き、解説より後のコミットは解説なしと知らせる記述は変えていない"
       }
     ]
