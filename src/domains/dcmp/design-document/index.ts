@@ -1097,9 +1097,9 @@ function collectNodeErrors(
       nested.node,
       tokens,
     );
-    const fillErrors = Layout.collectFillAxesInFreeParent(
-      Layout.fromProps(nested.parentProps),
+    const fillErrors = Size.collectFillAxesInFreeParent(
       nested.node.props ?? {},
+      Layout.fromProps(nested.parentProps),
     ).map((axis) =>
       DesignDocumentValidationError.fromFillAxisInFreeParent(axis, nodeName),
     );
