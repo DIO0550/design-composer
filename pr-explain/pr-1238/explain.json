@@ -1,0 +1,4368 @@
+{
+  "version": 1,
+  "pr": 1238,
+  "sha": "cb1992d107c2851dc434055dd372d98ef6226377",
+  "issue": 1197,
+  "overview": {
+    "title": "[ui] 選択しているだけのとき、Alt を押してホバーした相手との距離を数値で出す",
+    "lead": "ノードを 1 つ選んで Alt / Option を押している間、ポインタの下の相手(無ければ親の内側の縁)までの距離が赤い短い線と数値で出るようになった。相手はクリックが選ぶものと同じ規則で決め、同じ親の中なら兄弟を相手にする。",
+    "before": [
+      {
+        "text": "選択しているだけのときに Alt / Option を押しても、距離は何も出なかった(`docs/06-ui.md` に「#1197 はまだ出さない」とあった)"
+      },
+      {
+        "text": "クリックで選ぶもの(名前を引いて、無ければ artboard)は `EditorState.selectAt` の中だけにあった",
+        "message": "select-at"
+      },
+      {
+        "text": "毎コミット測り直すフックと、修飾キーを押している間の購読は、それぞれ 1 つずつ書いてあった",
+        "message": "space-hold"
+      }
+    ],
+    "after": [
+      {
+        "text": "Alt / Option を押したままノードの上を動くと、兄弟・別の枝なら離れている向きに 1 本、祖先・子孫・親なら内側の縁まで上下左右 4 本が出る",
+        "message": "selection-distances"
+      },
+      {
+        "text": "ポインタを置いてから押しても、押してから動かしても出る。離す・ウィンドウを離れる・キャンバスの外へ出ると消える",
+        "message": "key-hold"
+      },
+      {
+        "text": "操作の最中(運ぶ・リサイズ・artboard の移動・範囲選択・パン)、文言の編集中、右クリックのメニュー、凍結中、入力欄にフォーカスがあるときは出さず、DOM も測らない",
+        "message": "menu-open"
+      },
+      {
+        "text": "複数選択・artboard の選択・選択なしでは出ない。斜めに離れた相手・一部だけ重なる相手には線を引かない",
+        "message": "pair-create"
+      },
+      {
+        "text": "クリックで選ぶものとこの距離の相手は、同じ `DocumentSelection.nameToSelectAt` から引く",
+        "message": "pair-target"
+      },
+      {
+        "text": "測り直しは `useMeasured`、修飾キーの押し離しは `useModifierKeyHold` に寄せ、既存のリサイズハンドルとパンの構えもその上に乗せた",
+        "message": "drawn-measured"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "相手の決め方",
+        "text": "クリックの規則に、同じ親の中なら兄弟、自分の artboard の背景なら artboard を足している。取り違えると答えが変わる入力をテストに選んだ",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+        }
+      },
+      {
+        "title": "出さないときの一覧",
+        "text": "9 つの条件を 1 つの式にまとめ、その間は指し先を渡さず測らない。リサイズ中の距離(#1209)はこの条件にリサイズが入っている前提で進む",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+        }
+      },
+      {
+        "title": "前の組の線を返さない",
+        "text": "測った組と今の組が一致するときだけ線を返す。効果の順番に頼らず、組が変わった回・無くなった回の両方を守る",
+        "go": {
+          "kind": "message",
+          "id": "measured"
+        }
+      },
+      {
+        "title": "修飾キーの購読の共通化",
+        "text": "パンの構えも同じ購読に乗せ替えたので、既存のパンの振る舞いが変わっていないかを見てほしい",
+        "go": {
+          "kind": "message",
+          "id": "space-hold"
+        }
+      },
+      {
+        "title": "Alt を押して相手を指したときの流れ",
+        "text": "枠からの通知、押している間の指し先、測る組、実測、重ね描きまでを 1 本で見る。表示はストーリーで撮れない(Alt を押した状態は args で作れない)",
+        "go": {
+          "kind": "flow",
+          "id": "hover"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "alt-distance",
+      "label": "選択しているだけのときの距離",
+      "role": "ノードを 1 つ選んで Alt / Option を押している間、ポインタの下の相手との距離を測って描く"
+    },
+    {
+      "id": "click-rule",
+      "label": "クリックが選ぶもの",
+      "role": "押した・指した位置から選ぶものを 1 か所で決め、クリックと距離の相手の両方が引く"
+    },
+    {
+      "id": "shared-hooks",
+      "label": "測り直しと修飾キーの共通部品",
+      "role": "毎コミットの測り直しと、修飾キーを押している間の購読を、既存の用途と新しい用途で共有する"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / session",
+      "role": "クリックが選ぶもの・指している artboard を、選択とドキュメントから引く"
+    },
+    {
+      "layer": "utils",
+      "role": "2 つの不在の値を、中身の比べ方を受けて比べる"
+    },
+    {
+      "layer": "features / editor",
+      "role": "クリックの選択を共有の規則へ付け替え、右クリックのメニューの状態をキャンバスへ渡す"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "指し先・測る組・押している間の購読・実測・描画の配線を持つ"
+    },
+    {
+      "layer": "components",
+      "role": "テスト部品に、枠から別の要素へ移る操作を足す"
+    },
+    {
+      "layer": "hooks",
+      "role": "物理キーの割り当てが左右の Alt のように複数のキーを持てることを doc に書く"
+    },
+    {
+      "layer": "docs",
+      "role": "選択しているだけのときの Alt / Option の距離を仕様として書く"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/session/document-selection/index.ts",
+      "name": "選択とドキュメント",
+      "role": "今の選択とドキュメントから、押された位置で選ぶもの・載っている artboard を引く",
+      "feature": "click-rule",
+      "change": "`nameToSelectAt` と `artboardNameAt` を足した"
+    },
+    {
+      "path": "src/features/editor/domains/editor-state/index.ts",
+      "name": "編集状態",
+      "role": "クリックで選択を変える",
+      "feature": "click-rule",
+      "change": "`selectAt` の中の導出を `nameToSelectAt` の呼び出しに置き換えた"
+    },
+    {
+      "path": "src/utils/Option.ts",
+      "name": "値の有無",
+      "role": "値が無いことを表す型と、その操作",
+      "feature": "shared-hooks",
+      "change": "`Option.equals` を足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/pointing/index.ts",
+      "name": "指し先",
+      "role": "ポインタがキャンバスの外・枠の外・枠の上のどこにいるかを表す直和",
+      "feature": "alt-distance",
+      "change": "新しく作った"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+      "name": "測る組",
+      "role": "選択と指し先から、内側の縁を測る組か横並びの組かを決め、矩形にして線を引く",
+      "feature": "alt-distance",
+      "change": "新しく作った"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "name": "向かい合う距離",
+      "role": "起点から相手・親の縁までの短い線を求める(#960 から)",
+      "feature": "alt-distance",
+      "change": "起点の引数を `moved` から `from` に改名した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "name": "置き直しの線",
+      "role": "運んでいる間の距離を求める(#960 から)",
+      "feature": "alt-distance",
+      "change": "改名に合わせて `from: moved` で渡す",
+      "graph": false
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+      "name": "押している間の指し先",
+      "role": "最後の指し先を覚え、Alt / Option を押している間だけ返す",
+      "feature": "alt-distance",
+      "change": "新しく作った"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+      "name": "修飾キーの押し離し",
+      "role": "document の keydown / keyup と window の blur を購読し、押した・離したを知らせる",
+      "feature": "shared-hooks",
+      "change": "新しく作った(パンの構えから切り出した)"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-space-held/index.ts",
+      "name": "パンの構え",
+      "role": "space を押している間だけ真を返す",
+      "feature": "shared-hooks",
+      "change": "購読を修飾キーの押し離しへ乗せ替えた"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+      "name": "距離の実測",
+      "role": "測る組を決めて DOM を測り、今の組と一致するときだけ線を返す",
+      "feature": "alt-distance",
+      "change": "新しく作った"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+      "name": "測り直し",
+      "role": "毎コミットと window の resize で測り直し、同じなら前の参照を返す",
+      "feature": "shared-hooks",
+      "change": "新しく作った(描かれた矩形の追跡から切り出した)"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "name": "描かれた矩形の追跡",
+      "role": "リサイズハンドルを重ねるために、回った矩形を追いかける",
+      "feature": "shared-hooks",
+      "change": "測り直しの上に乗せ替えた"
+    },
+    {
+      "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "name": "描かれた矩形",
+      "role": "名前で指した要素の矩形を DOM から測る",
+      "feature": "alt-distance",
+      "change": "`measureWithArea` を公開した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "name": "キャンバス",
+      "role": "操作の状態を持ち、出さない条件を決めて距離の重ね描きを置く",
+      "feature": "alt-distance",
+      "change": "押している間の指し先と距離の実測を呼び、キャンバスの出入りを伝え、3 つ目の重ね描きを置いた"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "name": "artboard の枠",
+      "role": "枠の上のクリック・掴む操作・ポインタの移動を受ける",
+      "feature": "alt-distance",
+      "change": "pointermove / pointerleave で指し先を伝える。`pressDig` を `digByCommandKey` に改名した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx",
+      "name": "距離の重ね描き",
+      "role": "短い線と数値を描く(#960 から)",
+      "feature": "alt-distance",
+      "change": "doc を「運んでいる間と、選択しているだけのとき」に直しただけ"
+    },
+    {
+      "path": "src/features/editor/components/opened-document-editor/index.tsx",
+      "name": "編集画面",
+      "role": "右クリックのメニューの状態を持ち、キャンバスを置く",
+      "feature": "alt-distance",
+      "change": "メニューを開いているかを渡す"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "name": "キャンバスの中身",
+      "role": "押している間の指し先の口を枠の並びへ通す",
+      "feature": "alt-distance",
+      "change": "口を通すだけ",
+      "graph": false
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "name": "枠の並び",
+      "role": "押している間の指し先の口を枠へ通す",
+      "feature": "alt-distance",
+      "change": "口を通すだけ",
+      "graph": false
+    },
+    {
+      "path": "src/hooks/use-key-shortcut/index.tsx",
+      "name": "キーボードショートカット",
+      "role": "割り当てと、入力欄に食われるかの判定",
+      "change": "doc の件数の記述だけ",
+      "graph": false
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "キャンバス直接操作の仕様",
+      "change": "「選択しているだけのときの Alt / Option の距離」の項を足した",
+      "graph": false
+    },
+    {
+      "path": "src/components/__tests__/pointer-gesture.ts",
+      "name": "ポインタ操作のテスト部品",
+      "role": "テストでポインタの出入りを起こす",
+      "change": "`leavePointerInto` を足し、enter / leave の doc を実測に合わせた",
+      "graph": false
+    },
+    {
+      "path": "src/features/editor/features/canvas/__tests__/selection-distance-tree.ts",
+      "name": "距離のテスト用の木",
+      "role": "深さ 3 の木と描く矩形",
+      "change": "新しく作った",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "frame-track",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+      "kind": "cmd",
+      "name": "枠の上の指し先を伝える",
+      "code": "altPointing.trackPointer(Pointing.create(namesAt(event.target), digByCommandKey(event)))",
+      "via": "call",
+      "payload": "指している位置から外へ辿った名前と、⌘ / Ctrl から読んだ掘る量",
+      "status": "added"
+    },
+    {
+      "id": "canvas-track",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+      "kind": "cmd",
+      "name": "キャンバスの出入りを伝える",
+      "code": "altPointing.trackPointer(Pointing.Nothing) / altPointing.trackPointer(Pointing.Outside)",
+      "via": "call",
+      "payload": "入ったら枠の外、出たらキャンバスの外",
+      "status": "added"
+    },
+    {
+      "id": "key-hold",
+      "from": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+      "kind": "evt",
+      "name": "Alt の押し離しを知らせる",
+      "code": "useModifierKeyHold(DistanceModifierKey, changeHold)",
+      "via": "call",
+      "payload": "押した(`true`)・離した(`false`)",
+      "status": "added"
+    },
+    {
+      "id": "space-hold",
+      "from": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-space-held/index.ts",
+      "kind": "evt",
+      "name": "space の押し離しを知らせる",
+      "code": "useModifierKeyHold(PanModifierKey, setIsHeld)",
+      "via": "call",
+      "payload": "押した(`true`)・離した(`false`)",
+      "status": "changed"
+    },
+    {
+      "id": "read-pointing",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+      "kind": "qry",
+      "name": "押している間の指し先を読む",
+      "code": "useAltPointing()",
+      "via": "state",
+      "returns": "`{ pointing: Option<Pointing>; trackPointer }`。離している間は `none`",
+      "status": "added"
+    },
+    {
+      "id": "selection-distances",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+      "kind": "qry",
+      "name": "選択しているだけのときの距離を求める",
+      "code": "useSelectionDistances(selection, suspendsAltDistance ? Option.none : altPointing.pointing)",
+      "via": "call",
+      "payload": "選択と、出さない間は `none` にした指し先",
+      "returns": "`FacingDistances`(画面上の px)",
+      "status": "added"
+    },
+    {
+      "id": "pair-create",
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+      "to": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+      "kind": "qry",
+      "name": "測る組を決める",
+      "code": "DistancePair.create(selection, current)",
+      "via": "call",
+      "returns": "`Option<DistancePair>`(`within` / `beside`)",
+      "status": "added"
+    },
+    {
+      "id": "pair-artboard",
+      "from": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "kind": "qry",
+      "name": "指している artboard を引く",
+      "code": "DocumentSelection.artboardNameAt(selection, pointing.names)",
+      "via": "call",
+      "returns": "名前の並びのうち最初の artboard",
+      "status": "added"
+    },
+    {
+      "id": "pair-target",
+      "from": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "kind": "qry",
+      "name": "クリックが選ぶものを相手として引く",
+      "code": "DocumentSelection.nameToSelectAt(selection, pointing.names, pointing.dig)",
+      "via": "call",
+      "returns": "掘った先のノード、無ければ artboard",
+      "status": "added"
+    },
+    {
+      "id": "measured",
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+      "kind": "qry",
+      "name": "毎コミット測り直す",
+      "code": "useMeasured(() => ..., isSameMeasured)",
+      "via": "call",
+      "payload": "組と矩形を一緒に返す測り方と、その等しさ",
+      "returns": "最後に測った組と矩形",
+      "status": "added"
+    },
+    {
+      "id": "measure-area",
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "kind": "qry",
+      "name": "面積を持つ矩形を測る",
+      "code": "DistancePair.measure(current, DrawnBounds.measureWithArea)",
+      "via": "call",
+      "returns": "client 座標の矩形。大きさ 0・描かれていなければ `none`",
+      "status": "added"
+    },
+    {
+      "id": "to-distances",
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+      "to": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+      "kind": "qry",
+      "name": "測った組から線を引く",
+      "code": "DrawnDistancePair.toDistances(measured.value.drawn)",
+      "via": "call",
+      "returns": "`FacingDistances`",
+      "status": "added"
+    },
+    {
+      "id": "facing",
+      "from": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "kind": "qry",
+      "name": "向かい合う距離を測る",
+      "code": "FacingDistances.create({ from, parentBounds, siblings: [] }) / FacingDistances.createAmong({ from, others: [to] })",
+      "via": "call",
+      "returns": "上下左右の短い線",
+      "status": "added"
+    },
+    {
+      "id": "overlay",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx",
+      "kind": "cmd",
+      "name": "距離を描く",
+      "code": "<FacingDistanceOverlay distances={selectionDistances} view={view} />",
+      "via": "state",
+      "payload": "選択しているだけのときの距離",
+      "status": "added"
+    },
+    {
+      "id": "select-at",
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "kind": "qry",
+      "name": "クリックが選ぶものを引く",
+      "code": "DocumentSelection.nameToSelectAt(EditorState.documentSelection(state), names, dig)",
+      "via": "call",
+      "returns": "選ぶ名前。無ければ選択が外れる",
+      "status": "changed"
+    },
+    {
+      "id": "menu-open",
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "kind": "cmd",
+      "name": "メニューの開閉を渡す",
+      "code": "isContextMenuOpen={Option.isSome(contextMenu)}",
+      "via": "state",
+      "payload": "右クリックのメニューを開いているか",
+      "status": "added"
+    },
+    {
+      "id": "drawn-measured",
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+      "kind": "qry",
+      "name": "回った矩形を測り直す",
+      "code": "useMeasured(() => measure(target, container.current, basis), RotatedBounds.equals)",
+      "via": "call",
+      "returns": "最後に測った回った矩形",
+      "status": "changed"
+    },
+    {
+      "id": "pointing-equals",
+      "from": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+      "to": "src/utils/Option.ts",
+      "kind": "qry",
+      "name": "同じ指し先かを比べる",
+      "code": "Option.equals(previous, pointing, Pointing.equals)",
+      "via": "call",
+      "returns": "真なら前の値を返し、再レンダーしない",
+      "status": "added"
+    },
+    {
+      "id": "reposition-from",
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "kind": "qry",
+      "name": "運んでいる間の距離を測る",
+      "code": "FacingDistances.create({ from: moved, parentBounds, siblings })",
+      "via": "call",
+      "returns": "上下左右の短い線",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "hover",
+      "label": "Alt を押したまま相手を指したとき",
+      "steps": [
+        "frame-track",
+        "read-pointing",
+        "selection-distances",
+        "pair-create",
+        "pair-artboard",
+        "pair-target",
+        "measured",
+        "measure-area",
+        "to-distances",
+        "facing",
+        "overlay"
+      ]
+    },
+    {
+      "id": "press",
+      "label": "止まったまま Alt を押したとき",
+      "steps": [
+        "canvas-track",
+        "key-hold",
+        "pointing-equals",
+        "read-pointing",
+        "selection-distances",
+        "measured",
+        "overlay"
+      ]
+    },
+    {
+      "id": "suspend",
+      "label": "右クリックのメニューを開いているとき",
+      "steps": [
+        "menu-open",
+        "selection-distances"
+      ]
+    },
+    {
+      "id": "click",
+      "label": "キャンバスをクリックして選ぶとき",
+      "steps": [
+        "select-at"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "2e2a313cbed80310d753be6eb6a4ad4de0ba3e93",
+      "phase": "prep",
+      "role": "`FacingDistances` の起点の引数を `moved` から `from` に改名する",
+      "why": "選択しているだけのときは、運んでいるものではなく選んでいるノードやその子孫を起点に渡す。名前が嘘になる前に、`Facing` の語彙に揃えた。振る舞いは変えない。",
+      "review": [
+        "`RepositionLines` の 2 箇所とテストの改名だけで、ケースの増減が無いこと"
+      ]
+    },
+    {
+      "sha": "f61952d2393db3a66cdf5cd0989a39edf02d2fb3",
+      "phase": "prep",
+      "role": "面積を持つものだけを測る `DrawnBounds.measureWithArea` を公開する",
+      "why": "非表示のノードは大きさ 0 で測れるので、距離の相手から外す処理が要る。同じ処理が非公開で既にあったので、2 箇所目を書かずに公開した。"
+    },
+    {
+      "sha": "ecde0a9e2cf71752e8d853d4f2fe2e1c66a6cce0",
+      "phase": "prep",
+      "role": "`measureWithArea` が大きさ 0 と描かれていないものを外すことをテストで固定する",
+      "why": "大きさの無いノードでは距離を出さない、という規則の拠り所なので、公開した時点で固定した。"
+    },
+    {
+      "sha": "78c48f7145c454264db362b42558707059726a3f",
+      "phase": "prep",
+      "role": "クリックが選ぶものを引く `DocumentSelection.nameToSelectAt` を足す",
+      "why": "距離の相手は「クリックと同じ規則」(Q1・Q7)。この導出は `EditorState.selectAt` の中にあり、子の feature の canvas からは import できない。ドキュメントと今の選択の両方を持つ `DocumentSelection` に 1 つ置いた(Q11)。",
+      "flows": [
+        "click",
+        "hover"
+      ],
+      "review": [
+        "名前を `selectableNameAt` にしなかった理由(既存の `selectable*` はロック中も含む)が doc と合っているか"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "start": 178,
+          "end": 191,
+          "text": "ノードを掘った答えが無ければ、名前の並びの最初の artboard へ倒す。後のコミットで artboard の引き方を `artboardNameAt` に切り出す"
+        }
+      ]
+    },
+    {
+      "sha": "e1414debd13249977154513c59f4dd6054ed6438",
+      "phase": "prep",
+      "role": "`nameToSelectAt` がクリックの規則どおりに選ぶものを引くことを固定する",
+      "why": "クリックと距離の相手の両方が使うので、呼び出し側の既存テストだけでなく、このメソッドの振る舞いとして固定した。"
+    },
+    {
+      "sha": "8a4e0df7483505fd238713330a0e9068bc730cb4",
+      "phase": "prep",
+      "role": "`EditorState.selectAt` を `nameToSelectAt` の呼び出しに置き換える",
+      "why": "クリックと距離の相手が同じ 1 つの規則を引くようにした。`selectAt` を直に呼ぶ既存テスト 22 件は手を入れずに通る。",
+      "flows": [
+        "click"
+      ],
+      "before": [
+        {
+          "text": "`selectAt` が「名前を引いて、無ければ artboard」を自分で書いていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "`selectAt` は `nameToSelectAt` を呼ぶだけ",
+          "message": "select-at"
+        }
+      ]
+    },
+    {
+      "sha": "fc9095f62581b0c39e7f486550c249595852070e",
+      "phase": "prep",
+      "role": "ポインタの指し先を表す直和 `Pointing` を足す",
+      "why": "キャンバスの外・枠の外・枠の上(名前の並びと掘る量)の 3 つを直和で持ち、外にいるのに名前を持つ状態を作れなくした。名前の並びと掘る量はいつも組で渡るので 1 つの型にまとめた。"
+    },
+    {
+      "sha": "12222a95022bf10c7cfbbcc770a1a96d779022c0",
+      "phase": "prep",
+      "role": "`Pointing.equals` の 5 通りを固定する",
+      "why": "取り違えると、指し先が変わっても距離が更新されないか、動くたびにキャンバス全体を描き直す。"
+    },
+    {
+      "sha": "d66827878704c3254d5e7afa8ed638a2b329df30",
+      "phase": "prep",
+      "role": "テスト部品に Alt の押し離しと、枠から別の要素へ移る操作を足す",
+      "why": "既存の `leavePointer` は React に窓の外へ出たと読まれ、キャンバスの外まで leave が届く。枠から見出しやハンドルへ移る(キャンバスには残る)操作は `relatedTarget` 付きの `pointerOut` で起こす。",
+      "review": [
+        "`leavePointerInto` の doc が、実測した enter / leave の届き方と合っているか"
+      ]
+    },
+    {
+      "sha": "96d627941e3ae2751dbec2cc733c57fbd9e1cf93",
+      "phase": "core",
+      "role": "選択と指し先から測る組を決める `DistancePair` を足す",
+      "why": "Q1〜Q7 の決定をそのまま型にした。相手はクリックの規則、同じ親の中なら兄弟(Q5)、祖先・子孫は木の親子で内側の縁(Q6)、親子でない相手は `createAmong` に 1 件だけ渡し、離れているときだけ 1 本になる。形で包むかを判定する処理は作らない。",
+      "flows": [
+        "hover"
+      ],
+      "review": [
+        "兄弟の規則(Q5)が ⌘ / Ctrl を押しているときに効かないこと",
+        "別の artboard を指したときに、相手を探さず親の縁へ倒れること"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "start": 105,
+          "end": 126,
+          "text": "別の artboard なら相手無し。⌘ / Ctrl が無ければ兄弟を先に探し、無ければクリックの規則"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "start": 137,
+          "end": 156,
+          "text": "木の上の関係だけで組の種類を決める。形で包むかは見ない(Q6)"
+        }
+      ]
+    },
+    {
+      "sha": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "phase": "core",
+      "role": "`DistancePair` の相手の決め方と測り方を固定する",
+      "why": "規則を取り違えると答えが変わる入力を選んだ。親の背景は親と artboard 直下の祖先が違う深さ 3 で、artboard の背景は深さ 2 以上で書き、⌘ はいちばん内側・選択・いちばん外側が互いに違う入力にした。",
+      "review": [
+        "artboard 直下の選択で書くと規則を外しても答えが変わらないケースが残っていないか"
+      ]
+    },
+    {
+      "sha": "eddbda0b4e45a5ea3b5a13ddda073395da2919fc",
+      "phase": "core",
+      "role": "Alt を押している間のポインタの指し先を持つ `useAltPointing` を足す",
+      "why": "ポインタの位置をいつも state に持つと、Alt を押していない間も要素の境目をまたぐたびにキャンバス全体を描き直す。最後の指し先は ref に持ち、押した瞬間に state へ写すので、指してから押しても出る。",
+      "flows": [
+        "press"
+      ],
+      "review": [
+        "入力欄・選択欄にフォーカスがあるときに Alt を見ない判定が `KeyShortcut.isConsumedBy` を通っていること"
+      ]
+    },
+    {
+      "sha": "d7e4fb4b251b05b08014c958bab961b62008efbd",
+      "phase": "core",
+      "role": "`useAltPointing` の押す・離す・追従・フォーカスの扱いを固定する",
+      "why": "押す順・描き直しを止める条件・フォーカスの扱いがこのフックの振る舞い。「押していない間は動かしても返らない」は、いつも state を更新する実装でもほかのケースが落ちないので別に置いた。"
+    },
+    {
+      "sha": "bec65740397e14deb28cbf043a47b61dfc14ea1f",
+      "phase": "core",
+      "role": "選択しているだけのときの距離を実測する `useSelectionDistances` を足す",
+      "why": "相手の矩形は DOM の実測でしか取れず、選択や倍率を変えたときはポインタを動かさなくても測り直す必要がある。前例の `use-drawn-bounds` と同じく、毎コミットと resize で測る。線ではなく矩形を比べるのは、#1227 で `ThinLine.equals` が無くなったため。"
+    },
+    {
+      "sha": "81d2c0177f3593fc294b9448cb926473c660b85d",
+      "phase": "core",
+      "role": "`useSelectionDistances` の測り直しと参照の保ち方を固定する",
+      "why": "同じ参照を返すか、測らない間に DOM を測らないかは、通しのテストでは観測しにくい。"
+    },
+    {
+      "sha": "46bf7871d473c737100209d7c3294ee5d4b5d5dd",
+      "phase": "core",
+      "role": "キャンバスに配線し、選択しているだけのときに Alt で距離を出す",
+      "why": "名前の並びと掘る量はクリックと同じ `namesAt` / `pressDig` で取り、集め方を 2 通りに割らない。出さない間は指し先を `none` にして測らない。メニューは覆いを持たず開いた直後はポインタが動かないので、DOM から推さずに props で受ける。",
+      "flows": [
+        "hover",
+        "press",
+        "suspend"
+      ],
+      "review": [
+        "出さない条件の 9 つが、docs の「出さないとき」のうち操作・画面の状態の項目を漏れなく覆っているか",
+        "枠の leave は枠の外、キャンバスの leave はキャンバスの外、の 2 つを取り違えていないか"
+      ],
+      "before": [
+        {
+          "text": "選択しているだけのときに Alt / Option を押しても何も出ない"
+        }
+      ],
+      "after": [
+        {
+          "text": "Alt / Option を押している間、ポインタの下の相手との距離が出る",
+          "message": "selection-distances"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "start": 186,
+          "end": 199,
+          "text": "出さないときはフックに `none` を渡す。描く側で隠すだけだと、運んでいる間も毎回 DOM を測る"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "start": 254,
+          "end": 255,
+          "text": "キャンバスに入ったら枠の外、出たらキャンバスの外"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "start": 193,
+          "end": 198,
+          "text": "枠の上はクリックと同じ名前の集め方で伝え、枠を出たら枠の外にする"
+        }
+      ]
+    },
+    {
+      "sha": "23f866270d491d78eb338c0c0eb52915f286d91a",
+      "phase": "fin",
+      "role": "距離の重ね描きの doc を、選択しているだけのときも出る前提に直す",
+      "why": "同じ重ね描きを選択しているだけのときにも使うようになり、「運んでいる間」とだけ書いた doc が嘘になったため。"
+    },
+    {
+      "sha": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "phase": "core",
+      "role": "キャンバスを通して、選択しているだけのときの距離が出ることを固定する",
+      "why": "枠からの通知・フック・重ね描きの配線はキャンバスの中で閉じているので、この層で通しのテストを書いた。見出しのケースは横並びの 1 本を出してから移る形にし、leave の配線を外すと答えが変わるようにした。"
+    },
+    {
+      "sha": "6f316bca4b83bdd5c6fe17d5bd6784808e7359d1",
+      "phase": "core",
+      "role": "操作中・キャンバスの外では出さないことを固定する",
+      "why": "どのテストも、止める理由が無ければ出る指し先で Alt を押す。条件を 1 つずつ外すと、対応する 1 件だけが落ちることを確かめた。"
+    },
+    {
+      "sha": "5fd6296994f50c47e36f4338ad588b16e7e50a22",
+      "phase": "core",
+      "role": "編集画面で、メニューと入力欄のフォーカスが距離を止めることを固定する",
+      "why": "メニューの状態は編集画面が持ち、入力欄は右ペインにあるので、キャンバスの層では通せない。props の受け渡しが切れても気づけるように、編集画面の層で通した。",
+      "flows": [
+        "suspend"
+      ]
+    },
+    {
+      "sha": "f3c23eb01b2b53cd897fd1951b6c1c0ea93291e0",
+      "phase": "core",
+      "role": "選択しているだけのときの Alt / Option の距離を仕様書に書く",
+      "why": "Q1〜Q12 の決定は Issue のコメントに散っているので、仕様として 1 か所で読めるようにした。運んでいる間と同じ部分は参照し、押しているかを見るタイミングが違う点は明記した。",
+      "review": [
+        "UI 案にこの表示が無いので、見た目を #960 と同じにしたことが読み取れるか"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 195,
+          "end": 195,
+          "text": "「#1197 はまだ出さない」を、新しい項を指す文に直した"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 215,
+          "end": 238,
+          "text": "新しい項。相手・相手が無いとき・測り方・出さないとき"
+        }
+      ]
+    },
+    {
+      "sha": "2bdb9cc12335ccba2208dd6c1b2b2046b102b3bc",
+      "phase": "revise",
+      "role": "2 つの `Option` を比べ方を受けて比べる `Option.equals` を足す",
+      "why": "実装の検証(F2)で、「中身が等しければ前の参照を返す」比較が 3 箇所に書き写されていると指摘された。比べ方は引数で受け、ドメインの等しさは各ドメインに残す。"
+    },
+    {
+      "sha": "f617b9b392d1ce064f483f02133f174e250b1e93",
+      "phase": "revise",
+      "role": "`Option.equals` の 4 通りを固定する",
+      "why": "片方だけ値を持つときに比べ方を呼ばないことは見落としやすいので、edge に分けた。"
+    },
+    {
+      "sha": "31985dc55abaf81bedc0e22f9070395e286080b4",
+      "phase": "revise",
+      "role": "名前の並びのうち最初の artboard を `DocumentSelection.artboardNameAt` に切り出す",
+      "why": "実装の検証(F1)。同じ式が `nameToSelectAt` と `DistancePair` に書かれていて、片方だけ直すとクリックが倒れる artboard と、距離が自分の artboard かを判定する artboard が食い違う。",
+      "flows": [
+        "hover",
+        "click"
+      ]
+    },
+    {
+      "sha": "3e0f8d31632b0f89a9fa8c85c814e6cfc09fd9fa",
+      "phase": "revise",
+      "role": "修飾キーを押している間の購読を `useModifierKeyHold` にまとめる",
+      "why": "実装の検証(F3・F8)。Alt の購読はパンの構えの書き写しだった。違うのは離したかの判定だけなのでそこを引数にし、Alt が押した瞬間に指し先を写せるよう、押し離しの変化を受け取る関数を渡す形にした。",
+      "flows": [
+        "press"
+      ],
+      "review": [
+        "パンの構えの離し方(space の keyup)が、乗せ替えの前と同じであること"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+          "start": 33,
+          "end": 46,
+          "text": "押したかは codes で見て、フォーカスの判定だけを割り当てに委ねる。離したかは用途ごとに受け取る"
+        }
+      ]
+    },
+    {
+      "sha": "71d45fd89f0d8237cd8e5d82a365586c45742a42",
+      "phase": "revise",
+      "role": "`DistancePair` が `artboardNameAt` を使い、`equals` を持つ",
+      "why": "実装の検証(F1・F5・F7・F9)。`DistancePair.equals` は、測った矩形がどの組のものかを測り直しのフックが確かめるのに使う。ハンドルは見た目では枠の中なので、`Pointing` の doc で枠の外と分けて書いた。",
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "start": 200,
+          "end": 209,
+          "text": "組の等しさ。次のコミットで、測った組と今の組の照合に使う"
+        }
+      ]
+    },
+    {
+      "sha": "e26cde517039eb0f85d43d31bb87e2ddf94a3c85",
+      "phase": "revise",
+      "role": "`DistancePair.equals` を固定する",
+      "why": "取り違えると、組が変わった回に前の組の線を返す。"
+    },
+    {
+      "sha": "0d6c8dba07f312a145aeb7694ff1f6463934346b",
+      "phase": "revise",
+      "role": "測り直しを `useMeasured` にまとめ、測った組と一致したときだけ線を返す",
+      "why": "実装の検証(F2・F9)。前のガードは「組が無くなった回」しか守らず、組が A から B に変わった回は layout effect が測り直す前に前の組の矩形を持っていた。返す値を今の組と測った組の一致で決めると、両方を同じ判定で扱え、効果の順番に頼らない。",
+      "flows": [
+        "hover"
+      ],
+      "review": [
+        "`useDrawnBounds` の振る舞い(リサイズハンドルの追従)が乗せ替えで変わっていないこと"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+          "start": 66,
+          "end": 71,
+          "text": "今の組と測った組が一致するときだけ線を返す"
+        }
+      ]
+    },
+    {
+      "sha": "4c0dcfdc78f6f281724733044fcd50f0b1b09182",
+      "phase": "revise",
+      "role": "組が変わった回・無くなった回に前の組の線を返さないことを固定する",
+      "why": "レンダーごとの戻り値をすべて記録して見るので、layout effect が描画前に測り直すかどうかに頼らずに守れる。画面に出た線だけを見ると、外しても落ちない。"
+    },
+    {
+      "sha": "cae052549b42319f370333c0fc886f1c4cdd4532",
+      "phase": "revise",
+      "role": "距離の数値を読むテストのヘルパーを canvas のテスト部品へ移し、enter / leave の doc を実測に合わせる",
+      "why": "実装の検証(F4・F6)。同じヘルパーが 2 ファイルにあった。`enterPointer` の doc は「狙った要素にだけ届く」だったが、実測では祖先にも届き、新しいテストはその挙動に頼って通っていた。"
+    },
+    {
+      "sha": "d1eba5bccb46b8d625eb196d62d0225a5822d4b7",
+      "phase": "revise",
+      "role": "掘る量を読む関数を `digByCommandKey` に改名し、配線まわりのコメントを実際に合わせる",
+      "why": "実装の検証(F5・F8)。`pressDig` は pointermove からも呼ばれるようになり、名前がボタンの押下を約束していた。同じ `trackPointer` に違う値を入れる 2 箇所に理由を 1 行書いた。",
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "start": 252,
+          "end": 253,
+          "text": "キャンバスを出たときだけキャンバスの外。枠を出ただけは枠の外"
+        }
+      ]
+    },
+    {
+      "sha": "e648fb6bbe14319a81d9c8aaaf1207324a86b1f7",
+      "phase": "revise",
+      "role": "仕様書の「相手が無いとき」と「出さないとき」の書き方を直す",
+      "why": "実装の検証(F7)。ハンドルを枠の外に含めると、見た目では枠の中にあるハンドルと食い違って読めた。非表示の artboard の中のノードを選んでいるときを、出さないときに足した。"
+    },
+    {
+      "sha": "c6be4e7b4b8e6ec82a375d352d7ec0a6bedec3ce",
+      "phase": "hard",
+      "role": "測る組の片方の名前だけが変わる場合を、等しさと測り直しのテストで固定する",
+      "why": "ミューテーションの検証で、`equals` の内外の組の側と横並びの起点を外しても、測り直しのフックから組の比較を外しても落ちなかった。名前だけが変わって矩形が同じ場合を別のテストに分けた。"
+    },
+    {
+      "sha": "ce6f5df19baeb01dc598493d51a6b239072ee2c1",
+      "phase": "hard",
+      "role": "右の Alt・片方だけ離す・初期の指し先・押していない間の再レンダーを固定する",
+      "why": "ミューテーションの検証で、codes から右の Alt を消しても、離したかを keyup の code で見る形にしても、初期値を枠の外にしても落ちなかった。テストが左の Alt だけで撃っていたため。"
+    },
+    {
+      "sha": "cb1992d107c2851dc434055dd372d98ef6226377",
+      "phase": "hard",
+      "role": "resize の購読の張り直しと、面積で外す規則を守る入力にする",
+      "why": "ミューテーションの検証で、購読を 1 度だけ張る形に壊しても落ちず、大きさの無いノードのテストは両方の辺が 0 だと別の規則で同じ答えになっていた。片方の辺だけ 0 にして、面積の規則だけが答えを決める入力にした。"
+    }
+  ],
+  "suites": [
+    {
+      "id": "click",
+      "label": "クリックが選ぶもの",
+      "file": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts"
+    },
+    {
+      "id": "pointing",
+      "label": "指し先の等しさ",
+      "file": "src/features/editor/features/canvas/domains/pointing/__tests__/pointing.normal.test.ts"
+    },
+    {
+      "id": "pair-normal",
+      "label": "測る組の決め方",
+      "file": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts"
+    },
+    {
+      "id": "pair-edge",
+      "label": "測る組を作らないとき",
+      "file": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.edge.test.ts"
+    },
+    {
+      "id": "pair-dist",
+      "label": "測る組の線の向き",
+      "file": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.distances.test.ts"
+    },
+    {
+      "id": "alt",
+      "label": "押している間の指し先",
+      "file": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx"
+    },
+    {
+      "id": "seldist",
+      "label": "距離の実測",
+      "file": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx"
+    },
+    {
+      "id": "drawnhook",
+      "label": "描かれた矩形の追跡",
+      "file": "src/features/editor/features/canvas/hooks/use-drawn-bounds/__tests__/use-drawn-bounds.normal.test.tsx"
+    },
+    {
+      "id": "drawn",
+      "label": "面積を持つ矩形",
+      "file": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts"
+    },
+    {
+      "id": "option",
+      "label": "値の有無の等しさ",
+      "file": "src/utils/__tests__/Option.edge.test.ts"
+    },
+    {
+      "id": "canvas",
+      "label": "キャンバスでの距離",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx"
+    },
+    {
+      "id": "suspended",
+      "label": "距離を出さないとき",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx"
+    },
+    {
+      "id": "editor",
+      "label": "編集画面での距離",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection-distance.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "click-node",
+      "suite": "click",
+      "name": "ノードを指していれば、掘る量どおりのノードを選ぶ",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "クリックと距離の相手が引く規則の基本形",
+      "given": "ノードの載った artboard",
+      "when": "ノードの上の名前の並びで `nameToSelectAt` を呼ぶ",
+      "then": "掘る量どおりのノードの名前が返る",
+      "commit": "e1414debd13249977154513c59f4dd6054ed6438",
+      "excerpt": {
+        "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts",
+        "start": 50,
+        "end": 58,
+        "text": "test(\"ノードを指していれば、掘る量どおりのノードを選ぶ\", () => {\n  const name = DocumentSelection.nameToSelectAt(\n    setupSelection(),\n    [\"label\", \"card\", \"home\"],\n    SelectionDigs.Deepest,\n  );\n\n  expect(name).toEqual(Option.some(\"label\"));\n});"
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "select-at",
+        "pair-target"
+      ]
+    },
+    {
+      "id": "click-artboard",
+      "suite": "click",
+      "name": "artboard の背景を指すと、その artboard を選ぶ",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "自分の artboard の背景を指したときに artboard を相手にする(Q7)拠り所",
+      "given": "artboard の背景だけの並び",
+      "when": "`nameToSelectAt` を呼ぶ",
+      "then": "その artboard の名前が返る",
+      "commit": "e1414debd13249977154513c59f4dd6054ed6438",
+      "excerpt": {
+        "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts",
+        "start": 60,
+        "end": 68,
+        "text": "test(\"artboard の背景を指すと、その artboard を選ぶ\", () => {\n  const name = DocumentSelection.nameToSelectAt(\n    setupSelection(),\n    [\"home\"],\n    SelectionDigs.NoDeeper,\n  );\n\n  expect(name).toEqual(Option.some(\"home\"));\n});"
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "select-at",
+        "pair-target"
+      ]
+    },
+    {
+      "id": "click-locked",
+      "suite": "click",
+      "name": "ロック中のノードしか無い枝を指すと、その artboard を選ぶ",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "ロック中のノードを相手にしない",
+      "given": "ロック中のノードの上の並び",
+      "when": "`nameToSelectAt` を呼ぶ",
+      "then": "artboard の名前が返る",
+      "commit": "e1414debd13249977154513c59f4dd6054ed6438",
+      "excerpt": {
+        "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts",
+        "start": 70,
+        "end": 78,
+        "text": "test(\"ロック中のノードしか無い枝を指すと、その artboard を選ぶ\", () => {\n  const name = DocumentSelection.nameToSelectAt(\n    setupSelection(),\n    [\"sealed-title\", \"sealed\", \"home\"],\n    SelectionDigs.Deepest,\n  );\n\n  expect(name).toEqual(Option.some(\"home\"));\n});"
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "select-at",
+        "pair-target"
+      ]
+    },
+    {
+      "id": "artboard-at",
+      "suite": "click",
+      "name": "押された位置を載せている artboard は、辿った名前のうちの artboard になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "クリックが倒れる artboard と、距離が自分の artboard かを判定する artboard を同じにする(F1)",
+      "given": "ノードと artboard を含む名前の並び",
+      "when": "`artboardNameAt` を呼ぶ",
+      "then": "並びのうち最初の artboard が返る",
+      "commit": "31985dc55abaf81bedc0e22f9070395e286080b4",
+      "excerpt": {
+        "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts",
+        "start": 100,
+        "end": 108,
+        "text": "test(\"押された位置を載せている artboard は、辿った名前のうちの artboard になる\", () => {\n  const name = DocumentSelection.artboardNameAt(setupSelection(), [\n    \"label\",\n    \"card\",\n    \"home\",\n  ]);\n\n  expect(name).toEqual(Option.some(\"home\"));\n});"
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "pair-artboard"
+      ]
+    },
+    {
+      "id": "pointing-dig",
+      "suite": "pointing",
+      "name": "掘る量が違えば等しくない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "⌘ を押して動いたときに相手を引き直す",
+      "given": "同じ名前の並びで、掘る量だけが違う 2 つ",
+      "when": "`Pointing.equals` で比べる",
+      "then": "偽",
+      "commit": "12222a95022bf10c7cfbbcc770a1a96d779022c0",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/pointing/__tests__/pointing.normal.test.ts",
+        "start": 26,
+        "end": 31,
+        "text": "test(\"掘る量が違えば等しくない\", () => {\n  const a = Pointing.create([\"label\", \"card\", \"home\"], SelectionDigs.NoDeeper);\n  const b = Pointing.create([\"label\", \"card\", \"home\"], SelectionDigs.Deepest);\n\n  expect(Pointing.equals(a, b)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/pointing/index.ts"
+      ]
+    },
+    {
+      "id": "pointing-kind",
+      "suite": "pointing",
+      "name": "キャンバスの外と枠の外は等しくない",
+      "techniques": [
+        "state"
+      ],
+      "why": "空き領域からキャンバスの外へ出たときに線を消す",
+      "given": "キャンバスの外と枠の外",
+      "when": "`Pointing.equals` で比べる",
+      "then": "偽",
+      "commit": "12222a95022bf10c7cfbbcc770a1a96d779022c0",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/pointing/__tests__/pointing.normal.test.ts",
+        "start": 33,
+        "end": 35,
+        "text": "test(\"キャンバスの外と枠の外は等しくない\", () => {\n  expect(Pointing.equals(Pointing.Outside, Pointing.Nothing)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/pointing/index.ts"
+      ]
+    },
+    {
+      "id": "pair-inside",
+      "suite": "pair-normal",
+      "name": "選択の内側を指すと、選択から親の内側の縁までを測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "相手が選択自身なら親の縁で測る(Q1)",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で row を選ぶ",
+      "when": "label の上を掘る量 `NoDeeper` で指す",
+      "then": "`within(row, card)`",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+        "start": 13,
+        "end": 25,
+        "text": "test(\"選択の内側を指すと、選択から親の内側の縁までを測る\", () => {\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"row\"]),\n    Pointing.create(\n      [\"label\", \"cell\", \"row\", \"card\", \"home\"],\n      SelectionDigs.NoDeeper,\n    ),\n  );\n\n  expect(pair).toEqual(\n    Option.some({ kind: \"within\", inner: \"row\", outer: \"card\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-create",
+        "pair-target"
+      ]
+    },
+    {
+      "id": "pair-sibling",
+      "suite": "pair-normal",
+      "name": "兄弟を指すと、兄弟との横並びを測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "同じ親の中なら兄弟を相手にする(Q5)",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で row を選ぶ",
+      "when": "chip の上を指す",
+      "then": "`beside(row, chip)`",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+        "start": 27,
+        "end": 36,
+        "text": "test(\"兄弟を指すと、兄弟との横並びを測る\", () => {\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"row\"]),\n    Pointing.create([\"chip\", \"card\", \"home\"], SelectionDigs.NoDeeper),\n  );\n\n  expect(pair).toEqual(\n    Option.some({ kind: \"beside\", from: \"row\", to: \"chip\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-create"
+      ]
+    },
+    {
+      "id": "pair-sibling-child",
+      "suite": "pair-normal",
+      "name": "兄弟の子を指しても、兄弟との横並びを測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "兄弟の中を指しても、相手は兄弟そのもの",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で row を選ぶ",
+      "when": "chip-icon の上を指す",
+      "then": "`beside(row, chip)`",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+        "start": 38,
+        "end": 50,
+        "text": "test(\"兄弟の子を指しても、兄弟との横並びを測る\", () => {\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"row\"]),\n    Pointing.create(\n      [\"chip-icon\", \"chip\", \"card\", \"home\"],\n      SelectionDigs.NoDeeper,\n    ),\n  );\n\n  expect(pair).toEqual(\n    Option.some({ kind: \"beside\", from: \"row\", to: \"chip\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-create"
+      ]
+    },
+    {
+      "id": "pair-deepest",
+      "suite": "pair-normal",
+      "name": "⌘ を押して選択の内側を指すと、いちばん内側の子孫から選択の内側の縁までを測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "⌘ / Ctrl ならいちばん内側を相手にし、子孫は相手から選択の内側の縁まで測る(Q6)",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で row を選ぶ",
+      "when": "label の上を掘る量 `Deepest` で指す",
+      "then": "`within(label, row)`(1 つ内側の cell ではない)",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+        "start": 52,
+        "end": 64,
+        "text": "test(\"⌘ を押して選択の内側を指すと、いちばん内側の子孫から選択の内側の縁までを測る\", () => {\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"row\"]),\n    Pointing.create(\n      [\"label\", \"cell\", \"row\", \"card\", \"home\"],\n      SelectionDigs.Deepest,\n    ),\n  );\n\n  expect(pair).toEqual(\n    Option.some({ kind: \"within\", inner: \"label\", outer: \"row\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-create",
+        "pair-target"
+      ]
+    },
+    {
+      "id": "pair-deepest-sibling",
+      "suite": "pair-normal",
+      "name": "⌘ を押して兄弟の子を指すと、その子との横並びを測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "⌘ / Ctrl のときは兄弟の規則を効かせない",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で row を選ぶ",
+      "when": "chip-icon の上を `Deepest` で指す",
+      "then": "`beside(row, chip-icon)`",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+        "start": 66,
+        "end": 78,
+        "text": "test(\"⌘ を押して兄弟の子を指すと、その子との横並びを測る\", () => {\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"row\"]),\n    Pointing.create(\n      [\"chip-icon\", \"chip\", \"card\", \"home\"],\n      SelectionDigs.Deepest,\n    ),\n  );\n\n  expect(pair).toEqual(\n    Option.some({ kind: \"beside\", from: \"row\", to: \"chip-icon\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-create",
+        "pair-target"
+      ]
+    },
+    {
+      "id": "pair-parent-bg",
+      "suite": "pair-normal",
+      "name": "深さ 3 のノードを選んで親の背景を指すと、クリックの規則どおり artboard 直下の祖先の内側の縁までを測る",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "親の背景ではクリックの規則に戻る(Q12-1)。親と artboard 直下の祖先が違う深さ 3 で書く",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で cell を選ぶ",
+      "when": "親 row の背景(`[row, card, home]`)を指す",
+      "then": "`within(cell, card)`(親 row ではない)",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+        "start": 80,
+        "end": 90,
+        "text": "test(\"深さ 3 のノードを選んで親の背景を指すと、クリックの規則どおり artboard 直下の祖先の内側の縁までを測る\", () => {\n  // 親（`row`）の縁とは答えが違う\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"cell\"]),\n    Pointing.create([\"row\", \"card\", \"home\"], SelectionDigs.NoDeeper),\n  );\n\n  expect(pair).toEqual(\n    Option.some({ kind: \"within\", inner: \"cell\", outer: \"card\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-create",
+        "pair-target"
+      ]
+    },
+    {
+      "id": "pair-artboard-bg",
+      "suite": "pair-normal",
+      "name": "深さ 2 のノードを選んで自分の artboard の背景を指すと、artboard の内側の縁までを測る",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "自分の artboard の背景なら artboard を相手にする(Q7)。親と artboard が違う深さ 2 で書く",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で row を選ぶ",
+      "when": "home の背景(`[home]`)を指す",
+      "then": "`within(row, home)`",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+        "start": 103,
+        "end": 112,
+        "text": "test(\"深さ 2 のノードを選んで自分の artboard の背景を指すと、artboard の内側の縁までを測る\", () => {\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"row\"]),\n    Pointing.create([\"home\"], SelectionDigs.NoDeeper),\n  );\n\n  expect(pair).toEqual(\n    Option.some({ kind: \"within\", inner: \"row\", outer: \"home\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-create",
+        "pair-artboard",
+        "pair-target"
+      ]
+    },
+    {
+      "id": "pair-other-artboard",
+      "suite": "pair-normal",
+      "name": "深さ 2 のノードを選んで別の artboard のノードを指すと、親の内側の縁までを測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "別の artboard は相手にしない(Q4)",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で row を選ぶ",
+      "when": "settings の slot を指す",
+      "then": "`within(row, card)`",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+        "start": 114,
+        "end": 123,
+        "text": "test(\"深さ 2 のノードを選んで別の artboard のノードを指すと、親の内側の縁までを測る\", () => {\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"row\"]),\n    Pointing.create([\"slot\", \"settings\"], SelectionDigs.NoDeeper),\n  );\n\n  expect(pair).toEqual(\n    Option.some({ kind: \"within\", inner: \"row\", outer: \"card\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-create",
+        "pair-artboard"
+      ]
+    },
+    {
+      "id": "pair-nothing",
+      "suite": "pair-normal",
+      "name": "artboard の枠の外を指すと、親の内側の縁までを測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "空き領域・見出し・ハンドルの上は相手無し(Q12-2)",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で row を選ぶ",
+      "when": "枠の外(`Pointing.Nothing`)を渡す",
+      "then": "`within(row, card)`",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+        "start": 125,
+        "end": 134,
+        "text": "test(\"artboard の枠の外を指すと、親の内側の縁までを測る\", () => {\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"row\"]),\n    Pointing.Nothing,\n  );\n\n  expect(pair).toEqual(\n    Option.some({ kind: \"within\", inner: \"row\", outer: \"card\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-create"
+      ]
+    },
+    {
+      "id": "pair-outside",
+      "suite": "pair-normal",
+      "name": "キャンバスの外を指していると、何も測らない",
+      "techniques": [
+        "state"
+      ],
+      "why": "キャンバスの外では出さない(Q8)",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で row を選ぶ",
+      "when": "キャンバスの外(`Pointing.Outside`)を渡す",
+      "then": "`none`",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+        "start": 136,
+        "end": 143,
+        "text": "test(\"キャンバスの外を指していると、何も測らない\", () => {\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"row\"]),\n    Pointing.Outside,\n  );\n\n  expect(pair).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-create"
+      ]
+    },
+    {
+      "id": "pair-equals-outer",
+      "suite": "pair-normal",
+      "name": "内側の縁を測る組で、包む側だけが違えば等しくない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "子の上から artboard の背景へ移るように、包む側だけが変わる回に前の線を返さない",
+      "given": "`within(row, card)` と `within(row, home)`",
+      "when": "`DistancePair.equals` で比べる",
+      "then": "偽",
+      "commit": "c6be4e7b4b8e6ec82a375d352d7ec0a6bedec3ce",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+        "start": 183,
+        "end": 190,
+        "text": "test(\"内側の縁を測る組で、包む側だけが違えば等しくない\", () => {\n  const isEqual = DistancePair.equals(\n    { kind: \"within\", inner: \"row\", outer: \"card\" },\n    { kind: \"within\", inner: \"row\", outer: \"home\" },\n  );\n\n  expect(isEqual).toBe(false);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "measured"
+      ]
+    },
+    {
+      "id": "edge-multi",
+      "suite": "pair-edge",
+      "name": "複数選択では、兄弟を指しても何も測らない",
+      "techniques": [
+        "state"
+      ],
+      "why": "出すのは 1 つだけ選んでいるときだけ(Q3)。兄弟を指す入力なので、選択を見なければ横並びになる",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で row と title を選ぶ",
+      "when": "兄弟の上を指す",
+      "then": "`none`",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.edge.test.ts",
+        "start": 13,
+        "end": 20,
+        "text": "test(\"複数選択では、兄弟を指しても何も測らない\", () => {\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"row\", \"title\"]),\n    Pointing.create([\"chip\", \"card\", \"home\"], SelectionDigs.NoDeeper),\n  );\n\n  expect(pair).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-create"
+      ]
+    },
+    {
+      "id": "edge-locked",
+      "suite": "pair-edge",
+      "name": "ロック中の兄弟を指しても、その兄弟は相手にならない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "ロックを見なければ sealed との横並びになる入力",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で row を選ぶ",
+      "when": "ロックした sealed の上を指す",
+      "then": "`within(row, card)`",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.edge.test.ts",
+        "start": 40,
+        "end": 50,
+        "text": "test(\"ロック中の兄弟を指しても、その兄弟は相手にならない\", () => {\n  // ロックを見なければ `sealed` との横並びになる\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"row\"]),\n    Pointing.create([\"sealed\", \"card\", \"home\"], SelectionDigs.NoDeeper),\n  );\n\n  expect(pair).toEqual(\n    Option.some({ kind: \"within\", inner: \"row\", outer: \"card\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-create",
+        "pair-target"
+      ]
+    },
+    {
+      "id": "edge-locked-deepest",
+      "suite": "pair-edge",
+      "name": "⌘ を押してロック中のノードの中を指すと、そのすぐ外側のノードを相手にする",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "⌘ でもロック中とその子孫は相手にしない",
+      "given": "`selection-distance-tree`(home > card > row > cell > label、row の兄弟 chip とロックした sealed、別の枝 title、別の artboard settings)で row を選ぶ",
+      "when": "sealed-mark の上を `Deepest` で指す",
+      "then": "外側の card が相手になり `within(row, card)`",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.edge.test.ts",
+        "start": 52,
+        "end": 64,
+        "text": "test(\"⌘ を押してロック中のノードの中を指すと、そのすぐ外側のノードを相手にする\", () => {\n  const pair = DistancePair.create(\n    selectionDistanceTree([\"row\"]),\n    Pointing.create(\n      [\"sealed-mark\", \"sealed\", \"card\", \"home\"],\n      SelectionDigs.Deepest,\n    ),\n  );\n\n  expect(pair).toEqual(\n    Option.some({ kind: \"within\", inner: \"row\", outer: \"card\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "pair-target"
+      ]
+    },
+    {
+      "id": "dist-within",
+      "suite": "pair-dist",
+      "name": "包む相手の内側の縁までは、上下左右 4 本を引く",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "祖先・親・子孫との組は 4 本(Q2・Q6)",
+      "given": "起点と、それを包む矩形の内外の組",
+      "when": "`toDistances` を呼ぶ",
+      "then": "上下左右 4 本",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.distances.test.ts",
+        "start": 30,
+        "end": 41,
+        "text": "test(\"包む相手の内側の縁までは、上下左右 4 本を引く\", () => {\n  const distances = DrawnDistancePair.toDistances({\n    kind: \"within\",\n    inner: From,\n    outer: { left: 0, top: 0, width: 400, height: 300 },\n  });\n\n  expect(drawnFacings(distances)).toEqual({\n    horizontal: { start: true, end: true },\n    vertical: { start: true, end: true },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "to-distances",
+        "facing"
+      ]
+    },
+    {
+      "id": "dist-overflow",
+      "suite": "pair-dist",
+      "name": "包む相手からはみ出した向きには、線を引かない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "祖先からはみ出した選択は、はみ出した向きだけ出さない(Q6)",
+      "given": "左辺が相手の左辺より外にある内外の組",
+      "when": "`toDistances` を呼ぶ",
+      "then": "左だけ無く 3 本",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.distances.test.ts",
+        "start": 43,
+        "end": 55,
+        "text": "test(\"包む相手からはみ出した向きには、線を引かない\", () => {\n  // 左辺が相手の左辺（150）より外にある\n  const distances = DrawnDistancePair.toDistances({\n    kind: \"within\",\n    inner: From,\n    outer: { left: 150, top: 0, width: 250, height: 300 },\n  });\n\n  expect(drawnFacings(distances)).toEqual({\n    horizontal: { start: false, end: true },\n    vertical: { start: true, end: true },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "to-distances",
+        "facing"
+      ]
+    },
+    {
+      "id": "dist-beside",
+      "suite": "pair-dist",
+      "name": "左右に離れて並ぶ相手までは、離れている向きに 1 本だけ引く",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "親子でない相手は離れている向きに 1 本(Q2)",
+      "given": "右へ離れて縦が重なる横並びの組",
+      "when": "`toDistances` を呼ぶ",
+      "then": "右に 1 本だけ",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.distances.test.ts",
+        "start": 57,
+        "end": 68,
+        "text": "test(\"左右に離れて並ぶ相手までは、離れている向きに 1 本だけ引く\", () => {\n  const distances = DrawnDistancePair.toDistances({\n    kind: \"beside\",\n    from: From,\n    to: { left: 260, top: 110, width: 50, height: 30 },\n  });\n\n  expect(drawnFacings(distances)).toEqual({\n    horizontal: { start: false, end: true },\n    vertical: { start: false, end: false },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "to-distances",
+        "facing"
+      ],
+      "values": {
+        "columns": [
+          "相手(起点は左右 100〜200・上下 100〜150)",
+          "線"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "右へ離れて縦が重なる(左 260)",
+              "右に 1 本"
+            ]
+          },
+          {
+            "cells": [
+              "上へ離れて横が重なる(上 10〜40)",
+              "上に 1 本"
+            ]
+          },
+          {
+            "cells": [
+              "斜め(左 260・上 200)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "一部だけ重なる(左 180・上 130)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "形だけ包む(0〜400 × 0〜300)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "接する(左 200)",
+              "無し"
+            ],
+            "boundary": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "dist-diagonal",
+      "suite": "pair-dist",
+      "name": "斜めに離れている相手までは、線を引かない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "短い線を置く向かい合う範囲が無い(Q2)",
+      "given": "斜めに離れた横並びの組",
+      "when": "`toDistances` を呼ぶ",
+      "then": "線が無い",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.distances.test.ts",
+        "start": 83,
+        "end": 91,
+        "text": "test(\"斜めに離れている相手までは、線を引かない\", () => {\n  const distances = DrawnDistancePair.toDistances({\n    kind: \"beside\",\n    from: From,\n    to: { left: 260, top: 200, width: 50, height: 30 },\n  });\n\n  expect(distances).toEqual(FacingDistances.None);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "to-distances",
+        "facing"
+      ],
+      "values": {
+        "columns": [
+          "相手(起点は左右 100〜200・上下 100〜150)",
+          "線"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "右へ離れて縦が重なる(左 260)",
+              "右に 1 本"
+            ]
+          },
+          {
+            "cells": [
+              "上へ離れて横が重なる(上 10〜40)",
+              "上に 1 本"
+            ]
+          },
+          {
+            "cells": [
+              "斜め(左 260・上 200)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "一部だけ重なる(左 180・上 130)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "形だけ包む(0〜400 × 0〜300)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "接する(左 200)",
+              "無し"
+            ],
+            "boundary": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "dist-partial",
+      "suite": "pair-dist",
+      "name": "一部だけ重なる相手までは、線を引かない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "一部の重なりは出さない(Q2)",
+      "given": "一部だけ重なる横並びの組",
+      "when": "`toDistances` を呼ぶ",
+      "then": "線が無い",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.distances.test.ts",
+        "start": 93,
+        "end": 101,
+        "text": "test(\"一部だけ重なる相手までは、線を引かない\", () => {\n  const distances = DrawnDistancePair.toDistances({\n    kind: \"beside\",\n    from: From,\n    to: { left: 180, top: 130, width: 50, height: 50 },\n  });\n\n  expect(distances).toEqual(FacingDistances.None);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "to-distances",
+        "facing"
+      ],
+      "values": {
+        "columns": [
+          "相手(起点は左右 100〜200・上下 100〜150)",
+          "線"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "右へ離れて縦が重なる(左 260)",
+              "右に 1 本"
+            ]
+          },
+          {
+            "cells": [
+              "上へ離れて横が重なる(上 10〜40)",
+              "上に 1 本"
+            ]
+          },
+          {
+            "cells": [
+              "斜め(左 260・上 200)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "一部だけ重なる(左 180・上 130)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "形だけ包む(0〜400 × 0〜300)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "接する(左 200)",
+              "無し"
+            ],
+            "boundary": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "dist-shape-wrap",
+      "suite": "pair-dist",
+      "name": "親子の関係に無く形が包んでいる相手までは、線を引かない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "包むかは木の親子で決め、形では見ない(Q6)",
+      "given": "形だけ起点を包む横並びの組",
+      "when": "`toDistances` を呼ぶ",
+      "then": "線が無い",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.distances.test.ts",
+        "start": 103,
+        "end": 111,
+        "text": "test(\"親子の関係に無く形が包んでいる相手までは、線を引かない\", () => {\n  const distances = DrawnDistancePair.toDistances({\n    kind: \"beside\",\n    from: From,\n    to: { left: 0, top: 0, width: 400, height: 300 },\n  });\n\n  expect(distances).toEqual(FacingDistances.None);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "to-distances",
+        "facing"
+      ],
+      "values": {
+        "columns": [
+          "相手(起点は左右 100〜200・上下 100〜150)",
+          "線"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "右へ離れて縦が重なる(左 260)",
+              "右に 1 本"
+            ]
+          },
+          {
+            "cells": [
+              "上へ離れて横が重なる(上 10〜40)",
+              "上に 1 本"
+            ]
+          },
+          {
+            "cells": [
+              "斜め(左 260・上 200)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "一部だけ重なる(左 180・上 130)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "形だけ包む(0〜400 × 0〜300)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "接する(左 200)",
+              "無し"
+            ],
+            "boundary": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "dist-touch",
+      "suite": "pair-dist",
+      "name": "接している相手までは、線を引かない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "接している向きには出さない(ノードの移動と同じ)",
+      "given": "右辺に接する横並びの組",
+      "when": "`toDistances` を呼ぶ",
+      "then": "線が無い",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.distances.test.ts",
+        "start": 113,
+        "end": 121,
+        "text": "test(\"接している相手までは、線を引かない\", () => {\n  const distances = DrawnDistancePair.toDistances({\n    kind: \"beside\",\n    from: From,\n    to: { left: 200, top: 110, width: 50, height: 30 },\n  });\n\n  expect(distances).toEqual(FacingDistances.None);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "to-distances",
+        "facing"
+      ],
+      "values": {
+        "columns": [
+          "相手(起点は左右 100〜200・上下 100〜150)",
+          "線"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "右へ離れて縦が重なる(左 260)",
+              "右に 1 本"
+            ]
+          },
+          {
+            "cells": [
+              "上へ離れて横が重なる(上 10〜40)",
+              "上に 1 本"
+            ]
+          },
+          {
+            "cells": [
+              "斜め(左 260・上 200)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "一部だけ重なる(左 180・上 130)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "形だけ包む(0〜400 × 0〜300)",
+              "無し"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "接する(左 200)",
+              "無し"
+            ],
+            "boundary": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "dist-unmeasured",
+      "suite": "pair-dist",
+      "name": "どちらかが測れなければ、組にならない",
+      "techniques": [
+        "error"
+      ],
+      "why": "描かれていない相手には線を引かない",
+      "given": "row だけ測れる測り方",
+      "when": "`DistancePair.measure` を呼ぶ",
+      "then": "`none`",
+      "commit": "faa666975921bdd8af49f64bfa40e962bc3bb8ac",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.distances.test.ts",
+        "start": 133,
+        "end": 140,
+        "text": "test(\"どちらかが測れなければ、組にならない\", () => {\n  const drawn = DistancePair.measure(\n    { kind: \"beside\", from: \"row\", to: \"chip\" },\n    (name) => (name === \"row\" ? Option.some(From) : Option.none),\n  );\n\n  expect(drawn).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "measure-area"
+      ]
+    },
+    {
+      "id": "alt-point-then-press",
+      "suite": "alt",
+      "name": "指してから Alt を押すと、その指し先が返る",
+      "techniques": [
+        "state"
+      ],
+      "why": "ポインタを置いてから押しても出る",
+      "given": "row の上を伝えたあと",
+      "when": "Alt を押す",
+      "then": "row の指し先が返る",
+      "commit": "d7e4fb4b251b05b08014c958bab961b62008efbd",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+        "start": 26,
+        "end": 33,
+        "text": "test(\"指してから Alt を押すと、その指し先が返る\", () => {\n  const { result } = renderHook(() => useAltPointing());\n  act(() => result.current.trackPointer(OnRow));\n\n  holdAlt();\n\n  expect(result.current.pointing).toEqual(Option.some(OnRow));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts"
+      ],
+      "covers": [
+        "frame-track",
+        "key-hold",
+        "read-pointing"
+      ]
+    },
+    {
+      "id": "alt-not-held",
+      "suite": "alt",
+      "name": "Alt を押していない間は、動かしても指し先は返らない",
+      "techniques": [
+        "state"
+      ],
+      "why": "いつも state を更新する実装に壊しても、ほかのケースでは落ちない",
+      "given": "Alt を押していない",
+      "when": "row の上を伝える",
+      "then": "`none`",
+      "commit": "d7e4fb4b251b05b08014c958bab961b62008efbd",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+        "start": 35,
+        "end": 41,
+        "text": "test(\"Alt を押していない間は、動かしても指し先は返らない\", () => {\n  const { result } = renderHook(() => useAltPointing());\n\n  act(() => result.current.trackPointer(OnRow));\n\n  expect(result.current.pointing).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts"
+      ],
+      "covers": [
+        "frame-track",
+        "read-pointing"
+      ]
+    },
+    {
+      "id": "alt-release",
+      "suite": "alt",
+      "name": "Alt を離すと指し先は返らなくなる",
+      "techniques": [
+        "state"
+      ],
+      "why": "離すと消える",
+      "given": "row を指して Alt を押している",
+      "when": "Alt を離す",
+      "then": "`none`",
+      "commit": "d7e4fb4b251b05b08014c958bab961b62008efbd",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+        "start": 43,
+        "end": 51,
+        "text": "test(\"Alt を離すと指し先は返らなくなる\", () => {\n  const { result } = renderHook(() => useAltPointing());\n  act(() => result.current.trackPointer(OnRow));\n  holdAlt();\n\n  releaseAlt();\n\n  expect(result.current.pointing).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts"
+      ],
+      "covers": [
+        "key-hold"
+      ]
+    },
+    {
+      "id": "alt-blur",
+      "suite": "alt",
+      "name": "ウィンドウを離れると、指し先は返らなくなる",
+      "techniques": [
+        "state"
+      ],
+      "why": "離れている間に離したキーの keyup は届かない。#1202 の懸念でフォーカスが移っても残らない",
+      "given": "row を指して Alt を押している",
+      "when": "window の blur を撃つ",
+      "then": "`none`",
+      "commit": "d7e4fb4b251b05b08014c958bab961b62008efbd",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+        "start": 73,
+        "end": 81,
+        "text": "test(\"ウィンドウを離れると、指し先は返らなくなる\", () => {\n  const { result } = renderHook(() => useAltPointing());\n  act(() => result.current.trackPointer(OnRow));\n  holdAlt();\n\n  fireEvent.blur(globalThis.window);\n\n  expect(result.current.pointing).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts"
+      ],
+      "covers": [
+        "key-hold"
+      ]
+    },
+    {
+      "id": "alt-input",
+      "suite": "alt",
+      "name": "入力欄にフォーカスがあるときに Alt を押しても、指し先は返らない",
+      "techniques": [
+        "state"
+      ],
+      "why": "macOS では Option で特殊文字を打つので、打つたびに線が出ないようにする(Q12-3)",
+      "given": "テキストの入力欄と、row の指し先",
+      "when": "入力欄を撃つ先にして Alt を押す",
+      "then": "`none`",
+      "commit": "d7e4fb4b251b05b08014c958bab961b62008efbd",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+        "start": 119,
+        "end": 127,
+        "text": "test(\"入力欄にフォーカスがあるときに Alt を押しても、指し先は返らない\", () => {\n  const { result } = renderHook(() => useAltPointing());\n  const { getByRole } = render(<input type=\"text\" />);\n  act(() => result.current.trackPointer(OnRow));\n\n  holdAlt(getByRole(\"textbox\"));\n\n  expect(result.current.pointing).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts"
+      ],
+      "covers": [
+        "key-hold"
+      ]
+    },
+    {
+      "id": "alt-select",
+      "suite": "alt",
+      "name": "選択欄にフォーカスがあるときに Alt を押しても、指し先は返らない",
+      "techniques": [
+        "state"
+      ],
+      "why": "キーを受け取る要素の判定はキーボードショートカットと同じ",
+      "given": "選択欄と、row の指し先",
+      "when": "選択欄を撃つ先にして Alt を押す",
+      "then": "`none`",
+      "commit": "d7e4fb4b251b05b08014c958bab961b62008efbd",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+        "start": 129,
+        "end": 141,
+        "text": "test(\"選択欄にフォーカスがあるときに Alt を押しても、指し先は返らない\", () => {\n  const { result } = renderHook(() => useAltPointing());\n  const { getByRole } = render(\n    <select>\n      <option>fixed</option>\n    </select>,\n  );\n  act(() => result.current.trackPointer(OnRow));\n\n  holdAlt(getByRole(\"combobox\"));\n\n  expect(result.current.pointing).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts"
+      ],
+      "covers": [
+        "key-hold"
+      ]
+    },
+    {
+      "id": "alt-right",
+      "suite": "alt",
+      "name": "右の Alt を押しても、指し先が返る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "右の Option だけで操作する人を守る(ミューテーションの検証で足した)",
+      "given": "row の指し先",
+      "when": "`AltRight` の keydown を撃つ",
+      "then": "row の指し先が返る",
+      "commit": "ce6f5df19baeb01dc598493d51a6b239072ee2c1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+        "start": 143,
+        "end": 154,
+        "text": "test(\"右の Alt を押しても、指し先が返る\", () => {\n  const { result } = renderHook(() => useAltPointing());\n  act(() => result.current.trackPointer(OnRow));\n\n  fireEvent.keyDown(globalThis.document, {\n    code: \"AltRight\",\n    key: \"Alt\",\n    altKey: true,\n  });\n\n  expect(result.current.pointing).toEqual(Option.some(OnRow));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+        "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts"
+      ],
+      "covers": [
+        "key-hold"
+      ]
+    },
+    {
+      "id": "alt-one-side",
+      "suite": "alt",
+      "name": "左右の Alt を押して片方だけ離しても、指し先は返ったまま",
+      "techniques": [
+        "state"
+      ],
+      "why": "離したかは keyup の code ではなく altKey で見る",
+      "given": "左右の Alt を押している",
+      "when": "左の keyup(`altKey: true`)を撃つ",
+      "then": "row の指し先のまま",
+      "commit": "ce6f5df19baeb01dc598493d51a6b239072ee2c1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+        "start": 156,
+        "end": 174,
+        "text": "test(\"左右の Alt を押して片方だけ離しても、指し先は返ったまま\", () => {\n  const { result } = renderHook(() => useAltPointing());\n  act(() => result.current.trackPointer(OnRow));\n  holdAlt();\n  fireEvent.keyDown(globalThis.document, {\n    code: \"AltRight\",\n    key: \"Alt\",\n    altKey: true,\n  });\n\n  // 右を押したままなので、左を離した keyup も Alt を押している\n  fireEvent.keyUp(globalThis.document, {\n    code: \"AltLeft\",\n    key: \"Alt\",\n    altKey: true,\n  });\n\n  expect(result.current.pointing).toEqual(Option.some(OnRow));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+        "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts"
+      ],
+      "covers": [
+        "key-hold"
+      ]
+    },
+    {
+      "id": "alt-initial",
+      "suite": "alt",
+      "name": "一度も指し先を伝えないまま Alt を押すと、キャンバスの外を指していることになる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "初期値を枠の外にすると、キャンバスに入る前の Alt で親の縁が出てしまう",
+      "given": "何も伝えていない",
+      "when": "Alt を押す",
+      "then": "キャンバスの外の指し先が返る",
+      "commit": "ce6f5df19baeb01dc598493d51a6b239072ee2c1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+        "start": 176,
+        "end": 182,
+        "text": "test(\"一度も指し先を伝えないまま Alt を押すと、キャンバスの外を指していることになる\", () => {\n  const { result } = renderHook(() => useAltPointing());\n\n  holdAlt();\n\n  expect(result.current.pointing).toEqual(Option.some(Pointing.Outside));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts"
+      ],
+      "covers": [
+        "key-hold"
+      ]
+    },
+    {
+      "id": "alt-no-rerender",
+      "suite": "alt",
+      "name": "Alt を押していない間は、指し先が変わっても再レンダーしない",
+      "techniques": [
+        "state"
+      ],
+      "why": "doc が約束する性能の性質(計画の検証 A7)を回数で守る",
+      "given": "レンダーのたびに値を記録するフック",
+      "when": "Alt を押さずに指し先を 2 回変える",
+      "then": "レンダーの回数が増えない",
+      "commit": "ce6f5df19baeb01dc598493d51a6b239072ee2c1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+        "start": 184,
+        "end": 197,
+        "text": "test(\"Alt を押していない間は、指し先が変わっても再レンダーしない\", () => {\n  const rendered: Option<Pointing>[] = [];\n  const { result } = renderHook(() => {\n    const control = useAltPointing();\n    rendered.push(control.pointing);\n    return control;\n  });\n  const renderedBefore = rendered.length;\n\n  act(() => result.current.trackPointer(OnRow));\n  act(() => result.current.trackPointer(OnChip));\n\n  expect(rendered.length).toBe(renderedBefore);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts"
+      ],
+      "covers": [
+        "frame-track"
+      ]
+    },
+    {
+      "id": "alt-repeat",
+      "suite": "alt",
+      "name": "Alt を押したまま keydown が繰り返し届いても、同じ参照が返る",
+      "techniques": [
+        "idempotence"
+      ],
+      "why": "キーリピートのたびにキャンバスを描き直さない",
+      "given": "row を指して Alt を押している",
+      "when": "もう一度 Alt の keydown を撃つ",
+      "then": "前と同じ参照",
+      "commit": "d7e4fb4b251b05b08014c958bab961b62008efbd",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+        "start": 108,
+        "end": 117,
+        "text": "test(\"Alt を押したまま keydown が繰り返し届いても、同じ参照が返る\", () => {\n  const { result } = renderHook(() => useAltPointing());\n  act(() => result.current.trackPointer(OnRow));\n  holdAlt();\n  const before = result.current.pointing;\n\n  holdAlt();\n\n  expect(result.current.pointing).toBe(before);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts"
+      ],
+      "covers": [
+        "pointing-equals"
+      ]
+    },
+    {
+      "id": "sd-same-ref",
+      "suite": "seldist",
+      "name": "測り直した矩形が前と同じなら、同じ参照を返す",
+      "techniques": [
+        "idempotence"
+      ],
+      "why": "毎コミット測るたびに再レンダーが連鎖しない",
+      "given": "row・card・chip を描き、枠の外を指している",
+      "when": "再レンダーする",
+      "then": "前と同じ参照",
+      "commit": "81d2c0177f3593fc294b9448cb926473c660b85d",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+        "start": 35,
+        "end": 46,
+        "text": "test(\"測り直した矩形が前と同じなら、同じ参照を返す\", () => {\n  drawRowAndAround();\n  const selection = selectionDistanceTree([\"row\"]);\n  const { result, rerender } = renderHook(() =>\n    useSelectionDistances(selection, Option.some(Pointing.Nothing)),\n  );\n  const before = result.current;\n\n  rerender();\n\n  expect(result.current).toBe(before);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+        "src/features/editor/features/canvas/hooks/use-measured/index.ts"
+      ],
+      "covers": [
+        "measured"
+      ]
+    },
+    {
+      "id": "sd-no-measure",
+      "suite": "seldist",
+      "name": "指し先が無ければ、DOM を測らずに何も引かない",
+      "techniques": [
+        "state"
+      ],
+      "why": "出さない間(操作中など)は DOM を測らない",
+      "given": "測るたびに名前を記録する要素",
+      "when": "指し先 `none` で呼ぶ",
+      "then": "線が無く、何も測っていない",
+      "commit": "81d2c0177f3593fc294b9448cb926473c660b85d",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+        "start": 48,
+        "end": 66,
+        "text": "test(\"指し先が無ければ、DOM を測らずに何も引かない\", () => {\n  const measured: string[] = [];\n  for (const name of [\"row\", \"card\"] as const) {\n    const element = drawNamed(name, SelectionDistanceTreeBounds[name]);\n    const bounds = SelectionDistanceTreeBounds[name];\n    element.getBoundingClientRect = () => {\n      measured.push(name);\n      return new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);\n    };\n  }\n  const selection = selectionDistanceTree([\"row\"]);\n\n  const { result } = renderHook(() =>\n    useSelectionDistances(selection, Option.none),\n  );\n\n  expect(result.current).toEqual(FacingDistances.None);\n  expect(measured).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts"
+      ],
+      "covers": [
+        "selection-distances",
+        "measure-area"
+      ]
+    },
+    {
+      "id": "sd-changed",
+      "suite": "seldist",
+      "name": "測る組が別の組に変わった回は、測り直す前にも前の組の線を返さない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "組が A から B に変わった回に前の線を返さない(F9)",
+      "given": "row と chip の横並びを測っている",
+      "when": "枠の外へ指し先を変える",
+      "then": "変えたあとのどのレンダーにも横並びの線が無い",
+      "commit": "4c0dcfdc78f6f281724733044fcd50f0b1b09182",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+        "start": 121,
+        "end": 131,
+        "text": "test(\"測る組が別の組に変わった回は、測り直す前にも前の組の線を返さない\", () => {\n  drawRowAndAround();\n  const { rerender, returned } = renderRecordingDistances(\n    Pointing.create([\"chip\", \"card\", \"home\"], SelectionDigs.NoDeeper),\n  );\n  const changedAt = returned.length;\n\n  rerender({ pointing: Pointing.Nothing });\n\n  expect(returned.slice(changedAt)).not.toContainEqual(rowBesideChip());\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts"
+      ],
+      "covers": [
+        "measured"
+      ]
+    },
+    {
+      "id": "sd-one-side",
+      "suite": "seldist",
+      "name": "測る組の片方だけが別の名前に変わった回は、測り直す前にも前の組の線を返さない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "組の比較を外しても落ちなかった抜け(ミューテーションの検証)",
+      "given": "`within(row, card)` を測っている",
+      "when": "home の背景へ指し先を変える",
+      "then": "変えたあとのどのレンダーにも card の縁までの線が無い",
+      "commit": "c6be4e7b4b8e6ec82a375d352d7ec0a6bedec3ce",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+        "start": 145,
+        "end": 161,
+        "text": "test(\"測る組の片方だけが別の名前に変わった回は、測り直す前にも前の組の線を返さない\", () => {\n  // `row` から `card` の縁まで → `row` から `home` の縁まで\n  drawRowAndAround();\n  drawNamed(\"home\", SelectionDistanceTreeBounds.home);\n  const { rerender, returned } = renderRecordingDistances(Pointing.Nothing);\n  const changedAt = returned.length;\n\n  rerender({ pointing: Pointing.create([\"home\"], SelectionDigs.NoDeeper) });\n\n  expect(returned.slice(changedAt)).not.toContainEqual(\n    DrawnDistancePair.toDistances({\n      kind: \"within\",\n      inner: SelectionDistanceTreeBounds.row,\n      outer: SelectionDistanceTreeBounds.card,\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts"
+      ],
+      "covers": [
+        "measured"
+      ]
+    },
+    {
+      "id": "sd-same-bounds",
+      "suite": "seldist",
+      "name": "測る組が変わっても測った矩形が前と同じなら、新しい組の線を返す",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "矩形が同じでも組の名前で取り違えない",
+      "given": "card と home を同じ矩形に描く",
+      "when": "card の縁から home の縁へ指し先を変える",
+      "then": "最後のレンダーで新しい組の線が返る",
+      "commit": "c6be4e7b4b8e6ec82a375d352d7ec0a6bedec3ce",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+        "start": 163,
+        "end": 180,
+        "text": "test(\"測る組が変わっても測った矩形が前と同じなら、新しい組の線を返す\", () => {\n  // `card` と `home` を同じ矩形に描くので、組の名前だけが変わる\n  drawRowAndAround();\n  drawNamed(\"home\", SelectionDistanceTreeBounds.card);\n  const { rerender, returned } = renderRecordingDistances(Pointing.Nothing);\n\n  rerender({ pointing: Pointing.create([\"home\"], SelectionDigs.NoDeeper) });\n\n  expect(ArrayEx.last(returned)).toEqual(\n    Option.some(\n      DrawnDistancePair.toDistances({\n        kind: \"within\",\n        inner: SelectionDistanceTreeBounds.row,\n        outer: SelectionDistanceTreeBounds.card,\n      }),\n    ),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts"
+      ],
+      "covers": [
+        "measured"
+      ]
+    },
+    {
+      "id": "drawn-resubscribe",
+      "suite": "drawnhook",
+      "name": "測る対象を変えたあとにウィンドウの大きさが変わると、新しい対象を測り直す",
+      "techniques": [
+        "regression"
+      ],
+      "why": "購読を 1 度だけ張る形に壊しても落ちなかった抜け(ミューテーションの検証)",
+      "given": "前と新しい対象を同じ矩形に描く",
+      "when": "対象を変えたあと、新しい対象を動かして resize を撃つ",
+      "then": "新しい対象の矩形が返る",
+      "commit": "cb1992d107c2851dc434055dd372d98ef6226377",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/__tests__/use-drawn-bounds.normal.test.tsx",
+        "start": 129,
+        "end": 144,
+        "text": "test(\"測る対象を変えたあとにウィンドウの大きさが変わると、新しい対象を測り直す\", () => {\n  /*\n   * 前後の対象を同じ矩形に描いておく。前の対象を測り直しても値が変わらないので、\n   * 再レンダーが起きず、新しい対象を測り直したかどうかだけが結果に出る。\n   */\n  const bounds = { left: 12, top: 34, width: 200, height: 100 };\n  drawNamed(\"home\", bounds);\n  const about = drawNamed(\"about\", bounds);\n  const { rerender } = render(<BoundsProbe target={Option.some(\"home\")} />);\n  rerender(<BoundsProbe target={Option.some(\"about\")} />);\n\n  stubBounds(about, { left: 20, top: 40, width: 400, height: 200 });\n  fireEvent(globalThis.window, new Event(\"resize\"));\n\n  expect(screen.getByTestId(\"bounds\").textContent).toBe(\"10,20,400,200\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+        "src/features/editor/features/canvas/hooks/use-measured/index.ts"
+      ],
+      "covers": [
+        "drawn-measured"
+      ]
+    },
+    {
+      "id": "drawn-zero",
+      "suite": "drawn",
+      "name": "大きさ 0 で描かれているものは、面積を持つものとしては測れない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "非表示のノードでは距離を出さない規則の拠り所",
+      "given": "大きさ 0 で描かれた要素",
+      "when": "`measureWithArea` で測る",
+      "then": "`none`",
+      "commit": "ecde0a9e2cf71752e8d853d4f2fe2e1c66a6cce0",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+        "start": 104,
+        "end": 108,
+        "text": "test(\"大きさ 0 で描かれているものは、面積を持つものとしては測れない\", () => {\n  drawNamed(\"collapsed\", { left: 100, top: 100, width: 0, height: 0 });\n\n  expect(DrawnBounds.measureWithArea(\"collapsed\")).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/utils/DrawnBounds.ts"
+      ],
+      "covers": [
+        "measure-area"
+      ]
+    },
+    {
+      "id": "option-one-side",
+      "suite": "option",
+      "name": "equals は片方だけ値を持てば、比べ方にかかわらず false",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "組が無くなった回に前の線と取り違えない",
+      "given": "`some` と `none`、いつも真を返す比べ方",
+      "when": "`Option.equals` で比べる",
+      "then": "false",
+      "commit": "f617b9b392d1ce064f483f02133f174e250b1e93",
+      "excerpt": {
+        "path": "src/utils/__tests__/Option.edge.test.ts",
+        "start": 67,
+        "end": 70,
+        "text": "test(\"equals は片方だけ値を持てば、比べ方にかかわらず false\", () => {\n  expect(Option.equals(Option.some(\"a\"), Option.none, () => true)).toBe(false);\n  expect(Option.equals(Option.none, Option.some(\"a\"), () => true)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/utils/Option.ts"
+      ],
+      "covers": [
+        "pointing-equals"
+      ]
+    },
+    {
+      "id": "c-sibling",
+      "suite": "canvas",
+      "name": "Alt を押している間、左右に並ぶ兄弟を指すと、その間の距離が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "いちばんよく使う隣の兄弟までの距離(Q5)",
+      "given": "`row`(左右 140〜340・上下 100〜160)を選ぶと、親 card の縁までは左 20・右 180・上 10・下 120、兄弟 chip までは右 40",
+      "when": "chip の上へ動いて Alt を押す",
+      "then": "`40` だけが出る",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 42,
+        "end": 50,
+        "text": "test(\"Alt を押している間、左右に並ぶ兄弟を指すと、その間の距離が出る\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n\n  movePointer(drawn(\"chip\"), Anywhere);\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"40\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "frame-track",
+        "selection-distances",
+        "overlay"
+      ]
+    },
+    {
+      "id": "c-vertical",
+      "suite": "canvas",
+      "name": "Alt を押している間、上下に並ぶ別の枝のノードを指すと、その間の距離が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "縦に離れた相手も 1 本",
+      "given": "`row`(左右 140〜340・上下 100〜160)を選ぶと、親 card の縁までは左 20・右 180・上 10・下 120、title までは下 160",
+      "when": "title の上へ動いて Alt を押す",
+      "then": "`160` だけが出る",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 52,
+        "end": 60,
+        "text": "test(\"Alt を押している間、上下に並ぶ別の枝のノードを指すと、その間の距離が出る\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n\n  movePointer(drawn(\"title\"), Anywhere);\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"160\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "selection-distances",
+        "overlay"
+      ]
+    },
+    {
+      "id": "c-inside",
+      "suite": "canvas",
+      "name": "Alt を押している間、選択の内側を指すと、親の内側の縁までの距離が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "相手が選択自身なら親の縁",
+      "given": "`row`(左右 140〜340・上下 100〜160)を選ぶと、親 card の縁までは左 20・右 180・上 10・下 120",
+      "when": "label の上へ動いて Alt を押す",
+      "then": "`10` `120` `180` `20`",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 62,
+        "end": 70,
+        "text": "test(\"Alt を押している間、選択の内側を指すと、親の内側の縁までの距離が出る\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n\n  movePointer(drawn(\"label\"), Anywhere);\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"10\", \"120\", \"180\", \"20\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "selection-distances",
+        "overlay"
+      ]
+    },
+    {
+      "id": "c-deepest",
+      "suite": "canvas",
+      "name": "⌘ も押して選択の内側を指すと、いちばん内側の子孫から選択の内側の縁までの距離が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "⌘ の有無をポインタが動くたびに読む配線",
+      "given": "`row`(左右 140〜340・上下 100〜160)を選ぶと、親 card の縁までは左 20・右 180・上 10・下 120。label は左右 170〜220・上下 115〜135",
+      "when": "⌘ を押しながら label の上へ動き、Alt を押す",
+      "then": "`120` `15` `25` `30`",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 72,
+        "end": 81,
+        "text": "test(\"⌘ も押して選択の内側を指すと、いちばん内側の子孫から選択の内側の縁までの距離が出る\", () => {\n  // `label`（左右 170〜220・上下 115〜135）から `row` の縁まで\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n\n  movePointer(drawn(\"label\"), Anywhere, \"meta\");\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"120\", \"15\", \"25\", \"30\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx"
+      ],
+      "covers": [
+        "frame-track",
+        "overlay"
+      ]
+    },
+    {
+      "id": "c-overflow",
+      "suite": "canvas",
+      "name": "選択が祖先からはみ出している向きには、距離が出ない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "祖先からはみ出した向きは出さない(Q6)",
+      "given": "row の左辺を card の左辺より外に描く",
+      "when": "label の上へ動いて Alt を押す",
+      "then": "左の `20` が無く `10` `120` `180`",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 83,
+        "end": 93,
+        "text": "test(\"選択が祖先からはみ出している向きには、距離が出ない\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n  // 左辺が `card` の左辺（120）より外へ出る\n  drawnAt(\"row\", { left: 110, top: 100, width: 230, height: 60 });\n\n  movePointer(drawn(\"label\"), Anywhere);\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"10\", \"120\", \"180\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "overlay"
+      ]
+    },
+    {
+      "id": "c-artboard-bg",
+      "suite": "canvas",
+      "name": "自分の artboard の背景を指すと、artboard の内側の縁までの距離が出る",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "Q7 の配線",
+      "given": "`row`(左右 140〜340・上下 100〜160)を選ぶと、親 card の縁までは左 20・右 180・上 10・下 120、home の縁までは左 40・右 360・上 40・下 300",
+      "when": "home の背景へ動いて Alt を押す",
+      "then": "`300` `360` `40` `40`",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 95,
+        "end": 103,
+        "text": "test(\"自分の artboard の背景を指すと、artboard の内側の縁までの距離が出る\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n\n  movePointer(drawn(\"home\"), Anywhere);\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"300\", \"360\", \"40\", \"40\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "frame-track",
+        "pair-artboard",
+        "overlay"
+      ]
+    },
+    {
+      "id": "c-other-artboard",
+      "suite": "canvas",
+      "name": "別の artboard のノードを指すと、親の内側の縁までの距離が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "別の artboard は相手にしない(Q4)",
+      "given": "`row`(左右 140〜340・上下 100〜160)を選ぶと、親 card の縁までは左 20・右 180・上 10・下 120",
+      "when": "settings の slot の上へ動いて Alt を押す",
+      "then": "親 card の縁までの 4 本",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 105,
+        "end": 113,
+        "text": "test(\"別の artboard のノードを指すと、親の内側の縁までの距離が出る\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n\n  movePointer(drawn(\"slot\"), Anywhere);\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"10\", \"120\", \"180\", \"20\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "pair-artboard",
+        "overlay"
+      ]
+    },
+    {
+      "id": "c-heading",
+      "suite": "canvas",
+      "name": "見出しの上へ移ると、親の内側の縁までの距離に変わる",
+      "techniques": [
+        "state"
+      ],
+      "why": "枠の leave を外すと答えが変わる入力にした(N8)",
+      "given": "chip を指して Alt を押し、`40` が出ている",
+      "when": "chip から home の見出しへ移る",
+      "then": "親 card の縁までの 4 本に変わる",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 115,
+        "end": 125,
+        "text": "test(\"見出しの上へ移ると、親の内側の縁までの距離に変わる\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n  movePointer(drawn(\"chip\"), Anywhere);\n  holdAlt();\n  expect(sortedFacingDistanceLabels()).toEqual([\"40\"]);\n\n  leavePointerInto(drawn(\"chip\"), artboardHandle(\"home\"));\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"10\", \"120\", \"180\", \"20\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx"
+      ],
+      "covers": [
+        "frame-track",
+        "overlay"
+      ]
+    },
+    {
+      "id": "c-handle",
+      "suite": "canvas",
+      "name": "リサイズハンドルの上へ移ると、親の内側の縁までの距離に変わる",
+      "techniques": [
+        "state"
+      ],
+      "why": "ハンドルの上は枠の外と同じ(Q12-2)",
+      "given": "badge を選び、下の marker を指して `40` が出ている",
+      "when": "marker からリサイズハンドルへ移る",
+      "then": "親 home の縁までの `180` `20` `20` `240`",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 127,
+        "end": 141,
+        "text": "test(\"リサイズハンドルの上へ移ると、親の内側の縁までの距離に変わる\", () => {\n  /*\n   * `badge`（左右 120〜220・上下 80〜120）の下に `marker`（上辺 160）があり、親 `home` は\n   * 左右 100〜460・上下 60〜300（`resize-snap-siblings`）。\n   */\n  renderCanvas({ selection: setupSelection([\"badge\"]) });\n  drawnApart();\n  movePointer(drawn(\"marker\"), Anywhere);\n  holdAlt();\n  expect(sortedFacingDistanceLabels()).toEqual([\"40\"]);\n\n  leavePointerInto(drawn(\"marker\"), resizeHandleAt({ x: 1, y: 1 }));\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"180\", \"20\", \"20\", \"240\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "frame-track",
+        "overlay"
+      ]
+    },
+    {
+      "id": "c-zoom",
+      "suite": "canvas",
+      "name": "倍率に合わせて、ドキュメント上の長さで出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "数値はドキュメント上の px",
+      "given": "倍率を 1.2 にする",
+      "when": "chip の上へ動いて Alt を押す",
+      "then": "画面上 40 がドキュメント上の `33`",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 143,
+        "end": 153,
+        "text": "test(\"倍率に合わせて、ドキュメント上の長さで出る\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n  // 1.2 倍。画面上の 40 はドキュメント上の 33.3…\n  wheel(canvasSurface(), { x: 0, y: -100 }, \"ctrl\");\n\n  movePointer(drawn(\"chip\"), Anywhere);\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"33\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx"
+      ],
+      "covers": [
+        "overlay"
+      ]
+    },
+    {
+      "id": "c-press-then-move",
+      "suite": "canvas",
+      "name": "Alt を押してから相手を指しても、距離が出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "押す順の 2 通りのうち、押してから動かす側",
+      "given": "`row`(左右 140〜340・上下 100〜160)を選ぶと、親 card の縁までは左 20・右 180・上 10・下 120",
+      "when": "Alt を押してから chip の上へ動く",
+      "then": "`40`",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 155,
+        "end": 163,
+        "text": "test(\"Alt を押してから相手を指しても、距離が出る\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n\n  holdAlt();\n  movePointer(drawn(\"chip\"), Anywhere);\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"40\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts"
+      ],
+      "covers": [
+        "key-hold",
+        "frame-track"
+      ]
+    },
+    {
+      "id": "c-not-held",
+      "suite": "canvas",
+      "name": "Alt を押していない間は、相手を指しても距離が出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "押していない間は出さない",
+      "given": "`row`(左右 140〜340・上下 100〜160)を選ぶと、親 card の縁までは左 20・右 180・上 10・下 120",
+      "when": "chip の上へ動くだけ",
+      "then": "何も出ない",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 165,
+        "end": 172,
+        "text": "test(\"Alt を押していない間は、相手を指しても距離が出ない\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n\n  movePointer(drawn(\"chip\"), Anywhere);\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "read-pointing"
+      ]
+    },
+    {
+      "id": "c-release",
+      "suite": "canvas",
+      "name": "Alt を離すと、距離は消える",
+      "techniques": [
+        "state"
+      ],
+      "why": "離すと消える",
+      "given": "chip を指して Alt を押している",
+      "when": "Alt を離す",
+      "then": "何も出ない",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 174,
+        "end": 183,
+        "text": "test(\"Alt を離すと、距離は消える\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n  movePointer(drawn(\"chip\"), Anywhere);\n  holdAlt();\n\n  releaseAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "key-hold"
+      ]
+    },
+    {
+      "id": "c-empty",
+      "suite": "canvas",
+      "name": "キャンバスに入って空き領域にいる間に Alt を押すと、親の内側の縁までの距離が出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "キャンバスの enter の配線を守る(N5)",
+      "given": "`row`(左右 140〜340・上下 100〜160)を選ぶと、親 card の縁までは左 20・右 180・上 10・下 120",
+      "when": "キャンバスに入り、空き領域で Alt を押す",
+      "then": "親 card の縁までの 4 本",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 185,
+        "end": 193,
+        "text": "test(\"キャンバスに入って空き領域にいる間に Alt を押すと、親の内側の縁までの距離が出る\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n\n  enterPointer(canvasSurface());\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"10\", \"120\", \"180\", \"20\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "canvas-track",
+        "overlay"
+      ]
+    },
+    {
+      "id": "c-reselect",
+      "suite": "canvas",
+      "name": "Alt を押したまま選択を変えると、新しい選択から測り直す",
+      "techniques": [
+        "state"
+      ],
+      "why": "ポインタを動かさなくても毎コミット測り直す",
+      "given": "空き領域で Alt を押している",
+      "when": "選択を title に変える",
+      "then": "title から home の縁までの `100` `260` `360` `40`",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 195,
+        "end": 206,
+        "text": "test(\"Alt を押したまま選択を変えると、新しい選択から測り直す\", () => {\n  const selection = selectionDistanceTree([\"row\"]);\n  const { rerenderWith } = renderCanvas({ selection });\n  drawSelectionDistanceTree();\n  enterPointer(canvasSurface());\n  holdAlt();\n\n  // `title`（左右 140〜340・上下 320〜360）から `home` の縁まで\n  rerenderWith(withOnlySelected(selection, \"title\"));\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"100\", \"260\", \"360\", \"40\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts"
+      ],
+      "covers": [
+        "measured",
+        "overlay"
+      ]
+    },
+    {
+      "id": "c-resize",
+      "suite": "canvas",
+      "name": "Alt を押したままウィンドウの大きさが変わると、測り直す",
+      "techniques": [
+        "state"
+      ],
+      "why": "再レンダーを伴わない位置の変化を resize で拾う",
+      "given": "chip を指して Alt を押し、`40` が出ている",
+      "when": "chip を右へ 20 動かして resize を撃つ",
+      "then": "`60`",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 208,
+        "end": 218,
+        "text": "test(\"Alt を押したままウィンドウの大きさが変わると、測り直す\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n  movePointer(drawn(\"chip\"), Anywhere);\n  holdAlt();\n\n  drawnAt(\"chip\", { left: 400, top: 110, width: 100, height: 40 });\n  fireEvent(globalThis.window, new Event(\"resize\"));\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"60\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/hooks/use-measured/index.ts"
+      ],
+      "covers": [
+        "measured"
+      ]
+    },
+    {
+      "id": "c-no-area",
+      "suite": "canvas",
+      "name": "大きさの無いノードを選んでいると、距離は出ない",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "面積の規則だけが答えを決める入力(片方の辺だけ 0)",
+      "given": "row を幅 0・高さ 60 に描く",
+      "when": "空き領域で Alt を押す",
+      "then": "何も出ない",
+      "commit": "08246abd9ac8cdd0d2098a09f126c892c9d11784",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 220,
+        "end": 230,
+        "text": "test(\"大きさの無いノードを選んでいると、距離は出ない\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n  // 片方の辺だけ 0 にする。両方 0 だと、面積を見ずに測っても線が出ない\n  drawnAt(\"row\", { left: 140, top: 100, width: 0, height: 60 });\n\n  enterPointer(canvasSurface());\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/utils/DrawnBounds.ts"
+      ],
+      "covers": [
+        "measure-area"
+      ],
+      "values": {
+        "columns": [
+          "選んでいるノードの大きさ",
+          "面積の規則を外したとき"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "幅 0・高さ 60",
+              "線が出る(テストが落ちる)"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "幅 0・高さ 0",
+              "直交する重なりが無く、外しても線が出ない(以前の入力)"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "s-outside",
+      "suite": "suspended",
+      "name": "ポインタがキャンバスの外へ出ると、距離は消える",
+      "techniques": [
+        "state"
+      ],
+      "why": "キャンバスの外では出さない(Q8)",
+      "given": "chip を指して Alt を押している",
+      "when": "chip から窓の外へ出る",
+      "then": "何も出ない",
+      "commit": "6f316bca4b83bdd5c6fe17d5bd6784808e7359d1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+        "start": 42,
+        "end": 51,
+        "text": "test(\"ポインタがキャンバスの外へ出ると、距離は消える\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n  movePointer(drawn(\"chip\"), { x: 400, y: 120 });\n  holdAlt();\n\n  leavePointer(drawn(\"chip\"));\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "canvas-track"
+      ]
+    },
+    {
+      "id": "s-multi",
+      "suite": "suspended",
+      "name": "複数選択では、Alt を押しても距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "1 つだけ選んでいるときに限る(Q3)",
+      "given": "row と title を選び、空き領域にいる",
+      "when": "Alt を押す",
+      "then": "何も出ない",
+      "commit": "6f316bca4b83bdd5c6fe17d5bd6784808e7359d1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+        "start": 53,
+        "end": 61,
+        "text": "test(\"複数選択では、Alt を押しても距離は出ない\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\", \"title\"]) });\n  drawSelectionDistanceTree();\n  enterPointer(canvasSurface());\n\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "selection-distances"
+      ]
+    },
+    {
+      "id": "s-frozen",
+      "suite": "suspended",
+      "name": "凍結中は、Alt を押しても距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "凍結中は出さない(Q8)",
+      "given": "凍結中で、`row`(左右 140〜340・上下 100〜160)を選ぶと、親 card の縁までは左 20・右 180・上 10・下 120。止める理由が無ければ距離が出る位置にポインタがある",
+      "when": "Alt を押す",
+      "then": "何も出ない",
+      "commit": "6f316bca4b83bdd5c6fe17d5bd6784808e7359d1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+        "start": 63,
+        "end": 74,
+        "text": "test(\"凍結中は、Alt を押しても距離は出ない\", () => {\n  renderCanvas({\n    selection: selectionDistanceTree([\"row\"]),\n    isFrozen: true,\n  });\n  drawSelectionDistanceTree();\n  enterPointer(canvasSurface());\n\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "selection-distances"
+      ]
+    },
+    {
+      "id": "s-resize",
+      "suite": "suspended",
+      "name": "リサイズハンドルを掴んでいる間は、Alt を押しても距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "リサイズ中は出さない。#1209 はこの前提で進む",
+      "given": "badge を選び、リサイズハンドルを掴んでいる",
+      "when": "Alt を押す",
+      "then": "何も出ない",
+      "commit": "6f316bca4b83bdd5c6fe17d5bd6784808e7359d1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+        "start": 76,
+        "end": 85,
+        "text": "test(\"リサイズハンドルを掴んでいる間は、Alt を押しても距離は出ない\", () => {\n  renderCanvas({ selection: setupSelectionForResize([\"badge\"]) });\n  drawnApartForResize();\n  enterPointer(canvasSurface());\n  pressPointer(resizeHandleAt({ x: 1, y: 1 }), { x: 220, y: 120 });\n\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "selection-distances"
+      ]
+    },
+    {
+      "id": "s-artboard",
+      "suite": "suspended",
+      "name": "artboard を運んでいる間は、Alt を押しても距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "artboard の移動中は出さない",
+      "given": "home の見出しを掴んで動かしている",
+      "when": "Alt を押す",
+      "then": "何も出ない",
+      "commit": "6f316bca4b83bdd5c6fe17d5bd6784808e7359d1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+        "start": 87,
+        "end": 97,
+        "text": "test(\"artboard を運んでいる間は、Alt を押しても距離は出ない\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n  enterPointer(canvasSurface());\n  pressPointer(artboardHandle(\"home\"), { x: 0, y: 0 });\n  movePointer(canvasContent(), { x: 30, y: 20 });\n\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "selection-distances"
+      ]
+    },
+    {
+      "id": "s-range",
+      "suite": "suspended",
+      "name": "範囲選択の最中は、Alt を押しても距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "範囲選択の最中は出さない",
+      "given": "空き領域から範囲を引いている",
+      "when": "Alt を押す",
+      "then": "何も出ない",
+      "commit": "6f316bca4b83bdd5c6fe17d5bd6784808e7359d1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+        "start": 99,
+        "end": 109,
+        "text": "test(\"範囲選択の最中は、Alt を押しても距離は出ない\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n  enterPointer(canvasSurface());\n  pressPointer(canvasSurface(), { x: 60, y: 40 });\n  movePointer(canvasSurface(), { x: 170, y: 100 });\n\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "selection-distances"
+      ]
+    },
+    {
+      "id": "s-range-end",
+      "suite": "suspended",
+      "name": "範囲選択を終えると、また距離が出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "出さない条件が解けたら戻る",
+      "given": "空き領域で範囲を引いて離した",
+      "when": "Alt を押す",
+      "then": "親 card の縁までの 4 本",
+      "commit": "6f316bca4b83bdd5c6fe17d5bd6784808e7359d1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+        "start": 111,
+        "end": 122,
+        "text": "test(\"範囲選択を終えると、また距離が出る\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n  enterPointer(canvasSurface());\n  pressPointer(canvasSurface(), { x: 60, y: 40 });\n  movePointer(canvasSurface(), { x: 70, y: 50 });\n  releasePointer(canvasSurface(), { x: 70, y: 50 });\n\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"10\", \"120\", \"180\", \"20\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "selection-distances",
+        "overlay"
+      ]
+    },
+    {
+      "id": "s-space",
+      "suite": "suspended",
+      "name": "space でパンを構えている間は、Alt を押しても距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "パンの構えの間は出さない",
+      "given": "`row`(左右 140〜340・上下 100〜160)を選ぶと、親 card の縁までは左 20・右 180・上 10・下 120。止める理由が無ければ距離が出る位置にポインタがある",
+      "when": "space を押してから Alt を押す",
+      "then": "何も出ない",
+      "commit": "6f316bca4b83bdd5c6fe17d5bd6784808e7359d1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+        "start": 124,
+        "end": 133,
+        "text": "test(\"space でパンを構えている間は、Alt を押しても距離は出ない\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n  enterPointer(canvasSurface());\n  holdSpace();\n\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/hooks/use-space-held/index.ts"
+      ],
+      "covers": [
+        "space-hold",
+        "selection-distances"
+      ]
+    },
+    {
+      "id": "s-middle",
+      "suite": "suspended",
+      "name": "中ボタンでパンしている間は、Alt を押しても距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "パンの最中は出さない",
+      "given": "中ボタンで押している",
+      "when": "Alt を押す",
+      "then": "何も出ない",
+      "commit": "6f316bca4b83bdd5c6fe17d5bd6784808e7359d1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+        "start": 135,
+        "end": 144,
+        "text": "test(\"中ボタンでパンしている間は、Alt を押しても距離は出ない\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n  enterPointer(canvasSurface());\n  pressPointer(canvasSurface(), { x: 60, y: 40 }, PointerButtons.Middle);\n\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "selection-distances"
+      ]
+    },
+    {
+      "id": "s-text",
+      "suite": "suspended",
+      "name": "文言をその場で編集している間は、Alt を押しても距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "macOS では Option で特殊文字を打つので、編集中は出さない",
+      "given": "title を選んでダブルクリックで編集している",
+      "when": "Alt を押す",
+      "then": "何も出ない",
+      "commit": "6f316bca4b83bdd5c6fe17d5bd6784808e7359d1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+        "start": 146,
+        "end": 155,
+        "text": "test(\"文言をその場で編集している間は、Alt を押しても距離は出ない\", () => {\n  renderCanvas({ selection: selectionDistanceTree([\"title\"]) });\n  drawSelectionDistanceTree();\n  enterPointer(canvasSurface());\n  fireEvent.doubleClick(drawn(\"title\"));\n\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "selection-distances"
+      ]
+    },
+    {
+      "id": "s-carry",
+      "suite": "suspended",
+      "name": "Alt を押しながらノードを運んでいる間は、運んでいる間の距離だけが出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "運んでいる間の距離(#960)と重ならない",
+      "given": "badge を選び、空き領域で Alt を押している",
+      "when": "Alt を押したまま badge を運ぶ",
+      "then": "運んでいる間の距離 `12` `150` `190` `66` だけ",
+      "commit": "6f316bca4b83bdd5c6fe17d5bd6784808e7359d1",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+        "start": 157,
+        "end": 167,
+        "text": "test(\"Alt を押しながらノードを運んでいる間は、運んでいる間の距離だけが出る\", () => {\n  // 運んでいる間の距離は `artboard-canvas.facing-distance` の 1 件目と同じ\n  renderCanvas({ selection: withOnlySelected(setupSiblings(), \"badge\") });\n  drawnApart();\n  enterPointer(canvasSurface());\n  holdAlt();\n\n  carryNode(\"badge\", { x: 113, y: -12 }, \"alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"12\", \"150\", \"190\", \"66\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "selection-distances"
+      ]
+    },
+    {
+      "id": "e-menu",
+      "suite": "editor",
+      "name": "右クリックのメニューを開いている間は Alt を押しても距離が出ず、閉じると出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "メニューの状態の受け渡しが切れても気づける",
+      "given": "編集画面で home-title を選び、空き領域にいる",
+      "when": "右クリックのメニューを開いて Alt を押し、Alt を押したまま Esc で閉じる",
+      "then": "開いている間は何も出ず、閉じると `170` `220` `40` `40`",
+      "commit": "5fd6296994f50c47e36f4338ad588b16e7e50a22",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection-distance.test.tsx",
+        "start": 35,
+        "end": 45,
+        "text": "test(\"右クリックのメニューを開いている間は Alt を押しても距離が出ず、閉じると出る\", async () => {\n  await selectTitleInCanvas();\n  fireEvent.contextMenu(drawn(\"home-title\"), { clientX: 120, clientY: 80 });\n  holdAlt();\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n\n  // Alt を押したまま Esc で閉じる\n  fireEvent.keyDown(screen.getByRole(\"menu\"), { key: \"Escape\", altKey: true });\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"170\", \"220\", \"40\", \"40\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/components/opened-document-editor/index.tsx",
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "menu-open",
+        "selection-distances"
+      ]
+    },
+    {
+      "id": "e-input",
+      "suite": "editor",
+      "name": "右ペインの Content の入力欄にフォーカスがあるときに Alt を押しても、距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "入力欄で Option を打つたびに線が出ないようにする(Q12-3)",
+      "given": "編集画面で home-title を選び、空き領域にいる",
+      "when": "右ペインの Content の入力欄にフォーカスして Alt を押す",
+      "then": "何も出ない",
+      "commit": "5fd6296994f50c47e36f4338ad588b16e7e50a22",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection-distance.test.tsx",
+        "start": 47,
+        "end": 55,
+        "text": "test(\"右ペインの Content の入力欄にフォーカスがあるときに Alt を押しても、距離は出ない\", async () => {\n  await selectTitleInCanvas();\n  const field = screen.getByRole(\"textbox\", { name: \"Content\" });\n  field.focus();\n\n  holdAlt(field);\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/components/opened-document-editor/index.tsx",
+        "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts"
+      ],
+      "covers": [
+        "key-hold"
+      ]
+    },
+    {
+      "id": "todo-hidden-artboard",
+      "suite": "canvas",
+      "name": "非表示の artboard の中のノードを選んでいると、Alt を押しても距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "todo": true,
+      "why": "仕様の「出さないとき」に書いたが、正しい実装では要素が DOM に無く、絞りを外して描かせても happy-dom では大きさ 0 で出ないため、落ちる形のテストにできなかった",
+      "given": "非表示の artboard の中のノードをツリーから選んでいる",
+      "when": "Alt を押す",
+      "then": "何も出ない",
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+        "src/features/editor/features/canvas/utils/DrawnBounds.ts"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "選択しているだけのとき、Alt / Option を押すとポインタの下の相手との距離が出るようになった",
+    "lead": "ノードを 1 つ選んで Alt / Option を押している間、ポインタの下にある相手との距離が赤い短い線と数値で見えます。相手が無いところでは、選んでいるノードから親の内側の縁までが出ます。見た目と数値の丸めは、運んでいる間の Alt / Option の距離と同じです。",
+    "changed": {
+      "before": [
+        {
+          "text": "選択しているだけのときに Alt / Option を押しても、何も出なかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "Alt / Option を押している間、ポインタの下の相手との距離が出る。相手が無ければ親の内側の縁まで上下左右 4 本が出る",
+          "message": "selection-distances"
+        },
+        {
+          "text": "相手はクリックで選ばれるものと同じ規則で決まる。ただし同じ親の中を指していれば、すぐ隣の兄弟が相手になる",
+          "message": "pair-target"
+        },
+        {
+          "text": "ポインタを置いてから押しても、押してから動かしても出る。離す・ウィンドウを離れる・キャンバスの外へ出ると消える",
+          "message": "key-hold"
+        }
+      ],
+      "text": "隣の要素まで何 px 空いているかを、運ばずに確かめられるようになりました。",
+      "specs": [
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「キャンバス直接操作」の「選択しているだけのときの Alt / Option の距離」の項",
+          "text": "相手の決め方・相手が無いとき・測り方・押しているかを見るタイミング・出さないときを新しく書いた",
+          "shas": [
+            "f3c23eb01b2b53cd897fd1951b6c1c0ea93291e0",
+            "e648fb6bbe14319a81d9c8aaaf1207324a86b1f7"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「移動(ドラッグ)」の Alt / Option の距離の、出さないときの行",
+          "text": "「選択しているだけのときはまだ出さない」を外し、新しい項を指すようにした",
+          "shas": [
+            "f3c23eb01b2b53cd897fd1951b6c1c0ea93291e0"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「非表示の artboard」の距離の相手の行",
+          "text": "距離の相手にならない場面に、選択しているだけのときを足した",
+          "shas": [
+            "f3c23eb01b2b53cd897fd1951b6c1c0ea93291e0"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 960,
+          "text": "運んでいる間の距離を扱った回。選択しているだけのときをここへ切り出した"
+        },
+        {
+          "issue": 1209,
+          "text": "リサイズ中の距離。ここではリサイズ中は出さないので、2 つの線は重ならない"
+        },
+        {
+          "issue": 1202,
+          "text": "Windows で Alt を単独で押して離したときの振る舞いの検証。ここで守るのはウィンドウを離れたら消えることだけ"
+        },
+        {
+          "issue": 1231,
+          "text": "名前の並びと掘る量の組を 1 つにまとめる件。この変更で増えた受け口もその対象"
+        }
+      ],
+      "primers": [
+        "alt-pointing-ref",
+        "distance-pair",
+        "discriminated-union"
+      ]
+    },
+    "tables": [
+      {
+        "label": "何を指したか × 何を選んでいるか",
+        "gist": "Alt / Option を押している間に出る線は、ポインタの下のものと、選んでいるノードの深さで決まる。",
+        "text": "「離れている向きに 1 本」は、もう一方の軸で幅を持って重なり、離れているときだけ出ます。斜めに離れている・一部だけ重なるときは出ません。",
+        "rowHeads": [
+          {
+            "id": "sibling",
+            "label": "兄弟(同じ親の直下)とその中"
+          },
+          {
+            "id": "inside",
+            "label": "選んでいるノードの中"
+          },
+          {
+            "id": "inside-cmd",
+            "label": "選んでいるノードの中",
+            "note": "⌘ / Ctrl も押している"
+          },
+          {
+            "id": "parent-bg",
+            "label": "親の背景",
+            "note": "直下の子が乗っていないところ"
+          },
+          {
+            "id": "artboard-bg",
+            "label": "自分の artboard の背景"
+          },
+          {
+            "id": "other-branch",
+            "label": "兄弟でない別の枝のノード"
+          },
+          {
+            "id": "other-artboard",
+            "label": "別の artboard"
+          },
+          {
+            "id": "nothing",
+            "label": "空き領域・見出し・選んでいるノードのリサイズハンドル"
+          },
+          {
+            "id": "outside",
+            "label": "キャンバスの外"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "top",
+            "label": "artboard 直下のノードを 1 つ"
+          },
+          {
+            "id": "deep",
+            "label": "それより深いノードを 1 つ"
+          },
+          {
+            "id": "other",
+            "label": "複数・artboard・選択なし"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "sibling",
+            "columnHead": "top",
+            "result": "兄弟まで、離れている向きに 1 本",
+            "was": "何も出ない"
+          },
+          {
+            "rowHead": "sibling",
+            "columnHead": "deep",
+            "result": "兄弟まで、離れている向きに 1 本",
+            "was": "何も出ない",
+            "tests": [
+              "c-sibling",
+              "pair-sibling",
+              "pair-sibling-child"
+            ],
+            "note": "⌘ / Ctrl も押していると兄弟の規則は効かず、いちばん内側が相手になる"
+          },
+          {
+            "rowHead": "sibling",
+            "columnHead": "other",
+            "result": "何も出ない",
+            "tests": [
+              "edge-multi",
+              "s-multi"
+            ]
+          },
+          {
+            "rowHead": "inside",
+            "columnHead": "top",
+            "result": "選んでいるノードから親(artboard)の内側の縁まで 4 本",
+            "was": "何も出ない"
+          },
+          {
+            "rowHead": "inside",
+            "columnHead": "deep",
+            "result": "選んでいるノードから親の内側の縁まで 4 本",
+            "was": "何も出ない",
+            "tests": [
+              "c-inside",
+              "pair-inside"
+            ]
+          },
+          {
+            "rowHead": "inside",
+            "columnHead": "other",
+            "result": "何も出ない"
+          },
+          {
+            "rowHead": "inside-cmd",
+            "columnHead": "top",
+            "result": "いちばん内側の子孫から、選んでいるノードの内側の縁まで 4 本",
+            "was": "何も出ない"
+          },
+          {
+            "rowHead": "inside-cmd",
+            "columnHead": "deep",
+            "result": "いちばん内側の子孫から、選んでいるノードの内側の縁まで 4 本",
+            "was": "何も出ない",
+            "tests": [
+              "c-deepest",
+              "pair-deepest"
+            ]
+          },
+          {
+            "rowHead": "inside-cmd",
+            "columnHead": "other",
+            "result": "何も出ない"
+          },
+          {
+            "rowHead": "parent-bg",
+            "columnHead": "top",
+            "result": "親は artboard なので、artboard の内側の縁まで 4 本",
+            "was": "何も出ない"
+          },
+          {
+            "rowHead": "parent-bg",
+            "columnHead": "deep",
+            "result": "artboard 直下の祖先(深さ 2 なら親)の内側の縁まで 4 本",
+            "was": "何も出ない",
+            "tests": [
+              "pair-parent-bg"
+            ],
+            "note": "親そのものではなく、クリックで選ばれるもの"
+          },
+          {
+            "rowHead": "parent-bg",
+            "columnHead": "other",
+            "result": "何も出ない"
+          },
+          {
+            "rowHead": "artboard-bg",
+            "columnHead": "top",
+            "result": "artboard の内側の縁まで 4 本",
+            "was": "何も出ない"
+          },
+          {
+            "rowHead": "artboard-bg",
+            "columnHead": "deep",
+            "result": "artboard の内側の縁まで 4 本",
+            "was": "何も出ない",
+            "tests": [
+              "c-artboard-bg",
+              "pair-artboard-bg"
+            ]
+          },
+          {
+            "rowHead": "artboard-bg",
+            "columnHead": "other",
+            "result": "何も出ない"
+          },
+          {
+            "rowHead": "other-branch",
+            "columnHead": "top",
+            "result": "当たらない(同じ artboard のほかのノードは、どれも兄弟とその中になる)"
+          },
+          {
+            "rowHead": "other-branch",
+            "columnHead": "deep",
+            "result": "その枝の artboard 直下の子が相手。祖先なら内側の縁まで 4 本、そうでなければ離れている向きに 1 本",
+            "was": "何も出ない",
+            "tests": [
+              "c-vertical"
+            ]
+          },
+          {
+            "rowHead": "other-branch",
+            "columnHead": "other",
+            "result": "何も出ない"
+          },
+          {
+            "rowHead": "other-artboard",
+            "columnHead": "top",
+            "result": "親(artboard)の内側の縁まで 4 本",
+            "was": "何も出ない"
+          },
+          {
+            "rowHead": "other-artboard",
+            "columnHead": "deep",
+            "result": "親の内側の縁まで 4 本",
+            "was": "何も出ない",
+            "tests": [
+              "c-other-artboard",
+              "pair-other-artboard"
+            ]
+          },
+          {
+            "rowHead": "other-artboard",
+            "columnHead": "other",
+            "result": "何も出ない"
+          },
+          {
+            "rowHead": "nothing",
+            "columnHead": "top",
+            "result": "親(artboard)の内側の縁まで 4 本",
+            "was": "何も出ない"
+          },
+          {
+            "rowHead": "nothing",
+            "columnHead": "deep",
+            "result": "親の内側の縁まで 4 本",
+            "was": "何も出ない",
+            "tests": [
+              "c-heading",
+              "c-handle",
+              "c-empty",
+              "pair-nothing"
+            ]
+          },
+          {
+            "rowHead": "nothing",
+            "columnHead": "other",
+            "result": "何も出ない"
+          },
+          {
+            "rowHead": "outside",
+            "columnHead": "top",
+            "result": "何も出ない"
+          },
+          {
+            "rowHead": "outside",
+            "columnHead": "deep",
+            "result": "何も出ない",
+            "tests": [
+              "s-outside",
+              "pair-outside"
+            ]
+          },
+          {
+            "rowHead": "outside",
+            "columnHead": "other",
+            "result": "何も出ない"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "Alt / Option を押したまま、選択や画面の大きさが変わったとき",
+        "before": [],
+        "after": [
+          {
+            "text": "ポインタを動かさなくても、新しい選択・新しい位置から測り直した距離に変わる",
+            "message": "measured"
+          }
+        ],
+        "text": "選択の切り替えやウィンドウの大きさの変更で、古い距離が残りません。",
+        "tests": [
+          "c-reselect",
+          "c-resize",
+          "sd-changed"
+        ],
+        "primers": [
+          "use-measured"
+        ]
+      },
+      {
+        "label": "Alt / Option を押したまま、ほかの操作を始めたとき",
+        "before": [],
+        "after": [
+          {
+            "text": "ノードを運ぶ・リサイズ・artboard の移動・範囲選択・パンの最中は出ない。終えるとまた出る",
+            "message": "selection-distances"
+          },
+          {
+            "text": "Alt / Option を押しながらノードを運んでいる間は、運んでいる間の距離だけが出る"
+          },
+          {
+            "text": "文言の編集中・右クリックのメニューを開いている間・凍結中・入力欄や選択欄にフォーカスがあるときは出ない",
+            "message": "menu-open"
+          }
+        ],
+        "text": "macOS では Option で特殊文字を打つので、文字を打っている場面では線を出しません。",
+        "tests": [
+          "s-resize",
+          "s-artboard",
+          "s-range",
+          "s-range-end",
+          "s-space",
+          "s-middle",
+          "s-carry",
+          "s-text",
+          "s-frozen",
+          "e-menu",
+          "e-input",
+          "alt-input",
+          "alt-select",
+          "todo-hidden-artboard"
+        ],
+        "primers": [
+          "modifier-key-hold"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "キャンバスをクリックしたときに選ばれるもの(artboard の背景なら artboard、ロック中のノードの上ならその外側)は変わらない",
+        "tests": [
+          "click-node",
+          "click-artboard",
+          "click-locked"
+        ]
+      },
+      {
+        "text": "space を押している間のパンの構えは変わらない"
+      },
+      {
+        "text": "運んでいる間の Alt / Option の距離の出方は変わらない",
+        "tests": [
+          "s-carry"
+        ]
+      },
+      {
+        "text": "選んでいるものに重ねるリサイズハンドルが、選択の変更やウィンドウの大きさの変更に追従することは変わらない",
+        "tests": [
+          "drawn-resubscribe"
+        ]
+      },
+      {
+        "text": "見た目(赤い短い線とラベル)と、数値をドキュメント上の px に丸めることは、運んでいる間の距離と同じ",
+        "tests": [
+          "c-zoom"
+        ]
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「キャンバスのクリックが選ぶ階層」",
+        "text": "クリックが選ぶ階層の規則は変えていない。距離の相手はこの規則を引く"
+      },
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「移動(ドラッグ)」の Alt / Option の距離の項",
+        "text": "運んでいる間の距離の相手・見た目・丸めは変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "discriminated-union",
+      "category": "TypeScript · 型",
+      "label": "判別可能な union と `switch` の網羅",
+      "gist": "とりうる状態を[[直和|union]]で列挙し、共通の[[判別子|discriminant]]で場合分けする書き方。`switch` で全部の場合を書いたかをコンパイラが確かめる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`type A = { kind: \"x\"; ... } | { kind: \"y\"; ... }` のように、`|` で型を並べると「どれか 1 つ」を表す型になる。各型が同じ名前のキー(ここでは `kind`)に違う[[リテラル型|literal-type]]を持てば、`switch (a.kind)` の各 `case` の中では、その場合の型に[[絞り込み|narrowing]]が効き、その場合だけにあるキー(`names` など)を読める。"
+        },
+        {
+          "kind": "declaration",
+          "code": "type Pointing =\n  | Readonly<{ kind: \"outside\" }>\n  | Readonly<{ kind: \"nothing\" }>\n  | Readonly<{ kind: \"on-frame\"; names: readonly string[]; dig: SelectionDig }>;"
+        },
+        {
+          "kind": "caution",
+          "text": "`default` を書かずに、戻り値の型を `undefined` を含まない型にしておくと、場合を 1 つ足したのに `case` を書き忘れたとき「値を返さない経路がある」としてコンパイルが落ちる。`default` を書くと、足した場合が黙ってそこへ落ちる。"
+        },
+        {
+          "kind": "rule",
+          "text": "このリポジトリでは、矛盾した状態を作れる真偽値や `Option` の組み合わせより直和を選ぶ(`rules/coding.md`「正しい状態だけを列挙する」)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/pointing/index.ts",
+          "lineRange": {
+            "start": 13,
+            "end": 20
+          },
+          "text": "指し先の 3 つの状態。キャンバスの外にいるのに名前を持つ、を作れない",
+          "shas": [
+            "fc9095f62581b0c39e7f486550c249595852070e"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "lineRange": {
+            "start": 17,
+            "end": 24
+          },
+          "text": "名前の組と矩形の組を、同じ 2 つの種類で持つ",
+          "shas": [
+            "96d627941e3ae2751dbec2cc733c57fbd9e1cf93"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "lineRange": {
+            "start": 171,
+            "end": 191
+          },
+          "text": "`switch (pointing.kind)` を `default` 無しで書く",
+          "shas": [
+            "96d627941e3ae2751dbec2cc733c57fbd9e1cf93"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "distance-pair"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "react-ref-state",
+      "category": "React · フック",
+      "label": "`useRef` と `useState` の使い分け",
+      "gist": "画面に出す値は[[state|state]]、出さずに覚えておくだけの値は[[ref|ref]]に置く。ref を書き換えても再レンダーは起きない。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`useState` は値と、値を変える関数の組を返す。変える関数を呼ぶと React はコンポーネントを描き直す。関数に「前の値から次の値を返す関数」を渡すと、前の値を受け取って次を決められ、前と同じ参照を返せば描き直しを省く。`useRef` は `{ current }` という箱を返し、`current` を書き換えても描き直しは起きない。"
+        },
+        {
+          "kind": "declaration",
+          "code": "const lastPointing = useRef<Pointing>(Pointing.Outside);\nconst [pointing, setPointing] = useState<Option<Pointing>>(Option.none);"
+        },
+        {
+          "kind": "caution",
+          "text": "描画中に `ref.current` を読んで画面に出すと、書き換えても画面が追いつかない。ref はイベントの処理の中だけで読む。"
+        },
+        {
+          "kind": "rule",
+          "text": "判定軸は「描画で読むなら `useState`、イベントの処理の中だけで使うなら `useRef`」(`rules/hooks.md`「useRef の使い分け」)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+          "lineRange": {
+            "start": 66,
+            "end": 86
+          },
+          "text": "最後の指し先は ref、押している間だけ state に写す",
+          "shas": [
+            "eddbda0b4e45a5ea3b5a13ddda073395da2919fc",
+            "3e0f8d31632b0f89a9fa8c85c814e6cfc09fd9fa"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "alt-pointing-ref"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "layout-effect",
+      "category": "React · フック",
+      "label": "依存配列の無い `useLayoutEffect`",
+      "gist": "描画が DOM に反映された直後、画面に出る前に走る処理。依存配列を省くと、描き直しのたびに毎回走る。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`useEffect(fn)` は画面に出たあとに、`useLayoutEffect(fn)` は画面に出る前に `fn` を同期で走らせる。DOM の大きさを測って state に入れ直すと、測る前の値は画面に出ない。2 つ目の引数(依存配列)を省くと、毎回の描き直しのあとに走る。`fn` が関数を返すと、次に走る前とコンポーネントが消えるときにそれを呼ぶ(後片付け)。"
+        },
+        {
+          "kind": "declaration",
+          "code": "useLayoutEffect(() => {\n  remeasure();\n  window.addEventListener(\"resize\", remeasure);\n  return () => window.removeEventListener(\"resize\", remeasure);\n});"
+        },
+        {
+          "kind": "caution",
+          "text": "毎回走る効果の中で state を変えると、描き直しが続く。測った値が前と同じなら前の参照を返して止める。"
+        },
+        {
+          "kind": "memo",
+          "text": "購読も毎回張り直すのは、`[]` で 1 度だけ張ると、リスナーが最初に作った `remeasure` を掴んだまま、古い測る相手を測り続けるため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+          "lineRange": {
+            "start": 25,
+            "end": 40
+          },
+          "text": "毎コミット測り直し、resize を購読する",
+          "shas": [
+            "0d6c8dba07f312a145aeb7694ff1f6463934346b"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "use-measured"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "pointer-enter-leave",
+      "category": "DOM · React イベント",
+      "label": "pointerenter / pointerleave と `relatedTarget`",
+      "gist": "ポインタが要素の範囲に入った・出たことを知らせるイベント。子へ移っただけでは親に leave は来ない。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`pointerover` / `pointerout` は子の境目をまたぐたびに[[泡立ち|bubbling]]で親まで届くが、`pointerenter` / `pointerleave` は泡立たず、その要素の範囲(子を含む)を出入りしたときだけ来る。React の `onPointerEnter` / `onPointerLeave` は、over / out と、移る先を指す `relatedTarget` から合成している。"
+        },
+        {
+          "kind": "declaration",
+          "code": "onPointerEnter={() => altPointing.trackPointer(Pointing.Nothing)}\nonPointerLeave={() => altPointing.trackPointer(Pointing.Outside)}"
+        },
+        {
+          "kind": "caution",
+          "text": "テストで `relatedTarget` の無い leave を撃つと、React はポインタが窓の外へ出たと読み、祖先にも leave を届ける。枠から見出しへ移る(キャンバスには残る)操作は、`relatedTarget` 付きの `pointerOut` で起こす。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "lineRange": {
+            "start": 251,
+            "end": 253
+          },
+          "text": "キャンバスに入ったら枠の外、出たらキャンバスの外",
+          "shas": [
+            "46bf7871d473c737100209d7c3294ee5d4b5d5dd",
+            "d1eba5bccb46b8d625eb196d62d0225a5822d4b7"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "lineRange": {
+            "start": 193,
+            "end": 198
+          },
+          "text": "枠の上の移動で指し先を伝え、枠を出たら枠の外",
+          "shas": [
+            "46bf7871d473c737100209d7c3294ee5d4b5d5dd"
+          ]
+        },
+        {
+          "path": "src/components/__tests__/pointer-gesture.ts",
+          "lineRange": {
+            "start": 165,
+            "end": 178
+          },
+          "text": "テストで、祖先の中に留まる移動を起こす",
+          "shas": [
+            "d66827878704c3254d5e7afa8ed638a2b329df30",
+            "cae052549b42319f370333c0fc886f1c4cdd4532"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "alt-pointing-ref"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "keyboard-code",
+      "category": "DOM · キーボード",
+      "label": "`KeyboardEvent.code` と `altKey`",
+      "gist": "押された物理キーの位置(`code`)と、その時点で修飾キーが押されているか(`altKey`)を読む 2 つの方法。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`code` は配列に関係なく物理キーの位置を表し、左右の Alt は `\"AltLeft\"` / `\"AltRight\"` と区別される。`altKey` は、そのイベントの時点で左右どちらかの Alt / Option が押されていれば真になる。"
+        },
+        {
+          "kind": "memo",
+          "text": "押し始めは `code` が左右の Alt のどちらかかで見て、離したかは `altKey` が偽になったかで見る。左右を押して片方だけ離した keyup では `altKey` がまだ真なので、押したままと扱える。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+          "lineRange": {
+            "start": 33,
+            "end": 45
+          },
+          "text": "押し始めは `codes` で、離したかは用途ごとの判定で見る",
+          "shas": [
+            "3e0f8d31632b0f89a9fa8c85c814e6cfc09fd9fa"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+          "lineRange": {
+            "start": 17,
+            "end": 30
+          },
+          "text": "左右の Alt を並べ、離したかは `AltKey.isHeld` で見る",
+          "shas": [
+            "3e0f8d31632b0f89a9fa8c85c814e6cfc09fd9fa"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "modifier-key-hold"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "distance-pair",
+      "category": "canvas · ドメイン",
+      "label": "測る組 `DistancePair`",
+      "gist": "選択と指し先から、何と何を測るかを名前の組で決める。祖先・子孫・親の縁は内側の縁を測る組、親子でない相手は横並びの組。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`create` は選択が 1 つのノードでなければ、またはキャンバスの外なら組を作らない。枠の上なら、別の artboard は相手無し、⌘ / Ctrl が無ければ同じ親の直下の子(兄弟)、それ以外はクリックの規則で相手を決め、木の関係で組の種類を決める。`measure` で描かれている矩形に置き換え、`DrawnDistancePair.toDistances` が既存の向かい合う距離の計算に渡す。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+            "start": 136,
+            "end": 155,
+            "emphasis": [
+              {
+                "start": 141,
+                "end": 153
+              }
+            ],
+            "text": "function pairWith(\n  selection: DocumentSelection,\n  selected: SelectedNode,\n  counterpart: string,\n): DistancePair {\n  if (counterpart === selected.name) {\n    return withinOf(selected, selected.parent);\n  }\n  if (selected.ancestors.includes(counterpart)) {\n    return withinOf(selected, counterpart);\n  }\n  const counterpartAncestors = DesignDocument.collectAncestorNames(\n    selection.document,\n    counterpart,\n  );\n  if (counterpartAncestors.includes(selected.name)) {\n    return { kind: \"within\", inner: counterpart, outer: selected.name };\n  }\n  return { kind: \"beside\", from: selected.name, to: counterpart };\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "包むかどうかを矩形の形で判定しない。祖先・子孫は木の親子で決め、親子でない相手は横並びにして、離れているときだけ 1 本になる(決定 Q6)。"
+        },
+        {
+          "kind": "spec",
+          "text": "`docs/06-ui.md`「キャンバス直接操作」の「選択しているだけのときの Alt / Option の距離」。"
+        },
+        {
+          "kind": "history",
+          "text": "計画 v1 では形で包むかを判定する `createWithin` / `createBetween` を足す案だった。祖先からはみ出した選択で、親を指したときと空き領域を指したときの答えが割れるので、木で決める形に変えた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "lineRange": {
+            "start": 157,
+            "end": 241
+          },
+          "text": "`create` / `equals` / `measure`",
+          "shas": [
+            "96d627941e3ae2751dbec2cc733c57fbd9e1cf93",
+            "71d45fd89f0d8237cd8e5d82a365586c45742a42"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "lineRange": {
+            "start": 243,
+            "end": 290
+          },
+          "text": "`DrawnDistancePair.toDistances` / `equals`",
+          "shas": [
+            "96d627941e3ae2751dbec2cc733c57fbd9e1cf93"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "discriminated-union",
+        "use-measured"
+      ],
+      "tests": [
+        "pair-sibling",
+        "pair-parent-bg",
+        "pair-deepest",
+        "edge-locked",
+        "dist-shape-wrap"
+      ],
+      "flows": [
+        "hover"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "alt-pointing-ref",
+      "category": "canvas · フック",
+      "label": "押している間だけの指し先 `useAltPointing`",
+      "gist": "枠とキャンバスから伝わる指し先を [[ref|ref]] に覚え、Alt / Option を押している間だけ [[state|state]] に写して返す。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`trackPointer` は ref を更新し、押している間で指し先が変わったときだけ state を変える。押した瞬間は `useModifierKeyHold` から知らされ、そのときの ref の値を写す。どちらも `Option.equals` と `Pointing.equals` で同じなら前の値を返す。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+            "start": 66,
+            "end": 86,
+            "text": "export function useAltPointing(): AltPointingControl {\n  const lastPointing = useRef<Pointing>(Pointing.Outside);\n  const [pointing, setPointing] = useState<Option<Pointing>>(Option.none);\n\n  const changeHold = useCallback((isHeld: boolean) => {\n    const last = lastPointing.current;\n    setPointing((previous) =>\n      isHeld ? keepIfSame(previous, last) : Option.none,\n    );\n  }, []);\n  useModifierKeyHold(DistanceModifierKey, changeHold);\n\n  const trackPointer = useCallback((next: Pointing) => {\n    lastPointing.current = next;\n    setPointing((previous) =>\n      Option.isSome(previous) ? keepIfSame(previous, next) : previous,\n    );\n  }, []);\n\n  return { pointing, trackPointer };\n}"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "初期値はキャンバスの外。枠の外にすると、ポインタがキャンバスに入る前に押した Alt で親の縁までの距離が出る。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+          "lineRange": {
+            "start": 32,
+            "end": 86
+          },
+          "text": "口の型とフック本体",
+          "shas": [
+            "eddbda0b4e45a5ea3b5a13ddda073395da2919fc",
+            "3e0f8d31632b0f89a9fa8c85c814e6cfc09fd9fa"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "lineRange": {
+            "start": 181,
+            "end": 196
+          },
+          "text": "キャンバスが呼び、出さないときは指し先を `none` にして渡す",
+          "shas": [
+            "46bf7871d473c737100209d7c3294ee5d4b5d5dd",
+            "d1eba5bccb46b8d625eb196d62d0225a5822d4b7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "react-ref-state",
+        "modifier-key-hold"
+      ],
+      "tests": [
+        "alt-point-then-press",
+        "alt-not-held",
+        "alt-no-rerender",
+        "alt-initial"
+      ],
+      "flows": [
+        "press"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "modifier-key-hold",
+      "category": "canvas · フック",
+      "label": "修飾キーの押し離し `useModifierKeyHold`",
+      "gist": "押している間だけ効く修飾キー(パンの space・距離の Alt)の購読を 1 つにまとめたもの。違うのは、どの keyup で離したことにするかだけ。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+            "start": 28,
+            "end": 57,
+            "text": "export function useModifierKeyHold(\n  key: HeldModifierKey,\n  onChange: (isHeld: boolean) => void,\n): void {\n  useEffect(() => {\n    const hold = (event: KeyboardEvent) => {\n      const startsHold =\n        key.shortcut.codes.includes(event.code) &&\n        !KeyShortcut.isConsumedBy(key.shortcut, event.target);\n      if (startsHold) {\n        onChange(true);\n      }\n    };\n    const release = (event: KeyboardEvent) => {\n      if (key.isReleasedBy(event)) {\n        onChange(false);\n      }\n    };\n    const clear = () => onChange(false);\n\n    globalThis.document.addEventListener(\"keydown\", hold);\n    globalThis.document.addEventListener(\"keyup\", release);\n    globalThis.window.addEventListener(\"blur\", clear);\n    return () => {\n      globalThis.document.removeEventListener(\"keydown\", hold);\n      globalThis.document.removeEventListener(\"keyup\", release);\n      globalThis.window.removeEventListener(\"blur\", clear);\n    };\n  }, [key, onChange]);\n}"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "押し始めは割り当ての `codes` に含まれ、フォーカスのある要素がキーを受け取らない(`KeyShortcut.isConsumedBy`)ときだけ。ウィンドウを離れたら離したことにする。"
+        },
+        {
+          "kind": "history",
+          "text": "最初は Alt の購読をパンの構えから書き写していた。実装の検証(F3)で、片方だけ直る形を無くすために切り出した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+          "lineRange": {
+            "start": 10,
+            "end": 57
+          },
+          "text": "割り当ての型とフック",
+          "shas": [
+            "3e0f8d31632b0f89a9fa8c85c814e6cfc09fd9fa"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-space-held/index.ts",
+          "lineRange": {
+            "start": 23,
+            "end": 46
+          },
+          "text": "パンの構えを乗せ替えた側",
+          "shas": [
+            "3e0f8d31632b0f89a9fa8c85c814e6cfc09fd9fa"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "keyboard-code",
+        "alt-pointing-ref"
+      ],
+      "tests": [
+        "alt-right",
+        "alt-one-side",
+        "alt-input",
+        "s-space"
+      ],
+      "flows": [
+        "press"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "use-measured",
+      "category": "canvas · フック",
+      "label": "毎コミットの測り直し `useMeasured`",
+      "gist": "描かれているものを測った結果を、変わるたびに追いかけて返す。[[依存配列|deps]]を持たず毎コミット測り、同じなら前の参照を返す。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+            "start": 19,
+            "end": 43,
+            "text": "export function useMeasured<T>(\n  measure: () => Option<T>,\n  equals: (value: T, other: T) => boolean,\n): Option<T> {\n  const [measured, setMeasured] = useState<Option<T>>(Option.none);\n\n  useLayoutEffect(() => {\n    const remeasure = () => {\n      setMeasured((previous) => {\n        const next = measure();\n        return Option.equals(previous, next, equals) ? previous : next;\n      });\n    };\n\n    remeasure();\n    /*\n     * 購読も毎コミット張り直す。`[]` で 1 度だけ張ると、リスナーが最初の `measure` を\n     * 掴んだままになり、測る相手を変えたあとに古い相手を測り続ける。\n     */\n    globalThis.window.addEventListener(\"resize\", remeasure);\n    return () => globalThis.window.removeEventListener(\"resize\", remeasure);\n  });\n\n  return measured;\n}"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "距離の実測では、測った組の名前と矩形を一緒に持ち、今の組と測った組が一致するときだけ線を返す。組が変わった回は、効果が測り直す前の 1 回だけ前の組の矩形を持っているため。"
+        },
+        {
+          "kind": "caution",
+          "text": "拾えないのは再レンダーを伴わない位置の変化(Web フォントや画像の読み込み完了)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+          "lineRange": {
+            "start": 19,
+            "end": 43
+          },
+          "text": "測り直しの本体",
+          "shas": [
+            "0d6c8dba07f312a145aeb7694ff1f6463934346b"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+          "lineRange": {
+            "start": 41,
+            "end": 72
+          },
+          "text": "距離の実測が乗る側。最後の 6 行が組の照合",
+          "shas": [
+            "bec65740397e14deb28cbf043a47b61dfc14ea1f",
+            "0d6c8dba07f312a145aeb7694ff1f6463934346b"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+          "lineRange": {
+            "start": 51,
+            "end": 60
+          },
+          "text": "リサイズハンドルの追跡も同じものに乗せた",
+          "shas": [
+            "0d6c8dba07f312a145aeb7694ff1f6463934346b"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "layout-effect",
+        "distance-pair"
+      ],
+      "tests": [
+        "sd-same-ref",
+        "sd-changed",
+        "sd-one-side",
+        "drawn-resubscribe"
+      ],
+      "flows": [
+        "hover"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "name-to-select",
+      "category": "session · ドメイン",
+      "label": "クリックが選ぶもの `nameToSelectAt`",
+      "gist": "押された・指している位置から、クリックが選ぶもの(ノード、無ければ artboard)を引く。クリックと距離の相手の両方がここを通る。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/session/document-selection/index.ts",
+            "start": 167,
+            "end": 206,
+            "text": "  /**\n   * キャンバスで押された位置から、クリックが選ぶものの名前（docs/06-ui.md「キャンバスのク\n   * リックが選ぶ階層」）。選べるノードは `nodeNameAt` で決め、無ければ押された位置を載せて\n   * いる artboard へ倒す。ロック中のノードは返さない。\n   *\n   * @param selection 候補を引くドキュメントと、掘る起点になる今の選択\n   * @param names 押された位置から外へ辿った名前（内→外）\n   * @param dig 押し方から決まった掘る量\n   * @returns 掘った先のノード、無ければ `names` のうち最初の artboard の名前。どちらも無けれ\n   *   ば（部品定義の中の名前だけ・空の並び）`none`\n   */\n  nameToSelectAt(\n    selection: DocumentSelection,\n    names: readonly string[],\n    dig: SelectionDig,\n  ): Option<string> {\n    return Option.or(\n      DocumentSelection.nodeNameAt(selection, names, dig),\n      DocumentSelection.artboardNameAt(selection, names),\n    );\n  },\n\n  /**\n   * キャンバスで押された・指している位置を載せている artboard の名前。\n   *\n   * @param selection artboard を引くドキュメントの出どころ\n   * @param names 押された・指している位置から外へ辿った名前（内→外）\n   * @returns `names` のうち最初の artboard の名前。artboard が無ければ（部品定義の中の名前\n   *   だけ・空の並び）`none`\n   */\n  artboardNameAt(\n    selection: DocumentSelection,\n    names: readonly string[],\n  ): Option<string> {\n    return ArrayEx.first(\n      names.filter((name) =>\n        Option.isSome(DesignDocument.findArtboard(selection.document, name)),\n      ),\n    );\n  },"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "同じ導出を 2 か所に書かない。子の feature(canvas)は親の `EditorState` を import できないので、共有の `DocumentSelection` に置いた(決定 Q11)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "lineRange": {
+            "start": 167,
+            "end": 206
+          },
+          "text": "`nameToSelectAt` と `artboardNameAt`",
+          "shas": [
+            "78c48f7145c454264db362b42558707059726a3f",
+            "31985dc55abaf81bedc0e22f9070395e286080b4"
+          ]
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "lineRange": {
+            "start": 532,
+            "end": 547
+          },
+          "text": "クリックの選択がこれを呼ぶ",
+          "shas": [
+            "8a4e0df7483505fd238713330a0e9068bc730cb4"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "lineRange": {
+            "start": 105,
+            "end": 125
+          },
+          "text": "距離の相手がこれを呼ぶ",
+          "shas": [
+            "96d627941e3ae2751dbec2cc733c57fbd9e1cf93",
+            "71d45fd89f0d8237cd8e5d82a365586c45742a42"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "distance-pair"
+      ],
+      "tests": [
+        "click-node",
+        "click-artboard",
+        "click-locked",
+        "artboard-at"
+      ],
+      "flows": [
+        "click",
+        "hover"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "union",
+      "label": "直和",
+      "text": "「A か B のどれか 1 つ」を表す型。TypeScript では `|` で型を並べて書く。"
+    },
+    {
+      "id": "discriminant",
+      "label": "判別子",
+      "text": "直和のどの場合かを見分けるための共通のキー。ここでは `kind`。"
+    },
+    {
+      "id": "literal-type",
+      "label": "リテラル型",
+      "text": "`\"outside\"` のように、特定の 1 つの値だけを許す型。"
+    },
+    {
+      "id": "narrowing",
+      "label": "絞り込み",
+      "text": "条件分岐の中で、変数の型をより狭い型として扱えるようになる TypeScript の働き。"
+    },
+    {
+      "id": "state",
+      "label": "state",
+      "text": "React が覚えていて、変えると画面を描き直す値。`useState` で作る。"
+    },
+    {
+      "id": "ref",
+      "label": "ref",
+      "text": "React が覚えているが、変えても画面を描き直さない値の箱。`useRef` で作り、`current` で読み書きする。"
+    },
+    {
+      "id": "bubbling",
+      "label": "泡立ち",
+      "text": "要素で起きたイベントが、親、その親へと順に伝わっていく DOM の仕組み。"
+    },
+    {
+      "id": "deps",
+      "label": "依存配列",
+      "text": "React のフックに渡す 2 つ目の引数。中の値が変わったときだけ処理を走らせる。省くと毎回走る。"
+    }
+  ]
+}
