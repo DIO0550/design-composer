@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
 # 検出器の種別の照合（`cases-report.sh` の `report_documented_kinds` / `report_covered_kinds`）と
-# `report` 自身（NG なら `cases_failed` を立て、ok なら立てない）の判定表。一時ディレクトリへ小さな
-# 検出器を置いて照合を呼び、NG を出して `cases_failed` を立てるか、ok だけを出すかが期待どおりかを
-# 1 コマンドで確かめる。
+# `report` 自身（NG なら `cases_failed` を立て、ok なら立てない）の判定表。照合の表は一時ディレクトリへ
+# 小さな検出器を置いて照合を呼び、`report` の表は検出器を置かずに `report` だけを呼ぶ。どちらも NG を
+# 出して `cases_failed` を立てるか、ok だけを出すかが期待どおりかを 1 コマンドで確かめる。
 #
 # 使い方: bash .claude/hooks/lib/cases-report-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
