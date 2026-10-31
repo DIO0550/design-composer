@@ -45,7 +45,8 @@ export function releaseSpace(): void {
 /**
  * Alt / Option を押す / 離す（選択しているだけのときの距離の修飾キー）。
  *
- * `code` で撃つのは、フックが打たれた文字ではなく物理キーで見ているのに合わせる。
+ * フックは押したかを物理キー（`code`）で、離したかを `altKey` で見るので、押すほうは
+ * `code`、離すほうは `altKey: false` が効く。
  *
  * @param target キーを受け取る要素（フォーカスのある要素）。既定は文書全体
  */

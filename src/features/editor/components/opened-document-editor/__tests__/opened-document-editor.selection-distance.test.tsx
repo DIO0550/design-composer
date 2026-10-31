@@ -1,9 +1,10 @@
 import { fireEvent, screen } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { enterPointer } from "@/components/__tests__/pointer-gesture";
 import {
   canvasSurface,
+  enterPointer,
   holdAlt,
+  sortedFacingDistanceLabels,
   stubBounds,
 } from "@/features/editor/features/canvas/__tests__";
 import { drawn, renderOpenedDocument, selectInTree } from "./setup";
@@ -29,14 +30,6 @@ async function selectTitleInCanvas(): Promise<void> {
     height: 30,
   });
   enterPointer(canvasSurface());
-}
-
-/** 出ている Alt / Option の距離の数値（文字列の昇順）。 */
-function sortedFacingDistanceLabels(): readonly string[] {
-  return screen
-    .queryAllByTestId("facing-distance-label")
-    .map((label) => label.textContent ?? "")
-    .sort();
 }
 
 test("右クリックのメニューを開いている間は Alt を押しても距離が出ず、閉じると出る", async () => {

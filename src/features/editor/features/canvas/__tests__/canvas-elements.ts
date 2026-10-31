@@ -183,3 +183,27 @@ export function tokenReferrerNames(canvas: HTMLElement): readonly string[] {
   );
   return namesIn(dashedRules);
 }
+
+/**
+ * 出ている、2 つの矩形の間の数値（揃え先との隙間か Alt / Option の距離）。
+ *
+ * @param testId 見る線の `data-testid`（揃え先との隙間なら `snap-gap`）
+ * @returns 出ている数値の並び（ラベルの文字列）。出ていなければ空
+ */
+export function distanceLabels(
+  testId: "snap-gap" | "facing-distance",
+): readonly string[] {
+  return screen
+    .queryAllByTestId(`${testId}-label`)
+    .map((label) => label.textContent ?? "");
+}
+
+/**
+ * 出ている Alt / Option の距離の数値を、文字列の昇順に並べたもの。向きは `facing-distances` の
+ * 単体で見るので、通しでは並びを見ない。
+ *
+ * @returns 出ている距離の数値の並び（文字列の昇順）。出ていなければ空
+ */
+export function sortedFacingDistanceLabels(): readonly string[] {
+  return [...distanceLabels("facing-distance")].sort();
+}
