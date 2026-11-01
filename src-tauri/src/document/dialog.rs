@@ -1,7 +1,5 @@
-//! .dcmp を選ばせるダイアログ。
-//!
-//! ダイアログは webview からではなく Rust から出す。選ばれたパスを、webview を経由せずに
-//! 選ばれた集合(`chosen_paths.rs`)へ載せるため。
+//! .dcmp を選ばせるダイアログを Rust から出し、選ばれたパスを選ばれた集合(`chosen_paths.rs`)へ
+//! 載せる(`docs/05-architecture.md`「選ばれたファイルの記録」)。
 
 use tauri::{Runtime, State, Window};
 use tauri_plugin_dialog::{DialogExt, FileDialogBuilder, FilePath};
@@ -18,18 +16,18 @@ const DOCUMENT_EXTENSIONS: &[&str] = &["dcmp"];
 /// 新規作成の保存ダイアログに入れておく名前。
 const DEFAULT_FILE_NAME: &str = "untitled.dcmp";
 
-/// .dcmp に絞ったダイアログを、`window` の上に出す形で組み立てる。
+/// .dcmp に絞ったダイアログを組み立てる。
 fn document_dialog<R: Runtime>(window: &Window<R>) -> FileDialogBuilder<R> {
-    let builder = window
+    window
         .dialog()
         .file()
-        .add_filter(DOCUMENT_FILTER_NAME, DOCUMENT_EXTENSIONS);
-    with_parent(builder, window)
+        .add_filter(DOCUMENT_FILTER_NAME, DOCUMENT_EXTENSIONS)
 }
 
-// 親ウィンドウを付けるのは、plugin-dialog 自身の `open` コマンドと同じく Windows / macOS だけ。
+// 親ウィンドウの付け方は plugin-dialog 自身のコマンドに揃える。開く `open` は Windows / macOS
+// だけで、保存の `save` はデスクトップすべてで付ける。
 #[cfg(any(windows, target_os = "macos"))]
-fn with_parent<R: Runtime>(
+fn with_open_parent<R: Runtime>(
     builder: FileDialogBuilder<R>,
     window: &Window<R>,
 ) -> FileDialogBuilder<R> {
@@ -37,7 +35,23 @@ fn with_parent<R: Runtime>(
 }
 
 #[cfg(not(any(windows, target_os = "macos")))]
-fn with_parent<R: Runtime>(
+fn with_open_parent<R: Runtime>(
+    builder: FileDialogBuilder<R>,
+    _window: &Window<R>,
+) -> FileDialogBuilder<R> {
+    builder
+}
+
+#[cfg(desktop)]
+fn with_save_parent<R: Runtime>(
+    builder: FileDialogBuilder<R>,
+    window: &Window<R>,
+) -> FileDialogBuilder<R> {
+    builder.set_parent(window)
+}
+
+#[cfg(not(desktop))]
+fn with_save_parent<R: Runtime>(
     builder: FileDialogBuilder<R>,
     _window: &Window<R>,
 ) -> FileDialogBuilder<R> {
@@ -63,7 +77,7 @@ fn accept_picked(
     let spelled = path
         .to_str()
         .ok_or_else(|| DocumentIoError::invalid_path(&path, "UTF-8 で表せない"))?;
-    chosen.choose(spelled).map(Some)
+    chosen.record_chosen(spelled).map(Some)
 }
 
 // ダイアログは閉じられるまで戻らない。同期コマンドはメインスレッドで動くので、async で
@@ -73,7 +87,7 @@ pub fn choose_open_document_path(
     window: Window,
     chosen: State<'_, ChosenDocumentPaths>,
 ) -> Result<Option<String>, DocumentIoError> {
-    let picked = document_dialog(&window).blocking_pick_file();
+    let picked = with_open_parent(document_dialog(&window), &window).blocking_pick_file();
     accept_picked(chosen.inner(), picked)
 }
 
@@ -82,7 +96,7 @@ pub fn choose_save_document_path(
     window: Window,
     chosen: State<'_, ChosenDocumentPaths>,
 ) -> Result<Option<String>, DocumentIoError> {
-    let picked = document_dialog(&window)
+    let picked = with_save_parent(document_dialog(&window), &window)
         .set_file_name(DEFAULT_FILE_NAME)
         .blocking_save_file();
     accept_picked(chosen.inner(), picked)

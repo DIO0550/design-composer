@@ -1,9 +1,5 @@
-//! 利用者が選んだドキュメントのパスの記録。
-//!
-//! ドキュメントの 4 コマンド(`load_document` / `save_document` / `watch_document` /
-//! `unwatch_document`)が受け付けるのは、利用者がダイアログで選んだ・ウィンドウへ落とした・
-//! 過去にそうして記録に残っているパスだけ(`docs/05-architecture.md`「選ばれたファイルの記録」)。
-//! 記録を書くのは Rust だけで、webview から足す口は持たない。
+//! 利用者が選んだドキュメントのパスの記録と、ドキュメントの 4 コマンドに渡されたパスの照合
+//! (`docs/05-architecture.md`「選ばれたファイルの記録」)。
 
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
@@ -19,7 +15,7 @@ use super::io::DocumentIoError;
 const FILE_NAME: &str = "chosen-documents.json";
 
 /// 記録ファイルに残す件数の上限(新しいものから数える)。
-const RECORDED_LIMIT: usize = 50;
+pub(crate) const RECORDED_LIMIT: usize = 50;
 
 /// 設定ディレクトリの下の記録ファイルの置き場。
 pub fn record_path(config_dir: &Path) -> PathBuf {
@@ -36,7 +32,7 @@ pub struct ChosenDocumentPath(DocumentFilePath);
 impl ChosenDocumentPath {
     /// 照合を通ったときの綴り(webview から渡された綴りそのもの)。
     pub fn spelling(&self) -> String {
-        self.0.to_string_lossy().into_owned()
+        self.0.spelling()
     }
 }
 
@@ -56,43 +52,48 @@ impl AsRef<Path> for ChosenDocumentPath {
 
 /// 利用者が選んだパスの集合と、それを残す記録ファイル。
 ///
-/// メモリ上の並びは新しい順・重複なしで、件数の上限を持たない。上限を持たせると、タブを
-/// 多く開いたときに古いタブの自動保存が `NotChosen` になる。上限は記録ファイルにだけ掛ける。
+/// メモリ上の並びは新しい順・重複なしで、件数の上限を持たない。上限は記録ファイルにだけ
+/// 掛ける(`docs/05-architecture.md`「選ばれたファイルの記録」)。
 #[derive(Debug)]
 pub struct ChosenDocumentPaths {
     chosen: Mutex<Vec<String>>,
-    record_file: PathBuf,
+    /// 並びを書き出す先。`None` の起動中は記録ファイルへ書き出さず、メモリ上で照合だけを続ける。
+    record_file: Option<PathBuf>,
 }
 
 impl ChosenDocumentPaths {
     /// 記録ファイルから、前回までに選ばれたパスを読み戻す。
     ///
-    /// @param record_file 記録ファイルの置き場。以後の書き出しもここへ行う
-    /// @returns 記録にあったパスを選ばれたものとして持つ集合。記録が無い・読めない・
-    /// JSON の配列として読めないときは空。ドキュメントのパスとして扱えない行(文字列でない
-    /// 行を含む)は落とし、重複は先に現れた側(新しい側)を残して、上限の件数までを持つ
+    /// @param record_file 記録ファイルの置き場。読めたときは以後の書き出しもここへ行う
+    /// @returns 記録にあったパスを選ばれたものとして持つ集合。記録が無い・JSON の配列として
+    /// 読めないときは空。ドキュメントのパスとして扱えない行(文字列でない行を含む)は落とし、
+    /// 重複は先に現れた側(新しい側)を残して、上限の件数までを持つ。記録ファイルを読めない
+    /// (`read_optional_text` が失敗する)ときは空で、この起動中は記録ファイルへ書き出さない
     pub fn restore(record_file: PathBuf) -> Self {
-        // 読めない記録を失敗として返さないのは、記録が欠けても選び直せば済み、起動を
-        // 止める理由にならないため(`app_state` と同じく、壊れても作り直せるものを置く先)。
-        let chosen = file_io::read_optional_text(&record_file)
-            .ok()
-            .flatten()
-            .map(|text| recorded_paths(&text))
-            .unwrap_or_default();
-        Self {
-            chosen: Mutex::new(chosen),
-            record_file,
+        match file_io::read_optional_text(&record_file) {
+            Ok(text) => Self {
+                chosen: Mutex::new(text.map(|text| recorded_paths(&text)).unwrap_or_default()),
+                record_file: Some(record_file),
+            },
+            Err(_) => Self::in_memory(),
         }
     }
 
-    /// 利用者が選んだパスを、寄せた綴りで集合の先頭に載せて記録へ書き出す。
+    /// 記録ファイルへ書き出さない、空の集合を作る。記録ファイルの置き場を決められないときに使う。
+    pub fn in_memory() -> Self {
+        Self {
+            chosen: Mutex::new(Vec::new()),
+            record_file: None,
+        }
+    }
+
+    /// 利用者が選んだパスを、寄せた綴りで集合の先頭に載せ、並びが変わったら記録へ書き出す。
     ///
     /// @param raw_path ダイアログ・ドロップが返したパス
     /// @returns 載せた綴り(`canonicalize_requested` で寄せた綴り)。寄せられないときは
     /// `InvalidPath` を返し、集合にも記録にも触れない
-    pub fn choose(&self, raw_path: &str) -> Result<String, DocumentIoError> {
-        let canonical = canonicalize_requested(raw_path)?;
-        let spelling = canonical.to_string_lossy().into_owned();
+    pub fn record_chosen(&self, raw_path: &str) -> Result<String, DocumentIoError> {
+        let spelling = canonicalize_requested(raw_path)?.spelling();
         self.bring_to_front(&spelling);
         Ok(spelling)
     }
@@ -112,24 +113,27 @@ impl ChosenDocumentPaths {
         Ok(ChosenDocumentPath(path))
     }
 
-    /// 読み込めたパスを集合の先頭へ移し、記録へ書き出す。
-    ///
-    /// 常用しているファイルが、新しく選んだものに押されて記録の上限から外れないようにする。
+    /// 読み込めたパスを集合の先頭へ移し、並びが変わったら記録へ書き出す。
     pub fn record_opened(&self, path: &ChosenDocumentPath) {
         self.bring_to_front(&path.spelling());
     }
 
-    /// `spelling` を集合の先頭に置き、記録へ書き出す。
+    /// `spelling` を集合の先頭に置き、並びが変わったときだけ記録ファイルへ書き出す(記録ファイルを
+    /// 持たない起動中は書き出さない)。
     ///
     /// 書き出しはロックを持ったまま行い、並びと記録ファイルの中身が書き出しの順でずれない
-    /// ようにする。
+    /// ようにする。書き出しの失敗は返さない(`docs/05-architecture.md`「選ばれたファイルの記録」)。
     fn bring_to_front(&self, spelling: &str) {
         let mut chosen = self.chosen();
         let reordered = with_front(&chosen, spelling);
+        if reordered == *chosen {
+            return;
+        }
         *chosen = reordered;
-        // 書き出しの失敗は返さない。起動中の照合はメモリの集合で続き、失われるのは次の起動で
-        // 選び直さずに開けることだけなので、選ぶ・開く操作そのものを失敗にしない。
-        let _ = file_io::write_text(&self.record_file, &recorded_text(&chosen));
+        let Some(record_file) = &self.record_file else {
+            return;
+        };
+        let _ = file_io::write_text(record_file, &recorded_text(&chosen));
     }
 
     /// ロックを取得する。

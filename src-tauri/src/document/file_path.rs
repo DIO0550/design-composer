@@ -64,6 +64,11 @@ impl DocumentFilePath {
         }
         Ok(Self(path.to_path_buf()))
     }
+
+    /// パスの綴り。`parse` に渡された文字列そのもの。
+    pub fn spelling(&self) -> String {
+        self.0.to_string_lossy().into_owned()
+    }
 }
 
 impl Deref for DocumentFilePath {

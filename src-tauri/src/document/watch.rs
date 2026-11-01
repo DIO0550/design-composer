@@ -11,7 +11,7 @@ use serde::Serialize;
 use tauri::{AppHandle, Emitter, State};
 
 use super::chosen_paths::{ChosenDocumentPath, ChosenDocumentPaths};
-use super::io::{self, DocumentIoError, DocumentRegistries};
+use super::io::{self, DocumentIoError, DocumentManagedState};
 use super::known_content::KnownContentRegistry;
 
 pub use watchers::DocumentWatchers;
@@ -33,11 +33,25 @@ pub struct DocumentChanged {
 
 /// 監視のコマンドが使う、管理状態の組。
 #[derive(Clone, Copy)]
-pub struct WatchRegistries<'a> {
+pub struct WatchManagedState<'a> {
     /// 照合と自書き込みの識別に使う組。
-    pub document: DocumentRegistries<'a>,
+    pub document: DocumentManagedState<'a>,
     /// 張っている監視。
     pub watchers: &'a DocumentWatchers,
+}
+
+impl<'a> WatchManagedState<'a> {
+    /// 照合に使う集合と、把握している内容と、張っている監視から組を作る。
+    pub fn new(
+        chosen: &'a ChosenDocumentPaths,
+        known: &'a Arc<KnownContentRegistry>,
+        watchers: &'a DocumentWatchers,
+    ) -> Self {
+        Self {
+            document: DocumentManagedState::new(chosen, known),
+            watchers,
+        }
+    }
 }
 
 /// `path` の監視を開始し、外部変更を検知するたびに読み込んだ内容を `on_change` に渡す。
@@ -87,15 +101,15 @@ pub fn changed_content(known: &KnownContentRegistry, path: &ChosenDocumentPath) 
 /// @returns 形の検査を通らないときは `InvalidPath`、選ばれていないときは `NotChosen` を返し、
 /// 監視を張らない
 pub fn start_requested(
-    registries: WatchRegistries<'_>,
+    managed: WatchManagedState<'_>,
     raw_path: &str,
     on_change: impl Fn(DocumentChanged) + Send + 'static,
 ) -> Result<(), DocumentIoError> {
-    let path = registries.document.chosen.require(raw_path)?;
+    let path = managed.document.chosen.require(raw_path)?;
     let notified_path = path.spelling();
-    let known = Arc::clone(registries.document.known);
+    let known = Arc::clone(managed.document.known);
 
-    start(registries.watchers, known, &path, move |content| {
+    start(managed.watchers, known, &path, move |content| {
         on_change(DocumentChanged {
             path: notified_path.clone(),
             content,
@@ -108,14 +122,14 @@ pub fn start_requested(
 /// @returns 形の検査を通らないときは `InvalidPath`、選ばれていないときは `NotChosen` を返し、
 /// 監視にも記録にも触れない
 pub fn stop_requested(
-    registries: WatchRegistries<'_>,
+    managed: WatchManagedState<'_>,
     raw_path: &str,
 ) -> Result<(), DocumentIoError> {
-    let path = registries.document.chosen.require(raw_path)?;
-    registries.watchers.unwatch(&path);
+    let path = managed.document.chosen.require(raw_path)?;
+    managed.watchers.unwatch(&path);
     // 記録も破棄する。監視を再開するときに現在の内容を読み直すので、監視していない間に
     // 起きた変更を「把握済み」として持ち越さないようにする。
-    registries.document.known.forget(&path);
+    managed.document.known.forget(&path);
     Ok(())
 }
 
@@ -127,14 +141,8 @@ pub fn watch_document(
     chosen: State<'_, ChosenDocumentPaths>,
     known: State<'_, Arc<KnownContentRegistry>>,
 ) -> Result<(), DocumentIoError> {
-    let registries = WatchRegistries {
-        document: DocumentRegistries {
-            chosen: chosen.inner(),
-            known: known.inner(),
-        },
-        watchers: watchers.inner(),
-    };
-    start_requested(registries, &path, move |payload| {
+    let managed = WatchManagedState::new(chosen.inner(), known.inner(), watchers.inner());
+    start_requested(managed, &path, move |payload| {
         // 発火に失敗しても伝える先が無い(失敗しているのが通知経路そのもの)。
         let _ = app.emit(DOCUMENT_CHANGED_EVENT, payload);
     })
@@ -147,12 +155,6 @@ pub fn unwatch_document(
     chosen: State<'_, ChosenDocumentPaths>,
     known: State<'_, Arc<KnownContentRegistry>>,
 ) -> Result<(), DocumentIoError> {
-    let registries = WatchRegistries {
-        document: DocumentRegistries {
-            chosen: chosen.inner(),
-            known: known.inner(),
-        },
-        watchers: watchers.inner(),
-    };
-    stop_requested(registries, &path)
+    let managed = WatchManagedState::new(chosen.inner(), known.inner(), watchers.inner());
+    stop_requested(managed, &path)
 }

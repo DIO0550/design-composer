@@ -15,11 +15,18 @@ pub use error::DocumentIoError;
 
 /// ドキュメントのコマンドが照合と自書き込みの識別に使う、管理状態の組。
 #[derive(Debug, Clone, Copy)]
-pub struct DocumentRegistries<'a> {
+pub struct DocumentManagedState<'a> {
     /// 利用者が選んだパスの集合。
     pub chosen: &'a ChosenDocumentPaths,
     /// アプリが把握している内容。file watch のコールバックからも参照するので `Arc` で持つ。
     pub known: &'a Arc<KnownContentRegistry>,
+}
+
+impl<'a> DocumentManagedState<'a> {
+    /// 照合に使う集合と、把握している内容から組を作る。
+    pub fn new(chosen: &'a ChosenDocumentPaths, known: &'a Arc<KnownContentRegistry>) -> Self {
+        Self { chosen, known }
+    }
 }
 
 /// ファイルを UTF-8 文字列として読み込む。
@@ -60,12 +67,12 @@ pub fn load_requested(
 /// @returns 形の検査を通らないときは `InvalidPath`、選ばれていないときは `NotChosen` を返し、
 /// ファイルには触れない
 pub fn save_requested(
-    registries: DocumentRegistries<'_>,
+    managed: DocumentManagedState<'_>,
     raw_path: &str,
     content: &str,
 ) -> Result<(), DocumentIoError> {
-    let path = registries.chosen.require(raw_path)?;
-    save(registries.known, &path, content)
+    let path = managed.chosen.require(raw_path)?;
+    save(managed.known, &path, content)
 }
 
 #[tauri::command]
@@ -83,9 +90,6 @@ pub fn save_document(
     chosen: State<'_, ChosenDocumentPaths>,
     known: State<'_, Arc<KnownContentRegistry>>,
 ) -> Result<(), DocumentIoError> {
-    let registries = DocumentRegistries {
-        chosen: chosen.inner(),
-        known: known.inner(),
-    };
-    save_requested(registries, &path, &content)
+    let managed = DocumentManagedState::new(chosen.inner(), known.inner());
+    save_requested(managed, &path, &content)
 }

@@ -76,5 +76,5 @@ pub fn canonicalize_requested(raw_path: &str) -> Result<DocumentFilePath, Docume
 // 応答しないネットワークドライブの realpath で UI が固まりうるので、async で別スレッドへ出す。
 #[tauri::command(async)]
 pub fn canonicalize_document_path(path: String) -> Result<String, DocumentIoError> {
-    canonicalize_requested(&path).map(|canonical| canonical.to_string_lossy().into_owned())
+    canonicalize_requested(&path).map(|canonical| canonical.spelling())
 }

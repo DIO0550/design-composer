@@ -31,11 +31,15 @@ pub fn run() {
         .manage(DocumentWatchers::new())
         // 選ばれたパスの記録は設定ディレクトリに置くので、パスを解決できる setup で読み戻す。
         // setup は IPC を受け付ける前に同期で走るので、空の集合で照合されることはない。
+        // 設定ディレクトリを解決できなくても起動は止めず、記録なし(メモリ上の照合だけ)で動く。
         .setup(|app| {
-            let config_dir = app.path().app_config_dir()?;
-            app.manage(ChosenDocumentPaths::restore(chosen_paths::record_path(
-                &config_dir,
-            )));
+            let chosen = match app.path().app_config_dir() {
+                Ok(config_dir) => {
+                    ChosenDocumentPaths::restore(chosen_paths::record_path(&config_dir))
+                }
+                Err(_) => ChosenDocumentPaths::in_memory(),
+            };
+            app.manage(chosen);
             Ok(())
         })
         .on_window_event(document::file_drop::on_window_event)

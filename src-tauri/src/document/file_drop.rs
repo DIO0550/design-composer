@@ -1,8 +1,5 @@
-//! ウィンドウへ落とされたファイル。
-//!
-//! Tauri は `tauri://drag-drop` を webview へ配ってから、こちらのウィンドウイベントの
-//! ハンドラを呼ぶ。webview がそれを聞いて開くと、選ばれた集合へ載せる前に `load_document`
-//! が届きうるので、載せ終えてから独自のイベント(`document-dropped`)で知らせる。
+//! ウィンドウへ落とされたファイルを選ばれた集合へ載せ、載せ終えてから `document-dropped` で
+//! 知らせる(`tauri://drag-drop` を使わない理由は `docs/05-architecture.md`「選ばれたファイルの記録」)。
 
 use std::path::PathBuf;
 
@@ -31,7 +28,11 @@ pub fn accept_dropped(chosen: &ChosenDocumentPaths, dropped: &[PathBuf]) -> Docu
         .filter_map(|path| path.to_str())
         // 載せられなかったものも知らせに残すのは、TS が開こうとして「パスが正しくありません」を
         // 出せるようにするため。並びから落とすと、落としたのに何も起きない。
-        .map(|raw| chosen.choose(raw).unwrap_or_else(|_| raw.to_string()))
+        .map(|raw| {
+            chosen
+                .record_chosen(raw)
+                .unwrap_or_else(|_| raw.to_string())
+        })
         .collect();
     DocumentDropped { paths }
 }

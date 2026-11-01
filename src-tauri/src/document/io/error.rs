@@ -21,8 +21,8 @@ pub enum DocumentIoError {
     /// `canonical_path.rs` が揃えた綴りを UTF-8 で表せないパスと、`dialog.rs` がダイアログで
     /// 選ばれたものをパスとして・UTF-8 として読めないとき。
     InvalidPath { message: String },
-    /// 利用者がダイアログで選んだ・ウィンドウへ落とした・過去にそうして記録に残っている、の
-    /// どれでもないパス(`chosen_paths.rs`)。
+    /// 選ばれたファイルの記録に無いパス(`chosen_paths.rs`。`docs/05-architecture.md`
+    /// 「選ばれたファイルの記録」)。
     NotChosen { message: String },
     /// ファイルの中身が UTF-8 として解釈できない。
     InvalidUtf8 { message: String },
