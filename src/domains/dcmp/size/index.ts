@@ -5,7 +5,10 @@ import {
 import { CssDirection } from "@/domains/dcmp/css-direction";
 import { Layout } from "@/domains/dcmp/layout";
 import { PropEdit, type Props, type PropValue } from "@/domains/dcmp/node";
-import type { PrimitiveType } from "@/domains/dcmp/primitive-schema";
+import {
+  PrimitiveSchema,
+  type PrimitiveType,
+} from "@/domains/dcmp/primitive-schema";
 import type { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Axes, type Axis } from "@/domains/unit/axis";
 import { Px } from "@/domains/unit/px";
@@ -341,6 +344,28 @@ export const Size = {
         propsList.some((props) => Size.collectFillAxes(props).includes(axis)),
       )
       .map(fillModePropEdit);
+  },
+
+  /**
+   * 親に交差軸へ引き伸ばされている子を包むときに、その軸のモードを Box へ書く編集
+   * （Box が既定の `hug` だと中身の大きさに縮む）。
+   *
+   * @param types 包むプリミティブの型の並び
+   * @param axis 親が子を引き伸ばしている軸
+   * @returns どれかの型がその軸のモードの prop をスキーマで宣言していなければ、モードを
+   *   `fill` にする編集 1 件。全員が宣言しているときと、並びが空のときは空
+   */
+  collectStretchedFillModePropEdits(
+    types: readonly PrimitiveType[],
+    axis: Axis,
+  ): readonly PropEdit[] {
+    const hasStretchedType = types.some(
+      (type) =>
+        !Option.isSome(
+          PrimitiveSchema.propDefinition(type, Size.modeProp(axis)),
+        ),
+    );
+    return hasStretchedType ? [fillModePropEdit(axis)] : [];
   },
 
   /**
