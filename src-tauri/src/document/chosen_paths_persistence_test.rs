@@ -274,3 +274,53 @@ fn 外から書かれた記録に同じ行が重なっていても1件に数え�
 
     assert!(chosen.require(&raws[RECORDED_LIMIT - 1]).is_ok());
 }
+
+#[test]
+fn 上限を超えて選んでも記録ファイルに書く行は上限の件数まで() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    let chosen = chosen_paths_in(&record_dir);
+
+    choose_many(&chosen, &dir, 0..RECORDED_LIMIT + 1);
+
+    // 読み戻す側も上限で切るので、次の起動の照合ではなく記録ファイルの中身を数える
+    let recorded: Vec<String> =
+        serde_json::from_slice(&record_bytes(&record_dir)).expect("記録は文字列の配列");
+    assert_eq!(recorded.len(), RECORDED_LIMIT);
+}
+
+#[test]
+fn 使えない行で上限の件数を埋めた記録でも後ろにある使える行は照合を通る() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    let raw = raw_document_path(&dir, "document.dcmp");
+    // 相対パスはドキュメントのパスとして扱えない。上限より先に落とさないと、使える行が切られる
+    let unusable = (0..RECORDED_LIMIT).map(|index| format!("relative-{index}.dcmp"));
+    let rows: Vec<String> = unusable.chain(std::iter::once(raw.clone())).collect();
+    write_record(&record_dir, &serde_json::Value::from(rows).to_string());
+
+    let chosen = restarted(&record_dir);
+
+    assert!(chosen.require(&raw).is_ok());
+}
+
+#[test]
+fn 上限の境目をまたいで重なった行は新しい側を数え上限から外れるのは後ろの行() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    let newest = raw_document_path(&dir, "newest.dcmp");
+    let last = raw_document_path(&dir, "last.dcmp");
+    let between =
+        (1..RECORDED_LIMIT).map(|index| raw_document_path(&dir, &format!("doc-{index}.dcmp")));
+    // 新しい順の並び。先頭の行を末尾にも重ね、重なりを除くと `last` がちょうど上限の 1 つ外になる
+    let rows: Vec<String> = std::iter::once(newest.clone())
+        .chain(between)
+        .chain([last.clone(), newest.clone()])
+        .collect();
+    write_record(&record_dir, &serde_json::Value::from(rows).to_string());
+
+    let chosen = restarted(&record_dir);
+
+    assert!(chosen.require(&newest).is_ok());
+    assert!(is_not_chosen(&chosen, &last));
+}

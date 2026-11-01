@@ -188,6 +188,66 @@ fn 選んだときと違う綴りでは同じファイルでも監視を始め�
     assert!(matches!(result, Err(DocumentIoError::NotChosen { .. })));
 }
 
+// 停止を拒むことを確かめるテストは、別の集合で選んで張った監視を、その綴りを選んでいない
+// 集合から止めようとする。照合を外すと、ここで張ってある監視と把握済みの内容が消える。
+
+#[test]
+fn 選んでいないdcmpファイルの監視の停止は選ばれていないことを返す() {
+    let dir = TempDir::new("watch-edge");
+    let record_dir = TempDir::new("watch-edge-record");
+    let chosen = chosen_paths_in(&record_dir);
+    // 対照に別のファイルを選んでおく。集合が空だから拒んだ、では通らないようにする。
+    chosen_spelling(&chosen, &dir, "other.dcmp");
+    let known = Arc::new(KnownContentRegistry::new());
+    let watchers = DocumentWatchers::new();
+
+    let result = watch::stop_requested(
+        WatchManagedState::new(&chosen, &known, &watchers),
+        &raw_document_path(&dir, "document.dcmp"),
+    );
+
+    assert!(matches!(result, Err(DocumentIoError::NotChosen { .. })));
+}
+
+#[test]
+fn 選んでいないdcmpファイルの監視の停止を拒むと張ってある監視は続く() {
+    let dir = TempDir::new("watch-edge");
+    let record_dir = TempDir::new("watch-edge-record");
+    let path = chosen_file_path(&dir, "document.dcmp");
+    fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
+    let chosen = chosen_paths_in(&record_dir);
+    let known = Arc::new(KnownContentRegistry::new());
+    let watchers = DocumentWatchers::new();
+    let changes = watch_changes(&watchers, &known, &path);
+
+    let _ = watch::stop_requested(
+        WatchManagedState::new(&chosen, &known, &watchers),
+        &path.spelling(),
+    );
+    fs::write(&path, r#"{"version":2}"#).expect("外部からの書き込みができる");
+
+    assert_eq!(next_change(&changes), r#"{"version":2}"#);
+}
+
+#[test]
+fn 選んでいないdcmpファイルの監視の停止を拒むと把握済みの内容は残る() {
+    let dir = TempDir::new("watch-edge");
+    let record_dir = TempDir::new("watch-edge-record");
+    let path = chosen_file_path(&dir, "document.dcmp");
+    fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
+    let chosen = chosen_paths_in(&record_dir);
+    let known = Arc::new(KnownContentRegistry::new());
+    let watchers = DocumentWatchers::new();
+    let _changes = watch_changes(&watchers, &known, &path);
+
+    let _ = watch::stop_requested(
+        WatchManagedState::new(&chosen, &known, &watchers),
+        &path.spelling(),
+    );
+
+    assert!(known.is_known(&path, r#"{"version":1}"#));
+}
+
 /// 監視対象と同じディレクトリの一時ファイルへ書いてから差し替える。
 fn replace_from_temp_file(dir: &TempDir, path: &std::path::Path, content: &str, label: &str) {
     let temp_path = dir.join(&format!("{label}.tmp"));

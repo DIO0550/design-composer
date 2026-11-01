@@ -29,6 +29,10 @@ mod chosen_paths_normal_test;
 #[cfg(test)]
 mod chosen_paths_persistence_test;
 #[cfg(test)]
+mod dialog_edge_test;
+#[cfg(test)]
+mod dialog_normal_test;
+#[cfg(test)]
 mod file_drop_normal_test;
 #[cfg(test)]
 mod file_path_edge_test;

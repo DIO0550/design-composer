@@ -30,6 +30,31 @@ pub fn raw_document_path(dir: &TempDir, relative: &str) -> String {
         .to_string()
 }
 
+/// `dir` を正規化した綴りの配下に `relative` を置いた、寄せた綴りとして期待する綴り。
+///
+/// macOS の一時ディレクトリは `/var` が `/private/var` への symlink なので、期待値も
+/// 正規化したディレクトリから組み立てる。
+#[cfg(unix)]
+pub fn canonical_in(dir: &TempDir, relative: &str) -> String {
+    dir.path()
+        .canonicalize()
+        .expect("一時ディレクトリを正規化できる")
+        .join(relative)
+        .to_str()
+        .expect("一時ディレクトリのパスは UTF-8")
+        .to_string()
+}
+
+/// `dir` 配下に `target` を置き、それを指す symlink `link` を作る。
+///
+/// @returns symlink を通した綴り(寄せる前の綴り)
+#[cfg(unix)]
+pub fn symlinked_document(dir: &TempDir, target: &str, link: &str) -> String {
+    std::fs::write(dir.join(target), "{}").expect("リンク先のファイルを用意できる");
+    std::os::unix::fs::symlink(dir.join(target), dir.join(link)).expect("symlink を作れる");
+    raw_document_path(dir, link)
+}
+
 /// 記録ファイルを `record_dir` に置いて、選ばれたパスの集合を読み戻す。
 ///
 /// 記録ファイルを対象のファイルと別のディレクトリに置くのは、対象のディレクトリの中身を

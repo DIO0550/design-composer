@@ -5,6 +5,8 @@ use std::fs;
 use super::chosen_paths::{self, ChosenDocumentPaths};
 use super::io::DocumentIoError;
 
+#[cfg(unix)]
+use super::test_support::symlinked_document;
 use super::test_support::{chosen_paths_in, chosen_spelling, raw_document_path, TempDir};
 
 #[test]
@@ -71,4 +73,47 @@ fn 記録ファイルを持たない集合でも選んだパスは照合を通�
     let spelling = chosen_spelling(&chosen, &dir, "document.dcmp");
 
     assert!(chosen.require(&spelling).is_ok());
+}
+
+#[test]
+fn 大文字小文字だけが違う綴りは選ばれていないことを返す() {
+    let dir = TempDir::new("chosen-edge");
+    let record_dir = TempDir::new("chosen-edge-record");
+    fs::write(dir.join("document.dcmp"), "{}").expect("ファイルを用意できる");
+    let chosen = chosen_paths_in(&record_dir);
+    let spelling = chosen_spelling(&chosen, &dir, "document.dcmp");
+    let recased = spelling.replace("document.dcmp", "Document.dcmp");
+
+    let result = chosen.require(&recased);
+
+    assert!(matches!(result, Err(DocumentIoError::NotChosen { .. })));
+}
+
+#[cfg(unix)]
+#[test]
+fn 寄せると消える要素を含む綴りで選んでもその綴りのままでは選ばれていないことを返す() {
+    let dir = TempDir::new("chosen-edge");
+    let record_dir = TempDir::new("chosen-edge-record");
+    fs::write(dir.join("document.dcmp"), "{}").expect("ファイルを用意できる");
+    let chosen = chosen_paths_in(&record_dir);
+    let detoured = raw_document_path(&dir, "./document.dcmp");
+    chosen.record_chosen(&detoured).expect("選べる");
+
+    let result = chosen.require(&detoured);
+
+    assert!(matches!(result, Err(DocumentIoError::NotChosen { .. })));
+}
+
+#[cfg(unix)]
+#[test]
+fn symlink経由の綴りで選んでもその綴りのままでは選ばれていないことを返す() {
+    let dir = TempDir::new("chosen-edge");
+    let record_dir = TempDir::new("chosen-edge-record");
+    let linked = symlinked_document(&dir, "real.dcmp", "link.dcmp");
+    let chosen = chosen_paths_in(&record_dir);
+    chosen.record_chosen(&linked).expect("選べる");
+
+    let result = chosen.require(&linked);
+
+    assert!(matches!(result, Err(DocumentIoError::NotChosen { .. })));
 }

@@ -63,7 +63,7 @@ fn with_save_parent<R: Runtime>(
 /// @param picked ダイアログが返したもの(閉じたなら `None`)
 /// @returns 載せた綴り(閉じたなら `None`)。パスとして・UTF-8 として読めないときと、
 /// ドキュメントのパスとして寄せられないとき(`.dcmp` 以外を選んだときなど)は `InvalidPath`
-fn accept_picked(
+pub(super) fn accept_picked(
     chosen: &ChosenDocumentPaths,
     picked: Option<FilePath>,
 ) -> Result<Option<String>, DocumentIoError> {
