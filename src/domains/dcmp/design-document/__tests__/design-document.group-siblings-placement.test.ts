@@ -39,10 +39,10 @@ function setupDocument(
   });
 }
 
-/** panel の中で包む、フローの Text 2 つ。 */
+/** panel の中で包む、フローの Box 2 つ。 */
 const FlowPair: readonly Node[] = [
-  { name: "first", type: "Text" },
-  { name: "second", type: "Text" },
+  { name: "first", type: "Box" },
+  { name: "second", type: "Box" },
 ];
 
 /**
@@ -96,7 +96,7 @@ test("layout: free の親の中のフローの兄弟を包むと、Box も free 
   expect(propsOf(grouped, "box")).toEqual({ layout: "free" });
 });
 
-test("親に何も書かれていなければ、フローで fill を持たない兄弟を包んだ Box は props を持たない", () => {
+test("親に何も書かれていなければ、長さのモードを持つフローの兄弟を包んだ Box は props を持たない", () => {
   const grouped = groupPair(setupDocument({}, FlowPair));
   const box = Option.unwrap(DesignDocument.findNode(grouped, "box"));
 
@@ -108,16 +108,16 @@ test("兄弟のうち 1 つでも幅が fill なら Box の幅も fill になり
     setupDocument({}, [
       {
         name: "first",
-        type: "Text",
+        type: "Box",
         props: { widthMode: "fill", minWidth: 120, maxWidth: 320 },
       },
-      { name: "second", type: "Text" },
+      { name: "second", type: "Box" },
     ]),
   );
   const unfilled = groupPair(
     setupDocument({}, [
-      { name: "first", type: "Text", props: { widthMode: "hug" } },
-      { name: "second", type: "Text" },
+      { name: "first", type: "Box", props: { widthMode: "hug" } },
+      { name: "second", type: "Box" },
     ]),
   );
 

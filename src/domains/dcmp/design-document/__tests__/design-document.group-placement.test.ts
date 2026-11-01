@@ -77,7 +77,7 @@ test("フローのノードを包んでも、ノードに書かれた座標は�
   const document = setupDocument([
     {
       name: "title",
-      type: "Text",
+      type: "Box",
       props: { placement: "flow", x: 24, y: 48 },
     },
   ]);
