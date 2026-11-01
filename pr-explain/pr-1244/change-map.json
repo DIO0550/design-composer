@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1244,
+  "headBranch": "claude/magical-cannon-gxbkbs",
+  "baseBranch": "main",
+  "mergeBase": "b1d6996d0b0aa8b319dfc85f8ca4aa9558e49312",
+  "head": "99bca4f6799d86330c1c00da395c9f2a3f093e0f",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1241.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 132,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "99bca4f6799d86330c1c00da395c9f2a3f093e0f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T05:21:04Z",
+      "subject": "📝 [Documentation]: PR #1241 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1241.md を追加した（#1189、locking を publicProps\n  の binding の宛先にすることを禁止した回）\n- 指摘 14 件を記録した: plan 3（plan-reviewer）、duplication 2\n  （duplication-reviewer）、comment 2（comment-reviewer）、harness 2\n  （harness-reviewer / 自己修正）、naming 2（naming-reviewer）、type 1\n  （over-guard-reviewer）、test 1（test-reviewer）、なし 1\n  （structure-reviewer）\n- 人のレビューは 0 件、bot は Copilot の 1 件（指摘なし）、CI は全通過\n\n背景:\nマージ後に harness-record で記録を 1 ファイル残す手順に従った。\n手戻りやフック不発は記憶からしか取れないので、Issue #1189 に残した\n内容とこのセッションの履歴から書いた。\n\n採用理由:\n不採用にした指摘（改名・型の閉じ方）も、サブエージェントが挙げた\n事実として 1 件ずつ残した。束ねて対応した指摘も、出どころごとに分けた。\n\n影響とトレードオフ:\n差分は harness/records/ の新規 1 ファイルだけ。記録 PR は Issue を\n持たない例外に当たるので、Closes は書かない。\n\n代替案:\n- 不採用の指摘を記録から外す: 数える材料が減り、同じ指摘の再来を\n  数えられなくなる\n\n参考:\n- PR #1241、Issue #1189\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2R9h5wtyYDP2g7GQtY",
+      "files": [
+        {
+          "path": "harness/records/pr-1241.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 132,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,132 @@\n+# PR #1241 locking を publicProps の binding の宛先にすることを禁止する\n+\n+- マージ日: 2026-11-01\n+- 関連 Issue: #1189\n+- 差分規模: 9 ファイル / +305 -14\n+\n+## ゴールと結果\n+\n+ゴールは、publicProps の binding の宛先 prop が(プリミティブの)`locking` のドキュメントを開くと、binding の不整合としてエラー一覧に出ること。ファイルは開き、編集は続けられる。そうした binding を UI から作れる経路があれば、その扱いも決める。ゴールは達成した。\n+\n+- 判定は `ComponentBinding.hopIntoPrimitive` の 1 か所に置いた。エラー一覧への表示と、インスペクタの公開 prop 欄を消すことが、同じ判定で揃う\n+- UI からこの binding を作る経路は無い。手当ては要らないと計画で確かめた\n+- GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確かめた。コメントは自分のテストケース表と bot の投稿だけだった\n+- bot のレビューは Copilot の 1 件で、「Approval recommended / No open issues」だった。指摘は無い\n+- CI は 9 本すべて緑だった。VRT の差分は 0 件(204 passed)。テストは 691 files / 5427 tests\n+\n+## 指摘\n+\n+### 1. 嘘になる doc がファイル表に行単位で挙がっていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 書き直しが要る doc が 6 か所あるのに、計画は「@returns を直す」で止まっていた。6 か所は `BindingViolation` / `BindingHop` / `hopIntoPrimitive` / `resolvePropTarget` / `violation` / `fromBindingViolation` の doc。第 2 版で行番号と文案まで書き、変えない doc(reference-context など)も明記した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 7\n+\n+### 2. 解除で上書きを焼き込む扱いの却下理由が、結果と釣り合っていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 却下理由は「既存の壊れた binding と揃える」だった。しかし missing-prop は焼き込むと未知の prop のエラーとして表に出るのに、`locking` は効く値として黙って残る。(a) 許容と決め、理由を書き直した(解除後はツリーから選べ、表示と挙動が一致する)。(b) は循環 import になるため却下した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 5\n+\n+### 3. `resolvePropTarget` の変更が届く利用箇所の数え方が 2 つで止まっていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 利用箇所は 3 モジュールある(prop-control / reference-context の `collectOverrideViolations` / token-referrer)。影響の一覧へ 3 つとも挙げ、変わる / 変わらないを 1 行ずつ書いた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 1\n+\n+### 4. `UnbindablePropNames` の doc が docs/03「ロック」の理由を書き写していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 理由の本文を docs/03 に一本化した。コード側は 1 文と docs/03 への参照だけにし、artboard の `ArtboardFixedLockingProps` と同じ書き方に揃えた。comment-reviewer と harness-reviewer の担当外メモも同じ根本原因を挙げていた(指摘 5)。\n+- 既存ルール: rules/coding.md「規約の適用範囲」(判断根拠の doc の重複)\n+\n+### 5. コメントの理由の重複(指摘 4 と同じ根本原因)\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 指摘 4 と同じ箇所を comment-excess として挙げた。対応は指摘 4 で束ねた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 6. 「宛先がインスタンスなら制限は掛からない」が docs/02 と docs/03 の両方にあった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: docs/02 は 03「ロック」を参照する 1 行だけにした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 7. 条件を足したときの doc の折り返し崩れ\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: `resolvePropTarget` の `@returns` と `violation` の概要を、他の doc と同じ幅に折り直した。\n+- 既存ルール: なし\n+\n+### 8. docs/03 の同じファイル内の節参照に「上記」「下記」が付いていなかった\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 03-schema の他の 30 か所余りは `下記「…」` / `上記「…」` の形で書かれている。差分の 2 か所だけ、どちらも付いていなかった。他と同じ形に揃えた。\n+- 既存ルール: なし\n+\n+### 9. `hopIntoPrimitive` の早期 return の組が空行で区切られていなかった\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: 読みやすさの指摘(低)。組ごとに空行を入れた。\n+- 既存ルール: なし\n+\n+### 10. テストのフィクスチャ名 `frozen` が production の `isFrozen` と意味でぶつかっていた\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: production では `isFrozen` が「ファイル不正でペインが固まる」の意味で使われている。名前を `lock` 系に改めた。語彙外の上書き値 `\"frozen\"` は意図した入力なので残した。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 11. `UnbindablePrimitivePropNames` への改名(不採用)\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 非公開で、参照は 1 か所だけ。doc が範囲を書いているので不採用とした。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 12. `UnbindablePropNames` を `readonly string[]` ではなく `as const satisfies` で閉じる(不採用)\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（over-guard-reviewer）`\n+- 内容: 担当外として挙げられ、naming-reviewer も同じ点に触れた。比較相手は binding の `prop: string` で、同じ理由の既存の一覧 `ArtboardFixedLockingProps` と同じ形なので不採用とした。structure-reviewer は指摘していない。\n+- 既存ルール: rules/coding.md「値の語彙を型で閉じる」\n+\n+### 13. 「型が未知 → 繋げない prop」の判定順を守るテストが無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: ミューテーション 7 通りのうち、判定を型の判定より前に移す 1 通りだけが全件を通った。型が未知のテストは `gap` だけで、locking のテストは Text / Box 宛てだけだった。「指し先の型が未知なら、locking を指していても違反にしない」を足し、壊すとその 1 件だけが落ちることを実測した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 14. push 前のカナリアが通った(フック不発環境)\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` は deny されずに通った。実行中フラグのマーカーも、このセッションの発火ログも無く、README の表で「本当に不発」の枝に当たる。起動は Issue の assigned で動くルーティンで、作業ディレクトリは `/home/user`(3 リポジトリが並ぶ)だった。#1235 と同じ環境。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- **計画は plan-reviewer の指摘 3 件(指摘 1〜3)で第 2 版にした。** planner に戻して直させた\n+- **実装の検証 1 段目で、軽微な指摘 6 件を採用した(指摘 4〜10 のうち不採用の 11 を除く)。** 修正は implementer に渡し、3 コミットに分けた。方式(solution-reviewer)の結論は「維持」で、計画の決定は変えていない\n+- **2 段目(test-reviewer)の指摘 1 件で、テストを 1 件足した(指摘 13)**\n+- **サブエージェントに渡したものに不足があった。** performance / duplication には Bash が無く、`git diff` を実行できなかった。代わりにファイルを読ませた。naming / over-guard / harness には計画と却下案を渡しておらず、3 つとも「受け取るもの」の不足を報告した\n+- **フック不発環境だったので、止まるはずの操作を手で見直した。** `npx` と一括の `git add` は打っていない(add は対象ファイルを明示した)。commit は implementer の完了後に、push は test-reviewer の完了後に行った\n+- 計画と実装の差分は無い(implementer の報告)\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。集計と介入の判断は `harness-growth` の管轄。",
+          "patchLines": 133,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
