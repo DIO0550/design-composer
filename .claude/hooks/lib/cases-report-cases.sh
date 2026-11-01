@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
 # 検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds`）と `report` 自身（NG なら
-# `cases_failed` を立て、ok なら立てない）と、終了コードと見出しの突き合わせ（`decide` / `normalize_miss`）の
+# `cases_failed` を立て、ok なら立てない）と、判定の読み取り（`decide` / `normalize_miss`）の
 # 判定表。照合の表は一時ディレクトリへ小さな検出器を置いて照合を呼び、`report` の表は検出器を置かずに
 # `report` だけを呼ぶ。この 2 つは、NG を出して `cases_failed` を立てるか ok だけを出すかを確かめる。
-# 突き合わせの表は検出器を走らせず、表に書いた出力と終了コードを `decide` へ渡して返る判定を確かめる。
+# 判定の読み取りの表は検出器を走らせず、表に書いた出力と終了コードを `decide` へ渡して返る判定を確かめる。
 #
 # 使い方: bash .claude/hooks/lib/cases-report-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -21,16 +21,16 @@
 # 表は `期待|ケース名|照合|実装の種別|docstring の種別|表の期待に出た種別` の 1 行 1 ケース。種別は
 # 空白区切りで、`-` は 1 つも持たない。照合は `documented`（`report_documented_kinds`）か
 # `covered`（`report_covered_kinds`）。`report` 自身の表は `期待|ケース名|report に渡す期待|report に渡す判定`
-# の 1 行 1 ケース。この 2 つの表の期待は 2 つ。
+# の 1 行 1 ケース。照合の表と `report` の表の期待は 2 つ（NG / ok）。
 #
 # | 期待 | 意味 |
 # | --- | --- |
 # | `NG` | NG の行を出し、`cases_failed` を立ててほしい |
 # | `ok` | ok の行だけを出し、`cases_failed` を立ててはいけない |
 #
-# 突き合わせの表は 2 つ。`decide` の表は `期待|ケース名|終了コード|出力`、`normalize_miss` と組み合わせた
+# 判定の読み取りの表は 2 つ。`decide` の表は `期待|ケース名|終了コード|出力`、`normalize_miss` と組み合わせた
 # 表は `期待|ケース名|表に書く期待|終了コード|出力` の 1 行 1 ケース。出力は検出器の標準出力の 1 行で、
-# `-` なら何も出さない。見出しの正規表現は `^\[probe\]` に固定する。期待は返ってほしい判定の綴り
+# `-` なら何も出さない。見出しの正規表現は `decide_row` の中で固定する。期待は返ってほしい判定の綴り
 # そのもの（`pass` / `deny` / `broken` / `miss`）で、`report` へ直に渡す。
 set -uo pipefail
 
@@ -133,42 +133,50 @@ ok|期待と判定が一致すると ok の行だけを出し、cases_failed を
 NG|期待と判定が食い違うと NG の行を出し、cases_failed を立てる|deny|pass
 REPORT_CASES
 
-# 突き合わせの表に書いた出力を、検出器の標準出力にする。
+# 判定の読み取りの表に書いた出力を、検出器の標準出力にする。
 #
 # $1 表に書いた出力。`-` なら何も出さない
-probe_output() {
+row_output() {
   [ "$1" = "-" ] && return 0
   printf '%s\n' "$1"
 }
 
+# 表に書いた終了コードと出力から、`decide` の判定を返す。見出しの正規表現は `^\[alpha\]` に固定する。
+#
+# $1 表に書いた終了コード
+# $2 表に書いた出力
+decide_row() {
+  decide "$(row_output "$2")" "$1" '^\[alpha\]'
+}
+
 while IFS='|' read -r expected label status output; do
   [ -n "$label" ] || continue
-  report "$expected" "$(decide "$(probe_output "$output")" "$status" '^\[probe\]')" "$label"
+  report "$expected" "$(decide_row "$status" "$output")" "$label"
 done <<'DECIDE_CASES'
 pass|exit 0 で何も出さなければ pass|0|-
 pass|exit 0 で見出しに当たらない行だけを出すなら pass|0|違反 0 件
-deny|exit 1 で見出しを出せば deny|1|[probe] 1 件
+deny|exit 1 で見出しを出せば deny|1|[alpha] 1 件
 broken|exit 1 なのに何も出さなければ broken|1|-
 broken|exit 1 なのに見出しに当たらない行だけを出すなら broken|1|違反 0 件
-broken|見出しを出したまま exit 0 なら broken|0|[probe] 1 件
+broken|見出しを出したまま exit 0 なら broken|0|[alpha] 1 件
 broken|exit 2 で何も出さなければ broken|2|-
-broken|exit 2 で見出しを出しても broken|2|[probe] 1 件
+broken|exit 2 で見出しを出しても broken|2|[alpha] 1 件
 DECIDE_CASES
 
 while IFS='|' read -r expected label table_expected status output; do
   [ -n "$label" ] || continue
-  decision="$(decide "$(probe_output "$output")" "$status" '^\[probe\]')"
+  decision="$(decide_row "$status" "$output")"
   report "$expected" "$(normalize_miss "$table_expected" "$decision")" "$label"
 done <<'MISS_CASES'
 miss|取りこぼしを期待した表で exit 0 かつ何も出さなければ miss|miss|0|-
 pass|pass を期待した表で exit 0 かつ何も出さなければ miss と読まず pass|pass|0|-
-deny|取りこぼしを期待した表でも exit 1 で見出しを出せば deny|miss|1|[probe] 1 件
+deny|取りこぼしを期待した表でも exit 1 で見出しを出せば deny|miss|1|[alpha] 1 件
 broken|取りこぼしを期待した表でも exit 2 なら miss と読まず broken|miss|2|-
-broken|取りこぼしを期待した表でも見出しを出したまま exit 0 なら miss と読まず broken|miss|0|[probe] 1 件
+broken|取りこぼしを期待した表でも見出しを出したまま exit 0 なら miss と読まず broken|miss|0|[alpha] 1 件
 MISS_CASES
 
 if [ "$cases_failed" -ne 0 ]; then
   echo "判定表と食い違いがあります"
   exit 1
 fi
-echo "終了コードと見出しの突き合わせと報告と種別の照合の判定表: 期待どおり"
+echo "判定の読み取りと報告と種別の照合の判定表: 期待どおり"
