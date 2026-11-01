@@ -1,0 +1,738 @@
+{
+  "version": 1,
+  "pr": 1245,
+  "sha": "57b6a907a0bbb93526da5f0239b837491a0e6385",
+  "issue": 1007,
+  "overview": {
+    "title": "判定の読み取りを終了コードと見出しの突き合わせにし、検出器の退行を broken と読む",
+    "lead": "判定表が、検出器の「違反の見出しを出したまま exit 0」「exit 0・1 以外で落ちた」を broken として赤にできるようになった。突き合わせは `cases-report.sh` の `decide` の 1 か所だけが持つ。",
+    "before": [
+      {
+        "text": "`decide` は終了コードが 1 でなければ見出しを見ずに pass と読む。見出しを出したまま exit 0 の検出器でも、pass を期待したケースは ok のまま",
+        "message": "m-verdict-decide"
+      },
+      {
+        "text": "exit 2 で落ちた検出器も pass と読み、取りこぼしを期待したケースは miss に読み替えられる"
+      },
+      {
+        "text": "`import-rule-cases.sh` だけは自前の `verdict` で両方を broken にしており、同じ突き合わせを 2 か所で別の厳しさで持っていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "exit 0 で見出しなしは pass、exit 1 で見出しありは deny、それ以外はすべて broken",
+        "message": "m-verdict-decide"
+      },
+      {
+        "text": "broken は取りこぼし(miss)に読み替えられない",
+        "message": "m-normalize"
+      },
+      {
+        "text": "`import-rule-cases.sh` の `verdict` も `decide` を呼び、deny のときだけ種別の綴りへ置き換える",
+        "message": "m-import-decide"
+      },
+      {
+        "text": "見出しの判定は各判定表が渡す正規表現の範囲だけ。当たらない見出しを出したまま exit 0 なら pass のまま"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "見出しの判定の範囲",
+        "text": "result-option-discriminant は自分の種別だけ、missing-doc-comments の --all は件数 1 以上の集計行だけを見出しと読む。広げないと決めた(Issue #1007)が、範囲の外の退行は拾えない",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/lib/cases-report.sh"
+        }
+      },
+      {
+        "title": "判定表の名前の改め",
+        "text": "naming-reviewer の指摘で、計画の名前を捨てて共有ライブラリの語彙「判定の読み取り」へ揃えた。この語は直接は確かめていない関数も含む",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/lib/cases-report-cases.sh"
+        }
+      },
+      {
+        "title": "スタブの検出器の表",
+        "text": "実物の検出器からは broken の出力を作れないので、検出器をスタブへ差し替える表を足した",
+        "go": {
+          "kind": "flow",
+          "id": "f-import"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "verdict",
+      "label": "判定の読み取り",
+      "role": "検出器の出力と終了コードから pass / deny / broken を決め、判定表へ返す"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "判定表の共有ライブラリの判定を厳しくし、判定表と配線・README を追随させる"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/hooks/lib/cases-report.sh",
+      "name": "判定表の共有ライブラリ",
+      "role": "判定の読み取り・報告・種別の照合を判定表へ貸す",
+      "feature": "verdict",
+      "change": "`decide` を `case \"$status:$found\"` の 1 本にした"
+    },
+    {
+      "path": ".claude/hooks/lib/cases-report-cases.sh",
+      "name": "判定の読み取りの判定表",
+      "role": "共有ライブラリ自身の判定表",
+      "feature": "verdict",
+      "change": "decide の表 8 行と取りこぼしの読み替えの表 5 行を足し、名前を改めた"
+    },
+    {
+      "path": ".claude/hooks/lib/import-rule-cases.sh",
+      "name": "import 規約の判定表",
+      "role": "import 規約の検出器へ表を流して種別を確かめる",
+      "feature": "verdict",
+      "change": "自前の突き合わせをやめて `decide` を呼ぶ。スタブの検出器の表を足した"
+    },
+    {
+      "path": ".claude/hooks/lib/cases-fixtures.sh",
+      "name": "判定表の前提の置き方",
+      "role": "落ちる検出器のスタブを置く",
+      "change": "使う側に import 規約の判定表を足した"
+    },
+    {
+      "path": ".claude/hooks/lib/story-title-cases.sh",
+      "name": "story の title の判定表",
+      "role": "decide を呼ぶ判定表の 1 つ",
+      "change": "doc を新しい decide に合わせた"
+    },
+    {
+      "path": "harness/githooks/pre-push",
+      "name": "push 前の検査",
+      "role": "判定表を順に走らせる",
+      "change": "判定表の名前を追随"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m-verdict-decide",
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "判定を読む",
+      "code": "decide \"$output\" \"$status\" '^\\[story-title-(tree|missing)\\]'",
+      "via": "call",
+      "payload": "検出器の出力・終了コード・見出しの正規表現",
+      "returns": "pass / deny / broken",
+      "status": "changed"
+    },
+    {
+      "id": "m-normalize",
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "取りこぼしへ読み替える",
+      "code": "normalize_miss \"$expected\" \"$decision\"",
+      "via": "call",
+      "payload": "表の期待と判定",
+      "returns": "pass だけを miss に読み替えた判定"
+    },
+    {
+      "id": "m-import-decide",
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "import 規約の判定を読む",
+      "code": "decide \"$output\" \"$status\" \"$heading\"",
+      "via": "call",
+      "payload": "検出器の出力・終了コード・見出しの正規表現 ^\\[",
+      "returns": "pass / deny / broken",
+      "status": "added"
+    },
+    {
+      "id": "m-stub",
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "kind": "cmd",
+      "name": "落ちる検出器を置く",
+      "code": "place_failing_detector \"$stub\" \"$target\"",
+      "via": "file",
+      "payload": "落ち方とパス",
+      "status": "added"
+    },
+    {
+      "id": "m-table-decide",
+      "from": ".claude/hooks/lib/cases-report-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "表の行で判定を読む",
+      "code": "decide \"$(row_output \"$2\")\" \"$1\" '^\\[alpha\\]'",
+      "via": "call",
+      "payload": "表に書いた終了コードと出力",
+      "returns": "pass / deny / broken",
+      "status": "added"
+    },
+    {
+      "id": "m-prepush",
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "kind": "cmd",
+      "name": "判定の読み取りの判定表を走らせる",
+      "code": "run_check \"判定の読み取りと報告と種別の照合の判定表\" bash .claude/hooks/lib/cases-report-cases.sh",
+      "via": "exec",
+      "returns": "終了コード",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f-table",
+      "label": "判定表が実物の検出器を判定する",
+      "steps": [
+        "m-verdict-decide",
+        "m-normalize"
+      ]
+    },
+    {
+      "id": "f-import",
+      "label": "import 規約の判定表がスタブで broken を確かめる",
+      "steps": [
+        "m-stub",
+        "m-import-decide"
+      ]
+    },
+    {
+      "id": "f-self",
+      "label": "push 前に判定の読み取りそのものを確かめる",
+      "steps": [
+        "m-prepush",
+        "m-table-decide"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "d8a30fe998aa776a48ba1fab65a9190f5347af4e",
+      "phase": "core",
+      "role": "`decide` を終了コードと見出しの突き合わせにする",
+      "why": "緩い判定が根本原因なので最初に直す。既存の判定表 5 本は写しで NG 0 を確かめてから入れた",
+      "flows": [
+        "f-table"
+      ],
+      "review": [
+        "正しい組み合わせ 2 つ以外をすべて broken に落とす形になっているか"
+      ],
+      "before": [
+        {
+          "text": "exit 1 以外は見出しを見ずに pass"
+        }
+      ],
+      "after": [
+        {
+          "text": "exit 0 + 見出しなしだけが pass、exit 1 + 見出しありだけが deny"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "start": 34,
+          "end": 38,
+          "text": "受け皿の `*)` が broken 側なので、知らない終了コードも pass に化けない"
+        }
+      ]
+    },
+    {
+      "sha": "afc9029f5517baa6c62e8581e0920b4440ce3e17",
+      "phase": "core",
+      "role": "decide と取りこぼしの読み替えの表を足す",
+      "why": "broken の枝は実物の検出器からは届かないので、表に書いた出力と終了コードで直に確かめる",
+      "flows": [
+        "f-self"
+      ],
+      "review": [
+        "取りこぼしの表が「読み替えてはいけない側」も持っているか"
+      ]
+    },
+    {
+      "sha": "836afbe583d6d1663a77cdafef2405163b6f32bf",
+      "phase": "core",
+      "role": "import 規約の判定表の `verdict` を `decide` へ寄せる",
+      "why": "decide が同じ厳しさになったので 2 か所目を残す理由が無くなった",
+      "flows": [
+        "f-import"
+      ],
+      "review": [
+        "見出しを ^\\[ の広さで渡す理由がコメントで読めるか"
+      ]
+    },
+    {
+      "sha": "2dbb644d204c0ecb4f45da3d389a318db6599ec9",
+      "phase": "fin",
+      "role": "判定表の doc と README を新しい decide に合わせる",
+      "why": "「終了コードで報告する」という記述が実物と食い違うようになったため"
+    },
+    {
+      "sha": "ad706e878b79af9492b73b5ce475b5fba53066af",
+      "phase": "revise",
+      "role": "見出しの正規表現を verdict 内の 1 か所に置く",
+      "why": "duplication-reviewer の指摘。片方だけ狭めると意図が黙って崩れる"
+    },
+    {
+      "sha": "49a8508db5073269ad2ca2c984dacfa0a23aac95",
+      "phase": "revise",
+      "role": "表の decide 呼び出しを 1 つにし、名前を既存の語彙へ揃える",
+      "why": "duplication-reviewer と naming-reviewer の指摘。「突き合わせ」は共有ライブラリの語彙「判定の読み取り」と割れていた",
+      "review": [
+        "新しい名前が pre-push・CI・README で揃っているか"
+      ]
+    },
+    {
+      "sha": "2cd7a9919f0262c9a6d273be8d7640a8ee03b51d",
+      "phase": "revise",
+      "role": "decide の doc を有無の判定と効く範囲に合わせる",
+      "why": "comment-reviewer の指摘。件数ではなく有無を見ていること、範囲の外は pass と読むことを書く"
+    },
+    {
+      "sha": "57b6a907a0bbb93526da5f0239b837491a0e6385",
+      "phase": "revise",
+      "role": "スタブの検出器で import 規約の判定表の broken を確かめる",
+      "why": "test-reviewer が、verdict の新しい配線を 3 通りに壊しても判定表が落ちないことを実測した",
+      "flows": [
+        "f-import"
+      ],
+      "review": [
+        "3 つのスタブで、却下案・旧仕様・ゲート外しのそれぞれが落ちるか"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "s-report",
+      "label": "判定の読み取りの判定表",
+      "file": ".claude/hooks/lib/cases-report-cases.sh"
+    },
+    {
+      "id": "s-import",
+      "label": "import 規約の判定表",
+      "file": ".claude/hooks/lib/import-rule-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "t-decide",
+      "suite": "s-report",
+      "name": "見出しを出したまま exit 0 なら broken",
+      "techniques": [
+        "boundary",
+        "error",
+        "regression"
+      ],
+      "why": "違反を報告しながら push を止めない退行を赤にする",
+      "given": "見出し [alpha] 1 件 を出す",
+      "when": "exit 0 で終わる",
+      "then": "broken",
+      "commit": "afc9029f5517baa6c62e8581e0920b4440ce3e17",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 148,
+        "end": 164,
+        "emphasis": [
+          {
+            "start": 161,
+            "end": 161
+          }
+        ],
+        "text": "decide_row() {\n  decide \"$(row_output \"$2\")\" \"$1\" '^\\[alpha\\]'\n}\n\nwhile IFS='|' read -r expected label status output; do\n  [ -n \"$label\" ] || continue\n  report \"$expected\" \"$(decide_row \"$status\" \"$output\")\" \"$label\"\ndone <<'DECIDE_CASES'\npass|exit 0 で何も出さなければ pass|0|-\npass|exit 0 で見出しに当たらない行だけを出すなら pass|0|違反 0 件\ndeny|exit 1 で見出しを出せば deny|1|[alpha] 1 件\nbroken|exit 1 なのに何も出さなければ broken|1|-\nbroken|exit 1 なのに見出しに当たらない行だけを出すなら broken|1|違反 0 件\nbroken|見出しを出したまま exit 0 なら broken|0|[alpha] 1 件\nbroken|exit 2 で何も出さなければ broken|2|-\nbroken|exit 2 で見出しを出しても broken|2|[alpha] 1 件\nDECIDE_CASES"
+      },
+      "values": {
+        "columns": [
+          "終了コード",
+          "見出し",
+          "判定"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "0",
+              "なし",
+              "pass"
+            ]
+          },
+          {
+            "cells": [
+              "0",
+              "あり",
+              "broken"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "1",
+              "あり",
+              "deny"
+            ]
+          },
+          {
+            "cells": [
+              "1",
+              "なし",
+              "broken"
+            ]
+          },
+          {
+            "cells": [
+              "2",
+              "なし / あり",
+              "broken"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "m-table-decide"
+      ]
+    },
+    {
+      "id": "t-exit2",
+      "suite": "s-report",
+      "name": "exit 2 で何も出さなければ broken",
+      "techniques": [
+        "error"
+      ],
+      "why": "検出器が落ちたのを pass と読まない",
+      "given": "何も出さない",
+      "when": "exit 2 で終わる",
+      "then": "broken",
+      "commit": "afc9029f5517baa6c62e8581e0920b4440ce3e17",
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "m-table-decide"
+      ]
+    },
+    {
+      "id": "t-miss",
+      "suite": "s-report",
+      "name": "取りこぼしを期待した表でも exit 2 なら miss と読まず broken",
+      "techniques": [
+        "error",
+        "equivalence"
+      ],
+      "why": "検出器が落ちたのを意図した取りこぼしと読み違えない",
+      "given": "表の期待が miss",
+      "when": "検出器が exit 2",
+      "then": "broken",
+      "commit": "afc9029f5517baa6c62e8581e0920b4440ce3e17",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 166,
+        "end": 176,
+        "text": "while IFS='|' read -r expected label table_expected status output; do\n  [ -n \"$label\" ] || continue\n  decision=\"$(decide_row \"$status\" \"$output\")\"\n  report \"$expected\" \"$(normalize_miss \"$table_expected\" \"$decision\")\" \"$label\"\ndone <<'MISS_CASES'\nmiss|取りこぼしを期待した表で exit 0 かつ何も出さなければ miss|miss|0|-\npass|pass を期待した表で exit 0 かつ何も出さなければ miss と読まず pass|pass|0|-\ndeny|取りこぼしを期待した表でも exit 1 で見出しを出せば deny|miss|1|[alpha] 1 件\nbroken|取りこぼしを期待した表でも exit 2 なら miss と読まず broken|miss|2|-\nbroken|取りこぼしを期待した表でも見出しを出したまま exit 0 なら miss と読まず broken|miss|0|[alpha] 1 件\nMISS_CASES"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "m-normalize"
+      ]
+    },
+    {
+      "id": "t-miss-pass",
+      "suite": "s-report",
+      "name": "pass を期待した表で exit 0 かつ何も出さなければ miss と読まず pass",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "期待を見ずに pass を常に miss にする実装を落とす",
+      "given": "表の期待が pass",
+      "when": "exit 0 で何も出さない",
+      "then": "pass",
+      "commit": "afc9029f5517baa6c62e8581e0920b4440ce3e17",
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "m-normalize"
+      ]
+    },
+    {
+      "id": "t-stub-unreadable",
+      "suite": "s-import",
+      "name": "種別として読めない見出しを出したまま exit 0 で終わる検出器は broken",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "decide へ種別の綴りを渡す実装(却下案)だと pass に化けるのを落とす",
+      "given": "検出器を [Foo Bar] x を出すスタブに差し替える",
+      "when": "exit 0 で終わる",
+      "then": "broken",
+      "commit": "57b6a907a0bbb93526da5f0239b837491a0e6385",
+      "excerpt": {
+        "path": ".claude/hooks/lib/import-rule-cases.sh",
+        "start": 205,
+        "end": 215,
+        "emphasis": [
+          {
+            "start": 206,
+            "end": 206
+          }
+        ],
+        "text": "stub_cases=\"$(cat <<'CASES'\nbroken|種別として読めない見出しを出したまま exit 0 で終わる検出器は broken|unreadable-exit0\nbroken|種別の見出しを出したまま exit 0 で終わる検出器は broken|heading-exit0\nbroken|見出しを出さずに exit 2 で終わる検出器は broken|usage\nCASES\n)\"\n\nwhile IFS='|' read -r expected label stub; do\n  place_stub_detector \"$stub\" \"$work/stub-detector.py\"\n  report \"$expected\" \"$(detector=\"$work/stub-detector.py\"; verdict)\" \"$label\"\ndone <<< \"$stub_cases\""
+      },
+      "targets": [
+        ".claude/hooks/lib/import-rule-cases.sh"
+      ],
+      "covers": [
+        "m-import-decide",
+        "m-stub"
+      ]
+    },
+    {
+      "id": "t-stub-heading",
+      "suite": "s-import",
+      "name": "種別の見出しを出したまま exit 0 で終わる検出器は broken",
+      "techniques": [
+        "regression"
+      ],
+      "why": "decide を呼ばず終了コードだけで決める旧仕様を落とす",
+      "given": "検出器を [import-cycle] 1 件 を出すスタブに差し替える",
+      "when": "exit 0 で終わる",
+      "then": "broken",
+      "commit": "57b6a907a0bbb93526da5f0239b837491a0e6385",
+      "targets": [
+        ".claude/hooks/lib/import-rule-cases.sh"
+      ],
+      "covers": [
+        "m-import-decide"
+      ]
+    },
+    {
+      "id": "t-stub-exit2",
+      "suite": "s-import",
+      "name": "見出しを出さずに exit 2 で終わる検出器は broken",
+      "techniques": [
+        "error"
+      ],
+      "why": "deny ゲートを外して broken を照合へ流す実装を落とす",
+      "given": "検出器を使い方の 1 行を出して落ちるスタブに差し替える",
+      "when": "exit 2 で終わる",
+      "then": "broken",
+      "commit": "57b6a907a0bbb93526da5f0239b837491a0e6385",
+      "targets": [
+        ".claude/hooks/lib/import-rule-cases.sh"
+      ],
+      "covers": [
+        "m-import-decide",
+        "m-stub"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "検査の道具が壊れたとき、判定表が赤くなる",
+    "lead": "push 前の検査とCIの判定表は、規約の違反を探す道具そのものが壊れたときにも赤くなるようになった。",
+    "changed": {
+      "before": [
+        {
+          "text": "違反を報告しながら成功で終わるように道具が壊れても、違反の無いはずの例は緑のまま"
+        },
+        {
+          "text": "道具が異常終了しても、違反の無いはずの例と取りこぼしてよい例は緑のまま"
+        }
+      ],
+      "after": [
+        {
+          "text": "違反を報告しながら成功で終わる道具は、どの例でも壊れていると報告される",
+          "message": "m-verdict-decide"
+        },
+        {
+          "text": "異常終了した道具は、どの例でも壊れていると報告される"
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1007,
+          "text": "この変更の起点。import 規約の判定表だけが厳しい読み方をしていた"
+        }
+      ],
+      "primers": [
+        "p-decide"
+      ]
+    },
+    "tables": [
+      {
+        "label": "道具の終わり方と報告の組み合わせ",
+        "gist": "正しい組み合わせ 2 つ以外はすべて壊れていると読む",
+        "rowHeads": [
+          {
+            "id": "ok",
+            "label": "成功で終わる"
+          },
+          {
+            "id": "fail",
+            "label": "違反ありで終わる"
+          },
+          {
+            "id": "crash",
+            "label": "異常終了"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "none",
+            "label": "違反の報告なし"
+          },
+          {
+            "id": "some",
+            "label": "違反の報告あり"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "ok",
+            "columnHead": "none",
+            "result": "違反なし",
+            "tests": [
+              "t-miss-pass"
+            ]
+          },
+          {
+            "rowHead": "ok",
+            "columnHead": "some",
+            "result": "壊れている",
+            "was": "違反なし",
+            "tests": [
+              "t-decide",
+              "t-stub-heading"
+            ]
+          },
+          {
+            "rowHead": "fail",
+            "columnHead": "none",
+            "result": "壊れている"
+          },
+          {
+            "rowHead": "fail",
+            "columnHead": "some",
+            "result": "違反あり"
+          },
+          {
+            "rowHead": "crash",
+            "columnHead": "none",
+            "result": "壊れている",
+            "was": "違反なし",
+            "tests": [
+              "t-exit2",
+              "t-miss",
+              "t-stub-exit2"
+            ]
+          },
+          {
+            "rowHead": "crash",
+            "columnHead": "some",
+            "result": "壊れている",
+            "was": "違反なし"
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "道具が正しく動いているあいだ、既存のどの判定表の結果も変わらない"
+      },
+      {
+        "text": "道具ごとに決めた報告の綴りの外の行は、違反の報告と数えない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "id": "p-case",
+      "kind": "language",
+      "category": "bash",
+      "label": "`case` とヒアストリング",
+      "gist": "値の組み合わせで枝を選ぶ構文と、文字列をコマンドの標準入力へ渡す書き方。[[パイプ|pipe]]を使わずに済む",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "case \"$status:$found\" in\n  0:) echo \"pass\" ;;\n  1:heading) echo \"deny\" ;;\n  *) echo \"broken\" ;;\nesac"
+        },
+        {
+          "kind": "text",
+          "text": "`case` は上から順にパターンへ当て、最初に当たった枝だけを走らせる。`*` はどれにも当たらなかったときの受け皿。`<<<\"$output\"` はヒアストリングで、変数の中身を標準入力として渡す"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "lineRange": {
+            "start": 32,
+            "end": 40
+          },
+          "text": "`decide` の本体",
+          "shas": [
+            "d8a30fe998aa776a48ba1fab65a9190f5347af4e"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p-decide",
+      "kind": "codebase",
+      "category": "ハーネス",
+      "label": "判定の読み取り(`decide`)",
+      "gist": "検出器の出力と終了コードを突き合わせて pass / deny / broken を返す。判定表はみなこれを通す",
+      "passages": [
+        {
+          "kind": "rule",
+          "text": "見出しは判定表が渡す正規表現に当たる行が 1 行でもあるかだけを見る"
+        },
+        {
+          "kind": "caution",
+          "text": "正規表現の外の見出しを出したまま exit 0 で終わる退行は pass と読む"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "lineRange": {
+            "start": 23,
+            "end": 40
+          },
+          "text": "定義と doc",
+          "shas": [
+            "d8a30fe998aa776a48ba1fab65a9190f5347af4e",
+            "2cd7a9919f0262c9a6d273be8d7640a8ee03b51d"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "p-case"
+      ],
+      "status": "changed",
+      "tests": [
+        "t-decide",
+        "t-miss"
+      ],
+      "flows": [
+        "f-table"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "pipe",
+      "label": "パイプ",
+      "text": "`a | b` の形で、前のコマンドの出力を次のコマンドの入力へつなぐ仕組み。`pipefail` の下では途中の失敗も全体の失敗になる"
+    }
+  ]
+}
