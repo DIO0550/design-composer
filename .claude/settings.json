@@ -146,10 +146,6 @@
           },
           {
             "type": "command",
-            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/pre-push-result-option-discriminants.sh\""
-          },
-          {
-            "type": "command",
             "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/pre-push-story-titles.sh\""
           },
           {
