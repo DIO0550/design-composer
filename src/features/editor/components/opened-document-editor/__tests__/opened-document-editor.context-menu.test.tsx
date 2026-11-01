@@ -37,6 +37,15 @@ import {
  * `opened-document-editor.reposition` と同じものを 2 つ持つことになる。
  */
 
+/**
+ * メニューの行を、操作の名前と割り当ての欄ごとの文字列にする。
+ *
+ * @param name 行の操作の名前
+ */
+function menuRowColumns(name: string): ReadonlyArray<string | null> {
+  return Array.from(menuRow(name).children, (column) => column.textContent);
+}
+
 test("キャンバスのノードを右クリックするとメニューが出る", async () => {
   await renderOpenedDocument();
 
@@ -216,12 +225,13 @@ test("コピー済みで貼り先があるときは、空き領域のメニュ�
   expect(menuRow("Paste").hasAttribute("disabled")).toBe(false);
 });
 
-test("macOS で動いているとき、行にはキーボードの割り当てが併記される", async () => {
+test("macOS で動いているとき、Copy の行の割り当ては ⌘C だけになる", async () => {
   await renderOpenedDocumentOn(MacOsNavigatorPlatform);
 
   rightClick(drawn("home-title"));
 
-  expect(menuRow("Copy").textContent).toContain("⌘C");
+  // `Shift+⌘C` も `⌘C` を含むので、部分一致では Shift が付いたことを見分けられない
+  expect(menuRowColumns("Copy")).toEqual(["Copy", "⌘C"]);
 });
 
 test("macOS で動いているとき、複製の行には ⌘D が併記される", async () => {
@@ -248,18 +258,17 @@ test("Windows で動いているとき、Copy の行に ⌘ は併記されな�
   expect(menuRow("Copy").textContent).not.toContain("⌘");
 });
 
-test("Windows で動いているときも、Delete の行の割り当ては Delete だけになる", async () => {
-  await renderOpenedDocumentOn(WindowsNavigatorPlatform);
+test.each([
+  ["macOS", MacOsNavigatorPlatform],
+  ["Windows", WindowsNavigatorPlatform],
+] as const)("%s で動いているときも、Delete の行の割り当ては Delete だけになる", async (_os, navigatorPlatform) => {
+  await renderOpenedDocumentOn(navigatorPlatform);
 
   rightClick(drawn("home-title"));
 
   // 操作の名前も Delete なので、行全体の文字列では `Delete` の部分一致が必ず通り、修飾の
   // 有無を部分一致では見分けられない。名前と割り当ての欄ごとに完全一致で比べる
-  const columns = Array.from(
-    menuRow("Delete").children,
-    (column) => column.textContent,
-  );
-  expect(columns).toEqual(["Delete", "Delete"]);
+  expect(menuRowColumns("Delete")).toEqual(["Delete", "Delete"]);
 });
 
 test("別の場所を右クリックすると、メニューがそこへ開き直す", async () => {
