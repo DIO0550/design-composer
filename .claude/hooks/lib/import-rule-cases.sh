@@ -32,6 +32,10 @@
 #
 # 期待は `pass`（違反 0 件）か、報告された種別を報告順に `+` で繋いだもの。2 件以上の種別は
 # `種別*件数` と綴る。検出器の終了コードと報告の見出しが食い違ったら `broken`。
+#
+# **`broken` の側は、検出器をスタブに差し替えた別の表で確かめる。** 実物の検出器からは、見出しを
+# 出したまま exit 0 で終わる・exit 0・1 以外で終わる、という出力を作れないため。表は
+# `期待|ケース名|スタブ` の 1 行 1 ケースで、スタブの綴りは `place_stub_detector` が持つ。
 set -uo pipefail
 
 lib_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -41,6 +45,8 @@ trap 'rm -rf "$work"' EXIT
 
 # 判定の読み取りと報告は判定表どうしで共有する（`cases_failed` / `decide` / `report`）。
 source "$lib_dir/cases-report.sh"
+# 落ちる検出器のスタブは、検出器を呼ぶ判定表どうしで共有する（`place_failing_detector`）。
+source "$lib_dir/cases-fixtures.sh"
 
 # 判定の土台になるツリー。親 `editor` の下に子 feature を 2 つ置き、公開口・テスト用の
 # 公開口・中のモジュールを持たせる。feature の外にも、`index.tsx` を持つモジュール・
@@ -120,6 +126,20 @@ verdict() {
   printf '%s\n' "$kinds" | paste -sd '+' -
 }
 
+# 検出器の代わりに走らせるスタブを置く。
+#
+# $1 スタブの綴り（`unreadable-exit0` は種別として読めない見出しを出して exit 0、`heading-exit0` は
+#    種別の見出しを出して exit 0。他は `place_failing_detector` の落ち方）
+# $2 スタブを書くパス
+place_stub_detector() {
+  local stub="$1" target="$2"
+  case "$stub" in
+    unreadable-exit0) printf 'print("[Foo Bar] x")\n' >"$target" ;;
+    heading-exit0) printf 'print("[import-cycle] 1 件")\nprint("  src/utils/probe-a.ts -> src/utils/probe-a.ts")\n' >"$target" ;;
+    *) place_failing_detector "$stub" "$target" ;;
+  esac
+}
+
 # 期待の欄に出てくる種別を 1 行ずつ並べる（件数の綴りは落とす）。
 #
 # $1 表の期待の欄を改行で並べたもの
@@ -181,6 +201,18 @@ while IFS='|' read -r expected label files; do
   place "$files"
   report "$expected" "$(verdict)" "$label"
 done <<< "$cases"
+
+stub_cases="$(cat <<'CASES'
+broken|種別として読めない見出しを出したまま exit 0 で終わる検出器は broken|unreadable-exit0
+broken|種別の見出しを出したまま exit 0 で終わる検出器は broken|heading-exit0
+broken|見出しを出さずに exit 2 で終わる検出器は broken|usage
+CASES
+)"
+
+while IFS='|' read -r expected label stub; do
+  place_stub_detector "$stub" "$work/stub-detector.py"
+  report "$expected" "$(detector="$work/stub-detector.py"; verdict)" "$label"
+done <<< "$stub_cases"
 
 covered_kinds="$(kinds_in "$(printf '%s\n' "$cases" | cut -d '|' -f 1)")"
 report_documented_kinds "$detector"
