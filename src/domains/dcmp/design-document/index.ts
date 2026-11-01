@@ -1243,8 +1243,8 @@ function collectArtboardErrors(
   // 照らす先が `Artboard.propDefinitions()` ではなく Box スキーマなので、デフォルト解決も
   // Box の既定（`overflow: visible`）で行う。Box の既定はすべて enum で artboard の
   // 上書き（`clip`）も値域内なので今は差が出ないが、artboard 固有の既定がトークンを
-  // 指した時点で食い違う（`Artboard.propDefinitions()` を使うと `widthMode` などが
-  // unknown-prop になるため、寄せるなら別の変更として行う）
+  // 指した時点で食い違う（`Artboard.propDefinitions()` を使うと、読み捨てると決めた
+  // `widthMode` などが unknown-prop になる。docs/03「前提」）
   const propErrors = PropDefinitionRecord.collectErrors(
     BoxSchema.props,
     artboard.props ?? {},
