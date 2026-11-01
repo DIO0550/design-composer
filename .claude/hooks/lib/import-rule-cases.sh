@@ -39,7 +39,7 @@ detector="$lib_dir/import-rule-violations.py"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-# 報告は判定表どうしで共有する（`cases_failed` / `report`）。
+# 判定の読み取りと報告は判定表どうしで共有する（`cases_failed` / `decide` / `report`）。
 source "$lib_dir/cases-report.sh"
 
 # 判定の土台になるツリー。親 `editor` の下に子 feature を 2 つ置き、公開口・テスト用の
@@ -99,29 +99,24 @@ place() {
   done
 }
 
-# 検出器を 1 度走らせ、報告された種別を報告順に `+` で繋いで返す。
+# 検出器を 1 度走らせ、`decide` が deny と読んだときだけ、報告された種別を報告順に `+` で繋いで返す。
 #
-# `broken` になるのは、終了コードと見出しの有無が食い違ったとき(exit 0 で見出しがある /
-# exit 1 で見出しが無い)、終了コードが 0・1 以外のとき、種別として読めない見出しがあるとき。
-# `cases-report.sh` の `decide()` を使わないのは、exit 1 以外を一律 pass と読むため。
-# 見出しを出したまま exit 0 を返す退行（push が止まらない）がそれでは通る。
+# `broken` になるのは、`decide` が broken と読んだときと、種別として読めない見出しがあるとき。
+# 見出しを種別の綴りではなく `^\[` の広さで `decide` へ渡すのは、読めない見出しを出したまま exit 0 も
+# broken にするため。種別の綴り（`^\[[a-z-]+\] [0-9]+ 件$`）を渡すと、それが pass になる。
 verdict() {
-  local output status kinds headings
+  local output status decision kinds
   output="$(cd "$work" && python3 "$detector" src)" && status=0 || status=$?
-  headings="$(printf '%s\n' "$output" | grep -c '^\[')"
+  decision="$(decide "$output" "$status" '^\[')"
+  [ "$decision" = "deny" ] || { echo "$decision"; return 0; }
   kinds="$(printf '%s\n' "$output" \
     | sed -nE 's/^\[([a-z-]+)\] ([0-9]+) 件$/\1*\2/p' \
     | sed 's/\*1$//')"
-  if [ "$headings" != "$(printf '%s' "$kinds" | grep -c .)" ]; then
+  if [ "$(printf '%s\n' "$output" | grep -c '^\[')" != "$(printf '%s' "$kinds" | grep -c .)" ]; then
     echo "broken"
     return 0
   fi
-  kinds="$(printf '%s\n' "$kinds" | paste -sd '+' -)"
-  case "$status:${kinds:+found}" in
-    0:) echo "pass" ;;
-    1:found) echo "$kinds" ;;
-    *) echo "broken" ;;
-  esac
+  printf '%s\n' "$kinds" | paste -sd '+' -
 }
 
 # 期待の欄に出てくる種別を 1 行ずつ並べる（件数の綴りは落とす）。
