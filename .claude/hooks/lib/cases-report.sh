@@ -14,28 +14,28 @@
 # （`rules/coding.md`「同じ処理が2箇所に現れたら共通化する」）。どの判定表がどの関数を使っているかは
 # `.claude/hooks/README.md`「配線」の `lib/cases-report.sh` の行が持つ。
 #
-# 判定を終了コードで見る理由は `.claude/hooks/README.md`「終了コードまで見る」。
+# 判定は終了コードと報告の見出しを突き合わせて決める（`decide`）。終了コードを見る理由は
+# `.claude/hooks/README.md`「終了コードまで見る」。
 
 # 食い違ったケースがあれば 1 になる。source した側が最後に見る。
 cases_failed=0
 
-# 検出器の出力と終了コードから、deny / pass / broken を決める。
+# 検出器の出力と終了コードを突き合わせて、pass / deny / broken を決める。
+#
+# exit 0 で見出しが無ければ pass、exit 1 で見出しがあれば deny、それ以外（見出しを出したまま exit 0 /
+# 見出しの無い exit 1 / exit 0・1 以外）は broken。見出しは $3 に当たる行だけを数える。
 #
 # $1 検出器の標準出力
 # $2 検出器の終了コード
 # $3 報告の見出しの正規表現（`grep -E` に渡す）
 decide() {
-  local output="$1" status="$2" heading="$3"
-  if [ "$status" -ne 1 ]; then
-    echo "pass"
-    return 0
-  fi
-  # exit 1 は違反あり。報告の見出しが無いなら判定が壊れている。
-  if printf '%s' "$output" | grep -qE "$heading"; then
-    echo "deny"
-  else
-    echo "broken"
-  fi
+  local output="$1" status="$2" heading="$3" found=""
+  grep -qE "$heading" <<<"$output" && found="heading"
+  case "$status:$found" in
+    0:) echo "pass" ;;
+    1:heading) echo "deny" ;;
+    *) echo "broken" ;;
+  esac
 }
 
 # 報告が 1 行以上あり、すべての行が期待した見出しで始まるか。違反を分類で報告する検出器の、落とす側の
