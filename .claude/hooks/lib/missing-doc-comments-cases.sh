@@ -73,7 +73,7 @@ write_input() {
   esac >"$file"
 }
 
-# 検出器を 1 度走らせ、終了コードから deny / pass を決める。見出しは呼び方ごとに違い、
+# 検出器を 1 度走らせ、`decide` で pass / deny / broken を決める。見出しは呼び方ごとに違い、
 # `--all` は報告の後ろに件数の集計を出す。
 verdict() {
   local mode="$1" file="$2" output status
