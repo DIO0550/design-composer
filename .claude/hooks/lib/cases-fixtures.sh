@@ -3,10 +3,10 @@
 # 検出器を呼ぶフックの判定表(`*-cases.sh`)が共有する、ケースの前提の置き方。落ちる検出器・
 # 起動できない python3・本体が同じテストヘルパーを、渡されたパスへ置く。
 #
-# 使う側: lib/pre-push-detector-cases.sh / lib/edit-detector-cases.sh
+# 使う側: lib/pre-push-detector-cases.sh / lib/edit-detector-cases.sh / lib/import-rule-cases.sh
 #
 # 終了コードと出力の組を実物の検出器から決まった形で作れないので、判定表は検出器をスタブで作る
-# (ここに置くのは 2 本が共有する落ちる側。報告の行を出すスタブは報告の綴りが違うので各判定表が持つ)。
+# (ここに置くのは判定表どうしが共有する落ちる側。報告の行を出すスタブは報告の綴りが違うので各判定表が持つ)。
 #
 # 起動できない python3 は、起動すると 127 で落ちる。`command -v python3` で疎通を見る実装は
 # これを見つけてしまい、検出器を走らせて「落ちた」と読む(起動して見る `python3_usable` は

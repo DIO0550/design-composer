@@ -13,7 +13,7 @@
 # 前のケースの印を持ち越さない。
 #
 # 2 本のフックは deny でも exit 0 で JSON を返すので、`cases-report.sh` の `decide`
-# (exit 1 を違反とみなす)ではなく、出力の `permissionDecision` を見て決める。
+# (exit 1 かつ見出しありを deny と読む)ではなく、出力の `permissionDecision` を見て決める。
 # JSON は jq を使わず printf で組む(フック本体と同じく、jq の無い環境でも走らせるため)。
 #
 # **Agent / Task の入力は Agent ツールの引数名に合わせて組んだもので、実物の PreToolUse から写していない。**

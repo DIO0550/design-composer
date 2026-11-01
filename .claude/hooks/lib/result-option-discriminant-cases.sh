@@ -11,8 +11,7 @@
 # この検査の中心で、手で 1 回動かすだけでは退行を検知できないため。** 同じ形の前例は
 # 同じフォルダの `canary-cases.sh`。
 #
-# 判定を終了コードで見る理由は `.claude/hooks/README.md`「終了コードまで見る」。deny の行は
-# さらに報告の見出しが出ることも見る。
+# 判定の決め方（終了コードと報告の見出しの突き合わせ）は `cases-report.sh` の `decide` が持つ。
 #
 # 表は読み側（`result-option-read`）と作る側（`result-option-write`）の 2 つで、どちらも
 # `期待|ケース名|ソース` の 1 行 1 ケース。ソース中の `@@` は改行に置き換わる。各表は自分の
@@ -38,7 +37,7 @@ mkdir -p "$work/src"
 # 判定の読み取りと報告は判定表どうしで共有する（`cases_failed` / `decide` / `report`）。
 source "$lib_dir/cases-report.sh"
 
-# 検出器を 1 度走らせ、終了コードから deny / pass を決める。
+# 検出器を 1 度走らせ、`decide` で pass / deny / broken を決める。
 #
 # $1 報告の種別（`result-option-read` / `result-option-write`）
 verdict() {

@@ -10,8 +10,7 @@
 # 走査対象の決め方がこの検査の中心で、リポジトリに違反が無い限り検出器を呼ぶだけの層 1・
 # 層 2 は緑のままだから。** 同じ形の前例は同じフォルダの `story-title-cases.sh`。
 #
-# 判定を終了コードで見る理由は `.claude/hooks/README.md`「終了コードまで見る」。deny の行は
-# さらに報告の見出しが出ることも見る。
+# 判定の決め方（終了コードと報告の見出しの突き合わせ）は `cases-report.sh` の `decide` が持つ。
 #
 # **木は 1 度だけ組み、ケースごとに中身だけを書き換える。** 検出器は git が追跡している
 # ファイルを走査対象にするので、ケースごとに木を組み直すとケースの数だけ索引の作り直しが走る。
@@ -97,7 +96,7 @@ write_case() {
   esac > "$work/$file"
 }
 
-# 検出器を 1 度走らせ、終了コードから deny / pass を決める。
+# 検出器を 1 度走らせ、`decide` で pass / deny / broken を決める。
 verdict() {
   local output status
   output="$(cd "$work" && python3 "$detector")" && status=0 || status=$?
