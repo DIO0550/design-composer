@@ -3,10 +3,10 @@
 use std::fs;
 use std::sync::Arc;
 
-use super::io::{save_requested, DocumentRegistries};
+use super::io::{save_requested, DocumentManagedState};
 use super::known_content::KnownContentRegistry;
 
-use super::test_support::{chosen_document, chosen_paths_in, TempDir};
+use super::test_support::{chosen_paths_in, chosen_spelling, TempDir};
 
 #[test]
 fn 選んだパスは選んだときに返った綴りで照合を通る() {
@@ -15,7 +15,7 @@ fn 選んだパスは選んだときに返った綴りで照合を通る() {
     fs::write(dir.join("document.dcmp"), "{}").expect("選ぶファイルを用意できる");
     let chosen = chosen_paths_in(&record_dir);
 
-    let spelling = chosen_document(&chosen, &dir, "document.dcmp");
+    let spelling = chosen_spelling(&chosen, &dir, "document.dcmp");
 
     assert!(chosen.require(&spelling).is_ok());
 }
@@ -26,13 +26,10 @@ fn 保存ダイアログで選んだまだ無いファイルへ保存できる()
     let record_dir = TempDir::new("chosen-normal-record");
     let chosen = chosen_paths_in(&record_dir);
     let known = Arc::new(KnownContentRegistry::new());
-    let spelling = chosen_document(&chosen, &dir, "untitled.dcmp");
-    let registries = DocumentRegistries {
-        chosen: &chosen,
-        known: &known,
-    };
+    let spelling = chosen_spelling(&chosen, &dir, "untitled.dcmp");
+    let managed = DocumentManagedState::new(&chosen, &known);
 
-    save_requested(registries, &spelling, r#"{"version":1}"#).expect("保存に成功する");
+    save_requested(managed, &spelling, r#"{"version":1}"#).expect("保存に成功する");
 
     assert_eq!(
         fs::read_to_string(dir.join("untitled.dcmp")).expect("読める"),

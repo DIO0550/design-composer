@@ -7,11 +7,11 @@ use std::fs;
 
 use std::sync::Arc;
 
-use super::io::{self, load_requested, save_requested, DocumentIoError, DocumentRegistries};
+use super::io::{self, load_requested, save_requested, DocumentIoError, DocumentManagedState};
 use super::known_content::KnownContentRegistry;
 
 use super::test_support::{
-    chosen_document, chosen_file_path, chosen_paths_in, raw_document_path, TempDir,
+    chosen_file_path, chosen_paths_in, chosen_spelling, raw_document_path, TempDir,
 };
 
 #[test]
@@ -132,16 +132,9 @@ fn 拡張子がdcmpでない既存のファイルへの保存は不正なパス�
     fs::write(dir.join("notes.txt"), "secret").expect("中身のあるファイルを用意できる");
     let chosen = chosen_paths_in(&record_dir);
     let known = Arc::new(KnownContentRegistry::new());
-    let registries = DocumentRegistries {
-        chosen: &chosen,
-        known: &known,
-    };
+    let managed = DocumentManagedState::new(&chosen, &known);
 
-    let result = save_requested(
-        registries,
-        &raw_document_path(&dir, "notes.txt"),
-        r#"{"a":1}"#,
-    );
+    let result = save_requested(managed, &raw_document_path(&dir, "notes.txt"), r#"{"a":1}"#);
 
     assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
     assert_eq!(
@@ -156,16 +149,9 @@ fn 拡張子がdcmpでない存在しないファイルへの保存はファイ�
     let record_dir = TempDir::new("edge-record");
     let chosen = chosen_paths_in(&record_dir);
     let known = Arc::new(KnownContentRegistry::new());
-    let registries = DocumentRegistries {
-        chosen: &chosen,
-        known: &known,
-    };
+    let managed = DocumentManagedState::new(&chosen, &known);
 
-    let result = save_requested(
-        registries,
-        &raw_document_path(&dir, "notes.txt"),
-        r#"{"a":1}"#,
-    );
+    let result = save_requested(managed, &raw_document_path(&dir, "notes.txt"), r#"{"a":1}"#);
 
     assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
     assert!(dir.file_names().is_empty());
@@ -178,7 +164,7 @@ fn 選んでいないdcmpファイルは中身があっても読み込まずに�
     fs::write(dir.join("document.dcmp"), r#"{"version":1}"#).expect("読み込む対象を用意できる");
     let chosen = chosen_paths_in(&record_dir);
     // 対照に別のファイルを選んでおく。集合が空だから拒んだ、では通らないようにする。
-    chosen_document(&chosen, &dir, "other.dcmp");
+    chosen_spelling(&chosen, &dir, "other.dcmp");
 
     let result = load_requested(&chosen, &raw_document_path(&dir, "document.dcmp"));
 
@@ -191,15 +177,12 @@ fn 選んでいないdcmpファイルへの保存は選ばれていないこと�
     let record_dir = TempDir::new("edge-record");
     fs::write(dir.join("document.dcmp"), r#"{"version":1}"#).expect("保存先を用意できる");
     let chosen = chosen_paths_in(&record_dir);
-    chosen_document(&chosen, &dir, "other.dcmp");
+    chosen_spelling(&chosen, &dir, "other.dcmp");
     let known = Arc::new(KnownContentRegistry::new());
-    let registries = DocumentRegistries {
-        chosen: &chosen,
-        known: &known,
-    };
+    let managed = DocumentManagedState::new(&chosen, &known);
 
     let result = save_requested(
-        registries,
+        managed,
         &raw_document_path(&dir, "document.dcmp"),
         r#"{"version":2}"#,
     );

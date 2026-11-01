@@ -5,11 +5,11 @@ use std::sync::Arc;
 
 use super::io::DocumentIoError;
 use super::known_content::KnownContentRegistry;
-use super::watch::{self, DocumentWatchers};
+use super::watch::{self, DocumentWatchers, WatchManagedState};
 
 use super::test_support::{
-    assert_no_change, chosen_document, chosen_file_path, chosen_paths_in, next_change,
-    raw_document_path, watch_changes, watch_registries, watch_requested_payloads, TempDir,
+    assert_no_change, chosen_file_path, chosen_paths_in, chosen_spelling, next_change,
+    raw_document_path, watch_changes, watch_requested_payloads, TempDir,
 };
 
 #[test]
@@ -122,7 +122,7 @@ fn 拡張子がdcmpでない既存のファイルは監視されず書き換え�
     let watchers = DocumentWatchers::new();
 
     let (result, payloads) = watch_requested_payloads(
-        watch_registries(&chosen, &known, &watchers),
+        WatchManagedState::new(&chosen, &known, &watchers),
         &raw_document_path(&dir, "notes.txt"),
     );
     fs::write(dir.join("notes.txt"), "v2").expect("外部からの書き込みができる");
@@ -140,7 +140,7 @@ fn 拡張子がdcmpでないファイルの監視の停止は不正なパスを�
     let watchers = DocumentWatchers::new();
 
     let result = watch::stop_requested(
-        watch_registries(&chosen, &known, &watchers),
+        WatchManagedState::new(&chosen, &known, &watchers),
         &raw_document_path(&dir, "notes.txt"),
     );
 
@@ -154,12 +154,12 @@ fn 選んでいないdcmpファイルは監視されず書き換えても通知�
     fs::write(dir.join("document.dcmp"), r#"{"version":1}"#).expect("監視対象を用意できる");
     let chosen = chosen_paths_in(&record_dir);
     // 対照に別のファイルを選んでおく。集合が空だから拒んだ、では通らないようにする。
-    chosen_document(&chosen, &dir, "other.dcmp");
+    chosen_spelling(&chosen, &dir, "other.dcmp");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
 
     let (result, payloads) = watch_requested_payloads(
-        watch_registries(&chosen, &known, &watchers),
+        WatchManagedState::new(&chosen, &known, &watchers),
         &raw_document_path(&dir, "document.dcmp"),
     );
     fs::write(dir.join("document.dcmp"), r#"{"version":2}"#).expect("外部からの書き込みができる");
@@ -174,14 +174,16 @@ fn 選んだときと違う綴りでは同じファイルでも監視を始め�
     let record_dir = TempDir::new("watch-edge-record");
     fs::write(dir.join("document.dcmp"), r#"{"version":1}"#).expect("監視対象を用意できる");
     let chosen = chosen_paths_in(&record_dir);
-    chosen_document(&chosen, &dir, "document.dcmp");
+    chosen_spelling(&chosen, &dir, "document.dcmp");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
     // 寄せると消える `/./` を綴りに含める
     let detoured = raw_document_path(&dir, "./document.dcmp");
 
-    let (result, _payloads) =
-        watch_requested_payloads(watch_registries(&chosen, &known, &watchers), &detoured);
+    let (result, _payloads) = watch_requested_payloads(
+        WatchManagedState::new(&chosen, &known, &watchers),
+        &detoured,
+    );
 
     assert!(matches!(result, Err(DocumentIoError::NotChosen { .. })));
 }

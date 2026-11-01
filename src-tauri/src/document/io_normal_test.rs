@@ -3,7 +3,7 @@ use std::fs;
 use super::io::{self, load_requested};
 use super::known_content::KnownContentRegistry;
 
-use super::test_support::{chosen_document, chosen_file_path, chosen_paths_in, TempDir};
+use super::test_support::{chosen_file_path, chosen_paths_in, chosen_spelling, TempDir};
 
 #[test]
 fn 保存した内容がそのまま読み込める() {
@@ -93,7 +93,7 @@ fn 選んだdcmpファイルを選んだときに返った綴りで渡すと中�
     let content = r#"{"version":1}"#;
     fs::write(dir.join("document.dcmp"), content).expect("読み込む対象を用意できる");
     let chosen = chosen_paths_in(&record_dir);
-    let spelling = chosen_document(&chosen, &dir, "document.dcmp");
+    let spelling = chosen_spelling(&chosen, &dir, "document.dcmp");
 
     let loaded = load_requested(&chosen, &spelling).expect("読み込みに成功する");
 

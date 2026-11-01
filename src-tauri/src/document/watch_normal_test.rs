@@ -5,11 +5,11 @@ use std::sync::Arc;
 
 use super::io;
 use super::known_content::KnownContentRegistry;
-use super::watch::DocumentWatchers;
+use super::watch::{DocumentWatchers, WatchManagedState};
 
 use super::test_support::{
-    assert_no_change, chosen_document, chosen_file_path, chosen_paths_in, next_change,
-    watch_changes, watch_registries, watch_requested_payloads, TempDir,
+    assert_no_change, chosen_file_path, chosen_paths_in, chosen_spelling, next_change,
+    watch_changes, watch_requested_payloads, TempDir,
 };
 
 #[test]
@@ -112,10 +112,12 @@ fn 通知のパスは選んだときに返った綴りのまま届く() {
     let chosen = chosen_paths_in(&record_dir);
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
-    let spelling = chosen_document(&chosen, &dir, "document.dcmp");
+    let spelling = chosen_spelling(&chosen, &dir, "document.dcmp");
 
-    let (started, payloads) =
-        watch_requested_payloads(watch_registries(&chosen, &known, &watchers), &spelling);
+    let (started, payloads) = watch_requested_payloads(
+        WatchManagedState::new(&chosen, &known, &watchers),
+        &spelling,
+    );
     started.expect("監視を開始できる");
     fs::write(dir.join("document.dcmp"), r#"{"version":2}"#).expect("外部からの書き込みができる");
     let payload: serde_json::Value =

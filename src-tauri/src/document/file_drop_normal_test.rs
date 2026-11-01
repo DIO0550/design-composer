@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use super::file_drop::accept_dropped;
 
-use super::test_support::{chosen_paths_in, raw_document_path, TempDir};
+use super::test_support::{chosen_paths_in, chosen_spelling, raw_document_path, TempDir};
 
 /// `document-dropped` で知らせる並び。
 fn notified_paths(dropped: &super::file_drop::DocumentDropped) -> Vec<String> {
@@ -33,9 +33,7 @@ fn 選べないファイルも落とした綴りのまま落とした順に知�
     fs::write(dir.join("notes.txt"), "x").expect("落とすファイルを用意できる");
     fs::write(dir.join("document.dcmp"), "{}").expect("落とすファイルを用意できる");
     let chosen = chosen_paths_in(&record_dir);
-    let canonical = chosen
-        .choose(&raw_document_path(&dir, "document.dcmp"))
-        .expect("寄せた綴りを得られる");
+    let canonical = chosen_spelling(&chosen, &dir, "document.dcmp");
 
     let dropped = accept_dropped(&chosen, &[dir.join("notes.txt"), dir.join("document.dcmp")]);
 

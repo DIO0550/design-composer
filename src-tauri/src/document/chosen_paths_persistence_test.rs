@@ -6,13 +6,10 @@ use std::fs;
 
 use crate::app_state;
 
-use super::chosen_paths::{self, ChosenDocumentPaths};
+use super::chosen_paths::{self, ChosenDocumentPaths, RECORDED_LIMIT};
 use super::io::{load_requested, DocumentIoError};
 
-use super::test_support::{chosen_document, chosen_paths_in, raw_document_path, TempDir};
-
-/// 記録ファイルに残す件数の上限(`chosen_paths.rs` と同じ値)。
-const RECORDED_LIMIT: usize = 50;
+use super::test_support::{chosen_paths_in, chosen_spelling, raw_document_path, TempDir};
 
 /// `record_dir` の記録ファイルから読み戻す(次の起動を再現する)。
 fn restarted(record_dir: &TempDir) -> ChosenDocumentPaths {
@@ -28,13 +25,18 @@ fn choose_many(
     range: std::ops::Range<usize>,
 ) -> Vec<String> {
     range
-        .map(|index| chosen_document(chosen, dir, &format!("doc-{index}.dcmp")))
+        .map(|index| chosen_spelling(chosen, dir, &format!("doc-{index}.dcmp")))
         .collect()
 }
 
 /// 記録ファイルの中身を、外の書き手が書いたものとして置く。
 fn write_record(record_dir: &TempDir, content: &str) {
     fs::write(chosen_paths::record_path(record_dir.path()), content).expect("記録を書ける");
+}
+
+/// 記録ファイルの中身をバイト列のまま読む。
+fn record_bytes(record_dir: &TempDir) -> Vec<u8> {
+    fs::read(chosen_paths::record_path(record_dir.path())).expect("記録を読める")
 }
 
 fn is_not_chosen(chosen: &ChosenDocumentPaths, raw: &str) -> bool {
@@ -45,7 +47,7 @@ fn is_not_chosen(chosen: &ChosenDocumentPaths, raw: &str) -> bool {
 fn 選んだパスは次の起動でも照合を通る() {
     let dir = TempDir::new("chosen-persistence");
     let record_dir = TempDir::new("chosen-persistence-record");
-    let spelling = chosen_document(&chosen_paths_in(&record_dir), &dir, "document.dcmp");
+    let spelling = chosen_spelling(&chosen_paths_in(&record_dir), &dir, "document.dcmp");
 
     let next = restarted(&record_dir);
 
@@ -190,13 +192,85 @@ fn 同じパスを2回選んでも記録では1件に数える() {
     let dir = TempDir::new("chosen-persistence");
     let record_dir = TempDir::new("chosen-persistence-record");
     let chosen = chosen_paths_in(&record_dir);
-    let oldest = chosen_document(&chosen, &dir, "oldest.dcmp");
-    chosen_document(&chosen, &dir, "twice.dcmp");
-    chosen_document(&chosen, &dir, "twice.dcmp");
+    let oldest = chosen_spelling(&chosen, &dir, "oldest.dcmp");
+    chosen_spelling(&chosen, &dir, "twice.dcmp");
+    chosen_spelling(&chosen, &dir, "twice.dcmp");
     // 重複を数えていれば、ここで上限を超えて最も古いものが記録から外れる
     choose_many(&chosen, &dir, 0..RECORDED_LIMIT - 2);
 
     let next = restarted(&record_dir);
 
     assert!(next.require(&oldest).is_ok());
+}
+
+#[test]
+fn 記録が壊れていても選び直せば次の起動で照合を通る() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    write_record(&record_dir, "[");
+    let spelling = chosen_spelling(&restarted(&record_dir), &dir, "document.dcmp");
+
+    let next = restarted(&record_dir);
+
+    assert!(next.require(&spelling).is_ok());
+}
+
+#[test]
+fn 読めない記録から起動したあとに選んでも記録ファイルは書き換わらない() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    // UTF-8 として読めない記録。中身を書き換えられたかをバイト列で比べる
+    let unreadable: &[u8] = b"[\"\xff\"]";
+    fs::write(chosen_paths::record_path(record_dir.path()), unreadable).expect("記録を書ける");
+    let chosen = restarted(&record_dir);
+
+    chosen_spelling(&chosen, &dir, "document.dcmp");
+
+    assert_eq!(record_bytes(&record_dir), unreadable);
+}
+
+#[test]
+fn 読めない記録から起動しても選んだパスは起動中なら照合を通る() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    // 記録の場所をディレクトリにして、読めなくする
+    fs::create_dir(chosen_paths::record_path(record_dir.path())).expect("ディレクトリを置ける");
+    let chosen = restarted(&record_dir);
+
+    let spelling = chosen_spelling(&chosen, &dir, "document.dcmp");
+
+    assert!(chosen.require(&spelling).is_ok());
+}
+
+#[test]
+fn 先頭にあるパスを選び直しても記録ファイルは書き換わらない() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    let chosen = chosen_paths_in(&record_dir);
+    chosen_spelling(&chosen, &dir, "document.dcmp");
+    // 外から別の中身に置き換えておき、書き出せばこれが消えることで見分ける
+    let replaced = serde_json::json!([raw_document_path(&dir, "other.dcmp")]).to_string();
+    write_record(&record_dir, &replaced);
+
+    chosen_spelling(&chosen, &dir, "document.dcmp");
+
+    assert_eq!(record_bytes(&record_dir), replaced.as_bytes());
+}
+
+#[test]
+fn 外から書かれた記録に同じ行が重なっていても1件に数えて復元する() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    let raws: Vec<String> = (0..RECORDED_LIMIT)
+        .map(|index| raw_document_path(&dir, &format!("doc-{index}.dcmp")))
+        .collect();
+    // 先頭の行を重ねて、行数だけなら上限を 1 件超える記録にする
+    let rows: Vec<String> = std::iter::once(raws[0].clone())
+        .chain(raws.iter().cloned())
+        .collect();
+    write_record(&record_dir, &serde_json::Value::from(rows).to_string());
+
+    let chosen = restarted(&record_dir);
+
+    assert!(chosen.require(&raws[RECORDED_LIMIT - 1]).is_ok());
 }

@@ -5,7 +5,7 @@ use std::fs;
 use super::chosen_paths::{self, ChosenDocumentPaths};
 use super::io::DocumentIoError;
 
-use super::test_support::{chosen_document, chosen_paths_in, raw_document_path, TempDir};
+use super::test_support::{chosen_paths_in, chosen_spelling, raw_document_path, TempDir};
 
 #[test]
 fn 選んでいないdcmpファイルは選ばれていないことを返す() {
@@ -14,7 +14,7 @@ fn 選んでいないdcmpファイルは選ばれていないことを返す() {
     fs::write(dir.join("document.dcmp"), "{}").expect("ファイルを用意できる");
     let chosen = chosen_paths_in(&record_dir);
     // 対照に別のファイルを選んでおく。集合が空だから拒んだ、では通らないようにする。
-    chosen_document(&chosen, &dir, "other.dcmp");
+    chosen_spelling(&chosen, &dir, "other.dcmp");
 
     let result = chosen.require(&raw_document_path(&dir, "document.dcmp"));
 
@@ -28,7 +28,7 @@ fn 区切りが続いているだけの綴りでも選んだ綴りと違えば�
     let record_dir = TempDir::new("chosen-edge-record");
     fs::write(dir.join("document.dcmp"), "{}").expect("ファイルを用意できる");
     let chosen = chosen_paths_in(&record_dir);
-    let spelling = chosen_document(&chosen, &dir, "document.dcmp");
+    let spelling = chosen_spelling(&chosen, &dir, "document.dcmp");
     let doubled = spelling.replace("/document.dcmp", "//document.dcmp");
 
     let result = chosen.require(&doubled);
@@ -43,7 +43,7 @@ fn 拡張子がdcmpでないファイルは選ぼうとしても不正なパス�
     fs::write(dir.join("notes.txt"), "x").expect("ファイルを用意できる");
     let chosen = chosen_paths_in(&record_dir);
 
-    let result = chosen.choose(&raw_document_path(&dir, "notes.txt"));
+    let result = chosen.record_chosen(&raw_document_path(&dir, "notes.txt"));
 
     assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
 }
@@ -52,12 +52,23 @@ fn 拡張子がdcmpでないファイルは選ぼうとしても不正なパス�
 fn 記録を書き出せなくても選んだパスは起動中なら照合を通る() {
     let dir = TempDir::new("chosen-edge");
     let record_dir = TempDir::new("chosen-edge-record");
-    // 記録の置き場の親をファイルにして、書き出しを失敗させる
-    fs::write(record_dir.join("blocker"), "").expect("邪魔なファイルを置ける");
     let chosen =
         ChosenDocumentPaths::restore(chosen_paths::record_path(&record_dir.join("blocker")));
+    // 読み戻したあとで記録の置き場の親をファイルにして、書き出しを失敗させる(読み戻す前に
+    // 置くと、読めない記録として書き出しそのものを止めてしまう)
+    fs::write(record_dir.join("blocker"), "").expect("邪魔なファイルを置ける");
 
-    let spelling = chosen_document(&chosen, &dir, "document.dcmp");
+    let spelling = chosen_spelling(&chosen, &dir, "document.dcmp");
+
+    assert!(chosen.require(&spelling).is_ok());
+}
+
+#[test]
+fn 記録ファイルを持たない集合でも選んだパスは照合を通る() {
+    let dir = TempDir::new("chosen-edge");
+    let chosen = ChosenDocumentPaths::in_memory();
+
+    let spelling = chosen_spelling(&chosen, &dir, "document.dcmp");
 
     assert!(chosen.require(&spelling).is_ok());
 }
