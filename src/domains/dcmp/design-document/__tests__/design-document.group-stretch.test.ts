@@ -142,6 +142,30 @@ test("row の親の下で Text と Box をまとめて包むと、Box は row �
   });
 });
 
+test("揃えが center の親の下で Text と Box をまとめて包むと、Box は親の揃えだけを持ち fill を持たない", () => {
+  const grouped = group(
+    setupPanelDocument({ align: "center" }, [
+      { name: "title", type: "Text" },
+      { name: "card", type: "Box" },
+    ]),
+    ["title", "card"],
+  );
+
+  expect(propsOf(grouped, "box")).toEqual({ align: "center" });
+});
+
+test("column の親の下で Box、Text の順にまとめて包んでも、Box の幅が fill になる", () => {
+  const grouped = group(
+    setupPanelDocument({}, [
+      { name: "card", type: "Box" },
+      { name: "title", type: "Text" },
+    ]),
+    ["card", "title"],
+  );
+
+  expect(propsOf(grouped, "box")).toEqual({ widthMode: "fill" });
+});
+
 test("揃えが stretch の親の下の Text を包んでから外すと、元のドキュメントに戻る", () => {
   const document = setupPanelDocument({}, [
     { name: "title", type: "Text", props: { content: "見出し" } },
