@@ -81,3 +81,25 @@ test("contains は違う値を持っていれば false", () => {
 test("contains は値を持たなければ false", () => {
   expect(Option.contains(Option.none, "a")).toBe(false);
 });
+
+test("equals はどちらも値を持ち、比べ方が等しいと答えれば true", () => {
+  expect(
+    Option.equals(
+      Option.some("a"),
+      Option.some("A"),
+      (a, b) => a.toLowerCase() === b.toLowerCase(),
+    ),
+  ).toBe(true);
+});
+
+test("equals はどちらも値を持ち、比べ方が違うと答えれば false", () => {
+  expect(
+    Option.equals(Option.some("a"), Option.some("b"), (a, b) => a === b),
+  ).toBe(false);
+});
+
+test("equals はどちらも値を持たなければ true", () => {
+  expect(Option.equals<string>(Option.none, Option.none, () => false)).toBe(
+    true,
+  );
+});

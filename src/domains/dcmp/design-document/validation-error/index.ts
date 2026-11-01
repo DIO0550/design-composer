@@ -26,6 +26,7 @@ type NodeValidationErrorKind =
   | "invalid-public-prop-name"
   | "dangling-binding-node"
   | "dangling-binding-prop"
+  | "unbindable-binding-prop"
   | "missing-name"
   | "invalid-identifier"
   | "duplicate-name"
@@ -278,7 +279,8 @@ export const DesignDocumentValidationError = {
    * @param binding 違反を持つ公開 prop の binding
    * @returns 指し先のノードが無ければ dangling-binding-node、指し先の prop が無ければ
    *   dangling-binding-prop。指し先のインスタンスの参照先がその prop を公開していないときも
-   *   dangling-binding-prop。どちらも部品名を位置、公開 prop 名を prop に持つ
+   *   dangling-binding-prop。指し先のプリミティブの prop が繋げない prop なら
+   *   unbindable-binding-prop。どれも部品名を位置、公開 prop 名を prop に持つ
    */
   fromBindingViolation(
     violation: BindingViolation,
@@ -304,6 +306,12 @@ export const DesignDocumentValidationError = {
           kind: "dangling-binding-prop",
           ...location,
           message: `node "${binding.node}" has no prop "${binding.prop}"`,
+        };
+      case "unbindable-prop":
+        return {
+          kind: "unbindable-binding-prop",
+          ...location,
+          message: `prop "${binding.prop}" of node "${binding.node}" cannot be bound to a public prop`,
         };
     }
   },

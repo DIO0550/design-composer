@@ -102,6 +102,7 @@
   - 識別子の規則（kebab-case）は課さない。宣言名を指すのは、その部品のインスタンスの `overrides` のキーと、その部品を内部に持つ親部品の binding の `prop`（インターフェースの連鎖）だけで、単一名前空間に入らない。どちらも prop 名を書く位置にある（`props` のキーは `paddingTop` のような camelCase）
 - 宣言は binding `{ node, prop }` で内部ノードの prop に結び付く
   - `node` は部品内部のノードの `name` を指す（全ノードが name を持つため、任意の内部ノードに binding できる）
+  - `prop` に `locking` は書けない（03-schema「ロック」）
 - 上書き値のドメイン（enum / トークン / 生リテラル）は binding 先 prop のスキーマ定義をそのまま継承する。部品用の型システムは新設しない
 - インスタンスのプロパティパネルは publicProps 宣言と、参照ノード自身の値（`locking`）から生成する
 - 部品の内部構造を変更しても、publicProps 宣言の binding を維持する限りインスタンスは壊れない
