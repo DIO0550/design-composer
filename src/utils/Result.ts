@@ -1,12 +1,23 @@
+/**
+ * 成否の判別子のキー。export しないので、型の上ではこのファイルの外から名前を持てない。
+ *
+ * 登録済みシンボルにするのは、HMR でこのファイルが評価し直されても、保持された state の
+ * 古い値を同じキーで読むため。`Symbol()` だと評価のたびに別のキーになり、古い値を `isOk` が読めない。
+ *
+ * シンボルのキーは `JSON.stringify` / `structuredClone` で落ちるので、直列化するなら
+ * `libs/` の境界で詰め替える（`Option` の判別子も同じ）。
+ */
+const OkTag: unique symbol = Symbol.for("design-composer/utils/Result#ok");
+
 /** 成功した結果。処理が返した値を持つ。 */
 export type Ok<T> = Readonly<{
-  ok: true;
+  [OkTag]: true;
   value: T;
 }>;
 
 /** 失敗した結果。 */
 export type Err<E> = Readonly<{
-  ok: false;
+  [OkTag]: false;
   error: E;
 }>;
 
@@ -26,7 +37,7 @@ export const Result = {
    * @returns `value` を持つ `ok`。凍結してあるので後から書き換えられない
    */
   ok<T>(value: T): Ok<T> {
-    return Object.freeze({ ok: true as const, value });
+    return Object.freeze({ [OkTag]: true as const, value });
   },
 
   /**
@@ -36,7 +47,7 @@ export const Result = {
    * @returns `error` を持つ `err`。凍結してあるので後から書き換えられない
    */
   err<E>(error: E): Err<E> {
-    return Object.freeze({ ok: false as const, error });
+    return Object.freeze({ [OkTag]: false as const, error });
   },
 
   /**
@@ -47,7 +58,7 @@ export const Result = {
    * @returns 成功なら `fn` の戻り値の `ok`。失敗なら同じ `err` をそのまま返す
    */
   map<T, U, E>(result: Result<T, E>, fn: (value: T) => U): Result<U, E> {
-    return result.ok ? Result.ok(fn(result.value)) : result;
+    return result[OkTag] ? Result.ok(fn(result.value)) : result;
   },
 
   /**
@@ -61,7 +72,7 @@ export const Result = {
     result: Result<T, E>,
     fn: (value: T) => Result<U, E>,
   ): Result<U, E> {
-    return result.ok ? fn(result.value) : result;
+    return result[OkTag] ? fn(result.value) : result;
   },
 
   /**
@@ -72,7 +83,7 @@ export const Result = {
    * @returns 失敗なら `fn` の戻り値を持つ `err`。成功なら同じ `ok` をそのまま返す
    */
   mapErr<T, E, F>(result: Result<T, E>, fn: (error: E) => F): Result<T, F> {
-    return result.ok ? result : Result.err(fn(result.error));
+    return result[OkTag] ? result : Result.err(fn(result.error));
   },
 
   /**
@@ -83,20 +94,19 @@ export const Result = {
    * @returns 成功ならその値。失敗ならエラーを捨てて `defaultValue`
    */
   unwrapOr<T, E>(result: Result<T, E>, defaultValue: T): T {
-    return result.ok ? result.value : defaultValue;
+    return result[OkTag] ? result.value : defaultValue;
   },
 
   /**
    * 成功しているか。
    *
-   * 成否の判定はすべてここを通す。判別子（`ok`）を直接読み書きするのはこのファイルの
-   * 中だけにして、`Result` がどう表現されているかを知る場所を定義元 1 つに閉じている。
+   * 成否の判定はすべてここを通す。
    *
    * @param result 中身を見る `Result`
    * @returns 成功していれば `true`。失敗なら `false`
    */
   isOk<T, E>(result: Result<T, E>): result is Ok<T> {
-    return result.ok;
+    return result[OkTag];
   },
 
   /**
@@ -107,7 +117,7 @@ export const Result = {
    * @throws `result` が失敗のとき。メッセージにエラーを文字列にしたものを含める
    */
   unwrap<T, E>(result: Result<T, E>): T {
-    if (!result.ok) {
+    if (!result[OkTag]) {
       throw new Error(`cannot unwrap an Err result: ${String(result.error)}`);
     }
     return result.value;
