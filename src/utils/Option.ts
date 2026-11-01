@@ -114,6 +114,26 @@ export const Option = {
   },
 
   /**
+   * 2 つの `Option` が同じものを表しているか。中身の比べ方は呼び出し側が渡す。
+   *
+   * @param option 比べる `Option`
+   * @param other 比べる `Option`
+   * @param equalsValue どちらも値を持つときに、2 つの値を比べる関数
+   * @returns どちらも `none` なら `true`。どちらも値を持てば `equalsValue` の答え。片方だけ
+   *   値を持つなら `false`
+   */
+  equals<T>(
+    option: Option<T>,
+    other: Option<T>,
+    equalsValue: (value: T, otherValue: T) => boolean,
+  ): boolean {
+    if (option.some && other.some) {
+      return equalsValue(option.value, other.value);
+    }
+    return option.some === other.some;
+  },
+
+  /**
    * Some の値を取り出す。None の場合は例外を投げる。
    * 分岐せず値を前提にしてよいのは、失敗をそのままテストの失敗にしたいテストコードだけ
    * （`Result.unwrap` と同じ位置づけ / rules/coding.md）。

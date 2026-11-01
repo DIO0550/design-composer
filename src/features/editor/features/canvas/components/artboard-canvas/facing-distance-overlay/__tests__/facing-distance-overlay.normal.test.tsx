@@ -7,9 +7,9 @@ import { Option } from "@/utils/Option";
 import { FacingDistanceOverlay } from "../index";
 
 /*
- * 運んでいる間の Alt / Option の距離（docs/06-ui.md「キャンバス直接操作」）。どの相手まで測るかは
- * `facing-distances` が決めるので、ここが見るのは渡された線を描く矩形にして出すかどうかと、
- * 数値をどの単位で出すか。
+ * Alt / Option の距離（運んでいる間と、選択しているだけのとき / docs/06-ui.md「キャンバス直接
+ * 操作」）。どの相手まで測るかは `facing-distances` が決めるので、ここが見るのは渡された線を
+ * 描く矩形にして出すかどうかと、数値をどの単位で出すか。
  */
 
 /** 等倍の表示。画面上の長さがそのままドキュメント上の長さになる。 */

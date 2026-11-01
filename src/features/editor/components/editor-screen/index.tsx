@@ -56,8 +56,9 @@ function OpenedDocumentEditors({
                 見えていない編集画面はショートカットを張らない。`document` に張るので
                 見えているかは関係なく、外すと 1 回の押下が開いている数だけ実行される。
 
-                `useSpaceHeld`（キャンバスのパンの構え）はここでは止めない。押下を実行
-                するのではなく修飾の状態を持つだけなので、背面で立っても見え方は変わらない。
+                `useSpaceHeld`（キャンバスのパンの構え）と `useAltPointing`（選択しているだけ
+                のときの Alt / Option の距離）はここでは止めない。押下を実行するのではなく
+                修飾の状態を持つだけなので、背面で立っても見え方は変わらない。
               */}
             <KeyShortcutScopeProvider
               scope={

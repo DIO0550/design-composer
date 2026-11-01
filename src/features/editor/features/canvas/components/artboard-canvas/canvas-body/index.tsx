@@ -2,6 +2,7 @@ import type { MouseEvent as ReactMouseEvent } from "react";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { TokenSelection } from "@/domains/session/token-selection";
+import type { AltPointingControl } from "@/features/editor/features/canvas/hooks/use-alt-pointing";
 import type { ArtboardDragControl } from "@/features/editor/features/canvas/hooks/use-artboard-drag";
 import type { NodeDragControl } from "@/features/editor/features/canvas/hooks/use-node-drag";
 import type { NodeResizeControl } from "@/features/editor/features/canvas/hooks/use-node-resize";
@@ -24,6 +25,7 @@ export function CanvasBody({
   nodeDrag,
   nodeResize,
   textEdit,
+  altPointing,
 }: Readonly<{
   compiled: Result<CompiledDocument, Error>;
   selection: DocumentSelection;
@@ -37,6 +39,7 @@ export function CanvasBody({
   nodeDrag: NodeDragControl;
   nodeResize: NodeResizeControl;
   textEdit: TextEditControl;
+  altPointing: AltPointingControl;
 }>) {
   if (!Result.isOk(compiled)) {
     return (
@@ -59,6 +62,7 @@ export function CanvasBody({
       nodeDrag={nodeDrag}
       nodeResize={nodeResize}
       textEdit={textEdit}
+      altPointing={altPointing}
     />
   );
 }

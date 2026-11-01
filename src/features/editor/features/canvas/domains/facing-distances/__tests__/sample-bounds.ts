@@ -8,5 +8,5 @@ export const Parent: CanvasBounds = {
   height: 100,
 };
 
-/** 運んでいるもの（左右 50〜70・上下 40〜50）。 */
-export const Moved: CanvasBounds = { left: 50, top: 40, width: 20, height: 10 };
+/** 起点（左右 50〜70・上下 40〜50）。 */
+export const From: CanvasBounds = { left: 50, top: 40, width: 20, height: 10 };

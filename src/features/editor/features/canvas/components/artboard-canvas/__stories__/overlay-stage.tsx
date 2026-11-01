@@ -7,8 +7,10 @@ import type { Decorator } from "@storybook/react-vite";
  * （線は白地でも見えるが、実画面ではキャンバスの灰色の上に出る）。
  *
  * `drop-marker` と `snap-guide-overlay` と `facing-distance-overlay` が同じ器を使う。どれも
- * 運んでいる最中にしか出ず、`ArtboardCanvas` のストーリーは静止した状態しか撮れないため、
- * **線の太さ・色を確かめる手段はそれぞれの story だけ**になる。
+ * 運んでいる最中か、キーを押している間（`facing-distance-overlay` は選択しているだけのときも
+ * Alt / Option を押している間に出る）にしか出ず、`ArtboardCanvas` のストーリーは args で
+ * 作れる静止した状態しか撮れないため、**線の太さ・色を確かめる手段はそれぞれの story だけ**
+ * になる。
  */
 export const OverlayStage: Decorator = (Story) => (
   <div className="h-64 w-full bg-gray-100">

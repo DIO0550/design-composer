@@ -8,8 +8,8 @@ import { Option } from "@/utils/Option";
 import { DistanceLine } from "../snap-guide-overlay";
 
 /**
- * 運んでいる間の Alt / Option の距離（docs/06-ui.md「キャンバス直接操作」）。見た目は揃え先
- * との隙間と同じ。
+ * Alt / Option の距離（運んでいる間と、選択しているだけのとき / docs/06-ui.md「キャンバス
+ * 直接操作」）。見た目は揃え先との隙間と同じ。
  *
  * @returns 距離のある向きごとの短い線と数値。ドキュメント上の px へ丸めて 0 になる向きは出ない
  */

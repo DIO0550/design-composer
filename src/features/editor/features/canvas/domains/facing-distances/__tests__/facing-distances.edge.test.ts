@@ -2,14 +2,14 @@ import { expect, test } from "vitest";
 import { SidePairs } from "@/domains/unit/side";
 import { Option } from "@/utils/Option";
 import { FacingDistances } from "../index";
-import { Moved, Parent } from "./sample-bounds";
+import { From, Parent } from "./sample-bounds";
 
-test("運んでいるものと重なっている兄弟は相手にならない", () => {
+test("起点と重なっている兄弟は相手にならない", () => {
   const overlapping = { left: 60, top: 35, width: 30, height: 10 };
 
   expect(
     FacingDistances.create({
-      moved: Moved,
+      from: From,
       parentBounds: Parent,
       siblings: [overlapping],
     }).horizontal.end,
@@ -27,7 +27,7 @@ test("親の縁より先にいる兄弟は相手にならない", () => {
 
   expect(
     FacingDistances.create({
-      moved: Moved,
+      from: From,
       parentBounds: Parent,
       siblings: [outside],
     }).horizontal.end,
@@ -44,7 +44,7 @@ test("兄弟に接している向きには、兄弟も親の縁も線を引か�
   const touching = { left: 70, top: 40, width: 20, height: 10 };
 
   const distances = FacingDistances.create({
-    moved: Moved,
+    from: From,
     parentBounds: Parent,
     siblings: [touching],
   });
@@ -61,7 +61,7 @@ test("兄弟に接している向きには、兄弟も親の縁も線を引か�
 
 test("親の縁に接している向きには線を引かない", () => {
   const distances = FacingDistances.create({
-    moved: { left: 0, top: 40, width: 20, height: 10 },
+    from: { left: 0, top: 40, width: 20, height: 10 },
     parentBounds: Parent,
     siblings: [],
   });
@@ -78,7 +78,7 @@ test("親の縁に接している向きには線を引かない", () => {
 
 test("親の縁からはみ出した向きに兄弟が無ければ、線を引かない", () => {
   const distances = FacingDistances.create({
-    moved: { left: -10, top: 40, width: 20, height: 10 },
+    from: { left: -10, top: 40, width: 20, height: 10 },
     parentBounds: Parent,
     siblings: [],
   });
@@ -98,7 +98,7 @@ test("親の縁からはみ出した向きでも、その先にいる兄弟ま�
 
   expect(
     FacingDistances.create({
-      moved: { left: -10, top: 40, width: 20, height: 10 },
+      from: { left: -10, top: 40, width: 20, height: 10 },
       parentBounds: Parent,
       siblings: [sibling],
     }).horizontal.start,
@@ -117,7 +117,7 @@ test("兄弟と親の縁が同じ距離なら、親の縁までの線になる",
 
   expect(
     FacingDistances.create({
-      moved: Moved,
+      from: From,
       parentBounds: Parent,
       siblings: [sibling],
     }).horizontal.end,
@@ -134,7 +134,7 @@ test("親の外にいる向きは手前の縁まで測り、奥の縁まで突�
   // 親の上（上下 -20〜-10）にいる。下へ進むと親の上辺 0 に当たり、下辺 100 までは測らない
   expect(
     FacingDistances.create({
-      moved: { left: 50, top: -20, width: 20, height: 10 },
+      from: { left: 50, top: -20, width: 20, height: 10 },
       parentBounds: Parent,
       siblings: [],
     }),
@@ -155,7 +155,7 @@ test("端数で数 ULP 外側から重なって見えても、親の縁に外側
   // 下辺は -11.99999999999999 + 12 = 1.0658e-14 で、親の上辺 0 より数 ULP 下にある
   expect(
     FacingDistances.create({
-      moved: { left: 50, top: -11.99999999999999, width: 20, height: 12 },
+      from: { left: 50, top: -11.99999999999999, width: 20, height: 12 },
       parentBounds: Parent,
       siblings: [],
     }),
@@ -163,7 +163,7 @@ test("端数で数 ULP 外側から重なって見えても、親の縁に外側
   // 1 離れていれば、親の上辺までの線を引く
   expect(
     FacingDistances.create({
-      moved: { left: 50, top: -13, width: 20, height: 12 },
+      from: { left: 50, top: -13, width: 20, height: 12 },
       parentBounds: Parent,
       siblings: [],
     }).vertical.end,
