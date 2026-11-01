@@ -1,0 +1,941 @@
+{
+  "version": 2,
+  "pr": 1257,
+  "headBranch": "claude/magical-cannon-r434wp",
+  "baseBranch": "main",
+  "mergeBase": "2f80bd25bcdb424b60a718004610321443930e7e",
+  "head": "76feb514963e6bc0bee7ce69028baf337b33e575",
+  "groups": [
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resize-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/edit-continuity/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/session/prop-control/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/dom-event/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-token-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.instance-lock.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-token-actions/__tests__/use-token-actions.continuity.test.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 22,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/inspector",
+      "files": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/groups-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 21,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/prop-row/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/shorthand-row/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.edit-continuity.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/inspector/components/property-panel/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/prop-field/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/tokens",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 18,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/color-swatch/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/segmented-control/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/__tests__/segmented-controls.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "hooks",
+      "files": [
+        {
+          "path": "src/hooks/use-first-then-rest/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 33,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 47,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/hooks/use-first-then-rest/index.ts"
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.edit-continuity.test.tsx",
+        "name": "キーボードだけで同じ欄へ戻って打つと、そこからまた別のまとまりとして届く"
+      },
+      {
+        "file": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.edit-continuity.test.tsx",
+        "name": "打っている途中で同じ欄をクリックしても、続けて打った編集は同じまとまりの続きとして届く"
+      },
+      {
+        "file": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts",
+        "name": "1 回呼んで 2 件目以降の値になってから区切ると、次はまた 1 件目の値が返る"
+      },
+      {
+        "file": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts",
+        "name": "初めて呼ぶと 1 件目の値が返る"
+      },
+      {
+        "file": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts",
+        "name": "描き直しを待たずに続けて呼んでも、2 回目は 2 件目以降の値が返る"
+      },
+      {
+        "file": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts",
+        "name": "描き直しを挟んで続けて呼んでも、2 回目からは 2 件目以降の値が返る"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.edit-continuity.test.tsx",
+      "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "4f8d990c1c21c5955db772ae3134195dc0517e68",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T11:37:55Z",
+      "subject": "✨ [New Feature]: #550 1 件目と 2 件目以降で返す値を変える汎用フックを追加",
+      "body": "- src/hooks/use-first-then-rest に useFirstThenRest<T> を追加\n- restart で区切り、next は区切ってから 1 回目に first、以降は rest を返す\n\n背景:\n「1 件目は Separate、2 件目以降は Continued、区切りで下ろす」という同じ形の\nuseRef が prop-field / use-node-resize / token-editor の value-field の 3 箇所に\nあり、3 箇所目が出た時点で畳むことになった。\n\n採用理由:\nオーナー判断で src/hooks/ に置く案 A を採った。src/hooks は domains を\nimport できないので、続き方の語彙(EditContinuity)を知らない汎用フックにし、\n返す値は呼び出し側が first / rest として渡す <T> 版にした。型を決めるのは\n呼び出し側で、実装は T の中身を見ないので、rules/coding.md の型引数の条件に\n当たる。引数は同じ型が 2 つ並ぶのでオブジェクトで受ける。\n\n影響とトレードオフ:\n戻り値は関数プロパティ記法にした。呼び出し側がメソッドを切り離して\nonFocus 等へ渡すので、this に頼る実装を型の上で塞ぐ。\nref に置くのは、pointermove のように描き直しを待たずに続けて呼ばれる経路が\nあるため(useState だと 2 回とも first になる)。\n\n代替案:\n- 閉じた union \"first\" | \"rest\" を返す非ジェネリック版: EditContinuity と\n  1 対 1 の語彙が src/hooks に二重化し、読み替えの三項が 3 箇所に残る\n- src/hooks から domains/session の import を許す: 規約と lint に例外が増える\n- domains に純粋な値を置く: ref の読み書きの重複は残る\n- 名前 useRunPosition / useFirstFlag / reset: Position の衝突・実装手段の名前・\n  use-canvas-view の reset との衝突\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/550\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NvLccNfwNz8ZaSzv3",
+      "files": [
+        {
+          "path": "src/hooks/use-first-then-rest/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 32,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,32 @@\n+import { useRef } from \"react\";\n+\n+/**\n+ * 区切ってから 1 回目だけ `first` を、2 回目以降は `rest` を返す並び。\n+ *\n+ * 呼んだ時点で 1 件目は済んだとみなす。返した値を受け手が捨てても、次は `rest` を返す。\n+ *\n+ * @param values 1 回目に返す値と、2 回目以降に返す値\n+ * @returns 区切る手続きと、次の値を返す手続き\n+ */\n+export function useFirstThenRest<T>(\n+  values: Readonly<{ first: T; rest: T }>,\n+): Readonly<{ restart: () => void; next: () => T }> {\n+  const hasStarted = useRef(false);\n+\n+  return {\n+    /** 区切る。次の `next` はまた `first` を返す。 */\n+    restart: () => {\n+      hasStarted.current = false;\n+    },\n+    /**\n+     * 次の値を返す。iterator の `{ value, done }` ではなく値そのものを返す。\n+     *\n+     * @returns 区切ってから(または初めて)1 回目なら `first`、それ以外は `rest`\n+     */\n+    next: () => {\n+      const value = hasStarted.current ? values.rest : values.first;\n+      hasStarted.current = true;\n+      return value;\n+    },\n+  };\n+}",
+          "patchLines": 33,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d3a4756d2c7e26d65176a6ef1c620123effbb67c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T11:37:56Z",
+      "subject": "🧪 [Tests]: #550 useFirstThenRest の並びと区切りのテストを追加",
+      "body": "- 初めて呼ぶと first、描き直しを挟んでも挟まなくても 2 回目から rest\n- 1 回呼んでから区切ると、次はまた first\n\n背景:\n3 箇所が依存する判断(呼んだ時点で 1 件目は済んだとみなす)をフックへ\n移したので、その振る舞いをフック単体で固定する。\n\n採用理由:\n描き直しを挟む / 挟まないを別ケースにした。前者は let 実装を、後者は\nuseState 実装を落とす(実装を壊して実測した)。区切りのケースは、区切る前に\n1 回呼んで rest にしておかないと、restart を何もしない実装でも通るため。\n\n影響とトレードオフ:\nnext / restart は ref を書き換えるだけで state を更新しないので、act で\n包まずに直接呼んでいる。値はテスト用の文字列にし、ドメインは import しない。\n\n代替案:\n- 「受け手が値を使わなくても次は rest」を別ケースにする: フックは受け手を\n  観測できず、描き直しを挟むケースと同じ assert になるので立てない\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/550\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NvLccNfwNz8ZaSzv3",
+      "files": [
+        {
+          "path": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 47,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,47 @@\n+import { renderHook } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { useFirstThenRest } from \"../index\";\n+\n+/** 1 件目と 2 件目以降で別の値を返す並びを描く。 */\n+const setup = () =>\n+  renderHook(() => useFirstThenRest({ first: \"head\", rest: \"tail\" }));\n+\n+test(\"初めて呼ぶと 1 件目の値が返る\", () => {\n+  const { result } = setup();\n+\n+  const value = result.current.next();\n+\n+  expect(value).toBe(\"head\");\n+});\n+\n+test(\"描き直しを挟んで続けて呼んでも、2 回目からは 2 件目以降の値が返る\", () => {\n+  const { result, rerender } = setup();\n+\n+  const first = result.current.next();\n+  rerender();\n+  const second = result.current.next();\n+  rerender();\n+  const third = result.current.next();\n+\n+  expect([first, second, third]).toEqual([\"head\", \"tail\", \"tail\"]);\n+});\n+\n+test(\"描き直しを待たずに続けて呼んでも、2 回目は 2 件目以降の値が返る\", () => {\n+  const { result } = setup();\n+\n+  const sequence = result.current;\n+  const values = [sequence.next(), sequence.next()];\n+\n+  expect(values).toEqual([\"head\", \"tail\"]);\n+});\n+\n+test(\"1 回呼んで 2 件目以降の値になってから区切ると、次はまた 1 件目の値が返る\", () => {\n+  const { result } = setup();\n+\n+  const first = result.current.next();\n+  const second = result.current.next();\n+  result.current.restart();\n+  const afterRestart = result.current.next();\n+\n+  expect([first, second, afterRestart]).toEqual([\"head\", \"tail\", \"head\"]);\n+});",
+          "patchLines": 48,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "33f3ab6d76dd2d5dbbe33bf491dedea9437da80f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T11:38:05Z",
+      "subject": "♻️ [Refactoring]: #550 プロパティ欄の続き方を useFirstThenRest で決める",
+      "body": "- LiteralInput の hasEdited ref を useFirstThenRest に置き換え\n- onFocus で restart、onChange で next() の値を続き方として渡す\n\n背景:\n同じ形の ref が 3 箇所にあり、src/hooks に畳む先を作った。\n\n採用理由:\nfirst に Separate、rest に Continued を渡すので、読み替えの三項も消える。\n振る舞い(フォーカスしてから離すまでが undo 1 回ぶん)は変えない。\n\n影響とトレードオフ:\n「立てるのは送った時点で、履歴へ入ったかは見ない」はフックの doc へ移した。\nただし、その帰結(1 件目が上流で落ちると 2 件目が続きとして届く)は undo\n履歴の話で、汎用層に書けないため、このサイトに 1〜2 行残した。\n「畳む先が無いので分けたまま」のコメントは事実でなくなったので消した。\n\n代替案:\n- 帰結もフックの doc に書く: ドメインの語(履歴・編集)が src/hooks に入る\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/550\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NvLccNfwNz8ZaSzv3",
+      "files": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 21,
+          "patch": "@@ -1,4 +1,4 @@\n-import { type ReactElement, useId, useRef } from \"react\";\n+import { type ReactElement, useId } from \"react\";\n import { ColorSwatch, GradientSwatch } from \"@/components/color-swatch\";\n import { SegmentedControl } from \"@/components/segmented-control\";\n import type { PropEdit } from \"@/domains/dcmp/node\";\n@@ -17,6 +17,7 @@ import {\n   PropControl,\n   type PropControlInput,\n } from \"@/domains/session/prop-control\";\n+import { useFirstThenRest } from \"@/hooks/use-first-then-rest\";\n import { Option } from \"@/utils/Option\";\n \n /*\n@@ -348,16 +349,12 @@ function LiteralInput({\n   field: FieldBinding;\n   inputType: \"number\" | \"text\";\n }>): ReactElement {\n-  /*\n-   * 立てるのは送った時点で、履歴へ入ったかは見ない。1 件目が上流で落ちると 2 件目が\n-   * 続きとして届く（`EditHistory.amend` の doc が書いている「戻る先が無いまま」と同じ形）。\n-   *\n-   * 同じ形の ref が `features/editor/features/canvas` の `use-node-resize` と\n-   * `features/editor/features/tokens` の `token-editor/value-field` にもある。\n-   * 畳む先が `src/hooks/` にも `domains/` にも置けず（前者は domains を、後者は React を\n-   * import できない）、寄せるには 3 つの feature の外に層が要るので分けたままにしている。\n-   */\n-  const hasEdited = useRef(false);\n+  // 1 件目が上流で落ちると 2 件目が続きとして届く（`EditHistory.amend` の doc が書いている\n+  // 「戻る先が無いまま」と同じ形）。\n+  const continuitySequence = useFirstThenRest({\n+    first: EditContinuities.Separate,\n+    rest: EditContinuities.Continued,\n+  });\n \n   return (\n     <input\n@@ -366,17 +363,9 @@ function LiteralInput({\n       className={FieldClass}\n       value={field.value}\n       placeholder={field.unsetLabel}\n-      onFocus={() => {\n-        hasEdited.current = false;\n-      }}\n+      onFocus={continuitySequence.restart}\n       onChange={(event) => {\n-        field.onChangeRaw(\n-          event.target.value,\n-          hasEdited.current\n-            ? EditContinuities.Continued\n-            : EditContinuities.Separate,\n-        );\n-        hasEdited.current = true;\n+        field.onChangeRaw(event.target.value, continuitySequence.next());\n       }}\n     />\n   );",
+          "patchLines": 57,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "13fb521afae5e86371f11fe3637d99895aa0ee56",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T11:38:20Z",
+      "subject": "♻️ [Refactoring]: #550 リサイズの続き方を useFirstThenRest で決める",
+      "body": "- use-node-resize の hasResized ref を useFirstThenRest に置き換え\n- grab / grabAt で restart、trackPointer で next() の値を onResize へ渡す\n\n背景:\n同じ形の ref が 3 箇所にあり、src/hooks に畳む先を作った。\n\n採用理由:\nnext() は tracked の早期 return より後で呼ぶ(今と同じ順)。前で呼ぶと、\n反映しなかった移動で 1 件目を使ってしまう。掴んでから離すまでが undo\n1 回ぶんという振る舞いは変えない。\n\n影響とトレードオフ:\nreducer の状態に持たない理由(pointermove が同期フラッシュされない)は、\nこのサイトで reducer へ戻されてもテストで気づけないので残した。\n「立てるのは通知した時点で…」の段落はフックの doc へ移ったので消した。\n\n代替案:\n- 続き方を reducer の状態に持つ: 描き直しを待たずに 2 回処理されると、\n  2 回とも 1 件目になって undo が割れる\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/550\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NvLccNfwNz8ZaSzv3",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 21,
+          "patch": "@@ -2,7 +2,6 @@ import {\n   type MouseEvent as ReactMouseEvent,\n   type PointerEvent as ReactPointerEvent,\n   useReducer,\n-  useRef,\n } from \"react\";\n import type { ResizeEdit } from \"@/domains/dcmp/resize-edit\";\n import { DocumentSelection } from \"@/domains/session/document-selection\";\n@@ -24,6 +23,7 @@ import {\n } from \"@/features/editor/features/canvas/domains/side-snap\";\n import { CanvasPointer } from \"@/features/editor/features/canvas/utils/CanvasPointer\";\n import { DrawnBounds } from \"@/features/editor/features/canvas/utils/DrawnBounds\";\n+import { useFirstThenRest } from \"@/hooks/use-first-then-rest\";\n import { CommandKey } from \"@/libs/dom-event\";\n import { Option } from \"@/utils/Option\";\n \n@@ -156,25 +156,18 @@ export function useNodeResize(\n     undefined,\n     NodeResize.create,\n   );\n-  /*\n-   * この掴みで既に 1 回反映したか。掴むたびに戻す。\n-   *\n-   * reducer の状態に持たないのは、`trackPointer` が読むのが**今のレンダーの値**だから。\n-   * pointermove は同期フラッシュが保証されず、続けて 2 回処理されると 2 回とも「まだ\n-   * 反映していない」と読んで undo が 2 回に割れる（happy-dom は毎回フラッシュするので\n-   * テストには出ない）。render では読まずハンドラの中だけで読み書きするので ref に置く\n-   * （rules/hooks.md「useRef の使い分け」）。\n-   *\n-   * 立てるのは通知した時点で、履歴へ入ったかは見ない。1 件目が上流で落ちると 2 件目が\n-   * 続きとして届く（`EditHistory.amend` の doc が書いている「戻る先が無いまま」と同じ形）。\n-   */\n-  const hasResized = useRef(false);\n+  // reducer の状態に持たないのは、pointermove が同期フラッシュされず今のレンダーの値を読むと\n+  // 2 回とも 1 件目になるため（happy-dom は毎回フラッシュするのでテストには出ない）。\n+  const continuitySequence = useFirstThenRest({\n+    first: EditContinuities.Separate,\n+    rest: EditContinuities.Continued,\n+  });\n \n   const grab = (\n     grip: ResizeGrip,\n     event: ReactPointerEvent<HTMLElement>,\n   ): void => {\n-    hasResized.current = false;\n+    continuitySequence.restart();\n     const held = NodeResize.hold(\n       params.resizable,\n       grip,\n@@ -217,7 +210,7 @@ export function useNodeResize(\n     if (!Option.isSome(grabbed)) {\n       return false;\n     }\n-    hasResized.current = false;\n+    continuitySequence.restart();\n     dispatch({\n       type: \"grab\",\n       held: withMeasuredSnap(grabbed.value, bounds.value),\n@@ -247,11 +240,7 @@ export function useNodeResize(\n     if (!Option.isSome(tracked)) {\n       return;\n     }\n-    const continuity = hasResized.current\n-      ? EditContinuities.Continued\n-      : EditContinuities.Separate;\n-    hasResized.current = true;\n-    params.onResize(tracked.value.edit, continuity);\n+    params.onResize(tracked.value.edit, continuitySequence.next());\n     dispatch({ type: \"track\", guides: tracked.value.guides });\n   };\n ",
+          "patchLines": 71,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e319e77f03f2a2629d1e9fb275f79270c170f80a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T11:38:20Z",
+      "subject": "♻️ [Refactoring]: #550 カラーピッカーの続き方を useFirstThenRest で決める",
+      "body": "- ColorPickerField の hasEdited ref と resetEdited を useFirstThenRest に置き換え\n- onClick / onBlur で restart、onChange で next() の値を渡す\n\n背景:\n同じ形の ref が 3 箇所にあり、src/hooks に畳む先を作った。\n\n採用理由:\n区切りの時点(開いたとき・離れたとき)は変えず、ref の読み書きだけを\nフックへ移した。\n\n影響とトレードオフ:\n「立てるのは送った時点で…(LiteralInput と同じ扱い)」を消した。これに\n続いていた「#rrggbb は none に届かない」は、前提の文が無くなると何の話か\n読めなくなるので、「1 件目が落ちて続きが先に届くことは無い」と主語を\n補って書き直した。リセットの語は「区切る」に揃えた。\n\n代替案:\n- 「none に届かない」の文も消す: このサイトでは帰結が起きない理由で、\n  ほかの 2 箇所には無い事実なので残す\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/550\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NvLccNfwNz8ZaSzv3",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 18,
+          "patch": "@@ -1,4 +1,4 @@\n-import { type ReactElement, useRef, useState } from \"react\";\n+import { type ReactElement, useState } from \"react\";\n import type { Rgb, TokenValue } from \"@/domains/dcmp/token\";\n import {\n   EditContinuities,\n@@ -9,6 +9,7 @@ import {\n   type TokenControlField,\n   type TokenControlInput,\n } from \"@/features/editor/features/tokens/domains/token-control\";\n+import { useFirstThenRest } from \"@/hooks/use-first-then-rest\";\n import type { ValueOf } from \"@/types/ValueOf\";\n import { Option } from \"@/utils/Option\";\n \n@@ -120,34 +121,28 @@ function ColorPickerField({\n   onChangeRaw: ChangeRaw;\n }>): ReactElement {\n   /*\n-   * 立てるのは送った時点で、履歴へ入ったかは見ない（prop-field の `LiteralInput` と同じ\n-   * 扱い）。ピッカーは常に #rrggbb を返すので `TokenControl.valueFrom` の `none` には届かない。\n+   * ピッカーは常に #rrggbb を返し `TokenControl.valueFrom` の `none` に届かないので、1 件目が\n+   * 落ちて続きが先に届くことは無い。\n    *\n-   * 下ろすのは開いたとき（click）と離れたとき（blur）。フォーカスを得たときにしないのは、\n+   * 区切るのは開いたとき（click）と離れたとき（blur）。フォーカスを得たときにしないのは、\n    * ピッカーを閉じてもフォーカスが入力欄に残り、開き直しでは focus が発火しないため。blur でも\n-   * 下ろすのは、色のパネルがモーダルでなく、別の欄を編集して戻ったときに続きとして送らないため。\n+   * 区切るのは、色のパネルがモーダルでなく、別の欄を編集して戻ったときに続きとして送らないため。\n    * Chromium ではキーボード（Enter / Space）で開いても click が届くことを実測した。Tauri の\n    * WebView は未検証。\n    */\n-  const hasEdited = useRef(false);\n-  const resetEdited = () => {\n-    hasEdited.current = false;\n-  };\n+  const continuitySequence = useFirstThenRest({\n+    first: EditContinuities.Separate,\n+    rest: EditContinuities.Continued,\n+  });\n   const picker = (\n     <input\n       id={id}\n       type=\"color\"\n       value={value}\n-      onClick={resetEdited}\n-      onBlur={resetEdited}\n+      onClick={continuitySequence.restart}\n+      onBlur={continuitySequence.restart}\n       onChange={(event) => {\n-        onChangeRaw(\n-          event.target.value,\n-          hasEdited.current\n-            ? EditContinuities.Continued\n-            : EditContinuities.Separate,\n-        );\n-        hasEdited.current = true;\n+        onChangeRaw(event.target.value, continuitySequence.next());\n       }}\n       className={PickerClasses[density]}\n     />",
+          "patchLines": 60,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "973b5496f85ac749df7a769706a5627192ac5190",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T11:49:30Z",
+      "subject": "♻️ [Refactoring]: #550 useFirstThenRest の ref 名と doc の語彙を restart に揃える",
+      "body": "- ref を hasStarted から hasReturnedFirst に改名\n- doc の「区切る」を公開名 restart に合わせて「始め直す」に統一\n- next の本体で、立てる行と return の間に空行を入れる\n- テストの setup の doc を「描く」から「用意する」に直す\n\n背景:\nnaming-reviewer の指摘。restart() で hasStarted が false になり、名前と\n実体が逆を向いていた。同じ操作を restart・区切る・hasStarted = false の\n3 通りで呼んでいた。\n\n採用理由:\nref の名前は実体(1 件目をもう返したか)に合わせた。doc の語彙は、外から\n見える restart に揃えた。公開名は変えない。\n\n影響とトレードオフ:\n振る舞いは変わらない。テスト名の「区切る」は、テストの観点を表す文と\nして残した。\n\n代替案:\n- 公開名を区切り系の名前に変える: reset は use-canvas-view が別の意味で\n  使っているので、restart を採った経緯がある\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/550\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NvLccNfwNz8ZaSzv3",
+      "files": [
+        {
+          "path": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -2,7 +2,7 @@ import { renderHook } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n import { useFirstThenRest } from \"../index\";\n \n-/** 1 件目と 2 件目以降で別の値を返す並びを描く。 */\n+/** 1 件目と 2 件目以降で別の値を返す並びを用意する。 */\n const setup = () =>\n   renderHook(() => useFirstThenRest({ first: \"head\", rest: \"tail\" }));\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/hooks/use-first-then-rest/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 8,
+          "patch": "@@ -1,31 +1,32 @@\n import { useRef } from \"react\";\n \n /**\n- * 区切ってから 1 回目だけ `first` を、2 回目以降は `rest` を返す並び。\n+ * 始め直してから 1 回目だけ `first` を、2 回目以降は `rest` を返す並び。\n  *\n  * 呼んだ時点で 1 件目は済んだとみなす。返した値を受け手が捨てても、次は `rest` を返す。\n  *\n  * @param values 1 回目に返す値と、2 回目以降に返す値\n- * @returns 区切る手続きと、次の値を返す手続き\n+ * @returns 始め直す手続きと、次の値を返す手続き\n  */\n export function useFirstThenRest<T>(\n   values: Readonly<{ first: T; rest: T }>,\n ): Readonly<{ restart: () => void; next: () => T }> {\n-  const hasStarted = useRef(false);\n+  const hasReturnedFirst = useRef(false);\n \n   return {\n-    /** 区切る。次の `next` はまた `first` を返す。 */\n+    /** 始め直す。次の `next` はまた `first` を返す。 */\n     restart: () => {\n-      hasStarted.current = false;\n+      hasReturnedFirst.current = false;\n     },\n     /**\n      * 次の値を返す。iterator の `{ value, done }` ではなく値そのものを返す。\n      *\n-     * @returns 区切ってから(または初めて)1 回目なら `first`、それ以外は `rest`\n+     * @returns 始め直してから(または初めて)1 回目なら `first`、それ以外は `rest`\n      */\n     next: () => {\n-      const value = hasStarted.current ? values.rest : values.first;\n-      hasStarted.current = true;\n+      const value = hasReturnedFirst.current ? values.rest : values.first;\n+      hasReturnedFirst.current = true;\n+\n       return value;\n     },\n   };",
+          "patchLines": 41,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "8afa8d88570441bca9a60964aaf662795b4b030b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T11:49:31Z",
+      "subject": "♻️ [Refactoring]: #550 続き方の並びを EditContinuityRun として 1 箇所で決める",
+      "body": "- domains/session/edit-continuity に EditContinuityRun(first: Separate,\n  rest: Continued)を追加\n- 3 箇所はどれも useFirstThenRest(EditContinuityRun) を呼ぶだけにする\n- use-node-resize に「1 件目が上流で落ちると 2 件目が続きとして届く」を戻す\n- ColorPickerField のコメントの「区切る」を「始め直す」に揃える\n\n背景:\nduplication-reviewer / solution-reviewer の指摘。{ first: Separate,\nrest: Continued } が 3 箇所に一字一句同じ形で書かれていた。first と rest\nはどちらも EditContinuity なので、1 箇所だけ入れ替えても型エラーにならず、\nその欄だけ undo の粒度が黙って変わる。\nover-guard-reviewer の指摘。EditorState.resize は、単一選択でない・\nファイルが不正な間に none を返す。そのため 1 件目が落ちうるのに、\nuse-node-resize からはその帰結の記述が消えていた。\n\n採用理由:\n対応表は語彙の範囲なので、EditContinuities の隣に置いた。子 feature\n3 つはどれも src/domains を import でき、src/hooks は domains を知らない\nまま。first と rest を入れ替えると、既存の 3 テストファイルの 9 件が\n落ちることを実測した。\n\n影響とトレードオフ:\nEditContinuities に入れると、ValueOf がこの組まで union に含めてしまう\nので、別の export にした。生成・判定・変換は持たず、companion を持たない\nという前提はそのまま。\n\n代替案:\n- 3 箇所に直書きしたまま残す: 書き写しが一致していることに振る舞いの\n  維持が頼ったままになる\n- 案 C(domains に続き方の状態を置く): ref の重複が残るので却下済み。\n  今回置いたのは値の対応だけで、それとは別物\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/550\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NvLccNfwNz8ZaSzv3",
+      "files": [
+        {
+          "path": "src/domains/session/edit-continuity/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 1,
+          "patch": "@@ -19,7 +19,7 @@ export const EditContinuities = {\n  *\n  * 同名のコンパニオンオブジェクトを持たないのは、**続き方そのものに生成・判定・変換が無い**\n  * ため。積むか差し替えるかを決めるのは履歴の側（`EditHistory`）で、ここは語彙だけを持つ\n- * （先例は `unit/axis` の `Axis`）。\n+ * （先例は `unit/axis` の `Axis`）。`EditContinuityRun` も値の割り当てだけで、生成・判定・変換は持たない。\n  *\n  * `features/editor/domains/edit-history` と並べないのは、指定する側が\n  * `features/editor/features/canvas` と `features/editor/features/inspector` と\n@@ -27,3 +27,14 @@ export const EditContinuities = {\n  * （`rules/architecture.md`「配置の判断基準」の昇格）。\n  */\n export type EditContinuity = ValueOf<typeof EditContinuities>;\n+\n+/**\n+ * 1 回の操作が続けて送る編集の続き方。並びの頭は直前とは別のまとまり、残りはその続き。\n+ *\n+ * `EditContinuities` に入れないのは、入れると `ValueOf` がこの組まで `EditContinuity` の union に\n+ * 含めるため。\n+ */\n+export const EditContinuityRun = {\n+  first: EditContinuities.Separate,\n+  rest: EditContinuities.Continued,\n+} as const satisfies Readonly<{ first: EditContinuity; rest: EditContinuity }>;",
+          "patchLines": 24,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 5,
+          "patch": "@@ -6,8 +6,8 @@ import {\n import type { ResizeEdit } from \"@/domains/dcmp/resize-edit\";\n import { DocumentSelection } from \"@/domains/session/document-selection\";\n import {\n-  EditContinuities,\n   type EditContinuity,\n+  EditContinuityRun,\n } from \"@/domains/session/edit-continuity\";\n import { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-bounds\";\n import type { CanvasView } from \"@/features/editor/features/canvas/domains/canvas-view\";\n@@ -158,10 +158,9 @@ export function useNodeResize(\n   );\n   // reducer の状態に持たないのは、pointermove が同期フラッシュされず今のレンダーの値を読むと\n   // 2 回とも 1 件目になるため（happy-dom は毎回フラッシュするのでテストには出ない）。\n-  const continuitySequence = useFirstThenRest({\n-    first: EditContinuities.Separate,\n-    rest: EditContinuities.Continued,\n-  });\n+  // 単一選択でない・ファイルが不正な間に 1 件目が上流で落ちると、2 件目が続きとして届く\n+  // （`EditHistory.amend` の doc が書いている「戻る先が無いまま」と同じ形）。\n+  const continuitySequence = useFirstThenRest(EditContinuityRun);\n \n   const grab = (\n     grip: ResizeGrip,",
+          "patchLines": 24,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 4,
+          "patch": "@@ -10,6 +10,7 @@ import {\n import {\n   EditContinuities,\n   type EditContinuity,\n+  EditContinuityRun,\n } from \"@/domains/session/edit-continuity\";\n import {\n   type CurrentPaint,\n@@ -351,10 +352,7 @@ function LiteralInput({\n }>): ReactElement {\n   // 1 件目が上流で落ちると 2 件目が続きとして届く（`EditHistory.amend` の doc が書いている\n   // 「戻る先が無いまま」と同じ形）。\n-  const continuitySequence = useFirstThenRest({\n-    first: EditContinuities.Separate,\n-    rest: EditContinuities.Continued,\n-  });\n+  const continuitySequence = useFirstThenRest(EditContinuityRun);\n \n   return (\n     <input",
+          "patchLines": 20,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 6,
+          "patch": "@@ -3,6 +3,7 @@ import type { Rgb, TokenValue } from \"@/domains/dcmp/token\";\n import {\n   EditContinuities,\n   type EditContinuity,\n+  EditContinuityRun,\n } from \"@/domains/session/edit-continuity\";\n import {\n   TokenControl,\n@@ -124,16 +125,13 @@ function ColorPickerField({\n    * ピッカーは常に #rrggbb を返し `TokenControl.valueFrom` の `none` に届かないので、1 件目が\n    * 落ちて続きが先に届くことは無い。\n    *\n-   * 区切るのは開いたとき（click）と離れたとき（blur）。フォーカスを得たときにしないのは、\n+   * 始め直すのは開いたとき（click）と離れたとき（blur）。フォーカスを得たときにしないのは、\n    * ピッカーを閉じてもフォーカスが入力欄に残り、開き直しでは focus が発火しないため。blur でも\n-   * 区切るのは、色のパネルがモーダルでなく、別の欄を編集して戻ったときに続きとして送らないため。\n+   * 始め直すのは、色のパネルがモーダルでなく、別の欄を編集して戻ったときに続きとして送らないため。\n    * Chromium ではキーボード（Enter / Space）で開いても click が届くことを実測した。Tauri の\n    * WebView は未検証。\n    */\n-  const continuitySequence = useFirstThenRest({\n-    first: EditContinuities.Separate,\n-    rest: EditContinuities.Continued,\n-  });\n+  const continuitySequence = useFirstThenRest(EditContinuityRun);\n   const picker = (\n     <input\n       id={id}",
+          "patchLines": 28,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "76feb514963e6bc0bee7ce69028baf337b33e575",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T12:42:34Z",
+      "subject": "🧪 [Tests]: #550 プロパティ欄の始め直しがフォーカスで起きることをテストで固定",
+      "body": "- キーボードだけ(Tab / Shift+Tab)で同じ欄へ戻って打つと別のまとまりになる\n- 打っている途中で同じ欄をクリックしても、続けて打てば同じまとまりの続き\n\n背景:\ntest-reviewer の実測。LiteralInput の onFocus={restart} を onClick に\nずらしても、1847 件すべて通った。既存の「フォーカスし直して打つと…」は\nuser.type がクリックを合成するので、focus と click を区別できていない\nかった。この穴は差分の前からあったが、今回の差分がちょうどこの restart\nの位置を書き換えている。\n\n採用理由:\nfocus だけで起きる経路(キーボードで戻る)と、click だけで起きる経路\n(打っている途中のクリック)をそれぞれ 1 件ずつ置いた。どちらの向きに\nずらしても落ちる。onClick に変えると 2 件とも落ちることを実測した。\n\n影響とトレードオフ:\n実装は変えていない。テストファイルの既存の setup をそのまま使っている。\n\n代替案:\n- 既存テストの user.type を keyboard に替える: 既存の観点(フォーカスし\n  直すと区切る)の書き換えになり、click 側の経路は守られないまま残る\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/550\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NvLccNfwNz8ZaSzv3",
+      "files": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.edit-continuity.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 0,
+          "patch": "@@ -30,6 +30,27 @@ test(\"同じ欄へフォーカスし直して打つと、そこからまた別\n   expect(continuities).toEqual([Separate, Continued, Separate]);\n });\n \n+test(\"キーボードだけで同じ欄へ戻って打つと、そこからまた別のまとまりとして届く\", async () => {\n+  const { user, continuities } = setupEditablePanel(\"home-title\");\n+  await user.type(screen.getByRole(\"textbox\", { name: \"Content\" }), \"ab\");\n+\n+  await user.tab();\n+  await user.tab({ shift: true });\n+  await user.keyboard(\"c\");\n+\n+  expect(continuities).toEqual([Separate, Continued, Separate]);\n+});\n+\n+test(\"打っている途中で同じ欄をクリックしても、続けて打った編集は同じまとまりの続きとして届く\", async () => {\n+  const { user, continuities } = setupEditablePanel(\"home-title\");\n+  await user.type(screen.getByRole(\"textbox\", { name: \"Content\" }), \"ab\");\n+\n+  await user.click(screen.getByRole(\"textbox\", { name: \"Content\" }));\n+  await user.keyboard(\"c\");\n+\n+  expect(continuities).toEqual([Separate, Continued, Continued]);\n+});\n+\n test(\"別の欄へ移って打つと、そこからまた別のまとまりとして届く\", async () => {\n   /*\n    * まとまりを欄ごとではなくパネルに 1 つ持つ実装は、ここだけが落ちる",
+          "patchLines": 28,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "src/domains/session/edit-continuity/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize-continuity.test.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.token.test.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.edit-continuity.test.tsx",
+      "to": "src/components/__tests__/segmented-controls.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.edit-continuity.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.edit-continuity.test.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/groups-body/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.stories.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/components/color-swatch/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/components/segmented-control/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-row/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-row/index.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/shorthand-row/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/shorthand-row/index.tsx",
+      "to": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.instance-lock.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.token.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/index.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-token-actions/__tests__/use-token-actions.continuity.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-token-actions/index.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "status": "added"
+    }
+  ]
+}
