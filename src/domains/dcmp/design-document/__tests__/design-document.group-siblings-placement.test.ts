@@ -3,41 +3,16 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import type { Node, Props } from "@/domains/dcmp/node";
+import type { Node } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { propsOf } from "./group-setup";
+import { propsOf, setupDocument } from "./group-setup";
 
 /*
  * 同じ親の兄弟をまとめて包むときに、Box が親と兄弟から引き継ぐ指定（docs/06-ui.md
  * 「複数選択」のグループ化）。木の付け替えそのものは `design-document.group-siblings.test.ts`
  * が持つ。
  */
-
-/**
- * 画面の直下に、props を書いた panel を置き、その中にノードを並べたドキュメント。
- *
- * @param panelProps panel に書く props
- * @param children panel の中に並べるノード
- * @returns 1 つの artboard だけを持つドキュメント
- */
-function setupDocument(
-  panelProps: Props,
-  children: readonly Node[],
-): DesignDocument {
-  return DesignDocument.create({
-    tokens: DocumentTemplate.Default.tokens,
-    components: DocumentTemplate.Default.components,
-    artboards: [
-      {
-        name: "screen",
-        width: 375,
-        height: 812,
-        children: [{ name: "panel", type: "Box", props: panelProps, children }],
-      },
-    ],
-  });
-}
 
 /** panel の中で包む、フローの Box 2 つ。 */
 const FlowPair: readonly Node[] = [

@@ -1,4 +1,7 @@
-import { DesignDocument } from "@/domains/dcmp/design-document";
+import {
+  DesignDocument,
+  DocumentTemplate,
+} from "@/domains/dcmp/design-document";
 import { Node, type Props } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 
@@ -29,4 +32,29 @@ export function childNames(
   return Option.unwrap(DesignDocument.findChildren(document, parentName)).map(
     (child) => child.name,
   );
+}
+
+/**
+ * 画面の直下に、props を書いた panel を置き、その中にノードを並べたドキュメント。
+ *
+ * @param panelProps panel に書く props
+ * @param children panel の中に並べるノード
+ * @returns 1 つの artboard だけを持つドキュメント
+ */
+export function setupDocument(
+  panelProps: Props,
+  children: readonly Node[],
+): DesignDocument {
+  return DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    components: DocumentTemplate.Default.components,
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [{ name: "panel", type: "Box", props: panelProps, children }],
+      },
+    ],
+  });
 }
