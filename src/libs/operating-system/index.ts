@@ -26,11 +26,13 @@ export const OperatingSystem = {
    * `navigator.platform` は lib.dom で `@deprecated` だが使う。代わりの `userAgentData` は
    * lib.dom に型が無く、WebKit 系の webview（macOS / Linux）が持っていない。
    *
-   * @param source 判定に使う `platform` を持つもの。省くと実物の `navigator`
+   * @param navigatorPlatform 判定に使う `platform` を持つもの。省くと実物の `navigator`
    * @returns `platform` が `Mac` で始まれば `MacOs`、それ以外は `Other`
    */
-  fromNavigator(source: NavigatorPlatform = navigator): OperatingSystem {
-    return source.platform.startsWith("Mac")
+  fromNavigator(
+    navigatorPlatform: NavigatorPlatform = navigator,
+  ): OperatingSystem {
+    return navigatorPlatform.platform.startsWith("Mac")
       ? OperatingSystems.MacOs
       : OperatingSystems.Other;
   },

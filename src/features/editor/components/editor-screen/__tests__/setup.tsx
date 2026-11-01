@@ -31,7 +31,7 @@ import {
   type NavigatorPlatform,
   OperatingSystem,
 } from "@/libs/operating-system";
-import { MacOsNavigator } from "@/libs/operating-system/fake";
+import { MacOsNavigatorPlatform } from "@/libs/operating-system/fake";
 import { EditorScreen } from "../index";
 
 /** 既に置いてあるファイル。 */
@@ -50,7 +50,7 @@ export type ScreenPortOptions = Readonly<{
   /** メニューの購読を張れないようにするか。 */
   denyMenu?: boolean;
   /** アプリが動いている webview の `navigator`。省くと macOS。 */
-  platform?: NavigatorPlatform;
+  navigatorPlatform?: NavigatorPlatform;
 }>;
 
 /** 画面と、その外側の口を動かす手段。 */
@@ -96,7 +96,7 @@ export function renderEditorScreen(
     <EditorScreen
       clock={createClockFake().clock}
       operatingSystem={OperatingSystem.fromNavigator(
-        options.platform ?? MacOsNavigator,
+        options.navigatorPlatform ?? MacOsNavigatorPlatform,
       )}
       ports={{
         ipc: ipcFake.ipc,

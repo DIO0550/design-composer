@@ -25,8 +25,8 @@ import { Option } from "@/utils/Option";
  * 行に併記する割り当て。綴りは OS ごとに変わるので、ここではキーと修飾だけを持つ。
  */
 type MenuShortcut =
-  | Readonly<{ type: "plain"; key: string }>
-  | Readonly<{ type: "command"; key: string; withShiftKey: boolean }>;
+  | Readonly<{ kind: "plain"; key: string }>
+  | Readonly<{ kind: "command"; key: string; withShiftKey: boolean }>;
 
 /**
  * 修飾の無いキーの割り当て。
@@ -34,8 +34,8 @@ type MenuShortcut =
  * @param key キーの綴り
  * @returns 併記する割り当て
  */
-function plainKey(key: string): Option<MenuShortcut> {
-  return Option.some({ type: "plain", key });
+function plainShortcut(key: string): Option<MenuShortcut> {
+  return Option.some({ kind: "plain", key });
 }
 
 /**
@@ -44,8 +44,8 @@ function plainKey(key: string): Option<MenuShortcut> {
  * @param key 修飾と組むキーの綴り
  * @returns 併記する割り当て
  */
-function commandKey(key: string): Option<MenuShortcut> {
-  return Option.some({ type: "command", key, withShiftKey: false });
+function commandShortcut(key: string): Option<MenuShortcut> {
+  return Option.some({ kind: "command", key, withShiftKey: false });
 }
 
 /**
@@ -54,8 +54,8 @@ function commandKey(key: string): Option<MenuShortcut> {
  * @param key 修飾と組むキーの綴り
  * @returns 併記する割り当て
  */
-function shiftCommandKey(key: string): Option<MenuShortcut> {
-  return Option.some({ type: "command", key, withShiftKey: true });
+function shiftCommandShortcut(key: string): Option<MenuShortcut> {
+  return Option.some({ kind: "command", key, withShiftKey: true });
 }
 
 /** 表示のための綴りだけを持つ部分（押せるかどうかと押したときの手続きは状態から決まる）。 */
@@ -71,47 +71,48 @@ type OperationPresentation = Readonly<
  * `Context menu`）。割り当ては動いている OS の綴りで出す（`shortcutLabel`）。
  *
  * 割り当ての出どころはキーボードのフック（`use-*-shortcut`）。片方だけ変えると併記と
- * 実際の割り当てが食い違う（#1254）。
+ * 実際の割り当てが食い違う。
+ * フックから導かないのは、併記を持つ 10 個のフックの非公開の定数を公開し直す必要があり範囲外だから（#1254）。
  */
 const OperationPresentations = {
   duplicate: {
     label: "Duplicate",
-    shortcut: commandKey("D"),
+    shortcut: commandShortcut("D"),
     tone: ContextMenuTones.Normal,
   },
   copy: {
     label: "Copy",
-    shortcut: commandKey("C"),
+    shortcut: commandShortcut("C"),
     tone: ContextMenuTones.Normal,
   },
   paste: {
     label: "Paste",
-    shortcut: commandKey("V"),
+    shortcut: commandShortcut("V"),
     tone: ContextMenuTones.Normal,
   },
   rename: {
     label: "Rename",
-    shortcut: commandKey("R"),
+    shortcut: commandShortcut("R"),
     tone: ContextMenuTones.Normal,
   },
   group: {
     label: "Group",
-    shortcut: commandKey("G"),
+    shortcut: commandShortcut("G"),
     tone: ContextMenuTones.Normal,
   },
   ungroup: {
     label: "Ungroup",
-    shortcut: shiftCommandKey("G"),
+    shortcut: shiftCommandShortcut("G"),
     tone: ContextMenuTones.Normal,
   },
   "bring-forward": {
     label: "Bring forward",
-    shortcut: commandKey("]"),
+    shortcut: commandShortcut("]"),
     tone: ContextMenuTones.Normal,
   },
   "send-backward": {
     label: "Send backward",
-    shortcut: commandKey("["),
+    shortcut: commandShortcut("["),
     tone: ContextMenuTones.Normal,
   },
   "detach-instance": {
@@ -121,17 +122,17 @@ const OperationPresentations = {
   },
   delete: {
     label: "Delete",
-    shortcut: plainKey("Delete"),
+    shortcut: plainShortcut("Delete"),
     tone: ContextMenuTones.Danger,
   },
   undo: {
     label: "Undo",
-    shortcut: commandKey("Z"),
+    shortcut: commandShortcut("Z"),
     tone: ContextMenuTones.Normal,
   },
   redo: {
     label: "Redo",
-    shortcut: shiftCommandKey("Z"),
+    shortcut: shiftCommandShortcut("Z"),
     tone: ContextMenuTones.Normal,
   },
 } as const satisfies Readonly<Record<EditOperation, OperationPresentation>>;
@@ -147,7 +148,7 @@ function shortcutLabel(
   shortcut: MenuShortcut,
   operatingSystem: OperatingSystem,
 ): string {
-  switch (shortcut.type) {
+  switch (shortcut.kind) {
     case "plain":
       return shortcut.key;
     case "command":
@@ -163,7 +164,7 @@ function shortcutLabel(
  * @returns `shortcutLabel` の、コマンドキー付きの場合の綴り
  */
 function commandShortcutLabel(
-  shortcut: Extract<MenuShortcut, { type: "command" }>,
+  shortcut: Extract<MenuShortcut, { kind: "command" }>,
   operatingSystem: OperatingSystem,
 ): string {
   switch (operatingSystem) {
@@ -234,6 +235,7 @@ export function EditorContextMenu({
         <ContextMenu.List key={section.map((row) => row.operation).join()}>
           {section.map((row) => {
             const presentation = OperationPresentations[row.operation];
+
             return (
               <ContextMenu.Item
                 key={row.operation}

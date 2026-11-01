@@ -25,7 +25,7 @@ import {
   type NavigatorPlatform,
   OperatingSystem,
 } from "@/libs/operating-system";
-import { MacOsNavigator } from "@/libs/operating-system/fake";
+import { MacOsNavigatorPlatform } from "@/libs/operating-system/fake";
 import { Option } from "@/utils/Option";
 import { OpenedDocumentEditor } from "../index";
 
@@ -41,7 +41,7 @@ export type OpenedDocumentFakes = Readonly<{
 /** 編集画面を描くときに決めるもの。 */
 type OpenedDocumentSetting = Readonly<{
   document: DesignDocument;
-  platform: NavigatorPlatform;
+  navigatorPlatform: NavigatorPlatform;
 }>;
 
 /**
@@ -50,9 +50,9 @@ type OpenedDocumentSetting = Readonly<{
  * @param setting 開くドキュメントと、アプリが動いている webview の `navigator`
  * @returns 編集画面が外部世界とやり取りする口の代役一式
  */
-async function renderOpenedDocumentWith({
+async function renderOpenedDocumentFrom({
   document,
-  platform,
+  navigatorPlatform,
 }: OpenedDocumentSetting): Promise<OpenedDocumentFakes> {
   const ipc = createDocumentIpcFake({
     [Path]: DocumentJson.serialize(document),
@@ -63,7 +63,7 @@ async function renderOpenedDocumentWith({
     <OpenedDocumentEditor
       clock={clock.clock}
       ipc={ipc.ipc}
-      operatingSystem={OperatingSystem.fromNavigator(platform)}
+      operatingSystem={OperatingSystem.fromNavigator(navigatorPlatform)}
       opened={{ path: Path, document }}
     />,
   );
@@ -86,21 +86,25 @@ async function renderOpenedDocumentWith({
 export function renderOpenedDocumentWithClock(
   document: DesignDocument = SampleDocument,
 ): Promise<OpenedDocumentFakes> {
-  return renderOpenedDocumentWith({ document, platform: MacOsNavigator });
+  return renderOpenedDocumentFrom({
+    document,
+    navigatorPlatform: MacOsNavigatorPlatform,
+  });
 }
 
 /**
  * サンプルのドキュメントを、指定した OS で動いていることにして描画する。
  *
- * @param platform アプリが動いている webview の `navigator`
+ * @param navigatorPlatform アプリが動いている webview の `navigator`
  */
 export async function renderOpenedDocumentOn(
-  platform: NavigatorPlatform,
+  navigatorPlatform: NavigatorPlatform,
 ): Promise<DocumentIpcFake> {
-  const { ipc } = await renderOpenedDocumentWith({
+  const { ipc } = await renderOpenedDocumentFrom({
     document: SampleDocument,
-    platform,
+    navigatorPlatform,
   });
+
   return ipc;
 }
 
@@ -213,19 +217,12 @@ export function documentErrorList(): HTMLElement {
   return screen.getByRole("alert", { name: "ドキュメントのエラー一覧" });
 }
 
+export {
+  menuRow,
+  rightClick,
+  rightClickInTree,
+} from "@/features/editor/__tests__/editor-context-menu";
 export { contextMenu };
-
-/**
- * コンテキストメニューの行。
- *
- * @param label 行の綴り。読み上げ名は綴りのうしろに割り当てが並ぶので前方一致で引く
- * @returns その行のボタン
- */
-export function menuRow(label: string): HTMLElement {
-  return within(contextMenu()).getByRole("menuitem", {
-    name: new RegExp(`^${label}`),
-  });
-}
 
 /** 左ペイン。 */
 export function leftPane(): HTMLElement {

@@ -1,12 +1,17 @@
-import { fireEvent, within } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { contextMenu } from "@/components/__tests__/context-menu";
+import {
+  menuRow,
+  rightClickInTree,
+} from "@/features/editor/__tests__/editor-context-menu";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import type { NavigatorPlatform } from "@/libs/operating-system";
-import { MacOsNavigator, WindowsNavigator } from "@/libs/operating-system/fake";
-import { Path, renderEditorScreen, startOpen, tree } from "./setup";
+import {
+  MacOsNavigatorPlatform,
+  WindowsNavigatorPlatform,
+} from "@/libs/operating-system/fake";
+import { Path, renderEditorScreen, startOpen } from "./setup";
 
 /*
  * 画面の入口で受け取った OS が、開いたドキュメントのコンテキストメニューまで届くかを見る
@@ -16,33 +21,32 @@ import { Path, renderEditorScreen, startOpen, tree } from "./setup";
 /**
  * その OS で動いていることにして `Path` を開き、ツリーの `home-title` の行を右クリックする。
  *
- * @param platform アプリが動いている webview の `navigator`
+ * @param navigatorPlatform アプリが動いている webview の `navigator`
  * @returns 開いたメニューの Copy の行
  */
-async function copyRowOn(platform: NavigatorPlatform): Promise<HTMLElement> {
+async function copyRowOn(
+  navigatorPlatform: NavigatorPlatform,
+): Promise<HTMLElement> {
   const observer = renderEditorScreen(
     { [Path]: DocumentJson.serialize(SampleDocument) },
     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },
-    { platform },
+    { navigatorPlatform },
   );
   await startOpen(observer);
 
-  fireEvent.contextMenu(
-    within(tree()).getByRole("button", { name: "home-title" }),
-    { clientX: 120, clientY: 80 },
-  );
+  rightClickInTree("home-title");
 
-  return within(contextMenu()).getByRole("menuitem", { name: /^Copy/ });
+  return menuRow("Copy");
 }
 
 test("Windows で動いている画面でドキュメントを開くと、ツリーの行のメニューの Copy に Ctrl+C が併記される", async () => {
-  const copyRow = await copyRowOn(WindowsNavigator);
+  const copyRow = await copyRowOn(WindowsNavigatorPlatform);
 
   expect(copyRow.textContent).toContain("Ctrl+C");
 });
 
 test("macOS で動いている画面でドキュメントを開くと、ツリーの行のメニューの Copy に ⌘C が併記される", async () => {
-  const copyRow = await copyRowOn(MacOsNavigator);
+  const copyRow = await copyRowOn(MacOsNavigatorPlatform);
 
   expect(copyRow.textContent).toContain("⌘C");
 });

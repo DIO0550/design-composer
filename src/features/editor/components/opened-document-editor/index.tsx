@@ -363,7 +363,7 @@ export function OpenedDocumentEditor({
   clock: Clock;
   ipc: DocumentIpc;
   opened: OpenedDocument;
-  /** コンテキストメニューの割り当ての綴りを選ぶのに使う、アプリが動いている OS。 */
+  /** アプリが動いている OS。 */
   operatingSystem: OperatingSystem;
 }>) {
   return (

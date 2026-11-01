@@ -5,10 +5,16 @@ import type { NavigatorPlatform } from "../index";
  */
 
 /** macOS の webview。 */
-export const MacOsNavigator: NavigatorPlatform = { platform: "MacIntel" };
+export const MacOsNavigatorPlatform: NavigatorPlatform = {
+  platform: "MacIntel",
+};
 
 /** Windows の webview。 */
-export const WindowsNavigator: NavigatorPlatform = { platform: "Win32" };
+export const WindowsNavigatorPlatform: NavigatorPlatform = {
+  platform: "Win32",
+};
 
 /** Linux の webview。 */
-export const LinuxNavigator: NavigatorPlatform = { platform: "Linux x86_64" };
+export const LinuxNavigatorPlatform: NavigatorPlatform = {
+  platform: "Linux x86_64",
+};

@@ -97,7 +97,7 @@ export function EditorScreen({
 }: Readonly<{
   clock: Clock;
   ports: DocumentSessionPorts;
-  /** 編集画面の割り当ての綴りを選ぶのに使う、アプリが動いている OS。 */
+  /** アプリが動いている OS。 */
   operatingSystem: OperatingSystem;
 }>) {
   const {

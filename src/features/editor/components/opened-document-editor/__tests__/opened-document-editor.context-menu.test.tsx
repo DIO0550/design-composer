@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
@@ -8,7 +8,10 @@ import {
   artboardHandle,
   canvasSurface,
 } from "@/features/editor/features/canvas/__tests__";
-import { MacOsNavigator, WindowsNavigator } from "@/libs/operating-system/fake";
+import {
+  MacOsNavigatorPlatform,
+  WindowsNavigatorPlatform,
+} from "@/libs/operating-system/fake";
 import {
   breakFileExternally,
   contextMenu,
@@ -16,6 +19,7 @@ import {
   menuRow,
   renderOpenedDocument,
   renderOpenedDocumentOn,
+  rightClick,
   selectArtboard,
   selectInTree,
   tree,
@@ -32,19 +36,6 @@ import {
  * `useKeyShortcut` で見る。ここで同じことを見るには絶対配置のノードのフィクスチャが要り、
  * `opened-document-editor.reposition` と同じものを 2 つ持つことになる。
  */
-
-/**
- * キャンバスに描かれたものを右クリックする。
- *
- * @param target 押す要素
- * @param at 押した窓の座標。省くと折り返しの起きない位置
- */
-function rightClick(
-  target: Element,
-  at: Readonly<{ x: number; y: number }> = { x: 120, y: 80 },
-): void {
-  fireEvent.contextMenu(target, { clientX: at.x, clientY: at.y });
-}
 
 test("キャンバスのノードを右クリックするとメニューが出る", async () => {
   await renderOpenedDocument();
@@ -226,7 +217,7 @@ test("コピー済みで貼り先があるときは、空き領域のメニュ�
 });
 
 test("macOS で動いているとき、行にはキーボードの割り当てが併記される", async () => {
-  await renderOpenedDocumentOn(MacOsNavigator);
+  await renderOpenedDocumentOn(MacOsNavigatorPlatform);
 
   rightClick(drawn("home-title"));
 
@@ -234,7 +225,7 @@ test("macOS で動いているとき、行にはキーボードの割り当て�
 });
 
 test("macOS で動いているとき、複製の行には ⌘D が併記される", async () => {
-  await renderOpenedDocumentOn(MacOsNavigator);
+  await renderOpenedDocumentOn(MacOsNavigatorPlatform);
 
   rightClick(drawn("home-title"));
 
@@ -242,7 +233,7 @@ test("macOS で動いているとき、複製の行には ⌘D が併記され�
 });
 
 test("Windows で動いているとき、Copy の行には Ctrl+C が併記される", async () => {
-  await renderOpenedDocumentOn(WindowsNavigator);
+  await renderOpenedDocumentOn(WindowsNavigatorPlatform);
 
   rightClick(drawn("home-title"));
 
@@ -250,7 +241,7 @@ test("Windows で動いているとき、Copy の行には Ctrl+C が併記さ�
 });
 
 test("Windows で動いているとき、Copy の行に ⌘ は併記されない", async () => {
-  await renderOpenedDocumentOn(WindowsNavigator);
+  await renderOpenedDocumentOn(WindowsNavigatorPlatform);
 
   rightClick(drawn("home-title"));
 
@@ -258,12 +249,12 @@ test("Windows で動いているとき、Copy の行に ⌘ は併記されな�
 });
 
 test("Windows で動いているときも、Delete の行の割り当ては Delete だけになる", async () => {
-  await renderOpenedDocumentOn(WindowsNavigator);
+  await renderOpenedDocumentOn(WindowsNavigatorPlatform);
 
   rightClick(drawn("home-title"));
 
-  // 行は操作の名前と割り当ての 2 つの欄を持つ。操作の名前も Delete なので、行全体の
-  // 文字列では修飾が付いたかどうかを見分けられず、欄ごとに完全一致で比べる
+  // 操作の名前も Delete なので、行全体の文字列では `Delete` の部分一致が必ず通り、修飾の
+  // 有無を部分一致では見分けられない。名前と割り当ての欄ごとに完全一致で比べる
   const columns = Array.from(
     menuRow("Delete").children,
     (column) => column.textContent,

@@ -10,7 +10,10 @@ import { createClockFake } from "@/libs/clock/fake";
 import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { OperatingSystem } from "@/libs/operating-system";
-import { MacOsNavigator, WindowsNavigator } from "@/libs/operating-system/fake";
+import {
+  MacOsNavigatorPlatform,
+  WindowsNavigatorPlatform,
+} from "@/libs/operating-system/fake";
 import { OpenedDocumentEditor } from "./index";
 
 const SamplePath = filePath("/work/sample.dcmp");
@@ -38,8 +41,8 @@ const meta = {
   args: {
     clock: clock.clock,
     ipc: files.ipc,
-    // UI 案（docs/Design Composer.html）が描いているのは macOS の窓。
-    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigator),
+    // macOS を既定にする理由は docs/06-ui.md「コンテキストメニュー」
+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),
     opened: {
       path: SamplePath,
       document: EditorState.document(SampleEditorState),
@@ -83,11 +86,14 @@ async function openContextMenuOnTreeRow(): Promise<void> {
     "button",
     { name: "home-title" },
   );
+
   const rect = row.getBoundingClientRect();
+
   fireEvent.contextMenu(row, {
     clientX: rect.left + rect.width / 2,
     clientY: rect.bottom,
   });
+
   await waitFor(() => {
     expect(
       screen.getByRole("menu", { name: "コンテキストメニュー" }),
@@ -110,7 +116,9 @@ export const ContextMenuOnMacOs: Story = {
  */
 export const ContextMenuOnWindows: Story = {
   name: "Windows でコンテキストメニューを開いた編集画面",
-  args: { operatingSystem: OperatingSystem.fromNavigator(WindowsNavigator) },
+  args: {
+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),
+  },
   play: openContextMenuOnTreeRow,
 };
 

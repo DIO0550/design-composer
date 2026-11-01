@@ -3,13 +3,17 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
 import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading";
-import { MacOsNavigator, WindowsNavigator } from "@/libs/operating-system/fake";
+import {
+  MacOsNavigatorPlatform,
+  WindowsNavigatorPlatform,
+} from "@/libs/operating-system/fake";
 import {
   drawn,
   menuRow,
   renderOpenedDocument,
   renderOpenedDocumentOn,
   renderWithSameComponentInstancesSelected,
+  rightClick,
   selectInTree,
   tree,
 } from "./setup";
@@ -86,18 +90,18 @@ test("メニューの Ungroup を押すと、Box の子が親へ戻る", async (
 });
 
 test("macOS で動いているとき、Group と Ungroup の行には UI 案の綴りの割り当てが併記される", async () => {
-  await renderOpenedDocumentOn(MacOsNavigator);
+  await renderOpenedDocumentOn(MacOsNavigatorPlatform);
 
-  fireEvent.contextMenu(drawn("home-title"), { clientX: 120, clientY: 80 });
+  rightClick(drawn("home-title"));
 
   expect(menuRow("Group").textContent).toContain("⌘G");
   expect(menuRow("Ungroup").textContent).toContain("Shift+⌘G");
 });
 
 test("Windows で動いているとき、Ungroup の行には Ctrl+Shift+G が併記される", async () => {
-  await renderOpenedDocumentOn(WindowsNavigator);
+  await renderOpenedDocumentOn(WindowsNavigatorPlatform);
 
-  fireEvent.contextMenu(drawn("home-title"), { clientX: 120, clientY: 80 });
+  rightClick(drawn("home-title"));
 
   expect(menuRow("Ungroup").textContent).toContain("Ctrl+Shift+G");
 });
