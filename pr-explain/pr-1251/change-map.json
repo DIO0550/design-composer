@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1251,
+  "headBranch": "claude/magical-cannon-z7vf8x",
+  "baseBranch": "main",
+  "mergeBase": "b6565f8da816cf61f8c0d5792ab879f3eba59fb2",
+  "head": "c91b9bd6efed2c998b91bba23095af945a73125c",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1250.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 196,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "c91b9bd6efed2c998b91bba23095af945a73125c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T11:04:30Z",
+      "subject": "📝 [Doc]: #1013 PR #1250 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1250.md を追加する(指摘 21 件・手戻り 4 回・発火は計測対象外)\n\n背景:\nPR #1250(Result / Option の判別子をシンボルのキーにし、検出器を型で置き換える)\nがマージされた。harness-record スキルの手順で、その回の指摘・CI 失敗・手戻りを\n分類付きで残す。\n\n採用理由:\n- 人のレビューは get_reviews / get_review_comments / get_comments の 3 つを\n  確認し、0 件だった。Copilot は指摘 0 件で、人の確認を推奨している\n- CI の失敗は VRT の公開ステップ 1 件だけ。Pages の配信待ちによるもので、\n  対応する規範が無いので分類 `なし` にした\n- 発火ログはこのセッション ID の分が無く(フック不発)、計測対象外と書いた\n\n影響とトレードオフ:\n集計・介入はしていない(harness-growth の管轄)。`対策済` の行は書いていない。\n\n参考:\n- PR #1250 / Issue #1013 / #1249\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2P1xChoGrQRtRCThDp",
+      "files": [
+        {
+          "path": "harness/records/pr-1250.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 196,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,196 @@\n+# PR #1250 Result / Option の判別子をシンボルのキーにして、直読み・直書きの検出器を型で置き換える\n+\n+- マージ日: 2026-11-01\n+- 関連 Issue: #1013\n+- 差分規模: 19 ファイル / +151 -487\n+\n+## ゴールと結果\n+\n+ゴールは「`Result` / `Option` の判別子(`ok` / `some`)を定義元の外から読み書きすると `tsc` で落ちるようになり、正規表現の検出器とその配線(判定表・フック・pre-push・CI・README の節)が無くなる」。達成した。\n+\n+- 判別子は、export しない `Symbol.for(...)` のキー(`OkTag` / `SomeTag`)にした\n+- 検出器の 3 ファイルと配線を外した\n+- `rules/coding.md` の該当の 1 行は、判定の入口の 1 文に縮めた\n+\n+経緯の要点は 3 つ。\n+\n+- **着手時:** 採るか決めることがこの Issue の 1 項目目で、設計判断に当たるため、判断待ちで止めた。セッション中の回答で案 A(採る)に決まった\n+- **計画の検証:** 採用案を `Symbol()` から `Symbol.for()` に変えた\n+- **別 Issue に分けたもの:** `JsonValue` に Result / Option が型エラー無しで入る件は #1249 に分けた\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。\n+\n+- `get_reviews`: Copilot の 1 件だけ(指摘 0 件。「基礎の型の変更なので人の確認を推奨」)\n+- `get_review_comments`: 0 件\n+- `get_comments`: 自分が投稿したテストケース表と CI の失敗の説明、bot の投稿(Storybook プレビュー・CI レポート・VRT)だけ\n+\n+## 指摘\n+\n+### 1. 登録しない `Symbol()` は、HMR で定義元が評価し直されると古い値を誤読する\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 却下案(`Symbol.for`)の理由づけが逆向きで、HMR の問題は採用案の側にあった。モジュールを 2 回評価する再現(`vi.resetModules`)で確かめ、採用案を `Symbol.for` に替えた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(却下した案)\n+\n+### 2. 完了確認の grep が、日本語の検査名の消し忘れを拾えない\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: ファイル名の綴りだけを見る grep では、README・CI のコメントに残る「直読み・直書き」を拾えなかった。`grep -rnI \"直読み・直書き\"` が 0 件になることも完了条件に足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(手順 2・3)\n+\n+### 3. 型テストが「判別子のキーを export しない」ことを守っていない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画のテストは文字列キーへ戻したときにしか落ちなかった。動的 import でキーを読む `@ts-expect-error` のテストを足した。`export` を付けると TS2578 で落ちることを確かめた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 4. undefined の比較テストを Option 側に置かない理由と、テストの Why が無い\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `Option.some` は NonNullable しか受けず、`none` は `value` を持たないので、このテストに当たる入力が作れない。この理由を計画に書き、テストのそばには守っているもの(比較が判別子を見ること)を 2 行のコメントで残した。\n+- 既存ルール: rules/testing.md「古典学派のテスト」\n+\n+### 5. 新しい名前 `OkTag` / `SomeTag` を grep した記録が無い\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画に次の 3 つを書き足した。\n+  - grep した範囲(リポジトリ全体で 0 件)\n+  - `*Brand` にしない理由(`Brand.ts` の目印は型の上だけのもの)\n+  - `*Key` にしない理由(`Key` はキーボードの語彙)\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 6. 分けない理由と、同じファイルを触るオープンな PR の確認が計画に無い\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 分けない理由は Issue に書いてあったが、計画の側に無かった。open の PR(#1247 / #1248)が同じファイルを触らないことと合わせて書き足した。\n+- 既存ルール: AGENTS.md「タスクの分割」\n+\n+### 7. `story-title-cases.sh` の前例の向け直し先が、理由と合わない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画は `canary-cases.sh` へ向け直すとしていたが、理由が違った。同じ理由を持つ判定表はどれも `story-title-cases.sh` を指していて指し合いになるので、向け直さずに前例の言及を消した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 8. `JsonValue` へ Result / Option が型エラー無しで入り、直列化で判別子が黙って落ちる\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: string の index signature はシンボルのキーを見ない。変更前は `{\"some\":false}` と書かれて誤りが見えたが、変更後は `{}` になる。いま該当する経路は 0 件なので、受け入れた制約として `OkTag` の doc に明記し、型で弾く対応は #1249 に分けた。方式の結論は「調整」。\n+- 既存ルール: rules/coding.md「値の語彙を型で閉じる」(前提をコメントで書くのは、型で閉じたことにならない)\n+\n+### 9. `isOk` / `isSome` の doc が、縮めた規約の行と同じ約束を言い直している\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 「判定はすべてここを通す」が `rules/coding.md:24` と重なっていた。doc から消し、型の doc にある rules への参照に任せた。\n+- 既存ルール: rules/coding.md「規約の適用範囲」(同じ判断根拠を説明する doc の重複)\n+\n+### 10. 層 2 のレシピの「probe はモジュールフォルダの外に置く」が実物と合わない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: `src/features/editor/` は `index.ts` を持つモジュールフォルダだった。実測で効いている条件(doc 付き・整形済み・`src/` の中)を切り分け、説明をそれに合わせた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 11. 「素の 1 行を置くと oxlint / biome / import 規約も落ちる」が確かめていない主張\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 実測すると、落ちたのは typecheck / doc コメント(整形が崩れていれば biome も)だけだった。実際に落ちるものだけに書き直した。\n+- 既存ルール: rules/coding.md「外部の挙動は動かして確かめる」\n+\n+### 12. 前例の文を消したあと、`story-title-cases.sh` の文が途中で切れていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 1 文に整え直した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 13. `harness/githooks/README.md` の「確かめる」段落で、括弧の内外の主語がねじれていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 何を名指ししてよいのかが曖昧だったので、2 文に分けた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 14. 検出器の名前を消したあと、`ts_sources.py` の docstring の改行が崩れていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 改行を詰め直した。harness-reviewer も同じ箇所を低で挙げた(指摘 15)。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 15. `ts_sources.py` の docstring の改行が不自然\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 指摘 14 と同じ箇所で、同じ直しで解消した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 16. 語幹 `Tag` が、`Brand<T, Tag>` の「ブランドの目印」と同じ語になっている\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 受け入れなかった。`OkTag` の doc に「成否の判別子のキー」と明記してあり、export しないので外で取り違えられる経路も無い。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 17. 判別子を別名の文字列キーにしても、tsc も全テストも通る\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: テストは元の綴り `ok` / `some` で読めないことしか見ていなかった。`OkTag = \"isOk\"` で 5549 件が通った。`Extract<keyof X, string>` を固定する型テストを足し、別名のキーで tsc が落ちることを確かめた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」(既定値と違う答えになる入力を選ぶ)\n+\n+### 18. `Symbol.for` を `Symbol()` に戻しても 1 件も落ちない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: HMR のために選んだ判断(指摘 1)がテストで守られていなかった。`vi.resetModules()` の前後で古い値を判定するテストを Result / Option に 1 本ずつ足した。テストが守るようになったので、doc の Why と Why not は外した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 19. VRT の公開ステップが、Pages の配信待ちで 20 分タイムアウトした\n+\n+- 分類: `なし`\n+- 出どころ: `CI`\n+- 内容: compare / verify は成功し、落ちたのは publish だけだった。08:42 以降の gh-pages のコミット(VRT レポートと pr-explain の解説)が、どれもサイトに出ていなかった。1 回の再実行で差分 0 / 204 件通過。この PR の差分とは無関係で、プロキシからは Pages の API を読めなかった。\n+- 既存ルール: なし\n+\n+### 20. カナリアが deny されずに通った(フック不発)\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: このセッション ID の検証エージェントのマーカーも、発火ログの見出しも無いので「本当に不発」。起動の形(Issue の assigned で起動した routine、作業ディレクトリは `/home/user`)は #1032 の実測と同じ。Bash の履歴を見直すと、`npx` / `git add -A` は 0 件だった。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+### 21. 前面で起動した planner / implementer / 検証エージェントが、背景で走った\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `run_in_background: false` を渡しても背景の起動になった。フックが不発なので、git 操作の抑止も無い。作業ツリーを書き換えるエージェントは単独で起動し、完了の通知を受け取るまで git 操作をしないことで避けた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md`「サブエージェントの使い方」\n+\n+## 手戻り\n+\n+4 回。\n+\n+1. **フェーズ 1:** 設計判断の確認待ちで止めた。「未検証」の項目は待つ前に実測し、判断の材料にした\n+2. **計画の検証:** 7 件の指摘を受けて計画を直した(指摘 1〜7)。採用案が `Symbol()` から `Symbol.for()` に変わった\n+3. **実装の検証(1 段目、9 エージェント):** 7 件を直して 2 コミットを足した(指摘 8〜15)。不採用は 1 件(指摘 16)\n+4. **ミューテーションの実測(2 段目):** テストの抜けが 2 件見つかった(指摘 17・18)。テスト 1 コミットと doc 1 コミットを足した\n+\n+HMR の Why と Why not は、計画で doc に書き、2 段目でテストに任せて外した(1 回入れて 1 回抜いた)。\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。集計と介入の判断は `harness-growth` の管轄なので、この記録では行わない。",
+          "patchLines": 197,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
