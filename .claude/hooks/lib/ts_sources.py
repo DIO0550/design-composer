@@ -2,10 +2,11 @@
 """`src/` の TypeScript を走査する検査スクリプトの共通部分。
 
 走査の対象の集め方・報告の形・コマンドラインの受け方は、どの検査でも同じものが要る。
-`import-rule-violations.py` と
-`story-title-violations.py` がこれを読む。import の解決(`IMPORT_SPECIFIER` / `resolve_import`)は、
-PR の解説ページの変更の地図(`.github/scripts/build-pr-change-map.py`)も同じものを使う。`named-path-violations.py` は走査の範囲が
-`src/` に収まらないので、報告の形（`report_violations`）と `src/` の綴り（`DEFAULT_ROOT`）だけを読む。
+`import-rule-violations.py` と `story-title-violations.py` がこれを読む。import の解決
+(`IMPORT_SPECIFIER` / `resolve_import`)は、PR の解説ページの変更の地図
+(`.github/scripts/build-pr-change-map.py`)も同じものを使う。`named-path-violations.py` は
+走査の範囲が `src/` に収まらないので、報告の形（`report_violations`）と `src/` の綴り
+（`DEFAULT_ROOT`）だけを読む。
 
 **ファイル名だけアンダースコア。** `lib/` の綴りはケバブケースだが、ハイフンを含む名前は
 Python のモジュールとして import できない。直接実行されるスクリプトの隣に置いてあるので、

@@ -579,8 +579,8 @@ echo '{"tool_input":{"command":"git push"}}' \
 
 ```bash
 # 層 2(git hooks)が落ちた検査のあとも最後まで走り、結果の行が失敗を言うこと。
-# **probe は doc 付き・整形済みで、モジュールフォルダの外に置く。** 層 2 は oxlint / biome /
-# doc コメント / import 規約も同じ回に走らせるので、素の 1 行を置くとそれらも落ち、
+# **probe は doc 付き・整形済みにして、typecheck が見る `src/` の中に置く。** 層 2 は biome /
+# doc コメントも同じ回に走らせるので、doc の無い・整形していない 1 行を置くとそれらも落ち、
 # exit 1 が型から来たのかを「失敗した検査」の行で切り分けることになる
 printf '/**\n * 型で落ちる検査の probe。\n *\n * @param count 数\n * @returns 表示\n */\nexport const Probe = (count: number): string => count;\n' \
   > src/features/editor/probe.ts

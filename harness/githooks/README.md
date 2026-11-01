@@ -140,8 +140,8 @@ bash harness/githooks/lib/check-tally-cases.sh; echo "exit=$?"
 
 落ちた検査があっても後ろまで走り、最後の行が失敗を言うことは、違反の probe を置いて
 確かめる(レシピは `.claude/hooks/README.md`「動作確認」の「層 2(git hooks)が落ちた検査のあとも
-最後まで走り」のブロック。probe の綴りを
-名指ししてよいのはあちらのフェンスの中だけ → `named-path-violations.py`)。
+最後まで走り」のブロック)。まだ無い probe のパスを書いてよいのは、`named-path-violations.py` が
+免除しているあちらのフェンスの中だけなので、ここにはパスを書かない。
 
 `core.hooksPath` を設定したうえで push すると、落ちた検査があれば最後まで走ったあとに
 結果の行を出して push が中止される。
