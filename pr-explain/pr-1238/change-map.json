@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-y9hm2l",
   "baseBranch": "main",
   "mergeBase": "6f8cff07efc08dbbf650e9e0e7510220e28e3da1",
-  "head": "cb1992d107c2851dc434055dd372d98ef6226377",
+  "head": "f845b8ae228df71321b64c3f82aa109627da3975",
   "groups": [
     {
       "label": "domains / unit",
@@ -1672,7 +1672,7 @@
           "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
           "status": "A",
           "oldPath": null,
-          "additions": 290,
+          "additions": 333,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -1718,7 +1718,7 @@
           "path": "src/features/editor/features/canvas/domains/pointing/index.ts",
           "status": "A",
           "oldPath": null,
-          "additions": 63,
+          "additions": 75,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -2147,7 +2147,7 @@
           "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.distances.test.ts",
           "status": "A",
           "oldPath": null,
-          "additions": 162,
+          "additions": 168,
           "deletions": 0,
           "changed": true,
           "target": "src/features/editor/features/canvas/domains/distance-pair/index.ts"
@@ -2156,7 +2156,7 @@
           "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.edge.test.ts",
           "status": "A",
           "oldPath": null,
-          "additions": 64,
+          "additions": 72,
           "deletions": 0,
           "changed": true,
           "target": "src/features/editor/features/canvas/domains/distance-pair/index.ts"
@@ -2165,7 +2165,7 @@
           "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
           "status": "A",
           "oldPath": null,
-          "additions": 208,
+          "additions": 240,
           "deletions": 0,
           "changed": true,
           "target": "src/features/editor/features/canvas/domains/distance-pair/index.ts"
@@ -2405,7 +2405,7 @@
           "path": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
           "status": "A",
           "oldPath": null,
-          "additions": 180,
+          "additions": 183,
           "deletions": 0,
           "changed": true,
           "target": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts"
@@ -4553,6 +4553,96 @@
           "deletions": 1,
           "patch": "@@ -1,4 +1,4 @@\n-import { render, screen } from \"@testing-library/react\";\n+import { fireEvent, render, screen } from \"@testing-library/react\";\n import { useRef } from \"react\";\n import { afterEach, expect, test } from \"vitest\";\n import {\n@@ -125,3 +125,20 @@ test(\"回った要素は、レイアウトの大きさに倍率を掛けた矩\n   // 器の左上（10, 20）を原点に置き直すので、(150, 100) は (140, 80) になる\n   expect(screen.getByTestId(\"bounds\").textContent).toBe(\"140,80,200,80\");\n });\n+\n+test(\"測る対象を変えたあとにウィンドウの大きさが変わると、新しい対象を測り直す\", () => {\n+  /*\n+   * 前後の対象を同じ矩形に描いておく。前の対象を測り直しても値が変わらないので、\n+   * 再レンダーが起きず、新しい対象を測り直したかどうかだけが結果に出る。\n+   */\n+  const bounds = { left: 12, top: 34, width: 200, height: 100 };\n+  drawNamed(\"home\", bounds);\n+  const about = drawNamed(\"about\", bounds);\n+  const { rerender } = render(<BoundsProbe target={Option.some(\"home\")} />);\n+  rerender(<BoundsProbe target={Option.some(\"about\")} />);\n+\n+  stubBounds(about, { left: 20, top: 40, width: 400, height: 200 });\n+  fireEvent(globalThis.window, new Event(\"resize\"));\n+\n+  expect(screen.getByTestId(\"bounds\").textContent).toBe(\"10,20,400,200\");\n+});",
           "patchLines": 27,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "8c04e9c6de8d775b55fb76e56d451c040754e303",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T02:16:03Z",
+      "subject": "♻️ [Refactoring]: #1197 Pointing の判別子の綴りを PointingKinds の 1 箇所にまとめる",
+      "body": "- 判別子の語彙 `PointingKinds`(`Outside` / `Nothing` / `OnFrame`)と、union の型\n  `PointingKind = ValueOf<typeof PointingKinds>` を足した\n- 型 `Pointing` の各枝、定数 `Outside` / `Nothing`、`create`、`equals` を\n  `PointingKinds.*` で書くようにした\n- `DistancePair` の `switch` の `case` と `Extract` も `PointingKinds.*` にした\n\n背景:\nPR #1238 のレビューで「kind の値を 2 重で書いているように見える」と指摘された。\n`\"outside\"` / `\"nothing\"` / `\"on-frame\"` が、型の宣言・定数・`switch` の\n`case` に直書きで並んでいた。\n\n採用理由:\n`rules/coding.md`「値の集合から union を導出する」の形(定数オブジェクト +\n`ValueOf`)にすると、綴りが 1 箇所になり、消費側は値を名前で指せる。型は\n`typeof PointingKinds.*` で引くので、定数から型を引いても循環しない。網羅\n(`switch` に `default` を置かず、抜けを型で検出する)は保たれ、`case` を\n1 つ消すと `tsc` が落ちることを確かめた。素の文字列の綴り違いも、型の側と\n`case` の側の両方で `tsc` が弾く。\n\n代替案:\n- 型を `typeof Outside` で書く: 定数が `satisfies Pointing` で型に頼っており、\n  循環になる\n- 直書きのまま残す: 同じ綴りが 3 箇所に並ぶ\n\n影響とトレードオフ:\n振る舞いは変わらない。同じ形の既存の直和(`node-resize` / `node-drag` など)は\nこの PR では触らない。\n\n参考:\n- PR #1238 のレビュー(pointing/index.ts 14 行目)、Issue #1197\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QwGimdE5yivSioPYz",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 5,
+          "patch": "@@ -3,7 +3,10 @@ import { DocumentSelection } from \"@/domains/session/document-selection\";\n import { SelectionDigs } from \"@/domains/session/selection-dig\";\n import { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-bounds\";\n import { FacingDistances } from \"@/features/editor/features/canvas/domains/facing-distances\";\n-import type { Pointing } from \"@/features/editor/features/canvas/domains/pointing\";\n+import {\n+  type Pointing,\n+  PointingKinds,\n+} from \"@/features/editor/features/canvas/domains/pointing\";\n import { ArrayEx } from \"@/utils/ArrayEx\";\n import { Option } from \"@/utils/Option\";\n \n@@ -104,7 +107,7 @@ function siblingAt(\n  */\n function counterpartAt(\n   selection: DocumentSelection,\n-  pointing: Extract<Pointing, { kind: \"on-frame\" }>,\n+  pointing: Extract<Pointing, { kind: typeof PointingKinds.OnFrame }>,\n   selected: SelectedNode,\n ): Option<string> {\n   const pointedArtboard = DocumentSelection.artboardNameAt(\n@@ -174,11 +177,11 @@ export const DistancePair = {\n   ): Option<DistancePair> {\n     return Option.flatMap(selectedNodeOf(selection), (selected) => {\n       switch (pointing.kind) {\n-        case \"outside\":\n+        case PointingKinds.Outside:\n           return Option.none;\n-        case \"nothing\":\n+        case PointingKinds.Nothing:\n           return Option.some(withinOf(selected, selected.parent));\n-        case \"on-frame\": {\n+        case PointingKinds.OnFrame: {\n           const counterpart = counterpartAt(selection, pointing, selected);\n           return Option.some(\n             Option.isSome(counterpart)",
+          "patchLines": 36,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/pointing/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 7,
+          "patch": "@@ -1,4 +1,15 @@\n import type { SelectionDig } from \"@/domains/session/selection-dig\";\n+import type { ValueOf } from \"@/types/ValueOf\";\n+\n+/** 指し先の種類（`Pointing` の判別子）。 */\n+export const PointingKinds = {\n+  Outside: \"outside\",\n+  Nothing: \"nothing\",\n+  OnFrame: \"on-frame\",\n+} as const;\n+\n+/** 指し先の種類。 */\n+export type PointingKind = ValueOf<typeof PointingKinds>;\n \n /**\n  * ポインタが今キャンバスのどこを指しているか（docs/06-ui.md「キャンバス直接操作」の、選択\n@@ -11,22 +22,22 @@ import type { SelectionDig } from \"@/domains/session/selection-dig\";\n  *   末尾は artboard）、`dig` はその時点の押し方から決まった掘る量\n  */\n export type Pointing =\n-  | Readonly<{ kind: \"outside\" }>\n-  | Readonly<{ kind: \"nothing\" }>\n+  | Readonly<{ kind: typeof PointingKinds.Outside }>\n+  | Readonly<{ kind: typeof PointingKinds.Nothing }>\n   | Readonly<{\n-      kind: \"on-frame\";\n+      kind: typeof PointingKinds.OnFrame;\n       names: readonly string[];\n       dig: SelectionDig;\n     }>;\n \n /** キャンバスの外を指している。 */\n-const Outside = { kind: \"outside\" } as const satisfies Pointing;\n+const Outside = { kind: PointingKinds.Outside } as const satisfies Pointing;\n \n /**\n  * キャンバスの中で、artboard の枠の外か、選んでいるノードのリサイズハンドルの上を指して\n  * いる。\n  */\n-const Nothing = { kind: \"nothing\" } as const satisfies Pointing;\n+const Nothing = { kind: PointingKinds.Nothing } as const satisfies Pointing;\n \n export const Pointing = {\n   Outside,\n@@ -40,7 +51,7 @@ export const Pointing = {\n    * @returns 枠の上を指している指し先\n    */\n   create(names: readonly string[], dig: SelectionDig): Pointing {\n-    return { kind: \"on-frame\", names, dig };\n+    return { kind: PointingKinds.OnFrame, names, dig };\n   },\n \n   /**\n@@ -51,7 +62,8 @@ export const Pointing = {\n    * @returns 種類が同じで、枠の上なら名前の並びと掘る量まで同じなら真\n    */\n   equals(a: Pointing, b: Pointing): boolean {\n-    const isBothOnFrame = a.kind === \"on-frame\" && b.kind === \"on-frame\";\n+    const isBothOnFrame =\n+      a.kind === PointingKinds.OnFrame && b.kind === PointingKinds.OnFrame;\n     if (!isBothOnFrame) {\n       return a.kind === b.kind;\n     }",
+          "patchLines": 63,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f845b8ae228df71321b64c3f82aa109627da3975",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T02:24:24Z",
+      "subject": "♻️ [Refactoring]: #1197 DistancePair の判別子の綴りを DistancePairKinds の 1 箇所にまとめる",
+      "body": "- 判別子の語彙 `DistancePairKinds`(`Within` / `Beside`)と\n  `DistancePairKind = ValueOf<typeof DistancePairKinds>` を足した\n- `DistancePair` / `DrawnDistancePair` の型・生成・`switch` の `case`・`equals`・\n  `measure`・`toDistances` を `DistancePairKinds.*` で書くようにした\n- テスト 4 ファイルの `kind: \"within\"` / `\"beside\"` の直書きを `DistancePairKinds.*`\n  に寄せた(ケースの増減なし)\n\n背景:\n直前のコミットで、PR #1238 のレビューの指摘(「kind の値を 2 重で書いているように\n見える」)を受け、`Pointing` の判別子を 1 箇所にまとめた。同じ PR で足した\n`DistancePair` も同じ形で `\"within\"` / `\"beside\"` を直書きしていて、同じ指摘が当たる。\n\n採用理由:\n指摘された箇所だけ直すと、同じ PR の中で同じ形が残り、次のレビューでもう一度\n指摘される。この PR で足した型に限って根本から揃えた。網羅は保たれ(`case` を\n1 つ消すと TS2366)、`case` 側・生成側の綴り違いも `tsc` が弾くことを確かめた。\n\n代替案:\n- `Pointing` だけ直す: 同じ PR に同じ形が残る\n- 既存の直和(`node-resize` / `node-drag` など)まで揃える: この PR の範囲を超える\n\n影響とトレードオフ:\n振る舞いは変わらない。\n\n参考:\n- PR #1238 のレビュー(pointing/index.ts 14 行目)、Issue #1197\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QwGimdE5yivSioPYz",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.distances.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 16,
+          "patch": "@@ -2,7 +2,7 @@ import { expect, test } from \"vitest\";\n import type { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-bounds\";\n import { FacingDistances } from \"@/features/editor/features/canvas/domains/facing-distances\";\n import { Option } from \"@/utils/Option\";\n-import { DistancePair, DrawnDistancePair } from \"../index\";\n+import { DistancePair, DistancePairKinds, DrawnDistancePair } from \"../index\";\n \n /*\n  * 測る 2 つを矩形に置き換えて、どの向きに線を引くか（docs/06-ui.md「キャンバス直接操作」の\n@@ -29,7 +29,7 @@ function drawnFacings(distances: FacingDistances) {\n \n test(\"包む相手の内側の縁までは、上下左右 4 本を引く\", () => {\n   const distances = DrawnDistancePair.toDistances({\n-    kind: \"within\",\n+    kind: DistancePairKinds.Within,\n     inner: From,\n     outer: { left: 0, top: 0, width: 400, height: 300 },\n   });\n@@ -43,7 +43,7 @@ test(\"包む相手の内側の縁までは、上下左右 4 本を引く\", () =>\n test(\"包む相手からはみ出した向きには、線を引かない\", () => {\n   // 左辺が相手の左辺（150）より外にある\n   const distances = DrawnDistancePair.toDistances({\n-    kind: \"within\",\n+    kind: DistancePairKinds.Within,\n     inner: From,\n     outer: { left: 150, top: 0, width: 250, height: 300 },\n   });\n@@ -56,7 +56,7 @@ test(\"包む相手からはみ出した向きには、線を引かない\", () =>\n \n test(\"左右に離れて並ぶ相手までは、離れている向きに 1 本だけ引く\", () => {\n   const distances = DrawnDistancePair.toDistances({\n-    kind: \"beside\",\n+    kind: DistancePairKinds.Beside,\n     from: From,\n     to: { left: 260, top: 110, width: 50, height: 30 },\n   });\n@@ -69,7 +69,7 @@ test(\"左右に離れて並ぶ相手までは、離れている向きに 1 本\n \n test(\"上下に離れて並ぶ相手までは、離れている向きに 1 本だけ引く\", () => {\n   const distances = DrawnDistancePair.toDistances({\n-    kind: \"beside\",\n+    kind: DistancePairKinds.Beside,\n     from: From,\n     to: { left: 120, top: 10, width: 50, height: 30 },\n   });\n@@ -82,7 +82,7 @@ test(\"上下に離れて並ぶ相手までは、離れている向きに 1 本\n \n test(\"斜めに離れている相手までは、線を引かない\", () => {\n   const distances = DrawnDistancePair.toDistances({\n-    kind: \"beside\",\n+    kind: DistancePairKinds.Beside,\n     from: From,\n     to: { left: 260, top: 200, width: 50, height: 30 },\n   });\n@@ -92,7 +92,7 @@ test(\"斜めに離れている相手までは、線を引かない\", () => {\n \n test(\"一部だけ重なる相手までは、線を引かない\", () => {\n   const distances = DrawnDistancePair.toDistances({\n-    kind: \"beside\",\n+    kind: DistancePairKinds.Beside,\n     from: From,\n     to: { left: 180, top: 130, width: 50, height: 50 },\n   });\n@@ -102,7 +102,7 @@ test(\"一部だけ重なる相手までは、線を引かない\", () => {\n \n test(\"親子の関係に無く形が包んでいる相手までは、線を引かない\", () => {\n   const distances = DrawnDistancePair.toDistances({\n-    kind: \"beside\",\n+    kind: DistancePairKinds.Beside,\n     from: From,\n     to: { left: 0, top: 0, width: 400, height: 300 },\n   });\n@@ -112,7 +112,7 @@ test(\"親子の関係に無く形が包んでいる相手までは、線を引\n \n test(\"接している相手までは、線を引かない\", () => {\n   const distances = DrawnDistancePair.toDistances({\n-    kind: \"beside\",\n+    kind: DistancePairKinds.Beside,\n     from: From,\n     to: { left: 200, top: 110, width: 50, height: 30 },\n   });\n@@ -123,16 +123,18 @@ test(\"接している相手までは、線を引かない\", () => {\n test(\"2 つとも測れれば、矩形に置き換えた組になる\", () => {\n   const outer = { left: 0, top: 0, width: 400, height: 300 };\n   const drawn = DistancePair.measure(\n-    { kind: \"within\", inner: \"row\", outer: \"card\" },\n+    { kind: DistancePairKinds.Within, inner: \"row\", outer: \"card\" },\n     (name) => Option.some(name === \"row\" ? From : outer),\n   );\n \n-  expect(drawn).toEqual(Option.some({ kind: \"within\", inner: From, outer }));\n+  expect(drawn).toEqual(\n+    Option.some({ kind: DistancePairKinds.Within, inner: From, outer }),\n+  );\n });\n \n test(\"どちらかが測れなければ、組にならない\", () => {\n   const drawn = DistancePair.measure(\n-    { kind: \"beside\", from: \"row\", to: \"chip\" },\n+    { kind: DistancePairKinds.Beside, from: \"row\", to: \"chip\" },\n     (name) => (name === \"row\" ? Option.some(From) : Option.none),\n   );\n \n@@ -143,8 +145,12 @@ test(\"矩形が 1 つでも違えば、等しくない\", () => {\n   const outer = { left: 0, top: 0, width: 400, height: 300 };\n \n   const isEqual = DrawnDistancePair.equals(\n-    { kind: \"within\", inner: From, outer },\n-    { kind: \"within\", inner: From, outer: { ...outer, width: 401 } },\n+    { kind: DistancePairKinds.Within, inner: From, outer },\n+    {\n+      kind: DistancePairKinds.Within,\n+      inner: From,\n+      outer: { ...outer, width: 401 },\n+    },\n   );\n \n   expect(isEqual).toBe(false);\n@@ -154,8 +160,8 @@ test(\"同じ矩形でも、組の種類が違えば等しくない\", () => {\n   const to = { left: 260, top: 110, width: 50, height: 30 };\n \n   const isEqual = DrawnDistancePair.equals(\n-    { kind: \"within\", inner: From, outer: to },\n-    { kind: \"beside\", from: From, to },\n+    { kind: DistancePairKinds.Within, inner: From, outer: to },\n+    { kind: DistancePairKinds.Beside, from: From, to },\n   );\n \n   expect(isEqual).toBe(false);",
+          "patchLines": 129,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 3,
+          "patch": "@@ -3,7 +3,7 @@ import { SelectionDigs } from \"@/domains/session/selection-dig\";\n import { selectionDistanceTree } from \"@/features/editor/features/canvas/__tests__/selection-distance-tree\";\n import { Pointing } from \"@/features/editor/features/canvas/domains/pointing\";\n import { Option } from \"@/utils/Option\";\n-import { DistancePair } from \"../index\";\n+import { DistancePair, DistancePairKinds } from \"../index\";\n \n /*\n  * 選択しているだけのときの Alt / Option の距離を測らないとき・相手にしないもの\n@@ -45,7 +45,11 @@ test(\"ロック中の兄弟を指しても、その兄弟は相手にならな\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"within\", inner: \"row\", outer: \"card\" }),\n+    Option.some({\n+      kind: DistancePairKinds.Within,\n+      inner: \"row\",\n+      outer: \"card\",\n+    }),\n   );\n });\n \n@@ -59,6 +63,10 @@ test(\"⌘ を押してロック中のノードの中を指すと、そのすぐ\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"within\", inner: \"row\", outer: \"card\" }),\n+    Option.some({\n+      kind: DistancePairKinds.Within,\n+      inner: \"row\",\n+      outer: \"card\",\n+    }),\n   );\n });",
+          "patchLines": 34,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 56,
+          "deletions": 24,
+          "patch": "@@ -3,7 +3,7 @@ import { SelectionDigs } from \"@/domains/session/selection-dig\";\n import { selectionDistanceTree } from \"@/features/editor/features/canvas/__tests__/selection-distance-tree\";\n import { Pointing } from \"@/features/editor/features/canvas/domains/pointing\";\n import { Option } from \"@/utils/Option\";\n-import { DistancePair } from \"../index\";\n+import { DistancePair, DistancePairKinds } from \"../index\";\n \n /*\n  * 選択しているだけのときの Alt / Option の距離で、何と何を測るか（docs/06-ui.md「キャンバス\n@@ -20,7 +20,11 @@ test(\"選択の内側を指すと、選択から親の内側の縁までを測\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"within\", inner: \"row\", outer: \"card\" }),\n+    Option.some({\n+      kind: DistancePairKinds.Within,\n+      inner: \"row\",\n+      outer: \"card\",\n+    }),\n   );\n });\n \n@@ -31,7 +35,7 @@ test(\"兄弟を指すと、兄弟との横並びを測る\", () => {\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"beside\", from: \"row\", to: \"chip\" }),\n+    Option.some({ kind: DistancePairKinds.Beside, from: \"row\", to: \"chip\" }),\n   );\n });\n \n@@ -45,7 +49,7 @@ test(\"兄弟の子を指しても、兄弟との横並びを測る\", () => {\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"beside\", from: \"row\", to: \"chip\" }),\n+    Option.some({ kind: DistancePairKinds.Beside, from: \"row\", to: \"chip\" }),\n   );\n });\n \n@@ -59,7 +63,11 @@ test(\"⌘ を押して選択の内側を指すと、いちばん内側の子孫\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"within\", inner: \"label\", outer: \"row\" }),\n+    Option.some({\n+      kind: DistancePairKinds.Within,\n+      inner: \"label\",\n+      outer: \"row\",\n+    }),\n   );\n });\n \n@@ -73,7 +81,11 @@ test(\"⌘ を押して兄弟の子を指すと、その子との横並びを測\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"beside\", from: \"row\", to: \"chip-icon\" }),\n+    Option.some({\n+      kind: DistancePairKinds.Beside,\n+      from: \"row\",\n+      to: \"chip-icon\",\n+    }),\n   );\n });\n \n@@ -85,7 +97,11 @@ test(\"深さ 3 のノードを選んで親の背景を指すと、クリック\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"within\", inner: \"cell\", outer: \"card\" }),\n+    Option.some({\n+      kind: DistancePairKinds.Within,\n+      inner: \"cell\",\n+      outer: \"card\",\n+    }),\n   );\n });\n \n@@ -96,7 +112,7 @@ test(\"別の枝のノードを指すと、そのノードとの横並びを測\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"beside\", from: \"row\", to: \"title\" }),\n+    Option.some({ kind: DistancePairKinds.Beside, from: \"row\", to: \"title\" }),\n   );\n });\n \n@@ -107,7 +123,11 @@ test(\"深さ 2 のノードを選んで自分の artboard の背景を指すと\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"within\", inner: \"row\", outer: \"home\" }),\n+    Option.some({\n+      kind: DistancePairKinds.Within,\n+      inner: \"row\",\n+      outer: \"home\",\n+    }),\n   );\n });\n \n@@ -118,7 +138,11 @@ test(\"深さ 2 のノードを選んで別の artboard のノードを指すと\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"within\", inner: \"row\", outer: \"card\" }),\n+    Option.some({\n+      kind: DistancePairKinds.Within,\n+      inner: \"row\",\n+      outer: \"card\",\n+    }),\n   );\n });\n \n@@ -129,7 +153,11 @@ test(\"artboard の枠の外を指すと、親の内側の縁までを測る\", ()\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"within\", inner: \"row\", outer: \"card\" }),\n+    Option.some({\n+      kind: DistancePairKinds.Within,\n+      inner: \"row\",\n+      outer: \"card\",\n+    }),\n   );\n });\n \n@@ -149,14 +177,18 @@ test(\"artboard 直下のノードの親は artboard になる\", () => {\n   );\n \n   expect(pair).toEqual(\n-    Option.some({ kind: \"within\", inner: \"title\", outer: \"home\" }),\n+    Option.some({\n+      kind: DistancePairKinds.Within,\n+      inner: \"title\",\n+      outer: \"home\",\n+    }),\n   );\n });\n \n test(\"同じ 2 つを測る組は、等しい\", () => {\n   const isEqual = DistancePair.equals(\n-    { kind: \"beside\", from: \"row\", to: \"chip\" },\n-    { kind: \"beside\", from: \"row\", to: \"chip\" },\n+    { kind: DistancePairKinds.Beside, from: \"row\", to: \"chip\" },\n+    { kind: DistancePairKinds.Beside, from: \"row\", to: \"chip\" },\n   );\n \n   expect(isEqual).toBe(true);\n@@ -164,8 +196,8 @@ test(\"同じ 2 つを測る組は、等しい\", () => {\n \n test(\"相手が 1 つでも違えば、等しくない\", () => {\n   const isEqual = DistancePair.equals(\n-    { kind: \"beside\", from: \"row\", to: \"chip\" },\n-    { kind: \"beside\", from: \"row\", to: \"title\" },\n+    { kind: DistancePairKinds.Beside, from: \"row\", to: \"chip\" },\n+    { kind: DistancePairKinds.Beside, from: \"row\", to: \"title\" },\n   );\n \n   expect(isEqual).toBe(false);\n@@ -173,8 +205,8 @@ test(\"相手が 1 つでも違えば、等しくない\", () => {\n \n test(\"同じ名前でも、組の種類が違えば等しくない\", () => {\n   const isEqual = DistancePair.equals(\n-    { kind: \"within\", inner: \"row\", outer: \"card\" },\n-    { kind: \"beside\", from: \"row\", to: \"card\" },\n+    { kind: DistancePairKinds.Within, inner: \"row\", outer: \"card\" },\n+    { kind: DistancePairKinds.Beside, from: \"row\", to: \"card\" },\n   );\n \n   expect(isEqual).toBe(false);\n@@ -182,8 +214,8 @@ test(\"同じ名前でも、組の種類が違えば等しくない\", () => {\n \n test(\"内側の縁を測る組で、包む側だけが違えば等しくない\", () => {\n   const isEqual = DistancePair.equals(\n-    { kind: \"within\", inner: \"row\", outer: \"card\" },\n-    { kind: \"within\", inner: \"row\", outer: \"home\" },\n+    { kind: DistancePairKinds.Within, inner: \"row\", outer: \"card\" },\n+    { kind: DistancePairKinds.Within, inner: \"row\", outer: \"home\" },\n   );\n \n   expect(isEqual).toBe(false);\n@@ -191,8 +223,8 @@ test(\"内側の縁を測る組で、包む側だけが違えば等しくない\",\n \n test(\"内側の縁を測る組で、包まれる側だけが違えば等しくない\", () => {\n   const isEqual = DistancePair.equals(\n-    { kind: \"within\", inner: \"row\", outer: \"card\" },\n-    { kind: \"within\", inner: \"chip\", outer: \"card\" },\n+    { kind: DistancePairKinds.Within, inner: \"row\", outer: \"card\" },\n+    { kind: DistancePairKinds.Within, inner: \"chip\", outer: \"card\" },\n   );\n \n   expect(isEqual).toBe(false);\n@@ -200,8 +232,8 @@ test(\"内側の縁を測る組で、包まれる側だけが違えば等しく\n \n test(\"横並びの組で、測り始める側だけが違えば等しくない\", () => {\n   const isEqual = DistancePair.equals(\n-    { kind: \"beside\", from: \"row\", to: \"chip\" },\n-    { kind: \"beside\", from: \"title\", to: \"chip\" },\n+    { kind: DistancePairKinds.Beside, from: \"row\", to: \"chip\" },\n+    { kind: DistancePairKinds.Beside, from: \"title\", to: \"chip\" },\n   );\n \n   expect(isEqual).toBe(false);",
+          "patchLines": 204,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 61,
+          "deletions": 21,
+          "patch": "@@ -7,9 +7,19 @@ import {\n   type Pointing,\n   PointingKinds,\n } from \"@/features/editor/features/canvas/domains/pointing\";\n+import type { ValueOf } from \"@/types/ValueOf\";\n import { ArrayEx } from \"@/utils/ArrayEx\";\n import { Option } from \"@/utils/Option\";\n \n+/** 測る 2 つの種類（`DistancePair` と `DrawnDistancePair` の判別子）。 */\n+export const DistancePairKinds = {\n+  Within: \"within\",\n+  Beside: \"beside\",\n+} as const;\n+\n+/** 測る 2 つの種類。 */\n+export type DistancePairKind = ValueOf<typeof DistancePairKinds>;\n+\n /**\n  * 選択しているだけのときの Alt / Option の距離を測る 2 つ（docs/06-ui.md「キャンバス直接操作」\n  * の、選択しているだけのときの Alt / Option の距離）。名前で持つ。\n@@ -18,13 +28,29 @@ import { Option } from \"@/utils/Option\";\n  * - `beside`: 親子の関係に無い 2 つで、`from` から `to` まで離れている向きを測る\n  */\n export type DistancePair =\n-  | Readonly<{ kind: \"within\"; inner: string; outer: string }>\n-  | Readonly<{ kind: \"beside\"; from: string; to: string }>;\n+  | Readonly<{\n+      kind: typeof DistancePairKinds.Within;\n+      inner: string;\n+      outer: string;\n+    }>\n+  | Readonly<{\n+      kind: typeof DistancePairKinds.Beside;\n+      from: string;\n+      to: string;\n+    }>;\n \n /** `DistancePair` の 2 つを、描かれている矩形（client 座標）に置き換えたもの。 */\n export type DrawnDistancePair =\n-  | Readonly<{ kind: \"within\"; inner: CanvasBounds; outer: CanvasBounds }>\n-  | Readonly<{ kind: \"beside\"; from: CanvasBounds; to: CanvasBounds }>;\n+  | Readonly<{\n+      kind: typeof DistancePairKinds.Within;\n+      inner: CanvasBounds;\n+      outer: CanvasBounds;\n+    }>\n+  | Readonly<{\n+      kind: typeof DistancePairKinds.Beside;\n+      from: CanvasBounds;\n+      to: CanvasBounds;\n+    }>;\n \n /** 選んでいるノードと、それを包んでいるもの。 */\n type SelectedNode = Readonly<{\n@@ -69,7 +95,7 @@ function selectedNodeOf(selection: DocumentSelection): Option<SelectedNode> {\n  * @returns `within` の組\n  */\n function withinOf(selected: SelectedNode, outer: string): DistancePair {\n-  return { kind: \"within\", inner: selected.name, outer };\n+  return { kind: DistancePairKinds.Within, inner: selected.name, outer };\n }\n \n /**\n@@ -152,9 +178,17 @@ function pairWith(\n     counterpart,\n   );\n   if (counterpartAncestors.includes(selected.name)) {\n-    return { kind: \"within\", inner: counterpart, outer: selected.name };\n+    return {\n+      kind: DistancePairKinds.Within,\n+      inner: counterpart,\n+      outer: selected.name,\n+    };\n   }\n-  return { kind: \"beside\", from: selected.name, to: counterpart };\n+  return {\n+    kind: DistancePairKinds.Beside,\n+    from: selected.name,\n+    to: counterpart,\n+  };\n }\n \n export const DistancePair = {\n@@ -202,12 +236,18 @@ export const DistancePair = {\n    */\n   equals(a: DistancePair, b: DistancePair): boolean {\n     switch (a.kind) {\n-      case \"within\":\n+      case DistancePairKinds.Within:\n+        return (\n+          b.kind === DistancePairKinds.Within &&\n+          a.inner === b.inner &&\n+          a.outer === b.outer\n+        );\n+      case DistancePairKinds.Beside:\n         return (\n-          b.kind === \"within\" && a.inner === b.inner && a.outer === b.outer\n+          b.kind === DistancePairKinds.Beside &&\n+          a.from === b.from &&\n+          a.to === b.to\n         );\n-      case \"beside\":\n-        return b.kind === \"beside\" && a.from === b.from && a.to === b.to;\n     }\n   },\n \n@@ -223,18 +263,18 @@ export const DistancePair = {\n     measure: (name: string) => Option<CanvasBounds>,\n   ): Option<DrawnDistancePair> {\n     switch (pair.kind) {\n-      case \"within\":\n+      case DistancePairKinds.Within:\n         return Option.flatMap(measure(pair.inner), (inner) =>\n           Option.map(measure(pair.outer), (outer) => ({\n-            kind: \"within\" as const,\n+            kind: DistancePairKinds.Within,\n             inner,\n             outer,\n           })),\n         );\n-      case \"beside\":\n+      case DistancePairKinds.Beside:\n         return Option.flatMap(measure(pair.from), (from) =>\n           Option.map(measure(pair.to), (to) => ({\n-            kind: \"beside\" as const,\n+            kind: DistancePairKinds.Beside,\n             from,\n             to,\n           })),\n@@ -253,13 +293,13 @@ export const DrawnDistancePair = {\n    */\n   toDistances(drawn: DrawnDistancePair): FacingDistances {\n     switch (drawn.kind) {\n-      case \"within\":\n+      case DistancePairKinds.Within:\n         return FacingDistances.create({\n           from: drawn.inner,\n           parentBounds: drawn.outer,\n           siblings: [],\n         });\n-      case \"beside\":\n+      case DistancePairKinds.Beside:\n         return FacingDistances.createAmong({\n           from: drawn.from,\n           others: [drawn.to],\n@@ -276,15 +316,15 @@ export const DrawnDistancePair = {\n    */\n   equals(a: DrawnDistancePair, b: DrawnDistancePair): boolean {\n     switch (a.kind) {\n-      case \"within\":\n+      case DistancePairKinds.Within:\n         return (\n-          b.kind === \"within\" &&\n+          b.kind === DistancePairKinds.Within &&\n           CanvasBounds.equals(a.inner, b.inner) &&\n           CanvasBounds.equals(a.outer, b.outer)\n         );\n-      case \"beside\":\n+      case DistancePairKinds.Beside:\n         return (\n-          b.kind === \"beside\" &&\n+          b.kind === DistancePairKinds.Beside &&\n           CanvasBounds.equals(a.from, b.from) &&\n           CanvasBounds.equals(a.to, b.to)\n         );",
+          "patchLines": 165,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 5,
+          "patch": "@@ -9,7 +9,10 @@ import {\n   SelectionDistanceTreeBounds,\n   selectionDistanceTree,\n } from \"@/features/editor/features/canvas/__tests__/selection-distance-tree\";\n-import { DrawnDistancePair } from \"@/features/editor/features/canvas/domains/distance-pair\";\n+import {\n+  DistancePairKinds,\n+  DrawnDistancePair,\n+} from \"@/features/editor/features/canvas/domains/distance-pair\";\n import { FacingDistances } from \"@/features/editor/features/canvas/domains/facing-distances\";\n import { Pointing } from \"@/features/editor/features/canvas/domains/pointing\";\n import { ArrayEx } from \"@/utils/ArrayEx\";\n@@ -81,7 +84,7 @@ test(\"測る組が変わると、新しい組で測り直す\", () => {\n \n   expect(result.current).toEqual(\n     DrawnDistancePair.toDistances({\n-      kind: \"beside\",\n+      kind: DistancePairKinds.Beside,\n       from: SelectionDistanceTreeBounds.row,\n       to: SelectionDistanceTreeBounds.chip,\n     }),\n@@ -112,7 +115,7 @@ function renderRecordingDistances(initial: Pointing) {\n /** `row` と兄弟 `chip` の横並びの線。 */\n function rowBesideChip(): FacingDistances {\n   return DrawnDistancePair.toDistances({\n-    kind: \"beside\",\n+    kind: DistancePairKinds.Beside,\n     from: SelectionDistanceTreeBounds.row,\n     to: SelectionDistanceTreeBounds.chip,\n   });\n@@ -153,7 +156,7 @@ test(\"測る組の片方だけが別の名前に変わった回は、測り直\n \n   expect(returned.slice(changedAt)).not.toContainEqual(\n     DrawnDistancePair.toDistances({\n-      kind: \"within\",\n+      kind: DistancePairKinds.Within,\n       inner: SelectionDistanceTreeBounds.row,\n       outer: SelectionDistanceTreeBounds.card,\n     }),\n@@ -171,7 +174,7 @@ test(\"測る組が変わっても測った矩形が前と同じなら、新し\n   expect(ArrayEx.last(returned)).toEqual(\n     Option.some(\n       DrawnDistancePair.toDistances({\n-        kind: \"within\",\n+        kind: DistancePairKinds.Within,\n         inner: SelectionDistanceTreeBounds.row,\n         outer: SelectionDistanceTreeBounds.card,\n       }),",
+          "patchLines": 48,
           "truncated": false
         }
       ]
@@ -8396,6 +8486,11 @@
     },
     {
       "from": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
       "to": "src/utils/ArrayEx.ts",
       "status": "added"
     },
@@ -8677,6 +8772,11 @@
     {
       "from": "src/features/editor/features/canvas/domains/pointing/index.ts",
       "to": "src/domains/session/selection-dig/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/pointing/index.ts",
+      "to": "src/types/ValueOf.ts",
       "status": "added"
     },
     {
