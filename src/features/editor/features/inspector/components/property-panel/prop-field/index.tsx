@@ -10,6 +10,7 @@ import {
 import {
   EditContinuities,
   type EditContinuity,
+  EditContinuityRun,
 } from "@/domains/session/edit-continuity";
 import {
   type CurrentPaint,
@@ -351,10 +352,7 @@ function LiteralInput({
 }>): ReactElement {
   // 1 件目が上流で落ちると 2 件目が続きとして届く（`EditHistory.amend` の doc が書いている
   // 「戻る先が無いまま」と同じ形）。
-  const continuitySequence = useFirstThenRest({
-    first: EditContinuities.Separate,
-    rest: EditContinuities.Continued,
-  });
+  const continuitySequence = useFirstThenRest(EditContinuityRun);
 
   return (
     <input

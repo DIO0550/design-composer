@@ -6,8 +6,8 @@ import {
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import {
-  EditContinuities,
   type EditContinuity,
+  EditContinuityRun,
 } from "@/domains/session/edit-continuity";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import type { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
@@ -158,10 +158,9 @@ export function useNodeResize(
   );
   // reducer の状態に持たないのは、pointermove が同期フラッシュされず今のレンダーの値を読むと
   // 2 回とも 1 件目になるため（happy-dom は毎回フラッシュするのでテストには出ない）。
-  const continuitySequence = useFirstThenRest({
-    first: EditContinuities.Separate,
-    rest: EditContinuities.Continued,
-  });
+  // 単一選択でない・ファイルが不正な間に 1 件目が上流で落ちると、2 件目が続きとして届く
+  // （`EditHistory.amend` の doc が書いている「戻る先が無いまま」と同じ形）。
+  const continuitySequence = useFirstThenRest(EditContinuityRun);
 
   const grab = (
     grip: ResizeGrip,

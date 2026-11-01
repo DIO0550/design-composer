@@ -3,6 +3,7 @@ import type { Rgb, TokenValue } from "@/domains/dcmp/token";
 import {
   EditContinuities,
   type EditContinuity,
+  EditContinuityRun,
 } from "@/domains/session/edit-continuity";
 import {
   TokenControl,
@@ -124,16 +125,13 @@ function ColorPickerField({
    * ピッカーは常に #rrggbb を返し `TokenControl.valueFrom` の `none` に届かないので、1 件目が
    * 落ちて続きが先に届くことは無い。
    *
-   * 区切るのは開いたとき（click）と離れたとき（blur）。フォーカスを得たときにしないのは、
+   * 始め直すのは開いたとき（click）と離れたとき（blur）。フォーカスを得たときにしないのは、
    * ピッカーを閉じてもフォーカスが入力欄に残り、開き直しでは focus が発火しないため。blur でも
-   * 区切るのは、色のパネルがモーダルでなく、別の欄を編集して戻ったときに続きとして送らないため。
+   * 始め直すのは、色のパネルがモーダルでなく、別の欄を編集して戻ったときに続きとして送らないため。
    * Chromium ではキーボード（Enter / Space）で開いても click が届くことを実測した。Tauri の
    * WebView は未検証。
    */
-  const continuitySequence = useFirstThenRest({
-    first: EditContinuities.Separate,
-    rest: EditContinuities.Continued,
-  });
+  const continuitySequence = useFirstThenRest(EditContinuityRun);
   const picker = (
     <input
       id={id}
