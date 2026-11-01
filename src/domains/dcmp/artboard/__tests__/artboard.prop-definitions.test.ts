@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { Artboard } from "../index";
 
-test("artboard は Box の props をそのまま受け付ける", () => {
+test("artboard も Box の塗りを受け付ける", () => {
   expect(Object.keys(Artboard.propDefinitions())).toContain("background");
 });
 
@@ -9,21 +9,21 @@ test("artboard も opacity を受け付ける", () => {
   expect(Object.keys(Artboard.propDefinitions())).toContain("opacity");
 });
 
-test("サイズのモードは artboard の props では変えられないので受け付けない", () => {
+test("サイズのモードは artboard では読み捨てるので、パネルに出さない", () => {
   const names = Object.keys(Artboard.propDefinitions());
 
   expect(names).not.toContain("widthMode");
   expect(names).not.toContain("heightMode");
 });
 
-test("サイズの長さは artboard 自身が持つので props では受け付けない", () => {
+test("サイズの長さは artboard 自身が持つので、props の側は読み捨ててパネルに出さない", () => {
   const names = Object.keys(Artboard.propDefinitions());
 
   expect(names).not.toContain("width");
   expect(names).not.toContain("height");
 });
 
-test("親の中での置かれ方は artboard の props では受け付けない", () => {
+test("親の中での置かれ方は artboard では読み捨てるので、パネルに出さない", () => {
   const names = Object.keys(Artboard.propDefinitions());
 
   expect(names).not.toContain("placement");
@@ -31,7 +31,7 @@ test("親の中での置かれ方は artboard の props では受け付けない
   expect(names).not.toContain("y");
 });
 
-test("親のリサイズへの追従は artboard の props では受け付けない", () => {
+test("親のリサイズへの追従は artboard では読み捨てるので、パネルに出さない", () => {
   const names = Object.keys(Artboard.propDefinitions());
 
   expect(names).not.toContain("constraintX");
@@ -50,11 +50,11 @@ test("表示 / 非表示は artboard の props でも受け付ける", () => {
   expect(Object.keys(Artboard.propDefinitions())).toContain("visibility");
 });
 
-test("回転は artboard の props では受け付けない", () => {
+test("回転は artboard では読み捨てるので、パネルに出さない", () => {
   expect(Object.keys(Artboard.propDefinitions())).not.toContain("rotation");
 });
 
-test("artboard は最小 / 最大のサイズを受け付けない", () => {
+test("最小 / 最大のサイズは artboard では読み捨てるので、パネルに出さない", () => {
   const names = Object.keys(Artboard.propDefinitions());
 
   expect(names).not.toContain("minWidth");
@@ -63,6 +63,6 @@ test("artboard は最小 / 最大のサイズを受け付けない", () => {
   expect(names).not.toContain("maxHeight");
 });
 
-test("ロックは artboard の props では受け付けない", () => {
+test("ロックは artboard では読み捨てるので、パネルに出さない", () => {
   expect(Object.keys(Artboard.propDefinitions())).not.toContain("locking");
 });
