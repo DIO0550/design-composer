@@ -1,0 +1,615 @@
+{
+  "version": 1,
+  "pr": 1241,
+  "sha": "931e2439960dc80f90eda23909345ab7d9036ba4",
+  "issue": 1189,
+  "overview": {
+    "title": "locking を publicProps の binding の宛先にすることを禁止する",
+    "lead": "部品の公開 prop がプリミティブの `locking` に繋がっていたら、binding の不整合としてエラー一覧に出し、インスペクタの欄からも消す。",
+    "before": [
+      {
+        "text": "`locking` を公開した部品は検査を通り、インスタンスのインスペクタに `locking` の欄が出ていた。locked にしてもインスタンスは動かせた"
+      }
+    ],
+    "after": [
+      {
+        "text": "開くと `unbindable-binding-prop` のエラーが部品名と公開 prop 名の位置で出る（ファイルは開く）",
+        "message": "violation"
+      },
+      {
+        "text": "インスタンスのインスペクタから、その公開 prop の欄が消える",
+        "message": "resolve"
+      },
+      {
+        "text": "宛先が入れ子のインスタンスなら制限しない（`prop` は参照先の公開 prop 名）",
+        "message": "hop"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "判定の置き場所",
+        "text": "`hopIntoPrimitive` の 1 か所で、エラーと欄の両方が揃う",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/dcmp/component-binding/index.ts"
+        }
+      },
+      {
+        "title": "解除の扱い",
+        "text": "解除では上書きをそのまま焼き込む（内部ノードがロックされうる）。許容した理由は Issue",
+        "go": {
+          "kind": "flow",
+          "id": "open"
+        }
+      },
+      {
+        "title": "仕様の追記",
+        "text": "理由の本文は docs/03「ロック」に一本化した",
+        "go": {
+          "kind": "file",
+          "path": "docs/03-schema.md"
+        }
+      }
+    ]
+  },
+  "concepts": [
+    {
+      "path": "src/domains/dcmp/component-binding/index.ts",
+      "name": "公開 prop の binding",
+      "role": "公開 prop の繋ぎ先を 1 段ずつ辿り、違反か解決かを返す",
+      "change": "`UnbindablePropNames` と `unbindable-prop` を足した"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "name": "検証エラー",
+      "role": "違反をエラー一覧の行へ詰め替える",
+      "change": "`unbindable-binding-prop` を足した"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "ドキュメント",
+      "role": "開くときに全検査を集める"
+    },
+    {
+      "path": "src/domains/session/prop-control/index.ts",
+      "name": "プロパティの欄",
+      "role": "インスタンスの公開 prop の欄を組み立てる"
+    },
+    {
+      "path": "src/domains/dcmp/reference-context/index.ts",
+      "name": "参照の文脈",
+      "role": "上書きの値を公開 prop の定義と照らす"
+    },
+    {
+      "path": "docs/03-schema.md",
+      "name": "スキーマ仕様",
+      "role": "ロックとバリデーションの仕様",
+      "change": "「ロック」に禁止と理由、バリデーション仕様に項目を足した"
+    }
+  ],
+  "messages": [
+    {
+      "id": "violation",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "kind": "qry",
+      "name": "binding の違反を問う",
+      "code": "ComponentBinding.violation",
+      "via": "call",
+      "returns": "`unbindable-prop` などの違反",
+      "status": "changed"
+    },
+    {
+      "id": "to-error",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "kind": "qry",
+      "name": "違反をエラーにする",
+      "code": "fromBindingViolation",
+      "via": "call",
+      "returns": "`unbindable-binding-prop`",
+      "status": "changed"
+    },
+    {
+      "id": "resolve",
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "kind": "qry",
+      "name": "公開 prop の繋ぎ先を引く",
+      "code": "ComponentBinding.resolvePublicPropTarget",
+      "via": "call",
+      "returns": "繋げない prop なら none",
+      "status": "changed"
+    },
+    {
+      "id": "override-check",
+      "from": "src/domains/dcmp/reference-context/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "kind": "qry",
+      "name": "上書きの定義を引く",
+      "code": "ComponentBinding.resolvePropTarget",
+      "via": "call",
+      "returns": "繋げない prop なら none（値の検査を飛ばす）",
+      "status": "changed"
+    },
+    {
+      "id": "hop",
+      "from": "src/domains/dcmp/component-binding/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "kind": "qry",
+      "name": "1 段目を辿る",
+      "code": "hop",
+      "via": "call",
+      "returns": "プリミティブなら `hopIntoPrimitive`、インスタンスなら `hopIntoInstance`"
+    }
+  ],
+  "flows": [
+    {
+      "id": "open",
+      "label": "ファイルを開いたとき",
+      "steps": [
+        "violation",
+        "to-error",
+        "override-check"
+      ]
+    },
+    {
+      "id": "inspect",
+      "label": "インスタンスを選んだとき",
+      "steps": [
+        "resolve"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "397cd5b2f9f7f086877b4e3049fe3a3d1ecbc7d8",
+      "phase": "core",
+      "role": "`locking` を繋げない prop として判定する",
+      "why": "`hop` は違反と解決が共有しているので、ここに置けばエラーと欄の両方が同じ判定で決まる。",
+      "flows": [
+        "open",
+        "inspect"
+      ],
+      "review": [
+        "判定の順（型が未知 → スキーマに無い → 繋げない）が妥当か",
+        "宛先がインスタンスのときに制限しない判断が妥当か"
+      ],
+      "before": [
+        {
+          "text": "`locking` への binding は definition として解決していた"
+        }
+      ],
+      "after": [
+        {
+          "text": "`unbindable-prop` を返す",
+          "message": "violation"
+        }
+      ]
+    },
+    {
+      "sha": "823c295ca9539b76d4826770d141a8d507103f35",
+      "phase": "core",
+      "role": "エラー・欄・上書きの検査の 3 か所で振る舞いを固定する",
+      "why": "判定 1 つが 3 つの観測点に効くので、それぞれで落ちうるテストを置いた。",
+      "review": [
+        "上書き値を語彙外の `\"frozen\"` にしたことで、検査を飛ばすことまで守れているか"
+      ]
+    },
+    {
+      "sha": "9d88fdd77c57922f1ef898fb16d2e48ee922640d",
+      "phase": "core",
+      "role": "仕様（docs/03・docs/02）に禁止を書く",
+      "why": "検査を足した以上、仕様側にも規則と理由を置く。"
+    },
+    {
+      "sha": "51c37e60ecb12ae02cc16b608bbd0a0f8d0ce6cd",
+      "phase": "revise",
+      "role": "doc の理由を docs/03 への参照にする",
+      "why": "レビューで、理由の本文が docs と二重になっていると指摘された。"
+    },
+    {
+      "sha": "bc22fc15f743b0db44086b9cc541b158bcc7e9aa",
+      "phase": "revise",
+      "role": "フィクスチャ名を `lock` 系に改める",
+      "why": "production の `isFrozen` と意味がぶつかると指摘された。"
+    },
+    {
+      "sha": "5b5bec96b85f2c3da8db003edb4fff997c1bba62",
+      "phase": "revise",
+      "role": "docs の例外の記述を docs/03 に寄せ、節参照を揃える",
+      "why": "docs/02 と docs/03 に同じ例外があり、節参照の書き方も揃っていなかった。"
+    },
+    {
+      "sha": "931e2439960dc80f90eda23909345ab7d9036ba4",
+      "phase": "hard",
+      "role": "型が未知のときの順序をテストで固定する",
+      "why": "ミューテーションで、判定を型の判定より前に移しても全件が通った。"
+    }
+  ],
+  "suites": [
+    {
+      "id": "violation",
+      "label": "binding の違反",
+      "file": "src/domains/dcmp/component-binding/__tests__/component-binding.violation.test.ts"
+    },
+    {
+      "id": "edge",
+      "label": "binding の解決",
+      "file": "src/domains/dcmp/component-binding/__tests__/component-binding.edge.test.ts"
+    },
+    {
+      "id": "validate",
+      "label": "ドキュメントの binding 検査",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-binding.test.ts"
+    },
+    {
+      "id": "shape",
+      "label": "エラーの形",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts"
+    },
+    {
+      "id": "panel",
+      "label": "インスタンスの欄",
+      "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "v-unknown",
+      "suite": "violation",
+      "name": "指し先の型が未知なら、locking を指していても違反にしない",
+      "techniques": [
+        "regression",
+        "boundary"
+      ],
+      "why": "順序が崩れると型が未知のエラーに重なって出る",
+      "given": "型が `Frame` のノードの `locking` を指す binding",
+      "when": "違反を問う",
+      "then": "`none`",
+      "commit": "931e2439960dc80f90eda23909345ab7d9036ba4",
+      "excerpt": {
+        "path": "src/domains/dcmp/component-binding/__tests__/component-binding.violation.test.ts",
+        "start": 114,
+        "end": 124,
+        "text": "test(\"指し先の型が未知なら、locking を指していても違反にしない\", () => {\n  const violation = ComponentBinding.violation(\n    components(),\n    ComponentBinding.create(\"button\", {\n      node: \"button-frame\",\n      prop: \"locking\",\n    }),\n  );\n\n  expect(violation).toEqual(Option.none);\n});"
+      },
+      "covers": [
+        "violation"
+      ]
+    },
+    {
+      "id": "v-inner",
+      "suite": "violation",
+      "name": "内部のプリミティブの locking を指す binding は unbindable-prop になる",
+      "techniques": [
+        "error"
+      ],
+      "why": "禁止の本体",
+      "given": "内部の Text の `locking` を公開した部品",
+      "when": "違反を問う",
+      "then": "`unbindable-prop`",
+      "commit": "823c295ca9539b76d4826770d141a8d507103f35",
+      "excerpt": {
+        "path": "src/domains/dcmp/component-binding/__tests__/component-binding.violation.test.ts",
+        "start": 144,
+        "end": 154,
+        "text": "test(\"内部のプリミティブの locking を指す binding は unbindable-prop になる\", () => {\n  const violation = ComponentBinding.violation(\n    components(),\n    ComponentBinding.create(\"button\", {\n      node: \"button-label\",\n      prop: \"locking\",\n    }),\n  );\n\n  expect(violation).toEqual(Option.some({ kind: \"unbindable-prop\" }));\n});"
+      },
+      "covers": [
+        "violation"
+      ]
+    },
+    {
+      "id": "v-root",
+      "suite": "violation",
+      "name": "部品の根の locking を指す binding も unbindable-prop になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "根の `locking` もインスタンスのロックにならない",
+      "given": "根の Box の `locking` を公開した部品",
+      "when": "違反を問う",
+      "then": "`unbindable-prop`",
+      "commit": "823c295ca9539b76d4826770d141a8d507103f35",
+      "excerpt": {
+        "path": "src/domains/dcmp/component-binding/__tests__/component-binding.violation.test.ts",
+        "start": 156,
+        "end": 163,
+        "text": "test(\"部品の根の locking を指す binding も unbindable-prop になる\", () => {\n  const violation = ComponentBinding.violation(\n    components(),\n    ComponentBinding.create(\"button\", { node: \"button\", prop: \"locking\" }),\n  );\n\n  expect(violation).toEqual(Option.some({ kind: \"unbindable-prop\" }));\n});"
+      },
+      "covers": [
+        "violation"
+      ]
+    },
+    {
+      "id": "v-named",
+      "suite": "violation",
+      "name": "指し先のインスタンスの参照先が locking という名前の公開 prop を content に繋いでいれば、違反にならない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "宣言名は自由で、正しい部品を弾かない",
+      "given": "入れ子の部品が `locking` という名前の公開 prop を `content` に繋ぐ",
+      "when": "外側の binding の違反を問う",
+      "then": "`none`",
+      "commit": "823c295ca9539b76d4826770d141a8d507103f35",
+      "excerpt": {
+        "path": "src/domains/dcmp/component-binding/__tests__/component-binding.violation.test.ts",
+        "start": 165,
+        "end": 184,
+        "text": "test(\"指し先のインスタンスの参照先が locking という名前の公開 prop を content に繋いでいれば、違反にならない\", () => {\n  const components: ComponentSet = {\n    card: {\n      type: \"Box\",\n      children: [{ name: \"card-badge\", ref: \"badge\" }],\n    },\n    badge: {\n      type: \"Box\",\n      children: [{ name: \"badge-label\", type: \"Text\" }],\n      publicProps: { locking: { node: \"badge-label\", prop: \"content\" } },\n    },\n  };\n\n  const violation = ComponentBinding.violation(\n    components,\n    ComponentBinding.create(\"card\", { node: \"card-badge\", prop: \"locking\" }),\n  );\n\n  expect(violation).toEqual(Option.none);\n});"
+      },
+      "covers": [
+        "hop"
+      ]
+    },
+    {
+      "id": "v-own",
+      "suite": "violation",
+      "name": "参照先が locking を公開していなければ、インスタンス自身のロックへは繋がらず missing-public-prop になる",
+      "techniques": [
+        "error"
+      ],
+      "why": "binding からインスタンス自身の値には届かない",
+      "given": "直下に `locking` を書いた入れ子インスタンスを指す binding",
+      "when": "違反を問う",
+      "then": "`missing-public-prop`",
+      "commit": "823c295ca9539b76d4826770d141a8d507103f35",
+      "excerpt": {
+        "path": "src/domains/dcmp/component-binding/__tests__/component-binding.violation.test.ts",
+        "start": 186,
+        "end": 206,
+        "text": "test(\"参照先が locking を公開していなければ、インスタンス自身のロックへは繋がらず missing-public-prop になる\", () => {\n  const components: ComponentSet = {\n    card: {\n      type: \"Box\",\n      children: [{ name: \"card-badge\", ref: \"badge\", locking: \"locked\" }],\n    },\n    badge: {\n      type: \"Box\",\n      children: [{ name: \"badge-label\", type: \"Text\" }],\n    },\n  };\n\n  const violation = ComponentBinding.violation(\n    components,\n    ComponentBinding.create(\"card\", { node: \"card-badge\", prop: \"locking\" }),\n  );\n\n  expect(violation).toEqual(\n    Option.some({ kind: \"missing-public-prop\", ref: \"badge\" }),\n  );\n});"
+      },
+      "covers": [
+        "hop"
+      ]
+    },
+    {
+      "id": "e-direct",
+      "suite": "edge",
+      "name": "locking を指す binding は解決できない",
+      "techniques": [
+        "error"
+      ],
+      "why": "解決できなければインスペクタの欄が出ない",
+      "given": "`locking` を公開した部品",
+      "when": "繋ぎ先を引く",
+      "then": "`none`",
+      "commit": "823c295ca9539b76d4826770d141a8d507103f35",
+      "excerpt": {
+        "path": "src/domains/dcmp/component-binding/__tests__/component-binding.edge.test.ts",
+        "start": 169,
+        "end": 183,
+        "text": "test(\"locking を指す binding は解決できない\", () => {\n  const components: ComponentSet = {\n    button: { type: \"Box\", children: [{ name: \"button-label\", type: \"Text\" }] },\n  };\n\n  const target = ComponentBinding.resolvePropTarget(\n    components,\n    ComponentBinding.create(\"button\", {\n      node: \"button-label\",\n      prop: \"locking\",\n    }),\n  );\n\n  expect(target).toEqual(Option.none);\n});"
+      },
+      "covers": [
+        "resolve"
+      ]
+    },
+    {
+      "id": "e-chain",
+      "suite": "edge",
+      "name": "連鎖の先で locking に着く binding は解決できない",
+      "techniques": [
+        "state"
+      ],
+      "why": "親のインスタンスでも欄が消える",
+      "given": "外側 → 入れ子 → `locking`",
+      "when": "外側から繋ぎ先を引く",
+      "then": "`none`",
+      "commit": "823c295ca9539b76d4826770d141a8d507103f35",
+      "excerpt": {
+        "path": "src/domains/dcmp/component-binding/__tests__/component-binding.edge.test.ts",
+        "start": 185,
+        "end": 208,
+        "text": "test(\"連鎖の先で locking に着く binding は解決できない\", () => {\n  const components: ComponentSet = {\n    button: {\n      type: \"Box\",\n      children: [{ name: \"button-label\", type: \"Text\" }],\n      publicProps: { lock: { node: \"button-label\", prop: \"locking\" } },\n    },\n    card: {\n      type: \"Box\",\n      children: [{ name: \"card-action\", ref: \"button\" }],\n      publicProps: { actionLock: { node: \"card-action\", prop: \"lock\" } },\n    },\n  };\n\n  const target = ComponentBinding.resolvePropTarget(\n    components,\n    ComponentBinding.create(\"card\", {\n      node: \"card-action\",\n      prop: \"lock\",\n    }),\n  );\n\n  expect(target).toEqual(Option.none);\n});"
+      },
+      "covers": [
+        "resolve"
+      ]
+    },
+    {
+      "id": "d-error",
+      "suite": "validate",
+      "name": "locking への binding は unbindable-binding-prop エラーになる",
+      "techniques": [
+        "error"
+      ],
+      "why": "開いたときにエラー一覧に出る",
+      "given": "`locking` を公開したドキュメント",
+      "when": "検査する",
+      "then": "`unbindable-binding-prop`",
+      "commit": "823c295ca9539b76d4826770d141a8d507103f35",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-binding.test.ts",
+        "start": 204,
+        "end": 225,
+        "text": "test(\"locking への binding は unbindable-binding-prop エラーになる\", () => {\n  const document = DesignDocument.create({\n    tokens: DocumentTemplate.Default.tokens,\n    components: {\n      button: {\n        type: \"Box\",\n        children: [{ name: \"button-label\", type: \"Text\" }],\n        publicProps: { lock: { node: \"button-label\", prop: \"locking\" } },\n      },\n    },\n  });\n\n  const errors = DesignDocument.collectErrors(document);\n\n  expect(errors).toEqual([\n    expect.objectContaining({\n      kind: \"unbindable-binding-prop\",\n      nodeName: \"button\",\n      prop: \"lock\",\n    }),\n  ]);\n});"
+      },
+      "covers": [
+        "violation",
+        "to-error"
+      ]
+    },
+    {
+      "id": "d-nested",
+      "suite": "validate",
+      "name": "入れ子の部品の locking へ繋いだ公開 prop を親が辿っていても、エラーは繋いだ部品に 1 件だけ出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "原因 1 件が親の数だけ増えない",
+      "given": "親が子の部品の公開 prop を辿り、子が `locking` へ繋ぐ",
+      "when": "検査する",
+      "then": "子の部品に 1 件だけ",
+      "commit": "823c295ca9539b76d4826770d141a8d507103f35",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-binding.test.ts",
+        "start": 227,
+        "end": 253,
+        "text": "test(\"入れ子の部品の locking へ繋いだ公開 prop を親が辿っていても、エラーは繋いだ部品に 1 件だけ出る\", () => {\n  const document = DesignDocument.create({\n    tokens: DocumentTemplate.Default.tokens,\n    components: {\n      button: {\n        type: \"Box\",\n        children: [{ name: \"button-label\", type: \"Text\" }],\n        publicProps: { lock: { node: \"button-label\", prop: \"locking\" } },\n      },\n      card: {\n        type: \"Box\",\n        children: [{ name: \"card-action\", ref: \"button\" }],\n        publicProps: { actionLock: { node: \"card-action\", prop: \"lock\" } },\n      },\n    },\n  });\n\n  const errors = DesignDocument.collectErrors(document);\n\n  expect(errors).toEqual([\n    expect.objectContaining({\n      kind: \"unbindable-binding-prop\",\n      nodeName: \"button\",\n      prop: \"lock\",\n    }),\n  ]);\n});"
+      },
+      "covers": [
+        "violation"
+      ]
+    },
+    {
+      "id": "d-named",
+      "suite": "validate",
+      "name": "locking という名前の公開 prop を他の prop へ繋いでもエラーにならない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "判定は宛先の prop で、宣言名ではない",
+      "given": "宣言名 `locking` → `content`",
+      "when": "検査する",
+      "then": "エラーなし",
+      "commit": "823c295ca9539b76d4826770d141a8d507103f35",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-binding.test.ts",
+        "start": 255,
+        "end": 268,
+        "text": "test(\"locking という名前の公開 prop を他の prop へ繋いでもエラーにならない\", () => {\n  const document = DesignDocument.create({\n    tokens: DocumentTemplate.Default.tokens,\n    components: {\n      badge: {\n        type: \"Box\",\n        children: [{ name: \"badge-label\", type: \"Text\" }],\n        publicProps: { locking: { node: \"badge-label\", prop: \"content\" } },\n      },\n    },\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([]);\n});"
+      },
+      "covers": [
+        "violation"
+      ]
+    },
+    {
+      "id": "d-override",
+      "suite": "validate",
+      "name": "インスタンスが語彙に無い値で locking へ繋いだ公開 prop を上書きしていても、エラーは binding の 1 件だけ",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "上書きの値の検査を飛ばし、エラーが重ならない",
+      "given": "インスタンスが `\"frozen\"` で上書き",
+      "when": "検査する",
+      "then": "binding のエラー 1 件だけ",
+      "commit": "823c295ca9539b76d4826770d141a8d507103f35",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-binding.test.ts",
+        "start": 270,
+        "end": 305,
+        "text": "test(\"インスタンスが語彙に無い値で locking へ繋いだ公開 prop を上書きしていても、エラーは binding の 1 件だけ\", () => {\n  const document = DesignDocument.create({\n    tokens: DocumentTemplate.Default.tokens,\n    components: {\n      button: {\n        type: \"Box\",\n        children: [{ name: \"button-label\", type: \"Text\" }],\n        publicProps: { lock: { node: \"button-label\", prop: \"locking\" } },\n      },\n    },\n    artboards: [\n      {\n        name: \"screen\",\n        width: 375,\n        height: 812,\n        children: [\n          {\n            name: \"screen-button\",\n            ref: \"button\",\n            overrides: { lock: \"frozen\" },\n          },\n        ],\n      },\n    ],\n  });\n\n  const errors = DesignDocument.collectErrors(document);\n\n  expect(errors).toEqual([\n    expect.objectContaining({\n      kind: \"unbindable-binding-prop\",\n      nodeName: \"button\",\n      prop: \"lock\",\n    }),\n  ]);\n});"
+      },
+      "covers": [
+        "override-check"
+      ]
+    },
+    {
+      "id": "s-shape",
+      "suite": "shape",
+      "name": "locking へ binding したときのエラーは、部品名と公開 prop 名の位置で、ノード名と prop 名を挙げる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "エラー一覧の位置と文面",
+      "given": "`locking` を公開したドキュメント",
+      "when": "検査する",
+      "then": "kind・位置・message が一致",
+      "commit": "823c295ca9539b76d4826770d141a8d507103f35",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+        "start": 75,
+        "end": 96,
+        "text": "test(\"locking へ binding したときのエラーは、部品名と公開 prop 名の位置で、ノード名と prop 名を挙げる\", () => {\n  const errors = errorsOf(\n    {\n      button: {\n        type: \"Box\",\n        children: [{ name: \"button-label\", type: \"Text\" }],\n        publicProps: { lock: { node: \"button-label\", prop: \"locking\" } },\n      },\n    },\n    [],\n  );\n\n  expect(errors).toStrictEqual([\n    {\n      kind: \"unbindable-binding-prop\",\n      nodeName: \"button\",\n      prop: \"lock\",\n      message:\n        'prop \"locking\" of node \"button-label\" cannot be bound to a public prop',\n    },\n  ]);\n});"
+      },
+      "covers": [
+        "to-error"
+      ]
+    },
+    {
+      "id": "p-panel",
+      "suite": "panel",
+      "name": "locking へ繋いだ公開 prop はコントロールが出ず、同じ部品の他の公開 prop は出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "locked と出るのに動かせる食い違いを画面に出さない",
+      "given": "`title → content` と `lock → locking` を公開した部品",
+      "when": "インスタンスの欄を組む",
+      "then": "欄は `title` だけ",
+      "commit": "823c295ca9539b76d4826770d141a8d507103f35",
+      "excerpt": {
+        "path": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "start": 227,
+        "end": 234,
+        "text": "test(\"locking へ繋いだ公開 prop はコントロールが出ず、同じ部品の他の公開 prop は出る\", () => {\n  const selection = setupInstanceSelection({\n    name: \"card\",\n    ref: \"lock-card\",\n  });\n\n  expect(publicPropNames(selection)).toEqual([\"title\"]);\n});"
+      },
+      "covers": [
+        "resolve"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "ロックを公開した部品は、開くとエラーになる",
+    "lead": "部品の中身のロックを公開して、インスタンスごとに切り替えられるようにした部品は、開いたときにエラー一覧に出る。インスタンスのプロパティにもその欄は出なくなる。",
+    "changed": {
+      "before": [
+        {
+          "text": "部品の中身のロックを公開した部品は、エラーなく開けた"
+        },
+        {
+          "text": "インスタンスのプロパティにロックの欄が出て、ロックにしてもインスタンスは動かせた"
+        }
+      ],
+      "after": [
+        {
+          "text": "開くとエラー一覧に、どの部品のどの公開項目かが出る。ファイルは開き、編集は続けられる",
+          "message": "to-error"
+        },
+        {
+          "text": "インスタンスのプロパティから、その欄が消える",
+          "message": "resolve"
+        }
+      ],
+      "specs": [
+        {
+          "path": "docs/03-schema.md",
+          "locator": "「ロック」の箇条",
+          "text": "ロックは公開項目の繋ぎ先にできないことと、その理由を足した",
+          "shas": [
+            "9d88fdd77c57922f1ef898fb16d2e48ee922640d",
+            "5b5bec96b85f2c3da8db003edb4fff997c1bba62"
+          ]
+        },
+        {
+          "path": "docs/03-schema.md",
+          "locator": "「バリデーション仕様」の繋ぎ先の不整合",
+          "text": "ロックへの繋ぎを不整合の例に足した",
+          "shas": [
+            "9d88fdd77c57922f1ef898fb16d2e48ee922640d"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 973,
+          "text": "インスタンス自身のロックを入れた回で、この禁止を決めて分割した"
+        }
+      ]
+    },
+    "kept": [
+      {
+        "text": "入れ子の部品が「ロック」という名前の公開項目を文字などへ繋いでいるときは、エラーにならない",
+        "tests": [
+          "v-named",
+          "d-named"
+        ]
+      },
+      {
+        "text": "インスタンス自身のロック（インスペクタのインスタンスの節の行）はこれまでどおり使える",
+        "tests": [
+          "v-own"
+        ]
+      },
+      {
+        "text": "部品の解除では、インスタンスの上書きを今までどおり中身へ焼き込む"
+      }
+    ]
+  }
+}
