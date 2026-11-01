@@ -1,0 +1,1760 @@
+{
+  "version": 1,
+  "pr": 1250,
+  "sha": "081f525fd102c63d57afd3854cab7c21b25dfc84",
+  "issue": 1013,
+  "overview": {
+    "title": "Result / Option の判別子をシンボルのキーにして、直読み・直書きの検出器を型で置き換える",
+    "lead": "`Result` / `Option` の判別子(`ok` / `some`)を、export しない `Symbol.for(...)` のキー(`OkTag` / `SomeTag`)に変えた。定義元の外で判別子を読み書きすると `tsc` が落とすので、同じ規則を正規表現で守っていた検出器とその配線を外した。",
+    "before": [
+      {
+        "text": "定義元の外で `result.ok` / `option.some` を読むと、`result-option-discriminant-violations.py` が push 前・CI で止めていた(分割代入・`in`・ブラケット・shorthand は拾えなかった)",
+        "message": "prepush-detector"
+      },
+      {
+        "text": "`{ ok: true, value: 1 }` のような値リテラルで結果を作るのも、同じ検出器が正規表現で止めていた",
+        "message": "ci-detector"
+      },
+      {
+        "text": "セッションの `git push` の前に、PreToolUse フックが同じ検出器を走らせていた",
+        "message": "hook-detector"
+      },
+      {
+        "text": "`rules/coding.md` L24 が「判別子を直接読み書きしてよいのは定義元の中だけ」と規律で書いていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "定義元の外で `result.ok` を読むと TS2339、`{ ok: true, value: 42 }` を `Result` として書くと TS2353 で `tsc` が落ちる",
+        "message": "typecheck"
+      },
+      {
+        "text": "`isOk` / `isSome` の名前とシグネチャは変わらず、呼び出し側はそのまま動く",
+        "message": "save-isok"
+      },
+      {
+        "text": "検出器・判定表・PreToolUse フック・pre-push の 2 検査・CI の 2 ステップ・README の節が無くなる"
+      },
+      {
+        "text": "Vite の HMR で `Result.ts` が評価し直されても、それ以前に作った値を新しい `isOk` が `true` と判定する(`Symbol.for` で同じキーを引くため)",
+        "message": "tab-issome"
+      },
+      {
+        "text": "`rules/coding.md` L24 は「判定は `isSome` / `isOk` を通す」だけ残る(`\"value\" in r` の迂回は型で落ちないため)"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "判別子のキー",
+        "text": "`Symbol()` ではなく `Symbol.for(...)` にした判断。plan-reviewer の指摘で切り替え、test-reviewer の実測で評価し直しのテストを足すまで守られていなかった",
+        "go": {
+          "kind": "file",
+          "path": "src/utils/Result.ts"
+        }
+      },
+      {
+        "title": "受け入れた制約",
+        "text": "`JSON.stringify` / `structuredClone` でシンボルのキーが落ち、`JsonValue` へ型エラー無しで代入できる。src に経路は 0 件で、型で弾く対応は #1249 に分けた",
+        "go": {
+          "kind": "feature",
+          "id": "discriminant"
+        }
+      },
+      {
+        "title": "残した規約の 1 行",
+        "text": "`rules/coding.md` L24 を丸ごと消さず判定の入口だけ残した理由(`\"value\" in r` が型で落ちない)が妥当か",
+        "go": {
+          "kind": "file",
+          "path": "rules/coding.md"
+        }
+      },
+      {
+        "title": "ハーネスの層",
+        "text": "外した配線(settings.json・pre-push・frontend.yml)と、作り直した層 2 のレシピ",
+        "go": {
+          "kind": "layer",
+          "layer": "ハーネス"
+        }
+      },
+      {
+        "title": "push 前の検査",
+        "text": "判別子の検査が抜け、型の検査がその役を担う流れ",
+        "go": {
+          "kind": "flow",
+          "id": "push"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "discriminant",
+      "label": "判別子の閉じ方",
+      "role": "成否・在／不在の判別子を、定義元だけが名前を持てるシンボルのキーにして型で閉じる"
+    },
+    {
+      "id": "detector-removal",
+      "label": "検出器の撤去",
+      "role": "型で守れるようになった規則を正規表現で守っていた検出器と、その配線を外す"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "utils",
+      "role": "`Result.ts` / `Option.ts` の判別子をシンボルのキーにし、外からの読み書きを型で落とすテストを足す"
+    },
+    {
+      "layer": "ハーネス",
+      "role": "検出器・判定表・フックを消し、pre-push・CI・settings.json の配線と README・規約の記述を直す"
+    },
+    {
+      "layer": "features / editor/features/document-sync",
+      "role": "変えていない呼び出し側。`Result.isOk` を通して成否を判定する例"
+    },
+    {
+      "layer": "components",
+      "role": "変えていない呼び出し側。`Option.isSome` を通して在／不在を判定する例"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/utils/Result.ts",
+      "name": "成否の型",
+      "role": "失敗しうる処理の戻り値と、その生成・連鎖・判定",
+      "feature": "discriminant",
+      "change": "判別子を export しない `OkTag`(`Symbol.for(\"design-composer/utils/Result#ok\")`)のキーにした"
+    },
+    {
+      "path": "src/utils/Option.ts",
+      "name": "在／不在の型",
+      "role": "値が無いことがありうる処理の戻り値と、その生成・連鎖・判定",
+      "feature": "discriminant",
+      "change": "判別子を export しない `SomeTag` のキーにした"
+    },
+    {
+      "path": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "name": "自動保存",
+      "role": "保存の結果を `Result.isOk` で判定する(変えていない呼び出し側)",
+      "feature": "discriminant"
+    },
+    {
+      "path": "src/components/tab-bar/index.tsx",
+      "name": "タブバー",
+      "role": "並べ替えの有無を `Option.isSome` で判定する(変えていない呼び出し側)",
+      "feature": "discriminant"
+    },
+    {
+      "path": "harness/githooks/pre-push",
+      "name": "push 前の検査",
+      "role": "push の前に型・lint・規約の検査をまとめて走らせる",
+      "feature": "detector-removal",
+      "change": "判別子の検査と、その判定表の 2 検査を外した"
+    },
+    {
+      "path": ".github/workflows/frontend.yml",
+      "name": "CI の規約検査",
+      "role": "CI の rules-check で規約の検査を走らせる",
+      "feature": "detector-removal",
+      "change": "判別子の検査と判定表の 2 ステップを外した"
+    },
+    {
+      "path": ".claude/settings.json",
+      "name": "セッションのフック設定",
+      "role": "PreToolUse で `git push` の前に走らせるフックを並べる",
+      "feature": "detector-removal",
+      "change": "判別子のフックの行を外した"
+    },
+    {
+      "path": ".claude/hooks/pre-push-result-option-discriminants.sh",
+      "name": "判別子のフック",
+      "role": "セッションの `git push` の前に検出器を呼んでいた",
+      "feature": "detector-removal",
+      "change": "消した"
+    },
+    {
+      "path": ".claude/hooks/lib/result-option-discriminant-violations.py",
+      "name": "判別子の検出器",
+      "role": "定義元の外の `.ok` / `.some` の読みと値リテラルを正規表現で探していた",
+      "feature": "detector-removal",
+      "change": "消した"
+    },
+    {
+      "path": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+      "name": "判別子の判定表",
+      "role": "検出器の判定を合成した入力で確かめていた",
+      "feature": "detector-removal",
+      "change": "消した"
+    },
+    {
+      "path": "rules/coding.md",
+      "name": "コーディング規約",
+      "role": "「エラーと不在の表現」で判定の入口を決める",
+      "feature": "detector-removal",
+      "change": "L24 を「判定は `isSome` / `isOk` を通す」に縮めた",
+      "graph": false
+    },
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "フックの説明",
+      "role": "フックの一覧・動作確認のレシピ",
+      "feature": "detector-removal",
+      "change": "検出器の節と表の行を消し、層 2 のレシピを型で落ちる probe に作り直した",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "save-isok",
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/utils/Result.ts",
+      "kind": "qry",
+      "name": "成否を問い合わせる",
+      "code": "Result.isOk(saved)",
+      "via": "call",
+      "payload": "保存の結果",
+      "returns": "成功なら `true`(`result[OkTag]` を読む)",
+      "status": "changed"
+    },
+    {
+      "id": "tab-issome",
+      "from": "src/components/tab-bar/index.tsx",
+      "to": "src/utils/Option.ts",
+      "kind": "qry",
+      "name": "在／不在を問い合わせる",
+      "code": "Option.isSome(reorder)",
+      "via": "call",
+      "payload": "並べ替えの指定",
+      "returns": "値があれば `true`(`option[SomeTag]` を読む)",
+      "status": "changed"
+    },
+    {
+      "id": "typecheck",
+      "from": "harness/githooks/pre-push",
+      "to": "src/utils/Result.ts",
+      "kind": "qry",
+      "name": "型を検査する",
+      "code": "pnpm run typecheck",
+      "via": "exec",
+      "payload": "`src/` 全体",
+      "returns": "定義元の外の判別子の読み書きがあれば TS2339 / TS2353 で失敗"
+    },
+    {
+      "id": "prepush-detector",
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/result-option-discriminant-violations.py",
+      "kind": "qry",
+      "name": "判別子の直読み・直書きを検査する",
+      "code": "python3 .claude/hooks/lib/result-option-discriminant-violations.py src",
+      "via": "exec",
+      "status": "removed"
+    },
+    {
+      "id": "prepush-cases",
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/result-option-discriminant-cases.sh",
+      "kind": "qry",
+      "name": "判別子の判定表を走らせる",
+      "code": "bash .claude/hooks/lib/result-option-discriminant-cases.sh",
+      "via": "exec",
+      "status": "removed"
+    },
+    {
+      "id": "ci-detector",
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/result-option-discriminant-violations.py",
+      "kind": "qry",
+      "name": "CI で判別子を検査する",
+      "code": "python3 .claude/hooks/lib/result-option-discriminant-violations.py src",
+      "via": "exec",
+      "status": "removed"
+    },
+    {
+      "id": "hook-detector",
+      "from": ".claude/settings.json",
+      "to": ".claude/hooks/pre-push-result-option-discriminants.sh",
+      "kind": "qry",
+      "name": "push の前にフックを呼ぶ",
+      "code": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/pre-push-result-option-discriminants.sh\"",
+      "via": "exec",
+      "status": "removed"
+    },
+    {
+      "id": "hook-runs-detector",
+      "from": ".claude/hooks/pre-push-result-option-discriminants.sh",
+      "to": ".claude/hooks/lib/result-option-discriminant-violations.py",
+      "kind": "qry",
+      "name": "フックから検出器を呼ぶ",
+      "code": "result-option-discriminant-violations.py src",
+      "via": "exec",
+      "status": "removed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "judge",
+      "label": "成否・在／不在を判定するとき",
+      "steps": [
+        "save-isok",
+        "tab-issome"
+      ]
+    },
+    {
+      "id": "push",
+      "label": "push 前の検査",
+      "steps": [
+        "typecheck",
+        "prepush-detector",
+        "prepush-cases"
+      ]
+    },
+    {
+      "id": "ci",
+      "label": "CI の規約検査",
+      "steps": [
+        "ci-detector"
+      ]
+    },
+    {
+      "id": "agent-push",
+      "label": "セッションが push するとき",
+      "steps": [
+        "hook-detector",
+        "hook-runs-detector"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "3d4db36f57b8489b45bd64addfa301ac059699a5",
+      "phase": "core",
+      "role": "`Result` / `Option` の判別子を、export しない `Symbol.for(...)` のキーにする",
+      "why": "検出器を外してよい根拠は型の変更にしかないので、先に型を変える。Issue の案 A(型で置き換える)を採り、案 C(型と検出器の併用)は同じ規則を 2 箇所で守ることになるので却下した。計画では `Symbol(\"ok\")` だったが、plan-reviewer の指摘で、HMR で定義元が評価し直されても保持した古い値を同じキーで読めるよう `Symbol.for` にした。",
+      "flows": [
+        "judge"
+      ],
+      "review": [
+        "型宣言・生成・判別子の読みがすべて `[OkTag]` / `[SomeTag]` に置き換わり、文字列の `ok` / `some` が残っていないか",
+        "公開 API(`ok` / `err` / `some` / `none` / `isOk` / `isSome` など)の名前とシグネチャが変わっていないか",
+        "`Symbol.for` の綴りを知っていれば実行時にキーを取り出せるが、型の上では `r[Symbol.for(...)]` も TS7053 で落ちるのでゴールは保てる、という判断"
+      ],
+      "before": [
+        {
+          "text": "判別子は公開された文字列キー `ok` / `some`"
+        }
+      ],
+      "after": [
+        {
+          "text": "判別子は定義元の中だけで名前を持てる `unique symbol` のキー",
+          "message": "save-isok"
+        },
+        {
+          "text": "定義元の外の `.ok` の読みは TS2339、値リテラルの `{ ok: true }` は TS2353 で落ちる"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/utils/Result.ts",
+          "start": 10,
+          "end": 10,
+          "text": "export しないので、このファイルの外ではキーに名前を付けられない。`unique symbol` の注釈で、このキーが他のどのシンボルとも別の型になる"
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "start": 1,
+          "end": 9,
+          "text": "この時点の doc には `Symbol.for` にする理由も書いていた。081f525 でテストに任せて外す"
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "start": 108,
+          "end": 110,
+          "text": "`isOk` は判別子を読むだけ。戻り値の型述語 `result is Ok<T>` で呼び出し側の絞り込みが効く"
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "start": 5,
+          "end": 5,
+          "text": "`Option` も同じ形。`Symbol.for` の鍵の綴りはファイルと判別子の名前を含め、他と衝突しないようにしている"
+        }
+      ]
+    },
+    {
+      "sha": "89c62ee7bf788f3311b5b020f932a4bd47042d86",
+      "phase": "hard",
+      "role": "判別子を定義元の外から読み書き・持ち出しできないことを型テストで固定する",
+      "why": "型で閉じたことは「実際に弾かれるか」で確かめる(`rules/coding.md`「値の語彙を型で閉じる」)。`@ts-expect-error` を置くと、閉じ方が緩んだときに TS2578(使われていない `@ts-expect-error`)で typecheck が落ちる。",
+      "review": [
+        "`@ts-expect-error` の行が、本当に判別子の読み・書き・持ち出しの行の直前にあるか",
+        "値が `undefined` の成功と失敗の比較テストが、キーを非列挙にする退行を捕まえる形になっているか"
+      ],
+      "notes": [
+        {
+          "path": "src/utils/__tests__/Result.type.test.ts",
+          "start": 34,
+          "end": 41,
+          "text": "`result.ok` が型エラーになることと、実行時に `undefined` であることの両方を見る"
+        },
+        {
+          "path": "src/utils/__tests__/Result.type.test.ts",
+          "start": 50,
+          "end": 55,
+          "text": "動的 import した名前空間から `OkTag` を引く。export すると TS2339 が消え、`@ts-expect-error` が TS2578 で落ちる"
+        },
+        {
+          "path": "src/utils/__tests__/Result.edge.test.ts",
+          "start": 54,
+          "end": 58,
+          "text": "判別子しか違わない 2 値。`toEqual` が判別子を比べなくなると等しくなる"
+        }
+      ]
+    },
+    {
+      "sha": "9301de88dff94c3d99208bfeb4d4b74affb60520",
+      "phase": "core",
+      "role": "判別子の直読み・直書きの検出器と、その配線をすべて外す",
+      "why": "型が検出器の拾えなかった形(分割代入・`in`・ブラケット・shorthand)まで落とすので、同じ規則を正規表現で守る必要が無くなった。型の変更と同じ PR にしたのは、型だけ先に入れた中間状態が却下した案 C そのものだから。層 2 のレシピは `harness/githooks/README.md` から参照されていたので、消さずに型で落ちる probe へ作り直した。",
+      "flows": [
+        "push",
+        "ci",
+        "agent-push"
+      ],
+      "review": [
+        "settings.json・pre-push・frontend.yml・README の表から、検出器と判定表への参照が漏れなく消えているか",
+        "作り直した層 2 のレシピが「失敗した検査: typecheck」・exit=1 になる、という実測の主張",
+        "`story-title-cases.sh` の前例への言及を向け直さず消した判断(向け直すと判定表どうしが指し合いになる)"
+      ],
+      "before": [
+        {
+          "text": "push 前に判別子の検査と判定表が走っていた",
+          "message": "prepush-detector"
+        },
+        {
+          "text": "CI の rules-check にも 2 ステップあった",
+          "message": "ci-detector"
+        },
+        {
+          "text": "セッションの `git push` の前に PreToolUse フックが検出器を呼んでいた",
+          "message": "hook-detector"
+        }
+      ],
+      "after": [
+        {
+          "text": "判別子の読み書きは型の検査だけが止める",
+          "message": "typecheck"
+        }
+      ],
+      "notes": [
+        {
+          "path": "harness/githooks/pre-push",
+          "side": "old",
+          "start": 39,
+          "end": 39,
+          "text": "外した検出器の呼び出し"
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "side": "old",
+          "start": 47,
+          "end": 47,
+          "text": "外した判定表の呼び出し"
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "side": "old",
+          "start": 143,
+          "end": 150,
+          "text": "検出器を CI のスクリプトとして持っていた理由(oxlint にも GritQL にも書けない)ごと消した"
+        },
+        {
+          "path": ".claude/settings.json",
+          "side": "old",
+          "start": 147,
+          "end": 150,
+          "text": "PreToolUse フックの行"
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 580,
+          "end": 589,
+          "text": "層 2 のレシピを、型で落ちる probe を置いて pre-push を走らせる形に作り直した"
+        }
+      ]
+    },
+    {
+      "sha": "3a1f5329fe7d2f29224c6b9afec4904162c80b9e",
+      "phase": "fin",
+      "role": "`rules/coding.md` の判別子の規律を、判定の入口の 1 文に縮める",
+      "why": "外での読み書きと値リテラルでの生成は `tsc` が落とすので、規約に書く必要が無くなった。ただし `\"value\" in r ? r.value : …` で絞り込む迂回は型の変更後も通るので、判定を `isOk` / `isSome` に通す規律だけは残した。",
+      "review": [
+        "行ごと消して `always_loaded_cap` を下げず、前半を残した判断(`\"value\" in r` の迂回)"
+      ],
+      "notes": [
+        {
+          "path": "rules/coding.md",
+          "start": 24,
+          "end": 24,
+          "text": "判別子を直接読み書きしてよい範囲の記述を消し、判定の入口だけを残した。行数は変わらないのでラチェットは 789 のまま"
+        }
+      ]
+    },
+    {
+      "sha": "f2adaa132cc7546137eaa93cb97415dab5d725ad",
+      "phase": "revise",
+      "role": "判別子の doc に `JsonValue` へ代入できてしまう点を足し、規約と重なる 1 文を消す",
+      "why": "solution-reviewer が、`JsonValue` は文字列の index signature しか見ないので判別子を持つ値も型エラー無しで代入でき、直列化で判別子が黙って落ちると指摘した。型で弾く対応は `Json.ts` の利用者全体に及ぶので #1249 に分け、それまでの守りとして事実を doc に書いた。duplication-reviewer の指摘で、`rules/coding.md` L24 と同じ約束を言い直していた `isOk` / `isSome` の doc の文は消した。",
+      "review": [
+        "#1249 が入るまで `JsonValue` への誤った代入が型でもテストでも止まらないことを受け入れた判断"
+      ],
+      "notes": [
+        {
+          "path": "src/utils/Result.ts",
+          "start": 7,
+          "end": 9,
+          "text": "型でもテストでも守れないので doc に残す直列化の注意"
+        }
+      ]
+    },
+    {
+      "sha": "c094e9f6d7a1bbb23665af2f0998e426fe3632d7",
+      "phase": "revise",
+      "role": "層 2 のレシピの置き場の説明を実測に合わせ、撤去後に崩れた文を整える",
+      "why": "comment-reviewer と harness-reviewer の指摘。「モジュールフォルダの外に置く」は実物(`src/features/editor/` は `index.ts` を持つ)と合わず、「oxlint / import 規約も落ちる」は確かめていない主張だった。実測で、効いているのは「doc 付き・整形済み」と「tsconfig の include(`src`)の中」だと切り分けた。",
+      "review": [
+        "doc の無い・整形していない 1 行で一緒に落ちるのが biome / doc コメントだけ、という実測の書き方"
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 582,
+          "end": 584,
+          "text": "置き場の条件を実測した 2 つに直した"
+        }
+      ]
+    },
+    {
+      "sha": "b138f5f22619468d27127da8ddcf729d101bbd25",
+      "phase": "revise",
+      "role": "判別子が文字列キーで現れないことと、評価し直し後も古い値を判定できることを固定する",
+      "why": "test-reviewer が写しで実装を壊して実測し、2 つの抜けを見つけた。キーを別名の文字列(`\"isOk\"`)にすると全テストが通り、`Symbol.for` を `Symbol` に戻しても 1 件も落ちなかった。文字列キーの集合を型で固定するテストと、`vi.resetModules()` で定義元を評価し直すテストを足し、それぞれの壊し方で新しいテストだけが落ちることを確かめた。",
+      "review": [
+        "`vi.resetModules` はモジュールを差し替えず評価し直すだけなので、`rules/testing.md` の `vi.mock` 禁止に当たらないという判断",
+        "`Extract<keyof Ok<number>, string>` が `\"value\"` になる形で、綴りに依らず文字列の判別子が無いことを守れているか"
+      ],
+      "notes": [
+        {
+          "path": "src/utils/__tests__/Result.type.test.ts",
+          "start": 57,
+          "end": 60,
+          "text": "文字列のキーだけを取り出して比べる。別名の文字列キーを足すとここが合わなくなる"
+        },
+        {
+          "path": "src/utils/__tests__/Result.edge.test.ts",
+          "start": 60,
+          "end": 69,
+          "text": "評価し直す前に作った値を、評価し直した後の `isOk` で判定する。`Symbol()` だとキーが別物になり `undefined` が返る"
+        },
+        {
+          "path": "src/utils/__tests__/Option.edge.test.ts",
+          "start": 72,
+          "end": 81,
+          "text": "`Option` も同じ形"
+        }
+      ]
+    },
+    {
+      "sha": "081f525fd102c63d57afd3854cab7c21b25dfc84",
+      "phase": "fin",
+      "role": "判別子のキーを登録済みシンボルにする理由を、テストに任せて doc から外す",
+      "why": "前のコミットで、`Symbol()` に戻すとテストが仕様の名前付きで落ちるようになった。型・テストが守っているものはコメントへ写さない(`rules/coding.md`「Why と Why not は別物として書く」)。直列化の段落は型でもテストでも守れないので残した。",
+      "review": [
+        "doc から HMR の理由を外しても、テスト名「定義元が評価し直されても、それ以前に作った値を判定できる」で辿れるか"
+      ],
+      "notes": [
+        {
+          "path": "src/utils/Result.ts",
+          "start": 1,
+          "end": 8,
+          "text": "残ったのは名前を持てないことと直列化の注意だけ"
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "side": "old",
+          "start": 4,
+          "end": 5,
+          "text": "消した HMR の理由。いまは評価し直しのテストが守る"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "result-type",
+      "label": "成否の型テスト",
+      "file": "src/utils/__tests__/Result.type.test.ts"
+    },
+    {
+      "id": "option-type",
+      "label": "在／不在の型テスト",
+      "file": "src/utils/__tests__/Option.type.test.ts"
+    },
+    {
+      "id": "result-edge",
+      "label": "成否の境界",
+      "file": "src/utils/__tests__/Result.edge.test.ts"
+    },
+    {
+      "id": "option-edge",
+      "label": "在／不在の境界",
+      "file": "src/utils/__tests__/Option.edge.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "result-read",
+      "suite": "result-type",
+      "name": "定義元の外からは成否の判別子を読めない",
+      "techniques": [
+        "type",
+        "error"
+      ],
+      "why": "定義元の外で `result.ok` を読んで分岐するコードを書けなくする。`isOk` を通さない判定が混ざらないため",
+      "given": "`Result<number, string>` を返す関数の戻り値",
+      "when": "定義元の外で `result.ok` を読む",
+      "then": "TS2339 になる(`@ts-expect-error` が受ける)。実行時の値は `undefined`。キーを文字列に戻すと TS2578 で落ちる",
+      "commit": "89c62ee7bf788f3311b5b020f932a4bd47042d86",
+      "excerpt": {
+        "path": "src/utils/__tests__/Result.type.test.ts",
+        "start": 34,
+        "end": 41,
+        "emphasis": [
+          {
+            "start": 37,
+            "end": 38
+          }
+        ],
+        "text": "test(\"定義元の外からは成否の判別子を読めない\", () => {\n  const result = decoded(true);\n\n  // @ts-expect-error 判別子のキーは定義元の外から名前を持てない（TS2339）\n  const discriminant = result.ok;\n\n  expect(discriminant).toBeUndefined();\n});"
+      },
+      "targets": [
+        "src/utils/Result.ts"
+      ],
+      "covers": [
+        "typecheck"
+      ]
+    },
+    {
+      "id": "result-literal",
+      "suite": "result-type",
+      "name": "定義元の外では値リテラルで結果を作れない",
+      "techniques": [
+        "type",
+        "error"
+      ],
+      "why": "`Result.ok` / `Result.err` を通さずに作った値が `Result` として流通しないようにする",
+      "given": "定義元の外",
+      "when": "`{ ok: true, value: 42 }` を `Result<number, string>` として書く",
+      "then": "TS2353 になる。実行時も `Result.ok(42)` と等しくない",
+      "commit": "89c62ee7bf788f3311b5b020f932a4bd47042d86",
+      "excerpt": {
+        "path": "src/utils/__tests__/Result.type.test.ts",
+        "start": 43,
+        "end": 48,
+        "emphasis": [
+          {
+            "start": 44,
+            "end": 45
+          }
+        ],
+        "text": "test(\"定義元の外では値リテラルで結果を作れない\", () => {\n  // @ts-expect-error 判別子のキーは定義元の外から書けない（TS2353）\n  const made: Result<number, string> = { ok: true, value: 42 };\n\n  expect(made).not.toEqual(Result.ok(42));\n});"
+      },
+      "targets": [
+        "src/utils/Result.ts"
+      ],
+      "covers": [
+        "typecheck"
+      ]
+    },
+    {
+      "id": "result-export",
+      "suite": "result-type",
+      "name": "成否の判別子のキーは定義元から持ち出せない",
+      "techniques": [
+        "type",
+        "regression"
+      ],
+      "why": "`OkTag` が export されると、外から `result[OkTag]` で読み書きでき、型で閉じた意味が無くなる",
+      "given": "`Result.ts` を動的 import した名前空間",
+      "when": "`module.OkTag` を引く",
+      "then": "TS2339 になり、実行時は `undefined`。export すると TS2578 で typecheck が落ちる(test-reviewer の実測)",
+      "commit": "89c62ee7bf788f3311b5b020f932a4bd47042d86",
+      "excerpt": {
+        "path": "src/utils/__tests__/Result.type.test.ts",
+        "start": 50,
+        "end": 55,
+        "text": "test(\"成否の判別子のキーは定義元から持ち出せない\", async () => {\n  const module = await import(\"../Result\");\n\n  // @ts-expect-error 判別子のキーは export しない（TS2339）\n  expect(module.OkTag).toBeUndefined();\n});"
+      },
+      "targets": [
+        "src/utils/Result.ts"
+      ]
+    },
+    {
+      "id": "result-no-string-key",
+      "suite": "result-type",
+      "name": "成否の判別子は文字列のキーとして現れない",
+      "techniques": [
+        "type",
+        "regression"
+      ],
+      "why": "判別子を元の綴りと違う文字列(`\"isOk\"` など)のキーに戻しても、元の綴りで読めないことを見るテストは通ってしまう。綴りに依らず文字列の判別子が無いことを守る",
+      "given": "`Ok<number>` と `Err<string>` の型",
+      "when": "キーのうち文字列のものだけを `Extract<keyof X, string>` で取り出す",
+      "then": "`Ok` は `\"value\"`、`Err` は `\"error\"` だけになる",
+      "commit": "b138f5f22619468d27127da8ddcf729d101bbd25",
+      "excerpt": {
+        "path": "src/utils/__tests__/Result.type.test.ts",
+        "start": 57,
+        "end": 60,
+        "text": "test(\"成否の判別子は文字列のキーとして現れない\", () => {\n  expectTypeOf<Extract<keyof Ok<number>, string>>().toEqualTypeOf<\"value\">();\n  expectTypeOf<Extract<keyof Err<string>, string>>().toEqualTypeOf<\"error\">();\n});"
+      },
+      "values": {
+        "columns": [
+          "型",
+          "文字列のキー",
+          "別名の文字列キーを足したとき"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`Ok<number>`",
+              "`\"value\"`",
+              "`\"value\" | \"isOk\"` で落ちる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`Err<string>`",
+              "`\"error\"`",
+              "`\"error\" | \"isOk\"` で落ちる"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/utils/Result.ts"
+      ]
+    },
+    {
+      "id": "option-read",
+      "suite": "option-type",
+      "name": "定義元の外からは在／不在の判別子を読めない",
+      "techniques": [
+        "type",
+        "error"
+      ],
+      "why": "定義元の外で `option.some` を読んで分岐するコードを書けなくする",
+      "given": "`Option.fromNullable<number>(42)` の戻り値(union のまま)",
+      "when": "定義元の外で `option.some` を読む",
+      "then": "TS2339 になる。実行時の値は `undefined`",
+      "commit": "89c62ee7bf788f3311b5b020f932a4bd47042d86",
+      "excerpt": {
+        "path": "src/utils/__tests__/Option.type.test.ts",
+        "start": 21,
+        "end": 28,
+        "emphasis": [
+          {
+            "start": 24,
+            "end": 25
+          }
+        ],
+        "text": "test(\"定義元の外からは在／不在の判別子を読めない\", () => {\n  const option = Option.fromNullable<number>(42);\n\n  // @ts-expect-error 判別子のキーは定義元の外から名前を持てない（TS2339）\n  const discriminant = option.some;\n\n  expect(discriminant).toBeUndefined();\n});"
+      },
+      "targets": [
+        "src/utils/Option.ts"
+      ],
+      "covers": [
+        "typecheck"
+      ]
+    },
+    {
+      "id": "option-literal",
+      "suite": "option-type",
+      "name": "定義元の外では値リテラルで不在を作れない",
+      "techniques": [
+        "type",
+        "error"
+      ],
+      "why": "`Option.none` を通さずに作った不在が流通しないようにする",
+      "given": "定義元の外",
+      "when": "`{ some: false }` を `Option<number>` として書く",
+      "then": "TS2353 になる。実行時も `Option.none` と等しくない",
+      "commit": "89c62ee7bf788f3311b5b020f932a4bd47042d86",
+      "excerpt": {
+        "path": "src/utils/__tests__/Option.type.test.ts",
+        "start": 30,
+        "end": 35,
+        "text": "test(\"定義元の外では値リテラルで不在を作れない\", () => {\n  // @ts-expect-error 判別子のキーは定義元の外から書けない（TS2353）\n  const made: Option<number> = { some: false };\n\n  expect(made).not.toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/utils/Option.ts"
+      ],
+      "covers": [
+        "typecheck"
+      ]
+    },
+    {
+      "id": "option-export",
+      "suite": "option-type",
+      "name": "在／不在の判別子のキーは定義元から持ち出せない",
+      "techniques": [
+        "type",
+        "regression"
+      ],
+      "why": "`SomeTag` が export されると外から読み書きできる",
+      "given": "`Option.ts` を動的 import した名前空間",
+      "when": "`module.SomeTag` を引く",
+      "then": "TS2339 になり、実行時は `undefined`。export すると TS2578",
+      "commit": "89c62ee7bf788f3311b5b020f932a4bd47042d86",
+      "excerpt": {
+        "path": "src/utils/__tests__/Option.type.test.ts",
+        "start": 37,
+        "end": 42,
+        "text": "test(\"在／不在の判別子のキーは定義元から持ち出せない\", async () => {\n  const module = await import(\"../Option\");\n\n  // @ts-expect-error 判別子のキーは export しない（TS2339）\n  expect(module.SomeTag).toBeUndefined();\n});"
+      },
+      "targets": [
+        "src/utils/Option.ts"
+      ]
+    },
+    {
+      "id": "option-no-string-key",
+      "suite": "option-type",
+      "name": "在／不在の判別子は文字列のキーとして現れない",
+      "techniques": [
+        "type",
+        "regression"
+      ],
+      "why": "別名の文字列キー(`\"isSome\"` など)への退行を、綴りに依らず止める",
+      "given": "`Some<number>` と `None` の型",
+      "when": "キーのうち文字列のものだけを取り出す",
+      "then": "`Some` は `\"value\"` だけ、`None` は `never`(文字列のキーが 1 つも無い)",
+      "commit": "b138f5f22619468d27127da8ddcf729d101bbd25",
+      "excerpt": {
+        "path": "src/utils/__tests__/Option.type.test.ts",
+        "start": 44,
+        "end": 47,
+        "text": "test(\"在／不在の判別子は文字列のキーとして現れない\", () => {\n  expectTypeOf<Extract<keyof Some<number>, string>>().toEqualTypeOf<\"value\">();\n  expectTypeOf<Extract<keyof None, string>>().toEqualTypeOf<never>();\n});"
+      },
+      "values": {
+        "columns": [
+          "型",
+          "文字列のキー"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`Some<number>`",
+              "`\"value\"`"
+            ]
+          },
+          {
+            "cells": [
+              "`None`",
+              "`never`"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/utils/Option.ts"
+      ]
+    },
+    {
+      "id": "result-undefined-compare",
+      "suite": "result-edge",
+      "name": "値が undefined の成功と失敗は、比べると別物になる",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "既存テストの `toEqual` が成否を区別し続けることを守る。判別子を非列挙にするなどで比較が判別子を見なくなると、判別子しか違わない 2 値が等しくなる",
+      "given": "`Result.ok(undefined)` と `Result.err(undefined)`",
+      "when": "`toEqual` で比べる",
+      "then": "等しくない(列挙可能なシンボルのキーを Vitest が比べる)",
+      "commit": "89c62ee7bf788f3311b5b020f932a4bd47042d86",
+      "excerpt": {
+        "path": "src/utils/__tests__/Result.edge.test.ts",
+        "start": 54,
+        "end": 58,
+        "text": "test(\"値が undefined の成功と失敗は、比べると別物になる\", () => {\n  // 値も中身も undefined だと判別子しか違わないので、比較が判別子を見なくなる\n  // （キーを非列挙にする等）とここが等しくなる。\n  expect(Result.ok(undefined)).not.toEqual(Result.err(undefined));\n});"
+      },
+      "values": {
+        "columns": [
+          "キーの持ち方",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "列挙可能なシンボルのキー",
+              "等しくない(通る)"
+            ]
+          },
+          {
+            "cells": [
+              "非列挙のキー",
+              "等しくなる(落ちる)"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/utils/Result.ts"
+      ]
+    },
+    {
+      "id": "result-reeval",
+      "suite": "result-edge",
+      "name": "定義元が評価し直されても、それ以前に作った値を判定できる",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "HMR で `Result.ts` が評価し直されても、Fast Refresh が保持した state の古い値を新しい `isOk` が読めること。`Symbol()` に戻すと評価のたびに別のキーになる",
+      "given": "評価し直す前の `Result.ts` で作った `Result.ok(1)`",
+      "when": "`vi.resetModules()` のあとに `Result.ts` を import し直し、新しい `Result.isOk` で判定する",
+      "then": "新しい `Result` は前と別の値で、古い値の判定は `true`",
+      "commit": "b138f5f22619468d27127da8ddcf729d101bbd25",
+      "excerpt": {
+        "path": "src/utils/__tests__/Result.edge.test.ts",
+        "start": 60,
+        "end": 69,
+        "emphasis": [
+          {
+            "start": 64,
+            "end": 68
+          }
+        ],
+        "text": "test(\"定義元が評価し直されても、それ以前に作った値を判定できる\", async () => {\n  const before = await import(\"../Result\");\n  const old = before.Result.ok(1);\n\n  vi.resetModules();\n  const after = await import(\"../Result\");\n\n  expect(after.Result).not.toBe(before.Result);\n  expect(after.Result.isOk(old)).toBe(true);\n});"
+      },
+      "values": {
+        "columns": [
+          "キーの作り方",
+          "評価し直し後の判定"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`Symbol.for(...)`",
+              "`true`(通る)"
+            ]
+          },
+          {
+            "cells": [
+              "`Symbol(...)`",
+              "`undefined`(落ちる)"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/utils/Result.ts"
+      ],
+      "covers": [
+        "save-isok"
+      ]
+    },
+    {
+      "id": "option-reeval",
+      "suite": "option-edge",
+      "name": "定義元が評価し直されても、それ以前に作った値を判定できる",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "`Option.ts` が評価し直されても、保持された古い `Some` を新しい `isSome` が読めること",
+      "given": "評価し直す前の `Option.ts` で作った `Option.some(1)`",
+      "when": "`vi.resetModules()` のあとに import し直し、新しい `Option.isSome` で判定する",
+      "then": "古い値の判定は `true`",
+      "commit": "b138f5f22619468d27127da8ddcf729d101bbd25",
+      "excerpt": {
+        "path": "src/utils/__tests__/Option.edge.test.ts",
+        "start": 72,
+        "end": 81,
+        "text": "test(\"定義元が評価し直されても、それ以前に作った値を判定できる\", async () => {\n  const before = await import(\"../Option\");\n  const old = before.Option.some(1);\n\n  vi.resetModules();\n  const after = await import(\"../Option\");\n\n  expect(after.Option).not.toBe(before.Option);\n  expect(after.Option.isSome(old)).toBe(true);\n});"
+      },
+      "targets": [
+        "src/utils/Option.ts"
+      ],
+      "covers": [
+        "tab-issome"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "成否と在／不在の目印を直接さわるコードは、書いた時点で型エラーになった",
+    "lead": "使う人は、このリポジトリで実装するセッションと開発者です。成否と在／不在を表す値の目印を、決められた判定の入口を通さずに読み書きすると、型の検査がその場で止めます。アプリを操作する人の画面の振る舞いは変わりません。",
+    "changed": {
+      "before": [
+        {
+          "text": "目印を直接読み書きするコードは、push の前と CI の専用の検査が文字の並びで探して止めていた",
+          "message": "prepush-detector"
+        },
+        {
+          "text": "分割代入や角括弧で読む書き方は、その検査をすり抜けていた"
+        },
+        {
+          "text": "エディタで書いている間は何も出ず、push するまで気づけなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "目印を直接読み書きするコードは、エディタで書いた時点で型エラーになり、push の前と CI では型の検査で止まる",
+          "message": "typecheck"
+        },
+        {
+          "text": "分割代入や角括弧で読む書き方も、同じく型エラーになる"
+        },
+        {
+          "text": "push の前と CI で走る検査が、それぞれ 2 つずつ減る"
+        }
+      ],
+      "text": "同じ決まりを 2 か所で守らないよう、型で止められるようになった分の専用の検査は外しました。判定の入口を通すという決まりは、型で止められない迂回が残るので規約に 1 文だけ残しています。",
+      "specs": [
+        {
+          "path": "rules/coding.md",
+          "locator": "「エラーと不在の表現」の、判定は入口を通すという行",
+          "text": "目印を直接読み書きしてよい範囲の記述を消し、判定は入口を通すという部分だけを残した",
+          "shas": [
+            "3a1f5329fe7d2f29224c6b9afec4904162c80b9e"
+          ]
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "locator": "「動作確認」の、層 2 が落ちた検査のあとも最後まで走ることを確かめる手順",
+          "text": "専用の検査を使った手順から、型で落ちる見本を置いて確かめる手順に作り直した",
+          "shas": [
+            "9301de88dff94c3d99208bfeb4d4b74affb60520",
+            "c094e9f6d7a1bbb23665af2f0998e426fe3632d7"
+          ]
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "locator": "push 前の検査の一覧の表と、判定表の本数",
+          "text": "目印の検査とその判定表を一覧から外し、判定表の本数を 18 本から 17 本にした",
+          "shas": [
+            "9301de88dff94c3d99208bfeb4d4b74affb60520"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1249,
+          "text": "目印を持つ値が、文字列で書き出す用の型へ型エラー無しで入ってしまう件を、この変更から分けて先送りした"
+        },
+        {
+          "issue": 524,
+          "text": "専用の検査を値の書き方まで広げた回。その検証で、型で置き換える方式が挙がった"
+        },
+        {
+          "issue": 523,
+          "text": "専用の検査を最初に入れた回"
+        }
+      ],
+      "primers": [
+        "discriminant-closure",
+        "unique-symbol",
+        "symbol-for"
+      ]
+    },
+    "tables": [
+      {
+        "label": "目印のさわり方と、止まる場所",
+        "gist": "どう書いたかと、どの時点で気づけるかの 2 つで結果が決まる。",
+        "text": "下の段の迂回は型では止まらないので、規約の 1 文が受け持ちます。",
+        "rowHeads": [
+          {
+            "id": "read",
+            "label": "目印を名前で読む"
+          },
+          {
+            "id": "literal",
+            "label": "目印ごと値の形を書いて作る"
+          },
+          {
+            "id": "indirect",
+            "label": "分割代入や角括弧で目印を読む",
+            "note": "専用の検査が拾えなかった書き方"
+          },
+          {
+            "id": "detour",
+            "label": "中身のキーがあるかで成否を見分ける",
+            "note": "判定の入口を通さない迂回"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "editor",
+            "label": "エディタで書いた時点"
+          },
+          {
+            "id": "push",
+            "label": "push の前と CI"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "read",
+            "columnHead": "editor",
+            "result": "型エラーになる",
+            "was": "何も出ない",
+            "tests": [
+              "result-read",
+              "option-read"
+            ]
+          },
+          {
+            "rowHead": "read",
+            "columnHead": "push",
+            "result": "型の検査で止まる",
+            "was": "専用の検査で止まる",
+            "tests": [
+              "result-read",
+              "option-read"
+            ]
+          },
+          {
+            "rowHead": "literal",
+            "columnHead": "editor",
+            "result": "型エラーになる",
+            "was": "何も出ない",
+            "tests": [
+              "result-literal",
+              "option-literal"
+            ]
+          },
+          {
+            "rowHead": "literal",
+            "columnHead": "push",
+            "result": "型の検査で止まる",
+            "was": "専用の検査で止まる",
+            "tests": [
+              "result-literal",
+              "option-literal"
+            ]
+          },
+          {
+            "rowHead": "indirect",
+            "columnHead": "editor",
+            "result": "型エラーになる",
+            "was": "何も出ない"
+          },
+          {
+            "rowHead": "indirect",
+            "columnHead": "push",
+            "result": "型の検査で止まる",
+            "was": "止まらない"
+          },
+          {
+            "rowHead": "detour",
+            "columnHead": "editor",
+            "result": "何も出ない"
+          },
+          {
+            "rowHead": "detour",
+            "columnHead": "push",
+            "result": "止まらない(規約の 1 文で受ける)"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "成否や在／不在の値をそのまま文字列へ書き出したとき",
+        "before": [],
+        "after": [
+          {
+            "text": "目印が落ちて、書き戻しても成否が分からない値になる"
+          },
+          {
+            "text": "文字列で書き出す用の型へも、型エラー無しで入ってしまう"
+          }
+        ],
+        "text": "いまのアプリにこの経路はありません。書き出すときは外部との境界で詰め替える前提で受け入れ、型で弾く対応は別の Issue に分けました。",
+        "primers": [
+          "symbol-for"
+        ]
+      },
+      {
+        "label": "部品カタログの操作パネルで、不在を含む引数を編集したとき",
+        "before": [],
+        "after": [
+          {
+            "text": "パネルとの受け渡しで目印が落ち、その引数が不在として扱われる"
+          }
+        ],
+        "text": "開いた直後の表示・部品カタログの画面を直接開く確認・見た目の差分の比較は、受け渡しを通らないので影響しません。"
+      }
+    ],
+    "kept": [
+      {
+        "text": "アプリを操作する人から見た画面の振る舞いは変わらない"
+      },
+      {
+        "text": "判定の入口を通して成否・在／不在を見るコードは、書き換えずにそのまま動く"
+      },
+      {
+        "text": "開発中に定義元を編集し直しても、それ以前に作られて画面に残っている値は正しく判定される",
+        "tests": [
+          "result-reeval",
+          "option-reeval"
+        ]
+      },
+      {
+        "text": "テストで成功と失敗を比べると、中身が同じでも別物として区別される",
+        "tests": [
+          "result-undefined-compare"
+        ]
+      },
+      {
+        "text": "目印のキーの名前は定義元の外へ持ち出せない",
+        "tests": [
+          "result-export",
+          "option-export"
+        ]
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "rules/coding.md",
+        "locator": "「エラーと不在の表現」の、例外を投げず失敗と不在を値で返す決まり",
+        "text": "失敗と不在を値で返し、判定は入口を通すという決まり自体は変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "unique-symbol",
+      "category": "TypeScript · 型",
+      "label": "`unique symbol`",
+      "gist": "1 つの[[シンボル|symbol]]の値だけを表す型。`const` の宣言に注釈すると、その定数が他のどのシンボルとも区別される[[リテラル型|literal-type]]になり、オブジェクトの型のキーに使える。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "ふつうの `symbol` 型はすべてのシンボルをまとめた型なので、キーにしても「どのシンボルか」を型が覚えない。`const X: unique symbol = Symbol(...)` と書くと、型 `typeof X` は `X` そのものだけを表し、`{ [X]: true }` の形の型で `X` 以外のキーを受け付けなくなる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "const OkTag: unique symbol = Symbol.for(\"design-composer/utils/Result#ok\");"
+        },
+        {
+          "kind": "rule",
+          "text": "`unique symbol` を注釈できるのは `const` の宣言と、クラスの `static readonly` プロパティだけ。`let` では書けない。"
+        },
+        {
+          "kind": "caution",
+          "text": "型の上で閉じるのは「その定数の名前を持てるか」で、実行時にキーを隠すわけではない。`Object.getOwnPropertySymbols` を使えば実行時には取り出せる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/Result.ts",
+          "lineRange": {
+            "start": 8,
+            "end": 8
+          },
+          "text": "成否の判別子のキー `OkTag`",
+          "shas": [
+            "3d4db36f57b8489b45bd64addfa301ac059699a5"
+          ]
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "lineRange": {
+            "start": 5,
+            "end": 5
+          },
+          "text": "在／不在の判別子のキー `SomeTag`",
+          "shas": [
+            "3d4db36f57b8489b45bd64addfa301ac059699a5"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "symbol-for",
+        "computed-key"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "symbol-for",
+      "category": "JavaScript · 標準",
+      "label": "`Symbol.for` と `Symbol` の違い",
+      "gist": "`Symbol(説明)` は呼ぶたびに新しい[[シンボル|symbol]]を作る。`Symbol.for(鍵)` は[[グローバルシンボルレジストリ|registry]]から鍵の綴りで引き、同じ綴りなら何度呼んでも同じシンボルを返す。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "Symbol.for(key: string): symbol"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "key",
+              "type": "string",
+              "text": "レジストリで引く鍵。同じ綴りを渡すと、どの[[モジュールの評価|module-eval]]からでも同じシンボルが返る"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "モジュールの最上位で `Symbol(\"ok\")` を作ると、そのモジュールが評価されるたびに別のキーになる。開発中の[[HMR|hmr]]はファイルを編集するとそのモジュールを評価し直すので、編集前に作られて画面の state に残っている値は古いキーを持ち、新しいモジュールの関数からは読めなくなる。`Symbol.for` なら評価し直しても同じキーを引くので読める。"
+        },
+        {
+          "kind": "caution",
+          "text": "シンボルのキーは `JSON.stringify` でも `structuredClone` でも落ちる。`{ [OkTag]: true, value: 1 }` を `JSON.stringify` すると `{\"value\":1}` になる。"
+        },
+        {
+          "kind": "memo",
+          "text": "鍵の綴りを知っていれば誰でも `Symbol.for` で同じシンボルを引けるので、実行時の秘密にはならない。ここで閉じたいのは型の上の名前だけなので、それで足りる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/Result.ts",
+          "lineRange": {
+            "start": 4,
+            "end": 8
+          },
+          "text": "直列化で落ちる注意を doc に残し、キーを `Symbol.for` で作る",
+          "shas": [
+            "3d4db36f57b8489b45bd64addfa301ac059699a5",
+            "f2adaa132cc7546137eaa93cb97415dab5d725ad",
+            "081f525fd102c63d57afd3854cab7c21b25dfc84"
+          ]
+        },
+        {
+          "path": "src/utils/__tests__/Result.edge.test.ts",
+          "lineRange": {
+            "start": 60,
+            "end": 69
+          },
+          "text": "評価し直しても古い値を判定できることを確かめるテスト",
+          "shas": [
+            "b138f5f22619468d27127da8ddcf729d101bbd25"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "unique-symbol",
+        "reset-modules"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "computed-key",
+      "category": "TypeScript · 型",
+      "label": "シンボルをキーにした型と `keyof`",
+      "gist": "オブジェクトの型のキーを `[式]` と書くと、その式の型([[リテラル型|literal-type]]か `unique symbol`)をキーにできる。定義元でしか名前を持てないキーを、型の中に置くための書き方。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "type Ok<T> = Readonly<{ [OkTag]: true; value: T }>;"
+        },
+        {
+          "kind": "text",
+          "text": "外から `result.ok` と書くと、型にそのキーが無いので TS2339(そのプロパティは無い)。`{ ok: true, value: 42 }` を `Result` として書くと、型に無いキーを余分に書いたので TS2353。どちらも[[診断番号|ts-code]]で区別できる。"
+        },
+        {
+          "kind": "text",
+          "text": "`keyof T` は型 `T` のキーを並べた union で、シンボルのキーも含む。`Extract<keyof T, string>` で文字列のキーだけを取り出すと、判別子が文字列のキーとして紛れ込んでいないかを型で確かめられる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/utils/__tests__/Result.type.test.ts",
+            "start": 57,
+            "end": 60,
+            "text": "test(\"成否の判別子は文字列のキーとして現れない\", () => {\n  expectTypeOf<Extract<keyof Ok<number>, string>>().toEqualTypeOf<\"value\">();\n  expectTypeOf<Extract<keyof Err<string>, string>>().toEqualTypeOf<\"error\">();\n});"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/Result.ts",
+          "lineRange": {
+            "start": 11,
+            "end": 20
+          },
+          "text": "`Ok` / `Err` の型が `[OkTag]` をキーに持つ",
+          "shas": [
+            "3d4db36f57b8489b45bd64addfa301ac059699a5"
+          ]
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "lineRange": {
+            "start": 8,
+            "end": 16
+          },
+          "text": "`Some` / `None` の型が `[SomeTag]` をキーに持つ",
+          "shas": [
+            "3d4db36f57b8489b45bd64addfa301ac059699a5"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "unique-symbol",
+        "ts-expect-error"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "ts-expect-error",
+      "category": "TypeScript · コメント",
+      "label": "`@ts-expect-error`",
+      "gist": "次の 1 行に型エラーがあることを表明するコメント。エラーがあれば黙らせ、無ければ逆に TS2578 で落ちる。「この書き方は型で弾かれる」ことをテストとして固定するのに使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`// @ts-expect-error 説明` を書いた次の行で型エラーが出れば、そのエラーは報告されない。次の行にエラーが無いと「使われていない `@ts-expect-error`」(TS2578)として[[診断番号|ts-code]]が出て、typecheck が落ちる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/utils/__tests__/Result.type.test.ts",
+            "start": 34,
+            "end": 55,
+            "emphasis": [
+              {
+                "start": 37,
+                "end": 37
+              },
+              {
+                "start": 44,
+                "end": 44
+              },
+              {
+                "start": 53,
+                "end": 53
+              }
+            ],
+            "text": "test(\"定義元の外からは成否の判別子を読めない\", () => {\n  const result = decoded(true);\n\n  // @ts-expect-error 判別子のキーは定義元の外から名前を持てない（TS2339）\n  const discriminant = result.ok;\n\n  expect(discriminant).toBeUndefined();\n});\n\ntest(\"定義元の外では値リテラルで結果を作れない\", () => {\n  // @ts-expect-error 判別子のキーは定義元の外から書けない（TS2353）\n  const made: Result<number, string> = { ok: true, value: 42 };\n\n  expect(made).not.toEqual(Result.ok(42));\n});\n\ntest(\"成否の判別子のキーは定義元から持ち出せない\", async () => {\n  const module = await import(\"../Result\");\n\n  // @ts-expect-error 判別子のキーは export しない（TS2339）\n  expect(module.OkTag).toBeUndefined();\n});"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "似た `@ts-ignore` はエラーが無くても黙っているので、閉じ方が緩んだことに気づけない。型テストには `@ts-expect-error` を使う。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/__tests__/Result.type.test.ts",
+          "lineRange": {
+            "start": 37,
+            "end": 54
+          },
+          "text": "判別子の読み・値リテラル・持ち出しの 3 か所",
+          "shas": [
+            "89c62ee7bf788f3311b5b020f932a4bd47042d86"
+          ]
+        },
+        {
+          "path": "src/utils/__tests__/Option.type.test.ts",
+          "lineRange": {
+            "start": 24,
+            "end": 41
+          },
+          "text": "`Option` の同じ 3 か所",
+          "shas": [
+            "89c62ee7bf788f3311b5b020f932a4bd47042d86"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "computed-key"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "vitest-equality",
+      "category": "Vitest · 比較",
+      "label": "`toEqual` とシンボルのキー",
+      "gist": "Vitest の `toEqual` / `toStrictEqual` は、文字列のキーに加えて[[列挙可能|enumerable]]なシンボルのキーも比べる。判別子をシンボルにしても、既存テストの比較は成否を区別し続ける。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "差分の表示では、シンボルのキーは `Symbol(説明)` の行として出る。`Result.ok(1)` と `Result.err(1)` を比べると、`Symbol(design-composer/utils/Result#ok): true` と `false` の行が差分になる。"
+        },
+        {
+          "kind": "caution",
+          "text": "`Object.defineProperty` などでキーを非列挙にすると比較から外れ、判別子しか違わない 2 値(`Result.ok(undefined)` と `Result.err(undefined)`)が等しくなる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/__tests__/Result.edge.test.ts",
+          "lineRange": {
+            "start": 54,
+            "end": 58
+          },
+          "text": "判別子しか違わない 2 値を比べるテスト",
+          "shas": [
+            "89c62ee7bf788f3311b5b020f932a4bd47042d86"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "reset-modules",
+      "category": "Vitest · モジュール",
+      "label": "`vi.resetModules`",
+      "gist": "Vitest が覚えているモジュールのキャッシュを空にする関数。次に `import()` したとき、そのモジュールが[[評価し直され|module-eval]]る。[[HMR|hmr]]で定義元が評価し直される状況をテストで再現するのに使う。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "vi.resetModules(): VitestUtils"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/utils/__tests__/Option.edge.test.ts",
+            "start": 72,
+            "end": 81,
+            "emphasis": [
+              {
+                "start": 76,
+                "end": 77
+              }
+            ],
+            "text": "test(\"定義元が評価し直されても、それ以前に作った値を判定できる\", async () => {\n  const before = await import(\"../Option\");\n  const old = before.Option.some(1);\n\n  vi.resetModules();\n  const after = await import(\"../Option\");\n\n  expect(after.Option).not.toBe(before.Option);\n  expect(after.Option.isSome(old)).toBe(true);\n});"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "ファイルの先頭で静的に `import` した束縛は、キャッシュを空にしても差し替わらない。評価し直した側は `await import(...)` で受け取る。"
+        },
+        {
+          "kind": "memo",
+          "text": "モジュールの中身を差し替える `vi.mock` と違い、同じ実装を読み直すだけ。`rules/testing.md` の `vi.mock` 禁止には当たらない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/__tests__/Result.edge.test.ts",
+          "lineRange": {
+            "start": 64,
+            "end": 65
+          },
+          "text": "`Result.ts` を評価し直す",
+          "shas": [
+            "b138f5f22619468d27127da8ddcf729d101bbd25"
+          ]
+        },
+        {
+          "path": "src/utils/__tests__/Option.edge.test.ts",
+          "lineRange": {
+            "start": 76,
+            "end": 77
+          },
+          "text": "`Option.ts` を評価し直す",
+          "shas": [
+            "b138f5f22619468d27127da8ddcf729d101bbd25"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "symbol-for"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "discriminant-closure",
+      "category": "utils · 型の境界",
+      "label": "`Result` / `Option` の判別子の閉じ方",
+      "gist": "判別子のキーを定義元のファイルの中の export しない定数(`OkTag` / `SomeTag`)にし、その型を `unique symbol`(1 つのシンボルだけを表す[[リテラル型|literal-type]])にしてキーを固定する。外から名前を持てないので、読み書きは定義元の関数を通すしかない。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "生成(`ok` / `err` / `some` / `none`)と判定(`isOk` / `isSome`)は定義元の中で `[OkTag]` / `[SomeTag]` を読み書きする。外のコードは公開 API の名前とシグネチャだけを使い、判別子に触れない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/utils/Result.ts",
+            "start": 1,
+            "end": 26,
+            "text": "/**\n * 成否の判別子のキー。export しないので、型の上ではこのファイルの外から名前を持てない。\n *\n * シンボルのキーは `JSON.stringify` / `structuredClone` で落ちるので、直列化するなら\n * `libs/` の境界で詰め替える（`Option` の判別子も同じ）。`JsonValue` は文字列キーしか\n * 見ないので、判別子を持つ値も型エラー無しで代入できてしまう。\n */\nconst OkTag: unique symbol = Symbol.for(\"design-composer/utils/Result#ok\");\n\n/** 成功した結果。処理が返した値を持つ。 */\nexport type Ok<T> = Readonly<{\n  [OkTag]: true;\n  value: T;\n}>;\n\n/** 失敗した結果。 */\nexport type Err<E> = Readonly<{\n  [OkTag]: false;\n  error: E;\n}>;\n\n/**\n * 失敗しうる処理の戻り値（rules/coding.md「エラーと不在の表現」）。\n * `Result.isOk` で分岐すると、成功なら `value`、失敗なら `error` だけが読める。\n */\nexport type Result<T, E> = Ok<T> | Err<E>;"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "判定は `isOk` / `isSome` を通す(`rules/coding.md`「エラーと不在の表現」)。`\"value\" in r` で絞り込む迂回は型で落ちないので、この 1 文が受け持つ。"
+        },
+        {
+          "kind": "spec",
+          "text": "直列化するときは `libs/` の境界で詰め替える。`JsonValue` へは型エラー無しで代入できてしまう(#1249 で扱う)。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は判別子が文字列キー `ok` / `some` で、定義元の外での直読み・直書きを `result-option-discriminant-violations.py` が正規表現で探していた。分割代入・`in`・ブラケット・shorthand は拾えなかった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/Result.ts",
+          "lineRange": {
+            "start": 104,
+            "end": 106
+          },
+          "text": "`isOk` が判別子を読む",
+          "shas": [
+            "3d4db36f57b8489b45bd64addfa301ac059699a5"
+          ]
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "lineRange": {
+            "start": 103,
+            "end": 105
+          },
+          "text": "`isSome` が判別子を読む",
+          "shas": [
+            "3d4db36f57b8489b45bd64addfa301ac059699a5"
+          ]
+        },
+        {
+          "path": "rules/coding.md",
+          "lineRange": {
+            "start": 24,
+            "end": 24
+          },
+          "text": "判定の入口を決める 1 文",
+          "shas": [
+            "3a1f5329fe7d2f29224c6b9afec4904162c80b9e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "unique-symbol",
+        "computed-key",
+        "layer2-recipe"
+      ],
+      "tests": [
+        "result-read",
+        "result-literal",
+        "result-export",
+        "result-no-string-key",
+        "option-read",
+        "option-literal",
+        "option-export",
+        "option-no-string-key",
+        "result-reeval",
+        "option-reeval"
+      ],
+      "flows": [
+        "judge"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "layer2-recipe",
+      "category": "ハーネス · 動作確認",
+      "label": "層 2 の動作確認レシピ",
+      "gist": "push 前の検査(層 2 の `harness/githooks/pre-push`)が、落ちた検査のあとも最後まで走り、結果の行が失敗を言うことを確かめる手順。型で落ちる probe を `src/` に置いて走らせる。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/README.md",
+            "start": 580,
+            "end": 589,
+            "text": "```bash\n# 層 2(git hooks)が落ちた検査のあとも最後まで走り、結果の行が失敗を言うこと。\n# **probe は doc 付き・整形済みにして、typecheck が見る `src/` の中に置く。** 層 2 は biome /\n# doc コメントも同じ回に走らせるので、doc の無い・整形していない 1 行を置くとそれらも落ち、\n# exit 1 が型から来たのかを「失敗した検査」の行で切り分けることになる\nprintf '/**\\n * 型で落ちる検査の probe。\\n *\\n * @param count 数\\n * @returns 表示\\n */\\nexport const Probe = (count: number): string => count;\\n' \\\n  > src/features/editor/probe.ts\nbash harness/githooks/pre-push; echo \"exit=$?\"   # → 「失敗した検査: typecheck」・exit=1\nrm src/features/editor/probe.ts\n```"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "probe は doc 付き・整形済みにして、typecheck が見る `src/` の中に置く。そうすると落ちるのは typecheck だけになり、「失敗した検査: typecheck」・exit=1 で 1 つの原因に絞れる。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は判別子の直読みの probe を置き、消した検出器で落ちることを確かめていた。検出器を外したので、型で落ちる probe に作り直した。"
+        },
+        {
+          "kind": "memo",
+          "text": "doc の無い 1 行だと doc コメントの検査も、整形していないと biome も一緒に落ちる。oxlint と import 規約はどちらでも落ちなかった(実測)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/README.md",
+          "lineRange": {
+            "start": 580,
+            "end": 589
+          },
+          "text": "作り直したレシピ",
+          "shas": [
+            "9301de88dff94c3d99208bfeb4d4b74affb60520",
+            "c094e9f6d7a1bbb23665af2f0998e426fe3632d7"
+          ]
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "text": "このレシピを指す段落",
+          "shas": [
+            "9301de88dff94c3d99208bfeb4d4b74affb60520",
+            "c094e9f6d7a1bbb23665af2f0998e426fe3632d7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "discriminant-closure"
+      ],
+      "flows": [
+        "push"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "symbol",
+      "label": "シンボル",
+      "text": "JavaScript の組み込みの値の種類の 1 つ。文字列と違い、作ったものどうしが互いに別物になるので、他と衝突しないオブジェクトのキーに使う。"
+    },
+    {
+      "id": "literal-type",
+      "label": "リテラル型",
+      "text": "`true` や `\"value\"` のように、1 つの値だけを表す型。`unique symbol` も 1 つのシンボルだけを表すので同じ仲間。"
+    },
+    {
+      "id": "registry",
+      "label": "グローバルシンボルレジストリ",
+      "text": "実行環境全体で 1 つある、鍵の綴りからシンボルを引く表。`Symbol.for` が読み書きし、モジュールを評価し直しても消えない。"
+    },
+    {
+      "id": "module-eval",
+      "label": "モジュールの評価",
+      "text": "ファイルの最上位のコードを上から実行して、export する値を作ること。ふつうは 1 回だけで、2 回目の `import` はキャッシュした結果を返す。"
+    },
+    {
+      "id": "hmr",
+      "label": "HMR",
+      "text": "Hot Module Replacement。開発サーバー(Vite)が、編集したファイルのモジュールだけを評価し直して画面へ差し込む仕組み。React の Fast Refresh は、その間も画面の state を保つ。"
+    },
+    {
+      "id": "ts-code",
+      "label": "診断番号",
+      "text": "TypeScript のコンパイラがエラーごとに付ける `TS` で始まる番号。TS2339 は「そのプロパティは無い」、TS2353 は「型に無いキーを書いた」、TS2578 は「使われていない `@ts-expect-error`」。"
+    },
+    {
+      "id": "enumerable",
+      "label": "列挙可能",
+      "text": "オブジェクトのプロパティが持つ属性の 1 つ。ふつうに `{ [key]: 値 }` で作ったプロパティは列挙可能で、比較や `Object.assign` の対象になる。"
+    }
+  ]
+}
