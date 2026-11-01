@@ -118,10 +118,10 @@ export type NamedRotation = Readonly<{
  * ここに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
  *
  * 例外は追従（`followPropEdits`）とグループ化 / 解除（`groupedBox` /
- * `groupedSiblingsBox` / `freedChildren`）で、ここだけは `Placement` / `Constraint` /
- * `Size` / `Layout` / `BoxAlign` / `Offset` を組み合わせて編集を作る。子側のドメイン
- * （`Node`）へ置けないのは、`Placement` が `PropEdit` を `Node` から import しており、
- * 逆向きの import が循環になるため。
+ * `groupedSiblingsBox` / `collectParentAlignStretchFillModePropEdits` / `freedChildren`）
+ * で、ここだけは `Placement` / `Constraint` / `Size` / `Layout` / `BoxAlign` / `Offset` を
+ * 組み合わせて編集を作る。子側のドメイン（`Node`）へ置けないのは、`Placement` が
+ * `PropEdit` を `Node` から import しており、逆向きの import が循環になるため。
  */
 
 /**
@@ -261,6 +261,39 @@ function applyNodePropEdits(node: Node, edits: readonly PropEdit[]): Node {
 }
 
 /**
+ * 親の揃えの `stretch` に交差軸へ引き伸ばされているノードを包むときに、その軸を Box も
+ * `fill` にする編集（docs/06-ui.md「編集操作の一覧」のグループ化）。
+ *
+ * 引き伸ばされているのは、その軸の長さのモードの prop を持たない型（いまは Text）。Box が
+ * 既定の `hug` のままだと、包んだノードが中身の大きさに縮む。
+ *
+ * 部品インスタンスは見ない。インスタンスの大きさは部品定義のルートが持ち、それを引く判定は
+ * #988 で扱う。
+ *
+ * @param members 包むノード
+ * @param parentProps 包むノードの親に書かれている props（デフォルト解決済みでないもの）
+ * @returns 親が子を並べて揃えが `stretch` で、その交差軸の長さのモードの prop を持たない
+ *   プリミティブが包むノードにあれば、交差軸のモードを `fill` にする編集 1 件。それ以外は空
+ */
+function collectParentAlignStretchFillModePropEdits(
+  members: readonly Node[],
+  parentProps: Props,
+): readonly PropEdit[] {
+  const types = members.flatMap((member) => {
+    const isSchemaPrimitive =
+      Node.isPrimitive(member) && PrimitiveSchema.isPrimitiveType(member.type);
+    return isSchemaPrimitive ? [member.type] : [];
+  });
+
+  return Option.unwrapOr(
+    Option.map(BoxAlign.stretchedAxis(parentProps), (axis) =>
+      Size.collectAlignStretchFillModePropEdits(types, axis),
+    ),
+    [],
+  );
+}
+
+/**
  * 1 つだけ包むときの、ノードを包む Box と、その唯一の子になったノード（docs/06-ui.md
  * 「編集操作の一覧」のグループ化）。
  *
@@ -272,14 +305,15 @@ function applyNodePropEdits(node: Node, edits: readonly PropEdit[]): Node {
  * フローのノードの配置は移さない。読み捨てられている座標が Box へ移ると、フローの Box を
  * 外しても子へ戻らず、⌘G → ⌘⇧G で元のノードに戻らなくなる。
  *
- * 親の並べ方（`layout` / `gap` / `align`）も写さない。子が 1 つなら向き・間隔・揃えは
- * 見た目を変えない。
+ * 親の並べ方（`layout` / `gap` / `align`）は写さない。子が 1 つなら字面は動かない。親の揃えの
+ * `stretch` に引き伸ばされていた軸は `collectParentAlignStretchFillModePropEdits`。
  *
  * @param node 包むノード
+ * @param parentProps 包むノードの親に書かれている props（デフォルト解決済みでないもの）
  * @param boxName 新しく作る Box に付ける名前
  * @returns 包んだ Box。引き継ぐ指定が無ければ props を持たない
  */
-function groupedBox(node: Node, boxName: string): Node {
+function groupedBox(node: Node, parentProps: Props, boxName: string): Node {
   const props = Node.writtenPropsOf(node);
   const isAbsolute = Option.isSome(absolutePlacementOf(node));
   const placementEdits = isAbsolute
@@ -295,9 +329,14 @@ function groupedBox(node: Node, boxName: string): Node {
     children: [content],
   };
 
+  const alignStretchFillEdits = isAbsolute
+    ? []
+    : collectParentAlignStretchFillModePropEdits([node], parentProps);
+
   return applyNodePropEdits(box, [
     ...placementEdits,
     ...Size.collectFillPropEdits(props),
+    ...alignStretchFillEdits,
   ]);
 }
 
@@ -305,7 +344,8 @@ function groupedBox(node: Node, boxName: string): Node {
  * 同じ親の兄弟を 2 つ以上まとめて包む Box（docs/06-ui.md「複数選択」のグループ化）。
  *
  * 全員フローなら、親に書かれた並べ方（`layout` / `gap` / `align`）と、どれかが `fill` の軸の
- * モードを Box が持ち、兄弟はそのまま子になる。全員絶対配置なら、Box は兄弟の各軸の最小の
+ * モードを Box が持ち、兄弟はそのまま子になる（親の揃えの `stretch` に引き伸ばされていた軸は
+ * `collectParentAlignStretchFillModePropEdits`）。全員絶対配置なら、Box は兄弟の各軸の最小の
  * 座標に絶対配置で置かれ、全員一致の追従だけを持ち、兄弟は Box の座標を引いた位置になる。
  *
  * @param members 包む兄弟。元の並び順
@@ -336,6 +376,10 @@ function groupedSiblingsBox(
       ...BoxAlign.collectWrittenPropEdits(parentProps),
     ];
     const fillEdits = Size.collectFillModePropEdits(propsList);
+    const alignStretchFillEdits = collectParentAlignStretchFillModePropEdits(
+      members,
+      parentProps,
+    );
 
     const flowBox: Node = {
       name: boxName,
@@ -344,7 +388,11 @@ function groupedSiblingsBox(
     };
 
     return Result.ok(
-      applyNodePropEdits(flowBox, [...layoutEdits, ...fillEdits]),
+      applyNodePropEdits(flowBox, [
+        ...layoutEdits,
+        ...fillEdits,
+        ...alignStretchFillEdits,
+      ]),
     );
   }
 
@@ -2380,7 +2428,8 @@ export const DesignDocument = {
    * Box は包むノードのうちいちばん前面（並びで後ろ）にいたものの位置へ入り、包むノードを
    * 元の並び順で子にする。1 つなら元のノードが居た位置そのままで、引き継ぐ指定は
    * `groupedBox`。同じ親の兄弟が 2 つ以上なら `groupedSiblingsBox`。それ以外の props は
-   * 持たせない（スキーマ既定の `hug` が包んだ中身に合う）。
+   * 持たせない（スキーマ既定の `hug` が包んだ中身に合う。親の揃えの `stretch` に引き伸ばされて
+   * いた軸だけは `fill`）。
    *
    * @param document 包む先のドキュメント
    * @param names 包むノードの名前。重複は 1 つとして扱う
@@ -2414,7 +2463,7 @@ export const DesignDocument = {
     const [sole, ...rest] = members.value;
     const box =
       rest.length === 0
-        ? Result.ok(groupedBox(sole, boxName))
+        ? Result.ok(groupedBox(sole, parent.value.props, boxName))
         : groupedSiblingsBox(members.value, parent.value.props, boxName);
     if (!Result.isOk(box)) {
       return box;

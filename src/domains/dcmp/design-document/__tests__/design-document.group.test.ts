@@ -11,7 +11,7 @@ import { DesignDocument, DocumentTemplate } from "../index";
  */
 
 test("ノードを包むと、そのノードが居た位置に新しい Box が入り、ノードはその唯一の子になる", () => {
-  const title = { name: "title", type: "Text" };
+  const title = { name: "title", type: "Box" };
   const document = DesignDocument.create({
     artboards: [{ name: "screen", width: 375, height: 812, children: [title] }],
   });
@@ -53,7 +53,7 @@ test("包んでも前後の兄弟の並び順は変わらない", () => {
 });
 
 test("入れ子の中にいるノードも包める", () => {
-  const label = { name: "label", type: "Text" };
+  const label = { name: "label", type: "Box" };
   const document = DesignDocument.create({
     artboards: [
       {
@@ -78,14 +78,14 @@ test("入れ子の中にいるノードも包める", () => {
   ]);
 });
 
-test("フローで fill を持たないノードを包んだ Box は props を持たない", () => {
+test("フローで fill を持たない Box を包んだ Box は props を持たない", () => {
   const document = DesignDocument.create({
     artboards: [
       {
         name: "screen",
         width: 375,
         height: 812,
-        children: [{ name: "title", type: "Text" }],
+        children: [{ name: "title", type: "Box" }],
       },
     ],
   });

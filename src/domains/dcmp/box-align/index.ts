@@ -1,4 +1,7 @@
+import { CssDirection } from "@/domains/dcmp/css-direction";
+import { Layout } from "@/domains/dcmp/layout";
 import { PropEdit, type Props } from "@/domains/dcmp/node";
+import type { Axis } from "@/domains/unit/axis";
 import type { ValueOf } from "@/types/ValueOf";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -48,6 +51,24 @@ export const BoxAlign = {
    */
   collectWrittenPropEdits(props: Props): readonly PropEdit[] {
     return PropEdit.collectWritten(props, ["align"]);
+  },
+
+  /**
+   * 親の props から、子を交差軸いっぱいに引き伸ばす軸を返す（docs/03「Box」の `align`。
+   * `layout` が `free` 以外のときだけ効く）。
+   *
+   * @param props 親の props（デフォルト解決済みでなくてよい）
+   * @returns 揃えが stretch で子を並べるならその交差軸。揃えが start / center / end か、
+   *   `layout: free` なら `none`
+   */
+  stretchedAxis(props: Props): Option<Axis> {
+    if (BoxAlign.fromProps(props) !== BoxAligns.Stretch) {
+      return Option.none;
+    }
+    return Option.map(
+      Layout.direction(Layout.fromProps(props)),
+      CssDirection.crossAxis,
+    );
   },
 
   /**
