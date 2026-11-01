@@ -17,3 +17,26 @@ test("isSome が真の側では値を読める型に絞られる", () => {
   expectTypeOf(value).toEqualTypeOf<number>();
   expect(value).toBe(42);
 });
+
+test("定義元の外からは在／不在の判別子を読めない", () => {
+  const option = Option.fromNullable<number>(42);
+
+  // @ts-expect-error 判別子のキーは定義元の外から名前を持てない（TS2339）
+  const discriminant = option.some;
+
+  expect(discriminant).toBeUndefined();
+});
+
+test("定義元の外では値リテラルで不在を作れない", () => {
+  // @ts-expect-error 判別子のキーは定義元の外から書けない（TS2353）
+  const made: Option<number> = { some: false };
+
+  expect(made).not.toEqual(Option.none);
+});
+
+test("在／不在の判別子のキーは定義元から持ち出せない", async () => {
+  const module = await import("../Option");
+
+  // @ts-expect-error 判別子のキーは export しない（TS2339）
+  expect(module.SomeTag).toBeUndefined();
+});

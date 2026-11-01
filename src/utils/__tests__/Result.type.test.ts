@@ -30,3 +30,26 @@ test("isOk が偽の側では失敗のエラーを読める型に絞られる", 
   expectTypeOf(error).toEqualTypeOf<string>();
   expect(error).toBe("fail");
 });
+
+test("定義元の外からは成否の判別子を読めない", () => {
+  const result = decoded(true);
+
+  // @ts-expect-error 判別子のキーは定義元の外から名前を持てない（TS2339）
+  const discriminant = result.ok;
+
+  expect(discriminant).toBeUndefined();
+});
+
+test("定義元の外では値リテラルで結果を作れない", () => {
+  // @ts-expect-error 判別子のキーは定義元の外から書けない（TS2353）
+  const made: Result<number, string> = { ok: true, value: 42 };
+
+  expect(made).not.toEqual(Result.ok(42));
+});
+
+test("成否の判別子のキーは定義元から持ち出せない", async () => {
+  const module = await import("../Result");
+
+  // @ts-expect-error 判別子のキーは export しない（TS2339）
+  expect(module.OkTag).toBeUndefined();
+});

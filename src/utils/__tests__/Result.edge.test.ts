@@ -50,3 +50,9 @@ test("ok で生成した結果は凍結されていて変更できない", () =>
 test("err で生成した結果は凍結されていて変更できない", () => {
   expect(Object.isFrozen(Result.err("fail"))).toBe(true);
 });
+
+test("値が undefined の成功と失敗は、比べると別物になる", () => {
+  // 値も中身も undefined だと判別子しか違わないので、比較が判別子を見なくなる
+  // （キーを非列挙にする等）とここが等しくなる。
+  expect(Result.ok(undefined)).not.toEqual(Result.err(undefined));
+});
