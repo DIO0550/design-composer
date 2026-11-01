@@ -55,6 +55,15 @@ const Components: ComponentSet = {
     type: "Box",
     children: [{ name: "prototype-named-label", type: "Text" }],
   },
+  /** ロックを公開 prop にしている部品。繋げない prop の欄が出ないことを見るために使う。 */
+  "frozen-card": {
+    publicProps: {
+      title: { node: "frozen-card-title", prop: "content" },
+      frozen: { node: "frozen-card-title", prop: "locking" },
+    },
+    type: "Box",
+    children: [{ name: "frozen-card-title", type: "Text" }],
+  },
 };
 
 function setupSelection(
@@ -213,6 +222,15 @@ test("条件を満たさない公開 prop はコントロールが出ない", ()
   });
 
   expect(publicPropNames(selection)).toEqual(["title", "widthMode"]);
+});
+
+test("locking へ繋いだ公開 prop はコントロールが出ず、同じ部品の他の公開 prop は出る", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "frozen-card",
+  });
+
+  expect(publicPropNames(selection)).toEqual(["title"]);
 });
 
 test("存在しない部品を指すインスタンスには公開 prop のコントロールが出ない", () => {

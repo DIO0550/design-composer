@@ -128,3 +128,67 @@ test("部品一式に無い部品名の binding は違反にしない", () => {
 
   expect(violation).toEqual(Option.none);
 });
+
+test("内部のプリミティブの locking を指す binding は unbindable-prop になる", () => {
+  const violation = ComponentBinding.violation(
+    components(),
+    ComponentBinding.create("button", {
+      node: "button-label",
+      prop: "locking",
+    }),
+  );
+
+  expect(violation).toEqual(Option.some({ kind: "unbindable-prop" }));
+});
+
+test("部品の根の locking を指す binding も unbindable-prop になる", () => {
+  const violation = ComponentBinding.violation(
+    components(),
+    ComponentBinding.create("button", { node: "button", prop: "locking" }),
+  );
+
+  expect(violation).toEqual(Option.some({ kind: "unbindable-prop" }));
+});
+
+test("指し先のインスタンスの参照先が locking という名前の公開 prop を content に繋いでいれば、違反にならない", () => {
+  const components: ComponentSet = {
+    card: {
+      type: "Box",
+      children: [{ name: "card-badge", ref: "badge" }],
+    },
+    badge: {
+      type: "Box",
+      children: [{ name: "badge-label", type: "Text" }],
+      publicProps: { locking: { node: "badge-label", prop: "content" } },
+    },
+  };
+
+  const violation = ComponentBinding.violation(
+    components,
+    ComponentBinding.create("card", { node: "card-badge", prop: "locking" }),
+  );
+
+  expect(violation).toEqual(Option.none);
+});
+
+test("参照先が locking を公開していなければ、インスタンス自身のロックへは繋がらず missing-public-prop になる", () => {
+  const components: ComponentSet = {
+    card: {
+      type: "Box",
+      children: [{ name: "card-badge", ref: "badge", locking: "locked" }],
+    },
+    badge: {
+      type: "Box",
+      children: [{ name: "badge-label", type: "Text" }],
+    },
+  };
+
+  const violation = ComponentBinding.violation(
+    components,
+    ComponentBinding.create("card", { node: "card-badge", prop: "locking" }),
+  );
+
+  expect(violation).toEqual(
+    Option.some({ kind: "missing-public-prop", ref: "badge" }),
+  );
+});
