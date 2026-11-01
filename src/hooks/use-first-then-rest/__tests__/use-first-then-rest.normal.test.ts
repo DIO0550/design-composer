@@ -2,7 +2,7 @@ import { renderHook } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { useFirstThenRest } from "../index";
 
-/** 1 件目と 2 件目以降で別の値を返す並びを描く。 */
+/** 1 件目と 2 件目以降で別の値を返す並びを用意する。 */
 const setup = () =>
   renderHook(() => useFirstThenRest({ first: "head", rest: "tail" }));
 
