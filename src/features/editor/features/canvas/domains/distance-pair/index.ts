@@ -3,7 +3,10 @@ import { DocumentSelection } from "@/domains/session/document-selection";
 import { SelectionDigs } from "@/domains/session/selection-dig";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
-import type { Pointing } from "@/features/editor/features/canvas/domains/pointing";
+import {
+  type Pointing,
+  PointingKinds,
+} from "@/features/editor/features/canvas/domains/pointing";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
@@ -104,7 +107,7 @@ function siblingAt(
  */
 function counterpartAt(
   selection: DocumentSelection,
-  pointing: Extract<Pointing, { kind: "on-frame" }>,
+  pointing: Extract<Pointing, { kind: typeof PointingKinds.OnFrame }>,
   selected: SelectedNode,
 ): Option<string> {
   const pointedArtboard = DocumentSelection.artboardNameAt(
@@ -174,11 +177,11 @@ export const DistancePair = {
   ): Option<DistancePair> {
     return Option.flatMap(selectedNodeOf(selection), (selected) => {
       switch (pointing.kind) {
-        case "outside":
+        case PointingKinds.Outside:
           return Option.none;
-        case "nothing":
+        case PointingKinds.Nothing:
           return Option.some(withinOf(selected, selected.parent));
-        case "on-frame": {
+        case PointingKinds.OnFrame: {
           const counterpart = counterpartAt(selection, pointing, selected);
           return Option.some(
             Option.isSome(counterpart)

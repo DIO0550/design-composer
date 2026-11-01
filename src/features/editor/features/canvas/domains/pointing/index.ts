@@ -1,4 +1,15 @@
 import type { SelectionDig } from "@/domains/session/selection-dig";
+import type { ValueOf } from "@/types/ValueOf";
+
+/** 指し先の種類（`Pointing` の判別子）。 */
+export const PointingKinds = {
+  Outside: "outside",
+  Nothing: "nothing",
+  OnFrame: "on-frame",
+} as const;
+
+/** 指し先の種類。 */
+export type PointingKind = ValueOf<typeof PointingKinds>;
 
 /**
  * ポインタが今キャンバスのどこを指しているか（docs/06-ui.md「キャンバス直接操作」の、選択
@@ -11,22 +22,22 @@ import type { SelectionDig } from "@/domains/session/selection-dig";
  *   末尾は artboard）、`dig` はその時点の押し方から決まった掘る量
  */
 export type Pointing =
-  | Readonly<{ kind: "outside" }>
-  | Readonly<{ kind: "nothing" }>
+  | Readonly<{ kind: typeof PointingKinds.Outside }>
+  | Readonly<{ kind: typeof PointingKinds.Nothing }>
   | Readonly<{
-      kind: "on-frame";
+      kind: typeof PointingKinds.OnFrame;
       names: readonly string[];
       dig: SelectionDig;
     }>;
 
 /** キャンバスの外を指している。 */
-const Outside = { kind: "outside" } as const satisfies Pointing;
+const Outside = { kind: PointingKinds.Outside } as const satisfies Pointing;
 
 /**
  * キャンバスの中で、artboard の枠の外か、選んでいるノードのリサイズハンドルの上を指して
  * いる。
  */
-const Nothing = { kind: "nothing" } as const satisfies Pointing;
+const Nothing = { kind: PointingKinds.Nothing } as const satisfies Pointing;
 
 export const Pointing = {
   Outside,
@@ -40,7 +51,7 @@ export const Pointing = {
    * @returns 枠の上を指している指し先
    */
   create(names: readonly string[], dig: SelectionDig): Pointing {
-    return { kind: "on-frame", names, dig };
+    return { kind: PointingKinds.OnFrame, names, dig };
   },
 
   /**
@@ -51,7 +62,8 @@ export const Pointing = {
    * @returns 種類が同じで、枠の上なら名前の並びと掘る量まで同じなら真
    */
   equals(a: Pointing, b: Pointing): boolean {
-    const isBothOnFrame = a.kind === "on-frame" && b.kind === "on-frame";
+    const isBothOnFrame =
+      a.kind === PointingKinds.OnFrame && b.kind === PointingKinds.OnFrame;
     if (!isBothOnFrame) {
       return a.kind === b.kind;
     }
