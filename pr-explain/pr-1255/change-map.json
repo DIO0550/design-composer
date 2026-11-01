@@ -1,0 +1,2310 @@
+{
+  "version": 2,
+  "pr": 1255,
+  "headBranch": "claude/magical-cannon-ct3q49",
+  "baseBranch": "main",
+  "mergeBase": "2f80bd25bcdb424b60a718004610321443930e7e",
+  "head": "ff25752f1881cd400eaabe26ca09426b01bb84ab",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/offset/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-save-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/edit-continuity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/file-validity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-documents/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection-dig/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/file-paths.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/sample-document.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/app-menu/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-menu/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-window/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-window/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/clock/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/clock/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/operating-system/fake/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 20,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/operating-system/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 39,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/tauri-dialog/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/tauri-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/__tests__/document-change.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/operating-system/__tests__/operating-system.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 25,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/libs/operating-system/index.ts"
+        },
+        {
+          "path": "src/libs/operating-system/__tests__/operating-system.real-navigator.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 31,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/libs/operating-system/index.ts"
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/__stories__/sample-editor-state.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/canvas-dock/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/document-error-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 123,
+          "deletions": 23,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/components/editor-layout/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-left-pane/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-provider/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-right-pane/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/components/editor-top-bar/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 30,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/reorder-step/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-activate-tab-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-artboard-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-shortcuts/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-fit-document-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-fit-selection-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-token-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/types/OpenedContextMenu.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/editor-context-menu.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 48,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/__tests__/pane-regions.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/right-pane-heading.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 52,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/components/editor-screen/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.shortcut.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard-reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.canvas-dock.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.clipboard.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.componentize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 46,
+          "deletions": 14,
+          "changed": true,
+          "target": "src/features/editor/components/opened-document-editor/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.duplicate.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.edit-error.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.file-invalid.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.frozen.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.group.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 3,
+          "changed": true,
+          "target": "src/features/editor/components/opened-document-editor/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.history.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.insert.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.last-valid-render.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.left-pane.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.open-invalid.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.prop-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.remove.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.rename.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reorder.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection-distance.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/components/opened-document-editor/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.text-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-canvas.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.top-bar.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 15,
+          "changed": true,
+          "target": "src/features/editor/components/opened-document-editor/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.zoom-fit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 61,
+          "deletions": 24,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 53,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/assets",
+      "files": [
+        {
+          "path": "src/features/editor/features/assets/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-open-failure/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-start/domains/document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-sync",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-sync/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/sidebar",
+      "files": [
+        {
+          "path": "src/features/editor/features/sidebar/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/__stories__/screen-height-shell.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/action-card/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/context-menu/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/__tests__/context-menu.ts",
+          "changed": false
+        },
+        {
+          "path": "src/components/__tests__/row-drag.ts",
+          "changed": false
+        },
+        {
+          "path": "src/components/__tests__/row-names.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "hooks",
+      "files": [
+        {
+          "path": "src/hooks/use-key-shortcut/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "app",
+      "files": [
+        {
+          "path": "src/app/App.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/app/main.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/app/__tests__/App.normal.test.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": ".oxlintrc.json",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+        "name": "Windows で動いている画面でドキュメントを開くと、ツリーの行のメニューの Copy に Ctrl+C が併記される"
+      },
+      {
+        "file": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+        "name": "macOS で動いている画面でドキュメントを開くと、ツリーの行のメニューの Copy に ⌘C が併記される"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+        "name": "%s で動いているときも、Delete の行の割り当ては Delete だけになる"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+        "name": "Windows で動いているとき、Copy の行に ⌘ は併記されない"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+        "name": "Windows で動いているとき、Copy の行には Ctrl+C が併記される"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+        "name": "macOS で動いているとき、Copy の行の割り当ては ⌘C だけになる"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+        "name": "macOS で動いているとき、複製の行には ⌘D が併記される"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.group.test.tsx",
+        "name": "Windows で動いているとき、Ungroup の行には Ctrl+Shift+G が併記される"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.group.test.tsx",
+        "name": "macOS で動いているとき、Group と Ungroup の行には UI 案の綴りの割り当てが併記される"
+      },
+      {
+        "file": "src/libs/operating-system/__tests__/operating-system.normal.test.ts",
+        "name": "Linux の webview が返す platform からは macOS 以外と判定する"
+      },
+      {
+        "file": "src/libs/operating-system/__tests__/operating-system.normal.test.ts",
+        "name": "Windows の webview が返す platform からは macOS 以外と判定する"
+      },
+      {
+        "file": "src/libs/operating-system/__tests__/operating-system.normal.test.ts",
+        "name": "macOS の webview が返す platform からは macOS と判定する"
+      },
+      {
+        "file": "src/libs/operating-system/__tests__/operating-system.real-navigator.test.ts",
+        "name": "引数を省くと、実物の navigator が Windows の platform を返すとき macOS 以外と判定する"
+      },
+      {
+        "file": "src/libs/operating-system/__tests__/operating-system.real-navigator.test.ts",
+        "name": "引数を省くと、実物の navigator が macOS の platform を返すとき macOS と判定する"
+      }
+    ],
+    "removed": [
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+        "name": "行にはキーボードの割り当てが併記される"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+        "name": "複製の行には ⌘D が併記される"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.group.test.tsx",
+        "name": "Group と Ungroup の行には UI 案の綴りの割り当てが併記される"
+      }
+    ],
+    "files": [
+      "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+      "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.group.test.tsx",
+      "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+      "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+      "src/libs/operating-system/__tests__/operating-system.normal.test.ts",
+      "src/libs/operating-system/__tests__/operating-system.real-navigator.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "8b9e61cb7c4703f6ee551f4aff82059eef5221c9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T11:33:10Z",
+      "subject": "✨ [New Feature]: #480 コンテキストメニューの割り当ての併記を、動いている OS の綴りで出す",
+      "body": "- 動いている OS を問う境界 src/libs/operating-system を足す\n  (OperatingSystem.fromNavigator と、代役の MacOs/Windows/LinuxNavigator)\n- App で 1 度だけ判定し、EditorScreen → OpenedDocumentEditor →\n  EditorContextMenu へ props で通す\n- メニューの割り当てを「修飾なし / コマンドキー付き(+Shift)」の直和で持ち、\n  macOS は ⌘C / Shift+⌘G、それ以外は Ctrl+C / Ctrl+Shift+G と綴る\n- docs/06-ui.md「コンテキストメニュー」と開始画面のカードのコメントを\n  出し分け後の内容へ直す\n- メニューを開いたストーリーを macOS / Windows の対で足す\n\n背景:\ndocs/06-ui.md は併記を「動いている OS の綴り 1 つ」と決めているが、\n#470 は UI 案の ⌘ を固定で出しており、リポジトリに OS を読む仕組みが\n無かった。Windows / Linux で動かすと仕様と食い違う。\n\n採用理由:\nnavigator.platform が \"Mac\" で始まるかだけで判定する。lib.dom では\n@deprecated だが、代わりの userAgentData は lib.dom に型が無く、\nWebKit 系 webview (macOS / Linux) が対応していない。Linux は綴りが\nWindows と同じ Ctrl 側なので 2 値 (MacOs / Other) に閉じた。\n配る経路は props。別 Provider だと付け忘れが実行時の throw まで\n分からず、EditorProvider は編集状態の Context で OS とは無関係なため。\n綴りの規則は表示側の関心事なのでメニューのファイルに非公開で置く\n(rules/architecture.md「人が読む1行への綴りは表示側」)。\n\n影響とトレードオフ:\nOS の値は EditorBody / EditorPanes を素通しで 2 段流れる。\n割り当ての事実はキーボードのフック (use-*-shortcut) と併記の表の\n2 か所に残り、片方だけ変えると食い違う (#1254 で導出に寄せる)。\n開始画面のカード (⌘O / ⌘N) は ⌘ 固定のまま (#1253)。\nplatform の値は実機の webview では未確認 (MDN の記述に依拠)。\n\n代替案:\n- @tauri-apps/plugin-os: 外部ランタイム依存の追加と Rust 側の登録・\n  capability が要り、テストでは結局代役になる\n- userAgent 文字列の解析: platform より判定が複雑になるだけ\n- Windows / Linux を分けた 3 値: 区別を使う側が無い\n- DocumentSessionPorts に入れる: document-start の外部 I/O の束で、\n  OS はその口ではない\n- macOS 用と Ctrl 用の表を 2 つ書く: 同じキーを 2 度書き、修飾の\n  並びの規則が表に散らばる\n\n参考:\n- docs/06-ui.md「コンテキストメニュー」「グループ化 / グループ解除」\n- MDN Navigator.platform\n- Issue #480 のコメント (計画・plan-reviewer の指摘への対応)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RLErNwf9vJcpBZ4Ak",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -371,7 +371,7 @@ Figma 寄りの直接操作を採用する。\n | artboard | 名前を変更 ／ 削除 |\n | 空き領域 | ペースト ／ 取り消す・やり直す |\n \n-- **行にはキーボードの割り当てを併記する。** 出すのは**動いている OS の綴り**1 つだけ（UI 案が描いているのは macOS の窓なので `⌘`。Windows では `Ctrl` 側 / 上記「並べ替え」の表記と同じ 2 つを 1 行に並べない）。**OS による出し分けは #480**（それまでは UI 案の綴りを固定で出す）。**割り当てを持たない操作では欄ごと出さない** — 空欄にすると「割り当てが無い」と「載せないと決めた」が読み分けられなくなる\n+- **行にはキーボードの割り当てを併記する。** 出すのは**動いている OS の綴り**1 つだけで、macOS では `⌘` 側（UI 案が描いている窓）、それ以外（Windows / Linux）では `Ctrl` 側を出す（上記「並べ替え」の表記と同じ 2 つを 1 行に並べない）。`Ctrl` 側の修飾の並びは上記「グループ化 / グループ解除」の `Ctrl+Shift+G` に従う。**割り当てを持たない操作では欄ごと出さない** — 空欄にすると「割り当てが無い」と「載せないと決めた」が読み分けられなくなる\n - **削除の行に出すのは `Delete` だけ。** `Backspace` も同じ操作を受けるが（上記の割り当て）、2 つ並べると行の幅が割り当てのために伸びる\n - **割り当ては UI 案どおり。** 複製は `⌘D`、**グループ化 / 解除は `⌘G` / `Shift+⌘G`、名前を変更は `⌘R`**（webview の再読み込みと重なるが、割り当てが当たった押下は既定動作を止めるので再読み込みは起きない。止まらないのは入力中で、そのときはどの割り当ても通さない / 上記「編集操作の一覧」）\n - **できない操作は消さずに押せない状態で並べる。** 隣がいない向きへの前面へ / 背面へ（上記「並べ替え」）、上記「複数選択」の並べ替えができないときの前面へ / 背面へ、インスタンス以外を選んでいるときの解除、Box 以外を選んでいるときのグループ解除、上記「複数選択」の条件を満たさないときの複製・コピー（artboard が混ざる）とペースト（複数選択中）、上記「複数選択」のグループ化ができないときのグループ化が該当する。消すと並びが対象ごとに動いて、同じ操作が毎回違う位置に出る",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/app/App.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 1,
+          "patch": "@@ -6,6 +6,7 @@ import { Clock } from \"@/libs/clock\";\n import { createDocumentDialog } from \"@/libs/document-dialog\";\n import { createDocumentIpc } from \"@/libs/document-ipc\";\n import { createFileDrop } from \"@/libs/file-drop\";\n+import { OperatingSystem } from \"@/libs/operating-system\";\n import { TauriDialog } from \"@/libs/tauri-dialog\";\n import { TauriIpc } from \"@/libs/tauri-ipc\";\n \n@@ -14,6 +15,7 @@ import { TauriIpc } from \"@/libs/tauri-ipc\";\n  * レンダーのたびに作り直すと参照が毎回変わり、自動保存・file watch・メニューと\n  * ドロップの購読がその都度張り直される（どれも口の同一性で購読の続きを判断している）。\n  * 時計も同じで、参照が変わると経過時間の購読が張り直される。\n+ * 動いている OS も同じ場所で 1 度だけ判定する（起動中に変わらないので読み直す意味が無い）。\n  *\n  * Tauri の口（`TauriIpc`）を 1 つにまとめるのは、コマンドもイベントも同じ webview へ\n  * 向くため。分けて作っても届く先は同じで、口の数だけ同一性の管理が増える。\n@@ -28,8 +30,15 @@ const ports = {\n   appWindow: createAppWindow(tauriIpc),\n } as const;\n const clock = Clock.create();\n+const operatingSystem = OperatingSystem.fromNavigator();\n \n /** アプリの入口。Tauri の口を包んだ実体を編集画面へ渡すだけに徹する。 */\n export function App() {\n-  return <EditorScreen clock={clock} ports={ports} />;\n+  return (\n+    <EditorScreen\n+      clock={clock}\n+      ports={ports}\n+      operatingSystem={operatingSystem}\n+    />\n+  );\n }",
+          "patchLines": 33,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 121,
+          "deletions": 23,
+          "patch": "@@ -15,57 +15,103 @@ import {\n   useNodeActions,\n } from \"@/features/editor/hooks/use-node-actions\";\n import type { OpenedContextMenu } from \"@/features/editor/types/OpenedContextMenu\";\n+import {\n+  type OperatingSystem,\n+  OperatingSystems,\n+} from \"@/libs/operating-system\";\n import { Option } from \"@/utils/Option\";\n \n+/**\n+ * 行に併記する割り当て。綴りは OS ごとに変わるので、ここではキーと修飾だけを持つ。\n+ */\n+type MenuShortcut =\n+  | Readonly<{ type: \"plain\"; key: string }>\n+  | Readonly<{ type: \"command\"; key: string; withShiftKey: boolean }>;\n+\n+/**\n+ * 修飾の無いキーの割り当て。\n+ *\n+ * @param key キーの綴り\n+ * @returns 併記する割り当て\n+ */\n+function plainKey(key: string): Option<MenuShortcut> {\n+  return Option.some({ type: \"plain\", key });\n+}\n+\n+/**\n+ * コマンドキー（macOS の ⌘ / それ以外の Ctrl）付きの割り当て。\n+ *\n+ * @param key 修飾と組むキーの綴り\n+ * @returns 併記する割り当て\n+ */\n+function commandKey(key: string): Option<MenuShortcut> {\n+  return Option.some({ type: \"command\", key, withShiftKey: false });\n+}\n+\n+/**\n+ * Shift とコマンドキー付きの割り当て。\n+ *\n+ * @param key 修飾と組むキーの綴り\n+ * @returns 併記する割り当て\n+ */\n+function shiftCommandKey(key: string): Option<MenuShortcut> {\n+  return Option.some({ type: \"command\", key, withShiftKey: true });\n+}\n+\n /** 表示のための綴りだけを持つ部分（押せるかどうかと押したときの手続きは状態から決まる）。 */\n-type OperationPresentation = Omit<\n-  ComponentProps<typeof ContextMenu.Item>,\n-  \"isEnabled\" | \"onSelect\"\n+type OperationPresentation = Readonly<\n+  Omit<\n+    ComponentProps<typeof ContextMenu.Item>,\n+    \"isEnabled\" | \"onSelect\" | \"shortcut\"\n+  > & { shortcut: Option<MenuShortcut> }\n >;\n \n /**\n  * 操作ごとの綴り・併記する割り当て・色味（UI 案 docs/Design Composer.html の\n- * `Context menu`）。出すのは macOS の綴りだけで、動いている OS には合わせていない。\n+ * `Context menu`）。割り当ては動いている OS の綴りで出す（`shortcutLabel`）。\n+ *\n+ * 割り当ての出どころはキーボードのフック（`use-*-shortcut`）。片方だけ変えると併記と\n+ * 実際の割り当てが食い違う（#1254）。\n  */\n const OperationPresentations = {\n   duplicate: {\n     label: \"Duplicate\",\n-    shortcut: Option.some(\"⌘D\"),\n+    shortcut: commandKey(\"D\"),\n     tone: ContextMenuTones.Normal,\n   },\n   copy: {\n     label: \"Copy\",\n-    shortcut: Option.some(\"⌘C\"),\n+    shortcut: commandKey(\"C\"),\n     tone: ContextMenuTones.Normal,\n   },\n   paste: {\n     label: \"Paste\",\n-    shortcut: Option.some(\"⌘V\"),\n+    shortcut: commandKey(\"V\"),\n     tone: ContextMenuTones.Normal,\n   },\n   rename: {\n     label: \"Rename\",\n-    shortcut: Option.some(\"⌘R\"),\n+    shortcut: commandKey(\"R\"),\n     tone: ContextMenuTones.Normal,\n   },\n   group: {\n     label: \"Group\",\n-    shortcut: Option.some(\"⌘G\"),\n+    shortcut: commandKey(\"G\"),\n     tone: ContextMenuTones.Normal,\n   },\n   ungroup: {\n     label: \"Ungroup\",\n-    shortcut: Option.some(\"Shift+⌘G\"),\n+    shortcut: shiftCommandKey(\"G\"),\n     tone: ContextMenuTones.Normal,\n   },\n   \"bring-forward\": {\n     label: \"Bring forward\",\n-    shortcut: Option.some(\"⌘]\"),\n+    shortcut: commandKey(\"]\"),\n     tone: ContextMenuTones.Normal,\n   },\n   \"send-backward\": {\n     label: \"Send backward\",\n-    shortcut: Option.some(\"⌘[\"),\n+    shortcut: commandKey(\"[\"),\n     tone: ContextMenuTones.Normal,\n   },\n   \"detach-instance\": {\n@@ -75,21 +121,63 @@ const OperationPresentations = {\n   },\n   delete: {\n     label: \"Delete\",\n-    shortcut: Option.some(\"Delete\"),\n+    shortcut: plainKey(\"Delete\"),\n     tone: ContextMenuTones.Danger,\n   },\n   undo: {\n     label: \"Undo\",\n-    shortcut: Option.some(\"⌘Z\"),\n+    shortcut: commandKey(\"Z\"),\n     tone: ContextMenuTones.Normal,\n   },\n   redo: {\n     label: \"Redo\",\n-    shortcut: Option.some(\"Shift+⌘Z\"),\n+    shortcut: shiftCommandKey(\"Z\"),\n     tone: ContextMenuTones.Normal,\n   },\n } as const satisfies Readonly<Record<EditOperation, OperationPresentation>>;\n \n+/**\n+ * 割り当てを、動いている OS の綴りにする（docs/06-ui.md「編集操作の一覧」の表記）。\n+ *\n+ * @param shortcut 併記する割り当て\n+ * @param operatingSystem アプリが動いている OS\n+ * @returns macOS なら `⌘X` / `Shift+⌘X`、それ以外なら `Ctrl+X` / `Ctrl+Shift+X`。修飾の無いキーはそのまま\n+ */\n+function shortcutLabel(\n+  shortcut: MenuShortcut,\n+  operatingSystem: OperatingSystem,\n+): string {\n+  switch (shortcut.type) {\n+    case \"plain\":\n+      return shortcut.key;\n+    case \"command\":\n+      return commandShortcutLabel(shortcut, operatingSystem);\n+  }\n+}\n+\n+/**\n+ * コマンドキー付きの割り当てを、動いている OS の綴りにする。\n+ *\n+ * @param shortcut コマンドキー付きの割り当て\n+ * @param operatingSystem アプリが動いている OS\n+ * @returns `shortcutLabel` の、コマンドキー付きの場合の綴り\n+ */\n+function commandShortcutLabel(\n+  shortcut: Extract<MenuShortcut, { type: \"command\" }>,\n+  operatingSystem: OperatingSystem,\n+): string {\n+  switch (operatingSystem) {\n+    case OperatingSystems.MacOs:\n+      return shortcut.withShiftKey\n+        ? `Shift+⌘${shortcut.key}`\n+        : `⌘${shortcut.key}`;\n+    case OperatingSystems.Other:\n+      return shortcut.withShiftKey\n+        ? `Ctrl+Shift+${shortcut.key}`\n+        : `Ctrl+${shortcut.key}`;\n+  }\n+}\n+\n /**\n  * 操作ごとに呼ぶ手続き。キーボードの割り当てと同じものを呼ぶ。\n  *\n@@ -125,9 +213,12 @@ function operationHandlers(\n  */\n export function EditorContextMenu({\n   opened,\n+  operatingSystem,\n   onClose,\n }: Readonly<{\n   opened: OpenedContextMenu;\n+  /** 割り当ての綴りを選ぶのに使う、アプリが動いている OS。 */\n+  operatingSystem: OperatingSystem;\n   onClose: () => void;\n }>): ReactElement {\n   const { state } = useEditor();\n@@ -141,14 +232,21 @@ export function EditorContextMenu({\n       {menu.sections.map((section) => (\n         // 節に id が無いので操作を鍵にする（同じ操作は 1 つのメニューに 2 度出ない）\n         <ContextMenu.List key={section.map((row) => row.operation).join()}>\n-          {section.map((row) => (\n-            <ContextMenu.Item\n-              key={row.operation}\n-              {...OperationPresentations[row.operation]}\n-              isEnabled={row.isEnabled}\n-              onSelect={handlers[row.operation]}\n-            />\n-          ))}\n+          {section.map((row) => {\n+            const presentation = OperationPresentations[row.operation];\n+            return (\n+              <ContextMenu.Item\n+                key={row.operation}\n+                label={presentation.label}\n+                shortcut={Option.map(presentation.shortcut, (shortcut) =>\n+                  shortcutLabel(shortcut, operatingSystem),\n+                )}\n+                tone={presentation.tone}\n+                isEnabled={row.isEnabled}\n+                onSelect={handlers[row.operation]}\n+              />\n+            );\n+          })}\n         </ContextMenu.List>\n       ))}\n     </ContextMenu>",
+          "patchLines": 226,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 48,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,48 @@\n+import { fireEvent, within } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { contextMenu } from \"@/components/__tests__/context-menu\";\n+import { SampleDocument } from \"@/features/editor/__tests__/sample-document\";\n+import { DialogChoice } from \"@/libs/document-dialog/fake\";\n+import { DocumentJson } from \"@/libs/document-json\";\n+import type { NavigatorPlatform } from \"@/libs/operating-system\";\n+import { MacOsNavigator, WindowsNavigator } from \"@/libs/operating-system/fake\";\n+import { Path, renderEditorScreen, startOpen, tree } from \"./setup\";\n+\n+/*\n+ * 画面の入口で受け取った OS が、開いたドキュメントのコンテキストメニューまで届くかを見る\n+ * （docs/06-ui.md「コンテキストメニュー」）。綴りの規則そのものは編集画面の層のテストが見る。\n+ */\n+\n+/**\n+ * その OS で動いていることにして `Path` を開き、ツリーの `home-title` の行を右クリックする。\n+ *\n+ * @param platform アプリが動いている webview の `navigator`\n+ * @returns 開いたメニューの Copy の行\n+ */\n+async function copyRowOn(platform: NavigatorPlatform): Promise<HTMLElement> {\n+  const observer = renderEditorScreen(\n+    { [Path]: DocumentJson.serialize(SampleDocument) },\n+    { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },\n+    { platform },\n+  );\n+  await startOpen(observer);\n+\n+  fireEvent.contextMenu(\n+    within(tree()).getByRole(\"button\", { name: \"home-title\" }),\n+    { clientX: 120, clientY: 80 },\n+  );\n+\n+  return within(contextMenu()).getByRole(\"menuitem\", { name: /^Copy/ });\n+}\n+\n+test(\"Windows で動いている画面でドキュメントを開くと、ツリーの行のメニューの Copy に Ctrl+C が併記される\", async () => {\n+  const copyRow = await copyRowOn(WindowsNavigator);\n+\n+  expect(copyRow.textContent).toContain(\"Ctrl+C\");\n+});\n+\n+test(\"macOS で動いている画面でドキュメントを開くと、ツリーの行のメニューの Copy に ⌘C が併記される\", async () => {\n+  const copyRow = await copyRowOn(MacOsNavigator);\n+\n+  expect(copyRow.textContent).toContain(\"⌘C\");\n+});",
+          "patchLines": 49,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "patch": "@@ -27,6 +27,11 @@ import {\n } from \"@/libs/document-ipc/fake\";\n import { DocumentJson } from \"@/libs/document-json\";\n import { createFileDropFake } from \"@/libs/file-drop/fake\";\n+import {\n+  type NavigatorPlatform,\n+  OperatingSystem,\n+} from \"@/libs/operating-system\";\n+import { MacOsNavigator } from \"@/libs/operating-system/fake\";\n import { EditorScreen } from \"../index\";\n \n /** 既に置いてあるファイル。 */\n@@ -44,6 +49,8 @@ export type ScreenPortOptions = Readonly<{\n   denyAppStateLoad?: boolean;\n   /** メニューの購読を張れないようにするか。 */\n   denyMenu?: boolean;\n+  /** アプリが動いている webview の `navigator`。省くと macOS。 */\n+  platform?: NavigatorPlatform;\n }>;\n \n /** 画面と、その外側の口を動かす手段。 */\n@@ -88,6 +95,9 @@ export function renderEditorScreen(\n   render(\n     <EditorScreen\n       clock={createClockFake().clock}\n+      operatingSystem={OperatingSystem.fromNavigator(\n+        options.platform ?? MacOsNavigator,\n+      )}\n       ports={{\n         ipc: ipcFake.ipc,\n         dialog: dialogFake.dialog,",
+          "patchLines": 31,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 1,
+          "patch": "@@ -18,6 +18,8 @@ import {\n import { createDocumentIpcFake } from \"@/libs/document-ipc/fake\";\n import { DocumentJson } from \"@/libs/document-json\";\n import { createFileDropFake, type FileDropFake } from \"@/libs/file-drop/fake\";\n+import { OperatingSystem } from \"@/libs/operating-system\";\n+import { MacOsNavigator } from \"@/libs/operating-system/fake\";\n import { EditorScreen } from \"./index\";\n \n const SamplePath = filePath(\"/work/sample.dcmp\");\n@@ -91,7 +93,12 @@ const meta = {\n   title: \"features/editor/EditorScreen\",\n   component: EditorScreen,\n   parameters: { layout: \"fullscreen\" },\n-  args: { clock: clock.clock, ports: started.ports },\n+  args: {\n+    clock: clock.clock,\n+    ports: started.ports,\n+    // UI 案（docs/Design Composer.html）が描いているのは macOS の窓。\n+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigator),\n+  },\n } satisfies Meta<typeof EditorScreen>;\n \n export default meta;",
+          "patchLines": 23,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 2,
+          "patch": "@@ -20,6 +20,7 @@ import {\n } from \"@/hooks/use-key-shortcut\";\n import type { Clock } from \"@/libs/clock\";\n import type { DocumentIpc } from \"@/libs/document-ipc\";\n+import type { OperatingSystem } from \"@/libs/operating-system\";\n import { Option } from \"@/utils/Option\";\n \n /**\n@@ -39,10 +40,12 @@ function OpenedDocumentEditors({\n   opened,\n   clock,\n   ipc,\n+  operatingSystem,\n }: Readonly<{\n   opened: OpenedDocuments;\n   clock: Clock;\n   ipc: DocumentIpc;\n+  operatingSystem: OperatingSystem;\n }>): ReactElement {\n   const activePath = OpenedDocuments.activePath(opened);\n \n@@ -67,7 +70,12 @@ function OpenedDocumentEditors({\n                   : KeyShortcutScopes.Suspended\n               }\n             >\n-              <OpenedDocumentEditor clock={clock} ipc={ipc} opened={document} />\n+              <OpenedDocumentEditor\n+                clock={clock}\n+                ipc={ipc}\n+                opened={document}\n+                operatingSystem={operatingSystem}\n+              />\n             </KeyShortcutScopeProvider>\n           </div>\n         );\n@@ -85,7 +93,13 @@ function OpenedDocumentEditors({\n export function EditorScreen({\n   clock,\n   ports,\n-}: Readonly<{ clock: Clock; ports: DocumentSessionPorts }>) {\n+  operatingSystem,\n+}: Readonly<{\n+  clock: Clock;\n+  ports: DocumentSessionPorts;\n+  /** 編集画面の割り当ての綴りを選ぶのに使う、アプリが動いている OS。 */\n+  operatingSystem: OperatingSystem;\n+}>) {\n   const {\n     session,\n     recentPaths,\n@@ -145,6 +159,7 @@ export function EditorScreen({\n         opened={session.documents.value}\n         clock={clock}\n         ipc={ports.ipc}\n+        operatingSystem={operatingSystem}\n       />\n     </div>\n   );",
+          "patchLines": 58,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 36,
+          "deletions": 4,
+          "patch": "@@ -8,12 +8,14 @@ import {\n   artboardHandle,\n   canvasSurface,\n } from \"@/features/editor/features/canvas/__tests__\";\n+import { MacOsNavigator, WindowsNavigator } from \"@/libs/operating-system/fake\";\n import {\n   breakFileExternally,\n   contextMenu,\n   drawn,\n   menuRow,\n   renderOpenedDocument,\n+  renderOpenedDocumentOn,\n   selectArtboard,\n   selectInTree,\n   tree,\n@@ -223,22 +225,52 @@ test(\"コピー済みで貼り先があるときは、空き領域のメニュ\n   expect(menuRow(\"Paste\").hasAttribute(\"disabled\")).toBe(false);\n });\n \n-test(\"行にはキーボードの割り当てが併記される\", async () => {\n-  await renderOpenedDocument();\n+test(\"macOS で動いているとき、行にはキーボードの割り当てが併記される\", async () => {\n+  await renderOpenedDocumentOn(MacOsNavigator);\n \n   rightClick(drawn(\"home-title\"));\n \n   expect(menuRow(\"Copy\").textContent).toContain(\"⌘C\");\n });\n \n-test(\"複製の行には ⌘D が併記される\", async () => {\n-  await renderOpenedDocument();\n+test(\"macOS で動いているとき、複製の行には ⌘D が併記される\", async () => {\n+  await renderOpenedDocumentOn(MacOsNavigator);\n \n   rightClick(drawn(\"home-title\"));\n \n   expect(menuRow(\"Duplicate\").textContent).toContain(\"⌘D\");\n });\n \n+test(\"Windows で動いているとき、Copy の行には Ctrl+C が併記される\", async () => {\n+  await renderOpenedDocumentOn(WindowsNavigator);\n+\n+  rightClick(drawn(\"home-title\"));\n+\n+  expect(menuRow(\"Copy\").textContent).toContain(\"Ctrl+C\");\n+});\n+\n+test(\"Windows で動いているとき、Copy の行に ⌘ は併記されない\", async () => {\n+  await renderOpenedDocumentOn(WindowsNavigator);\n+\n+  rightClick(drawn(\"home-title\"));\n+\n+  expect(menuRow(\"Copy\").textContent).not.toContain(\"⌘\");\n+});\n+\n+test(\"Windows で動いているときも、Delete の行の割り当ては Delete だけになる\", async () => {\n+  await renderOpenedDocumentOn(WindowsNavigator);\n+\n+  rightClick(drawn(\"home-title\"));\n+\n+  // 行は操作の名前と割り当ての 2 つの欄を持つ。操作の名前も Delete なので、行全体の\n+  // 文字列では修飾が付いたかどうかを見分けられず、欄ごとに完全一致で比べる\n+  const columns = Array.from(\n+    menuRow(\"Delete\").children,\n+    (column) => column.textContent,\n+  );\n+  expect(columns).toEqual([\"Delete\", \"Delete\"]);\n+});\n+\n test(\"別の場所を右クリックすると、メニューがそこへ開き直す\", async () => {\n   await renderOpenedDocument();\n   rightClick(drawn(\"home-title\"));",
+          "patchLines": 72,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.group.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 2,
+          "patch": "@@ -3,10 +3,12 @@ import userEvent from \"@testing-library/user-event\";\n import { expect, test } from \"vitest\";\n import { rowNames } from \"@/components/__tests__/row-names\";\n import { rightPaneHeading } from \"@/features/editor/__tests__/right-pane-heading\";\n+import { MacOsNavigator, WindowsNavigator } from \"@/libs/operating-system/fake\";\n import {\n   drawn,\n   menuRow,\n   renderOpenedDocument,\n+  renderOpenedDocumentOn,\n   renderWithSameComponentInstancesSelected,\n   selectInTree,\n   tree,\n@@ -83,11 +85,19 @@ test(\"メニューの Ungroup を押すと、Box の子が親へ戻る\", async (\n   expect(rowNames(tree())).toEqual([\"home-title\", \"home-login\"]);\n });\n \n-test(\"Group と Ungroup の行には UI 案の綴りの割り当てが併記される\", async () => {\n-  await renderOpenedDocument();\n+test(\"macOS で動いているとき、Group と Ungroup の行には UI 案の綴りの割り当てが併記される\", async () => {\n+  await renderOpenedDocumentOn(MacOsNavigator);\n \n   fireEvent.contextMenu(drawn(\"home-title\"), { clientX: 120, clientY: 80 });\n \n   expect(menuRow(\"Group\").textContent).toContain(\"⌘G\");\n   expect(menuRow(\"Ungroup\").textContent).toContain(\"Shift+⌘G\");\n });\n+\n+test(\"Windows で動いているとき、Ungroup の行には Ctrl+Shift+G が併記される\", async () => {\n+  await renderOpenedDocumentOn(WindowsNavigator);\n+\n+  fireEvent.contextMenu(drawn(\"home-title\"), { clientX: 120, clientY: 80 });\n+\n+  expect(menuRow(\"Ungroup\").textContent).toContain(\"Ctrl+Shift+G\");\n+});",
+          "patchLines": 35,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "patch": "@@ -3,6 +3,8 @@ import { expect, test } from \"vitest\";\n import { SampleDocument } from \"@/features/editor/__tests__/sample-document\";\n import { createClockFake } from \"@/libs/clock/fake\";\n import { createDocumentIpcFake } from \"@/libs/document-ipc/fake\";\n+import { OperatingSystem } from \"@/libs/operating-system\";\n+import { MacOsNavigator } from \"@/libs/operating-system/fake\";\n import { OpenedDocumentEditor } from \"../index\";\n import { canvasPane, Path } from \"./setup\";\n \n@@ -14,6 +16,7 @@ test(\"開いているファイルを監視できないと、その失敗が画\n     <OpenedDocumentEditor\n       clock={createClockFake().clock}\n       ipc={fake.ipc}\n+      operatingSystem={OperatingSystem.fromNavigator(MacOsNavigator)}\n       opened={{ path: Path, document: SampleDocument }}\n     />,\n   );\n@@ -29,6 +32,7 @@ test(\"監視できないファイルでも、開いているドキュメント\n     <OpenedDocumentEditor\n       clock={createClockFake().clock}\n       ipc={fake.ipc}\n+      operatingSystem={OperatingSystem.fromNavigator(MacOsNavigator)}\n       opened={{ path: Path, document: SampleDocument }}\n     />,\n   );",
+          "patchLines": 25,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 52,
+          "deletions": 12,
+          "patch": "@@ -21,6 +21,11 @@ import {\n   type DocumentIpcFake,\n } from \"@/libs/document-ipc/fake\";\n import { DocumentJson } from \"@/libs/document-json\";\n+import {\n+  type NavigatorPlatform,\n+  OperatingSystem,\n+} from \"@/libs/operating-system\";\n+import { MacOsNavigator } from \"@/libs/operating-system/fake\";\n import { Option } from \"@/utils/Option\";\n import { OpenedDocumentEditor } from \"../index\";\n \n@@ -33,21 +38,22 @@ export type OpenedDocumentFakes = Readonly<{\n   clock: ClockFake;\n }>;\n \n+/** 編集画面を描くときに決めるもの。 */\n+type OpenedDocumentSetting = Readonly<{\n+  document: DesignDocument;\n+  platform: NavigatorPlatform;\n+}>;\n+\n /**\n- * サンプルのドキュメントを開いた編集画面を、時計の代役つきで描画する。\n- *\n- * 監視と購読は非同期に成立するので、操作を始める前にここで待ち合わせる\n- * （待たずに操作すると、成立したときの状態更新が act の外で起きる）。\n- *\n- * 時計を要らないテストのほうが圧倒的に多いので、口を 1 つだけ返す `renderOpenedDocument`\n- * を別に置いている。\n+ * ドキュメントを開いた編集画面を、時計の代役つきで描画し、監視と購読の成立を待つ。\n  *\n- * @param document 開くドキュメント。`SampleDocument` に無い形（同じ部品を指す\n- *   インスタンスが 2 つ以上あるなど）を要るテストだけが渡す\n+ * @param setting 開くドキュメントと、アプリが動いている webview の `navigator`\n+ * @returns 編集画面が外部世界とやり取りする口の代役一式\n  */\n-export async function renderOpenedDocumentWithClock(\n-  document: DesignDocument = SampleDocument,\n-): Promise<OpenedDocumentFakes> {\n+async function renderOpenedDocumentWith({\n+  document,\n+  platform,\n+}: OpenedDocumentSetting): Promise<OpenedDocumentFakes> {\n   const ipc = createDocumentIpcFake({\n     [Path]: DocumentJson.serialize(document),\n   });\n@@ -57,6 +63,7 @@ export async function renderOpenedDocumentWithClock(\n     <OpenedDocumentEditor\n       clock={clock.clock}\n       ipc={ipc.ipc}\n+      operatingSystem={OperatingSystem.fromNavigator(platform)}\n       opened={{ path: Path, document }}\n     />,\n   );\n@@ -64,6 +71,39 @@ export async function renderOpenedDocumentWithClock(\n   return { ipc, clock };\n }\n \n+/**\n+ * サンプルのドキュメントを開いた編集画面を、時計の代役つきで描画する。動いている OS は macOS。\n+ *\n+ * 監視と購読は非同期に成立するので、操作を始める前にここで待ち合わせる\n+ * （待たずに操作すると、成立したときの状態更新が act の外で起きる）。\n+ *\n+ * 時計を要らないテストのほうが圧倒的に多いので、口を 1 つだけ返す `renderOpenedDocument`\n+ * を別に置いている。\n+ *\n+ * @param document 開くドキュメント。`SampleDocument` に無い形（同じ部品を指す\n+ *   インスタンスが 2 つ以上あるなど）を要るテストだけが渡す\n+ */\n+export function renderOpenedDocumentWithClock(\n+  document: DesignDocument = SampleDocument,\n+): Promise<OpenedDocumentFakes> {\n+  return renderOpenedDocumentWith({ document, platform: MacOsNavigator });\n+}\n+\n+/**\n+ * サンプルのドキュメントを、指定した OS で動いていることにして描画する。\n+ *\n+ * @param platform アプリが動いている webview の `navigator`\n+ */\n+export async function renderOpenedDocumentOn(\n+  platform: NavigatorPlatform,\n+): Promise<DocumentIpcFake> {\n+  const { ipc } = await renderOpenedDocumentWith({\n+    document: SampleDocument,\n+    platform,\n+  });\n+  return ipc;\n+}\n+\n /**\n  * サンプルのドキュメントを開いた編集画面を描画する。\n  *",
+          "patchLines": 95,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 45,
+          "deletions": 1,
+          "patch": "@@ -1,5 +1,5 @@\n import type { Meta, StoryObj } from \"@storybook/react-vite\";\n-import { expect, screen, waitFor } from \"storybook/test\";\n+import { expect, fireEvent, screen, waitFor, within } from \"storybook/test\";\n import { ScreenHeightShell } from \"@/components/__stories__/screen-height-shell\";\n import { filePath } from \"@/domains/__tests__/file-paths\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n@@ -9,6 +9,8 @@ import { EditorState } from \"@/features/editor/domains/editor-state\";\n import { createClockFake } from \"@/libs/clock/fake\";\n import { createDocumentIpcFake } from \"@/libs/document-ipc/fake\";\n import { DocumentJson } from \"@/libs/document-json\";\n+import { OperatingSystem } from \"@/libs/operating-system\";\n+import { MacOsNavigator, WindowsNavigator } from \"@/libs/operating-system/fake\";\n import { OpenedDocumentEditor } from \"./index\";\n \n const SamplePath = filePath(\"/work/sample.dcmp\");\n@@ -36,6 +38,8 @@ const meta = {\n   args: {\n     clock: clock.clock,\n     ipc: files.ipc,\n+    // UI 案（docs/Design Composer.html）が描いているのは macOS の窓。\n+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigator),\n     opened: {\n       path: SamplePath,\n       document: EditorState.document(SampleEditorState),\n@@ -70,6 +74,46 @@ export const SyncFailed: Story = {\n   },\n };\n \n+/**\n+ * ツリーの `home-title` の行を右クリックし、メニューが開くまで待つ。開く位置は行の横幅の\n+ * 中ほど・下端にして、押した行がメニューに隠れないようにする。\n+ */\n+async function openContextMenuOnTreeRow(): Promise<void> {\n+  const row = within(screen.getByRole(\"region\", { name: \"ツリー\" })).getByRole(\n+    \"button\",\n+    { name: \"home-title\" },\n+  );\n+  const rect = row.getBoundingClientRect();\n+  fireEvent.contextMenu(row, {\n+    clientX: rect.left + rect.width / 2,\n+    clientY: rect.bottom,\n+  });\n+  await waitFor(() => {\n+    expect(\n+      screen.getByRole(\"menu\", { name: \"コンテキストメニュー\" }),\n+    ).toBeDefined();\n+  });\n+}\n+\n+/**\n+ * macOS で動いているときのノードのメニュー。割り当ては `⌘C` / `Shift+⌘G` の綴りで併記される\n+ * （docs/06-ui.md「コンテキストメニュー」）。\n+ */\n+export const ContextMenuOnMacOs: Story = {\n+  name: \"macOS でコンテキストメニューを開いた編集画面\",\n+  play: openContextMenuOnTreeRow,\n+};\n+\n+/**\n+ * Windows で動いているときのノードのメニュー。割り当ては `Ctrl+C` / `Ctrl+Shift+G` の綴りで\n+ * 併記される（docs/06-ui.md「コンテキストメニュー」）。\n+ */\n+export const ContextMenuOnWindows: Story = {\n+  name: \"Windows でコンテキストメニューを開いた編集画面\",\n+  args: { operatingSystem: OperatingSystem.fromNavigator(WindowsNavigator) },\n+  play: openContextMenuOnTreeRow,\n+};\n+\n const Sample = EditorState.document(SampleEditorState);\n \n /**",
+          "patchLines": 72,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 30,
+          "deletions": 4,
+          "patch": "@@ -53,6 +53,7 @@ import { useTokenActions } from \"@/features/editor/hooks/use-token-actions\";\n import type { OpenedContextMenu } from \"@/features/editor/types/OpenedContextMenu\";\n import type { Clock } from \"@/libs/clock\";\n import type { DocumentIpc } from \"@/libs/document-ipc\";\n+import type { OperatingSystem } from \"@/libs/operating-system\";\n import { Option } from \"@/utils/Option\";\n \n /**\n@@ -63,9 +64,11 @@ import { Option } from \"@/utils/Option\";\n function EditorPanes({\n   canvasView,\n   fileRevert,\n+  operatingSystem,\n }: Readonly<{\n   canvasView: CanvasViewControl;\n   fileRevert: FileRevertControl;\n+  operatingSystem: OperatingSystem;\n }>) {\n   const { state } = useEditor();\n   const node = useNodeActions();\n@@ -240,6 +243,7 @@ function EditorPanes({\n       {Option.isSome(contextMenu) ? (\n         <EditorContextMenu\n           opened={contextMenu.value}\n+          operatingSystem={operatingSystem}\n           onClose={() => setContextMenu(Option.none)}\n         />\n       ) : null}\n@@ -256,7 +260,13 @@ function EditorBody({\n   clock,\n   ipc,\n   opened,\n-}: Readonly<{ clock: Clock; ipc: DocumentIpc; opened: OpenedDocument }>) {\n+  operatingSystem,\n+}: Readonly<{\n+  clock: Clock;\n+  ipc: DocumentIpc;\n+  opened: OpenedDocument;\n+  operatingSystem: OperatingSystem;\n+}>) {\n   const { state, dispatch } = useEditor();\n   const path = opened.path;\n   /*\n@@ -330,7 +340,11 @@ function EditorBody({\n         watch={watchFailure}\n         revert={DocumentSaveState.failure(fileRevert.saveState)}\n       />\n-      <EditorPanes canvasView={canvasView} fileRevert={fileRevert} />\n+      <EditorPanes\n+        canvasView={canvasView}\n+        fileRevert={fileRevert}\n+        operatingSystem={operatingSystem}\n+      />\n     </div>\n   );\n }\n@@ -344,10 +358,22 @@ export function OpenedDocumentEditor({\n   clock,\n   ipc,\n   opened,\n-}: Readonly<{ clock: Clock; ipc: DocumentIpc; opened: OpenedDocument }>) {\n+  operatingSystem,\n+}: Readonly<{\n+  clock: Clock;\n+  ipc: DocumentIpc;\n+  opened: OpenedDocument;\n+  /** コンテキストメニューの割り当ての綴りを選ぶのに使う、アプリが動いている OS。 */\n+  operatingSystem: OperatingSystem;\n+}>) {\n   return (\n     <EditorProvider initialDocument={opened.document}>\n-      <EditorBody clock={clock} ipc={ipc} opened={opened} />\n+      <EditorBody\n+        clock={clock}\n+        ipc={ipc}\n+        opened={opened}\n+        operatingSystem={operatingSystem}\n+      />\n     </EditorProvider>\n   );\n }",
+          "patchLines": 81,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -36,8 +36,8 @@ function commandSourceFailureLabel(source: CommandSource): string {\n \n /*\n  * 開始画面の 2 枚のカードの中身。ショートカットの割り当ての出どころは `src-tauri/src/menu.rs` の\n- * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。OS ごとに表記は変えず、\n- * コンテキストメニューと同じ ⌘ 表記に揃えている。\n+ * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。OS ごとの出し分けは\n+ * #1253 まで行わず、⌘ 表記で固定している。\n  */\n \n /** 開くのカード（プライマリ）。 */",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/operating-system/__tests__/operating-system.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,21 @@\n+import { expect, test } from \"vitest\";\n+import { LinuxNavigator, MacOsNavigator, WindowsNavigator } from \"../fake\";\n+import { OperatingSystem, OperatingSystems } from \"../index\";\n+\n+test(\"macOS の webview が返す platform からは macOS と判定する\", () => {\n+  expect(OperatingSystem.fromNavigator(MacOsNavigator)).toBe(\n+    OperatingSystems.MacOs,\n+  );\n+});\n+\n+test(\"Windows の webview が返す platform からは macOS 以外と判定する\", () => {\n+  expect(OperatingSystem.fromNavigator(WindowsNavigator)).toBe(\n+    OperatingSystems.Other,\n+  );\n+});\n+\n+test(\"Linux の webview が返す platform からは macOS 以外と判定する\", () => {\n+  expect(OperatingSystem.fromNavigator(LinuxNavigator)).toBe(\n+    OperatingSystems.Other,\n+  );\n+});",
+          "patchLines": 22,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/operating-system/fake/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,14 @@\n+import type { NavigatorPlatform } from \"../index\";\n+\n+/*\n+ * 各 OS の webview が返す `navigator.platform` の綴り（MDN「Navigator: platform property」）。\n+ */\n+\n+/** macOS の webview。 */\n+export const MacOsNavigator: NavigatorPlatform = { platform: \"MacIntel\" };\n+\n+/** Windows の webview。 */\n+export const WindowsNavigator: NavigatorPlatform = { platform: \"Win32\" };\n+\n+/** Linux の webview。 */\n+export const LinuxNavigator: NavigatorPlatform = { platform: \"Linux x86_64\" };",
+          "patchLines": 15,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/operating-system/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 37,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,37 @@\n+import type { ValueOf } from \"@/types/ValueOf\";\n+\n+/**\n+ * 割り当ての綴りを分ける単位での、アプリが動いている OS。\n+ *\n+ * Linux も Windows と同じ `Other` に入れる。どちらも割り当ての綴りが `Ctrl` 側で同じで、\n+ * 2 つを区別して使う側が無い。\n+ * `libs/` に置くのは、この値に付く規則が外部の値（`navigator.platform`）の解釈だけだから。\n+ */\n+export const OperatingSystems = {\n+  MacOs: \"mac-os\",\n+  Other: \"other\",\n+} as const;\n+\n+/** アプリが動いている OS（`OperatingSystems` のどれか）。 */\n+export type OperatingSystem = ValueOf<typeof OperatingSystems>;\n+\n+/** OS の判定に使う、`navigator` のうちの 1 項目。 */\n+export type NavigatorPlatform = Readonly<{ platform: string }>;\n+\n+/** 動いている OS の判定。 */\n+export const OperatingSystem = {\n+  /**\n+   * `navigator.platform` から、動いている OS を判定する。\n+   *\n+   * `navigator.platform` は lib.dom で `@deprecated` だが使う。代わりの `userAgentData` は\n+   * lib.dom に型が無く、WebKit 系の webview（macOS / Linux）が持っていない。\n+   *\n+   * @param source 判定に使う `platform` を持つもの。省くと実物の `navigator`\n+   * @returns `platform` が `Mac` で始まれば `MacOs`、それ以外は `Other`\n+   */\n+  fromNavigator(source: NavigatorPlatform = navigator): OperatingSystem {\n+    return source.platform.startsWith(\"Mac\")\n+      ? OperatingSystems.MacOs\n+      : OperatingSystems.Other;\n+  },\n+} as const;",
+          "patchLines": 38,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "29640aa39c61db47375cc9140280d608de39c618",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T11:45:43Z",
+      "subject": "♻️ [Refactoring]: #480 実装レビューの指摘に合わせて命名・テストの共有・コメントを直す",
+      "body": "- 割り当ての組み立て関数を plainShortcut / commandShortcut /\n  shiftCommandShortcut に、MenuShortcut の判別子を kind に改める\n- OS 判定に渡す値の呼び名を NavigatorPlatform に揃える (fake の定数・\n  fromNavigator の引数・テストの setup)\n- 右クリックとメニューの行を引くテストのヘルパーを\n  src/features/editor/__tests__/editor-context-menu.ts へ移し、\n  新しく足したテストからはそこを使う\n- docs/06-ui.md「割り当ては UI 案どおり」に、綴りは OS で分ける旨を添える\n- #1253 / #1254 を指すコメントに理由を 1 行ずつ足し、中継する props の\n  doc から用途を外す\n\n背景:\nフェーズ 6 の観点別レビューで、既存の語彙との衝突 (CommandKey は修飾キー\nそのもの、データの直和は kind)、新しいテストでのヘルパーの直書き、番号\nだけで理由の無いコメントが指摘された。\n\n採用理由:\ncommandKey(\"D\") は返すもの (割り当て全体) ではなく修飾キーに読めるので、\n戻り値の型 MenuShortcut に合わせて *Shortcut にした。ヘルパーは\neditor-screen と opened-document-editor の両方のテストから使うので、\npane-regions と同じく feature 直下の __tests__ に置いた。\n\n影響とトレードオフ:\nopened-document-editor の setup は移したヘルパーを出し直すので、既存の\nimport はそのまま動く。rename / selection-distance などにある右クリックの\n直書きは差分の前からあるので触っていない。\n\n代替案:\n- OperatingSystem を綴り専用と分かる名前に改める: いまの消費者は綴り\n  だけで doc に単位を書いている。別の OS 依存の処理が流用するときに\n  3 値化する判断として Issue に残した\n- 編集操作の一覧の各行に Ctrl 側の綴りを書き足す: 仕様の表を広げる\n  変更になる。374 行目の「並びは Ctrl+Shift+G に従う」から導ける\n\n参考:\n- Issue #480 のコメント (フェーズ 6 の指摘と採否)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RLErNwf9vJcpBZ4Ak",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -373,7 +373,7 @@ Figma 寄りの直接操作を採用する。\n \n - **行にはキーボードの割り当てを併記する。** 出すのは**動いている OS の綴り**1 つだけで、macOS では `⌘` 側（UI 案が描いている窓）、それ以外（Windows / Linux）では `Ctrl` 側を出す（上記「並べ替え」の表記と同じ 2 つを 1 行に並べない）。`Ctrl` 側の修飾の並びは上記「グループ化 / グループ解除」の `Ctrl+Shift+G` に従う。**割り当てを持たない操作では欄ごと出さない** — 空欄にすると「割り当てが無い」と「載せないと決めた」が読み分けられなくなる\n - **削除の行に出すのは `Delete` だけ。** `Backspace` も同じ操作を受けるが（上記の割り当て）、2 つ並べると行の幅が割り当てのために伸びる\n-- **割り当ては UI 案どおり。** 複製は `⌘D`、**グループ化 / 解除は `⌘G` / `Shift+⌘G`、名前を変更は `⌘R`**（webview の再読み込みと重なるが、割り当てが当たった押下は既定動作を止めるので再読み込みは起きない。止まらないのは入力中で、そのときはどの割り当ても通さない / 上記「編集操作の一覧」）\n+- **割り当ては UI 案どおり**（ここでは macOS の綴りで書く。綴りは上の「行にはキーボードの割り当てを併記する」のとおり OS で分け、`Ctrl` 側では `Ctrl+D` / `Ctrl+Shift+G` と出す）。複製は `⌘D`、**グループ化 / 解除は `⌘G` / `Shift+⌘G`、名前を変更は `⌘R`**（webview の再読み込みと重なるが、割り当てが当たった押下は既定動作を止めるので再読み込みは起きない。止まらないのは入力中で、そのときはどの割り当ても通さない / 上記「編集操作の一覧」）\n - **できない操作は消さずに押せない状態で並べる。** 隣がいない向きへの前面へ / 背面へ（上記「並べ替え」）、上記「複数選択」の並べ替えができないときの前面へ / 背面へ、インスタンス以外を選んでいるときの解除、Box 以外を選んでいるときのグループ解除、上記「複数選択」の条件を満たさないときの複製・コピー（artboard が混ざる）とペースト（複数選択中）、上記「複数選択」のグループ化ができないときのグループ化が該当する。消すと並びが対象ごとに動いて、同じ操作が毎回違う位置に出る\n - **押せない行は、操作の名前も割り当ても同じ淡色** `#c4c4c4`（UI 案 `Context menu` が押せない 3 行をこの色で描いている。`Assets · Instance` の `Create component` が押せないときの文字色と同じ）。有効な行の割り当ても同じ色だが、有効な行は操作の名前が濃いので行全体の濃さで読み分けられる。**ボタン側が持つ背景・枠と「できない理由」の一文はメニューでは持たない**（行に一文を入れると高さが行ごとに変わる）\n - **複数選択中もメニューは出る。** 押せるのは取り消す・やり直す・削除と、複製・コピー・前面へ / 背面へ・グループ化（上記「複数選択」の条件のとき）で、残り（ペースト・名前を変更・グループ解除・部品にする・解除）はどれも押せない（上記「複数選択」が 1 つだけ選んでいるときの操作とするものに、メニューで足した名前を変更を加えたもの。どれを複数対応にするかは上記「複数選択」）",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/__tests__/editor-context-menu.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 48,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,48 @@\n+import { fireEvent, within } from \"@testing-library/react\";\n+import { contextMenu } from \"@/components/__tests__/context-menu\";\n+import { tree } from \"@/features/editor/__tests__/pane-regions\";\n+\n+/*\n+ * 編集画面のコンテキストメニューを開いて行を引く。\n+ *\n+ * `opened-document-editor` と `editor-screen` の両方のテストが同じ開き方・引き方をするため、\n+ * モジュールの外へ出してある（`pane-regions` と同じ形）。\n+ */\n+\n+/**\n+ * 要素を右クリックする。\n+ *\n+ * @param target 押す要素\n+ * @param at 押した窓の座標。省くと折り返しの起きない位置\n+ */\n+export function rightClick(\n+  target: Element,\n+  at: Readonly<{ x: number; y: number }> = { x: 120, y: 80 },\n+): void {\n+  fireEvent.contextMenu(target, { clientX: at.x, clientY: at.y });\n+}\n+\n+/**\n+ * ツリーの行を右クリックする。同じ名前はキャンバスにも出るのでツリーに絞る。\n+ *\n+ * @param name 押す行の名前\n+ * @param at 押した窓の座標。省くと折り返しの起きない位置\n+ */\n+export function rightClickInTree(\n+  name: string,\n+  at?: Readonly<{ x: number; y: number }>,\n+): void {\n+  rightClick(within(tree()).getByRole(\"button\", { name }), at);\n+}\n+\n+/**\n+ * コンテキストメニューの行。\n+ *\n+ * @param label 行の綴り。読み上げ名は綴りのうしろに割り当てが並ぶので前方一致で引く\n+ * @returns その行のボタン\n+ */\n+export function menuRow(label: string): HTMLElement {\n+  return within(contextMenu()).getByRole(\"menuitem\", {\n+    name: new RegExp(`^${label}`),\n+  });\n+}",
+          "patchLines": 49,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 22,
+          "patch": "@@ -25,8 +25,8 @@ import { Option } from \"@/utils/Option\";\n  * 行に併記する割り当て。綴りは OS ごとに変わるので、ここではキーと修飾だけを持つ。\n  */\n type MenuShortcut =\n-  | Readonly<{ type: \"plain\"; key: string }>\n-  | Readonly<{ type: \"command\"; key: string; withShiftKey: boolean }>;\n+  | Readonly<{ kind: \"plain\"; key: string }>\n+  | Readonly<{ kind: \"command\"; key: string; withShiftKey: boolean }>;\n \n /**\n  * 修飾の無いキーの割り当て。\n@@ -34,8 +34,8 @@ type MenuShortcut =\n  * @param key キーの綴り\n  * @returns 併記する割り当て\n  */\n-function plainKey(key: string): Option<MenuShortcut> {\n-  return Option.some({ type: \"plain\", key });\n+function plainShortcut(key: string): Option<MenuShortcut> {\n+  return Option.some({ kind: \"plain\", key });\n }\n \n /**\n@@ -44,8 +44,8 @@ function plainKey(key: string): Option<MenuShortcut> {\n  * @param key 修飾と組むキーの綴り\n  * @returns 併記する割り当て\n  */\n-function commandKey(key: string): Option<MenuShortcut> {\n-  return Option.some({ type: \"command\", key, withShiftKey: false });\n+function commandShortcut(key: string): Option<MenuShortcut> {\n+  return Option.some({ kind: \"command\", key, withShiftKey: false });\n }\n \n /**\n@@ -54,8 +54,8 @@ function commandKey(key: string): Option<MenuShortcut> {\n  * @param key 修飾と組むキーの綴り\n  * @returns 併記する割り当て\n  */\n-function shiftCommandKey(key: string): Option<MenuShortcut> {\n-  return Option.some({ type: \"command\", key, withShiftKey: true });\n+function shiftCommandShortcut(key: string): Option<MenuShortcut> {\n+  return Option.some({ kind: \"command\", key, withShiftKey: true });\n }\n \n /** 表示のための綴りだけを持つ部分（押せるかどうかと押したときの手続きは状態から決まる）。 */\n@@ -71,47 +71,48 @@ type OperationPresentation = Readonly<\n  * `Context menu`）。割り当ては動いている OS の綴りで出す（`shortcutLabel`）。\n  *\n  * 割り当ての出どころはキーボードのフック（`use-*-shortcut`）。片方だけ変えると併記と\n- * 実際の割り当てが食い違う（#1254）。\n+ * 実際の割り当てが食い違う。\n+ * フックから導かないのは、併記を持つ 10 個のフックの非公開の定数を公開し直す必要があり範囲外だから（#1254）。\n  */\n const OperationPresentations = {\n   duplicate: {\n     label: \"Duplicate\",\n-    shortcut: commandKey(\"D\"),\n+    shortcut: commandShortcut(\"D\"),\n     tone: ContextMenuTones.Normal,\n   },\n   copy: {\n     label: \"Copy\",\n-    shortcut: commandKey(\"C\"),\n+    shortcut: commandShortcut(\"C\"),\n     tone: ContextMenuTones.Normal,\n   },\n   paste: {\n     label: \"Paste\",\n-    shortcut: commandKey(\"V\"),\n+    shortcut: commandShortcut(\"V\"),\n     tone: ContextMenuTones.Normal,\n   },\n   rename: {\n     label: \"Rename\",\n-    shortcut: commandKey(\"R\"),\n+    shortcut: commandShortcut(\"R\"),\n     tone: ContextMenuTones.Normal,\n   },\n   group: {\n     label: \"Group\",\n-    shortcut: commandKey(\"G\"),\n+    shortcut: commandShortcut(\"G\"),\n     tone: ContextMenuTones.Normal,\n   },\n   ungroup: {\n     label: \"Ungroup\",\n-    shortcut: shiftCommandKey(\"G\"),\n+    shortcut: shiftCommandShortcut(\"G\"),\n     tone: ContextMenuTones.Normal,\n   },\n   \"bring-forward\": {\n     label: \"Bring forward\",\n-    shortcut: commandKey(\"]\"),\n+    shortcut: commandShortcut(\"]\"),\n     tone: ContextMenuTones.Normal,\n   },\n   \"send-backward\": {\n     label: \"Send backward\",\n-    shortcut: commandKey(\"[\"),\n+    shortcut: commandShortcut(\"[\"),\n     tone: ContextMenuTones.Normal,\n   },\n   \"detach-instance\": {\n@@ -121,17 +122,17 @@ const OperationPresentations = {\n   },\n   delete: {\n     label: \"Delete\",\n-    shortcut: plainKey(\"Delete\"),\n+    shortcut: plainShortcut(\"Delete\"),\n     tone: ContextMenuTones.Danger,\n   },\n   undo: {\n     label: \"Undo\",\n-    shortcut: commandKey(\"Z\"),\n+    shortcut: commandShortcut(\"Z\"),\n     tone: ContextMenuTones.Normal,\n   },\n   redo: {\n     label: \"Redo\",\n-    shortcut: shiftCommandKey(\"Z\"),\n+    shortcut: shiftCommandShortcut(\"Z\"),\n     tone: ContextMenuTones.Normal,\n   },\n } as const satisfies Readonly<Record<EditOperation, OperationPresentation>>;\n@@ -147,7 +148,7 @@ function shortcutLabel(\n   shortcut: MenuShortcut,\n   operatingSystem: OperatingSystem,\n ): string {\n-  switch (shortcut.type) {\n+  switch (shortcut.kind) {\n     case \"plain\":\n       return shortcut.key;\n     case \"command\":\n@@ -163,7 +164,7 @@ function shortcutLabel(\n  * @returns `shortcutLabel` の、コマンドキー付きの場合の綴り\n  */\n function commandShortcutLabel(\n-  shortcut: Extract<MenuShortcut, { type: \"command\" }>,\n+  shortcut: Extract<MenuShortcut, { kind: \"command\" }>,\n   operatingSystem: OperatingSystem,\n ): string {\n   switch (operatingSystem) {\n@@ -234,6 +235,7 @@ export function EditorContextMenu({\n         <ContextMenu.List key={section.map((row) => row.operation).join()}>\n           {section.map((row) => {\n             const presentation = OperationPresentations[row.operation];\n+\n             return (\n               <ContextMenu.Item\n                 key={row.operation}",
+          "patchLines": 149,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 14,
+          "patch": "@@ -1,12 +1,17 @@\n-import { fireEvent, within } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n-import { contextMenu } from \"@/components/__tests__/context-menu\";\n+import {\n+  menuRow,\n+  rightClickInTree,\n+} from \"@/features/editor/__tests__/editor-context-menu\";\n import { SampleDocument } from \"@/features/editor/__tests__/sample-document\";\n import { DialogChoice } from \"@/libs/document-dialog/fake\";\n import { DocumentJson } from \"@/libs/document-json\";\n import type { NavigatorPlatform } from \"@/libs/operating-system\";\n-import { MacOsNavigator, WindowsNavigator } from \"@/libs/operating-system/fake\";\n-import { Path, renderEditorScreen, startOpen, tree } from \"./setup\";\n+import {\n+  MacOsNavigatorPlatform,\n+  WindowsNavigatorPlatform,\n+} from \"@/libs/operating-system/fake\";\n+import { Path, renderEditorScreen, startOpen } from \"./setup\";\n \n /*\n  * 画面の入口で受け取った OS が、開いたドキュメントのコンテキストメニューまで届くかを見る\n@@ -16,33 +21,32 @@ import { Path, renderEditorScreen, startOpen, tree } from \"./setup\";\n /**\n  * その OS で動いていることにして `Path` を開き、ツリーの `home-title` の行を右クリックする。\n  *\n- * @param platform アプリが動いている webview の `navigator`\n+ * @param navigatorPlatform アプリが動いている webview の `navigator`\n  * @returns 開いたメニューの Copy の行\n  */\n-async function copyRowOn(platform: NavigatorPlatform): Promise<HTMLElement> {\n+async function copyRowOn(\n+  navigatorPlatform: NavigatorPlatform,\n+): Promise<HTMLElement> {\n   const observer = renderEditorScreen(\n     { [Path]: DocumentJson.serialize(SampleDocument) },\n     { open: DialogChoice.chosen(Path), save: DialogChoice.Canceled },\n-    { platform },\n+    { navigatorPlatform },\n   );\n   await startOpen(observer);\n \n-  fireEvent.contextMenu(\n-    within(tree()).getByRole(\"button\", { name: \"home-title\" }),\n-    { clientX: 120, clientY: 80 },\n-  );\n+  rightClickInTree(\"home-title\");\n \n-  return within(contextMenu()).getByRole(\"menuitem\", { name: /^Copy/ });\n+  return menuRow(\"Copy\");\n }\n \n test(\"Windows で動いている画面でドキュメントを開くと、ツリーの行のメニューの Copy に Ctrl+C が併記される\", async () => {\n-  const copyRow = await copyRowOn(WindowsNavigator);\n+  const copyRow = await copyRowOn(WindowsNavigatorPlatform);\n \n   expect(copyRow.textContent).toContain(\"Ctrl+C\");\n });\n \n test(\"macOS で動いている画面でドキュメントを開くと、ツリーの行のメニューの Copy に ⌘C が併記される\", async () => {\n-  const copyRow = await copyRowOn(MacOsNavigator);\n+  const copyRow = await copyRowOn(MacOsNavigatorPlatform);\n \n   expect(copyRow.textContent).toContain(\"⌘C\");\n });",
+          "patchLines": 65,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -31,7 +31,7 @@ import {\n   type NavigatorPlatform,\n   OperatingSystem,\n } from \"@/libs/operating-system\";\n-import { MacOsNavigator } from \"@/libs/operating-system/fake\";\n+import { MacOsNavigatorPlatform } from \"@/libs/operating-system/fake\";\n import { EditorScreen } from \"../index\";\n \n /** 既に置いてあるファイル。 */\n@@ -50,7 +50,7 @@ export type ScreenPortOptions = Readonly<{\n   /** メニューの購読を張れないようにするか。 */\n   denyMenu?: boolean;\n   /** アプリが動いている webview の `navigator`。省くと macOS。 */\n-  platform?: NavigatorPlatform;\n+  navigatorPlatform?: NavigatorPlatform;\n }>;\n \n /** 画面と、その外側の口を動かす手段。 */\n@@ -96,7 +96,7 @@ export function renderEditorScreen(\n     <EditorScreen\n       clock={createClockFake().clock}\n       operatingSystem={OperatingSystem.fromNavigator(\n-        options.platform ?? MacOsNavigator,\n+        options.navigatorPlatform ?? MacOsNavigatorPlatform,\n       )}\n       ports={{\n         ipc: ipcFake.ipc,",
+          "patchLines": 27,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -19,7 +19,7 @@ import { createDocumentIpcFake } from \"@/libs/document-ipc/fake\";\n import { DocumentJson } from \"@/libs/document-json\";\n import { createFileDropFake, type FileDropFake } from \"@/libs/file-drop/fake\";\n import { OperatingSystem } from \"@/libs/operating-system\";\n-import { MacOsNavigator } from \"@/libs/operating-system/fake\";\n+import { MacOsNavigatorPlatform } from \"@/libs/operating-system/fake\";\n import { EditorScreen } from \"./index\";\n \n const SamplePath = filePath(\"/work/sample.dcmp\");\n@@ -96,8 +96,8 @@ const meta = {\n   args: {\n     clock: clock.clock,\n     ports: started.ports,\n-    // UI 案（docs/Design Composer.html）が描いているのは macOS の窓。\n-    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigator),\n+    // macOS を既定にする理由は docs/06-ui.md「コンテキストメニュー」\n+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),\n   },\n } satisfies Meta<typeof EditorScreen>;\n ",
+          "patchLines": 20,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -97,7 +97,7 @@ export function EditorScreen({\n }: Readonly<{\n   clock: Clock;\n   ports: DocumentSessionPorts;\n-  /** 編集画面の割り当ての綴りを選ぶのに使う、アプリが動いている OS。 */\n+  /** アプリが動いている OS。 */\n   operatingSystem: OperatingSystem;\n }>) {\n   const {",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 22,
+          "patch": "@@ -1,4 +1,4 @@\n-import { fireEvent, screen, within } from \"@testing-library/react\";\n+import { screen, within } from \"@testing-library/react\";\n import userEvent from \"@testing-library/user-event\";\n import { expect, test } from \"vitest\";\n import { rowNames } from \"@/components/__tests__/row-names\";\n@@ -8,7 +8,10 @@ import {\n   artboardHandle,\n   canvasSurface,\n } from \"@/features/editor/features/canvas/__tests__\";\n-import { MacOsNavigator, WindowsNavigator } from \"@/libs/operating-system/fake\";\n+import {\n+  MacOsNavigatorPlatform,\n+  WindowsNavigatorPlatform,\n+} from \"@/libs/operating-system/fake\";\n import {\n   breakFileExternally,\n   contextMenu,\n@@ -16,6 +19,7 @@ import {\n   menuRow,\n   renderOpenedDocument,\n   renderOpenedDocumentOn,\n+  rightClick,\n   selectArtboard,\n   selectInTree,\n   tree,\n@@ -33,19 +37,6 @@ import {\n  * `opened-document-editor.reposition` と同じものを 2 つ持つことになる。\n  */\n \n-/**\n- * キャンバスに描かれたものを右クリックする。\n- *\n- * @param target 押す要素\n- * @param at 押した窓の座標。省くと折り返しの起きない位置\n- */\n-function rightClick(\n-  target: Element,\n-  at: Readonly<{ x: number; y: number }> = { x: 120, y: 80 },\n-): void {\n-  fireEvent.contextMenu(target, { clientX: at.x, clientY: at.y });\n-}\n-\n test(\"キャンバスのノードを右クリックするとメニューが出る\", async () => {\n   await renderOpenedDocument();\n \n@@ -226,7 +217,7 @@ test(\"コピー済みで貼り先があるときは、空き領域のメニュ\n });\n \n test(\"macOS で動いているとき、行にはキーボードの割り当てが併記される\", async () => {\n-  await renderOpenedDocumentOn(MacOsNavigator);\n+  await renderOpenedDocumentOn(MacOsNavigatorPlatform);\n \n   rightClick(drawn(\"home-title\"));\n \n@@ -234,7 +225,7 @@ test(\"macOS で動いているとき、行にはキーボードの割り当て\n });\n \n test(\"macOS で動いているとき、複製の行には ⌘D が併記される\", async () => {\n-  await renderOpenedDocumentOn(MacOsNavigator);\n+  await renderOpenedDocumentOn(MacOsNavigatorPlatform);\n \n   rightClick(drawn(\"home-title\"));\n \n@@ -242,7 +233,7 @@ test(\"macOS で動いているとき、複製の行には ⌘D が併記され\n });\n \n test(\"Windows で動いているとき、Copy の行には Ctrl+C が併記される\", async () => {\n-  await renderOpenedDocumentOn(WindowsNavigator);\n+  await renderOpenedDocumentOn(WindowsNavigatorPlatform);\n \n   rightClick(drawn(\"home-title\"));\n \n@@ -250,7 +241,7 @@ test(\"Windows で動いているとき、Copy の行には Ctrl+C が併記さ\n });\n \n test(\"Windows で動いているとき、Copy の行に ⌘ は併記されない\", async () => {\n-  await renderOpenedDocumentOn(WindowsNavigator);\n+  await renderOpenedDocumentOn(WindowsNavigatorPlatform);\n \n   rightClick(drawn(\"home-title\"));\n \n@@ -258,12 +249,12 @@ test(\"Windows で動いているとき、Copy の行に ⌘ は併記されな\n });\n \n test(\"Windows で動いているときも、Delete の行の割り当ては Delete だけになる\", async () => {\n-  await renderOpenedDocumentOn(WindowsNavigator);\n+  await renderOpenedDocumentOn(WindowsNavigatorPlatform);\n \n   rightClick(drawn(\"home-title\"));\n \n-  // 行は操作の名前と割り当ての 2 つの欄を持つ。操作の名前も Delete なので、行全体の\n-  // 文字列では修飾が付いたかどうかを見分けられず、欄ごとに完全一致で比べる\n+  // 操作の名前も Delete なので、行全体の文字列では `Delete` の部分一致が必ず通り、修飾の\n+  // 有無を部分一致では見分けられない。名前と割り当ての欄ごとに完全一致で比べる\n   const columns = Array.from(\n     menuRow(\"Delete\").children,\n     (column) => column.textContent,",
+          "patchLines": 98,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.group.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 5,
+          "patch": "@@ -3,13 +3,17 @@ import userEvent from \"@testing-library/user-event\";\n import { expect, test } from \"vitest\";\n import { rowNames } from \"@/components/__tests__/row-names\";\n import { rightPaneHeading } from \"@/features/editor/__tests__/right-pane-heading\";\n-import { MacOsNavigator, WindowsNavigator } from \"@/libs/operating-system/fake\";\n+import {\n+  MacOsNavigatorPlatform,\n+  WindowsNavigatorPlatform,\n+} from \"@/libs/operating-system/fake\";\n import {\n   drawn,\n   menuRow,\n   renderOpenedDocument,\n   renderOpenedDocumentOn,\n   renderWithSameComponentInstancesSelected,\n+  rightClick,\n   selectInTree,\n   tree,\n } from \"./setup\";\n@@ -86,18 +90,18 @@ test(\"メニューの Ungroup を押すと、Box の子が親へ戻る\", async (\n });\n \n test(\"macOS で動いているとき、Group と Ungroup の行には UI 案の綴りの割り当てが併記される\", async () => {\n-  await renderOpenedDocumentOn(MacOsNavigator);\n+  await renderOpenedDocumentOn(MacOsNavigatorPlatform);\n \n-  fireEvent.contextMenu(drawn(\"home-title\"), { clientX: 120, clientY: 80 });\n+  rightClick(drawn(\"home-title\"));\n \n   expect(menuRow(\"Group\").textContent).toContain(\"⌘G\");\n   expect(menuRow(\"Ungroup\").textContent).toContain(\"Shift+⌘G\");\n });\n \n test(\"Windows で動いているとき、Ungroup の行には Ctrl+Shift+G が併記される\", async () => {\n-  await renderOpenedDocumentOn(WindowsNavigator);\n+  await renderOpenedDocumentOn(WindowsNavigatorPlatform);\n \n-  fireEvent.contextMenu(drawn(\"home-title\"), { clientX: 120, clientY: 80 });\n+  rightClick(drawn(\"home-title\"));\n \n   expect(menuRow(\"Ungroup\").textContent).toContain(\"Ctrl+Shift+G\");\n });",
+          "patchLines": 42,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -4,7 +4,7 @@ import { SampleDocument } from \"@/features/editor/__tests__/sample-document\";\n import { createClockFake } from \"@/libs/clock/fake\";\n import { createDocumentIpcFake } from \"@/libs/document-ipc/fake\";\n import { OperatingSystem } from \"@/libs/operating-system\";\n-import { MacOsNavigator } from \"@/libs/operating-system/fake\";\n+import { MacOsNavigatorPlatform } from \"@/libs/operating-system/fake\";\n import { OpenedDocumentEditor } from \"../index\";\n import { canvasPane, Path } from \"./setup\";\n \n@@ -16,7 +16,7 @@ test(\"開いているファイルを監視できないと、その失敗が画\n     <OpenedDocumentEditor\n       clock={createClockFake().clock}\n       ipc={fake.ipc}\n-      operatingSystem={OperatingSystem.fromNavigator(MacOsNavigator)}\n+      operatingSystem={OperatingSystem.fromNavigator(MacOsNavigatorPlatform)}\n       opened={{ path: Path, document: SampleDocument }}\n     />,\n   );\n@@ -32,7 +32,7 @@ test(\"監視できないファイルでも、開いているドキュメント\n     <OpenedDocumentEditor\n       clock={createClockFake().clock}\n       ipc={fake.ipc}\n-      operatingSystem={OperatingSystem.fromNavigator(MacOsNavigator)}\n+      operatingSystem={OperatingSystem.fromNavigator(MacOsNavigatorPlatform)}\n       opened={{ path: Path, document: SampleDocument }}\n     />,\n   );",
+          "patchLines": 27,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 15,
+          "patch": "@@ -10,6 +10,7 @@ import {\n   propertyPane,\n   renderOpenedDocument,\n   renderWithSameComponentInstancesSelected,\n+  rightClickInTree,\n   selectArtboard,\n   selectInTree,\n   tree,\n@@ -23,21 +24,6 @@ import {\n  * 成り立ち、happy-dom は `inert` をイベントに強制しない（表示確認で見る）。\n  */\n \n-/**\n- * ツリーの行を右クリックする。同じ名前はキャンバスにも出るのでツリーに絞る。\n- *\n- * @param name 押す行の名前\n- */\n-function rightClickInTree(\n-  name: string,\n-  at: Readonly<{ x: number; y: number }> = { x: 120, y: 80 },\n-): void {\n-  fireEvent.contextMenu(within(tree()).getByRole(\"button\", { name }), {\n-    clientX: at.x,\n-    clientY: at.y,\n-  });\n-}\n-\n /**\n  * `Artboards` の一覧の行を右クリックする。\n  *",
+          "patchLines": 30,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 22,
+          "patch": "@@ -25,7 +25,7 @@ import {\n   type NavigatorPlatform,\n   OperatingSystem,\n } from \"@/libs/operating-system\";\n-import { MacOsNavigator } from \"@/libs/operating-system/fake\";\n+import { MacOsNavigatorPlatform } from \"@/libs/operating-system/fake\";\n import { Option } from \"@/utils/Option\";\n import { OpenedDocumentEditor } from \"../index\";\n \n@@ -41,7 +41,7 @@ export type OpenedDocumentFakes = Readonly<{\n /** 編集画面を描くときに決めるもの。 */\n type OpenedDocumentSetting = Readonly<{\n   document: DesignDocument;\n-  platform: NavigatorPlatform;\n+  navigatorPlatform: NavigatorPlatform;\n }>;\n \n /**\n@@ -50,9 +50,9 @@ type OpenedDocumentSetting = Readonly<{\n  * @param setting 開くドキュメントと、アプリが動いている webview の `navigator`\n  * @returns 編集画面が外部世界とやり取りする口の代役一式\n  */\n-async function renderOpenedDocumentWith({\n+async function renderOpenedDocumentFrom({\n   document,\n-  platform,\n+  navigatorPlatform,\n }: OpenedDocumentSetting): Promise<OpenedDocumentFakes> {\n   const ipc = createDocumentIpcFake({\n     [Path]: DocumentJson.serialize(document),\n@@ -63,7 +63,7 @@ async function renderOpenedDocumentWith({\n     <OpenedDocumentEditor\n       clock={clock.clock}\n       ipc={ipc.ipc}\n-      operatingSystem={OperatingSystem.fromNavigator(platform)}\n+      operatingSystem={OperatingSystem.fromNavigator(navigatorPlatform)}\n       opened={{ path: Path, document }}\n     />,\n   );\n@@ -86,21 +86,25 @@ async function renderOpenedDocumentWith({\n export function renderOpenedDocumentWithClock(\n   document: DesignDocument = SampleDocument,\n ): Promise<OpenedDocumentFakes> {\n-  return renderOpenedDocumentWith({ document, platform: MacOsNavigator });\n+  return renderOpenedDocumentFrom({\n+    document,\n+    navigatorPlatform: MacOsNavigatorPlatform,\n+  });\n }\n \n /**\n  * サンプルのドキュメントを、指定した OS で動いていることにして描画する。\n  *\n- * @param platform アプリが動いている webview の `navigator`\n+ * @param navigatorPlatform アプリが動いている webview の `navigator`\n  */\n export async function renderOpenedDocumentOn(\n-  platform: NavigatorPlatform,\n+  navigatorPlatform: NavigatorPlatform,\n ): Promise<DocumentIpcFake> {\n-  const { ipc } = await renderOpenedDocumentWith({\n+  const { ipc } = await renderOpenedDocumentFrom({\n     document: SampleDocument,\n-    platform,\n+    navigatorPlatform,\n   });\n+\n   return ipc;\n }\n \n@@ -213,20 +217,13 @@ export function documentErrorList(): HTMLElement {\n   return screen.getByRole(\"alert\", { name: \"ドキュメントのエラー一覧\" });\n }\n \n+export {\n+  menuRow,\n+  rightClick,\n+  rightClickInTree,\n+} from \"@/features/editor/__tests__/editor-context-menu\";\n export { contextMenu };\n \n-/**\n- * コンテキストメニューの行。\n- *\n- * @param label 行の綴り。読み上げ名は綴りのうしろに割り当てが並ぶので前方一致で引く\n- * @returns その行のボタン\n- */\n-export function menuRow(label: string): HTMLElement {\n-  return within(contextMenu()).getByRole(\"menuitem\", {\n-    name: new RegExp(`^${label}`),\n-  });\n-}\n-\n /** 左ペイン。 */\n export function leftPane(): HTMLElement {\n   return screen.getByRole(\"complementary\", { name: \"左ペイン\" });",
+          "patchLines": 96,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 4,
+          "patch": "@@ -10,7 +10,10 @@ import { createClockFake } from \"@/libs/clock/fake\";\n import { createDocumentIpcFake } from \"@/libs/document-ipc/fake\";\n import { DocumentJson } from \"@/libs/document-json\";\n import { OperatingSystem } from \"@/libs/operating-system\";\n-import { MacOsNavigator, WindowsNavigator } from \"@/libs/operating-system/fake\";\n+import {\n+  MacOsNavigatorPlatform,\n+  WindowsNavigatorPlatform,\n+} from \"@/libs/operating-system/fake\";\n import { OpenedDocumentEditor } from \"./index\";\n \n const SamplePath = filePath(\"/work/sample.dcmp\");\n@@ -38,8 +41,8 @@ const meta = {\n   args: {\n     clock: clock.clock,\n     ipc: files.ipc,\n-    // UI 案（docs/Design Composer.html）が描いているのは macOS の窓。\n-    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigator),\n+    // macOS を既定にする理由は docs/06-ui.md「コンテキストメニュー」\n+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),\n     opened: {\n       path: SamplePath,\n       document: EditorState.document(SampleEditorState),\n@@ -83,11 +86,14 @@ async function openContextMenuOnTreeRow(): Promise<void> {\n     \"button\",\n     { name: \"home-title\" },\n   );\n+\n   const rect = row.getBoundingClientRect();\n+\n   fireEvent.contextMenu(row, {\n     clientX: rect.left + rect.width / 2,\n     clientY: rect.bottom,\n   });\n+\n   await waitFor(() => {\n     expect(\n       screen.getByRole(\"menu\", { name: \"コンテキストメニュー\" }),\n@@ -110,7 +116,9 @@ export const ContextMenuOnMacOs: Story = {\n  */\n export const ContextMenuOnWindows: Story = {\n   name: \"Windows でコンテキストメニューを開いた編集画面\",\n-  args: { operatingSystem: OperatingSystem.fromNavigator(WindowsNavigator) },\n+  args: {\n+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),\n+  },\n   play: openContextMenuOnTreeRow,\n };\n ",
+          "patchLines": 49,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -363,7 +363,7 @@ export function OpenedDocumentEditor({\n   clock: Clock;\n   ipc: DocumentIpc;\n   opened: OpenedDocument;\n-  /** コンテキストメニューの割り当ての綴りを選ぶのに使う、アプリが動いている OS。 */\n+  /** アプリが動いている OS。 */\n   operatingSystem: OperatingSystem;\n }>) {\n   return (",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -37,7 +37,8 @@ function commandSourceFailureLabel(source: CommandSource): string {\n /*\n  * 開始画面の 2 枚のカードの中身。ショートカットの割り当ての出どころは `src-tauri/src/menu.rs` の\n  * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。OS ごとの出し分けは\n- * #1253 まで行わず、⌘ 表記で固定している。\n+ * 行わず、⌘ 表記で固定している。\n+ * 子 feature からは親の `editor-context-menu` に非公開で置いた綴りの規則を使えないため（#1253）。\n  */\n \n /** 開くのカード（プライマリ）。 */",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/operating-system/__tests__/operating-system.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 4,
+          "patch": "@@ -1,21 +1,25 @@\n import { expect, test } from \"vitest\";\n-import { LinuxNavigator, MacOsNavigator, WindowsNavigator } from \"../fake\";\n+import {\n+  LinuxNavigatorPlatform,\n+  MacOsNavigatorPlatform,\n+  WindowsNavigatorPlatform,\n+} from \"../fake\";\n import { OperatingSystem, OperatingSystems } from \"../index\";\n \n test(\"macOS の webview が返す platform からは macOS と判定する\", () => {\n-  expect(OperatingSystem.fromNavigator(MacOsNavigator)).toBe(\n+  expect(OperatingSystem.fromNavigator(MacOsNavigatorPlatform)).toBe(\n     OperatingSystems.MacOs,\n   );\n });\n \n test(\"Windows の webview が返す platform からは macOS 以外と判定する\", () => {\n-  expect(OperatingSystem.fromNavigator(WindowsNavigator)).toBe(\n+  expect(OperatingSystem.fromNavigator(WindowsNavigatorPlatform)).toBe(\n     OperatingSystems.Other,\n   );\n });\n \n test(\"Linux の webview が返す platform からは macOS 以外と判定する\", () => {\n-  expect(OperatingSystem.fromNavigator(LinuxNavigator)).toBe(\n+  expect(OperatingSystem.fromNavigator(LinuxNavigatorPlatform)).toBe(\n     OperatingSystems.Other,\n   );\n });",
+          "patchLines": 30,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/operating-system/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 3,
+          "patch": "@@ -5,10 +5,16 @@ import type { NavigatorPlatform } from \"../index\";\n  */\n \n /** macOS の webview。 */\n-export const MacOsNavigator: NavigatorPlatform = { platform: \"MacIntel\" };\n+export const MacOsNavigatorPlatform: NavigatorPlatform = {\n+  platform: \"MacIntel\",\n+};\n \n /** Windows の webview。 */\n-export const WindowsNavigator: NavigatorPlatform = { platform: \"Win32\" };\n+export const WindowsNavigatorPlatform: NavigatorPlatform = {\n+  platform: \"Win32\",\n+};\n \n /** Linux の webview。 */\n-export const LinuxNavigator: NavigatorPlatform = { platform: \"Linux x86_64\" };\n+export const LinuxNavigatorPlatform: NavigatorPlatform = {\n+  platform: \"Linux x86_64\",\n+};",
+          "patchLines": 20,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/operating-system/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 3,
+          "patch": "@@ -26,11 +26,13 @@ export const OperatingSystem = {\n    * `navigator.platform` は lib.dom で `@deprecated` だが使う。代わりの `userAgentData` は\n    * lib.dom に型が無く、WebKit 系の webview（macOS / Linux）が持っていない。\n    *\n-   * @param source 判定に使う `platform` を持つもの。省くと実物の `navigator`\n+   * @param navigatorPlatform 判定に使う `platform` を持つもの。省くと実物の `navigator`\n    * @returns `platform` が `Mac` で始まれば `MacOs`、それ以外は `Other`\n    */\n-  fromNavigator(source: NavigatorPlatform = navigator): OperatingSystem {\n-    return source.platform.startsWith(\"Mac\")\n+  fromNavigator(\n+    navigatorPlatform: NavigatorPlatform = navigator,\n+  ): OperatingSystem {\n+    return navigatorPlatform.platform.startsWith(\"Mac\")\n       ? OperatingSystems.MacOs\n       : OperatingSystems.Other;\n   },",
+          "patchLines": 17,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "ff25752f1881cd400eaabe26ca09426b01bb84ab",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T12:09:18Z",
+      "subject": "🧪 [Tests]: #480 macOS 側の綴りと実物の navigator を読む入口をテストで守る",
+      "body": "- macOS の Copy の行の割り当てを、部分一致ではなく欄ごとの完全一致\n  ([\"Copy\", \"⌘C\"]) で見る\n- Delete の行の割り当てが Delete だけになることを、Windows に加えて\n  macOS でも test.each で見る\n- 引数を省いた OperatingSystem.fromNavigator() が実物の navigator を\n  読むことを、navigator.platform を差し替えて見るテストを足す\n- App.tsx に、判定が併記まで届くことはテストで留めず実機で確かめる旨を\n  書く\n\n背景:\ntest-reviewer が実装を壊して確かめたところ、3 つの壊し方が全テストを\n通り抜けた。macOS の Shift なしの綴りに Shift+ を足す (toContain(\"⌘C\")\nは \"Shift+⌘C\" でも通る)、修飾なしのキーを macOS だけ ⌘ 付きにする、\nfromNavigator の既定引数を固定値に変える、の 3 つ。\n\n採用理由:\nWindows 側の Delete テストと同じく、名前と割り当ての欄ごとに完全一致で\n比べる形に揃えた。navigator.platform はプロセス外の境界なので、vi.mock\nを使わずにテストの中で差し替え、afterEach で happy-dom の既定値へ戻す。\n\n影響とトレードオフ:\nApp.tsx の判定の 1 行はモジュールの初期化で 1 度だけ走り、App のテストは\n開始画面から先へ進めないので、テストを置かず理由のコメントで残した。\nテストが見ていない行 (Redo / Undo / Paste など) の割り当ては、差分の前と\n同じく守られていない (#1254 で導出に寄せて解消する)。\n\n代替案:\n- App のテストで navigator を差し替えて綴りまで見る: 開く導線が Tauri\n  のダイアログを使うので、編集画面まで進めない\n\n参考:\n- Issue #480 のコメント (test-reviewer の指摘と採否)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RLErNwf9vJcpBZ4Ak",
+      "files": [
+        {
+          "path": "src/app/App.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -16,6 +16,8 @@ import { TauriIpc } from \"@/libs/tauri-ipc\";\n  * ドロップの購読がその都度張り直される（どれも口の同一性で購読の続きを判断している）。\n  * 時計も同じで、参照が変わると経過時間の購読が張り直される。\n  * 動いている OS も同じ場所で 1 度だけ判定する（起動中に変わらないので読み直す意味が無い）。\n+ * その判定が割り当ての併記まで届くことはテストで留めず実機で確かめる（開く導線が Tauri の\n+ * ダイアログを使うので、App のテストは開始画面から先へ進めない）。\n  *\n  * Tauri の口（`TauriIpc`）を 1 つにまとめるのは、コマンドもイベントも同じ webview へ\n  * 向くため。分けて作っても届く先は同じで、口の数だけ同一性の管理が増える。",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 9,
+          "patch": "@@ -37,6 +37,15 @@ import {\n  * `opened-document-editor.reposition` と同じものを 2 つ持つことになる。\n  */\n \n+/**\n+ * メニューの行を、操作の名前と割り当ての欄ごとの文字列にする。\n+ *\n+ * @param name 行の操作の名前\n+ */\n+function menuRowColumns(name: string): ReadonlyArray<string | null> {\n+  return Array.from(menuRow(name).children, (column) => column.textContent);\n+}\n+\n test(\"キャンバスのノードを右クリックするとメニューが出る\", async () => {\n   await renderOpenedDocument();\n \n@@ -216,12 +225,13 @@ test(\"コピー済みで貼り先があるときは、空き領域のメニュ\n   expect(menuRow(\"Paste\").hasAttribute(\"disabled\")).toBe(false);\n });\n \n-test(\"macOS で動いているとき、行にはキーボードの割り当てが併記される\", async () => {\n+test(\"macOS で動いているとき、Copy の行の割り当ては ⌘C だけになる\", async () => {\n   await renderOpenedDocumentOn(MacOsNavigatorPlatform);\n \n   rightClick(drawn(\"home-title\"));\n \n-  expect(menuRow(\"Copy\").textContent).toContain(\"⌘C\");\n+  // `Shift+⌘C` も `⌘C` を含むので、部分一致では Shift が付いたことを見分けられない\n+  expect(menuRowColumns(\"Copy\")).toEqual([\"Copy\", \"⌘C\"]);\n });\n \n test(\"macOS で動いているとき、複製の行には ⌘D が併記される\", async () => {\n@@ -248,18 +258,17 @@ test(\"Windows で動いているとき、Copy の行に ⌘ は併記されな\n   expect(menuRow(\"Copy\").textContent).not.toContain(\"⌘\");\n });\n \n-test(\"Windows で動いているときも、Delete の行の割り当ては Delete だけになる\", async () => {\n-  await renderOpenedDocumentOn(WindowsNavigatorPlatform);\n+test.each([\n+  [\"macOS\", MacOsNavigatorPlatform],\n+  [\"Windows\", WindowsNavigatorPlatform],\n+] as const)(\"%s で動いているときも、Delete の行の割り当ては Delete だけになる\", async (_os, navigatorPlatform) => {\n+  await renderOpenedDocumentOn(navigatorPlatform);\n \n   rightClick(drawn(\"home-title\"));\n \n   // 操作の名前も Delete なので、行全体の文字列では `Delete` の部分一致が必ず通り、修飾の\n   // 有無を部分一致では見分けられない。名前と割り当ての欄ごとに完全一致で比べる\n-  const columns = Array.from(\n-    menuRow(\"Delete\").children,\n-    (column) => column.textContent,\n-  );\n-  expect(columns).toEqual([\"Delete\", \"Delete\"]);\n+  expect(menuRowColumns(\"Delete\")).toEqual([\"Delete\", \"Delete\"]);\n });\n \n test(\"別の場所を右クリックすると、メニューがそこへ開き直す\", async () => {",
+          "patchLines": 57,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/operating-system/__tests__/operating-system.real-navigator.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 31,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,31 @@\n+import { afterEach, expect, test } from \"vitest\";\n+import { MacOsNavigatorPlatform, WindowsNavigatorPlatform } from \"../fake\";\n+import { OperatingSystem, OperatingSystems } from \"../index\";\n+\n+/*\n+ * 引数を省いたときに実物の `navigator` を読むことを確かめる。`navigator` はプロセス外の\n+ * 境界なので、`platform` だけをテストの中で差し替え、終わったら外して元の値へ戻す。\n+ */\n+\n+function replaceNavigatorPlatform(platform: string): void {\n+  Object.defineProperty(navigator, \"platform\", {\n+    value: platform,\n+    configurable: true,\n+  });\n+}\n+\n+afterEach(() => {\n+  Reflect.deleteProperty(navigator, \"platform\");\n+});\n+\n+test(\"引数を省くと、実物の navigator が macOS の platform を返すとき macOS と判定する\", () => {\n+  replaceNavigatorPlatform(MacOsNavigatorPlatform.platform);\n+\n+  expect(OperatingSystem.fromNavigator()).toBe(OperatingSystems.MacOs);\n+});\n+\n+test(\"引数を省くと、実物の navigator が Windows の platform を返すとき macOS 以外と判定する\", () => {\n+  replaceNavigatorPlatform(WindowsNavigatorPlatform.platform);\n+\n+  expect(OperatingSystem.fromNavigator()).toBe(OperatingSystems.Other);\n+});",
+          "patchLines": 32,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/app/App.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": "docs/06-ui.md",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/features/editor/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/app-state-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/app-window/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/clock/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/document-dialog/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/file-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/tauri-dialog/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/__tests__/App.normal.test.tsx",
+      "to": "src/app/App.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/main.tsx",
+      "to": "src/app/App.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/editor-context-menu.ts",
+      "to": "src/components/__tests__/context-menu.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/editor-context-menu.ts",
+      "to": "src/features/editor/__tests__/pane-regions.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/components/context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/components/editor-provider/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/domains/edit-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-edit-actions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-node-actions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/types/OpenedContextMenu.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/features/editor/__tests__/editor-context-menu.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.shortcut.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/components/__tests__/row-drag.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/pane-regions.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/components/editor-screen/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/__tests__/document-change.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-menu/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-state-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-window/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/clock/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/file-drop/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/features/editor/__stories__/sample-editor-state.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/features/editor/components/editor-screen/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/features/editor/features/document-start/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/app-menu/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/app-state-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/app-state-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/app-window/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/clock/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/file-drop/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/domains/session/opened-documents/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/features/editor/components/document-error-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/features/editor/components/opened-document-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/features/editor/features/document-start/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/features/editor/hooks/use-activate-tab-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/libs/clock/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard-reposition.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.canvas-dock.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.clipboard.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.componentize.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+      "to": "src/components/__tests__/row-names.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+      "to": "src/features/editor/__tests__/right-pane-heading.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.duplicate.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.edit-error.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.file-invalid.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.frozen.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.group.test.tsx",
+      "to": "src/components/__tests__/row-names.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.group.test.tsx",
+      "to": "src/features/editor/__tests__/right-pane-heading.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.group.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.group.test.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.history.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.insert.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.last-valid-render.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.left-pane.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.multi-selection.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.normal.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.open-invalid.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.prop-edit.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.remove.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.rename.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reorder.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection-distance.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+      "to": "src/libs/clock/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.text-edit.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-canvas.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.top-bar.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+      "to": "src/components/__tests__/row-names.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+      "to": "src/features/editor/__tests__/right-pane-heading.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.tree-context-menu.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.zoom-fit.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/components/__tests__/context-menu.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/editor-context-menu.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/pane-regions.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/features/editor/components/opened-document-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/features/editor/features/sidebar/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/__tests__/document-change.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/clock/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/components/__stories__/screen-height-shell.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/features/editor/__stories__/sample-editor-state.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/features/editor/components/opened-document-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/clock/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/session/document-save-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/session/file-validity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/session/opened-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/session/selection-dig/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/components/canvas-dock/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/components/editor-context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/components/editor-layout/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/components/editor-left-pane/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/components/editor-provider/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/components/editor-right-pane/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/components/editor-top-bar/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/domains/edit-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/features/assets/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/features/canvas/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/features/document-sync/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/features/sidebar/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/hooks/use-artboard-actions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/hooks/use-edit-shortcuts/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/hooks/use-fit-document-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/hooks/use-fit-selection-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/hooks/use-node-actions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/hooks/use-token-actions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/types/OpenedContextMenu.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/libs/clock/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/components/action-card/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/features/editor/features/document-start/components/document-open-failure/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/index.ts",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/index.ts",
+      "to": "src/features/editor/components/editor-screen/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/operating-system/__tests__/operating-system.normal.test.ts",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/operating-system/__tests__/operating-system.normal.test.ts",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/operating-system/__tests__/operating-system.real-navigator.test.ts",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/operating-system/__tests__/operating-system.real-navigator.test.ts",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/operating-system/fake/index.ts",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/operating-system/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "added"
+    }
+  ]
+}
