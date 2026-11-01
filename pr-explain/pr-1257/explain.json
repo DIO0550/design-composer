@@ -1,0 +1,467 @@
+{
+  "version": 1,
+  "pr": 1257,
+  "sha": "76feb514963e6bc0bee7ce69028baf337b33e575",
+  "issue": 550,
+  "overview": {
+    "title": "「1 件目は別のまとまり、以降は続き」の ref を汎用フックへ寄せる",
+    "lead": "3 箇所に同じ形で書かれていた `useRef` の読み書きと判断を `src/hooks/use-first-then-rest` に 1 つにまとめた。undo の粒度は変えていない。",
+    "before": [
+      {
+        "text": "`LiteralInput`・`use-node-resize`・`ColorPickerField` がそれぞれ自前の ref で `hasXxx.current ? Continued : Separate` を書いていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "3 箇所とも `useFirstThenRest(EditContinuityRun)` を呼び、区切りで `restart()`、送るときに `next()` を使う",
+        "message": "pf-next"
+      },
+      {
+        "text": "`{ first: Separate, rest: Continued }` の対応は `EditContinuityRun` の 1 箇所で決まる",
+        "message": "pf-run"
+      },
+      {
+        "text": "プロパティ欄はキーボードだけで戻っても区切られ、途中のクリックでは区切られないことをテストで固定した"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "汎用フックが受け手を見ない判断",
+        "text": "`next()` は呼んだ時点で 1 件目を済んだとみなす。上流で 1 件目が落ちると 2 件目が続きとして届く帰結は、落ちうる 2 箇所のコメントに残した",
+        "go": {
+          "kind": "file",
+          "path": "src/hooks/use-first-then-rest/index.ts"
+        }
+      },
+      {
+        "title": "続き方の並びの置き場所",
+        "text": "`EditContinuityRun` を `domains/session` に置いた。`EditContinuity` の doc の「語彙だけを持つ」と矛盾しないかを見てほしい",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/session/edit-continuity/index.ts"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "hooks",
+      "role": "ドメインを知らない汎用フック(1 件目と残りを返す並び)を新設"
+    },
+    {
+      "layer": "domains / session",
+      "role": "続き方の並び(頭は別のまとまり、残りは続き)の対応を 1 箇所で持つ"
+    },
+    {
+      "layer": "features / editor/features/inspector",
+      "role": "プロパティ欄が並びを使い、フォーカスで始め直す"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "リサイズが並びを使い、掴むたびに始め直す"
+    },
+    {
+      "layer": "features / editor/features/tokens",
+      "role": "カラーピッカーが並びを使い、開く・離れるで始め直す"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/hooks/use-first-then-rest/index.ts",
+      "name": "1 件目と残りの並び",
+      "role": "始め直してから 1 回目は first、以降は rest を返す",
+      "change": "新規"
+    },
+    {
+      "path": "src/domains/session/edit-continuity/index.ts",
+      "name": "編集の続き方",
+      "role": "続き方の語彙と、続き方の並び",
+      "change": "続き方の並びを追加"
+    },
+    {
+      "path": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "name": "プロパティ欄",
+      "role": "値を打ち込む欄",
+      "change": "ref を並びに置き換え"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "name": "リサイズ",
+      "role": "ハンドル・帯でノードの大きさを変える",
+      "change": "ref を並びに置き換え"
+    },
+    {
+      "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "name": "トークンの値の欄",
+      "role": "カラーピッカーで色を選ぶ",
+      "change": "ref を並びに置き換え"
+    }
+  ],
+  "messages": [
+    {
+      "id": "pf-restart",
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "kind": "cmd",
+      "name": "始め直す(欄にフォーカスしたとき)",
+      "code": "continuitySequence.restart()",
+      "via": "call",
+      "status": "added"
+    },
+    {
+      "id": "pf-next",
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "kind": "qry",
+      "name": "次の続き方を問う",
+      "code": "continuitySequence.next()",
+      "via": "call",
+      "returns": "`EditContinuity`",
+      "status": "added"
+    },
+    {
+      "id": "pf-run",
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "kind": "qry",
+      "name": "続き方の並びを引く",
+      "code": "useFirstThenRest(EditContinuityRun)",
+      "via": "call",
+      "status": "added"
+    },
+    {
+      "id": "nr-restart",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "kind": "cmd",
+      "name": "始め直す(掴んだとき)",
+      "code": "continuitySequence.restart()",
+      "via": "call",
+      "status": "added"
+    },
+    {
+      "id": "nr-next",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "kind": "qry",
+      "name": "次の続き方を問う",
+      "code": "continuitySequence.next()",
+      "via": "call",
+      "returns": "`EditContinuity`",
+      "status": "added"
+    },
+    {
+      "id": "nr-run",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "kind": "qry",
+      "name": "続き方の並びを引く",
+      "code": "useFirstThenRest(EditContinuityRun)",
+      "via": "call",
+      "status": "added"
+    },
+    {
+      "id": "vf-restart",
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "kind": "cmd",
+      "name": "始め直す(ピッカーを開いた・離れたとき)",
+      "code": "continuitySequence.restart()",
+      "via": "call",
+      "status": "added"
+    },
+    {
+      "id": "vf-next",
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "kind": "qry",
+      "name": "次の続き方を問う",
+      "code": "continuitySequence.next()",
+      "via": "call",
+      "returns": "`EditContinuity`",
+      "status": "added"
+    },
+    {
+      "id": "vf-run",
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "kind": "qry",
+      "name": "続き方の並びを引く",
+      "code": "useFirstThenRest(EditContinuityRun)",
+      "via": "call",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "type-field",
+      "label": "プロパティ欄に打ち込む",
+      "steps": [
+        "pf-run",
+        "pf-restart",
+        "pf-next"
+      ]
+    },
+    {
+      "id": "drag-resize",
+      "label": "掴んでリサイズする",
+      "steps": [
+        "nr-run",
+        "nr-restart",
+        "nr-next"
+      ]
+    },
+    {
+      "id": "pick-color",
+      "label": "ピッカーで色を選ぶ",
+      "steps": [
+        "vf-run",
+        "vf-restart",
+        "vf-next"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "4f8d990c1c21c5955db772ae3134195dc0517e68",
+      "phase": "core",
+      "role": "汎用フックを足す",
+      "why": "3 箇所を置き換える前に、畳む先(domains を import しない `src/hooks`)を作る",
+      "review": [
+        "`<T>` 版にした理由(呼び出し側が型を決め、実装は中身を見ない)が規約の型引数の条件に合っているか"
+      ]
+    },
+    {
+      "sha": "d3a4756d2c7e26d65176a6ef1c620123effbb67c",
+      "phase": "core",
+      "role": "フックのテスト",
+      "why": "描き直しを挟む / 挟まないを分け、`let` 実装と `useState` 実装をそれぞれ落とせるようにした",
+      "review": [
+        "`act` を使わずに直接呼んでいてよいか(ref の書き換えだけで state は更新しない)"
+      ]
+    },
+    {
+      "sha": "33f3ab6d76dd2d5dbbe33bf491dedea9437da80f",
+      "phase": "core",
+      "role": "プロパティ欄を置き換える",
+      "why": "畳む先が無いという旧コメントは事実でなくなったので消し、1 件目が落ちたときの帰結だけを残した",
+      "flows": [
+        "type-field"
+      ],
+      "review": [
+        "`onFocus` に `restart` を直接渡しても引数は無視されるだけか"
+      ]
+    },
+    {
+      "sha": "13fb521afae5e86371f11fe3637d99895aa0ee56",
+      "phase": "core",
+      "role": "リサイズを置き換える",
+      "why": "`next()` は早期 return の後で呼び、反映しなかった移動で 1 件目を使わない",
+      "flows": [
+        "drag-resize"
+      ],
+      "review": [
+        "`next()` の呼び出し位置が置き換え前と同じ順か"
+      ]
+    },
+    {
+      "sha": "e319e77f03f2a2629d1e9fb275f79270c170f80a",
+      "phase": "core",
+      "role": "カラーピッカーを置き換える",
+      "why": "前提の文を消すと「none に届かない」が何の話か読めなくなるので、主語を補って書き直した",
+      "flows": [
+        "pick-color"
+      ]
+    },
+    {
+      "sha": "973b5496f85ac749df7a769706a5627192ac5190",
+      "phase": "revise",
+      "role": "ref 名と doc の語彙を揃える",
+      "why": "`restart()` で `hasStarted` が false になる逆向きの名前を、実体の `hasReturnedFirst` に直した"
+    },
+    {
+      "sha": "8afa8d88570441bca9a60964aaf662795b4b030b",
+      "phase": "revise",
+      "role": "続き方の並びを 1 箇所で決める",
+      "why": "3 箇所に同じ `{ first, rest }` があり、取り違えても型エラーにならなかった。入れ替えると既存テスト 9 件が落ちることを実測した",
+      "review": [
+        "`EditContinuities` に入れず別の export にした理由(`ValueOf` の union が壊れる)"
+      ]
+    },
+    {
+      "sha": "76feb514963e6bc0bee7ce69028baf337b33e575",
+      "phase": "hard",
+      "role": "フォーカスで始め直すことを固定",
+      "why": "`onFocus` を `onClick` にずらしても既存テストが通っていた(`user.type` がクリックを合成する)",
+      "flows": [
+        "type-field"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "hook",
+      "label": "並びのフック",
+      "file": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts"
+    },
+    {
+      "id": "panel",
+      "label": "プロパティ欄の続き方",
+      "file": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.edit-continuity.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "t1",
+      "suite": "hook",
+      "name": "初めて呼ぶと 1 件目の値が返る",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "始め直していなくても最初は別のまとまりになる",
+      "given": "並びを用意した直後",
+      "when": "`next()` を呼ぶ",
+      "then": "`first` が返る",
+      "commit": "d3a4756d2c7e26d65176a6ef1c620123effbb67c",
+      "excerpt": {
+        "path": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts",
+        "start": 9,
+        "end": 15,
+        "text": "test(\"初めて呼ぶと 1 件目の値が返る\", () => {\n  const { result } = setup();\n\n  const value = result.current.next();\n\n  expect(value).toBe(\"head\");\n});"
+      },
+      "targets": [
+        "src/hooks/use-first-then-rest/index.ts"
+      ]
+    },
+    {
+      "id": "t2",
+      "suite": "hook",
+      "name": "描き直しを挟んで続けて呼んでも、2 回目からは 2 件目以降の値が返る",
+      "techniques": [
+        "state"
+      ],
+      "why": "打ち込みのたびの再レンダーで並びの位置を失わない(ローカル変数の実装を落とす)",
+      "given": "並びを用意した",
+      "when": "`next()` と描き直しを交互に 3 回",
+      "then": "`[first, rest, rest]`",
+      "commit": "d3a4756d2c7e26d65176a6ef1c620123effbb67c",
+      "excerpt": {
+        "path": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts",
+        "start": 17,
+        "end": 27,
+        "text": "test(\"描き直しを挟んで続けて呼んでも、2 回目からは 2 件目以降の値が返る\", () => {\n  const { result, rerender } = setup();\n\n  const first = result.current.next();\n  rerender();\n  const second = result.current.next();\n  rerender();\n  const third = result.current.next();\n\n  expect([first, second, third]).toEqual([\"head\", \"tail\", \"tail\"]);\n});"
+      },
+      "targets": [
+        "src/hooks/use-first-then-rest/index.ts"
+      ]
+    },
+    {
+      "id": "t3",
+      "suite": "hook",
+      "name": "描き直しを待たずに続けて呼んでも、2 回目は 2 件目以降の値が返る",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "pointermove が同期フラッシュされない経路でも undo が割れない(`useState` 実装を落とす)",
+      "given": "並びを用意した",
+      "when": "描き直しを挟まずに `next()` を 2 回",
+      "then": "`[first, rest]`",
+      "commit": "d3a4756d2c7e26d65176a6ef1c620123effbb67c",
+      "excerpt": {
+        "path": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts",
+        "start": 29,
+        "end": 36,
+        "text": "test(\"描き直しを待たずに続けて呼んでも、2 回目は 2 件目以降の値が返る\", () => {\n  const { result } = setup();\n\n  const sequence = result.current;\n  const values = [sequence.next(), sequence.next()];\n\n  expect(values).toEqual([\"head\", \"tail\"]);\n});"
+      },
+      "targets": [
+        "src/hooks/use-first-then-rest/index.ts"
+      ],
+      "covers": [
+        "nr-next"
+      ]
+    },
+    {
+      "id": "t4",
+      "suite": "hook",
+      "name": "1 回呼んで 2 件目以降の値になってから区切ると、次はまた 1 件目の値が返る",
+      "techniques": [
+        "state"
+      ],
+      "why": "始め直すと新しいまとまりになる(区切る前に rest にしておかないと何もしない実装でも通る)",
+      "given": "`next()` を 2 回呼んだ",
+      "when": "`restart()` してから `next()`",
+      "then": "`[first, rest, first]`",
+      "commit": "d3a4756d2c7e26d65176a6ef1c620123effbb67c",
+      "excerpt": {
+        "path": "src/hooks/use-first-then-rest/__tests__/use-first-then-rest.normal.test.ts",
+        "start": 38,
+        "end": 47,
+        "text": "test(\"1 回呼んで 2 件目以降の値になってから区切ると、次はまた 1 件目の値が返る\", () => {\n  const { result } = setup();\n\n  const first = result.current.next();\n  const second = result.current.next();\n  result.current.restart();\n  const afterRestart = result.current.next();\n\n  expect([first, second, afterRestart]).toEqual([\"head\", \"tail\", \"head\"]);\n});"
+      },
+      "targets": [
+        "src/hooks/use-first-then-rest/index.ts"
+      ]
+    },
+    {
+      "id": "t5",
+      "suite": "panel",
+      "name": "キーボードだけで同じ欄へ戻って打つと、そこからまた別のまとまりとして届く",
+      "techniques": [
+        "regression"
+      ],
+      "why": "始め直しがフォーカスで起きる(クリックではない)",
+      "given": "欄に 2 文字打った",
+      "when": "Tab で離れ、Shift+Tab で戻って打つ",
+      "then": "`[Separate, Continued, Separate]`",
+      "commit": "76feb514963e6bc0bee7ce69028baf337b33e575",
+      "targets": [
+        "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx"
+      ],
+      "covers": [
+        "pf-restart"
+      ]
+    },
+    {
+      "id": "t6",
+      "suite": "panel",
+      "name": "打っている途中で同じ欄をクリックしても、続けて打った編集は同じまとまりの続きとして届く",
+      "techniques": [
+        "regression"
+      ],
+      "why": "途中のクリックでまとまりが割れない",
+      "given": "欄に 2 文字打った",
+      "when": "同じ欄をクリックして続けて打つ",
+      "then": "`[Separate, Continued, Continued]`",
+      "commit": "76feb514963e6bc0bee7ce69028baf337b33e575",
+      "targets": [
+        "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx"
+      ],
+      "covers": [
+        "pf-next"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "取り消しの単位は変わらない",
+    "lead": "欄への打ち込み・リサイズ・色選びで、取り消し 1 回で戻る範囲はこれまでどおり。内部の書き方をそろえただけで、使う人から見える変化は無い。",
+    "kept": [
+      {
+        "text": "1 つの欄へフォーカスしてから離れるまでの打ち込みは、取り消し 1 回で戻る",
+        "tests": [
+          "t5",
+          "t6"
+        ]
+      },
+      {
+        "text": "掴んでから離すまでのリサイズは、取り消し 1 回で戻る",
+        "tests": [
+          "t3"
+        ]
+      },
+      {
+        "text": "ピッカーを開いてから閉じるまでの色選びは、取り消し 1 回で戻る"
+      }
+    ]
+  }
+}
