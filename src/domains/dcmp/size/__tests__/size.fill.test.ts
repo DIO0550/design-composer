@@ -74,3 +74,31 @@ test("fill の軸が無ければ、fill を写す編集は空", () => {
     Size.collectFillPropEdits({ widthMode: "fixed", width: 120, minWidth: 40 }),
   ).toEqual([]);
 });
+
+test("引き伸ばされている軸のモードを持たない Text を含む並びは、その軸の幅を fill にする編集になる", () => {
+  expect(
+    Size.collectStretchedFillModePropEdits(
+      [PrimitiveTypes.Box, PrimitiveTypes.Text],
+      "width",
+    ),
+  ).toEqual([PropEdit.set(["widthMode"], "fill")]);
+});
+
+test("引き伸ばされている軸が高さなら、高さのモードを fill にする編集になる", () => {
+  expect(
+    Size.collectStretchedFillModePropEdits([PrimitiveTypes.Text], "height"),
+  ).toEqual([PropEdit.set(["heightMode"], "fill")]);
+});
+
+test("全員がその軸のモードを持つ型なら、引き伸ばしを写す編集は空", () => {
+  expect(
+    Size.collectStretchedFillModePropEdits(
+      [PrimitiveTypes.Box, PrimitiveTypes.Ellipse],
+      "width",
+    ),
+  ).toEqual([]);
+});
+
+test("空の並びなら、引き伸ばしを写す編集は空", () => {
+  expect(Size.collectStretchedFillModePropEdits([], "width")).toEqual([]);
+});
