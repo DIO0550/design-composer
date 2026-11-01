@@ -157,3 +157,27 @@ test("読み捨てる prop でも、artboard の props に数値でない回転�
     }),
   ]);
 });
+
+test("読み捨てる prop でも、artboard の props に枠外のロックを書くと値域違反のエラーになる", () => {
+  const errors = collectSingleArtboardErrors({ locking: "bogus" });
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "enum-violation",
+      nodeName: "screen",
+      prop: "locking",
+    }),
+  ]);
+});
+
+test("読み捨てる prop でも、artboard の props に数値でない最小幅を書くと型の不一致のエラーになる", () => {
+  const errors = collectSingleArtboardErrors({ minWidth: "abc" });
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "literal-type-mismatch",
+      nodeName: "screen",
+      prop: "minWidth",
+    }),
+  ]);
+});
