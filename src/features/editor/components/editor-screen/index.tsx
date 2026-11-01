@@ -20,6 +20,7 @@ import {
 } from "@/hooks/use-key-shortcut";
 import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
+import type { OperatingSystem } from "@/libs/operating-system";
 import { Option } from "@/utils/Option";
 
 /**
@@ -39,10 +40,12 @@ function OpenedDocumentEditors({
   opened,
   clock,
   ipc,
+  operatingSystem,
 }: Readonly<{
   opened: OpenedDocuments;
   clock: Clock;
   ipc: DocumentIpc;
+  operatingSystem: OperatingSystem;
 }>): ReactElement {
   const activePath = OpenedDocuments.activePath(opened);
 
@@ -67,7 +70,12 @@ function OpenedDocumentEditors({
                   : KeyShortcutScopes.Suspended
               }
             >
-              <OpenedDocumentEditor clock={clock} ipc={ipc} opened={document} />
+              <OpenedDocumentEditor
+                clock={clock}
+                ipc={ipc}
+                opened={document}
+                operatingSystem={operatingSystem}
+              />
             </KeyShortcutScopeProvider>
           </div>
         );
@@ -85,7 +93,13 @@ function OpenedDocumentEditors({
 export function EditorScreen({
   clock,
   ports,
-}: Readonly<{ clock: Clock; ports: DocumentSessionPorts }>) {
+  operatingSystem,
+}: Readonly<{
+  clock: Clock;
+  ports: DocumentSessionPorts;
+  /** 編集画面の割り当ての綴りを選ぶのに使う、アプリが動いている OS。 */
+  operatingSystem: OperatingSystem;
+}>) {
   const {
     session,
     recentPaths,
@@ -145,6 +159,7 @@ export function EditorScreen({
         opened={session.documents.value}
         clock={clock}
         ipc={ports.ipc}
+        operatingSystem={operatingSystem}
       />
     </div>
   );

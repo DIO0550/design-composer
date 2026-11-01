@@ -18,6 +18,8 @@ import {
 import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { createFileDropFake, type FileDropFake } from "@/libs/file-drop/fake";
+import { OperatingSystem } from "@/libs/operating-system";
+import { MacOsNavigator } from "@/libs/operating-system/fake";
 import { EditorScreen } from "./index";
 
 const SamplePath = filePath("/work/sample.dcmp");
@@ -91,7 +93,12 @@ const meta = {
   title: "features/editor/EditorScreen",
   component: EditorScreen,
   parameters: { layout: "fullscreen" },
-  args: { clock: clock.clock, ports: started.ports },
+  args: {
+    clock: clock.clock,
+    ports: started.ports,
+    // UI 案（docs/Design Composer.html）が描いているのは macOS の窓。
+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigator),
+  },
 } satisfies Meta<typeof EditorScreen>;
 
 export default meta;

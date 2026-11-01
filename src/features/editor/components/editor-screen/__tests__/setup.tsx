@@ -27,6 +27,11 @@ import {
 } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { createFileDropFake } from "@/libs/file-drop/fake";
+import {
+  type NavigatorPlatform,
+  OperatingSystem,
+} from "@/libs/operating-system";
+import { MacOsNavigator } from "@/libs/operating-system/fake";
 import { EditorScreen } from "../index";
 
 /** 既に置いてあるファイル。 */
@@ -44,6 +49,8 @@ export type ScreenPortOptions = Readonly<{
   denyAppStateLoad?: boolean;
   /** メニューの購読を張れないようにするか。 */
   denyMenu?: boolean;
+  /** アプリが動いている webview の `navigator`。省くと macOS。 */
+  platform?: NavigatorPlatform;
 }>;
 
 /** 画面と、その外側の口を動かす手段。 */
@@ -88,6 +95,9 @@ export function renderEditorScreen(
   render(
     <EditorScreen
       clock={createClockFake().clock}
+      operatingSystem={OperatingSystem.fromNavigator(
+        options.platform ?? MacOsNavigator,
+      )}
       ports={{
         ipc: ipcFake.ipc,
         dialog: dialogFake.dialog,

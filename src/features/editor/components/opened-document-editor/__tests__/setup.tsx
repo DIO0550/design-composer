@@ -21,6 +21,11 @@ import {
   type DocumentIpcFake,
 } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
+import {
+  type NavigatorPlatform,
+  OperatingSystem,
+} from "@/libs/operating-system";
+import { MacOsNavigator } from "@/libs/operating-system/fake";
 import { Option } from "@/utils/Option";
 import { OpenedDocumentEditor } from "../index";
 
@@ -33,8 +38,41 @@ export type OpenedDocumentFakes = Readonly<{
   clock: ClockFake;
 }>;
 
+/** 編集画面を描くときに決めるもの。 */
+type OpenedDocumentSetting = Readonly<{
+  document: DesignDocument;
+  platform: NavigatorPlatform;
+}>;
+
 /**
- * サンプルのドキュメントを開いた編集画面を、時計の代役つきで描画する。
+ * ドキュメントを開いた編集画面を、時計の代役つきで描画し、監視と購読の成立を待つ。
+ *
+ * @param setting 開くドキュメントと、アプリが動いている webview の `navigator`
+ * @returns 編集画面が外部世界とやり取りする口の代役一式
+ */
+async function renderOpenedDocumentWith({
+  document,
+  platform,
+}: OpenedDocumentSetting): Promise<OpenedDocumentFakes> {
+  const ipc = createDocumentIpcFake({
+    [Path]: DocumentJson.serialize(document),
+  });
+  const clock = createClockFake();
+
+  render(
+    <OpenedDocumentEditor
+      clock={clock.clock}
+      ipc={ipc.ipc}
+      operatingSystem={OperatingSystem.fromNavigator(platform)}
+      opened={{ path: Path, document }}
+    />,
+  );
+  await act(async () => {});
+  return { ipc, clock };
+}
+
+/**
+ * サンプルのドキュメントを開いた編集画面を、時計の代役つきで描画する。動いている OS は macOS。
  *
  * 監視と購読は非同期に成立するので、操作を始める前にここで待ち合わせる
  * （待たずに操作すると、成立したときの状態更新が act の外で起きる）。
@@ -45,23 +83,25 @@ export type OpenedDocumentFakes = Readonly<{
  * @param document 開くドキュメント。`SampleDocument` に無い形（同じ部品を指す
  *   インスタンスが 2 つ以上あるなど）を要るテストだけが渡す
  */
-export async function renderOpenedDocumentWithClock(
+export function renderOpenedDocumentWithClock(
   document: DesignDocument = SampleDocument,
 ): Promise<OpenedDocumentFakes> {
-  const ipc = createDocumentIpcFake({
-    [Path]: DocumentJson.serialize(document),
-  });
-  const clock = createClockFake();
+  return renderOpenedDocumentWith({ document, platform: MacOsNavigator });
+}
 
-  render(
-    <OpenedDocumentEditor
-      clock={clock.clock}
-      ipc={ipc.ipc}
-      opened={{ path: Path, document }}
-    />,
-  );
-  await act(async () => {});
-  return { ipc, clock };
+/**
+ * サンプルのドキュメントを、指定した OS で動いていることにして描画する。
+ *
+ * @param platform アプリが動いている webview の `navigator`
+ */
+export async function renderOpenedDocumentOn(
+  platform: NavigatorPlatform,
+): Promise<DocumentIpcFake> {
+  const { ipc } = await renderOpenedDocumentWith({
+    document: SampleDocument,
+    platform,
+  });
+  return ipc;
 }
 
 /**

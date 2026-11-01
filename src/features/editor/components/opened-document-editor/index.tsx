@@ -53,6 +53,7 @@ import { useTokenActions } from "@/features/editor/hooks/use-token-actions";
 import type { OpenedContextMenu } from "@/features/editor/types/OpenedContextMenu";
 import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
+import type { OperatingSystem } from "@/libs/operating-system";
 import { Option } from "@/utils/Option";
 
 /**
@@ -63,9 +64,11 @@ import { Option } from "@/utils/Option";
 function EditorPanes({
   canvasView,
   fileRevert,
+  operatingSystem,
 }: Readonly<{
   canvasView: CanvasViewControl;
   fileRevert: FileRevertControl;
+  operatingSystem: OperatingSystem;
 }>) {
   const { state } = useEditor();
   const node = useNodeActions();
@@ -240,6 +243,7 @@ function EditorPanes({
       {Option.isSome(contextMenu) ? (
         <EditorContextMenu
           opened={contextMenu.value}
+          operatingSystem={operatingSystem}
           onClose={() => setContextMenu(Option.none)}
         />
       ) : null}
@@ -256,7 +260,13 @@ function EditorBody({
   clock,
   ipc,
   opened,
-}: Readonly<{ clock: Clock; ipc: DocumentIpc; opened: OpenedDocument }>) {
+  operatingSystem,
+}: Readonly<{
+  clock: Clock;
+  ipc: DocumentIpc;
+  opened: OpenedDocument;
+  operatingSystem: OperatingSystem;
+}>) {
   const { state, dispatch } = useEditor();
   const path = opened.path;
   /*
@@ -330,7 +340,11 @@ function EditorBody({
         watch={watchFailure}
         revert={DocumentSaveState.failure(fileRevert.saveState)}
       />
-      <EditorPanes canvasView={canvasView} fileRevert={fileRevert} />
+      <EditorPanes
+        canvasView={canvasView}
+        fileRevert={fileRevert}
+        operatingSystem={operatingSystem}
+      />
     </div>
   );
 }
@@ -344,10 +358,22 @@ export function OpenedDocumentEditor({
   clock,
   ipc,
   opened,
-}: Readonly<{ clock: Clock; ipc: DocumentIpc; opened: OpenedDocument }>) {
+  operatingSystem,
+}: Readonly<{
+  clock: Clock;
+  ipc: DocumentIpc;
+  opened: OpenedDocument;
+  /** コンテキストメニューの割り当ての綴りを選ぶのに使う、アプリが動いている OS。 */
+  operatingSystem: OperatingSystem;
+}>) {
   return (
     <EditorProvider initialDocument={opened.document}>
-      <EditorBody clock={clock} ipc={ipc} opened={opened} />
+      <EditorBody
+        clock={clock}
+        ipc={ipc}
+        opened={opened}
+        operatingSystem={operatingSystem}
+      />
     </EditorProvider>
   );
 }

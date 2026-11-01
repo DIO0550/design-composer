@@ -8,12 +8,14 @@ import {
   artboardHandle,
   canvasSurface,
 } from "@/features/editor/features/canvas/__tests__";
+import { MacOsNavigator, WindowsNavigator } from "@/libs/operating-system/fake";
 import {
   breakFileExternally,
   contextMenu,
   drawn,
   menuRow,
   renderOpenedDocument,
+  renderOpenedDocumentOn,
   selectArtboard,
   selectInTree,
   tree,
@@ -223,20 +225,50 @@ test("コピー済みで貼り先があるときは、空き領域のメニュ�
   expect(menuRow("Paste").hasAttribute("disabled")).toBe(false);
 });
 
-test("行にはキーボードの割り当てが併記される", async () => {
-  await renderOpenedDocument();
+test("macOS で動いているとき、行にはキーボードの割り当てが併記される", async () => {
+  await renderOpenedDocumentOn(MacOsNavigator);
 
   rightClick(drawn("home-title"));
 
   expect(menuRow("Copy").textContent).toContain("⌘C");
 });
 
-test("複製の行には ⌘D が併記される", async () => {
-  await renderOpenedDocument();
+test("macOS で動いているとき、複製の行には ⌘D が併記される", async () => {
+  await renderOpenedDocumentOn(MacOsNavigator);
 
   rightClick(drawn("home-title"));
 
   expect(menuRow("Duplicate").textContent).toContain("⌘D");
+});
+
+test("Windows で動いているとき、Copy の行には Ctrl+C が併記される", async () => {
+  await renderOpenedDocumentOn(WindowsNavigator);
+
+  rightClick(drawn("home-title"));
+
+  expect(menuRow("Copy").textContent).toContain("Ctrl+C");
+});
+
+test("Windows で動いているとき、Copy の行に ⌘ は併記されない", async () => {
+  await renderOpenedDocumentOn(WindowsNavigator);
+
+  rightClick(drawn("home-title"));
+
+  expect(menuRow("Copy").textContent).not.toContain("⌘");
+});
+
+test("Windows で動いているときも、Delete の行の割り当ては Delete だけになる", async () => {
+  await renderOpenedDocumentOn(WindowsNavigator);
+
+  rightClick(drawn("home-title"));
+
+  // 行は操作の名前と割り当ての 2 つの欄を持つ。操作の名前も Delete なので、行全体の
+  // 文字列では修飾が付いたかどうかを見分けられず、欄ごとに完全一致で比べる
+  const columns = Array.from(
+    menuRow("Delete").children,
+    (column) => column.textContent,
+  );
+  expect(columns).toEqual(["Delete", "Delete"]);
 });
 
 test("別の場所を右クリックすると、メニューがそこへ開き直す", async () => {
