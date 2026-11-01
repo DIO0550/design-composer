@@ -111,6 +111,18 @@ test("指し先の型が未知なら違反にしない", () => {
   expect(violation).toEqual(Option.none);
 });
 
+test("指し先の型が未知なら、locking を指していても違反にしない", () => {
+  const violation = ComponentBinding.violation(
+    components(),
+    ComponentBinding.create("button", {
+      node: "button-frame",
+      prop: "locking",
+    }),
+  );
+
+  expect(violation).toEqual(Option.none);
+});
+
 test("部品のルートを指す binding も、ルートの型のスキーマで照らされる", () => {
   const violation = ComponentBinding.violation(
     components(),
