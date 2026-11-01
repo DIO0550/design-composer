@@ -3,7 +3,7 @@ import { SelectionDigs } from "@/domains/session/selection-dig";
 import { selectionDistanceTree } from "@/features/editor/features/canvas/__tests__/selection-distance-tree";
 import { Pointing } from "@/features/editor/features/canvas/domains/pointing";
 import { Option } from "@/utils/Option";
-import { DistancePair } from "../index";
+import { DistancePair, DistancePairKinds } from "../index";
 
 /*
  * 選択しているだけのときの Alt / Option の距離を測らないとき・相手にしないもの
@@ -45,7 +45,11 @@ test("ロック中の兄弟を指しても、その兄弟は相手にならな�
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "within", inner: "row", outer: "card" }),
+    Option.some({
+      kind: DistancePairKinds.Within,
+      inner: "row",
+      outer: "card",
+    }),
   );
 });
 
@@ -59,6 +63,10 @@ test("⌘ を押してロック中のノードの中を指すと、そのすぐ�
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "within", inner: "row", outer: "card" }),
+    Option.some({
+      kind: DistancePairKinds.Within,
+      inner: "row",
+      outer: "card",
+    }),
   );
 });

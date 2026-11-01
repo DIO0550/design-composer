@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import { Option } from "@/utils/Option";
-import { DistancePair, DrawnDistancePair } from "../index";
+import { DistancePair, DistancePairKinds, DrawnDistancePair } from "../index";
 
 /*
  * 測る 2 つを矩形に置き換えて、どの向きに線を引くか（docs/06-ui.md「キャンバス直接操作」の
@@ -29,7 +29,7 @@ function drawnFacings(distances: FacingDistances) {
 
 test("包む相手の内側の縁までは、上下左右 4 本を引く", () => {
   const distances = DrawnDistancePair.toDistances({
-    kind: "within",
+    kind: DistancePairKinds.Within,
     inner: From,
     outer: { left: 0, top: 0, width: 400, height: 300 },
   });
@@ -43,7 +43,7 @@ test("包む相手の内側の縁までは、上下左右 4 本を引く", () =>
 test("包む相手からはみ出した向きには、線を引かない", () => {
   // 左辺が相手の左辺（150）より外にある
   const distances = DrawnDistancePair.toDistances({
-    kind: "within",
+    kind: DistancePairKinds.Within,
     inner: From,
     outer: { left: 150, top: 0, width: 250, height: 300 },
   });
@@ -56,7 +56,7 @@ test("包む相手からはみ出した向きには、線を引かない", () =>
 
 test("左右に離れて並ぶ相手までは、離れている向きに 1 本だけ引く", () => {
   const distances = DrawnDistancePair.toDistances({
-    kind: "beside",
+    kind: DistancePairKinds.Beside,
     from: From,
     to: { left: 260, top: 110, width: 50, height: 30 },
   });
@@ -69,7 +69,7 @@ test("左右に離れて並ぶ相手までは、離れている向きに 1 本�
 
 test("上下に離れて並ぶ相手までは、離れている向きに 1 本だけ引く", () => {
   const distances = DrawnDistancePair.toDistances({
-    kind: "beside",
+    kind: DistancePairKinds.Beside,
     from: From,
     to: { left: 120, top: 10, width: 50, height: 30 },
   });
@@ -82,7 +82,7 @@ test("上下に離れて並ぶ相手までは、離れている向きに 1 本�
 
 test("斜めに離れている相手までは、線を引かない", () => {
   const distances = DrawnDistancePair.toDistances({
-    kind: "beside",
+    kind: DistancePairKinds.Beside,
     from: From,
     to: { left: 260, top: 200, width: 50, height: 30 },
   });
@@ -92,7 +92,7 @@ test("斜めに離れている相手までは、線を引かない", () => {
 
 test("一部だけ重なる相手までは、線を引かない", () => {
   const distances = DrawnDistancePair.toDistances({
-    kind: "beside",
+    kind: DistancePairKinds.Beside,
     from: From,
     to: { left: 180, top: 130, width: 50, height: 50 },
   });
@@ -102,7 +102,7 @@ test("一部だけ重なる相手までは、線を引かない", () => {
 
 test("親子の関係に無く形が包んでいる相手までは、線を引かない", () => {
   const distances = DrawnDistancePair.toDistances({
-    kind: "beside",
+    kind: DistancePairKinds.Beside,
     from: From,
     to: { left: 0, top: 0, width: 400, height: 300 },
   });
@@ -112,7 +112,7 @@ test("親子の関係に無く形が包んでいる相手までは、線を引�
 
 test("接している相手までは、線を引かない", () => {
   const distances = DrawnDistancePair.toDistances({
-    kind: "beside",
+    kind: DistancePairKinds.Beside,
     from: From,
     to: { left: 200, top: 110, width: 50, height: 30 },
   });
@@ -123,16 +123,18 @@ test("接している相手までは、線を引かない", () => {
 test("2 つとも測れれば、矩形に置き換えた組になる", () => {
   const outer = { left: 0, top: 0, width: 400, height: 300 };
   const drawn = DistancePair.measure(
-    { kind: "within", inner: "row", outer: "card" },
+    { kind: DistancePairKinds.Within, inner: "row", outer: "card" },
     (name) => Option.some(name === "row" ? From : outer),
   );
 
-  expect(drawn).toEqual(Option.some({ kind: "within", inner: From, outer }));
+  expect(drawn).toEqual(
+    Option.some({ kind: DistancePairKinds.Within, inner: From, outer }),
+  );
 });
 
 test("どちらかが測れなければ、組にならない", () => {
   const drawn = DistancePair.measure(
-    { kind: "beside", from: "row", to: "chip" },
+    { kind: DistancePairKinds.Beside, from: "row", to: "chip" },
     (name) => (name === "row" ? Option.some(From) : Option.none),
   );
 
@@ -143,8 +145,12 @@ test("矩形が 1 つでも違えば、等しくない", () => {
   const outer = { left: 0, top: 0, width: 400, height: 300 };
 
   const isEqual = DrawnDistancePair.equals(
-    { kind: "within", inner: From, outer },
-    { kind: "within", inner: From, outer: { ...outer, width: 401 } },
+    { kind: DistancePairKinds.Within, inner: From, outer },
+    {
+      kind: DistancePairKinds.Within,
+      inner: From,
+      outer: { ...outer, width: 401 },
+    },
   );
 
   expect(isEqual).toBe(false);
@@ -154,8 +160,8 @@ test("同じ矩形でも、組の種類が違えば等しくない", () => {
   const to = { left: 260, top: 110, width: 50, height: 30 };
 
   const isEqual = DrawnDistancePair.equals(
-    { kind: "within", inner: From, outer: to },
-    { kind: "beside", from: From, to },
+    { kind: DistancePairKinds.Within, inner: From, outer: to },
+    { kind: DistancePairKinds.Beside, from: From, to },
   );
 
   expect(isEqual).toBe(false);

@@ -3,7 +3,7 @@ import { SelectionDigs } from "@/domains/session/selection-dig";
 import { selectionDistanceTree } from "@/features/editor/features/canvas/__tests__/selection-distance-tree";
 import { Pointing } from "@/features/editor/features/canvas/domains/pointing";
 import { Option } from "@/utils/Option";
-import { DistancePair } from "../index";
+import { DistancePair, DistancePairKinds } from "../index";
 
 /*
  * 選択しているだけのときの Alt / Option の距離で、何と何を測るか（docs/06-ui.md「キャンバス
@@ -20,7 +20,11 @@ test("選択の内側を指すと、選択から親の内側の縁までを測�
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "within", inner: "row", outer: "card" }),
+    Option.some({
+      kind: DistancePairKinds.Within,
+      inner: "row",
+      outer: "card",
+    }),
   );
 });
 
@@ -31,7 +35,7 @@ test("兄弟を指すと、兄弟との横並びを測る", () => {
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "beside", from: "row", to: "chip" }),
+    Option.some({ kind: DistancePairKinds.Beside, from: "row", to: "chip" }),
   );
 });
 
@@ -45,7 +49,7 @@ test("兄弟の子を指しても、兄弟との横並びを測る", () => {
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "beside", from: "row", to: "chip" }),
+    Option.some({ kind: DistancePairKinds.Beside, from: "row", to: "chip" }),
   );
 });
 
@@ -59,7 +63,11 @@ test("⌘ を押して選択の内側を指すと、いちばん内側の子孫�
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "within", inner: "label", outer: "row" }),
+    Option.some({
+      kind: DistancePairKinds.Within,
+      inner: "label",
+      outer: "row",
+    }),
   );
 });
 
@@ -73,7 +81,11 @@ test("⌘ を押して兄弟の子を指すと、その子との横並びを測�
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "beside", from: "row", to: "chip-icon" }),
+    Option.some({
+      kind: DistancePairKinds.Beside,
+      from: "row",
+      to: "chip-icon",
+    }),
   );
 });
 
@@ -85,7 +97,11 @@ test("深さ 3 のノードを選んで親の背景を指すと、クリック�
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "within", inner: "cell", outer: "card" }),
+    Option.some({
+      kind: DistancePairKinds.Within,
+      inner: "cell",
+      outer: "card",
+    }),
   );
 });
 
@@ -96,7 +112,7 @@ test("別の枝のノードを指すと、そのノードとの横並びを測�
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "beside", from: "row", to: "title" }),
+    Option.some({ kind: DistancePairKinds.Beside, from: "row", to: "title" }),
   );
 });
 
@@ -107,7 +123,11 @@ test("深さ 2 のノードを選んで自分の artboard の背景を指すと�
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "within", inner: "row", outer: "home" }),
+    Option.some({
+      kind: DistancePairKinds.Within,
+      inner: "row",
+      outer: "home",
+    }),
   );
 });
 
@@ -118,7 +138,11 @@ test("深さ 2 のノードを選んで別の artboard のノードを指すと�
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "within", inner: "row", outer: "card" }),
+    Option.some({
+      kind: DistancePairKinds.Within,
+      inner: "row",
+      outer: "card",
+    }),
   );
 });
 
@@ -129,7 +153,11 @@ test("artboard の枠の外を指すと、親の内側の縁までを測る", ()
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "within", inner: "row", outer: "card" }),
+    Option.some({
+      kind: DistancePairKinds.Within,
+      inner: "row",
+      outer: "card",
+    }),
   );
 });
 
@@ -149,14 +177,18 @@ test("artboard 直下のノードの親は artboard になる", () => {
   );
 
   expect(pair).toEqual(
-    Option.some({ kind: "within", inner: "title", outer: "home" }),
+    Option.some({
+      kind: DistancePairKinds.Within,
+      inner: "title",
+      outer: "home",
+    }),
   );
 });
 
 test("同じ 2 つを測る組は、等しい", () => {
   const isEqual = DistancePair.equals(
-    { kind: "beside", from: "row", to: "chip" },
-    { kind: "beside", from: "row", to: "chip" },
+    { kind: DistancePairKinds.Beside, from: "row", to: "chip" },
+    { kind: DistancePairKinds.Beside, from: "row", to: "chip" },
   );
 
   expect(isEqual).toBe(true);
@@ -164,8 +196,8 @@ test("同じ 2 つを測る組は、等しい", () => {
 
 test("相手が 1 つでも違えば、等しくない", () => {
   const isEqual = DistancePair.equals(
-    { kind: "beside", from: "row", to: "chip" },
-    { kind: "beside", from: "row", to: "title" },
+    { kind: DistancePairKinds.Beside, from: "row", to: "chip" },
+    { kind: DistancePairKinds.Beside, from: "row", to: "title" },
   );
 
   expect(isEqual).toBe(false);
@@ -173,8 +205,8 @@ test("相手が 1 つでも違えば、等しくない", () => {
 
 test("同じ名前でも、組の種類が違えば等しくない", () => {
   const isEqual = DistancePair.equals(
-    { kind: "within", inner: "row", outer: "card" },
-    { kind: "beside", from: "row", to: "card" },
+    { kind: DistancePairKinds.Within, inner: "row", outer: "card" },
+    { kind: DistancePairKinds.Beside, from: "row", to: "card" },
   );
 
   expect(isEqual).toBe(false);
@@ -182,8 +214,8 @@ test("同じ名前でも、組の種類が違えば等しくない", () => {
 
 test("内側の縁を測る組で、包む側だけが違えば等しくない", () => {
   const isEqual = DistancePair.equals(
-    { kind: "within", inner: "row", outer: "card" },
-    { kind: "within", inner: "row", outer: "home" },
+    { kind: DistancePairKinds.Within, inner: "row", outer: "card" },
+    { kind: DistancePairKinds.Within, inner: "row", outer: "home" },
   );
 
   expect(isEqual).toBe(false);
@@ -191,8 +223,8 @@ test("内側の縁を測る組で、包む側だけが違えば等しくない",
 
 test("内側の縁を測る組で、包まれる側だけが違えば等しくない", () => {
   const isEqual = DistancePair.equals(
-    { kind: "within", inner: "row", outer: "card" },
-    { kind: "within", inner: "chip", outer: "card" },
+    { kind: DistancePairKinds.Within, inner: "row", outer: "card" },
+    { kind: DistancePairKinds.Within, inner: "chip", outer: "card" },
   );
 
   expect(isEqual).toBe(false);
@@ -200,8 +232,8 @@ test("内側の縁を測る組で、包まれる側だけが違えば等しく�
 
 test("横並びの組で、測り始める側だけが違えば等しくない", () => {
   const isEqual = DistancePair.equals(
-    { kind: "beside", from: "row", to: "chip" },
-    { kind: "beside", from: "title", to: "chip" },
+    { kind: DistancePairKinds.Beside, from: "row", to: "chip" },
+    { kind: DistancePairKinds.Beside, from: "title", to: "chip" },
   );
 
   expect(isEqual).toBe(false);

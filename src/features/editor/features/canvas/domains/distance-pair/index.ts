@@ -7,8 +7,18 @@ import {
   type Pointing,
   PointingKinds,
 } from "@/features/editor/features/canvas/domains/pointing";
+import type { ValueOf } from "@/types/ValueOf";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
+
+/** 測る 2 つの種類（`DistancePair` と `DrawnDistancePair` の判別子）。 */
+export const DistancePairKinds = {
+  Within: "within",
+  Beside: "beside",
+} as const;
+
+/** 測る 2 つの種類。 */
+export type DistancePairKind = ValueOf<typeof DistancePairKinds>;
 
 /**
  * 選択しているだけのときの Alt / Option の距離を測る 2 つ（docs/06-ui.md「キャンバス直接操作」
@@ -18,13 +28,29 @@ import { Option } from "@/utils/Option";
  * - `beside`: 親子の関係に無い 2 つで、`from` から `to` まで離れている向きを測る
  */
 export type DistancePair =
-  | Readonly<{ kind: "within"; inner: string; outer: string }>
-  | Readonly<{ kind: "beside"; from: string; to: string }>;
+  | Readonly<{
+      kind: typeof DistancePairKinds.Within;
+      inner: string;
+      outer: string;
+    }>
+  | Readonly<{
+      kind: typeof DistancePairKinds.Beside;
+      from: string;
+      to: string;
+    }>;
 
 /** `DistancePair` の 2 つを、描かれている矩形（client 座標）に置き換えたもの。 */
 export type DrawnDistancePair =
-  | Readonly<{ kind: "within"; inner: CanvasBounds; outer: CanvasBounds }>
-  | Readonly<{ kind: "beside"; from: CanvasBounds; to: CanvasBounds }>;
+  | Readonly<{
+      kind: typeof DistancePairKinds.Within;
+      inner: CanvasBounds;
+      outer: CanvasBounds;
+    }>
+  | Readonly<{
+      kind: typeof DistancePairKinds.Beside;
+      from: CanvasBounds;
+      to: CanvasBounds;
+    }>;
 
 /** 選んでいるノードと、それを包んでいるもの。 */
 type SelectedNode = Readonly<{
@@ -69,7 +95,7 @@ function selectedNodeOf(selection: DocumentSelection): Option<SelectedNode> {
  * @returns `within` の組
  */
 function withinOf(selected: SelectedNode, outer: string): DistancePair {
-  return { kind: "within", inner: selected.name, outer };
+  return { kind: DistancePairKinds.Within, inner: selected.name, outer };
 }
 
 /**
@@ -152,9 +178,17 @@ function pairWith(
     counterpart,
   );
   if (counterpartAncestors.includes(selected.name)) {
-    return { kind: "within", inner: counterpart, outer: selected.name };
+    return {
+      kind: DistancePairKinds.Within,
+      inner: counterpart,
+      outer: selected.name,
+    };
   }
-  return { kind: "beside", from: selected.name, to: counterpart };
+  return {
+    kind: DistancePairKinds.Beside,
+    from: selected.name,
+    to: counterpart,
+  };
 }
 
 export const DistancePair = {
@@ -202,12 +236,18 @@ export const DistancePair = {
    */
   equals(a: DistancePair, b: DistancePair): boolean {
     switch (a.kind) {
-      case "within":
+      case DistancePairKinds.Within:
         return (
-          b.kind === "within" && a.inner === b.inner && a.outer === b.outer
+          b.kind === DistancePairKinds.Within &&
+          a.inner === b.inner &&
+          a.outer === b.outer
         );
-      case "beside":
-        return b.kind === "beside" && a.from === b.from && a.to === b.to;
+      case DistancePairKinds.Beside:
+        return (
+          b.kind === DistancePairKinds.Beside &&
+          a.from === b.from &&
+          a.to === b.to
+        );
     }
   },
 
@@ -223,18 +263,18 @@ export const DistancePair = {
     measure: (name: string) => Option<CanvasBounds>,
   ): Option<DrawnDistancePair> {
     switch (pair.kind) {
-      case "within":
+      case DistancePairKinds.Within:
         return Option.flatMap(measure(pair.inner), (inner) =>
           Option.map(measure(pair.outer), (outer) => ({
-            kind: "within" as const,
+            kind: DistancePairKinds.Within,
             inner,
             outer,
           })),
         );
-      case "beside":
+      case DistancePairKinds.Beside:
         return Option.flatMap(measure(pair.from), (from) =>
           Option.map(measure(pair.to), (to) => ({
-            kind: "beside" as const,
+            kind: DistancePairKinds.Beside,
             from,
             to,
           })),
@@ -253,13 +293,13 @@ export const DrawnDistancePair = {
    */
   toDistances(drawn: DrawnDistancePair): FacingDistances {
     switch (drawn.kind) {
-      case "within":
+      case DistancePairKinds.Within:
         return FacingDistances.create({
           from: drawn.inner,
           parentBounds: drawn.outer,
           siblings: [],
         });
-      case "beside":
+      case DistancePairKinds.Beside:
         return FacingDistances.createAmong({
           from: drawn.from,
           others: [drawn.to],
@@ -276,15 +316,15 @@ export const DrawnDistancePair = {
    */
   equals(a: DrawnDistancePair, b: DrawnDistancePair): boolean {
     switch (a.kind) {
-      case "within":
+      case DistancePairKinds.Within:
         return (
-          b.kind === "within" &&
+          b.kind === DistancePairKinds.Within &&
           CanvasBounds.equals(a.inner, b.inner) &&
           CanvasBounds.equals(a.outer, b.outer)
         );
-      case "beside":
+      case DistancePairKinds.Beside:
         return (
-          b.kind === "beside" &&
+          b.kind === DistancePairKinds.Beside &&
           CanvasBounds.equals(a.from, b.from) &&
           CanvasBounds.equals(a.to, b.to)
         );

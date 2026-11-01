@@ -9,7 +9,10 @@ import {
   SelectionDistanceTreeBounds,
   selectionDistanceTree,
 } from "@/features/editor/features/canvas/__tests__/selection-distance-tree";
-import { DrawnDistancePair } from "@/features/editor/features/canvas/domains/distance-pair";
+import {
+  DistancePairKinds,
+  DrawnDistancePair,
+} from "@/features/editor/features/canvas/domains/distance-pair";
 import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import { Pointing } from "@/features/editor/features/canvas/domains/pointing";
 import { ArrayEx } from "@/utils/ArrayEx";
@@ -81,7 +84,7 @@ test("測る組が変わると、新しい組で測り直す", () => {
 
   expect(result.current).toEqual(
     DrawnDistancePair.toDistances({
-      kind: "beside",
+      kind: DistancePairKinds.Beside,
       from: SelectionDistanceTreeBounds.row,
       to: SelectionDistanceTreeBounds.chip,
     }),
@@ -112,7 +115,7 @@ function renderRecordingDistances(initial: Pointing) {
 /** `row` と兄弟 `chip` の横並びの線。 */
 function rowBesideChip(): FacingDistances {
   return DrawnDistancePair.toDistances({
-    kind: "beside",
+    kind: DistancePairKinds.Beside,
     from: SelectionDistanceTreeBounds.row,
     to: SelectionDistanceTreeBounds.chip,
   });
@@ -153,7 +156,7 @@ test("測る組の片方だけが別の名前に変わった回は、測り直�
 
   expect(returned.slice(changedAt)).not.toContainEqual(
     DrawnDistancePair.toDistances({
-      kind: "within",
+      kind: DistancePairKinds.Within,
       inner: SelectionDistanceTreeBounds.row,
       outer: SelectionDistanceTreeBounds.card,
     }),
@@ -171,7 +174,7 @@ test("測る組が変わっても測った矩形が前と同じなら、新し�
   expect(ArrayEx.last(returned)).toEqual(
     Option.some(
       DrawnDistancePair.toDistances({
-        kind: "within",
+        kind: DistancePairKinds.Within,
         inner: SelectionDistanceTreeBounds.row,
         outer: SelectionDistanceTreeBounds.card,
       }),
