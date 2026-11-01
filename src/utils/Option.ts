@@ -1,6 +1,6 @@
 /**
  * 在／不在の判別子のキー。export しないので、型の上ではこのファイルの外から名前を持てない。
- * 登録済みシンボルにする理由と直列化の扱いは `Result.ts` の `OkTag` と同じ。
+ * 直列化の扱いは `Result.ts` の `OkTag` と同じ。
  */
 const SomeTag: unique symbol = Symbol.for("design-composer/utils/Option#some");
 
