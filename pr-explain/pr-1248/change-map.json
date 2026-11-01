@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1248,
+  "headBranch": "claude/magical-cannon-77ya30",
+  "baseBranch": "main",
+  "mergeBase": "81847213d7806d5f0eefe5ad96e65fd9d188557b",
+  "head": "b3cae52af2438b8faec75111fb187d1ab7c31471",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1245.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 163,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "b3cae52af2438b8faec75111fb187d1ab7c31471",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-01T06:57:49Z",
+      "subject": "📝 [Doc]: #1007 PR #1245 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1245.md を足す(指摘 19 件・手戻り・発火)\n\n背景:\nPR #1245(decide() を終了コードと見出しの突き合わせにする)がマージ\nされたので、harness-record の手順で記録を残す。人のレビューは 0 件\n(get_reviews / get_review_comments / get_comments の 3 つを確認)、\nCI は全件緑。\n\n採用理由:\n指摘は 1 件 1 ブロックで、plan-reviewer 6 件・solution / duplication /\nnaming / comment / over-guard / test の各 reviewer の指摘と、フック不発の\n自己観測を分けて書いた。comment-reviewer の 2 件を同じ doc の 1 文で直した\nものも、元の指摘ごとに数えられるよう 1 ブロックにまとめて内容に明記した。\n\n影響とトレードオフ:\n発火ログはこのセッション分が無く(フック不発)、「計測対象外」と書いた。\n対策済の行は harness-growth の管轄なので書いていない。\n\n代替案:\n- 記録を省く: 0 件の回も含めて残すのがこのスキルの前提なので採らない\n\n参考:\n- PR #1245、Issue #1007\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NPj7QiU16H1fuFpc6",
+      "files": [
+        {
+          "path": "harness/records/pr-1245.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 163,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,163 @@\n+# PR #1245 decide() を終了コードと見出しの突き合わせにし、退行を broken と読む\n+\n+- マージ日: 2026-11-01\n+- 関連 Issue: #1007\n+- 差分規模: 13 ファイル / +138 -60\n+\n+## ゴールと結果\n+\n+ゴールは「判定表が検出器の『見出しを出したまま exit 0』『exit 0・1 以外(検出器が落ちた)』の退行を broken として赤にできるようになる。突き合わせは `cases-report.sh` の `decide` 1 か所だけが持ち、`import-rule-cases.sh` もそれを使う」。達成した。test-reviewer が `decide` に 10 通り、`normalize_miss` に 5 通り、`import-rule-cases.sh` の verdict に 3 通りの壊し方を入れ、どれも判定表が落ちることを実測した。\n+\n+効くのは各判定表が `decide` に渡す見出しの正規表現の範囲だけで、広げないと計画で決めた(result-option-discriminant は自分の種別だけ、missing-doc-comments の `--all` は件数 1 以上の集計行だけ)。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認している。コメントは、自分が投稿したテストケース表と bot の投稿(Storybook プレビュー・CI レポート・VRT)だけ。CI は全件緑で、VRT の差分は 0 件だった(204 件 passed)。\n+\n+## 指摘\n+\n+### 1. README 65・66 行目の直し方が曖昧で、2 か所目が抜けかねない\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 配線表のセルの括弧は判定表のグループごとに付いており、どの括弧へ何を足すかを計画が書いていなかった。セルごとに確定させた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(変更するファイルと、そこに何を置くか)\n+\n+### 2. doc を「改める」とだけ書き、書き換え後の文面が無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `cases-report.sh` 17 行目と 3 本の判定表の冒頭に同じ根拠文があり、直すか残すかが計画に無かった。根拠を 1 か所に寄せる文面まで計画に書いた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(計画を渡す前に踏む手順 7)\n+\n+### 3. ゴール「突き合わせは 1 か所だけ」を確かめる手段が無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 判定表の NG 0 だけでは、別の判定表が自前の突き合わせを持ち続けても緑のまま。`rg` の確認コマンドと、今と実装後の件数を計画に入れた。\n+- 既存ルール: なし\n+\n+### 4. 取りこぼしの読み替えの表が「読み替えてはいけない側」を持っていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 3 行とも期待 miss の入力で、期待を見ずに pass を常に miss にする実装・deny も miss にする実装が通った。pass 期待の行と、miss 期待でも deny になる行を足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 5. 効く範囲が各表の見出しの正規表現に限られることが計画に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: import-rule だけが `^\\[` の広さで渡すので、範囲の非対称は計画の中で生まれていた。限定と、広げない理由を計画に書いた。\n+- 既存ルール: なし\n+\n+### 6. 並行する Issue / PR を確かめた記録が無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 軽微。open PR は #1242 だけで対象ファイルに触れない、#1005 は閉じている、#1233 は末尾の隣接行だけ、を Issue に書いた。\n+- 既存ルール: なし\n+\n+### 7. 方式は維持\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 結論は「維持」。根本原因(終了コードの読み方を 2 か所で別々に持っていた)を 1 か所にして直している。行単位の気づき(指摘 8 と同じ)を担当外として添えていた。\n+- 既存ルール: なし\n+\n+### 8. import-rule-cases.sh の verdict で見出しの正規表現を 2 か所に書いている\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `decide` へ渡す箇所と `grep -c` で数え直す箇所。片方だけ狭めると「読めない見出しを broken にする」意図が黙って崩れる。verdict 内の local 変数に寄せた。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 9. 判定の読み取りの表の 2 ループが同じ decide 呼び出しを書き写している\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: DECIDE_CASES と MISS_CASES。片方の呼び方だけ変わっても両方緑のまま。`decide_row` を切り出し、見出しの正規表現をその中だけに置いた。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 10. 判定表の新しい名前の「突き合わせ」が、同じ関数の組の既存の呼び名と割れる\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: `cases-report.sh` と README は同じ組を「判定の読み取り」と呼んでおり、「突き合わせ」は `normalize_miss` にも当てはまらない。計画で避けた「判定の読み取り」へ名前を揃えた(計画から変わった判断)。\n+- 既存ルール: rules/naming.md「メソッド名を既存のドメインに揃える」\n+\n+### 11. probe は既存の語では「動作確認で一時的に置く違反入力」の意味\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 検出器を走らせない表の出力に `probe_output` / `[probe]` を使っていた。`row_output` と仮名 `[alpha]` に改めた。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 12. 名前の付いていた見出しの数がコマンド置換のまま比較に入った\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 参考扱い。元の変数 `headings` に戻した。\n+- 既存ルール: なし\n+\n+### 13. decide の doc が「数える」と書くが実装は有無だけを見る。効く範囲の限界も書かれていない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 2 つの指摘を同じ doc の 1 文で直したが、元は別の指摘。「$3 に当たる行が 1 行でもあるかを見るので、当たらない見出しの exit 0 は pass と読む」にした。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 14. verification-agent-cases.sh の decide の要約が古い判定のまま\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 「exit 1 を違反とみなす」を「exit 1 かつ見出しありを deny と読む」に直した。理由の文は今も成り立つので残した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 15. missing-doc の --all の見出しの末尾 / [1-9] の理由が無い\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: decide が「見出し + exit 0」を broken にしたことで意味を持つようになった。違反なしでも `… / 0 ファイル` の集計行が exit 0 で出るので、消すと違反の無い入力が broken になる。理由を添えた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 16. 冒頭の「この 2 つの表」がどれを指すか読み直しが要る\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 新しい 2 表が後ろに続くため。「照合の表と `report` の表」と明示した。\n+- 既存ルール: なし\n+\n+### 17. decide の grep が正規表現の誤りを「当たらない」と同じに畳む(参考)\n+\n+- 分類: `over-guard`\n+- 出どころ: `レビュー（over-guard-reviewer）`\n+- 内容: 不採用。本人も対処不要としている。正規表現はどれも固定値で、壊れれば deny のケースが必ず赤になる。差分の前から同じ形。\n+- 既存ルール: なし\n+\n+### 18. import-rule-cases.sh の verdict の新しい配線をどの判定表も守っていない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 見出しを種別の綴りに替える(却下案)・deny ゲートを外す・decide を呼ばず終了コードだけで決める(旧仕様)の 3 通りがどれも 0 件落ちた。検出器をスタブへ差し替える 3 ケースを足し、3 通りとも落ちることを実測した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 19. フックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: push 前の `echo hook-canary` が 2 回とも通った。implementer 起動後も実行中フラグのマーカーが無く、このセッションの発火ログの見出しも無い(`/tmp` にあったのは別セッションの残骸)。README の表の「本当に不発」の枝。起動形態は #1032 と同じ(Issue の assigned で起動した routine、3 リポジトリ、作業ディレクトリ `/home/user`)。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- フェーズ 4: plan-reviewer の指摘 6 件を受け、planner に計画を立て直させた(1 回)。立て直しで判定表の改名・ヒアストリングへの変更・decide の表の 2 行が加わった\n+- フェーズ 6: implementer を 2 回追加起動した(レビュー指摘 9 件の修正 / test-reviewer の指摘の修正)\n+- 計画から変わった判断は 2 つ。判定表の名前を「終了コードと見出しの突き合わせと…」から「判定の読み取りと…」へ(指摘 10)。計画では「通しのテストは足さない」としていた import-rule-cases.sh にスタブの表を足した(指摘 18)\n+- implementer の 1 回目の pre-push は node_modules が無く `PRE_PUSH_REQUIRE_ALL=1` で失敗し、`pnpm install --frozen-lockfile` の後に通った\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。このスキルの管轄は記録まで(集計・介入は `harness-growth`)。",
+          "patchLines": 164,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
