@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { Result } from "../Result";
 
 test.each([
@@ -55,4 +55,15 @@ test("値が undefined の成功と失敗は、比べると別物になる", () 
   // 値も中身も undefined だと判別子しか違わないので、比較が判別子を見なくなる
   // （キーを非列挙にする等）とここが等しくなる。
   expect(Result.ok(undefined)).not.toEqual(Result.err(undefined));
+});
+
+test("定義元が評価し直されても、それ以前に作った値を判定できる", async () => {
+  const before = await import("../Result");
+  const old = before.Result.ok(1);
+
+  vi.resetModules();
+  const after = await import("../Result");
+
+  expect(after.Result).not.toBe(before.Result);
+  expect(after.Result.isOk(old)).toBe(true);
 });

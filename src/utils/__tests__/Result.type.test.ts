@@ -1,5 +1,5 @@
 import { expect, expectTypeOf, test } from "vitest";
-import { Result } from "../Result";
+import { type Err, type Ok, Result } from "../Result";
 
 /*
  * 絞り込みが効くことを固定する（`rules/coding.md`「型レベルの保証が仕様の一部であるとき
@@ -52,4 +52,9 @@ test("成否の判別子のキーは定義元から持ち出せない", async ()
 
   // @ts-expect-error 判別子のキーは export しない（TS2339）
   expect(module.OkTag).toBeUndefined();
+});
+
+test("成否の判別子は文字列のキーとして現れない", () => {
+  expectTypeOf<Extract<keyof Ok<number>, string>>().toEqualTypeOf<"value">();
+  expectTypeOf<Extract<keyof Err<string>, string>>().toEqualTypeOf<"error">();
 });

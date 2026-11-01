@@ -1,5 +1,5 @@
 import { expect, expectTypeOf, test } from "vitest";
-import { Option } from "../Option";
+import { type None, Option, type Some } from "../Option";
 
 /*
  * 絞り込みが効くことを固定する（`rules/coding.md`「型レベルの保証が仕様の一部であるとき
@@ -39,4 +39,9 @@ test("在／不在の判別子のキーは定義元から持ち出せない", as
 
   // @ts-expect-error 判別子のキーは export しない（TS2339）
   expect(module.SomeTag).toBeUndefined();
+});
+
+test("在／不在の判別子は文字列のキーとして現れない", () => {
+  expectTypeOf<Extract<keyof Some<number>, string>>().toEqualTypeOf<"value">();
+  expectTypeOf<Extract<keyof None, string>>().toEqualTypeOf<never>();
 });
