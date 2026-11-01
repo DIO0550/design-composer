@@ -7,8 +7,7 @@ import { Result } from "@/utils/Result";
  * ウィンドウへファイルが落とされたことを知らせるイベント名（Rust 側の
  * `DOCUMENT_DROPPED_EVENT` と対）。
  *
- * Tauri 自身が配る `tauri://drag-drop` は聞かない。Rust が落とされたパスを開いてよいものと
- * して記録する前に webview へ届くので、それを見て開くと記録の前に読み込みが届きうる。
+ * Tauri 自身が配る `tauri://drag-drop` を聞かない理由は docs/05-architecture.md「選ばれたファイルの記録」。
  */
 export const DocumentDroppedEvent = "document-dropped";
 

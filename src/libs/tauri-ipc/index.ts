@@ -61,6 +61,26 @@ export const TauriIpc = {
   },
 
   /**
+   * reject された値から、利用者に見せる原文を取り出す。
+   *
+   * Rust の `Err` は `message` を持つオブジェクトで届き、コマンドに届く前に Tauri 自身が
+   * 失敗した場合は文字列で届く。形で見分けてどちらも 1 つの原文に寄せる。
+   *
+   * @param reason reject された値
+   * @returns 文字列の `message` を持つならそれ、それ以外は値を文字列にしたもの
+   */
+  toFailureMessage(reason: unknown): string {
+    const isObject = typeof reason === "object" && reason !== null;
+    if (isObject) {
+      const { message } = reason as Record<string, unknown>;
+      if (typeof message === "string") {
+        return message;
+      }
+    }
+    return String(reason);
+  },
+
+  /**
    * 本物の Tauri のコマンドとイベントに向いた口を作る。
    *
    * @returns `@tauri-apps/api` を呼ぶ口。イベントの購読者には payload だけを渡す

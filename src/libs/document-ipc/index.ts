@@ -5,26 +5,29 @@ import {
 } from "@/domains/session/document-access-failure";
 import { FilePath } from "@/domains/unit/file-path";
 import { TauriIpc, type Unsubscribe } from "@/libs/tauri-ipc";
+import type { ValueOf } from "@/types/ValueOf";
 import { Interop } from "@/utils/Interop";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
+/** Rust の `DocumentIoError`（`src-tauri/src/document/io/error.rs`）と対の、失敗の種類。 */
+const IoErrorKinds = {
+  NotFound: "notFound",
+  PermissionDenied: "permissionDenied",
+  InvalidPath: "invalidPath",
+  NotChosen: "notChosen",
+  InvalidUtf8: "invalidUtf8",
+  Io: "io",
+} as const;
+
 /**
  * 失敗の種類。
  *
- * `notFound` 〜 `io` は Rust の `DocumentIoError`（`src-tauri/src/document/io/error.rs`）
- * と対の語彙。`ipcFailed` だけは TS 側の追加で、Rust のコマンドに届く前後で起きた失敗を指
- * す（コマンド未登録・引数のデシリアライズ失敗・想定外の戻り値）。これらを `io` に丸めると
- * 「ファイル I/O が失敗した」という別の意味になるため分けている。
+ * `IoErrorKinds` に `ipcFailed` を足したもの。`ipcFailed` だけは TS 側の追加で、Rust の
+ * コマンドに届く前後で起きた失敗を指す（コマンド未登録・引数のデシリアライズ失敗・想定外の
+ * 戻り値）。これらを `io` に丸めると「ファイル I/O が失敗した」という別の意味になるため分けている。
  */
-export type DocumentIpcErrorKind =
-  | "notFound"
-  | "permissionDenied"
-  | "invalidPath"
-  | "notChosen"
-  | "invalidUtf8"
-  | "io"
-  | "ipcFailed";
+export type DocumentIpcErrorKind = ValueOf<typeof IoErrorKinds> | "ipcFailed";
 
 /** ファイルの読み書きが失敗した理由と、診断用の原文。 */
 export type DocumentIpcError = Readonly<{
@@ -123,15 +126,6 @@ export type DocumentIpc = Readonly<{
   ): Promise<Result<Unsubscribe, DocumentIpcError>>;
 }>;
 
-const IoErrorKinds: readonly DocumentIpcErrorKind[] = [
-  "notFound",
-  "permissionDenied",
-  "invalidPath",
-  "notChosen",
-  "invalidUtf8",
-  "io",
-];
-
 /**
  * Rust 側が返した拒否理由が、種別を持つ I/O の失敗として読めるか。
  *
@@ -145,7 +139,7 @@ function isDocumentIoError(reason: unknown): reason is DocumentIpcError {
   const { kind, message } = reason as Record<string, unknown>;
   return (
     typeof message === "string" &&
-    IoErrorKinds.some((ioErrorKind) => ioErrorKind === kind)
+    Object.values(IoErrorKinds).some((ioErrorKind) => ioErrorKind === kind)
   );
 }
 

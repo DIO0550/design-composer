@@ -3,6 +3,7 @@ import { ipcFailure } from "@/libs/tauri-ipc/fake";
 import { Option } from "@/utils/Option";
 import {
   createDocumentIpc,
+  type DocumentCommand,
   type DocumentIpc,
   type DocumentIpcErrorKind,
 } from "../index";
@@ -120,7 +121,7 @@ function permissionDenied(path: string): Promise<never> {
 }
 
 /** 選ばれたパスにしか応じないコマンド（Rust の `ChosenDocumentPaths::require` を通るもの）。 */
-const ChosenOnlyCommands: readonly string[] = [
+const ChosenOnlyCommands: readonly DocumentCommand[] = [
   "load_document",
   "save_document",
   "watch_document",
@@ -233,11 +234,14 @@ export function createDocumentIpcFake(
       if (typeof path !== "string") {
         return ipcFailure(`${command}: path が文字列でない`);
       }
+
       const isUnchosen =
-        ChosenOnlyCommands.includes(command) && unchosenPaths.has(path);
+        ChosenOnlyCommands.some((chosenOnly) => chosenOnly === command) &&
+        unchosenPaths.has(path);
       if (isUnchosen) {
         return notChosen(path);
       }
+
       switch (command) {
         case "canonicalize_document_path":
           return canonicalizeDocumentPath(path);

@@ -35,20 +35,11 @@ export type DocumentDialog = Readonly<{
 /**
  * reject された値を失敗として読む。
  *
- * Rust の `Err` は `{ kind, message }` の形で、コマンドに届く前に Tauri 自身が失敗した場合は
- * 文字列で届く。どちらも利用者に見せる原文は 1 つなので、形で見分けて `message` に寄せる。
- *
  * @param reason reject された値
- * @returns Rust 由来ならその `message`、それ以外は値を文字列にしたものを持つ失敗
+ * @returns `TauriIpc.toFailureMessage` で取り出した原文を持つ失敗
  */
 function toDocumentDialogError(reason: unknown): DocumentDialogError {
-  if (typeof reason === "object" && reason !== null) {
-    const { message } = reason as Record<string, unknown>;
-    if (typeof message === "string") {
-      return { message };
-    }
-  }
-  return { message: String(reason) };
+  return { message: TauriIpc.toFailureMessage(reason) };
 }
 
 /**
@@ -66,11 +57,13 @@ function toChosenPath(
   if (value === null) {
     return Result.ok(Option.none);
   }
+
   if (typeof value !== "string") {
     return Result.err({
       message: `${command} が文字列以外を返した: ${String(value)}`,
     });
   }
+
   const path = FilePath.create(value);
   return Option.isSome(path)
     ? Result.ok(path)
