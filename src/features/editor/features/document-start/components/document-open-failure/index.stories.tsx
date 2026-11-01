@@ -25,11 +25,33 @@ export const Unreachable: Story = {
   name: "ファイルが見つからない",
 };
 
-/** ダイアログを出せなかった状態。原文は OS 側の綴りがそのまま出る。 */
+/**
+ * ファイルを選べなかった状態（`.dcmp` 以外を選んだなど）。原文は Rust が返した綴りが
+ * そのまま出る。
+ */
 export const DialogFailed: Story = {
   name: "ファイルを選べなかった",
   args: {
-    failure: { kind: "dialog", error: { message: "dialog.open not allowed" } },
+    failure: {
+      kind: "dialog",
+      error: {
+        message: "/work/settings-ui/notes.txt: 拡張子が `.dcmp` ではない",
+      },
+    },
+  },
+};
+
+/** このアプリで選ばれていないファイルを開こうとした状態。選び直す先を理由の 1 行で示す。 */
+export const Unchosen: Story = {
+  name: "このアプリで選ばれていない",
+  args: {
+    failure: {
+      kind: "io",
+      error: DocumentAccessFailure.create(
+        "unchosen",
+        `${MissingPath}: このアプリで選ばれていない`,
+      ),
+    },
   },
 };
 
