@@ -3,8 +3,8 @@
   "pr": 1242,
   "headBranch": "claude/magical-cannon-ghoyhe",
   "baseBranch": "main",
-  "mergeBase": "ef46435a07f2cb0fad17aa15dc2d959392febd7c",
-  "head": "3a1f6809b9e588fef2a8ed9ff893a635fc9bf005",
+  "mergeBase": "27c5d4ef8d09fb683cccb7d5834c08f99766b47f",
+  "head": "954899b091a2a33258cc0c0bb53d97f37bf879f2",
   "groups": [
     {
       "label": "domains / unit",
@@ -606,6 +606,10 @@
           "changed": false
         },
         {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts",
+          "changed": false
+        },
+        {
           "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-dig.test.ts",
           "changed": false
         },
@@ -1102,6 +1106,10 @@
           "changed": false
         },
         {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "changed": false
+        },
+        {
           "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
           "changed": false
         },
@@ -1131,6 +1139,10 @@
         },
         {
           "path": "src/features/editor/features/canvas/__tests__/canvas-turned-frame.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/selection-distance-tree.ts",
           "changed": false
         },
         {
@@ -1741,6 +1753,15 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "954899b091a2a33258cc0c0bb53d97f37bf879f2",
+      "merge": true,
+      "author": "Claude",
+      "date": "2026-11-01T06:31:30Z",
+      "subject": "🔀 [Merge]: #1056 origin/main を取り込み、docs/03 ロックの節のコンフリクトを解消する",
+      "body": "- main 側(#1189)が足した「`locking` は publicProps の binding の宛先に\n  できない」の行はそのまま残す\n- artboard の行は、このブランチの「読み捨てる」版を残す\n\n背景:\nmain で #1189 が docs/03「ロック」節に binding の制限の行を足し、\nそのすぐ下の artboard の行(このブランチで「受け付けない」から\n「読み捨てる」へ書き換えた行)と隣り合ってコンフリクトした。\n\n採用理由:\n2 つの行は別の規則で、どちらも残す。artboard の行は main 側に\n旧い「受け付けない」の文が残っているだけなので、このブランチの版を採る。\n\n影響とトレードオフ:\n振る舞いは変えない。取り込んだ後も「受け付けない」の grep は 0 件で、\ntypecheck / lint / biome / test:run(5542 件)が通る。\n\n代替案:\n- rebase して force push する: PR を出した後の履歴を書き換えずに済む\n  マージを採った\n\n参考:\n- Issue #1056 / PR #1242\n- #1189(main 側の変更)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PbHvDMS3QbYU725zP",
+      "files": []
     }
   ],
   "dependencies": [
@@ -2585,6 +2606,11 @@
       "status": "kept"
     },
     {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
       "from": "src/domains/session/document-selection/__tests__/document-selection.canvas-dig.test.ts",
       "to": "src/domains/dcmp/design-document/index.ts",
       "status": "kept"
@@ -3115,6 +3141,11 @@
       "status": "kept"
     },
     {
+      "from": "src/features/editor/features/canvas/__tests__/selection-distance-tree.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
       "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.frozen.test.tsx",
       "to": "src/domains/dcmp/design-document/index.ts",
       "status": "kept"
@@ -3166,6 +3197,11 @@
     },
     {
       "from": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
       "to": "src/domains/dcmp/design-document/index.ts",
       "status": "kept"
     },
