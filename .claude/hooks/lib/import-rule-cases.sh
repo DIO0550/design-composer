@@ -105,14 +105,15 @@ place() {
 # 見出しを種別の綴りではなく `^\[` の広さで `decide` へ渡すのは、読めない見出しを出したまま exit 0 も
 # broken にするため。種別の綴り（`^\[[a-z-]+\] [0-9]+ 件$`）を渡すと、それが pass になる。
 verdict() {
-  local output status decision kinds
+  local output status decision kinds headings heading='^\['
   output="$(cd "$work" && python3 "$detector" src)" && status=0 || status=$?
-  decision="$(decide "$output" "$status" '^\[')"
+  decision="$(decide "$output" "$status" "$heading")"
   [ "$decision" = "deny" ] || { echo "$decision"; return 0; }
+  headings="$(printf '%s\n' "$output" | grep -cE "$heading")"
   kinds="$(printf '%s\n' "$output" \
     | sed -nE 's/^\[([a-z-]+)\] ([0-9]+) 件$/\1*\2/p' \
     | sed 's/\*1$//')"
-  if [ "$(printf '%s\n' "$output" | grep -c '^\[')" != "$(printf '%s' "$kinds" | grep -c .)" ]; then
+  if [ "$headings" != "$(printf '%s' "$kinds" | grep -c .)" ]; then
     echo "broken"
     return 0
   fi
