@@ -209,8 +209,9 @@ export const TokenReferrer = {
   /**
    * artboard 1枚の中で、そのトークンを参照している箇所を集める。
    *
-   * artboard 自身の props も対象。受け付ける prop の定義は `Artboard.propDefinitions` が持つ
-   * ので Box スキーマを直に見ない（artboard が受け付ける prop の唯一の答えがそちらだから）。
+   * artboard 自身の props も対象。書いて効く prop の定義は `Artboard.propDefinitions` が持つ
+   * ので Box スキーマを直に見ない（artboard の props で書いて効く prop の唯一の答えが
+   * そちらだから）。
    *
    * ただし検証側（`DesignDocument.collectErrors` が artboard ごとに呼ぶ本体の
    * `collectArtboardErrors`）は Box スキーマを照らしており、artboard だけ照らす先が 2 通り
