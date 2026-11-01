@@ -1,6 +1,9 @@
 import { expect, test } from "vitest";
+import type { TauriIpc } from "@/libs/tauri-ipc";
+import { ipcFailure } from "@/libs/tauri-ipc/fake";
 import { Result } from "@/utils/Result";
 import { createDocumentDialogFake, DialogChoice } from "../fake";
+import { createDocumentDialog } from "../index";
 
 test("ダイアログを出せなかったときは失敗として返り、例外にはならない", async () => {
   const fake = createDocumentDialogFake({
@@ -60,5 +63,26 @@ test("選ばれたものを Rust が受け付けなかったときは、その�
 
   expect(chosen).toStrictEqual(
     Result.err({ message: "/work/notes.txt: 拡張子が `.dcmp` ではない" }),
+  );
+});
+
+test("ダイアログのコマンドが文字列でも null でもない値を返すと、その旨と受け取った値が失敗に残る", async () => {
+  // 本物の Rust は返さない値なので、代役ではなく値を返すだけの IPC を組む。
+  const tauriIpc: TauriIpc = {
+    invoke() {
+      return Promise.resolve(42);
+    },
+    listen(event) {
+      return ipcFailure(`Event ${event} not emitted`);
+    },
+  };
+  const dialog = createDocumentDialog(tauriIpc);
+
+  const chosen = await dialog.chooseOpenPath();
+
+  expect(chosen).toStrictEqual(
+    Result.err({
+      message: "choose_open_document_path が文字列以外を返した: 42",
+    }),
   );
 });

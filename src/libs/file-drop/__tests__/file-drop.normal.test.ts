@@ -1,5 +1,7 @@
 import { expect, test } from "vitest";
+import { createFileDrop } from "@/libs/file-drop";
 import { createFileDropFake, type FileDropFake } from "@/libs/file-drop/fake";
+import { createSingleEventIpcFake } from "@/libs/tauri-ipc/fake";
 import { Result } from "@/utils/Result";
 
 const Path = "/work/login.dcmp";
@@ -52,6 +54,22 @@ test("購読を解除すると、その後に落とされても届かない", as
 
   unsubscribe();
   fake.dropFiles([OtherPath]);
+
+  expect(received).toStrictEqual([[Path]]);
+});
+
+test("Rust が document-dropped で知らせたドロップが届く", async () => {
+  // 代役の定数を通さず綴りで書く。Rust 側の `DOCUMENT_DROPPED_EVENT` と片側だけ変えると落ちる。
+  const rustEvents = createSingleEventIpcFake("document-dropped");
+  const drop = createFileDrop(rustEvents.ipc);
+  const received: (readonly string[])[] = [];
+  Result.unwrap(
+    await drop.subscribeDropped((paths) => {
+      received.push(paths);
+    }),
+  );
+
+  rustEvents.deliver({ paths: [Path] });
 
   expect(received).toStrictEqual([[Path]]);
 });
