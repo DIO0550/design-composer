@@ -45,7 +45,8 @@ export type PublicPropTarget = Readonly<{
 }>;
 
 /**
- * binding が指している先の prop が見つからない理由。
+ * binding が指し先の prop に繋がらない理由（指し先の prop が見つからない、または繋げない prop を
+ * 指している）。
  *
  * どれも binding が属する部品の側の不整合で、指し先のノード名・prop 名は binding 自身が
  * 持っている。
@@ -55,12 +56,14 @@ export type BindingViolation =
   | Readonly<{ kind: "missing-node" }>
   /** 指し先のプリミティブのスキーマに、その prop が無い。 */
   | Readonly<{ kind: "missing-prop" }>
+  /** 指し先のプリミティブの prop が、公開 prop の繋ぎ先にできないもの（`locking`）。 */
+  | Readonly<{ kind: "unbindable-prop" }>
   /** 指し先の部品インスタンスの参照先（`ref`）が、その prop を公開していない。 */
   | Readonly<{ kind: "missing-public-prop"; ref: string }>;
 
 /**
  * binding を 1 段辿った結果。`resolvePropTarget` と `violation` が同じ辿りを使うこと
- * で、1 段目の判定（指し先のノード・型・prop・公開の有無）を 2 つの関数で食い違わせない。
+ * で、1 段目の判定（指し先のノード・型・prop・繋げる prop か・公開の有無）を 2 つの関数で食い違わせない。
  */
 type BindingHop =
   /**
@@ -83,12 +86,23 @@ type BindingHop =
     }>;
 
 /**
+ * 公開 prop の繋ぎ先にできないプリミティブの prop。
+ *
+ * 部品の中身はキャンバスで選べない（docs/06「キャンバスのクリックが選ぶ階層」）ので、上書きで
+ * locked を書いても効く対象が無く、インスペクタに locked と出るのに動かせる食い違いになる。
+ * インスタンスのロックは参照ノード直下で持つ（docs/03「ロック」）。
+ * `RefOwnPropNames` からは導出しない（あちらは「インスタンス自身の値」として集めた別の一覧）。
+ */
+const UnbindablePropNames: readonly string[] = ["locking"];
+
+/**
  * 指し先のプリミティブで、binding の prop の定義と設定値を引く。
  *
  * @param primitive binding の指し先のプリミティブ
  * @param prop binding が指す prop 名
- * @returns 定義があれば `definition`（設定値はプリミティブの props のその prop）、型が未知
- *   なら `unresolvable`、スキーマにその prop が無ければ `missing-prop`
+ * @returns 定義があり繋げる prop なら `definition`（設定値はプリミティブの props のその
+ *   prop）、型が未知なら `unresolvable`、スキーマにその prop が無ければ `missing-prop`、
+ *   繋げない prop（`UnbindablePropNames`）なら `unbindable-prop`
  */
 function hopIntoPrimitive(primitive: PrimitiveNode, prop: string): BindingHop {
   if (!PrimitiveSchema.isPrimitiveType(primitive.type)) {
@@ -97,6 +111,9 @@ function hopIntoPrimitive(primitive: PrimitiveNode, prop: string): BindingHop {
   const definition = PrimitiveSchema.propDefinition(primitive.type, prop);
   if (!Option.isSome(definition)) {
     return { kind: "missing-prop" };
+  }
+  if (UnbindablePropNames.includes(prop)) {
+    return { kind: "unbindable-prop" };
   }
   return {
     kind: "definition",
@@ -201,6 +218,7 @@ function resolveThroughRefs(
     case "unresolvable":
     case "missing-node":
     case "missing-prop":
+    case "unbindable-prop":
     case "missing-public-prop":
       return Option.none;
   }
@@ -234,7 +252,8 @@ export const ComponentBinding = {
    * @param source 解決を始める部品名と binding
    * @returns 行き着いたプリミティブ prop の定義と、部品定義がそこに設定している値（途中の
    *   参照ノードが上書きしていれば、いちばん外側の上書き）。部品・binding 先のノードが無いとき、
-   *   binding 先のノードの型が未知かその prop がスキーマに無いとき、連鎖の途中の部品が
+   *   binding 先のノードの型が未知か、その prop がスキーマに無いか繋げない prop（`locking`）の
+   *   とき、連鎖の途中の部品が
    *   無いかその prop を公開していないとき、連鎖が辿った部品へ戻ったときは `none`
    */
   resolvePropTarget(
@@ -276,15 +295,15 @@ export const ComponentBinding = {
   },
 
   /**
-   * binding の指し先に、binding が指す prop があるか。見るのは 1 段だけで、指し先が部品
+   * binding の指し先に、binding が指す prop があり、公開 prop の繋ぎ先にできるか。見るのは 1 段だけで、指し先が部品
    * インスタンスなら、参照先の部品がその prop を公開しているかまでを見る（その先の binding
    * は参照先の部品の検査が見る）。
    *
    * @param components 引き先の部品一式
    * @param source 検査する部品名と binding
-   * @returns 指し先の prop が見つからなければその理由。見つかったときと、binding の不整合では
-   *   ない理由で辿れないとき（部品が一式に無い・指し先の型が未知・指し先のインスタンスの参照先
-   *   の部品が無い）は `none`
+   * @returns 指し先の prop が見つからないか繋げない prop なら、その理由。繋げる prop が
+   *   見つかったときと、binding の不整合ではない理由で辿れないとき（部品が一式に無い・指し先の
+   *   型が未知・指し先のインスタンスの参照先の部品が無い）は `none`
    */
   violation(
     components: ComponentSet,
@@ -294,6 +313,7 @@ export const ComponentBinding = {
     switch (step.kind) {
       case "missing-node":
       case "missing-prop":
+      case "unbindable-prop":
       case "missing-public-prop":
         return Option.some(step);
       case "unresolvable":
