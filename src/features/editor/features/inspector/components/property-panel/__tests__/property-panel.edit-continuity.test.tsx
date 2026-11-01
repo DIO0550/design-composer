@@ -30,6 +30,27 @@ test("同じ欄へフォーカスし直して打つと、そこからまた別�
   expect(continuities).toEqual([Separate, Continued, Separate]);
 });
 
+test("キーボードだけで同じ欄へ戻って打つと、そこからまた別のまとまりとして届く", async () => {
+  const { user, continuities } = setupEditablePanel("home-title");
+  await user.type(screen.getByRole("textbox", { name: "Content" }), "ab");
+
+  await user.tab();
+  await user.tab({ shift: true });
+  await user.keyboard("c");
+
+  expect(continuities).toEqual([Separate, Continued, Separate]);
+});
+
+test("打っている途中で同じ欄をクリックしても、続けて打った編集は同じまとまりの続きとして届く", async () => {
+  const { user, continuities } = setupEditablePanel("home-title");
+  await user.type(screen.getByRole("textbox", { name: "Content" }), "ab");
+
+  await user.click(screen.getByRole("textbox", { name: "Content" }));
+  await user.keyboard("c");
+
+  expect(continuities).toEqual([Separate, Continued, Continued]);
+});
+
 test("別の欄へ移って打つと、そこからまた別のまとまりとして届く", async () => {
   /*
    * まとまりを欄ごとではなくパネルに 1 つ持つ実装は、ここだけが落ちる
