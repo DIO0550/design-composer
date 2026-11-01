@@ -86,11 +86,8 @@ type BindingHop =
     }>;
 
 /**
- * 公開 prop の繋ぎ先にできないプリミティブの prop。
+ * 公開 prop の繋ぎ先にできないプリミティブの prop（繋げない理由は docs/03「ロック」）。
  *
- * 部品の中身はキャンバスで選べない（docs/06「キャンバスのクリックが選ぶ階層」）ので、上書きで
- * locked を書いても効く対象が無く、インスペクタに locked と出るのに動かせる食い違いになる。
- * インスタンスのロックは参照ノード直下で持つ（docs/03「ロック」）。
  * `RefOwnPropNames` からは導出しない（あちらは「インスタンス自身の値」として集めた別の一覧）。
  */
 const UnbindablePropNames: readonly string[] = ["locking"];
@@ -108,13 +105,16 @@ function hopIntoPrimitive(primitive: PrimitiveNode, prop: string): BindingHop {
   if (!PrimitiveSchema.isPrimitiveType(primitive.type)) {
     return { kind: "unresolvable" };
   }
+
   const definition = PrimitiveSchema.propDefinition(primitive.type, prop);
   if (!Option.isSome(definition)) {
     return { kind: "missing-prop" };
   }
+
   if (UnbindablePropNames.includes(prop)) {
     return { kind: "unbindable-prop" };
   }
+
   return {
     kind: "definition",
     target: {
@@ -252,9 +252,9 @@ export const ComponentBinding = {
    * @param source 解決を始める部品名と binding
    * @returns 行き着いたプリミティブ prop の定義と、部品定義がそこに設定している値（途中の
    *   参照ノードが上書きしていれば、いちばん外側の上書き）。部品・binding 先のノードが無いとき、
-   *   binding 先のノードの型が未知か、その prop がスキーマに無いか繋げない prop（`locking`）の
-   *   とき、連鎖の途中の部品が
-   *   無いかその prop を公開していないとき、連鎖が辿った部品へ戻ったときは `none`
+   *   binding 先のノードの型が未知か、その prop がスキーマに無いか繋げない prop（`locking`）
+   *   のとき、連鎖の途中の部品が無いかその prop を公開していないとき、連鎖が辿った部品へ
+   *   戻ったときは `none`
    */
   resolvePropTarget(
     components: ComponentSet,
@@ -295,9 +295,9 @@ export const ComponentBinding = {
   },
 
   /**
-   * binding の指し先に、binding が指す prop があり、公開 prop の繋ぎ先にできるか。見るのは 1 段だけで、指し先が部品
-   * インスタンスなら、参照先の部品がその prop を公開しているかまでを見る（その先の binding
-   * は参照先の部品の検査が見る）。
+   * binding の指し先に、binding が指す prop があり、公開 prop の繋ぎ先にできるか。見るのは
+   * 1 段だけで、指し先が部品インスタンスなら、参照先の部品がその prop を公開しているかまでを
+   * 見る（その先の binding は参照先の部品の検査が見る）。
    *
    * @param components 引き先の部品一式
    * @param source 検査する部品名と binding
