@@ -4,12 +4,13 @@ import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
- * ウィンドウへファイルが落とされたことを知らせるイベント名。
+ * ウィンドウへファイルが落とされたことを知らせるイベント名（Rust 側の
+ * `DOCUMENT_DROPPED_EVENT` と対）。
  *
- * Tauri 自身が webview へ配る（`tauri` クレートの `DRAG_DROP_EVENT`）ので、
- * こちらの Rust 側には対になるコードが無い。
+ * Tauri 自身が配る `tauri://drag-drop` は聞かない。Rust が落とされたパスを開いてよいものと
+ * して記録する前に webview へ届くので、それを見て開くと記録の前に読み込みが届きうる。
  */
-export const DragDropEvent = "tauri://drag-drop";
+export const DocumentDroppedEvent = "document-dropped";
 
 /** 購読を張れなかった失敗と、診断用の原文。 */
 export type FileDropError = Readonly<{ message: string }>;
@@ -17,8 +18,7 @@ export type FileDropError = Readonly<{ message: string }>;
 /**
  * 落とされた値を、ファイルのパスの並びとして読む。
  *
- * ドラッグ中の通過（`tauri://drag-over`）とは別のイベントだが、同じ形の値が
- * 来るとは限らないので、`as` で通さず形を確かめる。
+ * IPC を渡ってくる値に型は無いので、`as` で通さず形を確かめる。
  *
  * @param payload ドロップのイベントで届いた値
  * @returns 落とされたファイルのパスの並び（ファイル名の要素を持たないものは落とす）。
@@ -42,6 +42,7 @@ function toDroppedPaths(payload: unknown): Option<readonly FilePath[]> {
 /**
  * ウィンドウへのファイルのドロップ（docs/05-architecture.md「Tauri IPC」）。配るのは落
  * とされたパスのうちファイル名の要素を持つものの並びだけで、開けるファイルかどうかは見ない。
+ * `.dcmp` として受け付けられたものは Rust が寄せた綴りで、それ以外は落とされた綴りのまま届く。
  *
  * ドロップを OS 側で受けるので、Windows では webview の HTML5 ドラッグ & ドロップが使え
  * ない（今のところ使っている箇所は無い）。
@@ -65,13 +66,16 @@ export function createFileDrop(tauriIpc: TauriIpc): FileDrop {
   return {
     async subscribeDropped(listener) {
       try {
-        const unsubscribe = await tauriIpc.listen(DragDropEvent, (payload) => {
-          // ファイルのパスを 1 件も持たない通知（ドラッグ中の通過・空の並びなど）は配らない。
-          const paths = toDroppedPaths(payload);
-          if (Option.isSome(paths)) {
-            listener(paths.value);
-          }
-        });
+        const unsubscribe = await tauriIpc.listen(
+          DocumentDroppedEvent,
+          (payload) => {
+            // ファイルのパスを 1 件も持たない通知（空の並び・形の合わない値）は配らない。
+            const paths = toDroppedPaths(payload);
+            if (Option.isSome(paths)) {
+              listener(paths.value);
+            }
+          },
+        );
         return Result.ok(unsubscribe);
       } catch (reason) {
         return Result.err({ message: String(reason) });

@@ -18,6 +18,8 @@ export const DocumentAccessFailureReasons = {
   NotPermitted: "notPermitted",
   /** パスとして使えない。 */
   UnusablePath: "unusablePath",
+  /** 利用者がまだこのアプリで選んでいない。 */
+  Unchosen: "unchosen",
   /** テキストとして読めない。 */
   UndecodableText: "undecodableText",
   /** 読み書き自体が失敗した。 */

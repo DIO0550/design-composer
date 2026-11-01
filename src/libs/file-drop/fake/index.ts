@@ -1,5 +1,5 @@
 import { createSingleEventIpcFake } from "@/libs/tauri-ipc/fake";
-import { createFileDrop, DragDropEvent, type FileDrop } from "../index";
+import { createFileDrop, DocumentDroppedEvent, type FileDrop } from "../index";
 
 /**
  * ウィンドウへのドロップの代役。落とされたファイルをテストから起こす。
@@ -13,7 +13,7 @@ export type FileDropFake = Readonly<{
   dropFiles(paths: readonly string[]): void;
   /**
    * パスの並びを持たない通知が届いたことにする。
-   * ドラッグ中の通過など、同じ購読へ来うる別の形を再現するために分けている。
+   * 形の合わない値を受けたときの振る舞いを再現するために分けている。
    */
   deliverUnknown(payload: unknown): void;
   /** 購読そのものを張れないようにする。 */
@@ -26,14 +26,14 @@ export type FileDropFake = Readonly<{
  * @returns 代役の口と、ドロップを起こす手段
  */
 export function createFileDropFake(): FileDropFake {
-  const events = createSingleEventIpcFake(DragDropEvent);
+  const events = createSingleEventIpcFake(DocumentDroppedEvent);
 
   return {
     drop: createFileDrop(events.ipc),
 
     dropFiles(paths) {
-      // 本物と同じ形（位置も添える）で配る。
-      events.deliver({ paths: [...paths], position: { x: 0, y: 0 } });
+      // 本物（Rust の `DocumentDropped`）と同じ形で配る。
+      events.deliver({ paths: [...paths] });
     },
 
     deliverUnknown: events.deliver,

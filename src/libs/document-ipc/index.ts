@@ -21,6 +21,7 @@ export type DocumentIpcErrorKind =
   | "notFound"
   | "permissionDenied"
   | "invalidPath"
+  | "notChosen"
   | "invalidUtf8"
   | "io"
   | "ipcFailed";
@@ -69,6 +70,8 @@ function toDocumentAccessFailureReason(
       return DocumentAccessFailureReasons.NotPermitted;
     case "invalidPath":
       return DocumentAccessFailureReasons.UnusablePath;
+    case "notChosen":
+      return DocumentAccessFailureReasons.Unchosen;
     case "invalidUtf8":
       return DocumentAccessFailureReasons.UndecodableText;
     case "io":
@@ -124,6 +127,7 @@ const IoErrorKinds: readonly DocumentIpcErrorKind[] = [
   "notFound",
   "permissionDenied",
   "invalidPath",
+  "notChosen",
   "invalidUtf8",
   "io",
 ];

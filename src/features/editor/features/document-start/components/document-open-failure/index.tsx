@@ -31,6 +31,8 @@ function ioFailureLabel(reason: DocumentAccessFailureReason): string {
       return "ファイルを読み書きする権限がありません";
     case "unusablePath":
       return "パスが正しくありません";
+    case "unchosen":
+      return "このファイルはまだこのアプリで選ばれていません。「開く」から選び直してください";
     case "undecodableText":
       return "UTF-8 のテキストとして読めません";
     case "storageFailed":
