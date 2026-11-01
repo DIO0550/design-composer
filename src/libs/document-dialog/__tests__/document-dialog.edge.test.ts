@@ -49,3 +49,16 @@ test("保存のダイアログがファイル名の要素を持たないパス�
     Result.err({ message: "選ばれたパスがファイル名を持たない: \\" }),
   );
 });
+
+test("選ばれたものを Rust が受け付けなかったときは、その理由の原文が失敗に残る", async () => {
+  const fake = createDocumentDialogFake({
+    open: DialogChoice.refused("/work/notes.txt: 拡張子が `.dcmp` ではない"),
+    save: DialogChoice.Canceled,
+  });
+
+  const chosen = await fake.dialog.chooseOpenPath();
+
+  expect(chosen).toStrictEqual(
+    Result.err({ message: "/work/notes.txt: 拡張子が `.dcmp` ではない" }),
+  );
+});

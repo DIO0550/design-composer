@@ -125,6 +125,8 @@ export type SessionPortOptions = Readonly<{
   linkedPaths?: readonly PathLink[];
   /** 綴りを寄せられないパスと、そのときの失敗の種別。 */
   canonicalizeDenials?: readonly CanonicalizeDenial[];
+  /** 利用者がこのアプリで選んでいないものとして扱うパス。 */
+  unchosenPaths?: readonly string[];
 }>;
 
 /**
@@ -159,6 +161,9 @@ export function renderDocumentSession(
   }
   for (const denial of options.canonicalizeDenials ?? []) {
     ipcFake.denyCanonicalize(denial);
+  }
+  for (const path of options.unchosenPaths ?? []) {
+    ipcFake.denyAsUnchosen(path);
   }
 
   const ports = {

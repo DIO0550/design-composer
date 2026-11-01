@@ -155,7 +155,7 @@ test("ダイアログを出せなかったときは、その失敗が残る", as
   expect(DocumentSession.failure(observer.session())).toStrictEqual(
     Option.some({
       kind: "dialog",
-      error: { message: "Error: dialog.open not allowed" },
+      error: { message: "dialog.open not allowed" },
     }),
   );
 });

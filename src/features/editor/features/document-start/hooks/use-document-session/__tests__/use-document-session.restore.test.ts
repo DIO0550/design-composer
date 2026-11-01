@@ -82,6 +82,45 @@ test("前回開いていたファイルが開けなくても一覧から外れ�
   expect(observer.recentPaths()).toStrictEqual([Path, SecondPath]);
 });
 
+test("前回開いていたファイルがこのアプリで選ばれていなければ、選ばれていないことを理由に持つ失敗になる", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
+    NoDialogChoices,
+    {
+      storedAppState: storedRecentPaths([Path, SecondPath]),
+      unchosenPaths: [Path],
+    },
+  );
+
+  await observer.settle();
+
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
+      kind: "io",
+      error: DocumentAccessFailure.create(
+        DocumentAccessFailureReasons.Unchosen,
+        `${Path}: このアプリで選ばれていない`,
+      ),
+    }),
+  );
+});
+
+test("前回開いていたファイルがこのアプリで選ばれていなくても一覧から外れない", async () => {
+  // 2 件目は選ばれている。選ばれていない先頭だけが外れる・全部外れる、のどちらでも落ちる。
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
+    NoDialogChoices,
+    {
+      storedAppState: storedRecentPaths([Path, SecondPath]),
+      unchosenPaths: [Path],
+    },
+  );
+
+  await observer.settle();
+
+  expect(observer.recentPaths()).toStrictEqual([Path, SecondPath]);
+});
+
 test("一覧が 1 件も無ければ何も開かない", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },

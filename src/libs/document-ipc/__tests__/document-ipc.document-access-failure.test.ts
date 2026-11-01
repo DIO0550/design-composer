@@ -23,6 +23,7 @@ const Correspondences: readonly (readonly [
   ["notFound", "missing"],
   ["permissionDenied", "notPermitted"],
   ["invalidPath", "unusablePath"],
+  ["notChosen", "unchosen"],
   ["invalidUtf8", "undecodableText"],
   ["io", "storageFailed"],
   ["ipcFailed", "undelivered"],
