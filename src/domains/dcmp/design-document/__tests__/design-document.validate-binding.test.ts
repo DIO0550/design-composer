@@ -208,7 +208,7 @@ test("locking への binding は unbindable-binding-prop エラーになる", ()
       button: {
         type: "Box",
         children: [{ name: "button-label", type: "Text" }],
-        publicProps: { frozen: { node: "button-label", prop: "locking" } },
+        publicProps: { lock: { node: "button-label", prop: "locking" } },
       },
     },
   });
@@ -219,7 +219,7 @@ test("locking への binding は unbindable-binding-prop エラーになる", ()
     expect.objectContaining({
       kind: "unbindable-binding-prop",
       nodeName: "button",
-      prop: "frozen",
+      prop: "lock",
     }),
   ]);
 });
@@ -231,12 +231,12 @@ test("入れ子の部品の locking へ繋いだ公開 prop を親が辿って�
       button: {
         type: "Box",
         children: [{ name: "button-label", type: "Text" }],
-        publicProps: { frozen: { node: "button-label", prop: "locking" } },
+        publicProps: { lock: { node: "button-label", prop: "locking" } },
       },
       card: {
         type: "Box",
         children: [{ name: "card-action", ref: "button" }],
-        publicProps: { actionFrozen: { node: "card-action", prop: "frozen" } },
+        publicProps: { actionLock: { node: "card-action", prop: "lock" } },
       },
     },
   });
@@ -247,7 +247,7 @@ test("入れ子の部品の locking へ繋いだ公開 prop を親が辿って�
     expect.objectContaining({
       kind: "unbindable-binding-prop",
       nodeName: "button",
-      prop: "frozen",
+      prop: "lock",
     }),
   ]);
 });
@@ -274,7 +274,7 @@ test("インスタンスが語彙に無い値で locking へ繋いだ公開 prop
       button: {
         type: "Box",
         children: [{ name: "button-label", type: "Text" }],
-        publicProps: { frozen: { node: "button-label", prop: "locking" } },
+        publicProps: { lock: { node: "button-label", prop: "locking" } },
       },
     },
     artboards: [
@@ -286,7 +286,7 @@ test("インスタンスが語彙に無い値で locking へ繋いだ公開 prop
           {
             name: "screen-button",
             ref: "button",
-            overrides: { frozen: "frozen" },
+            overrides: { lock: "frozen" },
           },
         ],
       },
@@ -299,7 +299,7 @@ test("インスタンスが語彙に無い値で locking へ繋いだ公開 prop
     expect.objectContaining({
       kind: "unbindable-binding-prop",
       nodeName: "button",
-      prop: "frozen",
+      prop: "lock",
     }),
   ]);
 });

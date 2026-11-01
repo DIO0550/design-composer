@@ -187,12 +187,12 @@ test("連鎖の先で locking に着く binding は解決できない", () => {
     button: {
       type: "Box",
       children: [{ name: "button-label", type: "Text" }],
-      publicProps: { frozen: { node: "button-label", prop: "locking" } },
+      publicProps: { lock: { node: "button-label", prop: "locking" } },
     },
     card: {
       type: "Box",
       children: [{ name: "card-action", ref: "button" }],
-      publicProps: { actionFrozen: { node: "card-action", prop: "frozen" } },
+      publicProps: { actionLock: { node: "card-action", prop: "lock" } },
     },
   };
 
@@ -200,7 +200,7 @@ test("連鎖の先で locking に着く binding は解決できない", () => {
     components,
     ComponentBinding.create("card", {
       node: "card-action",
-      prop: "frozen",
+      prop: "lock",
     }),
   );
 

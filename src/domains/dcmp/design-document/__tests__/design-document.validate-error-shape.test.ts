@@ -78,7 +78,7 @@ test("locking へ binding したときのエラーは、部品名と公開 prop 
       button: {
         type: "Box",
         children: [{ name: "button-label", type: "Text" }],
-        publicProps: { frozen: { node: "button-label", prop: "locking" } },
+        publicProps: { lock: { node: "button-label", prop: "locking" } },
       },
     },
     [],
@@ -88,7 +88,7 @@ test("locking へ binding したときのエラーは、部品名と公開 prop 
     {
       kind: "unbindable-binding-prop",
       nodeName: "button",
-      prop: "frozen",
+      prop: "lock",
       message:
         'prop "locking" of node "button-label" cannot be bound to a public prop',
     },
