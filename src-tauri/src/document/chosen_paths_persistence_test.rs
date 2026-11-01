@@ -1,0 +1,202 @@
+//! 選ばれたパスの記録を、次の起動へ持ち越す(docs/05-architecture.md「選ばれたファイルの記録」)。
+//!
+//! 「次の起動」は、同じ記録ファイルから `ChosenDocumentPaths::restore` で読み戻すことで再現する。
+
+use std::fs;
+
+use crate::app_state;
+
+use super::chosen_paths::{self, ChosenDocumentPaths};
+use super::io::{load_requested, DocumentIoError};
+
+use super::test_support::{chosen_document, chosen_paths_in, raw_document_path, TempDir};
+
+/// 記録ファイルに残す件数の上限(`chosen_paths.rs` と同じ値)。
+const RECORDED_LIMIT: usize = 50;
+
+/// `record_dir` の記録ファイルから読み戻す(次の起動を再現する)。
+fn restarted(record_dir: &TempDir) -> ChosenDocumentPaths {
+    chosen_paths_in(record_dir)
+}
+
+/// `dir` 配下の `doc-{n}.dcmp` を、`range` の順に選ぶ。
+///
+/// @returns 選んだときに返った綴り(選んだ順)
+fn choose_many(
+    chosen: &ChosenDocumentPaths,
+    dir: &TempDir,
+    range: std::ops::Range<usize>,
+) -> Vec<String> {
+    range
+        .map(|index| chosen_document(chosen, dir, &format!("doc-{index}.dcmp")))
+        .collect()
+}
+
+/// 記録ファイルの中身を、外の書き手が書いたものとして置く。
+fn write_record(record_dir: &TempDir, content: &str) {
+    fs::write(chosen_paths::record_path(record_dir.path()), content).expect("記録を書ける");
+}
+
+fn is_not_chosen(chosen: &ChosenDocumentPaths, raw: &str) -> bool {
+    matches!(chosen.require(raw), Err(DocumentIoError::NotChosen { .. }))
+}
+
+#[test]
+fn 選んだパスは次の起動でも照合を通る() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    let spelling = chosen_document(&chosen_paths_in(&record_dir), &dir, "document.dcmp");
+
+    let next = restarted(&record_dir);
+
+    assert!(next.require(&spelling).is_ok());
+}
+
+#[test]
+fn 記録が無ければ何も選ばれていない() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+
+    let chosen = restarted(&record_dir);
+
+    assert!(is_not_chosen(
+        &chosen,
+        &raw_document_path(&dir, "document.dcmp")
+    ));
+}
+
+#[test]
+fn 記録が壊れていれば中に書かれたパスも選ばれていない() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    let raw = raw_document_path(&dir, "document.dcmp");
+    // 末尾が切れた配列
+    write_record(
+        &record_dir,
+        &format!("[{}", serde_json::Value::from(raw.as_str())),
+    );
+
+    let chosen = restarted(&record_dir);
+
+    assert!(is_not_chosen(&chosen, &raw));
+}
+
+#[test]
+fn 最近使ったファイルの一覧にだけあるパスは選ばれていない() {
+    let dir = TempDir::new("chosen-persistence");
+    let config_dir = TempDir::new("chosen-persistence-config");
+    let raw = raw_document_path(&dir, "document.dcmp");
+    let app_state = serde_json::json!({ "recentPaths": [raw] }).to_string();
+    fs::write(app_state::state_path(config_dir.path()), app_state)
+        .expect("app-state.json を書ける");
+
+    let chosen = restarted(&config_dir);
+
+    assert!(is_not_chosen(&chosen, &raw));
+}
+
+#[test]
+fn 記録に外から書き足されたドキュメントのパスとして扱えない行は落とし残りの行は照合を通る() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    let raw = raw_document_path(&dir, "document.dcmp");
+    let record = serde_json::json!([
+        42,
+        "relative.dcmp",
+        raw_document_path(&dir, "notes.txt"),
+        raw
+    ]);
+    write_record(&record_dir, &record.to_string());
+
+    let chosen = restarted(&record_dir);
+
+    assert!(chosen.require(&raw).is_ok());
+}
+
+#[test]
+fn 上限を超えて選ぶと次の起動では古いものから外れる() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    let spellings = choose_many(&chosen_paths_in(&record_dir), &dir, 0..RECORDED_LIMIT + 1);
+
+    let next = restarted(&record_dir);
+
+    assert!(is_not_chosen(&next, &spellings[0]));
+    assert!(next.require(&spellings[1]).is_ok());
+}
+
+#[test]
+fn 上限を超えて選んでも起動中は古いものも照合を通る() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    let chosen = chosen_paths_in(&record_dir);
+
+    let spellings = choose_many(&chosen, &dir, 0..RECORDED_LIMIT + 1);
+
+    assert!(chosen.require(&spellings[0]).is_ok());
+}
+
+#[test]
+fn 読み込めたパスは並びの先頭へ移り新しく選んだものに押されても記録に残る() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    fs::write(dir.join("doc-0.dcmp"), "{}").expect("読み込む対象を用意できる");
+    let chosen = chosen_paths_in(&record_dir);
+    let spellings = choose_many(&chosen, &dir, 0..RECORDED_LIMIT);
+
+    load_requested(&chosen, &spellings[0]).expect("読み込みに成功する");
+    choose_many(&chosen, &dir, RECORDED_LIMIT..RECORDED_LIMIT + 1);
+    let next = restarted(&record_dir);
+
+    assert!(next.require(&spellings[0]).is_ok());
+    assert!(is_not_chosen(&next, &spellings[1]));
+}
+
+#[test]
+fn 読み込めなかったパスは並びの先頭へ移らない() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    // doc-0.dcmp は置かないので読み込めない
+    let chosen = chosen_paths_in(&record_dir);
+    let spellings = choose_many(&chosen, &dir, 0..RECORDED_LIMIT);
+
+    load_requested(&chosen, &spellings[0]).expect_err("読み込みに失敗する");
+    choose_many(&chosen, &dir, RECORDED_LIMIT..RECORDED_LIMIT + 1);
+    let next = restarted(&record_dir);
+
+    assert!(is_not_chosen(&next, &spellings[0]));
+}
+
+#[test]
+fn 外から上限を超えて書かれた記録は新しいものから上限の件数までが照合を通る() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    let raws: Vec<String> = (0..=RECORDED_LIMIT)
+        .map(|index| raw_document_path(&dir, &format!("doc-{index}.dcmp")))
+        .collect();
+    write_record(
+        &record_dir,
+        &serde_json::Value::from(raws.clone()).to_string(),
+    );
+
+    let chosen = restarted(&record_dir);
+
+    assert!(chosen.require(&raws[RECORDED_LIMIT - 1]).is_ok());
+    assert!(is_not_chosen(&chosen, &raws[RECORDED_LIMIT]));
+}
+
+#[test]
+fn 同じパスを2回選んでも記録では1件に数える() {
+    let dir = TempDir::new("chosen-persistence");
+    let record_dir = TempDir::new("chosen-persistence-record");
+    let chosen = chosen_paths_in(&record_dir);
+    let oldest = chosen_document(&chosen, &dir, "oldest.dcmp");
+    chosen_document(&chosen, &dir, "twice.dcmp");
+    chosen_document(&chosen, &dir, "twice.dcmp");
+    // 重複を数えていれば、ここで上限を超えて最も古いものが記録から外れる
+    choose_many(&chosen, &dir, 0..RECORDED_LIMIT - 2);
+
+    let next = restarted(&record_dir);
+
+    assert!(next.require(&oldest).is_ok());
+}

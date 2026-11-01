@@ -2,10 +2,10 @@ use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
 use std::sync::Arc;
 use std::time::Duration;
 
-use super::file_path::DocumentFilePath;
-use super::io::DocumentIoError;
+use super::chosen_paths::{self, ChosenDocumentPath, ChosenDocumentPaths};
+use super::io::{DocumentIoError, DocumentRegistries};
 use super::known_content::KnownContentRegistry;
-use super::watch::{self, DocumentWatchers};
+use super::watch::{self, DocumentWatchers, WatchRegistries};
 
 // `document` のテストは `TempDir` を `super::test_support::TempDir` として読む。置き場を
 // クレート共通へ移しても読む側の綴りが変わらないよう、ここから再 export する。
@@ -30,11 +30,31 @@ pub fn raw_document_path(dir: &TempDir, relative: &str) -> String {
         .to_string()
 }
 
-/// `dir` 配下の `relative`(`/` を含むサブパスも可)を、ドキュメントのパスとして受け付けた
-/// 形で返す。
-pub fn document_file_path(dir: &TempDir, relative: &str) -> DocumentFilePath {
-    DocumentFilePath::parse(&raw_document_path(dir, relative))
-        .expect("ドキュメントのパスとして受け付けられる")
+/// 記録ファイルを `record_dir` に置いて、選ばれたパスの集合を読み戻す。
+///
+/// 記録ファイルを対象のファイルと別のディレクトリに置くのは、対象のディレクトリの中身を
+/// 確かめるテストに記録ファイルが混ざらないようにするため。
+pub fn chosen_paths_in(record_dir: &TempDir) -> ChosenDocumentPaths {
+    ChosenDocumentPaths::restore(chosen_paths::record_path(record_dir.path()))
+}
+
+/// `dir` 配下の `relative` を利用者が選んだことにする。
+///
+/// @returns 選んだときに返った綴り(寄せた綴り)。webview はこの綴りでコマンドを呼ぶ
+pub fn chosen_document(chosen: &ChosenDocumentPaths, dir: &TempDir, relative: &str) -> String {
+    chosen
+        .choose(&raw_document_path(dir, relative))
+        .expect("ドキュメントのパスとして選べる")
+}
+
+/// `dir` 配下の `relative`(`/` を含むサブパスも可)を、利用者が選んで照合を通った形で返す。
+///
+/// 選んだ記録は使い捨ての一時ディレクトリに置き、返す前に片付ける。
+pub fn chosen_file_path(dir: &TempDir, relative: &str) -> ChosenDocumentPath {
+    let record_dir = TempDir::new("chosen-record");
+    let chosen = chosen_paths_in(&record_dir);
+    let spelling = chosen_document(&chosen, dir, relative);
+    chosen.require(&spelling).expect("選んだ綴りは照合を通る")
 }
 
 /// 変更の通知をチャネルへ流す形で監視を開始する。
@@ -44,7 +64,7 @@ pub fn document_file_path(dir: &TempDir, relative: &str) -> DocumentFilePath {
 pub fn watch_changes(
     watchers: &DocumentWatchers,
     known: &Arc<KnownContentRegistry>,
-    path: &DocumentFilePath,
+    path: &ChosenDocumentPath,
 ) -> Receiver<String> {
     let (sender, receiver) = mpsc::channel();
     watch::start(watchers, Arc::clone(known), path, move |content| {
@@ -59,16 +79,27 @@ pub fn watch_changes(
 ///
 /// @returns 監視の開始の成否と、ペイロードを受け取るチャネル
 pub fn watch_requested_payloads(
-    watchers: &DocumentWatchers,
-    known: &Arc<KnownContentRegistry>,
+    registries: WatchRegistries<'_>,
     raw_path: &str,
 ) -> (Result<(), DocumentIoError>, Receiver<String>) {
     let (sender, receiver) = mpsc::channel();
-    let started = watch::start_requested(watchers, Arc::clone(known), raw_path, move |payload| {
+    let started = watch::start_requested(registries, raw_path, move |payload| {
         let json = serde_json::to_string(&payload).expect("ペイロードを JSON にできる");
         let _ = sender.send(json);
     });
     (started, receiver)
+}
+
+/// 監視のコマンドが使う管理状態の組を作る。
+pub fn watch_registries<'a>(
+    chosen: &'a ChosenDocumentPaths,
+    known: &'a Arc<KnownContentRegistry>,
+    watchers: &'a DocumentWatchers,
+) -> WatchRegistries<'a> {
+    WatchRegistries {
+        document: DocumentRegistries { chosen, known },
+        watchers,
+    }
 }
 
 /// 次に通知された内容を待って返す。

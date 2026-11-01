@@ -8,8 +8,8 @@ use super::known_content::KnownContentRegistry;
 use super::watch::{self, DocumentWatchers};
 
 use super::test_support::{
-    assert_no_change, document_file_path, next_change, raw_document_path, watch_changes,
-    watch_requested_payloads, TempDir,
+    assert_no_change, chosen_document, chosen_file_path, chosen_paths_in, next_change,
+    raw_document_path, watch_changes, watch_registries, watch_requested_payloads, TempDir,
 };
 
 #[test]
@@ -21,7 +21,7 @@ fn 存在しないファイルの監視は開始できない() {
     let result = watch::start(
         &watchers,
         known,
-        &document_file_path(&dir, "missing.dcmp"),
+        &chosen_file_path(&dir, "missing.dcmp"),
         |_| {},
     );
 
@@ -31,7 +31,7 @@ fn 存在しないファイルの監視は開始できない() {
 #[test]
 fn 外部がファイルを差し替えても検知が続く() {
     let dir = TempDir::new("watch-edge");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -49,7 +49,7 @@ fn 外部がファイルを差し替えても検知が続く() {
 #[test]
 fn 同じディレクトリの別ファイルの変更は通知されない() {
     let dir = TempDir::new("watch-edge");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -63,7 +63,7 @@ fn 同じディレクトリの別ファイルの変更は通知されない() {
 #[test]
 fn 同じファイルを二重に監視しても通知は1回だけ届く() {
     let dir = TempDir::new("watch-edge");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -79,7 +79,7 @@ fn 同じファイルを二重に監視しても通知は1回だけ届く() {
 #[test]
 fn 監視を再開すると停止中の変更は通知されず再開後の変更が通知される() {
     let dir = TempDir::new("watch-edge");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -97,7 +97,7 @@ fn 監視を再開すると停止中の変更は通知されず再開後の変�
 #[test]
 fn 監視していないファイルの停止は何も起こさない() {
     let dir = TempDir::new("watch-edge");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -109,15 +109,22 @@ fn 監視していないファイルの停止は何も起こさない() {
     assert_eq!(next_change(&changes), r#"{"version":2}"#);
 }
 
+// 不正なパスを返すことを確かめるテストは、選ばれたパスの集合を空にして呼ぶ。`.dcmp` 以外は
+// そもそも選べないので、集合を空にしても照合より先に形の検査で落ちることを固定できる。
+
 #[test]
 fn 拡張子がdcmpでない既存のファイルは監視されず書き換えても通知されない() {
     let dir = TempDir::new("watch-edge");
+    let record_dir = TempDir::new("watch-edge-record");
     fs::write(dir.join("notes.txt"), "v1").expect("監視対象を用意できる");
+    let chosen = chosen_paths_in(&record_dir);
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
 
-    let (result, payloads) =
-        watch_requested_payloads(&watchers, &known, &raw_document_path(&dir, "notes.txt"));
+    let (result, payloads) = watch_requested_payloads(
+        watch_registries(&chosen, &known, &watchers),
+        &raw_document_path(&dir, "notes.txt"),
+    );
     fs::write(dir.join("notes.txt"), "v2").expect("外部からの書き込みができる");
 
     assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
@@ -127,12 +134,56 @@ fn 拡張子がdcmpでない既存のファイルは監視されず書き換え�
 #[test]
 fn 拡張子がdcmpでないファイルの監視の停止は不正なパスを返す() {
     let dir = TempDir::new("watch-edge");
-    let known = KnownContentRegistry::new();
+    let record_dir = TempDir::new("watch-edge-record");
+    let chosen = chosen_paths_in(&record_dir);
+    let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
 
-    let result = watch::stop_requested(&watchers, &known, &raw_document_path(&dir, "notes.txt"));
+    let result = watch::stop_requested(
+        watch_registries(&chosen, &known, &watchers),
+        &raw_document_path(&dir, "notes.txt"),
+    );
 
     assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
+}
+
+#[test]
+fn 選んでいないdcmpファイルは監視されず書き換えても通知されない() {
+    let dir = TempDir::new("watch-edge");
+    let record_dir = TempDir::new("watch-edge-record");
+    fs::write(dir.join("document.dcmp"), r#"{"version":1}"#).expect("監視対象を用意できる");
+    let chosen = chosen_paths_in(&record_dir);
+    // 対照に別のファイルを選んでおく。集合が空だから拒んだ、では通らないようにする。
+    chosen_document(&chosen, &dir, "other.dcmp");
+    let known = Arc::new(KnownContentRegistry::new());
+    let watchers = DocumentWatchers::new();
+
+    let (result, payloads) = watch_requested_payloads(
+        watch_registries(&chosen, &known, &watchers),
+        &raw_document_path(&dir, "document.dcmp"),
+    );
+    fs::write(dir.join("document.dcmp"), r#"{"version":2}"#).expect("外部からの書き込みができる");
+
+    assert!(matches!(result, Err(DocumentIoError::NotChosen { .. })));
+    assert_no_change(&payloads);
+}
+
+#[test]
+fn 選んだときと違う綴りでは同じファイルでも監視を始められない() {
+    let dir = TempDir::new("watch-edge");
+    let record_dir = TempDir::new("watch-edge-record");
+    fs::write(dir.join("document.dcmp"), r#"{"version":1}"#).expect("監視対象を用意できる");
+    let chosen = chosen_paths_in(&record_dir);
+    chosen_document(&chosen, &dir, "document.dcmp");
+    let known = Arc::new(KnownContentRegistry::new());
+    let watchers = DocumentWatchers::new();
+    // 寄せると消える `/./` を綴りに含める
+    let detoured = raw_document_path(&dir, "./document.dcmp");
+
+    let (result, _payloads) =
+        watch_requested_payloads(watch_registries(&chosen, &known, &watchers), &detoured);
+
+    assert!(matches!(result, Err(DocumentIoError::NotChosen { .. })));
 }
 
 /// 監視対象と同じディレクトリの一時ファイルへ書いてから差し替える。
