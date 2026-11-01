@@ -6,7 +6,7 @@ import {
 import type { Node } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { propsOf, setupDocument } from "./group-setup";
+import { group, propsOf, setupPanelDocument } from "./group-setup";
 
 /*
  * 同じ親の兄弟をまとめて包むときに、Box が親と兄弟から引き継ぐ指定（docs/06-ui.md
@@ -27,20 +27,21 @@ const FlowPair: readonly Node[] = [
  * @returns 包んだあとのドキュメント
  */
 function groupPair(document: DesignDocument): DesignDocument {
-  return Result.unwrap(
-    DesignDocument.groupIntoBox(document, ["first", "second"], "box"),
-  );
+  return group(document, ["first", "second"]);
 }
 
 test("layout: row の親の中のフローの兄弟を包むと、Box も row で並べる", () => {
-  const grouped = groupPair(setupDocument({ layout: "row" }, FlowPair));
+  const grouped = groupPair(setupPanelDocument({ layout: "row" }, FlowPair));
 
   expect(propsOf(grouped, "box")).toEqual({ layout: "row" });
 });
 
 test("親に書かれた gap / align を Box も持つ", () => {
   const grouped = groupPair(
-    setupDocument({ gap: "md", align: "center", paddingTop: "lg" }, FlowPair),
+    setupPanelDocument(
+      { gap: "md", align: "center", paddingTop: "lg" },
+      FlowPair,
+    ),
   );
 
   expect(propsOf(grouped, "box")).toEqual({ gap: "md", align: "center" });
@@ -66,13 +67,13 @@ test("artboard の直下のフローの兄弟を包むと、artboard に書か�
 });
 
 test("layout: free の親の中のフローの兄弟を包むと、Box も free になる", () => {
-  const grouped = groupPair(setupDocument({ layout: "free" }, FlowPair));
+  const grouped = groupPair(setupPanelDocument({ layout: "free" }, FlowPair));
 
   expect(propsOf(grouped, "box")).toEqual({ layout: "free" });
 });
 
 test("親に何も書かれていなければ、長さのモードを持つフローの兄弟を包んだ Box は props を持たない", () => {
-  const grouped = groupPair(setupDocument({}, FlowPair));
+  const grouped = groupPair(setupPanelDocument({}, FlowPair));
   const box = Option.unwrap(DesignDocument.findNode(grouped, "box"));
 
   expect("props" in box).toBe(false);
@@ -80,7 +81,7 @@ test("親に何も書かれていなければ、長さのモードを持つフ�
 
 test("兄弟のうち 1 つでも幅が fill なら Box の幅も fill になり、下限・上限は写さない", () => {
   const filled = groupPair(
-    setupDocument({}, [
+    setupPanelDocument({}, [
       {
         name: "first",
         type: "Box",
@@ -90,7 +91,7 @@ test("兄弟のうち 1 つでも幅が fill なら Box の幅も fill になり
     ]),
   );
   const unfilled = groupPair(
-    setupDocument({}, [
+    setupPanelDocument({}, [
       { name: "first", type: "Box", props: { widthMode: "hug" } },
       { name: "second", type: "Box" },
     ]),
@@ -104,7 +105,7 @@ test("兄弟のうち 1 つでも幅が fill なら Box の幅も fill になり
 
 test("絶対配置の兄弟をまとめて包むと、Box はそれらの各軸の最小の座標に絶対配置で置かれる", () => {
   const grouped = groupPair(
-    setupDocument({}, [
+    setupPanelDocument({}, [
       {
         name: "first",
         type: "Text",
@@ -127,7 +128,7 @@ test("絶対配置の兄弟をまとめて包むと、Box はそれらの各軸�
 
 test("絶対配置の兄弟をまとめて包むと、兄弟は絶対配置のまま Box の座標を引いた位置になる", () => {
   const grouped = groupPair(
-    setupDocument({}, [
+    setupPanelDocument({}, [
       {
         name: "first",
         type: "Text",
@@ -149,7 +150,7 @@ test("絶対配置の兄弟をまとめて包むと、兄弟は絶対配置の�
 
 test("絶対配置の兄弟の追従が軸ごとに揃っていれば Box も同じ追従を持ち、揃っていない軸は持たない", () => {
   const grouped = groupPair(
-    setupDocument({}, [
+    setupPanelDocument({}, [
       {
         name: "first",
         type: "Text",
@@ -184,7 +185,7 @@ test("絶対配置の兄弟の追従が軸ごとに揃っていれば Box も同
 });
 
 test("絶対配置の兄弟をまとめて包んでから外すと、元の座標と追従に戻る", () => {
-  const document = setupDocument({}, [
+  const document = setupPanelDocument({}, [
     {
       name: "first",
       type: "Text",
@@ -210,8 +211,8 @@ test("絶対配置とフローの兄弟が混ざっていると包めない", ()
     type: "Text",
     props: { placement: "absolute", x: 40, y: 10 },
   };
-  const mixed = setupDocument({}, [absoluteFirst, FlowPair[1]]);
-  const flow = setupDocument({}, FlowPair);
+  const mixed = setupPanelDocument({}, [absoluteFirst, FlowPair[1]]);
+  const flow = setupPanelDocument({}, FlowPair);
 
   expect([
     DesignDocument.groupIntoBox(mixed, ["first", "second"], "box"),
@@ -225,7 +226,7 @@ test("絶対配置とフローの兄弟が混ざっていると、Box 名が使�
     type: "Text",
     props: { placement: "absolute", x: 40, y: 10 },
   };
-  const mixed = setupDocument({}, [absoluteFirst, FlowPair[1]]);
+  const mixed = setupPanelDocument({}, [absoluteFirst, FlowPair[1]]);
 
   expect(
     DesignDocument.groupIntoBox(mixed, ["first", "second"], "Box 1"),
@@ -233,7 +234,7 @@ test("絶対配置とフローの兄弟が混ざっていると、Box 名が使�
 });
 
 test("部品インスタンスと絶対配置の兄弟が混ざっていると包めない", () => {
-  const document = setupDocument({}, [
+  const document = setupPanelDocument({}, [
     {
       name: "first",
       type: "Text",

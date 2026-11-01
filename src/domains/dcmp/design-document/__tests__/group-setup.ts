@@ -1,9 +1,12 @@
+import type { ComponentSet } from "@/domains/dcmp/component";
 import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import { Node, type Props } from "@/domains/dcmp/node";
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { Option } from "@/utils/Option";
+import { Result } from "@/utils/Result";
 
 /**
  * 名前で引いたノードに書かれている props。
@@ -41,7 +44,7 @@ export function childNames(
  * @param children panel の中に並べるノード
  * @returns 1 つの artboard だけを持つドキュメント
  */
-export function setupDocument(
+export function setupPanelDocument(
   panelProps: Props,
   children: readonly Node[],
 ): DesignDocument {
@@ -57,4 +60,49 @@ export function setupDocument(
       },
     ],
   });
+}
+
+/**
+ * 画面の直下にノードを並べたドキュメント。
+ *
+ * @param artboardProps 画面に書く props。省くと何も書かない
+ * @param components ドキュメントの部品定義。省くと持たない
+ * @param children 画面の直下に並べるノード
+ * @returns 1 つの artboard だけを持つドキュメント
+ */
+export function setupArtboardDocument({
+  artboardProps,
+  components,
+  children,
+}: {
+  artboardProps?: Props;
+  components?: ComponentSet;
+  children: readonly Node[];
+}): DesignDocument {
+  return DesignDocument.create({
+    components,
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        ...(artboardProps === undefined ? {} : { props: artboardProps }),
+        children,
+      },
+    ],
+  });
+}
+
+/**
+ * 名前で指したノードを box という名前の Box で包む。
+ *
+ * @param document 包む先のドキュメント
+ * @param names 包むノードの名前
+ * @returns 包んだあとのドキュメント
+ */
+export function group(
+  document: DesignDocument,
+  names: NonEmptyArray<string>,
+): DesignDocument {
+  return Result.unwrap(DesignDocument.groupIntoBox(document, names, "box"));
 }

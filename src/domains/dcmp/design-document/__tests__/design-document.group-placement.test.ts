@@ -1,9 +1,8 @@
 import { expect, test } from "vitest";
-import type { Node } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
-import { propsOf } from "./group-setup";
+import { propsOf, setupArtboardDocument } from "./group-setup";
 
 /*
  * 包む / 外すときに、配置（docs/03「配置の指定」の 5 prop）を Box と子の間で受け渡す
@@ -11,32 +10,22 @@ import { propsOf } from "./group-setup";
  * `design-document.group.test.ts` が持つ。
  */
 
-/**
- * 画面の直下にノードを並べたドキュメント。
- *
- * @param children 画面の直下に並べるノード
- * @returns 1 つの artboard だけを持つドキュメント
- */
-function setupDocument(children: readonly Node[]): DesignDocument {
-  return DesignDocument.create({
-    artboards: [{ name: "screen", width: 375, height: 812, children }],
-  });
-}
-
 test("絶対配置のノードを包むと、Box がそのノードの配置を持つ", () => {
-  const document = setupDocument([
-    {
-      name: "title",
-      type: "Text",
-      props: {
-        placement: "absolute",
-        x: 24,
-        y: 48,
-        constraintX: "max",
-        constraintY: "center",
+  const document = setupArtboardDocument({
+    children: [
+      {
+        name: "title",
+        type: "Text",
+        props: {
+          placement: "absolute",
+          x: 24,
+          y: 48,
+          constraintX: "max",
+          constraintY: "center",
+        },
       },
-    },
-  ]);
+    ],
+  });
 
   const grouped = Result.unwrap(
     DesignDocument.groupIntoBox(document, ["title"], "box"),
@@ -52,19 +41,21 @@ test("絶対配置のノードを包むと、Box がそのノードの配置を�
 });
 
 test("絶対配置のノードを包むと、包まれたノードは配置の prop を持たなくなり、それ以外の props は残る", () => {
-  const document = setupDocument([
-    {
-      name: "title",
-      type: "Text",
-      props: {
-        placement: "absolute",
-        x: 24,
-        y: 48,
-        constraintX: "max",
-        content: "見出し",
+  const document = setupArtboardDocument({
+    children: [
+      {
+        name: "title",
+        type: "Text",
+        props: {
+          placement: "absolute",
+          x: 24,
+          y: 48,
+          constraintX: "max",
+          content: "見出し",
+        },
       },
-    },
-  ]);
+    ],
+  });
 
   const grouped = Result.unwrap(
     DesignDocument.groupIntoBox(document, ["title"], "box"),
@@ -74,13 +65,15 @@ test("絶対配置のノードを包むと、包まれたノードは配置の p
 });
 
 test("フローのノードを包んでも、ノードに書かれた座標はそのまま残り、Box は座標を持たない", () => {
-  const document = setupDocument([
-    {
-      name: "title",
-      type: "Box",
-      props: { placement: "flow", x: 24, y: 48 },
-    },
-  ]);
+  const document = setupArtboardDocument({
+    children: [
+      {
+        name: "title",
+        type: "Box",
+        props: { placement: "flow", x: 24, y: 48 },
+      },
+    ],
+  });
 
   const grouped = Result.unwrap(
     DesignDocument.groupIntoBox(document, ["title"], "box"),
@@ -93,20 +86,22 @@ test("フローのノードを包んでも、ノードに書かれた座標は�
 });
 
 test("絶対配置の Box を外すと、絶対配置の子の座標に Box の座標が足される", () => {
-  const document = setupDocument([
-    {
-      name: "box",
-      type: "Box",
-      props: { placement: "absolute", x: 100, y: 200 },
-      children: [
-        {
-          name: "badge",
-          type: "Ellipse",
-          props: { placement: "absolute", x: 10, y: 20 },
-        },
-      ],
-    },
-  ]);
+  const document = setupArtboardDocument({
+    children: [
+      {
+        name: "box",
+        type: "Box",
+        props: { placement: "absolute", x: 100, y: 200 },
+        children: [
+          {
+            name: "badge",
+            type: "Ellipse",
+            props: { placement: "absolute", x: 10, y: 20 },
+          },
+        ],
+      },
+    ],
+  });
 
   const { document: ungrouped } = Result.unwrap(
     DesignDocument.ungroupBox(document, "box"),
@@ -120,32 +115,34 @@ test("絶対配置の Box を外すと、絶対配置の子の座標に Box の�
 });
 
 test("絶対配置の Box を外しても、絶対配置の子の追従は子のものが残る", () => {
-  const document = setupDocument([
-    {
-      name: "box",
-      type: "Box",
-      props: {
-        placement: "absolute",
-        x: 100,
-        y: 200,
-        constraintX: "scale",
-        constraintY: "stretch",
-      },
-      children: [
-        {
-          name: "badge",
-          type: "Ellipse",
-          props: {
-            placement: "absolute",
-            x: 10,
-            y: 20,
-            constraintX: "max",
-            constraintY: "center",
-          },
+  const document = setupArtboardDocument({
+    children: [
+      {
+        name: "box",
+        type: "Box",
+        props: {
+          placement: "absolute",
+          x: 100,
+          y: 200,
+          constraintX: "scale",
+          constraintY: "stretch",
         },
-      ],
-    },
-  ]);
+        children: [
+          {
+            name: "badge",
+            type: "Ellipse",
+            props: {
+              placement: "absolute",
+              x: 10,
+              y: 20,
+              constraintX: "max",
+              constraintY: "center",
+            },
+          },
+        ],
+      },
+    ],
+  });
 
   const { document: ungrouped } = Result.unwrap(
     DesignDocument.ungroupBox(document, "box"),
@@ -158,27 +155,29 @@ test("絶対配置の Box を外しても、絶対配置の子の追従は子の
 });
 
 test("絶対配置の Box の中のフローの子が 1 つだけなら、外すとその子が Box の配置を持つ", () => {
-  const document = setupDocument([
-    {
-      name: "box",
-      type: "Box",
-      props: {
-        placement: "absolute",
-        x: 100,
-        y: 200,
-        constraintX: "max",
-        constraintY: "center",
-      },
-      children: [
-        { name: "title", type: "Text", props: { content: "見出し" } },
-        {
-          name: "badge",
-          type: "Ellipse",
-          props: { placement: "absolute", x: 10, y: 20 },
+  const document = setupArtboardDocument({
+    children: [
+      {
+        name: "box",
+        type: "Box",
+        props: {
+          placement: "absolute",
+          x: 100,
+          y: 200,
+          constraintX: "max",
+          constraintY: "center",
         },
-      ],
-    },
-  ]);
+        children: [
+          { name: "title", type: "Text", props: { content: "見出し" } },
+          {
+            name: "badge",
+            type: "Ellipse",
+            props: { placement: "absolute", x: 10, y: 20 },
+          },
+        ],
+      },
+    ],
+  });
 
   const { document: ungrouped } = Result.unwrap(
     DesignDocument.ungroupBox(document, "box"),
@@ -195,16 +194,18 @@ test("絶対配置の Box の中のフローの子が 1 つだけなら、外す
 });
 
 test("フローの子に古い追従が残っていても、外したあとの子の配置は Box と同じになる", () => {
-  const document = setupDocument([
-    {
-      name: "box",
-      type: "Box",
-      props: { placement: "absolute", x: 100, y: 200 },
-      children: [
-        { name: "title", type: "Text", props: { constraintX: "scale" } },
-      ],
-    },
-  ]);
+  const document = setupArtboardDocument({
+    children: [
+      {
+        name: "box",
+        type: "Box",
+        props: { placement: "absolute", x: 100, y: 200 },
+        children: [
+          { name: "title", type: "Text", props: { constraintX: "scale" } },
+        ],
+      },
+    ],
+  });
 
   const { document: ungrouped } = Result.unwrap(
     DesignDocument.ungroupBox(document, "box"),
@@ -218,17 +219,19 @@ test("フローの子に古い追従が残っていても、外したあとの�
 });
 
 test("絶対配置の Box の中にフローの子が 2 つ以上あると、外してもフローの子は配置を持たない", () => {
-  const document = setupDocument([
-    {
-      name: "box",
-      type: "Box",
-      props: { placement: "absolute", x: 100, y: 200 },
-      children: [
-        { name: "first", type: "Text", props: { content: "1" } },
-        { name: "second", type: "Text", props: { content: "2" } },
-      ],
-    },
-  ]);
+  const document = setupArtboardDocument({
+    children: [
+      {
+        name: "box",
+        type: "Box",
+        props: { placement: "absolute", x: 100, y: 200 },
+        children: [
+          { name: "first", type: "Text", props: { content: "1" } },
+          { name: "second", type: "Text", props: { content: "2" } },
+        ],
+      },
+    ],
+  });
 
   const { document: ungrouped } = Result.unwrap(
     DesignDocument.ungroupBox(document, "box"),
@@ -300,16 +303,18 @@ test("フローの子が 1 つでもインスタンスと並んでいれば、�
 });
 
 test("フローの Box を外すと、唯一のフローの子の props は変わらない", () => {
-  const document = setupDocument([
-    {
-      name: "box",
-      type: "Box",
-      props: { placement: "flow", x: 100, y: 200 },
-      children: [
-        { name: "title", type: "Text", props: { constraintX: "scale" } },
-      ],
-    },
-  ]);
+  const document = setupArtboardDocument({
+    children: [
+      {
+        name: "box",
+        type: "Box",
+        props: { placement: "flow", x: 100, y: 200 },
+        children: [
+          { name: "title", type: "Text", props: { constraintX: "scale" } },
+        ],
+      },
+    ],
+  });
 
   const { document: ungrouped } = Result.unwrap(
     DesignDocument.ungroupBox(document, "box"),
@@ -319,20 +324,22 @@ test("フローの Box を外すと、唯一のフローの子の props は変�
 });
 
 test("フローの Box を外すと、絶対配置の子の座標は変わらない", () => {
-  const document = setupDocument([
-    {
-      name: "box",
-      type: "Box",
-      props: { placement: "flow", x: 100, y: 200 },
-      children: [
-        {
-          name: "badge",
-          type: "Ellipse",
-          props: { placement: "absolute", x: 10, y: 20 },
-        },
-      ],
-    },
-  ]);
+  const document = setupArtboardDocument({
+    children: [
+      {
+        name: "box",
+        type: "Box",
+        props: { placement: "flow", x: 100, y: 200 },
+        children: [
+          {
+            name: "badge",
+            type: "Ellipse",
+            props: { placement: "absolute", x: 10, y: 20 },
+          },
+        ],
+      },
+    ],
+  });
 
   const { document: ungrouped } = Result.unwrap(
     DesignDocument.ungroupBox(document, "box"),
@@ -361,7 +368,7 @@ test("絶対配置のノードを包んでから外すと、元のノードに�
     },
     children: [],
   };
-  const document = setupDocument([title]);
+  const document = setupArtboardDocument({ children: [title] });
 
   const grouped = Result.unwrap(
     DesignDocument.groupIntoBox(document, ["title"], "box"),

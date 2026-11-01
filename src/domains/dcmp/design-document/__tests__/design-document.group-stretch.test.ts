@@ -1,31 +1,18 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { Result } from "@/utils/Result";
-import { propsOf, setupDocument } from "./group-setup";
+import {
+  group,
+  propsOf,
+  setupArtboardDocument,
+  setupPanelDocument,
+} from "./group-setup";
 
-/*
- * 親の `stretch` に交差軸へ引き伸ばされているノードを包むと、Box もその軸を `fill` にする
- * （docs/06-ui.md「編集操作の一覧」のグループ化・「複数選択」）。
- */
-
-/**
- * 名前で指したノードを box という名前の Box で包む。
- *
- * @param document 包む先のドキュメント
- * @param names 包むノードの名前
- * @returns 包んだあとのドキュメント
- */
-function group(
-  document: DesignDocument,
-  names: NonEmptyArray<string>,
-): DesignDocument {
-  return Result.unwrap(DesignDocument.groupIntoBox(document, names, "box"));
-}
+// docs/06-ui.md「編集操作の一覧」のグループ化・「複数選択」のグループ化
 
 test("揃えを書いていない column の親の下でフローの Text を包むと、Box の幅が fill になる", () => {
   const grouped = group(
-    setupDocument({ layout: "column" }, [{ name: "title", type: "Text" }]),
+    setupPanelDocument({ layout: "column" }, [{ name: "title", type: "Text" }]),
     ["title"],
   );
 
@@ -34,7 +21,7 @@ test("揃えを書いていない column の親の下でフローの Text を包
 
 test("layout: row の親の下でフローの Text を包むと、Box の高さが fill になる", () => {
   const grouped = group(
-    setupDocument({ layout: "row" }, [{ name: "title", type: "Text" }]),
+    setupPanelDocument({ layout: "row" }, [{ name: "title", type: "Text" }]),
     ["title"],
   );
 
@@ -42,15 +29,8 @@ test("layout: row の親の下でフローの Text を包むと、Box の高さ�
 });
 
 test("何も書いていない artboard の直下で Text を包むと、Box の幅が fill になる", () => {
-  const document = DesignDocument.create({
-    artboards: [
-      {
-        name: "screen",
-        width: 375,
-        height: 812,
-        children: [{ name: "title", type: "Text" }],
-      },
-    ],
+  const document = setupArtboardDocument({
+    children: [{ name: "title", type: "Text" }],
   });
 
   expect(propsOf(group(document, ["title"]), "box")).toEqual({
@@ -59,16 +39,9 @@ test("何も書いていない artboard の直下で Text を包むと、Box の
 });
 
 test("layout: row と書いた artboard の直下で Text を包むと、Box の高さが fill になる", () => {
-  const document = DesignDocument.create({
-    artboards: [
-      {
-        name: "screen",
-        width: 375,
-        height: 812,
-        props: { layout: "row" },
-        children: [{ name: "title", type: "Text" }],
-      },
-    ],
+  const document = setupArtboardDocument({
+    artboardProps: { layout: "row" },
+    children: [{ name: "title", type: "Text" }],
   });
 
   expect(propsOf(group(document, ["title"]), "box")).toEqual({
@@ -78,7 +51,7 @@ test("layout: row と書いた artboard の直下で Text を包むと、Box の
 
 test("揃えが center の column の親の下で Text を包んだ Box は、大きさの prop を持たない", () => {
   const grouped = group(
-    setupDocument({ align: "center" }, [{ name: "title", type: "Text" }]),
+    setupPanelDocument({ align: "center" }, [{ name: "title", type: "Text" }]),
     ["title"],
   );
 
@@ -87,16 +60,16 @@ test("揃えが center の column の親の下で Text を包んだ Box は、�
 
 test("layout: free の親の下で Text を包んだ Box は、大きさの prop を持たない", () => {
   const grouped = group(
-    setupDocument({ layout: "free" }, [{ name: "title", type: "Text" }]),
+    setupPanelDocument({ layout: "free" }, [{ name: "title", type: "Text" }]),
     ["title"],
   );
 
   expect(propsOf(grouped, "box")).toEqual({});
 });
 
-test("stretch の親の下で絶対配置の Text を包むと、Box は配置だけを持ち fill を持たない", () => {
+test("揃えが stretch の親の下で絶対配置の Text を包むと、Box は配置だけを持ち fill を持たない", () => {
   const grouped = group(
-    setupDocument({}, [
+    setupPanelDocument({}, [
       {
         name: "title",
         type: "Text",
@@ -115,7 +88,7 @@ test("stretch の親の下で絶対配置の Text を包むと、Box は配置�
 
 test("Text を包んでも Text の props は変わらない", () => {
   const grouped = group(
-    setupDocument({}, [
+    setupPanelDocument({}, [
       { name: "title", type: "Text", props: { content: "見出し" } },
     ]),
     ["title"],
@@ -124,25 +97,19 @@ test("Text を包んでも Text の props は変わらない", () => {
   expect(propsOf(grouped, "title")).toEqual({ content: "見出し" });
 });
 
-test("stretch の親の下で Ellipse を包んだ Box は、大きさの prop を持たない", () => {
-  const grouped = group(setupDocument({}, [{ name: "dot", type: "Ellipse" }]), [
-    "dot",
-  ]);
+test("揃えが stretch の親の下で Ellipse を包んだ Box は、大きさの prop を持たない", () => {
+  const grouped = group(
+    setupPanelDocument({}, [{ name: "dot", type: "Ellipse" }]),
+    ["dot"],
+  );
 
   expect(propsOf(grouped, "box")).toEqual({});
 });
 
-test("stretch の親の下で部品インスタンスを包んだ Box は、大きさの prop を持たない", () => {
-  const document = DesignDocument.create({
+test("揃えが stretch の親の下で部品インスタンスを包んだ Box は、大きさの prop を持たない", () => {
+  const document = setupArtboardDocument({
     components: { Caption: { type: "Text" } },
-    artboards: [
-      {
-        name: "screen",
-        width: 375,
-        height: 812,
-        children: [{ name: "caption", ref: "Caption" }],
-      },
-    ],
+    children: [{ name: "caption", ref: "Caption" }],
   });
 
   expect(propsOf(group(document, ["caption"]), "box")).toEqual({});
@@ -150,7 +117,7 @@ test("stretch の親の下で部品インスタンスを包んだ Box は、大�
 
 test("column の親の下で Text と Box をまとめて包むと、Box の幅が fill になる", () => {
   const grouped = group(
-    setupDocument({}, [
+    setupPanelDocument({}, [
       { name: "title", type: "Text" },
       { name: "card", type: "Box" },
     ]),
@@ -162,7 +129,7 @@ test("column の親の下で Text と Box をまとめて包むと、Box の幅�
 
 test("row の親の下で Text と Box をまとめて包むと、Box は row で並べ、高さが fill になる", () => {
   const grouped = group(
-    setupDocument({ layout: "row" }, [
+    setupPanelDocument({ layout: "row" }, [
       { name: "title", type: "Text" },
       { name: "card", type: "Box" },
     ]),
@@ -175,8 +142,8 @@ test("row の親の下で Text と Box をまとめて包むと、Box は row �
   });
 });
 
-test("stretch の親の下の Text を包んでから外すと、元のドキュメントに戻る", () => {
-  const document = setupDocument({}, [
+test("揃えが stretch の親の下の Text を包んでから外すと、元のドキュメントに戻る", () => {
+  const document = setupPanelDocument({}, [
     { name: "title", type: "Text", props: { content: "見出し" } },
   ]);
 
