@@ -1,7 +1,8 @@
 //! 同じファイルを指す別の綴りを、1 つの綴りへ寄せる。
 //!
 //! 寄せた綴りは `KnownContentRegistry` の記録のキーと、TS がタブ・最近使ったファイルを
-//! 見分けるのに使う綴り(`canonicalize_document_path`)の両方に使う。
+//! 見分けるのに使う綴り(`canonicalize_document_path`)と、選ばれたパスの集合に載せる綴り
+//! (`chosen_paths.rs`)の 3 つに使う。
 
 use std::path::{Component, Path, PathBuf, Prefix};
 

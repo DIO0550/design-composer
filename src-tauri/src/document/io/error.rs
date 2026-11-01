@@ -18,8 +18,12 @@ pub enum DocumentIoError {
     PermissionDenied { message: String },
     /// ドキュメントとして扱えないパス。`DocumentFilePath::parse` が拒否したパスと、
     /// `io/atomic_write.rs` / `watch/watchers.rs` が親ディレクトリ・ファイル名を取り出せないパスと、
-    /// `canonical_path.rs` が揃えた綴りを UTF-8 で表せないパス。
+    /// `canonical_path.rs` が揃えた綴りを UTF-8 で表せないパスと、`dialog.rs` がダイアログで
+    /// 選ばれたものをパスとして・UTF-8 として読めないとき。
     InvalidPath { message: String },
+    /// 利用者がダイアログで選んだ・ウィンドウへ落とした・過去にそうして記録に残っている、の
+    /// どれでもないパス(`chosen_paths.rs`)。
+    NotChosen { message: String },
     /// ファイルの中身が UTF-8 として解釈できない。
     InvalidUtf8 { message: String },
     /// 上記のいずれにも当てはまらない I/O の失敗。
@@ -43,6 +47,12 @@ impl DocumentIoError {
         }
     }
 
+    pub(crate) fn not_chosen(path: &Path) -> Self {
+        Self::NotChosen {
+            message: format!("{}: このアプリで選ばれていない", path.display()),
+        }
+    }
+
     /// 種別を切り分けられない失敗を、対象パスを添えて表す。
     pub(crate) fn io(path: &Path, reason: &str) -> Self {
         Self::Io {
@@ -62,6 +72,7 @@ impl DocumentIoError {
             Self::NotFound { message }
             | Self::PermissionDenied { message }
             | Self::InvalidPath { message }
+            | Self::NotChosen { message }
             | Self::InvalidUtf8 { message }
             | Self::Io { message } => message,
         }

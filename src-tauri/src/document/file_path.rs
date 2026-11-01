@@ -4,17 +4,21 @@ use std::path::{Component, Path, PathBuf};
 
 use super::io::DocumentIoError;
 
-/// ドキュメントの 5 コマンドが扱ってよいと検査を通ったパス。
+/// ドキュメントのパスとして形の検査を通ったパス。
 ///
 /// 拡張子が `.dcmp`(大文字小文字は問わない)の絶対パスで、`..` の要素を含まず、
 /// ファイル名で終わり、ファイル名に `:` を含まないものだけを表す。
+///
+/// 利用者が選んだかどうかは見ない。ドキュメントの読み書き・監視に渡せるのは、さらに照合を
+/// 通った `ChosenDocumentPath`(`chosen_paths.rs`)だけ。
 ///
 /// `Deserialize` は付けない。tauri はコマンド引数のデシリアライズ失敗を文字列の
 /// `InvokeError` で返すため、TS 側で `invalidPath` ではなく `ipcFailed` に化ける。
 /// 引数は `String` で受け、`parse` で `DocumentIoError` として拒否する。
 ///
-/// 綴りは正規化せずに保つ。TS は `document-changed` の `path` を開いているパスと
-/// 文字列で比べる(`use-document-reload/index.ts`)ので、綴りを変えると通知が届かなくなる。
+/// 綴りは正規化せずに保つ。選ばれたパスの照合(`chosen_paths.rs`)は綴りの完全一致で、
+/// TS も `document-changed` の `path` を開いているパスと文字列で比べる
+/// (`use-document-reload/index.ts`)ので、綴りを変えると照合も通知も外れる。
 /// 同じファイルの綴りを寄せるのは `canonical_path.rs` で、TS はその綴りで他の 4 コマンドを呼ぶ。
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DocumentFilePath(PathBuf);
