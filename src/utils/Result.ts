@@ -5,7 +5,8 @@
  * 古い値を同じキーで読むため。`Symbol()` だと評価のたびに別のキーになり、古い値を `isOk` が読めない。
  *
  * シンボルのキーは `JSON.stringify` / `structuredClone` で落ちるので、直列化するなら
- * `libs/` の境界で詰め替える（`Option` の判別子も同じ）。
+ * `libs/` の境界で詰め替える（`Option` の判別子も同じ）。`JsonValue` は文字列キーしか
+ * 見ないので、判別子を持つ値も型エラー無しで代入できてしまう。
  */
 const OkTag: unique symbol = Symbol.for("design-composer/utils/Result#ok");
 
@@ -99,8 +100,6 @@ export const Result = {
 
   /**
    * 成功しているか。
-   *
-   * 成否の判定はすべてここを通す。
    *
    * @param result 中身を見る `Result`
    * @returns 成功していれば `true`。失敗なら `false`

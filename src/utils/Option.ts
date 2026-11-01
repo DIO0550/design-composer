@@ -97,8 +97,6 @@ export const Option = {
   /**
    * 値を持っているか。
    *
-   * 在／不在の判定はすべてここを通す。
-   *
    * @param option 中身を見る `Option`
    * @returns 値を持っていれば `true`。`none` なら `false`
    */
