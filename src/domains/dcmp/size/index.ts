@@ -347,25 +347,26 @@ export const Size = {
   },
 
   /**
-   * 親に交差軸へ引き伸ばされている子を包むときに、その軸のモードを Box へ書く編集
-   * （Box が既定の `hug` だと中身の大きさに縮む）。
+   * 親の揃えの `stretch` に交差軸へ引き伸ばされている子を包むときに、その軸のモードを Box へ
+   * 書く編集。
    *
    * @param types 包むプリミティブの型の並び
    * @param axis 親が子を引き伸ばしている軸
    * @returns どれかの型がその軸のモードの prop をスキーマで宣言していなければ、モードを
    *   `fill` にする編集 1 件。全員が宣言しているときと、並びが空のときは空
    */
-  collectStretchedFillModePropEdits(
+  collectAlignStretchFillModePropEdits(
     types: readonly PrimitiveType[],
     axis: Axis,
   ): readonly PropEdit[] {
-    const hasStretchedType = types.some(
+    const hasTypeLackingModeProp = types.some(
       (type) =>
         !Option.isSome(
           PrimitiveSchema.propDefinition(type, Size.modeProp(axis)),
         ),
     );
-    return hasStretchedType ? [fillModePropEdit(axis)] : [];
+
+    return hasTypeLackingModeProp ? [fillModePropEdit(axis)] : [];
   },
 
   /**
