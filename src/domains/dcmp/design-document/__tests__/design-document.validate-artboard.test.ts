@@ -76,91 +76,74 @@ function collectSingleArtboardErrors(
   );
 }
 
+/**
+ * 対照の未知の prop を 1 件足した artboard 1 枚だけのドキュメントを検証する。
+ *
+ * 対照を置くのは、`[]` を期待すると何も検証しない実装でも通るため。読み捨てが効いていれば、
+ * エラーは対照の 1 件({@link UnknownPropErrorOnly})だけになる。
+ *
+ * @param props 対照と並べて artboard に設定する props
+ * @returns そのドキュメントのバリデーションエラー
+ */
+function collectErrorsBesideUnknownProp(
+  props: Props,
+): readonly DesignDocumentValidationError[] {
+  return collectSingleArtboardErrors({ ...props, notAProp: true });
+}
+
+/** {@link collectErrorsBesideUnknownProp} が足した対照だけがエラーになったときの期待値。 */
+const UnknownPropErrorOnly = [
+  expect.objectContaining({
+    kind: "unknown-prop",
+    nodeName: "screen",
+    prop: "notAProp",
+  }),
+];
+
 test("artboard の props に書いた配置と追従は読み捨てられ、未知の prop のエラーにならない", () => {
-  // 対照に未知の prop を 1 件置く。`[]` を期待すると何も検証しない実装でも通る
-  const errors = collectSingleArtboardErrors({
+  const errors = collectErrorsBesideUnknownProp({
     placement: "absolute",
     x: 10,
     y: 20,
     constraintX: "max",
     constraintY: "center",
-    notAProp: true,
   });
 
-  expect(errors).toEqual([
-    expect.objectContaining({
-      kind: "unknown-prop",
-      nodeName: "screen",
-      prop: "notAProp",
-    }),
-  ]);
+  expect(errors).toEqual(UnknownPropErrorOnly);
 });
 
 test("artboard の props に書いたロックは読み捨てられ、未知の prop のエラーにならない", () => {
-  // 対照に未知の prop を 1 件置く。`[]` を期待すると何も検証しない実装でも通る
-  const errors = collectSingleArtboardErrors({
-    locking: "locked",
-    notAProp: true,
-  });
+  const errors = collectErrorsBesideUnknownProp({ locking: "locked" });
 
-  expect(errors).toEqual([
-    expect.objectContaining({
-      kind: "unknown-prop",
-      nodeName: "screen",
-      prop: "notAProp",
-    }),
-  ]);
+  expect(errors).toEqual(UnknownPropErrorOnly);
 });
 
 test("artboard の props に書いた回転は読み捨てられ、未知の prop のエラーにならない", () => {
-  // 対照に未知の prop を 1 件置く。`[]` を期待すると何も検証しない実装でも通る
-  const errors = collectSingleArtboardErrors({ rotation: 30, notAProp: true });
+  const errors = collectErrorsBesideUnknownProp({ rotation: 30 });
 
-  expect(errors).toEqual([
-    expect.objectContaining({
-      kind: "unknown-prop",
-      nodeName: "screen",
-      prop: "notAProp",
-    }),
-  ]);
+  expect(errors).toEqual(UnknownPropErrorOnly);
 });
 
 test("artboard の props に書いたサイズのモードと長さは読み捨てられ、未知の prop のエラーにならない", () => {
-  // 対照に未知の prop を 1 件置く。`[]` を期待すると何も検証しない実装でも通る
-  const errors = collectSingleArtboardErrors({
+  const errors = collectErrorsBesideUnknownProp({
     widthMode: "hug",
     width: 100,
     heightMode: "fill",
     height: 50,
-    notAProp: true,
   });
 
-  expect(errors).toEqual([
-    expect.objectContaining({
-      kind: "unknown-prop",
-      nodeName: "screen",
-      prop: "notAProp",
-    }),
-  ]);
+  expect(errors).toEqual(UnknownPropErrorOnly);
 });
 
 test("artboard の props に書いた最小 / 最大は読み捨てられ、未知の prop のエラーにならない", () => {
-  // 対照に未知の prop を 1 件置く。`[]` を期待すると何も検証しない実装でも通る
-  const errors = collectSingleArtboardErrors({
+  const errors = collectErrorsBesideUnknownProp({
     minWidth: 100,
     maxWidth: 200,
     minHeight: 10,
     maxHeight: 20,
-    notAProp: true,
   });
 
-  expect(errors).toEqual([
-    expect.objectContaining({
-      kind: "unknown-prop",
-      nodeName: "screen",
-      prop: "notAProp",
-    }),
-  ]);
+  expect(errors).toEqual(UnknownPropErrorOnly);
 });
 
 test("読み捨てる prop でも、artboard の props に数値でない回転を書くと型の不一致のエラーになる", () => {
