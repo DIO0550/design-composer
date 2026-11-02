@@ -50,7 +50,7 @@ type MenuShortcut =
  * 物理キーの綴り（`Digit1` など）は打つ文字の綴りにならず、Shift だけの修飾は
  * `MenuShortcut` が表せないので、表に置いた時点で型エラーにする。
  */
-type ShowableKeyShortcut = Extract<
+export type ShowableKeyShortcut = Extract<
   KeyShortcut,
   { kind: typeof KeyTriggers.TypedCharacter }
 > &
