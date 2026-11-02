@@ -92,13 +92,17 @@ test("新規作成ボタンには、空のドキュメントから始めるこ�
   ).toBeDefined();
 });
 
+/*
+ * 割り当ては説明の末尾に、前の文言と空白で区切って付く。区切りから末尾までを割り当ての綴りと
+ * 突き合わせ、`Shift+⌘O` のように前へ修飾が付いた綴りを通さない。
+ */
 test("macOS で動いているとき、開くボタンには、⌘O でも開けることが説明として添えられる", () => {
   renderDocumentStart({
     operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),
   });
 
   expect(
-    screen.getByRole("button", { name: "開く", description: /⌘O/ }),
+    screen.getByRole("button", { name: "開く", description: /(?:^|\s)⌘O$/ }),
   ).toBeDefined();
 });
 
@@ -108,7 +112,10 @@ test("macOS で動いているとき、新規作成ボタンには、⌘N でも
   });
 
   expect(
-    screen.getByRole("button", { name: "新規作成", description: /⌘N/ }),
+    screen.getByRole("button", {
+      name: "新規作成",
+      description: /(?:^|\s)⌘N$/,
+    }),
   ).toBeDefined();
 });
 
@@ -118,7 +125,10 @@ test("Windows で動いているとき、開くボタンには、Ctrl+O でも�
   });
 
   expect(
-    screen.getByRole("button", { name: "開く", description: /Ctrl\+O/ }),
+    screen.getByRole("button", {
+      name: "開く",
+      description: /(?:^|\s)Ctrl\+O$/,
+    }),
   ).toBeDefined();
 });
 
@@ -128,7 +138,10 @@ test("Windows で動いているとき、新規作成ボタンには、Ctrl+N �
   });
 
   expect(
-    screen.getByRole("button", { name: "新規作成", description: /Ctrl\+N/ }),
+    screen.getByRole("button", {
+      name: "新規作成",
+      description: /(?:^|\s)Ctrl\+N$/,
+    }),
   ).toBeDefined();
 });
 

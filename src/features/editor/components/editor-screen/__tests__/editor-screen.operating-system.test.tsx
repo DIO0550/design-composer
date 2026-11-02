@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import {
   menuRow,
@@ -72,11 +72,11 @@ function openCardOn(navigatorPlatform: NavigatorPlatform): HTMLElement {
 test("Windows で動いている画面で何も開いていないとき、開始画面の開くカードに Ctrl+O が添えられる", () => {
   const openCard = openCardOn(WindowsNavigatorPlatform);
 
-  expect(openCard.textContent).toContain("Ctrl+O");
+  expect(within(openCard).getByText("Ctrl+O")).toBeDefined();
 });
 
 test("macOS で動いている画面で何も開いていないとき、開始画面の開くカードに ⌘O が添えられる", () => {
   const openCard = openCardOn(MacOsNavigatorPlatform);
 
-  expect(openCard.textContent).toContain("⌘O");
+  expect(within(openCard).getByText("⌘O")).toBeDefined();
 });
