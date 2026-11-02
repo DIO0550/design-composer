@@ -1,0 +1,242 @@
+{
+  "version": 1,
+  "pr": 1261,
+  "sha": "81494a1b54941f2e4ac1c18180200908bd238bf9",
+  "issue": 1249,
+  "overview": {
+    "title": "JSON の値へ成否・在不在の値を代入したら型で弾く",
+    "lead": "`JsonObject` にシンボルのキーの index signature(`never`)を足した。`Result` / `Option` を `JsonValue` へ代入すると `tsc` が落ち、判別子が黙って落ちた形で `.dcmp` に書かれる経路を、型の上で書けなくした。",
+    "before": [
+      {
+        "text": "`Option.some(x)` / `Option.none` / `Result.ok(x)` を `JsonValue` へ型エラー無しで代入できた。直列化すると判別子が落ち、`{}` や `{\"value\":x}` として書かれうる"
+      }
+    ],
+    "after": [
+      {
+        "text": "これらを `JsonValue` / `JsonObject` へ代入すると TS2322 で落ちる。フィールドや配列の要素に入れた場合も同じ"
+      },
+      {
+        "text": "文字列のキーだけのオブジェクトと辞書は、これまでどおり代入できる。利用している 10 ファイルに書き換えは要らない"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "シンボルのキーの値を never にした選択",
+        "text": "`undefined` でも Result / Option は弾ける。値が `undefined` のシンボルのキーを持つオブジェクトまで弾くために `never` にし、その選択はテストで固定した",
+        "go": {
+          "kind": "file",
+          "path": "src/utils/Json.ts"
+        }
+      }
+    ]
+  },
+  "concepts": [
+    {
+      "path": "src/utils/Json.ts",
+      "name": "JSON の値",
+      "role": "`.dcmp` へ書き出す値の型",
+      "change": "`JsonObject` のキーを文字列だけに閉じた"
+    },
+    {
+      "path": "src/utils/Result.ts",
+      "name": "成否の結果",
+      "role": "判別子をシンボルのキーで持つ",
+      "change": "doc から、事実でなくなった「代入できてしまう」を削った"
+    },
+    {
+      "path": "src/utils/__tests__/Json.type.test.ts",
+      "name": "JSON の値の型テスト",
+      "role": "代入できる・できないを `expectTypeOf` で固定する",
+      "change": "新規"
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "451d42b91f094f21b1bb6f46a3015c66669d8be8",
+      "phase": "core",
+      "role": "`JsonObject` にシンボルのキーの index signature を足し、型テストを置く",
+      "why": "型の定義 1 か所を閉じれば、`JsonValue` を経由して書き出す経路がすべて閉じる。書き出し関数ごとに型引数で縛る案は、`JsonValue` を直接組み立てる経路が漏れるので採らなかった",
+      "review": [
+        "`[key: symbol]: never` を足しても、既存の `toJson` の推論が崩れていないか(tsc -b は通っている)"
+      ]
+    },
+    {
+      "sha": "81494a1b54941f2e4ac1c18180200908bd238bf9",
+      "phase": "revise",
+      "role": "`never` を選んだことをテストで固定し、doc の理由を消す",
+      "why": "test-reviewer の実測で、`undefined` に緩めても既存の 8 件が通ってしまうと分かった。差が出る入力でテストを 1 件足し、規律として残していた doc の Why を消した",
+      "review": [
+        "`declare const` の `unique symbol` を型の位置だけで使う書き方が読みやすいか"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "json-type",
+      "label": "JSON の値の型",
+      "file": "src/utils/__tests__/Json.type.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "t-some",
+      "suite": "json-type",
+      "name": "値を持つ Option は JSON の値として代入できない",
+      "techniques": [
+        "type"
+      ],
+      "why": "在の判別子(true)が落ちて `{\"value\":x}` と書かれるのを防ぐ",
+      "given": "`Some<string>`",
+      "when": "`JsonValue` へ代入する",
+      "then": "型エラー",
+      "commit": "451d42b91f094f21b1bb6f46a3015c66669d8be8",
+      "targets": [
+        "src/utils/Json.ts"
+      ]
+    },
+    {
+      "id": "t-none",
+      "suite": "json-type",
+      "name": "不在の Option は JSON の値として代入できない",
+      "techniques": [
+        "type"
+      ],
+      "why": "不在の判別子(false)が落ちて `{}` と書かれるのを防ぐ",
+      "given": "`None`",
+      "when": "`JsonValue` へ代入する",
+      "then": "型エラー",
+      "commit": "451d42b91f094f21b1bb6f46a3015c66669d8be8",
+      "targets": [
+        "src/utils/Json.ts"
+      ]
+    },
+    {
+      "id": "t-ok",
+      "suite": "json-type",
+      "name": "成功の Result は JSON の値として代入できない",
+      "techniques": [
+        "type"
+      ],
+      "why": "成否の判別子が落ちるのを防ぐ",
+      "given": "`Ok<string>`",
+      "when": "`JsonValue` へ代入する",
+      "then": "型エラー",
+      "commit": "451d42b91f094f21b1bb6f46a3015c66669d8be8",
+      "targets": [
+        "src/utils/Json.ts"
+      ]
+    },
+    {
+      "id": "t-err",
+      "suite": "json-type",
+      "name": "失敗の Result は JSON の値として代入できない",
+      "techniques": [
+        "type"
+      ],
+      "why": "判別子が false の側も弾く",
+      "given": "`Err<string>`",
+      "when": "`JsonValue` へ代入する",
+      "then": "型エラー",
+      "commit": "451d42b91f094f21b1bb6f46a3015c66669d8be8",
+      "targets": [
+        "src/utils/Json.ts"
+      ]
+    },
+    {
+      "id": "t-field",
+      "suite": "json-type",
+      "name": "フィールドに Option を持つオブジェクトは JSON のオブジェクトとして代入できない",
+      "techniques": [
+        "type"
+      ],
+      "why": "入れ子のフィールドをたどっても弾く",
+      "given": "`Readonly<{ name: Option<string> }>`",
+      "when": "`JsonObject` へ代入する",
+      "then": "型エラー",
+      "commit": "451d42b91f094f21b1bb6f46a3015c66669d8be8",
+      "targets": [
+        "src/utils/Json.ts"
+      ]
+    },
+    {
+      "id": "t-nested",
+      "suite": "json-type",
+      "name": "文字列のキーだけで入れ子になったオブジェクトは JSON の値として代入できる",
+      "techniques": [
+        "type",
+        "equivalence"
+      ],
+      "why": "対照。型を何も通らない形に壊したときに落ちる",
+      "given": "文字列のキーだけの入れ子のオブジェクト",
+      "when": "`JsonValue` へ代入する",
+      "then": "代入できる",
+      "commit": "451d42b91f094f21b1bb6f46a3015c66669d8be8",
+      "targets": [
+        "src/utils/Json.ts"
+      ]
+    },
+    {
+      "id": "t-record",
+      "suite": "json-type",
+      "name": "文字列のキーで引く辞書は JSON のオブジェクトとして代入できる",
+      "techniques": [
+        "type",
+        "equivalence"
+      ],
+      "why": "対照。`Object.fromEntries` や `sortedMap` の出力が通ることを守る",
+      "given": "`Readonly<Record<string, number>>`",
+      "when": "`JsonObject` へ代入する",
+      "then": "代入できる",
+      "commit": "451d42b91f094f21b1bb6f46a3015c66669d8be8",
+      "targets": [
+        "src/utils/Json.ts"
+      ]
+    },
+    {
+      "id": "t-array",
+      "suite": "json-type",
+      "name": "要素に Option を持つ配列は JSON の値として代入できない",
+      "techniques": [
+        "type"
+      ],
+      "why": "配列の要素をたどっても弾く",
+      "given": "`readonly Option<string>[]`",
+      "when": "`JsonValue` へ代入する",
+      "then": "型エラー",
+      "commit": "451d42b91f094f21b1bb6f46a3015c66669d8be8",
+      "targets": [
+        "src/utils/Json.ts"
+      ]
+    },
+    {
+      "id": "t-undefined",
+      "suite": "json-type",
+      "name": "値が undefined のシンボルのキーを持つオブジェクトは JSON のオブジェクトとして代入できない",
+      "techniques": [
+        "type",
+        "regression"
+      ],
+      "why": "シンボルのキーの値を `never` から `undefined` に緩める退行を捕まえる",
+      "given": "値が `undefined` の `unique symbol` のキーを持つオブジェクト",
+      "when": "`JsonObject` へ代入する",
+      "then": "型エラー",
+      "commit": "81494a1b54941f2e4ac1c18180200908bd238bf9",
+      "targets": [
+        "src/utils/Json.ts"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "保存されるファイルの中身は変わらない",
+    "lead": "型の検査だけを強めた変更で、アプリを使う人から見た動きは変わらない。在と不在を区別できない形でファイルが保存される誤りを、作る段階で止められるようにした。",
+    "kept": [
+      {
+        "text": "保存されるファイルの中身と、開いたときの読み方は変わらない",
+        "tests": [
+          "t-nested",
+          "t-record"
+        ]
+      }
+    ]
+  }
+}
