@@ -3,8 +3,8 @@
   "pr": 1256,
   "headBranch": "claude/magical-cannon-ihz183",
   "baseBranch": "main",
-  "mergeBase": "ef46435a07f2cb0fad17aa15dc2d959392febd7c",
-  "head": "1705b3d733ec7ffdaa5998a9796f8eae261e2d38",
+  "mergeBase": "4b76ca1b83c06703224179d277a3e639eb57bce0",
+  "head": "df172992c37ebe620d4f0fdfc9fbe192ffd51c2c",
   "groups": [
     {
       "label": "domains / unit",
@@ -138,8 +138,8 @@
           "path": "src/libs/document-ipc/index.ts",
           "status": "M",
           "oldPath": null,
-          "additions": 18,
-          "deletions": 20,
+          "additions": 23,
+          "deletions": 24,
           "changed": true,
           "target": null
         },
@@ -156,10 +156,14 @@
           "path": "src/libs/file-drop/index.ts",
           "status": "M",
           "oldPath": null,
-          "additions": 16,
-          "deletions": 13,
+          "additions": 19,
+          "deletions": 15,
           "changed": true,
           "target": null
+        },
+        {
+          "path": "src/libs/operating-system/index.ts",
+          "changed": false
         },
         {
           "path": "src/libs/tauri-dialog/index.ts",
@@ -249,12 +253,39 @@
           "changed": false
         },
         {
+          "path": "src/utils/ObjectEx.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
           "path": "src/utils/Option.ts",
           "changed": false
         },
         {
           "path": "src/utils/Result.ts",
           "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/ObjectEx.edge.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/utils/ObjectEx.ts"
+        },
+        {
+          "path": "src/utils/__tests__/ObjectEx.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/utils/ObjectEx.ts"
         }
       ]
     },
@@ -288,6 +319,10 @@
         },
         {
           "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
           "changed": false
         },
         {
@@ -895,6 +930,38 @@
       {
         "file": "src/libs/file-drop/__tests__/file-drop.normal.test.ts",
         "name": "Rust が document-dropped で知らせたドロップが届く"
+      },
+      {
+        "file": "src/utils/__tests__/ObjectEx.edge.test.ts",
+        "name": "null はオブジェクトと判定しない"
+      },
+      {
+        "file": "src/utils/__tests__/ObjectEx.edge.test.ts",
+        "name": "undefined はオブジェクトと判定しない"
+      },
+      {
+        "file": "src/utils/__tests__/ObjectEx.edge.test.ts",
+        "name": "数値はオブジェクトと判定しない"
+      },
+      {
+        "file": "src/utils/__tests__/ObjectEx.edge.test.ts",
+        "name": "文字列はオブジェクトと判定しない"
+      },
+      {
+        "file": "src/utils/__tests__/ObjectEx.edge.test.ts",
+        "name": "関数はオブジェクトと判定しない"
+      },
+      {
+        "file": "src/utils/__tests__/ObjectEx.normal.test.ts",
+        "name": "オブジェクトと判定された側では、値をキーで引ける型に絞られる"
+      },
+      {
+        "file": "src/utils/__tests__/ObjectEx.normal.test.ts",
+        "name": "オブジェクトはオブジェクトと判定する"
+      },
+      {
+        "file": "src/utils/__tests__/ObjectEx.normal.test.ts",
+        "name": "配列はオブジェクトと判定する"
       }
     ],
     "removed": [],
@@ -905,7 +972,9 @@
       "src/libs/document-dialog/__tests__/document-dialog.edge.test.ts",
       "src/libs/document-ipc/__tests__/document-ipc.document-access-failure.test.ts",
       "src/libs/file-drop/__tests__/file-drop.edge.test.ts",
-      "src/libs/file-drop/__tests__/file-drop.normal.test.ts"
+      "src/libs/file-drop/__tests__/file-drop.normal.test.ts",
+      "src/utils/__tests__/ObjectEx.edge.test.ts",
+      "src/utils/__tests__/ObjectEx.normal.test.ts"
     ]
   },
   "commits": [
@@ -1888,6 +1957,105 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "9c1645e1d424cd0347c7ddceed15062385f23a35",
+      "merge": true,
+      "author": "Claude",
+      "date": "2026-11-02T01:36:47Z",
+      "subject": "🔀 [Merge]: #1155 main を取り込み、App.tsx の import の衝突を解消する",
+      "body": "- main 側の OperatingSystem の import と使用箇所を残す\n- このブランチで削除した TauriDialog の import を消し、\n  createDocumentDialog(tauriIpc) を保つ\n\n背景:\nオーナーのレビュー(PR #1256)で、main とのコンフリクトの解消を依頼された。\nmain は App.tsx に OperatingSystem を足し、このブランチは tauri-dialog を\n消していたため、同じ import の並びで衝突した。\n\n採用理由:\n両側の変更はどちらも生かす必要があり、意味の衝突は無い。main 側で新しく\nplugin-dialog / tauri-dialog / tauri://drag-drop / 旧名を参照するコードが\n入っていないことを grep で確かめた。\n\n影響とトレードオフ:\n取り込んだ状態で typecheck / vitest / lint / biome / cargo test(142)/\npre-push(30 通過)がすべて通る。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PXSEjL3abM1XuUzWi",
+      "files": []
+    },
+    {
+      "sha": "d615db805493a00deb1d2e4fe0c6db9165df6e48",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-02T01:44:23Z",
+      "subject": "✨ [New Feature]: #1155 null でないオブジェクトかを判定する ObjectEx.isObject を足す",
+      "body": "- src/utils/ObjectEx.ts を新設し、値が null でないオブジェクトかを判定して\n  Readonly<Record<string, unknown>> へ絞る型ガード isObject を置く\n\n背景:\nPR #1256 のオーナーのレビューで、tauri-ipc の toFailureMessage にある\n「object かつ null でない」判定を、ObjectEx のようなファイルにして汎用的に\n使えるようにする指摘を受けた。同じ判定は document-ipc(2 か所)と\nfile-drop にもあり、呼び出し側ごとに as Record<string, unknown> で\nすり抜けていた。\n\n採用理由:\nドメイン知識を持たない組み込み型への操作なので、rules/architecture.md の\nutils の形式(フラット 1 ファイル + 同名の名前空間)で <型名>Ex に置く。\n型ガードにすれば、呼び出し側の as を消せる(境界以外での as を禁じる規約)。\n呼び出しの無い操作は先回りで足さず、判定 1 つだけにした。\n\n代替案:\n- Json.ts の isJsonRecord を流用する: 配列も除く判定で、IPC で届く値の\n  判定(配列は通す)と中身が違う\n- RecordEx に足す: RecordEx は既に Record になった値への操作で、\n  unknown から絞る入口とは役割が違う\n\n影響とトレードオフ:\n配列は真、関数は偽(typeof の振る舞いのまま)。既存の判定と同じ振る舞い。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PXSEjL3abM1XuUzWi",
+      "files": [
+        {
+          "path": "src/utils/ObjectEx.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,12 @@\n+/** `typeof` が `\"object\"` になる値に対する汎用操作。 */\n+export const ObjectEx = {\n+  /**\n+   * その値が `null` でないオブジェクトか。配列も含め、関数は含めない。\n+   *\n+   * @param value 判定する値\n+   * @returns `typeof` が `\"object\"` で `null` でなければ true。真の側では値をキーで引ける\n+   */\n+  isObject(value: unknown): value is Readonly<Record<string, unknown>> {\n+    return typeof value === \"object\" && value !== null;\n+  },\n+} as const;",
+          "patchLines": 13,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "77e083294cafe88b13a7943102ace558b29d2f76",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-02T01:44:34Z",
+      "subject": "🧪 [Tests]: #1155 ObjectEx.isObject の判定と型の絞り込みをテストで固定する",
+      "body": "- normal: オブジェクトは真 / 配列は真 / 真の側では値をキーで引ける型に絞られる\n- edge: null・undefined・文字列・数値・関数は偽\n\n背景:\n直前のコミットで足した ObjectEx.isObject は、IPC で届く値の形を確かめる\n3 つの libs から使われる。\n\n採用理由:\n既存の判定の振る舞い(配列は通す・関数は通さない)を、寄せた後も変えない\nことを固定する。実装を 1 か所ずつ壊して(null の除外を外す・配列も除く・\n関数も通す・型ガードを外す など)、それぞれ落ちることを確かめた。型の\n絞り込みの退行は typecheck が捕まえる。\n\n影響とトレードオフ:\nテストのみ。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PXSEjL3abM1XuUzWi",
+      "files": [
+        {
+          "path": "src/utils/__tests__/ObjectEx.edge.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,22 @@\n+import { expect, test } from \"vitest\";\n+import { ObjectEx } from \"@/utils/ObjectEx\";\n+\n+test(\"null はオブジェクトと判定しない\", () => {\n+  expect(ObjectEx.isObject(null)).toBe(false);\n+});\n+\n+test(\"undefined はオブジェクトと判定しない\", () => {\n+  expect(ObjectEx.isObject(undefined)).toBe(false);\n+});\n+\n+test(\"文字列はオブジェクトと判定しない\", () => {\n+  expect(ObjectEx.isObject(\"failed\")).toBe(false);\n+});\n+\n+test(\"数値はオブジェクトと判定しない\", () => {\n+  expect(ObjectEx.isObject(0)).toBe(false);\n+});\n+\n+test(\"関数はオブジェクトと判定しない\", () => {\n+  expect(ObjectEx.isObject(() => \"failed\")).toBe(false);\n+});",
+          "patchLines": 23,
+          "truncated": false
+        },
+        {
+          "path": "src/utils/__tests__/ObjectEx.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,19 @@\n+import { expect, expectTypeOf, test } from \"vitest\";\n+import { ObjectEx } from \"@/utils/ObjectEx\";\n+\n+test(\"オブジェクトはオブジェクトと判定する\", () => {\n+  expect(ObjectEx.isObject({ message: \"failed\" })).toBe(true);\n+});\n+\n+test(\"配列はオブジェクトと判定する\", () => {\n+  expect(ObjectEx.isObject([\"a\"])).toBe(true);\n+});\n+\n+test(\"オブジェクトと判定された側では、値をキーで引ける型に絞られる\", () => {\n+  const value: unknown = JSON.parse('{\"message\": \"failed\"}');\n+\n+  const message = ObjectEx.isObject(value) ? value.message : undefined;\n+\n+  expectTypeOf(message).toEqualTypeOf<unknown>();\n+  expect(message).toBe(\"failed\");\n+});",
+          "patchLines": 20,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "df172992c37ebe620d4f0fdfc9fbe192ffd51c2c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-02T01:44:34Z",
+      "subject": "♻️ [Refactoring]: #1155 IPC で届く値の形の確かめを ObjectEx.isObject に寄せる",
+      "body": "- tauri-ipc の toFailureMessage、document-ipc の isDocumentIoError と\n  toDocumentChanged、file-drop の toDroppedPaths の「object かつ null でない」\n  判定を ObjectEx.isObject に置き換える\n- 呼び出し側の as Record<string, unknown> を消す\n\n背景:\nPR #1256 のオーナーのレビューで、tauri-ipc の判定を汎用に使えるようにする\n指摘を受けた。同じ判定が 4 か所に独立に書かれていた。\n\n採用理由:\n型ガードで絞るので、各所の as によるすり抜けが要らなくなる。配列も除く判定\n(Json.ts の isJsonRecord、document-migration)は中身が違うので寄せない。\n\n代替案:\n- 指摘箇所の tauri-ipc だけを置き換える: 同じ判定が 3 か所に残る\n\n影響とトレードオフ:\n振る舞いは変えていない(既存の libs のテストは変更なしで通る)。\ngrep で as Record<string, unknown> は src から 0 件になった。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PXSEjL3abM1XuUzWi",
+      "files": [
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "patch": "@@ -7,6 +7,7 @@ import { FilePath } from \"@/domains/unit/file-path\";\n import { TauriIpc, type Unsubscribe } from \"@/libs/tauri-ipc\";\n import type { ValueOf } from \"@/types/ValueOf\";\n import { Interop } from \"@/utils/Interop\";\n+import { ObjectEx } from \"@/utils/ObjectEx\";\n import { Option } from \"@/utils/Option\";\n import { Result } from \"@/utils/Result\";\n \n@@ -133,10 +134,10 @@ export type DocumentIpc = Readonly<{\n  * @returns 種別とメッセージを持つ I/O の失敗として読めれば true\n  */\n function isDocumentIoError(reason: unknown): reason is DocumentIpcError {\n-  if (typeof reason !== \"object\" || reason === null) {\n+  if (!ObjectEx.isObject(reason)) {\n     return false;\n   }\n-  const { kind, message } = reason as Record<string, unknown>;\n+  const { kind, message } = reason;\n   return (\n     typeof message === \"string\" &&\n     Object.values(IoErrorKinds).some((ioErrorKind) => ioErrorKind === kind)\n@@ -167,10 +168,10 @@ function toDocumentIpcError(reason: unknown): DocumentIpcError {\n  *   ときは `none`\n  */\n function toDocumentChanged(payload: unknown): Option<DocumentChanged> {\n-  if (typeof payload !== \"object\" || payload === null) {\n+  if (!ObjectEx.isObject(payload)) {\n     return Option.none;\n   }\n-  const { path, content } = payload as Record<string, unknown>;\n+  const { path, content } = payload;\n   if (typeof path !== \"string\" || typeof content !== \"string\") {\n     return Option.none;\n   }",
+          "patchLines": 34,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/file-drop/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "patch": "@@ -1,5 +1,6 @@\n import { FilePath } from \"@/domains/unit/file-path\";\n import type { TauriIpc, Unsubscribe } from \"@/libs/tauri-ipc\";\n+import { ObjectEx } from \"@/utils/ObjectEx\";\n import { Option } from \"@/utils/Option\";\n import { Result } from \"@/utils/Result\";\n \n@@ -24,10 +25,10 @@ export type FileDropError = Readonly<{ message: string }>;\n  *   並びとして読めない・残ったパスが 1 件も無いときは `none`\n  */\n function toDroppedPaths(payload: unknown): Option<readonly FilePath[]> {\n-  if (typeof payload !== \"object\" || payload === null) {\n+  if (!ObjectEx.isObject(payload)) {\n     return Option.none;\n   }\n-  const { paths } = payload as Record<string, unknown>;\n+  const { paths } = payload;\n   if (!Array.isArray(paths) || !paths.every((p) => typeof p === \"string\")) {\n     return Option.none;\n   }",
+          "patchLines": 20,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/tauri-ipc/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -1,5 +1,6 @@\n import { invoke } from \"@tauri-apps/api/core\";\n import { listen } from \"@tauri-apps/api/event\";\n+import { ObjectEx } from \"@/utils/ObjectEx\";\n import { Result } from \"@/utils/Result\";\n \n /** 購読を解除する。 */\n@@ -70,9 +71,8 @@ export const TauriIpc = {\n    * @returns 文字列の `message` を持つならそれ、それ以外は値を文字列にしたもの\n    */\n   toFailureMessage(reason: unknown): string {\n-    const isObject = typeof reason === \"object\" && reason !== null;\n-    if (isObject) {\n-      const { message } = reason as Record<string, unknown>;\n+    if (ObjectEx.isObject(reason)) {\n+      const { message } = reason;\n       if (typeof message === \"string\") {\n         return message;\n       }",
+          "patchLines": 19,
+          "truncated": false
+        }
+      ]
     }
   ],
   "dependencies": [
@@ -2028,6 +2196,11 @@
     },
     {
       "from": "src/app/App.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
       "to": "src/libs/tauri-dialog/index.ts",
       "status": "removed"
     },
@@ -2063,6 +2236,11 @@
     },
     {
       "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
       "to": "src/libs/document-dialog/fake/index.ts",
       "status": "kept"
     },
@@ -2778,6 +2956,11 @@
     },
     {
       "from": "src/libs/document-ipc/index.ts",
+      "to": "src/utils/ObjectEx.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
       "to": "src/utils/Option.ts",
       "status": "kept"
     },
@@ -2848,6 +3031,11 @@
     },
     {
       "from": "src/libs/file-drop/index.ts",
+      "to": "src/utils/ObjectEx.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/file-drop/index.ts",
       "to": "src/utils/Option.ts",
       "status": "kept"
     },
@@ -2868,8 +3056,23 @@
     },
     {
       "from": "src/libs/tauri-ipc/index.ts",
+      "to": "src/utils/ObjectEx.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/tauri-ipc/index.ts",
       "to": "src/utils/Result.ts",
       "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ObjectEx.edge.test.ts",
+      "to": "src/utils/ObjectEx.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/utils/__tests__/ObjectEx.normal.test.ts",
+      "to": "src/utils/ObjectEx.ts",
+      "status": "added"
     }
   ]
 }
