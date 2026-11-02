@@ -1,0 +1,966 @@
+{
+  "version": 2,
+  "pr": 1262,
+  "headBranch": "claude/magical-cannon-rukd1d",
+  "baseBranch": "main",
+  "mergeBase": "752abd5bfdcd3f7beb6e25f02711ab1ce83338d5",
+  "head": "741d49231259644278606625241f8b6f2c3829dd",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-access-failure/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-documents/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/file-paths.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/clock/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/operating-system/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/operating-system/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/components/document-error-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 60,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/components/editor-provider/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/reorder-step/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-activate-tab-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/types/OpenedContextMenu.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/editor-context-menu.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 32,
+          "deletions": 2,
+          "changed": true,
+          "target": "src/features/editor/components/editor-screen/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-open-failure/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 40,
+          "deletions": 11,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-start/domains/document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 57,
+          "deletions": 6,
+          "changed": true,
+          "target": "src/features/editor/features/document-start/components/document-start/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/__stories__/screen-height-shell.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/action-card/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/context-menu/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/shown-shortcut/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 59,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 69,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/components/shown-shortcut/index.ts"
+        }
+      ]
+    },
+    {
+      "label": "hooks",
+      "files": [
+        {
+          "path": "src/hooks/use-key-shortcut/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": ".oxlintrc.json",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "name": "Linux で動いているとき、コマンドキー付きの割り当ては Ctrl+C と綴る"
+      },
+      {
+        "file": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "name": "Windows で動いているとき、コマンドキー付きの割り当ては Ctrl+C と綴る"
+      },
+      {
+        "file": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "name": "Windows・Linux で動いているとき、Shift とコマンドキー付きの割り当ては Ctrl を先にして Ctrl+Shift+G と綴る"
+      },
+      {
+        "file": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "name": "macOS で動いているとき、Shift とコマンドキー付きの割り当ては Shift+⌘G と綴る"
+      },
+      {
+        "file": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "name": "macOS で動いているとき、コマンドキー付きの割り当ては ⌘C と綴る"
+      },
+      {
+        "file": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "name": "修飾の無い割り当ては、Windows でもキーの綴りのまま出る"
+      },
+      {
+        "file": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "name": "修飾の無い割り当ては、macOS でもキーの綴りのまま出る"
+      },
+      {
+        "file": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+        "name": "Windows で動いている画面で何も開いていないとき、開始画面の開くカードに Ctrl+O が添えられる"
+      },
+      {
+        "file": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+        "name": "macOS で動いている画面で何も開いていないとき、開始画面の開くカードに ⌘O が添えられる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "name": "Windows で動いているとき、新規作成ボタンには、Ctrl+N でも作れることが説明として添えられる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "name": "Windows で動いているとき、開くボタンには、Ctrl+O でも開けることが説明として添えられる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "name": "Windows で動いているとき、開くボタンの説明に ⌘ は出ない"
+      },
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "name": "macOS で動いているとき、新規作成ボタンには、⌘N でも作れることが説明として添えられる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "name": "macOS で動いているとき、開くボタンには、⌘O でも開けることが説明として添えられる"
+      }
+    ],
+    "removed": [
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "name": "新規作成ボタンには、⌘N でも作れることが説明として添えられる"
+      },
+      {
+        "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "name": "開くボタンには、⌘O でも開けることが説明として添えられる"
+      }
+    ],
+    "files": [
+      "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+      "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "fb335049668f94cdf707e2ff03a5ff76aa961402",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-02T05:32:22Z",
+      "subject": "♻️ [Refactoring]: #1253 割り当ての綴りの規則を src/components/shortcut-notation へ上げる",
+      "body": "- editor-context-menu の非公開の MenuShortcut を ShortcutNotation に改名して\n  src/components/shortcut-notation へ移す\n- shortcutLabel / commandShortcutLabel を ShortcutNotation.toText と非公開の\n  commandText に移し、コンテキストメニューはそれを呼ぶ\n- 綴りの規則のテスト（macOS / Windows / Linux × Shift の有無、修飾無し）を足す\n\n背景:\n開始画面（子 feature の document-start）のカードも OS ごとの綴りで出したいが、\n規則は親 feature の editor-context-menu に非公開で置かれていた。子は親を\nimport できない（rules/consistency.md「親の参照: 禁止」）ため、書き写すと\n⌘ / Ctrl の並びの規則が 2 か所に分かれる。\n\n採用理由:\n人が読む 1 行への綴りは表示側の関心事（rules/architecture.md）で、併記を\n持つ部品が共に使える src/components/ に置いた。components → libs の前例\n（context-menu → libs/dom-event）があり、lint の制限にも当たらない。\nOption で包む plainShortcut などは操作の表の都合なので移さず残した。\n\n代替案:\n- libs/operating-system に足す: 「外部の値の解釈だけだから libs」という\n  既存の Why が崩れ、OS の側にキーの概念が無い\n- libs/dom-event の CommandKey に寄せる: libs はキーイベントの解釈に閉じる\n- src/utils に置く: utils → libs が 0 件で、層の向きが初めて双方向になる\n- src/domains に置く: production から libs を import できず\n  OperatingSystem を受け取れない\n- KeyShortcut に綴りを持たせる: 複数キー・物理キーを持ち綴りが 1 つに\n  決まらない。キーボードの割り当てから併記を導くのは #1254\n- ContextMenu.Item / ActionCard に構造化した割り当てと OS を受けさせる:\n  汎用部品の公開 API が 2 つ変わり、OS を配る Provider も要る\n\n影響とトレードオフ:\nコンテキストメニューの振る舞いは変わらない（既存の綴りのテストは\n描いた結果を見ており、書き換えずに通る）。型名の notation は UI 案・仕様に\n無い語で、MenuShortcut のままでは共有後に名前と実体がずれるため付けた。\n\n参考:\n- Issue #1253 の計画 v1 / v2 のコメント\n- #480（コンテキストメニューの OS ごとの綴り）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2S2Q5h6uMQNRtgVVf1",
+      "files": [
+        {
+          "path": "src/components/shortcut-notation/__tests__/shortcut-notation.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 69,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,69 @@\n+import { expect, test } from \"vitest\";\n+import { ShortcutNotation } from \"@/components/shortcut-notation\";\n+import { OperatingSystem } from \"@/libs/operating-system\";\n+import {\n+  LinuxNavigatorPlatform,\n+  MacOsNavigatorPlatform,\n+  WindowsNavigatorPlatform,\n+} from \"@/libs/operating-system/fake\";\n+\n+const MacOs = OperatingSystem.fromNavigator(MacOsNavigatorPlatform);\n+const Windows = OperatingSystem.fromNavigator(WindowsNavigatorPlatform);\n+const Linux = OperatingSystem.fromNavigator(LinuxNavigatorPlatform);\n+\n+test(\"macOS で動いているとき、コマンドキー付きの割り当ては ⌘C と綴る\", () => {\n+  expect(\n+    ShortcutNotation.toText(\n+      { kind: \"command\", key: \"C\", withShiftKey: false },\n+      MacOs,\n+    ),\n+  ).toBe(\"⌘C\");\n+});\n+\n+test(\"macOS で動いているとき、Shift とコマンドキー付きの割り当ては Shift+⌘G と綴る\", () => {\n+  expect(\n+    ShortcutNotation.toText(\n+      { kind: \"command\", key: \"G\", withShiftKey: true },\n+      MacOs,\n+    ),\n+  ).toBe(\"Shift+⌘G\");\n+});\n+\n+test(\"Windows で動いているとき、コマンドキー付きの割り当ては Ctrl+C と綴る\", () => {\n+  expect(\n+    ShortcutNotation.toText(\n+      { kind: \"command\", key: \"C\", withShiftKey: false },\n+      Windows,\n+    ),\n+  ).toBe(\"Ctrl+C\");\n+});\n+\n+test(\"Linux で動いているとき、コマンドキー付きの割り当ては Ctrl+C と綴る\", () => {\n+  expect(\n+    ShortcutNotation.toText(\n+      { kind: \"command\", key: \"C\", withShiftKey: false },\n+      Linux,\n+    ),\n+  ).toBe(\"Ctrl+C\");\n+});\n+\n+test(\"Windows・Linux で動いているとき、Shift とコマンドキー付きの割り当ては Ctrl を先にして Ctrl+Shift+G と綴る\", () => {\n+  expect(\n+    ShortcutNotation.toText(\n+      { kind: \"command\", key: \"G\", withShiftKey: true },\n+      Windows,\n+    ),\n+  ).toBe(\"Ctrl+Shift+G\");\n+});\n+\n+test(\"修飾の無い割り当ては、macOS でもキーの綴りのまま出る\", () => {\n+  expect(ShortcutNotation.toText({ kind: \"plain\", key: \"Delete\" }, MacOs)).toBe(\n+    \"Delete\",\n+  );\n+});\n+\n+test(\"修飾の無い割り当ては、Windows でもキーの綴りのまま出る\", () => {\n+  expect(\n+    ShortcutNotation.toText({ kind: \"plain\", key: \"Delete\" }, Windows),\n+  ).toBe(\"Delete\");\n+});",
+          "patchLines": 70,
+          "truncated": false
+        },
+        {
+          "path": "src/components/shortcut-notation/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 59,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,59 @@\n+import {\n+  type OperatingSystem,\n+  OperatingSystems,\n+} from \"@/libs/operating-system\";\n+\n+/*\n+ * 人が読む 1 行への綴りは表示側の関心事なので、割り当てを併記する部品が共に使えるここに置く\n+ * （rules/architecture.md「ロジックの帰属先」）。domains は production から libs を import できず、\n+ * 綴りを選ぶのに要る `OperatingSystem` を受け取れない。\n+ */\n+\n+/**\n+ * 併記するキーボードの割り当て。綴りは OS ごとに変わるので、ここではキーと修飾だけを持つ。\n+ */\n+export type ShortcutNotation =\n+  | Readonly<{ kind: \"plain\"; key: string }>\n+  | Readonly<{ kind: \"command\"; key: string; withShiftKey: boolean }>;\n+\n+/**\n+ * コマンドキー付きの割り当てを、動いている OS の綴りにする。\n+ *\n+ * @param notation コマンドキー付きの割り当て\n+ * @param operatingSystem アプリが動いている OS\n+ * @returns `ShortcutNotation.toText` の、コマンドキー付きの場合の綴り\n+ */\n+function commandText(\n+  notation: Extract<ShortcutNotation, { kind: \"command\" }>,\n+  operatingSystem: OperatingSystem,\n+): string {\n+  switch (operatingSystem) {\n+    case OperatingSystems.MacOs:\n+      return notation.withShiftKey\n+        ? `Shift+⌘${notation.key}`\n+        : `⌘${notation.key}`;\n+    case OperatingSystems.Other:\n+      return notation.withShiftKey\n+        ? `Ctrl+Shift+${notation.key}`\n+        : `Ctrl+${notation.key}`;\n+  }\n+}\n+\n+/** 併記する割り当ての綴り。 */\n+export const ShortcutNotation = {\n+  /**\n+   * 割り当てを、動いている OS の綴りにする（docs/06-ui.md「コンテキストメニュー」の表記）。\n+   *\n+   * @param notation 併記する割り当て\n+   * @param operatingSystem アプリが動いている OS\n+   * @returns macOS なら `⌘X` / `Shift+⌘X`、それ以外なら `Ctrl+X` / `Ctrl+Shift+X`。修飾の無いキーはそのまま\n+   */\n+  toText(notation: ShortcutNotation, operatingSystem: OperatingSystem): string {\n+    switch (notation.kind) {\n+      case \"plain\":\n+        return notation.key;\n+      case \"command\":\n+        return commandText(notation, operatingSystem);\n+    }\n+  },\n+} as const;",
+          "patchLines": 60,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 59,
+          "patch": "@@ -1,5 +1,6 @@\n import type { ComponentProps, ReactElement } from \"react\";\n import { ContextMenu, ContextMenuTones } from \"@/components/context-menu\";\n+import { ShortcutNotation } from \"@/components/shortcut-notation\";\n import { useEditor } from \"@/features/editor/components/editor-provider\";\n import {\n   EditMenu,\n@@ -15,26 +16,16 @@ import {\n   useNodeActions,\n } from \"@/features/editor/hooks/use-node-actions\";\n import type { OpenedContextMenu } from \"@/features/editor/types/OpenedContextMenu\";\n-import {\n-  type OperatingSystem,\n-  OperatingSystems,\n-} from \"@/libs/operating-system\";\n+import type { OperatingSystem } from \"@/libs/operating-system\";\n import { Option } from \"@/utils/Option\";\n \n-/**\n- * 行に併記する割り当て。綴りは OS ごとに変わるので、ここではキーと修飾だけを持つ。\n- */\n-type MenuShortcut =\n-  | Readonly<{ kind: \"plain\"; key: string }>\n-  | Readonly<{ kind: \"command\"; key: string; withShiftKey: boolean }>;\n-\n /**\n  * 修飾の無いキーの割り当て。\n  *\n  * @param key キーの綴り\n  * @returns 併記する割り当て\n  */\n-function plainShortcut(key: string): Option<MenuShortcut> {\n+function plainShortcut(key: string): Option<ShortcutNotation> {\n   return Option.some({ kind: \"plain\", key });\n }\n \n@@ -44,7 +35,7 @@ function plainShortcut(key: string): Option<MenuShortcut> {\n  * @param key 修飾と組むキーの綴り\n  * @returns 併記する割り当て\n  */\n-function commandShortcut(key: string): Option<MenuShortcut> {\n+function commandShortcut(key: string): Option<ShortcutNotation> {\n   return Option.some({ kind: \"command\", key, withShiftKey: false });\n }\n \n@@ -54,7 +45,7 @@ function commandShortcut(key: string): Option<MenuShortcut> {\n  * @param key 修飾と組むキーの綴り\n  * @returns 併記する割り当て\n  */\n-function shiftCommandShortcut(key: string): Option<MenuShortcut> {\n+function shiftCommandShortcut(key: string): Option<ShortcutNotation> {\n   return Option.some({ kind: \"command\", key, withShiftKey: true });\n }\n \n@@ -63,12 +54,12 @@ type OperationPresentation = Readonly<\n   Omit<\n     ComponentProps<typeof ContextMenu.Item>,\n     \"isEnabled\" | \"onSelect\" | \"shortcut\"\n-  > & { shortcut: Option<MenuShortcut> }\n+  > & { shortcut: Option<ShortcutNotation> }\n >;\n \n /**\n  * 操作ごとの綴り・併記する割り当て・色味（UI 案 docs/Design Composer.html の\n- * `Context menu`）。割り当ては動いている OS の綴りで出す（`shortcutLabel`）。\n+ * `Context menu`）。割り当ては動いている OS の綴りで出す（`ShortcutNotation.toText`）。\n  *\n  * 割り当ての出どころはキーボードのフック（`use-*-shortcut`）。片方だけ変えると併記と\n  * 実際の割り当てが食い違う。\n@@ -137,48 +128,6 @@ const OperationPresentations = {\n   },\n } as const satisfies Readonly<Record<EditOperation, OperationPresentation>>;\n \n-/**\n- * 割り当てを、動いている OS の綴りにする（docs/06-ui.md「編集操作の一覧」の表記）。\n- *\n- * @param shortcut 併記する割り当て\n- * @param operatingSystem アプリが動いている OS\n- * @returns macOS なら `⌘X` / `Shift+⌘X`、それ以外なら `Ctrl+X` / `Ctrl+Shift+X`。修飾の無いキーはそのまま\n- */\n-function shortcutLabel(\n-  shortcut: MenuShortcut,\n-  operatingSystem: OperatingSystem,\n-): string {\n-  switch (shortcut.kind) {\n-    case \"plain\":\n-      return shortcut.key;\n-    case \"command\":\n-      return commandShortcutLabel(shortcut, operatingSystem);\n-  }\n-}\n-\n-/**\n- * コマンドキー付きの割り当てを、動いている OS の綴りにする。\n- *\n- * @param shortcut コマンドキー付きの割り当て\n- * @param operatingSystem アプリが動いている OS\n- * @returns `shortcutLabel` の、コマンドキー付きの場合の綴り\n- */\n-function commandShortcutLabel(\n-  shortcut: Extract<MenuShortcut, { kind: \"command\" }>,\n-  operatingSystem: OperatingSystem,\n-): string {\n-  switch (operatingSystem) {\n-    case OperatingSystems.MacOs:\n-      return shortcut.withShiftKey\n-        ? `Shift+⌘${shortcut.key}`\n-        : `⌘${shortcut.key}`;\n-    case OperatingSystems.Other:\n-      return shortcut.withShiftKey\n-        ? `Ctrl+Shift+${shortcut.key}`\n-        : `Ctrl+${shortcut.key}`;\n-  }\n-}\n-\n /**\n  * 操作ごとに呼ぶ手続き。キーボードの割り当てと同じものを呼ぶ。\n  *\n@@ -241,7 +190,7 @@ export function EditorContextMenu({\n                 key={row.operation}\n                 label={presentation.label}\n                 shortcut={Option.map(presentation.shortcut, (shortcut) =>\n-                  shortcutLabel(shortcut, operatingSystem),\n+                  ShortcutNotation.toText(shortcut, operatingSystem),\n                 )}\n                 tone={presentation.tone}\n                 isEnabled={row.isEnabled}",
+          "patchLines": 127,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "776cf62f89240e1a2e3cc07b99e8cacac790b8f7",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-02T05:32:37Z",
+      "subject": "✨ [New Feature]: #1253 開始画面のカードの割り当てを動いている OS の綴りで出す",
+      "body": "- DocumentStart の props に operatingSystem を足し、EditorScreen から渡す\n- 開く / 新規作成のカードの ⌘O / ⌘N 固定をやめ、キーと修飾だけを持つ\n  OpenShortcut / CreateShortcut を ShortcutNotation.toText で綴る\n- 開始画面のテストに Windows のケースを、EditorScreen の OS のテストに\n  開始画面までの配線のケースを足し、Windows のストーリーを 1 本足す\n\n背景:\n#480 でコンテキストメニューは OS ごとの綴りになったが、開始画面のカードは\n⌘ 固定のままで、Windows / Linux ではアプリの中で Ctrl+C と ⌘O が並んでいた。\n\n採用理由:\nOS の値を子 feature まで props で通し、綴りは子が ShortcutNotation で作る。\nカードの見出し・説明・割り当てを子の 1 か所に保てる。割り当ての出どころは\nmenu.rs の CmdOrCtrl+O / CmdOrCtrl+N。\n\n代替案:\n- 親（EditorScreen）が綴りを作って文字列で差し込む: 割り当て O / N を\n  親が持つことになり、カードの中身が親子 2 か所に割れる\n- 開始画面に規則を書き写す: ⌘ / Ctrl の並びの規則が 2 か所に分かれる\n\n影響とトレードオフ:\nDocumentStart の props が 1 つ増え、テストの setup とストーリーの args が\n追随する（setup の既定は macOS）。足した Windows のストーリーは main に\nベースラインが無いので VRT では比べられず、Ctrl+O / Ctrl+N のバッジが\n400px の列に収まることは Storybook を headless Chrome で撮って目視した。\n\n参考:\n- Issue #1253 の計画 v2 のコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2S2Q5h6uMQNRtgVVf1",
+      "files": [
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 32,
+          "deletions": 2,
+          "patch": "@@ -1,3 +1,4 @@\n+import { screen } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n import {\n   menuRow,\n@@ -14,8 +15,9 @@ import {\n import { Path, renderEditorScreen, startOpen } from \"./setup\";\n \n /*\n- * 画面の入口で受け取った OS が、開いたドキュメントのコンテキストメニューまで届くかを見る\n- * （docs/06-ui.md「コンテキストメニュー」）。綴りの規則そのものは編集画面の層のテストが見る。\n+ * 画面の入口で受け取った OS が、開始画面のカードと、開いたドキュメントのコンテキストメニューまで\n+ * 届くかを見る（docs/06-ui.md「開く前の画面（開始画面）」「コンテキストメニュー」）。\n+ * 綴りの規則そのものは `ShortcutNotation` のテストが見る。\n  */\n \n /**\n@@ -50,3 +52,31 @@ test(\"macOS で動いている画面でドキュメントを開くと、ツリ\n \n   expect(copyRow.textContent).toContain(\"⌘C\");\n });\n+\n+/**\n+ * その OS で動いていることにして、何も開いていない画面の開くカードを引く。\n+ *\n+ * @param navigatorPlatform アプリが動いている webview の `navigator`\n+ * @returns 開始画面の開くカード\n+ */\n+function openCardOn(navigatorPlatform: NavigatorPlatform): HTMLElement {\n+  renderEditorScreen(\n+    {},\n+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n+    { navigatorPlatform },\n+  );\n+\n+  return screen.getByRole(\"button\", { name: \"開く\" });\n+}\n+\n+test(\"Windows で動いている画面で何も開いていないとき、開始画面の開くカードに Ctrl+O が添えられる\", () => {\n+  const openCard = openCardOn(WindowsNavigatorPlatform);\n+\n+  expect(openCard.textContent).toContain(\"Ctrl+O\");\n+});\n+\n+test(\"macOS で動いている画面で何も開いていないとき、開始画面の開くカードに ⌘O が添えられる\", () => {\n+  const openCard = openCardOn(MacOsNavigatorPlatform);\n+\n+  expect(openCard.textContent).toContain(\"⌘O\");\n+});",
+          "patchLines": 49,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -125,6 +125,7 @@ export function EditorScreen({\n             recentPaths={recentPaths}\n             recentFilesFailure={recentFilesFailure}\n             commandFailure={commandFailure}\n+            operatingSystem={operatingSystem}\n             renderErrors={(errors) => (\n               // 解釈できずに開けなかったファイルなので、由来は unopened-file で固定になる\n               // （飛び先のノードも書き戻す表示中の内容もまだ無い）。",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 42,
+          "deletions": 4,
+          "patch": "@@ -2,6 +2,11 @@ import { screen, within } from \"@testing-library/react\";\n import userEvent from \"@testing-library/user-event\";\n import { expect, test } from \"vitest\";\n import { filePath } from \"@/domains/__tests__/file-paths\";\n+import { OperatingSystem } from \"@/libs/operating-system\";\n+import {\n+  MacOsNavigatorPlatform,\n+  WindowsNavigatorPlatform,\n+} from \"@/libs/operating-system/fake\";\n import { recordActions, renderDocumentStart } from \"./setup\";\n \n const Path = filePath(\"/work/settings-ui/app.dcmp\");\n@@ -87,22 +92,55 @@ test(\"新規作成ボタンには、空のドキュメントから始めるこ\n   ).toBeDefined();\n });\n \n-test(\"開くボタンには、⌘O でも開けることが説明として添えられる\", () => {\n-  renderDocumentStart();\n+test(\"macOS で動いているとき、開くボタンには、⌘O でも開けることが説明として添えられる\", () => {\n+  renderDocumentStart({\n+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),\n+  });\n \n   expect(\n     screen.getByRole(\"button\", { name: \"開く\", description: /⌘O/ }),\n   ).toBeDefined();\n });\n \n-test(\"新規作成ボタンには、⌘N でも作れることが説明として添えられる\", () => {\n-  renderDocumentStart();\n+test(\"macOS で動いているとき、新規作成ボタンには、⌘N でも作れることが説明として添えられる\", () => {\n+  renderDocumentStart({\n+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),\n+  });\n \n   expect(\n     screen.getByRole(\"button\", { name: \"新規作成\", description: /⌘N/ }),\n   ).toBeDefined();\n });\n \n+test(\"Windows で動いているとき、開くボタンには、Ctrl+O でも開けることが説明として添えられる\", () => {\n+  renderDocumentStart({\n+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),\n+  });\n+\n+  expect(\n+    screen.getByRole(\"button\", { name: \"開く\", description: /Ctrl\\+O/ }),\n+  ).toBeDefined();\n+});\n+\n+test(\"Windows で動いているとき、新規作成ボタンには、Ctrl+N でも作れることが説明として添えられる\", () => {\n+  renderDocumentStart({\n+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),\n+  });\n+\n+  expect(\n+    screen.getByRole(\"button\", { name: \"新規作成\", description: /Ctrl\\+N/ }),\n+  ).toBeDefined();\n+});\n+\n+test(\"Windows で動いているとき、開くボタンの説明に ⌘ は出ない\", () => {\n+  renderDocumentStart({\n+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),\n+  });\n+\n+  const openButton = screen.getByRole(\"button\", { name: \"開く\" });\n+  expect(openButton.textContent).not.toContain(\"⌘\");\n+});\n+\n test(\"最近使ったファイルは、ファイル名で並ぶ\", () => {\n   renderDocumentStart({ recentPaths: [Path] });\n ",
+          "patchLines": 72,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "patch": "@@ -8,6 +8,8 @@ import type {\n   CommandSourceFailure,\n   DocumentSessionActions,\n } from \"@/features/editor/features/document-start/hooks/use-document-session\";\n+import { OperatingSystem } from \"@/libs/operating-system\";\n+import { MacOsNavigatorPlatform } from \"@/libs/operating-system/fake\";\n import { Option } from \"@/utils/Option\";\n \n /** エラーの一覧を出さない状態を見るときの、渡す描き方。 */\n@@ -62,6 +64,8 @@ export type StartOverrides = Readonly<{\n   recentFilesFailure?: Option<string>;\n   commandFailure?: Option<CommandSourceFailure>;\n   renderErrors?: (errors: readonly DocumentError[]) => ReactNode;\n+  /** アプリが動いている OS。省くと macOS。 */\n+  operatingSystem?: OperatingSystem;\n }>;\n \n /**\n@@ -78,6 +82,10 @@ export function renderDocumentStart(overrides: StartOverrides = {}): void {\n       recentFilesFailure={overrides.recentFilesFailure ?? Option.none}\n       commandFailure={overrides.commandFailure ?? Option.none}\n       renderErrors={overrides.renderErrors ?? renderNothing}\n+      operatingSystem={\n+        overrides.operatingSystem ??\n+        OperatingSystem.fromNavigator(MacOsNavigatorPlatform)\n+      }\n     />,\n   );\n }",
+          "patchLines": 29,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "patch": "@@ -4,6 +4,11 @@ import { filePath } from \"@/domains/__tests__/file-paths\";\n import { DocumentAccessFailure } from \"@/domains/session/document-access-failure\";\n import { OpenAttempt } from \"@/features/editor/features/document-start/domains/document-session\";\n import { CommandSources } from \"@/features/editor/features/document-start/hooks/use-document-session\";\n+import { OperatingSystem } from \"@/libs/operating-system\";\n+import {\n+  MacOsNavigatorPlatform,\n+  WindowsNavigatorPlatform,\n+} from \"@/libs/operating-system/fake\";\n import { Option } from \"@/utils/Option\";\n import { DocumentStart } from \"./index\";\n \n@@ -32,6 +37,7 @@ const meta = {\n     recentFilesFailure: Option.none,\n     commandFailure: Option.none,\n     renderErrors: () => null,\n+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),\n   },\n   // 開始画面は高さを親に合わせるので、素の `#storybook-root` へ直接描くと潰れる。\n   decorators: [\n@@ -52,6 +58,14 @@ export const Default: Story = {\n   name: \"開始画面\",\n };\n \n+/** Windows で動いている状態。割り当ては Ctrl 側の綴りで出る。 */\n+export const OnWindows: Story = {\n+  name: \"Windows で動いている\",\n+  args: {\n+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),\n+  },\n+};\n+\n /** 最近使ったファイルが並んでいる状態。同名のファイルはフォルダ名で見分ける。 */\n export const WithRecentDocuments: Story = {\n   name: \"最近使ったファイルがある\",",
+          "patchLines": 35,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 40,
+          "deletions": 11,
+          "patch": "@@ -4,6 +4,7 @@ import {\n   type ActionCardContent,\n   ActionCardTones,\n } from \"@/components/action-card\";\n+import { ShortcutNotation } from \"@/components/shortcut-notation\";\n import { FilePath } from \"@/domains/unit/file-path\";\n import {\n   DocumentOpenFailureNotice,\n@@ -17,6 +18,7 @@ import {\n   CommandSources,\n   type DocumentSessionActions,\n } from \"@/features/editor/features/document-start/hooks/use-document-session\";\n+import type { OperatingSystem } from \"@/libs/operating-system\";\n import { Option } from \"@/utils/Option\";\n \n /**\n@@ -35,31 +37,42 @@ function commandSourceFailureLabel(source: CommandSource): string {\n }\n \n /*\n- * 開始画面の 2 枚のカードの中身。ショートカットの割り当ての出どころは `src-tauri/src/menu.rs` の\n- * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。OS ごとの出し分けは\n- * 行わず、⌘ 表記で固定している。\n- * 子 feature からは親の `editor-context-menu` に非公開で置いた綴りの規則を使えないため（#1253）。\n+ * 開始画面の 2 枚のカードの中身と割り当て。割り当ての出どころは `src-tauri/src/menu.rs` の\n+ * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここはキーと修飾だけを持つ（片方だけ変えると併記と実際の\n+ * 割り当てが食い違う）。綴りは `ShortcutNotation` が動いている OS ごとに作る。\n  */\n \n /** 開くのカード（プライマリ）。 */\n const OpenCardContent = {\n   title: \"開く\",\n   description: \"既存の .dcmp を選ぶ\",\n-  shortcut: \"⌘O\",\n   iconPaths: [\n     \"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\",\n   ],\n   tone: ActionCardTones.Primary,\n-} as const satisfies ActionCardContent;\n+} as const satisfies Omit<ActionCardContent, \"shortcut\">;\n+\n+/** 開くの割り当て。 */\n+const OpenShortcut = {\n+  kind: \"command\",\n+  key: \"O\",\n+  withShiftKey: false,\n+} as const satisfies ShortcutNotation;\n \n /** 新規作成のカード。 */\n const CreateCardContent = {\n   title: \"新規作成\",\n   description: \"空のドキュメントから始める\",\n-  shortcut: \"⌘N\",\n   iconPaths: [\"M12 5v14\", \"M5 12h14\"],\n   tone: ActionCardTones.Normal,\n-} as const satisfies ActionCardContent;\n+} as const satisfies Omit<ActionCardContent, \"shortcut\">;\n+\n+/** 新規作成の割り当て。 */\n+const CreateShortcut = {\n+  kind: \"command\",\n+  key: \"N\",\n+  withShiftKey: false,\n+} as const satisfies ShortcutNotation;\n \n /**\n  * ドキュメントを開く / 作る導線。\n@@ -69,24 +82,33 @@ const CreateCardContent = {\n  *\n  * @param actions 開く / 作るを始める手続き\n  * @param disabled 既に開く操作が始まっていて、押させたくないか\n+ * @param operatingSystem 割り当ての綴りを選ぶのに使う、アプリが動いている OS\n  * @returns 開く（プライマリ）と新規作成の 2 枚のカード\n  */\n function StartActions({\n   actions,\n   disabled,\n+  operatingSystem,\n }: Readonly<{\n   actions: DocumentSessionActions;\n   disabled: boolean;\n+  operatingSystem: OperatingSystem;\n }>): ReactElement {\n   return (\n     <div className=\"mt-2 grid w-full grid-cols-2 gap-3\">\n       <ActionCard\n-        content={OpenCardContent}\n+        content={{\n+          ...OpenCardContent,\n+          shortcut: ShortcutNotation.toText(OpenShortcut, operatingSystem),\n+        }}\n         onClick={actions.openDocument}\n         disabled={disabled}\n       />\n       <ActionCard\n-        content={CreateCardContent}\n+        content={{\n+          ...CreateCardContent,\n+          shortcut: ShortcutNotation.toText(CreateShortcut, operatingSystem),\n+        }}\n         onClick={actions.createDocument}\n         disabled={disabled}\n       />\n@@ -182,6 +204,7 @@ function RecentFileList({\n  * @param recentFilesFailure その一覧を読み取れなかった理由。読めていれば `none`\n  * @param commandFailure 開く指示を受け取れなかった経路とその理由。両方受け取れていれば `none`\n  * @param renderErrors 解釈できなかったファイルのエラー一覧の描き方\n+ * @param operatingSystem 割り当ての綴りを選ぶのに使う、アプリが動いている OS\n  */\n export function DocumentStart({\n   attempt,\n@@ -190,6 +213,7 @@ export function DocumentStart({\n   recentFilesFailure,\n   commandFailure,\n   renderErrors,\n+  operatingSystem,\n }: Readonly<{\n   attempt: OpenAttempt;\n   actions: DocumentSessionActions;\n@@ -197,6 +221,7 @@ export function DocumentStart({\n   recentFilesFailure: Option<string>;\n   commandFailure: Option<CommandSourceFailure>;\n   renderErrors: RenderDocumentErrors;\n+  operatingSystem: OperatingSystem;\n }>) {\n   const isOpening = OpenAttempt.isOpening(attempt);\n   const failure = OpenAttempt.failure(attempt);\n@@ -218,7 +243,11 @@ export function DocumentStart({\n             ? \"ファイルを読み込んでいます…\"\n             : \"ドキュメントを開くか、新しく作成してください。\"}\n         </p>\n-        <StartActions actions={actions} disabled={isOpening} />\n+        <StartActions\n+          actions={actions}\n+          disabled={isOpening}\n+          operatingSystem={operatingSystem}\n+        />\n         <RecentFileList\n           paths={recentPaths}\n           onOpen={(path) => actions.openDocumentsAt([path])}",
+          "patchLines": 140,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e47314d2502f6580f44b4b8d36d411b3d6762035",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-02T05:32:37Z",
+      "subject": "📝 [Documentation]: #1253 開始画面の割り当ても OS の綴りで出すことを仕様に書く",
+      "body": "- 06-ui.md「開く前の画面」に、開く / 新規作成に添える割り当ては動いている\n  OS の綴りで出し、規則は「コンテキストメニュー」と同じ旨を足す\n- 「開く / 新規作成の導線」の ⌘O / ⌘N に「macOS の綴りで書く」を足す\n\n背景:\n開始画面の割り当てについて仕様に記述が無く、追加したテストの根拠が\n無かった。導線の節は macOS の綴りだけで書かれており、OS で綴りが分かれる\nのは開始画面だけと読める状態だった。\n\n採用理由:\n規則の文言は「コンテキストメニュー」節の 1 か所に置いたまま参照し、\n書き写さない（片方だけを直せる状態を作らない）。\n\n影響とトレードオフ:\n05-architecture.md の同じ記述（OS のメニュー ⌘O / ⌘N）は今回触れていない。\n\n参考:\n- Issue #1253 の計画 v2（plan-reviewer の指摘 3・4）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2S2Q5h6uMQNRtgVVf1",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -19,6 +19,7 @@ Figma 型の3ペイン。\n \n ドキュメントを 1 つも開いていない間は、3 ペインの代わりに開始画面を出す。持つのはアプリ名・`開く` / `新規作成`・最近使ったファイルの一覧・ファイルを落として開ける旨の案内・開けなかった理由・最近使ったファイルを読み取れないときのその旨・メニューやドロップからの操作を受け取れないときのその旨。\n \n+- **`開く` / `新規作成` に添える割り当ては、動いている OS の綴りで出す。** 綴りの規則は下記「コンテキストメニュー」の行に併記する割り当てと同じ\n - **最近使ったファイルは、ファイル名と収めているフォルダの名前で並べる。** 同名のファイルを別フォルダで開いたときに区別できるようにするため。symlink から開いたものは実体の名前で並ぶ。1 件も無ければ枠ごと出さない\n - 一覧は**アプリ自身の状態**として残す（置き場は 05-architecture）。**開いた順に新しいものから**並べ、同じファイルを開き直したら重複させず先頭へ移す（symlink 経由・macOS / Windows での大小違いなど、別の綴りで開き直しても同じファイルとして扱う）。持つのは**10 件まで**で、超えたら古いものから落とす\n - **起動したら一覧の先頭のファイルを開く。** 開けなかったときは開始画面に理由を出し、そのファイルを一覧から外さない（一時的に読めないだけのことがあるため）。ただしファイル名の要素を持たないパス（`/` だけなど）は、読み込むときに一覧へ入れず、その次のものを先頭として扱う（一時的ではなく、二度と開けないため）。自動で開くかどうかの設定は持たない\n@@ -40,7 +41,7 @@ Figma 型の3ペイン。\n \n ### 開く / 新規作成の導線\n \n-ドキュメントを開いている間は、開始画面が消えるので **OS のメニュー**（⌘O / ⌘N。タブを閉じる ⌘W も同じメニューにある）とウィンドウへのファイルのドロップが導線になる。上端のバーには置かない。\n+ドキュメントを開いている間は、開始画面が消えるので **OS のメニュー**（ここでは macOS の綴りで書く。⌘O / ⌘N。タブを閉じる ⌘W も同じメニューにある）とウィンドウへのファイルのドロップが導線になる。上端のバーには置かない。\n \n - **複数のファイルを一度に落とせる。** 落とした数だけ開く。ただしファイル名の要素を持たないパス（`/` だけなど）は開く対象に数えず、理由も出さない。1 件も残らなければ何も起きない（一時的ではなく、二度と開けないため）\n ",
+          "patchLines": 17,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "5171cf6a10ad4c9eac78989d0e175e28cb75337d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-02T05:38:10Z",
+      "subject": "♻️ [Refactoring]: #1253 併記する割り当ての型を ShownShortcut に改名し、参照と doc を整える",
+      "body": "- ShortcutNotation を ShownShortcut に、src/components/shortcut-notation を\n  src/components/shown-shortcut に改名する\n- 開始画面の OpenShortcut / CreateShortcut を OpenCardShortcut /\n  CreateCardShortcut に改名する\n- コンテキストメニューの commandShortcut の doc から ⌘ / Ctrl の規則を外し、\n  ShownShortcut.toText を参照する\n- docs/06-ui.md の開始画面の参照を、節名と箇条の両方を書く形にする\n- shown-shortcut の置き場所の Why に「OperatingSystem が libs にある間は」の\n  条件を足す\n\n背景:\n実装の検証（naming / duplication / harness / comment）の指摘への対応。\n型が持つのは OS に依らないキーと修飾で、綴り（notation）は toText が\n作るので、旧名は出力の側を名指ししていた。\n\n採用理由:\n中心語を仕様の「割り当て」に当たる Shortcut にし、併記用であることを\n修飾語で出した。キー入力を受ける KeyShortcut とは修飾語で分かれる。\n開始画面の定数は、features/editor にある 14 個の <操作>Shortcut:\nKeyShortcut と同じ形を避け、カードとの対応を名前に出した。\n\n代替案:\n- ShownShortcut に create を置き、コンテキストメニューと開始画面の両方から\n  呼ぶ: 検証すべき制約の無い直和で、satisfies の型リテラルがそのまま唯一の\n  形になっている。plainShortcut などの Option で包む関数は残るので、作り方の\n  経路は減らない\n- 開始画面のテストを OS ごとに 1 件へ減らす: 開く / 新規作成は別の定数から\n  作るので、2 枚 x 2 OS は配線の取り違えを落とすのに要る\n\n影響とトレードオフ:\n振る舞いは変わらない（改名と doc のみ）。\n\n参考:\n- Issue #1253「実装の検証（フェーズ 6）と対応」のコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2S2Q5h6uMQNRtgVVf1",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -19,7 +19,7 @@ Figma 型の3ペイン。\n \n ドキュメントを 1 つも開いていない間は、3 ペインの代わりに開始画面を出す。持つのはアプリ名・`開く` / `新規作成`・最近使ったファイルの一覧・ファイルを落として開ける旨の案内・開けなかった理由・最近使ったファイルを読み取れないときのその旨・メニューやドロップからの操作を受け取れないときのその旨。\n \n-- **`開く` / `新規作成` に添える割り当ては、動いている OS の綴りで出す。** 綴りの規則は下記「コンテキストメニュー」の行に併記する割り当てと同じ\n+- **`開く` / `新規作成` に添える割り当ては、動いている OS の綴りで出す。** 綴りの規則は下記「コンテキストメニュー」の「行にはキーボードの割り当てを併記する」と同じ\n - **最近使ったファイルは、ファイル名と収めているフォルダの名前で並べる。** 同名のファイルを別フォルダで開いたときに区別できるようにするため。symlink から開いたものは実体の名前で並ぶ。1 件も無ければ枠ごと出さない\n - 一覧は**アプリ自身の状態**として残す（置き場は 05-architecture）。**開いた順に新しいものから**並べ、同じファイルを開き直したら重複させず先頭へ移す（symlink 経由・macOS / Windows での大小違いなど、別の綴りで開き直しても同じファイルとして扱う）。持つのは**10 件まで**で、超えたら古いものから落とす\n - **起動したら一覧の先頭のファイルを開く。** 開けなかったときは開始画面に理由を出し、そのファイルを一覧から外さない（一時的に読めないだけのことがあるため）。ただしファイル名の要素を持たないパス（`/` だけなど）は、読み込むときに一覧へ入れず、その次のものを先頭として扱う（一時的ではなく、二度と開けないため）。自動で開くかどうかの設定は持たない",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+          "status": "R",
+          "oldPath": "src/components/shortcut-notation/__tests__/shortcut-notation.normal.test.ts",
+          "additions": 10,
+          "deletions": 10,
+          "patch": "@@ -1,5 +1,5 @@\n import { expect, test } from \"vitest\";\n-import { ShortcutNotation } from \"@/components/shortcut-notation\";\n+import { ShownShortcut } from \"@/components/shown-shortcut\";\n import { OperatingSystem } from \"@/libs/operating-system\";\n import {\n   LinuxNavigatorPlatform,\n@@ -13,7 +13,7 @@ const Linux = OperatingSystem.fromNavigator(LinuxNavigatorPlatform);\n \n test(\"macOS で動いているとき、コマンドキー付きの割り当ては ⌘C と綴る\", () => {\n   expect(\n-    ShortcutNotation.toText(\n+    ShownShortcut.toText(\n       { kind: \"command\", key: \"C\", withShiftKey: false },\n       MacOs,\n     ),\n@@ -22,7 +22,7 @@ test(\"macOS で動いているとき、コマンドキー付きの割り当て\n \n test(\"macOS で動いているとき、Shift とコマンドキー付きの割り当ては Shift+⌘G と綴る\", () => {\n   expect(\n-    ShortcutNotation.toText(\n+    ShownShortcut.toText(\n       { kind: \"command\", key: \"G\", withShiftKey: true },\n       MacOs,\n     ),\n@@ -31,7 +31,7 @@ test(\"macOS で動いているとき、Shift とコマンドキー付きの割\n \n test(\"Windows で動いているとき、コマンドキー付きの割り当ては Ctrl+C と綴る\", () => {\n   expect(\n-    ShortcutNotation.toText(\n+    ShownShortcut.toText(\n       { kind: \"command\", key: \"C\", withShiftKey: false },\n       Windows,\n     ),\n@@ -40,7 +40,7 @@ test(\"Windows で動いているとき、コマンドキー付きの割り当て\n \n test(\"Linux で動いているとき、コマンドキー付きの割り当ては Ctrl+C と綴る\", () => {\n   expect(\n-    ShortcutNotation.toText(\n+    ShownShortcut.toText(\n       { kind: \"command\", key: \"C\", withShiftKey: false },\n       Linux,\n     ),\n@@ -49,7 +49,7 @@ test(\"Linux で動いているとき、コマンドキー付きの割り当て\n \n test(\"Windows・Linux で動いているとき、Shift とコマンドキー付きの割り当ては Ctrl を先にして Ctrl+Shift+G と綴る\", () => {\n   expect(\n-    ShortcutNotation.toText(\n+    ShownShortcut.toText(\n       { kind: \"command\", key: \"G\", withShiftKey: true },\n       Windows,\n     ),\n@@ -57,13 +57,13 @@ test(\"Windows・Linux で動いているとき、Shift とコマンドキー付\n });\n \n test(\"修飾の無い割り当ては、macOS でもキーの綴りのまま出る\", () => {\n-  expect(ShortcutNotation.toText({ kind: \"plain\", key: \"Delete\" }, MacOs)).toBe(\n+  expect(ShownShortcut.toText({ kind: \"plain\", key: \"Delete\" }, MacOs)).toBe(\n     \"Delete\",\n   );\n });\n \n test(\"修飾の無い割り当ては、Windows でもキーの綴りのまま出る\", () => {\n-  expect(\n-    ShortcutNotation.toText({ kind: \"plain\", key: \"Delete\" }, Windows),\n-  ).toBe(\"Delete\");\n+  expect(ShownShortcut.toText({ kind: \"plain\", key: \"Delete\" }, Windows)).toBe(\n+    \"Delete\",\n+  );\n });",
+          "patchLines": 70,
+          "truncated": false
+        },
+        {
+          "path": "src/components/shown-shortcut/index.ts",
+          "status": "R",
+          "oldPath": "src/components/shortcut-notation/index.ts",
+          "additions": 7,
+          "deletions": 7,
+          "patch": "@@ -5,14 +5,14 @@ import {\n \n /*\n  * 人が読む 1 行への綴りは表示側の関心事なので、割り当てを併記する部品が共に使えるここに置く\n- * （rules/architecture.md「ロジックの帰属先」）。domains は production から libs を import できず、\n- * 綴りを選ぶのに要る `OperatingSystem` を受け取れない。\n+ * （rules/architecture.md「ロジックの帰属先」）。domains は production から libs を import できないので、\n+ * `OperatingSystem` が `libs/` にある間は、綴りを選ぶのに要るそれを受け取れない。\n  */\n \n /**\n  * 併記するキーボードの割り当て。綴りは OS ごとに変わるので、ここではキーと修飾だけを持つ。\n  */\n-export type ShortcutNotation =\n+export type ShownShortcut =\n   | Readonly<{ kind: \"plain\"; key: string }>\n   | Readonly<{ kind: \"command\"; key: string; withShiftKey: boolean }>;\n \n@@ -21,10 +21,10 @@ export type ShortcutNotation =\n  *\n  * @param notation コマンドキー付きの割り当て\n  * @param operatingSystem アプリが動いている OS\n- * @returns `ShortcutNotation.toText` の、コマンドキー付きの場合の綴り\n+ * @returns `ShownShortcut.toText` の、コマンドキー付きの場合の綴り\n  */\n function commandText(\n-  notation: Extract<ShortcutNotation, { kind: \"command\" }>,\n+  notation: Extract<ShownShortcut, { kind: \"command\" }>,\n   operatingSystem: OperatingSystem,\n ): string {\n   switch (operatingSystem) {\n@@ -40,7 +40,7 @@ function commandText(\n }\n \n /** 併記する割り当ての綴り。 */\n-export const ShortcutNotation = {\n+export const ShownShortcut = {\n   /**\n    * 割り当てを、動いている OS の綴りにする（docs/06-ui.md「コンテキストメニュー」の表記）。\n    *\n@@ -48,7 +48,7 @@ export const ShortcutNotation = {\n    * @param operatingSystem アプリが動いている OS\n    * @returns macOS なら `⌘X` / `Shift+⌘X`、それ以外なら `Ctrl+X` / `Ctrl+Shift+X`。修飾の無いキーはそのまま\n    */\n-  toText(notation: ShortcutNotation, operatingSystem: OperatingSystem): string {\n+  toText(notation: ShownShortcut, operatingSystem: OperatingSystem): string {\n     switch (notation.kind) {\n       case \"plain\":\n         return notation.key;",
+          "patchLines": 49,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 8,
+          "patch": "@@ -1,6 +1,6 @@\n import type { ComponentProps, ReactElement } from \"react\";\n import { ContextMenu, ContextMenuTones } from \"@/components/context-menu\";\n-import { ShortcutNotation } from \"@/components/shortcut-notation\";\n+import { ShownShortcut } from \"@/components/shown-shortcut\";\n import { useEditor } from \"@/features/editor/components/editor-provider\";\n import {\n   EditMenu,\n@@ -25,17 +25,17 @@ import { Option } from \"@/utils/Option\";\n  * @param key キーの綴り\n  * @returns 併記する割り当て\n  */\n-function plainShortcut(key: string): Option<ShortcutNotation> {\n+function plainShortcut(key: string): Option<ShownShortcut> {\n   return Option.some({ kind: \"plain\", key });\n }\n \n /**\n- * コマンドキー（macOS の ⌘ / それ以外の Ctrl）付きの割り当て。\n+ * コマンドキー付きの割り当て（OS ごとの綴りは `ShownShortcut.toText`）。\n  *\n  * @param key 修飾と組むキーの綴り\n  * @returns 併記する割り当て\n  */\n-function commandShortcut(key: string): Option<ShortcutNotation> {\n+function commandShortcut(key: string): Option<ShownShortcut> {\n   return Option.some({ kind: \"command\", key, withShiftKey: false });\n }\n \n@@ -45,7 +45,7 @@ function commandShortcut(key: string): Option<ShortcutNotation> {\n  * @param key 修飾と組むキーの綴り\n  * @returns 併記する割り当て\n  */\n-function shiftCommandShortcut(key: string): Option<ShortcutNotation> {\n+function shiftCommandShortcut(key: string): Option<ShownShortcut> {\n   return Option.some({ kind: \"command\", key, withShiftKey: true });\n }\n \n@@ -54,12 +54,12 @@ type OperationPresentation = Readonly<\n   Omit<\n     ComponentProps<typeof ContextMenu.Item>,\n     \"isEnabled\" | \"onSelect\" | \"shortcut\"\n-  > & { shortcut: Option<ShortcutNotation> }\n+  > & { shortcut: Option<ShownShortcut> }\n >;\n \n /**\n  * 操作ごとの綴り・併記する割り当て・色味（UI 案 docs/Design Composer.html の\n- * `Context menu`）。割り当ては動いている OS の綴りで出す（`ShortcutNotation.toText`）。\n+ * `Context menu`）。割り当ては動いている OS の綴りで出す（`ShownShortcut.toText`）。\n  *\n  * 割り当ての出どころはキーボードのフック（`use-*-shortcut`）。片方だけ変えると併記と\n  * 実際の割り当てが食い違う。\n@@ -190,7 +190,7 @@ export function EditorContextMenu({\n                 key={row.operation}\n                 label={presentation.label}\n                 shortcut={Option.map(presentation.shortcut, (shortcut) =>\n-                  ShortcutNotation.toText(shortcut, operatingSystem),\n+                  ShownShortcut.toText(shortcut, operatingSystem),\n                 )}\n                 tone={presentation.tone}\n                 isEnabled={row.isEnabled}",
+          "patchLines": 62,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -17,7 +17,7 @@ import { Path, renderEditorScreen, startOpen } from \"./setup\";\n /*\n  * 画面の入口で受け取った OS が、開始画面のカードと、開いたドキュメントのコンテキストメニューまで\n  * 届くかを見る（docs/06-ui.md「開く前の画面（開始画面）」「コンテキストメニュー」）。\n- * 綴りの規則そのものは `ShortcutNotation` のテストが見る。\n+ * 綴りの規則そのものは `ShownShortcut` のテストが見る。\n  */\n \n /**",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 8,
+          "patch": "@@ -4,7 +4,7 @@ import {\n   type ActionCardContent,\n   ActionCardTones,\n } from \"@/components/action-card\";\n-import { ShortcutNotation } from \"@/components/shortcut-notation\";\n+import { ShownShortcut } from \"@/components/shown-shortcut\";\n import { FilePath } from \"@/domains/unit/file-path\";\n import {\n   DocumentOpenFailureNotice,\n@@ -39,7 +39,7 @@ function commandSourceFailureLabel(source: CommandSource): string {\n /*\n  * 開始画面の 2 枚のカードの中身と割り当て。割り当ての出どころは `src-tauri/src/menu.rs` の\n  * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここはキーと修飾だけを持つ（片方だけ変えると併記と実際の\n- * 割り当てが食い違う）。綴りは `ShortcutNotation` が動いている OS ごとに作る。\n+ * 割り当てが食い違う）。綴りは `ShownShortcut` が動いている OS ごとに作る。\n  */\n \n /** 開くのカード（プライマリ）。 */\n@@ -53,11 +53,11 @@ const OpenCardContent = {\n } as const satisfies Omit<ActionCardContent, \"shortcut\">;\n \n /** 開くの割り当て。 */\n-const OpenShortcut = {\n+const OpenCardShortcut = {\n   kind: \"command\",\n   key: \"O\",\n   withShiftKey: false,\n-} as const satisfies ShortcutNotation;\n+} as const satisfies ShownShortcut;\n \n /** 新規作成のカード。 */\n const CreateCardContent = {\n@@ -68,11 +68,11 @@ const CreateCardContent = {\n } as const satisfies Omit<ActionCardContent, \"shortcut\">;\n \n /** 新規作成の割り当て。 */\n-const CreateShortcut = {\n+const CreateCardShortcut = {\n   kind: \"command\",\n   key: \"N\",\n   withShiftKey: false,\n-} as const satisfies ShortcutNotation;\n+} as const satisfies ShownShortcut;\n \n /**\n  * ドキュメントを開く / 作る導線。\n@@ -99,7 +99,7 @@ function StartActions({\n       <ActionCard\n         content={{\n           ...OpenCardContent,\n-          shortcut: ShortcutNotation.toText(OpenShortcut, operatingSystem),\n+          shortcut: ShownShortcut.toText(OpenCardShortcut, operatingSystem),\n         }}\n         onClick={actions.openDocument}\n         disabled={disabled}\n@@ -107,7 +107,7 @@ function StartActions({\n       <ActionCard\n         content={{\n           ...CreateCardContent,\n-          shortcut: ShortcutNotation.toText(CreateShortcut, operatingSystem),\n+          shortcut: ShownShortcut.toText(CreateCardShortcut, operatingSystem),\n         }}\n         onClick={actions.createDocument}\n         disabled={disabled}",
+          "patchLines": 64,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "741d49231259644278606625241f8b6f2c3829dd",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-02T05:58:58Z",
+      "subject": "🧪 [Tests]: #1253 開始画面のカードの割り当てを綴り全体との一致で確かめる",
+      "body": "- 開始画面のテストの description を、空白の後ろから末尾までの一致\n  （/(?:^|\\s)⌘O$/ など）に変える。Windows 側も同じ形にそろえる\n- EditorScreen の OS のテストを、textContent の部分一致から開くカードの中の\n  getByText の完全一致に変える\n\n背景:\ntest-reviewer の所見。macOS 側が部分一致だったので、カードの割り当てに\n誤って Shift が付き Shift+⌘O になっても通り、Windows 側だけが拾っていた。\n\n採用理由:\n説明は「既存の .dcmp を選ぶ」と割り当ての 2 要素から作られ、割り当ては\n末尾に空白で区切って付くので、末尾まで一致を求めれば綴り全体を見られる。\nカードの textContent は区切りが無く正規表現で切り出せないため、\nEditorScreen 側は割り当ての要素を getByText で引く。開く / 新規作成の\n割り当てに Shift を付けると直した 6 件がすべて落ちることを実測した。\n\n影響とトレードオフ:\nコンテキストメニューの Copy の 2 件は部分一致のまま（今回の指摘の対象外）。\n\n参考:\n- Issue #1253「実装の検証（フェーズ 6）と対応」のコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2S2Q5h6uMQNRtgVVf1",
+      "files": [
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -1,4 +1,4 @@\n-import { screen } from \"@testing-library/react\";\n+import { screen, within } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n import {\n   menuRow,\n@@ -72,11 +72,11 @@ function openCardOn(navigatorPlatform: NavigatorPlatform): HTMLElement {\n test(\"Windows で動いている画面で何も開いていないとき、開始画面の開くカードに Ctrl+O が添えられる\", () => {\n   const openCard = openCardOn(WindowsNavigatorPlatform);\n \n-  expect(openCard.textContent).toContain(\"Ctrl+O\");\n+  expect(within(openCard).getByText(\"Ctrl+O\")).toBeDefined();\n });\n \n test(\"macOS で動いている画面で何も開いていないとき、開始画面の開くカードに ⌘O が添えられる\", () => {\n   const openCard = openCardOn(MacOsNavigatorPlatform);\n \n-  expect(openCard.textContent).toContain(\"⌘O\");\n+  expect(within(openCard).getByText(\"⌘O\")).toBeDefined();\n });",
+          "patchLines": 20,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 4,
+          "patch": "@@ -92,13 +92,17 @@ test(\"新規作成ボタンには、空のドキュメントから始めるこ\n   ).toBeDefined();\n });\n \n+/*\n+ * 割り当ては説明の末尾に、前の文言と空白で区切って付く。区切りから末尾までを割り当ての綴りと\n+ * 突き合わせ、`Shift+⌘O` のように前へ修飾が付いた綴りを通さない。\n+ */\n test(\"macOS で動いているとき、開くボタンには、⌘O でも開けることが説明として添えられる\", () => {\n   renderDocumentStart({\n     operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),\n   });\n \n   expect(\n-    screen.getByRole(\"button\", { name: \"開く\", description: /⌘O/ }),\n+    screen.getByRole(\"button\", { name: \"開く\", description: /(?:^|\\s)⌘O$/ }),\n   ).toBeDefined();\n });\n \n@@ -108,7 +112,10 @@ test(\"macOS で動いているとき、新規作成ボタンには、⌘N でも\n   });\n \n   expect(\n-    screen.getByRole(\"button\", { name: \"新規作成\", description: /⌘N/ }),\n+    screen.getByRole(\"button\", {\n+      name: \"新規作成\",\n+      description: /(?:^|\\s)⌘N$/,\n+    }),\n   ).toBeDefined();\n });\n \n@@ -118,7 +125,10 @@ test(\"Windows で動いているとき、開くボタンには、Ctrl+O でも\n   });\n \n   expect(\n-    screen.getByRole(\"button\", { name: \"開く\", description: /Ctrl\\+O/ }),\n+    screen.getByRole(\"button\", {\n+      name: \"開く\",\n+      description: /(?:^|\\s)Ctrl\\+O$/,\n+    }),\n   ).toBeDefined();\n });\n \n@@ -128,7 +138,10 @@ test(\"Windows で動いているとき、新規作成ボタンには、Ctrl+N \n   });\n \n   expect(\n-    screen.getByRole(\"button\", { name: \"新規作成\", description: /Ctrl\\+N/ }),\n+    screen.getByRole(\"button\", {\n+      name: \"新規作成\",\n+      description: /(?:^|\\s)Ctrl\\+N$/,\n+    }),\n   ).toBeDefined();\n });\n ",
+          "patchLines": 55,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": "docs/06-ui.md",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+      "to": "src/components/shown-shortcut/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/components/shown-shortcut/index.ts",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/components/context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/components/shown-shortcut/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/components/editor-provider/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/domains/edit-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-edit-actions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-node-actions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/types/OpenedContextMenu.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/features/editor/__tests__/editor-context-menu.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/components/editor-screen/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/features/editor/components/editor-screen/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/domains/session/opened-documents/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/features/editor/components/document-error-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/features/editor/components/opened-document-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/features/editor/features/document-start/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/features/editor/hooks/use-activate-tab-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/libs/clock/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/components/editor-context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.edge.test.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.failure.test.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/domains/session/document-error/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/components/__stories__/screen-height-shell.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/domains/session/document-access-failure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/components/action-card/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/components/shown-shortcut/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/features/editor/features/document-start/components/document-open-failure/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/index.ts",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/index.ts",
+      "to": "src/features/editor/components/editor-screen/index.tsx",
+      "status": "kept"
+    }
+  ]
+}
