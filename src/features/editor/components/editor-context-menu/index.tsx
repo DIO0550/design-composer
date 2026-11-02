@@ -5,7 +5,10 @@ import {
   EditMenu,
   type EditOperation,
 } from "@/features/editor/domains/edit-menu";
-import { ReorderSteps } from "@/features/editor/domains/reorder-step";
+import {
+  type ReorderStep,
+  ReorderSteps,
+} from "@/features/editor/domains/reorder-step";
 import { CopyShortcut } from "@/features/editor/hooks/use-copy-shortcut";
 import { DeleteShortcut } from "@/features/editor/hooks/use-delete-shortcut";
 import { DuplicateShortcut } from "@/features/editor/hooks/use-duplicate-shortcut";
@@ -47,7 +50,7 @@ type MenuShortcut =
  * 物理キーの綴り（`Digit1` など）は打つ文字の綴りにならず、Shift だけの修飾は
  * `MenuShortcut` が表せないので、表に置いた時点で型エラーにする。
  */
-type NotatableKeyShortcut = Extract<
+type ShowableKeyShortcut = Extract<
   KeyShortcut,
   { kind: typeof KeyTriggers.TypedCharacter }
 > &
@@ -65,7 +68,7 @@ type NotatableKeyShortcut = Extract<
  * @returns 併記する割り当て
  */
 function menuShortcutFromKeyShortcut(
-  shortcut: NotatableKeyShortcut,
+  shortcut: ShowableKeyShortcut,
 ): MenuShortcut {
   const [firstKey] = shortcut.keys;
   const key = firstKey.length === 1 ? firstKey.toUpperCase() : firstKey;
@@ -75,12 +78,26 @@ function menuShortcutFromKeyShortcut(
     : { kind: "plain", key };
 }
 
-/** 表示のための綴りだけを持つ部分（押せるかどうかと押したときの手続きは状態から決まる）。 */
+/**
+ * 行の見出し・併記に使うキーボードの割り当て・色味（押せるかどうかと押したときの手続きは
+ * 状態から決まる）。
+ */
 type OperationPresentation = Readonly<
   Omit<
     ComponentProps<typeof ContextMenu.Item>,
     "isEnabled" | "onSelect" | "shortcut"
-  > & { shortcut: Option<NotatableKeyShortcut> }
+  > & { shortcut: Option<ShowableKeyShortcut> }
+>;
+
+/**
+ * 並べ替えの操作ごとの向き。行に併記する割り当て（`OperationPresentations`）と押したときの
+ * 手続き（`operationHandlers`）の両方がここから向きを引く。
+ */
+const OperationReorderSteps = {
+  "bring-forward": ReorderSteps.TowardFront,
+  "send-backward": ReorderSteps.TowardBack,
+} as const satisfies Readonly<
+  Record<Extract<EditOperation, "bring-forward" | "send-backward">, ReorderStep>
 >;
 
 /**
@@ -123,12 +140,16 @@ const OperationPresentations = {
   },
   "bring-forward": {
     label: "Bring forward",
-    shortcut: Option.some(ReorderShortcuts[ReorderSteps.TowardFront]),
+    shortcut: Option.some(
+      ReorderShortcuts[OperationReorderSteps["bring-forward"]],
+    ),
     tone: ContextMenuTones.Normal,
   },
   "send-backward": {
     label: "Send backward",
-    shortcut: Option.some(ReorderShortcuts[ReorderSteps.TowardBack]),
+    shortcut: Option.some(
+      ReorderShortcuts[OperationReorderSteps["send-backward"]],
+    ),
     tone: ContextMenuTones.Normal,
   },
   "detach-instance": {
@@ -213,8 +234,10 @@ function operationHandlers(
     rename: edit.startRenaming,
     group: edit.groupSelected,
     ungroup: edit.ungroupSelected,
-    "bring-forward": () => edit.reorderSelected(ReorderSteps.TowardFront),
-    "send-backward": () => edit.reorderSelected(ReorderSteps.TowardBack),
+    "bring-forward": () =>
+      edit.reorderSelected(OperationReorderSteps["bring-forward"]),
+    "send-backward": () =>
+      edit.reorderSelected(OperationReorderSteps["send-backward"]),
     "detach-instance": node.detachInstance,
     delete: edit.removeSelected,
     undo: edit.undo,

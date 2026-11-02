@@ -234,14 +234,6 @@ test("macOS で動いているとき、Copy の行の割り当ては ⌘C だけ
   expect(menuRowColumns("Copy")).toEqual(["Copy", "⌘C"]);
 });
 
-test("macOS で動いているとき、複製の行には ⌘D が併記される", async () => {
-  await renderOpenedDocumentOn(MacOsNavigatorPlatform);
-
-  rightClick(drawn("home-title"));
-
-  expect(menuRow("Duplicate").textContent).toContain("⌘D");
-});
-
 test("Windows で動いているとき、Copy の行には Ctrl+C が併記される", async () => {
   await renderOpenedDocumentOn(WindowsNavigatorPlatform);
 
@@ -277,11 +269,11 @@ function openNodeMenu(): void {
 }
 
 /** 空き領域を右クリックしてメニューを開く。 */
-function openCanvasMenu(): void {
+function openEmptyAreaMenu(): void {
   rightClick(canvasSurface());
 }
 
-// Copy と Delete の行は、上の個別のテストが同じ完全一致で見ている
+// Copy（macOS）と Delete の行は上の個別のテストが同じ完全一致で見ているので、ここには並べない
 test.each([
   { name: "Duplicate", shortcut: "⌘D", openMenu: openNodeMenu },
   { name: "Paste", shortcut: "⌘V", openMenu: openNodeMenu },
@@ -290,8 +282,8 @@ test.each([
   { name: "Ungroup", shortcut: "Shift+⌘G", openMenu: openNodeMenu },
   { name: "Bring forward", shortcut: "⌘]", openMenu: openNodeMenu },
   { name: "Send backward", shortcut: "⌘[", openMenu: openNodeMenu },
-  { name: "Undo", shortcut: "⌘Z", openMenu: openCanvasMenu },
-  { name: "Redo", shortcut: "Shift+⌘Z", openMenu: openCanvasMenu },
+  { name: "Undo", shortcut: "⌘Z", openMenu: openEmptyAreaMenu },
+  { name: "Redo", shortcut: "Shift+⌘Z", openMenu: openEmptyAreaMenu },
 ] as const)("macOS で動いているとき、$name の行の割り当ては $shortcut になる", async ({
   name,
   shortcut,
@@ -307,7 +299,7 @@ test.each([
 test("Windows で動いているとき、Ungroup の行の割り当ては Ctrl+Shift+G になる", async () => {
   await renderOpenedDocumentOn(WindowsNavigatorPlatform);
 
-  rightClick(drawn("home-title"));
+  openNodeMenu();
 
   expect(menuRowColumns("Ungroup")).toEqual(["Ungroup", "Ctrl+Shift+G"]);
 });
@@ -315,7 +307,7 @@ test("Windows で動いているとき、Ungroup の行の割り当ては Ctrl+S
 test("Detach instance の行には割り当ての欄が出ない", async () => {
   await renderOpenedDocumentOn(MacOsNavigatorPlatform);
 
-  rightClick(drawn("home-title"));
+  openNodeMenu();
 
   expect(menuRowColumns("Detach instance")).toEqual(["Detach instance"]);
 });
