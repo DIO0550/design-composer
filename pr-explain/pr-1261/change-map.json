@@ -1,0 +1,1770 @@
+{
+  "version": 2,
+  "pr": 1261,
+  "headBranch": "claude/magical-cannon-qwve2l",
+  "baseBranch": "main",
+  "mergeBase": "752abd5bfdcd3f7beb6e25f02711ab1ce83338d5",
+  "head": "81494a1b54941f2e4ac1c18180200908bd238bf9",
+  "groups": [
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/v1/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/format-version/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/color/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/gradient/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/shadow/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/typography/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.canvas-position.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.json.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/__tests__/component.json.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.componentize-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.componentize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.constraint.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.copies-after.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.detach-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.detach.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.detachable.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.name-uniqueness.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.node-copies.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.remove-all-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.remove-all.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rename-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.replace-node.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.sibling-positions.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-validation-range.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.tree-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.tree.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.usable-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-color.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-default.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-duplicate-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/v1/__tests__/design-document-v1.json.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/__tests__/expanded-node.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/__tests__/expanded-node.nested.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/__tests__/expanded-node.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/__tests__/expanded-node.root-override.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/__tests__/node-tree.ambiguous-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/__tests__/node-tree.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/__tests__/node-tree.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/__tests__/node.json.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/__tests__/node.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/__tests__/token.edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/__tests__/token.json.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/__tests__/token.paint-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/__tests__/token.prototype-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/gradient/__tests__/gradient.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/gradient/__tests__/gradient.json.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/shadow/__tests__/shadow.json.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/typography/__tests__/typography.json.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-documents/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/__tests__/document-reload.invalid.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/__tests__/document-reload.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-document/__tests__/opened-document.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-document/__tests__/opened-document.open-boundary.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-documents/__tests__/opened-documents.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-documents/__tests__/opened-documents.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "services",
+      "files": [
+        {
+          "path": "src/services/document-html/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/node-html/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/document-html/__tests__/document-html.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/document-html/__tests__/document-html.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/node-html/__tests__/node-html.box.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/node-html/__tests__/node-html.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/node-html/__tests__/node-html.ellipse.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/node-html/__tests__/node-html.placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/node-html/__tests__/node-html.size.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/node-html/__tests__/node-html.text.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/node-html/__tests__/setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/app-menu/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-window/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-migration/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/json-text/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/tauri-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-menu/__tests__/app-menu.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-menu/__tests__/app-menu.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/__tests__/app-state-ipc.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/__tests__/app-state-ipc.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-json/__tests__/app-state-json.parse-error.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-json/__tests__/app-state-json.parse.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-window/__tests__/app-window.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/__tests__/document-dialog.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/__tests__/document-dialog.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.format-version.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.parse-error.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.parse.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.roundtrip.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.template.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.type.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-migration/__tests__/document-migration.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-migration/__tests__/document-migration.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/__tests__/file-drop.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/__tests__/file-drop.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/json-text/__tests__/json-text.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/json-text/__tests__/json-text.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Interop.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Json.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/RecordEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/utils/__tests__/ArrayEx.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/ArrayEx.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/Interop.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/Interop.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/Interop.type.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/Json.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/Json.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/Json.setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/Json.type.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 46,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/utils/Json.ts"
+        },
+        {
+          "path": "src/utils/__tests__/Result.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/Result.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/Result.type.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/domains/document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-sync",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/inspector",
+      "files": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/utils/__tests__/Json.type.test.ts",
+        "name": "フィールドに Option を持つオブジェクトは JSON のオブジェクトとして代入できない"
+      },
+      {
+        "file": "src/utils/__tests__/Json.type.test.ts",
+        "name": "不在の Option は JSON の値として代入できない"
+      },
+      {
+        "file": "src/utils/__tests__/Json.type.test.ts",
+        "name": "値が undefined のシンボルのキーを持つオブジェクトは JSON のオブジェクトとして代入できない"
+      },
+      {
+        "file": "src/utils/__tests__/Json.type.test.ts",
+        "name": "値を持つ Option は JSON の値として代入できない"
+      },
+      {
+        "file": "src/utils/__tests__/Json.type.test.ts",
+        "name": "失敗の Result は JSON の値として代入できない"
+      },
+      {
+        "file": "src/utils/__tests__/Json.type.test.ts",
+        "name": "成功の Result は JSON の値として代入できない"
+      },
+      {
+        "file": "src/utils/__tests__/Json.type.test.ts",
+        "name": "文字列のキーだけで入れ子になったオブジェクトは JSON の値として代入できる"
+      },
+      {
+        "file": "src/utils/__tests__/Json.type.test.ts",
+        "name": "文字列のキーで引く辞書は JSON のオブジェクトとして代入できる"
+      },
+      {
+        "file": "src/utils/__tests__/Json.type.test.ts",
+        "name": "要素に Option を持つ配列は JSON の値として代入できない"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/utils/__tests__/Json.type.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "451d42b91f094f21b1bb6f46a3015c66669d8be8",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-02T05:29:12Z",
+      "subject": "🐛 [Bug fix]: #1249 JsonValue へ Result / Option を代入したら型で弾く",
+      "body": "- JsonObject にシンボルのキーの index signature(never)を足し、\n  キーを文字列だけに閉じる\n- Result.ts の OkTag の doc から「JsonValue は文字列キーしか見ないので\n  代入できてしまう」を削る(事実でなくなったため)\n- Json.type.test.ts を追加し、代入できないこと(Some / None / Ok / Err /\n  フィールド / 配列要素)と、文字列キーのオブジェクト・辞書が通ることを\n  expectTypeOf で固定する\n\n背景:\n#1013 で Result / Option の判別子をシンボルのキーにした。文字列の index\nsignature はシンボルのキーを見ないので、Option.some(x) などを JsonValue へ\n型エラー無しで代入できた。直列化すると判別子が黙って落ち、在と不在を\n区別できない形で .dcmp に書かれうる。これまでは OkTag の doc に書いた\n規律(pr-1250 で受け入れた制約)だけが守りだった。\n\n採用理由:\nJsonObject の定義 1 か所を閉じれば、JsonValue を経由して書き出す経路が\nすべて閉じる。変更後の型で tsc -b が通り、利用している 12 ファイルを\n書き換える必要は無かった。元の型に戻すと否定側の 6 件だけが落ち、\n対照の 2 件は通ることを実測した。\n\n影響とトレードオフ:\n型だけの変更で、実行時の挙動は変わらない。シンボルのキーの値を\nundefined にしてもテストは通り、never との差を型やテストでは守れない。\nそこで JsonObject の doc に never を選んだ理由を 1 行残した。\n\n代替案:\n- [key: symbol]?: never: index signature に ? を付けられず、TS1005 になる\n- [key: symbol]: undefined: 「値が無いことはある」と読めてしまう\n- OkTag / SomeTag を export し、名指しで除く: 「判別子は定義元から\n  持ち出せない」という Result.type / Option.type のテストを崩す。汎用の\n  Json が Result / Option の内部を知ることにもなる\n- 書き出し関数を型引数で縛る: 入口ごとに縛りが要り、JsonValue を直接\n  組み立てる経路が漏れる\n- 代入できてしまうことをテストで固定するだけに留める: 型で弾けるので\n  採らない\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1249\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SQqCD6SYpgCgwvPUU",
+      "files": [
+        {
+          "path": "src/utils/Json.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 2,
+          "patch": "@@ -10,8 +10,15 @@ export type JsonValue =\n   | readonly JsonValue[]\n   | JsonObject;\n \n-/** JSON のオブジェクト。値はすべて JSON のデータモデルで表せる。 */\n-export type JsonObject = Readonly<{ [key: string]: JsonValue }>;\n+/**\n+ * JSON のオブジェクト。キーは文字列だけで、値はすべて JSON のデータモデルで表せる。\n+ *\n+ * シンボルのキーを `undefined` にすると「値が無いことはある」と読めるので `never` にする。\n+ */\n+export type JsonObject = Readonly<{\n+  [key: string]: JsonValue;\n+  [key: symbol]: never;\n+}>;\n \n /** 読み込んだ直後のオブジェクト。値の型はまだ何も分かっていない。 */\n export type JsonRecord = Readonly<Record<string, unknown>>;",
+          "patchLines": 18,
+          "truncated": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 2,
+          "patch": "@@ -2,8 +2,7 @@\n  * 成否の判別子のキー。export しないので、型の上ではこのファイルの外から名前を持てない。\n  *\n  * シンボルのキーは `JSON.stringify` / `structuredClone` で落ちるので、直列化するなら\n- * `libs/` の境界で詰め替える（`Option` の判別子も同じ）。`JsonValue` は文字列キーしか\n- * 見ないので、判別子を持つ値も型エラー無しで代入できてしまう。\n+ * `libs/` の境界で詰め替える（`Option` の判別子も同じ）。\n  */\n const OkTag: unique symbol = Symbol.for(\"design-composer/utils/Result#ok\");\n ",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "src/utils/__tests__/Json.type.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 38,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,38 @@\n+import { expectTypeOf, test } from \"vitest\";\n+import type { JsonObject, JsonValue } from \"../Json\";\n+import type { None, Option, Some } from \"../Option\";\n+import type { Err, Ok } from \"../Result\";\n+\n+test(\"値を持つ Option は JSON の値として代入できない\", () => {\n+  expectTypeOf<Some<string>>().not.toExtend<JsonValue>();\n+});\n+\n+test(\"不在の Option は JSON の値として代入できない\", () => {\n+  expectTypeOf<None>().not.toExtend<JsonValue>();\n+});\n+\n+test(\"成功の Result は JSON の値として代入できない\", () => {\n+  expectTypeOf<Ok<string>>().not.toExtend<JsonValue>();\n+});\n+\n+test(\"失敗の Result は JSON の値として代入できない\", () => {\n+  expectTypeOf<Err<string>>().not.toExtend<JsonValue>();\n+});\n+\n+test(\"フィールドに Option を持つオブジェクトは JSON のオブジェクトとして代入できない\", () => {\n+  expectTypeOf<Readonly<{ name: Option<string> }>>().not.toExtend<JsonObject>();\n+});\n+\n+test(\"文字列のキーだけで入れ子になったオブジェクトは JSON の値として代入できる\", () => {\n+  expectTypeOf<\n+    Readonly<{ name: string; frame: Readonly<{ width: number }> }>\n+  >().toExtend<JsonValue>();\n+});\n+\n+test(\"文字列のキーで引く辞書は JSON のオブジェクトとして代入できる\", () => {\n+  expectTypeOf<Readonly<Record<string, number>>>().toExtend<JsonObject>();\n+});\n+\n+test(\"要素に Option を持つ配列は JSON の値として代入できない\", () => {\n+  expectTypeOf<readonly Option<string>[]>().not.toExtend<JsonValue>();\n+});",
+          "patchLines": 39,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "81494a1b54941f2e4ac1c18180200908bd238bf9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-02T05:37:57Z",
+      "subject": "🧪 [Tests]: #1249 シンボルのキーの値を never にした選択をテストで固定する",
+      "body": "- Json.type.test.ts に「値が undefined のシンボルのキーを持つオブジェクトは\n  JSON のオブジェクトとして代入できない」を足す\n- JsonObject の doc から、never を選んだ理由の段落を消す\n\n背景:\n前のコミットでは、[key: symbol]: never と undefined の差は型でもテストでも\n守れないと判断し、doc に理由を 1 行残していた。test-reviewer の実測で、\n値が undefined のシンボルのキーを持つオブジェクトを使えば差が出ると分かった\n(never なら代入できず、undefined なら代入できる)。\n\n採用理由:\nテストで守れることは、コメントへ写さない(rules/coding.md「コメントは\ndoc と Why / Why not に絞る」)。never を undefined に戻すと、新しい\nテストだけが落ちることを実測した。\n\n影響とトレードオフ:\n型の本体と実行時の挙動は変えていない。型テストが 1 件増えるだけ。\n\n代替案:\n- doc の理由を残し、テストは足さない: 規律に頼る形が残る。書き換えても\n  気付けない\n- doc に「テストでは守れない」と書き足す(comment-reviewer の案): 事実と\n  違うので採らない\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1249\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SQqCD6SYpgCgwvPUU",
+      "files": [
+        {
+          "path": "src/utils/Json.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 5,
+          "patch": "@@ -10,11 +10,7 @@ export type JsonValue =\n   | readonly JsonValue[]\n   | JsonObject;\n \n-/**\n- * JSON のオブジェクト。キーは文字列だけで、値はすべて JSON のデータモデルで表せる。\n- *\n- * シンボルのキーを `undefined` にすると「値が無いことはある」と読めるので `never` にする。\n- */\n+/** JSON のオブジェクト。キーは文字列だけで、値はすべて JSON のデータモデルで表せる。 */\n export type JsonObject = Readonly<{\n   [key: string]: JsonValue;\n   [key: symbol]: never;",
+          "patchLines": 13,
+          "truncated": false
+        },
+        {
+          "path": "src/utils/__tests__/Json.type.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "patch": "@@ -3,6 +3,8 @@ import type { JsonObject, JsonValue } from \"../Json\";\n import type { None, Option, Some } from \"../Option\";\n import type { Err, Ok } from \"../Result\";\n \n+declare const undefinedSymbolKey: unique symbol;\n+\n test(\"値を持つ Option は JSON の値として代入できない\", () => {\n   expectTypeOf<Some<string>>().not.toExtend<JsonValue>();\n });\n@@ -36,3 +38,9 @@ test(\"文字列のキーで引く辞書は JSON のオブジェクトとして\n test(\"要素に Option を持つ配列は JSON の値として代入できない\", () => {\n   expectTypeOf<readonly Option<string>[]>().not.toExtend<JsonValue>();\n });\n+\n+test(\"値が undefined のシンボルのキーを持つオブジェクトは JSON のオブジェクトとして代入できない\", () => {\n+  expectTypeOf<\n+    Readonly<{ [undefinedSymbolKey]: undefined; name: string }>\n+  >().not.toExtend<JsonObject>();\n+});",
+          "patchLines": 19,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.canvas-position.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.canvas-position.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.json.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.json.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/__tests__/component.json.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/__tests__/component.json.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit-edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-reposition.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.componentize-edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.componentize.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.constraint.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.copies-after.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detach-edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detach.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detachable.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-placement.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.name-uniqueness.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.node-copies.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.prop-edit.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.remove-all-edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.remove-all.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.rename-name.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.replace-node.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.reposition.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.resize.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.sibling-positions.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-validation-range.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.tree-edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.tree.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.usable-name.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-color.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-color.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-default.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-duplicate-name.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/v1/__tests__/design-document-v1.json.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/v1/__tests__/design-document-v1.json.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/v1/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/v1/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/__tests__/expanded-node.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/__tests__/expanded-node.nested.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/__tests__/expanded-node.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/__tests__/expanded-node.root-override.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/format-version/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/format-version/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node-tree/__tests__/node-tree.ambiguous-name.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node-tree/__tests__/node-tree.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node-tree/__tests__/node-tree.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node-tree/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.json.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.json.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.prop-edit.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/__tests__/token.edit.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/__tests__/token.json.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/__tests__/token.json.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/__tests__/token.paint-name.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/__tests__/token.prototype-name.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/gradient/__tests__/gradient.edge.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/gradient/__tests__/gradient.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/gradient/__tests__/gradient.json.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/gradient/__tests__/gradient.json.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/gradient/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/gradient/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/shadow/__tests__/shadow.json.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/shadow/__tests__/shadow.json.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/shadow/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/shadow/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/typography/__tests__/typography.json.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/typography/__tests__/typography.json.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/typography/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/typography/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-error/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-reload/__tests__/document-reload.invalid.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-reload/__tests__/document-reload.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-reload/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-document/__tests__/opened-document.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-document/__tests__/opened-document.open-boundary.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-document/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-documents/__tests__/opened-documents.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-documents/__tests__/opened-documents.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-documents/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/sample-document.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.stories.tsx",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.stories.tsx",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.stories.tsx",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/__tests__/app-menu.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/__tests__/app-menu.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-menu/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/__tests__/app-state-ipc.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/__tests__/app-state-ipc.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-ipc/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-json/__tests__/app-state-json.parse-error.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-json/__tests__/app-state-json.parse.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-json/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-state-json/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-window/__tests__/app-window.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/app-window/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/__tests__/document-dialog.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/__tests__/document-dialog.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-dialog/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.format-version.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.parse-error.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.parse.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.roundtrip.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.template.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.type.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-migration/__tests__/document-migration.edge.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-migration/__tests__/document-migration.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-migration/__tests__/document-migration.normal.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-migration/__tests__/document-migration.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-migration/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-migration/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/__tests__/file-drop.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/__tests__/file-drop.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/json-text/__tests__/json-text.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/json-text/__tests__/json-text.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/json-text/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/tauri-ipc/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/__tests__/document-html.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/__tests__/document-html.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/__tests__/node-html.box.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/__tests__/node-html.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/__tests__/node-html.ellipse.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/__tests__/node-html.placement.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/__tests__/node-html.size.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/__tests__/node-html.text.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/__tests__/setup.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/ArrayEx.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/Interop.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/Json.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/Json.ts",
+      "to": "src/utils/RecordEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/Json.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/Interop.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/Interop.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/Interop.type.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/Json.edge.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/Json.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/Json.normal.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/Json.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/Json.setup.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/Json.setup.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/Json.type.test.ts",
+      "to": "src/utils/Json.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/utils/__tests__/Json.type.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/utils/__tests__/Json.type.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/utils/__tests__/Result.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/Result.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/Result.type.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    }
+  ]
+}
