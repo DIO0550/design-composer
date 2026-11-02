@@ -5,12 +5,12 @@ import {
 } from "@/hooks/use-key-shortcut";
 
 /** 削除に割り当てる組み合わせ。Windows / macOS どちらの流儀でも消せるよう両方を受ける。 */
-const DeleteShortcut: KeyShortcut = {
+export const DeleteShortcut = {
   kind: KeyTriggers.TypedCharacter,
   keys: ["Delete", "Backspace"],
   withCommandKey: false,
   withShiftKey: false,
-};
+} as const satisfies KeyShortcut;
 
 /**
  * 選んでいるもの（ノード / artboard）の削除をキーボードから行えるようにする（docs/06-ui.md

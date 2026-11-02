@@ -9,12 +9,12 @@ import {
  *
  * Windows の流儀にある Ctrl+Y は割り当てない。
  */
-const RedoShortcut: KeyShortcut = {
+export const RedoShortcut = {
   kind: KeyTriggers.TypedCharacter,
   keys: ["z"],
   withCommandKey: true,
   withShiftKey: true,
-};
+} as const satisfies KeyShortcut;
 
 /**
  * undo で戻した編集をやり直す操作をキーボードから行えるようにする（docs/06-ui.md「編集操作

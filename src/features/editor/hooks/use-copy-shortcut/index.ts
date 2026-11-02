@@ -5,12 +5,12 @@ import {
 } from "@/hooks/use-key-shortcut";
 
 /** コピーに割り当てる組み合わせ（Windows は Ctrl+C / macOS は Cmd+C）。 */
-const CopyShortcut: KeyShortcut = {
+export const CopyShortcut = {
   kind: KeyTriggers.TypedCharacter,
   keys: ["c"],
   withCommandKey: true,
   withShiftKey: false,
-};
+} as const satisfies KeyShortcut;
 
 /**
  * 選択中のノードのコピーをキーボードから行えるようにする（docs/06-ui.md「編集操作の一覧」
