@@ -5,14 +5,14 @@ import {
 
 /*
  * 人が読む 1 行への綴りは表示側の関心事なので、割り当てを併記する部品が共に使えるここに置く
- * （rules/architecture.md「ロジックの帰属先」）。domains は production から libs を import できず、
- * 綴りを選ぶのに要る `OperatingSystem` を受け取れない。
+ * （rules/architecture.md「ロジックの帰属先」）。domains は production から libs を import できないので、
+ * `OperatingSystem` が `libs/` にある間は、綴りを選ぶのに要るそれを受け取れない。
  */
 
 /**
  * 併記するキーボードの割り当て。綴りは OS ごとに変わるので、ここではキーと修飾だけを持つ。
  */
-export type ShortcutNotation =
+export type ShownShortcut =
   | Readonly<{ kind: "plain"; key: string }>
   | Readonly<{ kind: "command"; key: string; withShiftKey: boolean }>;
 
@@ -21,10 +21,10 @@ export type ShortcutNotation =
  *
  * @param notation コマンドキー付きの割り当て
  * @param operatingSystem アプリが動いている OS
- * @returns `ShortcutNotation.toText` の、コマンドキー付きの場合の綴り
+ * @returns `ShownShortcut.toText` の、コマンドキー付きの場合の綴り
  */
 function commandText(
-  notation: Extract<ShortcutNotation, { kind: "command" }>,
+  notation: Extract<ShownShortcut, { kind: "command" }>,
   operatingSystem: OperatingSystem,
 ): string {
   switch (operatingSystem) {
@@ -40,7 +40,7 @@ function commandText(
 }
 
 /** 併記する割り当ての綴り。 */
-export const ShortcutNotation = {
+export const ShownShortcut = {
   /**
    * 割り当てを、動いている OS の綴りにする（docs/06-ui.md「コンテキストメニュー」の表記）。
    *
@@ -48,7 +48,7 @@ export const ShortcutNotation = {
    * @param operatingSystem アプリが動いている OS
    * @returns macOS なら `⌘X` / `Shift+⌘X`、それ以外なら `Ctrl+X` / `Ctrl+Shift+X`。修飾の無いキーはそのまま
    */
-  toText(notation: ShortcutNotation, operatingSystem: OperatingSystem): string {
+  toText(notation: ShownShortcut, operatingSystem: OperatingSystem): string {
     switch (notation.kind) {
       case "plain":
         return notation.key;

@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { ShortcutNotation } from "@/components/shortcut-notation";
+import { ShownShortcut } from "@/components/shown-shortcut";
 import { OperatingSystem } from "@/libs/operating-system";
 import {
   LinuxNavigatorPlatform,
@@ -13,7 +13,7 @@ const Linux = OperatingSystem.fromNavigator(LinuxNavigatorPlatform);
 
 test("macOS で動いているとき、コマンドキー付きの割り当ては ⌘C と綴る", () => {
   expect(
-    ShortcutNotation.toText(
+    ShownShortcut.toText(
       { kind: "command", key: "C", withShiftKey: false },
       MacOs,
     ),
@@ -22,7 +22,7 @@ test("macOS で動いているとき、コマンドキー付きの割り当て�
 
 test("macOS で動いているとき、Shift とコマンドキー付きの割り当ては Shift+⌘G と綴る", () => {
   expect(
-    ShortcutNotation.toText(
+    ShownShortcut.toText(
       { kind: "command", key: "G", withShiftKey: true },
       MacOs,
     ),
@@ -31,7 +31,7 @@ test("macOS で動いているとき、Shift とコマンドキー付きの割�
 
 test("Windows で動いているとき、コマンドキー付きの割り当ては Ctrl+C と綴る", () => {
   expect(
-    ShortcutNotation.toText(
+    ShownShortcut.toText(
       { kind: "command", key: "C", withShiftKey: false },
       Windows,
     ),
@@ -40,7 +40,7 @@ test("Windows で動いているとき、コマンドキー付きの割り当て
 
 test("Linux で動いているとき、コマンドキー付きの割り当ては Ctrl+C と綴る", () => {
   expect(
-    ShortcutNotation.toText(
+    ShownShortcut.toText(
       { kind: "command", key: "C", withShiftKey: false },
       Linux,
     ),
@@ -49,7 +49,7 @@ test("Linux で動いているとき、コマンドキー付きの割り当て�
 
 test("Windows・Linux で動いているとき、Shift とコマンドキー付きの割り当ては Ctrl を先にして Ctrl+Shift+G と綴る", () => {
   expect(
-    ShortcutNotation.toText(
+    ShownShortcut.toText(
       { kind: "command", key: "G", withShiftKey: true },
       Windows,
     ),
@@ -57,13 +57,13 @@ test("Windows・Linux で動いているとき、Shift とコマンドキー付�
 });
 
 test("修飾の無い割り当ては、macOS でもキーの綴りのまま出る", () => {
-  expect(ShortcutNotation.toText({ kind: "plain", key: "Delete" }, MacOs)).toBe(
+  expect(ShownShortcut.toText({ kind: "plain", key: "Delete" }, MacOs)).toBe(
     "Delete",
   );
 });
 
 test("修飾の無い割り当ては、Windows でもキーの綴りのまま出る", () => {
-  expect(
-    ShortcutNotation.toText({ kind: "plain", key: "Delete" }, Windows),
-  ).toBe("Delete");
+  expect(ShownShortcut.toText({ kind: "plain", key: "Delete" }, Windows)).toBe(
+    "Delete",
+  );
 });

@@ -4,7 +4,7 @@ import {
   type ActionCardContent,
   ActionCardTones,
 } from "@/components/action-card";
-import { ShortcutNotation } from "@/components/shortcut-notation";
+import { ShownShortcut } from "@/components/shown-shortcut";
 import { FilePath } from "@/domains/unit/file-path";
 import {
   DocumentOpenFailureNotice,
@@ -39,7 +39,7 @@ function commandSourceFailureLabel(source: CommandSource): string {
 /*
  * 開始画面の 2 枚のカードの中身と割り当て。割り当ての出どころは `src-tauri/src/menu.rs` の
  * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここはキーと修飾だけを持つ（片方だけ変えると併記と実際の
- * 割り当てが食い違う）。綴りは `ShortcutNotation` が動いている OS ごとに作る。
+ * 割り当てが食い違う）。綴りは `ShownShortcut` が動いている OS ごとに作る。
  */
 
 /** 開くのカード（プライマリ）。 */
@@ -53,11 +53,11 @@ const OpenCardContent = {
 } as const satisfies Omit<ActionCardContent, "shortcut">;
 
 /** 開くの割り当て。 */
-const OpenShortcut = {
+const OpenCardShortcut = {
   kind: "command",
   key: "O",
   withShiftKey: false,
-} as const satisfies ShortcutNotation;
+} as const satisfies ShownShortcut;
 
 /** 新規作成のカード。 */
 const CreateCardContent = {
@@ -68,11 +68,11 @@ const CreateCardContent = {
 } as const satisfies Omit<ActionCardContent, "shortcut">;
 
 /** 新規作成の割り当て。 */
-const CreateShortcut = {
+const CreateCardShortcut = {
   kind: "command",
   key: "N",
   withShiftKey: false,
-} as const satisfies ShortcutNotation;
+} as const satisfies ShownShortcut;
 
 /**
  * ドキュメントを開く / 作る導線。
@@ -99,7 +99,7 @@ function StartActions({
       <ActionCard
         content={{
           ...OpenCardContent,
-          shortcut: ShortcutNotation.toText(OpenShortcut, operatingSystem),
+          shortcut: ShownShortcut.toText(OpenCardShortcut, operatingSystem),
         }}
         onClick={actions.openDocument}
         disabled={disabled}
@@ -107,7 +107,7 @@ function StartActions({
       <ActionCard
         content={{
           ...CreateCardContent,
-          shortcut: ShortcutNotation.toText(CreateShortcut, operatingSystem),
+          shortcut: ShownShortcut.toText(CreateCardShortcut, operatingSystem),
         }}
         onClick={actions.createDocument}
         disabled={disabled}

@@ -1,6 +1,6 @@
 import type { ComponentProps, ReactElement } from "react";
 import { ContextMenu, ContextMenuTones } from "@/components/context-menu";
-import { ShortcutNotation } from "@/components/shortcut-notation";
+import { ShownShortcut } from "@/components/shown-shortcut";
 import { useEditor } from "@/features/editor/components/editor-provider";
 import {
   EditMenu,
@@ -25,17 +25,17 @@ import { Option } from "@/utils/Option";
  * @param key キーの綴り
  * @returns 併記する割り当て
  */
-function plainShortcut(key: string): Option<ShortcutNotation> {
+function plainShortcut(key: string): Option<ShownShortcut> {
   return Option.some({ kind: "plain", key });
 }
 
 /**
- * コマンドキー（macOS の ⌘ / それ以外の Ctrl）付きの割り当て。
+ * コマンドキー付きの割り当て（OS ごとの綴りは `ShownShortcut.toText`）。
  *
  * @param key 修飾と組むキーの綴り
  * @returns 併記する割り当て
  */
-function commandShortcut(key: string): Option<ShortcutNotation> {
+function commandShortcut(key: string): Option<ShownShortcut> {
   return Option.some({ kind: "command", key, withShiftKey: false });
 }
 
@@ -45,7 +45,7 @@ function commandShortcut(key: string): Option<ShortcutNotation> {
  * @param key 修飾と組むキーの綴り
  * @returns 併記する割り当て
  */
-function shiftCommandShortcut(key: string): Option<ShortcutNotation> {
+function shiftCommandShortcut(key: string): Option<ShownShortcut> {
   return Option.some({ kind: "command", key, withShiftKey: true });
 }
 
@@ -54,12 +54,12 @@ type OperationPresentation = Readonly<
   Omit<
     ComponentProps<typeof ContextMenu.Item>,
     "isEnabled" | "onSelect" | "shortcut"
-  > & { shortcut: Option<ShortcutNotation> }
+  > & { shortcut: Option<ShownShortcut> }
 >;
 
 /**
  * 操作ごとの綴り・併記する割り当て・色味（UI 案 docs/Design Composer.html の
- * `Context menu`）。割り当ては動いている OS の綴りで出す（`ShortcutNotation.toText`）。
+ * `Context menu`）。割り当ては動いている OS の綴りで出す（`ShownShortcut.toText`）。
  *
  * 割り当ての出どころはキーボードのフック（`use-*-shortcut`）。片方だけ変えると併記と
  * 実際の割り当てが食い違う。
@@ -190,7 +190,7 @@ export function EditorContextMenu({
                 key={row.operation}
                 label={presentation.label}
                 shortcut={Option.map(presentation.shortcut, (shortcut) =>
-                  ShortcutNotation.toText(shortcut, operatingSystem),
+                  ShownShortcut.toText(shortcut, operatingSystem),
                 )}
                 tone={presentation.tone}
                 isEnabled={row.isEnabled}

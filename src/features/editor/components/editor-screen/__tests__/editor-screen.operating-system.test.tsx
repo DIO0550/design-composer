@@ -17,7 +17,7 @@ import { Path, renderEditorScreen, startOpen } from "./setup";
 /*
  * 画面の入口で受け取った OS が、開始画面のカードと、開いたドキュメントのコンテキストメニューまで
  * 届くかを見る（docs/06-ui.md「開く前の画面（開始画面）」「コンテキストメニュー」）。
- * 綴りの規則そのものは `ShortcutNotation` のテストが見る。
+ * 綴りの規則そのものは `ShownShortcut` のテストが見る。
  */
 
 /**
