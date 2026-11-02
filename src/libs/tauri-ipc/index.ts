@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { ObjectEx } from "@/utils/ObjectEx";
 import { Result } from "@/utils/Result";
 
 /** 購読を解除する。 */
@@ -58,6 +59,25 @@ export const TauriIpc = {
         return Result.err(toError(reason));
       }
     };
+  },
+
+  /**
+   * reject された値から、利用者に見せる原文を取り出す。
+   *
+   * Rust の `Err` は `message` を持つオブジェクトで届き、コマンドに届く前に Tauri 自身が
+   * 失敗した場合は文字列で届く。形で見分けてどちらも 1 つの原文に寄せる。
+   *
+   * @param reason reject された値
+   * @returns 文字列の `message` を持つならそれ、それ以外は値を文字列にしたもの
+   */
+  toFailureMessage(reason: unknown): string {
+    if (ObjectEx.isObject(reason)) {
+      const { message } = reason;
+      if (typeof message === "string") {
+        return message;
+      }
+    }
+    return String(reason);
   },
 
   /**

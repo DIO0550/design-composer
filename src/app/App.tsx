@@ -7,7 +7,6 @@ import { createDocumentDialog } from "@/libs/document-dialog";
 import { createDocumentIpc } from "@/libs/document-ipc";
 import { createFileDrop } from "@/libs/file-drop";
 import { OperatingSystem } from "@/libs/operating-system";
-import { TauriDialog } from "@/libs/tauri-dialog";
 import { TauriIpc } from "@/libs/tauri-ipc";
 
 /*
@@ -25,7 +24,7 @@ import { TauriIpc } from "@/libs/tauri-ipc";
 const tauriIpc = TauriIpc.create();
 const ports = {
   ipc: createDocumentIpc(tauriIpc),
-  dialog: createDocumentDialog(TauriDialog.create()),
+  dialog: createDocumentDialog(tauriIpc),
   menu: createAppMenu(tauriIpc),
   drop: createFileDrop(tauriIpc),
   appState: createAppStateIpc(tauriIpc),

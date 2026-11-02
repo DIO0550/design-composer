@@ -1,29 +1,29 @@
 import { FilePath } from "@/domains/unit/file-path";
-import type { FileFilter, TauriDialog } from "@/libs/tauri-dialog";
+import { TauriIpc } from "@/libs/tauri-ipc";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
- * ダイアログを出せなかった・選ばれたパスがファイル名の要素を持たなかった失敗。
+ * ダイアログを出せなかった・選ばれたものを Rust が受け付けなかった（`.dcmp` 以外を選んだ
+ * など）・選ばれたパスがファイル名の要素を持たなかった失敗。
  *
  * 分岐すべき失敗が増えたらそのときに直和へ広げる。
  */
 export type DocumentDialogError = Readonly<{ message: string }>;
 
-/** 1 ドキュメント = 1 ファイル（docs/01-file-format.md「ファイル」）。 */
-const DocumentFileFilter: FileFilter = {
-  name: "Design Composer ドキュメント",
-  extensions: ["dcmp"],
-};
-
-/** 新規作成の保存ダイアログに入れておく名前。 */
-const DefaultFileName = "untitled.dcmp";
+/**
+ * ダイアログを出すコマンド名（`src-tauri/src/document/dialog.rs`）。絞り込みと保存の既定の
+ * 名前は Rust 側が持つ。
+ */
+type DocumentDialogCommand =
+  | "choose_open_document_path"
+  | "choose_save_document_path";
 
 /**
  * .dcmp を選ばせるダイアログ。
  *
  * 選ばずに閉じたことは失敗ではないので `Option`（`none`）で、ダイアログ自体を
- * 出せなかったこと・選ばれたパスがファイル名の要素を持たなかったことは `Result`（`Err`）で
+ * 出せなかったこと・選ばれたものを受け付けられなかったことは `Result`（`Err`）で
  * 表す。2 つを 1 つに潰すと、呼び出し側が「利用者がやめた」と「アプリが壊れている」を
  * 区別できなくなる。
  */
@@ -33,63 +33,73 @@ export type DocumentDialog = Readonly<{
 }>;
 
 /**
- * 選ばれたパスを、ファイルのパスとして受け入れる。
+ * reject された値を失敗として読む。
  *
- * @param chosen ダイアログが返したパス（閉じたなら `none`）
- * @returns ファイルのパス（閉じたなら `none`）。ファイル名の要素を持たなければ、その旨と
- *   受け取った原文を持つ失敗
+ * @param reason reject された値
+ * @returns `TauriIpc.toFailureMessage` で取り出した原文を持つ失敗
  */
-function toChosenPath(
-  chosen: Option<string>,
-): Result<Option<FilePath>, DocumentDialogError> {
-  if (!Option.isSome(chosen)) {
-    return Result.ok(Option.none);
-  }
-  const path = FilePath.create(chosen.value);
-  return Option.isSome(path)
-    ? Result.ok(path)
-    : Result.err({
-        message: `選ばれたパスがファイル名を持たない: ${chosen.value}`,
-      });
+function toDocumentDialogError(reason: unknown): DocumentDialogError {
+  return { message: TauriIpc.toFailureMessage(reason) };
 }
 
 /**
- * ダイアログを出し、失敗を値として返す。
+ * コマンドが返した値を、選ばれたファイルのパスとして受け入れる。
  *
- * ここが例外と `Result` の境界。`libs/` の外へ例外を出さないため、
- * このモジュールの公開 API はすべて `Result` を返す。
- *
- * @param chooser 実際にダイアログを出す手続き
- * @returns 選ばれたパス（閉じたなら `none`）。手続きが投げたら、投げた値を文字列にした
- *   `message` を持つ失敗（`Error` なら前に `Error: ` が付く）。選ばれたパスがファイル名の
- *   要素を持たなければ、その旨と受け取った原文を持つ失敗
+ * @param command 値を返したコマンド
+ * @param value コマンドが返した値（閉じたなら `null`）
+ * @returns ファイルのパス（閉じたなら `none`）。文字列でも `null` でもないときは、その旨と
+ *   受け取った値を持つ失敗。ファイル名の要素を持たなければ、その旨と受け取った原文を持つ失敗
  */
-async function choose(
-  chooser: () => Promise<Option<string>>,
-): Promise<Result<Option<FilePath>, DocumentDialogError>> {
-  try {
-    return toChosenPath(await chooser());
-  } catch (reason) {
-    return Result.err({ message: String(reason) });
+function toChosenPath(
+  command: DocumentDialogCommand,
+  value: unknown,
+): Result<Option<FilePath>, DocumentDialogError> {
+  if (value === null) {
+    return Result.ok(Option.none);
   }
+
+  if (typeof value !== "string") {
+    return Result.err({
+      message: `${command} が文字列以外を返した: ${String(value)}`,
+    });
+  }
+
+  const path = FilePath.create(value);
+  return Option.isSome(path)
+    ? Result.ok(path)
+    : Result.err({
+        message: `選ばれたパスがファイル名を持たない: ${value}`,
+      });
 }
 
 /**
  * .dcmp を選ばせるダイアログを作る。
  *
- * @param dialog 実際にダイアログを出す口。絞り込みと保存の既定の名前はこのモジュールが渡す
- * @returns `dialog` を通して .dcmp を選ばせるダイアログ
+ * ダイアログは Rust が出し、選ばれたパスを開いてよいものとして記録してから、寄せた綴りを
+ * 返す（docs/05-architecture.md「選ばれたファイルの記録」）。
+ *
+ * @param tauriIpc ダイアログのコマンドを呼ぶ IPC
+ * @returns `tauriIpc` を通して .dcmp を選ばせるダイアログ。失敗はすべて値として返す
  */
-export function createDocumentDialog(dialog: TauriDialog): DocumentDialog {
+export function createDocumentDialog(tauriIpc: TauriIpc): DocumentDialog {
+  const call = TauriIpc.caller<DocumentDialogCommand, DocumentDialogError>(
+    tauriIpc,
+    toDocumentDialogError,
+  );
+  const choose = async (
+    command: DocumentDialogCommand,
+  ): Promise<Result<Option<FilePath>, DocumentDialogError>> =>
+    Result.flatMap(await call(command, {}), (value) =>
+      toChosenPath(command, value),
+    );
+
   return {
     chooseOpenPath() {
-      return choose(() => dialog.chooseOpenPath(DocumentFileFilter));
+      return choose("choose_open_document_path");
     },
 
     chooseSavePath() {
-      return choose(() =>
-        dialog.chooseSavePath(DocumentFileFilter, DefaultFileName),
-      );
+      return choose("choose_save_document_path");
     },
   };
 }

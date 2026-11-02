@@ -1,5 +1,7 @@
 import { expect, test } from "vitest";
+import { createFileDrop } from "@/libs/file-drop";
 import { createFileDropFake } from "@/libs/file-drop/fake";
+import { createSingleEventIpcFake } from "@/libs/tauri-ipc/fake";
 import { Result } from "@/utils/Result";
 
 const Path = "/work/login.dcmp";
@@ -13,7 +15,7 @@ test("パスの並びを持たない通知は配られない", async () => {
     }),
   );
 
-  // ドラッグ中の通過は位置しか持たない。
+  // 位置しか持たない、形の合わない通知。
   fake.deliverUnknown({ position: { x: 12, y: 34 } });
   // 落とされた側を 1 件混ぜる。届く側を壊しても、落とす側を壊しても落ちる。
   fake.dropFiles([Path]);
@@ -74,4 +76,18 @@ test("空の並びのドロップは配られない", async () => {
   fake.dropFiles([Path]);
 
   expect(received).toStrictEqual([[Path]]);
+});
+
+test("Tauri 自身が配るドロップの通知では配られない", async () => {
+  // 開いてよいものとして記録される前に届く通知なので、聞いていれば落ちる。
+  const tauriDragDrop = createSingleEventIpcFake("tauri://drag-drop");
+  const drop = createFileDrop(tauriDragDrop.ipc);
+  const received: (readonly string[])[] = [];
+  await drop.subscribeDropped((paths) => {
+    received.push(paths);
+  });
+
+  tauriDragDrop.deliver({ paths: [Path], position: { x: 0, y: 0 } });
+
+  expect(received).toStrictEqual([]);
 });

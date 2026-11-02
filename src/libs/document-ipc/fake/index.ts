@@ -3,6 +3,7 @@ import { ipcFailure } from "@/libs/tauri-ipc/fake";
 import { Option } from "@/utils/Option";
 import {
   createDocumentIpc,
+  type DocumentCommand,
   type DocumentIpc,
   type DocumentIpcErrorKind,
 } from "../index";
@@ -58,6 +59,14 @@ export type DocumentIpcFake = Readonly<{
    */
   denyCanonicalize(denial: CanonicalizeDenial): void;
   /**
+   * そのパスを、利用者がこのアプリで選んでいないものとして扱う。
+   *
+   * 本物と同じく、読み込み・書き込み・監視の開始 / 停止を `notChosen` で拒み、ファイルには
+   * 触れない。綴りを寄せるコマンドは選んだかどうかを見ないので、そのまま動く。既定では
+   * どのパスも選ばれている。
+   */
+  denyAsUnchosen(path: string): void;
+  /**
    * そのパスへの書き込みだけを拒むようにする（読み込みと監視はそのまま動く）。
    *
    * 全コマンドを失敗させる代役だと監視も張れず、「ファイルが不正な状態」に到達できないため、
@@ -111,6 +120,28 @@ function permissionDenied(path: string): Promise<never> {
   });
 }
 
+/** 選ばれたパスにしか応じないコマンド（Rust の `ChosenDocumentPaths::require` を通るもの）。 */
+const ChosenOnlyCommands: readonly DocumentCommand[] = [
+  "load_document",
+  "save_document",
+  "watch_document",
+  "unwatch_document",
+];
+
+/**
+ * 本物と同じ形（種別つき）で、選ばれていないことを返す。
+ *
+ * @param path 選ばれていなかったパス
+ * @returns 決して解決しない Promise
+ * @throws 必ず。`notChosen` の種別を持つ失敗で reject する
+ */
+function notChosen(path: string): Promise<never> {
+  return Promise.reject({
+    kind: "notChosen",
+    message: `${path}: このアプリで選ばれていない`,
+  });
+}
+
 /**
  * Rust 側の代役を作る。
  *
@@ -122,6 +153,7 @@ export function createDocumentIpcFake(
 ): DocumentIpcFake {
   const contents = new Map(Object.entries(files));
   const deniedWritePaths = new Set<string>();
+  const unchosenPaths = new Set<string>();
   const heldWrites = new Map<string, Promise<void>>();
   const linkTargets = new Map<string, string>();
   const canonicalizeDenials = new Map<string, CanonicalizeDenialKind>();
@@ -202,6 +234,14 @@ export function createDocumentIpcFake(
       if (typeof path !== "string") {
         return ipcFailure(`${command}: path が文字列でない`);
       }
+
+      const isUnchosen =
+        ChosenOnlyCommands.some((chosenOnly) => chosenOnly === command) &&
+        unchosenPaths.has(path);
+      if (isUnchosen) {
+        return notChosen(path);
+      }
+
       switch (command) {
         case "canonicalize_document_path":
           return canonicalizeDocumentPath(path);
@@ -254,6 +294,10 @@ export function createDocumentIpcFake(
 
     denyCanonicalize({ path, kind }) {
       canonicalizeDenials.set(path, kind);
+    },
+
+    denyAsUnchosen(path) {
+      unchosenPaths.add(path);
     },
 
     denyWrites(path) {

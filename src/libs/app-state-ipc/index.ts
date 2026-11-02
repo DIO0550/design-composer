@@ -20,33 +20,13 @@ export type AppStateIpc = Readonly<{
 }>;
 
 /**
- * Rust 側が返した拒否理由が、原文を持つ失敗として読めるか。
- *
- * @param reason reject された値
- * @returns 文言を持つ失敗として読めれば true
- */
-function hasMessage(reason: unknown): reason is AppStateIpcError {
-  if (typeof reason !== "object" || reason === null) {
-    return false;
-  }
-  const { message } = reason as Record<string, unknown>;
-  return typeof message === "string";
-}
-
-/**
  * reject された値を失敗として解釈する。
  *
- * Rust の `Err` は文言を持つ形で届くが、コマンドに届く前に Tauri 自身が失敗した場合は
- * 文字列で reject される。形で見分けて後者も同じ失敗へ寄せる。
- *
  * @param reason reject された値
- * @returns 診断用の原文を持つ失敗
+ * @returns `TauriIpc.toFailureMessage` で取り出した原文を持つ失敗
  */
 function toAppStateIpcError(reason: unknown): AppStateIpcError {
-  if (hasMessage(reason)) {
-    return reason;
-  }
-  return { message: String(reason) };
+  return { message: TauriIpc.toFailureMessage(reason) };
 }
 
 /**
