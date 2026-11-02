@@ -1,5 +1,6 @@
 import type { ComponentProps, ReactElement } from "react";
 import { ContextMenu, ContextMenuTones } from "@/components/context-menu";
+import { ShortcutNotation } from "@/components/shortcut-notation";
 import { useEditor } from "@/features/editor/components/editor-provider";
 import {
   EditMenu,
@@ -15,18 +16,8 @@ import {
   useNodeActions,
 } from "@/features/editor/hooks/use-node-actions";
 import type { OpenedContextMenu } from "@/features/editor/types/OpenedContextMenu";
-import {
-  type OperatingSystem,
-  OperatingSystems,
-} from "@/libs/operating-system";
+import type { OperatingSystem } from "@/libs/operating-system";
 import { Option } from "@/utils/Option";
-
-/**
- * 行に併記する割り当て。綴りは OS ごとに変わるので、ここではキーと修飾だけを持つ。
- */
-type MenuShortcut =
-  | Readonly<{ kind: "plain"; key: string }>
-  | Readonly<{ kind: "command"; key: string; withShiftKey: boolean }>;
 
 /**
  * 修飾の無いキーの割り当て。
@@ -34,7 +25,7 @@ type MenuShortcut =
  * @param key キーの綴り
  * @returns 併記する割り当て
  */
-function plainShortcut(key: string): Option<MenuShortcut> {
+function plainShortcut(key: string): Option<ShortcutNotation> {
   return Option.some({ kind: "plain", key });
 }
 
@@ -44,7 +35,7 @@ function plainShortcut(key: string): Option<MenuShortcut> {
  * @param key 修飾と組むキーの綴り
  * @returns 併記する割り当て
  */
-function commandShortcut(key: string): Option<MenuShortcut> {
+function commandShortcut(key: string): Option<ShortcutNotation> {
   return Option.some({ kind: "command", key, withShiftKey: false });
 }
 
@@ -54,7 +45,7 @@ function commandShortcut(key: string): Option<MenuShortcut> {
  * @param key 修飾と組むキーの綴り
  * @returns 併記する割り当て
  */
-function shiftCommandShortcut(key: string): Option<MenuShortcut> {
+function shiftCommandShortcut(key: string): Option<ShortcutNotation> {
   return Option.some({ kind: "command", key, withShiftKey: true });
 }
 
@@ -63,12 +54,12 @@ type OperationPresentation = Readonly<
   Omit<
     ComponentProps<typeof ContextMenu.Item>,
     "isEnabled" | "onSelect" | "shortcut"
-  > & { shortcut: Option<MenuShortcut> }
+  > & { shortcut: Option<ShortcutNotation> }
 >;
 
 /**
  * 操作ごとの綴り・併記する割り当て・色味（UI 案 docs/Design Composer.html の
- * `Context menu`）。割り当ては動いている OS の綴りで出す（`shortcutLabel`）。
+ * `Context menu`）。割り当ては動いている OS の綴りで出す（`ShortcutNotation.toText`）。
  *
  * 割り当ての出どころはキーボードのフック（`use-*-shortcut`）。片方だけ変えると併記と
  * 実際の割り当てが食い違う。
@@ -138,48 +129,6 @@ const OperationPresentations = {
 } as const satisfies Readonly<Record<EditOperation, OperationPresentation>>;
 
 /**
- * 割り当てを、動いている OS の綴りにする（docs/06-ui.md「編集操作の一覧」の表記）。
- *
- * @param shortcut 併記する割り当て
- * @param operatingSystem アプリが動いている OS
- * @returns macOS なら `⌘X` / `Shift+⌘X`、それ以外なら `Ctrl+X` / `Ctrl+Shift+X`。修飾の無いキーはそのまま
- */
-function shortcutLabel(
-  shortcut: MenuShortcut,
-  operatingSystem: OperatingSystem,
-): string {
-  switch (shortcut.kind) {
-    case "plain":
-      return shortcut.key;
-    case "command":
-      return commandShortcutLabel(shortcut, operatingSystem);
-  }
-}
-
-/**
- * コマンドキー付きの割り当てを、動いている OS の綴りにする。
- *
- * @param shortcut コマンドキー付きの割り当て
- * @param operatingSystem アプリが動いている OS
- * @returns `shortcutLabel` の、コマンドキー付きの場合の綴り
- */
-function commandShortcutLabel(
-  shortcut: Extract<MenuShortcut, { kind: "command" }>,
-  operatingSystem: OperatingSystem,
-): string {
-  switch (operatingSystem) {
-    case OperatingSystems.MacOs:
-      return shortcut.withShiftKey
-        ? `Shift+⌘${shortcut.key}`
-        : `⌘${shortcut.key}`;
-    case OperatingSystems.Other:
-      return shortcut.withShiftKey
-        ? `Ctrl+Shift+${shortcut.key}`
-        : `Ctrl+${shortcut.key}`;
-  }
-}
-
-/**
  * 操作ごとに呼ぶ手続き。キーボードの割り当てと同じものを呼ぶ。
  *
  * @param edit キーボードの割り当てと共有する編集操作
@@ -241,7 +190,7 @@ export function EditorContextMenu({
                 key={row.operation}
                 label={presentation.label}
                 shortcut={Option.map(presentation.shortcut, (shortcut) =>
-                  shortcutLabel(shortcut, operatingSystem),
+                  ShortcutNotation.toText(shortcut, operatingSystem),
                 )}
                 tone={presentation.tone}
                 isEnabled={row.isEnabled}
