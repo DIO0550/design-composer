@@ -10,8 +10,11 @@ export type JsonValue =
   | readonly JsonValue[]
   | JsonObject;
 
-/** JSON のオブジェクト。値はすべて JSON のデータモデルで表せる。 */
-export type JsonObject = Readonly<{ [key: string]: JsonValue }>;
+/** JSON のオブジェクト。キーは文字列だけで、値はすべて JSON のデータモデルで表せる。 */
+export type JsonObject = Readonly<{
+  [key: string]: JsonValue;
+  [key: symbol]: never;
+}>;
 
 /** 読み込んだ直後のオブジェクト。値の型はまだ何も分かっていない。 */
 export type JsonRecord = Readonly<Record<string, unknown>>;
