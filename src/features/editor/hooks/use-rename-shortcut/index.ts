@@ -5,12 +5,12 @@ import {
 } from "@/hooks/use-key-shortcut";
 
 /** 名前の変更に割り当てる組み合わせ（UI 案 docs/Design Composer.html の `Rename ⌘R`）。 */
-const RenameShortcut: KeyShortcut = {
+export const RenameShortcut = {
   kind: KeyTriggers.TypedCharacter,
   keys: ["r"],
   withCommandKey: true,
   withShiftKey: false,
-};
+} as const satisfies KeyShortcut;
 
 /**
  * 選んでいるものの名前の編集を、キーボードから始められるようにする
