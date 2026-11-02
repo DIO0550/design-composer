@@ -990,6 +990,16 @@
     "name": "コンパイルできないドキュメントの編集画面"
   },
   {
+    "id": "features-editor-openeddocumenteditor--context-menu-on-mac-os",
+    "title": "features/editor/OpenedDocumentEditor",
+    "name": "macOS でコンテキストメニューを開いた編集画面"
+  },
+  {
+    "id": "features-editor-openeddocumenteditor--context-menu-on-windows",
+    "title": "features/editor/OpenedDocumentEditor",
+    "name": "Windows でコンテキストメニューを開いた編集画面"
+  },
+  {
     "id": "features-editor-openeddocumenteditor--deep-branch",
     "title": "features/editor/OpenedDocumentEditor",
     "name": "入れ子のあるドキュメントの編集画面"
