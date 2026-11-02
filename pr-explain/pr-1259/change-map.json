@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1259,
+  "headBranch": "claude/magical-cannon-ct3q49",
+  "baseBranch": "main",
+  "mergeBase": "91d6fe935cb3975e4dc4483a3581f182039a18e8",
+  "head": "822d093b326950932aca37dc1590e8104c8e2256",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1255.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 255,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "822d093b326950932aca37dc1590e8104c8e2256",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-02T00:46:00Z",
+      "subject": "📝 [Documentation]: PR #1255 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1255.md を足す (Issue #480 / PR #1255 の指摘 32 件・\n  手戻り・発火)\n\n背景:\nPR #1255 がマージされたので、harness-record の手順でその回の指摘・\nCI・手戻りを分類タグ付きで残す。\n\n採用理由:\n指摘は出どころごとに 1 件 1 ブロックで書き、束ねて対応したものも元の\n指摘ごとに分けた (count.sh が分類ごとに数えるため)。発火ログは\nフック不発のため「計測対象外」とした。\n\n影響とトレードオフ:\n差分は harness/records/ の新規 1 ファイルだけ。対策済の行は書かない\n(介入は harness-growth の管轄)。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RLErNwf9vJcpBZ4Ak",
+      "files": [
+        {
+          "path": "harness/records/pr-1255.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 255,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,255 @@\n+# PR #1255 コンテキストメニューの割り当ての併記を、動いている OS の綴りで出す\n+\n+- マージ日: 2026-11-02\n+- 関連 Issue: #480\n+- 差分規模: 20 ファイル / +602 -92\n+\n+## ゴールと結果\n+\n+ゴール: 編集画面のコンテキストメニューの割り当ての併記が、動いている OS の綴り 1 つで出る(macOS は `⌘C` / `Shift+⌘G`、それ以外は `Ctrl+C` / `Ctrl+Shift+G`)。達成した。\n+- `src/libs/operating-system`(`fromNavigator` と fake)を足し、App で 1 度判定して props で `EditorContextMenu` まで通した\n+- 開始画面のカードは #1253、キー定義から併記を導くことは #1254 に分けた\n+- Linux を `Ctrl` 側にしたことと、Copy / Paste / Undo / Redo の `Ctrl` 側の綴りは推論で決め、オーナーの確認待ちとして PR に書いた\n+\n+GitHub 上の人のレビューは 0 件(`get_review_comments` は空、`get_reviews` は `copilot-pull-request-reviewer[bot]` の 1 件、`get_comments` は `github-actions[bot]` の 3 件と自分のテストケース表だけ)。CI は head(ff25752)で全部成功し、VRT の差分は 0(新しいストーリーが 2 件)。\n+\n+## 指摘\n+\n+### 1. 開始画面のカードのコメントが前提を失うのにファイル表に無い\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: document-start の「コンテキストメニューと同じ ⌘ 表記に揃えている」が嘘になる。範囲外にして #1253 に分け、コメントだけ書き換えた。「未決: 無し」としていたが、この判断が未決だった。\n+- 既存ルール: implementation-flow フェーズ 3 手順 7\n+\n+### 2. Delete の行のテストが部分一致で落ちない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 操作名も `Delete` なので `toContain(\"Delete\")` は修飾が付いても通る。欄ごとの完全一致に変えた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 3. Linux のテストが Windows と同じ入力\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 判定を通ると両方 `Other` になり、部品のテストとしては壊し方が無い。外した(Linux の判定は libs のテストが守る)。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 4. 画面全体の配線を Windows 側しか見ていない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 値を捨てて `Other` を固定で渡しても通る。macOS 側のテストを足した。\n+- 既存ルール: rules/testing.md\n+\n+### 5. Provider を却下した理由が成り立っていない\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「clock も props」は前例にならず(clock は途中の段が使う)、EditorProvider の必須 prop なら tsc も効く。編集状態と無関係な値を同じ Context にまとめない、で書き直して props を維持した。\n+- 既存ルール: implementation-flow フェーズ 3 手順 5\n+\n+### 6. props が 4 つに増える箇所に名前の付いた型を\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: clock / ipc / OS は常に一緒には渡らないので採用しなかった。\n+- 既存ルール: rules/coding.md「関数のシグネチャ」\n+\n+### 7. 割り当ての二重定義と、分けた先の Issue が無い\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `KeyShortcut` と併記の表が同じ事実を持つ。#1254 を起票し、表の doc に食い違いの注意を書いた。\n+- 既存ルール: AGENTS.md「タスクの分割」\n+\n+### 8. union を libs に置く理由が無い\n+\n+- 分類: `ownership`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: Clock は語彙を domains に置いている。OS の値に付く規則は外部の値の解釈だけ、と理由を記録した。\n+- 既存ルール: rules/architecture.md「ロジックの帰属先」\n+\n+### 9. `@deprecated` の API を使う理由と、Linux を Other に入れる理由を doc に\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 採用し、`fromNavigator` の doc に書いた。\n+- 既存ルール: rules/coding.md「Why と Why not は別物として書く」\n+\n+### 10. platform の値の出典が無い\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 出典は MDN と書き、実機の webview では未確認であることを PR に書いた(この環境では `pnpm tauri dev` を動かせない)。\n+- 既存ルール: rules/coding.md「外部の挙動は動かして確かめる」\n+\n+### 11. 新しいストーリーは VRT で守られない\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: macOS / Windows の対で 2 本足し、撮影して目で見た。\n+- 既存ルール: rules/ui-verification.md「表示確認」\n+\n+### 12. 改名するテストの件数が違う\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「4 本」は assert の数で、テストは 3 本だった。\n+- 既存ルール: implementation-flow フェーズ 3 手順 2\n+\n+### 13. `detect` がリポジトリの動詞に無い\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `fromNavigator` に改めた。\n+- 既存ルール: rules/naming.md「メソッド名を既存のドメインに揃える」\n+\n+### 14. #1253 で綴りの規則を子 feature から使うには置き場所を上げる必要がある\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 方式は「維持」。今回は非公開のまま、#1253 に前提として書き添えた。\n+- 既存ルール: rules/consistency.md「feature の構成とネスト」\n+\n+### 15. docs の「割り当ては UI 案どおり」がどの OS でも ⌘ と読める\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 隣の行の前提を書き換えたのに突き合わせ直していなかった。綴りは OS で分ける旨を添えた。\n+- 既存ルール: AGENTS.md「規約の更新」(同じファイルの既存の記述と突き合わせる)\n+\n+### 16. Copy / Paste / Undo / Redo の `Ctrl` 側の綴りが docs に無い\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 表を広げずに、「並びは `Ctrl+Shift+G` に従う」から導けるとして記録で対応した。\n+- 既存ルール: なし\n+\n+### 17. UI 案にも仕様にも無い対象を推論で決めた\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（ui-reviewer）`\n+- 内容: Linux を `Ctrl` 側にしたことと、Copy 等の `Ctrl` 側の綴り。根拠とともに Issue と PR にオーナー確認待ちとして書いた。\n+- 既存ルール: rules/ui-verification.md\n+\n+### 18. 値を求める行と return の間に空行が無い\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: 読みやすさの指摘。3 か所に空行を入れた。\n+- 既存ルール: なし\n+\n+### 19. 新しいテストが右クリック・行の引き方を直書きしている\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: ファイルローカルな `rightClick` / `rightClickInTree` / `menuRow` と重複。`src/features/editor/__tests__/editor-context-menu.ts` へ移して共有した。\n+- 既存ルール: rules/testing.md「テスト用ヘルパーの置き場所」\n+\n+### 20. ストーリー 2 本に同じ理由コメント\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: docs を指す 1 行にした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 21. 中継する段ごとに props の用途の doc がある\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 用途は消費する側だけに書いた。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 22. `commandKey` などが修飾キーを指す既存の `CommandKey` とぶつかる\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 返すものに合わせて `*Shortcut` にした。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 23. データの直和の判別子が `type`\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: リポジトリで `type` はアクションだけ、データは `kind`。`kind` にした。\n+- 既存ルール: rules/naming.md「メソッド名を既存のドメインに揃える」\n+\n+### 24. 同じ値が Navigator / platform / source の 3 通りに呼ばれる\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 型名 `NavigatorPlatform` に揃えた。非公開の `renderOpenedDocumentWith` も `renderOpenedDocumentFrom` に改めた。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 25. `OperatingSystem` が汎用の OS を名乗るのに値は綴り用の 2 値\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 採用しなかった。流用されるときに 3 値化する判断として Issue に残した。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 26. Issue 番号だけで理由の無いコメント\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: #1253 / #1254 の前に理由を 1 行ずつ書いた。理由を書くときに数え直して、#1254 本文の「12 個」が誤り(併記を持つのは 10 個)と分かり、本文を直した。\n+- 既存ルール: rules/coding.md「Why と Why not は別物として書く」\n+\n+### 27. Delete のテストのコメントの理由が強すぎる\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 「行全体では見分けられない」は部分一致のときだけ成り立つ。書き直した。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 28. macOS の Shift なしの綴りに `Shift+` を足しても落ちない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: macOS 側の assert が `toContain(\"⌘C\")` で、`Shift+⌘C` も通る(ミューテーション 30 通り中の生き残り)。欄の完全一致に変えた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 29. 修飾なしのキーが OS で変わらないことを macOS 側で守っていない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: Delete のテストを test.each で両方の OS に広げた。\n+- 既存ルール: rules/testing.md\n+\n+### 30. 実物の `navigator` を読む入口をどのテストも通らない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 既定引数を固定値にしても通った。`navigator.platform` を差し替えるテストを足した。App.tsx の 1 行はテストせず、理由をコメントに書いた。\n+- 既存ルール: rules/testing.md「代替してよいのはプロセス外の境界のみ」\n+\n+### 31. 実機の webview の `navigator.platform` が未確認\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（bot）`\n+- 内容: copilot-pull-request-reviewer が「Needs a closer look」として、WebView2 / WebKitGTK で値を確かめる必要を挙げた(具体的な欠陥は無し)。PR に未確認と書いてあった点と同じ。\n+- 既存ルール: rules/coding.md「外部の挙動は動かして確かめる」\n+\n+### 32. フックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が通り、マーカーも発火ログの見出しも無かった(「本当に不発」の枝)。起動時の作業ディレクトリがリポジトリの親(`/home/user`)だった。implementer が表示確認で `npx --no-install playwright screenshot` を実行していた(`block-npx.sh` が止めるはずの操作。取り消すものは無い)。`git add -A` は打っていない。\n+- 既存ルール: .claude/hooks/README.md「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- フェーズ 4 の指摘で計画を直し、#1253 / #1254 を分けた。採否は表で決まっていたので、planner での立て直しを省いて Issue に理由を書いた\n+- フェーズ 6 の 1 段目の指摘で 1 コミット(命名・テストヘルパーの共有・コメント)\n+- test-reviewer の生き残り 3 件で 1 コミット(指摘 28〜30)\n+- #1254 の本文の件数を 12 → 10 に直した(指摘 26)\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。harness-record は記録までで、集計と介入の判断は harness-growth の管轄。",
+          "patchLines": 256,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
