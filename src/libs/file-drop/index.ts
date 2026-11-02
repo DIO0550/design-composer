@@ -1,5 +1,6 @@
 import { FilePath } from "@/domains/unit/file-path";
 import type { TauriIpc, Unsubscribe } from "@/libs/tauri-ipc";
+import { ObjectEx } from "@/utils/ObjectEx";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
@@ -24,10 +25,10 @@ export type FileDropError = Readonly<{ message: string }>;
  *   並びとして読めない・残ったパスが 1 件も無いときは `none`
  */
 function toDroppedPaths(payload: unknown): Option<readonly FilePath[]> {
-  if (typeof payload !== "object" || payload === null) {
+  if (!ObjectEx.isObject(payload)) {
     return Option.none;
   }
-  const { paths } = payload as Record<string, unknown>;
+  const { paths } = payload;
   if (!Array.isArray(paths) || !paths.every((p) => typeof p === "string")) {
     return Option.none;
   }

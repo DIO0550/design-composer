@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { ObjectEx } from "@/utils/ObjectEx";
 import { Result } from "@/utils/Result";
 
 /** 購読を解除する。 */
@@ -70,9 +71,8 @@ export const TauriIpc = {
    * @returns 文字列の `message` を持つならそれ、それ以外は値を文字列にしたもの
    */
   toFailureMessage(reason: unknown): string {
-    const isObject = typeof reason === "object" && reason !== null;
-    if (isObject) {
-      const { message } = reason as Record<string, unknown>;
+    if (ObjectEx.isObject(reason)) {
+      const { message } = reason;
       if (typeof message === "string") {
         return message;
       }

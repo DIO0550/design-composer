@@ -7,6 +7,7 @@ import { FilePath } from "@/domains/unit/file-path";
 import { TauriIpc, type Unsubscribe } from "@/libs/tauri-ipc";
 import type { ValueOf } from "@/types/ValueOf";
 import { Interop } from "@/utils/Interop";
+import { ObjectEx } from "@/utils/ObjectEx";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
@@ -133,10 +134,10 @@ export type DocumentIpc = Readonly<{
  * @returns 種別とメッセージを持つ I/O の失敗として読めれば true
  */
 function isDocumentIoError(reason: unknown): reason is DocumentIpcError {
-  if (typeof reason !== "object" || reason === null) {
+  if (!ObjectEx.isObject(reason)) {
     return false;
   }
-  const { kind, message } = reason as Record<string, unknown>;
+  const { kind, message } = reason;
   return (
     typeof message === "string" &&
     Object.values(IoErrorKinds).some((ioErrorKind) => ioErrorKind === kind)
@@ -167,10 +168,10 @@ function toDocumentIpcError(reason: unknown): DocumentIpcError {
  *   ときは `none`
  */
 function toDocumentChanged(payload: unknown): Option<DocumentChanged> {
-  if (typeof payload !== "object" || payload === null) {
+  if (!ObjectEx.isObject(payload)) {
     return Option.none;
   }
-  const { path, content } = payload as Record<string, unknown>;
+  const { path, content } = payload;
   if (typeof path !== "string" || typeof content !== "string") {
     return Option.none;
   }
