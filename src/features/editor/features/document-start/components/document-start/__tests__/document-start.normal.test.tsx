@@ -2,6 +2,11 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { filePath } from "@/domains/__tests__/file-paths";
+import { OperatingSystem } from "@/libs/operating-system";
+import {
+  MacOsNavigatorPlatform,
+  WindowsNavigatorPlatform,
+} from "@/libs/operating-system/fake";
 import { recordActions, renderDocumentStart } from "./setup";
 
 const Path = filePath("/work/settings-ui/app.dcmp");
@@ -87,20 +92,53 @@ test("新規作成ボタンには、空のドキュメントから始めるこ�
   ).toBeDefined();
 });
 
-test("開くボタンには、⌘O でも開けることが説明として添えられる", () => {
-  renderDocumentStart();
+test("macOS で動いているとき、開くボタンには、⌘O でも開けることが説明として添えられる", () => {
+  renderDocumentStart({
+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),
+  });
 
   expect(
     screen.getByRole("button", { name: "開く", description: /⌘O/ }),
   ).toBeDefined();
 });
 
-test("新規作成ボタンには、⌘N でも作れることが説明として添えられる", () => {
-  renderDocumentStart();
+test("macOS で動いているとき、新規作成ボタンには、⌘N でも作れることが説明として添えられる", () => {
+  renderDocumentStart({
+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),
+  });
 
   expect(
     screen.getByRole("button", { name: "新規作成", description: /⌘N/ }),
   ).toBeDefined();
+});
+
+test("Windows で動いているとき、開くボタンには、Ctrl+O でも開けることが説明として添えられる", () => {
+  renderDocumentStart({
+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),
+  });
+
+  expect(
+    screen.getByRole("button", { name: "開く", description: /Ctrl\+O/ }),
+  ).toBeDefined();
+});
+
+test("Windows で動いているとき、新規作成ボタンには、Ctrl+N でも作れることが説明として添えられる", () => {
+  renderDocumentStart({
+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),
+  });
+
+  expect(
+    screen.getByRole("button", { name: "新規作成", description: /Ctrl\+N/ }),
+  ).toBeDefined();
+});
+
+test("Windows で動いているとき、開くボタンの説明に ⌘ は出ない", () => {
+  renderDocumentStart({
+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),
+  });
+
+  const openButton = screen.getByRole("button", { name: "開く" });
+  expect(openButton.textContent).not.toContain("⌘");
 });
 
 test("最近使ったファイルは、ファイル名で並ぶ", () => {

@@ -4,6 +4,11 @@ import { filePath } from "@/domains/__tests__/file-paths";
 import { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import { OpenAttempt } from "@/features/editor/features/document-start/domains/document-session";
 import { CommandSources } from "@/features/editor/features/document-start/hooks/use-document-session";
+import { OperatingSystem } from "@/libs/operating-system";
+import {
+  MacOsNavigatorPlatform,
+  WindowsNavigatorPlatform,
+} from "@/libs/operating-system/fake";
 import { Option } from "@/utils/Option";
 import { DocumentStart } from "./index";
 
@@ -32,6 +37,7 @@ const meta = {
     recentFilesFailure: Option.none,
     commandFailure: Option.none,
     renderErrors: () => null,
+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),
   },
   // 開始画面は高さを親に合わせるので、素の `#storybook-root` へ直接描くと潰れる。
   decorators: [
@@ -50,6 +56,14 @@ type Story = StoryObj<typeof meta>;
 /** 何も開いていない状態。最近使ったファイルがまだ 1 件も無い。 */
 export const Default: Story = {
   name: "開始画面",
+};
+
+/** Windows で動いている状態。割り当ては Ctrl 側の綴りで出る。 */
+export const OnWindows: Story = {
+  name: "Windows で動いている",
+  args: {
+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),
+  },
 };
 
 /** 最近使ったファイルが並んでいる状態。同名のファイルはフォルダ名で見分ける。 */

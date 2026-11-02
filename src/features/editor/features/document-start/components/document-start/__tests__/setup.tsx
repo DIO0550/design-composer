@@ -8,6 +8,8 @@ import type {
   CommandSourceFailure,
   DocumentSessionActions,
 } from "@/features/editor/features/document-start/hooks/use-document-session";
+import { OperatingSystem } from "@/libs/operating-system";
+import { MacOsNavigatorPlatform } from "@/libs/operating-system/fake";
 import { Option } from "@/utils/Option";
 
 /** エラーの一覧を出さない状態を見るときの、渡す描き方。 */
@@ -62,6 +64,8 @@ export type StartOverrides = Readonly<{
   recentFilesFailure?: Option<string>;
   commandFailure?: Option<CommandSourceFailure>;
   renderErrors?: (errors: readonly DocumentError[]) => ReactNode;
+  /** アプリが動いている OS。省くと macOS。 */
+  operatingSystem?: OperatingSystem;
 }>;
 
 /**
@@ -78,6 +82,10 @@ export function renderDocumentStart(overrides: StartOverrides = {}): void {
       recentFilesFailure={overrides.recentFilesFailure ?? Option.none}
       commandFailure={overrides.commandFailure ?? Option.none}
       renderErrors={overrides.renderErrors ?? renderNothing}
+      operatingSystem={
+        overrides.operatingSystem ??
+        OperatingSystem.fromNavigator(MacOsNavigatorPlatform)
+      }
     />,
   );
 }
