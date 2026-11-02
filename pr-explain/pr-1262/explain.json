@@ -1,0 +1,1341 @@
+{
+  "version": 1,
+  "pr": 1262,
+  "sha": "741d49231259644278606625241f8b6f2c3829dd",
+  "issue": 1253,
+  "overview": {
+    "title": "開始画面のカードの割り当てを、動いている OS の綴りで出す",
+    "lead": "開始画面の「開く」「新規作成」カードに添える割り当てが ⌘O / ⌘N 固定だったのを、コンテキストメニュー(#480)と同じ規則で macOS なら ⌘O / ⌘N、Windows・Linux なら Ctrl+O / Ctrl+N と出すようにした。綴りの規則は `editor-context-menu` の非公開の関数から `src/components/shown-shortcut` の `ShownShortcut.toText` へ移して共有する。",
+    "before": [
+      {
+        "text": "開始画面の開くカードは、どの OS でも `⌘O` を添えていた"
+      },
+      {
+        "text": "開始画面の新規作成カードは、どの OS でも `⌘N` を添えていた"
+      },
+      {
+        "text": "Windows・Linux では、コンテキストメニューの `Ctrl+C` と開始画面の `⌘O` が同じアプリの中で並んでいた"
+      },
+      {
+        "text": "割り当ての綴りの規則(`shortcutLabel`)は `editor-context-menu` の中に非公開で置かれ、子 feature の開始画面からは使えなかった"
+      }
+    ],
+    "after": [
+      {
+        "text": "macOS では開くカードに `⌘O`、新規作成カードに `⌘N` を添える(これまでと同じ)",
+        "message": "start-to-text"
+      },
+      {
+        "text": "Windows・Linux では開くカードに `Ctrl+O`、新規作成カードに `Ctrl+N` を添え、`⌘` は出さない",
+        "message": "start-to-text"
+      },
+      {
+        "text": "`EditorScreen` が受け取った OS を、開始画面(`DocumentStart`)へ props で渡す",
+        "message": "screen-to-start"
+      },
+      {
+        "text": "コンテキストメニューも同じ `ShownShortcut.toText` で綴り、出る綴りは変わらない",
+        "message": "menu-to-text"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "併記する割り当ての型",
+        "text": "型名 `ShownShortcut` は naming-reviewer の指摘で改名したもので、未決のまま入れた。キー入力を受ける `KeyShortcut` とは修飾語で分けている",
+        "go": {
+          "kind": "file",
+          "path": "src/components/shown-shortcut/index.ts"
+        }
+      },
+      {
+        "title": "汎用部品の層に置いた規則",
+        "text": "`src/components/` に JSX を持たない `.ts` のロジックを置いた。domains は production から libs を import できず、utils に置くと utils → libs が初めて現れるための判断で、見てほしい",
+        "go": {
+          "kind": "layer",
+          "layer": "components"
+        }
+      },
+      {
+        "title": "開始画面までの配線",
+        "text": "OS は Provider ではなく props で `EditorScreen` から `DocumentStart` へ通す。Provider で配る案は今回見送った",
+        "go": {
+          "kind": "flow",
+          "id": "start-screen"
+        }
+      },
+      {
+        "title": "Windows のストーリー",
+        "text": "足したストーリー(`OnWindows`)は main にベースラインが無いので VRT では new になり、比べられない。バッジが列に収まることは撮って目視しただけ",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/document-start/components/document-start/index.stories.tsx"
+        }
+      },
+      {
+        "title": "割り当ての綴り",
+        "text": "開始画面とコンテキストメニューが同じ規則を呼ぶ",
+        "go": {
+          "kind": "message",
+          "id": "start-to-text"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "start",
+      "label": "開始画面",
+      "role": "開く / 新規作成のカードに、動いている OS の綴りで割り当てを添える"
+    },
+    {
+      "id": "shortcut",
+      "label": "割り当ての綴り",
+      "role": "キーと修飾だけを持つ割り当てを、OS ごとの 1 行の綴りにする"
+    },
+    {
+      "id": "menu",
+      "label": "コンテキストメニュー",
+      "role": "行に併記する割り当てを、共有した規則で綴る(振る舞いは変えない)"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "components",
+      "role": "併記する割り当ての型と、OS ごとの綴りの規則を置く"
+    },
+    {
+      "layer": "features / editor",
+      "role": "受け取った OS を開始画面へ渡し、コンテキストメニューは共有した規則を呼ぶ"
+    },
+    {
+      "layer": "features / editor/features/document-start",
+      "role": "カードごとの割り当て(キーと修飾)を持ち、OS を受けて綴る"
+    },
+    {
+      "layer": "docs",
+      "role": "開始画面の割り当ても OS の綴りで出すことを仕様に書く"
+    },
+    {
+      "layer": "libs",
+      "role": "動いている OS の判定(変更なし)。綴りの規則が受け取る値の出どころ"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/components/shown-shortcut/index.ts",
+      "name": "併記する割り当て",
+      "role": "キーと修飾だけを持つ割り当ての型と、それを OS ごとの綴りにする `toText`",
+      "feature": "shortcut",
+      "change": "コンテキストメニューの非公開の `MenuShortcut` / `shortcutLabel` を移し、`ShownShortcut` / `ShownShortcut.toText` にした"
+    },
+    {
+      "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "name": "開始画面",
+      "role": "開く / 新規作成のカードと最近使ったファイルを出す",
+      "feature": "start",
+      "change": "カードの `shortcut` 固定文字列をやめ、`OpenCardShortcut` / `CreateCardShortcut` を OS で綴る。props に `operatingSystem` を足した"
+    },
+    {
+      "path": "src/features/editor/components/editor-screen/index.tsx",
+      "name": "アプリの画面",
+      "role": "何も開いていなければ開始画面を、開いていれば編集画面を出す",
+      "feature": "start",
+      "change": "受け取っていた `operatingSystem` を `DocumentStart` へも渡す"
+    },
+    {
+      "path": "src/features/editor/components/editor-context-menu/index.tsx",
+      "name": "コンテキストメニュー",
+      "role": "ツリー・キャンバスの右クリックで出るメニュー",
+      "feature": "menu",
+      "change": "綴りの型と規則を `ShownShortcut` へ移し、呼ぶだけにした"
+    },
+    {
+      "path": "src/components/action-card/index.tsx",
+      "name": "操作のカード",
+      "role": "見出し・説明・割り当てのバッジを持つ汎用のカード(変更なし)",
+      "feature": "start"
+    },
+    {
+      "path": "src/libs/operating-system/index.ts",
+      "name": "動いている OS",
+      "role": "`navigator.platform` から macOS かそれ以外(`Other`)かを決める(変更なし)",
+      "feature": "shortcut"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "画面の仕様",
+      "role": "開始画面と導線の節に、割り当ての綴りの記述を足した",
+      "change": "「開く前の画面」に 1 行、「開く / 新規作成の導線」に「macOS の綴りで書く」",
+      "graph": false
+    },
+    {
+      "path": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "name": "開始画面のストーリー",
+      "role": "Windows で動いている開始画面のストーリーを足した",
+      "feature": "start",
+      "change": "`OnWindows` を足し、既定の args に macOS を入れた",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "screen-to-start",
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "kind": "cmd",
+      "name": "開始画面を出す",
+      "code": "<DocumentStart … operatingSystem={operatingSystem} />",
+      "via": "call",
+      "payload": "`operatingSystem`(ほかの props は変わらない)",
+      "status": "changed"
+    },
+    {
+      "id": "start-to-text",
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/components/shown-shortcut/index.ts",
+      "kind": "qry",
+      "name": "カードの割り当てを綴る",
+      "code": "ShownShortcut.toText(OpenCardShortcut, operatingSystem)",
+      "via": "call",
+      "payload": "`{ kind: \"command\", key: \"O\" | \"N\", withShiftKey: false }` と OS",
+      "returns": "`⌘O` / `Ctrl+O` などの文字列",
+      "status": "added"
+    },
+    {
+      "id": "text-to-os",
+      "from": "src/components/shown-shortcut/index.ts",
+      "to": "src/libs/operating-system/index.ts",
+      "kind": "qry",
+      "name": "OS の語彙を引く",
+      "code": "case OperatingSystems.MacOs",
+      "via": "state",
+      "payload": "受け取った `OperatingSystem` の値",
+      "returns": "macOS か `Other` かの分岐",
+      "status": "added"
+    },
+    {
+      "id": "start-to-card",
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/components/action-card/index.tsx",
+      "kind": "cmd",
+      "name": "カードを描く",
+      "code": "<ActionCard content={{ ...OpenCardContent, shortcut }} />",
+      "via": "call",
+      "payload": "見出し・説明・アイコン・色味と、綴った割り当て",
+      "status": "changed"
+    },
+    {
+      "id": "menu-to-text",
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/components/shown-shortcut/index.ts",
+      "kind": "qry",
+      "name": "メニューの行の割り当てを綴る",
+      "code": "ShownShortcut.toText(shortcut, operatingSystem)",
+      "via": "call",
+      "payload": "操作ごとの割り当てと OS",
+      "returns": "行に併記する綴り",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "start-screen",
+      "label": "何も開いていない画面を出したとき",
+      "steps": [
+        "screen-to-start",
+        "start-to-text",
+        "text-to-os",
+        "start-to-card"
+      ]
+    },
+    {
+      "id": "context-menu",
+      "label": "コンテキストメニューを開いたとき",
+      "steps": [
+        "menu-to-text",
+        "text-to-os"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "fb335049668f94cdf707e2ff03a5ff76aa961402",
+      "phase": "prep",
+      "role": "綴りの規則をコンテキストメニューの中から `src/components/` へ上げる",
+      "why": "開始画面は親 feature `editor` の子 feature で、子は親を import できない(rules/consistency.md「親の参照: 禁止」)。書き写すと ⌘ / Ctrl の並びの規則が 2 か所に割れるので、先に振る舞いを変えずに規則だけを共有できる場所へ移した。domains は production から libs を import できず `OperatingSystem` を受け取れない、utils に置くと utils → libs が初めて現れる、libs は外部の値の解釈に閉じる、という順で置き場を消し、併記を持つ部品が共に使える `src/components/` にした(この時点の名前は `ShortcutNotation`)。",
+      "flows": [
+        "context-menu"
+      ],
+      "review": [
+        "`src/components/` に JSX を持たない `.ts` のロジックを置いた判断が、層の約束に照らして納得できるか",
+        "コンテキストメニューの既存テストを書き換えずに通していて、振る舞いが変わっていないこと",
+        "`plainShortcut` など `Option` で包む関数は操作の表の都合としてメニュー側に残したこと"
+      ],
+      "before": [
+        {
+          "text": "綴りの規則は `editor-context-menu` の非公開の `shortcutLabel` / `commandShortcutLabel` だった"
+        }
+      ],
+      "after": [
+        {
+          "text": "コンテキストメニューは共有の `toText` を呼んで綴る",
+          "message": "menu-to-text"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/components/shortcut-notation/index.ts",
+          "start": 6,
+          "end": 10,
+          "text": "置き場所の理由。domains は production から libs を import できないので、OS を受け取る綴りの規則を持てない"
+        },
+        {
+          "path": "src/components/shortcut-notation/index.ts",
+          "start": 26,
+          "end": 40,
+          "text": "移した規則の本体。macOS は `Shift+⌘X`、それ以外は `Ctrl+Shift+X` と修飾の並びが OS で逆になる"
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/index.tsx",
+          "side": "old",
+          "start": 147,
+          "end": 180,
+          "text": "移す前の `shortcutLabel` と `commandShortcutLabel`。中身は変えずに移した"
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/index.tsx",
+          "start": 193,
+          "end": 193,
+          "text": "メニューの行は共有した規則を呼ぶだけになった"
+        }
+      ]
+    },
+    {
+      "sha": "776cf62f89240e1a2e3cc07b99e8cacac790b8f7",
+      "phase": "core",
+      "role": "開始画面のカードの割り当てを、受け取った OS で綴る",
+      "why": "#480 でコンテキストメニューは OS ごとの綴りになったが、開始画面のカードは ⌘ 固定のままだった。OS を子 feature まで props で通し、綴りは子が作る形にしたのは、カードの見出し・説明・割り当てを子の 1 か所に保つため。親が綴りを作って文字列で差し込むと、割り当ての O / N を親が持ち、カードの中身が親子 2 か所に割れる。",
+      "flows": [
+        "start-screen"
+      ],
+      "review": [
+        "カードの中身は `Omit<ActionCardContent, \"shortcut\">` に狭め、割り当ては別の定数に分けたこと",
+        "割り当ての出どころは `src-tauri/src/menu.rs` の `CmdOrCtrl+O` / `CmdOrCtrl+N` で、片方だけ変えると併記と実際の割り当てが食い違うこと",
+        "テストの setup とストーリーの既定の OS を macOS にしたこと",
+        "Windows のストーリーは VRT のベースラインが無く new になるので、Ctrl+O / Ctrl+N のバッジが列に収まるかは目で見てほしい"
+      ],
+      "before": [
+        {
+          "text": "開始画面のカードは `⌘O` / `⌘N` をそのまま持っていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "`EditorScreen` が OS を `DocumentStart` へ渡す",
+          "message": "screen-to-start"
+        },
+        {
+          "text": "開始画面がカードの割り当てを OS で綴る",
+          "message": "start-to-text"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "start": 39,
+          "end": 43,
+          "text": "割り当てのキーと修飾は `menu.rs` と対で持つ、という理由。⌘ 固定の理由だった #1253 の記述を置き換えた"
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "start": 55,
+          "end": 60,
+          "text": "開くの割り当て。キーと修飾だけで、綴りは持たない(この時点の名前は `OpenShortcut`)"
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "start": 98,
+          "end": 111,
+          "text": "カードの中身に、その場で綴った割り当てを足して渡す"
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.tsx",
+          "start": 128,
+          "end": 128,
+          "text": "既に受け取っていた OS を開始画面にも渡す 1 行"
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+          "start": 61,
+          "end": 67,
+          "text": "Windows で動いているストーリー。main にベースラインが無いので VRT では比べられない"
+        }
+      ]
+    },
+    {
+      "sha": "e47314d2502f6580f44b4b8d36d411b3d6762035",
+      "phase": "core",
+      "role": "開始画面の割り当ても OS の綴りで出すことを仕様に書く",
+      "why": "開始画面の割り当てについて仕様に記述が無く、足したテストの根拠が無かった。導線の節は macOS の綴りだけで書かれていて、OS で綴りが分かれるのは開始画面だけと読めたため、「macOS の綴りで書く」を添えた。規則の文言は「コンテキストメニュー」節の 1 か所に置いたまま参照し、書き写さない。",
+      "review": [
+        "規則を書き写さず「コンテキストメニュー」節を参照していること",
+        "05-architecture.md の OS のメニューの記述(⌘O / ⌘N)は今回触れていないこと"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 22,
+          "end": 22,
+          "text": "開始画面の割り当ての 1 行。規則はコンテキストメニューの節を指す"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 44,
+          "end": 44,
+          "text": "導線の節の ⌘O / ⌘N が macOS の綴りであることを明示した"
+        }
+      ]
+    },
+    {
+      "sha": "5171cf6a10ad4c9eac78989d0e175e28cb75337d",
+      "phase": "revise",
+      "role": "型を `ShownShortcut`、開始画面の定数を `OpenCardShortcut` / `CreateCardShortcut` に改名する",
+      "why": "naming-reviewer の指摘。型が持つのは OS に依らないキーと修飾で、綴り(notation)は `toText` が作るので、旧名は出力の側を名指ししていた。中心語を仕様の「割り当て」に当たる Shortcut にし、併記用であることを修飾語で出した。開始画面の定数は、`features/editor` にある 14 個の `<操作>Shortcut: KeyShortcut` と同じ形を避け、カードとの対応を名前に出した。`ShownShortcut` に `create` を置く案は、検証すべき制約の無い直和で作り方の経路も減らないので見送った。",
+      "review": [
+        "型名 `ShownShortcut` は未決のまま入れた。キー入力を受ける `KeyShortcut` と取り違えずに読めるか",
+        "置き場所の理由に「`OperatingSystem` が `libs/` にある間は」の条件を足し、前提が変われば理由も変わることを書いたこと"
+      ],
+      "notes": [
+        {
+          "path": "src/components/shown-shortcut/index.ts",
+          "start": 6,
+          "end": 10,
+          "text": "置き場所の理由に、OS の型が libs にある間という条件を足した"
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "start": 55,
+          "end": 75,
+          "text": "カードとの対応が名前に出る `OpenCardShortcut` / `CreateCardShortcut`"
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/index.tsx",
+          "start": 32,
+          "end": 40,
+          "text": "`commandShortcut` の doc から ⌘ / Ctrl の規則を外し、`ShownShortcut.toText` を指す"
+        }
+      ]
+    },
+    {
+      "sha": "741d49231259644278606625241f8b6f2c3829dd",
+      "phase": "revise",
+      "role": "開始画面のカードの割り当てを、綴り全体との一致で確かめる",
+      "why": "test-reviewer の指摘。macOS 側の assert が `/⌘O/` の部分一致だったので、割り当てに誤って Shift が付いて `Shift+⌘O` になっても通っていた。説明は「既存の .dcmp を選ぶ」と割り当ての 2 要素から作られ、割り当ては末尾に空白で区切って付くので、空白から末尾までの一致を求めれば綴り全体を見られる。カードの `textContent` は区切りが無いので、`EditorScreen` 側は割り当ての要素を `getByText` の完全一致で引く。",
+      "review": [
+        "`/(?:^|\\s)⌘O$/` の形で、前に修飾が付いた綴りを落とせていること",
+        "`EditorScreen` 側を `textContent` の部分一致から `within(openCard).getByText` の完全一致に変えたこと",
+        "コンテキストメニューの Copy の 2 件は部分一致のまま残したこと(今回の指摘の対象外)"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+          "start": 95,
+          "end": 98,
+          "text": "末尾まで一致を求める理由。`Shift+⌘O` を通さないため"
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+          "start": 105,
+          "end": 105,
+          "text": "部分一致 `/⌘O/` から、空白から末尾までの一致に変えた"
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+          "start": 75,
+          "end": 75,
+          "text": "カードの中の割り当ての要素を完全一致で引く"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "shown-shortcut",
+      "label": "割り当ての綴り",
+      "file": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts"
+    },
+    {
+      "id": "document-start",
+      "label": "開始画面",
+      "file": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx"
+    },
+    {
+      "id": "editor-screen-os",
+      "label": "アプリの画面の OS",
+      "file": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "text-mac-command",
+      "suite": "shown-shortcut",
+      "name": "macOS で動いているとき、コマンドキー付きの割り当ては ⌘C と綴る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "macOS ではコマンドキーを ⌘ で、キーの前に付けて綴る",
+      "given": "macOS の `navigator.platform` から作った OS",
+      "when": "Shift 無しのコマンドキー付き C を綴る",
+      "then": "`⌘C` になる",
+      "commit": "fb335049668f94cdf707e2ff03a5ff76aa961402",
+      "excerpt": {
+        "path": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "start": 14,
+        "end": 21,
+        "text": "test(\"macOS で動いているとき、コマンドキー付きの割り当ては ⌘C と綴る\", () => {\n  expect(\n    ShownShortcut.toText(\n      { kind: \"command\", key: \"C\", withShiftKey: false },\n      MacOs,\n    ),\n  ).toBe(\"⌘C\");\n});"
+      },
+      "targets": [
+        "src/components/shown-shortcut/index.ts"
+      ],
+      "covers": [
+        "text-to-os"
+      ]
+    },
+    {
+      "id": "text-mac-shift",
+      "suite": "shown-shortcut",
+      "name": "macOS で動いているとき、Shift とコマンドキー付きの割り当ては Shift+⌘G と綴る",
+      "techniques": [
+        "equivalence",
+        "boundary"
+      ],
+      "why": "macOS では Shift を ⌘ より前に置く。Windows と並びが逆なので取り違えやすい",
+      "given": "macOS の OS",
+      "when": "Shift 付きのコマンドキー付き G を綴る",
+      "then": "`Shift+⌘G` になる",
+      "commit": "fb335049668f94cdf707e2ff03a5ff76aa961402",
+      "excerpt": {
+        "path": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "start": 23,
+        "end": 30,
+        "text": "test(\"macOS で動いているとき、Shift とコマンドキー付きの割り当ては Shift+⌘G と綴る\", () => {\n  expect(\n    ShownShortcut.toText(\n      { kind: \"command\", key: \"G\", withShiftKey: true },\n      MacOs,\n    ),\n  ).toBe(\"Shift+⌘G\");\n});"
+      },
+      "values": {
+        "columns": [
+          "OS",
+          "Shift",
+          "綴り"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "macOS",
+              "無し",
+              "`⌘G`"
+            ]
+          },
+          {
+            "cells": [
+              "macOS",
+              "有り",
+              "`Shift+⌘G`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "Windows・Linux",
+              "無し",
+              "`Ctrl+G`"
+            ]
+          },
+          {
+            "cells": [
+              "Windows・Linux",
+              "有り",
+              "`Ctrl+Shift+G`"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/components/shown-shortcut/index.ts"
+      ],
+      "covers": [
+        "text-to-os"
+      ]
+    },
+    {
+      "id": "text-windows-command",
+      "suite": "shown-shortcut",
+      "name": "Windows で動いているとき、コマンドキー付きの割り当ては Ctrl+C と綴る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "Windows ではコマンドキーを `Ctrl+` で綴る",
+      "given": "Windows の OS",
+      "when": "Shift 無しのコマンドキー付き C を綴る",
+      "then": "`Ctrl+C` になる",
+      "commit": "fb335049668f94cdf707e2ff03a5ff76aa961402",
+      "excerpt": {
+        "path": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "start": 32,
+        "end": 39,
+        "text": "test(\"Windows で動いているとき、コマンドキー付きの割り当ては Ctrl+C と綴る\", () => {\n  expect(\n    ShownShortcut.toText(\n      { kind: \"command\", key: \"C\", withShiftKey: false },\n      Windows,\n    ),\n  ).toBe(\"Ctrl+C\");\n});"
+      },
+      "targets": [
+        "src/components/shown-shortcut/index.ts"
+      ],
+      "covers": [
+        "text-to-os"
+      ]
+    },
+    {
+      "id": "text-linux-command",
+      "suite": "shown-shortcut",
+      "name": "Linux で動いているとき、コマンドキー付きの割り当ては Ctrl+C と綴る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "Linux も Windows と同じ `Other` に入り、Ctrl 側で綴る",
+      "given": "Linux の OS",
+      "when": "Shift 無しのコマンドキー付き C を綴る",
+      "then": "`Ctrl+C` になる",
+      "commit": "fb335049668f94cdf707e2ff03a5ff76aa961402",
+      "excerpt": {
+        "path": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "start": 41,
+        "end": 48,
+        "text": "test(\"Linux で動いているとき、コマンドキー付きの割り当ては Ctrl+C と綴る\", () => {\n  expect(\n    ShownShortcut.toText(\n      { kind: \"command\", key: \"C\", withShiftKey: false },\n      Linux,\n    ),\n  ).toBe(\"Ctrl+C\");\n});"
+      },
+      "targets": [
+        "src/components/shown-shortcut/index.ts"
+      ],
+      "covers": [
+        "text-to-os"
+      ]
+    },
+    {
+      "id": "text-windows-shift",
+      "suite": "shown-shortcut",
+      "name": "Windows・Linux で動いているとき、Shift とコマンドキー付きの割り当ては Ctrl を先にして Ctrl+Shift+G と綴る",
+      "techniques": [
+        "equivalence",
+        "boundary"
+      ],
+      "why": "Ctrl 側では Ctrl を Shift より前に置く。macOS と並びが逆",
+      "given": "Windows の OS",
+      "when": "Shift 付きのコマンドキー付き G を綴る",
+      "then": "`Ctrl+Shift+G` になる",
+      "commit": "fb335049668f94cdf707e2ff03a5ff76aa961402",
+      "excerpt": {
+        "path": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "start": 50,
+        "end": 57,
+        "text": "test(\"Windows・Linux で動いているとき、Shift とコマンドキー付きの割り当ては Ctrl を先にして Ctrl+Shift+G と綴る\", () => {\n  expect(\n    ShownShortcut.toText(\n      { kind: \"command\", key: \"G\", withShiftKey: true },\n      Windows,\n    ),\n  ).toBe(\"Ctrl+Shift+G\");\n});"
+      },
+      "targets": [
+        "src/components/shown-shortcut/index.ts"
+      ],
+      "covers": [
+        "text-to-os"
+      ]
+    },
+    {
+      "id": "text-plain-mac",
+      "suite": "shown-shortcut",
+      "name": "修飾の無い割り当ては、macOS でもキーの綴りのまま出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "Delete のような修飾の無いキーに ⌘ を付けない",
+      "given": "macOS の OS",
+      "when": "修飾の無い Delete を綴る",
+      "then": "`Delete` のまま",
+      "commit": "fb335049668f94cdf707e2ff03a5ff76aa961402",
+      "excerpt": {
+        "path": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "start": 59,
+        "end": 63,
+        "text": "test(\"修飾の無い割り当ては、macOS でもキーの綴りのまま出る\", () => {\n  expect(ShownShortcut.toText({ kind: \"plain\", key: \"Delete\" }, MacOs)).toBe(\n    \"Delete\",\n  );\n});"
+      },
+      "targets": [
+        "src/components/shown-shortcut/index.ts"
+      ]
+    },
+    {
+      "id": "text-plain-windows",
+      "suite": "shown-shortcut",
+      "name": "修飾の無い割り当ては、Windows でもキーの綴りのまま出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "修飾の無いキーに `Ctrl+` を付けない",
+      "given": "Windows の OS",
+      "when": "修飾の無い Delete を綴る",
+      "then": "`Delete` のまま",
+      "commit": "fb335049668f94cdf707e2ff03a5ff76aa961402",
+      "excerpt": {
+        "path": "src/components/shown-shortcut/__tests__/shown-shortcut.normal.test.ts",
+        "start": 65,
+        "end": 69,
+        "text": "test(\"修飾の無い割り当ては、Windows でもキーの綴りのまま出る\", () => {\n  expect(ShownShortcut.toText({ kind: \"plain\", key: \"Delete\" }, Windows)).toBe(\n    \"Delete\",\n  );\n});"
+      },
+      "targets": [
+        "src/components/shown-shortcut/index.ts"
+      ]
+    },
+    {
+      "id": "start-mac-open",
+      "suite": "document-start",
+      "name": "macOS で動いているとき、開くボタンには、⌘O でも開けることが説明として添えられる",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "macOS では開くカードの割り当てがこれまでどおり ⌘O で、前に修飾が付かない",
+      "given": "macOS で動いている開始画面",
+      "when": "開くボタンを名前と説明で引く",
+      "then": "説明が空白の後ろの `⌘O` で終わる(`/(?:^|\\s)⌘O$/`)。`Shift+⌘O` では落ちる",
+      "commit": "776cf62f89240e1a2e3cc07b99e8cacac790b8f7",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "start": 95,
+        "end": 107,
+        "emphasis": [
+          {
+            "start": 105,
+            "end": 105
+          }
+        ],
+        "text": "/*\n * 割り当ては説明の末尾に、前の文言と空白で区切って付く。区切りから末尾までを割り当ての綴りと\n * 突き合わせ、`Shift+⌘O` のように前へ修飾が付いた綴りを通さない。\n */\ntest(\"macOS で動いているとき、開くボタンには、⌘O でも開けることが説明として添えられる\", () => {\n  renderDocumentStart({\n    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),\n  });\n\n  expect(\n    screen.getByRole(\"button\", { name: \"開く\", description: /(?:^|\\s)⌘O$/ }),\n  ).toBeDefined();\n});"
+      },
+      "values": {
+        "columns": [
+          "説明の末尾",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`既存の .dcmp を選ぶ ⌘O`",
+              "通る"
+            ]
+          },
+          {
+            "cells": [
+              "`既存の .dcmp を選ぶ Shift+⌘O`",
+              "落ちる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`既存の .dcmp を選ぶ Ctrl+O`",
+              "落ちる"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/document-start/components/document-start/index.tsx",
+        "src/components/action-card/index.tsx"
+      ],
+      "covers": [
+        "start-to-text",
+        "start-to-card"
+      ]
+    },
+    {
+      "id": "start-mac-create",
+      "suite": "document-start",
+      "name": "macOS で動いているとき、新規作成ボタンには、⌘N でも作れることが説明として添えられる",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "新規作成は開くと別の定数から綴るので、割り当ての取り違えを開くと別に落とす",
+      "given": "macOS で動いている開始画面",
+      "when": "新規作成ボタンを名前と説明で引く",
+      "then": "説明が空白の後ろの `⌘N` で終わる",
+      "commit": "776cf62f89240e1a2e3cc07b99e8cacac790b8f7",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "start": 109,
+        "end": 120,
+        "text": "test(\"macOS で動いているとき、新規作成ボタンには、⌘N でも作れることが説明として添えられる\", () => {\n  renderDocumentStart({\n    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),\n  });\n\n  expect(\n    screen.getByRole(\"button\", {\n      name: \"新規作成\",\n      description: /(?:^|\\s)⌘N$/,\n    }),\n  ).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/components/document-start/index.tsx"
+      ],
+      "covers": [
+        "start-to-text",
+        "start-to-card"
+      ]
+    },
+    {
+      "id": "start-windows-open",
+      "suite": "document-start",
+      "name": "Windows で動いているとき、開くボタンには、Ctrl+O でも開けることが説明として添えられる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "この PR の本体。Windows では開くカードに Ctrl+O を添える",
+      "given": "Windows で動いている開始画面",
+      "when": "開くボタンを名前と説明で引く",
+      "then": "説明が空白の後ろの `Ctrl+O` で終わる",
+      "commit": "776cf62f89240e1a2e3cc07b99e8cacac790b8f7",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "start": 122,
+        "end": 133,
+        "text": "test(\"Windows で動いているとき、開くボタンには、Ctrl+O でも開けることが説明として添えられる\", () => {\n  renderDocumentStart({\n    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),\n  });\n\n  expect(\n    screen.getByRole(\"button\", {\n      name: \"開く\",\n      description: /(?:^|\\s)Ctrl\\+O$/,\n    }),\n  ).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/components/document-start/index.tsx"
+      ],
+      "covers": [
+        "start-to-text",
+        "start-to-card"
+      ]
+    },
+    {
+      "id": "start-windows-create",
+      "suite": "document-start",
+      "name": "Windows で動いているとき、新規作成ボタンには、Ctrl+N でも作れることが説明として添えられる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "Windows では新規作成カードに Ctrl+N を添える",
+      "given": "Windows で動いている開始画面",
+      "when": "新規作成ボタンを名前と説明で引く",
+      "then": "説明が空白の後ろの `Ctrl+N` で終わる",
+      "commit": "776cf62f89240e1a2e3cc07b99e8cacac790b8f7",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "start": 135,
+        "end": 146,
+        "text": "test(\"Windows で動いているとき、新規作成ボタンには、Ctrl+N でも作れることが説明として添えられる\", () => {\n  renderDocumentStart({\n    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),\n  });\n\n  expect(\n    screen.getByRole(\"button\", {\n      name: \"新規作成\",\n      description: /(?:^|\\s)Ctrl\\+N$/,\n    }),\n  ).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/components/document-start/index.tsx"
+      ],
+      "covers": [
+        "start-to-text",
+        "start-to-card"
+      ]
+    },
+    {
+      "id": "start-windows-no-command",
+      "suite": "document-start",
+      "name": "Windows で動いているとき、開くボタンの説明に ⌘ は出ない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "直す前の不具合(Windows でも ⌘O が出ていた)が戻らないこと",
+      "given": "Windows で動いている開始画面",
+      "when": "開くボタンの中身を見る",
+      "then": "`⌘` を含まない",
+      "commit": "776cf62f89240e1a2e3cc07b99e8cacac790b8f7",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.normal.test.tsx",
+        "start": 148,
+        "end": 155,
+        "text": "test(\"Windows で動いているとき、開くボタンの説明に ⌘ は出ない\", () => {\n  renderDocumentStart({\n    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),\n  });\n\n  const openButton = screen.getByRole(\"button\", { name: \"開く\" });\n  expect(openButton.textContent).not.toContain(\"⌘\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/components/document-start/index.tsx"
+      ],
+      "covers": [
+        "start-to-text"
+      ]
+    },
+    {
+      "id": "screen-windows-open",
+      "suite": "editor-screen-os",
+      "name": "Windows で動いている画面で何も開いていないとき、開始画面の開くカードに Ctrl+O が添えられる",
+      "techniques": [
+        "state"
+      ],
+      "why": "画面の入口で受け取った OS が開始画面まで届くこと。渡す OS を固定する壊し方で落ちる",
+      "given": "Windows の `navigator` で、何も開いていないアプリの画面",
+      "when": "開くカードを引く",
+      "then": "カードの中に `Ctrl+O` ちょうどの要素がある",
+      "commit": "776cf62f89240e1a2e3cc07b99e8cacac790b8f7",
+      "excerpt": {
+        "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+        "start": 56,
+        "end": 76,
+        "emphasis": [
+          {
+            "start": 75,
+            "end": 75
+          }
+        ],
+        "text": "/**\n * その OS で動いていることにして、何も開いていない画面の開くカードを引く。\n *\n * @param navigatorPlatform アプリが動いている webview の `navigator`\n * @returns 開始画面の開くカード\n */\nfunction openCardOn(navigatorPlatform: NavigatorPlatform): HTMLElement {\n  renderEditorScreen(\n    {},\n    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n    { navigatorPlatform },\n  );\n\n  return screen.getByRole(\"button\", { name: \"開く\" });\n}\n\ntest(\"Windows で動いている画面で何も開いていないとき、開始画面の開くカードに Ctrl+O が添えられる\", () => {\n  const openCard = openCardOn(WindowsNavigatorPlatform);\n\n  expect(within(openCard).getByText(\"Ctrl+O\")).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/features/editor/components/editor-screen/index.tsx",
+        "src/features/editor/features/document-start/components/document-start/index.tsx"
+      ],
+      "covers": [
+        "screen-to-start",
+        "start-to-text"
+      ]
+    },
+    {
+      "id": "screen-mac-open",
+      "suite": "editor-screen-os",
+      "name": "macOS で動いている画面で何も開いていないとき、開始画面の開くカードに ⌘O が添えられる",
+      "techniques": [
+        "state"
+      ],
+      "why": "Windows の件と対にして、どちらかの OS に固定する壊し方を落とす",
+      "given": "macOS の `navigator` で、何も開いていないアプリの画面",
+      "when": "開くカードを引く",
+      "then": "カードの中に `⌘O` ちょうどの要素がある",
+      "commit": "776cf62f89240e1a2e3cc07b99e8cacac790b8f7",
+      "excerpt": {
+        "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+        "start": 78,
+        "end": 82,
+        "text": "test(\"macOS で動いている画面で何も開いていないとき、開始画面の開くカードに ⌘O が添えられる\", () => {\n  const openCard = openCardOn(MacOsNavigatorPlatform);\n\n  expect(within(openCard).getByText(\"⌘O\")).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/features/editor/components/editor-screen/index.tsx",
+        "src/features/editor/features/document-start/components/document-start/index.tsx"
+      ],
+      "covers": [
+        "screen-to-start",
+        "start-to-text"
+      ]
+    },
+    {
+      "id": "screen-windows-copy",
+      "suite": "editor-screen-os",
+      "name": "Windows で動いている画面でドキュメントを開くと、ツリーの行のメニューの Copy に Ctrl+C が併記される",
+      "techniques": [
+        "regression"
+      ],
+      "why": "規則を移したあともコンテキストメニューの綴りが変わらないこと(#480 からある既存のテスト)",
+      "given": "Windows の `navigator` で、ドキュメントを開いた画面",
+      "when": "ツリーの行を右クリックしてメニューを開く",
+      "then": "Copy の行に `Ctrl+C` を含む(部分一致のまま)",
+      "excerpt": {
+        "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+        "start": 44,
+        "end": 48,
+        "text": "test(\"Windows で動いている画面でドキュメントを開くと、ツリーの行のメニューの Copy に Ctrl+C が併記される\", async () => {\n  const copyRow = await copyRowOn(WindowsNavigatorPlatform);\n\n  expect(copyRow.textContent).toContain(\"Ctrl+C\");\n});"
+      },
+      "targets": [
+        "src/features/editor/components/editor-context-menu/index.tsx"
+      ],
+      "covers": [
+        "menu-to-text"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "開始画面の「開く」「新規作成」に添える割り当てが、Windows・Linux では Ctrl の綴りになった",
+    "lead": "アプリを Windows や Linux で使う人から見て、何も開いていないときの画面のカードに添える割り当てが、実際に押すキーと同じ綴りで出るようになりました。macOS での見え方は変わりません。",
+    "changed": {
+      "before": [
+        {
+          "text": "開始画面の開くカードには、どの OS でも ⌘O が添えられていた"
+        },
+        {
+          "text": "新規作成カードには、どの OS でも ⌘N が添えられていた"
+        },
+        {
+          "text": "Windows・Linux では、右クリックのメニューは Ctrl+C なのに開始画面だけ ⌘ で、綴りがそろっていなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "macOS では開くカードに ⌘O、新規作成カードに ⌘N が添えられる",
+          "message": "start-to-text"
+        },
+        {
+          "text": "Windows・Linux では開くカードに Ctrl+O、新規作成カードに Ctrl+N が添えられ、⌘ は出ない",
+          "message": "start-to-text"
+        },
+        {
+          "text": "開始画面と右クリックのメニューが、同じ規則で割り当てを綴る",
+          "message": "menu-to-text"
+        }
+      ],
+      "text": "押すキーそのもの(macOS は ⌘、それ以外は Ctrl)は前から OS のメニューが OS ごとに決めていて、変わったのは画面に出る綴りだけです。",
+      "specs": [
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「開く前の画面(開始画面)」の、開く / 新規作成に添える割り当ての行",
+          "text": "開く / 新規作成に添える割り当ては動いている OS の綴りで出し、規則はコンテキストメニューの併記と同じ、という行を足した",
+          "shas": [
+            "e47314d2502f6580f44b4b8d36d411b3d6762035",
+            "5171cf6a10ad4c9eac78989d0e175e28cb75337d"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「開く / 新規作成の導線」の OS のメニューの段落",
+          "text": "⌘O / ⌘N が macOS の綴りで書いたものであることを書き添えた",
+          "shas": [
+            "e47314d2502f6580f44b4b8d36d411b3d6762035"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 480,
+          "text": "右クリックのメニューの割り当てを OS ごとの綴りにした件。開始画面はそこで残っていた"
+        },
+        {
+          "issue": 1254,
+          "text": "キーボードの割り当てそのものから併記の綴りを導く件。今回は扱わず先送りした"
+        }
+      ],
+      "primers": [
+        "shown-shortcut",
+        "discriminated-union-switch"
+      ]
+    },
+    "tables": [
+      {
+        "label": "開始画面のカードに添える割り当て",
+        "gist": "出る綴りは、どのカードかと、どの OS で動いているかの 2 つで決まる。",
+        "text": "Linux は Windows と同じ綴りになります。",
+        "rowHeads": [
+          {
+            "id": "open",
+            "label": "開くカード"
+          },
+          {
+            "id": "create",
+            "label": "新規作成カード"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "mac",
+            "label": "macOS"
+          },
+          {
+            "id": "windows",
+            "label": "Windows・Linux"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "open",
+            "columnHead": "mac",
+            "result": "⌘O",
+            "tests": [
+              "start-mac-open",
+              "screen-mac-open"
+            ]
+          },
+          {
+            "rowHead": "open",
+            "columnHead": "windows",
+            "result": "Ctrl+O",
+            "was": "⌘O",
+            "tests": [
+              "start-windows-open",
+              "start-windows-no-command",
+              "screen-windows-open"
+            ]
+          },
+          {
+            "rowHead": "create",
+            "columnHead": "mac",
+            "result": "⌘N",
+            "tests": [
+              "start-mac-create"
+            ]
+          },
+          {
+            "rowHead": "create",
+            "columnHead": "windows",
+            "result": "Ctrl+N",
+            "was": "⌘N",
+            "tests": [
+              "start-windows-create"
+            ]
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "右クリックのメニューの割り当ての綴り(macOS は ⌘C や Shift+⌘G、それ以外は Ctrl+C や Ctrl+Shift+G)は変わらない",
+        "tests": [
+          "screen-windows-copy",
+          "text-mac-shift",
+          "text-windows-shift"
+        ]
+      },
+      {
+        "text": "修飾の無いキー(Delete など)は、どの OS でもキーの名前のまま出る",
+        "tests": [
+          "text-plain-mac",
+          "text-plain-windows"
+        ]
+      },
+      {
+        "text": "カードの見出し・説明の文・押したときの動きは変わらない"
+      },
+      {
+        "text": "ドキュメントを開いている間の OS のメニューの割り当ては変わらない"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「コンテキストメニュー」の「行にはキーボードの割り当てを併記する」",
+        "text": "OS ごとの綴りの規則そのものは変えず、開始画面の行からここを指すようにした"
+      },
+      {
+        "path": "docs/05-architecture.md",
+        "locator": "開く / 新しく作る指示が届く経路の、OS のメニュー(⌘O / ⌘N)の記述",
+        "text": "macOS の綴りだけで書いた記述は今回触れていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "discriminated-union-switch",
+      "category": "typescript · 型",
+      "label": "判別可能な union と `switch`",
+      "gist": "取りうる形を `kind` のような共通の[[リテラル型|literal-type]]のキーで見分けられる [[union 型|union]]にし、`switch` でその値ごとに処理を分ける書き方。分けた枝の中では、その形にしか無いキー(ここでは `withShiftKey`)を読める。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`A | B` と書いた [[union 型|union]]の値は、どちらの形か分かるまで両方に共通するキーしか読めない。共通のキー `kind` に `\"plain\"` / `\"command\"` のような[[リテラル型|literal-type]]を置くと、`switch (notation.kind)` の `case \"command\":` の中では、TypeScript が値を `command` の形に[[絞り込む|narrowing]]。"
+        },
+        {
+          "kind": "declaration",
+          "code": "type ShownShortcut =\n  | Readonly<{ kind: \"plain\"; key: string }>\n  | Readonly<{ kind: \"command\"; key: string; withShiftKey: boolean }>;"
+        },
+        {
+          "kind": "rule",
+          "text": "`default` を置かず、戻り値を `string` にしておくと、`case` が抜けたときに「値を返さない経路がある」としてコンパイルが落ちる(rules/coding.md「列挙した状態の網羅を型で強制する」)。"
+        },
+        {
+          "kind": "memo",
+          "text": "`Extract<ShownShortcut, { kind: \"command\" }>` は、union のうち `kind` が `command` の形だけを取り出す組み込みの型。`commandText` の引数はこれで、`plain` を渡すと型で弾かれる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/components/shown-shortcut/index.ts",
+          "lineRange": {
+            "start": 15,
+            "end": 17
+          },
+          "text": "併記する割り当ての 2 つの形",
+          "shas": [
+            "fb335049668f94cdf707e2ff03a5ff76aa961402",
+            "5171cf6a10ad4c9eac78989d0e175e28cb75337d"
+          ]
+        },
+        {
+          "path": "src/components/shown-shortcut/index.ts",
+          "lineRange": {
+            "start": 26,
+            "end": 40
+          },
+          "text": "OS で分ける `switch`。`OperatingSystems` の 2 つの値を網羅する",
+          "shas": [
+            "fb335049668f94cdf707e2ff03a5ff76aa961402"
+          ]
+        },
+        {
+          "path": "src/components/shown-shortcut/index.ts",
+          "lineRange": {
+            "start": 51,
+            "end": 57
+          },
+          "text": "形で分ける `switch`",
+          "shas": [
+            "fb335049668f94cdf707e2ff03a5ff76aa961402"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "as-const-satisfies",
+        "shown-shortcut"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "as-const-satisfies",
+      "category": "typescript · 型",
+      "label": "`as const satisfies` と `Omit`",
+      "gist": "定数の値を、書いたままの[[リテラル型|literal-type]]で残しつつ、ある型の形に合っているかをコンパイラに確かめさせる書き方。カードの中身から `shortcut` だけを抜いた形を確かめるのに `Omit` を使っている。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`as const` は、オブジェクトの値を書き換えられない[[リテラル型|literal-type]](`\"command\"` や `\"O\"`)のまま固定する。続く `satisfies T` は、値が型 `T` に当てはまるかだけを確かめ、値の型を `T` へ広げない。`: T` と注釈すると型が `T` になり、`kind` が `\"command\"` だったことが失われる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "const OpenCardShortcut = {\n  kind: \"command\",\n  key: \"O\",\n  withShiftKey: false,\n} as const satisfies ShownShortcut;"
+        },
+        {
+          "kind": "text",
+          "text": "`Omit<T, \"shortcut\">` は、型 `T` から `shortcut` のキーを除いた型を作る組み込みの型。カードの中身の定数は割り当てを持たなくなったので、`ActionCardContent` から `shortcut` を除いた形と突き合わせ、描くときに綴った割り当てを[[スプレッド構文|spread]]で足す。"
+        },
+        {
+          "kind": "caution",
+          "text": "`Omit` に書くキー名は文字列なので、綴りを間違えても除かれないだけで落ちない場合がある。ここでは `ActionCard` が `shortcut` を必須で受けるので、描くところで足し忘れれば型で落ちる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "lineRange": {
+            "start": 46,
+            "end": 53
+          },
+          "text": "開くのカードの中身。`shortcut` を除いた形と突き合わせる",
+          "shas": [
+            "776cf62f89240e1a2e3cc07b99e8cacac790b8f7"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "lineRange": {
+            "start": 56,
+            "end": 60
+          },
+          "text": "開くの割り当て",
+          "shas": [
+            "776cf62f89240e1a2e3cc07b99e8cacac790b8f7",
+            "5171cf6a10ad4c9eac78989d0e175e28cb75337d"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "lineRange": {
+            "start": 100,
+            "end": 103
+          },
+          "text": "中身を広げ、綴った割り当てを足して渡す",
+          "shas": [
+            "776cf62f89240e1a2e3cc07b99e8cacac790b8f7",
+            "5171cf6a10ad4c9eac78989d0e175e28cb75337d"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "discriminated-union-switch"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "shown-shortcut",
+      "category": "components · 割り当て",
+      "label": "併記する割り当て(`ShownShortcut`)",
+      "gist": "画面に添えるキーボードの割り当てを、OS に依らないキーと修飾だけの値で持ち、描くときに `toText` で OS ごとの 1 行の綴りにする。開始画面とコンテキストメニューが共に使う。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "値は「修飾無し(`plain`)」と「コマンドキー付き(`command`、Shift の有無を持つ)」の 2 つの形。`toText(notation, operatingSystem)` は macOS なら `⌘X` / `Shift+⌘X`、それ以外なら `Ctrl+X` / `Ctrl+Shift+X` を返し、修飾の無いキーはそのまま返す。OS の値は `libs/operating-system` の `OperatingSystem.fromNavigator` が `navigator.platform` から決め、Linux も Windows と同じ `Other` に入る。"
+        },
+        {
+          "kind": "spec",
+          "text": "綴りの規則は docs/06-ui.md「コンテキストメニュー」の「行にはキーボードの割り当てを併記する」。開始画面の行はそこを指す。"
+        },
+        {
+          "kind": "rule",
+          "text": "人が読む 1 行への綴りは表示側の関心事なので、ドメインではなく併記を持つ部品の層に置く(rules/architecture.md「ロジックの帰属先」)。domains は production から libs を import できず、OS の値を受け取れない。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は `editor-context-menu` の非公開の `MenuShortcut` / `shortcutLabel` だった。この PR で `ShortcutNotation` として移し、naming-reviewer の指摘で `ShownShortcut` に改名した。"
+        },
+        {
+          "kind": "memo",
+          "text": "`create` は置いていない。検証すべき制約が無く、`satisfies` で書いた値がそのまま唯一の形になっているため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/components/shown-shortcut/index.ts",
+          "lineRange": {
+            "start": 43,
+            "end": 59
+          },
+          "text": "`ShownShortcut.toText`",
+          "shas": [
+            "fb335049668f94cdf707e2ff03a5ff76aa961402",
+            "5171cf6a10ad4c9eac78989d0e175e28cb75337d"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "lineRange": {
+            "start": 102,
+            "end": 102
+          },
+          "text": "開始画面の開くカードが呼ぶ",
+          "shas": [
+            "776cf62f89240e1a2e3cc07b99e8cacac790b8f7",
+            "5171cf6a10ad4c9eac78989d0e175e28cb75337d"
+          ]
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/index.tsx",
+          "lineRange": {
+            "start": 192,
+            "end": 194
+          },
+          "text": "コンテキストメニューの行が呼ぶ",
+          "shas": [
+            "fb335049668f94cdf707e2ff03a5ff76aa961402",
+            "5171cf6a10ad4c9eac78989d0e175e28cb75337d"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "discriminated-union-switch"
+      ],
+      "tests": [
+        "text-mac-command",
+        "text-mac-shift",
+        "text-windows-shift",
+        "start-windows-open",
+        "screen-windows-open"
+      ],
+      "flows": [
+        "start-screen",
+        "context-menu"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "literal-type",
+      "label": "リテラル型",
+      "text": "`\"command\"` や `\"O\"` のように、ただ 1 つの値だけを許す型。素の `string` と違い、別の綴りを入れるとコンパイルが落ちる。"
+    },
+    {
+      "id": "union",
+      "label": "union 型",
+      "text": "`A | B` と書き、A か B のどちらかの形をとる値の型。"
+    },
+    {
+      "id": "narrowing",
+      "label": "絞り込み",
+      "text": "`if` や `switch` で値を調べた枝の中で、TypeScript が値の型をより狭い型として扱うこと。"
+    },
+    {
+      "id": "spread",
+      "label": "スプレッド構文",
+      "text": "`{ ...a, b: 1 }` のように書き、オブジェクト `a` のキーをすべて写した新しいオブジェクトを作る構文。元の `a` は変わらない。"
+    }
+  ]
+}
