@@ -2,13 +2,12 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   useReducer,
-  useRef,
 } from "react";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import {
-  EditContinuities,
   type EditContinuity,
+  EditContinuityRun,
 } from "@/domains/session/edit-continuity";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import type { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
@@ -24,6 +23,7 @@ import {
 } from "@/features/editor/features/canvas/domains/side-snap";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
+import { useFirstThenRest } from "@/hooks/use-first-then-rest";
 import { CommandKey } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 
@@ -156,25 +156,17 @@ export function useNodeResize(
     undefined,
     NodeResize.create,
   );
-  /*
-   * この掴みで既に 1 回反映したか。掴むたびに戻す。
-   *
-   * reducer の状態に持たないのは、`trackPointer` が読むのが**今のレンダーの値**だから。
-   * pointermove は同期フラッシュが保証されず、続けて 2 回処理されると 2 回とも「まだ
-   * 反映していない」と読んで undo が 2 回に割れる（happy-dom は毎回フラッシュするので
-   * テストには出ない）。render では読まずハンドラの中だけで読み書きするので ref に置く
-   * （rules/hooks.md「useRef の使い分け」）。
-   *
-   * 立てるのは通知した時点で、履歴へ入ったかは見ない。1 件目が上流で落ちると 2 件目が
-   * 続きとして届く（`EditHistory.amend` の doc が書いている「戻る先が無いまま」と同じ形）。
-   */
-  const hasResized = useRef(false);
+  // reducer の状態に持たないのは、pointermove が同期フラッシュされず今のレンダーの値を読むと
+  // 2 回とも 1 件目になるため（happy-dom は毎回フラッシュするのでテストには出ない）。
+  // 単一選択でない・ファイルが不正な間に 1 件目が上流で落ちると、2 件目が続きとして届く
+  // （`EditHistory.amend` の doc が書いている「戻る先が無いまま」と同じ形）。
+  const continuitySequence = useFirstThenRest(EditContinuityRun);
 
   const grab = (
     grip: ResizeGrip,
     event: ReactPointerEvent<HTMLElement>,
   ): void => {
-    hasResized.current = false;
+    continuitySequence.restart();
     const held = NodeResize.hold(
       params.resizable,
       grip,
@@ -217,7 +209,7 @@ export function useNodeResize(
     if (!Option.isSome(grabbed)) {
       return false;
     }
-    hasResized.current = false;
+    continuitySequence.restart();
     dispatch({
       type: "grab",
       held: withMeasuredSnap(grabbed.value, bounds.value),
@@ -247,11 +239,7 @@ export function useNodeResize(
     if (!Option.isSome(tracked)) {
       return;
     }
-    const continuity = hasResized.current
-      ? EditContinuities.Continued
-      : EditContinuities.Separate;
-    hasResized.current = true;
-    params.onResize(tracked.value.edit, continuity);
+    params.onResize(tracked.value.edit, continuitySequence.next());
     dispatch({ type: "track", guides: tracked.value.guides });
   };
 

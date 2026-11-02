@@ -1,14 +1,16 @@
-import { type ReactElement, useRef, useState } from "react";
+import { type ReactElement, useState } from "react";
 import type { Rgb, TokenValue } from "@/domains/dcmp/token";
 import {
   EditContinuities,
   type EditContinuity,
+  EditContinuityRun,
 } from "@/domains/session/edit-continuity";
 import {
   TokenControl,
   type TokenControlField,
   type TokenControlInput,
 } from "@/features/editor/features/tokens/domains/token-control";
+import { useFirstThenRest } from "@/hooks/use-first-then-rest";
 import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";
 
@@ -120,34 +122,25 @@ function ColorPickerField({
   onChangeRaw: ChangeRaw;
 }>): ReactElement {
   /*
-   * 立てるのは送った時点で、履歴へ入ったかは見ない（prop-field の `LiteralInput` と同じ
-   * 扱い）。ピッカーは常に #rrggbb を返すので `TokenControl.valueFrom` の `none` には届かない。
+   * ピッカーは常に #rrggbb を返し `TokenControl.valueFrom` の `none` に届かないので、1 件目が
+   * 落ちて続きが先に届くことは無い。
    *
-   * 下ろすのは開いたとき（click）と離れたとき（blur）。フォーカスを得たときにしないのは、
+   * 始め直すのは開いたとき（click）と離れたとき（blur）。フォーカスを得たときにしないのは、
    * ピッカーを閉じてもフォーカスが入力欄に残り、開き直しでは focus が発火しないため。blur でも
-   * 下ろすのは、色のパネルがモーダルでなく、別の欄を編集して戻ったときに続きとして送らないため。
+   * 始め直すのは、色のパネルがモーダルでなく、別の欄を編集して戻ったときに続きとして送らないため。
    * Chromium ではキーボード（Enter / Space）で開いても click が届くことを実測した。Tauri の
    * WebView は未検証。
    */
-  const hasEdited = useRef(false);
-  const resetEdited = () => {
-    hasEdited.current = false;
-  };
+  const continuitySequence = useFirstThenRest(EditContinuityRun);
   const picker = (
     <input
       id={id}
       type="color"
       value={value}
-      onClick={resetEdited}
-      onBlur={resetEdited}
+      onClick={continuitySequence.restart}
+      onBlur={continuitySequence.restart}
       onChange={(event) => {
-        onChangeRaw(
-          event.target.value,
-          hasEdited.current
-            ? EditContinuities.Continued
-            : EditContinuities.Separate,
-        );
-        hasEdited.current = true;
+        onChangeRaw(event.target.value, continuitySequence.next());
       }}
       className={PickerClasses[density]}
     />

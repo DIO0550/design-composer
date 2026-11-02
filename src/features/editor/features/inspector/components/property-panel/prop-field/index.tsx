@@ -1,4 +1,4 @@
-import { type ReactElement, useId, useRef } from "react";
+import { type ReactElement, useId } from "react";
 import { ColorSwatch, GradientSwatch } from "@/components/color-swatch";
 import { SegmentedControl } from "@/components/segmented-control";
 import type { PropEdit } from "@/domains/dcmp/node";
@@ -10,6 +10,7 @@ import {
 import {
   EditContinuities,
   type EditContinuity,
+  EditContinuityRun,
 } from "@/domains/session/edit-continuity";
 import {
   type CurrentPaint,
@@ -17,6 +18,7 @@ import {
   PropControl,
   type PropControlInput,
 } from "@/domains/session/prop-control";
+import { useFirstThenRest } from "@/hooks/use-first-then-rest";
 import { Option } from "@/utils/Option";
 
 /*
@@ -348,16 +350,9 @@ function LiteralInput({
   field: FieldBinding;
   inputType: "number" | "text";
 }>): ReactElement {
-  /*
-   * 立てるのは送った時点で、履歴へ入ったかは見ない。1 件目が上流で落ちると 2 件目が
-   * 続きとして届く（`EditHistory.amend` の doc が書いている「戻る先が無いまま」と同じ形）。
-   *
-   * 同じ形の ref が `features/editor/features/canvas` の `use-node-resize` と
-   * `features/editor/features/tokens` の `token-editor/value-field` にもある。
-   * 畳む先が `src/hooks/` にも `domains/` にも置けず（前者は domains を、後者は React を
-   * import できない）、寄せるには 3 つの feature の外に層が要るので分けたままにしている。
-   */
-  const hasEdited = useRef(false);
+  // 1 件目が上流で落ちると 2 件目が続きとして届く（`EditHistory.amend` の doc が書いている
+  // 「戻る先が無いまま」と同じ形）。
+  const continuitySequence = useFirstThenRest(EditContinuityRun);
 
   return (
     <input
@@ -366,17 +361,9 @@ function LiteralInput({
       className={FieldClass}
       value={field.value}
       placeholder={field.unsetLabel}
-      onFocus={() => {
-        hasEdited.current = false;
-      }}
+      onFocus={continuitySequence.restart}
       onChange={(event) => {
-        field.onChangeRaw(
-          event.target.value,
-          hasEdited.current
-            ? EditContinuities.Continued
-            : EditContinuities.Separate,
-        );
-        hasEdited.current = true;
+        field.onChangeRaw(event.target.value, continuitySequence.next());
       }}
     />
   );
