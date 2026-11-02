@@ -18,6 +18,8 @@ import {
 import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { createFileDropFake, type FileDropFake } from "@/libs/file-drop/fake";
+import { OperatingSystem } from "@/libs/operating-system";
+import { MacOsNavigatorPlatform } from "@/libs/operating-system/fake";
 import { EditorScreen } from "./index";
 
 const SamplePath = filePath("/work/sample.dcmp");
@@ -91,7 +93,12 @@ const meta = {
   title: "features/editor/EditorScreen",
   component: EditorScreen,
   parameters: { layout: "fullscreen" },
-  args: { clock: clock.clock, ports: started.ports },
+  args: {
+    clock: clock.clock,
+    ports: started.ports,
+    // macOS を既定にする理由は docs/06-ui.md「コンテキストメニュー」
+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),
+  },
 } satisfies Meta<typeof EditorScreen>;
 
 export default meta;

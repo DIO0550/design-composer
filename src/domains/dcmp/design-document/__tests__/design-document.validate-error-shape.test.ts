@@ -72,6 +72,29 @@ test("binding の指すプリミティブに prop が無いときのエラーは
   ]);
 });
 
+test("locking へ binding したときのエラーは、部品名と公開 prop 名の位置で、ノード名と prop 名を挙げる", () => {
+  const errors = errorsOf(
+    {
+      button: {
+        type: "Box",
+        children: [{ name: "button-label", type: "Text" }],
+        publicProps: { lock: { node: "button-label", prop: "locking" } },
+      },
+    },
+    [],
+  );
+
+  expect(errors).toStrictEqual([
+    {
+      kind: "unbindable-binding-prop",
+      nodeName: "button",
+      prop: "lock",
+      message:
+        'prop "locking" of node "button-label" cannot be bound to a public prop',
+    },
+  ]);
+});
+
 test("binding の指すインスタンスの参照先が prop を公開していないときのエラーは、部品名と公開 prop 名の位置で、参照先の部品名を挙げる", () => {
   const errors = errorsOf(
     {

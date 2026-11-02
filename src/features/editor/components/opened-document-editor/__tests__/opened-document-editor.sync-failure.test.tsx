@@ -3,6 +3,8 @@ import { expect, test } from "vitest";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
 import { createClockFake } from "@/libs/clock/fake";
 import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
+import { OperatingSystem } from "@/libs/operating-system";
+import { MacOsNavigatorPlatform } from "@/libs/operating-system/fake";
 import { OpenedDocumentEditor } from "../index";
 import { canvasPane, Path } from "./setup";
 
@@ -14,6 +16,7 @@ test("開いているファイルを監視できないと、その失敗が画�
     <OpenedDocumentEditor
       clock={createClockFake().clock}
       ipc={fake.ipc}
+      operatingSystem={OperatingSystem.fromNavigator(MacOsNavigatorPlatform)}
       opened={{ path: Path, document: SampleDocument }}
     />,
   );
@@ -29,6 +32,7 @@ test("監視できないファイルでも、開いているドキュメント�
     <OpenedDocumentEditor
       clock={createClockFake().clock}
       ipc={fake.ipc}
+      operatingSystem={OperatingSystem.fromNavigator(MacOsNavigatorPlatform)}
       opened={{ path: Path, document: SampleDocument }}
     />,
   );

@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { rowNames } from "@/components/__tests__/row-names";
@@ -9,11 +9,17 @@ import {
   canvasSurface,
 } from "@/features/editor/features/canvas/__tests__";
 import {
+  MacOsNavigatorPlatform,
+  WindowsNavigatorPlatform,
+} from "@/libs/operating-system/fake";
+import {
   breakFileExternally,
   contextMenu,
   drawn,
   menuRow,
   renderOpenedDocument,
+  renderOpenedDocumentOn,
+  rightClick,
   selectArtboard,
   selectInTree,
   tree,
@@ -32,16 +38,12 @@ import {
  */
 
 /**
- * キャンバスに描かれたものを右クリックする。
+ * メニューの行を、操作の名前と割り当ての欄ごとの文字列にする。
  *
- * @param target 押す要素
- * @param at 押した窓の座標。省くと折り返しの起きない位置
+ * @param name 行の操作の名前
  */
-function rightClick(
-  target: Element,
-  at: Readonly<{ x: number; y: number }> = { x: 120, y: 80 },
-): void {
-  fireEvent.contextMenu(target, { clientX: at.x, clientY: at.y });
+function menuRowColumns(name: string): ReadonlyArray<string | null> {
+  return Array.from(menuRow(name).children, (column) => column.textContent);
 }
 
 test("キャンバスのノードを右クリックするとメニューが出る", async () => {
@@ -223,20 +225,50 @@ test("コピー済みで貼り先があるときは、空き領域のメニュ�
   expect(menuRow("Paste").hasAttribute("disabled")).toBe(false);
 });
 
-test("行にはキーボードの割り当てが併記される", async () => {
-  await renderOpenedDocument();
+test("macOS で動いているとき、Copy の行の割り当ては ⌘C だけになる", async () => {
+  await renderOpenedDocumentOn(MacOsNavigatorPlatform);
 
   rightClick(drawn("home-title"));
 
-  expect(menuRow("Copy").textContent).toContain("⌘C");
+  // `Shift+⌘C` も `⌘C` を含むので、部分一致では Shift が付いたことを見分けられない
+  expect(menuRowColumns("Copy")).toEqual(["Copy", "⌘C"]);
 });
 
-test("複製の行には ⌘D が併記される", async () => {
-  await renderOpenedDocument();
+test("macOS で動いているとき、複製の行には ⌘D が併記される", async () => {
+  await renderOpenedDocumentOn(MacOsNavigatorPlatform);
 
   rightClick(drawn("home-title"));
 
   expect(menuRow("Duplicate").textContent).toContain("⌘D");
+});
+
+test("Windows で動いているとき、Copy の行には Ctrl+C が併記される", async () => {
+  await renderOpenedDocumentOn(WindowsNavigatorPlatform);
+
+  rightClick(drawn("home-title"));
+
+  expect(menuRow("Copy").textContent).toContain("Ctrl+C");
+});
+
+test("Windows で動いているとき、Copy の行に ⌘ は併記されない", async () => {
+  await renderOpenedDocumentOn(WindowsNavigatorPlatform);
+
+  rightClick(drawn("home-title"));
+
+  expect(menuRow("Copy").textContent).not.toContain("⌘");
+});
+
+test.each([
+  ["macOS", MacOsNavigatorPlatform],
+  ["Windows", WindowsNavigatorPlatform],
+] as const)("%s で動いているときも、Delete の行の割り当ては Delete だけになる", async (_os, navigatorPlatform) => {
+  await renderOpenedDocumentOn(navigatorPlatform);
+
+  rightClick(drawn("home-title"));
+
+  // 操作の名前も Delete なので、行全体の文字列では `Delete` の部分一致が必ず通り、修飾の
+  // 有無を部分一致では見分けられない。名前と割り当ての欄ごとに完全一致で比べる
+  expect(menuRowColumns("Delete")).toEqual(["Delete", "Delete"]);
 });
 
 test("別の場所を右クリックすると、メニューがそこへ開き直す", async () => {

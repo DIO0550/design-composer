@@ -165,3 +165,44 @@ test("公開 prop 名を変えながら辿った部品へ戻ったら、戻っ�
 
   expect(target).toEqual(Option.none);
 });
+
+test("locking を指す binding は解決できない", () => {
+  const components: ComponentSet = {
+    button: { type: "Box", children: [{ name: "button-label", type: "Text" }] },
+  };
+
+  const target = ComponentBinding.resolvePropTarget(
+    components,
+    ComponentBinding.create("button", {
+      node: "button-label",
+      prop: "locking",
+    }),
+  );
+
+  expect(target).toEqual(Option.none);
+});
+
+test("連鎖の先で locking に着く binding は解決できない", () => {
+  const components: ComponentSet = {
+    button: {
+      type: "Box",
+      children: [{ name: "button-label", type: "Text" }],
+      publicProps: { lock: { node: "button-label", prop: "locking" } },
+    },
+    card: {
+      type: "Box",
+      children: [{ name: "card-action", ref: "button" }],
+      publicProps: { actionLock: { node: "card-action", prop: "lock" } },
+    },
+  };
+
+  const target = ComponentBinding.resolvePropTarget(
+    components,
+    ComponentBinding.create("card", {
+      node: "card-action",
+      prop: "lock",
+    }),
+  );
+
+  expect(target).toEqual(Option.none);
+});

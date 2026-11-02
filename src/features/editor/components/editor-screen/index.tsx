@@ -20,6 +20,7 @@ import {
 } from "@/hooks/use-key-shortcut";
 import type { Clock } from "@/libs/clock";
 import type { DocumentIpc } from "@/libs/document-ipc";
+import type { OperatingSystem } from "@/libs/operating-system";
 import { Option } from "@/utils/Option";
 
 /**
@@ -39,10 +40,12 @@ function OpenedDocumentEditors({
   opened,
   clock,
   ipc,
+  operatingSystem,
 }: Readonly<{
   opened: OpenedDocuments;
   clock: Clock;
   ipc: DocumentIpc;
+  operatingSystem: OperatingSystem;
 }>): ReactElement {
   const activePath = OpenedDocuments.activePath(opened);
 
@@ -56,8 +59,9 @@ function OpenedDocumentEditors({
                 見えていない編集画面はショートカットを張らない。`document` に張るので
                 見えているかは関係なく、外すと 1 回の押下が開いている数だけ実行される。
 
-                `useSpaceHeld`（キャンバスのパンの構え）はここでは止めない。押下を実行
-                するのではなく修飾の状態を持つだけなので、背面で立っても見え方は変わらない。
+                `useSpaceHeld`（キャンバスのパンの構え）と `useAltPointing`（選択しているだけ
+                のときの Alt / Option の距離）はここでは止めない。押下を実行するのではなく
+                修飾の状態を持つだけなので、背面で立っても見え方は変わらない。
               */}
             <KeyShortcutScopeProvider
               scope={
@@ -66,7 +70,12 @@ function OpenedDocumentEditors({
                   : KeyShortcutScopes.Suspended
               }
             >
-              <OpenedDocumentEditor clock={clock} ipc={ipc} opened={document} />
+              <OpenedDocumentEditor
+                clock={clock}
+                ipc={ipc}
+                opened={document}
+                operatingSystem={operatingSystem}
+              />
             </KeyShortcutScopeProvider>
           </div>
         );
@@ -84,7 +93,13 @@ function OpenedDocumentEditors({
 export function EditorScreen({
   clock,
   ports,
-}: Readonly<{ clock: Clock; ports: DocumentSessionPorts }>) {
+  operatingSystem,
+}: Readonly<{
+  clock: Clock;
+  ports: DocumentSessionPorts;
+  /** アプリが動いている OS。 */
+  operatingSystem: OperatingSystem;
+}>) {
   const {
     session,
     recentPaths,
@@ -144,6 +159,7 @@ export function EditorScreen({
         opened={session.documents.value}
         clock={clock}
         ipc={ports.ipc}
+        operatingSystem={operatingSystem}
       />
     </div>
   );

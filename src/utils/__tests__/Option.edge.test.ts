@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { expect, test, vi } from "vitest";
 import { Option } from "../Option";
 
 test.each([
@@ -62,4 +62,20 @@ test("unwrap は none に対して例外を投げる", () => {
 
 test("unwrap は falsy な値 0 もそのまま取り出す", () => {
   expect(Option.unwrap(Option.some(0))).toBe(0);
+});
+
+test("equals は片方だけ値を持てば、比べ方にかかわらず false", () => {
+  expect(Option.equals(Option.some("a"), Option.none, () => true)).toBe(false);
+  expect(Option.equals(Option.none, Option.some("a"), () => true)).toBe(false);
+});
+
+test("定義元が評価し直されても、それ以前に作った値を判定できる", async () => {
+  const before = await import("../Option");
+  const old = before.Option.some(1);
+
+  vi.resetModules();
+  const after = await import("../Option");
+
+  expect(after.Option).not.toBe(before.Option);
+  expect(after.Option.isSome(old)).toBe(true);
 });

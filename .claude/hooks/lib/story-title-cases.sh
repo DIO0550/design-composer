@@ -7,11 +7,10 @@
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
 # **表をファイルに置くのは、導出（構造セグメントの取り方・`components` の落とし方・
-# 葉を見ないこと）がこの検査の中心で、`src` に違反が無い限り検出器を呼ぶだけの層 1・
-# 層 2 は緑のままだから。** 同じ形の前例は同じフォルダの `result-option-discriminant-cases.sh`。
+# 葉を見ないこと）がこの検査の中心なのに、検出器を呼ぶだけの層 1・層 2 は `src` に
+# 違反が無い限り緑のままだから。**
 #
-# 判定を終了コードで見る理由は `.claude/hooks/README.md`「終了コードまで見る」。deny の行は
-# さらに報告の見出しが出ることも見る。
+# 判定の決め方（終了コードと報告の見出しの突き合わせ）は `cases-report.sh` の `decide` が持つ。
 #
 # **検出器は走査ルートを `src` という綴りで見る**(`feature_of()` が `src/features` から
 # 辿る)。一時リポジトリへ `cd` してから相対パスで呼ぶのはそのため。絶対パスで渡すと
@@ -39,7 +38,7 @@ trap 'rm -rf "$work"' EXIT
 # 判定の読み取りと報告は判定表どうしで共有する（`cases_failed` / `decide` / `report`）。
 source "$lib_dir/cases-report.sh"
 
-# 検出器を 1 度走らせ、終了コードから deny / pass を決める。
+# 検出器を 1 度走らせ、`decide` で pass / deny / broken を決める。
 verdict() {
   local output status
   output="$(cd "$work" && python3 "$detector" src)" && status=0 || status=$?

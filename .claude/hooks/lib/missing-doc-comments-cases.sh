@@ -73,12 +73,14 @@ write_input() {
   esac >"$file"
 }
 
-# 検出器を 1 度走らせ、終了コードから deny / pass を決める。見出しは呼び方ごとに違い、
+# 検出器を 1 度走らせ、`decide` で pass / deny / broken を決める。見出しは呼び方ごとに違い、
 # `--all` は報告の後ろに件数の集計を出す。
 verdict() {
   local mode="$1" file="$2" output status
   if [ "$mode" = "all" ]; then
     output="$(python3 "$detector" --all "$(dirname "$file")")" && status=0 || status=$?
+    # 集計の行は exit 0 でも「… / 0 ファイル」で出るので、ファイル数が 1 以上の行だけを見出しにする。
+    # 0 件の集計まで見出しと読むと、違反の無い入力が broken になる。
     decide "$output" "$status" '^doc の無い宣言 [0-9]+ 件 / 項目が欠けた doc [0-9]+ 件 / [1-9]'
   else
     output="$(python3 "$detector" "$file")" && status=0 || status=$?

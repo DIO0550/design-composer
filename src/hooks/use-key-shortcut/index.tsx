@@ -29,7 +29,7 @@ type KeyModifiers = Readonly<{
  * ページ全体で受けるキーの組み合わせ。きっかけ（`kind`）で 2 つに分かれ、`keys` は打た
  * れた文字、`codes` は押された物理キーの綴り（`"Digit1"` など）を持つ。
  *
- * `codes` も同じ形にしてあるが、今のところどの割り当ても 1 件しか持たない。
+ * `codes` も同じ形にしてあり、左右の Alt のように同じ役割の物理キーを並べて持てる。
  */
 export type KeyShortcut = KeyModifiers &
   (

@@ -10,7 +10,7 @@
 # **表をファイルに置くのは、窓の取り方(綴りごとに持ち、そのうちいちばん古い窓から数える)が
 # この集計の中心で、増え続ける本物の記録を目で数えても退行を検知できないため。** 同じ形の
 # 前例は `.github/scripts/check-pr-closing-issue-cases.sh`。終了コードで見る理由も、そこと
-# `.claude/hooks/lib/result-option-discriminant-cases.sh` の冒頭にある。
+# `.claude/hooks/lib/cases-report.sh` の冒頭にある。
 #
 # 合成側が語彙表(`.claude/skills/harness-record/templates/record.md`)に載っている綴りを使うのは、
 # `count.sh` の畳み方と読み分けがその綴りで固定されていて、架空の分類・出どころでは亜種が

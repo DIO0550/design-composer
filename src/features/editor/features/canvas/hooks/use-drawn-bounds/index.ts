@@ -1,7 +1,8 @@
-import { type RefObject, useLayoutEffect, useState } from "react";
+import type { RefObject } from "react";
 import type { Angle } from "@/domains/unit/angle";
 import type { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
+import { useMeasured } from "@/features/editor/features/canvas/hooks/use-measured";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { Option } from "@/utils/Option";
@@ -36,33 +37,11 @@ function measure(
 }
 
 /**
- * 2 つの結果が同じものを指しているか。
- *
- * @param previous 前に持っていた結果
- * @param next 測り直した結果
- * @returns どちらも不在か、同じ矩形・同じ向きを指していれば `true`
- */
-function isSame(
-  previous: Option<RotatedBounds>,
-  next: Option<RotatedBounds>,
-): boolean {
-  if (!Option.isSome(previous) || !Option.isSome(next)) {
-    return Option.isSome(previous) === Option.isSome(next);
-  }
-  return RotatedBounds.equals(previous.value, next.value);
-}
-
-/**
  * 回って描かれている矩形を、変わるたびに追いかけて返す（リサイズハンドルを回った辺に
  * 重ねるために使う）。
  *
- * **依存配列を持たず毎コミット測り直す。** 位置が動く原因はキャンバス自身のドキュメント
- * / 倍率だけでなく、トークン選択やエラー一覧の出入りで中央ペインの高さが変わることでも
- * 起きるため、原因を列挙して deps に並べると上流の状態が増えるたびに追随が要る。測り直
- * した値が前と同じなら**同じ参照を返して再レンダーを止める**。
- *
- * 拾えないのは**再レンダーを伴わない位置変化**（Web フォントや画像の読み込み完了）。ウ
- * ィンドウの大きさの変化だけは再レンダーが起きないので明示的に購読する。
+ * 測り直し方（毎コミット測り直し、ウィンドウの大きさの変化を購読し、同じなら前の参照を
+ * 返す）は `useMeasured`。
  *
  * @param target 追いかける artboard / ノードの名前。未選択なら `none`
  * @param container 座標の原点にする器（ハンドルを重ねる側の要素）
@@ -74,24 +53,8 @@ export function useDrawnBounds(
   container: RefObject<HTMLElement | null>,
   basis: MeasureBasis,
 ): Option<RotatedBounds> {
-  const [bounds, setBounds] = useState<Option<RotatedBounds>>(Option.none);
-
-  useLayoutEffect(() => {
-    const remeasure = () => {
-      setBounds((previous) => {
-        const next = measure(target, container.current, basis);
-        return isSame(previous, next) ? previous : next;
-      });
-    };
-
-    remeasure();
-    /*
-     * 購読も毎コミット張り直す。`[]` で 1 度だけ張ると、リスナーが最初の
-     * `target` を掴んだままになり、選択を変えたあとに古い名前を測り続ける。
-     */
-    globalThis.window.addEventListener("resize", remeasure);
-    return () => globalThis.window.removeEventListener("resize", remeasure);
-  });
-
-  return bounds;
+  return useMeasured(
+    () => measure(target, container.current, basis),
+    RotatedBounds.equals,
+  );
 }

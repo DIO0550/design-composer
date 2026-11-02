@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, screen, waitFor } from "storybook/test";
+import { expect, fireEvent, screen, waitFor, within } from "storybook/test";
 import { ScreenHeightShell } from "@/components/__stories__/screen-height-shell";
 import { filePath } from "@/domains/__tests__/file-paths";
 import { DesignDocument } from "@/domains/dcmp/design-document";
@@ -9,6 +9,11 @@ import { EditorState } from "@/features/editor/domains/editor-state";
 import { createClockFake } from "@/libs/clock/fake";
 import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { DocumentJson } from "@/libs/document-json";
+import { OperatingSystem } from "@/libs/operating-system";
+import {
+  MacOsNavigatorPlatform,
+  WindowsNavigatorPlatform,
+} from "@/libs/operating-system/fake";
 import { OpenedDocumentEditor } from "./index";
 
 const SamplePath = filePath("/work/sample.dcmp");
@@ -36,6 +41,8 @@ const meta = {
   args: {
     clock: clock.clock,
     ipc: files.ipc,
+    // macOS を既定にする理由は docs/06-ui.md「コンテキストメニュー」
+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),
     opened: {
       path: SamplePath,
       document: EditorState.document(SampleEditorState),
@@ -68,6 +75,51 @@ export const SyncFailed: Story = {
       document: EditorState.document(SampleEditorState),
     },
   },
+};
+
+/**
+ * ツリーの `home-title` の行を右クリックし、メニューが開くまで待つ。開く位置は行の横幅の
+ * 中ほど・下端にして、押した行がメニューに隠れないようにする。
+ */
+async function openContextMenuOnTreeRow(): Promise<void> {
+  const row = within(screen.getByRole("region", { name: "ツリー" })).getByRole(
+    "button",
+    { name: "home-title" },
+  );
+
+  const rect = row.getBoundingClientRect();
+
+  fireEvent.contextMenu(row, {
+    clientX: rect.left + rect.width / 2,
+    clientY: rect.bottom,
+  });
+
+  await waitFor(() => {
+    expect(
+      screen.getByRole("menu", { name: "コンテキストメニュー" }),
+    ).toBeDefined();
+  });
+}
+
+/**
+ * macOS で動いているときのノードのメニュー。割り当ては `⌘C` / `Shift+⌘G` の綴りで併記される
+ * （docs/06-ui.md「コンテキストメニュー」）。
+ */
+export const ContextMenuOnMacOs: Story = {
+  name: "macOS でコンテキストメニューを開いた編集画面",
+  play: openContextMenuOnTreeRow,
+};
+
+/**
+ * Windows で動いているときのノードのメニュー。割り当ては `Ctrl+C` / `Ctrl+Shift+G` の綴りで
+ * 併記される（docs/06-ui.md「コンテキストメニュー」）。
+ */
+export const ContextMenuOnWindows: Story = {
+  name: "Windows でコンテキストメニューを開いた編集画面",
+  args: {
+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),
+  },
+  play: openContextMenuOnTreeRow,
 };
 
 const Sample = EditorState.document(SampleEditorState);

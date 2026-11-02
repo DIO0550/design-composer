@@ -69,7 +69,7 @@ const ArtboardFixedSizeProps: readonly string[] = [
  * artboard の props では変えられない最小 / 最大の prop。
  *
  * サイズが `fixed` 固定である以上、最小 / 最大は宣言として出力されない
- * (docs/03「サイズ指定の原則」)。書けても効かないものは受け付けない側に倒す。
+ * (docs/03「サイズ指定の原則」)。書いても効かないので読み捨てる(docs/03「前提」)。
  */
 const ArtboardFixedSizeLimitProps: readonly string[] = [
   "minWidth",
@@ -91,7 +91,7 @@ const ArtboardFixedSizeLimitProps: readonly string[] = [
 const ArtboardFixedPlacementProps: readonly string[] = Placement.PropNames;
 
 /**
- * artboard の props では変えられないロックの prop（受け付けない理由は docs/03「ロック」）。
+ * artboard の props では変えられないロックの prop（読み捨てる理由は docs/03「ロック」）。
  */
 const ArtboardFixedLockingProps: readonly string[] = ["locking"];
 
@@ -306,7 +306,7 @@ export const Artboard = {
    * - サイズは `fixed` **固定**で、長さは artboard の `width` / `height`。props では
    *   変えられない
    * - 配置は `flow` **固定**。ここで固定しないと、持っていない親からの相対で置かれた
-   *   artboard が描かれる（props を照らす先は Box スキーマなのでファイルには書けてしまう）
+   *   artboard が描かれる（props を照らす先は Box スキーマなので、書いても unknown-prop にはならない）
    * - ロックは `unlocked` **固定**（docs/03「ロック」）
    * - 回転は**固定**で回らない。artboard は子の座標の原点になる器なので、回ると中身の位置が
    *   全部変わり、枠の外側に描かれる見出しとリサイズハンドルもずれる（docs/03「回転」）
@@ -331,7 +331,7 @@ export const Artboard = {
   },
 
   /**
-   * artboard が props として受け付ける prop の定義（docs/03「Box スキーマを流用する」）。
+   * artboard の props として書いて効く prop の定義（docs/03「前提」）。
    *
    * @returns Box スキーマの prop 定義から `boxProps` が固定するものを除き、`overflow` の
    *   デフォルトを `clip` にしたもの。並びは Box スキーマの宣言順
