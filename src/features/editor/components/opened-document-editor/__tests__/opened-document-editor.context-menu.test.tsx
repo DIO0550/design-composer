@@ -271,6 +271,55 @@ test.each([
   expect(menuRowColumns("Delete")).toEqual(["Delete", "Delete"]);
 });
 
+/** ノードを右クリックしてメニューを開く。 */
+function openNodeMenu(): void {
+  rightClick(drawn("home-title"));
+}
+
+/** 空き領域を右クリックしてメニューを開く。 */
+function openCanvasMenu(): void {
+  rightClick(canvasSurface());
+}
+
+// Copy と Delete の行は、上の個別のテストが同じ完全一致で見ている
+test.each([
+  { name: "Duplicate", shortcut: "⌘D", openMenu: openNodeMenu },
+  { name: "Paste", shortcut: "⌘V", openMenu: openNodeMenu },
+  { name: "Rename", shortcut: "⌘R", openMenu: openNodeMenu },
+  { name: "Group", shortcut: "⌘G", openMenu: openNodeMenu },
+  { name: "Ungroup", shortcut: "Shift+⌘G", openMenu: openNodeMenu },
+  { name: "Bring forward", shortcut: "⌘]", openMenu: openNodeMenu },
+  { name: "Send backward", shortcut: "⌘[", openMenu: openNodeMenu },
+  { name: "Undo", shortcut: "⌘Z", openMenu: openCanvasMenu },
+  { name: "Redo", shortcut: "Shift+⌘Z", openMenu: openCanvasMenu },
+] as const)("macOS で動いているとき、$name の行の割り当ては $shortcut になる", async ({
+  name,
+  shortcut,
+  openMenu,
+}) => {
+  await renderOpenedDocumentOn(MacOsNavigatorPlatform);
+
+  openMenu();
+
+  expect(menuRowColumns(name)).toEqual([name, shortcut]);
+});
+
+test("Windows で動いているとき、Ungroup の行の割り当ては Ctrl+Shift+G になる", async () => {
+  await renderOpenedDocumentOn(WindowsNavigatorPlatform);
+
+  rightClick(drawn("home-title"));
+
+  expect(menuRowColumns("Ungroup")).toEqual(["Ungroup", "Ctrl+Shift+G"]);
+});
+
+test("Detach instance の行には割り当ての欄が出ない", async () => {
+  await renderOpenedDocumentOn(MacOsNavigatorPlatform);
+
+  rightClick(drawn("home-title"));
+
+  expect(menuRowColumns("Detach instance")).toEqual(["Detach instance"]);
+});
+
 test("別の場所を右クリックすると、メニューがそこへ開き直す", async () => {
   await renderOpenedDocument();
   rightClick(drawn("home-title"));
