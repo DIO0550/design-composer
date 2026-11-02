@@ -505,6 +505,11 @@
     "name": "ファイルを選べなかった"
   },
   {
+    "id": "features-editor-features-document-start-documentopenfailurebanner--unchosen",
+    "title": "features/editor/features/document-start/DocumentOpenFailureBanner",
+    "name": "このアプリで選ばれていない"
+  },
+  {
     "id": "features-editor-features-document-start-documentopenfailurebanner--unparsable",
     "title": "features/editor/features/document-start/DocumentOpenFailureBanner",
     "name": "ドキュメントとして読み取れない"
@@ -528,6 +533,11 @@
     "id": "features-editor-features-document-start-documentstart--open-failed",
     "title": "features/editor/features/document-start/DocumentStart",
     "name": "開けなかった"
+  },
+  {
+    "id": "features-editor-features-document-start-documentstart--open-unchosen",
+    "title": "features/editor/features/document-start/DocumentStart",
+    "name": "このアプリで選ばれていない"
   },
   {
     "id": "features-editor-features-document-start-documentstart--opening",
