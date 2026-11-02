@@ -36,8 +36,9 @@ function commandSourceFailureLabel(source: CommandSource): string {
 
 /*
  * 開始画面の 2 枚のカードの中身。ショートカットの割り当ての出どころは `src-tauri/src/menu.rs` の
- * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。OS ごとに表記は変えず、
- * コンテキストメニューと同じ ⌘ 表記に揃えている。
+ * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。OS ごとの出し分けは
+ * 行わず、⌘ 表記で固定している。
+ * 子 feature からは親の `editor-context-menu` に非公開で置いた綴りの規則を使えないため（#1253）。
  */
 
 /** 開くのカード（プライマリ）。 */

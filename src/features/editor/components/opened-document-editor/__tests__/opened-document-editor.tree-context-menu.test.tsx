@@ -10,6 +10,7 @@ import {
   propertyPane,
   renderOpenedDocument,
   renderWithSameComponentInstancesSelected,
+  rightClickInTree,
   selectArtboard,
   selectInTree,
   tree,
@@ -22,21 +23,6 @@ import {
  * 凍結中に出ないことはここでは確かめられない。左ペインの `inert` が行へ届かせないことで
  * 成り立ち、happy-dom は `inert` をイベントに強制しない（表示確認で見る）。
  */
-
-/**
- * ツリーの行を右クリックする。同じ名前はキャンバスにも出るのでツリーに絞る。
- *
- * @param name 押す行の名前
- */
-function rightClickInTree(
-  name: string,
-  at: Readonly<{ x: number; y: number }> = { x: 120, y: 80 },
-): void {
-  fireEvent.contextMenu(within(tree()).getByRole("button", { name }), {
-    clientX: at.x,
-    clientY: at.y,
-  });
-}
 
 /**
  * `Artboards` の一覧の行を右クリックする。
