@@ -3,6 +3,8 @@ import type { JsonObject, JsonValue } from "../Json";
 import type { None, Option, Some } from "../Option";
 import type { Err, Ok } from "../Result";
 
+declare const undefinedSymbolKey: unique symbol;
+
 test("値を持つ Option は JSON の値として代入できない", () => {
   expectTypeOf<Some<string>>().not.toExtend<JsonValue>();
 });
@@ -35,4 +37,10 @@ test("文字列のキーで引く辞書は JSON のオブジェクトとして�
 
 test("要素に Option を持つ配列は JSON の値として代入できない", () => {
   expectTypeOf<readonly Option<string>[]>().not.toExtend<JsonValue>();
+});
+
+test("値が undefined のシンボルのキーを持つオブジェクトは JSON のオブジェクトとして代入できない", () => {
+  expectTypeOf<
+    Readonly<{ [undefinedSymbolKey]: undefined; name: string }>
+  >().not.toExtend<JsonObject>();
 });

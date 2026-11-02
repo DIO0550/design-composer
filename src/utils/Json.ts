@@ -10,11 +10,7 @@ export type JsonValue =
   | readonly JsonValue[]
   | JsonObject;
 
-/**
- * JSON のオブジェクト。キーは文字列だけで、値はすべて JSON のデータモデルで表せる。
- *
- * シンボルのキーを `undefined` にすると「値が無いことはある」と読めるので `never` にする。
- */
+/** JSON のオブジェクト。キーは文字列だけで、値はすべて JSON のデータモデルで表せる。 */
 export type JsonObject = Readonly<{
   [key: string]: JsonValue;
   [key: symbol]: never;
