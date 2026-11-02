@@ -1,10 +1,10 @@
 {
-  "reportVersion": "1705b3d733ec7ffdaa5998a9796f8eae261e2d38",
+  "reportVersion": "df172992c37ebe620d4f0fdfc9fbe192ffd51c2c",
   "maxDiffRatio": 0.002,
   "changed": 0,
   "new": 2,
   "deleted": 0,
-  "passed": 204,
+  "passed": 206,
   "failed": 0,
   "results": [
     {
@@ -676,12 +676,12 @@
       "title": "features/editor/features/assets/CreateComponent",
       "name": "ファイルが不正な間に部品名を打っている",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 5,
+      "reason": "match",
+      "diffPixels": 0,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-features-assets-createcomponent--instance-selected",
@@ -2599,6 +2599,32 @@
       "id": "features-editor-openeddocumenteditor--compile-failed",
       "title": "features/editor/OpenedDocumentEditor",
       "name": "コンパイルできないドキュメントの編集画面",
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": true,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "features-editor-openeddocumenteditor--context-menu-on-mac-os",
+      "id": "features-editor-openeddocumenteditor--context-menu-on-mac-os",
+      "title": "features/editor/OpenedDocumentEditor",
+      "name": "macOS でコンテキストメニューを開いた編集画面",
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": true,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "features-editor-openeddocumenteditor--context-menu-on-windows",
+      "id": "features-editor-openeddocumenteditor--context-menu-on-windows",
+      "title": "features/editor/OpenedDocumentEditor",
+      "name": "Windows でコンテキストメニューを開いた編集画面",
       "status": "passed",
       "reason": "match",
       "diffPixels": 0,
