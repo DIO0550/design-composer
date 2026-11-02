@@ -2,8 +2,7 @@
  * 成否の判別子のキー。export しないので、型の上ではこのファイルの外から名前を持てない。
  *
  * シンボルのキーは `JSON.stringify` / `structuredClone` で落ちるので、直列化するなら
- * `libs/` の境界で詰め替える（`Option` の判別子も同じ）。`JsonValue` は文字列キーしか
- * 見ないので、判別子を持つ値も型エラー無しで代入できてしまう。
+ * `libs/` の境界で詰め替える（`Option` の判別子も同じ）。
  */
 const OkTag: unique symbol = Symbol.for("design-composer/utils/Result#ok");
 
