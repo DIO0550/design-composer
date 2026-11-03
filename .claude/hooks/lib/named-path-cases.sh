@@ -161,8 +161,4 @@ CASES
 
 report_documented_kinds "$detector"
 
-if [ "$cases_failed" -ne 0 ]; then
-  echo "判定表と食い違いがあります"
-  exit 1
-fi
-echo "名指ししたパスの判定表: 期待どおり"
+exit "$cases_failed"

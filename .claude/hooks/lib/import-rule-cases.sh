@@ -218,8 +218,4 @@ covered_kinds="$(kinds_in "$(printf '%s\n' "$cases" | cut -d '|' -f 1)")"
 report_documented_kinds "$detector"
 report_covered_kinds "$detector" "$covered_kinds"
 
-if [ "$cases_failed" -ne 0 ]; then
-  echo "判定表と食い違いがあります"
-  exit 1
-fi
-echo "import 規約の判定表: 期待どおり"
+exit "$cases_failed"

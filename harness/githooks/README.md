@@ -31,7 +31,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 | --- | --- | --- |
 | `set-hooks-path.sh` | `package.json` の `prepare`（`pnpm install`） | `core.hooksPath` をここへ向ける。git の無い環境・git リポジトリでない場所では黙って飛ばす |
 | `lib/check-tally.sh` | `pre-push` が source する | 検査を落ちても止めずに走らせ、通過・失敗・飛ばしを数えて最後の行に結果を出す(下の「結果の読み方」) |
-| `lib/check-tally-cases.sh` | `pre-push` / `frontend.yml` の `rules-check` | `lib/check-tally.sh` の判定表。実物の検査の代わりにスタブを流し、終了コードと最後の行を見る |
+| `lib/check-tally-cases.sh` | `pre-push` / `frontend.yml` の `rules-check` | `lib/check-tally.sh` の判定表。実物の検査の代わりにスタブを流し、終了コードと最後の行を見る。加えて `.claude/hooks/lib/cases-report-cases.sh` の最後の文が `exit "$cases_failed"` であることと、本物のルートで判定表の最後の文を確かめる呼び出しを持つことを見る |
 
 **検査そのものは `.claude/hooks/lib/` と共有している。** Claude Code のフックはこれと
 同じスクリプトを走らせる即時フィードバック版で、内容が二重管理にならないようにしている。

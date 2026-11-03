@@ -183,8 +183,4 @@ for hook in block-lint-suppress.sh check-doc-comments.sh check-test-helper-dupli
   check pass "$hook" real violation broken "起動できない python3 しか無ければ、違反があっても何も出さない"
 done
 
-if [ "$cases_failed" -ne 0 ]; then
-  echo "判定表と食い違いがあります"
-  exit 1
-fi
-echo "編集時の検査フックの共通部分の判定表: 期待どおり"
+exit "$cases_failed"

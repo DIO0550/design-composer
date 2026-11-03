@@ -4,7 +4,11 @@
 # `cases_failed` を立て、ok なら立てない）と、判定の読み取り（`decide` / `normalize_miss`）の
 # 判定表。照合の表は一時ディレクトリへ小さな検出器を置いて照合を呼び、`report` の表は検出器を置かずに
 # `report` だけを呼ぶ。この 2 つは、NG を出して `cases_failed` を立てるか ok だけを出すかを確かめる。
-# 判定の読み取りの表は検出器を走らせず、表に書いた出力と終了コードを `decide` へ渡して返る判定を確かめる。
+# 判定の読み取りの表は検出器を走らせず、表に書いた出力と終了コードを `decide` へ渡して返る判定を
+# 確かめる。最後の文の照合の表は一時ディレクトリに判定表の木を置いて
+# `report_tables_exit_with_cases_failed` を呼び、最後に本物のリポジトリのルートでも呼んで、
+# `cases-report.sh` を source するどの判定表も最後の文が `exit "$cases_failed"` かを確かめる。
+# 本物のルートで集めた判定表に、相手役の `harness/githooks/lib/check-tally-cases.sh` が入っているかも確かめる。
 #
 # 使い方: bash .claude/hooks/lib/cases-report-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -21,7 +25,9 @@
 # 表は `期待|ケース名|照合|実装の種別|docstring の種別|表の期待に出た種別` の 1 行 1 ケース。種別は
 # 空白区切りで、`-` は 1 つも持たない。照合は `documented`（`report_documented_kinds`）か
 # `covered`（`report_covered_kinds`）。`report` 自身の表は `期待|ケース名|report に渡す期待|report に渡す判定`
-# の 1 行 1 ケース。照合の表と `report` の表の期待は 2 つ（NG / ok）。
+# の 1 行 1 ケース。最後の文の照合の表は `期待|ケース名|置くもの` の 1 行 1 ケースで、置くものは
+# `パス=読み方:終わり方` の空白区切り（`-` なら何も置かない。読み方と終わり方は `table_sourcing` /
+# `table_ending` の case）。照合の表と `report` の表と最後の文の照合の表の期待は 2 つ（NG / ok）。
 #
 # | 期待 | 意味 |
 # | --- | --- |
@@ -175,8 +181,133 @@ broken|取りこぼしを期待した表でも exit 2 なら miss と読まず b
 broken|取りこぼしを期待した表でも見出しを出したまま exit 0 なら miss と読まず broken|miss|0|[alpha] 1 件
 MISS_CASES
 
-if [ "$cases_failed" -ne 0 ]; then
-  echo "判定表と食い違いがあります"
-  exit 1
-fi
-echo "判定の読み取りと報告と種別の照合の判定表: 期待どおり"
+# `cases-report.sh` を source している `*.sh` を、`<root>` の下から 1 行 1 本で出す。`node_modules/` と
+# `.git/` の下は見ない。
+#
+# $1 探すルート
+tables_sourcing_cases_report() {
+  grep -rlE --include='*.sh' --exclude-dir=node_modules --exclude-dir=.git \
+    '^[[:space:]]*(source|\.)[[:space:]].*cases-report\.sh' "$1" | sort
+}
+
+# `<root>` の下で `cases-report.sh` を source している判定表ごとに、最後の文が `exit "$cases_failed"` かを
+# 1 行で出す。1 本も見つからなければ、集め方が壊れているので NG にする。
+#
+# $1 探すルート
+report_tables_exit_with_cases_failed() {
+  local root="$1" tables table
+  tables="$(tables_sourcing_cases_report "$root")"
+  if [ -z "$tables" ]; then
+    printf 'NG   %s の下に cases-report.sh を source する判定表が見つからない\n' "$root"
+    cases_failed=1
+    return 0
+  fi
+  while IFS= read -r table; do
+    report_exits_with_cases_failed "$table" "${table#"$root"/}"
+  done <<<"$tables"
+}
+
+# 最後の文の照合の表に書いた終わり方を、判定表の末尾の行にする。表に知らない終わり方なら 1 を返す。
+#
+# $1 終わり方
+table_ending() {
+  case "$1" in
+    exit) printf '%s\n' 'exit "$cases_failed"' ;;
+    exit-then-comments) printf '%s\n' 'exit "$cases_failed"' '' '# 後ろはコメントだけ' '  # 字下げしたコメント' ;;
+    exit-0) printf '%s\n' 'exit 0' ;;
+    no-exit) ;;
+    echo-after-exit) printf '%s\n' 'exit "$cases_failed"' 'echo "後ろの文"' ;;
+    commented-exit) printf '%s\n' '# exit "$cases_failed"' ;;
+    if-form)
+      printf '%s\n' 'if [ "$cases_failed" -ne 0 ]; then' '  echo "判定表と食い違いがあります"' '  exit 1' 'fi' \
+        'echo "期待どおり"'
+      ;;
+    unquoted) printf '%s\n' 'exit $cases_failed' ;;
+    braced) printf '%s\n' 'exit "${cases_failed}"' ;;
+    indented-exit) printf '%s\n' '  exit "$cases_failed"' ;;
+    trailing-comment) printf '%s\n' 'exit "$cases_failed"  # 終わり' ;;
+    *) return 1 ;;
+  esac
+}
+
+# 最後の文の照合の表に書いた読み方を、`cases-report.sh` を読む行にする。`mention` はコメントで触れるだけ。
+# 表に知らない読み方なら 1 を返す。
+#
+# $1 読み方
+table_sourcing() {
+  case "$1" in
+    source) printf '%s\n' 'source "$lib_dir/cases-report.sh"' ;;
+    dot) printf '%s\n' '. "$lib_dir/cases-report.sh"' ;;
+    indented-source) printf '%s\n' '  source "$lib_dir/cases-report.sh"' ;;
+    mention) printf '%s\n' '# source "$lib_dir/cases-report.sh" はしない' ;;
+    *) return 1 ;;
+  esac
+}
+
+# 表に書いた置くもの（`パス=読み方:終わり方` の空白区切り。`-` なら何も置かない）を `<root>` の下へ置く。
+# 読み方か終わり方に表の知らない綴りがあれば 1 を返す。
+#
+# $1 表に書いた置くもの
+# $2 置くルート
+place_tables() {
+  local placements="$1" root="$2" placement path how
+  mkdir -p "$root"
+  [ "$placements" = "-" ] && return 0
+  for placement in $placements; do
+    path="$root/${placement%%=*}"
+    how="${placement#*=}"
+    mkdir -p "$(dirname "$path")"
+    {
+      printf '%s\n' '#!/usr/bin/env bash'
+      table_sourcing "${how%%:*}" || return 1
+      printf '%s\n' 'report ok ok "ケース"'
+      table_ending "${how#*:}" || return 1
+    } >"$path"
+  done
+}
+
+tree_count=0
+while IFS='|' read -r expected label placements; do
+  [ -n "$label" ] || continue
+  tree_count=$((tree_count + 1))
+  root="$work/tree-$tree_count"
+  # 綴りを打ち間違えたケースは、期待が ok でも NG でも食い違いとして落とす（置かれなかった木を照合して
+  # 期待どおりの判定が出ると、打ち間違いが緑のまま残る）。
+  decision="表に知らない綴りがある"
+  if place_tables "$placements" "$root"; then
+    decision="$(verdict_of report_tables_exit_with_cases_failed "$root")"
+  fi
+  report "$expected" "$decision" "$label"
+done <<'EXIT_CASES'
+ok|最後の文が exit "$cases_failed" なら ok|a-cases.sh=source:exit
+ok|exit "$cases_failed" の後ろがコメントと空行だけなら ok|a-cases.sh=source:exit-then-comments
+NG|最後の文が exit 0 なら NG|a-cases.sh=source:exit-0
+NG|exit を消して最後の文が report になっていれば NG|a-cases.sh=source:no-exit
+NG|exit "$cases_failed" の後ろに echo があれば NG|a-cases.sh=source:echo-after-exit
+NG|exit "$cases_failed" をコメントにしていれば NG|a-cases.sh=source:commented-exit
+NG|cases_failed を if で見て echo で終わる形なら NG|a-cases.sh=source:if-form
+NG|引用符の無い exit $cases_failed なら NG|a-cases.sh=source:unquoted
+NG|exit "${cases_failed}" なら NG|a-cases.sh=source:braced
+NG|字下げした exit "$cases_failed" なら NG|a-cases.sh=source:indented-exit
+NG|行末にコメントのある exit "$cases_failed" なら NG|a-cases.sh=source:trailing-comment
+NG|. で読む判定表が exit 0 なら NG|a-cases.sh=source:exit b-cases.sh=dot:exit-0
+NG|字下げした source で読む判定表が exit 0 なら NG|a-cases.sh=source:exit b-cases.sh=indented-source:exit-0
+ok|コメントで cases-report.sh に触れるだけのファイルは見ない|a-cases.sh=source:exit b.sh=mention:no-exit
+ok|node_modules の下の判定表は見ない|a-cases.sh=source:exit node_modules/pkg/b-cases.sh=source:exit-0
+ok|.git の下の判定表は見ない|a-cases.sh=source:exit .git/hooks/b-cases.sh=source:exit-0
+NG|cases-report.sh を source する判定表が 1 本も無ければ NG|-
+NG|正しい判定表と exit 0 の判定表が並んでいれば NG|a-cases.sh=source:exit lib/b-cases.sh=source:exit-0
+NG|exit 0 の判定表が正しい判定表より先に並んでいても NG|a-cases.sh=source:exit-0 lib/b-cases.sh=source:exit
+EXIT_CASES
+
+repo_root="$(cd "$lib_dir/../../.." && pwd)"
+report_tables_exit_with_cases_failed "$repo_root"
+
+# `repo_root` がずれると集める範囲が縮み、相手役の判定表が照合から外れても緑のまま残る。2 本が互いに
+# 相手を照合する形なので、相手が集めた範囲に入っていることも見る。
+partner_table="harness/githooks/lib/check-tally-cases.sh"
+partner_decision="範囲に無い"
+tables_sourcing_cases_report "$repo_root" | grep -qxF -- "$repo_root/$partner_table" && partner_decision="範囲にある"
+report "範囲にある" "$partner_decision" "本物のルートで集めた判定表に $partner_table が入っている"
+
+exit "$cases_failed"

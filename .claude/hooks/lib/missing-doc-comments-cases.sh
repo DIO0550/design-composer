@@ -116,8 +116,4 @@ deny|all|method-items-missing|--all で走査しても、メソッドの doc に
 pass|all|method-documented|--all で走査して、メソッドに @param / @returns の揃った doc があれば報告しない
 CASES
 
-if [ "$cases_failed" -ne 0 ]; then
-  echo "判定表と食い違いがあります"
-  exit 1
-fi
-echo "doc コメントの判定表: 期待どおり"
+exit "$cases_failed"
