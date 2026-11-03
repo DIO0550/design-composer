@@ -1,0 +1,1364 @@
+{
+  "version": 1,
+  "pr": 1271,
+  "sha": "0569a13f37b4efb37f467ba673ff97070532ac0d",
+  "issue": 1231,
+  "overview": {
+    "title": "ポインタの下の名前の並びと掘る量を `UnderPointer` 1 つで受け渡す",
+    "lead": "キャンバスで選ぶ・掴む・Alt の距離の相手を決める経路で、組のまま渡していた `names` と `dig` を、新しい型 `UnderPointer` 1 つで受け渡すようにした。振る舞いは変えていない(リファクタ)。",
+    "before": [
+      {
+        "text": "クリック・ダブルクリック・⌘ クリック・Enter は `onSelect(names, dig)` で 2 つの値を渡し、`select_at` アクションも `names` と `dig` を別々に持っていた"
+      },
+      {
+        "text": "掴むときは `grabNode(event, names, dig)`、選ぶ名前を引くのは `DocumentSelection.nodeNameAt(selection, names, dig)` / `nameToSelectAt(selection, names, dig)` だった"
+      },
+      {
+        "text": "Alt の距離の指し先 `Pointing` の on-frame の枝は `{ kind, names, dig }` を平らに持ち、`Pointing.equals` が名前の並びと掘る量を自分で比べていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "クリック・ダブルクリック・⌘ クリック・Enter は `onSelect(underPointer)` で 1 つの値を渡し、`select_at` は `{ underPointer }` を持つ",
+        "message": "m-select"
+      },
+      {
+        "text": "掴むときは `grabNode(event, underPointer)`、名前を引くのは `nodeNameAt(selection, underPointer)` / `nameToSelectAt(selection, underPointer)`",
+        "message": "m-grab"
+      },
+      {
+        "text": "`Pointing` の on-frame の枝は `{ kind, underPointer }` を持ち、等しさは `UnderPointer.equals` に任せる",
+        "message": "m-equals"
+      },
+      {
+        "text": "ダブルクリックは `OneDeeper`、Enter と右クリックは `NoDeeper` のまま。押し方から掘る量を読むのは click / pointermove / pointerdown の 3 箇所だけ",
+        "message": "m-create"
+      },
+      {
+        "text": "`artboardNameAt` / `siblingAt` は名前だけで答えが決まるので、引数は名前の並びのまま"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "型を置いた層",
+        "text": "`UnderPointer` を `src/domains/session/` に置いた。`SelectionDig` も、受け取る側の `DocumentSelection` も session にあり、カテゴリの import の向きから置けるのはここだけになる",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/session/under-pointer/index.ts"
+        }
+      },
+      {
+        "title": "ダブルクリックの掘る量",
+        "text": "ダブルクリックだけは押し方ではなく `OneDeeper` で掘る量を決めるので、非公開の `underPointerAt(event)` に寄せていない。寄せるとダブルクリックで掘れなくなる",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx"
+        }
+      },
+      {
+        "title": "等しさの移し替え",
+        "text": "`Pointing.equals` の on-frame の比較を `UnderPointer.equals` へ移した。長さ・掘る量の比較を壊したとき落ちるのは `under-pointer.normal` だけ(画面から見たテストでは落ちない)",
+        "go": {
+          "kind": "message",
+          "id": "m-equals"
+        }
+      },
+      {
+        "title": "キーボードの経路",
+        "text": "Enter で artboard を選ぶ経路はポインタではなくフォーカスから作る値だが、クリックと同じ選び方をさせるので同じ型で渡すと決めた(計画で決めた未決の判断)",
+        "go": {
+          "kind": "flow",
+          "id": "f-click"
+        }
+      },
+      {
+        "title": "選択の層",
+        "text": "選ぶ名前を引く入口 2 つの引数を変えた。引数を広げなかった `artboardNameAt` も同じファイルにある",
+        "go": {
+          "kind": "layer",
+          "layer": "domains / session"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "selection",
+      "label": "キャンバスの選択",
+      "role": "クリック・ダブルクリック・⌘ クリック・Enter・右クリックで、ポインタの下から選ぶものを決める経路"
+    },
+    {
+      "id": "grab",
+      "label": "掴む",
+      "role": "pointerdown で、同じ押し方のクリックが選ぶものを掴む経路"
+    },
+    {
+      "id": "distance",
+      "label": "Alt の距離",
+      "role": "Alt / Option を押している間、ポインタの下の相手を決めて距離を出す経路"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / session",
+      "role": "組の型 `UnderPointer` を足し、選ぶ名前を引く `DocumentSelection` の入口をそれで受ける"
+    },
+    {
+      "layer": "features / editor",
+      "role": "`select_at` アクション・`EditorState.selectAt`・`useNodeActions.selectAt` と、右クリックの経路を `UnderPointer` で受け渡す"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "枠で `UnderPointer` を作り、`onSelect`・`grabNode`・`Pointing` へ渡す。`Pointing` の等しさは `UnderPointer.equals` に任せる"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/session/under-pointer/index.ts",
+      "name": "ポインタの下",
+      "role": "ポインタの下から外へ辿った名前の並びと、どの深さで読むか(掘る量)の組",
+      "feature": "selection",
+      "change": "新しく作った。`create` と `equals` を持つ"
+    },
+    {
+      "path": "src/domains/session/document-selection/index.ts",
+      "name": "ドキュメントの選択",
+      "role": "ドキュメントと今の選択から、押された位置で選ぶ名前を引く",
+      "feature": "selection",
+      "change": "`nodeNameAt` / `nameToSelectAt` の引数を `(selection, underPointer)` にした"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "name": "artboard の枠",
+      "role": "枠で受けたクリック・ダブルクリック・Enter・pointermove・pointerdown から、ポインタの下を作って渡す",
+      "feature": "selection",
+      "change": "click / pointermove / pointerdown の同じ式を非公開の `underPointerAt(event)` にまとめ、`onSelect` の型を変えた"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "name": "キャンバス",
+      "role": "枠からの選択を外へ通知する",
+      "feature": "selection",
+      "change": "`onSelect` の型を `(underPointer) => void` にした(`canvas-body` / `artboard-frame-list` も同じ)"
+    },
+    {
+      "path": "src/features/editor/hooks/use-node-actions/index.ts",
+      "name": "ノードの操作",
+      "role": "選択などの操作をアクションとして dispatch する",
+      "feature": "selection",
+      "change": "`selectAt` を `(underPointer) => void` にした"
+    },
+    {
+      "path": "src/features/editor/hooks/use-editor-state/index.ts",
+      "name": "エディタの状態の保持",
+      "role": "アクションを受けて `EditorState` を更新する reducer",
+      "feature": "selection",
+      "change": "`select_at` アクションを `{ underPointer }` にした"
+    },
+    {
+      "path": "src/features/editor/domains/editor-state/index.ts",
+      "name": "エディタの状態",
+      "role": "編集中のドキュメントと選択の状態",
+      "feature": "selection",
+      "change": "`selectAt(state, underPointer)` にした"
+    },
+    {
+      "path": "src/features/editor/components/opened-document-editor/index.tsx",
+      "name": "開いたドキュメントの編集画面",
+      "role": "キャンバスと操作をつなぎ、右クリックで選択を移す",
+      "feature": "selection",
+      "change": "右クリックの経路を `UnderPointer.create(names, NoDeeper)` で渡すようにした"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "name": "ノードのドラッグ",
+      "role": "押された位置から掴むノードを決めてドラッグを始める",
+      "feature": "grab",
+      "change": "`grabNode(event, underPointer)` にした"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/pointing/index.ts",
+      "name": "指し先",
+      "role": "ポインタがキャンバスのどこを指しているか(外・枠の外・枠の上)",
+      "feature": "distance",
+      "change": "on-frame の枝を `{ kind, underPointer }` にし、`create` は `UnderPointer` を受け、`equals` は `UnderPointer.equals` に任せる"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+      "name": "Alt を押している間の指し先",
+      "role": "指し先を追い、変わらなければ前の値を保つ",
+      "feature": "distance"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+      "name": "距離の組",
+      "role": "選んでいるノードと指し先から、距離を測る相手を決める",
+      "feature": "distance",
+      "change": "`pointing.underPointer.*` を読むようにした"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m-create",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "kind": "qry",
+      "name": "ポインタの下を作る",
+      "code": "UnderPointer.create(namesAt(event.target), digByCommandKey(event))",
+      "via": "call",
+      "payload": "枠の中で押された要素から外へ辿った名前と、⌘ の有無から読んだ掘る量(ダブルクリックは `OneDeeper`、Enter は `NoDeeper`)",
+      "returns": "`UnderPointer`",
+      "status": "added"
+    },
+    {
+      "id": "m-select",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "kind": "evt",
+      "name": "選んだことを知らせる",
+      "code": "onSelect(underPointerAt(event))",
+      "via": "call",
+      "payload": "`UnderPointer`(これまでは `names` と `dig` の 2 つ)",
+      "status": "changed"
+    },
+    {
+      "id": "m-forward",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/hooks/use-node-actions/index.ts",
+      "kind": "cmd",
+      "name": "選択を移す",
+      "code": "onSelect={node.selectAt}",
+      "via": "call",
+      "payload": "`UnderPointer`",
+      "status": "changed"
+    },
+    {
+      "id": "m-context",
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/hooks/use-node-actions/index.ts",
+      "kind": "cmd",
+      "name": "右クリックで選択を移す",
+      "code": "node.selectAt(UnderPointer.create(names, SelectionDigs.NoDeeper))",
+      "via": "call",
+      "payload": "右クリックした位置の名前の並びと `NoDeeper`",
+      "status": "changed"
+    },
+    {
+      "id": "m-dispatch",
+      "from": "src/features/editor/hooks/use-node-actions/index.ts",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "kind": "cmd",
+      "name": "選択のアクションを送る",
+      "code": "dispatch({ type: \"select_at\", underPointer })",
+      "via": "state",
+      "payload": "`{ type: \"select_at\", underPointer }`",
+      "status": "changed"
+    },
+    {
+      "id": "m-reduce",
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "kind": "cmd",
+      "name": "掘った先を選んだ状態にする",
+      "code": "EditorState.selectAt(state, action.underPointer)",
+      "via": "call",
+      "payload": "今の状態と `action.underPointer`",
+      "returns": "掘った先を選んだ状態",
+      "status": "changed"
+    },
+    {
+      "id": "m-name",
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "kind": "qry",
+      "name": "選ぶ名前を引く",
+      "code": "DocumentSelection.nameToSelectAt(EditorState.documentSelection(state), underPointer)",
+      "via": "call",
+      "payload": "`UnderPointer`",
+      "returns": "掘った先のノード、無ければ最初の artboard の名前(`Option<string>`)",
+      "status": "changed"
+    },
+    {
+      "id": "m-grab",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "kind": "cmd",
+      "name": "押した位置のノードを掴む",
+      "code": "nodeDrag.grabNode(event, underPointerAt(event))",
+      "via": "call",
+      "payload": "`pointerdown` のイベントと `UnderPointer`",
+      "returns": "掴んだら `true`",
+      "status": "changed"
+    },
+    {
+      "id": "m-grab-name",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "kind": "qry",
+      "name": "掴むノードの名前を引く",
+      "code": "DocumentSelection.nodeNameAt(params.selection, underPointer)",
+      "via": "call",
+      "payload": "`UnderPointer`",
+      "returns": "掘った先のノードの名前(`Option<string>`)",
+      "status": "changed"
+    },
+    {
+      "id": "m-track",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+      "kind": "cmd",
+      "name": "指し先を追う",
+      "code": "altPointing.trackPointer(Pointing.create(underPointerAt(event)))",
+      "via": "call",
+      "payload": "枠の上を指している `Pointing`",
+      "status": "changed"
+    },
+    {
+      "id": "m-pointing-equals",
+      "from": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+      "to": "src/features/editor/features/canvas/domains/pointing/index.ts",
+      "kind": "qry",
+      "name": "指し先が変わったかを問う",
+      "code": "Option.equals(previous, pointing, Pointing.equals)",
+      "via": "call",
+      "payload": "前の指し先と今の指し先",
+      "returns": "同じなら真(真なら前の値を保つ)"
+    },
+    {
+      "id": "m-equals",
+      "from": "src/features/editor/features/canvas/domains/pointing/index.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "kind": "qry",
+      "name": "ポインタの下の等しさを問う",
+      "code": "UnderPointer.equals(a.underPointer, b.underPointer)",
+      "via": "call",
+      "payload": "どちらも枠の上のときの 2 つの `UnderPointer`",
+      "returns": "名前の並びと掘る量がどちらも同じなら真",
+      "status": "added"
+    },
+    {
+      "id": "m-pair",
+      "from": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "kind": "qry",
+      "name": "距離の相手の名前を引く",
+      "code": "DocumentSelection.nameToSelectAt(selection, pointing.underPointer)",
+      "via": "call",
+      "payload": "指し先が持つ `UnderPointer`",
+      "returns": "クリックが選ぶものの名前(`Option<string>`)",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f-click",
+      "label": "枠をクリックしたとき",
+      "steps": [
+        "m-create",
+        "m-select",
+        "m-forward",
+        "m-dispatch",
+        "m-reduce",
+        "m-name"
+      ]
+    },
+    {
+      "id": "f-context",
+      "label": "右クリックしたとき",
+      "steps": [
+        "m-context",
+        "m-dispatch",
+        "m-reduce",
+        "m-name"
+      ]
+    },
+    {
+      "id": "f-grab",
+      "label": "枠の中を押して掴んだとき",
+      "steps": [
+        "m-create",
+        "m-grab",
+        "m-grab-name"
+      ]
+    },
+    {
+      "id": "f-alt",
+      "label": "Alt を押してポインタを動かしたとき",
+      "steps": [
+        "m-create",
+        "m-track",
+        "m-pointing-equals",
+        "m-equals",
+        "m-pair"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "f7cce3f3e7929098c5d94c9618d10fde0daaaba1",
+      "phase": "prep",
+      "role": "組の型 `UnderPointer` を、呼び出す側の無いまま足す",
+      "why": "経路を付け替えるコミットはシグネチャの変更でテストまで巻き込んで大きくなるので、型とその等しさの規則だけを先に切り出して、単独で読めるようにした。`equals` は `Pointing.equals` の on-frame の枝にあった比較(長さと要素ごとの比較、掘る量の比較)を同じ形で写している。",
+      "review": [
+        "`equals` の比較が、移す前の `Pointing.equals` の on-frame の枝と同じ条件になっているか",
+        "型の doc の、掘る量を同じ型に含める理由(名前の並びだけでは選ぶものが決まらない)が納得できるか"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/session/under-pointer/index.ts",
+          "start": 8,
+          "end": 9,
+          "text": "型の名前が「ポインタの下」なのに掘る量を含む理由。plan-reviewer の指摘 6 で、名前は変えずに理由を doc に置くことにした"
+        },
+        {
+          "path": "src/domains/session/under-pointer/index.ts",
+          "start": 35,
+          "end": 40,
+          "text": "`ArrayEx.isEqual` として汎用化する案(R5)は、#1197 で足さないと決めていたので採らず、ここに直接書いた"
+        }
+      ]
+    },
+    {
+      "sha": "bce2c8abea170c88b47c80cc5103cd31d62f2a4c",
+      "phase": "prep",
+      "role": "`UnderPointer` の等しさの規則を 4 件のテストで固定する",
+      "why": "経路を付け替える前に、`Pointing.equals` のテストにあった観点(同じ / 名前が 1 つ違う / 名前の数が違う / 掘る量が違う)を `UnderPointer` 側へ移しておく。付け替えのコミットで `pointing.normal` を委ねる形に書き直しても、観点が失われないため。",
+      "review": [
+        "「名前の数が違えば等しくない」の入力が、短い側が長い側の先頭と一致する並びになっているか(先頭の不一致で通ってしまわないか)"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/session/under-pointer/__tests__/under-pointer.normal.test.ts",
+          "start": 31,
+          "end": 39,
+          "text": "plan-reviewer の指摘 1。元の入力では長さの比較を消しても先頭の要素の不一致で落ちるので、`[\"card\",\"home\"]` と `[\"card\",\"home\",\"extra\"]` に変えた"
+        }
+      ]
+    },
+    {
+      "sha": "bdc101f08faa583640847765993edeabb0f54b42",
+      "phase": "core",
+      "role": "既にある `(names, dig)` の受け渡しを、すべて `UnderPointer` 1 つに付け替える",
+      "why": "シグネチャを変えると呼び出し側とテストがまとめて型エラーになるので、各コミットでビルドが通る状態を保つには、経路の付け替えとテスト 86 箇所の書き換えを 1 コミットにする必要があった。`distance-pair` が `Pointing` と `DocumentSelection` の両方をまたぐので、経路ごとにも分けられない。",
+      "flows": [
+        "f-click",
+        "f-context",
+        "f-grab",
+        "f-alt"
+      ],
+      "review": [
+        "ダブルクリックが `underPointerAt` に寄せられず、`OneDeeper` のまま渡っているか",
+        "`underPointerAt` にまとめたのが click / pointermove / pointerdown の 3 箇所だけか",
+        "`artboardNameAt` / `siblingAt` の引数を名前の並びのまま残した判断(R7)が妥当か",
+        "既存テストの書き換えが引数の形だけで、テスト名と観点が変わっていないか"
+      ],
+      "before": [
+        {
+          "text": "`onSelect(names, dig)` / `grabNode(event, names, dig)` / `nameToSelectAt(selection, names, dig)` と、組をばらして渡していた"
+        }
+      ],
+      "after": [
+        {
+          "text": "どの経路も `UnderPointer` 1 つを渡す",
+          "message": "m-select"
+        },
+        {
+          "text": "`Pointing` の on-frame の枝は `underPointer` を持ち、等しさを任せる",
+          "message": "m-equals"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "start": 103,
+          "end": 104,
+          "text": "click / pointermove / pointerdown にあった同じ式をまとめた非公開の関数"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "start": 112,
+          "end": 113,
+          "text": "Enter はフォーカスから作る値だが、クリックと同じ選び方をさせるので同じ型で渡す(plan-reviewer の指摘 6)"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "start": 197,
+          "end": 197,
+          "text": "ダブルクリックは押し方ではなく `OneDeeper` で掘る。`underPointerAt` に寄せると掘れなくなる(plan-reviewer の指摘 2)"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/pointing/index.ts",
+          "start": 63,
+          "end": 70,
+          "text": "どちらかが枠の上でなければ種類だけを比べ、どちらも枠の上なら `UnderPointer.equals` に任せる"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "start": 147,
+          "end": 149,
+          "text": "`Deepest` かどうかで兄弟を探すかを決める判定は、読む場所が `pointing.underPointer.dig` に変わっただけ"
+        }
+      ]
+    },
+    {
+      "sha": "0569a13f37b4efb37f467ba673ff97070532ac0d",
+      "phase": "revise",
+      "role": "`UnderPointer` の意味を型の doc 1 箇所に寄せ、各所の doc はその関数での役割だけにする",
+      "why": "実装の検証で、名前の並びと掘る量の説明が 7 箇所の `@param` やコメントに書き写されていると指摘された(duplication)。型が変わったときに片方だけ直る状態を作らないため、意味の定義は型の doc に置いた。doc が「ポインタの下」と「掘る量」を別の 2 つとして並べていた点(naming / comment)も、1 つのものとして書き直した。",
+      "review": [
+        "各所の `@param` が型の doc の写しになっておらず、その関数に固有の情報だけを残しているか",
+        "`onSelect` の関数型を型エイリアスに切り出さなかった判断が妥当か"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/session/under-pointer/index.ts",
+          "start": 11,
+          "end": 12,
+          "text": "キーボードの経路も同じ型で渡すことを、型の doc に 1 行足した"
+        },
+        {
+          "path": "src/domains/session/under-pointer/index.ts",
+          "start": 21,
+          "end": 25,
+          "text": "「ポインタの下(どの深さで読むかを含む)」として 1 つのものに書き直した"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/pointing/index.ts",
+          "start": 21,
+          "end": 22,
+          "text": "型の doc の写しだった説明を、この型での役割に縮めた"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "under-pointer",
+      "label": "ポインタの下の等しさ",
+      "file": "src/domains/session/under-pointer/__tests__/under-pointer.normal.test.ts"
+    },
+    {
+      "id": "pointing",
+      "label": "指し先の等しさ",
+      "file": "src/features/editor/features/canvas/domains/pointing/__tests__/pointing.normal.test.ts"
+    },
+    {
+      "id": "ode-selection",
+      "label": "編集画面での選択",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection.test.tsx"
+    },
+    {
+      "id": "ac-selection",
+      "label": "キャンバスの選択の通知",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection.test.tsx"
+    },
+    {
+      "id": "ac-distance",
+      "label": "選択しているだけのときの距離",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx"
+    },
+    {
+      "id": "ode-grab",
+      "label": "掘ってから掴む",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx"
+    },
+    {
+      "id": "ode-context",
+      "label": "コンテキストメニュー",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "up-same",
+      "suite": "under-pointer",
+      "name": "同じ名前の並びと掘る量なら等しい",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "Alt を押したままポインタが同じ位置にとどまったとき、指し先を作り直さない(距離の相手を測り直さない)ため",
+      "given": "`[\"label\",\"card\",\"home\"]` と `NoDeeper` で作った 2 つの `UnderPointer`(別々に作った配列)",
+      "when": "`UnderPointer.equals` で比べる",
+      "then": "`true` になる(配列の参照ではなく中身で比べている)",
+      "commit": "bce2c8abea170c88b47c80cc5103cd31d62f2a4c",
+      "excerpt": {
+        "path": "src/domains/session/under-pointer/__tests__/under-pointer.normal.test.ts",
+        "start": 5,
+        "end": 16,
+        "text": "test(\"同じ名前の並びと掘る量なら等しい\", () => {\n  const a = UnderPointer.create(\n    [\"label\", \"card\", \"home\"],\n    SelectionDigs.NoDeeper,\n  );\n  const b = UnderPointer.create(\n    [\"label\", \"card\", \"home\"],\n    SelectionDigs.NoDeeper,\n  );\n\n  expect(UnderPointer.equals(a, b)).toBe(true);\n});"
+      },
+      "targets": [
+        "src/domains/session/under-pointer/index.ts"
+      ],
+      "covers": [
+        "m-equals"
+      ]
+    },
+    {
+      "id": "up-name",
+      "suite": "under-pointer",
+      "name": "名前が 1 つ違えば等しくない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ポインタが隣のノードへ移ったとき、指し先が変わったと分かるため(要素ごとの比較を守る)",
+      "given": "先頭だけが `label` と `title` で違う、同じ長さの並び。掘る量はどちらも `NoDeeper`",
+      "when": "`UnderPointer.equals` で比べる",
+      "then": "`false` になる",
+      "commit": "bce2c8abea170c88b47c80cc5103cd31d62f2a4c",
+      "excerpt": {
+        "path": "src/domains/session/under-pointer/__tests__/under-pointer.normal.test.ts",
+        "start": 18,
+        "end": 29,
+        "text": "test(\"名前が 1 つ違えば等しくない\", () => {\n  const a = UnderPointer.create(\n    [\"label\", \"card\", \"home\"],\n    SelectionDigs.NoDeeper,\n  );\n  const b = UnderPointer.create(\n    [\"title\", \"card\", \"home\"],\n    SelectionDigs.NoDeeper,\n  );\n\n  expect(UnderPointer.equals(a, b)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/domains/session/under-pointer/index.ts"
+      ],
+      "covers": [
+        "m-equals"
+      ]
+    },
+    {
+      "id": "up-length",
+      "suite": "under-pointer",
+      "name": "名前の数が違えば等しくない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "入れ子の深さが変わる位置へ移ったとき、指し先が変わったと分かるため。長さの比較を消すと、要素ごとの比較だけでは短い側の範囲しか見ないので等しくなってしまう",
+      "given": "`[\"card\",\"home\"]` と、その後ろに 1 つ足した `[\"card\",\"home\",\"extra\"]`。掘る量はどちらも `NoDeeper`",
+      "when": "`UnderPointer.equals` で比べる",
+      "then": "`false` になる",
+      "commit": "bce2c8abea170c88b47c80cc5103cd31d62f2a4c",
+      "excerpt": {
+        "path": "src/domains/session/under-pointer/__tests__/under-pointer.normal.test.ts",
+        "start": 31,
+        "end": 39,
+        "emphasis": [
+          {
+            "start": 32,
+            "end": 36
+          }
+        ],
+        "text": "test(\"名前の数が違えば等しくない\", () => {\n  const a = UnderPointer.create([\"card\", \"home\"], SelectionDigs.NoDeeper);\n  const b = UnderPointer.create(\n    [\"card\", \"home\", \"extra\"],\n    SelectionDigs.NoDeeper,\n  );\n\n  expect(UnderPointer.equals(a, b)).toBe(false);\n});"
+      },
+      "values": {
+        "columns": [
+          "a の名前",
+          "b の名前",
+          "長さの比較を消したとき",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`[\"card\",\"home\"]`",
+              "`[\"card\",\"home\",\"extra\"]`",
+              "等しいと答えてしまう",
+              "等しくない"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`[\"label\",\"card\",\"home\"]`",
+              "`[\"card\",\"home\"]`(元の入力)",
+              "先頭の不一致で等しくないと答える(落ちない)",
+              "等しくない"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/session/under-pointer/index.ts"
+      ],
+      "covers": [
+        "m-equals"
+      ]
+    },
+    {
+      "id": "up-dig",
+      "suite": "under-pointer",
+      "name": "掘る量が違えば等しくない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "同じ位置で ⌘ を押す・離すと距離の相手が変わるので、指し先が変わったと分かるため",
+      "given": "同じ名前の並びで、掘る量が `NoDeeper` と `Deepest`",
+      "when": "`UnderPointer.equals` で比べる",
+      "then": "`false` になる",
+      "commit": "bce2c8abea170c88b47c80cc5103cd31d62f2a4c",
+      "excerpt": {
+        "path": "src/domains/session/under-pointer/__tests__/under-pointer.normal.test.ts",
+        "start": 41,
+        "end": 52,
+        "text": "test(\"掘る量が違えば等しくない\", () => {\n  const a = UnderPointer.create(\n    [\"label\", \"card\", \"home\"],\n    SelectionDigs.NoDeeper,\n  );\n  const b = UnderPointer.create(\n    [\"label\", \"card\", \"home\"],\n    SelectionDigs.Deepest,\n  );\n\n  expect(UnderPointer.equals(a, b)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/domains/session/under-pointer/index.ts"
+      ],
+      "covers": [
+        "m-equals"
+      ]
+    },
+    {
+      "id": "pt-same",
+      "suite": "pointing",
+      "name": "枠の上で同じポインタの下なら等しい",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "枠の上でポインタが動かないとき、指し先を作り直さないため",
+      "given": "同じ名前の並びと `NoDeeper` で作った `UnderPointer` を、それぞれ `Pointing.create` で枠の上にした 2 つ",
+      "when": "`Pointing.equals` で比べる",
+      "then": "`true` になる",
+      "commit": "bdc101f08faa583640847765993edeabb0f54b42",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/pointing/__tests__/pointing.normal.test.ts",
+        "start": 6,
+        "end": 15,
+        "text": "test(\"枠の上で同じポインタの下なら等しい\", () => {\n  const a = Pointing.create(\n    UnderPointer.create([\"label\", \"card\", \"home\"], SelectionDigs.NoDeeper),\n  );\n  const b = Pointing.create(\n    UnderPointer.create([\"label\", \"card\", \"home\"], SelectionDigs.NoDeeper),\n  );\n\n  expect(Pointing.equals(a, b)).toBe(true);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/pointing/index.ts"
+      ],
+      "covers": [
+        "m-equals",
+        "m-pointing-equals"
+      ]
+    },
+    {
+      "id": "pt-differ",
+      "suite": "pointing",
+      "name": "枠の上でポインタの下が違えば等しくない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "どちらも枠の上のとき、比較を `UnderPointer.equals` に任せていることを守る(種類だけを比べる形に壊すと落ちる)",
+      "given": "先頭の名前だけが違う 2 つの、枠の上の指し先",
+      "when": "`Pointing.equals` で比べる",
+      "then": "`false` になる",
+      "commit": "bdc101f08faa583640847765993edeabb0f54b42",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/pointing/__tests__/pointing.normal.test.ts",
+        "start": 17,
+        "end": 26,
+        "text": "test(\"枠の上でポインタの下が違えば等しくない\", () => {\n  const a = Pointing.create(\n    UnderPointer.create([\"label\", \"card\", \"home\"], SelectionDigs.NoDeeper),\n  );\n  const b = Pointing.create(\n    UnderPointer.create([\"title\", \"card\", \"home\"], SelectionDigs.NoDeeper),\n  );\n\n  expect(Pointing.equals(a, b)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/pointing/index.ts"
+      ],
+      "covers": [
+        "m-equals",
+        "m-pointing-equals"
+      ]
+    },
+    {
+      "id": "pt-outside-nothing",
+      "suite": "pointing",
+      "name": "キャンバスの外と枠の外は等しくない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ポインタがキャンバスに入ったとき、指し先が変わったと分かるため(どちらも枠の上でないときは種類で比べる)",
+      "given": "キャンバスの外(`Outside`)と枠の外(`Nothing`)",
+      "when": "`Pointing.equals` で比べる",
+      "then": "`false` になる",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/pointing/__tests__/pointing.normal.test.ts",
+        "start": 28,
+        "end": 30,
+        "text": "test(\"キャンバスの外と枠の外は等しくない\", () => {\n  expect(Pointing.equals(Pointing.Outside, Pointing.Nothing)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/pointing/index.ts"
+      ],
+      "covers": [
+        "m-pointing-equals"
+      ]
+    },
+    {
+      "id": "pt-frame-nothing",
+      "suite": "pointing",
+      "name": "枠の上と枠の外は等しくない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "片方だけが枠の上のときに、種類の比較で答えることを守る(plan-reviewer の指摘 7 で足した)",
+      "given": "枠の上の指し先と、枠の外(`Nothing`)",
+      "when": "`Pointing.equals` で比べる",
+      "then": "`false` になる",
+      "commit": "bdc101f08faa583640847765993edeabb0f54b42",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/pointing/__tests__/pointing.normal.test.ts",
+        "start": 32,
+        "end": 38,
+        "text": "test(\"枠の上と枠の外は等しくない\", () => {\n  const onFrame = Pointing.create(\n    UnderPointer.create([\"label\", \"card\", \"home\"], SelectionDigs.NoDeeper),\n  );\n\n  expect(Pointing.equals(onFrame, Pointing.Nothing)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/pointing/index.ts"
+      ],
+      "covers": [
+        "m-pointing-equals"
+      ]
+    },
+    {
+      "id": "ode-dblclick",
+      "suite": "ode-selection",
+      "name": "ダブルクリック 1 回では 1 階層だけ内側へ進む",
+      "techniques": [
+        "state"
+      ],
+      "why": "ダブルクリックが `OneDeeper` のまま reducer まで届いていることを、画面の通しで守る",
+      "given": "深い枝を持つドキュメントを開いた編集画面",
+      "when": "キャンバスの `deep-title` をダブルクリックする",
+      "then": "ツリーで選ばれているのが 1 階層内側の `inner-panel` になる",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection.test.tsx",
+        "start": 56,
+        "end": 62,
+        "text": "test(\"ダブルクリック 1 回では 1 階層だけ内側へ進む\", async () => {\n  await renderOpenedDocument(SampleDocumentWithDeepBranch);\n\n  await userEvent.dblClick(renderedElement(canvasPane(), \"deep-title\"));\n\n  expect(currentRowNames(tree())).toEqual([\"inner-panel\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+        "src/features/editor/hooks/use-editor-state/index.ts",
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "m-create",
+        "m-select",
+        "m-forward",
+        "m-dispatch",
+        "m-reduce",
+        "m-name"
+      ]
+    },
+    {
+      "id": "ode-command",
+      "suite": "ode-selection",
+      "name": "⌘ を押しながらクリックすると、押した位置のいちばん内側が選ばれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "click で押し方から読んだ掘る量(`Deepest`)が `select_at` の `underPointer` に入って届くことを守る",
+      "given": "深い枝を持つドキュメントを開いた編集画面",
+      "when": "⌘ を押しながらキャンバスの `deep-title` をクリックする",
+      "then": "ツリーで `deep-title` が選ばれる",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection.test.tsx",
+        "start": 73,
+        "end": 82,
+        "text": "test(\"⌘ を押しながらクリックすると、押した位置のいちばん内側が選ばれる\", async () => {\n  await renderOpenedDocument(SampleDocumentWithDeepBranch);\n\n  const user = userEvent.setup();\n  await user.keyboard(\"{Meta>}\");\n  await user.click(renderedElement(canvasPane(), \"deep-title\"));\n  await user.keyboard(\"{/Meta}\");\n\n  expect(currentRowNames(tree())).toEqual([\"deep-title\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "m-create",
+        "m-select",
+        "m-dispatch",
+        "m-reduce",
+        "m-name"
+      ]
+    },
+    {
+      "id": "ac-enter",
+      "suite": "ac-selection",
+      "name": "キーボードで artboard を活性化するとその artboard だけが候補になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "フォーカスから作る Enter の経路も、`NoDeeper` の `UnderPointer` として通知されることを守る",
+      "given": "artboard `home` が 1 枚あるキャンバス",
+      "when": "枠にフォーカスして Enter を押す",
+      "then": "`onSelect` が `UnderPointer.create([\"home\"], NoDeeper)` で呼ばれる",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection.test.tsx",
+        "start": 79,
+        "end": 92,
+        "text": "test(\"キーボードで artboard を活性化するとその artboard だけが候補になる\", async () => {\n  const onSelect = vi.fn();\n  const selection = selectionFromArtboards([\n    { name: \"home\", width: 360, height: 240, children: [] },\n  ]);\n  renderCanvas({ selection, onSelect });\n\n  screen.getByRole(\"button\", { name: \"home\" }).focus();\n  await userEvent.keyboard(\"{Enter}\");\n\n  expect(onSelect).toHaveBeenCalledWith(\n    UnderPointer.create([\"home\"], SelectionDigs.NoDeeper),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx"
+      ],
+      "covers": [
+        "m-select"
+      ]
+    },
+    {
+      "id": "ac-alt-command",
+      "suite": "ac-distance",
+      "name": "⌘ も押して選択の内側を指すと、いちばん内側の子孫から選択の内側の縁までの距離が出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "pointermove で読んだ掘る量が指し先に入り、距離の組が `Deepest` を判定できることを守る",
+      "given": "`row` を選んでいるキャンバス",
+      "when": "⌘ を押したまま `label` の上へポインタを動かし、Alt を押す",
+      "then": "`label` から `row` の内側の縁までの 4 つの距離が出る",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance.test.tsx",
+        "start": 72,
+        "end": 81,
+        "text": "test(\"⌘ も押して選択の内側を指すと、いちばん内側の子孫から選択の内側の縁までの距離が出る\", () => {\n  // `label`（左右 170〜220・上下 115〜135）から `row` の縁まで\n  renderCanvas({ selection: selectionDistanceTree([\"row\"]) });\n  drawSelectionDistanceTree();\n\n  movePointer(drawn(\"label\"), Anywhere, \"meta\");\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"120\", \"15\", \"25\", \"30\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/pointing/index.ts",
+        "src/features/editor/features/canvas/domains/distance-pair/index.ts"
+      ],
+      "covers": [
+        "m-create",
+        "m-track",
+        "m-pointing-equals",
+        "m-pair"
+      ]
+    },
+    {
+      "id": "ode-grab-dig",
+      "suite": "ode-grab",
+      "name": "ダブルクリックで中身まで掘ってから同じところを運ぶと、掘った中身が動く",
+      "techniques": [
+        "state"
+      ],
+      "why": "pointerdown で作った `UnderPointer` が `grabNode` から `nodeNameAt` に届き、掘った選択の内側を掴むことを守る",
+      "given": "キャンバスで `label` をダブルクリックして掘った状態",
+      "when": "同じところを掴んで `panel` へ運ぶ",
+      "then": "`label` の親が `panel` になる(外側の `card` ごとは動かない)",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+        "start": 58,
+        "end": 66,
+        "text": "test(\"ダブルクリックで中身まで掘ってから同じところを運ぶと、掘った中身が動く\", async () => {\n  await renderOpenedDocument(setupDocument());\n  await userEvent.dblClick(drawn(\"label\"));\n\n  dragLabelOntoPanel();\n\n  // 掘った選択が掴む側へ届いていなければ、外側の `card` ごと `panel` へ移る\n  expect(drawnParentName(\"label\")).toBe(\"panel\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "m-create",
+        "m-grab",
+        "m-grab-name"
+      ]
+    },
+    {
+      "id": "ode-context-select",
+      "suite": "ode-context",
+      "name": "キャンバスのノードを右クリックすると、押した枝の入口が選ばれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "右クリックの経路が `NoDeeper` の `UnderPointer` で選択を移すことを守る",
+      "given": "ドキュメントを開いた編集画面",
+      "when": "キャンバスの `home-title` を右クリックする",
+      "then": "右ペインの見出しが `home-title` になる",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+        "start": 57,
+        "end": 63,
+        "text": "test(\"キャンバスのノードを右クリックすると、押した枝の入口が選ばれる\", async () => {\n  await renderOpenedDocument();\n\n  rightClick(drawn(\"home-title\"));\n\n  expect(rightPaneHeading().textContent).toContain(\"home-title\");\n});"
+      },
+      "targets": [
+        "src/features/editor/components/opened-document-editor/index.tsx"
+      ],
+      "covers": [
+        "m-context",
+        "m-dispatch",
+        "m-reduce",
+        "m-name"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "使う人から見て変わったことは無い",
+    "lead": "キャンバスで選ぶ・掴む・距離を見る操作の中で受け渡している値のまとめ方を変えただけで、どの操作の結果も変わっていません。",
+    "kept": [
+      {
+        "text": "キャンバスで入れ子の中身をクリックすると、選ばれるのはこれまでどおり artboard 直下の子"
+      },
+      {
+        "text": "ダブルクリックするたびに 1 階層ずつ内側へ進む",
+        "tests": [
+          "ode-dblclick"
+        ]
+      },
+      {
+        "text": "⌘ を押しながらクリックすると、押した位置のいちばん内側が選ばれる",
+        "tests": [
+          "ode-command"
+        ]
+      },
+      {
+        "text": "artboard の枠にフォーカスして Enter を押すと、その artboard だけが選ばれる",
+        "tests": [
+          "ac-enter"
+        ]
+      },
+      {
+        "text": "ダブルクリックで掘ってから同じところを運ぶと、掘った中身が動く",
+        "tests": [
+          "ode-grab-dig"
+        ]
+      },
+      {
+        "text": "右クリックすると、押した枝の入口が選ばれる(掘らない)",
+        "tests": [
+          "ode-context-select"
+        ]
+      },
+      {
+        "text": "Alt を押したまま同じ場所にとどまっている間は距離の相手が変わらず、隣のノードや深さの違う位置へ移るか、⌘ を押す・離すと相手が変わる",
+        "tests": [
+          "up-same",
+          "up-name",
+          "up-length",
+          "up-dig",
+          "pt-same",
+          "pt-differ"
+        ]
+      },
+      {
+        "text": "⌘ も押して選択の内側を指すと、いちばん内側の子孫から選択の内側の縁までの距離が出る",
+        "tests": [
+          "ac-alt-command"
+        ]
+      },
+      {
+        "text": "ポインタがキャンバスに入る・枠から外れると、距離の相手を決め直す",
+        "tests": [
+          "pt-outside-nothing",
+          "pt-frame-nothing"
+        ]
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「選択」の「キャンバスのクリックが選ぶ階層」",
+        "text": "クリック・ダブルクリック・⌘ クリックで選ぶ階層の規則は変えていない"
+      },
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「キャンバス直接操作」の、選択しているだけのときの Alt / Option の距離の項",
+        "text": "距離の相手はクリックが選ぶもの、⌘ も押していればいちばん内側、という規則は変えていない"
+      },
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「コンテキストメニュー」の「右クリックは選択を変える」の項",
+        "text": "右クリックで選ぶ階層が左クリックと同じ規則に従う記述は変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "discriminated-union",
+      "category": "typescript · 型",
+      "label": "判別可能な union",
+      "gist": "取りうる状態を[[union 型|union]]で並べ、どの状態かを共通のプロパティ([[判別子|discriminant]])の値で見分けられるようにする書き方。状態ごとに持つプロパティを変えられるので、ある状態でしか意味のない値を、ほかの状態で持てなくなる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "各メンバーに同じ名前のプロパティ(ここでは `kind`)を置き、その型を[[リテラル型|literal-type]](`\"on-frame\"` のような 1 つの値だけを許す型)にする。`if (a.kind === \"on-frame\")` のように判別子を比べると、その枝の中では型がそのメンバーに[[絞り込まれ|narrowing]]、そのメンバーにしか無いプロパティ(`underPointer`)を読めるようになる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "type Pointing =\n  | Readonly<{ kind: \"outside\" }>\n  | Readonly<{ kind: \"nothing\" }>\n  | Readonly<{ kind: \"on-frame\"; underPointer: UnderPointer }>;"
+        },
+        {
+          "kind": "text",
+          "text": "標準で用意されている型 `Extract<T, U>` は、union `T` のメンバーのうち `U` に代入できるものだけを残した型を作る。`Extract<Pointing, { kind: \"on-frame\" }>` と書けば、枠の上のメンバーだけを受け取る引数にできる。"
+        },
+        {
+          "kind": "caution",
+          "text": "判別子を比べずに `a.underPointer` を読むと、`outside` / `nothing` のメンバーにはそのプロパティが無いので型エラーになる。2 つの値を比べるときは、両方を絞り込んでから読む必要がある。"
+        },
+        {
+          "kind": "memo",
+          "text": "この PR では、on-frame のメンバーが持つ値を `{ kind, names, dig }` の平らな形から `{ kind, underPointer }` の入れ子の形に変えた。平らなまま `{ kind } & UnderPointer`([[交差型|intersection]])として持つ案は、作るたびに値を分解して詰め直すことになるので採らなかった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/pointing/index.ts",
+          "lineRange": {
+            "start": 24,
+            "end": 30
+          },
+          "text": "`Pointing` の 3 つのメンバー。on-frame だけが `underPointer` を持つ",
+          "shas": [
+            "bdc101f08faa583640847765993edeabb0f54b42"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/pointing/index.ts",
+          "lineRange": {
+            "start": 62,
+            "end": 69
+          },
+          "text": "両方が on-frame かを判別子で確かめてから `underPointer` を読む",
+          "shas": [
+            "bdc101f08faa583640847765993edeabb0f54b42"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "lineRange": {
+            "start": 136,
+            "end": 154
+          },
+          "text": "`Extract` で on-frame のメンバーだけを受け取り、`pointing.underPointer` を読む",
+          "shas": [
+            "bdc101f08faa583640847765993edeabb0f54b42"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "pointing",
+        "readonly"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "readonly",
+      "category": "typescript · 型",
+      "label": "`Readonly` と `readonly` 配列",
+      "gist": "値を作ったあとに書き換えられないことを、型で表す仕組み。[[オブジェクト型|object-type]]のプロパティへの代入や、配列の `push` のような書き換えをコンパイルエラーにする。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`Readonly<T>` は標準で用意されている型で、`T` のすべてのプロパティに `readonly` を付けた型を作る。`readonly string[]` は書き換える操作(`push` / `splice` / 添字への代入など)を持たない配列の型で、読む操作(`length` / `every` / 添字で読む)だけが使える。"
+        },
+        {
+          "kind": "declaration",
+          "code": "type UnderPointer = Readonly<{\n  names: readonly string[];\n  dig: SelectionDig;\n}>;"
+        },
+        {
+          "kind": "caution",
+          "text": "`Readonly<T>` が効くのは 1 段目のプロパティだけで、中の配列までは書き換えを禁じない。配列の中身も守るには、プロパティの型そのものを `readonly string[]` と書く。"
+        },
+        {
+          "kind": "memo",
+          "text": "`readonly` は型の上だけの約束で、実行時に値を凍らせるわけではない(実行時に凍らせるのは `Object.freeze`)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/session/under-pointer/index.ts",
+          "lineRange": {
+            "start": 14,
+            "end": 17
+          },
+          "text": "`UnderPointer` の型。名前の並びも `readonly` の配列で持つ",
+          "shas": [
+            "f7cce3f3e7929098c5d94c9618d10fde0daaaba1"
+          ]
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/index.ts",
+          "lineRange": {
+            "start": 26,
+            "end": 26
+          },
+          "text": "`select_at` アクションも `Readonly` で包む",
+          "shas": [
+            "bdc101f08faa583640847765993edeabb0f54b42"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "under-pointer"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "under-pointer",
+      "category": "domains · session",
+      "label": "`UnderPointer`(ポインタの下)",
+      "gist": "ポインタの下から外へ辿った名前の並び(`names`)と、どの深さで読むか(`dig`)を 1 つにした値。キャンバスで選ぶ・掴む・距離の相手を決める経路は、どれもこの 1 つを受け渡す。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "名前の並びだけでは選ぶものが決まらず、掘る量まで揃って初めて決まるので、2 つを同じ型に入れている。押し方から掘る量を読むのは枠(`artboard-frame`)の非公開の `underPointerAt(event)` で、ダブルクリック(`OneDeeper`)・Enter と右クリック(`NoDeeper`)は掘る量を決め打ちで `create` に渡す。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/session/under-pointer/index.ts",
+            "start": 38,
+            "end": 44,
+            "emphasis": [
+              {
+                "start": 39,
+                "end": 41
+              }
+            ],
+            "text": "  equals(a: UnderPointer, b: UnderPointer): boolean {\n    const isSameNames =\n      a.names.length === b.names.length &&\n      a.names.every((name, index) => name === b.names[index]);\n\n    return isSameNames && a.dig === b.dig;\n  },"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "`equals` は名前の並びを長さと要素ごとに比べ、掘る量も比べる。配列は[[参照|reference]]が違えば `===` で等しくならないので、中身を比べている。"
+        },
+        {
+          "kind": "rule",
+          "text": "名前だけで答えが決まる `artboardNameAt` / `siblingAt` には `UnderPointer` を渡さず、`underPointer.names` を渡す。判定に要らない掘る量まで受け取らせないため(却下した案 R7)。"
+        },
+        {
+          "kind": "spec",
+          "text": "選ぶ階層の規則は docs/06-ui.md「キャンバスのクリックが選ぶ階層」。型の doc もここを指している。"
+        },
+        {
+          "kind": "history",
+          "text": "これまでは `onSelect(names, dig)` のように組をばらして渡していて、片方だけを取り違えても型で弾けなかった(#1197 の計画の検証での指摘)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/session/under-pointer/index.ts",
+          "lineRange": {
+            "start": 3,
+            "end": 17
+          },
+          "text": "型と、掘る量を含める理由・キーボードの経路も同じ型で渡すことを書いた doc",
+          "shas": [
+            "f7cce3f3e7929098c5d94c9618d10fde0daaaba1",
+            "0569a13f37b4efb37f467ba673ff97070532ac0d"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "lineRange": {
+            "start": 100,
+            "end": 105
+          },
+          "text": "押し方から掘る量を読んで作る `underPointerAt`",
+          "shas": [
+            "bdc101f08faa583640847765993edeabb0f54b42",
+            "0569a13f37b4efb37f467ba673ff97070532ac0d"
+          ]
+        },
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "lineRange": {
+            "start": 179,
+            "end": 187
+          },
+          "text": "`nameToSelectAt` が受け取り、`artboardNameAt` には名前の並びだけを渡す",
+          "shas": [
+            "bdc101f08faa583640847765993edeabb0f54b42"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "readonly",
+        "pointing"
+      ],
+      "tests": [
+        "up-same",
+        "up-name",
+        "up-length",
+        "up-dig"
+      ],
+      "flows": [
+        "f-click",
+        "f-grab"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "pointing",
+      "category": "features · canvas",
+      "label": "`Pointing`(指し先)",
+      "gist": "ポインタが今キャンバスのどこを指しているかを、外・枠の外・枠の上の 3 つの状態で表す[[判別可能な union|union]]。枠の上の状態だけが `UnderPointer` を持つ。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "Alt / Option を押している間の距離の相手を決める材料で、指し先が変わらなければ前の値を保つ(`use-alt-pointing` の `keepIfSame`)。その判定に `Pointing.equals` を使う。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/pointing/index.ts",
+            "start": 62,
+            "end": 69,
+            "text": "  equals(a: Pointing, b: Pointing): boolean {\n    const isBothOnFrame =\n      a.kind === PointingKinds.OnFrame && b.kind === PointingKinds.OnFrame;\n    if (!isBothOnFrame) {\n      return a.kind === b.kind;\n    }\n    return UnderPointer.equals(a.underPointer, b.underPointer);\n  },"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "どちらかが枠の上でなければ種類だけを比べ、どちらも枠の上なら比べるのは `UnderPointer.equals` に任せる。この PR で、on-frame の比較を `UnderPointer` 側へ移した。"
+        },
+        {
+          "kind": "history",
+          "text": "`Pointing` を session へ上げる案(R1)は、`Outside` / `Nothing` が canvas 固有の状態で、クリックや掴みの経路までその状態を知ることになるので採らなかった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/pointing/index.ts",
+          "lineRange": {
+            "start": 51,
+            "end": 69
+          },
+          "text": "`create` が `UnderPointer` を受け、`equals` が `UnderPointer.equals` に任せる",
+          "shas": [
+            "bdc101f08faa583640847765993edeabb0f54b42"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "discriminated-union",
+        "under-pointer"
+      ],
+      "tests": [
+        "pt-same",
+        "pt-differ",
+        "pt-outside-nothing",
+        "pt-frame-nothing"
+      ],
+      "flows": [
+        "f-alt"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "union",
+      "label": "union 型",
+      "text": "`A | B` のように縦棒で型を並べ、「どれか 1 つ」を表す型。値はどのメンバーかを確かめてからでないと、メンバー固有のプロパティを読めない。"
+    },
+    {
+      "id": "discriminant",
+      "label": "判別子",
+      "text": "union のどのメンバーにもある共通のプロパティで、値がメンバーごとに違うもの。比べるとメンバーが 1 つに決まる。"
+    },
+    {
+      "id": "literal-type",
+      "label": "リテラル型",
+      "text": "`\"on-frame\"` や `1` のように、ただ 1 つの値だけを許す型。`string` より狭い。"
+    },
+    {
+      "id": "narrowing",
+      "label": "絞り込み",
+      "text": "`if` や `switch` で値を確かめたあと、その枝の中で TypeScript が型をより狭いものとして扱うこと。"
+    },
+    {
+      "id": "intersection",
+      "label": "交差型",
+      "text": "`A & B` と書き、A と B の両方のプロパティを持つ値を表す型。"
+    },
+    {
+      "id": "object-type",
+      "label": "オブジェクト型",
+      "text": "`{ names: string[]; dig: SelectionDig }` のように、プロパティの名前と型を並べて書く型。"
+    },
+    {
+      "id": "reference",
+      "label": "参照",
+      "text": "配列やオブジェクトの値そのものではなく、それがどこにあるかを指すもの。`===` は参照を比べるので、中身が同じでも別々に作った配列は等しくならない。"
+    }
+  ]
+}
