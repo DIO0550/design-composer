@@ -6,22 +6,9 @@
 use std::fs;
 
 use super::canonical_path::canonicalize_requested;
-use super::test_support::{raw_document_path, TempDir};
-
-/// `dir` を正規化した綴りの配下に `relative` を置いた、期待する綴り。
-///
-/// macOS の一時ディレクトリは `/var` が `/private/var` への symlink なので、期待値も
-/// 正規化したディレクトリから組み立てる。
 #[cfg(unix)]
-fn canonical_in(dir: &TempDir, relative: &str) -> String {
-    dir.path()
-        .canonicalize()
-        .expect("一時ディレクトリを正規化できる")
-        .join(relative)
-        .to_str()
-        .expect("一時ディレクトリのパスは UTF-8")
-        .to_string()
-}
+use super::test_support::canonical_in;
+use super::test_support::{raw_document_path, TempDir};
 
 /// 寄せた綴りを文字列で返す。
 ///

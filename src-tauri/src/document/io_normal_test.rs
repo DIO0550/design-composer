@@ -1,14 +1,14 @@
 use std::fs;
 
-use super::io::{self, load_document};
+use super::io::{self, load_requested};
 use super::known_content::KnownContentRegistry;
 
-use super::test_support::{document_file_path, raw_document_path, TempDir};
+use super::test_support::{chosen_file_path, chosen_paths_in, chosen_spelling, TempDir};
 
 #[test]
 fn 保存した内容がそのまま読み込める() {
     let dir = TempDir::new("normal");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
     let content = r#"{"version":1,"artboards":[]}"#;
 
@@ -20,7 +20,7 @@ fn 保存した内容がそのまま読み込める() {
 #[test]
 fn 既存のファイルへ保存すると内容が置き換わる() {
     let dir = TempDir::new("normal");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
 
     io::save(&known, &path, r#"{"version":1}"#).expect("初回の保存に成功する");
@@ -35,7 +35,7 @@ fn 既存のファイルへ保存すると内容が置き換わる() {
 #[test]
 fn 空の内容も保存して読み込める() {
     let dir = TempDir::new("normal");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
 
     io::save(&known, &path, "").expect("保存に成功する");
@@ -46,7 +46,7 @@ fn 空の内容も保存して読み込める() {
 #[test]
 fn マルチバイト文字を含む内容が壊れずに読み込める() {
     let dir = TempDir::new("normal");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
     let content = r#"{"name":"見出し","text":"日本語のテキスト 🎨"}"#;
 
@@ -58,7 +58,7 @@ fn マルチバイト文字を含む内容が壊れずに読み込める() {
 #[test]
 fn 保存の後に一時ファイルが残らない() {
     let dir = TempDir::new("normal");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     let known = KnownContentRegistry::new();
 
     io::save(&known, &path, r#"{"version":1}"#).expect("保存に成功する");
@@ -70,8 +70,8 @@ fn 保存の後に一時ファイルが残らない() {
 fn 同じディレクトリの複数のファイルをそれぞれ保存して読み込める() {
     let dir = TempDir::new("normal");
     let known = KnownContentRegistry::new();
-    let first = document_file_path(&dir, "first.dcmp");
-    let second = document_file_path(&dir, "second.dcmp");
+    let first = chosen_file_path(&dir, "first.dcmp");
+    let second = chosen_file_path(&dir, "second.dcmp");
 
     io::save(&known, &first, r#"{"name":"first"}"#).expect("1 つ目の保存に成功する");
     io::save(&known, &second, r#"{"name":"second"}"#).expect("2 つ目の保存に成功する");
@@ -87,13 +87,15 @@ fn 同じディレクトリの複数のファイルをそれぞれ保存して�
 }
 
 #[test]
-fn 既存のdcmpファイルの絶対パスを渡すと中身が読み込める() {
+fn 選んだdcmpファイルを選んだときに返った綴りで渡すと中身が読み込める() {
     let dir = TempDir::new("normal");
+    let record_dir = TempDir::new("normal-record");
     let content = r#"{"version":1}"#;
     fs::write(dir.join("document.dcmp"), content).expect("読み込む対象を用意できる");
-    let raw = raw_document_path(&dir, "document.dcmp");
+    let chosen = chosen_paths_in(&record_dir);
+    let spelling = chosen_spelling(&chosen, &dir, "document.dcmp");
 
-    let loaded = load_document(raw).expect("読み込みに成功する");
+    let loaded = load_requested(&chosen, &spelling).expect("読み込みに成功する");
 
     assert_eq!(loaded, content);
 }

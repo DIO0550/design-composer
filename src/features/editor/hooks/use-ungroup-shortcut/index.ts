@@ -7,12 +7,12 @@ import {
 /**
  * グループ解除に割り当てる組み合わせ（Windows は Ctrl+Shift+G / macOS は Cmd+Shift+G）。
  */
-const UngroupShortcut: KeyShortcut = {
+export const UngroupShortcut = {
   kind: KeyTriggers.TypedCharacter,
   keys: ["g"],
   withCommandKey: true,
   withShiftKey: true,
-};
+} as const satisfies KeyShortcut;
 
 /**
  * 選んでいる Box を外す操作をキーボードから行えるようにする（docs/06-ui.md「編集操作の一

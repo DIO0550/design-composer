@@ -5,17 +5,17 @@ use std::sync::Arc;
 
 use super::io;
 use super::known_content::KnownContentRegistry;
-use super::watch::DocumentWatchers;
+use super::watch::{DocumentWatchers, WatchManagedState};
 
 use super::test_support::{
-    assert_no_change, document_file_path, next_change, raw_document_path, watch_changes,
-    watch_requested_payloads, TempDir,
+    assert_no_change, chosen_file_path, chosen_paths_in, chosen_spelling, next_change,
+    watch_changes, watch_requested_payloads, TempDir,
 };
 
 #[test]
 fn 外部がファイルを書き換えると変更が通知される() {
     let dir = TempDir::new("watch-normal");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -29,7 +29,7 @@ fn 外部がファイルを書き換えると変更が通知される() {
 #[test]
 fn アプリ自身の保存では変更が通知されない() {
     let dir = TempDir::new("watch-normal");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -45,7 +45,7 @@ fn アプリ自身の保存では変更が通知されない() {
 #[test]
 fn 内容が変わらない書き込みでは変更が通知されない() {
     let dir = TempDir::new("watch-normal");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -60,7 +60,7 @@ fn 内容が変わらない書き込みでは変更が通知されない() {
 #[test]
 fn 外部の書き込み1回につき通知は1回だけ届く() {
     let dir = TempDir::new("watch-normal");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -76,7 +76,7 @@ fn 外部の書き込み1回につき通知は1回だけ届く() {
 #[test]
 fn 外部が続けて書き換えるとそれぞれの内容が通知される() {
     let dir = TempDir::new("watch-normal");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -92,7 +92,7 @@ fn 外部が続けて書き換えるとそれぞれの内容が通知される()
 #[test]
 fn 監視を止めると変更が通知されなくなる() {
     let dir = TempDir::new("watch-normal");
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     fs::write(&path, r#"{"version":1}"#).expect("監視対象を用意できる");
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
@@ -105,19 +105,23 @@ fn 監視を止めると変更が通知されなくなる() {
 }
 
 #[test]
-fn 通知のパスは監視を依頼した綴りのまま届く() {
+fn 通知のパスは選んだときに返った綴りのまま届く() {
     let dir = TempDir::new("watch-normal");
+    let record_dir = TempDir::new("watch-normal-record");
     fs::write(dir.join("document.dcmp"), r#"{"version":1}"#).expect("監視対象を用意できる");
+    let chosen = chosen_paths_in(&record_dir);
     let known = Arc::new(KnownContentRegistry::new());
     let watchers = DocumentWatchers::new();
-    // 正規化すると消える `/./` を綴りに含める
-    let raw = raw_document_path(&dir, "./document.dcmp");
+    let spelling = chosen_spelling(&chosen, &dir, "document.dcmp");
 
-    let (started, payloads) = watch_requested_payloads(&watchers, &known, &raw);
+    let (started, payloads) = watch_requested_payloads(
+        WatchManagedState::new(&chosen, &known, &watchers),
+        &spelling,
+    );
     started.expect("監視を開始できる");
     fs::write(dir.join("document.dcmp"), r#"{"version":2}"#).expect("外部からの書き込みができる");
     let payload: serde_json::Value =
         serde_json::from_str(&next_change(&payloads)).expect("ペイロードは JSON");
 
-    assert_eq!(payload["path"], raw.as_str());
+    assert_eq!(payload["path"], spelling.as_str());
 }

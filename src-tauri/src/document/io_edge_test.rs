@@ -5,17 +5,20 @@
 
 use std::fs;
 
-use super::io::{self, load_document, save_requested, DocumentIoError};
+use std::sync::Arc;
+
+use super::io::{self, load_requested, save_requested, DocumentIoError, DocumentManagedState};
 use super::known_content::KnownContentRegistry;
 
-use super::test_support::{document_file_path, raw_document_path, TempDir};
+use super::test_support::{
+    chosen_file_path, chosen_paths_in, chosen_spelling, raw_document_path, TempDir,
+};
 
 #[test]
 fn 存在しないファイルの読み込みは見つからないことを返す() {
     let dir = TempDir::new("edge");
 
-    let error =
-        io::load(&document_file_path(&dir, "missing.dcmp")).expect_err("読み込みに失敗する");
+    let error = io::load(&chosen_file_path(&dir, "missing.dcmp")).expect_err("読み込みに失敗する");
 
     assert!(matches!(error, DocumentIoError::NotFound { .. }));
 }
@@ -27,7 +30,7 @@ fn 存在しないディレクトリ配下への保存は失敗する() {
 
     let error = io::save(
         &known,
-        &document_file_path(&dir, "missing/document.dcmp"),
+        &chosen_file_path(&dir, "missing/document.dcmp"),
         r#"{"a":1}"#,
     )
     .expect_err("保存に失敗する");
@@ -41,7 +44,7 @@ fn 保存に失敗したとき一時ファイルが残らない() {
     let known = KnownContentRegistry::new();
 
     // 書き込み先をディレクトリにすることで、一時ファイルの作成後に rename を失敗させる
-    let path = document_file_path(&dir, "document.dcmp");
+    let path = chosen_file_path(&dir, "document.dcmp");
     fs::create_dir(&path).expect("ディレクトリを作成できる");
 
     io::save(&known, &path, r#"{"a":1}"#).expect_err("保存に失敗する");
@@ -52,7 +55,7 @@ fn 保存に失敗したとき一時ファイルが残らない() {
 #[test]
 fn UTF8として解釈できないファイルの読み込みは不正なUTF8を返す() {
     let dir = TempDir::new("edge");
-    let path = document_file_path(&dir, "broken.dcmp");
+    let path = chosen_file_path(&dir, "broken.dcmp");
     fs::write(&path, [0xff, 0xfe, 0x00, 0x80]).expect("不正なバイト列を書ける");
 
     let error = io::load(&path).expect_err("読み込みに失敗する");
@@ -63,7 +66,7 @@ fn UTF8として解釈できないファイルの読み込みは不正なUTF8を
 #[test]
 fn ディレクトリを読み込もうとすると失敗する() {
     let dir = TempDir::new("edge");
-    let path = document_file_path(&dir, "folder.dcmp");
+    let path = chosen_file_path(&dir, "folder.dcmp");
     fs::create_dir(&path).expect("ディレクトリを作成できる");
 
     let error = io::load(&path).expect_err("読み込みに失敗する");
@@ -74,7 +77,7 @@ fn ディレクトリを読み込もうとすると失敗する() {
 #[test]
 fn 失敗したときのエラーは対象のパスを含む() {
     let dir = TempDir::new("edge");
-    let path = document_file_path(&dir, "missing.dcmp");
+    let path = chosen_file_path(&dir, "missing.dcmp");
 
     let error = io::load(&path).expect_err("読み込みに失敗する");
 
@@ -89,7 +92,7 @@ fn 失敗したときのエラーは対象のパスを含む() {
 fn 保存の失敗は自書き込みとして記録されない() {
     let dir = TempDir::new("edge");
     let known = KnownContentRegistry::new();
-    let path = document_file_path(&dir, "missing/document.dcmp");
+    let path = chosen_file_path(&dir, "missing/document.dcmp");
     let content = r#"{"a":1}"#;
 
     io::save(&known, &path, content).expect_err("保存に失敗する");
@@ -97,20 +100,27 @@ fn 保存の失敗は自書き込みとして記録されない() {
     assert!(!known.is_known(&path, content));
 }
 
+// 不正なパスを返すことを確かめるテストは、選ばれたパスの集合を空にして呼ぶ。`.dcmp` 以外・
+// 相対パスはそもそも選べないので、集合を空にしても照合より先に形の検査で落ちることを固定できる。
+
 #[test]
 fn 拡張子がdcmpでない既存のファイルは中身があっても読み込まずに不正なパスを返す() {
     let dir = TempDir::new("edge");
+    let record_dir = TempDir::new("edge-record");
     fs::write(dir.join("notes.txt"), "secret").expect("中身のあるファイルを用意できる");
-    let raw = raw_document_path(&dir, "notes.txt");
+    let chosen = chosen_paths_in(&record_dir);
 
-    let result = load_document(raw);
+    let result = load_requested(&chosen, &raw_document_path(&dir, "notes.txt"));
 
     assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
 }
 
 #[test]
 fn 相対パスの読み込みは不正なパスを返す() {
-    let result = load_document("document.dcmp".to_string());
+    let record_dir = TempDir::new("edge-record");
+    let chosen = chosen_paths_in(&record_dir);
+
+    let result = load_requested(&chosen, "document.dcmp");
 
     assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
 }
@@ -118,10 +128,13 @@ fn 相対パスの読み込みは不正なパスを返す() {
 #[test]
 fn 拡張子がdcmpでない既存のファイルへの保存は不正なパスを返して中身を変えない() {
     let dir = TempDir::new("edge");
+    let record_dir = TempDir::new("edge-record");
     fs::write(dir.join("notes.txt"), "secret").expect("中身のあるファイルを用意できる");
-    let known = KnownContentRegistry::new();
+    let chosen = chosen_paths_in(&record_dir);
+    let known = Arc::new(KnownContentRegistry::new());
+    let managed = DocumentManagedState::new(&chosen, &known);
 
-    let result = save_requested(&known, &raw_document_path(&dir, "notes.txt"), r#"{"a":1}"#);
+    let result = save_requested(managed, &raw_document_path(&dir, "notes.txt"), r#"{"a":1}"#);
 
     assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
     assert_eq!(
@@ -133,10 +146,63 @@ fn 拡張子がdcmpでない既存のファイルへの保存は不正なパス�
 #[test]
 fn 拡張子がdcmpでない存在しないファイルへの保存はファイルを作らない() {
     let dir = TempDir::new("edge");
-    let known = KnownContentRegistry::new();
+    let record_dir = TempDir::new("edge-record");
+    let chosen = chosen_paths_in(&record_dir);
+    let known = Arc::new(KnownContentRegistry::new());
+    let managed = DocumentManagedState::new(&chosen, &known);
 
-    let result = save_requested(&known, &raw_document_path(&dir, "notes.txt"), r#"{"a":1}"#);
+    let result = save_requested(managed, &raw_document_path(&dir, "notes.txt"), r#"{"a":1}"#);
 
     assert!(matches!(result, Err(DocumentIoError::InvalidPath { .. })));
     assert!(dir.file_names().is_empty());
+}
+
+#[test]
+fn 選んでいないdcmpファイルは中身があっても読み込まずに選ばれていないことを返す() {
+    let dir = TempDir::new("edge");
+    let record_dir = TempDir::new("edge-record");
+    fs::write(dir.join("document.dcmp"), r#"{"version":1}"#).expect("読み込む対象を用意できる");
+    let chosen = chosen_paths_in(&record_dir);
+    // 対照に別のファイルを選んでおく。集合が空だから拒んだ、では通らないようにする。
+    chosen_spelling(&chosen, &dir, "other.dcmp");
+
+    let result = load_requested(&chosen, &raw_document_path(&dir, "document.dcmp"));
+
+    assert!(matches!(result, Err(DocumentIoError::NotChosen { .. })));
+}
+
+#[test]
+fn 選んでいないdcmpファイルへの保存は選ばれていないことを返して中身を変えない() {
+    let dir = TempDir::new("edge");
+    let record_dir = TempDir::new("edge-record");
+    fs::write(dir.join("document.dcmp"), r#"{"version":1}"#).expect("保存先を用意できる");
+    let chosen = chosen_paths_in(&record_dir);
+    chosen_spelling(&chosen, &dir, "other.dcmp");
+    let known = Arc::new(KnownContentRegistry::new());
+    let managed = DocumentManagedState::new(&chosen, &known);
+
+    let result = save_requested(
+        managed,
+        &raw_document_path(&dir, "document.dcmp"),
+        r#"{"version":2}"#,
+    );
+
+    assert!(matches!(result, Err(DocumentIoError::NotChosen { .. })));
+    assert_eq!(
+        fs::read_to_string(dir.join("document.dcmp")).expect("読める"),
+        r#"{"version":1}"#
+    );
+}
+
+#[test]
+fn 選ばれていないことはその種別でシリアライズされる() {
+    let dir = TempDir::new("edge");
+    let record_dir = TempDir::new("edge-record");
+    let chosen = chosen_paths_in(&record_dir);
+
+    let error = load_requested(&chosen, &raw_document_path(&dir, "document.dcmp"))
+        .expect_err("読み込みに失敗する");
+    let serialized = serde_json::to_value(&error).expect("JSON にできる");
+
+    assert_eq!(serialized["kind"], "notChosen");
 }

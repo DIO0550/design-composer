@@ -92,6 +92,21 @@ export const OpenFailed: Story = {
   },
 };
 
+/** 最近使ったファイルから、このアプリで選ばれていないファイルを開こうとした状態。 */
+export const OpenUnchosen: Story = {
+  name: "このアプリで選ばれていない",
+  args: {
+    recentPaths: RecentPaths,
+    attempt: OpenAttempt.failed({
+      kind: "io",
+      error: DocumentAccessFailure.create(
+        "unchosen",
+        "/work/settings-ui/app.dcmp: このアプリで選ばれていない",
+      ),
+    }),
+  },
+};
+
 /** 保存されている最近使ったファイルを読み取れなかった状態。 */
 export const RecentFilesUnreadable: Story = {
   name: "最近使ったファイルを読み込めない",

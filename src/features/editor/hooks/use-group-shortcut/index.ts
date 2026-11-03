@@ -5,12 +5,12 @@ import {
 } from "@/hooks/use-key-shortcut";
 
 /** グループ化に割り当てる組み合わせ（Windows は Ctrl+G / macOS は Cmd+G）。 */
-const GroupShortcut: KeyShortcut = {
+export const GroupShortcut = {
   kind: KeyTriggers.TypedCharacter,
   keys: ["g"],
   withCommandKey: true,
   withShiftKey: false,
-};
+} as const satisfies KeyShortcut;
 
 /**
  * 選んでいるノードを Box で包む操作をキーボードから行えるようにする（docs/06-ui.md「編集

@@ -5,12 +5,12 @@ import {
 } from "@/hooks/use-key-shortcut";
 
 /** ペーストに割り当てる組み合わせ（Windows は Ctrl+V / macOS は Cmd+V）。 */
-const PasteShortcut: KeyShortcut = {
+export const PasteShortcut = {
   kind: KeyTriggers.TypedCharacter,
   keys: ["v"],
   withCommandKey: true,
   withShiftKey: false,
-};
+} as const satisfies KeyShortcut;
 
 /**
  * クリップボードの中身のペーストをキーボードから行えるようにする（docs/06-ui.md「編集操作

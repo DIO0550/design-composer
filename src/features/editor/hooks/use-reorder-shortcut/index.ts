@@ -3,29 +3,37 @@ import {
   ReorderSteps,
 } from "@/features/editor/domains/reorder-step";
 import {
+  type KeyShortcut,
   type KeyShortcutBinding,
   KeyTriggers,
   useKeyShortcuts,
 } from "@/hooks/use-key-shortcut";
 
 /**
- * 並べ替えに割り当てるキーと、その向き
+ * 並べ替えの向きごとに割り当てる組み合わせ
  * （Windows は Ctrl+] / Ctrl+[、macOS は Cmd+] / Cmd+[）。
- *
- * キーは押した向きの見出しなので、値の別名ではなく綴りのまま置く
- * （rules/naming.md「対応表のキーを PascalCase にするのは「キーが値の別名」のときだけ」）。
  */
-const ReorderKeys = {
-  "]": ReorderSteps.TowardFront,
-  "[": ReorderSteps.TowardBack,
-} as const satisfies Readonly<Record<string, ReorderStep>>;
+export const ReorderShortcuts = {
+  [ReorderSteps.TowardFront]: {
+    kind: KeyTriggers.TypedCharacter,
+    keys: ["]"],
+    withCommandKey: true,
+    withShiftKey: false,
+  },
+  [ReorderSteps.TowardBack]: {
+    kind: KeyTriggers.TypedCharacter,
+    keys: ["["],
+    withCommandKey: true,
+    withShiftKey: false,
+  },
+} as const satisfies Readonly<Record<ReorderStep, KeyShortcut>>;
 
 /**
  * 選んでいるノードを兄弟の並びの中で 1 つぶん動かす操作を、キーボードから行えるようにする
  * （docs/06-ui.md「編集操作の一覧」の並べ替え・「複数選択」）。複数選んでいれば、同じ親の
  * 兄弟のときだけまとめて動く。
  *
- * このフックが持つのは「どのキーがどちらの向きか」だけで、ページ全体で受けることと入力
+ * このフックが持つのは「どちらの向きにどの割り当てか」だけで、ページ全体で受けることと入力
  * 中は無視することは `useKeyShortcuts` に任せる。
  *
  * @param onReorder 割り当てが押されたときに、その向きで呼ぶ手続き
@@ -33,15 +41,10 @@ const ReorderKeys = {
 export function useReorderShortcut(
   onReorder: (step: ReorderStep) => void,
 ): void {
-  const bindings: readonly KeyShortcutBinding[] = Object.entries(
-    ReorderKeys,
-  ).map(([key, step]) => ({
-    shortcut: {
-      kind: KeyTriggers.TypedCharacter,
-      keys: [key],
-      withCommandKey: true,
-      withShiftKey: false,
-    },
+  const bindings: readonly KeyShortcutBinding[] = Object.values(
+    ReorderSteps,
+  ).map((step) => ({
+    shortcut: ReorderShortcuts[step],
     onPress: () => onReorder(step),
   }));
 

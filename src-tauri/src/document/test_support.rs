@@ -2,10 +2,10 @@ use std::sync::mpsc::{self, Receiver, RecvTimeoutError};
 use std::sync::Arc;
 use std::time::Duration;
 
-use super::file_path::DocumentFilePath;
+use super::chosen_paths::{self, ChosenDocumentPath, ChosenDocumentPaths};
 use super::io::DocumentIoError;
 use super::known_content::KnownContentRegistry;
-use super::watch::{self, DocumentWatchers};
+use super::watch::{self, DocumentWatchers, WatchManagedState};
 
 // `document` のテストは `TempDir` を `super::test_support::TempDir` として読む。置き場を
 // クレート共通へ移しても読む側の綴りが変わらないよう、ここから再 export する。
@@ -30,11 +30,56 @@ pub fn raw_document_path(dir: &TempDir, relative: &str) -> String {
         .to_string()
 }
 
-/// `dir` 配下の `relative`(`/` を含むサブパスも可)を、ドキュメントのパスとして受け付けた
-/// 形で返す。
-pub fn document_file_path(dir: &TempDir, relative: &str) -> DocumentFilePath {
-    DocumentFilePath::parse(&raw_document_path(dir, relative))
-        .expect("ドキュメントのパスとして受け付けられる")
+/// `dir` を正規化した綴りの配下に `relative` を置いた、寄せた綴りとして期待する綴り。
+///
+/// macOS の一時ディレクトリは `/var` が `/private/var` への symlink なので、期待値も
+/// 正規化したディレクトリから組み立てる。
+#[cfg(unix)]
+pub fn canonical_in(dir: &TempDir, relative: &str) -> String {
+    dir.path()
+        .canonicalize()
+        .expect("一時ディレクトリを正規化できる")
+        .join(relative)
+        .to_str()
+        .expect("一時ディレクトリのパスは UTF-8")
+        .to_string()
+}
+
+/// `dir` 配下に `target` を置き、それを指す symlink `link` を作る。
+///
+/// @returns symlink を通した綴り(寄せる前の綴り)
+#[cfg(unix)]
+pub fn symlinked_document(dir: &TempDir, target: &str, link: &str) -> String {
+    std::fs::write(dir.join(target), "{}").expect("リンク先のファイルを用意できる");
+    std::os::unix::fs::symlink(dir.join(target), dir.join(link)).expect("symlink を作れる");
+    raw_document_path(dir, link)
+}
+
+/// 記録ファイルを `record_dir` に置いて、選ばれたパスの集合を読み戻す。
+///
+/// 記録ファイルを対象のファイルと別のディレクトリに置くのは、対象のディレクトリの中身を
+/// 確かめるテストに記録ファイルが混ざらないようにするため。
+pub fn chosen_paths_in(record_dir: &TempDir) -> ChosenDocumentPaths {
+    ChosenDocumentPaths::restore(chosen_paths::record_path(record_dir.path()))
+}
+
+/// `dir` 配下の `relative` を利用者が選んだことにする。
+///
+/// @returns 選んだときに返った綴り(寄せた綴り)。webview はこの綴りでコマンドを呼ぶ
+pub fn chosen_spelling(chosen: &ChosenDocumentPaths, dir: &TempDir, relative: &str) -> String {
+    chosen
+        .record_chosen(&raw_document_path(dir, relative))
+        .expect("ドキュメントのパスとして選べる")
+}
+
+/// `dir` 配下の `relative`(`/` を含むサブパスも可)を、利用者が選んで照合を通った形で返す。
+///
+/// 選んだ記録は使い捨ての一時ディレクトリに置き、返す前に片付ける。
+pub fn chosen_file_path(dir: &TempDir, relative: &str) -> ChosenDocumentPath {
+    let record_dir = TempDir::new("chosen-record");
+    let chosen = chosen_paths_in(&record_dir);
+    let spelling = chosen_spelling(&chosen, dir, relative);
+    chosen.require(&spelling).expect("選んだ綴りは照合を通る")
 }
 
 /// 変更の通知をチャネルへ流す形で監視を開始する。
@@ -44,7 +89,7 @@ pub fn document_file_path(dir: &TempDir, relative: &str) -> DocumentFilePath {
 pub fn watch_changes(
     watchers: &DocumentWatchers,
     known: &Arc<KnownContentRegistry>,
-    path: &DocumentFilePath,
+    path: &ChosenDocumentPath,
 ) -> Receiver<String> {
     let (sender, receiver) = mpsc::channel();
     watch::start(watchers, Arc::clone(known), path, move |content| {
@@ -59,12 +104,11 @@ pub fn watch_changes(
 ///
 /// @returns 監視の開始の成否と、ペイロードを受け取るチャネル
 pub fn watch_requested_payloads(
-    watchers: &DocumentWatchers,
-    known: &Arc<KnownContentRegistry>,
+    managed: WatchManagedState<'_>,
     raw_path: &str,
 ) -> (Result<(), DocumentIoError>, Receiver<String>) {
     let (sender, receiver) = mpsc::channel();
-    let started = watch::start_requested(watchers, Arc::clone(known), raw_path, move |payload| {
+    let started = watch::start_requested(managed, raw_path, move |payload| {
         let json = serde_json::to_string(&payload).expect("ペイロードを JSON にできる");
         let _ = sender.send(json);
     });

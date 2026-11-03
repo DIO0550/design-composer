@@ -59,6 +59,19 @@ test("パスとして扱えない指定のときは、パスの問題だと伝�
   expect(screen.getByText("パスが正しくありません")).toBeDefined();
 });
 
+test("このアプリで選ばれていないファイルのときは、開くから選び直すよう伝わる", () => {
+  renderDocumentStart({
+    attempt: ioFailure("unchosen"),
+    renderErrors: renderPlaceholder,
+  });
+
+  expect(
+    screen.getByText(
+      "このファイルはまだこのアプリで選ばれていません。「開く」から選び直してください",
+    ),
+  ).toBeDefined();
+});
+
 test("UTF-8 として読めないファイルのときは、文字コードの問題だと伝わる", () => {
   renderDocumentStart({
     attempt: ioFailure("undecodableText"),

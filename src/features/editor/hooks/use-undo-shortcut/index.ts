@@ -5,12 +5,12 @@ import {
 } from "@/hooks/use-key-shortcut";
 
 /** undo に割り当てる組み合わせ（Windows は Ctrl+Z / macOS は Cmd+Z）。 */
-const UndoShortcut: KeyShortcut = {
+export const UndoShortcut = {
   kind: KeyTriggers.TypedCharacter,
   keys: ["z"],
   withCommandKey: true,
   withShiftKey: false,
-};
+} as const satisfies KeyShortcut;
 
 /**
  * 直前の編集を戻す操作をキーボードから行えるようにする（docs/06-ui.md「編集操作の一覧」の

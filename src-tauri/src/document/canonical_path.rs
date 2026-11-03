@@ -1,7 +1,8 @@
 //! 同じファイルを指す別の綴りを、1 つの綴りへ寄せる。
 //!
 //! 寄せた綴りは `KnownContentRegistry` の記録のキーと、TS がタブ・最近使ったファイルを
-//! 見分けるのに使う綴り(`canonicalize_document_path`)の両方に使う。
+//! 見分けるのに使う綴り(`canonicalize_document_path`)と、選ばれたパスの集合に載せる綴り
+//! (`chosen_paths.rs`)の 3 つに使う。
 
 use std::path::{Component, Path, PathBuf, Prefix};
 
@@ -75,5 +76,5 @@ pub fn canonicalize_requested(raw_path: &str) -> Result<DocumentFilePath, Docume
 // 応答しないネットワークドライブの realpath で UI が固まりうるので、async で別スレッドへ出す。
 #[tauri::command(async)]
 pub fn canonicalize_document_path(path: String) -> Result<String, DocumentIoError> {
-    canonicalize_requested(&path).map(|canonical| canonical.to_string_lossy().into_owned())
+    canonicalize_requested(&path).map(|canonical| canonical.spelling())
 }
