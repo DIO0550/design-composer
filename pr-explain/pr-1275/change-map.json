@@ -1,0 +1,1097 @@
+{
+  "version": 2,
+  "pr": 1275,
+  "headBranch": "claude/magical-cannon-yu01cv",
+  "baseBranch": "main",
+  "mergeBase": "db7f2cf07701c53c622635716d652e778564f5d7",
+  "head": "e3455a733d50520b3954e477e145ef3eca246092",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-access-failure/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/file-validity/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/document-errors.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/file-paths.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/instants.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/sample-document.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/app-menu/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-menu/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-window/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/clock/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 14,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/operating-system/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/operating-system/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/tauri-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/tauri-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/__tests__/document-change.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/libs/document-ipc/index.ts"
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 46,
+          "deletions": 8,
+          "changed": true,
+          "target": "src/libs/document-ipc/index.ts"
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/__stories__/sample-editor-state.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/pane-regions.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.shortcut.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 5,
+          "changed": true,
+          "target": "src/features/editor/components/editor-screen/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 10,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.last-valid-render.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-sync",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.document-invalid.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 11,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 4,
+          "changed": true,
+          "target": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 4,
+          "changed": true,
+          "target": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/__tests__/use-file-revert.normal.test.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/__stories__/screen-height-shell.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/__tests__/row-drag.ts",
+          "changed": false
+        },
+        {
+          "path": "src/components/__tests__/row-names.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+        "name": "外部変更のパスと中身は、位置で並べて渡すことはできない"
+      },
+      {
+        "file": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+        "name": "別の綴りで外部から書き換えると、実体の中身が変わる"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+      "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "5454ae2e08f70c4738706c4f426a442b68b8e0b6",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-03T12:48:17Z",
+      "subject": "♻️ [Refactoring]: #1140 DocumentIpcFake.changeExternally をオブジェクト引数にする",
+      "body": "- changeExternally(path, content) を changeExternally({ path, content }) に変更\n- 引数の型 ExternalChange を fake 内に定義（export しない）\n- 内部の notifyChange を削除し、唯一の呼び出し元 changeExternally に畳む\n- 直接呼び出し 11 件（normal テスト 8 / document-change 1 / use-auto-save 1 / stories 1）を差し替え\n\n背景:\npath と content はどちらも string の位置引数で、逆に渡しても型エラーに\nならなかった（rules/coding.md「関数のシグネチャ」）。同じ形の取り違えは\npr-152 指摘 13 でテストヘルパーに実際に起きている。\n\n採用理由:\n同じファイルの linkPath({ link, target }) / denyCanonicalize({ path, kind })\nと同じオブジェクト引数の流儀に揃えた。型に名前を付けたのは、path が\n「書き換えに使った綴り」で通知の綴り（監視を張ったときの綴り）とは別物で\nあることを doc に書く置き場が要るため。notifyChange は呼び出し元が 1 つで、\nオブジェクト引数にすると同形の無名型を増やすか、path という名前に解決済みの\n実体を入れて名前と実体がずれるので、畳むのがいちばん小さい。\n\n影響とトレードオフ:\n塞げるのは位置の取り違えだけで、{ path: content, content: path } のような\nフィールドの取り違えは型では塞がない（名前が書いてあるので読めば分かる）。\n本番コードからの呼び出しは 0 件で、振る舞いは変わらない。\n\n代替案:\n- path を FilePath にする: fake の他の口（contentOf / linkPath / denyWrites\n  等）はすべて外の世界の綴りを生の string で受けており、ここだけ変えると\n  fake の語彙が割れる。共有ヘルパー changeFileExternally にも波及する\n- 本番の DocumentChanged を引数の型に流用する: あちらの path は通知が届いた\n  綴りで、値として別物\n- ExternalChange を export する: import する消費者がいない\n\n参考:\n- Issue #1140（計画・却下案・plan-reviewer への対応）\n- #545（本番の DocumentIpc.save の path を FilePath にした回）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QyerDeuKYqUmAbAUR",
+      "files": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -431,7 +431,7 @@ export const FileInvalid: Story = {\n     await waitFor(() => {\n       expect(brokenFiles.isWatching(SamplePath)).toBe(true);\n     });\n-    brokenFiles.changeExternally(SamplePath, \"{ 壊れた\");\n+    brokenFiles.changeExternally({ path: SamplePath, content: \"{ 壊れた\" });\n     await waitFor(() => {\n       expect(screen.getByText(\"最後に正常だった表示\")).toBeDefined();\n     });",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -66,7 +66,7 @@ test(\"編集の直後にファイルが不正になると、デバウンス中\n   // 編集してデバウンスを走らせ、書き出される前に外部がファイルを壊す\n   rerender({ ipc: fake.ipc, document: edited });\n   await waitDebounce(AutoSaveDebounceMs - 1);\n-  fake.changeExternally(Path, broken);\n+  fake.changeExternally({ path: Path, content: broken });\n   rerender({ ipc: fake.ipc, document: edited, fileValidity: Invalid });\n   await waitDebounce();\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/__tests__/document-change.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -14,6 +14,6 @@ export async function changeFileExternally({\n   content: string;\n }>): Promise<void> {\n   await act(async () => {\n-    fake.changeExternally(path, content);\n+    fake.changeExternally({ path, content });\n   });\n }",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 32,
+          "deletions": 8,
+          "patch": "@@ -43,7 +43,10 @@ test(\"監視中のファイルが外部から書き換わると、パスと中\n   );\n   Result.unwrap(await fake.ipc.watch(Path));\n \n-  fake.changeExternally(Path, `{ \"formatVersion\": \"1.0\" }`);\n+  fake.changeExternally({\n+    path: Path,\n+    content: `{ \"formatVersion\": \"1.0\" }`,\n+  });\n \n   expect(received).toStrictEqual([\n     { path: Path, content: `{ \"formatVersion\": \"1.0\" }` },\n@@ -70,7 +73,10 @@ test(\"監視していないファイルの外部変更は届かない\", async ()\n     await fake.ipc.subscribeChanged((changed) => received.push(changed)),\n   );\n \n-  fake.changeExternally(Path, `{ \"formatVersion\": \"1.0\" }`);\n+  fake.changeExternally({\n+    path: Path,\n+    content: `{ \"formatVersion\": \"1.0\" }`,\n+  });\n \n   expect(received).toStrictEqual([]);\n });\n@@ -84,7 +90,10 @@ test(\"監視を止めると外部変更が届かなくなる\", async () => {\n   Result.unwrap(await fake.ipc.watch(Path));\n \n   Result.unwrap(await fake.ipc.unwatch(Path));\n-  fake.changeExternally(Path, `{ \"formatVersion\": \"1.0\" }`);\n+  fake.changeExternally({\n+    path: Path,\n+    content: `{ \"formatVersion\": \"1.0\" }`,\n+  });\n \n   expect(received).toStrictEqual([]);\n });\n@@ -98,7 +107,10 @@ test(\"購読を解除すると外部変更が届かなくなる\", async () => {\n   Result.unwrap(await fake.ipc.watch(Path));\n \n   unsubscribe();\n-  fake.changeExternally(Path, `{ \"formatVersion\": \"1.0\" }`);\n+  fake.changeExternally({\n+    path: Path,\n+    content: `{ \"formatVersion\": \"1.0\" }`,\n+  });\n \n   expect(received).toStrictEqual([]);\n });\n@@ -150,7 +162,10 @@ test(\"別の綴りで外部から書き換えると、実体を監視してい\n   );\n   Result.unwrap(await fake.ipc.watch(Path));\n \n-  fake.changeExternally(LinkPath, `{ \"formatVersion\": \"1.0\" }`);\n+  fake.changeExternally({\n+    path: LinkPath,\n+    content: `{ \"formatVersion\": \"1.0\" }`,\n+  });\n \n   expect(received).toStrictEqual([\n     { path: Path, content: `{ \"formatVersion\": \"1.0\" }` },\n@@ -166,7 +181,10 @@ test(\"別の綴りで監視すると、実体の外部変更がその綴りで\n   );\n   Result.unwrap(await fake.ipc.watch(LinkPath));\n \n-  fake.changeExternally(Path, `{ \"formatVersion\": \"1.0\" }`);\n+  fake.changeExternally({\n+    path: Path,\n+    content: `{ \"formatVersion\": \"1.0\" }`,\n+  });\n \n   expect(received).toStrictEqual([\n     { path: LinkPath, content: `{ \"formatVersion\": \"1.0\" }` },\n@@ -183,7 +201,10 @@ test(\"後から別の綴りで監視し直すと、前の綴りには外部変\n   Result.unwrap(await fake.ipc.watch(Path));\n   Result.unwrap(await fake.ipc.watch(LinkPath));\n \n-  fake.changeExternally(Path, `{ \"formatVersion\": \"1.0\" }`);\n+  fake.changeExternally({\n+    path: Path,\n+    content: `{ \"formatVersion\": \"1.0\" }`,\n+  });\n \n   expect(received).toStrictEqual([\n     { path: LinkPath, content: `{ \"formatVersion\": \"1.0\" }` },\n@@ -200,7 +221,10 @@ test(\"別の綴りで監視を止めると、実体の外部変更が届かな\n   Result.unwrap(await fake.ipc.watch(Path));\n \n   Result.unwrap(await fake.ipc.unwatch(LinkPath));\n-  fake.changeExternally(Path, `{ \"formatVersion\": \"1.0\" }`);\n+  fake.changeExternally({\n+    path: Path,\n+    content: `{ \"formatVersion\": \"1.0\" }`,\n+  });\n \n   expect(received).toStrictEqual([]);\n });",
+          "patchLines": 96,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 14,
+          "patch": "@@ -23,6 +23,12 @@ export type CanonicalizeDenial = Readonly<{\n   kind: CanonicalizeDenialKind;\n }>;\n \n+/**\n+ * 外部による書き換え。`path` は書き換えに使った綴りで、通知はこの綴りではなく監視を張ったときの\n+ * 綴りで届く。\n+ */\n+type ExternalChange = Readonly<{ path: string; content: string }>;\n+\n /**\n  * Rust 側の代役。インメモリのファイル表に対して `docs/05-architecture.md`「Tauri IPC」の\n  * 5コマンドと `document-changed` を再現する。\n@@ -37,7 +43,7 @@ export type DocumentIpcFake = Readonly<{\n    * 外部（AI・エディタ・git 操作等）による書き換えを再現する。\n    * 監視中のパスなら `document-changed` が届く。\n    */\n-  changeExternally(path: string, content: string): void;\n+  changeExternally(change: ExternalChange): void;\n   /** 現在のファイルの中身。別の綴りを登録したパスは、その実体の中身を返す。 */\n   contentOf(path: string): Option<string>;\n   /**\n@@ -165,16 +171,6 @@ export function createDocumentIpcFake(\n \n   const targetOf = (path: string): string => linkTargets.get(path) ?? path;\n \n-  const notifyChange = (target: string, content: string): void => {\n-    const path = watchedSpellings.get(target);\n-    if (path === undefined) {\n-      return;\n-    }\n-    for (const listener of listeners) {\n-      listener({ path, content });\n-    }\n-  };\n-\n   const canonicalizeDocumentPath = (path: string): Promise<unknown> => {\n     switch (canonicalizeDenials.get(path)) {\n       case \"invalidPath\":\n@@ -275,9 +271,16 @@ export function createDocumentIpcFake(\n   return {\n     ipc: createDocumentIpc(tauriIpc),\n \n-    changeExternally(path, content) {\n-      contents.set(targetOf(path), content);\n-      notifyChange(targetOf(path), content);\n+    changeExternally({ path, content }) {\n+      const target = targetOf(path);\n+      contents.set(target, content);\n+      const watchedSpelling = watchedSpellings.get(target);\n+      if (watchedSpelling === undefined) {\n+        return;\n+      }\n+      for (const listener of listeners) {\n+        listener({ path: watchedSpelling, content });\n+      }\n     },\n \n     contentOf(path) {",
+          "patchLines": 59,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d25d18989ac292fde72fd4d14582106aabfac147",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-03T12:48:27Z",
+      "subject": "♻️ [Refactoring]: #1140 editor-screen テストの位置引数ラッパー changeExternally を削除する",
+      "body": "- editor-screen/__tests__/setup.tsx の changeExternally(files, path, content) を削除\n- editor-screen.sync.test.tsx の 4 件を changeFileExternally({ fake, path, content }) に直接差し替え\n\n背景:\nfake 本体をオブジェクト引数にしても、このラッパーが (files, path: string,\ncontent: string) で包み直しているため、この 4 件では path と content を\n入れ替えても型エラーにならなかった。\n\n採用理由:\n共有ヘルパー changeFileExternally は既にオブジェクト引数で act も包んでいる。\npr-152 指摘 13 で 1 本化したものを位置引数で包み直した形だったので、\nラッパーを消して直接呼ぶのがいちばん小さい。\n\n影響とトレードオフ:\nテストのみの変更で、振る舞いは変わらない。呼び出し 1 件ごとに fake を\n名前付きで渡すぶん行は長くなる。\n\n代替案:\n- 別 Issue に分ける: 残すと #1140 のゴール（取り違えを型で検出）がこの\n  4 件で成り立たない\n- use-document-reload 側のラッパーも消す: path が FilePath で、入れ替えると\n  既に型エラーになるのでスコープ外\n\n参考:\n- Issue #1140\n- harness/records/pr-152.md 指摘 13\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QyerDeuKYqUmAbAUR",
+      "files": [
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 5,
+          "patch": "@@ -4,12 +4,12 @@ import { dragRowNamed } from \"@/components/__tests__/row-drag\";\n import { rowNames } from \"@/components/__tests__/row-names\";\n import { artboardContent } from \"@/domains/__tests__/sample-document\";\n import { SampleDocument } from \"@/features/editor/__tests__/sample-document\";\n+import { changeFileExternally } from \"@/libs/__tests__/document-change\";\n import { DialogChoice } from \"@/libs/document-dialog/fake\";\n import { DocumentJson } from \"@/libs/document-json\";\n import { Option } from \"@/utils/Option\";\n import {\n   artboardList,\n-  changeExternally,\n   closeTab,\n   LinkPath,\n   OtherPath,\n@@ -56,7 +56,11 @@ test(\"開いているファイルが外部から書き換わると、その内\n   );\n   await startOpen(observer);\n \n-  await changeExternally(observer.files, Path, artboardContent(\"profile\"));\n+  await changeFileExternally({\n+    fake: observer.files,\n+    path: Path,\n+    content: artboardContent(\"profile\"),\n+  });\n \n   expect(\n     within(artboardList()).getByRole(\"button\", { name: \"profile\" }),\n@@ -108,7 +112,11 @@ test(\"背面のタブのファイルが書き換わっても、見ている画\n   await startOpen(observer);\n   await startCreate(observer);\n \n-  await changeExternally(observer.files, Path, artboardContent(\"profile\"));\n+  await changeFileExternally({\n+    fake: observer.files,\n+    path: Path,\n+    content: artboardContent(\"profile\"),\n+  });\n \n   // 見ているのは新規作成した側。artboard 一覧を引いてから、届いていないことを見る\n   // （画面全体から探すと、背面のタブに隠れているだけでも null になる）。\n@@ -125,7 +133,11 @@ test(\"背面のタブのファイルが書き換わると、そのタブへ移\n   await startOpen(observer);\n   await startCreate(observer);\n \n-  await changeExternally(observer.files, Path, artboardContent(\"profile\"));\n+  await changeFileExternally({\n+    fake: observer.files,\n+    path: Path,\n+    content: artboardContent(\"profile\"),\n+  });\n   await selectTab(Path);\n \n   expect(\n@@ -171,7 +183,11 @@ test(\"開いているファイルを別の綴りで落としても、外部変\n   await startOpen(observer);\n   await observer.dropFiles([LinkPath]);\n \n-  await changeExternally(observer.files, Path, artboardContent(\"profile\"));\n+  await changeFileExternally({\n+    fake: observer.files,\n+    path: Path,\n+    content: artboardContent(\"profile\"),\n+  });\n   await selectTab(Path);\n \n   expect(",
+          "patchLines": 66,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 10,
+          "patch": "@@ -4,7 +4,6 @@ import { dragRowNamed } from \"@/components/__tests__/row-drag\";\n import { filePath } from \"@/domains/__tests__/file-paths\";\n import { artboardContent } from \"@/domains/__tests__/sample-document\";\n import { SampleDocument } from \"@/features/editor/__tests__/sample-document\";\n-import { changeFileExternally } from \"@/libs/__tests__/document-change\";\n \n export {\n   artboardList,\n@@ -218,12 +217,3 @@ export async function closeTab(path: string): Promise<void> {\n   );\n   await act(async () => {});\n }\n-\n-/** 外部エディタがファイルを書き換え、通知が届くまで待つ。 */\n-export async function changeExternally(\n-  files: DocumentIpcFake,\n-  path: string,\n-  content: string,\n-): Promise<void> {\n-  await changeFileExternally({ fake: files, path, content });\n-}",
+          "patchLines": 21,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "dd07f8c5feaf1d009ed1e679f0cc0e3c736b8e97",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-03T12:48:34Z",
+      "subject": "🧪 [Tests]: #1140 外部変更のパスと中身を位置で渡せないことを型テストで固定する",
+      "body": "- document-ipc.edge.test.ts に「外部変更のパスと中身は、位置で並べて渡すことはできない」を追加\n\n背景:\nchangeExternally をオブジェクト引数にしたことは型の上の保証で、位置引数へ\n戻しても実行時のテストは落ちない。\n\n採用理由:\n直上の ipc.save のテスト「保存先と中身を取り違えて渡すことはできない」と\n同じ形（呼ばない関数の中で @ts-expect-error を付けて呼び、expectTypeOf で\n固定）に揃えた。位置引数に戻すと TS2578（未使用の @ts-expect-error）で\ntypecheck が落ちることを一時的に壊して確かめた。\n\n影響とトレードオフ:\n守れるのは位置の取り違えだけで、フィールドの取り違えは対象外。\n\n代替案:\n- 実行時のテストで確かめる: 型の保証なので実行時には観測できない\n\n参考:\n- Issue #1140\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QyerDeuKYqUmAbAUR",
+      "files": [
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 0,
+          "patch": "@@ -179,3 +179,14 @@ test(\"保存先と中身を取り違えて渡すことはできない\", () => {\n \n   expectTypeOf(swapped).toBeFunction();\n });\n+\n+test(\"外部変更のパスと中身は、位置で並べて渡すことはできない\", () => {\n+  const fake = createDocumentIpcFake();\n+\n+  // 呼ばずに型だけを見る。\n+  const positional = () =>\n+    // @ts-expect-error パスと中身は名前を付けて渡す\n+    fake.changeExternally(\"{}\", Path);\n+\n+  expectTypeOf(positional).toBeFunction();\n+});",
+          "patchLines": 15,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "0bce2416664db8603032d18291774c3f2ad3b404",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-03T12:55:46Z",
+      "subject": "♻️ [Refactoring]: #1140 use-document-reload テストの位置引数ラッパー changeExternally を削除する",
+      "body": "- use-document-reload/__tests__/setup.ts の changeExternally(fake, content, path = Path) を削除\n- normal / invalid テストの 6 件を changeFileExternally({ fake, path, content }) に直接差し替え\n\n背景:\n計画では「path が FilePath なので入れ替えれば型エラーになる」としてスコープ外\nにしていた。実装の検証（duplication-reviewer）で、path に既定値があり FilePath\nは string に代入できるため、changeExternally(fake, Path) と書くとパスが中身\nとして渡っても通ることが分かり、位置の取り違え口が残っていた。\n\n採用理由:\neditor-screen のラッパーを消したのと同じ理由・同じ形にそろえた。共有ヘルパー\nchangeFileExternally は既にオブジェクト引数で act も包んでいる。\n\n影響とトレードオフ:\nテストのみの変更で振る舞いは変わらない。呼び出しごとに fake と path を名前\n付きで書くぶん行は長くなる。\n\n代替案:\n- ラッパーを残して理由をコメントに書く: 既定値つきの位置引数という取り違え\n  口そのものが残る\n\n参考:\n- Issue #1140（実装の検証への対応）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QyerDeuKYqUmAbAUR",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 11,
+          "patch": "@@ -3,9 +3,7 @@ import { filePath } from \"@/domains/__tests__/file-paths\";\n import type { DocumentAccessFailure } from \"@/domains/session/document-access-failure\";\n import type { DocumentReload } from \"@/domains/session/document-reload\";\n import type { FilePath } from \"@/domains/unit/file-path\";\n-import { changeFileExternally } from \"@/libs/__tests__/document-change\";\n import type { DocumentIpc } from \"@/libs/document-ipc\";\n-import type { DocumentIpcFake } from \"@/libs/document-ipc/fake\";\n import type { Option } from \"@/utils/Option\";\n import { useDocumentReload } from \"../index\";\n \n@@ -42,12 +40,3 @@ export async function renderDocumentReload(\n \n   return { reloads, failure: () => result.current, unmount };\n }\n-\n-/** 外部エディタがファイルを書き換え、通知が届くまで待つ。 */\n-export async function changeExternally(\n-  fake: DocumentIpcFake,\n-  content: string,\n-  path: FilePath = Path,\n-): Promise<void> {\n-  await changeFileExternally({ fake, path, content });\n-}",
+          "patchLines": 23,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 4,
+          "patch": "@@ -5,15 +5,20 @@ import {\n   DocumentAccessFailure,\n   DocumentAccessFailureReasons,\n } from \"@/domains/session/document-access-failure\";\n+import { changeFileExternally } from \"@/libs/__tests__/document-change\";\n import { createDocumentIpcFake } from \"@/libs/document-ipc/fake\";\n import { Option } from \"@/utils/Option\";\n-import { changeExternally, Path, renderDocumentReload } from \"./setup\";\n+import { Path, renderDocumentReload } from \"./setup\";\n \n test(\"外部エディタが不正な JSON を保存すると、エラー一覧として届く\", async () => {\n   const fake = createDocumentIpcFake({ [Path]: artboardContent(\"home\") });\n   const observer = await renderDocumentReload(fake.ipc);\n \n-  await changeExternally(fake, '{ \"formatVersion\": ');\n+  await changeFileExternally({\n+    fake,\n+    path: Path,\n+    content: '{ \"formatVersion\": ',\n+  });\n \n   expect(observer.reloads).toStrictEqual([\n     {\n@@ -33,8 +38,16 @@ test(\"不正な JSON を直して保存すると、そのドキュメントが\n   const fake = createDocumentIpcFake({ [Path]: artboardContent(\"home\") });\n   const observer = await renderDocumentReload(fake.ipc);\n \n-  await changeExternally(fake, '{ \"formatVersion\": ');\n-  await changeExternally(fake, artboardContent(\"settings\"));\n+  await changeFileExternally({\n+    fake,\n+    path: Path,\n+    content: '{ \"formatVersion\": ',\n+  });\n+  await changeFileExternally({\n+    fake,\n+    path: Path,\n+    content: artboardContent(\"settings\"),\n+  });\n \n   expect(observer.reloads.map((reload) => reload.kind)).toStrictEqual([\n     \"rejected\",",
+          "patchLines": 42,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 4,
+          "patch": "@@ -3,14 +3,19 @@ import { filePath } from \"@/domains/__tests__/file-paths\";\n import { artboardContent } from \"@/domains/__tests__/sample-document\";\n import { Artboard } from \"@/domains/dcmp/artboard\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { changeFileExternally } from \"@/libs/__tests__/document-change\";\n import { createDocumentIpcFake } from \"@/libs/document-ipc/fake\";\n-import { changeExternally, Path, renderDocumentReload } from \"./setup\";\n+import { Path, renderDocumentReload } from \"./setup\";\n \n test(\"外部エディタがファイルを書き換えると、その内容が取り込まれる\", async () => {\n   const fake = createDocumentIpcFake({ [Path]: artboardContent(\"home\") });\n   const observer = await renderDocumentReload(fake.ipc);\n \n-  await changeExternally(fake, artboardContent(\"settings\"));\n+  await changeFileExternally({\n+    fake,\n+    path: Path,\n+    content: artboardContent(\"settings\"),\n+  });\n \n   // JSON を経由すると省略可能なキーが落ちるため、キーの有無ではなく値で比べる。\n   expect(observer.reloads).toEqual([\n@@ -35,7 +40,11 @@ test(\"開いていない別のファイルが書き換わっても取り込ま\n   // 別のファイルも監視されている状態を作る（`document-changed` はアプリ全体へ配られる）。\n   await renderDocumentReload(fake.ipc, otherPath);\n \n-  await changeExternally(fake, artboardContent(\"profile\"), otherPath);\n+  await changeFileExternally({\n+    fake,\n+    path: otherPath,\n+    content: artboardContent(\"profile\"),\n+  });\n \n   expect(opened.reloads).toStrictEqual([]);\n });\n@@ -45,7 +54,11 @@ test(\"画面を閉じた後の外部変更は取り込まれない\", async () =>\n   const observer = await renderDocumentReload(fake.ipc);\n \n   observer.unmount();\n-  await changeExternally(fake, artboardContent(\"settings\"));\n+  await changeFileExternally({\n+    fake,\n+    path: Path,\n+    content: artboardContent(\"settings\"),\n+  });\n \n   expect(observer.reloads).toStrictEqual([]);\n });",
+          "patchLines": 48,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "2dfdbe3edf3acdff3c37272b154310c5cdf3d1c3",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-03T12:55:53Z",
+      "subject": "📝 [Documentation]: #1140 ExternalChange の doc から通知の綴りの説明を外す",
+      "body": "- ExternalChange の doc を「path は書き換えに使った綴り」までに縮める\n- changeExternally の実装で書き換えと通知の境目に空行を入れる\n\n背景:\n「通知は監視を張ったときの綴りで届く」が ExternalChange の doc と\nwatchedSpellings のコメントの 2 か所に書かれていた（duplication-reviewer）。\nまた notifyChange を畳んだとき、書き換えと通知の区切りが消えていた\n（structure-reviewer）。\n\n採用理由:\n通知の綴りは watchedSpellings の振る舞いなので、そちらのコメント 1 か所に\n寄せ、片方だけ直せる状態をなくした。区切りは関数を分けずに空行で戻した。\n\n影響とトレードオフ:\n振る舞いは変わらない。\n\n代替案:\n- 説明を changeExternally のメソッド doc へ移す: 重複が場所を変えて残る\n\n参考:\n- Issue #1140（実装の検証への対応）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QyerDeuKYqUmAbAUR",
+      "files": [
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 4,
+          "patch": "@@ -23,10 +23,7 @@ export type CanonicalizeDenial = Readonly<{\n   kind: CanonicalizeDenialKind;\n }>;\n \n-/**\n- * 外部による書き換え。`path` は書き換えに使った綴りで、通知はこの綴りではなく監視を張ったときの\n- * 綴りで届く。\n- */\n+/** 外部による書き換え。`path` は書き換えに使った綴り。 */\n type ExternalChange = Readonly<{ path: string; content: string }>;\n \n /**\n@@ -274,10 +271,12 @@ export function createDocumentIpcFake(\n     changeExternally({ path, content }) {\n       const target = targetOf(path);\n       contents.set(target, content);\n+\n       const watchedSpelling = watchedSpellings.get(target);\n       if (watchedSpelling === undefined) {\n         return;\n       }\n+\n       for (const listener of listeners) {\n         listener({ path: watchedSpelling, content });\n       }",
+          "patchLines": 25,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e3455a733d50520b3954e477e145ef3eca246092",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-03T13:16:01Z",
+      "subject": "🧪 [Tests]: #1140 別の綴りで外部から書き換えると実体の中身が変わることをテストする",
+      "body": "- document-ipc.normal.test.ts に「別の綴りで外部から書き換えると、実体の中身が変わる」を追加\n\n背景:\ntest-reviewer の実測で、changeExternally の contents.set(target, content) を\ncontents.set(path, content) に壊しても落ちるテストが無かった。差分より前から\nある穴だが、今回 notifyChange を畳んだ際にこの行を書き直している。\n\n採用理由:\n別の綴り（LinkPath）で書き換えて実体（Path）の contentOf を見るのが、保存先の\n規則を直接観測する最小の形。初期の中身と違う値を入れ、既定値で通らないように\nした。壊すと追加したテストだけが落ちることを確かめた。\n\n影響とトレードオフ:\nテストの追加のみ。\n\n代替案:\n- 実体を read して確かめる: contentOf で直接観測できるので経路を増やさない\n\n参考:\n- Issue #1140（実装の検証への対応）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QyerDeuKYqUmAbAUR",
+      "files": [
+        {
+          "path": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "patch": "@@ -153,6 +153,20 @@ test(\"別の綴りで書くと、実体の中身が変わる\", async () => {\n   );\n });\n \n+test(\"別の綴りで外部から書き換えると、実体の中身が変わる\", () => {\n+  const fake = createDocumentIpcFake({ [Path]: `{}` });\n+  fake.linkPath({ link: LinkPath, target: Path });\n+\n+  fake.changeExternally({\n+    path: LinkPath,\n+    content: `{ \"formatVersion\": \"1.0\" }`,\n+  });\n+\n+  expect(fake.contentOf(Path)).toStrictEqual(\n+    Option.some(`{ \"formatVersion\": \"1.0\" }`),\n+  );\n+});\n+\n test(\"別の綴りで外部から書き換えると、実体を監視している綴りで届く\", async () => {\n   const fake = createDocumentIpcFake({ [Path]: `{}` });\n   fake.linkPath({ link: LinkPath, target: Path });",
+          "patchLines": 21,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.shortcut.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/components/__tests__/row-drag.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/components/__tests__/row-names.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/libs/__tests__/document-change.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+      "to": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/components/__tests__/row-drag.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/pane-regions.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/components/editor-screen/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/__tests__/document-change.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-menu/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-state-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/app-window/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/clock/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/file-drop/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.last-valid-render.test.tsx",
+      "to": "src/libs/__tests__/document-change.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/__tests__/document-change.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/components/__stories__/screen-height-shell.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/features/editor/__stories__/sample-editor-state.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/features/editor/components/opened-document-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/clock/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.document-invalid.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "to": "src/domains/__tests__/document-errors.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "to": "src/domains/__tests__/instants.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "to": "src/domains/session/file-validity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "to": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "to": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.normal.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/domains/session/document-access-failure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/domains/session/document-reload/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/libs/__tests__/document-change.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+      "to": "src/domains/session/document-access-failure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+      "to": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+      "to": "src/libs/__tests__/document-change.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.invalid.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/libs/__tests__/document-change.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/__tests__/use-file-revert.normal.test.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/__tests__/document-change.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/libs/tauri-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/libs/tauri-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    }
+  ]
+}
