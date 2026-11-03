@@ -49,7 +49,7 @@ export const FacingDistances = {
    * 引く（相手の選び方は docs/06-ui.md の Alt / Option の距離）。
    *
    * @param from 距離を測り始める矩形
-   * @param parentBounds `from` を囲む親の矩形（運んでいる間は落とし先の親）
+   * @param parentBounds `from` を囲む親の矩形（運んでいる間は落とし先の親、リサイズ中は今の親）
    * @param siblings その親の直下の、`from` 以外の子
    * @returns 向きごとの短い線（すべて画面上の px）。当たる相手が無い / 最初に当たる相手に
    *   接している向きは `none`（重なっている相手は飛ばす）
@@ -76,7 +76,8 @@ export const FacingDistances = {
 
   /**
    * 上下左右それぞれ、`others` のうち最初に当たる相手までの短い線。親の縁は候補にしない
-   * （docs/06-ui.md の artboard の移動と、選択しているだけのときの Alt / Option の距離）。
+   * （docs/06-ui.md の artboard の移動・artboard のリサイズと、選択しているだけのときの
+   * Alt / Option の距離）。
    *
    * @param from 距離を測り始める矩形
    * @param others 距離を測る相手の矩形
@@ -93,6 +94,27 @@ export const FacingDistances = {
     return FacingDistances.fromFacings((facing) =>
       lineToFirstReached(facing, from, others),
     );
+  },
+
+  /**
+   * 渡した向きの線だけを残した距離。
+   *
+   * @param distances 向きごとの短い線
+   * @param facings 残す向き
+   * @returns `facings` にある向きは `distances` の線のまま、無い向きは `none`
+   */
+  onlyToward(
+    distances: FacingDistances,
+    facings: readonly Facing[],
+  ): FacingDistances {
+    return FacingDistances.fromFacings((facing) => {
+      const isKept = facings.some((kept) => {
+        const isSameFacing =
+          kept.pair === facing.pair && kept.end === facing.end;
+        return isSameFacing;
+      });
+      return isKept ? distances[facing.pair][facing.end] : Option.none;
+    });
   },
 
   /**
