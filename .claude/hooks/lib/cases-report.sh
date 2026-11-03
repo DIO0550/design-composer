@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# 判定表（`*-cases.sh`）が共有する、判定の読み取りと報告と、検出器の種別の照合。
+# 判定表（`*-cases.sh`）が共有する、判定の読み取りと報告と、検出器の種別の照合と、判定表の最後の文の照合。
 #
-# 使い方: source したうえで `decide`・`normalize_miss`・`all_in_category`・`report` を呼び、最後に
-# `cases_failed` を見る。ケースの並べ方と検出器の呼び方は、判定表ごとに違う（走査ルートを
+# 使い方: source したうえで `decide`・`normalize_miss`・`all_in_category`・`report` を呼び、最後の文を
+# `exit "$cases_failed"` にする（照合するのは `cases-report-cases.sh`）。ケースの並べ方と検出器の呼び方は、判定表ごとに違う（走査ルートを
 # 絶対パスで渡すもの・`cd` してから相対で渡すもの、置くのが 1 ファイルか木か）ので、
 # そこは各判定表が持つ。検出器の種別を docstring の一覧と照合するなら
 # `report_documented_kinds <検出器>`、表の期待がすべての種別を含むかも見るなら
@@ -17,7 +17,8 @@
 # 判定は終了コードと報告の見出しを突き合わせて決める（`decide`）。終了コードを見る理由は
 # `.claude/hooks/README.md`「終了コードまで見る」。
 
-# 食い違ったケースがあれば 1 になる。source した側が最後に見る。
+# 食い違ったケースがあれば 1 になる。source した側は最後の文を `exit "$cases_failed"` にする
+# （照合するのは `cases-report-cases.sh`）。
 cases_failed=0
 
 # 検出器の出力と終了コードを突き合わせて、pass / deny / broken を決める。
@@ -159,4 +160,29 @@ report_covered_kinds() {
       cases_failed=1
     fi
   done <<<"$(reported_kinds "$detector")"
+}
+
+# コメント行と空行を除いた、ファイルの最後の行を出す。
+#
+# $1 ファイルのパス
+last_statement() {
+  grep -vE '^[[:space:]]*(#|$)' "$1" | tail -n 1
+}
+
+# 判定表の最後の文が `exit "$cases_failed"` と完全に一致するかを 1 行で出す。違えば `cases_failed` を立てる。
+#
+# スクリプトの終了コードは最後の文の終了コードなので、この文が無い・後ろに文がある・`exit 0` なら、
+# NG を出しても検査が通りうる。綴りを 1 通りに絞るのは、受け付ける形を増やすと照合の側が字句を解釈し始めるため。
+#
+# $1 判定表のパス
+# $2 報告に出す名前（省くと $1）
+report_exits_with_cases_failed() {
+  local table="$1" label="${2:-$1}" last
+  last="$(last_statement "$table")"
+  if [ "$last" = 'exit "$cases_failed"' ]; then
+    printf 'ok   %s の最後の文が exit "$cases_failed" になっている\n' "$label"
+    return 0
+  fi
+  printf 'NG   %s の最後の文が exit "$cases_failed" ではない（最後の文: %s）\n' "$label" "${last:-空}"
+  cases_failed=1
 }
