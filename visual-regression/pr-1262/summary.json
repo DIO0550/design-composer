@@ -1,10 +1,10 @@
 {
-  "reportVersion": "741d49231259644278606625241f8b6f2c3829dd",
+  "reportVersion": "5e8bb70330066296cc7e433c1f18fe0ed46578f1",
   "maxDiffRatio": 0.002,
   "changed": 0,
   "new": 1,
   "deleted": 0,
-  "passed": 206,
+  "passed": 208,
   "failed": 0,
   "results": [
     {
@@ -1321,6 +1321,19 @@
       "hasDiff": false
     },
     {
+      "story": "features-editor-features-document-start-documentopenfailurebanner--unchosen",
+      "id": "features-editor-features-document-start-documentopenfailurebanner--unchosen",
+      "title": "features/editor/features/document-start/DocumentOpenFailureBanner",
+      "name": "このアプリで選ばれていない",
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": true,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
       "story": "features-editor-features-document-start-documentopenfailurebanner--unparsable",
       "id": "features-editor-features-document-start-documentopenfailurebanner--unparsable",
       "title": "features/editor/features/document-start/DocumentOpenFailureBanner",
@@ -1390,6 +1403,19 @@
       "id": "features-editor-features-document-start-documentstart--open-failed",
       "title": "features/editor/features/document-start/DocumentStart",
       "name": "開けなかった",
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
+      "hasExpected": true,
+      "hasActual": true,
+      "hasDiff": false
+    },
+    {
+      "story": "features-editor-features-document-start-documentstart--open-unchosen",
+      "id": "features-editor-features-document-start-documentstart--open-unchosen",
+      "title": "features/editor/features/document-start/DocumentStart",
+      "name": "このアプリで選ばれていない",
       "status": "passed",
       "reason": "match",
       "diffPixels": 0,
