@@ -1,0 +1,1996 @@
+{
+  "version": 1,
+  "pr": 1270,
+  "sha": "95b0340752327bd14b866d9c6b333b85cd2e2bd0",
+  "issue": 1233,
+  "overview": {
+    "title": "判定表の最後の文を照合し、`exit \"$cases_failed\"` を消すと pre-push / CI が落ちるようにする",
+    "lead": "`cases-report.sh` を source する判定表 16 本の最後の文を、`cases-report-cases.sh` が grep で集めて照合する。集める側の末尾と呼び出し行は `check-tally-cases.sh` が照合し、2 本が互いを見る。",
+    "before": [
+      {
+        "text": "判定表の末尾の `exit \"$cases_failed\"` を消すか `exit 0` にすると、NG の行を出しても exit 0 で、pre-push / CI は緑のまま通る"
+      },
+      {
+        "text": "判定表の末尾は `exit \"$cases_failed\"` 形と、if 形(`exit 1` の後に「…: 期待どおり」を echo)の 2 通りがあった"
+      }
+    ],
+    "after": [
+      {
+        "text": "16 本の判定表は最後の文が `exit \"$cases_failed\"` の 1 行に揃い、外れた判定表があれば `cases-report-cases.sh` が NG を出して exit 1",
+        "message": "check-ending"
+      },
+      {
+        "text": "`cases-report-cases.sh` の末尾か本物のルートへの呼び出し行が外れれば、`check-tally-cases.sh` が NG を出して exit 1",
+        "message": "check-collector-call"
+      },
+      {
+        "text": "本物のルートで集めた範囲に `check-tally-cases.sh` が無ければ、`cases-report-cases.sh` が NG",
+        "message": "partner-in-range"
+      },
+      {
+        "text": "判定表が 1 本も見つからなければ NG(0 本を「すべて合っている」と読まない)",
+        "message": "collect"
+      },
+      {
+        "text": "最後の「…: 期待どおり」「判定表と食い違いがあります」の行は出なくなった",
+        "message": "run-table"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "最後の文の照合",
+        "text": "受け付ける綴りを 1 通りに絞った。字下げや `${…}` も NG になる",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/lib/cases-report.sh"
+        }
+      },
+      {
+        "title": "相互照合",
+        "text": "2 本が互いを見る形の守り手の無い残り 2 つ(自己照合の行を消す・grep を常に yes にする)を受け入れた",
+        "go": {
+          "kind": "flow",
+          "id": "partner"
+        }
+      },
+      {
+        "title": "集める範囲",
+        "text": "`source` / `.` / 字下げを拾い、`node_modules/` と `.git/` を除く。範囲に相手役があるかも見る",
+        "go": {
+          "kind": "message",
+          "id": "collect"
+        }
+      },
+      {
+        "title": "末尾を揃えた判定表",
+        "text": "if 形の 7 本(と集める側自身)を 1 行にした。最後の行の文言は出なくなる",
+        "go": {
+          "kind": "feature",
+          "id": "tables"
+        }
+      },
+      {
+        "title": "ハーネスの層",
+        "text": "変更はすべてハーネスの層。pre-push と CI の配線は足していない",
+        "go": {
+          "kind": "layer",
+          "layer": "ハーネス"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "ending",
+      "label": "最後の文の照合",
+      "role": "判定表の最後の文を集めて照合し、照合する側も相手役が照合する"
+    },
+    {
+      "id": "tables",
+      "label": "末尾を揃えた判定表",
+      "role": "if 形で終わっていた判定表を `exit \"$cases_failed\"` の 1 行に揃える"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "判定表の末尾の約束と、その照合を持つ"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/hooks/lib/cases-report.sh",
+      "name": "判定表の共有部品",
+      "role": "判定表が source する、判定の読み取りと報告と、判定表の最後の文の照合",
+      "feature": "ending",
+      "change": "`last_statement` と `report_exits_with_cases_failed` を足し、冒頭の使い方を「最後の文を `exit \"$cases_failed\"` にする」約束に書き直した"
+    },
+    {
+      "path": ".claude/hooks/lib/cases-report-cases.sh",
+      "name": "集める側の判定表",
+      "role": "`cases-report.sh` を source する判定表を grep で集めて、最後の文を照合する",
+      "feature": "ending",
+      "change": "一時ディレクトリの木の 19 ケース(`EXIT_CASES`)と、本物のルートでの照合と、相手役が範囲に入っているかの確認を足した。自分の末尾も `exit \"$cases_failed\"` にした"
+    },
+    {
+      "path": "harness/githooks/lib/check-tally-cases.sh",
+      "name": "結果行の判定表",
+      "role": "pre-push の集計の判定表で、この PR からは集める側の末尾と呼び出し行を見る相手役",
+      "feature": "ending",
+      "change": "集める側の最後の文と、本物のルートへの呼び出し行を照合する 2 件を足した。pre-push の最後の文の式は `last_statement` に置き換えた"
+    },
+    {
+      "path": ".claude/hooks/lib/story-title-cases.sh",
+      "name": "story の題の判定表",
+      "role": "末尾を揃えた 7 本の代表。末尾が `exit \"$cases_failed\"` 1 行になった",
+      "feature": "tables",
+      "change": "末尾の if 文と echo の 5 行を `exit \"$cases_failed\"` の 1 行にした"
+    },
+    {
+      "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "name": "push 前の検査フックの判定表",
+      "role": "末尾を揃えた 7 本の 1 つ",
+      "feature": "tables",
+      "change": "末尾の if 文と echo の 5 行を `exit \"$cases_failed\"` の 1 行にした",
+      "graph": false
+    },
+    {
+      "path": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "name": "テストヘルパーの重複の判定表",
+      "role": "末尾を揃えた 7 本の 1 つ",
+      "feature": "tables",
+      "change": "末尾の if 文と echo の 5 行を `exit \"$cases_failed\"` の 1 行にした",
+      "graph": false
+    },
+    {
+      "path": ".claude/hooks/lib/edit-detector-cases.sh",
+      "name": "編集時の検査フックの判定表",
+      "role": "末尾を揃えた 7 本の 1 つ",
+      "feature": "tables",
+      "change": "末尾の if 文と echo の 5 行を `exit \"$cases_failed\"` の 1 行にした",
+      "graph": false
+    },
+    {
+      "path": ".claude/hooks/lib/import-rule-cases.sh",
+      "name": "import 規約の判定表",
+      "role": "末尾を揃えた 7 本の 1 つ",
+      "feature": "tables",
+      "change": "末尾の if 文と echo の 5 行を `exit \"$cases_failed\"` の 1 行にした",
+      "graph": false
+    },
+    {
+      "path": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "name": "doc コメントの判定表",
+      "role": "末尾を揃えた 7 本の 1 つ",
+      "feature": "tables",
+      "change": "末尾の if 文と echo の 5 行を `exit \"$cases_failed\"` の 1 行にした",
+      "graph": false
+    },
+    {
+      "path": ".claude/hooks/lib/named-path-cases.sh",
+      "name": "名指ししたパスの判定表",
+      "role": "末尾を揃えた 7 本の 1 つ",
+      "feature": "tables",
+      "change": "末尾の if 文と echo の 5 行を `exit \"$cases_failed\"` の 1 行にした",
+      "graph": false
+    },
+    {
+      "path": "harness/githooks/pre-push",
+      "name": "push 前の検査",
+      "role": "判定表を 1 本ずつ走らせ、終了コードで通過・失敗を数える(変えていない)"
+    },
+    {
+      "path": ".github/workflows/frontend.yml",
+      "name": "CI の規約検査",
+      "role": "`rules-check` のジョブで同じ判定表を 1 ステップずつ走らせる(変えていない)",
+      "graph": false
+    },
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "フックの配線の表",
+      "role": "どの判定表がどの部品を使うかの一覧",
+      "change": "共有部品の行と集める側の行に、最後の文の照合を書き足した",
+      "graph": false
+    },
+    {
+      "path": "harness/githooks/README.md",
+      "name": "git フックの配線の表",
+      "role": "pre-push まわりのファイルの一覧",
+      "change": "結果行の判定表の行に、集める側を見ることを書き足した",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "run-table",
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "kind": "cmd",
+      "name": "判定表を走らせる",
+      "code": "run_check \"story の title の判定表\" bash .claude/hooks/lib/story-title-cases.sh",
+      "via": "exec",
+      "returns": "終了コード(この PR から `cases_failed` そのもの)",
+      "status": "changed"
+    },
+    {
+      "id": "run-collector",
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "kind": "cmd",
+      "name": "集める側を走らせる",
+      "code": "run_check \"判定の読み取りと報告と種別の照合の判定表\" bash .claude/hooks/lib/cases-report-cases.sh",
+      "via": "exec",
+      "returns": "終了コード。末尾が外れた判定表が 1 本でもあれば 1"
+    },
+    {
+      "id": "run-partner",
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "kind": "cmd",
+      "name": "相手役を走らせる",
+      "code": "run_check \"pre-push の結果行の判定表\" bash harness/githooks/lib/check-tally-cases.sh",
+      "via": "exec",
+      "returns": "終了コード。集める側の末尾か呼び出し行が外れていれば 1"
+    },
+    {
+      "id": "collect",
+      "from": ".claude/hooks/lib/cases-report-cases.sh",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "kind": "qry",
+      "name": "判定表を集める",
+      "code": "tables_sourcing_cases_report \"$repo_root\"",
+      "via": "file",
+      "payload": "リポジトリのルート",
+      "returns": "`cases-report.sh` を source / `.` で読む `*.sh` のパス(`node_modules/` と `.git/` の下を除く)",
+      "status": "added"
+    },
+    {
+      "id": "check-ending",
+      "from": ".claude/hooks/lib/cases-report-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "cmd",
+      "name": "最後の文を照合する",
+      "code": "report_exits_with_cases_failed \"$table\" \"${table#\"$root\"/}\"",
+      "via": "call",
+      "payload": "判定表のパスと報告に出す名前",
+      "returns": "ok / NG の 1 行。NG なら `cases_failed=1`",
+      "status": "added"
+    },
+    {
+      "id": "partner-in-range",
+      "from": ".claude/hooks/lib/cases-report-cases.sh",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "kind": "qry",
+      "name": "相手役が範囲にあるか見る",
+      "code": "tables_sourcing_cases_report \"$repo_root\" | grep -qxF -- \"$repo_root/$partner_table\"",
+      "via": "file",
+      "returns": "範囲にある / 範囲に無い",
+      "status": "added"
+    },
+    {
+      "id": "check-collector-ending",
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "kind": "qry",
+      "name": "集める側の最後の文を見る",
+      "code": "report_exits_with_cases_failed \"$cases_report_cases\" \".claude/hooks/lib/cases-report-cases.sh\"",
+      "via": "file",
+      "returns": "ok / NG の 1 行",
+      "status": "added"
+    },
+    {
+      "id": "check-collector-call",
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "kind": "qry",
+      "name": "本物のルートへの呼び出し行を見る",
+      "code": "grep -qxF 'report_tables_exit_with_cases_failed \"$repo_root\"' \"$cases_report_cases\"",
+      "via": "file",
+      "returns": "yes / no(行全体の一致)",
+      "status": "added"
+    },
+    {
+      "id": "read-last",
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "最後の文を取り出す",
+      "code": "last_statement \"$here/../pre-push\"",
+      "via": "call",
+      "payload": "ファイルのパス",
+      "returns": "コメント行と空行を除いた最後の行",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "push",
+      "label": "push したとき",
+      "steps": [
+        "run-table",
+        "run-collector",
+        "collect",
+        "check-ending",
+        "partner-in-range",
+        "run-partner",
+        "check-collector-ending",
+        "check-collector-call"
+      ]
+    },
+    {
+      "id": "collector",
+      "label": "集める側が判定表を照合する",
+      "steps": [
+        "collect",
+        "check-ending",
+        "partner-in-range"
+      ]
+    },
+    {
+      "id": "partner",
+      "label": "相手役が集める側を照合する",
+      "steps": [
+        "check-collector-ending",
+        "check-collector-call",
+        "read-last"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "85d9823b62b0b78f0b869aa76e392ec73e27b2e0",
+      "phase": "prep",
+      "role": "最後の文を照合する関数を共有部品に足す",
+      "why": "照合は集める側と相手役の 2 か所から呼ぶ。どちらも既に `cases-report.sh` を source しているので、`cases_failed` を定義しているこのファイルに置いた。`last_statement` は `check-tally-cases.sh` にあった式を移したもので、この時点ではまだ誰も呼んでいない。",
+      "flows": [
+        "collector"
+      ],
+      "review": [
+        "受け付ける綴りを `exit \"$cases_failed\"` の 1 通りにした。字下げ・行末コメント・引用符なし・`${cases_failed}` はすべて NG になる",
+        "最後の文の照合で `trap 'exit \"$cases_failed\"' EXIT` を採らなかった理由(16 本とも自前の `trap … EXIT` を張っている)が妥当か"
+      ],
+      "after": [
+        {
+          "text": "1 本の判定表の最後の文が `exit \"$cases_failed\"` かを 1 行で報告できる",
+          "message": "check-ending"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "start": 5,
+          "end": 6,
+          "text": "「最後に `cases_failed` を見る」を、最後の文を `exit \"$cases_failed\"` にする約束へ書き直した"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "start": 168,
+          "end": 170,
+          "text": "コメント行と空行を除いた最後の行。複数行の文は最後の行だけが返る(次のコミットで doc に開示)"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "start": 182,
+          "end": 187,
+          "text": "文字列の完全一致だけで判定する。NG の後の代入は `report` と同じ形"
+        }
+      ]
+    },
+    {
+      "sha": "cf0e5e962561bc867d3db9432f4b2a5ba466e063",
+      "phase": "prep",
+      "role": "if 形で終わっていた判定表 7 本の末尾を `exit \"$cases_failed\"` に揃える",
+      "why": "if 形の最後の文は echo なので、if を丸ごと消しても echo が最後に残り、1 行の照合では if の有無を判定できない。`cases_failed` の代入は `=0` と `=1` しか無いので、書き換えても終了コードは変わらない。照合を入れる前に揃えないと、照合を入れたコミットが落ちる。",
+      "flows": [
+        "push"
+      ],
+      "review": [
+        "最後に出ていた「判定表と食い違いがあります」「…: 期待どおり」の行を当てにしている呼び出し側が無いか(コミットでは grep で確かめ、`harness/records` の経緯の中にしか無い)"
+      ],
+      "before": [
+        {
+          "text": "食い違いがあれば echo して exit 1、無ければ「…: 期待どおり」と echo して終わる"
+        }
+      ],
+      "after": [
+        {
+          "text": "最後の文が `exit \"$cases_failed\"` で、終了コードは同じ。最後の行の文言は出ない",
+          "message": "run-table"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "side": "old",
+          "start": 88,
+          "end": 92,
+          "text": "消した if 形。最後の文が echo なので、if を消しても照合からは区別できない"
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "start": 88,
+          "end": 88,
+          "text": "揃えた形。残りの 6 本も同じ 1 行"
+        }
+      ]
+    },
+    {
+      "sha": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "phase": "core",
+      "role": "`cases-report.sh` を source する判定表を集めて、最後の文を照合する",
+      "why": "集める側は `cases-report.sh` を使う側を守る検査なので、`cases-report.sh` の判定表に置いた。pre-push と CI の `rules-check` で既に走っているので配線を足さずに済む。一覧を固定せず grep で集めるのは、判定表を足したときに照合から漏れないため。",
+      "flows": [
+        "collector"
+      ],
+      "review": [
+        "0 本を「すべて合っている」と読まないよう 0 本を NG にした。対象外のケースには正しい 1 本を並べ、0 本の NG と区別している",
+        "exit の直前で `cases_failed=0` にするすり抜けはゴールの外とし、照合しない",
+        "集める正規表現が `source` と `.` の両方と字下げを拾い、コメントで触れるだけの行を拾わないか"
+      ],
+      "before": [
+        {
+          "text": "判定表の末尾で終了コードを渡す文を消しても、どこからも検出されない"
+        }
+      ],
+      "after": [
+        {
+          "text": "本物のルートで集めた判定表のどれかの末尾が外れていれば、集める側が NG を出して exit 1",
+          "message": "check-ending"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 187,
+          "end": 190,
+          "text": "行頭(字下げ可)の `source` か `.` の後に `cases-report.sh` がある `*.sh` を集める。`node_modules/` と `.git/` は除く"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 196,
+          "end": 207,
+          "text": "この時点の名前は `report_tables_end_with_exit`。1 段目のレビューで改名する"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 268,
+          "end": 287,
+          "text": "この時点では 18 ケース。. で読むケースは正しい判定表を並べていない(テストのコミットで直す)"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 289,
+          "end": 292,
+          "text": "本物のルートで照合し、自分の末尾も `exit \"$cases_failed\"` にした"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "side": "old",
+          "start": 178,
+          "end": 182,
+          "text": "この判定表自身の if 形の末尾。8 本目としてここで揃えた"
+        }
+      ]
+    },
+    {
+      "sha": "90a2a00acb30e5cac43d98b7ad94df044e39c970",
+      "phase": "core",
+      "role": "集める側の最後の文と呼び出し行を、相手役の判定表で見る",
+      "why": "集める側は、自分自身の最後の文と本物のルートへの呼び出しを守れない。呼び出しの 1 行を消しても最後の文は残るので、穴が 1 段奥へ移るだけになる(plan-reviewer の指摘)。`check-tally-cases.sh` は集める 16 本に入っているので、互いに相手を照合すればどちらの末尾を消しても片方が落ちる。",
+      "flows": [
+        "partner"
+      ],
+      "review": [
+        "呼び出し行を `grep -qxF` で行全体の一致にしたので、定義行・一時ディレクトリの木への呼び出し・コメントにした行には当たらない",
+        "呼び出し行の綴りを変えると、この照合も同じコミットで直す必要がある"
+      ],
+      "before": [
+        {
+          "text": "集める側から本物のルートへの呼び出しを消しても、何も落ちない"
+        }
+      ],
+      "after": [
+        {
+          "text": "集める側の末尾か呼び出し行が外れると、相手役が NG を出して exit 1",
+          "message": "check-collector-call"
+        }
+      ],
+      "notes": [
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "start": 111,
+          "end": 111,
+          "text": "ローカル変数 `last_statement` を消し、同名の関数を呼ぶ形にした(変数と関数の名前の衝突)"
+        },
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "start": 115,
+          "end": 118,
+          "text": "この時点の呼び出し行の綴りは `report_tables_end_with_exit \"$repo_root\"`"
+        }
+      ]
+    },
+    {
+      "sha": "076686cccbf1238e86a721767ad09d1b75aa7dc3",
+      "phase": "fin",
+      "role": "配線の表に、最後の文の照合とその使い手を書き足す",
+      "why": "どの判定表がどの関数を使うかを一覧に持つのは README の「配線」の表だけなので、関数と照合を足したことでずれた表を直した。照合の理由はコードのコメントに置き、表には写していない。",
+      "review": [
+        "共有部品の行の使い手の一覧に、集める側と相手役の両方が正しく並んでいるか"
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 63,
+          "end": 64,
+          "text": "共有部品の行と集める側の行"
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "start": 34,
+          "end": 34,
+          "text": "相手役の行"
+        }
+      ]
+    },
+    {
+      "sha": "513398c90465f2fe3377a5b30a94185b41953037",
+      "phase": "revise",
+      "role": "共有部品の照合の doc と引数を整える",
+      "why": "1 段目のレビューの指摘 4 つへの対応。同じ規範が冒頭とコメントに 2 回出ていたので冒頭の使い方へ寄せ、呼び出しの無い既定値 `${2:-$1}` を消して `$2` を必須にした。`last_statement` は README と相手役の語「最後の文」に合わせて名前を残し、最後の「行」を返すずれは doc で開示した。",
+      "review": [
+        "`last_statement` を改名せず doc で開示したこと。照合が受け付けるのは 1 行の文だけなので、いまの使い方に害は無い"
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "start": 166,
+          "end": 167,
+          "text": "名前と実体のずれ(最後の文 / 最後の行)を開示した"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "start": 177,
+          "end": 181,
+          "text": "trap EXIT と、判定表を走らせる案を採らなかった理由を doc に移した"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "start": 184,
+          "end": 186,
+          "text": "`$2` を必須にした"
+        }
+      ]
+    },
+    {
+      "sha": "e1ad87da089bdbc673a7e70bf7161f5e35a573a0",
+      "phase": "revise",
+      "role": "集める側の照合を `report_tables_exit_with_cases_failed` に改め、表の打ち間違いを NG にする",
+      "why": "集める側の名前は「exit で終わる」なのに exit 0 を NG にしていて、名前と判定の条件がずれていた(naming)。性質の部分を 1 本ずつ見る側の綴りに揃えた。ケース表の綴りを打ち間違えると何も置かれない終わり方になり、NG を期待するケースが空振りで通りえたので、知らない綴りを食い違いにした。",
+      "flows": [
+        "partner"
+      ],
+      "review": [
+        "呼び出し行の綴りが変わったので、相手役の `grep -qxF` の綴りも同じコミットで直している",
+        "打ち間違いを、期待が ok でも NG でも食い違いとして落とすこと"
+      ],
+      "before": [
+        {
+          "text": "ケース表の終わり方の綴りを打ち間違えると、空の末尾として照合され、NG を期待するケースは通る"
+        }
+      ],
+      "after": [
+        {
+          "text": "知らない綴りのケースは「表に知らない綴りがある」として食い違いになる"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 196,
+          "end": 196,
+          "text": "改名した集める側の関数"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 228,
+          "end": 228,
+          "text": "終わり方の知らない綴りは 1 を返す"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 242,
+          "end": 242,
+          "text": "読み方の知らない綴りも同じ"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 273,
+          "end": 279,
+          "text": "置けなかったケースは照合せず、判定を「表に知らない綴りがある」にして `report` へ渡す"
+        },
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "start": 117,
+          "end": 117,
+          "text": "相手役が照合する呼び出し行の綴りも合わせた"
+        }
+      ]
+    },
+    {
+      "sha": "95b0340752327bd14b866d9c6b333b85cd2e2bd0",
+      "phase": "revise",
+      "role": "最後の文の照合のケースを、ガードと並び順で答えが出ない入力にする",
+      "why": "test-reviewer が実装を 30 通り壊したところ抜けが 3 つあった。集め方から `.` を外しても 0 本のガードが期待どおりの NG を出してしまう、悪い表がソート順で常に最後に来る、`repo_root` がずれても緑のまま残る。ケースの入力を、照合しているはずの規則でしか答えが出ない形にした。",
+      "flows": [
+        "collector"
+      ],
+      "review": [
+        "照合のための照合はここで止めた。自己照合の行を消す・grep を常に yes にする、には守り手が無い",
+        "範囲の確認は相手役が入っていることだけを見る。ルートの印になるファイルを見る案は、印が変わると外れるので採らなかった"
+      ],
+      "before": [
+        {
+          "text": "集め方から `.` を外す・最後の 1 本だけを見る・ルートをずらす、のどれに壊しても緑のまま"
+        }
+      ],
+      "after": [
+        {
+          "text": "その 4 通りの壊し方のどれでも exit 1 になる",
+          "message": "partner-in-range"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 293,
+          "end": 294,
+          "text": "正しい判定表を 1 本並べた。. を外すと 1 本見つかってしまい、0 本の NG に逃げられない"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 300,
+          "end": 300,
+          "text": "悪い表が先に並ぶケース。最後の 1 本だけを見る退行を捕まえる"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "start": 306,
+          "end": 311,
+          "text": "本物のルートで集めた範囲に相手役が入っているか"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "crc",
+      "label": "最後の文の照合の判定表",
+      "file": ".claude/hooks/lib/cases-report-cases.sh"
+    },
+    {
+      "id": "ct",
+      "label": "結果行の判定表",
+      "file": "harness/githooks/lib/check-tally-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "exit-01",
+      "suite": "crc",
+      "name": "最後の文が exit \"$cases_failed\" なら ok",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "正しい形を NG にしないこと",
+      "given": "一時ディレクトリの木に、1 本が `exit \"$cases_failed\"` で終わる",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "ok の行だけを出し、`cases_failed` を立てない",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 282,
+        "end": 282,
+        "text": "ok|最後の文が exit \"$cases_failed\" なら ok|a-cases.sh=source:exit"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-02",
+      "suite": "crc",
+      "name": "exit \"$cases_failed\" の後ろがコメントと空行だけなら ok",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "コメントと空行は文ではないので、最後の文の判定から除く",
+      "given": "一時ディレクトリの木に、`exit \"$cases_failed\"` の後ろに空行・コメント・字下げしたコメントがある",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "ok の行だけを出し、`cases_failed` を立てない",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 283,
+        "end": 283,
+        "text": "ok|exit \"$cases_failed\" の後ろがコメントと空行だけなら ok|a-cases.sh=source:exit-then-comments"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-03",
+      "suite": "crc",
+      "name": "最後の文が exit 0 なら NG",
+      "techniques": [
+        "error"
+      ],
+      "why": "ゴールの壊し方そのもの。NG を出しても緑で通る形",
+      "given": "一時ディレクトリの木に、最後の文が `exit 0`",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 284,
+        "end": 284,
+        "text": "NG|最後の文が exit 0 なら NG|a-cases.sh=source:exit-0"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ],
+      "values": {
+        "columns": [
+          "最後の文",
+          "期待"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`exit \"$cases_failed\"`",
+              "ok"
+            ]
+          },
+          {
+            "cells": [
+              "`exit 0`",
+              "NG"
+            ],
+            "boundary": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "exit-04",
+      "suite": "crc",
+      "name": "exit を消して最後の文が report になっていれば NG",
+      "techniques": [
+        "error"
+      ],
+      "why": "ゴールのもう 1 つの壊し方。`report` は NG のときも 0 を返すので緑で通る",
+      "given": "一時ディレクトリの木に、末尾の exit が無く、最後の文が `report ok ok \"ケース\"`",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 285,
+        "end": 285,
+        "text": "NG|exit を消して最後の文が report になっていれば NG|a-cases.sh=source:no-exit"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-05",
+      "suite": "crc",
+      "name": "exit \"$cases_failed\" の後ろに echo があれば NG",
+      "techniques": [
+        "error"
+      ],
+      "why": "最後の文の終了コードがスクリプトの終了コードになるので、後ろの文が 0 を返せば通ってしまう",
+      "given": "一時ディレクトリの木に、`exit \"$cases_failed\"` の後ろに `echo`",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 286,
+        "end": 286,
+        "text": "NG|exit \"$cases_failed\" の後ろに echo があれば NG|a-cases.sh=source:echo-after-exit"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-06",
+      "suite": "crc",
+      "name": "exit \"$cases_failed\" をコメントにしていれば NG",
+      "techniques": [
+        "error"
+      ],
+      "why": "コメントにした行を文と読まないこと",
+      "given": "一時ディレクトリの木に、`# exit \"$cases_failed\"` だけ",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 287,
+        "end": 287,
+        "text": "NG|exit \"$cases_failed\" をコメントにしていれば NG|a-cases.sh=source:commented-exit"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-07",
+      "suite": "crc",
+      "name": "cases_failed を if で見て echo で終わる形なら NG",
+      "techniques": [
+        "regression"
+      ],
+      "why": "if を消しても echo が残る形なので、1 行の照合では受け付けない",
+      "given": "一時ディレクトリの木に、揃える前の if 形(最後が `echo \"期待どおり\"`)",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 288,
+        "end": 288,
+        "text": "NG|cases_failed を if で見て echo で終わる形なら NG|a-cases.sh=source:if-form"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-08",
+      "suite": "crc",
+      "name": "引用符の無い exit $cases_failed なら NG",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "綴りを 1 通りに絞ったこと",
+      "given": "一時ディレクトリの木に、`exit $cases_failed`",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 289,
+        "end": 289,
+        "text": "NG|引用符の無い exit $cases_failed なら NG|a-cases.sh=source:unquoted"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-09",
+      "suite": "crc",
+      "name": "exit \"${cases_failed}\" なら NG",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "綴りを 1 通りに絞ったこと",
+      "given": "一時ディレクトリの木に、`exit \"${cases_failed}\"`",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 290,
+        "end": 290,
+        "text": "NG|exit \"${cases_failed}\" なら NG|a-cases.sh=source:braced"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-10",
+      "suite": "crc",
+      "name": "字下げした exit \"$cases_failed\" なら NG",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "字下げした exit は if などの中にある疑いがあるので受け付けない",
+      "given": "一時ディレクトリの木に、`  exit \"$cases_failed\"`(字下げ)",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 291,
+        "end": 291,
+        "text": "NG|字下げした exit \"$cases_failed\" なら NG|a-cases.sh=source:indented-exit"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-11",
+      "suite": "crc",
+      "name": "行末にコメントのある exit \"$cases_failed\" なら NG",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "綴りを 1 通りに絞ったこと",
+      "given": "一時ディレクトリの木に、`exit \"$cases_failed\"  # 終わり`",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 292,
+        "end": 292,
+        "text": "NG|行末にコメントのある exit \"$cases_failed\" なら NG|a-cases.sh=source:trailing-comment"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-12",
+      "suite": "crc",
+      "name": ". で読む判定表が exit 0 なら NG",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "`.` で読む判定表も集めること。正しい 1 本を並べたので、`.` を外すと 0 本のガードに逃げられず ok になって落ちる",
+      "given": "一時ディレクトリの木に、正しい `a-cases.sh` と、`.` で読んで `exit 0` で終わる `b-cases.sh`",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "95b0340752327bd14b866d9c6b333b85cd2e2bd0",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 293,
+        "end": 293,
+        "text": "NG|. で読む判定表が exit 0 なら NG|a-cases.sh=source:exit b-cases.sh=dot:exit-0"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-13",
+      "suite": "crc",
+      "name": "字下げした source で読む判定表が exit 0 なら NG",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "字下げした `source` も集めること。正しい 1 本を並べて、0 本のガードで答えが出ないようにした",
+      "given": "一時ディレクトリの木に、正しい `a-cases.sh` と、字下げした `source` で読んで `exit 0` で終わる `b-cases.sh`",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "95b0340752327bd14b866d9c6b333b85cd2e2bd0",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 294,
+        "end": 294,
+        "text": "NG|字下げした source で読む判定表が exit 0 なら NG|a-cases.sh=source:exit b-cases.sh=indented-source:exit-0"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-14",
+      "suite": "crc",
+      "name": "コメントで cases-report.sh に触れるだけのファイルは見ない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "読み込まないファイルを判定表として集めないこと",
+      "given": "一時ディレクトリの木に、正しい `a-cases.sh` と、コメントで触れるだけで exit の無い `b.sh`",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "ok の行だけを出し、`cases_failed` を立てない",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 295,
+        "end": 295,
+        "text": "ok|コメントで cases-report.sh に触れるだけのファイルは見ない|a-cases.sh=source:exit b.sh=mention:no-exit"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-15",
+      "suite": "crc",
+      "name": "node_modules の下の判定表は見ない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "依存パッケージの中を照合しないこと",
+      "given": "一時ディレクトリの木に、正しい `a-cases.sh` と、`node_modules/pkg/b-cases.sh`(`exit 0`)",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "ok の行だけを出し、`cases_failed` を立てない",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 296,
+        "end": 296,
+        "text": "ok|node_modules の下の判定表は見ない|a-cases.sh=source:exit node_modules/pkg/b-cases.sh=source:exit-0"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-16",
+      "suite": "crc",
+      "name": ".git の下の判定表は見ない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`.git` の中を照合しないこと(plan-reviewer の指摘)",
+      "given": "一時ディレクトリの木に、正しい `a-cases.sh` と、`.git/hooks/b-cases.sh`(`exit 0`)",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "ok の行だけを出し、`cases_failed` を立てない",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 297,
+        "end": 297,
+        "text": "ok|.git の下の判定表は見ない|a-cases.sh=source:exit .git/hooks/b-cases.sh=source:exit-0"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-17",
+      "suite": "crc",
+      "name": "cases-report.sh を source する判定表が 1 本も無ければ NG",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "0 本を「すべて合っている」と読まないこと。集め方が壊れたことに気づく",
+      "given": "一時ディレクトリの木に、何も置かない",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 298,
+        "end": 298,
+        "text": "NG|cases-report.sh を source する判定表が 1 本も無ければ NG|-"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ],
+      "values": {
+        "columns": [
+          "集まった判定表",
+          "期待"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "0 本",
+              "NG"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "正しい 1 本",
+              "ok"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "exit-18",
+      "suite": "crc",
+      "name": "正しい判定表と exit 0 の判定表が並んでいれば NG",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "1 本でも外れていれば NG にすること",
+      "given": "一時ディレクトリの木に、正しい `a-cases.sh` と、`exit 0` の `lib/b-cases.sh`",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 299,
+        "end": 299,
+        "text": "NG|正しい判定表と exit 0 の判定表が並んでいれば NG|a-cases.sh=source:exit lib/b-cases.sh=source:exit-0"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "exit-19",
+      "suite": "crc",
+      "name": "exit 0 の判定表が正しい判定表より先に並んでいても NG",
+      "techniques": [
+        "regression"
+      ],
+      "why": "悪い表が並びの最後に来ない入力。最後の 1 本だけを見る退行を捕まえる",
+      "given": "一時ディレクトリの木に、`exit 0` の `a-cases.sh` が先、正しい `lib/b-cases.sh` が後",
+      "when": "その木のルートで `report_tables_exit_with_cases_failed` を呼ぶ",
+      "then": "NG の行を出し、`cases_failed` を立てる",
+      "commit": "95b0340752327bd14b866d9c6b333b85cd2e2bd0",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 300,
+        "end": 300,
+        "text": "NG|exit 0 の判定表が正しい判定表より先に並んでいても NG|a-cases.sh=source:exit-0 lib/b-cases.sh=source:exit"
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "collect",
+        "check-ending"
+      ]
+    },
+    {
+      "id": "partner-range",
+      "suite": "crc",
+      "name": "本物のルートで集めた判定表に $partner_table が入っている",
+      "techniques": [
+        "regression",
+        "state"
+      ],
+      "why": "`repo_root` がずれると集める範囲が縮み、相手役が照合から外れても緑のまま残る。2 本が互いを見る前提を確かめる",
+      "given": "本物のリポジトリのルート",
+      "when": "集めた判定表の一覧に、`harness/githooks/lib/check-tally-cases.sh` の絶対パスが行全体で一致するかを見る",
+      "then": "「範囲にある」になる。名前の `$partner_table` は実行時に `harness/githooks/lib/check-tally-cases.sh` へ展開される",
+      "commit": "95b0340752327bd14b866d9c6b333b85cd2e2bd0",
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 303,
+        "end": 311,
+        "emphasis": [
+          {
+            "start": 310,
+            "end": 311
+          }
+        ],
+        "text": "repo_root=\"$(cd \"$lib_dir/../../..\" && pwd)\"\nreport_tables_exit_with_cases_failed \"$repo_root\"\n\n# `repo_root` がずれると集める範囲が縮み、相手役の判定表が照合から外れても緑のまま残る。2 本が互いに\n# 相手を照合する形なので、相手が集めた範囲に入っていることも見る。\npartner_table=\"harness/githooks/lib/check-tally-cases.sh\"\npartner_decision=\"範囲に無い\"\ntables_sourcing_cases_report \"$repo_root\" | grep -qxF -- \"$repo_root/$partner_table\" && partner_decision=\"範囲にある\"\nreport \"範囲にある\" \"$partner_decision\" \"本物のルートで集めた判定表に $partner_table が入っている\""
+      },
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh",
+        "harness/githooks/lib/check-tally-cases.sh"
+      ],
+      "covers": [
+        "partner-in-range"
+      ]
+    },
+    {
+      "id": "collector-ending",
+      "suite": "ct",
+      "name": ".claude/hooks/lib/cases-report-cases.sh の最後の文が exit \"$cases_failed\" になっている",
+      "techniques": [
+        "regression"
+      ],
+      "why": "集める側は自分の最後の文を守れないので、相手役が見る。末尾を消すと相手役が NG で落ちる",
+      "given": "本物の `cases-report-cases.sh`",
+      "when": "`report_exits_with_cases_failed` で最後の文を照合する",
+      "then": "ok の行を出す",
+      "commit": "90a2a00acb30e5cac43d98b7ad94df044e39c970",
+      "excerpt": {
+        "path": "harness/githooks/lib/check-tally-cases.sh",
+        "start": 113,
+        "end": 116,
+        "emphasis": [
+          {
+            "start": 116,
+            "end": 116
+          }
+        ],
+        "text": "# 判定表の最後の文は cases-report-cases.sh が集めて確かめるが、集める側は自分自身の最後の文と\n# 集める呼び出しを守れないので、その 2 つはここで見る。\ncases_report_cases=\"$here/../../../.claude/hooks/lib/cases-report-cases.sh\"\nreport_exits_with_cases_failed \"$cases_report_cases\" \".claude/hooks/lib/cases-report-cases.sh\""
+      },
+      "targets": [
+        "harness/githooks/lib/check-tally-cases.sh",
+        ".claude/hooks/lib/cases-report-cases.sh"
+      ],
+      "covers": [
+        "check-collector-ending"
+      ]
+    },
+    {
+      "id": "collector-call",
+      "suite": "ct",
+      "name": "cases-report-cases.sh が、本物のリポジトリのルートで判定表の最後の文を確かめている",
+      "techniques": [
+        "regression"
+      ],
+      "why": "呼び出しの 1 行を消しても集める側の最後の文は残るので、行そのものを見る",
+      "given": "本物の `cases-report-cases.sh`",
+      "when": "`report_tables_exit_with_cases_failed \"$repo_root\"` の行が行全体で一致するかを `grep -qxF` で見る",
+      "then": "yes になる。定義行・一時ディレクトリへの呼び出し・コメントにした行には当たらない",
+      "commit": "90a2a00acb30e5cac43d98b7ad94df044e39c970",
+      "excerpt": {
+        "path": "harness/githooks/lib/check-tally-cases.sh",
+        "start": 117,
+        "end": 118,
+        "text": "report yes \"$(grep -qxF 'report_tables_exit_with_cases_failed \"$repo_root\"' \"$cases_report_cases\" && echo yes || echo no)\" \\\n  \"cases-report-cases.sh が、本物のリポジトリのルートで判定表の最後の文を確かめている\""
+      },
+      "targets": [
+        "harness/githooks/lib/check-tally-cases.sh",
+        ".claude/hooks/lib/cases-report-cases.sh"
+      ],
+      "covers": [
+        "check-collector-call"
+      ]
+    },
+    {
+      "id": "finish-checks",
+      "suite": "ct",
+      "name": "pre-push の最後の文が finish_checks で、その終了コードがフックの終了コードになる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "前からある照合。式を `last_statement` に置き換えても答えが変わらないこと",
+      "given": "本物の `harness/githooks/pre-push`",
+      "when": "`last_statement` で最後の文を取り出す",
+      "then": "`finish_checks` になる",
+      "excerpt": {
+        "path": "harness/githooks/lib/check-tally-cases.sh",
+        "start": 109,
+        "end": 111,
+        "text": "# pre-push の終了コードは最後の文の終了コードなので、`finish_checks` の後ろに文があると\n# 集計が失敗を返しても push が通る。上のケースは lib だけを見るので、ここで配線を見る。\nreport \"finish_checks\" \"$(last_statement \"$here/../pre-push\")\" \"pre-push の最後の文が finish_checks で、その終了コードがフックの終了コードになる\""
+      },
+      "targets": [
+        "harness/githooks/lib/check-tally-cases.sh",
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "read-last"
+      ]
+    },
+    {
+      "id": "reset-before-exit",
+      "suite": "crc",
+      "name": "exit の直前で cases_failed を 0 に戻す判定表は NG",
+      "techniques": [
+        "error"
+      ],
+      "todo": true,
+      "why": "最後の文は正しいまま、直前で `cases_failed=0` にすると緑で通る。ゴールの外として照合していない",
+      "given": "`cases_failed=0` の後に `exit \"$cases_failed\"` で終わる判定表",
+      "when": "集める側で照合する",
+      "then": "NG にしてほしいが、いまは ok になる",
+      "targets": [
+        ".claude/hooks/lib/cases-report-cases.sh"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "判定表の終わり方を壊すと、push と CI が止まるようになった",
+    "lead": "ハーネスを使うセッションと人から見て変わったのは、判定表の最後の文を消したり終了コードを 0 に固定したりしたときに、それが検査で捕まるようになったことと、判定表の最後に出ていたまとめの 1 行が出なくなったことです。",
+    "changed": {
+      "before": [
+        {
+          "text": "判定表の最後で結果を終了コードに渡す文を消すか 0 に固定すると、食い違いの行を出しても判定表は成功で終わり、push も CI も緑のまま通る"
+        },
+        {
+          "text": "判定表の多くは、最後に「…: 期待どおり」か「判定表と食い違いがあります」の 1 行を出していた"
+        }
+      ],
+      "after": [
+        {
+          "text": "判定表の最後の文が決まった 1 行でなければ、push 前の検査と CI の規約検査が、どの判定表のどの文かを出して止まる",
+          "message": "check-ending"
+        },
+        {
+          "text": "照合する側の判定表自身の末尾や照合の呼び出しを消しても、もう一方の判定表が止める",
+          "message": "check-collector-call"
+        },
+        {
+          "text": "判定表の最後の「…: 期待どおり」の行は出ない。結果は push 前の検査の集計と CI のステップ名が伝える",
+          "message": "run-table"
+        }
+      ],
+      "text": "判定表を新しく足しても、一覧に書き足さずに照合の対象へ入ります。",
+      "specs": [
+        {
+          "path": ".claude/hooks/README.md",
+          "locator": "「配線」の表の、判定表が共有する部品の行と、判定の読み取りと報告の判定表の行",
+          "text": "最後の文の照合の部品とその使い手、本物のルートで最後の文を照合することを書き足した",
+          "shas": [
+            "076686cccbf1238e86a721767ad09d1b75aa7dc3"
+          ]
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "locator": "「配線」の表の、結果行の判定表の行",
+          "text": "照合する側の判定表の最後の文と、照合の呼び出しを見ることを書き足した",
+          "shas": [
+            "076686cccbf1238e86a721767ad09d1b75aa7dc3"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1233,
+          "text": "判定表がまちがいを出しても成功で終わり、緑のまま通っていた件。計画・却下した案・レビューへの対応が残っている"
+        }
+      ],
+      "primers": [
+        "last-statement-exit",
+        "mutual-check"
+      ]
+    },
+    "tables": [
+      {
+        "label": "判定表の終わり方と push の結果",
+        "gist": "push が通るかを決めるのは、判定表の中のケースが期待どおりかと、判定表の最後の文が決まった 1 行かの 2 つ。",
+        "text": "上の段は変わりません。下の 3 段は、これまで判定表の書き方しだいで緑のまま通っていたところです。",
+        "rowHeads": [
+          {
+            "id": "proper",
+            "label": "決まった 1 行で終わる"
+          },
+          {
+            "id": "zero",
+            "label": "終了コードを 0 に固定して終わる"
+          },
+          {
+            "id": "removed",
+            "label": "終わりの文を消した",
+            "note": "最後の文が結果の報告になる"
+          },
+          {
+            "id": "old-form",
+            "label": "これまでの、まとめの行を出して終わる形"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "all-ok",
+            "label": "ケースがすべて期待どおり"
+          },
+          {
+            "id": "has-ng",
+            "label": "食い違うケースがある"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "proper",
+            "columnHead": "all-ok",
+            "result": "通る",
+            "tests": [
+              "exit-01"
+            ]
+          },
+          {
+            "rowHead": "proper",
+            "columnHead": "has-ng",
+            "result": "止まる"
+          },
+          {
+            "rowHead": "zero",
+            "columnHead": "all-ok",
+            "result": "止まる(終わり方が違うと出る)",
+            "was": "通る",
+            "tests": [
+              "exit-03"
+            ]
+          },
+          {
+            "rowHead": "zero",
+            "columnHead": "has-ng",
+            "result": "止まる",
+            "was": "食い違いの行を出したまま通る",
+            "tests": [
+              "exit-03"
+            ]
+          },
+          {
+            "rowHead": "removed",
+            "columnHead": "all-ok",
+            "result": "止まる(終わり方が違うと出る)",
+            "was": "通る",
+            "tests": [
+              "exit-04"
+            ]
+          },
+          {
+            "rowHead": "removed",
+            "columnHead": "has-ng",
+            "result": "止まる",
+            "was": "食い違いの行を出したまま通る",
+            "tests": [
+              "exit-04"
+            ]
+          },
+          {
+            "rowHead": "old-form",
+            "columnHead": "all-ok",
+            "result": "止まる(終わり方が違うと出る)",
+            "was": "通る",
+            "tests": [
+              "exit-07"
+            ]
+          },
+          {
+            "rowHead": "old-form",
+            "columnHead": "has-ng",
+            "result": "止まる",
+            "tests": [
+              "exit-07"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "照合する側の判定表を壊したとき",
+        "before": [],
+        "after": [
+          {
+            "text": "照合する側の末尾を消すか、本物のリポジトリで照合する行を消すと、もう一方の判定表が止める",
+            "message": "check-collector-call"
+          },
+          {
+            "text": "照合する範囲がずれてもう一方が外れると、照合する側が止める",
+            "message": "partner-in-range"
+          }
+        ],
+        "text": "2 本が互いを見るので、どちらか一方を壊しても緑のまま残りません。照合の行そのものを消す・照合の結果を常に一致にする、の 2 つには守り手がありません。",
+        "tests": [
+          "collector-ending",
+          "collector-call",
+          "partner-range"
+        ],
+        "primers": [
+          "mutual-check"
+        ]
+      },
+      {
+        "label": "照合のケース表の綴りを打ち間違えたとき",
+        "before": [],
+        "after": [
+          {
+            "text": "知らない綴りのケースは、期待が成功でも失敗でも食い違いとして止まる"
+          }
+        ],
+        "text": "何も置かれないまま照合されて、期待どおりに見えてしまうのを防ぎます。"
+      }
+    ],
+    "kept": [
+      {
+        "text": "末尾を揃えた判定表の中のケースと、その判定は変わらない",
+        "tests": [
+          "exit-01"
+        ]
+      },
+      {
+        "text": "push 前の検査と CI で走る検査の数と順番は変わらない(照合は既に走っている判定表の中に入れた)"
+      },
+      {
+        "text": "最後の文の後ろにコメントや空行があるのはかまわない",
+        "tests": [
+          "exit-02"
+        ]
+      },
+      {
+        "text": "依存パッケージや git の管理領域の中のファイルは照合しない",
+        "tests": [
+          "exit-15",
+          "exit-16"
+        ]
+      },
+      {
+        "text": "push 前の検査の最後の文の照合は、前と同じ答えを返す",
+        "tests": [
+          "finish-checks"
+        ]
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "harness/githooks/README.md",
+        "locator": "「結果の読み方」",
+        "text": "push 前の検査の最後の行で通過・失敗・飛ばしを読む決まりは変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "exit-status",
+      "category": "bash · 終了コード",
+      "label": "終了コードと `exit`",
+      "gist": "コマンドやスクリプトが成功したか失敗したかを、呼び出した側に 0〜255 の数で伝える仕組み。0 が成功、それ以外が失敗。[[pre-push|pre-push]] も CI も、この数だけで通すか止めるかを決める。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`exit n` はスクリプトをその場で終わらせ、終了コードを n にする。`exit` を書かずに最後まで走ったスクリプトは、**最後に実行した文の終了コード**で終わる。`echo` は書き出せれば 0 を返し、`x=1` のような代入も 0 を返す。"
+        },
+        {
+          "kind": "declaration",
+          "code": "exit \"$cases_failed\""
+        },
+        {
+          "kind": "caution",
+          "text": "途中で失敗を見つけて変数に覚えておいても、最後の文が 0 を返せばスクリプトは成功で終わる。食い違いの行を出しても緑のまま通っていたのはこのため。"
+        },
+        {
+          "kind": "memo",
+          "text": "`\"$cases_failed\"` の `\"…\"` は、変数の中身を 1 つの語として渡すための引用符。中身が空でも `exit` に空の語が渡り、引数が消えない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "lineRange": {
+            "start": 88,
+            "end": 88
+          },
+          "text": "揃えた判定表の最後の文",
+          "shas": [
+            "cf0e5e962561bc867d3db9432f4b2a5ba466e063"
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "lineRange": {
+            "start": 177,
+            "end": 179
+          },
+          "text": "最後の文の照合が要る理由",
+          "shas": [
+            "85d9823b62b0b78f0b869aa76e392ec73e27b2e0",
+            "513398c90465f2fe3377a5b30a94185b41953037"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "last-statement-exit"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "source-dot",
+      "category": "bash · 読み込み",
+      "label": "`source` と `.`",
+      "gist": "別のシェルスクリプトを、いま走っているシェルの中で読み込んで実行するコマンド。読み込んだ側で定義した変数と関数が、そのまま読み込んだ側でも使える。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`source ファイル` と `. ファイル` は bash では同じ意味。`bash ファイル` のように別のプロセスで走らせるのと違い、読み込んだファイルが代入した変数(ここでは `cases_failed`)は、読み込んだ側の変数として残る。"
+        },
+        {
+          "kind": "declaration",
+          "code": "source \"$lib_dir/cases-report.sh\""
+        },
+        {
+          "kind": "caution",
+          "text": "綴りが 2 通りあるので、読み込んでいるファイルを grep で探すときは両方を拾う。行頭の字下げも許す。どちらかを外すと、その綴りで読む判定表が黙って照合から外れる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "lineRange": {
+            "start": 188,
+            "end": 191
+          },
+          "text": "`source` か `.` で `cases-report.sh` を読む `*.sh` を集める",
+          "shas": [
+            "c0e7ebdc320ffc8d922366619f1a71dc9fb10039"
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "lineRange": {
+            "start": 39,
+            "end": 39
+          },
+          "text": "判定表が共有部品を読み込む行"
+        }
+      ],
+      "seeAlso": [
+        "grep-flags"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "grep-flags",
+      "category": "bash · grep",
+      "label": "`grep` の `-r` `-l` `-x` `-F` `-q`",
+      "gist": "`grep` はファイルの中から[[正規表現|regex]]に合う行を探すコマンド。旗(オプション)の組み合わせで、ファイルの一覧を出す・行全体の一致だけを見る・結果を終了コードだけで返す、に変わる。",
+      "passages": [
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "-r",
+              "type": "旗",
+              "text": "ディレクトリの下を再帰的に探す。`--include='*.sh'` で対象を絞り、`--exclude-dir` で入らないディレクトリを指す"
+            },
+            {
+              "name": "-l",
+              "type": "旗",
+              "text": "合った行ではなく、合う行を持つファイルのパスを 1 行 1 つ出す"
+            },
+            {
+              "name": "-E",
+              "type": "旗",
+              "text": "拡張の[[正規表現|regex]]で読む。`(a|b)` の選択が書ける"
+            },
+            {
+              "name": "-x",
+              "type": "旗",
+              "text": "行の一部ではなく、行全体が一致したときだけ合ったとする"
+            },
+            {
+              "name": "-F",
+              "type": "旗",
+              "text": "パターンを正規表現ではなく、そのままの文字列として探す。`$` や `.` が特別な意味を持たない"
+            },
+            {
+              "name": "-q",
+              "type": "旗",
+              "text": "何も出さず、見つかったら 0、見つからなければ 1 の終了コードだけを返す",
+              "note": "`&&` と組む"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "`A && B` は A の終了コードが 0 のときだけ B を実行する。`grep -q … && x=yes` で「見つかったら yes」が書ける。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "lineRange": {
+            "start": 117,
+            "end": 118
+          },
+          "text": "呼び出し行を行全体の一致(`-qxF`)で見る",
+          "shas": [
+            "90a2a00acb30e5cac43d98b7ad94df044e39c970",
+            "e1ad87da089bdbc673a7e70bf7161f5e35a573a0"
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "lineRange": {
+            "start": 310,
+            "end": 310
+          },
+          "text": "集めた一覧に相手役のパスがあるかを行全体の一致で見る",
+          "shas": [
+            "95b0340752327bd14b866d9c6b333b85cd2e2bd0"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "heredoc-read",
+      "category": "bash · ヒアドキュメント",
+      "label": "ヒアドキュメントと `while IFS='|' read -r`",
+      "gist": "スクリプトの中に書いた複数行の文字列を、ファイルの代わりにコマンドの入力へ流す書き方([[ヒアドキュメント|heredoc]])。判定表は 1 行 1 ケースの表をこれで流し、1 行ずつ読む。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`done <<'EXIT_CASES'` から次の `EXIT_CASES` だけの行までが、`while` の入力になる。目印を `'…'` で囲むと、中の `$cases_failed` などは展開されずに文字のまま届く。`IFS='|' read -r a b c` は 1 行を `|` で区切って変数に入れ、`-r` は `\\` を特別扱いしない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/cases-report-cases.sh",
+            "start": 269,
+            "end": 283,
+            "emphasis": [
+              {
+                "start": 270,
+                "end": 270
+              },
+              {
+                "start": 281,
+                "end": 281
+              }
+            ],
+            "text": "tree_count=0\nwhile IFS='|' read -r expected label placements; do\n  [ -n \"$label\" ] || continue\n  tree_count=$((tree_count + 1))\n  root=\"$work/tree-$tree_count\"\n  # 綴りを打ち間違えたケースは、期待が ok でも NG でも食い違いとして落とす（置かれなかった木を照合して\n  # 期待どおりの判定が出ると、打ち間違いが緑のまま残る）。\n  decision=\"表に知らない綴りがある\"\n  if place_tables \"$placements\" \"$root\"; then\n    decision=\"$(verdict_of report_tables_exit_with_cases_failed \"$root\")\"\n  fi\n  report \"$expected\" \"$decision\" \"$label\"\ndone <<'EXIT_CASES'\nok|最後の文が exit \"$cases_failed\" なら ok|a-cases.sh=source:exit\nok|exit \"$cases_failed\" の後ろがコメントと空行だけなら ok|a-cases.sh=source:exit-then-comments"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "lineRange": {
+            "start": 269,
+            "end": 301
+          },
+          "text": "最後の文の照合のケース表 `EXIT_CASES`",
+          "shas": [
+            "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+            "e1ad87da089bdbc673a7e70bf7161f5e35a573a0",
+            "95b0340752327bd14b866d9c6b333b85cd2e2bd0"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "last-statement-exit",
+      "category": "harness · 判定表",
+      "label": "判定表の最後の文の照合",
+      "gist": "`cases-report.sh` を読み込む判定表は、最後の文を `exit \"$cases_failed\"` の 1 行にする約束を持つ。その約束を、文字列の完全一致で見る。[[終了コード|exit-code]]の仕組みは言語の節「終了コードと `exit`」にある。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`last_statement` がコメント行と空行を除いた最後の行を取り出し、`report_exits_with_cases_failed` がそれを `exit \"$cases_failed\"` と比べる。違えば NG の行を出して `cases_failed` を立てる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/cases-report.sh",
+            "start": 166,
+            "end": 194,
+            "emphasis": [
+              {
+                "start": 188,
+                "end": 188
+              }
+            ],
+            "text": "# コメント行と空行を除いた、ファイルの最後の行を出す。1 行で書いた文を想定していて、複数行に\n# わたる文では、その最後の行が返る。\n#\n# $1 ファイルのパス\nlast_statement() {\n  grep -vE '^[[:space:]]*(#|$)' \"$1\" | tail -n 1\n}\n\n# 判定表の最後の文が `exit \"$cases_failed\"` と完全に一致するかを 1 行で出す。違えば `cases_failed` を\n# 立てる。\n#\n# スクリプトの終了コードは最後の文の終了コードなので、この文が無い・後ろに文がある・`exit 0` なら、\n# NG を出しても検査が通りうる。綴りを 1 通りに絞るのは、受け付ける形を増やすと照合の側が字句を\n# 解釈し始めるため。\n# `trap 'exit \"$cases_failed\"' EXIT` は採らない（判定表がそれぞれ自前の `trap … EXIT` を張っていて\n# 上書きされる）。判定表を走らせて終了コードを見る形も採らない（表ごとに要る道具と時間が増える）。\n#\n# $1 判定表のパス\n# $2 報告に出す名前\nreport_exits_with_cases_failed() {\n  local table=\"$1\" label=\"$2\" last\n  last=\"$(last_statement \"$table\")\"\n  if [ \"$last\" = 'exit \"$cases_failed\"' ]; then\n    printf 'ok   %s の最後の文が exit \"$cases_failed\" になっている\\n' \"$label\"\n    return 0\n  fi\n  printf 'NG   %s の最後の文が exit \"$cases_failed\" ではない（最後の文: %s）\\n' \"$label\" \"${last:-空}\"\n  cases_failed=1\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "受け付ける綴りは 1 通り。字下げ・行末コメント・引用符なし・`${cases_failed}` は NG。形を増やすと照合が字句を解釈し始める。"
+        },
+        {
+          "kind": "caution",
+          "text": "複数行にわたる文はその最後の行だけが返る。いまの判定表はすべて 1 行の文で終わるので害は無い。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は if 形(食い違いがあれば `exit 1`、無ければ「期待どおり」と echo)と `exit \"$cases_failed\"` 形が混ざっていた。if 形は最後の文が echo なので、if を消しても照合で区別できず、8 本を書き換えて揃えた。"
+        },
+        {
+          "kind": "memo",
+          "text": "`trap 'exit \"$cases_failed\"' EXIT` で終了コードを強制する案は、16 本とも自前の `trap … EXIT` を張っていて上書きされるので採らなかった。判定表を実際に走らせる案は、表ごとに要る道具と時間が増えるので採らなかった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "lineRange": {
+            "start": 166,
+            "end": 194
+          },
+          "text": "`last_statement` と `report_exits_with_cases_failed`",
+          "shas": [
+            "85d9823b62b0b78f0b869aa76e392ec73e27b2e0",
+            "513398c90465f2fe3377a5b30a94185b41953037"
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "lineRange": {
+            "start": 197,
+            "end": 208
+          },
+          "text": "集めた判定表ごとに照合する",
+          "shas": [
+            "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+            "e1ad87da089bdbc673a7e70bf7161f5e35a573a0"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "exit-status",
+        "source-dot",
+        "mutual-check"
+      ],
+      "tests": [
+        "exit-01",
+        "exit-03",
+        "exit-04",
+        "exit-07",
+        "exit-17",
+        "exit-19"
+      ],
+      "flows": [
+        "collector"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "mutual-check",
+      "category": "harness · 判定表",
+      "label": "2 本が互いを照合する",
+      "gist": "集める側(`cases-report-cases.sh`)は自分の末尾と、本物のルートへの呼び出しを守れない。そこを相手役(`check-tally-cases.sh`)が見て、相手役の末尾は集める側が集めて見る。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "集める側は本物のルートで集めた範囲に相手役が入っていることも確かめる。ルートがずれて範囲が縮むと、相手役が照合から外れても緑のまま残るため。相手役は呼び出し行を `grep -qxF` の行全体の一致で見るので、定義行やコメントにした行には当たらない。"
+        },
+        {
+          "kind": "spec",
+          "text": "片方の末尾を消すと、もう一方が NG を出して exit 1 になる。どちらも pre-push と CI の `rules-check` で既に走っている。"
+        },
+        {
+          "kind": "caution",
+          "text": "照合のための照合はここで止めている。自己照合の行を消す・grep を常に yes にする、には守り手が無い。守りを足しても同じ形が 1 段上に移るだけになる。"
+        },
+        {
+          "kind": "memo",
+          "text": "独立した検査スクリプトを立てる案と、集める側を相手役に置く案は採らなかった。どちらも、新しい側の最後の文を誰も守らないのは同じになる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "lineRange": {
+            "start": 303,
+            "end": 311
+          },
+          "text": "本物のルートでの照合と、相手役が範囲にあるかの確認",
+          "shas": [
+            "c0e7ebdc320ffc8d922366619f1a71dc9fb10039",
+            "95b0340752327bd14b866d9c6b333b85cd2e2bd0"
+          ]
+        },
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "lineRange": {
+            "start": 113,
+            "end": 118
+          },
+          "text": "集める側の末尾と呼び出し行の照合",
+          "shas": [
+            "90a2a00acb30e5cac43d98b7ad94df044e39c970",
+            "e1ad87da089bdbc673a7e70bf7161f5e35a573a0"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "last-statement-exit",
+        "grep-flags"
+      ],
+      "tests": [
+        "collector-ending",
+        "collector-call",
+        "partner-range"
+      ],
+      "flows": [
+        "partner"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "pre-push",
+      "label": "pre-push",
+      "text": "`git push` の直前に git が自動で走らせるスクリプト。0 以外で終わると push が止まる。"
+    },
+    {
+      "id": "regex",
+      "label": "正規表現",
+      "text": "文字列の形を記号で書いたパターン。`^` は行頭、`.*` は任意の文字の並び、`[[:space:]]` は空白 1 文字を表す。"
+    },
+    {
+      "id": "heredoc",
+      "label": "ヒアドキュメント",
+      "text": "`<<目印` から目印だけの行までを、ひとかたまりの入力としてコマンドへ渡す書き方。"
+    },
+    {
+      "id": "exit-code",
+      "label": "終了コード",
+      "text": "スクリプトが終わったときに呼び出し側へ返す 0〜255 の数。0 が成功。"
+    }
+  ]
+}
