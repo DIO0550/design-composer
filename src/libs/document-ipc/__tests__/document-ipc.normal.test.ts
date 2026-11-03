@@ -153,6 +153,20 @@ test("別の綴りで書くと、実体の中身が変わる", async () => {
   );
 });
 
+test("別の綴りで外部から書き換えると、実体の中身が変わる", () => {
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
+  fake.linkPath({ link: LinkPath, target: Path });
+
+  fake.changeExternally({
+    path: LinkPath,
+    content: `{ "formatVersion": "1.0" }`,
+  });
+
+  expect(fake.contentOf(Path)).toStrictEqual(
+    Option.some(`{ "formatVersion": "1.0" }`),
+  );
+});
+
 test("別の綴りで外部から書き換えると、実体を監視している綴りで届く", async () => {
   const fake = createDocumentIpcFake({ [Path]: `{}` });
   fake.linkPath({ link: LinkPath, target: Path });
