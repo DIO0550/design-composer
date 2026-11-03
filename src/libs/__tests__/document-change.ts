@@ -14,6 +14,6 @@ export async function changeFileExternally({
   content: string;
 }>): Promise<void> {
   await act(async () => {
-    fake.changeExternally(path, content);
+    fake.changeExternally({ path, content });
   });
 }

@@ -431,7 +431,7 @@ export const FileInvalid: Story = {
     await waitFor(() => {
       expect(brokenFiles.isWatching(SamplePath)).toBe(true);
     });
-    brokenFiles.changeExternally(SamplePath, "{ 壊れた");
+    brokenFiles.changeExternally({ path: SamplePath, content: "{ 壊れた" });
     await waitFor(() => {
       expect(screen.getByText("最後に正常だった表示")).toBeDefined();
     });
