@@ -5,6 +5,7 @@ import {
 } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import { Option } from "@/utils/Option";
 
 /**
@@ -50,8 +51,7 @@ function setupSelection(): DocumentSelection {
 test("ノードを指していれば、掘る量どおりのノードを選ぶ", () => {
   const name = DocumentSelection.nameToSelectAt(
     setupSelection(),
-    ["label", "card", "home"],
-    SelectionDigs.Deepest,
+    UnderPointer.create(["label", "card", "home"], SelectionDigs.Deepest),
   );
 
   expect(name).toEqual(Option.some("label"));
@@ -60,8 +60,7 @@ test("ノードを指していれば、掘る量どおりのノードを選ぶ",
 test("artboard の背景を指すと、その artboard を選ぶ", () => {
   const name = DocumentSelection.nameToSelectAt(
     setupSelection(),
-    ["home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["home"], SelectionDigs.NoDeeper),
   );
 
   expect(name).toEqual(Option.some("home"));
@@ -70,8 +69,10 @@ test("artboard の背景を指すと、その artboard を選ぶ", () => {
 test("ロック中のノードしか無い枝を指すと、その artboard を選ぶ", () => {
   const name = DocumentSelection.nameToSelectAt(
     setupSelection(),
-    ["sealed-title", "sealed", "home"],
-    SelectionDigs.Deepest,
+    UnderPointer.create(
+      ["sealed-title", "sealed", "home"],
+      SelectionDigs.Deepest,
+    ),
   );
 
   expect(name).toEqual(Option.some("home"));
@@ -80,8 +81,7 @@ test("ロック中のノードしか無い枝を指すと、その artboard を�
 test("部品定義の中の名前だけを指しても、何も選ばない", () => {
   const name = DocumentSelection.nameToSelectAt(
     setupSelection(),
-    ["primary-button-label"],
-    SelectionDigs.Deepest,
+    UnderPointer.create(["primary-button-label"], SelectionDigs.Deepest),
   );
 
   expect(name).toEqual(Option.none);
@@ -90,8 +90,7 @@ test("部品定義の中の名前だけを指しても、何も選ばない", ()
 test("名前を 1 つも辿れなければ、何も選ばない", () => {
   const name = DocumentSelection.nameToSelectAt(
     setupSelection(),
-    [],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create([], SelectionDigs.NoDeeper),
   );
 
   expect(name).toEqual(Option.none);

@@ -1,6 +1,7 @@
 import { renderHook } from "@testing-library/react";
 import { afterEach, expect, test } from "vitest";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import {
   clearDrawn,
   drawNamed,
@@ -79,7 +80,9 @@ test("測る組が変わると、新しい組で測り直す", () => {
   });
 
   rerender({
-    pointing: Pointing.create(["chip", "card", "home"], SelectionDigs.NoDeeper),
+    pointing: Pointing.create(
+      UnderPointer.create(["chip", "card", "home"], SelectionDigs.NoDeeper),
+    ),
   });
 
   expect(result.current).toEqual(
@@ -124,7 +127,9 @@ function rowBesideChip(): FacingDistances {
 test("測る組が別の組に変わった回は、測り直す前にも前の組の線を返さない", () => {
   drawRowAndAround();
   const { rerender, returned } = renderRecordingDistances(
-    Pointing.create(["chip", "card", "home"], SelectionDigs.NoDeeper),
+    Pointing.create(
+      UnderPointer.create(["chip", "card", "home"], SelectionDigs.NoDeeper),
+    ),
   );
   const changedAt = returned.length;
 
@@ -136,7 +141,9 @@ test("測る組が別の組に変わった回は、測り直す前にも前の�
 test("測る組が無くなった回は、測り直す前にも前の組の線を返さない", () => {
   drawRowAndAround();
   const { rerender, returned } = renderRecordingDistances(
-    Pointing.create(["chip", "card", "home"], SelectionDigs.NoDeeper),
+    Pointing.create(
+      UnderPointer.create(["chip", "card", "home"], SelectionDigs.NoDeeper),
+    ),
   );
   const changedAt = returned.length;
 
@@ -152,7 +159,11 @@ test("測る組の片方だけが別の名前に変わった回は、測り直�
   const { rerender, returned } = renderRecordingDistances(Pointing.Nothing);
   const changedAt = returned.length;
 
-  rerender({ pointing: Pointing.create(["home"], SelectionDigs.NoDeeper) });
+  rerender({
+    pointing: Pointing.create(
+      UnderPointer.create(["home"], SelectionDigs.NoDeeper),
+    ),
+  });
 
   expect(returned.slice(changedAt)).not.toContainEqual(
     DrawnDistancePair.toDistances({
@@ -169,7 +180,11 @@ test("測る組が変わっても測った矩形が前と同じなら、新し�
   drawNamed("home", SelectionDistanceTreeBounds.card);
   const { rerender, returned } = renderRecordingDistances(Pointing.Nothing);
 
-  rerender({ pointing: Pointing.create(["home"], SelectionDigs.NoDeeper) });
+  rerender({
+    pointing: Pointing.create(
+      UnderPointer.create(["home"], SelectionDigs.NoDeeper),
+    ),
+  });
 
   expect(ArrayEx.last(returned)).toEqual(
     Option.some(

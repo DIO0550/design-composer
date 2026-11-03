@@ -1,7 +1,7 @@
 import type { MouseEvent as ReactMouseEvent } from "react";
 import type { DocumentSelection } from "@/domains/session/document-selection";
-import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { TokenSelection } from "@/domains/session/token-selection";
+import type { UnderPointer } from "@/domains/session/under-pointer";
 import type { AltPointingControl } from "@/features/editor/features/canvas/hooks/use-alt-pointing";
 import type { ArtboardDragControl } from "@/features/editor/features/canvas/hooks/use-artboard-drag";
 import type { NodeDragControl } from "@/features/editor/features/canvas/hooks/use-node-drag";
@@ -30,7 +30,7 @@ export function CanvasBody({
   compiled: Result<CompiledDocument, Error>;
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
-  onSelect: (names: readonly string[], dig: SelectionDig) => void;
+  onSelect: (underPointer: UnderPointer) => void;
   onContextMenu: (
     event: ReactMouseEvent<HTMLElement>,
     names: readonly string[],

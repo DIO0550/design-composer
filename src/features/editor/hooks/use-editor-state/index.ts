@@ -8,7 +8,7 @@ import type { TokenRef, TokenValue } from "@/domains/dcmp/token";
 import type { DocumentReload } from "@/domains/session/document-reload";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
 import type { NodeTemplate } from "@/domains/session/node-template";
-import type { SelectionDig } from "@/domains/session/selection-dig";
+import type { UnderPointer } from "@/domains/session/under-pointer";
 import type { Instant } from "@/domains/unit/instant";
 import type { Offset } from "@/domains/unit/offset";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -23,11 +23,7 @@ export type EditorAction =
   /* 左ペインの行の右クリック。既に選択に入っている行では選択を変えない。 */
   | Readonly<{ type: "select_if_unselected"; name: string }>
   /* キャンバスからの選択。押し方の解釈（掘る量）はキャンバス側が済ませて渡す。 */
-  | Readonly<{
-      type: "select_at";
-      names: readonly string[];
-      dig: SelectionDig;
-    }>
+  | Readonly<{ type: "select_at"; underPointer: UnderPointer }>
   /* キャンバスの範囲選択。範囲に重なったものの名前はキャンバス側が実測から決めて渡す。 */
   | Readonly<{ type: "select_in_range"; names: readonly string[] }>
   | Readonly<{ type: "clear_selection" }>
@@ -123,7 +119,7 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
     case "select_if_unselected":
       return EditorState.selectIfUnselected(state, action.name);
     case "select_at":
-      return EditorState.selectAt(state, action.names, action.dig);
+      return EditorState.selectAt(state, action.underPointer);
     case "select_in_range":
       return EditorState.selectInRange(state, action.names);
     case "clear_selection":

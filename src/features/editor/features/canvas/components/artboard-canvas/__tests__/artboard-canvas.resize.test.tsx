@@ -5,6 +5,7 @@ import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { EditContinuities } from "@/domains/session/edit-continuity";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import { canvasContent } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
@@ -238,8 +239,7 @@ test("辺を掴んで artboard の並びまで引いて離しても、次のク�
   fireEvent.click(drawn("title"));
 
   expect(onSelect).toHaveBeenCalledWith(
-    ["title", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["title", "home"], SelectionDigs.NoDeeper),
   );
 });
 
@@ -255,8 +255,7 @@ test("ハンドルを掴んで artboard の並びまで引いて離しても、�
   fireEvent.click(drawn("title"));
 
   expect(onSelect).toHaveBeenCalledWith(
-    ["title", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["title", "home"], SelectionDigs.NoDeeper),
   );
 });
 
@@ -273,8 +272,7 @@ test("ハンドルを掴んで枠の中で離しても、次のクリックは�
   fireEvent.click(drawn("title"));
 
   expect(onSelect).toHaveBeenCalledWith(
-    ["title", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["title", "home"], SelectionDigs.NoDeeper),
   );
 });
 
@@ -294,8 +292,7 @@ test("右ボタンでハンドルを押して引いて離しても、次のク�
   fireEvent.click(drawn("title"));
 
   expect(onSelect).toHaveBeenCalledWith(
-    ["title", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["title", "home"], SelectionDigs.NoDeeper),
   );
 });
 
@@ -315,8 +312,7 @@ test("中ボタンでハンドルを押して引いて離しても、次のク�
   fireEvent.click(drawn("title"));
 
   expect(onSelect).toHaveBeenCalledWith(
-    ["title", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["title", "home"], SelectionDigs.NoDeeper),
   );
 });
 

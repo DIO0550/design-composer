@@ -11,7 +11,7 @@ import { Placement } from "@/domains/dcmp/placement";
 import type { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { NodeTemplate } from "@/domains/session/node-template";
-import type { SelectionDig } from "@/domains/session/selection-dig";
+import type { UnderPointer } from "@/domains/session/under-pointer";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
@@ -494,17 +494,15 @@ export type NodeDragControl = Readonly<{
    * 始められなくなる。
    *
    * @param event artboard の枠で受けた `pointerdown`
-   * @param names 押された位置から外へ辿った名前（内→外）。クリックが選ぶときと同じ集め方
-   *   で受け取る
-   * @param dig 押し方から決まった掘る量（クリックと同じ読み替え）
+   * @param underPointer 押された位置から外へ辿った名前と、押し方から決まった掘る量。クリック
+   *   が選ぶときと同じ集め方・読み替えで受け取る
    * @returns 掴んだ（＝この先の判定へ渡さない）なら `true`。押された位置から根までに
    *   選べるノードが 1 つも無ければ `false`（artboard の背景か、ロック中のノードの上を押し
    *   たとき / docs/03「ロック」）
    */
   grabNode: (
     event: ReactPointerEvent<HTMLElement>,
-    names: readonly string[],
-    dig: SelectionDig,
+    underPointer: UnderPointer,
   ) => boolean;
   dragHandlers: NodeDragHandlers;
   /** パレットの行から掴む。掴めるものは行が知っているので指定を受け取る。 */
@@ -544,10 +542,9 @@ export function useNodeDrag(
 
   const grabNode = (
     event: ReactPointerEvent<HTMLElement>,
-    names: readonly string[],
-    dig: SelectionDig,
+    underPointer: UnderPointer,
   ): boolean => {
-    const name = DocumentSelection.nodeNameAt(params.selection, names, dig);
+    const name = DocumentSelection.nodeNameAt(params.selection, underPointer);
     if (!Option.isSome(name)) {
       return false;
     }

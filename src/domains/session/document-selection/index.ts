@@ -4,6 +4,7 @@ import { Node } from "@/domains/dcmp/node";
 import { Selection } from "@/domains/session/selection";
 import { SelectionDig } from "@/domains/session/selection-dig";
 import { SelectionState } from "@/domains/session/selection-state";
+import type { UnderPointer } from "@/domains/session/under-pointer";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
@@ -147,19 +148,20 @@ export const DocumentSelection = {
    * （docs/03「ロック」）ので、今の選択がロック中なら押された枝の入口から選び直す。
    *
    * @param selection 候補を引くドキュメントと、掘る起点になる今の選択
-   * @param names 押された位置から外へ辿った名前（内→外）
-   * @param dig 押し方から決まった掘る量
+   * @param underPointer 押された位置から外へ辿った名前と、押し方から決まった掘る量
    * @returns 掘った先のノードの名前。押された位置に選べるノードが 1 つも無ければ（artboard
    *   の背景か、ロック中のノードの上を押したとき）`none`
    */
   nodeNameAt(
     selection: DocumentSelection,
-    names: readonly string[],
-    dig: SelectionDig,
+    underPointer: UnderPointer,
   ): Option<string> {
     return SelectionDig.nameAt(
-      dig,
-      DesignDocument.collectUnlockedNodeNames(selection.document, names),
+      underPointer.dig,
+      DesignDocument.collectUnlockedNodeNames(
+        selection.document,
+        underPointer.names,
+      ),
       DocumentSelection.singleName(selection),
     );
   },
@@ -170,19 +172,17 @@ export const DocumentSelection = {
    * いる artboard へ倒す。ロック中のノードは返さない。
    *
    * @param selection 候補を引くドキュメントと、掘る起点になる今の選択
-   * @param names 押された位置から外へ辿った名前（内→外）
-   * @param dig 押し方から決まった掘る量
-   * @returns 掘った先のノード、無ければ `names` のうち最初の artboard の名前。どちらも無けれ
-   *   ば（部品定義の中の名前だけ・空の並び）`none`
+   * @param underPointer 押された位置から外へ辿った名前と、押し方から決まった掘る量
+   * @returns 掘った先のノード、無ければ `underPointer.names` のうち最初の artboard の名前。
+   *   どちらも無ければ（部品定義の中の名前だけ・空の並び）`none`
    */
   nameToSelectAt(
     selection: DocumentSelection,
-    names: readonly string[],
-    dig: SelectionDig,
+    underPointer: UnderPointer,
   ): Option<string> {
     return Option.or(
-      DocumentSelection.nodeNameAt(selection, names, dig),
-      DocumentSelection.artboardNameAt(selection, names),
+      DocumentSelection.nodeNameAt(selection, underPointer),
+      DocumentSelection.artboardNameAt(selection, underPointer.names),
     );
   },
 

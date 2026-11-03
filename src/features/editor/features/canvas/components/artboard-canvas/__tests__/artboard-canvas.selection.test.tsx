@@ -4,6 +4,7 @@ import { expect, test, vi } from "vitest";
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import {
   canvasContent,
   highlightedNames,
@@ -42,8 +43,7 @@ test("artboard の中のノードを押すと、そのノードを内側とす�
   await userEvent.click(renderedElement(canvasContent(), "home-title"));
 
   expect(onSelect).toHaveBeenCalledWith(
-    ["home-title", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["home-title", "home"], SelectionDigs.NoDeeper),
   );
 });
 
@@ -54,8 +54,10 @@ test("部品インスタンスの中身を押すと、内側の部品定義の�
   await userEvent.click(screen.getByText("ログイン"));
 
   expect(onSelect).toHaveBeenCalledWith(
-    ["primary-button-label", "home-login", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(
+      ["primary-button-label", "home-login", "home"],
+      SelectionDigs.NoDeeper,
+    ),
   );
 });
 
@@ -69,7 +71,9 @@ test("artboard の枠を押すとその artboard だけが候補になる", asyn
 
   await userEvent.click(screen.getByRole("button", { name: "settings" }));
 
-  expect(onSelect).toHaveBeenCalledWith(["settings"], SelectionDigs.NoDeeper);
+  expect(onSelect).toHaveBeenCalledWith(
+    UnderPointer.create(["settings"], SelectionDigs.NoDeeper),
+  );
 });
 
 test("キーボードで artboard を活性化するとその artboard だけが候補になる", async () => {
@@ -82,7 +86,9 @@ test("キーボードで artboard を活性化するとその artboard だけが
   screen.getByRole("button", { name: "home" }).focus();
   await userEvent.keyboard("{Enter}");
 
-  expect(onSelect).toHaveBeenCalledWith(["home"], SelectionDigs.NoDeeper);
+  expect(onSelect).toHaveBeenCalledWith(
+    UnderPointer.create(["home"], SelectionDigs.NoDeeper),
+  );
 });
 
 test("space を押しても artboard は活性化しない", async () => {
@@ -116,8 +122,7 @@ test("⌘ を押しながらクリックすると、掘れるだけ掘る指定�
   await user.keyboard("{/Meta}");
 
   expect(onSelect).toHaveBeenCalledWith(
-    ["home-title", "home"],
-    SelectionDigs.Deepest,
+    UnderPointer.create(["home-title", "home"], SelectionDigs.Deepest),
   );
 });
 
@@ -132,8 +137,7 @@ test("ダブルクリックすると、1 階層だけ掘る指定で候補が通
   await userEvent.dblClick(renderedElement(canvasContent(), "home-title"));
 
   expect(onSelect).toHaveBeenLastCalledWith(
-    ["home-title", "home"],
-    SelectionDigs.OneDeeper,
+    UnderPointer.create(["home-title", "home"], SelectionDigs.OneDeeper),
   );
 });
 

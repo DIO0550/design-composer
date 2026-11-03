@@ -7,6 +7,7 @@ import {
   type SelectionDig,
   SelectionDigs,
 } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import type { ArrangedArtboard } from "@/features/editor/features/canvas/domains/arranged-artboard";
 import { Pointing } from "@/features/editor/features/canvas/domains/pointing";
 import type { AltPointingControl } from "@/features/editor/features/canvas/hooks/use-alt-pointing";
@@ -67,7 +68,7 @@ export function ArtboardFrame({
   arranged: ArrangedArtboard;
   isSelected: boolean;
   isCurrent: boolean;
-  onSelect: (names: readonly string[], dig: SelectionDig) => void;
+  onSelect: (underPointer: UnderPointer) => void;
   onContextMenu: (
     event: MouseEvent<HTMLElement>,
     names: readonly string[],
@@ -96,6 +97,11 @@ export function ArtboardFrame({
       ...ElementEx.attributeValuesToRoot(target, ElementNameAttribute),
       element.name,
     ]);
+  /**
+   * クリック・掴むとき・Alt / Option の距離の相手を決めるときの、ポインタの下と掘る量。
+   */
+  const underPointerAt = (event: MouseEvent<HTMLElement>): UnderPointer =>
+    UnderPointer.create(namesAt(event.target), digByCommandKey(event));
 
   const activate = (event: KeyboardEvent<HTMLElement>) => {
     if (!KeyName.isOneOf(ActivationKeys, event)) {
@@ -103,7 +109,8 @@ export function ArtboardFrame({
     }
     event.preventDefault();
     // キーボードで選べるのは枠にフォーカスしている artboard 自身（中身は指せない）。
-    onSelect([element.name], SelectionDigs.NoDeeper);
+    // ポインタではなくフォーカスから作るが、クリックと同じ選び方をさせるので同じ型で渡す。
+    onSelect(UnderPointer.create([element.name], SelectionDigs.NoDeeper));
   };
 
   /*
@@ -173,7 +180,7 @@ export function ArtboardFrame({
            * `dragHandlers`）。artboard のドラッグも尋ねない。掴み口の見出しは枠の兄弟なので、
            * 運んだあとの click はここへ届かない（`ArtboardDrag` の doc）。
            */
-          onSelect(namesAt(event.target), digByCommandKey(event));
+          onSelect(underPointerAt(event));
         }}
         /*
          * ダブルクリックは 1 階層内側へ掘る操作で、掘りきった Text をさらに押したときだけ
@@ -187,13 +194,11 @@ export function ArtboardFrame({
         onDoubleClick={(event: MouseEvent<HTMLElement>) => {
           const names = namesAt(event.target);
           textEdit.start(names);
-          onSelect(names, SelectionDigs.OneDeeper);
+          onSelect(UnderPointer.create(names, SelectionDigs.OneDeeper));
         }}
         onKeyDown={activate}
         onPointerMove={(event) =>
-          altPointing.trackPointer(
-            Pointing.create(namesAt(event.target), digByCommandKey(event)),
-          )
+          altPointing.trackPointer(Pointing.create(underPointerAt(event)))
         }
         onPointerLeave={() => altPointing.trackPointer(Pointing.Nothing)}
         // 土台へ渡さないのは、そちらが空き領域として扱うため
@@ -216,11 +221,7 @@ export function ArtboardFrame({
            */
           const grabbed =
             nodeResize.grabAt(event) ||
-            nodeDrag.grabNode(
-              event,
-              namesAt(event.target),
-              digByCommandKey(event),
-            );
+            nodeDrag.grabNode(event, underPointerAt(event));
           if (grabbed) {
             // 掴んだドラッグは土台へ渡さない（掴んだものと範囲の両方が動くと操作が読めなくなる）
             event.stopPropagation();

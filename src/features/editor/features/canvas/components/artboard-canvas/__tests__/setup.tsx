@@ -10,6 +10,7 @@ import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
 import { TokenSelection } from "@/domains/session/token-selection";
+import type { UnderPointer } from "@/domains/session/under-pointer";
 import type { Offset } from "@/domains/unit/offset";
 import {
   canvasContent,
@@ -102,7 +103,7 @@ type CanvasValues = Readonly<{
 
 /** キャンバスが外へ渡す操作。テストは見たいものだけを渡し、残りは呼ばれても何もしない。 */
 type CanvasHandlers = Readonly<{
-  onSelect: (names: readonly string[]) => void;
+  onSelect: (underPointer: UnderPointer) => void;
   onSelectInRange: (names: readonly string[]) => void;
   onMoveNode: (name: string, to: ChildPosition) => void;
   onRepositionNode: RepositionNode;

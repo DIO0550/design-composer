@@ -138,18 +138,18 @@ function counterpartAt(
 ): Option<string> {
   const pointedArtboard = DocumentSelection.artboardNameAt(
     selection,
-    pointing.names,
+    pointing.underPointer.names,
   );
   if (!Option.contains(pointedArtboard, selected.artboard)) {
     return Option.none;
   }
   const sibling =
-    pointing.dig === SelectionDigs.Deepest
+    pointing.underPointer.dig === SelectionDigs.Deepest
       ? Option.none
-      : siblingAt(selection, selected, pointing.names);
+      : siblingAt(selection, selected, pointing.underPointer.names);
   return Option.or(
     sibling,
-    DocumentSelection.nameToSelectAt(selection, pointing.names, pointing.dig),
+    DocumentSelection.nameToSelectAt(selection, pointing.underPointer),
   );
 }
 

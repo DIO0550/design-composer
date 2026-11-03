@@ -1,6 +1,7 @@
 import { act, fireEvent, render, renderHook } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import {
   holdAlt,
   releaseAlt,
@@ -15,12 +16,13 @@ import { useAltPointing } from "..";
  */
 
 /** `row` の上を指している。 */
-const OnRow = Pointing.create(["row", "card", "home"], SelectionDigs.NoDeeper);
+const OnRow = Pointing.create(
+  UnderPointer.create(["row", "card", "home"], SelectionDigs.NoDeeper),
+);
 
 /** `chip` の上を指している。 */
 const OnChip = Pointing.create(
-  ["chip", "card", "home"],
-  SelectionDigs.NoDeeper,
+  UnderPointer.create(["chip", "card", "home"], SelectionDigs.NoDeeper),
 );
 
 test("指してから Alt を押すと、その指し先が返る", () => {
@@ -98,7 +100,9 @@ test("Alt を押している間に同じ指し先を伝え直しても、同じ�
 
   act(() =>
     result.current.trackPointer(
-      Pointing.create(["row", "card", "home"], SelectionDigs.NoDeeper),
+      Pointing.create(
+        UnderPointer.create(["row", "card", "home"], SelectionDigs.NoDeeper),
+      ),
     ),
   );
 

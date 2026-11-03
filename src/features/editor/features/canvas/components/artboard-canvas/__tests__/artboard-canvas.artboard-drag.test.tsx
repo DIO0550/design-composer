@@ -1,6 +1,7 @@
 import { screen } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import {
   artboardFrameContainer,
   artboardHandle,
@@ -207,5 +208,7 @@ test("見出しを掴んで運んだ直後でも、次のクリックで選べ�
   });
   screen.getByRole("button", { name: "third" }).click();
 
-  expect(onSelect).toHaveBeenCalledWith(["third"], SelectionDigs.NoDeeper);
+  expect(onSelect).toHaveBeenCalledWith(
+    UnderPointer.create(["third"], SelectionDigs.NoDeeper),
+  );
 });

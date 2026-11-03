@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import { Option } from "@/utils/Option";
 
 /**
@@ -46,8 +47,10 @@ function setupDocument(): DesignDocument {
 test("ロックした Box の中を ⌘ で押すと、そのすぐ外側のロックしていないノードを選ぶ", () => {
   const name = DocumentSelection.nodeNameAt(
     DocumentSelection.fromNames(setupDocument(), []),
-    ["label", "row", "card", "home"],
-    SelectionDigs.Deepest,
+    UnderPointer.create(
+      ["label", "row", "card", "home"],
+      SelectionDigs.Deepest,
+    ),
   );
 
   expect(name).toEqual(Option.some("card"));
@@ -56,8 +59,10 @@ test("ロックした Box の中を ⌘ で押すと、そのすぐ外側のロ�
 test("artboard 直下のロックした Box の中を押すと、Box もその中身も選ばない", () => {
   const name = DocumentSelection.nodeNameAt(
     DocumentSelection.fromNames(setupDocument(), []),
-    ["sealed-title", "sealed", "home"],
-    SelectionDigs.Deepest,
+    UnderPointer.create(
+      ["sealed-title", "sealed", "home"],
+      SelectionDigs.Deepest,
+    ),
   );
 
   expect(name).toEqual(Option.none);
@@ -83,8 +88,10 @@ test("artboard 直下のロックしたインスタンスの中を押すと、�
 
   const name = DocumentSelection.nodeNameAt(
     DocumentSelection.fromNames(document, []),
-    ["badge-label", "home-badge", "home"],
-    SelectionDigs.Deepest,
+    UnderPointer.create(
+      ["badge-label", "home-badge", "home"],
+      SelectionDigs.Deepest,
+    ),
   );
 
   expect(name).toEqual(Option.none);

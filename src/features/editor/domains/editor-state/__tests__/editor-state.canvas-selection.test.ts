@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 import { DeepTitleNames, InstanceNames, stateWithDeepBranch } from "./setup";
@@ -7,8 +8,7 @@ import { DeepTitleNames, InstanceNames, stateWithDeepBranch } from "./setup";
 test("クリックすると、押した位置がどれだけ深くても artboard 直下の子が選択状態になる", () => {
   const state = EditorState.selectAt(
     stateWithDeepBranch(),
-    DeepTitleNames,
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(DeepTitleNames, SelectionDigs.NoDeeper),
   );
 
   expect(EditorState.isSelected(state, "outer-panel")).toBe(true);
@@ -17,8 +17,7 @@ test("クリックすると、押した位置がどれだけ深くても artboar
 test("部品インスタンスの中身をクリックするとインスタンス自身が選択状態になる", () => {
   const state = EditorState.selectAt(
     stateWithDeepBranch(),
-    InstanceNames,
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(InstanceNames, SelectionDigs.NoDeeper),
   );
 
   expect(EditorState.isSelected(state, "home-login")).toBe(true);
@@ -27,8 +26,7 @@ test("部品インスタンスの中身をクリックするとインスタン�
 test("artboard の中で何も指していなければ artboard が選択状態になる", () => {
   const state = EditorState.selectAt(
     stateWithDeepBranch(),
-    ["home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["home"], SelectionDigs.NoDeeper),
   );
 
   expect(EditorState.isSelected(state, "home")).toBe(true);
@@ -39,8 +37,7 @@ test("今選んでいるものの内側をクリックしても選択は変わ�
 
   const state = EditorState.selectAt(
     selected,
-    DeepTitleNames,
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(DeepTitleNames, SelectionDigs.NoDeeper),
   );
 
   expect(EditorState.isSelected(state, "inner-panel")).toBe(true);
@@ -51,8 +48,7 @@ test("artboard を選んでいるときに中身をクリックすると artboar
 
   const state = EditorState.selectAt(
     selected,
-    DeepTitleNames,
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(DeepTitleNames, SelectionDigs.NoDeeper),
   );
 
   expect(EditorState.isSelected(state, "outer-panel")).toBe(true);
@@ -63,8 +59,7 @@ test("掘った状態で関係のない枝をクリックすると、その枝�
 
   const state = EditorState.selectAt(
     selected,
-    ["sibling-panel", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["sibling-panel", "home"], SelectionDigs.NoDeeper),
   );
 
   expect(EditorState.isSelected(state, "sibling-panel")).toBe(true);
@@ -73,8 +68,7 @@ test("掘った状態で関係のない枝をクリックすると、その枝�
 test("掘れるだけ掘る指定では、押した位置のいちばん内側が選択状態になる", () => {
   const state = EditorState.selectAt(
     stateWithDeepBranch(),
-    DeepTitleNames,
-    SelectionDigs.Deepest,
+    UnderPointer.create(DeepTitleNames, SelectionDigs.Deepest),
   );
 
   expect(EditorState.isSelected(state, "deep-title")).toBe(true);
@@ -83,8 +77,7 @@ test("掘れるだけ掘る指定では、押した位置のいちばん内側�
 test("掘れるだけ掘る指定でも、部品インスタンスの中身はインスタンス自身が選択状態になる", () => {
   const state = EditorState.selectAt(
     stateWithDeepBranch(),
-    InstanceNames,
-    SelectionDigs.Deepest,
+    UnderPointer.create(InstanceNames, SelectionDigs.Deepest),
   );
 
   expect(EditorState.isSelected(state, "home-login")).toBe(true);
@@ -95,8 +88,7 @@ test("どれも選択できない候補しか無ければ選択は外れる", ()
 
   const state = EditorState.selectAt(
     selected,
-    ["unknown"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["unknown"], SelectionDigs.NoDeeper),
   );
 
   expect(Option.isSome(EditorState.singleName(state))).toBe(false);
@@ -105,7 +97,10 @@ test("どれも選択できない候補しか無ければ選択は外れる", ()
 test("候補が1つも無ければ選択は外れる", () => {
   const selected = EditorState.select(stateWithDeepBranch(), "deep-title");
 
-  const state = EditorState.selectAt(selected, [], SelectionDigs.NoDeeper);
+  const state = EditorState.selectAt(
+    selected,
+    UnderPointer.create([], SelectionDigs.NoDeeper),
+  );
 
   expect(Option.isSome(EditorState.singleName(state))).toBe(false);
 });
@@ -113,7 +108,10 @@ test("候補が1つも無ければ選択は外れる", () => {
 test("押した場所を変えても元の状態は変わらない", () => {
   const selected = EditorState.select(stateWithDeepBranch(), "deep-title");
 
-  EditorState.selectAt(selected, ["home"], SelectionDigs.NoDeeper);
+  EditorState.selectAt(
+    selected,
+    UnderPointer.create(["home"], SelectionDigs.NoDeeper),
+  );
 
   expect(EditorState.isSelected(selected, "deep-title")).toBe(true);
 });

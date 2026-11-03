@@ -9,8 +9,8 @@ import type { PropEdit } from "@/domains/dcmp/node";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
-import type { SelectionDig } from "@/domains/session/selection-dig";
 import type { TokenSelection } from "@/domains/session/token-selection";
+import type { UnderPointer } from "@/domains/session/under-pointer";
 import type { Offset } from "@/domains/unit/offset";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { NodeDrag } from "@/features/editor/features/canvas/domains/node-drag";
@@ -106,7 +106,7 @@ export function ArtboardCanvas({
   isContextMenuOpen: boolean;
   canvasView: CanvasViewControl;
   nodeDrag: NodeDragControl;
-  onSelect: (names: readonly string[], dig: SelectionDig) => void;
+  onSelect: (underPointer: UnderPointer) => void;
   /** 範囲選択で、範囲に重なったものをまとめて選ぶ。 */
   onSelectInRange: (names: readonly string[]) => void;
   onResize: (edit: ResizeEdit, continuity: EditContinuity) => void;
