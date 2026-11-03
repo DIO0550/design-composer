@@ -38,13 +38,16 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 | 7 PR / 8 マージ後 | 親(push 前検査・commit・push・PR・Issue への追記) |
 
 - **親はリポジトリの中のファイルを編集しない**(`src/` に限らず `.claude/` `harness/` `docs/` `rules/` も)。
-  修正の小ささは理由にしない(1 行でも `implementer` に渡す)。線引きを毎回判断すると分担が崩れる
+  修正の小ささは理由にしない(1 行でも `implementer` に渡す)。線引きを毎回判断すると分担が崩れる。
+  親の Edit / Write は `.claude/hooks/block-parent-session-edit.sh` が拒否する(Bash 経由の書き換えは
+  見ない。フックが発火しない環境では効かない)
 - 親が作業ツリーを変えてよいのは、判断を伴わない次の 2 つだけ
   - 自動修正コマンド(`pnpm exec biome check --write` 等)をフェーズ 7 で走らせる
   - 検証エージェントの書き換えを、基準のコミットへ `git restore` / `git clean` で戻す
     (「サブエージェントの使い方」)
 - Issue・PR 本文を書くのは親。`planner` / `implementer` は返すだけ
-- この分担は `implementation-flow` の中だけで、`harness-record` / `harness-growth` には及ばない
+- この分担は `implementation-flow` の中だけで、`harness-record` / `harness-growth` には及ばない。
+  フックもこの 2 つの起動を `implementation-flow` の終わりの区切りにする
 
 ---
 
