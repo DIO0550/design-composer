@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
 # 検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds`）と `report` 自身（NG なら
-# `cases_failed` を立て、ok なら立てない）と、判定の読み取り（`decide` / `normalize_miss`）の
+# `cases_failed` を立て、ok なら立てない）と、判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss`）の
 # 判定表。照合の表は一時ディレクトリへ小さな検出器を置いて照合を呼び、`report` の表は検出器を置かずに
 # `report` だけを呼ぶ。この 2 つは、NG を出して `cases_failed` を立てるか ok だけを出すかを確かめる。
-# 判定の読み取りの表は検出器を走らせず、表に書いた出力と終了コードを `decide` へ渡して返る判定を
-# 確かめる。最後の文の照合の表は一時ディレクトリに判定表の木を置いて
+# 判定の読み取りの表は検出器を走らせず、表に書いた出力と終了コードを `decide` / `decide_by_permission` へ
+# 渡して返る判定を確かめる。最後の文の照合の表は一時ディレクトリに判定表の木を置いて
 # `report_tables_exit_with_cases_failed` を呼び、最後に本物のリポジトリのルートでも呼んで、
 # `cases-report.sh` を source するどの判定表も最後の文が `exit "$cases_failed"` かを確かめる。
 # 本物のルートで集めた判定表に、相手役の `harness/githooks/lib/check-tally-cases.sh` が入っているかも確かめる。
@@ -34,9 +34,10 @@
 # | `NG` | NG の行を出し、`cases_failed` を立ててほしい |
 # | `ok` | ok の行だけを出し、`cases_failed` を立ててはいけない |
 #
-# 判定の読み取りの表は 2 つ。`decide` の表は `期待|ケース名|終了コード|出力`、`normalize_miss` と組み合わせた
-# 表は `期待|ケース名|表に書く期待|終了コード|出力` の 1 行 1 ケース。出力は検出器の標準出力の 1 行で、
-# `-` なら何も出さない。見出しの正規表現は `decide_row` の中で固定する。期待は返ってほしい判定の綴り
+# 判定の読み取りの表は 3 つ。`decide` の表と `decide_by_permission` の表は `期待|ケース名|終了コード|出力`、
+# `normalize_miss` と組み合わせた表は `期待|ケース名|表に書く期待|終了コード|出力` の 1 行 1 ケース。出力は
+# 検出器（`decide_by_permission` の表では PreToolUse フック）の標準出力の 1 行で、`-` なら何も出さない。
+# `decide` の見出しの正規表現は `decide_row` の中で固定する。期待は返ってほしい判定の綴り
 # そのもの（`pass` / `deny` / `broken` / `miss`）で、`report` へ直に渡す。
 set -uo pipefail
 
@@ -168,6 +169,16 @@ broken|見出しを出したまま exit 0 なら broken|0|[alpha] 1 件
 broken|exit 2 で何も出さなければ broken|2|-
 broken|exit 2 で見出しを出しても broken|2|[alpha] 1 件
 DECIDE_CASES
+
+while IFS='|' read -r expected label status output; do
+  [ -n "$label" ] || continue
+  report "$expected" "$(decide_by_permission "$(row_output "$output")" "$status")" "$label"
+done <<'PERMISSION_CASES'
+deny|PreToolUse フックが exit 0 で deny の JSON を返せば deny|0|{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny"}}
+pass|PreToolUse フックが exit 0 で何も出さなければ pass|0|-
+pass|PreToolUse フックが exit 0 で additionalContext だけを返すなら pass|0|{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"x"}}
+broken|PreToolUse フックが deny の JSON を返しても exit 0 以外なら broken|1|{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny"}}
+PERMISSION_CASES
 
 while IFS='|' read -r expected label table_expected status output; do
   [ -n "$label" ] || continue

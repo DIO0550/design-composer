@@ -12,8 +12,7 @@
 # 止まる」という 2 本の間の約束だから。ケースごとに一時の TMPDIR と session_id を分け、
 # 前のケースの印を持ち越さない。
 #
-# 2 本のフックは deny でも exit 0 で JSON を返すので、`cases-report.sh` の `decide`
-# (exit 1 かつ見出しありを deny と読む)ではなく、出力の `permissionDecision` を見て決める。
+# 判定は `cases-report.sh` の `decide_by_permission`。
 # JSON は jq を使わず printf で組む(フック本体と同じく、jq の無い環境でも走らせるため)。
 #
 # **Agent / Task の入力は Agent ツールの引数名に合わせて組んだもので、実物の PreToolUse から写していない。**
@@ -30,23 +29,6 @@ block_hook="$lib_dir/../block-git-during-verification-agent.sh"
 TMPDIR="$(mktemp -d)"
 export TMPDIR
 trap 'rm -rf "$TMPDIR"' EXIT
-
-# フックの出力と終了コードから deny / pass / broken を決める。
-#
-# $1 フックの標準出力
-# $2 フックの終了コード(2 本とも判定によらず 0 で終わる)
-decide_by_permission() {
-  local deny_pattern='"permissionDecision"[[:space:]]*:[[:space:]]*"deny"'
-  if [ "$2" -ne 0 ]; then
-    echo "broken"
-    return 0
-  fi
-  if [[ "$1" =~ $deny_pattern ]]; then
-    echo "deny"
-    return 0
-  fi
-  echo "pass"
-}
 
 # Task/Agent のフックへ 1 回分の呼び出しを流し、判定を返す。ツール名は `TOOL_NAME` で
 # 差し替えられる(既定は Agent)。
@@ -148,6 +130,18 @@ report deny "$(agent_verdict s17 PreToolUse "$background_implementer")" "run_in_
 in_subagent_fields='"agent_id":"ab90e859b438c06a1","agent_type":"implementer","hook_event_name":"PreToolUse","tool_name":"Bash",'
 agent_verdict s26 PreToolUse "$foreground_implementer" >/dev/null
 report deny "$(git_verdict s26 'git add --dry-run -- README.md' "$in_subagent_fields")" "implementer の実行中は、サブエージェントの中から呼んだ git add も拒否される"
+
+# 2 本は共有部品(`lib/hook-input.sh`)を自分の置き場所から辿って読む。呼んだパスの綴りが相対でも
+# 辿れることを、リポジトリルートに cd して `./` から呼んで確かめる。
+repo_root="$(cd "$lib_dir/../../.." && pwd)"
+relative_git_output="$(
+  cd "$repo_root" || exit 1
+  printf '{"session_id":"s27","hook_event_name":"PreToolUse","tool_name":"Agent","tool_input":{%s}}' "$foreground_test_reviewer" \
+    | bash ./.claude/hooks/track-verification-agent-activity.sh >/dev/null
+  printf '{"session_id":"s27","tool_input":{"command":"git add src"}}' | bash ./.claude/hooks/block-git-during-verification-agent.sh
+)"
+relative_git_status=$?
+report deny "$(decide_by_permission "$relative_git_output" "$relative_git_status")" "リポジトリルートから相対パスで 2 本を呼んでも、前面で起動した test-reviewer の実行中は git add が拒否される"
 
 # 残った印の種類は有効期間でしか外から見えないので、最後に印を古くして見分ける。implementer の印を
 # 先に古くしておくのは、種類を問わず最も古い印を消す実装だと implementer の印が消えるようにするため。
