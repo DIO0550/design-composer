@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "pr": 1266,
+  "headBranch": "claude/affectionate-hypatia-o4ft5b",
+  "baseBranch": "main",
+  "mergeBase": "8315ce85ae8cc5cc30e7321f4123f9fb30ed921e",
+  "head": "07aa669da075dc2d70a24104019024175dd350fd",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/plan-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1257.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "07aa669da075dc2d70a24104019024175dd350fd",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-03T00:01:50Z",
+      "subject": "plan-reviewer: 公開 API が自前の型を出すかの判断を実装前に求める観点を追加",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbGhvMJ1pgJVHnGZD",
+      "files": [
+        {
+          "path": ".claude/agents/plan-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -44,6 +44,9 @@ model: inherit\n   「規約の文面どおりに上げてよい」と「上げる根拠(読み替え対象のファイルが実在する・その版で\n   動作確認済みである等)が実例で成立している」は別で、後者を確かめずに前者だけで進めていないか\n   （`分類: version-bump-unverified`）\n+- **公開 API が自前の型を受け取る/返す形にするかを、実装前に決めているか。** 引数や戻り値に\n+  自前の型(`TauriIpc` 等)が出ることを「外へ漏らす」とみなす案と、受け取ってよいとする案で\n+  判断が割れる。決めずに進めると実装後に判断が変わって取り消しになる（`分類: dependency`）\n - **ロジックの帰属先が正しいか。** 判定・計算・変換が `services/` や features 層や\n   呼び出し側のヘルパー関数に置かれようとしていないか。第 1 引数に取る型の\n   コンパニオンオブジェクトへ置けないか（`rules/architecture.md`「services はドメインを",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/pr-1257.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -145,3 +145,5 @@\n ## 規約への反映\n \n 無し。このスキルの管轄は記録まで(集計・介入は `harness-growth`)。\n+\n+- 対策済: `dependency` 層=観点 at pr-1257",
+          "patchLines": 6,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
