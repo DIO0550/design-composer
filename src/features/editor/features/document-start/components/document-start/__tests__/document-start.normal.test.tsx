@@ -2,6 +2,11 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { filePath } from "@/domains/__tests__/file-paths";
+import { OperatingSystem } from "@/libs/operating-system";
+import {
+  MacOsNavigatorPlatform,
+  WindowsNavigatorPlatform,
+} from "@/libs/operating-system/fake";
 import { recordActions, renderDocumentStart } from "./setup";
 
 const Path = filePath("/work/settings-ui/app.dcmp");
@@ -87,20 +92,66 @@ test("新規作成ボタンには、空のドキュメントから始めるこ�
   ).toBeDefined();
 });
 
-test("開くボタンには、⌘O でも開けることが説明として添えられる", () => {
-  renderDocumentStart();
+/*
+ * 割り当ては説明の末尾に、前の文言と空白で区切って付く。区切りから末尾までを割り当ての綴りと
+ * 突き合わせ、`Shift+⌘O` のように前へ修飾が付いた綴りを通さない。
+ */
+test("macOS で動いているとき、開くボタンには、⌘O でも開けることが説明として添えられる", () => {
+  renderDocumentStart({
+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),
+  });
 
   expect(
-    screen.getByRole("button", { name: "開く", description: /⌘O/ }),
+    screen.getByRole("button", { name: "開く", description: /(?:^|\s)⌘O$/ }),
   ).toBeDefined();
 });
 
-test("新規作成ボタンには、⌘N でも作れることが説明として添えられる", () => {
-  renderDocumentStart();
+test("macOS で動いているとき、新規作成ボタンには、⌘N でも作れることが説明として添えられる", () => {
+  renderDocumentStart({
+    operatingSystem: OperatingSystem.fromNavigator(MacOsNavigatorPlatform),
+  });
 
   expect(
-    screen.getByRole("button", { name: "新規作成", description: /⌘N/ }),
+    screen.getByRole("button", {
+      name: "新規作成",
+      description: /(?:^|\s)⌘N$/,
+    }),
   ).toBeDefined();
+});
+
+test("Windows で動いているとき、開くボタンには、Ctrl+O でも開けることが説明として添えられる", () => {
+  renderDocumentStart({
+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),
+  });
+
+  expect(
+    screen.getByRole("button", {
+      name: "開く",
+      description: /(?:^|\s)Ctrl\+O$/,
+    }),
+  ).toBeDefined();
+});
+
+test("Windows で動いているとき、新規作成ボタンには、Ctrl+N でも作れることが説明として添えられる", () => {
+  renderDocumentStart({
+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),
+  });
+
+  expect(
+    screen.getByRole("button", {
+      name: "新規作成",
+      description: /(?:^|\s)Ctrl\+N$/,
+    }),
+  ).toBeDefined();
+});
+
+test("Windows で動いているとき、開くボタンの説明に ⌘ は出ない", () => {
+  renderDocumentStart({
+    operatingSystem: OperatingSystem.fromNavigator(WindowsNavigatorPlatform),
+  });
+
+  const openButton = screen.getByRole("button", { name: "開く" });
+  expect(openButton.textContent).not.toContain("⌘");
 });
 
 test("最近使ったファイルは、ファイル名で並ぶ", () => {

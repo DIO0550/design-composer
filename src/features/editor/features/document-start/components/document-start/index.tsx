@@ -4,6 +4,7 @@ import {
   type ActionCardContent,
   ActionCardTones,
 } from "@/components/action-card";
+import { ShownShortcut } from "@/components/shown-shortcut";
 import { FilePath } from "@/domains/unit/file-path";
 import {
   DocumentOpenFailureNotice,
@@ -17,6 +18,7 @@ import {
   CommandSources,
   type DocumentSessionActions,
 } from "@/features/editor/features/document-start/hooks/use-document-session";
+import type { OperatingSystem } from "@/libs/operating-system";
 import { Option } from "@/utils/Option";
 
 /**
@@ -35,31 +37,42 @@ function commandSourceFailureLabel(source: CommandSource): string {
 }
 
 /*
- * 開始画面の 2 枚のカードの中身。ショートカットの割り当ての出どころは `src-tauri/src/menu.rs` の
- * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここは表示の綴りだけを持つ。OS ごとの出し分けは
- * 行わず、⌘ 表記で固定している。
- * 子 feature からは親の `editor-context-menu` に非公開で置いた綴りの規則を使えないため（#1253）。
+ * 開始画面の 2 枚のカードの中身と割り当て。割り当ての出どころは `src-tauri/src/menu.rs` の
+ * `CmdOrCtrl+O` / `CmdOrCtrl+N` で、ここはキーと修飾だけを持つ（片方だけ変えると併記と実際の
+ * 割り当てが食い違う）。綴りは `ShownShortcut` が動いている OS ごとに作る。
  */
 
 /** 開くのカード（プライマリ）。 */
 const OpenCardContent = {
   title: "開く",
   description: "既存の .dcmp を選ぶ",
-  shortcut: "⌘O",
   iconPaths: [
     "M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
   ],
   tone: ActionCardTones.Primary,
-} as const satisfies ActionCardContent;
+} as const satisfies Omit<ActionCardContent, "shortcut">;
+
+/** 開くの割り当て。 */
+const OpenCardShortcut = {
+  kind: "command",
+  key: "O",
+  withShiftKey: false,
+} as const satisfies ShownShortcut;
 
 /** 新規作成のカード。 */
 const CreateCardContent = {
   title: "新規作成",
   description: "空のドキュメントから始める",
-  shortcut: "⌘N",
   iconPaths: ["M12 5v14", "M5 12h14"],
   tone: ActionCardTones.Normal,
-} as const satisfies ActionCardContent;
+} as const satisfies Omit<ActionCardContent, "shortcut">;
+
+/** 新規作成の割り当て。 */
+const CreateCardShortcut = {
+  kind: "command",
+  key: "N",
+  withShiftKey: false,
+} as const satisfies ShownShortcut;
 
 /**
  * ドキュメントを開く / 作る導線。
@@ -69,24 +82,33 @@ const CreateCardContent = {
  *
  * @param actions 開く / 作るを始める手続き
  * @param disabled 既に開く操作が始まっていて、押させたくないか
+ * @param operatingSystem 割り当ての綴りを選ぶのに使う、アプリが動いている OS
  * @returns 開く（プライマリ）と新規作成の 2 枚のカード
  */
 function StartActions({
   actions,
   disabled,
+  operatingSystem,
 }: Readonly<{
   actions: DocumentSessionActions;
   disabled: boolean;
+  operatingSystem: OperatingSystem;
 }>): ReactElement {
   return (
     <div className="mt-2 grid w-full grid-cols-2 gap-3">
       <ActionCard
-        content={OpenCardContent}
+        content={{
+          ...OpenCardContent,
+          shortcut: ShownShortcut.toText(OpenCardShortcut, operatingSystem),
+        }}
         onClick={actions.openDocument}
         disabled={disabled}
       />
       <ActionCard
-        content={CreateCardContent}
+        content={{
+          ...CreateCardContent,
+          shortcut: ShownShortcut.toText(CreateCardShortcut, operatingSystem),
+        }}
         onClick={actions.createDocument}
         disabled={disabled}
       />
@@ -182,6 +204,7 @@ function RecentFileList({
  * @param recentFilesFailure その一覧を読み取れなかった理由。読めていれば `none`
  * @param commandFailure 開く指示を受け取れなかった経路とその理由。両方受け取れていれば `none`
  * @param renderErrors 解釈できなかったファイルのエラー一覧の描き方
+ * @param operatingSystem 割り当ての綴りを選ぶのに使う、アプリが動いている OS
  */
 export function DocumentStart({
   attempt,
@@ -190,6 +213,7 @@ export function DocumentStart({
   recentFilesFailure,
   commandFailure,
   renderErrors,
+  operatingSystem,
 }: Readonly<{
   attempt: OpenAttempt;
   actions: DocumentSessionActions;
@@ -197,6 +221,7 @@ export function DocumentStart({
   recentFilesFailure: Option<string>;
   commandFailure: Option<CommandSourceFailure>;
   renderErrors: RenderDocumentErrors;
+  operatingSystem: OperatingSystem;
 }>) {
   const isOpening = OpenAttempt.isOpening(attempt);
   const failure = OpenAttempt.failure(attempt);
@@ -218,7 +243,11 @@ export function DocumentStart({
             ? "ファイルを読み込んでいます…"
             : "ドキュメントを開くか、新しく作成してください。"}
         </p>
-        <StartActions actions={actions} disabled={isOpening} />
+        <StartActions
+          actions={actions}
+          disabled={isOpening}
+          operatingSystem={operatingSystem}
+        />
         <RecentFileList
           paths={recentPaths}
           onOpen={(path) => actions.openDocumentsAt([path])}

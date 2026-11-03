@@ -125,6 +125,7 @@ export function EditorScreen({
             recentPaths={recentPaths}
             recentFilesFailure={recentFilesFailure}
             commandFailure={commandFailure}
+            operatingSystem={operatingSystem}
             renderErrors={(errors) => (
               // 解釈できずに開けなかったファイルなので、由来は unopened-file で固定になる
               // （飛び先のノードも書き戻す表示中の内容もまだ無い）。

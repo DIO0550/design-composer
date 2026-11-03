@@ -1,3 +1,4 @@
+import { screen, within } from "@testing-library/react";
 import { expect, test } from "vitest";
 import {
   menuRow,
@@ -14,8 +15,9 @@ import {
 import { Path, renderEditorScreen, startOpen } from "./setup";
 
 /*
- * 画面の入口で受け取った OS が、開いたドキュメントのコンテキストメニューまで届くかを見る
- * （docs/06-ui.md「コンテキストメニュー」）。綴りの規則そのものは編集画面の層のテストが見る。
+ * 画面の入口で受け取った OS が、開始画面のカードと、開いたドキュメントのコンテキストメニューまで
+ * 届くかを見る（docs/06-ui.md「開く前の画面（開始画面）」「コンテキストメニュー」）。
+ * 綴りの規則そのものは `ShownShortcut` のテストが見る。
  */
 
 /**
@@ -49,4 +51,32 @@ test("macOS で動いている画面でドキュメントを開くと、ツリ�
   const copyRow = await copyRowOn(MacOsNavigatorPlatform);
 
   expect(copyRow.textContent).toContain("⌘C");
+});
+
+/**
+ * その OS で動いていることにして、何も開いていない画面の開くカードを引く。
+ *
+ * @param navigatorPlatform アプリが動いている webview の `navigator`
+ * @returns 開始画面の開くカード
+ */
+function openCardOn(navigatorPlatform: NavigatorPlatform): HTMLElement {
+  renderEditorScreen(
+    {},
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+    { navigatorPlatform },
+  );
+
+  return screen.getByRole("button", { name: "開く" });
+}
+
+test("Windows で動いている画面で何も開いていないとき、開始画面の開くカードに Ctrl+O が添えられる", () => {
+  const openCard = openCardOn(WindowsNavigatorPlatform);
+
+  expect(within(openCard).getByText("Ctrl+O")).toBeDefined();
+});
+
+test("macOS で動いている画面で何も開いていないとき、開始画面の開くカードに ⌘O が添えられる", () => {
+  const openCard = openCardOn(MacOsNavigatorPlatform);
+
+  expect(within(openCard).getByText("⌘O")).toBeDefined();
 });
