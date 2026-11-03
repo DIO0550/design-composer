@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
-# スキル・サブエージェントの発火ログのパス。書くのは `record-firings.sh`、読むのは
-# `harness-record` スキルと `block-parent-session-edit.sh`。書く側と読む側でパスの組み立てを割らない
-# ために 1 箇所に置く。
+# スキル・サブエージェントの発火ログのパス。コードで組み立てるのは、書く `record-firings.sh` と読む
+# `block-parent-session-edit.sh` の 2 本で、この 2 本の間で組み立てを割らないために 1 箇所に置く。
+# `harness-record` の SKILL.md と `.claude/hooks/README.md` で手で打つコマンドは、パスをリテラルで書いている。
 
 # セッションの発火ログのパスを出す。
 #
