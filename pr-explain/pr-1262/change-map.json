@@ -3,8 +3,8 @@
   "pr": 1262,
   "headBranch": "claude/magical-cannon-rukd1d",
   "baseBranch": "main",
-  "mergeBase": "752abd5bfdcd3f7beb6e25f02711ab1ce83338d5",
-  "head": "741d49231259644278606625241f8b6f2c3829dd",
+  "mergeBase": "8315ce85ae8cc5cc30e7321f4123f9fb30ed921e",
+  "head": "5e8bb70330066296cc7e433c1f18fe0ed46578f1",
   "groups": [
     {
       "label": "domains / unit",
@@ -80,6 +80,15 @@
       ]
     },
     {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/NonEmptyArray.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
       "label": "features / editor",
       "files": [
         {
@@ -125,11 +134,51 @@
           "changed": false
         },
         {
+          "path": "src/features/editor/hooks/use-copy-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-delete-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-duplicate-shortcut/index.ts",
+          "changed": false
+        },
+        {
           "path": "src/features/editor/hooks/use-edit-actions/index.ts",
           "changed": false
         },
         {
+          "path": "src/features/editor/hooks/use-group-shortcut/index.ts",
+          "changed": false
+        },
+        {
           "path": "src/features/editor/hooks/use-node-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-paste-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-redo-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-rename-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-reorder-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-undo-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-ungroup-shortcut/index.ts",
           "changed": false
         },
         {
@@ -146,6 +195,10 @@
         },
         {
           "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/__tests__/editor-context-menu.type.test.ts",
           "changed": false
         },
         {
@@ -614,6 +667,15 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "5e8bb70330066296cc7e433c1f18fe0ed46578f1",
+      "merge": true,
+      "author": "Claude",
+      "date": "2026-11-03T00:09:51Z",
+      "subject": "🔀 [Merge]: #1253 main を取り込み、editor-context-menu のコンフリクトを解決する",
+      "body": "- main（#1254）の、併記をキーボードの割り当て（use-*-shortcut の定数）から\n  導く構造をそのまま採る\n- その上で #1253 の共有を当て、MenuShortcut / shortcutLabel を置かず\n  ShownShortcut / ShownShortcut.toText を使う\n- menuShortcutFromKeyShortcut は戻り値が ShownShortcut になるため\n  shownShortcutFromKeyShortcut に改名する\n\n背景:\n#1253 は綴りの規則を editor-context-menu から src/components/shown-shortcut\nへ移し、#1254 は同じファイルで併記の出どころをキーボードの割り当てへ\n変えた。両方が同じ型と関数を触っていたためコンフリクトした。\n\n採用理由:\n2 つの変更は別の軸（綴りの規則の置き場所 / 併記の出どころ）なので、\n#1254 の構造を保ったまま綴りの部分だけを ShownShortcut に寄せれば両立する。\nShowableKeyShortcut の型テストと、描画される文字列は変わらない。\n\n影響とトレードオフ:\ndocs/05-architecture.md の「OS のメニュー（⌘O / ⌘N）」には「macOS の綴りで\n書く」の断りが無いままで、この取り込みで生じたものではないので触れていない。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2S2Q5h6uMQNRtgVVf1",
+      "files": []
     }
   ],
   "dependencies": [
@@ -648,6 +710,11 @@
       "status": "added"
     },
     {
+      "from": "src/features/editor/components/editor-context-menu/__tests__/editor-context-menu.type.test.ts",
+      "to": "src/features/editor/components/editor-context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
       "from": "src/features/editor/components/editor-context-menu/index.tsx",
       "to": "src/components/context-menu/index.tsx",
       "status": "kept"
@@ -674,7 +741,27 @@
     },
     {
       "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-copy-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-delete-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-duplicate-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
       "to": "src/features/editor/hooks/use-edit-actions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-group-shortcut/index.ts",
       "status": "kept"
     },
     {
@@ -684,12 +771,52 @@
     },
     {
       "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-paste-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-redo-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-rename-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-reorder-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-undo-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/features/editor/hooks/use-ungroup-shortcut/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
       "to": "src/features/editor/types/OpenedContextMenu.ts",
       "status": "kept"
     },
     {
       "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
       "to": "src/libs/operating-system/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/types/NonEmptyArray.ts",
       "status": "kept"
     },
     {
