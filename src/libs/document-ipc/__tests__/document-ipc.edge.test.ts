@@ -179,3 +179,14 @@ test("保存先と中身を取り違えて渡すことはできない", () => {
 
   expectTypeOf(swapped).toBeFunction();
 });
+
+test("外部変更のパスと中身は、位置で並べて渡すことはできない", () => {
+  const fake = createDocumentIpcFake();
+
+  // 呼ばずに型だけを見る。
+  const positional = () =>
+    // @ts-expect-error パスと中身は名前を付けて渡す
+    fake.changeExternally("{}", Path);
+
+  expectTypeOf(positional).toBeFunction();
+});
