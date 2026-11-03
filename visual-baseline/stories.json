@@ -530,6 +530,11 @@
     "name": "メニューを受け取れない"
   },
   {
+    "id": "features-editor-features-document-start-documentstart--on-windows",
+    "title": "features/editor/features/document-start/DocumentStart",
+    "name": "Windows で動いている"
+  },
+  {
     "id": "features-editor-features-document-start-documentstart--open-failed",
     "title": "features/editor/features/document-start/DocumentStart",
     "name": "開けなかった"
