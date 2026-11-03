@@ -1,0 +1,2621 @@
+{
+  "version": 1,
+  "pr": 1274,
+  "sha": "0fe6dc83a9219fa20d724d462c46c78284986e59",
+  "issue": 1209,
+  "overview": {
+    "title": "リサイズ中も、Alt / Option を押していれば掴んだ辺の向きの距離を数値で出す",
+    "lead": "ノード / artboard をリサイズしている間に Alt / Option を押していれば、掴んだ辺から外への向きだけ(辺なら 1、角なら 2)、その向きで最初に当たる相手までの距離が出る。相手はリサイズの辺のスナップの揃え先と同じ(動かないもの)で、掴んだ時点に 1 回だけ測る。",
+    "before": [
+      {
+        "text": "リサイズ中は、Alt / Option を押しても距離は出なかった(`docs/06-ui.md` に「リサイズ中(#1209)はまだ出さない」)"
+      },
+      {
+        "text": "掴んだ時点に測るのは辺のスナップの組だけで、`ResizeHold.snapFrom: Option<SideSnap>` に載せていた"
+      },
+      {
+        "text": "揃え先の名前は平らな並び(`snapTargetNames: readonly string[]`)で、親と兄弟の区別が無かった"
+      }
+    ],
+    "after": [
+      {
+        "text": "掴んだ時点に、揃え先の組と距離の相手を 1 回の実測(`ResizeHold.measured`)にまとめて載せる。名前ごとに矩形を引くのは 1 回だけ",
+        "message": "m-grab-measure"
+      },
+      {
+        "text": "ポインタが動くたびに Alt / Option を見て、押していなければ距離の相手を外してから `trackedAt` を通す(状態へは書き戻さない)",
+        "message": "m-without-distance"
+      },
+      {
+        "text": "`trackedAt` は、書き込む長さの位置へ掴んだ辺だけを動かした矩形から 4 方向を測り、掴んだ辺の向きだけを残す",
+        "message": "m-only-toward"
+      },
+      {
+        "text": "今の親を引けない(無い / 面積 0)ときは距離の相手だけ `none` にし、兄弟への吸い付きは残す",
+        "message": "m-measure-bounds"
+      },
+      {
+        "text": "角で一方の長さが 0 で止まると、直交の向きは重なる相手が無くなり出ない(移動の距離と同じ重なりの規則)",
+        "message": "m-create-distances"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "掴んだ時点の実測",
+        "text": "揃え先の組と距離の相手を 1 つの Option にまとめた。親が引けないときに距離だけを外し、兄弟への吸い付きを残すのはここ(`resizeMeasureOf`)",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts"
+        }
+      },
+      {
+        "title": "Alt の判定の置き場",
+        "text": "⌘ と同じく、フックがポインタの移動ごとに外してから通す。solution レビューで、移動(フックが直和を組む / 真偽値の引数)と形が 3 通りに割れていると指摘され、見送った",
+        "go": {
+          "kind": "message",
+          "id": "m-without-distance"
+        }
+      },
+      {
+        "title": "動かしたときの流れ",
+        "text": "起点の矩形 → 4 方向の距離 → 掴んだ向きだけ、の順を 1 本で見る",
+        "go": {
+          "kind": "flow",
+          "id": "f-track"
+        }
+      },
+      {
+        "title": "距離の相手の置き場",
+        "text": "移動の置き直し(`reposition-lines`)から `distance-targets` へ移し、リサイズからも引けるようにした",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/domains/distance-targets/index.ts"
+        }
+      },
+      {
+        "title": "目で見た表示",
+        "text": "Storybook の `OpenedDocumentEditor` の absolute-node で確かめた。Alt で左辺を動かすと左の 1 本だけ(266)、Alt を離すと消える、右下の角で右と下の 2 本(下辺は吸い付いたあと)",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "resize-distance",
+      "label": "リサイズ中の距離",
+      "role": "リサイズしている間、Alt / Option で掴んだ辺の向きの距離を出す"
+    },
+    {
+      "id": "distance-shared",
+      "label": "距離の部品",
+      "role": "移動とリサイズが共有する、相手から 4 方向の線を引く部品と、向きの絞り込み"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "掴んだ時点の実測・掴んだ向きの絞り込み・起点の矩形の計算と、フックでの Alt の判定、キャンバスへの重ね描き"
+    },
+    {
+      "layer": "utils",
+      "role": "`Option` で写して値のあるものだけを残す `ArrayEx.filterMap` を足した"
+    },
+    {
+      "layer": "docs",
+      "role": "`06-ui.md` の「リサイズハンドル」に Alt / Option の距離の項を足し、移動・選択の項の「まだ出さない」を置き換えた"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "name": "リサイズ",
+      "role": "掴み方・掴んだ時点の実測・書き込む長さと線を決めるドメイン",
+      "feature": "resize-distance",
+      "change": "`ResizeTargetNames`・`ResizeMeasure`・`ResizeLines` を足し、`ResizeGrip.toFacings`・`withMeasured`・`withoutDistanceTargets`・`withLines`・`facingDistances` を公開。`trackedAt` が距離も返す"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "name": "リサイズの仲介",
+      "role": "DOM の実測とポインタイベントを仲介するフック",
+      "feature": "resize-distance",
+      "change": "掴んだ時点に名前から矩形を引く手段を渡し、Alt / Option を押していない移動では距離の相手を外す。返す値に `facingDistances` を足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/distance-targets/index.ts",
+      "name": "距離の相手",
+      "role": "Alt / Option の距離を測る相手(親の中 / artboard の間)と、そこから 4 方向の線を引く入口",
+      "feature": "distance-shared",
+      "change": "新しく作った。`reposition-lines` から型と線を引く関数を移した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "name": "向きごとの距離",
+      "role": "上下左右それぞれ最初に当たる相手までの短い線",
+      "feature": "distance-shared",
+      "change": "`onlyToward` を足した。doc にリサイズ中の親を書き足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/facing/index.ts",
+      "name": "向き",
+      "role": "辺の組と進む側で表す向きと、最初に当たる相手の判定",
+      "feature": "distance-shared",
+      "change": "`equals` を足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "name": "辺のスナップ",
+      "role": "掴んだ辺を揃え先へ寄せる量とガイド線",
+      "feature": "resize-distance",
+      "change": "軸から辺の組への対応表 `SidePairByAxis` を export した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "name": "移動の線",
+      "role": "ノード / artboard を運んでいる間のガイド線と Alt / Option の距離",
+      "feature": "distance-shared",
+      "change": "距離の相手の型と線を引く関数を `distance-targets` へ移した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "name": "キャンバス",
+      "role": "artboard と重ね描きを並べる画面",
+      "feature": "resize-distance",
+      "change": "リサイズ中の距離の重ね描きを置いた"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx",
+      "name": "距離の重ね描き",
+      "role": "向きごとの線と数値を描く",
+      "feature": "resize-distance",
+      "change": "doc に「リサイズしている間」を足しただけ"
+    },
+    {
+      "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "name": "描かれた矩形",
+      "role": "名前から今描かれている矩形を DOM で測る",
+      "feature": "resize-distance",
+      "change": "`ArrayEx.filterMap` に乗せ替えた(振る舞いは同じ)"
+    },
+    {
+      "path": "src/utils/ArrayEx.ts",
+      "name": "配列の操作",
+      "role": "組み込みの配列への汎用操作",
+      "change": "`filterMap` を足した"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "画面の振る舞いの仕様",
+      "change": "「リサイズハンドル」に Alt / Option の距離の項を足した",
+      "graph": false
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "name": "ノードの移動の仲介",
+      "role": "ノードを運ぶフック",
+      "change": "距離の相手の型の import 元を付け替えただけ",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "m-grab-measure",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "kind": "cmd",
+      "name": "掴んだ時点の実測を載せる",
+      "code": "NodeResize.withMeasured(held, { grabbed, measure: DrawnBounds.measureWithArea })",
+      "via": "call",
+      "payload": "掴んだ時点の矩形と、名前から矩形を引く手段",
+      "returns": "`measured` に揃え先の組と距離の相手を載せた掴み",
+      "status": "added"
+    },
+    {
+      "id": "m-measure-bounds",
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "kind": "qry",
+      "name": "名前から描かれた矩形を引く",
+      "code": "drawn.measure(name)",
+      "via": "call",
+      "payload": "揃え先と距離の相手の名前(1 名 1 回)",
+      "returns": "描かれていて面積を持てば矩形、無ければ `none`",
+      "status": "added"
+    },
+    {
+      "id": "m-without-distance",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "kind": "cmd",
+      "name": "距離の相手を外す",
+      "code": "NodeResize.withoutDistanceTargets(snapDecided)",
+      "via": "call",
+      "payload": "Alt / Option を押していない移動の、今の状態",
+      "returns": "距離の相手を `none` にした状態(状態へは書き戻さない)",
+      "status": "added"
+    },
+    {
+      "id": "m-tracked",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "kind": "qry",
+      "name": "動かした位置の編集と線",
+      "code": "NodeResize.trackedAt(resize, pointer, view)",
+      "via": "call",
+      "payload": "今のポインタの位置と倍率",
+      "returns": "書き込む編集・ガイド線・距離",
+      "status": "changed"
+    },
+    {
+      "id": "m-to-distances",
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/distance-targets/index.ts",
+      "kind": "qry",
+      "name": "相手までの距離を引く",
+      "code": "DistanceTargets.toDistances(targets, resizedBounds(...))",
+      "via": "call",
+      "payload": "掴んだ辺だけを動かした起点の矩形",
+      "returns": "4 方向の線",
+      "status": "added"
+    },
+    {
+      "id": "m-create-distances",
+      "from": "src/features/editor/features/canvas/domains/distance-targets/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "kind": "qry",
+      "name": "向きごとの最初の相手",
+      "code": "FacingDistances.create / FacingDistances.createAmong",
+      "via": "call",
+      "payload": "起点と、親の縁と兄弟 / 他の artboard",
+      "returns": "4 方向の線",
+      "status": "added"
+    },
+    {
+      "id": "m-only-toward",
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "kind": "qry",
+      "name": "掴んだ向きだけ残す",
+      "code": "FacingDistances.onlyToward(distances, ResizeGrip.toFacings(held.grip))",
+      "via": "call",
+      "payload": "4 方向の線と、掴んだ辺の向き(辺なら 1、角なら 2)",
+      "returns": "掴んだ向き以外を `none` にした線",
+      "status": "added"
+    },
+    {
+      "id": "m-facing-equals",
+      "from": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing/index.ts",
+      "kind": "qry",
+      "name": "同じ向きか",
+      "code": "Facing.equals(kept, facing)",
+      "via": "call",
+      "payload": "残す向きと、今見ている向き",
+      "returns": "辺の組と進む側の両方が同じなら `true`",
+      "status": "added"
+    },
+    {
+      "id": "m-with-lines",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "kind": "cmd",
+      "name": "線と距離を状態へ載せる",
+      "code": "NodeResize.withLines(resize, lines)",
+      "via": "state",
+      "payload": "ガイド線と距離",
+      "status": "changed"
+    },
+    {
+      "id": "m-read-distances",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "kind": "qry",
+      "name": "今出す距離",
+      "code": "NodeResize.facingDistances(resize)",
+      "via": "call",
+      "returns": "掴んでいれば最後に動かした位置からの距離、そうでなければ線が無い距離",
+      "status": "added"
+    },
+    {
+      "id": "m-draw",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/facing-distance-overlay/index.tsx",
+      "kind": "cmd",
+      "name": "距離を描く",
+      "code": "<FacingDistanceOverlay distances={nodeResize.facingDistances} view={view} />",
+      "via": "state",
+      "payload": "リサイズ中の距離と倍率",
+      "status": "added"
+    },
+    {
+      "id": "m-reposition",
+      "from": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "to": "src/features/editor/features/canvas/domains/distance-targets/index.ts",
+      "kind": "qry",
+      "name": "運んでいる間の距離を引く",
+      "code": "DistanceTargets.toDistances(targets, SideSnap.movedBy(...))",
+      "via": "call",
+      "payload": "寄せたあとの運んでいる矩形",
+      "returns": "4 方向の線",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f-grab",
+      "label": "ハンドルを掴んだとき",
+      "steps": [
+        "m-grab-measure",
+        "m-measure-bounds"
+      ]
+    },
+    {
+      "id": "f-track",
+      "label": "Alt を押して動かしたとき",
+      "steps": [
+        "m-without-distance",
+        "m-tracked",
+        "m-to-distances",
+        "m-create-distances",
+        "m-only-toward",
+        "m-facing-equals",
+        "m-with-lines"
+      ]
+    },
+    {
+      "id": "f-draw",
+      "label": "距離を描くとき",
+      "steps": [
+        "m-read-distances",
+        "m-draw"
+      ]
+    },
+    {
+      "id": "f-drag",
+      "label": "ノードを運んでいるとき",
+      "steps": [
+        "m-reposition",
+        "m-create-distances"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "1e63bd6bf44b39ccdf6b61f646cfe75875bc393f",
+      "phase": "prep",
+      "role": "距離の相手 `DistanceTargets` を `distance-targets` モジュールへ移す",
+      "why": "リサイズからも距離の相手を引くため。`reposition-lines` に残すと、置き直しでないリサイズが置き直しのモジュールを引くことになる(却下案 5)。`facing-distances` に置くと「`FacingDistances` はノードと artboard を区別しない」と食い違う(却下案 4)。",
+      "flows": [
+        "f-drag"
+      ],
+      "review": [
+        "移しただけで、ノード / artboard の移動の距離の振る舞いは変わっていないこと"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-targets/index.ts",
+          "start": 10,
+          "end": 23,
+          "text": "kind が分けているのは何を測るか。doc に「リサイズ中は今の親」「幅につられて動くものを除く」を足した"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-targets/index.ts",
+          "start": 33,
+          "end": 44,
+          "text": "旧 `reposition-lines` の非公開 `distanceLinesFrom` を、型の名前空間の `toDistances` として公開した"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+          "start": 54,
+          "end": 54,
+          "text": "移動側は import して呼ぶだけになった"
+        }
+      ]
+    },
+    {
+      "sha": "9a1a42135ce471a8b88a65c737e9569ec7d44c2d",
+      "phase": "prep",
+      "role": "`DistanceTargets.toDistances` の相手の形ごとの線をテストする",
+      "why": "移した関数を公開 API にしたので、親の中 / artboard の間の 2 つの枝を公開の入口から確かめる。",
+      "review": [
+        "artboard の間では親の縁を測らないことを、左に兄弟がいない配置で見ていること"
+      ]
+    },
+    {
+      "sha": "8fd8e090758bb2dbdd156ed994dd674932059889",
+      "phase": "core",
+      "role": "`FacingDistances.onlyToward` で、挙げた向きだけを残す",
+      "why": "4 方向を計算してから掴んだ向きだけ残す。向きを決めるのは掴み方なので、絞り込みをフックや表示に置かずドメインに置いた(却下案 8)。",
+      "flows": [
+        "f-track"
+      ],
+      "review": [
+        "実装を `fromFacings` に通していて、残さない向きは線があっても `none` になること"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+          "start": 106,
+          "end": 118,
+          "text": "向きの等しさをここで直書きしていた。のちに `Facing.equals` へ寄せた(ee4495d)"
+        }
+      ]
+    },
+    {
+      "sha": "ba6b8ccec6b855e6c824df3ae857ba374e0d82a3",
+      "phase": "core",
+      "role": "`onlyToward` が挙げた向きだけを残すことをテストする",
+      "why": "辺(1 向き)・角(2 向き)・空の 3 つ。4 方向に線がある距離から始め、残さない向きに線があっても消えることを見る。",
+      "review": [
+        "絞る前に 4 方向とも線がある入力にしてあり、絞り込みを外すと落ちること"
+      ]
+    },
+    {
+      "sha": "dffa6b9b85afbb9065698d57cb3f4a63f7ce98df",
+      "phase": "core",
+      "role": "リサイズ中も Alt / Option で掴んだ辺の向きの距離を出す",
+      "why": "掴んだ時点の実測を 1 つの `Option<ResizeMeasure>` にまとめ(別々の Option だと「相手はあるのに組が無い」が書ける)、名前から矩形を引く関数をフックから渡して 1 名 1 回だけ引く。起点の矩形は DOM を測らず計算で作る(リサイズは毎回ドキュメントを書き換えるので DOM が 1 回遅れる)。",
+      "flows": [
+        "f-grab",
+        "f-track",
+        "f-draw"
+      ],
+      "review": [
+        "今の親を引けないとき、距離の相手だけを `none` にして兄弟への吸い付きは残していること(却下案 14 との差)",
+        "起点の矩形が、掴んだ時点の矩形の掴んだ辺だけを、書き込む長さ(吸い付き・丸め・0 止めのあと)の位置へ動かしたものになっていること",
+        "Alt を押していない移動で外した距離の相手を、状態へ書き戻していないこと",
+        "揃え先の名前を `ResizeTargetNames` の直和にし、既存の名前のテスト 26 件を構造で比べる形へ書き換えたこと"
+      ],
+      "before": [
+        {
+          "text": "リサイズ中は Alt / Option を押しても距離が出ない"
+        }
+      ],
+      "after": [
+        {
+          "text": "Alt / Option を押していれば、掴んだ辺の向きだけ最初に当たる相手までの距離が出る",
+          "message": "m-only-toward"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 143,
+          "end": 148,
+          "text": "掴んだ軸ごとに、その軸の辺の組と掴んだ端。`ResizeGrip.grabs` が空でない並びなので、戻り値も空でない"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 233,
+          "end": 241,
+          "text": "揃え先と距離の相手の名前。親と兄弟を分けたのは、親を引けないときに距離だけを外すため"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 1021,
+          "end": 1065,
+          "text": "名前ごとに 1 回だけ矩形を引き、揃え先の並びと距離の相手の両方をそこから作る"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 1099,
+          "end": 1120,
+          "text": "実測が無い / 距離の相手が無いなら線が無い距離。あれば 4 方向を測ってから掴んだ向きだけ残す"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 1131,
+          "end": 1147,
+          "text": "縮んだ量を画面の px に直して掴んだ辺だけを動かす。符号の分岐はのちに `inwardFrom` へ寄せた(1d757c2)"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "start": 237,
+          "end": 247,
+          "text": "⌘ の判定のあとで Alt を見る。押していなければ距離の相手を外してから通す"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "start": 405,
+          "end": 408,
+          "text": "リサイズ中の距離。ガイド線の隣に置いた"
+        }
+      ]
+    },
+    {
+      "sha": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "phase": "core",
+      "role": "掴んだ辺の向きと距離をドメインでテストする",
+      "why": "向きの対応(`toFacings`)と、起点・吸い付き・⌘・倍率・0 止め・親が引けないとき・artboard を、ドメインの公開 API から確かめる。",
+      "review": [
+        "倍率 2 倍のテストが、倍率を戻し忘れたときと違う答えになる入力になっていること",
+        "高さが 0 で止まったときに右が出ないことを、左右の相手がいる配置で見ていること"
+      ]
+    },
+    {
+      "sha": "c513e5ca357f305d719afe8b10d34f8a0082ab1c",
+      "phase": "core",
+      "role": "キャンバスでリサイズ中の Alt の距離を通しでテストする",
+      "why": "Alt をポインタの移動ごとに見ること・離すと消えることはフックとキャンバスを通さないと確かめられない。既存の「リサイズハンドルを掴んでいる間は距離が出ない」は、選択しているだけのときの距離の話だと名前で分かるように改名した。",
+      "flows": [
+        "f-track",
+        "f-draw"
+      ],
+      "review": [
+        "途中で Alt を押す / 離すの 2 件が、状態へ書き戻したときに落ちること"
+      ]
+    },
+    {
+      "sha": "0f09401193c46a11addab2bf22ad50ebbd4c24ce",
+      "phase": "core",
+      "role": "`06-ui.md` にリサイズ中の Alt / Option の距離を書く",
+      "why": "「リサイズ中(#1209)はまだ出さない」を置き換え、リサイズハンドルの項に、向き・相手・親が描かれていないとき・測る位置・0 止め・既知の限界を書いた。Figma の「Alt で中心からリサイズ」は割り当てないことも書いた。",
+      "review": [
+        "今の親が描かれていないとき距離だけ出さず、兄弟への吸い付きは残ることが書かれていること"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 292,
+          "end": 299,
+          "text": "リサイズハンドルの Alt / Option の項。相手の選び方の 4 規則はのちに参照の形で足した(d83653b)"
+        }
+      ]
+    },
+    {
+      "sha": "019cc718635be0c5c2701f9b4586e873c144515f",
+      "phase": "revise",
+      "role": "`ArrayEx.filterMap` を足す",
+      "why": "`Option` で写して値のあるものだけを残す走査が、`DrawnBounds` の 2 箇所・`FacingDistances.hasCoinciding`・新しい `resizeMeasureOf` に現れた(duplication レビューの指摘)。",
+      "review": [
+        "名前が操作(写して残す)を指していて、用途の語を持ち込んでいないこと"
+      ],
+      "notes": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "start": 183,
+          "end": 198,
+          "text": "`flatMap` で、`some` のときだけ 1 要素の配列を返す"
+        }
+      ]
+    },
+    {
+      "sha": "3602c70795c4a1199b8b4229013e1d44987f7bcd",
+      "phase": "revise",
+      "role": "`filterMap` が値のある要素だけを順に残すことをテストする",
+      "why": "残す要素が並びの途中に散らばる入力で、順を保つことも見る。",
+      "review": [
+        "`none` を残す壊し方で落ちること(ミューテーションで 41 件落ちた)"
+      ]
+    },
+    {
+      "sha": "50eb90ab1b8a0e4bf068794bb9ffcc3347413825",
+      "phase": "revise",
+      "role": "`Facing.equals` を足す",
+      "why": "`onlyToward` の中で向きの等しさを直書きしていた(structure レビューの指摘)。向きの性質なので `Facing` に置く。",
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/facing/index.ts",
+          "start": 29,
+          "end": 39,
+          "text": "辺の組と進む側の両方で比べる"
+        }
+      ]
+    },
+    {
+      "sha": "d2a3e8f46869c1feee1b8120be8ede39a2dde546",
+      "phase": "revise",
+      "role": "`Facing.equals` が辺の組と端の両方で判定することをテストする",
+      "why": "片方のフィールドだけで比べる実装を、それぞれ落とすため、組だけ違う / 端だけ違うを別々に置いた。",
+      "review": [
+        "片方のフィールドだけで比べる壊し方の両方で落ちること"
+      ]
+    },
+    {
+      "sha": "ee4495dc3f6fd544cc61af249b0167903c31a578",
+      "phase": "revise",
+      "role": "`DrawnBounds` と `FacingDistances` を `filterMap` / `Facing.equals` に乗せ替える",
+      "why": "新設した 2 つを既存の箇所から引き、同じ処理を 1 箇所にした。振る舞いは変わらない。",
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+          "start": 112,
+          "end": 112,
+          "text": "向きの等しさを `Facing.equals` に"
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "start": 88,
+          "end": 88,
+          "text": "描かれていて面積を持つものだけ"
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "start": 102,
+          "end": 104,
+          "text": "描かれているものだけ(面積は問わない)"
+        }
+      ]
+    },
+    {
+      "sha": "1d757c21a46ad04b655f3f017583336cc03e689b",
+      "phase": "revise",
+      "role": "リサイズの実測と符号の扱いを 1 箇所に寄せ、`withMeasure` を `withMeasured` に改名する",
+      "why": "符号の規則が 3 箇所に散っていると、1 箇所だけ直したときに起点の矩形と書き込む長さが逆向きに割れる。`withMeasure` は引数の `measure` と読み違える(naming レビュー)。",
+      "review": [
+        "`inwardFrom` が `resizedBounds` / `resizedLength` / `centerShift` の 3 箇所から引かれていること",
+        "振る舞いが変わっていないこと(テストは改名の追随だけ)"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 357,
+          "end": 361,
+          "text": "掴んだ時点に引く手段の型に名前を付けた"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 1009,
+          "end": 1017,
+          "text": "`withoutSnapTargets` / `withoutDistanceTargets` の骨組み"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 1244,
+          "end": 1246,
+          "text": "掴んだ端から内側へ向かう符号"
+        }
+      ]
+    },
+    {
+      "sha": "3f5c3cd47ec592283677c6ea655f038fbccbbdd9",
+      "phase": "revise",
+      "role": "テスト名とコメントを「掴んだ時点の実測」という呼び方に揃える",
+      "why": "`snapFrom` を `measured` にしたので、「辺のスナップの組を載せていない掴み」というテスト名が実体とずれた。中身は変えていない。"
+    },
+    {
+      "sha": "b8a20834f5a5802245911b3dfc028a0843e78982",
+      "phase": "revise",
+      "role": "リサイズ中に出る重ね描きをコメントに反映する",
+      "why": "「隙間の数値はリサイズでは出さない」というコメントが、直下に置いた距離の重ね描きと矛盾して読めた(comment レビュー)。"
+    },
+    {
+      "sha": "d83653bc325e8e589404ad1916e6aee2daba91cb",
+      "phase": "revise",
+      "role": "リサイズの Alt の項で、移動と同じ規則を参照の形にまとめる",
+      "why": "相手の選び方の 4 規則が無く、吸い付いたとき 0 が出ると読めた(harness レビュー)。揃え先の列挙は上の項の書き写しになっていた(duplication レビュー)。artboard の移動の節と同じ形で「次は、ノードの移動の Alt / Option の距離と同じ」とした。",
+      "review": [
+        "相手に接している向きには何も出さない、が書かれ、吸い付いたときに 0 が出ないと読めること"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 300,
+          "end": 302,
+          "text": "移動の距離から受け継ぐ規則"
+        }
+      ]
+    },
+    {
+      "sha": "0fe6dc83a9219fa20d724d462c46c78284986e59",
+      "phase": "revise",
+      "role": "今の親が大きさを持たずに描かれているとき距離が出ないことを通しでテストする",
+      "why": "test-reviewer のミューテーション 28 件のうち、フックが渡す `measureWithArea` を `measure` に差し替えても全件通った(親が面積 0 のとき距離を出さないことが守られていなかった)。足したテストは、差し替えるとこれだけが落ちる。",
+      "review": [
+        "ガイド線が出ていることも見て、距離が出ない理由が親の面積だけに絞れていること"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx",
+          "start": 164,
+          "end": 179,
+          "text": "兄弟の `marker` だけを描き、親の `home` は描かない"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "s-int",
+      "label": "キャンバスでのリサイズの距離",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx"
+    },
+    {
+      "id": "s-susp",
+      "label": "選択の距離を止めるとき",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx"
+    },
+    {
+      "id": "s-nfd",
+      "label": "リサイズの距離",
+      "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts"
+    },
+    {
+      "id": "s-gf",
+      "label": "掴んだ辺の向き",
+      "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.grip-facings.test.ts"
+    },
+    {
+      "id": "s-dt",
+      "label": "距離の相手",
+      "file": "src/features/editor/features/canvas/domains/distance-targets/__tests__/distance-targets.normal.test.ts"
+    },
+    {
+      "id": "s-ot",
+      "label": "向きの絞り込み",
+      "file": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.only-toward.test.ts"
+    },
+    {
+      "id": "s-fn",
+      "label": "向きの判定",
+      "file": "src/features/editor/features/canvas/domains/facing/__tests__/facing.normal.test.ts"
+    },
+    {
+      "id": "s-fe",
+      "label": "向きの判定の境界",
+      "file": "src/features/editor/features/canvas/domains/facing/__tests__/facing.edge.test.ts"
+    },
+    {
+      "id": "s-an",
+      "label": "配列の操作",
+      "file": "src/utils/__tests__/ArrayEx.normal.test.ts"
+    },
+    {
+      "id": "s-ae",
+      "label": "配列の操作の境界",
+      "file": "src/utils/__tests__/ArrayEx.edge.test.ts"
+    },
+    {
+      "id": "s-snap",
+      "label": "リサイズの吸い付き",
+      "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap.test.ts"
+    },
+    {
+      "id": "s-sg",
+      "label": "リサイズのガイド線",
+      "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "i-edge",
+      "suite": "s-int",
+      "name": "Alt を押しながら右辺を動かしている間、右の最初に当たる相手（親の縁）までの距離だけが出る",
+      "techniques": [
+        "equivalence",
+        "state"
+      ],
+      "why": "辺を掴んだときは掴んだ向きの 1 本だけ。左・上・下にも相手がいる配置で、絞り込みを外すと落ちる",
+      "given": "`badge`(左右 120〜220)が `home`(左右 100〜460)の中にあり、下に兄弟の `marker` がいる",
+      "when": "右辺を 218 → 238 と Alt を押しながら動かす",
+      "then": "`220` の 1 本だけが出る",
+      "commit": "c513e5ca357f305d719afe8b10d34f8a0082ab1c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx",
+        "start": 33,
+        "end": 43,
+        "emphasis": [
+          {
+            "start": 40,
+            "end": 42
+          }
+        ],
+        "text": "test(\"Alt を押しながら右辺を動かしている間、右の最初に当たる相手（親の縁）までの距離だけが出る\", () => {\n  renderCanvas({ selection: setupSelection([\"badge\"]) });\n  drawnApart();\n  const badge = drawnAt(\"badge\", BadgeBounds);\n\n  // 左（`home` の縁まで 20）・上（20）・下（`marker` まで 40）は出ない\n  pressPointer(badge, { x: 218, y: 100 });\n  movePointer(badge, { x: 238, y: 100 }, \"alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"220\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "m-without-distance",
+        "m-tracked",
+        "m-only-toward",
+        "m-draw"
+      ]
+    },
+    {
+      "id": "i-corner",
+      "suite": "s-int",
+      "name": "Alt を押しながら右下の角を動かしている間、右と下の最初に当たる相手までの距離が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "角を掴んだときは 2 本",
+      "given": "`badge`(左右 120〜220)が `home`(左右 100〜460)の中にあり、下に兄弟の `marker` がいる",
+      "when": "右下の角を (220,120) → (240,130) と Alt を押しながら動かす",
+      "then": "`220` と `30` が出る",
+      "commit": "c513e5ca357f305d719afe8b10d34f8a0082ab1c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx",
+        "start": 45,
+        "end": 55,
+        "text": "test(\"Alt を押しながら右下の角を動かしている間、右と下の最初に当たる相手までの距離が出る\", () => {\n  renderCanvas({ selection: setupSelection([\"badge\"]) });\n  drawnApart();\n  const badge = drawnAt(\"badge\", BadgeBounds);\n\n  // 右辺 240・下辺 130。右は `home` の縁まで 220、下は `marker` まで 30\n  pressPointer(resizeHandleAt({ x: 1, y: 1 }), { x: 220, y: 120 });\n  movePointer(badge, { x: 240, y: 130 }, \"alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"220\", \"30\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "m-only-toward",
+        "m-draw"
+      ]
+    },
+    {
+      "id": "i-noalt",
+      "suite": "s-int",
+      "name": "Alt を押さずに動かしている間は、距離が出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "Alt を押していない移動では距離の相手を外す",
+      "given": "`badge`(左右 120〜220)が `home`(左右 100〜460)の中にあり、下に兄弟の `marker` がいる",
+      "when": "右辺を修飾キーなしで動かす",
+      "then": "距離は出ない",
+      "commit": "c513e5ca357f305d719afe8b10d34f8a0082ab1c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx",
+        "start": 57,
+        "end": 66,
+        "text": "test(\"Alt を押さずに動かしている間は、距離が出ない\", () => {\n  renderCanvas({ selection: setupSelection([\"badge\"]) });\n  drawnApart();\n  const badge = drawnAt(\"badge\", BadgeBounds);\n\n  pressPointer(badge, { x: 218, y: 100 });\n  movePointer(badge, { x: 238, y: 100 });\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts"
+      ],
+      "covers": [
+        "m-without-distance"
+      ]
+    },
+    {
+      "id": "i-late-alt",
+      "suite": "s-int",
+      "name": "Alt を押さずに動かしてから Alt を押して動かすと、距離が出る",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "外した距離の相手を状態へ書き戻していないこと。ミューテーション(Alt を書き戻す)で落ちたのはこの 1 件だけ",
+      "given": "`badge`(左右 120〜220)が `home`(左右 100〜460)の中にあり、下に兄弟の `marker` がいる",
+      "when": "修飾キーなしで 1 回動かし、次に Alt を押して動かす",
+      "then": "`220` が出る",
+      "commit": "c513e5ca357f305d719afe8b10d34f8a0082ab1c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx",
+        "start": 68,
+        "end": 78,
+        "text": "test(\"Alt を押さずに動かしてから Alt を押して動かすと、距離が出る\", () => {\n  renderCanvas({ selection: setupSelection([\"badge\"]) });\n  drawnApart();\n  const badge = drawnAt(\"badge\", BadgeBounds);\n\n  pressPointer(badge, { x: 218, y: 100 });\n  movePointer(badge, { x: 228, y: 100 });\n  movePointer(badge, { x: 238, y: 100 }, \"alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"220\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-without-distance",
+        "m-with-lines"
+      ]
+    },
+    {
+      "id": "i-alt-off",
+      "suite": "s-int",
+      "name": "Alt を押して距離を出したあと、離して動かすと距離が消える",
+      "techniques": [
+        "state"
+      ],
+      "why": "押しているかはポインタが動くたびに見る",
+      "given": "`badge`(左右 120〜220)が `home`(左右 100〜460)の中にあり、下に兄弟の `marker` がいる",
+      "when": "Alt を押して動かしたあと、離して動かす",
+      "then": "距離は消える",
+      "commit": "c513e5ca357f305d719afe8b10d34f8a0082ab1c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx",
+        "start": 80,
+        "end": 90,
+        "text": "test(\"Alt を押して距離を出したあと、離して動かすと距離が消える\", () => {\n  renderCanvas({ selection: setupSelection([\"badge\"]) });\n  drawnApart();\n  const badge = drawnAt(\"badge\", BadgeBounds);\n\n  pressPointer(badge, { x: 218, y: 100 });\n  movePointer(badge, { x: 238, y: 100 }, \"alt\");\n  movePointer(badge, { x: 239, y: 100 });\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts"
+      ],
+      "covers": [
+        "m-without-distance",
+        "m-with-lines"
+      ]
+    },
+    {
+      "id": "i-release",
+      "suite": "s-int",
+      "name": "ポインタを離すと、距離が消える",
+      "techniques": [
+        "state"
+      ],
+      "why": "掴んでいないときは線が無い距離を返す",
+      "given": "`badge`(左右 120〜220)が `home`(左右 100〜460)の中にあり、下に兄弟の `marker` がいる",
+      "when": "Alt を押して動かしたあとポインタを離す",
+      "then": "距離は消える",
+      "commit": "c513e5ca357f305d719afe8b10d34f8a0082ab1c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx",
+        "start": 92,
+        "end": 102,
+        "text": "test(\"ポインタを離すと、距離が消える\", () => {\n  renderCanvas({ selection: setupSelection([\"badge\"]) });\n  drawnApart();\n  const badge = drawnAt(\"badge\", BadgeBounds);\n\n  pressPointer(badge, { x: 218, y: 100 });\n  movePointer(badge, { x: 238, y: 100 }, \"alt\");\n  releasePointer(badge, { x: 238, y: 100 });\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "m-read-distances",
+        "m-draw"
+      ]
+    },
+    {
+      "id": "i-zoom",
+      "suite": "s-int",
+      "name": "倍率を上げて動かしている間も、距離はドキュメント上の px で出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "起点を画面の px で作り、表示はドキュメントの px に戻す。倍率が 1 でない通しのテストはこれだけ",
+      "given": "1.2 倍で見ていて、矩形も 1.2 倍で描かれている",
+      "when": "画面上で 24 動かす",
+      "then": "`220`(倍率を渡し忘れると 264)",
+      "commit": "c513e5ca357f305d719afe8b10d34f8a0082ab1c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx",
+        "start": 104,
+        "end": 127,
+        "text": "test(\"倍率を上げて動かしている間も、距離はドキュメント上の px で出る\", () => {\n  renderCanvas({ selection: setupSelection([\"badge\"]) });\n  wheel(canvasSurface(), { x: 0, y: -100 }, \"ctrl\");\n\n  // 1.2 倍で見ているときの描かれた矩形（`drawnApart` の並びを 1.2 倍したもの）\n  drawnAt(\"home\", { left: 120, top: 72, width: 432, height: 288 });\n  drawnAt(\"marker\", { left: 144, top: 192, width: 171.6, height: 48 });\n  drawnAt(\"settings\", { left: 600, top: 72, width: 360, height: 288 });\n  const badge = drawnAt(\"badge\", {\n    left: 144,\n    top: 96,\n    width: 120,\n    height: 48,\n  });\n\n  /*\n   * 画面上で 24 動かすと幅は 20 伸び、右辺は画面上で 288。`home` の右の縁 552 まで画面上で\n   * 264・ドキュメント上で 220。倍率を表示へ渡し忘れると画面上の値（264）が出る。\n   */\n  pressPointer(badge, { x: 262, y: 120 });\n  movePointer(badge, { x: 286, y: 120 }, \"alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"220\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ],
+      "covers": [
+        "m-tracked",
+        "m-draw"
+      ]
+    },
+    {
+      "id": "i-snap",
+      "suite": "s-int",
+      "name": "Alt を押したままでも掴んだ辺は吸い付き、吸い付いたあとの辺から測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "起点は書き込む長さの位置(吸い付いたあと)",
+      "given": "`badge`(左右 120〜220)が `home`(左右 100〜460)の中にあり、下に兄弟の `marker` がいる",
+      "when": "右辺を 260 まで Alt を押しながら動かし、`marker` の右辺 263 へ吸い付かせる",
+      "then": "`197`(吸い付かなければ 200)",
+      "commit": "c513e5ca357f305d719afe8b10d34f8a0082ab1c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx",
+        "start": 129,
+        "end": 139,
+        "text": "test(\"Alt を押したままでも掴んだ辺は吸い付き、吸い付いたあとの辺から測る\", () => {\n  renderCanvas({ selection: setupSelection([\"badge\"]) });\n  drawnApart();\n  const badge = drawnAt(\"badge\", BadgeBounds);\n\n  // 右辺は 260 まで来て `marker` の右辺 263 へ吸い付く。吸い付かなければ 200\n  pressPointer(badge, { x: 218, y: 100 });\n  movePointer(badge, { x: 258, y: 100 }, \"alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"197\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-tracked",
+        "m-to-distances"
+      ]
+    },
+    {
+      "id": "i-meta",
+      "suite": "s-int",
+      "name": "⌘ と Alt を押しながら動かすと、吸い付かない位置から測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "⌘ で揃え先を外すと、起点は寄せない位置",
+      "given": "`badge`(左右 120〜220)が `home`(左右 100〜460)の中にあり、下に兄弟の `marker` がいる",
+      "when": "⌘ と Alt を押しながら右辺を 260 まで動かす",
+      "then": "`200`",
+      "commit": "c513e5ca357f305d719afe8b10d34f8a0082ab1c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx",
+        "start": 141,
+        "end": 150,
+        "text": "test(\"⌘ と Alt を押しながら動かすと、吸い付かない位置から測る\", () => {\n  renderCanvas({ selection: setupSelection([\"badge\"]) });\n  drawnApart();\n  const badge = drawnAt(\"badge\", BadgeBounds);\n\n  pressPointer(badge, { x: 218, y: 100 });\n  movePointer(badge, { x: 258, y: 100 }, \"meta+alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"200\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-tracked"
+      ]
+    },
+    {
+      "id": "i-artboard",
+      "suite": "s-int",
+      "name": "Alt を押しながら artboard の右辺を動かすと、右の artboard までの距離が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "artboard の相手は動かない他の artboard",
+      "given": "`home`(右辺 460)の右に `settings`(左辺 500)がある",
+      "when": "`home` の右辺を Alt を押しながら 472 まで動かす",
+      "then": "`28`",
+      "commit": "c513e5ca357f305d719afe8b10d34f8a0082ab1c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx",
+        "start": 152,
+        "end": 162,
+        "text": "test(\"Alt を押しながら artboard の右辺を動かすと、右の artboard までの距離が出る\", () => {\n  renderCanvas({ selection: setupSelection([\"home\"]) });\n  drawnApart();\n  const home = drawnAt(\"home\", HomeBounds);\n\n  // 右辺は 472 まで来る。`settings` の左辺 500 まで 28\n  pressPointer(home, { x: 458, y: 280 });\n  movePointer(home, { x: 470, y: 280 }, \"alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"28\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/distance-targets/index.ts"
+      ],
+      "covers": [
+        "m-to-distances",
+        "m-create-distances"
+      ]
+    },
+    {
+      "id": "i-zero-parent",
+      "suite": "s-int",
+      "name": "Alt を押しながら動かしても、今の親が大きさを持たずに描かれているなら距離は出ない",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "フックが渡すのが面積を見る `measureWithArea` であること。test-reviewer で漏れていた 1 件で、`measure` に差し替えるとこれだけが落ちる",
+      "given": "`home` は大きさ 0 のまま、兄弟の `marker` だけが描かれている",
+      "when": "右下の角を Alt を押しながら動かす",
+      "then": "ガイド線は出るが、距離は出ない",
+      "commit": "0fe6dc83a9219fa20d724d462c46c78284986e59",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-facing-distance.test.tsx",
+        "start": 164,
+        "end": 179,
+        "emphasis": [
+          {
+            "start": 177,
+            "end": 178
+          }
+        ],
+        "text": "test(\"Alt を押しながら動かしても、今の親が大きさを持たずに描かれているなら距離は出ない\", () => {\n  renderCanvas({ selection: setupSelection([\"badge\"]) });\n  // `home` は描かずに大きさ 0 のまま、兄弟の `marker` だけを描く\n  drawnAt(\"marker\", { left: 120, top: 160, width: 143, height: 40 });\n  const badge = drawnAt(\"badge\", BadgeBounds);\n\n  /*\n   * 右下の角を運び、右辺は 260 で `marker` の右辺 263 へ吸い付き、下辺は 130 で `marker` まで\n   * 30 手前に来る。`marker` は測れていて吸い付きは出るので、距離が出ない理由は親の大きさが 0 なことだけ\n   */\n  pressPointer(resizeHandleAt({ x: 1, y: 1 }), { x: 220, y: 120 });\n  movePointer(badge, { x: 260, y: 130 }, \"alt\");\n\n  expect(snapGuides().length).toBeGreaterThan(0);\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/features/editor/features/canvas/utils/DrawnBounds.ts"
+      ],
+      "covers": [
+        "m-grab-measure",
+        "m-measure-bounds"
+      ]
+    },
+    {
+      "id": "susp",
+      "suite": "s-susp",
+      "name": "リサイズハンドルを掴んでいる間は、Alt を押しても選択しているだけのときの距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "リサイズ中に出るのはリサイズの距離だけで、選択しているだけのときの距離は止まったまま",
+      "given": "`badge` を選んでいる",
+      "when": "右下のハンドルを押して(動かさずに)Alt を押す",
+      "then": "距離は出ない",
+      "commit": "c513e5ca357f305d719afe8b10d34f8a0082ab1c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+        "start": 76,
+        "end": 85,
+        "text": "test(\"リサイズハンドルを掴んでいる間は、Alt を押しても選択しているだけのときの距離は出ない\", () => {\n  renderCanvas({ selection: setupSelectionForResize([\"badge\"]) });\n  drawnApartForResize();\n  enterPointer(canvasSurface());\n  pressPointer(resizeHandleAt({ x: 1, y: 1 }), { x: 220, y: 120 });\n\n  holdAlt();\n\n  expect(sortedFacingDistanceLabels()).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+      ]
+    },
+    {
+      "id": "d-edge",
+      "suite": "s-nfd",
+      "name": "右辺だけを掴んで動かすと、左・上・下に相手がいても右の相手までの距離だけが出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "辺なら掴んだ向きの 1 本。絞り込みを外すミューテーション(14 件落ちた)の代表",
+      "given": "今の親の中で、上下左右に兄弟が 1 つずついる",
+      "when": "右辺を 300 → 320",
+      "then": "右の 320〜400 だけ",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 86,
+        "end": 103,
+        "text": "test(\"右辺だけを掴んで動かすと、左・上・下に相手がいても右の相手までの距離だけが出る\", () => {\n  const resize = grabbedWithTargets(\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n    {\n      names: WithinParent,\n      boundsByName: DrawnBounds,\n    },\n  );\n\n  expect(spansOf(distancesAt(resize, { x: 320, y: 100 }))).toEqual({\n    horizontal: {\n      start: Option.none,\n      end: Option.some({ min: 320, max: 400 }),\n    },\n    vertical: { start: Option.none, end: Option.none },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/facing-distances/index.ts"
+      ],
+      "covers": [
+        "m-only-toward"
+      ]
+    },
+    {
+      "id": "d-corner-br",
+      "suite": "s-nfd",
+      "name": "右下の角を掴んで動かすと、右と下の相手までの距離が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "角なら 2 本",
+      "given": "同上",
+      "when": "右下の角を (300,150) → (320,170)",
+      "then": "右 320〜400 と下 170〜200",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 105,
+        "end": 122,
+        "text": "test(\"右下の角を掴んで動かすと、右と下の相手までの距離が出る\", () => {\n  const resize = grabbedWithTargets(\n    { x: 1, y: 1 },\n    { x: 300, y: 150 },\n    {\n      names: WithinParent,\n      boundsByName: DrawnBounds,\n    },\n  );\n\n  expect(spansOf(distancesAt(resize, { x: 320, y: 170 }))).toEqual({\n    horizontal: {\n      start: Option.none,\n      end: Option.some({ min: 320, max: 400 }),\n    },\n    vertical: { start: Option.none, end: Option.some({ min: 170, max: 200 }) },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-only-toward"
+      ]
+    },
+    {
+      "id": "d-corner-tr",
+      "suite": "s-nfd",
+      "name": "右上の角を掴んで動かすと、右と上の相手までの距離が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "幅と高さで掴んだ端が揃わない角でも、それぞれの向きが残る",
+      "given": "同上",
+      "when": "右上の角を (300,50) → (320,40)",
+      "then": "右 320〜400 と上 20〜40",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 124,
+        "end": 141,
+        "text": "test(\"右上の角を掴んで動かすと、右と上の相手までの距離が出る\", () => {\n  const resize = grabbedWithTargets(\n    { x: 1, y: 0 },\n    { x: 300, y: 50 },\n    {\n      names: WithinParent,\n      boundsByName: DrawnBounds,\n    },\n  );\n\n  expect(spansOf(distancesAt(resize, { x: 320, y: 40 }))).toEqual({\n    horizontal: {\n      start: Option.none,\n      end: Option.some({ min: 320, max: 400 }),\n    },\n    vertical: { start: Option.some({ min: 20, max: 40 }), end: Option.none },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-only-toward"
+      ]
+    },
+    {
+      "id": "d-left",
+      "suite": "s-nfd",
+      "name": "左辺を引いて縮めると、左の距離は動かしたあとの左辺から測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "起点は掴んだ時点の矩形ではなく動かしたあとの辺。起点を掴んだ時点の矩形のままにするミューテーション(17 件落ちた)と、符号反転(17 件)を落とす",
+      "given": "同上",
+      "when": "左辺を 100 → 130",
+      "then": "左 50〜130(掴んだ時点の辺なら 50〜100)",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 143,
+        "end": 157,
+        "text": "test(\"左辺を引いて縮めると、左の距離は動かしたあとの左辺から測る\", () => {\n  const resize = grabbedWithTargets(\n    { x: 0, y: 0.5 },\n    { x: 100, y: 100 },\n    {\n      names: WithinParent,\n      boundsByName: DrawnBounds,\n    },\n  );\n\n  // 掴んだ時点の左辺 100 から測るなら 50〜100 になる\n  expect(\n    spansOf(distancesAt(resize, { x: 130, y: 100 })).horizontal.start,\n  ).toEqual(Option.some({ min: 50, max: 130 }));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-to-distances"
+      ]
+    },
+    {
+      "id": "d-snap",
+      "suite": "s-nfd",
+      "name": "掴んだ辺が吸い付いたときは、吸い付いたあとの辺から測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "起点は吸い付いたあと",
+      "given": "上の兄弟の右辺が 200",
+      "when": "右辺を 197 まで動かす",
+      "then": "右 200〜400",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 159,
+        "end": 173,
+        "text": "test(\"掴んだ辺が吸い付いたときは、吸い付いたあとの辺から測る\", () => {\n  const resize = grabbedWithTargets(\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n    {\n      names: WithinParent,\n      boundsByName: DrawnBounds,\n    },\n  );\n\n  // 右辺は 197 で、上の兄弟の右辺 200 へ吸い付く\n  expect(\n    spansOf(distancesAt(resize, { x: 197, y: 100 })).horizontal.end,\n  ).toEqual(Option.some({ min: 200, max: 400 }));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-tracked"
+      ]
+    },
+    {
+      "id": "d-meta",
+      "suite": "s-nfd",
+      "name": "揃え先を外して（⌘ / Ctrl）吸い付かないときは、寄せない位置から測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "揃え先を外しても距離の相手は残る",
+      "given": "同上で、揃え先を外した",
+      "when": "右辺を 197 まで動かす",
+      "then": "右 197〜400",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 175,
+        "end": 190,
+        "text": "test(\"揃え先を外して（⌘ / Ctrl）吸い付かないときは、寄せない位置から測る\", () => {\n  const resize = NodeResize.withoutSnapTargets(\n    grabbedWithTargets(\n      { x: 1, y: 0.5 },\n      { x: 300, y: 100 },\n      {\n        names: WithinParent,\n        boundsByName: DrawnBounds,\n      },\n    ),\n  );\n\n  expect(\n    spansOf(distancesAt(resize, { x: 197, y: 100 })).horizontal.end,\n  ).toEqual(Option.some({ min: 197, max: 400 }));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-tracked"
+      ]
+    },
+    {
+      "id": "d-noalt",
+      "suite": "s-nfd",
+      "name": "距離の相手を外す（Alt / Option なし）と距離は出ず、吸い付きとガイド線は変わらない",
+      "techniques": [
+        "state"
+      ],
+      "why": "距離の相手を外すことは、吸い付きとガイド線に影響しない",
+      "given": "同上",
+      "when": "距離の相手を外した状態と外さない状態で、同じ位置まで動かす",
+      "then": "距離だけが線の無い距離になり、編集とガイド線は同じ",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 192,
+        "end": 212,
+        "text": "test(\"距離の相手を外す（Alt / Option なし）と距離は出ず、吸い付きとガイド線は変わらない\", () => {\n  const resize = grabbedWithTargets(\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n    {\n      names: WithinParent,\n      boundsByName: DrawnBounds,\n    },\n  );\n  const measuring = Option.unwrap(\n    NodeResize.trackedAt(resize, { x: 197, y: 100 }, setupView()),\n  );\n\n  expect(\n    NodeResize.trackedAt(\n      NodeResize.withoutDistanceTargets(resize),\n      { x: 197, y: 100 },\n      setupView(),\n    ),\n  ).toEqual(Option.some({ ...measuring, distanceLines: FacingDistances.None }));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-without-distance",
+        "m-tracked"
+      ]
+    },
+    {
+      "id": "d-zoom",
+      "suite": "s-nfd",
+      "name": "倍率 2 倍では、掴んだ辺は縮んだ量の 2 倍動いた位置から測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "縮んだ量はドキュメントの px なので、起点を作るときに画面の px へ直す。倍率換算を外すミューテーションでは、このテストとキャンバスの倍率のテストの 2 件が落ちた",
+      "given": "倍率 2 倍",
+      "when": "画面で 40 引く",
+      "then": "右 340〜400(戻し忘れると 320 から)",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 214,
+        "end": 229,
+        "text": "test(\"倍率 2 倍では、掴んだ辺は縮んだ量の 2 倍動いた位置から測る\", () => {\n  const resize = grabbedWithTargets(\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n    {\n      names: WithinParent,\n      boundsByName: DrawnBounds,\n    },\n  );\n  const doubled: CanvasView = { ...CanvasView.create(), scale: 2 };\n\n  // 画面で 40 引くと幅は 20 伸びる。倍率を戻し忘れると右辺は 320 になる\n  expect(\n    spansOf(distancesAt(resize, { x: 340, y: 100 }, doubled)).horizontal.end,\n  ).toEqual(Option.some({ min: 340, max: 400 }));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-to-distances"
+      ],
+      "values": {
+        "columns": [
+          "倍率",
+          "画面で引いた量",
+          "起点の右辺"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "1 倍",
+              "20",
+              "320"
+            ]
+          },
+          {
+            "cells": [
+              "2 倍",
+              "40",
+              "340"
+            ],
+            "boundary": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "d-cross",
+      "suite": "s-nfd",
+      "name": "右辺を左辺の向こうまで引いても、長さ 0 で止まった位置から測る",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "長さが 0 で止まると、起点の辺もそこで止まる",
+      "given": "同上",
+      "when": "右辺を 40 まで引く(左辺は 100)",
+      "then": "右 100〜400",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 231,
+        "end": 245,
+        "text": "test(\"右辺を左辺の向こうまで引いても、長さ 0 で止まった位置から測る\", () => {\n  const resize = grabbedWithTargets(\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n    {\n      names: WithinParent,\n      boundsByName: DrawnBounds,\n    },\n  );\n\n  // ポインタは 40 にあるが、幅は 0 で止まり右辺は左辺 100 の位置に留まる\n  expect(\n    spansOf(distancesAt(resize, { x: 40, y: 100 })).horizontal.end,\n  ).toEqual(Option.some({ min: 100, max: 400 }));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-to-distances"
+      ]
+    },
+    {
+      "id": "d-zero-height",
+      "suite": "s-nfd",
+      "name": "右下の角で高さが 0 で止まると、右の距離は出ず下の距離だけが出る",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "高さ 0 の起点は左右の相手と上下で重ならないので、直交の向きは出ない(計画の指摘 1 で受け入れた)",
+      "given": "同上",
+      "when": "右下の角を (320, 0) まで引く",
+      "then": "右は出ず、下 50〜200",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 247,
+        "end": 262,
+        "text": "test(\"右下の角で高さが 0 で止まると、右の距離は出ず下の距離だけが出る\", () => {\n  const resize = grabbedWithTargets(\n    { x: 1, y: 1 },\n    { x: 300, y: 150 },\n    {\n      names: WithinParent,\n      boundsByName: DrawnBounds,\n    },\n  );\n\n  // 高さ 0 の起点は左右の相手と上下で重ならない\n  expect(spansOf(distancesAt(resize, { x: 320, y: 0 }))).toEqual({\n    horizontal: { start: Option.none, end: Option.none },\n    vertical: { start: Option.none, end: Option.some({ min: 50, max: 200 }) },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/facing-distances/index.ts"
+      ],
+      "covers": [
+        "m-create-distances"
+      ]
+    },
+    {
+      "id": "d-no-parent",
+      "suite": "s-nfd",
+      "name": "今の親を引けないときは距離が出ないが、兄弟には吸い付く",
+      "techniques": [
+        "state"
+      ],
+      "why": "親が引けないと距離の相手だけ外し、揃え先は残す",
+      "given": "兄弟だけが描かれている",
+      "when": "右辺を 197 まで動かす",
+      "then": "幅は 100(兄弟へ吸い付く)で、距離は無い",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 264,
+        "end": 286,
+        "text": "test(\"今の親を引けないときは距離が出ないが、兄弟には吸い付く\", () => {\n  const resize = grabbedWithTargets(\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n    {\n      names: WithinParent,\n      boundsByName: SiblingBounds,\n    },\n  );\n\n  // 右辺は 197 で、上の兄弟の右辺 200 へ吸い付けば幅 100\n  expect(\n    Option.map(\n      NodeResize.trackedAt(resize, { x: 197, y: 100 }, setupView()),\n      ({ edit, distanceLines }) => ({ edit, distanceLines }),\n    ),\n  ).toEqual(\n    Option.some({\n      edit: ResizeEdit.create([{ axis: \"width\", length: 100 }]),\n      distanceLines: FacingDistances.None,\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-measure-bounds"
+      ]
+    },
+    {
+      "id": "d-no-measure",
+      "suite": "s-nfd",
+      "name": "掴んだ時点の実測を載せていない掴みでは、距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "掴んだ時点に測れなかった掴み",
+      "given": "実測を載せていない掴み",
+      "when": "右辺を動かす",
+      "then": "線が無い距離",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 288,
+        "end": 296,
+        "text": "test(\"掴んだ時点の実測を載せていない掴みでは、距離は出ない\", () => {\n  const resize = grabbedAt(\n    { ...setupResizable(), targets: { kind: \"anyGrip\", names: WithinParent } },\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n  );\n\n  expect(distancesAt(resize, { x: 320, y: 100 })).toEqual(FacingDistances.None);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    },
+    {
+      "id": "d-flow-corner",
+      "suite": "s-nfd",
+      "name": "揃え先も距離の相手も無い掴み方（フロー配置の 2 軸の角）では、距離は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "交差軸の 1 軸だけで効く相手は、角では名前ごと無くなる",
+      "given": "幅の 1 軸だけで効く相手",
+      "when": "右下の角を掴んで動かす",
+      "then": "線が無い距離",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 298,
+        "end": 310,
+        "text": "test(\"揃え先も距離の相手も無い掴み方（フロー配置の 2 軸の角）では、距離は出ない\", () => {\n  // 幅の 1 軸だけで効く相手なので、右下の角では名前が絞られて無くなる\n  const resizable = {\n    ...setupResizable(),\n    targets: { kind: \"axisOnly\", axis: \"width\", names: WithinParent },\n  } as const;\n  const resize = grabbedWithMeasured(\n    heldAt(resizable, { x: 1, y: 1 }, { x: 300, y: 150 }),\n    DrawnBounds,\n  );\n\n  expect(distancesAt(resize, { x: 320, y: 170 })).toEqual(FacingDistances.None);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    },
+    {
+      "id": "d-artboard",
+      "suite": "s-nfd",
+      "name": "artboard の右辺を掴むと、右の動かない artboard までの距離が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "artboard の間では親の縁を測らない",
+      "given": "左に `intro`、右に `settings`",
+      "when": "右辺を 320 まで動かす",
+      "then": "右 320〜500 だけ",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 312,
+        "end": 332,
+        "text": "test(\"artboard の右辺を掴むと、右の動かない artboard までの距離が出る\", () => {\n  const resize = grabbedWithTargets(\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n    {\n      names: { kind: \"among-artboards\", otherNames: [\"intro\", \"settings\"] },\n      boundsByName: {\n        intro: { left: -300, top: 50, width: 200, height: 100 },\n        settings: { left: 500, top: 0, width: 200, height: 300 },\n      },\n    },\n  );\n\n  expect(spansOf(distancesAt(resize, { x: 320, y: 100 }))).toEqual({\n    horizontal: {\n      start: Option.none,\n      end: Option.some({ min: 320, max: 500 }),\n    },\n    vertical: { start: Option.none, end: Option.none },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/distance-targets/index.ts"
+      ],
+      "covers": [
+        "m-to-distances"
+      ]
+    },
+    {
+      "id": "d-idle",
+      "suite": "s-nfd",
+      "name": "掴んだ直後と離したあとは、今出す距離が無い",
+      "techniques": [
+        "state"
+      ],
+      "why": "動かす前と離したあとに古い距離が残らない",
+      "given": "掴んだ直後 / 距離を載せてから離したあと",
+      "when": "今出す距離を読む",
+      "then": "どちらも線が無い距離",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 334,
+        "end": 352,
+        "text": "test(\"掴んだ直後と離したあとは、今出す距離が無い\", () => {\n  const resize = grabbedWithTargets(\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n    {\n      names: WithinParent,\n      boundsByName: DrawnBounds,\n    },\n  );\n  const tracked = Option.unwrap(\n    NodeResize.trackedAt(resize, { x: 320, y: 100 }, setupView()),\n  );\n  const released = NodeResize.release(NodeResize.withLines(resize, tracked));\n\n  expect([\n    NodeResize.facingDistances(resize),\n    NodeResize.facingDistances(released),\n  ]).toEqual([FacingDistances.None, FacingDistances.None]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-read-distances"
+      ]
+    },
+    {
+      "id": "d-read",
+      "suite": "s-nfd",
+      "name": "掴んでいる状態に載せた距離が、今出す距離として返る",
+      "techniques": [
+        "state"
+      ],
+      "why": "状態へ載せた距離がそのまま読める",
+      "given": "動かした結果を状態へ載せた",
+      "when": "今出す距離を読む",
+      "then": "載せた距離",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+        "start": 354,
+        "end": 370,
+        "text": "test(\"掴んでいる状態に載せた距離が、今出す距離として返る\", () => {\n  const resize = grabbedWithTargets(\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n    {\n      names: WithinParent,\n      boundsByName: DrawnBounds,\n    },\n  );\n  const tracked = Option.unwrap(\n    NodeResize.trackedAt(resize, { x: 320, y: 100 }, setupView()),\n  );\n\n  expect(\n    NodeResize.facingDistances(NodeResize.withLines(resize, tracked)),\n  ).toEqual(tracked.distanceLines);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "m-with-lines",
+        "m-read-distances"
+      ]
+    },
+    {
+      "id": "g-right",
+      "suite": "s-gf",
+      "name": "右辺を掴むと、右へだけ進む",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "辺は 1 向き",
+      "given": "2 軸とも掴める",
+      "when": "右辺を掴む",
+      "then": "右",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.grip-facings.test.ts",
+        "start": 17,
+        "end": 21,
+        "text": "test(\"右辺を掴むと、右へだけ進む\", () => {\n  expect(\n    ResizeGrip.toFacings(gripAt(setupResizable(), { x: 1, y: 0.5 })),\n  ).toEqual([Right]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    },
+    {
+      "id": "g-left",
+      "suite": "s-gf",
+      "name": "左辺を掴むと、左へだけ進む",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "始点側の辺",
+      "given": "同上",
+      "when": "左辺を掴む",
+      "then": "左",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.grip-facings.test.ts",
+        "start": 23,
+        "end": 27,
+        "text": "test(\"左辺を掴むと、左へだけ進む\", () => {\n  expect(\n    ResizeGrip.toFacings(gripAt(setupResizable(), { x: 0, y: 0.5 })),\n  ).toEqual([Left]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    },
+    {
+      "id": "g-top",
+      "suite": "s-gf",
+      "name": "上辺を掴むと、上へだけ進む",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "高さの軸",
+      "given": "同上",
+      "when": "上辺を掴む",
+      "then": "上",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.grip-facings.test.ts",
+        "start": 29,
+        "end": 33,
+        "text": "test(\"上辺を掴むと、上へだけ進む\", () => {\n  expect(\n    ResizeGrip.toFacings(gripAt(setupResizable(), { x: 0.5, y: 0 })),\n  ).toEqual([Top]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    },
+    {
+      "id": "g-br",
+      "suite": "s-gf",
+      "name": "右下の角を掴むと、右と下へ進む",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "角は幅・高さの順に 2 向き",
+      "given": "同上",
+      "when": "右下の角を掴む",
+      "then": "右・下の順",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.grip-facings.test.ts",
+        "start": 35,
+        "end": 39,
+        "text": "test(\"右下の角を掴むと、右と下へ進む\", () => {\n  expect(\n    ResizeGrip.toFacings(gripAt(setupResizable(), { x: 1, y: 1 })),\n  ).toEqual([Right, Bottom]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    },
+    {
+      "id": "g-tr",
+      "suite": "s-gf",
+      "name": "右上の角を掴むと、右と上へ進む",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "軸ごとに端が違う角",
+      "given": "同上",
+      "when": "右上の角を掴む",
+      "then": "右・上の順",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.grip-facings.test.ts",
+        "start": 41,
+        "end": 45,
+        "text": "test(\"右上の角を掴むと、右と上へ進む\", () => {\n  expect(\n    ResizeGrip.toFacings(gripAt(setupResizable(), { x: 1, y: 0 })),\n  ).toEqual([Right, Top]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    },
+    {
+      "id": "g-bl",
+      "suite": "s-gf",
+      "name": "左下の角を掴むと、左と下へ進む",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "軸ごとに端が違う角",
+      "given": "同上",
+      "when": "左下の角を掴む",
+      "then": "左・下の順",
+      "commit": "454df98d2a6bb869510a0b70ce1217d992a7bca7",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.grip-facings.test.ts",
+        "start": 47,
+        "end": 51,
+        "text": "test(\"左下の角を掴むと、左と下へ進む\", () => {\n  expect(\n    ResizeGrip.toFacings(gripAt(setupResizable(), { x: 0, y: 1 })),\n  ).toEqual([Left, Bottom]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    },
+    {
+      "id": "dt-parent",
+      "suite": "s-dt",
+      "name": "親の中の相手なら、左は親の縁まで、右は兄弟までの線になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "親の中の相手は親の縁と兄弟を測る",
+      "given": "左に兄弟がいない",
+      "when": "親の中の相手から線を引く",
+      "then": "左は 0〜50、右は 70〜100",
+      "commit": "9a1a42135ce471a8b88a65c737e9569ec7d44c2d",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-targets/__tests__/distance-targets.normal.test.ts",
+        "start": 12,
+        "end": 34,
+        "text": "test(\"親の中の相手なら、左は親の縁まで、右は兄弟までの線になる\", () => {\n  expect(\n    DistanceTargets.toDistances(\n      {\n        kind: \"within-parent\",\n        parentBounds: { left: 0, top: 0, width: 200, height: 100 },\n        siblings: [RightSibling],\n      },\n      From,\n    ).horizontal,\n  ).toEqual({\n    start: Option.some({\n      along: SidePairs.Horizontal,\n      at: 45,\n      span: { min: 0, max: 50 },\n    }),\n    end: Option.some({\n      along: SidePairs.Horizontal,\n      at: 45,\n      span: { min: 70, max: 100 },\n    }),\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-targets/index.ts"
+      ],
+      "covers": [
+        "m-create-distances"
+      ]
+    },
+    {
+      "id": "dt-artboards",
+      "suite": "s-dt",
+      "name": "artboard の間の相手なら、親の縁を測らず他の artboard だけを測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "artboard の間では親の縁が無い",
+      "given": "同上",
+      "when": "artboard の間の相手から線を引く",
+      "then": "左は無く、右は 70〜100",
+      "commit": "9a1a42135ce471a8b88a65c737e9569ec7d44c2d",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/distance-targets/__tests__/distance-targets.normal.test.ts",
+        "start": 36,
+        "end": 50,
+        "text": "test(\"artboard の間の相手なら、親の縁を測らず他の artboard だけを測る\", () => {\n  expect(\n    DistanceTargets.toDistances(\n      { kind: \"among-artboards\", others: [RightSibling] },\n      From,\n    ).horizontal,\n  ).toEqual({\n    start: Option.none,\n    end: Option.some({\n      along: SidePairs.Horizontal,\n      at: 45,\n      span: { min: 70, max: 100 },\n    }),\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/distance-targets/index.ts"
+      ],
+      "covers": [
+        "m-create-distances"
+      ]
+    },
+    {
+      "id": "ot-one",
+      "suite": "s-ot",
+      "name": "残す向きを 1 つ渡すと、4 方向に線があってもその向きの線だけが残る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "残さない向きに線があっても消える",
+      "given": "4 方向とも親の縁まで線がある",
+      "when": "右だけを残す",
+      "then": "右だけ",
+      "commit": "ba6b8ccec6b855e6c824df3ae857ba374e0d82a3",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.only-toward.test.ts",
+        "start": 26,
+        "end": 37,
+        "text": "test(\"残す向きを 1 つ渡すと、4 方向に線があってもその向きの線だけが残る\", () => {\n  const distances = setupDistances();\n\n  expect(\n    FacingDistances.onlyToward(distances, [\n      { pair: SidePairs.Horizontal, end: AxisEnds.End },\n    ]),\n  ).toEqual({\n    horizontal: { start: Option.none, end: distances.horizontal.end },\n    vertical: { start: Option.none, end: Option.none },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing-distances/index.ts"
+      ],
+      "covers": [
+        "m-only-toward"
+      ]
+    },
+    {
+      "id": "ot-two",
+      "suite": "s-ot",
+      "name": "角の 2 向きを渡すと、その 2 つだけが残る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "2 向きとも残る",
+      "given": "同上",
+      "when": "右と上を残す",
+      "then": "右と上だけ",
+      "commit": "ba6b8ccec6b855e6c824df3ae857ba374e0d82a3",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.only-toward.test.ts",
+        "start": 39,
+        "end": 51,
+        "text": "test(\"角の 2 向きを渡すと、その 2 つだけが残る\", () => {\n  const distances = setupDistances();\n\n  expect(\n    FacingDistances.onlyToward(distances, [\n      { pair: SidePairs.Horizontal, end: AxisEnds.End },\n      { pair: SidePairs.Vertical, end: AxisEnds.Start },\n    ]),\n  ).toEqual({\n    horizontal: { start: Option.none, end: distances.horizontal.end },\n    vertical: { start: distances.vertical.start, end: Option.none },\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing-distances/index.ts"
+      ],
+      "covers": [
+        "m-only-toward"
+      ]
+    },
+    {
+      "id": "ot-none",
+      "suite": "s-ot",
+      "name": "残す向きが空なら、どの向きにも線が無い",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "空の境界",
+      "given": "同上",
+      "when": "何も残さない",
+      "then": "線が無い距離",
+      "commit": "ba6b8ccec6b855e6c824df3ae857ba374e0d82a3",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/facing-distances/__tests__/facing-distances.only-toward.test.ts",
+        "start": 53,
+        "end": 57,
+        "text": "test(\"残す向きが空なら、どの向きにも線が無い\", () => {\n  expect(FacingDistances.onlyToward(setupDistances(), [])).toEqual(\n    FacingDistances.None,\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing-distances/index.ts"
+      ],
+      "covers": [
+        "m-only-toward"
+      ]
+    },
+    {
+      "id": "eq-same",
+      "suite": "s-fn",
+      "name": "辺の組と進む側が同じ向きは、別に作っても同じ向きとみなす",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "値で比べる",
+      "given": "右",
+      "when": "別に作った右と比べる",
+      "then": "等しい",
+      "commit": "d2a3e8f46869c1feee1b8120be8ede39a2dde546",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/facing/__tests__/facing.normal.test.ts",
+        "start": 104,
+        "end": 108,
+        "text": "test(\"辺の組と進む側が同じ向きは、別に作っても同じ向きとみなす\", () => {\n  expect(\n    Facing.equals(Right, { pair: SidePairs.Horizontal, end: AxisEnds.End }),\n  ).toBe(true);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing/index.ts"
+      ],
+      "covers": [
+        "m-facing-equals"
+      ]
+    },
+    {
+      "id": "eq-end",
+      "suite": "s-fe",
+      "name": "辺の組が同じでも進む側が違えば、同じ向きとはみなさない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "辺の組だけで比べる実装を落とす(片方のフィールドだけで比べるミューテーションは 14 件 / 10 件落ちた)",
+      "given": "右",
+      "when": "左と比べる",
+      "then": "等しくない",
+      "commit": "d2a3e8f46869c1feee1b8120be8ede39a2dde546",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/facing/__tests__/facing.edge.test.ts",
+        "start": 45,
+        "end": 47,
+        "text": "test(\"辺の組が同じでも進む側が違えば、同じ向きとはみなさない\", () => {\n  expect(Facing.equals(Right, Left)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing/index.ts"
+      ],
+      "covers": [
+        "m-facing-equals"
+      ]
+    },
+    {
+      "id": "eq-pair",
+      "suite": "s-fe",
+      "name": "進む側が同じでも辺の組が違えば、同じ向きとはみなさない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "進む側だけで比べる実装を落とす",
+      "given": "右",
+      "when": "下と比べる",
+      "then": "等しくない",
+      "commit": "d2a3e8f46869c1feee1b8120be8ede39a2dde546",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/facing/__tests__/facing.edge.test.ts",
+        "start": 49,
+        "end": 51,
+        "text": "test(\"進む側が同じでも辺の組が違えば、同じ向きとはみなさない\", () => {\n  expect(Facing.equals(Right, Down)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/facing/index.ts"
+      ],
+      "covers": [
+        "m-facing-equals"
+      ]
+    },
+    {
+      "id": "fm-keep",
+      "suite": "s-an",
+      "name": "写して値のあった要素だけが、元の並びの順に残る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "値のある要素だけを順に残す",
+      "given": "正と負が混ざった並び",
+      "when": "正なら 10 倍して写す",
+      "then": "`[30, 20, 40]`",
+      "commit": "3602c70795c4a1199b8b4229013e1d44987f7bcd",
+      "excerpt": {
+        "path": "src/utils/__tests__/ArrayEx.normal.test.ts",
+        "start": 264,
+        "end": 270,
+        "text": "test(\"写して値のあった要素だけが、元の並びの順に残る\", () => {\n  expect(\n    ArrayEx.filterMap([3, -1, 2, -5, 4], (item) =>\n      item > 0 ? Option.some(item * 10) : Option.none,\n    ),\n  ).toEqual([30, 20, 40]);\n});"
+      },
+      "targets": [
+        "src/utils/ArrayEx.ts"
+      ]
+    },
+    {
+      "id": "fm-empty",
+      "suite": "s-ae",
+      "name": "どの要素も写せなければ、写した並びは空になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "すべて `none` の境界",
+      "given": "2 要素の並び",
+      "when": "すべて `none` に写す",
+      "then": "空",
+      "commit": "3602c70795c4a1199b8b4229013e1d44987f7bcd",
+      "excerpt": {
+        "path": "src/utils/__tests__/ArrayEx.edge.test.ts",
+        "start": 153,
+        "end": 155,
+        "text": "test(\"どの要素も写せなければ、写した並びは空になる\", () => {\n  expect(ArrayEx.filterMap([\"a\", \"b\"], () => Option.none)).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/utils/ArrayEx.ts"
+      ]
+    },
+    {
+      "id": "snap-renamed",
+      "suite": "s-snap",
+      "name": "掴んだ時点の実測を載せていない掴みでは、揃え先の近くでも寄せない",
+      "techniques": [
+        "state"
+      ],
+      "why": "改名だけで中身は変えていない(実測が無い掴みは寄せない)",
+      "given": "実測を載せていない掴み",
+      "when": "揃え先の近くまで動かす",
+      "then": "寄せない",
+      "commit": "3f5c3cd47ec592283677c6ea655f038fbccbbdd9",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap.test.ts",
+        "start": 34,
+        "end": 45,
+        "text": "test(\"掴んだ時点の実測を載せていない掴みでは、揃え先の近くでも寄せない\", () => {\n  // 上と同じ動かし方。載せていれば 240 になる\n  const resize = grabbedAt(\n    setupResizable(),\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n  );\n\n  expect(resizeEditAt(resize, { x: 337, y: 100 }, setupView())).toEqual(\n    Option.some(ResizeEdit.create([{ axis: \"width\", length: 237 }])),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    },
+    {
+      "id": "guide-renamed",
+      "suite": "s-sg",
+      "name": "掴んだ時点の実測を載せていない掴みでは、揃え先の近くでもガイド線は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "改名だけで中身は変えていない",
+      "given": "実測を載せていない掴み",
+      "when": "揃え先の近くまで動かす",
+      "then": "ガイド線は出ない",
+      "commit": "3f5c3cd47ec592283677c6ea655f038fbccbbdd9",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+        "start": 113,
+        "end": 125,
+        "text": "test(\"掴んだ時点の実測を載せていない掴みでは、揃え先の近くでもガイド線は出ない\", () => {\n  const resize = grabbedAt(\n    setupResizable(),\n    { x: 1, y: 0.5 },\n    { x: 300, y: 100 },\n  );\n\n  const tracked = NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupView());\n\n  expect(Option.map(tracked, ({ guides }) => guides)).toEqual(\n    Option.some(SideSnap.NoGuides),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "リサイズしている間も、Alt / Option を押せば掴んだ辺の先の距離が見える",
+    "lead": "ノードや artboard の大きさをハンドルで変えている間に Alt / Option を押していると、掴んだ辺から外へ、最初に当たる相手までの距離が数値で出るようになりました。運んでいる間の距離と同じ見た目です。",
+    "changed": {
+      "before": [
+        {
+          "text": "リサイズ中は、Alt / Option を押しても距離は出なかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "掴んだ辺の向きだけ、その向きで最初に当たる相手までの距離が出る(辺なら 1 本、角なら 2 本)",
+          "message": "m-only-toward"
+        },
+        {
+          "text": "距離は吸い付いたあとの辺から測る。⌘ / Ctrl も押していれば吸い付かない位置から測る",
+          "message": "m-tracked"
+        },
+        {
+          "text": "押しているかはポインタが動くたびに見る。途中で押せばその移動から出て、離せばその移動から消える",
+          "message": "m-without-distance"
+        }
+      ],
+      "text": "相手は、リサイズで吸い付く先と同じものです(大きさを変えても動かないもの)。絶対配置のノードなら今の親の縁と同じ親の中の他のノード、artboard なら幅を変えても動かない他の artboard。相手の位置は掴んだ時点に 1 回だけ測ります。",
+      "specs": [
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「リサイズハンドル」の Alt / Option の距離の項",
+          "text": "リサイズ中に Alt / Option を押すと掴んだ辺の向きだけ距離を出すこと、相手・測る位置・出さないときを新しく書いた",
+          "shas": [
+            "0f09401193c46a11addab2bf22ad50ebbd4c24ce",
+            "d83653bc325e8e589404ad1916e6aee2daba91cb"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「ノードの移動」の Alt / Option の距離の、出さないときの行",
+          "text": "「リサイズ中はまだ出さない」を、リサイズハンドルの項への参照に置き換えた",
+          "shas": [
+            "0f09401193c46a11addab2bf22ad50ebbd4c24ce"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「選択しているだけのときの Alt / Option の距離」の出さないときの行",
+          "text": "リサイズしている間は、その操作の距離だけを出すと書き足した",
+          "shas": [
+            "0f09401193c46a11addab2bf22ad50ebbd4c24ce"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1201,
+          "text": "artboard の移動とリサイズ中の距離を扱っていた Issue から、リサイズの分を切り出した"
+        },
+        {
+          "issue": 960,
+          "text": "ノードを運んでいる間の距離。相手の選び方と見た目をここから受け継ぐ"
+        },
+        {
+          "issue": 1197,
+          "text": "選択しているだけのときの距離。リサイズ中は止まったままにする"
+        }
+      ],
+      "primers": [
+        "c-measured",
+        "c-resized-bounds",
+        "c-only-toward"
+      ]
+    },
+    "tables": [
+      {
+        "label": "掴むところと Alt / Option",
+        "gist": "距離が出るかは Alt / Option を押しているかで、何本出るかは掴むところで決まる。",
+        "text": "例は、親の中で上下左右に相手があるノードを動かしたとき。",
+        "rowHeads": [
+          {
+            "id": "edge",
+            "label": "右辺を掴む"
+          },
+          {
+            "id": "corner",
+            "label": "右下の角を掴む"
+          },
+          {
+            "id": "flat",
+            "label": "右下の角で高さを 0 まで縮める",
+            "note": "反対の辺を越えて引いても 0 で止まる"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "plain",
+            "label": "何も押さずに動かす"
+          },
+          {
+            "id": "alt",
+            "label": "Alt / Option を押しながら動かす"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "edge",
+            "columnHead": "plain",
+            "result": "距離は出ない",
+            "tests": [
+              "i-noalt"
+            ]
+          },
+          {
+            "rowHead": "edge",
+            "columnHead": "alt",
+            "result": "右の 1 本だけが出る",
+            "was": "距離は出ない",
+            "tests": [
+              "i-edge",
+              "d-edge"
+            ]
+          },
+          {
+            "rowHead": "corner",
+            "columnHead": "plain",
+            "result": "距離は出ない"
+          },
+          {
+            "rowHead": "corner",
+            "columnHead": "alt",
+            "result": "右と下の 2 本が出る",
+            "was": "距離は出ない",
+            "tests": [
+              "i-corner",
+              "d-corner-br"
+            ]
+          },
+          {
+            "rowHead": "flat",
+            "columnHead": "plain",
+            "result": "距離は出ない"
+          },
+          {
+            "rowHead": "flat",
+            "columnHead": "alt",
+            "result": "下の 1 本だけが出る(左右は重なる相手が無くなるので出ない)",
+            "was": "距離は出ない",
+            "tests": [
+              "d-zero-height"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "何をリサイズしているか",
+        "gist": "相手はリサイズで吸い付く先と同じ。吸い付く先が無いものでは距離も出ない。",
+        "rowHeads": [
+          {
+            "id": "abs",
+            "label": "絶対配置のノード"
+          },
+          {
+            "id": "board",
+            "label": "artboard"
+          },
+          {
+            "id": "noparent",
+            "label": "親が大きさを持たずに描かれているノード"
+          },
+          {
+            "id": "turned",
+            "label": "回って描かれているノード"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "alt",
+            "label": "Alt / Option を押しながら動かす"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "abs",
+            "columnHead": "alt",
+            "result": "親の縁か、同じ親の中の他のノードまでの距離が出る",
+            "was": "距離は出ない",
+            "tests": [
+              "i-edge"
+            ]
+          },
+          {
+            "rowHead": "board",
+            "columnHead": "alt",
+            "result": "幅を変えても動かない他の artboard までの距離が出る",
+            "was": "距離は出ない",
+            "tests": [
+              "i-artboard",
+              "d-artboard"
+            ]
+          },
+          {
+            "rowHead": "noparent",
+            "columnHead": "alt",
+            "result": "距離は出ない(同じ親の中の他のノードへは吸い付く)",
+            "tests": [
+              "i-zero-parent",
+              "d-no-parent"
+            ],
+            "note": "親の縁を突き抜けて奥の相手まで測らないため"
+          },
+          {
+            "rowHead": "turned",
+            "columnHead": "alt",
+            "result": "距離は出ない(吸い付きも無い)"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "Alt / Option を押したまま吸い付いたとき",
+        "before": [],
+        "after": [
+          {
+            "text": "吸い付いたあとの辺から測った距離が出る",
+            "message": "m-tracked"
+          },
+          {
+            "text": "吸い付いた相手そのものに接している向きには何も出ない"
+          }
+        ],
+        "text": "吸い付きとガイド線は、Alt / Option を押していても押していなくても同じです。",
+        "tests": [
+          "i-snap",
+          "d-snap",
+          "d-noalt"
+        ],
+        "primers": [
+          "c-resized-bounds"
+        ]
+      },
+      {
+        "label": "拡大・縮小して見ているとき",
+        "before": [],
+        "after": [
+          {
+            "text": "数値はいつもドキュメント上の大きさで出る(画面上の大きさではない)",
+            "message": "m-draw"
+          }
+        ],
+        "tests": [
+          "i-zoom",
+          "d-zoom"
+        ],
+        "primers": [
+          "c-resized-bounds"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "辺の吸い付きとガイド線の出方は変わらない",
+        "tests": [
+          "d-noalt"
+        ]
+      },
+      {
+        "text": "⌘ / Ctrl を押している間は吸い付かない",
+        "tests": [
+          "i-meta",
+          "d-meta"
+        ]
+      },
+      {
+        "text": "ポインタを離すと距離は消える",
+        "tests": [
+          "i-release",
+          "d-idle"
+        ]
+      },
+      {
+        "text": "リサイズハンドルを押しているだけ(まだ動かしていない)のときは、選択しているだけのときの距離も出ない",
+        "tests": [
+          "susp"
+        ]
+      },
+      {
+        "text": "Alt / Option で中心からリサイズする操作は無い(Alt / Option は距離の表示に使う)"
+      },
+      {
+        "text": "ノードや artboard を運んでいる間の距離は変わらない"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「リサイズハンドル」の辺のスナップの項",
+        "text": "吸い付く先と、⌘ / Ctrl で吸い付かないことの記述は変えていない"
+      },
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「ノードの移動」の Alt / Option の距離の相手の選び方",
+        "text": "重なる相手だけを見る・接している向きは出さない・縁からはみ出した向きは縁を相手にしない、の規則は変えずにリサイズから参照した"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "l-discriminated-union",
+      "category": "typescript · 型",
+      "label": "判別できる直和と `switch` の網羅",
+      "gist": "取りうる形を `kind` のような共通のキーで見分ける[[直和|union]]を作り、`switch` で形ごとに分けて書くための仕組み。TypeScript は `case` の中で値を、その形のキーを持つ型として扱う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`type T = { kind: \"a\"; x: number } | { kind: \"b\"; y: string }` のように、`|` で形を並べる。`switch (t.kind)` の `case \"a\":` の中では、TypeScript が `t` を 1 つめの形に絞るので `t.x` が読める。これを[[型の絞り込み|narrowing]]と呼ぶ。"
+        },
+        {
+          "kind": "declaration",
+          "code": "export type ResizeTargetNames =\n  | Readonly<{ kind: \"within-parent\"; parentName: string; siblingNames: readonly string[] }>\n  | Readonly<{ kind: \"among-artboards\"; otherNames: readonly string[] }>;"
+        },
+        {
+          "kind": "rule",
+          "text": "`default` を書かず、関数の戻り値の型を `undefined` を含まないものにする。`case` が抜けると「値を返さない経路がある」としてコンパイルが落ちるので、形を 1 つ足したときに書き忘れが見つかる(このリポジトリの規約)。"
+        },
+        {
+          "kind": "memo",
+          "text": "`Readonly<…>` は、中のキーへの代入を型の上で禁じる組み込みの型。値は書き換えず、新しい値を作って返す。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "lineRange": {
+            "start": 233,
+            "end": 241
+          },
+          "text": "揃え先と距離の相手の名前。親の中か artboard の間かで持つものが違う",
+          "shas": [
+            "dffa6b9b85afbb9065698d57cb3f4a63f7ce98df"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "lineRange": {
+            "start": 1043,
+            "end": 1069
+          },
+          "text": "`resizeMeasureOf` が名前の形ごとに実測を組む",
+          "shas": [
+            "dffa6b9b85afbb9065698d57cb3f4a63f7ce98df",
+            "1d757c21a46ad04b655f3f017583336cc03e689b"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-targets/index.ts",
+          "lineRange": {
+            "start": 33,
+            "end": 44
+          },
+          "text": "相手の形ごとに線の引き方を分ける",
+          "shas": [
+            "1e63bd6bf44b39ccdf6b61f646cfe75875bc393f"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "c-measured"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "l-flatmap",
+      "category": "javascript · 配列",
+      "label": "`Array.prototype.flatMap`",
+      "gist": "配列の各要素を[[配列|array]]に写し、それらを 1 段つなげて 1 つの配列にする標準のメソッド。写した先を空の配列にすれば要素を捨てられるので、「写す」と「捨てる」を 1 回の走査で書ける。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "array.flatMap((item) => [ ...0 個以上の値 ])"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "callback",
+              "type": "(item: T) => U[]",
+              "text": "要素ごとに呼ばれ、その要素の代わりに並べる値の配列を返す[[コールバック|callback]]"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "`[1, 2].flatMap((n) => n > 1 ? [n * 10] : [])` は `[20]` になる。元の配列は変えず、新しい配列を返す。"
+        },
+        {
+          "kind": "caution",
+          "text": "つなげるのは 1 段だけ。コールバックが配列の配列を返すと、内側の配列は残る。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "lineRange": {
+            "start": 190,
+            "end": 198
+          },
+          "text": "`ArrayEx.filterMap` が、`Option` が `some` のときだけ 1 要素の配列を返して残す",
+          "shas": [
+            "019cc718635be0c5c2701f9b4586e873c144515f"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "c-measured"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "c-measured",
+      "category": "canvas · リサイズ",
+      "label": "掴んだ時点の実測",
+      "gist": "ハンドルを掴んだ瞬間に、揃え先の矩形と距離の相手の矩形を 1 回だけ測り、掴んでいる状態に 1 つの `Option` として載せる。リサイズ中は描き直しが 1 回遅れるので、動かすたびには測り直さない。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "フックは名前から矩形を引く手段(面積の無いものは `none` を返す)を渡すだけで、どの名前を引くかと、その結果から揃え先の並びと距離の相手の両方を作るのはドメインが行う。今の親を引けなければ距離の相手だけを `none` にし、兄弟への吸い付きは残す。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+            "start": 1031,
+            "end": 1070,
+            "emphasis": [
+              {
+                "start": 1044,
+                "end": 1057
+              }
+            ],
+            "text": "function resizeMeasureOf(\n  targetNames: Option<ResizeTargetNames>,\n  drawn: DrawnAtGrab,\n): ResizeMeasure {\n  if (!Option.isSome(targetNames)) {\n    return {\n      snap: SideSnap.create(drawn.grabbed, []),\n      distanceTargets: Option.none,\n    };\n  }\n\n  const names = targetNames.value;\n  switch (names.kind) {\n    case \"within-parent\": {\n      const parent = drawn.measure(names.parentName);\n      const parentBounds = ArrayEx.filterMap([parent], (bounds) => bounds);\n      const siblings = ArrayEx.filterMap(names.siblingNames, drawn.measure);\n\n      return {\n        snap: SideSnap.create(drawn.grabbed, [...parentBounds, ...siblings]),\n        distanceTargets: Option.map(parent, (bounds) => ({\n          kind: \"within-parent\" as const,\n          parentBounds: bounds,\n          siblings,\n        })),\n      };\n    }\n    case \"among-artboards\": {\n      const others = ArrayEx.filterMap(names.otherNames, drawn.measure);\n\n      return {\n        snap: SideSnap.create(drawn.grabbed, others),\n        distanceTargets: Option.some({\n          kind: \"among-artboards\" as const,\n          others,\n        }),\n      };\n    }\n  }\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "揃え先と距離の相手は、リサイズしても動かないものに絞る。掴んだ時点の位置で測るので、動くものを相手にすると数値が嘘になる(未決 A を A1 で確定)。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は辺のスナップの組だけを `snapFrom: Option<SideSnap>` に載せていた。距離の相手を別の `Option` にすると「相手はあるのに組が無い」が書けるので、1 つにまとめた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "lineRange": {
+            "start": 330,
+            "end": 361
+          },
+          "text": "`ResizeHold.measured` と `ResizeMeasure`・`DrawnAtGrab`",
+          "shas": [
+            "dffa6b9b85afbb9065698d57cb3f4a63f7ce98df",
+            "1d757c21a46ad04b655f3f017583336cc03e689b"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "lineRange": {
+            "start": 89,
+            "end": 97
+          },
+          "text": "フックが `DrawnBounds.measureWithArea` を渡す",
+          "shas": [
+            "dffa6b9b85afbb9065698d57cb3f4a63f7ce98df"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "l-discriminated-union",
+        "l-flatmap",
+        "c-resized-bounds"
+      ],
+      "tests": [
+        "i-zero-parent",
+        "d-no-parent",
+        "d-no-measure"
+      ],
+      "flows": [
+        "f-grab"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "c-resized-bounds",
+      "category": "canvas · リサイズ",
+      "label": "起点の矩形",
+      "gist": "距離を測り始める矩形を、DOM を測らずに計算で作る。掴んだ時点の矩形の掴んだ辺だけを、書き込む長さ(吸い付き・丸め・0 止めのあと)の位置へ動かす。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "縮んだ量はドキュメント上の px なので、倍率で画面上の px に直してから辺を動かす。動かす向きは掴んだ端で決まり、始点側(左・上)なら内側は `+`、終点側(右・下)なら内側は `-`。この符号は書き込む長さと置き直す位置の計算と同じ関数から引く。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+            "start": 1137,
+            "end": 1153,
+            "text": "function resizedBounds(\n  grabbed: CanvasBounds,\n  resized: readonly ResizedLength[],\n  view: CanvasView,\n): CanvasBounds {\n  return resized.reduce((bounds, each) => {\n    const axis = each.length.axis;\n    const screenShrunk = Offset.along(\n      CanvasView.toScreenOffset(view, axisOffset(axis, each.shrunk)),\n      axis,\n    );\n    const movedEdge =\n      CanvasBounds.edgeAt(grabbed, axis, each.end) +\n      inwardFrom(each.end, screenShrunk);\n    return CanvasBounds.withEdgeAt(bounds, { axis, end: each.end }, movedEdge);\n  }, grabbed);\n}"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "掴んでいない軸の長さが中身に合わせて連れて変わっても、起点の掴んでいない辺は掴んだ時点のまま。ガイド線と同じ既知の限界として仕様に書いてある。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "lineRange": {
+            "start": 1137,
+            "end": 1153
+          },
+          "text": "`resizedBounds`",
+          "shas": [
+            "dffa6b9b85afbb9065698d57cb3f4a63f7ce98df",
+            "1d757c21a46ad04b655f3f017583336cc03e689b"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "lineRange": {
+            "start": 1244,
+            "end": 1246
+          },
+          "text": "`inwardFrom`。符号を 1 箇所に寄せた",
+          "shas": [
+            "1d757c21a46ad04b655f3f017583336cc03e689b"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "c-only-toward"
+      ],
+      "tests": [
+        "d-left",
+        "d-zoom",
+        "d-cross",
+        "d-snap",
+        "i-zoom"
+      ],
+      "flows": [
+        "f-track"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "c-only-toward",
+      "category": "canvas · 距離",
+      "label": "掴んだ向きへの絞り込み",
+      "gist": "4 方向の距離を移動と同じ部品で測ってから、掴んだ辺の向きだけを残す。向きは辺の組(左右 / 上下)と進む側(始点 / 終点)の対で表す。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`ResizeGrip.toFacings` が掴んだ軸ごとに向きを 1 つ作り(辺なら 1、角なら幅・高さの順に 2)、`FacingDistances.onlyToward` がそれ以外の向きを `none` にする。向きの等しさは `Facing.equals` で、辺の組と進む側の両方を比べる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+            "start": 100,
+            "end": 115,
+            "text": "  /**\n   * 渡した向きの線だけを残した距離。\n   *\n   * @param distances 向きごとの短い線\n   * @param facings 残す向き\n   * @returns `facings` にある向きは `distances` の線のまま、無い向きは `none`\n   */\n  onlyToward(\n    distances: FacingDistances,\n    facings: readonly Facing[],\n  ): FacingDistances {\n    return FacingDistances.fromFacings((facing) => {\n      const isKept = facings.some((kept) => Facing.equals(kept, facing));\n      return isKept ? distances[facing.pair][facing.end] : Option.none;\n    });\n  },"
+          }
+        },
+        {
+          "kind": "spec",
+          "text": "角で一方の長さが 0 で止まると、直交の向きで幅を持って重なる相手が無くなり、何も出ない(`docs/06-ui.md`「リサイズハンドル」)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "lineRange": {
+            "start": 143,
+            "end": 148
+          },
+          "text": "`ResizeGrip.toFacings`",
+          "shas": [
+            "dffa6b9b85afbb9065698d57cb3f4a63f7ce98df"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+          "lineRange": {
+            "start": 107,
+            "end": 115
+          },
+          "text": "`FacingDistances.onlyToward`",
+          "shas": [
+            "8fd8e090758bb2dbdd156ed994dd674932059889",
+            "ee4495dc3f6fd544cc61af249b0167903c31a578"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/facing/index.ts",
+          "lineRange": {
+            "start": 36,
+            "end": 38
+          },
+          "text": "`Facing.equals`",
+          "shas": [
+            "50eb90ab1b8a0e4bf068794bb9ffcc3347413825"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "c-resized-bounds"
+      ],
+      "tests": [
+        "d-edge",
+        "d-corner-br",
+        "d-corner-tr",
+        "d-zero-height",
+        "ot-one",
+        "ot-two",
+        "ot-none",
+        "g-tr",
+        "eq-end",
+        "eq-pair"
+      ],
+      "flows": [
+        "f-track"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "union",
+      "label": "直和",
+      "text": "いくつかの型のうちどれか 1 つ、を表す型。TypeScript では `A | B` と書く。"
+    },
+    {
+      "id": "narrowing",
+      "label": "型の絞り込み",
+      "text": "条件分岐の中で、TypeScript が値の型をその条件を満たす形に狭めて扱うこと。"
+    },
+    {
+      "id": "array",
+      "label": "配列",
+      "text": "値を順に並べたもの。`[a, b]` と書く。"
+    },
+    {
+      "id": "callback",
+      "label": "コールバック",
+      "text": "別の関数に引数として渡し、その関数の中から呼んでもらう関数。"
+    }
+  ]
+}
