@@ -400,7 +400,10 @@ export function ArtboardCanvas({
         view={view}
       />
       <FacingDistanceOverlay distances={selectionDistances} view={view} />
-      {/* 隙間の数値はリサイズでは出さない（docs/06-ui.md「リサイズハンドル」の辺のスナップ） */}
+      {/*
+        揃え先との隙間の数値はリサイズでは出さない（docs/06-ui.md「リサイズハンドル」の辺の
+        スナップ）。Alt / Option の距離は出す（直下の FacingDistanceOverlay）
+      */}
       <GuideLineOverlay guides={nodeResize.snapGuides} />
       <FacingDistanceOverlay
         distances={nodeResize.facingDistances}
