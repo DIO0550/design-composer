@@ -90,7 +90,7 @@ function withMeasuredTargets(
   held: ResizeHold,
   grabbed: CanvasBounds,
 ): ResizeHold {
-  return NodeResize.withMeasure(held, {
+  return NodeResize.withMeasured(held, {
     grabbed,
     measure: DrawnBounds.measureWithArea,
   });
@@ -235,13 +235,13 @@ export function useNodeResize(
    * ドキュメント、ガイド線と距離はこのフックの状態）ので、1 つの state にはまとめない。
    */
   const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
-    const commandApplied = CommandKey.isHeld(event)
+    const snapDecided = CommandKey.isHeld(event)
       ? NodeResize.withoutSnapTargets(resize)
       : resize;
     const tracked = NodeResize.trackedAt(
       AltKey.isHeld(event)
-        ? commandApplied
-        : NodeResize.withoutDistanceTargets(commandApplied),
+        ? snapDecided
+        : NodeResize.withoutDistanceTargets(snapDecided),
       CanvasPointer.offsetOf(event),
       params.view,
     );

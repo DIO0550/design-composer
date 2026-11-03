@@ -328,14 +328,11 @@ export type ResizeHold = Readonly<{
    */
   targetNames: Option<ResizeTargetNames>;
   /**
-   * 掴んだ時点の実測。`hold` の直後と、掴んだ時点の矩形を測れなかったときは `none`。
+   * 掴んだ時点の実測（揃え先の組と距離の相手）。`hold` の直後と、掴んだ時点の矩形を測れなかった
+   * ときは `none`。
    *
-   * 揃え先と相手の無い掴み（`targetNames` が `none`）と ⌘ で外した値（`withoutSnapTargets`）
-   * では `snap.stationary` が空。相手の無い掴み・親を引けなかった掴み・Alt を押していない値
-   * （`withoutDistanceTargets`）では `distanceTargets` が `none`。
-   *
-   * 揃え先と相手はリサイズしても動かないものに絞っている（`ResizeTargets`）ので、動かすたびには
-   * 測り直さない。別々の Option にすると「距離の相手はあるのに組が無い」が書ける。
+   * 揃え先と相手はリサイズしても動かないもの（`ResizeTargets`）なので、動かすたびには測り直さない。
+   * 2 つを別々の Option にすると「距離の相手はあるのに組が無い」が書けるので 1 つにまとめる。
    */
   measured: Option<ResizeMeasure>;
 }>;
@@ -345,8 +342,22 @@ export type ResizeHold = Readonly<{
  * Alt / Option の距離を測る相手。
  */
 export type ResizeMeasure = Readonly<{
+  /**
+   * 辺のスナップの組。揃え先と相手の無い掴み（`ResizeHold.targetNames` が `none`）と ⌘ で外した値
+   * （`withoutSnapTargets`）では `stationary` が空。
+   */
   snap: SideSnap;
+  /**
+   * 距離の相手。相手の無い掴み・親を引けなかった掴み・Alt を押していない値
+   * （`withoutDistanceTargets`）では `none`。
+   */
   distanceTargets: Option<DistanceTargets>;
+}>;
+
+/** 掴んだ時点の矩形と、`ResizeHold.targetNames` の名前から矩形を引く手段。 */
+type DrawnAtGrab = Readonly<{
+  grabbed: CanvasBounds;
+  measure: (name: string) => Option<CanvasBounds>;
 }>;
 
 /** 最後に動かした位置で出す線（すべて画面上の px）。 */
@@ -679,13 +690,7 @@ export const NodeResize = {
    *   親を引けなければ距離の相手は `none`
    * @returns 実測を載せた掴み
    */
-  withMeasure(
-    held: ResizeHold,
-    drawn: Readonly<{
-      grabbed: CanvasBounds;
-      measure: (name: string) => Option<CanvasBounds>;
-    }>,
-  ): ResizeHold {
+  withMeasured(held: ResizeHold, drawn: DrawnAtGrab): ResizeHold {
     return {
       ...held,
       measured: Option.some(resizeMeasureOf(held.targetNames, drawn)),
@@ -703,16 +708,10 @@ export const NodeResize = {
    * @returns 揃え先を空にした状態。掴んでいない / 実測が載っていなければ `resize` のまま
    */
   withoutSnapTargets(resize: NodeResize): NodeResize {
-    if (resize.kind !== "resizing") {
-      return resize;
-    }
-    return {
-      ...resize,
-      measured: Option.map(resize.measured, (measured) => ({
-        ...measured,
-        snap: SideSnap.create(measured.snap.moving, []),
-      })),
-    };
+    return withMeasuredMapped(resize, (measured) => ({
+      ...measured,
+      snap: SideSnap.create(measured.snap.moving, []),
+    }));
   },
 
   /**
@@ -723,16 +722,10 @@ export const NodeResize = {
    * @returns 距離の相手を `none` にした状態。掴んでいない / 実測が載っていなければ `resize` のまま
    */
   withoutDistanceTargets(resize: NodeResize): NodeResize {
-    if (resize.kind !== "resizing") {
-      return resize;
-    }
-    return {
-      ...resize,
-      measured: Option.map(resize.measured, (measured) => ({
-        ...measured,
-        distanceTargets: Option.none,
-      })),
-    };
+    return withMeasuredMapped(resize, (measured) => ({
+      ...measured,
+      distanceTargets: Option.none,
+    }));
   },
 
   /**
@@ -1007,6 +1000,23 @@ function flowTargets(document: DesignDocument, name: string): ResizeTargets {
 }
 
 /**
+ * 掴んでいる最中なら、載っている実測を写した状態。
+ *
+ * @param resize 今のリサイズの状態
+ * @param fn 載っている実測から新しい実測を作る
+ * @returns 実測を `fn` で写した状態。掴んでいない / 実測が載っていなければ `resize` のまま
+ */
+function withMeasuredMapped(
+  resize: NodeResize,
+  fn: (measured: ResizeMeasure) => ResizeMeasure,
+): NodeResize {
+  if (resize.kind !== "resizing") {
+    return resize;
+  }
+  return { ...resize, measured: Option.map(resize.measured, fn) };
+}
+
+/**
  * 掴んだ時点の実測。名前ごとに 1 回だけ矩形を引き、揃え先の並びと距離の相手の両方をそこから
  * 作る。
  *
@@ -1020,28 +1030,22 @@ function flowTargets(document: DesignDocument, name: string): ResizeTargets {
  */
 function resizeMeasureOf(
   targetNames: Option<ResizeTargetNames>,
-  drawn: Readonly<{
-    grabbed: CanvasBounds;
-    measure: (name: string) => Option<CanvasBounds>;
-  }>,
+  drawn: DrawnAtGrab,
 ): ResizeMeasure {
-  const measureAll = (names: readonly string[]): readonly CanvasBounds[] =>
-    names.flatMap((name) => {
-      const bounds = drawn.measure(name);
-      return Option.isSome(bounds) ? [bounds.value] : [];
-    });
   if (!Option.isSome(targetNames)) {
     return {
       snap: SideSnap.create(drawn.grabbed, []),
       distanceTargets: Option.none,
     };
   }
+
   const names = targetNames.value;
   switch (names.kind) {
     case "within-parent": {
       const parent = drawn.measure(names.parentName);
-      const parentBounds = Option.isSome(parent) ? [parent.value] : [];
-      const siblings = measureAll(names.siblingNames);
+      const parentBounds = ArrayEx.filterMap([parent], (bounds) => bounds);
+      const siblings = ArrayEx.filterMap(names.siblingNames, drawn.measure);
+
       return {
         snap: SideSnap.create(drawn.grabbed, [...parentBounds, ...siblings]),
         distanceTargets: Option.map(parent, (bounds) => ({
@@ -1052,7 +1056,8 @@ function resizeMeasureOf(
       };
     }
     case "among-artboards": {
-      const others = measureAll(names.otherNames);
+      const others = ArrayEx.filterMap(names.otherNames, drawn.measure);
+
       return {
         snap: SideSnap.create(drawn.grabbed, others),
         distanceTargets: Option.some({
@@ -1104,6 +1109,7 @@ function distanceLinesAt(
   if (!Option.isSome(held.measured)) {
     return FacingDistances.None;
   }
+
   const measured = held.measured.value;
   return Option.unwrapOr(
     Option.map(measured.distanceTargets, (targets) =>
@@ -1139,9 +1145,9 @@ function resizedBounds(
       CanvasView.toScreenOffset(view, axisOffset(axis, each.shrunk)),
       axis,
     );
-    const edge = CanvasBounds.edgeAt(grabbed, axis, each.end);
     const movedEdge =
-      each.end === AxisEnds.Start ? edge + screenShrunk : edge - screenShrunk;
+      CanvasBounds.edgeAt(grabbed, axis, each.end) +
+      inwardFrom(each.end, screenShrunk);
     return CanvasBounds.withEdgeAt(bounds, { axis, end: each.end }, movedEdge);
   }, grabbed);
 }
@@ -1173,10 +1179,7 @@ function resizedLength(
   const axis = grab.length.axis;
   const along = CanvasView.toDocumentLength(view, Offset.along(moved, axis));
   const before = grab.length.length;
-  const length = AxisLength.create(
-    axis,
-    grab.end === AxisEnds.Start ? before - along : before + along,
-  );
+  const length = AxisLength.create(axis, before - inwardFrom(grab.end, along));
   return { length, end: grab.end, shrunk: before - length.length };
 }
 
@@ -1225,11 +1228,21 @@ function placedPosition(
  * @returns その軸だけが動く差
  */
 function centerShift(resized: ResizedLength): Offset {
-  const half = resized.shrunk / 2;
   return axisOffset(
     resized.length.axis,
-    resized.end === AxisEnds.Start ? half : -half,
+    inwardFrom(resized.end, resized.shrunk / 2),
   );
+}
+
+/**
+ * 掴んだ端から内側へ向かう向きを付けた量。始点側の端なら内側は +、終点側の端なら内側は −。
+ *
+ * @param end 掴んだ端
+ * @param amount 内側へ向かう量
+ * @returns 始点側なら `amount`、終点側なら `-amount`
+ */
+function inwardFrom(end: AxisEnd, amount: number): number {
+  return end === AxisEnds.Start ? amount : -amount;
 }
 
 /**

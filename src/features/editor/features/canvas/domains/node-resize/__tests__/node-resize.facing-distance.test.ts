@@ -5,12 +5,13 @@ import type { CanvasBounds } from "@/features/editor/features/canvas/domains/can
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import { Option } from "@/utils/Option";
+import type { Range } from "@/utils/Range";
 import { NodeResize, type ResizeTargetNames } from "../index";
 import {
   grabbedAt,
+  grabbedWithMeasured,
   grabbedWithTargets,
   heldAt,
-  setupBounds,
   setupResizable,
   setupView,
 } from "./setup";
@@ -44,8 +45,6 @@ const DrawnBounds: Readonly<Record<string, CanvasBounds>> = {
   parent: { left: 0, top: 0, width: 600, height: 400 },
 };
 
-type Span = Readonly<{ min: number; max: number }>;
-
 /**
  * 向きごとの線の伸びる範囲だけを取り出す（線の置き場所は `FacingDistances` のテストが見る）。
  *
@@ -54,7 +53,7 @@ type Span = Readonly<{ min: number; max: number }>;
  */
 function spansOf(distances: FacingDistances) {
   const spanOf = (line: (typeof distances)["horizontal"]["start"]) =>
-    Option.map(line, (each): Span => each.span);
+    Option.map(line, (each): Range => each.span);
   return {
     horizontal: {
       start: spanOf(distances.horizontal.start),
@@ -302,14 +301,9 @@ test("揃え先も距離の相手も無い掴み方（フロー配置の 2 軸�
     ...setupResizable(),
     targets: { kind: "axisOnly", axis: "width", names: WithinParent },
   } as const;
-  const resize = NodeResize.grab(
-    NodeResize.withMeasure(
-      heldAt(resizable, { x: 1, y: 1 }, { x: 300, y: 150 }),
-      {
-        grabbed: setupBounds(),
-        measure: (name) => Option.fromNullable(DrawnBounds[name]),
-      },
-    ),
+  const resize = grabbedWithMeasured(
+    heldAt(resizable, { x: 1, y: 1 }, { x: 300, y: 150 }),
+    DrawnBounds,
   );
 
   expect(distancesAt(resize, { x: 320, y: 170 })).toEqual(FacingDistances.None);

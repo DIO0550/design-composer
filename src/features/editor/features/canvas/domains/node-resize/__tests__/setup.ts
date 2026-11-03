@@ -163,10 +163,24 @@ export function grabbedWithTargets(
     ...heldAt(setupResizable(), anchor, pointerOrigin),
     targetNames: Option.some(drawn.names),
   };
+  return grabbedWithMeasured(held, drawn.boundsByName);
+}
+
+/**
+ * 掴んだものに、掴んだ時点の矩形（`setupBounds`）と名前ごとの矩形から実測を載せて掴んだ状態。
+ *
+ * @param held 掴んだもの。揃え先と距離の相手の名前（`targetNames`）を持つ
+ * @param boundsByName 名前ごとに描かれている矩形（無い名前は引けない）
+ * @returns 掴んだ状態
+ */
+export function grabbedWithMeasured(
+  held: ResizeHold,
+  boundsByName: Readonly<Record<string, CanvasBounds>>,
+): NodeResize {
   return NodeResize.grab(
-    NodeResize.withMeasure(held, {
+    NodeResize.withMeasured(held, {
       grabbed: setupBounds(),
-      measure: (name) => Option.fromNullable(drawn.boundsByName[name]),
+      measure: (name) => Option.fromNullable(boundsByName[name]),
     }),
   );
 }
