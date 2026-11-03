@@ -23,10 +23,7 @@ export type CanonicalizeDenial = Readonly<{
   kind: CanonicalizeDenialKind;
 }>;
 
-/**
- * 外部による書き換え。`path` は書き換えに使った綴りで、通知はこの綴りではなく監視を張ったときの
- * 綴りで届く。
- */
+/** 外部による書き換え。`path` は書き換えに使った綴り。 */
 type ExternalChange = Readonly<{ path: string; content: string }>;
 
 /**
@@ -274,10 +271,12 @@ export function createDocumentIpcFake(
     changeExternally({ path, content }) {
       const target = targetOf(path);
       contents.set(target, content);
+
       const watchedSpelling = watchedSpellings.get(target);
       if (watchedSpelling === undefined) {
         return;
       }
+
       for (const listener of listeners) {
         listener({ path: watchedSpelling, content });
       }
