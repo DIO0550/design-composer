@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1268,
+  "headBranch": "claude/magical-cannon-rukd1d",
+  "baseBranch": "main",
+  "mergeBase": "e2b9345641fb1afb76155c4b0843c2a0807bd59c",
+  "head": "704afc5fb43c2dcbc8ff674aae036b3d448cad00",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1262.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 167,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "704afc5fb43c2dcbc8ff674aae036b3d448cad00",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-03T02:12:01Z",
+      "subject": "📝 [Documentation]: #1253 PR #1262 の振り返りを harness/records に記録",
+      "body": "- harness/records/pr-1262.md を足す（指摘 17 件・手戻り・発火）\n\n背景:\nPR #1262（開始画面のカードの割り当ての綴りを OS に合わせる）がマージされたので、\nその回のレビュー指摘・手戻り・フックの不発を harness-record の形式で残す。\n\n採用理由:\n指摘は 1 件 1 ブロックにし、出どころは語彙から 1 つずつ選んだ。GitHub 上の人の\nレビューは 3 経路とも 0 件で、セッション中のコンフリクト修正の指示だけを\nレビュー（人）として数えた。発火ログはこのセッションの分が無く、\n計測対象外（フック不発）と書いた。\n\n影響とトレードオフ:\n対策済の行は書いていない（介入は harness-growth の管轄）。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2S2Q5h6uMQNRtgVVf1",
+      "files": [
+        {
+          "path": "harness/records/pr-1262.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 167,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,167 @@\n+# PR #1262 開始画面のカードの割り当ての綴りを、動いている OS に合わせる\n+\n+- マージ日: 2026-11-03\n+- 関連 Issue: #1253\n+- 差分規模: 10 ファイル / +291 -80\n+\n+## ゴールと結果\n+\n+ゴールは、Windows / Linux で動かしたときに、開始画面の「開く」「新規作成」カードの割り当ての綴りを、コンテキストメニュー（#480）と同じく動いている OS の綴りで出し、アプリ内で綴りを揃えること。達成した。\n+\n+- 綴りの規則を `editor-context-menu` の非公開の場所から `src/components/shown-shortcut`（`ShownShortcut.toText`）へ移し、開始画面とコンテキストメニューで共有した\n+- GitHub 上の人のレビューは 0 件。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した\n+  - `get_reviews` には Copilot の review が 1 件あり、指摘は 0（Approval recommended）\n+  - コメントは、自分で投稿したテストケース表と bot の投稿（Storybook プレビュー・CI レポート・VRT）だけ\n+- CI は全件緑。VRT は差分 0。New の 1 件は足した `OnWindows` ストーリー\n+- セッション中に、オーナーからコンフリクトの修正を 1 回指示された（指摘 16）\n+\n+## 指摘\n+\n+### 1. 足した Windows のストーリーは VRT のベースラインが無く、比べられない\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画に、Storybook の Windows ストーリーを撮って、400px の列でバッジが収まるかを目視する手順を足した。playwright-cli が無かったので、headless Chrome で撮った。\n+- 既存ルール: rules/ui-verification.md「表示確認」\n+\n+### 2. ファイル表の行が粗い（editor-context-menu の参照行が名指しされていない）\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 直す行を 36 / 47 / 56 / 66 / 71 / 147-180 / 244 と列挙した。\n+- 既存ルール: なし\n+\n+### 3. 移す doc の拠り所が仕様の節と合っていない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 旧 doc は「編集操作の一覧」を拠り所にしていた。規則の文言を持っている「コンテキストメニュー」節を参照する形に直した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 4. docs の導線節が macOS の綴りだけで書かれ、開始画面の追記と食い違う\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: docs/06-ui.md「開く / 新規作成の導線」に「ここでは macOS の綴りで書く」を足した。docs/05-architecture.md の同じ記述はスコープ外にした。\n+- 既存ルール: なし\n+\n+### 5. components/ に置く理由と、domains に置かない理由が無い\n+\n+- 分類: `ownership`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 次の 2 点を、計画とモジュールの doc に Why として書き、却下案に「src/domains に置く」を足した。\n+  - 人が読む綴りは表示側の関心事であること\n+  - domains は production から libs を import できないこと\n+- 既存ルール: rules/architecture.md「ロジックの帰属先」\n+\n+### 6. 却下案に libs/dom-event の CommandKey が無い\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 却下案に 1 行足した（libs はキーイベントの解釈に閉じる）。\n+- 既存ルール: なし\n+\n+### 7. 型名 ShortcutNotation が、持っている値ではなく出力（綴り）の側を名指ししている\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 計画で唯一、未決のまま進めた点。`ShownShortcut` に改名し、モジュールも `src/components/shown-shortcut` にした。structure-reviewer も担当外として同じ点を添えていた。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 8. OpenShortcut / CreateShortcut が既存の 14 個の `<操作>Shortcut: KeyShortcut` と同じ形で、型が別\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: `OpenCardShortcut` / `CreateCardShortcut` に改名した。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 9. 同じ型の値を、2 つのファイルが別のやり方で作っている\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 不採用。検証すべき制約の無い直和で、`satisfies` の型リテラルがそのまま唯一の形になっている。`Option` で包む関数は残るので、`create` を足しても作り方の経路は減らない。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 10. commandShortcut の doc が ⌘ / Ctrl の規則を書き写している\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: OS ごとの綴りを書かず、`ShownShortcut.toText` を参照する形にした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 11. 開始画面のテストが綴りの全組み合わせを見ている\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 不採用。開く / 新規作成は別の定数から作るので、2 枚 × 2 OS は配線の取り違えを落とすのに要る。test-reviewer の実測（カードごと・OS ごとの固定と、取り違え）で確かめた。\n+- 既存ルール: rules/testing.md「古典学派のテスト」\n+\n+### 12. 開始画面からの仕様の参照が節名だけ\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 節名と箇条（「行にはキーボードの割り当てを併記する」）の両方を書く形にした。\n+- 既存ルール: なし\n+\n+### 13. 置き場所の Why が「OperatingSystem が libs にある」ことを前提にしている\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 「`OperatingSystem` が `libs/` にある間は」の条件を足した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 14. OS を Provider で配ることの検討\n+\n+- 分類: `react`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 結論は「維持」。指摘は低で、今回は見送り、理由を Issue に書いた。理由は次の 3 点。割り当てを併記する部品が増えたときに改めて判断する。\n+  - 値は起動時に 1 回決まる定数である\n+  - props の方が依存が見え、テストの setup が単純になる\n+  - 開始画面側で増えた通過は 1 段だけである\n+- 既存ルール: rules/components.md「Provider / Context の使いどころ」\n+\n+### 15. macOS 側のテストが部分一致で、カードの割り当てに Shift が付いても通る\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 16 通りのミューテーションはすべて落ちた。ただし Shift を付ける変異は Windows 側でしか落ちていなかった。そこで説明の末尾までの一致（`getByText` の完全一致）に変え、直した 6 件が両 OS で落ちることを実測した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 16. main（#1254）とのコンフリクトを修正するよう指示された\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（人）`\n+- 内容: 次の 2 つが同じ型と関数を触っていたので、`editor-context-menu/index.tsx` で衝突した。#1254 の構造を採り、綴りだけ `ShownShortcut.toText` に寄せて解決した。\n+  - #1254: 併記をキーボードの割り当てから導く\n+  - この PR: 綴りの規則を移す\n+\n+  #1254 は計画時点で open で、却下案（KeyShortcut に持たせる）の行き先として名前は出ていた。ただし、同じファイルを触ることは計画で数えていなかった。\n+- 既存ルール: なし\n+\n+### 17. フックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: push 前の `echo hook-canary` が通った。implementer を通した後でも実行中フラグのマーカーが無く、このセッションの発火ログも無い。README の表では「本当に不発」の枝。\n+  - 起動形態は pr-1257 と同じ（Issue の assigned で起動した routine、3 リポジトリ、作業ディレクトリ `/home/user`）\n+  - Bash の履歴を見直し、npx・`git add -A`・サブエージェント実行中の commit が無いことを確かめた\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- フェーズ 3: 着手時は `node_modules` が無く、planner はテストを走らせずに計画した。implementer の前に、親が `pnpm install --frozen-lockfile` を走らせた\n+- フェーズ 4: plan-reviewer の 6 件はすべて採用した。planner へは戻さず、親が差分を計画 v2 として Issue に書き、implementer へ渡した\n+- フェーズ 6: implementer を 2 回追加で起動した\n+  - 1 回目は、レビュー指摘 5 件の修正。中心は改名（指摘 7・8）\n+  - 2 回目は、test-reviewer の所見の修正（指摘 15）\n+  - 計画から変わった判断は、型名を `ShownShortcut` に決めたこと（計画で未決だった点）\n+- マージ前: オーナーの指示で main を取り込み、コンフリクトを解決した（指摘 16）。`menuShortcutFromKeyShortcut` を `shownShortcutFromKeyShortcut` に改名した\n+- 観点別のエージェントが渡された `git diff origin/main...HEAD` を使うと、手元の origin/main が古く、240 ファイルを含んでいた。各エージェントは自分で範囲を `752abd5..HEAD` に絞った。test-reviewer には範囲を明示して渡した\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。このスキルの管轄は記録まで（集計・介入は `harness-growth`）。",
+          "patchLines": 168,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
