@@ -179,6 +179,8 @@ done <<'PERMISSION_CASES'
 deny|PreToolUse フックが exit 0 で deny の JSON を返せば deny|0|{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny"}}
 pass|PreToolUse フックが exit 0 で何も出さなければ pass|0|-
 pass|PreToolUse フックが exit 0 で additionalContext だけを返すなら pass|0|{"hookSpecificOutput":{"hookEventName":"PreToolUse","additionalContext":"x"}}
+pass|PreToolUse フックが exit 0 で ask の JSON を返すなら deny と読まず pass|0|{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"ask"}}
+pass|PreToolUse フックが exit 0 で allow の JSON を返すなら deny と読まず pass|0|{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}
 broken|PreToolUse フックが deny の JSON を返しても exit 0 以外なら broken|1|{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny"}}
 PERMISSION_CASES
 

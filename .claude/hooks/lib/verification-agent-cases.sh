@@ -125,8 +125,8 @@ in_subagent_fields="$(subagent_call_fields Bash)"
 agent_verdict s26 PreToolUse "$foreground_implementer" >/dev/null
 report deny "$(git_verdict s26 'git add --dry-run -- README.md' "$in_subagent_fields")" "implementer の実行中は、サブエージェントの中から呼んだ git add も拒否される"
 
-# 2 本は共有部品(`lib/hook-input.sh`)を自分の置き場所から辿って読む。呼んだパスの綴りが相対でも
-# 辿れることを、リポジトリルートに cd して `./` から呼んで確かめる。
+# 設定は 2 本を `${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/` から呼ぶので、CLAUDE_PROJECT_DIR が空なら
+# cwd からの相対パスになる。リポジトリルートに cd して `./` から呼び、その綴りでも動くことを確かめる。
 repo_root="$(cd "$lib_dir/../../.." && pwd)"
 relative_git_verdict="$(
   cd "$repo_root" || exit 1
@@ -135,6 +135,15 @@ relative_git_verdict="$(
   git_input s27 | hook_verdict_by_permission ./.claude/hooks/block-git-during-verification-agent.sh
 )"
 report deny "$relative_git_verdict" "リポジトリルートから相対パスで 2 本を呼んでも、前面で起動した test-reviewer の実行中は git add が拒否される"
+
+# 上の 1 件はリポジトリルートを cwd にしているので、共有部品を cwd から辿る実装でも通る。置き場所から
+# 辿っていることは、cwd をリポジトリの外(TMPDIR)にして 2 本を絶対パスで呼んで確かめる。
+outside_cwd_git_verdict="$(
+  cd "$TMPDIR" || exit 1
+  agent_verdict s28 PreToolUse "$foreground_test_reviewer" >/dev/null
+  git_verdict s28
+)"
+report deny "$outside_cwd_git_verdict" "リポジトリの外を cwd にして絶対パスで 2 本を呼んでも、前面で起動した test-reviewer の実行中は git add が拒否される"
 
 # 残った印の種類は有効期間でしか外から見えないので、最後に印を古くして見分ける。implementer の印を
 # 先に古くしておくのは、種類を問わず最も古い印を消す実装だと implementer の印が消えるようにするため。

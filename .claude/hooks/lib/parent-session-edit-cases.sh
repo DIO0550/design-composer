@@ -84,13 +84,28 @@ report pass "$(edit_verdict s1 "$parent_write" '"content":"x"')" "file_path の�
 report pass "$(edit_verdict s1 "$parent_write" '"file_path":"","content":"x"')" "file_path が空の入力は通る"
 report pass "$(edit_verdict s1 "$parent_write" '"file_path":"src/a.ts","content":"x"')" "file_path が相対パスの入力は通る"
 
-# フックは自分の置き場所からリポジトリのルートと共有部品を辿る。呼んだパスの綴りが相対でも
-# 辿れることを、リポジトリルートに cd して `./` から呼んで確かめる。
+# 設定はフックを `${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/` から呼ぶので、CLAUDE_PROJECT_DIR が空なら
+# cwd からの相対パスになる。リポジトリルートに cd して `./` から呼び、その綴りでも動くことを確かめる。
 relative_verdict="$(
   cd "$repo_root" || exit 1
   edit_input s1 "$parent_edit" "$edit_in_repo" | hook_verdict_by_permission ./.claude/hooks/block-parent-session-edit.sh
 )"
 report deny "$relative_verdict" "リポジトリルートから相対パスでフックを呼んでも、implementation-flow の中の親の Edit は拒否される"
+
+# 上の 1 件はリポジトリルートを cwd にしているので、ルートや共有部品を cwd から辿る実装でも通る。
+# 置き場所から辿っていることは、cwd をリポジトリの外(file_path が cwd の下に無い TMPDIR)にして
+# フックを絶対パスで呼んで確かめる。読む側と書く側を 1 件ずつに分け、どちらが cwd に頼ったかを見分ける。
+outside_cwd_verdict="$(
+  cd "$TMPDIR" || exit 1
+  edit_verdict s1 "$parent_edit" "$edit_in_repo"
+)"
+report deny "$outside_cwd_verdict" "リポジトリの外を cwd にして絶対パスでフックを呼んでも、implementation-flow の中の親の Edit は拒否される"
+
+(
+  cd "$TMPDIR" || exit 1
+  write_firings_log s19 implementation-flow
+)
+report deny "$(edit_verdict s19 "$parent_edit" "$edit_in_repo")" "リポジトリの外を cwd にして絶対パスで発火ログを書かせても、implementation-flow の中の親の Edit は拒否される"
 
 write_firings_log s2 implementation-flow harness-record
 report pass "$(edit_verdict s2 "$parent_edit" "$edit_in_repo")" "implementation-flow の後に harness-record を起動したら、親の Edit は通る"
@@ -138,6 +153,16 @@ report deny "$(edit_verdict s16 "$parent_edit" "$edit_in_repo")" "harness-record
 
 write_firings_log s17 agent:x-planner agent:x-implementer
 report pass "$(edit_verdict s17 "$parent_edit" "$edit_in_repo")" "名前が planner / implementer で終わるだけの別のエージェントは区切りにならず、親の Edit は通る"
+
+# s12 / s17 の対で、後ろに付いた綴りを見る。
+write_firings_log s20 implementation-flow-x
+report pass "$(edit_verdict s20 "$parent_edit" "$edit_in_repo")" "名前が implementation-flow で始まるだけの別のスキルは区切りにならず、親の Edit は通る"
+
+write_firings_log s21 agent:planner-x agent:implementer-x
+report pass "$(edit_verdict s21 "$parent_edit" "$edit_in_repo")" "名前が planner / implementer で始まるだけの別のエージェントは区切りにならず、親の Edit は通る"
+
+write_firings_log s22 implementation-flow harness-record-x harness-growth-x
+report deny "$(edit_verdict s22 "$parent_edit" "$edit_in_repo")" "名前が harness-record / harness-growth で始まるだけの別のスキルは外へ出る区切りにならず、親の Edit は拒否され続ける"
 
 write_firings_log s18 agent:plan-reviewer agent:test-reviewer agent:Explore
 report pass "$(edit_verdict s18 "$parent_edit" "$edit_in_repo")" "planner / implementer 以外のエージェントを起動しただけでは、親の Edit は通る"
