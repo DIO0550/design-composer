@@ -114,7 +114,7 @@ report "finish_checks" "$(last_statement "$here/../pre-push")" "pre-push の最�
 # 集める呼び出しを守れないので、その 2 つはここで見る。
 cases_report_cases="$here/../../../.claude/hooks/lib/cases-report-cases.sh"
 report_exits_with_cases_failed "$cases_report_cases" ".claude/hooks/lib/cases-report-cases.sh"
-report yes "$(grep -qxF 'report_tables_end_with_exit "$repo_root"' "$cases_report_cases" && echo yes || echo no)" \
+report yes "$(grep -qxF 'report_tables_exit_with_cases_failed "$repo_root"' "$cases_report_cases" && echo yes || echo no)" \
   "cases-report-cases.sh が、本物のリポジトリのルートで判定表の最後の文を確かめている"
 
 exit "$cases_failed"

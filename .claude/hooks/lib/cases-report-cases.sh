@@ -4,10 +4,10 @@
 # `cases_failed` を立て、ok なら立てない）と、判定の読み取り（`decide` / `normalize_miss`）の
 # 判定表。照合の表は一時ディレクトリへ小さな検出器を置いて照合を呼び、`report` の表は検出器を置かずに
 # `report` だけを呼ぶ。この 2 つは、NG を出して `cases_failed` を立てるか ok だけを出すかを確かめる。
-# 判定の読み取りの表は検出器を走らせず、表に書いた出力と終了コードを `decide` へ渡して返る判定を確かめる。
-# 最後の文の照合の表は一時ディレクトリに判定表の木を置いて `report_tables_end_with_exit` を呼び、
-# 最後に本物のリポジトリのルートでも呼んで、`cases-report.sh` を source するどの判定表も
-# 最後の文が `exit "$cases_failed"` かを確かめる。
+# 判定の読み取りの表は検出器を走らせず、表に書いた出力と終了コードを `decide` へ渡して返る判定を
+# 確かめる。最後の文の照合の表は一時ディレクトリに判定表の木を置いて
+# `report_tables_exit_with_cases_failed` を呼び、最後に本物のリポジトリのルートでも呼んで、
+# `cases-report.sh` を source するどの判定表も最後の文が `exit "$cases_failed"` かを確かめる。
 #
 # 使い方: bash .claude/hooks/lib/cases-report-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -193,7 +193,7 @@ tables_sourcing_cases_report() {
 # 1 行で出す。1 本も見つからなければ、集め方が壊れているので NG にする。
 #
 # $1 探すルート
-report_tables_end_with_exit() {
+report_tables_exit_with_cases_failed() {
   local root="$1" tables table
   tables="$(tables_sourcing_cases_report "$root")"
   if [ -z "$tables" ]; then
@@ -206,7 +206,7 @@ report_tables_end_with_exit() {
   done <<<"$tables"
 }
 
-# 最後の文の照合の表に書いた終わり方を、判定表の末尾の行にする。
+# 最後の文の照合の表に書いた終わり方を、判定表の末尾の行にする。表に知らない終わり方なら 1 を返す。
 #
 # $1 終わり方
 table_ending() {
@@ -217,15 +217,20 @@ table_ending() {
     no-exit) ;;
     echo-after-exit) printf '%s\n' 'exit "$cases_failed"' 'echo "後ろの文"' ;;
     commented-exit) printf '%s\n' '# exit "$cases_failed"' ;;
-    if-form) printf '%s\n' 'if [ "$cases_failed" -ne 0 ]; then' '  echo "判定表と食い違いがあります"' '  exit 1' 'fi' 'echo "期待どおり"' ;;
+    if-form)
+      printf '%s\n' 'if [ "$cases_failed" -ne 0 ]; then' '  echo "判定表と食い違いがあります"' '  exit 1' 'fi' \
+        'echo "期待どおり"'
+      ;;
     unquoted) printf '%s\n' 'exit $cases_failed' ;;
     braced) printf '%s\n' 'exit "${cases_failed}"' ;;
     indented-exit) printf '%s\n' '  exit "$cases_failed"' ;;
     trailing-comment) printf '%s\n' 'exit "$cases_failed"  # 終わり' ;;
+    *) return 1 ;;
   esac
 }
 
 # 最後の文の照合の表に書いた読み方を、`cases-report.sh` を読む行にする。`mention` はコメントで触れるだけ。
+# 表に知らない読み方なら 1 を返す。
 #
 # $1 読み方
 table_sourcing() {
@@ -234,10 +239,12 @@ table_sourcing() {
     dot) printf '%s\n' '. "$lib_dir/cases-report.sh"' ;;
     indented-source) printf '%s\n' '  source "$lib_dir/cases-report.sh"' ;;
     mention) printf '%s\n' '# source "$lib_dir/cases-report.sh" はしない' ;;
+    *) return 1 ;;
   esac
 }
 
 # 表に書いた置くもの（`パス=読み方:終わり方` の空白区切り。`-` なら何も置かない）を `<root>` の下へ置く。
+# 読み方か終わり方に表の知らない綴りがあれば 1 を返す。
 #
 # $1 表に書いた置くもの
 # $2 置くルート
@@ -251,9 +258,9 @@ place_tables() {
     mkdir -p "$(dirname "$path")"
     {
       printf '%s\n' '#!/usr/bin/env bash'
-      table_sourcing "${how%%:*}"
+      table_sourcing "${how%%:*}" || return 1
       printf '%s\n' 'report ok ok "ケース"'
-      table_ending "${how#*:}"
+      table_ending "${how#*:}" || return 1
     } >"$path"
   done
 }
@@ -263,8 +270,13 @@ while IFS='|' read -r expected label placements; do
   [ -n "$label" ] || continue
   tree_count=$((tree_count + 1))
   root="$work/tree-$tree_count"
-  place_tables "$placements" "$root"
-  report "$expected" "$(verdict_of report_tables_end_with_exit "$root")" "$label"
+  # 綴りを打ち間違えたケースは、期待が ok でも NG でも食い違いとして落とす（置かれなかった木を照合して
+  # 期待どおりの判定が出ると、打ち間違いが緑のまま残る）。
+  decision="表に知らない綴りがある"
+  if place_tables "$placements" "$root"; then
+    decision="$(verdict_of report_tables_exit_with_cases_failed "$root")"
+  fi
+  report "$expected" "$decision" "$label"
 done <<'EXIT_CASES'
 ok|最後の文が exit "$cases_failed" なら ok|a-cases.sh=source:exit
 ok|exit "$cases_failed" の後ろがコメントと空行だけなら ok|a-cases.sh=source:exit-then-comments
@@ -287,6 +299,6 @@ NG|正しい判定表と exit 0 の判定表が並んでいれば NG|a-cases.sh=
 EXIT_CASES
 
 repo_root="$(cd "$lib_dir/../../.." && pwd)"
-report_tables_end_with_exit "$repo_root"
+report_tables_exit_with_cases_failed "$repo_root"
 
 exit "$cases_failed"
