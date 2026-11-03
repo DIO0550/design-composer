@@ -1,0 +1,249 @@
+{
+  "version": 1,
+  "pr": 1275,
+  "sha": "e3455a733d50520b3954e477e145ef3eca246092",
+  "issue": 1140,
+  "overview": {
+    "title": "外部変更の代役の引数をオブジェクトにする",
+    "lead": "テスト用の代役 `DocumentIpcFake.changeExternally` の `path` と `content` を位置で取り違えると、型エラーになるようにした。",
+    "before": [
+      {
+        "text": "`fake.changeExternally(content, path)` と逆に渡しても型が通り、テストは別のファイルを書き換えたまま進んだ"
+      },
+      {
+        "text": "テスト用ラッパー 2 本(editor-screen / use-document-reload)も位置引数で、同じ取り違えが型で検出できなかった"
+      }
+    ],
+    "after": [
+      {
+        "text": "`changeExternally({ path, content })` だけが通り、位置で渡すと型エラーになる",
+        "message": "change-externally"
+      },
+      {
+        "text": "ラッパーは消え、テストは共有ヘルパー `changeFileExternally({ fake, path, content })` を直接呼ぶ",
+        "message": "change-file-externally"
+      },
+      {
+        "text": "監視中の綴りがあればその綴りで通知し、無ければ通知しない振る舞いは変わらない",
+        "message": "notify-listeners"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "通知処理の畳み込み",
+        "text": "内部の `notifyChange` を `changeExternally` の中へ畳んだ。通知の綴り(監視を張ったときの綴り)と書き換えの綴りを取り違えていないかを見てほしい。",
+        "go": {
+          "kind": "file",
+          "path": "src/libs/document-ipc/fake/index.ts"
+        }
+      },
+      {
+        "title": "既定値付きラッパーの削除",
+        "text": "use-document-reload のラッパーは `path: FilePath = Path` で一見安全に見えたが、`changeExternally(fake, Path)` がパスを中身として通していた。計画ではスコープ外としていたが、レビューで覆った。",
+        "go": {
+          "kind": "layer",
+          "layer": "features / editor/features/document-sync"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "libs",
+      "role": "テスト用の代役(fake)の引数の形を変え、共有ヘルパーと型テストを足した"
+    },
+    {
+      "layer": "features / editor",
+      "role": "editor-screen のテストからラッパーを消し、ストーリーの呼び出し形を変えた"
+    },
+    {
+      "layer": "features / editor/features/document-sync",
+      "role": "use-auto-save / use-document-reload のテストの呼び出し形を変え、ラッパーを消した"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/libs/document-ipc/fake/index.ts",
+      "name": "外部変更の代役",
+      "role": "Rust 側の代わりにインメモリのファイル表で外部変更と通知を再現する",
+      "change": "`changeExternally` をオブジェクト引数 `ExternalChange` にし、`notifyChange` を畳んだ"
+    },
+    {
+      "path": "src/libs/__tests__/document-change.ts",
+      "name": "外部変更の共有ヘルパー",
+      "role": "`act` で包んで代役に外部変更を起こさせる",
+      "change": "代役をオブジェクト引数で呼ぶ形にした"
+    },
+    {
+      "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "name": "編集画面のテスト準備",
+      "role": "編集画面のテストの組み立て",
+      "change": "位置引数のラッパーを削除した"
+    },
+    {
+      "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "name": "読み直しのテスト準備",
+      "role": "読み直しフックのテストの組み立て",
+      "change": "位置引数のラッパーを削除した"
+    }
+  ],
+  "messages": [
+    {
+      "id": "change-file-externally",
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/libs/__tests__/document-change.ts",
+      "kind": "cmd",
+      "name": "外部変更を起こす",
+      "code": "changeFileExternally({ fake, path, content })",
+      "via": "call",
+      "status": "changed"
+    },
+    {
+      "id": "change-externally",
+      "from": "src/libs/__tests__/document-change.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "kind": "cmd",
+      "name": "ファイルを書き換える",
+      "code": "fake.changeExternally({ path, content })",
+      "via": "call",
+      "payload": "書き換えに使った綴りと中身",
+      "status": "changed"
+    },
+    {
+      "id": "notify-listeners",
+      "from": "src/libs/document-ipc/fake/index.ts",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "kind": "evt",
+      "name": "外部変更を知らせる",
+      "code": "listener({ path: watchedSpelling, content })",
+      "via": "call",
+      "payload": "監視を張ったときの綴りと中身",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "external-edit",
+      "label": "外部エディタが保存する",
+      "steps": [
+        "change-file-externally",
+        "change-externally",
+        "notify-listeners"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "5454ae2e08f70c4738706c4f426a442b68b8e0b6",
+      "phase": "core",
+      "role": "代役の引数をオブジェクトにし、直接の呼び出し 11 件を差し替える",
+      "why": "宣言と呼び出しは片方だけでは型が通らないので 1 コミットにした。`notifyChange` は呼び出し元が 1 つで、オブジェクト引数にすると名前と実体がずれるので畳んだ。",
+      "flows": [
+        "external-edit"
+      ],
+      "review": [
+        "畳んだ後も、通知が書き換えの綴りではなく監視を張ったときの綴りで届いているか"
+      ]
+    },
+    {
+      "sha": "d25d18989ac292fde72fd4d14582106aabfac147",
+      "phase": "core",
+      "role": "編集画面テストの位置引数ラッパーを消す",
+      "why": "代役をオブジェクト引数にしても、このラッパーが位置引数で包み直していたため取り違えが型で検出できなかった。",
+      "review": [
+        "4 件の呼び出しで `path` と `content` の値が元と同じか"
+      ]
+    },
+    {
+      "sha": "dd07f8c5feaf1d009ed1e679f0cc0e3c736b8e97",
+      "phase": "core",
+      "role": "位置引数で呼べないことを型テストで固定する",
+      "why": "型の保証は実行時のテストでは観測できないので、`@ts-expect-error` で typecheck に落とさせる。直上の `ipc.save` の型テストと同じ形。"
+    },
+    {
+      "sha": "0bce2416664db8603032d18291774c3f2ad3b404",
+      "phase": "revise",
+      "role": "読み直しテストの位置引数ラッパーを消す",
+      "why": "計画では `FilePath` だから安全としてスコープ外にしたが、既定値付きのため `changeExternally(fake, Path)` がパスを中身として通すことをレビューが指摘した。",
+      "review": [
+        "`otherPath` を渡していた 1 件が `otherPath` のまま差し替わっているか"
+      ]
+    },
+    {
+      "sha": "2dfdbe3edf3acdff3c37272b154310c5cdf3d1c3",
+      "phase": "revise",
+      "role": "doc の重複を除き、書き換えと通知の間に空行を入れる",
+      "why": "通知の綴りの説明が型の doc と表のコメントの 2 か所にあったので、表の側 1 か所に寄せた。"
+    },
+    {
+      "sha": "e3455a733d50520b3954e477e145ef3eca246092",
+      "phase": "hard",
+      "role": "別の綴りで書き換えると実体の中身が変わることをテストする",
+      "why": "書き換え先を `target` から `path` に壊しても落ちるテストが無かった(ミューテーションで実測)。"
+    }
+  ],
+  "suites": [
+    {
+      "id": "ipc-edge",
+      "label": "文書の通信の境界値",
+      "file": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts"
+    },
+    {
+      "id": "ipc-normal",
+      "label": "文書の通信の正常系",
+      "file": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "positional-rejected",
+      "suite": "ipc-edge",
+      "name": "外部変更のパスと中身は、位置で並べて渡すことはできない",
+      "techniques": [
+        "type"
+      ],
+      "why": "引数をオブジェクトにした保証が位置引数へ戻って失われないようにする",
+      "given": "代役がある",
+      "when": "`changeExternally(\"{}\", Path)` と位置で書く",
+      "then": "型エラーになる(戻すと未使用の `@ts-expect-error` で typecheck が落ちる)",
+      "commit": "dd07f8c5feaf1d009ed1e679f0cc0e3c736b8e97",
+      "excerpt": {
+        "path": "src/libs/document-ipc/__tests__/document-ipc.edge.test.ts",
+        "start": 183,
+        "end": 192,
+        "text": "test(\"外部変更のパスと中身は、位置で並べて渡すことはできない\", () => {\n  const fake = createDocumentIpcFake();\n\n  // 呼ばずに型だけを見る。\n  const positional = () =>\n    // @ts-expect-error パスと中身は名前を付けて渡す\n    fake.changeExternally(\"{}\", Path);\n\n  expectTypeOf(positional).toBeFunction();\n});"
+      },
+      "targets": [
+        "src/libs/document-ipc/fake/index.ts"
+      ],
+      "covers": [
+        "change-externally"
+      ]
+    },
+    {
+      "id": "link-writes-target",
+      "suite": "ipc-normal",
+      "name": "別の綴りで外部から書き換えると、実体の中身が変わる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "書き換えが綴りではなく実体へ届くことを守る",
+      "given": "`Path` に `LinkPath` を張った代役",
+      "when": "`LinkPath` で外部から書き換える",
+      "then": "`contentOf(Path)` が書き換えた中身になる",
+      "commit": "e3455a733d50520b3954e477e145ef3eca246092",
+      "excerpt": {
+        "path": "src/libs/document-ipc/__tests__/document-ipc.normal.test.ts",
+        "start": 156,
+        "end": 168,
+        "text": "test(\"別の綴りで外部から書き換えると、実体の中身が変わる\", () => {\n  const fake = createDocumentIpcFake({ [Path]: `{}` });\n  fake.linkPath({ link: LinkPath, target: Path });\n\n  fake.changeExternally({\n    path: LinkPath,\n    content: `{ \"formatVersion\": \"1.0\" }`,\n  });\n\n  expect(fake.contentOf(Path)).toStrictEqual(\n    Option.some(`{ \"formatVersion\": \"1.0\" }`),\n  );\n});"
+      },
+      "targets": [
+        "src/libs/document-ipc/fake/index.ts"
+      ],
+      "covers": [
+        "change-externally"
+      ]
+    }
+  ]
+}
