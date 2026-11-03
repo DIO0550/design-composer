@@ -402,6 +402,10 @@ export function ArtboardCanvas({
       <FacingDistanceOverlay distances={selectionDistances} view={view} />
       {/* 隙間の数値はリサイズでは出さない（docs/06-ui.md「リサイズハンドル」の辺のスナップ） */}
       <GuideLineOverlay guides={nodeResize.snapGuides} />
+      <FacingDistanceOverlay
+        distances={nodeResize.facingDistances}
+        view={view}
+      />
       {/* 座標を動かすドラッグにはドロップ線が出ないので、代わりに実体を先に動かす */}
       <RepositionPreviewStyle
         drag={nodeDrag.drag}

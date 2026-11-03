@@ -81,9 +81,10 @@ export type GrabbedEnds = Readonly<Record<Axis, Option<AxisEnd>>>;
 /**
  * 軸に沿って伸び縮みする辺の組（幅なら左右の辺、高さなら上下の辺）。
  *
- * `unit/side` は辺の組を軸とは別の語彙にしているので、対応はこのモジュールの都合として持つ。
+ * `unit/side` は辺の組を軸とは別の語彙にしているので、対応は辺のスナップとリサイズの都合として
+ * ここに持つ（`ResizeGrip.toFacings` も引く）。
  */
-const SidePairByAxis = {
+export const SidePairByAxis = {
   width: SidePairs.Horizontal,
   height: SidePairs.Vertical,
 } as const satisfies Readonly<Record<Axis, SidePair>>;

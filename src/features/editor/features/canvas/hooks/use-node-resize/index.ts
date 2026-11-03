@@ -11,26 +11,25 @@ import {
 } from "@/domains/session/edit-continuity";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import type { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import type { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import {
   NodeResize,
   type ResizableSelection,
   type ResizeGrip,
   type ResizeHold,
+  type ResizeLines,
 } from "@/features/editor/features/canvas/domains/node-resize";
-import {
-  SideSnap,
-  type SnapGuides,
-} from "@/features/editor/features/canvas/domains/side-snap";
+import type { SnapGuides } from "@/features/editor/features/canvas/domains/side-snap";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
 import { useFirstThenRest } from "@/hooks/use-first-then-rest";
-import { CommandKey } from "@/libs/dom-event";
+import { AltKey, CommandKey } from "@/libs/dom-event";
 import { Option } from "@/utils/Option";
 
 /** リサイズの進み方（docs/06-ui.md「キャンバス直接操作」のリサイズハンドル）。 */
 type NodeResizeAction =
   | Readonly<{ type: "grab"; held: ResizeHold }>
-  | Readonly<{ type: "track"; guides: SnapGuides }>
+  | Readonly<{ type: "track"; lines: ResizeLines }>
   | Readonly<{ type: "release" }>
   | Readonly<{ type: "cancel" }>
   | Readonly<{ type: "consume_click" }>;
@@ -50,7 +49,7 @@ function nodeResizeReducer(
     case "grab":
       return NodeResize.grab(action.held);
     case "track":
-      return NodeResize.withSnapGuides(resize, action.guides);
+      return NodeResize.withLines(resize, action.lines);
     case "release":
       return NodeResize.release(resize);
     case "cancel":
@@ -61,8 +60,8 @@ function nodeResizeReducer(
 }
 
 /**
- * 選択中のものが今どこにどれだけの大きさで描かれているか（軸に平行な外接矩形。辺の
- * スナップの組に載せる）。
+ * 選択中のものが今どこにどれだけの大きさで描かれているか（軸に平行な外接矩形。掴んだ時点の
+ * 実測に載せる）。
  *
  * ハンドルを描く側（`useDrawnBounds`）が持つスナップショットを使い回さず、押した
  * 瞬間に測り直す。スナップショットは再レンダーのたびにしか更新されないので、
@@ -79,22 +78,22 @@ function selectionBounds(selection: DocumentSelection): Option<CanvasBounds> {
 }
 
 /**
- * 掴んだものに、掴んだ時点の辺のスナップの組を載せる（docs/06-ui.md「リサイズハンドル」の
- * 辺のスナップ）。揃え先を決めるのは `NodeResize.resizable` と `NodeResize.hold`、ここは
- * 実測だけ。
+ * 掴んだものに、掴んだ時点の実測を載せる（docs/06-ui.md「リサイズハンドル」の辺のスナップと
+ * Alt / Option の距離）。揃え先と距離の相手を決めるのは `NodeResize.resizable` と
+ * `NodeResize.hold`、ここは実測だけ。
  *
- * @param held 掴んだもの。揃え先の名前（`snapTargetNames`）を持つ
+ * @param held 掴んだもの。揃え先と距離の相手の名前（`targetNames`）を持つ
  * @param grabbed 選択中のものが掴んだ時点に描かれている矩形
- * @returns 揃え先の実測を載せた掴み
+ * @returns 揃え先と距離の相手の実測を載せた掴み
  */
-function withMeasuredSnap(held: ResizeHold, grabbed: CanvasBounds): ResizeHold {
-  return NodeResize.withSideSnap(
-    held,
-    SideSnap.create(
-      grabbed,
-      DrawnBounds.collectDrawnBounds(held.snapTargetNames),
-    ),
-  );
+function withMeasuredTargets(
+  held: ResizeHold,
+  grabbed: CanvasBounds,
+): ResizeHold {
+  return NodeResize.withMeasure(held, {
+    grabbed,
+    measure: DrawnBounds.measureWithArea,
+  });
 }
 
 /** 運んでいる間のポインタを追う側（artboard の並びを包む `canvas-content`）へ渡す props。 */
@@ -125,6 +124,8 @@ export type NodeResizeControl = Readonly<{
   grabbed: Option<ResizeHold>;
   /** 掴んだ辺が揃った線（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。 */
   snapGuides: SnapGuides;
+  /** 掴んだ辺から外への Alt / Option の距離（docs/06-ui.md「リサイズハンドル」）。 */
+  facingDistances: FacingDistances;
   dragHandlers: NodeResizeHandlers;
   /** リサイズ直後の `click` を飲み込む（選択に使わせない / `NodeResize` の `resized`）。 */
   onClickCapture: (event: ReactMouseEvent<HTMLElement>) => void;
@@ -136,8 +137,8 @@ export type NodeResizeControl = Readonly<{
  *
  * このフックが持つのは DOM の実測とイベントの仲介だけで、
  * 「どこを掴めるか」「どれだけの長さになるか」の判定は `node-resize` にある。
- * ⌘ / Ctrl を押している間に揃え先を外す（吸い付かせない）のは、修飾キーという入力の事情
- * なのでこちらが持つ。
+ * ⌘ / Ctrl を押している間に揃え先を外す（吸い付かせない）のと、Alt / Option を押していない
+ * 間に距離の相手を外すのは、修飾キーという入力の事情なのでこちらが持つ。
  *
  * @param params 掴める軸と位置を持つ `resizable`、実測に使う `selection`、倍率の `view`、
  *   大きさが確定したときに呼ぶ `onResize`
@@ -173,7 +174,7 @@ export function useNodeResize(
       CanvasPointer.offsetOf(event),
     );
     /*
-     * ハンドルは測らなくても掴める。測れないときは吸い付かないだけで、掴むことは止めない。
+     * ハンドルは測らなくても掴める。測れないときは吸い付かず距離も出ないだけで、掴むことは止めない。
      * 大きさの無い実測は原点に返るので、そこから行き先を作ると関係の無い辺へ吸い付く
      * （帯の経路は `grabAt` の当たり判定で弾かれる）。
      */
@@ -182,7 +183,9 @@ export function useNodeResize(
     );
     dispatch({
       type: "grab",
-      held: Option.isSome(bounds) ? withMeasuredSnap(held, bounds.value) : held,
+      held: Option.isSome(bounds)
+        ? withMeasuredTargets(held, bounds.value)
+        : held,
     });
   };
 
@@ -212,7 +215,7 @@ export function useNodeResize(
     continuitySequence.restart();
     dispatch({
       type: "grab",
-      held: withMeasuredSnap(grabbed.value, bounds.value),
+      held: withMeasuredTargets(grabbed.value, bounds.value),
     });
     return true;
   };
@@ -224,15 +227,21 @@ export function useNodeResize(
    * 2 件目以降を続きとして渡すことで、掴んでから離すまでが undo 1 回ぶんになる
    * （docs/06-ui.md「リサイズハンドル」）。
    *
-   * ⌘ / Ctrl を押している移動では揃え先を外してから通す。外した値は状態へ書き戻さないので、
-   * キーを離して動かし直せば同じ掴みのまま再び吸い付く。状態へ書き戻すのは揃った線だけ。
+   * ⌘ / Ctrl を押している移動では揃え先を外してから通す。Alt / Option を押していない移動では
+   * 距離の相手を外してから通す。外した値は状態へ書き戻さないので、キーを変えて動かし直せば
+   * 同じ掴みのまま再び吸い付く / 距離が出る。状態へ書き戻すのはガイド線と距離だけ。
    *
-   * 編集の通知と線の dispatch を続けて行うが、更新先の持ち主が違う（編集はドキュメント、
-   * 線はこのフックの状態）ので、1 つの state にはまとめない。
+   * 編集の通知とガイド線・距離の dispatch を続けて行うが、更新先の持ち主が違う（編集は
+   * ドキュメント、ガイド線と距離はこのフックの状態）ので、1 つの state にはまとめない。
    */
   const trackPointer = (event: ReactPointerEvent<HTMLElement>) => {
+    const commandApplied = CommandKey.isHeld(event)
+      ? NodeResize.withoutSnapTargets(resize)
+      : resize;
     const tracked = NodeResize.trackedAt(
-      CommandKey.isHeld(event) ? NodeResize.withoutSnapTargets(resize) : resize,
+      AltKey.isHeld(event)
+        ? commandApplied
+        : NodeResize.withoutDistanceTargets(commandApplied),
       CanvasPointer.offsetOf(event),
       params.view,
     );
@@ -240,7 +249,13 @@ export function useNodeResize(
       return;
     }
     params.onResize(tracked.value.edit, continuitySequence.next());
-    dispatch({ type: "track", guides: tracked.value.guides });
+    dispatch({
+      type: "track",
+      lines: {
+        guides: tracked.value.guides,
+        distanceLines: tracked.value.distanceLines,
+      },
+    });
   };
 
   return {
@@ -248,6 +263,7 @@ export function useNodeResize(
     grab,
     grabbed: NodeResize.grabbed(resize),
     snapGuides: NodeResize.snapGuides(resize),
+    facingDistances: NodeResize.facingDistances(resize),
     dragHandlers: {
       onPointerMove: trackPointer,
       onPointerUp: () => dispatch({ type: "release" }),

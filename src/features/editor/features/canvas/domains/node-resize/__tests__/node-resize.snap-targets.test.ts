@@ -1,8 +1,9 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { Option } from "@/utils/Option";
 import { NodeResize } from "../index";
-import { heldSnapTargetNames, RightEdgeGrip, snapTargetNamesAt } from "./setup";
+import { heldTargetNames, RightEdgeGrip, targetNamesAt } from "./setup";
 
 /**
  * 座標を持たない `intro` / `home` / `about` と、座標を持つ `settings` が並ぶドキュメント。
@@ -71,52 +72,55 @@ function setupSelection(selectedNames: readonly string[]): DocumentSelection {
 
 test("絶対配置のノードを選んでいると、揃え先は今の親と自分以外の直下の子になる", () => {
   // 孫の `label` は含めない
-  expect(
-    snapTargetNamesAt(setupSelection(["badge"]), { x: 1, y: 0.5 }),
-  ).toEqual(["home", "panel", "marker"]);
+  expect(targetNamesAt(setupSelection(["badge"]), { x: 1, y: 0.5 })).toEqual(
+    Option.some({
+      kind: "within-parent",
+      parentName: "home",
+      siblingNames: ["panel", "marker"],
+    }),
+  );
 });
 
 test("絶対配置のノードは、右下の角を掴んでも揃え先が右辺と同じになる", () => {
-  expect(snapTargetNamesAt(setupSelection(["badge"]), { x: 1, y: 1 })).toEqual([
-    "home",
-    "panel",
-    "marker",
-  ]);
+  expect(targetNamesAt(setupSelection(["badge"]), { x: 1, y: 1 })).toEqual(
+    Option.some({
+      kind: "within-parent",
+      parentName: "home",
+      siblingNames: ["panel", "marker"],
+    }),
+  );
 });
 
 test("縦に並ぶフロー配置のノードの下辺を掴むと、揃え先は無い", () => {
-  expect(
-    snapTargetNamesAt(setupSelection(["panel"]), { x: 0.5, y: 1 }),
-  ).toEqual([]);
+  expect(targetNamesAt(setupSelection(["panel"]), { x: 0.5, y: 1 })).toEqual(
+    Option.none,
+  );
 });
 
 test("artboard を選んでいると、揃え先は幅を変えても動かない他の artboard になる", () => {
   // 後ろにある座標を持たない `about` は、`home` の幅につられて動くので外れる
-  expect(snapTargetNamesAt(setupSelection(["home"]), { x: 1, y: 0.5 })).toEqual(
-    ["intro", "settings"],
+  expect(targetNamesAt(setupSelection(["home"]), { x: 1, y: 0.5 })).toEqual(
+    Option.some({ kind: "among-artboards", otherNames: ["intro", "settings"] }),
   );
 });
 
 test("artboard の下辺を掴んでも、幅につられて動く artboard は揃え先から外れたまま", () => {
-  expect(snapTargetNamesAt(setupSelection(["home"]), { x: 0.5, y: 1 })).toEqual(
-    ["intro", "settings"],
+  expect(targetNamesAt(setupSelection(["home"]), { x: 0.5, y: 1 })).toEqual(
+    Option.some({ kind: "among-artboards", otherNames: ["intro", "settings"] }),
   );
 });
 
 test("何も選んでいないと、揃え先は無い", () => {
   expect(
-    heldSnapTargetNames(
-      NodeResize.resizable(setupSelection([])),
-      RightEdgeGrip,
-    ),
-  ).toEqual([]);
+    heldTargetNames(NodeResize.resizable(setupSelection([])), RightEdgeGrip),
+  ).toEqual(Option.none);
 });
 
 test("2 つ以上選んでいると、揃え先は無い", () => {
   expect(
-    heldSnapTargetNames(
+    heldTargetNames(
       NodeResize.resizable(setupSelection(["badge", "marker"])),
       RightEdgeGrip,
     ),
-  ).toEqual([]);
+  ).toEqual(Option.none);
 });

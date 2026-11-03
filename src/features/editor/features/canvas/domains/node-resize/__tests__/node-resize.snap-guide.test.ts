@@ -167,7 +167,7 @@ test("掴んでいる状態に載せた揃った線が、今出すガイド線�
     NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupView()),
   );
 
-  expect(
-    NodeResize.snapGuides(NodeResize.withSnapGuides(resize, tracked.guides)),
-  ).toEqual(tracked.guides);
+  expect(NodeResize.snapGuides(NodeResize.withLines(resize, tracked))).toEqual(
+    tracked.guides,
+  );
 });
