@@ -27,6 +27,17 @@ const PxDigits = { fractionDigits: 6 } as const;
 
 export const Facing = {
   /**
+   * 2 つが同じ向きか。
+   *
+   * @param facing 比べる向き
+   * @param other 比べる向き
+   * @returns 辺の組と進む側の両方が同じなら `true`
+   */
+  equals(facing: Facing, other: Facing): boolean {
+    return facing.pair === other.pair && facing.end === other.end;
+  },
+
+  /**
    * 進む向きで、直交する軸で幅を持って重なる相手のうち最初に当たるもの。
    *
    * @param facing 進む向き
