@@ -6,6 +6,10 @@
 # 見る。**名前は出力全体ではなく内訳の行から探す。** `run_check` の見出しにはどの検査の名前も
 # 出るので、全体から探すと集計を壊しても通る。
 #
+# 終わりに配線を 2 つ見る: `pre-push` の最後の文が `finish_checks` であること、
+# `.claude/hooks/lib/cases-report-cases.sh` の最後の文が `exit "$cases_failed"` で、本物のルートで
+# 判定表の最後の文を確かめる呼び出しを持つこと。
+#
 # 使い方: bash harness/githooks/lib/check-tally-cases.sh
 # 食い違ったケースがあれば exit 1(`ok` だけなら期待どおり)。
 
@@ -104,7 +108,13 @@ report "pre-push: 結果 失敗(検査を 1 つも走らせていない)" "$(las
 
 # pre-push の終了コードは最後の文の終了コードなので、`finish_checks` の後ろに文があると
 # 集計が失敗を返しても push が通る。上のケースは lib だけを見るので、ここで配線を見る。
-last_statement="$(grep -vE '^[[:space:]]*(#|$)' "$here/../pre-push" | tail -n 1)"
-report "finish_checks" "$last_statement" "pre-push の最後の文が finish_checks で、その終了コードがフックの終了コードになる"
+report "finish_checks" "$(last_statement "$here/../pre-push")" "pre-push の最後の文が finish_checks で、その終了コードがフックの終了コードになる"
+
+# 判定表の最後の文は cases-report-cases.sh が集めて確かめるが、集める側は自分自身の最後の文と
+# 集める呼び出しを守れないので、その 2 つはここで見る。
+cases_report_cases="$here/../../../.claude/hooks/lib/cases-report-cases.sh"
+report_exits_with_cases_failed "$cases_report_cases" ".claude/hooks/lib/cases-report-cases.sh"
+report yes "$(grep -qxF 'report_tables_end_with_exit "$repo_root"' "$cases_report_cases" && echo yes || echo no)" \
+  "cases-report-cases.sh が、本物のリポジトリのルートで判定表の最後の文を確かめている"
 
 exit "$cases_failed"
