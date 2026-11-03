@@ -3,9 +3,7 @@ import { filePath } from "@/domains/__tests__/file-paths";
 import type { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import type { DocumentReload } from "@/domains/session/document-reload";
 import type { FilePath } from "@/domains/unit/file-path";
-import { changeFileExternally } from "@/libs/__tests__/document-change";
 import type { DocumentIpc } from "@/libs/document-ipc";
-import type { DocumentIpcFake } from "@/libs/document-ipc/fake";
 import type { Option } from "@/utils/Option";
 import { useDocumentReload } from "../index";
 
@@ -41,13 +39,4 @@ export async function renderDocumentReload(
   await act(async () => {});
 
   return { reloads, failure: () => result.current, unmount };
-}
-
-/** 外部エディタがファイルを書き換え、通知が届くまで待つ。 */
-export async function changeExternally(
-  fake: DocumentIpcFake,
-  content: string,
-  path: FilePath = Path,
-): Promise<void> {
-  await changeFileExternally({ fake, path, content });
 }

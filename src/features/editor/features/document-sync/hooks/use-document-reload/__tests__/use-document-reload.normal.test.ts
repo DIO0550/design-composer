@@ -3,14 +3,19 @@ import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { Artboard } from "@/domains/dcmp/artboard";
 import { DesignDocument } from "@/domains/dcmp/design-document";
+import { changeFileExternally } from "@/libs/__tests__/document-change";
 import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
-import { changeExternally, Path, renderDocumentReload } from "./setup";
+import { Path, renderDocumentReload } from "./setup";
 
 test("外部エディタがファイルを書き換えると、その内容が取り込まれる", async () => {
   const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   const observer = await renderDocumentReload(fake.ipc);
 
-  await changeExternally(fake, artboardContent("settings"));
+  await changeFileExternally({
+    fake,
+    path: Path,
+    content: artboardContent("settings"),
+  });
 
   // JSON を経由すると省略可能なキーが落ちるため、キーの有無ではなく値で比べる。
   expect(observer.reloads).toEqual([
@@ -35,7 +40,11 @@ test("開いていない別のファイルが書き換わっても取り込ま�
   // 別のファイルも監視されている状態を作る（`document-changed` はアプリ全体へ配られる）。
   await renderDocumentReload(fake.ipc, otherPath);
 
-  await changeExternally(fake, artboardContent("profile"), otherPath);
+  await changeFileExternally({
+    fake,
+    path: otherPath,
+    content: artboardContent("profile"),
+  });
 
   expect(opened.reloads).toStrictEqual([]);
 });
@@ -45,7 +54,11 @@ test("画面を閉じた後の外部変更は取り込まれない", async () =>
   const observer = await renderDocumentReload(fake.ipc);
 
   observer.unmount();
-  await changeExternally(fake, artboardContent("settings"));
+  await changeFileExternally({
+    fake,
+    path: Path,
+    content: artboardContent("settings"),
+  });
 
   expect(observer.reloads).toStrictEqual([]);
 });
