@@ -3,6 +3,7 @@ import { SidePair, SidePairs } from "@/domains/unit/side";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { Facing } from "@/features/editor/features/canvas/domains/facing";
 import { ThinLine } from "@/features/editor/features/canvas/domains/thin-line";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
@@ -108,11 +109,7 @@ export const FacingDistances = {
     facings: readonly Facing[],
   ): FacingDistances {
     return FacingDistances.fromFacings((facing) => {
-      const isKept = facings.some((kept) => {
-        const isSameFacing =
-          kept.pair === facing.pair && kept.end === facing.end;
-        return isSameFacing;
-      });
+      const isKept = facings.some((kept) => Facing.equals(kept, facing));
       return isKept ? distances[facing.pair][facing.end] : Option.none;
     });
   },
@@ -126,10 +123,7 @@ export const FacingDistances = {
    */
   hasCoinciding(distances: FacingDistances, line: ThinLine): boolean {
     const drawnLines = Object.values(SidePairs).flatMap((pair) =>
-      Object.values(AxisEnds).flatMap((end) => {
-        const distanceLine = distances[pair][end];
-        return Option.isSome(distanceLine) ? [distanceLine.value] : [];
-      }),
+      ArrayEx.filterMap(Object.values(AxisEnds), (end) => distances[pair][end]),
     );
     return drawnLines.some((distanceLine) =>
       ThinLine.isCoinciding(distanceLine, line),
