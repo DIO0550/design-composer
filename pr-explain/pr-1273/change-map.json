@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1273,
+  "headBranch": "claude/magical-cannon-bs47td",
+  "baseBranch": "main",
+  "mergeBase": "e46ba4b526a3a35ee3c836811e3426a168b4c273",
+  "head": "1e8343e096cdfe412d9d561db5e4f69960b89f48",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1271.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 143,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "1e8343e096cdfe412d9d561db5e4f69960b89f48",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-03T12:08:29Z",
+      "subject": "📝 [Doc]: #1231 PR #1271 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1271.md を足す(指摘 16 件・手戻り・発火)\n\n背景:\nPR #1271(#1231)がマージされたので、harness-record の手順でその回の\n指摘・手戻り・フック環境を残す。\n\n採用理由:\n指摘は 1 件 1 ブロックで、分類と出どころは templates/record.md の語彙から\n選んだ。GitHub 上の人のレビューは 3 つの取り方すべてで 0 件だった。\nフックが不発だったので、発火は「計測対象外(フック不発)」と書いた。\n\n代替案:\n- 親の不注意(レビュアーへの入力漏れ)を記録から外す: 次に数えるときの\n  材料が欠けるので残した\n\n影響とトレードオフ:\n差分は harness/records の新規 1 ファイルだけ。対策済の行は書かない\n(介入は harness-growth の管轄)。\n\n参考:\n- .claude/skills/harness-record/SKILL.md\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N2a8hYUBdAPdGZGGQ",
+      "files": [
+        {
+          "path": "harness/records/pr-1271.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 143,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,143 @@\n+# PR #1271 ポインタの下の名前の並びと掘る量を UnderPointer 1 つで受け渡す\n+\n+- マージ日: 2026-11-03\n+- 関連 Issue: #1231\n+- 差分規模: 33 ファイル / +374 -234\n+\n+## ゴールと結果\n+\n+ゴールは「ポインタの下の名前の並び（`names`）と掘る量（`dig`）を、既にある経路でも 1 つの型で受け渡すようになる。振る舞いは変えない」。達成した。`src/domains/session/under-pointer` に `UnderPointer` を足した。`nodeNameAt` / `nameToSelectAt` / `selectAt` / `select_at` / `onSelect` / `grabNode` と、`Pointing` の on-frame の枝を、この型に寄せた。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。\n+- `get_reviews`: Copilot の 1 件だけで、中身は「選択した tier ではレビューを完了できなかった」という通知。指摘ではない\n+- `get_comments`: 自分が投稿したテストケース表と、bot の投稿（Storybook プレビュー・CI レポート・VRT）だけ\n+\n+CI は全件緑で、VRT の差分は 0 件だった（209 件 passed）。\n+\n+## 指摘\n+\n+### 1. 「名前の数が違えば等しくない」の入力では、長さの比較を消してもテストが落ちなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `pointing.normal` から移す予定だった入力 `[\"label\",\"card\",\"home\"]` と `[\"card\",\"home\"]` は、先頭の要素から食い違う。そのため長さの比較を消しても `every` の側で false になり、テストが通ってしまう。入力を `[\"card\",\"home\"]` と `[\"card\",\"home\",\"extra\"]` に変えた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 2. ダブルクリックの経路（`OneDeeper`）が計画のファイル表に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画は「3 箇所の同じ式を `underPointerAt` にまとめる」とだけ書いていた。ダブルクリックは掘る量を押し方で決めないので、これに寄せると掘れなくなる余地が残っていた。ダブルクリックは `UnderPointer.create(names, OneDeeper)` のまま残すと計画に明記した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3（変更するファイルと置くもの）\n+\n+### 3. 型の変更で嘘になる doc を、行の単位で計画に挙げていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `@param names` / `@param dig` と `names` を指す記述が 4 ファイルにあった。行番号つきで表にし、据え置くものも挙げた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3（行の単位で直す記述）\n+\n+### 4. ゴールを確かめるコマンドが計画に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 完了条件として `rg -n \"dig: SelectionDig\" src -g '!**/__tests__/**'` を足した。ヒットが `under-pointer` と `selection-dig` の中だけになれば達成。\n+- 既存ルール: なし\n+\n+### 5. 配線を守っているテストの名指しが不正確だった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画は「`opened-document-editor.*` の通しのテストが守る」と書いていた。実際には pointermove と Enter の経路は `artboard-canvas.*` の単体テストしか通らない。経路ごとに、守っているテストを 1 行ずつ書き直した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 4\n+\n+### 6. `UnderPointer` という名前がキーボードの経路と `dig` を覆っていないのに、Why が無かった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 名前は変えないと決めた。代わりに、型の doc に `dig` を含める理由を、Enter の経路に同じ型で渡す理由を、それぞれ書いた。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 7. `Pointing.equals` のテストで、片方だけ on-frame の組み合わせを見ていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「枠の上と枠の外は等しくない」を 1 件足した。委ねる先を書き換える回なので、kind で比べる枝を固定するため。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 8. 並行する Issue / PR を確かめた記録が計画に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 確かめた結果、衝突は無かった。open の PR は 0 件で、同じ対象に触る open の Issue は #1231 だけだった。それを Issue に 1 行残した。\n+- 既存ルール: なし\n+\n+### 9. `UnderPointer` の意味を 7 箇所の `@param` やコメントが書き写していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 意味の定義は型の doc 1 箇所に置き、各所はその関数での役割だけを書く形に直した（コミット 0569a13）。\n+- 既存ルール: rules/coding.md「規約の適用範囲」「doc に書く項目」\n+\n+### 10. `(underPointer: UnderPointer) => void` を 6 箇所に直接書いている\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 見送った。引数が名前の付いた 1 つの型になった時点で取り違えの危険は消えており、エイリアスを足しても防げるものが増えないため。理由は Issue #1231 に書いた。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 11. doc が「ポインタの下」と「掘る量」を別の 2 つとして並べ、型の名前と食い違っていた\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 既存の drop-parent では「ポインタの下」が名前の並びだけを指している。名前は変えず、`create` / `underPointerAt` の doc を「ポインタの下（どの深さで読むかを含む）」と 1 つのものとして書き直した。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 12. 型の doc が、キーボードから作る経路に触れていなかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 型の doc に「キーボードのフォーカスから作る経路（artboard の Enter）も同じ型で渡す」を 1 行足した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 13. `equals` で `const` と `return` の間に空行が無い\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: 読みやすさの指摘（低）。空行を 1 つ入れた。\n+- 既存ルール: なし\n+\n+### 14. ui-reviewer と performance-reviewer に、計画と却下案を渡していなかった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: 親が書いた起動の prompt に、計画の Issue コメントの id を入れ忘れた。2 体とも「受け取るものの欠け」として報告した。performance-reviewer は Bash を持たないので差分を取れず、変更前の形を仮定して読んだ。どちらも指摘は 0 件で、判定は変わらなかった。\n+- 既存ルール: `.claude/skills/implementation-flow/reviewer-instructions.md`「受け取るもの」\n+\n+### 15. duplication-reviewer が Bash を持たず、`git diff` も Issue のコメントも開けなかった\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: prompt で `git diff 506605d..HEAD` と Issue のコメント id を渡した。しかしツールが Read / Grep / Glob だけなので、どちらも読めなかった。そのため差分で増えたのかを確かめないまま指摘を返した（指摘 9・10 は差分の行だった）。\n+- 既存ルール: なし\n+\n+### 16. フックが発火していない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が 2 回とも通り、実行中フラグのマーカーと発火ログの見出しのどちらも無かった。セッション中の禁止コマンドは見直して 0 件だった。test-reviewer の実行中（約 50 分）も git の抑止は効かず、親が完了を待ってから git を操作した。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- フェーズ 4 で plan-reviewer の指摘 8 件をすべて採用した。直し方が一意に決まっていたので、planner に戻さず、親が Issue へ追記して implementer に渡した。`implementation-flow` フェーズ 4「直しは planner へ戻す」から外れている。外れたことは Issue #1231 のコメントに書いた\n+- フェーズ 6 で指摘 3 件（9・11/12・13）を採用し、doc を直すコミットを 1 つ足した\n+- test-reviewer は 22 通り壊して 22 通りとも落ち、指摘は 0 件だった\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録だけを残す回で、集計と介入は harness-growth の管轄。",
+          "patchLines": 144,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
