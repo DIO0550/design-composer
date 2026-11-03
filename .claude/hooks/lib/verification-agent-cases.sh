@@ -12,7 +12,7 @@
 # 止まる」という 2 本の間の約束だから。ケースごとに一時の TMPDIR と session_id を分け、
 # 前のケースの印を持ち越さない。
 #
-# 判定は `cases-report.sh` の `decide_by_permission`。
+# 判定は `cases-report.sh` の `hook_verdict_by_permission`。
 # JSON は jq を使わず printf で組む(フック本体と同じく、jq の無い環境でも走らせるため)。
 #
 # **Agent / Task の入力は Agent ツールの引数名に合わせて組んだもので、実物の PreToolUse から写していない。**
@@ -22,6 +22,7 @@ set -uo pipefail
 
 lib_dir="$(cd "$(dirname "$0")" && pwd)"
 . "$lib_dir/cases-report.sh"
+. "$lib_dir/cases-fixtures.sh"
 
 track_hook="$lib_dir/../track-verification-agent-activity.sh"
 block_hook="$lib_dir/../block-git-during-verification-agent.sh"
@@ -37,33 +38,27 @@ trap 'rm -rf "$TMPDIR"' EXIT
 # $2 `PreToolUse` / `PostToolUse`
 # $3 tool_input の中身(`{` `}` を除いた JSON)
 agent_verdict() {
-  local session="$1" event="$2" tool_input="$3" tool_name="${TOOL_NAME:-Agent}" output status
-  output="$(printf '{"session_id":"%s","hook_event_name":"%s","tool_name":"%s","tool_input":{%s}}' \
-    "$session" "$event" "$tool_name" "$tool_input" | bash "$track_hook")"
-  status=$?
-  decide_by_permission "$output" "$status"
+  local session="$1" event="$2" tool_input="$3" tool_name="${TOOL_NAME:-Agent}"
+  printf '{"session_id":"%s","hook_event_name":"%s","tool_name":"%s","tool_input":{%s}}' \
+    "$session" "$event" "$tool_name" "$tool_input" | hook_verdict_by_permission "$track_hook"
 }
 
-# git コマンドを書いた Bash の呼び出しを流し、フックの出力をそのまま返す(git は実行しない)。
-# 終了コードはフックのもの。
+# git コマンドを書いた Bash の呼び出しの入力を組む。
 #
 # $1 セッション
 # $2 コマンド(省くと `git add src`)
 # $3 session_id と tool_input の間に挟むフィールド(`,` で終わる JSON。省くと何も挟まない)
-git_output() {
-  printf '{"session_id":"%s",%s"tool_input":{"command":"%s"}}' "$1" "${3:-}" "${2:-git add src}" | bash "$block_hook"
+git_input() {
+  printf '{"session_id":"%s",%s"tool_input":{"command":"%s"}}' "$1" "${3:-}" "${2:-git add src}"
 }
 
 # git コマンドを書いた Bash の呼び出しを流し、判定を返す(git は実行しない)。
 #
 # $1 セッション
 # $2 コマンド(省くと `git add src`)
-# $3 session_id と tool_input の間に挟むフィールド(`git_output` と同じ)
+# $3 session_id と tool_input の間に挟むフィールド(`git_input` と同じ)
 git_verdict() {
-  local output status
-  output="$(git_output "$@")"
-  status=$?
-  decide_by_permission "$output" "$status"
+  git_input "$@" | hook_verdict_by_permission "$block_hook"
 }
 
 # セッションの印をすべて指定した秒数だけ前の時刻へ戻す。印の有効期間(種類ごとに違う)を
@@ -126,22 +121,20 @@ report pass "$(git_verdict s16)" "前面で起動した implementer が終わる
 
 report deny "$(agent_verdict s17 PreToolUse "$background_implementer")" "run_in_background: true を明示した implementer は起動が拒否される"
 
-# サブエージェントの中の Bash 呼び出しは、入力に `agent_id` / `agent_type` が載る(並びは実物の入力に合わせた)。
-in_subagent_fields='"agent_id":"ab90e859b438c06a1","agent_type":"implementer","hook_event_name":"PreToolUse","tool_name":"Bash",'
+in_subagent_fields="$(subagent_call_fields Bash)"
 agent_verdict s26 PreToolUse "$foreground_implementer" >/dev/null
 report deny "$(git_verdict s26 'git add --dry-run -- README.md' "$in_subagent_fields")" "implementer の実行中は、サブエージェントの中から呼んだ git add も拒否される"
 
 # 2 本は共有部品(`lib/hook-input.sh`)を自分の置き場所から辿って読む。呼んだパスの綴りが相対でも
 # 辿れることを、リポジトリルートに cd して `./` から呼んで確かめる。
 repo_root="$(cd "$lib_dir/../../.." && pwd)"
-relative_git_output="$(
+relative_git_verdict="$(
   cd "$repo_root" || exit 1
   printf '{"session_id":"s27","hook_event_name":"PreToolUse","tool_name":"Agent","tool_input":{%s}}' "$foreground_test_reviewer" \
     | bash ./.claude/hooks/track-verification-agent-activity.sh >/dev/null
-  printf '{"session_id":"s27","tool_input":{"command":"git add src"}}' | bash ./.claude/hooks/block-git-during-verification-agent.sh
+  git_input s27 | hook_verdict_by_permission ./.claude/hooks/block-git-during-verification-agent.sh
 )"
-relative_git_status=$?
-report deny "$(decide_by_permission "$relative_git_output" "$relative_git_status")" "リポジトリルートから相対パスで 2 本を呼んでも、前面で起動した test-reviewer の実行中は git add が拒否される"
+report deny "$relative_git_verdict" "リポジトリルートから相対パスで 2 本を呼んでも、前面で起動した test-reviewer の実行中は git add が拒否される"
 
 # 残った印の種類は有効期間でしか外から見えないので、最後に印を古くして見分ける。implementer の印を
 # 先に古くしておくのは、種類を問わず最も古い印を消す実装だと implementer の印が消えるようにするため。
@@ -185,7 +178,7 @@ quoted_tmpdir="$TMPDIR/q\"x\\y"
 mkdir -p "$quoted_tmpdir"
 TMPDIR="$quoted_tmpdir" agent_verdict s25 PreToolUse "$foreground_test_reviewer" >/dev/null
 escaped_marker_location='q\"x\\y/design-composer-verification-agents-s25/active.*'
-quoted_output="$(TMPDIR="$quoted_tmpdir" git_output s25)"
+quoted_output="$(git_input s25 | TMPDIR="$quoted_tmpdir" bash "$block_hook")"
 marker_location_in_reason=missing
 if [[ "$quoted_output" == *"$escaped_marker_location"* ]]; then
   marker_location_in_reason=escaped

@@ -11,9 +11,15 @@
 # harness/case-law/process.md「サブエージェントの起動とフックの入力を実測した」)。PostToolUse に
 # `agent_id` が載るかは測っていないので、PreToolUse に置く。
 #
-# implementation-flow の中かどうかは、record-firings.sh が書く発火ログで決める。implementation-flow /
-# harness-record / harness-growth のうち最後に起動したスキルが implementation-flow なら中にいる。ログが
-# 無い・どれも起動していないなら外として通す(区切りが見えないまま止めると、フローの外の編集まで止まる)。
+# implementation-flow の中かどうかは、record-firings.sh が書く発火ログの区切りで決める。中に入る区切りは
+# スキル implementation-flow とエージェント planner / implementer の起動、外へ出る区切りはスキル
+# harness-record / harness-growth の起動で、最後に当たった区切りが中に入る側なら拒否する。ログが無い・
+# 区切りが 1 つも無い・session_id が無いなら外として通す(区切りが見えないまま止めると、フローの外の
+# 編集まで止まる)。
+#
+# planner / implementer を呼ぶのは implementation-flow だけ(planner はフェーズ 3・4、implementer は 5〜7)なので、
+# 起動されていれば flow の中と言える。Skill ツールを経ずに手順を読んで進める回は、スキルの起動がログに残らない。
+# flow の始まりに Skill ツールでの起動を規約で求める案は採らない(指示頼みで、まさにそこが守られない)。
 #
 # リポジトリのルートは CLAUDE_PROJECT_DIR ではなく、このファイルの置き場所から辿る。セッションの中で
 # 見た CLAUDE_PROJECT_DIR は空だった(フックのプロセスから見た値は測っていない)。
@@ -25,8 +31,8 @@
 # 全員の Edit / Write を止める。
 set -uo pipefail
 
-root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)" || exit 0
 hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit 0
+repo_root="$(cd "$hook_dir/../.." && pwd)" || exit 0
 . "$hook_dir/lib/hook-input.sh" || exit 0
 . "$hook_dir/lib/firings-log.sh" || exit 0
 
@@ -37,16 +43,19 @@ input="$(cat)"
 in_subagent_pattern='"agent_id"[[:space:]]*:'
 [[ "$input" =~ $in_subagent_pattern ]] && exit 0
 
+# repo_root は絶対パスなので、空・相対の file_path もこの前方一致で外れる。
 file_path="$(extract file_path)"
-[[ "$file_path" == /* ]] || exit 0
-[[ "$file_path" == "$root"/* ]] || exit 0
+[[ "$file_path" == "$repo_root"/* ]] || exit 0
 
-log_file="$(firings_log_path "$(extract session_id)")"
+session_id="$(extract session_id)"
+[ -n "$session_id" ] || exit 0
+log_file="$(firings_log_path "$session_id")"
 [ -f "$log_file" ] || exit 0
 
-flow_boundary_pattern=$'\tskill\t(implementation-flow|harness-record|harness-growth)$'
-last_flow_boundary="$(grep -E "$flow_boundary_pattern" "$log_file" 2>/dev/null | tail -n 1)"
-[[ "$last_flow_boundary" == *implementation-flow ]] || exit 0
+flow_entry_pattern=$'\t(skill\timplementation-flow|agent\t(planner|implementer))$'
+flow_exit_pattern=$'\tskill\t(harness-record|harness-growth)$'
+last_flow_boundary="$(grep -E -e "$flow_entry_pattern" -e "$flow_exit_pattern" "$log_file" 2>/dev/null | tail -n 1)"
+[[ "$last_flow_boundary" =~ $flow_entry_pattern ]] || exit 0
 
 cat <<'JSON'
 {
