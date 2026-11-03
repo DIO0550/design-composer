@@ -19,11 +19,10 @@
 # フェイルオープンになるとしても、判定自体は bash の組み込みだけで完結させる)。
 set -uo pipefail
 
+hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit 0
+. "$hook_dir/lib/hook-input.sh" || exit 0
+
 input="$(cat)"
-extract() {
-  local pattern="\"$1\"[[:space:]]*:[[:space:]]*\"([^\"]*)\""
-  [[ "$input" =~ $pattern ]] && printf '%s' "${BASH_REMATCH[1]}"
-}
 
 command_text="$(extract command)"
 [[ "$command_text" =~ git[[:space:]]+(add|commit|push)([[:space:]]|$) ]] || exit 0
