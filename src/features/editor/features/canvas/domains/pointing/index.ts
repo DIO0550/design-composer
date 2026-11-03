@@ -18,8 +18,8 @@ export type PointingKind = ValueOf<typeof PointingKinds>;
  * - `outside`: キャンバスの外
  * - `nothing`: キャンバスの中で、artboard の枠の外（空き領域・見出し）か、選んでいるノードの
  *   リサイズハンドル（四角。帯は除く）の上
- * - `on-frame`: artboard の枠の上。`underPointer` は指している位置から外へ辿った名前と、
- *   その時点の押し方から決まった掘る量
+ * - `on-frame`: artboard の枠の上。`underPointer` はその時点の押し方で読んだ、指している
+ *   位置
  */
 export type Pointing =
   | Readonly<{ kind: typeof PointingKinds.Outside }>
@@ -45,8 +45,7 @@ export const Pointing = {
   /**
    * artboard の枠の上を指していることにする。
    *
-   * @param underPointer 指している位置から外へ辿った名前と、その時点の押し方から決まった
-   *   掘る量
+   * @param underPointer その時点の押し方で読んだ、指している位置
    * @returns 枠の上を指している指し先
    */
   create(underPointer: UnderPointer): Pointing {

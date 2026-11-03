@@ -494,8 +494,8 @@ export type NodeDragControl = Readonly<{
    * 始められなくなる。
    *
    * @param event artboard の枠で受けた `pointerdown`
-   * @param underPointer 押された位置から外へ辿った名前と、押し方から決まった掘る量。クリック
-   *   が選ぶときと同じ集め方・読み替えで受け取る
+   * @param underPointer 押された位置（どの深さで読むかを含む）。クリックが選ぶときと同じ
+   *   集め方・読み替えで受け取る
    * @returns 掴んだ（＝この先の判定へ渡さない）なら `true`。押された位置から根までに
    *   選べるノードが 1 つも無ければ `false`（artboard の背景か、ロック中のノードの上を押し
    *   たとき / docs/03「ロック」）

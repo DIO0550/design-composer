@@ -525,7 +525,7 @@ export const EditorState = {
    * どれも選べなければ選択は外れる。
    *
    * @param state 選択を移す前の状態
-   * @param underPointer 押された位置から外へ辿った名前と、押し方から決まった掘る量
+   * @param underPointer 押された位置（どの深さで読むかを含む）
    * @returns 掘った先を選んだ状態。選べる名前が 1 つも無ければ未選択
    */
   selectAt(state: EditorState, underPointer: UnderPointer): EditorState {

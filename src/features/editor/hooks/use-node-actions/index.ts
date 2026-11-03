@@ -78,8 +78,8 @@ export function useNodeActions(): NodeActions {
     selectIfUnselected: (name) =>
       dispatch({ type: "select_if_unselected", name }),
     /**
-     * キャンバスは押された位置から外へ辿った名前と、押し方から決まった掘る量を渡す。
-     * どこまで内側へ入るかは状態側の判断（`EditorState.selectAt`）。
+     * キャンバスは押された位置を `UnderPointer` で渡す。どこまで内側へ入るかは状態側の
+     * 判断（`EditorState.selectAt`）。
      */
     selectAt: (underPointer) => dispatch({ type: "select_at", underPointer }),
     /**

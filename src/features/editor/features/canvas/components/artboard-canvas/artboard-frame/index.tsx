@@ -98,7 +98,8 @@ export function ArtboardFrame({
       element.name,
     ]);
   /**
-   * クリック・掴むとき・Alt / Option の距離の相手を決めるときの、ポインタの下と掘る量。
+   * クリック・掴むとき・Alt / Option の距離の相手を決めるときの、ポインタの下（どの深さで
+   * 読むかを含む）。
    */
   const underPointerAt = (event: MouseEvent<HTMLElement>): UnderPointer =>
     UnderPointer.create(namesAt(event.target), digByCommandKey(event));

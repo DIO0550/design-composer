@@ -7,6 +7,9 @@ import type { SelectionDig } from "@/domains/session/selection-dig";
  *
  * 名前の並びだけでは選ぶものが決まらず、どの深さで読むかまで揃って初めて決まるので、
  * `dig` を同じ型に含めている。
+ *
+ * キーボードのフォーカスから作る経路（artboard の Enter。`ArtboardFrame` の `activate`）も
+ * クリックと同じ選び方をさせるので、同じ型で渡す。
  */
 export type UnderPointer = Readonly<{
   names: readonly string[];
@@ -15,11 +18,11 @@ export type UnderPointer = Readonly<{
 
 export const UnderPointer = {
   /**
-   * ポインタの下にあるものを、掘る量と組にする。
+   * ポインタの下（どの深さで読むかを含む）を作る。
    *
    * @param names ポインタの下から外へ辿った名前（内→外）
    * @param dig 押し方から決まった掘る量
-   * @returns ポインタの下にあるものと掘る量の組
+   * @returns ポインタの下
    */
   create(names: readonly string[], dig: SelectionDig): UnderPointer {
     return { names, dig };
@@ -36,6 +39,7 @@ export const UnderPointer = {
     const isSameNames =
       a.names.length === b.names.length &&
       a.names.every((name, index) => name === b.names[index]);
+
     return isSameNames && a.dig === b.dig;
   },
 } as const;
