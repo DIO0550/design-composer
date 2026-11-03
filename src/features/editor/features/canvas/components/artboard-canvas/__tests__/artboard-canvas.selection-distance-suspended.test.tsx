@@ -73,7 +73,7 @@ test("凍結中は、Alt を押しても距離は出ない", () => {
   expect(sortedFacingDistanceLabels()).toEqual([]);
 });
 
-test("リサイズハンドルを掴んでいる間は、Alt を押しても距離は出ない", () => {
+test("リサイズハンドルを掴んでいる間は、Alt を押しても選択しているだけのときの距離は出ない", () => {
   renderCanvas({ selection: setupSelectionForResize(["badge"]) });
   drawnApartForResize();
   enterPointer(canvasSurface());
