@@ -16,6 +16,7 @@ import {
   drawnAt,
   renderCanvas,
   resizeHandleAt,
+  snapGuides,
   sortedFacingDistanceLabels,
 } from "./setup";
 
@@ -158,4 +159,21 @@ test("Alt を押しながら artboard の右辺を動かすと、右の artboard
   movePointer(home, { x: 470, y: 280 }, "alt");
 
   expect(sortedFacingDistanceLabels()).toEqual(["28"]);
+});
+
+test("Alt を押しながら動かしても、今の親が大きさを持たずに描かれているなら距離は出ない", () => {
+  renderCanvas({ selection: setupSelection(["badge"]) });
+  // `home` は描かずに大きさ 0 のまま、兄弟の `marker` だけを描く
+  drawnAt("marker", { left: 120, top: 160, width: 143, height: 40 });
+  const badge = drawnAt("badge", BadgeBounds);
+
+  /*
+   * 右下の角を運び、右辺は 260 で `marker` の右辺 263 へ吸い付き、下辺は 130 で `marker` まで
+   * 30 手前に来る。`marker` は測れていて吸い付きは出るので、距離が出ない理由は親の大きさが 0 なことだけ
+   */
+  pressPointer(resizeHandleAt({ x: 1, y: 1 }), { x: 220, y: 120 });
+  movePointer(badge, { x: 260, y: 130 }, "alt");
+
+  expect(snapGuides().length).toBeGreaterThan(0);
+  expect(sortedFacingDistanceLabels()).toEqual([]);
 });
