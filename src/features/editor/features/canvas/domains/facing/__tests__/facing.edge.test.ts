@@ -1,7 +1,7 @@
 import { expect, test } from "vitest";
 import { Option } from "@/utils/Option";
 import { Facing } from "../index";
-import { Right } from "./facings";
+import { Down, Left, Right } from "./facings";
 
 test("端数で数 ULP 重なって見えても、接している相手には距離 0 で当たる", () => {
   // 右辺は 0.1 + 0.2 = 0.30000000000000004 で、相手の左辺 0.3 より先にある
@@ -40,4 +40,12 @@ test("直交する向きに 0.001 だけ重なる相手は、重なっている�
   expect(Facing.firstReached(Right, { from, candidates: [to] })).toEqual(
     Option.some(to),
   );
+});
+
+test("辺の組が同じでも進む側が違えば、同じ向きとはみなさない", () => {
+  expect(Facing.equals(Right, Left)).toBe(false);
+});
+
+test("進む側が同じでも辺の組が違えば、同じ向きとはみなさない", () => {
+  expect(Facing.equals(Right, Down)).toBe(false);
 });
