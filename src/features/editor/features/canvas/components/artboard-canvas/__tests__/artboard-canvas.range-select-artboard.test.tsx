@@ -1,6 +1,7 @@
 import { fireEvent } from "@testing-library/react";
 import { expect, test, vi } from "vitest";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import { rangeFrames } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   drag,
@@ -76,7 +77,9 @@ test("artboard の背景を押して離したクリックでは、その artboar
   releasePointer(drawn("home"), { x: 106, y: 66 });
   fireEvent.click(drawn("home"));
 
-  expect(onSelect).toHaveBeenCalledWith(["home"], SelectionDigs.NoDeeper);
+  expect(onSelect).toHaveBeenCalledWith(
+    UnderPointer.create(["home"], SelectionDigs.NoDeeper),
+  );
 });
 
 test("artboard の背景から範囲を引いた直後の click では、artboard が選ばれない", () => {
@@ -119,7 +122,9 @@ test("範囲を引いた直後の click を飲み込んだあとは、次のク�
   fireEvent.click(drawn("home"));
   fireEvent.click(drawn("settings"));
 
-  expect(onSelect).toHaveBeenCalledWith(["settings"], SelectionDigs.NoDeeper);
+  expect(onSelect).toHaveBeenCalledWith(
+    UnderPointer.create(["settings"], SelectionDigs.NoDeeper),
+  );
 });
 
 test("範囲を引いて離したあと click が来ないまま中身を押しても、そのクリックで選べる", () => {
@@ -137,8 +142,7 @@ test("範囲を引いて離したあと click が来ないまま中身を押し�
   fireEvent.click(drawn("badge"));
 
   expect(onSelect).toHaveBeenCalledWith(
-    ["badge", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["badge", "home"], SelectionDigs.NoDeeper),
   );
 });
 

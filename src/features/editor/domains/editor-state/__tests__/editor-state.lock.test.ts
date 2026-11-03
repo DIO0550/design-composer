@@ -3,6 +3,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { PropEdit } from "@/domains/dcmp/node";
 import { EditContinuities } from "@/domains/session/edit-continuity";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 import { InstanceNames, stateWithDeepBranch } from "./setup";
@@ -66,8 +67,7 @@ function setupState(): EditorState {
 test("ロックした artboard 直下の子をクリックすると artboard が選ばれる", () => {
   const state = EditorState.selectAt(
     setupState(),
-    ["badge", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["badge", "home"], SelectionDigs.NoDeeper),
   );
 
   expect(EditorState.singleName(state)).toEqual(Option.some("home"));
@@ -78,8 +78,10 @@ test("ツリーで選んだロック中のノードをキャンバスで押す�
 
   const state = EditorState.selectAt(
     selected,
-    ["label", "row", "card", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(
+      ["label", "row", "card", "home"],
+      SelectionDigs.NoDeeper,
+    ),
   );
 
   expect(EditorState.singleName(state)).toEqual(Option.some("card"));
@@ -124,8 +126,7 @@ test("ロックを外したノードはキャンバスのクリックで選べ�
 
   const state = EditorState.selectAt(
     EditorState.clearSelection(unlocked),
-    ["badge", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["badge", "home"], SelectionDigs.NoDeeper),
   );
 
   expect(EditorState.singleName(state)).toEqual(Option.some("badge"));
@@ -184,8 +185,7 @@ function stateWithLockedInstance(): EditorState {
 test("ロックしたインスタンスの中身をクリックすると artboard が選ばれる", () => {
   const state = EditorState.selectAt(
     EditorState.clearSelection(stateWithLockedInstance()),
-    InstanceNames,
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(InstanceNames, SelectionDigs.NoDeeper),
   );
 
   expect(EditorState.singleName(state)).toEqual(Option.some("home"));
@@ -220,8 +220,7 @@ test("ロックを外したインスタンスはキャンバスのクリック�
 
   const state = EditorState.selectAt(
     EditorState.clearSelection(unlocked),
-    InstanceNames,
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(InstanceNames, SelectionDigs.NoDeeper),
   );
 
   expect(EditorState.singleName(state)).toEqual(Option.some("home-login"));

@@ -6,6 +6,7 @@ import { EditContinuities } from "@/domains/session/edit-continuity";
 import { FileValidity } from "@/domains/session/file-validity";
 import type { OpenedDocument } from "@/domains/session/opened-document";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import type { Offset } from "@/domains/unit/offset";
 import { CanvasDockContent } from "@/features/editor/components/canvas-dock";
 import { EditorContextMenu } from "@/features/editor/components/editor-context-menu";
@@ -196,7 +197,9 @@ function EditorPanes({
               );
               // 空き領域では選択に手を付けない（docs/06-ui.md「コンテキストメニュー」）
               if (target !== EditMenuTargets.EmptyArea) {
-                node.selectAt(names, SelectionDigs.NoDeeper);
+                node.selectAt(
+                  UnderPointer.create(names, SelectionDigs.NoDeeper),
+                );
               }
               setContextMenu(Option.some({ at, target }));
             }}

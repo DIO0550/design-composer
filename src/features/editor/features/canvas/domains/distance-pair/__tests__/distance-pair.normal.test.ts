@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import { selectionDistanceTree } from "@/features/editor/features/canvas/__tests__/selection-distance-tree";
 import { Pointing } from "@/features/editor/features/canvas/domains/pointing";
 import { Option } from "@/utils/Option";
@@ -14,8 +15,10 @@ test("選択の内側を指すと、選択から親の内側の縁までを測�
   const pair = DistancePair.create(
     selectionDistanceTree(["row"]),
     Pointing.create(
-      ["label", "cell", "row", "card", "home"],
-      SelectionDigs.NoDeeper,
+      UnderPointer.create(
+        ["label", "cell", "row", "card", "home"],
+        SelectionDigs.NoDeeper,
+      ),
     ),
   );
 
@@ -31,7 +34,9 @@ test("選択の内側を指すと、選択から親の内側の縁までを測�
 test("兄弟を指すと、兄弟との横並びを測る", () => {
   const pair = DistancePair.create(
     selectionDistanceTree(["row"]),
-    Pointing.create(["chip", "card", "home"], SelectionDigs.NoDeeper),
+    Pointing.create(
+      UnderPointer.create(["chip", "card", "home"], SelectionDigs.NoDeeper),
+    ),
   );
 
   expect(pair).toEqual(
@@ -43,8 +48,10 @@ test("兄弟の子を指しても、兄弟との横並びを測る", () => {
   const pair = DistancePair.create(
     selectionDistanceTree(["row"]),
     Pointing.create(
-      ["chip-icon", "chip", "card", "home"],
-      SelectionDigs.NoDeeper,
+      UnderPointer.create(
+        ["chip-icon", "chip", "card", "home"],
+        SelectionDigs.NoDeeper,
+      ),
     ),
   );
 
@@ -57,8 +64,10 @@ test("⌘ を押して選択の内側を指すと、いちばん内側の子孫�
   const pair = DistancePair.create(
     selectionDistanceTree(["row"]),
     Pointing.create(
-      ["label", "cell", "row", "card", "home"],
-      SelectionDigs.Deepest,
+      UnderPointer.create(
+        ["label", "cell", "row", "card", "home"],
+        SelectionDigs.Deepest,
+      ),
     ),
   );
 
@@ -75,8 +84,10 @@ test("⌘ を押して兄弟の子を指すと、その子との横並びを測�
   const pair = DistancePair.create(
     selectionDistanceTree(["row"]),
     Pointing.create(
-      ["chip-icon", "chip", "card", "home"],
-      SelectionDigs.Deepest,
+      UnderPointer.create(
+        ["chip-icon", "chip", "card", "home"],
+        SelectionDigs.Deepest,
+      ),
     ),
   );
 
@@ -93,7 +104,9 @@ test("深さ 3 のノードを選んで親の背景を指すと、クリック�
   // 親（`row`）の縁とは答えが違う
   const pair = DistancePair.create(
     selectionDistanceTree(["cell"]),
-    Pointing.create(["row", "card", "home"], SelectionDigs.NoDeeper),
+    Pointing.create(
+      UnderPointer.create(["row", "card", "home"], SelectionDigs.NoDeeper),
+    ),
   );
 
   expect(pair).toEqual(
@@ -108,7 +121,9 @@ test("深さ 3 のノードを選んで親の背景を指すと、クリック�
 test("別の枝のノードを指すと、そのノードとの横並びを測る", () => {
   const pair = DistancePair.create(
     selectionDistanceTree(["row"]),
-    Pointing.create(["title", "home"], SelectionDigs.NoDeeper),
+    Pointing.create(
+      UnderPointer.create(["title", "home"], SelectionDigs.NoDeeper),
+    ),
   );
 
   expect(pair).toEqual(
@@ -119,7 +134,7 @@ test("別の枝のノードを指すと、そのノードとの横並びを測�
 test("深さ 2 のノードを選んで自分の artboard の背景を指すと、artboard の内側の縁までを測る", () => {
   const pair = DistancePair.create(
     selectionDistanceTree(["row"]),
-    Pointing.create(["home"], SelectionDigs.NoDeeper),
+    Pointing.create(UnderPointer.create(["home"], SelectionDigs.NoDeeper)),
   );
 
   expect(pair).toEqual(
@@ -134,7 +149,9 @@ test("深さ 2 のノードを選んで自分の artboard の背景を指すと�
 test("深さ 2 のノードを選んで別の artboard のノードを指すと、親の内側の縁までを測る", () => {
   const pair = DistancePair.create(
     selectionDistanceTree(["row"]),
-    Pointing.create(["slot", "settings"], SelectionDigs.NoDeeper),
+    Pointing.create(
+      UnderPointer.create(["slot", "settings"], SelectionDigs.NoDeeper),
+    ),
   );
 
   expect(pair).toEqual(

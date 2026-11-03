@@ -6,6 +6,7 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { NodeTemplate } from "@/domains/session/node-template";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import { drawn } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
@@ -99,11 +100,13 @@ function NodeDragHarness({
           setGrabbed(
             nodeDrag.grabNode(
               event,
-              ElementEx.attributeValuesToRoot(
-                event.target,
-                ElementNameAttribute,
+              UnderPointer.create(
+                ElementEx.attributeValuesToRoot(
+                  event.target,
+                  ElementNameAttribute,
+                ),
+                SelectionDigs.NoDeeper,
               ),
-              SelectionDigs.NoDeeper,
             )
               ? "掴んだ"
               : "掴んでいない",

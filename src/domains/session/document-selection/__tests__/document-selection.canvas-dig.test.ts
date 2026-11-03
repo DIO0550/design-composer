@@ -5,6 +5,7 @@ import {
 } from "@/domains/dcmp/design-document";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import { Option } from "@/utils/Option";
 
 /**
@@ -54,8 +55,7 @@ test("何も選んでいないときは、押した位置の artboard 直下の�
 
   const name = DocumentSelection.nodeNameAt(
     selection,
-    PressedOnLabel,
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(PressedOnLabel, SelectionDigs.NoDeeper),
   );
 
   expect(Option.unwrap(name)).toBe("card");
@@ -66,8 +66,7 @@ test("押した位置が今の選択の内側なら、選んでいるノード�
 
   const name = DocumentSelection.nodeNameAt(
     selection,
-    PressedOnLabel,
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(PressedOnLabel, SelectionDigs.NoDeeper),
   );
 
   expect(Option.unwrap(name)).toBe("row");
@@ -78,8 +77,7 @@ test("別の枝を選んでいるときは、押した位置の artboard 直下�
 
   const name = DocumentSelection.nodeNameAt(
     selection,
-    PressedOnLabel,
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(PressedOnLabel, SelectionDigs.NoDeeper),
   );
 
   expect(Option.unwrap(name)).toBe("card");
@@ -90,8 +88,7 @@ test("いちばん内側まで掘る押し方では、選択に関わらず押�
 
   const name = DocumentSelection.nodeNameAt(
     selection,
-    PressedOnLabel,
-    SelectionDigs.Deepest,
+    UnderPointer.create(PressedOnLabel, SelectionDigs.Deepest),
   );
 
   expect(Option.unwrap(name)).toBe("label");
@@ -102,8 +99,7 @@ test("artboard の背景を押したときはノードが決まらない", () =>
 
   const name = DocumentSelection.nodeNameAt(
     selection,
-    ["home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["home"], SelectionDigs.NoDeeper),
   );
 
   expect(Option.isSome(name)).toBe(false);
@@ -114,8 +110,10 @@ test("インスタンスの中身を押したときは、いちばん内側ま�
 
   const name = DocumentSelection.nodeNameAt(
     selection,
-    ["primary-button-label", "login", "home"],
-    SelectionDigs.Deepest,
+    UnderPointer.create(
+      ["primary-button-label", "login", "home"],
+      SelectionDigs.Deepest,
+    ),
   );
 
   expect(Option.unwrap(name)).toBe("login");

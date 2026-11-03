@@ -3,7 +3,7 @@ import type { PropEdit } from "@/domains/dcmp/node";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
 import type { NodeTemplate } from "@/domains/session/node-template";
-import type { SelectionDig } from "@/domains/session/selection-dig";
+import type { UnderPointer } from "@/domains/session/under-pointer";
 import type { Offset } from "@/domains/unit/offset";
 import { useEditor } from "@/features/editor/components/editor-provider";
 import { EditorState } from "@/features/editor/domains/editor-state";
@@ -21,7 +21,7 @@ export type NodeActions = Readonly<{
   select: (name: string) => void;
   /** 左ペインの行の右クリックで、その行を選ぶ。既に選択に入っていれば選択を変えない。 */
   selectIfUnselected: (name: string) => void;
-  selectAt: (names: readonly string[], dig: SelectionDig) => void;
+  selectAt: (underPointer: UnderPointer) => void;
   /** キャンバスの範囲選択で、範囲に重なったものをまとめて選ぶ。 */
   selectInRange: (names: readonly string[]) => void;
   clearSelection: () => void;
@@ -78,10 +78,10 @@ export function useNodeActions(): NodeActions {
     selectIfUnselected: (name) =>
       dispatch({ type: "select_if_unselected", name }),
     /**
-     * キャンバスは押された位置から外へ辿った名前と、押し方から決まった掘る量を渡す。
-     * どこまで内側へ入るかは状態側の判断（`EditorState.selectAt`）。
+     * キャンバスは押された位置を `UnderPointer` で渡す。どこまで内側へ入るかは状態側の
+     * 判断（`EditorState.selectAt`）。
      */
-    selectAt: (names, dig) => dispatch({ type: "select_at", names, dig }),
+    selectAt: (underPointer) => dispatch({ type: "select_at", underPointer }),
     /**
      * 範囲に重なったものはキャンバスが実測から決めて渡す（描かれた位置は
      * ドキュメントからは分からない）。選べるものへの絞り込みは状態側の判断

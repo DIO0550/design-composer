@@ -25,9 +25,9 @@ import {
 } from "@/domains/session/edit-continuity";
 import { FileValidity } from "@/domains/session/file-validity";
 import { NodeTemplate } from "@/domains/session/node-template";
-import type { SelectionDig } from "@/domains/session/selection-dig";
 import { SelectionState } from "@/domains/session/selection-state";
 import { TokenSelection } from "@/domains/session/token-selection";
+import type { UnderPointer } from "@/domains/session/under-pointer";
 import type { Instant } from "@/domains/unit/instant";
 import type { Offset } from "@/domains/unit/offset";
 import { EditHistory } from "@/features/editor/domains/edit-history";
@@ -525,22 +525,16 @@ export const EditorState = {
    * どれも選べなければ選択は外れる。
    *
    * @param state 選択を移す前の状態
-   * @param names 押された位置から外へ辿った名前（内→外）
-   * @param dig 押し方から決まった掘る量
+   * @param underPointer 押された位置（どの深さで読むかを含む）
    * @returns 掘った先を選んだ状態。選べる名前が 1 つも無ければ未選択
    */
-  selectAt(
-    state: EditorState,
-    names: readonly string[],
-    dig: SelectionDig,
-  ): EditorState {
+  selectAt(state: EditorState, underPointer: UnderPointer): EditorState {
     return {
       ...state,
       selection: SelectionState.fromName(
         DocumentSelection.nameToSelectAt(
           EditorState.documentSelection(state),
-          names,
-          dig,
+          underPointer,
         ),
       ),
     };

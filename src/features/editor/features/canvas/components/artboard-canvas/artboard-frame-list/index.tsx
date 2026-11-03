@@ -1,7 +1,7 @@
 import { type MouseEvent as ReactMouseEvent, useMemo } from "react";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import type { SelectionDig } from "@/domains/session/selection-dig";
 import { TokenSelection } from "@/domains/session/token-selection";
+import type { UnderPointer } from "@/domains/session/under-pointer";
 import { ArrangedArtboard } from "@/features/editor/features/canvas/domains/arranged-artboard";
 import { NodeDrag } from "@/features/editor/features/canvas/domains/node-drag";
 import type { AltPointingControl } from "@/features/editor/features/canvas/hooks/use-alt-pointing";
@@ -79,7 +79,7 @@ export function ArtboardFrameList({
   compiled: CompiledDocument;
   selection: DocumentSelection;
   tokenSelection: TokenSelection;
-  onSelect: (names: readonly string[], dig: SelectionDig) => void;
+  onSelect: (underPointer: UnderPointer) => void;
   onContextMenu: (
     event: ReactMouseEvent<HTMLElement>,
     names: readonly string[],

@@ -3,6 +3,7 @@ import { expect, test, vi } from "vitest";
 import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import type { DocumentSelection } from "@/domains/session/document-selection";
 import { SelectionDigs } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import { canvasSurface } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import {
   movePointer,
@@ -332,8 +333,7 @@ test("落とせる親が無い場所で離しても、次のクリックは選�
   fireEvent.click(drawn("badge"));
 
   expect(onSelect).toHaveBeenCalledWith(
-    ["badge", "home"],
-    SelectionDigs.NoDeeper,
+    UnderPointer.create(["badge", "home"], SelectionDigs.NoDeeper),
   );
 });
 

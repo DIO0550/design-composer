@@ -1,4 +1,4 @@
-import type { SelectionDig } from "@/domains/session/selection-dig";
+import { UnderPointer } from "@/domains/session/under-pointer";
 import type { ValueOf } from "@/types/ValueOf";
 
 /** 指し先の種類（`Pointing` の判別子）。 */
@@ -18,16 +18,15 @@ export type PointingKind = ValueOf<typeof PointingKinds>;
  * - `outside`: キャンバスの外
  * - `nothing`: キャンバスの中で、artboard の枠の外（空き領域・見出し）か、選んでいるノードの
  *   リサイズハンドル（四角。帯は除く）の上
- * - `on-frame`: artboard の枠の上。`names` は指している位置から外へ辿った名前（内→外。
- *   末尾は artboard）、`dig` はその時点の押し方から決まった掘る量
+ * - `on-frame`: artboard の枠の上。`underPointer` はその時点の押し方で読んだ、指している
+ *   位置
  */
 export type Pointing =
   | Readonly<{ kind: typeof PointingKinds.Outside }>
   | Readonly<{ kind: typeof PointingKinds.Nothing }>
   | Readonly<{
       kind: typeof PointingKinds.OnFrame;
-      names: readonly string[];
-      dig: SelectionDig;
+      underPointer: UnderPointer;
     }>;
 
 /** キャンバスの外を指している。 */
@@ -46,12 +45,11 @@ export const Pointing = {
   /**
    * artboard の枠の上を指していることにする。
    *
-   * @param names 指している位置から外へ辿った名前（内→外）
-   * @param dig その時点の押し方から決まった掘る量
+   * @param underPointer その時点の押し方で読んだ、指している位置
    * @returns 枠の上を指している指し先
    */
-  create(names: readonly string[], dig: SelectionDig): Pointing {
-    return { kind: PointingKinds.OnFrame, names, dig };
+  create(underPointer: UnderPointer): Pointing {
+    return { kind: PointingKinds.OnFrame, underPointer };
   },
 
   /**
@@ -67,9 +65,6 @@ export const Pointing = {
     if (!isBothOnFrame) {
       return a.kind === b.kind;
     }
-    const isSameNames =
-      a.names.length === b.names.length &&
-      a.names.every((name, index) => name === b.names[index]);
-    return isSameNames && a.dig === b.dig;
+    return UnderPointer.equals(a.underPointer, b.underPointer);
   },
 } as const;
