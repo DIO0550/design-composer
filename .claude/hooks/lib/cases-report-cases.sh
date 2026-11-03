@@ -8,6 +8,7 @@
 # 確かめる。最後の文の照合の表は一時ディレクトリに判定表の木を置いて
 # `report_tables_exit_with_cases_failed` を呼び、最後に本物のリポジトリのルートでも呼んで、
 # `cases-report.sh` を source するどの判定表も最後の文が `exit "$cases_failed"` かを確かめる。
+# 本物のルートで集めた判定表に、相手役の `harness/githooks/lib/check-tally-cases.sh` が入っているかも確かめる。
 #
 # 使い方: bash .claude/hooks/lib/cases-report-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -289,16 +290,24 @@ NG|引用符の無い exit $cases_failed なら NG|a-cases.sh=source:unquoted
 NG|exit "${cases_failed}" なら NG|a-cases.sh=source:braced
 NG|字下げした exit "$cases_failed" なら NG|a-cases.sh=source:indented-exit
 NG|行末にコメントのある exit "$cases_failed" なら NG|a-cases.sh=source:trailing-comment
-NG|. で読む判定表が exit 0 なら NG|a-cases.sh=dot:exit-0
-NG|字下げした source で読む判定表が exit 0 なら NG|a-cases.sh=indented-source:exit-0
+NG|. で読む判定表が exit 0 なら NG|a-cases.sh=source:exit b-cases.sh=dot:exit-0
+NG|字下げした source で読む判定表が exit 0 なら NG|a-cases.sh=source:exit b-cases.sh=indented-source:exit-0
 ok|コメントで cases-report.sh に触れるだけのファイルは見ない|a-cases.sh=source:exit b.sh=mention:no-exit
 ok|node_modules の下の判定表は見ない|a-cases.sh=source:exit node_modules/pkg/b-cases.sh=source:exit-0
 ok|.git の下の判定表は見ない|a-cases.sh=source:exit .git/hooks/b-cases.sh=source:exit-0
 NG|cases-report.sh を source する判定表が 1 本も無ければ NG|-
 NG|正しい判定表と exit 0 の判定表が並んでいれば NG|a-cases.sh=source:exit lib/b-cases.sh=source:exit-0
+NG|exit 0 の判定表が正しい判定表より先に並んでいても NG|a-cases.sh=source:exit-0 lib/b-cases.sh=source:exit
 EXIT_CASES
 
 repo_root="$(cd "$lib_dir/../../.." && pwd)"
 report_tables_exit_with_cases_failed "$repo_root"
+
+# `repo_root` がずれると集める範囲が縮み、相手役の判定表が照合から外れても緑のまま残る。2 本が互いに
+# 相手を照合する形なので、相手が集めた範囲に入っていることも見る。
+partner_table="harness/githooks/lib/check-tally-cases.sh"
+partner_decision="範囲に無い"
+tables_sourcing_cases_report "$repo_root" | grep -qxF -- "$repo_root/$partner_table" && partner_decision="範囲にある"
+report "範囲にある" "$partner_decision" "本物のルートで集めた判定表に $partner_table が入っている"
 
 exit "$cases_failed"
