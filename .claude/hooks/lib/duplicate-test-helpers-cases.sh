@@ -451,8 +451,4 @@ function openedAt(path: string) {
 }
 TS
 
-if [ "$cases_failed" -ne 0 ]; then
-  echo "判定表と食い違いがあります"
-  exit 1
-fi
-echo "テストヘルパーの重複の判定表: 期待どおり"
+exit "$cases_failed"

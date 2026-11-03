@@ -120,8 +120,4 @@ check_violations unchecked "報告の行を出して exit 2 で終わる検出�
 check_violations pass "git push 以外のコマンドは、検出器が落ちても止めない" "git status" crash
 check_violations pass "起動できない python3 しか無ければ、git push を止めない" "git push" reports broken
 
-if [ "$cases_failed" -ne 0 ]; then
-  echo "判定表と食い違いがあります"
-  exit 1
-fi
-echo "push 前の検査フックの共通部分の判定表: 期待どおり"
+exit "$cases_failed"
