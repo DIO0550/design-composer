@@ -100,13 +100,18 @@ awk_common='
     t = fold_tag(s)
     return (closed_at[t] + 0 > closed_at[s] + 0) ? closed_layer[t] : closed_layer[s]
   }
-  # 指摘 1 件の門。分類の行なら綴りを控えて空文字を返し、出どころの行なら控えた綴りを返して
-  # 控えを消す(直前に分類の行が無ければ空文字)。それ以外の行は空文字
-  function finding_tag(line,    tag) {
+  # 指摘 1 件の門。分類の行なら綴りを控えて空文字を返し、出どころの行なら、未消費の分類の行が
+  # あればその綴りを返して控えを消す。それ以外の行は空文字
+  function spelling_of_finding(line,    spelling) {
     if (line ~ /^- 分類: `/) { pending = spelling_of(line); return "" }
     if (line !~ /^- 出どころ:/) return ""
-    tag = pending; pending = ""
-    return tag
+    spelling = pending; pending = ""
+    return spelling
+  }
+  # 出どころの行の値。接頭辞 `- 出どころ: ` とバッククォートを外す
+  function source_of(line) {
+    sub(/^- 出どころ: */, "", line); gsub(/`/, "", line)
+    return line
   }
 '
 
@@ -115,11 +120,11 @@ awk_common='
 summary_rows() {
   awk "$awk_common"'
     FNR == 1 { number = record_number(FILENAME); records[number] = 1 }
-    { tag = finding_tag($0) }
-    tag != "" {
-      if (reached_outside($0)) outside[tag, number]++
-      else inside[tag, number]++
-      spellings[tag] = 1
+    { spelling = spelling_of_finding($0) }
+    spelling != "" {
+      if (reached_outside($0)) outside[spelling, number]++
+      else inside[spelling, number]++
+      spellings[spelling] = 1
       next
     }
     /^- 対策済: `/ { close_window($0); next }
@@ -154,13 +159,12 @@ list_findings() {
   awk -v want="$1" "$awk_common"'
     FNR == 1 { number = record_number(FILENAME) }
     /^### / { heading = $0; sub(/^### /, "", heading) }
-    { tag = finding_tag($0) }
-    tag != "" && fold_tag(tag) == want {
-      source = $0; sub(/^- 出どころ: */, "", source); gsub(/`/, "", source)
+    { spelling = spelling_of_finding($0) }
+    spelling != "" && fold_tag(spelling) == want {
       n++
-      finding_spelling[n] = tag
+      finding_spelling[n] = spelling
       finding_number[n] = number
-      lines[n] = sprintf("%d\tpr-%d  %-36s  %s", !reached_outside($0), number, source, heading)
+      lines[n] = sprintf("%d\tpr-%d  %-36s  %s", !reached_outside($0), number, source_of($0), heading)
       next
     }
     /^- 対策済: `/ { close_window($0); next }
@@ -172,42 +176,51 @@ list_findings() {
   ' pr-*.md | sort -s -k1,1n | cut -f2-
 }
 
-# レビューエージェントごとに、指摘を残した記録の本数と指摘の件数を
-# 「<並べ替えのキー>\t<定義の有無>\t<名前>\t<本数>\t<件数>\t<件/本>」で返す(件/本は 0 本なら `-`)。
-# 数えるのは門(finding_tag)を通った出どころの行のうち、バッククォートを外して
+# レビューエージェントごとに、指摘を残した記録の本数・指摘の件数・最後に指摘を残した記録を
+# 「<本数>\t<定義の有無>\t<名前>\t<件数>\t<件/本>\t<最後>\t<以降>」で返す。最後はその装置が
+# 最後に指摘を残した記録の番号、以降はその記録より後の記録の本数(どちらも 0 本なら `-`。
+# 件/本も同じ)。起動しても指摘 0 件の回は本数に入らない。
+# 数えるのは門(spelling_of_finding)を通った出どころの行のうち、バッククォートを外して
 # `レビュー（<名前>-reviewer）` だけになる行。括弧の中に名前以外の語を持つ行
-# (`レビュー（implementation-reviewer のミューテーション実測）` 等)は、語彙表に反する綴りで
-# どの装置に按分するかを決められないので数えない。
-# 定義のある名前は出どころに現れなくても 0 本 0 件で返す(それが退役の信号)。定義の無い名前は
-# 本数に依らず末尾へ置くため、並べ替えのキーを記録の本数より十分大きい値にする。
+# (`レビュー（implementation-reviewer のミューテーション実測）` 等。バッククォートを外した後の形)
+# は、語彙表に反する綴りでどの装置に按分するかを決められないので数えない。
+# 定義のある名前は出どころに現れなくても 0 本 0 件で返す。
+# 並びは定義の有無(定義のある名前が先)→ 本数の昇順。同数は awk が出した順のまま
+# (定義のある名前は glob 順)。
 # 引数: <定義のある名前を空白で区切った並び(glob 順)>
 reviewer_rows() {
   awk -v defined="$1" "$awk_common"'
-    function row(kind, name, key,    records, findings, per) {
+    function row(kind, name,    records, findings, per, last, after, number) {
       records = records_of[name] + 0; findings = findings_of[name] + 0
       per = (records > 0) ? sprintf("%.1f 件/本", findings / records) : "-"
-      printf "%d\t%s\t%s\t%d\t%d\t%s\n", key, kind, name, records, findings, per
+      last = (records > 0) ? last_of[name] : "-"
+      after = "-"
+      if (records > 0) {
+        after = 0
+        for (number in all_records) if (number + 0 > last_of[name]) after++
+      }
+      printf "%d\t%s\t%s\t%d\t%s\t%s\t%s\n", records, kind, name, findings, per, last, after
     }
     BEGIN {
       n = split(defined, names, " ")
       for (i = 1; i <= n; i++) is_defined[names[i]] = 1
-      undefined_key = 1000000
     }
-    FNR == 1 { number = record_number(FILENAME) }
-    { tag = finding_tag($0) }
-    tag != "" {
-      name = $0; gsub(/`/, "", name)
-      if (name !~ /^- 出どころ: *レビュー（[a-z-]+-reviewer） *$/) next
-      sub(/^- 出どころ: *レビュー（/, "", name); sub(/） *$/, "", name)
+    FNR == 1 { number = record_number(FILENAME); all_records[number] = 1 }
+    { spelling = spelling_of_finding($0) }
+    spelling != "" {
+      name = source_of($0)
+      if (name !~ /^レビュー（[a-z0-9-]+-reviewer） *$/) next
+      sub(/^レビュー（/, "", name); sub(/） *$/, "", name)
       findings_of[name]++
       if (!(seen[name, number]++)) records_of[name]++
+      if (number > last_of[name] + 0) last_of[name] = number
       next
     }
     END {
-      for (i = 1; i <= n; i++) row("defined", names[i], records_of[names[i]] + 0)
-      for (name in findings_of) if (!is_defined[name]) row("undefined", name, undefined_key)
+      for (i = 1; i <= n; i++) row("defined", names[i])
+      for (name in findings_of) if (!is_defined[name]) row("undefined", name)
     }
-  ' pr-*.md | sort -s -k1,1n
+  ' pr-*.md | sort -s -k2,2 -k1,1n
 }
 
 # `.claude/agents/*-reviewer.md` の名前を glob 順に空白区切りで返す。
@@ -219,17 +232,30 @@ defined_reviewers() {
   done
 }
 
-# 節 3 段 1 の表。定義のある装置の行を本数の昇順で出し、定義の無い名前があればその後ろに
-# 本数・件数だけを出す。
+# 節 3 段 1 の表。先頭に退役候補(最後に指摘を残した記録から <閾値> 本以上経った装置)を
+# 1 行で出し、その下に定義のある装置の行を本数の昇順で並べる。まだ指摘を残していない装置は
+# 観測期間が決められない(新設直後と区別できない)ので候補にも表にも出さず、名前だけを後ろに出す。
+# 定義の無い名前があればその後ろに本数・件数だけを出す。
+# 引数: <候補にする以降の本数>
 reviewer_table() {
-  local rows undefined
+  local rows candidates
   rows="$(reviewer_rows "$(defined_reviewers)")"
-  printf '%s\n' "$rows" | awk -F'\t' '$2 == "defined" { printf "     %-24s %4d 本 %5d 件  %s\n", $3, $4, $5, $6 }'
-  printf '%s\n' "   起動しても指摘 0 件の回は本数に入らない。条件付きで呼ぶ装置は本数ではなく件/本で見る"
-  undefined="$(printf '%s\n' "$rows" | awk -F'\t' '$2 == "undefined" { printf "     %-24s %4d 本 %5d 件\n", $3, $4, $5 }')"
-  [ -n "$undefined" ] || return 0
-  printf '   %s\n' "定義の無い名前(観点別に分かれる前の旧語彙など。上の表へ混ぜない):"
-  printf '%s\n' "$undefined"
+  candidates="$(printf '%s\n' "$rows" | awk -F'\t' -v threshold="$1" '
+    $2 == "defined" && $1 > 0 && $7 >= threshold { printf "%s%s", sep, $3; sep = " " }
+  ')"
+  printf '   退役候補（以降 %s 本以上）: %s\n' "$1" "${candidates:-該当なし}"
+  printf '%s\n' "$rows" | awk -F'\t' '
+    function end_defined() {
+      if (unstarted == "") return
+      printf "   %s\n", "まだ指摘を残していない(観測期間が決められないので候補にしない):"
+      printf "%s", unstarted
+    }
+    $2 == "defined" && $1 == 0 { unstarted = unstarted sprintf("     %s\n", $3); next }
+    $2 == "defined" { printf "     %-24s %4d 本 %5d 件  最後=pr-%-5d 以降=%-4d %s\n", $3, $1, $4, $6, $7, $5; next }
+    !under { end_defined(); under = 1; printf "   %s\n", "定義の無い名前(観点別に分かれる前の名前、`implementation-reviewer` など。上の表へ混ぜない):" }
+    { printf "     %-24s %4d 本 %5d 件\n", $3, $1, $4 }
+    END { if (!under) end_defined() }
+  '
 }
 
 # AGENTS.md + rules/ の行数
@@ -289,13 +315,16 @@ if [ "${1:-}" = "--shrink" ]; then
   printf '%s\n' "3. 装置の退役候補"
 
   # 段 1 で数えるのは指摘を返す装置(`*-reviewer`)だけ。`planner` / `implementer` /
-  # `harness-counter` は指摘を返さないので出どころに現れない
+  # `harness-counter` は指摘を返さないので出どころに現れない。
+  # 候補は最後に指摘を残した記録から retire_after 本以上経った装置。記録の総数がそれ未満なら
+  # どの装置も以降が届かないので、表ごと出さない
+  retire_after=10
   total="$(ls pr-*.md | wc -l)"
   printf '   %s\n' "3-1. レビューエージェント（記録の出どころから。記録 ${total} 本）"
-  if [ "$total" -lt 10 ]; then
-    printf '   %s\n' "(記録 10 本未満のため候補は出さない)"
+  if [ "$total" -lt "$retire_after" ]; then
+    printf '   %s\n' "(記録 ${retire_after} 本未満のため候補は出さない)"
   else
-    reviewer_table
+    reviewer_table "$retire_after"
   fi
   printf '\n'
 
