@@ -25,9 +25,10 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記・続きの Issue・評価の記録を促す       |
 | `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。連ねたコマンドの中にあっても切り出して見る。通ってしまったときの読み方は後述（**通った = 不発、ではない**） |
 | `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える。コメントする前に、他セッションの URL コメント・自分以外の assignee が無いかを確認するよう促す（`parallel-issue-work`） |
-| `record-firings.sh`      | `SessionStart` + `PostToolUse` (Skill/Task/Agent) | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` が記録を書くときに読む。SessionStart のセッション見出しで「起動しなかった」と「フック不発」を切り分ける |
+| `record-firings.sh`      | `SessionStart` + `PostToolUse` (Skill/Task/Agent) | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` が記録を書くときに読む。`block-parent-session-edit.sh` も implementation-flow の中かどうかを決めるために読む。SessionStart のセッション見出しで「起動しなかった」と「フック不発」を切り分ける |
 | `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **作業ツリーを書き換えるサブエージェントの実行中フラグ**。`plan-reviewer` / `test-reviewer` / `implementer` の開始・終了をセッション別・種類別のマーカーで数える。`block-git-during-verification-agent.sh` が読む。この 3 つの起動のうち、**`run_in_background: true` を明示したものは拒否する**(塞いでいない形はフックの冒頭) |
 | `block-git-during-verification-agent.sh` | `PreToolUse` (Bash)   | **作業ツリーを書き換えるサブエージェントの実行中の git 操作を拒否**。マーカーが立っている間は `git add` / `commit` / `push` を deny する。ミューテーション実測や実装の途中の書き換えをコミットへ取り込む事故を防ぐ。古いマーカーは無視する(種類ごとに有効期間が違う。値と理由はフックの本文)。拒否文に印のディレクトリを出す |
+| `block-parent-session-edit.sh` | `PreToolUse` (Edit/Write) | **implementation-flow の中の親セッションの編集を拒否**(`implementation-flow`「役割の分担」)。入力に `agent_id` の無い(親の)Edit / Write で、リポジトリの中のファイルを指し、発火ログの最後の区切りが flow の中なら deny する。区切りになる起動と通す入力はフックの冒頭 |
 
 ## 移植元から見送ったもの
 
@@ -60,9 +61,9 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |
 | `lib/edit-detector.sh` | `block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh` | 編集時の検査フックの共通部分。検出器を `.github/scripts/lib/detector-report.sh` の `detector_report` で走らせ、異常終了したら `print_edit_unchecked_context <イベント名> <検査の名前> <検出器>` が `permissionDecision` の無い `additionalContext` で「検査できていません」を返す(編集は止めない)。PostToolUse の 2 本の違反の報告も同じ形(`print_additional_context <イベント名> <文>`)で書く。python3 の疎通は `detector-precondition.sh` の `python3_usable` で見る |
 | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring が持つ |
-| `lib/cases-report.sh` | `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh`(`decide`・`normalize_miss`・`report`) / `lib/story-title-cases.sh` / `lib/named-path-cases.sh`(それに `report_documented_kinds`) / `lib/import-rule-cases.sh`(`decide`・`report`・`report_documented_kinds`・`report_covered_kinds`) / `lib/cases-report-cases.sh`(`decide`・`normalize_miss`・`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`report_exits_with_cases_failed`) / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`kinds_in_categories`) / `lib/verification-agent-cases.sh` / `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `.github/scripts/pr-explain-pages-cases.sh` / `harness/records/count-cases.sh` / `harness/githooks/lib/check-tally-cases.sh`(`report`・`last_statement`・`report_exits_with_cases_failed`) | 判定表が共有する、判定の読み取り（`decide` / `normalize_miss` / `all_in_category`）と報告（`report` / `cases_failed`）と、検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）と、判定表の最後の文の照合（`last_statement` / `report_exits_with_cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
-| `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 一時ディレクトリに置いた小さな検出器で `report_documented_kinds` / `report_covered_kinds` を呼ぶ照合と、`report` 自身を呼ぶ表では、`cases_failed` の立ち方と出力の行が期待どおりかを報告する。表に書いた出力と終了コードで `decide` / `normalize_miss` を直に呼ぶ表では、返る判定(pass / deny / broken / miss)が期待どおりかを報告する。一時ディレクトリに置いた判定表の木と本物のリポジトリのルートでは、`cases-report.sh` を source する判定表の最後の文が `exit "$cases_failed"` かを報告する。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |
-| `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh`(`place_failing_detector` だけ) | 検出器を呼ぶフックの判定表が共有する、ケースの前提の置き方。落ちる検出器のスタブ(`place_failing_detector`)・起動できない python3(`python3_path_prefix`)・本体が同じテストヘルパー(`place_duplicate_helpers`)を、渡されたパスへ置く |
+| `lib/cases-report.sh` | `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh`(`decide`・`normalize_miss`・`report`) / `lib/story-title-cases.sh` / `lib/named-path-cases.sh`(それに `report_documented_kinds`) / `lib/import-rule-cases.sh`(`decide`・`report`・`report_documented_kinds`・`report_covered_kinds`) / `lib/cases-report-cases.sh`(`decide`・`decide_by_permission`・`hook_verdict_by_permission`・`normalize_miss`・`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`report_exits_with_cases_failed`) / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`kinds_in_categories`) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`hook_verdict_by_permission`・`report`) / `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `.github/scripts/pr-explain-pages-cases.sh` / `harness/records/count-cases.sh` / `harness/githooks/lib/check-tally-cases.sh`(`report`・`last_statement`・`report_exits_with_cases_failed`) | 判定表が共有する、判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category`。PreToolUse フックを流すところからなら `hook_verdict_by_permission`）と報告（`report` / `cases_failed`）と、検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）と、判定表の最後の文の照合（`last_statement` / `report_exits_with_cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
+| `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 一時ディレクトリに置いた小さな検出器で `report_documented_kinds` / `report_covered_kinds` を呼ぶ照合と、`report` 自身を呼ぶ表では、`cases_failed` の立ち方と出力の行が期待どおりかを報告する。表に書いた出力と終了コードで `decide` / `decide_by_permission` / `normalize_miss` を直に呼ぶ表と、それを返すフックのスタブを `hook_verdict_by_permission` で流す表では、返る判定(pass / deny / broken / miss)が期待どおりかを報告する。一時ディレクトリに置いた判定表の木と本物のリポジトリのルートでは、`cases-report.sh` を source する判定表の最後の文が `exit "$cases_failed"` かを報告する。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |
+| `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh`(`place_failing_detector` だけ) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`subagent_call_fields` だけ) | フックの判定表が共有する、ケースの前提の置き方。落ちる検出器のスタブ(`place_failing_detector`)・起動できない python3(`python3_path_prefix`)・本体が同じテストヘルパー(`place_duplicate_helpers`)を、渡されたパスへ置く。サブエージェントの中の呼び出しの入力のフィールド(`subagent_call_fields`)を組む |
 | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `import-rule-violations.py` へ判定表を流し、報告された種別と件数が期待どおりかを報告する。検出器が報告する種別のうち、表の期待に 1 度も出ないものがあっても NG。`scan()` の種別の並びが docstring の一覧と食い違っても NG。検出器をスタブへ差し替えた表では、見出しを出したまま exit 0・exit 0・1 以外で終わる検出器を broken と読むかを報告する。食い違いがあれば exit 1 |
 | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードと報告の見出しで報告する。検出器の種別の並びが docstring の一覧と食い違っても NG。食い違いがあれば exit 1 |
 | `lib/pre-push-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `pre-push-test-helper-duplication.sh` へ `CLAUDE_PROJECT_DIR` を一時ディレクトリに向けた JSON を流して `deny_on_all_src_failure` を、スタブの検出器を渡して `deny_on_violations` を判定し、deny(違反 / 検査できなかった)/ pass が期待どおりかを報告する。食い違いがあれば exit 1 |
@@ -71,7 +72,10 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/story-title-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `story-title-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードと報告の見出しで報告する。検出器の種別の並びが docstring の一覧と食い違っても NG。食い違いがあれば exit 1 |
 | `lib/missing-doc-comments-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `missing-doc-comments.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードと報告の見出しで報告する。食い違いがあれば exit 1 |
 | `lib/duplicate-test-helpers-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `duplicate-test-helpers.py` へ判定表を流し、ファイル 1 つを渡す形と `--lines` の両方で deny / pass / miss が期待どおりかを終了コードと報告の見出しで報告する。食い違いがあれば exit 1 |
-| `lib/verification-agent-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` へ Task/Agent と git の呼び出しを順に流し、起動の拒否と git 操作の拒否が期待どおりかを報告する。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |
+| `lib/verification-agent-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` へ Task/Agent と git の呼び出しを順に流し、起動の拒否と git 操作の拒否が期待どおりかを報告する。リポジトリルートから相対パスで 2 本を呼んだときと、リポジトリの外を cwd にして絶対パスで呼んだときの拒否も見る。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |
+| `lib/hook-input.sh` | `record-firings.sh` / `track-verification-agent-activity.sh` / `block-git-during-verification-agent.sh` / `block-parent-session-edit.sh` | 標準入力の JSON から文字列の値を取り出す `extract`。jq を使わず bash の組み込みだけで読む |
+| `lib/firings-log.sh` | `record-firings.sh` / `block-parent-session-edit.sh` | 発火ログのパスを組み立てる `firings_log_path <session_id>` |
+| `lib/parent-session-edit-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | 本物の `record-firings.sh` に発火ログを書かせてから `block-parent-session-edit.sh` へ Edit / Write の呼び出しを流し、親の編集の拒否と素通りが期待どおりかを報告する。確かめる項目は各ケースの名前が持つ。食い違いがあれば exit 1 |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
@@ -100,8 +104,8 @@ biome の format 差分を含む状態で push が通り、CI で落ちた回が
 
 ### カバー範囲と残る穴
 
-git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の 2 つは発火しない環境では
-効かず、git のイベントに対応物が無いので移設もできない。
+git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の表で CI の代替が「**無し**」の行は、
+発火しない環境では効かず、git のイベントに対応物が無いので移設もできない。
 
 | 効かなくなるもの | CI の代替 |
 | --- | --- |
@@ -111,11 +115,22 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `session-url-notice.sh`(セッション URL の提示) | **無し**。宛先の Issue とそのコメントは CI から読めるが、CI が走るのは規約の起点(着手時)より後で、赤にしても事後に貼らせる以外に直せない(`harness/case-law/process.md`)。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
 | `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
 | `check-test-helper-duplication.sh`(即時フィードバック) | 結果は push 前の検査(git hooks の `duplicate-test-helpers.py --all src`。`python3` が使える環境だけ)と CI(`rules-check`)が `src/` 全体で拾う。**即時性だけが失われる** |
-| `record-firings.sh`(発火ログ) | **無し**。ただし失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、誤ったゼロにはならない)。カナリアと同じ「失敗してもガードが破れない」検出系 |
+| `record-firings.sh`(発火ログ) | **無し**。`harness-record` の計測は失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、誤ったゼロにはならない)。ただし同じログを読む `block-parent-session-edit.sh` は、ログに implementation-flow の区切りが無ければ素通りするので、こちらが落ちると親の編集の拒否も効かなくなる |
+| `block-parent-session-edit.sh`(セッション中の行為の禁止) | **無し**。誰が編集したか(親かサブエージェントか)はコミットに残らない。発火する環境でも残る穴は下 |
+
+`block-parent-session-edit.sh` が発火する環境でも残る穴は 5 つ。
+
+| 残る穴 | 内容 |
+| --- | --- |
+| 区切りがログに残らない起動 | Skill ツールを経ずに手順を読んで implementation-flow を進める回は、`planner` を起動するまで止まらない(このとき `skill` の行はログに残らない。#1046 で実測)。スラッシュコマンドで起動したときに Skill の PostToolUse が届くかは未検証で、届かないなら `/harness-record` で入った回は前の区切りが残ったまま拒否が続く(抜け方は「例外」) |
+| matcher の外の道具 | `NotebookEdit` / `MultiEdit` は matcher(`Edit\|Write`)に入っていないので見ない。入力のキーが違い(`NotebookEdit` は `notebook_path`)、#1046 のゴールが Edit / Write に限られる |
+| Bash 経由の書き換え | `sed -i` やリダイレクトでの書き換えは見ない。コマンド文字列から書き換え先のパスを確定できず、このフックでは判定できない |
+| 正規化しないパス | `..` を挟んだ絶対パスや symlink 越しのパスは、綴りがルートと前方一致しないとリポジトリの外として通る(正規化はしない) |
+| 発火しない起動の形 | フックが発火しない起動の形(「発火しているかを確かめる」の実測)では効かない |
 
 ### 「代替不能」が実際に不発だったとき、手動で肩代わりする
 
-`block-npx.sh` / `block-git-during-verification-agent.sh` は上の表のとおり CI の代替が
+`block-npx.sh` / `block-git-during-verification-agent.sh` / `block-parent-session-edit.sh` は上の表のとおり CI の代替が
 **無し**。カナリア(次項)で不発が確定したら、「記録のみ」で終わらせず、そのフックが
 止めるはずだった操作を手動で確認する(不発のままミューテーションがコミットへ混入した回と、
 任意の `npx` 実行が素通りした回がある)。
@@ -124,6 +139,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | --- | --- |
 | `block-npx.sh` | 実行した `npx` コマンドがリポジトリへ何か書き込んでいないか `git status` で確認する |
 | `block-git-during-verification-agent.sh` | 作業ツリーを書き換えるサブエージェントの実行中に作られたコミットの diff を、そのエージェントが返したはずの内容とだけ照合する(意図しない変更が紛れていないか) |
+| `block-parent-session-edit.sh` | このセッションの親の Edit / Write の履歴を見直し、implementation-flow の中でリポジトリの中のファイルを編集していないか確認する |
 
 `session-url-notice.sh` の不発は対応不要(上の表のとおり、失っても情報が 1 つ
 足りないだけでガードは破れない)。
@@ -158,6 +174,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `lib/pre-push-detector-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |
 | `lib/edit-detector-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |
 | `lib/verification-agent-cases.sh` | あり | あり |
+| `lib/parent-session-edit-cases.sh` | あり | あり |
 | `lib/cases-report-cases.sh` | あり | あり |
 | `.github/scripts/check-added-cases.sh` | あり(`lint-suppress` ジョブ) | あり(`python3` がある環境だけ) |
 | `.github/scripts/check-pr-closing-issue-cases.sh` | あり | **無し(残る穴)** |
@@ -168,9 +185,9 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。次の
 | `.github/scripts/pr-explain-core-cases.sh` | あり | あり(`python3` と Node 20 以上がある環境だけ) |
 | `harness/githooks/lib/check-tally-cases.sh` | あり | あり |
 
-- **`canary-cases.sh` と `verification-agent-cases.sh` と `pre-push-detector-cases.sh` と `edit-detector-cases.sh` の 4 本は、層 3 の部品
+- **`canary-cases.sh` と `verification-agent-cases.sh` と `parent-session-edit-cases.sh` と `pre-push-detector-cases.sh` と `edit-detector-cases.sh` の 5 本は、層 3 の部品
   (`hook-canary.sh` / `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` /
-  `lib/pre-push-detector.sh` の `deny_on_all_src_failure` / `deny_on_violations` /
+  `block-parent-session-edit.sh` と `record-firings.sh` / `lib/pre-push-detector.sh` の `deny_on_all_src_failure` / `deny_on_violations` /
   `lib/edit-detector.sh` とそれを使うフック 3 本)を層 2・層 1 で検査する。** ゲートが見ているのは
   「リポジトリに入っているスクリプトの判定が変わっていないか」で、その部品がどの層で使われるかとは別。
   push 前手順(`implementation-flow` フェーズ 7)はカナリアの出力を読んで不発かどうかを決め、
@@ -235,6 +252,8 @@ silent だったフックの不発が detected に変わる。
 | 通った | 無い | ある | SessionStart は発火している。PreToolUse は不明 |
 | 通った | 無い | 無い | **本当に不発**(`分類: hook-environment`) |
 
+発火ログのパスの組み立ては `lib/firings-log.sh` が持つ。
+
 ```bash
 ls -d "${TMPDIR:-/tmp}/design-composer-verification-agents-${CLAUDE_CODE_SESSION_ID:-}"
 grep -c $'\tsession\t' "${TMPDIR:-/tmp}/design-composer-firings-${CLAUDE_CODE_SESSION_ID:-}.log"
@@ -289,6 +308,9 @@ deny のメッセージは、`jq` / `python3` が欠けていればその名前�
 
 ## 例外(エスケープハッチ)
 
+- `block-parent-session-edit.sh` が implementation-flow の外の作業でも拒否したら、その Edit / Write を
+  `implementer` / `general-purpose` に渡す。正規の抜け方はこれだけ(残る穴は「カバー範囲と残る穴」)。
+  拒否を外すためだけに `harness-record` / `harness-growth` を起動しない
 - `block-git-during-verification-agent.sh` が拒否したのに、該当するサブエージェントが動いていないなら、
   中断で PostToolUse が来ずに残った印。拒否文に出るディレクトリの `active.<種類>.*` がそれで、種類ごとの
   有効期間(フックの本文)を過ぎれば無視される。**待たずに消すかは利用者に確認してから**、そのファイルを
@@ -432,6 +454,11 @@ rm -rf "${TMPDIR}/design-composer-verification-agents-probe"
 
 # 背景起動の拒否を含む判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる
 bash .claude/hooks/lib/verification-agent-cases.sh; echo "exit=$?"
+```
+
+```bash
+# implementation-flow の中の親セッションの編集の判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる
+bash .claude/hooks/lib/parent-session-edit-cases.sh; echo "exit=$?"
 ```
 
 ```bash

@@ -59,6 +59,7 @@ GitHub に残らない口頭の指示(「その UI はやめて欲しい」な�
 `${TMPDIR:-/tmp}/design-composer-firings-<session_id>.log` へ 1 行ずつ書き出している
 (1 列目 = 時刻、2 列目 = `session` / `skill` / `agent`、3 列目 = 名前)。
 **記憶(自己申告)からではなく、このログを読んで記録の「発火」に書く。**
+このスキルの起動は `implementation-flow` の区切りになる(→ `.claude/hooks/block-parent-session-edit.sh`)。
 
 ```bash
 ls "${TMPDIR:-/tmp}"/design-composer-firings-*.log

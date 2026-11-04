@@ -27,11 +27,10 @@
 # (implementation-flow「サブエージェントの使い方」)。
 set -uo pipefail
 
+hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit 0
+. "$hook_dir/lib/hook-input.sh" || exit 0
+
 input="$(cat)"
-extract() {
-  local pattern="\"$1\"[[:space:]]*:[[:space:]]*\"([^\"]*)\""
-  [[ "$input" =~ $pattern ]] && printf '%s' "${BASH_REMATCH[1]}"
-}
 
 tool_name="$(extract tool_name)"
 event_name="$(extract hook_event_name)"

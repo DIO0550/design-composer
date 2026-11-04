@@ -4,7 +4,9 @@
 # 判定表の最後の文の照合。
 #
 # 使い方: source したうえで `decide`・`normalize_miss`・`all_in_category`・`report` を呼び、最後の文を
-# `exit "$cases_failed"` にする（照合するのは `cases-report-cases.sh`）。ケースの並べ方と検出器の
+# `exit "$cases_failed"` にする（照合するのは `cases-report-cases.sh`）。deny でも exit 0 で JSON を返す
+# PreToolUse フックの判定表は、`decide` の代わりに `decide_by_permission` を呼ぶ（フックを流すところから
+# 任せるなら `hook_verdict_by_permission`）。ケースの並べ方と検出器の
 # 呼び方は、判定表ごとに違う（走査ルートを絶対パスで渡すもの・`cd` してから相対で渡すもの、置くのが
 # 1 ファイルか木か）ので、
 # そこは各判定表が持つ。検出器の種別を docstring の一覧と照合するなら
@@ -39,6 +41,36 @@ decide() {
     1:heading) echo "deny" ;;
     *) echo "broken" ;;
   esac
+}
+
+# PreToolUse フックの出力と終了コードから、deny / pass / broken を決める。
+#
+# PreToolUse フックは deny でも exit 0 で JSON を返すので、`decide`（exit 1 かつ見出しありを deny と読む）
+# ではなく、出力の `permissionDecision` を見て決める。exit 0 以外は、deny の JSON を出していても broken。
+#
+# $1 フックの標準出力
+# $2 フックの終了コード（deny でも 0）
+decide_by_permission() {
+  local deny_pattern='"permissionDecision"[[:space:]]*:[[:space:]]*"deny"'
+  if [ "$2" -ne 0 ]; then
+    echo "broken"
+    return 0
+  fi
+  if [[ "$1" =~ $deny_pattern ]]; then
+    echo "deny"
+    return 0
+  fi
+  echo "pass"
+}
+
+# 標準入力を PreToolUse フックへ流し、出力と終了コードから deny / pass / broken を返す（`decide_by_permission`）。
+#
+# $1 フックのパス（`bash` で走らせる。相対なら呼び出し側のカレントディレクトリから辿る）
+hook_verdict_by_permission() {
+  local output status
+  output="$(bash "$1")"
+  status=$?
+  decide_by_permission "$output" "$status"
 }
 
 # 報告が 1 行以上あり、すべての行が期待した見出しで始まるか。違反を分類で報告する検出器の、落とす側の

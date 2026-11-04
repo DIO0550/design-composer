@@ -39,6 +39,7 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 
 - **親はリポジトリの中のファイルを編集しない**(`src/` に限らず `.claude/` `harness/` `docs/` `rules/` も)。
   修正の小ささは理由にしない(1 行でも `implementer` に渡す)。線引きを毎回判断すると分担が崩れる
+  (→ `.claude/hooks/block-parent-session-edit.sh`)
 - 親が作業ツリーを変えてよいのは、判断を伴わない次の 2 つだけ
   - 自動修正コマンド(`pnpm exec biome check --write` 等)をフェーズ 7 で走らせる
   - 検証エージェントの書き換えを、基準のコミットへ `git restore` / `git clean` で戻す

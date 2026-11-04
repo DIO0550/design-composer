@@ -6,7 +6,7 @@ description: "harness/records/ の記録を数え、人・bot・CI へ届いた�
 # ハーネスの育て方
 
 記録を数え、**人・bot・CI へ届いた指摘が再発している分類 1 つ**にだけ手を入れる。印象や
-読み直しでは決めない。記録の新規作成はしない(→ `harness-record`)。
+読み直しでは決めない。記録の新規作成はしない(→ `harness-record`)。このスキルの起動は `implementation-flow` の区切りになる(→ `.claude/hooks/block-parent-session-edit.sh`)。
 
 介入先は**フックか判例の 2 択**。読み手の記憶に頼る文章(`rules/`・スキルの手順・エージェントの
 観点)を足すことは介入に数えない。機械判定できないものは判例に置き、検証エージェントがそこを読む。
