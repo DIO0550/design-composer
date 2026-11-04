@@ -28,7 +28,7 @@ function placed(lengths: readonly AxisLength[]): ResizableSelection {
   return {
     lengths,
     origin: Option.some({ x: 30, y: 70 }),
-    snapTargets: { kind: "none" },
+    targets: { kind: "none" },
     rotation: { own: 0, total: 0 },
   };
 }
@@ -38,7 +38,7 @@ function unplaced(lengths: readonly AxisLength[]): ResizableSelection {
   return {
     lengths,
     origin: Option.none,
-    snapTargets: { kind: "none" },
+    targets: { kind: "none" },
     rotation: { own: 0, total: 0 },
   };
 }

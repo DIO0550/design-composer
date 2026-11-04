@@ -6,8 +6,8 @@ import { OverlayStage } from "../__stories__/overlay-stage";
 import { FacingDistanceOverlay } from "./index";
 
 /**
- * Alt / Option の距離（運んでいる間と、選択しているだけのとき。映し方は `OverlayStage` の doc
- * を参照）。
+ * Alt / Option の距離（運んでいる間と、リサイズしている間と、選択しているだけのとき。映し方は
+ * `OverlayStage` の doc を参照）。
  */
 const meta = {
   title: "features/editor/features/canvas/ArtboardCanvas/FacingDistanceOverlay",

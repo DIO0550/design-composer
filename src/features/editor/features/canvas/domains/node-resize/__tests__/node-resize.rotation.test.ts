@@ -19,7 +19,7 @@ import {
   setupFlowResizable,
   setupResizable,
   setupView,
-  snapTargetNamesAt,
+  targetNamesAt,
 } from "./setup";
 
 /*
@@ -328,27 +328,33 @@ test("回った Box の中のノードは、自分の向きと祖先を合わせ
 
 test("回したノードには揃え先が無い", () => {
   expect(
-    snapTargetNamesAt(setupTurnedSelection("tilted"), { x: 1, y: 0.5 }),
-  ).toEqual([]);
+    targetNamesAt(setupTurnedSelection("tilted"), { x: 1, y: 0.5 }),
+  ).toEqual(Option.none);
 });
 
 test("回った Box の中のノードにも揃え先が無い", () => {
   expect(
-    snapTargetNamesAt(setupTurnedSelection("badge"), { x: 1, y: 0.5 }),
-  ).toEqual([]);
+    targetNamesAt(setupTurnedSelection("badge"), { x: 1, y: 0.5 }),
+  ).toEqual(Option.none);
 });
 
 test("回った Box の中の、自分は回していないノードにも揃え先が無い", () => {
   // 自分の向きで見ると回っていないので、合計で見ていなければ揃え先を持ってしまう
   expect(
-    snapTargetNamesAt(setupTurnedSelection("upright"), { x: 1, y: 0.5 }),
-  ).toEqual([]);
+    targetNamesAt(setupTurnedSelection("upright"), { x: 1, y: 0.5 }),
+  ).toEqual(Option.none);
 });
 
 test("1 回り回したノードは回っていないものと同じく揃え先を持つ", () => {
   expect(
-    snapTargetNamesAt(setupTurnedSelection("stamp"), { x: 1, y: 0.5 }),
-  ).toEqual(["home", "card", "tilted"]);
+    targetNamesAt(setupTurnedSelection("stamp"), { x: 1, y: 0.5 }),
+  ).toEqual(
+    Option.some({
+      kind: "within-parent",
+      parentName: "home",
+      siblingNames: ["card", "tilted"],
+    }),
+  );
 });
 
 test("359.8 度の絶対配置の Box の中にある -719.8 度の絶対配置のノードは、揃え先を持つ", () => {
@@ -391,5 +397,11 @@ test("359.8 度の絶対配置の Box の中にある -719.8 度の絶対配置�
     ["badge"],
   );
 
-  expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual(["card"]);
+  expect(targetNamesAt(selection, { x: 1, y: 0.5 })).toEqual(
+    Option.some({
+      kind: "within-parent",
+      parentName: "card",
+      siblingNames: [],
+    }),
+  );
 });

@@ -33,8 +33,8 @@ test("右辺の内側を押すと幅のハンドルを掴む", () => {
       pointerOrigin: { x: 297, y: 100 },
       grabbedAt: Option.some({ x: 30, y: 70 }),
       rotation: { own: 0, total: 0 },
-      snapTargetNames: [],
-      snapFrom: Option.none,
+      targetNames: Option.none,
+      measured: Option.none,
     }),
   );
 });
@@ -703,7 +703,7 @@ test("両側の帯に入る細い要素では、近いほうの辺を掴む", ()
   const narrow: ResizableSelection = {
     lengths: [AxisLength.create("width", 10)],
     origin: Option.some({ x: 30, y: 70 }),
-    snapTargets: { kind: "none" },
+    targets: { kind: "none" },
     rotation: { own: 0, total: 0 },
   };
   const narrowBounds: RotatedBounds = {
@@ -726,7 +726,7 @@ test("両側の帯に入る細い要素でも、左寄りを押せば始点側�
   const narrow: ResizableSelection = {
     lengths: [AxisLength.create("width", 10)],
     origin: Option.some({ x: 30, y: 70 }),
-    snapTargets: { kind: "none" },
+    targets: { kind: "none" },
     rotation: { own: 0, total: 0 },
   };
   const narrowBounds: RotatedBounds = {

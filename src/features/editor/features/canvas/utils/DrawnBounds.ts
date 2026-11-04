@@ -3,6 +3,7 @@ import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-b
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { CanvasDom } from "@/libs/canvas-dom";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /** 範囲選択が重なりを見る相手の名前と、その画面上の向き（自分と祖先の合計）。 */
@@ -84,10 +85,7 @@ export const DrawnBounds = {
    * @returns 描かれていて面積を持つものの矩形。渡された並びの順を保つ
    */
   collectDrawnBounds(names: readonly string[]): readonly CanvasBounds[] {
-    return names.flatMap((name) => {
-      const measured = DrawnBounds.measureWithArea(name);
-      return Option.isSome(measured) ? [measured.value] : [];
-    });
+    return ArrayEx.filterMap(names, DrawnBounds.measureWithArea);
   },
 
   /**
@@ -101,11 +99,9 @@ export const DrawnBounds = {
    *   いなければ `none`
    */
   enclosing(names: readonly string[]): Option<CanvasBounds> {
-    const drawn = names.flatMap((name) => {
-      const measured = DrawnBounds.measure(name);
-      return Option.isSome(measured) ? [measured.value] : [];
-    });
-    return CanvasBounds.enclosing(drawn);
+    return CanvasBounds.enclosing(
+      ArrayEx.filterMap(names, DrawnBounds.measure),
+    );
   },
 
   /**

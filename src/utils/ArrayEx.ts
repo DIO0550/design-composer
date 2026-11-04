@@ -181,6 +181,23 @@ export const ArrayEx = {
   },
 
   /**
+   * 各要素を不在になりうる手続きで写し、値のあったものだけを並びの順に残す。
+   *
+   * @param array 写す前の並び
+   * @param fn 要素から写した先の値を作る。作れなければ `none`
+   * @returns `fn` が `some` を返した要素の値を、元の並びの順に持つ新しい並び
+   */
+  filterMap<T, U>(
+    array: readonly T[],
+    fn: (item: T) => Option<U>,
+  ): readonly U[] {
+    return array.flatMap((item) => {
+      const mapped = fn(item);
+      return Option.isSome(mapped) ? [mapped.value] : [];
+    });
+  },
+
+  /**
    * 先頭を除いた並び。
    *
    * @param array 除く前の並び

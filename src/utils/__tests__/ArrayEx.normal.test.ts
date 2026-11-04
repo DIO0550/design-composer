@@ -260,3 +260,11 @@ test("どの要素も写せれば、写した値が同じ順に並ぶ", () => {
     ArrayEx.mapNonEmptyUntilErr([1, 2, 3], (item) => Result.ok(item * 10)),
   ).toEqual(Result.ok([10, 20, 30]));
 });
+
+test("写して値のあった要素だけが、元の並びの順に残る", () => {
+  expect(
+    ArrayEx.filterMap([3, -1, 2, -5, 4], (item) =>
+      item > 0 ? Option.some(item * 10) : Option.none,
+    ),
+  ).toEqual([30, 20, 40]);
+});

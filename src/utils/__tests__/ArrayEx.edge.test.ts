@@ -149,3 +149,7 @@ test("写せない要素があれば、並びで最初に写せなかった要�
     ),
   ).toEqual(Result.err(-2));
 });
+
+test("どの要素も写せなければ、写した並びは空になる", () => {
+  expect(ArrayEx.filterMap(["a", "b"], () => Option.none)).toEqual([]);
+});

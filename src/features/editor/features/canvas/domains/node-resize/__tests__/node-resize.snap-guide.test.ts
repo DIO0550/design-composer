@@ -110,7 +110,7 @@ test("揃え先の辺の近くまで運んでいなければ、ガイド線は�
   );
 });
 
-test("辺のスナップの組を載せていない掴みでは、揃え先の近くでもガイド線は出ない", () => {
+test("掴んだ時点の実測を載せていない掴みでは、揃え先の近くでもガイド線は出ない", () => {
   const resize = grabbedAt(
     setupResizable(),
     { x: 1, y: 0.5 },
@@ -167,7 +167,7 @@ test("掴んでいる状態に載せた揃った線が、今出すガイド線�
     NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupView()),
   );
 
-  expect(
-    NodeResize.snapGuides(NodeResize.withSnapGuides(resize, tracked.guides)),
-  ).toEqual(tracked.guides);
+  expect(NodeResize.snapGuides(NodeResize.withLines(resize, tracked))).toEqual(
+    tracked.guides,
+  );
 });

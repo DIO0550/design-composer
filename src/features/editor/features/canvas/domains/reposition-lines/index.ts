@@ -1,5 +1,5 @@
 import { Offset } from "@/domains/unit/offset";
-import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
+import { DistanceTargets } from "@/features/editor/features/canvas/domains/distance-targets";
 import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import {
   SideSnap,
@@ -16,19 +16,6 @@ export type RepositionLines = Readonly<{
   snap: SnapGuides;
   distanceLines: FacingDistances;
 }>;
-
-/**
- * Alt / Option の距離を測る相手（画面上の px）。
- */
-export type DistanceTargets =
-  /** ノード: 落とし先の親の矩形と、その親の直下の運んでいるもの以外の子 */
-  | Readonly<{
-      kind: "within-parent";
-      parentBounds: CanvasBounds;
-      siblings: readonly CanvasBounds[];
-    }>
-  /** artboard: 運んでいる artboard 以外の、描かれていて大きさを持つ artboard（`.dcmp` の並び順） */
-  | Readonly<{ kind: "among-artboards"; others: readonly CanvasBounds[] }>;
 
 /**
  * ノードの座標の置き直しと artboard の移動 1 回分の吸い付きの答え。
@@ -64,7 +51,10 @@ export const RepositionLines = {
     const snapped = SideSnap.toSnapped(snap);
     const distanceLines = Option.unwrapOr(
       Option.map(distanceTargets, (targets) =>
-        distanceLinesFrom(SideSnap.movedBy(snap, snapped.offset), targets),
+        DistanceTargets.toDistances(
+          targets,
+          SideSnap.movedBy(snap, snapped.offset),
+        ),
       ),
       FacingDistances.None,
     );
@@ -102,32 +92,3 @@ export const RepositionLines = {
     };
   },
 } as const;
-
-/**
- * 寄せたあとの運んでいるものから、測る相手までの Alt / Option の距離を引く。
- *
- * kind が分けているのは何を置き直しているか（親の中のノード / キャンバス上の artboard）で、
- * FacingDistances は相手の並びから線を引くだけでノードと artboard を区別しない。
- *
- * @param moved 寄せたあとの運んでいるものの矩形
- * @param targets 距離を測る相手
- * @returns 向きごとの短い線
- */
-function distanceLinesFrom(
-  moved: CanvasBounds,
-  targets: DistanceTargets,
-): FacingDistances {
-  switch (targets.kind) {
-    case "within-parent":
-      return FacingDistances.create({
-        from: moved,
-        parentBounds: targets.parentBounds,
-        siblings: targets.siblings,
-      });
-    case "among-artboards":
-      return FacingDistances.createAmong({
-        from: moved,
-        others: targets.others,
-      });
-  }
-}

@@ -6,7 +6,6 @@ import { resizeAnchorAt } from "@/features/editor/features/canvas/__tests__/canv
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import type { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
-import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
 import { Option } from "@/utils/Option";
 import {
   NodeResize,
@@ -14,6 +13,7 @@ import {
   type ResizeGrip,
   type ResizeHandleAnchor,
   type ResizeHold,
+  type ResizeTargetNames,
 } from "../index";
 
 /** 画面の (100, 50) から 200x100 の大きさで描かれている要素。 */
@@ -34,7 +34,7 @@ export function setupResizable(): ResizableSelection {
       AxisLength.create("height", 100),
     ],
     origin: Option.some({ x: 30, y: 70 }),
-    snapTargets: { kind: "none" },
+    targets: { kind: "none" },
     rotation: { own: 0, total: 0 },
   };
 }
@@ -82,32 +82,32 @@ export function gripAt(
 }
 
 /**
- * その掴み方で掴んだときの揃え先の名前。
+ * その掴み方で掴んだときの揃え先と距離の相手の名前。
  *
  * @param resizable 掴む対象
  * @param grip 掴んだもの
- * @returns `NodeResize.hold` が絞った揃え先の名前
+ * @returns `NodeResize.hold` が絞った揃え先と距離の相手の名前
  */
-export function heldSnapTargetNames(
+export function heldTargetNames(
   resizable: ResizableSelection,
   grip: ResizeGrip,
-): readonly string[] {
-  return NodeResize.hold(resizable, grip, Offset.Origin).snapTargetNames;
+): Option<ResizeTargetNames> {
+  return NodeResize.hold(resizable, grip, Offset.Origin).targetNames;
 }
 
 /**
- * 選んだものをその箇所で掴んだときの揃え先の名前。
+ * 選んだものをその箇所で掴んだときの揃え先と距離の相手の名前。
  *
  * @param selection ドキュメントと選択の対
  * @param anchor 押した箇所
- * @returns `NodeResize.hold` が絞った揃え先の名前（掴めなければテストを落とす）
+ * @returns `NodeResize.hold` が絞った揃え先と距離の相手の名前（掴めなければテストを落とす）
  */
-export function snapTargetNamesAt(
+export function targetNamesAt(
   selection: DocumentSelection,
   anchor: ResizeHandleAnchor,
-): readonly string[] {
+): Option<ResizeTargetNames> {
   const resizable = NodeResize.resizable(selection);
-  return heldSnapTargetNames(resizable, gripAt(resizable, anchor));
+  return heldTargetNames(resizable, gripAt(resizable, anchor));
 }
 
 /**
@@ -116,7 +116,7 @@ export function snapTargetNamesAt(
  * @param resizable 掴む対象
  * @param anchor 押した箇所
  * @param pointerOrigin 押した位置
- * @returns 掴んだもの（辺のスナップの組は載っていない）
+ * @returns 掴んだもの（掴んだ時点の実測は載っていない）
  */
 export function heldAt(
   resizable: ResizableSelection,
@@ -143,8 +143,50 @@ export function grabbedAt(
 }
 
 /**
- * その箇所を押して掴み、掴んだ時点の矩形（`setupBounds`）とその揃え先で辺のスナップの組を
- * 載せた状態。
+ * `setupResizable` をその箇所で押して掴み、揃え先と距離の相手の名前を差し替えたうえで、
+ * 掴んだ時点の矩形（`setupBounds`）と名前ごとの矩形から実測を載せた状態。
+ *
+ * @param anchor 押した箇所
+ * @param pointerOrigin 押した位置
+ * @param drawn 揃え先と距離の相手の名前と、名前ごとに描かれている矩形（無い名前は引けない）
+ * @returns 掴んだ状態
+ */
+export function grabbedWithTargets(
+  anchor: ResizeHandleAnchor,
+  pointerOrigin: Offset,
+  drawn: Readonly<{
+    names: ResizeTargetNames;
+    boundsByName: Readonly<Record<string, CanvasBounds>>;
+  }>,
+): NodeResize {
+  const held: ResizeHold = {
+    ...heldAt(setupResizable(), anchor, pointerOrigin),
+    targetNames: Option.some(drawn.names),
+  };
+  return grabbedWithMeasured(held, drawn.boundsByName);
+}
+
+/**
+ * 掴んだものに、掴んだ時点の矩形（`setupBounds`）と名前ごとの矩形から実測を載せて掴んだ状態。
+ *
+ * @param held 掴んだもの。揃え先と距離の相手の名前（`targetNames`）を持つ
+ * @param boundsByName 名前ごとに描かれている矩形（無い名前は引けない）
+ * @returns 掴んだ状態
+ */
+export function grabbedWithMeasured(
+  held: ResizeHold,
+  boundsByName: Readonly<Record<string, CanvasBounds>>,
+): NodeResize {
+  return NodeResize.grab(
+    NodeResize.withMeasured(held, {
+      grabbed: setupBounds(),
+      measure: (name) => Option.fromNullable(boundsByName[name]),
+    }),
+  );
+}
+
+/**
+ * その箇所を押して掴み、掴んだ時点の矩形（`setupBounds`）と揃え先で実測を載せた状態。
  *
  * @param anchor 押した箇所
  * @param pointerOrigin 押した位置
@@ -156,12 +198,13 @@ export function grabbedWithSnap(
   pointerOrigin: Offset,
   stationary: readonly CanvasBounds[],
 ): NodeResize {
-  return NodeResize.grab(
-    NodeResize.withSideSnap(
-      heldAt(setupResizable(), anchor, pointerOrigin),
-      SideSnap.create(setupBounds(), stationary),
+  const otherNames = stationary.map((_, index) => `stationary-${index}`);
+  return grabbedWithTargets(anchor, pointerOrigin, {
+    names: { kind: "among-artboards", otherNames },
+    boundsByName: Object.fromEntries(
+      stationary.map((bounds, index) => [otherNames[index], bounds]),
     ),
-  );
+  });
 }
 
 /**

@@ -1,4 +1,6 @@
 import { expect, test } from "vitest";
+import { AxisEnds } from "@/domains/unit/axis";
+import { SidePairs } from "@/domains/unit/side";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { Option } from "@/utils/Option";
 import { Facing } from "../index";
@@ -97,4 +99,10 @@ test("並びに起点自身があっても、自分には当たらない", () =>
   expect(
     Facing.firstReached(Right, { from: line, candidates: [line] }),
   ).toEqual(Option.none);
+});
+
+test("辺の組と進む側が同じ向きは、別に作っても同じ向きとみなす", () => {
+  expect(
+    Facing.equals(Right, { pair: SidePairs.Horizontal, end: AxisEnds.End }),
+  ).toBe(true);
 });

@@ -15,6 +15,7 @@ import type { UnderPointer } from "@/domains/session/under-pointer";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import type { DistanceTargets } from "@/features/editor/features/canvas/domains/distance-targets";
 import {
   Carrying,
   DropEdit,
@@ -27,10 +28,7 @@ import {
   DropZone,
   InsertionParent,
 } from "@/features/editor/features/canvas/domains/node-drop";
-import {
-  type DistanceTargets,
-  RepositionLines,
-} from "@/features/editor/features/canvas/domains/reposition-lines";
+import { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
 import {
   type DropParentCoordinates,
   type GrabbedPlacement,

@@ -2,7 +2,8 @@ import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { Props } from "@/domains/dcmp/node";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import { snapTargetNamesAt } from "./setup";
+import { Option } from "@/utils/Option";
+import { targetNamesAt } from "./setup";
 
 /*
  * フロー配置のノードの揃え先（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
@@ -83,11 +84,17 @@ function setupSelection(
 test("幅が固定の縦並びの親で右辺を掴むと、揃え先は親と自分以外の直下の子になる", () => {
   // 後ろの兄弟と絶対配置の兄弟を含み、孫の `first-label` は含めない
   expect(
-    snapTargetNamesAt(setupSelection({ parent: FixedColumn }), {
+    targetNamesAt(setupSelection({ parent: FixedColumn }), {
       x: 1,
       y: 0.5,
     }),
-  ).toEqual(["list", "first", "after", "pin"]);
+  ).toEqual(
+    Option.some({
+      kind: "within-parent",
+      parentName: "list",
+      siblingNames: ["first", "after", "pin"],
+    }),
+  );
 });
 
 test("artboard の直下で右辺を掴むと、揃え先は artboard と自分以外の直下の子になる", () => {
@@ -131,18 +138,25 @@ test("artboard の直下で右辺を掴むと、揃え先は artboard と自分�
     ["target"],
   );
 
-  expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual([
-    "home",
-    "badge",
-    "after",
-    "marker",
-  ]);
+  expect(targetNamesAt(selection, { x: 1, y: 0.5 })).toEqual(
+    Option.some({
+      kind: "within-parent",
+      parentName: "home",
+      siblingNames: ["badge", "after", "marker"],
+    }),
+  );
 });
 
 test("両軸とも固定のノードの右上の角は幅だけを掴むので、揃え先がある", () => {
   expect(
-    snapTargetNamesAt(setupSelection({ parent: FixedColumn }), { x: 1, y: 0 }),
-  ).toEqual(["list", "first", "after", "pin"]);
+    targetNamesAt(setupSelection({ parent: FixedColumn }), { x: 1, y: 0 }),
+  ).toEqual(
+    Option.some({
+      kind: "within-parent",
+      parentName: "list",
+      siblingNames: ["first", "after", "pin"],
+    }),
+  );
 });
 
 test("高さが固定でないノードの右下の角は幅だけを掴むので、揃え先がある", () => {
@@ -151,51 +165,64 @@ test("高さが固定でないノードの右下の角は幅だけを掴むの�
     target: { widthMode: "fixed", width: 120, heightMode: "hug" },
   });
 
-  expect(snapTargetNamesAt(selection, { x: 1, y: 1 })).toEqual([
-    "list",
-    "first",
-    "after",
-    "pin",
-  ]);
+  expect(targetNamesAt(selection, { x: 1, y: 1 })).toEqual(
+    Option.some({
+      kind: "within-parent",
+      parentName: "list",
+      siblingNames: ["first", "after", "pin"],
+    }),
+  );
 });
 
 test("高さが固定の横並びの親で下辺を掴むと、揃え先がある", () => {
   expect(
-    snapTargetNamesAt(setupSelection({ parent: FixedRow }), { x: 0.5, y: 1 }),
-  ).toEqual(["list", "first", "after", "pin"]);
+    targetNamesAt(setupSelection({ parent: FixedRow }), { x: 0.5, y: 1 }),
+  ).toEqual(
+    Option.some({
+      kind: "within-parent",
+      parentName: "list",
+      siblingNames: ["first", "after", "pin"],
+    }),
+  );
 });
 
 test("高さが固定の横並びの親で左下の角を掴むと、高さだけを掴むので揃え先がある", () => {
   expect(
-    snapTargetNamesAt(setupSelection({ parent: FixedRow }), { x: 0, y: 1 }),
-  ).toEqual(["list", "first", "after", "pin"]);
+    targetNamesAt(setupSelection({ parent: FixedRow }), { x: 0, y: 1 }),
+  ).toEqual(
+    Option.some({
+      kind: "within-parent",
+      parentName: "list",
+      siblingNames: ["first", "after", "pin"],
+    }),
+  );
 });
 
 test("縦並びの親で下辺を掴むと、揃え先は無い", () => {
   expect(
-    snapTargetNamesAt(setupSelection({ parent: FixedColumn }), {
+    targetNamesAt(setupSelection({ parent: FixedColumn }), {
       x: 0.5,
       y: 1,
     }),
-  ).toEqual([]);
+  ).toEqual(Option.none);
 });
 
 test("縦並びの親で右下の角を掴むと、揃え先は無い", () => {
   expect(
-    snapTargetNamesAt(setupSelection({ parent: FixedColumn }), { x: 1, y: 1 }),
-  ).toEqual([]);
+    targetNamesAt(setupSelection({ parent: FixedColumn }), { x: 1, y: 1 }),
+  ).toEqual(Option.none);
 });
 
 test("縦並びの親で左下の角を掴むと、主軸の高さだけを掴むので揃え先は無い", () => {
   expect(
-    snapTargetNamesAt(setupSelection({ parent: FixedColumn }), { x: 0, y: 1 }),
-  ).toEqual([]);
+    targetNamesAt(setupSelection({ parent: FixedColumn }), { x: 0, y: 1 }),
+  ).toEqual(Option.none);
 });
 
 test("横並びの親で右辺を掴むと、揃え先は無い", () => {
   expect(
-    snapTargetNamesAt(setupSelection({ parent: FixedRow }), { x: 1, y: 0.5 }),
-  ).toEqual([]);
+    targetNamesAt(setupSelection({ parent: FixedRow }), { x: 1, y: 0.5 }),
+  ).toEqual(Option.none);
 });
 
 test("揃えが center の親では、右辺を掴んでも揃え先は無い", () => {
@@ -203,7 +230,7 @@ test("揃えが center の親では、右辺を掴んでも揃え先は無い", 
     parent: { ...FixedColumn, align: "center" },
   });
 
-  expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual([]);
+  expect(targetNamesAt(selection, { x: 1, y: 0.5 })).toEqual(Option.none);
 });
 
 test("幅が fixed なのに長さを書いていない親では、右辺を掴んでも揃え先は無い", () => {
@@ -211,7 +238,7 @@ test("幅が fixed なのに長さを書いていない親では、右辺を掴�
     parent: { layout: "column", widthMode: "fixed" },
   });
 
-  expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual([]);
+  expect(targetNamesAt(selection, { x: 1, y: 0.5 })).toEqual(Option.none);
 });
 
 test("回った Box の中にいるノードは、右辺を掴んでも揃え先は無い", () => {
@@ -219,7 +246,7 @@ test("回った Box の中にいるノードは、右辺を掴んでも揃え先
     parent: { ...FixedColumn, rotation: 30 },
   });
 
-  expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual([]);
+  expect(targetNamesAt(selection, { x: 1, y: 0.5 })).toEqual(Option.none);
 });
 
 test("自分が回っているノードは、右辺を掴んでも揃え先は無い", () => {
@@ -228,5 +255,5 @@ test("自分が回っているノードは、右辺を掴んでも揃え先は�
     target: { ...BothFixed, rotation: 30 },
   });
 
-  expect(snapTargetNamesAt(selection, { x: 1, y: 0.5 })).toEqual([]);
+  expect(targetNamesAt(selection, { x: 1, y: 0.5 })).toEqual(Option.none);
 });
