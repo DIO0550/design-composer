@@ -1,0 +1,1686 @@
+{
+  "version": 1,
+  "pr": 1285,
+  "sha": "d78b6bc0836a8475e87a3d3a9ac4cd53db9fa328",
+  "issue": 1283,
+  "overview": {
+    "title": "装置の退役候補を、発火ログではなく記録の出どころから数える",
+    "lead": "`count.sh --shrink` の節 3 が、発火ログが無くてもレビューエージェントごとの本数・件数・最後に指摘を残した記録・それ以降の本数を出し、以降が 10 本以上の装置を退役候補として 1 行で示す。",
+    "before": [
+      {
+        "text": "節 3 は記録の `## 発火` 行だけを読み、発火ログが取れた記録が 10 本未満(実際は 2 本)なので、いつも「候補は出さない」で止まっていた"
+      },
+      {
+        "text": "減らす側(装置の退役)が一度も動かず、増やす側(観点の追加)だけが動く状態だった"
+      }
+    ],
+    "after": [
+      {
+        "text": "節 3-1 が `.claude/agents/*-reviewer.md` ごとに、記録の `- 出どころ: レビュー（<name>）` 行から本数・件数・件/本・最後・以降を出す",
+        "message": "read-records"
+      },
+      {
+        "text": "以降が 10 本以上の装置を先頭の「退役候補:」の行に、無ければ「該当なし」を出す",
+        "message": "shrink"
+      },
+      {
+        "text": "0 本の装置は候補にせず「まだ指摘を残していない」に名前だけ、定義ファイルの無い名前は「定義の無い名前」に本数・件数だけを出す",
+        "message": "glob-agents"
+      },
+      {
+        "text": "節 3-2 はスキルを発火ログから数える旧の形のまま残る"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "累計ではなく窓で見る",
+        "text": "最初の実装は全期間の累計で「0 本」を条件にしていたが、止まった装置も新設直後の装置も区別できないと `solution-reviewer` が指摘し、節 2 と同じ「以降」の窓に変えた",
+        "go": {
+          "kind": "message",
+          "id": "read-records"
+        }
+      },
+      {
+        "title": "0 本の装置は候補にしない",
+        "text": "最後の記録が無く観測期間が決められない(新設直後と区別できない)。定義の追加日を git から引く案は、集計を git に依存させ判定表で守れなくなるので採らなかった",
+        "go": {
+          "kind": "file",
+          "path": "harness/records/count.sh"
+        }
+      },
+      {
+        "title": "定義の無い名前を分ける",
+        "text": "`implementation-reviewer`(観点別に分かれる前の名前、148 本 1108 件)は、どの観点の指摘か分からず按分できないので、表に混ぜず後ろに出す。名前は固定せず定義ファイルの有無で分ける",
+        "go": {
+          "kind": "message",
+          "id": "glob-agents"
+        }
+      },
+      {
+        "title": "数えない 41 行",
+        "text": "括弧の中に自由記述を持つ出どころ行(`レビュー（implementation-reviewer のミューテーション実測）` 等)は語彙表に反する綴りで按分できないので数えない",
+        "go": {
+          "kind": "file",
+          "path": "harness/records/count.sh"
+        }
+      },
+      {
+        "title": "合成記録では現れない形",
+        "text": "`test-reviewer` の実測で、連番・1 桁本数の合成記録では以降の計算・最後の数値比較・本数の数値ソートを壊しても落ちないと分かり、まばらな番号と 3 種の混在のケースを足した",
+        "go": {
+          "kind": "file",
+          "path": "harness/records/count-cases.sh"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "retire",
+      "label": "装置の退役候補",
+      "role": "記録からレビューエージェントの退役候補を出し、ハーネスを育てる手順の「縮める」の材料にする"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "記録の集計と、その判定表。育て方の手順の語彙を集計の列に合わせる"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "harness/records/count.sh",
+      "name": "記録の集計",
+      "role": "振り返りの記録を読み、分類ごとの再発と、縮める側の数字を出す",
+      "feature": "retire",
+      "change": "節 3 を 2 段にし、段 1 をレビューエージェントごとの出どころの集計にした。門と出どころの取り出しを共有関数に寄せた"
+    },
+    {
+      "path": "harness/records/count-cases.sh",
+      "name": "集計の判定表",
+      "role": "合成した記録と定義へ集計を当て、全モードの判定を 1 コマンドで確かめる",
+      "feature": "retire",
+      "change": "節 3 の 25 ケースと、定義を置く・見出しの下を切り出すヘルパーを足した"
+    },
+    {
+      "path": ".claude/skills/harness-growth/SKILL.md",
+      "name": "育て方の手順",
+      "role": "記録を数えて 1 分類に介入し、縮める側も 1 つ実施する手順",
+      "feature": "retire",
+      "change": "「縮める」表の節 3 の条件を「最後に指摘を残した記録から 10 本以上」にした"
+    },
+    {
+      "path": "harness/records/README.md",
+      "name": "記録の読み方",
+      "role": "記録フォルダの使い方",
+      "change": "`--shrink` の説明の語を「装置の退役候補」にした",
+      "graph": false
+    },
+    {
+      "path": ".claude/agents/",
+      "name": "レビューエージェントの定義",
+      "role": "観点別の検証エージェント。名前の一覧として読まれる(変更なし)",
+      "feature": "retire"
+    },
+    {
+      "path": "harness/records/",
+      "name": "振り返りの記録",
+      "role": "PR ごとの指摘の記録。出どころの行にエージェント名が入る(変更なし)",
+      "feature": "retire"
+    }
+  ],
+  "messages": [
+    {
+      "id": "shrink",
+      "from": ".claude/skills/harness-growth/SKILL.md",
+      "to": "harness/records/count.sh",
+      "kind": "qry",
+      "name": "縮める側の数字を出す",
+      "code": "bash harness/records/count.sh --shrink",
+      "via": "exec",
+      "returns": "節 1〜3。節 3-1 に退役候補の行と装置ごとの表",
+      "status": "changed"
+    },
+    {
+      "id": "glob-agents",
+      "from": "harness/records/count.sh",
+      "to": ".claude/agents/",
+      "kind": "qry",
+      "name": "定義のある装置を集める",
+      "code": "defined_reviewers",
+      "via": "file",
+      "returns": "`*-reviewer.md` の名前を glob 順に",
+      "status": "added"
+    },
+    {
+      "id": "read-records",
+      "from": "harness/records/count.sh",
+      "to": "harness/records/",
+      "kind": "qry",
+      "name": "出どころの行を装置ごとに数える",
+      "code": "reviewer_rows \"$(defined_reviewers)\"",
+      "via": "file",
+      "payload": "定義のある名前の並び",
+      "returns": "装置ごとの本数・件数・件/本・最後・以降(定義の有無つき)",
+      "status": "added"
+    },
+    {
+      "id": "run-cases",
+      "from": "harness/records/count-cases.sh",
+      "to": "harness/records/count.sh",
+      "kind": "qry",
+      "name": "合成したツリーで集計を走らせる",
+      "code": "run_count --shrink",
+      "via": "exec",
+      "returns": "節 3 の出力(見出しの下の行を切り出して比べる)",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "growth",
+      "label": "育て方の手順が縮める側を読むとき",
+      "steps": [
+        "shrink",
+        "glob-agents",
+        "read-records"
+      ]
+    },
+    {
+      "id": "cases",
+      "label": "判定表を走らせたとき",
+      "steps": [
+        "run-cases",
+        "glob-agents",
+        "read-records"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "phase": "core",
+      "role": "節 3 を 2 段にし、段 1 をレビューエージェントごとの出どころの集計にする",
+      "why": "発火ログは起動の形によって取れないが、記録の出どころには既にエージェント名が 233 本分入っている。計画段階で `plan-reviewer` の 10 件(括弧内に自由記述を持つ 41 行の扱い、門の関数化、ケースの落ちうる形など)を反映してから書いた。",
+      "flows": [
+        "growth",
+        "cases"
+      ],
+      "review": [
+        "分類の行の直後の出どころ行だけを指摘 1 件とする門を、既存の 2 箇所と新しい 1 箇所で共有していること",
+        "バッククォートを全部外してから行全体で名前に当てていること(括弧の中だけにバッククォートがある記録が 23 本ある)"
+      ],
+      "before": [
+        {
+          "text": "節 3 は発火ログの有無で止まり、エージェントの退役を判断する材料が無かった"
+        }
+      ],
+      "after": [
+        {
+          "text": "段 1 が装置ごとの本数・件数・件/本を出す(この時点では累計)",
+          "message": "read-records"
+        }
+      ],
+      "notes": [
+        {
+          "path": "harness/records/count.sh",
+          "start": 105,
+          "end": 110,
+          "text": "門を関数にした。`summary_rows` / `list_findings` / 新しい `reviewer_rows` の 3 箇所が呼ぶ。既存の出力は byte 単位で変わらない"
+        },
+        {
+          "path": "harness/records/count.sh",
+          "start": 184,
+          "end": 212,
+          "text": "装置ごとの集計。定義のある名前はシェル側から受け取り、出どころに現れなくても 0 本で返す"
+        },
+        {
+          "path": "harness/records/count.sh",
+          "start": 194,
+          "end": 194,
+          "text": "定義の無い名前を末尾へ置くつもりのソートキー。次のコミットで到達しないと分かって消した"
+        },
+        {
+          "path": "harness/records/count.sh",
+          "start": 228,
+          "end": 228,
+          "text": "判断基準を出力に書いた注記。手順側の表と割れるので次のコミットで消した"
+        },
+        {
+          "path": "harness/records/count.sh",
+          "start": 293,
+          "end": 294,
+          "text": "記録の総数の門。10 本未満なら表を出さず段 2 へ続く(exit しない)"
+        }
+      ]
+    },
+    {
+      "sha": "719a1ace6c659fe7ff578a909c68732025ee79d9",
+      "phase": "revise",
+      "role": "累計ではなく窓で見る形にし、1 段目のレビューの指摘を反映する",
+      "why": "`solution-reviewer` / `over-guard-reviewer` / `harness-reviewer` / `comment-reviewer` が同じ根本原因を指した: 全期間の累計では止まった装置も新設直後の装置も 0 本にならず(あるいは即座に 0 本になり)、「0 本なら退役」の条件が実運用で成立しない。節 2 と同じ「以降」の窓に変え、候補を 1 行で出し、0 本の装置は候補から外した。到達しないソートキー・出どころの正規化の重複・名前の語彙(`finding_tag` → `spelling_of_finding`)も同時に直した。",
+      "flows": [
+        "growth"
+      ],
+      "review": [
+        "候補の条件が「定義のある装置」「本数 > 0」「以降 ≥ 閾値」の 3 つで、閾値と門が同じ変数を参照していること",
+        "0 本の装置を候補にしない理由(観測期間が決められない)が、手順側の表の条件と食い違っていないこと"
+      ],
+      "before": [
+        {
+          "text": "表は全装置の累計で、判断基準の注記が出力と手順の 2 箇所に割れていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "先頭に「退役候補（以降 10 本以上）: …」か「該当なし」の 1 行",
+          "message": "shrink"
+        },
+        {
+          "text": "0 本の装置は「まだ指摘を残していない」に名前だけ、定義の無い名前は本数順で後ろに",
+          "message": "glob-agents"
+        }
+      ],
+      "notes": [
+        {
+          "path": "harness/records/count.sh",
+          "start": 112,
+          "end": 115,
+          "text": "出どころの値の取り出しを共有関数にした(重複の指摘)"
+        },
+        {
+          "path": "harness/records/count.sh",
+          "start": 243,
+          "end": 246,
+          "text": "候補の行。以降が閾値以上の定義のある装置だけを名前で並べる"
+        },
+        {
+          "path": "harness/records/count.sh",
+          "start": 253,
+          "end": 253,
+          "text": "0 本の定義は表に出さず、後で名前だけを出すために溜める"
+        },
+        {
+          "path": "harness/records/count.sh",
+          "start": 321,
+          "end": 321,
+          "text": "候補の閾値と記録の総数の門が同じ変数を参照する"
+        },
+        {
+          "path": ".claude/skills/harness-growth/SKILL.md",
+          "start": 86,
+          "end": 86,
+          "text": "節 3 の条件を「最後に指摘を残した記録から 10 本以上」に。前の「0 本」は実運用で成立しない"
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "start": 32,
+          "end": 32,
+          "text": "ドットディレクトリの定義が前のケースから残っていたのを直した"
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "start": 104,
+          "end": 110,
+          "text": "見出しの下の行を切り出すヘルパー。3 箇所にあった awk を畳んだ"
+        }
+      ]
+    },
+    {
+      "sha": "d78b6bc0836a8475e87a3d3a9ac4cd53db9fa328",
+      "phase": "hard",
+      "role": "合成記録では現れない形のケースを判定表に足す",
+      "why": "`test-reviewer` が実装を壊して実測し、判定表が通ったまま出力が変わる壊し方を 13 件見つけた。合成記録が pr-1..N の連番・1 桁の本数だったので、以降の計算を「総数 − 最後の番号」にしても、最後を文字列で比べても、本数を文字列でソートしても落ちなかった。3 種(定義のある装置・定義の無い名前・0 本の装置)が同時にある入力も無かった。",
+      "flows": [
+        "cases"
+      ],
+      "review": [
+        "足したケースごとに、どのミューテーションで NG が出たかが Issue #1283 のコメントに表としてあること",
+        "正規表現を `） *$` ごと外す形でだけ落ちる(末尾の `*$` だけ外しても自由記述の行は一致しない)"
+      ],
+      "before": [
+        {
+          "text": "以降の計算・最後の比較・本数のソートを壊しても判定表は通った"
+        }
+      ],
+      "after": [
+        {
+          "text": "まばらな番号・桁違いの本数・3 種の混在・定義 0 のツリーで落ちる",
+          "message": "run-cases"
+        }
+      ],
+      "notes": [
+        {
+          "path": "harness/records/count-cases.sh",
+          "start": 496,
+          "end": 510,
+          "text": "番号に隙間と桁の違い。pr-9 の後ろに 2〜4 桁を置くと文字列比較で `10` も `1205` も `9` より小さくなる"
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "start": 521,
+          "end": 531,
+          "text": "3 種の混在。定義の無い名前は以降が閾値を越えていても候補にしない"
+        },
+        {
+          "path": "harness/records/count.sh",
+          "start": 183,
+          "end": 185,
+          "text": "0 本のときの `-` は守りではなく列を埋めるため。守りは候補条件の `$1 > 0`(二重の守りの指摘)"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "cases",
+      "label": "集計の判定表(節 3)",
+      "file": "harness/records/count-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "gate-9",
+      "suite": "cases",
+      "name": "記録が 9 本のときは表を出さず「記録 10 本未満」の文言を出す",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "記録の総数がしきい値未満ならどの装置も以降が届かないので、表ごと出さない",
+      "given": "定義 1 つ、記録 9 本、pr-1 に指摘 1 件",
+      "when": "縮める側を出す",
+      "then": "文言が 1 回出て、表の行は無い",
+      "commit": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "values": {
+        "columns": [
+          "記録の本数",
+          "表"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "9",
+              "出ない"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "10",
+              "出る"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 387,
+        "end": 391,
+        "text": "build_reviewer_tree 9\nwrite_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\nreport \"文言=1 行=\" \\\n  \"文言=$(run_count --shrink | grep -c '記録 10 本未満のため候補は出さない') 行=$(reviewer_row alpha-reviewer)\" \\\n  \"記録が 9 本のときは表を出さず「記録 10 本未満」の文言を出す\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "run-cases"
+      ]
+    },
+    {
+      "id": "gate-continue",
+      "suite": "cases",
+      "name": "記録が 9 本で段 1 の門に掛かっても段 2 の見出しは出る",
+      "techniques": [
+        "boundary",
+        "state"
+      ],
+      "why": "段 1 と段 2 は別の出どころを読むので、片方の門で止めると他方が出なくなる",
+      "given": "記録 9 本",
+      "when": "縮める側を出す",
+      "then": "3-2 の見出しが 1 回出る",
+      "commit": "d78b6bc0836a8475e87a3d3a9ac4cd53db9fa328",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 392,
+        "end": 393,
+        "text": "# 段 1 の門で止まっても段 2 は出る(門の中で exit すると 3-2 が消える)。\nreport 1 \"$(run_count --shrink | grep -c '^   3-2\\. ')\" \"記録が 9 本で段 1 の門に掛かっても段 2 の見出しは出る\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ]
+    },
+    {
+      "id": "gate-10",
+      "suite": "cases",
+      "name": "記録が 10 本になると表を出す",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "門の境界",
+      "given": "記録 10 本、pr-1 に指摘 1 件",
+      "when": "縮める側を出す",
+      "then": "1 本 1 件 最後=pr-1 以降=9 1.0 件/本",
+      "commit": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 394,
+        "end": 396,
+        "text": "build_reviewer_tree 10\nwrite_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\nreport \"1 本 1 件 最後=pr-1 以降=9 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \"記録が 10 本になると表を出す\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "per-record",
+      "suite": "cases",
+      "name": "同じ装置が 1 本の記録に 2 件・別の記録に 1 件残すと 2 本 3 件 1.5 件/本になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "本数は記録単位、件数は指摘単位で数える",
+      "given": "pr-1 に 2 件、pr-2 に 1 件",
+      "when": "縮める側を出す",
+      "then": "2 本 3 件 1.5 件/本",
+      "commit": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 397,
+        "end": 402,
+        "text": "build_reviewer_tree 10\nwrite_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\nwrite_finding 1 comment-beta \"レビュー（alpha-reviewer）\"\nwrite_finding 2 comment-alpha \"レビュー（alpha-reviewer）\"\nreport \"2 本 3 件 最後=pr-2 以降=8 1.5 件/本\" \"$(reviewer_row alpha-reviewer)\" \\\n  \"同じ装置が 1 本の記録に 2 件・別の記録に 1 件残すと 2 本 3 件 1.5 件/本になる\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "last-after",
+      "suite": "cases",
+      "name": "最後に指摘を残した記録と、それ以降の記録の本数が出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "退役の判断は累計ではなく、最後に残してからの本数で行う",
+      "given": "記録 15 本、pr-2 と pr-3 に指摘",
+      "when": "縮める側を出す",
+      "then": "最後=pr-3 以降=12(総数とも門の 10 とも違う値)",
+      "commit": "719a1ace6c659fe7ff578a909c68732025ee79d9",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 404,
+        "end": 410,
+        "text": "# 最後は番号の最大で、以降はそれより後の記録の本数。記録を 15 本にするのは、以降の値を\n# 記録の総数とも門の 10 本とも違えるため。\nbuild_reviewer_tree 15\nwrite_finding 2 comment-alpha \"レビュー（alpha-reviewer）\"\nwrite_finding 3 comment-alpha \"レビュー（alpha-reviewer）\"\nreport \"2 本 2 件 最後=pr-3 以降=12 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \\\n  \"最後に指摘を残した記録と、それ以降の記録の本数が出る\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "bt-whole",
+      "suite": "cases",
+      "name": "バッククォート付きの `レビュー（alpha-reviewer）` は 1 本 1 件に数える",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "出どころの綴りはバッククォートの位置が記録によって違う",
+      "given": "出どころ行の全体がバッククォートで囲まれている",
+      "when": "縮める側を出す",
+      "then": "1 本 1 件",
+      "commit": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 412,
+        "end": 425,
+        "text": "# 出どころの綴りはバッククォートの位置が記録によって違う(全体・無し・括弧の中だけ)。\n# どれも同じ 1 本 1 件に数える。表は `ケース名|出どころの行`。\nreviewer_source_cases='\nバッククォート付きの `レビュー（alpha-reviewer）` は 1 本 1 件に数える|- 出どころ: `レビュー（alpha-reviewer）`\nバッククォートの無い レビュー（alpha-reviewer） も 1 本 1 件に数える|- 出どころ: レビュー（alpha-reviewer）\n括弧の中だけバッククォートの レビュー（`alpha-reviewer`） も 1 本 1 件に数える|- 出どころ: レビュー（`alpha-reviewer`）\n'\nwhile IFS='|' read -r label line; do\n  [ -n \"$label\" ] || continue\n  build_reviewer_tree 10\n  append_line 1 '- 分類: `comment-alpha`'\n  append_line 1 \"$line\"\n  report \"1 本 1 件 最後=pr-1 以降=9 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \"$label\"\ndone <<< \"$reviewer_source_cases\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "bt-none",
+      "suite": "cases",
+      "name": "バッククォートの無い レビュー（alpha-reviewer） も 1 本 1 件に数える",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "語彙を決める前の記録にはバッククォートの無い綴りがある",
+      "given": "バッククォートの無い出どころ行",
+      "when": "縮める側を出す",
+      "then": "1 本 1 件",
+      "commit": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 412,
+        "end": 425,
+        "text": "# 出どころの綴りはバッククォートの位置が記録によって違う(全体・無し・括弧の中だけ)。\n# どれも同じ 1 本 1 件に数える。表は `ケース名|出どころの行`。\nreviewer_source_cases='\nバッククォート付きの `レビュー（alpha-reviewer）` は 1 本 1 件に数える|- 出どころ: `レビュー（alpha-reviewer）`\nバッククォートの無い レビュー（alpha-reviewer） も 1 本 1 件に数える|- 出どころ: レビュー（alpha-reviewer）\n括弧の中だけバッククォートの レビュー（`alpha-reviewer`） も 1 本 1 件に数える|- 出どころ: レビュー（`alpha-reviewer`）\n'\nwhile IFS='|' read -r label line; do\n  [ -n \"$label\" ] || continue\n  build_reviewer_tree 10\n  append_line 1 '- 分類: `comment-alpha`'\n  append_line 1 \"$line\"\n  report \"1 本 1 件 最後=pr-1 以降=9 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \"$label\"\ndone <<< \"$reviewer_source_cases\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "bt-inner",
+      "suite": "cases",
+      "name": "括弧の中だけバッククォートの レビュー（`alpha-reviewer`） も 1 本 1 件に数える",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "pr-244〜pr-332 の 23 本(444 行)がこの形",
+      "given": "括弧の中だけバッククォートの出どころ行",
+      "when": "縮める側を出す",
+      "then": "1 本 1 件",
+      "commit": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 412,
+        "end": 425,
+        "text": "# 出どころの綴りはバッククォートの位置が記録によって違う(全体・無し・括弧の中だけ)。\n# どれも同じ 1 本 1 件に数える。表は `ケース名|出どころの行`。\nreviewer_source_cases='\nバッククォート付きの `レビュー（alpha-reviewer）` は 1 本 1 件に数える|- 出どころ: `レビュー（alpha-reviewer）`\nバッククォートの無い レビュー（alpha-reviewer） も 1 本 1 件に数える|- 出どころ: レビュー（alpha-reviewer）\n括弧の中だけバッククォートの レビュー（`alpha-reviewer`） も 1 本 1 件に数える|- 出どころ: レビュー（`alpha-reviewer`）\n'\nwhile IFS='|' read -r label line; do\n  [ -n \"$label\" ] || continue\n  build_reviewer_tree 10\n  append_line 1 '- 分類: `comment-alpha`'\n  append_line 1 \"$line\"\n  report \"1 本 1 件 最後=pr-1 以降=9 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \"$label\"\ndone <<< \"$reviewer_source_cases\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "cand-10",
+      "suite": "cases",
+      "name": "以降が 10 本の装置は退役候補に出る",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "候補のしきい値は以降 10 本以上",
+      "given": "記録 11 本、pr-1 に指摘",
+      "when": "縮める側を出す",
+      "then": "候補の行に名前が出る",
+      "commit": "719a1ace6c659fe7ff578a909c68732025ee79d9",
+      "values": {
+        "columns": [
+          "以降",
+          "候補"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "10",
+              "出る"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "9",
+              "該当なし"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 427,
+        "end": 435,
+        "text": "# 退役候補は以降が 10 本以上の装置。境界は記録の総数で作る(pr-1 に残して 11 本なら以降 10、\n# 10 本なら以降 9)。「該当なし」の綴りまで比べるのは、候補が無いときに行ごと出さない実装を\n# 落とすため。\nbuild_reviewer_tree 11\nwrite_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\nreport \"alpha-reviewer\" \"$(retire_candidates)\" \"以降が 10 本の装置は退役候補に出る\"\nbuild_reviewer_tree 10\nwrite_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\nreport \"該当なし\" \"$(retire_candidates)\" \"以降が 9 本の装置は退役候補に出ず「該当なし」になる\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "shrink"
+      ]
+    },
+    {
+      "id": "cand-9",
+      "suite": "cases",
+      "name": "以降が 9 本の装置は退役候補に出ず「該当なし」になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "候補が無いときに行ごと出さない実装を落とすため、綴りまで比べる",
+      "given": "記録 10 本、pr-1 に指摘",
+      "when": "縮める側を出す",
+      "then": "該当なし",
+      "commit": "719a1ace6c659fe7ff578a909c68732025ee79d9",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 433,
+        "end": 435,
+        "text": "build_reviewer_tree 10\nwrite_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\nreport \"該当なし\" \"$(retire_candidates)\" \"以降が 9 本の装置は退役候補に出ず「該当なし」になる\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "shrink"
+      ]
+    },
+    {
+      "id": "zero",
+      "suite": "cases",
+      "name": "定義があって出どころに現れない装置は候補にも表にも出ず「まだ指摘を残していない」に出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "観測期間が決められない装置を退役候補にしない",
+      "given": "定義 2 つ、片方だけ指摘あり(以降 10)",
+      "when": "縮める側を出す",
+      "then": "候補は指摘のある側だけ、0 本の側は別の見出しに名前だけ",
+      "commit": "719a1ace6c659fe7ff578a909c68732025ee79d9",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 437,
+        "end": 445,
+        "text": "# 定義があって出どころに現れない装置は、観測期間が決められないので候補にも表にも出さず、\n# 「まだ指摘を残していない」の下に名前だけ出す。alpha-reviewer を以降 10 本で置くのは、\n# 候補の行が beta-reviewer を落としたことを「該当なし」ではなく名前で見るため。\nbuild_reviewer_tree 11\nwrite_agent beta-reviewer\nwrite_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\nreport \"候補=alpha-reviewer 表= まだ=beta-reviewer\" \\\n  \"候補=$(retire_candidates) 表=$(reviewer_row beta-reviewer) まだ=$(under_heading 'まだ指摘を残していない' | paste -sd' ' -)\" \\\n  \"定義があって出どころに現れない装置は候補にも表にも出ず「まだ指摘を残していない」に出る\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "glob-agents"
+      ]
+    },
+    {
+      "id": "planner",
+      "suite": "cases",
+      "name": "-reviewer で終わらない定義(planner)は「まだ指摘を残していない」にも出ない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "数えるのは指摘を返す装置だけ",
+      "given": "定義に指摘を返さない装置を足す",
+      "when": "縮める側を出す",
+      "then": "その名前はどこにも出ない",
+      "commit": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 446,
+        "end": 449,
+        "text": "build_reviewer_tree 10\nwrite_agent planner\nreport \"alpha-reviewer\" \"$(under_heading 'まだ指摘を残していない' | paste -sd' ' -)\" \\\n  \"-reviewer で終わらない定義(planner)は「まだ指摘を残していない」にも出ない\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "glob-agents"
+      ]
+    },
+    {
+      "id": "undefined",
+      "suite": "cases",
+      "name": "定義の無い名前(implementation-reviewer)は表に出ず、「定義の無い名前」の下に本数・件数が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "観点別に分かれる前の名前を現在の装置に混ぜない",
+      "given": "定義ファイルの無い名前の出どころ行",
+      "when": "縮める側を出す",
+      "then": "表に無く、別の見出しの下に 1 本 1 件",
+      "commit": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 450,
+        "end": 454,
+        "text": "build_reviewer_tree 10\nwrite_finding 1 comment-alpha \"レビュー（implementation-reviewer）\"\nreport \"表= 定義の無い名前=1 本 1 件\" \\\n  \"表=$(reviewer_row implementation-reviewer) 定義の無い名前=$(under_heading '定義の無い名前' | awk '$1 == \"implementation-reviewer\" { $1 = \"\"; sub(/^ +/, \"\"); print }')\" \\\n  \"定義の無い名前(implementation-reviewer)は表に出ず、「定義の無い名前」の下に本数・件数が出る\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "human",
+      "suite": "cases",
+      "name": "レビュー（人） はどの装置にも「定義の無い名前」にも数えない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "人の指摘は再発であって装置の指摘ではない",
+      "given": "人の出どころ行",
+      "when": "縮める側を出す",
+      "then": "表の行は空で、定義の無い名前の見出しも出ない",
+      "commit": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 455,
+        "end": 459,
+        "text": "build_reviewer_tree 10\nwrite_finding 1 comment-alpha \"レビュー（人）\"\nreport \"alpha-reviewer= 定義の無い名前=0\" \\\n  \"alpha-reviewer=$(reviewer_row alpha-reviewer) 定義の無い名前=$(run_count --shrink | grep -c '定義の無い名前')\" \\\n  \"レビュー（人） はどの装置にも「定義の無い名前」にも数えない\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "no-tag",
+      "suite": "cases",
+      "name": "分類の行が先行しない出どころの行は数えない(既定の表と同じ門)",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "指摘 1 件の定義を既定の表と揃える",
+      "given": "分類の行の無い出どころ行",
+      "when": "縮める側を出す",
+      "then": "表の行は空",
+      "commit": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 460,
+        "end": 462,
+        "text": "build_reviewer_tree 10\nappend_line 1 '- 出どころ: `レビュー（alpha-reviewer）`'\nreport \"\" \"$(reviewer_row alpha-reviewer)\" \"分類の行が先行しない出どころの行は数えない(既定の表と同じ門)\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "free-text",
+      "suite": "cases",
+      "name": "括弧の中に名前以外の語を持つ レビュー（alpha-reviewer の 2 巡目） はどの装置にも「定義の無い名前」にも数えない",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "正規表現を緩めると、装置の行は変わらず「定義の無い名前」に自由記述つきの名前が入る形で通ってしまう",
+      "given": "自由記述つきの行 1 件と、対照の行 1 件",
+      "when": "縮める側を出す",
+      "then": "対照だけ 1 本 1 件、定義の無い名前の見出しは出ない",
+      "commit": "d78b6bc0836a8475e87a3d3a9ac4cd53db9fa328",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 463,
+        "end": 470,
+        "text": "# 見出しが出ないことまで見るのは、正規表現を緩めると alpha の行は変わらず「定義の無い名前」に\n# `alpha-reviewer の 2 巡目` が入る形で通ってしまうため。\nbuild_reviewer_tree 10\nwrite_finding 1 comment-alpha \"レビュー（alpha-reviewer の 2 巡目）\"\nwrite_finding 2 comment-alpha \"レビュー（alpha-reviewer）\"\nreport \"alpha-reviewer=1 本 1 件 最後=pr-2 以降=8 1.0 件/本 定義の無い名前=0\" \\\n  \"alpha-reviewer=$(reviewer_row alpha-reviewer) 定義の無い名前=$(run_count --shrink | grep -c '定義の無い名前')\" \\\n  \"括弧の中に名前以外の語を持つ レビュー（alpha-reviewer の 2 巡目） はどの装置にも「定義の無い名前」にも数えない\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "digit-name",
+      "suite": "cases",
+      "name": "数字を含む名前(a11y-reviewer)も数える",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "名前の字種を定義ファイル名と揃える",
+      "given": "数字を含む名前の定義と出どころ行",
+      "when": "縮める側を出す",
+      "then": "1 本 1 件",
+      "commit": "719a1ace6c659fe7ff578a909c68732025ee79d9",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 471,
+        "end": 474,
+        "text": "build_reviewer_tree 10\nwrite_agent a11y-reviewer\nwrite_finding 1 comment-alpha \"レビュー（a11y-reviewer）\"\nreport \"1 本 1 件 最後=pr-1 以降=9 1.0 件/本\" \"$(reviewer_row a11y-reviewer)\" \"数字を含む名前(a11y-reviewer)も数える\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "order",
+      "suite": "cases",
+      "name": "記録の本数が少ない装置が上に並ぶ",
+      "techniques": [
+        "state"
+      ],
+      "why": "候補になりやすい装置を上に出す。同数の並びは glob 順で既に成立するので固定しない",
+      "given": "glob 順と逆になる本数",
+      "when": "縮める側を出す",
+      "then": "本数の少ない装置が先",
+      "commit": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 476,
+        "end": 485,
+        "text": "# 並びは本数の昇順。glob 順(a → b)と逆になる本数を置き、本数のキーだけを固定する。\n# 同数のときの並びは glob 順で既に成立していて、並べ替えを落としても通るので固定しない。\nbuild_reviewer_tree 10\nwrite_agent beta-reviewer\nwrite_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\nwrite_finding 1 comment-alpha \"レビュー（beta-reviewer）\"\nwrite_finding 2 comment-alpha \"レビュー（alpha-reviewer）\"\nreport \"beta-reviewer alpha-reviewer\" \\\n  \"$(under_heading '^   退役候補' | awk '{print $1}' | paste -sd' ' -)\" \\\n  \"記録の本数が少ない装置が上に並ぶ\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ]
+    },
+    {
+      "id": "order-undefined",
+      "suite": "cases",
+      "name": "定義の無い名前が 2 つあるとき本数の少ないほうが上に並ぶ",
+      "techniques": [
+        "state"
+      ],
+      "why": "最初の実装では到達しないソートキーで並びが不定だった",
+      "given": "名前順とも記録に現れる順とも逆になる本数",
+      "when": "縮める側を出す",
+      "then": "本数の少ないほうが先",
+      "commit": "719a1ace6c659fe7ff578a909c68732025ee79d9",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 486,
+        "end": 494,
+        "text": "# 定義の無い名前も本数の昇順。名前順(delta → gamma)とも記録に現れる順(delta が先)とも\n# 逆になる本数を置く。\nbuild_reviewer_tree 10\nwrite_finding 1 comment-alpha \"レビュー（delta-reviewer）\"\nwrite_finding 2 comment-alpha \"レビュー（delta-reviewer）\"\nwrite_finding 3 comment-alpha \"レビュー（gamma-reviewer）\"\nreport \"gamma-reviewer delta-reviewer\" \\\n  \"$(under_heading '定義の無い名前' | awk '{print $1}' | paste -sd' ' -)\" \\\n  \"定義の無い名前が 2 つあるとき本数の少ないほうが上に並ぶ\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ]
+    },
+    {
+      "id": "sparse",
+      "suite": "cases",
+      "name": "番号に隙間と桁の違いがあっても、以降は最後より大きい番号の記録の本数になる",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "連番の合成記録では、以降を「総数 − 最後の番号」で出す実装も落ちなかった",
+      "given": "pr-7, 9, 10〜18, 120, 1205 の 13 本、pr-9 に指摘",
+      "when": "縮める側を出す",
+      "then": "最後=pr-9 以降=11",
+      "commit": "d78b6bc0836a8475e87a3d3a9ac4cd53db9fa328",
+      "values": {
+        "columns": [
+          "記録の番号",
+          "以降に数える"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "7",
+              "数えない"
+            ]
+          },
+          {
+            "cells": [
+              "9(最後)",
+              "数えない"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "10",
+              "数える"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "1205",
+              "数える"
+            ]
+          }
+        ]
+      },
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 496,
+        "end": 505,
+        "text": "# 番号に隙間と桁の違いがある記録。合成記録が pr-1 .. pr-N の連番だと、以降を「総数 − 最後の番号」で\n# 出す実装も、最後の番号を文字列で比べる実装も同じ答えになって落ちない。pr-9 の後ろに 2 桁・3 桁・\n# 4 桁を置くと、文字列比較では `10` も `1205` も `9` より小さくなる。\nbuild_tree 0 0\nwrite_agent alpha-reviewer\nwrite_agent beta-reviewer\nfor number in 7 9 10 11 12 13 14 15 16 17 18 120 1205; do open_record \"$number\"; done\nwrite_finding 9 comment-alpha \"レビュー（alpha-reviewer）\"\nreport \"1 本 1 件 最後=pr-9 以降=11 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \\\n  \"番号に隙間と桁の違いがあっても、以降は最後より大きい番号の記録の本数になる\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "numeric-last",
+      "suite": "cases",
+      "name": "pr-9 と pr-10 に残した装置の最後は pr-10 になる(番号は数値で比べる)",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "文字列比較では「10」が「9」より小さく、最後が pr-9 になる",
+      "given": "同じ装置が pr-9 と pr-10 に指摘",
+      "when": "縮める側を出す",
+      "then": "最後=pr-10 以降=10",
+      "commit": "d78b6bc0836a8475e87a3d3a9ac4cd53db9fa328",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 506,
+        "end": 510,
+        "text": "# 最後の決め方も同じ入力で見る。pr-9 と pr-10 の両方に残すと、文字列比較では pr-9 が最後になる。\nwrite_finding 9 comment-alpha \"レビュー（beta-reviewer）\"\nwrite_finding 10 comment-alpha \"レビュー（beta-reviewer）\"\nreport \"2 本 2 件 最後=pr-10 以降=10 1.0 件/本\" \"$(reviewer_row beta-reviewer)\" \\\n  \"pr-9 と pr-10 に残した装置の最後は pr-10 になる(番号は数値で比べる)\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "read-records"
+      ]
+    },
+    {
+      "id": "numeric-sort",
+      "suite": "cases",
+      "name": "本数が 7 本の装置は 12 本の装置より上に並ぶ(本数は数値で比べる)",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "文字列の昇順では「12」が「7」より上に来る",
+      "given": "12 本と 7 本の装置",
+      "when": "縮める側を出す",
+      "then": "7 本が先",
+      "commit": "d78b6bc0836a8475e87a3d3a9ac4cd53db9fa328",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 512,
+        "end": 519,
+        "text": "# 本数の並びも数値で比べる。1 桁と 2 桁を並べると、文字列の昇順では `12` が `7` より上に来る。\nbuild_reviewer_tree 12\nwrite_agent beta-reviewer\nfor number in $(seq 12); do write_finding \"$number\" comment-alpha \"レビュー（alpha-reviewer）\"; done\nfor number in $(seq 7); do write_finding \"$number\" comment-alpha \"レビュー（beta-reviewer）\"; done\nreport \"beta-reviewer alpha-reviewer\" \\\n  \"$(under_heading '^   退役候補' | awk '{print $1}' | paste -sd' ' -)\" \\\n  \"本数が 7 本の装置は 12 本の装置より上に並ぶ(本数は数値で比べる)\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ]
+    },
+    {
+      "id": "mixed",
+      "suite": "cases",
+      "name": "定義のある装置・定義の無い名前・0 本の定義が同時にあっても、候補は定義のある装置だけで、残りはそれぞれの置き場に出る",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "3 種が別々のケースにしか無いと、混ぜ方を壊しても落ちない(新しい装置を足した直後は必ずこの組み合わせになる)",
+      "given": "15 本の装置、以降 13 の定義の無い名前、0 本の定義",
+      "when": "縮める側を出す",
+      "then": "候補は該当なし、表に 15 本の装置、「まだ」に 0 本の定義、「定義の無い名前」に古い名前",
+      "commit": "d78b6bc0836a8475e87a3d3a9ac4cd53db9fa328",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 521,
+        "end": 531,
+        "text": "# 定義のある装置・定義の無い名前・0 本の定義が同時にあるツリー。3 つが別々のケースにしかないと、\n# 混ぜ方(定義の有無で先に分ける並び、「まだ」の名前を出す位置、候補を定義のある名前に限ること)を\n# 壊しても落ちない。old-reviewer は以降 13 本で閾値を越えているが、定義が無いので候補にしない。\nbuild_reviewer_tree 15\nwrite_agent beta-reviewer\nfor number in $(seq 15); do write_finding \"$number\" comment-alpha \"レビュー（alpha-reviewer）\"; done\nwrite_finding 1 comment-alpha \"レビュー（old-reviewer）\"\nwrite_finding 2 comment-alpha \"レビュー（old-reviewer）\"\nreport \"候補=該当なし 表=15 本 15 件 最後=pr-15 以降=0 1.0 件/本 まだ=beta-reviewer 定義の無い名前=old-reviewer\" \\\n  \"候補=$(retire_candidates) 表=$(reviewer_row alpha-reviewer) まだ=$(under_heading 'まだ指摘を残していない' | paste -sd' ' -) 定義の無い名前=$(under_heading '定義の無い名前' | awk '{print $1}' | paste -sd' ' -)\" \\\n  \"定義のある装置・定義の無い名前・0 本の定義が同時にあっても、候補は定義のある装置だけで、残りはそれぞれの置き場に出る\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "shrink",
+        "glob-agents",
+        "read-records"
+      ]
+    },
+    {
+      "id": "no-agents",
+      "suite": "cases",
+      "name": "定義が 1 つも無ければ「まだ指摘を残していない」の見出しも出ない",
+      "techniques": [
+        "error"
+      ],
+      "why": "不一致の glob が文字列のまま残ると、その文字列が 0 本の定義として出る",
+      "given": "定義フォルダが空、記録 10 本",
+      "when": "縮める側を出す",
+      "then": "見出しが出ない",
+      "commit": "d78b6bc0836a8475e87a3d3a9ac4cd53db9fa328",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 533,
+        "end": 538,
+        "text": "# 定義が 1 つも無いツリー。不一致の glob が文字列のまま残ると `*-reviewer` が 0 本の定義として\n# 「まだ指摘を残していない」に出る。\nbuild_tree 0 0\nopen_records 10\nreport 0 \"$(run_count --shrink | grep -c 'まだ指摘を残していない')\" \\\n  \"定義が 1 つも無ければ「まだ指摘を残していない」の見出しも出ない\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ],
+      "covers": [
+        "glob-agents"
+      ]
+    },
+    {
+      "id": "skills-only",
+      "suite": "cases",
+      "name": "発火 0 のスキルにはスキルだけが出て、定義のあるエージェント(alpha-reviewer)は出ない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "エージェントは段 1 が数えるので、段 2 の発火 0 の一覧から外す",
+      "given": "記録 10 本に発火の行、定義 1 つ",
+      "when": "縮める側を出す",
+      "then": "発火 0 の一覧はスキルだけ",
+      "commit": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "excerpt": {
+        "path": "harness/records/count-cases.sh",
+        "start": 540,
+        "end": 549,
+        "text": "# 段 2 の「発火 0 のスキル」にはスキルだけが出て、エージェントは出ない(エージェントは段 1 が数える)。\n# 段 2 の門(発火を計測できた記録 10 本)を越えるため、記録 10 本に `- 発火:` の行を置く。\n# pr-1 だけ名前付きにするのは、全部 `無し` だと発火回数の grep が不一致で段 2 が exit 1 になるため\n# (変更前からの挙動。#1284)。\nbuild_reviewer_tree 10\nappend_line 1 '- 発火: `implementation-flow` 1回'\nfor number in $(seq 2 10); do append_line \"$number\" '- 発火: 無し'; done\nreport \"harness-growth\" \\\n  \"$(under_heading '発火 0 のスキル' | paste -sd' ' -)\" \\\n  \"発火 0 のスキルにはスキルだけが出て、定義のあるエージェント(alpha-reviewer)は出ない\""
+      },
+      "targets": [
+        "harness/records/count.sh"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "ハーネスを育てる手順の「縮める」で、退役候補のレビューエージェントが 1 行で読めるようになった",
+    "lead": "使う人は、ハーネスを育てる手順を回すセッションです。縮める側の数字を出したとき、節 3 に何が出るかが変わります。",
+    "changed": {
+      "before": [
+        {
+          "text": "節 3 は発火の記録が 10 本未満だと「候補は出さない」とだけ出て、エージェントの退役を判断する材料が無かった"
+        }
+      ],
+      "after": [
+        {
+          "text": "節 3-1 の先頭に「退役候補」の行が出て、最後に指摘を残してから記録が 10 本以上経ったレビューエージェントの名前が並ぶ。無ければ「該当なし」",
+          "message": "shrink"
+        },
+        {
+          "text": "その下にレビューエージェントごとの本数・件数・最後に指摘を残した記録・それ以降の本数・1 本あたりの件数の表が、本数の少ない順に並ぶ",
+          "message": "read-records"
+        },
+        {
+          "text": "一度も指摘を残していないエージェントは候補にならず、別の見出しの下に名前だけ出る",
+          "message": "glob-agents"
+        },
+        {
+          "text": "観点別に分かれる前の名前は表に混ざらず、後ろに本数と件数だけ出る"
+        }
+      ],
+      "text": "今の記録に当てると、候補に出るのはセキュリティの観点のエージェント 1 つ(最後に残してから記録が 29 本経っている)です。起動しても指摘が 0 件だった回は本数に入らないので、条件つきで呼ぶエージェントは 1 本あたりの件数も見て判断します。",
+      "specs": [
+        {
+          "path": ".claude/skills/harness-growth/SKILL.md",
+          "locator": "「5. 縮める」の表の節 3 の行",
+          "text": "条件を「発火 0 の装置」から「最後に指摘を残した記録から 10 本以上経ったレビューエージェント / 発火 0 のスキル」に書き換えた",
+          "shas": [
+            "011e2094f48216fc6ba096f00c3b3be72841907e",
+            "719a1ace6c659fe7ff578a909c68732025ee79d9"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 907,
+          "text": "実装の検証を観点別のエージェントに分けた回。分かれる前の名前が記録に残っている理由"
+        },
+        {
+          "issue": 1277,
+          "text": "発火の記録が取れない起動の形を実測する件。スキル側の退役の信号はこちらに残る"
+        },
+        {
+          "issue": 1284,
+          "text": "節 3-2 が、発火を計測できた記録が全部「無し」だと落ちる既存の欠陥。この変更では触らず分けた"
+        }
+      ],
+      "primers": [
+        "window",
+        "gate"
+      ]
+    },
+    "tables": [
+      {
+        "label": "エージェントの状態ごとの出る場所",
+        "gist": "どこに出るかは、定義ファイルがあるかと、最後に指摘を残してからの本数で決まる。",
+        "text": "以前はどの状態でも何も出なかったので、すべてのマスが変わっています。",
+        "rowHeads": [
+          {
+            "id": "recent",
+            "label": "最後に残してから 10 本未満"
+          },
+          {
+            "id": "stale",
+            "label": "最後に残してから 10 本以上"
+          },
+          {
+            "id": "never",
+            "label": "一度も残していない",
+            "note": "新設直後と区別できない"
+          },
+          {
+            "id": "undefined",
+            "label": "定義ファイルの無い名前",
+            "note": "観点別に分かれる前の名前"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "candidate",
+            "label": "退役候補の行"
+          },
+          {
+            "id": "table",
+            "label": "表と見出し"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "recent",
+            "columnHead": "candidate",
+            "result": "出ない",
+            "was": "行自体が無い",
+            "tests": [
+              "cand-9"
+            ]
+          },
+          {
+            "rowHead": "recent",
+            "columnHead": "table",
+            "result": "表に本数・件数・最後・以降が出る",
+            "was": "何も出ない",
+            "tests": [
+              "last-after"
+            ]
+          },
+          {
+            "rowHead": "stale",
+            "columnHead": "candidate",
+            "result": "名前が出る",
+            "was": "行自体が無い",
+            "tests": [
+              "cand-10"
+            ]
+          },
+          {
+            "rowHead": "stale",
+            "columnHead": "table",
+            "result": "表に本数・件数・最後・以降が出る",
+            "was": "何も出ない",
+            "tests": [
+              "sparse"
+            ]
+          },
+          {
+            "rowHead": "never",
+            "columnHead": "candidate",
+            "result": "出ない",
+            "was": "行自体が無い",
+            "tests": [
+              "zero",
+              "mixed"
+            ]
+          },
+          {
+            "rowHead": "never",
+            "columnHead": "table",
+            "result": "表には出ず「まだ指摘を残していない」の下に名前だけ",
+            "was": "何も出ない",
+            "tests": [
+              "zero"
+            ]
+          },
+          {
+            "rowHead": "undefined",
+            "columnHead": "candidate",
+            "result": "出ない(以降が 10 本以上でも)",
+            "was": "行自体が無い",
+            "tests": [
+              "mixed"
+            ]
+          },
+          {
+            "rowHead": "undefined",
+            "columnHead": "table",
+            "result": "表には出ず「定義の無い名前」の下に本数と件数",
+            "was": "何も出ない",
+            "tests": [
+              "undefined"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "記録が 10 本に満たないとき",
+        "before": [
+          {
+            "text": "節 3 全体が「候補は出さない」で止まる"
+          }
+        ],
+        "after": [
+          {
+            "text": "節 3-1 は表を出さずに「記録 10 本未満のため候補は出さない」と出し、節 3-2 はそのまま続く",
+            "message": "shrink"
+          }
+        ],
+        "text": "どのエージェントも以降が 10 本に届かないので、表を出しても候補は出ません。",
+        "tests": [
+          "gate-9",
+          "gate-continue"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "節 1(行数のラチェット)と節 2(判例へ落とす候補)の出力は変わらない",
+        "tests": [
+          "skills-only"
+        ]
+      },
+      {
+        "text": "節 3-2 のスキルの数え方(発火の記録から)は変わらない",
+        "tests": [
+          "skills-only"
+        ]
+      },
+      {
+        "text": "既定の表と、分類ごとの指摘の一覧の出力は変わらない(門を共有関数にしても byte 単位で同じ)"
+      },
+      {
+        "text": "人・bot・CI の指摘は装置の表に数えない",
+        "tests": [
+          "human"
+        ]
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": ".claude/skills/harness-growth/SKILL.md",
+        "locator": "「5. 縮める」の表の節 1・節 2 の行",
+        "text": "行数のラチェットと判例へ落とす候補の条件は変えていない"
+      },
+      {
+        "path": ".claude/skills/harness-record/templates/record.md",
+        "locator": "「出どころの語彙」の表",
+        "text": "出どころの綴りの決まり(括弧の中はエージェントの名前だけ)は変えていない。この決まりに反する綴りは数えない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "awk-arrays",
+      "category": "awk · 連想配列と関数",
+      "label": "awk の連想配列・関数・パターンアクション",
+      "gist": "awk は入力を 1 行ずつ読み、[[パターン|pattern]]に合う行で[[アクション|action]]を実行する言語。記録を 1 パスで集計するために、[[連想配列|assoc]]と、大域変数を触る関数を使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "プログラムは `パターン { アクション }` の並びで、各行に対して上から順に当てる。`FNR == 1` はファイルの先頭行、`/^- 出どころ:/` は正規表現に合う行、パターン無しは全行。`next` で残りのパターンを飛ばして次の行へ進み、`END { … }` は全行を読み終えた後に 1 回だけ走る。"
+        },
+        {
+          "kind": "text",
+          "text": "[[連想配列|assoc]]は `a[key]++` のように書くだけで作られる。キーを `,` で並べると(`seen[name, number]`)、内部では `SUBSEP` で連結した 1 つの文字列がキーになる。`for (k in a)` で全キーを回せるが順序は決まっていないので、並びが要るなら外で `sort` に通す。"
+        },
+        {
+          "kind": "declaration",
+          "code": "function name(arg1, arg2,    local1, local2) { … }"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "arg1, arg2",
+              "type": "値",
+              "text": "呼び出し側から渡す引数。配列を渡すと参照になる"
+            },
+            {
+              "name": "local1, local2",
+              "type": "値",
+              "text": "宣言に余分に並べた名前は[[局所変数|local]]になる。空白を多めに空けて区切るのが慣習",
+              "note": "並べなければ大域"
+            }
+          ]
+        },
+        {
+          "kind": "caution",
+          "text": "関数の中で宣言に無い名前に代入すると大域変数になる。`spelling_of_finding` はこれを使って、分類の行で控えた綴り(`pending`)を次の出どころの行まで持ち越す。"
+        },
+        {
+          "kind": "memo",
+          "text": "`gsub(/`/, \"\", s)` は `s` の中の該当をすべて置き換える(`sub` は最初の 1 つだけ)。文字列と数値の比較は、片方が文字列なら文字列として比べるので、記録番号は `+ 0` で数値にしてから比べる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "harness/records/count.sh",
+          "lineRange": {
+            "start": 103,
+            "end": 115
+          },
+          "text": "`spelling_of_finding` が大域変数 `pending` で分類の行の綴りを持ち越し、`source_of` が `gsub` でバッククォートを外す",
+          "shas": [
+            "011e2094f48216fc6ba096f00c3b3be72841907e",
+            "719a1ace6c659fe7ff578a909c68732025ee79d9"
+          ]
+        },
+        {
+          "path": "harness/records/count.sh",
+          "lineRange": {
+            "start": 194,
+            "end": 227
+          },
+          "text": "`reviewer_rows` が `seen[name, number]` で記録単位の本数を、`findings_of[name]` で件数を数え、`END` で装置ごとの行を出す",
+          "shas": [
+            "011e2094f48216fc6ba096f00c3b3be72841907e",
+            "719a1ace6c659fe7ff578a909c68732025ee79d9"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "gate",
+        "window"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "bash-glob-sort",
+      "category": "bash · glob と sort",
+      "label": "`set -u` 下の不一致 glob と `sort -s -k`",
+      "gist": "シェルの[[glob|glob]]は、合うファイルが無いと模様の文字列がそのまま残る。並べ替えは `sort` に列と数値を指定し、同じ値の行の順を保つには `-s` を付ける。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`for f in dir/*-reviewer.md` は、合うファイルが 1 つも無いと `f` に `dir/*-reviewer.md` という文字列が 1 回入る。`set -u`(未定義変数でエラー)はこれを止めないので、`[ -e \"$f\" ] || continue` で実在を確かめる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "sort -s -k2,2 -k1,1n"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "-k2,2",
+              "type": "列の範囲",
+              "text": "2 列目だけをキーにする。`-k2` だけだと 2 列目から行末までになる"
+            },
+            {
+              "name": "-k1,1n",
+              "type": "列の範囲",
+              "text": "1 列目を数値として比べる。`n` が無いと `12` は `7` より小さい"
+            },
+            {
+              "name": "-s",
+              "type": "旗",
+              "text": "キーが同じ行の順を入力のまま保つ([[安定ソート|stable]])。無いと行全体で比べ直す"
+            }
+          ]
+        },
+        {
+          "kind": "caution",
+          "text": "`set -o pipefail` の下では、パイプの途中の `grep` が 1 行も一致しないと終了コードが 1 になり、スクリプト全体が落ちる。節 3-2 にこの形が残っている(#1284)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "harness/records/count.sh",
+          "lineRange": {
+            "start": 231,
+            "end": 236
+          },
+          "text": "`defined_reviewers` が不一致の glob を `[ -e ]` で飛ばす",
+          "shas": [
+            "011e2094f48216fc6ba096f00c3b3be72841907e"
+          ]
+        },
+        {
+          "path": "harness/records/count.sh",
+          "lineRange": {
+            "start": 226,
+            "end": 226
+          },
+          "text": "定義の有無 → 本数の昇順で 1 回だけ並べ替える",
+          "shas": [
+            "719a1ace6c659fe7ff578a909c68732025ee79d9"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "cases"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "gate",
+      "category": "harness · 記録の読み方",
+      "label": "分類の行と出どころの行の門",
+      "gist": "[[記録|record]]の指摘 1 件は `- 分類:` の行とその直後の `- 出どころ:` の行の対で表す。集計はこの対を通った出どころの行だけを数え、分類の行の無い出どころは数えない。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "門は `spelling_of_finding` が持つ。分類の行で綴りを控え、出どころの行でそれを返して控えを消す。既定の表・分類ごとの一覧・装置ごとの集計の 3 箇所が同じ門を呼ぶので、「指摘 1 件」の定義が割れない。"
+        },
+        {
+          "kind": "rule",
+          "text": "出どころの値は `source_of` で取り出す(接頭辞とバッククォートを外す)。装置ごとの集計は、その値が `レビュー（<名前>-reviewer）` だけになる行に限る。括弧の中に別の語がある行は語彙表に反する綴りなので数えない(実記録 41 行)。"
+        },
+        {
+          "kind": "history",
+          "text": "最初のコミットでは門の関数名を `finding_tag` としていたが、返すのは畳む前の綴りなので、既存の `spelling_of` に揃えて改名した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "harness/records/count.sh",
+          "lineRange": {
+            "start": 103,
+            "end": 115
+          },
+          "text": "門と出どころの取り出し",
+          "shas": [
+            "011e2094f48216fc6ba096f00c3b3be72841907e",
+            "719a1ace6c659fe7ff578a909c68732025ee79d9"
+          ]
+        },
+        {
+          "path": "harness/records/count.sh",
+          "lineRange": {
+            "start": 212,
+            "end": 221
+          },
+          "text": "装置ごとの集計が門を通った行を名前に当てる"
+        }
+      ],
+      "seeAlso": [
+        "awk-arrays"
+      ],
+      "tests": [
+        "no-tag",
+        "free-text",
+        "bt-inner"
+      ],
+      "flows": [
+        "growth"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "window",
+      "category": "harness · 窓で見る",
+      "label": "最後に指摘を残した記録からの「以降」",
+      "gist": "累計ではなく、最後に指摘を残した[[記録|record]]より後の記録の本数([[以降|after]])で装置を見る。節 2 が分類を「窓が開いてから以降 10 本」で見るのと同じ形。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "最後は記録番号の最大(数値で比べる)、以降はそれより大きい番号の記録の本数。候補は定義のある装置で本数が 1 以上、以降が閾値(10)以上のもの。閾値と記録の総数の門は同じ変数を参照する。"
+        },
+        {
+          "kind": "spec",
+          "text": "ハーネスを育てる手順の「縮める」表の節 3: 最後に指摘を残した記録から 10 本以上経ったレビューエージェント / 発火 0 のスキル。"
+        },
+        {
+          "kind": "caution",
+          "text": "起動しても指摘 0 件だった回は本数に入らない。条件付きで呼ぶ装置(セキュリティ・性能)は、本数ではなく 1 本あたりの件数も見る。一度も残していない装置は観測期間が決められないので候補にしない。"
+        },
+        {
+          "kind": "history",
+          "text": "最初のコミットは全期間の累計で「0 本」を条件にしていたが、止まった装置も新設直後の装置も区別できないという指摘で窓に変えた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "harness/records/count.sh",
+          "lineRange": {
+            "start": 196,
+            "end": 206
+          },
+          "text": "装置ごとの最後と以降の計算",
+          "shas": [
+            "719a1ace6c659fe7ff578a909c68732025ee79d9"
+          ]
+        },
+        {
+          "path": "harness/records/count.sh",
+          "lineRange": {
+            "start": 243,
+            "end": 249
+          },
+          "text": "候補の行",
+          "shas": [
+            "719a1ace6c659fe7ff578a909c68732025ee79d9"
+          ]
+        },
+        {
+          "path": "harness/records/count.sh",
+          "lineRange": {
+            "start": 320,
+            "end": 331
+          },
+          "text": "閾値と門が同じ変数を参照する",
+          "shas": [
+            "719a1ace6c659fe7ff578a909c68732025ee79d9"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "gate",
+        "cases"
+      ],
+      "tests": [
+        "last-after",
+        "cand-10",
+        "cand-9",
+        "sparse",
+        "numeric-last",
+        "mixed"
+      ],
+      "flows": [
+        "growth"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "cases",
+      "category": "harness · 判定表",
+      "label": "集計の判定表の組み方",
+      "gist": "[[判定表|cases]]は合成した記録と定義を一時ツリーに置き、集計を走らせて期待と比べる。出力は見出しの下の行を切り出して比べる。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`build_reviewer_tree <本数>` がツリーを作り直して定義 1 つと記録を開き、`write_finding` で指摘を足し、`under_heading <見出し>` が出力の見出しの直下の行を返す。`report 期待 実際 ケース名` が 1 行の ok / NG を出す。"
+        },
+        {
+          "kind": "rule",
+          "text": "どのケースもツリーの作り直しから始める。ドットディレクトリも消す(`find -delete`)。合成記録の番号は連番だけでなく、隙間と桁の違いを持つケースも置く。"
+        },
+        {
+          "kind": "memo",
+          "text": "ケースを足すときは、対応するミューテーションを実装に当てて NG が出ることを確かめてから採用する。期待が空のケースはヘルパーが壊れていても通るので、同じ実行の中の非空のケースが守る。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "harness/records/count-cases.sh",
+          "lineRange": {
+            "start": 93,
+            "end": 121
+          },
+          "text": "節 3 のケースが使うヘルパー",
+          "shas": [
+            "011e2094f48216fc6ba096f00c3b3be72841907e",
+            "719a1ace6c659fe7ff578a909c68732025ee79d9"
+          ]
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "lineRange": {
+            "start": 496,
+            "end": 531
+          },
+          "text": "合成記録では現れない形のケース",
+          "shas": [
+            "d78b6bc0836a8475e87a3d3a9ac4cd53db9fa328"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "bash-glob-sort"
+      ],
+      "tests": [
+        "sparse",
+        "mixed",
+        "no-agents"
+      ],
+      "flows": [
+        "cases"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "pattern",
+      "label": "パターン",
+      "text": "awk で、その行にアクションを当てるかを決める条件。正規表現・比較式・`END` などを書く。"
+    },
+    {
+      "id": "action",
+      "label": "アクション",
+      "text": "パターンに合った行で実行する `{ … }` の中身。"
+    },
+    {
+      "id": "assoc",
+      "label": "連想配列",
+      "text": "文字列をキーにして値を引く配列。awk では宣言なしに `a[key]` と書くだけで作られる。"
+    },
+    {
+      "id": "local",
+      "label": "局所変数",
+      "text": "その関数の中だけで使える変数。awk では引数の並びの余分な名前がそれになる。"
+    },
+    {
+      "id": "glob",
+      "label": "glob",
+      "text": "`*` や `?` でファイル名の模様を書き、シェルが合うファイル名に展開する仕組み。"
+    },
+    {
+      "id": "stable",
+      "label": "安定ソート",
+      "text": "キーが同じ要素の相対的な順を、並べ替えの前のまま保つ並べ替え。"
+    },
+    {
+      "id": "record",
+      "label": "記録",
+      "text": "マージした PR ごとに 1 ファイル残す振り返り。指摘を「分類」と「出どころ」の行の対で書く。"
+    },
+    {
+      "id": "after",
+      "label": "以降",
+      "text": "ある記録より後の記録の本数。分類では窓が開いてから、装置では最後に指摘を残してから、を数える。"
+    },
+    {
+      "id": "cases",
+      "label": "判定表",
+      "text": "合成した入力に検査を当てて、期待どおりに判定するかを 1 コマンドで確かめるスクリプト。"
+    }
+  ]
+}
