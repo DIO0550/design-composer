@@ -1,0 +1,358 @@
+{
+  "version": 2,
+  "pr": 1285,
+  "headBranch": "claude/funny-ride-4ji5fz",
+  "baseBranch": "main",
+  "mergeBase": "a4a2bbf512107463ddf629686f720eae00f521a1",
+  "head": "d78b6bc0836a8475e87a3d3a9ac4cd53db9fa328",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/harness-growth/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": "AGENTS.md",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "changed": false
+        },
+        {
+          "path": "harness/records/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 214,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/count.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 133,
+          "deletions": 19,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "011e2094f48216fc6ba096f00c3b3be72841907e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-04T15:09:33Z",
+      "subject": "count.sh --shrink 節 3 を、発火ログではなく記録の出どころから数える",
+      "body": "節 3「装置の退役候補」を 2 段にする。段 1 はレビューエージェント\n(.claude/agents/*-reviewer.md)ごとに、記録の `出どころ` 行から\n「指摘を残した記録の本数」「指摘の件数」「件/本」を出す。出どころに\n現れない定義も 0 本 0 件で出し、定義の無い名前(観点別に分かれる前の\n旧語彙)は表の後ろに分けて出す。段 2 はスキルを発火ログから数える旧の\n形をそのまま残す。\n\n分類 → 出どころ の門(pending の取り回し)は awk_common の finding_tag\nに寄せ、summary_rows / list_findings / reviewer_rows の 3 箇所が呼ぶ。\n既存の出力は変更前と一致する。\n\n判定表 count-cases.sh に「--shrink 節 3」の 14 ケースを足し、\nharness-growth の「縮める」表の節 3 の条件を新しい列の語彙に合わせる。\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N1xAoRqrGLE6gvosL",
+      "files": [
+        {
+          "path": ".claude/skills/harness-growth/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -83,7 +83,7 @@ git worktree add /tmp/replay \"${merge}^2\"           # その PR のマージ前\n | 1 | 常時ロードが上限を超えている | 実例・固有名・件数・PR 番号を判例へ移す。無ければ、フックで強制済みの節を参照 1 行にする |\n | 1 | 常時ロードが上限を下回った | `count.sh` の `always_loaded_cap` をその値まで下げる(下げるまで `--ratchet` が落ちる)。**上げない** |\n | 2 | 以降 10 本以上で再発 0 の分類 | その分類の `rules/` の節から実例・経緯を判例へ落とす(規範の 1 文は残す) |\n-| 3 | 発火 0 の装置 | 退役するか、description のトリガー文言を直す。どちらかを理由付きで選ぶ |\n+| 3 | 指摘を残した記録が 0 本のレビューエージェント / 発火 0 のスキル | 退役するか、呼ぶ条件・description のトリガー文言を直す。どちらかを理由付きで選ぶ |\n \n ## 6. PR にする\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -16,7 +16,7 @@\n \n ```bash\n bash harness/records/count.sh              # 分類ごとの再発(人・bot・CI)・内部・通算・以降・起点\n-bash harness/records/count.sh --shrink     # 縮める側(行数のラチェット・判例へ落とす候補・装置の発火)\n+bash harness/records/count.sh --shrink     # 縮める側(行数のラチェット・判例へ落とす候補・装置の退役候補)\n bash harness/records/count.sh --list <分類> # 窓が開いてからの指摘を 1 件 1 行で\n bash harness/records/count.sh --ratchet    # 常時ロードと harness-growth スキルの行数を予算と突き合わせる(pre-push と CI が呼ぶ)\n bash harness/records/count-cases.sh        # 上の数え方・--list・--ratchet・--shrink の判定表(pre-push と CI が呼ぶ)",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 127,
+          "deletions": 1,
+          "patch": "@@ -30,7 +30,7 @@ source \"$records_dir/../../.claude/hooks/lib/cases-report.sh\"\n build_tree() {\n   local loaded_delta=\"$1\" skill_delta=\"$2\" loaded_budget skill_budget\n   rm -rf \"${work:?}\"/*\n-  mkdir -p \"$work/rules\" \"$work/.claude/skills/harness-growth\" \"$work/harness/records\"\n+  mkdir -p \"$work/rules\" \"$work/.claude/skills/harness-growth\" \"$work/.claude/agents\" \"$work/harness/records\"\n   cp \"$records_dir/count.sh\" \"$work/harness/records/count.sh\"\n \n   loaded_budget=\"$(sed -n 's/^always_loaded_cap=\\([0-9]*\\).*/\\1/p' \"$records_dir/count.sh\")\"\n@@ -77,6 +77,26 @@ run_count() {\n   bash \"$work/harness/records/count.sh\" \"$@\"\n }\n \n+# `.claude/agents/` に装置の定義を置く(count.sh は名前しか見ないので中身は空)。\n+# 引数: <名前>\n+write_agent() {\n+  : > \"$work/.claude/agents/$1.md\"\n+}\n+\n+# 記録を pr-1 .. pr-<本数> まで見出しだけで開く(--shrink 節 3 段 1 の門「記録 10 本」を越えるため)。\n+# 引数: <本数>\n+fill_records() {\n+  local number\n+  for number in $(seq \"$1\"); do open_record \"$number\"; done\n+}\n+\n+# --shrink の出力から、その名前の行の `<本数> 本 <件数> 件 <件/本>` の部分を 1 行で返す。\n+# 名前が出力に無ければ空。\n+# 引数: <名前>\n+reviewer_row() {\n+  run_count --shrink | awk -v name=\"$1\" '$1 == name { $1 = \"\"; sub(/^ +/, \"\"); print }'\n+}\n+\n # 既定の表の comment の行を 1 行にして返す。\n # 通算・以降まで返すのは、窓の外の件数と窓の長さを壊しても気づけるようにするため。\n comment_row() {\n@@ -336,4 +356,110 @@ write_finding 10 comment \"レビュー（人）\"\n sections=\"$(run_count --shrink 2>&1 | grep -cE '^[0-9]+\\. ')\"\n report 3 \"$sections\" \"予算がずれていても節 1〜3 がすべて出る\"\n \n+# --shrink 節 3 段 1 は、記録の出どころの行からレビューエージェントごとに「指摘を残した記録の本数」と\n+# 「指摘の件数」を数える。定義は `.claude/agents/*-reviewer.md` から取るので、合成側にも定義を置く。\n+# 門(記録 10 本)を越えるため、どのケースも記録を 10 本開いてから指摘を足す。\n+printf '\\n%s\\n' \"--shrink 節 3\"\n+build_tree 0 0\n+write_agent alpha-reviewer\n+fill_records 9\n+write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n+report \"文言=1 行=\" \\\n+  \"文言=$(run_count --shrink | grep -c '記録 10 本未満のため候補は出さない') 行=$(reviewer_row alpha-reviewer)\" \\\n+  \"記録が 9 本のときは表を出さず「記録 10 本未満」の文言を出す\"\n+build_tree 0 0\n+write_agent alpha-reviewer\n+fill_records 10\n+write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n+report \"1 本 1 件 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \"記録が 10 本になると表を出す\"\n+build_tree 0 0\n+write_agent alpha-reviewer\n+fill_records 10\n+write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n+write_finding 1 comment-beta \"レビュー（alpha-reviewer）\"\n+write_finding 2 comment-alpha \"レビュー（alpha-reviewer）\"\n+report \"2 本 3 件 1.5 件/本\" \"$(reviewer_row alpha-reviewer)\" \\\n+  \"同じ装置が 1 本の記録に 2 件・別の記録に 1 件残すと 2 本 3 件 1.5 件/本になる\"\n+\n+# 出どころの綴りはバッククォートの位置が記録によって違う(全体・無し・括弧の中だけ)。\n+# どれも同じ 1 本 1 件に数える。表は `ケース名|出どころの行`。\n+reviewer_source_cases='\n+バッククォート付きの `レビュー（alpha-reviewer）` は 1 本 1 件に数える|- 出どころ: `レビュー（alpha-reviewer）`\n+バッククォートの無い レビュー（alpha-reviewer） も 1 本 1 件に数える|- 出どころ: レビュー（alpha-reviewer）\n+括弧の中だけバッククォートの レビュー（`alpha-reviewer`） も 1 本 1 件に数える|- 出どころ: レビュー（`alpha-reviewer`）\n+'\n+while IFS='|' read -r label line; do\n+  [ -n \"$label\" ] || continue\n+  build_tree 0 0\n+  write_agent alpha-reviewer\n+  fill_records 10\n+  append_line 1 '- 分類: `comment-alpha`'\n+  append_line 1 \"$line\"\n+  report \"1 本 1 件 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \"$label\"\n+done <<< \"$reviewer_source_cases\"\n+\n+build_tree 0 0\n+write_agent alpha-reviewer\n+write_agent beta-reviewer\n+fill_records 10\n+write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n+report \"0 本 0 件 -\" \"$(reviewer_row beta-reviewer)\" \"定義があって出どころに現れない装置は 0 本 0 件 - で表に出る\"\n+build_tree 0 0\n+write_agent alpha-reviewer\n+write_agent planner\n+fill_records 10\n+report \"alpha-reviewer=0 本 0 件 - planner=\" \\\n+  \"alpha-reviewer=$(reviewer_row alpha-reviewer) planner=$(reviewer_row planner)\" \\\n+  \"-reviewer で終わらない定義(planner)は表に出ない\"\n+build_tree 0 0\n+write_agent alpha-reviewer\n+fill_records 10\n+write_finding 1 comment-alpha \"レビュー（implementation-reviewer）\"\n+report \"表=0 定義の無い名前=1 本 1 件\" \\\n+  \"表=$(run_count --shrink | awk '/定義の無い名前/ {exit} $1 == \"implementation-reviewer\"' | wc -l) 定義の無い名前=$(run_count --shrink | awk -v name=implementation-reviewer '/定義の無い名前/ {under = 1; next} under && $1 == name { $1 = \"\"; sub(/^ +/, \"\"); print }')\" \\\n+  \"定義の無い名前(implementation-reviewer)は表に出ず、「定義の無い名前」の下に本数・件数が出る\"\n+build_tree 0 0\n+write_agent alpha-reviewer\n+fill_records 10\n+write_finding 1 comment-alpha \"レビュー（人）\"\n+report \"alpha-reviewer=0 本 0 件 - 定義の無い名前=0\" \\\n+  \"alpha-reviewer=$(reviewer_row alpha-reviewer) 定義の無い名前=$(run_count --shrink | grep -c '定義の無い名前')\" \\\n+  \"レビュー（人） はどの装置にも「定義の無い名前」にも数えない\"\n+build_tree 0 0\n+write_agent alpha-reviewer\n+fill_records 10\n+append_line 1 '- 出どころ: `レビュー（alpha-reviewer）`'\n+report \"0 本 0 件 -\" \"$(reviewer_row alpha-reviewer)\" \"分類の行が先行しない出どころの行は数えない(既定の表と同じ門)\"\n+build_tree 0 0\n+write_agent alpha-reviewer\n+fill_records 10\n+write_finding 1 comment-alpha \"レビュー（alpha-reviewer の 2 巡目）\"\n+write_finding 2 comment-alpha \"レビュー（alpha-reviewer）\"\n+report \"1 本 1 件 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \\\n+  \"括弧の中に名前以外の語を持つ レビュー（alpha-reviewer の 2 巡目） は数えない\"\n+\n+# 並びは本数の昇順。glob 順(a → b)と逆になる本数を置き、本数のキーだけを固定する。\n+# 同数のときの並びは glob 順で既に成立していて、並べ替えを落としても通るので固定しない。\n+build_tree 0 0\n+write_agent alpha-reviewer\n+write_agent beta-reviewer\n+fill_records 10\n+write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n+report \"beta-reviewer alpha-reviewer\" \\\n+  \"$(run_count --shrink | awk '$3 == \"本\" && $5 == \"件\" {print $1}' | paste -sd' ' -)\" \\\n+  \"記録の本数が少ない装置が上に並ぶ\"\n+\n+# 段 2 の「発火 0 のスキル」にはスキルだけが出て、エージェントは出ない(エージェントは段 1 が数える)。\n+# 段 2 の門(発火を計測できた記録 10 本)を越えるため、記録 10 本に `- 発火:` の行を置く。\n+# pr-1 だけ名前付きにするのは、全部 `無し` だと発火回数の grep が不一致で段 2 が exit 1 になるため\n+# (変更前からの挙動)。\n+build_tree 0 0\n+write_agent alpha-reviewer\n+fill_records 10\n+append_line 1 '- 発火: `implementation-flow` 1回'\n+for number in $(seq 2 10); do append_line \"$number\" '- 発火: 無し'; done\n+report \"harness-growth\" \\\n+  \"$(run_count --shrink | awk '/発火 0 のスキル/ {under = 1; next} under {print $1}' | paste -sd' ' -)\" \\\n+  \"発火 0 のスキルにはスキルだけが出て、定義のあるエージェント(alpha-reviewer)は出ない\"\n+\n exit \"$cases_failed\"",
+          "patchLines": 147,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": "harness/records/count.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 99,
+          "deletions": 17,
+          "patch": "@@ -3,14 +3,16 @@\n # 分類ごとに「窓が開いてから、人・bot・CI へ届いた指摘の数」を数える。\n # harness-growth スキル(.claude/skills/harness-growth/SKILL.md)の入力。\n #\n-# 読むのは記録の次の 3 種類の行:\n+# 読むのは記録の次の 4 種類の行:\n #   - 分類: `<分類>`                        … 指摘 1 件\n #   - 出どころ: `<出どころ>`                … 直前の「分類」の指摘を誰が見つけたか\n+#                                            (--shrink 節 3 はレビューエージェントごとにも数える)\n #   - 対策済: `<分類>` 層=<層> at pr-<番号>  … その回に介入したこと(窓を閉じる)\n+#   - 発火: `<装置>` N回                     … その回に発火した装置(--shrink 節 3 だけが読む)\n #\n # 使い方:\n #   count.sh                 分類ごとの再発・内部・通算・以降・起点を出す\n-#   count.sh --shrink        縮める側の数字を出す(行数のラチェット・判例へ落とす候補・装置の発火)\n+#   count.sh --shrink        縮める側の数字を出す(行数のラチェット・判例へ落とす候補・装置の退役候補)\n #   count.sh --list <分類>   その分類の、窓が開いてからの指摘を 1 件 1 行で出す\n #   count.sh --ratchet       常時ロードと harness-growth スキルの行数を予算と突き合わせる。\n #                            ずれていれば exit 1(git hooks と CI が呼ぶ)\n@@ -98,6 +100,14 @@ awk_common='\n     t = fold_tag(s)\n     return (closed_at[t] + 0 > closed_at[s] + 0) ? closed_layer[t] : closed_layer[s]\n   }\n+  # 指摘 1 件の門。分類の行なら綴りを控えて空文字を返し、出どころの行なら控えた綴りを返して\n+  # 控えを消す(直前に分類の行が無ければ空文字)。それ以外の行は空文字\n+  function finding_tag(line,    tag) {\n+    if (line ~ /^- 分類: `/) { pending = spelling_of(line); return \"\" }\n+    if (line !~ /^- 出どころ:/) return \"\"\n+    tag = pending; pending = \"\"\n+    return tag\n+  }\n '\n \n # 記録を 1 パスで読み、分類ごとの集計行を返す(列は「出力の列」のとおり)。\n@@ -105,12 +115,11 @@ awk_common='\n summary_rows() {\n   awk \"$awk_common\"'\n     FNR == 1 { number = record_number(FILENAME); records[number] = 1 }\n-    /^- 分類: `/ { pending = spelling_of($0); next }\n-    /^- 出どころ:/ && pending != \"\" {\n-      if (reached_outside($0)) outside[pending, number]++\n-      else inside[pending, number]++\n-      spellings[pending] = 1\n-      pending = \"\"\n+    { tag = finding_tag($0) }\n+    tag != \"\" {\n+      if (reached_outside($0)) outside[tag, number]++\n+      else inside[tag, number]++\n+      spellings[tag] = 1\n       next\n     }\n     /^- 対策済: `/ { close_window($0); next }\n@@ -145,14 +154,13 @@ list_findings() {\n   awk -v want=\"$1\" \"$awk_common\"'\n     FNR == 1 { number = record_number(FILENAME) }\n     /^### / { heading = $0; sub(/^### /, \"\", heading) }\n-    /^- 分類: `/ { pending = spelling_of($0); if (fold_tag(pending) != want) pending = \"\"; next }\n-    /^- 出どころ:/ && pending != \"\" {\n+    { tag = finding_tag($0) }\n+    tag != \"\" && fold_tag(tag) == want {\n       source = $0; sub(/^- 出どころ: */, \"\", source); gsub(/`/, \"\", source)\n       n++\n-      finding_spelling[n] = pending\n+      finding_spelling[n] = tag\n       finding_number[n] = number\n       lines[n] = sprintf(\"%d\\tpr-%d  %-36s  %s\", !reached_outside($0), number, source, heading)\n-      pending = \"\"\n       next\n     }\n     /^- 対策済: `/ { close_window($0); next }\n@@ -164,6 +172,66 @@ list_findings() {\n   ' pr-*.md | sort -s -k1,1n | cut -f2-\n }\n \n+# レビューエージェントごとに、指摘を残した記録の本数と指摘の件数を\n+# 「<並べ替えのキー>\\t<定義の有無>\\t<名前>\\t<本数>\\t<件数>\\t<件/本>」で返す(件/本は 0 本なら `-`)。\n+# 数えるのは門(finding_tag)を通った出どころの行のうち、バッククォートを外して\n+# `レビュー（<名前>-reviewer）` だけになる行。括弧の中に名前以外の語を持つ行\n+# (`レビュー（implementation-reviewer のミューテーション実測）` 等)は、語彙表に反する綴りで\n+# どの装置に按分するかを決められないので数えない。\n+# 定義のある名前は出どころに現れなくても 0 本 0 件で返す(それが退役の信号)。定義の無い名前は\n+# 本数に依らず末尾へ置くため、並べ替えのキーを記録の本数より十分大きい値にする。\n+# 引数: <定義のある名前を空白で区切った並び(glob 順)>\n+reviewer_rows() {\n+  awk -v defined=\"$1\" \"$awk_common\"'\n+    function row(kind, name, key,    records, findings, per) {\n+      records = records_of[name] + 0; findings = findings_of[name] + 0\n+      per = (records > 0) ? sprintf(\"%.1f 件/本\", findings / records) : \"-\"\n+      printf \"%d\\t%s\\t%s\\t%d\\t%d\\t%s\\n\", key, kind, name, records, findings, per\n+    }\n+    BEGIN {\n+      n = split(defined, names, \" \")\n+      for (i = 1; i <= n; i++) is_defined[names[i]] = 1\n+      undefined_key = 1000000\n+    }\n+    FNR == 1 { number = record_number(FILENAME) }\n+    { tag = finding_tag($0) }\n+    tag != \"\" {\n+      name = $0; gsub(/`/, \"\", name)\n+      if (name !~ /^- 出どころ: *レビュー（[a-z-]+-reviewer） *$/) next\n+      sub(/^- 出どころ: *レビュー（/, \"\", name); sub(/） *$/, \"\", name)\n+      findings_of[name]++\n+      if (!(seen[name, number]++)) records_of[name]++\n+      next\n+    }\n+    END {\n+      for (i = 1; i <= n; i++) row(\"defined\", names[i], records_of[names[i]] + 0)\n+      for (name in findings_of) if (!is_defined[name]) row(\"undefined\", name, undefined_key)\n+    }\n+  ' pr-*.md | sort -s -k1,1n\n+}\n+\n+# `.claude/agents/*-reviewer.md` の名前を glob 順に空白区切りで返す。\n+# 不一致の glob は文字列のまま残るので `[ -e ]` で飛ばす\n+defined_reviewers() {\n+  for agent in ../../.claude/agents/*-reviewer.md; do\n+    [ -e \"$agent\" ] || continue\n+    printf '%s ' \"$(basename \"$agent\" .md)\"\n+  done\n+}\n+\n+# 節 3 段 1 の表。定義のある装置の行を本数の昇順で出し、定義の無い名前があればその後ろに\n+# 本数・件数だけを出す。\n+reviewer_table() {\n+  local rows undefined\n+  rows=\"$(reviewer_rows \"$(defined_reviewers)\")\"\n+  printf '%s\\n' \"$rows\" | awk -F'\\t' '$2 == \"defined\" { printf \"     %-24s %4d 本 %5d 件  %s\\n\", $3, $4, $5, $6 }'\n+  printf '%s\\n' \"   起動しても指摘 0 件の回は本数に入らない。条件付きで呼ぶ装置は本数ではなく件/本で見る\"\n+  undefined=\"$(printf '%s\\n' \"$rows\" | awk -F'\\t' '$2 == \"undefined\" { printf \"     %-24s %4d 本 %5d 件\\n\", $3, $4, $5 }')\"\n+  [ -n \"$undefined\" ] || return 0\n+  printf '   %s\\n' \"定義の無い名前(観点別に分かれる前の旧語彙など。上の表へ混ぜない):\"\n+  printf '%s\\n' \"$undefined\"\n+}\n+\n # AGENTS.md + rules/ の行数\n loaded_lines() {\n   (cd ../.. && wc -l AGENTS.md rules/*.md | tail -1 | awk '{print $1}')\n@@ -216,9 +284,23 @@ if [ \"${1:-}\" = \"--shrink\" ]; then\n   candidates=\"$(summary_rows | awk '$1 == 0 && $4 >= 10 {printf \"     %-12s 内部=%-4s 以降=%-4s 起点=%s\\n\", $5, $2, $4, $6}' | sort)\"\n   printf '%s\\n\\n' \"${candidates:-     該当なし}\"\n \n-  # 装置(スキル・エージェント)の退役候補。記録の「## 発火」の行から数える。\n+  # 装置(スキル・エージェント)の退役候補。段 1 はレビューエージェントを記録の「出どころ」の\n+  # 行から、段 2 はスキルを記録の「## 発火」の行から数える(出どころにスキル名は現れない)\n+  printf '%s\\n' \"3. 装置の退役候補\"\n+\n+  # 段 1 で数えるのは指摘を返す装置(`*-reviewer`)だけ。`planner` / `implementer` /\n+  # `harness-counter` は指摘を返さないので出どころに現れない\n+  total=\"$(ls pr-*.md | wc -l)\"\n+  printf '   %s\\n' \"3-1. レビューエージェント（記録の出どころから。記録 ${total} 本）\"\n+  if [ \"$total\" -lt 10 ]; then\n+    printf '   %s\\n' \"(記録 10 本未満のため候補は出さない)\"\n+  else\n+    reviewer_table\n+  fi\n+  printf '\\n'\n+\n   # フックは数えない(予防装置は発火 0 が「効いている」でありうる)\n-  printf '%s\\n' \"3. 装置の退役候補（発火を計測できた記録 10 本から判断）\"\n+  printf '   %s\\n' \"3-2. スキル（発火を計測できた記録 10 本から判断）\"\n   measured=0\n   for record in pr-*.md; do\n     grep -qE '^- 発火: (`|無し)' \"$record\" && measured=$((measured + 1))\n@@ -233,9 +315,9 @@ if [ \"${1:-}\" = \"--shrink\" ]; then\n     | sed 's/^- 発火: `\\([^`]*\\)` \\([0-9]*\\)回/\\1 \\2/' \\\n     | awk '{sum[$1] += $2} END {for (name in sum) printf \"     %-34s %4d 回\\n\", name, sum[name]}' \\\n     | sort -k2 -rn\n-  printf '%s\\n' \"   計測した記録で発火 0 のリポジトリ内装置:\"\n-  for device in ../../.claude/skills/*/ ../../.claude/agents/*.md; do\n-    name=\"$(basename \"$device\" .md)\"\n+  printf '%s\\n' \"   計測した記録で発火 0 のスキル:\"\n+  for device in ../../.claude/skills/*/; do\n+    name=\"$(basename \"$device\")\"\n     grep -qE \"^- 発火: \\`$name\\`\" pr-*.md || printf '     %s\\n' \"$name\"\n   done\n   exit 0",
+          "patchLines": 176,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "719a1ace6c659fe7ff578a909c68732025ee79d9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-04T15:27:49Z",
+      "subject": "節 3-1 を累計ではなく窓で見る形にし、レビューの指摘を反映する",
+      "body": "- 列「最後」(最後に指摘を残した記録)と「以降」(それより後の記録の\n  本数)を足し、以降が 10 本以上の装置を「退役候補」として 1 行で出す。\n  0 本の装置は観測期間が決められないので候補にせず、別の見出しの下に\n  名前だけ出す\n- harness-growth の「縮める」表の節 3 の条件を「最後に指摘を残した記録\n  から 10 本以上」にし、出力側の注記(判断基準)は消す\n- 到達しないソートキー(undefined_key)を消し、kind → 本数で 1 回だけ\n  並べ替える\n- 出どころの行の正規化を awk_common の source_of に寄せ、finding_tag\n  を spelling_of_finding に改名する。名前の正規表現に数字を許す\n- 判定表: build_tree がドットディレクトリを消していなかったのを直し、\n  見出しの下を切り出すヘルパー(under_heading)に 3 箇所の awk を畳む。\n  最後/以降・候補の境界・0 本の装置・定義の無い名前の並びのケースを足す\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N1xAoRqrGLE6gvosL",
+      "files": [
+        {
+          "path": ".claude/skills/harness-growth/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -83,7 +83,7 @@ git worktree add /tmp/replay \"${merge}^2\"           # その PR のマージ前\n | 1 | 常時ロードが上限を超えている | 実例・固有名・件数・PR 番号を判例へ移す。無ければ、フックで強制済みの節を参照 1 行にする |\n | 1 | 常時ロードが上限を下回った | `count.sh` の `always_loaded_cap` をその値まで下げる(下げるまで `--ratchet` が落ちる)。**上げない** |\n | 2 | 以降 10 本以上で再発 0 の分類 | その分類の `rules/` の節から実例・経緯を判例へ落とす(規範の 1 文は残す) |\n-| 3 | 指摘を残した記録が 0 本のレビューエージェント / 発火 0 のスキル | 退役するか、呼ぶ条件・description のトリガー文言を直す。どちらかを理由付きで選ぶ |\n+| 3 | 最後に指摘を残した記録から 10 本以上経ったレビューエージェント / 発火 0 のスキル | 退役するか、呼ぶ条件・description のトリガー文言を直す。どちらかを理由付きで選ぶ |\n \n ## 6. PR にする\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 95,
+          "deletions": 58,
+          "patch": "@@ -29,7 +29,7 @@ source \"$records_dir/../../.claude/hooks/lib/cases-report.sh\"\n # 引数: <常時ロードの増減> <スキルの増減>\n build_tree() {\n   local loaded_delta=\"$1\" skill_delta=\"$2\" loaded_budget skill_budget\n-  rm -rf \"${work:?}\"/*\n+  find \"${work:?}\" -mindepth 1 -delete\n   mkdir -p \"$work/rules\" \"$work/.claude/skills/harness-growth\" \"$work/.claude/agents\" \"$work/harness/records\"\n   cp \"$records_dir/count.sh\" \"$work/harness/records/count.sh\"\n \n@@ -85,16 +85,39 @@ write_agent() {\n \n # 記録を pr-1 .. pr-<本数> まで見出しだけで開く(--shrink 節 3 段 1 の門「記録 10 本」を越えるため)。\n # 引数: <本数>\n-fill_records() {\n+open_records() {\n   local number\n   for number in $(seq \"$1\"); do open_record \"$number\"; done\n }\n \n-# --shrink の出力から、その名前の行の `<本数> 本 <件数> 件 <件/本>` の部分を 1 行で返す。\n-# 名前が出力に無ければ空。\n+# --shrink 節 3 のケースの土台。ツリーを作り直し、alpha-reviewer の定義を置き、記録を <本数> 本開く。\n+# 引数: <記録の本数>\n+build_reviewer_tree() {\n+  build_tree 0 0\n+  write_agent alpha-reviewer\n+  open_records \"$1\"\n+}\n+\n+# --shrink の出力から、見出しの直下に並ぶ行(空白 5 個で始まる行)を、字下げを外して返す。\n+# 見出しが無ければ空。節 3 段 1 の表は「退役候補」の行の直下に並ぶ。\n+# 引数: <見出しの正規表現>\n+under_heading() {\n+  run_count --shrink | awk -v heading=\"$1\" '\n+    $0 ~ heading { under = 1; next }\n+    under && !/^     / { exit }\n+    under { sub(/^     /, \"\"); print }\n+  '\n+}\n+\n+# 節 3 段 1 の表から、その名前の行の名前より後ろを 1 行で返す。名前が表に無ければ空。\n # 引数: <名前>\n reviewer_row() {\n-  run_count --shrink | awk -v name=\"$1\" '$1 == name { $1 = \"\"; sub(/^ +/, \"\"); print }'\n+  under_heading '^   退役候補' | awk -v name=\"$1\" '$1 == name { $1 = \"\"; sub(/^ +/, \"\"); print }'\n+}\n+\n+# 「退役候補」の行の `: ` より後ろを返す。\n+retire_candidates() {\n+  run_count --shrink | sed -n 's/^   退役候補[^:]*: //p'\n }\n \n # 既定の表の comment の行を 1 行にして返す。\n@@ -357,30 +380,33 @@ sections=\"$(run_count --shrink 2>&1 | grep -cE '^[0-9]+\\. ')\"\n report 3 \"$sections\" \"予算がずれていても節 1〜3 がすべて出る\"\n \n # --shrink 節 3 段 1 は、記録の出どころの行からレビューエージェントごとに「指摘を残した記録の本数」と\n-# 「指摘の件数」を数える。定義は `.claude/agents/*-reviewer.md` から取るので、合成側にも定義を置く。\n-# 門(記録 10 本)を越えるため、どのケースも記録を 10 本開いてから指摘を足す。\n+# 「指摘の件数」、最後に指摘を残した記録とそれ以降の本数を数える。定義は `.claude/agents/*-reviewer.md`\n+# から取るので、合成側にも定義を置く。門(記録 10 本)を越えるため、どのケースも記録を 10 本以上開いて\n+# から指摘を足す(門の境界を見る最初のケースだけ 9 本)。\n printf '\\n%s\\n' \"--shrink 節 3\"\n-build_tree 0 0\n-write_agent alpha-reviewer\n-fill_records 9\n+build_reviewer_tree 9\n write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n report \"文言=1 行=\" \\\n   \"文言=$(run_count --shrink | grep -c '記録 10 本未満のため候補は出さない') 行=$(reviewer_row alpha-reviewer)\" \\\n   \"記録が 9 本のときは表を出さず「記録 10 本未満」の文言を出す\"\n-build_tree 0 0\n-write_agent alpha-reviewer\n-fill_records 10\n+build_reviewer_tree 10\n write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n-report \"1 本 1 件 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \"記録が 10 本になると表を出す\"\n-build_tree 0 0\n-write_agent alpha-reviewer\n-fill_records 10\n+report \"1 本 1 件 最後=pr-1 以降=9 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \"記録が 10 本になると表を出す\"\n+build_reviewer_tree 10\n write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n write_finding 1 comment-beta \"レビュー（alpha-reviewer）\"\n write_finding 2 comment-alpha \"レビュー（alpha-reviewer）\"\n-report \"2 本 3 件 1.5 件/本\" \"$(reviewer_row alpha-reviewer)\" \\\n+report \"2 本 3 件 最後=pr-2 以降=8 1.5 件/本\" \"$(reviewer_row alpha-reviewer)\" \\\n   \"同じ装置が 1 本の記録に 2 件・別の記録に 1 件残すと 2 本 3 件 1.5 件/本になる\"\n \n+# 最後は番号の最大で、以降はそれより後の記録の本数。記録を 15 本にするのは、以降の値を\n+# 記録の総数とも門の 10 本とも違えるため。\n+build_reviewer_tree 15\n+write_finding 2 comment-alpha \"レビュー（alpha-reviewer）\"\n+write_finding 3 comment-alpha \"レビュー（alpha-reviewer）\"\n+report \"2 本 2 件 最後=pr-3 以降=12 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \\\n+  \"最後に指摘を残した記録と、それ以降の記録の本数が出る\"\n+\n # 出どころの綴りはバッククォートの位置が記録によって違う(全体・無し・括弧の中だけ)。\n # どれも同じ 1 本 1 件に数える。表は `ケース名|出どころの行`。\n reviewer_source_cases='\n@@ -390,76 +416,87 @@ reviewer_source_cases='\n '\n while IFS='|' read -r label line; do\n   [ -n \"$label\" ] || continue\n-  build_tree 0 0\n-  write_agent alpha-reviewer\n-  fill_records 10\n+  build_reviewer_tree 10\n   append_line 1 '- 分類: `comment-alpha`'\n   append_line 1 \"$line\"\n-  report \"1 本 1 件 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \"$label\"\n+  report \"1 本 1 件 最後=pr-1 以降=9 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \"$label\"\n done <<< \"$reviewer_source_cases\"\n \n-build_tree 0 0\n-write_agent alpha-reviewer\n+# 退役候補は以降が 10 本以上の装置。境界は記録の総数で作る(pr-1 に残して 11 本なら以降 10、\n+# 10 本なら以降 9)。「該当なし」の綴りまで比べるのは、候補が無いときに行ごと出さない実装を\n+# 落とすため。\n+build_reviewer_tree 11\n+write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n+report \"alpha-reviewer\" \"$(retire_candidates)\" \"以降が 10 本の装置は退役候補に出る\"\n+build_reviewer_tree 10\n+write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n+report \"該当なし\" \"$(retire_candidates)\" \"以降が 9 本の装置は退役候補に出ず「該当なし」になる\"\n+\n+# 定義があって出どころに現れない装置は、観測期間が決められないので候補にも表にも出さず、\n+# 「まだ指摘を残していない」の下に名前だけ出す。alpha-reviewer を以降 10 本で置くのは、\n+# 候補の行が beta-reviewer を落としたことを「該当なし」ではなく名前で見るため。\n+build_reviewer_tree 11\n write_agent beta-reviewer\n-fill_records 10\n write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n-report \"0 本 0 件 -\" \"$(reviewer_row beta-reviewer)\" \"定義があって出どころに現れない装置は 0 本 0 件 - で表に出る\"\n-build_tree 0 0\n-write_agent alpha-reviewer\n+report \"候補=alpha-reviewer 表= まだ=beta-reviewer\" \\\n+  \"候補=$(retire_candidates) 表=$(reviewer_row beta-reviewer) まだ=$(under_heading 'まだ指摘を残していない' | paste -sd' ' -)\" \\\n+  \"定義があって出どころに現れない装置は候補にも表にも出ず「まだ指摘を残していない」に出る\"\n+build_reviewer_tree 10\n write_agent planner\n-fill_records 10\n-report \"alpha-reviewer=0 本 0 件 - planner=\" \\\n-  \"alpha-reviewer=$(reviewer_row alpha-reviewer) planner=$(reviewer_row planner)\" \\\n-  \"-reviewer で終わらない定義(planner)は表に出ない\"\n-build_tree 0 0\n-write_agent alpha-reviewer\n-fill_records 10\n+report \"alpha-reviewer\" \"$(under_heading 'まだ指摘を残していない' | paste -sd' ' -)\" \\\n+  \"-reviewer で終わらない定義(planner)は「まだ指摘を残していない」にも出ない\"\n+build_reviewer_tree 10\n write_finding 1 comment-alpha \"レビュー（implementation-reviewer）\"\n-report \"表=0 定義の無い名前=1 本 1 件\" \\\n-  \"表=$(run_count --shrink | awk '/定義の無い名前/ {exit} $1 == \"implementation-reviewer\"' | wc -l) 定義の無い名前=$(run_count --shrink | awk -v name=implementation-reviewer '/定義の無い名前/ {under = 1; next} under && $1 == name { $1 = \"\"; sub(/^ +/, \"\"); print }')\" \\\n+report \"表= 定義の無い名前=1 本 1 件\" \\\n+  \"表=$(reviewer_row implementation-reviewer) 定義の無い名前=$(under_heading '定義の無い名前' | awk '$1 == \"implementation-reviewer\" { $1 = \"\"; sub(/^ +/, \"\"); print }')\" \\\n   \"定義の無い名前(implementation-reviewer)は表に出ず、「定義の無い名前」の下に本数・件数が出る\"\n-build_tree 0 0\n-write_agent alpha-reviewer\n-fill_records 10\n+build_reviewer_tree 10\n write_finding 1 comment-alpha \"レビュー（人）\"\n-report \"alpha-reviewer=0 本 0 件 - 定義の無い名前=0\" \\\n+report \"alpha-reviewer= 定義の無い名前=0\" \\\n   \"alpha-reviewer=$(reviewer_row alpha-reviewer) 定義の無い名前=$(run_count --shrink | grep -c '定義の無い名前')\" \\\n   \"レビュー（人） はどの装置にも「定義の無い名前」にも数えない\"\n-build_tree 0 0\n-write_agent alpha-reviewer\n-fill_records 10\n+build_reviewer_tree 10\n append_line 1 '- 出どころ: `レビュー（alpha-reviewer）`'\n-report \"0 本 0 件 -\" \"$(reviewer_row alpha-reviewer)\" \"分類の行が先行しない出どころの行は数えない(既定の表と同じ門)\"\n-build_tree 0 0\n-write_agent alpha-reviewer\n-fill_records 10\n+report \"\" \"$(reviewer_row alpha-reviewer)\" \"分類の行が先行しない出どころの行は数えない(既定の表と同じ門)\"\n+build_reviewer_tree 10\n write_finding 1 comment-alpha \"レビュー（alpha-reviewer の 2 巡目）\"\n write_finding 2 comment-alpha \"レビュー（alpha-reviewer）\"\n-report \"1 本 1 件 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \\\n+report \"1 本 1 件 最後=pr-2 以降=8 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \\\n   \"括弧の中に名前以外の語を持つ レビュー（alpha-reviewer の 2 巡目） は数えない\"\n+build_reviewer_tree 10\n+write_agent a11y-reviewer\n+write_finding 1 comment-alpha \"レビュー（a11y-reviewer）\"\n+report \"1 本 1 件 最後=pr-1 以降=9 1.0 件/本\" \"$(reviewer_row a11y-reviewer)\" \"数字を含む名前(a11y-reviewer)も数える\"\n \n # 並びは本数の昇順。glob 順(a → b)と逆になる本数を置き、本数のキーだけを固定する。\n # 同数のときの並びは glob 順で既に成立していて、並べ替えを落としても通るので固定しない。\n-build_tree 0 0\n-write_agent alpha-reviewer\n+build_reviewer_tree 10\n write_agent beta-reviewer\n-fill_records 10\n write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n+write_finding 1 comment-alpha \"レビュー（beta-reviewer）\"\n+write_finding 2 comment-alpha \"レビュー（alpha-reviewer）\"\n report \"beta-reviewer alpha-reviewer\" \\\n-  \"$(run_count --shrink | awk '$3 == \"本\" && $5 == \"件\" {print $1}' | paste -sd' ' -)\" \\\n+  \"$(under_heading '^   退役候補' | awk '{print $1}' | paste -sd' ' -)\" \\\n   \"記録の本数が少ない装置が上に並ぶ\"\n+# 定義の無い名前も本数の昇順。名前順(delta → gamma)とも記録に現れる順(delta が先)とも\n+# 逆になる本数を置く。\n+build_reviewer_tree 10\n+write_finding 1 comment-alpha \"レビュー（delta-reviewer）\"\n+write_finding 2 comment-alpha \"レビュー（delta-reviewer）\"\n+write_finding 3 comment-alpha \"レビュー（gamma-reviewer）\"\n+report \"gamma-reviewer delta-reviewer\" \\\n+  \"$(under_heading '定義の無い名前' | awk '{print $1}' | paste -sd' ' -)\" \\\n+  \"定義の無い名前が 2 つあるとき本数の少ないほうが上に並ぶ\"\n \n # 段 2 の「発火 0 のスキル」にはスキルだけが出て、エージェントは出ない(エージェントは段 1 が数える)。\n # 段 2 の門(発火を計測できた記録 10 本)を越えるため、記録 10 本に `- 発火:` の行を置く。\n # pr-1 だけ名前付きにするのは、全部 `無し` だと発火回数の grep が不一致で段 2 が exit 1 になるため\n-# (変更前からの挙動)。\n-build_tree 0 0\n-write_agent alpha-reviewer\n-fill_records 10\n+# (変更前からの挙動。#1284)。\n+build_reviewer_tree 10\n append_line 1 '- 発火: `implementation-flow` 1回'\n for number in $(seq 2 10); do append_line \"$number\" '- 発火: 無し'; done\n report \"harness-growth\" \\\n-  \"$(run_count --shrink | awk '/発火 0 のスキル/ {under = 1; next} under {print $1}' | paste -sd' ' -)\" \\\n+  \"$(under_heading '発火 0 のスキル' | paste -sd' ' -)\" \\\n   \"発火 0 のスキルにはスキルだけが出て、定義のあるエージェント(alpha-reviewer)は出ない\"\n \n exit \"$cases_failed\"",
+          "patchLines": 228,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": "harness/records/count.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 76,
+          "deletions": 47,
+          "patch": "@@ -100,13 +100,18 @@ awk_common='\n     t = fold_tag(s)\n     return (closed_at[t] + 0 > closed_at[s] + 0) ? closed_layer[t] : closed_layer[s]\n   }\n-  # 指摘 1 件の門。分類の行なら綴りを控えて空文字を返し、出どころの行なら控えた綴りを返して\n-  # 控えを消す(直前に分類の行が無ければ空文字)。それ以外の行は空文字\n-  function finding_tag(line,    tag) {\n+  # 指摘 1 件の門。分類の行なら綴りを控えて空文字を返し、出どころの行なら、未消費の分類の行が\n+  # あればその綴りを返して控えを消す。それ以外の行は空文字\n+  function spelling_of_finding(line,    spelling) {\n     if (line ~ /^- 分類: `/) { pending = spelling_of(line); return \"\" }\n     if (line !~ /^- 出どころ:/) return \"\"\n-    tag = pending; pending = \"\"\n-    return tag\n+    spelling = pending; pending = \"\"\n+    return spelling\n+  }\n+  # 出どころの行の値。接頭辞 `- 出どころ: ` とバッククォートを外す\n+  function source_of(line) {\n+    sub(/^- 出どころ: */, \"\", line); gsub(/`/, \"\", line)\n+    return line\n   }\n '\n \n@@ -115,11 +120,11 @@ awk_common='\n summary_rows() {\n   awk \"$awk_common\"'\n     FNR == 1 { number = record_number(FILENAME); records[number] = 1 }\n-    { tag = finding_tag($0) }\n-    tag != \"\" {\n-      if (reached_outside($0)) outside[tag, number]++\n-      else inside[tag, number]++\n-      spellings[tag] = 1\n+    { spelling = spelling_of_finding($0) }\n+    spelling != \"\" {\n+      if (reached_outside($0)) outside[spelling, number]++\n+      else inside[spelling, number]++\n+      spellings[spelling] = 1\n       next\n     }\n     /^- 対策済: `/ { close_window($0); next }\n@@ -154,13 +159,12 @@ list_findings() {\n   awk -v want=\"$1\" \"$awk_common\"'\n     FNR == 1 { number = record_number(FILENAME) }\n     /^### / { heading = $0; sub(/^### /, \"\", heading) }\n-    { tag = finding_tag($0) }\n-    tag != \"\" && fold_tag(tag) == want {\n-      source = $0; sub(/^- 出どころ: */, \"\", source); gsub(/`/, \"\", source)\n+    { spelling = spelling_of_finding($0) }\n+    spelling != \"\" && fold_tag(spelling) == want {\n       n++\n-      finding_spelling[n] = tag\n+      finding_spelling[n] = spelling\n       finding_number[n] = number\n-      lines[n] = sprintf(\"%d\\tpr-%d  %-36s  %s\", !reached_outside($0), number, source, heading)\n+      lines[n] = sprintf(\"%d\\tpr-%d  %-36s  %s\", !reached_outside($0), number, source_of($0), heading)\n       next\n     }\n     /^- 対策済: `/ { close_window($0); next }\n@@ -172,42 +176,51 @@ list_findings() {\n   ' pr-*.md | sort -s -k1,1n | cut -f2-\n }\n \n-# レビューエージェントごとに、指摘を残した記録の本数と指摘の件数を\n-# 「<並べ替えのキー>\\t<定義の有無>\\t<名前>\\t<本数>\\t<件数>\\t<件/本>」で返す(件/本は 0 本なら `-`)。\n-# 数えるのは門(finding_tag)を通った出どころの行のうち、バッククォートを外して\n+# レビューエージェントごとに、指摘を残した記録の本数・指摘の件数・最後に指摘を残した記録を\n+# 「<本数>\\t<定義の有無>\\t<名前>\\t<件数>\\t<件/本>\\t<最後>\\t<以降>」で返す。最後はその装置が\n+# 最後に指摘を残した記録の番号、以降はその記録より後の記録の本数(どちらも 0 本なら `-`。\n+# 件/本も同じ)。起動しても指摘 0 件の回は本数に入らない。\n+# 数えるのは門(spelling_of_finding)を通った出どころの行のうち、バッククォートを外して\n # `レビュー（<名前>-reviewer）` だけになる行。括弧の中に名前以外の語を持つ行\n-# (`レビュー（implementation-reviewer のミューテーション実測）` 等)は、語彙表に反する綴りで\n-# どの装置に按分するかを決められないので数えない。\n-# 定義のある名前は出どころに現れなくても 0 本 0 件で返す(それが退役の信号)。定義の無い名前は\n-# 本数に依らず末尾へ置くため、並べ替えのキーを記録の本数より十分大きい値にする。\n+# (`レビュー（implementation-reviewer のミューテーション実測）` 等。バッククォートを外した後の形)\n+# は、語彙表に反する綴りでどの装置に按分するかを決められないので数えない。\n+# 定義のある名前は出どころに現れなくても 0 本 0 件で返す。\n+# 並びは定義の有無(定義のある名前が先)→ 本数の昇順。同数は awk が出した順のまま\n+# (定義のある名前は glob 順)。\n # 引数: <定義のある名前を空白で区切った並び(glob 順)>\n reviewer_rows() {\n   awk -v defined=\"$1\" \"$awk_common\"'\n-    function row(kind, name, key,    records, findings, per) {\n+    function row(kind, name,    records, findings, per, last, after, number) {\n       records = records_of[name] + 0; findings = findings_of[name] + 0\n       per = (records > 0) ? sprintf(\"%.1f 件/本\", findings / records) : \"-\"\n-      printf \"%d\\t%s\\t%s\\t%d\\t%d\\t%s\\n\", key, kind, name, records, findings, per\n+      last = (records > 0) ? last_of[name] : \"-\"\n+      after = \"-\"\n+      if (records > 0) {\n+        after = 0\n+        for (number in all_records) if (number + 0 > last_of[name]) after++\n+      }\n+      printf \"%d\\t%s\\t%s\\t%d\\t%s\\t%s\\t%s\\n\", records, kind, name, findings, per, last, after\n     }\n     BEGIN {\n       n = split(defined, names, \" \")\n       for (i = 1; i <= n; i++) is_defined[names[i]] = 1\n-      undefined_key = 1000000\n     }\n-    FNR == 1 { number = record_number(FILENAME) }\n-    { tag = finding_tag($0) }\n-    tag != \"\" {\n-      name = $0; gsub(/`/, \"\", name)\n-      if (name !~ /^- 出どころ: *レビュー（[a-z-]+-reviewer） *$/) next\n-      sub(/^- 出どころ: *レビュー（/, \"\", name); sub(/） *$/, \"\", name)\n+    FNR == 1 { number = record_number(FILENAME); all_records[number] = 1 }\n+    { spelling = spelling_of_finding($0) }\n+    spelling != \"\" {\n+      name = source_of($0)\n+      if (name !~ /^レビュー（[a-z0-9-]+-reviewer） *$/) next\n+      sub(/^レビュー（/, \"\", name); sub(/） *$/, \"\", name)\n       findings_of[name]++\n       if (!(seen[name, number]++)) records_of[name]++\n+      if (number > last_of[name] + 0) last_of[name] = number\n       next\n     }\n     END {\n-      for (i = 1; i <= n; i++) row(\"defined\", names[i], records_of[names[i]] + 0)\n-      for (name in findings_of) if (!is_defined[name]) row(\"undefined\", name, undefined_key)\n+      for (i = 1; i <= n; i++) row(\"defined\", names[i])\n+      for (name in findings_of) if (!is_defined[name]) row(\"undefined\", name)\n     }\n-  ' pr-*.md | sort -s -k1,1n\n+  ' pr-*.md | sort -s -k2,2 -k1,1n\n }\n \n # `.claude/agents/*-reviewer.md` の名前を glob 順に空白区切りで返す。\n@@ -219,17 +232,30 @@ defined_reviewers() {\n   done\n }\n \n-# 節 3 段 1 の表。定義のある装置の行を本数の昇順で出し、定義の無い名前があればその後ろに\n-# 本数・件数だけを出す。\n+# 節 3 段 1 の表。先頭に退役候補(最後に指摘を残した記録から <閾値> 本以上経った装置)を\n+# 1 行で出し、その下に定義のある装置の行を本数の昇順で並べる。まだ指摘を残していない装置は\n+# 観測期間が決められない(新設直後と区別できない)ので候補にも表にも出さず、名前だけを後ろに出す。\n+# 定義の無い名前があればその後ろに本数・件数だけを出す。\n+# 引数: <候補にする以降の本数>\n reviewer_table() {\n-  local rows undefined\n+  local rows candidates\n   rows=\"$(reviewer_rows \"$(defined_reviewers)\")\"\n-  printf '%s\\n' \"$rows\" | awk -F'\\t' '$2 == \"defined\" { printf \"     %-24s %4d 本 %5d 件  %s\\n\", $3, $4, $5, $6 }'\n-  printf '%s\\n' \"   起動しても指摘 0 件の回は本数に入らない。条件付きで呼ぶ装置は本数ではなく件/本で見る\"\n-  undefined=\"$(printf '%s\\n' \"$rows\" | awk -F'\\t' '$2 == \"undefined\" { printf \"     %-24s %4d 本 %5d 件\\n\", $3, $4, $5 }')\"\n-  [ -n \"$undefined\" ] || return 0\n-  printf '   %s\\n' \"定義の無い名前(観点別に分かれる前の旧語彙など。上の表へ混ぜない):\"\n-  printf '%s\\n' \"$undefined\"\n+  candidates=\"$(printf '%s\\n' \"$rows\" | awk -F'\\t' -v threshold=\"$1\" '\n+    $2 == \"defined\" && $1 > 0 && $7 >= threshold { printf \"%s%s\", sep, $3; sep = \" \" }\n+  ')\"\n+  printf '   退役候補（以降 %s 本以上）: %s\\n' \"$1\" \"${candidates:-該当なし}\"\n+  printf '%s\\n' \"$rows\" | awk -F'\\t' '\n+    function end_defined() {\n+      if (unstarted == \"\") return\n+      printf \"   %s\\n\", \"まだ指摘を残していない(観測期間が決められないので候補にしない):\"\n+      printf \"%s\", unstarted\n+    }\n+    $2 == \"defined\" && $1 == 0 { unstarted = unstarted sprintf(\"     %s\\n\", $3); next }\n+    $2 == \"defined\" { printf \"     %-24s %4d 本 %5d 件  最後=pr-%-5d 以降=%-4d %s\\n\", $3, $1, $4, $6, $7, $5; next }\n+    !under { end_defined(); under = 1; printf \"   %s\\n\", \"定義の無い名前(観点別に分かれる前の名前、`implementation-reviewer` など。上の表へ混ぜない):\" }\n+    { printf \"     %-24s %4d 本 %5d 件\\n\", $3, $1, $4 }\n+    END { if (!under) end_defined() }\n+  '\n }\n \n # AGENTS.md + rules/ の行数\n@@ -289,13 +315,16 @@ if [ \"${1:-}\" = \"--shrink\" ]; then\n   printf '%s\\n' \"3. 装置の退役候補\"\n \n   # 段 1 で数えるのは指摘を返す装置(`*-reviewer`)だけ。`planner` / `implementer` /\n-  # `harness-counter` は指摘を返さないので出どころに現れない\n+  # `harness-counter` は指摘を返さないので出どころに現れない。\n+  # 候補は最後に指摘を残した記録から retire_after 本以上経った装置。記録の総数がそれ未満なら\n+  # どの装置も以降が届かないので、表ごと出さない\n+  retire_after=10\n   total=\"$(ls pr-*.md | wc -l)\"\n   printf '   %s\\n' \"3-1. レビューエージェント（記録の出どころから。記録 ${total} 本）\"\n-  if [ \"$total\" -lt 10 ]; then\n-    printf '   %s\\n' \"(記録 10 本未満のため候補は出さない)\"\n+  if [ \"$total\" -lt \"$retire_after\" ]; then\n+    printf '   %s\\n' \"(記録 ${retire_after} 本未満のため候補は出さない)\"\n   else\n-    reviewer_table\n+    reviewer_table \"$retire_after\"\n   fi\n   printf '\\n'\n ",
+          "patchLines": 191,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "d78b6bc0836a8475e87a3d3a9ac4cd53db9fa328",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-04T15:46:12Z",
+      "subject": "判定表に、合成記録では現れない形(まばらな番号・桁違いの本数・3 種の混在)を足す",
+      "body": "test-reviewer のミューテーション実測で、壊しても落ちない箇所が見つかった\nのに対応する。番号に隙間と桁の違いを持つ記録、本数が 1 桁と 2 桁の装置、\n定義のある装置・定義の無い名前・0 本の装置が同時にあるツリー、定義が\n0 のツリー、門のケースで 3-2 の見出しも出ること、自由記述の行が定義の\n無い名前にも入らないこと、のケースを足す。\n\n0 本のときの `-` の説明を、候補の条件は `$1 > 0` が守る形に直す。\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N1xAoRqrGLE6gvosL",
+      "files": [
+        {
+          "path": "harness/records/count-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 51,
+          "deletions": 2,
+          "patch": "@@ -389,6 +389,8 @@ write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n report \"文言=1 行=\" \\\n   \"文言=$(run_count --shrink | grep -c '記録 10 本未満のため候補は出さない') 行=$(reviewer_row alpha-reviewer)\" \\\n   \"記録が 9 本のときは表を出さず「記録 10 本未満」の文言を出す\"\n+# 段 1 の門で止まっても段 2 は出る(門の中で exit すると 3-2 が消える)。\n+report 1 \"$(run_count --shrink | grep -c '^   3-2\\. ')\" \"記録が 9 本で段 1 の門に掛かっても段 2 の見出しは出る\"\n build_reviewer_tree 10\n write_finding 1 comment-alpha \"レビュー（alpha-reviewer）\"\n report \"1 本 1 件 最後=pr-1 以降=9 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \"記録が 10 本になると表を出す\"\n@@ -458,11 +460,14 @@ report \"alpha-reviewer= 定義の無い名前=0\" \\\n build_reviewer_tree 10\n append_line 1 '- 出どころ: `レビュー（alpha-reviewer）`'\n report \"\" \"$(reviewer_row alpha-reviewer)\" \"分類の行が先行しない出どころの行は数えない(既定の表と同じ門)\"\n+# 見出しが出ないことまで見るのは、正規表現を緩めると alpha の行は変わらず「定義の無い名前」に\n+# `alpha-reviewer の 2 巡目` が入る形で通ってしまうため。\n build_reviewer_tree 10\n write_finding 1 comment-alpha \"レビュー（alpha-reviewer の 2 巡目）\"\n write_finding 2 comment-alpha \"レビュー（alpha-reviewer）\"\n-report \"1 本 1 件 最後=pr-2 以降=8 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \\\n-  \"括弧の中に名前以外の語を持つ レビュー（alpha-reviewer の 2 巡目） は数えない\"\n+report \"alpha-reviewer=1 本 1 件 最後=pr-2 以降=8 1.0 件/本 定義の無い名前=0\" \\\n+  \"alpha-reviewer=$(reviewer_row alpha-reviewer) 定義の無い名前=$(run_count --shrink | grep -c '定義の無い名前')\" \\\n+  \"括弧の中に名前以外の語を持つ レビュー（alpha-reviewer の 2 巡目） はどの装置にも「定義の無い名前」にも数えない\"\n build_reviewer_tree 10\n write_agent a11y-reviewer\n write_finding 1 comment-alpha \"レビュー（a11y-reviewer）\"\n@@ -488,6 +493,50 @@ report \"gamma-reviewer delta-reviewer\" \\\n   \"$(under_heading '定義の無い名前' | awk '{print $1}' | paste -sd' ' -)\" \\\n   \"定義の無い名前が 2 つあるとき本数の少ないほうが上に並ぶ\"\n \n+# 番号に隙間と桁の違いがある記録。合成記録が pr-1 .. pr-N の連番だと、以降を「総数 − 最後の番号」で\n+# 出す実装も、最後の番号を文字列で比べる実装も同じ答えになって落ちない。pr-9 の後ろに 2 桁・3 桁・\n+# 4 桁を置くと、文字列比較では `10` も `1205` も `9` より小さくなる。\n+build_tree 0 0\n+write_agent alpha-reviewer\n+write_agent beta-reviewer\n+for number in 7 9 10 11 12 13 14 15 16 17 18 120 1205; do open_record \"$number\"; done\n+write_finding 9 comment-alpha \"レビュー（alpha-reviewer）\"\n+report \"1 本 1 件 最後=pr-9 以降=11 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \\\n+  \"番号に隙間と桁の違いがあっても、以降は最後より大きい番号の記録の本数になる\"\n+# 最後の決め方も同じ入力で見る。pr-9 と pr-10 の両方に残すと、文字列比較では pr-9 が最後になる。\n+write_finding 9 comment-alpha \"レビュー（beta-reviewer）\"\n+write_finding 10 comment-alpha \"レビュー（beta-reviewer）\"\n+report \"2 本 2 件 最後=pr-10 以降=10 1.0 件/本\" \"$(reviewer_row beta-reviewer)\" \\\n+  \"pr-9 と pr-10 に残した装置の最後は pr-10 になる(番号は数値で比べる)\"\n+\n+# 本数の並びも数値で比べる。1 桁と 2 桁を並べると、文字列の昇順では `12` が `7` より上に来る。\n+build_reviewer_tree 12\n+write_agent beta-reviewer\n+for number in $(seq 12); do write_finding \"$number\" comment-alpha \"レビュー（alpha-reviewer）\"; done\n+for number in $(seq 7); do write_finding \"$number\" comment-alpha \"レビュー（beta-reviewer）\"; done\n+report \"beta-reviewer alpha-reviewer\" \\\n+  \"$(under_heading '^   退役候補' | awk '{print $1}' | paste -sd' ' -)\" \\\n+  \"本数が 7 本の装置は 12 本の装置より上に並ぶ(本数は数値で比べる)\"\n+\n+# 定義のある装置・定義の無い名前・0 本の定義が同時にあるツリー。3 つが別々のケースにしかないと、\n+# 混ぜ方(定義の有無で先に分ける並び、「まだ」の名前を出す位置、候補を定義のある名前に限ること)を\n+# 壊しても落ちない。old-reviewer は以降 13 本で閾値を越えているが、定義が無いので候補にしない。\n+build_reviewer_tree 15\n+write_agent beta-reviewer\n+for number in $(seq 15); do write_finding \"$number\" comment-alpha \"レビュー（alpha-reviewer）\"; done\n+write_finding 1 comment-alpha \"レビュー（old-reviewer）\"\n+write_finding 2 comment-alpha \"レビュー（old-reviewer）\"\n+report \"候補=該当なし 表=15 本 15 件 最後=pr-15 以降=0 1.0 件/本 まだ=beta-reviewer 定義の無い名前=old-reviewer\" \\\n+  \"候補=$(retire_candidates) 表=$(reviewer_row alpha-reviewer) まだ=$(under_heading 'まだ指摘を残していない' | paste -sd' ' -) 定義の無い名前=$(under_heading '定義の無い名前' | awk '{print $1}' | paste -sd' ' -)\" \\\n+  \"定義のある装置・定義の無い名前・0 本の定義が同時にあっても、候補は定義のある装置だけで、残りはそれぞれの置き場に出る\"\n+\n+# 定義が 1 つも無いツリー。不一致の glob が文字列のまま残ると `*-reviewer` が 0 本の定義として\n+# 「まだ指摘を残していない」に出る。\n+build_tree 0 0\n+open_records 10\n+report 0 \"$(run_count --shrink | grep -c 'まだ指摘を残していない')\" \\\n+  \"定義が 1 つも無ければ「まだ指摘を残していない」の見出しも出ない\"\n+\n # 段 2 の「発火 0 のスキル」にはスキルだけが出て、エージェントは出ない(エージェントは段 1 が数える)。\n # 段 2 の門(発火を計測できた記録 10 本)を越えるため、記録 10 本に `- 発火:` の行を置く。\n # pr-1 だけ名前付きにするのは、全部 `無し` だと発火回数の grep が不一致で段 2 が exit 1 になるため",
+          "patchLines": 77,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": "harness/records/count.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 2,
+          "patch": "@@ -178,8 +178,11 @@ list_findings() {\n \n # レビューエージェントごとに、指摘を残した記録の本数・指摘の件数・最後に指摘を残した記録を\n # 「<本数>\\t<定義の有無>\\t<名前>\\t<件数>\\t<件/本>\\t<最後>\\t<以降>」で返す。最後はその装置が\n-# 最後に指摘を残した記録の番号、以降はその記録より後の記録の本数(どちらも 0 本なら `-`。\n-# 件/本も同じ)。起動しても指摘 0 件の回は本数に入らない。\n+# 最後に指摘を残した記録の番号、以降はその記録より後の記録の本数。起動しても指摘 0 件の回は\n+# 本数に入らない。\n+# 0 本の行の件/本・最後・以降を `-` にするのは、0 除算を避けて列を埋めるためで、守りではない。\n+# 0 本の装置を候補にしないのは reviewer_table の候補条件 `$1 > 0` が守る。0 本の行は表に出ない\n+# (名前だけを「まだ指摘を残していない」に出す)ので、`-` は表示には届かない。\n # 数えるのは門(spelling_of_finding)を通った出どころの行のうち、バッククォートを外して\n # `レビュー（<名前>-reviewer）` だけになる行。括弧の中に名前以外の語を持つ行\n # (`レビュー（implementation-reviewer のミューテーション実測）` 等。バッククォートを外した後の形)",
+          "patchLines": 14,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "to": "harness/records/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": ".claude/skills/harness-growth/SKILL.md",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    }
+  ]
+}
