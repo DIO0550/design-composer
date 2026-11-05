@@ -3,14 +3,16 @@
 # 分類ごとに「窓が開いてから、人・bot・CI へ届いた指摘の数」を数える。
 # harness-growth スキル(.claude/skills/harness-growth/SKILL.md)の入力。
 #
-# 読むのは記録の次の 3 種類の行:
+# 読むのは記録の次の 4 種類の行:
 #   - 分類: `<分類>`                        … 指摘 1 件
 #   - 出どころ: `<出どころ>`                … 直前の「分類」の指摘を誰が見つけたか
+#                                            (--shrink 節 3 はレビューエージェントごとにも数える)
 #   - 対策済: `<分類>` 層=<層> at pr-<番号>  … その回に介入したこと(窓を閉じる)
+#   - 発火: `<装置>` N回                     … その回に発火した装置(--shrink 節 3 だけが読む)
 #
 # 使い方:
 #   count.sh                 分類ごとの再発・内部・通算・以降・起点を出す
-#   count.sh --shrink        縮める側の数字を出す(行数のラチェット・判例へ落とす候補・装置の発火)
+#   count.sh --shrink        縮める側の数字を出す(行数のラチェット・判例へ落とす候補・装置の退役候補)
 #   count.sh --list <分類>   その分類の、窓が開いてからの指摘を 1 件 1 行で出す
 #   count.sh --ratchet       常時ロードと harness-growth スキルの行数を予算と突き合わせる。
 #                            ずれていれば exit 1(git hooks と CI が呼ぶ)
@@ -98,6 +100,19 @@ awk_common='
     t = fold_tag(s)
     return (closed_at[t] + 0 > closed_at[s] + 0) ? closed_layer[t] : closed_layer[s]
   }
+  # 指摘 1 件の門。分類の行なら綴りを控えて空文字を返し、出どころの行なら、未消費の分類の行が
+  # あればその綴りを返して控えを消す。それ以外の行は空文字
+  function spelling_of_finding(line,    spelling) {
+    if (line ~ /^- 分類: `/) { pending = spelling_of(line); return "" }
+    if (line !~ /^- 出どころ:/) return ""
+    spelling = pending; pending = ""
+    return spelling
+  }
+  # 出どころの行の値。接頭辞 `- 出どころ: ` とバッククォートを外す
+  function source_of(line) {
+    sub(/^- 出どころ: */, "", line); gsub(/`/, "", line)
+    return line
+  }
 '
 
 # 記録を 1 パスで読み、分類ごとの集計行を返す(列は「出力の列」のとおり)。
@@ -105,12 +120,11 @@ awk_common='
 summary_rows() {
   awk "$awk_common"'
     FNR == 1 { number = record_number(FILENAME); records[number] = 1 }
-    /^- 分類: `/ { pending = spelling_of($0); next }
-    /^- 出どころ:/ && pending != "" {
-      if (reached_outside($0)) outside[pending, number]++
-      else inside[pending, number]++
-      spellings[pending] = 1
-      pending = ""
+    { spelling = spelling_of_finding($0) }
+    spelling != "" {
+      if (reached_outside($0)) outside[spelling, number]++
+      else inside[spelling, number]++
+      spellings[spelling] = 1
       next
     }
     /^- 対策済: `/ { close_window($0); next }
@@ -145,14 +159,12 @@ list_findings() {
   awk -v want="$1" "$awk_common"'
     FNR == 1 { number = record_number(FILENAME) }
     /^### / { heading = $0; sub(/^### /, "", heading) }
-    /^- 分類: `/ { pending = spelling_of($0); if (fold_tag(pending) != want) pending = ""; next }
-    /^- 出どころ:/ && pending != "" {
-      source = $0; sub(/^- 出どころ: */, "", source); gsub(/`/, "", source)
+    { spelling = spelling_of_finding($0) }
+    spelling != "" && fold_tag(spelling) == want {
       n++
-      finding_spelling[n] = pending
+      finding_spelling[n] = spelling
       finding_number[n] = number
-      lines[n] = sprintf("%d\tpr-%d  %-36s  %s", !reached_outside($0), number, source, heading)
-      pending = ""
+      lines[n] = sprintf("%d\tpr-%d  %-36s  %s", !reached_outside($0), number, source_of($0), heading)
       next
     }
     /^- 対策済: `/ { close_window($0); next }
@@ -162,6 +174,91 @@ list_findings() {
       }
     }
   ' pr-*.md | sort -s -k1,1n | cut -f2-
+}
+
+# レビューエージェントごとに、指摘を残した記録の本数・指摘の件数・最後に指摘を残した記録を
+# 「<本数>\t<定義の有無>\t<名前>\t<件数>\t<件/本>\t<最後>\t<以降>」で返す。最後はその装置が
+# 最後に指摘を残した記録の番号、以降はその記録より後の記録の本数。起動しても指摘 0 件の回は
+# 本数に入らない。
+# 0 本の行の件/本・最後・以降を `-` にするのは、0 除算を避けて列を埋めるためで、守りではない。
+# 0 本の装置を候補にしないのは reviewer_table の候補条件 `$1 > 0` が守る。0 本の行は表に出ない
+# (名前だけを「まだ指摘を残していない」に出す)ので、`-` は表示には届かない。
+# 数えるのは門(spelling_of_finding)を通った出どころの行のうち、バッククォートを外して
+# `レビュー（<名前>-reviewer）` だけになる行。括弧の中に名前以外の語を持つ行
+# (`レビュー（implementation-reviewer のミューテーション実測）` 等。バッククォートを外した後の形)
+# は、語彙表に反する綴りでどの装置に按分するかを決められないので数えない。
+# 定義のある名前は出どころに現れなくても 0 本 0 件で返す。
+# 並びは定義の有無(定義のある名前が先)→ 本数の昇順。同数は awk が出した順のまま
+# (定義のある名前は glob 順)。
+# 引数: <定義のある名前を空白で区切った並び(glob 順)>
+reviewer_rows() {
+  awk -v defined="$1" "$awk_common"'
+    function row(kind, name,    records, findings, per, last, after, number) {
+      records = records_of[name] + 0; findings = findings_of[name] + 0
+      per = (records > 0) ? sprintf("%.1f 件/本", findings / records) : "-"
+      last = (records > 0) ? last_of[name] : "-"
+      after = "-"
+      if (records > 0) {
+        after = 0
+        for (number in all_records) if (number + 0 > last_of[name]) after++
+      }
+      printf "%d\t%s\t%s\t%d\t%s\t%s\t%s\n", records, kind, name, findings, per, last, after
+    }
+    BEGIN {
+      n = split(defined, names, " ")
+      for (i = 1; i <= n; i++) is_defined[names[i]] = 1
+    }
+    FNR == 1 { number = record_number(FILENAME); all_records[number] = 1 }
+    { spelling = spelling_of_finding($0) }
+    spelling != "" {
+      name = source_of($0)
+      if (name !~ /^レビュー（[a-z0-9-]+-reviewer） *$/) next
+      sub(/^レビュー（/, "", name); sub(/） *$/, "", name)
+      findings_of[name]++
+      if (!(seen[name, number]++)) records_of[name]++
+      if (number > last_of[name] + 0) last_of[name] = number
+      next
+    }
+    END {
+      for (i = 1; i <= n; i++) row("defined", names[i])
+      for (name in findings_of) if (!is_defined[name]) row("undefined", name)
+    }
+  ' pr-*.md | sort -s -k2,2 -k1,1n
+}
+
+# `.claude/agents/*-reviewer.md` の名前を glob 順に空白区切りで返す。
+# 不一致の glob は文字列のまま残るので `[ -e ]` で飛ばす
+defined_reviewers() {
+  for agent in ../../.claude/agents/*-reviewer.md; do
+    [ -e "$agent" ] || continue
+    printf '%s ' "$(basename "$agent" .md)"
+  done
+}
+
+# 節 3 段 1 の表。先頭に退役候補(最後に指摘を残した記録から <閾値> 本以上経った装置)を
+# 1 行で出し、その下に定義のある装置の行を本数の昇順で並べる。まだ指摘を残していない装置は
+# 観測期間が決められない(新設直後と区別できない)ので候補にも表にも出さず、名前だけを後ろに出す。
+# 定義の無い名前があればその後ろに本数・件数だけを出す。
+# 引数: <候補にする以降の本数>
+reviewer_table() {
+  local rows candidates
+  rows="$(reviewer_rows "$(defined_reviewers)")"
+  candidates="$(printf '%s\n' "$rows" | awk -F'\t' -v threshold="$1" '
+    $2 == "defined" && $1 > 0 && $7 >= threshold { printf "%s%s", sep, $3; sep = " " }
+  ')"
+  printf '   退役候補（以降 %s 本以上）: %s\n' "$1" "${candidates:-該当なし}"
+  printf '%s\n' "$rows" | awk -F'\t' '
+    function end_defined() {
+      if (unstarted == "") return
+      printf "   %s\n", "まだ指摘を残していない(観測期間が決められないので候補にしない):"
+      printf "%s", unstarted
+    }
+    $2 == "defined" && $1 == 0 { unstarted = unstarted sprintf("     %s\n", $3); next }
+    $2 == "defined" { printf "     %-24s %4d 本 %5d 件  最後=pr-%-5d 以降=%-4d %s\n", $3, $1, $4, $6, $7, $5; next }
+    !under { end_defined(); under = 1; printf "   %s\n", "定義の無い名前(観点別に分かれる前の名前、`implementation-reviewer` など。上の表へ混ぜない):" }
+    { printf "     %-24s %4d 本 %5d 件\n", $3, $1, $4 }
+    END { if (!under) end_defined() }
+  '
 }
 
 # AGENTS.md + rules/ の行数
@@ -216,9 +313,26 @@ if [ "${1:-}" = "--shrink" ]; then
   candidates="$(summary_rows | awk '$1 == 0 && $4 >= 10 {printf "     %-12s 内部=%-4s 以降=%-4s 起点=%s\n", $5, $2, $4, $6}' | sort)"
   printf '%s\n\n' "${candidates:-     該当なし}"
 
-  # 装置(スキル・エージェント)の退役候補。記録の「## 発火」の行から数える。
+  # 装置(スキル・エージェント)の退役候補。段 1 はレビューエージェントを記録の「出どころ」の
+  # 行から、段 2 はスキルを記録の「## 発火」の行から数える(出どころにスキル名は現れない)
+  printf '%s\n' "3. 装置の退役候補"
+
+  # 段 1 で数えるのは指摘を返す装置(`*-reviewer`)だけ。`planner` / `implementer` /
+  # `harness-counter` は指摘を返さないので出どころに現れない。
+  # 候補は最後に指摘を残した記録から retire_after 本以上経った装置。記録の総数がそれ未満なら
+  # どの装置も以降が届かないので、表ごと出さない
+  retire_after=10
+  total="$(ls pr-*.md | wc -l)"
+  printf '   %s\n' "3-1. レビューエージェント（記録の出どころから。記録 ${total} 本）"
+  if [ "$total" -lt "$retire_after" ]; then
+    printf '   %s\n' "(記録 ${retire_after} 本未満のため候補は出さない)"
+  else
+    reviewer_table "$retire_after"
+  fi
+  printf '\n'
+
   # フックは数えない(予防装置は発火 0 が「効いている」でありうる)
-  printf '%s\n' "3. 装置の退役候補（発火を計測できた記録 10 本から判断）"
+  printf '   %s\n' "3-2. スキル（発火を計測できた記録 10 本から判断）"
   measured=0
   for record in pr-*.md; do
     grep -qE '^- 発火: (`|無し)' "$record" && measured=$((measured + 1))
@@ -233,9 +347,9 @@ if [ "${1:-}" = "--shrink" ]; then
     | sed 's/^- 発火: `\([^`]*\)` \([0-9]*\)回/\1 \2/' \
     | awk '{sum[$1] += $2} END {for (name in sum) printf "     %-34s %4d 回\n", name, sum[name]}' \
     | sort -k2 -rn
-  printf '%s\n' "   計測した記録で発火 0 のリポジトリ内装置:"
-  for device in ../../.claude/skills/*/ ../../.claude/agents/*.md; do
-    name="$(basename "$device" .md)"
+  printf '%s\n' "   計測した記録で発火 0 のスキル:"
+  for device in ../../.claude/skills/*/; do
+    name="$(basename "$device")"
     grep -qE "^- 発火: \`$name\`" pr-*.md || printf '     %s\n' "$name"
   done
   exit 0

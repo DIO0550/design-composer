@@ -29,8 +29,8 @@ source "$records_dir/../../.claude/hooks/lib/cases-report.sh"
 # 引数: <常時ロードの増減> <スキルの増減>
 build_tree() {
   local loaded_delta="$1" skill_delta="$2" loaded_budget skill_budget
-  rm -rf "${work:?}"/*
-  mkdir -p "$work/rules" "$work/.claude/skills/harness-growth" "$work/harness/records"
+  find "${work:?}" -mindepth 1 -delete
+  mkdir -p "$work/rules" "$work/.claude/skills/harness-growth" "$work/.claude/agents" "$work/harness/records"
   cp "$records_dir/count.sh" "$work/harness/records/count.sh"
 
   loaded_budget="$(sed -n 's/^always_loaded_cap=\([0-9]*\).*/\1/p' "$records_dir/count.sh")"
@@ -75,6 +75,49 @@ write_intervention() {
 # 引数: count.sh へそのまま渡す引数
 run_count() {
   bash "$work/harness/records/count.sh" "$@"
+}
+
+# `.claude/agents/` に装置の定義を置く(count.sh は名前しか見ないので中身は空)。
+# 引数: <名前>
+write_agent() {
+  : > "$work/.claude/agents/$1.md"
+}
+
+# 記録を pr-1 .. pr-<本数> まで見出しだけで開く(--shrink 節 3 段 1 の門「記録 10 本」を越えるため)。
+# 引数: <本数>
+open_records() {
+  local number
+  for number in $(seq "$1"); do open_record "$number"; done
+}
+
+# --shrink 節 3 のケースの土台。ツリーを作り直し、alpha-reviewer の定義を置き、記録を <本数> 本開く。
+# 引数: <記録の本数>
+build_reviewer_tree() {
+  build_tree 0 0
+  write_agent alpha-reviewer
+  open_records "$1"
+}
+
+# --shrink の出力から、見出しの直下に並ぶ行(空白 5 個で始まる行)を、字下げを外して返す。
+# 見出しが無ければ空。節 3 段 1 の表は「退役候補」の行の直下に並ぶ。
+# 引数: <見出しの正規表現>
+under_heading() {
+  run_count --shrink | awk -v heading="$1" '
+    $0 ~ heading { under = 1; next }
+    under && !/^     / { exit }
+    under { sub(/^     /, ""); print }
+  '
+}
+
+# 節 3 段 1 の表から、その名前の行の名前より後ろを 1 行で返す。名前が表に無ければ空。
+# 引数: <名前>
+reviewer_row() {
+  under_heading '^   退役候補' | awk -v name="$1" '$1 == name { $1 = ""; sub(/^ +/, ""); print }'
+}
+
+# 「退役候補」の行の `: ` より後ろを返す。
+retire_candidates() {
+  run_count --shrink | sed -n 's/^   退役候補[^:]*: //p'
 }
 
 # 既定の表の comment の行を 1 行にして返す。
@@ -335,5 +378,174 @@ build_tree 1 0
 write_finding 10 comment "レビュー（人）"
 sections="$(run_count --shrink 2>&1 | grep -cE '^[0-9]+\. ')"
 report 3 "$sections" "予算がずれていても節 1〜3 がすべて出る"
+
+# --shrink 節 3 段 1 は、記録の出どころの行からレビューエージェントごとに「指摘を残した記録の本数」と
+# 「指摘の件数」、最後に指摘を残した記録とそれ以降の本数を数える。定義は `.claude/agents/*-reviewer.md`
+# から取るので、合成側にも定義を置く。門(記録 10 本)を越えるため、どのケースも記録を 10 本以上開いて
+# から指摘を足す(門の境界を見る最初のケースだけ 9 本)。
+printf '\n%s\n' "--shrink 節 3"
+build_reviewer_tree 9
+write_finding 1 comment-alpha "レビュー（alpha-reviewer）"
+report "文言=1 行=" \
+  "文言=$(run_count --shrink | grep -c '記録 10 本未満のため候補は出さない') 行=$(reviewer_row alpha-reviewer)" \
+  "記録が 9 本のときは表を出さず「記録 10 本未満」の文言を出す"
+# 段 1 の門で止まっても段 2 は出る(門の中で exit すると 3-2 が消える)。
+report 1 "$(run_count --shrink | grep -c '^   3-2\. ')" "記録が 9 本で段 1 の門に掛かっても段 2 の見出しは出る"
+build_reviewer_tree 10
+write_finding 1 comment-alpha "レビュー（alpha-reviewer）"
+report "1 本 1 件 最後=pr-1 以降=9 1.0 件/本" "$(reviewer_row alpha-reviewer)" "記録が 10 本になると表を出す"
+build_reviewer_tree 10
+write_finding 1 comment-alpha "レビュー（alpha-reviewer）"
+write_finding 1 comment-beta "レビュー（alpha-reviewer）"
+write_finding 2 comment-alpha "レビュー（alpha-reviewer）"
+report "2 本 3 件 最後=pr-2 以降=8 1.5 件/本" "$(reviewer_row alpha-reviewer)" \
+  "同じ装置が 1 本の記録に 2 件・別の記録に 1 件残すと 2 本 3 件 1.5 件/本になる"
+
+# 最後は番号の最大で、以降はそれより後の記録の本数。記録を 15 本にするのは、以降の値を
+# 記録の総数とも門の 10 本とも違えるため。
+build_reviewer_tree 15
+write_finding 2 comment-alpha "レビュー（alpha-reviewer）"
+write_finding 3 comment-alpha "レビュー（alpha-reviewer）"
+report "2 本 2 件 最後=pr-3 以降=12 1.0 件/本" "$(reviewer_row alpha-reviewer)" \
+  "最後に指摘を残した記録と、それ以降の記録の本数が出る"
+
+# 出どころの綴りはバッククォートの位置が記録によって違う(全体・無し・括弧の中だけ)。
+# どれも同じ 1 本 1 件に数える。表は `ケース名|出どころの行`。
+reviewer_source_cases='
+バッククォート付きの `レビュー（alpha-reviewer）` は 1 本 1 件に数える|- 出どころ: `レビュー（alpha-reviewer）`
+バッククォートの無い レビュー（alpha-reviewer） も 1 本 1 件に数える|- 出どころ: レビュー（alpha-reviewer）
+括弧の中だけバッククォートの レビュー（`alpha-reviewer`） も 1 本 1 件に数える|- 出どころ: レビュー（`alpha-reviewer`）
+'
+while IFS='|' read -r label line; do
+  [ -n "$label" ] || continue
+  build_reviewer_tree 10
+  append_line 1 '- 分類: `comment-alpha`'
+  append_line 1 "$line"
+  report "1 本 1 件 最後=pr-1 以降=9 1.0 件/本" "$(reviewer_row alpha-reviewer)" "$label"
+done <<< "$reviewer_source_cases"
+
+# 退役候補は以降が 10 本以上の装置。境界は記録の総数で作る(pr-1 に残して 11 本なら以降 10、
+# 10 本なら以降 9)。「該当なし」の綴りまで比べるのは、候補が無いときに行ごと出さない実装を
+# 落とすため。
+build_reviewer_tree 11
+write_finding 1 comment-alpha "レビュー（alpha-reviewer）"
+report "alpha-reviewer" "$(retire_candidates)" "以降が 10 本の装置は退役候補に出る"
+build_reviewer_tree 10
+write_finding 1 comment-alpha "レビュー（alpha-reviewer）"
+report "該当なし" "$(retire_candidates)" "以降が 9 本の装置は退役候補に出ず「該当なし」になる"
+
+# 定義があって出どころに現れない装置は、観測期間が決められないので候補にも表にも出さず、
+# 「まだ指摘を残していない」の下に名前だけ出す。alpha-reviewer を以降 10 本で置くのは、
+# 候補の行が beta-reviewer を落としたことを「該当なし」ではなく名前で見るため。
+build_reviewer_tree 11
+write_agent beta-reviewer
+write_finding 1 comment-alpha "レビュー（alpha-reviewer）"
+report "候補=alpha-reviewer 表= まだ=beta-reviewer" \
+  "候補=$(retire_candidates) 表=$(reviewer_row beta-reviewer) まだ=$(under_heading 'まだ指摘を残していない' | paste -sd' ' -)" \
+  "定義があって出どころに現れない装置は候補にも表にも出ず「まだ指摘を残していない」に出る"
+build_reviewer_tree 10
+write_agent planner
+report "alpha-reviewer" "$(under_heading 'まだ指摘を残していない' | paste -sd' ' -)" \
+  "-reviewer で終わらない定義(planner)は「まだ指摘を残していない」にも出ない"
+build_reviewer_tree 10
+write_finding 1 comment-alpha "レビュー（implementation-reviewer）"
+report "表= 定義の無い名前=1 本 1 件" \
+  "表=$(reviewer_row implementation-reviewer) 定義の無い名前=$(under_heading '定義の無い名前' | awk '$1 == "implementation-reviewer" { $1 = ""; sub(/^ +/, ""); print }')" \
+  "定義の無い名前(implementation-reviewer)は表に出ず、「定義の無い名前」の下に本数・件数が出る"
+build_reviewer_tree 10
+write_finding 1 comment-alpha "レビュー（人）"
+report "alpha-reviewer= 定義の無い名前=0" \
+  "alpha-reviewer=$(reviewer_row alpha-reviewer) 定義の無い名前=$(run_count --shrink | grep -c '定義の無い名前')" \
+  "レビュー（人） はどの装置にも「定義の無い名前」にも数えない"
+build_reviewer_tree 10
+append_line 1 '- 出どころ: `レビュー（alpha-reviewer）`'
+report "" "$(reviewer_row alpha-reviewer)" "分類の行が先行しない出どころの行は数えない(既定の表と同じ門)"
+# 見出しが出ないことまで見るのは、正規表現を緩めると alpha の行は変わらず「定義の無い名前」に
+# `alpha-reviewer の 2 巡目` が入る形で通ってしまうため。
+build_reviewer_tree 10
+write_finding 1 comment-alpha "レビュー（alpha-reviewer の 2 巡目）"
+write_finding 2 comment-alpha "レビュー（alpha-reviewer）"
+report "alpha-reviewer=1 本 1 件 最後=pr-2 以降=8 1.0 件/本 定義の無い名前=0" \
+  "alpha-reviewer=$(reviewer_row alpha-reviewer) 定義の無い名前=$(run_count --shrink | grep -c '定義の無い名前')" \
+  "括弧の中に名前以外の語を持つ レビュー（alpha-reviewer の 2 巡目） はどの装置にも「定義の無い名前」にも数えない"
+build_reviewer_tree 10
+write_agent a11y-reviewer
+write_finding 1 comment-alpha "レビュー（a11y-reviewer）"
+report "1 本 1 件 最後=pr-1 以降=9 1.0 件/本" "$(reviewer_row a11y-reviewer)" "数字を含む名前(a11y-reviewer)も数える"
+
+# 並びは本数の昇順。glob 順(a → b)と逆になる本数を置き、本数のキーだけを固定する。
+# 同数のときの並びは glob 順で既に成立していて、並べ替えを落としても通るので固定しない。
+build_reviewer_tree 10
+write_agent beta-reviewer
+write_finding 1 comment-alpha "レビュー（alpha-reviewer）"
+write_finding 1 comment-alpha "レビュー（beta-reviewer）"
+write_finding 2 comment-alpha "レビュー（alpha-reviewer）"
+report "beta-reviewer alpha-reviewer" \
+  "$(under_heading '^   退役候補' | awk '{print $1}' | paste -sd' ' -)" \
+  "記録の本数が少ない装置が上に並ぶ"
+# 定義の無い名前も本数の昇順。名前順(delta → gamma)とも記録に現れる順(delta が先)とも
+# 逆になる本数を置く。
+build_reviewer_tree 10
+write_finding 1 comment-alpha "レビュー（delta-reviewer）"
+write_finding 2 comment-alpha "レビュー（delta-reviewer）"
+write_finding 3 comment-alpha "レビュー（gamma-reviewer）"
+report "gamma-reviewer delta-reviewer" \
+  "$(under_heading '定義の無い名前' | awk '{print $1}' | paste -sd' ' -)" \
+  "定義の無い名前が 2 つあるとき本数の少ないほうが上に並ぶ"
+
+# 番号に隙間と桁の違いがある記録。合成記録が pr-1 .. pr-N の連番だと、以降を「総数 − 最後の番号」で
+# 出す実装も、最後の番号を文字列で比べる実装も同じ答えになって落ちない。pr-9 の後ろに 2 桁・3 桁・
+# 4 桁を置くと、文字列比較では `10` も `1205` も `9` より小さくなる。
+build_tree 0 0
+write_agent alpha-reviewer
+write_agent beta-reviewer
+for number in 7 9 10 11 12 13 14 15 16 17 18 120 1205; do open_record "$number"; done
+write_finding 9 comment-alpha "レビュー（alpha-reviewer）"
+report "1 本 1 件 最後=pr-9 以降=11 1.0 件/本" "$(reviewer_row alpha-reviewer)" \
+  "番号に隙間と桁の違いがあっても、以降は最後より大きい番号の記録の本数になる"
+# 最後の決め方も同じ入力で見る。pr-9 と pr-10 の両方に残すと、文字列比較では pr-9 が最後になる。
+write_finding 9 comment-alpha "レビュー（beta-reviewer）"
+write_finding 10 comment-alpha "レビュー（beta-reviewer）"
+report "2 本 2 件 最後=pr-10 以降=10 1.0 件/本" "$(reviewer_row beta-reviewer)" \
+  "pr-9 と pr-10 に残した装置の最後は pr-10 になる(番号は数値で比べる)"
+
+# 本数の並びも数値で比べる。1 桁と 2 桁を並べると、文字列の昇順では `12` が `7` より上に来る。
+build_reviewer_tree 12
+write_agent beta-reviewer
+for number in $(seq 12); do write_finding "$number" comment-alpha "レビュー（alpha-reviewer）"; done
+for number in $(seq 7); do write_finding "$number" comment-alpha "レビュー（beta-reviewer）"; done
+report "beta-reviewer alpha-reviewer" \
+  "$(under_heading '^   退役候補' | awk '{print $1}' | paste -sd' ' -)" \
+  "本数が 7 本の装置は 12 本の装置より上に並ぶ(本数は数値で比べる)"
+
+# 定義のある装置・定義の無い名前・0 本の定義が同時にあるツリー。3 つが別々のケースにしかないと、
+# 混ぜ方(定義の有無で先に分ける並び、「まだ」の名前を出す位置、候補を定義のある名前に限ること)を
+# 壊しても落ちない。old-reviewer は以降 13 本で閾値を越えているが、定義が無いので候補にしない。
+build_reviewer_tree 15
+write_agent beta-reviewer
+for number in $(seq 15); do write_finding "$number" comment-alpha "レビュー（alpha-reviewer）"; done
+write_finding 1 comment-alpha "レビュー（old-reviewer）"
+write_finding 2 comment-alpha "レビュー（old-reviewer）"
+report "候補=該当なし 表=15 本 15 件 最後=pr-15 以降=0 1.0 件/本 まだ=beta-reviewer 定義の無い名前=old-reviewer" \
+  "候補=$(retire_candidates) 表=$(reviewer_row alpha-reviewer) まだ=$(under_heading 'まだ指摘を残していない' | paste -sd' ' -) 定義の無い名前=$(under_heading '定義の無い名前' | awk '{print $1}' | paste -sd' ' -)" \
+  "定義のある装置・定義の無い名前・0 本の定義が同時にあっても、候補は定義のある装置だけで、残りはそれぞれの置き場に出る"
+
+# 定義が 1 つも無いツリー。不一致の glob が文字列のまま残ると `*-reviewer` が 0 本の定義として
+# 「まだ指摘を残していない」に出る。
+build_tree 0 0
+open_records 10
+report 0 "$(run_count --shrink | grep -c 'まだ指摘を残していない')" \
+  "定義が 1 つも無ければ「まだ指摘を残していない」の見出しも出ない"
+
+# 段 2 の「発火 0 のスキル」にはスキルだけが出て、エージェントは出ない(エージェントは段 1 が数える)。
+# 段 2 の門(発火を計測できた記録 10 本)を越えるため、記録 10 本に `- 発火:` の行を置く。
+# pr-1 だけ名前付きにするのは、全部 `無し` だと発火回数の grep が不一致で段 2 が exit 1 になるため
+# (変更前からの挙動。#1284)。
+build_reviewer_tree 10
+append_line 1 '- 発火: `implementation-flow` 1回'
+for number in $(seq 2 10); do append_line "$number" '- 発火: 無し'; done
+report "harness-growth" \
+  "$(under_heading '発火 0 のスキル' | paste -sd' ' -)" \
+  "発火 0 のスキルにはスキルだけが出て、定義のあるエージェント(alpha-reviewer)は出ない"
 
 exit "$cases_failed"
