@@ -23,6 +23,9 @@ export type CanonicalizeDenial = Readonly<{
   kind: CanonicalizeDenialKind;
 }>;
 
+/** 外部による書き換え。`path` は書き換えに使った綴り。 */
+type ExternalChange = Readonly<{ path: string; content: string }>;
+
 /**
  * Rust 側の代役。インメモリのファイル表に対して `docs/05-architecture.md`「Tauri IPC」の
  * 5コマンドと `document-changed` を再現する。
@@ -37,7 +40,7 @@ export type DocumentIpcFake = Readonly<{
    * 外部（AI・エディタ・git 操作等）による書き換えを再現する。
    * 監視中のパスなら `document-changed` が届く。
    */
-  changeExternally(path: string, content: string): void;
+  changeExternally(change: ExternalChange): void;
   /** 現在のファイルの中身。別の綴りを登録したパスは、その実体の中身を返す。 */
   contentOf(path: string): Option<string>;
   /**
@@ -165,16 +168,6 @@ export function createDocumentIpcFake(
 
   const targetOf = (path: string): string => linkTargets.get(path) ?? path;
 
-  const notifyChange = (target: string, content: string): void => {
-    const path = watchedSpellings.get(target);
-    if (path === undefined) {
-      return;
-    }
-    for (const listener of listeners) {
-      listener({ path, content });
-    }
-  };
-
   const canonicalizeDocumentPath = (path: string): Promise<unknown> => {
     switch (canonicalizeDenials.get(path)) {
       case "invalidPath":
@@ -275,9 +268,18 @@ export function createDocumentIpcFake(
   return {
     ipc: createDocumentIpc(tauriIpc),
 
-    changeExternally(path, content) {
-      contents.set(targetOf(path), content);
-      notifyChange(targetOf(path), content);
+    changeExternally({ path, content }) {
+      const target = targetOf(path);
+      contents.set(target, content);
+
+      const watchedSpelling = watchedSpellings.get(target);
+      if (watchedSpelling === undefined) {
+        return;
+      }
+
+      for (const listener of listeners) {
+        listener({ path: watchedSpelling, content });
+      }
     },
 
     contentOf(path) {

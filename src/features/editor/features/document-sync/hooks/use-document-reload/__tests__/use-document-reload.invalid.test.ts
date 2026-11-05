@@ -5,15 +5,20 @@ import {
   DocumentAccessFailure,
   DocumentAccessFailureReasons,
 } from "@/domains/session/document-access-failure";
+import { changeFileExternally } from "@/libs/__tests__/document-change";
 import { createDocumentIpcFake } from "@/libs/document-ipc/fake";
 import { Option } from "@/utils/Option";
-import { changeExternally, Path, renderDocumentReload } from "./setup";
+import { Path, renderDocumentReload } from "./setup";
 
 test("外部エディタが不正な JSON を保存すると、エラー一覧として届く", async () => {
   const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   const observer = await renderDocumentReload(fake.ipc);
 
-  await changeExternally(fake, '{ "formatVersion": ');
+  await changeFileExternally({
+    fake,
+    path: Path,
+    content: '{ "formatVersion": ',
+  });
 
   expect(observer.reloads).toStrictEqual([
     {
@@ -33,8 +38,16 @@ test("不正な JSON を直して保存すると、そのドキュメントが�
   const fake = createDocumentIpcFake({ [Path]: artboardContent("home") });
   const observer = await renderDocumentReload(fake.ipc);
 
-  await changeExternally(fake, '{ "formatVersion": ');
-  await changeExternally(fake, artboardContent("settings"));
+  await changeFileExternally({
+    fake,
+    path: Path,
+    content: '{ "formatVersion": ',
+  });
+  await changeFileExternally({
+    fake,
+    path: Path,
+    content: artboardContent("settings"),
+  });
 
   expect(observer.reloads.map((reload) => reload.kind)).toStrictEqual([
     "rejected",

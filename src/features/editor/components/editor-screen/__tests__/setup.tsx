@@ -4,7 +4,6 @@ import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { filePath } from "@/domains/__tests__/file-paths";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
-import { changeFileExternally } from "@/libs/__tests__/document-change";
 
 export {
   artboardList,
@@ -217,13 +216,4 @@ export async function closeTab(path: string): Promise<void> {
     screen.getByRole("button", { name: `${path} を閉じる` }),
   );
   await act(async () => {});
-}
-
-/** 外部エディタがファイルを書き換え、通知が届くまで待つ。 */
-export async function changeExternally(
-  files: DocumentIpcFake,
-  path: string,
-  content: string,
-): Promise<void> {
-  await changeFileExternally({ fake: files, path, content });
 }

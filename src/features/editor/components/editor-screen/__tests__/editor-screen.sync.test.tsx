@@ -4,12 +4,12 @@ import { dragRowNamed } from "@/components/__tests__/row-drag";
 import { rowNames } from "@/components/__tests__/row-names";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { SampleDocument } from "@/features/editor/__tests__/sample-document";
+import { changeFileExternally } from "@/libs/__tests__/document-change";
 import { DialogChoice } from "@/libs/document-dialog/fake";
 import { DocumentJson } from "@/libs/document-json";
 import { Option } from "@/utils/Option";
 import {
   artboardList,
-  changeExternally,
   closeTab,
   LinkPath,
   OtherPath,
@@ -56,7 +56,11 @@ test("開いているファイルが外部から書き換わると、その内�
   );
   await startOpen(observer);
 
-  await changeExternally(observer.files, Path, artboardContent("profile"));
+  await changeFileExternally({
+    fake: observer.files,
+    path: Path,
+    content: artboardContent("profile"),
+  });
 
   expect(
     within(artboardList()).getByRole("button", { name: "profile" }),
@@ -108,7 +112,11 @@ test("背面のタブのファイルが書き換わっても、見ている画�
   await startOpen(observer);
   await startCreate(observer);
 
-  await changeExternally(observer.files, Path, artboardContent("profile"));
+  await changeFileExternally({
+    fake: observer.files,
+    path: Path,
+    content: artboardContent("profile"),
+  });
 
   // 見ているのは新規作成した側。artboard 一覧を引いてから、届いていないことを見る
   // （画面全体から探すと、背面のタブに隠れているだけでも null になる）。
@@ -125,7 +133,11 @@ test("背面のタブのファイルが書き換わると、そのタブへ移�
   await startOpen(observer);
   await startCreate(observer);
 
-  await changeExternally(observer.files, Path, artboardContent("profile"));
+  await changeFileExternally({
+    fake: observer.files,
+    path: Path,
+    content: artboardContent("profile"),
+  });
   await selectTab(Path);
 
   expect(
@@ -171,7 +183,11 @@ test("開いているファイルを別の綴りで落としても、外部変�
   await startOpen(observer);
   await observer.dropFiles([LinkPath]);
 
-  await changeExternally(observer.files, Path, artboardContent("profile"));
+  await changeFileExternally({
+    fake: observer.files,
+    path: Path,
+    content: artboardContent("profile"),
+  });
   await selectTab(Path);
 
   expect(

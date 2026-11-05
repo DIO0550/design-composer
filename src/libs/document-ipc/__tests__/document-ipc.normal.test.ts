@@ -43,7 +43,10 @@ test("監視中のファイルが外部から書き換わると、パスと中�
   );
   Result.unwrap(await fake.ipc.watch(Path));
 
-  fake.changeExternally(Path, `{ "formatVersion": "1.0" }`);
+  fake.changeExternally({
+    path: Path,
+    content: `{ "formatVersion": "1.0" }`,
+  });
 
   expect(received).toStrictEqual([
     { path: Path, content: `{ "formatVersion": "1.0" }` },
@@ -70,7 +73,10 @@ test("監視していないファイルの外部変更は届かない", async ()
     await fake.ipc.subscribeChanged((changed) => received.push(changed)),
   );
 
-  fake.changeExternally(Path, `{ "formatVersion": "1.0" }`);
+  fake.changeExternally({
+    path: Path,
+    content: `{ "formatVersion": "1.0" }`,
+  });
 
   expect(received).toStrictEqual([]);
 });
@@ -84,7 +90,10 @@ test("監視を止めると外部変更が届かなくなる", async () => {
   Result.unwrap(await fake.ipc.watch(Path));
 
   Result.unwrap(await fake.ipc.unwatch(Path));
-  fake.changeExternally(Path, `{ "formatVersion": "1.0" }`);
+  fake.changeExternally({
+    path: Path,
+    content: `{ "formatVersion": "1.0" }`,
+  });
 
   expect(received).toStrictEqual([]);
 });
@@ -98,7 +107,10 @@ test("購読を解除すると外部変更が届かなくなる", async () => {
   Result.unwrap(await fake.ipc.watch(Path));
 
   unsubscribe();
-  fake.changeExternally(Path, `{ "formatVersion": "1.0" }`);
+  fake.changeExternally({
+    path: Path,
+    content: `{ "formatVersion": "1.0" }`,
+  });
 
   expect(received).toStrictEqual([]);
 });
@@ -141,6 +153,20 @@ test("別の綴りで書くと、実体の中身が変わる", async () => {
   );
 });
 
+test("別の綴りで外部から書き換えると、実体の中身が変わる", () => {
+  const fake = createDocumentIpcFake({ [Path]: `{}` });
+  fake.linkPath({ link: LinkPath, target: Path });
+
+  fake.changeExternally({
+    path: LinkPath,
+    content: `{ "formatVersion": "1.0" }`,
+  });
+
+  expect(fake.contentOf(Path)).toStrictEqual(
+    Option.some(`{ "formatVersion": "1.0" }`),
+  );
+});
+
 test("別の綴りで外部から書き換えると、実体を監視している綴りで届く", async () => {
   const fake = createDocumentIpcFake({ [Path]: `{}` });
   fake.linkPath({ link: LinkPath, target: Path });
@@ -150,7 +176,10 @@ test("別の綴りで外部から書き換えると、実体を監視してい�
   );
   Result.unwrap(await fake.ipc.watch(Path));
 
-  fake.changeExternally(LinkPath, `{ "formatVersion": "1.0" }`);
+  fake.changeExternally({
+    path: LinkPath,
+    content: `{ "formatVersion": "1.0" }`,
+  });
 
   expect(received).toStrictEqual([
     { path: Path, content: `{ "formatVersion": "1.0" }` },
@@ -166,7 +195,10 @@ test("別の綴りで監視すると、実体の外部変更がその綴りで�
   );
   Result.unwrap(await fake.ipc.watch(LinkPath));
 
-  fake.changeExternally(Path, `{ "formatVersion": "1.0" }`);
+  fake.changeExternally({
+    path: Path,
+    content: `{ "formatVersion": "1.0" }`,
+  });
 
   expect(received).toStrictEqual([
     { path: LinkPath, content: `{ "formatVersion": "1.0" }` },
@@ -183,7 +215,10 @@ test("後から別の綴りで監視し直すと、前の綴りには外部変�
   Result.unwrap(await fake.ipc.watch(Path));
   Result.unwrap(await fake.ipc.watch(LinkPath));
 
-  fake.changeExternally(Path, `{ "formatVersion": "1.0" }`);
+  fake.changeExternally({
+    path: Path,
+    content: `{ "formatVersion": "1.0" }`,
+  });
 
   expect(received).toStrictEqual([
     { path: LinkPath, content: `{ "formatVersion": "1.0" }` },
@@ -200,7 +235,10 @@ test("別の綴りで監視を止めると、実体の外部変更が届かな�
   Result.unwrap(await fake.ipc.watch(Path));
 
   Result.unwrap(await fake.ipc.unwatch(LinkPath));
-  fake.changeExternally(Path, `{ "formatVersion": "1.0" }`);
+  fake.changeExternally({
+    path: Path,
+    content: `{ "formatVersion": "1.0" }`,
+  });
 
   expect(received).toStrictEqual([]);
 });

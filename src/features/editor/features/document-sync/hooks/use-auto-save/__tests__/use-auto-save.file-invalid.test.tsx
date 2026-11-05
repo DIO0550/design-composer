@@ -66,7 +66,7 @@ test("編集の直後にファイルが不正になると、デバウンス中�
   // 編集してデバウンスを走らせ、書き出される前に外部がファイルを壊す
   rerender({ ipc: fake.ipc, document: edited });
   await waitDebounce(AutoSaveDebounceMs - 1);
-  fake.changeExternally(Path, broken);
+  fake.changeExternally({ path: Path, content: broken });
   rerender({ ipc: fake.ipc, document: edited, fileValidity: Invalid });
   await waitDebounce();
 
