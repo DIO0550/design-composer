@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1286,
+  "headBranch": "claude/magical-cannon-yu01cv",
+  "baseBranch": "main",
+  "mergeBase": "301a04ed1272a997e2586bb86bb1fc5a6ad2645b",
+  "head": "f5aafae201cab243bd4f89130a597197b148cdad",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1275.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 97,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "f5aafae201cab243bd4f89130a597197b148cdad",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-05T13:47:12Z",
+      "subject": "📝 [Documentation]: #1140 PR #1275 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1275.md を追加（指摘 9 件・手戻り・発火）\n\n背景:\nマージ後は harness-record スキルで、その回の指摘・手戻り・フック発火を\n分類タグ付きで 1 ファイル残す決まりになっている。\n\n採用理由:\n人・bot・CI の指摘は 0 件で、指摘はすべてサブエージェント由来と自己修正。\n発火ログはフック不発で取れなかったため「計測対象外(フック不発)」と書いた。\n\n影響とトレードオフ:\nharness/records/ の 1 ファイル追加のみ。対策済の行は書いていない\n（介入は harness-growth の管轄）。\n\n代替案:\n- 発火を記憶から書く: 推測が混ざり回数の根拠にできないので書かない\n\n参考:\n- PR #1275 / Issue #1140\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QyerDeuKYqUmAbAUR",
+      "files": [
+        {
+          "path": "harness/records/pr-1275.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 97,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,97 @@\n+# PR #1275 DocumentIpcFake.changeExternally をオブジェクト引数にする\n+\n+- マージ日: 2026-11-05\n+- 関連 Issue: #1140\n+- 差分規模: 11 ファイル / +131 -59\n+\n+## ゴールと結果\n+\n+ゴールは「`DocumentIpcFake.changeExternally` の `path` と `content` を位置で取り違えると型エラーになるようにする」こと。達成した。\n+\n+- 当初のゴールは「取り違えたら型エラー」だった。plan-reviewer の指摘(指摘 1)を受けて、「位置での取り違え」に絞った。フィールドの取り違えは型では塞いでいない\n+- fake の引数を `{ path, content }` にし、内部の `notifyChange` は `changeExternally` の中へ畳んだ。位置引数のテスト用ラッパーは 2 本とも削除した\n+- GitHub 上のレビューは `get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。人の指摘は 0 件だった\n+  - `get_reviews` には Copilot のレビューが 1 件あったが、指摘は 0 件(Approval recommended)\n+  - コメントは、自分で投稿したテストケース表と、bot の投稿(Storybook プレビュー・CI レポート・VRT)だけ\n+- CI はすべて緑。VRT は 209 件すべて差分なし\n+\n+## 指摘\n+\n+### 1. `path` を `FilePath` にする案が却下案に無く、ゴールがフィールドの取り違えまで含むように読める\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: ゴールを「位置で取り違えられなくする」に絞った。却下案に「`path` を `FilePath` にする」を足した。却下の理由は、fake の他の口がすべて生の `string` を受けているので、ここだけ変えると語彙が割れること。\n+- 既存ルール: なし\n+\n+### 2. editor-screen のラッパーを消すと import が 2 か所ずれるのに、ファイル表に無い\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `setup.tsx` の import の削除と、sync テストの import の付け替えをファイル表に足した。\n+- 既存ルール: なし\n+\n+### 3. 計画の文が `watchedSpellings` を「各綴り」と書いていて、実体と合わない\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `watchedSpellings` は `Map<string, string>` で、1 つの実体に綴りは 1 つしか無い。「綴りが無ければ通知しない。あればその 1 つの綴りで通知する」に直した。\n+- 既存ルール: なし\n+\n+### 4. use-document-reload にも位置引数のラッパーが残っており、取り違えが型で検出できない\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 計画では、このラッパーを「`path` が `FilePath` なので入れ替えれば型エラーになる」としてスコープ外にしていた。しかし `path` は既定値付きで、`FilePath` は `string` に代入できるので、`changeExternally(fake, Path)` と書くとパスが中身として渡っても通る。ラッパーを削除し、6 件を直接呼び出しに差し替えた。\n+- 既存ルール: rules/coding.md「関数のシグネチャ」\n+\n+### 5. 残したラッパーの理由が Issue にしか無い\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 指摘 4 でラッパーを削除したので、この指摘はそれで解消した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 6. 「通知は監視を張ったときの綴りで届く」という説明が型の doc と表のコメントの 2 か所にある\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `ExternalChange` の doc は「`path` は書き換えに使った綴り」までに縮めた。通知の綴りの説明は `watchedSpellings` のコメント 1 か所に寄せた。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 7. `notifyChange` を畳んだとき、書き換えと通知の区切りが消えた\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: 読みやすさの指摘(低)。書き換えと通知の境目に空行を入れた。\n+- 既存ルール: なし\n+\n+### 8. 書き換え先を `target` から `path` に壊しても落ちるテストが無い\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: ミューテーション M4 で落ちたテストは 0 件だった。差分より前からある穴だが、今回この行を書き直していた。「別の綴りで外部から書き換えると、実体の中身が変わる」を追加し、壊すとこのテストが落ちることを確かめた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 9. フック不発環境だった(カナリアが通り、マーカーもセッション見出しも無い)\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: push 前に `echo hook-canary` を実行すると deny されずに通った。実行中フラグのマーカーも、発火ログのセッション見出しも無かった。このため背景で起動したエージェントは拒否されずに走った。手作業で次の 2 点を確認し、PR 本文に記録した。\n+  - 作業ツリーを書き換えるエージェントが走っている間に commit / push をしていないこと\n+  - `git add -A` / `npx` を実行していないこと\n+- 既存ルール: なし\n+\n+## 手戻り\n+\n+- 計画でスコープ外にした use-document-reload のラッパーを、実装の検証のあとで削除した(指摘 4)。planner も plan-reviewer も、既定値付き引数を省いた呼び出しが通ることを実例で確かめていなかった\n+- plan-reviewer の 3 件(指摘 1〜3)は計画の文面の修正だった。planner に出し直さず、直した計画を implementer へ渡した\n+- テストを 1 件追加した(指摘 8)\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録だけを残す回で、集計と介入は `harness-growth` の管轄。",
+          "patchLines": 98,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
