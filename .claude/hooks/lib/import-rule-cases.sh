@@ -196,11 +196,14 @@ import-cycle|import type だけでできた閉路も拾う|src/utils/probe-a.ts>
 CASES
 )"
 
+cases_before=$cases_reported
 while IFS='|' read -r expected label files; do
+  [ -n "$label" ] || continue
   build_tree
   place "$files"
   report "$expected" "$(verdict)" "$label"
 done <<< "$cases"
+report_cases_ran cases "$cases_before"
 
 stub_cases="$(cat <<'CASES'
 broken|種別として読めない見出しを出したまま exit 0 で終わる検出器は broken|unreadable-exit0
@@ -209,10 +212,13 @@ broken|見出しを出さずに exit 2 で終わる検出器は broken|usage
 CASES
 )"
 
+cases_before=$cases_reported
 while IFS='|' read -r expected label stub; do
+  [ -n "$label" ] || continue
   place_stub_detector "$stub" "$work/stub-detector.py"
   report "$expected" "$(detector="$work/stub-detector.py"; verdict)" "$label"
 done <<< "$stub_cases"
+report_cases_ran stub_cases "$cases_before"
 
 covered_kinds="$(kinds_in "$(printf '%s\n' "$cases" | cut -d '|' -f 1)")"
 report_documented_kinds "$detector"
