@@ -45,6 +45,7 @@ verdict() {
   decide "$output" "$status" '^\[story-title-(tree|missing)\]'
 }
 
+cases_before=$cases_reported
 while IFS='|' read -r expected label story title; do
   [ -n "$story" ] || continue
   rm -rf "${work:?}/src"
@@ -82,6 +83,7 @@ deny|title を持たない story|src/features/editor/components/editor-layout/in
 deny|既定 export の外にも title: があり、どれが story の title か決まらない|src/features/editor/components/editor-layout/index.stories.tsx|@two
 miss|葉の名前が実在のコンポーネントと無関係でも通る(意図した取りこぼし)|src/features/editor/components/editor-layout/index.stories.tsx|features/editor/Nonsense
 CASES
+report_cases_ran CASES "$cases_before"
 
 report_documented_kinds "$detector"
 

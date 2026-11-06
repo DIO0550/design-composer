@@ -105,6 +105,7 @@ verdict() {
 
 build_tree
 
+cases_before=$cases_reported
 while IFS='|' read -r expected label file shape spelling; do
   [ -n "$file" ] || continue
   write_case "$file" "$shape" "$spelling"
@@ -158,6 +159,7 @@ miss|harness/records/ は走査しない(当時の綴りとして正しい)|harn
 miss|相対リンクの段数は見ない(行き先が実在すれば通る)|docs/probe.md|md|[規約](../../../../rules/coding.md)
 miss|git が追跡していないファイルは走査しない|untracked.md|md|features/sidebar
 CASES
+report_cases_ran CASES "$cases_before"
 
 report_documented_kinds "$detector"
 
