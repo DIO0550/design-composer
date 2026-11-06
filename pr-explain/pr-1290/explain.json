@@ -1,0 +1,514 @@
+{
+  "version": 1,
+  "pr": 1290,
+  "sha": "7eb15493975a2bf8b2dc65194a11c205c12d296b",
+  "issue": 1269,
+  "overview": {
+    "title": "判定表の表ループが 1 件も走らずに終わったら NG にする",
+    "lead": "`cases-report.sh` を source する判定表で、表(ループ)の行が消えたり列がずれて全行が読み飛ばされたりしたとき、黙って exit 0 にならず NG を出して落ちるようになった。",
+    "before": [
+      {
+        "text": "表の行を全部消しても、表ループ 20 本のうち 18 本は exit 0 / NG 0 のまま通った"
+      },
+      {
+        "text": "`read` の区切り(`IFS`)がずれて全行が読み飛ばされても、表は 0 件で通った"
+      }
+    ],
+    "after": [
+      {
+        "text": "表ループが `report` を 1 回も呼ばずに終わると `NG   <表> のケースが 1 件も走っていない` を出し、exit 1 になる",
+        "message": "m-ran"
+      },
+      {
+        "text": "表ループが 1 件以上走れば `ok   <表> のケースが走った` を 1 行足すだけで、終了コードは変わらない",
+        "message": "m-ran"
+      },
+      {
+        "text": "回す前の件数(`cases_before`)を取り忘れて空なら、数値でない旨の NG を出す",
+        "message": "m-ran"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "ファイルではなく表ループごとに数える",
+        "text": "1 ファイルに表が複数あると、1 本を空にしてもほかの表が `report` を呼ぶので、ファイル全体の件数は 0 にならない。区切りの件数を呼び出し側で取る形にした判断を見てほしい。",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/lib/cases-report.sh"
+        }
+      },
+      {
+        "title": "ガードの組の書き忘れは捕まらない",
+        "text": "`cases_before=` と `report_cases_ran` の組を消した形は、この PR では捕まえない。静的な検査は #1288 に分けた(表を回す共有関数に閉じる案との比較も申し送った)。",
+        "go": {
+          "kind": "flow",
+          "id": "f-loop"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "判定表の共有部品に計数と照合を足し、表ループを持つ判定表 11 本にその照合を配線する"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/hooks/lib/cases-report.sh",
+      "name": "判定表の共有部品",
+      "role": "判定表が source する、判定の読み取りと報告の関数群",
+      "change": "`report` の呼び出し回数 `cases_reported` と、表ごとの照合 `report_cases_ran` を足した"
+    },
+    {
+      "path": ".claude/hooks/lib/cases-report-cases.sh",
+      "name": "共有部品の判定表",
+      "role": "共有部品の関数そのものを確かめる判定表",
+      "change": "`RAN_CASES` を足し、既存の表ループ 7 本にガードを付けた"
+    },
+    {
+      "path": ".claude/hooks/lib/import-rule-cases.sh",
+      "name": "import 規則の判定表",
+      "role": "import 規則の検出器を確かめる判定表",
+      "change": "here-string の表ループ 2 本に空行の読み飛ばしとガードを付けた"
+    },
+    {
+      "path": "harness/records/count-cases.sh",
+      "name": "記録の集計の判定表",
+      "role": "`count.sh` を確かめる判定表",
+      "change": "表ループ 4 本にガードを付けた"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m-report",
+      "from": ".claude/hooks/lib/cases-report-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "cmd",
+      "name": "1 ケースの結果を報告する",
+      "code": "report \"$expected\" \"$decision\" \"$label\"",
+      "via": "call",
+      "payload": "期待・判定・ケース名",
+      "status": "changed"
+    },
+    {
+      "id": "m-ran",
+      "from": ".claude/hooks/lib/cases-report-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "表のケースが走ったかを照合する",
+      "code": "report_cases_ran RAN_CASES \"$cases_before\"",
+      "via": "call",
+      "payload": "表の名前・回す前の件数",
+      "returns": "ok / NG の 1 行(NG なら cases_failed を立てる)",
+      "status": "added"
+    },
+    {
+      "id": "m-ran-import",
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "import 規則の表が走ったかを照合する",
+      "code": "report_cases_ran cases \"$cases_before\"",
+      "via": "call",
+      "status": "added"
+    },
+    {
+      "id": "m-ran-count",
+      "from": "harness/records/count-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "集計の表が走ったかを照合する",
+      "code": "report_cases_ran window_cases \"$cases_before\"",
+      "via": "call",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f-loop",
+      "label": "表ループを 1 本回す",
+      "steps": [
+        "m-report",
+        "m-ran"
+      ]
+    },
+    {
+      "id": "f-other",
+      "label": "ほかの判定表の表ループ",
+      "steps": [
+        "m-ran-import",
+        "m-ran-count"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "e8fbaeca98a9c2d3c228a50395c7da72a06a0e50",
+      "phase": "core",
+      "role": "計数 `cases_reported` と照合 `report_cases_ran` を共有部品に足す",
+      "why": "照合を各判定表へ書くと同じ数え方が 10 本以上に並ぶので、`report` を持つ共有部品に寄せた。最後の文 `exit \"$cases_failed\"` は #1233 の照合が見ているので変えない。",
+      "flows": [
+        "f-loop"
+      ],
+      "review": [
+        "`report` が ok と NG のどちらでも件数を数えていること",
+        "回す前の件数を数値か確かめてから比べる理由が doc に書かれていること"
+      ]
+    },
+    {
+      "sha": "d83f8f60901cb4ea9ac3b111aacd7a54234d60c1",
+      "phase": "core",
+      "role": "`RAN_CASES` を足し、共有部品の判定表の表ループ 7 本にガードを付ける",
+      "why": "照合の振る舞いは、それを呼ぶ表で固定する。「食い違っても 1 件に数える」ケースは `verdict_of` では守れないので専用の判定 `ran_counted` を置いた。",
+      "flows": [
+        "f-loop"
+      ],
+      "review": [
+        "`走った` の行が `verdict_of` ではなく出力の行を見ていること"
+      ]
+    },
+    {
+      "sha": "adfe335bdf0ef4ef9132378c17d71af01abad59f",
+      "phase": "core",
+      "role": "import 規則の判定表の here-string ループ 2 本に空行の読み飛ばしとガードを付ける",
+      "why": "here-string は変数が空でも空行を 1 行渡すので、読み飛ばさないとガードが走ったと読む。",
+      "flows": [
+        "f-other"
+      ]
+    },
+    {
+      "sha": "824132c57171856d619b7038ee259ad3e152e4f0",
+      "phase": "core",
+      "role": ".claude/hooks/lib の判定表 4 本にガードを付ける",
+      "why": "edit-detector の `for` は 1 回ごとに 8 件を報告する表なので、並べた語を全部消すと 0 回で通る。対象に入れた。"
+    },
+    {
+      "sha": "ba0f21c99991043bc5305e02f5fd27b24dca3768",
+      "phase": "core",
+      "role": ".github/scripts の判定表 4 本にガードを付ける",
+      "why": "ループの外にも `report` がある判定表があり、ファイル単位では空の表を捕まえられない。"
+    },
+    {
+      "sha": "6a541e0257206db6805d981261ed0f1ab376cbf5",
+      "phase": "core",
+      "role": "記録の集計の判定表の表ループ 4 本にガードを付ける",
+      "why": "表ループの間に固定の `report` があり、区切りをループの直前で取らないと次の表の件数に混ざる。",
+      "flows": [
+        "f-other"
+      ]
+    },
+    {
+      "sha": "e9c6ba9bca89e51f01306e37330ef4540567f5cf",
+      "phase": "fin",
+      "role": "フックの README の配線に新しい計数と照合を載せる",
+      "why": "どの判定表がどの共有関数を使うかは README の配線の表が持つ取り決め。"
+    },
+    {
+      "sha": "81889ed6d2773363a606b5004cf03a00bd5477e0",
+      "phase": "revise",
+      "role": "edit-detector の表名をループ変数名にし、表の名前の決め方を書く",
+      "why": "naming-reviewer の指摘。for には区切りも変数名も無いので、決め方が決まっていなかった。"
+    },
+    {
+      "sha": "6b2b933730c51ca67cf29883ea43949f43f75e72",
+      "phase": "revise",
+      "role": "`ran_counted` の条件に名前を付け、期待 `走った` を冒頭の表に載せる",
+      "why": "naming-reviewer と harness-reviewer の指摘。2 つの条件を組んだまま `if` に置いていた。"
+    },
+    {
+      "sha": "5329becda87612f1238d1c1f1f4652218bcb49bd",
+      "phase": "revise",
+      "role": "here-string ループの空行の読み飛ばしに理由を書く",
+      "why": "comment-reviewer の指摘。理由が無いと冗長とみて消されうる。"
+    },
+    {
+      "sha": "614ad00337c3d8ec9f94f806df23f8d1e96c87f9",
+      "phase": "revise",
+      "role": "README の使い手の二重の列挙をやめる",
+      "why": "harness-reviewer の指摘。2 列目と 3 列目に一覧を二重に持つと片方だけ直せる。"
+    },
+    {
+      "sha": "7eb15493975a2bf8b2dc65194a11c205c12d296b",
+      "phase": "revise",
+      "role": "コメント 3 か所をミューテーションの実測に合わせる",
+      "why": "test-reviewer が壊して確かめた結果、守られていない約束 1 件と、外したときの帰結を読み違えさせる書き方 2 件が見つかった。"
+    }
+  ],
+  "suites": [
+    {
+      "id": "s-ran",
+      "label": "表が走ったかの照合",
+      "file": ".claude/hooks/lib/cases-report-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "t-zero",
+      "suite": "s-ran",
+      "name": "表の中で report を 1 回も呼ばなければ NG になり cases_failed を立てる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "表の行が消えた・全行が読み飛ばされた形を捕まえる、この PR の中心。",
+      "given": "表の前に report は無い",
+      "when": "表の中で report を 1 回も呼ばずに照合する",
+      "then": "NG を出し cases_failed が立つ",
+      "commit": "d83f8f60901cb4ea9ac3b111aacd7a54234d60c1",
+      "targets": [
+        ".claude/hooks/lib/cases-report.sh"
+      ],
+      "covers": [
+        "m-ran"
+      ]
+    },
+    {
+      "id": "t-one",
+      "suite": "s-ran",
+      "name": "表の中で report を 1 回呼べば ok の行だけを出し cases_failed を立てない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "比較を `-ge` に壊すと 0 件でも ok になる。その対になる側。",
+      "given": "表の前に report は無い",
+      "when": "表の中で report を 1 回呼んで照合する",
+      "then": "ok の行だけを出し cases_failed は立たない",
+      "commit": "d83f8f60901cb4ea9ac3b111aacd7a54234d60c1",
+      "covers": [
+        "m-ran"
+      ]
+    },
+    {
+      "id": "t-before",
+      "suite": "s-ran",
+      "name": "表の前に report を呼んでいても、表の中で 0 回なら NG",
+      "techniques": [
+        "state"
+      ],
+      "why": "ファイル全体の件数ではなく、回す前の件数と比べていることを守る。",
+      "given": "表の前に report を 1 回呼んでいる",
+      "when": "表の中で report を呼ばずに照合する",
+      "then": "NG を出す",
+      "commit": "d83f8f60901cb4ea9ac3b111aacd7a54234d60c1",
+      "covers": [
+        "m-ran"
+      ]
+    },
+    {
+      "id": "t-ng",
+      "suite": "s-ran",
+      "name": "表の中の report が食い違って NG を出しても、走った 1 件に数える",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`report` が ok の枝でだけ数える壊し方を捕まえる。",
+      "given": "表の前に report は無い",
+      "when": "表の中で食い違う report を 1 回呼んで照合する",
+      "then": "照合は ok を出し、走っていないの NG は出ない",
+      "commit": "d83f8f60901cb4ea9ac3b111aacd7a54234d60c1",
+      "covers": [
+        "m-ran",
+        "m-report"
+      ]
+    },
+    {
+      "id": "t-empty",
+      "suite": "s-ran",
+      "name": "回す前の件数が数値でない（空）なら NG になり cases_failed を立てる",
+      "techniques": [
+        "error"
+      ],
+      "why": "`[[ -gt ]]` は空を 0 と読むので、表の前に report があると数値の検査なしでは ok になる。",
+      "given": "表の前に report を 1 回呼び、回す前の件数は空",
+      "when": "表の中で report を 1 回呼んで照合する",
+      "then": "数値でない旨の NG を出し cases_failed が立つ",
+      "commit": "d83f8f60901cb4ea9ac3b111aacd7a54234d60c1",
+      "covers": [
+        "m-ran"
+      ],
+      "excerpt": {
+        "path": ".claude/hooks/lib/cases-report-cases.sh",
+        "start": 285,
+        "end": 292,
+        "emphasis": [
+          {
+            "start": 290,
+            "end": 290
+          }
+        ],
+        "text": "done <<'RAN_CASES'\nNG|表の中で report を 1 回も呼ばなければ NG になり cases_failed を立てる|0|-|取る\nok|表の中で report を 1 回呼べば ok の行だけを出し cases_failed を立てない|0|ok|取る\nNG|表の前に report を呼んでいても、表の中で 0 回なら NG|1|-|取る\n走った|表の中の report が食い違って NG を出しても、走った 1 件に数える|0|NG|取る\nNG|回す前の件数が数値でない（空）なら NG になり cases_failed を立てる|1|ok|空\nRAN_CASES\nreport_cases_ran RAN_CASES \"$cases_before\""
+      }
+    }
+  ],
+  "impact": {
+    "title": "判定表が空のまま緑にならなくなる",
+    "lead": "判定表を走らせるセッションや CI から見て、表の中身が消えた・読めなかったときに、成功ではなく失敗として知らされるようになった。",
+    "changed": {
+      "before": [
+        {
+          "text": "表の行が消えたり列がずれたりして、確かめたケースが 0 件でも、判定表は成功で終わった"
+        }
+      ],
+      "after": [
+        {
+          "text": "表ごとに 1 件以上確かめたかを見て、0 件なら「1 件も走っていない」と表の名前を添えて失敗で終わる",
+          "message": "m-ran"
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1233,
+          "text": "最後の文を照合する検査。この変更はその形を崩さずに足した"
+        },
+        {
+          "issue": 1288,
+          "text": "照合の行そのものを消した形の検査は、こちらに分けた"
+        },
+        {
+          "issue": 1289,
+          "text": "共有の報告を使っていない 2 本の判定表の同じ穴は、こちらに分けた"
+        }
+      ],
+      "primers": [
+        "p-guard"
+      ]
+    },
+    "kept": [
+      {
+        "text": "表が 1 件以上走ったときの終了コードと、各ケースの判定は変わらない",
+        "tests": [
+          "t-one"
+        ]
+      },
+      {
+        "text": "表のケースが期待と食い違ったときは、これまでどおりそのケースの失敗として出る",
+        "tests": [
+          "t-ng"
+        ]
+      }
+    ]
+  },
+  "primers": [
+    {
+      "id": "p-herestring",
+      "kind": "language",
+      "category": "Bash",
+      "label": "ヒアドキュメントと here-string",
+      "gist": "ループに表を流し込む 2 つの書き方。[[here-string|t-herestring]] は変数が空でも空行を 1 行渡す。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`done <<'CASES'` から `CASES` までの行がループの標準入力になる(ヒアドキュメント)。`done <<< \"$cases\"` は変数の中身に改行を 1 つ足して渡す。"
+        },
+        {
+          "kind": "caution",
+          "text": "here-string は中身が空でも改行 1 つを渡すので、`read` が 1 回成功してループ本体が 1 回まわる。空行を読み飛ばす `[ -n \"$label\" ] || continue` が要る。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "lineRange": {
+            "start": 199,
+            "end": 208
+          },
+          "text": "here-string で回す表に、空行の読み飛ばしとガードを付けた",
+          "shas": [
+            "adfe335bdf0ef4ef9132378c17d71af01abad59f"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p-arith",
+      "kind": "language",
+      "category": "Bash",
+      "label": "`[[ ]]` の数値比較",
+      "gist": "`[[ a -gt b ]]` は両辺を算術式として読む。空の綴りは 0 になる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`[ ]` は空の値でエラーを出すが、`[[ ]]` の `-gt` は空を 0 と読んで比べてしまう。そのため比べる前に `[[ \"$before\" =~ ^[0-9]+$ ]]` で数値かを確かめている。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "lineRange": {
+            "start": 133,
+            "end": 146
+          },
+          "text": "回す前の件数を数値か確かめてから比べる",
+          "shas": [
+            "e8fbaeca98a9c2d3c228a50395c7da72a06a0e50"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p-guard",
+      "kind": "codebase",
+      "category": "ハーネス",
+      "label": "表ループのガード",
+      "gist": "表ループの直前で `cases_before=$cases_reported` を取り、直後で `report_cases_ran <表の名前> \"$cases_before\"` を呼ぶ組。数値の確かめ方は [[数値比較|t-arith]] の節。",
+      "passages": [
+        {
+          "kind": "rule",
+          "text": "表の名前は、ヒアドキュメントなら区切り、here-string なら変数名、for ならループ変数名にする。"
+        },
+        {
+          "kind": "memo",
+          "text": "組を消した形・組の無いループを足した形はこの照合では捕まらない(#1288)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "harness/records/count-cases.sh",
+          "lineRange": {
+            "start": 190,
+            "end": 206
+          },
+          "text": "表ループの前後の組",
+          "shas": [
+            "6a541e0257206db6805d981261ed0f1ab376cbf5"
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "lineRange": {
+            "start": 31,
+            "end": 31
+          },
+          "text": "`report` が数える件数",
+          "shas": [
+            "e8fbaeca98a9c2d3c228a50395c7da72a06a0e50"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "p-herestring",
+        "p-arith"
+      ],
+      "status": "added",
+      "tests": [
+        "t-zero",
+        "t-before"
+      ],
+      "flows": [
+        "f-loop"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "t-herestring",
+      "label": "here-string",
+      "text": "`<<<` の後ろの文字列を、改行を 1 つ足してコマンドの標準入力にする Bash の書き方。"
+    },
+    {
+      "id": "t-arith",
+      "label": "数値比較",
+      "text": "`-gt`(より大きい)などの演算子で、両辺を整数として比べること。"
+    }
+  ]
+}
