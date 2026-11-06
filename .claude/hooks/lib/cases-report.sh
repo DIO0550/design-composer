@@ -6,7 +6,8 @@
 # 使い方: source したうえで `decide`・`normalize_miss`・`all_in_category`・`report` を呼び、最後の文を
 # `exit "$cases_failed"` にする（照合するのは `cases-report-cases.sh`）。表をループで回すなら、回す前に
 # `cases_before=$cases_reported` を取り、ループの後（ヒアドキュメントなら終わりの区切りの次の行）で
-# `report_cases_ran <表の名前> "$cases_before"` を呼ぶ。deny でも exit 0 で JSON を返す
+# `report_cases_ran <表の名前> "$cases_before"` を呼ぶ（表の名前は、ヒアドキュメントなら区切り、here-string なら
+# 変数名、for ならループ変数名）。deny でも exit 0 で JSON を返す
 # PreToolUse フックの判定表は、`decide` の代わりに `decide_by_permission` を呼ぶ（フックを流すところから
 # 任せるなら `hook_verdict_by_permission`）。ケースの並べ方と検出器の
 # 呼び方は、判定表ごとに違う（走査ルートを絶対パスで渡すもの・`cd` してから相対で渡すもの、置くのが
