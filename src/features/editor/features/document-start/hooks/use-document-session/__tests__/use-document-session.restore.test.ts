@@ -362,6 +362,54 @@ test("保存された一覧の先頭の綴りを寄せるのを拒まれると�
   );
 });
 
+test("保存された一覧の先頭の綴りを寄せるのを拒まれても、一覧から外れない", async () => {
+  // 2 件目は寄せられる。拒まれた先頭だけが外れる・全部外れる、のどちらでも落ちる。
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
+    NoDialogChoices,
+    {
+      storedAppState: storedRecentPaths([Path, SecondPath]),
+      canonicalizeDenials: [{ path: Path, kind: "invalidPath" }],
+    },
+  );
+
+  await observer.settle();
+
+  expect(observer.recentPaths()).toStrictEqual([Path, SecondPath]);
+});
+
+test("起動時に綴りを寄せるのを拒まれた先頭は、別のファイルを開くと 2 番目に下がって一覧に残る", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
+    { open: DialogChoice.chosen(SecondPath), save: DialogChoice.Canceled },
+    {
+      storedAppState: storedRecentPaths([Path]),
+      canonicalizeDenials: [{ path: Path, kind: "invalidPath" }],
+    },
+  );
+  await observer.settle();
+
+  await observer.openDocument();
+
+  expect(observer.recentPaths()).toStrictEqual([SecondPath, Path]);
+});
+
+test("起動時にこのアプリで選ばれていなかった先頭は、別のファイルを開くと 2 番目に下がって一覧に残る", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
+    { open: DialogChoice.chosen(SecondPath), save: DialogChoice.Canceled },
+    {
+      storedAppState: storedRecentPaths([Path]),
+      unchosenPaths: [Path],
+    },
+  );
+  await observer.settle();
+
+  await observer.openDocument();
+
+  expect(observer.recentPaths()).toStrictEqual([SecondPath, Path]);
+});
+
 test("別の綴りをまとめた一覧は、次に開いたときに書き直される", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
