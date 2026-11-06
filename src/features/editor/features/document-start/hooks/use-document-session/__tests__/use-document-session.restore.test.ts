@@ -362,6 +362,22 @@ test("保存された一覧の先頭の綴りを寄せるのを拒まれると�
   );
 });
 
+test("保存された一覧の先頭の綴りを寄せるのを拒まれても、一覧から外れない", async () => {
+  // 2 件目は寄せられる。拒まれた先頭だけが外れる・全部外れる、のどちらでも落ちる。
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },
+    NoDialogChoices,
+    {
+      storedAppState: storedRecentPaths([Path, SecondPath]),
+      canonicalizeDenials: [{ path: Path, kind: "invalidPath" }],
+    },
+  );
+
+  await observer.settle();
+
+  expect(observer.recentPaths()).toStrictEqual([Path, SecondPath]);
+});
+
 test("別の綴りをまとめた一覧は、次に開いたときに書き直される", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home"), [SecondPath]: artboardContent("shop") },

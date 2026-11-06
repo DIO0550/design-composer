@@ -209,6 +209,26 @@ test("綴りを寄せるのを拒まれたファイルを選ぶと、使えな�
   );
 });
 
+test("綴りを寄せるのを拒まれたファイルを落とすと、使えないパスとして失敗する", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+    { canonicalizeDenials: [{ path: Path, kind: "invalidPath" }] },
+  );
+
+  await observer.dropFiles([Path]);
+
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
+      kind: "io",
+      error: DocumentAccessFailure.create(
+        DocumentAccessFailureReasons.UnusablePath,
+        `${Path}: ドキュメントのパスとして扱えない`,
+      ),
+    }),
+  );
+});
+
 test("綴りを寄せる指示が届かなかったファイルを選ぶと、届かなかったこととして失敗する", async () => {
   const observer = renderDocumentSession(
     { [Path]: artboardContent("home") },
