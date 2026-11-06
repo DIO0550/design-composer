@@ -265,7 +265,7 @@ ran_counted() {
   output="$(ran_row "$@")"
   grep -qx 'ok   表 のケースが走った' <<<"$output" && said_ran=true
   grep -q 'のケースが 1 件も走っていない' <<<"$output" && said_not_ran=true
-  # ok の行を出したあと return せずに NG の行へも落ちる壊れ方を、走ったと読まないため。
+  # ok と NG の両方を出す出力を、この行が走ったと読まないため。
   if [ "$said_ran" = true ] && [ "$said_not_ran" = false ]; then
     echo "走った"
     return 0

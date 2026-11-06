@@ -198,8 +198,8 @@ CASES
 
 cases_before=$cases_reported
 while IFS='|' read -r expected label files; do
-  # here-string は変数が空でも空行を 1 行渡すので、読み飛ばさないと表が空でも report が 1 回呼ばれ、
-  # report_cases_ran が走ったと読む。
+  # here-string は変数が空でも空行を 1 行渡す。読み飛ばさないと表が空でも report_cases_ran は ok を出し、
+  # 落ちる理由が「表が空」ではなく空の期待と判定の食い違いとして出る。
   [ -n "$label" ] || continue
   build_tree
   place "$files"
