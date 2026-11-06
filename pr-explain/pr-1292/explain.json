@@ -1,0 +1,384 @@
+{
+  "version": 1,
+  "pr": 1292,
+  "sha": "629c29c5c0f321ffaf274e1d6892f94318b2d9de",
+  "issue": 1157,
+  "overview": {
+    "title": "invalidPath / notChosen で開けなかったパスも最近使ったファイルから外さないことを 06-ui に書き、テストで固定する",
+    "lead": "挙動は変えずに、`invalidPath` と `notChosen` で開けなかったパスを最近使ったファイルの一覧とドロップでどう扱うかを `docs/06-ui.md` に書き、その扱いをテスト 5 本で固定した。",
+    "before": [
+      {
+        "text": "06-ui が書いていた例外は「ファイル名の要素を持たないパスは一覧へ入れない」だけで、`invalidPath` / `notChosen` で開けなかったものを外すかどうかが読み取れなかった"
+      },
+      {
+        "text": "起動時の先頭が `invalidPath` で開けなくても一覧に残る、ドロップの `invalidPath` は理由を出す、という今の挙動を守るテストが無かった",
+        "message": "canonicalize"
+      }
+    ],
+    "after": [
+      {
+        "text": "06-ui に、`invalidPath` / `notChosen` で開けなかったものも一覧から外さないこと、とその理由が書かれている"
+      },
+      {
+        "text": "06-ui に、落としたファイルの `invalidPath` は開く対象に数えて理由を出し、`notChosen` にはならないことが書かれている"
+      },
+      {
+        "text": "起動時の先頭が `invalidPath` で拒まれても一覧に残り、別のファイルを開けば 2 番目に下がることをテストが守る",
+        "message": "canonicalize"
+      },
+      {
+        "text": "ドロップで `invalidPath` になったファイルは、他のファイルが開けても `UnusablePath` の失敗として残ることをテストが守る",
+        "message": "canonicalize"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "外さない理由の書き方",
+        "text": "`invalidPath` には綴りで決まるものと寄せた綴りで決まるもの(symlink の張り替えで開けるようになる)があり、二度と開けないものだけを外すには Rust の受け付け条件を TS にも二重に持つことになる、という理由で残す判断にした。却下した案(行を外す / TS に検査を持たせる / Rust で種別を分ける)は #1157",
+        "go": {
+          "kind": "file",
+          "path": "docs/06-ui.md"
+        }
+      },
+      {
+        "title": "ドロップの notChosen の主張の範囲",
+        "text": "UTF-8 で表せないパスは Rust が知らせる前に落とすので、「知らせに入ったもののうち」に主張を絞った。その扱いは #1291 で決める",
+        "go": {
+          "kind": "file",
+          "path": "docs/06-ui.md"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "docs",
+      "role": "開けなかったパスを最近使ったファイルの一覧とドロップでどう扱うかの仕様を書き足す"
+    },
+    {
+      "layer": "features / editor/features/document-start",
+      "role": "書き足した仕様を、文書のセッションのフックのテストで固定する(実装は変えない)"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "開始画面とドロップの振る舞い",
+      "change": "開けなかったパスの扱いの子箇条を 4 つ足した"
+    },
+    {
+      "path": "docs/05-architecture.md",
+      "name": "アーキテクチャ仕様",
+      "role": "Tauri IPC と選ばれたファイルの記録",
+      "change": "「一覧からは外さない」に 06-ui への参照を添えた"
+    },
+    {
+      "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "name": "文書のセッション",
+      "role": "起動時の復元・開く・落とす操作を受けて、開いている文書と最近使ったファイルを持つ"
+    },
+    {
+      "path": "src/libs/document-ipc/index.ts",
+      "name": "ドキュメントの IPC",
+      "role": "Rust のコマンドを呼び、失敗の種別をドメインの語彙へ詰め替える"
+    }
+  ],
+  "messages": [
+    {
+      "id": "canonicalize",
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "kind": "qry",
+      "name": "綴りを寄せる",
+      "code": "ipc.canonicalize(path)",
+      "via": "call",
+      "payload": "最近使ったファイル・選んだファイル・落としたファイルのパス",
+      "returns": "寄せた綴り、または失敗(`invalidPath` は `UnusablePath`)"
+    }
+  ],
+  "flows": [
+    {
+      "id": "restore",
+      "label": "起動時の復元",
+      "steps": [
+        "canonicalize"
+      ]
+    },
+    {
+      "id": "drop",
+      "label": "ファイルを落とす",
+      "steps": [
+        "canonicalize"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "6daa6262829d7b8c3aab94c670659814979571f2",
+      "phase": "core",
+      "role": "06-ui に invalidPath / notChosen の扱いの子箇条を 4 つ足す",
+      "why": "オーナーが案 C(挙動は変えずに仕様に書く)を選んだので、まず仕様を書いた。理由の文は親箇条の例外(ファイル名の要素を持たないパス)と逆の答えに読めないよう「上の…を除き」を入れた",
+      "flows": [
+        "restore",
+        "drop"
+      ],
+      "review": [
+        "子箇条の見出しが画面に出る文言で、IPC の種別名は括弧の中に留まっているか",
+        "notChosen の理由「一覧の先頭が削られていく」が、起動時に開くのは先頭 1 件だけという親箇条と合っているか"
+      ]
+    },
+    {
+      "sha": "18123a3f68e3efc9fd2414f2d3ea5da95cb1b8c5",
+      "phase": "core",
+      "role": "書いた仕様の中心の 2 点をテストで固定する",
+      "why": "既存のテストは先頭でない行の invalidPath、missing の先頭、ダイアログ経由の invalidPath しか見ておらず、先頭の invalidPath を外す実装やドロップで黙って除く実装に変えても落ちなかった",
+      "flows": [
+        "restore",
+        "drop"
+      ],
+      "review": [
+        "restore のテストが 2 件目を寄せられる行にして、先頭だけ外れる・全部外れるのどちらでも落ちる形になっているか"
+      ]
+    },
+    {
+      "sha": "0ebb030bf26347a3a7e293c3fec7b874ef7b34dd",
+      "phase": "revise",
+      "role": "レビューの指摘を受けて理由の文と参照を直す",
+      "why": "「見分けられない」は事実と違い(綴りの条件は寄せる前に見分けられる)、却下の本当の理由である条件の二重化に書き直した。ドロップの文は UTF-8 で表せないパスで成り立たないので範囲を絞った",
+      "review": [
+        "06-ui 26 行目の理由が、却下した案 B(TS に綴りの検査)を出し直させない書き方になっているか"
+      ]
+    },
+    {
+      "sha": "629c29c5c0f321ffaf274e1d6892f94318b2d9de",
+      "phase": "hard",
+      "role": "補足の文(一部だけ開けたドロップ・開け直した後の一覧)をテストで固定する",
+      "why": "test-reviewer が実装を壊したところ、1 件でも開けたら失敗を捨てる・次に開いたときに先頭を外す、の壊し方で src 全体のテストが 1 件も落ちなかった",
+      "flows": [
+        "restore",
+        "drop"
+      ],
+      "review": [
+        "notChosen 版のテストが、記録を読めなかった起動のたびに先頭が削られる退行を捕まえる形になっているか"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "restore",
+      "label": "起動時の復元",
+      "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts"
+    },
+    {
+      "id": "edge",
+      "label": "異常系",
+      "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "restore-head-kept",
+      "suite": "restore",
+      "name": "保存された一覧の先頭の綴りを寄せるのを拒まれても、一覧から外れない",
+      "techniques": [
+        "error",
+        "state"
+      ],
+      "why": "起動時に先頭が invalidPath で開けなくても、その行を一覧から外さないこと",
+      "given": "最近使ったファイルが 2 件あり、先頭だけ綴りを寄せるのを invalidPath で拒まれる",
+      "when": "起動して復元が終わる",
+      "then": "一覧は 2 件とも元の順のまま",
+      "commit": "18123a3f68e3efc9fd2414f2d3ea5da95cb1b8c5",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "start": 365,
+        "end": 379,
+        "text": "test(\"保存された一覧の先頭の綴りを寄せるのを拒まれても、一覧から外れない\", async () => {\n  // 2 件目は寄せられる。拒まれた先頭だけが外れる・全部外れる、のどちらでも落ちる。\n  const observer = renderDocumentSession(\n    { [Path]: artboardContent(\"home\"), [SecondPath]: artboardContent(\"shop\") },\n    NoDialogChoices,\n    {\n      storedAppState: storedRecentPaths([Path, SecondPath]),\n      canonicalizeDenials: [{ path: Path, kind: \"invalidPath\" }],\n    },\n  );\n\n  await observer.settle();\n\n  expect(observer.recentPaths()).toStrictEqual([Path, SecondPath]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "canonicalize"
+      ]
+    },
+    {
+      "id": "restore-invalid-reopen",
+      "suite": "restore",
+      "name": "起動時に綴りを寄せるのを拒まれた先頭は、別のファイルを開くと 2 番目に下がって一覧に残る",
+      "techniques": [
+        "state",
+        "error"
+      ],
+      "why": "開けなかった invalidPath の先頭は、次に別のファイルを開いた時点でも消えずに 2 番目に下がること",
+      "given": "最近使ったファイルの先頭が invalidPath で拒まれ、起動時に開けなかった",
+      "when": "ダイアログで別のファイルを開く",
+      "then": "一覧は開いたファイル、開けなかったファイルの順",
+      "commit": "629c29c5c0f321ffaf274e1d6892f94318b2d9de",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "start": 381,
+        "end": 395,
+        "text": "test(\"起動時に綴りを寄せるのを拒まれた先頭は、別のファイルを開くと 2 番目に下がって一覧に残る\", async () => {\n  const observer = renderDocumentSession(\n    { [Path]: artboardContent(\"home\"), [SecondPath]: artboardContent(\"shop\") },\n    { open: DialogChoice.chosen(SecondPath), save: DialogChoice.Canceled },\n    {\n      storedAppState: storedRecentPaths([Path]),\n      canonicalizeDenials: [{ path: Path, kind: \"invalidPath\" }],\n    },\n  );\n  await observer.settle();\n\n  await observer.openDocument();\n\n  expect(observer.recentPaths()).toStrictEqual([SecondPath, Path]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "canonicalize"
+      ]
+    },
+    {
+      "id": "restore-unchosen-reopen",
+      "suite": "restore",
+      "name": "起動時にこのアプリで選ばれていなかった先頭は、別のファイルを開くと 2 番目に下がって一覧に残る",
+      "techniques": [
+        "state",
+        "error"
+      ],
+      "why": "記録を一時的に読めなかった起動のたびに一覧の先頭が削られていく退行を防ぐ",
+      "given": "最近使ったファイルの先頭がこのアプリで選ばれておらず、起動時に開けなかった",
+      "when": "ダイアログで別のファイルを開く",
+      "then": "一覧は開いたファイル、開けなかったファイルの順",
+      "commit": "629c29c5c0f321ffaf274e1d6892f94318b2d9de",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.restore.test.ts",
+        "start": 397,
+        "end": 411,
+        "text": "test(\"起動時にこのアプリで選ばれていなかった先頭は、別のファイルを開くと 2 番目に下がって一覧に残る\", async () => {\n  const observer = renderDocumentSession(\n    { [Path]: artboardContent(\"home\"), [SecondPath]: artboardContent(\"shop\") },\n    { open: DialogChoice.chosen(SecondPath), save: DialogChoice.Canceled },\n    {\n      storedAppState: storedRecentPaths([Path]),\n      unchosenPaths: [Path],\n    },\n  );\n  await observer.settle();\n\n  await observer.openDocument();\n\n  expect(observer.recentPaths()).toStrictEqual([SecondPath, Path]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ]
+    },
+    {
+      "id": "edge-drop-invalid",
+      "suite": "edge",
+      "name": "綴りを寄せるのを拒まれたファイルを落とすと、使えないパスとして失敗する",
+      "techniques": [
+        "error"
+      ],
+      "why": "落としたファイルが invalidPath なら、黙って除かずに理由を出すこと",
+      "given": "落とすファイルの綴りを寄せるのが invalidPath で拒まれる",
+      "when": "そのファイルを 1 つ落とす",
+      "then": "失敗が UnusablePath として残る",
+      "commit": "18123a3f68e3efc9fd2414f2d3ea5da95cb1b8c5",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+        "start": 213,
+        "end": 231,
+        "text": "test(\"綴りを寄せるのを拒まれたファイルを落とすと、使えないパスとして失敗する\", async () => {\n  const observer = renderDocumentSession(\n    { [Path]: artboardContent(\"home\") },\n    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n    { canonicalizeDenials: [{ path: Path, kind: \"invalidPath\" }] },\n  );\n\n  await observer.dropFiles([Path]);\n\n  expect(DocumentSession.failure(observer.session())).toStrictEqual(\n    Option.some({\n      kind: \"io\",\n      error: DocumentAccessFailure.create(\n        DocumentAccessFailureReasons.UnusablePath,\n        `${Path}: ドキュメントのパスとして扱えない`,\n      ),\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "canonicalize"
+      ]
+    },
+    {
+      "id": "edge-drop-mixed",
+      "suite": "edge",
+      "name": "開けるファイルと綴りを寄せるのを拒まれたファイルを一緒に落としても、拒まれたほうは使えないパスとして失敗する",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "一部だけ開けたときも、invalidPath の理由を捨てないこと",
+      "given": "開けるファイルと invalidPath で拒まれるファイルがある",
+      "when": "開けるほうを先にして 2 つ一緒に落とす",
+      "then": "失敗が UnusablePath として残る",
+      "commit": "629c29c5c0f321ffaf274e1d6892f94318b2d9de",
+      "excerpt": {
+        "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.edge.test.ts",
+        "start": 233,
+        "end": 255,
+        "text": "test(\"開けるファイルと綴りを寄せるのを拒まれたファイルを一緒に落としても、拒まれたほうは使えないパスとして失敗する\", async () => {\n  // 開けるほうも混ぜて落とす。1 件でも開けたら失敗を捨てる実装はここで落ちる。\n  const observer = renderDocumentSession(\n    {\n      [Path]: artboardContent(\"home\"),\n      [OtherPath]: artboardContent(\"settings\"),\n    },\n    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n    { canonicalizeDenials: [{ path: Path, kind: \"invalidPath\" }] },\n  );\n\n  await observer.dropFiles([OtherPath, Path]);\n\n  expect(DocumentSession.failure(observer.session())).toStrictEqual(\n    Option.some({\n      kind: \"io\",\n      error: DocumentAccessFailure.create(\n        DocumentAccessFailureReasons.UnusablePath,\n        `${Path}: ドキュメントのパスとして扱えない`,\n      ),\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+      ],
+      "covers": [
+        "canonicalize"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "開けなかったファイルが最近使ったファイルに残るかどうかが仕様に書かれた",
+    "lead": "アプリの動きは変わらない。パスが正しくない・まだ選ばれていない、で開けなかったファイルを一覧に残すことと、落としたファイルで理由を出すことが仕様に書かれ、テストで守られるようになった。",
+    "changed": {
+      "before": [
+        {
+          "text": "仕様が一覧から外すと書いていたのは、ファイル名を持たないパスだけで、パスが正しくない・まだ選ばれていない、で開けなかったものをどうするかは書かれていなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "パスが正しくない、で開けなかったものも一覧に残る。別のファイルを開けばそれが先頭になり、起動時には開かれなくなる",
+          "message": "canonicalize"
+        },
+        {
+          "text": "まだこのアプリで選ばれていない、で開けなかったものも一覧に残る。開くから選び直せば開ける"
+        },
+        {
+          "text": "落としたファイルのパスが正しくなければ、他のファイルが開けても理由が出る",
+          "message": "canonicalize"
+        }
+      ],
+      "specs": [
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「開く前の画面（開始画面）」の起動したら一覧の先頭のファイルを開く、の行",
+          "text": "パスが正しくない・まだ選ばれていない、で開けなかったものも一覧から外さないことと、その理由を足した",
+          "shas": [
+            "6daa6262829d7b8c3aab94c670659814979571f2",
+            "0ebb030bf26347a3a7e293c3fec7b874ef7b34dd"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「開く / 新規作成の導線」の複数のファイルを一度に落とせる、の行",
+          "text": "パスが正しくないものは開く対象に数えて理由を出すことと、まだ選ばれていない、では拒まれないことを足した",
+          "shas": [
+            "6daa6262829d7b8c3aab94c670659814979571f2",
+            "0ebb030bf26347a3a7e293c3fec7b874ef7b34dd"
+          ]
+        },
+        {
+          "path": "docs/05-architecture.md",
+          "locator": "「選ばれたファイルの記録」の記録を入れる前から残っていたパスの行",
+          "text": "一覧からは外さない、の拠り所として開始画面の仕様への参照を添えた",
+          "shas": [
+            "0ebb030bf26347a3a7e293c3fec7b874ef7b34dd"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1144,
+          "text": "パスの検査が入り、正しくないパスが毎回拒まれるようになったのが、この扱いを決める必要の出どころ"
+        },
+        {
+          "issue": 1155,
+          "text": "まだ選ばれていないファイルを拒む照合が入り、その扱いがこの件に委ねられた"
+        },
+        {
+          "issue": 1291,
+          "text": "文字コードで表せないパスを落としたとき黙って除かれることの扱いを分けた"
+        }
+      ]
+    },
+    "kept": [
+      {
+        "text": "起動時に開くのは一覧の先頭の 1 件だけ"
+      },
+      {
+        "text": "ファイル名を持たないパスは一覧に入らず、落としても数えない"
+      },
+      {
+        "text": "開けなかった理由の文言(パスが正しくありません・このファイルはまだこのアプリで選ばれていません)は変わらない"
+      }
+    ]
+  }
+}
