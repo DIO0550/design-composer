@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "pr": 1287,
+  "headBranch": "claude/affectionate-hypatia-k2c6z0",
+  "baseBranch": "main",
+  "mergeBase": "f548bfc6a05888f40585e66ed53e431ff3de2311",
+  "head": "208aa31c2fdb33ab2b30cfd42c7fd0af1e825522",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/case-law/planning.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1276.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "208aa31c2fdb33ab2b30cfd42c7fd0af1e825522",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T00:02:10Z",
+      "subject": "plan の再発に判例 plan-open-decision を追加する",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PvHRCnx925Zhc4tN7",
+      "files": [
+        {
+          "path": "harness/case-law/planning.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 0,
+          "patch": "@@ -163,3 +163,16 @@ doc / Why コメントが「常に◯◯である」と書いている前提は\n \n **新しく思いついたケースだけを並べた一覧は、たいてい元より薄い。** ファイルをリネームして\n 観点を引き継いでから、新しい観点を足す。\n+\n+## `plan-open-decision` — 人の判断を仰ぐ事項が、目的に対して大きすぎる / 回答のないまま残る\n+\n+計画の「決めること」「未決の判断」に挙げた事項が、次のどちらかになっている形。\n+\n+| 起きたこと | 結果 |\n+|---|---|\n+| 目的（トラバーサルを防ぐ）に対して大きい論点（許可リスト）まで「決めること」に並べ、判断待ちで止めた（pr-1159） | オーナーが目的へ絞り直し、大きい論点は別 Issue に分けた |\n+| 動作が変わる判断を「未決」のまま残し、回答を得ずにマージした。bot が「人の判断が要る未解決事項」と指摘した（pr-1247） | 回答のない判断がマージされた |\n+\n+**判定の分かれ目は、その判断が目的の達成に要るか。** 要らないなら「決めること」に載せず、\n+別 Issue（スコープ外）に分ける。要るなら、回答を得てから進める（得られないなら PR を出さずに止める）。\n+どちらでもない「未決」のまま実装・マージへ進めない。",
+          "patchLines": 17,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/pr-1276.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -274,3 +274,5 @@ GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_\n ## 規約への反映\n \n 無し。記録だけを残す回で、集計と介入は harness-growth の管轄。\n+\n+- 対策済: `plan` 層=case-law at pr-1276",
+          "patchLines": 6,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
