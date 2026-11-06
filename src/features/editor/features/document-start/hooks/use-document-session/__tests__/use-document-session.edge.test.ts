@@ -14,6 +14,7 @@ import { Option } from "@/utils/Option";
 import {
   activeDocument,
   NewPath,
+  OtherPath,
   openedPaths,
   Path,
   renderDocumentSession,
@@ -217,6 +218,30 @@ test("綴りを寄せるのを拒まれたファイルを落とすと、使え�
   );
 
   await observer.dropFiles([Path]);
+
+  expect(DocumentSession.failure(observer.session())).toStrictEqual(
+    Option.some({
+      kind: "io",
+      error: DocumentAccessFailure.create(
+        DocumentAccessFailureReasons.UnusablePath,
+        `${Path}: ドキュメントのパスとして扱えない`,
+      ),
+    }),
+  );
+});
+
+test("開けるファイルと綴りを寄せるのを拒まれたファイルを一緒に落としても、拒まれたほうは使えないパスとして失敗する", async () => {
+  // 開けるほうも混ぜて落とす。1 件でも開けたら失敗を捨てる実装はここで落ちる。
+  const observer = renderDocumentSession(
+    {
+      [Path]: artboardContent("home"),
+      [OtherPath]: artboardContent("settings"),
+    },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+    { canonicalizeDenials: [{ path: Path, kind: "invalidPath" }] },
+  );
+
+  await observer.dropFiles([OtherPath, Path]);
 
   expect(DocumentSession.failure(observer.session())).toStrictEqual(
     Option.some({
