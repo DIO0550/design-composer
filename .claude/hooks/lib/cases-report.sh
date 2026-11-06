@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 #
 # 判定表（`*-cases.sh`）が共有する、判定の読み取りと報告と、検出器の種別の照合と、
-# 判定表の最後の文の照合。
+# 判定表の最後の文の照合と、表のケースが 1 件以上走ったかの照合。
 #
 # 使い方: source したうえで `decide`・`normalize_miss`・`all_in_category`・`report` を呼び、最後の文を
-# `exit "$cases_failed"` にする（照合するのは `cases-report-cases.sh`）。deny でも exit 0 で JSON を返す
+# `exit "$cases_failed"` にする（照合するのは `cases-report-cases.sh`）。表をループで回すなら、回す前に
+# `cases_before=$cases_reported` を取り、ループの後（ヒアドキュメントなら終わりの区切りの次の行）で
+# `report_cases_ran <表の名前> "$cases_before"` を呼ぶ。deny でも exit 0 で JSON を返す
 # PreToolUse フックの判定表は、`decide` の代わりに `decide_by_permission` を呼ぶ（フックを流すところから
 # 任せるなら `hook_verdict_by_permission`）。ケースの並べ方と検出器の
 # 呼び方は、判定表ごとに違う（走査ルートを絶対パスで渡すもの・`cd` してから相対で渡すもの、置くのが
@@ -23,6 +25,9 @@
 
 # 食い違ったケースがあれば 1 になる。
 cases_failed=0
+
+# `report` を呼んだ回数。
+cases_reported=0
 
 # 検出器の出力と終了コードを突き合わせて、pass / deny / broken を決める。
 #
@@ -98,18 +103,44 @@ normalize_miss() {
   echo "$decision"
 }
 
-# 1 ケースの結果を 1 行で出す。食い違ったら `cases_failed` を立てる。
+# 1 ケースの結果を 1 行で出し、走らせた件数 `cases_reported` を 1 増やす。食い違ったら `cases_failed` を立てる。
 #
 # $1 表に書かれた期待
 # $2 実際の判定
 # $3 ケース名
 report() {
   local expected="$1" decision="$2" label="$3"
+  cases_reported=$((cases_reported + 1))
   if [ "$decision" = "$expected" ]; then
     printf 'ok   %-4s %s\n' "$expected" "$label"
     return 0
   fi
   printf 'NG   expected=%s got=%s  %s\n' "$expected" "$decision" "$label"
+  cases_failed=1
+}
+
+# 表のケースが 1 件以上走ったか（表を回す前より `cases_reported` が増えたか）を 1 行で出す。走っていない・
+# 回す前の件数が非負整数でなければ `cases_failed` を立てる。`cases_reported` は増やさない。
+#
+# 表の行を消す・`read` のフィールドがずれて全行を読み飛ばすと、ループは `report` を 1 回も呼ばずに終わり、
+# 最後の文 `exit "$cases_failed"` は 0 のまま通る。
+# 回す前の件数を先に数値か確かめるのは、`[[ -gt ]]` が空の綴りを 0 と読み、表の前に `report` があれば
+# ok になるため。
+#
+# $1 報告に出す表の名前
+# $2 表を回す前の `cases_reported`
+report_cases_ran() {
+  local table="$1" before="${2:-}"
+  if ! [[ "$before" =~ ^[0-9]+$ ]]; then
+    printf 'NG   %s を回す前の件数が数値ではない（%s）\n' "$table" "${before:-空}"
+    cases_failed=1
+    return 0
+  fi
+  if [[ "$cases_reported" -gt "$before" ]]; then
+    printf 'ok   %s のケースが走った\n' "$table"
+    return 0
+  fi
+  printf 'NG   %s のケースが 1 件も走っていない\n' "$table"
   cases_failed=1
 }
 
