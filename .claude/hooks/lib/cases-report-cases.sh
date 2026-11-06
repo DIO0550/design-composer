@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 # 検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds`）と `report` 自身（NG なら
-# `cases_failed` を立て、ok なら立てない）と、判定の読み取り（`decide` / `decide_by_permission` /
-# `hook_verdict_by_permission` / `normalize_miss`）の判定表。照合の表は一時ディレクトリへ小さな検出器を置いて照合を呼び、`report` の表は検出器を置かずに
+# `cases_failed` を立て、ok なら立てない）と、表のケースが走ったかの照合（`report_cases_ran`）と、
+# 判定の読み取り（`decide` / `decide_by_permission` / `hook_verdict_by_permission` / `normalize_miss`）の判定表。照合の表は一時ディレクトリへ小さな検出器を置いて照合を呼び、`report` の表は検出器を置かずに
 # `report` だけを呼ぶ。この 2 つは、NG を出して `cases_failed` を立てるか ok だけを出すかを確かめる。
 # 判定の読み取りの表は検出器を走らせず、表に書いた出力と終了コードを `decide` / `decide_by_permission` へ
 # 渡して返る判定を確かめる（`hook_verdict_by_permission` だけは、表に書いた出力と終了コードを返すフックの
@@ -28,7 +28,11 @@
 # `covered`（`report_covered_kinds`）。`report` 自身の表は `期待|ケース名|report に渡す期待|report に渡す判定`
 # の 1 行 1 ケース。最後の文の照合の表は `期待|ケース名|置くもの` の 1 行 1 ケースで、置くものは
 # `パス=読み方:終わり方` の空白区切り（`-` なら何も置かない。読み方と終わり方は `table_sourcing` /
-# `table_ending` の case）。照合の表と `report` の表と最後の文の照合の表の期待は 2 つ（NG / ok）。
+# `table_ending` の case）。走ったかの照合の表は `期待|ケース名|表の前の report の回数|表の中の report|回す前の件数`
+# の 1 行 1 ケースで、表の中の report は `-`（呼ばない）/ `ok`（期待どおり）/ `NG`（食い違う）、回す前の件数は
+# `取る` / `空`（`ran_row`）。照合の表と `report` の表と最後の文の照合の表と走ったかの照合の表の期待は
+# 2 つ（NG / ok）。走ったかの照合の表だけは 3 つ目の `走った` を持ち、出力に `report_cases_ran` の ok の行が
+# あって NG の行が無いことを見る（表の中の NG で `cases_failed` が立つので、NG / ok では見分けられない）。
 #
 # | 期待 | 意味 |
 # | --- | --- |
@@ -115,6 +119,7 @@ verdict() {
   esac
 }
 
+cases_before=$cases_reported
 while IFS='|' read -r expected label check reported documented covered; do
   [ -n "$check" ] || continue
   detector="$work/detector.py"
@@ -128,7 +133,9 @@ NG|実装と docstring のどちらからも種別を取り出せない|document
 ok|実装の種別をすべて表の期待が含む|covered|alpha beta|alpha beta|alpha beta
 NG|表の期待に無い種別を実装が持つ|covered|alpha beta|alpha beta|alpha
 CASES
+report_cases_ran CASES "$cases_before"
 
+cases_before=$cases_reported
 while IFS='|' read -r expected label report_expected report_decision; do
   [ -n "$label" ] || continue
   decision="$(verdict_of report "$report_expected" "$report_decision" "report のケース")"
@@ -141,6 +148,7 @@ done <<'REPORT_CASES'
 ok|期待と判定が一致すると ok の行だけを出し、cases_failed を立てない|deny|deny
 NG|期待と判定が食い違うと NG の行を出し、cases_failed を立てる|deny|pass
 REPORT_CASES
+report_cases_ran REPORT_CASES "$cases_before"
 
 # 判定の読み取りの表に書いた出力を、検出器の標準出力にする。
 #
@@ -158,6 +166,7 @@ decide_row() {
   decide "$(row_output "$2")" "$1" '^\[alpha\]'
 }
 
+cases_before=$cases_reported
 while IFS='|' read -r expected label status output; do
   [ -n "$label" ] || continue
   report "$expected" "$(decide_row "$status" "$output")" "$label"
@@ -171,7 +180,9 @@ broken|見出しを出したまま exit 0 なら broken|0|[alpha] 1 件
 broken|exit 2 で何も出さなければ broken|2|-
 broken|exit 2 で見出しを出しても broken|2|[alpha] 1 件
 DECIDE_CASES
+report_cases_ran DECIDE_CASES "$cases_before"
 
+cases_before=$cases_reported
 while IFS='|' read -r expected label status output; do
   [ -n "$label" ] || continue
   report "$expected" "$(decide_by_permission "$(row_output "$output")" "$status")" "$label"
@@ -183,6 +194,7 @@ pass|PreToolUse フックが exit 0 で ask の JSON を返すなら deny と読
 pass|PreToolUse フックが exit 0 で allow の JSON を返すなら deny と読まず pass|0|{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"allow"}}
 broken|PreToolUse フックが deny の JSON を返しても exit 0 以外なら broken|1|{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny"}}
 PERMISSION_CASES
+report_cases_ran PERMISSION_CASES "$cases_before"
 
 # 標準入力が `hook-input` のときだけ、表に書いた出力と終了コードを返す PreToolUse フックのスタブを置く。
 # 標準入力が違えば exit 3 で落ちるので、フックへ標準入力を渡さない実装は broken になる。
@@ -198,6 +210,7 @@ place_permission_hook() {
   } >"$3"
 }
 
+cases_before=$cases_reported
 while IFS='|' read -r expected label status output; do
   [ -n "$label" ] || continue
   place_permission_hook "$status" "$output" "$work/hook.sh"
@@ -207,7 +220,9 @@ deny|フックへ標準入力を渡し、exit 0 で deny の JSON が返れば d
 pass|フックへ標準入力を渡し、exit 0 で何も返らなければ pass|0|-
 broken|フックが deny の JSON を返しても exit 0 以外なら broken|1|{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny"}}
 HOOK_CASES
+report_cases_ran HOOK_CASES "$cases_before"
 
+cases_before=$cases_reported
 while IFS='|' read -r expected label table_expected status output; do
   [ -n "$label" ] || continue
   decision="$(decide_row "$status" "$output")"
@@ -219,6 +234,57 @@ deny|取りこぼしを期待した表でも exit 1 で見出しを出せば den
 broken|取りこぼしを期待した表でも exit 2 なら miss と読まず broken|miss|2|-
 broken|取りこぼしを期待した表でも見出しを出したまま exit 0 なら miss と読まず broken|miss|0|[alpha] 1 件
 MISS_CASES
+report_cases_ran MISS_CASES "$cases_before"
+
+# 表を回したことにして、`report_cases_ran` を 1 回呼ぶ。件数を 0 から数え直すので、表の前の `report` の
+# 回数は表に書いたものだけになる。
+#
+# $1 表の前に呼ぶ `report` の回数
+# $2 表の中で呼ぶ `report`（`-` なら呼ばない。`ok` なら期待どおりの 1 件、`NG` なら食い違う 1 件）
+# $3 回す前の件数の渡し方（`取る` なら回す前の `cases_reported`、`空` なら空の綴り）
+ran_row() {
+  local reported_before="$1" inside="$2" taken="$3" before="" n
+  cases_reported=0
+  for ((n = 0; n < reported_before; n++)); do report ok ok "表の前のケース"; done
+  [ "$taken" = "取る" ] && before="$cases_reported"
+  case "$inside" in
+    ok) report ok ok "表の中のケース" ;;
+    NG) report ok pass "表の中のケース" ;;
+  esac
+  report_cases_ran 表 "$before"
+}
+
+# 表の中の `report` が NG を出しても、`report_cases_ran` が走った 1 件に数えたかを返す。数えていれば
+# `走った`、数えていなければ `走っていない`。`verdict_of` は使わない（表の中の NG で `cases_failed` が立つ）。
+#
+# $@ `ran_row` の引数
+ran_counted() {
+  local output
+  output="$(ran_row "$@")"
+  if grep -qx 'ok   表 のケースが走った' <<<"$output" && ! grep -q 'のケースが 1 件も走っていない' <<<"$output"; then
+    echo "走った"
+    return 0
+  fi
+  echo "走っていない"
+}
+
+cases_before=$cases_reported
+while IFS='|' read -r expected label reported_before inside taken; do
+  [ -n "$label" ] || continue
+  if [ "$expected" = "走った" ]; then
+    decision="$(ran_counted "$reported_before" "$inside" "$taken")"
+  else
+    decision="$(verdict_of ran_row "$reported_before" "$inside" "$taken")"
+  fi
+  report "$expected" "$decision" "$label"
+done <<'RAN_CASES'
+NG|表の中で report を 1 回も呼ばなければ NG になり cases_failed を立てる|0|-|取る
+ok|表の中で report を 1 回呼べば ok の行だけを出し cases_failed を立てない|0|ok|取る
+NG|表の前に report を呼んでいても、表の中で 0 回なら NG|1|-|取る
+走った|表の中の report が食い違って NG を出しても、走った 1 件に数える|0|NG|取る
+NG|回す前の件数が数値でない（空）なら NG になり cases_failed を立てる|1|ok|空
+RAN_CASES
+report_cases_ran RAN_CASES "$cases_before"
 
 # `cases-report.sh` を source している `*.sh` を、`<root>` の下から 1 行 1 本で出す。`node_modules/` と
 # `.git/` の下は見ない。
@@ -306,6 +372,7 @@ place_tables() {
 }
 
 tree_count=0
+cases_before=$cases_reported
 while IFS='|' read -r expected label placements; do
   [ -n "$label" ] || continue
   tree_count=$((tree_count + 1))
@@ -338,6 +405,7 @@ NG|cases-report.sh を source する判定表が 1 本も無ければ NG|-
 NG|正しい判定表と exit 0 の判定表が並んでいれば NG|a-cases.sh=source:exit lib/b-cases.sh=source:exit-0
 NG|exit 0 の判定表が正しい判定表より先に並んでいても NG|a-cases.sh=source:exit-0 lib/b-cases.sh=source:exit
 EXIT_CASES
+report_cases_ran EXIT_CASES "$cases_before"
 
 repo_root="$(cd "$lib_dir/../../.." && pwd)"
 report_tables_exit_with_cases_failed "$repo_root"
