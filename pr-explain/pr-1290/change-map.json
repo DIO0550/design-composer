@@ -1,0 +1,1441 @@
+{
+  "version": 2,
+  "pr": 1290,
+  "headBranch": "claude/magical-cannon-6sxipg",
+  "baseBranch": "main",
+  "mergeBase": "0e8ba0c1b442b420e7e76070210b6eecf3f5ae87",
+  "head": "7eb15493975a2bf8b2dc65194a11c205c12d296b",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/elapsed/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/px/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "services",
+      "files": [
+        {
+          "path": "src/services/node-html/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/IndexMove.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/components/editor-layout/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/button/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/type-glyph/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/button/__tests__/button.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/button/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/context-menu/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "app",
+      "files": [
+        {
+          "path": "src/app/App.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "src(その他)",
+      "files": [
+        {
+          "path": "src/test-setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "src-tauri",
+      "files": [
+        {
+          "path": "src-tauri/src/lib.rs",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/01-file-format.md",
+          "changed": false
+        },
+        {
+          "path": "docs/06-ui.md",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/block-lint-suppress.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/check-doc-comments.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/check-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-fixtures.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 76,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 35,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/lint-suppressions.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/parent-session-edit-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/verification-agent-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/harness-growth/SKILL.md",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/detector-precondition.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/detector-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": "AGENTS.md",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/count.sh",
+          "changed": false
+        },
+        {
+          "path": "rules/coding.md",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "e8fbaeca98a9c2d3c228a50395c7da72a06a0e50",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T13:48:02Z",
+      "subject": "✨ [New Feature]: #1269 判定表の表ループが 1 件も走らなかったときの照合 report_cases_ran を足す",
+      "body": "- cases-report.sh に、`report` を呼んだ回数 `cases_reported` を足し、`report` が ok / NG のどちらでも 1 増やす\n- 表を回す前の件数と比べて「1 件以上走ったか」を 1 行で出す `report_cases_ran <表の名前> <回す前の件数>` を足す\n- 回す前の件数が非負整数でなければ NG にする\n- 冒頭の要約と「使い方」に、ループの前後で呼ぶ手順を足す\n\n背景:\ncases-report.sh を source する判定表は、どれも「ケースが 1 件以上走ったか」を確かめていなかった。\n表の行を消したり、read のフィールドがずれて `[ -n … ] || continue` で全行が読み飛ばされたりすると、\nその表は黙って 0 件になり、exit 0 で通る。表ループ 20 本を写しで 1 本ずつ空にしたところ、18 本が\nexit 0 / NG 0 のまま通った。\n\n採用理由:\n数える単位をファイルではなくループにした。1 ファイルに表が複数あると、1 本を空にしてもほかの表が\nreport を呼ぶので、ファイル全体の件数は 0 にならない。Issue の実測例 REPORT_CASES を空にしても\n48 件残る。区切り(回す前の件数)を呼び出し側で取るのは、ループの間に固定の report 呼び出しがある\n判定表(count-cases 等)で、その件数を次の表に混ぜないため。\n比較に `[[ -gt ]]` を使うので、空の綴りは 0 と読まれる。そのため数値かどうかは先に確かめる。\n\n影響とトレードオフ:\n最後の文 `exit \"$cases_failed\"` は変えないので、#1233 の照合とは両立する。ガードの行を消したり、\nガードの無いループを足したりした形はこの照合では捕まらない。そちらは #1288 で静的に検査する。\nok の行に件数 N は出さない。守るケースを足してまで残す情報ではないため。\n\n代替案:\n- ファイル単位で合計 0 なら NG にする: 合計が 0 になるのは 20 本中 5 本だけ\n- cases_failed の初期値を 1 にする: 単位がファイルのままで、0 件でも NG の行が出ない\n- 最後の文を finish_cases などに変える: #1233 で揃えた照合と食い違う\n- trap EXIT で見る: 各判定表が自前の trap EXIT を張っていて上書きされる\n- ループ本体を関数にして包む関数に渡す: 20 本の本体を書き換えることになり、read の列もループごとに違う\n- 表の行数と照合する: ヒアドキュメントは変数になっていないので、行数を取れない\n\n参考:\n- Issue #1269 の計画コメント・plan-reviewer の指摘と対応\n- 静的検査の続き: #1288\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 34,
+          "deletions": 3,
+          "patch": "@@ -1,10 +1,12 @@\n #!/usr/bin/env bash\n #\n # 判定表（`*-cases.sh`）が共有する、判定の読み取りと報告と、検出器の種別の照合と、\n-# 判定表の最後の文の照合。\n+# 判定表の最後の文の照合と、表のケースが 1 件以上走ったかの照合。\n #\n # 使い方: source したうえで `decide`・`normalize_miss`・`all_in_category`・`report` を呼び、最後の文を\n-# `exit \"$cases_failed\"` にする（照合するのは `cases-report-cases.sh`）。deny でも exit 0 で JSON を返す\n+# `exit \"$cases_failed\"` にする（照合するのは `cases-report-cases.sh`）。表をループで回すなら、回す前に\n+# `cases_before=$cases_reported` を取り、ループの後（ヒアドキュメントなら終わりの区切りの次の行）で\n+# `report_cases_ran <表の名前> \"$cases_before\"` を呼ぶ。deny でも exit 0 で JSON を返す\n # PreToolUse フックの判定表は、`decide` の代わりに `decide_by_permission` を呼ぶ（フックを流すところから\n # 任せるなら `hook_verdict_by_permission`）。ケースの並べ方と検出器の\n # 呼び方は、判定表ごとに違う（走査ルートを絶対パスで渡すもの・`cd` してから相対で渡すもの、置くのが\n@@ -24,6 +26,9 @@\n # 食い違ったケースがあれば 1 になる。\n cases_failed=0\n \n+# `report` を呼んだ回数。\n+cases_reported=0\n+\n # 検出器の出力と終了コードを突き合わせて、pass / deny / broken を決める。\n #\n # exit 0 で見出しが無ければ pass、exit 1 で見出しがあれば deny、それ以外（見出しを出したまま exit 0 /\n@@ -98,13 +103,14 @@ normalize_miss() {\n   echo \"$decision\"\n }\n \n-# 1 ケースの結果を 1 行で出す。食い違ったら `cases_failed` を立てる。\n+# 1 ケースの結果を 1 行で出し、走らせた件数 `cases_reported` を 1 増やす。食い違ったら `cases_failed` を立てる。\n #\n # $1 表に書かれた期待\n # $2 実際の判定\n # $3 ケース名\n report() {\n   local expected=\"$1\" decision=\"$2\" label=\"$3\"\n+  cases_reported=$((cases_reported + 1))\n   if [ \"$decision\" = \"$expected\" ]; then\n     printf 'ok   %-4s %s\\n' \"$expected\" \"$label\"\n     return 0\n@@ -113,6 +119,31 @@ report() {\n   cases_failed=1\n }\n \n+# 表のケースが 1 件以上走ったか（表を回す前より `cases_reported` が増えたか）を 1 行で出す。走っていない・\n+# 回す前の件数が非負整数でなければ `cases_failed` を立てる。`cases_reported` は増やさない。\n+#\n+# 表の行を消す・`read` のフィールドがずれて全行を読み飛ばすと、ループは `report` を 1 回も呼ばずに終わり、\n+# 最後の文 `exit \"$cases_failed\"` は 0 のまま通る。\n+# 回す前の件数を先に数値か確かめるのは、`[[ -gt ]]` が空の綴りを 0 と読み、表の前に `report` があれば\n+# ok になるため。\n+#\n+# $1 報告に出す表の名前\n+# $2 表を回す前の `cases_reported`\n+report_cases_ran() {\n+  local table=\"$1\" before=\"${2:-}\"\n+  if ! [[ \"$before\" =~ ^[0-9]+$ ]]; then\n+    printf 'NG   %s を回す前の件数が数値ではない（%s）\\n' \"$table\" \"${before:-空}\"\n+    cases_failed=1\n+    return 0\n+  fi\n+  if [[ \"$cases_reported\" -gt \"$before\" ]]; then\n+    printf 'ok   %s のケースが走った\\n' \"$table\"\n+    return 0\n+  fi\n+  printf 'NG   %s のケースが 1 件も走っていない\\n' \"$table\"\n+  cases_failed=1\n+}\n+\n # 検出器が報告する種別を、実装に書いた順に 1 行 1 つ出す。読む形は 3 つで、`scan()` の\n # `found: dict[str, list[str]] = {` に並ぶキー・行頭の `KINDS = (...)`・報告の行の頭\n # （`f\"[<種別>] `。初出順で重複を除く）。1 本が 2 つの形を持てば連結され、docstring の一覧と",
+          "patchLines": 73,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "d83f8f60901cb4ea9ac3b111aacd7a54234d60c1",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T13:48:42Z",
+      "subject": "🧪 [Tests]: #1269 cases-report-cases.sh に report_cases_ran の判定表 RAN_CASES を足し、表ループ 7 本にガードを付ける",
+      "body": "- RAN_CASES を足す。表の中で report を呼ばない / 1 回呼ぶ / 表の前に呼ぶ / 食い違う / 回す前の件数が空 の 5 件\n- 既存の表ループ 7 本(CASES / REPORT_CASES / DECIDE_CASES / PERMISSION_CASES / HOOK_CASES / MISS_CASES / EXIT_CASES)と RAN_CASES 自身の前後に、cases_before と report_cases_ran を付ける\n- 冒頭コメントに RAN_CASES の列と期待の値を足す\n\n背景:\nIssue #1269 の実測例は、このファイルの REPORT_CASES を空にしても exit 0 / ok 65 件で通る、というものだった。\nreport_cases_ran の振る舞いは、それを呼ぶ表で固定する。\n\n採用理由:\n「食い違っても走った 1 件に数える」ケースは verdict_of の NG / ok では守れない。\n表の中の report が NG を出すと cases_failed が立ち、ガードの答えに関わらず NG になるため。\nそこで専用の判定 ran_counted を置き、出力の ok 行の有無と NG 行の有無を見る(plan-reviewer の指摘)。\n空のケースは表の前に report を 1 回呼ぶ形にした。`[[ -gt ]]` は空を 0 と読むので、\nこうしないと数値の検査を外したときに落ちない。\n\n影響とトレードオフ:\n各ケースが守っていることを、写しの上で cases-report.sh を壊して確かめた。\n比較を -ge にする / 0 と比べる / 加算を ok の枝だけにする / 数値の検査を外す、の 4 通りで、\nどれも RAN_CASES が NG になる。\n\n代替案:\nok 行に件数 N を出して検査する案は採らなかった。N は判断に使わない情報で、\nそれを守るケースを足すより出力から外すほうが単純なため。\n\n参考:\nIssue #1269 の plan-reviewer の指摘 1・2・7\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 71,
+          "deletions": 3,
+          "patch": "@@ -1,8 +1,8 @@\n #!/usr/bin/env bash\n #\n # 検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds`）と `report` 自身（NG なら\n-# `cases_failed` を立て、ok なら立てない）と、判定の読み取り（`decide` / `decide_by_permission` /\n-# `hook_verdict_by_permission` / `normalize_miss`）の判定表。照合の表は一時ディレクトリへ小さな検出器を置いて照合を呼び、`report` の表は検出器を置かずに\n+# `cases_failed` を立て、ok なら立てない）と、表のケースが走ったかの照合（`report_cases_ran`）と、\n+# 判定の読み取り（`decide` / `decide_by_permission` / `hook_verdict_by_permission` / `normalize_miss`）の判定表。照合の表は一時ディレクトリへ小さな検出器を置いて照合を呼び、`report` の表は検出器を置かずに\n # `report` だけを呼ぶ。この 2 つは、NG を出して `cases_failed` を立てるか ok だけを出すかを確かめる。\n # 判定の読み取りの表は検出器を走らせず、表に書いた出力と終了コードを `decide` / `decide_by_permission` へ\n # 渡して返る判定を確かめる（`hook_verdict_by_permission` だけは、表に書いた出力と終了コードを返すフックの\n@@ -28,7 +28,11 @@\n # `covered`（`report_covered_kinds`）。`report` 自身の表は `期待|ケース名|report に渡す期待|report に渡す判定`\n # の 1 行 1 ケース。最後の文の照合の表は `期待|ケース名|置くもの` の 1 行 1 ケースで、置くものは\n # `パス=読み方:終わり方` の空白区切り（`-` なら何も置かない。読み方と終わり方は `table_sourcing` /\n-# `table_ending` の case）。照合の表と `report` の表と最後の文の照合の表の期待は 2 つ（NG / ok）。\n+# `table_ending` の case）。走ったかの照合の表は `期待|ケース名|表の前の report の回数|表の中の report|回す前の件数`\n+# の 1 行 1 ケースで、表の中の report は `-`（呼ばない）/ `ok`（期待どおり）/ `NG`（食い違う）、回す前の件数は\n+# `取る` / `空`（`ran_row`）。照合の表と `report` の表と最後の文の照合の表と走ったかの照合の表の期待は\n+# 2 つ（NG / ok）。走ったかの照合の表だけは 3 つ目の `走った` を持ち、出力に `report_cases_ran` の ok の行が\n+# あって NG の行が無いことを見る（表の中の NG で `cases_failed` が立つので、NG / ok では見分けられない）。\n #\n # | 期待 | 意味 |\n # | --- | --- |\n@@ -115,6 +119,7 @@ verdict() {\n   esac\n }\n \n+cases_before=$cases_reported\n while IFS='|' read -r expected label check reported documented covered; do\n   [ -n \"$check\" ] || continue\n   detector=\"$work/detector.py\"\n@@ -128,7 +133,9 @@ NG|実装と docstring のどちらからも種別を取り出せない|document\n ok|実装の種別をすべて表の期待が含む|covered|alpha beta|alpha beta|alpha beta\n NG|表の期待に無い種別を実装が持つ|covered|alpha beta|alpha beta|alpha\n CASES\n+report_cases_ran CASES \"$cases_before\"\n \n+cases_before=$cases_reported\n while IFS='|' read -r expected label report_expected report_decision; do\n   [ -n \"$label\" ] || continue\n   decision=\"$(verdict_of report \"$report_expected\" \"$report_decision\" \"report のケース\")\"\n@@ -141,6 +148,7 @@ done <<'REPORT_CASES'\n ok|期待と判定が一致すると ok の行だけを出し、cases_failed を立てない|deny|deny\n NG|期待と判定が食い違うと NG の行を出し、cases_failed を立てる|deny|pass\n REPORT_CASES\n+report_cases_ran REPORT_CASES \"$cases_before\"\n \n # 判定の読み取りの表に書いた出力を、検出器の標準出力にする。\n #\n@@ -158,6 +166,7 @@ decide_row() {\n   decide \"$(row_output \"$2\")\" \"$1\" '^\\[alpha\\]'\n }\n \n+cases_before=$cases_reported\n while IFS='|' read -r expected label status output; do\n   [ -n \"$label\" ] || continue\n   report \"$expected\" \"$(decide_row \"$status\" \"$output\")\" \"$label\"\n@@ -171,7 +180,9 @@ broken|見出しを出したまま exit 0 なら broken|0|[alpha] 1 件\n broken|exit 2 で何も出さなければ broken|2|-\n broken|exit 2 で見出しを出しても broken|2|[alpha] 1 件\n DECIDE_CASES\n+report_cases_ran DECIDE_CASES \"$cases_before\"\n \n+cases_before=$cases_reported\n while IFS='|' read -r expected label status output; do\n   [ -n \"$label\" ] || continue\n   report \"$expected\" \"$(decide_by_permission \"$(row_output \"$output\")\" \"$status\")\" \"$label\"\n@@ -183,6 +194,7 @@ pass|PreToolUse フックが exit 0 で ask の JSON を返すなら deny と読\n pass|PreToolUse フックが exit 0 で allow の JSON を返すなら deny と読まず pass|0|{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"allow\"}}\n broken|PreToolUse フックが deny の JSON を返しても exit 0 以外なら broken|1|{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\"}}\n PERMISSION_CASES\n+report_cases_ran PERMISSION_CASES \"$cases_before\"\n \n # 標準入力が `hook-input` のときだけ、表に書いた出力と終了コードを返す PreToolUse フックのスタブを置く。\n # 標準入力が違えば exit 3 で落ちるので、フックへ標準入力を渡さない実装は broken になる。\n@@ -198,6 +210,7 @@ place_permission_hook() {\n   } >\"$3\"\n }\n \n+cases_before=$cases_reported\n while IFS='|' read -r expected label status output; do\n   [ -n \"$label\" ] || continue\n   place_permission_hook \"$status\" \"$output\" \"$work/hook.sh\"\n@@ -207,7 +220,9 @@ deny|フックへ標準入力を渡し、exit 0 で deny の JSON が返れば d\n pass|フックへ標準入力を渡し、exit 0 で何も返らなければ pass|0|-\n broken|フックが deny の JSON を返しても exit 0 以外なら broken|1|{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\"}}\n HOOK_CASES\n+report_cases_ran HOOK_CASES \"$cases_before\"\n \n+cases_before=$cases_reported\n while IFS='|' read -r expected label table_expected status output; do\n   [ -n \"$label\" ] || continue\n   decision=\"$(decide_row \"$status\" \"$output\")\"\n@@ -219,6 +234,57 @@ deny|取りこぼしを期待した表でも exit 1 で見出しを出せば den\n broken|取りこぼしを期待した表でも exit 2 なら miss と読まず broken|miss|2|-\n broken|取りこぼしを期待した表でも見出しを出したまま exit 0 なら miss と読まず broken|miss|0|[alpha] 1 件\n MISS_CASES\n+report_cases_ran MISS_CASES \"$cases_before\"\n+\n+# 表を回したことにして、`report_cases_ran` を 1 回呼ぶ。件数を 0 から数え直すので、表の前の `report` の\n+# 回数は表に書いたものだけになる。\n+#\n+# $1 表の前に呼ぶ `report` の回数\n+# $2 表の中で呼ぶ `report`（`-` なら呼ばない。`ok` なら期待どおりの 1 件、`NG` なら食い違う 1 件）\n+# $3 回す前の件数の渡し方（`取る` なら回す前の `cases_reported`、`空` なら空の綴り）\n+ran_row() {\n+  local reported_before=\"$1\" inside=\"$2\" taken=\"$3\" before=\"\" n\n+  cases_reported=0\n+  for ((n = 0; n < reported_before; n++)); do report ok ok \"表の前のケース\"; done\n+  [ \"$taken\" = \"取る\" ] && before=\"$cases_reported\"\n+  case \"$inside\" in\n+    ok) report ok ok \"表の中のケース\" ;;\n+    NG) report ok pass \"表の中のケース\" ;;\n+  esac\n+  report_cases_ran 表 \"$before\"\n+}\n+\n+# 表の中の `report` が NG を出しても、`report_cases_ran` が走った 1 件に数えたかを返す。数えていれば\n+# `走った`、数えていなければ `走っていない`。`verdict_of` は使わない（表の中の NG で `cases_failed` が立つ）。\n+#\n+# $@ `ran_row` の引数\n+ran_counted() {\n+  local output\n+  output=\"$(ran_row \"$@\")\"\n+  if grep -qx 'ok   表 のケースが走った' <<<\"$output\" && ! grep -q 'のケースが 1 件も走っていない' <<<\"$output\"; then\n+    echo \"走った\"\n+    return 0\n+  fi\n+  echo \"走っていない\"\n+}\n+\n+cases_before=$cases_reported\n+while IFS='|' read -r expected label reported_before inside taken; do\n+  [ -n \"$label\" ] || continue\n+  if [ \"$expected\" = \"走った\" ]; then\n+    decision=\"$(ran_counted \"$reported_before\" \"$inside\" \"$taken\")\"\n+  else\n+    decision=\"$(verdict_of ran_row \"$reported_before\" \"$inside\" \"$taken\")\"\n+  fi\n+  report \"$expected\" \"$decision\" \"$label\"\n+done <<'RAN_CASES'\n+NG|表の中で report を 1 回も呼ばなければ NG になり cases_failed を立てる|0|-|取る\n+ok|表の中で report を 1 回呼べば ok の行だけを出し cases_failed を立てない|0|ok|取る\n+NG|表の前に report を呼んでいても、表の中で 0 回なら NG|1|-|取る\n+走った|表の中の report が食い違って NG を出しても、走った 1 件に数える|0|NG|取る\n+NG|回す前の件数が数値でない（空）なら NG になり cases_failed を立てる|1|ok|空\n+RAN_CASES\n+report_cases_ran RAN_CASES \"$cases_before\"\n \n # `cases-report.sh` を source している `*.sh` を、`<root>` の下から 1 行 1 本で出す。`node_modules/` と\n # `.git/` の下は見ない。\n@@ -306,6 +372,7 @@ place_tables() {\n }\n \n tree_count=0\n+cases_before=$cases_reported\n while IFS='|' read -r expected label placements; do\n   [ -n \"$label\" ] || continue\n   tree_count=$((tree_count + 1))\n@@ -338,6 +405,7 @@ NG|cases-report.sh を source する判定表が 1 本も無ければ NG|-\n NG|正しい判定表と exit 0 の判定表が並んでいれば NG|a-cases.sh=source:exit lib/b-cases.sh=source:exit-0\n NG|exit 0 の判定表が正しい判定表より先に並んでいても NG|a-cases.sh=source:exit-0 lib/b-cases.sh=source:exit\n EXIT_CASES\n+report_cases_ran EXIT_CASES \"$cases_before\"\n \n repo_root=\"$(cd \"$lib_dir/../../..\" && pwd)\"\n report_tables_exit_with_cases_failed \"$repo_root\"",
+          "patchLines": 168,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "adfe335bdf0ef4ef9132378c17d71af01abad59f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T13:48:43Z",
+      "subject": "🧪 [Tests]: #1269 import-rule-cases.sh の表ループ 2 本に空行の読み飛ばしと report_cases_ran を付ける",
+      "body": "- `<<<\"$cases\"` / `<<<\"$stub_cases\"` の 2 本に `[ -n \"$label\" ] || continue` を足す\n- 2 本の前後に cases_before と report_cases_ran を付ける\n\n背景:\nこの 2 本はヒアドキュメントではなく、変数を here-string で回している。\nhere-string は変数が空でも空行を 1 行渡すので、本体が 1 回まわって report が呼ばれる。\n\n採用理由:\n空行を読み飛ばさないままだと、表を空にしたときにガードは「1 件走った」と ok を出す。\nそのとき落ちるのは、空の期待で呼んだ report の食い違いのせいで、ガードの働きではない。\nほかの表と同じ `|| continue` に揃え、表を空にしたらガードの NG で落ちるようにした\n(plan-reviewer の指摘 3)。\n\n影響とトレードオフ:\n2 本を写しの上で空にすると、どちらも「<表> のケースが 1 件も走っていない」の NG だけを出して exit 1 になる。\nほかの NG 行は出ない。\n\n代替案:\n空行の読み飛ばしを足さずに、ガードの側で here-string を特別扱いする案は採らなかった。\n読み方の都合を表ごとにガードへ持ち込むことになるため。\n\n参考:\nIssue #1269 の plan-reviewer の指摘 3\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 0,
+          "patch": "@@ -196,11 +196,14 @@ import-cycle|import type だけでできた閉路も拾う|src/utils/probe-a.ts>\n CASES\n )\"\n \n+cases_before=$cases_reported\n while IFS='|' read -r expected label files; do\n+  [ -n \"$label\" ] || continue\n   build_tree\n   place \"$files\"\n   report \"$expected\" \"$(verdict)\" \"$label\"\n done <<< \"$cases\"\n+report_cases_ran cases \"$cases_before\"\n \n stub_cases=\"$(cat <<'CASES'\n broken|種別として読めない見出しを出したまま exit 0 で終わる検出器は broken|unreadable-exit0\n@@ -209,10 +212,13 @@ broken|見出しを出さずに exit 2 で終わる検出器は broken|usage\n CASES\n )\"\n \n+cases_before=$cases_reported\n while IFS='|' read -r expected label stub; do\n+  [ -n \"$label\" ] || continue\n   place_stub_detector \"$stub\" \"$work/stub-detector.py\"\n   report \"$expected\" \"$(detector=\"$work/stub-detector.py\"; verdict)\" \"$label\"\n done <<< \"$stub_cases\"\n+report_cases_ran stub_cases \"$cases_before\"\n \n covered_kinds=\"$(kinds_in \"$(printf '%s\\n' \"$cases\" | cut -d '|' -f 1)\")\"\n report_documented_kinds \"$detector\"",
+          "patchLines": 29,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "824132c57171856d619b7038ee259ad3e152e4f0",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T13:48:43Z",
+      "subject": "🧪 [Tests]: #1269 .claude/hooks/lib の判定表 4 本の表ループに report_cases_ran を付ける",
+      "body": "- missing-doc-comments / named-path / story-title の CASES ループの前後に、cases_before と report_cases_ran を付ける\n- edit-detector の `for hook in …` ループにも、同じ組を付ける\n\n背景:\nこの 4 本は、表の行を全部消すと report を 1 回も呼ばないまま exit 0 で通っていた。\n写しで 1 本ずつ空にして確かめたところ、4 本とも同じだった。\n\n採用理由:\nedit-detector の for は、1 回まわるたびに check を 8 回呼ぶケースの表になっている。\n並べた語を全部消すと 0 回まわって通るので、while read の表と同じく対象に入れた(plan-reviewer の指摘 4)。\nスタブを置くためだけの for は、ケースの表ではないので対象から外した。\n\n影響とトレードオフ:\n4 本とも、空にすると「<表> のケースが 1 件も走っていない」の NG だけを出して exit 1 になる。\n最後の文 `exit \"$cases_failed\"` より前に入れたので、#1233 の照合は崩れない。\n\n代替案:\n判定表ごとに件数を自前で数える案は採らなかった。\n同じ数え方を 10 本以上の判定表に書くことになり、rules/coding.md「同じ処理が2箇所に現れたら共通化する」に反するため。\n\n参考:\nIssue #1269\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -170,6 +170,7 @@ check() {\n copy_hooks\n place_sources\n \n+cases_before=$cases_reported\n for hook in block-lint-suppress.sh check-doc-comments.sh check-test-helper-duplication.sh; do\n   found=\"feedback\"\n   [ \"$hook\" = \"block-lint-suppress.sh\" ] && found=\"deny\"\n@@ -182,5 +183,6 @@ for hook in block-lint-suppress.sh check-doc-comments.sh check-test-helper-dupli\n   check pass \"$hook\" real clean ok \"実物の検出器で違反が無ければ、何も出さない\"\n   check pass \"$hook\" real violation broken \"起動できない python3 しか無ければ、違反があっても何も出さない\"\n done\n+report_cases_ran hooks \"$cases_before\"\n \n exit \"$cases_failed\"",
+          "patchLines": 15,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -88,6 +88,7 @@ verdict() {\n   fi\n }\n \n+cases_before=$cases_reported\n while IFS='|' read -r expected mode input label; do\n   [ -n \"$input\" ] || continue\n   file=\"$work/src/sample.ts\"\n@@ -115,5 +116,6 @@ deny|all|method-undocumented|--all で走査しても、コンパニオンのメ\n deny|all|method-items-missing|--all で走査しても、メソッドの doc に @param / @returns が無いのを報告する\n pass|all|method-documented|--all で走査して、メソッドに @param / @returns の揃った doc があれば報告しない\n CASES\n+report_cases_ran CASES \"$cases_before\"\n \n exit \"$cases_failed\"",
+          "patchLines": 15,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -105,6 +105,7 @@ verdict() {\n \n build_tree\n \n+cases_before=$cases_reported\n while IFS='|' read -r expected label file shape spelling; do\n   [ -n \"$file\" ] || continue\n   write_case \"$file\" \"$shape\" \"$spelling\"\n@@ -158,6 +159,7 @@ miss|harness/records/ は走査しない(当時の綴りとして正しい)|harn\n miss|相対リンクの段数は見ない(行き先が実在すれば通る)|docs/probe.md|md|[規約](../../../../rules/coding.md)\n miss|git が追跡していないファイルは走査しない|untracked.md|md|features/sidebar\n CASES\n+report_cases_ran CASES \"$cases_before\"\n \n report_documented_kinds \"$detector\"\n ",
+          "patchLines": 16,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -45,6 +45,7 @@ verdict() {\n   decide \"$output\" \"$status\" '^\\[story-title-(tree|missing)\\]'\n }\n \n+cases_before=$cases_reported\n while IFS='|' read -r expected label story title; do\n   [ -n \"$story\" ] || continue\n   rm -rf \"${work:?}/src\"\n@@ -82,6 +83,7 @@ deny|title を持たない story|src/features/editor/components/editor-layout/in\n deny|既定 export の外にも title: があり、どれが story の title か決まらない|src/features/editor/components/editor-layout/index.stories.tsx|@two\n miss|葉の名前が実在のコンポーネントと無関係でも通る(意図した取りこぼし)|src/features/editor/components/editor-layout/index.stories.tsx|features/editor/Nonsense\n CASES\n+report_cases_ran CASES \"$cases_before\"\n \n report_documented_kinds \"$detector\"\n ",
+          "patchLines": 16,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "ba0f21c99991043bc5305e02f5fd27b24dca3768",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T13:48:43Z",
+      "subject": "🧪 [Tests]: #1269 .github/scripts の判定表 4 本の表ループに report_cases_ran を付ける",
+      "body": "- build-pr-change-map / build-pr-explain / check-pr-explain-template / pr-explain-core の表ループの前後に、cases_before と report_cases_ran を付ける\n\n背景:\nこの 4 本も、表の行を全部消すと report を 1 回も呼ばないまま exit 0 で通っていた。\nbuild-pr-change-map と build-pr-explain は、ループの外にも report があるので、ファイル全体の件数は 0 にならない。\n\n採用理由:\nファイル単位ではなくループ単位で数える形なので、ループの外の report があっても空の表を捕まえられる。\n\n影響とトレードオフ:\n4 本とも、空にすると「<表> のケースが 1 件も走っていない」の NG だけを出して exit 1 になる。\n\n代替案:\nファイル全体の件数で見る案は採らなかった。この 4 本のうち 2 本は、表を空にしても件数が残るため。\n\n参考:\nIssue #1269\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -260,6 +260,7 @@ print(\"holds\" if eval(sys.argv[2]) else \"fails\")\n PY\n }\n \n+cases_before=$cases_reported\n while IFS='|' read -r label expression; do\n   [ -n \"$label\" ] || continue\n   file=\"$work/map.json\"\n@@ -352,6 +353,7 @@ rename した .sh の hunk の変更前の側は、旧パスの中身から読\n html と sh 以外のファイルは hunkOpeningLines を持たない|\"hunkOpeningLines\" not in in_commit[(second, \"docs/x.md\")]\n patch を切ったファイルは、切った後の patch の hunk と同じ数だけ hunkOpeningLines を持つ|in_commit[(second, \"docs/embedded/many.sh\")][\"truncated\"] is True and len(in_commit[(second, \"docs/embedded/many.sh\")][\"hunkOpeningLines\"]) == sum(line.startswith(\"@@ \") for line in in_commit[(second, \"docs/embedded/many.sh\")][\"patch\"].split(\"\\n\")) > 1\n CASES\n+report_cases_ran CASES \"$cases_before\"\n \n # blob の中身を読む手順を、この一時リポジトリの blob の名前で直に叩く。読める名前だけなら中身を返す(下の止まるケースが、\n # blob を読めないせいで止まったと分かるようにする対照)。",
+          "patchLines": 16,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": "  python3 - \"$1\" \"$2\" \"$fork\" \"$first\" \"$side\" \"$second\" \"$head\" \"$without_base_branch\" \"$without_head_branch\" <<'PY'",
+              "new": "  python3 - \"$1\" \"$2\" \"$fork\" \"$first\" \"$side\" \"$second\" \"$head\" \"$without_base_branch\" \"$without_head_branch\" <<'PY'"
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -370,12 +370,14 @@ for number, line in enumerate(open(f\"{work}/cases.txt\", encoding=\"utf-8\"), 1):\n PY\n \n number=0\n+cases_before=$cases_reported\n while IFS='|' read -r expected category base label change; do\n   number=$((number + 1))\n   [ -n \"$label\" ] || continue\n   cp \"$work/case-$number.json\" \"$work/case.json\"\n   report \"$expected\" \"$(verdict \"$category\")\" \"$label\"\n done <<<\"$cases\"\n+report_cases_ran cases \"$cases_before\"\n \n # ここから下は書き出したものを見るケース。\n # $1 解説のファイルを作る基準, $2 変形。検査を走らせ、終了コードを返す(書き出し先は `$work/out.json`)",
+          "patchLines": 15,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": "python3 - \"$work\" <<'PY'",
+              "new": "python3 - \"$work\" <<'PY'"
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -93,11 +93,13 @@ deny|language|追跡している .py が色を付ける表から外れる|script\n CASES\n )\"\n \n+cases_before=$cases_reported\n while IFS='|' read -r expected category label change; do\n   [ -n \"$label\" ] || continue\n   make_template \"$change\"\n   report \"$expected\" \"$(verdict \"$category\")\" \"$label\"\n done <<<\"$cases\"\n+report_cases_ran cases \"$cases_before\"\n \n report_documented_kinds \"$checker\"\n report_covered_kinds \"$checker\" \"$(kinds_in_categories \"$cases\" pr-explain-)\"",
+          "patchLines": 14,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -2501,9 +2501,11 @@ if [ \"$status\" -ne 0 ]; then\n   exit 1\n fi\n \n+cases_before=$cases_reported\n while IFS=$'\\t' read -r decision label; do\n   [ -n \"$label\" ] || continue\n   report same \"$decision\" \"$label\"\n done <<< \"$results\"\n+report_cases_ran results \"$cases_before\"\n \n exit \"$cases_failed\"",
+          "patchLines": 12,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "6a541e0257206db6805d981261ed0f1ab376cbf5",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T13:48:43Z",
+      "subject": "🧪 [Tests]: #1269 count-cases.sh の表ループ 4 本に report_cases_ran を付ける",
+      "body": "- window_cases / source_cases / ratchet_cases / reviewer_source_cases の 4 本のループの前後に、cases_before と report_cases_ran を付ける\n\n背景:\ncount-cases.sh には表ループが 4 本あり、その間に固定の report 呼び出しもある。\n1 本を空にしても、ファイル全体では 61 件残って exit 0 で通っていた。\n\n採用理由:\n区切り(回す前の件数)をループの直前で取るので、ループの間にある固定の report は、次の表の件数に混ざらない。\n前回の照合からの件数で数える案では、ここが混ざって、空の表を ok と読む。\n\n影響とトレードオフ:\n4 本とも、空にすると「<表> のケースが 1 件も走っていない」の NG だけを出して exit 1 になる。\n\n代替案:\n区切りを置かずに前回の report_cases_ran からの件数で数える案は、上の理由で採らなかった。\n\n参考:\nIssue #1269\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": "harness/records/count-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "patch": "@@ -187,6 +187,7 @@ window_cases='\n '\n \n printf '%s\\n' \"窓の数え方\"\n+cases_before=$cases_reported\n while IFS='|' read -r expected label spec; do\n   [ -n \"$expected\" ] || continue\n   build_tree 0 0\n@@ -202,6 +203,7 @@ while IFS='|' read -r expected label spec; do\n   done\n   report \"$expected\" \"$(comment_row)\" \"$label\"\n done <<< \"$window_cases\"\n+report_cases_ran window_cases \"$cases_before\"\n \n # 旧語彙は読むときに現在の分類へ畳む(count.sh の fold_tag)。対応表の 1 行が落ちると\n # その綴りが畳まれずに残るので、出た分類の集合で見る。1 本の記録に全綴りを置くのは、\n@@ -259,6 +261,7 @@ source_cases='\n '\n \n printf '\\n%s\\n' \"出どころの読み分け\"\n+cases_before=$cases_reported\n while IFS='|' read -r expected label source; do\n   [ -n \"$expected\" ] || continue\n   build_tree 0 0\n@@ -266,6 +269,7 @@ while IFS='|' read -r expected label source; do\n   append_line 10 \"- 出どころ: $source\"\n   report \"$expected\" \"$(comment_counted_as)\" \"$label\"\n done <<< \"$source_cases\"\n+report_cases_ran source_cases \"$cases_before\"\n \n # 分類の行が `pending` に入り、出どころの行で 1 件として確定する。記録が崩れていても\n # 数えすぎないための境界なので、崩れた形を置いて見る。\n@@ -351,12 +355,14 @@ ratchet_cases='\n '\n \n printf '\\n%s\\n' \"--ratchet の終了コード\"\n+cases_before=$cases_reported\n while IFS='|' read -r expected label loaded_delta skill_delta; do\n   [ -n \"$expected\" ] || continue\n   build_tree \"$loaded_delta\" \"$skill_delta\"\n   run_count --ratchet >/dev/null 2>&1 && status=0 || status=$?\n   report \"$expected\" \"$status\" \"$label\"\n done <<< \"$ratchet_cases\"\n+report_cases_ran ratchet_cases \"$cases_before\"\n \n # --ratchet が出す文言。超過と下回りで直し方が逆なので、終了コードだけでは取り違えを拾えない。\n # 下回りは予算を持つ変数名まで見る。変数名は下回りの文言にしか出ないので、2 つの予算を\n@@ -416,6 +422,7 @@ reviewer_source_cases='\n バッククォートの無い レビュー（alpha-reviewer） も 1 本 1 件に数える|- 出どころ: レビュー（alpha-reviewer）\n 括弧の中だけバッククォートの レビュー（`alpha-reviewer`） も 1 本 1 件に数える|- 出どころ: レビュー（`alpha-reviewer`）\n '\n+cases_before=$cases_reported\n while IFS='|' read -r label line; do\n   [ -n \"$label\" ] || continue\n   build_reviewer_tree 10\n@@ -423,6 +430,7 @@ while IFS='|' read -r label line; do\n   append_line 1 \"$line\"\n   report \"1 本 1 件 最後=pr-1 以降=9 1.0 件/本\" \"$(reviewer_row alpha-reviewer)\" \"$label\"\n done <<< \"$reviewer_source_cases\"\n+report_cases_ran reviewer_source_cases \"$cases_before\"\n \n # 退役候補は以降が 10 本以上の装置。境界は記録の総数で作る(pr-1 に残して 11 本なら以降 10、\n # 10 本なら以降 9)。「該当なし」の綴りまで比べるのは、候補が無いときに行ごと出さない実装を",
+          "patchLines": 63,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "e9c6ba9bca89e51f01306e37330ef4540567f5cf",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T13:48:43Z",
+      "subject": "📝 [Doc]: #1269 hooks の README「配線」に cases_reported / report_cases_ran を載せる",
+      "body": "- lib/cases-report.sh の行に「表のケースが 1 件以上走ったかの照合」と、それを使う 11 本を足す\n- lib/cases-report-cases.sh の行に「report_cases_ran を呼ぶ表で、表の中で report を 1 回も呼ばなければ NG を出すか」を足す\n\n背景:\ncases-report.sh に足した関数と変数は、「配線」の表に、どの判定表が使うかと一緒に載っている必要がある。\n\n採用理由:\n「使う側」の列にある既存の括弧のまとまりは組み直さず、使う 11 本は説明の列に並べた。\n括弧のまとまりは複数本を 1 つにまとめた書き方なので、組み直すと差分が今回の変更と関係の無い行にまで広がる。\n\n影響とトレードオフ:\n説明の列が長くなる。11 本という数は、grep で数え直して一致を確かめた。\n\n代替案:\n「使う側」の列で、11 本それぞれの括弧書きに report_cases_ran を足す案は、上の理由で採らなかった。\n\n参考:\nIssue #1269\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -61,8 +61,8 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |\n | `lib/edit-detector.sh` | `block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh` | 編集時の検査フックの共通部分。検出器を `.github/scripts/lib/detector-report.sh` の `detector_report` で走らせ、異常終了したら `print_edit_unchecked_context <イベント名> <検査の名前> <検出器>` が `permissionDecision` の無い `additionalContext` で「検査できていません」を返す(編集は止めない)。PostToolUse の 2 本の違反の報告も同じ形(`print_additional_context <イベント名> <文>`)で書く。python3 の疎通は `detector-precondition.sh` の `python3_usable` で見る |\n | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring が持つ |\n-| `lib/cases-report.sh` | `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh`(`decide`・`normalize_miss`・`report`) / `lib/story-title-cases.sh` / `lib/named-path-cases.sh`(それに `report_documented_kinds`) / `lib/import-rule-cases.sh`(`decide`・`report`・`report_documented_kinds`・`report_covered_kinds`) / `lib/cases-report-cases.sh`(`decide`・`decide_by_permission`・`hook_verdict_by_permission`・`normalize_miss`・`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`report_exits_with_cases_failed`) / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`kinds_in_categories`) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`hook_verdict_by_permission`・`report`) / `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `.github/scripts/pr-explain-pages-cases.sh` / `harness/records/count-cases.sh` / `harness/githooks/lib/check-tally-cases.sh`(`report`・`last_statement`・`report_exits_with_cases_failed`) | 判定表が共有する、判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category`。PreToolUse フックを流すところからなら `hook_verdict_by_permission`）と報告（`report` / `cases_failed`）と、検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）と、判定表の最後の文の照合（`last_statement` / `report_exits_with_cases_failed`）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |\n-| `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 一時ディレクトリに置いた小さな検出器で `report_documented_kinds` / `report_covered_kinds` を呼ぶ照合と、`report` 自身を呼ぶ表では、`cases_failed` の立ち方と出力の行が期待どおりかを報告する。表に書いた出力と終了コードで `decide` / `decide_by_permission` / `normalize_miss` を直に呼ぶ表と、それを返すフックのスタブを `hook_verdict_by_permission` で流す表では、返る判定(pass / deny / broken / miss)が期待どおりかを報告する。一時ディレクトリに置いた判定表の木と本物のリポジトリのルートでは、`cases-report.sh` を source する判定表の最後の文が `exit \"$cases_failed\"` かを報告する。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |\n+| `lib/cases-report.sh` | `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh`(`decide`・`normalize_miss`・`report`) / `lib/story-title-cases.sh` / `lib/named-path-cases.sh`(それに `report_documented_kinds`) / `lib/import-rule-cases.sh`(`decide`・`report`・`report_documented_kinds`・`report_covered_kinds`) / `lib/cases-report-cases.sh`(`decide`・`decide_by_permission`・`hook_verdict_by_permission`・`normalize_miss`・`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`report_exits_with_cases_failed`) / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`kinds_in_categories`) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`hook_verdict_by_permission`・`report`) / `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `.github/scripts/pr-explain-pages-cases.sh` / `harness/records/count-cases.sh` / `harness/githooks/lib/check-tally-cases.sh`(`report`・`last_statement`・`report_exits_with_cases_failed`) | 判定表が共有する、判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category`。PreToolUse フックを流すところからなら `hook_verdict_by_permission`）と報告（`report` / `cases_failed`）と、検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）と、判定表の最後の文の照合（`last_statement` / `report_exits_with_cases_failed`）と、表のケースが 1 件以上走ったかの照合（`report` が数える `cases_reported` と `report_cases_ran`。表をループで回す `lib/cases-report-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh` / `lib/missing-doc-comments-cases.sh` / `lib/named-path-cases.sh` / `lib/story-title-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `harness/records/count-cases.sh` が使う）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |\n+| `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 一時ディレクトリに置いた小さな検出器で `report_documented_kinds` / `report_covered_kinds` を呼ぶ照合と、`report` 自身を呼ぶ表では、`cases_failed` の立ち方と出力の行が期待どおりかを報告する。表に書いた出力と終了コードで `decide` / `decide_by_permission` / `normalize_miss` を直に呼ぶ表と、それを返すフックのスタブを `hook_verdict_by_permission` で流す表では、返る判定(pass / deny / broken / miss)が期待どおりかを報告する。一時ディレクトリに置いた判定表の木と本物のリポジトリのルートでは、`cases-report.sh` を source する判定表の最後の文が `exit \"$cases_failed\"` かを報告する。`report_cases_ran` を呼ぶ表では、表の中で `report` を 1 回も呼ばなければ NG を出すかを報告する。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |\n | `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh`(`place_failing_detector` だけ) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`subagent_call_fields` だけ) | フックの判定表が共有する、ケースの前提の置き方。落ちる検出器のスタブ(`place_failing_detector`)・起動できない python3(`python3_path_prefix`)・本体が同じテストヘルパー(`place_duplicate_helpers`)を、渡されたパスへ置く。サブエージェントの中の呼び出しの入力のフィールド(`subagent_call_fields`)を組む |\n | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `import-rule-violations.py` へ判定表を流し、報告された種別と件数が期待どおりかを報告する。検出器が報告する種別のうち、表の期待に 1 度も出ないものがあっても NG。`scan()` の種別の並びが docstring の一覧と食い違っても NG。検出器をスタブへ差し替えた表では、見出しを出したまま exit 0・exit 0・1 以外で終わる検出器を broken と読むかを報告する。食い違いがあれば exit 1 |\n | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードと報告の見出しで報告する。検出器の種別の並びが docstring の一覧と食い違っても NG。食い違いがあれば exit 1 |",
+          "patchLines": 11,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "81889ed6d2773363a606b5004cf03a00bd5477e0",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T13:57:37Z",
+      "subject": "♻️ [Refactoring]: #1269 edit-detector の表名をループ変数名 hook にし、表の名前の決め方を使い方に書く",
+      "body": "- edit-detector-cases.sh の `report_cases_ran hooks` を `report_cases_ran hook` にする\n- cases-report.sh 冒頭の「使い方」に、表の名前の決め方を足す(ヒアドキュメントなら区切り、here-string なら変数名、for ならループ変数名)\n\n背景:\nnaming-reviewer から指摘を受けた。ほかの 21 本の表名は、そのファイルを grep すれば行き着く識別子になっている。\n`hooks` だけはファイル内のどの識別子とも一致せず、NG が出たときに該当するループを grep で探しにくい。\n\n採用理由:\nfor ループには区切りも変数名も無いので、表の名前の決め方が決まっていなかった。それが根本原因。\n名前を直すだけでなく、決め方を「使い方」に書き、次に for の表を足す人が同じ判断をしなくて済むようにした。\n\n影響とトレードオフ:\n出力が「ok   hook のケースが走った」に変わる。この行を読む呼び出し側は無い。\n\n代替案:\n決め方を書かずに名前だけを直す案は採らなかった。根本原因が残るため。\n\n参考:\nIssue #1269 のフェーズ 6 の記録(naming-reviewer の指摘)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -6,7 +6,8 @@\n # 使い方: source したうえで `decide`・`normalize_miss`・`all_in_category`・`report` を呼び、最後の文を\n # `exit \"$cases_failed\"` にする（照合するのは `cases-report-cases.sh`）。表をループで回すなら、回す前に\n # `cases_before=$cases_reported` を取り、ループの後（ヒアドキュメントなら終わりの区切りの次の行）で\n-# `report_cases_ran <表の名前> \"$cases_before\"` を呼ぶ。deny でも exit 0 で JSON を返す\n+# `report_cases_ran <表の名前> \"$cases_before\"` を呼ぶ（表の名前は、ヒアドキュメントなら区切り、here-string なら\n+# 変数名、for ならループ変数名）。deny でも exit 0 で JSON を返す\n # PreToolUse フックの判定表は、`decide` の代わりに `decide_by_permission` を呼ぶ（フックを流すところから\n # 任せるなら `hook_verdict_by_permission`）。ケースの並べ方と検出器の\n # 呼び方は、判定表ごとに違う（走査ルートを絶対パスで渡すもの・`cd` してから相対で渡すもの、置くのが",
+          "patchLines": 10,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -183,6 +183,6 @@ for hook in block-lint-suppress.sh check-doc-comments.sh check-test-helper-dupli\n   check pass \"$hook\" real clean ok \"実物の検出器で違反が無ければ、何も出さない\"\n   check pass \"$hook\" real violation broken \"起動できない python3 しか無ければ、違反があっても何も出さない\"\n done\n-report_cases_ran hooks \"$cases_before\"\n+report_cases_ran hook \"$cases_before\"\n \n exit \"$cases_failed\"",
+          "patchLines": 8,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "6b2b933730c51ca67cf29883ea43949f43f75e72",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T13:57:37Z",
+      "subject": "🧪 [Tests]: #1269 ran_counted の条件に名前を付け、RAN_CASES の期待「走った」を冒頭の表に載せる",
+      "body": "- ran_counted の 2 つの grep の結果を said_ran / said_not_ran に入れてから組み、NG 行が無いことも見る理由を 1 行で残す\n- 冒頭コメントの「期待は 2 つ」の列挙から走ったかの照合の表を外し、その表の期待は「NG / ok に `走った` を加えた 3 つ」と書く\n- 期待の表に `走った` の行を足す\n\n背景:\nnaming-reviewer と harness-reviewer から、同じ根本原因の指摘を受けた。2 つの条件を組んだ式が、名前の無いまま if に置かれていた\n(rules/naming.md「条件を組んだ式に名前を付ける」。rules/coding.md「規約の適用範囲」でシェルにも及ぶ)。\nharness-reviewer からは、冒頭コメントの「期待は 2 つ」と、直後の「3 つ目の走った」が食い違う点も指摘された。\n\n採用理由:\n2 つ目の条件(NG 行が無いこと)は冗長に見えるが、壊れ方を 1 つ拾っている。\nreport_cases_ran が ok の行を出したあと return せず、NG の行へも落ちる壊れ方を、走ったと読まないための条件。\nok 側の `return 0` を一時的に消して流すと、「走った」のケースが NG になることを確かめた。\n理由をそばに書かないと、後で読む人が冗長とみて消すおそれがあるため、1 行で残した。\n\n影響とトレードオフ:\n判定の中身は変えていない。RAN_CASES の 5 件は従来どおり通る。\n\n代替案:\n- 同じファイルの既存の verdict_of も同じ形をしているが、差分の外なので触らない\n- ran_counted が report_cases_ran の文言をそのまま照合している点(duplication-reviewer の低)は直さない。\n  文言を変えれば落ちるので、黙って通ることは無い\n\n参考:\nIssue #1269 のフェーズ 6 の記録(naming-reviewer / harness-reviewer の指摘)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 4,
+          "patch": "@@ -30,14 +30,15 @@\n # `パス=読み方:終わり方` の空白区切り（`-` なら何も置かない。読み方と終わり方は `table_sourcing` /\n # `table_ending` の case）。走ったかの照合の表は `期待|ケース名|表の前の report の回数|表の中の report|回す前の件数`\n # の 1 行 1 ケースで、表の中の report は `-`（呼ばない）/ `ok`（期待どおり）/ `NG`（食い違う）、回す前の件数は\n-# `取る` / `空`（`ran_row`）。照合の表と `report` の表と最後の文の照合の表と走ったかの照合の表の期待は\n-# 2 つ（NG / ok）。走ったかの照合の表だけは 3 つ目の `走った` を持ち、出力に `report_cases_ran` の ok の行が\n-# あって NG の行が無いことを見る（表の中の NG で `cases_failed` が立つので、NG / ok では見分けられない）。\n+# `取る` / `空`（`ran_row`）。照合の表と `report` の表と最後の文の照合の表の期待は 2 つ（NG / ok）。\n+# 走ったかの照合の表は、それに `走った` を加えた 3 つ（表の中の NG で `cases_failed` が立つので、NG / ok では\n+# 見分けられない）。\n #\n # | 期待 | 意味 |\n # | --- | --- |\n # | `NG` | NG の行を出し、`cases_failed` を立ててほしい |\n # | `ok` | ok の行だけを出し、`cases_failed` を立ててはいけない |\n+# | `走った` | `report_cases_ran` が ok の行を出し、NG の行を出さないでほしい（`cases_failed` は見ない） |\n #\n # 判定の読み取りの表は 4 つ。`decide` の表と `decide_by_permission` の表と `hook_verdict_by_permission` の表は\n # `期待|ケース名|終了コード|出力`、\n@@ -260,8 +261,12 @@ ran_row() {\n # $@ `ran_row` の引数\n ran_counted() {\n   local output\n+  local said_ran=false said_not_ran=false\n   output=\"$(ran_row \"$@\")\"\n-  if grep -qx 'ok   表 のケースが走った' <<<\"$output\" && ! grep -q 'のケースが 1 件も走っていない' <<<\"$output\"; then\n+  grep -qx 'ok   表 のケースが走った' <<<\"$output\" && said_ran=true\n+  grep -q 'のケースが 1 件も走っていない' <<<\"$output\" && said_not_ran=true\n+  # ok の行を出したあと return せずに NG の行へも落ちる壊れ方を、走ったと読まないため。\n+  if [ \"$said_ran\" = true ] && [ \"$said_not_ran\" = false ]; then\n     echo \"走った\"\n     return 0\n   fi",
+          "patchLines": 33,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "5329becda87612f1238d1c1f1f4652218bcb49bd",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T13:57:37Z",
+      "subject": "📝 [Doc]: #1269 import-rule-cases.sh の here-string ループに、空行を読み飛ばす理由を書く",
+      "body": "- 1 本目の here-string ループの `[ -n \"$label\" ] || continue` のそばに、2 行の理由を足す\n\n背景:\ncomment-reviewer から、このガードの理由がコードに無いと指摘された。\n読み手が冗長とみて消すと、表が空のときに report が 1 回呼ばれ、report_cases_ran が走ったと読む。\nガードの行の有無を静的に検査する仕組みは、まだ無い(#1288)。\n\n採用理由:\nhere-string は、変数が空でも空行を 1 行渡す。空の変数を `<<<` で渡すとループが 1 回まわることを、動かして確かめた。\n理由は 1 本目の側にだけ書いた。2 本目は同じ形で、同じ文を写すと doc が重複するため。\n\n影響とトレードオフ:\nコメントだけの変更で、振る舞いは変わらない。\n\n代替案:\nヒアドキュメントで回す他の表の同じ形のガードにも書く案は採らなかった。\nそちらは表の末尾の空行など理由が違い、今回の 0 件の照合とは関係しないため。\n\n参考:\nIssue #1269 のフェーズ 6 の記録(comment-reviewer の指摘)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -198,6 +198,8 @@ CASES\n \n cases_before=$cases_reported\n while IFS='|' read -r expected label files; do\n+  # here-string は変数が空でも空行を 1 行渡すので、読み飛ばさないと表が空でも report が 1 回呼ばれ、\n+  # report_cases_ran が走ったと読む。\n   [ -n \"$label\" ] || continue\n   build_tree\n   place \"$files\"",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "614ad00337c3d8ec9f94f806df23f8d1e96c87f9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T13:57:37Z",
+      "subject": "📝 [Doc]: #1269 README の配線で report_cases_ran の使い手の二重の列挙をやめ、RAN_CASES の範囲を書き足す",
+      "body": "- lib/cases-report.sh の行の 3 列目にあった、使う判定表 11 本の列挙を「表をループで回す判定表が使う」に置き換える\n- lib/cases-report-cases.sh の行に、回す前の件数が数値でないときの NG と、表の中の NG も走った 1 件に数えることを足す\n\n背景:\nharness-reviewer から指摘を受けた。使う側の一覧は 2 列目の括弧書きが持つのに、3 列目にも別の一覧を置いたため、片方だけを直せる状態になっていた。\ncomment-reviewer からは、65 行目の説明が RAN_CASES の確かめる範囲を狭く書いている、と指摘された。\n\n採用理由:\n3 列目は性質だけを書く形にして、一覧は 1 か所に寄せた。\nrules/coding.md「同じ処理が2箇所に現れたら共通化する」は、doc の重複にも及ぶ。\n\n影響とトレードオフ:\nどの判定表が report_cases_ran を使うかは、README からは「表をループで回す判定表」という性質でしか読めない。\n具体的なファイルは grep で引く。\n\n代替案:\n2 列目の各ファイルの括弧書きに report_cases_ran を足す案は採らなかった。\n既存の括弧のまとまりが複数本を束ねており、組み直すと差分が今回と関係の無い記述まで広がるため。\n\n参考:\nIssue #1269 のフェーズ 6 の記録(harness-reviewer / comment-reviewer の指摘)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -61,8 +61,8 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |\n | `lib/edit-detector.sh` | `block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh` | 編集時の検査フックの共通部分。検出器を `.github/scripts/lib/detector-report.sh` の `detector_report` で走らせ、異常終了したら `print_edit_unchecked_context <イベント名> <検査の名前> <検出器>` が `permissionDecision` の無い `additionalContext` で「検査できていません」を返す(編集は止めない)。PostToolUse の 2 本の違反の報告も同じ形(`print_additional_context <イベント名> <文>`)で書く。python3 の疎通は `detector-precondition.sh` の `python3_usable` で見る |\n | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring が持つ |\n-| `lib/cases-report.sh` | `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh`(`decide`・`normalize_miss`・`report`) / `lib/story-title-cases.sh` / `lib/named-path-cases.sh`(それに `report_documented_kinds`) / `lib/import-rule-cases.sh`(`decide`・`report`・`report_documented_kinds`・`report_covered_kinds`) / `lib/cases-report-cases.sh`(`decide`・`decide_by_permission`・`hook_verdict_by_permission`・`normalize_miss`・`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`report_exits_with_cases_failed`) / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`kinds_in_categories`) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`hook_verdict_by_permission`・`report`) / `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `.github/scripts/pr-explain-pages-cases.sh` / `harness/records/count-cases.sh` / `harness/githooks/lib/check-tally-cases.sh`(`report`・`last_statement`・`report_exits_with_cases_failed`) | 判定表が共有する、判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category`。PreToolUse フックを流すところからなら `hook_verdict_by_permission`）と報告（`report` / `cases_failed`）と、検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）と、判定表の最後の文の照合（`last_statement` / `report_exits_with_cases_failed`）と、表のケースが 1 件以上走ったかの照合（`report` が数える `cases_reported` と `report_cases_ran`。表をループで回す `lib/cases-report-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh` / `lib/missing-doc-comments-cases.sh` / `lib/named-path-cases.sh` / `lib/story-title-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `harness/records/count-cases.sh` が使う）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |\n-| `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 一時ディレクトリに置いた小さな検出器で `report_documented_kinds` / `report_covered_kinds` を呼ぶ照合と、`report` 自身を呼ぶ表では、`cases_failed` の立ち方と出力の行が期待どおりかを報告する。表に書いた出力と終了コードで `decide` / `decide_by_permission` / `normalize_miss` を直に呼ぶ表と、それを返すフックのスタブを `hook_verdict_by_permission` で流す表では、返る判定(pass / deny / broken / miss)が期待どおりかを報告する。一時ディレクトリに置いた判定表の木と本物のリポジトリのルートでは、`cases-report.sh` を source する判定表の最後の文が `exit \"$cases_failed\"` かを報告する。`report_cases_ran` を呼ぶ表では、表の中で `report` を 1 回も呼ばなければ NG を出すかを報告する。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |\n+| `lib/cases-report.sh` | `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh`(`decide`・`normalize_miss`・`report`) / `lib/story-title-cases.sh` / `lib/named-path-cases.sh`(それに `report_documented_kinds`) / `lib/import-rule-cases.sh`(`decide`・`report`・`report_documented_kinds`・`report_covered_kinds`) / `lib/cases-report-cases.sh`(`decide`・`decide_by_permission`・`hook_verdict_by_permission`・`normalize_miss`・`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`report_exits_with_cases_failed`) / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`kinds_in_categories`) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`hook_verdict_by_permission`・`report`) / `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `.github/scripts/pr-explain-pages-cases.sh` / `harness/records/count-cases.sh` / `harness/githooks/lib/check-tally-cases.sh`(`report`・`last_statement`・`report_exits_with_cases_failed`) | 判定表が共有する、判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category`。PreToolUse フックを流すところからなら `hook_verdict_by_permission`）と報告（`report` / `cases_failed`）と、検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）と、判定表の最後の文の照合（`last_statement` / `report_exits_with_cases_failed`）と、表のケースが 1 件以上走ったかの照合（`report` が数える `cases_reported` と `report_cases_ran`。表をループで回す判定表が使う）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |\n+| `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 一時ディレクトリに置いた小さな検出器で `report_documented_kinds` / `report_covered_kinds` を呼ぶ照合と、`report` 自身を呼ぶ表では、`cases_failed` の立ち方と出力の行が期待どおりかを報告する。表に書いた出力と終了コードで `decide` / `decide_by_permission` / `normalize_miss` を直に呼ぶ表と、それを返すフックのスタブを `hook_verdict_by_permission` で流す表では、返る判定(pass / deny / broken / miss)が期待どおりかを報告する。一時ディレクトリに置いた判定表の木と本物のリポジトリのルートでは、`cases-report.sh` を source する判定表の最後の文が `exit \"$cases_failed\"` かを報告する。`report_cases_ran` を呼ぶ表では、表の中で `report` を 1 回も呼ばない・回す前の件数が数値でないときに NG を出すかと、表の中の NG も走った 1 件に数えるかを報告する。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |\n | `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh`(`place_failing_detector` だけ) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`subagent_call_fields` だけ) | フックの判定表が共有する、ケースの前提の置き方。落ちる検出器のスタブ(`place_failing_detector`)・起動できない python3(`python3_path_prefix`)・本体が同じテストヘルパー(`place_duplicate_helpers`)を、渡されたパスへ置く。サブエージェントの中の呼び出しの入力のフィールド(`subagent_call_fields`)を組む |\n | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `import-rule-violations.py` へ判定表を流し、報告された種別と件数が期待どおりかを報告する。検出器が報告する種別のうち、表の期待に 1 度も出ないものがあっても NG。`scan()` の種別の並びが docstring の一覧と食い違っても NG。検出器をスタブへ差し替えた表では、見出しを出したまま exit 0・exit 0・1 以外で終わる検出器を broken と読むかを報告する。食い違いがあれば exit 1 |\n | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードと報告の見出しで報告する。検出器の種別の並びが docstring の一覧と食い違っても NG。食い違いがあれば exit 1 |",
+          "patchLines": 11,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "7eb15493975a2bf8b2dc65194a11c205c12d296b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-06T14:03:45Z",
+      "subject": "📝 [Doc]: #1269 report_cases_ran まわりのコメント 3 か所を、ミューテーションの実測に合わせる",
+      "body": "- report_cases_ran の doc から「cases_reported は増やさない」を外す\n- import-rule の here-string ループのコメントを直す。読み飛ばさないと「素通りする」ではなく、「report_cases_ran が ok を出し、落ちる理由が空の期待との食い違いとして出る」と書く\n- ran_counted の said_not_ran の理由を直す。壊れた実装を拾うためではなく、「この行自身の判定を正しくする」と書く\n\n背景:\ntest-reviewer が中心の判断を 11 通りに壊したところ、10 通りで RAN_CASES が落ちた。\n落ちなかった 1 通りと、外しても気づけないコメントの主張 2 件が低の指摘として挙がった。\n- report_cases_ran が ok の枝で件数を増やしても、全判定表が緑のままだった\n- import-rule のガードを外して表を空にすると、report_cases_ran は ok を出すが、空行の report の NG で exit 1 になった\n- ran_counted の 2 つ目の条件を消しても、return 0 を消す壊し方は別の行(verdict_of 経由)が拾った\n\n採用理由:\n1 つ目は、守るケースを足すのではなく doc から外した。\n21 組のガードはどれも表の直前で件数を取り直しているので、この約束に依存していない。\n守られていない約束を doc に残すと、読む人がそれを前提にする。\n2 つ目と 3 つ目は、書いてある事実自体は正しかった。ただ、条件を外したときに起きることを読み違えさせる書き方だったので、実測どおりに言い換えた。\n\n影響とトレードオフ:\nコメントだけの変更で、振る舞いは変わらない。cases-report-cases.sh / import-rule-cases.sh と pre-push は exit 0。\n\n代替案:\nRAN_CASES に「report_cases_ran の直後に取った件数で空の表を回すと NG」の行を足す案は採らなかった。\nその使い回しをしている呼び出し側が無く、守る価値が低いため。\n\n参考:\nIssue #1269 のフェーズ 6 の記録(test-reviewer の指摘 1〜3)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -265,7 +265,7 @@ ran_counted() {\n   output=\"$(ran_row \"$@\")\"\n   grep -qx 'ok   表 のケースが走った' <<<\"$output\" && said_ran=true\n   grep -q 'のケースが 1 件も走っていない' <<<\"$output\" && said_not_ran=true\n-  # ok の行を出したあと return せずに NG の行へも落ちる壊れ方を、走ったと読まないため。\n+  # ok と NG の両方を出す出力を、この行が走ったと読まないため。\n   if [ \"$said_ran\" = true ] && [ \"$said_not_ran\" = false ]; then\n     echo \"走った\"\n     return 0",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -121,7 +121,7 @@ report() {\n }\n \n # 表のケースが 1 件以上走ったか（表を回す前より `cases_reported` が増えたか）を 1 行で出す。走っていない・\n-# 回す前の件数が非負整数でなければ `cases_failed` を立てる。`cases_reported` は増やさない。\n+# 回す前の件数が非負整数でなければ `cases_failed` を立てる。\n #\n # 表の行を消す・`read` のフィールドがずれて全行を読み飛ばすと、ループは `report` を 1 回も呼ばずに終わり、\n # 最後の文 `exit \"$cases_failed\"` は 0 のまま通る。",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -198,8 +198,8 @@ CASES\n \n cases_before=$cases_reported\n while IFS='|' read -r expected label files; do\n-  # here-string は変数が空でも空行を 1 行渡すので、読み飛ばさないと表が空でも report が 1 回呼ばれ、\n-  # report_cases_ran が走ったと読む。\n+  # here-string は変数が空でも空行を 1 行渡す。読み飛ばさないと表が空でも report_cases_ran は ok を出し、\n+  # 落ちる理由が「表が空」ではなく空の期待と判定の食い違いとして出る。\n   [ -n \"$label\" ] || continue\n   build_tree\n   place \"$files\"",
+          "patchLines": 11,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/cases-report-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/cases-report-cases.sh",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/block-lint-suppress.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/check-doc-comments.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/check-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/edit-detector.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/lint-suppressions.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".github/scripts/lib/detector-precondition.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".github/scripts/lib/detector-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/components/type-glyph/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/domains/unit/elapsed/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": "docs/01-file-format.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": "rules/coding.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": "src/test-setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": "src/components/context-menu/index.stories.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": "src/features/editor/components/editor-layout/index.stories.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.stories.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/verification-agent-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/skills/pr-explain/templates/explain.json",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": ".github/scripts/build-pr-change-map.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src-tauri/src/lib.rs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/app/App.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/components/button/__tests__/button.normal.test.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/components/button/index.stories.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/components/button/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/services/node-html/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/explain.json",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": "docs/06-ui.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": ".claude/skills/harness-growth/SKILL.md",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    }
+  ]
+}
