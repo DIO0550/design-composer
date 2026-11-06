@@ -30,14 +30,15 @@
 # `パス=読み方:終わり方` の空白区切り（`-` なら何も置かない。読み方と終わり方は `table_sourcing` /
 # `table_ending` の case）。走ったかの照合の表は `期待|ケース名|表の前の report の回数|表の中の report|回す前の件数`
 # の 1 行 1 ケースで、表の中の report は `-`（呼ばない）/ `ok`（期待どおり）/ `NG`（食い違う）、回す前の件数は
-# `取る` / `空`（`ran_row`）。照合の表と `report` の表と最後の文の照合の表と走ったかの照合の表の期待は
-# 2 つ（NG / ok）。走ったかの照合の表だけは 3 つ目の `走った` を持ち、出力に `report_cases_ran` の ok の行が
-# あって NG の行が無いことを見る（表の中の NG で `cases_failed` が立つので、NG / ok では見分けられない）。
+# `取る` / `空`（`ran_row`）。照合の表と `report` の表と最後の文の照合の表の期待は 2 つ（NG / ok）。
+# 走ったかの照合の表は、それに `走った` を加えた 3 つ（表の中の NG で `cases_failed` が立つので、NG / ok では
+# 見分けられない）。
 #
 # | 期待 | 意味 |
 # | --- | --- |
 # | `NG` | NG の行を出し、`cases_failed` を立ててほしい |
 # | `ok` | ok の行だけを出し、`cases_failed` を立ててはいけない |
+# | `走った` | `report_cases_ran` が ok の行を出し、NG の行を出さないでほしい（`cases_failed` は見ない） |
 #
 # 判定の読み取りの表は 4 つ。`decide` の表と `decide_by_permission` の表と `hook_verdict_by_permission` の表は
 # `期待|ケース名|終了コード|出力`、
@@ -260,8 +261,12 @@ ran_row() {
 # $@ `ran_row` の引数
 ran_counted() {
   local output
+  local said_ran=false said_not_ran=false
   output="$(ran_row "$@")"
-  if grep -qx 'ok   表 のケースが走った' <<<"$output" && ! grep -q 'のケースが 1 件も走っていない' <<<"$output"; then
+  grep -qx 'ok   表 のケースが走った' <<<"$output" && said_ran=true
+  grep -q 'のケースが 1 件も走っていない' <<<"$output" && said_not_ran=true
+  # ok の行を出したあと return せずに NG の行へも落ちる壊れ方を、走ったと読まないため。
+  if [ "$said_ran" = true ] && [ "$said_not_ran" = false ]; then
     echo "走った"
     return 0
   fi
