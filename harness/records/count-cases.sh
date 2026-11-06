@@ -187,6 +187,7 @@ window_cases='
 '
 
 printf '%s\n' "窓の数え方"
+cases_before=$cases_reported
 while IFS='|' read -r expected label spec; do
   [ -n "$expected" ] || continue
   build_tree 0 0
@@ -202,6 +203,7 @@ while IFS='|' read -r expected label spec; do
   done
   report "$expected" "$(comment_row)" "$label"
 done <<< "$window_cases"
+report_cases_ran window_cases "$cases_before"
 
 # 旧語彙は読むときに現在の分類へ畳む(count.sh の fold_tag)。対応表の 1 行が落ちると
 # その綴りが畳まれずに残るので、出た分類の集合で見る。1 本の記録に全綴りを置くのは、
@@ -259,6 +261,7 @@ source_cases='
 '
 
 printf '\n%s\n' "出どころの読み分け"
+cases_before=$cases_reported
 while IFS='|' read -r expected label source; do
   [ -n "$expected" ] || continue
   build_tree 0 0
@@ -266,6 +269,7 @@ while IFS='|' read -r expected label source; do
   append_line 10 "- 出どころ: $source"
   report "$expected" "$(comment_counted_as)" "$label"
 done <<< "$source_cases"
+report_cases_ran source_cases "$cases_before"
 
 # 分類の行が `pending` に入り、出どころの行で 1 件として確定する。記録が崩れていても
 # 数えすぎないための境界なので、崩れた形を置いて見る。
@@ -351,12 +355,14 @@ ratchet_cases='
 '
 
 printf '\n%s\n' "--ratchet の終了コード"
+cases_before=$cases_reported
 while IFS='|' read -r expected label loaded_delta skill_delta; do
   [ -n "$expected" ] || continue
   build_tree "$loaded_delta" "$skill_delta"
   run_count --ratchet >/dev/null 2>&1 && status=0 || status=$?
   report "$expected" "$status" "$label"
 done <<< "$ratchet_cases"
+report_cases_ran ratchet_cases "$cases_before"
 
 # --ratchet が出す文言。超過と下回りで直し方が逆なので、終了コードだけでは取り違えを拾えない。
 # 下回りは予算を持つ変数名まで見る。変数名は下回りの文言にしか出ないので、2 つの予算を
@@ -416,6 +422,7 @@ reviewer_source_cases='
 バッククォートの無い レビュー（alpha-reviewer） も 1 本 1 件に数える|- 出どころ: レビュー（alpha-reviewer）
 括弧の中だけバッククォートの レビュー（`alpha-reviewer`） も 1 本 1 件に数える|- 出どころ: レビュー（`alpha-reviewer`）
 '
+cases_before=$cases_reported
 while IFS='|' read -r label line; do
   [ -n "$label" ] || continue
   build_reviewer_tree 10
@@ -423,6 +430,7 @@ while IFS='|' read -r label line; do
   append_line 1 "$line"
   report "1 本 1 件 最後=pr-1 以降=9 1.0 件/本" "$(reviewer_row alpha-reviewer)" "$label"
 done <<< "$reviewer_source_cases"
+report_cases_ran reviewer_source_cases "$cases_before"
 
 # 退役候補は以降が 10 本以上の装置。境界は記録の総数で作る(pr-1 に残して 11 本なら以降 10、
 # 10 本なら以降 9)。「該当なし」の綴りまで比べるのは、候補が無いときに行ごと出さない実装を
