@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1308,
+  "headBranch": "claude/magical-cannon-fr7ibg",
+  "baseBranch": "main",
+  "mergeBase": "51629b155187263a641e9304d4331399ca20c3aa",
+  "head": "5e1d61af7fdc981fb50303765f9dd4966a9767e3",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1307.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 179,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "5e1d61af7fdc981fb50303765f9dd4966a9767e3",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T13:51:43Z",
+      "subject": "📝 [Documentation]: #429 PR #1307 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1307.md を追加（指摘 21 件・手戻り・発火）\n\n背景:\nPR #1307（ぼかしの仕様）がマージされたので、harness-record の手順で評価を残す。\n\n採用理由:\n人のレビューは 0 件（3 つの API とも確認）。指摘はすべてサブエージェント由来と自己修正で、\n1 件 = 1 ブロックで分類した。発火ログは無く、フック不発環境だったので計測対象外と書いた。\n\n影響とトレードオフ:\n差分は harness/records/ の新規 1 ファイルだけ。集計・介入は行わない（harness-growth の管轄）。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NQefeGk3vmVhqyzaG",
+      "files": [
+        {
+          "path": "harness/records/pr-1307.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 179,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,179 @@\n+# PR #1307 ぼかしを Box / Ellipse の生リテラル prop layerBlur / backdropBlur として仕様に書く\n+\n+- マージ日: 2026-11-07\n+- 関連 Issue: #429\n+- 差分規模: 3 ファイル / +30 -6\n+\n+## ゴールと結果\n+\n+ゴールは「ぼかし（layer blur / background blur）をどの形で持つかが docs に書かれ、#373 C8 が『抜け』から更新される。次に実装する人が docs だけで prop 名・値域・既定・対象・CSS への出し方を決められる」。達成した。マージ後に #373 の C8 行を「docs 済・実装 #1306」へ書き換えた。実装は #1306、UI 案の欄は #1305 に分けた（#1306 は #1305 を待つ）。\n+\n+Issue の「先に決めること」（a: shadows を広げる / b: 種別を足す / c: 生リテラル）が未決だったため、着手時に選択肢を Issue に書いて判断待ちで止まった。オーナーが c を選んで再開した。その後フェーズ 4 で未回答の判断が残っていると指摘され、もう一度止まって Q1〜Q6 を仰いだ（オーナーは推奨どおりと回答）。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。コメントは、自分が投稿したテストケース表と bot の投稿（Storybook プレビュー・CI レポート・VRT）だけ。CI は全件緑で、VRT の差分は 0 件だった（209 件 passed）。\n+\n+## 指摘\n+\n+### 1. 回答の無かった判断（両方持つか・対象プリミティブ）を「反転可能な既定」として計画に入れて進めかけた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 1 回目の問いに a / b / c しか回答が無かったのに、残りの 3 問を既定で埋めて計画した。ゴールそのものに当たる判断だったため、PR 前にオーナーへ Q1〜Q6 として確認し直した。`range` を下端だけに広げる判断も、スキーマの記述形式を変えるので独立した問いにした。\n+- 既存ルール: `harness/case-law/planning.md`「plan-open-decision」\n+\n+### 2. ゴールの「#373 C8 を移す」が、この Issue の作業になっていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: C8 の更新を「実装 Issue へ渡すもの」に入れていた。#373 の凡例の「仕様」は「docs が持たないと明記」で今回に当たらないので、「docs 済・実装 #1306」の形でマージ後に親が書き換える手順にした。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 1（ゴール）\n+\n+### 3. 分けた後続 Issue（実装・UI 案）を作る手順が計画に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: フェーズ 2 で「新しい Issue に立てる」と書いたが、起票と順序が計画に無かった。PR 前に #1305 / #1306 を起票し、パネルがスキーマから自動生成されるので実装は UI 案を待つと明記した。\n+- 既存ルール: AGENTS.md「タスクの分割」\n+\n+### 4. artboard の `backdropBlur` を受け付ける理由が成り立っていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: artboard の背後はドキュメントの外なので意味が決まらない。`layerBlur` と分けて判断し直し、`backdropBlur` は読み捨てる側でオーナーに確認した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 5（却下理由の事実を確かめる）\n+\n+### 5. 「2 つは独立」「領域を変えない」が CSS の実際の挙動と食い違っていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 祖先の `filter` / `opacity < 1` で `backdrop-filter` が止まる（Backdrop Root）ので独立ではない。「領域」も箱か描画か読めなかった。「レイアウト・選択枠は変えない。描画は外へにじみ、親のクリップに従う」と特定した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 3（前提を実物で確かめる）\n+\n+### 6. CSS への出し方（範囲外の値・`-webkit-`）を実装 Issue に先送りしていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 範囲外は `opacity` の行と同じく丸めずに出すと決め、`-webkit-` はスコープ外と明記した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3（未決の判断）\n+\n+### 7. `layer` 接頭辞を grep した記録が無かった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `Layers` パネル（＝ノード）と意味が一致することと、素の `blur` が影トークンのフィールドと衝突するので接頭辞を付ける理由を計画に書いた。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 8. 表に足す行の位置（パネルの表示順の根拠）の意図が書かれていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 軽微。`shadow` の直後に置く意図（エフェクトを影の隣にまとめる）を計画に書いた。\n+- 既存ルール: なし\n+\n+### 9. Chrome でしか確かめていない Backdrop Root を仕様の決定として書いた\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 結論は「調整」。背後をどこまで読むかを草案に従うと言い切り、既定 `0` を出さない理由にも使っていた。WebKit 系 webview は未確認。仕様が決めるのは `filter` / `backdrop-filter` として出すまでにし、残りは webview に委ねると書き直した（04-tokens の「この仕様では決めない」の先例）。\n+- 既存ルール: rules/coding.md「外部の挙動は動かして確かめる」\n+\n+### 10. Backdrop Root の条件の列挙が草案の全体のように書かれていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 草案の条件は 7 つあるが、schema が出す 3 つだけを全体のように書いていた。指摘 9 の書き直しで列挙ごと消えた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 11. CSS の出し方が Chrome でしか確かめられていない旨が無かった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 指摘 9 と同じ根で、webview に委ねる書き方にしたことで解消。WebKit の確認は #1306 に残した。\n+- 既存ルール: rules/coding.md「外部の挙動は動かして確かめる」\n+\n+### 12. 同じノードに両方書くと、ぼかした背後の像にも `layerBlur` が掛かることが書かれていなかった\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: Chrome で `filter` が `backdrop-filter` の結果にも掛かることを実測。重なり方は webview に委ねると書いて解消（指摘 9 と同じ束）。\n+- 既存ルール: なし\n+\n+### 13. 「種別を持たない見た目の値（不透明度・ぼかし）」の列挙を 4 か所に書き写していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 02-data-model の 1 か所に寄せ、03-schema:8・04-tokens:3・04-tokens:135 は参照にした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」（同じ判断根拠の doc の重複）\n+\n+### 14. CSS 対応表の `layerBlur` 行が `rotation` / `opacity` 行の理由を書き写していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 「`rotation` の行と同じ理由」「`opacity` の行と同じく丸めない」の参照に置き換え、ぼかし固有の事情（CSS は負の `blur()` を捨てる）だけを残した。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 15. 04-tokens:135 の「ぼかし」が影トークンの「ぼかし」と読み分けにくい\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 低。影トークンの `blur` の欄名が既に「ぼかし」。指摘 13 の直しで 04-tokens:135 から列挙が消えて解消。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 16. artboard で `backdropBlur` を読み捨てる理由の前提が事実と違っていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 中。「背後にドキュメントの中身を持たない」と書いたが、artboard 同士は重なりうる。「背後に何が描かれるか（キャンバスの下地・重なった artboard の描き順）をドキュメントが定めていない」に直した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 17. 透けた artboard の子の `backdropBlur` にもドキュメントの外が入る\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 低。指摘 16 の理由が子にも当てはまる。1 文足した（何が見えるかはこの仕様では決めない）。\n+- 既存ルール: なし\n+\n+### 18. artboard には親が無く、`layerBlur` のにじみを切るものが無い\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 低。「親の `overflow: clip` に従う」が artboard には当てはまらないので 1 文足した。\n+- 既存ルール: なし\n+\n+### 19. 「選択の枠は箱のまま」が、枠の描画もぼけないと読める\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 低。「選択の枠の位置と大きさ」に限った。枠の描画がぼける件は #1306 / #1305 へ。\n+- 既存ルール: なし\n+\n+### 20. ぼかし節が formatVersion を指していない（不採用）\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 低。版の表は読み書きできるようになった時点で足す運用（PR #612）で #1306 の作業に入れてあり、docs に Issue 番号を書くとマージ後に事実でなくなるので採らなかった。Issue に理由を記録した。\n+- 既存ルール: なし\n+\n+### 21. フックが不発の環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が通り、検証エージェントのマーカーも発火ログの見出しも無かった（`.claude/hooks/README.md` の表の 4 行目 = 本当に不発）。`npx` / `git add -A` は未実行、親による repo ファイルの編集なし、commit はすべて implementer の完了後に個別のパスを add した。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる（カナリア）」\n+\n+## 手戻り\n+\n+- 判断待ちで 2 回止まった（着手時の a / b / c、フェーズ 4 後の Q1〜Q6）。2 回目は指摘 1 のとおり、1 回目で残りの問いを既定で埋めたのが原因\n+- フェーズ 4 の 8 件を受けて planner に計画を作り直させた\n+- フェーズ 6 の指摘（束 A〜D）を修正コミット 1 件（`0a20cc5`）で直した\n+- implementer の 1 回目の pre-push は node_modules が無く、検査を飛ばして exit 1 になった。`pnpm install --frozen-lockfile` の後に走らせ直して通った\n+- `test-reviewer` と撮影範囲の確認は、実行されるコードの差分が無いので起動していない\n+- 停止フックの「未 commit / 未 push」の通知が、サブエージェントの実行中とレビュー待ちの間に繰り返し出た。git 操作を待つ手順どおりで、手戻りではない\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録のみ（集計と介入は harness-growth の管轄）。",
+          "patchLines": 180,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
