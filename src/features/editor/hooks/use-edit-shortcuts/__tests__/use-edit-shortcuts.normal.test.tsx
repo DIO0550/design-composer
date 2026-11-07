@@ -126,14 +126,35 @@ test("Ctrl+] を押すと、選んでいるノードが兄弟の並びで前面�
   );
 });
 
-test("→ を押すと、選んでいる絶対配置のノードが右へ 1 ずれる", async () => {
+test("Ctrl+[ を押すと、選んでいるノードが兄弟の並びで背面へ 1 つ動く", async () => {
+  const user = userEvent.setup();
+  const { current } = renderHookOnEditTargets(useEditShortcuts, ["panel"]);
+
+  await user.keyboard("{Control>}[[{/Control}");
+
+  expect(childPositionNamed(current().editor.state, "panel")).toEqual(
+    Option.some({ parentName: "home", index: 1 }),
+  );
+});
+
+test("→ を押すと、選んでいる絶対配置のノードが右へ 1 ずれ、上下には動かない", async () => {
   const user = userEvent.setup();
   const { current } = renderHookOnEditTargets(useEditShortcuts, ["footer"]);
 
   await user.keyboard("{ArrowRight}");
 
   const footer = nodeNamed(current().editor.state, "footer");
-  expect(Node.writtenPropsOf(footer).x).toBe(41);
+  expect(Node.writtenPropsOf(footer)).toMatchObject({ x: 41, y: 24 });
+});
+
+test("↓ を押すと、選んでいる絶対配置のノードが下へ 1 ずれ、左右には動かない", async () => {
+  const user = userEvent.setup();
+  const { current } = renderHookOnEditTargets(useEditShortcuts, ["footer"]);
+
+  await user.keyboard("{ArrowDown}");
+
+  const footer = nodeNamed(current().editor.state, "footer");
+  expect(Node.writtenPropsOf(footer)).toMatchObject({ x: 40, y: 25 });
 });
 
 test("Ctrl+R を押すと、選んでいるものの名前の編集に入る", async () => {

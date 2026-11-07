@@ -2,6 +2,7 @@ import { act } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { documentWithThreeArtboards } from "@/features/editor/__tests__/artboard-fixtures";
+import { selectedNames } from "@/features/editor/__tests__/editor-state-reads";
 import {
   type RenderedHookInEditor,
   renderHookInEditor,
@@ -37,14 +38,26 @@ test("add は、artboard の並びの末尾に 1 枚足す", () => {
   });
 });
 
+test("add は、足した artboard を選ぶ", () => {
+  const { current } = setup();
+
+  act(() => current().hook.add());
+
+  const { state } = current().editor;
+  const added = DesignDocument.collectArtboardNames(
+    EditorState.document(state),
+  ).slice(3);
+  expect(selectedNames(state)).toEqual(added);
+});
+
 test("reorder は、並びの中の 1 枚を指した位置へ移す", () => {
   const { current } = setup();
 
-  act(() => current().hook.reorder({ fromIndex: 0, toIndex: 2 }));
+  act(() => current().hook.reorder({ fromIndex: 2, toIndex: 0 }));
 
   expect(
     DesignDocument.collectArtboardNames(
       EditorState.document(current().editor.state),
     ),
-  ).toEqual(["settings", "about", "home"]);
+  ).toEqual(["about", "home", "settings"]);
 });

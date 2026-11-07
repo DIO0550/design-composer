@@ -84,12 +84,12 @@ test("selectAt は、ポインタの下にあるもののうち、掘る量で�
     current().hook.selectAt(
       UnderPointer.create(
         ["panel-label", "panel", "home"],
-        SelectionDigs.NoDeeper,
+        SelectionDigs.Deepest,
       ),
     ),
   );
 
-  expect(selectedNames(current().editor.state)).toEqual(["panel"]);
+  expect(selectedNames(current().editor.state)).toEqual(["panel-label"]);
 });
 
 test("selectInRange は、範囲に重なったものをまとめて選ぶ", () => {

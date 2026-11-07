@@ -20,10 +20,10 @@ import { useNodeActions } from "../index";
 test("reorder は、指した位置の子を同じ親の中の別の index へ移す", () => {
   const { current } = renderHookOnEditTargets(useNodeActions, []);
 
-  act(() => current().hook.reorder({ parentName: "home", index: 0 }, 2));
+  act(() => current().hook.reorder({ parentName: "home", index: 2 }, 0));
 
-  expect(childPositionNamed(current().editor.state, "title")).toEqual(
-    Option.some({ parentName: "home", index: 2 }),
+  expect(childPositionNamed(current().editor.state, "panel")).toEqual(
+    Option.some({ parentName: "home", index: 0 }),
   );
 });
 
