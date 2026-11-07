@@ -1,0 +1,270 @@
+{
+  "version": 2,
+  "pr": 1303,
+  "headBranch": "claude/magical-cannon-4uhpp1",
+  "baseBranch": "main",
+  "mergeBase": "360323ff21e2c2038ecb9a89d75630e8aa4accbc",
+  "head": "8508866d93e6ba9a790d699ea2126e6958705d57",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/file-drop/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/tauri-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/__tests__/file-drop.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/__tests__/file-drop.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ObjectEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "app",
+      "files": [
+        {
+          "path": "src/app/App.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/05-architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "f55689f5d1209aa40bba95ce4f1dfcfa755a9ad0",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T05:26:36Z",
+      "subject": "📝 [Documentation]: #1291 UTF-8 で表せないパスをドロップから黙って除くことを 06-ui / 05-architecture に書く",
+      "body": "- 06-ui「開く / 新規作成の導線」に、UTF-8 で表せないパスは開く対象に数えず\n  理由も出さない、という子の箇条を足した\n- 同じ節の「パスが正しくありません」の箇条の除外を「上の 2 つ」に直した\n- 括弧の理由「二度と開けないため」を、`/` だけのパスを除く文のそばへ移した\n- 05-architecture の `document-dropped` の行に、UTF-8 で表せないパスは\n  並びに入らないことを足し、理由は 06-ui を参照させた\n\n背景:\nRust の accept_dropped は UTF-8 で表せないパスを知らせの前に落とす\n(テスト utf8で表せないパスは知らせから落とす)。一方 06-ui が黙って除くと\n書いていたのはファイル名の要素を持たないパスだけで、05 の document-dropped\nの行にも無かった。#1157 の計画で見つかり、スコープ外として切り出した。\n\n採用理由:\n挙動は変えず、今の挙動を仕様として書く(オーナーの判断で A 案)。\ndocument-dropped のペイロードは文字列の並びで、UTF-8 で表せないパスを\n損なわずに載せる綴りが無い。黙る理由はそこにあるので、06-ui 49 行目\n「黙って除くと何を受け付けなかったか分からない」の原則に対する例外として、\nその理由を子の箇条に書いた。\n\n影響とトレードオフ:\nダイアログで選んだときは invalidPath で理由が出るのに対し、ドロップでは\n黙る。導線によって扱いが割れることを受け入れ、その旨を箇条に明記した。\nUTF-8 で表せない名前は macOS では作れず、影響は Windows の対になって\nいないサロゲート・Linux の任意バイト列に限られる。\n\n代替案:\n- 理由を出す挙動に変える(B): to_string_lossy で載せると記録に載ったうえで\n  notFound になるか、置き換え文字を含む別のファイルを開く。成り立たせるには\n  ペイロードの形から変える必要があり、コストが釣り合わないため却下\n- 48 行目の除外条件に UTF-8 を並べ「二度と開けないため」を共有させる:\n  49 行目が同じく二度と開けない .txt にも理由を出すと決めており、\n  黙る理由にならないため却下\n- 05 の 48 行目(ダイアログ)にもドロップとの違いを書く: 06-ui と二重になる\n  ため却下\n\n参考:\n- Issue #1291 の計画・却下案のコメント\n- src-tauri/src/document/file_drop.rs の accept_dropped\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RWBPnhQZ2TPhVuDh6",
+      "files": [
+        {
+          "path": "docs/05-architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -42,7 +42,7 @@ Rust に .dcmp の構造を一切教えず、IPC を渡るのは**常に生の J\n | command | `close_current_window()` | 呼び出し元のウィンドウを閉じる |\n | event | `document-changed` | 外部変更の通知（Rust → JS） |\n | event | `document-menu` | OS のメニューで選ばれた項目（`open` / `create` / `close-tab`）の通知（Rust → JS） |\n-| event | `document-dropped` | ウィンドウへ落とされたファイルの通知（Rust → JS）。選ばれたファイルの記録へ載せたものは寄せた綴りで、載せられなかったものは落とされた綴りのまま並ぶ |\n+| event | `document-dropped` | ウィンドウへ落とされたファイルの通知（Rust → JS）。選ばれたファイルの記録へ載せたものは寄せた綴りで、載せられなかったものは落とされた綴りのまま並ぶ。UTF-8 で表せないパスは並びに入らない（06-ui「開く / 新規作成の導線」） |\n \n - ファイルを開く / 保存先を決めるダイアログは Tauri 標準プラグインを **Rust から**出す。webview にはダイアログの権限を与えない（選ばれたパスを webview を経由せずに記録へ載せるため）\n - `.dcmp` 以外を選んだとき・選ばれたパスを UTF-8 で表せないときは、選ぶコマンドが `invalidPath` を返す",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "patch": "@@ -45,8 +45,9 @@ Figma 型の3ペイン。\n \n ドキュメントを開いている間は、開始画面が消えるので **OS のメニュー**（ここでは macOS の綴りで書く。⌘O / ⌘N。タブを閉じる ⌘W も同じメニューにある）とウィンドウへのファイルのドロップが導線になる。上端のバーには置かない。\n \n-- **複数のファイルを一度に落とせる。** 落とした数だけ開く。ただしファイル名の要素を持たないパス（`/` だけなど）は開く対象に数えず、理由も出さない。1 件も残らなければ何も起きない（一時的ではなく、二度と開けないため）\n-  - **「パスが正しくありません」になるもの**（05-architecture「Tauri IPC」の `invalidPath`。`.dcmp` 以外など）**は、上のファイル名の要素を持たないものを除き、開く対象に数えて理由を出す。** 黙って除くと、落としたのに何も起きず、何を受け付けなかったのかが分からないため\n+- **複数のファイルを一度に落とせる。** 落とした数だけ開く。ただしファイル名の要素を持たないパス（`/` だけなど）は開く対象に数えず、理由も出さない（一時的ではなく、二度と開けないため）。下の UTF-8 で表せないパスも同じく数えず、1 件も残らなければ何も起きない\n+  - **UTF-8 で表せないパスは、開く対象に数えず理由も出さない。** ドロップの知らせ（05-architecture「Tauri IPC」の `document-dropped`）はパスを文字列で運ぶので、損なわずに載せる綴りが無く、知らせに含められないため（置き換え文字で載せると、無いファイルか別のファイルを指す綴りになる）。`開く` のダイアログで選んだときは「パスが正しくありません」になり（同じく `invalidPath`）、導線によって扱いが分かれる\n+  - **「パスが正しくありません」になるもの**（05-architecture「Tauri IPC」の `invalidPath`。`.dcmp` 以外など）**は、上の 2 つ（ファイル名の要素を持たないもの・UTF-8 で表せないもの）を除き、開く対象に数えて理由を出す。** 黙って除くと、落としたのに何も起きず、何を受け付けなかったのかが分からないため\n   - **落としたファイルが「このファイルはまだこのアプリで選ばれていません」で拒まれることは無い。** 選ばれたファイルの記録へ載せられるもの（寄せた綴りが 05-architecture「Tauri IPC」の条件を満たすもの）は、開く前に記録へ載る（05-architecture「選ばれたファイルの記録」）。知らせに入ったもののうち、記録へ載せられないものは上の「パスが正しくありません」になる\n \n ## 絞り込み",
+          "patchLines": 12,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "18b56a4363ec4ac962cfba2087d6bb65b5a0e200",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T05:26:36Z",
+      "subject": "📝 [Documentation]: #1291 FileDrop の doc に UTF-8 で表せないパスは届かないことを足す",
+      "body": "- src/libs/file-drop/index.ts の FileDrop の doc に「UTF-8 で表せないパスは\n  Rust が知らせから落とすので届かない」を独立した 1 文で足した\n\n背景:\ndoc の「それ以外は落とされた綴りのまま届く」の「それ以外」が、\nUTF-8 で表せないパスまで含むように読めた。\n\n採用理由:\nコメントは実装と一致させる(rules/coding.md)。括弧で「それ以外」に\n挟まず独立した文にしたのは、TS が落とす条件(ファイル名の要素)と\nRust が落とす条件を同じ段落で区別できるようにするため(plan-reviewer の提案)。\n\n影響とトレードオフ:\ndoc コメントのみで挙動は変わらない。doc は元から 3 文あり、1〜2 文の目安を\n超えたままになる。\n\n代替案:\n- 45 行目に括弧で「(UTF-8 で表せないものを除く)」を挟む: どちらが落とすのかが\n  読みにくくなるため却下\n\n参考:\n- docs/05-architecture.md の document-dropped の行\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RWBPnhQZ2TPhVuDh6",
+      "files": [
+        {
+          "path": "src/libs/file-drop/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -43,6 +43,7 @@ function toDroppedPaths(payload: unknown): Option<readonly FilePath[]> {\n  * ウィンドウへのファイルのドロップ（docs/05-architecture.md「Tauri IPC」）。配るのは落\n  * とされたパスのうちファイル名の要素を持つものの並びだけで、開けるファイルかどうかは見ない。\n  * `.dcmp` として受け付けられたものは Rust が寄せた綴りで、それ以外は落とされた綴りのまま届く。\n+ * UTF-8 で表せないパスは Rust が知らせから落とすので届かない。\n  *\n  * ドロップを OS 側で受けるので、Windows では webview の HTML5 ドラッグ & ドロップが使え\n  * ない（今のところ使っている箇所は無い）。",
+          "patchLines": 8,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "448142bc862c02fbbadbe6f439ae9f04d2691ea5",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T05:33:44Z",
+      "subject": "📝 [Documentation]: #1291 06-ui の UTF-8 の箇条に件数も運ばない理由を足し、除外の写しを減らす",
+      "body": "- UTF-8 で表せないパスの箇条に「件数だけを別に運んで理由を出す形も取らない」\n  ことと、その理由(macOS では作れず、知らせの形を変えるほどには起きない)を足した\n- 「パスが正しくありません」の箇条の除外を、括弧の列挙を消して\n  「上の 2 つを除き」だけにした\n\n背景:\nフェーズ 6 のレビューで 2 件の指摘を受けた。\n1 件目: 足した理由は「パスを損なわずに載せられない」ことまでしか言っておらず、\n「理由も出さない」ことの根拠になっていなかった。件数を別に運べば理由は出せる。\n2 件目: UTF-8 で表せないパスを数えないことを、同じ節の 48〜50 行目で 3 回書いていた。\n\n採用理由:\n件数を運ぶ形を取らない理由を書かないと、次の 50 行目の原則\n「黙って除くと何を受け付けなかったか分からない」と矛盾して読める。\nまた「原理的に無理」とも読まれる。\n除外の列挙は 49 行目の箇条と二重になり、片方だけを直せる状態になるので\n参照だけにした。48 行目の「下の UTF-8 で表せないパスも同じく数えず」は残した。\n「1 件も残らなければ何も起きない」がどの除外の後に数えるのかを示すのに要るため。\n\n影響とトレードオフ:\ndocs のみで挙動は変わらない。macOS の事実は file_drop_normal_test.rs の\nコメントと同じで、一時的な事実ではない。\n\n代替案:\n- 理由を書かずに今のまま残す: 50 行目の原則と食い違って読めるため却下\n- 括弧に経緯(Issue 番号)を書く: 仕様書に経緯が入るため却下。\n  理由の文として書いた\n- 48 行目の写しも消す: 「1 件も残らなければ」の数え方が読めなくなるため却下\n\n参考:\n- Issue #1291 のフェーズ 6 のコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RWBPnhQZ2TPhVuDh6",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -46,8 +46,8 @@ Figma 型の3ペイン。\n ドキュメントを開いている間は、開始画面が消えるので **OS のメニュー**（ここでは macOS の綴りで書く。⌘O / ⌘N。タブを閉じる ⌘W も同じメニューにある）とウィンドウへのファイルのドロップが導線になる。上端のバーには置かない。\n \n - **複数のファイルを一度に落とせる。** 落とした数だけ開く。ただしファイル名の要素を持たないパス（`/` だけなど）は開く対象に数えず、理由も出さない（一時的ではなく、二度と開けないため）。下の UTF-8 で表せないパスも同じく数えず、1 件も残らなければ何も起きない\n-  - **UTF-8 で表せないパスは、開く対象に数えず理由も出さない。** ドロップの知らせ（05-architecture「Tauri IPC」の `document-dropped`）はパスを文字列で運ぶので、損なわずに載せる綴りが無く、知らせに含められないため（置き換え文字で載せると、無いファイルか別のファイルを指す綴りになる）。`開く` のダイアログで選んだときは「パスが正しくありません」になり（同じく `invalidPath`）、導線によって扱いが分かれる\n-  - **「パスが正しくありません」になるもの**（05-architecture「Tauri IPC」の `invalidPath`。`.dcmp` 以外など）**は、上の 2 つ（ファイル名の要素を持たないもの・UTF-8 で表せないもの）を除き、開く対象に数えて理由を出す。** 黙って除くと、落としたのに何も起きず、何を受け付けなかったのかが分からないため\n+  - **UTF-8 で表せないパスは、開く対象に数えず理由も出さない。** ドロップの知らせ（05-architecture「Tauri IPC」の `document-dropped`）はパスを文字列で運ぶので、損なわずに載せる綴りが無く、知らせに含められないため（置き換え文字で載せると、無いファイルか別のファイルを指す綴りになる）。件数だけを別に運んで理由を出す形も取らない。UTF-8 で表せない名前は macOS では作れず、知らせの形を変えるほどには起きないため。`開く` のダイアログで選んだときは「パスが正しくありません」になり（同じく `invalidPath`）、導線によって扱いが分かれる\n+  - **「パスが正しくありません」になるもの**（05-architecture「Tauri IPC」の `invalidPath`。`.dcmp` 以外など）**は、上の 2 つを除き、開く対象に数えて理由を出す。** 黙って除くと、落としたのに何も起きず、何を受け付けなかったのかが分からないため\n   - **落としたファイルが「このファイルはまだこのアプリで選ばれていません」で拒まれることは無い。** 選ばれたファイルの記録へ載せられるもの（寄せた綴りが 05-architecture「Tauri IPC」の条件を満たすもの）は、開く前に記録へ載る（05-architecture「選ばれたファイルの記録」）。知らせに入ったもののうち、記録へ載せられないものは上の「パスが正しくありません」になる\n \n ## 絞り込み",
+          "patchLines": 11,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "8508866d93e6ba9a790d699ea2126e6958705d57",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T05:33:44Z",
+      "subject": "📝 [Documentation]: #1291 FileDrop の doc で「落とす」をドロップの意味だけに使う",
+      "body": "- 足した 1 文「Rust が知らせから落とす」を「Rust が知らせに含めない」に直した\n\n背景:\n同じ doc の直前の文は「落とされたパス」「落とされた綴り」を、利用者がドロップした\n意味で使っている。足した文の「落とす」だけが、並びから除く意味になっていた\n(naming のレビュー指摘)。\n\n採用理由:\n同じ段落で 1 つの語が 2 つの意味を持つと、読み違えうる。\n06-ui の「知らせに含められない」と語を揃えた。\n\n影響とトレードオフ:\ndoc コメントのみで、挙動は変わらない。\n\n代替案:\n- 「知らせから除く」: 06-ui の語と揃わないため、「含めない」を選んだ\n\n参考:\n- Issue #1291 のフェーズ 6 のコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RWBPnhQZ2TPhVuDh6",
+      "files": [
+        {
+          "path": "src/libs/file-drop/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -43,7 +43,7 @@ function toDroppedPaths(payload: unknown): Option<readonly FilePath[]> {\n  * ウィンドウへのファイルのドロップ（docs/05-architecture.md「Tauri IPC」）。配るのは落\n  * とされたパスのうちファイル名の要素を持つものの並びだけで、開けるファイルかどうかは見ない。\n  * `.dcmp` として受け付けられたものは Rust が寄せた綴りで、それ以外は落とされた綴りのまま届く。\n- * UTF-8 で表せないパスは Rust が知らせから落とすので届かない。\n+ * UTF-8 で表せないパスは Rust が知らせに含めないので届かない。\n  *\n  * ドロップを OS 側で受けるので、Windows では webview の HTML5 ドラッグ & ドロップが使え\n  * ない（今のところ使っている箇所は無い）。",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": "docs/06-ui.md",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/App.tsx",
+      "to": "src/libs/file-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/file-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/__tests__/file-drop.edge.test.ts",
+      "to": "src/libs/file-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/__tests__/file-drop.normal.test.ts",
+      "to": "src/libs/file-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/fake/index.ts",
+      "to": "src/libs/file-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/utils/ObjectEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/file-drop/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    }
+  ]
+}
