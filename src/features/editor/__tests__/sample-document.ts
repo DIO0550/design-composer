@@ -184,3 +184,43 @@ export const DocumentWithCardComponent = DesignDocument.create({
     },
   ],
 });
+
+/**
+ * 編集操作の行き先を見分けるためのドキュメント。部品 `card`（Box > Text の `card-label`）を
+ * 持ち、`home` の直下に次の順で並ぶ。
+ *
+ * - `title`: Text（文言「見出し」）
+ * - `footer`: 絶対配置の Text（x 40 / y 24）
+ * - `panel`: Box（子に Text の `panel-label`）
+ * - `home-card` / `other-card`: どちらも `card` のインスタンス
+ */
+export const DocumentWithEditTargets = DesignDocument.create({
+  components: {
+    card: {
+      type: "Box",
+      children: [{ name: "card-label", type: "Text" }],
+    },
+  },
+  artboards: [
+    {
+      name: "home",
+      width: 375,
+      height: 812,
+      children: [
+        { name: "title", type: "Text", props: { content: "見出し" } },
+        {
+          name: "footer",
+          type: "Text",
+          props: { placement: "absolute", x: 40, y: 24 },
+        },
+        {
+          name: "panel",
+          type: "Box",
+          children: [{ name: "panel-label", type: "Text" }],
+        },
+        { name: "home-card", ref: "card" },
+        { name: "other-card", ref: "card" },
+      ],
+    },
+  ],
+});
