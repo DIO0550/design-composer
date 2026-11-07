@@ -92,7 +92,8 @@ export function useTextEdit(
   /*
    * 確定の書き込み先は選択中のもの（受け取った `onEditProp` の先）。編集中は入力欄が
    * フォーカスを持っており、ほかを選ぶ操作は必ずフォーカスを外す = 先に確定するため、
-   * 別のものを選んだまま下書きが残ることはない。
+   * 別のものを選んだまま下書きが残ることはない。キャンバスで押した時点で選ぶ経路は、枠が
+   * 選ぶ前にフォーカスを取る（`ArtboardFrame` の `onPointerDown`）。
    */
   const commit = () => {
     if (!Option.isSome(edit)) {

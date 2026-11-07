@@ -62,6 +62,7 @@ export function WithCanvasControls({
     view: CanvasView.create(),
     onMove: () => {},
     onInsertAt: () => {},
+    onSelectGrabbed: () => {},
     onReposition: () => {},
   });
   const nodeResize = useNodeResize({

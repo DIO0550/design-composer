@@ -30,6 +30,7 @@ function CanvasWithView(
     view: canvasView.view,
     onMove: () => {},
     onInsertAt: () => {},
+    onSelectGrabbed: () => {},
     onReposition: () => {},
   });
   return (

@@ -9,7 +9,12 @@ import {
   SampleDocumentWithDanglingToken,
   SampleDocumentWithSameComponentInstances,
 } from "@/features/editor/__tests__/sample-document";
-import { renderedElement } from "@/features/editor/features/canvas/__tests__";
+import {
+  canvasSurface,
+  drag,
+  renderedElement,
+  stubBounds,
+} from "@/features/editor/features/canvas/__tests__";
 import {
   type LeftPaneView,
   LeftPaneViewLabels,
@@ -171,6 +176,21 @@ export function canvasPane(): HTMLElement {
 /** キャンバスに描かれている、名前で指した要素。 */
 export function drawn(name: string): HTMLElement {
   return renderedElement(canvasPane(), name);
+}
+
+/**
+ * キャンバスに描かれた 2 つのノードを上下に並べて測らせ、両方を囲む範囲を空き領域から引く。
+ *
+ * @param upper 範囲の上側に置くノードの名前
+ * @param lower 範囲の下側に置くノードの名前
+ */
+export function dragRangeAround({
+  upper,
+  lower,
+}: Readonly<{ upper: string; lower: string }>): void {
+  stubBounds(drawn(upper), { left: 140, top: 84, width: 60, height: 20 });
+  stubBounds(drawn(lower), { left: 140, top: 120, width: 80, height: 24 });
+  drag(canvasSurface(), { from: { x: 60, y: 40 }, to: { x: 260, y: 200 } });
 }
 
 /**

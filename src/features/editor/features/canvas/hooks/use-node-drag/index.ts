@@ -485,7 +485,9 @@ export type NodeDragControl = Readonly<{
   carriedTemplate: Option<NodeTemplate>;
   /**
    * 押された位置にある既存ノードのうち、同じ押し方のクリックが選ぶものを掴む
-   * （`DocumentSelection.nodeNameAt`）。
+   * （`DocumentSelection.nodeNameAt`）。掴めたら、掴んだものを選ぶ（`onSelectGrabbed`）。
+   * 編集中の入力欄を選び直す前のものへ確定させるには、呼ぶ前に呼び出し側がフォーカスを移し
+   * ておく（`ArtboardFrame` の `onPointerDown`）。
    *
    * **artboard の背景を押したときに `false` を返すことに、キャンバスの掴み分けが載ってい
    * る**（`ArtboardFrame` の `onPointerDown`）。掴めるようにすると、背景から範囲選択を
@@ -519,8 +521,9 @@ export type NodeDragControl = Readonly<{
  * 渡さない、Alt / Option なら距離を測る）だけで、落ちる先・書く座標・寄せ量と線は
  * `node-drop` / `node-drag` / `reposition-target` / `reposition-lines` が決める。
  *
- * @param params 掴むものと落とし先を決める `selection` / `view` と、確定したときに呼ぶ
- *   `onMove` / `onInsertAt` / `onReposition`
+ * @param params 掴むものと落とし先を決める `selection` / `view` と、既存ノードを掴んだ時点で
+ *   そのノードを選ぶ `onSelectGrabbed`、確定したときに呼ぶ `onMove` / `onInsertAt` /
+ *   `onReposition`
  * @returns 今のドラッグの状態と、画面の要素へ渡すハンドラ
  */
 export function useNodeDrag(
@@ -530,6 +533,7 @@ export function useNodeDrag(
     onMove: (name: string, to: ChildPosition) => void;
     onInsertAt: (template: NodeTemplate, at: ChildPosition) => void;
     onReposition: RepositionNode;
+    onSelectGrabbed: (name: string) => void;
   }>,
 ): NodeDragControl {
   const [drag, dispatch] = useReducer(
@@ -546,6 +550,7 @@ export function useNodeDrag(
     if (!Option.isSome(name)) {
       return false;
     }
+    params.onSelectGrabbed(name.value);
     dispatch({
       type: "grab",
       grab: {

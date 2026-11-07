@@ -120,6 +120,7 @@ function EditorPanes({
     onMove: node.move,
     onReposition: node.reposition,
     onInsertAt: node.insertAt,
+    onSelectGrabbed: node.select,
   });
   /*
    * 収めるズームの 2 本は `useEditShortcuts` へは寄せない。あちらが張るのはドキュメント

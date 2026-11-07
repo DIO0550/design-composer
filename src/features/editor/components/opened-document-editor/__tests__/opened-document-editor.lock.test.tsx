@@ -10,14 +10,13 @@ import {
 } from "@/domains/dcmp/design-document";
 import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading";
 import {
-  canvasSurface,
   drag,
   hasNoTextInlineEditorField,
   renderedElement,
-  stubBounds,
 } from "@/features/editor/features/canvas/__tests__";
 import {
   canvasPane,
+  dragRangeAround,
   drawn,
   renderOpenedDocument,
   selectInTree,
@@ -116,20 +115,8 @@ test("キャンバスで範囲を引くと、範囲に入ったロック中の�
    * ように、2 つの答えが割れる入力（範囲にロック中とロックしていないノードを並べる）にする。
    */
   await renderOpenedDocument(setupDocument());
-  stubBounds(drawn("home-title"), {
-    left: 140,
-    top: 84,
-    width: 60,
-    height: 20,
-  });
-  stubBounds(drawn("home-panel"), {
-    left: 140,
-    top: 120,
-    width: 80,
-    height: 24,
-  });
 
-  drag(canvasSurface(), { from: { x: 60, y: 40 }, to: { x: 260, y: 200 } });
+  dragRangeAround({ upper: "home-title", lower: "home-panel" });
 
   expect(currentRowNames(tree())).toEqual(["home-panel"]);
 });

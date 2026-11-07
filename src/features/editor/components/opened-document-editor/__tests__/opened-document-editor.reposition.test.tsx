@@ -156,13 +156,15 @@ test("キャンバスで掴んだノードを左ペインの上で離しても�
    *
    * `userEvent.click` を使わないのは、あれが自前の `pointerup` を伴い、それが器の `release`
    * を通って飲み込む状態を先に消してしまうため。
+   *
+   * 押した時点で `home-badge` が選ばれるので、`click` が漏れれば `home-title` に変わる。
    */
   pressPointer(drawn("home-badge"), { x: 100, y: 100 });
   movePointer(leftPane(), { x: 70, y: 112 });
   releasePointer(leftPane(), { x: 70, y: 112 });
   fireEvent.click(drawn("home-title"));
 
-  expect(within(propertyPane()).getByText("home-panel")).toBeDefined();
+  expect(within(propertyPane()).getByText("home-badge")).toBeDefined();
 });
 
 test("同じ親の中で運んだときは、包んでいる artboard が変わらない", async () => {

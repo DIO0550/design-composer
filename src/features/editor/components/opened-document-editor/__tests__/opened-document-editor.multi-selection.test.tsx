@@ -5,7 +5,6 @@ import { currentRowNames, rowNames } from "@/components/__tests__/row-names";
 import { SampleDocumentWithSameComponentInstances } from "@/features/editor/__tests__/sample-document";
 import {
   canvasSurface,
-  drag,
   highlightedNames,
   movePointer,
   pressPointer,
@@ -13,6 +12,7 @@ import {
 } from "@/features/editor/features/canvas/__tests__";
 import {
   canvasPane,
+  dragRangeAround,
   drawn,
   propertyPane,
   renderOpenedDocument,
@@ -118,18 +118,6 @@ test("キャンバスの空き領域から範囲を引くと、範囲に入っ�
    * どこかが切れていれば範囲を引いても選択が変わらない。
    */
   await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
-  stubBounds(drawn("home-title"), {
-    left: 140,
-    top: 84,
-    width: 60,
-    height: 20,
-  });
-  stubBounds(drawn("home-login"), {
-    left: 140,
-    top: 120,
-    width: 80,
-    height: 24,
-  });
   // 3 つ目（`home-signup`）は範囲の外に置き、選びすぎても落ちるようにする
   stubBounds(drawn("home-signup"), {
     left: 140,
@@ -138,7 +126,7 @@ test("キャンバスの空き領域から範囲を引くと、範囲に入っ�
     height: 24,
   });
 
-  drag(canvasSurface(), { from: { x: 60, y: 40 }, to: { x: 260, y: 200 } });
+  dragRangeAround({ upper: "home-title", lower: "home-login" });
 
   expect(currentRowNames(tree())).toEqual(["home-title", "home-login"]);
 });
@@ -170,20 +158,8 @@ test("範囲を引いている間、離す前からツリーの選択行が追�
 
 test("範囲を引いてまとめて選ぶと右ペインが選択数に切り替わる", async () => {
   await renderOpenedDocument(SampleDocumentWithSameComponentInstances);
-  stubBounds(drawn("home-title"), {
-    left: 140,
-    top: 84,
-    width: 60,
-    height: 20,
-  });
-  stubBounds(drawn("home-login"), {
-    left: 140,
-    top: 120,
-    width: 80,
-    height: 24,
-  });
 
-  drag(canvasSurface(), { from: { x: 60, y: 40 }, to: { x: 260, y: 200 } });
+  dragRangeAround({ upper: "home-title", lower: "home-login" });
 
   expect(
     within(propertyPane()).getByRole("heading", { name: "2 selected" }),
