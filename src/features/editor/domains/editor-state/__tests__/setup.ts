@@ -3,7 +3,6 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import type { Node } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -142,19 +141,6 @@ export const InstanceNames = [
   "home-login",
   "home",
 ] as const;
-
-/**
- * 名前で引いたノード。見つからなければテストを落とす。
- *
- * @param state 引き先のエディタの状態
- * @param name 引きたいノードの名前
- * @returns そのノード
- */
-export function nodeNamed(state: EditorState, name: string): Node {
-  return Option.unwrap(
-    DesignDocument.findNode(EditorState.document(state), name),
-  );
-}
 
 /**
  * 名前で指した親の子の並び。artboard もノードも「子を持つもの」として同じに見る。

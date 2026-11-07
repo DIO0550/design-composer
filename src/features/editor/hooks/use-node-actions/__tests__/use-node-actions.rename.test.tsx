@@ -1,10 +1,13 @@
 import { act } from "@testing-library/react";
 import { expect, test } from "vitest";
-import { DesignDocument } from "@/domains/dcmp/design-document";
-import { DocumentSelection } from "@/domains/session/document-selection";
+import {
+  childPositionNamed,
+  selectedNames,
+} from "@/features/editor/__tests__/editor-state-reads";
+import { renderHookOnEditTargets } from "@/features/editor/__tests__/hook-in-editor";
 import { EditorState } from "@/features/editor/domains/editor-state";
 import { Option } from "@/utils/Option";
-import { setup } from "./setup";
+import { useNodeActions } from "../index";
 
 /*
  * 行のダブルクリックと名前の入力欄から届く名前の編集が、確定・取り消しのそれぞれへ届くことを
@@ -12,7 +15,7 @@ import { setup } from "./setup";
  */
 
 test("startRenamingAt は、指したものを選んでその名前の編集に入る", () => {
-  const { current } = setup(["title"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["title"]);
 
   act(() => current().hook.startRenamingAt("panel"));
 
@@ -22,21 +25,18 @@ test("startRenamingAt は、指したものを選んでその名前の編集に�
 });
 
 test("rename は、編集中のものの名前を打った名前にする", () => {
-  const { current } = setup(["title"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["title"]);
   act(() => current().editor.dispatch({ type: "start_renaming" }));
 
   act(() => current().hook.rename("heading"));
 
-  expect(
-    DesignDocument.findChildPosition(
-      EditorState.document(current().editor.state),
-      "heading",
-    ),
-  ).toEqual(Option.some({ parentName: "home", index: 0 }));
+  expect(childPositionNamed(current().editor.state, "heading")).toEqual(
+    Option.some({ parentName: "home", index: 0 }),
+  );
 });
 
 test("rename で使えない名前を打つと、編集は閉じない", () => {
-  const { current } = setup(["title"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["title"]);
   act(() => current().editor.dispatch({ type: "start_renaming" }));
 
   act(() => current().hook.rename("panel"));
@@ -47,21 +47,18 @@ test("rename で使えない名前を打つと、編集は閉じない", () => {
 });
 
 test("finishRenaming は、使える名前なら編集中のものの名前をその名前にする", () => {
-  const { current } = setup(["title"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["title"]);
   act(() => current().editor.dispatch({ type: "start_renaming" }));
 
   act(() => current().hook.finishRenaming("heading"));
 
-  expect(
-    DesignDocument.findChildPosition(
-      EditorState.document(current().editor.state),
-      "heading",
-    ),
-  ).toEqual(Option.some({ parentName: "home", index: 0 }));
+  expect(childPositionNamed(current().editor.state, "heading")).toEqual(
+    Option.some({ parentName: "home", index: 0 }),
+  );
 });
 
 test("finishRenaming で使えない名前を渡すと、取り消して編集を閉じる", () => {
-  const { current } = setup(["title"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["title"]);
   act(() => current().editor.dispatch({ type: "start_renaming" }));
 
   act(() => current().hook.finishRenaming("panel"));
@@ -70,7 +67,7 @@ test("finishRenaming で使えない名前を渡すと、取り消して編集�
 });
 
 test("cancelRenaming は、選択を残したまま名前の編集を閉じる", () => {
-  const { current } = setup(["title"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["title"]);
   act(() => current().editor.dispatch({ type: "start_renaming" }));
 
   act(() => current().hook.cancelRenaming());
@@ -78,6 +75,6 @@ test("cancelRenaming は、選択を残したまま名前の編集を閉じる",
   const { state } = current().editor;
   expect({
     renamingName: EditorState.renamingName(state),
-    selected: DocumentSelection.names(EditorState.documentSelection(state)),
+    selected: selectedNames(state),
   }).toEqual({ renamingName: Option.none, selected: ["title"] });
 });

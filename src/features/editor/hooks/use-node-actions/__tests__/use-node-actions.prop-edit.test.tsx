@@ -6,9 +6,10 @@ import { Node, PropEdit } from "@/domains/dcmp/node";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { EditContinuities } from "@/domains/session/edit-continuity";
 import { Axes } from "@/domains/unit/axis";
+import { nodeNamed } from "@/features/editor/__tests__/editor-state-reads";
+import { renderHookOnEditTargets } from "@/features/editor/__tests__/hook-in-editor";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import { Option } from "@/utils/Option";
-import { setup } from "./setup";
+import { useNodeActions } from "../index";
 
 /*
  * プロパティパネル・キャンバスから届く値の編集が、それぞれの書き込み先へ届き、渡した続き方が
@@ -16,7 +17,7 @@ import { setup } from "./setup";
  */
 
 test("editProp は、選んでいるノードの prop を書き換える", () => {
-  const { current } = setup(["title"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["title"]);
 
   act(() =>
     current().hook.editProp(
@@ -25,17 +26,12 @@ test("editProp は、選んでいるノードの prop を書き換える", () =>
     ),
   );
 
-  const title = Option.unwrap(
-    DesignDocument.findNode(
-      EditorState.document(current().editor.state),
-      "title",
-    ),
-  );
+  const title = nodeNamed(current().editor.state, "title");
   expect(Node.writtenPropsOf(title).content).toBe("a");
 });
 
 test("editRefOwnProp は、選んでいるインスタンス自身の値を書き換える", () => {
-  const { current } = setup(["home-card"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["home-card"]);
 
   act(() =>
     current().hook.editRefOwnProp(
@@ -53,7 +49,7 @@ test("editRefOwnProp は、選んでいるインスタンス自身の値を書�
 });
 
 test("resize は、選んでいるノードの大きさを書き換える", () => {
-  const { current } = setup(["panel"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["panel"]);
 
   act(() =>
     current().hook.resize(
@@ -62,17 +58,12 @@ test("resize は、選んでいるノードの大きさを書き換える", () =
     ),
   );
 
-  const panel = Option.unwrap(
-    DesignDocument.findNode(
-      EditorState.document(current().editor.state),
-      "panel",
-    ),
-  );
+  const panel = nodeNamed(current().editor.state, "panel");
   expect(Node.writtenPropsOf(panel).width).toBe(200);
 });
 
 test("editProp で続きとして送った編集は、直前の編集と一緒に 1 回の undo で戻る", () => {
-  const { current } = setup(["title"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["title"]);
   act(() =>
     current().editor.dispatch({
       type: "apply_prop_edit",
@@ -89,17 +80,12 @@ test("editProp で続きとして送った編集は、直前の編集と一緒�
   );
   act(() => current().editor.dispatch({ type: "undo" }));
 
-  const title = Option.unwrap(
-    DesignDocument.findNode(
-      EditorState.document(current().editor.state),
-      "title",
-    ),
-  );
+  const title = nodeNamed(current().editor.state, "title");
   expect(Node.writtenPropsOf(title).content).toBe("見出し");
 });
 
 test("editRefOwnProp で続きとして送った編集は、直前の編集と一緒に 1 回の undo で戻る", () => {
-  const { current } = setup(["home-card"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["home-card"]);
   act(() =>
     current().editor.dispatch({
       type: "apply_ref_own_prop_edit",
@@ -125,7 +111,7 @@ test("editRefOwnProp で続きとして送った編集は、直前の編集と�
 });
 
 test("resize で続きとして送った編集は、直前の編集と一緒に 1 回の undo で戻る", () => {
-  const { current } = setup(["panel"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["panel"]);
   act(() =>
     current().editor.dispatch({
       type: "resize",
@@ -142,17 +128,12 @@ test("resize で続きとして送った編集は、直前の編集と一緒に 
   );
   act(() => current().editor.dispatch({ type: "undo" }));
 
-  const panel = Option.unwrap(
-    DesignDocument.findNode(
-      EditorState.document(current().editor.state),
-      "panel",
-    ),
-  );
+  const panel = nodeNamed(current().editor.state, "panel");
   expect(Node.writtenPropsOf(panel).width).toBeUndefined();
 });
 
 test("editProp で別の編集として送った編集は、1 回の undo でその編集だけが戻る", () => {
-  const { current } = setup(["title"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["title"]);
   act(() =>
     current().editor.dispatch({
       type: "apply_prop_edit",
@@ -169,17 +150,12 @@ test("editProp で別の編集として送った編集は、1 回の undo でそ
   );
   act(() => current().editor.dispatch({ type: "undo" }));
 
-  const title = Option.unwrap(
-    DesignDocument.findNode(
-      EditorState.document(current().editor.state),
-      "title",
-    ),
-  );
+  const title = nodeNamed(current().editor.state, "title");
   expect(Node.writtenPropsOf(title).content).toBe("a");
 });
 
 test("editRefOwnProp で別の編集として送った編集は、1 回の undo でその編集だけが戻る", () => {
-  const { current } = setup(["home-card"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["home-card"]);
   act(() =>
     current().editor.dispatch({
       type: "apply_ref_own_prop_edit",
@@ -205,7 +181,7 @@ test("editRefOwnProp で別の編集として送った編集は、1 回の undo 
 });
 
 test("resize で別の編集として送った編集は、1 回の undo でその編集だけが戻る", () => {
-  const { current } = setup(["panel"]);
+  const { current } = renderHookOnEditTargets(useNodeActions, ["panel"]);
   act(() =>
     current().editor.dispatch({
       type: "resize",
@@ -222,11 +198,6 @@ test("resize で別の編集として送った編集は、1 回の undo でそ�
   );
   act(() => current().editor.dispatch({ type: "undo" }));
 
-  const panel = Option.unwrap(
-    DesignDocument.findNode(
-      EditorState.document(current().editor.state),
-      "panel",
-    ),
-  );
+  const panel = nodeNamed(current().editor.state, "panel");
   expect(Node.writtenPropsOf(panel).width).toBe(200);
 });
