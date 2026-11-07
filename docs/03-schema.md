@@ -5,9 +5,9 @@
 ## 前提（他仕様からの制約）
 
 - props はフラットなスカラーのみ。1 prop = 1 ドメイン（enum / トークン参照 / 生リテラル）
-- 見た目に関わる prop のうち、トークン種別を持つものは必ずトークン参照（生リテラル禁止）。種別を持たない見た目の値（不透明度）は生リテラル（02-data-model「値のドメイン: 3種類」）
+- 見た目に関わる prop のうち、トークン種別を持つものは必ずトークン参照（生リテラル禁止）。種別を持たない見た目の値（不透明度・ぼかし）は生リテラル（02-data-model「値のドメイン: 3種類」）
 - スキーマからプロパティパネルを自動生成する
-- artboard は Box のスキーマを流用する。ただし artboard では意味の決まらない prop（「配置の指定」「ロック」「回転」「Box」の各節が挙げるもの）は**読み捨てる**。プロパティパネルに出さず、ファイルに書かれていても効かせず、未知の prop としてのバリデーションエラーにもしない。値は Box のスキーマで検証するので、ドメイン違反（下記「バリデーション仕様」）はエラーになる。書いても効かないことをエラーの理由にしない点は、「サイズ指定の原則」で `fixed` のノードに書いた最小 / 最大を読み捨てるのと同じ
+- artboard は Box のスキーマを流用する。ただし artboard では意味の決まらない prop（「配置の指定」「ロック」「ぼかし」「回転」「Box」の各節が挙げるもの）は**読み捨てる**。プロパティパネルに出さず、ファイルに書かれていても効かせず、未知の prop としてのバリデーションエラーにもしない。値は Box のスキーマで検証するので、ドメイン違反（下記「バリデーション仕様」）はエラーになる。書いても効かないことをエラーの理由にしない点は、「サイズ指定の原則」で `fixed` のノードに書いた最小 / 最大を読み捨てるのと同じ
 
 ## スキーマの記述場所と形式
 
@@ -30,7 +30,7 @@
 | `values` | enum 時: 許可される値のリスト |
 | `tokenKind` | token 時: 参照できるトークン種別の並び。1 つだけでも並びで書く（読む側の出し分けを 1 通りにするため）。2 つ持つのは `background` だけ（下記「塗り」） |
 | `literalType` | literal 時: `number` / `string` |
-| `range` | `literalType: number` 時: 取りうる値の範囲（両端を含む）。`{ min: 0, max: 1 }`。宣言しない prop は範囲では弾かれない |
+| `range` | `literalType: number` 時: 取りうる値の範囲。境界の値を含む。両端の `{ min: 0, max: 1 }` か、下端だけの `{ min: 0 }`（上限を持たない）。宣言しない prop は範囲では弾かれない |
 | `default` | デフォルト値。省略時は「なし」 |
 | `group` | プロパティパネルのセクション（layout / size / appearance 等） |
 | `enabledWhen` | 条件付き有効。`{ kind: "equals", prop: "...", equals: "..." }` / `{ kind: "notEquals", prop: "...", notEquals: "..." }` の**単純な等値・不等値のみ**（条件式言語は作らない）。見るのは**同じノードの** prop だけ |
@@ -130,6 +130,24 @@ Box と Ellipse が、透け具合を 1 prop で持つ（Text は持たない）
 - 取りうる範囲は `range` で宣言し、外れた値はバリデーションエラーにする（下記「バリデーション仕様」）
 - artboard は Box スキーマを流用するので**この prop を受け付ける**（上で読み捨てると決めた prop と違い、除く理由が無い）
 
+### ぼかし
+
+Box と Ellipse が、ぼかしを 2 prop で持つ（Text は持たない）。Figma の layer blur / background blur にあたる。
+
+| prop | ドメイン | 値 | デフォルト |
+|---|---|---|---|
+| `layerBlur` | 生リテラル (number, px, 0 以上) | ノード自身の描画（Box は子孫を含む）をぼかす強さ。0 でぼかさない | `0` |
+| `backdropBlur` | 生リテラル (number, px, 0 以上) | ノードの背後に描かれているものをぼかす強さ。0 でぼかさない | `0` |
+
+- **見た目の値だが生リテラルにする。** 理由は上記「不透明度」と同じ（対応するトークン種別が無い）
+- **影トークンの `blur`（04-tokens「shadows」）とは別の値。** どちらも px だが、影の `blur` は CSS の `box-shadow` のぼかし半径、こちらは CSS の `blur()` の長さ（ガウス関数の標準偏差）で、同じ数でもにじむ幅が揃わない。prop 名に `layer` / `backdrop` を付けて何をぼかすかを分けるのは、素の `blur` が影トークンのフィールドと同じ綴りになるため
+- 2 つは同じノードに同時に書ける
+- **`backdropBlur` が見えるのは、ノード自身の塗りが透けているところだけ。** ぼかした背後の上にノード自身（塗り・子孫）を重ねて描くので、不透明な塗りの下では隠れる。ぼかした背後はノードの箱（角丸・楕円の形を含む）で切り取る
+- **どこまでを背後として読むかは、CSS の `backdrop-filter` の定義（Filter Effects Level 2 の Backdrop Root。草案）に従う。** この定義では、`opacity` が 1 未満、または `layerBlur` / `backdropBlur` が 0 より大きい祖先があると、背後として読むのはそのうち最も近い祖先の内側に描かれたものまでで、その祖先より外側はぼかした像に入らない（祖先の効果は中身をまとめて描いてから掛かるため）
+- **箱は変えない。** 並び・サイズ（`hug` の長さを含む）・選択の枠・リサイズハンドル・クリックで選べる範囲は、ぼかす前の箱のまま。`layerBlur` の描画は箱の外へにじみ、親の `overflow: clip` に従って切られる
+- 取りうる範囲は `range` で下端だけを宣言する（上記「prop 定義のフィールド」）。上限の根拠になる値が無いため。負の値はバリデーションエラーにする（CSS の `blur()` も負を取れない）
+- artboard は Box スキーマを流用するので **`layerBlur` を受け付け**（`opacity` と同じく除く理由が無い）、**`backdropBlur` は読み捨てる**（上記「前提」）。artboard はいちばん外側の器で、背後にドキュメントの中身を持たない（背後に何があるかはドキュメントの外の描き方で決まる）ので、背後をぼかすこの prop では何をぼかすかが決まらないため
+
 ### 回転
 
 すべてのノードが、自分がどれだけ回るかを 1 prop で持つ。Figma の `relativeTransform` が含む回転にあたる。
@@ -202,6 +220,7 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ
 | `radiusBottomRight` | トークン (radius) | 右下 | なし (0) |
 | `radiusBottomLeft` | トークン (radius) | 左下 | なし (0) |
 | `shadow` | トークン (shadows) | | なし |
+| `layerBlur` / `backdropBlur` | | 上記「ぼかし」 | |
 | `overflow` | enum | `visible` / `clip` | `visible` |
 | `opacity` | | 上記「不透明度」 | |
 | `visibility` | | 上記「表示 / 非表示」 | |
@@ -245,6 +264,7 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ
 | `height` | 生リテラル (number, px) | `heightMode: fixed` 時のみ有効 | `100` |
 | `background` | | 上記「塗り」 | `gray-300` |
 | `shadow` | トークン (shadows) | | なし |
+| `layerBlur` / `backdropBlur` | | 上記「ぼかし」 | |
 | `opacity` | | 上記「不透明度」 | |
 | `visibility` | | 上記「表示 / 非表示」 | |
 | `locking` | | 上記「ロック」 | |
@@ -282,6 +302,8 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ
 | `background` | `background: var(--colors-*)` / `var(--gradients-*)`（その名前を持っている種別の var を出す。同名衝突では出力しない / どちらも持っていない名前は colors。上記「塗り」） |
 | `radiusTopLeft` / `radiusTopRight` / `radiusBottomRight` / `radiusBottomLeft` | `border-radius: var(--radius-*)` （左上 右上 右下 左下 の順で4値に合成。未指定の隅は `0`） |
 | `shadow` | `box-shadow: var(--shadows-*)` |
+| `layerBlur` | `filter: blur({n}px)`（既定の `0` では出力しない。`blur(0px)` でも `filter` が `none` でなくなり、そのノードが新しい stacking context になるうえ、子孫の `backdropBlur` が背後を読む範囲もそこで区切られるため / 上記「ぼかし」。範囲を外れた値も丸めずそのまま出す — 範囲の判定はバリデーションが持ち、CSS は負の `blur()` を不正な宣言として捨てるので、ぼかさないのと同じ見た目になる） |
+| `backdropBlur` | `backdrop-filter: blur({n}px)`（既定の `0` と範囲外の値の扱いは `layerBlur` の行と同じ） |
 | `overflow: clip` | `overflow: hidden` |
 | `opacity` | `opacity: {n}`（既定の `1` では出力しない。範囲を外れた値も丸めずそのまま出す — 範囲の判定はバリデーションが持ち、ブラウザが両端へ寄せる） |
 | Text 自体 | `div` + typography トークン展開（`font-size` / `line-height` / `font-weight`） |
