@@ -486,6 +486,8 @@ export type NodeDragControl = Readonly<{
   /**
    * 押された位置にある既存ノードのうち、同じ押し方のクリックが選ぶものを掴む
    * （`DocumentSelection.nodeNameAt`）。掴めたら、掴んだものを選ぶ（`onSelectGrabbed`）。
+   * 編集中の入力欄を選び直す前のものへ確定させるには、呼ぶ前に呼び出し側がフォーカスを移し
+   * ておく（`ArtboardFrame` の `onPointerDown`）。
    *
    * **artboard の背景を押したときに `false` を返すことに、キャンバスの掴み分けが載ってい
    * る**（`ArtboardFrame` の `onPointerDown`）。掴めるようにすると、背景から範囲選択を
