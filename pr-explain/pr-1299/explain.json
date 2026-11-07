@@ -1,0 +1,2099 @@
+{
+  "version": 1,
+  "pr": 1299,
+  "sha": "e7e6e8eec11a2b9c7491c601f3e0a2eba4dd7c3f",
+  "issue": 947,
+  "overview": {
+    "title": "キャンバスでノードを掴んだ時点で、そのノードを選ぶ",
+    "lead": "キャンバスで選んでいないノードを押すと、押した時点(`pointerdown` で掴めたとき)でそのノードが選ばれる。運び終えても、途中で取り消しても選択は戻さない。名前の変更・インライン編集の入力は、今までどおり打っていたものへ確定してから選び直す。",
+    "before": [
+      {
+        "text": "選んでいないノードを押して運んでも選択は変わらず、運んだあとの `click` は `NodeDrag.consumesClick` が飲み込んでいた",
+        "message": "swallow-click"
+      },
+      {
+        "text": "キャンバスで選び直すのは `click` の `onSelect(underPointerAt(event))` だけで、入力欄の確定は続く `mousedown` の blur で先に済んでいた",
+        "message": "click-select"
+      },
+      {
+        "text": "複数選択中に一員を押して運んでも、複数選択のまま残っていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "`grabNode` が `DocumentSelection.nodeNameAt` で掴んだ名前を `onSelectGrabbed` に渡し、編集画面が `node.select` に繋ぐ",
+        "message": "select-grabbed"
+      },
+      {
+        "text": "背景・ロック中のノードだけの所・右ボタン・artboard の見出し・パレットの雛形では、掴まないので選ばない",
+        "message": "name-at"
+      },
+      {
+        "text": "`ArtboardFrame` の `onPointerDown` が主ボタン判定の直後・掴む前に枠へ `focus({ preventScroll: true })` し、名前の変更とインライン編集を選び直す前の選択へ確定させる",
+        "message": "focus-rename"
+      },
+      {
+        "text": "運んだあとの `click` は従来どおり飲み込むので、離した位置で選び直されない",
+        "message": "swallow-click"
+      },
+      {
+        "text": "複数選択中に一員を押すと、押した位置でクリックが選ぶもの 1 つの選択になる(後退。#1298 で見直す)",
+        "message": "select"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "確定してから選ぶ順序",
+        "text": "枠へのフォーカスの移動が選ぶ処理より前にあることが、名前の変更の下書きを守っている。順序はフックの外の DOM 操作に頼っていて、`grabNode` の doc から指しているだけ",
+        "go": {
+          "kind": "flow",
+          "id": "press-while-editing"
+        }
+      },
+      {
+        "title": "掴んだ名前をそのまま選ぶ",
+        "text": "選ぶ名前を `nodeNameAt` から 1 回だけ求め、掴んだものと選んだものの一致を構造で保つ(却下案は名前を 2 経路で求めていた)",
+        "go": {
+          "kind": "message",
+          "id": "select-grabbed"
+        }
+      },
+      {
+        "title": "複数選択の後退",
+        "text": "複数選択中に一員を押すと 1 つの選択に崩れる。docs とテストで固定し、#1298 で書き換える前提",
+        "go": {
+          "kind": "feature",
+          "id": "grab-select"
+        }
+      },
+      {
+        "title": "移動の節の追記",
+        "text": "押した時点で選ぶ項・取り消しの項・「ノードは動かない」・名前の変更の節の 1 文",
+        "go": {
+          "kind": "file",
+          "path": "docs/06-ui.md"
+        }
+      },
+      {
+        "title": "キャンバスの層",
+        "text": "実装の差分はフックの 1 行と枠の 1 行に収まる",
+        "go": {
+          "kind": "layer",
+          "layer": "features / editor/features/canvas"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "grab-select",
+      "label": "押した時点で選ぶ",
+      "role": "キャンバスで掴めたノードを、押した時点で選択にする"
+    },
+    {
+      "id": "edit-commit",
+      "label": "入力の確定",
+      "role": "名前の変更とインライン編集の入力を、選び直す前の選択へ確定させる"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "掴んだ時点で選ぶ受け口(`onSelectGrabbed`)と、選ぶ前に枠へフォーカスを移す処理を持つ"
+    },
+    {
+      "layer": "features / editor",
+      "role": "受け口を `node.select` に繋ぐ。テストで編集画面の配線ごと確かめる"
+    },
+    {
+      "layer": "domains / session",
+      "role": "掴むものを決める `nodeNameAt` を持つ(変更なし)"
+    },
+    {
+      "layer": "docs",
+      "role": "移動の節と名前の変更の節に、押した時点で選ぶことと取り消しを書く"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "name": "artboard の枠",
+      "role": "キャンバスで押された位置を受け、掴む・範囲選択・クリックの選択へ振り分ける",
+      "feature": "edit-commit",
+      "change": "`onPointerDown` の主ボタン判定の直後・掴む前に、枠へ `focus({ preventScroll: true })` する"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "name": "ノードのドラッグ",
+      "role": "掴む・運ぶ・離す・運んだあとのクリックを飲み込む",
+      "feature": "grab-select",
+      "change": "引数に `onSelectGrabbed` を足し、`grabNode` で掴めたら掴んだ名前を渡す"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "name": "ドラッグの状態",
+      "role": "掴んでいない / 掴んだ / 運んでいる / 離した直後を表す",
+      "feature": "grab-select",
+      "change": "`dropped` と `release` の doc の「移動は選択を変えない」「仕様に定めは無く」を直した(振る舞いは変えていない)"
+    },
+    {
+      "path": "src/domains/session/document-selection/index.ts",
+      "name": "ドキュメントの選択",
+      "role": "押した位置で掴むもの(`nodeNameAt`)とクリックが選ぶもの(`nameToSelectAt`)を決める",
+      "feature": "grab-select"
+    },
+    {
+      "path": "src/features/editor/components/opened-document-editor/index.tsx",
+      "name": "編集画面",
+      "role": "キャンバス・左ペイン・右ペインを組み、ノードの操作をエディタの状態へ繋ぐ",
+      "feature": "grab-select",
+      "change": "`useNodeDrag` に `onSelectGrabbed: node.select` を渡す"
+    },
+    {
+      "path": "src/features/editor/domains/editor-state/index.ts",
+      "name": "エディタの状態",
+      "role": "選択と名前の変更中かを持つ。名前を変える対象は選択から引く(`renamingName`)",
+      "feature": "edit-commit"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+      "name": "Text のインライン編集",
+      "role": "文言の下書きを持ち、フォーカスが外れたら選択中のものへ確定する",
+      "feature": "edit-commit",
+      "change": "確定先の Why に、前提を守っている場所(枠の `onPointerDown`)を足した"
+    },
+    {
+      "path": "src/features/editor/features/sidebar/components/row-name-field/index.tsx",
+      "name": "名前の入力欄",
+      "role": "ツリーの行をその場で入力欄に変え、フォーカスが外れたら確定する",
+      "feature": "edit-commit"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "キャンバス直接操作と名前の変更の振る舞いを定める",
+      "change": "移動の節に押した時点で選ぶ項と取り消しの項を足し、名前の変更の節に 1 文足した",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "focus-rename",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/sidebar/components/row-name-field/index.tsx",
+      "kind": "evt",
+      "name": "名前の入力欄からフォーカスを外す",
+      "code": "event.currentTarget.focus({ preventScroll: true })",
+      "via": "call",
+      "payload": "枠へのフォーカス(入力欄には blur として届く)",
+      "status": "added"
+    },
+    {
+      "id": "focus-text",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+      "kind": "evt",
+      "name": "文言の入力欄からフォーカスを外す",
+      "code": "event.currentTarget.focus({ preventScroll: true })",
+      "via": "call",
+      "payload": "枠へのフォーカス(入力欄の `onBlur` が `commit` を呼ぶ)",
+      "status": "added"
+    },
+    {
+      "id": "finish-rename",
+      "from": "src/features/editor/features/sidebar/components/row-name-field/index.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "kind": "cmd",
+      "name": "名前の変更を確定する",
+      "code": "onBlur={() => onFinish(draft)}",
+      "via": "state",
+      "payload": "打っていた名前(対象は選択から引く)"
+    },
+    {
+      "id": "commit-text",
+      "from": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "kind": "cmd",
+      "name": "文言を確定する",
+      "code": "params.onEditProp(TextEdit.toPropEdit(edit.value))",
+      "via": "state",
+      "payload": "書いていた文言(書き込む先は選択中のもの)"
+    },
+    {
+      "id": "grab-node",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "kind": "cmd",
+      "name": "ノードを掴む",
+      "code": "nodeDrag.grabNode(event, underPointerAt(event))",
+      "via": "call",
+      "payload": "押された位置から外へ辿った名前と掘る量",
+      "returns": "掴んだら `true`(背景・ロック中なら `false` で範囲選択へ渡す)"
+    },
+    {
+      "id": "name-at",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "kind": "qry",
+      "name": "掴むものを求める",
+      "code": "DocumentSelection.nodeNameAt(params.selection, underPointer)",
+      "via": "call",
+      "payload": "今の選択と押された位置",
+      "returns": "掴むノードの名前。選べるノードが無ければ `none`"
+    },
+    {
+      "id": "select-grabbed",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/components/opened-document-editor/index.tsx",
+      "kind": "cmd",
+      "name": "掴んだノードを選ぶ",
+      "code": "params.onSelectGrabbed(name.value)",
+      "via": "call",
+      "payload": "掴んだノードの名前",
+      "status": "added"
+    },
+    {
+      "id": "select",
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "kind": "cmd",
+      "name": "選択を置き換える",
+      "code": "onSelectGrabbed: node.select",
+      "via": "state",
+      "payload": "選ぶノードの名前",
+      "status": "added"
+    },
+    {
+      "id": "swallow-click",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "kind": "qry",
+      "name": "離した直後のクリックを飲み込むか尋ねる",
+      "code": "NodeDrag.consumesClick(drag)",
+      "via": "call",
+      "payload": "今のドラッグの状態",
+      "returns": "運んで離した直後なら `true`(`stopPropagation` で枠の `onClick` へ届かせない)"
+    },
+    {
+      "id": "click-select",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/components/opened-document-editor/index.tsx",
+      "kind": "cmd",
+      "name": "クリックで選ぶ",
+      "code": "onSelect(underPointerAt(event))",
+      "via": "call",
+      "payload": "クリックされた位置"
+    },
+    {
+      "id": "select-at",
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "kind": "cmd",
+      "name": "押された位置で選ぶ",
+      "code": "onSelect={node.selectAt}",
+      "via": "state",
+      "payload": "クリックされた位置(選ぶものは `nameToSelectAt` が決める)"
+    }
+  ],
+  "flows": [
+    {
+      "id": "press-unselected",
+      "label": "選んでいないノードを押したとき",
+      "steps": [
+        "grab-node",
+        "name-at",
+        "select-grabbed",
+        "select"
+      ]
+    },
+    {
+      "id": "press-while-editing",
+      "label": "入力欄が出ている間に別のノードを押したとき",
+      "steps": [
+        "focus-rename",
+        "finish-rename",
+        "focus-text",
+        "commit-text",
+        "grab-node",
+        "name-at",
+        "select-grabbed",
+        "select"
+      ]
+    },
+    {
+      "id": "release-after-drag",
+      "label": "運んで離した直後のクリック",
+      "steps": [
+        "swallow-click"
+      ]
+    },
+    {
+      "id": "release-without-drag",
+      "label": "運ばずに離したあとのクリック",
+      "steps": [
+        "click-select",
+        "select-at"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "451a96e922b79d79d94c18add82aa450622dbb6a",
+      "phase": "core",
+      "role": "掴めたら掴んだ名前を選ぶ受け口を足し、編集画面で `node.select` に繋ぐ",
+      "why": "Issue #947 でオーナーが「押した時点で選ぶ / 取り消しても戻さない」を採った。選ぶ名前は `grabNode` が `nodeNameAt` で求めた掴んだ名前そのものを渡し、掴んだものと選んだものの一致を別経路に頼らず保つ。枠でプロップの `onSelect(underPointer)` を呼ぶ案は、名前を `nodeNameAt` と `nameToSelectAt` の 2 経路で求めるので採らなかった。",
+      "flows": [
+        "press-unselected"
+      ],
+      "review": [
+        "`onSelectGrabbed` を呼ぶのは `grabNode` だけで、パレットの `grabTemplate` では呼ばないこと",
+        "受け口の名前を `onSelect` にしなかったのは、canvas の中で `onSelect` が既に 2 通りの形を持つため。読み違えないか",
+        "選ぶのは grab の dispatch より前。順序を入れ替えても今は同じ結果になるが、どちらが自然か"
+      ],
+      "before": [
+        {
+          "text": "掴んでも選択は変わらず、運んだあとの `click` は飲み込まれていた",
+          "message": "swallow-click"
+        }
+      ],
+      "after": [
+        {
+          "text": "掴めた時点で掴んだノードが選ばれる",
+          "message": "select-grabbed"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "start": 534,
+          "end": 534,
+          "text": "受け口は名前 1 つだけを受け取る。選ぶものはフックが決め、呼び出し側は選ぶだけ"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "start": 551,
+          "end": 551,
+          "text": "`nodeNameAt` が `none` のとき(背景・ロック中)は手前で `false` を返すので、ここへは来ない"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "start": 123,
+          "end": 123,
+          "text": "ツリーの行を押したときと同じ `node.select` へ繋ぐ"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+          "start": 33,
+          "end": 34,
+          "text": "「移動は選択を変えない」を、選ばれるのは押した時点で掴んだもの、へ直した"
+        }
+      ]
+    },
+    {
+      "sha": "7cda705512234bca91f781185be712c334f3195f",
+      "phase": "hard",
+      "role": "選ぶ前に枠へフォーカスを移し、編集中の入力を打っていたものへ確定させる",
+      "why": "名前の変更とインライン編集の確定先はどちらも「選択中のもの」。ブラウザは `mousedown` でフォーカスを移すので、`pointerdown` で選ぶと選択が先に変わり、そのあとの blur が押したノードへ確定する(名前の変更は下書きが消える)。選び直す前に枠へフォーカスを移せば、今と同じフォーカス外しで確定してから選ぶ。計画の `textEdit.commit()` は Text にしか効かず、plan-reviewer の指摘で置き換えた。",
+      "flows": [
+        "press-while-editing"
+      ],
+      "review": [
+        "`focus()` は主ボタン判定の後で、`nodeResize.grabAt` と `grabNode` より前にあること",
+        "主ボタンで枠を押すたびに枠がフォーカスを持つ(背景・リサイズハンドルを含む)。続く mousedown でも同じ枠へ移っていたので、順序が早まるだけと言えるか",
+        "名前の変更の対象を状態に持たない理由(Why not)が納得できるか"
+      ],
+      "before": [
+        {
+          "text": "入力欄の確定は mousedown の blur で起き、選び直すのは続く click だった"
+        }
+      ],
+      "after": [
+        {
+          "text": "押した時点で枠へフォーカスを移し、確定を済ませてから選ぶ",
+          "message": "focus-rename"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "start": 215,
+          "end": 217,
+          "text": "右ボタンでは何もしないので、フォーカスも移さない"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "start": 223,
+          "end": 223,
+          "text": "`preventScroll` で、押した時点で枠を画面へ入れるスクロールを起こさない"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+          "start": 93,
+          "end": 97,
+          "text": "「ほかを選ぶ操作は必ずフォーカスを外す」という前提を、キャンバスで押した経路では枠が守っていると書き足した"
+        }
+      ]
+    },
+    {
+      "sha": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "phase": "core",
+      "role": "押した時点で選ぶ振る舞いと、編集中に押したときの確定先をテストで固定する",
+      "why": "フックの単体テストだけでは編集画面の配線(`node.select`)が切れても緑になるので、通しのテストを置いた。編集中に押すケースは `userEvent.pointer` で pointerdown → mousedown の順に撃つ。`fireEvent` の押下は happy-dom でフォーカスを動かさず、順序の不具合を写せないため。",
+      "flows": [
+        "press-unselected",
+        "press-while-editing"
+      ],
+      "review": [
+        "右ボタン・ロック中は右ペインの見出しで見ている。ツリーの選択行だけでは artboard へ倒れる実装と見分けられないため",
+        "`reposition` の期待値を `home-panel` から `home-badge` へ変えても、click が漏れれば `home-title` になるので飲み込みの守りは残ること",
+        "複数選択中に一員を押すケースは後退をそのまま固定している(#1298 で書き換える前提)"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+          "start": 79,
+          "end": 81,
+          "text": "pointerdown に続く mousedown でフォーカスが動く押し方。のちに `pressMovingFocus` へ改名した"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+          "start": 167,
+          "end": 167,
+          "text": "押した時点で `home-badge` が選ばれるので期待値を変えた"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts",
+          "start": 73,
+          "end": 73,
+          "text": "テスト名の括弧だけを直した(内容は変えていない)"
+        }
+      ]
+    },
+    {
+      "sha": "1c5a6f5690824b77cac19e48bb7fd8cb10045d50",
+      "phase": "core",
+      "role": "移動の節に、押した時点で掴んだノードが選ばれる項を足す",
+      "why": "振る舞いを変えたので仕様書に書く。複数選択の文言を「押したその 1 つ」にしなかったのは、入れ子の一員を押すと選ばれるのは外側になるため。見直し先は closed の #464 ではなく、新しく起票した #1298。",
+      "review": [
+        "artboard の見出しから運んでも選択は変わらない(同じ節の既存の項)と矛盾しないか"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 153,
+          "end": 153,
+          "text": "押した時点で選ぶ / 戻さない / 運ばずに離した click も同じもの / 複数選択は 1 つになる / 編集中は確定してから選ぶ、の 5 点"
+        }
+      ]
+    },
+    {
+      "sha": "2f0192f47c76c511f3b524fed182b90fa6e45c9d",
+      "phase": "revise",
+      "role": "押した時点で選ぶことに合わせ、doc と Why の前提を直す",
+      "why": "フェーズ 6 のレビューの指摘。`release` の doc は docs に定めを足したことで古くなっていた。確定の順序はフックの外の DOM 操作(枠のフォーカス)に頼っているのに、その前提が受け口の側から辿れなかった。フォーカスの移動を `grabNode` の中へ寄せるのは、呼び出し元が増えたときに検討する。",
+      "flows": [
+        "press-while-editing"
+      ],
+      "review": [
+        "`grabNode` の doc から、フォーカスを移す責任が呼び出し側にあると読めるか"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "start": 488,
+          "end": 490,
+          "text": "呼ぶ前にフォーカスを移しておく前提と、守っている場所を書いた"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+          "start": 470,
+          "end": 472,
+          "text": "離した位置のクリックで選び直させない理由を、docs の移動の節に根拠づけた"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "start": 221,
+          "end": 222,
+          "text": "Why not を、Assets を開いたまま名前の変更に入り、選び直して Layers へ戻る場面として具体化した"
+        }
+      ]
+    },
+    {
+      "sha": "7111108fc1fa1cdcc971f499c5444c5427e75429",
+      "phase": "revise",
+      "role": "押した時点と click の選択の一致を固定し、範囲で 2 つ選ぶ準備を共通化する",
+      "why": "docs の「運ばずに離したときの click が選ぶのも同じもの」は、押した時点の `nodeNameAt` と click の `nameToSelectAt` が同じ答えを返すことに乗っていて、テストで固定していなかった。click 側だけ `Deepest` にすると、14 件中この 1 件だけが落ちることを確かめた。",
+      "flows": [
+        "release-without-drag"
+      ],
+      "review": [
+        "`dragRangeAround` をオブジェクト引数にしたこと(名前の引数 2 つは取り違えても型エラーにならない)"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+          "start": 133,
+          "end": 142,
+          "text": "入れ子の中身を押して動かさずに離し、`click` だけを撃つ。押した時点と同じ `card` が選ばれる"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "start": 187,
+          "end": 193,
+          "text": "4 か所で同じだった矩形と範囲をまとめた。違うのはノードの名前だけ"
+        }
+      ]
+    },
+    {
+      "sha": "e7e6e8eec11a2b9c7491c601f3e0a2eba4dd7c3f",
+      "phase": "revise",
+      "role": "押した時点で選ぶ項の文言を、取り消し・名前の変更の節と揃える",
+      "why": "harness-reviewer の指摘。「編集画面の外へ出て取り消し」が 06-ui.md の他で定義されておらず、「何も起きない」は押した時点で選択が変わる今は厳密でなかった。名前の変更の入力欄が見えていない間は確定されず対象が移るので、「確定してから選ぶ」と言い切ると名前の変更の節と違う結果を読ませた。振る舞いは変えず、今の実装をそのまま書いた。",
+      "review": [
+        "「入力欄が出ている間に押すと」に絞った文言と、名前の変更の節の足した 1 文が食い違っていないか"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 153,
+          "end": 153,
+          "text": "取り消しを下の項へ譲り、編集中の扱いを「入力欄が出ている間」に絞った。使えない名前なら取り消して閉じる"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 160,
+          "end": 160,
+          "text": "「何も起きない」を「ノードは動かない」に。選択は押した時点で変わっているため"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 163,
+          "end": 163,
+          "text": "取り消しを独立した項にした(実装は `onPointerLeave` の cancel)"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 423,
+          "end": 423,
+          "text": "見えていない入力欄は確定されず、対象が選び直したものへ移る。click でも元から同じ"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "hook-select",
+      "label": "ドラッグのフックで選ぶ",
+      "file": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/use-node-drag.select.test.tsx"
+    },
+    {
+      "id": "grab-select",
+      "label": "編集画面で押した時点に選ぶ",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx"
+    },
+    {
+      "id": "editor-reposition",
+      "label": "編集画面での座標の置き直し",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx"
+    },
+    {
+      "id": "state-reposition",
+      "label": "エディタの状態の座標の置き直し",
+      "file": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "hs-plain",
+      "suite": "hook-select",
+      "name": "選んでいないノードを押すと、掴んだそのノードが選ばれる",
+      "techniques": [
+        "state"
+      ],
+      "why": "掴めたら受け口へ名前を渡すこと。選ぶ処理を消すと落ちる",
+      "given": "何も選んでいない器",
+      "when": "`title` を押す",
+      "then": "受け口に `title` が届く",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/use-node-drag.select.test.tsx",
+        "start": 7,
+        "end": 13,
+        "emphasis": [
+          {
+            "start": 12,
+            "end": 12
+          }
+        ],
+        "text": "test(\"選んでいないノードを押すと、掴んだそのノードが選ばれる\", () => {\n  renderHarness();\n\n  pressPointer(drawn(\"title\"), { x: 20, y: 235 });\n\n  expect(harnessOutput(\"selected\")).toBe(\"title\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "name-at",
+        "select-grabbed"
+      ]
+    },
+    {
+      "id": "hs-nested",
+      "suite": "hook-select",
+      "name": "入れ子の中身を押すと、選ばれるのは掴んだ artboard 直下の子",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "選ぶのは掴んだもの(クリックが選ぶもの)で、押した要素そのものではない。いちばん内側を選ぶ壊し方で落ちる",
+      "given": "`card` の中に `label` がある",
+      "when": "`label` を押す",
+      "then": "受け口に `card` が届く",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/use-node-drag.select.test.tsx",
+        "start": 15,
+        "end": 21,
+        "emphasis": [
+          {
+            "start": 20,
+            "end": 20
+          }
+        ],
+        "text": "test(\"入れ子の中身を押すと、選ばれるのは掴んだ artboard 直下の子\", () => {\n  renderHarness();\n\n  pressPointer(drawn(\"label\"), { x: 20, y: 135 });\n\n  expect(harnessOutput(\"selected\")).toBe(\"card\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "name-at",
+        "select-grabbed"
+      ]
+    },
+    {
+      "id": "hs-background",
+      "suite": "hook-select",
+      "name": "artboard の背景を押しても何も選ばれない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "掴めないときに選ぶと、背景からの範囲選択の前に選択が変わる。掴めないときも選ぶ壊し方で落ちる",
+      "given": "何も選んでいない器",
+      "when": "子が乗っていない所を押す",
+      "then": "受け口は呼ばれず「選んでいない」のまま(artboard も選ばれない)",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/use-node-drag.select.test.tsx",
+        "start": 23,
+        "end": 29,
+        "emphasis": [
+          {
+            "start": 28,
+            "end": 28
+          }
+        ],
+        "text": "test(\"artboard の背景を押しても何も選ばれない\", () => {\n  renderHarness();\n\n  pressPointer(drawn(\"home\"), { x: 300, y: 20 });\n\n  expect(harnessOutput(\"selected\")).toBe(\"選んでいない\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "name-at",
+        "select-grabbed"
+      ]
+    },
+    {
+      "id": "hs-palette",
+      "suite": "hook-select",
+      "name": "パレットの雛形を掴んでも何も選ばれない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "雛形はまだドキュメントに無いので選べない。`grabTemplate` でも選ぶ壊し方で落ちる",
+      "given": "何も選んでいない器",
+      "when": "パレットの Box を掴む",
+      "then": "「選んでいない」のまま",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/use-node-drag.select.test.tsx",
+        "start": 31,
+        "end": 37,
+        "emphasis": [
+          {
+            "start": 36,
+            "end": 36
+          }
+        ],
+        "text": "test(\"パレットの雛形を掴んでも何も選ばれない\", () => {\n  renderHarness();\n\n  pressPointer(paletteBox(), { x: 100, y: 100 });\n\n  expect(harnessOutput(\"selected\")).toBe(\"選んでいない\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "select-grabbed"
+      ]
+    },
+    {
+      "id": "gs-press",
+      "suite": "grab-select",
+      "name": "選んでいないノードを押した時点で、離す前からツリーでそのノードが選択状態になる",
+      "techniques": [
+        "state"
+      ],
+      "why": "編集画面の配線(`node.select`)まで届いていること。配線を no-op にすると落ちる",
+      "given": "何も選んでいない編集画面",
+      "when": "`title` を押して離さない",
+      "then": "ツリーの選択行が `title`",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 103,
+        "end": 109,
+        "emphasis": [
+          {
+            "start": 108,
+            "end": 108
+          }
+        ],
+        "text": "test(\"選んでいないノードを押した時点で、離す前からツリーでそのノードが選択状態になる\", async () => {\n  await renderOpenedDocument(setupDocument());\n\n  pressPointer(drawn(\"title\"), { x: 100, y: 100 });\n\n  expect(currentRowNames(tree())).toEqual([\"title\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/components/opened-document-editor/index.tsx",
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "grab-node",
+        "select-grabbed",
+        "select"
+      ]
+    },
+    {
+      "id": "gs-moved",
+      "suite": "grab-select",
+      "name": "運んで離すと、離した直後の click が飲み込まれても運んだノードが選ばれたまま",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "運んだあとの click を飲み込まないと、離した位置の `panel` が選ばれてしまう。release が click を飲み込まない壊し方で落ちる",
+      "given": "何も選んでいない編集画面",
+      "when": "`title` を押して `panel` の上まで運んで離し、`click` だけを撃つ",
+      "then": "ツリーの選択行が `title` のまま",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 111,
+        "end": 121,
+        "emphasis": [
+          {
+            "start": 118,
+            "end": 120
+          }
+        ],
+        "text": "test(\"運んで離すと、離した直後の click が飲み込まれても運んだノードが選ばれたまま\", async () => {\n  await renderOpenedDocument(setupDocument());\n\n  pressPointer(drawn(\"title\"), { x: 100, y: 100 });\n  movePointer(drawn(\"panel\"), { x: 100, y: 150 });\n  releasePointer(drawn(\"panel\"), { x: 100, y: 150 });\n  // `userEvent.click` は自前の `pointerdown` で掴み直すので、`click` だけを撃つ\n  fireEvent.click(drawn(\"panel\"));\n\n  expect(currentRowNames(tree())).toEqual([\"title\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+        "src/features/editor/features/canvas/domains/node-drag/index.ts"
+      ],
+      "covers": [
+        "select-grabbed",
+        "swallow-click"
+      ]
+    },
+    {
+      "id": "gs-cancel",
+      "suite": "grab-select",
+      "name": "運んでいる途中で編集画面の外へ出て取り消しても、押した時点で選んだノードが選ばれたまま",
+      "techniques": [
+        "state"
+      ],
+      "why": "取り消しても選択は戻さない(Issue #947 の判断)",
+      "given": "何も選んでいない編集画面",
+      "when": "`title` を押して運び、途中でポインタが外へ出る",
+      "then": "ツリーの選択行が `title` のまま",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 123,
+        "end": 131,
+        "emphasis": [
+          {
+            "start": 128,
+            "end": 130
+          }
+        ],
+        "text": "test(\"運んでいる途中で編集画面の外へ出て取り消しても、押した時点で選んだノードが選ばれたまま\", async () => {\n  await renderOpenedDocument(setupDocument());\n\n  pressPointer(drawn(\"title\"), { x: 100, y: 100 });\n  movePointer(drawn(\"panel\"), { x: 100, y: 150 });\n  leavePointer(drawn(\"panel\"));\n\n  expect(currentRowNames(tree())).toEqual([\"title\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "select-grabbed",
+        "select"
+      ]
+    },
+    {
+      "id": "gs-nested-click",
+      "suite": "grab-select",
+      "name": "入れ子の中身を押して動かさずに離すと、続く click でも押した時点と同じ artboard 直下の子が選ばれる",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "押した時点の選択と click の選択は別経路で決まるので、一致をここで固定する。click 側だけいちばん内側にすると、14 件中この 1 件だけが落ちる",
+      "given": "`card` の中に `label` がある編集画面",
+      "when": "`label` を押して動かさずに離し、`click` だけを撃つ",
+      "then": "ツリーの選択行が `card`",
+      "commit": "7111108fc1fa1cdcc971f499c5444c5427e75429",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 133,
+        "end": 142,
+        "emphasis": [
+          {
+            "start": 139,
+            "end": 141
+          }
+        ],
+        "text": "test(\"入れ子の中身を押して動かさずに離すと、続く click でも押した時点と同じ artboard 直下の子が選ばれる\", async () => {\n  await renderOpenedDocument(setupDocument());\n\n  pressPointer(drawn(\"label\"), { x: 100, y: 100 });\n  releasePointer(drawn(\"label\"), { x: 100, y: 100 });\n  // `userEvent.click` は自前の `pointerdown` で掴み直すので、`click` だけを撃つ\n  fireEvent.click(drawn(\"label\"));\n\n  expect(currentRowNames(tree())).toEqual([\"card\"]);\n});"
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts",
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx"
+      ],
+      "covers": [
+        "name-at",
+        "click-select",
+        "select-at"
+      ]
+    },
+    {
+      "id": "gs-cmd",
+      "suite": "grab-select",
+      "name": "⌘ を押しながら押すと、押した位置のいちばん内側が選ばれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "掴む階層の規則(⌘ でいちばん内側)が、選ぶものにもそのまま効くこと。⌘ を無視する壊し方で落ちる",
+      "given": "`card` の中に `label` がある編集画面",
+      "when": "⌘ を押しながら `label` を押す",
+      "then": "ツリーの選択行が `label`",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 144,
+        "end": 150,
+        "emphasis": [
+          {
+            "start": 147,
+            "end": 149
+          }
+        ],
+        "text": "test(\"⌘ を押しながら押すと、押した位置のいちばん内側が選ばれる\", async () => {\n  await renderOpenedDocument(setupDocument());\n\n  pressPointerHolding(drawn(\"label\"), { x: 100, y: 100 }, \"meta\");\n\n  expect(currentRowNames(tree())).toEqual([\"label\"]);\n});"
+      },
+      "values": {
+        "columns": [
+          "押した要素",
+          "押し方",
+          "選ばれる"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`title`(artboard 直下)",
+              "そのまま",
+              "`title`"
+            ]
+          },
+          {
+            "cells": [
+              "`label`(`card` の中)",
+              "そのまま",
+              "`card`"
+            ]
+          },
+          {
+            "cells": [
+              "`label`(`card` の中)",
+              "⌘ を押しながら",
+              "`label`"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "name-at",
+        "select-grabbed"
+      ]
+    },
+    {
+      "id": "gs-right",
+      "suite": "grab-select",
+      "name": "右ボタンで押しても、押した時点では選択は変わらない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "右ボタンでは掴まないので選ばない(右クリックの選択はメニューの側が決める)。主ボタン判定を外す壊し方で落ちる",
+      "given": "何も選んでいない編集画面",
+      "when": "右ボタンで `title` の pointerdown だけを起こす",
+      "then": "右ペインの見出しが空のまま",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 152,
+        "end": 158,
+        "emphasis": [
+          {
+            "start": 155,
+            "end": 157
+          }
+        ],
+        "text": "test(\"右ボタンで押しても、押した時点では選択は変わらない\", async () => {\n  await renderOpenedDocument(setupDocument());\n\n  pressPointer(drawn(\"title\"), { x: 100, y: 100 }, PointerButtons.Secondary);\n\n  expect(rightPaneHeading().textContent).toBe(\"\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx"
+      ],
+      "covers": [
+        "grab-node"
+      ]
+    },
+    {
+      "id": "gs-locked",
+      "suite": "grab-select",
+      "name": "ロック中のノードだけが乗っているところを押しても、押した時点では何も選ばれない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "ロック中のノードは掴めず、背景と同じく範囲選択へ渡す。artboard へ倒して選ぶ実装と見分けるため右ペインの見出しで見る。掴めないときも選ぶ壊し方で落ちる",
+      "given": "ロックした `memo` がある編集画面",
+      "when": "`memo` を押す",
+      "then": "右ペインの見出しが空のまま(artboard も選ばれない)",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 160,
+        "end": 166,
+        "emphasis": [
+          {
+            "start": 163,
+            "end": 165
+          }
+        ],
+        "text": "test(\"ロック中のノードだけが乗っているところを押しても、押した時点では何も選ばれない\", async () => {\n  await renderOpenedDocument(setupDocument());\n\n  pressPointer(drawn(\"memo\"), { x: 100, y: 100 });\n\n  expect(rightPaneHeading().textContent).toBe(\"\");\n});"
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "name-at"
+      ]
+    },
+    {
+      "id": "gs-heading",
+      "suite": "grab-select",
+      "name": "artboard の見出しを掴んで運んでも、選んでいたノードが選ばれたまま",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "見出しは artboard を運ぶ掴み口で、ノードを掴まない。見出しで artboard を選ぶ壊し方で落ちる",
+      "given": "ツリーで `title` を選んだ編集画面",
+      "when": "`home` の見出しを掴んで運ぶ",
+      "then": "ツリーの選択行が `title` のまま",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 168,
+        "end": 178,
+        "emphasis": [
+          {
+            "start": 172,
+            "end": 177
+          }
+        ],
+        "text": "test(\"artboard の見出しを掴んで運んでも、選んでいたノードが選ばれたまま\", async () => {\n  await renderOpenedDocument(setupDocument());\n  await selectInTree(\"title\");\n\n  drag(artboardHandle(\"home\"), {\n    from: { x: 100, y: 100 },\n    to: { x: 140, y: 120 },\n  });\n\n  expect(currentRowNames(tree())).toEqual([\"title\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx"
+      ]
+    },
+    {
+      "id": "gs-multi",
+      "suite": "grab-select",
+      "name": "複数選択中に一員を押すと、押した位置でクリックが選ぶもの 1 つの選択になる",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "docs に書いた後退をそのまま固定する(#1298 で書き換える前提)。押した時点で選ばない(既に選ばれていれば選ばない)壊し方で落ちる",
+      "given": "範囲で `title` と `caption` を選んだ編集画面",
+      "when": "`title` を押す",
+      "then": "ツリーの選択行が `title` だけ",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 180,
+        "end": 187,
+        "emphasis": [
+          {
+            "start": 182,
+            "end": 186
+          }
+        ],
+        "text": "test(\"複数選択中に一員を押すと、押した位置でクリックが選ぶもの 1 つの選択になる\", async () => {\n  await renderOpenedDocument(setupDocument());\n  dragRangeAround({ upper: \"title\", lower: \"caption\" });\n\n  pressPointer(drawn(\"title\"), { x: 100, y: 100 });\n\n  expect(currentRowNames(tree())).toEqual([\"title\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "select-grabbed",
+        "select"
+      ]
+    },
+    {
+      "id": "gs-inline-target",
+      "suite": "grab-select",
+      "name": "Text のインライン編集中に別のノードを押すと、書いていた文言は編集していた Text に入る",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "確定先は選択中のものなので、選ぶ前に確定させる必要がある。フォーカスを移さない・選んだ後に移す、のどちらの壊し方でも落ちる",
+      "given": "`title` の文言を「書き換え」と打っている途中",
+      "when": "`caption` を pointerdown → mousedown の順で押す",
+      "then": "`title` の文言が「書き換え」",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 189,
+        "end": 196,
+        "emphasis": [
+          {
+            "start": 193,
+            "end": 195
+          }
+        ],
+        "text": "test(\"Text のインライン編集中に別のノードを押すと、書いていた文言は編集していた Text に入る\", async () => {\n  await renderOpenedDocument(setupDocument());\n  await typeTitleInline(\"書き換え\");\n\n  await pressMovingFocus(drawn(\"caption\"));\n\n  expect(drawn(\"title\").textContent).toBe(\"書き換え\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+        "src/features/editor/features/canvas/hooks/use-text-edit/index.ts"
+      ],
+      "covers": [
+        "focus-text",
+        "commit-text"
+      ]
+    },
+    {
+      "id": "gs-inline-pressed",
+      "suite": "grab-select",
+      "name": "Text のインライン編集中に別のノードを押しても、押したノードの文言は変わらない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "確定が押したノードへずれる壊れ方を、押した側から見る。フォーカスの順序を壊すと落ちる",
+      "given": "`title` の文言を「書き換え」と打っている途中",
+      "when": "`caption` を pointerdown → mousedown の順で押す",
+      "then": "`caption` の文言が「注記」のまま",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 198,
+        "end": 205,
+        "emphasis": [
+          {
+            "start": 202,
+            "end": 204
+          }
+        ],
+        "text": "test(\"Text のインライン編集中に別のノードを押しても、押したノードの文言は変わらない\", async () => {\n  await renderOpenedDocument(setupDocument());\n  await typeTitleInline(\"書き換え\");\n\n  await pressMovingFocus(drawn(\"caption\"));\n\n  expect(drawn(\"caption\").textContent).toBe(\"注記\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+        "src/features/editor/features/canvas/hooks/use-text-edit/index.ts"
+      ],
+      "covers": [
+        "focus-text",
+        "commit-text"
+      ]
+    },
+    {
+      "id": "gs-rename-target",
+      "suite": "grab-select",
+      "name": "名前の変更中にキャンバスで別のノードを押すと、改名されるのは名前を打っていたノード",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "名前を変える対象は選択から引くので、選ぶ前に確定させる必要がある。改名先は描かれた文言で見る(名前の一覧だと押した側が改名される壊れ方でも通る)。フォーカスを移さない壊し方で落ちる",
+      "given": "ツリーで `title` の名前を `heading` と打っている途中",
+      "when": "キャンバスの `caption` を pointerdown → mousedown の順で押す",
+      "then": "`heading` の文言が `title` のものだった「見出し」",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 207,
+        "end": 215,
+        "emphasis": [
+          {
+            "start": 211,
+            "end": 214
+          }
+        ],
+        "text": "test(\"名前の変更中にキャンバスで別のノードを押すと、改名されるのは名前を打っていたノード\", async () => {\n  await renderOpenedDocument(setupDocument());\n  await typeTitleName(\"heading\");\n\n  await pressMovingFocus(drawn(\"caption\"));\n\n  // 押したノードへ改名が漏れると、`heading` の文言は `caption` の「注記」になる\n  expect(drawn(\"heading\").textContent).toBe(\"見出し\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "focus-rename",
+        "finish-rename"
+      ]
+    },
+    {
+      "id": "gs-rename-pressed",
+      "suite": "grab-select",
+      "name": "名前の変更中にキャンバスで別のノードを押しても、押したノードの名前は変わらない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "改名が押したノードへ漏れる壊れ方を、押した側から見る。フォーカスを選んだ後に移す壊し方で落ちる",
+      "given": "ツリーで `title` の名前を `heading` と打っている途中",
+      "when": "キャンバスの `caption` を pointerdown → mousedown の順で押す",
+      "then": "`caption` が同じ名前で描かれ、文言は「注記」",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 217,
+        "end": 224,
+        "emphasis": [
+          {
+            "start": 221,
+            "end": 223
+          }
+        ],
+        "text": "test(\"名前の変更中にキャンバスで別のノードを押しても、押したノードの名前は変わらない\", async () => {\n  await renderOpenedDocument(setupDocument());\n  await typeTitleName(\"heading\");\n\n  await pressMovingFocus(drawn(\"caption\"));\n\n  expect(drawn(\"caption\").textContent).toBe(\"注記\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "focus-rename",
+        "finish-rename"
+      ]
+    },
+    {
+      "id": "gs-rename-selected",
+      "suite": "grab-select",
+      "name": "名前の変更中にキャンバスで別のノードを押すと、押したノードが選ばれる",
+      "techniques": [
+        "state"
+      ],
+      "why": "確定を先に済ませても、選ぶこと自体はやめない(編集中だけ選ばない案は却下した)",
+      "given": "ツリーで `title` の名前を `heading` と打っている途中",
+      "when": "キャンバスの `caption` を pointerdown → mousedown の順で押す",
+      "then": "ツリーの選択行が `caption`",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+        "start": 226,
+        "end": 233,
+        "emphasis": [
+          {
+            "start": 230,
+            "end": 232
+          }
+        ],
+        "text": "test(\"名前の変更中にキャンバスで別のノードを押すと、押したノードが選ばれる\", async () => {\n  await renderOpenedDocument(setupDocument());\n  await typeTitleName(\"heading\");\n\n  await pressMovingFocus(drawn(\"caption\"));\n\n  expect(currentRowNames(tree())).toEqual([\"caption\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/components/opened-document-editor/index.tsx"
+      ],
+      "covers": [
+        "select-grabbed",
+        "select"
+      ]
+    },
+    {
+      "id": "rp-click",
+      "suite": "editor-reposition",
+      "name": "キャンバスで掴んだノードを左ペインの上で離しても、直後のクリックは選択に使われない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "離した直後の click は 3 ペインの器に出るので、器で飲み込めていること。期待値を `home-panel` から `home-badge` に変えたが、click が漏れれば `home-title` になるので守りは残る",
+      "given": "ツリーで `home-panel` を選んだ編集画面",
+      "when": "`home-badge` を押して左ペインの上まで運んで離し、`home-title` へ `click` だけを撃つ",
+      "then": "右ペインに `home-badge`",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+        "start": 149,
+        "end": 168,
+        "emphasis": [
+          {
+            "start": 160,
+            "end": 160
+          },
+          {
+            "start": 167,
+            "end": 167
+          }
+        ],
+        "text": "test(\"キャンバスで掴んだノードを左ペインの上で離しても、直後のクリックは選択に使われない\", async () => {\n  await renderOpenedDocument(setupDocument());\n  await userEvent.click(screen.getByRole(\"button\", { name: \"home-panel\" }));\n\n  /*\n   * 離した直後の `click` は、押した場所（キャンバス）と離した場所（左ペイン）の共通の祖先＝\n   * 3 ペインの器に出る。枠にもキャンバスの土台にも届かないので、器で受けていないと飲み込めない。\n   *\n   * `userEvent.click` を使わないのは、あれが自前の `pointerup` を伴い、それが器の `release`\n   * を通って飲み込む状態を先に消してしまうため。\n   *\n   * 押した時点で `home-badge` が選ばれるので、`click` が漏れれば `home-title` に変わる。\n   */\n  pressPointer(drawn(\"home-badge\"), { x: 100, y: 100 });\n  movePointer(leftPane(), { x: 70, y: 112 });\n  releasePointer(leftPane(), { x: 70, y: 112 });\n  fireEvent.click(drawn(\"home-title\"));\n\n  expect(within(propertyPane()).getByText(\"home-badge\")).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "swallow-click",
+        "select-grabbed"
+      ]
+    },
+    {
+      "id": "es-reposition",
+      "suite": "state-reposition",
+      "name": "選んでいないノードでも座標を置き直せる（置き直しは選択に依らない）",
+      "techniques": [
+        "state"
+      ],
+      "why": "座標の置き直しは選択に依らない。括弧の「キャンバスのドラッグは選択を変えない」が嘘になったので直した(中身は同じ)",
+      "given": "何も選んでいない状態",
+      "when": "`badge` の座標を置き直す",
+      "then": "置き直せる",
+      "commit": "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts",
+        "start": 73,
+        "end": 81,
+        "text": "test(\"選んでいないノードでも座標を置き直せる（置き直しは選択に依らない）\", () => {\n  const state = setupState();\n\n  // 選択が無い（= プロパティパネル経由の編集は成立しない）ことを前提に置く\n  expect(EditorState.singleName(state)).toEqual(Option.none);\n  expect(\n    Option.isSome(EditorState.reposition(state, \"badge\", toHome(70, 12))),\n  ).toBe(true);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "キャンバスでノードを押した時点で、そのノードが選ばれるようになった",
+    "lead": "選んでいないノードを押して運ぶと、指を離す前からそのノードが選ばれます。名前やその場の文言を書き換えている途中に押しても、書いていた内容は今までどおり書いていたものに入ります。",
+    "changed": {
+      "before": [
+        {
+          "text": "選んでいないノードを押して運んでも、選択は前のまま(または何も選ばれないまま)だった"
+        },
+        {
+          "text": "運んだノードを選ぶには、運び終えたあとにもう一度クリックする必要があった"
+        }
+      ],
+      "after": [
+        {
+          "text": "押した時点で、離す前からそのノードが選ばれる(枠・ツリーの行・右のパネルの見出しが切り替わる)",
+          "message": "select-grabbed"
+        },
+        {
+          "text": "運び終えても、運んでいる途中で編集画面の外へ出て取り消しても、選択は戻らない",
+          "message": "swallow-click"
+        }
+      ],
+      "text": "選ぶものは、同じ所をクリックしたときに選ばれるものと同じです(入れ子の中身なら外側、⌘ を押しながらならいちばん内側)。",
+      "specs": [
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「キャンバス直接操作」の「移動(ドラッグ)」の「押した時点で、掴んだノードが選ばれる」の項",
+          "text": "押した時点で選ぶこと、運び終えても取り消しても戻さないこと、複数選択中は 1 つになること、入力欄が出ている間は確定してから選ぶことを足した",
+          "shas": [
+            "1c5a6f5690824b77cac19e48bb7fd8cb10045d50",
+            "e7e6e8eec11a2b9c7491c601f3e0a2eba4dd7c3f"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「キャンバス直接操作」の「移動(ドラッグ)」の、編集画面の外へ出ると運ぶのを取り消す項",
+          "text": "取り消しを独立した項として足し、ノードは動かないと書いた",
+          "shas": [
+            "e7e6e8eec11a2b9c7491c601f3e0a2eba4dd7c3f"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「キャンバス直接操作」の「移動(ドラッグ)」の、落とせる親が無い場所で離したときの項",
+          "text": "「何も起きない」を「ノードは動かない」に直した(選択は押した時点で変わっているため)",
+          "shas": [
+            "e7e6e8eec11a2b9c7491c601f3e0a2eba4dd7c3f"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「名前の変更」の、入力欄が見えない間の項",
+          "text": "見えていない間にキャンバスで選び直すと、名前を変える対象が選び直したものへ移ることを足した(クリックでも元から同じ)",
+          "shas": [
+            "e7e6e8eec11a2b9c7491c601f3e0a2eba4dd7c3f"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 456,
+          "text": "運ぶものをクリックで選ぶものに揃えたときに、押した時点で選ぶかは別の振る舞いとして先送りしていた"
+        },
+        {
+          "issue": 1298,
+          "text": "複数選択中に一員を押すと 1 つの選択に崩れる後退を、選択を保つ形へ見直す"
+        }
+      ],
+      "primers": [
+        "pointer-order",
+        "focus-method",
+        "focus-before-select"
+      ]
+    },
+    "tables": [
+      {
+        "label": "押した場所と時点ごとの選択",
+        "gist": "選ばれるのは、押した時点で掴めたものだけ。掴めない所では、押した時点の選択は変わらない。",
+        "text": "列は、押した時点と、そのまま運んで離したあと。運ばずに離したときは、続くクリックが押した時点と同じものを選びます。",
+        "rowHeads": [
+          {
+            "id": "unselected",
+            "label": "選んでいないノード"
+          },
+          {
+            "id": "nested",
+            "label": "入れ子の中身",
+            "note": "⌘ なし"
+          },
+          {
+            "id": "deepest",
+            "label": "入れ子の中身",
+            "note": "⌘ を押しながら"
+          },
+          {
+            "id": "selected",
+            "label": "選んでいるノード"
+          },
+          {
+            "id": "member",
+            "label": "複数選択の一員"
+          },
+          {
+            "id": "background",
+            "label": "artboard の背景"
+          },
+          {
+            "id": "locked",
+            "label": "ロック中のノードだけが乗っている所"
+          },
+          {
+            "id": "heading",
+            "label": "artboard の見出し"
+          },
+          {
+            "id": "right",
+            "label": "選んでいないノード",
+            "note": "右ボタン"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "press",
+            "label": "押した時点"
+          },
+          {
+            "id": "release",
+            "label": "運んで離したあと"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "unselected",
+            "columnHead": "press",
+            "result": "そのノードが選ばれる",
+            "was": "選択は変わらない",
+            "tests": [
+              "hs-plain",
+              "gs-press"
+            ]
+          },
+          {
+            "rowHead": "unselected",
+            "columnHead": "release",
+            "result": "運んだノードが選ばれたまま",
+            "was": "前の選択のまま",
+            "tests": [
+              "gs-moved",
+              "rp-click"
+            ]
+          },
+          {
+            "rowHead": "nested",
+            "columnHead": "press",
+            "result": "外側の、artboard のすぐ下のものが選ばれる",
+            "was": "選択は変わらない",
+            "tests": [
+              "hs-nested"
+            ]
+          },
+          {
+            "rowHead": "nested",
+            "columnHead": "release",
+            "result": "その外側のものが選ばれたまま",
+            "was": "前の選択のまま",
+            "note": "運ばずに離したときも同じものが選ばれる",
+            "tests": [
+              "gs-nested-click"
+            ]
+          },
+          {
+            "rowHead": "deepest",
+            "columnHead": "press",
+            "result": "押した位置のいちばん内側が選ばれる",
+            "was": "選択は変わらない",
+            "tests": [
+              "gs-cmd"
+            ]
+          },
+          {
+            "rowHead": "deepest",
+            "columnHead": "release",
+            "result": "そのいちばん内側が選ばれたまま",
+            "was": "前の選択のまま"
+          },
+          {
+            "rowHead": "selected",
+            "columnHead": "press",
+            "result": "そのまま選ばれている",
+            "note": "ダブルクリックで掘って選んだ内側も、そのまま運べる"
+          },
+          {
+            "rowHead": "selected",
+            "columnHead": "release",
+            "result": "選ばれたまま"
+          },
+          {
+            "rowHead": "member",
+            "columnHead": "press",
+            "result": "押した位置でクリックが選ぶもの 1 つだけの選択になる",
+            "was": "複数選択のまま",
+            "note": "後退。複数選択を保つ形は別の課題で見直す",
+            "tests": [
+              "gs-multi"
+            ]
+          },
+          {
+            "rowHead": "member",
+            "columnHead": "release",
+            "result": "運んだもの 1 つだけの選択になる",
+            "was": "複数選択のまま運べた"
+          },
+          {
+            "rowHead": "background",
+            "columnHead": "press",
+            "result": "選択は変わらない",
+            "tests": [
+              "hs-background"
+            ]
+          },
+          {
+            "rowHead": "background",
+            "columnHead": "release",
+            "result": "範囲で選ぶ操作になる"
+          },
+          {
+            "rowHead": "locked",
+            "columnHead": "press",
+            "result": "選択は変わらない(artboard も選ばれない)",
+            "tests": [
+              "gs-locked"
+            ]
+          },
+          {
+            "rowHead": "locked",
+            "columnHead": "release",
+            "result": "背景と同じく範囲で選ぶ操作になる"
+          },
+          {
+            "rowHead": "heading",
+            "columnHead": "press",
+            "result": "選択は変わらない"
+          },
+          {
+            "rowHead": "heading",
+            "columnHead": "release",
+            "result": "artboard が動き、選んでいたものが選ばれたまま",
+            "tests": [
+              "gs-heading"
+            ]
+          },
+          {
+            "rowHead": "right",
+            "columnHead": "press",
+            "result": "押した時点では選択は変わらない",
+            "note": "このあとのメニューの側の決まりで選ばれる",
+            "tests": [
+              "gs-right"
+            ]
+          },
+          {
+            "rowHead": "right",
+            "columnHead": "release",
+            "result": "右ボタンでは運ばない"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "選んでいなかったノードを運んでいる最中",
+        "before": [
+          {
+            "text": "運んでいる間も、選択の枠やツリーの行の強調は前に選んでいたもののままだった"
+          }
+        ],
+        "after": [
+          {
+            "text": "運んでいる間から、選択の枠・ツリーの行の強調・右のパネルの見出しが運んでいるノードになる",
+            "message": "select-grabbed"
+          }
+        ],
+        "text": "すでに選んでいるノードを運ぶときと同じ見え方になります。",
+        "tests": [
+          "gs-press"
+        ]
+      },
+      {
+        "label": "運ぶのを途中で取り消したとき",
+        "before": [
+          {
+            "text": "取り消すと、ノードも選択も押す前のままだった"
+          }
+        ],
+        "after": [
+          {
+            "text": "ノードは動かないが、押したノードが選ばれたまま残る",
+            "message": "select-grabbed"
+          }
+        ],
+        "text": "運んでいる途中でポインタが編集画面の外へ出ると取り消しになります。選択だけは戻しません。",
+        "tests": [
+          "gs-cancel"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "名前の変更中にキャンバスで別のノードを押しても、新しい名前になるのは名前を打っていたノードで、押したノードの名前は変わらない",
+        "tests": [
+          "gs-rename-target",
+          "gs-rename-pressed",
+          "gs-rename-selected"
+        ]
+      },
+      {
+        "text": "文字のノードの文言をその場で書き換えている途中に別のノードを押しても、書いていた文言は書いていたノードに入り、押したノードの文言は変わらない",
+        "tests": [
+          "gs-inline-target",
+          "gs-inline-pressed"
+        ]
+      },
+      {
+        "text": "運ばずに離したときにクリックが選ぶものは、押した時点で選ばれたものと同じ",
+        "tests": [
+          "gs-nested-click"
+        ]
+      },
+      {
+        "text": "運んで離した位置で起きるクリックは、選択に使われない(左のパネルの上で離しても)",
+        "tests": [
+          "gs-moved",
+          "rp-click"
+        ]
+      },
+      {
+        "text": "左のパネルの部品の雛形を掴んだ時点では、選択は変わらない",
+        "tests": [
+          "hs-palette"
+        ]
+      },
+      {
+        "text": "選んでいないノードでも位置を変えられる",
+        "tests": [
+          "es-reposition"
+        ]
+      },
+      {
+        "text": "押した時点で画面はスクロールしない"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「キャンバス直接操作」の「artboard の移動」の「見出しから運んでも選択は変わらない」の項",
+        "text": "見出しから artboard を運んでも選択を変えない記述は変えていない"
+      },
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「コンテキストメニュー」の「右クリックは選択を変える」の項",
+        "text": "右クリックで選択が変わる決まりは変えていない(押した時点の選択に右ボタンは関わらない)"
+      },
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「名前の変更」の「確定は Enter とフォーカス外し」の項",
+        "text": "フォーカスが外れたら確定し、使えない名前ならフォーカス外しで取り消して閉じる決まりは変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "pointer-order",
+      "category": "DOM · イベント",
+      "label": "`pointerdown` → `mousedown` → `click` の順",
+      "gist": "ボタンを押して離す 1 回の操作で、ブラウザは決まった順に何通りもの[[イベント|event]]を出す。どの時点で処理するかによって、ほかの処理との前後が変わる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "押した瞬間にまず `pointerdown` が出て、続いて `mousedown` が出る。`mousedown` の[[既定の動作|default-action]]として、押した位置にあるフォーカスを受けられる要素へ[[フォーカス|focus]]が移り、それまでフォーカスを持っていた要素には[[blur|blur]]が出る。離すと `pointerup` → `mouseup` と出て、最後に `click` が出る。"
+        },
+        {
+          "kind": "text",
+          "text": "`click` が出るのは、押した要素と離した要素の両方を含むいちばん近い祖先。運んで離すと、押したノードとは違う所に `click` が出る。"
+        },
+        {
+          "kind": "caution",
+          "text": "`pointerdown` の中で何かを変えると、その変化は `mousedown` の[[blur|blur]]より前に起きる。blur をきっかけに「今の選択」へ書き込む入力欄は、`pointerdown` で選択を変えると新しい選択へ書き込んでしまう。"
+        },
+        {
+          "kind": "memo",
+          "text": "`click` の出る先は、このリポジトリでは Chromium で実測した結果をコメントに残している(`useNodeDrag` の `onClickCapture`)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "lineRange": {
+            "start": 210,
+            "end": 237
+          },
+          "text": "枠の `onPointerDown`。押した時点で掴み、掴めたら選ぶ",
+          "shas": [
+            "7cda705512234bca91f781185be712c334f3195f"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "lineRange": {
+            "start": 630,
+            "end": 644
+          },
+          "text": "運んで離した直後の `click` を、いちばん外側の器の capture で飲み込む"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+          "lineRange": {
+            "start": 77,
+            "end": 85
+          },
+          "text": "テストで pointerdown → mousedown の順に撃ち、フォーカスを動かす押し方",
+          "shas": [
+            "29dd3aa9114b2e094603f286cb0c8c97e179db00",
+            "7111108fc1fa1cdcc971f499c5444c5427e75429"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "focus-method",
+        "focus-before-select"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "focus-method",
+      "category": "DOM · フォーカス",
+      "label": "`focus()` と `preventScroll`",
+      "gist": "要素へ[[フォーカス|focus]]をプログラムから移すメソッド。呼んだその場で、それまでフォーカスを持っていた要素に[[blur|blur]]が出る。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "element.focus(options?: FocusOptions): void"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "options.preventScroll",
+              "type": "boolean",
+              "text": "`true` なら、フォーカスを移した要素を画面に入れるためのスクロールをしない",
+              "note": "省けば false"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "フォーカスを受けられるのは入力欄やボタンのような要素と、[[`tabIndex`|tabindex]] を持つ要素。既にフォーカスを持っている要素に呼んでも何も起きない。"
+        },
+        {
+          "kind": "caution",
+          "text": "[[blur|blur]]は `focus()` の呼び出しの中で出るので、`focus()` の次の行へ進む時点で、外れた入力欄の blur のハンドラは走り終えている。順序を頼りにするなら、`focus()` を先に呼ぶ。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "lineRange": {
+            "start": 224,
+            "end": 224
+          },
+          "text": "選ぶ前に枠へフォーカスを移す",
+          "shas": [
+            "7cda705512234bca91f781185be712c334f3195f"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "lineRange": {
+            "start": 173,
+            "end": 173
+          },
+          "text": "枠は `tabIndex={0}` なのでフォーカスを受けられる"
+        }
+      ],
+      "seeAlso": [
+        "pointer-order",
+        "react-events"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "react-events",
+      "category": "React · イベント",
+      "label": "React のイベントハンドラと `currentTarget`",
+      "gist": "JSX の要素に `onPointerDown` や `onBlur` のような props で関数を渡すと、その要素で[[イベント|event]]が起きたときに React がその関数を呼ぶ。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "ハンドラが受け取るイベントの `currentTarget` はハンドラを付けた要素(ここでは artboard の枠)で、`target` は実際に押された内側の要素。`stopPropagation()` を呼ぶと、外側の要素の同じイベントのハンドラへは渡らない。`onBlur` は、その要素から[[フォーカス|focus]]が外れたときに呼ばれる。"
+        },
+        {
+          "kind": "text",
+          "text": "ハンドラの中で状態を変える関数を呼んでも、状態はその場では変わらない。送った更新は次の[[描画|render]]で、送った順に[[reducer|reducer]]へ通される。blur で送った確定のあとに選ぶ更新を送れば、確定は選び直す前の選択で処理される。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "lineRange": {
+            "start": 210,
+            "end": 237
+          },
+          "text": "`currentTarget` で枠そのものへフォーカスを移し、掴んだら `stopPropagation` で土台の範囲選択へ渡さない"
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/row-name-field/index.tsx",
+          "lineRange": {
+            "start": 67,
+            "end": 67
+          },
+          "text": "名前の入力欄は `onBlur` で確定する"
+        }
+      ],
+      "seeAlso": [
+        "focus-method",
+        "commit-target"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "grab-rule",
+      "category": "canvas · 掴む",
+      "label": "掴むものの規則 `nodeNameAt`",
+      "gist": "押した位置で何を掴むかは、同じ押し方のクリックが選ぶものと同じ規則で `DocumentSelection.nodeNameAt` が決める。この PR は、その答えをそのまま選択へ渡す。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "候補はロックしていないノードだけで、掘る量(そのまま / ⌘ でいちばん内側)と今の選択から 1 つ選ぶ。押した位置が今の選択の内側なら選んでいるノードを掴む。選べるノードが無ければ[[`none`|option-none]]を返し、`grabNode` は `false` を返して範囲選択へ渡す。"
+        },
+        {
+          "kind": "rule",
+          "text": "選ぶ名前を別に求め直さない。`grabNode` は掴んだ名前を `onSelectGrabbed` にそのまま渡す。"
+        },
+        {
+          "kind": "spec",
+          "text": "掴むのは同じ押し方のクリックが選ぶもの、押した時点で掴んだノードが選ばれる(docs/06-ui.md「キャンバス直接操作」の移動)。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は掴んでも選ばず、運んだあとの `click` を飲み込んでいたので、選択は前のままだった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "lineRange": {
+            "start": 140,
+            "end": 167
+          },
+          "text": "`nodeNameAt`(この PR では変えていない)"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "lineRange": {
+            "start": 545,
+            "end": 562
+          },
+          "text": "`grabNode` が掴んだ名前を `onSelectGrabbed` に渡す",
+          "shas": [
+            "451a96e922b79d79d94c18add82aa450622dbb6a"
+          ]
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "lineRange": {
+            "start": 123,
+            "end": 123
+          },
+          "text": "編集画面が受け口を `node.select` に繋ぐ",
+          "shas": [
+            "451a96e922b79d79d94c18add82aa450622dbb6a"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "swallow-click",
+        "pointer-order"
+      ],
+      "tests": [
+        "hs-plain",
+        "hs-nested",
+        "hs-background",
+        "gs-cmd",
+        "gs-locked",
+        "gs-nested-click"
+      ],
+      "flows": [
+        "press-unselected"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "commit-target",
+      "category": "editor · 確定",
+      "label": "確定先は「選択中のもの」",
+      "gist": "名前の変更と Text のインライン編集は、どちらも入力欄から[[フォーカス|focus]]が外れたときに確定し、書き込む先をその時点の選択から引く。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "名前の変更は「変更中か」だけを状態に持ち、対象は `EditorState.renamingName` が選択から引く。インライン編集の確定は `onEditProp` へ送られ、書き込む先は選択中のもの。どちらも、確定の更新が選び直しの更新より先に届けば、打っていたものへ入る。"
+        },
+        {
+          "kind": "memo",
+          "text": "対象を状態に持たないのは、持つと選択と食い違った対象を編集できてしまうため(`EditorState` の `isRenaming` の doc)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "lineRange": {
+            "start": 330,
+            "end": 341
+          },
+          "text": "`renamingName` は選択から対象を引く"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+          "lineRange": {
+            "start": 92,
+            "end": 104
+          },
+          "text": "`commit` は選択中のものへ書く。前提を守る場所を書き足した",
+          "shas": [
+            "7cda705512234bca91f781185be712c334f3195f"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "focus-before-select",
+        "react-events"
+      ],
+      "tests": [
+        "gs-rename-target",
+        "gs-inline-target"
+      ],
+      "flows": [
+        "press-while-editing"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "focus-before-select",
+      "category": "canvas · 確定",
+      "label": "選ぶ前に枠へフォーカスを移す",
+      "gist": "枠の `onPointerDown` は、主ボタンと分かった直後・掴む前に枠へ[[フォーカス|focus]]を移す。入力欄の[[blur|blur]]が先に走り、確定が選び直しより先に届く。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+            "start": 210,
+            "end": 237,
+            "emphasis": [
+              {
+                "start": 218,
+                "end": 224
+              }
+            ],
+            "text": "        onPointerDown={(event) => {\n          /*\n           * 右ボタンでは何も掴まない。掴むと、メニューを操作するあいだの動きがそのまま移動に\n           * なる（土台へ渡ったあとは `useRangeSelect` が決める）。\n           */\n          if (!PointerButton.isPrimary(event)) {\n            return;\n          }\n          /*\n           * 掴むと選ぶので、選ぶ前にフォーカスを取り、名前の変更・インライン編集の入力欄を選択中\n           * のものへ確定させる。ブラウザが移すのは続く mousedown で、選び直した後になる。\n           * 名前の変更の対象を状態に持たないのは、`Assets` を開いたまま変更に入り、キャンバスで\n           * 選び直して `Layers` へ戻ったとき、入力欄の対象が今の選び直したものから前のものへ変わるため。\n           */\n          event.currentTarget.focus({ preventScroll: true });\n          /*\n           * 内側から外へ向かって掴み手を決める。ハンドル → 中身のノードの順で、先に掴んだもの\n           * が後ろへ渡さない。どちらも掴まなかった背景（子が乗っていないところ・ロック中の\n           * ノードの上）は土台まで渡す（docs/06-ui.md「範囲選択」）。\n           */\n          const grabbed =\n            nodeResize.grabAt(event) ||\n            nodeDrag.grabNode(event, underPointerAt(event));\n          if (grabbed) {\n            // 掴んだドラッグは土台へ渡さない（掴んだものと範囲の両方が動くと操作が読めなくなる）\n            event.stopPropagation();\n          }\n        }}"
+          }
+        },
+        {
+          "kind": "text",
+          "text": "順は、フォーカスを移す → 入力欄の blur で確定を送る → `grabNode` が選ぶ更新を送る。ブラウザが自分でフォーカスを移すのは続く `mousedown` で、選び直した後になるので、それを待たずに先取りしている。"
+        },
+        {
+          "kind": "caution",
+          "text": "この順序はフックの外の DOM 操作に頼っている。`grabNode` を別の場所から呼ぶなら、呼ぶ前にフォーカスを移す(`grabNode` の doc)。"
+        },
+        {
+          "kind": "history",
+          "text": "計画では押した時点で `textEdit.commit()` を呼ぶ形だったが、名前の変更の下書き(ツリーの行の部品が持つ)には届かないので、フォーカスの移動 1 つに置き換えた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "lineRange": {
+            "start": 218,
+            "end": 224
+          },
+          "text": "フォーカスを移す 1 行と、その理由・名前の変更の対象を状態に持たない理由",
+          "shas": [
+            "7cda705512234bca91f781185be712c334f3195f",
+            "2f0192f47c76c511f3b524fed182b90fa6e45c9d"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "lineRange": {
+            "start": 487,
+            "end": 491
+          },
+          "text": "`grabNode` の doc が、呼ぶ前にフォーカスを移しておく前提を指す",
+          "shas": [
+            "2f0192f47c76c511f3b524fed182b90fa6e45c9d"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "pointer-order",
+        "focus-method",
+        "commit-target"
+      ],
+      "tests": [
+        "gs-inline-target",
+        "gs-inline-pressed",
+        "gs-rename-target",
+        "gs-rename-pressed",
+        "gs-rename-selected"
+      ],
+      "flows": [
+        "press-while-editing"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "swallow-click",
+      "category": "canvas · 離す",
+      "label": "運んだあとのクリックを飲み込む",
+      "gist": "既存ノードを運んで離すと、ドラッグの状態は「離した直後」に入り、続く `click` を 1 回だけ飲み込む。この PR では変えていないが、押した時点で選んだものを離した位置で選び直させない役を担う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`NodeDrag.consumesClick` が `dropped` のときだけ `true` を返し、`useNodeDrag` の器が capture で `stopPropagation` する。動かさずに離したときはここへ入らないので、`click` は枠の `onSelect` へ届き、クリックの選択(`nameToSelectAt`)で選び直す。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+          "lineRange": {
+            "start": 466,
+            "end": 494
+          },
+          "text": "`release` と `consumesClick`。`release` の doc の根拠を docs の移動の節に直した",
+          "shas": [
+            "2f0192f47c76c511f3b524fed182b90fa6e45c9d"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "lineRange": {
+            "start": 638,
+            "end": 644
+          },
+          "text": "器の `onClickCapture`"
+        }
+      ],
+      "seeAlso": [
+        "grab-rule"
+      ],
+      "tests": [
+        "gs-moved",
+        "rp-click",
+        "gs-nested-click"
+      ],
+      "flows": [
+        "release-after-drag",
+        "release-without-drag"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "event",
+      "label": "イベント",
+      "text": "ブラウザが「押された」「フォーカスが外れた」のような出来事を知らせるもの。ページのコードは出来事の名前ごとに関数(ハンドラ)を登録して受け取る。"
+    },
+    {
+      "id": "default-action",
+      "label": "既定の動作",
+      "text": "イベントのあとにブラウザが自分で行う処理。`mousedown` ならフォーカスの移動、リンクの `click` ならページの移動。"
+    },
+    {
+      "id": "focus",
+      "label": "フォーカス",
+      "text": "キーボードの入力を受け取る要素。画面の中で同時に 1 つだけで、入力欄にフォーカスがあると打った文字がそこに入る。"
+    },
+    {
+      "id": "blur",
+      "label": "blur",
+      "text": "要素からフォーカスが外れたときに出るイベント。入力欄の確定のきっかけによく使う。"
+    },
+    {
+      "id": "tabindex",
+      "label": "tabIndex",
+      "text": "要素がフォーカスを受けられるかと Tab キーで巡る順を決める属性。`0` を付けると、`div` のような要素もフォーカスを受けられる。"
+    },
+    {
+      "id": "render",
+      "label": "描画",
+      "text": "React が状態から画面の中身を計算し直すこと。状態の更新はまとめられ、ハンドラが終わったあとの描画で反映される。"
+    },
+    {
+      "id": "reducer",
+      "label": "reducer",
+      "text": "今の状態と 1 つの操作を受け取り、次の状態を返す関数。React の `useReducer` は送られた操作をこの関数に 1 つずつ順に通す。"
+    },
+    {
+      "id": "option-none",
+      "label": "none",
+      "text": "このリポジトリの `Option` 型で「値が無い」を表す値。`null` や `undefined` の代わりに使う。"
+    }
+  ]
+}
