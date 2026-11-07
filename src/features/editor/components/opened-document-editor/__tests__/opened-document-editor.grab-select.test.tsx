@@ -14,17 +14,21 @@ import {
 import { rightPaneHeading } from "@/features/editor/__tests__/right-pane-heading";
 import {
   artboardHandle,
-  canvasSurface,
   drag,
   movePointer,
   pressPointer,
   releasePointer,
-  stubBounds,
   textInlineEditorField,
 } from "@/features/editor/features/canvas/__tests__";
 import { nameField } from "@/features/editor/features/sidebar/__tests__";
 import { PointerButtons } from "@/libs/dom-event";
-import { drawn, renderOpenedDocument, selectInTree, tree } from "./setup";
+import {
+  dragRangeAround,
+  drawn,
+  renderOpenedDocument,
+  selectInTree,
+  tree,
+} from "./setup";
 
 /*
  * キャンバスでノードを押した時点で、掴んだノードが選ばれるところを編集画面の配線ごと
@@ -76,15 +80,8 @@ function setupDocument(): DesignDocument {
  *
  * @param target 押す要素
  */
-async function pressHoldingFocus(target: Element): Promise<void> {
+async function pressMovingFocus(target: Element): Promise<void> {
   await userEvent.pointer({ keys: "[MouseLeft>]", target });
-}
-
-/** キャンバスで範囲を引いて、`title` と `caption` をまとめて選ぶ。 */
-function selectTitleAndCaptionByRange(): void {
-  stubBounds(drawn("title"), { left: 140, top: 84, width: 60, height: 20 });
-  stubBounds(drawn("caption"), { left: 140, top: 120, width: 80, height: 24 });
-  drag(canvasSurface(), { from: { x: 60, y: 40 }, to: { x: 260, y: 200 } });
 }
 
 /** `title` の文言をその場で打ち替えている途中（確定していない）にする。 */
@@ -133,6 +130,17 @@ test("運んでいる途中で編集画面の外へ出て取り消しても、�
   expect(currentRowNames(tree())).toEqual(["title"]);
 });
 
+test("入れ子の中身を押して動かさずに離すと、続く click でも押した時点と同じ artboard 直下の子が選ばれる", async () => {
+  await renderOpenedDocument(setupDocument());
+
+  pressPointer(drawn("label"), { x: 100, y: 100 });
+  releasePointer(drawn("label"), { x: 100, y: 100 });
+  // `userEvent.click` は自前の `pointerdown` で掴み直すので、`click` だけを撃つ
+  fireEvent.click(drawn("label"));
+
+  expect(currentRowNames(tree())).toEqual(["card"]);
+});
+
 test("⌘ を押しながら押すと、押した位置のいちばん内側が選ばれる", async () => {
   await renderOpenedDocument(setupDocument());
 
@@ -171,7 +179,7 @@ test("artboard の見出しを掴んで運んでも、選んでいたノード�
 
 test("複数選択中に一員を押すと、押した位置でクリックが選ぶもの 1 つの選択になる", async () => {
   await renderOpenedDocument(setupDocument());
-  selectTitleAndCaptionByRange();
+  dragRangeAround({ upper: "title", lower: "caption" });
 
   pressPointer(drawn("title"), { x: 100, y: 100 });
 
@@ -182,7 +190,7 @@ test("Text のインライン編集中に別のノードを押すと、書いて
   await renderOpenedDocument(setupDocument());
   await typeTitleInline("書き換え");
 
-  await pressHoldingFocus(drawn("caption"));
+  await pressMovingFocus(drawn("caption"));
 
   expect(drawn("title").textContent).toBe("書き換え");
 });
@@ -191,7 +199,7 @@ test("Text のインライン編集中に別のノードを押しても、押し
   await renderOpenedDocument(setupDocument());
   await typeTitleInline("書き換え");
 
-  await pressHoldingFocus(drawn("caption"));
+  await pressMovingFocus(drawn("caption"));
 
   expect(drawn("caption").textContent).toBe("注記");
 });
@@ -200,7 +208,7 @@ test("名前の変更中にキャンバスで別のノードを押すと、改�
   await renderOpenedDocument(setupDocument());
   await typeTitleName("heading");
 
-  await pressHoldingFocus(drawn("caption"));
+  await pressMovingFocus(drawn("caption"));
 
   // 押したノードへ改名が漏れると、`heading` の文言は `caption` の「注記」になる
   expect(drawn("heading").textContent).toBe("見出し");
@@ -210,7 +218,7 @@ test("名前の変更中にキャンバスで別のノードを押しても、�
   await renderOpenedDocument(setupDocument());
   await typeTitleName("heading");
 
-  await pressHoldingFocus(drawn("caption"));
+  await pressMovingFocus(drawn("caption"));
 
   expect(drawn("caption").textContent).toBe("注記");
 });
@@ -219,7 +227,7 @@ test("名前の変更中にキャンバスで別のノードを押すと、押�
   await renderOpenedDocument(setupDocument());
   await typeTitleName("heading");
 
-  await pressHoldingFocus(drawn("caption"));
+  await pressMovingFocus(drawn("caption"));
 
   expect(currentRowNames(tree())).toEqual(["caption"]);
 });
