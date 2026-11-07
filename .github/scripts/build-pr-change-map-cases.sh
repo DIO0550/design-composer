@@ -260,6 +260,7 @@ print("holds" if eval(sys.argv[2]) else "fails")
 PY
 }
 
+cases_before=$cases_reported
 while IFS='|' read -r label expression; do
   [ -n "$label" ] || continue
   file="$work/map.json"
@@ -352,6 +353,7 @@ rename した .sh の hunk の変更前の側は、旧パスの中身から読�
 html と sh 以外のファイルは hunkOpeningLines を持たない|"hunkOpeningLines" not in in_commit[(second, "docs/x.md")]
 patch を切ったファイルは、切った後の patch の hunk と同じ数だけ hunkOpeningLines を持つ|in_commit[(second, "docs/embedded/many.sh")]["truncated"] is True and len(in_commit[(second, "docs/embedded/many.sh")]["hunkOpeningLines"]) == sum(line.startswith("@@ ") for line in in_commit[(second, "docs/embedded/many.sh")]["patch"].split("\n")) > 1
 CASES
+report_cases_ran CASES "$cases_before"
 
 # blob の中身を読む手順を、この一時リポジトリの blob の名前で直に叩く。読める名前だけなら中身を返す(下の止まるケースが、
 # blob を読めないせいで止まったと分かるようにする対照)。

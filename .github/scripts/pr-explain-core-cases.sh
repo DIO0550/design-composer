@@ -2501,9 +2501,11 @@ if [ "$status" -ne 0 ]; then
   exit 1
 fi
 
+cases_before=$cases_reported
 while IFS=$'\t' read -r decision label; do
   [ -n "$label" ] || continue
   report same "$decision" "$label"
 done <<< "$results"
+report_cases_ran results "$cases_before"
 
 exit "$cases_failed"

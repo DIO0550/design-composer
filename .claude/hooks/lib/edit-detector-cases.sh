@@ -170,6 +170,7 @@ check() {
 copy_hooks
 place_sources
 
+cases_before=$cases_reported
 for hook in block-lint-suppress.sh check-doc-comments.sh check-test-helper-duplication.sh; do
   found="feedback"
   [ "$hook" = "block-lint-suppress.sh" ] && found="deny"
@@ -182,5 +183,6 @@ for hook in block-lint-suppress.sh check-doc-comments.sh check-test-helper-dupli
   check pass "$hook" real clean ok "実物の検出器で違反が無ければ、何も出さない"
   check pass "$hook" real violation broken "起動できない python3 しか無ければ、違反があっても何も出さない"
 done
+report_cases_ran hook "$cases_before"
 
 exit "$cases_failed"

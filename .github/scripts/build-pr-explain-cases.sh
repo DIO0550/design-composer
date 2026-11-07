@@ -370,12 +370,14 @@ for number, line in enumerate(open(f"{work}/cases.txt", encoding="utf-8"), 1):
 PY
 
 number=0
+cases_before=$cases_reported
 while IFS='|' read -r expected category base label change; do
   number=$((number + 1))
   [ -n "$label" ] || continue
   cp "$work/case-$number.json" "$work/case.json"
   report "$expected" "$(verdict "$category")" "$label"
 done <<<"$cases"
+report_cases_ran cases "$cases_before"
 
 # ここから下は書き出したものを見るケース。
 # $1 解説のファイルを作る基準, $2 変形。検査を走らせ、終了コードを返す(書き出し先は `$work/out.json`)

@@ -88,6 +88,7 @@ verdict() {
   fi
 }
 
+cases_before=$cases_reported
 while IFS='|' read -r expected mode input label; do
   [ -n "$input" ] || continue
   file="$work/src/sample.ts"
@@ -115,5 +116,6 @@ deny|all|method-undocumented|--all で走査しても、コンパニオンのメ
 deny|all|method-items-missing|--all で走査しても、メソッドの doc に @param / @returns が無いのを報告する
 pass|all|method-documented|--all で走査して、メソッドに @param / @returns の揃った doc があれば報告しない
 CASES
+report_cases_ran CASES "$cases_before"
 
 exit "$cases_failed"

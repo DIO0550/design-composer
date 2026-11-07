@@ -93,11 +93,13 @@ deny|language|追跡している .py が色を付ける表から外れる|script
 CASES
 )"
 
+cases_before=$cases_reported
 while IFS='|' read -r expected category label change; do
   [ -n "$label" ] || continue
   make_template "$change"
   report "$expected" "$(verdict "$category")" "$label"
 done <<<"$cases"
+report_cases_ran cases "$cases_before"
 
 report_documented_kinds "$checker"
 report_covered_kinds "$checker" "$(kinds_in_categories "$cases" pr-explain-)"
