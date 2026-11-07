@@ -68,8 +68,8 @@ function named(name: string) {
  *
  * ドキュメントと同じ入れ子で名前の属性を持つ要素を置き、artboard の枠と同じく押された位置
  * から外へ辿った名前で掴む（production の枠は中身の div の木を入れるために `div role="button"` にしている。器は
- * ボタン要素で代用するので、中身をボタンの中に置ける `span` にする）。掴めたか・`click` が選択まで届いたか・運んでいる雛形・掴んだ
- * ノードのずらし量を読めるようにする（枠・ドロップ線・ガイド線の見た目は
+ * ボタン要素で代用するので、中身をボタンの中に置ける `span` にする）。掴めたか・掴んだ時点で選ばれた
+ * ノード・`click` が選択まで届いたか・運んでいる雛形・掴んだノードのずらし量を読めるようにする（枠・ドロップ線・ガイド線の見た目は
  * features/editor/features/canvas/components/artboard-canvas の責務なのでここでは扱わない）。
  */
 function NodeDragHarness({
@@ -84,10 +84,12 @@ function NodeDragHarness({
 }>) {
   const [grabbed, setGrabbed] = useState("押していない");
   const [clicked, setClicked] = useState("click は届いていない");
+  const [selected, setSelected] = useState("選んでいない");
   const nodeDrag = useNodeDrag({
     selection: setupSelection(),
     view,
     ...callbacks,
+    onSelectGrabbed: setSelected,
   });
   const preview = NodeDrag.repositionPreview(nodeDrag.drag);
 
@@ -128,6 +130,7 @@ function NodeDragHarness({
       />
       <p data-testid="grabbed">{grabbed}</p>
       <p data-testid="clicked">{clicked}</p>
+      <p data-testid="selected">{selected}</p>
       <p data-testid="carried-template">
         {Option.isSome(nodeDrag.carriedTemplate)
           ? NodeTemplate.baseName(nodeDrag.carriedTemplate.value)

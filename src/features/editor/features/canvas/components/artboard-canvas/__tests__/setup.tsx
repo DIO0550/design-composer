@@ -130,6 +130,7 @@ function CanvasWithView(props: CanvasValues & CanvasHandlers) {
     view: canvasView.view,
     onMove: props.onMoveNode,
     onInsertAt: () => {},
+    onSelectGrabbed: () => {},
     onReposition: props.onRepositionNode,
   });
   return (

@@ -30,8 +30,8 @@ export type Grab = Readonly<{ dragged: DraggedNode; origin: Offset }>;
  * を運んでいるかは `DraggedNode` が持つ（分けると「両方ドラッグ中」が型で書けてしまう）。
  *
  * `dropped` は既存ノードを離した直後の状態。ブラウザは `pointerup` のあとに `click` を発火
- * させるので、これを挟まないと運んだ先の要素が選択されてしまう（移動は選択を変えない）。閾
- * 値未満の動きではここへ入らない。
+ * させるので、これを挟まないと運んだ先の要素が選択されてしまう（選ばれるのは押した時点で
+ * 掴んだもので、離した先の要素ではない）。閾値未満の動きではここへ入らない。
  */
 export type NodeDrag =
   | Readonly<{ kind: "idle" }>
