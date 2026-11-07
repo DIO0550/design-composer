@@ -43,6 +43,7 @@ function toDroppedPaths(payload: unknown): Option<readonly FilePath[]> {
  * ウィンドウへのファイルのドロップ（docs/05-architecture.md「Tauri IPC」）。配るのは落
  * とされたパスのうちファイル名の要素を持つものの並びだけで、開けるファイルかどうかは見ない。
  * `.dcmp` として受け付けられたものは Rust が寄せた綴りで、それ以外は落とされた綴りのまま届く。
+ * UTF-8 で表せないパスは Rust が知らせから落とすので届かない。
  *
  * ドロップを OS 側で受けるので、Windows では webview の HTML5 ドラッグ & ドロップが使え
  * ない（今のところ使っている箇所は無い）。
