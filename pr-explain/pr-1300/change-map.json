@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1300,
+  "headBranch": "claude/magical-cannon-6sxipg",
+  "baseBranch": "main",
+  "mergeBase": "4fc570d973f98b32efd18ceb7d8af6e3f3270a78",
+  "head": "f69fe0a29a3c4255a3ed125e7dafdbcca5c17950",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1290.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 165,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "f69fe0a29a3c4255a3ed125e7dafdbcca5c17950",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T02:13:46Z",
+      "subject": "📝 [Documentation]: #1269 PR #1290 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1290.md を足す。指摘 18 件、分類は plan 6 / test 3 / comment 3 / naming 2 / duplication 2 / harness 2\n- 人のレビューは 0 件(3 つの取り方で確認)、CI は全件緑、発火は計測対象外(フック不発)\n\n背景:\nPR #1290 がマージされたので、その回の評価を残す。\n\n採用理由:\nharness-record の手順どおり、指摘 1 件 = 1 ブロックで書いた。\n手戻りとフックの発火は、PR を出す前に Issue #1269 に書き残した内容と、このセッションの履歴から書いた。\n\n影響とトレードオフ:\n差分は harness/records/ の新規 1 ファイルだけ。対策済の行は書いていない(介入は harness-growth の管轄)。\n\n代替案:\n無し。\n\n参考:\nPR #1290、Issue #1269\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NXGJ6yMdu5zZjeskA",
+      "files": [
+        {
+          "path": "harness/records/pr-1290.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 165,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,165 @@\n+# PR #1290 判定表の表ループが 1 件も走らずに終わったら NG にする(report_cases_ran)\n+\n+- マージ日: 2026-11-07\n+- 関連 Issue: #1269\n+- 差分規模: 13 ファイル / +145 -8\n+\n+## ゴールと結果\n+\n+ゴールは次のとおり。`cases-report.sh` を source する判定表で、表(ループ)がケースを 1 件も走らせずに終わったときに、黙って exit 0 にならず NG を出して落ちるようにする。対象は、表の行を消した場合と、`read` のフィールドがずれて全行が読み飛ばされた場合。\n+\n+達成した。共有部品に計数 `cases_reported` と照合 `report_cases_ran` を足し、表ループ 21 本の前後にガードを付けた。写しで 22 本(`RAN_CASES` を含む)を 1 本ずつ空にすると、どれも NG / exit 1 になる。変更前は 20 本中 18 本が exit 0 / NG 0 で通っていた。\n+\n+ガードの行を消した場合の静的な検査は、#1288 へ分割した。`cases-report.sh` を source しない 2 本の同じ穴は #1289 へ分割した。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。コメントは、自分が投稿したテストケース表と bot の投稿(Storybook プレビュー・CI レポート・VRT)だけだった。CI は全件緑で、VRT の差分は 0 件(209 件 passed)。\n+\n+## 指摘\n+\n+### 1. 「食い違っても 1 件に数える」ケースが、計画どおりに書くと落ちなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 表の中の report が NG を出すと cases_failed が立ち、`verdict_of` はガードの答えに関わらず NG を返す。そのため、出力の ok 行の有無と NG 行の有無を見る専用の判定 `ran_counted` にした。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 2. ok 行の件数 N を守るケースが無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: N を「増分」ではなく「合計」にしても通ってしまう。守るケースを足さず、N を出力から外した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 3. here-string の 2 本ではガードが働かず、実測の結論も別の理由で落ちていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: here-string の `<<<\"\"` は空行を 1 行渡すので、ガードは「走った」と読む。計画の「写しで実測済み」は、空の期待で呼ばれた report の食い違いで落ちていただけだった。`[ -n \"$label\" ] || continue` を足し、通しの確認で見るものを「ガードの NG 行が出る」に変えた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 3\n+\n+### 4. スコープ外にした「ループを持たない判定表」の中に、ループを持つものがあった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: edit-detector の `for hook in …` は、1 回ごとに 8 件を報告する表だった。対象に入れ、スコープ外の文言を実際の基準に合わせた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 2\n+\n+### 5. 分けると決めた続きの Issue が立っていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: ガードの行の静的な検査を「別 Issue に分ける」と書いたが、番号もリンクも無かった。#1288 を立てて、#1269 にリンクした。\n+- 既存ルール: AGENTS.md「タスクの分割」\n+\n+### 6. ファイル表から、直す記述が 3 か所抜けていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 抜けていたのは次の 3 か所。どれもファイル表に入れた。\n+  - `cases-report.sh` 冒頭の要約\n+  - `report` の doc の文言\n+  - `cases-report-cases.sh` 冒頭の列の説明\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(変更するファイル)\n+\n+### 7. 引数が不正なときの振る舞いが決まっていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 第 2 引数を渡し忘れた・空のときの振る舞いが未決だった。数値でなければ NG と決め、ケースを 1 行足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(未決の判断)\n+\n+### 8. 方式の検証: 維持。ただし同じ問題に 3 回継ぎ当てが入っている\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 同じ問題に #1233 → #1269 → #1288 と、3 回継ぎ当てが入っている。今回は維持でよい。ただし #1288 では、表を回す共有関数に閉じて書き忘れの経路をなくす案と比べるべき、という指摘(中)。#1288 に申し送った。補足として、`canary-cases.sh` / `check-added-cases.sh` の続きの Issue が無い点も挙がり、#1289 を立てた。\n+- 既存ルール: なし\n+\n+### 9. for ループの表名が、そのファイルで grep できる識別子ではなかった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: edit-detector の `hooks` を、ループ変数名の `hook` にした。表の名前の決め方(区切り / 変数名 / ループ変数名)を「使い方」に書いた。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 10. `ran_counted` が 2 つの条件を組んだまま `if` に置いていた\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: `said_ran` / `said_not_ran` に入れてから組む形にし、2 つ目の条件の理由を 1 行で残した。harness-reviewer も同じ点を挙げた(下の 11)。\n+- 既存ルール: rules/naming.md「条件を組んだ式に名前を付ける」\n+\n+### 11. 同じ箇所の条件の組み方(harness-reviewer)\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 10 と同じ箇所を、規約の適用範囲(シェルにも及ぶ)の観点で挙げた。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 12. 冒頭コメントの「期待は 2 つ」と、直後の「3 つ目の走った」が食い違っていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 期待の表にも `走った` の行が無かった。列挙を直し、表に行を足した。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 13. README で、使い手の一覧が 2 列目と 3 列目に二重にあった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 3 列目に `report_cases_ran` の使い手 11 本を列挙しており、2 列目の括弧書きと片方だけを直せる状態だった。3 列目は性質だけを書く形にした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 14. here-string ループの空行の読み飛ばしに、理由が書かれていなかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 冗長とみて消されうる。1 本目の側に 2 行の理由を足した。ほかに、Issue の計画の件数(21 本)が実装(22 箇所)と合わないことも指摘された。これは Issue に訂正を追記した。README の検査範囲の説明が狭いことも指摘され、広げた。\n+- 既存ルール: rules/coding.md「Why と Why not は別物として書く」\n+\n+### 15. `ran_counted` が `report_cases_ran` の文言をそのまま照合している\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 低。文言を変えれば落ちるので黙っては通らない。`verdict_of` が使えない理由から来ている形なので、採らなかった。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 16. `report_cases_ran` の doc の「件数を増やさない」を守るケースが無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 11 通り壊して実測し、10 通りで落ちた。落ちなかったのは、ok の枝で件数を増やす壊し方。どの呼び出し側もこの約束に依存していないので、ケースは足さず doc から外した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 17. 外したときの帰結を読み違えさせるコメントが 2 か所あった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 次の 2 か所を、実測どおりに書き直した。\n+  - import-rule のガード: 外しても、空行の report の NG で落ちる\n+  - `ran_counted` の 2 つ目の条件: 外しても、別の行が拾う\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 18. フックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が通った。マーカーも発火ログの見出しも無かった。起動は Issue の assigned で起動した routine で、作業ディレクトリは `/home/user`。#1032 と同じ形。npx・`git add -A`・書き換えるサブエージェントの実行中の git 操作・親による Edit はどれも無かった。Stop フックからは途中で commit / push を 4 回促された。読むだけのレビュー中の 1 回は push して応え、残りは書き換えるエージェントの完了を待って従わなかった。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- plan-reviewer の 7 件をすべて採用し、親が決定を Issue に書いてから implementer へ渡した(planner には戻していない)\n+- 1 段目のレビュー後に、指摘 6 件を implementer で直した(4 コミット)\n+- 2 段目の test-reviewer 後に、コメント 3 か所を implementer で直した(1 コミット)\n+- implementer は 3 回起動した(実装 / 1 段目の修正 / 2 段目の修正)\n+- 最初の pre-push は `node_modules` が無く、typecheck / oxlint / biome を飛ばして exit 1 になった。`pnpm install --frozen-lockfile` のあとは通過した\n+- 親のコミット 1 本目で、commit スキルの「1 回の Bash 呼び出し = 1 コマンド」に反して `git add … && git commit -F -` と連ねた。2 本目からは heredoc の `-m` に戻した\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録だけを残す回で、集計と介入の判断は harness-growth の管轄。",
+          "patchLines": 166,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
