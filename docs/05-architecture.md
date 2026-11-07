@@ -42,7 +42,7 @@ Rust に .dcmp の構造を一切教えず、IPC を渡るのは**常に生の J
 | command | `close_current_window()` | 呼び出し元のウィンドウを閉じる |
 | event | `document-changed` | 外部変更の通知（Rust → JS） |
 | event | `document-menu` | OS のメニューで選ばれた項目（`open` / `create` / `close-tab`）の通知（Rust → JS） |
-| event | `document-dropped` | ウィンドウへ落とされたファイルの通知（Rust → JS）。選ばれたファイルの記録へ載せたものは寄せた綴りで、載せられなかったものは落とされた綴りのまま並ぶ |
+| event | `document-dropped` | ウィンドウへ落とされたファイルの通知（Rust → JS）。選ばれたファイルの記録へ載せたものは寄せた綴りで、載せられなかったものは落とされた綴りのまま並ぶ。UTF-8 で表せないパスは並びに入らない（06-ui「開く / 新規作成の導線」） |
 
 - ファイルを開く / 保存先を決めるダイアログは Tauri 標準プラグインを **Rust から**出す。webview にはダイアログの権限を与えない（選ばれたパスを webview を経由せずに記録へ載せるため）
 - `.dcmp` 以外を選んだとき・選ばれたパスを UTF-8 で表せないときは、選ぶコマンドが `invalidPath` を返す
