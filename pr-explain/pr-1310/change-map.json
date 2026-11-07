@@ -1,0 +1,1916 @@
+{
+  "version": 2,
+  "pr": 1310,
+  "headBranch": "claude/magical-cannon-s67fwe",
+  "baseBranch": "main",
+  "mergeBase": "51629b155187263a641e9304d4331399ca20c3aa",
+  "head": "7ec5d6e3c52e9501319e55901b5e84ba68fe9e9d",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/axis/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/axis-length/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-position/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reposition-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resize-edit/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/edit-continuity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection-dig/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/under-pointer/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/sample-document.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/components/editor-provider/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/reorder-step/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-artboard-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-shortcuts/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/artboard-fixtures.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/editor-state-reads.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 48,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/__tests__/hook-in-editor.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 81,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 40,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.shortcut.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.file-invalid.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.last-valid-render.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.open-invalid.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.rename.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.text-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.target.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-dig.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/features/editor/domains/editor-state/index.ts"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/features/editor/domains/editor-state/index.ts"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.duplicate.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/features/editor/domains/editor-state/index.ts"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.group-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.move.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-clipboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-duplicate.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/features/editor/domains/editor-state/index.ts"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-remove.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.remove.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.rename.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reveal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.revert.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 14,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 63,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-artboard-actions/index.ts"
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.clipboard.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 46,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-edit-actions/index.ts"
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 36,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-edit-actions/index.ts"
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.rename.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-edit-actions/index.ts"
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 87,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-edit-actions/index.ts"
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 198,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-edit-shortcuts/index.ts"
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.tree-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 203,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-node-actions/index.ts"
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 80,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-node-actions/index.ts"
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 127,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-node-actions/index.ts"
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 124,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/hooks/use-node-actions/index.ts"
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+        "name": "add は、artboard の並びの末尾に 1 枚足す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+        "name": "add は、足した artboard を選ぶ"
+      },
+      {
+        "file": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+        "name": "reorder は、並びの中の 1 枚を指した位置へ移す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.clipboard.test.tsx",
+        "name": "copy で選んでいるものをコピーすると、別の Box を選んで貼れる"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.clipboard.test.tsx",
+        "name": "duplicateSelected は、選んでいるものの複製をその直後へ挿す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.clipboard.test.tsx",
+        "name": "paste は、コピー済みのものを選んでいる Box の子の末尾へ貼る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+        "name": "redo は、取り消した編集をやり直す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+        "name": "undo は、直前の編集を取り消す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.rename.test.tsx",
+        "name": "startRenaming は、選んでいるものの名前の編集に入る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+        "name": "groupSelected は、選んでいるノードを新しい Box の中へ入れる"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+        "name": "removeSelected は、選んでいるノードを消す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+        "name": "reorderSelected で前面へ送ると、選んでいるノードが兄弟の並びで 1 つ後ろへ動く"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+        "name": "reorderSelected で背面へ送ると、選んでいるノードが兄弟の並びで 1 つ前へ動く"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+        "name": "repositionSelectedBy は、選んでいる絶対配置のノードの座標を渡した量だけずらす"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+        "name": "ungroupSelected は、選んでいる Box を外して子を親へ戻す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "Ctrl+C を押すと、選んでいるものがコピーされ、別の Box を選んで貼れる"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "Ctrl+D を押すと、選んでいるものの複製が直後へ挿される"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "Ctrl+G を押すと、選んでいるノードが新しい Box の中へ入る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "Ctrl+R を押すと、選んでいるものの名前の編集に入る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "Ctrl+Shift+G を押すと、選んでいる Box が外れて子が親へ戻る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "Ctrl+Shift+Z を押すと、取り消した編集がやり直される"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "Ctrl+V を押すと、コピー済みのものが選んでいる Box へ貼られる"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "Ctrl+Z を押すと、直前の編集が取り消される"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "Ctrl+[ を押すと、選んでいるノードが兄弟の並びで背面へ 1 つ動く"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "Ctrl+] を押すと、選んでいるノードが兄弟の並びで前面へ 1 つ動く"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "Delete を押すと、選んでいるノードが消える"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "Escape を押すと、ドキュメントを変えずに選択だけが外れる"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "→ を押すと、選んでいる絶対配置のノードが右へ 1 ずれ、上下には動かない"
+      },
+      {
+        "file": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+        "name": "↓ を押すと、選んでいる絶対配置のノードが下へ 1 ずれ、左右には動かない"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+        "name": "editProp で別の編集として送った編集は、1 回の undo でその編集だけが戻る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+        "name": "editProp で続きとして送った編集は、直前の編集と一緒に 1 回の undo で戻る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+        "name": "editProp は、選んでいるノードの prop を書き換える"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+        "name": "editRefOwnProp で別の編集として送った編集は、1 回の undo でその編集だけが戻る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+        "name": "editRefOwnProp で続きとして送った編集は、直前の編集と一緒に 1 回の undo で戻る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+        "name": "editRefOwnProp は、選んでいるインスタンス自身の値を書き換える"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+        "name": "resize で別の編集として送った編集は、1 回の undo でその編集だけが戻る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+        "name": "resize で続きとして送った編集は、直前の編集と一緒に 1 回の undo で戻る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+        "name": "resize は、選んでいるノードの大きさを書き換える"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+        "name": "cancelRenaming は、選択を残したまま名前の編集を閉じる"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+        "name": "finishRenaming で使えない名前を渡すと、取り消して編集を閉じる"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+        "name": "finishRenaming は、使える名前なら編集中のものの名前をその名前にする"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+        "name": "rename で使えない名前を打つと、編集は閉じない"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+        "name": "rename は、編集中のものの名前を打った名前にする"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+        "name": "startRenamingAt は、指したものを選んでその名前の編集に入る"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+        "name": "clearSelection は、ドキュメントを変えずに選択だけを外す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+        "name": "reveal でドキュメントに無い名前を指すと、選択は変わらない"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+        "name": "reveal は、エラーが指すノードを選び、名前の編集には入らない"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+        "name": "select でドキュメントに無い名前を指すと、何も選んでいない状態になる"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+        "name": "select は、複数選んでいても指した 1 つだけを選ぶ"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+        "name": "selectAllInstances は、選んでいるインスタンスと同じ部品を指すインスタンスをまとめて選ぶ"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+        "name": "selectAt は、ポインタの下にあるもののうち、掘る量で決まる深さのものを選ぶ"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+        "name": "selectIfUnselected は、指したものが既に選択に入っていれば選択を変えない"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+        "name": "selectIfUnselected は、指したものが選択に入っていなければそれだけを選ぶ"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+        "name": "selectInRange は、範囲に重なったものをまとめて選ぶ"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+        "name": "createComponent は、選んでいるノードを渡した名前の部品にして、元の位置をそのインスタンスにする"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+        "name": "detachInstance は、選んでいるインスタンスを部品の参照ではなくなるよう解除する"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+        "name": "insert は、選んでいる Box の子の末尾へ挿す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+        "name": "insertAt は、選択に依らず指した位置へ挿す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+        "name": "move は、名前で指したノードを別の親の中の位置へ移す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+        "name": "reorder は、指した位置の子を同じ親の中の別の index へ移す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+        "name": "reposition は、絶対配置のノードを指した座標へ置き直す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+        "name": "repositionArtboard は、artboard をキャンバス上の指した位置へ置き直す"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+        "name": "子を持てない Text を選んでいれば、挿入は押せない"
+      },
+      {
+        "file": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+        "name": "子を持てる Box を選んでいれば、挿入は押せる"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "src/features/editor/domains/editor-state/__tests__/editor-state.duplicate.test.ts",
+      "src/features/editor/domains/editor-state/__tests__/editor-state.multi-duplicate.test.ts",
+      "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+      "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.clipboard.test.tsx",
+      "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+      "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.rename.test.tsx",
+      "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+      "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+      "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+      "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+      "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "7ccd3da25c48380a4c1d0c4a2cc1f8e2f691a80c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T15:09:56Z",
+      "subject": "🧪 [Tests]: #554 操作フックを EditorProvider の中で動かす共有の器を足す",
+      "body": "- features/editor/__tests__/hook-in-editor.tsx に renderHookInEditor を置く\n  (renderHook の wrapper で実物の EditorProvider に包み、フックの戻り値と\n  useEditor() を一緒に読めるようにする)\n- 前提の選択は select_in_range で置き、置けた選択が渡した名前と順序まで\n  一致しなければテストを落とす\n- sample-document.ts に操作対象を 1 枚に並べた DocumentWithEditTargets を足す\n\n背景:\nfeatures/editor/hooks/ の操作フックは useEditor() を通すため、単体で\nテストするには EditorProvider の中で操作して状態を読む器が要る。\n4 つのフックのテストに同じ器を書くと duplicate-test-helpers.py に当たる\nので、先に共有の置き場所を決める必要があった。\n\n採用理由:\nrenderHook + wrapper にした。22 個あるメソッドの引数を器のボタンごとに\n固定せずに済み、状態を DOM の文字列を介さずドメインの API で直接読める。\n前提の選択を select_in_range で置くのは、名前の並びから複数選択を作れる\nアクションがこれしか無いため。ただし文書に無い名前・部品定義の中の\nノード・artboard・ロック中のノードは黙って選択から落ちる。そうなると\n「選択を変えない」系の期待値が既定値の未選択と同じになって何も守らない\nので、置けた選択を器の中で照合する。\nフィクスチャは文書の定数を集めている sample-document.ts に足した。\n\n代替案:\n- use-token-actions のテストと同じ、器コンポーネント + ボタンの形:\n  引数をボタンに固定し、状態を DOM 文字列で読むことになるため却下\n- 器を features/editor/hooks/__tests__/ に置く: 前例が 0 件。この feature の\n  共有テスト部品は features/editor/__tests__/ にあるため却下\n- 前提の選択を select を連ねて作る: select は 1 つしか選べず、複数選択の\n  前提を作れないため却下\n- フィクスチャを edit-targets.ts として新設する: 別ファイルになっているのは\n  読み出しと束ねたものだけで、文書だけの定数は sample-document.ts に集めて\n  いるため却下\n\n影響とトレードオフ:\nテスト用の部品だけの追加で、本番コードは変わらない。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/554\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PDZTSVTMjWaPcnVDC",
+      "files": [
+        {
+          "path": "src/features/editor/__tests__/hook-in-editor.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 66,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,66 @@\n+import { act, renderHook } from \"@testing-library/react\";\n+import type { ReactNode } from \"react\";\n+import { expect } from \"vitest\";\n+import type { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { DocumentSelection } from \"@/domains/session/document-selection\";\n+import {\n+  type Editor,\n+  EditorProvider,\n+  useEditor,\n+} from \"@/features/editor/components/editor-provider\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+\n+/** フックの戻り値と、同じ Provider が配っているエディタの状態・dispatch。 */\n+export type HookInEditor<T> = Readonly<{ hook: T; editor: Editor }>;\n+\n+/** 描いた直後に置いておく前提。 */\n+export type EditorPremise = Readonly<{\n+  /** 開いておくドキュメント。 */\n+  document: DesignDocument;\n+  /** 最初に選んでおく artboard / ノードの名前（この順で選ばれる）。 */\n+  selected: readonly string[];\n+}>;\n+\n+/** 描いたフックの、今の戻り値とエディタを読む手続き。 */\n+export type RenderedHookInEditor<T> = Readonly<{\n+  current: () => HookInEditor<T>;\n+}>;\n+\n+/**\n+ * 実物の `EditorProvider` の内側でフックを描き、前提の選択を範囲選択の経路で置く。\n+ *\n+ * 文書に無い名前・部品定義の中のノード・artboard・ロック中のノードは範囲選択で選べないので、\n+ * 渡すとテストが落ちる。範囲選択の経路を使うのは、名前の並びを受けて複数選択を作れる\n+ * アクションが `select_in_range` しか無いため。\n+ *\n+ * @param useHook 描くフック\n+ * @param premise 開くドキュメントと、最初に選んでおく名前\n+ * @returns 今のフックの戻り値とエディタを読む手続き\n+ */\n+export function renderHookInEditor<T>(\n+  useHook: () => T,\n+  { document, selected }: EditorPremise,\n+): RenderedHookInEditor<T> {\n+  const { result } = renderHook(\n+    (): HookInEditor<T> => ({ hook: useHook(), editor: useEditor() }),\n+    {\n+      wrapper: ({ children }: Readonly<{ children: ReactNode }>) => (\n+        <EditorProvider initialDocument={document}>{children}</EditorProvider>\n+      ),\n+    },\n+  );\n+\n+  act(() =>\n+    result.current.editor.dispatch({\n+      type: \"select_in_range\",\n+      names: selected,\n+    }),\n+  );\n+  expect(\n+    DocumentSelection.names(\n+      EditorState.documentSelection(result.current.editor.state),\n+    ),\n+  ).toEqual(selected);\n+\n+  return { current: () => result.current };\n+}",
+          "patchLines": 67,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 40,
+          "deletions": 0,
+          "patch": "@@ -184,3 +184,43 @@ export const DocumentWithCardComponent = DesignDocument.create({\n     },\n   ],\n });\n+\n+/**\n+ * 編集操作の行き先を見分けるためのドキュメント。部品 `card`（Box > Text の `card-label`）を\n+ * 持ち、`home` の直下に次の順で並ぶ。\n+ *\n+ * - `title`: Text（文言「見出し」）\n+ * - `footer`: 絶対配置の Text（x 40 / y 24）\n+ * - `panel`: Box（子に Text の `panel-label`）\n+ * - `home-card` / `other-card`: どちらも `card` のインスタンス\n+ */\n+export const DocumentWithEditTargets = DesignDocument.create({\n+  components: {\n+    card: {\n+      type: \"Box\",\n+      children: [{ name: \"card-label\", type: \"Text\" }],\n+    },\n+  },\n+  artboards: [\n+    {\n+      name: \"home\",\n+      width: 375,\n+      height: 812,\n+      children: [\n+        { name: \"title\", type: \"Text\", props: { content: \"見出し\" } },\n+        {\n+          name: \"footer\",\n+          type: \"Text\",\n+          props: { placement: \"absolute\", x: 40, y: 24 },\n+        },\n+        {\n+          name: \"panel\",\n+          type: \"Box\",\n+          children: [{ name: \"panel-label\", type: \"Text\" }],\n+        },\n+        { name: \"home-card\", ref: \"card\" },\n+        { name: \"other-card\", ref: \"card\" },\n+      ],\n+    },\n+  ],\n+});",
+          "patchLines": 44,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d4dc32108c18c9fcd4e129bec97a64786cdd53dc",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T15:10:15Z",
+      "subject": "🧪 [Tests]: #554 use-artboard-actions の配線をテストで固定する",
+      "body": "- add で artboard が末尾に 1 枚増えることを確かめる\n- reorder で並びの中の 1 枚が指定位置へ移ることを確かめる\n\n背景:\n画面の通しテストでは、メソッドと dispatch するアクションの取り違えが\n落ちない経路があった。\n\n採用理由:\n共有の器 renderHookInEditor の上で、メソッドごとに状態の変化を 1 件ずつ\n見る。文書は既存の documentWithThreeArtboards() を使う。\n\n代替案:\n- 画面の通しテストに任せる: 部品からの配線は opened-document-editor が\n  見ているが、フックからアクションへの取り違えは落ちないため却下\n\n影響とトレードオフ:\n引数なしのアクションへ差し替える 31 通りを 1 件ずつ当て、すべて落ちる\nことを確かめた。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/554\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PDZTSVTMjWaPcnVDC",
+      "files": [
+        {
+          "path": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 41,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,41 @@\n+import { act } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { documentWithThreeArtboards } from \"@/features/editor/__tests__/artboard-fixtures\";\n+import { renderHookInEditor } from \"@/features/editor/__tests__/hook-in-editor\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+import { useArtboardActions } from \"../index\";\n+\n+/* artboard の追加と並べ替えが、artboard の並びを変えることを確かめる（docs/06-ui.md「編集操作の一覧」）。 */\n+\n+test(\"add は、artboard の並びの末尾に 1 枚足す\", () => {\n+  const { current } = renderHookInEditor(useArtboardActions, {\n+    document: documentWithThreeArtboards(),\n+    selected: [],\n+  });\n+\n+  act(() => current().hook.add());\n+\n+  const names = DesignDocument.collectArtboardNames(\n+    EditorState.document(current().editor.state),\n+  );\n+  expect({ length: names.length, leading: names.slice(0, 3) }).toEqual({\n+    length: 4,\n+    leading: [\"home\", \"settings\", \"about\"],\n+  });\n+});\n+\n+test(\"reorder は、並びの中の 1 枚を指した位置へ移す\", () => {\n+  const { current } = renderHookInEditor(useArtboardActions, {\n+    document: documentWithThreeArtboards(),\n+    selected: [],\n+  });\n+\n+  act(() => current().hook.reorder({ fromIndex: 0, toIndex: 2 }));\n+\n+  expect(\n+    DesignDocument.collectArtboardNames(\n+      EditorState.document(current().editor.state),\n+    ),\n+  ).toEqual([\"settings\", \"about\", \"home\"]);\n+});",
+          "patchLines": 42,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d82699667b607cd347fb9fb2c8ac8da6c61cc0ad",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T15:10:15Z",
+      "subject": "🧪 [Tests]: #554 use-edit-actions の配線をテストで固定する",
+      "body": "- clipboard / history / tree-edit / rename の 4 カテゴリに 12 件を置く\n- 前提を組み立てる setup(selected) を __tests__/setup.ts にまとめる\n\n背景:\nコピー・貼り付け・複製、undo・redo のように引数を取らない操作は、\n別のアクションへ取り違えても型が通る。\n\n採用理由:\n取り違えた先と結果が分かれる入力を選んだ。コピーは panel を選び直して\nから貼ると写しが panel 側に入るので、複製と区別できる。並べ替えは前と\n後ろの 2 件を対にして、向きを固定した配線を落とす。前提の選択や履歴は\neditor.dispatch で作り、テストしているメソッドでは作らない。\n\n代替案:\n- 前提をフックのメソッドで作る: 取り違えが 1 つあると、無関係な\n  テストまで落ちるため却下\n- 子の名前を並べる読み出しヘルパーを書く: editor-state の childNames と\n  重複判定されるため却下。findChildPosition で足りる\n\n影響とトレードオフ:\n差し替え 167 通りを 1 件ずつ当て、すべて落ちることを確かめた。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/554\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PDZTSVTMjWaPcnVDC",
+      "files": [
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/setup.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,21 @@\n+import {\n+  type RenderedHookInEditor,\n+  renderHookInEditor,\n+} from \"@/features/editor/__tests__/hook-in-editor\";\n+import { DocumentWithEditTargets } from \"@/features/editor/__tests__/sample-document\";\n+import { type EditActions, useEditActions } from \"../index\";\n+\n+/**\n+ * `DocumentWithEditTargets` を開いて、名前で指したものを選んだ状態でフックを描く。\n+ *\n+ * @param selected 最初に選んでおくノードの名前（この順で選ばれる）\n+ * @returns 今のフックの戻り値とエディタを読む手続き\n+ */\n+export function setup(\n+  selected: readonly string[],\n+): RenderedHookInEditor<EditActions> {\n+  return renderHookInEditor(useEditActions, {\n+    document: DocumentWithEditTargets,\n+    selected,\n+  });\n+}",
+          "patchLines": 22,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.clipboard.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 55,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,55 @@\n+import { act } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+import { Option } from \"@/utils/Option\";\n+import { setup } from \"./setup\";\n+\n+/*\n+ * コピー & ペーストと複製が、選択とコピー済みのものから行き先を決めることを確かめる\n+ * （docs/06-ui.md「編集操作の一覧」）。\n+ */\n+\n+test(\"copy で選んでいるものをコピーすると、別の Box を選んで貼れる\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  act(() => current().hook.copy());\n+  act(() => current().editor.dispatch({ type: \"select\", name: \"panel\" }));\n+  act(() => current().editor.dispatch({ type: \"paste_copied\" }));\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"title-2\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"panel\", index: 1 }));\n+});\n+\n+test(\"paste は、コピー済みのものを選んでいる Box の子の末尾へ貼る\", () => {\n+  const { current } = setup([]);\n+  act(() => current().editor.dispatch({ type: \"select\", name: \"title\" }));\n+  act(() => current().editor.dispatch({ type: \"copy_selected\" }));\n+  act(() => current().editor.dispatch({ type: \"select\", name: \"panel\" }));\n+\n+  act(() => current().hook.paste());\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"title-2\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"panel\", index: 1 }));\n+});\n+\n+test(\"duplicateSelected は、選んでいるものの複製をその直後へ挿す\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  act(() => current().hook.duplicateSelected());\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"title-2\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 1 }));\n+});",
+          "patchLines": 56,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 37,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,37 @@\n+import { act } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+import { Option } from \"@/utils/Option\";\n+import { setup } from \"./setup\";\n+\n+/* undo / redo が編集履歴を辿ることを確かめる（docs/06-ui.md「編集操作の一覧」）。 */\n+\n+test(\"undo は、直前の編集を取り消す\", () => {\n+  const { current } = setup([\"title\"]);\n+  act(() => current().editor.dispatch({ type: \"remove_selected\" }));\n+\n+  act(() => current().hook.undo());\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 0 }));\n+});\n+\n+test(\"redo は、取り消した編集をやり直す\", () => {\n+  const { current } = setup([\"title\"]);\n+  act(() => current().editor.dispatch({ type: \"remove_selected\" }));\n+  act(() => current().editor.dispatch({ type: \"undo\" }));\n+\n+  act(() => current().hook.redo());\n+\n+  expect(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  ).toEqual(Option.none);\n+});",
+          "patchLines": 38,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.rename.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,15 @@\n+import { act } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+import { Option } from \"@/utils/Option\";\n+import { setup } from \"./setup\";\n+\n+test(\"startRenaming は、選んでいるものの名前の編集に入る\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  act(() => current().hook.startRenaming());\n+\n+  expect(EditorState.renamingName(current().editor.state)).toEqual(\n+    Option.some(\"title\"),\n+  );\n+});",
+          "patchLines": 16,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 94,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,94 @@\n+import { act } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { Node } from \"@/domains/dcmp/node\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+import { ReorderSteps } from \"@/features/editor/domains/reorder-step\";\n+import { Option } from \"@/utils/Option\";\n+import { setup } from \"./setup\";\n+\n+/*\n+ * 対象を渡さない木の編集が、選んでいるものへ届くことを確かめる\n+ * （docs/06-ui.md「編集操作の一覧」）。\n+ */\n+\n+test(\"removeSelected は、選んでいるノードを消す\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  act(() => current().hook.removeSelected());\n+\n+  expect(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  ).toEqual(Option.none);\n+});\n+\n+test(\"reorderSelected で前面へ送ると、選んでいるノードが兄弟の並びで 1 つ後ろへ動く\", () => {\n+  const { current } = setup([\"panel\"]);\n+\n+  act(() => current().hook.reorderSelected(ReorderSteps.TowardFront));\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"panel\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 3 }));\n+});\n+\n+test(\"reorderSelected で背面へ送ると、選んでいるノードが兄弟の並びで 1 つ前へ動く\", () => {\n+  const { current } = setup([\"panel\"]);\n+\n+  act(() => current().hook.reorderSelected(ReorderSteps.TowardBack));\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"panel\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 1 }));\n+});\n+\n+test(\"repositionSelectedBy は、選んでいる絶対配置のノードの座標を渡した量だけずらす\", () => {\n+  const { current } = setup([\"footer\"]);\n+\n+  act(() => current().hook.repositionSelectedBy({ x: 5, y: -4 }));\n+\n+  const footer = Option.unwrap(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"footer\",\n+    ),\n+  );\n+  expect(Node.writtenPropsOf(footer)).toMatchObject({ x: 45, y: 20 });\n+});\n+\n+test(\"groupSelected は、選んでいるノードを新しい Box の中へ入れる\", () => {\n+  const { current } = setup([\"title\", \"panel\"]);\n+\n+  act(() => current().hook.groupSelected());\n+\n+  const document = EditorState.document(current().editor.state);\n+  const parentName = Option.unwrap(\n+    DesignDocument.findChildPosition(document, \"title\"),\n+  ).parentName;\n+  expect(\n+    Option.unwrap(DesignDocument.findNode(document, parentName)),\n+  ).toMatchObject({ type: \"Box\" });\n+});\n+\n+test(\"ungroupSelected は、選んでいる Box を外して子を親へ戻す\", () => {\n+  const { current } = setup([\"title\", \"panel\"]);\n+  act(() => current().editor.dispatch({ type: \"group_selected\" }));\n+\n+  act(() => current().hook.ungroupSelected());\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 1 }));\n+});",
+          "patchLines": 95,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "7af84d5607c85832336c8d79243e7bfb4005a5b9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T15:10:15Z",
+      "subject": "🧪 [Tests]: #554 use-node-actions の配線をテストで固定する",
+      "body": "- selection / tree-edit / prop-edit / rename の 4 カテゴリに 35 件を置く\n- 22 のメソッドと isInsertEnabled に、少なくとも 1 件ずつ当てる\n\n背景:\n同じ形の引数を取るメソッドが多い。名前を 1 つ取るものが 7 つ、引数なしが\n4 つ、(PropEdit, EditContinuity) を取るものが 2 つある。どれも取り違えても\n型が通る。\n\n採用理由:\n取り違えやすい組を区別できる入力を選んだ。\n- select は複数選択の中の 1 つを渡して、selectIfUnselected と区別する\n- reveal は名前の編集に入らないことを見て、startRenamingAt と区別する\n- insertAt は選択位置と違う at を渡して、insert と区別する\n- editProp はインスタンス以外、editRefOwnProp はインスタンスを対象にする\n- 続き方は「続き」と「別の編集」を対にして、undo の戻り先で見る\n\n代替案:\n- 取り違えやすい組だけを見る: 引数なしのメソッドは別のアクションへ\n  差し替えても型が通るので、全部に置くことにして却下\n\n影響とトレードオフ:\n差し替え 431 通りを 1 件ずつ当て、すべて落ちることを確かめた。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/554\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PDZTSVTMjWaPcnVDC",
+      "files": [
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/setup.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,21 @@\n+import {\n+  type RenderedHookInEditor,\n+  renderHookInEditor,\n+} from \"@/features/editor/__tests__/hook-in-editor\";\n+import { DocumentWithEditTargets } from \"@/features/editor/__tests__/sample-document\";\n+import { type NodeActions, useNodeActions } from \"../index\";\n+\n+/**\n+ * `DocumentWithEditTargets` を開いて、名前で指したものを選んだ状態でフックを描く。\n+ *\n+ * @param selected 最初に選んでおくノードの名前（この順で選ばれる）\n+ * @returns 今のフックの戻り値とエディタを読む手続き\n+ */\n+export function setup(\n+  selected: readonly string[],\n+): RenderedHookInEditor<NodeActions> {\n+  return renderHookInEditor(useNodeActions, {\n+    document: DocumentWithEditTargets,\n+    selected,\n+  });\n+}",
+          "patchLines": 22,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 232,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,232 @@\n+import { act } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { AxisLength } from \"@/domains/dcmp/axis-length\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { Node, PropEdit } from \"@/domains/dcmp/node\";\n+import { ResizeEdit } from \"@/domains/dcmp/resize-edit\";\n+import { EditContinuities } from \"@/domains/session/edit-continuity\";\n+import { Axes } from \"@/domains/unit/axis\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+import { Option } from \"@/utils/Option\";\n+import { setup } from \"./setup\";\n+\n+/*\n+ * プロパティパネル・キャンバスから届く値の編集が、それぞれの書き込み先へ届き、渡した続き方が\n+ * 履歴のまとまりに効くことを確かめる（docs/06-ui.md「編集操作の一覧」の undo / redo）。\n+ */\n+\n+test(\"editProp は、選んでいるノードの prop を書き換える\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  act(() =>\n+    current().hook.editProp(\n+      PropEdit.set([\"content\"], \"a\"),\n+      EditContinuities.Separate,\n+    ),\n+  );\n+\n+  const title = Option.unwrap(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  );\n+  expect(Node.writtenPropsOf(title).content).toBe(\"a\");\n+});\n+\n+test(\"editRefOwnProp は、選んでいるインスタンス自身の値を書き換える\", () => {\n+  const { current } = setup([\"home-card\"]);\n+\n+  act(() =>\n+    current().hook.editRefOwnProp(\n+      PropEdit.set([\"locking\"], \"locked\"),\n+      EditContinuities.Separate,\n+    ),\n+  );\n+\n+  expect(\n+    DesignDocument.isLocked(\n+      EditorState.document(current().editor.state),\n+      \"home-card\",\n+    ),\n+  ).toBe(true);\n+});\n+\n+test(\"resize は、選んでいるノードの大きさを書き換える\", () => {\n+  const { current } = setup([\"panel\"]);\n+\n+  act(() =>\n+    current().hook.resize(\n+      ResizeEdit.create([AxisLength.create(Axes.Width, 200)]),\n+      EditContinuities.Separate,\n+    ),\n+  );\n+\n+  const panel = Option.unwrap(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"panel\",\n+    ),\n+  );\n+  expect(Node.writtenPropsOf(panel).width).toBe(200);\n+});\n+\n+test(\"editProp で続きとして送った編集は、直前の編集と一緒に 1 回の undo で戻る\", () => {\n+  const { current } = setup([\"title\"]);\n+  act(() =>\n+    current().editor.dispatch({\n+      type: \"apply_prop_edit\",\n+      edit: PropEdit.set([\"content\"], \"a\"),\n+      continuity: EditContinuities.Separate,\n+    }),\n+  );\n+\n+  act(() =>\n+    current().hook.editProp(\n+      PropEdit.set([\"content\"], \"ab\"),\n+      EditContinuities.Continued,\n+    ),\n+  );\n+  act(() => current().editor.dispatch({ type: \"undo\" }));\n+\n+  const title = Option.unwrap(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  );\n+  expect(Node.writtenPropsOf(title).content).toBe(\"見出し\");\n+});\n+\n+test(\"editRefOwnProp で続きとして送った編集は、直前の編集と一緒に 1 回の undo で戻る\", () => {\n+  const { current } = setup([\"home-card\"]);\n+  act(() =>\n+    current().editor.dispatch({\n+      type: \"apply_ref_own_prop_edit\",\n+      edit: PropEdit.set([\"locking\"], \"locked\"),\n+      continuity: EditContinuities.Separate,\n+    }),\n+  );\n+\n+  act(() =>\n+    current().hook.editRefOwnProp(\n+      PropEdit.set([\"locking\"], \"unlocked\"),\n+      EditContinuities.Continued,\n+    ),\n+  );\n+  act(() => current().editor.dispatch({ type: \"undo\" }));\n+\n+  expect(\n+    DesignDocument.isLocked(\n+      EditorState.document(current().editor.state),\n+      \"home-card\",\n+    ),\n+  ).toBe(false);\n+});\n+\n+test(\"resize で続きとして送った編集は、直前の編集と一緒に 1 回の undo で戻る\", () => {\n+  const { current } = setup([\"panel\"]);\n+  act(() =>\n+    current().editor.dispatch({\n+      type: \"resize\",\n+      edit: ResizeEdit.create([AxisLength.create(Axes.Width, 200)]),\n+      continuity: EditContinuities.Separate,\n+    }),\n+  );\n+\n+  act(() =>\n+    current().hook.resize(\n+      ResizeEdit.create([AxisLength.create(Axes.Width, 240)]),\n+      EditContinuities.Continued,\n+    ),\n+  );\n+  act(() => current().editor.dispatch({ type: \"undo\" }));\n+\n+  const panel = Option.unwrap(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"panel\",\n+    ),\n+  );\n+  expect(Node.writtenPropsOf(panel).width).toBeUndefined();\n+});\n+\n+test(\"editProp で別の編集として送った編集は、1 回の undo でその編集だけが戻る\", () => {\n+  const { current } = setup([\"title\"]);\n+  act(() =>\n+    current().editor.dispatch({\n+      type: \"apply_prop_edit\",\n+      edit: PropEdit.set([\"content\"], \"a\"),\n+      continuity: EditContinuities.Separate,\n+    }),\n+  );\n+\n+  act(() =>\n+    current().hook.editProp(\n+      PropEdit.set([\"content\"], \"ab\"),\n+      EditContinuities.Separate,\n+    ),\n+  );\n+  act(() => current().editor.dispatch({ type: \"undo\" }));\n+\n+  const title = Option.unwrap(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  );\n+  expect(Node.writtenPropsOf(title).content).toBe(\"a\");\n+});\n+\n+test(\"editRefOwnProp で別の編集として送った編集は、1 回の undo でその編集だけが戻る\", () => {\n+  const { current } = setup([\"home-card\"]);\n+  act(() =>\n+    current().editor.dispatch({\n+      type: \"apply_ref_own_prop_edit\",\n+      edit: PropEdit.set([\"locking\"], \"locked\"),\n+      continuity: EditContinuities.Separate,\n+    }),\n+  );\n+\n+  act(() =>\n+    current().hook.editRefOwnProp(\n+      PropEdit.set([\"locking\"], \"unlocked\"),\n+      EditContinuities.Separate,\n+    ),\n+  );\n+  act(() => current().editor.dispatch({ type: \"undo\" }));\n+\n+  expect(\n+    DesignDocument.isLocked(\n+      EditorState.document(current().editor.state),\n+      \"home-card\",\n+    ),\n+  ).toBe(true);\n+});\n+\n+test(\"resize で別の編集として送った編集は、1 回の undo でその編集だけが戻る\", () => {\n+  const { current } = setup([\"panel\"]);\n+  act(() =>\n+    current().editor.dispatch({\n+      type: \"resize\",\n+      edit: ResizeEdit.create([AxisLength.create(Axes.Width, 200)]),\n+      continuity: EditContinuities.Separate,\n+    }),\n+  );\n+\n+  act(() =>\n+    current().hook.resize(\n+      ResizeEdit.create([AxisLength.create(Axes.Width, 240)]),\n+      EditContinuities.Separate,\n+    ),\n+  );\n+  act(() => current().editor.dispatch({ type: \"undo\" }));\n+\n+  const panel = Option.unwrap(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"panel\",\n+    ),\n+  );\n+  expect(Node.writtenPropsOf(panel).width).toBe(200);\n+});",
+          "patchLines": 233,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 83,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,83 @@\n+import { act } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { DocumentSelection } from \"@/domains/session/document-selection\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+import { Option } from \"@/utils/Option\";\n+import { setup } from \"./setup\";\n+\n+/*\n+ * 行のダブルクリックと名前の入力欄から届く名前の編集が、確定・取り消しのそれぞれへ届くことを\n+ * 確かめる（docs/06-ui.md「名前の変更」）。\n+ */\n+\n+test(\"startRenamingAt は、指したものを選んでその名前の編集に入る\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  act(() => current().hook.startRenamingAt(\"panel\"));\n+\n+  expect(EditorState.renamingName(current().editor.state)).toEqual(\n+    Option.some(\"panel\"),\n+  );\n+});\n+\n+test(\"rename は、編集中のものの名前を打った名前にする\", () => {\n+  const { current } = setup([\"title\"]);\n+  act(() => current().editor.dispatch({ type: \"start_renaming\" }));\n+\n+  act(() => current().hook.rename(\"heading\"));\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"heading\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 0 }));\n+});\n+\n+test(\"rename で使えない名前を打つと、編集は閉じない\", () => {\n+  const { current } = setup([\"title\"]);\n+  act(() => current().editor.dispatch({ type: \"start_renaming\" }));\n+\n+  act(() => current().hook.rename(\"panel\"));\n+\n+  expect(EditorState.renamingName(current().editor.state)).toEqual(\n+    Option.some(\"title\"),\n+  );\n+});\n+\n+test(\"finishRenaming は、使える名前なら編集中のものの名前をその名前にする\", () => {\n+  const { current } = setup([\"title\"]);\n+  act(() => current().editor.dispatch({ type: \"start_renaming\" }));\n+\n+  act(() => current().hook.finishRenaming(\"heading\"));\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"heading\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 0 }));\n+});\n+\n+test(\"finishRenaming で使えない名前を渡すと、取り消して編集を閉じる\", () => {\n+  const { current } = setup([\"title\"]);\n+  act(() => current().editor.dispatch({ type: \"start_renaming\" }));\n+\n+  act(() => current().hook.finishRenaming(\"panel\"));\n+\n+  expect(EditorState.renamingName(current().editor.state)).toEqual(Option.none);\n+});\n+\n+test(\"cancelRenaming は、選択を残したまま名前の編集を閉じる\", () => {\n+  const { current } = setup([\"title\"]);\n+  act(() => current().editor.dispatch({ type: \"start_renaming\" }));\n+\n+  act(() => current().hook.cancelRenaming());\n+\n+  const { state } = current().editor;\n+  expect({\n+    renamingName: EditorState.renamingName(state),\n+    selected: DocumentSelection.names(EditorState.documentSelection(state)),\n+  }).toEqual({ renamingName: Option.none, selected: [\"title\"] });\n+});",
+          "patchLines": 84,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 147,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,147 @@\n+import { act } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { DocumentSelection } from \"@/domains/session/document-selection\";\n+import { SelectionDigs } from \"@/domains/session/selection-dig\";\n+import { UnderPointer } from \"@/domains/session/under-pointer\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+import { Option } from \"@/utils/Option\";\n+import { setup } from \"./setup\";\n+\n+/*\n+ * ツリー・キャンバス・エラー行から届く選択の操作が、それぞれの選び方で選択を変えることを\n+ * 確かめる（docs/06-ui.md「選択」）。\n+ */\n+\n+test(\"select は、複数選んでいても指した 1 つだけを選ぶ\", () => {\n+  const { current } = setup([\"title\", \"footer\"]);\n+\n+  act(() => current().hook.select(\"title\"));\n+\n+  expect(\n+    DocumentSelection.names(\n+      EditorState.documentSelection(current().editor.state),\n+    ),\n+  ).toEqual([\"title\"]);\n+});\n+\n+test(\"select でドキュメントに無い名前を指すと、何も選んでいない状態になる\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  act(() => current().hook.select(\"missing\"));\n+\n+  expect(\n+    DocumentSelection.names(\n+      EditorState.documentSelection(current().editor.state),\n+    ),\n+  ).toEqual([]);\n+});\n+\n+test(\"selectIfUnselected は、指したものが既に選択に入っていれば選択を変えない\", () => {\n+  const { current } = setup([\"title\", \"footer\"]);\n+\n+  act(() => current().hook.selectIfUnselected(\"title\"));\n+\n+  expect(\n+    DocumentSelection.names(\n+      EditorState.documentSelection(current().editor.state),\n+    ),\n+  ).toEqual([\"title\", \"footer\"]);\n+});\n+\n+test(\"selectIfUnselected は、指したものが選択に入っていなければそれだけを選ぶ\", () => {\n+  const { current } = setup([\"title\", \"footer\"]);\n+\n+  act(() => current().hook.selectIfUnselected(\"panel\"));\n+\n+  expect(\n+    DocumentSelection.names(\n+      EditorState.documentSelection(current().editor.state),\n+    ),\n+  ).toEqual([\"panel\"]);\n+});\n+\n+test(\"reveal は、エラーが指すノードを選び、名前の編集には入らない\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  act(() => current().hook.reveal(\"panel\"));\n+\n+  const { state } = current().editor;\n+  expect({\n+    selected: DocumentSelection.names(EditorState.documentSelection(state)),\n+    renamingName: EditorState.renamingName(state),\n+  }).toEqual({ selected: [\"panel\"], renamingName: Option.none });\n+});\n+\n+test(\"reveal でドキュメントに無い名前を指すと、選択は変わらない\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  act(() => current().hook.reveal(\"missing\"));\n+\n+  expect(\n+    DocumentSelection.names(\n+      EditorState.documentSelection(current().editor.state),\n+    ),\n+  ).toEqual([\"title\"]);\n+});\n+\n+test(\"selectAt は、ポインタの下にあるもののうち、掘る量で決まる深さのものを選ぶ\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  act(() =>\n+    current().hook.selectAt(\n+      UnderPointer.create(\n+        [\"panel-label\", \"panel\", \"home\"],\n+        SelectionDigs.NoDeeper,\n+      ),\n+    ),\n+  );\n+\n+  expect(\n+    DocumentSelection.names(\n+      EditorState.documentSelection(current().editor.state),\n+    ),\n+  ).toEqual([\"panel\"]);\n+});\n+\n+test(\"selectInRange は、範囲に重なったものをまとめて選ぶ\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  act(() => current().hook.selectInRange([\"panel\", \"footer\"]));\n+\n+  expect(\n+    DocumentSelection.names(\n+      EditorState.documentSelection(current().editor.state),\n+    ),\n+  ).toEqual([\"panel\", \"footer\"]);\n+});\n+\n+test(\"clearSelection は、ドキュメントを変えずに選択だけを外す\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  act(() => current().hook.clearSelection());\n+\n+  const { state } = current().editor;\n+  expect({\n+    selected: DocumentSelection.names(EditorState.documentSelection(state)),\n+    title: DesignDocument.findChildPosition(\n+      EditorState.document(state),\n+      \"title\",\n+    ),\n+  }).toEqual({\n+    selected: [],\n+    title: Option.some({ parentName: \"home\", index: 0 }),\n+  });\n+});\n+\n+test(\"selectAllInstances は、選んでいるインスタンスと同じ部品を指すインスタンスをまとめて選ぶ\", () => {\n+  const { current } = setup([\"home-card\"]);\n+\n+  act(() => current().hook.selectAllInstances());\n+\n+  expect(\n+    DocumentSelection.names(\n+      EditorState.documentSelection(current().editor.state),\n+    ),\n+  ).toEqual([\"home-card\", \"other-card\"]);\n+});",
+          "patchLines": 148,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 146,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,146 @@\n+import { act } from \"@testing-library/react\";\n+import { expect, test } from \"vitest\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { Node } from \"@/domains/dcmp/node\";\n+import { RepositionEdit } from \"@/domains/dcmp/reposition-edit\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+import { Option } from \"@/utils/Option\";\n+import { setup } from \"./setup\";\n+\n+/*\n+ * ツリー・キャンバス・パレットから届くツリーの編集が、それぞれの行き先へ届くことを確かめる\n+ * （docs/06-ui.md「編集操作の一覧」「キャンバス直接操作」）。\n+ */\n+\n+test(\"reorder は、指した位置の子を同じ親の中の別の index へ移す\", () => {\n+  const { current } = setup([]);\n+\n+  act(() => current().hook.reorder({ parentName: \"home\", index: 0 }, 2));\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 2 }));\n+});\n+\n+test(\"move は、名前で指したノードを別の親の中の位置へ移す\", () => {\n+  const { current } = setup([]);\n+\n+  act(() => current().hook.move(\"title\", { parentName: \"panel\", index: 1 }));\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"panel\", index: 1 }));\n+});\n+\n+test(\"reposition は、絶対配置のノードを指した座標へ置き直す\", () => {\n+  const { current } = setup([]);\n+\n+  act(() =>\n+    current().hook.reposition(\n+      \"footer\",\n+      RepositionEdit.create({\n+        parentName: \"home\",\n+        placement: { mode: \"absolute\", x: 100, y: 200 },\n+      }),\n+    ),\n+  );\n+\n+  const footer = Option.unwrap(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"footer\",\n+    ),\n+  );\n+  expect(Node.writtenPropsOf(footer)).toMatchObject({ x: 100, y: 200 });\n+});\n+\n+test(\"repositionArtboard は、artboard をキャンバス上の指した位置へ置き直す\", () => {\n+  const { current } = setup([]);\n+\n+  act(() => current().hook.repositionArtboard(\"home\", { x: 500, y: 300 }));\n+\n+  const home = Option.unwrap(\n+    DesignDocument.findArtboard(\n+      EditorState.document(current().editor.state),\n+      \"home\",\n+    ),\n+  );\n+  expect(home.canvasPosition).toEqual({ x: 500, y: 300 });\n+});\n+\n+test(\"insert は、選んでいる Box の子の末尾へ挿す\", () => {\n+  const { current } = setup([\"panel\"]);\n+\n+  act(() => current().hook.insert({ kind: \"primitive\", type: \"Ellipse\" }));\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"ellipse\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"panel\", index: 1 }));\n+});\n+\n+test(\"insertAt は、選択に依らず指した位置へ挿す\", () => {\n+  const { current } = setup([\"panel\"]);\n+\n+  act(() =>\n+    current().hook.insertAt(\n+      { kind: \"primitive\", type: \"Ellipse\" },\n+      { parentName: \"home\", index: 0 },\n+    ),\n+  );\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"ellipse\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 0 }));\n+});\n+\n+test(\"子を持てる Box を選んでいれば、挿入は押せる\", () => {\n+  const { current } = setup([\"panel\"]);\n+\n+  expect(current().hook.isInsertEnabled).toBe(true);\n+});\n+\n+test(\"子を持てない Text を選んでいれば、挿入は押せない\", () => {\n+  const { current } = setup([\"title\"]);\n+\n+  expect(current().hook.isInsertEnabled).toBe(false);\n+});\n+\n+test(\"detachInstance は、選んでいるインスタンスを部品の参照ではなくなるよう解除する\", () => {\n+  const { current } = setup([\"home-card\"]);\n+\n+  act(() => current().hook.detachInstance());\n+\n+  const homeCard = Option.unwrap(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"home-card\",\n+    ),\n+  );\n+  expect(Node.isRef(homeCard)).toBe(false);\n+});\n+\n+test(\"createComponent は、選んでいるノードを渡した名前の部品にして、元の位置をそのインスタンスにする\", () => {\n+  const { current } = setup([\"panel\"]);\n+\n+  act(() => current().hook.createComponent(\"badge\"));\n+\n+  const panel = Option.unwrap(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"panel\",\n+    ),\n+  );\n+  expect(panel).toMatchObject({ ref: \"badge\" });\n+});",
+          "patchLines": 147,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "8da156524239926c1ea89e1b75733f3d5e2124e0",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T15:10:15Z",
+      "subject": "🧪 [Tests]: #554 use-edit-shortcuts の割り当てをテストで固定する",
+      "body": "- 12 のキーを押して、それぞれ割り当てた操作の結果になることを見る\n- Escape は選択が外れても title が残ることまで見て、削除と区別する\n\n背景:\nuse-edit-shortcuts は、個々のショートカットフックへ use-edit-actions /\nuse-node-actions のメソッドを差し込むまとめ役になっている。差し込む口を\n取り違えても型が通る。\n\n採用理由:\n見る結果は use-edit-actions の同名ケースと同じにした。メソッドを呼ぶ\n代わりにキーを押す。キーの別名(Backspace・Meta・Shift+矢印)は、個々の\nショートカットフックのテストが持つので、ここでは見ない。\n\n代替案:\n- 個々のショートカットフックのテストに任せる: 差し込む口の取り違えは\n  そちらでは落ちないため却下\n\n影響とトレードオフ:\n差し込み口の差し替え 153 通りを 1 件ずつ当て、すべて落ちることを\n確かめた。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/554\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PDZTSVTMjWaPcnVDC",
+      "files": [
+        {
+          "path": "src/features/editor/hooks/use-edit-shortcuts/__tests__/setup.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,19 @@\n+import {\n+  type RenderedHookInEditor,\n+  renderHookInEditor,\n+} from \"@/features/editor/__tests__/hook-in-editor\";\n+import { DocumentWithEditTargets } from \"@/features/editor/__tests__/sample-document\";\n+import { useEditShortcuts } from \"../index\";\n+\n+/**\n+ * `DocumentWithEditTargets` を開いて、名前で指したものを選んだ状態でショートカットを張る。\n+ *\n+ * @param selected 最初に選んでおくノードの名前（この順で選ばれる）\n+ * @returns エディタを読む手続き（フック自身は何も返さない）\n+ */\n+export function setup(selected: readonly string[]): RenderedHookInEditor<void> {\n+  return renderHookInEditor(useEditShortcuts, {\n+    document: DocumentWithEditTargets,\n+    selected,\n+  });\n+}",
+          "patchLines": 20,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 196,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,196 @@\n+import { act } from \"@testing-library/react\";\n+import userEvent from \"@testing-library/user-event\";\n+import { expect, test } from \"vitest\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { Node } from \"@/domains/dcmp/node\";\n+import { DocumentSelection } from \"@/domains/session/document-selection\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+import { Option } from \"@/utils/Option\";\n+import { setup } from \"./setup\";\n+\n+/*\n+ * 編集操作の割り当てが、それぞれの操作へ届くことを確かめる（docs/06-ui.md「編集操作の一覧」）。\n+ * どの組み合わせを割り当てるかは各ショートカットのフックで確かめているので、ここでは\n+ * 割り当てごとに届く先だけを見る。\n+ */\n+\n+test(\"Delete を押すと、選んでいるノードが消える\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = setup([\"title\"]);\n+\n+  await user.keyboard(\"{Delete}\");\n+\n+  expect(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  ).toEqual(Option.none);\n+});\n+\n+test(\"Ctrl+C を押すと、選んでいるものがコピーされ、別の Box を選んで貼れる\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = setup([\"title\"]);\n+\n+  await user.keyboard(\"{Control>}c{/Control}\");\n+  act(() => current().editor.dispatch({ type: \"select\", name: \"panel\" }));\n+  act(() => current().editor.dispatch({ type: \"paste_copied\" }));\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"title-2\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"panel\", index: 1 }));\n+});\n+\n+test(\"Ctrl+V を押すと、コピー済みのものが選んでいる Box へ貼られる\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = setup([]);\n+  act(() => current().editor.dispatch({ type: \"select\", name: \"title\" }));\n+  act(() => current().editor.dispatch({ type: \"copy_selected\" }));\n+  act(() => current().editor.dispatch({ type: \"select\", name: \"panel\" }));\n+\n+  await user.keyboard(\"{Control>}v{/Control}\");\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"title-2\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"panel\", index: 1 }));\n+});\n+\n+test(\"Ctrl+D を押すと、選んでいるものの複製が直後へ挿される\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = setup([\"title\"]);\n+\n+  await user.keyboard(\"{Control>}d{/Control}\");\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"title-2\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 1 }));\n+});\n+\n+test(\"Ctrl+Z を押すと、直前の編集が取り消される\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = setup([\"title\"]);\n+  act(() => current().editor.dispatch({ type: \"remove_selected\" }));\n+\n+  await user.keyboard(\"{Control>}z{/Control}\");\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 0 }));\n+});\n+\n+test(\"Ctrl+Shift+Z を押すと、取り消した編集がやり直される\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = setup([\"title\"]);\n+  act(() => current().editor.dispatch({ type: \"remove_selected\" }));\n+  act(() => current().editor.dispatch({ type: \"undo\" }));\n+\n+  await user.keyboard(\"{Control>}{Shift>}z{/Shift}{/Control}\");\n+\n+  expect(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  ).toEqual(Option.none);\n+});\n+\n+test(\"Escape を押すと、ドキュメントを変えずに選択だけが外れる\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = setup([\"title\"]);\n+\n+  await user.keyboard(\"{Escape}\");\n+\n+  const { state } = current().editor;\n+  expect({\n+    selected: DocumentSelection.names(EditorState.documentSelection(state)),\n+    title: DesignDocument.findChildPosition(\n+      EditorState.document(state),\n+      \"title\",\n+    ),\n+  }).toEqual({\n+    selected: [],\n+    title: Option.some({ parentName: \"home\", index: 0 }),\n+  });\n+});\n+\n+test(\"Ctrl+] を押すと、選んでいるノードが兄弟の並びで前面へ 1 つ動く\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = setup([\"panel\"]);\n+\n+  await user.keyboard(\"{Control>}]{/Control}\");\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"panel\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 3 }));\n+});\n+\n+test(\"→ を押すと、選んでいる絶対配置のノードが右へ 1 ずれる\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = setup([\"footer\"]);\n+\n+  await user.keyboard(\"{ArrowRight}\");\n+\n+  const footer = Option.unwrap(\n+    DesignDocument.findNode(\n+      EditorState.document(current().editor.state),\n+      \"footer\",\n+    ),\n+  );\n+  expect(Node.writtenPropsOf(footer).x).toBe(41);\n+});\n+\n+test(\"Ctrl+R を押すと、選んでいるものの名前の編集に入る\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = setup([\"title\"]);\n+\n+  await user.keyboard(\"{Control>}r{/Control}\");\n+\n+  expect(EditorState.renamingName(current().editor.state)).toEqual(\n+    Option.some(\"title\"),\n+  );\n+});\n+\n+test(\"Ctrl+G を押すと、選んでいるノードが新しい Box の中へ入る\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = setup([\"title\", \"panel\"]);\n+\n+  await user.keyboard(\"{Control>}g{/Control}\");\n+\n+  const document = EditorState.document(current().editor.state);\n+  const parentName = Option.unwrap(\n+    DesignDocument.findChildPosition(document, \"title\"),\n+  ).parentName;\n+  expect(\n+    Option.unwrap(DesignDocument.findNode(document, parentName)),\n+  ).toMatchObject({ type: \"Box\" });\n+});\n+\n+test(\"Ctrl+Shift+G を押すと、選んでいる Box が外れて子が親へ戻る\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = setup([\"title\", \"panel\"]);\n+  act(() => current().editor.dispatch({ type: \"group_selected\" }));\n+\n+  await user.keyboard(\"{Control>}{Shift>}g{/Shift}{/Control}\");\n+\n+  expect(\n+    DesignDocument.findChildPosition(\n+      EditorState.document(current().editor.state),\n+      \"title\",\n+    ),\n+  ).toEqual(Option.some({ parentName: \"home\", index: 1 }));\n+});",
+          "patchLines": 197,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "58264e7dcbb9ba3d6059dab4bc7a500e3e12fc32",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T15:23:39Z",
+      "subject": "♻️ [Refactoring]: #554 操作フックのテストの器と読み出しを共有へ寄せる",
+      "body": "- hook-in-editor.tsx に renderHookOnEditTargets を足し、3 つのフックの\n  __tests__/setup.ts を消す\n- EditorPremise を InitialEditor に改名し、selected の doc から artboard を外す\n- nodeNamed を editor-state/__tests__/setup.ts から features/editor/__tests__/\n  editor-state-reads.ts へ上げ、childPositionNamed と selectedNames を並べる\n- group の期待値を、親を引いて Box を見る 2 段の読み出しから、\n  childPositionNamed が parentName \"box\" を返すことで見る形に揃える\n- renderHookInEditor の doc に、器コンポーネント + ボタンにしない理由を足す\n\n背景:\n実装の検証で次の指摘を受けた。\n- 3 つの setup.ts が、描くフックの違いだけで同じ手続きになっている\n- findNode / findChildPosition / 選択の読み出しを 30 か所以上インラインで\n  書いていて、既存の nodeNamed と本体が同じ\n- EditorPremise の \"Premise\" がリポジトリの語彙に無い\n- selected の doc が「artboard / ノード」と書いていて、同じファイルの\n  「artboard は範囲選択で選べないので落ちる」と食い違う\n\n採用理由:\n読み出しは domain と hook の両方のテストが使うので、2 つの共通の親である\nfeatures/editor/__tests__/ へ上げた。改名は、EditorProvider の\ninitialDocument など既存の initial* に揃えた。\n\n代替案:\n- shortcuts のテストが持つ期待値を edit-actions と共有物にまとめる:\n  テストを 1 本読むだけでは前提が分からなくなるので却下した\n  (rules/testing.md)。2 つのテストが固定しているのは別の入口(メソッドと\n  キー)の配線なので、重複は残し、読み出しの形だけ揃える\n- childNames も一緒に上げる: 11 ファイル・45 箇所の書き換えになるうえ、\n  新しいテストでは使わないので据え置いた\n\n影響とトレードオフ:\nテストの件数と、各テストが見ている仕様は変えていない。\n次の書き換えで、テストが 1 件ずつ落ちることを確かめた。\n- group_selected → remove_selected\n- ungroup_selected → undo\n- Ctrl+G / Ctrl+Shift+G の差し込み口を別の操作に差し替える\n- select → select_if_unselected\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/554#issuecomment-6708814189\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PDZTSVTMjWaPcnVDC",
+      "files": [
+        {
+          "path": "src/features/editor/__tests__/editor-state-reads.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 48,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,48 @@\n+import type { ChildPosition } from \"@/domains/dcmp/child-position\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import type { Node } from \"@/domains/dcmp/node\";\n+import { DocumentSelection } from \"@/domains/session/document-selection\";\n+import { EditorState } from \"@/features/editor/domains/editor-state\";\n+import { Option } from \"@/utils/Option\";\n+\n+/*\n+ * エディタの状態から、開いている文書のノードと選択を読む。`editor-state` のテストと、\n+ * エディタの状態を Provider から読むフックのテストが同じ読み方をする。\n+ */\n+\n+/**\n+ * 名前で引いたノード。見つからなければテストを落とす。\n+ *\n+ * @param state 引き先のエディタの状態\n+ * @param name 引きたいノードの名前\n+ * @returns そのノード\n+ */\n+export function nodeNamed(state: EditorState, name: string): Node {\n+  return Option.unwrap(\n+    DesignDocument.findNode(EditorState.document(state), name),\n+  );\n+}\n+\n+/**\n+ * 名前で指したノードが、どの親の何番目の子として置かれているか。\n+ *\n+ * @param state 引き先のエディタの状態\n+ * @param name 位置を読みたいノードの名前\n+ * @returns その親の名前と index。画面構造に無ければ（部品定義の中のノードも）「無し」\n+ */\n+export function childPositionNamed(\n+  state: EditorState,\n+  name: string,\n+): Option<ChildPosition> {\n+  return DesignDocument.findChildPosition(EditorState.document(state), name);\n+}\n+\n+/**\n+ * 選んでいるものの名前。\n+ *\n+ * @param state 読み先のエディタの状態\n+ * @returns 選んでいる名前の並び。何も選んでいなければ空\n+ */\n+export function selectedNames(state: EditorState): readonly string[] {\n+  return DocumentSelection.names(EditorState.documentSelection(state));\n+}",
+          "patchLines": 49,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/__tests__/hook-in-editor.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 13,
+          "patch": "@@ -2,22 +2,22 @@ import { act, renderHook } from \"@testing-library/react\";\n import type { ReactNode } from \"react\";\n import { expect } from \"vitest\";\n import type { DesignDocument } from \"@/domains/dcmp/design-document\";\n-import { DocumentSelection } from \"@/domains/session/document-selection\";\n+import { selectedNames } from \"@/features/editor/__tests__/editor-state-reads\";\n+import { DocumentWithEditTargets } from \"@/features/editor/__tests__/sample-document\";\n import {\n   type Editor,\n   EditorProvider,\n   useEditor,\n } from \"@/features/editor/components/editor-provider\";\n-import { EditorState } from \"@/features/editor/domains/editor-state\";\n \n /** フックの戻り値と、同じ Provider が配っているエディタの状態・dispatch。 */\n export type HookInEditor<T> = Readonly<{ hook: T; editor: Editor }>;\n \n-/** 描いた直後に置いておく前提。 */\n-export type EditorPremise = Readonly<{\n+/** フックを描いた直後のエディタ。 */\n+export type InitialEditor = Readonly<{\n   /** 開いておくドキュメント。 */\n   document: DesignDocument;\n-  /** 最初に選んでおく artboard / ノードの名前（この順で選ばれる）。 */\n+  /** 最初に選んでおくノードの名前（この順で選ばれる）。 */\n   selected: readonly string[];\n }>;\n \n@@ -27,19 +27,21 @@ export type RenderedHookInEditor<T> = Readonly<{\n }>;\n \n /**\n- * 実物の `EditorProvider` の内側でフックを描き、前提の選択を範囲選択の経路で置く。\n+ * 実物の `EditorProvider` の内側でフックを描き、最初の選択を範囲選択の経路で置く。\n  *\n  * 文書に無い名前・部品定義の中のノード・artboard・ロック中のノードは範囲選択で選べないので、\n  * 渡すとテストが落ちる。範囲選択の経路を使うのは、名前の並びを受けて複数選択を作れる\n  * アクションが `select_in_range` しか無いため。\n+ * 器のコンポーネントとボタンで描く形（`use-token-actions` のテスト）にしないのは、メソッドの\n+ * 引数がボタンごとに固定され、状態を DOM の文字列で読むことになるため。\n  *\n  * @param useHook 描くフック\n- * @param premise 開くドキュメントと、最初に選んでおく名前\n+ * @param initial 開くドキュメントと、最初に選んでおく名前\n  * @returns 今のフックの戻り値とエディタを読む手続き\n  */\n export function renderHookInEditor<T>(\n   useHook: () => T,\n-  { document, selected }: EditorPremise,\n+  { document, selected }: InitialEditor,\n ): RenderedHookInEditor<T> {\n   const { result } = renderHook(\n     (): HookInEditor<T> => ({ hook: useHook(), editor: useEditor() }),\n@@ -56,11 +58,24 @@ export function renderHookInEditor<T>(\n       names: selected,\n     }),\n   );\n-  expect(\n-    DocumentSelection.names(\n-      EditorState.documentSelection(result.current.editor.state),\n-    ),\n-  ).toEqual(selected);\n+  expect(selectedNames(result.current.editor.state)).toEqual(selected);\n \n   return { current: () => result.current };\n }\n+\n+/**\n+ * `DocumentWithEditTargets` を開いて、名前で指したものを選んだ状態でフックを描く。\n+ *\n+ * @param useHook 描くフック\n+ * @param selected 最初に選んでおくノードの名前（この順で選ばれる）\n+ * @returns 今のフックの戻り値とエディタを読む手続き\n+ */\n+export function renderHookOnEditTargets<T>(\n+  useHook: () => T,\n+  selected: readonly string[],\n+): RenderedHookInEditor<T> {\n+  return renderHookInEditor(useHook, {\n+    document: DocumentWithEditTargets,\n+    selected,\n+  });\n+}",
+          "patchLines": 83,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -5,9 +5,9 @@ import {\n   DocumentTemplate,\n } from \"@/domains/dcmp/design-document\";\n import { Node } from \"@/domains/dcmp/node\";\n+import { nodeNamed } from \"@/features/editor/__tests__/editor-state-reads\";\n import { Option } from \"@/utils/Option\";\n import { EditorState } from \"../index\";\n-import { nodeNamed } from \"./setup\";\n \n /**\n  * 選択したサブツリーの部品化（UI 案 docs/Design Composer.html の `Create component` /",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -4,9 +4,9 @@ import {\n   DocumentTemplate,\n } from \"@/domains/dcmp/design-document\";\n import { Node } from \"@/domains/dcmp/node\";\n+import { nodeNamed } from \"@/features/editor/__tests__/editor-state-reads\";\n import { Option } from \"@/utils/Option\";\n import { EditorState } from \"../index\";\n-import { nodeNamed } from \"./setup\";\n \n /**\n  * インスタンスの解除（UI 案 docs/Design Composer.html の `Detach instance`）。",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.duplicate.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -1,7 +1,8 @@\n import { expect, test } from \"vitest\";\n+import { nodeNamed } from \"@/features/editor/__tests__/editor-state-reads\";\n import { Option } from \"@/utils/Option\";\n import { EditorState } from \"../index\";\n-import { childNames, nodeNamed, stateWithDeepBranch } from \"./setup\";\n+import { childNames, stateWithDeepBranch } from \"./setup\";\n \n /*\n  * 選んでいるノードを複製する（docs/06-ui.md「編集操作の一覧」の複製）。直後へ入ることと",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-duplicate.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -1,10 +1,10 @@\n import { expect, test } from \"vitest\";\n import { DocumentSelection } from \"@/domains/session/document-selection\";\n+import { nodeNamed } from \"@/features/editor/__tests__/editor-state-reads\";\n import { Option } from \"@/utils/Option\";\n import { EditorState } from \"../index\";\n import {\n   childNames,\n-  nodeNamed,\n   stateWithChildInEachArtboard,\n   stateWithDeepBranch,\n } from \"./setup\";",
+          "patchLines": 12,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 14,
+          "patch": "@@ -3,7 +3,6 @@ import {\n   DesignDocument,\n   DocumentTemplate,\n } from \"@/domains/dcmp/design-document\";\n-import type { Node } from \"@/domains/dcmp/node\";\n import { Option } from \"@/utils/Option\";\n import { EditorState } from \"../index\";\n \n@@ -143,19 +142,6 @@ export const InstanceNames = [\n   \"home\",\n ] as const;\n \n-/**\n- * 名前で引いたノード。見つからなければテストを落とす。\n- *\n- * @param state 引き先のエディタの状態\n- * @param name 引きたいノードの名前\n- * @returns そのノード\n- */\n-export function nodeNamed(state: EditorState, name: string): Node {\n-  return Option.unwrap(\n-    DesignDocument.findNode(EditorState.document(state), name),\n-  );\n-}\n-\n /**\n  * 名前で指した親の子の並び。artboard もノードも「子を持つもの」として同じに見る。\n  *",
+          "patchLines": 28,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 8,
+          "patch": "@@ -2,17 +2,29 @@ import { act } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n import { documentWithThreeArtboards } from \"@/features/editor/__tests__/artboard-fixtures\";\n-import { renderHookInEditor } from \"@/features/editor/__tests__/hook-in-editor\";\n+import {\n+  type RenderedHookInEditor,\n+  renderHookInEditor,\n+} from \"@/features/editor/__tests__/hook-in-editor\";\n import { EditorState } from \"@/features/editor/domains/editor-state\";\n-import { useArtboardActions } from \"../index\";\n+import { type ArtboardActions, useArtboardActions } from \"../index\";\n \n /* artboard の追加と並べ替えが、artboard の並びを変えることを確かめる（docs/06-ui.md「編集操作の一覧」）。 */\n \n-test(\"add は、artboard の並びの末尾に 1 枚足す\", () => {\n-  const { current } = renderHookInEditor(useArtboardActions, {\n+/**\n+ * artboard を 3 枚持つドキュメントを、何も選ばずに開いてフックを描く。\n+ *\n+ * @returns 今のフックの戻り値とエディタを読む手続き\n+ */\n+function setup(): RenderedHookInEditor<ArtboardActions> {\n+  return renderHookInEditor(useArtboardActions, {\n     document: documentWithThreeArtboards(),\n     selected: [],\n   });\n+}\n+\n+test(\"add は、artboard の並びの末尾に 1 枚足す\", () => {\n+  const { current } = setup();\n \n   act(() => current().hook.add());\n \n@@ -26,10 +38,7 @@ test(\"add は、artboard の並びの末尾に 1 枚足す\", () => {\n });\n \n test(\"reorder は、並びの中の 1 枚を指した位置へ移す\", () => {\n-  const { current } = renderHookInEditor(useArtboardActions, {\n-    document: documentWithThreeArtboards(),\n-    selected: [],\n-  });\n+  const { current } = setup();\n \n   act(() => current().hook.reorder({ fromIndex: 0, toIndex: 2 }));\n ",
+          "patchLines": 46,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/setup.ts",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 21,
+          "patch": null,
+          "patchLines": 0,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.clipboard.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 24,
+          "patch": "@@ -1,9 +1,9 @@\n import { act } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n-import { DesignDocument } from \"@/domains/dcmp/design-document\";\n-import { EditorState } from \"@/features/editor/domains/editor-state\";\n+import { childPositionNamed } from \"@/features/editor/__tests__/editor-state-reads\";\n+import { renderHookOnEditTargets } from \"@/features/editor/__tests__/hook-in-editor\";\n import { Option } from \"@/utils/Option\";\n-import { setup } from \"./setup\";\n+import { useEditActions } from \"../index\";\n \n /*\n  * コピー & ペーストと複製が、選択とコピー済みのものから行き先を決めることを確かめる\n@@ -11,45 +11,36 @@ import { setup } from \"./setup\";\n  */\n \n test(\"copy で選んでいるものをコピーすると、別の Box を選んで貼れる\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditActions, [\"title\"]);\n \n   act(() => current().hook.copy());\n   act(() => current().editor.dispatch({ type: \"select\", name: \"panel\" }));\n   act(() => current().editor.dispatch({ type: \"paste_copied\" }));\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"title-2\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"panel\", index: 1 }));\n+  expect(childPositionNamed(current().editor.state, \"title-2\")).toEqual(\n+    Option.some({ parentName: \"panel\", index: 1 }),\n+  );\n });\n \n test(\"paste は、コピー済みのものを選んでいる Box の子の末尾へ貼る\", () => {\n-  const { current } = setup([]);\n+  const { current } = renderHookOnEditTargets(useEditActions, []);\n   act(() => current().editor.dispatch({ type: \"select\", name: \"title\" }));\n   act(() => current().editor.dispatch({ type: \"copy_selected\" }));\n   act(() => current().editor.dispatch({ type: \"select\", name: \"panel\" }));\n \n   act(() => current().hook.paste());\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"title-2\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"panel\", index: 1 }));\n+  expect(childPositionNamed(current().editor.state, \"title-2\")).toEqual(\n+    Option.some({ parentName: \"panel\", index: 1 }),\n+  );\n });\n \n test(\"duplicateSelected は、選んでいるものの複製をその直後へ挿す\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditActions, [\"title\"]);\n \n   act(() => current().hook.duplicateSelected());\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"title-2\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 1 }));\n+  expect(childPositionNamed(current().editor.state, \"title-2\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 1 }),\n+  );\n });",
+          "patchLines": 71,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 9,
+          "patch": "@@ -1,28 +1,27 @@\n import { act } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { childPositionNamed } from \"@/features/editor/__tests__/editor-state-reads\";\n+import { renderHookOnEditTargets } from \"@/features/editor/__tests__/hook-in-editor\";\n import { EditorState } from \"@/features/editor/domains/editor-state\";\n import { Option } from \"@/utils/Option\";\n-import { setup } from \"./setup\";\n+import { useEditActions } from \"../index\";\n \n /* undo / redo が編集履歴を辿ることを確かめる（docs/06-ui.md「編集操作の一覧」）。 */\n \n test(\"undo は、直前の編集を取り消す\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditActions, [\"title\"]);\n   act(() => current().editor.dispatch({ type: \"remove_selected\" }));\n \n   act(() => current().hook.undo());\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"title\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 0 }));\n+  expect(childPositionNamed(current().editor.state, \"title\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 0 }),\n+  );\n });\n \n test(\"redo は、取り消した編集をやり直す\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditActions, [\"title\"]);\n   act(() => current().editor.dispatch({ type: \"remove_selected\" }));\n   act(() => current().editor.dispatch({ type: \"undo\" }));\n ",
+          "patchLines": 37,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.rename.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "patch": "@@ -1,11 +1,12 @@\n import { act } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n+import { renderHookOnEditTargets } from \"@/features/editor/__tests__/hook-in-editor\";\n import { EditorState } from \"@/features/editor/domains/editor-state\";\n import { Option } from \"@/utils/Option\";\n-import { setup } from \"./setup\";\n+import { useEditActions } from \"../index\";\n \n test(\"startRenaming は、選んでいるものの名前の編集に入る\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditActions, [\"title\"]);\n \n   act(() => current().hook.startRenaming());\n ",
+          "patchLines": 15,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 31,
+          "deletions": 38,
+          "patch": "@@ -2,10 +2,15 @@ import { act } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n import { Node } from \"@/domains/dcmp/node\";\n+import {\n+  childPositionNamed,\n+  nodeNamed,\n+} from \"@/features/editor/__tests__/editor-state-reads\";\n+import { renderHookOnEditTargets } from \"@/features/editor/__tests__/hook-in-editor\";\n import { EditorState } from \"@/features/editor/domains/editor-state\";\n import { ReorderSteps } from \"@/features/editor/domains/reorder-step\";\n import { Option } from \"@/utils/Option\";\n-import { setup } from \"./setup\";\n+import { useEditActions } from \"../index\";\n \n /*\n  * 対象を渡さない木の編集が、選んでいるものへ届くことを確かめる\n@@ -13,7 +18,7 @@ import { setup } from \"./setup\";\n  */\n \n test(\"removeSelected は、選んでいるノードを消す\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditActions, [\"title\"]);\n \n   act(() => current().hook.removeSelected());\n \n@@ -26,69 +31,57 @@ test(\"removeSelected は、選んでいるノードを消す\", () => {\n });\n \n test(\"reorderSelected で前面へ送ると、選んでいるノードが兄弟の並びで 1 つ後ろへ動く\", () => {\n-  const { current } = setup([\"panel\"]);\n+  const { current } = renderHookOnEditTargets(useEditActions, [\"panel\"]);\n \n   act(() => current().hook.reorderSelected(ReorderSteps.TowardFront));\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"panel\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 3 }));\n+  expect(childPositionNamed(current().editor.state, \"panel\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 3 }),\n+  );\n });\n \n test(\"reorderSelected で背面へ送ると、選んでいるノードが兄弟の並びで 1 つ前へ動く\", () => {\n-  const { current } = setup([\"panel\"]);\n+  const { current } = renderHookOnEditTargets(useEditActions, [\"panel\"]);\n \n   act(() => current().hook.reorderSelected(ReorderSteps.TowardBack));\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"panel\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 1 }));\n+  expect(childPositionNamed(current().editor.state, \"panel\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 1 }),\n+  );\n });\n \n test(\"repositionSelectedBy は、選んでいる絶対配置のノードの座標を渡した量だけずらす\", () => {\n-  const { current } = setup([\"footer\"]);\n+  const { current } = renderHookOnEditTargets(useEditActions, [\"footer\"]);\n \n   act(() => current().hook.repositionSelectedBy({ x: 5, y: -4 }));\n \n-  const footer = Option.unwrap(\n-    DesignDocument.findNode(\n-      EditorState.document(current().editor.state),\n-      \"footer\",\n-    ),\n-  );\n+  const footer = nodeNamed(current().editor.state, \"footer\");\n   expect(Node.writtenPropsOf(footer)).toMatchObject({ x: 45, y: 20 });\n });\n \n test(\"groupSelected は、選んでいるノードを新しい Box の中へ入れる\", () => {\n-  const { current } = setup([\"title\", \"panel\"]);\n+  const { current } = renderHookOnEditTargets(useEditActions, [\n+    \"title\",\n+    \"panel\",\n+  ]);\n \n   act(() => current().hook.groupSelected());\n \n-  const document = EditorState.document(current().editor.state);\n-  const parentName = Option.unwrap(\n-    DesignDocument.findChildPosition(document, \"title\"),\n-  ).parentName;\n-  expect(\n-    Option.unwrap(DesignDocument.findNode(document, parentName)),\n-  ).toMatchObject({ type: \"Box\" });\n+  expect(childPositionNamed(current().editor.state, \"title\")).toEqual(\n+    Option.some({ parentName: \"box\", index: 0 }),\n+  );\n });\n \n test(\"ungroupSelected は、選んでいる Box を外して子を親へ戻す\", () => {\n-  const { current } = setup([\"title\", \"panel\"]);\n+  const { current } = renderHookOnEditTargets(useEditActions, [\n+    \"title\",\n+    \"panel\",\n+  ]);\n   act(() => current().editor.dispatch({ type: \"group_selected\" }));\n \n   act(() => current().hook.ungroupSelected());\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"title\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 1 }));\n+  expect(childPositionNamed(current().editor.state, \"title\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 1 }),\n+  );\n });",
+          "patchLines": 120,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-shortcuts/__tests__/setup.ts",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 19,
+          "patch": null,
+          "patchLines": 0,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 49,
+          "deletions": 68,
+          "patch": "@@ -3,10 +3,15 @@ import userEvent from \"@testing-library/user-event\";\n import { expect, test } from \"vitest\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n import { Node } from \"@/domains/dcmp/node\";\n-import { DocumentSelection } from \"@/domains/session/document-selection\";\n+import {\n+  childPositionNamed,\n+  nodeNamed,\n+  selectedNames,\n+} from \"@/features/editor/__tests__/editor-state-reads\";\n+import { renderHookOnEditTargets } from \"@/features/editor/__tests__/hook-in-editor\";\n import { EditorState } from \"@/features/editor/domains/editor-state\";\n import { Option } from \"@/utils/Option\";\n-import { setup } from \"./setup\";\n+import { useEditShortcuts } from \"../index\";\n \n /*\n  * 編集操作の割り当てが、それぞれの操作へ届くことを確かめる（docs/06-ui.md「編集操作の一覧」）。\n@@ -16,7 +21,7 @@ import { setup } from \"./setup\";\n \n test(\"Delete を押すと、選んでいるノードが消える\", async () => {\n   const user = userEvent.setup();\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\"title\"]);\n \n   await user.keyboard(\"{Delete}\");\n \n@@ -30,69 +35,57 @@ test(\"Delete を押すと、選んでいるノードが消える\", async () => {\n \n test(\"Ctrl+C を押すと、選んでいるものがコピーされ、別の Box を選んで貼れる\", async () => {\n   const user = userEvent.setup();\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\"title\"]);\n \n   await user.keyboard(\"{Control>}c{/Control}\");\n   act(() => current().editor.dispatch({ type: \"select\", name: \"panel\" }));\n   act(() => current().editor.dispatch({ type: \"paste_copied\" }));\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"title-2\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"panel\", index: 1 }));\n+  expect(childPositionNamed(current().editor.state, \"title-2\")).toEqual(\n+    Option.some({ parentName: \"panel\", index: 1 }),\n+  );\n });\n \n test(\"Ctrl+V を押すと、コピー済みのものが選んでいる Box へ貼られる\", async () => {\n   const user = userEvent.setup();\n-  const { current } = setup([]);\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, []);\n   act(() => current().editor.dispatch({ type: \"select\", name: \"title\" }));\n   act(() => current().editor.dispatch({ type: \"copy_selected\" }));\n   act(() => current().editor.dispatch({ type: \"select\", name: \"panel\" }));\n \n   await user.keyboard(\"{Control>}v{/Control}\");\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"title-2\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"panel\", index: 1 }));\n+  expect(childPositionNamed(current().editor.state, \"title-2\")).toEqual(\n+    Option.some({ parentName: \"panel\", index: 1 }),\n+  );\n });\n \n test(\"Ctrl+D を押すと、選んでいるものの複製が直後へ挿される\", async () => {\n   const user = userEvent.setup();\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\"title\"]);\n \n   await user.keyboard(\"{Control>}d{/Control}\");\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"title-2\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 1 }));\n+  expect(childPositionNamed(current().editor.state, \"title-2\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 1 }),\n+  );\n });\n \n test(\"Ctrl+Z を押すと、直前の編集が取り消される\", async () => {\n   const user = userEvent.setup();\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\"title\"]);\n   act(() => current().editor.dispatch({ type: \"remove_selected\" }));\n \n   await user.keyboard(\"{Control>}z{/Control}\");\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"title\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 0 }));\n+  expect(childPositionNamed(current().editor.state, \"title\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 0 }),\n+  );\n });\n \n test(\"Ctrl+Shift+Z を押すと、取り消した編集がやり直される\", async () => {\n   const user = userEvent.setup();\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\"title\"]);\n   act(() => current().editor.dispatch({ type: \"remove_selected\" }));\n   act(() => current().editor.dispatch({ type: \"undo\" }));\n \n@@ -108,17 +101,14 @@ test(\"Ctrl+Shift+Z を押すと、取り消した編集がやり直される\", a\n \n test(\"Escape を押すと、ドキュメントを変えずに選択だけが外れる\", async () => {\n   const user = userEvent.setup();\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\"title\"]);\n \n   await user.keyboard(\"{Escape}\");\n \n   const { state } = current().editor;\n   expect({\n-    selected: DocumentSelection.names(EditorState.documentSelection(state)),\n-    title: DesignDocument.findChildPosition(\n-      EditorState.document(state),\n-      \"title\",\n-    ),\n+    selected: selectedNames(state),\n+    title: childPositionNamed(state, \"title\"),\n   }).toEqual({\n     selected: [],\n     title: Option.some({ parentName: \"home\", index: 0 }),\n@@ -127,36 +117,28 @@ test(\"Escape を押すと、ドキュメントを変えずに選択だけが外\n \n test(\"Ctrl+] を押すと、選んでいるノードが兄弟の並びで前面へ 1 つ動く\", async () => {\n   const user = userEvent.setup();\n-  const { current } = setup([\"panel\"]);\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\"panel\"]);\n \n   await user.keyboard(\"{Control>}]{/Control}\");\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"panel\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 3 }));\n+  expect(childPositionNamed(current().editor.state, \"panel\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 3 }),\n+  );\n });\n \n test(\"→ を押すと、選んでいる絶対配置のノードが右へ 1 ずれる\", async () => {\n   const user = userEvent.setup();\n-  const { current } = setup([\"footer\"]);\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\"footer\"]);\n \n   await user.keyboard(\"{ArrowRight}\");\n \n-  const footer = Option.unwrap(\n-    DesignDocument.findNode(\n-      EditorState.document(current().editor.state),\n-      \"footer\",\n-    ),\n-  );\n+  const footer = nodeNamed(current().editor.state, \"footer\");\n   expect(Node.writtenPropsOf(footer).x).toBe(41);\n });\n \n test(\"Ctrl+R を押すと、選んでいるものの名前の編集に入る\", async () => {\n   const user = userEvent.setup();\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\"title\"]);\n \n   await user.keyboard(\"{Control>}r{/Control}\");\n \n@@ -167,30 +149,29 @@ test(\"Ctrl+R を押すと、選んでいるものの名前の編集に入る\", a\n \n test(\"Ctrl+G を押すと、選んでいるノードが新しい Box の中へ入る\", async () => {\n   const user = userEvent.setup();\n-  const { current } = setup([\"title\", \"panel\"]);\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\n+    \"title\",\n+    \"panel\",\n+  ]);\n \n   await user.keyboard(\"{Control>}g{/Control}\");\n \n-  const document = EditorState.document(current().editor.state);\n-  const parentName = Option.unwrap(\n-    DesignDocument.findChildPosition(document, \"title\"),\n-  ).parentName;\n-  expect(\n-    Option.unwrap(DesignDocument.findNode(document, parentName)),\n-  ).toMatchObject({ type: \"Box\" });\n+  expect(childPositionNamed(current().editor.state, \"title\")).toEqual(\n+    Option.some({ parentName: \"box\", index: 0 }),\n+  );\n });\n \n test(\"Ctrl+Shift+G を押すと、選んでいる Box が外れて子が親へ戻る\", async () => {\n   const user = userEvent.setup();\n-  const { current } = setup([\"title\", \"panel\"]);\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\n+    \"title\",\n+    \"panel\",\n+  ]);\n   act(() => current().editor.dispatch({ type: \"group_selected\" }));\n \n   await user.keyboard(\"{Control>}{Shift>}g{/Shift}{/Control}\");\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"title\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 1 }));\n+  expect(childPositionNamed(current().editor.state, \"title\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 1 }),\n+  );\n });",
+          "patchLines": 224,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/setup.ts",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 21,
+          "patch": null,
+          "patchLines": 0,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 47,
+          "patch": "@@ -6,9 +6,10 @@ import { Node, PropEdit } from \"@/domains/dcmp/node\";\n import { ResizeEdit } from \"@/domains/dcmp/resize-edit\";\n import { EditContinuities } from \"@/domains/session/edit-continuity\";\n import { Axes } from \"@/domains/unit/axis\";\n+import { nodeNamed } from \"@/features/editor/__tests__/editor-state-reads\";\n+import { renderHookOnEditTargets } from \"@/features/editor/__tests__/hook-in-editor\";\n import { EditorState } from \"@/features/editor/domains/editor-state\";\n-import { Option } from \"@/utils/Option\";\n-import { setup } from \"./setup\";\n+import { useNodeActions } from \"../index\";\n \n /*\n  * プロパティパネル・キャンバスから届く値の編集が、それぞれの書き込み先へ届き、渡した続き方が\n@@ -16,7 +17,7 @@ import { setup } from \"./setup\";\n  */\n \n test(\"editProp は、選んでいるノードの prop を書き換える\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n \n   act(() =>\n     current().hook.editProp(\n@@ -25,17 +26,12 @@ test(\"editProp は、選んでいるノードの prop を書き換える\", () =>\n     ),\n   );\n \n-  const title = Option.unwrap(\n-    DesignDocument.findNode(\n-      EditorState.document(current().editor.state),\n-      \"title\",\n-    ),\n-  );\n+  const title = nodeNamed(current().editor.state, \"title\");\n   expect(Node.writtenPropsOf(title).content).toBe(\"a\");\n });\n \n test(\"editRefOwnProp は、選んでいるインスタンス自身の値を書き換える\", () => {\n-  const { current } = setup([\"home-card\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"home-card\"]);\n \n   act(() =>\n     current().hook.editRefOwnProp(\n@@ -53,7 +49,7 @@ test(\"editRefOwnProp は、選んでいるインスタンス自身の値を書\n });\n \n test(\"resize は、選んでいるノードの大きさを書き換える\", () => {\n-  const { current } = setup([\"panel\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"panel\"]);\n \n   act(() =>\n     current().hook.resize(\n@@ -62,17 +58,12 @@ test(\"resize は、選んでいるノードの大きさを書き換える\", () =\n     ),\n   );\n \n-  const panel = Option.unwrap(\n-    DesignDocument.findNode(\n-      EditorState.document(current().editor.state),\n-      \"panel\",\n-    ),\n-  );\n+  const panel = nodeNamed(current().editor.state, \"panel\");\n   expect(Node.writtenPropsOf(panel).width).toBe(200);\n });\n \n test(\"editProp で続きとして送った編集は、直前の編集と一緒に 1 回の undo で戻る\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n   act(() =>\n     current().editor.dispatch({\n       type: \"apply_prop_edit\",\n@@ -89,17 +80,12 @@ test(\"editProp で続きとして送った編集は、直前の編集と一緒\n   );\n   act(() => current().editor.dispatch({ type: \"undo\" }));\n \n-  const title = Option.unwrap(\n-    DesignDocument.findNode(\n-      EditorState.document(current().editor.state),\n-      \"title\",\n-    ),\n-  );\n+  const title = nodeNamed(current().editor.state, \"title\");\n   expect(Node.writtenPropsOf(title).content).toBe(\"見出し\");\n });\n \n test(\"editRefOwnProp で続きとして送った編集は、直前の編集と一緒に 1 回の undo で戻る\", () => {\n-  const { current } = setup([\"home-card\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"home-card\"]);\n   act(() =>\n     current().editor.dispatch({\n       type: \"apply_ref_own_prop_edit\",\n@@ -125,7 +111,7 @@ test(\"editRefOwnProp で続きとして送った編集は、直前の編集と\n });\n \n test(\"resize で続きとして送った編集は、直前の編集と一緒に 1 回の undo で戻る\", () => {\n-  const { current } = setup([\"panel\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"panel\"]);\n   act(() =>\n     current().editor.dispatch({\n       type: \"resize\",\n@@ -142,17 +128,12 @@ test(\"resize で続きとして送った編集は、直前の編集と一緒に\n   );\n   act(() => current().editor.dispatch({ type: \"undo\" }));\n \n-  const panel = Option.unwrap(\n-    DesignDocument.findNode(\n-      EditorState.document(current().editor.state),\n-      \"panel\",\n-    ),\n-  );\n+  const panel = nodeNamed(current().editor.state, \"panel\");\n   expect(Node.writtenPropsOf(panel).width).toBeUndefined();\n });\n \n test(\"editProp で別の編集として送った編集は、1 回の undo でその編集だけが戻る\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n   act(() =>\n     current().editor.dispatch({\n       type: \"apply_prop_edit\",\n@@ -169,17 +150,12 @@ test(\"editProp で別の編集として送った編集は、1 回の undo でそ\n   );\n   act(() => current().editor.dispatch({ type: \"undo\" }));\n \n-  const title = Option.unwrap(\n-    DesignDocument.findNode(\n-      EditorState.document(current().editor.state),\n-      \"title\",\n-    ),\n-  );\n+  const title = nodeNamed(current().editor.state, \"title\");\n   expect(Node.writtenPropsOf(title).content).toBe(\"a\");\n });\n \n test(\"editRefOwnProp で別の編集として送った編集は、1 回の undo でその編集だけが戻る\", () => {\n-  const { current } = setup([\"home-card\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"home-card\"]);\n   act(() =>\n     current().editor.dispatch({\n       type: \"apply_ref_own_prop_edit\",\n@@ -205,7 +181,7 @@ test(\"editRefOwnProp で別の編集として送った編集は、1 回の undo\n });\n \n test(\"resize で別の編集として送った編集は、1 回の undo でその編集だけが戻る\", () => {\n-  const { current } = setup([\"panel\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"panel\"]);\n   act(() =>\n     current().editor.dispatch({\n       type: \"resize\",\n@@ -222,11 +198,6 @@ test(\"resize で別の編集として送った編集は、1 回の undo でそ\n   );\n   act(() => current().editor.dispatch({ type: \"undo\" }));\n \n-  const panel = Option.unwrap(\n-    DesignDocument.findNode(\n-      EditorState.document(current().editor.state),\n-      \"panel\",\n-    ),\n-  );\n+  const panel = nodeNamed(current().editor.state, \"panel\");\n   expect(Node.writtenPropsOf(panel).width).toBe(200);\n });",
+          "patchLines": 162,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 22,
+          "patch": "@@ -1,10 +1,13 @@\n import { act } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n-import { DesignDocument } from \"@/domains/dcmp/design-document\";\n-import { DocumentSelection } from \"@/domains/session/document-selection\";\n+import {\n+  childPositionNamed,\n+  selectedNames,\n+} from \"@/features/editor/__tests__/editor-state-reads\";\n+import { renderHookOnEditTargets } from \"@/features/editor/__tests__/hook-in-editor\";\n import { EditorState } from \"@/features/editor/domains/editor-state\";\n import { Option } from \"@/utils/Option\";\n-import { setup } from \"./setup\";\n+import { useNodeActions } from \"../index\";\n \n /*\n  * 行のダブルクリックと名前の入力欄から届く名前の編集が、確定・取り消しのそれぞれへ届くことを\n@@ -12,7 +15,7 @@ import { setup } from \"./setup\";\n  */\n \n test(\"startRenamingAt は、指したものを選んでその名前の編集に入る\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n \n   act(() => current().hook.startRenamingAt(\"panel\"));\n \n@@ -22,21 +25,18 @@ test(\"startRenamingAt は、指したものを選んでその名前の編集に\n });\n \n test(\"rename は、編集中のものの名前を打った名前にする\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n   act(() => current().editor.dispatch({ type: \"start_renaming\" }));\n \n   act(() => current().hook.rename(\"heading\"));\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"heading\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 0 }));\n+  expect(childPositionNamed(current().editor.state, \"heading\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 0 }),\n+  );\n });\n \n test(\"rename で使えない名前を打つと、編集は閉じない\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n   act(() => current().editor.dispatch({ type: \"start_renaming\" }));\n \n   act(() => current().hook.rename(\"panel\"));\n@@ -47,21 +47,18 @@ test(\"rename で使えない名前を打つと、編集は閉じない\", () => {\n });\n \n test(\"finishRenaming は、使える名前なら編集中のものの名前をその名前にする\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n   act(() => current().editor.dispatch({ type: \"start_renaming\" }));\n \n   act(() => current().hook.finishRenaming(\"heading\"));\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"heading\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 0 }));\n+  expect(childPositionNamed(current().editor.state, \"heading\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 0 }),\n+  );\n });\n \n test(\"finishRenaming で使えない名前を渡すと、取り消して編集を閉じる\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n   act(() => current().editor.dispatch({ type: \"start_renaming\" }));\n \n   act(() => current().hook.finishRenaming(\"panel\"));\n@@ -70,7 +67,7 @@ test(\"finishRenaming で使えない名前を渡すと、取り消して編集\n });\n \n test(\"cancelRenaming は、選択を残したまま名前の編集を閉じる\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n   act(() => current().editor.dispatch({ type: \"start_renaming\" }));\n \n   act(() => current().hook.cancelRenaming());\n@@ -78,6 +75,6 @@ test(\"cancelRenaming は、選択を残したまま名前の編集を閉じる\",\n   const { state } = current().editor;\n   expect({\n     renamingName: EditorState.renamingName(state),\n-    selected: DocumentSelection.names(EditorState.documentSelection(state)),\n+    selected: selectedNames(state),\n   }).toEqual({ renamingName: Option.none, selected: [\"title\"] });\n });",
+          "patchLines": 97,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 39,
+          "deletions": 59,
+          "patch": "@@ -1,12 +1,15 @@\n import { act } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n-import { DesignDocument } from \"@/domains/dcmp/design-document\";\n-import { DocumentSelection } from \"@/domains/session/document-selection\";\n import { SelectionDigs } from \"@/domains/session/selection-dig\";\n import { UnderPointer } from \"@/domains/session/under-pointer\";\n+import {\n+  childPositionNamed,\n+  selectedNames,\n+} from \"@/features/editor/__tests__/editor-state-reads\";\n+import { renderHookOnEditTargets } from \"@/features/editor/__tests__/hook-in-editor\";\n import { EditorState } from \"@/features/editor/domains/editor-state\";\n import { Option } from \"@/utils/Option\";\n-import { setup } from \"./setup\";\n+import { useNodeActions } from \"../index\";\n \n /*\n  * ツリー・キャンバス・エラー行から届く選択の操作が、それぞれの選び方で選択を変えることを\n@@ -14,79 +17,68 @@ import { setup } from \"./setup\";\n  */\n \n test(\"select は、複数選んでいても指した 1 つだけを選ぶ\", () => {\n-  const { current } = setup([\"title\", \"footer\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\n+    \"title\",\n+    \"footer\",\n+  ]);\n \n   act(() => current().hook.select(\"title\"));\n \n-  expect(\n-    DocumentSelection.names(\n-      EditorState.documentSelection(current().editor.state),\n-    ),\n-  ).toEqual([\"title\"]);\n+  expect(selectedNames(current().editor.state)).toEqual([\"title\"]);\n });\n \n test(\"select でドキュメントに無い名前を指すと、何も選んでいない状態になる\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n \n   act(() => current().hook.select(\"missing\"));\n \n-  expect(\n-    DocumentSelection.names(\n-      EditorState.documentSelection(current().editor.state),\n-    ),\n-  ).toEqual([]);\n+  expect(selectedNames(current().editor.state)).toEqual([]);\n });\n \n test(\"selectIfUnselected は、指したものが既に選択に入っていれば選択を変えない\", () => {\n-  const { current } = setup([\"title\", \"footer\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\n+    \"title\",\n+    \"footer\",\n+  ]);\n \n   act(() => current().hook.selectIfUnselected(\"title\"));\n \n-  expect(\n-    DocumentSelection.names(\n-      EditorState.documentSelection(current().editor.state),\n-    ),\n-  ).toEqual([\"title\", \"footer\"]);\n+  expect(selectedNames(current().editor.state)).toEqual([\"title\", \"footer\"]);\n });\n \n test(\"selectIfUnselected は、指したものが選択に入っていなければそれだけを選ぶ\", () => {\n-  const { current } = setup([\"title\", \"footer\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\n+    \"title\",\n+    \"footer\",\n+  ]);\n \n   act(() => current().hook.selectIfUnselected(\"panel\"));\n \n-  expect(\n-    DocumentSelection.names(\n-      EditorState.documentSelection(current().editor.state),\n-    ),\n-  ).toEqual([\"panel\"]);\n+  expect(selectedNames(current().editor.state)).toEqual([\"panel\"]);\n });\n \n test(\"reveal は、エラーが指すノードを選び、名前の編集には入らない\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n \n   act(() => current().hook.reveal(\"panel\"));\n \n   const { state } = current().editor;\n   expect({\n-    selected: DocumentSelection.names(EditorState.documentSelection(state)),\n+    selected: selectedNames(state),\n     renamingName: EditorState.renamingName(state),\n   }).toEqual({ selected: [\"panel\"], renamingName: Option.none });\n });\n \n test(\"reveal でドキュメントに無い名前を指すと、選択は変わらない\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n \n   act(() => current().hook.reveal(\"missing\"));\n \n-  expect(\n-    DocumentSelection.names(\n-      EditorState.documentSelection(current().editor.state),\n-    ),\n-  ).toEqual([\"title\"]);\n+  expect(selectedNames(current().editor.state)).toEqual([\"title\"]);\n });\n \n test(\"selectAt は、ポインタの下にあるもののうち、掘る量で決まる深さのものを選ぶ\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n \n   act(() =>\n     current().hook.selectAt(\n@@ -97,37 +89,26 @@ test(\"selectAt は、ポインタの下にあるもののうち、掘る量で\n     ),\n   );\n \n-  expect(\n-    DocumentSelection.names(\n-      EditorState.documentSelection(current().editor.state),\n-    ),\n-  ).toEqual([\"panel\"]);\n+  expect(selectedNames(current().editor.state)).toEqual([\"panel\"]);\n });\n \n test(\"selectInRange は、範囲に重なったものをまとめて選ぶ\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n \n   act(() => current().hook.selectInRange([\"panel\", \"footer\"]));\n \n-  expect(\n-    DocumentSelection.names(\n-      EditorState.documentSelection(current().editor.state),\n-    ),\n-  ).toEqual([\"panel\", \"footer\"]);\n+  expect(selectedNames(current().editor.state)).toEqual([\"panel\", \"footer\"]);\n });\n \n test(\"clearSelection は、ドキュメントを変えずに選択だけを外す\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n \n   act(() => current().hook.clearSelection());\n \n   const { state } = current().editor;\n   expect({\n-    selected: DocumentSelection.names(EditorState.documentSelection(state)),\n-    title: DesignDocument.findChildPosition(\n-      EditorState.document(state),\n-      \"title\",\n-    ),\n+    selected: selectedNames(state),\n+    title: childPositionNamed(state, \"title\"),\n   }).toEqual({\n     selected: [],\n     title: Option.some({ parentName: \"home\", index: 0 }),\n@@ -135,13 +116,12 @@ test(\"clearSelection は、ドキュメントを変えずに選択だけを外\n });\n \n test(\"selectAllInstances は、選んでいるインスタンスと同じ部品を指すインスタンスをまとめて選ぶ\", () => {\n-  const { current } = setup([\"home-card\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"home-card\"]);\n \n   act(() => current().hook.selectAllInstances());\n \n-  expect(\n-    DocumentSelection.names(\n-      EditorState.documentSelection(current().editor.state),\n-    ),\n-  ).toEqual([\"home-card\", \"other-card\"]);\n+  expect(selectedNames(current().editor.state)).toEqual([\n+    \"home-card\",\n+    \"other-card\",\n+  ]);\n });",
+          "patchLines": 184,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 31,
+          "deletions": 53,
+          "patch": "@@ -3,9 +3,14 @@ import { expect, test } from \"vitest\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n import { Node } from \"@/domains/dcmp/node\";\n import { RepositionEdit } from \"@/domains/dcmp/reposition-edit\";\n+import {\n+  childPositionNamed,\n+  nodeNamed,\n+} from \"@/features/editor/__tests__/editor-state-reads\";\n+import { renderHookOnEditTargets } from \"@/features/editor/__tests__/hook-in-editor\";\n import { EditorState } from \"@/features/editor/domains/editor-state\";\n import { Option } from \"@/utils/Option\";\n-import { setup } from \"./setup\";\n+import { useNodeActions } from \"../index\";\n \n /*\n  * ツリー・キャンバス・パレットから届くツリーの編集が、それぞれの行き先へ届くことを確かめる\n@@ -13,33 +18,27 @@ import { setup } from \"./setup\";\n  */\n \n test(\"reorder は、指した位置の子を同じ親の中の別の index へ移す\", () => {\n-  const { current } = setup([]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, []);\n \n   act(() => current().hook.reorder({ parentName: \"home\", index: 0 }, 2));\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"title\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 2 }));\n+  expect(childPositionNamed(current().editor.state, \"title\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 2 }),\n+  );\n });\n \n test(\"move は、名前で指したノードを別の親の中の位置へ移す\", () => {\n-  const { current } = setup([]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, []);\n \n   act(() => current().hook.move(\"title\", { parentName: \"panel\", index: 1 }));\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"title\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"panel\", index: 1 }));\n+  expect(childPositionNamed(current().editor.state, \"title\")).toEqual(\n+    Option.some({ parentName: \"panel\", index: 1 }),\n+  );\n });\n \n test(\"reposition は、絶対配置のノードを指した座標へ置き直す\", () => {\n-  const { current } = setup([]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, []);\n \n   act(() =>\n     current().hook.reposition(\n@@ -51,17 +50,12 @@ test(\"reposition は、絶対配置のノードを指した座標へ置き直す\n     ),\n   );\n \n-  const footer = Option.unwrap(\n-    DesignDocument.findNode(\n-      EditorState.document(current().editor.state),\n-      \"footer\",\n-    ),\n-  );\n+  const footer = nodeNamed(current().editor.state, \"footer\");\n   expect(Node.writtenPropsOf(footer)).toMatchObject({ x: 100, y: 200 });\n });\n \n test(\"repositionArtboard は、artboard をキャンバス上の指した位置へ置き直す\", () => {\n-  const { current } = setup([]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, []);\n \n   act(() => current().hook.repositionArtboard(\"home\", { x: 500, y: 300 }));\n \n@@ -75,20 +69,17 @@ test(\"repositionArtboard は、artboard をキャンバス上の指した位置\n });\n \n test(\"insert は、選んでいる Box の子の末尾へ挿す\", () => {\n-  const { current } = setup([\"panel\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"panel\"]);\n \n   act(() => current().hook.insert({ kind: \"primitive\", type: \"Ellipse\" }));\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"ellipse\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"panel\", index: 1 }));\n+  expect(childPositionNamed(current().editor.state, \"ellipse\")).toEqual(\n+    Option.some({ parentName: \"panel\", index: 1 }),\n+  );\n });\n \n test(\"insertAt は、選択に依らず指した位置へ挿す\", () => {\n-  const { current } = setup([\"panel\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"panel\"]);\n \n   act(() =>\n     current().hook.insertAt(\n@@ -97,50 +88,37 @@ test(\"insertAt は、選択に依らず指した位置へ挿す\", () => {\n     ),\n   );\n \n-  expect(\n-    DesignDocument.findChildPosition(\n-      EditorState.document(current().editor.state),\n-      \"ellipse\",\n-    ),\n-  ).toEqual(Option.some({ parentName: \"home\", index: 0 }));\n+  expect(childPositionNamed(current().editor.state, \"ellipse\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 0 }),\n+  );\n });\n \n test(\"子を持てる Box を選んでいれば、挿入は押せる\", () => {\n-  const { current } = setup([\"panel\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"panel\"]);\n \n   expect(current().hook.isInsertEnabled).toBe(true);\n });\n \n test(\"子を持てない Text を選んでいれば、挿入は押せない\", () => {\n-  const { current } = setup([\"title\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"title\"]);\n \n   expect(current().hook.isInsertEnabled).toBe(false);\n });\n \n test(\"detachInstance は、選んでいるインスタンスを部品の参照ではなくなるよう解除する\", () => {\n-  const { current } = setup([\"home-card\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"home-card\"]);\n \n   act(() => current().hook.detachInstance());\n \n-  const homeCard = Option.unwrap(\n-    DesignDocument.findNode(\n-      EditorState.document(current().editor.state),\n-      \"home-card\",\n-    ),\n-  );\n+  const homeCard = nodeNamed(current().editor.state, \"home-card\");\n   expect(Node.isRef(homeCard)).toBe(false);\n });\n \n test(\"createComponent は、選んでいるノードを渡した名前の部品にして、元の位置をそのインスタンスにする\", () => {\n-  const { current } = setup([\"panel\"]);\n+  const { current } = renderHookOnEditTargets(useNodeActions, [\"panel\"]);\n \n   act(() => current().hook.createComponent(\"badge\"));\n \n-  const panel = Option.unwrap(\n-    DesignDocument.findNode(\n-      EditorState.document(current().editor.state),\n-      \"panel\",\n-    ),\n-  );\n+  const panel = nodeNamed(current().editor.state, \"panel\");\n   expect(panel).toMatchObject({ ref: \"badge\" });\n });",
+          "patchLines": 165,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "7ec5d6e3c52e9501319e55901b5e84ba68fe9e9d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-07T16:13:03Z",
+      "subject": "🧪 [Tests]: #554 引数を捨てる書き換えも落ちるよう、配線テストの入力を直す",
+      "body": "- use-edit-shortcuts: Ctrl+[ のテストを足す。矢印は → と ↓ に分け、\n  x と y を両方見る\n- use-artboard-actions: reorder を fromIndex 2 → 0 に変える。add が足した\n  artboard を選ぶことを別のテストで見る\n- use-node-actions: reorder を index 2 から動かす。selectAt は title を\n  選んだ状態から Deepest で引く\n\n背景:\ntest-reviewer が 274 件のミューテーションを当てた。差し込み口の\n取り違えはすべて落ちたが、引数を捨てる書き換えが生き残った。\n- artboard の reorder が fromIndex を捨てても、全テスト 5782 件が通った\n- shortcuts は Ctrl+] と → しか押しておらず、向き・移動量・y を捨てる\n  書き換えが通った\n- node の reorder の from、selectAt の掘る量を固定する書き換えも通った\n計画の取り違え表は、アクション同士の入れ替えしか候補にしていなかった。\n\n採用理由:\n既定値と違う答えになる入力を選んだ(rules/testing.md「既定値と違う\n答えになる入力を選ぶ」)。selectAt は title を選んだ状態から引くと、\n掘る量によって答えが次のように分かれる。\n- no-deeper / one-deeper: panel\n- deepest: panel-label\n渡した Deepest 以外のどちらへ固定しても落ちる。\n\n代替案:\n- selectAt を panel を選んだ状態から引く: 答えが no-deeper では panel、\n  それ以外では panel-label になる。no-deeper の答えが最初の選択と同じ\n  なので、何も dispatch しないフックでも通ってしまうため却下\n- add の選択を、並びのテストに assert として足す: 1 テスト 1 仕様を保つ\n  ために、テストを分けた\n\n影響とトレードオフ:\n次の書き換えが、それぞれ落ちることを確かめた。\n- 向きを固定する / y を 0 にする / y に x を入れる / 移動量を固定する\n- fromIndex を 0 にする / add の後に選択を外す\n- from.index を 0 にする / 掘る量を no-deeper・one-deeper に固定する\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/554#issuecomment-6709519420\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PDZTSVTMjWaPcnVDC",
+      "files": [
+        {
+          "path": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 2,
+          "patch": "@@ -2,6 +2,7 @@ import { act } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n import { documentWithThreeArtboards } from \"@/features/editor/__tests__/artboard-fixtures\";\n+import { selectedNames } from \"@/features/editor/__tests__/editor-state-reads\";\n import {\n   type RenderedHookInEditor,\n   renderHookInEditor,\n@@ -37,14 +38,26 @@ test(\"add は、artboard の並びの末尾に 1 枚足す\", () => {\n   });\n });\n \n+test(\"add は、足した artboard を選ぶ\", () => {\n+  const { current } = setup();\n+\n+  act(() => current().hook.add());\n+\n+  const { state } = current().editor;\n+  const added = DesignDocument.collectArtboardNames(\n+    EditorState.document(state),\n+  ).slice(3);\n+  expect(selectedNames(state)).toEqual(added);\n+});\n+\n test(\"reorder は、並びの中の 1 枚を指した位置へ移す\", () => {\n   const { current } = setup();\n \n-  act(() => current().hook.reorder({ fromIndex: 0, toIndex: 2 }));\n+  act(() => current().hook.reorder({ fromIndex: 2, toIndex: 0 }));\n \n   expect(\n     DesignDocument.collectArtboardNames(\n       EditorState.document(current().editor.state),\n     ),\n-  ).toEqual([\"settings\", \"about\", \"home\"]);\n+  ).toEqual([\"about\", \"home\", \"settings\"]);\n });",
+          "patchLines": 37,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 2,
+          "patch": "@@ -126,14 +126,35 @@ test(\"Ctrl+] を押すと、選んでいるノードが兄弟の並びで前面\n   );\n });\n \n-test(\"→ を押すと、選んでいる絶対配置のノードが右へ 1 ずれる\", async () => {\n+test(\"Ctrl+[ を押すと、選んでいるノードが兄弟の並びで背面へ 1 つ動く\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\"panel\"]);\n+\n+  await user.keyboard(\"{Control>}[[{/Control}\");\n+\n+  expect(childPositionNamed(current().editor.state, \"panel\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 1 }),\n+  );\n+});\n+\n+test(\"→ を押すと、選んでいる絶対配置のノードが右へ 1 ずれ、上下には動かない\", async () => {\n   const user = userEvent.setup();\n   const { current } = renderHookOnEditTargets(useEditShortcuts, [\"footer\"]);\n \n   await user.keyboard(\"{ArrowRight}\");\n \n   const footer = nodeNamed(current().editor.state, \"footer\");\n-  expect(Node.writtenPropsOf(footer).x).toBe(41);\n+  expect(Node.writtenPropsOf(footer)).toMatchObject({ x: 41, y: 24 });\n+});\n+\n+test(\"↓ を押すと、選んでいる絶対配置のノードが下へ 1 ずれ、左右には動かない\", async () => {\n+  const user = userEvent.setup();\n+  const { current } = renderHookOnEditTargets(useEditShortcuts, [\"footer\"]);\n+\n+  await user.keyboard(\"{ArrowDown}\");\n+\n+  const footer = nodeNamed(current().editor.state, \"footer\");\n+  expect(Node.writtenPropsOf(footer)).toMatchObject({ x: 40, y: 25 });\n });\n \n test(\"Ctrl+R を押すと、選んでいるものの名前の編集に入る\", async () => {",
+          "patchLines": 38,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -84,12 +84,12 @@ test(\"selectAt は、ポインタの下にあるもののうち、掘る量で\n     current().hook.selectAt(\n       UnderPointer.create(\n         [\"panel-label\", \"panel\", \"home\"],\n-        SelectionDigs.NoDeeper,\n+        SelectionDigs.Deepest,\n       ),\n     ),\n   );\n \n-  expect(selectedNames(current().editor.state)).toEqual([\"panel\"]);\n+  expect(selectedNames(current().editor.state)).toEqual([\"panel-label\"]);\n });\n \n test(\"selectInRange は、範囲に重なったものをまとめて選ぶ\", () => {",
+          "patchLines": 15,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -20,10 +20,10 @@ import { useNodeActions } from \"../index\";\n test(\"reorder は、指した位置の子を同じ親の中の別の index へ移す\", () => {\n   const { current } = renderHookOnEditTargets(useNodeActions, []);\n \n-  act(() => current().hook.reorder({ parentName: \"home\", index: 0 }, 2));\n+  act(() => current().hook.reorder({ parentName: \"home\", index: 2 }, 0));\n \n-  expect(childPositionNamed(current().editor.state, \"title\")).toEqual(\n-    Option.some({ parentName: \"home\", index: 2 }),\n+  expect(childPositionNamed(current().editor.state, \"panel\")).toEqual(\n+    Option.some({ parentName: \"home\", index: 0 }),\n   );\n });\n ",
+          "patchLines": 14,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "src/features/editor/__tests__/editor-state-reads.ts",
+      "to": "src/domains/dcmp/child-position/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/editor-state-reads.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/editor-state-reads.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/editor-state-reads.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/editor-state-reads.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/editor-state-reads.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "to": "src/features/editor/components/editor-provider/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/__tests__/sample-document.ts",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/sample-document.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/sample-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/sample-document.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/sample-document.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.entry.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.operating-system.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.shortcut.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.sync.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/editor-screen.tab-shortcut.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.file-invalid.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.last-valid-render.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.multi-selection.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.open-invalid.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.rename.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.sync-failure.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.text-edit.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.target.test.ts",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-dig.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-selection.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.duplicate.test.ts",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.duplicate.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.duplicate.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.duplicate.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group-edge.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.move.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-clipboard.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-duplicate.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-duplicate.test.ts",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-duplicate.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-duplicate.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-duplicate.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-group.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-remove.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.remove.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.rename.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reveal.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.revert.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.selection.test.ts",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+      "to": "src/features/editor/__tests__/artboard-fixtures.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+      "to": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+      "to": "src/features/editor/hooks/use-artboard-actions/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.clipboard.test.tsx",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.clipboard.test.tsx",
+      "to": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.clipboard.test.tsx",
+      "to": "src/features/editor/hooks/use-edit-actions/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.clipboard.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+      "to": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+      "to": "src/features/editor/hooks/use-edit-actions/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.rename.test.tsx",
+      "to": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.rename.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.rename.test.tsx",
+      "to": "src/features/editor/hooks/use-edit-actions/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.rename.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+      "to": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+      "to": "src/features/editor/hooks/use-edit-actions/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+      "to": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+      "to": "src/features/editor/hooks/use-edit-shortcuts/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.tree-edit.test.tsx",
+      "to": "src/features/editor/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/features/editor/hooks/use-node-actions/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+      "to": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+      "to": "src/features/editor/hooks/use-node-actions/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+      "to": "src/domains/session/selection-dig/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+      "to": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+      "to": "src/features/editor/hooks/use-node-actions/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+      "to": "src/domains/dcmp/reposition-edit/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+      "to": "src/features/editor/__tests__/editor-state-reads.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+      "to": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+      "to": "src/features/editor/hooks/use-node-actions/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    }
+  ]
+}
