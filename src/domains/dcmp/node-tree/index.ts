@@ -63,9 +63,11 @@ function withChildrenAt(
   children: NodeTree,
 ): NodeTree {
   return NodeTree.create(
-    tree.nodes.map((node, current) =>
-      current === index ? { ...node, children: children.nodes } : node,
-    ),
+    tree.nodes.map((node, current) => {
+      // 子の並びを持てるのはプリミティブだけで、参照ノードはそのまま返す
+      const isTargetHost = current === index && Node.isPrimitive(node);
+      return isTargetHost ? Node.withChildren(node, children.nodes) : node;
+    }),
   );
 }
 

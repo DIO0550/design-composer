@@ -361,6 +361,17 @@ export const Node = {
   },
 
   /**
+   * 子の並びを差し替えたノード。
+   *
+   * @param node 子を差し替えるプリミティブ
+   * @param children 差し替え後の子の並び
+   * @returns 名前・type・props はそのままで、子だけが `children` になったノード
+   */
+  withChildren(node: PrimitiveNode, children: readonly Node[]): PrimitiveNode {
+    return { ...node, children };
+  },
+
+  /**
    * 自分と子孫の名前を集める。
    *
    * @param node 走査の起点になるノード

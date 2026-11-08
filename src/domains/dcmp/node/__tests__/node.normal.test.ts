@@ -57,3 +57,19 @@ test("部品インスタンスに書かれている props は、上書きや自�
     }),
   ).toEqual({});
 });
+
+test("子を差し替えたプリミティブは、名前・type・props を保ったまま新しい子を持つ", () => {
+  const node = {
+    name: "panel",
+    type: "Box",
+    props: { gap: 8 },
+    children: [{ name: "old", type: "Text" }],
+  };
+
+  expect(Node.withChildren(node, [{ name: "new", type: "Text" }])).toEqual({
+    name: "panel",
+    type: "Box",
+    props: { gap: 8 },
+    children: [{ name: "new", type: "Text" }],
+  });
+});
