@@ -76,10 +76,9 @@ export const NodeTree = {
    *
    * @param node 見るノード
    * @returns スキーマが子を認めているプリミティブなら `true`。参照ノードと、スキーマに無い
-   *   `type` のノードは `false`。`false` でもプリミティブのことがあるので、`false` の側では
-   *   参照ノードと見なさない
+   *   `type` のノードは `false`
    */
-  allowsChildren(node: Node): node is PrimitiveNode {
+  allowsChildren(node: Node): boolean {
     return Node.isPrimitive(node) && PrimitiveSchema.allowsChildren(node.type);
   },
 
@@ -247,7 +246,9 @@ export const NodeTree = {
   ): Result<Option<NodeTree>, NodeTreeEditError> {
     for (const [index, node] of tree.nodes.entries()) {
       if (node.name === parentName) {
-        if (!NodeTree.allowsChildren(node)) {
+        const holdsChildren =
+          Node.isPrimitive(node) && NodeTree.allowsChildren(node);
+        if (!holdsChildren) {
           return Result.err({ kind: "children-not-allowed", name: parentName });
         }
         const children = NodeTree.create(Node.children(node));
