@@ -26,11 +26,10 @@ export type RootPosition =
   | Readonly<{ kind: "component-key" }>
   | Readonly<{ kind: "artboard"; index: number }>;
 
-/**
- * 子ノードの欠落を報告するときの入れ物。名前を持つ祖先（`named`）か、そうした祖先が無いときの
- * 子を収めるルートの位置。
- */
-type ChildOwner = Readonly<{ kind: "named"; name: string }> | RootPosition;
+/** 子ノードの欠落を報告するときの入れ物。選び方は `NamePosition` の `child` のとおり。 */
+export type ChildOwner =
+  | Readonly<{ kind: "named"; name: string }>
+  | RootPosition;
 
 /**
  * 名前空間に属する名前が、ドキュメントのどこに書かれているか。名前が欠落していると名前自身では
@@ -40,8 +39,7 @@ type ChildOwner = Readonly<{ kind: "named"; name: string }> | RootPosition;
  * - `child`: `owner` の配下の、兄弟の中で `index` 番目のノード。`owner` は名前が空でない最も
  *   近い祖先（部品名・artboard 名を含む）。そうした祖先が無ければ子を収めるルートの位置
  *
- * `child` を `ChildPosition`（直接の親と添字）で表さない。欠落した親は名前で指せないので、
- * 入れ物は名前を持つ最も近い祖先、それも無ければ子を収めるルートの位置になる。
+ * `child` を `ChildPosition`（直接の親と添字）で表さない。欠落した親は名前で指せないため。
  */
 export type NamePosition =
   | RootPosition
@@ -64,7 +62,8 @@ type NameOccurrence = Readonly<{ name: string; position: NamePosition }>;
 /**
  * 子孫の欠落を報告するときの入れ物を選ぶ。
  *
- * @param name 入れ物の候補になるノード・ルートの名前。JSON 由来で無いこともある
+ * @param name 入れ物の候補になるノード・ルートの名前。型は `string` だが、JSON 由来のノードでは
+ *   name が無く `undefined` になりうる。そのときも `fallback` を返す
  * @param fallback `name` が空のときに使う入れ物
  * @returns `name` が空でなければその名前の入れ物、空なら `fallback`
  */
@@ -92,6 +91,30 @@ function collectNodeOccurrences(
   ]);
 }
 
+/** 名前空間のルート（部品定義・artboard）1 つの、名前と位置と子ノード。 */
+type NamespaceRoot = Readonly<{
+  name: string;
+  position: RootPosition;
+  children: readonly Node[];
+}>;
+
+/**
+ * ルート 1 つ分の名前の出現を集める。
+ *
+ * @param root 集めるルート
+ * @returns ルート自身の名前の出現と、配下のノードの出現を行きがけ順に並べたもの
+ */
+function collectRootOccurrences({
+  name,
+  position,
+  children,
+}: NamespaceRoot): readonly NameOccurrence[] {
+  return [
+    { name, position },
+    ...collectNodeOccurrences(children, namedOwnerOr(name, position)),
+  ];
+}
+
 /**
  * ドキュメントの構成要素から、名前空間に属する名前の出現を集める。
  *
@@ -106,27 +129,19 @@ function collectOccurrences(
 ): readonly NameOccurrence[] {
   const componentOccurrences = ComponentSet.toNamedComponents(
     components,
-  ).flatMap(({ name, component }): readonly NameOccurrence[] => {
-    const position: RootPosition = { kind: "component-key" };
-    return [
-      { name, position },
-      ...collectNodeOccurrences(
-        component.children ?? [],
-        namedOwnerOr(name, position),
-      ),
-    ];
-  });
-  const artboardOccurrences = artboards.flatMap(
-    (artboard, index): readonly NameOccurrence[] => {
-      const position: RootPosition = { kind: "artboard", index };
-      return [
-        { name: artboard.name, position },
-        ...collectNodeOccurrences(
-          artboard.children,
-          namedOwnerOr(artboard.name, position),
-        ),
-      ];
-    },
+  ).flatMap(({ name, component }) =>
+    collectRootOccurrences({
+      name,
+      position: { kind: "component-key" },
+      children: component.children ?? [],
+    }),
+  );
+  const artboardOccurrences = artboards.flatMap((artboard, index) =>
+    collectRootOccurrences({
+      name: artboard.name,
+      position: { kind: "artboard", index },
+      children: artboard.children,
+    }),
   );
   return [...componentOccurrences, ...artboardOccurrences];
 }
