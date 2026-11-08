@@ -44,7 +44,10 @@ import type {
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Rotation } from "@/domains/dcmp/rotation";
-import { SiblingPlacements } from "@/domains/dcmp/sibling-placements";
+import {
+  type PlacedChild,
+  SiblingPlacements,
+} from "@/domains/dcmp/sibling-placements";
 import { SiblingPositions } from "@/domains/dcmp/sibling-positions";
 import { Size } from "@/domains/dcmp/size";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
@@ -1824,20 +1827,20 @@ export const DesignDocument = {
     document: DesignDocument,
     names: NonEmptyArray<string>,
   ): Option<SiblingPlacements> {
-    const placedChildOf = (name: string) =>
-      Interop.toResult(
-        Option.flatMap(DesignDocument.childPlacementOf(document, name), (at) =>
-          Option.map(
-            DesignDocument.findChildPosition(document, name),
-            (position) => ({ name, at, index: position.index }),
-          ),
+    const placedChildOf = (name: string): Option<PlacedChild> =>
+      Option.flatMap(DesignDocument.childPlacementOf(document, name), (at) =>
+        Option.map(
+          DesignDocument.findChildPosition(document, name),
+          (position) => ({ name, at, index: position.index }),
         ),
-        name,
       );
 
     return Option.flatMap(
-      Interop.toOption(ArrayEx.mapNonEmptyUntilErr(names, placedChildOf)),
-      SiblingPlacements.fromChildPlacements,
+      ArrayEx.mapNonEmptyUntilNone(
+        ArrayEx.distinctNonEmpty(names),
+        placedChildOf,
+      ),
+      SiblingPlacements.fromPlacedChildren,
     );
   },
 

@@ -54,10 +54,17 @@ function siblingsOf(names: NonEmptyArray<string>): Option<SiblingPlacements> {
 test("同じ親の絶対配置の兄弟を逆順に渡しても、親と各自の座標がツリー順に返る", () => {
   expect(Option.unwrap(siblingsOf(["b", "a"]))).toEqual({
     parentName: "home",
-    placed: [
+    members: [
       { name: "a", placement: { mode: "absolute", x: 10, y: 20 } },
       { name: "b", placement: { mode: "absolute", x: 30, y: 40 } },
     ],
+  });
+});
+
+test("同じ名前が 2 回渡されても、一員は 1 つにまとまる", () => {
+  expect(Option.unwrap(siblingsOf(["a", "a"]))).toEqual({
+    parentName: "home",
+    members: [{ name: "a", placement: { mode: "absolute", x: 10, y: 20 } }],
   });
 });
 

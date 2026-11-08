@@ -119,13 +119,7 @@ const SamplePreview: RepositionPreview = {
 /** `home` の中の絶対配置の兄弟 `title` と `badge` を、まとめて掴んでいる状態。 */
 const CarryingSiblings: DraggedNode = {
   kind: "selected-siblings",
-  siblings: {
-    parentName: "home",
-    placed: [
-      { name: "title", placement: { mode: "absolute", x: 10, y: 36 } },
-      { name: "badge", placement: { mode: "absolute", x: 40, y: 24 } },
-    ],
-  },
+  names: ["title", "badge"],
 };
 
 /** `title` と `badge` をまとめて `body` の中の座標へ落とす側の行き先。 */

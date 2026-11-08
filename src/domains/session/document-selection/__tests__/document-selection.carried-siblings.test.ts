@@ -1,6 +1,5 @@
 import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
-import { SiblingPlacements } from "@/domains/dcmp/sibling-placements";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { SelectionDigs } from "@/domains/session/selection-dig";
 import { UnderPointer } from "@/domains/session/under-pointer";
@@ -65,12 +64,9 @@ function carriedNamesAt(
   selectedNames: readonly string[],
   underPointer: UnderPointer,
 ): Option<readonly string[]> {
-  return Option.map(
-    DocumentSelection.carriedSiblingsAt(
-      DocumentSelection.fromNames(setupDocument(), selectedNames),
-      underPointer,
-    ),
-    SiblingPlacements.names,
+  return DocumentSelection.carriedSiblingsAt(
+    DocumentSelection.fromNames(setupDocument(), selectedNames),
+    underPointer,
   );
 }
 

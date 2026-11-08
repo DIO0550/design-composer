@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
 import { leavePointer } from "@/components/__tests__/pointer-gesture";
 import { currentRowNames } from "@/components/__tests__/row-names";
+import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import { Artboard } from "@/domains/dcmp/artboard";
 import {
   DesignDocument,
@@ -106,11 +107,10 @@ function drawnPosition(name: string): readonly string[] {
 
 /** 描かれた要素の直下にある、名前を持つ要素の名前（描かれた順）。 */
 function drawnChildNames(name: string): readonly string[] {
-  return Array.from(drawn(name).children).flatMap((child) =>
-    child instanceof HTMLElement && child.dataset.name !== undefined
-      ? [child.dataset.name]
-      : [],
-  );
+  return Array.from(drawn(name).children).flatMap((child) => {
+    const childName = child.getAttribute(ElementNameAttribute);
+    return childName === null ? [] : [childName];
+  });
 }
 
 test("絶対配置の兄弟を選んだまま一員を押すと、押した時点では 2 つとも選ばれたまま", async () => {
@@ -145,10 +145,13 @@ test("一員を運んで離しても、2 つとも選ばれたまま", async () 
 test("まとめて運んだあと ⌘Z を 1 回押すと、2 つとも元の位置に戻る", async () => {
   await renderUngrouped();
   drag(drawn("a"), { from: { x: 100, y: 100 }, to: { x: 70, y: 112 } });
+  // 押した一員だけを運ぶ経路でも `b` は元の位置に描かれるので、取り消す前に動いたことを見る
+  const movedB = drawnPosition("b");
 
   await userEvent.keyboard("{Meta>}z{/Meta}");
 
-  expect([drawnPosition("a"), drawnPosition("b")]).toEqual([
+  expect([movedB, drawnPosition("a"), drawnPosition("b")]).toEqual([
+    ["70px", "72px"],
     ["40px", "24px"],
     ["100px", "60px"],
   ]);

@@ -8,14 +8,11 @@ import type { ChildPosition } from "@/domains/dcmp/child-position";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Placement } from "@/domains/dcmp/placement";
 import type { NodeRepositionEdit } from "@/domains/dcmp/reposition-edit";
-import type {
-  SiblingPlacement,
-  SiblingPlacements,
-} from "@/domains/dcmp/sibling-placements";
+import type { SiblingPlacements } from "@/domains/dcmp/sibling-placements";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import type { NodeTemplate } from "@/domains/session/node-template";
 import type { UnderPointer } from "@/domains/session/under-pointer";
-import type { Angle } from "@/domains/unit/angle";
+import { Angle } from "@/domains/unit/angle";
 import { Offset } from "@/domains/unit/offset";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
@@ -35,6 +32,8 @@ import {
 import { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
 import {
   type DropParentCoordinates,
+  type GrabbedMemberGeometry,
+  type GrabbedSiblings,
   SiblingsRepositionTarget,
 } from "@/features/editor/features/canvas/domains/reposition-target";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
@@ -46,7 +45,6 @@ import { AltKey, CommandKey } from "@/libs/dom-event";
 import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { ElementEx } from "@/utils/ElementEx";
-import { Interop } from "@/utils/Interop";
 import { Option } from "@/utils/Option";
 
 /**
@@ -149,22 +147,6 @@ type SnapTargets = Readonly<{
 /** 吸い付かない回の揃え先。 */
 const NoSnapTargets: SnapTargets = { stationary: [], siblings: [] };
 
-/** まとめて運ぶ一員の、掴んだ時点の座標と自分の向き（今の親の向きを基準にした角度）。 */
-type OrientedMember = SiblingPlacement & Readonly<{ ownRotation: Angle }>;
-
-/**
- * 座標で運んでいる兄弟（1 つだけ運ぶなら一員が 1 つ）に、それを測っている今の親の向きと
- * 一員ごとの自分の向きを添えたもの。
- *
- * 向きは `repositionCarrying` が 1 回だけ引き、ずらし量と実測の両方へ同じ値を配る。
- */
-type OrientedSiblings = Readonly<{
-  parentName: string;
-  parentRotation: Angle;
-  /** 一員それぞれの座標と自分の向き。ツリー順。 */
-  placed: NonEmptyArray<OrientedMember>;
-}>;
-
 /**
  * 座標の置き直しに要る実測。
  *
@@ -179,10 +161,12 @@ type RepositionMeasure = Readonly<{
    */
   origin: RotatedBounds;
   /**
-   * 運んでいるノード（まとめて運ぶなら全員。ツリー順）の、掴んだ時点の座標と自分の向き、
-   * 回る前の大きさと向き（`bounds`。位置は使わない）。
+   * 運んでいるノード（まとめて運ぶなら全員。ツリー順）の、掴んだ時点の座標と自分の向きと形、
+   * 回る前の大きさと画面上の向き（`bounds`。位置は使わない）。
    */
-  dragged: NonEmptyArray<OrientedMember & Readonly<{ bounds: RotatedBounds }>>;
+  dragged: NonEmptyArray<
+    GrabbedMemberGeometry & Readonly<{ bounds: RotatedBounds }>
+  >;
   /** 落とし先の親の外接矩形 */
   parentBounds: CanvasBounds;
   /** その親の直下の、運んでいるもの（まとめて運ぶなら全員）以外の子 */
@@ -199,7 +183,7 @@ type RepositionMeasure = Readonly<{
  * @param context 運んでいるノードと落とし先の親の向きの引き先のドキュメントと、倍率を持つ
  *   今の掴み。倍率は実測の割り戻しと、回ったもののレイアウトの大きさを画面上の大きさへ直す
  *   のに使う
- * @param grabbed 運んでいる兄弟と今の親、掴んだ時点の座標と今の親の向き・一員ごとの自分の向き
+ * @param grabbed 運んでいる兄弟と今の親、掴んだ時点の座標と今の親の向き
  * @param dropped 落とし先の親
  * @returns 置き直しに要る実測。今の親・落とし先・運んでいるノード（まとめて運ぶなら一員の
  *   どれか 1 つでも）が画面に無い・運んでいるノードか落とし先の親の向きが引けない・回って
@@ -207,31 +191,42 @@ type RepositionMeasure = Readonly<{
  */
 function measureReposition(
   context: DropContext,
-  grabbed: OrientedSiblings,
+  grabbed: GrabbedSiblings,
   dropped: DropParent,
 ): Option<RepositionMeasure> {
-  const measureByName = (name: string): Option<RotatedBounds> =>
-    Option.flatMap(
-      DesignDocument.totalRotationOf(context.document, name),
-      (rotation) => DrawnBounds.measureRotated(name, rotation, context.view),
-    );
   const currentBounds = DrawnBounds.measureRotated(
     grabbed.parentName,
     grabbed.parentRotation,
     context.view,
   );
-  const droppedRotated = measureByName(dropped.name);
+  const droppedRotated = Option.flatMap(
+    DesignDocument.totalRotationOf(context.document, dropped.name),
+    (rotation) =>
+      DrawnBounds.measureRotated(dropped.name, rotation, context.view),
+  );
   // 落とし先は `DrawnBounds` だけに寄せない。直下の子の矩形を集めるのに要素が要る
   const droppedElement = CanvasDom.elementOf(dropped.name);
-  const dragged = Interop.toOption(
-    ArrayEx.mapNonEmptyUntilErr(grabbed.placed, (member) =>
-      Interop.toResult(
-        Option.map(measureByName(member.name), (bounds) => ({
-          ...member,
-          bounds,
-        })),
-        member.name,
-      ),
+  // 一員の画面上の向きは、1 回だけ引いた親の向きに自分の向きを足す（一員ごとに木を辿らない）
+  const dragged = ArrayEx.mapNonEmptyUntilNone(grabbed.members, (member) =>
+    Option.flatMap(
+      DesignDocument.rotationOf(context.document, member.name),
+      (ownRotation) =>
+        Option.map(
+          DrawnBounds.measureRotated(
+            member.name,
+            Angle.sum([grabbed.parentRotation, ownRotation]),
+            context.view,
+          ),
+          (bounds) => ({
+            ...member,
+            ownRotation,
+            centerFromTopLeft: CanvasView.toDocumentOffset(
+              context.view,
+              RotatedBounds.centerFromTopLeft(bounds),
+            ),
+            bounds,
+          }),
+        ),
     ),
   );
   // 座標を書くにも揃え先を出すにもすべて要るので、1 つでも欠けたら測れなかったとみなす
@@ -244,10 +239,11 @@ function measureReposition(
     return Option.none;
   }
   const droppedBounds = CanvasDom.boundsOf(droppedElement.value);
+  const carriedNames = new Set<string | null>(
+    grabbed.members.map((member) => member.name),
+  );
   const isCarried = (child: Element) =>
-    grabbed.placed.some(
-      (member) => child.getAttribute(ElementNameAttribute) === member.name,
-    );
+    carriedNames.has(child.getAttribute(ElementNameAttribute));
   const siblings = namedChildrenOf(droppedElement.value)
     .filter((child) => !isCarried(child))
     .map(CanvasDom.boundsOf);
@@ -307,30 +303,6 @@ function destinationBounds(
 }
 
 /**
- * まとめて運ぶ一員それぞれの、自分の向き。
- *
- * @param document 向きの引き先になるドキュメント
- * @param siblings 運んでいる兄弟
- * @returns 一員ごとの掴んだ時点の座標と自分の向き。1 つでも向きが引けなければ `none`
- */
-function orientedMembersOf(
-  document: DesignDocument,
-  siblings: SiblingPlacements,
-): Option<NonEmptyArray<OrientedMember>> {
-  return Interop.toOption(
-    ArrayEx.mapNonEmptyUntilErr(siblings.placed, (member) =>
-      Interop.toResult(
-        Option.map(
-          DesignDocument.rotationOf(document, member.name),
-          (ownRotation): OrientedMember => ({ ...member, ownRotation }),
-        ),
-        member.name,
-      ),
-    ),
-  );
-}
-
-/**
  * 掴んでいる絶対配置のノード（まとめて運ぶなら全員）を、今のポインタまで運んだときの運び方。
  *
  * 運んだ量は画面上の移動量を倍率で割り戻したもので（倍率を変えても掴んだ点に追従する）、
@@ -346,10 +318,10 @@ function orientedMembersOf(
  * 一瞬寄っただけで元の位置へ戻り、運べているのか分からなくなる。
  *
  * @param context 今の掴みと、倍率・ポインタ
- * @param siblings 運んでいる兄弟（1 つだけ運ぶなら一員が 1 つ）と、掴んだ時点の座標
+ * @param siblings 運んでいる兄弟（1 つだけ運ぶなら一員が 1 つ）と、今のドキュメントでの座標
  * @returns 座標を置き直す運び方。親が無い / 親の矩形と運んでいるノードのどれかを
- *   実測できないときは見た目だけの運び方。今の親の向きか一員の自分の向きが引けないときは
- *   何も起きない運び方
+ *   実測できない（一員の自分の向きが引けないときを含む）ときは見た目だけの運び方。今の親の
+ *   向きが引けないときは何も起きない運び方
  */
 function repositionCarrying(
   context: DropContext,
@@ -359,21 +331,16 @@ function repositionCarrying(
     context.document,
     siblings.parentName,
   );
-  const members = orientedMembersOf(context.document, siblings);
-  const isOrientationKnown =
-    Option.isSome(parentRotation) && Option.isSome(members);
   /*
-   * 子の配置を引けた親は向きも引け、座標を引けたノードはプリミティブなので自分の向きも
-   * 引けるので、ここへは来ない。0 度とみなして見た目だけ追従させると、回った親の中では
-   * 運んだ向きと違う向きへずれて見えるので何もしない。
+   * 子の配置を引けた親は向きも引けるので、ここへは来ない。0 度とみなして見た目だけ追従
+   * させると、回った親の中では運んだ向きと違う向きへずれて見えるので何もしない。
    */
-  if (!isOrientationKnown) {
+  if (!Option.isSome(parentRotation)) {
     return Carrying.nothing();
   }
-  const grabbed: OrientedSiblings = {
-    parentName: siblings.parentName,
+  const grabbed: GrabbedSiblings = {
+    ...siblings,
     parentRotation: parentRotation.value,
-    placed: members.value,
   };
   const screenDelta = Offset.delta(
     context.grab.origin,
@@ -428,19 +395,7 @@ function repositionCarrying(
   return Carrying.droppable(
     DropEdit.reposition(
       SiblingsRepositionTarget.create(
-        {
-          parentName: grabbed.parentName,
-          parentRotation: grabbed.parentRotation,
-          placed: ArrayEx.mapNonEmpty(measured.value.dragged, (member) => ({
-            name: member.name,
-            placement: member.placement,
-            ownRotation: member.ownRotation,
-            centerFromTopLeft: CanvasView.toDocumentOffset(
-              context.view,
-              RotatedBounds.centerFromTopLeft(member.bounds),
-            ),
-          })),
-        },
+        { ...grabbed, members: measured.value.dragged },
         CanvasView.toDocumentOffset(context.view, snapped),
         measured.value.dropParent,
       ),
@@ -482,7 +437,8 @@ function intoTreeCarrying(
  *
  * 運び方を先に決めてから、その経路が要る親だけを解決する。既存ノード 1 つを運んでいるとき
  * は、座標で動かせる（`findSiblingPlacements` が答える）ことが「座標の置き直しになる」と
- * 同じ意味になる（フローのノードは座標を持たない）。
+ * 同じ意味になる（フローのノードは座標を持たない）。まとめて運んでいるときも座標は毎回今の
+ * ドキュメントから引き、全員が同じ親の絶対配置の兄弟でなくなっていたら何も起きない。
  *
  * **その運び方は実測の成否では変わらない。** 置き直しに決まったあとで実測に失敗したら、
  * ツリーの移動へ落とさずそのまま「落とせない」にする（落とすと、座標を動かすつもりのド
@@ -504,8 +460,15 @@ function carryingAt(context: DropContext): Carrying {
         ? repositionCarrying(context, placed.value)
         : intoTreeCarrying(context, dragged);
     }
-    case "selected-siblings":
-      return repositionCarrying(context, dragged.siblings);
+    case "selected-siblings": {
+      const placed = DesignDocument.findSiblingPlacements(
+        context.document,
+        dragged.names,
+      );
+      return Option.isSome(placed)
+        ? repositionCarrying(context, placed.value)
+        : Carrying.nothing();
+    }
   }
 }
 
@@ -605,7 +568,7 @@ export function useNodeDrag(
       dispatch({
         type: "grab",
         grab: {
-          dragged: { kind: "selected-siblings", siblings: carried.value },
+          dragged: { kind: "selected-siblings", names: carried.value },
           origin,
         },
       });

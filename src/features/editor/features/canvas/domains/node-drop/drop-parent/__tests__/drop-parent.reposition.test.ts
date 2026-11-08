@@ -90,19 +90,9 @@ test("子を並べない artboard も座標の受け入れ先になる", () => {
 
 test("まとめて運んでいる一員の子孫の上へ運ぶと、外側の親が受け入れ先になる", () => {
   // 先頭の一員（`title`）だけを占めているとみなすと、`card` が受け入れ先になる
-  const at = { mode: "absolute", x: 0, y: 0 } as const;
   const parent = DropParent.innermost(
     setupDocument(),
-    {
-      kind: "selected-siblings",
-      siblings: {
-        parentName: "home",
-        placed: [
-          { name: "title", placement: at },
-          { name: "body", placement: at },
-        ],
-      },
-    },
+    { kind: "selected-siblings", names: ["title", "body"] },
     ["card", "body", "home"],
   );
 

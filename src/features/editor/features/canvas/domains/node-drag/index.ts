@@ -408,8 +408,7 @@ export const NodeDrag = {
 
   /**
    * 運んでいるもの（まとめて運ぶなら全員）を今どれだけずらして見せるか。座標を動かすドラッグ
-   * のときだけ答え、
-   * **落とせる親がポインタの下に無くても答える**（`Carrying`）。
+   * のときだけ答え、**落とせる親がポインタの下に無くても答える**（`Carrying`）。
    *
    * 押しただけで見た目が動くと、クリックのたびにノードが一瞬ずれる。
    *
@@ -469,8 +468,8 @@ export const NodeDrag = {
    *
    * 落とせたかどうかでは分けない。掴んだノードは押した時点で選ばれていて、運び終えても
    * 選択は戻さない（docs/06-ui.md「移動（ドラッグ）」の「押した時点で、掴んだノードが
-   * 選ばれる」）。まとめて運ぶときは押した時点の選択（全員）をそのまま保つ。どちらも、離した
-   * 位置の `click` で選び直させない。
+   * 選ばれる」。まとめて運ぶ場合を除く）。まとめて運ぶときは押した時点の選択（全員）を
+   * そのまま保つ。どちらも、離した位置の `click` で選び直させない。
    *
    * 飲み込む `click` がどこへ出るかは離した場所で変わるので、受けるのは枠ではなく運んで
    * いる間のポインタを受けている器（`useNodeDrag` の `dragHandlers`）。
@@ -479,9 +478,16 @@ export const NodeDrag = {
    * @returns 直後の `click` を飲み込む状態、または何も掴んでいない状態
    */
   release(drag: NodeDrag): NodeDrag {
-    const swallowsClick =
-      drag.kind === "dragging" && drag.grab.dragged.kind !== "new";
-    return swallowsClick ? { kind: "dropped" } : NodeDrag.create();
+    if (drag.kind !== "dragging") {
+      return NodeDrag.create();
+    }
+    switch (drag.grab.dragged.kind) {
+      case "existing":
+      case "selected-siblings":
+        return { kind: "dropped" };
+      case "new":
+        return NodeDrag.create();
+    }
   },
 
   /**

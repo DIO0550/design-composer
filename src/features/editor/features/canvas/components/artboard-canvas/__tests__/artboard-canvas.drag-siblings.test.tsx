@@ -11,6 +11,7 @@ import {
   dragNodeOnto,
   drawn,
   drawnAt,
+  dropOnto,
   injectedStyles,
   previewRule,
   renderCanvas,
@@ -29,6 +30,15 @@ import {
  * 140〜220・84〜140。左辺は `b` の、上辺は `a` の辺になる。
  */
 
+/** 名前を中身に書いた、絶対配置の Text。 */
+function absoluteText(name: string, x: number, y: number) {
+  return {
+    name,
+    type: "Text",
+    props: { content: name, placement: "absolute", x, y },
+  };
+}
+
 /**
  * `home` に絶対配置の `a`（100, 24）・`b`（40, 60）・`marker`（250, 0）とフローの `flowing`
  * がこの順で並び、隣に空の artboard `settings` がある対。
@@ -37,11 +47,6 @@ import {
  * @returns そのドキュメントと選択の対
  */
 function setupSelection(selectedNames: readonly string[]): DocumentSelection {
-  const absoluteText = (name: string, x: number, y: number) => ({
-    name,
-    type: "Text",
-    props: { content: name, placement: "absolute", x, y },
-  });
   return selectionFromArtboards(
     [
       {
@@ -91,6 +96,43 @@ test("選んだ兄弟の一員を運んで離すと、全員ぶんの置き直�
 
   expect(onRepositionNodes.mock.calls).toEqual([
     [[inHome("a", 130, 35), inHome("b", 70, 71)]],
+  ]);
+});
+
+test("運んでいる途中でドキュメントの一員の座標が変わると、離したときはその時点の座標から運んだ量だけずれる", () => {
+  // 掴んだ時点の座標（b は 40）を持ち続けると、b は 70 へ書かれる
+  const onRepositionNodes = vi.fn();
+  const { rerenderWith } = renderCanvas({
+    selection: setupSelection(["a", "b"]),
+    onRepositionNodes,
+  });
+  drawnSiblings();
+  carryNode("a", { x: 30, y: 11 });
+
+  rerenderWith(
+    selectionFromArtboards(
+      [
+        {
+          name: "home",
+          width: 360,
+          height: 240,
+          children: [
+            absoluteText("a", 100, 24),
+            absoluteText("b", 50, 60),
+            absoluteText("marker", 250, 0),
+            { name: "flowing", type: "Text", props: { content: "流" } },
+          ],
+        },
+        { name: "settings", width: 360, height: 240, children: [] },
+      ],
+      ["a", "b"],
+    ),
+  );
+  drawnSiblings();
+  dropOnto(drawn("a"), { x: 30, y: 11 });
+
+  expect(onRepositionNodes.mock.calls).toEqual([
+    [[inHome("a", 130, 35), inHome("b", 80, 71)]],
   ]);
 });
 
@@ -163,11 +205,6 @@ test("選んでいない兄弟の列と同じ間隔の近くまで運ぶと、�
    * 縦に重ならず（80〜92）、`q` だけが重なる（150〜170）。囲む矩形の左辺 263 が 260 へ寄る。
    * `p` だけを見ると列と縦に重ならないので寄らず、p は 163 になる
    */
-  const absoluteText = (name: string, x: number, y: number) => ({
-    name,
-    type: "Text",
-    props: { content: name, placement: "absolute", x, y },
-  });
   const onRepositionNodes = vi.fn();
   renderCanvas({
     selection: selectionFromArtboards(

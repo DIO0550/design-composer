@@ -67,11 +67,11 @@ export function RepositionPreviewStyle({
     return null;
   }
   const { parentName, members } = preview.value;
-  // 一員は同じ親の兄弟なので、切り取りを解く相手と前に出す artboard は親から 1 回だけ引く
-  const wrappingNames = [
-    parentName,
-    ...DesignDocument.collectAncestorNames(designDocument, parentName),
-  ];
+  // 一員は同じ親の兄弟なので、切り取りを解く相手と前に出す artboard は 1 回だけ引く
+  const wrappingNames = DesignDocument.collectAncestorNames(
+    designDocument,
+    members[0].name,
+  );
   const owningArtboard = DesignDocument.findOwningArtboard(
     designDocument,
     parentName,

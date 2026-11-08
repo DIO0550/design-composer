@@ -1,7 +1,8 @@
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
-import { SiblingPlacements } from "@/domains/dcmp/sibling-placements";
 import type { NodeTemplate } from "@/domains/session/node-template";
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
+import type { TwoOrMoreArray } from "@/types/TwoOrMoreArray";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
@@ -15,14 +16,14 @@ import { Option } from "@/utils/Option";
  */
 function occupiedNamesOf(
   document: DesignDocument,
-  names: readonly string[],
+  names: NonEmptyArray<string>,
 ): Option<readonly string[]> {
-  const nodes = ArrayEx.filterMap(names, (name) =>
-    DesignDocument.findNode(document, name),
+  return Option.map(
+    ArrayEx.mapNonEmptyUntilNone(names, (name) =>
+      DesignDocument.findNode(document, name),
+    ),
+    (nodes) => nodes.flatMap(Node.collectNames),
   );
-  return nodes.length === names.length
-    ? Option.some(nodes.flatMap(Node.collectNames))
-    : Option.none;
 }
 
 /**
@@ -47,7 +48,7 @@ export type TreeDraggedNode =
  */
 export type DraggedNode =
   | TreeDraggedNode
-  | Readonly<{ kind: "selected-siblings"; siblings: SiblingPlacements }>;
+  | Readonly<{ kind: "selected-siblings"; names: TwoOrMoreArray<string> }>;
 
 export const DraggedNode = {
   /**
@@ -72,10 +73,7 @@ export const DraggedNode = {
       case "existing":
         return occupiedNamesOf(document, [dragged.name]);
       case "selected-siblings":
-        return occupiedNamesOf(
-          document,
-          SiblingPlacements.names(dragged.siblings),
-        );
+        return occupiedNamesOf(document, dragged.names);
     }
   },
 

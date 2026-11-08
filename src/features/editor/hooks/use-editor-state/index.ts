@@ -158,7 +158,8 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
         state,
       );
     case "reposition_nodes":
-      // 置き直せない指定が混ざれば、どのノードも親も座標も向きも変わらない（EditorState.repositionAll の `none`）。
+      // 置き直せない指定が混ざれば、どのノードも親も座標も向きも変わらない
+      // （EditorState.repositionAll の `none`）。
       return Option.unwrapOr(
         EditorState.repositionAll(state, action.edits),
         state,

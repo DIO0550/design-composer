@@ -15,7 +15,7 @@ import {
 const GrabbedInHome: GrabbedSiblingsGeometry = {
   parentName: "home",
   parentRotation: 0,
-  placed: [
+  members: [
     {
       name: "a",
       placement: { mode: "absolute", x: 40, y: 24 },
@@ -73,13 +73,13 @@ test("小数の座標の一員と整数の一員をまとめて運ぶと、一�
   const dropped = SiblingsRepositionTarget.create(
     {
       ...GrabbedInHome,
-      placed: [
+      members: [
         {
-          ...GrabbedInHome.placed[0],
+          ...GrabbedInHome.members[0],
           placement: { mode: "absolute", x: 10.5, y: 0 },
         },
         {
-          ...GrabbedInHome.placed[1],
+          ...GrabbedInHome.members[1],
           placement: { mode: "absolute", x: 40, y: 0 },
         },
       ],
@@ -108,7 +108,7 @@ test("90 度回った親から回っていない親へまとめて運ぶと、�
     {
       parentName: "turned",
       parentRotation: 90,
-      placed: [
+      members: [
         {
           name: "a",
           placement: { mode: "absolute", x: 10, y: 10 },

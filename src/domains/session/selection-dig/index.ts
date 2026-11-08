@@ -26,20 +26,31 @@ export const SelectionDigs = {
 /** 掘る量。 */
 export type SelectionDig = ValueOf<typeof SelectionDigs>;
 
+/** 候補の中に載っている今の選択と、その位置。 */
+type SelectedCandidate = Readonly<{
+  /** 候補の中の位置。 */
+  index: number;
+  /** その位置にある、選ばれている名前。 */
+  name: string;
+}>;
+
 /**
- * 今の選択が候補の中にある位置。選んでいるものが候補に 2 つ以上載っていれば（祖先と子孫を
- * 両方選んでいるとき）、いちばん内側のもの。
+ * 今の選択が候補の中にある位置と、その名前。選んでいるものが候補に 2 つ以上載っていれば
+ * （祖先と子孫を両方選んでいるとき）、いちばん内側のもの。
  *
  * @param candidates 押された位置から外へ辿った、選べるノードの名前（内→外）
  * @param selected 今選んでいる名前すべて。未選択なら空
- * @returns 候補の中の位置。押された位置がどの選択の内側でもなければ `none`
+ * @returns 候補の中の位置と名前。押された位置がどの選択の内側でもなければ `none`
  */
-function selectedIndexIn(
+function selectedCandidateIn(
   candidates: readonly string[],
   selected: readonly string[],
-): Option<number> {
-  const index = candidates.findIndex((name) => selected.includes(name));
-  return index >= 0 ? Option.some(index) : Option.none;
+): Option<SelectedCandidate> {
+  return Option.fromNullable(
+    candidates
+      .map((name, index) => ({ index, name }))
+      .find((candidate) => selected.includes(candidate.name)),
+  );
 }
 
 /**
@@ -87,19 +98,20 @@ export const SelectionDig = {
      * 外れていれば枝が違うので、掘る量に関わらず押された枝の入口から選び直す
      * （掘った深さを枝をまたいで引き継がない / docs/06-ui.md「選択」）。
      */
-    const selectedIndex = selectedIndexIn(candidates, selected);
-    const selectedCandidate = Option.flatMap(selectedIndex, (index) =>
-      Option.fromNullable(candidates[index]),
+    const selectedCandidate = selectedCandidateIn(candidates, selected);
+    const selectedName = Option.map(
+      selectedCandidate,
+      (candidate) => candidate.name,
     );
     const outermost = ArrayEx.last(candidates);
     switch (dig) {
       case "no-deeper":
-        return Option.isSome(selectedIndex) ? selectedCandidate : outermost;
+        return Option.or(selectedName, outermost);
       case "one-deeper":
-        return Option.isSome(selectedIndex)
+        return Option.isSome(selectedCandidate)
           ? Option.or(
-              insideOf(candidates, selectedIndex.value),
-              selectedCandidate,
+              insideOf(candidates, selectedCandidate.value.index),
+              selectedName,
             )
           : outermost;
       case "deepest":

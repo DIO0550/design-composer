@@ -3,7 +3,7 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import type { Node } from "@/domains/dcmp/node";
+import { Node, type Props } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -170,4 +170,53 @@ export function childNames(
   return Option.unwrap(
     DesignDocument.findChildren(EditorState.document(state), parentName),
   ).map((child) => child.name);
+}
+
+/**
+ * 絶対配置の `badge` と `chip`、付け替え先の `panel` を持つ状態。
+ * 座標は既定と違う値から始める。
+ *
+ * @param badgeProps `badge` に足して書く props（向きを書いて始めるときに使う）
+ * @returns その並びを持つエディタの状態
+ */
+export function stateWithAbsoluteSiblings(badgeProps: Props = {}): EditorState {
+  return EditorState.create(
+    DesignDocument.create({
+      artboards: [
+        {
+          name: "home",
+          width: 375,
+          height: 812,
+          children: [
+            {
+              name: "badge",
+              type: "Text",
+              props: { placement: "absolute", x: 40, y: 24, ...badgeProps },
+            },
+            {
+              name: "chip",
+              type: "Text",
+              props: { placement: "absolute", x: 100, y: 60 },
+            },
+            { name: "panel", type: "Box", props: {}, children: [] },
+          ],
+        },
+      ],
+    }),
+  );
+}
+
+/** その状態での、名前で指したノードの props。 */
+export function propsOf(
+  state: EditorState,
+  name: string,
+): Readonly<Record<string, unknown>> {
+  return Node.writtenPropsOf(nodeNamed(state, name));
+}
+
+/** その状態で、名前で指したノードがいる親の名前。 */
+export function parentNameOf(state: EditorState, name: string): string {
+  return Option.unwrap(
+    DesignDocument.findChildPosition(EditorState.document(state), name),
+  ).parentName;
 }

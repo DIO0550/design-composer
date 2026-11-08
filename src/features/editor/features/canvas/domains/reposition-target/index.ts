@@ -4,10 +4,7 @@ import {
   type NodeRepositionEdit,
   RepositionEdit,
 } from "@/domains/dcmp/reposition-edit";
-import type {
-  SiblingPlacement,
-  SiblingPlacements,
-} from "@/domains/dcmp/sibling-placements";
+import type { SiblingPlacement } from "@/domains/dcmp/sibling-placements";
 import { Angle } from "@/domains/unit/angle";
 import { Offset } from "@/domains/unit/offset";
 import type { NonEmptyArray } from "@/types/NonEmptyArray";
@@ -26,19 +23,21 @@ export type GrabbedPlacement = Readonly<{
 }>;
 
 /**
- * 掴んだ時点の配置に、向きの違う親へ付け替えるときに見た目を保つための自分の形を足したもの。
+ * 自分の向きと形。向きの違う親へ付け替えるときに見た目を保つのに要る。
  *
  * 付け替えで自分の向きを書き換えると、回る中心（回る前の矩形の中心）の位置が座標の原点
  * （回る前の左上）から見て向きの差だけ回る。中心を動かさないよう座標を直すには、自分の向きと
  * 左上から中心までの差が要る。
  */
-export type GrabbedGeometry = GrabbedPlacement &
-  Readonly<{
-    /** 自分の `rotation`（今の親の向きを基準にした角度）。 */
-    ownRotation: Angle;
-    /** 回る前の左上の角から中心までの差（ドキュメント上の px）。 */
-    centerFromTopLeft: Offset;
-  }>;
+export type OwnGeometry = Readonly<{
+  /** 自分の `rotation`（今の親の向きを基準にした角度）。 */
+  ownRotation: Angle;
+  /** 回る前の左上の角から中心までの差（ドキュメント上の px）。 */
+  centerFromTopLeft: Offset;
+}>;
+
+/** 掴んだ時点の配置と今の親の向きに、自分の向きと形を足したもの。 */
+export type GrabbedGeometry = GrabbedPlacement & OwnGeometry;
 
 /**
  * 落とし先の親と、その親の座標（docs/06-ui.md「キャンバス直接操作」）へ直すための材料。
@@ -57,43 +56,34 @@ export type DropParentCoordinates = Readonly<{
 
 /**
  * 掴んだ時点の、まとめて運ぶ兄弟と、その座標を測っている今の親の画面上の向き（祖先の合計）。
+ * 一員が何を持つか（座標だけか、自分の向きと形もか）を `M` で差し替える。
  *
  * 1 つだけ運ぶときも、一員が 1 つの兄弟として扱う。
  */
-export type GrabbedSiblings = SiblingPlacements &
-  Readonly<{
-    parentRotation: Angle;
-  }>;
-
-/** まとめて運ぶ一員の、掴んだ時点の座標と自分の形（`GrabbedGeometry` の一員ぶん）。 */
-export type GrabbedMemberGeometry = SiblingPlacement &
-  Readonly<{
-    /** 自分の `rotation`（今の親の向きを基準にした角度）。 */
-    ownRotation: Angle;
-    /** 回る前の左上の角から中心までの差（ドキュメント上の px）。 */
-    centerFromTopLeft: Offset;
-  }>;
-
-/**
- * 掴んだ時点の兄弟に、向きの違う親へ付け替えるときに見た目を保つための一員ごとの形を
- * 足したもの（`GrabbedPlacement` に対する `GrabbedGeometry` と同じ組）。
- */
-export type GrabbedSiblingsGeometry = Readonly<{
+type GrabbedSiblingsOf<M extends SiblingPlacement> = Readonly<{
+  /** 一員すべての今の親の名前。 */
   parentName: string;
   parentRotation: Angle;
-  /** 一員それぞれの座標と形。ツリー順。 */
-  placed: NonEmptyArray<GrabbedMemberGeometry>;
+  /** 一員それぞれ。ツリー順。 */
+  members: NonEmptyArray<M>;
 }>;
+
+/** 掴んだ時点の兄弟の座標と、今の親の向き（`GrabbedPlacement` の全員ぶん）。 */
+export type GrabbedSiblings = GrabbedSiblingsOf<SiblingPlacement>;
+
+/** まとめて運ぶ一員の、掴んだ時点の座標と自分の向きと形。 */
+export type GrabbedMemberGeometry = SiblingPlacement & OwnGeometry;
+
+/** 掴んだ時点の兄弟に、一員ごとの自分の向きと形を足したもの（`GrabbedGeometry` の全員ぶん）。 */
+export type GrabbedSiblingsGeometry = GrabbedSiblingsOf<GrabbedMemberGeometry>;
 
 /**
  * 絶対配置のノードを運んで離したときの、ノード 1 つぶんの行き先。どの親へ書くかは持たず、
  * まとめた `SiblingsRepositionTarget` が全員ぶんを 1 つだけ持つ。
  *
  * 書き込む座標と向き（`placement` / `rotation`）と、運んでいる間に見た目をずらす量
- * （`offset`）を対で持つ。親を付け替えると座標の原点と向きが変わるので、**画面上の向きと中心
- * の位置を変えない**ために書き込む座標と向きだけが落とし先の親を基準に直され、見た目の
- * ずらし量は今の親の向きで測った運んだ分のままになる。2 つは同じ 1 回のドラッグの別々の
- * 見え方で、別々に組むと食い違うため `create` からしか作らない。
+ * （`offset`）を対で持つ。同じ 1 回のドラッグの別々の見え方で、別々に組むと食い違うため
+ * `create` からしか作らない（直し方の違いは `create`）。
  */
 export type RepositionTarget = Readonly<{
   /** 落とし先の親から見た、書き込む座標。 */
@@ -158,6 +148,21 @@ function offsetToward(
   moved: AbsolutePlacement,
 ): Offset {
   return Placement.delta(from.placement, moved);
+}
+
+/**
+ * 兄弟の一員 1 人ぶんの、掴んだ時点の配置と今の親の向き。一員が持つ自分の向きと形はそのまま
+ * 残す。
+ *
+ * @param siblings 一員を含む、掴んだ時点の兄弟
+ * @param member 組みたい一員
+ * @returns その一員に今の親の向きを添えたもの
+ */
+function grabbedMember<M extends SiblingPlacement>(
+  siblings: GrabbedSiblingsOf<M>,
+  member: M,
+): M & Readonly<{ parentRotation: Angle }> {
+  return { ...member, parentRotation: siblings.parentRotation };
 }
 
 export const RepositionTarget = {
@@ -225,8 +230,8 @@ export const SiblingsRepositionTarget = {
   /**
    * 掴んだ時点の兄弟と、画面上で運んだ量から、全員の行き先を決める。
    *
-   * 全員に同じ運んだ量を渡し、一員ごとに `RepositionTarget.create` で行き先を決める。丸めは
-   * 一員ごとに行うので、小数の座標を持つ一員がいると一員どうしの間隔が 1px 未満ずれうる。
+   * 全員に同じ運んだ量を渡し、一員ごとに `RepositionTarget.create` で行き先を決める
+   * （丸めは一員ごと / docs/06-ui.md「キャンバス直接操作」）。
    *
    * @param grabbed 掴んだ時点の兄弟（今の親の座標）・今の親の向き・一員ごとの自分の向きと
    *   回る前の左上から中心までの差
@@ -242,15 +247,10 @@ export const SiblingsRepositionTarget = {
     return {
       parentName: grabbed.parentName,
       dropParentName: dropParent.name,
-      members: ArrayEx.mapNonEmpty(grabbed.placed, (member) => ({
+      members: ArrayEx.mapNonEmpty(grabbed.members, (member) => ({
         name: member.name,
         target: RepositionTarget.create(
-          {
-            placement: member.placement,
-            parentRotation: grabbed.parentRotation,
-            ownRotation: member.ownRotation,
-            centerFromTopLeft: member.centerFromTopLeft,
-          },
+          grabbedMember(grabbed, member),
           carried,
           dropParent,
         ),
@@ -270,6 +270,7 @@ export const SiblingsRepositionTarget = {
         target.dropParentName,
         member.target.placement,
       );
+
       const rotation = member.target.rotation;
       return {
         name: member.name,
@@ -307,13 +308,10 @@ export const SiblingsRepositionTarget = {
   carriedPreview(grabbed: GrabbedSiblings, carried: Offset): RepositionPreview {
     return {
       parentName: grabbed.parentName,
-      members: ArrayEx.mapNonEmpty(grabbed.placed, (member) => ({
+      members: ArrayEx.mapNonEmpty(grabbed.members, (member) => ({
         name: member.name,
         offset: RepositionTarget.carriedOffset(
-          {
-            placement: member.placement,
-            parentRotation: grabbed.parentRotation,
-          },
+          grabbedMember(grabbed, member),
           carried,
         ),
       })),
