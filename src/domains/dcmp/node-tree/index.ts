@@ -1,5 +1,5 @@
 import type { ChildPosition } from "@/domains/dcmp/child-position";
-import { Node } from "@/domains/dcmp/node";
+import { Node, type PrimitiveNode } from "@/domains/dcmp/node";
 import { PrimitiveSchema } from "@/domains/dcmp/primitive-schema";
 import { ArrayEx, type IndexOutOfRange } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -53,21 +53,20 @@ function toTreeResult(
  * 並びの中の 1 件の子の並びを差し替える。
  *
  * @param tree 差し替える対象を含む並び
- * @param index 子の並びを差し替えるノードの位置
+ * @param host 子の並びを差し替えるプリミティブと、`tree` の中のその位置
  * @param children 差し替え後の子の並び
- * @returns `index` 番目のノードだけ子の並びが入れ替わった、`tree` と同じ階層の並び
+ * @returns `host.index` 番目のノードだけ子の並びが入れ替わった、`tree` と同じ階層の並び
  */
 function withChildrenAt(
   tree: NodeTree,
-  index: number,
+  host: Readonly<{ index: number; node: PrimitiveNode }>,
   children: NodeTree,
 ): NodeTree {
+  const rebuilt = Node.withChildren(host.node, children.nodes);
   return NodeTree.create(
-    tree.nodes.map((node, current) => {
-      // 子の並びを持てるのはプリミティブだけで、参照ノードはそのまま返す
-      const isTargetHost = current === index && Node.isPrimitive(node);
-      return isTargetHost ? Node.withChildren(node, children.nodes) : node;
-    }),
+    tree.nodes.map((node, current) =>
+      current === host.index ? rebuilt : node,
+    ),
   );
 }
 
@@ -77,9 +76,10 @@ export const NodeTree = {
    *
    * @param node 見るノード
    * @returns スキーマが子を認めているプリミティブなら `true`。参照ノードと、スキーマに無い
-   *   `type` のノードは `false`
+   *   `type` のノードは `false`。`false` でもプリミティブのことがあるので、`false` の側では
+   *   参照ノードと見なさない
    */
-  allowsChildren(node: Node): boolean {
+  allowsChildren(node: Node): node is PrimitiveNode {
     return Node.isPrimitive(node) && PrimitiveSchema.allowsChildren(node.type);
   },
 
@@ -210,13 +210,18 @@ export const NodeTree = {
       if (host.name === name) {
         return Option.some(update(tree));
       }
+      if (!Node.isPrimitive(host)) {
+        continue;
+      }
       const updated = NodeTree.updateSiblingsOf(
         NodeTree.create(Node.children(host)),
         name,
         update,
       );
       if (Option.isSome(updated)) {
-        return Option.some(withChildrenAt(tree, hostIndex, updated.value));
+        return Option.some(
+          withChildrenAt(tree, { index: hostIndex, node: host }, updated.value),
+        );
       }
     }
     return Option.none;
@@ -241,21 +246,27 @@ export const NodeTree = {
     update: NodeTreeUpdate,
   ): Result<Option<NodeTree>, NodeTreeEditError> {
     for (const [index, node] of tree.nodes.entries()) {
-      const children = NodeTree.create(Node.children(node));
       if (node.name === parentName) {
         if (!NodeTree.allowsChildren(node)) {
           return Result.err({ kind: "children-not-allowed", name: parentName });
         }
+        const children = NodeTree.create(Node.children(node));
         return Result.map(update(children), (updated) =>
-          Option.some(withChildrenAt(tree, index, updated)),
+          Option.some(withChildrenAt(tree, { index, node }, updated)),
         );
       }
+      if (!Node.isPrimitive(node)) {
+        continue;
+      }
+      const children = NodeTree.create(Node.children(node));
       const updated = NodeTree.updateChildrenOf(children, parentName, update);
       // 失敗も「この部分木で親が見つかった」ことなので、次の兄弟へ進まずに返す
       const settled = !Result.isOk(updated) || Option.isSome(updated.value);
       if (settled) {
         return Result.map(updated, (found) =>
-          Option.map(found, (subtree) => withChildrenAt(tree, index, subtree)),
+          Option.map(found, (subtree) =>
+            withChildrenAt(tree, { index, node }, subtree),
+          ),
         );
       }
     }
