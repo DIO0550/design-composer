@@ -156,3 +156,26 @@ test("名前が欠落した子ノードは、名前を持つ親ノードを指�
     DocumentError.collectFrom(document).map((error) => error.location),
   ).toStrictEqual([{ kind: "node", nodeName: "screen" }]);
 });
+
+test("名前を持つ祖先が無い子ノードは、その子を収める artboard を指すドキュメント内のパスのエラーになる", () => {
+  const document = DesignDocument.create({
+    tokens: TokenSet.empty(),
+    artboards: [
+      {
+        name: "",
+        width: 375,
+        height: 812,
+        children: [{ name: "", type: "Box" }],
+      },
+    ],
+  });
+
+  expect(
+    DocumentError.collectFrom(document)
+      .filter((error) => error.kind === "missing-name")
+      .map((error) => error.location),
+  ).toStrictEqual([
+    { kind: "document-path", path: "artboards[0]" },
+    { kind: "document-path", path: "artboards[0]" },
+  ]);
+});

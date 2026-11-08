@@ -6,6 +6,7 @@ import type {
 import type {
   NamePosition,
   NameViolation,
+  RootPosition,
 } from "@/domains/dcmp/document-names";
 import type { RefNode } from "@/domains/dcmp/node";
 import type { PropValidationError } from "@/domains/dcmp/primitive-schema";
@@ -68,7 +69,8 @@ type TokenErrorLocation = Readonly<{ tokenName: string; prop?: string }>;
 
 /**
  * 名前の無いルート（部品定義・artboard）を指す不正 1 件。どのルートかをドキュメント内のパスで
- * 持ち、診断用のメッセージを持つ。
+ * 持ち、診断用のメッセージを持つ。名前を持つ祖先の無い子ノードの欠落も、この形で子を収める
+ * ルートを指す。
  */
 type UnnamedRootValidationError = Readonly<{
   kind: "missing-name";
@@ -94,38 +96,84 @@ export type DesignDocumentValidationError =
   | UnnamedRootValidationError;
 
 /**
+ * ルートの位置を、エラーの位置とメッセージの主語にする。
+ *
+ * @param position 部品定義・artboard のドキュメント内の位置
+ * @returns 位置にはドキュメント内のパス（`components` / `artboards[<添字>]`）を入れる
+ *
+ * キーが空の部品は、デコード失敗の綴り（`components.`）ではなく `components` で指す。末尾の
+ * `.` は綴りが欠けて見えるため。
+ */
+function toRootLocation(
+  position: RootPosition,
+): Readonly<{ documentPath: string; subject: string }> {
+  switch (position.kind) {
+    case "component-key":
+      return {
+        documentPath: ComponentsField,
+        subject: `key "" of "${ComponentsField}"`,
+      };
+    case "artboard":
+      return {
+        documentPath: Json.elementPath(ArtboardsField, position.index),
+        subject: `artboard ${position.index} of "${ArtboardsField}"`,
+      };
+  }
+}
+
+/**
+ * 名前が欠落した子ノードを、報告用のエラーにする。
+ *
+ * @param position 欠落した子ノードの入れ物と、兄弟の中での添字
+ * @returns 入れ物が名前を持つ祖先ならそのノードを指す missing-name、ルートの位置ならそのルートを
+ *   ドキュメント内のパスで指す missing-name
+ */
+function toMissingChildNameError(
+  position: Extract<NamePosition, { kind: "child" }>,
+): NodeValidationError | UnnamedRootValidationError {
+  const { owner, index } = position;
+  switch (owner.kind) {
+    case "named":
+      return {
+        kind: "missing-name",
+        nodeName: owner.name,
+        message: `child ${index} of "${owner.name}" has no name`,
+      };
+    case "component-key":
+    case "artboard": {
+      const { documentPath, subject } = toRootLocation(owner);
+      return {
+        kind: "missing-name",
+        documentPath,
+        message: `child ${index} of ${subject} has no name`,
+      };
+    }
+  }
+}
+
+/**
  * 名前が欠落した位置を、報告用のエラーにする。
  *
  * @param position 名前が欠落した位置
  * @returns 部品のキー・artboard の欠落はそのルートをドキュメント内のパス（`components` /
- *   `artboards[<添字>]`）で指す missing-name、子ノードの欠落は名前を持つ最も近い祖先のノードを
- *   指す missing-name
- *
- * キーが空の部品は、デコード失敗の綴り（`components.`）ではなく `components` で指す。末尾の
- * `.` は綴りが欠けて見えるため。
+ *   `artboards[<添字>]`）で指す missing-name。子ノードの欠落は名前を持つ最も近い祖先のノードを
+ *   指し、そうした祖先が無ければ子を収めるルートのパスを指す missing-name
  */
 function toMissingNameError(
   position: NamePosition,
 ): NodeValidationError | UnnamedRootValidationError {
   switch (position.kind) {
     case "component-key":
+    case "artboard": {
+      const { documentPath, subject } = toRootLocation(position);
       return {
         kind: "missing-name",
-        documentPath: ComponentsField,
-        message: `key "" of "${ComponentsField}" has no name`,
+        documentPath,
+        message: `${subject} has no name`,
       };
-    case "artboard":
-      return {
-        kind: "missing-name",
-        documentPath: Json.elementPath(ArtboardsField, position.index),
-        message: `artboard ${position.index} of "${ArtboardsField}" has no name`,
-      };
+    }
     case "child":
-      return {
-        kind: "missing-name",
-        nodeName: position.ownerName,
-        message: `child ${position.index} of "${position.ownerName}" has no name`,
-      };
+      return toMissingChildNameError(position);
   }
 }
 
