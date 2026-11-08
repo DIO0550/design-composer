@@ -1,10 +1,10 @@
 import { expect, test } from "vitest";
 import { DocumentSelection } from "@/domains/session/document-selection";
+import { nodeNamed } from "@/features/editor/__tests__/editor-state-reads";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 import {
   childNames,
-  nodeNamed,
   stateWithChildInEachArtboard,
   stateWithDeepBranch,
 } from "./setup";

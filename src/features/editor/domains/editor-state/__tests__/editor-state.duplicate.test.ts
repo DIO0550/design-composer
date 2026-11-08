@@ -1,7 +1,8 @@
 import { expect, test } from "vitest";
+import { nodeNamed } from "@/features/editor/__tests__/editor-state-reads";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
-import { childNames, nodeNamed, stateWithDeepBranch } from "./setup";
+import { childNames, stateWithDeepBranch } from "./setup";
 
 /*
  * 選んでいるノードを複製する（docs/06-ui.md「編集操作の一覧」の複製）。直後へ入ることと

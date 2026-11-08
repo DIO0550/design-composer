@@ -4,9 +4,9 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
+import { nodeNamed } from "@/features/editor/__tests__/editor-state-reads";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
-import { nodeNamed } from "./setup";
 
 /**
  * インスタンスの解除（UI 案 docs/Design Composer.html の `Detach instance`）。
