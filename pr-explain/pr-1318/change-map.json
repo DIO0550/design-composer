@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-rhln3o",
   "baseBranch": "main",
   "mergeBase": "9606a317ea3df5c0c36432cb1e97d066d2aaa11b",
-  "head": "bad979aadb4c040fac8dca820886bc4ba3daea76",
+  "head": "4aa3d4497ad8d57845a9215506971865ce76aec9",
   "groups": [
     {
       "label": "domains / unit",
@@ -51,7 +51,7 @@
           "path": "src/domains/dcmp/document-names/index.ts",
           "status": "M",
           "oldPath": null,
-          "additions": 78,
+          "additions": 80,
           "deletions": 22,
           "changed": true,
           "target": null
@@ -347,6 +347,26 @@
           "deletions": 10,
           "patch": "@@ -201,11 +201,16 @@ test(\"名前を持つ祖先が無いノードの欠落は、その子を収め\n     (error) => error.kind === \"missing-name\",\n   );\n \n-  expect(errors[1]).toEqual({\n-    kind: \"missing-name\",\n-    documentPath: \"artboards[1]\",\n-    message: 'child 0 of artboard 1 of \"artboards\" has no name',\n-  });\n+  expect(errors).toEqual([\n+    expect.objectContaining({\n+      documentPath: \"artboards[1]\",\n+      message: 'artboard 1 of \"artboards\" has no name',\n+    }),\n+    expect.objectContaining({\n+      documentPath: \"artboards[1]\",\n+      message: 'child 0 of artboard 1 of \"artboards\" has no name',\n+    }),\n+  ]);\n });\n \n test(\"名前を持つ祖先が無い部品内部のノードの欠落は、components のパスで報告される\", () => {\n@@ -218,11 +223,16 @@ test(\"名前を持つ祖先が無い部品内部のノードの欠落は、compo\n     (error) => error.kind === \"missing-name\",\n   );\n \n-  expect(errors[1]).toEqual({\n-    kind: \"missing-name\",\n-    documentPath: \"components\",\n-    message: 'child 0 of key \"\" of \"components\" has no name',\n-  });\n+  expect(errors).toEqual([\n+    expect.objectContaining({\n+      documentPath: \"components\",\n+      message: 'key \"\" of \"components\" has no name',\n+    }),\n+    expect.objectContaining({\n+      documentPath: \"components\",\n+      message: 'child 0 of key \"\" of \"components\" has no name',\n+    }),\n+  ]);\n });\n \n test(\"名前を持つ途中のノードの下の欠落は、そのノードの名前で報告される\", () => {",
           "patchLines": 44,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "4aa3d4497ad8d57845a9215506971865ce76aec9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-08T08:29:44Z",
+      "subject": "♻️ [Refactoring]: #932 namedOwnerOr の引数を string | undefined にして doc と型を揃える",
+      "body": "- namedOwnerOr の name の型を string から string | undefined に広げた\n- @param / @returns から型の注記を外し、「欠落(空・undefined)なら\n  fallback」とだけ書いた\n\n背景:\nPR #1318 のレビュー(Copilot、moderate)で、JSDoc が「name は\nundefined になりうる」と書いているのにシグネチャが name: string の\nままで、型と説明が食い違っていると指摘された。フェーズ 6 の\nstructure-reviewer も同じ点を担当外として挙げていた。\n\n採用理由:\n実行時に undefined が来る前提を、コメントではなく型で表す\n(rules/coding.md「前提をコメントで書くのは、型で閉じたことに\nならない」)。Node の name は string なので、呼び出し側はそのまま渡せる。\n\n影響とトレードオフ:\n- 振る舞いは変わらない(真偽で分岐する本体はそのまま)\n- undefined を受けることはテスト「name の無い（JSON 由来の）artboard の\n  子の欠落も…」が守っているので、理由のコメントは足していない\n\n代替案:\n- doc から undefined の記述を消すだけにする: 実行時に undefined が来る\n  事実が読み手から消え、真偽で判定している理由も見えなくなる\n\n参考:\n- https://github.com/DIO0550/design-composer/pull/1318#discussion_r4505564245\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RZ1Z3F5bfei1NkdVi",
+      "files": [
+        {
+          "path": "src/domains/dcmp/document-names/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 5,
+          "patch": "@@ -62,12 +62,14 @@ type NameOccurrence = Readonly<{ name: string; position: NamePosition }>;\n /**\n  * 子孫の欠落を報告するときの入れ物を選ぶ。\n  *\n- * @param name 入れ物の候補になるノード・ルートの名前。型は `string` だが、JSON 由来のノードでは\n- *   name が無く `undefined` になりうる。そのときも `fallback` を返す\n- * @param fallback `name` が空のときに使う入れ物\n- * @returns `name` が空でなければその名前の入れ物、空なら `fallback`\n+ * @param name 入れ物の候補になるノード・ルートの名前。欠落（空・`undefined`）なら `fallback` を使う\n+ * @param fallback `name` が欠落しているときに使う入れ物\n+ * @returns `name` が欠落していなければその名前の入れ物、欠落していれば `fallback`\n  */\n-function namedOwnerOr(name: string, fallback: ChildOwner): ChildOwner {\n+function namedOwnerOr(\n+  name: string | undefined,\n+  fallback: ChildOwner,\n+): ChildOwner {\n   return name ? { kind: \"named\", name } : fallback;\n }\n ",
+          "patchLines": 20,
           "truncated": false
         }
       ]
