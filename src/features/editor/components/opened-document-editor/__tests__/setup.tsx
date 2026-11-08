@@ -13,13 +13,13 @@ import {
   canvasSurface,
   drag,
   renderedElement,
-  stubBounds,
 } from "@/features/editor/features/canvas/__tests__";
 import {
   type LeftPaneView,
   LeftPaneViewLabels,
 } from "@/features/editor/features/sidebar";
 import { changeFileExternally } from "@/libs/__tests__/document-change";
+import { stubBounds } from "@/libs/__tests__/element-measure";
 import { type ClockFake, createClockFake } from "@/libs/clock/fake";
 import {
   createDocumentIpcFake,

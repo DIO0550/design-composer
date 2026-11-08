@@ -2,14 +2,14 @@ import { afterEach, expect, test } from "vitest";
 import {
   clearDrawn,
   drawNamed,
-  stubLayoutSize,
 } from "@/features/editor/features/canvas/__tests__/canvas-measure";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import { stubLayoutSize } from "@/libs/__tests__/element-measure";
 import { Option } from "@/utils/Option";
 import { DrawnBounds } from "../DrawnBounds";
 
-/* 測定の差し替え方と後片付けが要る理由は `canvas-measure` の doc を見る。 */
+/* 測定の差し替え方は `element-measure`、後片付けが要る理由は `canvas-measure` の doc を見る。 */
 afterEach(clearDrawn);
 
 test("描かれている名前を指すと、その要素の矩形が返る", () => {

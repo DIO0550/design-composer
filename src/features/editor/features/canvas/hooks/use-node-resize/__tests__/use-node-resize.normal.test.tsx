@@ -17,6 +17,7 @@ import {
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { NodeResize } from "@/features/editor/features/canvas/domains/node-resize";
+import { stubBounds } from "@/libs/__tests__/element-measure";
 import { useNodeResize } from "../index";
 
 /** 2 軸とも固定した `panel` を持つドキュメントと、選択の対。 */
@@ -103,18 +104,11 @@ function NodeResizeHarness({
 
 /**
  * 描かれた大きさをテスト用の値にした `panel`。
- * happy-dom はレイアウトを行わず矩形をすべて 0 で返すため、ブラウザが行う測定だけを
- * 差し替える（掴める範囲と長さの決まり方は実物の node-resize が答える）。
+ * 掴める範囲と長さの決まり方は実物の node-resize が答える。
  */
 function panel(): Element {
   const element = screen.getByTestId("panel");
-  element.getBoundingClientRect = () =>
-    new DOMRect(
-      PanelBounds.left,
-      PanelBounds.top,
-      PanelBounds.width,
-      PanelBounds.height,
-    );
+  stubBounds(element, PanelBounds);
   return element;
 }
 
