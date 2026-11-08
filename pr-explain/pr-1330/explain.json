@@ -1,0 +1,2769 @@
+{
+  "version": 1,
+  "pr": 1330,
+  "sha": "2e813e90189ecfdc4ddb7eaa7cc68bd57433724f",
+  "issue": 1298,
+  "overview": {
+    "title": "複数選択中に選択の一員を押して運んだとき、複数選択を保って全員を運ぶ",
+    "lead": "全員が絶対配置で同じ親の兄弟である複数選択なら、キャンバスで一員を押して運ぶと選択を保ったまま全員が同じ量だけ動き、離すと 1 回の編集（undo 1 回）になる。条件を満たさない複数選択は #947 の振る舞い（押した時点で 1 つに絞って運ぶ）のまま。",
+    "before": [
+      {
+        "text": "複数選択中に一員を押すと、押した時点でクリックが選ぶもの 1 つの選択になり、それだけを運んでいた",
+        "message": "select-grabbed"
+      },
+      {
+        "text": "複数選択中のクリック・掴む階層は単一選択でないので「今の選択の内側」を使わず、入れ子の一員の中を押すと artboard 直下の子が選ばれていた",
+        "message": "dig"
+      },
+      {
+        "text": "離したときの置き直しは 1 ノードずつ（`reposition_node`）で届いていた",
+        "message": "dispatch"
+      }
+    ],
+    "after": [
+      {
+        "text": "押した時点で `DocumentSelection.carriedSiblingsAt` が答えれば、選択を変えずに全員を掴む",
+        "message": "carried-siblings"
+      },
+      {
+        "text": "運ぶ間はポインタが動くたびに `findSiblingPlacements` で全員の座標を引き直し、全員を囲む矩形で寄せ・ガイド線・等間隔・Alt の距離を決める",
+        "message": "find-siblings-carry"
+      },
+      {
+        "text": "離すと全員ぶんの置き直しを 1 回で渡し、`EditorState.repositionAll` が 1 回の履歴にする",
+        "message": "editor-reposition-all"
+      },
+      {
+        "text": "運んでいる途中で一員が同じ親の兄弟でなくなれば、何も運ばない（ツリーへの移動にも切り替えない）",
+        "message": "find-siblings-carry"
+      },
+      {
+        "text": "複数選択の一員も掘る起点になり、入れ子の一員の内側を押すとその一員を選ぶ・掴む",
+        "message": "dig"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "掴んだ時点の座標を持たない",
+        "text": "計画では掴んだ時点の座標を持ち続ける形だったが、押したまま外部編集や取り消しが入ると古い座標で上書きするので、名前だけ持って毎回引き直す形へ逆転した。途中で兄弟でなくなったときは何も運ばない",
+        "go": {
+          "kind": "flow",
+          "id": "carry"
+        }
+      },
+      {
+        "title": "一員ごとのずらし量",
+        "text": "書く座標を一員ごとに整数へ丸めるので、見せるずらし量も一員ごとに逆算する。小数の座標の一員がいると間隔が 1px 未満ずれうる（docs に明記）",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/domains/reposition-target/index.ts"
+        }
+      },
+      {
+        "title": "クリックの選び方の副作用",
+        "text": "まとめて運べない複数選択でも、入れ子の一員の内側をクリックすると外側ではなくその一員が選ばれるようになった（判断 1 で受け入れた）",
+        "go": {
+          "kind": "message",
+          "id": "dig"
+        }
+      },
+      {
+        "title": "編集の入口を 1 本に",
+        "text": "単一の置き直しも 1 人の兄弟として同じ並びで届く。既存テスト 138 か所の書き換えはこの形の結果",
+        "go": {
+          "kind": "flow",
+          "id": "drop"
+        }
+      },
+      {
+        "title": "UI 仕様",
+        "text": "docs/06-ui.md のクリックの階層・複数選択・移動の節を書き換えた",
+        "go": {
+          "kind": "layer",
+          "layer": "docs"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "grab",
+      "label": "まとめて掴む",
+      "role": "押した位置と選択から、全員をまとめて運ぶかを決める"
+    },
+    {
+      "id": "carry",
+      "label": "まとめて運ぶ",
+      "role": "運ぶ間に全員の行き先・ずらし量・寄せを決める"
+    },
+    {
+      "id": "commit",
+      "label": "1 回の編集",
+      "role": "離したときの全員ぶんの置き直しを 1 回の履歴にする"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / dcmp",
+      "role": "同じ親の絶対配置の兄弟を引く入口と、まとめた置き直し（全部通るか何も変えないか）"
+    },
+    {
+      "layer": "domains / session",
+      "role": "複数選択の一員も掘る起点にし、まとめて運べるかを判定する"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "まとめて運ぶ枝を持つドラッグと、全員の行き先・見た目"
+    },
+    {
+      "layer": "features / editor",
+      "role": "置き直しのアクションを並びで受け、1 回の履歴にする"
+    },
+    {
+      "layer": "utils",
+      "role": "空でない並びの全要素の写しと重複除去"
+    },
+    {
+      "layer": "types",
+      "role": "2 件以上を構造で持つ並びの型"
+    },
+    {
+      "layer": "docs",
+      "role": "UI 仕様のクリックの階層・複数選択・移動の節"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/dcmp/sibling-placements/index.ts",
+      "name": "兄弟の座標",
+      "role": "親 1 つと、絶対配置の一員の名前・座標（ツリー順）",
+      "feature": "grab",
+      "change": "新しく作った。生成口 `fromPlacedChildren` が親 1 つ・ツリー順を成り立たせる"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "ドキュメント",
+      "role": "`.dcmp` の中身と、その読み書き",
+      "feature": "commit",
+      "change": "`findSiblingPlacements`（兄弟の座標を引く）と `repositionAll`（まとめた置き直し）を足した"
+    },
+    {
+      "path": "src/domains/dcmp/reposition-edit/index.ts",
+      "name": "置き直し",
+      "role": "親・座標・向きの書き込み内容",
+      "change": "名前と置き直しの組 `NodeRepositionEdit` を足した",
+      "graph": false
+    },
+    {
+      "path": "src/domains/session/document-selection/index.ts",
+      "name": "キャンバスの選択",
+      "role": "押された位置と今の選択から、選ぶもの・掴むものを決める",
+      "feature": "grab",
+      "change": "`carriedSiblingsAt` を足し、`nodeNameAt` が選択の名前すべてを渡すようにした"
+    },
+    {
+      "path": "src/domains/session/selection-dig/index.ts",
+      "name": "掘る階層",
+      "role": "候補と今の選択から、何階層掘ったものを選ぶかを決める",
+      "feature": "grab",
+      "change": "選択を 1 つではなく並びで受け、候補に載っているいちばん内側を起点にする"
+    },
+    {
+      "path": "src/domains/session/selection-state/index.ts",
+      "name": "選択の状態",
+      "role": "未選択・単一・複数の直和",
+      "change": "複数の並びを `TwoOrMoreArray` に置き換えた（構造は同じ）",
+      "graph": false
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "name": "ノードのドラッグ",
+      "role": "キャンバスのポインタを受けて、掴む・運ぶ・離すを進める",
+      "feature": "carry",
+      "change": "まとめて掴む経路、運ぶ間の引き直し、全員を囲む矩形での寄せ、全員ぶんの置き直しを足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+      "name": "運んでいるもの",
+      "role": "既存ノード 1 つ・まとめて運ぶ兄弟・雛形の直和",
+      "feature": "carry",
+      "change": "枝 `selected-siblings`（名前 2 件以上）と、ツリーへ落とせる側だけの `TreeDraggedNode` を足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "name": "ドラッグの状態",
+      "role": "掴んでいない・掴んだ・運んでいる・離した直後の状態と、落とし方",
+      "feature": "carry",
+      "change": "置き直しの落とし方が全員ぶんの行き先を持ち、まとめて運んで離した直後の click も飲み込む"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+      "name": "置き直しの行き先",
+      "role": "運んだ量から、書く座標・向きと見た目のずらし量を決める",
+      "feature": "carry",
+      "change": "全員ぶんの `SiblingsRepositionTarget` を足し、1 人ぶんの `RepositionTarget` から親を外した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "name": "運ぶ間の見た目",
+      "role": "運んでいるノードを `translate` でずらして見せる",
+      "feature": "carry",
+      "change": "一員ごとにずらす"
+    },
+    {
+      "path": "src/features/editor/hooks/use-node-actions/index.ts",
+      "name": "ノードの操作",
+      "role": "キャンバスの操作を編集のアクションへつなぐ",
+      "feature": "commit",
+      "change": "置き直しを並びで受ける"
+    },
+    {
+      "path": "src/features/editor/hooks/use-editor-state/index.ts",
+      "name": "編集状態の遷移",
+      "role": "アクションを編集状態の遷移へ振り分ける",
+      "feature": "commit",
+      "change": "アクション `reposition_node` を `reposition_nodes` に置き換えた"
+    },
+    {
+      "path": "src/features/editor/domains/editor-state/index.ts",
+      "name": "編集状態",
+      "role": "ドキュメント・選択・履歴をまとめた編集中の状態",
+      "feature": "commit",
+      "change": "`reposition` を `repositionAll` に置き換え、矢印キーの移動もそれを通す"
+    },
+    {
+      "path": "src/utils/ArrayEx.ts",
+      "name": "配列の操作",
+      "role": "組み込みの配列への汎用操作",
+      "change": "`mapNonEmptyUntilNone` と `distinctNonEmpty` を足した",
+      "graph": false
+    },
+    {
+      "path": "src/types/TwoOrMoreArray.ts",
+      "name": "2 件以上の並び",
+      "role": "1 件目と 2 件目が必ずある読み取り専用の並び",
+      "change": "新しく作った",
+      "graph": false
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "画面の操作の仕様",
+      "change": "クリックの階層・複数選択中の操作・移動の節を書き換えた",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "carried-siblings",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "kind": "qry",
+      "name": "まとめて運べるか問う",
+      "code": "DocumentSelection.carriedSiblingsAt(params.selection, underPointer)",
+      "via": "call",
+      "payload": "今の選択とドキュメント、押された位置",
+      "returns": "まとめて運ぶ一員の名前（2 件以上）か `none`",
+      "status": "added"
+    },
+    {
+      "id": "node-name-at",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "kind": "qry",
+      "name": "掴むものを問う",
+      "code": "DocumentSelection.nodeNameAt(params.selection, underPointer)",
+      "via": "call",
+      "payload": "今の選択とドキュメント、押された位置",
+      "returns": "同じ押し方のクリックが選ぶノードの名前",
+      "status": "changed"
+    },
+    {
+      "id": "select-grabbed",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/hooks/use-node-actions/index.ts",
+      "kind": "cmd",
+      "name": "掴んだものを選ぶ",
+      "code": "params.onSelectGrabbed(name.value)",
+      "via": "call",
+      "payload": "掴んだノードの名前（まとめて運ぶときは呼ばない）"
+    },
+    {
+      "id": "dig",
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/session/selection-dig/index.ts",
+      "kind": "qry",
+      "name": "掘る階層を問う",
+      "code": "SelectionDig.nameAt(dig, candidates, DocumentSelection.names(selection))",
+      "via": "call",
+      "payload": "掘る量・押された位置の候補（内→外）・選択の名前すべて",
+      "returns": "選ぶ名前",
+      "status": "changed"
+    },
+    {
+      "id": "find-siblings-check",
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "qry",
+      "name": "兄弟の座標を引く（判定）",
+      "code": "DesignDocument.findSiblingPlacements(document, selected.names)",
+      "via": "call",
+      "payload": "選んでいる名前（2 件以上）",
+      "returns": "親と一員の座標か `none`",
+      "status": "added"
+    },
+    {
+      "id": "find-siblings-carry",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "qry",
+      "name": "兄弟の座標を引く（運ぶ間）",
+      "code": "DesignDocument.findSiblingPlacements(context.document, dragged.names)",
+      "via": "call",
+      "payload": "まとめて運んでいる名前（1 つだけ運ぶときはその 1 つ）",
+      "returns": "今のドキュメントでの親と一員の座標か `none`",
+      "status": "added"
+    },
+    {
+      "id": "siblings-from",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/sibling-placements/index.ts",
+      "kind": "qry",
+      "name": "兄弟の座標を組む",
+      "code": "SiblingPlacements.fromPlacedChildren",
+      "via": "call",
+      "payload": "一員ごとの今の親・座標・並びの位置",
+      "returns": "親 1 つとツリー順の一員か、親が 2 つ以上なら `none`",
+      "status": "added"
+    },
+    {
+      "id": "target-create",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+      "kind": "qry",
+      "name": "全員の行き先を決める",
+      "code": "SiblingsRepositionTarget.create({ ...grabbed, members: measured.value.dragged }, …, measured.value.dropParent)",
+      "via": "call",
+      "payload": "掴んだ時点の兄弟と一員ごとの向きと形・運んだ量・落とし先の親",
+      "returns": "落とし先の親 1 つと、一員ごとの書く座標・向き・ずらし量",
+      "status": "added"
+    },
+    {
+      "id": "carried-preview",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+      "kind": "qry",
+      "name": "見た目だけのずらし量を決める",
+      "code": "SiblingsRepositionTarget.carriedPreview(grabbed, …)",
+      "via": "call",
+      "payload": "掴んだ時点の兄弟と今の親の向き・運んだ量",
+      "returns": "今の親と一員ごとのずらし量",
+      "status": "added"
+    },
+    {
+      "id": "preview-style",
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "kind": "qry",
+      "name": "ずらして見せる相手と量を問う",
+      "code": "NodeDrag.repositionPreview(drag)",
+      "via": "call",
+      "payload": "今のドラッグの状態",
+      "returns": "今の親と、一員ごとの名前とずらし量",
+      "status": "changed"
+    },
+    {
+      "id": "release",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "kind": "cmd",
+      "name": "指を離す",
+      "code": "NodeDrag.release(drag)",
+      "via": "state",
+      "payload": "今のドラッグの状態",
+      "returns": "既存ノード（まとめて運ぶ兄弟を含む）なら直後の click を飲み込む状態",
+      "status": "changed"
+    },
+    {
+      "id": "to-edits",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+      "kind": "qry",
+      "name": "全員ぶんの置き直しにする",
+      "code": "SiblingsRepositionTarget.toEdits(edit.target)",
+      "via": "call",
+      "payload": "全員の行き先",
+      "returns": "一員ごとの名前と置き直し（ツリー順）",
+      "status": "added"
+    },
+    {
+      "id": "on-reposition",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/hooks/use-node-actions/index.ts",
+      "kind": "cmd",
+      "name": "置き直しを確定する",
+      "code": "params.onReposition(SiblingsRepositionTarget.toEdits(edit.target))",
+      "via": "call",
+      "payload": "全員ぶんの置き直しの並び（1 回で渡す）",
+      "status": "changed"
+    },
+    {
+      "id": "dispatch",
+      "from": "src/features/editor/hooks/use-node-actions/index.ts",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "kind": "cmd",
+      "name": "置き直しのアクションを送る",
+      "code": "dispatch({ type: \"reposition_nodes\", edits })",
+      "via": "state",
+      "payload": "全員ぶんの置き直しの並び",
+      "status": "changed"
+    },
+    {
+      "id": "editor-reposition-all",
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "kind": "cmd",
+      "name": "まとめて置き直す",
+      "code": "EditorState.repositionAll(state, action.edits)",
+      "via": "call",
+      "payload": "全員ぶんの置き直しの並び",
+      "returns": "1 回の履歴を積んだ編集状態か、通らない指定が混ざれば `none`",
+      "status": "added"
+    },
+    {
+      "id": "editor-reposition",
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "kind": "cmd",
+      "name": "1 つを置き直す",
+      "code": "EditorState.reposition(state, action.name, action.edit)",
+      "via": "call",
+      "payload": "ノードの名前と置き直し",
+      "status": "removed"
+    },
+    {
+      "id": "document-reposition-all",
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "cmd",
+      "name": "ドキュメントをまとめて置き直す",
+      "code": "DesignDocument.repositionAll(EditorState.document(state), edits)",
+      "via": "call",
+      "payload": "全員ぶんの置き直しの並び",
+      "returns": "全部通ったドキュメントか、最初に通らなかった `err`",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "grab",
+      "label": "まとめて運べる一員を押したとき",
+      "steps": [
+        "carried-siblings",
+        "dig",
+        "find-siblings-check",
+        "siblings-from"
+      ]
+    },
+    {
+      "id": "narrow",
+      "label": "条件外の複数選択で押したとき",
+      "steps": [
+        "carried-siblings",
+        "node-name-at",
+        "dig",
+        "select-grabbed"
+      ]
+    },
+    {
+      "id": "carry",
+      "label": "まとめて運んでいる間",
+      "steps": [
+        "find-siblings-carry",
+        "siblings-from",
+        "target-create",
+        "carried-preview",
+        "preview-style"
+      ]
+    },
+    {
+      "id": "drop",
+      "label": "離したとき",
+      "steps": [
+        "release",
+        "to-edits",
+        "on-reposition",
+        "dispatch",
+        "editor-reposition-all",
+        "document-reposition-all"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "cec6c65a93f4ecdecc6de6cbc522d11c77fa46bd",
+      "phase": "prep",
+      "role": "同じ親の絶対配置の兄弟を表す型を足す",
+      "why": "運ぶ間も離すときも「親が 1 つで、一員ごとに座標がある」ことを前提にするので、その前提を生成口で成り立たせる値を先に作った。形は既存の `SiblingPositions.fromChildPositions` に揃えた。",
+      "review": [
+        "生成口の名前・重複の扱いは後の指摘反映コミットで変わる（`fromPlacedChildren`・重複除去は入口へ）。最終形は 47ecdad で見る"
+      ]
+    },
+    {
+      "sha": "6af23dd70b927faadf1c0039c0017ea3948ef80a",
+      "phase": "prep",
+      "role": "兄弟の座標の生成口の不変条件をテストする",
+      "why": "ツリー順・親 1 つを、逆順に渡す入力で「渡した順のまま返す」実装を落とせるように固定した。"
+    },
+    {
+      "sha": "563f5c99b7dec40a5ef87a162835ff4436f3d6ca",
+      "phase": "core",
+      "role": "ドキュメントに兄弟の座標の取得とまとめた置き直しを足す",
+      "why": "「全部通るか何も変えないか」「渡した順に付け替え先の末尾へ」はドキュメントの規則なので、`removeAll` と同じく `DesignDocument` に置いた。絶対配置の判定は既存の `childPlacementOf` に寄せ、導出を 2 本にしない。",
+      "flows": [
+        "drop"
+      ],
+      "review": [
+        "`repositionAll` は親が一員ごとに違ってもよい汎用の一括操作で、同じ親であることは呼び出し側の型が守る、という分担でよいか"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1823,
+          "end": 1826,
+          "text": "名前ごとに `childPlacementOf` と `findChildPosition` を引き、1 つでも引けなければ `none`"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 2288,
+          "end": 2290,
+          "text": "`reduceUntilErr` で順に当てるので、途中で `err` になれば何も書かない"
+        }
+      ]
+    },
+    {
+      "sha": "63a1099b69f7500759c87f7868d0801fb1df1dc1",
+      "phase": "core",
+      "role": "兄弟の座標の取得とまとめた置き直しをテストする",
+      "why": "失敗のケースを先頭が通る指定にして、「途中まで当てて返す」実装を落とせる入力にした。",
+      "flows": [
+        "drop"
+      ]
+    },
+    {
+      "sha": "adfc47aa03d426004a87e62fba5537bedf5f0824",
+      "phase": "core",
+      "role": "複数選択の一員も掘る起点にし、まとめて運べる兄弟を判定する",
+      "why": "オーナー回答の判断 1〜4（入れ子の一員の内側はその一員、⌘ で一員の中の子なら 1 つに絞る、ロック中・非表示がいれば運ばない）を、掴むものの規則 `nodeNameAt` と同じ `DocumentSelection` に置いた。判定をフックに書くと features 層にドメイン知識が入る。",
+      "flows": [
+        "grab",
+        "narrow"
+      ],
+      "review": [
+        "まとめて運べない複数選択でも、入れ子の一員の内側をクリックするとその一員が選ばれるようになる副作用を受け入れてよいか",
+        "祖先と子孫を両方選んでいるとき、内側（子孫）を起点にする規則でよいか"
+      ],
+      "before": [
+        {
+          "text": "掘る起点は単一選択のときだけで、複数選択では押した位置の artboard 直下の子を選んだ",
+          "message": "dig"
+        }
+      ],
+      "after": [
+        {
+          "text": "複数選択の一員それぞれが掘る起点になる",
+          "message": "dig"
+        },
+        {
+          "text": "まとめて運べるかを `carriedSiblingsAt` が答える",
+          "message": "carried-siblings"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "start": 182,
+          "end": 185,
+          "text": "このコミットでは兄弟の座標そのものを返していた。47ecdad で名前だけを返す形に変わる"
+        }
+      ]
+    },
+    {
+      "sha": "2c0c4890f69fe3c3ca8a697541afdf3a05aa1712",
+      "phase": "core",
+      "role": "まとめて運べる兄弟の判定と、複数選択中のクリックをテストする",
+      "why": "条件ごとに 1 本ずつ置き、どれか 1 つの条件を外した実装が落ちるようにした。",
+      "flows": [
+        "grab",
+        "narrow"
+      ]
+    },
+    {
+      "sha": "f29c48ed88a666a59992c7fb6b1157fc5ef066bd",
+      "phase": "core",
+      "role": "一員を押して運ぶと、選択を保ったまま全員を運ぶ",
+      "why": "単一ノードを「1 人の兄弟」として扱い、置き直しの落とし方を 1 つのまま並びにした（別の枝を足すと 6 つの switch に同じ処理が増える）。落とし先の親は全員ぶんの型に 1 つだけ持たせ、ずらし量は一員ごとに持つ。公開 API の形が変わるので、既存テストの追随（138 か所）を同じコミットに入れた。",
+      "flows": [
+        "grab",
+        "carry",
+        "drop"
+      ],
+      "review": [
+        "掴んだ時点の兄弟を枝に持たせて運ぶ間は引き直さない形（このコミット時点）。47ecdad で逆転している",
+        "`onReposition` を 1 本にして単一の置き直しも並びで渡す形でよいか",
+        "落とし先の親を一員ごとに持たせず `SiblingsRepositionTarget` に 1 つだけ持たせることで「全員が同じ親」を型で守っているか"
+      ],
+      "before": [
+        {
+          "text": "複数選択中に一員を押すと 1 つに絞って運んだ",
+          "message": "select-grabbed"
+        },
+        {
+          "text": "置き直しは 1 ノードずつのアクションで届いた",
+          "message": "editor-reposition"
+        }
+      ],
+      "after": [
+        {
+          "text": "まとめて運べるなら選択を変えずに全員を掴む",
+          "message": "carried-siblings"
+        },
+        {
+          "text": "離すと全員ぶんを 1 回のアクションで送る",
+          "message": "editor-reposition-all"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+          "start": 50,
+          "end": 50,
+          "text": "このコミットでは掴んだ時点の兄弟の座標を枝に持たせていた"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "start": 507,
+          "end": 508,
+          "text": "掴んだ時点の兄弟をそのまま使い、運ぶ間は引き直さなかった（solution-reviewer の指摘で 47ecdad が逆転させる）"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "start": 599,
+          "end": 611,
+          "text": "まとめて運べるなら `onSelectGrabbed` を呼ばずに全員を掴む"
+        }
+      ]
+    },
+    {
+      "sha": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "phase": "core",
+      "role": "まとめて運ぶ振る舞いを、ドメイン・キャンバス・編集画面の 3 層でテストする",
+      "why": "選択を保つこと・全員を同じ量動かすこと・1 回の取り消しは、キャンバス・状態・選択の配線が揃って初めて成り立つ。囲む矩形のケースは「押した一員の辺は遠いが囲む矩形の左辺は近い」入力にして、押した一員だけで判定する実装を落とせるようにした。",
+      "flows": [
+        "carry",
+        "drop"
+      ],
+      "review": [
+        "運ばずに離すケースをグループ解除で入れ子の兄弟を選ぶ入力にしたのは、範囲選択の兄弟では判断 1 を外しても同じ答えになるため。この入力で足りているか"
+      ]
+    },
+    {
+      "sha": "4186774aa8e0ea0ac22e4f881a8add92c4b9f3b6",
+      "phase": "core",
+      "role": "複数選択の一員を押して運ぶ振る舞いを仕様に書く",
+      "why": "振る舞いが変わったので同じ PR で docs/06-ui.md を揃えた。単数で書かれていた「運んでいるノード」の行は、まとめて運ぶ場合を言い切れないので複数でも読める形にした。"
+    },
+    {
+      "sha": "0e69943abe6634eb543bdc9fc0e2395ce39c7549",
+      "phase": "revise",
+      "role": "空でない並びの全要素の写しと重複除去を足す",
+      "why": "「一員ごとに引き、1 人でも欠ければ全体を不在にする」処理が差分だけで 4 か所・2 通りの書き方で現れていた（duplication / structure の指摘）。`distinct` をそのまま使うと空でないことが型から消えるので、空でない並び用を別に立てた。",
+      "review": [
+        "`mapNonEmptyUntilNone` という名前が「用途ではなく操作で名付ける」に沿っているか"
+      ]
+    },
+    {
+      "sha": "fe6f0727392adc46175899118bdf959a67c9dff7",
+      "phase": "revise",
+      "role": "足した 2 つの配列の操作をテストする",
+      "why": "utils の操作として他から使われたときに守るものが要るので、まとめて運ぶ側のテストとは別に置いた。"
+    },
+    {
+      "sha": "47ecdad2d0d10705c07095c5fd8348d220923c42",
+      "phase": "revise",
+      "role": "まとめて運ぶ経路をレビュー指摘に合わせて直す",
+      "why": "掴んだ時点の座標を持ち続けると、押したまま外部編集や取り消しが入ったときに古い座標で上書きする（rules/consistency.md の二重持ち）。計画時の plan-reviewer 指摘 11（運ぶ間は引き直さない）の根拠「何も運ばない枝は届かない」が外部変更で崩れるので、1 つだけ運ぶ経路と同じく毎回ドキュメントから引く形に揃えた。あわせて型の系列・名前・性能の指摘を反映した。",
+      "flows": [
+        "carry",
+        "grab"
+      ],
+      "review": [
+        "運ぶ途中で一員が同じ親の兄弟でなくなったら、ツリーへの移動に切り替えず何も運ばない、でよいか",
+        "一員の画面上の向きを「親の向き + 一員の向き」で足すので木から引いた値と 6 桁目で食い違いうるが、使うのは実測の外接矩形だけで書く座標には入らない",
+        "`findSiblingPlacements` が `findChildPosition` を 2 回引くのはレビューで不採用にした（直すには `childPlacementOf` の内側の位置を出す入口が要る）"
+      ],
+      "before": [
+        {
+          "text": "運ぶ間は掴んだ時点の兄弟の座標を使い続けた",
+          "message": "find-siblings-carry"
+        }
+      ],
+      "after": [
+        {
+          "text": "ポインタが動くたびに今のドキュメントから兄弟の座標を引き直し、引けなければ何も運ばない",
+          "message": "find-siblings-carry"
+        },
+        {
+          "text": "まとめて運べるかの判定は名前（2 件以上）だけを返す",
+          "message": "carried-siblings"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+          "start": 51,
+          "end": 51,
+          "text": "枝は名前だけを持つ。2 件以上を `TwoOrMoreArray` で構造に持つので、一員 1 つのまとめた運びは書けない"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "start": 463,
+          "end": 471,
+          "text": "毎回引き直し、引けなければ `Carrying.nothing()`。押した一員だけのツリー移動へは落とさない"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "start": 210,
+          "end": 218,
+          "text": "一員の画面上の向きは、1 回だけ引いた親の向きに自分の向きを足す（一員ごとに木を辿らない）"
+        },
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "start": 186,
+          "end": 189,
+          "text": "件数を数えず、選択の直和の `multiple` で分ける"
+        }
+      ]
+    },
+    {
+      "sha": "bb98a3bccd8b4a42978a3fbccc91c13787839c10",
+      "phase": "revise",
+      "role": "複数選択中のクリックとまとめて運ぶ条件の書き方を実装に揃える",
+      "why": "前の書き方「複数選択中は一員の内側を押すとその一員 1 つを選ぶ」は、一員が artboard・ロック中のときと祖先と子孫を両方選んだときに実装と食い違っていた（harness-reviewer の指摘）。既存の「今選んでいるノード」の規則を一員へ広げ、まとめて運ぶ条件は移動の節 1 か所だけに書いた。",
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 96,
+          "end": 96,
+          "text": "既存の規則を一員へ広げる書き方にし、artboard とロック中の例外は既存の括弧書きと下位項目が引き受ける"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 154,
+          "end": 154,
+          "text": "まとめて運ぶ条件はここだけに書く"
+        }
+      ]
+    },
+    {
+      "sha": "2e813e90189ecfdc4ddb7eaa7cc68bd57433724f",
+      "phase": "fin",
+      "role": "プレビューの一員ごとのずらし量と、途中で一員が移ったときを守る",
+      "why": "test-reviewer のミューテーション実測で、9 つの中心判断はすべて壊すと落ちたが、プレビューのずらし量を全員共通にしても、途中で一員が移ったときの「何も運ばない」をツリーへの移動に倒しても落ちなかった。その 2 つの穴を埋めた。",
+      "flows": [
+        "carry"
+      ],
+      "review": [
+        "小数の座標（x: 10.5）を使わないと、先頭の値で代用する実装でも同じ答えになる。入力の選び方が穴を塞いでいるか"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+          "start": 139,
+          "end": 141,
+          "text": "修正 A で足した「座標が変わる」側の対"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "canvas",
+      "label": "キャンバスのまとめた運び",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx"
+    },
+    {
+      "id": "editor",
+      "label": "編集画面のまとめた運び",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx"
+    },
+    {
+      "id": "target",
+      "label": "全員の行き先",
+      "file": "src/features/editor/features/canvas/domains/reposition-target/__tests__/reposition-target.siblings.test.ts"
+    },
+    {
+      "id": "carried",
+      "label": "まとめて運べるかの判定",
+      "file": "src/domains/session/document-selection/__tests__/document-selection.carried-siblings.test.ts"
+    },
+    {
+      "id": "click",
+      "label": "キャンバスのクリック",
+      "file": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts"
+    },
+    {
+      "id": "dig",
+      "label": "掘る階層の境界",
+      "file": "src/domains/session/selection-dig/__tests__/selection-dig.edge.test.ts"
+    },
+    {
+      "id": "siblings",
+      "label": "兄弟の座標の取得",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.sibling-placements.test.ts"
+    },
+    {
+      "id": "doc-all",
+      "label": "ドキュメントのまとめた置き直し",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.reposition-all.test.ts"
+    },
+    {
+      "id": "state-all",
+      "label": "編集状態のまとめた置き直し",
+      "file": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition-all.test.ts"
+    },
+    {
+      "id": "drag-state",
+      "label": "ドラッグの状態",
+      "file": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "c-one-call",
+      "suite": "canvas",
+      "name": "選んだ兄弟の一員を運んで離すと、全員ぶんの置き直しが 1 回で届き、全員が同じ量だけずれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "全員を同じ量だけ動かし、1 回の編集として届けること（中心判断）",
+      "given": "`home` の絶対配置の `a`（100, 24）と `b`（40, 60）を選んでいる",
+      "when": "`a` を (30, 11) 運んで離す",
+      "then": "置き直しが 1 回だけ届き、`a` は (130, 35)、`b` は (70, 71)",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 89,
+        "end": 100,
+        "emphasis": [
+          {
+            "start": 97,
+            "end": 99
+          }
+        ],
+        "text": "test(\"選んだ兄弟の一員を運んで離すと、全員ぶんの置き直しが 1 回で届き、全員が同じ量だけずれる\", () => {\n  const onRepositionNodes = vi.fn();\n  renderCanvas({ selection: setupSelection([\"a\", \"b\"]), onRepositionNodes });\n  drawnSiblings();\n\n  // 囲む矩形は 170〜250・95〜151 へ動き、どの辺・中心線からも 6px より離れている\n  dragNode(\"a\", { x: 30, y: 11 });\n\n  expect(onRepositionNodes.mock.calls).toEqual([\n    [[inHome(\"a\", 130, 35), inHome(\"b\", 70, 71)]],\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+        "src/features/editor/features/canvas/domains/reposition-target/index.ts"
+      ],
+      "covers": [
+        "target-create",
+        "to-edits",
+        "on-reposition"
+      ]
+    },
+    {
+      "id": "c-doc-changed",
+      "suite": "canvas",
+      "name": "運んでいる途中でドキュメントの一員の座標が変わると、離したときはその時点の座標から運んだ量だけずれる",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "掴んだ時点の座標を持ち続けると、押したまま外部編集が入ったときに古い座標で上書きする（運ぶ間はドキュメントから引き直す、の中心判断）",
+      "given": "`a` と `b` を選んで `a` を運んでいる途中",
+      "when": "ドキュメントの `b` の x が 40 から 50 に変わり、そのまま離す",
+      "then": "`b` は 80 へ書かれる（掴んだ時点の座標を使えば 70）",
+      "commit": "47ecdad2d0d10705c07095c5fd8348d220923c42",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 102,
+        "end": 137,
+        "emphasis": [
+          {
+            "start": 133,
+            "end": 135
+          }
+        ],
+        "text": "test(\"運んでいる途中でドキュメントの一員の座標が変わると、離したときはその時点の座標から運んだ量だけずれる\", () => {\n  // 掴んだ時点の座標（b は 40）を持ち続けると、b は 70 へ書かれる\n  const onRepositionNodes = vi.fn();\n  const { rerenderWith } = renderCanvas({\n    selection: setupSelection([\"a\", \"b\"]),\n    onRepositionNodes,\n  });\n  drawnSiblings();\n  carryNode(\"a\", { x: 30, y: 11 });\n\n  rerenderWith(\n    selectionFromArtboards(\n      [\n        {\n          name: \"home\",\n          width: 360,\n          height: 240,\n          children: [\n            absoluteText(\"a\", 100, 24),\n            absoluteText(\"b\", 50, 60),\n            absoluteText(\"marker\", 250, 0),\n            { name: \"flowing\", type: \"Text\", props: { content: \"流\" } },\n          ],\n        },\n        { name: \"settings\", width: 360, height: 240, children: [] },\n      ],\n      [\"a\", \"b\"],\n    ),\n  );\n  drawnSiblings();\n  dropOnto(drawn(\"a\"), { x: 30, y: 11 });\n\n  expect(onRepositionNodes.mock.calls).toEqual([\n    [[inHome(\"a\", 130, 35), inHome(\"b\", 80, 71)]],\n  ]);\n});"
+      },
+      "values": {
+        "columns": [
+          "`b` の座標の出どころ",
+          "書かれる `b` の x"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "離した時点のドキュメント（50）",
+              "80"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "掴んだ時点（40）",
+              "70（落ちる）"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "find-siblings-carry"
+      ]
+    },
+    {
+      "id": "c-member-moved",
+      "suite": "canvas",
+      "name": "運んでいる途中で一員が別の親へ移ると、離しても置き直しもツリー内の移動も届かない",
+      "techniques": [
+        "state",
+        "error"
+      ],
+      "why": "全員が同じ親の兄弟でなくなったら、押した一員だけをツリーへ移す運び方へは切り替えない",
+      "given": "`a` と `b` を選んで `a` を運んでいる途中",
+      "when": "ドキュメントで `b` が `settings` へ移り、`settings` の上で離す",
+      "then": "置き直しもツリー内の移動も 0 回",
+      "commit": "2e813e90189ecfdc4ddb7eaa7cc68bd57433724f",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 139,
+        "end": 181,
+        "emphasis": [
+          {
+            "start": 177,
+            "end": 180
+          }
+        ],
+        "text": "test(\"運んでいる途中で一員が別の親へ移ると、離しても置き直しもツリー内の移動も届かない\", () => {\n  // 一員が同じ親の兄弟でなくなったら、押した一員だけをツリーへ移す運び方へは切り替えない\n  const onRepositionNodes = vi.fn();\n  const onMoveNode = vi.fn();\n  const { rerenderWith } = renderCanvas({\n    selection: setupSelection([\"a\", \"b\"]),\n    onRepositionNodes,\n    onMoveNode,\n  });\n  drawnSiblings();\n  carryNode(\"a\", { x: 30, y: 11 });\n\n  rerenderWith(\n    selectionFromArtboards(\n      [\n        {\n          name: \"home\",\n          width: 360,\n          height: 240,\n          children: [\n            absoluteText(\"a\", 100, 24),\n            absoluteText(\"marker\", 250, 0),\n            { name: \"flowing\", type: \"Text\", props: { content: \"流\" } },\n          ],\n        },\n        {\n          name: \"settings\",\n          width: 360,\n          height: 240,\n          children: [absoluteText(\"b\", 40, 60)],\n        },\n      ],\n      [\"a\", \"b\"],\n    ),\n  );\n  drawnSiblings();\n  dropOnto(drawn(\"settings\"), { x: 30, y: 11 });\n\n  expect([\n    onRepositionNodes.mock.calls.length,\n    onMoveNode.mock.calls.length,\n  ]).toEqual([0, 0]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "find-siblings-carry"
+      ]
+    },
+    {
+      "id": "c-preview",
+      "suite": "canvas",
+      "name": "選んだ兄弟の一員を運んでいる間、全員が運んだ分だけずれて見える",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "運ぶ間の見た目も全員がずれる（docs の「離す位置まで先に動いて見える」を全員へ）",
+      "given": "`a` と `b` を選んでいる",
+      "when": "`a` を (30, 11) 運んでいる途中",
+      "then": "`a` と `b` の両方に (30, 11) のずらしが入る",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 183,
+        "end": 194,
+        "text": "test(\"選んだ兄弟の一員を運んでいる間、全員が運んだ分だけずれて見える\", () => {\n  renderCanvas({ selection: setupSelection([\"a\", \"b\"]) });\n  drawnSiblings();\n\n  carryNode(\"a\", { x: 30, y: 11 });\n\n  const styles = injectedStyles();\n  expect([\n    styles.includes(previewRule(\"a\", { x: 30, y: 11 })),\n    styles.includes(previewRule(\"b\", { x: 30, y: 11 })),\n  ]).toEqual([true, true]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx"
+      ],
+      "covers": [
+        "preview-style"
+      ]
+    },
+    {
+      "id": "c-enclosing",
+      "suite": "canvas",
+      "name": "押した一員の辺は何にも近くなくても、囲む矩形の左辺が親の左辺に近ければ全員が寄る",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "寄せは押した一員ではなく全員を囲む矩形で判定する（中心判断）",
+      "given": "囲む矩形の左辺は `b` の左辺。押す `a` の辺はどこからも遠い",
+      "when": "`a` を (-43, 11) 運んで離す（囲む矩形の左辺が `home` の左辺の 3px 手前）",
+      "then": "全員が寄り、`a` は 60、`b` は 0",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 196,
+        "end": 211,
+        "text": "test(\"押した一員の辺は何にも近くなくても、囲む矩形の左辺が親の左辺に近ければ全員が寄る\", () => {\n  const onRepositionNodes = vi.fn();\n  renderCanvas({ selection: setupSelection([\"a\", \"b\"]), onRepositionNodes });\n  drawnSiblings();\n\n  /*\n   * 囲む矩形の左辺（`b` の左辺）が 97 — `home` の左辺の 3px 手前。押した `a` は 157〜177 で、\n   * `a` だけを見ると寄らず a は 57、b は -3 になる\n   */\n  dragNode(\"a\", { x: -43, y: 11 });\n\n  expect(onRepositionNodes).toHaveBeenCalledWith([\n    inHome(\"a\", 60, 35),\n    inHome(\"b\", 0, 71),\n  ]);\n});"
+      },
+      "values": {
+        "columns": [
+          "判定に使う矩形",
+          "`a` の x",
+          "`b` の x"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "全員を囲む矩形",
+              "60",
+              "0"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "押した `a` だけ",
+              "57",
+              "-3"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "target-create"
+      ]
+    },
+    {
+      "id": "c-guide",
+      "suite": "canvas",
+      "name": "囲む矩形が揃え先に吸い付いている間、ガイド線は囲む矩形と揃え先をまたぐ長さで出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ガイド線も囲む矩形を運んでいるものとして引く",
+      "given": "`a` と `b` を選んでいる",
+      "when": "囲む矩形の右辺が `marker` の左辺の 3px 手前まで運ぶ",
+      "then": "線は `marker` の上辺 60 から `b` の下辺 151 までの高さ 91",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 213,
+        "end": 227,
+        "text": "test(\"囲む矩形が揃え先に吸い付いている間、ガイド線は囲む矩形と揃え先をまたぐ長さで出る\", () => {\n  renderCanvas({ selection: setupSelection([\"a\", \"b\"]) });\n  drawnSiblings();\n\n  // 囲む矩形の右辺が 347 — `marker` の左辺（350）の 3px 手前\n  carryNode(\"a\", { x: 127, y: 11 });\n\n  /*\n   * 線は `marker` の上辺（60）から、囲む矩形の下辺（`b` の下辺 151）までをまたぐ。`a` だけを\n   * 見ると下端は `a` の下辺 107 になる\n   */\n  expect(snapGuides()[0].getAttribute(\"style\")).toContain(\n    \"left: 349px; top: 60px; width: 2px; height: 91px\",\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ]
+    },
+    {
+      "id": "c-no-self",
+      "suite": "canvas",
+      "name": "まとめて運んでいる一員どうしは、互いの揃え先にならない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "動く前の一員の辺に寄ると動かなくなる（一員どうしは揃え先にならない、の中心判断）",
+      "given": "`a` と `b` を選んでいる",
+      "when": "囲む矩形の左辺が動く前の `b` の左辺の 4px 先に来るまで運ぶ",
+      "then": "寄らずに `a` は 104、`b` は 44",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 229,
+        "end": 244,
+        "text": "test(\"まとめて運んでいる一員どうしは、互いの揃え先にならない\", () => {\n  const onRepositionNodes = vi.fn();\n  renderCanvas({ selection: setupSelection([\"a\", \"b\"]), onRepositionNodes });\n  drawnSiblings();\n\n  /*\n   * 囲む矩形の左辺 144 は、動く前の `b` の左辺（140）の 4px 先。`b` が揃え先に残っていると\n   * 140 へ寄って動かなくなる\n   */\n  dragNode(\"a\", { x: 4, y: 11 });\n\n  expect(onRepositionNodes).toHaveBeenCalledWith([\n    inHome(\"a\", 104, 35),\n    inHome(\"b\", 44, 71),\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ]
+    },
+    {
+      "id": "c-alt",
+      "suite": "canvas",
+      "name": "Alt を押しながらまとめて運んでいる間、距離は囲む矩形から測る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "Alt / Option の距離も囲む矩形から測る",
+      "given": "`a` と `b` を選んでいる",
+      "when": "Alt を押しながら `a` を (30, 11) 運ぶ",
+      "then": "距離は 149・210・35・70（`a` だけなら左 130・下 193）",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 286,
+        "end": 297,
+        "text": "test(\"Alt を押しながらまとめて運んでいる間、距離は囲む矩形から測る\", () => {\n  renderCanvas({ selection: setupSelection([\"a\", \"b\"]) });\n  drawnSiblings();\n\n  /*\n   * 囲む矩形 170〜250・95〜151 から `home` の辺まで、左 70・右 210・上 35・下 149。\n   * `a` だけを見ると左 130・下 193 になる\n   */\n  carryNode(\"a\", { x: 30, y: 11 }, \"alt\");\n\n  expect(sortedFacingDistanceLabels()).toEqual([\"149\", \"210\", \"35\", \"70\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ]
+    },
+    {
+      "id": "c-other-artboard",
+      "suite": "canvas",
+      "name": "別の artboard の上へまとめて運んで離すと、全員の行き先がその artboard になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "落とし先の親は全員で 1 つ",
+      "given": "`a` と `b` を選んでいる",
+      "when": "`a` を `settings` の上へ運んで離す",
+      "then": "2 件とも行き先の親が `settings`",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 299,
+        "end": 311,
+        "text": "test(\"別の artboard の上へまとめて運んで離すと、全員の行き先がその artboard になる\", () => {\n  const onRepositionNodes = vi.fn();\n  renderCanvas({ selection: setupSelection([\"a\", \"b\"]), onRepositionNodes });\n  drawnSiblings();\n\n  dragNodeOnto(\"a\", drawn(\"settings\"), { x: 30, y: 30 });\n\n  expect(\n    onRepositionNodes.mock.lastCall?.[0].map(\n      (edit: { edit: RepositionEdit }) => edit.edit.to.parentName,\n    ),\n  ).toEqual([\"settings\", \"settings\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-target/index.ts"
+      ],
+      "covers": [
+        "to-edits"
+      ]
+    },
+    {
+      "id": "c-rotated",
+      "suite": "canvas",
+      "name": "90 度回った Box の中の兄弟を回っていない artboard へまとめて運ぶと、一員ごとに中心を保つ座標と 90 度が書かれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "向きの違う親への付け替えは、単一ノードと同じ直し方を一員ごとに当てる",
+      "given": "90 度回った `frame` の中の `chip` と `peg` を選んでいる",
+      "when": "`chip` を `home` の上へ (-20, 0) 運んで離す",
+      "then": "`chip` は (204, 14)、`peg` は (154, 154)、どちらも向き 90 度",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 313,
+        "end": 350,
+        "text": "test(\"90 度回った Box の中の兄弟を回っていない artboard へまとめて運ぶと、一員ごとに中心を保つ座標と 90 度が書かれる\", () => {\n  /*\n   * `frame` の座標の原点は `home` の座標で (250, 0)。運んだ量 (-20, 0) は親の座標で (0, 20)。\n   * `chip`（10, 30 へ）は中心 (20, 36) を回して原点を足し、(204, 14)。`peg`（150, 80 へ）は\n   * 中心 (160, 86) から同じく (154, 154)\n   */\n  const onRepositionNodes = vi.fn();\n  renderCanvas({\n    selection: DocumentSelection.fromNames(turnedFrameDocument(90), [\n      \"chip\",\n      \"peg\",\n    ]),\n    onRepositionNodes,\n  });\n  drawnTurnedFrame();\n\n  dragNodeOnto(\"chip\", drawn(\"home\"), { x: -20, y: 0 });\n\n  expect(onRepositionNodes).toHaveBeenCalledWith([\n    {\n      name: \"chip\",\n      edit: RepositionEdit.rotatedTo(\n        { parentName: \"home\", placement: { mode: \"absolute\", x: 204, y: 14 } },\n        90,\n      ),\n    },\n    {\n      name: \"peg\",\n      edit: RepositionEdit.rotatedTo(\n        {\n          parentName: \"home\",\n          placement: { mode: \"absolute\", x: 154, y: 154 },\n        },\n        90,\n      ),\n    },\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-target/index.ts"
+      ],
+      "covers": [
+        "target-create"
+      ]
+    },
+    {
+      "id": "c-meta",
+      "suite": "canvas",
+      "name": "⌘ を押しながらまとめて運ぶと、囲む矩形が親の辺に近くても寄らない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "⌘ / Ctrl で寄せを止める既存の規則が、まとめて運ぶときも効く",
+      "given": "`a` と `b` を選んでいる",
+      "when": "⌘ を押しながら囲む矩形が `home` の左辺の 3px 手前に来るまで運ぶ",
+      "then": "寄らずに `a` は 57、`b` は -3",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 352,
+        "end": 363,
+        "text": "test(\"⌘ を押しながらまとめて運ぶと、囲む矩形が親の辺に近くても寄らない\", () => {\n  const onRepositionNodes = vi.fn();\n  renderCanvas({ selection: setupSelection([\"a\", \"b\"]), onRepositionNodes });\n  drawnSiblings();\n\n  dragNode(\"a\", { x: -43, y: 11 }, \"meta\");\n\n  expect(onRepositionNodes).toHaveBeenCalledWith([\n    inHome(\"a\", 57, 35),\n    inHome(\"b\", -3, 71),\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ]
+    },
+    {
+      "id": "c-flow",
+      "suite": "canvas",
+      "name": "フローのノードが混ざった複数選択で一員を運ぶと、押した一員だけの置き直しが届く",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "条件外の複数選択は 1 つに絞る（中心判断）",
+      "given": "`a` とフローの `flowing` を選んでいる",
+      "when": "`a` を (30, 11) 運んで離す",
+      "then": "`a` だけの置き直しが届く",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 365,
+        "end": 376,
+        "text": "test(\"フローのノードが混ざった複数選択で一員を運ぶと、押した一員だけの置き直しが届く\", () => {\n  const onRepositionNodes = vi.fn();\n  renderCanvas({\n    selection: setupSelection([\"a\", \"flowing\"]),\n    onRepositionNodes,\n  });\n  drawnSiblings();\n\n  dragNode(\"a\", { x: 30, y: 11 });\n\n  expect(onRepositionNodes).toHaveBeenCalledWith([inHome(\"a\", 130, 35)]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "carried-siblings"
+      ]
+    },
+    {
+      "id": "c-order",
+      "suite": "canvas",
+      "name": "選択をツリーと逆の順に組んでいても、届く置き直しはツリー順に並ぶ",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "付け替え先では元の並び順のまま末尾へ入るので、届く並びはツリー順でなければならない（中心判断）",
+      "given": "選択を `[\"b\", \"a\"]` の順に組んでいる",
+      "when": "`a` を運んで離す",
+      "then": "置き直しは `a`、`b` の順",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-siblings.test.tsx",
+        "start": 378,
+        "end": 389,
+        "text": "test(\"選択をツリーと逆の順に組んでいても、届く置き直しはツリー順に並ぶ\", () => {\n  const onRepositionNodes = vi.fn();\n  renderCanvas({ selection: setupSelection([\"b\", \"a\"]), onRepositionNodes });\n  drawnSiblings();\n\n  dragNode(\"a\", { x: 30, y: 11 });\n\n  expect(onRepositionNodes).toHaveBeenCalledWith([\n    inHome(\"a\", 130, 35),\n    inHome(\"b\", 70, 71),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/sibling-placements/index.ts"
+      ],
+      "covers": [
+        "siblings-from",
+        "to-edits"
+      ]
+    },
+    {
+      "id": "e-press",
+      "suite": "editor",
+      "name": "絶対配置の兄弟を選んだまま一員を押すと、押した時点では 2 つとも選ばれたまま",
+      "techniques": [
+        "state"
+      ],
+      "why": "押した時点で選択を保つ（中心判断）。選択を持つ編集画面でしか見られない",
+      "given": "`group` をグループ解除して `a`・`b` を選んでいる",
+      "when": "`a` を押す",
+      "then": "ツリーで `a` と `b` が選ばれたまま",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+        "start": 116,
+        "end": 122,
+        "text": "test(\"絶対配置の兄弟を選んだまま一員を押すと、押した時点では 2 つとも選ばれたまま\", async () => {\n  await renderUngrouped();\n\n  pressPointer(drawn(\"a\"), { x: 100, y: 100 });\n\n  expect(currentRowNames(tree())).toEqual([\"a\", \"b\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "carried-siblings"
+      ]
+    },
+    {
+      "id": "e-move",
+      "suite": "editor",
+      "name": "一員を運んで離すと、2 つとも同じ量だけ動いて描かれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "編集画面の配線ごと、全員が同じ量動く",
+      "given": "`a`（40, 24）と `b`（100, 60）を選んでいる",
+      "when": "`a` を (-30, 12) 運んで離す",
+      "then": "`a` は (10, 36)、`b` は (70, 72) に描かれる",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+        "start": 124,
+        "end": 133,
+        "text": "test(\"一員を運んで離すと、2 つとも同じ量だけ動いて描かれる\", async () => {\n  await renderUngrouped();\n\n  drag(drawn(\"a\"), { from: { x: 100, y: 100 }, to: { x: 70, y: 112 } });\n\n  expect([drawnPosition(\"a\"), drawnPosition(\"b\")]).toEqual([\n    [\"10px\", \"36px\"],\n    [\"70px\", \"72px\"],\n  ]);\n});"
+      },
+      "covers": [
+        "on-reposition",
+        "dispatch",
+        "editor-reposition-all"
+      ]
+    },
+    {
+      "id": "e-keep",
+      "suite": "editor",
+      "name": "一員を運んで離しても、2 つとも選ばれたまま",
+      "techniques": [
+        "state"
+      ],
+      "why": "離した直後の click を飲み込まないと 1 つの選択になる",
+      "given": "`a` と `b` を選んでいる",
+      "when": "`a` を運んで離し、続く click を撃つ",
+      "then": "`a` と `b` が選ばれたまま",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+        "start": 135,
+        "end": 143,
+        "text": "test(\"一員を運んで離しても、2 つとも選ばれたまま\", async () => {\n  await renderUngrouped();\n\n  drag(drawn(\"a\"), { from: { x: 100, y: 100 }, to: { x: 70, y: 112 } });\n  // 離した直後の click は飲み込まれる。漏れれば `a` 1 つの選択になる\n  fireEvent.click(drawn(\"a\"));\n\n  expect(currentRowNames(tree())).toEqual([\"a\", \"b\"]);\n});"
+      },
+      "covers": [
+        "release"
+      ]
+    },
+    {
+      "id": "e-undo",
+      "suite": "editor",
+      "name": "まとめて運んだあと ⌘Z を 1 回押すと、2 つとも元の位置に戻る",
+      "techniques": [
+        "state"
+      ],
+      "why": "1 回の取り消しで全員が戻る（中心判断）。取り消す前に `b` も動いたことを確かめ、押した一員だけ運ぶ経路で通らないようにした",
+      "given": "`a` と `b` をまとめて運んで離した",
+      "when": "⌘Z を 1 回押す",
+      "then": "取り消す前の `b` は (70, 72)、取り消したあとは `a` (40, 24)・`b` (100, 60)",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+        "start": 145,
+        "end": 158,
+        "emphasis": [
+          {
+            "start": 148,
+            "end": 149
+          }
+        ],
+        "text": "test(\"まとめて運んだあと ⌘Z を 1 回押すと、2 つとも元の位置に戻る\", async () => {\n  await renderUngrouped();\n  drag(drawn(\"a\"), { from: { x: 100, y: 100 }, to: { x: 70, y: 112 } });\n  // 押した一員だけを運ぶ経路でも `b` は元の位置に描かれるので、取り消す前に動いたことを見る\n  const movedB = drawnPosition(\"b\");\n\n  await userEvent.keyboard(\"{Meta>}z{/Meta}\");\n\n  expect([movedB, drawnPosition(\"a\"), drawnPosition(\"b\")]).toEqual([\n    [\"70px\", \"72px\"],\n    [\"40px\", \"24px\"],\n    [\"100px\", \"60px\"],\n  ]);\n});"
+      },
+      "covers": [
+        "editor-reposition-all",
+        "document-reposition-all"
+      ]
+    },
+    {
+      "id": "e-text",
+      "suite": "editor",
+      "name": "一員の中の Text を押して運ばずに離すと、続く click でその一員 1 つが選ばれる",
+      "techniques": [
+        "state"
+      ],
+      "why": "入れ子の一員の内側を押すとその一員（中心判断）。範囲選択の兄弟ではこの判断を外しても同じ答えになるので、グループ解除で入れ子の兄弟を作った",
+      "given": "グループ解除で `a`（中に `a-label`）と `b` を選んでいる",
+      "when": "`a-label` を押して動かさずに離し、click を撃つ",
+      "then": "`a` 1 つが選ばれる（外側の `outer` ではない）",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+        "start": 160,
+        "end": 169,
+        "text": "test(\"一員の中の Text を押して運ばずに離すと、続く click でその一員 1 つが選ばれる\", async () => {\n  await renderUngrouped();\n\n  pressPointer(drawn(\"a-label\"), { x: 100, y: 100 });\n  releasePointer(drawn(\"a-label\"), { x: 100, y: 100 });\n  // `userEvent.click` は自前の `pointerdown` で掴み直すので、`click` だけを撃つ\n  fireEvent.click(drawn(\"a-label\"));\n\n  expect(currentRowNames(tree())).toEqual([\"a\"]);\n});"
+      },
+      "targets": [
+        "src/domains/session/selection-dig/index.ts"
+      ],
+      "covers": [
+        "dig"
+      ]
+    },
+    {
+      "id": "e-artboard",
+      "suite": "editor",
+      "name": "別の artboard の上へまとめて運ぶと、2 つとも元の並び順のままその artboard の子になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "付け替え先では元の並び順のまま末尾へ",
+      "given": "`a` と `b` を選んでいる",
+      "when": "`a` を `settings` の上へ運んで離す",
+      "then": "`settings` の子が `a`、`b` の順",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+        "start": 171,
+        "end": 180,
+        "text": "test(\"別の artboard の上へまとめて運ぶと、2 つとも元の並び順のままその artboard の子になる\", async () => {\n  await renderUngrouped();\n\n  // 離すのを運んだ先へ撃つのは、運んでいるノードが当たり判定から外れるため\n  pressPointer(drawn(\"a\"), { x: 100, y: 100 });\n  movePointer(drawn(\"settings\"), { x: 70, y: 112 });\n  releasePointer(drawn(\"settings\"), { x: 70, y: 112 });\n\n  expect(drawnChildNames(\"settings\")).toEqual([\"a\", \"b\"]);\n});"
+      },
+      "covers": [
+        "document-reposition-all"
+      ]
+    },
+    {
+      "id": "e-leave",
+      "suite": "editor",
+      "name": "まとめて運んでいる途中で編集画面の外へ出て取り消すと、どちらも動かず 2 つとも選ばれたまま",
+      "techniques": [
+        "state"
+      ],
+      "why": "外へ出たら取り消す既存の規則が、まとめて運ぶときも選択を崩さずに効く",
+      "given": "`a` と `b` を選んで `a` を運んでいる途中",
+      "when": "ポインタが編集画面の外へ出る",
+      "then": "どちらも元の位置で、2 つとも選ばれたまま",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+        "start": 182,
+        "end": 198,
+        "text": "test(\"まとめて運んでいる途中で編集画面の外へ出て取り消すと、どちらも動かず 2 つとも選ばれたまま\", async () => {\n  await renderUngrouped();\n\n  pressPointer(drawn(\"a\"), { x: 100, y: 100 });\n  movePointer(drawn(\"settings\"), { x: 70, y: 112 });\n  leavePointer(drawn(\"settings\"));\n\n  expect([\n    drawnPosition(\"a\"),\n    drawnPosition(\"b\"),\n    currentRowNames(tree()),\n  ]).toEqual([\n    [\"40px\", \"24px\"],\n    [\"100px\", \"60px\"],\n    [\"a\", \"b\"],\n  ]);\n});"
+      }
+    },
+    {
+      "id": "e-flow-press",
+      "suite": "editor",
+      "name": "フローの子が混ざった複数選択では、一員を押した時点でその一員 1 つが選ばれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "条件外の複数選択は #947 の振る舞いのまま",
+      "given": "フローの `c` を混ぜてグループ解除し、`a`・`b`・`c` を選んでいる",
+      "when": "`a` を押す",
+      "then": "`a` 1 つが選ばれる",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+        "start": 200,
+        "end": 206,
+        "text": "test(\"フローの子が混ざった複数選択では、一員を押した時点でその一員 1 つが選ばれる\", async () => {\n  await renderUngrouped(true);\n\n  pressPointer(drawn(\"a\"), { x: 100, y: 100 });\n\n  expect(currentRowNames(tree())).toEqual([\"a\"]);\n});"
+      },
+      "covers": [
+        "select-grabbed"
+      ]
+    },
+    {
+      "id": "e-flow-move",
+      "suite": "editor",
+      "name": "フローの子が混ざった複数選択で一員を運ぶと、その一員だけが動く",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "条件外の複数選択は押した一員だけを運ぶ",
+      "given": "フローの `c` を混ぜて `a`・`b`・`c` を選んでいる",
+      "when": "`a` を運んで離す",
+      "then": "`a` だけが動き、`b` は元の位置",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+        "start": 208,
+        "end": 217,
+        "text": "test(\"フローの子が混ざった複数選択で一員を運ぶと、その一員だけが動く\", async () => {\n  await renderUngrouped(true);\n\n  drag(drawn(\"a\"), { from: { x: 100, y: 100 }, to: { x: 70, y: 112 } });\n\n  expect([drawnPosition(\"a\"), drawnPosition(\"b\")]).toEqual([\n    [\"10px\", \"36px\"],\n    [\"100px\", \"60px\"],\n  ]);\n});"
+      }
+    },
+    {
+      "id": "t-round",
+      "suite": "target",
+      "name": "小数の座標の一員と整数の一員をまとめて運ぶと、一員ごとに丸めた座標とそこから逆算したずらし量になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "書く座標は一員ごとに整数へ丸め、見た目のずらし量もそこから一員ごとに逆算する（共通のずらし量にすると見た目と書かれる座標が 1px 未満ずれる）",
+      "given": "x が 10.5 の `a` と 40 の `b`",
+      "when": "(30, 0) 運ぶ",
+      "then": "書かれる x は 41 と 70、ずらし量は 30.5 と 30",
+      "commit": "b6ac95eb8763b57d530be72120c9069ebf014b54",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/reposition-target/__tests__/reposition-target.siblings.test.ts",
+        "start": 72,
+        "end": 100,
+        "text": "test(\"小数の座標の一員と整数の一員をまとめて運ぶと、一員ごとに丸めた座標とそこから逆算したずらし量になる\", () => {\n  const dropped = SiblingsRepositionTarget.create(\n    {\n      ...GrabbedInHome,\n      members: [\n        {\n          ...GrabbedInHome.members[0],\n          placement: { mode: \"absolute\", x: 10.5, y: 0 },\n        },\n        {\n          ...GrabbedInHome.members[1],\n          placement: { mode: \"absolute\", x: 40, y: 0 },\n        },\n      ],\n    },\n    { x: 30, y: 0 },\n    Home,\n  );\n\n  expect(\n    dropped.members.map((member) => [\n      member.target.placement.x,\n      member.target.offset.x,\n    ]),\n  ).toEqual([\n    [41, 30.5],\n    [70, 30],\n  ]);\n});"
+      },
+      "values": {
+        "columns": [
+          "一員",
+          "掴んだ x",
+          "書かれる x",
+          "ずらし量"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`a`",
+              "10.5",
+              "41",
+              "30.5"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`b`",
+              "40",
+              "70",
+              "30"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-target/index.ts"
+      ],
+      "covers": [
+        "target-create"
+      ]
+    },
+    {
+      "id": "t-preview-split",
+      "suite": "target",
+      "name": "小数の座標の一員と整数の一員をまとめて運んでいる間は、一員ごとに別々のずらし量で見せる",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "test-reviewer の実測で穴だった（プレビューのずらし量を全員共通にしても落ちなかった）",
+      "given": "x が 10.5 の `a` と 40 の `b`、落とし先は今の親",
+      "when": "(30, 0) 運んでいる間のプレビューを問う",
+      "then": "`a` は 30.5、`b` は 30",
+      "commit": "2e813e90189ecfdc4ddb7eaa7cc68bd57433724f",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/reposition-target/__tests__/reposition-target.siblings.test.ts",
+        "start": 169,
+        "end": 194,
+        "text": "test(\"小数の座標の一員と整数の一員をまとめて運んでいる間は、一員ごとに別々のずらし量で見せる\", () => {\n  const preview = SiblingsRepositionTarget.preview(\n    SiblingsRepositionTarget.create(\n      {\n        ...GrabbedInHome,\n        members: [\n          {\n            ...GrabbedInHome.members[0],\n            placement: { mode: \"absolute\", x: 10.5, y: 0 },\n          },\n          {\n            ...GrabbedInHome.members[1],\n            placement: { mode: \"absolute\", x: 40, y: 0 },\n          },\n        ],\n      },\n      { x: 30, y: 0 },\n      Home,\n    ),\n  );\n\n  expect(preview.members).toEqual([\n    { name: \"a\", offset: { x: 30.5, y: 0 } },\n    { name: \"b\", offset: { x: 30, y: 0 } },\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-target/index.ts"
+      ],
+      "covers": [
+        "preview-style"
+      ]
+    },
+    {
+      "id": "t-carried-split",
+      "suite": "target",
+      "name": "落とし先の親が決まっていない間も、小数の座標の一員と整数の一員は一員ごとに別々のずらし量で見せる",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "落とせる親が無い間の見た目だけの経路でも、一員ごとのずらし量を守る",
+      "given": "x が 10.5 の `a` と 40 の `b`、落とし先は無い",
+      "when": "(30, 0) 運んでいる間の見た目だけのずらし量を問う",
+      "then": "`a` は 30.5、`b` は 30",
+      "commit": "2e813e90189ecfdc4ddb7eaa7cc68bd57433724f",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/reposition-target/__tests__/reposition-target.siblings.test.ts",
+        "start": 196,
+        "end": 213,
+        "text": "test(\"落とし先の親が決まっていない間も、小数の座標の一員と整数の一員は一員ごとに別々のずらし量で見せる\", () => {\n  const preview = SiblingsRepositionTarget.carriedPreview(\n    {\n      parentName: \"home\",\n      parentRotation: 0,\n      members: [\n        { name: \"a\", placement: { mode: \"absolute\", x: 10.5, y: 0 } },\n        { name: \"b\", placement: { mode: \"absolute\", x: 40, y: 0 } },\n      ],\n    },\n    { x: 30, y: 0 },\n  );\n\n  expect(preview.members).toEqual([\n    { name: \"a\", offset: { x: 30.5, y: 0 } },\n    { name: \"b\", offset: { x: 30, y: 0 } },\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/reposition-target/index.ts"
+      ],
+      "covers": [
+        "carried-preview"
+      ]
+    },
+    {
+      "id": "k-nested",
+      "suite": "carried",
+      "name": "入れ子の一員の内側を押しても、全員をまとめて運ぶ",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "入れ子の一員の内側を押すとその一員を掴む（判断 1）",
+      "given": "`a`（中に `a-label`）と `b` を選んでいる",
+      "when": "`a-label` の位置を掘らない指定で押す",
+      "then": "`a`、`b` の名前が返る",
+      "commit": "2c0c4890f69fe3c3ca8a697541afdf3a05aa1712",
+      "excerpt": {
+        "path": "src/domains/session/document-selection/__tests__/document-selection.carried-siblings.test.ts",
+        "start": 85,
+        "end": 92,
+        "text": "test(\"入れ子の一員の内側を押しても、全員をまとめて運ぶ\", () => {\n  const carried = carriedNamesAt(\n    [\"a\", \"b\"],\n    UnderPointer.create(OnALabel, SelectionDigs.NoDeeper),\n  );\n\n  expect(carried).toEqual(Option.some([\"a\", \"b\"]));\n});"
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "carried-siblings",
+        "dig"
+      ]
+    },
+    {
+      "id": "k-locked",
+      "suite": "carried",
+      "name": "ロック中の一員がいると、まとめて運ばない",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "ロック中の一員がいれば条件外（判断 3）",
+      "given": "`b` とロック中の `sealed` を選んでいる",
+      "when": "`b` を押す",
+      "then": "`none`",
+      "commit": "2c0c4890f69fe3c3ca8a697541afdf3a05aa1712",
+      "excerpt": {
+        "path": "src/domains/session/document-selection/__tests__/document-selection.carried-siblings.test.ts",
+        "start": 133,
+        "end": 140,
+        "text": "test(\"ロック中の一員がいると、まとめて運ばない\", () => {\n  const carried = carriedNamesAt(\n    [\"b\", \"sealed\"],\n    UnderPointer.create(OnB, SelectionDigs.NoDeeper),\n  );\n\n  expect(Option.isSome(carried)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "carried-siblings"
+      ]
+    },
+    {
+      "id": "k-hidden",
+      "suite": "carried",
+      "name": "非表示の一員がいると、まとめて運ばない",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "非表示の一員がいれば条件外（判断 4）",
+      "given": "`b` と非表示の `ghost` を選んでいる",
+      "when": "`b` を押す",
+      "then": "`none`",
+      "commit": "2c0c4890f69fe3c3ca8a697541afdf3a05aa1712",
+      "excerpt": {
+        "path": "src/domains/session/document-selection/__tests__/document-selection.carried-siblings.test.ts",
+        "start": 142,
+        "end": 149,
+        "text": "test(\"非表示の一員がいると、まとめて運ばない\", () => {\n  const carried = carriedNamesAt(\n    [\"b\", \"ghost\"],\n    UnderPointer.create(OnB, SelectionDigs.NoDeeper),\n  );\n\n  expect(Option.isSome(carried)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "carried-siblings"
+      ]
+    },
+    {
+      "id": "k-parent",
+      "suite": "carried",
+      "name": "親の違うノードが混ざっていると、まとめて運ばない",
+      "techniques": [
+        "equivalence",
+        "error"
+      ],
+      "why": "同じ親の兄弟であることが条件",
+      "given": "`group` の中の `b` と `home` 直下の `stray` を選んでいる",
+      "when": "`b` を押す",
+      "then": "`none`",
+      "commit": "2c0c4890f69fe3c3ca8a697541afdf3a05aa1712",
+      "excerpt": {
+        "path": "src/domains/session/document-selection/__tests__/document-selection.carried-siblings.test.ts",
+        "start": 124,
+        "end": 131,
+        "text": "test(\"親の違うノードが混ざっていると、まとめて運ばない\", () => {\n  const carried = carriedNamesAt(\n    [\"b\", \"stray\"],\n    UnderPointer.create(OnB, SelectionDigs.NoDeeper),\n  );\n\n  expect(Option.isSome(carried)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts",
+        "src/domains/dcmp/sibling-placements/index.ts"
+      ],
+      "covers": [
+        "find-siblings-check",
+        "siblings-from"
+      ]
+    },
+    {
+      "id": "k-cmd-child",
+      "suite": "carried",
+      "name": "⌘ で一員の中の子を押すと、まとめて運ばない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "⌘ で掴むのはいちばん内側で、それが一員の中の子なら 1 つに絞る（判断 2）",
+      "given": "`a` と `b` を選んでいる",
+      "when": "`a-label` の位置を掘れるだけ掘る指定で押す",
+      "then": "`none`",
+      "commit": "2c0c4890f69fe3c3ca8a697541afdf3a05aa1712",
+      "excerpt": {
+        "path": "src/domains/session/document-selection/__tests__/document-selection.carried-siblings.test.ts",
+        "start": 151,
+        "end": 158,
+        "text": "test(\"⌘ で一員の中の子を押すと、まとめて運ばない\", () => {\n  const carried = carriedNamesAt(\n    [\"a\", \"b\"],\n    UnderPointer.create(OnALabel, SelectionDigs.Deepest),\n  );\n\n  expect(Option.isSome(carried)).toBe(false);\n});"
+      },
+      "values": {
+        "columns": [
+          "⌘ で押した位置のいちばん内側",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "一員の中の子（`a-label`）",
+              "運ばない"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "一員そのもの（`b`）",
+              "全員を運ぶ"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "carried-siblings"
+      ]
+    },
+    {
+      "id": "k-cmd-member",
+      "suite": "carried",
+      "name": "⌘ で押した位置のいちばん内側が一員そのものなら、全員をまとめて運ぶ",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "判断 2 の反対側",
+      "given": "`a` と `b` を選んでいる",
+      "when": "`b` の位置を掘れるだけ掘る指定で押す",
+      "then": "`a`、`b` の名前が返る",
+      "commit": "2c0c4890f69fe3c3ca8a697541afdf3a05aa1712",
+      "excerpt": {
+        "path": "src/domains/session/document-selection/__tests__/document-selection.carried-siblings.test.ts",
+        "start": 160,
+        "end": 167,
+        "text": "test(\"⌘ で押した位置のいちばん内側が一員そのものなら、全員をまとめて運ぶ\", () => {\n  const carried = carriedNamesAt(\n    [\"a\", \"b\"],\n    UnderPointer.create(OnB, SelectionDigs.Deepest),\n  );\n\n  expect(carried).toEqual(Option.some([\"a\", \"b\"]));\n});"
+      },
+      "targets": [
+        "src/domains/session/document-selection/index.ts"
+      ],
+      "covers": [
+        "carried-siblings"
+      ]
+    },
+    {
+      "id": "x-nested",
+      "suite": "click",
+      "name": "複数選択中に入れ子の一員を押すと、その一員を選ぶ",
+      "techniques": [
+        "regression"
+      ],
+      "why": "判断 1 の副作用（クリックの選び方が変わる）を固定する",
+      "given": "`label` と `login` を選んでいる",
+      "when": "`label` の位置を掘らない指定でクリックする",
+      "then": "`label` を選ぶ（artboard 直下の `card` ではない）",
+      "commit": "2c0c4890f69fe3c3ca8a697541afdf3a05aa1712",
+      "excerpt": {
+        "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts",
+        "start": 117,
+        "end": 124,
+        "text": "test(\"複数選択中に入れ子の一員を押すと、その一員を選ぶ\", () => {\n  const name = DocumentSelection.nameToSelectAt(\n    DocumentSelection.fromNames(setupSelection().document, [\"label\", \"login\"]),\n    UnderPointer.create([\"label\", \"card\", \"home\"], SelectionDigs.NoDeeper),\n  );\n\n  expect(name).toEqual(Option.some(\"label\"));\n});"
+      },
+      "targets": [
+        "src/domains/session/selection-dig/index.ts"
+      ],
+      "covers": [
+        "dig"
+      ]
+    },
+    {
+      "id": "g-desc",
+      "suite": "dig",
+      "name": "祖先と子孫の両方が選ばれて両方が候補に載るとき、掘らない指定では子孫が選ばれる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "候補に選択が 2 つ以上載るときはいちばん内側を起点にする",
+      "given": "`outer-panel` と `inner-panel` の両方を選んでいる",
+      "when": "両方が候補に載る位置を掘らない指定で押す",
+      "then": "`inner-panel`",
+      "commit": "adfc47aa03d426004a87e62fba5537bedf5f0824",
+      "excerpt": {
+        "path": "src/domains/session/selection-dig/__tests__/selection-dig.edge.test.ts",
+        "start": 34,
+        "end": 41,
+        "text": "test(\"祖先と子孫の両方が選ばれて両方が候補に載るとき、掘らない指定では子孫が選ばれる\", () => {\n  const name = SelectionDig.nameAt(SelectionDigs.NoDeeper, Candidates, [\n    \"outer-panel\",\n    \"inner-panel\",\n  ]);\n\n  expect(Option.unwrap(name)).toBe(\"inner-panel\");\n});"
+      },
+      "targets": [
+        "src/domains/session/selection-dig/index.ts"
+      ],
+      "covers": [
+        "dig"
+      ]
+    },
+    {
+      "id": "p-reverse",
+      "suite": "siblings",
+      "name": "同じ親の絶対配置の兄弟を逆順に渡しても、親と各自の座標がツリー順に返る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "付け替え先での並び順を決める前提（ツリー順）",
+      "given": "`home` の絶対配置の `a` と `b`",
+      "when": "`[\"b\", \"a\"]` で引く",
+      "then": "親 `home`、一員は `a`、`b` の順",
+      "commit": "63a1099b69f7500759c87f7868d0801fb1df1dc1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.sibling-placements.test.ts",
+        "start": 54,
+        "end": 62,
+        "text": "test(\"同じ親の絶対配置の兄弟を逆順に渡しても、親と各自の座標がツリー順に返る\", () => {\n  expect(Option.unwrap(siblingsOf([\"b\", \"a\"]))).toEqual({\n    parentName: \"home\",\n    members: [\n      { name: \"a\", placement: { mode: \"absolute\", x: 10, y: 20 } },\n      { name: \"b\", placement: { mode: \"absolute\", x: 30, y: 40 } },\n    ],\n  });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts",
+        "src/domains/dcmp/sibling-placements/index.ts"
+      ],
+      "covers": [
+        "siblings-from"
+      ]
+    },
+    {
+      "id": "r-fail",
+      "suite": "doc-all",
+      "name": "1 件でも受け入れられない置き直しがあれば、先頭が通る指定でも全体が失敗になる",
+      "techniques": [
+        "error"
+      ],
+      "why": "全部通るか何も変えないか（部分的に壊れた状態を作らない）",
+      "given": "`a` は通る指定、`b` は受け入れられない親を指す",
+      "when": "まとめて置き直す",
+      "then": "`b` の失敗で `err`",
+      "commit": "63a1099b69f7500759c87f7868d0801fb1df1dc1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.reposition-all.test.ts",
+        "start": 94,
+        "end": 103,
+        "text": "test(\"1 件でも受け入れられない置き直しがあれば、先頭が通る指定でも全体が失敗になる\", () => {\n  const result = DesignDocument.repositionAll(setupDocument(), [\n    { name: \"a\", edit: placedAt(\"panel\", 0, 0) },\n    { name: \"b\", edit: placedAt(\"title\", 0, 0) },\n  ]);\n\n  expect(result).toEqual(\n    Result.err({ kind: \"parent-not-found\", name: \"title\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "document-reposition-all"
+      ]
+    },
+    {
+      "id": "s-undo-all",
+      "suite": "state-all",
+      "name": "2 つをまとめて置き直したあと 1 回戻すと、2 つとも元の座標に戻る",
+      "techniques": [
+        "state"
+      ],
+      "why": "1 回の取り消しで全員が戻る（中心判断）",
+      "given": "絶対配置の `badge` と `chip`",
+      "when": "まとめて置き直して 1 回戻す",
+      "then": "2 つとも元の座標",
+      "commit": "f29c48ed88a666a59992c7fb6b1157fc5ef066bd",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition-all.test.ts",
+        "start": 147,
+        "end": 161,
+        "text": "test(\"2 つをまとめて置き直したあと 1 回戻すと、2 つとも元の座標に戻る\", () => {\n  const repositioned = Option.unwrap(\n    EditorState.repositionAll(stateWithAbsoluteSiblings(), [\n      { name: \"badge\", edit: toHome(70, 12) },\n      { name: \"chip\", edit: toHome(130, 48) },\n    ]),\n  );\n\n  const undone = Option.unwrap(EditorState.undo(repositioned));\n\n  expect([propsOf(undone, \"badge\"), propsOf(undone, \"chip\")]).toEqual([\n    expect.objectContaining({ x: 40, y: 24 }),\n    expect.objectContaining({ x: 100, y: 60 }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "editor-reposition-all",
+        "document-reposition-all"
+      ]
+    },
+    {
+      "id": "s-keep-sel",
+      "suite": "state-all",
+      "name": "まとめて置き直しても、選択は変わらない",
+      "techniques": [
+        "state"
+      ],
+      "why": "置き直しは選択に触れないので、まとめて運んだあとも全員が選ばれたまま",
+      "given": "`badge` と `chip` を選んでいる",
+      "when": "まとめて置き直す",
+      "then": "選択は `badge`、`chip` のまま",
+      "commit": "f29c48ed88a666a59992c7fb6b1157fc5ef066bd",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition-all.test.ts",
+        "start": 163,
+        "end": 179,
+        "text": "test(\"まとめて置き直しても、選択は変わらない\", () => {\n  const selected = EditorState.selectNodes(stateWithAbsoluteSiblings(), [\n    \"badge\",\n    \"chip\",\n  ]);\n\n  const repositioned = Option.unwrap(\n    EditorState.repositionAll(selected, [\n      { name: \"badge\", edit: toHome(70, 12) },\n      { name: \"chip\", edit: toHome(130, 48) },\n    ]),\n  );\n\n  expect(\n    DocumentSelection.names(EditorState.documentSelection(repositioned)),\n  ).toEqual([\"badge\", \"chip\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "editor-reposition-all"
+      ]
+    },
+    {
+      "id": "s-undo-one",
+      "suite": "state-all",
+      "name": "置き直したあと 1 回戻すと縦横とも元の座標に戻る",
+      "techniques": [
+        "regression"
+      ],
+      "why": "1 つだけの置き直しも並びで届く形に変えたが、1 回で戻ることは変わらない（もとは `editor-state.reposition` にあったテストを移した）",
+      "given": "絶対配置の `badge`",
+      "when": "1 つだけ置き直して 1 回戻す",
+      "then": "元の座標",
+      "commit": "f29c48ed88a666a59992c7fb6b1157fc5ef066bd",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition-all.test.ts",
+        "start": 56,
+        "end": 64,
+        "text": "test(\"置き直したあと 1 回戻すと縦横とも元の座標に戻る\", () => {\n  const repositioned = Option.unwrap(\n    repositionOne(stateWithAbsoluteSiblings(), \"badge\", toHome(70, 12)),\n  );\n\n  const undone = Option.unwrap(EditorState.undo(repositioned));\n\n  expect(propsOf(undone, \"badge\")).toMatchObject({ x: 40, y: 24 });\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "editor-reposition-all"
+      ]
+    },
+    {
+      "id": "n-swallow",
+      "suite": "drag-state",
+      "name": "まとめて運んだ兄弟を離したときは、直後のクリックを飲み込む",
+      "techniques": [
+        "state"
+      ],
+      "why": "離した位置の click で選び直させない",
+      "given": "まとめて運ぶ兄弟を掴んで、置き直せる位置まで運んでいる",
+      "when": "離す",
+      "then": "直後の click を飲み込む状態になる",
+      "commit": "f29c48ed88a666a59992c7fb6b1157fc5ef066bd",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-drag/__tests__/node-drag.normal.test.ts",
+        "start": 544,
+        "end": 555,
+        "text": "test(\"まとめて運んだ兄弟を離したときは、直後のクリックを飲み込む\", () => {\n  // 押した時点の選択（全員）を保つので、離した位置の click で選び直させない\n  const dragging = NodeDrag.moveTo(\n    NodeDrag.grab({ dragged: CarryingSiblings, origin: { x: 100, y: 100 } }),\n    { x: 100, y: 140 },\n    Carrying.droppable(\n      DropEdit.reposition(SampleSiblingsTarget, SampleRepositionLines),\n    ),\n  );\n\n  expect(NodeDrag.consumesClick(NodeDrag.release(dragging))).toBe(true);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-drag/index.ts"
+      ],
+      "covers": [
+        "release"
+      ]
+    },
+    {
+      "id": "todo-arrow",
+      "suite": "editor",
+      "name": "複数選択中に矢印キーを押しても、まとめては動かない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "矢印キーでの移動は 1 つだけ選んでいるときの操作のまま（#1326 で扱う）。この PR はキャンバスのドラッグだけを変えたが、その非対称を守るテストは無い",
+      "given": "絶対配置の兄弟を 2 つ選んでいる",
+      "when": "矢印キーを押す",
+      "then": "どちらも動かない",
+      "todo": true
+    }
+  ],
+  "impact": {
+    "title": "選んだ兄弟の 1 つを押して運ぶと、選んだまま全員が一緒に動くようになった",
+    "lead": "キャンバスで複数のノードを選び、その 1 つを押して運んだときの振る舞いが変わりました。全員が同じ親の中で座標を持って置かれている兄弟なら、選んだまま全員が同じだけ動き、1 回の取り消しで全員が戻ります。それ以外の複数選択では、これまでどおり押した 1 つに絞って運びます。",
+    "changed": {
+      "before": [
+        {
+          "text": "複数選択中にどれかを押すと、押した時点で 1 つの選択になり、それだけが動いた",
+          "message": "select-grabbed"
+        },
+        {
+          "text": "複数選択中に入れ子の中身を押すと、artboard 直下の外側のものが選ばれた",
+          "message": "dig"
+        }
+      ],
+      "after": [
+        {
+          "text": "全員が座標で置かれた同じ親の兄弟なら、押しても選択は変わらず、運ぶと全員が同じだけ動く",
+          "message": "carried-siblings"
+        },
+        {
+          "text": "離すと全員の移動が 1 回の編集になり、1 回の取り消しで全員が戻る",
+          "message": "editor-reposition-all"
+        },
+        {
+          "text": "運ばずに離すと、押したもの 1 つの選択になる"
+        },
+        {
+          "text": "複数選択中に入れ子の中身を押すと、その中身を含む選択中のもの（一員）が選ばれる",
+          "message": "dig"
+        }
+      ],
+      "text": "書かれる座標は一員ごとに整数へ丸めるので、小数の座標を持つものが混ざっていると、一員どうしの間隔が 1px 未満ずれることがあります。",
+      "specs": [
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「キャンバスのクリックが選ぶ階層」の「クリックでは掘った状態から外へ戻らない」の項",
+          "text": "今選んでいるノードの規則を、複数選択中はその一員（祖先と子孫を両方選んでいるときは内側の一員）へ広げた",
+          "shas": [
+            "4186774aa8e0ea0ac22e4f881a8add92c4b9f3b6",
+            "bb98a3bccd8b4a42978a3fbccc91c13787839c10"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「複数選択」の「複数選択中に行える編集操作」の項",
+          "text": "キャンバスのドラッグでの移動を条件付きで足し、矢印キーでの移動は 1 つだけ選んでいるときの操作だと明記した",
+          "shas": [
+            "4186774aa8e0ea0ac22e4f881a8add92c4b9f3b6",
+            "bb98a3bccd8b4a42978a3fbccc91c13787839c10"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「キャンバス直接操作」の「移動（ドラッグ）」の「押した時点で、掴んだノードが選ばれる」の項と子項目",
+          "text": "「複数選択中に押すと 1 つになる（見直し予定）」を、まとめて運ぶ条件・付け替え・寄せの見方・丸め・1 回の取り消しに置き換えた",
+          "shas": [
+            "4186774aa8e0ea0ac22e4f881a8add92c4b9f3b6",
+            "bb98a3bccd8b4a42978a3fbccc91c13787839c10"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「キャンバス直接操作」の「移動（ドラッグ）」の「掴むのは、同じ押し方のクリックが選ぶもの」の項",
+          "text": "押した位置が複数選択の一員の内側ならその一員を掴む、と広げた",
+          "shas": [
+            "4186774aa8e0ea0ac22e4f881a8add92c4b9f3b6",
+            "bb98a3bccd8b4a42978a3fbccc91c13787839c10"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 947,
+          "text": "押した時点で掴んだものを選ぶようにした変更。その結果、複数選択の一員を運ぶと選択が 1 つに崩れるようになった"
+        },
+        {
+          "issue": 1312,
+          "text": "流れで並ぶノードをまとめて運ぶ件。この PR では条件外として 1 つに絞る"
+        },
+        {
+          "issue": 1313,
+          "text": "親の違うものや混在した複数選択をまとめて運ぶ件。この PR では条件外"
+        },
+        {
+          "issue": 1326,
+          "text": "矢印キーでの移動を複数選択へ広げる件。この PR では 1 つだけ選んでいるときの操作のまま"
+        }
+      ],
+      "primers": [
+        "carried-siblings-rule",
+        "refetch-while-carrying"
+      ]
+    },
+    "tables": [
+      {
+        "label": "複数選択の種類と、押してからの操作",
+        "gist": "変わったのは、全員が座標で置かれた同じ親の兄弟のときの行と、入れ子の中身を押したときに選ばれるもの。",
+        "text": "条件外は、流れで並ぶもの・親の違うもの・artboard・ロック中・非表示のどれかが混ざっている複数選択です。",
+        "rowHeads": [
+          {
+            "id": "siblings",
+            "label": "全員が座標で置かれた同じ親の兄弟"
+          },
+          {
+            "id": "other",
+            "label": "条件外の複数選択",
+            "note": "流れで並ぶもの・親違い・ロック中・非表示が混ざる"
+          },
+          {
+            "id": "single",
+            "label": "1 つだけ選んでいる"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "press",
+            "label": "押した時点"
+          },
+          {
+            "id": "carry",
+            "label": "運んで離す"
+          },
+          {
+            "id": "click",
+            "label": "運ばずに離す"
+          },
+          {
+            "id": "undo",
+            "label": "運んだあと 1 回取り消す"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "siblings",
+            "columnHead": "press",
+            "result": "全員が選ばれたまま",
+            "was": "押した位置で選ばれるもの 1 つの選択になる",
+            "tests": [
+              "e-press",
+              "k-nested"
+            ]
+          },
+          {
+            "rowHead": "siblings",
+            "columnHead": "carry",
+            "result": "全員が同じだけ動き、全員が選ばれたまま",
+            "was": "押した 1 つだけが動き、それ 1 つの選択になる",
+            "tests": [
+              "c-one-call",
+              "e-move",
+              "e-keep",
+              "n-swallow"
+            ]
+          },
+          {
+            "rowHead": "siblings",
+            "columnHead": "click",
+            "result": "押した一員 1 つの選択になる（中身を押してもその一員）",
+            "was": "押した位置の artboard 直下のもの 1 つの選択になる（入れ子なら外側）",
+            "tests": [
+              "e-text"
+            ]
+          },
+          {
+            "rowHead": "siblings",
+            "columnHead": "undo",
+            "result": "1 回で全員が元の位置に戻る",
+            "was": "押した 1 つだけが動いていたので、それが戻る",
+            "tests": [
+              "e-undo",
+              "s-undo-all"
+            ]
+          },
+          {
+            "rowHead": "other",
+            "columnHead": "press",
+            "result": "押した一員 1 つの選択になる（中身を押してもその一員）",
+            "was": "押した位置の artboard 直下のもの 1 つの選択になる（入れ子なら外側）",
+            "note": "入れ子でなければこれまでと同じ",
+            "tests": [
+              "e-flow-press",
+              "x-nested"
+            ]
+          },
+          {
+            "rowHead": "other",
+            "columnHead": "carry",
+            "result": "押した一員だけが動き、それ 1 つの選択になる",
+            "tests": [
+              "e-flow-move",
+              "c-flow"
+            ]
+          },
+          {
+            "rowHead": "other",
+            "columnHead": "click",
+            "result": "押した一員 1 つの選択になる（中身を押してもその一員）",
+            "was": "押した位置の artboard 直下のもの 1 つの選択になる（入れ子なら外側）",
+            "tests": [
+              "x-nested"
+            ]
+          },
+          {
+            "rowHead": "other",
+            "columnHead": "undo",
+            "result": "1 回で押した一員が戻る"
+          },
+          {
+            "rowHead": "single",
+            "columnHead": "press",
+            "result": "そのまま選ばれている"
+          },
+          {
+            "rowHead": "single",
+            "columnHead": "carry",
+            "result": "そのものだけが動く"
+          },
+          {
+            "rowHead": "single",
+            "columnHead": "click",
+            "result": "選択は変わらない"
+          },
+          {
+            "rowHead": "single",
+            "columnHead": "undo",
+            "result": "1 回で元の位置に戻る",
+            "tests": [
+              "s-undo-one"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "まとめて運ぶ間の吸い付きと線",
+        "before": [],
+        "after": [
+          {
+            "text": "全員を囲む 1 つの矩形を運んでいるものとして、親や他の子の辺・中心線に吸い付き、ガイド線もその矩形から引く",
+            "message": "target-create"
+          },
+          {
+            "text": "運んでいる一員どうしは揃え先にならない"
+          },
+          {
+            "text": "等間隔は選んでいない兄弟の列から、Alt / Option の距離も囲む矩形から測る"
+          },
+          {
+            "text": "⌘ / Ctrl を押していれば吸い付かない"
+          }
+        ],
+        "tests": [
+          "c-enclosing",
+          "c-guide",
+          "c-no-self",
+          "c-alt",
+          "c-meta"
+        ]
+      },
+      {
+        "label": "まとめて別の親の上へ運んだとき",
+        "before": [],
+        "after": [
+          {
+            "text": "全員がその親の末尾へ、元の並び順のまま入る",
+            "message": "document-reposition-all"
+          },
+          {
+            "text": "向きの違う親へ移すときは、一員ごとに見た目の中心と向きを保つ"
+          }
+        ],
+        "tests": [
+          "c-other-artboard",
+          "e-artboard",
+          "c-rotated",
+          "c-order"
+        ],
+        "primers": [
+          "siblings-target"
+        ]
+      },
+      {
+        "label": "運んでいる途中でファイルが外から変わったとき",
+        "before": [],
+        "after": [
+          {
+            "text": "一員の座標が変わっていれば、離したときはその時点の座標から運んだ量だけ動く",
+            "message": "find-siblings-carry"
+          },
+          {
+            "text": "一員が別の親へ移っていれば、離しても何も動かない"
+          }
+        ],
+        "text": "押したまま他のエディタや取り消しでファイルが変わっても、古い位置で上書きしません。",
+        "tests": [
+          "c-doc-changed",
+          "c-member-moved"
+        ],
+        "primers": [
+          "refetch-while-carrying"
+        ]
+      },
+      {
+        "label": "⌘ / Ctrl を押しながら一員を押したとき",
+        "before": [],
+        "after": [
+          {
+            "text": "押した位置のいちばん内側が一員そのものなら、全員をまとめて運ぶ"
+          },
+          {
+            "text": "一員の中の子なら、その子 1 つに絞って運ぶ"
+          }
+        ],
+        "tests": [
+          "k-cmd-member",
+          "k-cmd-child"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "1 つだけ選んでいるときのドラッグは、これまでどおりそのものだけが動き、1 回の取り消しで戻る",
+        "tests": [
+          "s-undo-one"
+        ]
+      },
+      {
+        "text": "条件外の複数選択では、押した時点で 1 つに絞り、それだけを運ぶ",
+        "tests": [
+          "e-flow-press",
+          "e-flow-move",
+          "c-flow",
+          "k-parent",
+          "k-locked",
+          "k-hidden"
+        ]
+      },
+      {
+        "text": "運んでいる途中で編集画面の外へ出ると取り消され、何も動かず選択もそのまま",
+        "tests": [
+          "e-leave"
+        ]
+      },
+      {
+        "text": "矢印キーでの移動は、1 つだけ選んでいるときの操作のまま",
+        "tests": [
+          "todo-arrow"
+        ]
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「キャンバス直接操作」の「離した位置の親が今の親と違えば、その親へ付け替える」の項",
+        "text": "座標と向きの直し方は変えていない（まとめて運ぶときは一員ごとに同じ直し方を当てる）"
+      },
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「キャンバス直接操作」の「辺のスナップ」の項",
+        "text": "揃え先が親の 4 辺・中心線と直下の他の子であることは変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "tuple-rest",
+      "category": "TypeScript · 型",
+      "label": "残りの要素を持つ読み取り専用のタプル",
+      "gist": "配列の件数の下限を、長さの検査ではなく型の形で縛るための書き方。`readonly [T, T, ...T[]]` は「1 件目と 2 件目が必ずあり、その後ろは何件でもよい」並びを表す。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "[[タプル型|tuple]]は、位置ごとに型を決めた配列の型。`[A, B]` は 2 件ちょうどの並びを表す。末尾に `...T[]` を書くと、そこから後ろは `T` が何件続いてもよいという意味になる（[[残りの要素|rest-element]]）。先頭に `readonly` を付けると、`push` などの書き換えを型で禁じた並びになる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "export type TwoOrMoreArray<T> = readonly [T, T, ...T[]];"
+        },
+        {
+          "kind": "caution",
+          "text": "`[\"a\"]` のような 1 件の配列リテラルは代入できないが、型が `string[]` の値も代入できない。件数が型に出ていない配列から作るときは、件数を確かめて型を狭める関数を通す。"
+        },
+        {
+          "kind": "memo",
+          "text": "1 件以上の `NonEmptyArray<T>`（`readonly [T, ...T[]]`）を受け取る関数へは、そのまま渡せる。2 件目の位置がある並びは、1 件目の位置がある並びでもあるため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/types/TwoOrMoreArray.ts",
+          "lineRange": {
+            "start": 7,
+            "end": 7
+          },
+          "text": "2 件以上の並びの型",
+          "shas": [
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+          "lineRange": {
+            "start": 51,
+            "end": 51
+          },
+          "text": "まとめて運ぶ枝が名前を 2 件以上で持つ",
+          "shas": [
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        },
+        {
+          "path": "src/domains/session/selection-state/index.ts",
+          "lineRange": {
+            "start": 13,
+            "end": 13
+          },
+          "text": "複数選択の名前（構造は前と同じで名前を付けた）",
+          "shas": [
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "carried-siblings-rule"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "exhaustive-switch",
+      "category": "TypeScript · 制御",
+      "label": "`default` の無い `switch` による網羅",
+      "gist": "[[直和型|union]]の種類ごとの分岐で、種類を 1 つ足したときに書き漏れをコンパイルエラーにするための書き方。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`switch (x.kind)` の各 `case` の中で、TypeScript は `x` の型をその種類に[[狭める|narrowing]]。`default` を書かず、関数の戻り値の型に `undefined` を含めないでおくと、どれかの種類の `case` が抜けたときに「値を返さない経路がある」（TS2366）として落ちる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+            "start": 480,
+            "end": 491,
+            "emphasis": [
+              {
+                "start": 484,
+                "end": 489
+              }
+            ],
+            "text": "  release(drag: NodeDrag): NodeDrag {\n    if (drag.kind !== \"dragging\") {\n      return NodeDrag.create();\n    }\n    switch (drag.grab.dragged.kind) {\n      case \"existing\":\n      case \"selected-siblings\":\n        return { kind: \"dropped\" };\n      case \"new\":\n        return NodeDrag.create();\n    }\n  },"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "このリポジトリでは `default` の追加・`never` への代入・種類をキーにした対応表を網羅のために使わない（rules/coding.md「列挙した状態の網羅を型で強制する」）。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+          "lineRange": {
+            "start": 480,
+            "end": 491
+          },
+          "text": "離したときに click を飲み込むかを、運んでいるものの種類ごとに決める",
+          "shas": [
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "lineRange": {
+            "start": 450,
+            "end": 473
+          },
+          "text": "運び方を種類ごとに決める",
+          "shas": [
+            "f29c48ed88a666a59992c7fb6b1157fc5ef066bd",
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+          "lineRange": {
+            "start": 66,
+            "end": 78
+          },
+          "text": "占めている名前を種類ごとに答える",
+          "shas": [
+            "f29c48ed88a666a59992c7fb6b1157fc5ef066bd",
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "refetch-while-carrying"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "generic-intersection",
+      "category": "TypeScript · 型",
+      "label": "制約付きの型引数と交差型",
+      "gist": "一員が持つものだけを差し替えた型の系列を、1 つの定義から作るための書き方。`M extends SiblingPlacement` で「少なくともこの形を持つ」型だけを受け、`A & B` で 2 つの型の持ち物を合わせる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "[[型引数|type-parameter]]の `extends` は、その引数に入れてよい型の下限を決める。`GrabbedSiblingsOf<M extends SiblingPlacement>` は一員の型を `M` で受け、名前と座標を必ず持つ型だけを許す。`SiblingPlacement & OwnGeometry` のような[[交差型|intersection]]は、両方の型のプロパティをすべて持つ型になる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+            "start": 63,
+            "end": 78,
+            "text": "type GrabbedSiblingsOf<M extends SiblingPlacement> = Readonly<{\n  /** 一員すべての今の親の名前。 */\n  parentName: string;\n  parentRotation: Angle;\n  /** 一員それぞれ。ツリー順。 */\n  members: NonEmptyArray<M>;\n}>;\n\n/** 掴んだ時点の兄弟の座標と、今の親の向き（`GrabbedPlacement` の全員ぶん）。 */\nexport type GrabbedSiblings = GrabbedSiblingsOf<SiblingPlacement>;\n\n/** まとめて運ぶ一員の、掴んだ時点の座標と自分の向きと形。 */\nexport type GrabbedMemberGeometry = SiblingPlacement & OwnGeometry;\n\n/** 掴んだ時点の兄弟に、一員ごとの自分の向きと形を足したもの（`GrabbedGeometry` の全員ぶん）。 */\nexport type GrabbedSiblingsGeometry = GrabbedSiblingsOf<GrabbedMemberGeometry>;"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+          "lineRange": {
+            "start": 63,
+            "end": 78
+          },
+          "text": "掴んだ時点の兄弟の型の系列（座標だけの一員 / 向きと形も持つ一員）",
+          "shas": [
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+          "lineRange": {
+            "start": 161,
+            "end": 166
+          },
+          "text": "一員 1 人ぶんに今の親の向きを添える（一員の持ち物はそのまま残す）",
+          "shas": [
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "siblings-target"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "carried-siblings-rule",
+      "category": "session · 選択",
+      "label": "まとめて運ぶ条件",
+      "gist": "押した位置と今の選択から、全員をまとめて運ぶかを `DocumentSelection.carriedSiblingsAt` が決める。答えが[[`Option`|option]]の値ありなら選択を変えずに全員を掴み、無しなら #947 の経路（押した時点で 1 つを選んで運ぶ）へ進む。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "条件は 4 つで、すべて満たすときだけ名前を返す。2 つ以上選んでいる（選択の直和の `multiple`）・押した位置で掴むもの（`nodeNameAt`）が選択の一員・ロック中も非表示の一員もいない・全員が絶対配置で同じ親の兄弟（`findSiblingPlacements` が値を返す）。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/session/document-selection/index.ts",
+            "start": 182,
+            "end": 210,
+            "emphasis": [
+              {
+                "start": 191,
+                "end": 196
+              }
+            ],
+            "text": "  carriedSiblingsAt(\n    selection: DocumentSelection,\n    underPointer: UnderPointer,\n  ): Option<TwoOrMoreArray<string>> {\n    const selected = selection.selected;\n    if (selected.kind !== \"multiple\") {\n      return Option.none;\n    }\n\n    const document = selection.document;\n    const grabbed = DocumentSelection.nodeNameAt(selection, underPointer);\n    const grabsMember =\n      Option.isSome(grabbed) && selected.names.includes(grabbed.value);\n    if (!grabsMember) {\n      return Option.none;\n    }\n\n    const isUncarriable = (name: string) =>\n      DesignDocument.isLocked(document, name) ||\n      DesignDocument.isHidden(document, name);\n    if (selected.names.some(isUncarriable)) {\n      return Option.none;\n    }\n\n    return Option.map(\n      DesignDocument.findSiblingPlacements(document, selected.names),\n      () => selected.names,\n    );\n  },"
+          }
+        },
+        {
+          "kind": "spec",
+          "text": "docs/06-ui.md「キャンバス直接操作」の移動の「押した時点で、掴んだノードが選ばれる」の項が条件の正本で、「複数選択」の節からはそこを参照する。"
+        },
+        {
+          "kind": "history",
+          "text": "最初は兄弟の座標そのものを返していたが、運ぶ間に座標を持ち続けない形へ変えたので名前だけを返す。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "lineRange": {
+            "start": 182,
+            "end": 210
+          },
+          "text": "条件の判定",
+          "shas": [
+            "adfc47aa03d426004a87e62fba5537bedf5f0824",
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "lineRange": {
+            "start": 558,
+            "end": 577
+          },
+          "text": "掴むときに先に条件を問い、満たせば選ばずに全員を掴む",
+          "shas": [
+            "f29c48ed88a666a59992c7fb6b1157fc5ef066bd",
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "tuple-rest",
+        "refetch-while-carrying"
+      ],
+      "tests": [
+        "k-nested",
+        "k-locked",
+        "k-hidden",
+        "k-parent",
+        "k-cmd-child",
+        "k-cmd-member",
+        "e-press"
+      ],
+      "flows": [
+        "grab",
+        "narrow"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "refetch-while-carrying",
+      "category": "canvas · ドラッグ",
+      "label": "運ぶ間はドキュメントから引き直す",
+      "gist": "まとめて運ぶ枝は名前だけを持ち、ポインタが動くたびに今のドキュメントから兄弟の座標を引き直す。引けなければ（途中で兄弟でなくなれば）何も運ばない。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "1 つだけ運ぶときも同じく毎回 `findSiblingPlacements` で引き、引けなければ（流れで並ぶノードなら）ツリーへの移動になる。まとめて運ぶときは引けなければ `Carrying.nothing()` で、押した一員だけのツリー移動へは切り替えない。引き直した値は[[`Option`|option]]で返り、全員ぶんが揃わなければ値無しになる（[[`mapNonEmptyUntilNone`|map-until-none]]）。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+            "start": 450,
+            "end": 473,
+            "emphasis": [
+              {
+                "start": 463,
+                "end": 471
+              }
+            ],
+            "text": "function carryingAt(context: DropContext): Carrying {\n  const dragged = context.grab.dragged;\n  switch (dragged.kind) {\n    case \"new\":\n      return intoTreeCarrying(context, dragged);\n    case \"existing\": {\n      const placed = DesignDocument.findSiblingPlacements(context.document, [\n        dragged.name,\n      ]);\n      return Option.isSome(placed)\n        ? repositionCarrying(context, placed.value)\n        : intoTreeCarrying(context, dragged);\n    }\n    case \"selected-siblings\": {\n      const placed = DesignDocument.findSiblingPlacements(\n        context.document,\n        dragged.names,\n      );\n      return Option.isSome(placed)\n        ? repositionCarrying(context, placed.value)\n        : Carrying.nothing();\n    }\n  }\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "同じ情報を二重に持たない（rules/consistency.md）。掴んだ時点の座標を持つと、押したまま外部編集や取り消しが入ったときに古い座標で上書きする。"
+        },
+        {
+          "kind": "history",
+          "text": "計画では掴んだ時点の座標を持ち続ける形で、plan-reviewer も「運ぶ間は引き直さない」を求めていた。solution-reviewer の指摘で、その根拠（何も運ばない枝は届かない）が外部変更で崩れることが分かり、逆転した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "lineRange": {
+            "start": 450,
+            "end": 473
+          },
+          "text": "運び方を決めるたびに兄弟の座標を引き直す",
+          "shas": [
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1826,
+            "end": 1845
+          },
+          "text": "名前から兄弟の座標を引く入口。重複は入口で除く",
+          "shas": [
+            "563f5c99b7dec40a5ef87a162835ff4436f3d6ca",
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        },
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "lineRange": {
+            "start": 192,
+            "end": 209
+          },
+          "text": "全員を写し、1 人でも引けなければ値無し",
+          "shas": [
+            "0e69943abe6634eb543bdc9fc0e2395ce39c7549"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "exhaustive-switch",
+        "carried-siblings-rule"
+      ],
+      "tests": [
+        "c-doc-changed",
+        "c-member-moved"
+      ],
+      "flows": [
+        "carry"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "siblings-target",
+      "category": "canvas · 置き直し",
+      "label": "全員の行き先と一員ごとの丸め",
+      "gist": "`SiblingsRepositionTarget` は落とし先の親を 1 つだけ持ち、一員ごとに書く座標・向き・見た目のずらし量を持つ。全員に同じ運んだ量を渡し、一員ごとに 1 人ぶんの直し方（`RepositionTarget.create`）を当てる。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "書く座標は一員ごとに整数へ丸めるので、見た目のずらし量も一員ごとに丸めた座標から逆算する。共通の 1 つのずらし量にすると、見た目と書かれる座標が 1px 未満ずれる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+            "start": 242,
+            "end": 282,
+            "text": "  create(\n    grabbed: GrabbedSiblingsGeometry,\n    carried: Offset,\n    dropParent: DropParentCoordinates,\n  ): SiblingsRepositionTarget {\n    return {\n      parentName: grabbed.parentName,\n      dropParentName: dropParent.name,\n      members: ArrayEx.mapNonEmpty(grabbed.members, (member) => ({\n        name: member.name,\n        target: RepositionTarget.create(\n          grabbedMember(grabbed, member),\n          carried,\n          dropParent,\n        ),\n      })),\n    };\n  },\n\n  /**\n   * 離したときにドキュメントへ届ける、全員ぶんの置き直し。\n   *\n   * @param target 全員の行き先\n   * @returns 一員ごとの、落とし先の親と座標（向きを書き換えるならその向き）。ツリー順\n   */\n  toEdits(target: SiblingsRepositionTarget): NonEmptyArray<NodeRepositionEdit> {\n    return ArrayEx.mapNonEmpty(target.members, (member) => {\n      const to = ChildPlacement.create(\n        target.dropParentName,\n        member.target.placement,\n      );\n\n      const rotation = member.target.rotation;\n      return {\n        name: member.name,\n        edit: Option.isSome(rotation)\n          ? RepositionEdit.rotatedTo(to, rotation.value)\n          : RepositionEdit.create(to),\n      };\n    });\n  },"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "落とし先の親を一員ごとに持たせない。1 つだけ持つことで「全員が同じ親へ書かれる」を型で守る。"
+        },
+        {
+          "kind": "memo",
+          "text": "1 つだけ運ぶときも一員が 1 つの兄弟として同じ型を通る。そのため置き直しの受け手（`onReposition`）は常に並びを受け取る。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+          "lineRange": {
+            "start": 242,
+            "end": 282
+          },
+          "text": "全員の行き先と、離したときの全員ぶんの置き直し",
+          "shas": [
+            "f29c48ed88a666a59992c7fb6b1157fc5ef066bd",
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "lineRange": {
+            "start": 283,
+            "end": 303
+          },
+          "text": "一員ごとの外接矩形の和を運んでいるものの矩形にする",
+          "shas": [
+            "f29c48ed88a666a59992c7fb6b1157fc5ef066bd",
+            "47ecdad2d0d10705c07095c5fd8348d220923c42"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 2291,
+            "end": 2298
+          },
+          "text": "全部通るか何も変えないかで、まとめて置き直す",
+          "shas": [
+            "563f5c99b7dec40a5ef87a162835ff4436f3d6ca"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "generic-intersection"
+      ],
+      "tests": [
+        "t-round",
+        "t-preview-split",
+        "t-carried-split",
+        "c-rotated",
+        "r-fail",
+        "s-undo-all"
+      ],
+      "flows": [
+        "carry",
+        "drop"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "tuple",
+      "label": "タプル型",
+      "text": "位置ごとに要素の型を決めた配列の型。`[string, number]` は 1 件目が文字列・2 件目が数値の 2 件の並び。"
+    },
+    {
+      "id": "rest-element",
+      "label": "残りの要素",
+      "text": "タプル型の末尾に書く `...T[]`。そこから後ろに `T` が 0 件以上続いてよいことを表す。"
+    },
+    {
+      "id": "union",
+      "label": "直和型",
+      "text": "`A | B` のように、いくつかの型のどれか 1 つであることを表す型。共通の `kind` のような目印で種類を見分ける。"
+    },
+    {
+      "id": "narrowing",
+      "label": "狭める",
+      "text": "条件分岐の中で、TypeScript が値の型をその条件を満たす側の型として扱うこと。`case \"new\":` の中では `new` の種類の型になる。"
+    },
+    {
+      "id": "type-parameter",
+      "label": "型引数",
+      "text": "`<M>` のように型を引数として受け取る書き方。使う側が中身の型を決める。"
+    },
+    {
+      "id": "intersection",
+      "label": "交差型",
+      "text": "`A & B` と書き、`A` と `B` の両方のプロパティをすべて持つ型。"
+    },
+    {
+      "id": "option",
+      "label": "Option",
+      "text": "このリポジトリの値が有るか無いかを表す型（`src/utils/Option.ts`）。`undefined` の代わりに使い、`Option.isSome` で有無を判定する。"
+    },
+    {
+      "id": "map-until-none",
+      "label": "mapNonEmptyUntilNone",
+      "text": "空でない並びの各要素を `Option` を返す関数で写し、全部が値ありなら写した並びを、1 つでも値無しならその時点で値無しを返す配列の操作。"
+    }
+  ]
+}
