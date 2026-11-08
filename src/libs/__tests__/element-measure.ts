@@ -4,11 +4,12 @@ import type { CanvasDom } from "@/libs/canvas-dom";
  * 要素の実測（`getBoundingClientRect` / `offsetWidth` / `offsetHeight`）を差し替える。
  * 測る側は `CanvasDom.boundsOf` / `CanvasDom.layoutSizeOf`。
  *
- * happy-dom はレイアウトを行わず矩形をすべて 0 で返すため、**差し替えないと実測を使う
- * 実装を何に壊しても通る**（rules/testing.md「その assert は落ちうるか」）。
+ * happy-dom はレイアウトを行わず矩形も大きさもすべて 0 で返すため、**差し替えないと
+ * 実測を使う実装を何に壊しても通る**（rules/testing.md「その assert は落ちうるか」）。
  * ここで差し替えるのはブラウザが行う測定だけで、そこから何が決まるかは実物が答える。
  */
 
+/** 差し替える矩形。`CanvasDom.boundsOf` が返す形に揃えている。 */
 type MeasuredBounds = ReturnType<typeof CanvasDom.boundsOf>;
 
 /**
