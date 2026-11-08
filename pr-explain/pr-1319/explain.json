@@ -1,0 +1,205 @@
+{
+  "version": 1,
+  "pr": 1319,
+  "sha": "7aea72e5d057e81c04222b9f437fb05f2086c4f9",
+  "issue": 1277,
+  "overview": {
+    "title": "スラッシュコマンド起動の発火ログを実測結果へ書き換える",
+    "lead": "「スラッシュコマンドで起動したとき Skill の PostToolUse が届くかは未検証」としていた記述を、#1277 の実測で置き換えた。フックの挙動は変えていない。",
+    "before": [
+      {
+        "text": "README は、スラッシュコマンドで起動した回の発火ログを「未検証」としていた",
+        "message": "slash-no-log"
+      },
+      {
+        "text": "手順を読んで進める回がログに残らないことを「#1046 で実測」と書いていたが、#1046 のセッションはフックが発火しない形だった"
+      }
+    ],
+    "after": [
+      {
+        "text": "`/implementation-flow` を打った回は `skill` の行が書かれず、`planner` 起動前の親の Write は通り、起動後は deny される、と実測として書いた",
+        "message": "planner-marks-flow"
+      },
+      {
+        "text": "仕組み・他のスラッシュコマンド・手順を読んで進める回は推論と明記した"
+      },
+      {
+        "text": "発火ログを読む側(`record-firings.sh` の冒頭・harness-record・harness-growth)に、Skill ツールを通らない起動はスキルの行が抜けうるという限定と README への参照を置いた",
+        "message": "record-reads-log"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "残る穴の表",
+        "text": "実測と推論の書き分けが、#1277 の実測コメントと合っているか",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/README.md"
+        }
+      },
+      {
+        "title": "発火の読み方",
+        "text": "限定を表の 1 行ではなく表全体に効く位置に置いた。記録の書式・数え方は変えていない(#1309 で扱う)",
+        "go": {
+          "kind": "file",
+          "path": ".claude/skills/harness-record/SKILL.md"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "フックの説明・コメントと、発火ログを読むスキルの手順を、実測に合わせて書き換えた"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "フックの説明",
+      "role": "フックが塞ぐ範囲と残る穴の正本",
+      "change": "残る穴の 1 行を実測と推論に書き分け、実測表に #1277 の行を追加"
+    },
+    {
+      "path": ".claude/hooks/record-firings.sh",
+      "name": "発火ログ",
+      "role": "スキル・サブエージェントの起動をセッション別のログへ書く",
+      "change": "冒頭コメントだけ。スキルについては「行が無い = 起動していない」と言い切れない旨"
+    },
+    {
+      "path": ".claude/hooks/block-parent-session-edit.sh",
+      "name": "親の編集の拒否",
+      "role": "implementation-flow の中の親の編集を止める",
+      "change": "冒頭コメントだけ。区切りを Skill ツールでの起動に限定"
+    },
+    {
+      "path": ".claude/skills/harness-record/SKILL.md",
+      "name": "振り返りの記録",
+      "role": "発火ログを読んで記録の「発火」に書く",
+      "change": "発火の読み方に限定と README への参照"
+    },
+    {
+      "path": ".claude/skills/harness-growth/SKILL.md",
+      "name": "ハーネスの棚卸し",
+      "role": "記録を数えて退役候補を出す",
+      "change": "「発火 0 のスキル」に README への参照"
+    }
+  ],
+  "messages": [
+    {
+      "id": "slash-no-log",
+      "from": ".claude/hooks/record-firings.sh",
+      "to": ".claude/hooks/block-parent-session-edit.sh",
+      "kind": "qry",
+      "name": "フローの区切りを読む",
+      "code": "firings_log_path \"$session_id\"",
+      "via": "file",
+      "returns": "スラッシュコマンドで起動した回は skill の行が無い",
+      "status": "changed"
+    },
+    {
+      "id": "planner-marks-flow",
+      "from": ".claude/hooks/record-firings.sh",
+      "to": ".claude/hooks/block-parent-session-edit.sh",
+      "kind": "evt",
+      "name": "planner の起動が区切りになる",
+      "code": "agent\tplanner",
+      "via": "file"
+    },
+    {
+      "id": "record-reads-log",
+      "from": ".claude/hooks/record-firings.sh",
+      "to": ".claude/skills/harness-record/SKILL.md",
+      "kind": "qry",
+      "name": "記録の発火を書く",
+      "code": "ls \"${TMPDIR:-/tmp}\"/design-composer-firings-*.log",
+      "via": "file",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "slash-start",
+      "label": "スラッシュコマンドで implementation-flow を始めた回",
+      "steps": [
+        "slash-no-log",
+        "planner-marks-flow"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "7aea72e5d057e81c04222b9f437fb05f2086c4f9",
+      "phase": "core",
+      "role": "未検証としていた記述を #1277 の実測に置き換え、ログを読む側に限定を置く",
+      "why": "実測の範囲(どの起動で測ったか)は今後変わる事実なので README の 1 箇所だけに書き、他は 1 行の限定と参照に留めた。検証での指摘(実測の範囲の二重化・#1046 の出典の誤り・表の限定の位置)を反映済み。",
+      "flows": [
+        "slash-start"
+      ],
+      "review": [
+        "README の残る穴の表で、実測と推論の線引きが #1277 の実測コメントと合っているか",
+        "harness-record の限定が、記録の書式・数え方を変えずに読み手を README へ導けているか"
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 125,
+          "end": 125,
+          "text": "実測は `/implementation-flow` を打った回の結果だけ。仕組み・他のコマンド・手順を読む回は推論"
+        },
+        {
+          "path": ".claude/skills/harness-record/SKILL.md",
+          "start": 68,
+          "end": 68,
+          "text": "表の 1 行ではなく、表の前の読み方の文に限定を置いた"
+        }
+      ]
+    }
+  ],
+  "impact": {
+    "title": "スラッシュコマンドで始めた回の扱いが文書に書かれた",
+    "lead": "ハーネスを使うセッションが、スラッシュコマンドで実装の手順を始めたときに何が止まり何が止まらないかを、文書から読めるようになった。動きそのものは変わっていない。",
+    "changed": {
+      "before": [
+        {
+          "text": "スラッシュコマンドで手順を始めたとき、親の編集が止まるかどうかは文書上「確かめていない」とされていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "スラッシュコマンドで実装の手順を始めた回は、計画役を呼ぶまで親の編集が止まらず、呼んだ後は止まる、と実測として書かれた",
+          "message": "planner-marks-flow"
+        },
+        {
+          "text": "振り返りの記録を書くとき、スラッシュコマンドで起動したスキルは発火の一覧から抜けうると分かるようになった",
+          "message": "record-reads-log"
+        }
+      ],
+      "specs": [
+        {
+          "path": ".claude/hooks/README.md",
+          "locator": "「カバー範囲と残る穴」の「区切りがログに残らない起動」の行",
+          "text": "未検証の文を、実測した結果と推論とに書き分けて置き換えた",
+          "shas": [
+            "7aea72e5d057e81c04222b9f437fb05f2086c4f9"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1309,
+          "text": "見つかった穴(計画役を呼ぶまで止まらない区間)を塞ぐ対策"
+        },
+        {
+          "issue": 1317,
+          "text": "同じ実測で見つかった、追加の手順集が読み込まれない件"
+        }
+      ]
+    },
+    "kept": [
+      {
+        "text": "親の編集を止める判定そのもの・発火の記録の書き方と数え方は変わっていない"
+      }
+    ]
+  }
+}
