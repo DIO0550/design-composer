@@ -158,6 +158,33 @@ const PaddingDocument = DesignDocument.create({
   ],
 });
 
+/**
+ * 絶対配置で幅が fixed の Box。条件付きの数値欄が、同じ条件を共有して並ぶもの（`x` / `y`、
+ * `minHeight` / `maxHeight`）と、条件から 1 本だけぶら下がるもの（`width`）を 1 つの選択で出す。
+ */
+const AbsoluteDocument = DesignDocument.create({
+  artboards: [
+    {
+      name: "home",
+      width: 360,
+      height: 240,
+      children: [
+        {
+          name: "absolute-box",
+          type: "Box",
+          props: {
+            placement: "absolute",
+            x: 24,
+            y: 16,
+            widthMode: "fixed",
+            width: 120,
+          },
+        },
+      ],
+    },
+  ],
+});
+
 const LongNameDocument = DesignDocument.create({
   artboards: [
     {
@@ -253,6 +280,17 @@ export const Unset: Story = {
   name: "未指定の prop だけの Box を選択中",
   args: {
     selection: DocumentSelection.fromNames(UnsetDocument, ["unset-box"]),
+  },
+};
+
+/**
+ * 条件付きの数値欄の見え方。同じ条件から 2 本以上出る欄はラベルを出し、1 本だけの欄は
+ * ラベルを出さずにぶら下げる。
+ */
+export const AbsoluteBox: Story = {
+  name: "絶対配置で幅が fixed の Box を選択中",
+  args: {
+    selection: DocumentSelection.fromNames(AbsoluteDocument, ["absolute-box"]),
   },
 };
 

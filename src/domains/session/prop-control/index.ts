@@ -98,19 +98,32 @@ export type CurrentPaint =
   | Readonly<{ state: "unresolved"; name: string }>;
 
 /**
+ * その欄を出している条件と、同じ並びの中でその条件から出ている欄の数。
+ *
+ * - `unconditional`: `enabledWhen` を持たない
+ * - `soleUnderCondition`: 同じ並びで、その条件の prop（スキーマの `enabledWhen.prop`）から
+ *   出ている欄が自分 1 本だけ
+ * - `sharedCondition`: 同じ並びで、同じ条件の prop から出ている欄が 2 本以上ある
+ */
+type EnabledBy =
+  | Readonly<{ kind: "unconditional" }>
+  | Readonly<{ kind: "soleUnderCondition"; prop: string }>
+  | Readonly<{ kind: "sharedCondition"; prop: string }>;
+
+/**
  * 1 prop 分の編集欄。
  * `value`（明示的に設定されている値）と `defaultValue`（設定が無いときに効く値）を
  * 別々に持つのは、パネルが両者を区別して見せるため（docs/06-ui.md）。
  *
- * `enabledBy` は、その prop が編集できる条件を出している prop の名前（スキーマの
- * `enabledWhen.prop`）。
+ * `enabledBy` は、その prop を出している条件と、同じ並び（`group` の節 / インスタンスの
+ * 編集欄の並び）でその条件から出ている欄が自分だけか。
  */
 export type PropControl = Readonly<{
   prop: string;
   input: PropControlInput;
   value: Option<PropValue>;
   defaultValue: Option<PropValue>;
-  enabledBy: Option<string>;
+  enabledBy: EnabledBy;
 }>;
 
 /**
@@ -405,6 +418,14 @@ function publicEditableProps(
 }
 
 /**
+ * 条件を満たした prop と、同じ並びの中でのその条件の出どころ。
+ */
+type EnabledEditableProp = Readonly<{
+  editable: EditableProp;
+  enabledBy: EnabledBy;
+}>;
+
+/**
  * `enabledWhen` の判定に使う props。
  * 設定されていない prop も既定値では効いているため、既定を敷いた上で判定する
  * （`widthMode` を書いていない Box でも既定の `hug` として扱われ、`width` は出ない）。
@@ -428,13 +449,13 @@ function effectiveProps(
 /**
  * 1 つの prop の編集欄。今の値と、値域から決まる入力の形を持つ。
  *
- * @param editable 編集欄にする prop
+ * @param enabled 編集欄にする prop と、その条件の出どころ
  * @param props 今の値の出どころ（未設定なら `none`）
  * @param tokens トークン参照の選択肢の出どころ
- * @returns 入力の形・今の値・既定値を持つ 1 件の編集欄
+ * @returns 入力の形・今の値・既定値・条件の出どころを持つ 1 件の編集欄
  */
 function controlOf(
-  editable: EditableProp,
+  { editable, enabledBy }: EnabledEditableProp,
   props: Props,
   tokens: TokenSet,
 ): PropControl {
@@ -444,7 +465,7 @@ function controlOf(
     input: inputOf(editable, value, tokens),
     value,
     defaultValue: editable.defaultValue,
-    enabledBy: Option.fromNullable(editable.definition.enabledWhen?.prop),
+    enabledBy,
   };
 }
 
@@ -467,6 +488,33 @@ function enabledEditableProps(
 }
 
 /**
+ * 並びの各 prop に、同じ並びの中でその条件から出ている欄が自分だけかを添える。
+ *
+ * @param enabled 条件を満たす、編集できる prop の並び（`enabledWhen` の判定は済んでいる）
+ * @returns 渡された並び順のまま、条件の出どころを添えたもの
+ */
+function withEnabledBy(
+  enabled: readonly EditableProp[],
+): readonly EnabledEditableProp[] {
+  return enabled.map((editable): EnabledEditableProp => {
+    const condition = editable.definition.enabledWhen;
+    if (condition === undefined) {
+      return { editable, enabledBy: { kind: "unconditional" } };
+    }
+    const siblings = enabled.filter(
+      (candidate) => candidate.definition.enabledWhen?.prop === condition.prop,
+    );
+    return {
+      editable,
+      enabledBy:
+        siblings.length > 1
+          ? { kind: "sharedCondition", prop: condition.prop }
+          : { kind: "soleUnderCondition", prop: condition.prop },
+    };
+  });
+}
+
+/**
  * 見出しで分けない編集欄の並び（インスタンスの `Public props` と、インスタンス自身の値）。
  * 並びは宣言順（docs/03「order フィールドは持たない」）。
  *
@@ -480,8 +528,8 @@ function controlsOf(
   props: Props,
   tokens: TokenSet,
 ): readonly PropControl[] {
-  return enabledEditableProps(editables, props).map((editable) =>
-    controlOf(editable, props, tokens),
+  return withEnabledBy(enabledEditableProps(editables, props)).map((enabled) =>
+    controlOf(enabled, props, tokens),
   );
 }
 
@@ -513,20 +561,20 @@ function longhandControlOf(
  * @returns 束ねられた行の並び。`enabledWhen` で longhand が欠けた shorthand は入らない
  */
 function shorthandControlsOf(
-  editables: readonly EditableProp[],
+  editables: readonly EnabledEditableProp[],
   props: Props,
   tokens: TokenSet,
 ): readonly PropShorthandControl[] {
   const names = ArrayEx.distinct(
-    editables.flatMap((editable) =>
+    editables.flatMap(({ editable }) =>
       editable.definition.shorthand ? [editable.definition.shorthand.name] : [],
     ),
   );
   return names.flatMap((name) => {
-    const longhands = editables.flatMap((editable) => {
-      const shorthand = editable.definition.shorthand;
+    const longhands = editables.flatMap((enabled) => {
+      const shorthand = enabled.editable.definition.shorthand;
       return shorthand?.name === name
-        ? [longhandControlOf(shorthand, controlOf(editable, props, tokens))]
+        ? [longhandControlOf(shorthand, controlOf(enabled, props, tokens))]
         : [];
     });
     const control = PropShorthandControl.create(name, longhands);
@@ -538,30 +586,31 @@ function shorthandControlsOf(
  * セクションに並ぶ行。束ねた行はその shorthand の最初の longhand の位置に出る
  * （docs/03「パネルの表示順は定数の定義順」）。
  *
- * @param enabled 条件を満たす、編集できる prop の並び（`enabledWhen` の判定は済んでいる）
+ * @param enabled 条件を満たし、節の中での条件の出どころを添えた prop の並び
  * @param props 今の値の出どころ
  * @param tokens トークン参照の選択肢の出どころ
  * @returns 1 prop の行と束ねた行を宣言順に並べたもの
  */
 function rowsOf(
-  enabled: readonly EditableProp[],
+  enabled: readonly EnabledEditableProp[],
   props: Props,
   tokens: TokenSet,
 ): readonly PropControlRow[] {
   const shorthands = shorthandControlsOf(enabled, props, tokens);
-  return enabled.flatMap((editable, index): readonly PropControlRow[] => {
-    const shorthand = editable.definition.shorthand;
+  return enabled.flatMap((current, index): readonly PropControlRow[] => {
+    const shorthand = current.editable.definition.shorthand;
     const clustered = shorthands.find(
       (candidate) => candidate.name === shorthand?.name,
     );
     if (shorthand === undefined || clustered === undefined) {
-      return [{ kind: "prop", control: controlOf(editable, props, tokens) }];
+      return [{ kind: "prop", control: controlOf(current, props, tokens) }];
     }
     /* 束ねた行は 1 度だけ出す。2 度目以降の longhand は行を作らずに飛ばす。 */
     const isAlreadyPlaced = enabled
       .slice(0, index)
       .some(
-        (candidate) => candidate.definition.shorthand?.name === shorthand.name,
+        (candidate) =>
+          candidate.editable.definition.shorthand?.name === shorthand.name,
       );
     return isAlreadyPlaced ? [] : [{ kind: "shorthand", shorthand: clustered }];
   });
@@ -588,7 +637,9 @@ function sectionsOf(
   return groups.map((group) => ({
     group,
     rows: rowsOf(
-      enabled.filter((editable) => editable.definition.group === group),
+      withEnabledBy(
+        enabled.filter((editable) => editable.definition.group === group),
+      ),
       props,
       tokens,
     ),

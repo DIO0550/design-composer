@@ -47,6 +47,18 @@ const Components: ComponentSet = {
     type: "Box",
     children: [{ name: "sized-card-title", type: "Text" }],
   },
+  /** 置き方と幅を公開 prop にしている部品。条件を共有する公開 prop を見るために使う。 */
+  "placed-card": {
+    publicProps: {
+      placement: { node: "placed-card", prop: "placement" },
+      x: { node: "placed-card", prop: "x" },
+      y: { node: "placed-card", prop: "y" },
+      widthMode: { node: "placed-card", prop: "widthMode" },
+      width: { node: "placed-card", prop: "width" },
+    },
+    type: "Box",
+    children: [],
+  },
   /** Object.prototype 上の名前を公開 prop 名にしている部品。 */
   "prototype-named": {
     publicProps: {
@@ -349,4 +361,30 @@ test("存在しない部品を指すインスタンスにもロックの欄が�
   expect(
     instanceOf(selection).refOwnProps.map((control) => control.prop),
   ).toEqual(["locking"]);
+});
+
+test("公開 prop で絶対配置にしたインスタンスでは、公開した座標の欄は x も y も条件を共有する欄になる", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "placed-card",
+    overrides: { placement: "absolute" },
+  });
+  const publicProps = instanceOf(selection).publicProps;
+
+  expect([
+    controlNamed(publicProps, "x").enabledBy.kind,
+    controlNamed(publicProps, "y").enabledBy.kind,
+  ]).toEqual(["sharedCondition", "sharedCondition"]);
+});
+
+test("公開 prop で幅のモードを fixed にしたインスタンスでは、公開した width は widthMode が出している唯一の欄になる", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "placed-card",
+    overrides: { placement: "absolute", widthMode: "fixed" },
+  });
+
+  expect(
+    controlNamed(instanceOf(selection).publicProps, "width").enabledBy.kind,
+  ).toBe("soleUnderCondition");
 });

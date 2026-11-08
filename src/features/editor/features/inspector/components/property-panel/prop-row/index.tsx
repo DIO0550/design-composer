@@ -3,7 +3,6 @@ import type { PropEdit } from "@/domains/dcmp/node";
 import type { EditContinuity } from "@/domains/session/edit-continuity";
 import { PropControl } from "@/domains/session/prop-control";
 import { CaseStyle } from "@/utils/CaseStyle";
-import { Option } from "@/utils/Option";
 import { ControlOffsetClass, LabelClass } from "../label-width";
 import { fieldOf, PropField, unsetLabel } from "../prop-field";
 
@@ -11,9 +10,11 @@ import { fieldOf, PropField, unsetLabel } from "../prop-field";
  * 1 prop 分の行。UI 案（docs/Design Composer.html）はラベル左・コントロール右で並べ、表
  * 示名は prop 名の機械的な整形で作る（docs/03-schema.md「表示名フィールドは持たない」）。
  *
- * 条件付きの prop のうち**数値・文字の欄だけ**ラベルを出さず字下げする（UI 案は `width`
- * の数値欄をモードの行の下へぶら下げている）。直下に来るのはスキーマの宣言順に依ってお
- * り、順が変われば離れた位置に字下げだけが残る。**この出し分けは class の違いにしかなら
+ * 条件付きの prop のうち、**その条件から出ている欄が自分 1 本だけの数値・文字の欄**は
+ * ラベルを出さず字下げする（UI 案は `width` の数値欄をモードの行の下へぶら下げている）。
+ * 同じ条件から 2 本以上出ている欄（`x` / `y` 等）はどれが何の値か見分けられなくなるので
+ * ラベルを出す。直下に来るのはスキーマの宣言順に依っており、順が変われば離れた位置に
+ * 字下げだけが残る。**この出し分けは class の違いにしかなら
  * ないので、崩れに気づける手段は視覚差分だけ**（happy-dom は Tailwind を解決しない）。
  *
  * 全行を `aria-labelledby` に揃える（代償として、ラベルを押しても入力欄へフォーカスが移ら
@@ -31,7 +32,8 @@ export function PropRow({
   const labelledBy = useId();
   const isLiteralField =
     control.input.kind === "number" || control.input.kind === "text";
-  const hidesLabel = Option.isSome(control.enabledBy) && isLiteralField;
+  const hidesLabel =
+    control.enabledBy.kind === "soleUnderCondition" && isLiteralField;
   const showsUnsetNote =
     control.input.kind === "enum" && !PropControl.hasValue(control);
 

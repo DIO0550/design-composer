@@ -25,7 +25,7 @@ export const DirectionControl: PropControl = {
   input: { kind: "enum", values: ["row", "column"] },
   value: Option.none,
   defaultValue: Option.some("column"),
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
 /** 値の入った enum。注記は出ない。 */
@@ -34,7 +34,7 @@ export const WidthModeControl: PropControl = {
   input: { kind: "enum", values: ["hug", "fill", "fixed"] },
   value: Option.some("fixed"),
   defaultValue: Option.some("hug"),
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
 /** 数値のトークンを選ぶ欄。解決後の値が添う。 */
@@ -47,7 +47,7 @@ export const GapControl: PropControl = {
   },
   value: Option.some("md"),
   defaultValue: Option.none,
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
 /** ファイル由来の不正な参照を指している欄。解決値が無いので値が添わない。 */
@@ -60,7 +60,7 @@ export const DanglingGapControl: PropControl = {
   },
   value: Option.some("missing"),
   defaultValue: Option.none,
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
 /** トークン名から選ぶ欄（数値にも色にもならない種別）。 */
@@ -69,7 +69,7 @@ export const TypographyControl: PropControl = {
   input: { kind: "token", names: ["body", "heading"] },
   value: Option.some("heading"),
   defaultValue: Option.none,
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
 /**
@@ -87,7 +87,7 @@ export const BackgroundControl: PropControl = {
   },
   value: Option.some("primary"),
   defaultValue: Option.none,
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
 /** 実在しない色のトークンを指している欄。見本が出ない。 */
@@ -100,7 +100,7 @@ export const MissingBackgroundControl: PropControl = {
   },
   value: Option.some("missing"),
   defaultValue: Option.none,
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
 /** 塗りの欄が colors のトークンを指しているとき。色の見本が左に付く。 */
@@ -116,7 +116,7 @@ export const ColorPaintControl: PropControl = {
   },
   value: Option.some("primary"),
   defaultValue: Option.none,
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
 /** 塗りの欄がどちらの種別にも無い名前を指しているとき。見本が出ず、名前は節の外に出る。 */
@@ -129,7 +129,7 @@ export const UnresolvedPaintControl: PropControl = {
   },
   value: Option.some("missing"),
   defaultValue: Option.none,
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
 /** 塗りの欄が gradients のトークンを指しているとき。階調の見本が左に付く。 */
@@ -149,16 +149,31 @@ export const GradientPaintControl: PropControl = {
   },
   value: Option.some("brand"),
   defaultValue: Option.none,
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
-/** 条件付きの欄（`widthMode` が `fixed` のときだけ出る）。ラベルを出さず字下げする。 */
+/**
+ * 条件付きの欄で、その条件から出ているのが自分 1 本だけのもの（`widthMode` が `fixed` の
+ * ときの `width`）。ラベルを出さず字下げする。
+ */
 export const WidthControl: PropControl = {
   prop: "width",
   input: { kind: "number" },
   value: Option.some(480),
   defaultValue: Option.none,
-  enabledBy: Option.some("widthMode"),
+  enabledBy: { kind: "soleUnderCondition", prop: "widthMode" },
+};
+
+/**
+ * 条件付きの欄で、同じ条件から 2 本以上出ているもの（`widthMode` が `fixed` 以外のときの
+ * `minWidth` / `maxWidth`）。ラベルを出し、字下げしない。
+ */
+export const MinWidthControl: PropControl = {
+  prop: "minWidth",
+  input: { kind: "number" },
+  value: Option.some(120),
+  defaultValue: Option.none,
+  enabledBy: { kind: "sharedCondition", prop: "widthMode" },
 };
 
 /** 文字を打ち込む欄。インスタンスの公開 prop として既定値を持つ。 */
@@ -167,7 +182,7 @@ export const LabelControl: PropControl = {
   input: { kind: "text" },
   value: Option.some("ログイン"),
   defaultValue: Option.some("Button"),
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
 /** 既定を持たない公開 prop。上書きしていないので注記が出ない。 */
@@ -176,7 +191,7 @@ export const VariantControl: PropControl = {
   input: { kind: "enum", values: ["primary", "ghost"] },
   value: Option.none,
   defaultValue: Option.none,
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
 /**
@@ -201,7 +216,7 @@ function longhandControl(
     },
     value: token,
     defaultValue: Option.none,
-    enabledBy: Option.none,
+    enabledBy: { kind: "unconditional" },
   };
 }
 
@@ -278,7 +293,7 @@ export const LockingControl: PropControl = {
   input: { kind: "enum", values: ["unlocked", "locked"] },
   value: Option.none,
   defaultValue: Option.some("unlocked"),
-  enabledBy: Option.none,
+  enabledBy: { kind: "unconditional" },
 };
 
 /** ロックしたインスタンス自身のロックの欄。 */

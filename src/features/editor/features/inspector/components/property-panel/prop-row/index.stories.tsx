@@ -3,6 +3,7 @@ import { fn } from "storybook/test";
 import {
   BackgroundControl,
   DirectionControl,
+  MinWidthControl,
   WidthControl,
 } from "../__stories__/panel-controls";
 import { PanelFrame } from "../__stories__/panel-frame";
@@ -44,8 +45,17 @@ export const Unset: Story = {
   args: { control: DirectionControl },
 };
 
-/** 条件を出している行の下にぶら下がる欄。ラベルを出さず、コントロールの左端へ揃える。 */
+/**
+ * 条件を出している行の下にぶら下がる欄。その条件から出ているのが自分 1 本だけなので、
+ * ラベルを出さず、コントロールの左端へ揃える。
+ */
 export const Dependent: Story = {
   name: "条件付きの行（ラベルを出さず字下げする）",
   args: { control: WidthControl },
+};
+
+/** 同じ条件から 2 本以上出ている欄。どれが何の値かを見分けるため、ラベルを出して字下げしない。 */
+export const SharedCondition: Story = {
+  name: "条件を共有する行（ラベルを出す）",
+  args: { control: MinWidthControl },
 };

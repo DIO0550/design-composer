@@ -1,5 +1,21 @@
 import { expect, test } from "vitest";
-import { boxSelection, propNamesOf } from "./setup";
+import type { DocumentSelection } from "@/domains/session/document-selection";
+import type { PropControl } from "../index";
+import {
+  boxSelection,
+  controlNamed,
+  controlsIn,
+  propNamesOf,
+  sectionsOf,
+} from "./setup";
+
+function enabledByKindOf(
+  selection: DocumentSelection,
+  prop: string,
+): PropControl["enabledBy"]["kind"] {
+  const controls = sectionsOf(selection).flatMap(controlsIn);
+  return controlNamed(controls, prop).enabledBy.kind;
+}
 
 test("サイズのモードが fixed のときだけ長さのコントロールが出る", () => {
   expect(propNamesOf(boxSelection({ widthMode: "fixed" }))).toContain("width");
@@ -56,4 +72,28 @@ test("縦のサイズのモードが fixed なら高さの最小 / 最大のコ�
 
   expect(names).not.toContain("minHeight");
   expect(names).not.toContain("maxHeight");
+});
+
+test("絶対配置の Box では、座標の欄は x も y も placement の条件を共有する欄になる", () => {
+  const selection = boxSelection({ placement: "absolute" });
+
+  expect([
+    enabledByKindOf(selection, "x"),
+    enabledByKindOf(selection, "y"),
+  ]).toEqual(["sharedCondition", "sharedCondition"]);
+});
+
+test("縦のモードが fixed の Box では、横のモードの最小 / 最大が同じ節に並んでいても、height は heightMode が出している唯一の欄になる", () => {
+  const selection = boxSelection({ heightMode: "fixed" });
+
+  expect(enabledByKindOf(selection, "height")).toBe("soleUnderCondition");
+});
+
+test("横のモードが hug の Box では、minWidth と maxWidth はどちらも widthMode の条件を共有する欄になる", () => {
+  const selection = boxSelection({ widthMode: "hug" });
+
+  expect([
+    enabledByKindOf(selection, "minWidth"),
+    enabledByKindOf(selection, "maxWidth"),
+  ]).toEqual(["sharedCondition", "sharedCondition"]);
 });

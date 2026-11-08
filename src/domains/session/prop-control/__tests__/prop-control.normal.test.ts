@@ -320,15 +320,17 @@ test("条件付きの prop は条件を出している prop の名前を持つ",
     "box",
   );
 
-  expect(controlOf(selection, "width")?.enabledBy).toEqual(
-    Option.some("widthMode"),
-  );
+  expect(controlOf(selection, "width")?.enabledBy).toMatchObject({
+    prop: "widthMode",
+  });
 });
 
-test("条件を持たない prop は条件を出している prop の名前を持たない", () => {
+test("条件を持たない prop は条件の無い欄になる", () => {
   const selection = setupSelection([{ name: "box", type: "Box" }], "box");
 
-  expect(controlOf(selection, "layout")?.enabledBy).toEqual(Option.none);
+  expect(controlOf(selection, "layout")?.enabledBy).toEqual({
+    kind: "unconditional",
+  });
 });
 
 test("座標の欄は絶対配置のときだけ出る", () => {
