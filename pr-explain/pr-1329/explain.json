@@ -1,0 +1,1774 @@
+{
+  "version": 1,
+  "pr": 1329,
+  "sha": "71b905a21b9ec6e29c6c6dbff447bcd1d584d4f8",
+  "issue": 896,
+  "overview": {
+    "title": "名前が重複した文書で Box の大きさを変えたときの追従を、子の名前ではなくノードの値へ当てる",
+    "lead": "名前の一意性に違反したまま開いた文書でも、Box や artboard の大きさを変えると、直下の絶対配置の子(とその先)がその Box に合わせて追従し、例外を投げずに編集が終わるようになった。追従は子を名前で引き直さず、子のノードの値へ編集を当てて部分木を作り直し、`replaceNode` で 1 回だけ書き戻す。",
+    "before": [
+      {
+        "text": "親と子が同じ名前の Box を `resize` / `applyPropEdit` で広げると、追従が `child.name` で親自身に当たり、`scale` の子で再帰が止まらず `RangeError: Maximum call stack size exceeded` が投げられた",
+        "message": "follow-by-name"
+      },
+      {
+        "text": "前の兄弟の子に同じ名前のノードがあると、`findNode` が先に見つけるそちらが代わりに動いた",
+        "message": "follow-by-name"
+      },
+      {
+        "text": "artboard と同じ名前の子がいると、子へ向けた追従の座標が artboard の props に書かれた",
+        "message": "follow-by-name"
+      },
+      {
+        "text": "子の並びの差し替えは `node-tree` の中で `{ ...node, children }` と直和のまま書いており、参照ノードに `children` が付いても型が通った"
+      }
+    ],
+    "after": [
+      {
+        "text": "追従は `followedChildren` が子の並びの値そのものへ当て、長さが変わった子は `withFollowedChildren` で孫へ続く。名前で引くのは編集の入口の 1 回だけ",
+        "message": "follow-children"
+      },
+      {
+        "text": "ノードの経路は追従させた部分木を `replaceNode` で 1 回書き戻す",
+        "message": "replace-node"
+      },
+      {
+        "text": "artboard の経路は、リサイズ前後の artboard の長さから子を追従させて `Artboard.withTree` で書き戻す",
+        "message": "artboard-tree"
+      },
+      {
+        "text": "子の並びの差し替えは `Node.withChildren(PrimitiveNode, children)` 1 つに寄せ、`withChildrenAt` は `PrimitiveNode` に絞ったホストを受け取る",
+        "message": "children-at"
+      },
+      {
+        "text": "長さが変わらない編集(大半の prop の編集)と、子の無いノードでは子の走査に進まず、`children` を書いていない Box に空の `children` を書き足さない"
+      },
+      {
+        "text": "公開 API のシグネチャは変えていない"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "壊しても落ちなかった唯一の判定",
+        "text": "test-reviewer が 10 通りに壊して全部落ちた中で、`withFollowedChildren` 冒頭の `!Node.isPrimitive(after)` だけは外しても落ちない。参照ノードは子が空で次の打ち切りに入るので振る舞いは変わらず、`Node.withChildren` に渡すための型の絞り込みとして残している",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/dcmp/design-document/index.ts"
+        }
+      },
+      {
+        "title": "artboard の経路の作り直し",
+        "text": "artboard のリサイズは長さが変わらなくても子の並びを作り直す。観測できる差は参照の同一性だけなので打ち切りを入れていない(フェーズ 6 で不採用にした指摘)",
+        "go": {
+          "kind": "message",
+          "id": "artboard-tree"
+        }
+      },
+      {
+        "title": "条件に名前を付けた絞り込み",
+        "text": "6f622e7 で型ガードにした `allowsChildren` は、false でもプリミティブのことがあるので 71b905a で boolean へ戻した。絞り込みは `holdsChildren` に名前を付けた条件が担う",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/dcmp/node-tree/index.ts"
+        }
+      },
+      {
+        "title": "Box の大きさを変えたときの流れ",
+        "text": "入口で名前を 1 回引いてから、書き戻しまでを値で通す",
+        "go": {
+          "kind": "flow",
+          "id": "resize-box"
+        }
+      },
+      {
+        "title": "ドメインの層",
+        "text": "直したのはすべて `.dcmp` の中身を扱う層の中",
+        "go": {
+          "kind": "layer",
+          "layer": "domains / dcmp"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "follow",
+      "label": "大きさの追従",
+      "role": "親の大きさが変わったときに、絶対配置の子の座標と長さを親に合わせて書き換える(docs/03「親のリサイズへの追従」)"
+    },
+    {
+      "id": "tree-edit",
+      "label": "ノードの木の書き換え",
+      "role": "名前で指したノードを含む並びを作り直し、子の並びを差し替える"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / dcmp",
+      "role": "追従を子の値へ当てる形に直し、子の並びの差し替えを `Node.withChildren` に寄せた"
+    },
+    {
+      "layer": "features / editor",
+      "role": "エディタの状態から Issue の再現そのもの(リサイズとプロパティパネルの 2 経路)を確かめる"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/features/editor/domains/editor-state/index.ts",
+      "name": "エディタの状態",
+      "role": "選択中のものへ大きさ・prop の編集を流す入口",
+      "feature": "follow",
+      "change": "`applyPropEdit` の `@returns` から、追従させる子も名前で指すという前提の記述を外した"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "ドキュメント",
+      "role": "名前で指した artboard / ノードを編集し、大きさが変わったら子を追従させる",
+      "feature": "follow",
+      "change": "`withResizeFollowUp` / `followChildren` を消し、値で組む `withFollowedChildren` / `followedChildren` / `collectAxisResizes` と長さの読み出し(`FixedLengths`)を足した"
+    },
+    {
+      "path": "src/domains/dcmp/node/index.ts",
+      "name": "ノード",
+      "role": "1 つのノードの props・子の並びを読み書きする",
+      "feature": "tree-edit",
+      "change": "`Node.withChildren(PrimitiveNode, children)` を足した"
+    },
+    {
+      "path": "src/domains/dcmp/node-tree/index.ts",
+      "name": "ノードの並び",
+      "role": "名前でノードを探し、その並びや子の並びを作り直す",
+      "feature": "tree-edit",
+      "change": "`withChildrenAt` が `PrimitiveNode` に絞ったホストを受け取り、`Node.withChildren` で差し替える"
+    },
+    {
+      "path": "src/domains/dcmp/artboard/index.ts",
+      "name": "artboard",
+      "role": "artboard の長さと直下の子の並びを持つ",
+      "feature": "follow"
+    },
+    {
+      "path": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "name": "エディタの状態のテスト準備",
+      "role": "名前が重複した再現の文書と、子の並びの引き方をテストへ配る",
+      "change": "`stateWithParentNamedLikeChild` と `childrenUnder` を足した",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "resize",
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "cmd",
+      "name": "大きさを変える",
+      "code": "DesignDocument.resize(document, name, edit)",
+      "via": "call",
+      "payload": "選択中の名前と、書き込む長さ・置き直す位置",
+      "returns": "子を追従させたドキュメント"
+    },
+    {
+      "id": "prop-edit",
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "cmd",
+      "name": "prop を書き換える",
+      "code": "DesignDocument.applyPropEdit(document, name, edit)",
+      "via": "call",
+      "payload": "選択中の名前と、プロパティパネルで書き換えた prop",
+      "returns": "子を追従させたドキュメント",
+      "status": "changed"
+    },
+    {
+      "id": "apply-node-edit",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "kind": "cmd",
+      "name": "ノードの値へ編集を当てる",
+      "code": "Node.applyPropEdit(current, edit)",
+      "via": "call",
+      "payload": "子のノードの値と、追従の編集(座標・長さ)",
+      "returns": "編集を当てた新しいノード",
+      "status": "changed"
+    },
+    {
+      "id": "follow-children",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "kind": "cmd",
+      "name": "追従させた子の並びを持たせる",
+      "code": "Node.withChildren(after, followedChildren(children, resizes))",
+      "via": "call",
+      "payload": "編集後のノードと、追従させた子の並び",
+      "returns": "子だけを差し替えたノード",
+      "status": "added"
+    },
+    {
+      "id": "replace-node",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/node-tree/index.ts",
+      "kind": "cmd",
+      "name": "部分木を書き戻す",
+      "code": "DesignDocument.replaceNode(document, name, withFollowedChildren({ before, after }))",
+      "via": "call",
+      "payload": "入口で引いた名前と、追従を済ませた部分木",
+      "returns": "書き戻したドキュメント",
+      "status": "changed"
+    },
+    {
+      "id": "artboard-tree",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "kind": "cmd",
+      "name": "artboard の子を書き戻す",
+      "code": "Artboard.withTree(resized, NodeTree.create(followedChildren(resized.children, resizes)))",
+      "via": "call",
+      "payload": "リサイズした artboard と、追従させた子の並び",
+      "returns": "子を差し替えた artboard",
+      "status": "added"
+    },
+    {
+      "id": "children-at",
+      "from": "src/domains/dcmp/node-tree/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "kind": "cmd",
+      "name": "ホストの子を差し替える",
+      "code": "Node.withChildren(host.node, children.nodes)",
+      "via": "call",
+      "payload": "`PrimitiveNode` に絞ったホストと、新しい子の並び",
+      "returns": "子を差し替えたホスト",
+      "status": "changed"
+    },
+    {
+      "id": "follow-by-name",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/node-tree/index.ts",
+      "kind": "cmd",
+      "name": "子を名前で引き直して書く",
+      "code": "applyPropEdits(current, child.name, edits)",
+      "via": "call",
+      "payload": "子の名前と追従の編集",
+      "returns": "その名前で先に見つかるノードを書き換えたドキュメント",
+      "status": "removed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "resize-box",
+      "label": "Box の大きさをハンドルで変えたとき",
+      "steps": [
+        "resize",
+        "apply-node-edit",
+        "follow-children",
+        "replace-node",
+        "children-at"
+      ]
+    },
+    {
+      "id": "prop-edit-box",
+      "label": "プロパティパネルで Box の幅を変えたとき",
+      "steps": [
+        "prop-edit",
+        "apply-node-edit",
+        "follow-children",
+        "replace-node"
+      ]
+    },
+    {
+      "id": "resize-artboard",
+      "label": "artboard の大きさを変えたとき",
+      "steps": [
+        "resize",
+        "apply-node-edit",
+        "follow-children",
+        "artboard-tree"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "3adfe9032865c97197fd52528acb73f8434751a7",
+      "phase": "prep",
+      "role": "子の並びの差し替えを `Node.withChildren` 1 つに寄せる",
+      "why": "本体の修正で、追従させた子の並びをノードの値へ直接書き戻す。その `{ ...node, children }` は `node-tree` の `withChildrenAt` に続いて 2 箇所目になり、どちらも `Node` の直和のまま書くと参照ノードに `children` が付いても型が通る。先に `PrimitiveNode` を要求する入口を作っておき、本体のコミットはそれを使うだけにした。",
+      "flows": [
+        "resize-box"
+      ],
+      "review": [
+        "`Node.withChildren` が `PrimitiveNode` だけを受け取り、参照ノードへの書き込みを型で弾いていること",
+        "このコミット時点の `withChildrenAt` は参照ノードを黙って素通しする分岐を持っており、6f622e7 で呼び出し側の絞り込みへ移していること"
+      ],
+      "before": [
+        {
+          "text": "`withChildrenAt` が `{ ...node, children: children.nodes }` を直和のまま書いていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "`withChildrenAt` は `Node.withChildren` を通して書く",
+          "message": "children-at"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "start": 363,
+          "end": 372,
+          "text": "名前・type・props はスプレッドで写し、`children` だけを差し替えた新しいノードを返す。引数のノードは変えない"
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "start": 66,
+          "end": 69,
+          "text": "位置が一致しても参照ノードならそのまま返す分岐。届かないが、届いたら更新を捨てて成功を返す形で、6f622e7 で消す"
+        }
+      ]
+    },
+    {
+      "sha": "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+      "phase": "core",
+      "role": "大きさの追従を、子の名前ではなくノードの値へ当てる",
+      "why": "`followChildren` は子への追従を `applyPropEdits(current, child.name, …)` で名前から書き直しており、名前が重複すると `findNode` が外側の別のノードを返す。パス・親の名前 + 位置・参照の同一性で指し直す案は、どれもパスで更新する API が無い・同名の祖先で外れる・編集のたびに参照が変わる、で退けた。指し直すこと自体をやめ、子の値に編集を当てて部分木を組み、入口で引いた名前で 1 回だけ書き戻す。",
+      "flows": [
+        "resize-box",
+        "prop-edit-box",
+        "resize-artboard"
+      ],
+      "review": [
+        "`followedChildren` が子の並びを `map` で値のまま追従させ、名前を一度も引いていないこと",
+        "長さが変わった子だけが `withFollowedChildren` で孫へ続き、docs/03「追従で長さが変わった子は、その子の絶対配置の子も追従する」が成り立っていること",
+        "打ち切りの 2 条件(長さの変化 0 件・子 0 件)のうち、子 0 件は constraint.test.ts の追加テストが守り、変化 0 件は理由のコメントで残していること",
+        "artboard の経路が `updateArtboardNamed` の中で前後の長さを比べ、`Artboard.withTree` で子を書き戻していること"
+      ],
+      "before": [
+        {
+          "text": "親と子が同名だと追従が親自身に当たり、`RangeError` で止まった",
+          "message": "follow-by-name"
+        },
+        {
+          "text": "artboard と同名の子の追従が artboard の props に書かれた",
+          "message": "follow-by-name"
+        }
+      ],
+      "after": [
+        {
+          "text": "追従は子の値に当たり、部分木ごと 1 回で書き戻る",
+          "message": "replace-node"
+        },
+        {
+          "text": "artboard の子は artboard の中で追従して書き戻る",
+          "message": "artboard-tree"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "side": "old",
+          "start": 634,
+          "end": 646,
+          "text": "バグの元。子を `child.name` で `applyPropEdits` へ戻しており、名前が重複すると `findNode` が返す別のノードに書く"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 612,
+          "end": 626,
+          "text": "このコミットでは長さの変化を呼び出し側で集めて渡している。9649e75 で編集前後のノードを受け取る形に寄せる"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 638,
+          "end": 655,
+          "text": "子の値へ追従の編集を当て、その子の前後の長さから孫への追従を続ける"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 2137,
+          "end": 2146,
+          "text": "名前で引くのは `findNode` の 1 回だけで、追従を済ませた部分木を `replaceNode` で 1 回書き戻す"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 2203,
+          "end": 2216,
+          "text": "artboard の経路。リサイズ前後の artboard の長さから変化を集め、子の並びを値のまま追従させる"
+        }
+      ]
+    },
+    {
+      "sha": "197aaec47a4986da45b2f09f2d6ec0fd5478c8a2",
+      "phase": "hard",
+      "role": "Issue の再現そのものをエディタの状態の入口から確かめる",
+      "why": "Issue の再現は `EditorState.resize` と `EditorState.applyPropEdit` を入口にしていた。ドキュメントの層の修正が画面からの入口にも届いていることを、再現の文書のまま固定する。同じ文書を組む関数が 2 ファイルに現れて pre-push のテストヘルパーの重複検査が落ちたので、テスト固有の準備の置き場 `setup.ts` へ寄せた。",
+      "flows": [
+        "resize-box",
+        "prop-edit-box"
+      ],
+      "review": [
+        "resize と prop-edit をカテゴリの違う 2 ファイルに分けたまま、再現の文書だけを `setup.ts` で共有していること",
+        "`applyPropEdit` の `@returns` から、名前で追従させる前提の記述だけを消し、`resize` の `@returns` はそのままにしていること"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+          "start": 146,
+          "end": 185,
+          "text": "Issue の再現と同じ、親 `p` の中に同じ名前 `p` の `scale` の子がある文書"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "start": 1230,
+          "end": 1232,
+          "text": "追従が名前を引かなくなったので、「大きさに追従させる子も名前だけを指す」を外した"
+        }
+      ]
+    },
+    {
+      "sha": "6f622e708fddbb852ca204ca2260c31bb4ef4d27",
+      "phase": "revise",
+      "role": "`withChildrenAt` は `PrimitiveNode` に絞ったホストを受け取る",
+      "why": "over-guard-reviewer の指摘。`withChildrenAt` の中で参照ノードを素通しすると、届いたときに更新を黙って捨てたまま成功を返す。絞り込みを呼び出し側へ移し、受け取る時点で子を持てるノードであることを型で成立させた。",
+      "flows": [
+        "resize-box"
+      ],
+      "review": [
+        "再帰側で `Node.isPrimitive` で先に絞っても、参照ノードは子が空なので次の兄弟へ進む挙動が変わらないこと"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "start": 60,
+          "end": 71,
+          "text": "ホストを `{ index, node: PrimitiveNode }` で受け、素通しの分岐が無くなった"
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "start": 82,
+          "end": 82,
+          "text": "ここで型ガードにしたが、false でもプリミティブのことがあり、71b905a で boolean へ戻す"
+        }
+      ]
+    },
+    {
+      "sha": "9649e75208891f3fdfd14e674403ed0277b8cc5f",
+      "phase": "revise",
+      "role": "子の追従を、編集前後のノードから組む 1 箇所に寄せる",
+      "why": "duplication-reviewer の指摘。「編集前後のノードの長さを比べて子を追従させる」手順が `applyPropEdit` と `followedChildren` の 2 箇所にあり、片方だけ直すと prop の編集の追従と孫への追従とで振る舞いが割れる。既存の `withFollowedChildren` の引数を `{ before, after }` に変え、比べ方をその中へ閉じた。あわせて名前の無い `||` の条件に `nothingToFollow` と名前を付けた。",
+      "flows": [
+        "resize-box",
+        "prop-edit-box"
+      ],
+      "review": [
+        "`applyPropEdit` と `followedChildren` の両方が `withFollowedChildren({ before, after })` だけを呼ぶ形になっていること",
+        "`settled` は `node-tree` で探索の決着の意味で使われているので、打ち切る理由が出る `nothingToFollow` に改めたこと"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 613,
+          "end": 637,
+          "text": "長さの比較と打ち切りがこの関数の中だけになった。冒頭の `!Node.isPrimitive(after)` は型の絞り込みのため"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 650,
+          "end": 661,
+          "text": "子ごとに追従の編集を当て、編集前後の子をそのまま渡す"
+        }
+      ]
+    },
+    {
+      "sha": "30daba5076f8bd194be48972dc232c63613b3285",
+      "phase": "revise",
+      "role": "子の並びの引き方をテストの間で揃える",
+      "why": "duplication-reviewer の指摘。親の最初の子を読む式が 3 箇所にあり、`[0]` は空の並びで `undefined` になって表明ではなく `TypeError` で落ちる。`childrenUnder` に寄せ、先頭は `Option.unwrap(ArrayEx.first(…))` で取る。",
+      "review": [
+        "テストの観点と期待値を変えず、子の引き方だけを揃えていること"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+          "start": 187,
+          "end": 201,
+          "text": "名前で指した親の子の並びを返す。親が居なければ `Option.unwrap` でテストを落とす"
+        }
+      ]
+    },
+    {
+      "sha": "71b905a21b9ec6e29c6c6dbff447bcd1d584d4f8",
+      "phase": "revise",
+      "role": "`allowsChildren` を boolean の判定へ戻す",
+      "why": "test-reviewer の担当外の指摘。型ガード `node is PrimitiveNode` は false の側を「プリミティブではない」と絞るが、スキーマが子を認めない Text のようなプリミティブでも false になる。型が値とずれるので判定は boolean に戻し、絞り込みは `Node.isPrimitive` を含めて名前を付けた条件 `holdsChildren` に担わせた。",
+      "review": [
+        "`children-not-allowed` を返す条件が変わっていないこと(`allowsChildren` の中でも `Node.isPrimitive` を見ている)",
+        "`holdsChildren` を通ったあとの `node` が `PrimitiveNode` に絞られ、`withChildrenAt` に渡せていること"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "start": 81,
+          "end": 81,
+          "text": "型ガードをやめ、boolean を返す判定に戻した"
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "start": 249,
+          "end": 256,
+          "text": "条件に名前を付けても、`!holdsChildren` で抜けたあとの `node` は `PrimitiveNode` に絞られる"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "ambiguous",
+      "label": "名前が重複した文書の編集",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts"
+    },
+    {
+      "id": "constraint",
+      "label": "追従の規則",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.constraint.test.ts"
+    },
+    {
+      "id": "node",
+      "label": "ノードの正常系",
+      "file": "src/domains/dcmp/node/__tests__/node.normal.test.ts"
+    },
+    {
+      "id": "editor-resize",
+      "label": "エディタの状態のリサイズ",
+      "file": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts"
+    },
+    {
+      "id": "editor-prop-edit",
+      "label": "エディタの状態の prop 編集",
+      "file": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "same-name-scale",
+      "suite": "ambiguous",
+      "name": "親と子が同じ名前でも、親を resize で広げると、scale の子の位置と長さが親の比で追従する",
+      "techniques": [
+        "regression",
+        "equivalence"
+      ],
+      "why": "Issue の再現の中心。追従が子を名前で引き直すと親自身に当たり、再帰が止まらなかった",
+      "given": "幅・高さ 100 の Box `p` の中に、同じ名前 `p` の子(x 10・幅 50・両軸 `scale`)",
+      "when": "外側の `p` の幅を `resize` で 200 にする",
+      "then": "例外を投げず、子の x が 20・幅が 100 になる",
+      "commit": "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+        "start": 338,
+        "end": 347,
+        "emphasis": [
+          {
+            "start": 345,
+            "end": 346
+          }
+        ],
+        "text": "test(\"親と子が同じ名前でも、親を resize で広げると、scale の子の位置と長さが親の比で追従する\", () => {\n  const resized = resizeTo(\n    setupScaledChildOfSameName(),\n    \"p\",\n    AxisLength.create(\"width\", 200),\n  );\n\n  const props = Option.unwrap(firstChildPropsOf(resized, \"p\"));\n  expect([props.x, props.width]).toEqual([20, 100]);\n});"
+      },
+      "values": {
+        "columns": [
+          "親の幅",
+          "子の x",
+          "子の幅"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "100(前)",
+              "10",
+              "50"
+            ]
+          },
+          {
+            "cells": [
+              "200(後)",
+              "20",
+              "100"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "resize",
+        "apply-node-edit",
+        "follow-children",
+        "replace-node"
+      ]
+    },
+    {
+      "id": "same-name-parent-props",
+      "suite": "ambiguous",
+      "name": "親と子が同じ名前でも、親を resize で広げたとき、親には指定した長さだけが書かれる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "子へ向けた追従の座標・長さが同じ名前の親へ書かれないこと",
+      "given": "同上の文書",
+      "when": "外側の `p` の幅を 200 にする",
+      "then": "親の書かれた props は `widthMode: fixed`・`width: 200`・`heightMode: fixed`・`height: 100` だけ",
+      "commit": "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+        "start": 349,
+        "end": 363,
+        "emphasis": [
+          {
+            "start": 356,
+            "end": 362
+          }
+        ],
+        "text": "test(\"親と子が同じ名前でも、親を resize で広げたとき、親には指定した長さだけが書かれる\", () => {\n  const resized = resizeTo(\n    setupScaledChildOfSameName(),\n    \"p\",\n    AxisLength.create(\"width\", 200),\n  );\n\n  const parent = Option.unwrap(DesignDocument.findNode(resized, \"p\"));\n  expect(Node.writtenPropsOf(parent)).toEqual({\n    widthMode: \"fixed\",\n    width: 200,\n    heightMode: \"fixed\",\n    height: 100,\n  });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "resize",
+        "replace-node"
+      ]
+    },
+    {
+      "id": "same-name-prop-edit",
+      "suite": "ambiguous",
+      "name": "親と子が同じ名前でも、props の編集で親の width を変えると、scale の子が追従する",
+      "techniques": [
+        "regression"
+      ],
+      "why": "プロパティパネルからの経路(`applyPropEdit`)も同じ追従を通る",
+      "given": "同上の文書",
+      "when": "`applyPropEdit` で外側の `p` の `width` を 200 にする",
+      "then": "子の x が 20 になる",
+      "commit": "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+        "start": 365,
+        "end": 376,
+        "emphasis": [
+          {
+            "start": 374,
+            "end": 375
+          }
+        ],
+        "text": "test(\"親と子が同じ名前でも、props の編集で親の width を変えると、scale の子が追従する\", () => {\n  const edited = Result.unwrap(\n    DesignDocument.applyPropEdit(\n      setupScaledChildOfSameName(),\n      \"p\",\n      PropEdit.set([\"width\"], 200),\n    ),\n  );\n\n  const props = Option.unwrap(firstChildPropsOf(edited, \"p\"));\n  expect(props.x).toBe(20);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "prop-edit",
+        "apply-node-edit",
+        "follow-children",
+        "replace-node"
+      ]
+    },
+    {
+      "id": "same-name-height",
+      "suite": "ambiguous",
+      "name": "親と子が同じ名前でも、親の高さを resize で変えると、scale の子の縦の位置と長さが追従する",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ノードの経路の縦の軸を守る(plan-reviewer の「テストが横の軸に偏っている」指摘で足した)",
+      "given": "同上の文書",
+      "when": "外側の `p` の高さを 200 にする",
+      "then": "子の y が 20・高さが 100 になる",
+      "commit": "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+        "start": 378,
+        "end": 387,
+        "emphasis": [
+          {
+            "start": 385,
+            "end": 386
+          }
+        ],
+        "text": "test(\"親と子が同じ名前でも、親の高さを resize で変えると、scale の子の縦の位置と長さが追従する\", () => {\n  const resized = resizeTo(\n    setupScaledChildOfSameName(),\n    \"p\",\n    AxisLength.create(\"height\", 200),\n  );\n\n  const props = Option.unwrap(firstChildPropsOf(resized, \"p\"));\n  expect([props.y, props.height]).toEqual([20, 100]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "resize",
+        "follow-children"
+      ]
+    },
+    {
+      "id": "sibling-badge-follows",
+      "suite": "ambiguous",
+      "name": "同じ名前のノードが前の兄弟の子にあるとき、Box の幅を変えると、追従はその Box の子に当たる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "`findNode` は並びで先の 1 つを返すので、名前で引き直すと前の兄弟の子に当たっていた",
+      "given": "`row` の中に `badge`(x 5)、後ろの `panel`(幅 100)の中にも `badge`(x 10・`constraintX: max`)",
+      "when": "`panel` の幅を 200 にする",
+      "then": "`panel` の子の x が 110 になる",
+      "commit": "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+        "start": 411,
+        "end": 420,
+        "text": "test(\"同じ名前のノードが前の兄弟の子にあるとき、Box の幅を変えると、追従はその Box の子に当たる\", () => {\n  const resized = resizeTo(\n    setupDeepFirstBadges(),\n    \"panel\",\n    AxisLength.create(\"width\", 200),\n  );\n\n  const props = Option.unwrap(firstChildPropsOf(resized, \"panel\"));\n  expect(props.x).toBe(110);\n});"
+      },
+      "values": {
+        "columns": [
+          "`panel` の幅",
+          "`panel` の `badge` の x"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "100(前)",
+              "10"
+            ]
+          },
+          {
+            "cells": [
+              "200(後)",
+              "110"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "resize",
+        "follow-children"
+      ]
+    },
+    {
+      "id": "sibling-badge-kept",
+      "suite": "ambiguous",
+      "name": "同じ名前のノードが前の兄弟の子にあるとき、Box の幅を変えても、別の場所の同名ノードは動かない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "上のテストの対照。正しい子に当たるだけでなく、外のノードに書かれないこと",
+      "given": "同上の文書",
+      "when": "`panel` の幅を 200 にする",
+      "then": "`row` の中の `badge` は x 5 のまま",
+      "commit": "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+        "start": 422,
+        "end": 431,
+        "text": "test(\"同じ名前のノードが前の兄弟の子にあるとき、Box の幅を変えても、別の場所の同名ノードは動かない\", () => {\n  const resized = resizeTo(\n    setupDeepFirstBadges(),\n    \"panel\",\n    AxisLength.create(\"width\", 200),\n  );\n\n  const props = Option.unwrap(firstChildPropsOf(resized, \"row\"));\n  expect(props.x).toBe(5);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "replace-node"
+      ]
+    },
+    {
+      "id": "artboard-child-follows",
+      "suite": "ambiguous",
+      "name": "artboard と同じ名前の子でも、artboard を広げると、追従はその子に当たる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "名前は単一の名前空間で artboard が優先されるので、名前で引き直すと artboard 自身に当たっていた",
+      "given": "幅 200 の artboard `home` の直下に、同じ名前 `home` の子(x 150・`constraintX: max`)",
+      "when": "artboard の幅を 300 にする",
+      "then": "子の x が 250 になる",
+      "commit": "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+        "start": 453,
+        "end": 462,
+        "text": "test(\"artboard と同じ名前の子でも、artboard を広げると、追従はその子に当たる\", () => {\n  const resized = resizeTo(\n    setupChildNamedAsArtboard(),\n    \"home\",\n    AxisLength.create(\"width\", 300),\n  );\n\n  const props = Option.unwrap(firstChildPropsOf(resized, \"home\"));\n  expect(props.x).toBe(250);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts",
+        "src/domains/dcmp/artboard/index.ts"
+      ],
+      "covers": [
+        "resize",
+        "follow-children",
+        "artboard-tree"
+      ]
+    },
+    {
+      "id": "artboard-props-untouched",
+      "suite": "ambiguous",
+      "name": "artboard と同じ名前の子がいても、artboard を広げたときに artboard の props へ追従の座標が書かれない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "上のテストの対照。追従の座標が artboard の props に書かれないこと",
+      "given": "同上の文書(artboard は props を持たない)",
+      "when": "artboard の幅を 300 にする",
+      "then": "artboard の `props` は書かれないまま",
+      "commit": "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+        "start": 464,
+        "end": 473,
+        "text": "test(\"artboard と同じ名前の子がいても、artboard を広げたときに artboard の props へ追従の座標が書かれない\", () => {\n  const resized = resizeTo(\n    setupChildNamedAsArtboard(),\n    \"home\",\n    AxisLength.create(\"width\", 300),\n  );\n\n  const artboard = Option.unwrap(DesignDocument.findArtboard(resized, \"home\"));\n  expect(artboard.props).toBeUndefined();\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/artboard/index.ts"
+      ],
+      "covers": [
+        "artboard-tree"
+      ]
+    },
+    {
+      "id": "grandchild-follows",
+      "suite": "ambiguous",
+      "name": "孫が祖先と同じ名前でも、長さが変わった子の中の孫が追従する",
+      "techniques": [
+        "regression",
+        "state"
+      ],
+      "why": "子の長さが変わったら孫へ続く追従でも、名前で引かないこと。親の名前 + 位置で指す案はここで外れる",
+      "given": "`p`(幅 100)> `c`(x 0・幅 100・`scale`)> `p`(x 50・`max`)",
+      "when": "外側の `p` の幅を 200 にする",
+      "then": "`c` の幅が 200 になり、その中の孫 `p` の x が 150 になる",
+      "commit": "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+        "start": 475,
+        "end": 509,
+        "emphasis": [
+          {
+            "start": 505,
+            "end": 508
+          }
+        ],
+        "text": "test(\"孫が祖先と同じ名前でも、長さが変わった子の中の孫が追従する\", () => {\n  const document = setupDocument([\n    {\n      name: \"p\",\n      type: \"Box\",\n      props: { widthMode: \"fixed\", width: 100 },\n      children: [\n        {\n          name: \"c\",\n          type: \"Box\",\n          props: {\n            placement: \"absolute\",\n            x: 0,\n            y: 0,\n            constraintX: \"scale\",\n            widthMode: \"fixed\",\n            width: 100,\n          },\n          children: [\n            {\n              name: \"p\",\n              type: \"Box\",\n              props: { placement: \"absolute\", x: 50, y: 0, constraintX: \"max\" },\n            },\n          ],\n        },\n      ],\n    },\n  ]);\n\n  const resized = resizeTo(document, \"p\", AxisLength.create(\"width\", 200));\n\n  const props = Option.unwrap(firstChildPropsOf(resized, \"c\"));\n  expect(props.x).toBe(150);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "resize",
+        "apply-node-edit",
+        "follow-children"
+      ]
+    },
+    {
+      "id": "no-children-added",
+      "suite": "constraint",
+      "name": "children を書いていない Box の長さが追従で変わっても、その Box に children が増えない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "子 0 件の打ち切りを外すと、追従のたびに空の `children` がファイルへ書き足される(打ち切りを外すとこのテストだけが落ちることを試作で確認)",
+      "given": "幅 200 の artboard の直下に、`children` を書いていない `scale` の Box `panel`",
+      "when": "artboard を広げる",
+      "then": "`panel` に `children` キーが無いまま",
+      "commit": "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.constraint.test.ts",
+        "start": 660,
+        "end": 689,
+        "emphasis": [
+          {
+            "start": 687,
+            "end": 688
+          }
+        ],
+        "text": "test(\"children を書いていない Box の長さが追従で変わっても、その Box に children が増えない\", () => {\n  const document = DesignDocument.create({\n    artboards: [\n      {\n        name: \"home\",\n        width: 200,\n        height: 100,\n        children: [\n          {\n            name: \"panel\",\n            type: \"Box\",\n            props: {\n              placement: \"absolute\",\n              x: 0,\n              y: 0,\n              constraintX: \"scale\",\n              widthMode: \"fixed\",\n              width: 200,\n            },\n          },\n        ],\n      },\n    ],\n  });\n\n  const widened = widen(document, \"home\");\n\n  const panel = Option.unwrap(DesignDocument.findNode(widened, \"panel\"));\n  expect(\"children\" in panel).toBe(false);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "follow-children"
+      ]
+    },
+    {
+      "id": "with-children",
+      "suite": "node",
+      "name": "子を差し替えたプリミティブは、名前・type・props を保ったまま新しい子を持つ",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`Node.withChildren` が子以外を変えないこと",
+      "given": "名前 `panel`・type Box・props `{ gap: 8 }`・子 `old` のノード",
+      "when": "子を `new` の並びに差し替える",
+      "then": "名前・type・props はそのままで、子だけが `new` になる",
+      "commit": "3adfe9032865c97197fd52528acb73f8434751a7",
+      "excerpt": {
+        "path": "src/domains/dcmp/node/__tests__/node.normal.test.ts",
+        "start": 61,
+        "end": 75,
+        "text": "test(\"子を差し替えたプリミティブは、名前・type・props を保ったまま新しい子を持つ\", () => {\n  const node = {\n    name: \"panel\",\n    type: \"Box\",\n    props: { gap: 8 },\n    children: [{ name: \"old\", type: \"Text\" }],\n  };\n\n  expect(Node.withChildren(node, [{ name: \"new\", type: \"Text\" }])).toEqual({\n    name: \"panel\",\n    type: \"Box\",\n    props: { gap: 8 },\n    children: [{ name: \"new\", type: \"Text\" }],\n  });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/node/index.ts"
+      ],
+      "covers": [
+        "follow-children",
+        "children-at"
+      ]
+    },
+    {
+      "id": "editor-resize-duplicated",
+      "suite": "editor-resize",
+      "name": "名前が重複した文書で選んだ Box の大きさを変えると、編集が終わり、子が追従する",
+      "techniques": [
+        "regression"
+      ],
+      "why": "Issue の再現そのもの。画面からの入口でも例外を投げない",
+      "given": "親 `p`(幅 100)の中に同じ名前 `p` の `scale` の子(x 10)がある状態で `p` を選ぶ",
+      "when": "`EditorState.resize` で幅を 200 にする",
+      "then": "`some` が返り、子の x が 20 になる",
+      "commit": "197aaec47a4986da45b2f09f2d6ec0fd5478c8a2",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+        "start": 117,
+        "end": 130,
+        "text": "test(\"名前が重複した文書で選んだ Box の大きさを変えると、編集が終わり、子が追従する\", () => {\n  const state = EditorState.select(stateWithParentNamedLikeChild(), \"p\");\n\n  const resized = Option.unwrap(\n    EditorState.resize(\n      state,\n      ResizeEdit.create([AxisLength.create(\"width\", 200)]),\n      EditContinuities.Separate,\n    ),\n  );\n\n  const child = Option.unwrap(ArrayEx.first(childrenUnder(resized, \"p\")));\n  expect(Node.writtenPropsOf(child).x).toBe(20);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts",
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "resize",
+        "follow-children",
+        "replace-node"
+      ]
+    },
+    {
+      "id": "editor-prop-edit-duplicated",
+      "suite": "editor-prop-edit",
+      "name": "名前が重複した文書で選んだ Box の width を props 欄から変えると、編集が終わり、子が追従する",
+      "techniques": [
+        "regression"
+      ],
+      "why": "Issue の再現をプロパティパネルの経路で",
+      "given": "同上の状態",
+      "when": "`EditorState.applyPropEdit` で `width` を 200 にする",
+      "then": "`some` が返り、子の x が 20 になる",
+      "commit": "197aaec47a4986da45b2f09f2d6ec0fd5478c8a2",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+        "start": 70,
+        "end": 83,
+        "text": "test(\"名前が重複した文書で選んだ Box の width を props 欄から変えると、編集が終わり、子が追従する\", () => {\n  const state = EditorState.select(stateWithParentNamedLikeChild(), \"p\");\n\n  const edited = Option.unwrap(\n    EditorState.applyPropEdit(\n      state,\n      { names: [\"width\"], value: Option.some(200) },\n      EditContinuities.Separate,\n    ),\n  );\n\n  const child = Option.unwrap(ArrayEx.first(childrenUnder(edited, \"p\")));\n  expect(Node.writtenPropsOf(child).x).toBe(20);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts",
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "prop-edit",
+        "follow-children",
+        "replace-node"
+      ]
+    },
+    {
+      "id": "artboard-prop-edit-follow",
+      "suite": "ambiguous",
+      "name": "プロパティパネルから artboard の幅を変えると、直下の絶対配置の子が追従する",
+      "techniques": [
+        "state"
+      ],
+      "why": "`applyPropEdit` の artboard の経路は、この PR より前から子を追従させない。名前の重複とは別の問題としてスコープ外にした",
+      "given": "`constraintX: max` の子を持つ artboard",
+      "when": "`applyPropEdit` で artboard の `width` を変える",
+      "then": "子が追従する",
+      "todo": true,
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts",
+        "src/domains/dcmp/artboard/index.ts"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "名前が重複した文書でも、大きさを変えると中の要素がその枠に合わせてついてくる",
+    "lead": "同じ名前の要素を含んだまま開いた文書(エラー一覧を出したまま編集を続けられる文書)で、Box や artboard の大きさを変えたときに、操作が内部のエラーで止まらず、中の要素がその枠に合わせて動くようになりました。",
+    "changed": {
+      "before": [
+        {
+          "text": "親と同じ名前の子を持つ Box の大きさを変えると、操作が内部のエラーで終わらなかった",
+          "message": "follow-by-name"
+        },
+        {
+          "text": "前にある別の Box の中に同じ名前の要素があると、大きさを変えた Box の中ではなく、そちらが動いた",
+          "message": "follow-by-name"
+        },
+        {
+          "text": "artboard と同じ名前の要素が中にあると、その要素は動かず、要素のための座標が artboard 自身に書かれた",
+          "message": "follow-by-name"
+        }
+      ],
+      "after": [
+        {
+          "text": "大きさを変えた Box の、中にある要素そのものがついてくる。名前が重なっていても、別の場所の要素は動かない",
+          "message": "follow-children"
+        },
+        {
+          "text": "ついてきて大きさが変わった要素の、さらに中の要素もついてくる",
+          "message": "follow-children"
+        },
+        {
+          "text": "artboard を広げると、artboard の中の要素がついてきて、artboard 自身には大きさだけが書かれる",
+          "message": "artboard-tree"
+        }
+      ],
+      "text": "リサイズのハンドルで変えても、プロパティパネルで幅や高さを書き換えても同じです。名前の重複そのものはこれまでどおりエラー一覧に出たままです。",
+      "relatedIssues": [
+        {
+          "issue": 867,
+          "text": "テストの穴を確かめる作業の中でこの不具合を見つけ、修正はドキュメントの挙動を変えるので別にした件"
+        }
+      ],
+      "primers": [
+        "follow",
+        "name-addressed-edit"
+      ]
+    },
+    "tables": [
+      {
+        "label": "大きさを変えたときに、中の要素がどうなるか",
+        "gist": "結果を決めるのは、名前がどこで重なっているかと、どこから大きさを変えたかの 2 つ。",
+        "text": "名前が重なっていない文書では、どちらの操作でもこれまでと同じです。プロパティパネルから artboard の幅を変える操作は、この変更より前から中の要素を動かしません。",
+        "rowHeads": [
+          {
+            "id": "unique",
+            "label": "名前の重複なし"
+          },
+          {
+            "id": "parent-child",
+            "label": "親と子が同じ名前"
+          },
+          {
+            "id": "earlier-sibling",
+            "label": "前にある別の Box の中に同じ名前",
+            "note": "大きさを変えるのは後ろの Box"
+          },
+          {
+            "id": "grandchild",
+            "label": "孫が外側の Box と同じ名前",
+            "note": "間の子は親の比で伸び縮みする"
+          },
+          {
+            "id": "artboard",
+            "label": "artboard と中の要素が同じ名前",
+            "note": "大きさを変えるのは artboard"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "handle",
+            "label": "リサイズのハンドルで変える"
+          },
+          {
+            "id": "panel",
+            "label": "プロパティパネルで幅を変える"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "unique",
+            "columnHead": "handle",
+            "result": "中の要素がついてくる"
+          },
+          {
+            "rowHead": "unique",
+            "columnHead": "panel",
+            "result": "中の要素がついてくる"
+          },
+          {
+            "rowHead": "parent-child",
+            "columnHead": "handle",
+            "result": "中の要素がついてくる",
+            "was": "操作が内部のエラーで終わらない",
+            "tests": [
+              "same-name-scale",
+              "same-name-parent-props",
+              "same-name-height",
+              "editor-resize-duplicated"
+            ]
+          },
+          {
+            "rowHead": "parent-child",
+            "columnHead": "panel",
+            "result": "中の要素がついてくる",
+            "was": "操作が内部のエラーで終わらない",
+            "tests": [
+              "same-name-prop-edit",
+              "editor-prop-edit-duplicated"
+            ]
+          },
+          {
+            "rowHead": "earlier-sibling",
+            "columnHead": "handle",
+            "result": "大きさを変えた Box の中の要素がついてきて、前の Box の中の要素は動かない",
+            "was": "前の Box の中の同じ名前の要素が代わりに動く",
+            "tests": [
+              "sibling-badge-follows",
+              "sibling-badge-kept"
+            ]
+          },
+          {
+            "rowHead": "earlier-sibling",
+            "columnHead": "panel",
+            "result": "大きさを変えた Box の中の要素がついてきて、前の Box の中の要素は動かない",
+            "was": "前の Box の中の同じ名前の要素が代わりに動く",
+            "note": "テストはハンドルの経路で書いている(同じ追従を通る)"
+          },
+          {
+            "rowHead": "grandchild",
+            "columnHead": "handle",
+            "result": "間の子が伸び、その中の孫もついてくる",
+            "was": "孫は動かず、追従が同じ名前の別の要素に当たる",
+            "tests": [
+              "grandchild-follows"
+            ]
+          },
+          {
+            "rowHead": "grandchild",
+            "columnHead": "panel",
+            "result": "間の子が伸び、その中の孫もついてくる",
+            "was": "孫は動かず、追従が同じ名前の別の要素に当たる",
+            "note": "テストはハンドルの経路で書いている(同じ追従を通る)"
+          },
+          {
+            "rowHead": "artboard",
+            "columnHead": "handle",
+            "result": "中の要素がついてきて、artboard には大きさだけが書かれる",
+            "was": "中の要素は動かず、要素のための座標が artboard に書かれる",
+            "tests": [
+              "artboard-child-follows",
+              "artboard-props-untouched"
+            ]
+          },
+          {
+            "rowHead": "artboard",
+            "columnHead": "panel",
+            "result": "中の要素は動かない(この変更より前から)",
+            "tests": [
+              "artboard-prop-edit-follow"
+            ]
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "名前が重なっていない文書で大きさを変えたときの、中の要素のつき方は変わらない"
+      },
+      {
+        "text": "中に要素を持たない Box が、ついてきて伸び縮みしても、ファイルに空の子の並びが書き足されない",
+        "tests": [
+          "no-children-added"
+        ]
+      },
+      {
+        "text": "色や文字など、大きさと関係のない値を変えたときは、中の要素に触れない"
+      },
+      {
+        "text": "名前の重複そのものはエラー一覧に出たままで、この変更では直さない"
+      },
+      {
+        "text": "プロパティパネルから artboard の幅を変えても、中の要素はこれまでどおりついてこない",
+        "tests": [
+          "artboard-prop-edit-follow"
+        ]
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/03-schema.md",
+        "locator": "「親のリサイズへの追従」の、追従で長さが変わった子はその子の絶対配置の子も追従する、の行",
+        "text": "孫へ続く追従の規則は変えていない。名前を引かずに同じ規則を満たすように直した"
+      },
+      {
+        "path": "docs/03-schema.md",
+        "locator": "「開く時」の、名前の一意性違反でも開いて編集を続けられる、の表",
+        "text": "名前が重複した文書を開いて編集を続けられる扱いは変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "spread-update",
+      "category": "TypeScript · オブジェクト",
+      "label": "スプレッド構文での不変更新",
+      "gist": "元のオブジェクトを書き換えずに、一部のプロパティだけを差し替えた新しいオブジェクトを作るための書き方。`{ ...node, children }` と書くと、`node` のプロパティを写したうえで `children` だけを新しい値にした別の[[オブジェクト|object]]になる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`{ ...x }` はオブジェクトリテラルの中で `x` の自分のプロパティを順に写す。後ろに同じ名前のプロパティを書くと、そちらが勝つ。`{ children }` は `{ children: children }` の省略形。元の `node` は変わらないので、[[不変|immutable]]なデータの更新に使う。"
+        },
+        {
+          "kind": "declaration",
+          "code": "withChildren(node: PrimitiveNode, children: readonly Node[]): PrimitiveNode {\n  return { ...node, children };\n}"
+        },
+        {
+          "kind": "caution",
+          "text": "写すのは 1 段だけの[[浅いコピー|shallow-copy]]で、`props` のような入れ子のオブジェクトは元と同じものを指したまま。入れ子を書き換えるなら、その段でもスプレッドで作り直す。"
+        },
+        {
+          "kind": "memo",
+          "text": "受け取る型を `Node` のような[[直和|union]]のままにすると、`children` を持たない参照ノードに `children` が付いた値でも型の検査を通ってしまう(直和のどれかに `children` があれば余分なプロパティとして咎められない)。この PR はそのため、受け取る型を `PrimitiveNode` に絞った `Node.withChildren` に書き込みを集めた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "lineRange": {
+            "start": 370,
+            "end": 372
+          },
+          "text": "`Node.withChildren` の本体",
+          "shas": [
+            "3adfe9032865c97197fd52528acb73f8434751a7"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "lineRange": {
+            "start": 60,
+            "end": 71
+          },
+          "text": "`withChildrenAt` は以前ここで直に `{ ...node, children: children.nodes }` を書いていた",
+          "shas": [
+            "3adfe9032865c97197fd52528acb73f8434751a7",
+            "6f622e708fddbb852ca204ca2260c31bb4ef4d27"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "with-children"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "type-guard",
+      "category": "TypeScript · 型",
+      "label": "型ガード `x is T`",
+      "gist": "関数が true を返したら引数が `T` だと型検査器に教える書き方。呼び出し側の `if` の中で、その値を `T` として扱えるように[[絞り込み|narrowing]]が効く。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "戻り値の型に `node is PrimitiveNode` と書いた関数は boolean を返す。`if (Node.isPrimitive(node))` の中では `node` が `PrimitiveNode` に、`else` の側(false の側)では `Node` から `PrimitiveNode` を除いた残り(ここでは参照ノード)に絞られる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "isPrimitive(node: Node): node is PrimitiveNode {\n  return \"type\" in node;\n}"
+        },
+        {
+          "kind": "caution",
+          "text": "false の側も絞られるので、「true なら必ず `T`、false なら必ず `T` でない」が成り立つ判定にだけ書く。子を認めるかの判定 `allowsChildren` はスキーマが子を認めない Text でも false を返すので、型ガードにすると false の側で Text を参照ノードと思い込む。6f622e7 で型ガードにして、71b905a で boolean へ戻したのはこのため。"
+        },
+        {
+          "kind": "rule",
+          "text": "型ガードの中身が正しいかは検査されない。書いた人が true / false の両側の意味に責任を持つ。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "lineRange": {
+            "start": 348,
+            "end": 350
+          },
+          "text": "`Node.isPrimitive` は両側が成り立つ型ガード"
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "lineRange": {
+            "start": 81,
+            "end": 83
+          },
+          "text": "`allowsChildren` は boolean のまま",
+          "shas": [
+            "6f622e708fddbb852ca204ca2260c31bb4ef4d27",
+            "71b905a21b9ec6e29c6c6dbff447bcd1d584d4f8"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 620,
+            "end": 622
+          },
+          "text": "`!Node.isPrimitive(after)` で早く返し、以降の `after` を `PrimitiveNode` として `Node.withChildren` に渡す。外しても振る舞いは変わらない、型のための判定",
+          "shas": [
+            "9649e75208891f3fdfd14e674403ed0277b8cc5f"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "aliased-condition"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "aliased-condition",
+      "category": "TypeScript · 型",
+      "label": "名前を付けた条件での絞り込み",
+      "gist": "`&&` で組んだ条件を `const` の変数に入れてから `if` に使っても、その条件の中の[[型ガード|type-guard-term]]の[[絞り込み|narrowing]]が効く。条件に名前を付けるこのリポジトリの規約と、型の絞り込みを両立できる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "TypeScript 4.4 から、`const` に入れた条件を `if` で見たときも、元の式を直接書いたのと同じように絞り込む。`if (!holdsChildren) return …;` で抜けたあとは、`holdsChildren` が true だったことになり、その中の `Node.isPrimitive(node)` から `node` が `PrimitiveNode` に絞られる。"
+        },
+        {
+          "kind": "caution",
+          "text": "絞り込みが効くのは、条件の変数も、絞られる値(ここでは `for … of` の `const` で受けた `node`)も再代入されないときだけ。`let` で受けると効かない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "lineRange": {
+            "start": 249,
+            "end": 256
+          },
+          "text": "`holdsChildren` で抜けたあと、`node` をそのまま `withChildrenAt` のホストに渡している",
+          "shas": [
+            "71b905a21b9ec6e29c6c6dbff447bcd1d584d4f8"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 632,
+            "end": 635
+          },
+          "text": "`nothingToFollow` は絞り込みとは関係のない、打ち切りの理由に名前を付けた条件",
+          "shas": [
+            "9649e75208891f3fdfd14e674403ed0277b8cc5f"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "type-guard"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "record-type",
+      "category": "TypeScript · 型",
+      "label": "`Readonly<Record<K, V>>`",
+      "gist": "キーの集合 `K` のどれにも値 `V` を持つオブジェクトの型を作る、標準の[[型の部品|utility-type]]。`Readonly` を重ねると書き換えられないオブジェクトになる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`Record<Axis, Option<number>>` は、`Axis`(`\"width\" | \"height\"`)の両方のキーを必ず持ち、値が `Option<number>` のオブジェクト。片方の軸を書き忘れると型エラーになる。`fixedLengths[axis]` のように軸の値で引ける。"
+        },
+        {
+          "kind": "declaration",
+          "code": "type FixedLengths = Readonly<Record<Axis, Option<number>>>;"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 546,
+            "end": 546
+          },
+          "text": "編集前後の長さを軸ごとに持つ private 型",
+          "shas": [
+            "7c60c7ec8dd5f39edbb7415da0815c836068e627"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 579,
+            "end": 603
+          },
+          "text": "ノードと artboard から、それぞれこの形で長さを読む",
+          "shas": [
+            "7c60c7ec8dd5f39edbb7415da0815c836068e627"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "fixed-lengths"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "array-map",
+      "category": "JavaScript · 配列",
+      "label": "`map` と `flatMap`",
+      "gist": "配列の要素ごとに関数を呼んで新しい配列を作る組み込みのメソッド。`map` は件数と順を保ち、`flatMap` は各要素が返した配列をつないで 1 つの配列にする。どちらも元の配列は変えない。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`children.map((child) => …)` は子と同じ件数・同じ順の新しい並びを返すので、「並びの中のノードそのもの」を追従させた並びになる。名前で探し直さないので、同じ名前があっても取り違えない。"
+        },
+        {
+          "kind": "text",
+          "text": "`flatMap` で 1 件なら `[値]`、無ければ `[]` を返すと、絞り込みと変換を一度に書ける。`collectAxisResizes` は長さが変わった軸だけを残すのにこれを使っている。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 650,
+            "end": 661
+          },
+          "text": "`followedChildren` は子の並びを `map` で追従させる",
+          "shas": [
+            "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+            "9649e75208891f3fdfd14e674403ed0277b8cc5f"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 555,
+            "end": 570
+          },
+          "text": "`collectAxisResizes` は `flatMap` で変わった軸だけを集める",
+          "shas": [
+            "7c60c7ec8dd5f39edbb7415da0815c836068e627"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "follow"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "follow",
+      "category": "domains · 追従",
+      "label": "大きさの追従",
+      "gist": "親の大きさが変わったとき、[[絶対配置|absolute]]の子の座標と長さを、子の[[追従の指定|constraint]]に従って書き換える仕組み(docs/03「親のリサイズへの追従」)。この PR で、子を名前で引き直さず、子の値へ当てて部分木ごと作り直す形になった。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "入口は `applyPropEdit`(ノードの prop の編集。ノードのリサイズもここを通る)と、`resize` の artboard の経路。どちらも編集前後の長さを比べ、変わった軸ぶんの変化を `followedChildren` に渡す。`followedChildren` は子ごとに `followPropEdits` で追従の編集を作って子の値へ当て、その子の長さも変わったら `withFollowedChildren` で孫へ続ける。最後に部分木を 1 回だけ書き戻す。"
+        },
+        {
+          "kind": "spec",
+          "text": "追従で長さが変わった子は、その子の絶対配置の子も追従する(docs/03「親のリサイズへの追従」)。以前は子を `applyPropEdit` へ名前で戻すことで暗黙に[[再帰|recursion]]していた。今は `followedChildren` → `withFollowedChildren` の明示的な再帰。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は `withResizeFollowUp` → `followChildren` が `applyPropEdits(current, child.name, …)` で子を名前から書き直していた。名前が重複すると外側の親自身に当たり、`scale` の子で長さが変わり続けて[[呼び出しのスタック|call-stack]]があふれていた。"
+        },
+        {
+          "kind": "rule",
+          "text": "打ち切りは 2 つ。長さの変化が 0 件(大きさと無関係な prop の編集)と、子が 0 件(`children` を書いていない Box に空の `children` を書き足さないため)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 605,
+            "end": 662
+          },
+          "text": "`withFollowedChildren` と `followedChildren`",
+          "shas": [
+            "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+            "9649e75208891f3fdfd14e674403ed0277b8cc5f"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 2207,
+            "end": 2219
+          },
+          "text": "`resize` の artboard の経路",
+          "shas": [
+            "7c60c7ec8dd5f39edbb7415da0815c836068e627"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 194,
+            "end": 232
+          },
+          "text": "1 つの子への追従の編集を作る `followPropEdits`(この PR では変えていない)"
+        }
+      ],
+      "seeAlso": [
+        "fixed-lengths",
+        "name-addressed-edit",
+        "array-map"
+      ],
+      "tests": [
+        "same-name-scale",
+        "same-name-height",
+        "grandchild-follows",
+        "artboard-child-follows",
+        "no-children-added",
+        "artboard-prop-edit-follow"
+      ],
+      "flows": [
+        "resize-box",
+        "prop-edit-box",
+        "resize-artboard"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "name-addressed-edit",
+      "category": "domains · 編集",
+      "label": "名前で指す編集",
+      "gist": "ドキュメントの編集はどれも、artboard / ノードを名前で指す(`findNode` / `replaceNode` / `applyPropEdit`)。名前は単一の名前空間で、[[名前が重複した文書|duplicated-doc]]では artboard を優先し、ノードは並びで先に見つかる 1 つに当たる。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "名前で引くのは「編集の入口で相手を決める」1 回なら、重複していても約束どおり先の 1 つに決まる。問題は、入口で決めた相手の子を、途中でもう一度名前で引き直していたこと。子の名前が親や別の場所のノードと重なると、先に見つかる別のノードに書いてしまう。"
+        },
+        {
+          "kind": "rule",
+          "text": "名前で引くのは入口の 1 回だけにし、そこから先はノードの値を持ち回る。"
+        },
+        {
+          "kind": "memo",
+          "text": "グループ化(`groupIntoBox`)と解除(`ungroupBox`)にも、名前が重複した文書で外のノードに当たりうる箇所が残っている。再帰ではないので例外にはならず、Issue で外した名前の重複そのものの扱いに属する。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 2128,
+            "end": 2151
+          },
+          "text": "`applyPropEdit` は `findNode` で 1 回引き、追従を済ませた部分木を `replaceNode` で書き戻す",
+          "shas": [
+            "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+            "9649e75208891f3fdfd14e674403ed0277b8cc5f"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 2315,
+            "end": 2325
+          },
+          "text": "`replaceNode` は `findNode` が返すノードだけを差し替える"
+        }
+      ],
+      "seeAlso": [
+        "follow"
+      ],
+      "tests": [
+        "sibling-badge-follows",
+        "sibling-badge-kept",
+        "artboard-props-untouched",
+        "same-name-parent-props"
+      ],
+      "flows": [
+        "resize-box",
+        "prop-edit-box"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "with-children",
+      "category": "domains · ノード",
+      "label": "子の並びの差し替え",
+      "gist": "ノードの子の並びを差し替える書き込みを `Node.withChildren` 1 つに集め、子を持てるプリミティブだけを受け取る。`node-tree` の `withChildrenAt` も、[[型ガード|type-guard-term]]で絞ったホストを渡してこれを使う。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`withChildrenAt` は `{ index, node: PrimitiveNode }` を受け取り、その位置へ差し替えたノードを置くだけ。参照ノードかどうかの絞り込みは、名前を比べたあとの再帰側(`if (!Node.isPrimitive(host)) continue;`)と、親を見つけた側の `holdsChildren` が受け持つ。"
+        },
+        {
+          "kind": "history",
+          "text": "3adfe90 では `withChildrenAt` の中に「参照ノードならそのまま返す」分岐があった。届かない枝だが、届いたら更新を黙って捨てて成功を返すので、6f622e7 で呼び出し側へ移した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "lineRange": {
+            "start": 363,
+            "end": 372
+          },
+          "text": "`Node.withChildren`",
+          "shas": [
+            "3adfe9032865c97197fd52528acb73f8434751a7"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "lineRange": {
+            "start": 52,
+            "end": 71
+          },
+          "text": "`withChildrenAt`",
+          "shas": [
+            "3adfe9032865c97197fd52528acb73f8434751a7",
+            "6f622e708fddbb852ca204ca2260c31bb4ef4d27"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "lineRange": {
+            "start": 208,
+            "end": 225
+          },
+          "text": "`updateSiblingsOf` の再帰側の絞り込み",
+          "shas": [
+            "6f622e708fddbb852ca204ca2260c31bb4ef4d27"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "spread-update",
+        "type-guard",
+        "aliased-condition"
+      ],
+      "tests": [
+        "with-children",
+        "no-children-added"
+      ],
+      "flows": [
+        "resize-box"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "fixed-lengths",
+      "category": "domains · 追従",
+      "label": "長さの変化の集め方",
+      "gist": "追従に要るのは「どの軸の長さが、いくつからいくつへ変わったか」。編集前後の値から軸ごとの[[fixed の長さ|fixed-length]]を先に読み、`collectAxisResizes({ before, after })` で変わった軸だけを集める。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "ノードは `fixedLengthsOfNode`(部品インスタンス・スキーマに無い type、`hug` / `fill` の軸は `none`)、artboard は `fixedLengthsOfArtboard`(2 軸とも常に `some`)で読む。前後のどちらかが `none` の軸は追従しない(docs/03:親の長さが前後どちらかで決まらないときは追従しない)。"
+        },
+        {
+          "kind": "history",
+          "text": "以前はドキュメントと名前から `fixedLengthOf` で前後を引いていた。名前で引くと重複したときに別のノードの長さを読むので、値から読む形にした。公開の `fixedLengthOf` もノードの枝はこの読み出しを使う。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 545,
+            "end": 603
+          },
+          "text": "`FixedLengths` と `collectAxisResizes`・`fixedLengthsOfNode`・`fixedLengthsOfArtboard`",
+          "shas": [
+            "7c60c7ec8dd5f39edbb7415da0815c836068e627",
+            "9649e75208891f3fdfd14e674403ed0277b8cc5f"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 2037,
+            "end": 2050
+          },
+          "text": "公開の `fixedLengthOf` のノードの枝",
+          "shas": [
+            "7c60c7ec8dd5f39edbb7415da0815c836068e627"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "record-type",
+        "follow"
+      ],
+      "tests": [
+        "same-name-height",
+        "no-children-added"
+      ],
+      "flows": [
+        "resize-artboard",
+        "prop-edit-box"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "object",
+      "label": "オブジェクト",
+      "text": "名前の付いたプロパティと値の組を集めた値。`{ name: \"p\", type: \"Box\" }` のように書く。"
+    },
+    {
+      "id": "immutable",
+      "label": "不変",
+      "text": "一度作った値を書き換えず、変えたいときは新しい値を作ること。古い値を持っている他の場所が、知らないうちに変わるのを防ぐ。"
+    },
+    {
+      "id": "shallow-copy",
+      "label": "浅いコピー",
+      "text": "外側の 1 段だけを新しく作るコピー。中に入っているオブジェクトや配列は、元と同じものを指したまま。"
+    },
+    {
+      "id": "union",
+      "label": "直和",
+      "text": "「A か B のどちらか」を表す型。TypeScript では `A | B` と書く(union 型)。"
+    },
+    {
+      "id": "narrowing",
+      "label": "絞り込み",
+      "text": "`if` などの条件を通ったあと、型検査器が値の型をより狭い型として扱うこと。`A | B` の値が `A` だと分かった枝では、`A` のプロパティを使える。"
+    },
+    {
+      "id": "type-guard-term",
+      "label": "型ガード",
+      "text": "戻り値の型を `x is T` と書いた、boolean を返す関数。true を返した枝で引数を `T` に絞り込ませる。"
+    },
+    {
+      "id": "utility-type",
+      "label": "型の部品",
+      "text": "TypeScript が最初から用意している、型から型を作る道具(`Record`・`Readonly`・`Partial` など)。インストールせずに使える。"
+    },
+    {
+      "id": "absolute",
+      "label": "絶対配置",
+      "text": "親の中で座標(`x` / `y`)を書いて置く配置(`placement: absolute`)。並べて置くフロー配置と違い、親の大きさが変わると追従の指定に従って動く。"
+    },
+    {
+      "id": "constraint",
+      "label": "追従の指定",
+      "text": "親の大きさが変わったときに子がどう動くかを軸ごとに決める prop(`constraintX` / `constraintY`)。`min` / `max` / `center` / `stretch` / `scale` のどれか。"
+    },
+    {
+      "id": "recursion",
+      "label": "再帰",
+      "text": "関数が、処理の途中で自分自身(または自分へ戻ってくる関数)を呼ぶこと。止まる条件が満たされないと呼び出しが積み上がり続ける。"
+    },
+    {
+      "id": "call-stack",
+      "label": "呼び出しのスタック",
+      "text": "実行中の関数呼び出しを積んでおく場所。再帰が止まらないと上限を超え、JavaScript は `RangeError: Maximum call stack size exceeded` を投げる。"
+    },
+    {
+      "id": "duplicated-doc",
+      "label": "名前が重複した文書",
+      "text": "名前の一意性に違反した `.dcmp`。docs/03「開く時」により、エラー一覧を重ねて表示したまま開いて編集を続けられる。"
+    },
+    {
+      "id": "fixed-length",
+      "label": "fixed の長さ",
+      "text": "長さのモード(`widthMode` / `heightMode`)が `fixed` の軸に書かれた長さ。`hug` / `fill` の軸は中身や親で決まるので、書ける長さを持たない。"
+    }
+  ]
+}
