@@ -181,6 +181,34 @@ export const ArrayEx = {
   },
 
   /**
+   * 空でない並びの各要素を、不在になりうる手続きで並びの順に写す。`none` が返ったところで
+   * 止める。
+   *
+   * @param array 写す前の並び
+   * @param fn 要素から写した先の値を作る。作れなければ `none`
+   * @returns 各要素を写した値を同じ順に持つ並び。1 つでも `none` が返ればその時点で `none`
+   *   （以降の要素は写さない）
+   */
+  mapNonEmptyUntilNone<T, U>(
+    array: NonEmptyArray<T>,
+    fn: (item: T) => Option<U>,
+  ): Option<NonEmptyArray<U>> {
+    const [first, ...rest] = array;
+    return Option.flatMap(fn(first), (mappedFirst) =>
+      rest.reduce<Option<NonEmptyArray<U>>>(
+        (mapped, item) =>
+          Option.flatMap(mapped, (values) =>
+            Option.map(
+              fn(item),
+              (value): NonEmptyArray<U> => [...values, value],
+            ),
+          ),
+        Option.some([mappedFirst]),
+      ),
+    );
+  },
+
+  /**
    * 各要素を不在になりうる手続きで写し、値のあったものだけを並びの順に残す。
    *
    * @param array 写す前の並び
@@ -251,6 +279,20 @@ export const ArrayEx = {
    */
   distinct<T>(array: readonly T[]): readonly T[] {
     return array.filter((item, index) => indexOfEqual(array, item) === index);
+  },
+
+  /**
+   * 空でない並びから重複を取り除いた、空でない並び。
+   *
+   * @param array 重複を含みうる空でない並び
+   * @returns 各値を最初に現れた位置に 1 つずつ残した新しい並び（等しさは `distinct` と同じ）
+   */
+  distinctNonEmpty<T>(array: NonEmptyArray<T>): NonEmptyArray<T> {
+    const [first, ...rest] = array;
+    return [
+      first,
+      ...ArrayEx.distinct(rest).filter((item) => !isSameValueZero(item, first)),
+    ];
   },
 
   /**
