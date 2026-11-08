@@ -4,8 +4,10 @@ import type {
   PublicPropRef,
 } from "@/domains/dcmp/component-binding";
 import type {
+  ChildOwner,
   NamePosition,
   NameViolation,
+  RootPosition,
 } from "@/domains/dcmp/document-names";
 import type { RefNode } from "@/domains/dcmp/node";
 import type { PropValidationError } from "@/domains/dcmp/primitive-schema";
@@ -68,7 +70,8 @@ type TokenErrorLocation = Readonly<{ tokenName: string; prop?: string }>;
 
 /**
  * 名前の無いルート（部品定義・artboard）を指す不正 1 件。どのルートかをドキュメント内のパスで
- * 持ち、診断用のメッセージを持つ。
+ * 持ち、診断用のメッセージを持つ。子ノードの欠落も、入れ物がルートの位置
+ * （`NamePosition` の `child`）ならこの形になる。
  */
 type UnnamedRootValidationError = Readonly<{
   kind: "missing-name";
@@ -93,40 +96,99 @@ export type DesignDocumentValidationError =
   | TokenValidationError
   | UnnamedRootValidationError;
 
+/** 名前の欠落を報告するときのエラーの位置。名前を持つノードか、ドキュメント内のパス。 */
+type MissingNameLocation =
+  | Readonly<{ nodeName: string }>
+  | Readonly<{ documentPath: string }>;
+
 /**
- * 名前が欠落した位置を、報告用のエラーにする。
+ * ルートの位置を、エラーの位置とメッセージの主語にする。
  *
- * @param position 名前が欠落した位置
- * @returns 部品のキー・artboard の欠落はそのルートをドキュメント内のパス（`components` /
- *   `artboards[<添字>]`）で指す missing-name、子ノードの欠落は名前を持つ最も近い祖先のノードを
- *   指す missing-name
+ * @param position 部品定義・artboard のドキュメント内の位置
+ * @returns `documentPath` にドキュメント内のパス（`components` / `artboards[<添字>]`）、
+ *   `subject` にメッセージの主語（`key "" of "components"` / `artboard <添字> of "artboards"`）
  *
  * キーが空の部品は、デコード失敗の綴り（`components.`）ではなく `components` で指す。末尾の
  * `.` は綴りが欠けて見えるため。
  */
-function toMissingNameError(
-  position: NamePosition,
-): NodeValidationError | UnnamedRootValidationError {
+function toRootErrorLocation(
+  position: RootPosition,
+): Readonly<{ documentPath: string; subject: string }> {
   switch (position.kind) {
     case "component-key":
       return {
-        kind: "missing-name",
         documentPath: ComponentsField,
-        message: `key "" of "${ComponentsField}" has no name`,
+        subject: `key "" of "${ComponentsField}"`,
       };
     case "artboard":
       return {
-        kind: "missing-name",
         documentPath: Json.elementPath(ArtboardsField, position.index),
-        message: `artboard ${position.index} of "${ArtboardsField}" has no name`,
-      };
-    case "child":
-      return {
-        kind: "missing-name",
-        nodeName: position.ownerName,
-        message: `child ${position.index} of "${position.ownerName}" has no name`,
+        subject: `artboard ${position.index} of "${ArtboardsField}"`,
       };
   }
+}
+
+/**
+ * 欠落を報告するときの入れ物を、エラーの位置とメッセージの主語にする。
+ *
+ * @param owner 名前を持つノードか、ルートの位置
+ * @returns 名前を持つノードならそのノード名を位置に、`"<名前>"` を主語にする。ルートの位置なら
+ *   `toRootErrorLocation` のパスを位置に、その主語を主語にする
+ */
+function toOwnerErrorLocation(
+  owner: ChildOwner,
+): Readonly<{ location: MissingNameLocation; subject: string }> {
+  switch (owner.kind) {
+    case "named":
+      return {
+        location: { nodeName: owner.name },
+        subject: `"${owner.name}"`,
+      };
+    case "component-key":
+    case "artboard": {
+      const { documentPath, subject } = toRootErrorLocation(owner);
+      return { location: { documentPath }, subject };
+    }
+  }
+}
+
+/**
+ * 名前が欠落した位置を、エラーの位置と、名前を持たないものを指す主語にする。
+ *
+ * @param position 名前が欠落した位置
+ * @returns ルートの欠落はそのルートの位置と主語。子ノードの欠落は入れ物の位置と、
+ *   `child <添字> of <入れ物の主語>`
+ */
+function toMissingNameErrorLocation(
+  position: NamePosition,
+): Readonly<{ location: MissingNameLocation; subject: string }> {
+  switch (position.kind) {
+    case "component-key":
+    case "artboard":
+      return toOwnerErrorLocation(position);
+    case "child": {
+      const { location, subject } = toOwnerErrorLocation(position.owner);
+      return { location, subject: `child ${position.index} of ${subject}` };
+    }
+  }
+}
+
+/**
+ * 名前が欠落した位置を、報告用のエラーにする。
+ *
+ * @param position 名前が欠落した位置
+ * @returns `toMissingNameErrorLocation` の位置を持ち、`<主語> has no name` をメッセージに持つ
+ *   missing-name
+ */
+function toMissingNameError(
+  position: NamePosition,
+): NodeValidationError | UnnamedRootValidationError {
+  const { location, subject } = toMissingNameErrorLocation(position);
+  return {
+    kind: "missing-name",
+    ...location,
+    message: `${subject} has no name`,
+  };
 }
 
 /**

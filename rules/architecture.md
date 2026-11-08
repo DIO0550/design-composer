@@ -114,7 +114,7 @@ app → features → services → domains
 ```
 
 - `src/domains/<カテゴリ>/<x>/` は他の domain を import してよい(カテゴリの向きに従う・一方向のみ・循環禁止)。services / features / React / Tauri API への依存は禁止
-- **domains から libs への import は `__tests__/` の中だけ許す。** ファイルに載っている綴りを作るのに外部フォーマットの解釈が要り、そこを差し替えるとテストが実物で確かめられなくなるため(`rules/testing.md`「代替してよいのはプロセス外の境界のみ」)。**production 側は 0 件**で、外の語彙が要るなら境界(`libs/`)で詰め替えてドメインの語彙にする
+- **domains から libs への import は `__tests__/` の中だけ許す**(理由は判例 `dependency`)。**production 側は 0 件**で、外の語彙が要るなら境界(`libs/`)で詰め替えてドメインの語彙にする
 - `src/services/` は `src/domains/` と `src/types/` と `src/utils/` のみ import 可。React / Tauri API への依存は禁止
 - `features/<x>/` は自分の内部、`src/services/`、`src/domains/`、横断層(`components/` `hooks/` `libs/` `utils/` `types/`)を import 可。他 feature は**公開API = その feature の `index.ts` 経由のみ**で、向きは**親から直下の子だけ**(子 feature 同士・子から親は禁止。繋ぐのは親 → `rules/consistency.md`「feature の構成とネスト」)
 - `features/<x>/domains/` は `src/domains/` を import してよいが、他 feature の domains への直接 import は不可(2つ以上の feature が必要とするドメインオブジェクトは昇格させる → 「配置の判断基準」)

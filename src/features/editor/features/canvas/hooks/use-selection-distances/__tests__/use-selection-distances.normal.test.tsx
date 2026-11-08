@@ -16,6 +16,7 @@ import {
 } from "@/features/editor/features/canvas/domains/distance-pair";
 import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import { Pointing } from "@/features/editor/features/canvas/domains/pointing";
+import { stubBoundsEachMeasure } from "@/libs/__tests__/element-measure";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { useSelectionDistances } from "..";
@@ -26,7 +27,7 @@ import { useSelectionDistances } from "..";
  * `selection-distance-tree` の doc。
  */
 
-/* 測定の差し替え方と後片付けが要る理由は `canvas-measure` の doc を見る。 */
+/* 測定の差し替え方は `element-measure`、後片付けが要る理由は `canvas-measure` の doc を見る。 */
 afterEach(clearDrawn);
 
 /** `row` と、その親 `card`・兄弟 `chip` を描く。 */
@@ -54,10 +55,10 @@ test("指し先が無ければ、DOM を測らずに何も引かない", () => {
   for (const name of ["row", "card"] as const) {
     const element = drawNamed(name, SelectionDistanceTreeBounds[name]);
     const bounds = SelectionDistanceTreeBounds[name];
-    element.getBoundingClientRect = () => {
+    stubBoundsEachMeasure(element, () => {
       measured.push(name);
-      return new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
-    };
+      return bounds;
+    });
   }
   const selection = selectionDistanceTree(["row"]);
 

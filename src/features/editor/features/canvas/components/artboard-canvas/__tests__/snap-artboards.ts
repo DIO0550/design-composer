@@ -10,6 +10,7 @@ import {
   pressPointerHolding,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
+import { stubBoundsEachMeasure } from "@/libs/__tests__/element-measure";
 import { drawn, selectionFromArtboards } from "./setup";
 
 /** 並べる 3 枚の artboard の名前（並び順）と、3 枚に共通の大きさ。 */
@@ -46,15 +47,15 @@ export function setupSelection() {
  * @param name 追従させる artboard の名前
  */
 export function drawnFollowingFrame(name: string): void {
-  drawn(name).getBoundingClientRect = () => {
+  stubBoundsEachMeasure(drawn(name), () => {
     const { style } = artboardFrameContainer(canvasContent(), name);
-    return new DOMRect(
-      Number.parseFloat(style.left),
-      Number.parseFloat(style.top),
-      SampleArtboards.width,
-      SampleArtboards.height,
-    );
-  };
+    return {
+      left: Number.parseFloat(style.left),
+      top: Number.parseFloat(style.top),
+      width: SampleArtboards.width,
+      height: SampleArtboards.height,
+    };
+  });
 }
 
 /**

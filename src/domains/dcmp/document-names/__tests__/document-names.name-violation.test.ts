@@ -33,7 +33,11 @@ test("名前が空のノードは、入れ物の名前と兄弟の中の位置�
   expect(violations).toEqual([
     {
       kind: "missing",
-      position: { kind: "child", ownerName: "screen", index: 1 },
+      position: {
+        kind: "child",
+        owner: { kind: "named", name: "screen" },
+        index: 1,
+      },
     },
   ]);
 });
@@ -54,7 +58,11 @@ test("name の無い（JSON 由来の）ノードも欠落として返る", () =
   expect(violations).toEqual([
     {
       kind: "missing",
-      position: { kind: "child", ownerName: "screen", index: 0 },
+      position: {
+        kind: "child",
+        owner: { kind: "named", name: "screen" },
+        index: 0,
+      },
     },
   ]);
 });
@@ -73,7 +81,11 @@ test("名前が欠落したノードの子の欠落は、名前を持つ最も�
 
   expect(violations[1]).toEqual({
     kind: "missing",
-    position: { kind: "child", ownerName: "screen", index: 0 },
+    position: {
+      kind: "child",
+      owner: { kind: "named", name: "screen" },
+      index: 0,
+    },
   });
 });
 
@@ -92,13 +104,18 @@ test("名前を持つ途中のノードの下の欠落は、そのノードを�
   expect(violations).toEqual([
     {
       kind: "missing",
-      position: { kind: "child", ownerName: "row", index: 0 },
+      position: {
+        kind: "child",
+        owner: { kind: "named", name: "row" },
+        index: 0,
+      },
     },
   ]);
 });
 
-test("名前を持つ祖先が無いノードの欠落は、空の入れ物の名前で返る", () => {
+test("名前を持つ祖先が無いノードの欠落は、その子を収める artboard の位置を入れ物として返る", () => {
   const violations = DocumentNames.collectNameViolations({}, [
+    { name: "screen", width: 375, height: 812, children: [] },
     {
       name: "",
       width: 375,
@@ -109,7 +126,94 @@ test("名前を持つ祖先が無いノードの欠落は、空の入れ物の�
 
   expect(violations[1]).toEqual({
     kind: "missing",
-    position: { kind: "child", ownerName: "", index: 0 },
+    position: {
+      kind: "child",
+      owner: { kind: "artboard", index: 1 },
+      index: 0,
+    },
+  });
+});
+
+test("名前の空なノードが続く深い子の欠落も、ルートの artboard の位置を入れ物として返る", () => {
+  const violations = DocumentNames.collectNameViolations({}, [
+    {
+      name: "",
+      width: 375,
+      height: 812,
+      children: [
+        {
+          name: "",
+          type: "Box",
+          children: [
+            { name: "title", type: "Text" },
+            { name: "", type: "Text" },
+          ],
+        },
+      ],
+    },
+  ]);
+
+  expect(violations[2]).toEqual({
+    kind: "missing",
+    position: {
+      kind: "child",
+      owner: { kind: "artboard", index: 0 },
+      index: 1,
+    },
+  });
+});
+
+test("名前を持つ祖先が無い部品内部のノードの欠落は、部品のキーの位置を入れ物として返る", () => {
+  const violations = DocumentNames.collectNameViolations(
+    { "": { type: "Box", children: [{ name: "", type: "Text" }] } },
+    [],
+  );
+
+  expect(violations[1]).toEqual({
+    kind: "missing",
+    position: { kind: "child", owner: { kind: "component-key" }, index: 0 },
+  });
+});
+
+test("名前の無い artboard の下でも、名前を持つ途中のノードがあればそのノードを入れ物として返る", () => {
+  const violations = DocumentNames.collectNameViolations({}, [
+    {
+      name: "",
+      width: 375,
+      height: 812,
+      children: [
+        { name: "row", type: "Box", children: [{ name: "", type: "Text" }] },
+      ],
+    },
+  ]);
+
+  expect(violations[1]).toEqual({
+    kind: "missing",
+    position: {
+      kind: "child",
+      owner: { kind: "named", name: "row" },
+      index: 0,
+    },
+  });
+});
+
+test("name の無い（JSON 由来の）artboard の子の欠落も、その artboard の位置を入れ物として返る", () => {
+  const violations = DocumentNames.collectNameViolations({}, [
+    // @ts-expect-error AI の直接編集による name 欠落（JSON 由来）を再現する
+    {
+      width: 375,
+      height: 812,
+      children: [{ name: "", type: "Text" }],
+    },
+  ]);
+
+  expect(violations[1]).toEqual({
+    kind: "missing",
+    position: {
+      kind: "child",
+      owner: { kind: "artboard", index: 0 },
+      index: 0,
+    },
   });
 });
 
@@ -122,7 +226,11 @@ test("部品内部のノードの欠落は、部品名を入れ物として返�
   expect(violations).toEqual([
     {
       kind: "missing",
-      position: { kind: "child", ownerName: "card", index: 0 },
+      position: {
+        kind: "child",
+        owner: { kind: "named", name: "card" },
+        index: 0,
+      },
     },
   ]);
 });

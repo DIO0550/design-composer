@@ -4,17 +4,17 @@ import { afterEach, expect, test } from "vitest";
 import {
   clearDrawn,
   drawNamed,
-  stubBounds,
 } from "@/features/editor/features/canvas/__tests__/canvas-measure";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import { stubBounds } from "@/libs/__tests__/element-measure";
 import { useCanvasView } from "../index";
 import { transform } from "./setup";
 
 /*
  * 名前で指したものを画面へ収める操作。
  *
- * 測定を差し替えないと土台も対象も 0 × 0 になり、`fitTo` の「面積が無ければ何もしない」に
- * 全入力が落ちて実装を何に壊しても通る（差し替えの詳細は `canvas-measure` の doc）。
+ * **測定を差し替えないと**（理由は `element-measure` の doc）、土台も対象も 0 × 0 になり、
+ * `fitTo` の「面積が無ければ何もしない」に全入力が落ちて通ってしまう。
  */
 
 afterEach(clearDrawn);

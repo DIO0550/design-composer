@@ -183,15 +183,16 @@ test("name が欠落したノードの子の欠落は、名前を持つ最も近
   ]);
 });
 
-test("名前を持つ祖先が無いノードの欠落は、空の入れ物名で報告される", () => {
+test("名前を持つ祖先が無いノードの欠落は、その子を収める artboard のパスで報告される", () => {
   const document = DesignDocument.create({
     tokens: DocumentTemplate.Default.tokens,
     artboards: [
+      { name: "screen", width: 375, height: 812, children: [] },
       {
         name: "",
         width: 375,
         height: 812,
-        children: [{ name: "", type: "Text" }],
+        children: [{ name: "", type: "Box" }],
       },
     ],
   });
@@ -202,13 +203,34 @@ test("名前を持つ祖先が無いノードの欠落は、空の入れ物名�
 
   expect(errors).toEqual([
     expect.objectContaining({
-      kind: "missing-name",
-      documentPath: "artboards[0]",
+      documentPath: "artboards[1]",
+      message: 'artboard 1 of "artboards" has no name',
     }),
     expect.objectContaining({
-      kind: "missing-name",
-      nodeName: "",
-      message: 'child 0 of "" has no name',
+      documentPath: "artboards[1]",
+      message: 'child 0 of artboard 1 of "artboards" has no name',
+    }),
+  ]);
+});
+
+test("名前を持つ祖先が無い部品内部のノードの欠落は、components のパスで報告される", () => {
+  const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    components: { "": { type: "Box", children: [{ name: "", type: "Box" }] } },
+  });
+
+  const errors = DesignDocument.collectErrors(document).filter(
+    (error) => error.kind === "missing-name",
+  );
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      documentPath: "components",
+      message: 'key "" of "components" has no name',
+    }),
+    expect.objectContaining({
+      documentPath: "components",
+      message: 'child 0 of key "" of "components" has no name',
     }),
   ]);
 });
