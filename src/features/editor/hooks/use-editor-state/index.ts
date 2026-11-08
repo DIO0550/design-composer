@@ -2,7 +2,7 @@ import { type ActionDispatch, useReducer } from "react";
 import type { ChildPosition } from "@/domains/dcmp/child-position";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import type { PropEdit } from "@/domains/dcmp/node";
-import type { RepositionEdit } from "@/domains/dcmp/reposition-edit";
+import type { NodeRepositionEdit } from "@/domains/dcmp/reposition-edit";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import type { TokenRef, TokenValue } from "@/domains/dcmp/token";
 import type { DocumentReload } from "@/domains/session/document-reload";
@@ -15,6 +15,7 @@ import { EditorState } from "@/features/editor/domains/editor-state";
 import type { ReorderStep } from "@/features/editor/domains/reorder-step";
 import type { TokenTemplate } from "@/features/editor/domains/token-template";
 import type { IndexMove } from "@/types/IndexMove";
+import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { Option } from "@/utils/Option";
 
 /** エディタ画面で起きる状態遷移（docs/06-ui.md「選択」「編集操作の一覧」）。 */
@@ -43,9 +44,8 @@ export type EditorAction =
   | Readonly<{ type: "reorder_selected_nodes"; step: ReorderStep }>
   | Readonly<{ type: "move_node"; name: string; to: ChildPosition }>
   | Readonly<{
-      type: "reposition_node";
-      name: string;
-      edit: RepositionEdit;
+      type: "reposition_nodes";
+      edits: NonEmptyArray<NodeRepositionEdit>;
     }>
   /* 選択を移動量だけで動かす経路。今の座標を持たないキーボードのための入口。 */
   | Readonly<{ type: "reposition_selected_node"; delta: Offset }>
@@ -157,10 +157,10 @@ function applyAction(state: EditorState, action: EditorAction): EditorState {
         EditorState.moveNode(state, action.name, action.to),
         state,
       );
-    case "reposition_node":
-      // 置き直せない指定なら親も座標も向きも変わらない（EditorState.reposition の `none`）。
+    case "reposition_nodes":
+      // 置き直せない指定が混ざれば、どのノードも親も座標も向きも変わらない（EditorState.repositionAll の `none`）。
       return Option.unwrapOr(
-        EditorState.reposition(state, action.name, action.edit),
+        EditorState.repositionAll(state, action.edits),
         state,
       );
     case "reposition_selected_node":

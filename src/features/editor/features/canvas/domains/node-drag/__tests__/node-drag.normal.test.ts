@@ -1,24 +1,27 @@
 import { expect, test } from "vitest";
-import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import { SidePairs } from "@/domains/unit/side";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { FacingDistances } from "@/features/editor/features/canvas/domains/facing-distances";
 import type {
   DraggedNode,
   DropTarget,
+  TreeDraggedNode,
 } from "@/features/editor/features/canvas/domains/node-drop";
 import type { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
-import type { RepositionTarget } from "@/features/editor/features/canvas/domains/reposition-target";
+import type {
+  RepositionPreview,
+  SiblingsRepositionTarget,
+} from "@/features/editor/features/canvas/domains/reposition-target";
 import type { SnapGuides } from "@/features/editor/features/canvas/domains/side-snap";
 import type { ThinLine } from "@/features/editor/features/canvas/domains/thin-line";
 import { Option } from "@/utils/Option";
 import { Carrying, DropEdit, NodeDrag } from "../index";
 
 /** 木にある `title` を掴んでいる状態。 */
-const MovingTitle: DraggedNode = { kind: "existing", name: "title" };
+const MovingTitle: TreeDraggedNode = { kind: "existing", name: "title" };
 
 /** パレットの Box を掴んでいる状態。 */
-const PlacingBox: DraggedNode = {
+const PlacingBox: TreeDraggedNode = {
   kind: "new",
   template: { kind: "primitive", type: "Box" },
 };
@@ -88,13 +91,65 @@ const SampleMeasuredRepositionLines: RepositionLines = {
 /** 揃った線が 1 つも無い状態。 */
 const NoGuides: SnapGuides = { horizontal: Option.none, vertical: Option.none };
 
-/** `body` の中の座標へ落ちる側の行き先。見た目のずらし量は行き先と別の値にする。 */
-const SampleRepositionTarget: RepositionTarget = {
-  written: RepositionEdit.create({
-    parentName: "body",
-    placement: { mode: "absolute", x: 40, y: 24 },
-  }),
-  offset: { x: 30, y: -12 },
+/**
+ * `home` の中の `title` が `body` の中の座標へ落ちる側の行き先。見た目のずらし量は行き先と
+ * 別の値にする。
+ */
+const SampleRepositionTarget: SiblingsRepositionTarget = {
+  parentName: "home",
+  dropParentName: "body",
+  members: [
+    {
+      name: "title",
+      target: {
+        placement: { mode: "absolute", x: 40, y: 24 },
+        rotation: Option.none,
+        offset: { x: 30, y: -12 },
+      },
+    },
+  ],
+};
+
+/** `title` を運んでいる間のずらし量。 */
+const SamplePreview: RepositionPreview = {
+  parentName: "home",
+  members: [{ name: "title", offset: { x: 30, y: -12 } }],
+};
+
+/** `home` の中の絶対配置の兄弟 `title` と `badge` を、まとめて掴んでいる状態。 */
+const CarryingSiblings: DraggedNode = {
+  kind: "selected-siblings",
+  siblings: {
+    parentName: "home",
+    placed: [
+      { name: "title", placement: { mode: "absolute", x: 10, y: 36 } },
+      { name: "badge", placement: { mode: "absolute", x: 40, y: 24 } },
+    ],
+  },
+};
+
+/** `title` と `badge` をまとめて `body` の中の座標へ落とす側の行き先。 */
+const SampleSiblingsTarget: SiblingsRepositionTarget = {
+  parentName: "home",
+  dropParentName: "body",
+  members: [
+    {
+      name: "title",
+      target: {
+        placement: { mode: "absolute", x: 10, y: 36 },
+        rotation: Option.none,
+        offset: { x: 30, y: -12 },
+      },
+    },
+    {
+      name: "badge",
+      target: {
+        placement: { mode: "absolute", x: 40, y: 24 },
+        rotation: Option.none,
+        offset: { x: 30, y: -12 },
+      },
+    },
+  ],
 };
 
 test("押した位置から少ししか動かないうちはドラッグとして扱われない", () => {
@@ -232,7 +287,6 @@ test("パレットの雛形をツリーへ落とすと挿入になる", () => {
 test("座標を置き直す落とし方では挿さる位置を持たない", () => {
   // ドロップ線とラベルは「どの親の何番目の子になるか」の提示なので出さない
   const edit = DropEdit.reposition(
-    "title",
     SampleRepositionTarget,
     SampleRepositionLines,
   );
@@ -243,7 +297,6 @@ test("座標を置き直す落とし方では挿さる位置を持たない", ()
 test("座標を置き直す落とし方でも、子になる親の名前は答える", () => {
   // 落とし先の枠は、ツリーの移動と同じ提示なので座標のドラッグでも出す
   const edit = DropEdit.reposition(
-    "title",
     SampleRepositionTarget,
     SampleRepositionLines,
   );
@@ -257,7 +310,6 @@ test("ツリーへ落とす落とし方では、挿さる位置の親が子に�
 
 test("座標を置き直す落とし方は、揃った線に引くガイド線をそのまま答える", () => {
   const edit = DropEdit.reposition(
-    "title",
     SampleRepositionTarget,
     SampleRepositionLines,
   );
@@ -267,7 +319,6 @@ test("座標を置き直す落とし方は、揃った線に引くガイド線�
 
 test("座標を置き直す落とし方は、Alt / Option の距離をすべて答える", () => {
   const edit = DropEdit.reposition(
-    "title",
     SampleRepositionTarget,
     SampleMeasuredRepositionLines,
   );
@@ -277,7 +328,6 @@ test("座標を置き直す落とし方は、Alt / Option の距離をすべて�
 
 test("座標を置き直す落とし方は、Alt / Option の距離と同じ線上に重なる隙間を除き、ガイド線は残したガイドを答える", () => {
   const edit = DropEdit.reposition(
-    "title",
     SampleRepositionTarget,
     SampleMeasuredRepositionLines,
   );
@@ -297,7 +347,6 @@ test("運んでいる間は、座標を置き直す落とし方の距離を答�
     { x: 100, y: 140 },
     Carrying.droppable(
       DropEdit.reposition(
-        "title",
         SampleRepositionTarget,
         SampleMeasuredRepositionLines,
       ),
@@ -317,11 +366,7 @@ test("運んでいる間は、揃った線に引くガイド線を答える", ()
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
     Carrying.droppable(
-      DropEdit.reposition(
-        "title",
-        SampleRepositionTarget,
-        SampleRepositionLines,
-      ),
+      DropEdit.reposition(SampleRepositionTarget, SampleRepositionLines),
     ),
   );
 
@@ -342,7 +387,7 @@ test("落とせる親が無いまま運んでいる間は、揃った線のガ�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
+    Carrying.preview(SamplePreview),
   );
 
   expect(NodeDrag.snapGuides(dragging)).toEqual(NoGuides);
@@ -353,18 +398,13 @@ test("座標を置き直す落とし方のときだけ、ずらして見せる�
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
     Carrying.droppable(
-      DropEdit.reposition(
-        "title",
-        SampleRepositionTarget,
-        SampleRepositionLines,
-      ),
+      DropEdit.reposition(SampleRepositionTarget, SampleRepositionLines),
     ),
   );
 
-  expect(Option.unwrap(NodeDrag.repositionPreview(dragging))).toEqual({
-    name: "title",
-    offset: { x: 30, y: -12 },
-  });
+  expect(Option.unwrap(NodeDrag.repositionPreview(dragging))).toEqual(
+    SamplePreview,
+  );
 });
 
 test("ツリーへ落とす落とし方では、ずらして見せる相手と量を答えない", () => {
@@ -396,13 +436,12 @@ test("落とせる先が無くても、座標のドラッグならずらして�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
+    Carrying.preview(SamplePreview),
   );
 
-  expect(Option.unwrap(NodeDrag.repositionPreview(dragging))).toEqual({
-    name: "title",
-    offset: { x: 30, y: -12 },
-  });
+  expect(Option.unwrap(NodeDrag.repositionPreview(dragging))).toEqual(
+    SamplePreview,
+  );
 });
 
 test("見た目だけ動かしている間は、離しても届く編集を持たない", () => {
@@ -410,7 +449,7 @@ test("見た目だけ動かしている間は、離しても届く編集を持�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
+    Carrying.preview(SamplePreview),
   );
 
   expect(Option.isSome(NodeDrag.drop(dragging))).toBe(false);
@@ -421,7 +460,7 @@ test("見た目だけ動かしている間は、子になる親の名前を答�
   const dragging = NodeDrag.moveTo(
     NodeDrag.grab({ dragged: MovingTitle, origin: { x: 100, y: 100 } }),
     { x: 100, y: 140 },
-    Carrying.preview({ name: "title", offset: { x: 30, y: -12 } }),
+    Carrying.preview(SamplePreview),
   );
 
   expect(Option.isSome(NodeDrag.dropParentName(dragging))).toBe(false);
@@ -506,4 +545,23 @@ test("雛形を押しただけでまだ動かしていない間は、雛形を�
   });
 
   expect(Option.isSome(NodeDrag.carriedTemplate(held))).toBe(false);
+});
+
+test("まとめて運んだ兄弟を離したときは、直後のクリックを飲み込む", () => {
+  // 押した時点の選択（全員）を保つので、離した位置の click で選び直させない
+  const dragging = NodeDrag.moveTo(
+    NodeDrag.grab({ dragged: CarryingSiblings, origin: { x: 100, y: 100 } }),
+    { x: 100, y: 140 },
+    Carrying.droppable(
+      DropEdit.reposition(SampleSiblingsTarget, SampleRepositionLines),
+    ),
+  );
+
+  expect(NodeDrag.consumesClick(NodeDrag.release(dragging))).toBe(true);
+});
+
+test("まとめて運ぶ落とし方では、全員が子になる 1 つの親の名前を答える", () => {
+  const edit = DropEdit.reposition(SampleSiblingsTarget, SampleRepositionLines);
+
+  expect(DropEdit.dropParentName(edit)).toBe("body");
 });

@@ -138,7 +138,12 @@ function NodeDragHarness({
       </p>
       <p data-testid="reposition-preview">
         {Option.isSome(preview)
-          ? `${preview.value.name} ${preview.value.offset.x},${preview.value.offset.y}`
+          ? preview.value.members
+              .map(
+                (member) =>
+                  `${member.name} ${member.offset.x},${member.offset.y}`,
+              )
+              .join(" / ")
           : "ずらしていない"}
       </p>
     </div>

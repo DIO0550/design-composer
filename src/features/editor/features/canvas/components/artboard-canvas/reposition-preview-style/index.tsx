@@ -15,7 +15,7 @@ import { NameStyleRule } from "../name-style-rule";
  * 効く（`transform` の側に書くと移動量が回転した座標系で効いて向きがずれる）。
  *
  * 下の `CarriedNodeUnclipped` と同じく `!important` で勝たせる形にはしない。勝たせると
- * 運んでいる間だけ回転ごと打ち消されて、掴んだノードの向きが変わって見える。
+ * 運んでいる間だけ回転ごと打ち消されて、運んでいるノードの向きが変わって見える。
  */
 export const RepositionPreviewProperty = "translate";
 
@@ -50,7 +50,7 @@ export function repositionPreviewDeclarations(offset: Offset): string {
 export const CarriedNodeUnclipped = "overflow:visible!important";
 
 /**
- * 離したらどこへ置かれるかを、掴んだノード自身を動かして見せる。
+ * 離したらどこへ置かれるかを、運んでいるノード（まとめて運ぶなら全員）自身を動かして見せる。
  *
  * ドキュメントは書き換えない。ここは編集を続きとして送らないので、書き換えるとポインタ
  * 移動の刻みだけ undo が積まれる（ドラッグ 1 回 = undo 1 回が壊れる）。
@@ -66,13 +66,15 @@ export function RepositionPreviewStyle({
   if (!Option.isSome(preview)) {
     return null;
   }
-  const wrappingNames = DesignDocument.collectAncestorNames(
-    designDocument,
-    preview.value.name,
-  );
+  const { parentName, members } = preview.value;
+  // 一員は同じ親の兄弟なので、切り取りを解く相手と前に出す artboard は親から 1 回だけ引く
+  const wrappingNames = [
+    parentName,
+    ...DesignDocument.collectAncestorNames(designDocument, parentName),
+  ];
   const owningArtboard = DesignDocument.findOwningArtboard(
     designDocument,
-    preview.value.name,
+    parentName,
   );
   return (
     <>
@@ -99,10 +101,13 @@ export function RepositionPreviewStyle({
           declarations={InFrontOfArtboards}
         />
       )}
-      <NameStyleRule
-        name={preview.value.name}
-        declarations={repositionPreviewDeclarations(preview.value.offset)}
-      />
+      {members.map((member) => (
+        <NameStyleRule
+          key={member.name}
+          name={member.name}
+          declarations={repositionPreviewDeclarations(member.offset)}
+        />
+      ))}
     </>
   );
 }

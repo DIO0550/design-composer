@@ -255,12 +255,16 @@ function EditorStateHarness() {
         type="button"
         onClick={() =>
           dispatch({
-            type: "reposition_node",
-            name: "footer",
-            edit: RepositionEdit.create({
-              parentName: "home",
-              placement: { mode: "absolute", x: 70, y: 12 },
-            }),
+            type: "reposition_nodes",
+            edits: [
+              {
+                name: "footer",
+                edit: RepositionEdit.create({
+                  parentName: "home",
+                  placement: { mode: "absolute", x: 70, y: 12 },
+                }),
+              },
+            ],
           })
         }
       >

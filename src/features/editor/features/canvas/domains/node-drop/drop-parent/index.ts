@@ -9,8 +9,8 @@ import { DraggedNode } from "../dragged-node";
  * ドロップ先の候補になれる親（docs/06-ui.md「キャンバス直接操作」の移動）。受け入れる条
  * 件は `DropParent.innermost`、絞り込んだ先は `InsertionParent`。
  *
- * 名前だけなので `{ name: string }` を持つ他の型（`CarriedNode` /
- * `CarriedNodeWithParentRotation` / `DropParentCoordinates`）も構造的に代入できるが、
+ * 名前だけなので `{ name: string }` を持つ他の型（`DropParentCoordinates` /
+ * `NodeRepositionEdit`）も構造的に代入できるが、
  * ブランドは付けない。取り違えは `artboard-canvas.drag-placement` の通しテストが受け持つ
  * （rules/coding.md「防ぎたい誤用が実際にコード上へ現れてから導入する」）。
  */

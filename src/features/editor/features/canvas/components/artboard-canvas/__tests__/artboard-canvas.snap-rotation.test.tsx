@@ -19,21 +19,23 @@ import { drawnApart, drawnTurnedBadge, setupSiblings } from "./snap-siblings";
  */
 
 test("90 度回ったノードを運び、外接矩形の左辺が兄弟の左辺に近づいたら、外接矩形の左辺が揃う座標が書かれる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(90), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(90), onRepositionNodes });
   drawnApart();
   drawnTurnedBadge();
 
   // 外接矩形を回る前の矩形として置くと、寄せ先がずれる
   dragNode("badge", { x: 103, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 146, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 146, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("90 度回ったノードを運んで兄弟の左辺へ吸い付いている間、隙間の数値は外接矩形の下辺から測られる", () => {
@@ -74,18 +76,20 @@ test("倍率を上げても、90 度回ったノードは外接矩形の左辺�
    * 運んだ量 127.2 を倍率で割り戻して x は 40 + 106。回る前の大きさに倍率を掛けないと
    * 外接矩形の左辺が 277 になって 3 寄り、x は 40 + 128 / 1.2 を丸めた 147 になる
    */
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(90), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(90), onRepositionNodes });
   wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
   drawnApartZoomed();
 
   dragNode("badge", { x: 125, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 146, y: 14 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 146, y: 14 },
+      }),
+    },
+  ]);
 });

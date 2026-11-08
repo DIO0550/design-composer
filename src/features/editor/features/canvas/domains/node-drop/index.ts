@@ -1,3 +1,3 @@
-export { DraggedNode } from "./dragged-node";
+export { DraggedNode, type TreeDraggedNode } from "./dragged-node";
 export { DropParent, InsertionParent } from "./drop-parent";
 export { type DropTarget, DropZone } from "./drop-zone";

@@ -28,7 +28,7 @@ import {
  * キャンバスで運んだ結果がドキュメントへ届き、描き直されるまでを編集画面の配線ごと
  * 確かめる。
  *
- * ここでしか通らないのは、`onReposition` → `reposition_node` → 再コンパイルまでを
+ * ここでしか通らないのは、`onReposition` → `reposition_nodes` → 再コンパイルまでを
  * 通して CSS の `left` / `top` が動くところを見るため。キャンバス単体
  * （`artboard-canvas.drag-placement.test.tsx`）は落とし方の値までは固定するが、
  * それがドキュメントへ届いて描き直されるところは見ない。

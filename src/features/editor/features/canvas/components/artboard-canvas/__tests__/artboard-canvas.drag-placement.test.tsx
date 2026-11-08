@@ -84,23 +84,25 @@ function drawnApart(): void {
 }
 
 test("絶対配置のノードを運んで離すと、掴んだ時点の座標から動いた分だけずれる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNodes });
 
   dragNode("badge", { x: 30, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 70, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 70, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("何度も動かしても、ずれるのは掴んだ時点からの合計になる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNodes });
 
   // 途中のポインタ位置を基準にし直すと、最後の 1 区間分（8, -4）しか動かない
   pressPointer(drawn("badge"), { x: 100, y: 100 });
@@ -109,13 +111,15 @@ test("何度も動かしても、ずれるのは掴んだ時点からの合計�
   movePointer(drawn("badge"), { x: 130, y: 88 });
   releasePointer(drawn("badge"), { x: 130, y: 88 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 70, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 70, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("絶対配置のノードを同じ親の中で運んでもツリーの並びは変わらない", () => {
@@ -129,32 +133,32 @@ test("絶対配置のノードを同じ親の中で運んでもツリーの並�
 
 test("フローのノードを運ぶと今までどおりツリー内の移動になる", () => {
   const onMoveNode = vi.fn();
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSelection(), onMoveNode, onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSelection(), onMoveNode, onRepositionNodes });
 
   dragNode("title", { x: 30, y: -12 });
 
   expect([
     onMoveNode.mock.calls.length,
-    onRepositionNode.mock.calls.length,
+    onRepositionNodes.mock.calls.length,
   ]).toEqual([1, 0]);
 });
 
 test("押しただけで運んでいなければ座標は動かない", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNodes });
 
   pressPointer(drawn("badge"), { x: 100, y: 100 });
   releasePointer(drawn("badge"), { x: 100, y: 100 });
 
-  expect(onRepositionNode).not.toHaveBeenCalled();
+  expect(onRepositionNodes).not.toHaveBeenCalled();
 });
 
 test("運んでいる途中でキャンバスの外へ出ると座標は動かない", () => {
-  const onRepositionNode = vi.fn();
+  const onRepositionNodes = vi.fn();
   const { container } = renderCanvas({
     selection: setupSelection(),
-    onRepositionNode,
+    onRepositionNodes,
   });
 
   pressPointer(drawn("badge"), { x: 100, y: 100 });
@@ -165,12 +169,12 @@ test("運んでいる途中でキャンバスの外へ出ると座標は動か�
   );
   releasePointer(drawn("badge"), { x: 130, y: 88 });
 
-  expect(onRepositionNode).not.toHaveBeenCalled();
+  expect(onRepositionNodes).not.toHaveBeenCalled();
 });
 
 test("倍率を上げても、動く量は画面上ではなくドキュメント上の px になる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNodes });
   wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
 
   /*
@@ -180,85 +184,95 @@ test("倍率を上げても、動く量は画面上ではなくドキュメン�
    */
   dragNode("badge", { x: 34, y: -13 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 68, y: 13 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 68, y: 13 },
+      }),
+    },
+  ]);
 });
 
 test("親の外へ出る位置で離すと、はみ出した座標がそのまま届く", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNodes });
 
   // 親（360×240）の右下より外へ出る量。収めると (316, 216) のような値で止まる
   dragNode("badge", { x: 400, y: 300 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 440, y: 324 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 440, y: 324 },
+      }),
+    },
+  ]);
 });
 
 test("もともと親の外にあるノードを動かしても、親の内側へ戻らない", () => {
-  const onRepositionNode = vi.fn();
+  const onRepositionNodes = vi.fn();
   // 左へ出た x と下へ出た y にして、軸ごとに違う側で確かめる
   renderCanvas({
     selection: setupSelection({ x: -104, y: 300 }),
-    onRepositionNode,
+    onRepositionNodes,
   });
 
   dragNode("badge", { x: 8, y: 6 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: -96, y: 306 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: -96, y: 306 },
+      }),
+    },
+  ]);
 });
 
 test("親が変わらなければ、2 つの親を実測していてもずれは足されない", () => {
   // 実測値をそのまま足す実装だと、同じ親の中で運んだだけで座標が親の位置ぶん飛ぶ
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNodes });
   drawnApart();
 
   dragNode("badge", { x: 30, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 70, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 70, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("別の artboard の上で離すと、その artboard を親にした置き直しになる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNodes });
   drawnApart();
 
   dragBadgeOnto(drawn("settings"));
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    expect.objectContaining({
-      to: expect.objectContaining({ parentName: "settings" }),
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: expect.objectContaining({
+        to: expect.objectContaining({ parentName: "settings" }),
+      }),
+    },
+  ]);
 });
 
 test("親をまたいで離すと、届く座標は 2 つの親の左上のずれを打ち消した値になる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNodes });
   drawnApart();
 
   dragBadgeOnto(drawn("settings"));
@@ -268,18 +282,20 @@ test("親をまたいで離すと、届く座標は 2 つの親の左上のず�
    * `settings` の左上は `home` の左上から (400, 40) 右下にあるので、
    * 同じ画面上の位置は `settings` 基準では (-330, -28) になる。
    */
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "settings",
-      placement: { mode: "absolute", x: -330, y: -28 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "settings",
+        placement: { mode: "absolute", x: -330, y: -28 },
+      }),
+    },
+  ]);
 });
 
 test("倍率を上げると、親の左上のずれもドキュメント上の px へ割り戻される", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNodes });
   wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
   drawnApart();
 
@@ -290,13 +306,15 @@ test("倍率を上げると、親の左上のずれもドキュメント上の p
    * 画面上の親のずれ (400, 40) は (333.33…, 33.33…) にあたる。
    * 割り戻さないと (-335, -26) になる。
    */
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "settings",
-      placement: { mode: "absolute", x: -268, y: -19 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "settings",
+        placement: { mode: "absolute", x: -268, y: -19 },
+      }),
+    },
+  ]);
 });
 
 test("親をまたいで離しても、ツリーの移動としては届かない", () => {
@@ -311,12 +329,12 @@ test("親をまたいで離しても、ツリーの移動としては届かな�
 });
 
 test("落とせる親が無い場所で離しても置き直しは届かない", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNodes });
 
   dragBadgeOnto(artboardList());
 
-  expect(onRepositionNode).not.toHaveBeenCalled();
+  expect(onRepositionNodes).not.toHaveBeenCalled();
 });
 
 test("落とせる親が無い場所で離しても、次のクリックは選択に使われる", () => {
@@ -570,8 +588,8 @@ test("落とせる親が無い場所へ運んでいる間も、掴んだノー�
 });
 
 test("落とせる親が無い場所を通っても、戻ってくれば置き直しが届く", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSelection(), onRepositionNodes });
   drawnApart();
 
   pressPointer(drawn("badge"), { x: 100, y: 100 });
@@ -579,13 +597,15 @@ test("落とせる親が無い場所を通っても、戻ってくれば置き�
   movePointer(drawn("settings"), { x: 130, y: 88 });
   releasePointer(drawn("settings"), { x: 130, y: 88 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "settings",
-      placement: { mode: "absolute", x: -330, y: -28 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "settings",
+        placement: { mode: "absolute", x: -330, y: -28 },
+      }),
+    },
+  ]);
 });
 
 test("離すと見た目のずれは消える（座標そのものが動くため）", () => {

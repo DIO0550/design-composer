@@ -22,6 +22,6 @@ export {
 } from "@/features/editor/features/canvas/hooks/use-canvas-view";
 export {
   type NodeDragHandlers,
-  type RepositionNode,
+  type RepositionNodes,
   useNodeDrag,
 } from "@/features/editor/features/canvas/hooks/use-node-drag";

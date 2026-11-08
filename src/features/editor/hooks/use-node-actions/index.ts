@@ -7,7 +7,7 @@ import type { UnderPointer } from "@/domains/session/under-pointer";
 import type { Offset } from "@/domains/unit/offset";
 import { useEditor } from "@/features/editor/components/editor-provider";
 import { EditorState } from "@/features/editor/domains/editor-state";
-import type { RepositionNode } from "@/features/editor/features/canvas";
+import type { RepositionNodes } from "@/features/editor/features/canvas";
 import { Option } from "@/utils/Option";
 
 /**
@@ -30,10 +30,10 @@ export type NodeActions = Readonly<{
   reorder: (from: ChildPosition, toIndex: number) => void;
   move: (name: string, to: ChildPosition) => void;
   /**
-   * 絶対配置のノードを、指した親の中の座標へ置き直す。親が違えば付け替え、編集が向きを持てば
-   * 向きも書く。
+   * 絶対配置のノード（まとめて運んだなら全員）を、指した親の中の座標へ置き直す。親が違えば
+   * 付け替え、編集が向きを持てば向きも書く。
    */
-  reposition: RepositionNode;
+  reposition: RepositionNodes;
   /** artboard をキャンバス上の別の位置へ置き直す。 */
   repositionArtboard: (name: string, canvasPosition: Offset) => void;
   resize: (edit: ResizeEdit, continuity: EditContinuity) => void;
@@ -102,13 +102,12 @@ export function useNodeActions(): NodeActions {
      */
     move: (name, to) => dispatch({ type: "move_node", name, to }),
     /**
-     * 運んでいるノードが絶対配置なら、同じドラッグが座標の置き直しになる。どちらになるかはキャ
-     * ンバス側が運んでいるノードの配置を見て決める。
+     * 運んでいるもの（まとめて運ぶなら全員）が絶対配置なら、同じドラッグが座標の置き直しに
+     * なる。どちらになるかはキャンバス側が運んでいるノードの配置を見て決める。
      *
      * 落とし先の親も一緒に届くので、親をまたいで運べば付け替わる。
      */
-    reposition: (name, edit) =>
-      dispatch({ type: "reposition_node", name, edit }),
+    reposition: (edits) => dispatch({ type: "reposition_nodes", edits }),
     /**
      * artboard の見出しを掴んだドラッグはキャンバス上の移動。
      */

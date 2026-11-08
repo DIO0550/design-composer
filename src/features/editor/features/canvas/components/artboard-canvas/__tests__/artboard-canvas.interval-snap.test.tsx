@@ -13,52 +13,58 @@ import { carryNode, dragNode, renderCanvas, snapGuides } from "./setup";
  */
 
 test("兄弟の列の端から同じ間隔の近くまで運んで離すと、その間隔になる座標が書かれる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupHorizontalRow(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupHorizontalRow(), onRepositionNodes });
   drawnInHorizontalRow();
 
   dragNode("badge", { x: 123, y: 83 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 160, y: 107 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 160, y: 107 },
+      }),
+    },
+  ]);
 });
 
 test("⌘ を押しながら運ぶと、列の間隔にも吸い付かない", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupHorizontalRow(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupHorizontalRow(), onRepositionNodes });
   drawnInHorizontalRow();
 
   dragNode("badge", { x: 123, y: 83 }, "meta");
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 163, y: 107 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 163, y: 107 },
+      }),
+    },
+  ]);
 });
 
 test("列の端の子と縦に重ならない位置では、列の間隔に吸い付かない", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupHorizontalRow(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupHorizontalRow(), onRepositionNodes });
   drawnInHorizontalRow();
 
   // 上辺 230 は `second` の下辺（200）より下。横の量は 1 件目と同じなので、重なれば 160 へ寄る
   dragNode("badge", { x: 123, y: 146 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 163, y: 170 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 163, y: 170 },
+      }),
+    },
+  ]);
 });
 
 test("列の間隔へ吸い付いている間は、ガイド線が出ない", () => {

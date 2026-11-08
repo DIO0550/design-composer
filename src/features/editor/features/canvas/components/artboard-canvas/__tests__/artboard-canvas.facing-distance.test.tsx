@@ -45,19 +45,21 @@ test("Alt を押さずに運んでいる間は、距離が出ない", () => {
 });
 
 test("Alt を押したままでも吸い付き、離すと吸い付いた位置の座標が書かれる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onRepositionNodes });
   drawnApart();
 
   dragNode("badge", { x: 113, y: -12 }, "alt");
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 150, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 150, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("Alt を押して運んでいる間、距離と同じ線上に重なる揃え先との隙間は出さず、ガイド線は出したまま", () => {

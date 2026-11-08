@@ -14,42 +14,46 @@ import {
 import { drawnApart, setupSiblings } from "./snap-siblings";
 
 test("兄弟の辺の近くまで運んで離すと、その辺が揃う座標が書かれる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onRepositionNodes });
   drawnApart();
 
   // 左辺が `marker` の左辺の 3px 手前まで来る量。寄せが無ければ x は 153 になる
   dragNode("badge", { x: 113, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 150, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 150, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("親の縁の近くまで運んで離すと、縁に揃う座標が書かれる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onRepositionNodes });
   drawnApart();
 
   // 左辺が `home` の左の縁を 4px 越えた位置。寄せが無ければ x は -4 になる
   dragNode("badge", { x: -44, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 0, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 0, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("運んでいるノード自身は揃える先にならない", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onRepositionNodes });
   drawnApart();
 
   /*
@@ -59,29 +63,33 @@ test("運んでいるノード自身は揃える先にならない", () => {
    */
   dragNode("badge", { x: 3, y: 4 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 43, y: 28 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 43, y: 28 },
+      }),
+    },
+  ]);
 });
 
 test("どの辺からも遠ければ、運んだ量そのままの座標が書かれる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onRepositionNodes });
   drawnApart();
 
   dragNode("badge", { x: 30, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 70, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 70, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("運んでいる間の見た目のずらし量も、吸い付いた行き先と一致する", () => {
@@ -95,8 +103,8 @@ test("運んでいる間の見た目のずらし量も、吸い付いた行き�
 });
 
 test("倍率を上げても、画面上で同じだけ近づけば辺に吸い付く", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onRepositionNodes });
   drawnApart();
   wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
 
@@ -112,18 +120,20 @@ test("倍率を上げても、画面上で同じだけ近づけば辺に吸い�
    */
   dragNode("badge", { x: 105, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 125, y: 14 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 125, y: 14 },
+      }),
+    },
+  ]);
 });
 
 test("孫の辺は揃える先にならない", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onRepositionNodes });
   drawnApart();
 
   /*
@@ -132,18 +142,20 @@ test("孫の辺は揃える先にならない", () => {
    */
   dragNode("badge", { x: 123, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 163, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 163, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("別の artboard へ運んでも、その artboard の中の辺へ揃う", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onRepositionNodes });
   drawnApart();
 
   /*
@@ -153,18 +165,20 @@ test("別の artboard へ運んでも、その artboard の中の辺へ揃う", 
    */
   dragNodeOnto("badge", drawn("settings"), { x: 423, y: 30 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "settings",
-      placement: { mode: "absolute", x: 60, y: 14 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "settings",
+        placement: { mode: "absolute", x: 60, y: 14 },
+      }),
+    },
+  ]);
 });
 
 test("運んでいるものの右辺が決め手のときは、実測した大きさのぶん左へ寄る", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onRepositionNodes });
   drawnApart();
 
   /*
@@ -174,11 +188,13 @@ test("運んでいるものの右辺が決め手のときは、実測した大�
    */
   dragNode("badge", { x: 163, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 200, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 200, y: 12 },
+      }),
+    },
+  ]);
 });
