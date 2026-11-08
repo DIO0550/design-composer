@@ -143,6 +143,48 @@ export const InstanceNames = [
 ] as const;
 
 /**
+ * `home` に固定幅 100 の Box `p` があり、その中に同じ名前 `p` の Box（absolute・x 10・
+ * 固定幅 50・`constraintX: "scale"`）が入った、名前の一意性に違反した状態
+ * （docs/03-schema.md「開く時」）。
+ *
+ * @returns 親と子が同じ名前を持つエディタの状態
+ */
+export function stateWithParentNamedLikeChild(): EditorState {
+  return EditorState.create(
+    DesignDocument.create({
+      artboards: [
+        {
+          name: "home",
+          width: 375,
+          height: 812,
+          children: [
+            {
+              name: "p",
+              type: "Box",
+              props: { widthMode: "fixed", width: 100 },
+              children: [
+                {
+                  name: "p",
+                  type: "Box",
+                  props: {
+                    placement: "absolute",
+                    x: 10,
+                    y: 0,
+                    widthMode: "fixed",
+                    width: 50,
+                    constraintX: "scale",
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }),
+  );
+}
+
+/**
  * 名前で指した親の子の並び。artboard もノードも「子を持つもの」として同じに見る。
  *
  * @param state 引き先のエディタの状態
