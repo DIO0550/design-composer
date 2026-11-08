@@ -468,3 +468,27 @@ test("グラデーションの stop の色が hex でないときのエラーは
     },
   ]);
 });
+
+test("名前を持つ祖先が無い子ノードの欠落のエラーは、ルートのパスで指し、ノード名も prop も持たない", () => {
+  const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    artboards: [
+      {
+        name: "",
+        width: 375,
+        height: 812,
+        children: [{ name: "", type: "Box" }],
+      },
+    ],
+  });
+
+  const errors = DesignDocument.collectErrors(document).filter(
+    (error) => error.kind === "missing-name",
+  );
+
+  expect(errors[1]).toStrictEqual({
+    kind: "missing-name",
+    documentPath: "artboards[0]",
+    message: 'child 0 of artboard 0 of "artboards" has no name',
+  });
+});

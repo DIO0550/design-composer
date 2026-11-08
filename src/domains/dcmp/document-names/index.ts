@@ -16,21 +16,34 @@ import { StringEx } from "@/utils/StringEx";
 export type DocumentNames = Readonly<{ names: readonly string[] }>;
 
 /**
- * 名前空間に属する名前が、ドキュメントのどこに書かれているか。名前が欠落していると名前自身では
- * 位置を示せないため、入れ物の中での位置で表す。
+ * 名前空間のルート（部品定義・artboard）がドキュメントのどこにあるか。ルートの名前は欠落しうる
+ * ため、名前ではなくドキュメント内の位置で表す。
  *
  * - `component-key`: components のキー
  * - `artboard`: artboards の `index` 番目
- * - `child`: `ownerName` の配下の、兄弟の中で `index` 番目のノード。`ownerName` は名前が空で
- *   ない最も近い祖先のノード名で、そうした祖先が無ければ部品名・artboard 名（空でもそのまま）
+ */
+export type RootPosition =
+  | Readonly<{ kind: "component-key" }>
+  | Readonly<{ kind: "artboard"; index: number }>;
+
+/** 子ノードの欠落を報告するときの入れ物。選び方は `NamePosition` の `child` のとおり。 */
+export type ChildOwner =
+  | Readonly<{ kind: "named"; name: string }>
+  | RootPosition;
+
+/**
+ * 名前空間に属する名前が、ドキュメントのどこに書かれているか。名前が欠落していると名前自身では
+ * 位置を示せないため、入れ物の中での位置で表す。
  *
- * `child` を `ChildPosition`（直接の親と添字）で表さない。欠落した親は名前で指せないので、
- * 入れ物は直接の親ではなく名前を持つ最も近い祖先になる。
+ * - `component-key` / `artboard`: ルートそのもの（`RootPosition`）
+ * - `child`: `owner` の配下の、兄弟の中で `index` 番目のノード。`owner` は名前が空でない最も
+ *   近い祖先（部品名・artboard 名を含む）。そうした祖先が無ければ子を収めるルートの位置
+ *
+ * `child` を `ChildPosition`（直接の親と添字）で表さない。欠落した親は名前で指せないため。
  */
 export type NamePosition =
-  | Readonly<{ kind: "component-key" }>
-  | Readonly<{ kind: "artboard"; index: number }>
-  | Readonly<{ kind: "child"; ownerName: string; index: number }>;
+  | RootPosition
+  | Readonly<{ kind: "child"; owner: ChildOwner; index: number }>;
 
 /**
  * 名前空間に属する名前のバリデーション違反（docs/03-schema.md「バリデーション仕様」の
@@ -47,20 +60,61 @@ export type NameViolation =
 type NameOccurrence = Readonly<{ name: string; position: NamePosition }>;
 
 /**
+ * 子孫の欠落を報告するときの入れ物を選ぶ。
+ *
+ * @param name 入れ物の候補になるノード・ルートの名前。欠落（空・`undefined`）なら `fallback` を使う
+ * @param fallback `name` が欠落しているときに使う入れ物
+ * @returns `name` が欠落していなければその名前の入れ物、欠落していれば `fallback`
+ */
+function namedOwnerOr(
+  name: string | undefined,
+  fallback: ChildOwner,
+): ChildOwner {
+  return name ? { kind: "named", name } : fallback;
+}
+
+/**
  * ノードの並びとその子孫の名前の出現を、行きがけ順に並べる。
  *
  * @param nodes 並べるノードの兄弟の並び
- * @param ownerName 兄弟を収めている入れ物の名前
+ * @param owner 兄弟の欠落を報告するときの入れ物
  * @returns 各ノードの名前の出現と、その子孫の出現を行きがけ順に並べたもの
  */
 function collectNodeOccurrences(
   nodes: readonly Node[],
-  ownerName: string,
+  owner: ChildOwner,
 ): readonly NameOccurrence[] {
   return nodes.flatMap((node, index): readonly NameOccurrence[] => [
-    { name: node.name, position: { kind: "child", ownerName, index } },
-    ...collectNodeOccurrences(Node.children(node), node.name || ownerName),
+    { name: node.name, position: { kind: "child", owner, index } },
+    ...collectNodeOccurrences(
+      Node.children(node),
+      namedOwnerOr(node.name, owner),
+    ),
   ]);
+}
+
+/** 名前空間のルート（部品定義・artboard）1 つの、名前と位置と子ノード。 */
+type NamespaceRoot = Readonly<{
+  name: string;
+  position: RootPosition;
+  children: readonly Node[];
+}>;
+
+/**
+ * ルート 1 つ分の名前の出現を集める。
+ *
+ * @param root 集めるルート
+ * @returns ルート自身の名前の出現と、配下のノードの出現を行きがけ順に並べたもの
+ */
+function collectRootOccurrences({
+  name,
+  position,
+  children,
+}: NamespaceRoot): readonly NameOccurrence[] {
+  return [
+    { name, position },
+    ...collectNodeOccurrences(children, namedOwnerOr(name, position)),
+  ];
 }
 
 /**
@@ -77,15 +131,19 @@ function collectOccurrences(
 ): readonly NameOccurrence[] {
   const componentOccurrences = ComponentSet.toNamedComponents(
     components,
-  ).flatMap(({ name, component }): readonly NameOccurrence[] => [
-    { name, position: { kind: "component-key" } },
-    ...collectNodeOccurrences(component.children ?? [], name),
-  ]);
-  const artboardOccurrences = artboards.flatMap(
-    (artboard, index): readonly NameOccurrence[] => [
-      { name: artboard.name, position: { kind: "artboard", index } },
-      ...collectNodeOccurrences(artboard.children, artboard.name),
-    ],
+  ).flatMap(({ name, component }) =>
+    collectRootOccurrences({
+      name,
+      position: { kind: "component-key" },
+      children: component.children ?? [],
+    }),
+  );
+  const artboardOccurrences = artboards.flatMap((artboard, index) =>
+    collectRootOccurrences({
+      name: artboard.name,
+      position: { kind: "artboard", index },
+      children: artboard.children,
+    }),
   );
   return [...componentOccurrences, ...artboardOccurrences];
 }
