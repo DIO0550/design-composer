@@ -155,3 +155,10 @@ pr-846 で `PointerButton` / `CommandKey` / `KeyName` を `src/libs/` 直下に 
 - 親の `index.ts` を持たない入れ物にする形も示されたが、pr-846 では re-export する形に決まった
 - 親へまとめたあとは、`@/libs/dom-event/<サブフォルダ>` への deep import が検査をすり抜けるため
   grep で 0 件を確かめる(`import-rule-violations.py` は入れ子モジュールの `index.ts` を違反にしない)
+
+### domains から libs への import を `__tests__/` だけ許す理由
+
+ファイルに載っている綴りを作るのに外部フォーマットの解釈が要り、そこを差し替えるとテストが
+実物で確かめられなくなるため(`rules/testing.md`「代替してよいのはプロセス外の境界のみ」)。
+production 側が 0 件なのは、外の語彙が要る場面を境界(`libs/`)の詰め替えで閉じているから。
+(`rules/architecture.md`「依存方向のルール」から、規範の 1 文を残して移した。)
