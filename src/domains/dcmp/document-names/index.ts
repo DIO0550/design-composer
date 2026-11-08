@@ -62,12 +62,14 @@ type NameOccurrence = Readonly<{ name: string; position: NamePosition }>;
 /**
  * 子孫の欠落を報告するときの入れ物を選ぶ。
  *
- * @param name 入れ物の候補になるノード・ルートの名前。型は `string` だが、JSON 由来のノードでは
- *   name が無く `undefined` になりうる。そのときも `fallback` を返す
- * @param fallback `name` が空のときに使う入れ物
- * @returns `name` が空でなければその名前の入れ物、空なら `fallback`
+ * @param name 入れ物の候補になるノード・ルートの名前。欠落（空・`undefined`）なら `fallback` を使う
+ * @param fallback `name` が欠落しているときに使う入れ物
+ * @returns `name` が欠落していなければその名前の入れ物、欠落していれば `fallback`
  */
-function namedOwnerOr(name: string, fallback: ChildOwner): ChildOwner {
+function namedOwnerOr(
+  name: string | undefined,
+  fallback: ChildOwner,
+): ChildOwner {
   return name ? { kind: "named", name } : fallback;
 }
 
