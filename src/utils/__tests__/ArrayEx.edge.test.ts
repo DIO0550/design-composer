@@ -150,6 +150,18 @@ test("写せない要素があれば、並びで最初に写せなかった要�
   ).toEqual(Result.err(-2));
 });
 
+test("不在になりうる手続きで写せない要素が 1 つでもあれば、写した並びは無い", () => {
+  expect(
+    ArrayEx.mapNonEmptyUntilNone([1, -2, 3], (item) =>
+      item > 0 ? Option.some(item) : Option.none,
+    ),
+  ).toEqual(Option.none);
+});
+
+test("空でない並びから重複を取り除くとき、先頭と等しい値は後ろから消える", () => {
+  expect(ArrayEx.distinctNonEmpty(["a", "b", "a"])).toEqual(["a", "b"]);
+});
+
 test("どの要素も写せなければ、写した並びは空になる", () => {
   expect(ArrayEx.filterMap(["a", "b"], () => Option.none)).toEqual([]);
 });
