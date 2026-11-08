@@ -136,6 +136,50 @@ test("運んでいる途中でドキュメントの一員の座標が変わる�
   ]);
 });
 
+test("運んでいる途中で一員が別の親へ移ると、離しても置き直しもツリー内の移動も届かない", () => {
+  // 一員が同じ親の兄弟でなくなったら、押した一員だけをツリーへ移す運び方へは切り替えない
+  const onRepositionNodes = vi.fn();
+  const onMoveNode = vi.fn();
+  const { rerenderWith } = renderCanvas({
+    selection: setupSelection(["a", "b"]),
+    onRepositionNodes,
+    onMoveNode,
+  });
+  drawnSiblings();
+  carryNode("a", { x: 30, y: 11 });
+
+  rerenderWith(
+    selectionFromArtboards(
+      [
+        {
+          name: "home",
+          width: 360,
+          height: 240,
+          children: [
+            absoluteText("a", 100, 24),
+            absoluteText("marker", 250, 0),
+            { name: "flowing", type: "Text", props: { content: "流" } },
+          ],
+        },
+        {
+          name: "settings",
+          width: 360,
+          height: 240,
+          children: [absoluteText("b", 40, 60)],
+        },
+      ],
+      ["a", "b"],
+    ),
+  );
+  drawnSiblings();
+  dropOnto(drawn("settings"), { x: 30, y: 11 });
+
+  expect([
+    onRepositionNodes.mock.calls.length,
+    onMoveNode.mock.calls.length,
+  ]).toEqual([0, 0]);
+});
+
 test("選んだ兄弟の一員を運んでいる間、全員が運んだ分だけずれて見える", () => {
   renderCanvas({ selection: setupSelection(["a", "b"]) });
   drawnSiblings();

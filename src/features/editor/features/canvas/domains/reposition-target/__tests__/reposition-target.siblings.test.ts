@@ -165,3 +165,49 @@ test("落とし先の親が決まっていなくても、全員ぶんのずら�
     { name: "b", offset: { x: 30, y: -12 } },
   ]);
 });
+
+test("小数の座標の一員と整数の一員をまとめて運んでいる間は、一員ごとに別々のずらし量で見せる", () => {
+  const preview = SiblingsRepositionTarget.preview(
+    SiblingsRepositionTarget.create(
+      {
+        ...GrabbedInHome,
+        members: [
+          {
+            ...GrabbedInHome.members[0],
+            placement: { mode: "absolute", x: 10.5, y: 0 },
+          },
+          {
+            ...GrabbedInHome.members[1],
+            placement: { mode: "absolute", x: 40, y: 0 },
+          },
+        ],
+      },
+      { x: 30, y: 0 },
+      Home,
+    ),
+  );
+
+  expect(preview.members).toEqual([
+    { name: "a", offset: { x: 30.5, y: 0 } },
+    { name: "b", offset: { x: 30, y: 0 } },
+  ]);
+});
+
+test("落とし先の親が決まっていない間も、小数の座標の一員と整数の一員は一員ごとに別々のずらし量で見せる", () => {
+  const preview = SiblingsRepositionTarget.carriedPreview(
+    {
+      parentName: "home",
+      parentRotation: 0,
+      members: [
+        { name: "a", placement: { mode: "absolute", x: 10.5, y: 0 } },
+        { name: "b", placement: { mode: "absolute", x: 40, y: 0 } },
+      ],
+    },
+    { x: 30, y: 0 },
+  );
+
+  expect(preview.members).toEqual([
+    { name: "a", offset: { x: 30.5, y: 0 } },
+    { name: "b", offset: { x: 30, y: 0 } },
+  ]);
+});
