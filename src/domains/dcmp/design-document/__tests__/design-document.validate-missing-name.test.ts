@@ -201,11 +201,16 @@ test("名前を持つ祖先が無いノードの欠落は、その子を収め�
     (error) => error.kind === "missing-name",
   );
 
-  expect(errors[1]).toEqual({
-    kind: "missing-name",
-    documentPath: "artboards[1]",
-    message: 'child 0 of artboard 1 of "artboards" has no name',
-  });
+  expect(errors).toEqual([
+    expect.objectContaining({
+      documentPath: "artboards[1]",
+      message: 'artboard 1 of "artboards" has no name',
+    }),
+    expect.objectContaining({
+      documentPath: "artboards[1]",
+      message: 'child 0 of artboard 1 of "artboards" has no name',
+    }),
+  ]);
 });
 
 test("名前を持つ祖先が無い部品内部のノードの欠落は、components のパスで報告される", () => {
@@ -218,11 +223,16 @@ test("名前を持つ祖先が無い部品内部のノードの欠落は、compo
     (error) => error.kind === "missing-name",
   );
 
-  expect(errors[1]).toEqual({
-    kind: "missing-name",
-    documentPath: "components",
-    message: 'child 0 of key "" of "components" has no name',
-  });
+  expect(errors).toEqual([
+    expect.objectContaining({
+      documentPath: "components",
+      message: 'key "" of "components" has no name',
+    }),
+    expect.objectContaining({
+      documentPath: "components",
+      message: 'child 0 of key "" of "components" has no name',
+    }),
+  ]);
 });
 
 test("名前を持つ途中のノードの下の欠落は、そのノードの名前で報告される", () => {
