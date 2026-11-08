@@ -1,0 +1,95 @@
+{
+  "version": 2,
+  "pr": 1311,
+  "headBranch": "claude/affectionate-hypatia-5kpjio",
+  "baseBranch": "main",
+  "mergeBase": "637790209c9f7b77db27e64892119baf9ec6e48b",
+  "head": "20b4657951bc781377c6393fd46cef03ea3cf19c",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/pre-push-import-rules.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/case-law/architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "rules/architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": ".oxlintrc.json",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "20b4657951bc781377c6393fd46cef03ea3cf19c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-08T00:02:14Z",
+      "subject": "ハーネス棚卸し: dependency の理由を rules/architecture.md から判例へ移す",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2Pckj1Qq9gjXV26JcW",
+      "files": [
+        {
+          "path": "harness/case-law/architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 0,
+          "patch": "@@ -155,3 +155,10 @@ pr-846 で `PointerButton` / `CommandKey` / `KeyName` を `src/libs/` 直下に\n - 親の `index.ts` を持たない入れ物にする形も示されたが、pr-846 では re-export する形に決まった\n - 親へまとめたあとは、`@/libs/dom-event/<サブフォルダ>` への deep import が検査をすり抜けるため\n   grep で 0 件を確かめる(`import-rule-violations.py` は入れ子モジュールの `index.ts` を違反にしない)\n+\n+### domains から libs への import を `__tests__/` だけ許す理由\n+\n+ファイルに載っている綴りを作るのに外部フォーマットの解釈が要り、そこを差し替えるとテストが\n+実物で確かめられなくなるため(`rules/testing.md`「代替してよいのはプロセス外の境界のみ」)。\n+production 側が 0 件なのは、外の語彙が要る場面を境界(`libs/`)の詰め替えで閉じているから。\n+(`rules/architecture.md`「依存方向のルール」から、規範の 1 文を残して移した。)",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "rules/architecture.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -114,7 +114,7 @@ app → features → services → domains\n ```\n \n - `src/domains/<カテゴリ>/<x>/` は他の domain を import してよい(カテゴリの向きに従う・一方向のみ・循環禁止)。services / features / React / Tauri API への依存は禁止\n-- **domains から libs への import は `__tests__/` の中だけ許す。** ファイルに載っている綴りを作るのに外部フォーマットの解釈が要り、そこを差し替えるとテストが実物で確かめられなくなるため(`rules/testing.md`「代替してよいのはプロセス外の境界のみ」)。**production 側は 0 件**で、外の語彙が要るなら境界(`libs/`)で詰め替えてドメインの語彙にする\n+- **domains から libs への import は `__tests__/` の中だけ許す**(理由は判例 `dependency`)。**production 側は 0 件**で、外の語彙が要るなら境界(`libs/`)で詰め替えてドメインの語彙にする\n - `src/services/` は `src/domains/` と `src/types/` と `src/utils/` のみ import 可。React / Tauri API への依存は禁止\n - `features/<x>/` は自分の内部、`src/services/`、`src/domains/`、横断層(`components/` `hooks/` `libs/` `utils/` `types/`)を import 可。他 feature は**公開API = その feature の `index.ts` 経由のみ**で、向きは**親から直下の子だけ**(子 feature 同士・子から親は禁止。繋ぐのは親 → `rules/consistency.md`「feature の構成とネスト」)\n - `features/<x>/domains/` は `src/domains/` を import してよいが、他 feature の domains への直接 import は不可(2つ以上の feature が必要とするドメインオブジェクトは昇格させる → 「配置の判断基準」)",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/pre-push-import-rules.sh",
+      "to": "rules/architecture.md",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "rules/architecture.md",
+      "status": "kept"
+    }
+  ]
+}
