@@ -2,6 +2,7 @@ import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { Node, PropEdit, type Props } from "@/domains/dcmp/node";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
@@ -244,12 +245,10 @@ test("同じ名前の artboard が 2 枚あるとき、props の編集は findAr
 });
 
 test("同じ名前の artboard が 2 枚あるとき、リサイズは findArtboard が返す 1 枚だけを変える", () => {
-  const resized = Result.unwrap(
-    DesignDocument.resize(
-      setupDuplicatedArtboards(),
-      "home",
-      ResizeEdit.create([AxisLength.create("width", 300)]),
-    ),
+  const resized = resizeTo(
+    setupDuplicatedArtboards(),
+    "home",
+    AxisLength.create("width", 300),
   );
 
   expect(resized.artboards.map((artboard) => artboard.width)).toEqual([
@@ -320,7 +319,7 @@ function firstChildPropsOf(
   document: DesignDocument,
   name: string,
 ): Option<Props> {
-  const child = childrenOf(document, name)[0];
+  const child = Option.unwrap(ArrayEx.first(childrenOf(document, name)));
   return Node.isPrimitive(child)
     ? Option.some(Node.propsOf(child))
     : Option.none;

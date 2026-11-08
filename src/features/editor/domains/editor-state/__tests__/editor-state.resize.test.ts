@@ -4,9 +4,10 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { EditContinuities } from "@/domains/session/edit-continuity";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
-import { stateWithParentNamedLikeChild } from "./setup";
+import { childrenUnder, stateWithParentNamedLikeChild } from "./setup";
 
 function setupState(): EditorState {
   return EditorState.create(
@@ -124,8 +125,6 @@ test("名前が重複した文書で選んだ Box の大きさを変えると、
     ),
   );
 
-  const child = Option.unwrap(
-    DesignDocument.findChildren(EditorState.document(resized), "p"),
-  )[0];
+  const child = Option.unwrap(ArrayEx.first(childrenUnder(resized, "p")));
   expect(Node.writtenPropsOf(child).x).toBe(20);
 });

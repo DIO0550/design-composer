@@ -2,9 +2,10 @@ import { expect, test } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
 import { EditContinuities } from "@/domains/session/edit-continuity";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
-import { stateWithParentNamedLikeChild } from "./setup";
+import { childrenUnder, stateWithParentNamedLikeChild } from "./setup";
 
 function setupState(): EditorState {
   return EditorState.create(
@@ -77,8 +78,6 @@ test("名前が重複した文書で選んだ Box の width を props 欄から�
     ),
   );
 
-  const child = Option.unwrap(
-    DesignDocument.findChildren(EditorState.document(edited), "p"),
-  )[0];
+  const child = Option.unwrap(ArrayEx.first(childrenUnder(edited, "p")));
   expect(Node.writtenPropsOf(child).x).toBe(20);
 });

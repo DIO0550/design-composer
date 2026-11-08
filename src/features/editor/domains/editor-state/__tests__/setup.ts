@@ -3,6 +3,7 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
+import type { Node } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -189,13 +190,27 @@ export function stateWithParentNamedLikeChild(): EditorState {
  *
  * @param state 引き先のエディタの状態
  * @param parentName 子を読みたい artboard / ノードの名前
+ * @returns その子を並び順のまま。親が居なければテストを落とす
+ */
+export function childrenUnder(
+  state: EditorState,
+  parentName: string,
+): readonly Node[] {
+  return Option.unwrap(
+    DesignDocument.findChildren(EditorState.document(state), parentName),
+  );
+}
+
+/**
+ * 名前で指した親の子の名前の並び。
+ *
+ * @param state 引き先のエディタの状態
+ * @param parentName 子を読みたい artboard / ノードの名前
  * @returns その子の名前を並び順のまま。親が居なければテストを落とす
  */
 export function childNames(
   state: EditorState,
   parentName: string,
 ): readonly string[] {
-  return Option.unwrap(
-    DesignDocument.findChildren(EditorState.document(state), parentName),
-  ).map((child) => child.name);
+  return childrenUnder(state, parentName).map((child) => child.name);
 }
