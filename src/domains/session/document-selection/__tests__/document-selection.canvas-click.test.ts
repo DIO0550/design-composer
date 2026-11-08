@@ -113,3 +113,12 @@ test("辿った名前に artboard が無ければ、載せている artboard は
 
   expect(name).toEqual(Option.none);
 });
+
+test("複数選択中に入れ子の一員を押すと、その一員を選ぶ", () => {
+  const name = DocumentSelection.nameToSelectAt(
+    DocumentSelection.fromNames(setupSelection().document, ["label", "login"]),
+    UnderPointer.create(["label", "card", "home"], SelectionDigs.NoDeeper),
+  );
+
+  expect(name).toEqual(Option.some("label"));
+});
