@@ -115,14 +115,14 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 | `session-url-notice.sh`(セッション URL の提示) | **無し**。宛先の Issue とそのコメントは CI から読めるが、CI が走るのは規約の起点(着手時)より後で、赤にしても事後に貼らせる以外に直せない(`harness/case-law/process.md`)。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
 | `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
 | `check-test-helper-duplication.sh`(即時フィードバック) | 結果は push 前の検査(git hooks の `duplicate-test-helpers.py --all src`。`python3` が使える環境だけ)と CI(`rules-check`)が `src/` 全体で拾う。**即時性だけが失われる** |
-| `record-firings.sh`(発火ログ) | **無し**。`harness-record` の計測は失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、誤ったゼロにはならない)。ただし同じログを読む `block-parent-session-edit.sh` は、ログに implementation-flow の区切りが無ければ素通りするので、こちらが落ちると親の編集の拒否も効かなくなる |
+| `record-firings.sh`(発火ログ) | **無し**。`harness-record` の計測は失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、フック不発が誤ったゼロにはならない。ただしスキルは、Skill ツールを通らない起動だと見出しがあっても発火行が書かれない → 下の「区切りがログに残らない起動」)。一方、同じログを読む `block-parent-session-edit.sh` は、ログに implementation-flow の区切りが無ければ素通りするので、こちらが落ちると親の編集の拒否も効かなくなる |
 | `block-parent-session-edit.sh`(セッション中の行為の禁止) | **無し**。誰が編集したか(親かサブエージェントか)はコミットに残らない。発火する環境でも残る穴は下 |
 
 `block-parent-session-edit.sh` が発火する環境でも残る穴は 5 つ。
 
 | 残る穴 | 内容 |
 | --- | --- |
-| 区切りがログに残らない起動 | Skill ツールを経ずに手順を読んで implementation-flow を進める回は、`planner` を起動するまで止まらない(このとき `skill` の行はログに残らない。#1046 で実測)。スラッシュコマンドで起動したときに Skill の PostToolUse が届くかは未検証で、届かないなら `/harness-record` で入った回は前の区切りが残ったまま拒否が続く(抜け方は「例外」) |
+| 区切りがログに残らない起動 | Skill ツールを通らない起動は、スキルの起動がログに残らない(`skill` の行が書かれない)。利用者が打ったスラッシュコマンドと、手順を読んで implementation-flow を進める回がこれに当たる。**実測は `/implementation-flow` を打った回だけ**で、`skill` の行が書かれず、`planner` を起動する前の親の Write は通り、起動した後は deny された([#1277 の実測](https://github.com/DIO0550/design-composer/issues/1277#issuecomment-6708032746))。測ったのはこの結果だけで、仕組み(本文がプロンプトへ直接展開され、Skill の PostToolUse が起きない)・他のスラッシュコマンド・手順を読んで進める回(#1046 のセッションはフックが発火しない形だった)は**推論**。その推論では、同じセッションで implementation-flow の区切りの後に `/harness-record` / `/harness-growth` を打った回は、前の区切りが残ったまま拒否が続く(抜け方は「例外」)。対策は #1309 |
 | matcher の外の道具 | `NotebookEdit` / `MultiEdit` は matcher(`Edit\|Write`)に入っていないので見ない。入力のキーが違い(`NotebookEdit` は `notebook_path`)、#1046 のゴールが Edit / Write に限られる |
 | Bash 経由の書き換え | `sed -i` やリダイレクトでの書き換えは見ない。コマンド文字列から書き換え先のパスを確定できず、このフックでは判定できない |
 | 正規化しないパス | `..` を挟んだ絶対パスや symlink 越しのパスは、綴りがルートと前方一致しないとリポジトリの外として通る(正規化はしない) |
@@ -285,6 +285,7 @@ grep -c $'\tsession\t' "${TMPDIR:-/tmp}/design-composer-firings-${CLAUDE_CODE_SE
 | 2026-09-12 | claude.ai/code から起動 | `echo hook-canary` は **deny され**、同じセッションの `echo hook-canary && echo done` は**通った** = カナリアの取りこぼし |
 | 2026-10-10(#1032) | Issue の assigned で起動した routine(3 リポジトリを並べ、作業ディレクトリ `/home/user`) | **通った** = 不発(マーカーも見出しも無い) |
 | 2026-10-10(#1032) | 前のセッションが `create_session` で起動(design-composer だけ、作業ディレクトリはリポジトリルート) | **deny された** = 発火 |
+| 2026-11-07(#1277) | 前のセッションが `create_session` で起動(design-composer だけ、作業ディレクトリはリポジトリルート) | **deny された** = 発火。スラッシュコマンドで再開すると、同じログに SessionStart の見出しが 2 行目として書かれ、ログが続いた |
 
 #1032 の 2 行の読み方は `harness/case-law/process.md`「起動の形で発火が割れた対照」。
 

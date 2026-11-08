@@ -2,7 +2,7 @@
 #
 # implementation-flow の中で、親セッションがリポジトリの中のファイルを Edit / Write するのを拒否する
 # PreToolUse フック(matcher: Edit|Write)。サブエージェントの編集と、リポジトリの外のファイルと、
-# implementation-flow の外(harness-record / harness-growth)での親の編集は止めない。
+# implementation-flow の外(Skill ツールで起動した harness-record / harness-growth)での親の編集は止めない。
 #
 # 対応する規約: implementation-flow「役割の分担」の「親はリポジトリの中のファイルを編集しない」。
 #
@@ -18,7 +18,8 @@
 # 編集まで止まる)。
 #
 # planner / implementer を呼ぶのは implementation-flow だけ(planner はフェーズ 3・4、implementer は 5〜7)なので、
-# 起動されていれば flow の中と言える。Skill ツールを経ずに手順を読んで進める回は、スキルの起動がログに残らない。
+# 起動されていれば flow の中と言える。Skill ツールを通らない起動(手順を読んで進める回・打ったスラッシュコマンド)は、
+# スキルの起動がログに残らない(.claude/hooks/README.md「カバー範囲と残る穴」)。
 # flow の始まりに Skill ツールでの起動を規約で求める案は採らない(指示頼みで、まさにそこが守られない)。
 #
 # リポジトリのルートは CLAUDE_PROJECT_DIR ではなく、このファイルの置き場所から辿る。セッションの中で
