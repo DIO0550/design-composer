@@ -8,8 +8,8 @@ import {
   highlightedNames,
   movePointer,
   pressPointer,
-  stubBounds,
 } from "@/features/editor/features/canvas/__tests__";
+import { stubBounds } from "@/libs/__tests__/element-measure";
 import {
   canvasPane,
   dragRangeAround,

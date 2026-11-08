@@ -1,50 +1,12 @@
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import { drawn } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
+import { stubBounds, stubLayoutSize } from "@/libs/__tests__/element-measure";
 
 /**
- * キャンバスの実測を差し替える。
- *
- * happy-dom はレイアウトを行わず矩形をすべて 0 で返すため、**差し替えないと実測を使う
- * 実装を何に壊しても通る**（rules/testing.md「その assert は落ちうるか」）。
- * ここで差し替えるのはブラウザが行う測定だけで、そこから何が決まるかは実物が答える。
- *
- * キャンバスの実測の差し替えなので、外の feature から使う場合も持ち主であるこの feature
- * に置き、テスト用の公開口（`__tests__/index.ts`）から出す。
+ * キャンバスに描かれた要素を、測定を差し替えた状態で用意する。
+ * 測定の差し替えそのものと理由は `@/libs/__tests__/element-measure`。
  */
-
-/**
- * その要素が描かれている矩形を決める。
- *
- * @param element 測り方を差し替える要素
- * @param bounds その要素が返すことにする矩形
- */
-export function stubBounds(element: Element, bounds: CanvasBounds): void {
-  element.getBoundingClientRect = () =>
-    new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
-}
-
-/**
- * その要素の、変形を効かせる前のレイアウトの大きさを決める（`offsetWidth` / `offsetHeight`）。
- * 回った要素の回る前の大きさは外接矩形からは決まらないので、回ったものを測るテストは
- * `stubBounds` と合わせてこれも差し替える。
- *
- * @param element 測り方を差し替える要素
- * @param size その要素が返すことにする幅と高さ
- */
-export function stubLayoutSize(
-  element: HTMLElement,
-  size: Readonly<{ width: number; height: number }>,
-): void {
-  Object.defineProperty(element, "offsetWidth", {
-    configurable: true,
-    value: size.width,
-  });
-  Object.defineProperty(element, "offsetHeight", {
-    configurable: true,
-    value: size.height,
-  });
-}
 
 /**
  * キャンバスに描かれている要素の、描かれた位置と大きさをテスト用の値にする。

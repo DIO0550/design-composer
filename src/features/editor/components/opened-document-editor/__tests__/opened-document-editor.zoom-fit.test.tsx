@@ -3,16 +3,15 @@ import { expect, test } from "vitest";
 import {
   canvasContent,
   canvasSurface,
-  stubBounds,
 } from "@/features/editor/features/canvas/__tests__";
+import { stubBounds } from "@/libs/__tests__/element-measure";
 import { drawn, renderOpenedDocument } from "./setup";
 
 /*
  * キーボードから画面へ収めるところまでの通し。
  *
- * happy-dom はレイアウトを行わず矩形をすべて 0 で返すので、**測定を差し替えないと**
- * 収める側の「面積が無ければ何もしない」に落ちて、配線が切れていても通ってしまう
- * （差し替えの詳細は `canvas-measure` の doc）。
+ * **測定を差し替えないと**（理由は `element-measure` の doc）、収める側の「面積が無ければ
+ * 何もしない」に落ちて、配線が切れていても通ってしまう。
  */
 
 /** キャンバスの土台。収める先になる。 */

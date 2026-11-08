@@ -38,9 +38,9 @@ import {
 } from "../reposition-preview-style";
 
 /*
- * 名前で引く・距離の数値を読む・測りを差し替えるのはキャンバスのフックの単体テストや feature
- * 直下の共有の描き方（`canvas-turned-frame`）、編集画面の通しも使うので、持ち主は feature 直下
- * の `canvas-elements` / `canvas-measure`。ここからは今までどおりの名前で出す。
+ * 名前で引く・距離の数値を読む・測りを差し替えた状態で描くのはキャンバスのフックの単体テスト
+ * や feature 直下の共有の描き方（`canvas-turned-frame`）、編集画面の通しも使うので、持ち主は
+ * feature 直下の `canvas-elements` / `canvas-measure`。ここからは今までどおりの名前で出す。
  */
 export {
   distanceLabels,

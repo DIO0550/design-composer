@@ -4,14 +4,13 @@ import { afterEach, expect, test } from "vitest";
 import {
   clearDrawn,
   drawNamed,
-  stubBounds,
-  stubLayoutSize,
 } from "@/features/editor/features/canvas/__tests__/canvas-measure";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
+import { stubBounds, stubLayoutSize } from "@/libs/__tests__/element-measure";
 import { Option } from "@/utils/Option";
 import { useDrawnBounds } from "../index";
 
-/* 描かれている矩形の追いかけ方。測定の差し替え方は `canvas-measure` の doc を見る。 */
+/* 描かれている矩形の追いかけ方。測定の差し替え方は `element-measure` の doc を見る。 */
 
 afterEach(clearDrawn);
 
