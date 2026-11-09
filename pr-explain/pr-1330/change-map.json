@@ -3,8 +3,8 @@
   "pr": 1330,
   "headBranch": "claude/magical-cannon-fc9pso",
   "baseBranch": "main",
-  "mergeBase": "d954cef70900905e03546d4b75f1221aa9867e72",
-  "head": "397b8ade06cb0e79879a873ab2fddae68a4deb93",
+  "mergeBase": "58833e4f25cf80419c519585453ec22b7e83d38b",
+  "head": "b9e8adc7efea07c817e7d454b481be47b9ce5ff2",
   "groups": [
     {
       "label": "domains / unit",
@@ -1312,7 +1312,7 @@
           "status": "M",
           "oldPath": null,
           "additions": 51,
-          "deletions": 0,
+          "deletions": 1,
           "changed": true,
           "target": null
         },
@@ -3833,6 +3833,15 @@
       "subject": "🔀 [Merge]: #1298 main を取り込み、衝突とまとめた置き直しの呼び出しの形を揃える",
       "body": "- editor-state のテストの setup.ts の衝突を解消した。main（#554）が nodeNamed を\n  editor-state-reads へ移して Node の import を消していたが、このブランチの\n  stateWithAbsoluteSiblings / propsOf が Props と Node を使うので import を残し、\n  nodeNamed は移し先から読む\n- main から入った use-node-actions.tree-edit のテストを、置き直しの受け口の新しい形\n  （名前と置き直しの組の並び）で呼ぶように直した。テスト名・件数・期待値は変えていない\n\n背景:\nPR #1330 が main と衝突して CI と PR 解説のワークフローが走らなかったため、main を\nマージした。\n\n採用理由:\n履歴を書き換えない（rebase しない）ためにマージコミットで取り込んだ。main 側の\nテストは、このブランチで受け口を並びに変えたため型検査で落ちた（TS2554）ので、\n呼び出しの形だけを揃えた。\n\n影響とトレードオフ:\nテストのみ。マージ後に typecheck / lint / biome / vitest（737 ファイル・5868 件）/\npre-push（31 項目）がすべて exit 0。\n\n代替案:\nrebase で取り込む案は、push 済みのブランチの履歴を書き換えるため採らなかった。\n\n参考:\nhttps://github.com/DIO0550/design-composer/pull/1330\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RgQJV4G8TPPquoejt",
       "files": []
+    },
+    {
+      "sha": "b9e8adc7efea07c817e7d454b481be47b9ce5ff2",
+      "merge": true,
+      "author": "Claude",
+      "date": "2026-11-09T13:23:11Z",
+      "subject": "🔀 [Merge]: #1298 main を取り込み、editor-state のテストの import の衝突を解消する",
+      "body": "- main（#896 の 30daba5）が childrenUnder の戻り値のために import type { Node } を\n  足していた。このブランチは Node を値（Node.writtenPropsOf）として使うので、値の\n  import 1 本にまとめ、型としての使い方もそれでまかなう\n- Props と nodeNamed（editor-state-reads から）はこのブランチで使っているので残した\n\n背景:\nPR #1330 が再び main と衝突した。\n\n採用理由:\n両側で使っている名前をすべて残し、同じ名前の import を 2 本持たないようにした。\n履歴を書き換えないようマージコミットで取り込んだ。\n\n影響とトレードオフ:\nテストの import のみ。マージ後に typecheck / lint / biome / vitest（737 ファイル・\n5881 件）/ pre-push（31 項目）がすべて exit 0。追加で直したファイルは無い。\n\n代替案:\nrebase で取り込む案は、push 済みのブランチの履歴を書き換えるため採らなかった。\n\n参考:\nhttps://github.com/DIO0550/design-composer/pull/1330\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RgQJV4G8TPPquoejt",
+      "files": []
     }
   ],
   "dependencies": [
@@ -3884,6 +3893,11 @@
     {
       "from": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
       "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+      "to": "src/utils/ArrayEx.ts",
       "status": "kept"
     },
     {
@@ -5803,7 +5817,17 @@
     },
     {
       "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
       "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+      "to": "src/utils/ArrayEx.ts",
       "status": "kept"
     },
     {
@@ -5953,7 +5977,17 @@
     },
     {
       "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
       "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+      "to": "src/utils/ArrayEx.ts",
       "status": "kept"
     },
     {
@@ -6024,7 +6058,7 @@
     {
       "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
       "to": "src/domains/dcmp/node/index.ts",
-      "status": "added"
+      "status": "kept"
     },
     {
       "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
