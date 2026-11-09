@@ -83,15 +83,16 @@ test("描かれていない名前と面積を持たないものは、測った�
 });
 
 test("回っていて回る前の大きさが 0 のものは、外接矩形の中心を含む矩形でも拾わない", () => {
-  // 回る前の大きさ 0 は差し替えなくても返る値なので、大きさだけが違う `turned` を並べて、差し替えが効いていることを確かめる
-  const turnedSquare = {
+  // 回る前の大きさ 0 は差し替えなくても返る値なので、大きさだけが違う
+  // `turned` を並べて、差し替えが効いていることを確かめる
+  const enclosing = {
     left: 100,
     top: 100,
     width: 20 * Math.SQRT2,
     height: 20 * Math.SQRT2,
   };
-  stubLayoutSize(drawNamed("collapsed", turnedSquare), { width: 0, height: 0 });
-  stubLayoutSize(drawNamed("turned", turnedSquare), { width: 20, height: 20 });
+  stubLayoutSize(drawNamed("collapsed", enclosing), { width: 0, height: 0 });
+  stubLayoutSize(drawNamed("turned", enclosing), { width: 20, height: 20 });
 
   const overlapping = DrawnBounds.collectOverlappingNames(
     [
