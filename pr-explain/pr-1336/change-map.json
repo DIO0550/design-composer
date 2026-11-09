@@ -1,0 +1,2995 @@
+{
+  "version": 2,
+  "pr": 1336,
+  "headBranch": "claude/magical-cannon-jhtwnh",
+  "baseBranch": "main",
+  "mergeBase": "58833e4f25cf80419c519585453ec22b7e83d38b",
+  "head": "9371b3b76f28c9053e1548b7edcc2dd2cbc2a859",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/corner/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/side/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/axis-length/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/box-align/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 276,
+          "deletions": 70,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/component/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/constraint/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/corner-radius/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/token-referrer/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/document-names/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/layout/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/length-shorthand/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/locking/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 6,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/padding/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/token-props/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reference-context/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resolved-props/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 13,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/rotation/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/sibling-positions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/gradient/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/visibility/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/wrap/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.type.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/box-align/__tests__/box-align.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.declared.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 32,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/component-binding/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 263,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/component-binding/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.public-prop.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.violation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/constraint/__tests__/constraint.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.constraint.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.copies-after.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.name-uniqueness.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rename-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-fill.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/text-node-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/__tests__/expanded-node.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/__tests__/expanded-node.nested.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/__tests__/expanded-node.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/__tests__/expanded-node.root-override.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/layout/__tests__/layout.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/__tests__/node-tree.ambiguous-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/__tests__/node-tree.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/__tests__/node-tree.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/__tests__/node.json.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/__tests__/node.name-match.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/__tests__/node.nested-primitive.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/__tests__/node.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/__tests__/node.prop-edit.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 27,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/node/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/node/__tests__/node.props.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/__tests__/node.ref-node.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/__tests__/node.ref.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/__tests__/node.rename.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/placement/__tests__/placement.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/placement/__tests__/placement.prop-transfer.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.prototype-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.ref-props.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.token-kind-list.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.type.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.text.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.type.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reference-context/__tests__/reference-context.instance-violation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resolved-props/__tests__/resolved-props.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resolved-props/__tests__/resolved-props.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/rotation/__tests__/rotation.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/__tests__/size.fill.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/__tests__/size.limits.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/__tests__/size.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/__tests__/size.type.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / compiled",
+      "files": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.visibility.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.layout.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/__tests__/element-style-setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-documents/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 60,
+          "deletions": 86,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/session/selection-dig/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/under-pointer/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/session/document-reload/__tests__/document-reload.invalid.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-dig.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/__tests__/node-template.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.edit-from.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 216,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/session/prop-control/index.ts"
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection/__tests__/selection.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/under-pointer/__tests__/under-pointer.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "services",
+      "files": [
+        {
+          "path": "src/services/node-html/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/node-html/__tests__/node-html.edge.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/utils/Json.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/NumberEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Range.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/RecordEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/__tests__/ArrayEx.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/utils/ArrayEx.ts"
+        },
+        {
+          "path": "src/utils/__tests__/ArrayEx.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/utils/ArrayEx.ts"
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/NonEmptyArray.ts",
+          "changed": false
+        },
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/editor-state-reads.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-dig.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.instance-lock.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/assets",
+      "files": [
+        {
+          "path": "src/features/editor/features/assets/domains/componentization/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/facing/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-zone/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/pointing/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-drag.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-move.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-placement.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.range-select-artboard.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-snap-flow.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.text-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/pointing/__tests__/pointing.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/use-text-edit.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/domains/recent-files/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/inspector",
+      "files": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__stories__/panel-controls.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/groups-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/prop-row/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/shorthand-row/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.shorthand.test.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/sidebar",
+      "files": [
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/tokens",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/context-menu/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.declared.test.ts",
+        "name": "同じ prop を 2 つの名前で公開した部品を、途中の参照ノードが一方の名前で上書きしていれば、もう一方から辿っても上書きした値が既定になる"
+      },
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+        "name": "locking へ繋いだ公開 prop は着かず、他の公開 prop は着く"
+      },
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+        "name": "インスタンスの上書きは、部品の値を上書きした形で着いたノードに乗る"
+      },
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+        "name": "入れ子の部品では、着いた先の既定は途中の参照ノードの上書きまでを当て、インスタンスの上書きを当てる前の値になる"
+      },
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+        "name": "入れ子の部品では、途中の参照ノードの上書きが着いたノードに当たり、インスタンスの上書きが勝つ"
+      },
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+        "name": "別のノードへ繋いだ公開 prop の上書きは、着いたノードに当たらない"
+      },
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+        "name": "参照が循環している公開 prop は着かない"
+      },
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+        "name": "同じノードの条件の prop を公開していれば、その公開名が条件の公開名になる"
+      },
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+        "name": "同じ部品を 2 回使った部品では、別の参照ノードの中で条件の prop を公開していても、条件の公開名にならない"
+      },
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+        "name": "存在しない部品を指すインスタンスには、着いた先が無い"
+      },
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+        "name": "条件の prop を別のノードから公開していても、条件の公開名にならない"
+      },
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+        "name": "着いた先の既定は、インスタンスの上書きを当てる前の部品の値になる"
+      },
+      {
+        "file": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+        "name": "部品の中に無いノードへ繋いだ公開 prop は着かず、他の公開 prop は着く"
+      },
+      {
+        "file": "src/domains/dcmp/node/__tests__/node.prop-edit.test.ts",
+        "name": "プリミティブで prop の編集が書き込まれる先は、そのノードの props"
+      },
+      {
+        "file": "src/domains/dcmp/node/__tests__/node.prop-edit.test.ts",
+        "name": "上書きを持たない参照ノードでは、prop の編集が書き込まれる先は空"
+      },
+      {
+        "file": "src/domains/dcmp/node/__tests__/node.prop-edit.test.ts",
+        "name": "参照ノードで prop の編集が書き込まれる先は公開 prop への上書きで、インスタンス自身の値を含まない"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "name": "上書きしている公開 prop でも、既定には部品が設定している値が出る"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "name": "入れ子の部品へ公開名を変えて繋いだ幅のモードを上書きで fixed にすると、長さの欄が出る"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "name": "公開名を binding 先と違う名前にした部品で、幅のモードを上書きで fixed にすると、公開した長さの欄が出る"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "name": "別のノードの置き方を公開していても、座標の公開 prop の欄に条件の行は無い"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "name": "条件の prop を公開していなければ、公開 prop の欄に条件の行は無い"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "name": "条件の prop を公開していれば、公開 prop の欄の条件の行はその公開名になる"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "name": "条件の prop を別の名前で公開していれば、公開 prop の欄の条件の行はその公開名になる"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "name": "置き方を上書きで絶対配置にしても、別のノードの座標へ繋いだ公開 prop の欄は出ない"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "name": "部品の中でノードが絶対配置なら、置き方を公開していなくても、そのノードの座標へ繋いだ公開 prop の欄が出る"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "name": "部品の中でノードの幅のモードが fixed なら、モードを公開していなくても公開した長さの欄が出る"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "name": "部品の中で幅のモードが fixed でも、インスタンスがモードの公開 prop を hug に上書きすれば長さの欄は出ない"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+        "name": "部品定義の中の参照ノードが幅のモードを fixed に上書きしていれば、公開した長さの欄が出る"
+      },
+      {
+        "file": "src/utils/__tests__/ArrayEx.edge.test.ts",
+        "name": "一方が他方の先頭部分にすぎない並びは、要素ごとに等しくない"
+      },
+      {
+        "file": "src/utils/__tests__/ArrayEx.edge.test.ts",
+        "name": "空の並びどうしは、要素ごとに等しい"
+      },
+      {
+        "file": "src/utils/__tests__/ArrayEx.edge.test.ts",
+        "name": "要素ごとの比較は NaN どうしを等しいとみなす"
+      },
+      {
+        "file": "src/utils/__tests__/ArrayEx.normal.test.ts",
+        "name": "同じ要素でも並びの順が違えば、要素ごとに等しくない"
+      },
+      {
+        "file": "src/utils/__tests__/ArrayEx.normal.test.ts",
+        "name": "同じ長さで同じ位置に同じ要素を持つ並びは、要素ごとに等しい"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/domains/dcmp/component-binding/__tests__/component-binding.declared.test.ts",
+      "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+      "src/domains/dcmp/node/__tests__/node.prop-edit.test.ts",
+      "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+      "src/utils/__tests__/ArrayEx.edge.test.ts",
+      "src/utils/__tests__/ArrayEx.normal.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "b3adcf97a4cbbd2f8f58dd09ccbcc79ccf2e8254",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-09T13:52:49Z",
+      "subject": "🐛 [Bug fix]: #1328 公開 prop の enabledWhen を binding 先ノードの props で判定する",
+      "body": "- ComponentBinding に resolveInstancePropTargets / conditionPublicName と型 InstancePropTarget を追加\n- 辿りの各段で部品へ上書きを Component.applyOverrides で当ててからノードを引くように変更し、上書き前の既定(declared)と上書き後の着いたノードを 1 回の辿りで対で返す\n- prop-control の公開 prop の欄を、着いたノードの props(ResolvedProps.forNode)で PropDefinition.isEnabled に通して絞る\n- インスタンスの欄の enabledBy を、同じ部品にある条件の行の公開名(公開していなければ none)にする\n- effectiveProps を PropDefinitionRecord.collectDefaultsIfAbsent へ寄せる\n\n背景:\nインスタンスの公開 prop で、enabledWhen の条件は binding 先の prop 名(例 widthMode)を指すのに、\n判定に渡す props は公開名をキーにした overrides だった。公開名と binding 先の名前が違う部品、\n条件の prop を公開していない部品、別ノードの x / y へ繋いだ公開 prop で、欄が出る/出ないが\n誤っていた。docs/03-schema.md は「見るのは同じノードの prop だけ」と規定している。\n\n採用理由:\n条件は binding 先ノードの性質なので、ノードそのもの(部品内の値 + 途中の参照ノードと\nインスタンスの上書き + 既定)で判定するのが仕様どおり。参照の連鎖を循環を打ち切りながら\n辿る処理は ComponentBinding にしか無いので、そこで着いたノードまで返す。既定と着いたノードを\n別々の辿りで取ると「片方だけ解決できる」組み合わせが型で禁止されないので、1 回の辿りで対にした。\nenabledBy は PropRow がラベルを隠して字下げする目印で、条件の行がパネルに無いのに隠すと\n何の欄か分からない欄が出るため、同じ部品にある条件の行の公開名にした。\n\n代替案:\n- 判定に渡すキーを公開名から binding 先の名前へ付け替えるだけ: 非公開の条件 prop と別ノードの\n  ケースが直らない(キーが prop 名だけでノードを区別できない)ため却下\n- ExpandedNode.fromNode で展開して着いたノードを名前で探す: 経路と無関係な子の展開失敗で全体が\n  err になり、入れ子の内部ノード名が衝突しうるため却下\n- 上書き済みの部品に差し替えた ComponentSet を resolvePublicPropTarget に渡す: declared に\n  インスタンスの上書きが混ざり、パネルが既定と上書きを見分けられなくなるため却下\n- resolvePublicPropTarget と着いたノードを返す別メソッドで 2 回辿る: 上記の理由で却下\n- enabledBy をスキーマの enabledWhen.prop のままにする: 条件の行が無い欄のラベルが消えるため却下\n\n影響とトレードオフ:\nresolvePropTarget の declared は、内側の部品が同じ node.prop を 2 つの公開名で公開し、途中の\n参照ノードが辿っていない側の名前だけを上書きしているときに変わる(例: 5 → 10)。描画\n(段ごとに applyOverrides を当てる expanded-node)と揃う変化として受け入れ、テストで固定した。\n#633 の withEnabledBy(同じ条件の欄をまとめる処理)はスコープ外で、rebase 時に EditableProp の\n形とぶつかる。\n\n参考:\n- Issue #1328(計画・plan-reviewer の指摘と採否)\n- docs/03-schema.md「enabledWhen」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NX4968qzXW2nWiKPq",
+      "files": [
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.declared.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 32,
+          "deletions": 0,
+          "patch": "@@ -138,3 +138,35 @@ test(\"入れ子の部品の公開 prop constructor を上書きしていなけ\n \n   expect(target.declared).toEqual(Option.some(\"Inner\"));\n });\n+\n+test(\"同じ prop を 2 つの名前で公開した部品を、途中の参照ノードが一方の名前で上書きしていれば、もう一方から辿っても上書きした値が既定になる\", () => {\n+  const components: ComponentSet = {\n+    doubled: {\n+      type: \"Box\",\n+      children: [{ name: \"doubled-body\", type: \"Box\", props: { width: 5 } }],\n+      publicProps: {\n+        first: { node: \"doubled-body\", prop: \"width\" },\n+        second: { node: \"doubled-body\", prop: \"width\" },\n+      },\n+    },\n+    holder: {\n+      type: \"Box\",\n+      children: [\n+        { name: \"holder-doubled\", ref: \"doubled\", overrides: { second: 10 } },\n+      ],\n+      publicProps: { size: { node: \"holder-doubled\", prop: \"first\" } },\n+    },\n+  };\n+\n+  const target = Option.unwrap(\n+    ComponentBinding.resolvePropTarget(\n+      components,\n+      ComponentBinding.create(\"holder\", {\n+        node: \"holder-doubled\",\n+        prop: \"first\",\n+      }),\n+    ),\n+  );\n+\n+  expect(target.declared).toEqual(Option.some(10));\n+});",
+          "patchLines": 36,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 215,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,215 @@\n+import { expect, test } from \"vitest\";\n+import type { ComponentSet } from \"@/domains/dcmp/component\";\n+import type { RefNode } from \"@/domains/dcmp/node\";\n+import { Option } from \"@/utils/Option\";\n+import { ComponentBinding, type InstancePropTarget } from \"../index\";\n+\n+/**\n+ * 公開 prop の着いた先を公開名で引く。無ければテストを落とす。\n+ *\n+ * @param targets 着いた先の並び\n+ * @param name 引きたい公開名\n+ * @returns その公開名の着いた先\n+ */\n+function targetNamed(\n+  targets: readonly InstancePropTarget[],\n+  name: string,\n+): InstancePropTarget {\n+  return Option.unwrap(\n+    Option.fromNullable(targets.find((target) => target.name === name)),\n+  );\n+}\n+\n+/**\n+ * 内部ノード `card-body` の幅とモードを `size` / `mode` として公開した部品 `card` だけの一式。\n+ * `card-body` は幅 5・モード fixed を持つ。\n+ *\n+ * @returns 部品一式\n+ */\n+function setupCard(): ComponentSet {\n+  return {\n+    card: {\n+      type: \"Box\",\n+      children: [\n+        {\n+          name: \"card-body\",\n+          type: \"Box\",\n+          props: { width: 5, widthMode: \"fixed\" },\n+        },\n+      ],\n+      publicProps: {\n+        mode: { node: \"card-body\", prop: \"widthMode\" },\n+        size: { node: \"card-body\", prop: \"width\" },\n+      },\n+    },\n+  };\n+}\n+\n+/**\n+ * `split-a` の置き方と幅、`split-b` の座標と幅を公開した部品 `split` だけの一式。\n+ * どちらのノードも幅 5 を持つ。\n+ *\n+ * @returns 部品一式\n+ */\n+function setupSplit(): ComponentSet {\n+  return {\n+    split: {\n+      type: \"Box\",\n+      children: [\n+        { name: \"split-a\", type: \"Box\", props: { width: 5 } },\n+        { name: \"split-b\", type: \"Box\", props: { width: 5 } },\n+      ],\n+      publicProps: {\n+        placement: { node: \"split-a\", prop: \"placement\" },\n+        widthA: { node: \"split-a\", prop: \"width\" },\n+        x: { node: \"split-b\", prop: \"x\" },\n+        widthB: { node: \"split-b\", prop: \"width\" },\n+      },\n+    },\n+  };\n+}\n+\n+/**\n+ * インスタンスの公開 prop の着いた先。\n+ *\n+ * @param components 引き先の部品一式\n+ * @param instance 公開 prop を辿るインスタンス\n+ * @returns 公開 prop ごとの着いた先\n+ */\n+function resolve(\n+  components: ComponentSet,\n+  instance: RefNode,\n+): readonly InstancePropTarget[] {\n+  return ComponentBinding.resolveInstancePropTargets(components, instance);\n+}\n+\n+test(\"インスタンスの上書きは、部品の値を上書きした形で着いたノードに乗る\", () => {\n+  const targets = resolve(setupCard(), {\n+    name: \"instance\",\n+    ref: \"card\",\n+    overrides: { size: 10 },\n+  });\n+\n+  expect(targetNamed(targets, \"size\").node.props?.width).toBe(10);\n+});\n+\n+test(\"着いた先の既定は、インスタンスの上書きを当てる前の部品の値になる\", () => {\n+  const targets = resolve(setupCard(), {\n+    name: \"instance\",\n+    ref: \"card\",\n+    overrides: { size: 10 },\n+  });\n+\n+  expect(targetNamed(targets, \"size\").target.declared).toEqual(Option.some(5));\n+});\n+\n+test(\"別のノードへ繋いだ公開 prop の上書きは、着いたノードに当たらない\", () => {\n+  const targets = resolve(setupSplit(), {\n+    name: \"instance\",\n+    ref: \"split\",\n+    overrides: { widthB: 10 },\n+  });\n+\n+  expect(targetNamed(targets, \"widthA\").node.props?.width).toBe(5);\n+});\n+\n+test(\"入れ子の部品では、途中の参照ノードの上書きが着いたノードに当たり、インスタンスの上書きが勝つ\", () => {\n+  const components: ComponentSet = {\n+    ...setupCard(),\n+    row: {\n+      type: \"Box\",\n+      children: [\n+        {\n+          name: \"row-card\",\n+          ref: \"card\",\n+          overrides: { size: 7, mode: \"hug\" },\n+        },\n+      ],\n+      publicProps: { rowSize: { node: \"row-card\", prop: \"size\" } },\n+    },\n+  };\n+\n+  const targets = resolve(components, {\n+    name: \"instance\",\n+    ref: \"row\",\n+    overrides: { rowSize: 10 },\n+  });\n+\n+  expect(targetNamed(targets, \"rowSize\").node.props).toEqual({\n+    width: 10,\n+    widthMode: \"hug\",\n+  });\n+});\n+\n+test(\"同じノードの条件の prop を公開していれば、その公開名が条件の公開名になる\", () => {\n+  const targets = resolve(setupCard(), { name: \"instance\", ref: \"card\" });\n+\n+  expect(\n+    ComponentBinding.conditionPublicName(targets, targetNamed(targets, \"size\")),\n+  ).toEqual(Option.some(\"mode\"));\n+});\n+\n+test(\"条件の prop を別のノードから公開していても、条件の公開名にならない\", () => {\n+  const targets = resolve(setupSplit(), { name: \"instance\", ref: \"split\" });\n+\n+  expect(\n+    ComponentBinding.conditionPublicName(targets, targetNamed(targets, \"x\")),\n+  ).toEqual(Option.none);\n+});\n+\n+test(\"存在しない部品を指すインスタンスには、着いた先が無い\", () => {\n+  expect(resolve(setupCard(), { name: \"instance\", ref: \"missing\" })).toEqual(\n+    [],\n+  );\n+});\n+\n+test(\"部品の中に無いノードへ繋いだ公開 prop は着かず、他の公開 prop は着く\", () => {\n+  const components: ComponentSet = {\n+    card: {\n+      type: \"Box\",\n+      children: [{ name: \"card-body\", type: \"Box\" }],\n+      publicProps: {\n+        size: { node: \"card-body\", prop: \"width\" },\n+        gone: { node: \"card-missing\", prop: \"width\" },\n+      },\n+    },\n+  };\n+\n+  const targets = resolve(components, { name: \"instance\", ref: \"card\" });\n+\n+  expect(targets.map((target) => target.name)).toEqual([\"size\"]);\n+});\n+\n+test(\"locking へ繋いだ公開 prop は着かず、他の公開 prop は着く\", () => {\n+  const components: ComponentSet = {\n+    card: {\n+      type: \"Box\",\n+      children: [{ name: \"card-body\", type: \"Box\" }],\n+      publicProps: {\n+        size: { node: \"card-body\", prop: \"width\" },\n+        lock: { node: \"card-body\", prop: \"locking\" },\n+      },\n+    },\n+  };\n+\n+  const targets = resolve(components, { name: \"instance\", ref: \"card\" });\n+\n+  expect(targets.map((target) => target.name)).toEqual([\"size\"]);\n+});\n+\n+test(\"参照が循環している公開 prop は着かない\", () => {\n+  const components: ComponentSet = {\n+    first: {\n+      type: \"Box\",\n+      children: [{ name: \"first-second\", ref: \"second\" }],\n+      publicProps: { p: { node: \"first-second\", prop: \"q\" } },\n+    },\n+    second: {\n+      type: \"Box\",\n+      children: [{ name: \"second-first\", ref: \"first\" }],\n+      publicProps: { q: { node: \"second-first\", prop: \"p\" } },\n+    },\n+  };\n+\n+  expect(resolve(components, { name: \"instance\", ref: \"first\" })).toEqual([]);\n+});",
+          "patchLines": 216,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 210,
+          "deletions": 54,
+          "patch": "@@ -6,6 +6,7 @@ import {\n import {\n   Node,\n   type PrimitiveNode,\n+  type Props,\n   type PropValue,\n   type RefNode,\n } from \"@/domains/dcmp/node\";\n@@ -13,6 +14,7 @@ import {\n   PrimitiveSchema,\n   type PropDefinition,\n } from \"@/domains/dcmp/primitive-schema\";\n+import { ArrayEx } from \"@/utils/ArrayEx\";\n import { Option } from \"@/utils/Option\";\n import { RecordEx } from \"@/utils/RecordEx\";\n \n@@ -44,6 +46,36 @@ export type PublicPropTarget = Readonly<{\n   declared: Option<PropValue>;\n }>;\n \n+/**\n+ * インスタンスの公開 prop 1 つを辿って着いた先。\n+ *\n+ * `name` は公開名、`target.declared` はインスタンスの上書きを当てる前の値、`node` は\n+ * インスタンスの上書きまで当てた binding 先のプリミティブ。`path` は各段の binding 先の\n+ * ノード名を外側から並べたもの、`prop` は着いたノードの prop 名。\n+ */\n+export type InstancePropTarget = Readonly<{\n+  name: string;\n+  target: PublicPropTarget;\n+  node: PrimitiveNode;\n+  path: readonly string[];\n+  prop: string;\n+}>;\n+\n+/** binding を最後まで辿って着いた先。どの公開 prop から辿ったかは持たない。 */\n+type ReachedProp = Omit<InstancePropTarget, \"name\">;\n+\n+/**\n+ * 1 段の部品へ当てる上書き。`declared` は部品定義と途中の参照ノードの上書きだけ、`applied`\n+ * はそれにインスタンスの上書きを足したもの。\n+ */\n+type HopOverrides = Readonly<{ declared: Props; applied: Props }>;\n+\n+/**\n+ * 1 段で binding 先に見つけたノード。`node` は `HopOverrides.applied` を当てた部品のノード、\n+ * `declared` は `HopOverrides.declared` を当てた部品で同じ名前のノードに書かれている値。\n+ */\n+type HopNode<N extends Node> = Readonly<{ node: N; declared: Props }>;\n+\n /**\n  * binding が指し先の prop に繋がらない理由（指し先の prop が見つからない、または繋げない prop を\n  * 指している）。\n@@ -62,8 +94,9 @@ export type BindingViolation =\n   | Readonly<{ kind: \"missing-public-prop\"; ref: string }>;\n \n /**\n- * binding を 1 段辿った結果。`resolvePropTarget` と `violation` が同じ辿りを使うこと\n- * で、1 段目の判定（指し先のノード・型・prop・繋げる prop か・公開の有無）を 2 つの関数で食い違わせない。\n+ * binding を 1 段辿った結果。`resolvePropTarget`・`resolveInstancePropTargets` と `violation` が\n+ * 同じ辿りを使うことで、1 段目の判定（指し先のノード・型・prop・繋げる prop か・公開の有無）を\n+ * 関数どうしで食い違わせない。\n  */\n type BindingHop =\n   /**\n@@ -73,16 +106,23 @@ type BindingHop =\n    */\n   | Readonly<{ kind: \"unresolvable\" }>\n   | BindingViolation\n-  /** 指し先のプリミティブの prop 定義と、そのプリミティブに設定されている値に着いた。 */\n-  | Readonly<{ kind: \"definition\"; target: PublicPropTarget }>\n   /**\n-   * 指し先が部品インスタンスで、その部品の binding へ続く。`override` はそのインスタンスが\n-   * 公開 prop に書いている上書き。\n+   * 指し先のプリミティブの prop 定義と、そのプリミティブに設定されている値に着いた。`node` は\n+   * 上書きを `applied` まで当てた指し先のプリミティブ。\n+   */\n+  | Readonly<{\n+      kind: \"definition\";\n+      target: PublicPropTarget;\n+      node: PrimitiveNode;\n+    }>\n+  /**\n+   * 指し先が部品インスタンスで、その部品の binding へ続く。`overrides` は次の段の部品へ当てる\n+   * 上書きで、指し先のインスタンスの overrides を 2 系統それぞれで読んだもの。\n    */\n   | Readonly<{\n       kind: \"nested\";\n       next: ComponentBinding;\n-      override: Option<PropValue>;\n+      overrides: HopOverrides;\n     }>;\n \n /**\n@@ -92,21 +132,37 @@ type BindingHop =\n  */\n const UnbindablePropNames: readonly string[] = [\"locking\"];\n \n+/** 上書きを何も当てない辿り。 */\n+const NoOverrides: HopOverrides = { declared: {}, applied: {} };\n+\n+/**\n+ * 公開 prop の上書きが書き込まれる先の値（`Node.applyPropEdit` と同じ振り分け）。\n+ *\n+ * @param node 見るノード\n+ * @returns 参照ノードなら `overrides`、プリミティブなら `props`。無ければ空\n+ */\n+function writtenValuesOf(node: Node): Props {\n+  return Node.isRef(node) ? (node.overrides ?? {}) : (node.props ?? {});\n+}\n+\n /**\n  * 指し先のプリミティブで、binding の prop の定義と設定値を引く。\n  *\n  * @param primitive binding の指し先のプリミティブ\n  * @param prop binding が指す prop 名\n- * @returns 定義があり繋げる prop なら `definition`（設定値はプリミティブの props のその\n+ * @returns 定義があり繋げる prop なら `definition`（設定値は `primitive.declared` のその\n  *   prop）、型が未知なら `unresolvable`、スキーマにその prop が無ければ `missing-prop`、\n  *   繋げない prop（`UnbindablePropNames`）なら `unbindable-prop`\n  */\n-function hopIntoPrimitive(primitive: PrimitiveNode, prop: string): BindingHop {\n-  if (!PrimitiveSchema.isPrimitiveType(primitive.type)) {\n+function hopIntoPrimitive(\n+  primitive: HopNode<PrimitiveNode>,\n+  prop: string,\n+): BindingHop {\n+  if (!PrimitiveSchema.isPrimitiveType(primitive.node.type)) {\n     return { kind: \"unresolvable\" };\n   }\n \n-  const definition = PrimitiveSchema.propDefinition(primitive.type, prop);\n+  const definition = PrimitiveSchema.propDefinition(primitive.node.type, prop);\n   if (!Option.isSome(definition)) {\n     return { kind: \"missing-prop\" };\n   }\n@@ -119,8 +175,9 @@ function hopIntoPrimitive(primitive: PrimitiveNode, prop: string): BindingHop {\n     kind: \"definition\",\n     target: {\n       definition: definition.value,\n-      declared: RecordEx.get(primitive.props ?? {}, prop),\n+      declared: RecordEx.get(primitive.declared, prop),\n     },\n+    node: primitive.node,\n   };\n }\n \n@@ -131,88 +188,117 @@ function hopIntoPrimitive(primitive: PrimitiveNode, prop: string): BindingHop {\n  * @param components 引き先の部品一式\n  * @param instance binding の指し先の参照ノード\n  * @param prop binding が指す prop 名。参照先では公開 prop 名として引く\n- * @returns 参照先の binding へ続くなら `nested`（上書きは `instance` の overrides のその prop）、\n+ * @returns 参照先の binding へ続くなら `nested`（次の段へ当てる上書きは、`declared` 側が\n+ *   `instance.declared`、`applied` 側が `instance.node` の overrides）、\n  *   参照先の部品が無ければ `unresolvable`、\n  *   参照先がその prop を公開していなければ `missing-public-prop`\n  */\n function hopIntoInstance(\n   components: ComponentSet,\n-  instance: RefNode,\n+  instance: HopNode<RefNode>,\n   prop: string,\n ): BindingHop {\n-  const nested = ComponentSet.get(components, instance.ref);\n+  const ref = instance.node.ref;\n+  const nested = ComponentSet.get(components, ref);\n   if (!Option.isSome(nested)) {\n     return { kind: \"unresolvable\" };\n   }\n   const binding = Component.binding(nested.value, prop);\n   if (!Option.isSome(binding)) {\n-    return { kind: \"missing-public-prop\", ref: instance.ref };\n+    return { kind: \"missing-public-prop\", ref };\n   }\n   return {\n     kind: \"nested\",\n-    next: ComponentBinding.create(instance.ref, binding.value),\n-    override: RecordEx.get(instance.overrides ?? {}, prop),\n+    next: ComponentBinding.create(ref, binding.value),\n+    overrides: {\n+      declared: instance.declared,\n+      applied: instance.node.overrides ?? {},\n+    },\n   };\n }\n \n /**\n- * binding を 1 段だけ辿る。\n+ * binding を 1 段だけ辿る。部品へ上書きを `Component.applyOverrides` で当ててから指し先の\n+ * ノードを引くので、描画と同じ値を読む。\n  *\n  * @param components 引き先の部品一式\n  * @param source 辿る部品名と binding\n+ * @param overrides この段の部品へ当てる上書き\n  * @returns 部品が無ければ `unresolvable`、指し先のノードが無ければ `missing-node`。それ以外\n  *   は指し先がプリミティブか部品インスタンスかで `hopIntoPrimitive` / `hopIntoInstance` の結果\n  */\n-function hop(components: ComponentSet, source: ComponentBinding): BindingHop {\n+function hop(\n+  components: ComponentSet,\n+  source: ComponentBinding,\n+  overrides: HopOverrides,\n+): BindingHop {\n   const component = ComponentSet.get(components, source.componentName);\n   if (!Option.isSome(component)) {\n     return { kind: \"unresolvable\" };\n   }\n-  const found = Component.findNode(\n-    component.value,\n-    source.componentName,\n-    source.binding.node,\n-  );\n-  if (!Option.isSome(found)) {\n+  const findIn = (applying: Props): Option<Node> =>\n+    Component.findNode(\n+      Component.applyOverrides(component.value, source.componentName, applying),\n+      source.componentName,\n+      source.binding.node,\n+    );\n+  const found = findIn(overrides.applied);\n+  const declared = findIn(overrides.declared);\n+  if (!Option.isSome(found) || !Option.isSome(declared)) {\n     return { kind: \"missing-node\" };\n   }\n-  if (Node.isRef(found.value)) {\n-    return hopIntoInstance(components, found.value, source.binding.prop);\n+  const node = found.value;\n+  const declaredValues = writtenValuesOf(declared.value);\n+  if (Node.isRef(node)) {\n+    return hopIntoInstance(\n+      components,\n+      { node, declared: declaredValues },\n+      source.binding.prop,\n+    );\n   }\n-  return hopIntoPrimitive(found.value, source.binding.prop);\n+  return hopIntoPrimitive(\n+    { node, declared: declaredValues },\n+    source.binding.prop,\n+  );\n }\n \n /**\n- * `resolvePropTarget` の本体。`visited` は辿った部品名で、循環参照に入ったときに打ち切る\n- * ために持ち回る。\n+ * `resolvePropTarget` と `resolveInstancePropTargets` の本体。各段で当てる上書きと、循環参照に\n+ * 入ったときに打ち切るための辿った部品名を持ち回る。\n  *\n  * @param components 引き先の部品一式\n  * @param source 辿り始める部品名と binding\n- * @param visited ここまでに辿った部品名（再訪したら打ち切る）\n- * @returns 行き着いた prop 定義と設定値。連鎖が途切れた場合と循環に入った場合は `none`\n+ * @param state `overrides` は `source` の部品へ当てる上書き、`visited` はここまでに辿った\n+ *   部品名（再訪したら打ち切る）\n+ * @returns 行き着いた prop 定義と設定値、上書きを当てた binding 先のプリミティブ、そこまでの\n+ *   ノード名の並びと prop 名。連鎖が途切れた場合と循環に入った場合は `none`\n  */\n function resolveThroughRefs(\n   components: ComponentSet,\n   source: ComponentBinding,\n-  visited: ReadonlySet<string>,\n-): Option<PublicPropTarget> {\n-  const step = hop(components, source);\n+  state: Readonly<{ overrides: HopOverrides; visited: ReadonlySet<string> }>,\n+): Option<ReachedProp> {\n+  const step = hop(components, source, state.overrides);\n   switch (step.kind) {\n     case \"definition\":\n-      return Option.some(step.target);\n+      return Option.some({\n+        target: step.target,\n+        node: step.node,\n+        path: [source.binding.node],\n+        prop: source.binding.prop,\n+      });\n     case \"nested\": {\n       const nextName = step.next.componentName;\n-      if (visited.has(nextName)) {\n+      if (state.visited.has(nextName)) {\n         return Option.none;\n       }\n-      const inner = resolveThroughRefs(\n-        components,\n-        step.next,\n-        new Set(visited).add(nextName),\n-      );\n-      return Option.map(inner, (target) => ({\n-        ...target,\n-        declared: Option.or(step.override, target.declared),\n+      const inner = resolveThroughRefs(components, step.next, {\n+        overrides: step.overrides,\n+        visited: new Set(state.visited).add(nextName),\n+      });\n+      return Option.map(inner, (reached) => ({\n+        ...reached,\n+        path: [source.binding.node, ...reached.path],\n       }));\n     }\n     case \"unresolvable\":\n@@ -245,13 +331,13 @@ export const ComponentBinding = {\n    * 循環参照は検証エラーとして検出されるが、不正なドキュメントも画面には残る（docs/03\n    * 「不正ファイル時の挙動」）ため、辿った部品へ戻った時点で打ち切って必ず停止させる。\n    *\n-   * 上書きは内側から戻る結果に外側ほど後に被せるので、いちばん外側が勝つ。描画側の\n-   * `Component.applyOverrides` と同じ向きで、逆にするとパネルの既定値と描画が食い違う。\n+   * 途中の参照ノードの上書きは、各段の部品へ描画と同じ `Component.applyOverrides` で当てて\n+   * から次の段を引くので、いちばん外側が勝ち、パネルの既定値と描画が食い違わない。\n    *\n    * @param components 引き先の部品一式\n    * @param source 解決を始める部品名と binding\n    * @returns 行き着いたプリミティブ prop の定義と、部品定義がそこに設定している値（途中の\n-   *   参照ノードが上書きしていれば、いちばん外側の上書き）。部品・binding 先のノードが無いとき、\n+   *   参照ノードの上書きを当てた後の値）。部品・binding 先のノードが無いとき、\n    *   binding 先のノードの型が未知か、その prop がスキーマに無いか繋げない prop（`locking`）\n    *   のとき、連鎖の途中の部品が無いかその prop を公開していないとき、連鎖が辿った部品へ\n    *   戻ったときは `none`\n@@ -260,10 +346,80 @@ export const ComponentBinding = {\n     components: ComponentSet,\n     source: ComponentBinding,\n   ): Option<PublicPropTarget> {\n-    return resolveThroughRefs(\n-      components,\n-      source,\n-      new Set([source.componentName]),\n+    return Option.map(\n+      resolveThroughRefs(components, source, {\n+        overrides: NoOverrides,\n+        visited: new Set([source.componentName]),\n+      }),\n+      (reached) => reached.target,\n+    );\n+  },\n+\n+  /**\n+   * インスタンスの公開 prop を、インスタンスの上書きを当てながら binding 先まで辿る。辿り方と\n+   * 辿れなくなる条件は `resolvePropTarget` と同じ。\n+   *\n+   * @param components 引き先の部品一式\n+   * @param instance 公開 prop を辿りたい部品インスタンス\n+   * @returns 辿れた公開 prop ごとの着いた先。並びは部品の公開 prop の宣言順。辿れない公開 prop\n+   *   は含めず、参照先の部品が無ければ空\n+   */\n+  resolveInstancePropTargets(\n+    components: ComponentSet,\n+    instance: RefNode,\n+  ): readonly InstancePropTarget[] {\n+    const component = ComponentSet.get(components, instance.ref);\n+    if (!Option.isSome(component)) {\n+      return [];\n+    }\n+    const overrides: HopOverrides = {\n+      declared: {},\n+      applied: instance.overrides ?? {},\n+    };\n+    return ArrayEx.filterMap(\n+      Component.publicPropNames(component.value),\n+      (name) =>\n+        Option.map(\n+          Option.flatMap(Component.binding(component.value, name), (binding) =>\n+            resolveThroughRefs(\n+              components,\n+              ComponentBinding.create(instance.ref, binding),\n+              { overrides, visited: new Set([instance.ref]) },\n+            ),\n+          ),\n+          (reached) => ({ name, ...reached }),\n+        ),\n+    );\n+  },\n+\n+  /**\n+   * 公開 prop の欄が出る条件（`enabledWhen`）を出している prop を、同じインスタンスの公開 prop\n+   * から探す。見るのは同じノードの prop だけ（docs/03-schema.md）。\n+   *\n+   * @param targets 同じインスタンスの公開 prop の着いた先（`resolveInstancePropTargets` の結果）\n+   * @param target 条件を知りたい公開 prop の着いた先\n+   * @returns `target` と同じノードの、条件の prop へ繋がる公開 prop の名前。`target` に条件が\n+   *   無いか、条件の prop を公開していなければ `none`\n+   */\n+  conditionPublicName(\n+    targets: readonly InstancePropTarget[],\n+    target: InstancePropTarget,\n+  ): Option<string> {\n+    const isSameNode = (candidate: InstancePropTarget): boolean =>\n+      candidate.path.length === target.path.length &&\n+      candidate.path.every((name, index) => name === target.path[index]);\n+    return Option.flatMap(\n+      Option.fromNullable(target.target.definition.enabledWhen),\n+      (condition) =>\n+        Option.map(\n+          Option.fromNullable(\n+            targets.find(\n+              (candidate) =>\n+                candidate.prop === condition.prop && isSameNode(candidate),\n+            ),\n+          ),\n+          (found) => found.name,\n+        ),\n     );\n   },\n \n@@ -309,7 +465,7 @@ export const ComponentBinding = {\n     components: ComponentSet,\n     source: ComponentBinding,\n   ): Option<BindingViolation> {\n-    const step = hop(components, source);\n+    const step = hop(components, source, NoOverrides);\n     switch (step.kind) {\n       case \"missing-node\":\n       case \"missing-prop\":",
+          "patchLines": 410,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 4,
+          "patch": "@@ -380,8 +380,8 @@ export const PropDefinitionRecord = {\n    * 設定されていない prop に効くデフォルト。並びはスキーマの宣言順。\n    *\n    * 「未設定ならどの値が効くか」はスキーマ自身の性質なので、解決を要する側がそれぞれ走査\n-   * を持たずここを呼ぶ（`collectEffectiveAssignments` と `ResolvedProps.resolve`。\n-   * `session/prop-control` は既定の出どころが binding にもまたがるので寄せていない）。\n+   * を持たずここを呼ぶ（`collectEffectiveAssignments`・`ResolvedProps.resolve`・\n+   * `session/prop-control` の `effectiveProps`）。\n    *\n    * @param schema 補いの出どころになる prop 定義\n    * @param props 実際に設定されている props\n@@ -407,8 +407,6 @@ export const PropDefinitionRecord = {\n    * この並びが `collectRefPropNames` と `collectErrors` の共通の走査対象で、片方だけがデフォ\n    * ルトを見る状態に戻ると、参照 0 件のトークンを消して dangling が出る食い違いが表に出る。\n    *\n-   * `session/prop-control` の `effectiveProps` とも範囲が違う（binding 由来の既定も含む）。\n-   *\n    * @param schema 効いている値の出どころになる prop 定義\n    * @param props 実際に設定されている props\n    * @returns 明示設定（props の並び順）を先に、デフォルトで補われた prop （ス",
+          "patchLines": 20,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 204,
+          "deletions": 0,
+          "patch": "@@ -55,6 +55,97 @@ const Components: ComponentSet = {\n     type: \"Box\",\n     children: [{ name: \"prototype-named-label\", type: \"Text\" }],\n   },\n+  /** 幅のモードと長さを binding 先と違う名前で公開した部品。 */\n+  \"renamed-card\": {\n+    publicProps: {\n+      mode: { node: \"renamed-card\", prop: \"widthMode\" },\n+      size: { node: \"renamed-card\", prop: \"width\" },\n+    },\n+    type: \"Box\",\n+    children: [],\n+  },\n+  /** 部品の中で幅のモードが fixed のノードの、長さだけを公開した部品。 */\n+  \"fixed-inside-card\": {\n+    publicProps: { width: { node: \"fixed-inside-body\", prop: \"width\" } },\n+    type: \"Box\",\n+    children: [\n+      { name: \"fixed-inside-body\", type: \"Box\", props: { widthMode: \"fixed\" } },\n+    ],\n+  },\n+  /** 部品の中で幅のモードが fixed のノードの、モードと長さを公開した部品。 */\n+  \"fixed-mode-card\": {\n+    publicProps: {\n+      mode: { node: \"fixed-mode-body\", prop: \"widthMode\" },\n+      width: { node: \"fixed-mode-body\", prop: \"width\" },\n+    },\n+    type: \"Box\",\n+    children: [\n+      {\n+        name: \"fixed-mode-body\",\n+        type: \"Box\",\n+        props: { widthMode: \"fixed\", width: 100 },\n+      },\n+    ],\n+  },\n+  /** 置き方と座標を別々のノードから公開した部品。 */\n+  \"split-card\": {\n+    publicProps: {\n+      placement: { node: \"split-a\", prop: \"placement\" },\n+      x: { node: \"split-a\", prop: \"x\" },\n+      y: { node: \"split-b\", prop: \"y\" },\n+    },\n+    type: \"Box\",\n+    children: [\n+      { name: \"split-a\", type: \"Box\" },\n+      { name: \"split-b\", type: \"Box\" },\n+    ],\n+  },\n+  /** 部品の中で絶対配置のノードの座標と、別のノードの置き方を公開した部品。 */\n+  \"absolute-inside-card\": {\n+    publicProps: {\n+      placement: { node: \"absolute-inside-a\", prop: \"placement\" },\n+      y: { node: \"absolute-inside-b\", prop: \"y\" },\n+    },\n+    type: \"Box\",\n+    children: [\n+      { name: \"absolute-inside-a\", type: \"Box\" },\n+      {\n+        name: \"absolute-inside-b\",\n+        type: \"Box\",\n+        props: { placement: \"absolute\" },\n+      },\n+    ],\n+  },\n+  /** 幅のモードと長さを同じ名前で公開した、入れ子にされる側の部品。 */\n+  \"sizing-inner\": {\n+    publicProps: {\n+      widthMode: { node: \"sizing-inner\", prop: \"widthMode\" },\n+      width: { node: \"sizing-inner\", prop: \"width\" },\n+    },\n+    type: \"Box\",\n+    children: [],\n+  },\n+  /** `sizing-inner` のモードと長さを、違う名前で公開し直した部品。 */\n+  \"sizing-outer\": {\n+    publicProps: {\n+      mode: { node: \"sizing-outer-inner\", prop: \"widthMode\" },\n+      size: { node: \"sizing-outer-inner\", prop: \"width\" },\n+    },\n+    type: \"Box\",\n+    children: [{ name: \"sizing-outer-inner\", ref: \"sizing-inner\" }],\n+  },\n+  /** 中の `sizing-inner` のモードを fixed に上書きし、長さだけを公開した部品。 */\n+  \"sizing-preset\": {\n+    publicProps: { size: { node: \"sizing-preset-inner\", prop: \"width\" } },\n+    type: \"Box\",\n+    children: [\n+      {\n+        name: \"sizing-preset-inner\",\n+        ref: \"sizing-inner\",\n+        overrides: { widthMode: \"fixed\" },\n+      },\n+    ],\n+  },\n   /** ロックを公開 prop にしている部品。繋げない prop の欄が出ないことを見るために使う。 */\n   \"lock-card\": {\n     publicProps: {\n@@ -350,3 +441,116 @@ test(\"存在しない部品を指すインスタンスにもロックの欄が\n     instanceOf(selection).refOwnProps.map((control) => control.prop),\n   ).toEqual([\"locking\"]);\n });\n+\n+test(\"公開名を binding 先と違う名前にした部品で、幅のモードを上書きで fixed にすると、公開した長さの欄が出る\", () => {\n+  const selection = setupInstanceSelection({\n+    name: \"card\",\n+    ref: \"renamed-card\",\n+    overrides: { mode: \"fixed\" },\n+  });\n+\n+  expect(publicPropNames(selection)).toEqual([\"mode\", \"size\"]);\n+});\n+\n+test(\"部品の中でノードの幅のモードが fixed なら、モードを公開していなくても公開した長さの欄が出る\", () => {\n+  const selection = setupInstanceSelection({\n+    name: \"card\",\n+    ref: \"fixed-inside-card\",\n+  });\n+\n+  expect(publicPropNames(selection)).toEqual([\"width\"]);\n+});\n+\n+test(\"部品の中で幅のモードが fixed でも、インスタンスがモードの公開 prop を hug に上書きすれば長さの欄は出ない\", () => {\n+  const selection = setupInstanceSelection({\n+    name: \"card\",\n+    ref: \"fixed-mode-card\",\n+    overrides: { mode: \"hug\" },\n+  });\n+\n+  expect(publicPropNames(selection)).toEqual([\"mode\"]);\n+});\n+\n+test(\"置き方を上書きで絶対配置にしても、別のノードの座標へ繋いだ公開 prop の欄は出ない\", () => {\n+  const selection = setupInstanceSelection({\n+    name: \"card\",\n+    ref: \"split-card\",\n+    overrides: { placement: \"absolute\" },\n+  });\n+\n+  expect(publicPropNames(selection)).toEqual([\"placement\", \"x\"]);\n+});\n+\n+test(\"部品の中でノードが絶対配置なら、置き方を公開していなくても、そのノードの座標へ繋いだ公開 prop の欄が出る\", () => {\n+  const selection = setupInstanceSelection({\n+    name: \"card\",\n+    ref: \"absolute-inside-card\",\n+  });\n+\n+  expect(publicPropNames(selection)).toEqual([\"placement\", \"y\"]);\n+});\n+\n+test(\"入れ子の部品へ公開名を変えて繋いだ幅のモードを上書きで fixed にすると、長さの欄が出る\", () => {\n+  const selection = setupInstanceSelection({\n+    name: \"card\",\n+    ref: \"sizing-outer\",\n+    overrides: { mode: \"fixed\" },\n+  });\n+\n+  expect(publicPropNames(selection)).toEqual([\"mode\", \"size\"]);\n+});\n+\n+test(\"部品定義の中の参照ノードが幅のモードを fixed に上書きしていれば、公開した長さの欄が出る\", () => {\n+  const selection = setupInstanceSelection({\n+    name: \"card\",\n+    ref: \"sizing-preset\",\n+  });\n+\n+  expect(publicPropNames(selection)).toEqual([\"size\"]);\n+});\n+\n+test(\"条件の prop を公開していれば、公開 prop の欄の条件の行はその公開名になる\", () => {\n+  const selection = setupInstanceSelection({\n+    name: \"card\",\n+    ref: \"sized-card\",\n+    overrides: { widthMode: \"fixed\" },\n+  });\n+\n+  expect(\n+    controlNamed(instanceOf(selection).publicProps, \"width\").enabledBy,\n+  ).toEqual(Option.some(\"widthMode\"));\n+});\n+\n+test(\"条件の prop を公開していなければ、公開 prop の欄に条件の行は無い\", () => {\n+  const selection = setupInstanceSelection({\n+    name: \"card\",\n+    ref: \"fixed-inside-card\",\n+  });\n+\n+  expect(\n+    controlNamed(instanceOf(selection).publicProps, \"width\").enabledBy,\n+  ).toEqual(Option.none);\n+});\n+\n+test(\"条件の prop を別の名前で公開していれば、公開 prop の欄の条件の行はその公開名になる\", () => {\n+  const selection = setupInstanceSelection({\n+    name: \"card\",\n+    ref: \"renamed-card\",\n+    overrides: { mode: \"fixed\" },\n+  });\n+\n+  expect(\n+    controlNamed(instanceOf(selection).publicProps, \"size\").enabledBy,\n+  ).toEqual(Option.some(\"mode\"));\n+});\n+\n+test(\"別のノードの置き方を公開していても、座標の公開 prop の欄に条件の行は無い\", () => {\n+  const selection = setupInstanceSelection({\n+    name: \"card\",\n+    ref: \"absolute-inside-card\",\n+  });\n+\n+  expect(\n+    controlNamed(instanceOf(selection).publicProps, \"y\").enabledBy,\n+  ).toEqual(Option.none);\n+});",
+          "patchLines": 215,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/session/prop-control/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 76,
+          "deletions": 75,
+          "patch": "@@ -1,23 +1,25 @@\n import { Artboard } from \"@/domains/dcmp/artboard\";\n-import { Component, ComponentSet } from \"@/domains/dcmp/component\";\n-import { ComponentBinding } from \"@/domains/dcmp/component-binding\";\n+import {\n+  ComponentBinding,\n+  type InstancePropTarget,\n+} from \"@/domains/dcmp/component-binding\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n import {\n   Node,\n   PropEdit,\n   type Props,\n   type PropValue,\n-  type RefNode,\n } from \"@/domains/dcmp/node\";\n import {\n   PrimitiveSchema,\n   PropDefinition,\n-  type PropDefinitionRecord,\n+  PropDefinitionRecord,\n   type PropShorthand,\n   RefOwnPropDefinitions,\n   type ShorthandName,\n   ShorthandNames,\n } from \"@/domains/dcmp/primitive-schema\";\n+import { ResolvedProps } from \"@/domains/dcmp/resolved-props\";\n import {\n   type ColorToken,\n   type NumericTokenKind,\n@@ -102,8 +104,9 @@ export type CurrentPaint =\n  * `value`（明示的に設定されている値）と `defaultValue`（設定が無いときに効く値）を\n  * 別々に持つのは、パネルが両者を区別して見せるため（docs/06-ui.md）。\n  *\n- * `enabledBy` は、その prop が編集できる条件を出している prop の名前（スキーマの\n- * `enabledWhen.prop`）。\n+ * `enabledBy` は、同じパネルに並ぶ、条件の行の名前。group の節ではスキーマの\n+ * `enabledWhen.prop`、インスタンスの公開 prop では条件の prop へ繋がる公開名。条件が無いか\n+ * 条件の行がパネルに出ないなら `none`。\n  */\n export type PropControl = Readonly<{\n   prop: string;\n@@ -196,6 +199,7 @@ type EditableProp = Readonly<{\n   name: string;\n   definition: PropDefinition;\n   defaultValue: Option<PropValue>;\n+  enabledBy: Option<string>;\n }>;\n \n /**\n@@ -361,47 +365,44 @@ function declaredEditableProps(\n     name,\n     definition,\n     defaultValue: Option.fromNullable(definition.default),\n+    enabledBy: Option.fromNullable(definition.enabledWhen?.prop),\n   }));\n }\n \n /**\n- * 部品が公開している prop（docs/06-ui.md「インスタンス」）。binding 先が設定している値を\n- * 既定にし、無ければスキーマの `default` に落とす。\n+ * インスタンスの公開 prop の欄を出すか（docs/06-ui.md「`enabledWhen` により表示を出し分ける」）。\n+ * 条件は binding 先のノードの props（インスタンスの上書きまで当てて既定を敷いたもの）で見る。\n  *\n- * 宣言が解決できない prop（部品が壊れている）はコントロールを出さない。\n+ * @param target 公開 prop の着いた先\n+ * @returns 条件を満たせば `true`。binding 先のノードの型のスキーマが引けなければ `false`\n+ */\n+function isPublicPropEnabled(target: InstancePropTarget): boolean {\n+  const resolved = ResolvedProps.forNode(target.node);\n+  return (\n+    Option.isSome(resolved) &&\n+    PropDefinition.isEnabled(target.target.definition, resolved.value)\n+  );\n+}\n+\n+/**\n+ * 部品が公開している prop 1 つの素材（docs/06-ui.md「インスタンス」）。binding 先が設定している\n+ * 値を既定にし、無ければスキーマの `default` に落とす。\n  *\n- * @param components 参照先の部品を引くための部品一式\n- * @param node 公開 prop を知りたいインスタンスのノード\n- * @returns 編集できる公開 prop の並び。参照先や宣言が解決できなければ空\n+ * @param targets 同じインスタンスの公開 prop の着いた先。条件の公開名を探す範囲\n+ * @param target 素材にする公開 prop の着いた先\n+ * @returns 公開名で編集する prop の素材\n  */\n-function publicEditableProps(\n-  components: ComponentSet,\n-  node: RefNode,\n-): readonly EditableProp[] {\n-  const component = ComponentSet.get(components, node.ref);\n-  if (!Option.isSome(component)) {\n-    return [];\n-  }\n-  return Component.publicPropNames(component.value).flatMap((name) => {\n-    const target = ComponentBinding.resolvePublicPropTarget(components, {\n-      component: node.ref,\n-      prop: name,\n-    });\n-    if (!Option.isSome(target)) {\n-      return [];\n-    }\n-    const { definition, declared } = target.value;\n-    return [\n-      {\n-        name,\n-        definition,\n-        defaultValue: Option.or(\n-          declared,\n-          Option.fromNullable(definition.default),\n-        ),\n-      },\n-    ];\n-  });\n+function publicEditableProp(\n+  targets: readonly InstancePropTarget[],\n+  target: InstancePropTarget,\n+): EditableProp {\n+  const { definition, declared } = target.target;\n+  return {\n+    name: target.name,\n+    definition,\n+    defaultValue: Option.or(declared, Option.fromNullable(definition.default)),\n+    enabledBy: ComponentBinding.conditionPublicName(targets, target),\n+  };\n }\n \n /**\n@@ -409,19 +410,15 @@ function publicEditableProps(\n  * 設定されていない prop も既定値では効いているため、既定を敷いた上で判定する\n  * （`widthMode` を書いていない Box でも既定の `hug` として扱われ、`width` は出ない）。\n  *\n- * @param editables 既定値の出どころになる、編集できる prop の並び\n+ * @param schema 既定値の出どころになる prop 定義\n  * @param props 実際に設定されている props\n  * @returns 既定値の上に設定値を重ねた props\n  */\n-function effectiveProps(\n-  editables: readonly EditableProp[],\n-  props: Props,\n-): Props {\n-  const defaults = editables.flatMap((editable) =>\n-    Option.isSome(editable.defaultValue)\n-      ? [[editable.name, editable.defaultValue.value] as const]\n-      : [],\n-  );\n+function effectiveProps(schema: PropDefinitionRecord, props: Props): Props {\n+  const defaults = PropDefinitionRecord.collectDefaultsIfAbsent(\n+    schema,\n+    props,\n+  ).map(({ name, value }) => [name, value] as const);\n   return { ...Object.fromEntries(defaults), ...props };\n }\n \n@@ -444,7 +441,7 @@ function controlOf(\n     input: inputOf(editable, value, tokens),\n     value,\n     defaultValue: editable.defaultValue,\n-    enabledBy: Option.fromNullable(editable.definition.enabledWhen?.prop),\n+    enabledBy: editable.enabledBy,\n   };\n }\n \n@@ -452,35 +449,35 @@ function controlOf(\n  * 条件を満たさない prop はコントロール自体を作らない\n  * （docs/06-ui.md「`enabledWhen` により表示を出し分ける」）。\n  *\n- * @param editables 編集できる prop の並び\n+ * @param schema 編集できる prop の出どころになる prop 定義\n  * @param props `enabledWhen` の判定に使う props\n- * @returns 条件を満たす prop だけを、渡された並び順のまま返す\n+ * @returns 条件を満たす prop だけを、スキーマの宣言順のまま返す\n  */\n function enabledEditableProps(\n-  editables: readonly EditableProp[],\n+  schema: PropDefinitionRecord,\n   props: Props,\n ): readonly EditableProp[] {\n-  const effective = effectiveProps(editables, props);\n-  return editables.filter((editable) =>\n+  const effective = effectiveProps(schema, props);\n+  return declaredEditableProps(schema).filter((editable) =>\n     PropDefinition.isEnabled(editable.definition, effective),\n   );\n }\n \n /**\n- * 見出しで分けない編集欄の並び（インスタンスの `Public props` と、インスタンス自身の値）。\n+ * 見出しで分けない編集欄の並び（インスタンス自身の値）。\n  * 並びは宣言順（docs/03「order フィールドは持たない」）。\n  *\n- * @param editables 編集できる prop の並び\n+ * @param schema 編集できる prop の出どころになる prop 定義\n  * @param props 今の値と `enabledWhen` の判定に使う props\n  * @param tokens トークン参照の選択肢の出どころ\n  * @returns 条件を満たす prop の編集欄の並び\n  */\n function controlsOf(\n-  editables: readonly EditableProp[],\n+  schema: PropDefinitionRecord,\n   props: Props,\n   tokens: TokenSet,\n ): readonly PropControl[] {\n-  return enabledEditableProps(editables, props).map((editable) =>\n+  return enabledEditableProps(schema, props).map((editable) =>\n     controlOf(editable, props, tokens),\n   );\n }\n@@ -571,17 +568,17 @@ function rowsOf(\n  * セクションの並びは `group` の初出順、セクション内は宣言順\n  * （docs/03「order フィールドは持たない」）。\n  *\n- * @param editables 編集できる prop の並び\n+ * @param schema 編集できる prop の出どころになる prop 定義\n  * @param props 今の値と `enabledWhen` の判定に使う props\n  * @param tokens トークン参照の選択肢の出どころ\n  * @returns `group` ごとにまとめた編集欄の並び\n  */\n function sectionsOf(\n-  editables: readonly EditableProp[],\n+  schema: PropDefinitionRecord,\n   props: Props,\n   tokens: TokenSet,\n ): readonly PropControlSection[] {\n-  const enabled = enabledEditableProps(editables, props);\n+  const enabled = enabledEditableProps(schema, props);\n   const groups = ArrayEx.distinct(\n     enabled.map((editable) => editable.definition.group),\n   );\n@@ -607,16 +604,24 @@ function sectionsOf(\n  */\n function nodeControls(document: DesignDocument, node: Node): SelectionControls {\n   if (Node.isRef(node)) {\n+    const targets = ComponentBinding.resolveInstancePropTargets(\n+      document.components,\n+      node,\n+    );\n     return {\n       kind: \"instance\",\n       source: node.ref,\n-      publicProps: controlsOf(\n-        publicEditableProps(document.components, node),\n-        node.overrides ?? {},\n-        document.tokens,\n-      ),\n+      publicProps: targets\n+        .filter(isPublicPropEnabled)\n+        .map((target) =>\n+          controlOf(\n+            publicEditableProp(targets, target),\n+            node.overrides ?? {},\n+            document.tokens,\n+          ),\n+        ),\n       refOwnProps: controlsOf(\n-        declaredEditableProps(RefOwnPropDefinitions),\n+        RefOwnPropDefinitions,\n         Node.refOwnPropsOf(node),\n         document.tokens,\n       ),\n@@ -637,11 +642,7 @@ function nodeControls(document: DesignDocument, node: Node): SelectionControls {\n   }\n   return {\n     kind: \"groups\",\n-    sections: sectionsOf(\n-      declaredEditableProps(schema.value.props),\n-      node.props ?? {},\n-      document.tokens,\n-    ),\n+    sections: sectionsOf(schema.value.props, node.props ?? {}, document.tokens),\n   };\n }\n \n@@ -928,7 +929,7 @@ export const SelectionControls = {\n       return Option.some({\n         kind: \"groups\",\n         sections: sectionsOf(\n-          declaredEditableProps(Artboard.propDefinitions()),\n+          Artboard.propDefinitions(),\n           artboard.value.props ?? {},\n           document.tokens,\n         ),",
+          "patchLines": 283,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "5151407e756f98e69d984791b896feeca5e81134",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-09T14:10:08Z",
+      "subject": "♻️ [Refactoring]: #1328 公開 prop の着いた先に確かめた事実と判定を寄せる",
+      "body": "- InstancePropTarget に hopIntoPrimitive で作った ResolvedProps を持たせ、同名のコンパニオンに isOnSameNode / isEnabled / conditionPublicName を置く\n- ArrayEx.isElementwiseEqual を追加し、InstancePropTarget と UnderPointer.equals の並びの比較を載せる\n- Node.propEditedValuesOf を追加し、component-binding の書き写しと Node.applyPropEdit の読み出しを載せる\n- PropDefinitionRecord.toEffectiveProps を追加し、ResolvedProps.resolve と prop-control の既定の敷き方を 1 つにする\n- resolveInstancePropTargets と resolvePublicPropTarget の辿り始めを resolvePublicProp にまとめる\n- hop のノード探索を 1 回にし、上書き前の値は見つけたノード名で読む\n- 命名(withInstanceOverrides / nodeNames / exposesConditionProp、target の平坦化)と doc を直す\n\n背景:\n実装の検証(観点別レビュー)で、型を確かめた事実が着いた先の型に残らず、prop-control が\nResolvedProps.forNode をもう一度呼んで届かない false(欄を黙って出さない)を持っていた。\n並びの比較・ノードの値の振り分け・既定の敷き方が既存の実装と二重になり、writtenValuesOf は\n既存の Node.writtenPropsOf と逆の意味を持つ名前だった。\n\n採用理由:\nParse, don't validate に従い、確かめた時点で ResolvedProps を作って型に刻むことで、判定側は\nOption を開かずに PropDefinition.isEnabled を呼べる。InstancePropTarget の性質を答える関数は\nその型のコンパニオンに置き、ComponentBinding には辿りだけを残した。二重になっていた処理は、\nその値の型(ArrayEx / Node / PropDefinitionRecord)へ 1 つずつ寄せた。\n\n代替案:\n- Option.fromNullable(xs.find(...)) を ArrayEx へ寄せる: 差分前から src に 9 箇所あり、この Issue の\n  範囲外として見送った\n- 1 段目の applyOverrides を公開 prop の間で使い回す: 想定規模(公開 prop 10・上書き 10・ノード 30)で\n  1 描画あたり約 1.2 万ノードの走査に収まり、フレーム予算を圧迫しないので見送った\n\n影響とトレードオフ:\n振る舞いは変えていない(既存と追加済みのテストはすべて通る)。instance-target のテストは型の変更に\n合わせて読み出し方を書き換えた。resolvedProps は既定を敷いた値なので、入れ子のケースは\ntoMatchObject で比べている。\n\n参考:\n- Issue #1328(フェーズ 6 の採否コメント)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NX4968qzXW2nWiKPq",
+      "files": [
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 7,
+          "patch": "@@ -2,7 +2,7 @@ import { expect, test } from \"vitest\";\n import type { ComponentSet } from \"@/domains/dcmp/component\";\n import type { RefNode } from \"@/domains/dcmp/node\";\n import { Option } from \"@/utils/Option\";\n-import { ComponentBinding, type InstancePropTarget } from \"../index\";\n+import { ComponentBinding, InstancePropTarget } from \"../index\";\n \n /**\n  * 公開 prop の着いた先を公開名で引く。無ければテストを落とす。\n@@ -90,7 +90,7 @@ test(\"インスタンスの上書きは、部品の値を上書きした形で\n     overrides: { size: 10 },\n   });\n \n-  expect(targetNamed(targets, \"size\").node.props?.width).toBe(10);\n+  expect(targetNamed(targets, \"size\").resolvedProps.width).toBe(10);\n });\n \n test(\"着いた先の既定は、インスタンスの上書きを当てる前の部品の値になる\", () => {\n@@ -100,7 +100,7 @@ test(\"着いた先の既定は、インスタンスの上書きを当てる前\n     overrides: { size: 10 },\n   });\n \n-  expect(targetNamed(targets, \"size\").target.declared).toEqual(Option.some(5));\n+  expect(targetNamed(targets, \"size\").declared).toEqual(Option.some(5));\n });\n \n test(\"別のノードへ繋いだ公開 prop の上書きは、着いたノードに当たらない\", () => {\n@@ -110,7 +110,7 @@ test(\"別のノードへ繋いだ公開 prop の上書きは、着いたノー\n     overrides: { widthB: 10 },\n   });\n \n-  expect(targetNamed(targets, \"widthA\").node.props?.width).toBe(5);\n+  expect(targetNamed(targets, \"widthA\").resolvedProps.width).toBe(5);\n });\n \n test(\"入れ子の部品では、途中の参照ノードの上書きが着いたノードに当たり、インスタンスの上書きが勝つ\", () => {\n@@ -135,7 +135,7 @@ test(\"入れ子の部品では、途中の参照ノードの上書きが着い\n     overrides: { rowSize: 10 },\n   });\n \n-  expect(targetNamed(targets, \"rowSize\").node.props).toEqual({\n+  expect(targetNamed(targets, \"rowSize\").resolvedProps).toMatchObject({\n     width: 10,\n     widthMode: \"hug\",\n   });\n@@ -145,7 +145,10 @@ test(\"同じノードの条件の prop を公開していれば、その公開\n   const targets = resolve(setupCard(), { name: \"instance\", ref: \"card\" });\n \n   expect(\n-    ComponentBinding.conditionPublicName(targets, targetNamed(targets, \"size\")),\n+    InstancePropTarget.conditionPublicName(\n+      targets,\n+      targetNamed(targets, \"size\"),\n+    ),\n   ).toEqual(Option.some(\"mode\"));\n });\n \n@@ -153,7 +156,7 @@ test(\"条件の prop を別のノードから公開していても、条件の\n   const targets = resolve(setupSplit(), { name: \"instance\", ref: \"split\" });\n \n   expect(\n-    ComponentBinding.conditionPublicName(targets, targetNamed(targets, \"x\")),\n+    InstancePropTarget.conditionPublicName(targets, targetNamed(targets, \"x\")),\n   ).toEqual(Option.none);\n });\n ",
+          "patchLines": 66,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 161,
+          "deletions": 111,
+          "patch": "@@ -12,8 +12,10 @@ import {\n } from \"@/domains/dcmp/node\";\n import {\n   PrimitiveSchema,\n-  type PropDefinition,\n+  type PrimitiveType,\n+  PropDefinition,\n } from \"@/domains/dcmp/primitive-schema\";\n+import { ResolvedProps } from \"@/domains/dcmp/resolved-props\";\n import { ArrayEx } from \"@/utils/ArrayEx\";\n import { Option } from \"@/utils/Option\";\n import { RecordEx } from \"@/utils/RecordEx\";\n@@ -46,33 +48,43 @@ export type PublicPropTarget = Readonly<{\n   declared: Option<PropValue>;\n }>;\n \n+/**\n+ * binding 先のプリミティブの prop と、そのノードの props。\n+ * `resolvedProps` はインスタンスの上書きまで当てた binding 先のノードの props に既定を敷いたもの。\n+ */\n+type ReachedPrimitive = PublicPropTarget &\n+  Readonly<{ resolvedProps: ResolvedProps<PrimitiveType> }>;\n+\n /**\n  * インスタンスの公開 prop 1 つを辿って着いた先。\n  *\n- * `name` は公開名、`target.declared` はインスタンスの上書きを当てる前の値、`node` は\n- * インスタンスの上書きまで当てた binding 先のプリミティブ。`path` は各段の binding 先の\n- * ノード名を外側から並べたもの、`prop` は着いたノードの prop 名。\n+ * `name` は公開名、`declared` はインスタンスの上書きを当てる前の値、`resolvedProps` は\n+ * インスタンスの上書きまで当てた binding 先のノードの props に既定を敷いたもの。`nodeNames` は\n+ * 各段の binding 先のノード名を外側から並べたもの、`prop` は着いたノードの prop 名。\n  */\n-export type InstancePropTarget = Readonly<{\n-  name: string;\n-  target: PublicPropTarget;\n-  node: PrimitiveNode;\n-  path: readonly string[];\n-  prop: string;\n-}>;\n+export type InstancePropTarget = ReachedPrimitive &\n+  Readonly<{\n+    name: string;\n+    nodeNames: readonly string[];\n+    prop: string;\n+  }>;\n \n /** binding を最後まで辿って着いた先。どの公開 prop から辿ったかは持たない。 */\n type ReachedProp = Omit<InstancePropTarget, \"name\">;\n \n /**\n- * 1 段の部品へ当てる上書き。`declared` は部品定義と途中の参照ノードの上書きだけ、`applied`\n- * はそれにインスタンスの上書きを足したもの。\n+ * 1 段の部品へ当てる上書き。`declared` は部品定義と途中の参照ノードの上書きだけ、\n+ * `withInstanceOverrides` はそれにインスタンスの上書きを足したもの。\n  */\n-type HopOverrides = Readonly<{ declared: Props; applied: Props }>;\n+type HopOverrides = Readonly<{\n+  declared: Props;\n+  withInstanceOverrides: Props;\n+}>;\n \n /**\n- * 1 段で binding 先に見つけたノード。`node` は `HopOverrides.applied` を当てた部品のノード、\n- * `declared` は `HopOverrides.declared` を当てた部品で同じ名前のノードに書かれている値。\n+ * 1 段で binding 先に見つけたノード。`node` は `HopOverrides.withInstanceOverrides` を当てた\n+ * 部品のノード、`declared` は `HopOverrides.declared` を当てた部品で同じ名前のノードに\n+ * 書かれている値。\n  */\n type HopNode<N extends Node> = Readonly<{ node: N; declared: Props }>;\n \n@@ -107,13 +119,12 @@ type BindingHop =\n   | Readonly<{ kind: \"unresolvable\" }>\n   | BindingViolation\n   /**\n-   * 指し先のプリミティブの prop 定義と、そのプリミティブに設定されている値に着いた。`node` は\n-   * 上書きを `applied` まで当てた指し先のプリミティブ。\n+   * 指し先のプリミティブの prop 定義と、そのプリミティブに設定されている値に着いた。\n+   * `reached.resolvedProps` は上書きを `withInstanceOverrides` まで当てた指し先の props。\n    */\n   | Readonly<{\n       kind: \"definition\";\n-      target: PublicPropTarget;\n-      node: PrimitiveNode;\n+      reached: ReachedPrimitive;\n     }>\n   /**\n    * 指し先が部品インスタンスで、その部品の binding へ続く。`overrides` は次の段の部品へ当てる\n@@ -133,26 +144,17 @@ type BindingHop =\n const UnbindablePropNames: readonly string[] = [\"locking\"];\n \n /** 上書きを何も当てない辿り。 */\n-const NoOverrides: HopOverrides = { declared: {}, applied: {} };\n-\n-/**\n- * 公開 prop の上書きが書き込まれる先の値（`Node.applyPropEdit` と同じ振り分け）。\n- *\n- * @param node 見るノード\n- * @returns 参照ノードなら `overrides`、プリミティブなら `props`。無ければ空\n- */\n-function writtenValuesOf(node: Node): Props {\n-  return Node.isRef(node) ? (node.overrides ?? {}) : (node.props ?? {});\n-}\n+const NoOverrides: HopOverrides = { declared: {}, withInstanceOverrides: {} };\n \n /**\n  * 指し先のプリミティブで、binding の prop の定義と設定値を引く。\n  *\n- * @param primitive binding の指し先のプリミティブ\n+ * @param primitive binding の指し先で見つけたプリミティブと、上書き前にそこへ書かれている値\n  * @param prop binding が指す prop 名\n  * @returns 定義があり繋げる prop なら `definition`（設定値は `primitive.declared` のその\n- *   prop）、型が未知なら `unresolvable`、スキーマにその prop が無ければ `missing-prop`、\n- *   繋げない prop（`UnbindablePropNames`）なら `unbindable-prop`\n+ *   prop、ノードの props は `primitive.node` の props に既定を敷いたもの）、型が未知なら\n+ *   `unresolvable`、スキーマにその prop が無ければ `missing-prop`、繋げない prop\n+ *   （`UnbindablePropNames`）なら `unbindable-prop`\n  */\n function hopIntoPrimitive(\n   primitive: HopNode<PrimitiveNode>,\n@@ -173,11 +175,14 @@ function hopIntoPrimitive(\n \n   return {\n     kind: \"definition\",\n-    target: {\n+    reached: {\n       definition: definition.value,\n       declared: RecordEx.get(primitive.declared, prop),\n+      resolvedProps: ResolvedProps.resolve(\n+        primitive.node.type,\n+        Node.propsOf(primitive.node),\n+      ),\n     },\n-    node: primitive.node,\n   };\n }\n \n@@ -186,10 +191,10 @@ function hopIntoPrimitive(\n  * （インターフェースの連鎖）。\n  *\n  * @param components 引き先の部品一式\n- * @param instance binding の指し先の参照ノード\n+ * @param instance binding の指し先で見つけた参照ノードと、上書き前にそこへ書かれている上書き\n  * @param prop binding が指す prop 名。参照先では公開 prop 名として引く\n  * @returns 参照先の binding へ続くなら `nested`（次の段へ当てる上書きは、`declared` 側が\n- *   `instance.declared`、`applied` 側が `instance.node` の overrides）、\n+ *   `instance.declared`、`withInstanceOverrides` 側が `instance.node` の overrides）、\n  *   参照先の部品が無ければ `unresolvable`、\n  *   参照先がその prop を公開していなければ `missing-public-prop`\n  */\n@@ -212,7 +217,7 @@ function hopIntoInstance(\n     next: ComponentBinding.create(ref, binding.value),\n     overrides: {\n       declared: instance.declared,\n-      applied: instance.node.overrides ?? {},\n+      withInstanceOverrides: instance.node.overrides ?? {},\n     },\n   };\n }\n@@ -236,41 +241,40 @@ function hop(\n   if (!Option.isSome(component)) {\n     return { kind: \"unresolvable\" };\n   }\n-  const findIn = (applying: Props): Option<Node> =>\n+\n+  const findIn = (applying: Props, nodeName: string): Option<Node> =>\n     Component.findNode(\n       Component.applyOverrides(component.value, source.componentName, applying),\n       source.componentName,\n-      source.binding.node,\n+      nodeName,\n     );\n-  const found = findIn(overrides.applied);\n-  const declared = findIn(overrides.declared);\n-  if (!Option.isSome(found) || !Option.isSome(declared)) {\n+  const found = findIn(overrides.withInstanceOverrides, source.binding.node);\n+  if (!Option.isSome(found)) {\n     return { kind: \"missing-node\" };\n   }\n+\n   const node = found.value;\n-  const declaredValues = writtenValuesOf(declared.value);\n+  // 上書きは木の形を変えないので、上書き前の部品にも同じ名前のノードが必ずある\n+  const declared = Option.unwrapOr(\n+    Option.map(findIn(overrides.declared, node.name), Node.propEditedValuesOf),\n+    {},\n+  );\n+\n   if (Node.isRef(node)) {\n-    return hopIntoInstance(\n-      components,\n-      { node, declared: declaredValues },\n-      source.binding.prop,\n-    );\n+    return hopIntoInstance(components, { node, declared }, source.binding.prop);\n   }\n-  return hopIntoPrimitive(\n-    { node, declared: declaredValues },\n-    source.binding.prop,\n-  );\n+  return hopIntoPrimitive({ node, declared }, source.binding.prop);\n }\n \n /**\n- * `resolvePropTarget` と `resolveInstancePropTargets` の本体。各段で当てる上書きと、循環参照に\n- * 入ったときに打ち切るための辿った部品名を持ち回る。\n+ * `resolvePropTarget` と `resolvePublicProp` の本体。各段で当てる上書きと、循環参照に入った\n+ * ときに打ち切るための辿った部品名を持ち回る。\n  *\n  * @param components 引き先の部品一式\n  * @param source 辿り始める部品名と binding\n  * @param state `overrides` は `source` の部品へ当てる上書き、`visited` はここまでに辿った\n  *   部品名（再訪したら打ち切る）\n- * @returns 行き着いた prop 定義と設定値、上書きを当てた binding 先のプリミティブ、そこまでの\n+ * @returns 行き着いた prop 定義と設定値、上書きを当てた binding 先のノードの props、そこまでの\n  *   ノード名の並びと prop 名。連鎖が途切れた場合と循環に入った場合は `none`\n  */\n function resolveThroughRefs(\n@@ -282,9 +286,8 @@ function resolveThroughRefs(\n   switch (step.kind) {\n     case \"definition\":\n       return Option.some({\n-        target: step.target,\n-        node: step.node,\n-        path: [source.binding.node],\n+        ...step.reached,\n+        nodeNames: [source.binding.node],\n         prop: source.binding.prop,\n       });\n     case \"nested\": {\n@@ -298,7 +301,7 @@ function resolveThroughRefs(\n       });\n       return Option.map(inner, (reached) => ({\n         ...reached,\n-        path: [source.binding.node, ...reached.path],\n+        nodeNames: [source.binding.node, ...reached.nodeNames],\n       }));\n     }\n     case \"unresolvable\":\n@@ -310,6 +313,92 @@ function resolveThroughRefs(\n   }\n }\n \n+/**\n+ * 公開 prop の binding を、その部品から上書きを当てながら最後まで辿る。\n+ *\n+ * @param components 引き先の部品一式\n+ * @param publicProp 辿り始める部品名と公開 prop 名\n+ * @param overrides 辿り始める部品へ当てる上書き\n+ * @returns `resolveThroughRefs` の結果。部品が一式に無いか、その prop を公開していなければ\n+ *   `none`\n+ */\n+function resolvePublicProp(\n+  components: ComponentSet,\n+  publicProp: PublicPropRef,\n+  overrides: HopOverrides,\n+): Option<ReachedProp> {\n+  const component = ComponentSet.get(components, publicProp.component);\n+  const binding = Option.flatMap(component, (found) =>\n+    Component.binding(found, publicProp.prop),\n+  );\n+  return Option.flatMap(binding, (found) =>\n+    resolveThroughRefs(\n+      components,\n+      ComponentBinding.create(publicProp.component, found),\n+      { overrides, visited: new Set([publicProp.component]) },\n+    ),\n+  );\n+}\n+\n+/**\n+ * 着いた先から、binding 先の prop の定義と設定値だけを取り出す。\n+ *\n+ * @param reached binding を最後まで辿って着いた先\n+ * @returns 着いた prop の定義と、上書き前にそこへ書かれている値\n+ */\n+function toPublicPropTarget(reached: ReachedProp): PublicPropTarget {\n+  return { definition: reached.definition, declared: reached.declared };\n+}\n+\n+export const InstancePropTarget = {\n+  /**\n+   * 2 つの公開 prop が、同じ binding 先のノードへ着いているか。\n+   *\n+   * @param a 比べる着いた先\n+   * @param b 比べる着いた先\n+   * @returns 各段の binding 先のノード名の並びが同じなら true\n+   */\n+  isOnSameNode(a: InstancePropTarget, b: InstancePropTarget): boolean {\n+    return ArrayEx.isElementwiseEqual(a.nodeNames, b.nodeNames);\n+  },\n+\n+  /**\n+   * 公開 prop の欄を出すか（docs/06-ui.md「`enabledWhen` により表示を出し分ける」）。\n+   * 条件は binding 先のノードの props（インスタンスの上書きまで当てて既定を敷いたもの）で見る。\n+   *\n+   * @param target 公開 prop の着いた先\n+   * @returns 着いた prop の `enabledWhen` の条件を満たせば true（条件が無ければ true）\n+   */\n+  isEnabled(target: InstancePropTarget): boolean {\n+    return PropDefinition.isEnabled(target.definition, target.resolvedProps);\n+  },\n+\n+  /**\n+   * 公開 prop の欄が出る条件（`enabledWhen`）を出している prop を、同じインスタンスの公開 prop\n+   * から探す。見るのは同じノードの prop だけ（docs/03-schema.md）。\n+   *\n+   * @param targets 同じインスタンスの公開 prop の着いた先（`resolveInstancePropTargets` の結果）\n+   * @param target 条件を知りたい公開 prop の着いた先\n+   * @returns `target` と同じノードの、条件の prop へ繋がる公開 prop の名前。`target` に条件が\n+   *   無いか、条件の prop を公開していなければ `none`\n+   */\n+  conditionPublicName(\n+    targets: readonly InstancePropTarget[],\n+    target: InstancePropTarget,\n+  ): Option<string> {\n+    const condition = Option.fromNullable(target.definition.enabledWhen);\n+\n+    return Option.flatMap(condition, ({ prop }) => {\n+      const exposesConditionProp = (candidate: InstancePropTarget): boolean =>\n+        candidate.prop === prop &&\n+        InstancePropTarget.isOnSameNode(candidate, target);\n+      const exposing = Option.fromNullable(targets.find(exposesConditionProp));\n+\n+      return Option.map(exposing, (found) => found.name);\n+    });\n+  },\n+} as const;\n+\n export const ComponentBinding = {\n   /**\n    * binding を、それが属する部品の名前と組にする。\n@@ -351,7 +440,7 @@ export const ComponentBinding = {\n         overrides: NoOverrides,\n         visited: new Set([source.componentName]),\n       }),\n-      (reached) => reached.target,\n+      toPublicPropTarget,\n     );\n   },\n \n@@ -372,57 +461,26 @@ export const ComponentBinding = {\n     if (!Option.isSome(component)) {\n       return [];\n     }\n+\n     const overrides: HopOverrides = {\n       declared: {},\n-      applied: instance.overrides ?? {},\n+      withInstanceOverrides: instance.overrides ?? {},\n     };\n+\n     return ArrayEx.filterMap(\n       Component.publicPropNames(component.value),\n       (name) =>\n         Option.map(\n-          Option.flatMap(Component.binding(component.value, name), (binding) =>\n-            resolveThroughRefs(\n-              components,\n-              ComponentBinding.create(instance.ref, binding),\n-              { overrides, visited: new Set([instance.ref]) },\n-            ),\n+          resolvePublicProp(\n+            components,\n+            { component: instance.ref, prop: name },\n+            overrides,\n           ),\n           (reached) => ({ name, ...reached }),\n         ),\n     );\n   },\n \n-  /**\n-   * 公開 prop の欄が出る条件（`enabledWhen`）を出している prop を、同じインスタンスの公開 prop\n-   * から探す。見るのは同じノードの prop だけ（docs/03-schema.md）。\n-   *\n-   * @param targets 同じインスタンスの公開 prop の着いた先（`resolveInstancePropTargets` の結果）\n-   * @param target 条件を知りたい公開 prop の着いた先\n-   * @returns `target` と同じノードの、条件の prop へ繋がる公開 prop の名前。`target` に条件が\n-   *   無いか、条件の prop を公開していなければ `none`\n-   */\n-  conditionPublicName(\n-    targets: readonly InstancePropTarget[],\n-    target: InstancePropTarget,\n-  ): Option<string> {\n-    const isSameNode = (candidate: InstancePropTarget): boolean =>\n-      candidate.path.length === target.path.length &&\n-      candidate.path.every((name, index) => name === target.path[index]);\n-    return Option.flatMap(\n-      Option.fromNullable(target.target.definition.enabledWhen),\n-      (condition) =>\n-        Option.map(\n-          Option.fromNullable(\n-            targets.find(\n-              (candidate) =>\n-                candidate.prop === condition.prop && isSameNode(candidate),\n-            ),\n-          ),\n-          (found) => found.name,\n-        ),\n-    );\n-  },\n-\n   /**\n    * 公開 prop の binding を辿った先の prop 定義と設定値を解決する。辿り方と `none` になる\n    * 条件は `resolvePropTarget` と同じ。\n@@ -436,17 +494,9 @@ export const ComponentBinding = {\n     components: ComponentSet,\n     publicProp: PublicPropRef,\n   ): Option<PublicPropTarget> {\n-    const component = ComponentSet.get(components, publicProp.component);\n-    if (!Option.isSome(component)) {\n-      return Option.none;\n-    }\n-    return Option.flatMap(\n-      Component.binding(component.value, publicProp.prop),\n-      (binding) =>\n-        ComponentBinding.resolvePropTarget(\n-          components,\n-          ComponentBinding.create(publicProp.component, binding),\n-        ),\n+    return Option.map(\n+      resolvePublicProp(components, publicProp, NoOverrides),\n+      toPublicPropTarget,\n     );\n   },\n ",
+          "patchLines": 427,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/node/__tests__/node.prop-edit.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 27,
+          "deletions": 0,
+          "patch": "@@ -128,3 +128,30 @@ test(\"持てない prop が 2 つ以上あれば、編集が指す順にすべ\n \n   expect(edited).toEqual(Result.err([\"label\", \"gap\"]));\n });\n+\n+test(\"参照ノードで prop の編集が書き込まれる先は公開 prop への上書きで、インスタンス自身の値を含まない\", () => {\n+  expect(\n+    Node.propEditedValuesOf({\n+      name: \"submit\",\n+      ref: \"primary-button\",\n+      locking: \"locked\",\n+      overrides: { label: \"保存\" },\n+    }),\n+  ).toEqual({ label: \"保存\" });\n+});\n+\n+test(\"プリミティブで prop の編集が書き込まれる先は、そのノードの props\", () => {\n+  expect(\n+    Node.propEditedValuesOf({\n+      name: \"body\",\n+      type: \"Box\",\n+      props: { gap: \"md\" },\n+    }),\n+  ).toEqual({ gap: \"md\" });\n+});\n+\n+test(\"上書きを持たない参照ノードでは、prop の編集が書き込まれる先は空\", () => {\n+  expect(\n+    Node.propEditedValuesOf({ name: \"submit\", ref: \"primary-button\" }),\n+  ).toEqual({});\n+});",
+          "patchLines": 31,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 6,
+          "patch": "@@ -512,20 +512,31 @@ export const Node = {\n     return pickRefOwnProps(node);\n   },\n \n+  /**\n+   * `applyPropEdit` が prop の編集を書き込む先の値。`writtenPropsOf` と違い、参照ノードでは\n+   * 公開 prop への上書きを返す。\n+   *\n+   * @param node 見るノード\n+   * @returns 参照ノードなら `overrides`、プリミティブなら `props`。書かれていなければ空\n+   */\n+  propEditedValuesOf(node: Node): Props {\n+    return Node.isRef(node) ? (node.overrides ?? {}) : Node.propsOf(node);\n+  },\n+\n   /**\n    * ノードの prop を書き換える。参照ノードへの prop の編集は公開 prop への上書き\n    * （`overrides`）へ書く。直下のインスタンス自身の値は `applyRefOwnPropEdit` で書く。\n    *\n    * @param node 書き換えるノード\n    * @param edit 適用する編集\n-   * @returns 参照ノードなら `overrides`、プリミティブなら `props` に `Props.apply` で編集を\n-   *   適用したノード\n+   * @returns `propEditedValuesOf` の値（参照ノードなら `overrides`、プリミティブなら\n+   *   `props`）に `Props.apply` で編集を適用したノード\n    */\n   applyPropEdit(node: Node, edit: PropEdit): Node {\n-    if (Node.isRef(node)) {\n-      return { ...node, overrides: Props.apply(node.overrides ?? {}, edit) };\n-    }\n-    return { ...node, props: Props.apply(node.props ?? {}, edit) };\n+    const edited = Props.apply(Node.propEditedValuesOf(node), edit);\n+    return Node.isRef(node)\n+      ? { ...node, overrides: edited }\n+      : { ...node, props: edited };\n   },\n \n   /**",
+          "patchLines": 38,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 2,
+          "patch": "@@ -380,8 +380,7 @@ export const PropDefinitionRecord = {\n    * 設定されていない prop に効くデフォルト。並びはスキーマの宣言順。\n    *\n    * 「未設定ならどの値が効くか」はスキーマ自身の性質なので、解決を要する側がそれぞれ走査\n-   * を持たずここを呼ぶ（`collectEffectiveAssignments`・`ResolvedProps.resolve`・\n-   * `session/prop-control` の `effectiveProps`）。\n+   * を持たずここを呼ぶ（`collectEffectiveAssignments`・`toEffectiveProps`）。\n    *\n    * @param schema 補いの出どころになる prop 定義\n    * @param props 実際に設定されている props\n@@ -400,6 +399,22 @@ export const PropDefinitionRecord = {\n     );\n   },\n \n+  /**\n+   * 既定を敷いた上に設定値を重ねた props。\n+   *\n+   * @param schema 既定の出どころになる prop 定義\n+   * @param props 実際に設定されている props\n+   * @returns 未設定でデフォルトを持つ prop にデフォルトを補った props。設定されている prop は\n+   *   スキーマに無いものも含めてそのまま残す\n+   */\n+  toEffectiveProps(schema: PropDefinitionRecord, props: Props): Props {\n+    const defaulted = PropDefinitionRecord.collectDefaultsIfAbsent(\n+      schema,\n+      props,\n+    ).map(({ name, value }): readonly [string, PropValue] => [name, value]);\n+    return { ...Object.fromEntries(defaulted), ...props };\n+  },\n+\n   /**\n    * その props の下で実際に効いている prop 設定の並び。明示設定に、未設定の prop のデフ\n    * ォルトを足したもの。",
+          "patchLines": 33,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/resolved-props/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 13,
+          "patch": "@@ -33,21 +33,17 @@ export const ResolvedProps = {\n    */\n   resolve<T extends PrimitiveType>(type: T, props: Props): ResolvedProps<T> {\n     const schema: PrimitiveSchema = PrimitiveSchema.forType(type);\n-    const declared = Object.keys(schema.props).flatMap(\n-      (name): (readonly [string, PropValue])[] =>\n-        name in props ? [[name, props[name]]] : [],\n+    const inSchema = Object.fromEntries(\n+      Object.keys(schema.props).flatMap(\n+        (name): (readonly [string, PropValue])[] =>\n+          name in props ? [[name, props[name]]] : [],\n+      ),\n     );\n-    const defaulted = PropDefinitionRecord.collectDefaultsIfAbsent(\n+    const resolved = PropDefinitionRecord.toEffectiveProps(\n       schema.props,\n-      props,\n-    ).map(({ name, value }): readonly [string, PropValue] => [name, value]);\n-    // デフォルトの上に設定値を重ねる。2 つの走査の条件がずれても明示値が勝つ\n-    // （`Object.fromEntries` は後勝ち。`session/prop-control` の `effectiveProps` と同じ形）\n-    const resolved = {\n-      ...Object.fromEntries(defaulted),\n-      ...Object.fromEntries(declared),\n-    };\n-    // デフォルト持ち prop はどちらかの走査に必ず現れるため、狭い型への表明は安全\n+      inSchema,\n+    );\n+    // デフォルト持ち prop は設定値かデフォルトのどちらかで必ず現れるため、狭い型への表明は安全\n     return resolved as ResolvedProps<T>;\n   },\n ",
+          "patchLines": 31,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/session/prop-control/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 42,
+          "patch": "@@ -1,7 +1,7 @@\n import { Artboard } from \"@/domains/dcmp/artboard\";\n import {\n   ComponentBinding,\n-  type InstancePropTarget,\n+  InstancePropTarget,\n } from \"@/domains/dcmp/component-binding\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n import {\n@@ -19,7 +19,6 @@ import {\n   type ShorthandName,\n   ShorthandNames,\n } from \"@/domains/dcmp/primitive-schema\";\n-import { ResolvedProps } from \"@/domains/dcmp/resolved-props\";\n import {\n   type ColorToken,\n   type NumericTokenKind,\n@@ -104,9 +103,10 @@ export type CurrentPaint =\n  * `value`（明示的に設定されている値）と `defaultValue`（設定が無いときに効く値）を\n  * 別々に持つのは、パネルが両者を区別して見せるため（docs/06-ui.md）。\n  *\n- * `enabledBy` は、同じパネルに並ぶ、条件の行の名前。group の節ではスキーマの\n- * `enabledWhen.prop`、インスタンスの公開 prop では条件の prop へ繋がる公開名。条件が無いか\n- * 条件の行がパネルに出ないなら `none`。\n+ * `enabledBy` は、その prop の欄が出る条件（`enabledWhen`）を出している prop の名前。スキーマ\n+ * から並べる欄（group の節・インスタンス自身の値）ではスキーマの `enabledWhen.prop`、インスタンス\n+ * の公開 prop では条件の prop を公開していればその公開名。条件が無いか、インスタンスで条件の\n+ * prop を公開していなければ `none`。\n  */\n export type PropControl = Readonly<{\n   prop: string;\n@@ -370,23 +370,11 @@ function declaredEditableProps(\n }\n \n /**\n- * インスタンスの公開 prop の欄を出すか（docs/06-ui.md「`enabledWhen` により表示を出し分ける」）。\n- * 条件は binding 先のノードの props（インスタンスの上書きまで当てて既定を敷いたもの）で見る。\n+ * 部品が公開している prop 1 つの素材。binding 先が設定している値を既定にし、無ければスキーマの\n+ * `default` に落とす。\n  *\n- * @param target 公開 prop の着いた先\n- * @returns 条件を満たせば `true`。binding 先のノードの型のスキーマが引けなければ `false`\n- */\n-function isPublicPropEnabled(target: InstancePropTarget): boolean {\n-  const resolved = ResolvedProps.forNode(target.node);\n-  return (\n-    Option.isSome(resolved) &&\n-    PropDefinition.isEnabled(target.target.definition, resolved.value)\n-  );\n-}\n-\n-/**\n- * 部品が公開している prop 1 つの素材（docs/06-ui.md「インスタンス」）。binding 先が設定している\n- * 値を既定にし、無ければスキーマの `default` に落とす。\n+ * `enabledBy` を公開名にするのは、PropRow が `enabledBy` のあるリテラル欄のラベルを隠して字下げ\n+ * するため。スキーマの `enabledWhen.prop` のままだとパネルに無い行を指し、ラベルの無い欄が残る。\n  *\n  * @param targets 同じインスタンスの公開 prop の着いた先。条件の公開名を探す範囲\n  * @param target 素材にする公開 prop の着いた先\n@@ -396,32 +384,15 @@ function publicEditableProp(\n   targets: readonly InstancePropTarget[],\n   target: InstancePropTarget,\n ): EditableProp {\n-  const { definition, declared } = target.target;\n+  const { definition, declared } = target;\n   return {\n     name: target.name,\n     definition,\n     defaultValue: Option.or(declared, Option.fromNullable(definition.default)),\n-    enabledBy: ComponentBinding.conditionPublicName(targets, target),\n+    enabledBy: InstancePropTarget.conditionPublicName(targets, target),\n   };\n }\n \n-/**\n- * `enabledWhen` の判定に使う props。\n- * 設定されていない prop も既定値では効いているため、既定を敷いた上で判定する\n- * （`widthMode` を書いていない Box でも既定の `hug` として扱われ、`width` は出ない）。\n- *\n- * @param schema 既定値の出どころになる prop 定義\n- * @param props 実際に設定されている props\n- * @returns 既定値の上に設定値を重ねた props\n- */\n-function effectiveProps(schema: PropDefinitionRecord, props: Props): Props {\n-  const defaults = PropDefinitionRecord.collectDefaultsIfAbsent(\n-    schema,\n-    props,\n-  ).map(({ name, value }) => [name, value] as const);\n-  return { ...Object.fromEntries(defaults), ...props };\n-}\n-\n /**\n  * 1 つの prop の編集欄。今の値と、値域から決まる入力の形を持つ。\n  *\n@@ -448,6 +419,8 @@ function controlOf(\n /**\n  * 条件を満たさない prop はコントロール自体を作らない\n  * （docs/06-ui.md「`enabledWhen` により表示を出し分ける」）。\n+ * 設定されていない prop も既定値では効いているため、既定を敷いた上で判定する\n+ * （`widthMode` を書いていない Box でも既定の `hug` として扱われ、`width` は出ない）。\n  *\n  * @param schema 編集できる prop の出どころになる prop 定義\n  * @param props `enabledWhen` の判定に使う props\n@@ -457,7 +430,7 @@ function enabledEditableProps(\n   schema: PropDefinitionRecord,\n   props: Props,\n ): readonly EditableProp[] {\n-  const effective = effectiveProps(schema, props);\n+  const effective = PropDefinitionRecord.toEffectiveProps(schema, props);\n   return declaredEditableProps(schema).filter((editable) =>\n     PropDefinition.isEnabled(editable.definition, effective),\n   );\n@@ -612,7 +585,7 @@ function nodeControls(document: DesignDocument, node: Node): SelectionControls {\n       kind: \"instance\",\n       source: node.ref,\n       publicProps: targets\n-        .filter(isPublicPropEnabled)\n+        .filter(InstancePropTarget.isEnabled)\n         .map((target) =>\n           controlOf(\n             publicEditableProp(targets, target),",
+          "patchLines": 121,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/session/under-pointer/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 5,
+          "patch": "@@ -1,4 +1,5 @@\n import type { SelectionDig } from \"@/domains/session/selection-dig\";\n+import { ArrayEx } from \"@/utils/ArrayEx\";\n \n /**\n  * キャンバスのポインタの下にあるものを、どの深さで読むか（docs/06-ui.md「キャンバスのクリッ\n@@ -36,10 +37,6 @@ export const UnderPointer = {\n    * @returns 名前の並びと掘る量がどちらも同じなら真\n    */\n   equals(a: UnderPointer, b: UnderPointer): boolean {\n-    const isSameNames =\n-      a.names.length === b.names.length &&\n-      a.names.every((name, index) => name === b.names[index]);\n-\n-    return isSameNames && a.dig === b.dig;\n+    return ArrayEx.isElementwiseEqual(a.names, b.names) && a.dig === b.dig;\n   },\n } as const;",
+          "patchLines": 18,
+          "truncated": false
+        },
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "patch": "@@ -317,6 +317,20 @@ export const ArrayEx = {\n     return index === -1 ? Option.none : Option.fromNullable(array[index]);\n   },\n \n+  /**\n+   * 2 つの並びが、同じ長さで同じ位置に等しい要素を持つか。\n+   *\n+   * @param a 比べる並び\n+   * @param b 比べる並び\n+   * @returns 長さが同じで、すべての位置の要素が等しければ true。等しさは SameValueZero で見る\n+   */\n+  isElementwiseEqual<T>(a: readonly T[], b: readonly T[]): boolean {\n+    return (\n+      a.length === b.length &&\n+      a.every((item, index) => isSameValueZero(item, b[index]))\n+    );\n+  },\n+\n   /**\n    * その位置へ要素を差し込んだ並び。\n    *",
+          "patchLines": 21,
+          "truncated": false
+        },
+        {
+          "path": "src/utils/__tests__/ArrayEx.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "patch": "@@ -153,3 +153,15 @@ test(\"写せない要素があれば、並びで最初に写せなかった要\n test(\"どの要素も写せなければ、写した並びは空になる\", () => {\n   expect(ArrayEx.filterMap([\"a\", \"b\"], () => Option.none)).toEqual([]);\n });\n+\n+test(\"一方が他方の先頭部分にすぎない並びは、要素ごとに等しくない\", () => {\n+  expect(ArrayEx.isElementwiseEqual([\"a\"], [\"a\", \"b\"])).toBe(false);\n+});\n+\n+test(\"空の並びどうしは、要素ごとに等しい\", () => {\n+  expect(ArrayEx.isElementwiseEqual([], [])).toBe(true);\n+});\n+\n+test(\"要素ごとの比較は NaN どうしを等しいとみなす\", () => {\n+  expect(ArrayEx.isElementwiseEqual([Number.NaN], [Number.NaN])).toBe(true);\n+});",
+          "patchLines": 16,
+          "truncated": false
+        },
+        {
+          "path": "src/utils/__tests__/ArrayEx.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "patch": "@@ -268,3 +268,11 @@ test(\"写して値のあった要素だけが、元の並びの順に残る\", ()\n     ),\n   ).toEqual([30, 20, 40]);\n });\n+\n+test(\"同じ長さで同じ位置に同じ要素を持つ並びは、要素ごとに等しい\", () => {\n+  expect(ArrayEx.isElementwiseEqual([\"a\", \"b\"], [\"a\", \"b\"])).toBe(true);\n+});\n+\n+test(\"同じ要素でも並びの順が違えば、要素ごとに等しくない\", () => {\n+  expect(ArrayEx.isElementwiseEqual([\"a\", \"b\"], [\"b\", \"a\"])).toBe(false);\n+});",
+          "patchLines": 12,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "9371b3b76f28c9053e1548b7edcc2dd2cbc2a859",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-09T14:58:56Z",
+      "subject": "🧪 [Tests]: #1328 同じノードの判定と上書き前の既定をテストで固定する",
+      "body": "- 同じ部品を 2 回使った部品で、別の参照ノードの中の条件 prop が条件の公開名にならないことを確かめる\n- 入れ子の部品で、既定(declared)が途中の参照ノードの上書きまでを当て、インスタンスの上書き前の値になることを確かめる\n- 上書きしている公開 prop の欄でも、既定値に部品が設定している値が出ることを確かめる\n\n背景:\ntest-reviewer が実装を 26 通りに壊して確かめたところ、同じノードの判定を末尾のノード名だけで\n比べる / 外側のノード名を捨てる、入れ子の段で declared にインスタンスの上書きを混ぜる、の\n3 通りでテストが 1 件も落ちなかった。既存の「別のノード」は 1 段の部品の中だけで、途中の段だけが\n違う入力が無かった。\n\n採用理由:\nnodeNames を外側から並べた理由と、既定を上書き前の値から読む理由は、それぞれこの入力でしか\n区別できない。壊し方ごとに足したテストだけが落ちることを確かめた。\n\n代替案:\n- prop-control 側だけで通しに確かめる: 同じノードの判定は component-binding の性質なので、\n  そちらに置いた。既定値の表示はパネルの目的なので prop-control 側にも 1 本置いた\n\n影響とトレードオフ:\n実装の変更は無い。既存のフィクスチャは変えず、テストの中で部品を足している。\n\n参考:\n- Issue #1328\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NX4968qzXW2nWiKPq",
+      "files": [
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 45,
+          "deletions": 0,
+          "patch": "@@ -141,6 +141,25 @@ test(\"入れ子の部品では、途中の参照ノードの上書きが着い\n   });\n });\n \n+test(\"入れ子の部品では、着いた先の既定は途中の参照ノードの上書きまでを当て、インスタンスの上書きを当てる前の値になる\", () => {\n+  const components: ComponentSet = {\n+    ...setupCard(),\n+    row: {\n+      type: \"Box\",\n+      children: [{ name: \"row-card\", ref: \"card\", overrides: { size: 7 } }],\n+      publicProps: { rowSize: { node: \"row-card\", prop: \"size\" } },\n+    },\n+  };\n+\n+  const targets = resolve(components, {\n+    name: \"instance\",\n+    ref: \"row\",\n+    overrides: { rowSize: 10 },\n+  });\n+\n+  expect(targetNamed(targets, \"rowSize\").declared).toEqual(Option.some(7));\n+});\n+\n test(\"同じノードの条件の prop を公開していれば、その公開名が条件の公開名になる\", () => {\n   const targets = resolve(setupCard(), { name: \"instance\", ref: \"card\" });\n \n@@ -152,6 +171,32 @@ test(\"同じノードの条件の prop を公開していれば、その公開\n   ).toEqual(Option.some(\"mode\"));\n });\n \n+test(\"同じ部品を 2 回使った部品では、別の参照ノードの中で条件の prop を公開していても、条件の公開名にならない\", () => {\n+  const components: ComponentSet = {\n+    ...setupCard(),\n+    pair: {\n+      type: \"Box\",\n+      children: [\n+        { name: \"pair-a\", ref: \"card\" },\n+        { name: \"pair-b\", ref: \"card\" },\n+      ],\n+      publicProps: {\n+        aMode: { node: \"pair-a\", prop: \"mode\" },\n+        bSize: { node: \"pair-b\", prop: \"size\" },\n+      },\n+    },\n+  };\n+\n+  const targets = resolve(components, { name: \"instance\", ref: \"pair\" });\n+\n+  expect(\n+    InstancePropTarget.conditionPublicName(\n+      targets,\n+      targetNamed(targets, \"bSize\"),\n+    ),\n+  ).toEqual(Option.none);\n+});\n+\n test(\"条件の prop を別のノードから公開していても、条件の公開名にならない\", () => {\n   const targets = resolve(setupSplit(), { name: \"instance\", ref: \"split\" });\n ",
+          "patchLines": 59,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "patch": "@@ -242,6 +242,18 @@ test(\"上書きしていない公開 prop は部品が設定している値が\n   expect(control.defaultValue).toEqual(Option.some(\"Button\"));\n });\n \n+test(\"上書きしている公開 prop でも、既定には部品が設定している値が出る\", () => {\n+  const selection = setupInstanceSelection({\n+    name: \"action\",\n+    ref: \"primary-button\",\n+    overrides: { label: \"ログイン\" },\n+  });\n+\n+  expect(\n+    controlNamed(instanceOf(selection).publicProps, \"label\").defaultValue,\n+  ).toEqual(Option.some(\"Button\"));\n+});\n+\n test(\"上書きしていない塗りの公開 prop は、部品が設定している階調を既定の塗りとして持つ\", () => {\n   const selection = setupInstanceSelection({\n     name: \"banner\",",
+          "patchLines": 19,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/index.tsx",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.visibility.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/compiled-element.layout.test.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/element-style-setup.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/element-style-setup.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.type.test.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/axis-length/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/box-align/__tests__/box-align.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/box-align/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/box-align/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.declared.test.ts",
+      "to": "src/domains/dcmp/component-binding/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.declared.test.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.declared.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.declared.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.edge.test.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.normal.test.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.public-prop.test.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.violation.test.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/index.ts",
+      "to": "src/utils/RecordEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/constraint/__tests__/constraint.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/constraint/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/constraint/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/corner-radius/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.constraint.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.copies-after.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.name-uniqueness.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.prop-edit.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.rename-name.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.reposition.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.resize.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-fill.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/text-node-setup.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/document-names/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/document-names/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/__tests__/expanded-node.edge.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/__tests__/expanded-node.nested.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/__tests__/expanded-node.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/__tests__/expanded-node.root-override.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/layout/__tests__/layout.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/layout/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/layout/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/length-shorthand/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/locking/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/locking/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node-tree/__tests__/node-tree.ambiguous-name.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node-tree/__tests__/node-tree.edge.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node-tree/__tests__/node-tree.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node-tree/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node-tree/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.json.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.name-match.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.nested-primitive.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.prop-edit.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.prop-edit.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.prop-edit.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.props.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.ref-node.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.ref.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/__tests__/node.rename.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/index.ts",
+      "to": "src/types/NonEmptyArray.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/index.ts",
+      "to": "src/utils/RecordEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/node/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/padding/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/placement/__tests__/placement.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/placement/__tests__/placement.prop-transfer.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/placement/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.edge.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.normal.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.prototype-name.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.ref-props.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.token-kind-list.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.type.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/domains/unit/corner/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/domains/unit/side/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/utils/Range.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/utils/RecordEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.text.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.type.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/token-props/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/reference-context/__tests__/reference-context.instance-violation.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/reference-context/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/reference-context/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/resolved-props/__tests__/resolved-props.edge.test.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/resolved-props/__tests__/resolved-props.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/resolved-props/__tests__/resolved-props.normal.test.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/resolved-props/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/resolved-props/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/resolved-props/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/rotation/__tests__/rotation.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/rotation/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/sibling-positions/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/__tests__/size.fill.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/__tests__/size.fill.test.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/__tests__/size.inverted-limits.test.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/__tests__/size.limits.test.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/__tests__/size.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/__tests__/size.normal.test.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/__tests__/size.type.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/__tests__/size.type.test.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/gradient/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/visibility/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/visibility/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/wrap/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/wrap/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-reload/__tests__/document-reload.invalid.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.canvas-dig.test.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.lock.test.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/node-template/__tests__/node-template.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/node-template/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-documents/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.edit-from.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.edit-from.test.ts",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+      "to": "src/domains/session/prop-control/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/setup.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/setup.ts",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/unit/corner/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/unit/side/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/utils/RecordEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/selection-dig/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/selection-state/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/selection/__tests__/selection.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/selection/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/under-pointer/__tests__/under-pointer.normal.test.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/under-pointer/index.ts",
+      "to": "src/domains/session/selection-dig/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/under-pointer/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/unit/file-path/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/editor-state-reads.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/sample-document.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-history/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-dig.test.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-selection.test.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/domains/componentization/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.artboard-drag.test.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-move.test.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-placement.test.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.range-select-artboard.test.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-snap-flow.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection.test.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.text-edit.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.edge.test.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/distance-pair/__tests__/distance-pair.normal.test.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/facing/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/drop-zone/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/pointing/__tests__/pointing.normal.test.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/pointing/index.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.edge.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-alt-pointing/__tests__/use-alt-pointing.normal.test.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/use-text-edit.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/domains/recent-files/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__stories__/panel-controls.ts",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.shorthand.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/groups-body/index.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/groups-body/index.tsx",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.tsx",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/instance-body/index.tsx",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-field/index.tsx",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-row/index.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/prop-row/index.tsx",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/shorthand-row/index.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/shorthand-row/index.tsx",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/index.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/index.tsx",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.instance-lock.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/index.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/__tests__/node-html.edge.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/ArrayEx.ts",
+      "to": "src/types/NonEmptyArray.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/ArrayEx.ts",
+      "to": "src/utils/NumberEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/ArrayEx.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/ArrayEx.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.edge.test.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.edge.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.edge.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.normal.test.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.normal.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/utils/__tests__/ArrayEx.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    }
+  ]
+}
