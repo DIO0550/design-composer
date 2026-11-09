@@ -5,6 +5,7 @@ import { Selection } from "@/domains/session/selection";
 import { SelectionDig } from "@/domains/session/selection-dig";
 import { SelectionState } from "@/domains/session/selection-state";
 import type { UnderPointer } from "@/domains/session/under-pointer";
+import type { TwoOrMoreArray } from "@/types/TwoOrMoreArray";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
@@ -147,7 +148,7 @@ export const DocumentSelection = {
    * らない（掘ってもインスタンス自身で止まる）。ロック中のノードとその子孫も入らない
    * （docs/03「ロック」）ので、今の選択がロック中なら押された枝の入口から選び直す。
    *
-   * @param selection 候補を引くドキュメントと、掘る起点になる今の選択
+   * @param selection 候補を引くドキュメントと、掘る起点になる今の選択（複数選択ならその一員）
    * @param underPointer 押された位置（どの深さで読むかを含む）
    * @returns 掘った先のノードの名前。押された位置に選べるノードが 1 つも無ければ（artboard
    *   の背景か、ロック中のノードの上を押したとき）`none`
@@ -162,7 +163,49 @@ export const DocumentSelection = {
         selection.document,
         underPointer.names,
       ),
-      DocumentSelection.singleName(selection),
+      DocumentSelection.names(selection),
+    );
+  },
+
+  /**
+   * キャンバスで押された位置から掴むと、選んでいるものをまとめて運ぶことになるときの、その
+   * 兄弟の名前（docs/06-ui.md「キャンバス直接操作」の移動）。
+   *
+   * まとめて運ぶのは、2 つ以上選んでいて、押した位置で掴むもの（`nodeNameAt`）が選択の一員で、
+   * 全員が絶対配置で同じ親の兄弟（artboard が混ざらない）で、ロック中・非表示の一員がいない
+   * ときだけ。
+   *
+   * @param selection 選択とドキュメントの出どころ
+   * @param underPointer 押された位置（どの深さで読むかを含む）
+   * @returns まとめて運ぶ一員の名前（選んだ順）。上の条件を 1 つでも満たさなければ `none`
+   */
+  carriedSiblingsAt(
+    selection: DocumentSelection,
+    underPointer: UnderPointer,
+  ): Option<TwoOrMoreArray<string>> {
+    const selected = selection.selected;
+    if (selected.kind !== "multiple") {
+      return Option.none;
+    }
+
+    const document = selection.document;
+    const grabbed = DocumentSelection.nodeNameAt(selection, underPointer);
+    const grabsMember =
+      Option.isSome(grabbed) && selected.names.includes(grabbed.value);
+    if (!grabsMember) {
+      return Option.none;
+    }
+
+    const isUncarriable = (name: string) =>
+      DesignDocument.isLocked(document, name) ||
+      DesignDocument.isHidden(document, name);
+    if (selected.names.some(isUncarriable)) {
+      return Option.none;
+    }
+
+    return Option.map(
+      DesignDocument.findSiblingPlacements(document, selected.names),
+      () => selected.names,
     );
   },
 

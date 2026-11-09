@@ -4,9 +4,13 @@ import { FacingDistances } from "@/features/editor/features/canvas/domains/facin
 import {
   DraggedNode,
   type DropTarget,
+  type TreeDraggedNode,
 } from "@/features/editor/features/canvas/domains/node-drop";
 import { RepositionLines } from "@/features/editor/features/canvas/domains/reposition-lines";
-import type { RepositionTarget } from "@/features/editor/features/canvas/domains/reposition-target";
+import {
+  type RepositionPreview,
+  SiblingsRepositionTarget,
+} from "@/features/editor/features/canvas/domains/reposition-target";
 import {
   SideSnap,
   type SnapGuides,
@@ -26,12 +30,14 @@ export type Grab = Readonly<{ dragged: DraggedNode; origin: Offset }>;
  * と、「編集操作の一覧」の挿入）。
  *
  * 掴んだものを持つのは離すまで、落ちる先を持つのは動かしている間だけ、と状態ごとに持つ
- * ものが変わるため直和で列挙する。掴むのは既存ノードとパレットの雛形の 2 通りで、どちら
- * を運んでいるかは `DraggedNode` が持つ（分けると「両方ドラッグ中」が型で書けてしまう）。
+ * ものが変わるため直和で列挙する。掴むのは既存ノード 1 つ・選んでいる絶対配置の兄弟
+ * まとめて・パレットの雛形の 3 通りで、どれを運んでいるかは `DraggedNode` が持つ（分けると
+ * 「2 つを同時にドラッグ中」が型で書けてしまう）。
  *
- * `dropped` は既存ノードを離した直後の状態。ブラウザは `pointerup` のあとに `click` を発火
- * させるので、これを挟まないと運んだ先の要素が選択されてしまう（選ばれるのは押した時点で
- * 掴んだもので、離した先の要素ではない）。閾値未満の動きではここへ入らない。
+ * `dropped` は既存ノード（まとめて運ぶ兄弟を含む）を離した直後の状態。ブラウザは
+ * `pointerup` のあとに `click` を発火させるので、これを挟まないと運んだ先の要素が選択されて
+ * しまう（選ばれているべきなのは押した時点で掴んだもの・まとめて運ぶなら選んでいた全員で、
+ * 離した先の要素ではない）。閾値未満の動きではここへ入らない。
  */
 export type NodeDrag =
   | Readonly<{ kind: "idle" }>
@@ -53,25 +59,19 @@ export type DropEdit =
   | Readonly<{ kind: "insert"; template: NodeTemplate; target: DropTarget }>
   | Readonly<{
       kind: "reposition";
-      name: string;
-      /** 書き込む座標と向き、見た目のずらし量（座標とずらし量は**ドキュメント上の px**）。 */
-      target: RepositionTarget;
+      /**
+       * 運んでいるもの（まとめて運ぶなら全員）の落とし先の親と、一員ごとの書き込む座標と
+       * 向き、見た目のずらし量（座標とずらし量は**ドキュメント上の px**）。
+       */
+      target: SiblingsRepositionTarget;
       /** 揃った線のガイド線と揃え先との隙間、Alt / Option の距離の短い線（**画面上の px**）。 */
       lines: RepositionLines;
     }>;
 
 /**
- * 運んでいる間、掴んだノードをどれだけずらして見せるか。
- */
-export type RepositionPreview = Readonly<{
-  name: string;
-  offset: Offset;
-}>;
-
-/**
  * 運んでいる間、今のポインタで決まっていること。
  *
- * **落とせるかどうかと、掴んだノードが追従するかどうかは別に決まる。** 座標のドラッグは
+ * **落とせるかどうかと、運んでいるものが追従するかどうかは別に決まる。** 座標のドラッグは
  * 落とせる親がポインタの下に無くてもポインタへ追従する（追従を止めると、キャンバスの
  * 余白へ一瞬寄っただけで元の位置へ戻り、何を運んでいるのか分からなくなる）。
  */
@@ -82,7 +82,7 @@ export type Carrying =
 
 export const Carrying = {
   /**
-   * 落とせず、掴んだノードも動かない（ツリーのドラッグで落とし先が無いとき）。
+   * 落とせず、運んでいるものも動かない（ツリーのドラッグで落とし先が無いとき）。
    *
    * @returns 落とし先も、ずらす見た目も、ガイド線も距離も持たない運び方
    */
@@ -91,7 +91,7 @@ export const Carrying = {
   },
 
   /**
-   * 落とせないが、掴んだノードはポインタへ追従する（座標のドラッグ）。
+   * 落とせないが、運んでいるものはポインタへ追従する（座標のドラッグ）。
    *
    * @param preview ずらして見せる相手と量
    * @returns 見た目だけが動く運び方
@@ -127,7 +127,7 @@ export const Carrying = {
   },
 
   /**
-   * 掴んだノードをずらして見せる相手と量。
+   * 運んでいるものをずらして見せる相手と量。
    * 落とせるときは、届く編集が同じ量を持っている（同じ 1 回のドラッグなので、
    * 落とせる場所へ入った瞬間にずれ方が変わってはいけない）。
    *
@@ -155,32 +155,31 @@ export const DropEdit = {
    * @param target 落とせる親と、その中での挿入位置
    * @returns 移動または挿入の編集
    */
-  intoTree(dragged: DraggedNode, target: DropTarget): DropEdit {
+  intoTree(dragged: TreeDraggedNode, target: DropTarget): DropEdit {
     return dragged.kind === "existing"
       ? { kind: "move", name: dragged.name, target }
       : { kind: "insert", template: dragged.template, target };
   },
 
   /**
-   * 落とし先の親の中の座標へ置き直す編集。既存ノードにしか起きない。
+   * 落とし先の親の中の座標へ置き直す編集。既存ノード（まとめて運ぶ兄弟を含む）にしか
+   * 起きない。
    *
    * `target` の寄せ量と `lines` は同じ 1 回の判定（`RepositionLines.toSnapped`）から作る。
    *
    * 線は丸める前の実測から引くので、書かれる座標との差は丸めのぶん（docs/06-ui.md の辺の
    * スナップ）だけ残る。
    *
-   * @param name 置き直すノードの名前
-   * @param target 落とし先の親を基準に書き込む座標と向きと、運んでいる間のずらし量（座標と
-   *   ずらし量はドキュメント上の px）
+   * @param target 落とし先の親と、一員ごとにその親を基準に書き込む座標と向きと、運んでいる
+   *   間のずらし量（座標とずらし量はドキュメント上の px）
    * @param lines 吸い付いた線・揃え先との隙間（除く前）と、Alt / Option の距離（画面上の px）
    * @returns 座標の置き直しの落とし方
    */
   reposition(
-    name: string,
-    target: RepositionTarget,
+    target: SiblingsRepositionTarget,
     lines: RepositionLines,
   ): DropEdit {
-    return { kind: "reposition", name, target, lines };
+    return { kind: "reposition", target, lines };
   },
 
   /**
@@ -200,7 +199,7 @@ export const DropEdit = {
   },
 
   /**
-   * 運んでいるノードをずらして見せる相手と量。ツリーへ落とすときは持たない
+   * 運んでいるもの（まとめて運ぶなら全員）をずらして見せる相手と量。ツリーへ落とすときは持たない
    * （そちらは実体を動かさず、ドロップ線で落ちる先を見せる）。
    *
    * @param edit 今の落とし方
@@ -212,7 +211,7 @@ export const DropEdit = {
       case "insert":
         return Option.none;
       case "reposition":
-        return Option.some({ name: edit.name, offset: edit.target.offset });
+        return Option.some(SiblingsRepositionTarget.preview(edit.target));
     }
   },
 
@@ -281,7 +280,7 @@ export const DropEdit = {
       case "insert":
         return edit.target.position.parentName;
       case "reposition":
-        return edit.target.written.to.parentName;
+        return edit.target.dropParentName;
     }
   },
 } as const;
@@ -408,8 +407,8 @@ export const NodeDrag = {
   },
 
   /**
-   * 掴んだノードを今どれだけずらして見せるか。座標を動かすドラッグのときだけ答え、
-   * **落とせる親がポインタの下に無くても答える**（`Carrying`）。
+   * 運んでいるもの（まとめて運ぶなら全員）を今どれだけずらして見せるか。座標を動かすドラッグ
+   * のときだけ答え、**落とせる親がポインタの下に無くても答える**（`Carrying`）。
    *
    * 押しただけで見た目が動くと、クリックのたびにノードが一瞬ずれる。
    *
@@ -464,12 +463,13 @@ export const NodeDrag = {
   },
 
   /**
-   * 指を離す。既存ノードを運んでいたなら直後の `click` を飲み込む状態へ入り、動かしてい
-   * なかったなら掴んでいない状態へ戻す。
+   * 指を離す。既存ノード（まとめて運ぶ兄弟を含む）を運んでいたなら直後の `click` を飲み込む
+   * 状態へ入り、動かしていなかったなら掴んでいない状態へ戻す。
    *
    * 落とせたかどうかでは分けない。掴んだノードは押した時点で選ばれていて、運び終えても
    * 選択は戻さない（docs/06-ui.md「移動（ドラッグ）」の「押した時点で、掴んだノードが
-   * 選ばれる」）ので、離した位置の `click` で選び直させない。
+   * 選ばれる」。まとめて運ぶ場合を除く）。まとめて運ぶときは押した時点の選択（全員）を
+   * そのまま保つ。どちらも、離した位置の `click` で選び直させない。
    *
    * 飲み込む `click` がどこへ出るかは離した場所で変わるので、受けるのは枠ではなく運んで
    * いる間のポインタを受けている器（`useNodeDrag` の `dragHandlers`）。
@@ -478,9 +478,16 @@ export const NodeDrag = {
    * @returns 直後の `click` を飲み込む状態、または何も掴んでいない状態
    */
   release(drag: NodeDrag): NodeDrag {
-    const swallowsClick =
-      drag.kind === "dragging" && drag.grab.dragged.kind === "existing";
-    return swallowsClick ? { kind: "dropped" } : NodeDrag.create();
+    if (drag.kind !== "dragging") {
+      return NodeDrag.create();
+    }
+    switch (drag.grab.dragged.kind) {
+      case "existing":
+      case "selected-siblings":
+        return { kind: "dropped" };
+      case "new":
+        return NodeDrag.create();
+    }
   },
 
   /**

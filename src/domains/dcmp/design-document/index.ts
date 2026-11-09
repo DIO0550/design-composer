@@ -37,10 +37,17 @@ import {
   RefOwnPropDefinitions,
 } from "@/domains/dcmp/primitive-schema";
 import { ReferenceContext } from "@/domains/dcmp/reference-context";
-import type { RepositionEdit } from "@/domains/dcmp/reposition-edit";
+import type {
+  NodeRepositionEdit,
+  RepositionEdit,
+} from "@/domains/dcmp/reposition-edit";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { Rotation } from "@/domains/dcmp/rotation";
+import {
+  type PlacedChild,
+  SiblingPlacements,
+} from "@/domains/dcmp/sibling-placements";
 import { SiblingPositions } from "@/domains/dcmp/sibling-positions";
 import { Size } from "@/domains/dcmp/size";
 import { type Token, type TokenRef, TokenSet } from "@/domains/dcmp/token";
@@ -1866,6 +1873,37 @@ export const DesignDocument = {
   },
 
   /**
+   * 名前で指したノードがすべて同じ親の、絶対配置の兄弟であるときの、それぞれの座標
+   * （docs/06-ui.md「キャンバス直接操作」の、複数選択をまとめて運ぶ移動）。
+   *
+   * @param document 引き先になるドキュメント
+   * @param names 座標を知りたいノードの名前。順は問わず、重複は 1 つとして扱う
+   * @returns 親と、ツリー順に並べた一員の座標。座標で動かせない名前（`childPlacementOf` が
+   *   答えないもの: artboard 自身・部品インスタンス・フロー・無い名前など）が 1 つでもあるか、
+   *   親が 2 つ以上あれば `none`
+   */
+  findSiblingPlacements(
+    document: DesignDocument,
+    names: NonEmptyArray<string>,
+  ): Option<SiblingPlacements> {
+    const placedChildOf = (name: string): Option<PlacedChild> =>
+      Option.flatMap(DesignDocument.childPlacementOf(document, name), (at) =>
+        Option.map(
+          DesignDocument.findChildPosition(document, name),
+          (position) => ({ name, at, index: position.index }),
+        ),
+      );
+
+    return Option.flatMap(
+      ArrayEx.mapNonEmptyUntilNone(
+        ArrayEx.distinctNonEmpty(names),
+        placedChildOf,
+      ),
+      SiblingPlacements.fromPlacedChildren,
+    );
+  },
+
+  /**
    * 名前で指したノードを包んでいるものの名前を、内側から外側へ並べたもの。
    * 末尾は必ずその artboard になる。
    *
@@ -2297,6 +2335,28 @@ export const DesignDocument = {
     return Result.flatMap(
       DesignDocument.moveNode(document, name, appended.value),
       write,
+    );
+  },
+
+  /**
+   * 名前で指したノードをまとめて置き直す（docs/06-ui.md「キャンバス直接操作」の、複数選択を
+   * まとめて運ぶ移動）。1 つずつの置き直し方は `reposition` と同じ。
+   *
+   * 全部通るか何も変えないか。1 つでも受け入れられなければ、それより前の置き直しも書かない。
+   * 親を付け替える一員は、渡した順に付け替え先の末尾へ並ぶ。親は一員ごとに違ってよい
+   * （同じ親であることは呼び出し側の型が守る）。
+   *
+   * @param document 書き換える対象を含むドキュメント
+   * @param edits 置き直すノードの名前と、書き込む内容。渡した順に当てる
+   * @returns すべて置き直したドキュメント。どれか 1 つでも `reposition` が `err` になれば
+   *   その `err` で、何も書き換えない
+   */
+  repositionAll(
+    document: DesignDocument,
+    edits: NonEmptyArray<NodeRepositionEdit>,
+  ): Result<DesignDocument, DesignDocumentEditError> {
+    return ArrayEx.reduceUntilErr(edits, document, (current, edit) =>
+      DesignDocument.reposition(current, edit.name, edit.edit),
     );
   },
 

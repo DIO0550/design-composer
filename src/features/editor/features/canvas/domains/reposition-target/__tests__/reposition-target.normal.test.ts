@@ -27,10 +27,7 @@ const Home: DropParentCoordinates = {
 test("親が変わらないとき、書かれる座標は掴んだ時点から運んだ分だけ動く", () => {
   const dropped = RepositionTarget.create(Grabbed, { x: 30, y: -12 }, Home);
 
-  expect(dropped.written.to).toEqual({
-    parentName: "home",
-    placement: { mode: "absolute", x: 70, y: 12 },
-  });
+  expect(dropped.placement).toEqual({ mode: "absolute", x: 70, y: 12 });
 });
 
 test("親が変わるとき、書かれる座標は原点のずれを打ち消した値になる", () => {
@@ -41,10 +38,7 @@ test("親が変わるとき、書かれる座標は原点のずれを打ち消�
     { name: "card", shift: { x: -200, y: -60 }, rotation: 0 },
   );
 
-  expect(dropped.written.to).toEqual({
-    parentName: "card",
-    placement: { mode: "absolute", x: -130, y: -48 },
-  });
+  expect(dropped.placement).toEqual({ mode: "absolute", x: -130, y: -48 });
 });
 
 test("親が変わっても、見た目のずらし量には原点のずれが入らない", () => {
@@ -104,10 +98,7 @@ test("90 度回った親の中で画面上の左へ運ぶと、書かれる座�
     Turned,
   );
 
-  expect(dropped.written.to).toEqual({
-    parentName: "frame",
-    placement: { mode: "absolute", x: 40, y: 31 },
-  });
+  expect(dropped.placement).toEqual({ mode: "absolute", x: 40, y: 31 });
 });
 
 test("90 度回った親の中で画面上の左へ運ぶと、見た目のずらし量も親の向きへ戻した量になる", () => {
@@ -136,7 +127,7 @@ test("30 度回った親の中で割り切れない量を運んでも、書か�
     { name: "home", shift: { x: 0, y: 0 }, rotation: 30 },
   );
 
-  expect([dropped.written.to.placement, dropped.offset]).toEqual([
+  expect([dropped.placement, dropped.offset]).toEqual([
     { mode: "absolute", x: 59, y: 0 },
     { x: 19, y: -24 },
   ]);
@@ -149,8 +140,5 @@ test("360 度回った親の中では、回っていない親の中と同じ座�
     { name: "home", shift: { x: 0, y: 0 }, rotation: 360 },
   );
 
-  expect(dropped.written.to).toEqual({
-    parentName: "home",
-    placement: { mode: "absolute", x: 70, y: 12 },
-  });
+  expect(dropped.placement).toEqual({ mode: "absolute", x: 70, y: 12 });
 });

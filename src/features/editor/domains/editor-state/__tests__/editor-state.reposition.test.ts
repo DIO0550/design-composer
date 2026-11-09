@@ -1,210 +1,51 @@
 import { expect, test } from "vitest";
-import { ChildPlacement } from "@/domains/dcmp/child-placement";
-import { DesignDocument } from "@/domains/dcmp/design-document";
-import { Node, type Props } from "@/domains/dcmp/node";
-import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
-
-/**
- * 絶対配置の `badge` と、付け替え先の `panel` を持つ状態。
- * 座標は既定と違う値から始める。
- *
- * @param badgeProps `badge` に足して書く props（向きを書いて始めるときに使う）
- */
-function setupState(badgeProps: Props = {}): EditorState {
-  return EditorState.create(
-    DesignDocument.create({
-      artboards: [
-        {
-          name: "home",
-          width: 375,
-          height: 812,
-          children: [
-            {
-              name: "badge",
-              type: "Text",
-              props: { placement: "absolute", x: 40, y: 24, ...badgeProps },
-            },
-            { name: "panel", type: "Box", props: {}, children: [] },
-          ],
-        },
-      ],
-    }),
-  );
-}
-
-/** `home` の中の座標を指した、向きを書かない置き直し。 */
-function toHome(x: number, y: number): RepositionEdit {
-  return RepositionEdit.create(
-    ChildPlacement.create("home", { mode: "absolute", x, y }),
-  );
-}
-
-/** その状態での `badge` の props。 */
-function badgeProps(state: EditorState): Readonly<Record<string, unknown>> {
-  return Node.writtenPropsOf(
-    Option.unwrap(
-      DesignDocument.findNode(EditorState.document(state), "badge"),
-    ),
-  );
-}
-
-/** その状態で `badge` がいる親の名前。 */
-function badgeParentName(state: EditorState): string {
-  return Option.unwrap(
-    DesignDocument.findChildPosition(EditorState.document(state), "badge"),
-  ).parentName;
-}
-
-test("座標を置き直すと縦横とも新しい値になる", () => {
-  const repositioned = EditorState.reposition(
-    setupState(),
-    "badge",
-    toHome(70, 12),
-  );
-
-  expect(badgeProps(Option.unwrap(repositioned))).toMatchObject({
-    x: 70,
-    y: 12,
-  });
-});
-
-test("選んでいないノードでも座標を置き直せる（置き直しは選択に依らない）", () => {
-  const state = setupState();
-
-  // 選択が無い（= プロパティパネル経由の編集は成立しない）ことを前提に置く
-  expect(EditorState.singleName(state)).toEqual(Option.none);
-  expect(
-    Option.isSome(EditorState.reposition(state, "badge", toHome(70, 12))),
-  ).toBe(true);
-});
-
-test("置き直したあと 1 回戻すと縦横とも元の座標に戻る", () => {
-  const repositioned = Option.unwrap(
-    EditorState.reposition(setupState(), "badge", toHome(70, 12)),
-  );
-
-  const undone = Option.unwrap(EditorState.undo(repositioned));
-
-  expect(badgeProps(undone)).toMatchObject({ x: 40, y: 24 });
-});
-
-test("別の親を指して置き直すと、その親の子になる", () => {
-  const repositioned = Option.unwrap(
-    EditorState.reposition(
-      setupState(),
-      "badge",
-      RepositionEdit.create(
-        ChildPlacement.create("panel", { mode: "absolute", x: 8, y: 6 }),
-      ),
-    ),
-  );
-
-  expect(badgeParentName(repositioned)).toBe("panel");
-});
-
-test("親をまたいで置き直しても、1 回戻すだけで元の親へ戻る", () => {
-  // 木の移動と座標の書き込みが別々に積まれると、戻すのに 2 回要る
-  const repositioned = Option.unwrap(
-    EditorState.reposition(
-      setupState(),
-      "badge",
-      RepositionEdit.create(
-        ChildPlacement.create("panel", { mode: "absolute", x: 8, y: 6 }),
-      ),
-    ),
-  );
-
-  const undone = Option.unwrap(EditorState.undo(repositioned));
-
-  expect([badgeParentName(undone), badgeProps(undone).x]).toEqual(["home", 40]);
-});
-
-test("子を受け入れられない親を指すと置き直しは存在しない（履歴も dirty も動かない）", () => {
-  expect(
-    EditorState.reposition(
-      setupState(),
-      "badge",
-      RepositionEdit.create(
-        ChildPlacement.create("居ない親", { mode: "absolute", x: 70, y: 12 }),
-      ),
-    ),
-  ).toEqual(Option.none);
-});
-
-test("artboard の名前を指すと置き直しは存在しない（履歴も dirty も動かない）", () => {
-  // artboard は親 Box を持たないので、親からの座標を持たない
-  // （キャンバス上の位置は artboard 自身の `canvasPosition`）
-  expect(EditorState.reposition(setupState(), "home", toHome(70, 12))).toEqual(
-    Option.none,
-  );
-});
-
-test("ドキュメントに無い名前を指すと置き直しは存在しない", () => {
-  expect(
-    EditorState.reposition(setupState(), "居ない", toHome(70, 12)),
-  ).toEqual(Option.none);
-});
-
-test("向きも書き換えて親をまたいだ置き直しは、1 回戻すと親・座標・向きが全部戻る", () => {
-  const repositioned = Option.unwrap(
-    EditorState.reposition(
-      setupState({ rotation: 30 }),
-      "badge",
-      RepositionEdit.rotatedTo(
-        ChildPlacement.create("panel", { mode: "absolute", x: 8, y: 6 }),
-        120,
-      ),
-    ),
-  );
-
-  const undone = Option.unwrap(EditorState.undo(repositioned));
-
-  expect([
-    badgeParentName(undone),
-    badgeProps(undone).x,
-    badgeProps(undone).rotation,
-  ]).toEqual(["home", 40, 30]);
-});
+import { parentNameOf, propsOf, stateWithAbsoluteSiblings } from "./setup";
 
 /*
- * 以下は選択から移動量だけで動かす経路。行き先ではなく差分で受けるので、
- * **今の座標に足されている**ことを見る（既定の 0 から始めると、足す先を取り違えた
- * 実装でも同じ答えになる）。
+ * 選択から移動量だけで動かす経路（行き先で受ける経路は `editor-state.reposition-all.test.ts`）。
+ * 行き先ではなく差分で受けるので、**今の座標に足されている**ことを見る（既定の 0 から始める
+ * と、足す先を取り違えた実装でも同じ答えになる）。
  */
 test("選んでいる絶対配置のノードを横へ動かすと、横の座標だけが動く", () => {
-  const selected = EditorState.select(setupState(), "badge");
+  const selected = EditorState.select(stateWithAbsoluteSiblings(), "badge");
 
   const moved = EditorState.repositionSelectedNodeBy(selected, { x: 1, y: 0 });
 
-  expect(badgeProps(Option.unwrap(moved))).toMatchObject({ x: 41, y: 24 });
+  expect(propsOf(Option.unwrap(moved), "badge")).toMatchObject({
+    x: 41,
+    y: 24,
+  });
 });
 
 test("選んでいる絶対配置のノードを縦へ動かすと、縦の座標だけが動く", () => {
-  const selected = EditorState.select(setupState(), "badge");
+  const selected = EditorState.select(stateWithAbsoluteSiblings(), "badge");
 
   const moved = EditorState.repositionSelectedNodeBy(selected, {
     x: 0,
     y: -10,
   });
 
-  expect(badgeProps(Option.unwrap(moved))).toMatchObject({ x: 40, y: 14 });
+  expect(propsOf(Option.unwrap(moved), "badge")).toMatchObject({
+    x: 40,
+    y: 14,
+  });
 });
 
 test("動かしても親は変わらない", () => {
   // 座標だけで動かす経路には落とし先の親が届かないので、重なった先へ吸われない
-  const selected = EditorState.select(setupState(), "badge");
+  const selected = EditorState.select(stateWithAbsoluteSiblings(), "badge");
 
   const moved = Option.unwrap(
     EditorState.repositionSelectedNodeBy(selected, { x: 1, y: 0 }),
   );
 
-  expect(badgeParentName(moved)).toBe("home");
+  expect(parentNameOf(moved, "badge")).toBe("home");
 });
 
 test("フロー配置のノードを選んでいるときは動かない", () => {
-  const selected = EditorState.select(setupState(), "panel");
+  const selected = EditorState.select(stateWithAbsoluteSiblings(), "panel");
 
   expect(
     EditorState.repositionSelectedNodeBy(selected, { x: 1, y: 0 }),
@@ -213,13 +54,16 @@ test("フロー配置のノードを選んでいるときは動かない", () =>
 
 test("何も選んでいなければ動かない", () => {
   expect(
-    EditorState.repositionSelectedNodeBy(setupState(), { x: 1, y: 0 }),
+    EditorState.repositionSelectedNodeBy(stateWithAbsoluteSiblings(), {
+      x: 1,
+      y: 0,
+    }),
   ).toEqual(Option.none);
 });
 
 test("artboard を選んでいるときは動かない", () => {
   // artboard の位置は別の座標系（`canvasPosition`）が持つ
-  const selected = EditorState.select(setupState(), "home");
+  const selected = EditorState.select(stateWithAbsoluteSiblings(), "home");
 
   expect(
     EditorState.repositionSelectedNodeBy(selected, { x: 1, y: 0 }),
@@ -227,18 +71,24 @@ test("artboard を選んでいるときは動かない", () => {
 });
 
 test("向きを書いたノードを動かしても、向きは元のまま", () => {
-  const selected = EditorState.select(setupState({ rotation: 30 }), "badge");
+  const selected = EditorState.select(
+    stateWithAbsoluteSiblings({ rotation: 30 }),
+    "badge",
+  );
 
   const moved = EditorState.repositionSelectedNodeBy(selected, { x: 1, y: 0 });
 
-  expect(badgeProps(Option.unwrap(moved)).rotation).toBe(30);
+  expect(propsOf(Option.unwrap(moved), "badge").rotation).toBe(30);
 });
 
 test("数値でない向きを書いたノードを動かしても、その綴りが残る", () => {
   // 読み直して書くと、数値でない綴りは回っていない向き（0）として読まれて消える
-  const selected = EditorState.select(setupState({ rotation: "abc" }), "badge");
+  const selected = EditorState.select(
+    stateWithAbsoluteSiblings({ rotation: "abc" }),
+    "badge",
+  );
 
   const moved = EditorState.repositionSelectedNodeBy(selected, { x: 1, y: 0 });
 
-  expect(badgeProps(Option.unwrap(moved)).rotation).toBe("abc");
+  expect(propsOf(Option.unwrap(moved), "badge").rotation).toBe("abc");
 });

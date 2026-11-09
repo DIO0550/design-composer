@@ -108,38 +108,42 @@ function drawnNested(): void {
 }
 
 test("free の Box の中の絶対配置の子を運ぶと、その Box を親にした座標が届く", () => {
-  const onRepositionNode = vi.fn();
+  const onRepositionNodes = vi.fn();
   renderCanvas({
     selection: withOnlySelected(setupFreeBoxSelection(), "badge"),
-    onRepositionNode,
+    onRepositionNodes,
   });
   drawnNested();
 
   dragNode("badge", { x: 30, y: -12 });
 
   // 親が外側の `home` へ流れると、2 つの親の左上のずれ (40, 40) のぶん座標もずれる
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "panel",
-      placement: { mode: "absolute", x: 70, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "panel",
+        placement: { mode: "absolute", x: 70, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("free の artboard の中の絶対配置の子も、運んで離せる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupFreeArtboardSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupFreeArtboardSelection(), onRepositionNodes });
 
   dragNode("badge", { x: 30, y: -12 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 70, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 70, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("free の artboard の直下ではフローのノードを運んでも落とせない", () => {
@@ -168,8 +172,8 @@ test("落とせないまま離したときも、直後のクリックは選択�
 });
 
 test("絶対配置の子を free の Box の上で離すと、その Box へ親が付け替わる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupFreeBoxSelection(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupFreeBoxSelection(), onRepositionNodes });
   drawnNested();
 
   dragNodeOnto("pin", drawn("panel"), { x: 30, y: -12 });
@@ -179,13 +183,15 @@ test("絶対配置の子を free の Box の上で離すと、その Box へ親�
    * `panel` の左上は `home` の左上から (40, 40) 右下にあるので、同じ画面上の位置は
    * `panel` 基準では (0, -44) になる。
    */
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "pin",
-    RepositionEdit.create({
-      parentName: "panel",
-      placement: { mode: "absolute", x: 0, y: -44 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "pin",
+      edit: RepositionEdit.create({
+        parentName: "panel",
+        placement: { mode: "absolute", x: 0, y: -44 },
+      }),
+    },
+  ]);
 });
 
 test("free の Box の上へ運んでいる間、その Box に落とし先の枠が出る", () => {

@@ -44,3 +44,13 @@ export const RepositionEdit = {
     return { to, rotation: Option.some(rotation) };
   },
 } as const;
+
+/**
+ * 名前で指したノード 1 つぶんの置き直し（`DesignDocument.repositionAll` に並べて渡す 1 件）。
+ */
+export type NodeRepositionEdit = Readonly<{
+  /** 置き直すノードの名前。 */
+  name: string;
+  /** そのノードに書き込む内容。 */
+  edit: RepositionEdit;
+}>;

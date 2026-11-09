@@ -26,21 +26,31 @@ export const SelectionDigs = {
 /** 掘る量。 */
 export type SelectionDig = ValueOf<typeof SelectionDigs>;
 
+/** 候補の中に載っている今の選択と、その位置。 */
+type SelectedCandidate = Readonly<{
+  /** 候補の中の位置。 */
+  index: number;
+  /** その位置にある、選ばれている名前。 */
+  name: string;
+}>;
+
 /**
- * 今の選択が候補の中にある位置。
+ * 今の選択が候補の中にある位置と、その名前。選んでいるものが候補に 2 つ以上載っていれば
+ * （祖先と子孫を両方選んでいるとき）、いちばん内側のもの。
  *
  * @param candidates 押された位置から外へ辿った、選べるノードの名前（内→外）
- * @param selected 今選んでいる名前。単一選択でなければ `none`
- * @returns 候補の中の位置。押された位置が今の選択の内側でなければ `none`
+ * @param selected 今選んでいる名前すべて。未選択なら空
+ * @returns 候補の中の位置と名前。押された位置がどの選択の内側でもなければ `none`
  */
-function selectedIndexIn(
+function selectedCandidateIn(
   candidates: readonly string[],
-  selected: Option<string>,
-): Option<number> {
-  return Option.flatMap(selected, (name) => {
-    const index = candidates.indexOf(name);
-    return index >= 0 ? Option.some(index) : Option.none;
-  });
+  selected: readonly string[],
+): Option<SelectedCandidate> {
+  return Option.fromNullable(
+    candidates
+      .map((name, index) => ({ index, name }))
+      .find((candidate) => selected.includes(candidate.name)),
+  );
 }
 
 /**
@@ -72,28 +82,37 @@ export const SelectionDig = {
    *
    * @param dig 掘る量
    * @param candidates 押された位置から外へ辿った、選べるノードの名前（内→外。artboard を含まない）
-   * @param selected 今選んでいる名前。単一選択でなければ `none`
-   * @returns 選ぶ名前。候補が空なら `none`。`OneDeeper` で今の選択より内側が無いときは
-   *   今の選択そのもの（掘りきった状態を保つ）
+   * @param selected 今選んでいる名前すべて。複数選択ならその一員それぞれが掘る起点になる。
+   *   未選択なら空
+   * @returns 選ぶ名前。候補が空なら `none`。`NoDeeper` で押された位置が選択の内側なら、
+   *   候補に載っている選択（2 つ以上載っていればいちばん内側）。`OneDeeper` でその選択より
+   *   内側が無いときはその選択そのもの（掘りきった状態を保つ）
    */
   nameAt(
     dig: SelectionDig,
     candidates: readonly string[],
-    selected: Option<string>,
+    selected: readonly string[],
   ): Option<string> {
     /*
      * 押された位置が今の選択の内側にあるときだけ、今の深さを起点にする。
      * 外れていれば枝が違うので、掘る量に関わらず押された枝の入口から選び直す
      * （掘った深さを枝をまたいで引き継がない / docs/06-ui.md「選択」）。
      */
-    const selectedIndex = selectedIndexIn(candidates, selected);
+    const selectedCandidate = selectedCandidateIn(candidates, selected);
+    const selectedName = Option.map(
+      selectedCandidate,
+      (candidate) => candidate.name,
+    );
     const outermost = ArrayEx.last(candidates);
     switch (dig) {
       case "no-deeper":
-        return Option.isSome(selectedIndex) ? selected : outermost;
+        return Option.or(selectedName, outermost);
       case "one-deeper":
-        return Option.isSome(selectedIndex)
-          ? Option.or(insideOf(candidates, selectedIndex.value), selected)
+        return Option.isSome(selectedCandidate)
+          ? Option.or(
+              insideOf(candidates, selectedCandidate.value.index),
+              selectedName,
+            )
           : outermost;
       case "deepest":
         return ArrayEx.first(candidates);

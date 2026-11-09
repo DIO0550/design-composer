@@ -41,13 +41,15 @@ test("reposition は、絶対配置のノードを指した座標へ置き直す
   const { current } = renderHookOnEditTargets(useNodeActions, []);
 
   act(() =>
-    current().hook.reposition(
-      "footer",
-      RepositionEdit.create({
-        parentName: "home",
-        placement: { mode: "absolute", x: 100, y: 200 },
-      }),
-    ),
+    current().hook.reposition([
+      {
+        name: "footer",
+        edit: RepositionEdit.create({
+          parentName: "home",
+          placement: { mode: "absolute", x: 100, y: 200 },
+        }),
+      },
+    ]),
   );
 
   const footer = nodeNamed(current().editor.state, "footer");

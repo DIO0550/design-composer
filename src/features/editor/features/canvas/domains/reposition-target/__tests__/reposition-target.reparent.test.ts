@@ -64,7 +64,7 @@ function writtenRotation(
     },
     { x: 0, y: 0 },
     { name: "frame", shift: { x: 0, y: 0 }, rotation: rotations.dropRotation },
-  ).written.rotation;
+  ).rotation;
 }
 
 test("90 度回った親から回っていない親へ付け替えると、中心が同じ位置に来る座標が書かれる", () => {
@@ -78,10 +78,7 @@ test("90 度回った親から回っていない親へ付け替えると、中�
     Home,
   );
 
-  expect(dropped.written.to).toEqual({
-    parentName: "home",
-    placement: { mode: "absolute", x: 217, y: 14 },
-  });
+  expect(dropped.placement).toEqual({ mode: "absolute", x: 217, y: 14 });
 });
 
 test("90 度回った親から回っていない親へ付け替えると、自分の向きが差の 90 度になる", () => {
@@ -91,7 +88,7 @@ test("90 度回った親から回っていない親へ付け替えると、自�
     Home,
   );
 
-  expect(dropped.written.rotation).toEqual(Option.some(90));
+  expect(dropped.rotation).toEqual(Option.some(90));
 });
 
 test("回っていない親から 90 度回った親へ付け替えると、中心が同じ位置に来る座標が書かれる", () => {
@@ -102,10 +99,7 @@ test("回っていない親から 90 度回った親へ付け替えると、中�
     Frame,
   );
 
-  expect(dropped.written.to).toEqual({
-    parentName: "frame",
-    placement: { mode: "absolute", x: 26, y: 34 },
-  });
+  expect(dropped.placement).toEqual({ mode: "absolute", x: 26, y: 34 });
 });
 
 test("回っていない親から 90 度回った親へ付け替えると、自分の向きが差の -90 度になる", () => {
@@ -115,7 +109,7 @@ test("回っていない親から 90 度回った親へ付け替えると、自�
     Frame,
   );
 
-  expect(dropped.written.rotation).toEqual(Option.some(-90));
+  expect(dropped.rotation).toEqual(Option.some(-90));
 });
 
 test("自分が回っていれば、書かれる向きは自分の向きに差を足した値になる", () => {
@@ -141,7 +135,7 @@ test("同じ親の中で動かすときは、向きを書かない", () => {
     },
   );
 
-  expect(dropped.written.rotation).toEqual(Option.none);
+  expect(dropped.rotation).toEqual(Option.none);
 });
 
 test("360 度回った親から回っていない親へ付け替えると、向きを書かない", () => {
@@ -161,7 +155,7 @@ test("360 度回った親から回っていない親へ付け替えると、左�
     { name: "home", shift: { x: 0, y: 0 }, rotation: 0 },
   );
 
-  expect(dropped.written.to.placement).toEqual({
+  expect(dropped.placement).toEqual({
     mode: "absolute",
     x: 70,
     y: 12,
@@ -176,7 +170,7 @@ test("大きさの半分が整数でなくても、付け替えで書かれる�
     Home,
   );
 
-  expect(dropped.written.to.placement).toEqual({
+  expect(dropped.placement).toEqual({
     mode: "absolute",
     x: 217,
     y: 15,
@@ -221,11 +215,11 @@ function centersAndOrientations(
     dropParent.shift,
   );
   const droppedCenter = Offset.add(
-    Placement.offset(dropped.written.to.placement),
+    Placement.offset(dropped.placement),
     from.centerFromTopLeft,
   );
-  const droppedRotation = Option.isSome(dropped.written.rotation)
-    ? dropped.written.rotation.value
+  const droppedRotation = Option.isSome(dropped.rotation)
+    ? dropped.rotation.value
     : from.ownRotation;
   return {
     centerGap: Offset.distance(carriedCenter, droppedCenter),

@@ -261,6 +261,20 @@ test("どの要素も写せれば、写した値が同じ順に並ぶ", () => {
   ).toEqual(Result.ok([10, 20, 30]));
 });
 
+test("不在になりうる手続きで、どの要素も写せれば、写した値が同じ順に並ぶ", () => {
+  expect(
+    ArrayEx.mapNonEmptyUntilNone([1, 2, 3], (item) => Option.some(item * 10)),
+  ).toEqual(Option.some([10, 20, 30]));
+});
+
+test("空でない並びから重複を取り除くと、各値が最初に現れた順に 1 つずつ残る", () => {
+  expect(ArrayEx.distinctNonEmpty(["c", "a", "c", "b", "a"])).toEqual([
+    "c",
+    "a",
+    "b",
+  ]);
+});
+
 test("写して値のあった要素だけが、元の並びの順に残る", () => {
   expect(
     ArrayEx.filterMap([3, -1, 2, -5, 4], (item) =>

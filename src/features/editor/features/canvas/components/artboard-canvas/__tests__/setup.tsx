@@ -26,7 +26,7 @@ import { resizeAnchorIndexAt } from "@/features/editor/features/canvas/__tests__
 import type { ResizeHandleAnchor } from "@/features/editor/features/canvas/domains/node-resize";
 import { useCanvasView } from "@/features/editor/features/canvas/hooks/use-canvas-view";
 import {
-  type RepositionNode,
+  type RepositionNodes,
   useNodeDrag,
 } from "@/features/editor/features/canvas/hooks/use-node-drag";
 import { CanvasDom } from "@/libs/canvas-dom";
@@ -106,7 +106,7 @@ type CanvasHandlers = Readonly<{
   onSelect: (underPointer: UnderPointer) => void;
   onSelectInRange: (names: readonly string[]) => void;
   onMoveNode: (name: string, to: ChildPosition) => void;
-  onRepositionNode: RepositionNode;
+  onRepositionNodes: RepositionNodes;
   onRepositionArtboard: (name: string, canvasPosition: Offset) => void;
   onResize: (edit: ResizeEdit, continuity: EditContinuity) => void;
   onEditProp: (edit: PropEdit) => void;
@@ -131,7 +131,7 @@ function CanvasWithView(props: CanvasValues & CanvasHandlers) {
     onMove: props.onMoveNode,
     onInsertAt: () => {},
     onSelectGrabbed: () => {},
-    onReposition: props.onRepositionNode,
+    onReposition: props.onRepositionNodes,
   });
   return (
     <div {...nodeDrag.dragHandlers}>
@@ -163,7 +163,7 @@ function canvasElement(props: CanvasProps) {
       onSelect={vi.fn()}
       onSelectInRange={vi.fn()}
       onMoveNode={vi.fn()}
-      onRepositionNode={vi.fn()}
+      onRepositionNodes={vi.fn()}
       onRepositionArtboard={vi.fn()}
       onResize={vi.fn()}
       onEditProp={vi.fn()}

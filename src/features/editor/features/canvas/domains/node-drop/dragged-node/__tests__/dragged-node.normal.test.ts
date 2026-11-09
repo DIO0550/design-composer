@@ -70,3 +70,26 @@ test("木にあるノードを運んでいるときは雛形を答えない", ()
 
   expect(Option.isSome(template)).toBe(false);
 });
+
+/** 名前で指した 2 つをまとめて運んでいる状態。 */
+function carryingSiblings(names: readonly [string, string]): DraggedNode {
+  return { kind: "selected-siblings", names };
+}
+
+test("選んでいる兄弟をまとめて運んでいるときは、全員とその子孫の名前を占めている", () => {
+  const occupied = DraggedNode.collectNames(
+    carryingSiblings(["title", "body"]),
+    setupDocument(),
+  );
+
+  expect(Option.unwrap(occupied)).toEqual(["title", "body", "card"]);
+});
+
+test("まとめて運んでいる一員が 1 つでも木に無ければ、占めている名前が決まらない", () => {
+  const occupied = DraggedNode.collectNames(
+    carryingSiblings(["title", "居ないノード"]),
+    setupDocument(),
+  );
+
+  expect(Option.isSome(occupied)).toBe(false);
+});

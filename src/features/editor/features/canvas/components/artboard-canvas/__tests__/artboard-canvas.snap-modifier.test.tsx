@@ -24,35 +24,39 @@ import { drawnApart, setupSiblings } from "./snap-siblings";
  */
 
 test("⌘ を押しながら辺の近くまで運んで離すと、運んだ量そのままの座標が書かれる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onRepositionNodes });
   drawnApart();
 
   dragNode("badge", { x: 113, y: -12 }, "meta");
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 153, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 153, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("Ctrl を押しながら辺の近くまで運んでも、吸い付かない", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onRepositionNodes });
   drawnApart();
 
   dragNode("badge", { x: 113, y: -12 }, "ctrl");
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 153, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 153, y: 12 },
+      }),
+    },
+  ]);
 });
 
 test("⌘ を押しながら辺の近くまで運んでいる間は、ガイド線が出ない", () => {
@@ -75,8 +79,8 @@ test("⌘ を押しながら運んでいる間も、落とし先の親は枠で�
 });
 
 test("⌘ を離して動かし直すと、同じ位置でも再び吸い付く", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: setupSiblings(), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: setupSiblings(), onRepositionNodes });
   drawnApart();
 
   // 押している「間」だけ効くことを見るので、1 回のドラッグの中で押していない移動を続ける
@@ -84,11 +88,13 @@ test("⌘ を離して動かし直すと、同じ位置でも再び吸い付く"
   movePointer(drawn("badge"), { x: 213, y: 88 });
   releasePointer(drawn("badge"), { x: 213, y: 88 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "badge",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 150, y: 12 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "badge",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 150, y: 12 },
+      }),
+    },
+  ]);
 });

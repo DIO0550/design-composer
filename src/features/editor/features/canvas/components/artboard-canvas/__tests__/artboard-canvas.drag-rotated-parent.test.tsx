@@ -46,19 +46,21 @@ function drawnUprightFrame(): void {
 
 test("90 度回った Box の中の回っていないノードを画面上で左へ運ぶと、親の座標で y が運んだ量だけ増えた座標が書かれる", () => {
   // 運んだ量を親の向きへ戻さないと (3, 10) になる
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNodes });
   drawnTurnedFrame();
 
   dragNode("chip", { x: -7, y: 0 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "chip",
-    RepositionEdit.create({
-      parentName: "frame",
-      placement: { mode: "absolute", x: 10, y: 17 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "chip",
+      edit: RepositionEdit.create({
+        parentName: "frame",
+        placement: { mode: "absolute", x: 10, y: 17 },
+      }),
+    },
+  ]);
 });
 
 test("90 度回った Box の中のノードを運んでいる間、ずらして見せる量は親の向きへ戻した量になる", () => {
@@ -86,56 +88,62 @@ test("外接矩形の右辺が、90 度回った親の外接矩形の右辺に�
    * 外接矩形の右辺は 340 + 8 = 348 で、`frame` の右辺 350 へ 2 寄る。画面上で右へ 10 運んだ
    * ことになり、親の向きへ戻すと y が 10 減る
    */
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNodes });
   drawnTurnedFrame();
 
   dragNode("chip", { x: 8, y: 0 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "chip",
-    RepositionEdit.create({
-      parentName: "frame",
-      placement: { mode: "absolute", x: 10, y: 0 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "chip",
+      edit: RepositionEdit.create({
+        parentName: "frame",
+        placement: { mode: "absolute", x: 10, y: 0 },
+      }),
+    },
+  ]);
 });
 
 test("⌘ / Ctrl を押しながら 90 度回った親の中で同じ量運ぶと寄らず、親の座標で y が運んだ量だけ減る", () => {
   // 上のテストの対照。寄せ量が無ければ y は 10 - 8
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNodes });
   drawnTurnedFrame();
 
   dragNode("chip", { x: 8, y: 0 }, "ctrl");
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "chip",
-    RepositionEdit.create({
-      parentName: "frame",
-      placement: { mode: "absolute", x: 10, y: 2 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "chip",
+      edit: RepositionEdit.create({
+        parentName: "frame",
+        placement: { mode: "absolute", x: 10, y: 2 },
+      }),
+    },
+  ]);
 });
 
 test("90 度回った Box の中の回っていない Box の中のノードも、祖先の向きで親の座標へ戻される", () => {
   // 親の向きを自分の `rotation` から引くと、回っていない `inset` の 0 度になる
-  const onRepositionNode = vi.fn();
+  const onRepositionNodes = vi.fn();
   renderCanvas({
     selection: turnedFrameSelection(90, { nested: true }),
-    onRepositionNode,
+    onRepositionNodes,
   });
   drawnTurnedFrame(true);
 
   dragNode("dot", { x: -7, y: 0 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "dot",
-    RepositionEdit.create({
-      parentName: "inset",
-      placement: { mode: "absolute", x: 10, y: 17 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "dot",
+      edit: RepositionEdit.create({
+        parentName: "inset",
+        placement: { mode: "absolute", x: 10, y: 17 },
+      }),
+    },
+  ]);
 });
 
 test("90 度回った Box の中から回っていない親へ付け替えると、画面上の向きと中心を保つ向きと座標が書かれる", () => {
@@ -144,22 +152,24 @@ test("90 度回った Box の中から回っていない親へ付け替えると
    * (10, 17) を `home` の向きへ回すと (-17, 10) で、原点の位置を足して (233, 10)。自分の向きを
    * 90 度にすると中心が左上のまわりに回るので、20x12 の中心を保つ分 (-16, 4) だけ直して (217, 14)
    */
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNodes });
   drawnTurnedFrame();
 
   dragNodeOnto("chip", drawn("home"), { x: -7, y: 0 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "chip",
-    RepositionEdit.rotatedTo(
-      {
-        parentName: "home",
-        placement: { mode: "absolute", x: 217, y: 14 },
-      },
-      90,
-    ),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "chip",
+      edit: RepositionEdit.rotatedTo(
+        {
+          parentName: "home",
+          placement: { mode: "absolute", x: 217, y: 14 },
+        },
+        90,
+      ),
+    },
+  ]);
 });
 
 test("90 度回った Box の中の 30 度回ったノードを回っていない親へ付け替えると、向きは差を足した 120 度になる", () => {
@@ -167,10 +177,10 @@ test("90 度回った Box の中の 30 度回ったノードを回っていな�
    * 中心 (334, 80) のまま画面上で 120 度に立っている。回る前の大きさは同じなので、書かれる
    * 座標は回っていないノードと同じ (217, 14)
    */
-  const onRepositionNode = vi.fn();
+  const onRepositionNodes = vi.fn();
   renderCanvas({
     selection: turnedFrameSelection(90, { rotation: 30 }),
-    onRepositionNode,
+    onRepositionNodes,
   });
   drawnTurnedFrame();
   drawnTurnedAt(
@@ -181,16 +191,18 @@ test("90 度回った Box の中の 30 度回ったノードを回っていな�
 
   dragNodeOnto("chip", drawn("home"), { x: -7, y: 0 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "chip",
-    RepositionEdit.rotatedTo(
-      {
-        parentName: "home",
-        placement: { mode: "absolute", x: 217, y: 14 },
-      },
-      120,
-    ),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "chip",
+      edit: RepositionEdit.rotatedTo(
+        {
+          parentName: "home",
+          placement: { mode: "absolute", x: 217, y: 14 },
+        },
+        120,
+      ),
+    },
+  ]);
 });
 
 test("回っていない親から 90 度回った Box へ付け替えると、同じ規則で向きと回った親の座標が書かれる", () => {
@@ -199,22 +211,24 @@ test("回っていない親から 90 度回った Box へ付け替えると、�
    * 戻すと (30, -200) で、原点の位置を足して (30, 50)。向きを -90 度にして中心を保つ分
    * (-4, -16) だけ直して (26, 34)
    */
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNodes });
   drawnTurnedFrame();
 
   dragNodeOnto("pin", drawn("frame"), { x: 180, y: -120 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "pin",
-    RepositionEdit.rotatedTo(
-      {
-        parentName: "frame",
-        placement: { mode: "absolute", x: 26, y: 34 },
-      },
-      -90,
-    ),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "pin",
+      edit: RepositionEdit.rotatedTo(
+        {
+          parentName: "frame",
+          placement: { mode: "absolute", x: 26, y: 34 },
+        },
+        -90,
+      ),
+    },
+  ]);
 });
 
 test("倍率を上げても、90 度回った親の中の寄せ量が親の座標へ戻される", () => {
@@ -222,8 +236,8 @@ test("倍率を上げても、90 度回った親の中の寄せ量が親の座�
    * 1.2 倍では `chip` の外接矩形の右辺が 388 + 9 = 397 に来て、`frame` の右辺 400 へ 3 寄る。
    * 画面上で右へ 12 運んだことになり、倍率で割り戻して親の向きへ戻すと y が 10 減る
    */
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNodes });
   wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
   drawnAt("home", { left: 100, top: 60, width: 432, height: 288 });
   drawnTurnedAt(
@@ -239,13 +253,15 @@ test("倍率を上げても、90 度回った親の中の寄せ量が親の座�
 
   dragNode("chip", { x: 9, y: 0 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "chip",
-    RepositionEdit.create({
-      parentName: "frame",
-      placement: { mode: "absolute", x: 10, y: 0 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "chip",
+      edit: RepositionEdit.create({
+        parentName: "frame",
+        placement: { mode: "absolute", x: 10, y: 0 },
+      }),
+    },
+  ]);
 });
 
 test("倍率を上げても、90 度回った Box の中から回っていない親へ付け替えると、画面上の向きと中心を保つ向きと座標が書かれる", () => {
@@ -253,8 +269,8 @@ test("倍率を上げても、90 度回った Box の中から回っていない
    * 1.2 倍で画面上の左へ 8.4 運ぶと、倍率で割り戻して 7 になり、1 倍で 7 運んだときと同じ
    * (217, 14) になる。中心も倍率で割り戻さないと、座標がずれて書かれる
    */
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: turnedFrameSelection(90), onRepositionNodes });
   wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
   drawnAt("home", { left: 100, top: 60, width: 432, height: 288 });
   drawnTurnedAt(
@@ -270,47 +286,53 @@ test("倍率を上げても、90 度回った Box の中から回っていない
 
   dragNodeOnto("chip", drawn("home"), { x: -8.4, y: 0 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "chip",
-    RepositionEdit.rotatedTo(
-      {
-        parentName: "home",
-        placement: { mode: "absolute", x: 217, y: 14 },
-      },
-      90,
-    ),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "chip",
+      edit: RepositionEdit.rotatedTo(
+        {
+          parentName: "home",
+          placement: { mode: "absolute", x: 217, y: 14 },
+        },
+        90,
+      ),
+    },
+  ]);
 });
 
 test("360 度回った Box の中のノードは、回っていない Box の中と同じ座標が書かれる", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: turnedFrameSelection(360), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: turnedFrameSelection(360), onRepositionNodes });
   drawnUprightFrame();
 
   dragNode("chip", { x: 12, y: 5 });
 
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "chip",
-    RepositionEdit.create({
-      parentName: "frame",
-      placement: { mode: "absolute", x: 22, y: 15 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "chip",
+      edit: RepositionEdit.create({
+        parentName: "frame",
+        placement: { mode: "absolute", x: 22, y: 15 },
+      }),
+    },
+  ]);
 });
 
 test("360 度回った Box の中から回っていない親へ付け替えても、向きは書かれない", () => {
-  const onRepositionNode = vi.fn();
-  renderCanvas({ selection: turnedFrameSelection(360), onRepositionNode });
+  const onRepositionNodes = vi.fn();
+  renderCanvas({ selection: turnedFrameSelection(360), onRepositionNodes });
   drawnUprightFrame();
 
   dragNodeOnto("chip", drawn("home"), { x: 12, y: 5 });
 
   // 付け替えは起きる（`home` を指す）が、向きの差が 1 回りなので左上を保って向きは書かない
-  expect(onRepositionNode).toHaveBeenCalledWith(
-    "chip",
-    RepositionEdit.create({
-      parentName: "home",
-      placement: { mode: "absolute", x: 122, y: 65 },
-    }),
-  );
+  expect(onRepositionNodes).toHaveBeenCalledWith([
+    {
+      name: "chip",
+      edit: RepositionEdit.create({
+        parentName: "home",
+        placement: { mode: "absolute", x: 122, y: 65 },
+      }),
+    },
+  ]);
 });

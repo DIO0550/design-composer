@@ -177,7 +177,7 @@ test("artboard の見出しを掴んで運んでも、選んでいたノード�
   expect(currentRowNames(tree())).toEqual(["title"]);
 });
 
-test("複数選択中に一員を押すと、押した位置でクリックが選ぶもの 1 つの選択になる", async () => {
+test("フローの兄弟を複数選択中に一員を押すと、押した位置でクリックが選ぶもの 1 つの選択になる", async () => {
   await renderOpenedDocument(setupDocument());
   dragRangeAround({ upper: "title", lower: "caption" });
 

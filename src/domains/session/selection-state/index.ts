@@ -1,3 +1,4 @@
+import type { TwoOrMoreArray } from "@/types/TwoOrMoreArray";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
@@ -9,7 +10,7 @@ export type SelectionState =
   | Readonly<{ kind: "single"; name: string }>
   | Readonly<{
       kind: "multiple";
-      names: readonly [string, string, ...string[]];
+      names: TwoOrMoreArray<string>;
     }>;
 
 export const SelectionState = {

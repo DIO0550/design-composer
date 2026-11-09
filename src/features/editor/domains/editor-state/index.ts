@@ -8,7 +8,10 @@ import {
 import type { Node, PropEdit } from "@/domains/dcmp/node";
 import { Placement } from "@/domains/dcmp/placement";
 import { PrimitiveTypes } from "@/domains/dcmp/primitive-schema";
-import { RepositionEdit } from "@/domains/dcmp/reposition-edit";
+import {
+  type NodeRepositionEdit,
+  RepositionEdit,
+} from "@/domains/dcmp/reposition-edit";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import {
   Token,
@@ -807,30 +810,28 @@ export const EditorState = {
   },
 
   /**
-   * 絶対配置のノードを、指した親の中の座標へ置き直す（docs/06-ui.md「キャンバス直接操作」
-   * の移動のうち、座標が動く側）。指した親が今の親と違えばそこへ付け替わるが、木と座標（編集が
-   * 指していれば向きも）の書き換えを `DesignDocument.reposition` が 1 つにするので undo は 1 回で
-   * 戻る。
+   * 絶対配置のノード（まとめて運んだなら全員）を、指した親の中の座標へ置き直す
+   * （docs/06-ui.md「キャンバス直接操作」の移動のうち、座標が動く側）。指した親が今の親と
+   * 違えばそこへ付け替わるが、全員ぶんの木と座標（編集が指していれば向きも）の書き換えを
+   * `DesignDocument.repositionAll` が 1 つにするので undo は 1 回で全員が戻る。
    *
    * 座標を持たないもの（ドキュメントに無い名前・artboard 自身）と、子を受け入れられない
-   * 親を指した指定は「その編集が存在しない」ことなので `none`。キャンバスは受け入れられ
-   * る落とし先だけを見て落とし方を決めるため、画面の操作からは到達しない。
+   * 親を指した指定が 1 件でも混ざれば「その編集が存在しない」ことなので `none`。キャンバスは
+   * 受け入れられる落とし先だけを見て落とし方を決めるため、画面の操作からは到達しない。
    *
    * @param state 置き直す前の編集状態
-   * @param name 置き直すノードの名前
-   * @param edit 置き直したあとの親と、その親から見た座標。向きを書き換えるなら、その向き
-   * @returns 置き直したあとの編集状態。座標を持たない相手・受け入れられない親な
-   *   ら `none`
+   * @param edits 置き直すノードの名前と、置き直したあとの親・その親から見た座標。向きを
+   *   書き換えるなら、その向き
+   * @returns 置き直したあとの編集状態。座標を持たない相手・受け入れられない親が 1 件でも
+   *   あれば `none`
    */
-  reposition(
+  repositionAll(
     state: EditorState,
-    name: string,
-    edit: RepositionEdit,
+    edits: NonEmptyArray<NodeRepositionEdit>,
   ): Option<EditorState> {
-    const repositioned = DesignDocument.reposition(
+    const repositioned = DesignDocument.repositionAll(
       EditorState.document(state),
-      name,
-      edit,
+      edits,
     );
     return withEditResult(state, repositioned);
   },
@@ -860,16 +861,17 @@ export const EditorState = {
           ? Option.none
           : DesignDocument.childPlacementOf(document, name),
         (current) =>
-          EditorState.reposition(
-            state,
-            name,
-            RepositionEdit.create(
-              ChildPlacement.create(
-                current.parentName,
-                Placement.moveBy(current.placement, delta),
+          EditorState.repositionAll(state, [
+            {
+              name,
+              edit: RepositionEdit.create(
+                ChildPlacement.create(
+                  current.parentName,
+                  Placement.moveBy(current.placement, delta),
+                ),
               ),
-            ),
-          ),
+            },
+          ]),
       ),
     );
   },
