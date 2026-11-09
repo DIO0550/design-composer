@@ -1228,8 +1228,8 @@ export const EditorState = {
    * @param edit 書き換える prop と値
    * @param continuity 直前の編集との続き方（1 つの欄へ続けて打った 2 打鍵目以降は続き）
    * @returns prop を書き換えたエディタの状態。選択が無い・単一選択でない・ファイルが不正な
-   *   間は `none`（`DesignDocument.applyPropEdit` の失敗は、選択も、大きさに追従させる子も
-   *   ドキュメントに残る名前だけを指し、prop の編集は名前を変えないので起こらない）
+   *   間は `none`（`DesignDocument.applyPropEdit` の失敗は、選択がドキュメントに残る名前
+   *   だけを指し、prop の編集は名前を変えないので起こらない）
    */
   applyPropEdit(
     state: EditorState,

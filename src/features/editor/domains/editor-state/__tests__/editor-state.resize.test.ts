@@ -4,8 +4,10 @@ import { DesignDocument } from "@/domains/dcmp/design-document";
 import { Node } from "@/domains/dcmp/node";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { EditContinuities } from "@/domains/session/edit-continuity";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
+import { childrenUnder, stateWithParentNamedLikeChild } from "./setup";
 
 function setupState(): EditorState {
   return EditorState.create(
@@ -110,4 +112,19 @@ test("位置も変わるリサイズを Undo すると、大きさと位置の�
     DesignDocument.findArtboard(EditorState.document(undone), "home"),
   );
   expect([artboard.width, artboard.canvasPosition]).toEqual([360, undefined]);
+});
+
+test("名前が重複した文書で選んだ Box の大きさを変えると、編集が終わり、子が追従する", () => {
+  const state = EditorState.select(stateWithParentNamedLikeChild(), "p");
+
+  const resized = Option.unwrap(
+    EditorState.resize(
+      state,
+      ResizeEdit.create([AxisLength.create("width", 200)]),
+      EditContinuities.Separate,
+    ),
+  );
+
+  const child = Option.unwrap(ArrayEx.first(childrenUnder(resized, "p")));
+  expect(Node.writtenPropsOf(child).x).toBe(20);
 });
