@@ -242,6 +242,18 @@ test("上書きしていない公開 prop は部品が設定している値が�
   expect(control.defaultValue).toEqual(Option.some("Button"));
 });
 
+test("上書きしている公開 prop でも、既定には部品が設定している値が出る", () => {
+  const selection = setupInstanceSelection({
+    name: "action",
+    ref: "primary-button",
+    overrides: { label: "ログイン" },
+  });
+
+  expect(
+    controlNamed(instanceOf(selection).publicProps, "label").defaultValue,
+  ).toEqual(Option.some("Button"));
+});
+
 test("上書きしていない塗りの公開 prop は、部品が設定している階調を既定の塗りとして持つ", () => {
   const selection = setupInstanceSelection({
     name: "banner",

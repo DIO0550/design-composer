@@ -141,6 +141,25 @@ test("入れ子の部品では、途中の参照ノードの上書きが着い�
   });
 });
 
+test("入れ子の部品では、着いた先の既定は途中の参照ノードの上書きまでを当て、インスタンスの上書きを当てる前の値になる", () => {
+  const components: ComponentSet = {
+    ...setupCard(),
+    row: {
+      type: "Box",
+      children: [{ name: "row-card", ref: "card", overrides: { size: 7 } }],
+      publicProps: { rowSize: { node: "row-card", prop: "size" } },
+    },
+  };
+
+  const targets = resolve(components, {
+    name: "instance",
+    ref: "row",
+    overrides: { rowSize: 10 },
+  });
+
+  expect(targetNamed(targets, "rowSize").declared).toEqual(Option.some(7));
+});
+
 test("同じノードの条件の prop を公開していれば、その公開名が条件の公開名になる", () => {
   const targets = resolve(setupCard(), { name: "instance", ref: "card" });
 
@@ -150,6 +169,32 @@ test("同じノードの条件の prop を公開していれば、その公開�
       targetNamed(targets, "size"),
     ),
   ).toEqual(Option.some("mode"));
+});
+
+test("同じ部品を 2 回使った部品では、別の参照ノードの中で条件の prop を公開していても、条件の公開名にならない", () => {
+  const components: ComponentSet = {
+    ...setupCard(),
+    pair: {
+      type: "Box",
+      children: [
+        { name: "pair-a", ref: "card" },
+        { name: "pair-b", ref: "card" },
+      ],
+      publicProps: {
+        aMode: { node: "pair-a", prop: "mode" },
+        bSize: { node: "pair-b", prop: "size" },
+      },
+    },
+  };
+
+  const targets = resolve(components, { name: "instance", ref: "pair" });
+
+  expect(
+    InstancePropTarget.conditionPublicName(
+      targets,
+      targetNamed(targets, "bSize"),
+    ),
+  ).toEqual(Option.none);
 });
 
 test("条件の prop を別のノードから公開していても、条件の公開名にならない", () => {
