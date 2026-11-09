@@ -1,0 +1,130 @@
+{
+  "version": 2,
+  "pr": 1333,
+  "headBranch": "claude/magical-cannon-faxein",
+  "baseBranch": "main",
+  "mergeBase": "58833e4f25cf80419c519585453ec22b7e83d38b",
+  "head": "a468f63fdd0cca0300cfe13e98d1fc0a9359c57e",
+  "groups": [
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 7,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/utils/DrawnBounds.ts"
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": [
+      "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "dcced935a6ea9e7d07b4742f5493c9429165840d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-09T13:27:21Z",
+      "subject": "🧪 [Tests]: #1325 回る前の大きさ0のテストに大きさを持つ対照を並べる",
+      "body": "- 「回っていて回る前の大きさが 0 のものは、外接矩形の中心を含む矩形でも\n  拾わない」の対照を、回っていない home から、同じ外接矩形・同じ向きで\n  回る前の大きさ 20x20 を持つ turned に置き換えた\n- 外接矩形を 40 四方から 20√2 四方に変え、期待値を [\"turned\"] にした\n\n背景:\n差し替えの値 {0,0} は happy-dom が offsetWidth / offsetHeight に既定で\n返す値と同じだった。そのため stubLayoutSize を何もしない形に壊しても、\nこのテストは落ちなかった（#1320 のミューテーションで実測）。\n\n採用理由:\n守る仕様は「回る前の大きさが 0 のときの扱い」なので、collapsed の 0 は\n変えない。外接矩形と向きが同じで回る前の大きさだけが違うものを対照に\n置き、期待値をその 1 件にした。差し替えが効いていなければ turned も\n大きさ 0 になって外れ、[] になるので落ちる。\n大きさは整数（20x20）にして、外接矩形の側に √2 を掛けた。offsetWidth は\n整数に丸められる値で、normal の drawTurnedSquare も同じ向きで描いている。\n\n影響とトレードオフ:\n回っていない対照（home）は無くなった。回っていない経路は同じファイルの\n34 行目のテストと normal 側のテストが守っている。\n実測の結果:\n- stubLayoutSize を空にすると、落ちるのは対象のテストだけ\n- hasArea の判定を外すと、対象と 34 行目のテストが落ちる\n\n代替案:\n- collapsed の大きさを 0 以外にする: 守る仕様そのものが変わる\n- 片方の辺だけ 0 にする: 差し替えを壊しても 0x0 で外れ、落ちない\n- home を残したまま対照を足す: home の役目（[] を期待しても通るのを\n  防ぐ）は turned が引き継ぐ\n- 対照を別のテストに分ける: normal 側に同じ形が既にあり、このテストは\n  落ちないまま残る\n- 外接矩形を 40・大きさを 20√2 にする: 実物の offsetWidth が返さない\n  整数でない値で測ることになる（plan-reviewer の指摘で変更）\n- drawTurnedSquare / drawnTurnedAt を流用する: 中心と辺が固定されている\n  / キャンバスの描画（screen）に依存する\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1325\n- rules/testing.md「その assert は落ちうるか」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PWtzeZo7JUwfn26mv",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 7,
+          "patch": "@@ -83,22 +83,26 @@ test(\"描かれていない名前と面積を持たないものは、測った\n });\n \n test(\"回っていて回る前の大きさが 0 のものは、外接矩形の中心を含む矩形でも拾わない\", () => {\n-  stubLayoutSize(\n-    drawNamed(\"collapsed\", { left: 100, top: 100, width: 40, height: 40 }),\n-    { width: 0, height: 0 },\n-  );\n-  drawNamed(\"home\", { left: 110, top: 110, width: 10, height: 10 });\n+  // 回る前の大きさ 0 は差し替えなくても返る値なので、大きさだけが違う `turned` を並べて、差し替えが効いていることを確かめる\n+  const turnedSquare = {\n+    left: 100,\n+    top: 100,\n+    width: 20 * Math.SQRT2,\n+    height: 20 * Math.SQRT2,\n+  };\n+  stubLayoutSize(drawNamed(\"collapsed\", turnedSquare), { width: 0, height: 0 });\n+  stubLayoutSize(drawNamed(\"turned\", turnedSquare), { width: 20, height: 20 });\n \n   const overlapping = DrawnBounds.collectOverlappingNames(\n     [\n       { name: \"collapsed\", rotation: 45 },\n-      { name: \"home\", rotation: 0 },\n+      { name: \"turned\", rotation: 45 },\n     ],\n     { left: 110, top: 110, width: 20, height: 20 },\n     CanvasView.create(),\n   );\n \n-  expect(overlapping).toEqual([\"home\"]);\n+  expect(overlapping).toEqual([\"turned\"]);\n });\n \n test(\"大きさ 0 で描かれているものは、面積を持つものとしては測れない\", () => {",
+          "patchLines": 34,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "a468f63fdd0cca0300cfe13e98d1fc0a9359c57e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-09T13:29:34Z",
+      "subject": "♻️ [Refactoring]: #1325 外接矩形の定数名を enclosing に揃え、Why を2行に折る",
+      "body": "- ローカル定数 turnedSquare を enclosing に改名した\n- テスト冒頭の Why コメントを、文言はそのままで 2 行に折った\n\n背景:\n実装の検証で、naming-reviewer と comment-reviewer から指摘を受けた。\n\n採用理由:\nこの定数が持つのは、回った正方形そのものではなく軸に平行な外接矩形で、\n大きさ 0 の collapsed にも渡している。canvas-measure の drawnTurnedAt と\nRotatedBounds.fromEnclosing が同じ値を enclosing と呼んでいるので、\nそれに揃えた。\nコメントの折り方は、同じファイル 35〜36 行の書き方に合わせた。\n\n影響とトレードオフ:\nテストの振る舞いは変わらない。\n\n代替案:\n- duplication-reviewer の案（drawNamed 版の「回ったノードを置く」ヘルパーを\n  canvas-measure に足し、normal の drawTurnedSquare もそれで置き換える）は\n  採らなかった。この差分は既存の 2 つのヘルパーを組んで呼んでいるだけで、\n  新しいヘルパーを書いてはいない。採ると共有のテストヘルパーと normal 側\n  まで手が及び、Issue の範囲を超える。\n\n参考:\n- https://github.com/DIO0550/design-composer/issues/1325\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PWtzeZo7JUwfn26mv",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "patch": "@@ -83,15 +83,16 @@ test(\"描かれていない名前と面積を持たないものは、測った\n });\n \n test(\"回っていて回る前の大きさが 0 のものは、外接矩形の中心を含む矩形でも拾わない\", () => {\n-  // 回る前の大きさ 0 は差し替えなくても返る値なので、大きさだけが違う `turned` を並べて、差し替えが効いていることを確かめる\n-  const turnedSquare = {\n+  // 回る前の大きさ 0 は差し替えなくても返る値なので、大きさだけが違う\n+  // `turned` を並べて、差し替えが効いていることを確かめる\n+  const enclosing = {\n     left: 100,\n     top: 100,\n     width: 20 * Math.SQRT2,\n     height: 20 * Math.SQRT2,\n   };\n-  stubLayoutSize(drawNamed(\"collapsed\", turnedSquare), { width: 0, height: 0 });\n-  stubLayoutSize(drawNamed(\"turned\", turnedSquare), { width: 20, height: 20 });\n+  stubLayoutSize(drawNamed(\"collapsed\", enclosing), { width: 0, height: 0 });\n+  stubLayoutSize(drawNamed(\"turned\", enclosing), { width: 20, height: 20 });\n \n   const overlapping = DrawnBounds.collectOverlappingNames(\n     [",
+          "patchLines": 21,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    }
+  ]
+}
