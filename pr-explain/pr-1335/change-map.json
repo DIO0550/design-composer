@@ -1,0 +1,1299 @@
+{
+  "version": 2,
+  "pr": 1335,
+  "headBranch": "claude/magical-cannon-l84oo2",
+  "baseBranch": "main",
+  "mergeBase": "58833e4f25cf80419c519585453ec22b7e83d38b",
+  "head": "adeeb0daa60817c3dce48a40b2192ccfd67bb4c1",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/instant/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/offset/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-position/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reposition-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resize-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-save-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/edit-continuity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/file-validity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/under-pointer/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/document-errors.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/instants.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Interop.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/IndexMove.ts",
+          "changed": false
+        },
+        {
+          "path": "src/types/NonEmptyArray.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/__stories__/sample-editor-state.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/canvas-dock/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 49,
+          "deletions": 19,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/components/document-error-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-provider/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-right-pane/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 13,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/domains/reorder-step/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/token-template/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-artboard-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/artboard-fixtures.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/editor-state-reads.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/primary-color-token.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-provider/__tests__/editor-provider.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.empty-area.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard-reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-dig.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.clipboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.context-menu-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 6,
+          "changed": true,
+          "target": "src/features/editor/domains/editor-state/index.ts"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.duplicate.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.group-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/features/editor/domains/editor-state/index.ts"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.instance-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.move.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-clipboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-duplicate.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-remove.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reload.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.remove-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.remove.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.rename.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reveal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.revert.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/frozen-state.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.rename.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.artboard.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.group.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.instance-lock.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.rename.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.tree-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-sync",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-sync/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/tokens",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/index.ts",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": [
+      "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "d1033d7f204bf96674e30c326d14f1b32f842363",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-09T13:37:10Z",
+      "subject": "🚀 [Performance]: #1055 エラー一覧の検証をドキュメントが変わったときだけ走らせる",
+      "body": "- CanvasDockContent で DocumentError.collectFrom をドキュメントを鍵に useMemo する\n- canvasDock は fileValidity と数え終えたエラーを受け取る形に変える\n- 呼び出し元が無くなった EditorState.documentErrors を削除し、テストは\n  DocumentError.collectFrom(EditorState.document(x)) へ書き換える\n\n背景:\nノードのドラッグ中の pointermove とパンのたびに EditorPanes が描き直され、\nそのたびにドキュメント全体の検証が走っていた。SampleDocument で pointermove\n20 回を送ると、ドラッグで 23 回・パンで 22 回走る。1 回あたりは happy-dom で\n1000 ノード 14.77 ms、5000 ノード 66.15 ms で、1 フレームの大半を食う。\n\n採用理由:\n鍵を EditorState.document(state) にした。ドラッグ・パン・選択の切り替えでは\n参照が変わらず、編集・undo/redo・取り込みのときだけ変わる。変更後はドラッグで\n1 回(離したときの確定分)、パンで 0 回になった。\nmemo は受け取る側(ドック)に置いた。受け取り手はドックだけで、兄弟の\nTokenDashedNodes も受け取った側で覚えている。\n\n影響とトレードオフ:\nファイル不正時の出し分けは memo の外に置いた。不正の間はドキュメントが\n差し替わらないので、memo があっても余計には数えない。\n性能の性質は DOM に出ず、domains の spy は禁じられているのでテストは足して\nいない。memo の再計算の正しさは既存の通しテストが守る(deps を [] に壊すと\nedit-error 3 件・open-invalid 1 件が落ちる)。\n\n代替案:\n- EditorPanes で memo して props で渡す: state と errors を二重に受け取り、\n  食い違う組み合わせを渡せてしまう\n- 鍵を [state] にする: 選択の切り替えごとに数え直す\n- documentErrors(state) を残し鍵だけ [document] にする: biome の\n  useExhaustiveDependencies がエラーにし、抑制は依存配列を欺く実装になる\n- ドメイン側の WeakMap キャッシュ: 可変なモジュール状態になる\n- React.memo(CanvasDockContent): onReveal と dragged が毎回変わり当たらない\n\n参考:\n- Issue #1055 の計画コメントと plan-reviewer への対応\n- 元の指摘: #632 / PR #1054\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PQo8VRyD5JomjHXjS",
+      "files": [
+        {
+          "path": "src/features/editor/components/canvas-dock/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 46,
+          "deletions": 19,
+          "patch": "@@ -1,5 +1,5 @@\n-import type { ReactElement, ReactNode } from \"react\";\n-import type { DocumentError } from \"@/domains/session/document-error\";\n+import { type ReactElement, type ReactNode, useMemo } from \"react\";\n+import { DocumentError } from \"@/domains/session/document-error\";\n import { DocumentSaveState } from \"@/domains/session/document-save-state\";\n import { FileValidity } from \"@/domains/session/file-validity\";\n import type { NodeTemplate } from \"@/domains/session/node-template\";\n@@ -28,15 +28,18 @@ type CanvasDock =\n  * つの一覧を並べると、外部エディタでしか直せないファイルの一覧が、アプリ内で直せるドキ\n  * ュメントの一覧の場所を奪う。\n  *\n- * @param state エラーの出どころになるエディタの状態\n- * @returns ファイルが不正ならそのエラー、そうでなければ編集で作ったエラー\n+ * @param fileValidity ファイルが不正かどうかと、不正ならそのエラー\n+ * @param documentErrors 画面に映っているドキュメント自身の不正\n+ * @returns ファイルが不正ならそのエラー、そうでなければ受け取ったドキュメントのエラー\n  */\n-function canvasDock(state: EditorState): CanvasDock {\n-  const fileValidity = state.fileValidity;\n+function canvasDock(\n+  fileValidity: FileValidity,\n+  documentErrors: readonly DocumentError[],\n+): CanvasDock {\n   if (FileValidity.isInvalid(fileValidity)) {\n     return { kind: \"file-invalid\", errors: fileValidity.errors };\n   }\n-  return { kind: \"editable\", errors: EditorState.documentErrors(state) };\n+  return { kind: \"editable\", errors: documentErrors };\n }\n \n /**\n@@ -90,19 +93,22 @@ type CanvasDockContentProps = Readonly<{\n  *\n  * 編集を続けたまま直せる。一覧は 0 件なら何も出さない。\n  *\n+ * @param dock 今どちらの状態かと、そこで出すエラー\n+ * @param props 一覧・ツールバーへ渡す操作と、トークンの選択\n  * @returns ファイルが不正ならエラー一覧と破線の帯、そうでなければそれにキャンバスの\n  *   ツールバーを足したもの\n  */\n-function canvasDockParts({\n-  state,\n-  tokenSelection,\n-  node,\n-  artboard,\n-  dragged,\n-  onReveal,\n-  fileRevert,\n-}: CanvasDockContentProps): ReactElement {\n-  const dock = canvasDock(state);\n+function canvasDockParts(\n+  dock: CanvasDock,\n+  {\n+    tokenSelection,\n+    node,\n+    artboard,\n+    dragged,\n+    onReveal,\n+    fileRevert,\n+  }: CanvasDockContentProps,\n+): ReactElement {\n   switch (dock.kind) {\n     case \"file-invalid\":\n       return (\n@@ -148,9 +154,30 @@ function canvasDockParts({\n  * 器を出し分けの外に置くのは、どちらの状態でも積み方（順序・間隔・当たり判定）が同じで、\n  * 枝ごとに書くと片方だけ器を失っても誰も気づかないため。\n  *\n- * @param props 中身の出し分けへそのまま渡すもの\n+ * @param props どちらの状態かを決める出どころと、中身の出し分けへ渡すもの\n  * @returns 状態に応じた中身を積んだ、キャンバス下端の器\n  */\n export function CanvasDockContent(props: CanvasDockContentProps): ReactElement {\n-  return <CanvasDockStack>{canvasDockParts(props)}</CanvasDockStack>;\n+  const document = EditorState.document(props.state);\n+  /**\n+   * 画面に映っているドキュメント自身の不正。使用中トークンの削除で作った dangling 参照も、\n+   * 開いた時点で既にファイルに載っていた不正も出る。\n+   *\n+   * 覚える相手はドキュメントで、選択・ドラッグ・パンで描き直されても数え直さない\n+   * （`ArtboardCanvas` の `compiled` と同じ形）。\n+   * ファイルが不正なときの出し分けを memo の外に置いてよいのは、不正の間ドキュメントが\n+   * 差し替わらないため。\n+   */\n+  const documentErrors = useMemo(\n+    () => DocumentError.collectFrom(document),\n+    [document],\n+  );\n+  return (\n+    <CanvasDockStack>\n+      {canvasDockParts(\n+        canvasDock(props.state.fileValidity, documentErrors),\n+        props,\n+      )}\n+    </CanvasDockStack>\n+  );\n }",
+          "patchLines": 98,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 6,
+          "patch": "@@ -6,7 +6,10 @@ import {\n   DesignDocument,\n   DocumentTemplate,\n } from \"@/domains/dcmp/design-document\";\n-import type { DocumentErrorLocation } from \"@/domains/session/document-error\";\n+import {\n+  DocumentError,\n+  type DocumentErrorLocation,\n+} from \"@/domains/session/document-error\";\n import { Option } from \"@/utils/Option\";\n import { EditorState } from \"../index\";\n \n@@ -60,12 +63,16 @@ test(\"使用中のトークンを削除すると、そのトークンを参照\n   const removed = removeToken(openedState(), \"heading\");\n \n   expect(\n-    EditorState.documentErrors(removed).map((error) => error.location),\n+    DocumentError.collectFrom(EditorState.document(removed)).map(\n+      (error) => error.location,\n+    ),\n   ).toStrictEqual([HomeTitleTypography]);\n });\n \n test(\"編集で不正が生まれていないうちはドキュメントのエラーは出ない\", () => {\n-  expect(EditorState.documentErrors(openedState())).toStrictEqual([]);\n+  expect(\n+    DocumentError.collectFrom(EditorState.document(openedState())),\n+  ).toStrictEqual([]);\n });\n \n test(\"トークンの削除を取り消すとドキュメントのエラーは消える\", () => {\n@@ -73,7 +80,9 @@ test(\"トークンの削除を取り消すとドキュメントのエラーは\n \n   const undone = Option.unwrap(EditorState.undo(removed));\n \n-  expect(EditorState.documentErrors(undone)).toStrictEqual([]);\n+  expect(DocumentError.collectFrom(EditorState.document(undone))).toStrictEqual(\n+    [],\n+  );\n });\n \n test(\"外部変更を拒んでいても、表示中のドキュメントが正常ならドキュメントのエラーは出ない\", () => {\n@@ -86,7 +95,9 @@ test(\"外部変更を拒んでいても、表示中のドキュメントが正\n     ReceivedAt,\n   );\n \n-  expect(EditorState.documentErrors(rejected)).toStrictEqual([]);\n+  expect(\n+    DocumentError.collectFrom(EditorState.document(rejected)),\n+  ).toStrictEqual([]);\n });\n \n /*\n@@ -105,6 +116,8 @@ test(\"編集で作った不正は、外部変更を拒んだ後もファイル\n   );\n \n   expect(\n-    EditorState.documentErrors(rejected).map((error) => error.location),\n+    DocumentError.collectFrom(EditorState.document(rejected)).map(\n+      (error) => error.location,\n+    ),\n   ).toStrictEqual([HomeTitleTypography]);\n });",
+          "patchLines": 63,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 1,
+          "patch": "@@ -3,6 +3,7 @@ import {\n   DesignDocument,\n   DocumentTemplate,\n } from \"@/domains/dcmp/design-document\";\n+import { DocumentError } from \"@/domains/session/document-error\";\n import { DocumentSelection } from \"@/domains/session/document-selection\";\n import { Option } from \"@/utils/Option\";\n import { EditorState } from \"../index\";\n@@ -195,6 +196,8 @@ test(\"子を並べない Box の直下へ fill の子が出た解除は、ドキ\n   const ungrouped = Option.unwrap(EditorState.ungroupSelected(selected));\n \n   expect(\n-    EditorState.documentErrors(ungrouped).map((error) => error.kind),\n+    DocumentError.collectFrom(EditorState.document(ungrouped)).map(\n+      (error) => error.kind,\n+    ),\n   ).toEqual([\"fill-in-free-parent\"]);\n });",
+          "patchLines": 18,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 13,
+          "patch": "@@ -16,7 +16,6 @@ import {\n   TokenSet,\n   type TokenValue,\n } from \"@/domains/dcmp/token\";\n-import { DocumentError } from \"@/domains/session/document-error\";\n import type { DocumentReload } from \"@/domains/session/document-reload\";\n import { DocumentSelection } from \"@/domains/session/document-selection\";\n import {\n@@ -45,7 +44,7 @@ import { Result } from \"@/utils/Result\";\n  * 中の名前でしか意味を持たないため同じ器に持ち、`copiedNodes`（アプリ内クリップボード）と\n  * `isRenaming`（名前を編集中か）も同じく非永続なのでここに置く。\n  *\n- * ドキュメント自身の不正は持たず `EditorState.documentErrors` で導出する。\n+ * ドキュメント自身の不正は持たず、表示する側が `DocumentError.collectFrom` で導出する。\n  *\n  * 現在地は常に「最後に正常だったドキュメント」で、外部変更を拒んでも差し替えない。\n  * `fileValidity` が `invalid` の間は編集を受け付けない（古い表示から作った内容を書き出すと、\n@@ -417,17 +416,6 @@ export const EditorState = {\n     });\n   },\n \n-  /**\n-   * 画面に映っているドキュメント自身の不正。使用中トークンの削除で作った dangling 参照も、開\n-   * いた時点で既にファイルに載っていた不正も、ここに出る。\n-   *\n-   * @param state ドキュメントの出どころになるエディタの状態\n-   * @returns 見つかった不正。無ければ空\n-   */\n-  documentErrors(state: EditorState): readonly DocumentError[] {\n-    return DocumentError.collectFrom(EditorState.document(state));\n-  },\n-\n   /**\n    * ファイルが不正なまま残っているか（docs/03-schema.md「不正ファイル時の挙動」）。真の\n    * あいだ、画面に映っているのはファイルの現在の中身ではなく最後に正常だったドキュメン",
+          "patchLines": 35,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "adeeb0daa60817c3dce48a40b2192ccfd67bb4c1",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-09T13:42:15Z",
+      "subject": "♻️ [Refactoring]: #1055 エラー一覧の memo の名前と理由を実体に合わせる",
+      "body": "- ローカル変数 document を designDocument に改名する\n- memo の Why を「鍵に fileValidity を入れない理由」として書き直す\n- テストで守れない性能の性質であることを 1 行足す\n- 関数本体内のコメントを /* */ にし、値の塊と return の間に空行を入れる\n\n背景:\n実装の検証(naming / comment / over-guard / solution / structure)の指摘。\ndocument はグローバルの document を隠しており、手本に挙げた\nArtboardCanvas の compiled は同じ値を designDocument と呼んでいる。\nmemo の Why は「出し分けを memo の外に置いてよい」を不正の間に\nドキュメントが変わらないことへ条件付けて読ませていたが、鍵は\nドキュメントなので正しさはその前提に依らない。\n\n採用理由:\n理由の主語を鍵に置き直し、不正の間に余計な数え直しが起きないことを\n事実として書いた。memo を外しても落ちるテストが無いことは、型・テスト\nで守れず外すと気づけない事情なのでコメントに残した。\n\n影響とトレードオフ:\n振る舞いは変わらない。\n\n代替案:\n- テストファイル名 editor-state.document-errors の改名: EditorState の\n  編集・undo・取り込みの後のドキュメントのエラーを検証しており、名前は\n  実体と合うので採らない\n\n参考:\n- Issue #1055 の実装の検証への対応\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PQo8VRyD5JomjHXjS",
+      "files": [
+        {
+          "path": "src/features/editor/components/canvas-dock/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 7,
+          "patch": "@@ -39,6 +39,7 @@ function canvasDock(\n   if (FileValidity.isInvalid(fileValidity)) {\n     return { kind: \"file-invalid\", errors: fileValidity.errors };\n   }\n+\n   return { kind: \"editable\", errors: documentErrors };\n }\n \n@@ -158,20 +159,22 @@ function canvasDockParts(\n  * @returns 状態に応じた中身を積んだ、キャンバス下端の器\n  */\n export function CanvasDockContent(props: CanvasDockContentProps): ReactElement {\n-  const document = EditorState.document(props.state);\n-  /**\n+  const designDocument = EditorState.document(props.state);\n+  /*\n    * 画面に映っているドキュメント自身の不正。使用中トークンの削除で作った dangling 参照も、\n    * 開いた時点で既にファイルに載っていた不正も出る。\n    *\n    * 覚える相手はドキュメントで、選択・ドラッグ・パンで描き直されても数え直さない\n-   * （`ArtboardCanvas` の `compiled` と同じ形）。\n-   * ファイルが不正なときの出し分けを memo の外に置いてよいのは、不正の間ドキュメントが\n-   * 差し替わらないため。\n+   * （`ArtboardCanvas` の `compiled` と同じ形）。性能の性質なので、テストは数え直しの\n+   * 回数を見ず、memo を外しても落ちない。\n+   * 鍵に fileValidity を入れないのは、エラーがドキュメントだけから決まるため。不正の間は\n+   * ドキュメントが変わらないので、不正になっても数え直しは起きない。\n    */\n   const documentErrors = useMemo(\n-    () => DocumentError.collectFrom(document),\n-    [document],\n+    () => DocumentError.collectFrom(designDocument),\n+    [designDocument],\n   );\n+\n   return (\n     <CanvasDockStack>\n       {canvasDockParts(",
+          "patchLines": 38,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "src/features/editor/__stories__/sample-editor-state.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/artboard-fixtures.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/editor-state-reads.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/primary-color-token.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/domains/session/document-error/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/domains/session/document-save-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/domains/session/file-validity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/domains/session/node-template/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/features/editor/components/document-error-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/features/editor/features/canvas/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/features/editor/features/document-sync/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/features/editor/features/tokens/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/features/editor/hooks/use-artboard-actions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/features/editor/hooks/use-node-actions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/canvas-dock/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-provider/__tests__/editor-provider.edge.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-provider/index.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-right-pane/index.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.stories.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/components/canvas-dock/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.empty-area.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/setup.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard-reposition.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-dig.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.canvas-selection.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.clipboard.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize-edge.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.context-menu-selection.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "to": "src/domains/__tests__/document-errors.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "to": "src/domains/__tests__/instants.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "to": "src/domains/session/document-error/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.duplicate.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group-edge.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+      "to": "src/domains/session/document-error/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+      "to": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-edge.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.instance-selection.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.move.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-clipboard.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-duplicate.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-group.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-remove.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reload.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.remove-edge.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.remove.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.rename.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reposition.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize-continuity.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reveal.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.revert.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.selection.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.token.test.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/frozen-state.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/child-placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/child-position/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/reposition-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/document-error/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/document-reload/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/file-validity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/node-template/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/selection-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/unit/instant/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/edit-history/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/reorder-step/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/token-template/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/types/NonEmptyArray.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/utils/Interop.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.rename.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/setup.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.artboard.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.group.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.instance-lock.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.rename.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.tree-edit.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.rename.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.selection.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    }
+  ]
+}
