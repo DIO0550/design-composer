@@ -656,3 +656,34 @@ test("artboard を左辺から縮めても max の子は画面上の位置が変
     Option.unwrap(propOf(narrowed, "right-badge", "x")),
   ]).toEqual([50, 100]);
 });
+
+test("children を書いていない Box の長さが追従で変わっても、その Box に children が増えない", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 200,
+        height: 100,
+        children: [
+          {
+            name: "panel",
+            type: "Box",
+            props: {
+              placement: "absolute",
+              x: 0,
+              y: 0,
+              constraintX: "scale",
+              widthMode: "fixed",
+              width: 200,
+            },
+          },
+        ],
+      },
+    ],
+  });
+
+  const widened = widen(document, "home");
+
+  const panel = Option.unwrap(DesignDocument.findNode(widened, "panel"));
+  expect("children" in panel).toBe(false);
+});

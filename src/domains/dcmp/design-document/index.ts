@@ -124,11 +124,13 @@ export type NamedRotation = Readonly<{
  * 並びの探索・編集そのものは `NodeTree` が、名前の規則は `DocumentNames` が持っており、
  * ここに残るのは「複数の artboard のどれに対して行うか」という調停だけ。
  *
- * 例外は追従（`followPropEdits`）とグループ化 / 解除（`groupedBox` /
- * `groupedSiblingsBox` / `collectParentAlignStretchFillModePropEdits` / `freedChildren`）
- * で、ここだけは `Placement` / `Constraint` / `Size` / `Layout` / `BoxAlign` / `Offset` を
- * 組み合わせて編集を作る。子側のドメイン（`Node`）へ置けないのは、`Placement` が
- * `PropEdit` を `Node` から import しており、逆向きの import が循環になるため。
+ * 例外は追従（`followPropEdits` / `followedChildren` / `withFollowedChildren` /
+ * `collectAxisResizes` / `fixedLengthsOfNode` / `fixedLengthsOfArtboard`）とグループ化 /
+ * 解除（`groupedBox` / `groupedSiblingsBox` / `collectParentAlignStretchFillModePropEdits` /
+ * `freedChildren`）で、ここだけは `Placement` / `Constraint` / `Size` / `ResolvedProps` /
+ * `Layout` / `BoxAlign` / `Offset` を組み合わせて編集を作る。子側のドメイン（`Node`）へ
+ * 置けないのは、`Placement` / `Size` / `ResolvedProps` が `Node` から型や `PropEdit` を
+ * import しており、逆向きの import が循環になるため。
  */
 
 /**
@@ -547,42 +549,121 @@ function freedChildren(box: PrimitiveNode): readonly Node[] {
   });
 }
 
+/** `fixed` の軸ごとの長さ。長さが読めない軸は `none`。 */
+type FixedLengths = Readonly<Record<Axis, Option<number>>>;
+
 /**
- * 大きさが変わった artboard / ノードの、直下の絶対配置の子を追従させる（docs/03「配置の
- * 指定」）。
+ * 編集の前後の長さから、変わった軸の長さの変化を集める。
  *
- * 子への書き込みを `applyPropEdit` へ戻すので、**長さが変わった子は自分の子の追従を自分で
- * 引き起こす**（明示的な再帰を書かない）。
- *
- * @param before 編集する前のドキュメント
- * @param name 大きさが変わったかもしれない artboard / ノードの名前
- * @param edited その編集の結果
- * @returns 子を追従させたドキュメント。長さが変わっていない・長さが読めない
- *   （`fixedLengthOf` が答えない）ときは `edited` のまま
+ * @param before 編集する前の長さ
+ * @param after 編集したあとの長さ
+ * @returns 長さが変わった軸ぶんの変化。前後のどちらかで長さが読めない軸は含めない
  */
-function withResizeFollowUp(
-  before: DesignDocument,
-  name: string,
-  edited: Result<DesignDocument, DesignDocumentEditError>,
-): Result<DesignDocument, DesignDocumentEditError> {
-  return Result.flatMap(edited, (after) => {
-    const resizes = Object.values(Axes).flatMap((axis) => {
-      const resize = Option.flatMap(
-        DesignDocument.fixedLengthOf(before, name, axis),
-        (from) =>
-          Option.flatMap(
-            DesignDocument.fixedLengthOf(after, name, axis),
-            (to) => AxisResize.create({ axis, before: from, after: to }),
-          ),
-      );
-      return Option.isSome(resize) ? [resize.value] : [];
-    });
-    const children = DesignDocument.findChildren(after, name);
-    // 大きさと無関係な prop の編集（大半がそれ）で子の走査まで進まないための打ち切り
-    if (resizes.length === 0 || !Option.isSome(children)) {
-      return Result.ok(after);
-    }
-    return followChildren(after, children.value, resizes);
+function collectAxisResizes({
+  before,
+  after,
+}: Readonly<{
+  before: FixedLengths;
+  after: FixedLengths;
+}>): readonly AxisResize[] {
+  return Object.values(Axes).flatMap((axis) => {
+    const resize = Option.flatMap(before[axis], (from) =>
+      Option.flatMap(after[axis], (to) =>
+        AxisResize.create({ axis, before: from, after: to }),
+      ),
+    );
+    return Option.isSome(resize) ? [resize.value] : [];
+  });
+}
+
+/**
+ * ノードが `fixed` の軸に今持っている長さ。
+ *
+ * @param node 長さを知りたいノード
+ * @returns 軸ごとの長さ。部品インスタンス・スキーマに無い type のノードは両軸とも `none`。
+ *   それ以外でも `hug` `fill` の軸と、`fixed` なのに長さも既定も無い軸は `none`
+ */
+function fixedLengthsOfNode(node: Node): FixedLengths {
+  const props = Node.isPrimitive(node)
+    ? ResolvedProps.forNode(node)
+    : Option.none;
+  const along = (axis: Axis) =>
+    Option.flatMap(props, (resolved) =>
+      Size.fixedLengthFromProps(resolved, axis),
+    );
+  return { width: along(Axes.Width), height: along(Axes.Height) };
+}
+
+/**
+ * artboard の軸ごとの長さ。artboard は 2 軸とも `fixed` 固定なので常に答える
+ * （docs/03-schema.md）。
+ *
+ * @param artboard 長さを知りたい artboard
+ * @returns 軸ごとの長さ。どちらの軸も `some`
+ */
+function fixedLengthsOfArtboard(artboard: Artboard): FixedLengths {
+  return {
+    width: Option.some(artboard.width),
+    height: Option.some(artboard.height),
+  };
+}
+
+/**
+ * 編集の前後で長さが変わったノードの、直下の絶対配置の子を追従させたノード（docs/03
+ * 「配置の指定」）。
+ *
+ * @param before 編集する前のノード
+ * @param after 編集したあとのノード
+ * @returns 子孫を追従させた `after`。長さが変わっていない・子が無い・部品インスタンスなら
+ *   `after` のまま
+ */
+function withFollowedChildren({
+  before,
+  after,
+}: Readonly<{
+  before: Node;
+  after: Node;
+}>): Node {
+  if (!Node.isPrimitive(after)) {
+    return after;
+  }
+  const resizes = collectAxisResizes({
+    before: fixedLengthsOfNode(before),
+    after: fixedLengthsOfNode(after),
+  });
+  const children = Node.children(after);
+  /*
+   * 大きさと無関係な prop の編集（大半がそれ）で子の走査まで進まないための打ち切り。
+   * 子が無いときも打ち切るのは、`children` を書いていない Box に空の `children` を書き足さないため。
+   */
+  const nothingToFollow = resizes.length === 0 || children.length === 0;
+  if (nothingToFollow) {
+    return after;
+  }
+  return Node.withChildren(after, followedChildren(children, resizes));
+}
+
+/**
+ * 子の並びを、親の長さの変化へ追従させる。
+ *
+ * 追従させるのは並びの中のノードそのもので、名前で引き直さない（名前が重複した不正な
+ * ドキュメントで、同じ名前の別のノードへ当たらないため）。長さが変わった子は
+ * `withFollowedChildren` で自分の子へ追従を続ける。
+ *
+ * @param children 追従させる子の並び
+ * @param resizes 親の長さの変化（変化した軸のぶんだけ）
+ * @returns 追従させた子の並び。並びの順と件数は `children` のまま
+ */
+function followedChildren(
+  children: readonly Node[],
+  resizes: readonly AxisResize[],
+): readonly Node[] {
+  return children.map((child) => {
+    const followed = applyNodePropEdits(
+      child,
+      resizes.flatMap((resize) => followPropEdits(child, resize)),
+    );
+    return withFollowedChildren({ before: child, after: followed });
   });
 }
 
@@ -628,28 +709,6 @@ function nodePositionPropEdits(
     const stayed = Offset.along(stayedAt, axis);
     return moved === stayed ? [] : [Placement.positionPropEdit(axis, moved)];
   });
-}
-
-/**
- * 子の並びを順に追従させる。
- *
- * @param document 書き換える元のドキュメント
- * @param children 追従させる子の並び
- * @param resizes 親の長さの変化（変化した軸のぶんだけ）
- * @returns すべての子を追従させたドキュメント。途中で失敗したらその失敗
- */
-function followChildren(
-  document: DesignDocument,
-  children: readonly Node[],
-  resizes: readonly AxisResize[],
-): Result<DesignDocument, DesignDocumentEditError> {
-  return ArrayEx.reduceUntilErr(children, document, (current, child) =>
-    applyPropEdits(
-      current,
-      child.name,
-      resizes.flatMap((resize) => followPropEdits(child, resize)),
-    ),
-  );
 }
 
 /**
@@ -2022,12 +2081,9 @@ export const DesignDocument = {
     if (Option.isSome(artboard)) {
       return Option.some(artboard.value[axis]);
     }
-    const node = DesignDocument.findNode(document, name);
-    if (!Option.isSome(node) || !Node.isPrimitive(node.value)) {
-      return Option.none;
-    }
-    return Option.flatMap(ResolvedProps.forNode(node.value), (props) =>
-      Size.fixedLengthFromProps(props, axis),
+    return Option.flatMap(
+      DesignDocument.findNode(document, name),
+      (node) => fixedLengthsOfNode(node)[axis],
     );
   },
 
@@ -2095,7 +2151,7 @@ export const DesignDocument = {
    * 覧」の props 編集）。名前は単一名前空間なので、artboard とノードのどちらを相手にす
    * るかは名前で決まる。
    *
-   * 大きさが変わったときは、直下の絶対配置の子をここで追従させる（`withResizeFollowUp`）。
+   * 大きさが変わったときは、直下の絶対配置の子をここで追従させる（`withFollowedChildren`）。
    *
    * @param document 書き換える対象を含むドキュメント
    * @param name 書き換える artboard / ノードの名前
@@ -2104,7 +2160,8 @@ export const DesignDocument = {
    * @returns 書き換えたドキュメント。artboard にも artboard 配下のノードにも無い名前
    *   （部品定義の中のノードも含む）は `node-not-found`。名前が重複した不正なドキュメント
    *   では artboard を優先して `findArtboard` が返す 1 枚を、ノードは `findNode` が返す
-   *   ものを書き換える
+   *   ものを書き換える。追従させるのは書き換えたノードの子孫そのもので、同じ名前の別の
+   *   ノードではない
    */
   applyPropEdit(
     document: DesignDocument,
@@ -2121,14 +2178,13 @@ export const DesignDocument = {
     if (!Option.isSome(found)) {
       return Result.err({ kind: "node-not-found", name });
     }
-    return withResizeFollowUp(
+    return DesignDocument.replaceNode(
       document,
       name,
-      DesignDocument.replaceNode(
-        document,
-        name,
-        Node.applyPropEdit(found.value, edit),
-      ),
+      withFollowedChildren({
+        before: found.value,
+        after: Node.applyPropEdit(found.value, edit),
+      }),
     );
   },
 
@@ -2186,15 +2242,22 @@ export const DesignDocument = {
     name: string,
     edit: ResizeEdit,
   ): Result<DesignDocument, DesignDocumentEditError> {
-    const resizedArtboard = updateArtboardNamed(document, name, (artboard) =>
-      repositionResized(edit.lengths.reduce(Artboard.resize, artboard), edit),
-    );
-    if (Option.isSome(resizedArtboard)) {
-      return withResizeFollowUp(
-        document,
-        name,
-        Result.ok(resizedArtboard.value),
+    const resizedArtboard = updateArtboardNamed(document, name, (artboard) => {
+      const resized = repositionResized(
+        edit.lengths.reduce(Artboard.resize, artboard),
+        edit,
       );
+      const resizes = collectAxisResizes({
+        before: fixedLengthsOfArtboard(artboard),
+        after: fixedLengthsOfArtboard(resized),
+      });
+      return Artboard.withTree(
+        resized,
+        NodeTree.create(followedChildren(resized.children, resizes)),
+      );
+    });
+    if (Option.isSome(resizedArtboard)) {
+      return Result.ok(resizedArtboard.value);
     }
     const sizeEdits = edit.lengths.map(AxisLength.toPropEdit);
     const positionEdits = nodePositionPropEdits(document, name, edit.position);

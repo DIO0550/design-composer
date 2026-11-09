@@ -1,7 +1,8 @@
 import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
-import { Node } from "@/domains/dcmp/node";
+import { Node, PropEdit, type Props } from "@/domains/dcmp/node";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
@@ -244,12 +245,10 @@ test("同じ名前の artboard が 2 枚あるとき、props の編集は findAr
 });
 
 test("同じ名前の artboard が 2 枚あるとき、リサイズは findArtboard が返す 1 枚だけを変える", () => {
-  const resized = Result.unwrap(
-    DesignDocument.resize(
-      setupDuplicatedArtboards(),
-      "home",
-      ResizeEdit.create([AxisLength.create("width", 300)]),
-    ),
+  const resized = resizeTo(
+    setupDuplicatedArtboards(),
+    "home",
+    AxisLength.create("width", 300),
   );
 
   expect(resized.artboards.map((artboard) => artboard.width)).toEqual([
@@ -280,4 +279,231 @@ test("同じ名前の artboard が 2 枚あるとき、名前の変更は findAr
   );
 
   expect(DesignDocument.collectArtboardNames(renamed)).toEqual(["top", "home"]);
+});
+
+/** 親と子が同じ名前 `p` で、子が親の比で追従する（`scale`）ドキュメント。 */
+function setupScaledChildOfSameName(): DesignDocument {
+  return setupDocument([
+    {
+      name: "p",
+      type: "Box",
+      props: {
+        widthMode: "fixed",
+        width: 100,
+        heightMode: "fixed",
+        height: 100,
+      },
+      children: [
+        {
+          name: "p",
+          type: "Box",
+          props: {
+            placement: "absolute",
+            x: 10,
+            y: 10,
+            constraintX: "scale",
+            constraintY: "scale",
+            widthMode: "fixed",
+            width: 50,
+            heightMode: "fixed",
+            height: 50,
+          },
+        },
+      ],
+    },
+  ]);
+}
+
+/** 先に見つかるノードの、最初の子の props（名前では子を引き分けられないため）。 */
+function firstChildPropsOf(
+  document: DesignDocument,
+  name: string,
+): Option<Props> {
+  const child = Option.unwrap(ArrayEx.first(childrenOf(document, name)));
+  return Node.isPrimitive(child)
+    ? Option.some(Node.propsOf(child))
+    : Option.none;
+}
+
+function resizeTo(
+  document: DesignDocument,
+  name: string,
+  length: AxisLength,
+): DesignDocument {
+  return Result.unwrap(
+    DesignDocument.resize(document, name, ResizeEdit.create([length])),
+  );
+}
+
+test("親と子が同じ名前でも、親を resize で広げると、scale の子の位置と長さが親の比で追従する", () => {
+  const resized = resizeTo(
+    setupScaledChildOfSameName(),
+    "p",
+    AxisLength.create("width", 200),
+  );
+
+  const props = Option.unwrap(firstChildPropsOf(resized, "p"));
+  expect([props.x, props.width]).toEqual([20, 100]);
+});
+
+test("親と子が同じ名前でも、親を resize で広げたとき、親には指定した長さだけが書かれる", () => {
+  const resized = resizeTo(
+    setupScaledChildOfSameName(),
+    "p",
+    AxisLength.create("width", 200),
+  );
+
+  const parent = Option.unwrap(DesignDocument.findNode(resized, "p"));
+  expect(Node.writtenPropsOf(parent)).toEqual({
+    widthMode: "fixed",
+    width: 200,
+    heightMode: "fixed",
+    height: 100,
+  });
+});
+
+test("親と子が同じ名前でも、props の編集で親の width を変えると、scale の子が追従する", () => {
+  const edited = Result.unwrap(
+    DesignDocument.applyPropEdit(
+      setupScaledChildOfSameName(),
+      "p",
+      PropEdit.set(["width"], 200),
+    ),
+  );
+
+  const props = Option.unwrap(firstChildPropsOf(edited, "p"));
+  expect(props.x).toBe(20);
+});
+
+test("親と子が同じ名前でも、親の高さを resize で変えると、scale の子の縦の位置と長さが追従する", () => {
+  const resized = resizeTo(
+    setupScaledChildOfSameName(),
+    "p",
+    AxisLength.create("height", 200),
+  );
+
+  const props = Option.unwrap(firstChildPropsOf(resized, "p"));
+  expect([props.y, props.height]).toEqual([20, 100]);
+});
+
+/** 追従させたい Box の子と同じ名前のノードが、前の兄弟の子にあるドキュメント。 */
+function setupDeepFirstBadges(): DesignDocument {
+  const badgeProps = { placement: "absolute", y: 0, constraintX: "max" };
+  return setupDocument([
+    {
+      name: "row",
+      type: "Box",
+      children: [
+        { name: "badge", type: "Box", props: { ...badgeProps, x: 5 } },
+      ],
+    },
+    {
+      name: "panel",
+      type: "Box",
+      props: { widthMode: "fixed", width: 100 },
+      children: [
+        { name: "badge", type: "Box", props: { ...badgeProps, x: 10 } },
+      ],
+    },
+  ]);
+}
+
+test("同じ名前のノードが前の兄弟の子にあるとき、Box の幅を変えると、追従はその Box の子に当たる", () => {
+  const resized = resizeTo(
+    setupDeepFirstBadges(),
+    "panel",
+    AxisLength.create("width", 200),
+  );
+
+  const props = Option.unwrap(firstChildPropsOf(resized, "panel"));
+  expect(props.x).toBe(110);
+});
+
+test("同じ名前のノードが前の兄弟の子にあるとき、Box の幅を変えても、別の場所の同名ノードは動かない", () => {
+  const resized = resizeTo(
+    setupDeepFirstBadges(),
+    "panel",
+    AxisLength.create("width", 200),
+  );
+
+  const props = Option.unwrap(firstChildPropsOf(resized, "row"));
+  expect(props.x).toBe(5);
+});
+
+/** artboard `home` の直下に、同じ名前 `home` の右辺へ付いた子があるドキュメント。 */
+function setupChildNamedAsArtboard(): DesignDocument {
+  return DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 200,
+        height: 100,
+        children: [
+          {
+            name: "home",
+            type: "Box",
+            props: { placement: "absolute", x: 150, y: 0, constraintX: "max" },
+          },
+        ],
+      },
+    ],
+  });
+}
+
+test("artboard と同じ名前の子でも、artboard を広げると、追従はその子に当たる", () => {
+  const resized = resizeTo(
+    setupChildNamedAsArtboard(),
+    "home",
+    AxisLength.create("width", 300),
+  );
+
+  const props = Option.unwrap(firstChildPropsOf(resized, "home"));
+  expect(props.x).toBe(250);
+});
+
+test("artboard と同じ名前の子がいても、artboard を広げたときに artboard の props へ追従の座標が書かれない", () => {
+  const resized = resizeTo(
+    setupChildNamedAsArtboard(),
+    "home",
+    AxisLength.create("width", 300),
+  );
+
+  const artboard = Option.unwrap(DesignDocument.findArtboard(resized, "home"));
+  expect(artboard.props).toBeUndefined();
+});
+
+test("孫が祖先と同じ名前でも、長さが変わった子の中の孫が追従する", () => {
+  const document = setupDocument([
+    {
+      name: "p",
+      type: "Box",
+      props: { widthMode: "fixed", width: 100 },
+      children: [
+        {
+          name: "c",
+          type: "Box",
+          props: {
+            placement: "absolute",
+            x: 0,
+            y: 0,
+            constraintX: "scale",
+            widthMode: "fixed",
+            width: 100,
+          },
+          children: [
+            {
+              name: "p",
+              type: "Box",
+              props: { placement: "absolute", x: 50, y: 0, constraintX: "max" },
+            },
+          ],
+        },
+      ],
+    },
+  ]);
+
+  const resized = resizeTo(document, "p", AxisLength.create("width", 200));
+
+  const props = Option.unwrap(firstChildPropsOf(resized, "c"));
+  expect(props.x).toBe(150);
 });
