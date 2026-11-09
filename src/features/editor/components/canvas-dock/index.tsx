@@ -39,6 +39,7 @@ function canvasDock(
   if (FileValidity.isInvalid(fileValidity)) {
     return { kind: "file-invalid", errors: fileValidity.errors };
   }
+
   return { kind: "editable", errors: documentErrors };
 }
 
@@ -158,20 +159,22 @@ function canvasDockParts(
  * @returns 状態に応じた中身を積んだ、キャンバス下端の器
  */
 export function CanvasDockContent(props: CanvasDockContentProps): ReactElement {
-  const document = EditorState.document(props.state);
-  /**
+  const designDocument = EditorState.document(props.state);
+  /*
    * 画面に映っているドキュメント自身の不正。使用中トークンの削除で作った dangling 参照も、
    * 開いた時点で既にファイルに載っていた不正も出る。
    *
    * 覚える相手はドキュメントで、選択・ドラッグ・パンで描き直されても数え直さない
-   * （`ArtboardCanvas` の `compiled` と同じ形）。
-   * ファイルが不正なときの出し分けを memo の外に置いてよいのは、不正の間ドキュメントが
-   * 差し替わらないため。
+   * （`ArtboardCanvas` の `compiled` と同じ形）。性能の性質なので、テストは数え直しの
+   * 回数を見ず、memo を外しても落ちない。
+   * 鍵に fileValidity を入れないのは、エラーがドキュメントだけから決まるため。不正の間は
+   * ドキュメントが変わらないので、不正になっても数え直しは起きない。
    */
   const documentErrors = useMemo(
-    () => DocumentError.collectFrom(document),
-    [document],
+    () => DocumentError.collectFrom(designDocument),
+    [designDocument],
   );
+
   return (
     <CanvasDockStack>
       {canvasDockParts(
