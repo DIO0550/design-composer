@@ -55,6 +55,97 @@ const Components: ComponentSet = {
     type: "Box",
     children: [{ name: "prototype-named-label", type: "Text" }],
   },
+  /** 幅のモードと長さを binding 先と違う名前で公開した部品。 */
+  "renamed-card": {
+    publicProps: {
+      mode: { node: "renamed-card", prop: "widthMode" },
+      size: { node: "renamed-card", prop: "width" },
+    },
+    type: "Box",
+    children: [],
+  },
+  /** 部品の中で幅のモードが fixed のノードの、長さだけを公開した部品。 */
+  "fixed-inside-card": {
+    publicProps: { width: { node: "fixed-inside-body", prop: "width" } },
+    type: "Box",
+    children: [
+      { name: "fixed-inside-body", type: "Box", props: { widthMode: "fixed" } },
+    ],
+  },
+  /** 部品の中で幅のモードが fixed のノードの、モードと長さを公開した部品。 */
+  "fixed-mode-card": {
+    publicProps: {
+      mode: { node: "fixed-mode-body", prop: "widthMode" },
+      width: { node: "fixed-mode-body", prop: "width" },
+    },
+    type: "Box",
+    children: [
+      {
+        name: "fixed-mode-body",
+        type: "Box",
+        props: { widthMode: "fixed", width: 100 },
+      },
+    ],
+  },
+  /** 置き方と座標を別々のノードから公開した部品。 */
+  "split-card": {
+    publicProps: {
+      placement: { node: "split-a", prop: "placement" },
+      x: { node: "split-a", prop: "x" },
+      y: { node: "split-b", prop: "y" },
+    },
+    type: "Box",
+    children: [
+      { name: "split-a", type: "Box" },
+      { name: "split-b", type: "Box" },
+    ],
+  },
+  /** 部品の中で絶対配置のノードの座標と、別のノードの置き方を公開した部品。 */
+  "absolute-inside-card": {
+    publicProps: {
+      placement: { node: "absolute-inside-a", prop: "placement" },
+      y: { node: "absolute-inside-b", prop: "y" },
+    },
+    type: "Box",
+    children: [
+      { name: "absolute-inside-a", type: "Box" },
+      {
+        name: "absolute-inside-b",
+        type: "Box",
+        props: { placement: "absolute" },
+      },
+    ],
+  },
+  /** 幅のモードと長さを同じ名前で公開した、入れ子にされる側の部品。 */
+  "sizing-inner": {
+    publicProps: {
+      widthMode: { node: "sizing-inner", prop: "widthMode" },
+      width: { node: "sizing-inner", prop: "width" },
+    },
+    type: "Box",
+    children: [],
+  },
+  /** `sizing-inner` のモードと長さを、違う名前で公開し直した部品。 */
+  "sizing-outer": {
+    publicProps: {
+      mode: { node: "sizing-outer-inner", prop: "widthMode" },
+      size: { node: "sizing-outer-inner", prop: "width" },
+    },
+    type: "Box",
+    children: [{ name: "sizing-outer-inner", ref: "sizing-inner" }],
+  },
+  /** 中の `sizing-inner` のモードを fixed に上書きし、長さだけを公開した部品。 */
+  "sizing-preset": {
+    publicProps: { size: { node: "sizing-preset-inner", prop: "width" } },
+    type: "Box",
+    children: [
+      {
+        name: "sizing-preset-inner",
+        ref: "sizing-inner",
+        overrides: { widthMode: "fixed" },
+      },
+    ],
+  },
   /** ロックを公開 prop にしている部品。繋げない prop の欄が出ないことを見るために使う。 */
   "lock-card": {
     publicProps: {
@@ -349,4 +440,117 @@ test("存在しない部品を指すインスタンスにもロックの欄が�
   expect(
     instanceOf(selection).refOwnProps.map((control) => control.prop),
   ).toEqual(["locking"]);
+});
+
+test("公開名を binding 先と違う名前にした部品で、幅のモードを上書きで fixed にすると、公開した長さの欄が出る", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "renamed-card",
+    overrides: { mode: "fixed" },
+  });
+
+  expect(publicPropNames(selection)).toEqual(["mode", "size"]);
+});
+
+test("部品の中でノードの幅のモードが fixed なら、モードを公開していなくても公開した長さの欄が出る", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "fixed-inside-card",
+  });
+
+  expect(publicPropNames(selection)).toEqual(["width"]);
+});
+
+test("部品の中で幅のモードが fixed でも、インスタンスがモードの公開 prop を hug に上書きすれば長さの欄は出ない", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "fixed-mode-card",
+    overrides: { mode: "hug" },
+  });
+
+  expect(publicPropNames(selection)).toEqual(["mode"]);
+});
+
+test("置き方を上書きで絶対配置にしても、別のノードの座標へ繋いだ公開 prop の欄は出ない", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "split-card",
+    overrides: { placement: "absolute" },
+  });
+
+  expect(publicPropNames(selection)).toEqual(["placement", "x"]);
+});
+
+test("部品の中でノードが絶対配置なら、置き方を公開していなくても、そのノードの座標へ繋いだ公開 prop の欄が出る", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "absolute-inside-card",
+  });
+
+  expect(publicPropNames(selection)).toEqual(["placement", "y"]);
+});
+
+test("入れ子の部品へ公開名を変えて繋いだ幅のモードを上書きで fixed にすると、長さの欄が出る", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "sizing-outer",
+    overrides: { mode: "fixed" },
+  });
+
+  expect(publicPropNames(selection)).toEqual(["mode", "size"]);
+});
+
+test("部品定義の中の参照ノードが幅のモードを fixed に上書きしていれば、公開した長さの欄が出る", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "sizing-preset",
+  });
+
+  expect(publicPropNames(selection)).toEqual(["size"]);
+});
+
+test("条件の prop を公開していれば、公開 prop の欄の条件の行はその公開名になる", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "sized-card",
+    overrides: { widthMode: "fixed" },
+  });
+
+  expect(
+    controlNamed(instanceOf(selection).publicProps, "width").enabledBy,
+  ).toEqual(Option.some("widthMode"));
+});
+
+test("条件の prop を公開していなければ、公開 prop の欄に条件の行は無い", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "fixed-inside-card",
+  });
+
+  expect(
+    controlNamed(instanceOf(selection).publicProps, "width").enabledBy,
+  ).toEqual(Option.none);
+});
+
+test("条件の prop を別の名前で公開していれば、公開 prop の欄の条件の行はその公開名になる", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "renamed-card",
+    overrides: { mode: "fixed" },
+  });
+
+  expect(
+    controlNamed(instanceOf(selection).publicProps, "size").enabledBy,
+  ).toEqual(Option.some("mode"));
+});
+
+test("別のノードの置き方を公開していても、座標の公開 prop の欄に条件の行は無い", () => {
+  const selection = setupInstanceSelection({
+    name: "card",
+    ref: "absolute-inside-card",
+  });
+
+  expect(
+    controlNamed(instanceOf(selection).publicProps, "y").enabledBy,
+  ).toEqual(Option.none);
 });

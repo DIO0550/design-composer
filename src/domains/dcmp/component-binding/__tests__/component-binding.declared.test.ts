@@ -138,3 +138,35 @@ test("入れ子の部品の公開 prop constructor を上書きしていなけ�
 
   expect(target.declared).toEqual(Option.some("Inner"));
 });
+
+test("同じ prop を 2 つの名前で公開した部品を、途中の参照ノードが一方の名前で上書きしていれば、もう一方から辿っても上書きした値が既定になる", () => {
+  const components: ComponentSet = {
+    doubled: {
+      type: "Box",
+      children: [{ name: "doubled-body", type: "Box", props: { width: 5 } }],
+      publicProps: {
+        first: { node: "doubled-body", prop: "width" },
+        second: { node: "doubled-body", prop: "width" },
+      },
+    },
+    holder: {
+      type: "Box",
+      children: [
+        { name: "holder-doubled", ref: "doubled", overrides: { second: 10 } },
+      ],
+      publicProps: { size: { node: "holder-doubled", prop: "first" } },
+    },
+  };
+
+  const target = Option.unwrap(
+    ComponentBinding.resolvePropTarget(
+      components,
+      ComponentBinding.create("holder", {
+        node: "holder-doubled",
+        prop: "first",
+      }),
+    ),
+  );
+
+  expect(target.declared).toEqual(Option.some(10));
+});
