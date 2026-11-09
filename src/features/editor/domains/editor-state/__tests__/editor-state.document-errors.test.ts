@@ -6,7 +6,10 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
-import type { DocumentErrorLocation } from "@/domains/session/document-error";
+import {
+  DocumentError,
+  type DocumentErrorLocation,
+} from "@/domains/session/document-error";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
 
@@ -60,12 +63,16 @@ test("使用中のトークンを削除すると、そのトークンを参照�
   const removed = removeToken(openedState(), "heading");
 
   expect(
-    EditorState.documentErrors(removed).map((error) => error.location),
+    DocumentError.collectFrom(EditorState.document(removed)).map(
+      (error) => error.location,
+    ),
   ).toStrictEqual([HomeTitleTypography]);
 });
 
 test("編集で不正が生まれていないうちはドキュメントのエラーは出ない", () => {
-  expect(EditorState.documentErrors(openedState())).toStrictEqual([]);
+  expect(
+    DocumentError.collectFrom(EditorState.document(openedState())),
+  ).toStrictEqual([]);
 });
 
 test("トークンの削除を取り消すとドキュメントのエラーは消える", () => {
@@ -73,7 +80,9 @@ test("トークンの削除を取り消すとドキュメントのエラーは�
 
   const undone = Option.unwrap(EditorState.undo(removed));
 
-  expect(EditorState.documentErrors(undone)).toStrictEqual([]);
+  expect(DocumentError.collectFrom(EditorState.document(undone))).toStrictEqual(
+    [],
+  );
 });
 
 test("外部変更を拒んでいても、表示中のドキュメントが正常ならドキュメントのエラーは出ない", () => {
@@ -86,7 +95,9 @@ test("外部変更を拒んでいても、表示中のドキュメントが正�
     ReceivedAt,
   );
 
-  expect(EditorState.documentErrors(rejected)).toStrictEqual([]);
+  expect(
+    DocumentError.collectFrom(EditorState.document(rejected)),
+  ).toStrictEqual([]);
 });
 
 /*
@@ -105,6 +116,8 @@ test("編集で作った不正は、外部変更を拒んだ後もファイル�
   );
 
   expect(
-    EditorState.documentErrors(rejected).map((error) => error.location),
+    DocumentError.collectFrom(EditorState.document(rejected)).map(
+      (error) => error.location,
+    ),
   ).toStrictEqual([HomeTitleTypography]);
 });

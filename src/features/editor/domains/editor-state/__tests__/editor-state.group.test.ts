@@ -3,6 +3,7 @@ import {
   DesignDocument,
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
+import { DocumentError } from "@/domains/session/document-error";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
@@ -195,6 +196,8 @@ test("子を並べない Box の直下へ fill の子が出た解除は、ドキ
   const ungrouped = Option.unwrap(EditorState.ungroupSelected(selected));
 
   expect(
-    EditorState.documentErrors(ungrouped).map((error) => error.kind),
+    DocumentError.collectFrom(EditorState.document(ungrouped)).map(
+      (error) => error.kind,
+    ),
   ).toEqual(["fill-in-free-parent"]);
 });
