@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1332,
+  "headBranch": "claude/magical-cannon-5tzjdk",
+  "baseBranch": "main",
+  "mergeBase": "58833e4f25cf80419c519585453ec22b7e83d38b",
+  "head": "2f3e4b08f21cdad9fb66e998e68254b2fb4a5e13",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1329.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 176,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "2f3e4b08f21cdad9fb66e998e68254b2fb4a5e13",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-09T13:14:23Z",
+      "subject": "📝 [Doc]: #896 PR #1329 の記録を harness/records に足す",
+      "body": "- harness/records/pr-1329.md を追加した(指摘 20 件・手戻り 4 回・\n  発火は計測対象外)\n\n背景:\nPR #1329(#896)がマージされたので、harness-record の手順で、その回の\nレビュー指摘・CI・手戻りを分類タグ付きで 1 ファイルに残す。\n\n採用理由:\n指摘は 1 件 1 ブロックで書き、出どころは語彙から 1 つずつ選んだ。\n人のレビューは 0 件(get_reviews / get_review_comments /\nget_comments の 3 つとも確認)、bot は Copilot の概要のみで指摘なし、\nCI は全件緑。指摘はすべてサブエージェント・フック・自己修正による。\nPreToolUse のフックが不発の環境だったので、発火は計測対象外と書いた。\n\n影響とトレードオフ:\n- 差分は harness/records/ の新規 1 ファイルだけ。rules/・フック・\n  スキルには触れていない\n- 対策済の行は書いていない(介入は harness-growth の管轄)\n\n代替案:\n- 記録の中で集計・介入まで行う: harness-record の管轄外なので\n  行わない\n\n参考:\n- https://github.com/DIO0550/design-composer/pull/1329\n- https://github.com/DIO0550/design-composer/issues/896\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N3n49Y3A78nA1RQ84",
+      "files": [
+        {
+          "path": "harness/records/pr-1329.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 176,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,176 @@\n+# PR #1329 名前が重複した文書で Box の大きさを変えたときの追従を、子の名前ではなくノードの値へ当てる\n+\n+- マージ日: 2026-11-09\n+- 関連 Issue: #896\n+- 差分規模: 10 ファイル / +556 -103\n+\n+## ゴールと結果\n+\n+ゴールは「名前が重複した文書(docs/03-schema.md「開く時」で開いて編集を続けられる文書)でも、Box の大きさを変えたとき(`EditorState.resize` / props 欄からの `EditorState.applyPropEdit`)に、直下の絶対配置の子の追従がその子自身に当たり、例外を投げずに編集が終わる」。達成した。\n+\n+同じ原因で起きていた次の 2 つも、追従を値で組む形にしたことで一緒に直った。\n+\n+- 前の兄弟の子にある同名ノードが代わりに動く\n+- artboard と同名の子の追従が、artboard の props に書かれる\n+\n+props 欄から artboard の width を変えても子が追従しない件は、この PR より前からの挙動で、スコープ外として Issue に残した。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。人の側のコメントは、自分が投稿したテストケース表だけだった。bot のレビューは Copilot の 1 件で、「Approval recommended」の概要のみで指摘は無かった。CI は 1 回の push で全件緑、VRT の差分は 0 件(209 件 passed)。\n+\n+## 指摘\n+\n+### 1. 試作が計画に無い private 型(前後の読み出し関数 2 つ)を足していた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: ファイル表に型の行が無く、関数 2 つを渡す形にした理由も無かった。各辺を先に値(`FixedLengths`)へ読んで `{ before, after }` で渡す形に乗り換えた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(計画に書く 1: 変更するファイルと置くもの)\n+\n+### 2. 子の差し替えを `Node` の直和のまま `{ ...node, children }` で書いていた\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 参照ノードに children が付いた値でも型が通る。同じ書き込みが node-tree の `withChildrenAt` にもあり 2 箇所目だった。`Node.withChildren(PrimitiveNode, children)` を足して両方から使う計画にした。\n+- 既存ルール: rules/coding.md「不正な状態を型で表現できなくする」\n+\n+### 3. 追従の打ち切り 2 つを落とすテストが計画に無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「子 0 件なら空の children を書き足さない」を外して落ちるテストが無かった。1 件足した。「変化 0 件」は観測差が参照の同一性だけなので、理由コメントで残した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 4. `EditorState.resize` の `@returns` がファイル表に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `applyPropEdit` の `@returns` の理由に依っている doc だった。見直した結果、そのままでよいと計画に書いた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(手順 7: 触るモジュールの前提を崩さないか)\n+\n+### 5. 未決「無し」の裏に決めていない点があり、並行 PR の確認記録も無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 指摘 1・2 の判断が残っていた。並行する PR / Issue の確認結果を Issue に書いた(open の PR は #1327 の 1 件で、衝突なし)。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(計画に書く 4: 未決の判断)\n+\n+### 6. テストケースが幅(x 軸)に偏っていた\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: ノードの経路で縦軸を落とす壊れ方を拾えなかった。高さのケースを 1 件足した。artboard の経路は既存の「2 軸を同時に変えると縦横の両方で追従する」が守ることを、試作で確かめた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 7. 計画どおり 2 つのテストファイルに置いた再現の文書が、テストヘルパーの重複になった\n+\n+- 分類: `duplication`\n+- 出どころ: `フック`\n+- 内容: pre-push の「テストヘルパーの重複」が落ち、implementer が計画の手前で止まって返った。共通の `__tests__/setup.ts` へ寄せる判断を足した。\n+- 既存ルール: rules/testing.md「テスト用ヘルパーの置き場所」\n+\n+### 8. テストで使った `Object.hasOwn` が対象の lib に無く、typecheck が落ちた\n+\n+- 分類: `なし`\n+- 出どころ: `フック`\n+- 内容: implementer の 1 回目の pre-push で落ちた。`\"children\" in panel` に直した。\n+- 既存ルール: なし\n+\n+### 9. `withChildrenAt` に、参照ノードを黙って素通しする到達しない分岐が入った\n+\n+- 分類: `over-guard`\n+- 出どころ: `レビュー（over-guard-reviewer）`\n+- 内容: 届いたときは更新を捨てたまま成功を返す形だった。絞り込みを呼び出し側へ移し、`withChildrenAt` は `PrimitiveNode` に絞ったホストを受け取るようにした。\n+- 既存ルール: なし\n+\n+### 10. 打ち切りの条件が名前の無い `||` のまま `if` に入っていた\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: `settled || !Node.isPrimitive(node)` の形だった。`settled` は node-tree で「探索の決着」の意味で既に使われていた。単独条件の `if` 2 つに分け、`nothingToFollow` に改めた。\n+- 既存ルール: rules/naming.md「条件を組んだ式に名前を付ける」「その名前が既に別の意味を持っていないか確認する」\n+\n+### 11. `fixedLengthsOf*` の語幹が、別モジュールの private 関数と被る\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: node-resize の `fixedLengthsOf` は `AxisLength[]` を返す。どちらも非公開で意味は同じなので、見送った。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 12. 新しい関数の本体で、値を求める部分と `return` の間に空行が無い\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: 読みやすさの指摘で、重大度は低。ファイルの既存の書き方と同じなので見送った。\n+- 既存ルール: なし\n+\n+### 13. `fixedLengthsOfNode` の `@returns` が 2 つの条件を 1 文に混ぜていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 2 文に分けた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 14. `followedChildren` の doc が、名前で引き直さない理由を書いていなかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 「同じ名前の別のノードへ当たらないため」を添えた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 15. 編集前後のノードの長さを比べて子を追従させる手順が 2 箇所にあった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `applyPropEdit` と `followedChildren` に同じ並びがあった。`withFollowedChildren` が編集前後のノードを受け取る形にして、比べ方を 1 箇所に閉じた。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 16. テストで「親の最初の子を読む」式が 3 箇所に重複し、`[0]` で引いていた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `setup.ts` に `childrenUnder` を置いて共通化した。先頭は `Option.unwrap(ArrayEx.first(...))` で取る。\n+- 既存ルール: rules/testing.md「テスト用ヘルパーの置き場所」\n+\n+### 17. 新しい `resizeTo` を、同じファイルの既存テストが使っていなかった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 同じファイルの中だけ寄せた。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 18. artboard の経路は、長さが変わらなくても子の並びを作り直す\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 担当外としての指摘。観測できる差は参照の同一性だけなので、見送った。方式の結論は「維持」。\n+- 既存ルール: なし\n+\n+### 19. 1 段目の修正で型ガードにした `allowsChildren` が、false の側で値とずれていた\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 担当外としての指摘。`false` でもプリミティブのことがある(Text など)。boolean へ戻し、呼び出し側で `holdsChildren` に名前を付けて絞った。test-reviewer の本題(10 通りに壊して全部落ちた)は指摘 0 件だった。\n+- 既存ルール: rules/coding.md「不正な状態を型で表現できなくする」\n+\n+### 20. PreToolUse のフックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が通り、実行中フラグのマーカーも発火ログも無かった。Stop の command hook は発火していた。行為を止めるフックの代わりに、親の編集・検証中の git 操作・`git add` の指定を手で見直した。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- フェーズ 4: plan-reviewer の指摘 6 件で、計画を 1 回書き直した(指摘 1〜6)\n+- フェーズ 5: implementer がテストヘルパーの重複で止まって返った。`setup.ts` へ寄せる判断を足して、もう 1 回起動した(指摘 7)\n+- フェーズ 6(1 段目): 8 件を採用し、修正のために implementer を 1 回起動した\n+- フェーズ 6(2 段目): 1 段目の修正で入れた型ガードのずれを直すため、もう 1 回起動した(指摘 19)\n+- performance-reviewer と duplication-reviewer は Bash が無く `git diff` を実行できなかった。今のファイルから差分を推定しており、信頼度は自己申告で「中」\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。介入の判断は `harness-growth` の管轄で、このスキルでは記録だけを残す。",
+          "patchLines": 177,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
