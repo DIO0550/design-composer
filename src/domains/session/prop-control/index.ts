@@ -1,7 +1,7 @@
 import { Artboard } from "@/domains/dcmp/artboard";
 import {
   ComponentBinding,
-  type InstancePropTarget,
+  InstancePropTarget,
 } from "@/domains/dcmp/component-binding";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import {
@@ -19,7 +19,6 @@ import {
   type ShorthandName,
   ShorthandNames,
 } from "@/domains/dcmp/primitive-schema";
-import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import {
   type ColorToken,
   type NumericTokenKind,
@@ -104,9 +103,10 @@ export type CurrentPaint =
  * `value`（明示的に設定されている値）と `defaultValue`（設定が無いときに効く値）を
  * 別々に持つのは、パネルが両者を区別して見せるため（docs/06-ui.md）。
  *
- * `enabledBy` は、同じパネルに並ぶ、条件の行の名前。group の節ではスキーマの
- * `enabledWhen.prop`、インスタンスの公開 prop では条件の prop へ繋がる公開名。条件が無いか
- * 条件の行がパネルに出ないなら `none`。
+ * `enabledBy` は、その prop の欄が出る条件（`enabledWhen`）を出している prop の名前。スキーマ
+ * から並べる欄（group の節・インスタンス自身の値）ではスキーマの `enabledWhen.prop`、インスタンス
+ * の公開 prop では条件の prop を公開していればその公開名。条件が無いか、インスタンスで条件の
+ * prop を公開していなければ `none`。
  */
 export type PropControl = Readonly<{
   prop: string;
@@ -370,23 +370,11 @@ function declaredEditableProps(
 }
 
 /**
- * インスタンスの公開 prop の欄を出すか（docs/06-ui.md「`enabledWhen` により表示を出し分ける」）。
- * 条件は binding 先のノードの props（インスタンスの上書きまで当てて既定を敷いたもの）で見る。
+ * 部品が公開している prop 1 つの素材。binding 先が設定している値を既定にし、無ければスキーマの
+ * `default` に落とす。
  *
- * @param target 公開 prop の着いた先
- * @returns 条件を満たせば `true`。binding 先のノードの型のスキーマが引けなければ `false`
- */
-function isPublicPropEnabled(target: InstancePropTarget): boolean {
-  const resolved = ResolvedProps.forNode(target.node);
-  return (
-    Option.isSome(resolved) &&
-    PropDefinition.isEnabled(target.target.definition, resolved.value)
-  );
-}
-
-/**
- * 部品が公開している prop 1 つの素材（docs/06-ui.md「インスタンス」）。binding 先が設定している
- * 値を既定にし、無ければスキーマの `default` に落とす。
+ * `enabledBy` を公開名にするのは、PropRow が `enabledBy` のあるリテラル欄のラベルを隠して字下げ
+ * するため。スキーマの `enabledWhen.prop` のままだとパネルに無い行を指し、ラベルの無い欄が残る。
  *
  * @param targets 同じインスタンスの公開 prop の着いた先。条件の公開名を探す範囲
  * @param target 素材にする公開 prop の着いた先
@@ -396,30 +384,13 @@ function publicEditableProp(
   targets: readonly InstancePropTarget[],
   target: InstancePropTarget,
 ): EditableProp {
-  const { definition, declared } = target.target;
+  const { definition, declared } = target;
   return {
     name: target.name,
     definition,
     defaultValue: Option.or(declared, Option.fromNullable(definition.default)),
-    enabledBy: ComponentBinding.conditionPublicName(targets, target),
+    enabledBy: InstancePropTarget.conditionPublicName(targets, target),
   };
-}
-
-/**
- * `enabledWhen` の判定に使う props。
- * 設定されていない prop も既定値では効いているため、既定を敷いた上で判定する
- * （`widthMode` を書いていない Box でも既定の `hug` として扱われ、`width` は出ない）。
- *
- * @param schema 既定値の出どころになる prop 定義
- * @param props 実際に設定されている props
- * @returns 既定値の上に設定値を重ねた props
- */
-function effectiveProps(schema: PropDefinitionRecord, props: Props): Props {
-  const defaults = PropDefinitionRecord.collectDefaultsIfAbsent(
-    schema,
-    props,
-  ).map(({ name, value }) => [name, value] as const);
-  return { ...Object.fromEntries(defaults), ...props };
 }
 
 /**
@@ -448,6 +419,8 @@ function controlOf(
 /**
  * 条件を満たさない prop はコントロール自体を作らない
  * （docs/06-ui.md「`enabledWhen` により表示を出し分ける」）。
+ * 設定されていない prop も既定値では効いているため、既定を敷いた上で判定する
+ * （`widthMode` を書いていない Box でも既定の `hug` として扱われ、`width` は出ない）。
  *
  * @param schema 編集できる prop の出どころになる prop 定義
  * @param props `enabledWhen` の判定に使う props
@@ -457,7 +430,7 @@ function enabledEditableProps(
   schema: PropDefinitionRecord,
   props: Props,
 ): readonly EditableProp[] {
-  const effective = effectiveProps(schema, props);
+  const effective = PropDefinitionRecord.toEffectiveProps(schema, props);
   return declaredEditableProps(schema).filter((editable) =>
     PropDefinition.isEnabled(editable.definition, effective),
   );
@@ -612,7 +585,7 @@ function nodeControls(document: DesignDocument, node: Node): SelectionControls {
       kind: "instance",
       source: node.ref,
       publicProps: targets
-        .filter(isPublicPropEnabled)
+        .filter(InstancePropTarget.isEnabled)
         .map((target) =>
           controlOf(
             publicEditableProp(targets, target),

@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import type { ComponentSet } from "@/domains/dcmp/component";
 import type { RefNode } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
-import { ComponentBinding, type InstancePropTarget } from "../index";
+import { ComponentBinding, InstancePropTarget } from "../index";
 
 /**
  * 公開 prop の着いた先を公開名で引く。無ければテストを落とす。
@@ -90,7 +90,7 @@ test("インスタンスの上書きは、部品の値を上書きした形で�
     overrides: { size: 10 },
   });
 
-  expect(targetNamed(targets, "size").node.props?.width).toBe(10);
+  expect(targetNamed(targets, "size").resolvedProps.width).toBe(10);
 });
 
 test("着いた先の既定は、インスタンスの上書きを当てる前の部品の値になる", () => {
@@ -100,7 +100,7 @@ test("着いた先の既定は、インスタンスの上書きを当てる前�
     overrides: { size: 10 },
   });
 
-  expect(targetNamed(targets, "size").target.declared).toEqual(Option.some(5));
+  expect(targetNamed(targets, "size").declared).toEqual(Option.some(5));
 });
 
 test("別のノードへ繋いだ公開 prop の上書きは、着いたノードに当たらない", () => {
@@ -110,7 +110,7 @@ test("別のノードへ繋いだ公開 prop の上書きは、着いたノー�
     overrides: { widthB: 10 },
   });
 
-  expect(targetNamed(targets, "widthA").node.props?.width).toBe(5);
+  expect(targetNamed(targets, "widthA").resolvedProps.width).toBe(5);
 });
 
 test("入れ子の部品では、途中の参照ノードの上書きが着いたノードに当たり、インスタンスの上書きが勝つ", () => {
@@ -135,7 +135,7 @@ test("入れ子の部品では、途中の参照ノードの上書きが着い�
     overrides: { rowSize: 10 },
   });
 
-  expect(targetNamed(targets, "rowSize").node.props).toEqual({
+  expect(targetNamed(targets, "rowSize").resolvedProps).toMatchObject({
     width: 10,
     widthMode: "hug",
   });
@@ -145,7 +145,10 @@ test("同じノードの条件の prop を公開していれば、その公開�
   const targets = resolve(setupCard(), { name: "instance", ref: "card" });
 
   expect(
-    ComponentBinding.conditionPublicName(targets, targetNamed(targets, "size")),
+    InstancePropTarget.conditionPublicName(
+      targets,
+      targetNamed(targets, "size"),
+    ),
   ).toEqual(Option.some("mode"));
 });
 
@@ -153,7 +156,7 @@ test("条件の prop を別のノードから公開していても、条件の�
   const targets = resolve(setupSplit(), { name: "instance", ref: "split" });
 
   expect(
-    ComponentBinding.conditionPublicName(targets, targetNamed(targets, "x")),
+    InstancePropTarget.conditionPublicName(targets, targetNamed(targets, "x")),
   ).toEqual(Option.none);
 });
 

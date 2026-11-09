@@ -318,6 +318,20 @@ export const ArrayEx = {
   },
 
   /**
+   * 2 つの並びが、同じ長さで同じ位置に等しい要素を持つか。
+   *
+   * @param a 比べる並び
+   * @param b 比べる並び
+   * @returns 長さが同じで、すべての位置の要素が等しければ true。等しさは SameValueZero で見る
+   */
+  isElementwiseEqual<T>(a: readonly T[], b: readonly T[]): boolean {
+    return (
+      a.length === b.length &&
+      a.every((item, index) => isSameValueZero(item, b[index]))
+    );
+  },
+
+  /**
    * その位置へ要素を差し込んだ並び。
    *
    * @param array 差し込む前の並び

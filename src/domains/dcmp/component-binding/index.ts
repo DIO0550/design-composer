@@ -12,8 +12,10 @@ import {
 } from "@/domains/dcmp/node";
 import {
   PrimitiveSchema,
-  type PropDefinition,
+  type PrimitiveType,
+  PropDefinition,
 } from "@/domains/dcmp/primitive-schema";
+import { ResolvedProps } from "@/domains/dcmp/resolved-props";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { RecordEx } from "@/utils/RecordEx";
@@ -47,32 +49,42 @@ export type PublicPropTarget = Readonly<{
 }>;
 
 /**
+ * binding 先のプリミティブの prop と、そのノードの props。
+ * `resolvedProps` はインスタンスの上書きまで当てた binding 先のノードの props に既定を敷いたもの。
+ */
+type ReachedPrimitive = PublicPropTarget &
+  Readonly<{ resolvedProps: ResolvedProps<PrimitiveType> }>;
+
+/**
  * インスタンスの公開 prop 1 つを辿って着いた先。
  *
- * `name` は公開名、`target.declared` はインスタンスの上書きを当てる前の値、`node` は
- * インスタンスの上書きまで当てた binding 先のプリミティブ。`path` は各段の binding 先の
- * ノード名を外側から並べたもの、`prop` は着いたノードの prop 名。
+ * `name` は公開名、`declared` はインスタンスの上書きを当てる前の値、`resolvedProps` は
+ * インスタンスの上書きまで当てた binding 先のノードの props に既定を敷いたもの。`nodeNames` は
+ * 各段の binding 先のノード名を外側から並べたもの、`prop` は着いたノードの prop 名。
  */
-export type InstancePropTarget = Readonly<{
-  name: string;
-  target: PublicPropTarget;
-  node: PrimitiveNode;
-  path: readonly string[];
-  prop: string;
-}>;
+export type InstancePropTarget = ReachedPrimitive &
+  Readonly<{
+    name: string;
+    nodeNames: readonly string[];
+    prop: string;
+  }>;
 
 /** binding を最後まで辿って着いた先。どの公開 prop から辿ったかは持たない。 */
 type ReachedProp = Omit<InstancePropTarget, "name">;
 
 /**
- * 1 段の部品へ当てる上書き。`declared` は部品定義と途中の参照ノードの上書きだけ、`applied`
- * はそれにインスタンスの上書きを足したもの。
+ * 1 段の部品へ当てる上書き。`declared` は部品定義と途中の参照ノードの上書きだけ、
+ * `withInstanceOverrides` はそれにインスタンスの上書きを足したもの。
  */
-type HopOverrides = Readonly<{ declared: Props; applied: Props }>;
+type HopOverrides = Readonly<{
+  declared: Props;
+  withInstanceOverrides: Props;
+}>;
 
 /**
- * 1 段で binding 先に見つけたノード。`node` は `HopOverrides.applied` を当てた部品のノード、
- * `declared` は `HopOverrides.declared` を当てた部品で同じ名前のノードに書かれている値。
+ * 1 段で binding 先に見つけたノード。`node` は `HopOverrides.withInstanceOverrides` を当てた
+ * 部品のノード、`declared` は `HopOverrides.declared` を当てた部品で同じ名前のノードに
+ * 書かれている値。
  */
 type HopNode<N extends Node> = Readonly<{ node: N; declared: Props }>;
 
@@ -107,13 +119,12 @@ type BindingHop =
   | Readonly<{ kind: "unresolvable" }>
   | BindingViolation
   /**
-   * 指し先のプリミティブの prop 定義と、そのプリミティブに設定されている値に着いた。`node` は
-   * 上書きを `applied` まで当てた指し先のプリミティブ。
+   * 指し先のプリミティブの prop 定義と、そのプリミティブに設定されている値に着いた。
+   * `reached.resolvedProps` は上書きを `withInstanceOverrides` まで当てた指し先の props。
    */
   | Readonly<{
       kind: "definition";
-      target: PublicPropTarget;
-      node: PrimitiveNode;
+      reached: ReachedPrimitive;
     }>
   /**
    * 指し先が部品インスタンスで、その部品の binding へ続く。`overrides` は次の段の部品へ当てる
@@ -133,26 +144,17 @@ type BindingHop =
 const UnbindablePropNames: readonly string[] = ["locking"];
 
 /** 上書きを何も当てない辿り。 */
-const NoOverrides: HopOverrides = { declared: {}, applied: {} };
-
-/**
- * 公開 prop の上書きが書き込まれる先の値（`Node.applyPropEdit` と同じ振り分け）。
- *
- * @param node 見るノード
- * @returns 参照ノードなら `overrides`、プリミティブなら `props`。無ければ空
- */
-function writtenValuesOf(node: Node): Props {
-  return Node.isRef(node) ? (node.overrides ?? {}) : (node.props ?? {});
-}
+const NoOverrides: HopOverrides = { declared: {}, withInstanceOverrides: {} };
 
 /**
  * 指し先のプリミティブで、binding の prop の定義と設定値を引く。
  *
- * @param primitive binding の指し先のプリミティブ
+ * @param primitive binding の指し先で見つけたプリミティブと、上書き前にそこへ書かれている値
  * @param prop binding が指す prop 名
  * @returns 定義があり繋げる prop なら `definition`（設定値は `primitive.declared` のその
- *   prop）、型が未知なら `unresolvable`、スキーマにその prop が無ければ `missing-prop`、
- *   繋げない prop（`UnbindablePropNames`）なら `unbindable-prop`
+ *   prop、ノードの props は `primitive.node` の props に既定を敷いたもの）、型が未知なら
+ *   `unresolvable`、スキーマにその prop が無ければ `missing-prop`、繋げない prop
+ *   （`UnbindablePropNames`）なら `unbindable-prop`
  */
 function hopIntoPrimitive(
   primitive: HopNode<PrimitiveNode>,
@@ -173,11 +175,14 @@ function hopIntoPrimitive(
 
   return {
     kind: "definition",
-    target: {
+    reached: {
       definition: definition.value,
       declared: RecordEx.get(primitive.declared, prop),
+      resolvedProps: ResolvedProps.resolve(
+        primitive.node.type,
+        Node.propsOf(primitive.node),
+      ),
     },
-    node: primitive.node,
   };
 }
 
@@ -186,10 +191,10 @@ function hopIntoPrimitive(
  * （インターフェースの連鎖）。
  *
  * @param components 引き先の部品一式
- * @param instance binding の指し先の参照ノード
+ * @param instance binding の指し先で見つけた参照ノードと、上書き前にそこへ書かれている上書き
  * @param prop binding が指す prop 名。参照先では公開 prop 名として引く
  * @returns 参照先の binding へ続くなら `nested`（次の段へ当てる上書きは、`declared` 側が
- *   `instance.declared`、`applied` 側が `instance.node` の overrides）、
+ *   `instance.declared`、`withInstanceOverrides` 側が `instance.node` の overrides）、
  *   参照先の部品が無ければ `unresolvable`、
  *   参照先がその prop を公開していなければ `missing-public-prop`
  */
@@ -212,7 +217,7 @@ function hopIntoInstance(
     next: ComponentBinding.create(ref, binding.value),
     overrides: {
       declared: instance.declared,
-      applied: instance.node.overrides ?? {},
+      withInstanceOverrides: instance.node.overrides ?? {},
     },
   };
 }
@@ -236,41 +241,40 @@ function hop(
   if (!Option.isSome(component)) {
     return { kind: "unresolvable" };
   }
-  const findIn = (applying: Props): Option<Node> =>
+
+  const findIn = (applying: Props, nodeName: string): Option<Node> =>
     Component.findNode(
       Component.applyOverrides(component.value, source.componentName, applying),
       source.componentName,
-      source.binding.node,
+      nodeName,
     );
-  const found = findIn(overrides.applied);
-  const declared = findIn(overrides.declared);
-  if (!Option.isSome(found) || !Option.isSome(declared)) {
+  const found = findIn(overrides.withInstanceOverrides, source.binding.node);
+  if (!Option.isSome(found)) {
     return { kind: "missing-node" };
   }
+
   const node = found.value;
-  const declaredValues = writtenValuesOf(declared.value);
-  if (Node.isRef(node)) {
-    return hopIntoInstance(
-      components,
-      { node, declared: declaredValues },
-      source.binding.prop,
-    );
-  }
-  return hopIntoPrimitive(
-    { node, declared: declaredValues },
-    source.binding.prop,
+  // 上書きは木の形を変えないので、上書き前の部品にも同じ名前のノードが必ずある
+  const declared = Option.unwrapOr(
+    Option.map(findIn(overrides.declared, node.name), Node.propEditedValuesOf),
+    {},
   );
+
+  if (Node.isRef(node)) {
+    return hopIntoInstance(components, { node, declared }, source.binding.prop);
+  }
+  return hopIntoPrimitive({ node, declared }, source.binding.prop);
 }
 
 /**
- * `resolvePropTarget` と `resolveInstancePropTargets` の本体。各段で当てる上書きと、循環参照に
- * 入ったときに打ち切るための辿った部品名を持ち回る。
+ * `resolvePropTarget` と `resolvePublicProp` の本体。各段で当てる上書きと、循環参照に入った
+ * ときに打ち切るための辿った部品名を持ち回る。
  *
  * @param components 引き先の部品一式
  * @param source 辿り始める部品名と binding
  * @param state `overrides` は `source` の部品へ当てる上書き、`visited` はここまでに辿った
  *   部品名（再訪したら打ち切る）
- * @returns 行き着いた prop 定義と設定値、上書きを当てた binding 先のプリミティブ、そこまでの
+ * @returns 行き着いた prop 定義と設定値、上書きを当てた binding 先のノードの props、そこまでの
  *   ノード名の並びと prop 名。連鎖が途切れた場合と循環に入った場合は `none`
  */
 function resolveThroughRefs(
@@ -282,9 +286,8 @@ function resolveThroughRefs(
   switch (step.kind) {
     case "definition":
       return Option.some({
-        target: step.target,
-        node: step.node,
-        path: [source.binding.node],
+        ...step.reached,
+        nodeNames: [source.binding.node],
         prop: source.binding.prop,
       });
     case "nested": {
@@ -298,7 +301,7 @@ function resolveThroughRefs(
       });
       return Option.map(inner, (reached) => ({
         ...reached,
-        path: [source.binding.node, ...reached.path],
+        nodeNames: [source.binding.node, ...reached.nodeNames],
       }));
     }
     case "unresolvable":
@@ -309,6 +312,92 @@ function resolveThroughRefs(
       return Option.none;
   }
 }
+
+/**
+ * 公開 prop の binding を、その部品から上書きを当てながら最後まで辿る。
+ *
+ * @param components 引き先の部品一式
+ * @param publicProp 辿り始める部品名と公開 prop 名
+ * @param overrides 辿り始める部品へ当てる上書き
+ * @returns `resolveThroughRefs` の結果。部品が一式に無いか、その prop を公開していなければ
+ *   `none`
+ */
+function resolvePublicProp(
+  components: ComponentSet,
+  publicProp: PublicPropRef,
+  overrides: HopOverrides,
+): Option<ReachedProp> {
+  const component = ComponentSet.get(components, publicProp.component);
+  const binding = Option.flatMap(component, (found) =>
+    Component.binding(found, publicProp.prop),
+  );
+  return Option.flatMap(binding, (found) =>
+    resolveThroughRefs(
+      components,
+      ComponentBinding.create(publicProp.component, found),
+      { overrides, visited: new Set([publicProp.component]) },
+    ),
+  );
+}
+
+/**
+ * 着いた先から、binding 先の prop の定義と設定値だけを取り出す。
+ *
+ * @param reached binding を最後まで辿って着いた先
+ * @returns 着いた prop の定義と、上書き前にそこへ書かれている値
+ */
+function toPublicPropTarget(reached: ReachedProp): PublicPropTarget {
+  return { definition: reached.definition, declared: reached.declared };
+}
+
+export const InstancePropTarget = {
+  /**
+   * 2 つの公開 prop が、同じ binding 先のノードへ着いているか。
+   *
+   * @param a 比べる着いた先
+   * @param b 比べる着いた先
+   * @returns 各段の binding 先のノード名の並びが同じなら true
+   */
+  isOnSameNode(a: InstancePropTarget, b: InstancePropTarget): boolean {
+    return ArrayEx.isElementwiseEqual(a.nodeNames, b.nodeNames);
+  },
+
+  /**
+   * 公開 prop の欄を出すか（docs/06-ui.md「`enabledWhen` により表示を出し分ける」）。
+   * 条件は binding 先のノードの props（インスタンスの上書きまで当てて既定を敷いたもの）で見る。
+   *
+   * @param target 公開 prop の着いた先
+   * @returns 着いた prop の `enabledWhen` の条件を満たせば true（条件が無ければ true）
+   */
+  isEnabled(target: InstancePropTarget): boolean {
+    return PropDefinition.isEnabled(target.definition, target.resolvedProps);
+  },
+
+  /**
+   * 公開 prop の欄が出る条件（`enabledWhen`）を出している prop を、同じインスタンスの公開 prop
+   * から探す。見るのは同じノードの prop だけ（docs/03-schema.md）。
+   *
+   * @param targets 同じインスタンスの公開 prop の着いた先（`resolveInstancePropTargets` の結果）
+   * @param target 条件を知りたい公開 prop の着いた先
+   * @returns `target` と同じノードの、条件の prop へ繋がる公開 prop の名前。`target` に条件が
+   *   無いか、条件の prop を公開していなければ `none`
+   */
+  conditionPublicName(
+    targets: readonly InstancePropTarget[],
+    target: InstancePropTarget,
+  ): Option<string> {
+    const condition = Option.fromNullable(target.definition.enabledWhen);
+
+    return Option.flatMap(condition, ({ prop }) => {
+      const exposesConditionProp = (candidate: InstancePropTarget): boolean =>
+        candidate.prop === prop &&
+        InstancePropTarget.isOnSameNode(candidate, target);
+      const exposing = Option.fromNullable(targets.find(exposesConditionProp));
+
+      return Option.map(exposing, (found) => found.name);
+    });
+  },
+} as const;
 
 export const ComponentBinding = {
   /**
@@ -351,7 +440,7 @@ export const ComponentBinding = {
         overrides: NoOverrides,
         visited: new Set([source.componentName]),
       }),
-      (reached) => reached.target,
+      toPublicPropTarget,
     );
   },
 
@@ -372,53 +461,22 @@ export const ComponentBinding = {
     if (!Option.isSome(component)) {
       return [];
     }
+
     const overrides: HopOverrides = {
       declared: {},
-      applied: instance.overrides ?? {},
+      withInstanceOverrides: instance.overrides ?? {},
     };
+
     return ArrayEx.filterMap(
       Component.publicPropNames(component.value),
       (name) =>
         Option.map(
-          Option.flatMap(Component.binding(component.value, name), (binding) =>
-            resolveThroughRefs(
-              components,
-              ComponentBinding.create(instance.ref, binding),
-              { overrides, visited: new Set([instance.ref]) },
-            ),
+          resolvePublicProp(
+            components,
+            { component: instance.ref, prop: name },
+            overrides,
           ),
           (reached) => ({ name, ...reached }),
-        ),
-    );
-  },
-
-  /**
-   * 公開 prop の欄が出る条件（`enabledWhen`）を出している prop を、同じインスタンスの公開 prop
-   * から探す。見るのは同じノードの prop だけ（docs/03-schema.md）。
-   *
-   * @param targets 同じインスタンスの公開 prop の着いた先（`resolveInstancePropTargets` の結果）
-   * @param target 条件を知りたい公開 prop の着いた先
-   * @returns `target` と同じノードの、条件の prop へ繋がる公開 prop の名前。`target` に条件が
-   *   無いか、条件の prop を公開していなければ `none`
-   */
-  conditionPublicName(
-    targets: readonly InstancePropTarget[],
-    target: InstancePropTarget,
-  ): Option<string> {
-    const isSameNode = (candidate: InstancePropTarget): boolean =>
-      candidate.path.length === target.path.length &&
-      candidate.path.every((name, index) => name === target.path[index]);
-    return Option.flatMap(
-      Option.fromNullable(target.target.definition.enabledWhen),
-      (condition) =>
-        Option.map(
-          Option.fromNullable(
-            targets.find(
-              (candidate) =>
-                candidate.prop === condition.prop && isSameNode(candidate),
-            ),
-          ),
-          (found) => found.name,
         ),
     );
   },
@@ -436,17 +494,9 @@ export const ComponentBinding = {
     components: ComponentSet,
     publicProp: PublicPropRef,
   ): Option<PublicPropTarget> {
-    const component = ComponentSet.get(components, publicProp.component);
-    if (!Option.isSome(component)) {
-      return Option.none;
-    }
-    return Option.flatMap(
-      Component.binding(component.value, publicProp.prop),
-      (binding) =>
-        ComponentBinding.resolvePropTarget(
-          components,
-          ComponentBinding.create(publicProp.component, binding),
-        ),
+    return Option.map(
+      resolvePublicProp(components, publicProp, NoOverrides),
+      toPublicPropTarget,
     );
   },
 

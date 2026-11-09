@@ -380,8 +380,7 @@ export const PropDefinitionRecord = {
    * 設定されていない prop に効くデフォルト。並びはスキーマの宣言順。
    *
    * 「未設定ならどの値が効くか」はスキーマ自身の性質なので、解決を要する側がそれぞれ走査
-   * を持たずここを呼ぶ（`collectEffectiveAssignments`・`ResolvedProps.resolve`・
-   * `session/prop-control` の `effectiveProps`）。
+   * を持たずここを呼ぶ（`collectEffectiveAssignments`・`toEffectiveProps`）。
    *
    * @param schema 補いの出どころになる prop 定義
    * @param props 実際に設定されている props
@@ -398,6 +397,22 @@ export const PropDefinitionRecord = {
         return isAbsentWithDefault ? [{ name, value: definition.default }] : [];
       },
     );
+  },
+
+  /**
+   * 既定を敷いた上に設定値を重ねた props。
+   *
+   * @param schema 既定の出どころになる prop 定義
+   * @param props 実際に設定されている props
+   * @returns 未設定でデフォルトを持つ prop にデフォルトを補った props。設定されている prop は
+   *   スキーマに無いものも含めてそのまま残す
+   */
+  toEffectiveProps(schema: PropDefinitionRecord, props: Props): Props {
+    const defaulted = PropDefinitionRecord.collectDefaultsIfAbsent(
+      schema,
+      props,
+    ).map(({ name, value }): readonly [string, PropValue] => [name, value]);
+    return { ...Object.fromEntries(defaulted), ...props };
   },
 
   /**

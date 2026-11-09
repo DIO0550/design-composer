@@ -153,3 +153,15 @@ test("写せない要素があれば、並びで最初に写せなかった要�
 test("どの要素も写せなければ、写した並びは空になる", () => {
   expect(ArrayEx.filterMap(["a", "b"], () => Option.none)).toEqual([]);
 });
+
+test("一方が他方の先頭部分にすぎない並びは、要素ごとに等しくない", () => {
+  expect(ArrayEx.isElementwiseEqual(["a"], ["a", "b"])).toBe(false);
+});
+
+test("空の並びどうしは、要素ごとに等しい", () => {
+  expect(ArrayEx.isElementwiseEqual([], [])).toBe(true);
+});
+
+test("要素ごとの比較は NaN どうしを等しいとみなす", () => {
+  expect(ArrayEx.isElementwiseEqual([Number.NaN], [Number.NaN])).toBe(true);
+});

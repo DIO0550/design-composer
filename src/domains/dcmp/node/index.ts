@@ -513,19 +513,30 @@ export const Node = {
   },
 
   /**
+   * `applyPropEdit` が prop の編集を書き込む先の値。`writtenPropsOf` と違い、参照ノードでは
+   * 公開 prop への上書きを返す。
+   *
+   * @param node 見るノード
+   * @returns 参照ノードなら `overrides`、プリミティブなら `props`。書かれていなければ空
+   */
+  propEditedValuesOf(node: Node): Props {
+    return Node.isRef(node) ? (node.overrides ?? {}) : Node.propsOf(node);
+  },
+
+  /**
    * ノードの prop を書き換える。参照ノードへの prop の編集は公開 prop への上書き
    * （`overrides`）へ書く。直下のインスタンス自身の値は `applyRefOwnPropEdit` で書く。
    *
    * @param node 書き換えるノード
    * @param edit 適用する編集
-   * @returns 参照ノードなら `overrides`、プリミティブなら `props` に `Props.apply` で編集を
-   *   適用したノード
+   * @returns `propEditedValuesOf` の値（参照ノードなら `overrides`、プリミティブなら
+   *   `props`）に `Props.apply` で編集を適用したノード
    */
   applyPropEdit(node: Node, edit: PropEdit): Node {
-    if (Node.isRef(node)) {
-      return { ...node, overrides: Props.apply(node.overrides ?? {}, edit) };
-    }
-    return { ...node, props: Props.apply(node.props ?? {}, edit) };
+    const edited = Props.apply(Node.propEditedValuesOf(node), edit);
+    return Node.isRef(node)
+      ? { ...node, overrides: edited }
+      : { ...node, props: edited };
   },
 
   /**
