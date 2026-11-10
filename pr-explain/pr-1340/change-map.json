@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1340,
+  "headBranch": "claude/magical-cannon-jhtwnh",
+  "baseBranch": "main",
+  "mergeBase": "e75559d319c8b8325b282e58258026c2f31b7f23",
+  "head": "9042065b5b977f1de6714bb182d8c60f4cd81740",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1336.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 240,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "9042065b5b977f1de6714bb182d8c60f4cd81740",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-10T12:58:19Z",
+      "subject": "📝 [Documentation]: PR #1336 の振り返りを記録する",
+      "body": "- harness/records/pr-1336.md を追加(指摘 30 件・手戻り・発火)\n\n背景:\nPR #1336(Issue #1328)がマージされたので、harness-record スキルでその回の指摘・手戻り・\nフックの発火を分類タグ付きで残す。人・bot・CI の指摘は 0 件で、指摘はすべてサブエージェント\n由来と自己修正だった。\n\n採用理由:\n発火ログ(record-firings.sh)が無く、カナリアも通ったので、発火は「計測対象外(フック不発)」と\n書いた。手戻りと Stop フックの経緯は、このセッションの記憶と Issue #1328 のメモから書いた。\n\n影響とトレードオフ:\n差分は harness/records/ の新規 1 ファイルだけ。集計と規約への介入は行わない(harness-growth の管轄)。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NX4968qzXW2nWiKPq",
+      "files": [
+        {
+          "path": "harness/records/pr-1336.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 240,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,240 @@\n+# PR #1336 公開 prop の enabledWhen を binding 先ノードの props で判定する\n+\n+- マージ日: 2026-11-10\n+- 関連 Issue: #1328\n+- 差分規模: 13 ファイル / +953 -184\n+\n+## ゴールと結果\n+\n+ゴールは「インスタンスの公開 prop の欄が出るかどうか(`enabledWhen`)を、binding 先ノードの props(部品内の値 + 途中とインスタンスの上書き + 既定)で判定する」。達成した。Issue の 3 ケース(公開名と binding 先の名前が違う / 条件の prop を公開していない / 別ノードの座標)と入れ子のケースは、main で落ちるテストとして再現してから直した。\n+\n+計画の検証の段階で、インスタンスの欄の `enabledBy` を「同じ部品にある条件の行の公開名(無ければ none)」にすることを範囲に足した。直すと、ラベルが隠れて字下げされた欄が、ぶら下がる先の行が無いまま出るため(指摘 1)。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews`・`get_review_comments`・`get_comments` の 3 つとも確認した。コメントは、自分が投稿したテストケース表と bot の投稿(Storybook プレビュー・CI レポート・VRT)だけ。CI は全件緑で、VRT の差分は 0 件だった(209 件 passed)。\n+\n+## 指摘\n+\n+### 1. 直すと新しく出る欄が、ぶら下がる先の行の無いままラベルを隠す\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `PropRow` は `enabledBy` があるリテラル欄のラベルを隠して字下げする。条件の prop を公開していない部品では条件の行が無く、何の欄か分からない欄が出る。計画は「未決の判断: 無し」としていた。`enabledBy` を公開名(無ければ none)にすることを範囲に足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(未決の判断)\n+\n+### 2. `PropControl.enabledBy` の doc がファイル表に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: インスタンスでは、`enabledBy` が並びに無い prop の名前を指すようになる。doc の直しを計画に足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 7\n+\n+### 3. 前提が崩れる doc がファイル表から 5 件漏れていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `controlsOf`・`publicEditableProps`・`effectiveProps`・`BindingHop`・`resolveThroughRefs` の doc。行番号と、直す記述までを足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 7\n+\n+### 4. Issue に書いた計画の `nodeControls` の経路が誤っていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「今と同じ」と書いたが、今の経路は公開名キーの `effectiveProps` で絞り直すので、直した欄がそこで再び落ちる。`controlsOf` を通さない形に書き直した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 3\n+\n+### 5. `effectiveProps` が `collectDefaultsIfAbsent` の重複として残る\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 変更後は、スキーマ由来の並びだけを受けるようになるため。寄せる計画にした(挙動が同じことは試作で確かめた)。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 6. 同じ binding の連鎖を 2 回独立に辿る計画で、1 回で対を返す案を検討していなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 片方だけ解決できる組み合わせを型で禁止できない。1 回の辿りで、上書き前の既定と上書き後の着いたノードを対で返す形に替えた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 6\n+\n+### 7. `resolvePropTarget` の挙動は不変、という主張が 1 つの入力で成り立たない\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 同じ `node.prop` を 2 つの名前で公開し、途中の参照ノードが辿っていない側だけを上書きする形。`declared` が 5 から 10 に変わる。描画と揃う変化として受け入れ、テストで固定した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 7\n+\n+### 8. 計画のテストに、対になる側・優先順の入力・循環が無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「出る」側に偏っていた(部品で fixed、上書きで hug の「出ない」側が無い)。上書きのテストは、binding 先に別の値が無い入力だった。none 系に循環が無かった。3 つとも足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 9. 新しい型 `InstancePropTarget` にコンパニオンが無く、その性質を答える関数が 3 か所に割れた\n+\n+- 分類: `ownership`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: `conditionPublicName` は `ComponentBinding` の値を読まずに `ComponentBinding` に置かれていた。欄を出すかの判定は prop-control のヘルパーだった。同名のコンパニオンへ寄せた。\n+- 既存ルール: rules/architecture.md「ロジックの帰属先」\n+\n+### 10. 型を確かめた事実が着いた先の型に残らず、届かない `false` が残った\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: `hopIntoPrimitive` で型を確かめたのに、prop-control が `ResolvedProps.forNode` をもう一度呼び、`none` なら欄を出さない形だった。確かめた時点の `ResolvedProps` を持たせた。\n+- 既存ルール: rules/coding.md「処理の通過を型に刻む」\n+\n+### 11. 同じく、届かない `false` が失敗を「欄を出さない」に変えている\n+\n+- 分類: `over-guard`\n+- 出どころ: `レビュー（over-guard-reviewer）`\n+- 内容: 指摘 10 と同じ根本原因(束ねて対応した)。\n+- 既存ルール: rules/coding.md「エラーと不在の表現」\n+\n+### 12. `hop` が、片方だけ見つかることの無い 2 つの探索を両方確かめていた\n+\n+- 分類: `over-guard`\n+- 出どころ: `レビュー（over-guard-reviewer）`\n+- 内容: 上書きは木の形を変えないので、片方だけ none になることは無い。探索を 1 回にし、上書き前の値は見つけたノード名で読む形にした。\n+- 既存ルール: なし\n+\n+### 13. `writtenValuesOf` が `Node` の振り分けを書き写していた\n+\n+- 分類: `ownership`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: doc 自身が「`Node.applyPropEdit` と同じ振り分け」と書いていた。`Node.propEditedValuesOf` に移し、`applyPropEdit` もそれを読む形にした。\n+- 既存ルール: rules/architecture.md「ロジックの帰属先」\n+\n+### 14. `writtenValuesOf` の名前が既存の `Node.writtenPropsOf` と逆の意味だった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 既存は参照ノードで空を返し、新しいほうは overrides を返す。型が同じなので、取り違えてもエラーにならない。改名して移した(指摘 13 と束ねて対応した)。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 15. 並びが等しいかの判定が `session/under-pointer` と同じ形で 2 か所になった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `ArrayEx.isElementwiseEqual` を足し、両方から使う形にした。implementer も実装時に気づいて報告していた。\n+- 既存ルール: rules/architecture.md「utils の形式」\n+\n+### 16. 同じく、並びの比較の重複\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: 指摘 15 と同じ(束ねて対応した)。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 17. 公開 prop 名から辿り始める手順が 2 つの入口で重複していた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `resolveInstancePropTargets` と `resolvePublicPropTarget`。モジュール内の 1 関数にまとめた。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 18. 既定を敷いた props を作る処理が `ResolvedProps.resolve` と `effectiveProps` で二重だった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `PropDefinitionRecord.toEffectiveProps` にまとめた。呼び出し元を列挙したコメントと、「同じ形」の注記も不要になった。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 19. `Option.fromNullable(xs.find(...))` の形が増えた(不採用)\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 差分の前から `src/` に 9 箇所あり、Issue の範囲外として見送った。\n+- 既存ルール: rules/architecture.md「utils の形式」\n+\n+### 20. `find` の述語が `&&` を名前なしで組んでいた\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: `exposesConditionProp` という名前の関数にした。\n+- 既存ルール: rules/naming.md「条件を組んだ式に名前を付ける」\n+\n+### 21. 新しいフィールド名が、区別したいものを名前に出していなかった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: `target.target` の入れ子、`applied`(`declared` との違いが出ていない)、`path`(ファイルパスの語と衝突)。平らにして `withInstanceOverrides` / `nodeNames` にした。`enabledByPublicName` への改名(任意)は見送った。\n+- 既存ルール: rules/naming.md「内容を表さない汎用語を使わない」\n+\n+### 22. 追加した関数の本体に区切りの空行が無く、3 段の入れ子があった\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: 読みやすさの指摘。組ごとに空行を入れ、途中の値に名前を付けて入れ子を開いた。\n+- 既存ルール: なし\n+\n+### 23. `enabledBy` の doc の「条件の行がパネルに出ないなら none」が実装と合わない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 実装は「公開していれば公開名」で、欄が出ているかは見ていない。doc を実装の形に直した。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 24. インスタンスの `enabledBy` だけ公開名にしている理由がコードに無い\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 理由が Issue にしか無く、group 側に揃えてスキーマ名へ戻す修正を招く。Why と Why not を 2 行足した。\n+- 既存ルール: rules/coding.md「Why と Why not は別物として書く」\n+\n+### 25. doc が引いていた `docs/06-ui.md「インスタンス」` という見出しが無い\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: main から持ち越していた参照。該当する節が無いので、引用を外した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 26. `hopIntoPrimitive` / `hopIntoInstance` の `@param` が実引数の型に追随していなかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 引数を `HopNode` に替えたのに、文が元のままだった。直した。\n+- 既存ルール: rules/coding.md「コメントは実装と一致させる」\n+\n+### 27. 1 段目の上書きを、公開 prop の数だけ同じ入力で計算し直している(不採用)\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（performance-reviewer）`\n+- 内容: 性能の指摘(重大度 低)。見積もりは 1 描画あたり約 1.2 万ノードの走査で、1 フレームの予算を圧迫しないので見送った。\n+- 既存ルール: なし\n+\n+### 28. 同じノードかの判定が、途中の段だけが違う入力で守られていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: ミューテーション 26 通りの実測による。末尾のノード名だけで比べる形と、外側のノード名を捨てる形では 1 件も落ちなかった。同じ部品を 2 回使う部品のテストを足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 29. 入れ子の段で、既定がインスタンスの上書き前の値であることが守られていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 入れ子のテストは、着いた先の値しか見ていなかった。途中で `size: 7`、インスタンスで `rowSize: 10` とする入力で、既定が 7 になるテストを足した。パネル側で既定値を見るテストも 1 本足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 30. PreToolUse のフックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: push 前の `echo hook-canary` が deny されずに通った。実行中フラグのマーカーと発火ログも無く、README の表では「本当に不発」の枝に当たる。サブエージェントの実行中に commit を挟んでいないこと、親がファイルを編集していないことを手で確かめた。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- 計画: `plan-reviewer` の指摘 1〜8 で 1 回立て直した。直したのは、ラベルの扱いを範囲に足すこと、辿りを 1 回にすること、`effectiveProps` を寄せること、doc とテストの漏れ。\n+- 実装: 観点別のレビュー 7 件のうち、採用した指摘(9〜18・20〜26)で implementer を 1 回起動し直した(5151407)。方式(`solution-reviewer`)は「維持」で、指摘は無かった。\n+- テスト: `test-reviewer` の実測で落ちなかった 3 通りに、テストを 3 本足した(9371b3b)。\n+- push: レビュー中に Stop フックから「未 push のコミットがある」と数回言われた。サブエージェントの実行中は git 操作を挟まない手順を優先し、push はフェーズ 7 まで遅らせた。\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。このスキルの管轄は記録まで(集計と介入は `harness-growth`)。",
+          "patchLines": 241,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
