@@ -213,7 +213,7 @@ jobs:
         run: bash .github/scripts/check-pr-closing-issue-cases.sh
 
       # pr-closing-issue.yml が呼ぶもう 1 本の検査の判定表。検査対象と別のワークフローに置く理由は
-      # 上と同じ。pre-push に無い理由(再試行の待ちで 20 秒ほどかかる)も上と同じ README の段落。
+      # 上と同じ。pre-push に無い理由は同じ README の `check-duplicate-issue-pr-cases.sh` の箇条。
       - name: 同じ Issue を閉じる他の PR の検査の判定表
         run: bash .github/scripts/check-duplicate-issue-pr-cases.sh
 
@@ -264,7 +264,8 @@ jobs:
       - name: Build report markdown
         run: node .github/scripts/build-frontend-report.mjs ci-artifact > coverage.md
 
-      # レポートの投稿はチェックではないので、3 回とも失敗しただけでは赤にしない。呼び方の誤りは赤にする
+      # レポートの投稿はチェックではないので、3 回とも失敗(exit 1)しただけでは赤にしない。
+      # exit 1 が何を含むかは `upsert-sticky-comment.sh` の「終了コード」
       - name: Post report comment
         env:
           GH_TOKEN: ${{ github.token }}
