@@ -25,7 +25,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 
 | フック | 検査 | 呼んでいるもの |
 | --- | --- | --- |
-| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / story の title / 名指ししたパス / テストヘルパーの重複 / import 規約の判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / テストヘルパーの重複の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図の判定表 / 解説ページの置き場の判定表 / 解説の検査の判定表 / 解説ページの枠の検査の判定表 / 解説ページの核の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 / push 前の検査フックの判定表 / 編集時の検査フックの判定表 / 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表 / 親セッションの編集の判定表 / 判定の読み取りと報告と種別の照合の判定表 / pre-push の結果行の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/parent-session-edit-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |
+| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / story の title / 名指ししたパス / テストヘルパーの重複 / import 規約の判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / テストヘルパーの重複の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図の判定表 / 解説ページの置き場の判定表 / 解説の検査の判定表 / 解説ページの枠の検査の判定表 / 解説ページの核の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 / push 前の検査フックの判定表 / 編集時の検査フックの判定表 / sticky コメントの投稿・差し替えの判定表 / 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表 / 親セッションの編集の判定表 / 判定の読み取りと報告と種別の照合の判定表 / pre-push の結果行の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.github/scripts/upsert-sticky-comment-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/parent-session-edit-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |
 
 | スクリプト | 呼ばれ方 | 内容 |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 PR の解説ページの判定表 5 本(`build-pr-change-map-cases.sh` / `pr-explain-pages-cases.sh` /
 `build-pr-explain-cases.sh` / `check-pr-explain-template-cases.sh` / `pr-explain-core-cases.sh`)も `.github/scripts/` にある。当てる先が `pr-explain.yml` と
 `pr-explain` スキルから呼ばれるスクリプトで、同じ場所にあるため。
-**行数のラチェットと判定表 18 本**(`harness/records/count.sh --ratchet` /
+**行数のラチェットと判定表 19 本**(`harness/records/count.sh --ratchet` /
 `harness/records/count-cases.sh` / `.claude/hooks/lib/import-rule-cases.sh` /
 `.claude/hooks/lib/story-title-cases.sh` / `.claude/hooks/lib/named-path-cases.sh` /
 `.claude/hooks/lib/missing-doc-comments-cases.sh` / `.claude/hooks/lib/duplicate-test-helpers-cases.sh` /
@@ -56,18 +56,20 @@ PR の解説ページの判定表 5 本(`build-pr-change-map-cases.sh` / `pr-exp
 `.claude/hooks/lib/verification-agent-cases.sh` /
 `.claude/hooks/lib/parent-session-edit-cases.sh` /
 `.claude/hooks/lib/cases-report-cases.sh` /
-`harness/githooks/lib/check-tally-cases.sh` と上の解説ページの 5 本)も
+`harness/githooks/lib/check-tally-cases.sh` /
+`.github/scripts/upsert-sticky-comment-cases.sh` と上の解説ページの 5 本)も
 `.claude/hooks/` 側のフック(`pre-push-*.sh`)に対応物を持たない。判定表をどの層へ置くかと、層 3 へ足さない理由は
 `.claude/hooks/README.md`「カバー範囲と残る穴」。
 
 **道具が無い環境では、その道具を使う検査だけを飛ばす。** 既存の `pre-push-*` と同じ扱いで、
-検査できないことを理由に push を止めても検査の質は上がらないため。飛ばす単位は 4 つある。
+検査できないことを理由に push を止めても検査の質は上がらないため。飛ばす単位は 5 つある。
 
 | 無いもの | 飛ぶ検査 |
 | --- | --- |
 | `pnpm` または `node_modules` | 型 / lint / format |
 | `python3`（起動できないものが PATH に居る場合を含む） | doc コメント（と判定表） / import 規約（と判定表） / story の title（と判定表） / 名指ししたパス（と判定表） / テストヘルパーの重複（と判定表） / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図・解説ページの置き場・解説の検査・解説ページの枠の検査の判定表 |
 | `python3`（同上）または `jq` | カナリアの判定表 / push 前の検査フックの判定表 / 編集時の検査フックの判定表 |
+| `jq` | sticky コメントの投稿・差し替えの判定表 |
 | `python3`（同上）または `node`（起動できないもの・Node 20 未満が PATH に居る場合を含む） | 解説ページの核の判定表 |
 
 **飛ばしたことを出力に「飛ばします」と残し、最後の行の件数にも数える。** 通常の成功と綴りが同じだと、
