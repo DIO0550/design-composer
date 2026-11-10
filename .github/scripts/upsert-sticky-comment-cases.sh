@@ -80,14 +80,15 @@ new_case() {
 
 # 置き場 $1 で共通スクリプトを走らせ、`exit=<終了コード> calls=<呼ばれ方>` を返す。
 # $2 以降はスクリプトへの引数。失敗のさせ方は呼び出し側が環境変数で渡す。
-# 投げ先の環境変数を欠いた形は、$UNSET に欠く変数の名前を渡して作る
+# 投げ先の環境変数を欠いた形は、$UNSET に欠く変数の名前を渡して作る。PR 番号は $CASE_PR_NUMBER で
+# 差し替える(既定 1)
 run_upsert() {
   local dir="$1" status unset_flag=()
   shift
   [ -n "${UNSET:-}" ] && unset_flag=(-u "$UNSET")
   # 空の配列を `"${a[@]}"` で展開すると、bash 4.4 未満では `set -u` が未定義として落ちる
   STUB_DIR="$dir" PATH="$work/bin:$PATH" STICKY_COMMENT_RETRY_WAIT=0 \
-    GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 \
+    GITHUB_REPOSITORY=owner/repo PR_NUMBER="${CASE_PR_NUMBER:-1}" \
     env ${unset_flag[@]+"${unset_flag[@]}"} bash "$script" "$@" >/dev/null 2>&1
   status=$?
   printf 'exit=%s calls=%s' "$status" "$(tr '\n' ' ' <"$dir/calls" | sed 's/ $//')"
@@ -201,7 +202,7 @@ report 'exit=2 calls=' "$(run_upsert "$dir" --marker 'sticky-comment: cases' --b
   'marker が HTML コメントの形でなければ、gh を呼ばずに使い方の誤りで終わる'
 
 dir="$(new_case "$no_comments")"
-report 'exit=2 calls=' "$(run_upsert "$dir" --marker '<!-- a") | .x // ("b -->' --body-file "$work/body.md" --if-missing post)" \
+report 'exit=2 calls=' "$(run_upsert "$dir" --marker '<!-- a" -->' --body-file "$work/body.md" --if-missing post)" \
   'marker に二重引用符が入っていれば、gh を呼ばずに使い方の誤りで終わる'
 
 dir="$(new_case "$no_comments")"
@@ -209,12 +210,36 @@ report 'exit=2 calls=' "$(run_upsert "$dir" --marker '<!-- a\ -->' --body-file "
   'marker にバックスラッシュが入っていれば、gh を呼ばずに使い方の誤りで終わる'
 
 dir="$(new_case "$no_comments")"
+report 'exit=2 calls=' "$(run_upsert "$dir" --marker '<!-- a --> "' --body-file "$work/body.md" --if-missing post)" \
+  'marker の閉じの後ろに続きがあれば、gh を呼ばずに使い方の誤りで終わる'
+
+dir="$(new_case "$no_comments")"
+report 'exit=2 calls=' "$(run_upsert "$dir" --marker 'x<!-- a -->' --body-file "$work/body.md" --if-missing post)" \
+  'marker の開きの前に何かあれば、gh を呼ばずに使い方の誤りで終わる'
+
+dir="$(new_case "$no_comments")"
 report 'exit=2 calls=' "$(run_upsert "$dir" --marker "$marker" --body-file "$work/missing.md" --if-missing post)" \
   '本文のファイルが読めなければ、gh を呼ばずに使い方の誤りで終わる'
 
 dir="$(new_case "$no_comments")"
+report 'exit=2 calls=' "$(run_upsert "$dir" --marker "$marker" --body-file "$work" --if-missing post)" \
+  '本文のファイルとしてディレクトリを渡したら、gh を呼ばずに使い方の誤りで終わる'
+
+dir="$(new_case "$no_comments")"
+report 'exit=2 calls=' "$(run_upsert "$dir" --marker "$marker" --body-file "$work/body.md" --if-missing)" \
+  '値の無い引数で終わっていれば、gh を呼ばずに使い方の誤りで終わる(受け流される 3 回失敗と同じ 1 にしない)'
+
+dir="$(new_case "$no_comments")"
+report 'exit=2 calls=' "$(run_upsert "$dir" "${post[@]}" --unknown x)" \
+  '知らない引数を渡したら、gh を呼ばずに使い方の誤りで終わる'
+
+dir="$(new_case "$no_comments")"
 report 'exit=2 calls=' "$(UNSET=PR_NUMBER run_upsert "$dir" "${post[@]}")" \
   'PR 番号が無ければ、gh を呼ばずに使い方の誤りで終わる'
+
+dir="$(new_case "$no_comments")"
+report 'exit=2 calls=' "$(CASE_PR_NUMBER=abc run_upsert "$dir" "${post[@]}")" \
+  'PR 番号が数字でなければ、gh を呼ばずに使い方の誤りで終わる'
 
 dir="$(new_case "$no_comments")"
 report 'exit=2 calls=' "$(UNSET=GITHUB_REPOSITORY run_upsert "$dir" "${post[@]}")" \

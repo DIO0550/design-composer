@@ -73,7 +73,9 @@ esac
 # 本文は起動時に 1 度だけ読む。呼び出し側が `<(...)` で渡すと 2 度目の読み出しは空になり、
 # やり直した後の書き込みが空の本文になる。
 # `-f body="$body"` で引数に載せないのは、1 引数が 128KiB に達する本文で `gh` が起動できない(E2BIG)ため
-[ -r "$body_file" ] || usage
+body_file_readable=false
+[ -r "$body_file" ] && [ ! -d "$body_file" ] && body_file_readable=true
+[ "$body_file_readable" = true ] || usage
 body_with_marker="$(mktemp)" || temp_file_failed
 trap 'rm -f "$body_with_marker"' EXIT
 { printf '%s\n' "$marker"; cat -- "$body_file"; } >"$body_with_marker" || temp_file_failed
