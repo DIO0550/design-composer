@@ -1,5 +1,5 @@
-import type { ReactElement, ReactNode } from "react";
-import type { DocumentError } from "@/domains/session/document-error";
+import { type ReactElement, type ReactNode, useMemo } from "react";
+import { DocumentError } from "@/domains/session/document-error";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
 import { FileValidity } from "@/domains/session/file-validity";
 import type { NodeTemplate } from "@/domains/session/node-template";
@@ -28,15 +28,19 @@ type CanvasDock =
  * つの一覧を並べると、外部エディタでしか直せないファイルの一覧が、アプリ内で直せるドキ
  * ュメントの一覧の場所を奪う。
  *
- * @param state エラーの出どころになるエディタの状態
- * @returns ファイルが不正ならそのエラー、そうでなければ編集で作ったエラー
+ * @param fileValidity ファイルが不正かどうかと、不正ならそのエラー
+ * @param documentErrors 画面に映っているドキュメント自身の不正
+ * @returns ファイルが不正ならそのエラー、そうでなければ受け取ったドキュメントのエラー
  */
-function canvasDock(state: EditorState): CanvasDock {
-  const fileValidity = state.fileValidity;
+function canvasDock(
+  fileValidity: FileValidity,
+  documentErrors: readonly DocumentError[],
+): CanvasDock {
   if (FileValidity.isInvalid(fileValidity)) {
     return { kind: "file-invalid", errors: fileValidity.errors };
   }
-  return { kind: "editable", errors: EditorState.documentErrors(state) };
+
+  return { kind: "editable", errors: documentErrors };
 }
 
 /**
@@ -90,19 +94,22 @@ type CanvasDockContentProps = Readonly<{
  *
  * 編集を続けたまま直せる。一覧は 0 件なら何も出さない。
  *
+ * @param dock 今どちらの状態かと、そこで出すエラー
+ * @param props 一覧・ツールバーへ渡す操作と、トークンの選択
  * @returns ファイルが不正ならエラー一覧と破線の帯、そうでなければそれにキャンバスの
  *   ツールバーを足したもの
  */
-function canvasDockParts({
-  state,
-  tokenSelection,
-  node,
-  artboard,
-  dragged,
-  onReveal,
-  fileRevert,
-}: CanvasDockContentProps): ReactElement {
-  const dock = canvasDock(state);
+function canvasDockParts(
+  dock: CanvasDock,
+  {
+    tokenSelection,
+    node,
+    artboard,
+    dragged,
+    onReveal,
+    fileRevert,
+  }: CanvasDockContentProps,
+): ReactElement {
   switch (dock.kind) {
     case "file-invalid":
       return (
@@ -148,9 +155,32 @@ function canvasDockParts({
  * 器を出し分けの外に置くのは、どちらの状態でも積み方（順序・間隔・当たり判定）が同じで、
  * 枝ごとに書くと片方だけ器を失っても誰も気づかないため。
  *
- * @param props 中身の出し分けへそのまま渡すもの
+ * @param props どちらの状態かを決める出どころと、中身の出し分けへ渡すもの
  * @returns 状態に応じた中身を積んだ、キャンバス下端の器
  */
 export function CanvasDockContent(props: CanvasDockContentProps): ReactElement {
-  return <CanvasDockStack>{canvasDockParts(props)}</CanvasDockStack>;
+  const designDocument = EditorState.document(props.state);
+  /*
+   * 画面に映っているドキュメント自身の不正。使用中トークンの削除で作った dangling 参照も、
+   * 開いた時点で既にファイルに載っていた不正も出る。
+   *
+   * 覚える相手はドキュメントで、選択・ドラッグ・パンで描き直されても数え直さない
+   * （`ArtboardCanvas` の `compiled` と同じ形）。性能の性質なので、テストは数え直しの
+   * 回数を見ず、memo を外しても落ちない。
+   * 鍵に fileValidity を入れないのは、エラーがドキュメントだけから決まるため。不正の間は
+   * ドキュメントが変わらないので、不正になっても数え直しは起きない。
+   */
+  const documentErrors = useMemo(
+    () => DocumentError.collectFrom(designDocument),
+    [designDocument],
+  );
+
+  return (
+    <CanvasDockStack>
+      {canvasDockParts(
+        canvasDock(props.state.fileValidity, documentErrors),
+        props,
+      )}
+    </CanvasDockStack>
+  );
 }

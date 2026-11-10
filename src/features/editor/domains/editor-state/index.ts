@@ -19,7 +19,6 @@ import {
   TokenSet,
   type TokenValue,
 } from "@/domains/dcmp/token";
-import { DocumentError } from "@/domains/session/document-error";
 import type { DocumentReload } from "@/domains/session/document-reload";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import {
@@ -48,7 +47,7 @@ import { Result } from "@/utils/Result";
  * 中の名前でしか意味を持たないため同じ器に持ち、`copiedNodes`（アプリ内クリップボード）と
  * `isRenaming`（名前を編集中か）も同じく非永続なのでここに置く。
  *
- * ドキュメント自身の不正は持たず `EditorState.documentErrors` で導出する。
+ * ドキュメント自身の不正は持たず、表示する側が `DocumentError.collectFrom` で導出する。
  *
  * 現在地は常に「最後に正常だったドキュメント」で、外部変更を拒んでも差し替えない。
  * `fileValidity` が `invalid` の間は編集を受け付けない（古い表示から作った内容を書き出すと、
@@ -418,17 +417,6 @@ export const EditorState = {
         EditorState.select(edited, newName),
       );
     });
-  },
-
-  /**
-   * 画面に映っているドキュメント自身の不正。使用中トークンの削除で作った dangling 参照も、開
-   * いた時点で既にファイルに載っていた不正も、ここに出る。
-   *
-   * @param state ドキュメントの出どころになるエディタの状態
-   * @returns 見つかった不正。無ければ空
-   */
-  documentErrors(state: EditorState): readonly DocumentError[] {
-    return DocumentError.collectFrom(EditorState.document(state));
   },
 
   /**
