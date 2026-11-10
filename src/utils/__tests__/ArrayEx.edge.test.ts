@@ -165,3 +165,15 @@ test("空でない並びから重複を取り除くとき、先頭と等しい�
 test("どの要素も写せなければ、写した並びは空になる", () => {
   expect(ArrayEx.filterMap(["a", "b"], () => Option.none)).toEqual([]);
 });
+
+test("一方が他方の先頭部分にすぎない並びは、要素ごとに等しくない", () => {
+  expect(ArrayEx.isElementwiseEqual(["a"], ["a", "b"])).toBe(false);
+});
+
+test("空の並びどうしは、要素ごとに等しい", () => {
+  expect(ArrayEx.isElementwiseEqual([], [])).toBe(true);
+});
+
+test("要素ごとの比較は NaN どうしを等しいとみなす", () => {
+  expect(ArrayEx.isElementwiseEqual([Number.NaN], [Number.NaN])).toBe(true);
+});

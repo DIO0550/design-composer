@@ -1,18 +1,19 @@
 import { Artboard } from "@/domains/dcmp/artboard";
-import { Component, ComponentSet } from "@/domains/dcmp/component";
-import { ComponentBinding } from "@/domains/dcmp/component-binding";
+import {
+  ComponentBinding,
+  InstancePropTarget,
+} from "@/domains/dcmp/component-binding";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import {
   Node,
   PropEdit,
   type Props,
   type PropValue,
-  type RefNode,
 } from "@/domains/dcmp/node";
 import {
   PrimitiveSchema,
   PropDefinition,
-  type PropDefinitionRecord,
+  PropDefinitionRecord,
   type PropShorthand,
   RefOwnPropDefinitions,
   type ShorthandName,
@@ -102,8 +103,10 @@ export type CurrentPaint =
  * `value`（明示的に設定されている値）と `defaultValue`（設定が無いときに効く値）を
  * 別々に持つのは、パネルが両者を区別して見せるため（docs/06-ui.md）。
  *
- * `enabledBy` は、その prop が編集できる条件を出している prop の名前（スキーマの
- * `enabledWhen.prop`）。
+ * `enabledBy` は、その prop の欄が出る条件（`enabledWhen`）を出している prop の名前。スキーマ
+ * から並べる欄（group の節・インスタンス自身の値）ではスキーマの `enabledWhen.prop`、インスタンス
+ * の公開 prop では条件の prop を公開していればその公開名。条件が無いか、インスタンスで条件の
+ * prop を公開していなければ `none`。
  */
 export type PropControl = Readonly<{
   prop: string;
@@ -196,6 +199,7 @@ type EditableProp = Readonly<{
   name: string;
   definition: PropDefinition;
   defaultValue: Option<PropValue>;
+  enabledBy: Option<string>;
 }>;
 
 /**
@@ -361,68 +365,32 @@ function declaredEditableProps(
     name,
     definition,
     defaultValue: Option.fromNullable(definition.default),
+    enabledBy: Option.fromNullable(definition.enabledWhen?.prop),
   }));
 }
 
 /**
- * 部品が公開している prop（docs/06-ui.md「インスタンス」）。binding 先が設定している値を
- * 既定にし、無ければスキーマの `default` に落とす。
+ * 部品が公開している prop 1 つの素材。binding 先が設定している値を既定にし、無ければスキーマの
+ * `default` に落とす。
  *
- * 宣言が解決できない prop（部品が壊れている）はコントロールを出さない。
+ * `enabledBy` を公開名にするのは、PropRow が `enabledBy` のあるリテラル欄のラベルを隠して字下げ
+ * するため。スキーマの `enabledWhen.prop` のままだとパネルに無い行を指し、ラベルの無い欄が残る。
  *
- * @param components 参照先の部品を引くための部品一式
- * @param node 公開 prop を知りたいインスタンスのノード
- * @returns 編集できる公開 prop の並び。参照先や宣言が解決できなければ空
+ * @param targets 同じインスタンスの公開 prop の着いた先。条件の公開名を探す範囲
+ * @param target 素材にする公開 prop の着いた先
+ * @returns 公開名で編集する prop の素材
  */
-function publicEditableProps(
-  components: ComponentSet,
-  node: RefNode,
-): readonly EditableProp[] {
-  const component = ComponentSet.get(components, node.ref);
-  if (!Option.isSome(component)) {
-    return [];
-  }
-  return Component.publicPropNames(component.value).flatMap((name) => {
-    const target = ComponentBinding.resolvePublicPropTarget(components, {
-      component: node.ref,
-      prop: name,
-    });
-    if (!Option.isSome(target)) {
-      return [];
-    }
-    const { definition, declared } = target.value;
-    return [
-      {
-        name,
-        definition,
-        defaultValue: Option.or(
-          declared,
-          Option.fromNullable(definition.default),
-        ),
-      },
-    ];
-  });
-}
-
-/**
- * `enabledWhen` の判定に使う props。
- * 設定されていない prop も既定値では効いているため、既定を敷いた上で判定する
- * （`widthMode` を書いていない Box でも既定の `hug` として扱われ、`width` は出ない）。
- *
- * @param editables 既定値の出どころになる、編集できる prop の並び
- * @param props 実際に設定されている props
- * @returns 既定値の上に設定値を重ねた props
- */
-function effectiveProps(
-  editables: readonly EditableProp[],
-  props: Props,
-): Props {
-  const defaults = editables.flatMap((editable) =>
-    Option.isSome(editable.defaultValue)
-      ? [[editable.name, editable.defaultValue.value] as const]
-      : [],
-  );
-  return { ...Object.fromEntries(defaults), ...props };
+function publicEditableProp(
+  targets: readonly InstancePropTarget[],
+  target: InstancePropTarget,
+): EditableProp {
+  const { definition, declared } = target;
+  return {
+    name: target.name,
+    definition,
+    defaultValue: Option.or(declared, Option.fromNullable(definition.default)),
+    enabledBy: InstancePropTarget.conditionPublicName(targets, target),
+  };
 }
 
 /**
@@ -444,43 +412,45 @@ function controlOf(
     input: inputOf(editable, value, tokens),
     value,
     defaultValue: editable.defaultValue,
-    enabledBy: Option.fromNullable(editable.definition.enabledWhen?.prop),
+    enabledBy: editable.enabledBy,
   };
 }
 
 /**
  * 条件を満たさない prop はコントロール自体を作らない
  * （docs/06-ui.md「`enabledWhen` により表示を出し分ける」）。
+ * 設定されていない prop も既定値では効いているため、既定を敷いた上で判定する
+ * （`widthMode` を書いていない Box でも既定の `hug` として扱われ、`width` は出ない）。
  *
- * @param editables 編集できる prop の並び
+ * @param schema 編集できる prop の出どころになる prop 定義
  * @param props `enabledWhen` の判定に使う props
- * @returns 条件を満たす prop だけを、渡された並び順のまま返す
+ * @returns 条件を満たす prop だけを、スキーマの宣言順のまま返す
  */
 function enabledEditableProps(
-  editables: readonly EditableProp[],
+  schema: PropDefinitionRecord,
   props: Props,
 ): readonly EditableProp[] {
-  const effective = effectiveProps(editables, props);
-  return editables.filter((editable) =>
+  const effective = PropDefinitionRecord.toEffectiveProps(schema, props);
+  return declaredEditableProps(schema).filter((editable) =>
     PropDefinition.isEnabled(editable.definition, effective),
   );
 }
 
 /**
- * 見出しで分けない編集欄の並び（インスタンスの `Public props` と、インスタンス自身の値）。
+ * 見出しで分けない編集欄の並び（インスタンス自身の値）。
  * 並びは宣言順（docs/03「order フィールドは持たない」）。
  *
- * @param editables 編集できる prop の並び
+ * @param schema 編集できる prop の出どころになる prop 定義
  * @param props 今の値と `enabledWhen` の判定に使う props
  * @param tokens トークン参照の選択肢の出どころ
  * @returns 条件を満たす prop の編集欄の並び
  */
 function controlsOf(
-  editables: readonly EditableProp[],
+  schema: PropDefinitionRecord,
   props: Props,
   tokens: TokenSet,
 ): readonly PropControl[] {
-  return enabledEditableProps(editables, props).map((editable) =>
+  return enabledEditableProps(schema, props).map((editable) =>
     controlOf(editable, props, tokens),
   );
 }
@@ -571,17 +541,17 @@ function rowsOf(
  * セクションの並びは `group` の初出順、セクション内は宣言順
  * （docs/03「order フィールドは持たない」）。
  *
- * @param editables 編集できる prop の並び
+ * @param schema 編集できる prop の出どころになる prop 定義
  * @param props 今の値と `enabledWhen` の判定に使う props
  * @param tokens トークン参照の選択肢の出どころ
  * @returns `group` ごとにまとめた編集欄の並び
  */
 function sectionsOf(
-  editables: readonly EditableProp[],
+  schema: PropDefinitionRecord,
   props: Props,
   tokens: TokenSet,
 ): readonly PropControlSection[] {
-  const enabled = enabledEditableProps(editables, props);
+  const enabled = enabledEditableProps(schema, props);
   const groups = ArrayEx.distinct(
     enabled.map((editable) => editable.definition.group),
   );
@@ -607,16 +577,24 @@ function sectionsOf(
  */
 function nodeControls(document: DesignDocument, node: Node): SelectionControls {
   if (Node.isRef(node)) {
+    const targets = ComponentBinding.resolveInstancePropTargets(
+      document.components,
+      node,
+    );
     return {
       kind: "instance",
       source: node.ref,
-      publicProps: controlsOf(
-        publicEditableProps(document.components, node),
-        node.overrides ?? {},
-        document.tokens,
-      ),
+      publicProps: targets
+        .filter(InstancePropTarget.isEnabled)
+        .map((target) =>
+          controlOf(
+            publicEditableProp(targets, target),
+            node.overrides ?? {},
+            document.tokens,
+          ),
+        ),
       refOwnProps: controlsOf(
-        declaredEditableProps(RefOwnPropDefinitions),
+        RefOwnPropDefinitions,
         Node.refOwnPropsOf(node),
         document.tokens,
       ),
@@ -637,11 +615,7 @@ function nodeControls(document: DesignDocument, node: Node): SelectionControls {
   }
   return {
     kind: "groups",
-    sections: sectionsOf(
-      declaredEditableProps(schema.value.props),
-      node.props ?? {},
-      document.tokens,
-    ),
+    sections: sectionsOf(schema.value.props, node.props ?? {}, document.tokens),
   };
 }
 
@@ -928,7 +902,7 @@ export const SelectionControls = {
       return Option.some({
         kind: "groups",
         sections: sectionsOf(
-          declaredEditableProps(Artboard.propDefinitions()),
+          Artboard.propDefinitions(),
           artboard.value.props ?? {},
           document.tokens,
         ),

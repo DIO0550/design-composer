@@ -380,8 +380,7 @@ export const PropDefinitionRecord = {
    * 設定されていない prop に効くデフォルト。並びはスキーマの宣言順。
    *
    * 「未設定ならどの値が効くか」はスキーマ自身の性質なので、解決を要する側がそれぞれ走査
-   * を持たずここを呼ぶ（`collectEffectiveAssignments` と `ResolvedProps.resolve`。
-   * `session/prop-control` は既定の出どころが binding にもまたがるので寄せていない）。
+   * を持たずここを呼ぶ（`collectEffectiveAssignments`・`toEffectiveProps`）。
    *
    * @param schema 補いの出どころになる prop 定義
    * @param props 実際に設定されている props
@@ -401,13 +400,27 @@ export const PropDefinitionRecord = {
   },
 
   /**
+   * 既定を敷いた上に設定値を重ねた props。
+   *
+   * @param schema 既定の出どころになる prop 定義
+   * @param props 実際に設定されている props
+   * @returns 未設定でデフォルトを持つ prop にデフォルトを補った props。設定されている prop は
+   *   スキーマに無いものも含めてそのまま残す
+   */
+  toEffectiveProps(schema: PropDefinitionRecord, props: Props): Props {
+    const defaulted = PropDefinitionRecord.collectDefaultsIfAbsent(
+      schema,
+      props,
+    ).map(({ name, value }): readonly [string, PropValue] => [name, value]);
+    return { ...Object.fromEntries(defaulted), ...props };
+  },
+
+  /**
    * その props の下で実際に効いている prop 設定の並び。明示設定に、未設定の prop のデフ
    * ォルトを足したもの。
    *
    * この並びが `collectRefPropNames` と `collectErrors` の共通の走査対象で、片方だけがデフォ
    * ルトを見る状態に戻ると、参照 0 件のトークンを消して dangling が出る食い違いが表に出る。
-   *
-   * `session/prop-control` の `effectiveProps` とも範囲が違う（binding 由来の既定も含む）。
    *
    * @param schema 効いている値の出どころになる prop 定義
    * @param props 実際に設定されている props

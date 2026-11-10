@@ -1,4 +1,5 @@
 import type { SelectionDig } from "@/domains/session/selection-dig";
+import { ArrayEx } from "@/utils/ArrayEx";
 
 /**
  * キャンバスのポインタの下にあるものを、どの深さで読むか（docs/06-ui.md「キャンバスのクリッ
@@ -36,10 +37,6 @@ export const UnderPointer = {
    * @returns 名前の並びと掘る量がどちらも同じなら真
    */
   equals(a: UnderPointer, b: UnderPointer): boolean {
-    const isSameNames =
-      a.names.length === b.names.length &&
-      a.names.every((name, index) => name === b.names[index]);
-
-    return isSameNames && a.dig === b.dig;
+    return ArrayEx.isElementwiseEqual(a.names, b.names) && a.dig === b.dig;
   },
 } as const;

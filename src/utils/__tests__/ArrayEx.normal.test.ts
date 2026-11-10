@@ -282,3 +282,11 @@ test("写して値のあった要素だけが、元の並びの順に残る", ()
     ),
   ).toEqual([30, 20, 40]);
 });
+
+test("同じ長さで同じ位置に同じ要素を持つ並びは、要素ごとに等しい", () => {
+  expect(ArrayEx.isElementwiseEqual(["a", "b"], ["a", "b"])).toBe(true);
+});
+
+test("同じ要素でも並びの順が違えば、要素ごとに等しくない", () => {
+  expect(ArrayEx.isElementwiseEqual(["a", "b"], ["b", "a"])).toBe(false);
+});

@@ -128,3 +128,30 @@ test("持てない prop が 2 つ以上あれば、編集が指す順にすべ�
 
   expect(edited).toEqual(Result.err(["label", "gap"]));
 });
+
+test("参照ノードで prop の編集が書き込まれる先は公開 prop への上書きで、インスタンス自身の値を含まない", () => {
+  expect(
+    Node.propEditedValuesOf({
+      name: "submit",
+      ref: "primary-button",
+      locking: "locked",
+      overrides: { label: "保存" },
+    }),
+  ).toEqual({ label: "保存" });
+});
+
+test("プリミティブで prop の編集が書き込まれる先は、そのノードの props", () => {
+  expect(
+    Node.propEditedValuesOf({
+      name: "body",
+      type: "Box",
+      props: { gap: "md" },
+    }),
+  ).toEqual({ gap: "md" });
+});
+
+test("上書きを持たない参照ノードでは、prop の編集が書き込まれる先は空", () => {
+  expect(
+    Node.propEditedValuesOf({ name: "submit", ref: "primary-button" }),
+  ).toEqual({});
+});
