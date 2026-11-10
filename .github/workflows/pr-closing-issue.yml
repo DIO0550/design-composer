@@ -15,8 +15,7 @@
 # 閉じる Issue が既にクローズされていることは、この検査だけではどちらが正しいか判定できない
 # 情報提供にとどまるため、**判定では赤にしない**
 # （`harness/records/pr-604.md` 指摘 1 / `pr-605.md` 指摘 1）。
-# そのぶん、このジョブの赤は「問い合わせが 3 回とも通らなかった」か、コメントの共通スクリプトを
-# 呼べなかった(exit 1 以外)ことだけを意味する。
+# 赤の意味は `check-duplicate-issue-pr.sh` の末尾のコメント。
 name: pr-closing-issue
 
 on:
@@ -75,12 +74,10 @@ jobs:
         with:
           fetch-depth: 1
 
-      # `continue-on-error` は置かない。判定では赤にしない設計だが、それをステップ側で
-      # 実現すると、クエリのフィールド名・`permissions` の破損や GraphQL の 3 回失敗まで
-      # 緑になり、検査が動いていないことに誰も気づけない。コメントの共通スクリプトの
-      # 3 回失敗(exit 1)だけをスクリプトの中で握る
+      # `continue-on-error` は置かない。理由と、スクリプトの中で握る終了コードは
+      # `check-duplicate-issue-pr.sh` の末尾のコメント
       - name: 重複とクローズ済みの Issue を確認してコメントする
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
-        run: bash .github/scripts/check-duplicate-issue-pr.sh
+        run: bash .github/scripts/check-duplicate-issue-pr.sh --comment

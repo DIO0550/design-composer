@@ -61,8 +61,7 @@ run_case() {
 
   json="$(mktemp)"
   result_json "$closing" "$others" "$total" >"$json"
-  # Actions は GITHUB_REPOSITORY を既定で置くので、空にしないと本物の gh でコメントを投げに行く
-  actual="$(GITHUB_REPOSITORY= PR_NUMBER="$self" bash "$script" "$json" 2>&1)"
+  actual="$(PR_NUMBER="$self" bash "$script" "$json" 2>&1)"
   rm -f "$json"
 
   if [ "$actual" = "$expected" ]; then
@@ -157,13 +156,13 @@ run_case '[]
 
 # --- コメントの投稿 ---
 #
-# 貼る / 貼らないの指定と、共通スクリプトが 3 回とも失敗したときに赤にしない扱い・それ以外の
-# 終了コードは赤にする扱いを、差し替えた `gh` の呼ばれ方と終了コードで固定する。ここが無いと、**コメントを 1 度も投稿しない実装でも上のケースは
-# 全部緑**になる(判定の JSON しか見ていないため)。
+# 貼る / 貼らないのどちらを共通スクリプトへ渡すかを、差し替えた `gh` の呼ばれ方で固定する。
+# 共通スクリプトが失敗したときは、呼ばれ方ではなく終了コード(3 回失敗なら 0・それ以外は赤)を見る
+# (やり直しの並びは `upsert-sticky-comment-cases.sh` が持つ)。ここが無いと、**コメントを 1 度も
+# 投稿しない実装でも上のケースは全部緑**になる(判定の JSON しか見ていないため)。
 #
 # `gh` は呼ばれ方を $STUB_CALL_FILE へ、body=@<file> の先のファイルを読んで $STUB_BODY_FILE へ
 # 落とすだけにする。$FAIL_ON に GET / POST / PATCH を渡すと、その種類の呼び出しを毎回失敗させる
-# (共通スクリプトは 3 回までやり直す)
 install_gh_stub() {
   mkdir -p "$1/bin"
   cat >"$1/bin/gh" <<'STUB'
@@ -196,7 +195,7 @@ run_with_gh_stub() {
   PATH="$dir/bin:$PATH" STUB_CALL_FILE="$dir/calls" STUB_BODY_FILE="$dir/body" \
     EXISTING_COMMENT_ID="$existing" FAIL_ON="$fail_on" STICKY_COMMENT_RETRY_WAIT=0 \
     GITHUB_REPOSITORY=owner/repo PR_NUMBER=604 \
-    bash "$script" "$dir/result.json" >/dev/null 2>&1
+    bash "$script" --comment "$dir/result.json" >/dev/null 2>&1
 }
 
 run_comment_case() {
@@ -208,12 +207,31 @@ run_comment_case() {
   calls="$(tr '\n' ' ' <"$dir/calls" 2>/dev/null || true)"
   rm -rf "$dir"
 
-  if [ "${calls% }" = "$expected" ] && [ "$actual" = 0 ]; then
+  local called_as_expected=false
+  [ "${calls% }" = "$expected" ] && [ "$actual" = 0 ] && called_as_expected=true
+  if [ "$called_as_expected" = true ]; then
     printf 'ok   %s\n' "$label"
     return
   fi
   printf 'NG   exit=%s 呼び出し=%s (期待 exit=0 呼び出し=%s)  %s\n' \
     "$actual" "${calls% }" "$expected" "$label"
+  failed=1
+}
+
+# 共通スクリプトが 3 回とも失敗しても、この検査は赤にしない(exit 0)ことを見る
+run_comment_failure_case() {
+  local existing="$1" fail_on="$2" label="$3"
+  local dir actual=0
+
+  dir="$(mktemp -d)"
+  run_with_gh_stub "$dir" "$existing" "$fail_on" "$with_duplicate" || actual=$?
+  rm -rf "$dir"
+
+  if [ "$actual" = 0 ]; then
+    printf 'ok   %s\n' "$label"
+    return
+  fi
+  printf 'NG   exit=%s (期待 exit=0)  %s\n' "$actual" "$label"
   failed=1
 }
 
@@ -225,10 +243,34 @@ run_comment_case 'GET POST'  ''      ''      "$with_duplicate"    '重複があ�
 run_comment_case 'GET PATCH' '12345' ''      "$with_duplicate"    '重複があってコメントが既にあれば、差し替える'
 run_comment_case 'GET PATCH' '12345' ''      "$without_duplicate" '重複が無くなったら、貼ってあるコメントを差し替える'
 run_comment_case 'GET'       ''      ''      "$without_duplicate" '重複が無くてコメントも無ければ、何も貼らない'
-run_comment_case 'GET-FAILED GET-FAILED GET-FAILED' '' GET     "$with_duplicate"    'コメントの一覧を取れなければ、貼らない（取れなかったのを「無い」と読んで二重に貼らない）'
-run_comment_case 'GET POST-FAILED GET POST-FAILED GET POST-FAILED' '' POST  "$with_duplicate"    'コメントの投稿に失敗しても赤にしない'
-run_comment_case 'GET PATCH-FAILED GET PATCH-FAILED GET PATCH-FAILED' '12345' PATCH "$with_duplicate" 'コメントの差し替えに失敗しても赤にしない'
 run_comment_case 'GET POST'  ''      ''      "$with_closed_issue" '閉じる Issue がクローズ済みなら、重複が無くても新しく貼る'
+run_comment_failure_case ''      GET   'コメントの一覧を取れなくても赤にしない'
+run_comment_failure_case ''      POST  'コメントの投稿に失敗しても赤にしない'
+run_comment_failure_case '12345' PATCH 'コメントの差し替えに失敗しても赤にしない'
+
+# `--comment` が無ければ、投げ先の環境変数が置かれていてもコメントしない(`gh` を 1 度も呼ばない)
+run_without_comment_flag_case() {
+  local label="$1" dir calls
+
+  dir="$(mktemp -d)"
+  install_gh_stub "$dir"
+  printf '%s' "$with_duplicate" >"$dir/result.json"
+  : >"$dir/calls"
+  PATH="$dir/bin:$PATH" STUB_CALL_FILE="$dir/calls" STUB_BODY_FILE="$dir/body" \
+    STICKY_COMMENT_RETRY_WAIT=0 GITHUB_REPOSITORY=owner/repo PR_NUMBER=604 \
+    bash "$script" "$dir/result.json" >/dev/null 2>&1
+  calls="$(tr '\n' ' ' <"$dir/calls")"
+  rm -rf "$dir"
+
+  if [ -z "$calls" ]; then
+    printf 'ok   %s\n' "$label"
+    return
+  fi
+  printf 'NG   呼び出し=%s (期待 呼び出し無し)  %s\n' "${calls% }" "$label"
+  failed=1
+}
+
+run_without_comment_flag_case 'コメントの指定が無ければ、リポジトリと PR 番号が置かれていても gh を呼ばない'
 
 # 受け流すのは共通スクリプトの 3 回失敗(exit 1)だけ。この検査だけを一時ディレクトリへ写し、
 # 共通スクリプトが隣に無い形で走らせる
@@ -241,14 +283,14 @@ run_without_upsert_case() {
   printf '%s' "$with_duplicate" >"$dir/result.json"
   PATH="$dir/bin:$PATH" STUB_CALL_FILE="$dir/calls" STUB_BODY_FILE="$dir/body" \
     STICKY_COMMENT_RETRY_WAIT=0 GITHUB_REPOSITORY=owner/repo PR_NUMBER=604 \
-    bash "$dir/check-duplicate-issue-pr.sh" "$dir/result.json" >/dev/null 2>&1 || actual=$?
+    bash "$dir/check-duplicate-issue-pr.sh" --comment "$dir/result.json" >/dev/null 2>&1 || actual=$?
   rm -rf "$dir"
 
-  if [ "$actual" != 0 ]; then
+  if [ "$actual" = 127 ]; then
     printf 'ok   exit=%s  %s\n' "$actual" "$label"
     return
   fi
-  printf 'NG   exit=0 (期待 0 以外)  %s\n' "$label"
+  printf 'NG   exit=%s (期待 127)  %s\n' "$actual" "$label"
   failed=1
 }
 
@@ -277,7 +319,7 @@ run_body_case() {
 }
 
 run_body_case '<!-- sticky-comment: duplicate-issue-pr -->' "$with_duplicate" \
-  '貼る本文は marker で始まる（次の実行がこのコメントを見つけられる）'
+  '貼る本文に marker の綴りが入る'
 run_body_case 'Issue #595 は PR #602 も閉じています。' "$with_duplicate" \
   '貼る本文に、閉じる Issue と相手の PR の行が入る'
 run_body_case 'Issue #628 はマージ済みの PR #627 も閉じています。' \
@@ -302,10 +344,6 @@ run_fetch_case() {
   mkdir -p "$dir/bin"
   cat >"$dir/bin/gh" <<'STUB'
 #!/usr/bin/env bash
-# 数えるのは問い合わせ(graphql)だけ。コメント側の呼び出しは空を返して数に入れない
-if [ "${2:-}" != graphql ]; then
-  exit 0
-fi
 calls=$(( $(cat "$STUB_COUNT_FILE" 2>/dev/null || echo 0) + 1 ))
 echo "$calls" >"$STUB_COUNT_FILE"
 if [ "$calls" -le "$FAIL_TIMES" ]; then

@@ -19,8 +19,12 @@
 # 「一度も重複が無かった」のか「あったが消えた」のかを区別できなくなる)。
 #
 # 使い方:
-#   bash check-duplicate-issue-pr.sh              # GitHub へ問い合わせる(CI)
-#   bash check-duplicate-issue-pr.sh <file.json>  # 問い合わせ結果を差し替える(動作確認)
+#   bash check-duplicate-issue-pr.sh --comment              # GitHub へ問い合わせ、判定をコメントする(CI)
+#   bash check-duplicate-issue-pr.sh <file.json>            # 問い合わせ結果を差し替える(動作確認)
+#   bash check-duplicate-issue-pr.sh --comment <file.json>  # 差し替えた結果でコメントする(判定表)
+#
+# **コメントするのは `--comment` を渡したときだけ。** 環境変数が置かれているかでは決めない
+# (Actions は `GITHUB_REPOSITORY` を既定で置くので、判定表を走らせただけで本物の PR へ貼ってしまう)。
 #
 # 相手は 2 つの経路から集め、PR 番号で束ねる。
 # - `repository.pullRequests(states: OPEN)` — open な PR を更新の新しい順に先頭 100 件まで
@@ -79,7 +83,14 @@ fetch() {
   return 1
 }
 
-result_file="${1:-}"
+post_comment=false result_file=""
+for arg in "$@"; do
+  case "$arg" in
+    --comment) post_comment=true ;;
+    *) result_file="$arg" ;;
+  esac
+done
+
 if [ -n "$result_file" ]; then
   result="$(cat "$result_file")"
 else
@@ -158,13 +169,7 @@ truncation_note="$(
 )"
 if [ -n "$truncation_note" ]; then echo "$truncation_note"; fi
 
-# **コメントの投げ先が分かっているときだけ投げる。** 差し替え JSON を手で流す動作確認では
-# 環境変数を置かないのでここで終わる(共通スクリプトへ進むと使い方の誤り exit 2 で赤になる)。
-# 判定表は `gh` を差し替えて投げ先を渡し、貼る / 貼らないの指定と、共通スクリプトの 3 回失敗を
-# 赤にしない扱いを実際に踏ませる
-if [ -z "${GITHUB_REPOSITORY:-}" ] || [ -z "${PR_NUMBER:-}" ]; then
-  exit 0
-fi
+[ "$post_comment" = true ] || exit 0
 
 marker="<!-- sticky-comment: duplicate-issue-pr -->"
 
@@ -186,13 +191,13 @@ else
   if_missing=skip
 fi
 
-# **コメント側の失敗では赤にしない。** 受け流すのは共通スクリプトの exit 1(3 回とも失敗)だけで、
-# 呼び方の誤り(exit 2)や共通スクリプトが無い(127)は赤にする。赤はこのジョブでは「問い合わせが
-# 3 回とも通らなかった」か「コメントの共通スクリプトを呼べなかった」を意味する(ステップに
+# **コメント側の失敗では赤にしない。** 受け流すのは共通スクリプトの exit 1 だけで、何を含むかは
+# `upsert-sticky-comment.sh` の「終了コード」。赤はこのジョブでは「問い合わせが 3 回とも通らなかった」か
+# 「コメントの共通スクリプトが 3 回失敗(exit 1)以外で終わった」を意味する(ステップに
 # `continue-on-error` を置くと、その問い合わせの失敗まで緑になるので使わない)。
 bash "$(dirname "$0")/upsert-sticky-comment.sh" --marker "$marker" \
   --body-file <(printf '%s' "$body") --if-missing "$if_missing" || {
   status=$?
   [ "$status" = 1 ] || exit "$status"
-  echo 'コメントを貼れなかった(3 回とも失敗)' >&2
+  echo '::warning::重複の判定を PR にコメントできなかった(3 回とも失敗)'
 }
