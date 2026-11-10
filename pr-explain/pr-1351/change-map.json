@@ -1,0 +1,111 @@
+{
+  "version": 2,
+  "pr": 1351,
+  "headBranch": "claude/magical-cannon-gr730w",
+  "baseBranch": "main",
+  "mergeBase": "bcfae032964355f93b2f0d08928137a8f39e4727",
+  "head": "2fbcc3553d3a8fd716bf431285c063de99bd0a80",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/post-merge-review.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/harness-record/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/harness-record/templates/record.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "0abafee968e8505a9988500a17c1ee7627487d45",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-10T14:37:56Z",
+      "subject": "✨ [New Feature]: #1344 harness-record で指摘に添えられた形の名前を記録へ写す",
+      "body": "- harness-record Step 2 に、指摘に添えられた形の名前(判例の見出し・\n  観点名・旧語彙の綴り)を `- 形の名前:` 行へ正規形で写す手順を追加\n- templates/record.md の指摘ブロックで、出どころと内容の間に\n  `- 形の名前:` 行を追加\n- 分類の語彙の説明文を「形の名前」行を含む形に修正\n\n背景:\n#621 の棚卸しでは、記録が畳んだ分類(plan など)でしか書かれていない\nため、観点ごとの帰属を記録の自由記述から推定し直した。\nreviewer-instructions.md は指摘に形の名前を添えるよう求めているが、\nharness-record にはそれを記録へ写す指示が無く、次の棚卸しでも同じ\n推定が要る状態だった。\n\n採用理由:\n「内容」の先頭ではなく専用の行に置いた。行頭が決まっていれば\ngrep '^- 形の名前:' の 1 本で取り出せ、名前と本文の境目の規則が要らない。\n綴りは正規形(前置きを外す・判例と旧語彙はバッククォート・観点名は\n文のまま・「・」連結は 1 行 1 つ・分類と同じ綴りは写さない)に揃え、\n取り出した後に綴りの揺れを吸収する手間を無くした。\n\n代替案:\n- 内容の先頭に印付きで書く(Issue 本文の形): 既存の内容 6221 行中\n  1871 行が既にバッククォートで始まり、観点名もバッククォートや句点を\n  含むので、名前の終わりを決める区切りが作れない\n- 分類の欄に括弧/旧語彙で書く: 分類は語彙表から選ぶ決まりで、\n  count.sh は畳む前の綴りごとに窓を持つため窓の計算が変わる\n- 添えられていないとき「なし」と書く: 名前を添える指示を受けていない\n  出どころ(人・bot・CI・plan-reviewer)で常に「なし」になり、行が無い\n  ことと区別できない\n- 分類と出どころの間に置く: count-cases.sh が見ていない並びになり、\n  判定表のケース追加が要る\n- plan-reviewer.md にも添える指示を足す: open 中の #1345 と同じ\n  ファイルで衝突するため #1347 へ回した\n\n影響とトレードオフ:\ncount.sh は形の名前の行を読まない。全記録の出どころ行の直後に行を\n挿入して count.sh(既定・--list・--shrink)の出力が cmp で同一なことを\n確かめた。過去の記録は書き換えないので、取り出せるのはこれから書く\n記録だけになる。読む側(harness-growth / harness-counter)の手順は\n#1348 へ回した。\n\n参考:\n- reviewer-instructions.md「指摘の書式」(#1345 で書式が変わる前提)\n- Issue #1344 の計画と plan-reviewer の指摘への対応\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PqjaHWUZZRhiSPRNm",
+      "files": [
+        {
+          "path": ".claude/skills/harness-record/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 0,
+          "patch": "@@ -95,6 +95,22 @@ Issue と PR に残っている記録から復元し、復元できない分は\n   **ちょうど 1 つ**選ぶ。**括弧の中に自由記述を足さない**(「2 巡目」「ミューテーション実測」\n   などは「内容」に書く)。人・bot・CI は `count.sh` が「再発」として数える側なので、\n   サブエージェント由来と同じ綴りにしない\n+- **指摘に形の名前が添えられていたら、`形の名前` の行へ写す。** 添え方は\n+  [`reviewer-instructions.md`](../implementation-flow/reviewer-instructions.md)「指摘の書式」が決めている\n+  (判例の見出し・表の「形の名前」列の名前・観点の名前、または旧い書式の\n+  `分類: comment-behavior-claim` のような旧語彙の綴り。どの書式で添えられていても、写し方は同じ)\n+  - (a) **添えられていたときだけ写す。** 名前を自分で推し量って埋めない。添えられていなければ、\n+    その行ごと書かない(`なし` とも書かない)。人・bot・CI の指摘や、名前を添える指示を受けて\n+    いないエージェント(`plan-reviewer` など)の指摘では、たいてい行が無い\n+  - (b) **綴りは次の正規形にそろえる。** 前置きの `判例 ` や `分類: ` を外す。判例の見出しと旧語彙の\n+    綴りは名前だけをバッククォートで囲む(`` `plan-file-omission` ``)。観点の名前は太字の記号を\n+    外した文を、そのまま囲まずに書く。名前どうしが「・」でつながれて 2 つ以上並んでいたら、\n+    1 行に 1 つへ割る(観点の名前の文の中にある読点では割らない)。\n+    分類の語彙と同じ綴り(畳んだ先そのもの。`comment` など)なら写さない\n+  - (c) 行は `出どころ` の直後に置く。`count.sh` はこの行を読まない(指摘 1 件を数えるのは\n+    `分類` と `出どころ` の行)ので、数えた件数を変えない\n+  - (d) 取り出すときは `grep -n '^- 形の名前:' harness/records/pr-*.md` を使う\n+    (どの分類の指摘かは `grep -n -B3` で前の行を一緒に出して見る)\n - どれにも当てはまらないなら `分類: なし` と書き、内容に何の話かを書く。\n   これが「規約の抜け」の候補になる\n - **指摘が 0 件の回も記録を残す。** 0 件は「順調だった」というデータ",
+          "patchLines": 23,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/harness-record/templates/record.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -21,6 +21,7 @@\n \n - 分類: `<語彙>`\n - 出どころ: `<語彙>`\n+- 形の名前: `<判例の見出し・旧語彙>` / <観点の名前>(指摘に添えられていたときだけ。2 つ以上なら 1 行に 1 つ)\n - 内容: <何が起きたか。3 行まで>\n - 既存ルール: rules/<file>.md「<見出し>」 / なし\n \n@@ -79,7 +80,7 @@\n ## 分類の語彙\n \n ここから選ぶ。**勝手に増やさない。** どれにも当てはまらないなら `なし` と書く。\n-分類は規範の単位で、その中のどの形かは「内容」と判例(`harness/case-law/`)が持つ。\n+分類は規範の単位で、その中のどの形かは「形の名前」の行(指摘に添えられていたときだけ)・「内容」・判例(`harness/case-law/`)が持つ。写し方は harness-record スキル Step 2。\n 旧語彙は `count.sh` が読むときに畳む(過去の記録は書き換えない)。\n \n | 分類 | 対応する規範 | 旧語彙 |",
+          "patchLines": 17,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "2fbcc3553d3a8fd716bf431285c063de99bd0a80",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-10T14:47:17Z",
+      "subject": "♻️ [Refactoring]: #1344 形の名前の写し方を添えられた綴りの形で決める",
+      "body": "- 何が添えられるかの列挙を SKILL.md と template から外し、\n  reviewer-instructions.md「指摘の書式」への参照だけにした\n- 正規形を「バッククォートの識別子か、文か」で決める規則に直した\n  (識別子が分類の語彙と同じ/無いときは文の部分を囲まずに写す)\n- 「・」で割るのを識別子どうしの並びに限り、文は割らない\n- 外す前置きに `形の名前 ` を足した\n- 取り出しの grep -B3 を、直前の分類行を控える awk に置き換えた\n\n背景:\n実装の検証で、solution / duplication / comment / naming / harness の\n各 reviewer から指摘を受けた。根本原因は 2 つに束ねられた。\n1 つは、添える書式の定義が reviewer-instructions.md と SKILL.md の\n2 箇所にあり、しかも SKILL.md の列挙が open 中の #1345 の文面を\n写していたこと。もう 1 つは、正規形の規則が判例名の並びだけを想定して\nおり、観点の名前(文)や分類と同じ綴りの判例見出しを扱えないこと。\n\n採用理由:\n写し方を「何が添えられたか」ではなく「綴りの形」で決めれば、\n#1345 の前後どちらでも、また今後添え方の種類が増えても SKILL.md を\n直さずに済み、定義元は reviewer-instructions.md の 1 箇所になる。\n識別子は囲み文は囲まない、という R9 の区別がそのまま割り方の判定に\n使える。\n\n代替案:\n- 列挙を残して #1345 のマージ後にだけ入れる: マージ順に依存し、\n  以後も 2 箇所を同時に直す必要が残る\n- 分類の語彙と同じ識別子は写さない(前回の規則): 判例\n  「`plan` — 呼び出し側を数えずに書いた」のような見出しで、どの形か\n  という情報が消えてゴールと逆向きになる\n- 読点の除外だけ足して「・」は全部割る: 「権限・セキュリティ・…」\n  のような観点の名前が 3 行に割れる\n- grep -B の数を増やす: 名前の行数に上限が無いので合わせられない\n\n影響とトレードオフ:\ncount.sh は形の名前の行を読まないので件数は変わらない\n(count-cases.sh NG 0、--ratchet exit 0)。awk は mawk と既定の awk\nで、名前 3 行のブロックでも分類が出ることを確かめた。macOS の awk\nでは動かしていない。\n\n参考:\n- Issue #1344 の実装検証への対応コメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PqjaHWUZZRhiSPRNm",
+      "files": [
+        {
+          "path": ".claude/skills/harness-record/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 10,
+          "patch": "@@ -96,21 +96,20 @@ Issue と PR に残っている記録から復元し、復元できない分は\n   などは「内容」に書く)。人・bot・CI は `count.sh` が「再発」として数える側なので、\n   サブエージェント由来と同じ綴りにしない\n - **指摘に形の名前が添えられていたら、`形の名前` の行へ写す。** 添え方は\n-  [`reviewer-instructions.md`](../implementation-flow/reviewer-instructions.md)「指摘の書式」が決めている\n-  (判例の見出し・表の「形の名前」列の名前・観点の名前、または旧い書式の\n-  `分類: comment-behavior-claim` のような旧語彙の綴り。どの書式で添えられていても、写し方は同じ)\n+  [`reviewer-instructions.md`](../implementation-flow/reviewer-instructions.md)「指摘の書式」が決める。\n+  写し方は、添えられた綴りの形(バッククォートで囲んだ識別子か、文か)で決める\n   - (a) **添えられていたときだけ写す。** 名前を自分で推し量って埋めない。添えられていなければ、\n     その行ごと書かない(`なし` とも書かない)。人・bot・CI の指摘や、名前を添える指示を受けて\n     いないエージェント(`plan-reviewer` など)の指摘では、たいてい行が無い\n-  - (b) **綴りは次の正規形にそろえる。** 前置きの `判例 ` や `分類: ` を外す。判例の見出しと旧語彙の\n-    綴りは名前だけをバッククォートで囲む(`` `plan-file-omission` ``)。観点の名前は太字の記号を\n-    外した文を、そのまま囲まずに書く。名前どうしが「・」でつながれて 2 つ以上並んでいたら、\n-    1 行に 1 つへ割る(観点の名前の文の中にある読点では割らない)。\n-    分類の語彙と同じ綴り(畳んだ先そのもの。`comment` など)なら写さない\n+  - (b) **綴りは次の正規形にそろえる。** 前置きの `判例 ` `分類: ` `形の名前 ` を外す。\n+    バッククォートで囲んだ識別子があり、分類の語彙(畳んだ先。`comment` など)と違うなら、\n+    その識別子だけを囲んで書く(`` `plan-file-omission` ``)。識別子が無い・分類の語彙と同じなら、\n+    文の部分(「—」があればその後ろ、無ければ全体)を囲まずに書く。観点の名前は太字の記号を\n+    外した文を囲まずに書く。識別子どうしが「・」で並んでいるときだけ 1 行に 1 つへ割り、文は割らない\n   - (c) 行は `出どころ` の直後に置く。`count.sh` はこの行を読まない(指摘 1 件を数えるのは\n     `分類` と `出どころ` の行)ので、数えた件数を変えない\n-  - (d) 取り出すときは `grep -n '^- 形の名前:' harness/records/pr-*.md` を使う\n-    (どの分類の指摘かは `grep -n -B3` で前の行を一緒に出して見る)\n+  - (d) 取り出すときは、直前の `分類` の行と並べて出す\n+    `awk '/^- 分類:/{c=$0} /^- 形の名前:/{print FILENAME \": \" c \" / \" $0}' harness/records/pr-*.md` を使う\n - どれにも当てはまらないなら `分類: なし` と書き、内容に何の話かを書く。\n   これが「規約の抜け」の候補になる\n - **指摘が 0 件の回も記録を残す。** 0 件は「順調だった」というデータ",
+          "patchLines": 31,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/harness-record/templates/record.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -21,7 +21,7 @@\n \n - 分類: `<語彙>`\n - 出どころ: `<語彙>`\n-- 形の名前: `<判例の見出し・旧語彙>` / <観点の名前>(指摘に添えられていたときだけ。2 つ以上なら 1 行に 1 つ)\n+- 形の名前: <名前>(写し方は harness-record スキル Step 2)\n - 内容: <何が起きたか。3 行まで>\n - 既存ルール: rules/<file>.md「<見出し>」 / なし\n \n@@ -80,7 +80,7 @@\n ## 分類の語彙\n \n ここから選ぶ。**勝手に増やさない。** どれにも当てはまらないなら `なし` と書く。\n-分類は規範の単位で、その中のどの形かは「形の名前」の行(指摘に添えられていたときだけ)・「内容」・判例(`harness/case-law/`)が持つ。写し方は harness-record スキル Step 2。\n+分類は規範の単位で、その中のどの形かは「形の名前」の行・「内容」・判例(`harness/case-law/`)が持つ。写し方は harness-record スキル Step 2。\n 旧語彙は `count.sh` が読むときに畳む(過去の記録は書き換えない)。\n \n | 分類 | 対応する規範 | 旧語彙 |",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": ".claude/skills/harness-record/SKILL.md",
+      "status": "kept"
+    }
+  ]
+}
