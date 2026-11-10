@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "pr": 1337,
+  "headBranch": "claude/affectionate-hypatia-3oatt1",
+  "baseBranch": "main",
+  "mergeBase": "af518c5013c38a834582b1402cc3974bf3075eff",
+  "head": "3b663361da4bfc121bb3efb87cfef9892bdd9c01",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/case-law/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1330.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "3b663361da4bfc121bb3efb87cfef9892bdd9c01",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-10T00:01:56Z",
+      "subject": "harness-growth: なし の再発(まとめて運ぶ経路の性能指摘)を判例 pointer-path-recompute へ足す",
+      "body": "Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QWC7BhTCTKgHUExkT",
+      "files": [
+        {
+          "path": "harness/case-law/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "patch": "@@ -379,3 +379,7 @@ export const Money = {\n - **掴んだ時点の値を保存して引き直しを避ける案は、導出値の保存になる**(`rules/consistency.md`\n   「更新の入口」)。計測してコストが高いと分かってからにする\n - 根本原因が差分の外(呼び出し側のメモ化など)にあるときは、差分に継ぎ当てせず Issue に切り出す(#1055)\n+- **まとめて運ぶ経路でも同じ形が出る**(#1299 #1330)。一員ごとに木から向きや位置を引き直す指摘(#1330 の\n+  performance-reviewer)は、掛け算の片方が木の大きさなので直す対象。要素ごとに並びを作り直す O(n²)\n+  (#1330 の bot)は、n が運ぶ人数で小さく、同じ回の木の走査・DOM 実測のほうが重いので、隣の関数と同じ形で\n+  イミュータブルの規約に沿うなら直さない。分かれ目は「もう片方の次数が木の大きさか、運ぶ人数か」",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/pr-1330.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -256,3 +256,4 @@ GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_\n ## 規約への反映\n \n 無し。このスキルは記録を残すところまでで、集計と介入は `harness-growth` の管轄。\n+- 対策済: `なし` 層=case-law at pr-1330",
+          "patchLines": 5,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
