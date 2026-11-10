@@ -44,7 +44,9 @@ done_count="$(grep -c "^$kind" "$STUB_DIR/calls" 2>/dev/null)"
 fails_var="FAIL_$kind"
 if [ "$((${done_count:-0} + 1))" -le "${!fails_var:-0}" ]; then
   echo "$kind-FAILED" >>"$STUB_DIR/calls"
-  if [ "$kind" = POST ] && [ -n "${POST_LANDS:-}" ]; then
+  failed_post_landed=false
+  [ "$kind" = POST ] && [ -n "${POST_LANDS:-}" ] && failed_post_landed=true
+  if [ "$failed_post_landed" = true ]; then
     jq --arg b "$body" '. + [{id: 900, body: $b}]' "$STUB_DIR/pages/1.json" >"$STUB_DIR/landed"
     mv "$STUB_DIR/landed" "$STUB_DIR/pages/1.json"
   fi
@@ -83,9 +85,10 @@ run_upsert() {
   local dir="$1" status unset_flag=()
   shift
   [ -n "${UNSET:-}" ] && unset_flag=(-u "$UNSET")
+  # 空の配列を `"${a[@]}"` で展開すると、bash 4.4 未満では `set -u` が未定義として落ちる
   STUB_DIR="$dir" PATH="$work/bin:$PATH" STICKY_COMMENT_RETRY_WAIT=0 \
     GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 \
-    env "${unset_flag[@]}" bash "$script" "$@" >/dev/null 2>&1
+    env ${unset_flag[@]+"${unset_flag[@]}"} bash "$script" "$@" >/dev/null 2>&1
   status=$?
   printf 'exit=%s calls=%s' "$status" "$(tr '\n' ' ' <"$dir/calls" | sed 's/ $//')"
 }
@@ -93,8 +96,9 @@ run_upsert() {
 # 置き場 $1 に最後に書き込んだ本文が、marker の行に続けて渡した本文を並べたものかを報告する。
 # $2 ケース名
 report_written_body() {
-  local outcome=differs
-  [ -f "$1/body" ] && [ "$(cat "$1/body")" = "$expected_body" ] && outcome=matches
+  local outcome=differs written_body_matches=false
+  [ -f "$1/body" ] && [ "$(cat "$1/body")" = "$expected_body" ] && written_body_matches=true
+  [ "$written_body_matches" = true ] && outcome=matches
   report matches "$outcome" "$2"
 }
 
@@ -215,5 +219,11 @@ report 'exit=2 calls=' "$(UNSET=PR_NUMBER run_upsert "$dir" "${post[@]}")" \
 dir="$(new_case "$no_comments")"
 report 'exit=2 calls=' "$(UNSET=GITHUB_REPOSITORY run_upsert "$dir" "${post[@]}")" \
   'リポジトリが無ければ、gh を呼ばずに使い方の誤りで終わる'
+
+# --- 一時ファイルの失敗(`gh` を呼ぶ前に exit 3) ---
+
+dir="$(new_case "$no_comments")"
+report 'exit=3 calls=' "$(TMPDIR="$work/missing-dir" run_upsert "$dir" "${post[@]}")" \
+  '一時ファイルを作れなければ、gh を呼ばずに使い方の誤りとは別の失敗で終わる'
 
 exit "$cases_failed"

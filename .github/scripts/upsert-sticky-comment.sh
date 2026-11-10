@@ -17,12 +17,22 @@
 #   GH_TOKEN                   `gh` が使う。ここでは検査しない
 #   STICKY_COMMENT_RETRY_WAIT  n 回目の失敗の後に n × この秒数だけ待つ(既定 2)
 #
-# 終了コード: 0 = 貼った / 差し替えた / 無くて貼らない指定だった、1 = 一覧か書き込みが 3 回とも
-#             失敗した・一覧が数値でない ID を返した、2 = 使い方の誤り(`gh` を呼ぶ前に返す)
+# 終了コード:
+#   0 = 貼った / 差し替えた / 無くて貼らない指定だった
+#   1 = 一覧か書き込みが 3 回とも失敗した・一覧が数値でない ID を返した。`gh` は 5xx も権限の誤り
+#       (403 等)も区別せず失敗で返す(`gh help exit-codes`)ので、権限の誤りもここに入る。
+#       exit 1 を受け流す呼び出し側では、権限の誤りでも赤にならず `::warning::` が残るだけになる
+#   2 = 使い方の誤り(`gh` を呼ぶ前に返す)
+#   3 = 一時ファイルを作れない・書けない(`gh` を呼ぶ前に返す)
+#   受け流してよいのは 1 だけ。2・3 とスクリプトが見つからない 127 は呼び出し側の配線か環境の誤りなので赤にする
 #
 # **「一覧 → 書き込み」を 1 サイクルとして、失敗したらサイクルごとやり直す(最大 3 回)。**
+# やり直すのは、GitHub の API が一時的な 5xx を返すため(`check-pr-closing-issue.sh` の冒頭に実例)。
 # 書き込みだけをやり直すと、失敗を返した POST が実は通っていたときに二重に貼る。一覧から
 # 取り直せば、通っていた POST のコメントが見つかって次は PATCH になる。
+#
+# 探すのは marker で**始まる**コメントだけ。途中に含むだけで拾うと、marker の綴りを引用した
+# 人のコメントを差し替えてしまう。
 set -uo pipefail
 
 max_attempts=3
@@ -31,6 +41,11 @@ retry_wait="${STICKY_COMMENT_RETRY_WAIT:-2}"
 usage() {
   sed -n '/^# 使い方:/,/^#$/p' "$0" | sed 's/^# \{0,1\}//' >&2
   exit 2
+}
+
+temp_file_failed() {
+  echo "marker を付けた本文を一時ファイルへ書けなかった。コメントは触らない" >&2
+  exit 3
 }
 
 marker="" body_file="" if_missing=""
@@ -59,23 +74,19 @@ esac
 # やり直した後の書き込みが空の本文になる。
 # `-f body="$body"` で引数に載せないのは、1 引数が 128KiB に達する本文で `gh` が起動できない(E2BIG)ため
 [ -r "$body_file" ] || usage
-body_with_marker="$(mktemp)"
+body_with_marker="$(mktemp)" || temp_file_failed
 trap 'rm -f "$body_with_marker"' EXIT
-{ printf '%s\n' "$marker"; cat -- "$body_file"; } >"$body_with_marker" || usage
+{ printf '%s\n' "$marker"; cat -- "$body_file"; } >"$body_with_marker" || temp_file_failed
 
 comments_path="repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments"
 
-# 1 サイクルを走らせる。
-# @returns 0 = 済んだ、1 = 一覧か書き込みが失敗した(やり直す)、3 = 一覧が数値でない ID を返した(やり直さない)
+# 1 サイクルを走らせる。一覧が数値でない ID を返したら、やり直さずにスクリプトごと exit 1 で終わる。
+# @returns 0 = 済んだ、1 = 一覧か書き込みが失敗した(やり直す)
 #
-# **ページを送って全部見る。** 一覧は作成の古い順で、1 ページに収まらないことがある
-# (実測: `per_page=1` で `rel="next"` の Link が返る)。`--if-missing skip` の呼び出し側は
-# 知らせることが出たときにしか貼らないので、コメントが積もった後に貼られると 1 ページ目に
-# 載らない。見失うと二重に貼る。
-# 先頭行だけを採るのは、`--paginate` がページごとに `--jq` の結果を返す場合に 2 行以上返るため。
-# `head` へパイプしないのは、`pipefail` が無ければ `gh` の失敗が握りつぶされて失敗時のエラー本文が
-# ID に混入し、あれば `head` が先に閉じたときに `gh` が SIGPIPE で落ちて失敗になるため。
-# 変数代入の終了コードで `gh` の成否を判定する
+# **ページを送って全部見る。** `--if-missing skip` の呼び出し側は知らせることが出たときにしか貼らず、
+# コメントが積もった後に貼られると 1 ページ目に載らない(実測: `per_page=1` で `rel="next"` が返る)。
+# `--paginate` はページごとに `--jq` の結果を返すので先頭行だけを採る。`head` へのパイプで切らないのは、
+# `gh` が SIGPIPE で落ちて失敗に読まれるため
 upsert_once() {
   local ids existing
   ids="$(gh api --paginate "${comments_path}?per_page=100" \
@@ -87,20 +98,17 @@ upsert_once() {
     gh api -X POST "$comments_path" --field body=@"$body_with_marker" >/dev/null || return 1
     return 0
   fi
-  # 応答が壊れたまま POST に落ちると二重に貼り、やり直しても同じ応答が返るだけなので打ち切る
-  [[ "$existing" =~ ^[0-9]+$ ]] || return 3
+  # 壊れた ID へ PATCH を打たない。やり直しても同じ応答が返るだけなので打ち切る
+  if ! [[ "$existing" =~ ^[0-9]+$ ]]; then
+    echo "コメントの一覧が数値でない ID を返した。コメントは触らない" >&2
+    exit 1
+  fi
   gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${existing}" \
     --field body=@"$body_with_marker" >/dev/null || return 1
 }
 
 for attempt in $(seq 1 "$max_attempts"); do
-  upsert_once
-  status=$?
-  [ "$status" -eq 0 ] && exit 0
-  if [ "$status" -eq 3 ]; then
-    echo "コメントの一覧が数値でない ID を返した。コメントは触らない" >&2
-    exit 1
-  fi
+  upsert_once && exit 0
   echo "コメントの一覧か書き込みに失敗した(${attempt} 回目)" >&2
   [ "$attempt" -lt "$max_attempts" ] && sleep $((attempt * retry_wait))
 done
