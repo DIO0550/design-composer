@@ -138,6 +138,17 @@ pr-235 で観点(`implementation-reviewer`「モジュールの公開 API の観
 |---|---|
 | `Type["key"]` の indexed access 型はすべて警告 | `resizeCursor(grip): CSSProperties["cursor"]` は正当。問題は `DocumentSessionPorts["ipc"]` のように**直接 import できる名前付きの型(`DocumentIpc`)が既にあるのに** 束から添字で引く形だけ |
 
+### deep import と export の見方
+
+- deep import は、段数を数えず `python3 .claude/hooks/lib/import-rule-violations.py src` で見る
+  （`index.ts` の有無で判定する）。`domains/` はカテゴリを 1 段挟むので、
+  `@/domains/<カテゴリ>/<x>/<入れ子モジュール>` は正当で、パスの段数だけでは
+  内部ファイルへの deep import と区別できない。入れ子モジュールの `index.ts` に解決される
+  import は検出器が違反にしない(→「`dependency`」の該当箇所)
+- テストのためだけの export は、テストを公開 API 経由に書き直せないかを先に見る
+
+(`.claude/agents/structure-reviewer.md` から、規範の 1 文を残して移した。)
+
 ## `dependency` — 同じ語彙の兄弟モジュールを、親のフォルダを作らずに並べた
 
 pr-846 で `PointerButton` / `CommandKey` / `KeyName` を `src/libs/` 直下に 3〜4 モジュールとして並べる
@@ -155,6 +166,12 @@ pr-846 で `PointerButton` / `CommandKey` / `KeyName` を `src/libs/` 直下に 
 - 親の `index.ts` を持たない入れ物にする形も示されたが、pr-846 では re-export する形に決まった
 - 親へまとめたあとは、`@/libs/dom-event/<サブフォルダ>` への deep import が検査をすり抜けるため
   grep で 0 件を確かめる(`import-rule-violations.py` は入れ子モジュールの `index.ts` を違反にしない)
+
+### 公開 API に自前の型を出すかを実装前に決める
+
+引数や戻り値に自前の型(`TauriIpc` 等)が出ることを「外へ漏らす」とみなす案と、受け取ってよいと
+する案で判断が割れる。決めずに進めると実装後に判断が変わって取り消しになる。
+(`.claude/agents/plan-reviewer.md` から、規範の 1 文を残して移した。)
 
 ### domains から libs への import を `__tests__/` だけ許す理由
 

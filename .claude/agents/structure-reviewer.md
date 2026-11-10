@@ -38,17 +38,9 @@ model: inherit
 
 ## モジュールの公開 API の観点
 
-`分類: module-api`。**typecheck も lint も落ちないので、見なければ通る。**
+`分類: dependency`。判例 `module-api`。
 
-- **deep import が入っていないか。** フォルダ外部からの import は `index.ts` 経由だけ。
-  段数を数えず `python3 .claude/hooks/lib/import-rule-violations.py src` で見る
-  （`index.ts` の有無で判定する）。`domains/` はカテゴリを 1 段挟むので、
-  `@/domains/<カテゴリ>/<x>/<入れ子モジュール>` は正当で、パスの段数だけでは
-  内部ファイルへの deep import と区別できない
-- **`index.ts` 以外へ実装が切り出されていないか。** 分割が要るなら実装ファイルを 1 つ切り出す
-  のではなく**サブフォルダに分割**する（サブフォルダも `index.ts` + `__tests__/` を保つ）
-- **`index.ts` の export が増えていないか。** 外部に公開する必要があるものだけに絞る。
-  テストのためだけの export は、テストを公開 API 経由に書き直せないかを先に見る
+- **deep import・index.ts 以外への実装の切り出し・index.ts の export の増加が無いか**（`rules/architecture.md`「モジュールの公開API」）。見方と、検出器が拾わない形は `harness/case-law/architecture.md`「`module-api`」
 
 ## 型による境界の観点
 
@@ -62,7 +54,7 @@ model: inherit
 
 ## 状態管理の観点
 
-`分類: state-management`。
+`分類: react`。
 
 - **1 つのイベントハンドラ内で複数の setter を順に呼んでいないか。** state が連動している
   サインなので、`useReducer` で 1 つの state + アクションに統合する
@@ -71,13 +63,13 @@ model: inherit
 
 ## 読みやすさの観点
 
-`分類: readability`。
+`分類: なし`。
 
 - **追加・書き換えた関数の本体が、「値を求める → 失敗なら返す」の組・組み立て・`return` ごとに空行で区切られているか。** 空行なしで詰まった本体は、読み手が区切りを目で探すことになる
 
 ## 入れ子の対話要素とイベント境界の観点
 
-`分類: nested-interactive-event-boundary`。親(器・土台)側に張ったイベント受け口
+`分類: react`。親(器・土台)側に張ったイベント受け口
 (`preventDefault` / `stopPropagation` / ドラッグ開始の判定等)が、視覚的に重なる・構造的に
 入れ子になった対話可能な子要素(入力欄・リサイズハンドル等)の意図と衝突していないかを
 確認する。typecheck・lint のどちらも「範囲」までは見ないため、実際に重なる子要素を洗い出して

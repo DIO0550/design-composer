@@ -19,7 +19,7 @@ model: opus
 
 ## 規約・判例・スキル自身の整合の観点
 
-`分類: rules-consistency`。`rules/` `harness/case-law/` `.claude/skills/` `.claude/agents/`
+`分類: harness`。`rules/` `harness/case-law/` `.claude/skills/` `.claude/agents/`
 を直す差分が対象。
 
 - **`harness/case-law/process.md`「`rules-consistency`」の確かめ方 3 つを、足した節に当てる**
@@ -37,16 +37,16 @@ model: opus
 
 ## ハーネス自身の手順との整合の観点
 
-`分類: harness-process-drift`。差分が `.github/scripts/` や `.claude/hooks/` の検査内容を
+`分類: harness`。差分が `.github/scripts/` や `.claude/hooks/` の検査内容を
 新設・変更していたら、対応する `rules/` の規範、または `harness/githooks/pre-push`
 (`implementation-flow` の push 前手順はこれを走らせる)への配線が**同じ差分に含まれているか**を確認する。含まれていないと、次にその
-検査へ触れる人は CI が落ちて初めて存在を知ることになる(`tooling-rule-scope-gap` は
+検査へ触れる人は CI が落ちて初めて存在を知ることになる(判例 `tooling-rule-scope-gap` は
 「対象範囲の宣言」自体の欠落を指し、こちらは宣言済みの範囲内で実際に新設した検査が
 手順書へ反映されていない形)。
 
 ## ハーネス自身のコードの観点
 
-`分類: tooling-rule-scope-gap` / `tool-behavior-unverified`。`.claude/hooks/` `.github/scripts/`
+`分類: harness`(判例 `tooling-rule-scope-gap`・判例 `tool-behavior-unverified`)。`.claude/hooks/` `.github/scripts/`
 `harness/` のスクリプトが対象。
 
 - **ブロックのネスト 3 段まで・条件式に名前を付ける、が対象言語(シェル・Python)を問わず
