@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1338,
+  "headBranch": "claude/magical-cannon-faxein",
+  "baseBranch": "main",
+  "mergeBase": "c71138ccae1f3db32aa450183522ed48dd87eaec",
+  "head": "30afdf5fd66b3cfe305a2a25f37c124f6cc70723",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1333.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 76,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "30afdf5fd66b3cfe305a2a25f37c124f6cc70723",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-10T12:43:29Z",
+      "subject": "📝 [Documentation]: PR #1333 の記録を harness/records に追加",
+      "body": "- Issue #1325 の回の記録として harness/records/pr-1333.md を追加した\n- 指摘 7 件(plan 2 / duplication 2 / naming 1 / comment 1 / harness 1)と、手戻り・フック不発を記録した\n\n背景:\nマージ後は harness-record でその回の評価を残す決まりになっている。\n\n採用理由:\n人・bot・CI からの指摘は 0 件だった。発火ログが無いので、サブエージェントの\n指摘とフック不発は、このセッションの履歴と Issue のコメントから書いた。\n\n影響とトレードオフ:\n記録を 1 ファイル足すだけで、rules/・フック・スキルには触れていない。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PWtzeZo7JUwfn26mv",
+      "files": [
+        {
+          "path": "harness/records/pr-1333.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 76,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,76 @@\n+# PR #1333 DrawnBounds.edge: 回る前の大きさ 0 のテストに大きさを持つ対照を並べる\n+\n+- マージ日: 2026-11-10\n+- 関連 Issue: #1325\n+- 差分規模: 1 ファイル / +12 -7\n+\n+## ゴールと結果\n+\n+ゴールは「`DrawnBounds.edge` の「回っていて回る前の大きさが 0 のものは、外接矩形の中心を含む矩形でも拾わない」が、大きさの差し替え(`stubLayoutSize`)を何もしない形に壊したときに落ちる」。達成した。外接矩形と向きが同じで、回る前の大きさだけが違う対照 `turned` を置いた。test-reviewer の実測では、`stubLayoutSize` を空にすると対象のテストだけが落ち、`hasArea` の判定を外すと対象を含む 3 件が落ちる。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。`DIO0550` 名義のコメントは、このセッションが書いたテストケース表だけ。bot のレビューは Copilot の 1 件で、指摘は無かった。CI は全件緑で、VRT の差分は 0 件(209 件 passed)。\n+\n+## 指摘\n+\n+### 1. 対照の大きさを整数でない 20√2 にしていて、外接矩形の側を変える案を検討していなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 外接矩形を 40 に固定したまま整数の大きさだけを試して却下していた。`offsetWidth` は整数に丸められる値で、normal の `drawTurnedSquare` も外接矩形の側に √2 を掛けている。外接矩形を 20√2 四方、大きさを 20×20 に変えた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(却下案)\n+\n+### 2. 計画した Why コメント 2 行が、同じファイルのコメントと element-measure の doc の写しだった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 35〜36 行の一般則と、happy-dom の既定値が 0 であることを言い直していた。このテストにしか無い事情だけを 1 文で書く形にした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 3. 実装後に壊して確かめる手順が完了条件に入っていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画の段階でコピー上の実測はしていたが、指摘 1 で値を変えるとその実測は使えなくなる。「stub を空にする」「hasArea を外す」の 2 つを完了条件に足した。\n+- 既存ルール: なし\n+\n+### 4. ローカル定数 `turnedSquare` が値(軸に平行な外接矩形)と合わない名前だった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: この値は大きさ 0 の `collapsed` にも渡していて、正方形ではない。`drawnTurnedAt` の引数名と `RotatedBounds.fromEnclosing` の語に揃えて `enclosing` にした。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 5. Why コメントを 1 行に詰めて書いていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 同じファイルの 35〜36 行に合わせて 2 行に折った。\n+- 既存ルール: なし\n+\n+### 6. 「回ったノードを名前で引けるように置く」組み立てが edge と normal に割れている(却下)\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: `canvas-measure.ts` に drawNamed 版のヘルパーを足す案だった。この差分は既存の 2 つのヘルパーを組んで呼んでいるだけで、新しいヘルパーを書いてはいない。採ると共有ヘルパーと normal 側まで手が及び、Issue の範囲を超えるので却下した。理由は Issue #1325 に記録した。\n+- 既存ルール: rules/testing.md「テスト用ヘルパーの置き場所」\n+\n+### 7. push 前の hook-canary が deny されずに通り、フックが不発だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: 実行中フラグのマーカーも発火ログも無く、README の表では「本当に不発」に当たる。原因は、セッションの作業ディレクトリがリポジトリの外の `/home/user` で始まったことと推測している。代替の無い 3 つのフックは手で確かめ、PR 本文に記録した。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+計画を 1 回直した(指摘 1〜3)。直した計画は planner に戻さず、親がそのまま implementer に渡した。変わったのは値とコメントの 2 点だけで、骨組みは変わらないため(理由は Issue #1325 に記録した)。\n+\n+Stop フックの「未コミットの変更を commit / push せよ」が 2 回出た。どちらも implementer と test-reviewer が作業ツリーを書き換えている最中だったので、従わずに完了を待った。\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録のみ(集計と介入は harness-growth の管轄)。",
+          "patchLines": 77,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
