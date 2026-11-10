@@ -203,9 +203,9 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
   35.7 秒かかる(実測)。`pre-push` 全体は 73.0 秒(実測・`node_modules` のある環境。この判定表と同じ環境で
   続けて測った)で、載せると 1.5 倍になる。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 5 本は同じ `pre-push` の回の中で合わせて 16.2 秒(地図 3.4・置き場 5.6・解説の検査 4.3・枠の検査 2.8・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒、`lib/edit-detector-cases.sh` は 1.5 秒(実測)。**この穴は残したままなので、
   `check-pr-closing-issue.sh` を触ったときは手で走らせる**(「動作確認」)
-- **`check-duplicate-issue-pr-cases.sh` も層 1 だけ。** 21.6 秒かかり(実測)、大半が問い合わせの再試行の
+- **`check-duplicate-issue-pr-cases.sh` も層 1 だけ。** 22.0 秒かかり(実測)、大半が問い合わせの再試行の
   待ち。物差しは上の `check-pr-closing-issue-cases.sh` と同じで、`check-duplicate-issue-pr.sh` を触ったときは
-  手で走らせる(「動作確認」)。層 2 にも置いた `upsert-sticky-comment-cases.sh` は 0.7 秒(実測。
+  手で走らせる(「動作確認」)。層 2 にも置いた `upsert-sticky-comment-cases.sh` は 0.9 秒(実測。
   再試行の待ちを環境変数で 0 にしている)
 - 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない
 

@@ -186,7 +186,8 @@ STUB
   chmod +x "$1/bin/gh"
 }
 
-# 差し替えた `gh` を置いて走らせ、$dir に calls / body を残す。$4 は組み立て済みの問い合わせ結果
+# 差し替えた `gh` を置いて走らせ、$dir に calls / body と、この検査の標準出力・標準エラーを合わせた output を
+# 残す。$4 は組み立て済みの問い合わせ結果
 run_with_gh_stub() {
   local dir="$1" existing="$2" fail_on="$3" result="$4"
 
@@ -195,7 +196,7 @@ run_with_gh_stub() {
   PATH="$dir/bin:$PATH" STUB_CALL_FILE="$dir/calls" STUB_BODY_FILE="$dir/body" \
     EXISTING_COMMENT_ID="$existing" FAIL_ON="$fail_on" STICKY_COMMENT_RETRY_WAIT=0 \
     GITHUB_REPOSITORY=owner/repo PR_NUMBER=604 \
-    bash "$script" --comment "$dir/result.json" >/dev/null 2>&1
+    bash "$script" --comment "$dir/result.json" >"$dir/output" 2>&1
 }
 
 run_comment_case() {
@@ -218,20 +219,24 @@ run_comment_case() {
   failed=1
 }
 
-# 共通スクリプトが 3 回とも失敗しても、この検査は赤にしない(exit 0)ことを見る
+# 共通スクリプトが 3 回とも失敗しても、この検査は赤にしない(exit 0)が、`::warning::` を残して要約で
+# 気付けることを見る
 run_comment_failure_case() {
   local existing="$1" fail_on="$2" label="$3"
-  local dir actual=0
+  local dir actual=0 warned=false
 
   dir="$(mktemp -d)"
   run_with_gh_stub "$dir" "$existing" "$fail_on" "$with_duplicate" || actual=$?
+  grep -qF '::warning::' "$dir/output" && warned=true
   rm -rf "$dir"
 
-  if [ "$actual" = 0 ]; then
+  local passed_with_warning=false
+  [ "$actual" = 0 ] && [ "$warned" = true ] && passed_with_warning=true
+  if [ "$passed_with_warning" = true ]; then
     printf 'ok   %s\n' "$label"
     return
   fi
-  printf 'NG   exit=%s (期待 exit=0)  %s\n' "$actual" "$label"
+  printf 'NG   exit=%s 警告=%s (期待 exit=0 警告=true)  %s\n' "$actual" "$warned" "$label"
   failed=1
 }
 
@@ -247,6 +252,25 @@ run_comment_case 'GET POST'  ''      ''      "$with_closed_issue" '閉じる Iss
 run_comment_failure_case ''      GET   'コメントの一覧を取れなくても赤にしない'
 run_comment_failure_case ''      POST  'コメントの投稿に失敗しても赤にしない'
 run_comment_failure_case '12345' PATCH 'コメントの差し替えに失敗しても赤にしない'
+
+# 共通スクリプトが 3 回失敗(exit 1)以外で終わったら、その終了コードで赤にすることを見る。一時ファイルの
+# 置き場を無くすと、共通スクリプトだけが exit 3 で終わる(この検査自身は一時ファイルを作らない)
+run_upsert_temp_file_failure_case() {
+  local label="$1" dir actual=0
+
+  dir="$(mktemp -d)"
+  TMPDIR="$dir/missing-dir" run_with_gh_stub "$dir" '' '' "$with_duplicate" || actual=$?
+  rm -rf "$dir"
+
+  if [ "$actual" = 3 ]; then
+    printf 'ok   exit=%s  %s\n' "$actual" "$label"
+    return
+  fi
+  printf 'NG   exit=%s (期待 3)  %s\n' "$actual" "$label"
+  failed=1
+}
+
+run_upsert_temp_file_failure_case 'コメントの共通スクリプトが一時ファイルを作れずに終わったら赤にする（3 回失敗と同じには握らない）'
 
 # `--comment` が無ければ、投げ先の環境変数が置かれていてもコメントしない(`gh` を 1 度も呼ばない)
 run_without_comment_flag_case() {
