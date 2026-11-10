@@ -1,0 +1,3219 @@
+{
+  "version": 1,
+  "pr": 1346,
+  "sha": "2062daec787a972a96f9562d96fdf7c9c7eb4c9f",
+  "issue": 638,
+  "overview": {
+    "title": "sticky コメントの投稿・差し替えを `upsert-sticky-comment.sh` 1 本に寄せる",
+    "lead": "PR へ目印(marker)付きのコメントを「探して、あれば差し替え・無ければ貼る」処理が 4 箇所にあったものを、共通スクリプト 1 本に集めた。呼び出し側の違いは `--if-missing post|skip` と、呼び出し側が受ける終了コードだけで表す。",
+    "before": [
+      {
+        "text": "`frontend.yml`(カバレッジ)と `storybook-visual-regression.yml`(VRT)は一覧の 1 ページ目だけを探し、やり直しも無かった"
+      },
+      {
+        "text": "`storybook-pr-preview.yml` は `contains` で探し、一覧と書き込みを別々にやり直していた(失敗を返した POST が実は通っていると 2 件目を貼る)"
+      },
+      {
+        "text": "`check-duplicate-issue-pr.sh` は `GITHUB_REPOSITORY` と `PR_NUMBER` が揃うと本物の PR へコメントした(判定表を走らせただけで実在の PR 4 件へ貼る事故が起きた)"
+      },
+      {
+        "text": "カバレッジのステップは `continue-on-error`、duplicate は `|| echo` で、どんな失敗も緑のままだった"
+      }
+    ],
+    "after": [
+      {
+        "text": "4 箇所とも `upsert-sticky-comment.sh` を呼び、全ページを `startswith` で探して先頭の 1 件を差し替える",
+        "message": "call-coverage"
+      },
+      {
+        "text": "「一覧 → 書き込み」を 1 サイクルとして最大 3 回やり直し、毎回一覧を取り直すので二重に貼らない",
+        "message": "call-vrt"
+      },
+      {
+        "text": "カバレッジと duplicate は exit 1(3 回とも失敗)だけを `::warning::` で受け流し、exit 2・3・127 は赤にする",
+        "message": "call-duplicate"
+      },
+      {
+        "text": "duplicate の検査は `--comment` を受けたときだけコメントする",
+        "message": "dup-flag"
+      },
+      {
+        "text": "新しい判定表(30 件)を pre-push と CI に、どこにも配線されていなかった duplicate の判定表を CI に足した",
+        "message": "ci-dup-cases"
+      },
+      {
+        "text": "目印が空・形が違う・本文が読めないなどの使い方の誤りは `gh` を呼ぶ前に exit 2 で止まる"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "サイクルごとのやり直し",
+        "text": "書き込みだけでなく一覧からやり直す。失敗を返した POST が実は通っていても、次のサイクルで見つけて PATCH に回る",
+        "go": {
+          "kind": "file",
+          "path": ".github/scripts/upsert-sticky-comment.sh"
+        }
+      },
+      {
+        "title": "受け流すのは 3 回失敗だけ",
+        "text": "`continue-on-error` を外した。権限の誤り(403)も exit 1 に入るので、受け流す側では赤にならず警告だけになる(終了コードの doc に明記)",
+        "go": {
+          "kind": "message",
+          "id": "call-coverage"
+        }
+      },
+      {
+        "title": "コメントの明示",
+        "text": "duplicate の投稿を環境変数ではなく `--comment` で決める。事故の再発をケース 1 行ではなく構造で塞いだ",
+        "go": {
+          "kind": "message",
+          "id": "dup-flag"
+        }
+      },
+      {
+        "title": "判定表が走らない場所",
+        "text": "yml のインライン(カバレッジの受け流し・VRT・プレビューの呼び出し)は判定表が走らせない。この PR の CI で、各コメントが push のたびに 1 件のまま差し替わるかを目で確かめる",
+        "go": {
+          "kind": "flow",
+          "id": "report"
+        }
+      },
+      {
+        "title": "ハーネスの層",
+        "text": "変更はすべてハーネス(CI・git hooks)の中。アプリのコードは触っていない",
+        "go": {
+          "kind": "layer",
+          "layer": "ハーネス"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "sticky",
+      "label": "sticky コメント",
+      "role": "PR に目印付きのコメントを 1 件だけ置く共通スクリプトと、その呼び出し側"
+    },
+    {
+      "id": "verify",
+      "label": "判定表と配線",
+      "role": "共通スクリプトと duplicate の検査の振る舞いを判定表で固め、pre-push と CI に配線する"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "sticky コメントの共通スクリプトを足し、4 つの呼び出し側を付け替え、判定表 2 本を pre-push と CI に配線する"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".github/scripts/upsert-sticky-comment.sh",
+      "name": "sticky コメントの共通スクリプト",
+      "role": "目印で始まるコメントを全ページから探し、あれば差し替え、無ければ指定に従って貼るか何もしない",
+      "feature": "sticky",
+      "change": "新しく作った。引数は `--marker` / `--body-file` / `--if-missing`、終了コードは 0 / 1 / 2 / 3"
+    },
+    {
+      "path": ".github/scripts/check-duplicate-issue-pr.sh",
+      "name": "重複の検査",
+      "role": "同じ Issue を閉じる他の PR と、既にクローズされた Issue を見つけて PR に知らせる",
+      "feature": "sticky",
+      "change": "コメントの探索・PATCH・POST を共通スクリプトの呼び出しに置き換え、`--comment` を受けたときだけコメントするようにした"
+    },
+    {
+      "path": ".github/workflows/frontend.yml",
+      "name": "フロントエンドの CI",
+      "role": "検査とカバレッジのレポートの投稿",
+      "feature": "sticky",
+      "change": "レポートの投稿を共通スクリプトへ寄せ、`continue-on-error` を外した。判定表 2 本のステップを足した"
+    },
+    {
+      "path": ".github/workflows/storybook-visual-regression.yml",
+      "name": "VRT",
+      "role": "Storybook の視覚差分のレポートを PR に貼る",
+      "feature": "sticky",
+      "change": "本文への目印の出力と、探索・PATCH・POST を共通スクリプトの呼び出しに置き換えた"
+    },
+    {
+      "path": ".github/workflows/storybook-pr-preview.yml",
+      "name": "Storybook プレビュー",
+      "role": "プレビューと解説ページの URL を PR に告知する",
+      "feature": "sticky",
+      "change": "一覧・PATCH・POST とそれぞれのやり直し(約 50 行)を共通スクリプトの呼び出しに置き換えた"
+    },
+    {
+      "path": ".github/workflows/pr-closing-issue.yml",
+      "name": "閉じる Issue の検査",
+      "role": "PR が閉じる Issue の検査と、重複の検査を走らせる",
+      "feature": "sticky",
+      "change": "重複の検査へ `--comment` を渡し、赤の意味のコメントを検査スクリプト側への参照に縮めた"
+    },
+    {
+      "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "name": "共通スクリプトの判定表",
+      "role": "`gh` を差し替え、ページの JSON と失敗のさせ方を置いて、終了コード・呼ばれ方・本文を確かめる(30 件)",
+      "feature": "verify",
+      "change": "新しく作った"
+    },
+    {
+      "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+      "name": "重複の検査の判定表",
+      "role": "判定の JSON と、コメントの投稿の分岐・失敗の扱いを確かめる(39 件)",
+      "feature": "verify",
+      "change": "スタブを `body=@<file>` を読む形にし、失敗系を「exit 0 と警告」で見る形にし、ケースを 3 件足した"
+    },
+    {
+      "path": "harness/githooks/pre-push",
+      "name": "push 前の検査",
+      "role": "push の前に検査と判定表を走らせる git hook",
+      "feature": "verify",
+      "change": "`jq` だけを要件にした区間で共通スクリプトの判定表を走らせる"
+    },
+    {
+      "path": "harness/githooks/README.md",
+      "name": "git hooks の説明",
+      "role": "pre-push が何を走らせ、道具が無いと何を飛ばすか",
+      "feature": "verify",
+      "change": "判定表の一覧・本数・飛ばす単位を更新した",
+      "graph": false
+    },
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "フックの説明",
+      "role": "判定表をどの層に置き、どこに穴が残るか",
+      "feature": "verify",
+      "change": "層の表に 2 行と、層 1 だけに置く理由・所要時間・動作確認を足した",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "call-coverage",
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "kind": "cmd",
+      "name": "カバレッジのレポートを貼る",
+      "code": "bash .github/scripts/upsert-sticky-comment.sh --marker '<!-- sticky-comment: frontend-coverage -->' --body-file coverage.md --if-missing post",
+      "via": "exec",
+      "payload": "`coverage.md` と目印",
+      "returns": "終了コード(1 だけを `::warning::` で受け流す)",
+      "status": "added"
+    },
+    {
+      "id": "call-vrt",
+      "from": ".github/workflows/storybook-visual-regression.yml",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "kind": "cmd",
+      "name": "VRT のレポートを貼る",
+      "code": "bash .github/scripts/upsert-sticky-comment.sh --marker '<!-- sticky-comment: storybook-visual-regression -->' --body-file \"$BODY_FILE\" --if-missing post",
+      "via": "exec",
+      "payload": "VRT の要約の本文",
+      "returns": "終了コード(0 以外は赤)",
+      "status": "added"
+    },
+    {
+      "id": "call-preview",
+      "from": ".github/workflows/storybook-pr-preview.yml",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "kind": "cmd",
+      "name": "プレビューの告知を貼る",
+      "code": "bash .github/scripts/upsert-sticky-comment.sh --marker '<!-- storybook-preview -->' --body-file \"$BODY_FILE\" --if-missing post",
+      "via": "exec",
+      "payload": "プレビューと解説ページの URL",
+      "returns": "終了コード(0 以外は赤)",
+      "status": "added"
+    },
+    {
+      "id": "dup-flag",
+      "from": ".github/workflows/pr-closing-issue.yml",
+      "to": ".github/scripts/check-duplicate-issue-pr.sh",
+      "kind": "cmd",
+      "name": "重複を検査してコメントする",
+      "code": "bash .github/scripts/check-duplicate-issue-pr.sh --comment",
+      "via": "exec",
+      "payload": "`--comment` と `PR_NUMBER`",
+      "returns": "終了コード(問い合わせが 3 回とも通らない・共通スクリプトが 1 以外で終わると赤)",
+      "status": "changed"
+    },
+    {
+      "id": "call-duplicate",
+      "from": ".github/scripts/check-duplicate-issue-pr.sh",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "kind": "cmd",
+      "name": "重複の判定を貼る",
+      "code": "bash \"$(dirname \"$0\")/upsert-sticky-comment.sh\" --marker \"$marker\" --body-file <(printf '%s' \"$body\") --if-missing \"$if_missing\"",
+      "via": "exec",
+      "payload": "判定の本文(`<(...)` で渡す)と、知らせることがあれば `post`・無ければ `skip`",
+      "returns": "終了コード(1 だけを `::warning::` で受け流す)",
+      "status": "added"
+    },
+    {
+      "id": "prepush-upsert-cases",
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "kind": "qry",
+      "name": "push 前に共通スクリプトの判定表を走らせる",
+      "code": "run_check \"sticky コメントの投稿・差し替えの判定表\" bash .github/scripts/upsert-sticky-comment-cases.sh",
+      "via": "exec",
+      "returns": "`ok` / `NG` の行と終了コード",
+      "status": "added"
+    },
+    {
+      "id": "ci-upsert-cases",
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "kind": "qry",
+      "name": "CI で共通スクリプトの判定表を走らせる",
+      "code": "bash .github/scripts/upsert-sticky-comment-cases.sh",
+      "via": "exec",
+      "returns": "`ok` / `NG` の行と終了コード",
+      "status": "added"
+    },
+    {
+      "id": "upsert-cases-run",
+      "from": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "kind": "qry",
+      "name": "差し替えた gh の下で共通スクリプトを走らせる",
+      "code": "env ${unset_flag[@]+\"${unset_flag[@]}\"} bash \"$script\" \"$@\"",
+      "via": "exec",
+      "payload": "引数・`STICKY_COMMENT_RETRY_WAIT=0`・`PATH` の先頭の差し替えた `gh`",
+      "returns": "終了コードと、差し替えた `gh` が残した呼ばれ方・本文",
+      "status": "added"
+    },
+    {
+      "id": "ci-dup-cases",
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+      "kind": "qry",
+      "name": "CI で重複の検査の判定表を走らせる",
+      "code": "bash .github/scripts/check-duplicate-issue-pr-cases.sh",
+      "via": "exec",
+      "returns": "`ok` / `NG` の行と終了コード",
+      "status": "added"
+    },
+    {
+      "id": "dup-cases-run",
+      "from": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+      "to": ".github/scripts/check-duplicate-issue-pr.sh",
+      "kind": "qry",
+      "name": "差し替えた gh の下で重複の検査を走らせる",
+      "code": "bash \"$script\" --comment \"$dir/result.json\"",
+      "via": "exec",
+      "payload": "差し替えた問い合わせ結果と `--comment`",
+      "returns": "終了コード・出力と、差し替えた `gh` が残した呼ばれ方・本文",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "report",
+      "label": "push のたびにレポートと告知を貼るとき",
+      "steps": [
+        "call-coverage",
+        "call-vrt",
+        "call-preview"
+      ]
+    },
+    {
+      "id": "duplicate",
+      "label": "PR を開いた・編集したときの重複の知らせ",
+      "steps": [
+        "dup-flag",
+        "call-duplicate"
+      ]
+    },
+    {
+      "id": "cases",
+      "label": "判定表を走らせるとき",
+      "steps": [
+        "prepush-upsert-cases",
+        "ci-upsert-cases",
+        "upsert-cases-run",
+        "ci-dup-cases",
+        "dup-cases-run"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "cf066c9a9b641159c090ed0955ee23a18c04fa9f",
+      "phase": "core",
+      "role": "目印で始まるコメントを探して差し替え、無ければ貼る共通スクリプトを足す",
+      "why": "4 箇所の違いを洗うと、呼び出し側で答えが変わる本物の差は「無いときに貼るか」だけだった。ページングは引数にせず常に全ページを見る(1 ページ目だけの探索は二重に貼る潜在的な不具合で、残す価値のある差ではない)。この時点では呼び出し側は付け替えず、スクリプト単体を先に入れる。",
+      "flows": [
+        "report",
+        "duplicate"
+      ],
+      "review": [
+        "やり直しは書き込みだけでなく「一覧 → 書き込み」のサイクルごと。失敗を返した POST が実は通っていたときに、次のサイクルの一覧で見つかって PATCH に回るか",
+        "目印は `--jq` の文字列リテラルへそのまま埋め込むので、`\"` と `\\` を正規表現の形で締め出している。形の検査が埋め込みの安全を十分に担保しているか",
+        "本文は起動時に 1 度だけ一時ファイルへ写し、`--field body=@` で渡す。`<(...)` の 2 度読み(空になる)と 128KiB 超の引数(E2BIG)の両方を避けられているか"
+      ],
+      "before": [
+        {
+          "text": "同じ「探して PATCH / 無ければ POST」がワークフローとスクリプトの 4 箇所に、ページング・探し方・やり直しがばらばらのまま書かれていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "`upsert-sticky-comment.sh` が全ページを `startswith` で探し、先頭の 1 件を差し替える。無ければ `--if-missing` に従う",
+          "message": "call-coverage"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "start": 23,
+          "end": 25,
+          "text": "サイクルごとにやり直す理由。書き込みだけをやり直すと二重に貼る"
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "start": 48,
+          "end": 50,
+          "text": "目印を `--jq` の式へ埋め込むので、`\"` と `\\` を形で締め出す"
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "start": 58,
+          "end": 64,
+          "text": "本文を 1 度だけ読み、目印を先頭に付けて一時ファイルへ書く"
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "start": 79,
+          "end": 94,
+          "text": "1 サイクル。`--paginate` は結果をページごとに返すので先頭行だけを採る。この時点では数値でない ID を内部の 3 で返していた(44fab0d で exit 1 に直す)"
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "start": 96,
+          "end": 107,
+          "text": "最大 3 回のやり直し。n 回目の失敗の後に n × 待ち時間だけ待つ"
+        }
+      ]
+    },
+    {
+      "sha": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "phase": "core",
+      "role": "共通スクリプトの判定表(23 件)を足し、pre-push に配線する",
+      "why": "yml のインラインだった頃は単体で確かめる手段が無かった。ケースは「何を壊すと落ちるか」で選び、`--paginate` を外す・`contains` に戻す・最後の行を採る・目印の検査を外す・`skip` の分岐を外すと落ちることを確かめた。",
+      "flows": [
+        "cases"
+      ],
+      "review": [
+        "差し替えた `gh` は `--paginate` が無いと 1 ページ目しか返さない。これが無いと 2 ページ目のケースは `--paginate` を外しても通ってしまう",
+        "pre-push では `jq` だけを要件にした区間に置いた。`python3` と `jq` の区間に入れると、`python3` を使わないこの表まで飛ぶ"
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "start": 30,
+          "end": 63,
+          "text": "差し替えた `gh`。一覧ならページの JSON に `--jq` を当て、書き込みなら `body=@` の先を読んで残す。`FAIL_*` で最初の n 回を失敗させる"
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "start": 166,
+          "end": 167,
+          "text": "`POST_LANDS=1` で、失敗を返した POST が実は通っていた形を踏ませる(差し替えた `gh` が本文を 1 ページ目へ足す)"
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "start": 101,
+          "end": 105,
+          "text": "`jq` が無ければこの区間だけ飛ばす"
+        }
+      ]
+    },
+    {
+      "sha": "8050ab28d56d4d266fddb354bff9bc8bd8a1ba52",
+      "phase": "hard",
+      "role": "duplicate の判定表が本物の PR へコメントを貼らないよう、投げ先を空にする",
+      "why": "計画中にこの判定表を `GITHUB_REPOSITORY` 付きで走らせ、架空の判定を閉じた PR 4 件へ貼ってしまった。この判定表を CI に配線する前に塞ぐ必要があるので、配線とは分けて先に入れた。後で d94ea35 が構造で塞ぎ、この 1 行は外れる。",
+      "review": [
+        "判定の JSON を見るケースだけが投げ先を空にし、コメントの分岐を見るケースは差し替えた `gh` と投げ先を自分で明示している。どのケースが投げ先を要らないかが呼び出しから読めるか"
+      ],
+      "before": [
+        {
+          "text": "`run_case` が環境の `GITHUB_REPOSITORY` を引き継ぎ、Actions では本物の `gh` でコメントを投げに行った"
+        }
+      ],
+      "after": [
+        {
+          "text": "`run_case` は `GITHUB_REPOSITORY=` を空にして走らせる"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "start": 64,
+          "end": 65,
+          "text": "Actions は `GITHUB_REPOSITORY` を既定で置くので、空にしないと本物の PR へ貼る"
+        }
+      ]
+    },
+    {
+      "sha": "5329776c79daac8b36f72895b601163d346c5d93",
+      "phase": "core",
+      "role": "duplicate の検査のコメント投稿を共通スクリプトの呼び出しへ置き換える",
+      "why": "「知らせることがあるときだけ貼る」は呼び出し側の判断なので `--if-missing post|skip` で渡す。「コメント側の失敗では赤にしない」も呼び出し側の判断なので、共通スクリプトの終了コードを受ける側で表した。全部を受け流すと配線の誤りまで緑になるので、受け流すのは exit 1 だけにした。",
+      "flows": [
+        "duplicate"
+      ],
+      "review": [
+        "受け流すのは exit 1 だけで、exit 2(使い方の誤り)と 127(共通スクリプトが無い)は赤にしている",
+        "本文は `<(...)` で渡している。共通スクリプトが起動時に 1 度だけ読むので、やり直しても本文が残る"
+      ],
+      "before": [
+        {
+          "text": "探索・PATCH・POST を自前で書き、失敗は `|| echo` ですべて受け流していた"
+        }
+      ],
+      "after": [
+        {
+          "text": "知らせることがあれば `post`、無ければ `skip` で共通スクリプトを呼び、exit 1 だけを受け流す",
+          "message": "call-duplicate"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "start": 181,
+          "end": 187,
+          "text": "本文から目印を外し(共通スクリプトが付ける)、知らせることの有無で `post` / `skip` を選ぶ"
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "start": 193,
+          "end": 198,
+          "text": "status を取り出し、1 以外ならその値で終わる"
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "side": "old",
+          "start": 186,
+          "end": 210,
+          "text": "旧形の探索・PATCH・POST。ページングの理由のコメントは共通スクリプトへ移した"
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "start": 235,
+          "end": 253,
+          "text": "検査スクリプトだけを一時ディレクトリへ写し、共通スクリプトが隣に無い形で走らせる。この時点の期待は「0 以外」(d94ea35 で 127 に絞る)"
+        }
+      ]
+    },
+    {
+      "sha": "ddde511669a1bde016c97b778deb6d971769569c",
+      "phase": "core",
+      "role": "カバレッジのレポートを共通スクリプトへ寄せ、判定表 2 本を CI に配線する",
+      "why": "レポートの投稿はチェックではないので、API が 3 回とも通らないだけでは赤にしない。一方 `continue-on-error` はステップの全部の失敗を緑にするので、目印の綴り違いやスクリプトの不在まで緑になる。そこで `continue-on-error` を外し、受け流す終了コードを 1 に絞った。duplicate の判定表はこの PR で期待を書き換えるので、配線しないと書き換えた期待を何も守らない。",
+      "flows": [
+        "report",
+        "cases"
+      ],
+      "review": [
+        "`|| { status=$?; [ \"$status\" = 1 ] || exit \"$status\"; ... }` の形が、Actions の既定シェル `bash -e` の下で exit 1 だけを受け流すか(手元で確かめた)",
+        "duplicate の判定表は約 22 秒かかるので pre-push に載せず CI だけに置いた。`check-pr-closing-issue-cases.sh` と同じ物差し"
+      ],
+      "before": [
+        {
+          "text": "カバレッジのレポートは 1 ページ目だけを探し、`continue-on-error` でどんな失敗も緑だった"
+        },
+        {
+          "text": "`check-duplicate-issue-pr-cases.sh` はどこにも配線されていなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "共通スクリプトで全ページを探し、exit 1 だけを `::warning::` で受け流す",
+          "message": "call-coverage"
+        },
+        {
+          "text": "`rules-check` が判定表 2 本を走らせる",
+          "message": "ci-dup-cases"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/workflows/frontend.yml",
+          "start": 215,
+          "end": 221,
+          "text": "判定表 2 本のステップ。duplicate の判定表はここで初めて配線される"
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "start": 267,
+          "end": 283,
+          "text": "`continue-on-error` を外し、exit 1 だけを `::warning::` にして受け流す"
+        }
+      ]
+    },
+    {
+      "sha": "f37a36b14bc40581e52e179ce7f663e7ab0e5a63",
+      "phase": "core",
+      "role": "VRT のコメント投稿を共通スクリプトへ寄せる",
+      "why": "目印は共通スクリプトが先頭に付けるので、本文を組み立てる 2 つの分岐でそれぞれ目印を書く必要が無くなった(片方で忘れると次から毎回 POST になる形が消える)。目印の綴りは変えないので、開いている PR の既存コメントはそのまま差し替えの対象になる。",
+      "flows": [
+        "report"
+      ],
+      "review": [
+        "失敗時の扱いは今と同じ(`continue-on-error` は無く 0 以外は赤)。やり直しが 3 回付いた"
+      ],
+      "before": [
+        {
+          "text": "1 ページ目だけを探し、やり直しは無かった"
+        }
+      ],
+      "after": [
+        {
+          "text": "共通スクリプトで全ページを探し、3 回までやり直す",
+          "message": "call-vrt"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/workflows/storybook-visual-regression.yml",
+          "start": 331,
+          "end": 333,
+          "text": "探索・PATCH・POST の 7 行が、この 1 呼び出しになった"
+        }
+      ]
+    },
+    {
+      "sha": "28577c25c8687a05f7e86c64dd2bc548e637e51d",
+      "phase": "core",
+      "role": "Storybook プレビューの告知を共通スクリプトへ寄せる",
+      "why": "Issue の表に無かった 4 箇所目。ページング・やり直し・ID の検査はどれも共通スクリプトの既定に吸収できるので、残す理由が無い。探し方は `contains` から `startswith` に変わるが、既存のプレビューコメントも先頭行が目印なので見失わない。",
+      "flows": [
+        "report"
+      ],
+      "review": [
+        "目印の綴り `<!-- storybook-preview -->` は変えていない(変えると開いている PR に 2 本目が貼られる)",
+        "env の `PR` を `PR_NUMBER` に揃えた。URL の組み立ても同じ変数を読む"
+      ],
+      "before": [
+        {
+          "text": "`contains` で探し、一覧と書き込みを別々に 3 回ずつやり直していた"
+        }
+      ],
+      "after": [
+        {
+          "text": "共通スクリプトで `startswith` で探し、サイクルごとにやり直す",
+          "message": "call-preview"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/workflows/storybook-pr-preview.yml",
+          "start": 115,
+          "end": 115,
+          "text": "共通スクリプトが読む `PR_NUMBER` に揃えた"
+        },
+        {
+          "path": ".github/workflows/storybook-pr-preview.yml",
+          "start": 131,
+          "end": 133,
+          "text": "約 50 行の一覧・PATCH・POST とそれぞれのやり直しが、この 1 呼び出しになった"
+        }
+      ]
+    },
+    {
+      "sha": "13ba440184bcad68c1d67b54987e30104654403e",
+      "phase": "fin",
+      "role": "`pr-closing-issue.yml` の「赤の意味」のコメントを共通スクリプトの終了コードに合わせる",
+      "why": "duplicate が exit 2 と 127 を赤にするようになり、「赤 = 問い合わせが通らなかっただけ」が実物と食い違った。赤を見た人がまず疑うところを正しく指すため。",
+      "review": [
+        "コメントだけの変更。後で d94ea35 がスクリプト側への参照に縮める"
+      ],
+      "notes": [
+        {
+          "path": ".github/workflows/pr-closing-issue.yml",
+          "start": 18,
+          "end": 19,
+          "text": "赤の意味に「共通スクリプトを呼べなかった(exit 1 以外)」を足した"
+        },
+        {
+          "path": ".github/workflows/pr-closing-issue.yml",
+          "start": 80,
+          "end": 81,
+          "text": "スクリプトの中で握るのは 3 回失敗(exit 1)だけ"
+        }
+      ]
+    },
+    {
+      "sha": "c33b442ed0353fb3ca92814a9349a3e0d22d1a9c",
+      "phase": "fin",
+      "role": "フックの README に判定表 2 本の置き場と所要時間を足す",
+      "why": "どの層にあり、どの層に無いか(残る穴)を README の表が持っているので、配線を変えたらそこへ反映しないと穴が見えなくなる。duplicate の判定表を層 2 に置かない理由は `check-pr-closing-issue-cases.sh` と同じ物差しなので、同じ段落に並べた。",
+      "review": [
+        "秒数は手元の実測で環境によって変わる(2062dae で測り直す)"
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 181,
+          "end": 182,
+          "text": "duplicate は層 1 だけ(残る穴)、共通スクリプトは層 1 と層 2"
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 206,
+          "end": 209,
+          "text": "duplicate の判定表を層 1 だけに置く理由と実測秒数"
+        }
+      ]
+    },
+    {
+      "sha": "44fab0d3f6393225858b48ed59527a3c5f2e729e",
+      "phase": "revise",
+      "role": "共通スクリプトの終了コードと Why をレビューに合わせて整える",
+      "why": "フェーズ 6 の指摘を受けた。exit 1 を受け流す判断は呼び出し側にあるが、その前提(exit 1 に何が入るか)は共通スクリプトの性質なので、そちらの doc 1 箇所に置いた。一時ファイルの失敗は、2 にすると原因を読み違え、1 にすると受け流されて黙るので、どちらとも別の 3 にした。",
+      "review": [
+        "exit 1 には 5xx も権限の誤り(403 等)も入り、受け流す側では赤にならないことを doc に明記した。4xx を別の終了コードに分けない判断でよいか",
+        "数値でない ID は `upsert_once` の中で直接 exit 1 にし、内部の戻り値 3 をなくした(doc の exit 3 と意味が衝突するため)",
+        "判定表の空配列の展開を `${unset_flag[@]+\"${unset_flag[@]}\"}` にし、bash 4.4 未満の `set -u` でも落ちないようにした"
+      ],
+      "before": [
+        {
+          "text": "一時ファイルの失敗は使い方の誤り(exit 2)と同じ扱いだった"
+        }
+      ],
+      "after": [
+        {
+          "text": "一時ファイルを作れない・書けないときは専用の文面で exit 3 にする(呼び出し側では赤)"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "start": 20,
+          "end": 27,
+          "text": "終了コードの正本。受け流してよいのは 1 だけ"
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "start": 46,
+          "end": 49,
+          "text": "一時ファイルの失敗は使い方の誤りと別の文面・別の終了コード"
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "start": 101,
+          "end": 105,
+          "text": "壊れた ID へ PATCH を打たない。やり直しても同じ応答なので打ち切る"
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "start": 88,
+          "end": 91,
+          "text": "空配列の展開を `set -u` で落ちない形にした"
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "start": 223,
+          "end": 227,
+          "text": "`TMPDIR` を無いディレクトリにして exit 3 を踏む"
+        }
+      ]
+    },
+    {
+      "sha": "d94ea356a51405542bb472d5e213abf600bc9d71",
+      "phase": "revise",
+      "role": "duplicate の検査は `--comment` を受けたときだけ PR にコメントする",
+      "why": "8050ab2 は判定表の 1 行で投げ先を空にしたが、スクリプトは「環境変数が揃えば本物へ投げる」ままで、手で走らせる人や今後足すケースが毎回外す義務を負っていた。Actions のランナーも手元の端末も `GITHUB_REPOSITORY` を置きうるので、既定を「投稿しない」に倒した。構造で塞いだので判定表側の空化は外した。",
+      "flows": [
+        "duplicate"
+      ],
+      "review": [
+        "`pr-closing-issue.yml` 以外からこのスクリプトを呼んでいる箇所は無い(grep で確認)",
+        "判定表の失敗系 3 件を、やり直しの並びではなく「exit 0」で見る形にした。並びは共通スクリプトの判定表が持つ",
+        "受け流すときは `::warning::` を出し、緑のままでもジョブの要約で気付けるようにした"
+      ],
+      "before": [
+        {
+          "text": "`GITHUB_REPOSITORY` と `PR_NUMBER` が揃うとコメントした"
+        }
+      ],
+      "after": [
+        {
+          "text": "`--comment` を渡したときだけコメントする。ワークフローは `--comment` を渡す",
+          "message": "dup-flag"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "start": 22,
+          "end": 27,
+          "text": "使い方の 3 通りと、環境変数で決めない理由"
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "start": 86,
+          "end": 92,
+          "text": "`--comment` とそれ以外(差し替えた結果のファイル)を分ける"
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "start": 172,
+          "end": 172,
+          "text": "`--comment` が無ければここで終わる"
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "start": 202,
+          "end": 202,
+          "text": "受け流すときは `::warning::` を出す"
+        },
+        {
+          "path": ".github/workflows/pr-closing-issue.yml",
+          "start": 83,
+          "end": 83,
+          "text": "ワークフローが `--comment` を渡す"
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "side": "old",
+          "start": 64,
+          "end": 65,
+          "text": "8050ab2 の空化。構造で塞いだので外した"
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "start": 252,
+          "end": 273,
+          "text": "`--comment` が無ければ、投げ先が置かれていても `gh` を 1 度も呼ばない"
+        }
+      ]
+    },
+    {
+      "sha": "89e74e71ec65c359f8c16ef604d3e286556034eb",
+      "phase": "revise",
+      "role": "`frontend.yml` のコメントを参照先の箇条と共通スクリプトの doc に合わせる",
+      "why": "「上と同じ README の段落」と書いていたが、README では判定表ごとに箇条が分かれていた。秒数を書き写すと README と食い違うので、理由と実測値は 1 箇所ずつに置き、ワークフローからは参照だけにした。",
+      "review": [
+        "コメントだけの変更"
+      ],
+      "notes": [
+        {
+          "path": ".github/workflows/frontend.yml",
+          "start": 215,
+          "end": 216,
+          "text": "README の duplicate の箇条を指す。秒数は書き写さない"
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "start": 267,
+          "end": 268,
+          "text": "exit 1 が何を含むかは共通スクリプトの「終了コード」を指す"
+        }
+      ]
+    },
+    {
+      "sha": "f454dd4b7b0540777e317ed64df6054949abddd7",
+      "phase": "revise",
+      "role": "共通スクリプトの使い方の検査を判定表で守る(test-reviewer の指摘)",
+      "why": "test-reviewer が実装を 37 通りに壊したところ、目印の正規表現の `^` / `$`・PR 番号の数字の検査・引数の組み立ての検査を壊しても判定表が緑のままだった。値の無い引数が exit 1 になると呼び出し側が「3 回失敗」として受け流すので、2 であることを固定した。",
+      "flows": [
+        "cases"
+      ],
+      "review": [
+        "二重引用符のケースの入力を、二重引用符だけを含む目印にした(前は他の記号でも弾かれる入力だった)",
+        "本文ファイルの検査を `[ -f ]` ではなく「ディレクトリでなく読める」にした。`[ -f ]` だと duplicate が `<(...)` で渡す本文が弾かれる",
+        "書き出しだけが失敗する一時ファイルの経路は、通す入力が無くなり判定表では踏めないまま残る"
+      ],
+      "before": [
+        {
+          "text": "本文ファイルにディレクトリを渡すと exit 3 と「一時ファイルへ書けなかった」が出ていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "ディレクトリは使い方の誤り(exit 2)になる"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "start": 76,
+          "end": 78,
+          "text": "読めて、ディレクトリでないこと。パイプ(`<(...)`)は通す"
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "start": 212,
+          "end": 218,
+          "text": "目印の前後に文字が付いた入力。正規表現の `^` / `$` を守る"
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "start": 224,
+          "end": 234,
+          "text": "ディレクトリの本文・値の無い引数・知らない引数"
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "start": 240,
+          "end": 242,
+          "text": "数字でない PR 番号"
+        }
+      ]
+    },
+    {
+      "sha": "2062daec787a972a96f9562d96fdf7c9c7eb4c9f",
+      "phase": "revise",
+      "role": "duplicate の判定表で exit 3 を赤にすることと警告の出力を守る(test-reviewer の指摘)",
+      "why": "「受け流すのは exit 1 だけ」は共通スクリプトが無いとき(127)の 1 件でしか守られておらず、受け流す条件を `-le 3` に壊しても緑だった。`TMPDIR` を無いディレクトリにすると共通スクリプトだけが exit 3 を返す(duplicate 自身は `mktemp` を使わない)ので、受け流しの条件を直接切り分けられる。",
+      "flows": [
+        "cases"
+      ],
+      "review": [
+        "exit 2 では守れない。duplicate からの引数は固定なので、共通スクリプトに exit 2 を返させる入力を duplicate 側から作れない",
+        "`::warning::` は「緑のままでも要約で気付ける」という判断そのものなので、出力で見る"
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "start": 230,
+          "end": 230,
+          "text": "失敗系は exit 0 に加えて出力に `::warning::` があることを見る"
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "start": 256,
+          "end": 273,
+          "text": "共通スクリプトだけが exit 3 で終わる形を作り、duplicate も 3 で終わることを見る"
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 206,
+          "end": 208,
+          "text": "所要時間を測り直した(duplicate 22.0 秒 / 共通スクリプト 0.9 秒)"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "upsert",
+      "label": "共通スクリプトの判定表",
+      "file": ".github/scripts/upsert-sticky-comment-cases.sh"
+    },
+    {
+      "id": "dup",
+      "label": "重複の検査の判定表",
+      "file": ".github/scripts/check-duplicate-issue-pr-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "up-post",
+      "suite": "upsert",
+      "name": "marker で始まるコメントが無く、無いときは貼る指定なら、新しく貼る",
+      "techniques": [
+        "state"
+      ],
+      "why": "PR に初めてレポートを貼る基本の形",
+      "given": "目印で始まらないコメントが 1 件だけの一覧",
+      "when": "`--if-missing post` で走らせる",
+      "then": "exit 0、`gh` は GET → POST",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 117,
+        "end": 119,
+        "text": "dir=\"$(new_case \"$unrelated\")\"\nreport 'exit=0 calls=GET POST' \"$(run_upsert \"$dir\" \"${post[@]}\")\" \\\n  'marker で始まるコメントが無く、無いときは貼る指定なら、新しく貼る'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-post-body",
+      "suite": "upsert",
+      "name": "貼る本文は marker の行で始まり、続けて渡した本文が入る",
+      "techniques": [
+        "state"
+      ],
+      "why": "目印が先頭に無いと、次の実行がこのコメントを見つけられず毎回 POST になる",
+      "given": "目印で始まらないコメントだけの一覧",
+      "when": "`--if-missing post` で走らせる",
+      "then": "書き込んだ本文が「目印の行 + 渡した本文」と一致する",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 121,
+        "end": 124,
+        "text": "dir=\"$(new_case \"$unrelated\")\"\nrun_upsert \"$dir\" \"${post[@]}\" >/dev/null\nreport_written_body \"$dir\" \\\n  '貼る本文は marker の行で始まり、続けて渡した本文が入る'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-patch",
+      "suite": "upsert",
+      "name": "marker で始まるコメントがあれば、そのコメントの ID へ差し替える",
+      "techniques": [
+        "state"
+      ],
+      "why": "2 回目以降の push で、前のコメントを書き換えて 1 件のまま保つ",
+      "given": "ID 101 が目印で始まる一覧",
+      "when": "`--if-missing post` で走らせる",
+      "then": "exit 0、GET → PATCH 101",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 126,
+        "end": 128,
+        "text": "dir=\"$(new_case \"$sticky_101\")\"\nreport 'exit=0 calls=GET PATCH 101' \"$(run_upsert \"$dir\" \"${post[@]}\")\" \\\n  'marker で始まるコメントがあれば、そのコメントの ID へ差し替える'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-patch-body",
+      "suite": "upsert",
+      "name": "差し替える本文も marker の行で始まり、続けて渡した本文が入る",
+      "techniques": [
+        "state"
+      ],
+      "why": "差し替えで目印を落とすと、次から毎回 POST になる",
+      "given": "ID 101 が目印で始まる一覧",
+      "when": "`--if-missing post` で走らせる",
+      "then": "書き込んだ本文が「目印の行 + 渡した本文」と一致する",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 130,
+        "end": 133,
+        "text": "dir=\"$(new_case \"$sticky_101\")\"\nrun_upsert \"$dir\" \"${post[@]}\" >/dev/null\nreport_written_body \"$dir\" \\\n  '差し替える本文も marker の行で始まり、続けて渡した本文が入る'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-skip-none",
+      "suite": "upsert",
+      "name": "無いときは貼らない指定で、コメントも無ければ何も貼らない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "duplicate で知らせることが無い PR に、空の知らせを貼らない",
+      "given": "目印で始まるコメントが無い一覧",
+      "when": "`--if-missing skip` で走らせる",
+      "then": "exit 0、GET だけ",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 135,
+        "end": 137,
+        "text": "dir=\"$(new_case \"$unrelated\")\"\nreport 'exit=0 calls=GET' \"$(run_upsert \"$dir\" \"${skip[@]}\")\" \\\n  '無いときは貼らない指定で、コメントも無ければ何も貼らない'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-skip-patch",
+      "suite": "upsert",
+      "name": "無いときは貼らない指定でも、コメントがあれば差し替える",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "重複が解消した PR の既存の知らせを「解消済み」へ書き換える",
+      "given": "ID 101 が目印で始まる一覧",
+      "when": "`--if-missing skip` で走らせる",
+      "then": "exit 0、GET → PATCH 101",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 139,
+        "end": 141,
+        "text": "dir=\"$(new_case \"$sticky_101\")\"\nreport 'exit=0 calls=GET PATCH 101' \"$(run_upsert \"$dir\" \"${skip[@]}\")\" \\\n  '無いときは貼らない指定でも、コメントがあれば差し替える'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-page2",
+      "suite": "upsert",
+      "name": "2 ページ目にしか無いコメントも見つけて差し替える",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "コメントが積もった PR で前のコメントを見失うと二重に貼る(旧 frontend / VRT は 1 ページ目だけを見ていた)",
+      "given": "1 ページ目に無関係なコメント、2 ページ目に ID 202 の目印のコメント",
+      "when": "`--if-missing skip` で走らせる(差し替えた `gh` は `--paginate` が無いと 1 ページ目しか返さない)",
+      "then": "exit 0、GET → PATCH 202",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 145,
+        "end": 147,
+        "text": "dir=\"$(new_case \"$unrelated\" '[{\"id\": 202, \"body\": \"<!-- sticky-comment: cases -->\\n2 ページ目\"}]')\"\nreport 'exit=0 calls=GET PATCH 202' \"$(run_upsert \"$dir\" \"${skip[@]}\")\" \\\n  '2 ページ目にしか無いコメントも見つけて差し替える'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-mid-marker",
+      "suite": "upsert",
+      "name": "marker を本文の途中に含むだけのコメントは sticky と見なさず、新しく貼る",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "目印の綴りを引用した人のコメントを書き換えない(旧 preview は `contains` で探していた)",
+      "given": "本文の途中に目印を含むコメントだけの一覧",
+      "when": "`--if-missing post` で走らせる",
+      "then": "exit 0、GET → POST(既存のコメントへは PATCH しない)",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 149,
+        "end": 151,
+        "text": "dir=\"$(new_case '[{\"id\": 12, \"body\": \"引用: <!-- sticky-comment: cases --> を探している\"}]')\"\nreport 'exit=0 calls=GET POST' \"$(run_upsert \"$dir\" \"${post[@]}\")\" \\\n  'marker を本文の途中に含むだけのコメントは sticky と見なさず、新しく貼る'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-first",
+      "suite": "upsert",
+      "name": "marker で始まるコメントが 2 件以上あれば、先に並ぶほうを差し替える",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "過去に二重に貼られた PR でも、差し替える先が 1 つに決まる",
+      "given": "1 ページ目に ID 101・102、2 ページ目に ID 203 の目印のコメント",
+      "when": "`--if-missing post` で走らせる",
+      "then": "exit 0、GET → PATCH 101(ページの中の先頭とページをまたいだ先頭の両方)",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 153,
+        "end": 158,
+        "text": "# 1 ページ目に 2 件・2 ページ目に 1 件置き、ページの中の先頭とページをまたいだ先頭の両方を踏む\ndir=\"$(new_case \\\n  '[{\"id\": 101, \"body\": \"<!-- sticky-comment: cases -->\\n古い\"}, {\"id\": 102, \"body\": \"<!-- sticky-comment: cases -->\\n新しい\"}]' \\\n  '[{\"id\": 203, \"body\": \"<!-- sticky-comment: cases -->\\n2 ページ目\"}]')\"\nreport 'exit=0 calls=GET PATCH 101' \"$(run_upsert \"$dir\" \"${post[@]}\")\" \\\n  'marker で始まるコメントが 2 件以上あれば、先に並ぶほうを差し替える'"
+      },
+      "values": {
+        "columns": [
+          "置いたコメント",
+          "差し替える先"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "1 ページ目 101・102 / 2 ページ目 203",
+              "101"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-get-retry",
+      "suite": "upsert",
+      "name": "一覧の取得が一時的に失敗しても、やり直して貼る",
+      "techniques": [
+        "error",
+        "state"
+      ],
+      "why": "API の一時的な 5xx で貼れないことを減らす",
+      "given": "コメントが無い一覧、最初の GET を 1 回失敗させる",
+      "when": "`--if-missing post` で走らせる",
+      "then": "exit 0、GET-FAILED → GET → POST",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 162,
+        "end": 164,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=0 calls=GET-FAILED GET POST' \"$(FAIL_GET=1 run_upsert \"$dir\" \"${post[@]}\")\" \\\n  '一覧の取得が一時的に失敗しても、やり直して貼る'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-get-3fail",
+      "suite": "upsert",
+      "name": "一覧を 3 回とも取れなければ、貼らずに失敗で終わる",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "一覧が取れないのを「無い」と読んで POST すると二重に貼る",
+      "given": "GET を毎回失敗させる",
+      "when": "`--if-missing post` で走らせる",
+      "then": "exit 1、GET-FAILED が 3 回で POST しない",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 166,
+        "end": 168,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=1 calls=GET-FAILED GET-FAILED GET-FAILED' \"$(FAIL_GET=9 run_upsert \"$dir\" \"${post[@]}\")\" \\\n  '一覧を 3 回とも取れなければ、貼らずに失敗で終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-post-landed",
+      "suite": "upsert",
+      "name": "投稿が失敗を返しても実は載っていたなら、取り直した一覧から見つけて差し替え、二重に貼らない",
+      "techniques": [
+        "error",
+        "idempotence"
+      ],
+      "why": "POST がタイムアウトしたが実は通っていた形で、2 件目を貼らない。サイクルごとやり直す設計の根拠",
+      "given": "コメントが無い一覧、最初の POST は失敗を返すが本文が 1 ページ目に載る",
+      "when": "`--if-missing post` で走らせる",
+      "then": "exit 0、GET → POST-FAILED → GET → PATCH 900",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 170,
+        "end": 172,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=0 calls=GET POST-FAILED GET PATCH 900' \"$(FAIL_POST=1 POST_LANDS=1 run_upsert \"$dir\" \"${post[@]}\")\" \\\n  '投稿が失敗を返しても実は載っていたなら、取り直した一覧から見つけて差し替え、二重に貼らない'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-pipe-body",
+      "suite": "upsert",
+      "name": "本文をパイプで渡しても、やり直した後の書き込みに本文が残る",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "duplicate は本文を `<(...)` で渡す。2 度目に読むと空になるので、起動時に 1 度だけ読んでいないとやり直し後の本文が空になる",
+      "given": "コメントが無い一覧、最初の POST を失敗させる",
+      "when": "本文を `<(printf ...)` で渡して走らせる",
+      "then": "最後に書き込んだ本文が「目印の行 + 渡した本文」と一致する",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 174,
+        "end": 178,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nFAIL_POST=1 run_upsert \"$dir\" --marker \"$marker\" --body-file <(printf '本文の 1 行目\\n本文の 2 行目') \\\n  --if-missing post >/dev/null\nreport_written_body \"$dir\" \\\n  '本文をパイプで渡しても、やり直した後の書き込みに本文が残る'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-patch-3fail",
+      "suite": "upsert",
+      "name": "差し替えが 3 回とも失敗したら、失敗で終わる",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "書き込みの失敗も 3 回で打ち切り、呼び出し側へ 1 を返す",
+      "given": "ID 101 が目印で始まる一覧、PATCH を毎回失敗させる",
+      "when": "`--if-missing post` で走らせる",
+      "then": "exit 1、GET → PATCH-FAILED を 3 回",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 180,
+        "end": 183,
+        "text": "dir=\"$(new_case \"$sticky_101\")\"\nreport 'exit=1 calls=GET PATCH-FAILED GET PATCH-FAILED GET PATCH-FAILED' \\\n  \"$(FAIL_PATCH=9 run_upsert \"$dir\" \"${post[@]}\")\" \\\n  '差し替えが 3 回とも失敗したら、失敗で終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-post-3fail",
+      "suite": "upsert",
+      "name": "投稿が 3 回とも失敗したら、失敗で終わる",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "投稿の失敗も 3 回で打ち切り、呼び出し側へ 1 を返す",
+      "given": "コメントが無い一覧、POST を毎回失敗させる",
+      "when": "`--if-missing post` で走らせる",
+      "then": "exit 1、GET → POST-FAILED を 3 回",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 185,
+        "end": 188,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=1 calls=GET POST-FAILED GET POST-FAILED GET POST-FAILED' \\\n  \"$(FAIL_POST=9 run_upsert \"$dir\" \"${post[@]}\")\" \\\n  '投稿が 3 回とも失敗したら、失敗で終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-non-numeric",
+      "suite": "upsert",
+      "name": "一覧が数値でない ID を返したら、書き込まず・投稿にも落ちず・やり直しもせず失敗で終わる",
+      "techniques": [
+        "error"
+      ],
+      "why": "壊れた ID へ PATCH を打たず、POST に落ちて二重に貼りもしない。やり直しても同じ応答が返るだけ",
+      "given": "目印で始まるコメントの ID が `\"gh: HTTP 502\"` の一覧",
+      "when": "`--if-missing post` で走らせる",
+      "then": "exit 1、GET 1 回だけ",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 190,
+        "end": 192,
+        "text": "dir=\"$(new_case '[{\"id\": \"gh: HTTP 502\", \"body\": \"<!-- sticky-comment: cases -->\\n壊れた応答\"}]')\"\nreport 'exit=1 calls=GET' \"$(run_upsert \"$dir\" \"${post[@]}\")\" \\\n  '一覧が数値でない ID を返したら、書き込まず・投稿にも落ちず・やり直しもせず失敗で終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-if-missing",
+      "suite": "upsert",
+      "name": "無いときの扱いに post / skip 以外を渡したら、gh を呼ばずに使い方の誤りで終わる",
+      "techniques": [
+        "error",
+        "equivalence"
+      ],
+      "why": "呼び出し側の綴り違いを、受け流される 1 ではなく赤になる 2 で止める",
+      "given": "コメントが無い一覧",
+      "when": "`--if-missing always` で走らせる",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 196,
+        "end": 198,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(run_upsert \"$dir\" --marker \"$marker\" --body-file \"$work/body.md\" --if-missing always)\" \\\n  '無いときの扱いに post / skip 以外を渡したら、gh を呼ばずに使い方の誤りで終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-marker-html",
+      "suite": "upsert",
+      "name": "marker が HTML コメントの形でなければ、gh を呼ばずに使い方の誤りで終わる",
+      "techniques": [
+        "error"
+      ],
+      "why": "目印の書き損じで、見えるコメントの先頭に目印の文字が出るのを防ぐ",
+      "given": "コメントが無い一覧",
+      "when": "`--marker 'sticky-comment: cases'` で走らせる",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 200,
+        "end": 202,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(run_upsert \"$dir\" --marker 'sticky-comment: cases' --body-file \"$work/body.md\" --if-missing post)\" \\\n  'marker が HTML コメントの形でなければ、gh を呼ばずに使い方の誤りで終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-marker-quote",
+      "suite": "upsert",
+      "name": "marker に二重引用符が入っていれば、gh を呼ばずに使い方の誤りで終わる",
+      "techniques": [
+        "error"
+      ],
+      "why": "目印は `--jq` の文字列リテラルへ埋め込むので、`\"` が入ると式が壊れる",
+      "given": "コメントが無い一覧",
+      "when": "`--marker '<!-- a\" -->'` で走らせる(`\"` だけを含む入力)",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 204,
+        "end": 206,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(run_upsert \"$dir\" --marker '<!-- a\" -->' --body-file \"$work/body.md\" --if-missing post)\" \\\n  'marker に二重引用符が入っていれば、gh を呼ばずに使い方の誤りで終わる'"
+      },
+      "values": {
+        "columns": [
+          "目印",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`<!-- a\" -->`",
+              "exit 2"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`<!-- a\\ -->`",
+              "exit 2"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`<!-- a --> \"`",
+              "exit 2"
+            ]
+          },
+          {
+            "cells": [
+              "`x<!-- a -->`",
+              "exit 2"
+            ]
+          },
+          {
+            "cells": [
+              "`<!-- sticky-comment: cases -->`",
+              "通る"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-marker-backslash",
+      "suite": "upsert",
+      "name": "marker にバックスラッシュが入っていれば、gh を呼ばずに使い方の誤りで終わる",
+      "techniques": [
+        "error"
+      ],
+      "why": "`\\` も `--jq` の文字列リテラルを壊す",
+      "given": "コメントが無い一覧",
+      "when": "`--marker '<!-- a\\ -->'` で走らせる",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 208,
+        "end": 210,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(run_upsert \"$dir\" --marker '<!-- a\\ -->' --body-file \"$work/body.md\" --if-missing post)\" \\\n  'marker にバックスラッシュが入っていれば、gh を呼ばずに使い方の誤りで終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-marker-tail",
+      "suite": "upsert",
+      "name": "marker の閉じの後ろに続きがあれば、gh を呼ばずに使い方の誤りで終わる",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "正規表現の `$` が外れると、後ろに `\"` を続けた目印が通る",
+      "given": "コメントが無い一覧",
+      "when": "`--marker '<!-- a --> \"'` で走らせる",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "f454dd4b7b0540777e317ed64df6054949abddd7",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 212,
+        "end": 214,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(run_upsert \"$dir\" --marker '<!-- a --> \"' --body-file \"$work/body.md\" --if-missing post)\" \\\n  'marker の閉じの後ろに続きがあれば、gh を呼ばずに使い方の誤りで終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-marker-head",
+      "suite": "upsert",
+      "name": "marker の開きの前に何かあれば、gh を呼ばずに使い方の誤りで終わる",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "正規表現の `^` が外れると、先頭に文字が付いた目印が通る",
+      "given": "コメントが無い一覧",
+      "when": "`--marker 'x<!-- a -->'` で走らせる",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "f454dd4b7b0540777e317ed64df6054949abddd7",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 216,
+        "end": 218,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(run_upsert \"$dir\" --marker 'x<!-- a -->' --body-file \"$work/body.md\" --if-missing post)\" \\\n  'marker の開きの前に何かあれば、gh を呼ばずに使い方の誤りで終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-body-missing",
+      "suite": "upsert",
+      "name": "本文のファイルが読めなければ、gh を呼ばずに使い方の誤りで終わる",
+      "techniques": [
+        "error"
+      ],
+      "why": "本文のパスの誤りで空のコメントを貼らない",
+      "given": "コメントが無い一覧",
+      "when": "無いファイルを `--body-file` に渡す",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 220,
+        "end": 222,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(run_upsert \"$dir\" --marker \"$marker\" --body-file \"$work/missing.md\" --if-missing post)\" \\\n  '本文のファイルが読めなければ、gh を呼ばずに使い方の誤りで終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-body-dir",
+      "suite": "upsert",
+      "name": "本文のファイルとしてディレクトリを渡したら、gh を呼ばずに使い方の誤りで終わる",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "ディレクトリは `[ -r ]` を通るので、前は exit 3 と「一時ファイルへ書けなかった」になり原因を読み違えた",
+      "given": "コメントが無い一覧",
+      "when": "ディレクトリを `--body-file` に渡す",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "f454dd4b7b0540777e317ed64df6054949abddd7",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 224,
+        "end": 226,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(run_upsert \"$dir\" --marker \"$marker\" --body-file \"$work\" --if-missing post)\" \\\n  '本文のファイルとしてディレクトリを渡したら、gh を呼ばずに使い方の誤りで終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-no-value",
+      "suite": "upsert",
+      "name": "値の無い引数で終わっていれば、gh を呼ばずに使い方の誤りで終わる(受け流される 3 回失敗と同じ 1 にしない)",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "値の書き忘れが exit 1 になると、カバレッジと duplicate はそれを「3 回失敗」として受け流してしまう",
+      "given": "コメントが無い一覧",
+      "when": "最後の `--if-missing` に値を付けずに走らせる",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "f454dd4b7b0540777e317ed64df6054949abddd7",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 228,
+        "end": 230,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(run_upsert \"$dir\" --marker \"$marker\" --body-file \"$work/body.md\" --if-missing)\" \\\n  '値の無い引数で終わっていれば、gh を呼ばずに使い方の誤りで終わる(受け流される 3 回失敗と同じ 1 にしない)'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-unknown-arg",
+      "suite": "upsert",
+      "name": "知らない引数を渡したら、gh を呼ばずに使い方の誤りで終わる",
+      "techniques": [
+        "error"
+      ],
+      "why": "引数名の綴り違いを黙って無視しない",
+      "given": "コメントが無い一覧",
+      "when": "正しい引数に `--unknown x` を足して走らせる",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "f454dd4b7b0540777e317ed64df6054949abddd7",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 232,
+        "end": 234,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(run_upsert \"$dir\" \"${post[@]}\" --unknown x)\" \\\n  '知らない引数を渡したら、gh を呼ばずに使い方の誤りで終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-pr-missing",
+      "suite": "upsert",
+      "name": "PR 番号が無ければ、gh を呼ばずに使い方の誤りで終わる",
+      "techniques": [
+        "error"
+      ],
+      "why": "env の渡し忘れで、壊れた URL へ問い合わせない",
+      "given": "コメントが無い一覧",
+      "when": "`PR_NUMBER` を外して走らせる",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 236,
+        "end": 238,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(UNSET=PR_NUMBER run_upsert \"$dir\" \"${post[@]}\")\" \\\n  'PR 番号が無ければ、gh を呼ばずに使い方の誤りで終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-pr-non-numeric",
+      "suite": "upsert",
+      "name": "PR 番号が数字でなければ、gh を呼ばずに使い方の誤りで終わる",
+      "techniques": [
+        "error",
+        "equivalence"
+      ],
+      "why": "「無い」側だけでは、数字かの検査を壊しても緑のままだった",
+      "given": "コメントが無い一覧",
+      "when": "`PR_NUMBER=abc` で走らせる",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "f454dd4b7b0540777e317ed64df6054949abddd7",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 240,
+        "end": 242,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(CASE_PR_NUMBER=abc run_upsert \"$dir\" \"${post[@]}\")\" \\\n  'PR 番号が数字でなければ、gh を呼ばずに使い方の誤りで終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-repo-missing",
+      "suite": "upsert",
+      "name": "リポジトリが無ければ、gh を呼ばずに使い方の誤りで終わる",
+      "techniques": [
+        "error"
+      ],
+      "why": "`GITHUB_REPOSITORY` が無い環境で、壊れた URL へ問い合わせない",
+      "given": "コメントが無い一覧",
+      "when": "`GITHUB_REPOSITORY` を外して走らせる",
+      "then": "exit 2、`gh` を 1 度も呼ばない",
+      "commit": "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 244,
+        "end": 246,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=2 calls=' \"$(UNSET=GITHUB_REPOSITORY run_upsert \"$dir\" \"${post[@]}\")\" \\\n  'リポジトリが無ければ、gh を呼ばずに使い方の誤りで終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "up-tmp-fail",
+      "suite": "upsert",
+      "name": "一時ファイルを作れなければ、gh を呼ばずに使い方の誤りとは別の失敗で終わる",
+      "techniques": [
+        "error"
+      ],
+      "why": "環境の故障を、受け流される 1 にも、原因を読み違える 2 にもしない",
+      "given": "コメントが無い一覧",
+      "when": "`TMPDIR` を無いディレクトリにして走らせる",
+      "then": "exit 3、`gh` を 1 度も呼ばない",
+      "commit": "44fab0d3f6393225858b48ed59527a3c5f2e729e",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 250,
+        "end": 252,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nreport 'exit=3 calls=' \"$(TMPDIR=\"$work/missing-dir\" run_upsert \"$dir\" \"${post[@]}\")\" \\\n  '一時ファイルを作れなければ、gh を呼ばずに使い方の誤りとは別の失敗で終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "upsert-cases-run"
+      ]
+    },
+    {
+      "id": "dup-list-fail",
+      "suite": "dup",
+      "name": "コメントの一覧を取れなくても赤にしない",
+      "techniques": [
+        "error",
+        "state"
+      ],
+      "why": "重複の知らせはチェックではないので、コメント側の失敗では赤にしない。ただし `::warning::` で要約に残す",
+      "given": "重複がある判定、一覧(GET)を毎回失敗させる",
+      "when": "`--comment` 付きで走らせる",
+      "then": "exit 0、出力に `::warning::`",
+      "excerpt": {
+        "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+        "start": 222,
+        "end": 254,
+        "emphasis": [
+          {
+            "start": 252,
+            "end": 252
+          }
+        ],
+        "text": "# 共通スクリプトが 3 回とも失敗しても、この検査は赤にしない(exit 0)が、`::warning::` を残して要約で\n# 気付けることを見る\nrun_comment_failure_case() {\n  local existing=\"$1\" fail_on=\"$2\" label=\"$3\"\n  local dir actual=0 warned=false\n\n  dir=\"$(mktemp -d)\"\n  run_with_gh_stub \"$dir\" \"$existing\" \"$fail_on\" \"$with_duplicate\" || actual=$?\n  grep -qF '::warning::' \"$dir/output\" && warned=true\n  rm -rf \"$dir\"\n\n  local passed_with_warning=false\n  [ \"$actual\" = 0 ] && [ \"$warned\" = true ] && passed_with_warning=true\n  if [ \"$passed_with_warning\" = true ]; then\n    printf 'ok   %s\\n' \"$label\"\n    return\n  fi\n  printf 'NG   exit=%s 警告=%s (期待 exit=0 警告=true)  %s\\n' \"$actual\" \"$warned\" \"$label\"\n  failed=1\n}\n\nwith_duplicate=\"$(result_json \"$issue_595\" \"$duplicate_595\")\"\nwithout_duplicate=\"$(result_json \"$issue_595\" \"$unrelated\")\"\nwith_closed_issue=\"$(result_json \"$issue_628_closed_by_hand_for_604\" \"$no_others\")\"\n\nrun_comment_case 'GET POST'  ''      ''      \"$with_duplicate\"    '重複があってコメントがまだ無ければ、新しく貼る'\nrun_comment_case 'GET PATCH' '12345' ''      \"$with_duplicate\"    '重複があってコメントが既にあれば、差し替える'\nrun_comment_case 'GET PATCH' '12345' ''      \"$without_duplicate\" '重複が無くなったら、貼ってあるコメントを差し替える'\nrun_comment_case 'GET'       ''      ''      \"$without_duplicate\" '重複が無くてコメントも無ければ、何も貼らない'\nrun_comment_case 'GET POST'  ''      ''      \"$with_closed_issue\" '閉じる Issue がクローズ済みなら、重複が無くても新しく貼る'\nrun_comment_failure_case ''      GET   'コメントの一覧を取れなくても赤にしない'\nrun_comment_failure_case ''      POST  'コメントの投稿に失敗しても赤にしない'\nrun_comment_failure_case '12345' PATCH 'コメントの差し替えに失敗しても赤にしない'"
+      },
+      "targets": [
+        ".github/scripts/check-duplicate-issue-pr.sh"
+      ],
+      "covers": [
+        "dup-cases-run",
+        "call-duplicate"
+      ]
+    },
+    {
+      "id": "dup-post-fail",
+      "suite": "dup",
+      "name": "コメントの投稿に失敗しても赤にしない",
+      "techniques": [
+        "error",
+        "state"
+      ],
+      "why": "共通スクリプトが POST で 3 回失敗(exit 1)しても赤にしない",
+      "given": "重複がある判定、POST を毎回失敗させる",
+      "when": "`--comment` 付きで走らせる",
+      "then": "exit 0、出力に `::warning::`",
+      "excerpt": {
+        "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+        "start": 222,
+        "end": 254,
+        "emphasis": [
+          {
+            "start": 253,
+            "end": 253
+          }
+        ],
+        "text": "# 共通スクリプトが 3 回とも失敗しても、この検査は赤にしない(exit 0)が、`::warning::` を残して要約で\n# 気付けることを見る\nrun_comment_failure_case() {\n  local existing=\"$1\" fail_on=\"$2\" label=\"$3\"\n  local dir actual=0 warned=false\n\n  dir=\"$(mktemp -d)\"\n  run_with_gh_stub \"$dir\" \"$existing\" \"$fail_on\" \"$with_duplicate\" || actual=$?\n  grep -qF '::warning::' \"$dir/output\" && warned=true\n  rm -rf \"$dir\"\n\n  local passed_with_warning=false\n  [ \"$actual\" = 0 ] && [ \"$warned\" = true ] && passed_with_warning=true\n  if [ \"$passed_with_warning\" = true ]; then\n    printf 'ok   %s\\n' \"$label\"\n    return\n  fi\n  printf 'NG   exit=%s 警告=%s (期待 exit=0 警告=true)  %s\\n' \"$actual\" \"$warned\" \"$label\"\n  failed=1\n}\n\nwith_duplicate=\"$(result_json \"$issue_595\" \"$duplicate_595\")\"\nwithout_duplicate=\"$(result_json \"$issue_595\" \"$unrelated\")\"\nwith_closed_issue=\"$(result_json \"$issue_628_closed_by_hand_for_604\" \"$no_others\")\"\n\nrun_comment_case 'GET POST'  ''      ''      \"$with_duplicate\"    '重複があってコメントがまだ無ければ、新しく貼る'\nrun_comment_case 'GET PATCH' '12345' ''      \"$with_duplicate\"    '重複があってコメントが既にあれば、差し替える'\nrun_comment_case 'GET PATCH' '12345' ''      \"$without_duplicate\" '重複が無くなったら、貼ってあるコメントを差し替える'\nrun_comment_case 'GET'       ''      ''      \"$without_duplicate\" '重複が無くてコメントも無ければ、何も貼らない'\nrun_comment_case 'GET POST'  ''      ''      \"$with_closed_issue\" '閉じる Issue がクローズ済みなら、重複が無くても新しく貼る'\nrun_comment_failure_case ''      GET   'コメントの一覧を取れなくても赤にしない'\nrun_comment_failure_case ''      POST  'コメントの投稿に失敗しても赤にしない'\nrun_comment_failure_case '12345' PATCH 'コメントの差し替えに失敗しても赤にしない'"
+      },
+      "targets": [
+        ".github/scripts/check-duplicate-issue-pr.sh"
+      ],
+      "covers": [
+        "dup-cases-run",
+        "call-duplicate"
+      ]
+    },
+    {
+      "id": "dup-patch-fail",
+      "suite": "dup",
+      "name": "コメントの差し替えに失敗しても赤にしない",
+      "techniques": [
+        "error",
+        "state"
+      ],
+      "why": "共通スクリプトが PATCH で 3 回失敗(exit 1)しても赤にしない",
+      "given": "重複がある判定・既存のコメント 12345、PATCH を毎回失敗させる",
+      "when": "`--comment` 付きで走らせる",
+      "then": "exit 0、出力に `::warning::`",
+      "excerpt": {
+        "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+        "start": 222,
+        "end": 254,
+        "emphasis": [
+          {
+            "start": 254,
+            "end": 254
+          }
+        ],
+        "text": "# 共通スクリプトが 3 回とも失敗しても、この検査は赤にしない(exit 0)が、`::warning::` を残して要約で\n# 気付けることを見る\nrun_comment_failure_case() {\n  local existing=\"$1\" fail_on=\"$2\" label=\"$3\"\n  local dir actual=0 warned=false\n\n  dir=\"$(mktemp -d)\"\n  run_with_gh_stub \"$dir\" \"$existing\" \"$fail_on\" \"$with_duplicate\" || actual=$?\n  grep -qF '::warning::' \"$dir/output\" && warned=true\n  rm -rf \"$dir\"\n\n  local passed_with_warning=false\n  [ \"$actual\" = 0 ] && [ \"$warned\" = true ] && passed_with_warning=true\n  if [ \"$passed_with_warning\" = true ]; then\n    printf 'ok   %s\\n' \"$label\"\n    return\n  fi\n  printf 'NG   exit=%s 警告=%s (期待 exit=0 警告=true)  %s\\n' \"$actual\" \"$warned\" \"$label\"\n  failed=1\n}\n\nwith_duplicate=\"$(result_json \"$issue_595\" \"$duplicate_595\")\"\nwithout_duplicate=\"$(result_json \"$issue_595\" \"$unrelated\")\"\nwith_closed_issue=\"$(result_json \"$issue_628_closed_by_hand_for_604\" \"$no_others\")\"\n\nrun_comment_case 'GET POST'  ''      ''      \"$with_duplicate\"    '重複があってコメントがまだ無ければ、新しく貼る'\nrun_comment_case 'GET PATCH' '12345' ''      \"$with_duplicate\"    '重複があってコメントが既にあれば、差し替える'\nrun_comment_case 'GET PATCH' '12345' ''      \"$without_duplicate\" '重複が無くなったら、貼ってあるコメントを差し替える'\nrun_comment_case 'GET'       ''      ''      \"$without_duplicate\" '重複が無くてコメントも無ければ、何も貼らない'\nrun_comment_case 'GET POST'  ''      ''      \"$with_closed_issue\" '閉じる Issue がクローズ済みなら、重複が無くても新しく貼る'\nrun_comment_failure_case ''      GET   'コメントの一覧を取れなくても赤にしない'\nrun_comment_failure_case ''      POST  'コメントの投稿に失敗しても赤にしない'\nrun_comment_failure_case '12345' PATCH 'コメントの差し替えに失敗しても赤にしない'"
+      },
+      "targets": [
+        ".github/scripts/check-duplicate-issue-pr.sh"
+      ],
+      "covers": [
+        "dup-cases-run",
+        "call-duplicate"
+      ]
+    },
+    {
+      "id": "dup-exit3",
+      "suite": "dup",
+      "name": "コメントの共通スクリプトが一時ファイルを作れずに終わったら赤にする（3 回失敗と同じには握らない）",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "受け流すのは exit 1 だけ。127 の 1 件だけでは、受け流す条件を `-le 3` に壊しても緑だった",
+      "given": "重複がある判定、`TMPDIR` を無いディレクトリに(共通スクリプトだけが exit 3 で終わる)",
+      "when": "`--comment` 付きで走らせる",
+      "then": "duplicate も exit 3",
+      "commit": "2062daec787a972a96f9562d96fdf7c9c7eb4c9f",
+      "excerpt": {
+        "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+        "start": 256,
+        "end": 273,
+        "text": "# 共通スクリプトが 3 回失敗(exit 1)以外で終わったら、その終了コードで赤にすることを見る。一時ファイルの\n# 置き場を無くすと、共通スクリプトだけが exit 3 で終わる(この検査自身は一時ファイルを作らない)\nrun_upsert_temp_file_failure_case() {\n  local label=\"$1\" dir actual=0\n\n  dir=\"$(mktemp -d)\"\n  TMPDIR=\"$dir/missing-dir\" run_with_gh_stub \"$dir\" '' '' \"$with_duplicate\" || actual=$?\n  rm -rf \"$dir\"\n\n  if [ \"$actual\" = 3 ]; then\n    printf 'ok   exit=%s  %s\\n' \"$actual\" \"$label\"\n    return\n  fi\n  printf 'NG   exit=%s (期待 3)  %s\\n' \"$actual\" \"$label\"\n  failed=1\n}\n\nrun_upsert_temp_file_failure_case 'コメントの共通スクリプトが一時ファイルを作れずに終わったら赤にする（3 回失敗と同じには握らない）'"
+      },
+      "values": {
+        "columns": [
+          "共通スクリプトの終了",
+          "duplicate の終了"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "1(3 回とも失敗)",
+              "0 と `::warning::`"
+            ]
+          },
+          {
+            "cells": [
+              "3(一時ファイル)",
+              "3"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "127(見つからない)",
+              "127"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".github/scripts/check-duplicate-issue-pr.sh"
+      ],
+      "covers": [
+        "dup-cases-run",
+        "call-duplicate"
+      ]
+    },
+    {
+      "id": "dup-no-flag",
+      "suite": "dup",
+      "name": "コメントの指定が無ければ、リポジトリと PR 番号が置かれていても gh を呼ばない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "計画中に判定表を `GITHUB_REPOSITORY` 付きで走らせ、架空の判定を実在の PR 4 件へ貼った事故の再発を、構造で塞いだことを守る",
+      "given": "重複がある判定、`GITHUB_REPOSITORY` と `PR_NUMBER` を置く",
+      "when": "`--comment` を付けずに走らせる",
+      "then": "`gh` の呼び出しが 0 回",
+      "commit": "d94ea356a51405542bb472d5e213abf600bc9d71",
+      "excerpt": {
+        "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+        "start": 275,
+        "end": 297,
+        "text": "# `--comment` が無ければ、投げ先の環境変数が置かれていてもコメントしない(`gh` を 1 度も呼ばない)\nrun_without_comment_flag_case() {\n  local label=\"$1\" dir calls\n\n  dir=\"$(mktemp -d)\"\n  install_gh_stub \"$dir\"\n  printf '%s' \"$with_duplicate\" >\"$dir/result.json\"\n  : >\"$dir/calls\"\n  PATH=\"$dir/bin:$PATH\" STUB_CALL_FILE=\"$dir/calls\" STUB_BODY_FILE=\"$dir/body\" \\\n    STICKY_COMMENT_RETRY_WAIT=0 GITHUB_REPOSITORY=owner/repo PR_NUMBER=604 \\\n    bash \"$script\" \"$dir/result.json\" >/dev/null 2>&1\n  calls=\"$(tr '\\n' ' ' <\"$dir/calls\")\"\n  rm -rf \"$dir\"\n\n  if [ -z \"$calls\" ]; then\n    printf 'ok   %s\\n' \"$label\"\n    return\n  fi\n  printf 'NG   呼び出し=%s (期待 呼び出し無し)  %s\\n' \"${calls% }\" \"$label\"\n  failed=1\n}\n\nrun_without_comment_flag_case 'コメントの指定が無ければ、リポジトリと PR 番号が置かれていても gh を呼ばない'"
+      },
+      "targets": [
+        ".github/scripts/check-duplicate-issue-pr.sh"
+      ],
+      "covers": [
+        "dup-flag"
+      ]
+    },
+    {
+      "id": "dup-no-upsert",
+      "suite": "dup",
+      "name": "コメントの共通スクリプトが見つからなければ赤にする（3 回失敗と同じには握らない）",
+      "techniques": [
+        "error"
+      ],
+      "why": "共通スクリプトの配置漏れを緑のまま見逃さない",
+      "given": "検査スクリプトだけを一時ディレクトリへ写し、共通スクリプトが隣に無い",
+      "when": "`--comment` 付きで走らせる",
+      "then": "exit 127",
+      "commit": "5329776c79daac8b36f72895b601163d346c5d93",
+      "excerpt": {
+        "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+        "start": 299,
+        "end": 321,
+        "text": "# 受け流すのは共通スクリプトの 3 回失敗(exit 1)だけ。この検査だけを一時ディレクトリへ写し、\n# 共通スクリプトが隣に無い形で走らせる\nrun_without_upsert_case() {\n  local label=\"$1\" dir actual=0\n\n  dir=\"$(mktemp -d)\"\n  install_gh_stub \"$dir\"\n  cp \"$script\" \"$dir/check-duplicate-issue-pr.sh\"\n  printf '%s' \"$with_duplicate\" >\"$dir/result.json\"\n  PATH=\"$dir/bin:$PATH\" STUB_CALL_FILE=\"$dir/calls\" STUB_BODY_FILE=\"$dir/body\" \\\n    STICKY_COMMENT_RETRY_WAIT=0 GITHUB_REPOSITORY=owner/repo PR_NUMBER=604 \\\n    bash \"$dir/check-duplicate-issue-pr.sh\" --comment \"$dir/result.json\" >/dev/null 2>&1 || actual=$?\n  rm -rf \"$dir\"\n\n  if [ \"$actual\" = 127 ]; then\n    printf 'ok   exit=%s  %s\\n' \"$actual\" \"$label\"\n    return\n  fi\n  printf 'NG   exit=%s (期待 127)  %s\\n' \"$actual\" \"$label\"\n  failed=1\n}\n\nrun_without_upsert_case 'コメントの共通スクリプトが見つからなければ赤にする（3 回失敗と同じには握らない）'"
+      },
+      "targets": [
+        ".github/scripts/check-duplicate-issue-pr.sh"
+      ],
+      "covers": [
+        "dup-cases-run",
+        "call-duplicate"
+      ]
+    },
+    {
+      "id": "dup-body-marker",
+      "suite": "dup",
+      "name": "貼る本文に marker の綴りが入る",
+      "techniques": [
+        "state"
+      ],
+      "why": "duplicate が渡した目印が、投稿される本文に届く(先頭であることは共通スクリプトの判定表が持つ)",
+      "given": "重複がある判定",
+      "when": "`--comment` 付きで走らせる",
+      "then": "書き込んだ本文に `<!-- sticky-comment: duplicate-issue-pr -->` が含まれる",
+      "commit": "d94ea356a51405542bb472d5e213abf600bc9d71",
+      "excerpt": {
+        "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+        "start": 328,
+        "end": 346,
+        "emphasis": [
+          {
+            "start": 345,
+            "end": 346
+          }
+        ],
+        "text": "run_body_case() {\n  local expected=\"$1\" result=\"$2\" label=\"$3\"\n  local dir body\n\n  dir=\"$(mktemp -d)\"\n  run_with_gh_stub \"$dir\" '' '' \"$result\"\n  body=\"$(cat \"$dir/body\" 2>/dev/null || true)\"\n  rm -rf \"$dir\"\n\n  if grep -qF -- \"$expected\" <<<\"$body\"; then\n    printf 'ok   %s\\n' \"$label\"\n    return\n  fi\n  printf 'NG   本文に %s が無い  %s\\n' \"$expected\" \"$label\"\n  failed=1\n}\n\nrun_body_case '<!-- sticky-comment: duplicate-issue-pr -->' \"$with_duplicate\" \\\n  '貼る本文に marker の綴りが入る'"
+      },
+      "targets": [
+        ".github/scripts/check-duplicate-issue-pr.sh"
+      ],
+      "covers": [
+        "dup-cases-run",
+        "call-duplicate"
+      ]
+    },
+    {
+      "id": "dup-skip",
+      "suite": "dup",
+      "name": "重複が無くてコメントも無ければ、何も貼らない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "知らせることが無い PR には `skip` を渡し、新しく貼らない",
+      "given": "重複が無い判定、既存のコメントも無い",
+      "when": "`--comment` 付きで走らせる",
+      "then": "exit 0、`gh` は GET だけ",
+      "excerpt": {
+        "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+        "start": 247,
+        "end": 251,
+        "emphasis": [
+          {
+            "start": 250,
+            "end": 250
+          }
+        ],
+        "text": "run_comment_case 'GET POST'  ''      ''      \"$with_duplicate\"    '重複があってコメントがまだ無ければ、新しく貼る'\nrun_comment_case 'GET PATCH' '12345' ''      \"$with_duplicate\"    '重複があってコメントが既にあれば、差し替える'\nrun_comment_case 'GET PATCH' '12345' ''      \"$without_duplicate\" '重複が無くなったら、貼ってあるコメントを差し替える'\nrun_comment_case 'GET'       ''      ''      \"$without_duplicate\" '重複が無くてコメントも無ければ、何も貼らない'\nrun_comment_case 'GET POST'  ''      ''      \"$with_closed_issue\" '閉じる Issue がクローズ済みなら、重複が無くても新しく貼る'"
+      },
+      "targets": [
+        ".github/scripts/check-duplicate-issue-pr.sh"
+      ],
+      "covers": [
+        "dup-cases-run",
+        "call-duplicate"
+      ]
+    },
+    {
+      "id": "dup-pr604",
+      "suite": "dup",
+      "name": "pr-604 の実例(Issue #595 を #602 も閉じている)を捕まえる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "重複の判定そのものはこの PR で変わっていない",
+      "given": "Issue #595 を閉じる PR #604 と、同じ Issue を閉じる open な PR #602",
+      "when": "判定する",
+      "then": "重複として #602 と #595 を返す",
+      "excerpt": {
+        "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+        "start": 114,
+        "end": 114,
+        "text": "run_case '[{\"pr\":602,\"issues\":[595]}]'                            604 \"$issue_595\"  \"$duplicate_595\" 'pr-604 の実例(Issue #595 を #602 も閉じている)を捕まえる'"
+      },
+      "targets": [
+        ".github/scripts/check-duplicate-issue-pr.sh"
+      ],
+      "covers": [
+        "dup-cases-run"
+      ]
+    },
+    {
+      "id": "dup-fetch-3fail",
+      "suite": "dup",
+      "name": "3 回とも失敗したら赤にする（握りつぶさない）",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "問い合わせが 3 回とも通らなければ、今までどおり赤にする(検査が動いていないことに気付ける)",
+      "given": "問い合わせ(GraphQL)を毎回失敗させる",
+      "when": "走らせる",
+      "then": "exit 1、呼び出し 3 回",
+      "excerpt": {
+        "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+        "start": 396,
+        "end": 398,
+        "emphasis": [
+          {
+            "start": 398,
+            "end": 398
+          }
+        ],
+        "text": "run_fetch_case 0 0 1 '問い合わせが通れば再試行しない'\nrun_fetch_case 0 1 2 '一時的な 5xx は再試行して通る'\nrun_fetch_case 1 9 3 '3 回とも失敗したら赤にする（握りつぶさない）'"
+      },
+      "targets": [
+        ".github/scripts/check-duplicate-issue-pr.sh"
+      ],
+      "covers": [
+        "dup-cases-run"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "PR のレポートのコメントが二重に貼られにくくなり、貼れなかった理由で赤と緑が分かれるようになった",
+    "lead": "使う人(PR を見る人と、CI と検査を走らせるセッション)から見て変わったのは、PR に貼られるレポートや知らせのコメントの探し方・やり直し方と、貼れなかったときに CI が赤になるか緑のままかです。",
+    "changed": {
+      "before": [
+        {
+          "text": "カバレッジと VRT のレポートは、コメント一覧の最初のページだけから前回のコメントを探していた"
+        },
+        {
+          "text": "API が一時的に失敗すると、カバレッジ・VRT・重複の知らせはやり直さずにあきらめていた"
+        },
+        {
+          "text": "プレビューの告知は、一覧と投稿を別々にやり直していたので、失敗を返した投稿が実は載っていると 2 件目を貼りえた"
+        },
+        {
+          "text": "カバレッジのレポートと重複の知らせは、どんな失敗でも CI が緑のままだった"
+        }
+      ],
+      "after": [
+        {
+          "text": "4 つのコメントとも、コメント一覧を最後のページまで見て、目印の行で始まる前回のコメントを差し替える",
+          "message": "call-coverage"
+        },
+        {
+          "text": "一覧の取得から書き込みまでを 1 回として最大 3 回やり直し、やり直すたびに一覧を取り直すので 2 件目を貼らない",
+          "message": "call-vrt"
+        },
+        {
+          "text": "カバレッジのレポートと重複の知らせは、API が 3 回とも失敗したときだけ緑のまま警告を残し、配線や環境の誤りでは赤になる",
+          "message": "call-duplicate"
+        },
+        {
+          "text": "重複の検査は、コメントする指定を付けて走らせたときだけ PR にコメントする",
+          "message": "dup-flag"
+        }
+      ],
+      "text": "同じ PR にレポートが 2 件並ぶことと、配線を誤ったまま緑で気付かないことが減ります。",
+      "specs": [
+        {
+          "path": ".claude/hooks/README.md",
+          "locator": "「カバー範囲と残る穴」の層の表と、層 1 だけに置く判定表の箇条",
+          "text": "重複の検査の判定表を CI だけで走らせ、共通の手順の判定表を CI と push 前の両方で走らせると書き足した",
+          "shas": [
+            "c33b442ed0353fb3ca92814a9349a3e0d22d1a9c",
+            "2062daec787a972a96f9562d96fdf7c9c7eb4c9f"
+          ]
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "locator": "push 前の検査の表と「道具が無い環境では」の表",
+          "text": "push 前に走る判定表に共通の手順の判定表を足し、それに要る道具が無い環境では飛ばすと書き足した",
+          "shas": [
+            "c476b2f1b80dd2eb8110cf26aa2acd37294fae73"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 635,
+          "text": "重複の知らせを足した Issue。コメントの手順の共通化はここから切り分けた"
+        },
+        {
+          "issue": 1341,
+          "text": "共通の手順と解説ページの置き場とで、やり直しの骨組みが重なっている件を別に扱う"
+        },
+        {
+          "issue": 1342,
+          "text": "前回のコメントを探す条件に、コメントの書き手を含めるかを別に決める"
+        }
+      ],
+      "primers": [
+        "sticky-cycle",
+        "exit-code-contract",
+        "exit-status-or"
+      ]
+    },
+    "tables": [
+      {
+        "label": "コメントを貼ろうとした結果と、CI の色",
+        "gist": "結果は「どう失敗したか」と「どのコメントか」の 2 つで決まる。",
+        "text": "変わったマスは、カバレッジのレポートと重複の知らせの列に集まっています。VRT とプレビューの告知は、やり直しが付いた以外は前と同じく 0 以外で赤です。",
+        "rowHeads": [
+          {
+            "id": "ok",
+            "label": "貼れた・差し替えられた"
+          },
+          {
+            "id": "api",
+            "label": "API が 3 回続けて失敗した",
+            "note": "一時的な障害も権限の誤りも含む"
+          },
+          {
+            "id": "wiring",
+            "label": "配線か環境の誤り",
+            "note": "呼び出し方の誤り・共通の手順が無い・一時ファイルを作れない"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "coverage",
+            "label": "カバレッジのレポート"
+          },
+          {
+            "id": "vrt",
+            "label": "VRT のレポート"
+          },
+          {
+            "id": "preview",
+            "label": "プレビューの告知"
+          },
+          {
+            "id": "duplicate",
+            "label": "重複の知らせ"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "ok",
+            "columnHead": "coverage",
+            "result": "緑"
+          },
+          {
+            "rowHead": "ok",
+            "columnHead": "vrt",
+            "result": "緑"
+          },
+          {
+            "rowHead": "ok",
+            "columnHead": "preview",
+            "result": "緑"
+          },
+          {
+            "rowHead": "ok",
+            "columnHead": "duplicate",
+            "result": "緑"
+          },
+          {
+            "rowHead": "api",
+            "columnHead": "coverage",
+            "result": "3 回やり直したうえで、緑のまま警告を残す",
+            "was": "1 回の失敗であきらめ、緑のまま"
+          },
+          {
+            "rowHead": "api",
+            "columnHead": "vrt",
+            "result": "3 回やり直したうえで赤",
+            "was": "1 回の失敗で赤",
+            "tests": [
+              "up-patch-3fail",
+              "up-post-3fail"
+            ]
+          },
+          {
+            "rowHead": "api",
+            "columnHead": "preview",
+            "result": "3 回やり直したうえで赤",
+            "tests": [
+              "up-get-3fail"
+            ]
+          },
+          {
+            "rowHead": "api",
+            "columnHead": "duplicate",
+            "result": "3 回やり直したうえで、緑のまま警告を残す",
+            "was": "やり直さずにあきらめ、緑のまま記録に 1 行残るだけ",
+            "tests": [
+              "dup-list-fail",
+              "dup-post-fail",
+              "dup-patch-fail"
+            ]
+          },
+          {
+            "rowHead": "wiring",
+            "columnHead": "coverage",
+            "result": "赤",
+            "was": "緑のまま",
+            "note": "この列を確かめる判定表は無く、PR の CI で目で確かめる"
+          },
+          {
+            "rowHead": "wiring",
+            "columnHead": "vrt",
+            "result": "赤"
+          },
+          {
+            "rowHead": "wiring",
+            "columnHead": "preview",
+            "result": "赤"
+          },
+          {
+            "rowHead": "wiring",
+            "columnHead": "duplicate",
+            "result": "赤",
+            "was": "緑のまま",
+            "tests": [
+              "dup-exit3",
+              "dup-no-upsert"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "コメントが積もった PR",
+        "before": [
+          {
+            "text": "カバレッジと VRT のレポートは、前回のコメントが最初のページに無いと見失い、2 件目を貼りえた"
+          }
+        ],
+        "after": [
+          {
+            "text": "最後のページまで探し、前回のコメントを差し替える",
+            "message": "call-coverage"
+          }
+        ],
+        "text": "一覧は 1 ページ 100 件で取り、次のページがあれば続けて取ります。",
+        "tests": [
+          "up-page2"
+        ],
+        "primers": [
+          "gh-api-paginate"
+        ]
+      },
+      {
+        "label": "投稿が失敗を返したが、実は載っていたとき",
+        "before": [
+          {
+            "text": "カバレッジと VRT はやり直さず、プレビューの告知は投稿だけをやり直して 2 件目を貼りえた"
+          }
+        ],
+        "after": [
+          {
+            "text": "一覧を取り直して載っていたコメントを見つけ、差し替える",
+            "message": "call-vrt"
+          }
+        ],
+        "tests": [
+          "up-post-landed"
+        ],
+        "primers": [
+          "sticky-cycle"
+        ]
+      },
+      {
+        "label": "重複の検査を手元や判定表から走らせたとき",
+        "before": [
+          {
+            "text": "リポジトリと PR 番号が置かれた環境では、架空の判定を実在の PR にコメントしていた"
+          }
+        ],
+        "after": [
+          {
+            "text": "コメントする指定を付けない限り、PR にはコメントしない",
+            "message": "dup-flag"
+          }
+        ],
+        "text": "CI はこの指定を付けて走らせるので、CI での知らせ方は変わりません。",
+        "tests": [
+          "dup-no-flag"
+        ],
+        "primers": [
+          "comment-flag"
+        ]
+      },
+      {
+        "label": "人のコメントが目印の綴りを引用しているとき",
+        "before": [
+          {
+            "text": "プレビューの告知は、目印を途中に含むだけのコメントも自分のものと見なし、書き換ええた"
+          }
+        ],
+        "after": [
+          {
+            "text": "目印の行で始まるコメントだけを自分のものと見なし、引用したコメントは書き換えない"
+          }
+        ],
+        "tests": [
+          "up-mid-marker"
+        ],
+        "primers": [
+          "jq-select-startswith"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "目印の綴りは変えていないので、開いている PR に貼ってある既存のコメントは、そのまま差し替えの対象になる",
+        "tests": [
+          "up-patch"
+        ]
+      },
+      {
+        "text": "重複も閉じる Issue のクローズも無い PR には、重複の知らせを新しく貼らない",
+        "tests": [
+          "dup-skip",
+          "up-skip-none"
+        ]
+      },
+      {
+        "text": "重複を見つけたあとで解消した PR では、貼ってある知らせを「無くなった」へ書き換える",
+        "tests": [
+          "up-skip-patch"
+        ]
+      },
+      {
+        "text": "どの PR を重複と見なすかの判定は変わらない",
+        "tests": [
+          "dup-pr604"
+        ]
+      },
+      {
+        "text": "重複の検査の問い合わせが 3 回とも通らなければ、今までどおり赤になる",
+        "tests": [
+          "dup-fetch-3fail"
+        ]
+      },
+      {
+        "text": "VRT のレポートとプレビューの告知は、貼れなければ今までどおり赤になる"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "exit-status-or",
+      "category": "bash",
+      "label": "終了コードと `||` での受け流し",
+      "gist": "コマンドが成功したか失敗したかを、次のコマンドを走らせるかの分岐に使う仕組み。どのコマンドも終わるときに 0〜255 の[[終了コード|exit-status]]を返し、0 が成功、それ以外が失敗。`a || b` は `a` が失敗したときだけ `b` を走らせる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "直前のコマンドの終了コードは特別な変数 `$?` で読める。`||` の右側を `{ …; }`(コマンドをまとめる中括弧)にすると、その先頭で `status=$?` と書けば左側の終了コードを取っておける。この PR では、取っておいた値が 1 なら警告を出して先へ進み、1 以外ならその値で `exit` してスクリプトごと終わる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "cmd || {\n  status=$?\n  [ \"$status\" = 1 ] || exit \"$status\"\n  echo '::warning::…'\n}"
+        },
+        {
+          "kind": "caution",
+          "text": "[[GitHub Actions|actions]] の `run:` は既定で `bash -e` で走る。`-e` は失敗したコマンドがあればその場でスクリプトを止める設定だが、`||` の左側のコマンドは対象外なので、左側が失敗しても止まらず右側へ進む。右側の `exit \"$status\"` で、受け流さない値だけを改めて失敗にしている。"
+        },
+        {
+          "kind": "memo",
+          "text": "`127` はシェルが決めた値で、コマンド(ここでは呼び出すスクリプト)が見つからないときに返る。スクリプトが自分で `exit 2` などと書いた値とは出どころが違う。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/workflows/frontend.yml",
+          "lineRange": {
+            "start": 278,
+            "end": 284
+          },
+          "text": "カバレッジのレポートの投稿。exit 1 だけを `::warning::` で受け流す",
+          "shas": [
+            "ddde511669a1bde016c97b778deb6d971769569c"
+          ]
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "lineRange": {
+            "start": 198,
+            "end": 203
+          },
+          "text": "重複の判定の投稿。同じ形で exit 1 だけを受け流す",
+          "shas": [
+            "5329776c79daac8b36f72895b601163d346c5d93",
+            "d94ea356a51405542bb472d5e213abf600bc9d71"
+          ]
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 20,
+            "end": 27
+          },
+          "text": "共通スクリプトの終了コードの約束",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f",
+            "44fab0d3f6393225858b48ed59527a3c5f2e729e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "exit-code-contract",
+        "actions-warning"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "process-substitution",
+      "category": "bash",
+      "label": "`<(...)` プロセス置換",
+      "gist": "コマンドの出力を、ファイル名を受け取るコマンドへ「ファイルのように」渡す bash の書き方。一時ファイルを自分で作らずに済む。`<(printf '%s' \"$body\")` と書くと、bash はその出力を読める[[パイプ|pipe]]を用意し、`/dev/fd/63` のような[[ファイル記述子|fd]]の名前に置き換えて渡す。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "受け取った側からは普通のパスに見えるので、`cat \"$path\"` で中身を読める。ただし中身はファイルとして置かれているのではなく、[[パイプ|pipe]]を流れてくるだけ。"
+        },
+        {
+          "kind": "caution",
+          "text": "読めるのは 1 度だけ。1 度読み切ると流れは空になり、2 度目の `cat` は何も返さない。そのため共通スクリプトは起動時に 1 度だけ読んで一時ファイルへ写し、やり直しのたびにはその一時ファイルを使う。"
+        },
+        {
+          "kind": "memo",
+          "text": "`[ -f \"$path\" ]`(通常のファイルか)は、パイプなので偽になる。`[ -r \"$path\" ]`(読めるか)は真。本文ファイルの検査を「読めて、ディレクトリでない」にしたのはこのため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "lineRange": {
+            "start": 198,
+            "end": 199
+          },
+          "text": "重複の判定の本文を `<(...)` で共通スクリプトへ渡す",
+          "shas": [
+            "5329776c79daac8b36f72895b601163d346c5d93"
+          ]
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 73,
+            "end": 81
+          },
+          "text": "本文を 1 度だけ読み、目印を付けて一時ファイルへ写す",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f",
+            "f454dd4b7b0540777e317ed64df6054949abddd7"
+          ]
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "lineRange": {
+            "start": 174,
+            "end": 178
+          },
+          "text": "パイプで渡した本文が、やり直した後にも残るかを見るケース",
+          "shas": [
+            "c476b2f1b80dd2eb8110cf26aa2acd37294fae73"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "sticky-cycle"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "gh-api-paginate",
+      "category": "gh",
+      "label": "`gh api --paginate --jq`",
+      "gist": "GitHub の [[REST API|rest-api]] をコマンドラインから呼ぶ `gh api` に、全ページを取る `--paginate` と、応答から値を抜き出す `--jq` を組み合わせる書き方。PR のコメント一覧のような長い一覧は[[ページ|page]]に分かれて返るので、1 回の呼び出しでは最初のページしか取れない。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`--paginate` を付けると、`gh` は応答に次のページへの案内があるかぎり続けて取りに行く。`--jq` に渡した [[jq の式|jq-filter]] は、ページ全体をまとめてではなく**ページごとに**当てられ、結果もページごとに出る(`gh api --help` の「Each page is a separate JSON array or object」)。そのため、1 ページに 1 件ずつ見つかれば結果は 2 行以上になり、共通スクリプトはその先頭行だけを採る。"
+        },
+        {
+          "kind": "declaration",
+          "code": "gh api [-X <メソッド>] <エンドポイント> [--paginate] [--jq <式>] [--field <キー>=@<ファイル>]"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "-X",
+              "type": "GET | POST | PATCH …",
+              "text": "[[HTTP|http]] のメソッド。書かなければ GET(取得)",
+              "note": "既定 GET"
+            },
+            {
+              "name": "エンドポイント",
+              "type": "パス",
+              "text": "`repos/<owner>/<repo>/issues/<番号>/comments?per_page=100` のような API のパス。`per_page` は 1 ページの件数(既定 30・最大 100)"
+            },
+            {
+              "name": "--paginate",
+              "type": "フラグ",
+              "text": "全ページを順に取る"
+            },
+            {
+              "name": "--jq",
+              "type": "文字列",
+              "text": "応答に当てる [[jq の式|jq-filter]]。結果は文字列なら引用符なしで出る"
+            },
+            {
+              "name": "--field",
+              "type": "キー=値",
+              "text": "送る値。`@<ファイル>` と書くとファイルの中身を値として読む。本文を引数に直接載せると、1 引数 128KiB の上限で `gh` が起動できない"
+            }
+          ]
+        },
+        {
+          "kind": "caution",
+          "text": "失敗は 5xx(GitHub 側の一時的な失敗)も 403(権限の誤り)も同じ終了コード 1 で返る。終了コードだけでは見分けられない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 94,
+            "end": 96
+          },
+          "text": "全ページを取り、目印で始まるコメントの ID をページごとに出し、先頭行を採る",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f"
+          ]
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 100,
+            "end": 100
+          },
+          "text": "POST で新しく貼る。本文は `--field body=@` で一時ファイルから読む",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f"
+          ]
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 108,
+            "end": 109
+          },
+          "text": "PATCH で差し替える",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "jq-select-startswith",
+        "param-expansion-first-line",
+        "pipefail-sigpipe"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "jq-select-startswith",
+      "category": "jq",
+      "label": "`select` と `startswith`",
+      "gist": "[[JSON|json]] の配列から条件に合う要素だけを残し、その先頭の値を取り出す [[jq の式|jq-filter]]。ここではコメントの一覧から、本文が目印で始まるものの ID を 1 つ取る。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "[.[] | select(.body | startswith(\"<!-- sticky-comment: cases -->\"))][0].id // empty"
+        },
+        {
+          "kind": "text",
+          "text": "`.[]` は配列の要素を 1 つずつ流し、`|` は左の結果を右へ渡す。`select(条件)` は条件が真の要素だけを通す。`.body` はオブジェクトの `body` キーの値で、`startswith(s)` は文字列が `s` で**始まる**ときだけ真になる。外側の `[…]` で通った要素を配列に戻し、`[0]` で先頭、`.id` でその ID を取る。"
+        },
+        {
+          "kind": "text",
+          "text": "`a // b` は `a` が `null`(無い)か `false` なら `b` を返す。`empty` は何も出さない値なので、見つからなければ空の出力になり、シェル側では空文字列として読める。"
+        },
+        {
+          "kind": "caution",
+          "text": "`contains(s)` は文字列のどこかに `s` を含めば真になる。目印の綴りを引用した人のコメントまで拾うので、この PR では使わない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 95,
+            "end": 95
+          },
+          "text": "目印で始まるコメントの ID を 1 つ取る式",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "gh-api-paginate"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "param-expansion-first-line",
+      "category": "bash",
+      "label": "`${var%%$'\\n'*}` で先頭行を取る",
+      "gist": "変数の値から後ろの部分を削る bash の[[パラメータ展開|param-expansion]]で、改行より後ろを全部消して先頭行だけを残す書き方。外のコマンドを呼ばずに済む。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`${var%%pattern}` は、値の**末尾**から `pattern` に合う**いちばん長い**部分を消す(`%` 1 つならいちばん短い部分)。`$'\\n'` は改行 1 文字を表す書き方で、`$'\\n'*` は「改行とそれより後ろの全部」に合う。改行が無ければ何も消えない。"
+        },
+        {
+          "kind": "memo",
+          "text": "`head -n 1` へ[[パイプ|pipe]]で渡しても先頭行は取れるが、`head` が先に読むのをやめると書き手の `gh` が落ちることがある(`pipefail` の節)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 96,
+            "end": 96
+          },
+          "text": "ページごとに出た ID のうち、先頭行だけを採る",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "pipefail-sigpipe"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "pipefail-sigpipe",
+      "category": "bash",
+      "label": "`set -o pipefail` と SIGPIPE",
+      "gist": "[[パイプ|pipe]](`a | b`)の成否を、最後のコマンドだけでなく途中のコマンドの失敗でも決めるための設定。`set -uo pipefail` はこれと、未定義の変数を誤りにする `-u` をまとめて有効にする。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "既定では `a | b` の終了コードは `b` のものだけで、`a` の失敗は消える。`pipefail` を付けると、どれか 1 つでも失敗すればパイプ全体が失敗になる。"
+        },
+        {
+          "kind": "caution",
+          "text": "`a | head -n 1` のように、受け手が先に読むのをやめると、書き続けていた `a` には[[シグナル|signal]] SIGPIPE が届いて `a` は異常終了する。`pipefail` の下では、ほしい 1 行は取れているのにパイプ全体が失敗に見える。共通スクリプトがパイプを使わず変数への代入の終了コードで `gh` の成否を見るのはこのため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 36,
+            "end": 36
+          },
+          "text": "`set -uo pipefail`",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f"
+          ]
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 88,
+            "end": 91
+          },
+          "text": "`head` へのパイプで切らない理由",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f",
+            "44fab0d3f6393225858b48ed59527a3c5f2e729e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "set-u-empty-array",
+        "param-expansion-first-line"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "bash-regex-match",
+      "category": "bash",
+      "label": "`[[ =~ ]]` の正規表現",
+      "gist": "文字列が[[正規表現|regex]]に合うかを bash の中だけで判定する書き方。合えば終了コード 0、合わなければ 1 を返すので、`||` と組んで「合わなければ止める」と書ける。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`[[ \"$s\" =~ $pattern ]]` の右側は引用符で囲まない(囲むと正規表現ではなく文字どおりの文字列として比べる)。そのため、空白を含む式はいったん変数に入れてから書く。`^` は先頭、`$` は末尾に合い、両方を付けると文字列全体が式に合うときだけ真になる。"
+        },
+        {
+          "kind": "text",
+          "text": "`[A-Za-z0-9:_ -]+` は角括弧の中の文字が 1 文字以上続くことを表す。`\"` と `\\` を含めないことで、目印にそれらが入れられないようにしている。"
+        },
+        {
+          "kind": "caution",
+          "text": "`^` か `$` を外すと、式に合う部分が文字列のどこかにあるだけで真になる。後ろに `\"` を続けた目印が通るので、判定表に前後へ文字を付けたケースがある。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 63,
+            "end": 65
+          },
+          "text": "目印の形の検査",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f"
+          ]
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 70,
+            "end": 70
+          },
+          "text": "PR 番号が数字だけか",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f"
+          ]
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 104,
+            "end": 104
+          },
+          "text": "一覧が返した ID が数字だけか",
+          "shas": [
+            "44fab0d3f6393225858b48ed59527a3c5f2e729e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "sticky-cycle"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "set-u-empty-array",
+      "category": "bash",
+      "label": "`set -u` と空の配列",
+      "gist": "`set -u` は、値を入れていない変数を使ったときに誤りとして止める設定。綴り違いの変数が黙って空になるのを防ぐ。ところが古い bash では、要素が 0 個の[[配列|array]]を `\"${a[@]}\"` で展開しただけでも「未定義」として止まる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "bash 4.4 で、空の配列の展開は `set -u` でも止まらないように変わった。それより古い bash(macOS に入っている 3.2 など)でも動かすために、`${a[@]+\"${a[@]}\"}` と書く。`${x+y}` は「`x` が定義されていれば `y`、されていなければ何も無し」という展開で、空の配列のときは何も展開されない。"
+        },
+        {
+          "kind": "declaration",
+          "code": "env ${unset_flag[@]+\"${unset_flag[@]}\"} bash \"$script\" \"$@\""
+        },
+        {
+          "kind": "memo",
+          "text": "`unset_flag` は「この[[環境変数|env-var]]を外して走らせる」ための `-u <名前>` を入れる配列で、外さないケースでは空のまま。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "lineRange": {
+            "start": 85,
+            "end": 95
+          },
+          "text": "判定表がケースごとに環境変数を外して共通スクリプトを走らせる",
+          "shas": [
+            "44fab0d3f6393225858b48ed59527a3c5f2e729e",
+            "f454dd4b7b0540777e317ed64df6054949abddd7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "pipefail-sigpipe"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "actions-warning",
+      "category": "github actions",
+      "label": "`::warning::` と `continue-on-error`",
+      "gist": "[[GitHub Actions|actions]] で、失敗を緑のまま見えるように残す 2 つの手段。`::warning::文` を標準出力へ出すと、ジョブの要約に警告の注記が付く。`continue-on-error: true` をステップに付けると、そのステップが失敗してもジョブは成功として続く。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`::warning::` は Actions が出力の行を読んで解釈する[[ワークフローコマンド|workflow-command]]で、`echo '::warning::メッセージ'` と書くだけで使える。ジョブの色は変えない。"
+        },
+        {
+          "kind": "caution",
+          "text": "`continue-on-error` はステップの**どの**失敗も緑にする。綴り違いやスクリプトの不在のような配線の誤りまで緑になり、気付けない。この PR はカバレッジのステップから外し、受け流す終了コードを 1 に絞った。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/workflows/frontend.yml",
+          "lineRange": {
+            "start": 267,
+            "end": 284
+          },
+          "text": "`continue-on-error` を外し、exit 1 だけを `::warning::` にする",
+          "shas": [
+            "ddde511669a1bde016c97b778deb6d971769569c",
+            "89e74e71ec65c359f8c16ef604d3e286556034eb"
+          ]
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "lineRange": {
+            "start": 202,
+            "end": 202
+          },
+          "text": "重複の判定を貼れなかったときの警告",
+          "shas": [
+            "d94ea356a51405542bb472d5e213abf600bc9d71"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "exit-status-or"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "sticky-cycle",
+      "category": "harness · sticky コメント",
+      "label": "sticky コメントの 1 サイクル",
+      "gist": "PR に目印付きのコメントを 1 件だけ置く手順。目印の行で始まるコメントを全ページから探し、あれば差し替え(PATCH)、無ければ `--if-missing` に従って貼る(POST)か何もしない。「一覧 → 書き込み」を 1 サイクルとして、失敗したらサイクルごと最大 3 回やり直す。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "目印は共通スクリプトが本文の先頭に付けるので、探す側(`startswith`)と付ける側が 1 箇所にある。本文は起動時に 1 度だけ読んで一時ファイルへ写し、どのサイクルでもそこから送る。"
+        },
+        {
+          "kind": "rule",
+          "text": "やり直すときは書き込みだけでなく一覧から取り直す。失敗を返した POST が実は通っていれば、次のサイクルで見つかって PATCH に回り、二重に貼らない。"
+        },
+        {
+          "kind": "spec",
+          "text": "一覧が数値でない ID を返したら、書き込まず・POST にも落ちず・やり直しもせず exit 1 で終わる(やり直しても同じ応答が返るだけ)。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は同じ形が 4 箇所にあり、カバレッジと VRT は 1 ページ目だけを見てやり直しも無く、プレビューは `contains` で探して一覧と書き込みを別々にやり直していた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 29,
+            "end": 35
+          },
+          "text": "サイクルごとにやり直す理由と、`startswith` で探す理由",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f",
+            "44fab0d3f6393225858b48ed59527a3c5f2e729e"
+          ]
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 92,
+            "end": 117
+          },
+          "text": "`upsert_once` と、やり直しのループ",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f",
+            "44fab0d3f6393225858b48ed59527a3c5f2e729e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "gh-api-paginate",
+        "jq-select-startswith",
+        "process-substitution",
+        "exit-code-contract"
+      ],
+      "tests": [
+        "up-post",
+        "up-patch",
+        "up-skip-none",
+        "up-page2",
+        "up-mid-marker",
+        "up-first",
+        "up-get-retry",
+        "up-post-landed",
+        "up-pipe-body",
+        "up-non-numeric"
+      ],
+      "flows": [
+        "report",
+        "duplicate"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "exit-code-contract",
+      "category": "harness · sticky コメント",
+      "label": "終了コードの約束と、呼び出し側の受け流し",
+      "gist": "共通スクリプトは 0 = 済んだ / 1 = 3 回とも失敗 / 2 = 使い方の誤り / 3 = 一時ファイルの失敗、で終わる。どれを赤にするかは呼び出し側が決め、受け流してよいのは 1 だけ。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "spec",
+          "text": "2 と 3 は `gh` を呼ぶ前に返す。2・3 と、共通スクリプトが見つからないときの 127 は配線か環境の誤りなので、どの呼び出し側でも赤にする。"
+        },
+        {
+          "kind": "caution",
+          "text": "1 には GitHub 側の一時的な失敗だけでなく、権限の誤り(403 など)も入る。`gh` が終了コードで区別しないため。受け流す側(カバレッジと重複の知らせ)では、権限の誤りでも赤にならず警告が残るだけ。"
+        },
+        {
+          "kind": "rule",
+          "text": "カバレッジと重複の知らせは 1 だけを `::warning::` で受け流す。VRT とプレビューの告知は今までどおり 0 以外を赤にする(受け流しは書かない)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "lineRange": {
+            "start": 20,
+            "end": 27
+          },
+          "text": "終了コードの正本",
+          "shas": [
+            "cf066c9a9b641159c090ed0955ee23a18c04fa9f",
+            "44fab0d3f6393225858b48ed59527a3c5f2e729e"
+          ]
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "lineRange": {
+            "start": 278,
+            "end": 284
+          },
+          "text": "カバレッジの受け流し",
+          "shas": [
+            "ddde511669a1bde016c97b778deb6d971769569c"
+          ]
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "lineRange": {
+            "start": 194,
+            "end": 203
+          },
+          "text": "重複の知らせの受け流しと、このジョブの赤の意味",
+          "shas": [
+            "5329776c79daac8b36f72895b601163d346c5d93",
+            "d94ea356a51405542bb472d5e213abf600bc9d71"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "exit-status-or",
+        "actions-warning"
+      ],
+      "tests": [
+        "up-get-3fail",
+        "up-no-value",
+        "up-tmp-fail",
+        "dup-list-fail",
+        "dup-exit3",
+        "dup-no-upsert"
+      ],
+      "flows": [
+        "report",
+        "duplicate"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "comment-flag",
+      "category": "harness · 重複の検査",
+      "label": "重複の検査の `--comment`",
+      "gist": "重複の検査が PR にコメントするのは `--comment` を受けたときだけ。[[環境変数|env-var]]が置かれているかでは決めない。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "使い方は 3 通り: `--comment` だけ(CI。GitHub へ問い合わせてコメントする)/ 結果のファイルだけ(手で動作確認。コメントしない)/ 両方(判定表。差し替えた `gh` の下でコメントの分岐を踏ませる)。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は `GITHUB_REPOSITORY` と `PR_NUMBER` が揃うとコメントした。計画中にこの判定表を `GITHUB_REPOSITORY` 付きで走らせ、架空の判定を閉じた PR 4 件へ貼る事故が起きた。最初は判定表の 1 行で塞ぎ(8050ab2)、レビューを受けて既定を「コメントしない」に倒した(d94ea35)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "lineRange": {
+            "start": 21,
+            "end": 27
+          },
+          "text": "使い方と、環境変数で決めない理由",
+          "shas": [
+            "d94ea356a51405542bb472d5e213abf600bc9d71"
+          ]
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "lineRange": {
+            "start": 86,
+            "end": 92
+          },
+          "text": "引数の読み分け",
+          "shas": [
+            "d94ea356a51405542bb472d5e213abf600bc9d71"
+          ]
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "lineRange": {
+            "start": 172,
+            "end": 172
+          },
+          "text": "`--comment` が無ければここで終わる",
+          "shas": [
+            "d94ea356a51405542bb472d5e213abf600bc9d71"
+          ]
+        },
+        {
+          "path": ".github/workflows/pr-closing-issue.yml",
+          "lineRange": {
+            "start": 83,
+            "end": 83
+          },
+          "text": "ワークフローが `--comment` を渡す",
+          "shas": [
+            "d94ea356a51405542bb472d5e213abf600bc9d71"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "gh-stub"
+      ],
+      "tests": [
+        "dup-no-flag"
+      ],
+      "flows": [
+        "duplicate"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "gh-stub",
+      "category": "harness · 判定表",
+      "label": "判定表の差し替えた `gh`",
+      "gist": "判定表は本物の `gh` を呼ばず、[[PATH|path-var]] の先頭に置いた小さなスクリプトを `gh` として呼ばせる。呼ばれ方と書き込んだ本文をファイルへ残し、終了コードと合わせて確かめる。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "共通スクリプトの判定表の `gh` は、一覧(GET)ならケースごとに置いたページの JSON に `--jq` の式を当てて返し、`--paginate` が無ければ 1 ページ目だけを返す。書き込み(POST / PATCH)なら `body=@<file>` の先を読んで残す。`FAIL_GET` などに n を渡すと、その種類の最初の n 回を失敗させる。"
+        },
+        {
+          "kind": "rule",
+          "text": "`--paginate` が無いときに 1 ページ目しか返さないのは、2 ページ目のケースが「`--paginate` を外すと落ちる」ようにするため。"
+        },
+        {
+          "kind": "caution",
+          "text": "重複の検査の判定表の `gh` は形が違う(固定の ID を返す)。共通にしないのは、返し方が違い同じ処理の重複ではないため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "lineRange": {
+            "start": 29,
+            "end": 65
+          },
+          "text": "共通スクリプトの判定表の差し替えた `gh`",
+          "shas": [
+            "c476b2f1b80dd2eb8110cf26aa2acd37294fae73",
+            "44fab0d3f6393225858b48ed59527a3c5f2e729e"
+          ]
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "lineRange": {
+            "start": 166,
+            "end": 187
+          },
+          "text": "重複の検査の判定表の差し替えた `gh`",
+          "shas": [
+            "5329776c79daac8b36f72895b601163d346c5d93"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "sticky-cycle",
+        "set-u-empty-array"
+      ],
+      "tests": [
+        "up-page2",
+        "up-post-landed",
+        "dup-no-flag"
+      ],
+      "flows": [
+        "cases"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "exit-status",
+      "label": "終了コード",
+      "text": "コマンドが終わるときに返す 0〜255 の数。0 が成功、それ以外が失敗で、値の意味はコマンドごとに決める。"
+    },
+    {
+      "id": "actions",
+      "label": "GitHub Actions",
+      "text": "GitHub のリポジトリで、push や PR などのきっかけでスクリプトを走らせる仕組み。設定は `.github/workflows/` の YAML に書く。"
+    },
+    {
+      "id": "pipe",
+      "label": "パイプ",
+      "text": "あるコマンドの出力を、別のコマンドの入力へそのまま流す通り道。`a | b` と書く。流れたものはファイルとして残らない。"
+    },
+    {
+      "id": "fd",
+      "label": "ファイル記述子",
+      "text": "プログラムが開いているファイルやパイプを指す番号。Linux では `/dev/fd/<番号>` というパスで指せる。"
+    },
+    {
+      "id": "rest-api",
+      "label": "REST API",
+      "text": "URL のパスで対象を指し、HTTP のメソッド(GET で取得・POST で作成・PATCH で変更)で操作する形の API。"
+    },
+    {
+      "id": "page",
+      "label": "ページ",
+      "text": "長い一覧を一定の件数ごとに区切った 1 区切り。続きがあれば、応答に次のページの URL が付いてくる。"
+    },
+    {
+      "id": "jq-filter",
+      "label": "jq の式",
+      "text": "JSON を読み書きするコマンド `jq` に渡す、値の取り出し方・組み替え方を書いた式。`.id` や `.[]` を `|` でつないで書く。"
+    },
+    {
+      "id": "http",
+      "label": "HTTP",
+      "text": "Web でクライアントとサーバーがやりとりする約束事。要求には GET・POST・PATCH などのメソッドを付ける。"
+    },
+    {
+      "id": "json",
+      "label": "JSON",
+      "text": "データを文字で書き表す形式。`{…}` のオブジェクト・`[…]` の配列・文字列・数値などを組み合わせて書く。"
+    },
+    {
+      "id": "param-expansion",
+      "label": "パラメータ展開",
+      "text": "`${…}` の形で変数の値を取り出すときに、一部を削る・既定値を補うなどの加工を同時に行う bash の書き方。"
+    },
+    {
+      "id": "signal",
+      "label": "シグナル",
+      "text": "OS が動いているプログラムへ送る短い知らせ。受け取ったプログラムは既定では終了する。"
+    },
+    {
+      "id": "regex",
+      "label": "正規表現",
+      "text": "文字列の形を記号で書いたパターン。`^` で先頭、`$` で末尾、`+` で「1 回以上の繰り返し」を表す。"
+    },
+    {
+      "id": "array",
+      "label": "配列",
+      "text": "bash で複数の値を順に並べて持つ変数。`a=(x y)` で作り、`\"${a[@]}\"` で全要素を 1 つずつの引数として展開する。"
+    },
+    {
+      "id": "env-var",
+      "label": "環境変数",
+      "text": "プログラムを起動するときに外から渡す名前付きの値。子のプログラムへ引き継がれる。`NAME=値 コマンド` でその 1 回だけ渡せる。"
+    },
+    {
+      "id": "workflow-command",
+      "label": "ワークフローコマンド",
+      "text": "GitHub Actions が、ステップの出力の中の `::名前::` で始まる行を読んで実行する指示。警告の注記や値の受け渡しに使う。"
+    },
+    {
+      "id": "path-var",
+      "label": "PATH",
+      "text": "コマンド名からプログラムを探すフォルダの並びを持つ環境変数。先頭のフォルダから順に探すので、先頭に置いたものが優先される。"
+    }
+  ]
+}
