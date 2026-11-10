@@ -210,7 +210,7 @@ function compile(props: ResolvedProps<"Box">): Style { /* ... */ }
 判定の分かれ目は、**数え直す範囲が差分で動いた項目か、列挙が指す実体の全件か**。列挙を書いた・
 伸ばしたら、実体の出どころ（呼び出し箇所・委譲先・消費側）を grep して全件を数え、列挙と付き合わせる。
 
-語彙の定義（`comment-reviewer.md`「記述の組」表・`claim-verification` 手順7）が指すのは同じ
+形の名前の定義（`comment-reviewer.md`「記述の組」表・`claim-verification` 手順7）が指すのは同じ
 差分内の増減だけで、差分と関係なく最初から欠けている列挙は、定義の上では同じファイルの「主張の形」表
 の「この件数・個数は◯◯だ」の行（`comment-structure-claim`）に当たる。上の 3 件はこの分類で
 記録されたのでここに置くが、確かめ方はどちらの行も「実体を数え直す」で同じ。
@@ -246,7 +246,7 @@ function compile(props: ResolvedProps<"Box">): Style { /* ... */ }
 
 置き場所・寄せ先の 2 つ(pr-359 / pr-394)に限った判定の分かれ目は「**素直な置き場所・素直な型が別にあり、
 そこへ寄せても機械的には何も止まらないか**」。止まらないなら、寄せなかった理由は型にもテストにも
-無いので、コメントにしか残らない。`comment-reviewer` の語彙では、先例から外れた判断の理由が
+無いので、コメントにしか残らない。`comment-reviewer` の形の名前では、先例から外れた判断の理由が
 無い形(`comment-missing-divergence`)の置き場所版にあたる。
 
 ## `comment-temporary-premise` — 理由の根拠に一時的な事実を置いた

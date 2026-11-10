@@ -38,7 +38,7 @@ model: inherit
 
 ## モジュールの公開 API の観点
 
-`分類: dependency`。判例 `module-api`。
+`分類: dependency`。
 
 - **deep import・index.ts 以外への実装の切り出し・index.ts の export の増加が無いか**（`rules/architecture.md`「モジュールの公開API」）。見方と、検出器が拾わない形は `harness/case-law/architecture.md`「`module-api`」
 

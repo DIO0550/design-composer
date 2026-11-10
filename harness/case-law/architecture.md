@@ -144,7 +144,10 @@ pr-235 で観点(`implementation-reviewer`「モジュールの公開 API の観
   （`index.ts` の有無で判定する）。`domains/` はカテゴリを 1 段挟むので、
   `@/domains/<カテゴリ>/<x>/<入れ子モジュール>` は正当で、パスの段数だけでは
   内部ファイルへの deep import と区別できない。入れ子モジュールの `index.ts` に解決される
-  import は検出器が違反にしない(→「`dependency`」の該当箇所)
+  import は検出器が違反にしない(→「`dependency` — 同じ語彙の兄弟モジュールを、親のフォルダを
+  作らずに並べた」の最後の箇条)。ただし feature だけは 1 段狭く、feature の外(他 feature・`app/` 等)から
+  その中のモジュールの `index.ts` を読むと `feature-public-api` として違反になる(検出器の
+  docstring「feature だけは 1 段狭い」)
 - テストのためだけの export は、テストを公開 API 経由に書き直せないかを先に見る
 
 (`.claude/agents/structure-reviewer.md` から、規範の 1 文を残して移した。)

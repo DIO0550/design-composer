@@ -142,7 +142,7 @@ Issue: #<番号>
    書き終えるたびに `claim-verification` スキルで確かめる**(この形は検証エージェントでも
    時々すり抜けて人の指摘まで届く)
 9. **ファイル表が固まったら、同じファイルを触る open の PR を引き、重なりと、引いたコマンド・件数を
-   計画に書く。** `gh api 'repos/{owner}/{repo}/pulls?state=open&per_page=100' --jq '.[].number'` で
+   計画に書く。** `gh api 'repos/{owner}/{repo}/pulls?state=open&per_page=100' --paginate --jq '.[].number'` で
    番号を引き、各番号について `gh api 'repos/{owner}/{repo}/pulls/<番号>/files?per_page=100' --paginate --jq '.[].filename'`
    をファイル表と突き合わせる。重なりがあれば、どちらが先に入る前提かを書く。手順 1〜8 で
    ファイル表が増えるので最後に踏む。実例は
