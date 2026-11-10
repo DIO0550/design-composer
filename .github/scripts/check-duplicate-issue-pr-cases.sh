@@ -61,7 +61,8 @@ run_case() {
 
   json="$(mktemp)"
   result_json "$closing" "$others" "$total" >"$json"
-  actual="$(PR_NUMBER="$self" bash "$script" "$json" 2>&1)"
+  # Actions は GITHUB_REPOSITORY を既定で置くので、空にしないと本物の gh でコメントを投げに行く
+  actual="$(GITHUB_REPOSITORY= PR_NUMBER="$self" bash "$script" "$json" 2>&1)"
   rm -f "$json"
 
   if [ "$actual" = "$expected" ]; then
