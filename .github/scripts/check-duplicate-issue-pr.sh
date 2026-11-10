@@ -159,8 +159,9 @@ truncation_note="$(
 if [ -n "$truncation_note" ]; then echo "$truncation_note"; fi
 
 # **コメントの投げ先が分かっているときだけ投げる。** 差し替え JSON を手で流す動作確認では
-# 環境変数を置かないのでここで終わる。判定表は `gh` を差し替えたうえで投げ先を渡し、
-# 貼る / 差し替える / 貼らないの分岐を実際に踏ませる
+# 環境変数を置かないのでここで終わる(共通スクリプトへ進むと使い方の誤り exit 2 で赤になる)。
+# 判定表は `gh` を差し替えて投げ先を渡し、貼る / 貼らないの指定と、共通スクリプトの 3 回失敗を
+# 赤にしない扱いを実際に踏ませる
 if [ -z "${GITHUB_REPOSITORY:-}" ] || [ -z "${PR_NUMBER:-}" ]; then
   exit 0
 fi
@@ -178,33 +179,20 @@ if [ "$has_closed_issues" = true ]; then
 fi
 
 if [ "${#sections[@]}" -gt 0 ]; then
-  body="$(printf '%s\n' "$marker"; printf '%s\n\n' "${sections[@]}")"
+  body="$(printf '%s\n\n' "${sections[@]}")"
+  if_missing=post
 else
-  body="$(printf '%s\n現在、同じ Issue を閉じる他の PR(open / マージ済み)は無く、閉じる Issue もクローズされていません。' "$marker")"
+  body='現在、同じ Issue を閉じる他の PR(open / マージ済み)は無く、閉じる Issue もクローズされていません。'
+  if_missing=skip
 fi
 
-# **ページを送って全部見る。** 一覧は作成の古い順で、1 ページに収まらないことがある
-# (実測: `per_page=1` で `rel="next"` の Link が返る)。このコメントは重複かクローズ済みの
-# Issue が出たときにしか貼らないので、コメントが積もった後に貼られると 1 ページ目に載らない。
-# 見失うと二重に貼る。
-# 先頭行だけを採るのは、`--paginate` がページごとに `--jq` の結果を返す場合に 2 行以上
-# 返るため(`head` で切ると `gh` が SIGPIPE で落ちて `pipefail` に引っかかる)。
-#
-# **コメント側の失敗では赤にしない。** 赤はこのジョブでは「問い合わせが 3 回とも
-# 通らなかった」だけを意味する(ステップに `continue-on-error` を置くと、その問い合わせの
-# 失敗まで緑になるので使わない)。
-if ! comment_ids="$(gh api --paginate \
-  "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" \
-  --jq "[.[] | select(.body | startswith(\"$marker\"))][0].id // empty")"; then
-  echo 'コメントの一覧を取れなかった。コメントは触らない' >&2
-  exit 0
-fi
-existing="${comment_ids%%$'\n'*}"
-
-if [ -n "$existing" ]; then
-  gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${existing}" -f body="$body" \
-    >/dev/null || echo 'コメントの差し替えに失敗した' >&2
-elif [ "${#sections[@]}" -gt 0 ]; then
-  gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -f body="$body" \
-    >/dev/null || echo 'コメントの投稿に失敗した' >&2
-fi
+# **コメント側の失敗では赤にしない。** 受け流すのは共通スクリプトの exit 1(3 回とも失敗)だけで、
+# 呼び方の誤り(exit 2)や共通スクリプトが無い(127)は赤にする。赤はこのジョブでは「問い合わせが
+# 3 回とも通らなかった」か「コメントの共通スクリプトを呼べなかった」を意味する(ステップに
+# `continue-on-error` を置くと、その問い合わせの失敗まで緑になるので使わない)。
+bash "$(dirname "$0")/upsert-sticky-comment.sh" --marker "$marker" \
+  --body-file <(printf '%s' "$body") --if-missing "$if_missing" || {
+  status=$?
+  [ "$status" = 1 ] || exit "$status"
+  echo 'コメントを貼れなかった(3 回とも失敗)' >&2
+}
