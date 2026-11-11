@@ -266,7 +266,7 @@ test("artboard の props に逆転を書いてもエラーにならない", () =
   ]);
 });
 
-test("下限・上限を持たない Ellipse に逆転を書くと、未知の prop だけが出る", () => {
+test("幅を fill にした Ellipse の最小幅が最大幅より大きいと、maxWidth を指すエラーが 1 件出る", () => {
   const document = documentWithArtboard({
     tokens: DocumentTemplate.Default.tokens,
     props: { layout: "column" },
@@ -281,16 +281,27 @@ test("下限・上限を持たない Ellipse に逆転を書くと、未知の p
 
   expect(DesignDocument.collectErrors(document)).toEqual([
     expect.objectContaining({
-      kind: "unknown-prop",
-      nodeName: "target",
-      prop: "minWidth",
-    }),
-    expect.objectContaining({
-      kind: "unknown-prop",
+      kind: "inverted-size-limits",
       nodeName: "target",
       prop: "maxWidth",
     }),
   ]);
+});
+
+test("モードを書いていない Ellipse は既定が fixed なので、最小/最大を逆に書いてもエラーにならない", () => {
+  const document = documentWithArtboard({
+    tokens: DocumentTemplate.Default.tokens,
+    props: { layout: "column" },
+    children: [
+      {
+        name: "target",
+        type: "Ellipse",
+        props: { minWidth: 500, maxWidth: 100 },
+      },
+    ],
+  });
+
+  expect(DesignDocument.collectErrors(document)).toEqual([]);
 });
 
 test("逆転のエラーの本文は、最小と最大の両方の prop 名を含む", () => {

@@ -52,7 +52,7 @@ test("Ellipse は角丸・並べ方・余白・はみ出しの prop を持たな
   ).toEqual([]);
 });
 
-test("Ellipse の配置・回転・影・不透明度・表示・ロックは Box と同じ定義を持つ", () => {
+test("Ellipse の配置・回転・最小/最大の大きさ・影・不透明度・表示・ロックは Box と同じ定義を持つ", () => {
   const names = [
     "placement",
     "x",
@@ -60,6 +60,10 @@ test("Ellipse の配置・回転・影・不透明度・表示・ロックは Bo
     "constraintX",
     "constraintY",
     "rotation",
+    "minWidth",
+    "maxWidth",
+    "minHeight",
+    "maxHeight",
     "shadow",
     "opacity",
     "visibility",
