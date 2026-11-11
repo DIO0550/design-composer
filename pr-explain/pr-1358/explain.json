@@ -1,0 +1,855 @@
+{
+  "version": 1,
+  "pr": 1358,
+  "sha": "38a0764b39e5403a1d6e7b0cf562907494998637",
+  "issue": 978,
+  "overview": {
+    "title": "Ellipse に最小 / 最大サイズ（minWidth / maxWidth / minHeight / maxHeight）を持たせる",
+    "lead": "Ellipse にも Box と同じ下限・上限の 4 prop を書けるようになり、`fill` の軸では描画・検査・インスペクタのすべてに効く。",
+    "before": [
+      {
+        "text": "Ellipse に `minWidth` などを書くと、未知の prop としてバリデーションエラーになり、描画にも効かなかった",
+        "message": "m-resolve"
+      },
+      {
+        "text": "インスペクタの Ellipse の Size 節には、最小 / 最大の欄が無かった",
+        "message": "m-scan"
+      }
+    ],
+    "after": [
+      {
+        "text": "`fill` の軸に書いた下限・上限は CSS の `min-*` / `max-*` として出る",
+        "message": "m-size-decl"
+      },
+      {
+        "text": "`fixed` の軸（Ellipse の既定）に書いたものは読み捨て、エラーにもならない",
+        "message": "m-inverted"
+      },
+      {
+        "text": "`fill` の軸で下限が上限を超えると、`max*` を指すエラーが 1 件出る",
+        "message": "m-inverted"
+      },
+      {
+        "text": "インスペクタは `fill` の軸にだけ、最小 / 最大の 2 欄を幅 → 高さの順で出す",
+        "message": "m-scan"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "本番コードはスキーマだけ",
+        "text": "描画・検査・パネルは型に依らないので、スキーマに足すだけで Ellipse に効く。他の経路に Ellipse 用の分岐を足していない",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts"
+        }
+      },
+      {
+        "title": "宣言の順がパネルの並び",
+        "text": "幅と高さの定数を分けた理由はテストで固定した（spread の位置を動かすと落ちる）",
+        "go": {
+          "kind": "message",
+          "id": "m-scan"
+        }
+      },
+      {
+        "title": "版は 1.1 のまま",
+        "text": "1.1 は未配布なので、docs/01 の 1.1 の行に書き足しただけ",
+        "go": {
+          "kind": "layer",
+          "layer": "docs"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "domains / dcmp",
+      "role": "スキーマに 4 prop を足し、逆転の検査が Ellipse にも届くようにする"
+    },
+    {
+      "layer": "domains / compiled",
+      "role": "コードは変えず、Ellipse の CSS 出力に下限・上限が出ることをテストで固定する"
+    },
+    {
+      "layer": "domains / session",
+      "role": "コードは変えず、インスペクタの欄の出し分けと並びをテストで固定する"
+    },
+    {
+      "layer": "docs",
+      "role": "Ellipse の表と版の表に 4 prop を書く"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "name": "プリミティブのスキーマ",
+      "role": "Box / Text / Ellipse が持つ prop の定義",
+      "change": "下限・上限の定義を軸ごとの定数へ移し、Box と Ellipse の両方に展開した"
+    },
+    {
+      "path": "src/domains/dcmp/resolved-props/index.ts",
+      "name": "解決済みの props",
+      "role": "スキーマに無い prop を落とし、既定値を埋める"
+    },
+    {
+      "path": "src/domains/dcmp/size/index.ts",
+      "name": "サイズ",
+      "role": "モードと下限・上限から CSS の宣言と逆転の軸を出す"
+    },
+    {
+      "path": "src/domains/compiled/compiled-element/index.ts",
+      "name": "コンパイル済みの要素",
+      "role": "ノードを描画用の宣言にする"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "ドキュメントの検証",
+      "role": "prop の値と横断の規則を検査する"
+    },
+    {
+      "path": "src/domains/session/prop-control/index.ts",
+      "name": "プロパティの欄",
+      "role": "スキーマを走査してインスペクタの欄を組む"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m-resolve",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "kind": "qry",
+      "name": "スキーマで props を解決する",
+      "code": "ResolvedProps.resolve(typed.type, props)",
+      "via": "call",
+      "returns": "スキーマにある prop だけの props",
+      "status": "changed"
+    },
+    {
+      "id": "m-inverted",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "下限が上限を超えた軸を集める",
+      "code": "Size.collectInvertedLimitAxes(resolved)",
+      "via": "call",
+      "returns": "fixed 以外で逆転している軸"
+    },
+    {
+      "id": "m-size-decl",
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "大きさの宣言を作る",
+      "code": "Size.declarationsFromProps(props, \"width\", flexParentDirection)",
+      "via": "call",
+      "returns": "width / flex / min-width / max-width などの宣言"
+    },
+    {
+      "id": "m-scan",
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "kind": "qry",
+      "name": "スキーマの prop を宣言順に並べる",
+      "code": "Object.entries(schema)",
+      "via": "call",
+      "returns": "欄の並び（宣言順）",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f-validate",
+      "label": "ファイルを開いて検査する",
+      "steps": [
+        "m-resolve",
+        "m-inverted"
+      ]
+    },
+    {
+      "id": "f-render",
+      "label": "楕円を描く",
+      "steps": [
+        "m-size-decl"
+      ]
+    },
+    {
+      "id": "f-panel",
+      "label": "楕円を選んで欄を出す",
+      "steps": [
+        "m-scan"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "e85d20bbce5562211f0a22dc2c12cd9b6841ac78",
+      "phase": "core",
+      "role": "スキーマに 4 prop を足す（本番コードの変更はこれだけ）",
+      "why": "効かなかった原因は、解決済みの props がスキーマに無い prop を落としていたことだけだった。一時コピーで、スキーマに足せば描画・検査・パネルが追従することを実測してから入れた",
+      "flows": [
+        "f-validate",
+        "f-render",
+        "f-panel"
+      ],
+      "review": [
+        "Box の宣言順（width → 最小 / 最大 → heightMode）が変わっていないか",
+        "WidthLimitProps / HeightLimitProps の中身が移す前の Box の定義と同じか"
+      ],
+      "before": [
+        {
+          "text": "Ellipse に minWidth を書くと未知の prop になる"
+        }
+      ],
+      "after": [
+        {
+          "text": "Ellipse も Box と同じ 4 prop を持つ"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "start": 450,
+          "end": 450,
+          "text": "Ellipse は `width` の直後に幅の 2 prop を展開する。並びがパネルの行の順になる"
+        }
+      ]
+    },
+    {
+      "sha": "27381ff576c12728997537d396f0c505527b42f4",
+      "phase": "core",
+      "role": "スキーマの定義と逆転の検査をテストする",
+      "why": "旧テストは「Ellipse の min/max は未知の prop」を固定していたので、仕様に合わせて置き換えた",
+      "review": [
+        "既定 fixed の側が、Box の既定 hug で解決する実装なら落ちる入力になっているか"
+      ]
+    },
+    {
+      "sha": "3c5b2d7341f2bdea5c5a3f60a38375fc62f4d60b",
+      "phase": "core",
+      "role": "CSS の出力をテストする",
+      "why": "Ellipse 側のコードを変えていないので、効いていることを出力で固定する"
+    },
+    {
+      "sha": "b5a507b3e0def0d853b163c4928811e34551d441",
+      "phase": "core",
+      "role": "インスペクタの欄の出し分けをテストする",
+      "why": "パネルはスキーマ走査で組むので、どの状態で欄が出るかを、欄の一覧で固定する"
+    },
+    {
+      "sha": "398e89d690649af102337ec0f0942ce5e1d809f4",
+      "phase": "core",
+      "role": "docs/03 と docs/01 に書く",
+      "why": "「まだ決めていない」を確定した文にし、版の表を Box と Ellipse の両方に当たる書き方にした",
+      "review": [
+        "表の行の位置が、スキーマの宣言順と同じか"
+      ]
+    },
+    {
+      "sha": "fd91c29929a366a79338c19aa4007956bd0e0c61",
+      "phase": "revise",
+      "role": "定数の doc を現在形にし、却下した案を添える",
+      "why": "comment-reviewer の指摘。「4 行から 8 行」は変更前後の説明で、Ellipse だけ equals fill にしない理由が Issue にしか無かった"
+    },
+    {
+      "sha": "3f09e18c1c6770bdc60e9a167906bec6f207451b",
+      "phase": "revise",
+      "role": "テスト名を理由に揃え、組み立てを共通化する",
+      "why": "出ない理由は「既定 fixed を読み捨てる」で、「大きさを書いていない」ではない。組み立ての重複は duplication-reviewer の指摘"
+    },
+    {
+      "sha": "38a0764b39e5403a1d6e7b0cf562907494998637",
+      "phase": "revise",
+      "role": "Size 節の並びをテストで固定する",
+      "why": "test-reviewer が、spread の位置を動かしても全テストが通ることを実測した。定数を 2 つに分けた理由が規律でしか守られていなかった",
+      "review": [
+        "並びのテストが size の節だけを見ていて、他の節の変更に巻き込まれないか"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "s-schema",
+      "label": "スキーマ（Ellipse）",
+      "file": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ellipse.test.ts"
+    },
+    {
+      "id": "s-validate",
+      "label": "下限・上限の検証",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts"
+    },
+    {
+      "id": "s-size",
+      "label": "要素の大きさ",
+      "file": "src/domains/compiled/compiled-element/__tests__/compiled-element.size.test.ts"
+    },
+    {
+      "id": "s-enabled",
+      "label": "欄の出し分け",
+      "file": "src/domains/session/prop-control/__tests__/prop-control.enabled-when.test.ts"
+    },
+    {
+      "id": "s-normal",
+      "label": "欄の並び",
+      "file": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "t-same-def",
+      "suite": "s-schema",
+      "name": "Ellipse の配置・回転・最小/最大の大きさ・影・不透明度・表示・ロックは Box と同じ定義を持つ",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "共有した定義が Box と Ellipse でずれないこと",
+      "given": "Box と Ellipse のスキーマ",
+      "when": "共有する prop の定義を並べて比べる",
+      "then": "4 prop を含め、すべて同じ定義",
+      "commit": "27381ff576c12728997537d396f0c505527b42f4",
+      "excerpt": {
+        "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ellipse.test.ts",
+        "start": 55,
+        "end": 76,
+        "text": "test(\"Ellipse の配置・回転・最小/最大の大きさ・影・不透明度・表示・ロックは Box と同じ定義を持つ\", () => {\n  const names = [\n    \"placement\",\n    \"x\",\n    \"y\",\n    \"constraintX\",\n    \"constraintY\",\n    \"rotation\",\n    \"minWidth\",\n    \"maxWidth\",\n    \"minHeight\",\n    \"maxHeight\",\n    \"shadow\",\n    \"opacity\",\n    \"visibility\",\n    \"locking\",\n  ];\n\n  expect(\n    names.map((name) => PrimitiveSchema.propDefinition(\"Ellipse\", name)),\n  ).toEqual(names.map((name) => PrimitiveSchema.propDefinition(\"Box\", name)));\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/primitive-schema/schema/index.ts"
+      ],
+      "covers": []
+    },
+    {
+      "id": "t-inverted",
+      "suite": "s-validate",
+      "name": "幅を fill にした Ellipse の最小幅が最大幅より大きいと、maxWidth を指すエラーが 1 件出る",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "fill の軸の逆転がエラーになること",
+      "given": "縦に並べる artboard の中に、幅 fill・最小幅 > 最大幅の Ellipse",
+      "when": "ドキュメントを検証する",
+      "then": "maxWidth を指す逆転のエラーが 1 件だけ",
+      "commit": "3f09e18c1c6770bdc60e9a167906bec6f207451b",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 283,
+        "end": 297,
+        "text": "test(\"幅を fill にした Ellipse の最小幅が最大幅より大きいと、maxWidth を指すエラーが 1 件出る\", () => {\n  const document = documentWithEllipse({\n    widthMode: \"fill\",\n    minWidth: 500,\n    maxWidth: 100,\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"inverted-size-limits\",\n      nodeName: \"target\",\n      prop: \"maxWidth\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts",
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "m-resolve",
+        "m-inverted"
+      ]
+    },
+    {
+      "id": "t-inverted-fixed",
+      "suite": "s-validate",
+      "name": "モードを書いていない Ellipse は既定が fixed なので、最小/最大を逆に書いてもエラーにならない",
+      "techniques": [
+        "state"
+      ],
+      "why": "fixed の軸は前後関係も見ないこと",
+      "given": "モードを書かず、最小 > 最大の Ellipse",
+      "when": "ドキュメントを検証する",
+      "then": "エラー 0 件",
+      "commit": "3f09e18c1c6770bdc60e9a167906bec6f207451b",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+        "start": 299,
+        "end": 303,
+        "text": "test(\"モードを書いていない Ellipse は既定が fixed なので、最小/最大を逆に書いてもエラーにならない\", () => {\n  const document = documentWithEllipse({ minWidth: 500, maxWidth: 100 });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts",
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "m-resolve",
+        "m-inverted"
+      ]
+    },
+    {
+      "id": "t-css",
+      "suite": "s-size",
+      "name": "子を横に並べる親の中で幅を fill にした Ellipse に最小・最大の幅を書くと min-width / max-width が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "fill の軸の下限・上限が描画に効くこと",
+      "given": "横並びの親、幅 fill・最小 40・最大 200 の Ellipse",
+      "when": "宣言を作る",
+      "then": "min-width 40px / max-width 200px",
+      "commit": "3c5b2d7341f2bdea5c5a3f60a38375fc62f4d60b",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.size.test.ts",
+        "start": 33,
+        "end": 40,
+        "text": "test(\"子を横に並べる親の中で幅を fill にした Ellipse に最小・最大の幅を書くと min-width / max-width が出る\", () => {\n  const style = setupEllipseStyle(\n    { widthMode: \"fill\", minWidth: 40, maxWidth: 200 },\n    Option.some(\"row\"),\n  );\n\n  expect([style[\"min-width\"], style[\"max-width\"]]).toEqual([\"40px\", \"200px\"]);\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts",
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "m-size-decl"
+      ]
+    },
+    {
+      "id": "t-css-fixed",
+      "suite": "s-size",
+      "name": "モードを書いていない Ellipse は既定が fixed なので、書いた最小の幅は出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "fixed の軸の下限は読み捨てること",
+      "given": "モードを書かず最小 40 の Ellipse",
+      "when": "宣言を作る",
+      "then": "min-width は無い",
+      "commit": "3f09e18c1c6770bdc60e9a167906bec6f207451b",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.size.test.ts",
+        "start": 42,
+        "end": 44,
+        "text": "test(\"モードを書いていない Ellipse は既定が fixed なので、書いた最小の幅は出ない\", () => {\n  expect(\"min-width\" in setupEllipseStyle({ minWidth: 40 })).toBe(false);\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts",
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "m-size-decl"
+      ]
+    },
+    {
+      "id": "t-css-h",
+      "suite": "s-size",
+      "name": "高さを fill にした Ellipse に最小の高さを書くと min-height が出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "高さの軸でも効くこと",
+      "given": "横並びの親、高さ fill・最小 40 の Ellipse",
+      "when": "宣言を作る",
+      "then": "min-height 40px",
+      "commit": "3c5b2d7341f2bdea5c5a3f60a38375fc62f4d60b",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.size.test.ts",
+        "start": 46,
+        "end": 53,
+        "text": "test(\"高さを fill にした Ellipse に最小の高さを書くと min-height が出る\", () => {\n  expect(\n    setupEllipseStyle(\n      { heightMode: \"fill\", minHeight: 40 },\n      Option.some(\"row\"),\n    )[\"min-height\"],\n  ).toBe(\"40px\");\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts",
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "m-size-decl"
+      ]
+    },
+    {
+      "id": "t-ctl-w",
+      "suite": "s-enabled",
+      "name": "幅を fill にした Ellipse では幅の最小 / 最大のコントロールが出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "fill の幅でだけ欄が出ること",
+      "given": "幅 fill の Ellipse を選ぶ",
+      "when": "欄を組む",
+      "then": "minWidth / maxWidth の欄がある",
+      "commit": "b5a507b3e0def0d853b163c4928811e34551d441",
+      "excerpt": {
+        "path": "src/domains/session/prop-control/__tests__/prop-control.enabled-when.test.ts",
+        "start": 61,
+        "end": 66,
+        "text": "test(\"幅を fill にした Ellipse では幅の最小 / 最大のコントロールが出る\", () => {\n  const names = propNamesOf(ellipseSelection({ widthMode: \"fill\" }));\n\n  expect(names).toContain(\"minWidth\");\n  expect(names).toContain(\"maxWidth\");\n});"
+      },
+      "targets": [
+        "src/domains/session/prop-control/index.ts"
+      ],
+      "covers": [
+        "m-scan"
+      ]
+    },
+    {
+      "id": "t-ctl-h",
+      "suite": "s-enabled",
+      "name": "高さを fill にした Ellipse では高さの最小 / 最大のコントロールが出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "高さの軸でも同じこと",
+      "given": "高さ fill の Ellipse を選ぶ",
+      "when": "欄を組む",
+      "then": "minHeight / maxHeight の欄がある",
+      "commit": "b5a507b3e0def0d853b163c4928811e34551d441",
+      "excerpt": {
+        "path": "src/domains/session/prop-control/__tests__/prop-control.enabled-when.test.ts",
+        "start": 68,
+        "end": 73,
+        "text": "test(\"高さを fill にした Ellipse では高さの最小 / 最大のコントロールが出る\", () => {\n  const names = propNamesOf(ellipseSelection({ heightMode: \"fill\" }));\n\n  expect(names).toContain(\"minHeight\");\n  expect(names).toContain(\"maxHeight\");\n});"
+      },
+      "targets": [
+        "src/domains/session/prop-control/index.ts"
+      ],
+      "covers": [
+        "m-scan"
+      ]
+    },
+    {
+      "id": "t-ctl-fixed",
+      "suite": "s-enabled",
+      "name": "モードを書いていない Ellipse は既定が fixed なので、最小 / 最大のコントロールは出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "既定の fixed では欄を出さないこと",
+      "given": "モードを書いていない Ellipse を選ぶ",
+      "when": "欄を組む",
+      "then": "4 つの欄はどれも無い",
+      "commit": "3f09e18c1c6770bdc60e9a167906bec6f207451b",
+      "excerpt": {
+        "path": "src/domains/session/prop-control/__tests__/prop-control.enabled-when.test.ts",
+        "start": 75,
+        "end": 82,
+        "text": "test(\"モードを書いていない Ellipse は既定が fixed なので、最小 / 最大のコントロールは出ない\", () => {\n  const names = propNamesOf(ellipseSelection({}));\n\n  expect(names).not.toContain(\"minWidth\");\n  expect(names).not.toContain(\"maxWidth\");\n  expect(names).not.toContain(\"minHeight\");\n  expect(names).not.toContain(\"maxHeight\");\n});"
+      },
+      "targets": [
+        "src/domains/session/prop-control/index.ts"
+      ],
+      "covers": [
+        "m-scan"
+      ]
+    },
+    {
+      "id": "t-order-box",
+      "suite": "s-normal",
+      "name": "Box の大きさの欄は、幅の最小 / 最大を高さより前に並べる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "定数を軸ごとに分けた理由（並び）を守ること",
+      "given": "両軸 fill の Box を選ぶ",
+      "when": "Size 節の欄を並べる",
+      "then": "widthMode → minWidth → maxWidth → heightMode → minHeight → maxHeight",
+      "commit": "38a0764b39e5403a1d6e7b0cf562907494998637",
+      "excerpt": {
+        "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+        "start": 394,
+        "end": 408,
+        "text": "test(\"Box の大きさの欄は、幅の最小 / 最大を高さより前に並べる\", () => {\n  expect(\n    propNamesInSection(\n      boxSelection({ widthMode: \"fill\", heightMode: \"fill\" }),\n      \"size\",\n    ),\n  ).toEqual([\n    \"widthMode\",\n    \"minWidth\",\n    \"maxWidth\",\n    \"heightMode\",\n    \"minHeight\",\n    \"maxHeight\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/session/prop-control/index.ts",
+        "src/domains/dcmp/primitive-schema/schema/index.ts"
+      ],
+      "covers": [
+        "m-scan"
+      ]
+    },
+    {
+      "id": "t-order-ellipse",
+      "suite": "s-normal",
+      "name": "Ellipse の大きさの欄は、幅の最小 / 最大を高さより前に並べる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "Ellipse でも同じ並びになること",
+      "given": "両軸 fill の Ellipse を選ぶ",
+      "when": "Size 節の欄を並べる",
+      "then": "Box と同じ並び",
+      "commit": "38a0764b39e5403a1d6e7b0cf562907494998637",
+      "excerpt": {
+        "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+        "start": 410,
+        "end": 424,
+        "text": "test(\"Ellipse の大きさの欄は、幅の最小 / 最大を高さより前に並べる\", () => {\n  expect(\n    propNamesInSection(\n      ellipseSelection({ widthMode: \"fill\", heightMode: \"fill\" }),\n      \"size\",\n    ),\n  ).toEqual([\n    \"widthMode\",\n    \"minWidth\",\n    \"maxWidth\",\n    \"heightMode\",\n    \"minHeight\",\n    \"maxHeight\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/session/prop-control/index.ts",
+        "src/domains/dcmp/primitive-schema/schema/index.ts"
+      ],
+      "covers": [
+        "m-scan"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "楕円の伸び方に下限と上限を付けられる",
+    "lead": "並びの中で親いっぱいに伸ばした楕円に、最小・最大の幅と高さを付けられるようになった。四角（Box）と同じ書き方・同じ見え方。",
+    "changed": {
+      "before": [
+        {
+          "text": "楕円に最小・最大の大きさを書くと、ファイルのエラーとして一覧に出て、描画にも効かなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "親いっぱいに伸ばした軸では、書いた最小・最大で楕円の伸び縮みが止まる",
+          "message": "m-size-decl"
+        },
+        {
+          "text": "プロパティパネルの大きさの欄に、伸ばした軸だけ最小と最大の 2 欄が出る",
+          "message": "m-scan"
+        }
+      ],
+      "specs": [
+        {
+          "path": "docs/03-schema.md",
+          "locator": "「Ellipse」の表と箇条",
+          "text": "最小 / 最大の 4 行を足し、「まだ決めていない」を「持つ。効くのは fill の軸だけ」に確定した",
+          "shas": [
+            "398e89d690649af102337ec0f0942ce5e1d809f4"
+          ]
+        },
+        {
+          "path": "docs/01-file-format.md",
+          "locator": "「formatVersion」の版の表の 1.1 の行",
+          "text": "下限・上限を持つものに Ellipse を加えた。版は上げていない",
+          "shas": [
+            "398e89d690649af102337ec0f0942ce5e1d809f4"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 514,
+          "text": "楕円を実装した回。この判断を先送りして、この Issue に分けた"
+        }
+      ],
+      "primers": [
+        "p-schema-scan"
+      ]
+    },
+    "tables": [
+      {
+        "label": "楕円に最小幅を書いたとき",
+        "gist": "効くのは伸ばした軸だけ。固定の軸では今までどおり何も起きない",
+        "rowHeads": [
+          {
+            "id": "fixed",
+            "label": "幅が固定（既定）"
+          },
+          {
+            "id": "fill",
+            "label": "幅を親いっぱいに伸ばす"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "draw",
+            "label": "描画"
+          },
+          {
+            "id": "check",
+            "label": "ファイルの検査"
+          },
+          {
+            "id": "panel",
+            "label": "プロパティパネル"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "fixed",
+            "columnHead": "draw",
+            "result": "効かない（固定の幅のまま）",
+            "tests": [
+              "t-css-fixed"
+            ]
+          },
+          {
+            "rowHead": "fixed",
+            "columnHead": "check",
+            "result": "エラーにならない（読み捨てる）",
+            "was": "知らない項目としてエラー",
+            "tests": [
+              "t-inverted-fixed"
+            ]
+          },
+          {
+            "rowHead": "fixed",
+            "columnHead": "panel",
+            "result": "欄は出ない",
+            "tests": [
+              "t-ctl-fixed"
+            ]
+          },
+          {
+            "rowHead": "fill",
+            "columnHead": "draw",
+            "result": "その幅より縮まない・伸びない",
+            "was": "効かない",
+            "tests": [
+              "t-css"
+            ]
+          },
+          {
+            "rowHead": "fill",
+            "columnHead": "check",
+            "result": "最小が最大を超えていればエラー 1 件",
+            "was": "知らない項目としてエラー",
+            "tests": [
+              "t-inverted"
+            ]
+          },
+          {
+            "rowHead": "fill",
+            "columnHead": "panel",
+            "result": "最小・最大の 2 欄が幅の欄の直後に出る",
+            "was": "欄が無い",
+            "tests": [
+              "t-ctl-w",
+              "t-order-ellipse"
+            ]
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "四角（Box）の最小・最大の欄の並びと効き方は変わらない",
+        "tests": [
+          "t-order-box",
+          "t-same-def"
+        ]
+      },
+      {
+        "text": "ファイルの形式の版は 1.1 のまま"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/03-schema.md",
+        "locator": "「サイズ指定の原則」の最小 / 最大の箇条",
+        "text": "固定以外のときだけ効く・固定では読み捨てる、の規則そのものは変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "id": "p-spread",
+      "kind": "language",
+      "category": "TypeScript",
+      "label": "オブジェクトのスプレッドと `as const satisfies`",
+      "gist": "[[スプレッド|t-spread]]で定数の中身をスキーマへ展開し、`as const satisfies` で[[リテラル型|t-literal]]を保ったまま形を検査する",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`{ a: 1, ...Other, b: 2 }` は `Other` のキーをその位置に並べた新しいオブジェクトを作る。キーの並びは書いた順になり、`Object.entries` もその順で返す"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+            "start": 445,
+            "end": 466,
+            "emphasis": [
+              {
+                "start": 452,
+                "end": 452
+              },
+              {
+                "start": 466,
+                "end": 466
+              }
+            ],
+            "text": "    width: {\n      domain: \"literal\",\n      literalType: \"number\",\n      default: 100,\n      group: \"size\",\n      enabledWhen: { kind: \"equals\", prop: \"widthMode\", equals: \"fixed\" },\n    },\n    ...WidthLimitProps,\n    heightMode: {\n      domain: \"enum\",\n      values: [\"fill\", \"fixed\"],\n      default: \"fixed\",\n      group: \"size\",\n    },\n    height: {\n      domain: \"literal\",\n      literalType: \"number\",\n      default: 100,\n      group: \"size\",\n      enabledWhen: { kind: \"equals\", prop: \"heightMode\", equals: \"fixed\" },\n    },\n    ...HeightLimitProps,"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "lineRange": {
+            "start": 195,
+            "end": 242
+          },
+          "text": "軸ごとの定数",
+          "shas": [
+            "e85d20bbce5562211f0a22dc2c12cd9b6841ac78"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "lineRange": {
+            "start": 452,
+            "end": 452
+          },
+          "text": "Ellipse への展開",
+          "shas": [
+            "e85d20bbce5562211f0a22dc2c12cd9b6841ac78"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "p-schema-scan"
+      ]
+    },
+    {
+      "id": "p-schema-scan",
+      "kind": "codebase",
+      "category": "スキーマ",
+      "label": "スキーマ走査で組む欄と検査",
+      "gist": "インスペクタの欄・検証・描画はどれもスキーマの宣言から組むので、prop を足せば 3 つとも追従する。欄の並びは宣言の順（[[スプレッド|t-spread]]の位置）で決まる",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/session/prop-control/index.ts",
+            "start": 360,
+            "end": 368,
+            "text": " */\nfunction declaredEditableProps(\n  schema: PropDefinitionRecord,\n): readonly EditableProp[] {\n  return Object.entries(schema).map(([name, definition]) => ({\n    name,\n    definition,\n    defaultValue: Option.fromNullable(definition.default),\n    enabledBy: Option.fromNullable(definition.enabledWhen?.prop),"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "Ellipse 用の分岐を描画・検査に足さない。型に依らない `Size` が下限・上限を扱う"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/session/prop-control/index.ts",
+          "lineRange": {
+            "start": 360,
+            "end": 368
+          },
+          "text": "宣言順に欄を並べる"
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "text": "下限・上限の宣言と逆転の検査"
+        }
+      ],
+      "status": "changed",
+      "tests": [
+        "t-order-box",
+        "t-order-ellipse",
+        "t-ctl-w"
+      ],
+      "flows": [
+        "f-panel",
+        "f-validate"
+      ],
+      "seeAlso": [
+        "p-spread"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "t-spread",
+      "label": "スプレッド",
+      "text": "`...x` と書いて、オブジェクト `x` のキーと値をその場所へ展開する構文"
+    },
+    {
+      "id": "t-literal",
+      "label": "リテラル型",
+      "text": "`\"fixed\"` のように、ある 1 つの値だけを表す型。`as const` を付けると値がこの型のまま残る"
+    }
+  ]
+}
