@@ -61,7 +61,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |
 | `lib/edit-detector.sh` | `block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh` | 編集時の検査フックの共通部分。検出器を `.github/scripts/lib/detector-report.sh` の `detector_report` で走らせ、異常終了したら `print_edit_unchecked_context <イベント名> <検査の名前> <検出器>` が `permissionDecision` の無い `additionalContext` で「検査できていません」を返す(編集は止めない)。PostToolUse の 2 本の違反の報告も同じ形(`print_additional_context <イベント名> <文>`)で書く。python3 の疎通は `detector-precondition.sh` の `python3_usable` で見る |
 | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring が持つ |
-| `lib/cases-report.sh` | `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh`(`decide`・`normalize_miss`・`report`) / `lib/story-title-cases.sh` / `lib/named-path-cases.sh`(それに `report_documented_kinds`) / `lib/import-rule-cases.sh`(`decide`・`report`・`report_documented_kinds`・`report_covered_kinds`) / `lib/cases-report-cases.sh`(`decide`・`decide_by_permission`・`hook_verdict_by_permission`・`normalize_miss`・`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`report_exits_with_cases_failed`) / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`kinds_in_categories`) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`hook_verdict_by_permission`・`report`) / `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `.github/scripts/pr-explain-pages-cases.sh` / `harness/records/count-cases.sh` / `harness/githooks/lib/check-tally-cases.sh`(`report`・`last_statement`・`report_exits_with_cases_failed`) | 判定表が共有する、判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category`。PreToolUse フックを流すところからなら `hook_verdict_by_permission`）と報告（`report` / `cases_failed`）と、検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）と、判定表の最後の文の照合（`last_statement` / `report_exits_with_cases_failed`）と、表のケースが 1 件以上走ったかの照合（`report` が数える `cases_reported` と `report_cases_ran`。表をループで回す判定表が使う）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
+| `lib/cases-report.sh` | `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh`(`decide`・`normalize_miss`・`report`) / `lib/story-title-cases.sh` / `lib/named-path-cases.sh`(それに `report_documented_kinds`) / `lib/import-rule-cases.sh`(`decide`・`report`・`report_documented_kinds`・`report_covered_kinds`) / `lib/cases-report-cases.sh`(`decide`・`decide_by_permission`・`hook_verdict_by_permission`・`normalize_miss`・`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`report_exits_with_cases_failed`) / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`kinds_in_categories`) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`hook_verdict_by_permission`・`report`) / `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `.github/scripts/pr-explain-pages-cases.sh` / `harness/records/count-cases.sh` / `harness/githooks/lib/check-tally-cases.sh`(`report`・`last_statement`・`report_exits_with_cases_failed`) / `.github/scripts/upsert-sticky-comment-cases.sh`(`report`) | 判定表が共有する、判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category`。PreToolUse フックを流すところからなら `hook_verdict_by_permission`）と報告（`report` / `cases_failed`）と、検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）と、判定表の最後の文の照合（`last_statement` / `report_exits_with_cases_failed`）と、表のケースが 1 件以上走ったかの照合（`report` が数える `cases_reported` と `report_cases_ran`。表をループで回す判定表が使う）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
 | `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 一時ディレクトリに置いた小さな検出器で `report_documented_kinds` / `report_covered_kinds` を呼ぶ照合と、`report` 自身を呼ぶ表では、`cases_failed` の立ち方と出力の行が期待どおりかを報告する。表に書いた出力と終了コードで `decide` / `decide_by_permission` / `normalize_miss` を直に呼ぶ表と、それを返すフックのスタブを `hook_verdict_by_permission` で流す表では、返る判定(pass / deny / broken / miss)が期待どおりかを報告する。一時ディレクトリに置いた判定表の木と本物のリポジトリのルートでは、`cases-report.sh` を source する判定表の最後の文が `exit "$cases_failed"` かを報告する。`report_cases_ran` を呼ぶ表では、表の中で `report` を 1 回も呼ばない・回す前の件数が数値でないときに NG を出すかと、表の中の NG も走った 1 件に数えるかを報告する。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |
 | `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh`(`place_failing_detector` だけ) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`subagent_call_fields` だけ) | フックの判定表が共有する、ケースの前提の置き方。落ちる検出器のスタブ(`place_failing_detector`)・起動できない python3(`python3_path_prefix`)・本体が同じテストヘルパー(`place_duplicate_helpers`)を、渡されたパスへ置く。サブエージェントの中の呼び出しの入力のフィールド(`subagent_call_fields`)を組む |
 | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `import-rule-violations.py` へ判定表を流し、報告された種別と件数が期待どおりかを報告する。検出器が報告する種別のうち、表の期待に 1 度も出ないものがあっても NG。`scan()` の種別の並びが docstring の一覧と食い違っても NG。検出器をスタブへ差し替えた表では、見出しを出したまま exit 0・exit 0・1 以外で終わる検出器を broken と読むかを報告する。食い違いがあれば exit 1 |
@@ -178,6 +178,8 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 | `lib/cases-report-cases.sh` | あり | あり |
 | `.github/scripts/check-added-cases.sh` | あり(`lint-suppress` ジョブ) | あり(`python3` がある環境だけ) |
 | `.github/scripts/check-pr-closing-issue-cases.sh` | あり | **無し(残る穴)** |
+| `.github/scripts/check-duplicate-issue-pr-cases.sh` | あり | **無し(残る穴)** |
+| `.github/scripts/upsert-sticky-comment-cases.sh` | あり | あり(`jq` がある環境だけ) |
 | `.github/scripts/build-pr-change-map-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `.github/scripts/pr-explain-pages-cases.sh` | あり | あり(`python3` がある環境だけ) |
 | `.github/scripts/build-pr-explain-cases.sh` | あり | あり(`python3` がある環境だけ) |
@@ -201,6 +203,10 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
   35.7 秒かかる(実測)。`pre-push` 全体は 73.0 秒(実測・`node_modules` のある環境。この判定表と同じ環境で
   続けて測った)で、載せると 1.5 倍になる。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 5 本は同じ `pre-push` の回の中で合わせて 16.2 秒(地図 3.4・置き場 5.6・解説の検査 4.3・枠の検査 2.8・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒、`lib/edit-detector-cases.sh` は 1.5 秒(実測)。**この穴は残したままなので、
   `check-pr-closing-issue.sh` を触ったときは手で走らせる**(「動作確認」)
+- **`check-duplicate-issue-pr-cases.sh` も層 1 だけ。** 22.0 秒かかり(実測)、大半が問い合わせの再試行の
+  待ち。物差しは上の `check-pr-closing-issue-cases.sh` と同じで、`check-duplicate-issue-pr.sh` を触ったときは
+  手で走らせる(「動作確認」)。層 2 にも置いた `upsert-sticky-comment-cases.sh` は 0.9 秒(実測。
+  再試行の待ちを環境変数で 0 にしている)
 - 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない
 
 #### 撮影範囲の検査は層 1 と層 4 にしかない
@@ -485,8 +491,12 @@ bash .github/scripts/check-added-cases.sh; echo "exit=$?"
 # check-pr-closing-issue.sh を触ったときはここで走らせる(1 分かかる)
 bash .github/scripts/check-pr-closing-issue-cases.sh; echo "exit=$?"
 
-# 同じ Issue を閉じる他の PR の検査の判定表(`ok` だけなら期待どおり)
+# 同じ Issue を閉じる他の PR の検査の判定表(`ok` だけなら期待どおり)。CI だけが走らせるので、
+# check-duplicate-issue-pr.sh を触ったときはここで走らせる(20 秒ほどかかる)
 bash .github/scripts/check-duplicate-issue-pr-cases.sh; echo "exit=$?"
+
+# sticky コメントの投稿・差し替えの判定表(`ok` だけなら期待どおり)。pre-push と CI も走らせる
+bash .github/scripts/upsert-sticky-comment-cases.sh; echo "exit=$?"
 
 # 記録の集計の判定表(見ている観点は count-cases.sh 冒頭)。pre-push と CI も走らせる
 bash harness/records/count-cases.sh; echo "exit=$?"

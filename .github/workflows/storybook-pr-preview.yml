@@ -112,70 +112,22 @@ jobs:
         if: github.event.action != 'closed'
         env:
           GH_TOKEN: ${{ github.token }}
-          COMMENT_MARKER: "<!-- storybook-preview -->"
-          PR: ${{ github.event.number }}
+          PR_NUMBER: ${{ github.event.number }}
         run: |
           REPO_NAME="${GITHUB_REPOSITORY#*/}"
           OWNER="${GITHUB_REPOSITORY%%/*}"
-          URL="https://${OWNER}.github.io/${REPO_NAME}/pr-preview/pr-${PR}/"
+          URL="https://${OWNER}.github.io/${REPO_NAME}/pr-preview/pr-${PR_NUMBER}/"
 
           # 解説ページは pr-explain.yml が枠と地図を置き、解説(explain.json)はセッションが書く(.claude/skills/pr-explain/)。
           # 告知の固定コメントをもう 1 本増やさないよう、ここに相乗りする。
-          EXPLAIN_URL="https://${OWNER}.github.io/${REPO_NAME}/pr-explain/pr-${PR}/"
+          EXPLAIN_URL="https://${OWNER}.github.io/${REPO_NAME}/pr-explain/pr-${PR_NUMBER}/"
 
           BODY_FILE=preview-comment.md
           {
-            echo "$COMMENT_MARKER"
             echo "📖 Storybook preview: ${URL}"
             echo "📘 PR 解説: ${EXPLAIN_URL}"
           } > "$BODY_FILE"
 
-          # 既存のプレビューコメントがあれば編集、なければ新規作成。
-          # gh api は一時的な 5xx を返すことがあるためリトライする。
-          # パイプ経由で head に渡すと gh 自体の終了コードが握りつぶされ、
-          # 失敗時のエラー本文がそのまま ID として後続 URL に混入するため、
-          # 変数代入の戻り値で直接 gh の終了コードを判定する
-          list_ok=false
-          for attempt in 1 2 3; do
-            if list_output="$(
-              gh api --paginate "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" \
-                --jq ".[] | select(.body | contains(\"${COMMENT_MARKER}\")) | .id"
-            )"; then
-              list_ok=true
-              break
-            fi
-            echo "list comments failed (attempt $attempt), retrying..."
-            echo "$list_output"
-            sleep $((attempt * 2))
-          done
-          [ "$list_ok" = "true" ]
-
-          COMMENT_ID="$(printf '%s\n' "$list_output" | head -n 1)"
-          if [ -n "$COMMENT_ID" ] && ! [[ "$COMMENT_ID" =~ ^[0-9]+$ ]]; then
-            echo "unexpected comment id from gh api: $COMMENT_ID"
-            exit 1
-          fi
-
-          publish_ok=false
-          for attempt in 1 2 3; do
-            if [ -n "$COMMENT_ID" ]; then
-              if gh api \
-                --method PATCH \
-                "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" \
-                --field body=@"$BODY_FILE"; then
-                publish_ok=true
-                break
-              fi
-            else
-              if gh api \
-                --method POST \
-                "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" \
-                --field body=@"$BODY_FILE"; then
-                publish_ok=true
-                break
-              fi
-            fi
-            echo "publish preview comment failed (attempt $attempt), retrying..."
-            sleep $((attempt * 2))
-          done
-          [ "$publish_ok" = "true" ]
+          bash .github/scripts/upsert-sticky-comment.sh \
+            --marker '<!-- storybook-preview -->' \
+            --body-file "$BODY_FILE" --if-missing post

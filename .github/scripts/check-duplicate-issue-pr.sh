@@ -19,8 +19,12 @@
 # 「一度も重複が無かった」のか「あったが消えた」のかを区別できなくなる)。
 #
 # 使い方:
-#   bash check-duplicate-issue-pr.sh              # GitHub へ問い合わせる(CI)
-#   bash check-duplicate-issue-pr.sh <file.json>  # 問い合わせ結果を差し替える(動作確認)
+#   bash check-duplicate-issue-pr.sh --comment              # GitHub へ問い合わせ、判定をコメントする(CI)
+#   bash check-duplicate-issue-pr.sh <file.json>            # 問い合わせ結果を差し替える(動作確認)
+#   bash check-duplicate-issue-pr.sh --comment <file.json>  # 差し替えた結果でコメントする(判定表)
+#
+# **コメントするのは `--comment` を渡したときだけ。** 環境変数が置かれているかでは決めない
+# (Actions は `GITHUB_REPOSITORY` を既定で置くので、判定表を走らせただけで本物の PR へ貼ってしまう)。
 #
 # 相手は 2 つの経路から集め、PR 番号で束ねる。
 # - `repository.pullRequests(states: OPEN)` — open な PR を更新の新しい順に先頭 100 件まで
@@ -79,7 +83,14 @@ fetch() {
   return 1
 }
 
-result_file="${1:-}"
+post_comment=false result_file=""
+for arg in "$@"; do
+  case "$arg" in
+    --comment) post_comment=true ;;
+    *) result_file="$arg" ;;
+  esac
+done
+
 if [ -n "$result_file" ]; then
   result="$(cat "$result_file")"
 else
@@ -158,12 +169,7 @@ truncation_note="$(
 )"
 if [ -n "$truncation_note" ]; then echo "$truncation_note"; fi
 
-# **コメントの投げ先が分かっているときだけ投げる。** 差し替え JSON を手で流す動作確認では
-# 環境変数を置かないのでここで終わる。判定表は `gh` を差し替えたうえで投げ先を渡し、
-# 貼る / 差し替える / 貼らないの分岐を実際に踏ませる
-if [ -z "${GITHUB_REPOSITORY:-}" ] || [ -z "${PR_NUMBER:-}" ]; then
-  exit 0
-fi
+[ "$post_comment" = true ] || exit 0
 
 marker="<!-- sticky-comment: duplicate-issue-pr -->"
 
@@ -178,33 +184,20 @@ if [ "$has_closed_issues" = true ]; then
 fi
 
 if [ "${#sections[@]}" -gt 0 ]; then
-  body="$(printf '%s\n' "$marker"; printf '%s\n\n' "${sections[@]}")"
+  body="$(printf '%s\n\n' "${sections[@]}")"
+  if_missing=post
 else
-  body="$(printf '%s\n現在、同じ Issue を閉じる他の PR(open / マージ済み)は無く、閉じる Issue もクローズされていません。' "$marker")"
+  body='現在、同じ Issue を閉じる他の PR(open / マージ済み)は無く、閉じる Issue もクローズされていません。'
+  if_missing=skip
 fi
 
-# **ページを送って全部見る。** 一覧は作成の古い順で、1 ページに収まらないことがある
-# (実測: `per_page=1` で `rel="next"` の Link が返る)。このコメントは重複かクローズ済みの
-# Issue が出たときにしか貼らないので、コメントが積もった後に貼られると 1 ページ目に載らない。
-# 見失うと二重に貼る。
-# 先頭行だけを採るのは、`--paginate` がページごとに `--jq` の結果を返す場合に 2 行以上
-# 返るため(`head` で切ると `gh` が SIGPIPE で落ちて `pipefail` に引っかかる)。
-#
-# **コメント側の失敗では赤にしない。** 赤はこのジョブでは「問い合わせが 3 回とも
-# 通らなかった」だけを意味する(ステップに `continue-on-error` を置くと、その問い合わせの
-# 失敗まで緑になるので使わない)。
-if ! comment_ids="$(gh api --paginate \
-  "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments?per_page=100" \
-  --jq "[.[] | select(.body | startswith(\"$marker\"))][0].id // empty")"; then
-  echo 'コメントの一覧を取れなかった。コメントは触らない' >&2
-  exit 0
-fi
-existing="${comment_ids%%$'\n'*}"
-
-if [ -n "$existing" ]; then
-  gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${existing}" -f body="$body" \
-    >/dev/null || echo 'コメントの差し替えに失敗した' >&2
-elif [ "${#sections[@]}" -gt 0 ]; then
-  gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -f body="$body" \
-    >/dev/null || echo 'コメントの投稿に失敗した' >&2
-fi
+# **コメント側の失敗では赤にしない。** 受け流すのは共通スクリプトの exit 1 だけで、何を含むかは
+# `upsert-sticky-comment.sh` の「終了コード」。赤はこのジョブでは「問い合わせが 3 回とも通らなかった」か
+# 「コメントの共通スクリプトが 3 回失敗(exit 1)以外で終わった」を意味する(ステップに
+# `continue-on-error` を置くと、その問い合わせの失敗まで緑になるので使わない)。
+bash "$(dirname "$0")/upsert-sticky-comment.sh" --marker "$marker" \
+  --body-file <(printf '%s' "$body") --if-missing "$if_missing" || {
+  status=$?
+  [ "$status" = 1 ] || exit "$status"
+  echo '::warning::重複の判定を PR にコメントできなかった(3 回とも失敗)'
+}

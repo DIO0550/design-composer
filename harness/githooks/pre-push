@@ -98,6 +98,12 @@ run_check "push 前の検査フックの判定表" bash .claude/hooks/lib/pre-pu
 run_check "編集時の検査フックの判定表" bash .claude/hooks/lib/edit-detector-cases.sh
 resume_checks
 
+# PR へ sticky コメントを貼る・差し替える共通スクリプトの判定表。差し替えた gh が一覧に jq を当てるので、
+# jq が無い環境では判定が変わっていなくても NG を出す。python3 は使わないので上の区間とは分ける。
+command -v jq >/dev/null 2>&1 || skip_following_checks "jq が無い"
+run_check "sticky コメントの投稿・差し替えの判定表" bash .github/scripts/upsert-sticky-comment-cases.sh
+resume_checks
+
 # 作業ツリーを書き換えるサブエージェントの実行中フラグ(層 3 の部品)の判定表。bash だけで走るので飛ばさない。
 run_check "作業ツリーを書き換えるサブエージェントの実行中フラグの判定表" bash .claude/hooks/lib/verification-agent-cases.sh
 

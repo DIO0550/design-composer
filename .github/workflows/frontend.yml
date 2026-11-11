@@ -212,6 +212,14 @@ jobs:
       - name: PR が閉じる Issue の検査の判定表
         run: bash .github/scripts/check-pr-closing-issue-cases.sh
 
+      # pr-closing-issue.yml が呼ぶもう 1 本の検査の判定表。検査対象と別のワークフローに置く理由は
+      # 上と同じ。pre-push に無い理由は同じ README の `check-duplicate-issue-pr-cases.sh` の箇条。
+      - name: 同じ Issue を閉じる他の PR の検査の判定表
+        run: bash .github/scripts/check-duplicate-issue-pr-cases.sh
+
+      - name: sticky コメントの投稿・差し替えの判定表
+        run: bash .github/scripts/upsert-sticky-comment-cases.sh
+
       # PR の解説ページ(pr-explain.yml とセッションの pr-explain スキル)が使う 5 本の判定表。
       - name: 変更の地図の判定表
         run: bash .github/scripts/build-pr-change-map-cases.sh
@@ -256,8 +264,9 @@ jobs:
       - name: Build report markdown
         run: node .github/scripts/build-frontend-report.mjs ci-artifact > coverage.md
 
+      # レポートの投稿はチェックではないので、3 回とも失敗(exit 1)しただけでは赤にしない。
+      # exit 1 が何を含むかは `upsert-sticky-comment.sh` の「終了コード」
       - name: Post report comment
-        continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
@@ -266,12 +275,10 @@ jobs:
             echo "coverage.md not found; skipping"
             exit 0
           fi
-          MARKER="<!-- sticky-comment: frontend-coverage -->"
-          BODY=$(printf '%s\n%s' "$MARKER" "$(cat coverage.md)")
-          EXISTING=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
-            --jq "[.[] | select(.body | startswith(\"$MARKER\"))][0].id // empty")
-          if [ -n "$EXISTING" ]; then
-            gh api -X PATCH "repos/${GITHUB_REPOSITORY}/issues/comments/${EXISTING}" -f body="$BODY"
-          else
-            gh api -X POST "repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" -f body="$BODY"
-          fi
+          bash .github/scripts/upsert-sticky-comment.sh \
+            --marker '<!-- sticky-comment: frontend-coverage -->' \
+            --body-file coverage.md --if-missing post || {
+            status=$?
+            [ "$status" = 1 ] || exit "$status"
+            echo '::warning::カバレッジのレポートを PR に貼れなかった(3 回とも失敗)'
+          }
