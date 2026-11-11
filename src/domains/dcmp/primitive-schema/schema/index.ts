@@ -186,9 +186,11 @@ const OpacityProps = {
  * 高さの 2 prop と 1 つの定数にまとめないのは、spread する位置がパネルの行の並びを決めるため
  * （まとめると Box で `minWidth` / `maxWidth` が `height` の後ろへずれる）。
  *
+ * Ellipse の `widthMode` は `fill` / `fixed` の 2 値なので `equals: "fill"` でも同じ意味になるが、
+ * そうすると Box と定義を共有できず、docs/03 の「`fixed` 以外のとき」という綴りからも外れる。
+ *
  * UI 案（docs/Design Composer.html）はこの行を描いていない。パネルは UI 案の写しではなく
- * スキーマ走査で組み立てる（docs/03）ので、Box も Ellipse も Size 節の宣言が 4 行から 8 行に
- * なる（パネルに出るのは `enabledWhen` を満たす行だけ）。
+ * スキーマ走査で組み立てる（docs/03）ので、出るのは `enabledWhen` を満たす行だけ。
  */
 const WidthLimitProps = {
   minWidth: {
@@ -215,7 +217,7 @@ const WidthLimitProps = {
 
 /**
  * 高さの下限と上限の props（docs/03「サイズ指定の原則」）。Box と Ellipse が同じ 2 prop を持つ。
- * `enabledWhen` の向きと定数を分ける理由は `WidthLimitProps` と同じ。
+ * `enabledWhen` の向き、`equals: "fill"` にしない理由、定数を分ける理由は `WidthLimitProps` と同じ。
  */
 const HeightLimitProps = {
   minHeight: {
