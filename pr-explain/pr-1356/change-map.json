@@ -1,0 +1,140 @@
+{
+  "version": 2,
+  "pr": 1356,
+  "headBranch": "claude/magical-cannon-232pfa",
+  "baseBranch": "main",
+  "mergeBase": "660eb9437b2a0f131b5fa33b2c9f66fbd1f2dc86",
+  "head": "a528a49b2e4768d372eb9fbf20c6192dd0817f38",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/plan-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/post-merge-review.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/harness-record/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 7,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/implementation-flow/reviewer-instructions.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "9667477b3cb8d3f864555f8bfead711250ab4a32",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-11T13:27:26Z",
+      "subject": "✨ [New Feature]: #1347 plan-reviewer の指摘にも分類と形の名前を添えさせる",
+      "body": "- plan-reviewer.md「返し方」に、reviewer-instructions.md「指摘の書式」のうち冒頭の注記が指す範囲に従う箇条を足す\n- reviewer-instructions.md「指摘の書式」の冒頭に、表の「分類」の行と形の名前の箇条は plan-reviewer も従う注記を足す\n- reviewer-instructions.md の冒頭に、宛先の外のエージェントにも従わせる節はその節の冒頭に書く但し書きを足す\n- plan-reviewer.md の太字の無い 2 小項目(フェーズ 3 手順 5 / 手順 6 の確認)を太字にする\n- harness-record SKILL.md から「名前を添える指示を受けていないエージェント(plan-reviewer など)」の例示を消す\n\n背景:\n#1344 で harness-record が指摘に添えられた形の名前を記録へ写すようにしたが、\n名前を添える指示は実装の検証の観点別エージェントだけが対象で、plan-reviewer\n由来の指摘に名前が付くかは呼び出しのたびに偶然で決まっていた。\n同じ plan-reviewer.md を変える PR #1345 とぶつかるため後回しにしていた分。\n\n採用理由:\n添え方の定義と plan-reviewer が従う範囲は reviewer-instructions.md の 1 か所に置き、\nplan-reviewer.md からは参照だけにした。harness-record は添え方の出典を\nreviewer-instructions.md に決めていて、写すと定義が 2 か所に割れる。\n分類の欄も揃えたのは、形の名前の箇条が「分類の欄に括弧で添える」と分類欄を\n拠り所にしているため。太字の無い 2 小項目は、名前が無いときに添える\n「観点の名前(太字の文)」が決まらないので太字にした。\n冒頭の但し書きは、冒頭が plan-reviewer を名指しで外しているのに節で入れ直すと\n食い違うため、冒頭を書き換えずに両者を繋ぐ目的で足した。\n\n代替案:\n- 箇条の本文を plan-reviewer.md へ写す: doc の重複になるため却下\n- 「指摘の書式」を丸ごと従わせる: 証拠 ファイル:行 などは差分前提で計画の検証に合わないため却下\n- 分類なしで形の名前だけ添えさせる: 置き場所の読み替えが残り、偶然性が形を変えて残るため却下\n- 添え方を共有ファイルに切り出す: 共有は 1 箇条と表 1 行で、節単位で従わせる先例(planner)があるため却下\n- 冒頭の宛先を書き換えて plan-reviewer を含める: ファイル全体には従わない点は変わらないため却下\n- 太字の無い 2 小項目を親の観点名で代える: 手順 5 と 6 の区別が名前から消えるため却下\n- 但し書きに従うエージェント名を並べる: 各節の注記と二重になるため却下\n\n影響とトレードオフ:\nplan-reviewer の返答に分類の欄が増える。重大度・証拠などは従わないので、\n実装の検証の書式とは揃っていない(揃えるかは別の判断)。\n常時ロード(AGENTS.md + rules/)の行数は変わらない(789 / 789)。\n\n参考:\nRefs #1347\nRelates to #1344\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2MzsS68QDrb6ufd9ri",
+      "files": [
+        {
+          "path": ".claude/agents/plan-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 2,
+          "patch": "@@ -92,9 +92,9 @@ model: inherit\n - **語彙が `string` のまま残っていないか。** 仕様（`docs/`）が列挙している語彙は union にする\n - **却下案・据え置き判断の理由を、次の 2 つで確認する。** 却下という局面は同じでも、\n   「理由の正しさ」と「候補の網羅性」は別の観点で崩れる\n-  - `implementation-flow` フェーズ 3 手順 5 で却下理由を実際に確かめたか\n+  - **`implementation-flow` フェーズ 3 手順 5 で却下理由を実際に確かめたか**\n     (`分類: plan`)\n-  - `implementation-flow` フェーズ 3 手順 6 で近い代替案を検索したか\n+  - **`implementation-flow` フェーズ 3 手順 6 で近い代替案を検索したか**\n     (`分類: plan`)\n - **却下・据え置き・分割すると決めた作業の後続を、AGENTS.md「タスクの分割」の手順どおり\n   記録しているか。** 後続 Issue の起票・リンク・分けない/据え置く理由のいずれかを欠いたまま\n@@ -183,6 +183,8 @@ model: inherit\n ## 返し方\n \n - 指摘は「**どの観点に反しているか**」と「**代わりにどうするか**」をセットで書く\n+- **指摘の書き方は、`.claude/skills/implementation-flow/reviewer-instructions.md`「指摘の書式」のうち、\n+  その節の冒頭の注記が指す範囲に従う**\n - **問題が無いと判断した観点も、何を見てそう判断したかを 1 行で書く。**\n   「問題ありません」だけの返答は検証になっていない\n - 実装・ファイルの変更はしない。ミューテーションのために壊した場合も、返す前に必ず元へ戻す",
+          "patchLines": 21,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/harness-record/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 2,
+          "patch": "@@ -99,8 +99,7 @@ Issue と PR に残っている記録から復元し、復元できない分は\n   [`reviewer-instructions.md`](../implementation-flow/reviewer-instructions.md)「指摘の書式」が決める。\n   写し方は、添えられた綴りの形(バッククォートで囲んだ識別子か、文か)で決める\n   - (a) **添えられていたときだけ写す。** 名前を自分で推し量って埋めない。添えられていなければ、\n-    その行ごと書かない(`なし` とも書かない)。人・bot・CI の指摘や、名前を添える指示を受けて\n-    いないエージェント(`plan-reviewer` など)の指摘では、たいてい行が無い\n+    その行ごと書かない(`なし` とも書かない)。人・bot・CI の指摘では、たいてい行が無い\n   - (b) **綴りは次の正規形にそろえる。** 前置きの `判例 ` `分類: ` `形の名前 ` を外す。\n     バッククォートで囲んだ識別子があり、分類の語彙(畳んだ先。`comment` など)と違うなら、\n     その識別子だけを囲んで書く(`` `plan-file-omission` ``)。識別子が無い・分類の語彙と同じなら、",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/reviewer-instructions.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "patch": "@@ -4,6 +4,8 @@\n うち `plan-reviewer` 以外)が共通で従う。**観点は各エージェントの定義が持ち、ここは観点に依らない\n 指示だけを持つ。** どれを呼ぶか・起動の順序は `SKILL.md` のフェーズ 6 が持つ。\n \n+宛先の外のエージェントにも従わせる節は、その節の冒頭にそう書き、従う範囲もそこで決める。\n+\n ## 受け取るもの\n \n - **ゴール**\n@@ -15,6 +17,9 @@\n \n ## 指摘の書式\n \n+この節のうち、表の「分類」の行と「指摘には形の名前を添える」の箇条は `plan-reviewer`\n+(`.claude/agents/plan-reviewer.md`)も従う。ほかの項目・箇条は実装の検証向けで、従わない。\n+\n 1 件ごとに次の項目を持たせる。\n \n | 項目 | 書くこと |",
+          "patchLines": 19,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f4420182676d23e2072e1277b913d71cedf35a58",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-11T13:34:48Z",
+      "subject": "🐛 [Bug fix]: #1347 観点の名前は中にバッククォートがあっても文全体を形の名前へ写す",
+      "body": "- harness-record Step 2 (b) で、観点の名前(太字の文)の規則を識別子の規則より前に置き、文全体を写すと決める\n- 識別子だけを取り出す規則の対象を、判例の見出しと表の「形の名前」列の名前に限る\n- 外す前置きに `観点: ` を足す\n\n背景:\nplan-reviewer の観点名を太字にしたことで、`implementation-flow` フェーズ 3 手順 5 / 手順 6 の\n観点名が形の名前として添えられるようになった。(b) は「バッククォートの識別子があれば\nそれだけを書く」と「観点の名前は太字を外した文を書く」の優先を決めておらず、識別子の規則が\n先に当たると手順 5 と 6 がどちらも `implementation-flow` に潰れる(naming-reviewer の指摘)。\nplan-reviewer の他の観点(`src/utils/` `index.ts` など)や、他の reviewer の太字の観点でも同じ形になる。\n\n採用理由:\n根本は (b) の当てる順なので、(b) の 1 か所で閉じた。観点の名前は文で識別するもので、\n中のバッククォートは識別子ではなく文の一部なので残す。\n`観点: ` を前置きに足したのは、代行させた plan-reviewer が実際にこの前置きで添えてきたため。\n\n代替案:\n- plan-reviewer.md 側の 2 項目からバッククォートを外す: 他の 7 項目と他の reviewer の太字の観点に効かないため却下\n\n影響とトレードオフ:\n(b) の行数は 5 行のまま。既存の記録に `- 形の名前:` 行はまだ 0 件なので、写し直しは要らない。\n\n参考:\nRefs #1347\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2MzsS68QDrb6ufd9ri",
+      "files": [
+        {
+          "path": ".claude/skills/harness-record/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 5,
+          "patch": "@@ -100,11 +100,11 @@ Issue と PR に残っている記録から復元し、復元できない分は\n   写し方は、添えられた綴りの形(バッククォートで囲んだ識別子か、文か)で決める\n   - (a) **添えられていたときだけ写す。** 名前を自分で推し量って埋めない。添えられていなければ、\n     その行ごと書かない(`なし` とも書かない)。人・bot・CI の指摘では、たいてい行が無い\n-  - (b) **綴りは次の正規形にそろえる。** 前置きの `判例 ` `分類: ` `形の名前 ` を外す。\n-    バッククォートで囲んだ識別子があり、分類の語彙(畳んだ先。`comment` など)と違うなら、\n-    その識別子だけを囲んで書く(`` `plan-file-omission` ``)。識別子が無い・分類の語彙と同じなら、\n-    文の部分(「—」があればその後ろ、無ければ全体)を囲まずに書く。観点の名前は太字の記号を\n-    外した文を囲まずに書く。識別子どうしが「・」で並んでいるときだけ 1 行に 1 つへ割り、文は割らない\n+  - (b) **綴りは次の正規形にそろえる。** 前置きの `判例 ` `分類: ` `形の名前 ` `観点: ` を外す。\n+    観点の名前(太字の文)は、太字の記号だけを外した文全体を囲まずに書く(中のバッククォートも残す)。\n+    判例の見出し・表の「形の名前」列の名前は、バッククォートで囲んだ識別子があり分類の語彙(畳んだ先。\n+    `comment` など)と違うならその識別子だけを囲んで書き(`` `plan-file-omission` ``)、識別子が無い・分類の語彙と同じなら\n+    文の部分(「—」があればその後ろ、無ければ全体)を囲まずに書く。識別子どうしが「・」で並んでいるときだけ 1 行に 1 つへ割り、文は割らない\n   - (c) 行は `出どころ` の直後に置く。`count.sh` はこの行を読まない(指摘 1 件を数えるのは\n     `分類` と `出どころ` の行)ので、数えた件数を変えない\n   - (d) 取り出すときは、直前の `分類` の行と並べて出す",
+          "patchLines": 17,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "a528a49b2e4768d372eb9fbf20c6192dd0817f38",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-11T13:34:48Z",
+      "subject": "🐛 [Bug fix]: #1347 観点の名前は太字の文をそのまま添えると書く",
+      "body": "- reviewer-instructions.md「指摘の書式」の形の名前の箇条を「観点の名前(太字の文をそのまま)を添える」にする\n\n背景:\n変更後の plan-reviewer.md を general-purpose に読ませて代行させ、初版の計画を検証させたところ、\n観点の名前「複数のモジュール・ドメインオブジェクトが同じ事実を独立に導く計画になっていないか」が\n「複数のモジュールが同じ事実を…」と言い換えて添えられた。箇条は綴りを保つとは書いておらず、\n同じ観点が記録の上で別の綴りに割れて、harness-record の取り出しで束ねられなくなる。\n\n採用理由:\n添える側の指示に 1 語足すだけで、実装の検証の全 reviewer にも同じく効く。\n\n代替案:\n- harness-record 側で言い換えを元の観点名へ戻させる: 写す側に推し量りを持ち込み、(a)「名前を自分で推し量って埋めない」と食い違うため却下\n\n影響とトレードオフ:\n全 reviewer の添え方に効く。行数は変わらない。\n\n参考:\nRefs #1347\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2MzsS68QDrb6ufd9ri",
+      "files": [
+        {
+          "path": ".claude/skills/implementation-flow/reviewer-instructions.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -42,7 +42,7 @@\n \n - **指摘には形の名前を添える。** 分類の欄には上の語彙だけを書き、各定義の本文の判例の見出し\n   (判例 `plan-file-omission` 等)や表の「形の名前」列の名前があれば括弧で添える。無ければ観点の名前\n-  (太字の文)を添える\n+  (太字の文をそのまま)を添える\n - **自分の担当の中で同じ根本原因から出ている指摘は 1 件に束ね**、症状はその中に並べる\n - **観点ごとに見出しを立て、該当が無い観点も「無し」と、何を見てそう判断したかを 1 行で書く**\n   (観点を省略しない)",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": ".claude/skills/harness-record/SKILL.md",
+      "status": "kept"
+    }
+  ]
+}
