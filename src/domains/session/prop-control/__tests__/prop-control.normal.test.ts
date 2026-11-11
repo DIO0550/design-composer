@@ -9,9 +9,11 @@ import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { SelectionControls } from "../index";
 import {
+  boxSelection,
   colorOfControl,
   controlsIn,
   currentPaintOfControl,
+  ellipseSelection,
   resolvedValueOfControl,
   sectionsOf,
 } from "./setup";
@@ -31,6 +33,26 @@ function setupSelection(
   ...selected: readonly string[]
 ): DocumentSelection {
   return DocumentSelection.fromNames(setupDocument(children), selected);
+}
+
+/**
+ * 指定した group の節に並ぶ prop 名。節が無ければテストを落とす。
+ *
+ * @param selection 選択の出どころ
+ * @param group 節の group 名
+ * @returns その節の、行の順に並んだ prop 名
+ */
+function propNamesInSection(
+  selection: DocumentSelection,
+  group: string,
+): readonly string[] {
+  const section = sectionsOf(selection).find(
+    (candidate) => candidate.group === group,
+  );
+  if (section === undefined) {
+    throw new Error(`${group} のセクションが無い`);
+  }
+  return controlsIn(section).map((control) => control.prop);
 }
 
 function controlOf(selection: DocumentSelection, prop: string) {
@@ -359,15 +381,46 @@ test("コントロールは group ごとのセクションに分かれる", () =
 
 test("セクション内のコントロールはスキーマの宣言順に並ぶ", () => {
   const selection = setupSelection([{ name: "label", type: "Text" }], "label");
-  const appearance = sectionsOf(selection).find(
-    (section) => section.group === "appearance",
-  );
 
+  expect(propNamesInSection(selection, "appearance")).toEqual([
+    "typography",
+    "color",
+    "align",
+    "visibility",
+    "locking",
+  ]);
+});
+
+test("Box の大きさの欄は、幅の最小 / 最大を高さより前に並べる", () => {
   expect(
-    appearance === undefined
-      ? undefined
-      : controlsIn(appearance).map((control) => control.prop),
-  ).toEqual(["typography", "color", "align", "visibility", "locking"]);
+    propNamesInSection(
+      boxSelection({ widthMode: "fill", heightMode: "fill" }),
+      "size",
+    ),
+  ).toEqual([
+    "widthMode",
+    "minWidth",
+    "maxWidth",
+    "heightMode",
+    "minHeight",
+    "maxHeight",
+  ]);
+});
+
+test("Ellipse の大きさの欄は、幅の最小 / 最大を高さより前に並べる", () => {
+  expect(
+    propNamesInSection(
+      ellipseSelection({ widthMode: "fill", heightMode: "fill" }),
+      "size",
+    ),
+  ).toEqual([
+    "widthMode",
+    "minWidth",
+    "maxWidth",
+    "heightMode",
+    "minHeight",
+    "maxHeight",
+  ]);
 });
 
 test("Box の rotation は数値の欄として出る", () => {
