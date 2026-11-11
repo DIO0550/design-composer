@@ -44,6 +44,20 @@ function documentWithBox(props: Props): DesignDocument {
   });
 }
 
+/**
+ * 雛形のトークンを持ち、子を縦に並べる artboard の直下に Ellipse を 1 つ持つドキュメント。
+ *
+ * @param props その Ellipse に設定する props
+ * @returns その Ellipse を持つドキュメント
+ */
+function documentWithEllipse(props: Props): DesignDocument {
+  return documentWithArtboard({
+    tokens: DocumentTemplate.Default.tokens,
+    props: { layout: "column" },
+    children: [{ name: "target", type: "Ellipse", props }],
+  });
+}
+
 test("Box の最小幅が最大幅より大きいと、maxWidth を指すエラーが 1 件出る", () => {
   const document = documentWithBox({
     widthMode: "hug",
@@ -267,16 +281,10 @@ test("artboard の props に逆転を書いてもエラーにならない", () =
 });
 
 test("幅を fill にした Ellipse の最小幅が最大幅より大きいと、maxWidth を指すエラーが 1 件出る", () => {
-  const document = documentWithArtboard({
-    tokens: DocumentTemplate.Default.tokens,
-    props: { layout: "column" },
-    children: [
-      {
-        name: "target",
-        type: "Ellipse",
-        props: { widthMode: "fill", minWidth: 500, maxWidth: 100 },
-      },
-    ],
+  const document = documentWithEllipse({
+    widthMode: "fill",
+    minWidth: 500,
+    maxWidth: 100,
   });
 
   expect(DesignDocument.collectErrors(document)).toEqual([
@@ -289,17 +297,7 @@ test("幅を fill にした Ellipse の最小幅が最大幅より大きいと�
 });
 
 test("モードを書いていない Ellipse は既定が fixed なので、最小/最大を逆に書いてもエラーにならない", () => {
-  const document = documentWithArtboard({
-    tokens: DocumentTemplate.Default.tokens,
-    props: { layout: "column" },
-    children: [
-      {
-        name: "target",
-        type: "Ellipse",
-        props: { minWidth: 500, maxWidth: 100 },
-      },
-    ],
-  });
+  const document = documentWithEllipse({ minWidth: 500, maxWidth: 100 });
 
   expect(DesignDocument.collectErrors(document)).toEqual([]);
 });

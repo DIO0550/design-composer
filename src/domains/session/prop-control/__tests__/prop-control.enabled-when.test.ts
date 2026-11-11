@@ -72,7 +72,7 @@ test("高さを fill にした Ellipse では高さの最小 / 最大のコン�
   expect(names).toContain("maxHeight");
 });
 
-test("大きさを書いていない Ellipse では最小 / 最大のコントロールは出ない", () => {
+test("モードを書いていない Ellipse は既定が fixed なので、最小 / 最大のコントロールは出ない", () => {
   const names = propNamesOf(ellipseSelection({}));
 
   expect(names).not.toContain("minWidth");

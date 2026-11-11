@@ -39,7 +39,7 @@ test("子を横に並べる親の中で幅を fill にした Ellipse に最小�
   expect([style["min-width"], style["max-width"]]).toEqual(["40px", "200px"]);
 });
 
-test("大きさを書いていない Ellipse に書いた最小の幅は出ない", () => {
+test("モードを書いていない Ellipse は既定が fixed なので、書いた最小の幅は出ない", () => {
   expect("min-width" in setupEllipseStyle({ minWidth: 40 })).toBe(false);
 });
 
