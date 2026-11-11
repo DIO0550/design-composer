@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { boxSelection, propNamesOf } from "./setup";
+import { boxSelection, ellipseSelection, propNamesOf } from "./setup";
 
 test("サイズのモードが fixed のときだけ長さのコントロールが出る", () => {
   expect(propNamesOf(boxSelection({ widthMode: "fixed" }))).toContain("width");
@@ -54,6 +54,29 @@ test("縦のサイズのモードが hug なら高さの最小 / 最大のコン
 test("縦のサイズのモードが fixed なら高さの最小 / 最大のコントロールは出ない", () => {
   const names = propNamesOf(boxSelection({ heightMode: "fixed" }));
 
+  expect(names).not.toContain("minHeight");
+  expect(names).not.toContain("maxHeight");
+});
+
+test("幅を fill にした Ellipse では幅の最小 / 最大のコントロールが出る", () => {
+  const names = propNamesOf(ellipseSelection({ widthMode: "fill" }));
+
+  expect(names).toContain("minWidth");
+  expect(names).toContain("maxWidth");
+});
+
+test("高さを fill にした Ellipse では高さの最小 / 最大のコントロールが出る", () => {
+  const names = propNamesOf(ellipseSelection({ heightMode: "fill" }));
+
+  expect(names).toContain("minHeight");
+  expect(names).toContain("maxHeight");
+});
+
+test("大きさを書いていない Ellipse では最小 / 最大のコントロールは出ない", () => {
+  const names = propNamesOf(ellipseSelection({}));
+
+  expect(names).not.toContain("minWidth");
+  expect(names).not.toContain("maxWidth");
   expect(names).not.toContain("minHeight");
   expect(names).not.toContain("maxHeight");
 });
