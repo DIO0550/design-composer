@@ -262,8 +262,12 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ
 | `rotation` | | 上記「回転」 | |
 | `widthMode` | enum | `fill` / `fixed` | `fixed` |
 | `width` | 生リテラル (number, px) | `widthMode: fixed` 時のみ有効 | `100` |
+| `minWidth` | 生リテラル (number, px) | 幅の下限。`widthMode: fixed` 以外のときのみ有効 | - |
+| `maxWidth` | 生リテラル (number, px) | 幅の上限。`widthMode: fixed` 以外のときのみ有効 | - |
 | `heightMode` | enum | `fill` / `fixed` | `fixed` |
 | `height` | 生リテラル (number, px) | `heightMode: fixed` 時のみ有効 | `100` |
+| `minHeight` | 生リテラル (number, px) | 高さの下限。`heightMode: fixed` 以外のときのみ有効 | - |
+| `maxHeight` | 生リテラル (number, px) | 高さの上限。`heightMode: fixed` 以外のときのみ有効 | - |
 | `background` | | 上記「塗り」 | `gray-300` |
 | `shadow` | トークン (shadows) | | なし |
 | `layerBlur` / `backdropBlur` | | 上記「ぼかし」 | |
@@ -274,7 +278,7 @@ Box と Ellipse が、面をどう塗るかを 1 prop で持つ（Text が持つ
 - **`hug` を持たないのが Box との差**（上記「サイズ指定の原則」）。子を持たないので中身から決まる長さが無く、`hug` は常に 0 になる
 - **角丸の prop を持たない。** 楕円の丸みは形そのものであって設定値ではない。持たせると「楕円なのに角丸 4px」という、形と設定値が食い違う組み合わせが書けてしまう
 - **`layout` / `wrap` / `gap` / padding 4 辺 / `align` / `justify` / `overflow` を持たない。** 子を持たないので、並べる対象も切り取る対象も無い
-- **最小 / 最大のサイズを持つかはまだ決めていない。** `fill` を持つので意味は持ちうるが、Box と同じ 4 prop を足すかは #978 で決める（まだ足していない）
+- **最小 / 最大のサイズは Box と同じ 4 prop を持つ。** Ellipse の `fixed` 以外のモードは `fill` だけなので、効くのは `fill` の軸だけ（上記「サイズ指定の原則」）。並びの中で `fill` の Ellipse が 0 まで縮む・際限なく伸びるのを、Box を挟まずに止められるようにするため
 - **`background` の既定だけ Box と違う**（Box は「なし（透明）」）。Box は中身を入れる器なので透明が既定でよいが、Ellipse は形そのものなので、既定で塗りが無いと挿入しても画面に何も出ない。既定がトークン名を指すのは Text の `typography` / `color` と同じで、その名前は初期テンプレートが保証する（04-tokens「スキーマデフォルトとの関係」）
 - **`width` / `height` の既定 `100` は、Figma が楕円を作るときの既定（幅・高さとも 100）に揃えた。** 型でもテストでも守れない値なので、変えるときはこの行ごと変える
 - **どの版から読み書きできるかは 01-file-format「formatVersion」の表が持つ。** 新プリミティブは minor の追加的変更にあたり、Ellipse も表へ足してある
