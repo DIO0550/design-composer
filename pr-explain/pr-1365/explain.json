@@ -1,7 +1,7 @@
 {
   "version": 1,
   "pr": 1365,
-  "sha": "adcf3f6f6cc85bc897d49df0b5fd982594d3dd83",
+  "sha": "1ec1a1609f76b22c4a6fb01af725af0309f3d63c",
   "issue": 553,
   "overview": {
     "title": "Rust 側のファイルシステム呼び出しを `file_io` の 1 モジュールに集める",
@@ -58,7 +58,7 @@
       },
       {
         "title": "失敗のパス",
-        "text": "親ディレクトリが無いときの保存は一時ファイルの作成で失敗するので、メッセージのパスが変わる経路に入る。既存テストは `NotFound` だけを見ていて、パスは確かめていない",
+        "text": "パスが変わったのは一時ファイルの作成・書き込み・`sync_all` の失敗だけで、rename の失敗は前から保存先を載せていた。変わった側を守るのは 1ec1a16 で足した親ディレクトリが無い入力のテストで、adcf3f6 のテストは変更前の実装でも通る",
         "go": {
           "kind": "flow",
           "id": "save"
@@ -434,6 +434,44 @@
           "text": "`contains(\"document.dcmp\")` では一時ファイルのパスでも通るので、フルパスで照合する"
         }
       ]
+    },
+    {
+      "sha": "1ec1a1609f76b22c4a6fb01af725af0309f3d63c",
+      "phase": "revise",
+      "role": "一時ファイルを作れない保存の失敗で、保存先のパスが載ることをテストする",
+      "why": "adcf3f6 で足したパスのテストは rename が失敗する入力を使っていて、変更前の実装も rename の失敗には保存先のパスを載せていたので、この PR で変わった振る舞いを守っていなかった。adcf3f6 の本文の「作成の失敗は実物の FS では起こせない」は誤りで、親ディレクトリが無ければ `File::create` で失敗する。",
+      "flows": [
+        "save"
+      ],
+      "review": [
+        "変更前の実装(作成・書き込み・sync の失敗は一時ファイルのパス、rename の失敗は保存先のパスで `from_io` する形)を再現すると、足したテストだけが落ちる",
+        "フルパスの照合をテスト用の関数 `assert_message_contains_full_path` にまとめ、2 件のテストで共有した"
+      ],
+      "before": [
+        {
+          "text": "パスを確かめるテストは rename の失敗だけを通り、変わった経路(一時ファイルの作成の失敗)を通っていなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "親ディレクトリが無い入力で、一時ファイルの作成の失敗にも保存先のパスが載ることを確かめる",
+          "message": "save-write"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src-tauri/src/document/io_edge_test.rs",
+          "start": 68,
+          "end": 77,
+          "text": "2 件のテストで共有するフルパスの照合。一時ファイル名もファイル名を含むので、ファイル名だけでは照合しない"
+        },
+        {
+          "path": "src-tauri/src/document/io_edge_test.rs",
+          "start": 91,
+          "end": 101,
+          "text": "既存テスト「存在しないディレクトリ配下への保存は失敗する」と同じ入力で、種別ではなくパスを見る"
+        }
+      ]
     }
   ],
   "suites": [
@@ -479,12 +517,12 @@
       "commit": "adcf3f6f6cc85bc897d49df0b5fd982594d3dd83",
       "excerpt": {
         "path": "src-tauri/src/document/io_edge_test.rs",
-        "start": 55,
-        "end": 65,
+        "start": 56,
+        "end": 66,
         "emphasis": [
           {
-            "start": 64,
-            "end": 64
+            "start": 65,
+            "end": 65
           }
         ],
         "text": "#[test]\nfn 保存先がディレクトリのとき保存はIOの失敗を返す() {\n    let dir = TempDir::new(\"edge\");\n    let known = KnownContentRegistry::new();\n    let path = chosen_file_path(&dir, \"document.dcmp\");\n    fs::create_dir(&path).expect(\"ディレクトリを作成できる\");\n\n    let error = io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n\n    assert!(matches!(error, DocumentIoError::Io { .. }));\n}"
@@ -529,22 +567,26 @@
         "error",
         "regression"
       ],
-      "why": "失敗のメッセージには、一時ファイルでも親ディレクトリでもなく保存先のパスが載る。パスを親ディレクトリにする・一時ファイルにする、のどちらの壊し方でも落ちる",
+      "why": "rename の失敗でも、メッセージには一時ファイルでも親ディレクトリでもなく保存先のパスが載る。パスを親ディレクトリにする・一時ファイルにする、のどちらの壊し方でも落ちる。ただし rename の失敗は変更前も保存先を載せていたので、この PR で変わった振る舞い(作成・書き込みの失敗)はこのテストでは守れていない",
       "given": "保存先のパスに同名のディレクトリがある",
       "when": "そのパスへ保存する",
       "then": "失敗のメッセージが保存先のフルパスを含む",
       "commit": "adcf3f6f6cc85bc897d49df0b5fd982594d3dd83",
       "excerpt": {
         "path": "src-tauri/src/document/io_edge_test.rs",
-        "start": 67,
-        "end": 83,
+        "start": 68,
+        "end": 89,
         "emphasis": [
           {
-            "start": 77,
-            "end": 82
+            "start": 70,
+            "end": 76
+          },
+          {
+            "start": 88,
+            "end": 88
           }
         ],
-        "text": "#[test]\nfn 保存の失敗には保存先のパスが載る() {\n    let dir = TempDir::new(\"edge\");\n    let known = KnownContentRegistry::new();\n    let path = chosen_file_path(&dir, \"document.dcmp\");\n    fs::create_dir(&path).expect(\"ディレクトリを作成できる\");\n\n    let error = io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n\n    // 一時ファイル名 `.document.dcmp.<pid>.<n>.tmp` もファイル名を含むので、フルパスで照合する\n    let destination = path.display().to_string();\n    assert!(\n        error.message().contains(&destination),\n        \"エラーメッセージに保存先のパスが含まれていない: {}\",\n        error.message()\n    );\n}"
+        "text": "/// エラーメッセージが保存先のフルパスを含むことを確かめる。\nfn assert_message_contains_full_path(error: &DocumentIoError, destination: &Path) {\n    // 一時ファイル名 `.document.dcmp.<pid>.<n>.tmp` もファイル名を含むので、フルパスで照合する\n    let full_path = destination.display().to_string();\n    assert!(\n        error.message().contains(&full_path),\n        \"エラーメッセージに保存先のパスが含まれていない: {}\",\n        error.message()\n    );\n}\n\n#[test]\nfn 保存の失敗には保存先のパスが載る() {\n    let dir = TempDir::new(\"edge\");\n    let known = KnownContentRegistry::new();\n    let path = chosen_file_path(&dir, \"document.dcmp\");\n    fs::create_dir(&path).expect(\"ディレクトリを作成できる\");\n\n    let error = io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n\n    assert_message_contains_full_path(&error, &path);\n}"
       },
       "values": {
         "columns": [
@@ -593,8 +635,8 @@
       "then": "`DocumentIoError::NotFound` が返る",
       "excerpt": {
         "path": "src-tauri/src/document/io_edge_test.rs",
-        "start": 26,
-        "end": 39,
+        "start": 27,
+        "end": 40,
         "text": "#[test]\nfn 存在しないディレクトリ配下への保存は失敗する() {\n    let dir = TempDir::new(\"edge\");\n    let known = KnownContentRegistry::new();\n\n    let error = io::save(\n        &known,\n        &chosen_file_path(&dir, \"missing/document.dcmp\"),\n        r#\"{\"a\":1}\"#,\n    )\n    .expect_err(\"保存に失敗する\");\n\n    assert!(matches!(error, DocumentIoError::NotFound { .. }));\n}"
       },
       "targets": [
@@ -619,8 +661,8 @@
       "then": "ディレクトリには保存先の名前のものだけが残る",
       "excerpt": {
         "path": "src-tauri/src/document/io_edge_test.rs",
-        "start": 41,
-        "end": 53,
+        "start": 42,
+        "end": 54,
         "text": "#[test]\nfn 保存に失敗したとき一時ファイルが残らない() {\n    let dir = TempDir::new(\"edge\");\n    let known = KnownContentRegistry::new();\n\n    // 書き込み先をディレクトリにすることで、一時ファイルの作成後に rename を失敗させる\n    let path = chosen_file_path(&dir, \"document.dcmp\");\n    fs::create_dir(&path).expect(\"ディレクトリを作成できる\");\n\n    io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n\n    assert_eq!(dir.file_names(), vec![\"document.dcmp\".to_string()]);\n}"
       },
       "targets": [
@@ -763,18 +805,55 @@
         "error",
         "regression"
       ],
-      "why": "パスが一時ファイルから保存先に変わったのは一時ファイルの作成・書き込み・`sync_all` の失敗で、追加した 2 件は rename の失敗(前から保存先)しか通らない。親ディレクトリが無い入力なら作成の失敗を実物の FS で起こせるが、パスを確かめるテストは無い",
+      "why": "この PR で変わったのは、一時ファイルの作成・書き込み・`sync_all` で失敗したときにメッセージに載るパス(一時ファイル → 保存先)。親ディレクトリが無いと一時ファイルの作成で失敗するので、実物の FS のままこの経路を通せる。変更前の実装を再現して走らせると、このテストだけが落ちる",
       "given": "保存先の親ディレクトリが無い",
       "when": "そのパスへ保存する",
-      "then": "失敗のメッセージが保存先のフルパスを含み、一時ファイルのパスを含まない",
-      "todo": true,
+      "then": "失敗のメッセージが保存先のフルパスを含む",
       "targets": [
         "src-tauri/src/document/io.rs",
         "src-tauri/src/file_io/atomic_write.rs"
       ],
       "covers": [
         "save-write"
-      ]
+      ],
+      "commit": "1ec1a1609f76b22c4a6fb01af725af0309f3d63c",
+      "excerpt": {
+        "path": "src-tauri/src/document/io_edge_test.rs",
+        "start": 91,
+        "end": 101,
+        "emphasis": [
+          {
+            "start": 95,
+            "end": 96
+          },
+          {
+            "start": 100,
+            "end": 100
+          }
+        ],
+        "text": "#[test]\nfn 一時ファイルを作れないときの保存の失敗には保存先のパスが載る() {\n    let dir = TempDir::new(\"edge\");\n    let known = KnownContentRegistry::new();\n    // 親ディレクトリが無いので、rename より前の一時ファイルの作成で失敗する\n    let path = chosen_file_path(&dir, \"missing/document.dcmp\");\n\n    let error = io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n\n    assert_message_contains_full_path(&error, &path);\n}"
+      },
+      "values": {
+        "columns": [
+          "メッセージに載るパス",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "保存先 `…/missing/document.dcmp`",
+              "通る"
+            ]
+          },
+          {
+            "cells": [
+              "一時ファイル `…/missing/.document.dcmp.<pid>.<n>.tmp`(変更前の実装)",
+              "落ちる"
+            ],
+            "boundary": true
+          }
+        ]
+      }
     },
     {
       "id": "windows-verbatim-watch",
@@ -892,7 +971,7 @@
             "columnHead": "where",
             "result": "保存先のファイル",
             "was": "一時ファイル",
-            "note": "実物のファイルシステムでは起こせず、テストが無い"
+            "note": "書き込みの途中の失敗は実物のファイルシステムでは起こせず、テストが無い。同じ詰め替えを通るフォルダが無い場合はテストがある"
           },
           {
             "rowHead": "dest-is-dir",
@@ -1443,7 +1522,7 @@
         },
         {
           "kind": "caution",
-          "text": "作成・書き込み・同期の失敗時の一時ファイル削除や `sync_all` を外しても、どのテストも落ちない(実物の FS ではその失敗を起こしにくい)。test-reviewer が確かめて、理由付きで受け入れている。"
+          "text": "書き込み・同期の失敗は実物の FS では起こせないので、その失敗時の一時ファイル削除や `sync_all` を外しても、どのテストも落ちない。作成の失敗は親ディレクトリが無い入力で起こせる(このとき一時ファイルは作られていない)。test-reviewer が確かめて、理由付きで受け入れている。"
         }
       ],
       "occurrences": [
@@ -1467,7 +1546,8 @@
       "tests": [
         "atomic-read-while-write",
         "save-no-temp-left",
-        "save-missing-dir"
+        "save-missing-dir",
+        "missing-dir-dest-path"
       ],
       "flows": [
         "save"
