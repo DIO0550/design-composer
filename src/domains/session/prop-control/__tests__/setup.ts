@@ -3,6 +3,7 @@ import {
   DocumentTemplate,
 } from "@/domains/dcmp/design-document";
 import type { Props } from "@/domains/dcmp/node";
+import type { PrimitiveType } from "@/domains/dcmp/primitive-schema";
 import type { ColorToken } from "@/domains/dcmp/token";
 import { DocumentSelection } from "@/domains/session/document-selection";
 import { Option } from "@/utils/Option";
@@ -15,12 +16,16 @@ import {
 } from "../index";
 
 /**
- * Box を 1 つ選んだ状態。
+ * プリミティブを 1 つ選んだ状態。
  *
- * @param props その Box に設定する props
- * @returns その Box を選んでいるドキュメントと選択の対
+ * @param type 選ぶプリミティブの型
+ * @param props そのプリミティブに設定する props
+ * @returns そのプリミティブを選んでいるドキュメントと選択の対
  */
-export function boxSelection(props: Props): DocumentSelection {
+function primitiveSelection(
+  type: PrimitiveType,
+  props: Props,
+): DocumentSelection {
   return DocumentSelection.fromNames(
     DesignDocument.create({
       tokens: DocumentTemplate.Default.tokens,
@@ -29,12 +34,32 @@ export function boxSelection(props: Props): DocumentSelection {
           name: "home",
           width: 360,
           height: 240,
-          children: [{ name: "box", type: "Box", props }],
+          children: [{ name: "selected", type, props }],
         },
       ],
     }),
-    ["box"],
+    ["selected"],
   );
+}
+
+/**
+ * Box を 1 つ選んだ状態。
+ *
+ * @param props その Box に設定する props
+ * @returns その Box を選んでいるドキュメントと選択の対
+ */
+export function boxSelection(props: Props): DocumentSelection {
+  return primitiveSelection("Box", props);
+}
+
+/**
+ * Ellipse を 1 つ選んだ状態。
+ *
+ * @param props その Ellipse に設定する props
+ * @returns その Ellipse を選んでいるドキュメントと選択の対
+ */
+export function ellipseSelection(props: Props): DocumentSelection {
+  return primitiveSelection("Ellipse", props);
 }
 
 /**

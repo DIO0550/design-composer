@@ -178,6 +178,71 @@ const OpacityProps = {
 } as const satisfies PropDefinitionRecord;
 
 /**
+ * 幅の下限と上限の props（docs/03「サイズ指定の原則」）。Box と Ellipse が同じ 2 prop を持つ。
+ *
+ * 最小 / 最大が効くのは `fixed` 以外のモードのときなので、`width` の `enabledWhen` と
+ * 向きが逆になる。
+ *
+ * 高さの 2 prop と 1 つの定数にまとめないのは、spread する位置がパネルの行の並びを決めるため
+ * （まとめると Box で `minWidth` / `maxWidth` が `height` の後ろへずれる）。
+ *
+ * Ellipse の `widthMode` は `fill` / `fixed` の 2 値なので `equals: "fill"` でも同じ意味になるが、
+ * そうすると Box と定義を共有できず、docs/03 の「`fixed` 以外のとき」という綴りからも外れる。
+ *
+ * UI 案（docs/Design Composer.html）はこの行を描いていない。パネルは UI 案の写しではなく
+ * スキーマ走査で組み立てる（docs/03）ので、出るのは `enabledWhen` を満たす行だけ。
+ */
+const WidthLimitProps = {
+  minWidth: {
+    domain: "literal",
+    literalType: "number",
+    group: "size",
+    enabledWhen: {
+      kind: "notEquals",
+      prop: "widthMode",
+      notEquals: "fixed",
+    },
+  },
+  maxWidth: {
+    domain: "literal",
+    literalType: "number",
+    group: "size",
+    enabledWhen: {
+      kind: "notEquals",
+      prop: "widthMode",
+      notEquals: "fixed",
+    },
+  },
+} as const satisfies PropDefinitionRecord;
+
+/**
+ * 高さの下限と上限の props（docs/03「サイズ指定の原則」）。Box と Ellipse が同じ 2 prop を持つ。
+ * `enabledWhen` の向き、`equals: "fill"` にしない理由、定数を分ける理由は `WidthLimitProps` と同じ。
+ */
+const HeightLimitProps = {
+  minHeight: {
+    domain: "literal",
+    literalType: "number",
+    group: "size",
+    enabledWhen: {
+      kind: "notEquals",
+      prop: "heightMode",
+      notEquals: "fixed",
+    },
+  },
+  maxHeight: {
+    domain: "literal",
+    literalType: "number",
+    group: "size",
+    enabledWhen: {
+      kind: "notEquals",
+      prop: "heightMode",
+      notEquals: "fixed",
+    },
+  },
+} as const satisfies PropDefinitionRecord;
+
+/**
  * Box の仕様（docs/03「Box」の表）。
  */
 export const BoxSchema = {
@@ -266,33 +331,7 @@ export const BoxSchema = {
       group: "size",
       enabledWhen: { kind: "equals", prop: "widthMode", equals: "fixed" },
     },
-    /*
-     * 最小 / 最大が効くのは `fixed` 以外のモードのときなので、`width` の `enabledWhen` と
-     * 向きが逆になる（docs/03「サイズ指定の原則」）。
-     *
-     * UI 案（docs/Design Composer.html）はこの 4 行を描いていない。パネルは UI 案の写し
-     * ではなくスキーマ走査で組み立てる（docs/03）ので、Size 節は 4 行から 8 行になる。
-     */
-    minWidth: {
-      domain: "literal",
-      literalType: "number",
-      group: "size",
-      enabledWhen: {
-        kind: "notEquals",
-        prop: "widthMode",
-        notEquals: "fixed",
-      },
-    },
-    maxWidth: {
-      domain: "literal",
-      literalType: "number",
-      group: "size",
-      enabledWhen: {
-        kind: "notEquals",
-        prop: "widthMode",
-        notEquals: "fixed",
-      },
-    },
+    ...WidthLimitProps,
     heightMode: {
       domain: "enum",
       values: ["hug", "fill", "fixed"],
@@ -305,26 +344,7 @@ export const BoxSchema = {
       group: "size",
       enabledWhen: { kind: "equals", prop: "heightMode", equals: "fixed" },
     },
-    minHeight: {
-      domain: "literal",
-      literalType: "number",
-      group: "size",
-      enabledWhen: {
-        kind: "notEquals",
-        prop: "heightMode",
-        notEquals: "fixed",
-      },
-    },
-    maxHeight: {
-      domain: "literal",
-      literalType: "number",
-      group: "size",
-      enabledWhen: {
-        kind: "notEquals",
-        prop: "heightMode",
-        notEquals: "fixed",
-      },
-    },
+    ...HeightLimitProps,
     background: {
       domain: "token",
       tokenKind: PaintTokenKinds,
@@ -429,6 +449,7 @@ export const EllipseSchema = {
       group: "size",
       enabledWhen: { kind: "equals", prop: "widthMode", equals: "fixed" },
     },
+    ...WidthLimitProps,
     heightMode: {
       domain: "enum",
       values: ["fill", "fixed"],
@@ -442,6 +463,7 @@ export const EllipseSchema = {
       group: "size",
       enabledWhen: { kind: "equals", prop: "heightMode", equals: "fixed" },
     },
+    ...HeightLimitProps,
     // 既定が Box（なし）と違うので定義ごとは共有しない。指せる種別は同じ `PaintTokenKinds`
     background: {
       domain: "token",
