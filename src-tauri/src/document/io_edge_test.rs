@@ -4,6 +4,7 @@
 #![allow(non_snake_case)]
 
 use std::fs;
+use std::path::Path;
 
 use std::sync::Arc;
 
@@ -64,6 +65,17 @@ fn 保存先がディレクトリのとき保存はIOの失敗を返す() {
     assert!(matches!(error, DocumentIoError::Io { .. }));
 }
 
+/// エラーメッセージが保存先のフルパスを含むことを確かめる。
+fn assert_message_contains_full_path(error: &DocumentIoError, destination: &Path) {
+    // 一時ファイル名 `.document.dcmp.<pid>.<n>.tmp` もファイル名を含むので、フルパスで照合する
+    let full_path = destination.display().to_string();
+    assert!(
+        error.message().contains(&full_path),
+        "エラーメッセージに保存先のパスが含まれていない: {}",
+        error.message()
+    );
+}
+
 #[test]
 fn 保存の失敗には保存先のパスが載る() {
     let dir = TempDir::new("edge");
@@ -73,13 +85,19 @@ fn 保存の失敗には保存先のパスが載る() {
 
     let error = io::save(&known, &path, r#"{"a":1}"#).expect_err("保存に失敗する");
 
-    // 一時ファイル名 `.document.dcmp.<pid>.<n>.tmp` もファイル名を含むので、フルパスで照合する
-    let destination = path.display().to_string();
-    assert!(
-        error.message().contains(&destination),
-        "エラーメッセージに保存先のパスが含まれていない: {}",
-        error.message()
-    );
+    assert_message_contains_full_path(&error, &path);
+}
+
+#[test]
+fn 一時ファイルを作れないときの保存の失敗には保存先のパスが載る() {
+    let dir = TempDir::new("edge");
+    let known = KnownContentRegistry::new();
+    // 親ディレクトリが無いので、rename より前の一時ファイルの作成で失敗する
+    let path = chosen_file_path(&dir, "missing/document.dcmp");
+
+    let error = io::save(&known, &path, r#"{"a":1}"#).expect_err("保存に失敗する");
+
+    assert_message_contains_full_path(&error, &path);
 }
 
 #[test]
