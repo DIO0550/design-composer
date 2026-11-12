@@ -1,0 +1,2268 @@
+{
+  "version": 1,
+  "pr": 1364,
+  "sha": "c6f66f8d9ed125e86129fe1228ad33449e224e20",
+  "issue": 972,
+  "overview": {
+    "title": "ロック中の Box の中へ、外から新しくノードを持ち込まない",
+    "lead": "キャンバスのドラッグ・Assets の行からの挿入・ペースト・ツールバーの挿入で、ノードがロック中の Box(とその子孫の Box)の中へ入らなくなる。ドラッグと Assets の行はロックの外側の親へ落ち、ペーストとツールバーの挿入は最も外側のロック中ノードの直後へ入る。",
+    "before": [
+      {
+        "text": "キャンバスのドラッグ・Assets の行からの挿入で、ロック中の Box の上で離すとその Box の中へ入っていた",
+        "message": "drop-candidates"
+      },
+      {
+        "text": "ロック中の Box を選んでペースト・ツールバーの挿入をすると、その Box の子の末尾へ入っていた",
+        "message": "insert-position"
+      }
+    ],
+    "after": [
+      {
+        "text": "落とし先の走査は、ロック中(祖先から継いだものを含む)の候補を飛ばし、外側の受け入れられる親を選ぶ",
+        "message": "skip-locked"
+      },
+      {
+        "text": "外側に受け入れられる親が無ければ、今までどおり落とせない(artboard 直下のロック中の器なら artboard へ落ちる)",
+        "message": "skip-locked"
+      },
+      {
+        "text": "ロック中の Box を選んでのペースト・ツールバーの挿入は、`DesignDocument.insertPositionOf` が返す、最も外側のロック中ノードの直後へ入る",
+        "message": "insert-position"
+      },
+      {
+        "text": "ロックしていない Box・artboard を選んでいるときは今までどおり子の末尾。ロック中の Text・部品インスタンスは今までどおり貼れない",
+        "message": "insert-position"
+      },
+      {
+        "text": "並べ替えと複製(同じ親の中で済む操作)は、ロック中の Box の中でも今までどおり行える"
+      },
+      {
+        "text": "ロック中の Box を選んだまま続けて貼ると、後に貼ったものほど前に並ぶ(許容してテストで固定)"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "続けて貼ると逆順になる",
+        "text": "選択を動かさない約束を保つために、ロック中を選んだまま続けて貼ると作った順の逆に並ぶのを許容した。`EditorState.insertPosition` の doc に理由、テストで並びを固定している",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/domains/editor-state/index.ts"
+        }
+      },
+      {
+        "title": "ロックの判定を 1 つにまとめた",
+        "text": "落とし先の走査(`isLocked`)と挿入位置(`outermostLockedName`)が同じ判定 `LockedItself` を使う。artboard のロックが入ったときに片方だけ直す形を避けるため(レビューの指摘で後から寄せた)",
+        "go": {
+          "kind": "file",
+          "path": "src/domains/dcmp/design-document/index.ts"
+        }
+      },
+      {
+        "title": "落とし先の走査",
+        "text": "変えたのは飛ばす条件にロックを足した 1 か所。座標の置き直しと並びへの挿入の両方に効く",
+        "go": {
+          "kind": "message",
+          "id": "skip-locked"
+        }
+      },
+      {
+        "title": "ペーストと挿入の流れ",
+        "text": "貼り先の規則は `DesignDocument` が答え、`EditorState` は委ねるだけ",
+        "go": {
+          "kind": "flow",
+          "id": "paste"
+        }
+      },
+      {
+        "title": "仕様の書き直し",
+        "text": "線引きを「キャンバス側から」ではなく「外から新しく持ち込むか」で書いた。ペーストはツリーのメニュー・キーボードからも行えるため",
+        "go": {
+          "kind": "layer",
+          "layer": "docs"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "drop",
+      "label": "落とし先",
+      "role": "キャンバスのドラッグと Assets の行からの挿入で、ロック中の Box を落とし先から外す"
+    },
+    {
+      "id": "insert",
+      "label": "貼り先と挿入位置",
+      "role": "ペーストとツールバーの挿入で、ロック中の Box を選んでいるときは最も外側のロックの直後へ入れる"
+    },
+    {
+      "id": "lock-rule",
+      "label": "ロックの判定",
+      "role": "ノード自身のロックを読み、祖先から継ぐぶんと最も外側のロックを答える"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / dcmp",
+      "role": "ロックの読み取り(`Locking.fromNode`)・直後の位置(`ChildPosition.next`)・ロックを避けた挿入位置(`DesignDocument.insertPositionOf`)を持つ"
+    },
+    {
+      "layer": "features / editor",
+      "role": "ペースト・ツールバーの挿入の位置を `DesignDocument.insertPositionOf` へ委ねる"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "落とし先の走査でロック中の候補を飛ばす"
+    },
+    {
+      "layer": "docs",
+      "role": "ロック中の Box の中へ外から持ち込まない規則と、落とし先・貼り先・挿入の行を書く"
+    },
+    {
+      "layer": "domains / __tests__",
+      "role": "入れ子のロックの木を、dcmp と feature のテストで共有する"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "name": "キャンバスのドラッグ",
+      "role": "ポインタの下から根までの名前を並べ、落とし先を問い合わせる。Assets の行から運んだ雛形もここを通る",
+      "feature": "drop"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+      "name": "落とし先",
+      "role": "内側から外へ並べた候補のうち、受け入れられる最も内側の親を選ぶ",
+      "feature": "drop",
+      "change": "走査で飛ばす条件(`isSkipped`)に `DesignDocument.isLocked` を足した。doc の列挙を 3 つから 4 つへ"
+    },
+    {
+      "path": "src/features/editor/hooks/use-editor-state/index.ts",
+      "name": "エディタの操作の受け口",
+      "role": "ペースト・挿入・複製の操作を `EditorState` へ渡す",
+      "feature": "insert"
+    },
+    {
+      "path": "src/features/editor/domains/editor-state/index.ts",
+      "name": "エディタの状態",
+      "role": "選択からペースト・挿入の位置を決め、ドキュメントを書き換える",
+      "feature": "insert",
+      "change": "`insertPosition` を `appendPositionOf` から `insertPositionOf` へ委ねる形に変えた。逆順を許容する理由を doc に書いた"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "ドキュメント",
+      "role": "木の参照・ロックの継承・挿入位置を答える",
+      "feature": "lock-rule",
+      "change": "`insertPositionOf` を足し、判定 `LockedItself`・`holdsForSelf`・`outermostLockedName` を private に足した。`isLocked` は `LockedItself` を使う形に"
+    },
+    {
+      "path": "src/domains/dcmp/locking/index.ts",
+      "name": "ロック",
+      "role": "props・ノードからロックを読む",
+      "feature": "lock-rule",
+      "change": "ノード自身のロックを読む `fromNode` を足した(部品インスタンスは参照ノード直下の `locking` だけを読む)"
+    },
+    {
+      "path": "src/domains/dcmp/child-position/index.ts",
+      "name": "子の位置",
+      "role": "どの親の何番目かを表す",
+      "feature": "insert",
+      "change": "直後の位置を返す `next` を足し、複製の `insertCopyAfter` もこれを使う"
+    },
+    {
+      "path": "docs/03-schema.md",
+      "name": "スキーマ仕様",
+      "role": "「ロック」の節",
+      "feature": "lock-rule",
+      "change": "ロック中の Box の中へ外から新しくノードを持ち込まない項を足した"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "落とし先・貼り先・挿入の行",
+      "change": "3 行にロック中の Box の扱いを足した"
+    },
+    {
+      "path": "src/domains/__tests__/nested-locks.ts",
+      "name": "入れ子のロックの木",
+      "role": "ロックの中にロックがあり、その中にロックしていないと書いた Box がある部分木",
+      "change": "新しく作った",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "drop-candidates",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+      "kind": "qry",
+      "name": "落とし先を問い合わせる",
+      "code": "InsertionParent.innermost(context.document, dragged, namesToRoot(context.event.target))",
+      "via": "call",
+      "payload": "ドキュメント・運んでいるもの・ポインタの下から根までの名前",
+      "returns": "受け入れられる最も内側の親(無ければ `none`)",
+      "status": "changed"
+    },
+    {
+      "id": "skip-locked",
+      "from": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "qry",
+      "name": "候補がロック中か",
+      "code": "DesignDocument.isLocked(search.document, name)",
+      "via": "call",
+      "payload": "候補の名前",
+      "returns": "自身か祖先がロック中なら真",
+      "status": "added"
+    },
+    {
+      "id": "paste",
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "kind": "cmd",
+      "name": "貼る・挿す",
+      "code": "EditorState.pasteCopied(state) / EditorState.insertNode(state, action.template)",
+      "via": "call",
+      "returns": "貼った・挿したあとの状態(貼れなければ `none`)"
+    },
+    {
+      "id": "insert-position",
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "qry",
+      "name": "足す位置を問い合わせる",
+      "code": "DesignDocument.insertPositionOf(EditorState.document(state), name)",
+      "via": "call",
+      "payload": "選んでいる 1 つの名前",
+      "returns": "子の末尾か、最も外側のロックの直後。子を持てない・無い名前なら `none`",
+      "status": "changed"
+    },
+    {
+      "id": "read-lock",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/locking/index.ts",
+      "kind": "qry",
+      "name": "ノード自身のロックを読む",
+      "code": "Locking.fromNode(node)",
+      "via": "call",
+      "payload": "ノード",
+      "returns": "`locked` / `unlocked`",
+      "status": "added"
+    },
+    {
+      "id": "next-position",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/child-position/index.ts",
+      "kind": "qry",
+      "name": "直後の位置",
+      "code": "ChildPosition.next",
+      "via": "call",
+      "payload": "最も外側のロックの位置",
+      "returns": "同じ親の 1 つ後ろ",
+      "status": "added"
+    },
+    {
+      "id": "duplicate",
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "kind": "cmd",
+      "name": "複製する",
+      "code": "EditorState.duplicateSelected(state)",
+      "via": "call",
+      "returns": "元の直後へ複製を入れ、複製を選んだ状態"
+    }
+  ],
+  "flows": [
+    {
+      "id": "drag",
+      "label": "キャンバスのドラッグ・Assets の行で離したとき",
+      "steps": [
+        "drop-candidates",
+        "skip-locked",
+        "read-lock"
+      ]
+    },
+    {
+      "id": "paste",
+      "label": "ペースト・ツールバーの挿入をしたとき",
+      "steps": [
+        "paste",
+        "insert-position",
+        "read-lock",
+        "next-position"
+      ]
+    },
+    {
+      "id": "duplicate-flow",
+      "label": "複製したとき(変えていない)",
+      "steps": [
+        "duplicate",
+        "next-position"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "6f17cd77590a55bfd87e0a169be1b6994c6dbf2d",
+      "phase": "prep",
+      "role": "直後の位置を返す `ChildPosition.next` を足す",
+      "why": "挿入位置の「最も外側のロックの直後」と、既存の複製の「元の直後」が同じ式 `{...at, index: at.index + 1}` になるので、先に名前を付けた(plan-reviewer の指摘 7a)。",
+      "flows": [
+        "paste"
+      ],
+      "review": [
+        "親はそのままで `index` だけを 1 進める。値の範囲は見ない(挿入側が範囲を検証する)"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/child-position/index.ts",
+          "start": 11,
+          "end": 20,
+          "text": "新しく足した `next`"
+        }
+      ]
+    },
+    {
+      "sha": "f0aa3a8060090726e76b02fa16e96222de74b4d6",
+      "phase": "prep",
+      "role": "`ChildPosition.next` のテストを足す",
+      "why": "直後の位置の規則を 1 件で固定する。",
+      "notes": [
+        {
+          "path": "src/domains/dcmp/child-position/__tests__/child-position.normal.test.ts",
+          "start": 39,
+          "end": 44,
+          "text": "index 2 から 3。親は変わらない"
+        }
+      ]
+    },
+    {
+      "sha": "dbdd8ffcfa6fd11db2df05b0f1192b48fe078857",
+      "phase": "core",
+      "role": "ロックを避けた挿入位置を返す `DesignDocument.insertPositionOf` を足す",
+      "why": "貼り先そのものを `DesignDocument` が答える形にした。`EditorState` 側で「子を持てて、かつロック中なら直後」と分けると、ロックの規則が 2 層に分かれる(plan-reviewer の検討)。祖先から継いだロックを辿る処理が `DesignDocument` の private にあることも理由。",
+      "flows": [
+        "paste"
+      ],
+      "review": [
+        "子を持てないもの(ロック中の Text・部品インスタンス)は、ロックに依らず先に `none` を返す",
+        "ロックの中にロックがあっても、最も内側ではなく最も外側のロックの直後を返す(`ArrayEx.last` は祖先の並びの外側の端)",
+        "複製の `insertCopyAfter` も `ChildPosition.next` に置き換えた(振る舞いは不変)"
+      ],
+      "before": [
+        {
+          "text": "挿入位置は `appendPositionOf`(選んでいるものの子の末尾)だけだった"
+        }
+      ],
+      "after": [
+        {
+          "text": "ロック中なら最も外側のロック中ノードの直後を返す関数ができた(まだ呼ばれていない)",
+          "message": "insert-position"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1104,
+          "end": 1110,
+          "text": "ノード自身のロック。この時点では `isLocked` と共有する private 関数で、後で `Locking.fromNode` と `LockedItself` へ移した"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1121,
+          "end": 1140,
+          "text": "自身と祖先(内側から外側の並び)からロック中のものを絞り、末尾 = 最も外側を取る。artboard は `findNode` が `none` を返すので暗黙に外れていた(後でレビューの指摘で明示した)"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1873,
+          "end": 1889,
+          "text": "子を持てるかを先に見て、ロックがあれば最も外側のロックの位置の直後"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 2106,
+          "end": 2111,
+          "text": "`isLocked` は判定を共有するだけで、祖先を辿る走査は変えていない"
+        }
+      ]
+    },
+    {
+      "sha": "acca6a1261e38400e0280ca8741438add3d54e08",
+      "phase": "core",
+      "role": "`DesignDocument.insertPositionOf` のテストを足す",
+      "why": "「直後」と「親の末尾」が同じ値にならないよう、ロック中の Box の後ろに必ず兄弟を置く(plan-reviewer の指摘 2)。「最も外側」を確かめるために、ロックの中にもう 1 つロックを置いた(指摘 1)。",
+      "review": [
+        "ロックした Box の直後は index 1、子の末尾なら index 2 になる木で、両者を区別している"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.insert-position.test.ts",
+          "start": 72,
+          "end": 76,
+          "text": "内側のロック `inner` を選んでも、外側の `sealed` の直後(index 1)"
+        }
+      ]
+    },
+    {
+      "sha": "f2dfbd7a0a4b62b61ef09a45880f5a23f1b767cd",
+      "phase": "core",
+      "role": "ペーストとツールバーの挿入をロックした Box の外側へ出す",
+      "why": "ペースト(`pasteCopied`)とツールバーの挿入(`insertNode`)はどちらも `insertPosition` を通るので、そこを `insertPositionOf` へ委ねる 1 行で両方が変わる。ツールバーの挿入も揃えるのはオーナーの回答(未決 1 の A)。",
+      "flows": [
+        "paste"
+      ],
+      "review": [
+        "続けて貼ると逆順になるのを許容し、選択を動かさない約束を保った(理由は doc の 2 行)",
+        "「選択位置の子」と書いていた doc を `insertPosition` への参照に直した"
+      ],
+      "before": [
+        {
+          "text": "ロック中の Box を選んで貼ると、その Box の子の末尾へ入った"
+        }
+      ],
+      "after": [
+        {
+          "text": "最も外側のロック中ノードの直後へ入る",
+          "message": "insert-position"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "start": 899,
+          "end": 900,
+          "text": "逆順を許容する Why not。選択を新しいノードへ移すと、ロックしていないときのペースト・挿入の振る舞いまで変わる"
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "start": 909,
+          "end": 913,
+          "text": "委ね先を `appendPositionOf` から `insertPositionOf` へ"
+        }
+      ]
+    },
+    {
+      "sha": "590d52a71a627326a73b4efe2e112c1f6d727f19",
+      "phase": "core",
+      "role": "ロック中を選んでいるときのペースト・挿入のテストを足す",
+      "why": "`EditorState` を通した位置を、親の子の並びで確かめる。逆順はここで固定する(plan-reviewer の指摘 3)。",
+      "notes": [
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+          "start": 356,
+          "end": 368,
+          "text": "2 回貼ると `[sealed, source-3, source-2, after]`。許容した逆順をそのまま固定する"
+        }
+      ]
+    },
+    {
+      "sha": "89fdc85e210f76100d3cd2ad5cd62c554e8729ba",
+      "phase": "core",
+      "role": "キャンバスのドラッグと Assets の行からの挿入でロックした Box を落とし先から外す",
+      "why": "落とし先はポインタの下から外側へ候補を見て、受け入れられる最も内側を選ぶ走査になっている。ロック中を「飛ばす候補」に足すだけで、外側の親へ落ちる決定 2 がそのまま成り立つ。`DropParent` と `InsertionParent` の両方が同じ private の走査を通るので 1 か所で済む。",
+      "flows": [
+        "drag"
+      ],
+      "review": [
+        "`isLocked` は祖先から継いだロックも真にするので、ロックの中の unlocked と書いた Box も飛ばされる",
+        "artboard は `isLocked` が偽なので、最後は artboard へ落ちうる(`layout: free` の artboard の並びへの挿入は今までどおり落とせない)",
+        "候補ごとに祖先を辿る計算量は許容した(Alt の距離表示が既に全件の `isLocked` を呼んでいるのより軽い、という比較による判断で、計測はしていない)"
+      ],
+      "before": [
+        {
+          "text": "ロック中の Box の上で離すと、その Box が落とし先になった"
+        }
+      ],
+      "after": [
+        {
+          "text": "ロック中の候補は飛ばして外側を見る",
+          "message": "skip-locked"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+          "start": 60,
+          "end": 65,
+          "text": "占めている名前に加えてロック中も飛ばす。名前は後で `isSkipped` に変えた"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+          "start": 120,
+          "end": 120,
+          "text": "外す条件の 4 つ目"
+        }
+      ]
+    },
+    {
+      "sha": "1b2bcb99aefdccaf195516cce90f0b36a8507821",
+      "phase": "core",
+      "role": "落とし先がロックした Box を外すことのテストを足す",
+      "why": "座標の置き直し(`DropParent`)と並びへの挿入(`InsertionParent`)、既存ノードとパレットの雛形のそれぞれで確かめる。外し過ぎないことの対照も 1 件置く。",
+      "review": [
+        "`panel` は `layout: column` にしてある。`free` だと `InsertionParent` がロックと別の理由で外すので、ロックで外れたのか見分けられない"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/drop-parent.lock.test.ts",
+          "start": 37,
+          "end": 44,
+          "text": "`free-lock` は `layout: free` でロック中。`DropParent` は `free` を外さないので、ロックで外れたことだけが artboard への答えを作る"
+        }
+      ]
+    },
+    {
+      "sha": "b49ef55ed73bb83242362a193d3fb27259b1a3e8",
+      "phase": "core",
+      "role": "ロックした Box への持ち込みを画面から通すテストを足す",
+      "why": "ドメインのテストは位置を守り、画面のテストは「どの親の中に描かれたか」だけを見る(plan-reviewer の指摘 2)。ツリーの並べ替えはロック中の Box の中でも行えることの対照を足した(指摘 9)。",
+      "flows": [
+        "drag",
+        "paste"
+      ],
+      "review": [
+        "ドラッグ中の落とし先の枠(破線)がロックの外側の Box に出ることも見ている"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-lock.test.tsx",
+          "start": 87,
+          "end": 94,
+          "text": "離す前の枠。運んでいる最中の見え方の確認"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+          "start": 239,
+          "end": 251,
+          "text": "対照: ツリーの行のドラッグはロック中の Box の中でも並べ替えられる"
+        }
+      ]
+    },
+    {
+      "sha": "5f996efaf5bee3e21af1b4f5a38666288df9f6d9",
+      "phase": "core",
+      "role": "ロックした Box はキャンバス側からの持ち込み先にならないことを仕様に書く",
+      "why": "Assets の行からの挿入に仕様の拠り所が無かった(plan-reviewer の指摘 5)。この時点の線引きは「キャンバス側から」で、後のレビューで書き直した。",
+      "notes": [
+        {
+          "path": "docs/03-schema.md",
+          "start": 113,
+          "end": 113,
+          "text": "「ロック」の節に足した項(この時点の文言)"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 333,
+          "end": 333,
+          "text": "挿入の行に、ツールバーと Assets の行それぞれの入り先を書いた"
+        }
+      ]
+    },
+    {
+      "sha": "e8d400490e7bd82c986b0d694a6945429be6b236",
+      "phase": "revise",
+      "role": "ノード自身のロックを読む `Locking.fromNode` を足す",
+      "why": "structure-reviewer の指摘。ノード自身のロックの読み取りはノードからロックへの変換で、`DesignDocument` の性質ではない。`locking` から `node` への import の向きで循環しない。",
+      "flows": [
+        "drag",
+        "paste"
+      ],
+      "review": [
+        "部品インスタンスは `refOwnPropsOf`(参照ノード直下)だけを読み、部品の根の `locking` も `overrides` の `locking` も読まない"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/locking/index.ts",
+          "start": 41,
+          "end": 52,
+          "text": "`isLockedItself` の中身をここへ移した"
+        }
+      ]
+    },
+    {
+      "sha": "5b1bd3a490b8218e23fb60235e6b8dcfd00c2010",
+      "phase": "revise",
+      "role": "`Locking.fromNode` のテストを足す",
+      "why": "計画にあった「部品の根の `locking` はインスタンスのロックにならない」は、`fromNode` が部品定義を受け取らないので落ちうる assert にならない。代わりに「`overrides` の `locking` は読まない」を足した(implementer の判断)。",
+      "notes": [
+        {
+          "path": "src/domains/dcmp/locking/__tests__/locking.normal.test.ts",
+          "start": 32,
+          "end": 40,
+          "text": "`overrides` にロックと書いても `unlocked`"
+        }
+      ]
+    },
+    {
+      "sha": "abf341414b52e2f93ddf2c8475da5c55ec025167",
+      "phase": "revise",
+      "role": "ロックの継承判定を `isLocked` と `outermostLockedName` で共有する",
+      "why": "solution・duplication の指摘。`outermostLockedName` は artboard を「`findNode` が `none` を返すので偽」という暗黙の扱いで外しており、`isLocked` と判定を別々に持っていた。artboard のロックは docs/03 で未決なので、入れたときに片方だけ直すとドラッグとペーストで答えが割れる。",
+      "flows": [
+        "drag",
+        "paste"
+      ],
+      "review": [
+        "`isLocked` の走査(`holdsForSelfOrAncestor`)は変えていない。`collectAncestorNames` で並べると木を 2 度走るため",
+        "`holdsForSelf` と `holdsForSelfOrAncestor` が artboard かノードかの振り分けを別々に持つのは、artboard を引く回数を増やさないため"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1101,
+          "end": 1111,
+          "text": "判定を 1 つの定数に。artboard は偽、ノードは `Locking.fromNode`"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1145,
+          "end": 1158,
+          "text": "`outermostLockedName` も同じ判定で絞る。組み立てと return を空行で分けた(structure の指摘 2)"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 2124,
+          "end": 2126,
+          "text": "`isLocked` は `LockedItself` を渡すだけ"
+        }
+      ]
+    },
+    {
+      "sha": "df4665bcad1f34ccd2aecdd46a334ec80dd2e612",
+      "phase": "revise",
+      "role": "落とし先の走査で飛ばす条件の名前を `isSkipped` にする",
+      "why": "naming の指摘。`isRefused` が覆うのは外す 4 条件のうち 2 つだけで、`refused` は `DialogChoice.refused` で別の意味に使われている。",
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+          "start": 59,
+          "end": 63,
+          "text": "改名のみ"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+          "start": 43,
+          "end": 43,
+          "text": "外す条件の写しをやめ、`DropParent.innermost` の doc を指す(duplication の指摘 2)"
+        }
+      ]
+    },
+    {
+      "sha": "1d927ee071ddd1f7e177578bd1025599f5d903d5",
+      "phase": "revise",
+      "role": "`EditorState.insertPosition` の doc を `insertPositionOf` への参照にする",
+      "why": "duplication の指摘 2。`@returns` が `insertPositionOf` の規則を書き写していた。",
+      "notes": [
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "start": 903,
+          "end": 904,
+          "text": "規則は `insertPositionOf` に任せ、`none` になる場合(1 つだけ選んでいないとき)だけを書く"
+        }
+      ]
+    },
+    {
+      "sha": "ac6d38908dc083388286005d21d57b5c2cc46386",
+      "phase": "revise",
+      "role": "入れ子のロックのフィクスチャを `src/domains/__tests__` に共有する",
+      "why": "duplication の指摘 3。同じ入れ子のロックの木が 3 つのテストに独立に書かれていた。消費側が dcmp と feature にまたがるので、カテゴリと並べて置いた。画面テスト側は木の形が違うので対象外。",
+      "notes": [
+        {
+          "path": "src/domains/__tests__/nested-locks.ts",
+          "start": 18,
+          "end": 45,
+          "text": "`panel` > `sealed`(ロック)> `inner`(ロック)> `nested`(unlocked)と、`sealed` の後ろの `after`"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/setup.ts",
+          "start": 107,
+          "end": 111,
+          "text": "共有の木に `layout: column` だけを上書きする"
+        }
+      ]
+    },
+    {
+      "sha": "2968f282e5d27e27474d9cc4327ee2077be7e7b2",
+      "phase": "revise",
+      "role": "clipboard テストのコメントを `copySelected` の doc への参照にする",
+      "why": "comment の指摘 3。コメントが `copySelected` の doc と同じ理由を書いていた。",
+      "notes": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.clipboard.test.tsx",
+          "start": 57,
+          "end": 57,
+          "text": "「選択位置の子」の言い回しも消えた"
+        }
+      ]
+    },
+    {
+      "sha": "7285c15acf60ba32c923c257cb5154cdaab6a3ea",
+      "phase": "revise",
+      "role": "ロックの持ち込みの規則を「外から持ち込むか」で書き直す",
+      "why": "harness の指摘 2。ペーストはツリーのメニュー・キーボードからも行え、並べ替えは ⌘] / ⌘[ でも行えるので、「キャンバス側から」の線引きと食い違う。落とし先の文が `layout: free` の規則とぶつかって読める点(harness 3 / comment 2)と、06-ui の参照の綴り(harness 1)、挿入の行の「子の末尾へ」(comment 1)も直した。",
+      "review": [
+        "03-schema の項は「外から新しく持ち込む 4 経路」と「同じ親の中で済む並べ替えと複製」で線を引いた"
+      ],
+      "notes": [
+        {
+          "path": "docs/03-schema.md",
+          "start": 113,
+          "end": 113,
+          "text": "「受け入れられるいちばん内側の親(無ければ落とせない)」にして、`layout: free` の規則とぶつからないようにした"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 159,
+          "end": 159,
+          "text": "落とし先の規則の写しをやめ、03-schema「ロック」を指す"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 333,
+          "end": 333,
+          "text": "ツールバーからの挿入にロック中の例外を足した"
+        }
+      ]
+    },
+    {
+      "sha": "c6f66f8d9ed125e86129fe1228ad33449e224e20",
+      "phase": "revise",
+      "role": "ロックした Box の中の子の複製がその中に残ることのテストを足す",
+      "why": "test-reviewer が 15 通り壊して 14 通りで落ちた。落ちなかったのは「複製は変えない」を守るテストが無かったため。`insertCopyAfter` を `ChildPosition.next` に置き換えているので、複製が巻き込まれないことを 1 件で守る。足したあと同じ壊し方で落ちることを確認した。",
+      "flows": [
+        "duplicate-flow"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+          "start": 345,
+          "end": 353,
+          "text": "ロック中の `inner` を複製しても `sealed` の中に `[inner, inner-2]`"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "child-position",
+      "label": "子の位置",
+      "file": "src/domains/dcmp/child-position/__tests__/child-position.normal.test.ts"
+    },
+    {
+      "id": "insert-position",
+      "label": "ドキュメントの挿入位置",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.insert-position.test.ts"
+    },
+    {
+      "id": "locking",
+      "label": "ロックの読み取り",
+      "file": "src/domains/dcmp/locking/__tests__/locking.normal.test.ts"
+    },
+    {
+      "id": "editor-lock",
+      "label": "エディタの状態とロック",
+      "file": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts"
+    },
+    {
+      "id": "drop-lock",
+      "label": "落とし先とロック",
+      "file": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/drop-parent.lock.test.ts"
+    },
+    {
+      "id": "canvas-drag-lock",
+      "label": "キャンバスのドラッグとロック",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-lock.test.tsx"
+    },
+    {
+      "id": "asset-drag",
+      "label": "Assets の行からの挿入",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx"
+    },
+    {
+      "id": "editor-ui-lock",
+      "label": "画面から見たロック",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "next",
+      "suite": "child-position",
+      "name": "直後の位置は、同じ親の 1 つ後ろになる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "最も外側のロックの直後と、複製の元の直後を作る式",
+      "given": "`panel` の index 2",
+      "when": "`ChildPosition.next` を呼ぶ",
+      "then": "`panel` の index 3",
+      "commit": "f0aa3a8060090726e76b02fa16e96222de74b4d6",
+      "excerpt": {
+        "path": "src/domains/dcmp/child-position/__tests__/child-position.normal.test.ts",
+        "start": 40,
+        "end": 44,
+        "text": "test(\"直後の位置は、同じ親の 1 つ後ろになる\", () => {\n  const next = ChildPosition.next({ parentName: \"panel\", index: 2 });\n\n  expect(next).toEqual({ parentName: \"panel\", index: 3 });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/child-position/index.ts"
+      ],
+      "covers": [
+        "next-position"
+      ]
+    },
+    {
+      "id": "ip-locked",
+      "suite": "insert-position",
+      "name": "ロックした Box を起点に足す位置は、その Box の直後になる",
+      "techniques": [
+        "state",
+        "boundary"
+      ],
+      "why": "ロック中の Box の中へ貼らない",
+      "given": "`panel` に `sealed`(ロック)と `after` が並ぶ",
+      "when": "`sealed` を起点に位置を引く",
+      "then": "`panel` の index 1(子の末尾なら 2 で、区別できる)",
+      "commit": "acca6a1261e38400e0280ca8741438add3d54e08",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.insert-position.test.ts",
+        "start": 41,
+        "end": 45,
+        "text": "test(\"ロックした Box を起点に足す位置は、その Box の直後になる\", () => {\n  expect(DesignDocument.insertPositionOf(setupDocument(), \"sealed\")).toEqual(\n    Option.some({ parentName: \"panel\", index: 1 }),\n  );\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "insert-position",
+        "next-position"
+      ]
+    },
+    {
+      "id": "ip-nested-locked",
+      "suite": "insert-position",
+      "name": "ロックした Box の中のロックした Box を起点に足す位置は、最も外側のロックの直後になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "内側のロックの直後はまだ外側のロックの中",
+      "given": "`sealed`(ロック)の中に `inner`(ロック)",
+      "when": "`inner` を起点に位置を引く",
+      "then": "`sealed` の直後の `panel` の index 1",
+      "commit": "acca6a1261e38400e0280ca8741438add3d54e08",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.insert-position.test.ts",
+        "start": 47,
+        "end": 51,
+        "text": "test(\"ロックした Box の中のロックした Box を起点に足す位置は、最も外側のロックの直後になる\", () => {\n  expect(DesignDocument.insertPositionOf(setupDocument(), \"inner\")).toEqual(\n    Option.some({ parentName: \"panel\", index: 1 }),\n  );\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "insert-position"
+      ]
+    },
+    {
+      "id": "ip-inherited",
+      "suite": "insert-position",
+      "name": "祖先がロックしている Box は、自身にロックしていないと書いてあっても最も外側のロックの直後になる",
+      "techniques": [
+        "state"
+      ],
+      "why": "ロックは祖先から継ぐ(docs/03-schema「ロック」)",
+      "given": "ロックの中の `nested` に `unlocked` と書いてある",
+      "when": "`nested` を起点に位置を引く",
+      "then": "`panel` の index 1",
+      "commit": "acca6a1261e38400e0280ca8741438add3d54e08",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.insert-position.test.ts",
+        "start": 53,
+        "end": 57,
+        "text": "test(\"祖先がロックしている Box は、自身にロックしていないと書いてあっても最も外側のロックの直後になる\", () => {\n  expect(DesignDocument.insertPositionOf(setupDocument(), \"nested\")).toEqual(\n    Option.some({ parentName: \"panel\", index: 1 }),\n  );\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "insert-position",
+        "read-lock"
+      ]
+    },
+    {
+      "id": "ip-unlocked",
+      "suite": "insert-position",
+      "name": "ロックしていない Box を起点に足す位置は、その Box の子の末尾になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "対照: ロックしていなければ今までどおり",
+      "given": "子を 1 つ持つ `open`",
+      "when": "`open` を起点に位置を引く",
+      "then": "`open` の index 1",
+      "commit": "acca6a1261e38400e0280ca8741438add3d54e08",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.insert-position.test.ts",
+        "start": 59,
+        "end": 63,
+        "text": "test(\"ロックしていない Box を起点に足す位置は、その Box の子の末尾になる\", () => {\n  expect(DesignDocument.insertPositionOf(setupDocument(), \"open\")).toEqual(\n    Option.some({ parentName: \"open\", index: 1 }),\n  );\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "insert-position"
+      ]
+    },
+    {
+      "id": "ip-artboard",
+      "suite": "insert-position",
+      "name": "artboard を起点に足す位置は、artboard の子の末尾になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "artboard はロックを持たない",
+      "given": "子を 4 つ持つ `home`",
+      "when": "`home` を起点に位置を引く",
+      "then": "`home` の index 4",
+      "commit": "acca6a1261e38400e0280ca8741438add3d54e08",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.insert-position.test.ts",
+        "start": 65,
+        "end": 69,
+        "text": "test(\"artboard を起点に足す位置は、artboard の子の末尾になる\", () => {\n  expect(DesignDocument.insertPositionOf(setupDocument(), \"home\")).toEqual(\n    Option.some({ parentName: \"home\", index: 4 }),\n  );\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "insert-position"
+      ]
+    },
+    {
+      "id": "ip-locked-text",
+      "suite": "insert-position",
+      "name": "ロックした Text には、子を持てないので足す位置が無い",
+      "techniques": [
+        "error"
+      ],
+      "why": "子を持てないものはロックに依らず貼れない(今のまま)",
+      "given": "ロックした Text `locked-title`",
+      "when": "位置を引く",
+      "then": "`none`",
+      "commit": "acca6a1261e38400e0280ca8741438add3d54e08",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.insert-position.test.ts",
+        "start": 71,
+        "end": 75,
+        "text": "test(\"ロックした Text には、子を持てないので足す位置が無い\", () => {\n  expect(\n    DesignDocument.insertPositionOf(setupDocument(), \"locked-title\"),\n  ).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "insert-position"
+      ]
+    },
+    {
+      "id": "ip-locked-instance",
+      "suite": "insert-position",
+      "name": "ロックした部品インスタンスには、子を持てないので足す位置が無い",
+      "techniques": [
+        "error"
+      ],
+      "why": "インスタンスはロックしていても直後へ出さない",
+      "given": "ロックした部品インスタンス `login`",
+      "when": "位置を引く",
+      "then": "`none`",
+      "commit": "acca6a1261e38400e0280ca8741438add3d54e08",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.insert-position.test.ts",
+        "start": 77,
+        "end": 81,
+        "text": "test(\"ロックした部品インスタンスには、子を持てないので足す位置が無い\", () => {\n  expect(DesignDocument.insertPositionOf(setupDocument(), \"login\")).toEqual(\n    Option.none,\n  );\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "insert-position"
+      ]
+    },
+    {
+      "id": "ip-missing",
+      "suite": "insert-position",
+      "name": "ドキュメントに無い名前には足す位置が無い",
+      "techniques": [
+        "error"
+      ],
+      "why": "無い名前で位置を作らない",
+      "given": "ドキュメントに無い `missing`",
+      "when": "位置を引く",
+      "then": "`none`",
+      "commit": "acca6a1261e38400e0280ca8741438add3d54e08",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.insert-position.test.ts",
+        "start": 83,
+        "end": 87,
+        "text": "test(\"ドキュメントに無い名前には足す位置が無い\", () => {\n  expect(DesignDocument.insertPositionOf(setupDocument(), \"missing\")).toEqual(\n    Option.none,\n  );\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "insert-position"
+      ]
+    },
+    {
+      "id": "lock-box",
+      "suite": "locking",
+      "name": "ロックと書いた Box のノードはロックとして読まれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "プリミティブは props の `locking` を読む",
+      "given": "`locking: locked` の Box",
+      "when": "`Locking.fromNode`",
+      "then": "`locked`",
+      "commit": "5b1bd3a490b8218e23fb60235e6b8dcfd00c2010",
+      "excerpt": {
+        "path": "src/domains/dcmp/locking/__tests__/locking.normal.test.ts",
+        "start": 12,
+        "end": 20,
+        "text": "test(\"ロックと書いた Box のノードはロックとして読まれる\", () => {\n  expect(\n    Locking.fromNode({\n      name: \"panel\",\n      type: \"Box\",\n      props: { locking: \"locked\" },\n    }),\n  ).toBe(\"locked\");\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/locking/index.ts"
+      ],
+      "covers": [
+        "read-lock"
+      ]
+    },
+    {
+      "id": "lock-instance",
+      "suite": "locking",
+      "name": "参照ノード直下にロックと書いたインスタンスはロックとして読まれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "インスタンスのロックは参照ノード直下に書く(docs/03-schema「ロック」)",
+      "given": "参照ノード直下に `locking: locked`",
+      "when": "`Locking.fromNode`",
+      "then": "`locked`",
+      "commit": "5b1bd3a490b8218e23fb60235e6b8dcfd00c2010",
+      "excerpt": {
+        "path": "src/domains/dcmp/locking/__tests__/locking.normal.test.ts",
+        "start": 22,
+        "end": 30,
+        "text": "test(\"参照ノード直下にロックと書いたインスタンスはロックとして読まれる\", () => {\n  expect(\n    Locking.fromNode({\n      name: \"login\",\n      ref: \"primary-button\",\n      locking: \"locked\",\n    }),\n  ).toBe(\"locked\");\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/locking/index.ts"
+      ],
+      "covers": [
+        "read-lock"
+      ]
+    },
+    {
+      "id": "lock-overrides",
+      "suite": "locking",
+      "name": "インスタンスの上書きにロックと書いても、インスタンスのロックにはならない",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "上書きの `locking` を読むと、置き場所の規則が崩れる",
+      "given": "`overrides` に `locking: locked`",
+      "when": "`Locking.fromNode`",
+      "then": "`unlocked`",
+      "commit": "5b1bd3a490b8218e23fb60235e6b8dcfd00c2010",
+      "excerpt": {
+        "path": "src/domains/dcmp/locking/__tests__/locking.normal.test.ts",
+        "start": 32,
+        "end": 40,
+        "text": "test(\"インスタンスの上書きにロックと書いても、インスタンスのロックにはならない\", () => {\n  expect(\n    Locking.fromNode({\n      name: \"login\",\n      ref: \"primary-button\",\n      overrides: { locking: \"locked\" },\n    }),\n  ).toBe(\"unlocked\");\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/locking/index.ts"
+      ],
+      "covers": [
+        "read-lock"
+      ]
+    },
+    {
+      "id": "paste-locked",
+      "suite": "editor-lock",
+      "name": "ロックした Box を選んで貼ると、その Box の直後に並ぶ",
+      "techniques": [
+        "state"
+      ],
+      "why": "ペーストがロック中の Box の中へ入らない(決定 4)",
+      "given": "`source` をコピー済み。`panel` に `sealed`(ロック)と `after`",
+      "when": "`sealed` を選んで貼る",
+      "then": "`panel` の子が `[sealed, source-2, after]`",
+      "commit": "590d52a71a627326a73b4efe2e112c1f6d727f19",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+        "start": 284,
+        "end": 292,
+        "text": "test(\"ロックした Box を選んで貼ると、その Box の直後に並ぶ\", () => {\n  const pasted = Option.unwrap(\n    EditorState.pasteCopied(\n      EditorState.select(setupNestedLockState(), \"sealed\"),\n    ),\n  );\n\n  expect(childNames(pasted, \"panel\")).toEqual([\"sealed\", \"source-2\", \"after\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "insert-position"
+      ]
+    },
+    {
+      "id": "paste-inherited",
+      "suite": "editor-lock",
+      "name": "祖先がロックしている Box を選んで貼ると、最も外側のロックの直後に並ぶ",
+      "techniques": [
+        "state",
+        "boundary"
+      ],
+      "why": "継いだロックでも中へ入らない(未決 2 の回答)",
+      "given": "ロックの中のロックの中の `nested`",
+      "when": "`nested` を選んで貼る",
+      "then": "`panel` の子が `[sealed, source-2, after]`",
+      "commit": "590d52a71a627326a73b4efe2e112c1f6d727f19",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+        "start": 294,
+        "end": 302,
+        "text": "test(\"祖先がロックしている Box を選んで貼ると、最も外側のロックの直後に並ぶ\", () => {\n  const pasted = Option.unwrap(\n    EditorState.pasteCopied(\n      EditorState.select(setupNestedLockState(), \"nested\"),\n    ),\n  );\n\n  expect(childNames(pasted, \"panel\")).toEqual([\"sealed\", \"source-2\", \"after\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "insert-position"
+      ]
+    },
+    {
+      "id": "paste-unlocked",
+      "suite": "editor-lock",
+      "name": "ロックしていない Box を選んで貼ると、その Box の子の末尾に並ぶ",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "対照: ロックしていないときは変えない",
+      "given": "子を 1 つ持つ `open`",
+      "when": "`open` を選んで貼る",
+      "then": "`open` の子が `[open-title, source-2]`",
+      "commit": "590d52a71a627326a73b4efe2e112c1f6d727f19",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+        "start": 304,
+        "end": 310,
+        "text": "test(\"ロックしていない Box を選んで貼ると、その Box の子の末尾に並ぶ\", () => {\n  const pasted = Option.unwrap(\n    EditorState.pasteCopied(EditorState.select(setupNestedLockState(), \"open\")),\n  );\n\n  expect(childNames(pasted, \"open\")).toEqual([\"open-title\", \"source-2\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "insert-position"
+      ]
+    },
+    {
+      "id": "paste-locked-text",
+      "suite": "editor-lock",
+      "name": "ロックした Text を選んでいるときは貼れない",
+      "techniques": [
+        "error"
+      ],
+      "why": "子を持てないものは、ロックしていても直後へは出さない(今のまま)",
+      "given": "ロックした Text `locked-title`",
+      "when": "選んで貼る",
+      "then": "`none`",
+      "commit": "590d52a71a627326a73b4efe2e112c1f6d727f19",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+        "start": 312,
+        "end": 318,
+        "text": "test(\"ロックした Text を選んでいるときは貼れない\", () => {\n  expect(\n    EditorState.pasteCopied(\n      EditorState.select(setupNestedLockState(), \"locked-title\"),\n    ),\n  ).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "insert-position"
+      ]
+    },
+    {
+      "id": "insert-locked",
+      "suite": "editor-lock",
+      "name": "ロックした Box を選んで Box を挿すと、その Box の直後に並ぶ",
+      "techniques": [
+        "state"
+      ],
+      "why": "ツールバーの挿入もペーストと揃える(未決 1 の回答)",
+      "given": "`sealed`(ロック)を選んでいる",
+      "when": "Box の雛形を挿す",
+      "then": "`panel` の子が `[sealed, box, after]`",
+      "commit": "590d52a71a627326a73b4efe2e112c1f6d727f19",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+        "start": 320,
+        "end": 329,
+        "text": "test(\"ロックした Box を選んで Box を挿すと、その Box の直後に並ぶ\", () => {\n  const inserted = Option.unwrap(\n    EditorState.insertNode(\n      EditorState.select(setupNestedLockState(), \"sealed\"),\n      { kind: \"primitive\", type: \"Box\" },\n    ),\n  );\n\n  expect(childNames(inserted, \"panel\")).toEqual([\"sealed\", \"box\", \"after\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "insert-position"
+      ]
+    },
+    {
+      "id": "paste-twice",
+      "suite": "editor-lock",
+      "name": "ロックした Box を選んだまま 2 回貼ると、後に貼ったものが前に並ぶ",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "許容した逆順を固定する(plan-reviewer の指摘 3)。選択を新しいノードへ移す変更が入れば落ちる",
+      "given": "`sealed` を選んでいる",
+      "when": "続けて 2 回貼る",
+      "then": "`[sealed, source-3, source-2, after]`",
+      "commit": "590d52a71a627326a73b4efe2e112c1f6d727f19",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+        "start": 331,
+        "end": 343,
+        "text": "test(\"ロックした Box を選んだまま 2 回貼ると、後に貼ったものが前に並ぶ\", () => {\n  const selected = EditorState.select(setupNestedLockState(), \"sealed\");\n  const once = Option.unwrap(EditorState.pasteCopied(selected));\n\n  const twice = Option.unwrap(EditorState.pasteCopied(once));\n\n  expect(childNames(twice, \"panel\")).toEqual([\n    \"sealed\",\n    \"source-3\",\n    \"source-2\",\n    \"after\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "paste",
+        "insert-position"
+      ]
+    },
+    {
+      "id": "duplicate-in-lock",
+      "suite": "editor-lock",
+      "name": "ロックした Box の中の子を複製すると、複製はその Box の中の直後に並ぶ",
+      "techniques": [
+        "regression"
+      ],
+      "why": "複製は同じ親の直後へ入れる操作で、外から持ち込まないので変えない(test-reviewer の指摘で追加)",
+      "given": "`sealed`(ロック)の中の `inner`(ロック)",
+      "when": "`inner` を選んで複製する",
+      "then": "`sealed` の子が `[inner, inner-2]`",
+      "commit": "c6f66f8d9ed125e86129fe1228ad33449e224e20",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+        "start": 345,
+        "end": 353,
+        "text": "test(\"ロックした Box の中の子を複製すると、複製はその Box の中の直後に並ぶ\", () => {\n  const duplicated = Option.unwrap(\n    EditorState.duplicateSelected(\n      EditorState.select(setupNestedLockState(), \"inner\"),\n    ),\n  );\n\n  expect(childNames(duplicated, \"sealed\")).toEqual([\"inner\", \"inner-2\"]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts",
+        "src/domains/dcmp/child-position/index.ts"
+      ],
+      "covers": [
+        "duplicate",
+        "next-position"
+      ]
+    },
+    {
+      "id": "drop-locked",
+      "suite": "drop-lock",
+      "name": "ロックした Box の上で離すと、並びへ挿す先にはその外側のロックしていない Box が選ばれる",
+      "techniques": [
+        "state"
+      ],
+      "why": "フローの付け替えでロック中の Box の中へ入れない(決定 1・2)",
+      "given": "候補が `[sealed, panel, home]`",
+      "when": "並びへ挿す先を選ぶ",
+      "then": "`panel`",
+      "commit": "1b2bcb99aefdccaf195516cce90f0b36a8507821",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/drop-parent.lock.test.ts",
+        "start": 6,
+        "end": 14,
+        "text": "test(\"ロックした Box の上で離すと、並びへ挿す先にはその外側のロックしていない Box が選ばれる\", () => {\n  const parent = InsertionParent.innermost(\n    setupLockedDocument(),\n    moving(\"moved\"),\n    [\"sealed\", \"panel\", \"home\"],\n  );\n\n  expect(Option.unwrap(parent).name).toBe(\"panel\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts"
+      ],
+      "covers": [
+        "skip-locked"
+      ]
+    },
+    {
+      "id": "drop-inherited",
+      "suite": "drop-lock",
+      "name": "祖先がロックしている Box は、自身にロックしていないと書いてあっても挿す先にならずロックの外側が選ばれる",
+      "techniques": [
+        "state",
+        "boundary"
+      ],
+      "why": "子孫の Box も継いだロックで外れる",
+      "given": "候補が `[nested, inner, sealed, panel, home]`",
+      "when": "並びへ挿す先を選ぶ",
+      "then": "`panel`",
+      "commit": "1b2bcb99aefdccaf195516cce90f0b36a8507821",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/drop-parent.lock.test.ts",
+        "start": 16,
+        "end": 24,
+        "text": "test(\"祖先がロックしている Box は、自身にロックしていないと書いてあっても挿す先にならずロックの外側が選ばれる\", () => {\n  const parent = InsertionParent.innermost(\n    setupLockedDocument(),\n    moving(\"moved\"),\n    [\"nested\", \"inner\", \"sealed\", \"panel\", \"home\"],\n  );\n\n  expect(Option.unwrap(parent).name).toBe(\"panel\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts"
+      ],
+      "covers": [
+        "skip-locked",
+        "read-lock"
+      ]
+    },
+    {
+      "id": "drop-reposition",
+      "suite": "drop-lock",
+      "name": "座標の置き直しでも、ロックの中の Box の上で離すとロックの外側の親が選ばれる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "絶対配置の置き直しも同じ走査を通る",
+      "given": "候補が `[inner, sealed, panel, home]`",
+      "when": "置き直し先を選ぶ",
+      "then": "`panel`",
+      "commit": "1b2bcb99aefdccaf195516cce90f0b36a8507821",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/drop-parent.lock.test.ts",
+        "start": 26,
+        "end": 35,
+        "text": "test(\"座標の置き直しでも、ロックの中の Box の上で離すとロックの外側の親が選ばれる\", () => {\n  const parent = DropParent.innermost(setupLockedDocument(), moving(\"moved\"), [\n    \"inner\",\n    \"sealed\",\n    \"panel\",\n    \"home\",\n  ]);\n\n  expect(Option.unwrap(parent).name).toBe(\"panel\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts"
+      ],
+      "covers": [
+        "skip-locked"
+      ]
+    },
+    {
+      "id": "drop-artboard",
+      "suite": "drop-lock",
+      "name": "artboard 直下のロックした器の上で離すと、置き直し先は artboard になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "外側にロックしていない Box が無ければ artboard へ落ちる",
+      "given": "`layout: free` でロック中の `free-lock`。候補が `[free-lock, home]`",
+      "when": "置き直し先を選ぶ",
+      "then": "`home`",
+      "commit": "1b2bcb99aefdccaf195516cce90f0b36a8507821",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/drop-parent.lock.test.ts",
+        "start": 37,
+        "end": 44,
+        "text": "test(\"artboard 直下のロックした器の上で離すと、置き直し先は artboard になる\", () => {\n  const parent = DropParent.innermost(setupLockedDocument(), moving(\"moved\"), [\n    \"free-lock\",\n    \"home\",\n  ]);\n\n  expect(Option.unwrap(parent).name).toBe(\"home\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts"
+      ],
+      "covers": [
+        "skip-locked"
+      ]
+    },
+    {
+      "id": "drop-palette",
+      "suite": "drop-lock",
+      "name": "パレットの雛形を運んでいるときも、ロックの中の Box は挿す先にならない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "Assets の行からの挿入も同じ規則",
+      "given": "Box の雛形を運んでいる",
+      "when": "並びへ挿す先を選ぶ",
+      "then": "`panel`",
+      "commit": "1b2bcb99aefdccaf195516cce90f0b36a8507821",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/drop-parent.lock.test.ts",
+        "start": 46,
+        "end": 56,
+        "text": "test(\"パレットの雛形を運んでいるときも、ロックの中の Box は挿す先にならない\", () => {\n  const parent = InsertionParent.innermost(setupLockedDocument(), placingBox, [\n    \"nested\",\n    \"inner\",\n    \"sealed\",\n    \"panel\",\n    \"home\",\n  ]);\n\n  expect(Option.unwrap(parent).name).toBe(\"panel\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts"
+      ],
+      "covers": [
+        "skip-locked"
+      ]
+    },
+    {
+      "id": "drop-parent-of-locked",
+      "suite": "drop-lock",
+      "name": "ロック中の Box を子に持つ Box は落とし先のまま選ばれる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "対照: ロックを子に持つだけの親は外さない",
+      "given": "候補が `[panel, home]`",
+      "when": "並びへ挿す先を選ぶ",
+      "then": "`panel`",
+      "commit": "1b2bcb99aefdccaf195516cce90f0b36a8507821",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/drop-parent.lock.test.ts",
+        "start": 58,
+        "end": 66,
+        "text": "test(\"ロック中の Box を子に持つ Box は落とし先のまま選ばれる\", () => {\n  const parent = InsertionParent.innermost(\n    setupLockedDocument(),\n    moving(\"moved\"),\n    [\"panel\", \"home\"],\n  );\n\n  expect(Option.unwrap(parent).name).toBe(\"panel\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts"
+      ],
+      "covers": [
+        "skip-locked"
+      ]
+    },
+    {
+      "id": "canvas-flow",
+      "suite": "canvas-drag-lock",
+      "name": "フローのノードをロックの中の Box の上で離すと、ロックの外側の Box の子になる",
+      "techniques": [
+        "state"
+      ],
+      "why": "画面のドラッグからツリー内の移動が外側の親を指す",
+      "given": "`panel` > `sealed`(ロック)> `inner`",
+      "when": "`title` を `inner` の上へ運んで離す",
+      "then": "移動の先の親が `panel`",
+      "commit": "b49ef55ed73bb83242362a193d3fb27259b1a3e8",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-lock.test.tsx",
+        "start": 59,
+        "end": 69,
+        "text": "test(\"フローのノードをロックの中の Box の上で離すと、ロックの外側の Box の子になる\", () => {\n  const onMoveNode = vi.fn();\n  renderCanvas({ selection: setupSelection(), onMoveNode });\n\n  dragNodeOnto(\"title\", drawn(\"inner\"), { x: 30, y: 40 });\n\n  expect(onMoveNode).toHaveBeenCalledWith(\n    \"title\",\n    expect.objectContaining({ parentName: \"panel\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "drop-candidates",
+        "skip-locked"
+      ]
+    },
+    {
+      "id": "canvas-absolute",
+      "suite": "canvas-drag-lock",
+      "name": "絶対配置のノードをロックの中の Box の上で離すと、ロックの外側の Box へ親が付け替わる",
+      "techniques": [
+        "state"
+      ],
+      "why": "座標の置き直しも外側の親になる",
+      "given": "絶対配置の `pin`",
+      "when": "`inner` の上へ運んで離す",
+      "then": "置き直しの先の親が `panel`",
+      "commit": "b49ef55ed73bb83242362a193d3fb27259b1a3e8",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-lock.test.tsx",
+        "start": 71,
+        "end": 85,
+        "text": "test(\"絶対配置のノードをロックの中の Box の上で離すと、ロックの外側の Box へ親が付け替わる\", () => {\n  const onRepositionNodes = vi.fn();\n  renderCanvas({ selection: setupSelection(), onRepositionNodes });\n\n  dragNodeOnto(\"pin\", drawn(\"inner\"), { x: 30, y: 40 });\n\n  expect(onRepositionNodes).toHaveBeenCalledWith([\n    expect.objectContaining({\n      name: \"pin\",\n      edit: expect.objectContaining({\n        to: expect.objectContaining({ parentName: \"panel\" }),\n      }),\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "drop-candidates",
+        "skip-locked"
+      ]
+    },
+    {
+      "id": "canvas-outline",
+      "suite": "canvas-drag-lock",
+      "name": "ロックの中の Box の上へ運んでいる間、落とし先の枠はロックの外側の Box に出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "離す前の見え方が、離した結果と食い違わない",
+      "given": "`title` を掴んでいる",
+      "when": "`inner` の上へ動かす",
+      "then": "破線の枠が `panel` に出る",
+      "commit": "b49ef55ed73bb83242362a193d3fb27259b1a3e8",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-lock.test.tsx",
+        "start": 87,
+        "end": 94,
+        "text": "test(\"ロックの中の Box の上へ運んでいる間、落とし先の枠はロックの外側の Box に出る\", () => {\n  renderCanvas({ selection: setupSelection() });\n\n  pressPointer(drawn(\"title\"), { x: 100, y: 100 });\n  movePointer(drawn(\"inner\"), { x: 130, y: 140 });\n\n  expect(injectedStyles()).toContain('[data-name=\"panel\"]{outline:2px dashed');\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "drop-candidates"
+      ]
+    },
+    {
+      "id": "asset-into-lock",
+      "suite": "asset-drag",
+      "name": "プリミティブの行をロックの中の Box へ運んで離すと、ロックの外側の Box の子に増える",
+      "techniques": [
+        "state"
+      ],
+      "why": "Assets の行からの挿入を画面から通す",
+      "given": "`home-panel` > `home-sealed`(ロック)> `home-inner`",
+      "when": "Box の行を `home-inner` へ運んで離す",
+      "then": "新しい Box が `home-panel` の中に描かれる",
+      "commit": "b49ef55ed73bb83242362a193d3fb27259b1a3e8",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+        "start": 211,
+        "end": 245,
+        "text": "test(\"プリミティブの行をロックの中の Box へ運んで離すと、ロックの外側の Box の子に増える\", async () => {\n  await renderOpenedDocument(\n    DesignDocument.create({\n      tokens: DocumentTemplate.Default.tokens,\n      components: DocumentTemplate.Default.components,\n      artboards: [\n        Artboard.create({\n          name: \"home\",\n          width: 360,\n          height: 240,\n          children: [\n            {\n              name: \"home-panel\",\n              type: \"Box\",\n              children: [\n                {\n                  name: \"home-sealed\",\n                  type: \"Box\",\n                  props: { locking: \"locked\" },\n                  children: [{ name: \"home-inner\", type: \"Box\", children: [] }],\n                },\n              ],\n            },\n          ],\n        }),\n      ],\n    }),\n  );\n  await goTo(LeftPaneViews.Assets);\n\n  carryTo(\"Box\", drawn(\"home-inner\"));\n  releasePointer(drawn(\"home-inner\"), { x: 300, y: 150 });\n\n  expect(drawnParentName(\"box\")).toBe(\"home-panel\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-drag/index.ts"
+      ],
+      "covers": [
+        "drop-candidates",
+        "skip-locked"
+      ]
+    },
+    {
+      "id": "ui-paste",
+      "suite": "editor-ui-lock",
+      "name": "ツリーでロックの中の Box を選んで貼ると、ロックの外側の Box の中に描かれる",
+      "techniques": [
+        "state"
+      ],
+      "why": "Ctrl+V を画面から通す。位置はエディタの状態のテストが守り、ここは親だけを見る",
+      "given": "`home-note` をコピー済み",
+      "when": "ツリーで `home-inner` を選んで Ctrl+V",
+      "then": "`home-note-2` が `home-panel` の中に描かれる",
+      "commit": "b49ef55ed73bb83242362a193d3fb27259b1a3e8",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+        "start": 217,
+        "end": 226,
+        "text": "test(\"ツリーでロックの中の Box を選んで貼ると、ロックの外側の Box の中に描かれる\", async () => {\n  await renderOpenedDocument(setupNestedLockDocument());\n  await selectInTree(\"home-note\");\n  await userEvent.keyboard(\"{Control>}c{/Control}\");\n  await selectInTree(\"home-inner\");\n\n  await userEvent.keyboard(\"{Control>}v{/Control}\");\n\n  expect(drawnParentName(\"home-note-2\")).toBe(\"home-panel\");\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "paste",
+        "insert-position"
+      ]
+    },
+    {
+      "id": "ui-toolbar",
+      "suite": "editor-ui-lock",
+      "name": "ツリーでロックの中の Box を選んで Box を追加すると、ロックの外側の Box の中に描かれる",
+      "techniques": [
+        "state"
+      ],
+      "why": "ツールバーの挿入を画面から通す",
+      "given": "ツリーで `home-inner` を選んでいる",
+      "when": "「Box を追加」を押す",
+      "then": "新しい Box が `home-panel` の中に描かれる",
+      "commit": "b49ef55ed73bb83242362a193d3fb27259b1a3e8",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+        "start": 228,
+        "end": 237,
+        "text": "test(\"ツリーでロックの中の Box を選んで Box を追加すると、ロックの外側の Box の中に描かれる\", async () => {\n  await renderOpenedDocument(setupNestedLockDocument());\n  await selectInTree(\"home-inner\");\n\n  await userEvent.click(\n    within(canvasPane()).getByRole(\"button\", { name: \"Box を追加\" }),\n  );\n\n  expect(drawnParentName(\"box\")).toBe(\"home-panel\");\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "paste",
+        "insert-position"
+      ]
+    },
+    {
+      "id": "ui-reorder",
+      "suite": "editor-ui-lock",
+      "name": "ツリーの行を運ぶと、ロック中の Box の中の子も並べ替えられる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "対照: ツリーの並べ替えはロック中の Box の中でも変えない(決定 3)",
+      "given": "`home-sealed`(ロック)の中に `home-inner`・`home-caption`",
+      "when": "ツリーで `home-inner` を `home-caption` へ運ぶ",
+      "then": "`home-caption` が前に並ぶ",
+      "commit": "b49ef55ed73bb83242362a193d3fb27259b1a3e8",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+        "start": 239,
+        "end": 251,
+        "text": "test(\"ツリーの行を運ぶと、ロック中の Box の中の子も並べ替えられる\", async () => {\n  await renderOpenedDocument(setupNestedLockDocument());\n\n  dragRowNamed(tree(), { from: \"home-inner\", to: \"home-caption\" });\n\n  expect(rowNames(tree())).toEqual([\n    \"home-note\",\n    \"home-panel\",\n    \"home-sealed\",\n    \"home-caption\",\n    \"home-inner\",\n  ]);\n});"
+      }
+    }
+  ],
+  "impact": {
+    "title": "ロック中の Box の中へは、外から新しく持ち込めなくなった",
+    "lead": "ロックした Box(とその中の Box)は、ドラッグ・Assets の行・ペースト・ツールバーの挿入で中へ入れる先にならなくなりました。中の並べ替えと複製は今までどおりです。",
+    "changed": {
+      "before": [
+        {
+          "text": "キャンバスでノードを運んでロック中の Box の上で離すと、その Box の中へ入った",
+          "message": "drop-candidates"
+        },
+        {
+          "text": "Assets の行をロック中の Box の上で離すと、その Box の中に増えた",
+          "message": "drop-candidates"
+        },
+        {
+          "text": "ツリーでロック中の Box を選んで貼る・ツールバーで追加すると、その Box の中の末尾に入った",
+          "message": "insert-position"
+        }
+      ],
+      "after": [
+        {
+          "text": "ロック中の Box の上で離すと、その外側の、受け入れられるいちばん内側の親へ入る",
+          "message": "skip-locked"
+        },
+        {
+          "text": "運んでいる間の落とし先の枠も、その外側の親に出る",
+          "message": "drop-candidates"
+        },
+        {
+          "text": "ロック中の Box を選んで貼る・ツールバーで追加すると、いちばん外側のロック中のものの直後に並ぶ",
+          "message": "insert-position"
+        }
+      ],
+      "text": "ロックの中にさらにロックがあっても、入る先はいちばん外側のロックの外です。ロックしていない Box の中の Box も、外側でロックされていればロック中として扱われます。",
+      "specs": [
+        {
+          "path": "docs/03-schema.md",
+          "locator": "「ロック」の節の、ロック中の Box の中へ外から持ち込まない項",
+          "text": "ドラッグの付け替え・Assets の行からの挿入・ペースト・ツールバーの挿入ではロック中の Box の中へ入れず、並べ替えと複製はそのまま行えると書き足した",
+          "shas": [
+            "5f996efaf5bee3e21af1b4f5a38666288df9f6d9",
+            "7285c15acf60ba32c923c257cb5154cdaab6a3ea"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「キャンバス直接操作」の落とし先の親の行",
+          "text": "ロック中の Box も落とし先にならないと足した",
+          "shas": [
+            "5f996efaf5bee3e21af1b4f5a38666288df9f6d9",
+            "7285c15acf60ba32c923c257cb5154cdaab6a3ea"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「編集操作の一覧」の挿入の行",
+          "text": "ツールバーからの挿入と Assets の行からの挿入の入り先と、ロック中の Box を選んでいるときの例外を書いた",
+          "shas": [
+            "5f996efaf5bee3e21af1b4f5a38666288df9f6d9",
+            "7285c15acf60ba32c923c257cb5154cdaab6a3ea"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「複数選択」のコピーの行",
+          "text": "ペーストの貼り先を、選んでいるものの子の末尾(ロック中の Box ならスキーマ仕様の「ロック」)と書いた",
+          "shas": [
+            "5f996efaf5bee3e21af1b4f5a38666288df9f6d9",
+            "7285c15acf60ba32c923c257cb5154cdaab6a3ea"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 491,
+          "text": "ロック中のノードのコピーとペーストを許した回。ペーストでロック中の Box の中へ入る経路が、ここから残っていた"
+        }
+      ],
+      "primers": [
+        "drop-scan",
+        "insert-position-rule"
+      ]
+    },
+    "tables": [
+      {
+        "label": "操作ごとの入り先",
+        "gist": "外から新しく持ち込む操作だけが、ロック中の Box を避ける。",
+        "text": "列は、操作の対象(離した場所・選んでいるもの)がロック中の Box かどうか。",
+        "rowHeads": [
+          {
+            "id": "drag",
+            "label": "キャンバスでノードを運んで離す"
+          },
+          {
+            "id": "asset",
+            "label": "Assets の行を運んで離す"
+          },
+          {
+            "id": "paste",
+            "label": "貼る",
+            "note": "Ctrl+V・メニュー"
+          },
+          {
+            "id": "toolbar",
+            "label": "ツールバーで追加する"
+          },
+          {
+            "id": "reorder",
+            "label": "ツリーで並べ替える"
+          },
+          {
+            "id": "duplicate",
+            "label": "複製する"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "locked",
+            "label": "ロック中の Box(とその中)"
+          },
+          {
+            "id": "unlocked",
+            "label": "ロックしていない Box"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "drag",
+            "columnHead": "locked",
+            "result": "外側の、受け入れられるいちばん内側の親へ入る",
+            "was": "その Box の中へ入る",
+            "tests": [
+              "drop-locked",
+              "drop-inherited",
+              "drop-reposition",
+              "drop-artboard",
+              "canvas-flow",
+              "canvas-absolute",
+              "canvas-outline"
+            ]
+          },
+          {
+            "rowHead": "drag",
+            "columnHead": "unlocked",
+            "result": "その Box の中へ入る",
+            "tests": [
+              "drop-parent-of-locked"
+            ]
+          },
+          {
+            "rowHead": "asset",
+            "columnHead": "locked",
+            "result": "外側の、受け入れられるいちばん内側の親の中に増える",
+            "was": "その Box の中に増える",
+            "tests": [
+              "drop-palette",
+              "asset-into-lock"
+            ]
+          },
+          {
+            "rowHead": "asset",
+            "columnHead": "unlocked",
+            "result": "その Box の中に増える"
+          },
+          {
+            "rowHead": "paste",
+            "columnHead": "locked",
+            "result": "いちばん外側のロック中のものの直後に並ぶ",
+            "was": "選んだ Box の中の末尾に並ぶ",
+            "tests": [
+              "ip-locked",
+              "ip-nested-locked",
+              "ip-inherited",
+              "paste-locked",
+              "paste-inherited",
+              "ui-paste"
+            ]
+          },
+          {
+            "rowHead": "paste",
+            "columnHead": "unlocked",
+            "result": "選んだ Box の中の末尾に並ぶ",
+            "tests": [
+              "ip-unlocked",
+              "paste-unlocked"
+            ]
+          },
+          {
+            "rowHead": "toolbar",
+            "columnHead": "locked",
+            "result": "いちばん外側のロック中のものの直後に並ぶ",
+            "was": "選んだ Box の中の末尾に並ぶ",
+            "tests": [
+              "insert-locked",
+              "ui-toolbar"
+            ]
+          },
+          {
+            "rowHead": "toolbar",
+            "columnHead": "unlocked",
+            "result": "選んだ Box の中の末尾に並ぶ"
+          },
+          {
+            "rowHead": "reorder",
+            "columnHead": "locked",
+            "result": "Box の中で並べ替えられる",
+            "tests": [
+              "ui-reorder"
+            ]
+          },
+          {
+            "rowHead": "reorder",
+            "columnHead": "unlocked",
+            "result": "Box の中で並べ替えられる"
+          },
+          {
+            "rowHead": "duplicate",
+            "columnHead": "locked",
+            "result": "元の直後(ロック中の Box の中)に並ぶ",
+            "tests": [
+              "duplicate-in-lock"
+            ]
+          },
+          {
+            "rowHead": "duplicate",
+            "columnHead": "unlocked",
+            "result": "元の直後に並ぶ"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "ロック中の Box を選んだまま続けて貼る",
+        "before": [],
+        "after": [
+          {
+            "text": "後に貼ったものほど、ロック中のものの直後へ割り込むので、貼った順の逆に並ぶ",
+            "message": "insert-position"
+          }
+        ],
+        "text": "貼ったあとも選択はロック中の Box に残ります。選択を新しく貼ったものへ移すと、ロックしていないときのペーストの振る舞いまで変わるので、逆順のほうを受け入れました。",
+        "tests": [
+          "paste-twice"
+        ],
+        "primers": [
+          "insert-position-rule"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "ロック中の Text・部品インスタンスを選んでいるときは、今までどおり貼れない",
+        "tests": [
+          "paste-locked-text",
+          "ip-locked-text",
+          "ip-locked-instance"
+        ]
+      },
+      {
+        "text": "ロック中の Box を子に持つだけの Box は、今までどおり落とし先になる",
+        "tests": [
+          "drop-parent-of-locked"
+        ]
+      },
+      {
+        "text": "ツリーの並べ替えと複製は、ロック中の Box の中でも今までどおり行える",
+        "tests": [
+          "ui-reorder",
+          "duplicate-in-lock"
+        ]
+      },
+      {
+        "text": "artboard を選んで貼る・追加すると、今までどおり artboard の末尾に並ぶ",
+        "tests": [
+          "ip-artboard"
+        ]
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/03-schema.md",
+        "locator": "「ロック」の節の、ロックした Box の子孫もロック中として扱う項",
+        "text": "祖先を辿ってロック中を決める規則は変えていない(今回の判定もこれに従う)"
+      },
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「編集操作の一覧」の並べ替えの行",
+        "text": "同じ親の中の並べ替えの記述は変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "spread-override",
+      "category": "TypeScript · オブジェクト",
+      "label": "スプレッド構文で 1 つだけ変えた写しを作る",
+      "gist": "元の値を書き換えずに、1 つの項目だけ違う新しい[[オブジェクト|object]]を作るための書き方。`{ ...元, 項目: 新しい値 }` と書く。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`...元` は、元のオブジェクトの項目をすべて新しいオブジェクトへ写す。その後ろに同じ名前の項目を書くと、後に書いたほうが勝つ。元のオブジェクトは変わらないので、[[イミュータブル|immutable]]に扱える。"
+        },
+        {
+          "kind": "declaration",
+          "code": "next(position: ChildPosition): ChildPosition {\n  return { ...position, index: position.index + 1 };\n}"
+        },
+        {
+          "kind": "caution",
+          "text": "写すのは 1 段目だけ(浅い写し)。入れ子のオブジェクトは同じものを指したままになる。`ChildPosition` は文字列と数値だけなので問題にならない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/child-position/index.ts",
+          "lineRange": {
+            "start": 17,
+            "end": 19
+          },
+          "text": "`ChildPosition.next` が親はそのまま、`index` だけ 1 進めた位置を作る",
+          "shas": [
+            "6f17cd77590a55bfd87e0a169be1b6994c6dbf2d"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "insert-position-rule"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "typed-object-const",
+      "category": "TypeScript · 型",
+      "label": "型注釈付きの定数で関数の組を渡す",
+      "gist": "いくつかの関数をひとまとめにしたオブジェクトを定数にして、別の関数へ引数として渡すための書き方。定数に型を付けておくと、関数の引数の型が書かなくても決まる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`const 名前: 型 = { … }` と書くと、右辺がその型に合っているかをコンパイラが確かめる。型が「`node` は `Node` を受け取って `boolean` を返す関数」と決めていれば、`node: (node) => …` の `node` には `Node` の型が付く([[文脈による型付け|contextual-typing]])。"
+        },
+        {
+          "kind": "declaration",
+          "code": "type InheritedTest = Readonly<{\n  artboard: (artboard: Artboard) => boolean;\n  node: (node: Node) => boolean;\n}>;"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "artboard",
+              "type": "(artboard: Artboard) => boolean",
+              "text": "artboard 自身について答える関数"
+            },
+            {
+              "name": "node",
+              "type": "(node: Node) => boolean",
+              "text": "ノード自身について答える関数"
+            }
+          ]
+        },
+        {
+          "kind": "memo",
+          "text": "`Readonly<{…}>` は、各項目へ後から代入できなくする[[組み込みの型|utility-type]]。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1058,
+            "end": 1061
+          },
+          "text": "判定の組の型 `InheritedTest`(この PR では変えていない)"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1101,
+            "end": 1111
+          },
+          "text": "ロックの判定の定数 `LockedItself`",
+          "shas": [
+            "abf341414b52e2f93ddf2c8475da5c55ec025167"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "lock-inheritance"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "object-containing",
+      "category": "Vitest · 表明",
+      "label": "`vi.fn` と `expect.objectContaining`",
+      "gist": "コンポーネントへ渡した関数が、どんな引数で呼ばれたかを確かめるための道具。引数のうち見たい項目だけを比べる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`vi.fn()` は呼ばれた引数を覚える関数([[モック関数|mock-fn]])を作る。`toHaveBeenCalledWith(…)` は、そのどれかの呼び出しの引数が並べたものと等しいかを見る。`expect.objectContaining({ … })` を引数の位置に置くと、そのオブジェクトが書いた項目を含んでいれば等しいとみなし、ほかの項目は比べない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-lock.test.tsx",
+            "start": 59,
+            "end": 69,
+            "emphasis": [
+              {
+                "start": 65,
+                "end": 68
+              }
+            ],
+            "text": "test(\"フローのノードをロックの中の Box の上で離すと、ロックの外側の Box の子になる\", () => {\n  const onMoveNode = vi.fn();\n  renderCanvas({ selection: setupSelection(), onMoveNode });\n\n  dragNodeOnto(\"title\", drawn(\"inner\"), { x: 30, y: 40 });\n\n  expect(onMoveNode).toHaveBeenCalledWith(\n    \"title\",\n    expect.objectContaining({ parentName: \"panel\" }),\n  );\n});"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "このリポジトリでは呼び出しの検証は外の境界に限る(rules/testing.md)。ここで見ているのはキャンバスが外へ渡す編集の指示で、親の名前だけを比べている。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-lock.test.tsx",
+          "lineRange": {
+            "start": 59,
+            "end": 85
+          },
+          "text": "移動・置き直しの先の親が `panel` であることだけを見る",
+          "shas": [
+            "b49ef55ed73bb83242362a193d3fb27259b1a3e8"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "lock-inheritance",
+      "category": "domains · ロック",
+      "label": "ロックの継承と最も外側のロック",
+      "gist": "ノード自身のロックは `Locking.fromNode` が読み、祖先から継ぐぶんは `DesignDocument` が木を辿って決める。この PR で判定を `LockedItself` 1 つにまとめ、「どれかがロック中か」と「最も外側のロックはどれか」の両方がそれを使う。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`isLocked` は起点から親へ 1 つずつ上がり、どれかが `LockedItself` を満たせば真(artboard で止まる)。`outermostLockedName` は自身と祖先を内側から外側へ並べ、`LockedItself` を満たすものの最後 = 最も外側の名前を返す。"
+        },
+        {
+          "kind": "rule",
+          "text": "artboard はロックを持たない(`LockedItself.artboard` が常に偽)。artboard のロックを入れるときは、この定数 1 か所を直せば落とし先と挿入位置の両方に効く。"
+        },
+        {
+          "kind": "spec",
+          "text": "部品インスタンスのロックは参照ノード直下の `locking` で持ち、部品の根や `overrides` の `locking` はロックにならない(docs/03-schema「ロック」)。"
+        },
+        {
+          "kind": "history",
+          "text": "最初の実装では `outermostLockedName` が artboard を「`findNode` が `none` を返すので偽」と暗黙に外していた。レビューで、`isLocked` と判定が別々だと artboard のロックを入れたときにドラッグとペーストの答えが割れると指摘され、寄せた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/locking/index.ts",
+          "lineRange": {
+            "start": 41,
+            "end": 52
+          },
+          "text": "`Locking.fromNode`",
+          "shas": [
+            "e8d400490e7bd82c986b0d694a6945429be6b236"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1101,
+            "end": 1158
+          },
+          "text": "`LockedItself`・`holdsForSelf`・`outermostLockedName`",
+          "shas": [
+            "dbdd8ffcfa6fd11db2df05b0f1192b48fe078857",
+            "abf341414b52e2f93ddf2c8475da5c55ec025167"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 2124,
+            "end": 2126
+          },
+          "text": "`isLocked` は `LockedItself` を渡すだけ",
+          "shas": [
+            "abf341414b52e2f93ddf2c8475da5c55ec025167"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "typed-object-const",
+        "insert-position-rule",
+        "drop-scan"
+      ],
+      "tests": [
+        "lock-box",
+        "lock-instance",
+        "lock-overrides",
+        "ip-inherited",
+        "drop-inherited"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "insert-position-rule",
+      "category": "domains · 挿入",
+      "label": "ロックを避けた挿入位置",
+      "gist": "ペーストとツールバーの挿入の位置は `DesignDocument.insertPositionOf` が答え、`EditorState.insertPosition` はそれへ委ねるだけ。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "まず子の末尾(`appendPositionOf`)が引けるかを見る。引けなければ(子を持てない・無い名前)ロックに依らず `none`。引けたら最も外側のロックを探し、無ければ子の末尾、あればそのロックの位置を `ChildPosition.next` で 1 つ進めた位置を返す。"
+        },
+        {
+          "kind": "caution",
+          "text": "貼ったあとも選択は動かないので、ロック中の Box を選んだまま続けて貼ると、後のものほどロックの直後へ割り込み、作った順の逆に並ぶ。許容してテストで固定している。"
+        },
+        {
+          "kind": "spec",
+          "text": "ロック中の Box を選んでいるときのペースト・ツールバーの挿入は、最も外側のロック中ノードの直後へ入る(docs/03-schema「ロック」)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1880,
+            "end": 1907
+          },
+          "text": "`DesignDocument.insertPositionOf`",
+          "shas": [
+            "dbdd8ffcfa6fd11db2df05b0f1192b48fe078857"
+          ]
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "lineRange": {
+            "start": 892,
+            "end": 910
+          },
+          "text": "`EditorState.insertPosition` と、逆順を許容する理由",
+          "shas": [
+            "f2dfbd7a0a4b62b61ef09a45880f5a23f1b767cd",
+            "1d927ee071ddd1f7e177578bd1025599f5d903d5"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "lock-inheritance",
+        "spread-override"
+      ],
+      "tests": [
+        "ip-locked",
+        "ip-nested-locked",
+        "ip-unlocked",
+        "paste-locked",
+        "insert-locked",
+        "paste-twice"
+      ],
+      "flows": [
+        "paste"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "drop-scan",
+      "category": "canvas · 落とし先",
+      "label": "落とし先の走査",
+      "gist": "ポインタの下から根までの名前を内側から順に見て、飛ばす候補を除き、親として読めた最初のものを落とし先にする。この PR で飛ばす候補にロック中を足した。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`DropParent.innermost`(座標の置き直し)と `InsertionParent.innermost`(並びへの挿入)は、どちらも private の `innermostAccepted` を通る。飛ばすのは、運んでいるものが占めている名前と、`DesignDocument.isLocked` が真の名前。そのあと親として読めない候補(無い名前・子を持てない・並びへの挿入なら `layout: free`)も外へ進む。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+            "start": 50,
+            "end": 71,
+            "emphasis": [
+              {
+                "start": 59,
+                "end": 64
+              }
+            ],
+            "text": "function innermostAccepted<T>(\n  search: ParentSearchContext,\n  resolve: (document: DesignDocument, name: string) => Option<T>,\n): Option<T> {\n  const occupied = DraggedNode.collectNames(search.dragged, search.document);\n  if (!Option.isSome(occupied)) {\n    return Option.none;\n  }\n  for (const name of search.names) {\n    const isSkipped =\n      occupied.value.includes(name) ||\n      DesignDocument.isLocked(search.document, name);\n    if (isSkipped) {\n      continue;\n    }\n    const parent = resolve(search.document, name);\n    if (Option.isSome(parent)) {\n      return parent;\n    }\n  }\n  return Option.none;\n}"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "候補ごとに祖先を辿るが、許容した。Alt の距離表示がポインタの移動ごとに全件の `isLocked` を呼んでいるのより軽い、という比較による判断で、計測はしていない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+          "lineRange": {
+            "start": 58,
+            "end": 64
+          },
+          "text": "飛ばす条件 `isSkipped`",
+          "shas": [
+            "89fdc85e210f76100d3cd2ad5cd62c554e8729ba",
+            "df4665bcad1f34ccd2aecdd46a334ec80dd2e612"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "lineRange": {
+            "start": 419,
+            "end": 423
+          },
+          "text": "キャンバスのドラッグと Assets の行が並びへの挿入先を問い合わせる(変えていない)"
+        }
+      ],
+      "seeAlso": [
+        "lock-inheritance"
+      ],
+      "tests": [
+        "drop-locked",
+        "drop-inherited",
+        "drop-reposition",
+        "drop-artboard",
+        "drop-palette",
+        "drop-parent-of-locked"
+      ],
+      "flows": [
+        "drag"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "object",
+      "label": "オブジェクト",
+      "text": "名前の付いた項目を `{ 名前: 値 }` の形でまとめた値。"
+    },
+    {
+      "id": "immutable",
+      "label": "イミュータブル",
+      "text": "一度作った値を書き換えず、変えたいときは新しい値を作る扱い方。"
+    },
+    {
+      "id": "contextual-typing",
+      "label": "文脈による型付け",
+      "text": "関数を書いた場所で期待されている型から、引数の型をコンパイラが決めること。引数に型を書かなくてよくなる。"
+    },
+    {
+      "id": "utility-type",
+      "label": "組み込みの型",
+      "text": "TypeScript が最初から持っている、型から型を作る道具。`Readonly<T>` は `T` の各項目を読み取り専用にする。"
+    },
+    {
+      "id": "mock-fn",
+      "label": "モック関数",
+      "text": "テストのために本物の代わりに渡す関数。呼ばれた回数と引数を覚えていて、あとで確かめられる。"
+    }
+  ]
+}
