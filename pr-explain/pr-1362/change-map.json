@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1362,
+  "headBranch": "claude/magical-cannon-2vuzhc",
+  "baseBranch": "main",
+  "mergeBase": "9c2ecbf1696aec45c35b1da6998e1d11fd8cb656",
+  "head": "2299fbec8dbb6cf97337a7a6d6b69fc3d1890938",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1358.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 171,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "2299fbec8dbb6cf97337a7a6d6b69fc3d1890938",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-12T13:43:57Z",
+      "subject": "📝 [Doc]: #978 PR #1358 の振り返りを記録する",
+      "body": "- harness/records/pr-1358.md を足した（指摘 18 件・手戻り・発火）\n\n背景:\nPR #1358（Ellipse に最小 / 最大サイズを持たせる）がマージされたので、\nharness-record スキルの手順でその回の評価を残す。\n\n採用理由:\n人のレビューは get_reviews / get_review_comments / get_comments の 3 つを\n引いて 0 件と確かめた。発火ログは無く（フック不発）、計測対象外と書いた。\nCI の VRT の失敗はランナーの apt ミラーの名前解決によるもので、\n対応する規範が無いので分類 なし にした。\n\n代替案:\n- VRT の失敗を記録しない: CI へ届いた事実なので、数える材料として残す\n\n影響とトレードオフ:\n記録 1 ファイルの追加だけで、rules/・フック・スキルは変えていない。\n対策済 の行は書いていない（介入は harness-growth の管轄）。\n\n参考:\n- .claude/skills/harness-record/SKILL.md\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SQLgLtZMfEqzDwFws",
+      "files": [
+        {
+          "path": "harness/records/pr-1358.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 171,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,171 @@\n+# PR #1358 Ellipse に最小 / 最大サイズ（minWidth / maxWidth / minHeight / maxHeight）を持たせる\n+\n+- マージ日: 2026-11-12\n+- 関連 Issue: #978\n+- 差分規模: 9 ファイル / +243 -81\n+\n+## ゴールと結果\n+\n+Issue は「Ellipse に Box と同じ 4 prop を足すか決める」で、フェーズ 1 で判断待ちにして止めた。\n+オーナーの回答（「推奨でいい」）で案 A（足す・版は 1.1 の行へ追記）に決まった。\n+ゴールは「`fill` の軸では描画に効き、`fixed` の軸では読み捨て、`fill` の軸の逆転はエラー、インスペクタにも並ぶ」で、達成した。\n+\n+本番コードの変更はスキーマ 1 ファイルだけだった。描画・検査・パネルは型に依らず、スキーマに足すだけで追従した。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。\n+- `get_reviews` は Copilot の bot の 1 件だけ（「No open issues」で指摘なし）\n+- `get_comments` は、自分が投稿したテストケース表・CI 障害の説明 2 件と、bot の投稿（Storybook プレビュー・CI レポート・VRT）だけ\n+\n+## 指摘\n+\n+### 1. docs/03 の Ellipse の表に足す 4 行の位置が、行の単位で決まっていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「width/height の後に 4 行」は、height の後にまとめて置くとも読めた。パネルの行の並びは表の並びに従う（docs/06）ので、width の直後と height の直後に分けると行の単位で書いた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3（行の単位で直す記述）\n+\n+### 2. インスペクタに行が増えるのに、表示を確かめる手段が計画に無かった\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: Ellipse を fill にした状態のインスペクタを描くストーリーが無く、VRT には写らない。Storybook の画面全体のストーリーで、playwright で確かめる手順を計画に足した。\n+- 既存ルール: rules/ui-verification.md「表示確認」\n+\n+### 3. UI 案に無いことと、オーナーへ確認したことの記録が計画に無かった\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: UI 案に Ellipse は 0 件（`grep -i`）。スキーマ走査で欄を出す既存の決まりに従うことと、回答のどの部分で確認したかを Issue に書いた。\n+- 既存ルール: rules/ui-verification.md「UIの拠り所は `docs/Design Composer.html`」\n+\n+### 4. 定数を軸ごとに 2 つに分けた理由が、コメントに残る計画になっていなかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 1 定数にまとめない理由（spread の位置がパネルの行の並びを決める）は型でもテストでも守れない、という指摘。定数の doc に書くと計画に足した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 5. 新しい識別子 `*LimitProps` の、既存の語との突き合わせの記録が無かった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `Size.limitProps` / `ArtboardFixedSizeLimitProps` は prop 名の並びを指す。同じモジュールの `ShadowProps` などは定義の Record を指す。後者に揃えて名前は変えず、理由を Issue に書いた。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 6. open の PR との重なりの記録が無い（記録済みだった）\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画のコメントの「確かめたこと」に、open の PR 1 件・重なり 0 を書いてあった。計画は変えていない。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 9\n+\n+### 7. 却下案と分割しない理由を Issue に書いたかが読めない（記録済みだった）\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 却下案は計画のコメント、分割しない理由は回答のコメントに書いてあった。計画は変えていない。\n+- 既存ルール: AGENTS.md「実装の進め方」\n+\n+### 8. 対になる軸の片方しか試していなかった（任意）\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: コントロールの出し分けが幅の軸だけだった。「高さを fill にした Ellipse では高さの最小 / 最大のコントロールが出る」を足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 9. validate-size-limits の Ellipse の 2 件が、同じドキュメントの組み立てを 2 回書いていた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 形の名前: 同じ処理が2箇所に現れたら共通化する\n+- 内容: `documentWithBox` の隣に `documentWithEllipse` を作った。`documentWithArtboard` の `tokens?` は、Ellipse の既定の塗りにトークンが要るので残した。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 10. docs/03 の Ellipse の表が、最小 / 最大の 4 行を Box の表から写している（受け入れなかった）\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 形の名前: 同じ判断根拠・説明を doc 側で独立に複数箇所へ書いていないか\n+- 内容: 「上記」の参照 1 行にまとめる提案だった。docs/06 で表の行の位置がパネルの並びの拠り所になっているので、受け入れずに理由を Issue に書いた。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 11. 定数の doc が、変更の前後を説明する文（「4 行から 8 行になる」）だった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 形の名前: 経緯の混入\n+- 内容: 「パネルに出るのは `enabledWhen` を満たす行だけ」という現在形に直した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 12. Ellipse だけ `equals fill` にしない理由が、Issue にしか無かった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 形の名前: `comment-missing-issue-only`\n+- 内容: Why not を定数の doc に 2 行で足した。\n+- 既存ルール: rules/coding.md「Why と Why not は別物として書く」\n+\n+### 13. テスト名「大きさを書いていない Ellipse …」が、出ない理由を取り違えていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 形の名前: `comment-behavior-claim`\n+- 内容: 出ない理由は「既定の fixed を読み捨てる」なので、「モードを書いていない Ellipse は既定が fixed なので …」に揃えた（2 件）。\n+- 既存ルール: rules/testing.md「振る舞い(仕様)をテストする」\n+\n+### 14. 増えた行の表示確認が記録されておらず、それを写すストーリーも無かった\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（ui-reviewer）`\n+- 形の名前: `vrt-blind-spot`\n+- 内容: Storybook で表示を確かめた（fill で 2 欄が出る・最大 150 で止まる・fixed に戻すと消える）。ストーリーは足さず、VRT の対象外であることを PR 本文に書いた。\n+- 既存ルール: rules/ui-verification.md「表示確認」\n+\n+### 15. 「spread の位置がパネルの行の並びを決める」がテストで守られていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 形の名前: `test-coverage-gap`\n+- 内容: ミューテーション 8 件のうち 2 件が全テストを素通りした（Box / Ellipse の `...WidthLimitProps` を後ろへ移す）。Size 節の並びを `toEqual` で固定するテストを 2 件足し、同じ壊し方で落ちることを確かめた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 16. 並びのテストを足したら、既存のテストと節を探す処理が重複した\n+\n+- 分類: `duplication`\n+- 出どころ: `自己修正`\n+- 内容: implementer の報告で気づいた。`propNamesInSection(selection, group)` にまとめ、既存のテストもこれを呼ぶ形にした。\n+- 既存ルール: rules/coding.md「同じ処理が2箇所に現れたら共通化する」\n+\n+### 17. VRT がランナーの apt ミラーの名前解決の失敗で 2 回落ちた\n+\n+- 分類: `なし`\n+- 出どころ: `CI`\n+- 内容: `fonts-noto-cjk` を入れるステップが `Temporary failure resolving 'azure.archive.ubuntu.com'` で exit 100 になり、撮影まで進まなかった。1 回だけ再実行したが同じ理由で落ちたので、差分の外の問題として PR にコメントした。マージはオーナーの判断。\n+- 既存ルール: なし\n+\n+### 18. フックが発火しない環境だった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が deny されなかった。検証エージェントのマーカーも、発火ログの見出しも無かった（本当の不発）。禁止コマンド（`npx`・`git add -A`）は打っていない。エージェントの実行中のコミットも、親によるリポジトリの編集も無いことを実行履歴で確認した。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- フェーズ 1: 判断待ちで 1 回止まった（足すか足さないか）\n+- フェーズ 4: 計画を直した（指摘 1〜5、8）。6・7 は記録済みで変更なし\n+- フェーズ 6: implementer を 3 回起動し直した\n+  - 1 回目: comment 3 件と duplication 1 件\n+  - 2 回目: test-reviewer の並びのテスト\n+  - 3 回目: 2 回目で生まれた重複の共通化\n+- 起動の形: planner / plan-reviewer / implementer / test-reviewer に `run_in_background: false` を渡したが、すべて背景で起動した。完了通知を待ってから次へ進んだ\n+- PR コメントのテストケース表のテスト名が、最初はコードの綴りとずれていた（読点の有無など）。解説ページを書くときに気づき、コメントを書き直した\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。このスキルの管轄は記録までで、集計と介入の判断は `harness-growth` が行う。",
+          "patchLines": 172,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
