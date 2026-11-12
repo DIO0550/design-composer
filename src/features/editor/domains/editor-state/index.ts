@@ -890,21 +890,25 @@ export const EditorState = {
   },
 
   /**
-   * 選択位置へノードを挿すときの位置（docs/06-ui.md「編集操作の一覧」の挿入は
-   * 「選択位置の子として追加」）。
+   * 選択位置へノードを挿すときの位置（docs/06-ui.md「編集操作の一覧」の挿入・ペースト、
+   * docs/03-schema.md「ロック」）。
    *
    * 挿入のボタンはこれが `none` の間は押せなくしているため、画面の操作から `insertNode`
    * の `none` には到達しない。
    *
+   * ロック中を選んだまま続けて貼る・挿すと、後のものほどロックの直後へ割り込み作った順の逆に並ぶ。
+   * それでも選択を動かさないのは、ロックしていないときのペースト・挿入が選択を保つ約束まで変わるから。
+   *
    * @param state 選択の出どころになるエディタの状態
-   * @returns 選んでいるものの子の並びの末尾。1 つだけ選んでいないとき（未選択・複数選択）と、
-   *   選択が子を持てないノード（インスタンスと、スキーマが子を認めていない
-   *   プリミティブ）のときは `none`。ファイルの妥当性は
-   *   見ない
+   * @returns 選んでいるものの `DesignDocument.insertPositionOf`（ロックしていない Box と
+   *   artboard は子の末尾、自身か祖先がロックしている Box はロックしている最も外側のノードの
+   *   直後）。1 つだけ選んでいないとき（未選択・複数選択）と、選択が子を持てないノード
+   *   （インスタンスと、スキーマが子を認めていないプリミティブ）のときは `none`。ファイルの
+   *   妥当性は見ない
    */
   insertPosition(state: EditorState): Option<ChildPosition> {
     return Option.flatMap(EditorState.singleName(state), (name) =>
-      DesignDocument.appendPositionOf(EditorState.document(state), name),
+      DesignDocument.insertPositionOf(EditorState.document(state), name),
     );
   },
 
@@ -913,8 +917,8 @@ export const EditorState = {
    * （docs/06-ui.md「編集操作の一覧」のコピー & ペースト /「複数選択」）。どれを入れるかは
    * `DesignDocument.findOutermostNodes`。
    *
-   * artboard を入れないのは、貼る先が「選択位置の子」で artboard はどのノードの子にもな
-   * れないため。入れるのは切り離された複製なので、この後に元のノードを消しても貼れる
+   * artboard を入れないのは、貼る先がノードの子の並び（`insertPosition`）で、artboard は
+   * どこの子にもなれないため。入れるのは切り離された複製なので、この後に元のノードを消しても貼れる
    * （ドキュメントは変わらない）。
    *
    * @param state コピーする前の状態
@@ -933,7 +937,7 @@ export const EditorState = {
   },
 
   /**
-   * クリップボードの中身を選択位置の子として、写した順に貼る（docs/06-ui.md「編集操作の
+   * クリップボードの中身を選択位置（`insertPosition`）へ、写した順に貼る（docs/06-ui.md「編集操作の
    * 一覧」/「複数選択」）。
    *
    * 名前の付け替えは `DesignDocument.insertNodeCopies` が挿入と一体で行うため、ここでは順
@@ -1008,7 +1012,7 @@ export const EditorState = {
   },
 
   /**
-   * 選択位置の子としてノードを挿す（docs/06-ui.md「編集操作の一覧」の挿入）。
+   * 選択位置（`insertPosition`）へノードを挿す（docs/06-ui.md「編集操作の一覧」の挿入）。
    *
    * 選択は動かさない。
    *
