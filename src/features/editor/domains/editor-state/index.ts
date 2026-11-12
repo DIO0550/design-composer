@@ -900,11 +900,8 @@ export const EditorState = {
    * それでも選択を動かさないのは、ロックしていないときのペースト・挿入が選択を保つ約束まで変わるから。
    *
    * @param state 選択の出どころになるエディタの状態
-   * @returns 選んでいるものの `DesignDocument.insertPositionOf`（ロックしていない Box と
-   *   artboard は子の末尾、自身か祖先がロックしている Box はロックしている最も外側のノードの
-   *   直後）。1 つだけ選んでいないとき（未選択・複数選択）と、選択が子を持てないノード
-   *   （インスタンスと、スキーマが子を認めていないプリミティブ）のときは `none`。ファイルの
-   *   妥当性は見ない
+   * @returns 選んでいるものの `DesignDocument.insertPositionOf`。1 つだけ選んでいないとき
+   *   （未選択・複数選択）は `none`。ファイルの妥当性は見ない
    */
   insertPosition(state: EditorState): Option<ChildPosition> {
     return Option.flatMap(EditorState.singleName(state), (name) =>
