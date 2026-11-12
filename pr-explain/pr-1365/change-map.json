@@ -1,0 +1,196 @@
+{
+  "version": 2,
+  "pr": 1365,
+  "headBranch": "claude/magical-cannon-51rdv2",
+  "baseBranch": "main",
+  "mergeBase": "e75559d319c8b8325b282e58258026c2f31b7f23",
+  "head": "adcf3f6f6cc85bc897d49df0b5fd982594d3dd83",
+  "groups": [
+    {
+      "label": "src-tauri",
+      "files": [
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/io.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/io/error.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/io_edge_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 30,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/watch/watchers.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/file_io/atomic_write.rs",
+          "status": "R",
+          "oldPath": "src-tauri/src/document/io/atomic_write.rs",
+          "additions": 17,
+          "deletions": 27,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "38c852fcef0da8161f5c38ddefa9d520423dc245",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-12T14:10:31Z",
+      "subject": "♻️ [Refactoring]: #553 std::fs の呼び出しを file_io に集める",
+      "body": "- document/io/atomic_write.rs を file_io/atomic_write.rs へ移し、\n  write_atomic(directory, file_name, content) が io::Error をそのまま返す形にした\n- file_io に read_bytes / canonicalize を足し、document::io の load と\n  canonical_path.rs / watchers.rs の Path::canonicalize をそこへ寄せた\n- DocumentIoError への詰め替え(from_io / invalid_path)は document 側に残した\n- file_io のモジュール doc を、io::Result を返す口と FileIoError に\n  まとめる口の 2 系統として書き直した\n\n背景:\n#543 のレビューで「IO 部分を 1 か所にまとめて境界を作るか」と問われた。\n本番コードで std::fs を直接呼ぶ場所が file_io.rs / document/io.rs /\ndocument/io/atomic_write.rs と、Path::canonicalize を使う\ncanonical_path.rs / watchers.rs に散っていた。\n\n採用理由:\nIssue の案 D を採った。std::fs を呼ぶのは file_io だけにし、そこは\nio::Error を返す原始操作に留める。io::Error が kind() を持つので、\nFileIoError に種別を足さずに DocumentIoError の kind(TS 側の\nDocumentIpcErrorKind と対)を document 側の from_io で保てる。\nwrite_atomic が親とファイル名を分けて受けるのは、分けられないパスを\nInvalidPath にするかを呼び出し側が決めるため。\n\n影響とトレードオフ:\n- TS へ返る kind は変わらない。一時ファイルの作成・書き込み・sync_all の\n  失敗メッセージに載るパスが、一時ファイルから保存先に変わる\n  (io::Error の OS 文言はパスを含まず、詰め替える側が知るのは保存先だけ)\n- save の let-else の InvalidPath 枝は ChosenDocumentPath からは届かず、\n  テストを持たない\n- 完了条件の grep は一度確かめただけで、恒久化は #1363(Rust の CI)へ回した\n- Windows の \\\\?\\ を残したまま canonical_form へ渡る経路は実機で未確認\n\n代替案:\n- fs を trait + fake で差し替え可能にする: io_atomicity_test などが実物で\n  測っている rename のアトミック性が検査から外れる(古典学派)\n- FileIoError に種別を足す(案 A): io::ErrorKind を写した型を作るだけになる\n- read_optional_text / write_text の詰め替えを app_state / chosen_paths へ\n  移す: 同じ変換が 2 か所に出る。意味も read_bytes とは違う\n- write_atomic(path) のまま InvalidInput を返す: from_io が Io に写し、\n  InvalidPath が Io に変わる。InvalidPath に写し直すと NUL を含むパスの\n  失敗まで InvalidPath になる\n- 親とファイル名の対を型にする: DocumentFilePath は綴りを変えずに持つ\n  必要があり、parent.join(file_name) は /a//b.dcmp などの綴りを変える\n- file_io に新しいテストを足す: io_* / canonical_path_* / watch_* が\n  同じ経路を実物の FS で通している\n\n参考:\n- Issue #553(判断の履歴)、#1240(正規化・symlink・UNC の扱い)\n- cargo test(Linux)142 件通過\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QBq3quGwSyD8tKbbL",
+      "files": [
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 2,
+          "patch": "@@ -6,6 +6,8 @@\n \n use std::path::{Component, Path, PathBuf, Prefix};\n \n+use crate::file_io;\n+\n use super::file_path::DocumentFilePath;\n use super::io::DocumentIoError;\n \n@@ -16,7 +18,7 @@ use super::io::DocumentIoError;\n ///\n /// @returns 揃えた綴り。親ディレクトリも正規化できないときは `path` の綴りのまま\n pub fn canonical_form(path: &Path) -> PathBuf {\n-    if let Ok(canonical) = path.canonicalize() {\n+    if let Ok(canonical) = file_io::canonicalize(path) {\n         return without_verbatim_disk(canonical);\n     }\n \n@@ -31,7 +33,7 @@ pub fn canonical_form(path: &Path) -> PathBuf {\n     } else {\n         parent\n     };\n-    match parent.canonicalize() {\n+    match file_io::canonicalize(parent) {\n         Ok(directory) => without_verbatim_disk(directory).join(file_name),\n         Err(_) => path.to_path_buf(),\n     }",
+          "patchLines": 27,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/io.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 5,
+          "patch": "@@ -1,13 +1,14 @@\n-//! ドキュメントの永続化 I/O(読み込みとアトミックな書き込み)。\n+//! ドキュメントの永続化 I/O(読み込みとアトミックな書き込み)。ファイルシステムへは\n+//! `file_io` を通し、その失敗を `DocumentIoError` の種別へ詰め替えるのはここで行う。\n \n-mod atomic_write;\n mod error;\n \n-use std::fs;\n use std::sync::Arc;\n \n use tauri::State;\n \n+use crate::file_io;\n+\n use super::chosen_paths::{ChosenDocumentPath, ChosenDocumentPaths};\n use super::known_content::KnownContentRegistry;\n \n@@ -31,7 +32,8 @@ impl<'a> DocumentManagedState<'a> {\n \n /// ファイルを UTF-8 文字列として読み込む。\n pub fn load(path: &ChosenDocumentPath) -> Result<String, DocumentIoError> {\n-    let bytes = fs::read(path).map_err(|error| DocumentIoError::from_io(path, &error))?;\n+    let bytes =\n+        file_io::read_bytes(path).map_err(|error| DocumentIoError::from_io(path, &error))?;\n     String::from_utf8(bytes).map_err(|_| DocumentIoError::invalid_utf8(path))\n }\n \n@@ -44,7 +46,16 @@ pub fn save(\n     path: &ChosenDocumentPath,\n     content: &str,\n ) -> Result<(), DocumentIoError> {\n-    known.record_write(path, content, || atomic_write::write_atomic(path, content))\n+    let (Some(directory), Some(file_name)) = (path.parent(), path.file_name()) else {\n+        return Err(DocumentIoError::invalid_path(\n+            path,\n+            \"親ディレクトリとファイル名に分けられない\",\n+        ));\n+    };\n+    known.record_write(path, content, || {\n+        file_io::write_atomic(directory, file_name, content)\n+            .map_err(|error| DocumentIoError::from_io(path, &error))\n+    })\n }\n \n /// webview から渡されたパスを照合し、通ったときだけ `load` する。読み込めたら、そのパスを",
+          "patchLines": 46,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/io/error.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -17,7 +17,7 @@ pub enum DocumentIoError {\n     /// 読み込み / 書き込みの権限が無い。\n     PermissionDenied { message: String },\n     /// ドキュメントとして扱えないパス。`DocumentFilePath::parse` が拒否したパスと、\n-    /// `io/atomic_write.rs` / `watch/watchers.rs` が親ディレクトリ・ファイル名を取り出せないパスと、\n+    /// `io.rs`(保存)/ `watch/watchers.rs` が親ディレクトリ・ファイル名を取り出せないパスと、\n     /// `canonical_path.rs` が揃えた綴りを UTF-8 で表せないパスと、`dialog.rs` がダイアログで\n     /// 選ばれたものをパスとして・UTF-8 として読めないとき。\n     InvalidPath { message: String },",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/watch/watchers.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -7,6 +7,7 @@ use notify::{ErrorKind, RecommendedWatcher, RecursiveMode};\n use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};\n \n use crate::document::io::DocumentIoError;\n+use crate::file_io;\n \n /// 変更が落ち着くのを待つ時間。\n ///\n@@ -45,9 +46,8 @@ impl DocumentWatchers {\n         // 監視するのはファイルではなく親ディレクトリ。`save_document` のアトミック書き込みも\n         // 多くのエディタの保存も rename でファイルを差し替えるため、ファイル自身に watch を\n         // 張ると inode ごと差し替わって 2 回目以降のイベントが届かなくなる。\n-        let watched = path\n-            .canonicalize()\n-            .map_err(|error| DocumentIoError::from_io(path, &error))?;\n+        let watched =\n+            file_io::canonicalize(path).map_err(|error| DocumentIoError::from_io(path, &error))?;\n         let directory = watched\n             .parent()\n             .ok_or_else(|| DocumentIoError::invalid_path(path, \"親ディレクトリを持たない\"))?\n@@ -80,7 +80,7 @@ impl DocumentWatchers {\n \n     /// `path` の監視を止める。監視していないパスに対しては何もしない(停止操作は冪等)。\n     pub fn unwatch(&self, path: &Path) {\n-        let key = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());\n+        let key = file_io::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());\n         self.active().remove(&key);\n     }\n ",
+          "patchLines": 29,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 5,
+          "patch": "@@ -1,13 +1,22 @@\n-//! テキストファイルの読み書き。\n+//! ファイルシステムへの読み書き。本番コードで `std::fs` を呼ぶのはこのモジュールだけにする。\n //!\n-//! 中身が何であるかは知らない。どこへ置くか・何を書くかは呼び出し側が決める。\n+//! 口は 2 系統ある。`read_bytes` / `write_atomic` / `canonicalize` は `io::Result` をそのまま返し、\n+//! 失敗の種別への詰め替えは呼び出し側が行う。`read_optional_text` / `write_text` は失敗を\n+//! `FileIoError` にまとめる。後者は前者と意味が違う（無いことを `None` で表す・UTF-8 として\n+//! 解釈する・親ディレクトリを作る）ので残している。\n+//!\n+//! ファイル変更の監視（`notify`）はここを通さない。\n+\n+mod atomic_write;\n \n use std::fs;\n use std::io;\n-use std::path::Path;\n+use std::path::{Path, PathBuf};\n \n use serde::Serialize;\n \n+pub use atomic_write::write_atomic;\n+\n // テストは対象と同じ階層に `{対象のファイル名}_{カテゴリ}_test.rs` で置く。\n #[cfg(test)]\n mod file_io_edge_test;\n@@ -44,11 +53,23 @@ impl FileIoError {\n     }\n }\n \n+/// 中身をバイト列として読む。\n+pub fn read_bytes(path: &Path) -> io::Result<Vec<u8>> {\n+    fs::read(path)\n+}\n+\n+/// symlink と `.` / `..` を解決した絶対パスを返す。Windows の `\\\\?\\` 接頭辞は外さない。\n+///\n+/// 表示・照合に使う綴りは `document::canonical_path::canonical_form`（ドライブに付く `\\\\?\\` を外す）を使う。\n+pub fn canonicalize(path: &Path) -> io::Result<PathBuf> {\n+    fs::canonicalize(path)\n+}\n+\n /// テキストとして読む。\n ///\n /// まだ置かれていないことは失敗ではないので `None` で表す。\n pub fn read_optional_text(path: &Path) -> Result<Option<String>, FileIoError> {\n-    let bytes = match fs::read(path) {\n+    let bytes = match read_bytes(path) {\n         Ok(bytes) => bytes,\n         Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),\n         Err(error) => return Err(FileIoError::at(path, &error.to_string())),\n@@ -60,7 +81,7 @@ pub fn read_optional_text(path: &Path) -> Result<Option<String>, FileIoError> {\n \n /// 中身を置き換える。親ディレクトリが無ければ作る。\n ///\n-/// 一時ファイル + rename（`document::io`）にはしない。書き込みの途中で落ちて壊れても\n+/// 一時ファイル + rename（`write_atomic`）にはしない。書き込みの途中で落ちて壊れても\n /// 作り直せるものを置く先で、外部の読み手を待たせる相手もいない。\n pub fn write_text(path: &Path, content: &str) -> Result<(), FileIoError> {\n     let parent = path",
+          "patchLines": 60,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/file_io/atomic_write.rs",
+          "status": "R",
+          "oldPath": "src-tauri/src/document/io/atomic_write.rs",
+          "additions": 17,
+          "deletions": 27,
+          "patch": "@@ -1,20 +1,23 @@\n+use std::ffi::OsStr;\n use std::fs::{self, File};\n-use std::io::Write;\n+use std::io::{self, Write};\n use std::path::{Path, PathBuf};\n use std::sync::atomic::{AtomicU64, Ordering};\n \n-use super::error::DocumentIoError;\n-\n /// 一時ファイル名に混ぜる連番。同一プロセス内の同時書き込みが\n /// 同じ一時ファイルを掴まないようにする。\n static TEMP_FILE_SEQUENCE: AtomicU64 = AtomicU64::new(0);\n \n-/// 一時ファイルへ書いてから rename することで、`path` を部分書き込み状態にせず置き換える。\n+/// 一時ファイルへ書いてから rename することで、`directory` の `file_name` を部分書き込み状態に\n+/// せず置き換える。外部の読み手（AI・エディタ）からは、置き換え前か置き換え後の一方だけが見える。\n+///\n+/// 親とファイル名を分けて受けるのは、分けられないパスをどの失敗とするかを呼び出し側が決めるため。\n+/// パスで受けて `InvalidInput` を返すと、NUL を含むパスの失敗と見分けられない。\n ///\n-/// 外部の読み手（AI・エディタ）からは、置き換え前の内容か置き換え後の内容の\n-/// どちらか一方だけが見える。\n-pub(crate) fn write_atomic(path: &Path, content: &str) -> Result<(), DocumentIoError> {\n-    let temp_path = temp_path_for(path)?;\n+/// @returns 失敗は各手順の `io::Error` のまま返す（一時ファイルのパスは載らない）\n+pub fn write_atomic(directory: &Path, file_name: &OsStr, content: &str) -> io::Result<()> {\n+    let path = directory.join(file_name);\n+    let temp_path = temp_path_for(directory, file_name);\n \n     if let Err(error) = write_all_synced(&temp_path, content) {\n         remove_temp_file(&temp_path);\n@@ -24,34 +27,21 @@ pub(crate) fn write_atomic(path: &Path, content: &str) -> Result<(), DocumentIoE\n     // 一時ファイルは同一ディレクトリに作るのでファイルシステムをまたがず、rename は\n     // アトミックに完了する。Windows でも `fs::rename` は\n     // MoveFileExW(MOVEFILE_REPLACE_EXISTING) を使うため既存ファイルを置換できる。\n-    fs::rename(&temp_path, path).map_err(|error| {\n-        remove_temp_file(&temp_path);\n-        DocumentIoError::from_io(path, &error)\n-    })\n+    fs::rename(&temp_path, &path).inspect_err(|_| remove_temp_file(&temp_path))\n }\n \n-fn write_all_synced(temp_path: &Path, content: &str) -> Result<(), DocumentIoError> {\n-    let mut file =\n-        File::create(temp_path).map_err(|error| DocumentIoError::from_io(temp_path, &error))?;\n-    file.write_all(content.as_bytes())\n-        .map_err(|error| DocumentIoError::from_io(temp_path, &error))?;\n+fn write_all_synced(temp_path: &Path, content: &str) -> io::Result<()> {\n+    let mut file = File::create(temp_path)?;\n+    file.write_all(content.as_bytes())?;\n     // rename の後にクラッシュしても中身が確定しているよう、rename の前に同期する。\n     file.sync_all()\n-        .map_err(|error| DocumentIoError::from_io(temp_path, &error))\n }\n \n /// 書き込み先と同一ディレクトリの一時ファイルパスを組み立てる。\n ///\n /// 先頭のドットで隠しファイルにし、末尾の `.tmp` で file watch 側が除外できる形にする。\n /// プロセス ID と連番を挟むことで、同時に走る書き込み同士が衝突しないようにする。\n-fn temp_path_for(path: &Path) -> Result<PathBuf, DocumentIoError> {\n-    let parent = path\n-        .parent()\n-        .ok_or_else(|| DocumentIoError::invalid_path(path, \"親ディレクトリを持たない\"))?;\n-    let file_name = path\n-        .file_name()\n-        .ok_or_else(|| DocumentIoError::invalid_path(path, \"ファイル名を持たない\"))?;\n-\n+fn temp_path_for(directory: &Path, file_name: &OsStr) -> PathBuf {\n     let sequence = TEMP_FILE_SEQUENCE.fetch_add(1, Ordering::Relaxed);\n     let temp_name = format!(\n         \".{}.{}.{}.tmp\",\n@@ -60,7 +50,7 @@ fn temp_path_for(path: &Path) -> Result<PathBuf, DocumentIoError> {\n         sequence\n     );\n \n-    Ok(parent.join(temp_name))\n+    directory.join(temp_name)\n }\n \n /// 後始末なので失敗しても報告しない（元の失敗を上書きしないため）。",
+          "patchLines": 81,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "65e0c99c40140861b02469b812c057ab776fa1e7",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-12T14:16:17Z",
+      "subject": "📝 [Documentation]: #553 file_io::canonicalize の doc を実物に合わせる",
+      "body": "- canonical_form を名指しして「照合にはそちらを使う」としていた行を消した\n- OS が返した綴りのまま返す(Windows の \\\\?\\ も残す)ことと、\n  存在しないパス・解決できない symlink では Err になることを書いた\n\n背景:\n実装の検証(comment-reviewer / solution-reviewer / naming-reviewer)で、\n汎用の境界である file_io の doc がドメイン(document::canonical_path)を\n名指ししていること、Err になる条件が書かれていないことを指摘された。\n\n採用理由:\nfile_io は呼び出し側を知らない層なので、どの綴りを照合に使うかの案内は\n置かない。失敗の条件は呼び出し側(canonical_path.rs は「まだ存在しない\nファイル」、watchers.rs は監視の開始失敗)が分岐に使っているので doc に残す。\n\n影響とトレードオフ:\ndoc のみで、挙動は変わらない。\n\n代替案:\n- watchers.rs に「\\\\?\\ を外すと notify のイベントパスと一致しなくなる」\n  という Why を書く: notify 8.2.0 はイベントパスを監視に渡したディレクトリの\n  綴りから作り、directory と target は同じ watched から作るので、\\\\?\\ の\n  有無には依存しない。前提が実物と合わないため書かない\n- 「canonical_form は失敗しないので監視の開始失敗を返すために\n  file_io::canonicalize を使う」と書く: watch_edge_test「存在しないファイルの\n  監視は開始できない」が守っているので、コメントに写さない\n\n参考:\n- Issue #553\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QBq3quGwSyD8tKbbL",
+      "files": [
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -58,9 +58,9 @@ pub fn read_bytes(path: &Path) -> io::Result<Vec<u8>> {\n     fs::read(path)\n }\n \n-/// symlink と `.` / `..` を解決した絶対パスを返す。Windows の `\\\\?\\` 接頭辞は外さない。\n+/// symlink と `.` / `..` を解決した絶対パスを、OS が返した綴りのまま返す（Windows の `\\\\?\\` 接頭辞も残す）。\n ///\n-/// 表示・照合に使う綴りは `document::canonical_path::canonical_form`（ドライブに付く `\\\\?\\` を外す）を使う。\n+/// @returns 解決した絶対パス。パスが存在しないとき、途中の symlink を解決できないときは `Err`。\n pub fn canonicalize(path: &Path) -> io::Result<PathBuf> {\n     fs::canonicalize(path)\n }",
+          "patchLines": 12,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "adcf3f6f6cc85bc897d49df0b5fd982594d3dd83",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-12T14:25:40Z",
+      "subject": "🧪 [Tests]: #553 保存の失敗の種別と、メッセージに載るパスをテストで固定する",
+      "body": "- 保存先がディレクトリのとき、保存が Io の失敗を返すことを確かめるテストを足した\n- 同じ入力で、失敗のメッセージに保存先のフルパスが載ることを確かめるテストを足した\n\n背景:\ntest-reviewer の実測で、save の失敗をすべて NotFound に変えても、\nメッセージのパスを親ディレクトリに変えても 142 件すべてが通った。\n保存の失敗を DocumentIoError へ詰め替える処理は、38c852f で\ndocument/io.rs へ移している。これまでテストが確かめていたのは\nNotFound の場合だけだった。\n\n採用理由:\n保存先をディレクトリにすると rename で失敗し、kind は Io になる。\n既存の「一時ファイルが残らない」テストと同じ入力だが、1 テスト 1 仕様に\nするため別のテストに分けた。パスはフルパスで照合する。一時ファイル名\n(.document.dcmp.<pid>.<n>.tmp)にもファイル名が含まれるので、ファイル名\nだけで照合すると判定にならない。\n\n影響とトレードオフ:\n- 実装を壊して確かめた。kind を NotFound にする / パスを親ディレクトリに\n  する / パスを一時ファイルにする、のどれでも、該当するテストがそれぞれ\n  1 件ずつ落ちる\n- 一時ファイルの作成・書き込み・sync_all で失敗したときの経路は、\n  実物の FS では失敗を起こせない(root で動く環境では書き込めない\n  ディレクトリを作れない)ので、テストで固定していない\n\n代替案:\n- contains(\"document.dcmp\") で照合する: 一時ファイルのパスでも通る\n- 既存の「一時ファイルが残らない」テストに assert を足す: 1 テストに\n  2 つの仕様が入る\n\n参考:\n- Issue #553\n- cargo test(Linux)144 件通過\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QBq3quGwSyD8tKbbL",
+      "files": [
+        {
+          "path": "src-tauri/src/document/io_edge_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 30,
+          "deletions": 0,
+          "patch": "@@ -52,6 +52,36 @@ fn 保存に失敗したとき一時ファイルが残らない() {\n     assert_eq!(dir.file_names(), vec![\"document.dcmp\".to_string()]);\n }\n \n+#[test]\n+fn 保存先がディレクトリのとき保存はIOの失敗を返す() {\n+    let dir = TempDir::new(\"edge\");\n+    let known = KnownContentRegistry::new();\n+    let path = chosen_file_path(&dir, \"document.dcmp\");\n+    fs::create_dir(&path).expect(\"ディレクトリを作成できる\");\n+\n+    let error = io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n+\n+    assert!(matches!(error, DocumentIoError::Io { .. }));\n+}\n+\n+#[test]\n+fn 保存の失敗には保存先のパスが載る() {\n+    let dir = TempDir::new(\"edge\");\n+    let known = KnownContentRegistry::new();\n+    let path = chosen_file_path(&dir, \"document.dcmp\");\n+    fs::create_dir(&path).expect(\"ディレクトリを作成できる\");\n+\n+    let error = io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n+\n+    // 一時ファイル名 `.document.dcmp.<pid>.<n>.tmp` もファイル名を含むので、フルパスで照合する\n+    let destination = path.display().to_string();\n+    assert!(\n+        error.message().contains(&destination),\n+        \"エラーメッセージに保存先のパスが含まれていない: {}\",\n+        error.message()\n+    );\n+}\n+\n #[test]\n fn UTF8として解釈できないファイルの読み込みは不正なUTF8を返す() {\n     let dir = TempDir::new(\"edge\");",
+          "patchLines": 37,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
