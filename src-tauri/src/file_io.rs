@@ -58,9 +58,9 @@ pub fn read_bytes(path: &Path) -> io::Result<Vec<u8>> {
     fs::read(path)
 }
 
-/// symlink と `.` / `..` を解決した絶対パスを返す。Windows の `\\?\` 接頭辞は外さない。
+/// symlink と `.` / `..` を解決した絶対パスを、OS が返した綴りのまま返す（Windows の `\\?\` 接頭辞も残す）。
 ///
-/// 表示・照合に使う綴りは `document::canonical_path::canonical_form`（ドライブに付く `\\?\` を外す）を使う。
+/// @returns 解決した絶対パス。パスが存在しないとき、途中の symlink を解決できないときは `Err`。
 pub fn canonicalize(path: &Path) -> io::Result<PathBuf> {
     fs::canonicalize(path)
 }
