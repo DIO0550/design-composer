@@ -40,8 +40,7 @@ type ParentSearchContext = Readonly<{
  * 内側から外へ並べた候補のうち、運んでいるものを受け入れられる最も内側のものを選ぶ。
  *
  * どこまでを受け入れるかは `resolve` が答える（座標の置き直しと並びへの挿入で条件が違う）。
- * 走査そのもの（運んでいるものが占めている名前とロック中のノードを飛ばし、外側を見に行く）は
- * 共通。
+ * 走査そのもの（外す候補を飛ばし、外側を見に行く。外す条件は `DropParent.innermost`）は共通。
  *
  * @param search 引き先のドキュメント・運んでいるもの・内側から根へ向かう順の候補
  * @param resolve 候補を親として読む手続き
@@ -57,10 +56,10 @@ function innermostAccepted<T>(
     return Option.none;
   }
   for (const name of search.names) {
-    const isRefused =
+    const isSkipped =
       occupied.value.includes(name) ||
       DesignDocument.isLocked(search.document, name);
-    if (isRefused) {
+    if (isSkipped) {
       continue;
     }
     const parent = resolve(search.document, name);
