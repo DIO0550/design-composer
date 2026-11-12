@@ -1,7 +1,8 @@
 import { within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { expect, test } from "vitest";
-import { currentRowNames } from "@/components/__tests__/row-names";
+import { dragRowNamed } from "@/components/__tests__/row-drag";
+import { currentRowNames, rowNames } from "@/components/__tests__/row-names";
 import { segmentOf } from "@/components/__tests__/segmented-controls";
 import { Artboard } from "@/domains/dcmp/artboard";
 import {
@@ -18,6 +19,7 @@ import {
   canvasPane,
   dragRangeAround,
   drawn,
+  drawnParentName,
   renderOpenedDocument,
   selectInTree,
   tree,
@@ -169,4 +171,81 @@ test("ツリーで選んだロック中のインスタンスは、インスペ�
   await userEvent.click(renderedElement(canvasPane(), "home-login"));
 
   expect(currentRowNames(tree())).toEqual(["home-login"]);
+});
+
+/**
+ * `home` に、コピー元の Text `home-note` と Box の `home-panel` が並び、`home-panel` の中に
+ * ロックした Box `home-sealed`、その中に空の Box `home-inner` と Text の `home-caption` が
+ * この順で並ぶドキュメント。
+ */
+function setupNestedLockDocument(): DesignDocument {
+  return DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    components: DocumentTemplate.Default.components,
+    artboards: [
+      Artboard.create({
+        name: "home",
+        width: 360,
+        height: 240,
+        children: [
+          { name: "home-note", type: "Text", props: { content: "メモ" } },
+          {
+            name: "home-panel",
+            type: "Box",
+            children: [
+              {
+                name: "home-sealed",
+                type: "Box",
+                props: { locking: "locked" },
+                children: [
+                  { name: "home-inner", type: "Box", children: [] },
+                  {
+                    name: "home-caption",
+                    type: "Text",
+                    props: { content: "注記" },
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    ],
+  });
+}
+
+test("ツリーでロックの中の Box を選んで貼ると、ロックの外側の Box の中に描かれる", async () => {
+  await renderOpenedDocument(setupNestedLockDocument());
+  await selectInTree("home-note");
+  await userEvent.keyboard("{Control>}c{/Control}");
+  await selectInTree("home-inner");
+
+  await userEvent.keyboard("{Control>}v{/Control}");
+
+  expect(drawnParentName("home-note-2")).toBe("home-panel");
+});
+
+test("ツリーでロックの中の Box を選んで Box を追加すると、ロックの外側の Box の中に描かれる", async () => {
+  await renderOpenedDocument(setupNestedLockDocument());
+  await selectInTree("home-inner");
+
+  await userEvent.click(
+    within(canvasPane()).getByRole("button", { name: "Box を追加" }),
+  );
+
+  expect(drawnParentName("box")).toBe("home-panel");
+});
+
+test("ツリーの行を運ぶと、ロック中の Box の中の子も並べ替えられる", async () => {
+  await renderOpenedDocument(setupNestedLockDocument());
+
+  dragRowNamed(tree(), { from: "home-inner", to: "home-caption" });
+
+  expect(rowNames(tree())).toEqual([
+    "home-note",
+    "home-panel",
+    "home-sealed",
+    "home-caption",
+    "home-inner",
+  ]);
 });
