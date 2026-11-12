@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-51rdv2",
   "baseBranch": "main",
   "mergeBase": "e75559d319c8b8325b282e58258026c2f31b7f23",
-  "head": "adcf3f6f6cc85bc897d49df0b5fd982594d3dd83",
+  "head": "1ec1a1609f76b22c4a6fb01af725af0309f3d63c",
   "groups": [
     {
       "label": "src-tauri",
@@ -40,7 +40,7 @@
           "path": "src-tauri/src/document/io_edge_test.rs",
           "status": "M",
           "oldPath": null,
-          "additions": 30,
+          "additions": 48,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -187,6 +187,26 @@
           "deletions": 0,
           "patch": "@@ -52,6 +52,36 @@ fn 保存に失敗したとき一時ファイルが残らない() {\n     assert_eq!(dir.file_names(), vec![\"document.dcmp\".to_string()]);\n }\n \n+#[test]\n+fn 保存先がディレクトリのとき保存はIOの失敗を返す() {\n+    let dir = TempDir::new(\"edge\");\n+    let known = KnownContentRegistry::new();\n+    let path = chosen_file_path(&dir, \"document.dcmp\");\n+    fs::create_dir(&path).expect(\"ディレクトリを作成できる\");\n+\n+    let error = io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n+\n+    assert!(matches!(error, DocumentIoError::Io { .. }));\n+}\n+\n+#[test]\n+fn 保存の失敗には保存先のパスが載る() {\n+    let dir = TempDir::new(\"edge\");\n+    let known = KnownContentRegistry::new();\n+    let path = chosen_file_path(&dir, \"document.dcmp\");\n+    fs::create_dir(&path).expect(\"ディレクトリを作成できる\");\n+\n+    let error = io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n+\n+    // 一時ファイル名 `.document.dcmp.<pid>.<n>.tmp` もファイル名を含むので、フルパスで照合する\n+    let destination = path.display().to_string();\n+    assert!(\n+        error.message().contains(&destination),\n+        \"エラーメッセージに保存先のパスが含まれていない: {}\",\n+        error.message()\n+    );\n+}\n+\n #[test]\n fn UTF8として解釈できないファイルの読み込みは不正なUTF8を返す() {\n     let dir = TempDir::new(\"edge\");",
           "patchLines": 37,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "1ec1a1609f76b22c4a6fb01af725af0309f3d63c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-12T14:43:37Z",
+      "subject": "🧪 [Tests]: #553 一時ファイルを作れない保存の失敗で、保存先のパスが載ることをテストする",
+      "body": "- 存在しないディレクトリへの保存(一時ファイルの作成で失敗する)で、\n  メッセージに保存先のフルパスが載ることを確かめるテストを足した\n- 保存先のフルパスを照合する処理を、テスト用の関数\n  assert_message_contains_full_path にまとめた(2 件のテストで共有)\n\n背景:\nこの PR で変わった振る舞いは「一時ファイルの作成・書き込み・sync_all で\n失敗したとき、メッセージに載るパスが一時ファイルから保存先へ変わる」こと。\nadcf3f6 で足した「保存の失敗には保存先のパスが載る」は、rename が失敗する\n入力を使っている。変更前の実装も rename の失敗には保存先のパスを載せていた\nので、このテストは変更前の実装でも通ってしまい、変わった振る舞いを守って\nいなかった。\nadcf3f6 の本文には「作成の失敗は実物の FS では起こせない」と書いたが、\nこれは誤り。存在しないディレクトリへ保存すると File::create で失敗する\n(PR の解説を書く途中で分かった)。\n\n採用理由:\n既存テスト「存在しないディレクトリ配下への保存は失敗する」と同じ入力を\n使えば、実物の FS のまま作成失敗の経路を通せる。変更前の実装(作成・\n書き込み・sync の失敗は一時ファイルのパス、rename の失敗は保存先の\nパスで from_io する形)を再現して走らせると、このテストだけが落ちることを\n確かめた。\n\n影響とトレードオフ:\nテストだけの変更。cargo test は 145 件通る(Linux)。\n\n代替案:\n- 既存テスト「存在しないディレクトリ配下への保存は失敗する」に assert を\n  足す: 1 テストに 2 つの仕様が入る\n- 照合を 2 件のテストにそれぞれ書く: 同じ処理が 2 箇所に現れる\n\n参考:\n- Issue #553\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QBq3quGwSyD8tKbbL",
+      "files": [
+        {
+          "path": "src-tauri/src/document/io_edge_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 25,
+          "deletions": 7,
+          "patch": "@@ -4,6 +4,7 @@\n #![allow(non_snake_case)]\n \n use std::fs;\n+use std::path::Path;\n \n use std::sync::Arc;\n \n@@ -64,6 +65,17 @@ fn 保存先がディレクトリのとき保存はIOの失敗を返す() {\n     assert!(matches!(error, DocumentIoError::Io { .. }));\n }\n \n+/// エラーメッセージが保存先のフルパスを含むことを確かめる。\n+fn assert_message_contains_full_path(error: &DocumentIoError, destination: &Path) {\n+    // 一時ファイル名 `.document.dcmp.<pid>.<n>.tmp` もファイル名を含むので、フルパスで照合する\n+    let full_path = destination.display().to_string();\n+    assert!(\n+        error.message().contains(&full_path),\n+        \"エラーメッセージに保存先のパスが含まれていない: {}\",\n+        error.message()\n+    );\n+}\n+\n #[test]\n fn 保存の失敗には保存先のパスが載る() {\n     let dir = TempDir::new(\"edge\");\n@@ -73,13 +85,19 @@ fn 保存の失敗には保存先のパスが載る() {\n \n     let error = io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n \n-    // 一時ファイル名 `.document.dcmp.<pid>.<n>.tmp` もファイル名を含むので、フルパスで照合する\n-    let destination = path.display().to_string();\n-    assert!(\n-        error.message().contains(&destination),\n-        \"エラーメッセージに保存先のパスが含まれていない: {}\",\n-        error.message()\n-    );\n+    assert_message_contains_full_path(&error, &path);\n+}\n+\n+#[test]\n+fn 一時ファイルを作れないときの保存の失敗には保存先のパスが載る() {\n+    let dir = TempDir::new(\"edge\");\n+    let known = KnownContentRegistry::new();\n+    // 親ディレクトリが無いので、rename より前の一時ファイルの作成で失敗する\n+    let path = chosen_file_path(&dir, \"missing/document.dcmp\");\n+\n+    let error = io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n+\n+    assert_message_contains_full_path(&error, &path);\n }\n \n #[test]",
+          "patchLines": 53,
           "truncated": false
         }
       ]
