@@ -6,7 +6,7 @@ import { SelectionDigs } from "@/domains/session/selection-dig";
 import { UnderPointer } from "@/domains/session/under-pointer";
 import { Option } from "@/utils/Option";
 import { EditorState } from "../index";
-import { InstanceNames, stateWithDeepBranch } from "./setup";
+import { childNames, InstanceNames, stateWithDeepBranch } from "./setup";
 
 /*
  * ロックしたノードがキャンバスの選択・直接操作の対象から外れ、ツリーからは選べること
@@ -242,4 +242,127 @@ test("インスタンスのロックは Undo 1 回で書く前へ戻る", () => 
   expect(
     DesignDocument.isLocked(EditorState.document(undone), "home-login"),
   ).toBe(false);
+});
+
+/**
+ * `home` の直下に、コピー元の Text `source`、`panel`（中にロックした `sealed` > ロックした
+ * `inner` > ロックしていないと書いた Box の `nested`、その後ろに Text の `after`）、子を 1 つ
+ * 持つ `open`、ロックした Text の `locked-title` が並ぶ状態。クリップボードには `source` が
+ * 入っている。
+ */
+function setupNestedLockState(): EditorState {
+  const state = EditorState.create(
+    DesignDocument.create({
+      artboards: [
+        {
+          name: "home",
+          width: 375,
+          height: 812,
+          children: [
+            { name: "source", type: "Text" },
+            {
+              name: "panel",
+              type: "Box",
+              children: [
+                {
+                  name: "sealed",
+                  type: "Box",
+                  props: { locking: "locked" },
+                  children: [
+                    {
+                      name: "inner",
+                      type: "Box",
+                      props: { locking: "locked" },
+                      children: [
+                        {
+                          name: "nested",
+                          type: "Box",
+                          props: { locking: "unlocked" },
+                        },
+                      ],
+                    },
+                  ],
+                },
+                { name: "after", type: "Text" },
+              ],
+            },
+            {
+              name: "open",
+              type: "Box",
+              children: [{ name: "open-title", type: "Text" }],
+            },
+            {
+              name: "locked-title",
+              type: "Text",
+              props: { locking: "locked" },
+            },
+          ],
+        },
+      ],
+    }),
+  );
+  return Option.unwrap(
+    EditorState.copySelected(EditorState.select(state, "source")),
+  );
+}
+
+test("ロックした Box を選んで貼ると、その Box の直後に並ぶ", () => {
+  const pasted = Option.unwrap(
+    EditorState.pasteCopied(
+      EditorState.select(setupNestedLockState(), "sealed"),
+    ),
+  );
+
+  expect(childNames(pasted, "panel")).toEqual(["sealed", "source-2", "after"]);
+});
+
+test("祖先がロックしている Box を選んで貼ると、最も外側のロックの直後に並ぶ", () => {
+  const pasted = Option.unwrap(
+    EditorState.pasteCopied(
+      EditorState.select(setupNestedLockState(), "nested"),
+    ),
+  );
+
+  expect(childNames(pasted, "panel")).toEqual(["sealed", "source-2", "after"]);
+});
+
+test("ロックしていない Box を選んで貼ると、その Box の子の末尾に並ぶ", () => {
+  const pasted = Option.unwrap(
+    EditorState.pasteCopied(EditorState.select(setupNestedLockState(), "open")),
+  );
+
+  expect(childNames(pasted, "open")).toEqual(["open-title", "source-2"]);
+});
+
+test("ロックした Text を選んでいるときは貼れない", () => {
+  expect(
+    EditorState.pasteCopied(
+      EditorState.select(setupNestedLockState(), "locked-title"),
+    ),
+  ).toEqual(Option.none);
+});
+
+test("ロックした Box を選んで Box を挿すと、その Box の直後に並ぶ", () => {
+  const inserted = Option.unwrap(
+    EditorState.insertNode(
+      EditorState.select(setupNestedLockState(), "sealed"),
+      { kind: "primitive", type: "Box" },
+    ),
+  );
+
+  expect(childNames(inserted, "panel")).toEqual(["sealed", "box", "after"]);
+});
+
+test("ロックした Box を選んだまま 2 回貼ると、後に貼ったものが前に並ぶ", () => {
+  const selected = EditorState.select(setupNestedLockState(), "sealed");
+  const once = Option.unwrap(EditorState.pasteCopied(selected));
+
+  const twice = Option.unwrap(EditorState.pasteCopied(once));
+
+  expect(childNames(twice, "panel")).toEqual([
+    "sealed",
+    "source-3",
+    "source-2",
+    "after",
+  ]);
 });
