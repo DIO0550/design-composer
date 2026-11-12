@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { nestedLockPanel } from "@/domains/__tests__/nested-locks";
 import {
   DesignDocument,
   DocumentTemplate,
@@ -6,8 +7,7 @@ import {
 import { Option } from "@/utils/Option";
 
 /**
- * `home` の直下に `panel`（中にロックした `sealed` > ロックした `inner` > ロックしていないと
- * 書いた Box の `nested`、その後ろに Text の `after`）、子を 1 つ持つ `open`、ロックした Text の
+ * `home` の直下に `nestedLockPanel` の `panel`、子を 1 つ持つ `open`、ロックした Text の
  * `locked-title`、ロックした部品インスタンスの `login` が並ぶ。
  */
 function setupDocument(): DesignDocument {
@@ -20,32 +20,7 @@ function setupDocument(): DesignDocument {
         width: 360,
         height: 240,
         children: [
-          {
-            name: "panel",
-            type: "Box",
-            children: [
-              {
-                name: "sealed",
-                type: "Box",
-                props: { locking: "locked" },
-                children: [
-                  {
-                    name: "inner",
-                    type: "Box",
-                    props: { locking: "locked" },
-                    children: [
-                      {
-                        name: "nested",
-                        type: "Box",
-                        props: { locking: "unlocked" },
-                      },
-                    ],
-                  },
-                ],
-              },
-              { name: "after", type: "Text" },
-            ],
-          },
+          nestedLockPanel(),
           {
             name: "open",
             type: "Box",

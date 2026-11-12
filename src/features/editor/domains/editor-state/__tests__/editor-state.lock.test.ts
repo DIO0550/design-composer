@@ -1,4 +1,5 @@
 import { expect, test } from "vitest";
+import { nestedLockPanel } from "@/domains/__tests__/nested-locks";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { PropEdit } from "@/domains/dcmp/node";
 import { EditContinuities } from "@/domains/session/edit-continuity";
@@ -245,9 +246,8 @@ test("インスタンスのロックは Undo 1 回で書く前へ戻る", () => 
 });
 
 /**
- * `home` の直下に、コピー元の Text `source`、`panel`（中にロックした `sealed` > ロックした
- * `inner` > ロックしていないと書いた Box の `nested`、その後ろに Text の `after`）、子を 1 つ
- * 持つ `open`、ロックした Text の `locked-title` が並ぶ状態。クリップボードには `source` が
+ * `home` の直下に、コピー元の Text `source`、`nestedLockPanel` の `panel`、子を 1 つ持つ
+ * `open`、ロックした Text の `locked-title` が並ぶ状態。クリップボードには `source` が
  * 入っている。
  */
 function setupNestedLockState(): EditorState {
@@ -260,32 +260,7 @@ function setupNestedLockState(): EditorState {
           height: 812,
           children: [
             { name: "source", type: "Text" },
-            {
-              name: "panel",
-              type: "Box",
-              children: [
-                {
-                  name: "sealed",
-                  type: "Box",
-                  props: { locking: "locked" },
-                  children: [
-                    {
-                      name: "inner",
-                      type: "Box",
-                      props: { locking: "locked" },
-                      children: [
-                        {
-                          name: "nested",
-                          type: "Box",
-                          props: { locking: "unlocked" },
-                        },
-                      ],
-                    },
-                  ],
-                },
-                { name: "after", type: "Text" },
-              ],
-            },
+            nestedLockPanel(),
             {
               name: "open",
               type: "Box",
