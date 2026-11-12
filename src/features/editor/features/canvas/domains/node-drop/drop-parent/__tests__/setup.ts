@@ -88,3 +88,59 @@ export function setupFreeArtboardDocument(): DesignDocument {
     ],
   });
 }
+
+/**
+ * `home` の下に、`panel`（中にロックした `sealed` > ロックした `inner` > ロックしていないと
+ * 書いた Box の `nested`、その後ろに Text の `after`）、子を並べないロックした器 `free-lock`、
+ * 運ぶ Text の `moved` が並ぶドキュメント。
+ *
+ * @returns その並びを持つドキュメント
+ */
+export function setupLockedDocument(): DesignDocument {
+  return DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 375,
+        height: 812,
+        children: [
+          {
+            name: "panel",
+            type: "Box",
+            // 子を縦に並べる器。free にすると InsertionParent が外すので、ロックで外れたのか見分けられない
+            props: { layout: "column" },
+            children: [
+              {
+                name: "sealed",
+                type: "Box",
+                props: { locking: "locked" },
+                children: [
+                  {
+                    name: "inner",
+                    type: "Box",
+                    props: { locking: "locked" },
+                    children: [
+                      {
+                        name: "nested",
+                        type: "Box",
+                        props: { locking: "unlocked" },
+                      },
+                    ],
+                  },
+                ],
+              },
+              { name: "after", type: "Text" },
+            ],
+          },
+          {
+            name: "free-lock",
+            type: "Box",
+            props: { layout: "free", locking: "locked" },
+            children: [],
+          },
+          { name: "moved", type: "Text" },
+        ],
+      },
+    ],
+  });
+}
