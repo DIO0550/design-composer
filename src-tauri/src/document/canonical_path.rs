@@ -6,6 +6,8 @@
 
 use std::path::{Component, Path, PathBuf, Prefix};
 
+use crate::file_io;
+
 use super::file_path::DocumentFilePath;
 use super::io::DocumentIoError;
 
@@ -16,7 +18,7 @@ use super::io::DocumentIoError;
 ///
 /// @returns 揃えた綴り。親ディレクトリも正規化できないときは `path` の綴りのまま
 pub fn canonical_form(path: &Path) -> PathBuf {
-    if let Ok(canonical) = path.canonicalize() {
+    if let Ok(canonical) = file_io::canonicalize(path) {
         return without_verbatim_disk(canonical);
     }
 
@@ -31,7 +33,7 @@ pub fn canonical_form(path: &Path) -> PathBuf {
     } else {
         parent
     };
-    match parent.canonicalize() {
+    match file_io::canonicalize(parent) {
         Ok(directory) => without_verbatim_disk(directory).join(file_name),
         Err(_) => path.to_path_buf(),
     }

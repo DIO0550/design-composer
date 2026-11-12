@@ -17,7 +17,7 @@ pub enum DocumentIoError {
     /// 読み込み / 書き込みの権限が無い。
     PermissionDenied { message: String },
     /// ドキュメントとして扱えないパス。`DocumentFilePath::parse` が拒否したパスと、
-    /// `io/atomic_write.rs` / `watch/watchers.rs` が親ディレクトリ・ファイル名を取り出せないパスと、
+    /// `io.rs`(保存)/ `watch/watchers.rs` が親ディレクトリ・ファイル名を取り出せないパスと、
     /// `canonical_path.rs` が揃えた綴りを UTF-8 で表せないパスと、`dialog.rs` がダイアログで
     /// 選ばれたものをパスとして・UTF-8 として読めないとき。
     InvalidPath { message: String },

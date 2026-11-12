@@ -1,12 +1,13 @@
-//! ドキュメントの永続化 I/O(読み込みとアトミックな書き込み)。
+//! ドキュメントの永続化 I/O(読み込みとアトミックな書き込み)。ファイルシステムへは
+//! `file_io` を通し、その失敗を `DocumentIoError` の種別へ詰め替えるのはここで行う。
 
-mod atomic_write;
 mod error;
 
-use std::fs;
 use std::sync::Arc;
 
 use tauri::State;
+
+use crate::file_io;
 
 use super::chosen_paths::{ChosenDocumentPath, ChosenDocumentPaths};
 use super::known_content::KnownContentRegistry;
@@ -31,7 +32,8 @@ impl<'a> DocumentManagedState<'a> {
 
 /// ファイルを UTF-8 文字列として読み込む。
 pub fn load(path: &ChosenDocumentPath) -> Result<String, DocumentIoError> {
-    let bytes = fs::read(path).map_err(|error| DocumentIoError::from_io(path, &error))?;
+    let bytes =
+        file_io::read_bytes(path).map_err(|error| DocumentIoError::from_io(path, &error))?;
     String::from_utf8(bytes).map_err(|_| DocumentIoError::invalid_utf8(path))
 }
 
@@ -44,7 +46,16 @@ pub fn save(
     path: &ChosenDocumentPath,
     content: &str,
 ) -> Result<(), DocumentIoError> {
-    known.record_write(path, content, || atomic_write::write_atomic(path, content))
+    let (Some(directory), Some(file_name)) = (path.parent(), path.file_name()) else {
+        return Err(DocumentIoError::invalid_path(
+            path,
+            "親ディレクトリとファイル名に分けられない",
+        ));
+    };
+    known.record_write(path, content, || {
+        file_io::write_atomic(directory, file_name, content)
+            .map_err(|error| DocumentIoError::from_io(path, &error))
+    })
 }
 
 /// webview から渡されたパスを照合し、通ったときだけ `load` する。読み込めたら、そのパスを

@@ -7,6 +7,7 @@ use notify::{ErrorKind, RecommendedWatcher, RecursiveMode};
 use notify_debouncer_mini::{new_debouncer, DebounceEventResult, Debouncer};
 
 use crate::document::io::DocumentIoError;
+use crate::file_io;
 
 /// 変更が落ち着くのを待つ時間。
 ///
@@ -45,9 +46,8 @@ impl DocumentWatchers {
         // 監視するのはファイルではなく親ディレクトリ。`save_document` のアトミック書き込みも
         // 多くのエディタの保存も rename でファイルを差し替えるため、ファイル自身に watch を
         // 張ると inode ごと差し替わって 2 回目以降のイベントが届かなくなる。
-        let watched = path
-            .canonicalize()
-            .map_err(|error| DocumentIoError::from_io(path, &error))?;
+        let watched =
+            file_io::canonicalize(path).map_err(|error| DocumentIoError::from_io(path, &error))?;
         let directory = watched
             .parent()
             .ok_or_else(|| DocumentIoError::invalid_path(path, "親ディレクトリを持たない"))?
@@ -80,7 +80,7 @@ impl DocumentWatchers {
 
     /// `path` の監視を止める。監視していないパスに対しては何もしない(停止操作は冪等)。
     pub fn unwatch(&self, path: &Path) {
-        let key = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
+        let key = file_io::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
         self.active().remove(&key);
     }
 
