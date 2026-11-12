@@ -341,3 +341,13 @@ test("ロックした Box を選んだまま 2 回貼ると、後に貼ったも
     "after",
   ]);
 });
+
+test("ロックした Box の中の子を複製すると、複製はその Box の中の直後に並ぶ", () => {
+  const duplicated = Option.unwrap(
+    EditorState.duplicateSelected(
+      EditorState.select(setupNestedLockState(), "inner"),
+    ),
+  );
+
+  expect(childNames(duplicated, "sealed")).toEqual(["inner", "inner-2"]);
+});
