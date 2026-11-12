@@ -53,6 +53,36 @@ fn 保存に失敗したとき一時ファイルが残らない() {
 }
 
 #[test]
+fn 保存先がディレクトリのとき保存はIOの失敗を返す() {
+    let dir = TempDir::new("edge");
+    let known = KnownContentRegistry::new();
+    let path = chosen_file_path(&dir, "document.dcmp");
+    fs::create_dir(&path).expect("ディレクトリを作成できる");
+
+    let error = io::save(&known, &path, r#"{"a":1}"#).expect_err("保存に失敗する");
+
+    assert!(matches!(error, DocumentIoError::Io { .. }));
+}
+
+#[test]
+fn 保存の失敗には保存先のパスが載る() {
+    let dir = TempDir::new("edge");
+    let known = KnownContentRegistry::new();
+    let path = chosen_file_path(&dir, "document.dcmp");
+    fs::create_dir(&path).expect("ディレクトリを作成できる");
+
+    let error = io::save(&known, &path, r#"{"a":1}"#).expect_err("保存に失敗する");
+
+    // 一時ファイル名 `.document.dcmp.<pid>.<n>.tmp` もファイル名を含むので、フルパスで照合する
+    let destination = path.display().to_string();
+    assert!(
+        error.message().contains(&destination),
+        "エラーメッセージに保存先のパスが含まれていない: {}",
+        error.message()
+    );
+}
+
+#[test]
 fn UTF8として解釈できないファイルの読み込みは不正なUTF8を返す() {
     let dir = TempDir::new("edge");
     let path = chosen_file_path(&dir, "broken.dcmp");
