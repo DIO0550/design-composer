@@ -9,6 +9,16 @@ export type ChildPosition = Readonly<{
 
 export const ChildPosition = {
   /**
+   * この位置にいるものの直後（同じ親の 1 つ後ろ）。
+   *
+   * @param position 起点にする位置
+   * @returns 親はそのままで、`index` を 1 つ進めた位置
+   */
+  next(position: ChildPosition): ChildPosition {
+    return { ...position, index: position.index + 1 };
+  },
+
+  /**
    * `removed` にいたノードを取り除いたあとの並びで見た、この位置。
    *
    * 挿入位置は取り除く前の並びを見て決まる（画面に描かれているのはその状態）のに対し、
