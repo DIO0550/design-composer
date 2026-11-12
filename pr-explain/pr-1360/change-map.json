@@ -1,0 +1,81 @@
+{
+  "version": 2,
+  "pr": 1360,
+  "headBranch": "claude/affectionate-hypatia-tjyg6s",
+  "baseBranch": "main",
+  "mergeBase": "594ffdb52b0bc1cdbdf2b3b84c1943bdc4f19c75",
+  "head": "6ec849233b62a71669bbb773e294c12f594d4962",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/test-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1346.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "72544ef35727d79de56dd93b4088a39de6abd0cd",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-12T00:03:13Z",
+      "subject": "test-reviewer: テストを足さない変更と読み違えやすい入力の守り手を返させる",
+      "body": "分類 test の再発 2 件(pr-1192 #40 人 / pr-1310 #22 bot)はどちらも、\nどのテストが守っているかが PR に無く、外から問われてから実測した形。\n前回の介入が case-law のため、観点(層=skill)に置く。\n\nRefs #1359\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NZ9eP2z4ptxof9hgW",
+      "files": [
+        {
+          "path": ".claude/agents/test-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -97,3 +97,6 @@ model: opus\n   テストがあるかを数える。** 優先順位を反転するミューテーションは、**入力が片側だけなら挙動が\n   変わらない**ので落ちない。既存テストが「A だけ壊す」「B だけ壊す」で揃っていたら、\n   **A と B が同時に成り立つ入力**が 1 件も無いというサイン\n+- **処理を変えたのにテストを足していない箇所と、読み違えやすい入力(user-event の `[[` `{{` などの\n+  エスケープ)を使うテストは、守っているテスト名と壊して落ちた結果を返す**(`分類: test`)。PR 本文に\n+  無いと、人・bot から「守られているか」を問われてから実測し直すことになる",
+          "patchLines": 7,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "6ec849233b62a71669bbb773e294c12f594d4962",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-12T00:03:32Z",
+      "subject": "records: test の起点を pr-1360 へ進める",
+      "body": "Refs #1359\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NZ9eP2z4ptxof9hgW",
+      "files": [
+        {
+          "path": "harness/records/pr-1346.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -309,3 +309,4 @@ GitHub 上の人のレビューは 0 件だった。`get_reviews`・`get_review_\n ## 規約への反映\n \n 無し。記録のみ(集計と介入は `harness-growth` の管轄)。\n+- 対策済: `test` 層=skill at pr-1360",
+          "patchLines": 5,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
