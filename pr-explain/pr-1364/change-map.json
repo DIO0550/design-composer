@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-i1fq1d",
   "baseBranch": "main",
   "mergeBase": "660eb9437b2a0f131b5fa33b2c9f66fbd1f2dc86",
-  "head": "c6f66f8d9ed125e86129fe1228ad33449e224e20",
+  "head": "da1598289cc93fdb66dfd7ade92687b4f9e61105",
   "groups": [
     {
       "label": "domains / unit",
@@ -1308,7 +1308,7 @@
           "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
           "status": "M",
           "oldPath": null,
-          "additions": 8,
+          "additions": 7,
           "deletions": 4,
           "changed": true,
           "target": null
@@ -2364,6 +2364,46 @@
           "deletions": 0,
           "patch": "@@ -341,3 +341,13 @@ test(\"ロックした Box を選んだまま 2 回貼ると、後に貼ったも\n     \"after\",\n   ]);\n });\n+\n+test(\"ロックした Box の中の子を複製すると、複製はその Box の中の直後に並ぶ\", () => {\n+  const duplicated = Option.unwrap(\n+    EditorState.duplicateSelected(\n+      EditorState.select(setupNestedLockState(), \"inner\"),\n+    ),\n+  );\n+\n+  expect(childNames(duplicated, \"sealed\")).toEqual([\"inner\", \"inner-2\"]);\n+});",
           "patchLines": 14,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "72b950bc4ecd8dff2df18b9fc88eebd1f42b732b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T06:41:06Z",
+      "subject": "🚀 [Performance]: #972 落とし先の走査で、親として成立した候補にだけロック判定をかける",
+      "body": "- innermostAccepted の判定順を「占めている名前を飛ばす → resolve → 成立した\n  候補にだけ DesignDocument.isLocked」に変える\n- isSkipped を無くし、受け入れる条件を isAccepted として名前を付ける\n\n背景:\nPR #1364 のレビュー(Copilot)で、ドラッグ中のポインタ移動ごとに呼ばれる\ninnermostAccepted が、候補ごとに祖先を辿る isLocked を resolve より先に\n呼んでおり、子を持てない葉(Text など)や無い名前にも祖先の走査をしていると\n指摘された。\n\n採用理由:\nresolve は名前から親を 1 回引くだけで、isLocked は祖先 1 段ごとに木を走る。\n安い判定で先に絞れば、ポインタの下に葉があるよくある形で isLocked の呼び出しが\n減る。どちらの条件でも外側の候補を見に行くので、結果は変わらない。\n\n影響とトレードオフ:\n振る舞いは変わらない(既存の drop-parent.lock / artboard-canvas.drag-lock /\nasset-drag のテストがそのまま通る)。isSkipped は占めている名前とロックの\n2 条件を表していたが、ロック判定が後ろへ移り実体と合わなくなったので消した。\n\n代替案:\n- 今のままにする: 実装の検証(performance-reviewer)では許容と判断していたが、\n  順序を変えるだけで呼び出しを減らせ、読みやすさも落ちない\n\n参考:\n- PR #1364 のレビューコメント(discussion_r4560404077)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PvU5uTWkbTEMFR3zZ",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 5,
+          "patch": "@@ -56,14 +56,13 @@ function innermostAccepted<T>(\n     return Option.none;\n   }\n   for (const name of search.names) {\n-    const isSkipped =\n-      occupied.value.includes(name) ||\n-      DesignDocument.isLocked(search.document, name);\n-    if (isSkipped) {\n+    if (occupied.value.includes(name)) {\n       continue;\n     }\n     const parent = resolve(search.document, name);\n-    if (Option.isSome(parent)) {\n+    const isAccepted =\n+      Option.isSome(parent) && !DesignDocument.isLocked(search.document, name);\n+    if (isAccepted) {\n       return parent;\n     }\n   }",
+          "patchLines": 19,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "da1598289cc93fdb66dfd7ade92687b4f9e61105",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T06:41:06Z",
+      "subject": "📝 [Documentation]: #972 Locking.fromNode の @returns に既定値を書く",
+      "body": "- @returns の末尾「既定」を、fromProps と揃えて「既定（`Default`）」にする\n\n背景:\nPR #1364 のレビュー(Copilot)で、fromNode の @returns が既定値を書いておらず\n読み取りづらいと指摘された。\n\n採用理由:\nfromNode は fromProps に渡して返すので既定値は同じ。同じモジュールの fromProps\nと書き方を揃える。\n\n影響とトレードオフ:\ndoc のみ。\n\n代替案:\n- 「既定は fromProps と同じ」と参照にする: 1 語で書けるので、参照より値を\n  書くほうが読み手の手間が少ない\n\n参考:\n- PR #1364 のレビューコメント(discussion_r4560404182)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PvU5uTWkbTEMFR3zZ",
+      "files": [
+        {
+          "path": "src/domains/dcmp/locking/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -43,7 +43,7 @@ export const Locking = {\n    *\n    * @param node 読み取り元のノード\n    * @returns ロック。部品インスタンスは参照ノード直下の `locking` だけを読み、部品の根の\n-   *   `locking` は読まない（docs/03-schema.md「ロック」）。未設定・語彙に無い綴りのときは既定\n+   *   `locking` は読まない（docs/03-schema.md「ロック」）。未設定・語彙に無い綴りのときは既定（`Default`）\n    */\n   fromNode(node: Node): Locking {\n     return Locking.fromProps(",
+          "patchLines": 9,
           "truncated": false
         }
       ]
