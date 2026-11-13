@@ -129,6 +129,7 @@ function ColorPickerField({
    * WebView は未検証。
    */
   const continuitySequence = useFirstThenRest(EditContinuityRun);
+
   return (
     <input
       id={id}
