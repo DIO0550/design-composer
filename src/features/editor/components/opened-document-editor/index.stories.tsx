@@ -358,6 +358,49 @@ export const NodeInRotatedBox: Story = {
   args: argsOpening(DocumentWithNodeInRotatedBox),
 };
 
+/**
+ * `home` の末尾に、30 度回った幅 `fixed`・高さ `hug` の Box `home-note` を足し、その中に
+ * 折り返す Text を置いたドキュメント。末尾に置く理由は `DocumentWithNodeInRotatedBox` と同じ。
+ */
+const DocumentWithRotatedHugText = documentWithHomeChildren((children) => [
+  ...children,
+  {
+    name: "home-note",
+    type: "Box",
+    props: {
+      placement: "absolute",
+      x: 170,
+      y: 40,
+      widthMode: "fixed",
+      width: 160,
+      heightMode: "hug",
+      rotation: 30,
+      background: "gray-100",
+    },
+    children: [
+      {
+        name: "home-note-text",
+        type: "Text",
+        props: {
+          content:
+            "回ったノードの幅を変えると、折り返しが変わって高さも連れて変わる。",
+        },
+      },
+    ],
+  },
+]);
+
+/**
+ * 回っていて、幅を変えると高さが連れて変わるノードがある編集画面。
+ *
+ * `home-note` を選んで右辺を引くと、折り返しで高さが変わっても回る前の左上の角が親の座標で
+ * 動かない（docs/06-ui.md「リサイズハンドル」）。掴んでいる間も離したあとも確かめられる。
+ */
+export const RotatedHugText: Story = {
+  name: "回っていて高さが連れて変わるノードがある編集画面",
+  args: argsOpening(DocumentWithRotatedHugText),
+};
+
 /*
  * 居ない部品へ向け直した `home-login`。`RefNode` と注釈した定数にしてから差し込むのは、
  * `Node` が直和で、注釈なしの literal（`{ ...node, ref }` を含む）だと `type` と `ref` を
