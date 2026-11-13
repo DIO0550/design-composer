@@ -37,7 +37,7 @@
 
 ## 定数は PascalCase
 
-**`const` の名前に SCREAMING_SNAKE_CASE を使わない。** オブジェクト・配列・スカラーのどれでも、また export の有無にもよらず PascalCase で書く。**コンパニオンオブジェクトのメンバー**も、値がオブジェクトでも同じ。コンパニオンのメンバーは公開 API としてメソッドと並ぶので、`Hoge.method()` と `Hoge.Member` で流儀を割らないため。
+**`const` の名前に SCREAMING_SNAKE_CASE を使わない。** オブジェクト・配列・スカラーのどれでも、また export の有無にもよらず PascalCase で書く。**コンパニオンオブジェクトのメンバー**も、値がオブジェクトでも同じ(理由は判例)。
 
 ### 対応表のキーを PascalCase にするのは「キーが値の別名」のときだけ
 
