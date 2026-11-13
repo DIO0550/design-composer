@@ -60,6 +60,10 @@
 |---|---|---|
 | `DocumentTemplate.DEFAULT` | `DocumentTemplate.Default` | 新規ドキュメントの雛形（トークンと部品定義を持つオブジェクト）を持つコンパニオンのメンバー |
 
+コンパニオンのメンバーも値の種類を問わず PascalCase にするのは、メンバーが公開 API として
+メソッドと並ぶから。`Hoge.method()` と `Hoge.Member` で流儀を割らない（`DocumentTemplate.Default` は
+値がオブジェクトでも定数の綴りに寄せず、コンパニオンの一員として綴る）。
+
 ## `naming-vocabulary-gap` — 対応表のキーをどう綴るか
 
 **キーが値の別名になっている定数**（`Axes` / `LeftPaneViews` / `DocumentErrorOrigins`）は
