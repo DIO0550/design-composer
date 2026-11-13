@@ -1,0 +1,1835 @@
+{
+  "version": 1,
+  "pr": 1375,
+  "sha": "e1fa5752b03ca7f8d5d60b69b32c502d429c8c4e",
+  "issue": 1363,
+  "overview": {
+    "title": "PR の CI で src-tauri の clippy と test を走らせ、本番コードの `std::fs` を `file_io` に閉じ込める",
+    "lead": "PR を出すと `src-tauri` ワークフローが `cargo clippy --all-targets -- -D warnings` と `cargo test` を走らせ、失敗すれば赤になる。`src-tauri/clippy.toml` の `disallowed-methods` / `disallowed-types` により、本番コードで `file_io` の外から `std::fs`(と `Path` のファイルシステムに触るメソッド)を使うと clippy が落ちる。",
+    "before": [
+      {
+        "text": "CI も pre-push も cargo を走らせず、src-tauri のテスト(148 件)は PR で一度も検査されていなかった"
+      },
+      {
+        "text": "「本番コードで `std::fs` を呼ぶのは `file_io` だけ」は #553 のときに grep で 1 回確かめただけで、次に誰かが直接呼んでも止まらなかった"
+      },
+      {
+        "text": "テスト名の `non_snake_case` の抑制と同じ理由のコメントが 3 つの `_test.rs` に複製されていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "PR ごとに ubuntu-24.04 で `cargo clippy --all-targets --locked -- -D warnings` が走り、警告が 1 件でもあれば赤になる",
+        "message": "run-clippy"
+      },
+      {
+        "text": "clippy は `src-tauri/clippy.toml` の禁止一覧を読み、本番コードの `std::fs` の自由関数 19 個・`Path` のメソッド 10 個・`File` / `OpenOptions` / `DirBuilder` を落とす",
+        "message": "read-ban"
+      },
+      {
+        "text": "続けて `cargo test --locked` が走り、失敗したテストがあれば赤になる",
+        "message": "run-test"
+      },
+      {
+        "text": "`file_io` は `#![expect(...)]` で禁止を許可された唯一の受け口で、本番コードは今まで通りここを通して読み書きする",
+        "message": "load-bytes"
+      },
+      {
+        "text": "テストのビルド(`cfg(test)`)では `lib.rs` の `cfg_attr` で禁止と `non_snake_case` を外すので、テストはフィクスチャを `std::fs` で直接用意でき、日本語のテスト名も個別の抑制なしで書ける"
+      },
+      {
+        "text": "`ci-trace` が `src-tauri` の run も拾い、所要時間を記録する",
+        "message": "notify-trace"
+      },
+      {
+        "text": "`#[cfg(windows)]` / `#[cfg(target_os = \"macos\")]` の分岐の中の `std::fs` は、ubuntu の clippy からは見えず落ちない(検出の限界として `lib.rs` に書いた)"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "必須チェックへの登録は未決",
+        "text": "リポジトリ設定なのでこの PR では登録していない。登録するまでは赤でもマージは止まらない。stable の clippy の版上げで、src-tauri を触らない PR も一斉に赤になりうることを判断材料にしてほしい",
+        "go": {
+          "kind": "file",
+          "path": ".github/workflows/src-tauri.yml"
+        }
+      },
+      {
+        "title": "テストのビルドだけ禁止を外す",
+        "text": "`cfg_attr(test, allow(...))` はテストのビルドにだけ効き、`--all-targets` に含まれる cfg(test) でない lib ターゲットは禁止付きで検査される。無条件の `allow` にすると本番も素通りする",
+        "go": {
+          "kind": "file",
+          "path": "src-tauri/src/lib.rs"
+        }
+      },
+      {
+        "title": "受け口の許可は expect",
+        "text": "`file_io` から fs の呼び出しが消えると unfulfilled で落ち、使われない許可が残らない。`expect` と `reason =` は Rust 1.81 からで、`Cargo.toml` の `rust-version = 1.77.2` との食い違いは #1373 に分けた",
+        "go": {
+          "kind": "file",
+          "path": "src-tauri/src/file_io.rs"
+        }
+      },
+      {
+        "title": "禁止一覧はブロックリスト",
+        "text": "一覧に無い新しい std の API や、fs に触る外部クレートは素通りする。いまそういう依存は無い",
+        "go": {
+          "kind": "file",
+          "path": "src-tauri/clippy.toml"
+        }
+      },
+      {
+        "title": "PR を出したときの流れ",
+        "text": "clippy が禁止一覧を読んでクレートを検査し、続けて test、最後に ci-trace が拾う",
+        "go": {
+          "kind": "flow",
+          "id": "pr-ci"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "fs-ban",
+      "label": "fs の禁止",
+      "role": "本番コードで `std::fs` を直接使えるのを `file_io` だけにする"
+    },
+    {
+      "id": "rust-ci",
+      "label": "Rust の CI",
+      "role": "PR ごとに src-tauri の clippy と test を走らせ、失敗を赤にする"
+    },
+    {
+      "id": "guides",
+      "label": "手順と説明",
+      "role": "手元で同じ検査を走らせる手順と、検査をどの層に置いたかの説明"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "src-tauri",
+      "role": "禁止一覧と、その受け口(`file_io`)・テストのビルドでの除外(`lib.rs`)を置く"
+    },
+    {
+      "layer": "ハーネス",
+      "role": "src-tauri の CI を新設し、「CI は cargo を走らせない」を前提にしていた理由とフェーズ 7 の手順を直す"
+    },
+    {
+      "layer": "その他",
+      "role": "`TAURI_SETUP.md` に CI と同じ 2 コマンドと要るシステムライブラリを書く"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src-tauri/clippy.toml",
+      "name": "fs の禁止一覧",
+      "role": "clippy が読む設定。`std::fs` の自由関数・`Path` のファイルシステムに触るメソッドを `disallowed-methods` に、`File` / `OpenOptions` / `DirBuilder` を `disallowed-types` に並べる",
+      "feature": "fs-ban",
+      "change": "新しく作った。後のコミットで `Path` のメソッドも含める理由を 1 行足した"
+    },
+    {
+      "path": "src-tauri/src/file_io.rs",
+      "name": "ファイル入出力の受け口",
+      "role": "本番コードで `std::fs` を呼ぶ唯一のモジュール",
+      "feature": "fs-ban",
+      "change": "`#![expect(clippy::disallowed_methods, clippy::disallowed_types, reason = ...)]` で禁止を許可し、`allow` でなく `expect` にした理由を書いた"
+    },
+    {
+      "path": "src-tauri/src/lib.rs",
+      "name": "クレートのルート",
+      "role": "クレート全体に効く属性を置く場所",
+      "feature": "fs-ban",
+      "change": "テストのビルドでだけ禁止と `non_snake_case` を外す `cfg_attr` 2 行と、その理由・検出の限界を書いた"
+    },
+    {
+      "path": "src-tauri/src/document/io.rs",
+      "name": "ドキュメントの読み書き",
+      "role": "`.dcmp` を読み、アトミックに書く本番コード。`file_io` を通す側の代表",
+      "feature": "fs-ban"
+    },
+    {
+      "path": ".github/workflows/src-tauri.yml",
+      "name": "Rust の CI",
+      "role": "pull_request で apt・rustup・clippy・test を順に走らせるワークフロー",
+      "feature": "rust-ci",
+      "change": "新しく作った。後のコミットで paths で絞らない理由を書いた"
+    },
+    {
+      "path": ".github/workflows/ci-trace.yml",
+      "name": "CI トレース",
+      "role": "対象ワークフローの完了後にジョブの所要時間を集める",
+      "feature": "rust-ci",
+      "change": "`workflow_run` の対象に `src-tauri` を足した(照合は `name:` なので綴りを揃えた)"
+    },
+    {
+      "path": ".github/workflows/frontend.yml",
+      "name": "フロントエンドの CI",
+      "role": "pnpm の検査と Tauri の版の突き合わせ",
+      "feature": "rust-ci",
+      "change": "「cargo を走らせる CI が無い」を前提にした理由を消し、スクリプトの冒頭への参照 1 行にした"
+    },
+    {
+      "path": ".github/scripts/check-tauri-version-match.mjs",
+      "name": "Tauri の版の突き合わせ",
+      "role": "Rust と npm の Tauri の major/minor の一致を見る",
+      "feature": "rust-ci",
+      "change": "冒頭の理由を「PR の CI が走らせるのは cargo だけで、cargo は npm 側を読まない」に書き直した"
+    },
+    {
+      "path": "src-tauri/src/document/canonical_path.rs",
+      "name": "パスの綴りの正規化",
+      "role": "同じファイルを指す別の綴りを 1 つに寄せる",
+      "change": "Windows / macOS だけの分岐が CI で走らない理由の参照先を `src-tauri.yml` に直した"
+    },
+    {
+      "path": "src-tauri/src/document/canonical_path_normal_test.rs",
+      "name": "正規化のテスト",
+      "role": "パスの綴りの正規化の正常系",
+      "change": "同じ理由の重複を消し、`without_verbatim_disk` の doc への参照にした",
+      "graph": false
+    },
+    {
+      "path": "src-tauri/src/document/file_path_normal_test.rs",
+      "name": "パスのテスト",
+      "role": "ドキュメントのパスとして受け付けるもの",
+      "change": "個別の `#![allow(non_snake_case)]` と理由のコメントを消した",
+      "graph": false
+    },
+    {
+      "path": "src-tauri/src/document/io_atomicity_test.rs",
+      "name": "書き込みのアトミック性のテスト",
+      "role": "書き込み途中を外から読んでも壊れた JSON にならない",
+      "change": "個別の `#![allow(non_snake_case)]` と理由のコメントを消した",
+      "graph": false
+    },
+    {
+      "path": "src-tauri/src/document/io_edge_test.rs",
+      "name": "読み書きの境界のテスト",
+      "role": "読み書きの異常系",
+      "change": "個別の `#![allow(non_snake_case)]` と理由のコメントを消した",
+      "graph": false
+    },
+    {
+      "path": "TAURI_SETUP.md",
+      "name": "セットアップ手順",
+      "role": "Tauri の開発環境の用意",
+      "feature": "guides",
+      "change": "「Rust 側の検査」の節に CI と同じ 2 コマンドと、Linux で要るシステムライブラリを書いた"
+    },
+    {
+      "path": ".claude/skills/implementation-flow/SKILL.md",
+      "name": "実装の手順",
+      "role": "フェーズ 7 の push 前の検査",
+      "feature": "guides",
+      "change": "`src-tauri/` に差分があるときはセットアップ手順の 2 コマンドも走らせる段落を足した"
+    },
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "ハーネスの層の説明",
+      "role": "検査をどの層に置いたかと、カバー範囲と残る穴",
+      "feature": "guides",
+      "change": "「Rust の検査は層 1 と層 4 にしかない」の小節を足した"
+    },
+    {
+      "path": ".claude/agents/over-guard-reviewer.md",
+      "name": "過剰な防御の検証",
+      "role": "Rust のネストの深さを目で見る観点を持つ検証エージェント",
+      "feature": "guides",
+      "change": "「Rust には CI の強制が無い」を「clippy の設定にネストの深さの閾値が無い」に言い換えた",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "run-clippy",
+      "from": ".github/workflows/src-tauri.yml",
+      "to": "src-tauri/src/lib.rs",
+      "kind": "qry",
+      "name": "クレートを clippy で検査する",
+      "code": "cargo clippy --all-targets --locked -- -D warnings",
+      "via": "exec",
+      "payload": "lib・bin・テストなどすべてのターゲット",
+      "returns": "警告が 1 件でもあれば非 0 の終了コード",
+      "status": "added"
+    },
+    {
+      "id": "read-ban",
+      "from": ".github/workflows/src-tauri.yml",
+      "to": "src-tauri/clippy.toml",
+      "kind": "qry",
+      "name": "禁止一覧を読む",
+      "code": "disallowed-methods / disallowed-types",
+      "via": "file",
+      "returns": "禁止する関数・メソッド・型のパスと理由",
+      "status": "added"
+    },
+    {
+      "id": "run-test",
+      "from": ".github/workflows/src-tauri.yml",
+      "to": "src-tauri/src/lib.rs",
+      "kind": "qry",
+      "name": "テストを走らせる",
+      "code": "cargo test --locked",
+      "via": "exec",
+      "returns": "失敗したテストがあれば非 0 の終了コード",
+      "status": "added"
+    },
+    {
+      "id": "notify-trace",
+      "from": ".github/workflows/src-tauri.yml",
+      "to": ".github/workflows/ci-trace.yml",
+      "kind": "evt",
+      "name": "run の完了を知らせる",
+      "code": "on: workflow_run: workflows: [src-tauri]",
+      "via": "http",
+      "payload": "完了した run",
+      "status": "added"
+    },
+    {
+      "id": "load-bytes",
+      "from": "src-tauri/src/document/io.rs",
+      "to": "src-tauri/src/file_io.rs",
+      "kind": "qry",
+      "name": "ファイルを読む",
+      "code": "file_io::read_bytes(path)",
+      "via": "call",
+      "payload": "選ばれたドキュメントのパス",
+      "returns": "`io::Result<Vec<u8>>`"
+    },
+    {
+      "id": "write-atomic",
+      "from": "src-tauri/src/document/io.rs",
+      "to": "src-tauri/src/file_io.rs",
+      "kind": "cmd",
+      "name": "アトミックに書く",
+      "code": "file_io::write_atomic(directory, file_name, content)",
+      "via": "call",
+      "payload": "親ディレクトリ・ファイル名・中身",
+      "returns": "`io::Result<()>`"
+    },
+    {
+      "id": "refer-setup",
+      "from": ".claude/skills/implementation-flow/SKILL.md",
+      "to": "TAURI_SETUP.md",
+      "kind": "qry",
+      "name": "手元の Rust の検査を引く",
+      "code": "TAURI_SETUP.md「Rust 側の検査」",
+      "via": "file",
+      "returns": "CI と同じ 2 コマンド",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "pr-ci",
+      "label": "PR を出したとき",
+      "steps": [
+        "run-clippy",
+        "read-ban",
+        "run-test",
+        "notify-trace"
+      ]
+    },
+    {
+      "id": "prod-io",
+      "label": "本番コードがドキュメントを読み書きするとき",
+      "steps": [
+        "load-bytes",
+        "write-atomic"
+      ]
+    },
+    {
+      "id": "before-push",
+      "label": "src-tauri を変えて push する前",
+      "steps": [
+        "refer-setup"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "6f649caae997aa884f446b01bfad91e7cf455b1f",
+      "phase": "prep",
+      "role": "テスト名の `non_snake_case` の抑制を `lib.rs` の `cfg_attr(test)` 1 箇所にまとめる",
+      "why": "次のコミットの後で CI に `cargo clippy --all-targets -- -D warnings` を載せると、いまの main で出る唯一の警告(`menu_normal_test.rs` の `イベント名はTS側と揃っている` の `non_snake_case`)で初回から赤になる。同じ理由の抑制が既に 3 ファイルに複製されていたので、4 つ目を足さずにクレートのルート 1 箇所へ寄せた。テスト名を `ts` に改名する案は、大文字のラテン文字を含むテスト名が他に 5 件あって書き方が割れるので計画の検証で却下した。",
+      "review": [
+        "`cfg_attr(test, ...)` なのでテストのビルドにだけ効き、本番コードの非 snake case は引き続き落ちる(手元で確かめた)",
+        "消した 3 ファイルのコメントと `lib.rs` の 1 行が同じ理由を言えているか"
+      ],
+      "before": [
+        {
+          "text": "日本語のテスト名を書くテストファイルごとに `#![allow(non_snake_case)]` と理由のコメントを置いていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "テストのビルドではクレート全体で `non_snake_case` を外し、テストファイルは個別の抑制なしで日本語のテスト名を書ける"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src-tauri/src/lib.rs",
+          "start": 1,
+          "end": 2,
+          "text": "`#![...]` はクレート全体に効く。`cfg_attr(test, ...)` で `cargo test` のビルドのときだけ `allow(non_snake_case)` になる"
+        },
+        {
+          "path": "src-tauri/src/document/file_path_normal_test.rs",
+          "side": "old",
+          "start": 3,
+          "end": 6,
+          "text": "同じ理由の抑制が 3 ファイルにあった。ここと `io_atomicity_test.rs` / `io_edge_test.rs` から消した"
+        }
+      ]
+    },
+    {
+      "sha": "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+      "phase": "core",
+      "role": "`clippy.toml` で本番コードの `std::fs` を禁止し、`file_io` だけを許可する",
+      "why": "#553(PR #1365)で本番コードの `std::fs` を `file_io` に集めたが、完了条件は grep 1 回で確かめただけだった。clippy の `disallowed-*` は型解決後に当たるので、別名 import(`use std::fs as f`)や `PathBuf` からの自動参照外し(`path_buf.is_file()`)でも落ちる(実測)。clippy.toml だけでテストを除外する `allow-disallowed-methods-in-tests` は unknown field で弾かれ、テストモジュールごとの `#[allow]` は 20 箇所に複製されるので、`lib.rs` の `cfg_attr(test)` 1 行にした。",
+      "flows": [
+        "pr-ci",
+        "prod-io"
+      ],
+      "review": [
+        "禁止一覧に `Path` のメソッド 10 個を含めた判断。含めないと `Path::exists` で抜けられ、file_io の外の本番コードでの使用は 0 件なので既存コードは落ちない",
+        "`file_io` の許可を `allow` でなく `expect` にした判断。fs の呼び出しが消えると unfulfilled で落ちる",
+        "`#![expect]` と `reason =` は Rust 1.81 からで、`rust-version = 1.77.2` と食い違う。宣言の見直しは #1373 に分けた",
+        "`std::os::*::fs::symlink*` を禁止しなかった判断。Linux では Windows 側のパスが unreachable の警告になり、本番での使用も 0 件"
+      ],
+      "before": [
+        {
+          "text": "本番コードのどこからでも `std::fs` や `Path::exists` を呼べた"
+        }
+      ],
+      "after": [
+        {
+          "text": "clippy を走らせると、本番コードで `file_io` の外から `std::fs` / `File` / `Path::exists` などを使った箇所が落ちる",
+          "message": "read-ban"
+        },
+        {
+          "text": "テストのビルドでは禁止を外すので、テストはフィクスチャを `std::fs` で直接用意できる"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src-tauri/clippy.toml",
+          "start": 1,
+          "end": 20,
+          "text": "`std::fs` の自由関数 19 個。`reason` は clippy の警告文に出る"
+        },
+        {
+          "path": "src-tauri/clippy.toml",
+          "start": 21,
+          "end": 30,
+          "text": "`Path` のうちファイルシステムに触るメソッド 10 個。`PathBuf` は `Path` への自動参照外しで同じメソッドを呼ぶので、これで両方に当たる"
+        },
+        {
+          "path": "src-tauri/clippy.toml",
+          "start": 32,
+          "end": 36,
+          "text": "型そのものの使用を禁止する。`File::open` も `OpenOptions::new()` もここで当たる"
+        },
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "start": 10,
+          "end": 14,
+          "text": "内側の属性なので `file_io` モジュールと子の `atomic_write` 全体に効く。`expect` は lint が 1 回も出なければ unfulfilled の警告になる"
+        },
+        {
+          "path": "src-tauri/src/lib.rs",
+          "start": 1,
+          "end": 3,
+          "text": "テストのビルドでだけ禁止を外す。`--all-targets` には cfg(test) でない lib ターゲットも含まれるので、本番コードは禁止付きで検査される"
+        }
+      ]
+    },
+    {
+      "sha": "4ade9eb38722ec79ea0ded49a3cb708d3dde13cf",
+      "phase": "core",
+      "role": "PR の CI に `src-tauri` ワークフローを足し、clippy と test を走らせる",
+      "why": "前のコミットの禁止は誰かが clippy を走らせない限り効かず、src-tauri のテスト 148 件も PR で検査されていなかった。frontend.yml にジョブを足すと名前と中身が食い違うので新しいワークフローに分けた。pre-push に載せる案は初回 clippy 74 秒 + test 92 秒で pre-push 全体(73 秒)の 2 倍を超え、webkit のシステムライブラリが無い環境では飛ばすしかないので却下。`Swatinem/rust-cache` は pull_request だけで走るので他 PR のキャッシュを引けず、緑になる時間は frontend と visual-regression で決まるので入れなかった。",
+      "flows": [
+        "pr-ci"
+      ],
+      "review": [
+        "paths で絞らない判断。必須チェックにしたとき絞られた PR で保留のまま止まるのと、stable の clippy の版上げで増えた lint を見せるため",
+        "ツールチェーンを `rust-toolchain.toml` で固定せず stable にした判断。release-desktop と同じ版で検査と出荷を揃える代わりに、版上げで全 PR が赤になりうる",
+        "apt の組は `.devcontainer/node/Dockerfile` の Tauri 用のものを写した。Dockerfile のビルドコンテキストは `./node` で共有できない",
+        "「CI は cargo を走らせない」を前提にしていた理由 4 箇所(frontend.yml・check-tauri-version-match.mjs・canonical_path.rs とそのテスト)の書き直しが漏れていないか",
+        "ci-trace の `workflows:` の綴りがワークフローの `name: src-tauri` と一致しているか"
+      ],
+      "before": [
+        {
+          "text": "PR で src-tauri の clippy も test も走らなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "PR ごとに clippy と test が走り、どちらかが失敗すれば赤になる",
+          "message": "run-clippy"
+        },
+        {
+          "text": "ci-trace が src-tauri の run を拾う",
+          "message": "notify-trace"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/workflows/src-tauri.yml",
+          "start": 3,
+          "end": 4,
+          "text": "pull_request だけで、paths で絞らない"
+        },
+        {
+          "path": ".github/workflows/src-tauri.yml",
+          "start": 26,
+          "end": 39,
+          "text": "tauri クレートのビルドに要る webkit などのシステムライブラリ"
+        },
+        {
+          "path": ".github/workflows/src-tauri.yml",
+          "start": 41,
+          "end": 44,
+          "text": "stable に clippy を足して入れる。版は固定しない"
+        },
+        {
+          "path": ".github/workflows/src-tauri.yml",
+          "start": 46,
+          "end": 52,
+          "text": "`-D warnings` で警告をエラーにし、`--locked` で Cargo.lock と食い違えば落とす"
+        },
+        {
+          "path": ".github/workflows/ci-trace.yml",
+          "start": 15,
+          "end": 15,
+          "text": "照合はワークフローの `name:` なので、ファイル名ではなく名前を書く"
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "start": 48,
+          "end": 49,
+          "text": "CI ができたので、理由を「ubuntu でしか走らない」に書き直した"
+        }
+      ]
+    },
+    {
+      "sha": "b929f99cded2817d7f2f06484a1f7941450964f8",
+      "phase": "revise",
+      "role": "重複した理由を 1 箇所へ寄せ、欠けていた理由と検出の限界をコメントに足す",
+      "why": "実装の検証で duplication / comment / harness の各レビュアーから、同じ理由が 2 箇所にあって片方だけ直せる・判断の理由が Issue にしか無い・CI ができた後も「CI に Rust が無い」と読める、という指摘を受けた。理由は実装している側(スクリプトの冒頭・分岐を持つ関数の doc)にだけ置き、呼び出し側には参照だけを残した。検出の限界は comment-reviewer が最小クレートで再現したもの。",
+      "review": [
+        "lib.rs の検出の限界の 2 行。ubuntu の clippy は `#[cfg(windows)]` / `#[cfg(target_os = \"macos\")]` の中の `std::fs` を見ないので落ちない。CI に Windows / macOS のマトリクスを足す案は、いまの本番の cfg 分岐(dialog.rs / menu.rs)に fs の呼び出しが無いので見送った",
+        "足した 3 つの理由(expect にした・Path を含める・paths で絞らない)は、消すと次の人が allow に戻す・Path を外す・paths で絞る恐れがある判断か"
+      ],
+      "notes": [
+        {
+          "path": "src-tauri/src/lib.rs",
+          "start": 3,
+          "end": 4,
+          "text": "検出の限界。clippy はホストの cfg で外れるコードを型検査しない"
+        },
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "start": 10,
+          "end": 10,
+          "text": "`expect` にした理由"
+        },
+        {
+          "path": "src-tauri/clippy.toml",
+          "start": 21,
+          "end": 21,
+          "text": "`Path` のメソッドも含める理由"
+        },
+        {
+          "path": ".github/workflows/src-tauri.yml",
+          "start": 3,
+          "end": 4,
+          "text": "paths で絞らない理由"
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "start": 39,
+          "end": 40,
+          "text": "理由を消し、何を見るかとスクリプトの冒頭への参照だけにした"
+        }
+      ]
+    },
+    {
+      "sha": "e1fa5752b03ca7f8d5d60b69b32c502d429c8c4e",
+      "phase": "fin",
+      "role": "Rust の検査を push 前の手順とハーネスの層の説明に載せる",
+      "why": "harness-reviewer の指摘。CI だけがゲートを持つ既存の検査(`check-pr-closing-issue-cases.sh` と Storybook の撮影範囲)はフェーズ 7 の手順に書かれているのに、src-tauri.yml だけが手順から辿れず、src-tauri を変えた PR は push した後の CI で初めて禁止に当たる形だった。撮影範囲の段落と小節と同じ形にそろえた。",
+      "flows": [
+        "before-push"
+      ],
+      "review": [
+        "README の小節で、層 2(pre-push)に cargo を載せない理由が所要時間と環境で言えているか",
+        "over-guard-reviewer の言い換え。clippy は `excessive-nesting-threshold` を設定しない限り深さを見ないので、ネストの深さの観点は残る"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 301,
+          "end": 305,
+          "text": "コマンドは写さず、セットアップ手順の節を参照する"
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 246,
+          "end": 254,
+          "text": "層 2・層 3 へ置かない理由はここにだけ書く"
+        },
+        {
+          "path": ".claude/agents/over-guard-reviewer.md",
+          "start": 40,
+          "end": 40,
+          "text": "CI に clippy が入ったので、「CI の強制が無い」が全体の否定に読めないよう主語を絞った"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "ban",
+      "label": "本番コードの fs の禁止",
+      "file": "src-tauri/clippy.toml"
+    },
+    {
+      "id": "receiver",
+      "label": "受け口の許可",
+      "file": "src-tauri/src/file_io.rs"
+    },
+    {
+      "id": "exempt",
+      "label": "テストのビルドでの除外",
+      "file": "src-tauri/src/lib.rs"
+    },
+    {
+      "id": "ci",
+      "label": "Rust の CI",
+      "file": ".github/workflows/src-tauri.yml"
+    }
+  ],
+  "tests": [
+    {
+      "id": "ban-functions",
+      "suite": "ban",
+      "name": "本番コードで file_io の外から std::fs の関数を呼ぶと clippy が落ちる",
+      "techniques": [
+        "error",
+        "equivalence"
+      ],
+      "why": "完了条件「本番コードで `std::fs` を呼ぶのは `file_io` だけ」の本体。コミットしたテストではなく、手元で違反を一時的に書き足して `cargo clippy --all-targets -- -D warnings` の終了コードを見た(禁止一覧そのものが守っている)",
+      "given": "この PR の `clippy.toml` と、`file_io` の外の本番コード",
+      "when": "`std::fs::read` を書き足して clippy を走らせる",
+      "then": "`disallowed_methods` で exit 101 になる",
+      "commit": "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+      "targets": [
+        "src-tauri/clippy.toml",
+        "src-tauri/src/lib.rs"
+      ],
+      "covers": [
+        "read-ban",
+        "run-clippy"
+      ]
+    },
+    {
+      "id": "ban-types",
+      "suite": "ban",
+      "name": "本番コードで File / OpenOptions / DirBuilder を使うと clippy が落ちる",
+      "techniques": [
+        "error",
+        "equivalence"
+      ],
+      "why": "自由関数を禁止しても、型の関連関数(`File::open` など)からファイルを開けると抜けられる。手元で注入して確かめたもので、自動テストではない",
+      "given": "`file_io` の外の本番コード",
+      "when": "表の型を使う行を 1 つずつ書き足して clippy を走らせる",
+      "then": "どれも `disallowed_types` で落ちる",
+      "commit": "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+      "values": {
+        "columns": [
+          "書き足したもの",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`std::fs::File`",
+              "落ちる"
+            ]
+          },
+          {
+            "cells": [
+              "`std::fs::OpenOptions`",
+              "落ちる"
+            ]
+          },
+          {
+            "cells": [
+              "`std::fs::DirBuilder`",
+              "落ちる"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src-tauri/clippy.toml"
+      ],
+      "covers": [
+        "read-ban"
+      ]
+    },
+    {
+      "id": "ban-path-methods",
+      "suite": "ban",
+      "name": "本番コードで Path や PathBuf からファイルシステムに触ると clippy が落ちる",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "`std::fs` だけを禁止すると `Path::exists` で抜けられる(実測)。`PathBuf` は自動参照外しで `Path` のメソッドを呼ぶので、そちらも当たるかが境目。手元で注入して確かめた",
+      "given": "`file_io` の外の本番コード",
+      "when": "表の呼び出しを書き足して clippy を走らせる",
+      "then": "どれも `disallowed_methods` で落ちる",
+      "commit": "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+      "values": {
+        "columns": [
+          "書き足した呼び出し",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`Path::exists`",
+              "落ちる"
+            ]
+          },
+          {
+            "cells": [
+              "`PathBuf` の値の `.is_file()`",
+              "落ちる"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src-tauri/clippy.toml"
+      ],
+      "covers": [
+        "read-ban"
+      ]
+    },
+    {
+      "id": "ban-alias",
+      "suite": "ban",
+      "name": "std::fs を別名で import しても clippy が落ちる",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "grep では `use std::fs as f; f::write(...)` を拾えない。clippy の禁止は型解決後のパスで当たるので別名でも落ちる。手元で注入して確かめた",
+      "given": "`file_io` の外の本番コード",
+      "when": "`use std::fs as f;` と `f::write(...)` を書き足して clippy を走らせる",
+      "then": "`disallowed_methods` で落ちる",
+      "commit": "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+      "targets": [
+        "src-tauri/clippy.toml"
+      ],
+      "covers": [
+        "read-ban"
+      ]
+    },
+    {
+      "id": "ban-other-targets",
+      "suite": "ban",
+      "name": "main.rs と build.rs の std::fs も clippy が落とす",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`lib.rs` の除外はテストのビルドにしか効かず、`--all-targets` の bin ターゲットと build script にも禁止が掛かること。手元で注入して確かめた",
+      "given": "`src-tauri/src/main.rs` と `src-tauri/build.rs`",
+      "when": "それぞれに `std::fs` の呼び出しを書き足して clippy を走らせる",
+      "then": "どちらも落ちる",
+      "commit": "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+      "values": {
+        "columns": [
+          "書き足した場所",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`main.rs`",
+              "落ちる"
+            ]
+          },
+          {
+            "cells": [
+              "`build.rs`",
+              "落ちる"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src-tauri/clippy.toml"
+      ],
+      "covers": [
+        "read-ban",
+        "run-clippy"
+      ]
+    },
+    {
+      "id": "receiver-needs-expect",
+      "suite": "receiver",
+      "name": "file_io の許可を外すと file_io 自身が clippy で落ちる",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "禁止一覧が `file_io` の中の呼び出しにも当たっていること(許可が実際に効いていること)の確かめ。手元で属性を外して確かめた",
+      "given": "`file_io.rs` と子の `atomic_write`",
+      "when": "`#![expect(clippy::disallowed_methods, clippy::disallowed_types, ...)]` を消して clippy を走らせる",
+      "then": "`file_io` の中の fs の呼び出しで落ちる",
+      "commit": "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+      "targets": [
+        "src-tauri/src/file_io.rs"
+      ],
+      "covers": [
+        "read-ban"
+      ]
+    },
+    {
+      "id": "receiver-unfulfilled",
+      "suite": "receiver",
+      "name": "file_io の許可が使われなくなると unfulfilled で落ちる",
+      "techniques": [
+        "state",
+        "boundary"
+      ],
+      "why": "`allow` だと、fs の呼び出しが消えた後も許可だけが残る。`expect` にした理由そのもの。手元で書き換えて確かめた",
+      "given": "`file_io` に掛けた許可",
+      "when": "表の組み合わせで clippy を走らせる",
+      "then": "`expect` のときだけ、許可が使われない状態を落とす",
+      "commit": "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+      "values": {
+        "columns": [
+          "許可の書き方",
+          "許可が当たる呼び出し",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`expect`",
+              "ある(この PR の状態)",
+              "通る"
+            ]
+          },
+          {
+            "cells": [
+              "`expect`",
+              "無い",
+              "unfulfilled で落ちる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`allow`",
+              "無い",
+              "落ちない(許可が残る)"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src-tauri/src/file_io.rs"
+      ],
+      "covers": [
+        "read-ban"
+      ]
+    },
+    {
+      "id": "exempt-tests",
+      "suite": "exempt",
+      "name": "テストコードで std::fs を使っても clippy は落ちない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "テストはフィクスチャを `std::fs` で直接用意・検査する外部の書き手。`cfg_attr(test, allow(...))` を外すとテスト 91 件で落ちることを手元で確かめた(自動テストではない)",
+      "given": "テストのビルド(`cfg(test)`)",
+      "when": "`cargo clippy --all-targets -- -D warnings` を走らせる",
+      "then": "テストの `std::fs` の呼び出しでは落ちない",
+      "commit": "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+      "values": {
+        "columns": [
+          "lib.rs の除外",
+          "テストの fs の呼び出し"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`cfg_attr(test, allow(...))` あり",
+              "落ちない"
+            ]
+          },
+          {
+            "cells": [
+              "除外なし",
+              "91 件で落ちる"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src-tauri/src/lib.rs"
+      ],
+      "covers": [
+        "run-clippy"
+      ]
+    },
+    {
+      "id": "exempt-not-prod",
+      "suite": "exempt",
+      "name": "テストの除外は本番コードの禁止を外さない",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "除外を無条件の `allow` にすると本番コードも素通りする。`cfg_attr(test)` が cfg(test) でない lib ターゲットに効かないことが、この PR の禁止が成り立つ前提。手元で書き換えて確かめた",
+      "given": "`file_io` の外の本番コードに `std::fs::read` を書き足した状態",
+      "when": "`lib.rs` の除外の書き方を変えて clippy を走らせる",
+      "then": "`cfg_attr(test)` なら落ち、無条件の `allow` なら素通りする",
+      "commit": "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+      "values": {
+        "columns": [
+          "lib.rs の除外",
+          "本番の fs の呼び出し"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`cfg_attr(test, allow(...))`",
+              "落ちる"
+            ]
+          },
+          {
+            "cells": [
+              "無条件の `allow(...)`",
+              "素通り"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src-tauri/src/lib.rs"
+      ],
+      "covers": [
+        "run-clippy"
+      ]
+    },
+    {
+      "id": "exempt-test-names",
+      "suite": "exempt",
+      "name": "日本語のテスト名にラテン文字の大文字が入っても警告にならない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "`DCMP` / `JSON` / `TS` を含むテスト名は snake case でない。抑制を 1 箇所にまとめても、個別の抑制を消した 3 ファイルと `menu_normal_test.rs` が落ちないこと。`cfg_attr` を外すとテスト名 6 件で落ちることを手元で確かめた",
+      "given": "個別の `#![allow(non_snake_case)]` を消したテストファイル",
+      "when": "`cargo clippy --all-targets -- -D warnings` を走らせる",
+      "then": "テスト名で `non_snake_case` は出ない",
+      "commit": "6f649caae997aa884f446b01bfad91e7cf455b1f",
+      "targets": [
+        "src-tauri/src/lib.rs"
+      ],
+      "covers": [
+        "run-clippy"
+      ]
+    },
+    {
+      "id": "exempt-prod-names",
+      "suite": "exempt",
+      "name": "本番コードの snake case でない関数名は警告になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "テスト名の抑制をクレートのルートに置いても、本番コードの命名の検査は残ること。手元で本番に非 snake case の関数を足して確かめた",
+      "given": "本番コード(cfg(test) でない lib)",
+      "when": "snake case でない名前の関数を足して clippy を走らせる",
+      "then": "`non_snake_case` で落ちる",
+      "commit": "6f649caae997aa884f446b01bfad91e7cf455b1f",
+      "targets": [
+        "src-tauri/src/lib.rs"
+      ],
+      "covers": [
+        "run-clippy"
+      ]
+    },
+    {
+      "id": "ci-baseline",
+      "suite": "ci",
+      "name": "この PR の状態で clippy と cargo test が通る",
+      "techniques": [
+        "state"
+      ],
+      "why": "CI を足した初回から赤にしないこと。手元で `cargo clippy --all-targets --locked -- -D warnings` が exit 0、`cargo test --locked` が 148 passed",
+      "given": "この PR の head",
+      "when": "`src-tauri` で CI と同じ 2 コマンドを走らせる",
+      "then": "どちらも終了コード 0",
+      "commit": "4ade9eb38722ec79ea0ded49a3cb708d3dde13cf",
+      "targets": [
+        ".github/workflows/src-tauri.yml"
+      ],
+      "covers": [
+        "run-clippy",
+        "run-test"
+      ]
+    },
+    {
+      "id": "ci-test-fails",
+      "suite": "ci",
+      "name": "失敗するテストがあると cargo test が非 0 で終わる",
+      "techniques": [
+        "error"
+      ],
+      "why": "CI のステップが赤になるのは終了コードが非 0 のとき。違反のコミットを PR の履歴に残さないため、PR 上の赤ではなく手元の終了コードで代えた",
+      "given": "失敗するテストを 1 件書き足した状態",
+      "when": "`cargo test --locked` を走らせる",
+      "then": "非 0 で終わる",
+      "commit": "4ade9eb38722ec79ea0ded49a3cb708d3dde13cf",
+      "targets": [
+        ".github/workflows/src-tauri.yml"
+      ],
+      "covers": [
+        "run-test"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "PR に Rust 側の検査が出て、本番コードでファイルを直接触る書き方をすると赤になる",
+    "lead": "使う人(PR を出す人と、実装するセッション)から見て変わったのは、PR に Rust 側の検査の結果が出ることと、本番コードでファイルを読み書きする道が 1 つに絞られたことです。テストの書き方は変わりません。",
+    "changed": {
+      "before": [
+        {
+          "text": "PR では Rust 側の検査もテストも走らず、壊れていても出荷のときまで気づけなかった"
+        },
+        {
+          "text": "本番コードのどこからでもファイルを直接読み書きでき、決まりは目で見て守るだけだった"
+        }
+      ],
+      "after": [
+        {
+          "text": "PR を出すたびに Rust 側の検査とテストが走り、警告か失敗したテストがあれば PR が赤になる",
+          "message": "run-clippy"
+        },
+        {
+          "text": "本番コードでファイルの読み書きをまとめた場所の外からファイルを直接触ると、PR が赤になる",
+          "message": "read-ban"
+        },
+        {
+          "text": "Rust 側を変えたときは、push の前に同じ検査を手元で走らせる手順になった",
+          "message": "refer-setup"
+        }
+      ],
+      "text": "ファイルの読み書きは、まとめた場所を通せば今まで通り書けます。赤になったときの警告文には「ファイルの読み書きをまとめた場所を通す」という理由が出ます。",
+      "specs": [
+        {
+          "path": "TAURI_SETUP.md",
+          "locator": "「Rust 側の検査」の節",
+          "text": "CI と同じ 2 つの検査を手元で走らせる手順と、Linux で要るシステムライブラリを足した",
+          "shas": [
+            "4ade9eb38722ec79ea0ded49a3cb708d3dde13cf"
+          ]
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "locator": "「フェーズ 7」の Rust 側に差分があるときの段落",
+          "text": "Rust 側に差分があるときは push の前に同じ 2 つの検査を走らせる、を足した",
+          "shas": [
+            "e1fa5752b03ca7f8d5d60b69b32c502d429c8c4e"
+          ]
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "locator": "「カバー範囲と残る穴」の「Rust の検査は層 1 と層 4 にしかない」",
+          "text": "Rust 側の検査は CI と push 前の手順にだけあり、push のときの自動の検査には置かない理由を足した",
+          "shas": [
+            "e1fa5752b03ca7f8d5d60b69b32c502d429c8c4e"
+          ]
+        },
+        {
+          "path": ".claude/agents/over-guard-reviewer.md",
+          "locator": "「過剰な防御」の観点のうちネストの深さの行",
+          "text": "「Rust には CI の強制が無い」を「検査の設定にネストの深さの閾値が無い」に言い換えた",
+          "shas": [
+            "e1fa5752b03ca7f8d5d60b69b32c502d429c8c4e"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 553,
+          "text": "本番コードのファイルの読み書きを 1 か所に集めた件。そのときは手で 1 回確かめただけで、守る仕組みがこの PR で入った"
+        },
+        {
+          "issue": 1373,
+          "text": "この PR の書き方が求める Rust の版と、宣言している最低の版の食い違いを見直す件として分けた"
+        },
+        {
+          "issue": 366,
+          "text": "Rust と npm の版のずれに出荷のときまで気づけなかった件。版の突き合わせは引き続き別の検査が持つ"
+        }
+      ],
+      "primers": [
+        "clippy-disallowed",
+        "all-targets",
+        "file-io-receiver",
+        "rust-ci"
+      ]
+    },
+    "tables": [
+      {
+        "label": "ファイルを直接触ったときの PR の結果",
+        "gist": "赤になるかを決めるのは、どこに書いたかと、ファイルを直接触ったか。",
+        "text": "直接触ってよいのは、ファイルの読み書きをまとめた場所だけになりました。テストの書き方と、Windows・Mac だけの分岐は変わっていません。",
+        "rowHeads": [
+          {
+            "id": "prod",
+            "label": "本番コード",
+            "note": "読み書きをまとめた場所の外"
+          },
+          {
+            "id": "receiver",
+            "label": "ファイルの読み書きをまとめた場所"
+          },
+          {
+            "id": "tests",
+            "label": "テスト"
+          },
+          {
+            "id": "other-os",
+            "label": "本番コードの Windows・Mac だけの分岐"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "direct",
+            "label": "ファイルを直接触る"
+          },
+          {
+            "id": "none",
+            "label": "直接触らない"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "prod",
+            "columnHead": "direct",
+            "result": "PR が赤になる",
+            "was": "何も起きない",
+            "tests": [
+              "ban-functions",
+              "ban-types",
+              "ban-path-methods",
+              "ban-alias",
+              "ban-other-targets",
+              "exempt-not-prod"
+            ]
+          },
+          {
+            "rowHead": "prod",
+            "columnHead": "none",
+            "result": "通る",
+            "tests": [
+              "ci-baseline"
+            ]
+          },
+          {
+            "rowHead": "receiver",
+            "columnHead": "direct",
+            "result": "通る",
+            "tests": [
+              "receiver-needs-expect"
+            ]
+          },
+          {
+            "rowHead": "receiver",
+            "columnHead": "none",
+            "result": "PR が赤になる",
+            "was": "何も起きない",
+            "note": "直接触る理由が無くなったのに許可だけが残るのを止める",
+            "tests": [
+              "receiver-unfulfilled"
+            ]
+          },
+          {
+            "rowHead": "tests",
+            "columnHead": "direct",
+            "result": "通る",
+            "tests": [
+              "exempt-tests"
+            ]
+          },
+          {
+            "rowHead": "tests",
+            "columnHead": "none",
+            "result": "通る"
+          },
+          {
+            "rowHead": "other-os",
+            "columnHead": "direct",
+            "result": "通る",
+            "note": "検査は ubuntu で走るので、ほかの環境だけの分岐は見えない"
+          },
+          {
+            "rowHead": "other-os",
+            "columnHead": "none",
+            "result": "通る"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "Rust 側の検査が PR に出る",
+        "before": [],
+        "after": [
+          {
+            "text": "Rust 側を触らない PR でも、毎回 Rust 側の検査とテストが走る",
+            "message": "run-test"
+          },
+          {
+            "text": "検査の道具の版が上がって新しい警告が増えると、Rust 側を触らない PR も赤になりうる"
+          },
+          {
+            "text": "検査の所要時間も、ほかの CI と同じ記録に載る",
+            "message": "notify-trace"
+          }
+        ],
+        "text": "どの PR でも走らせるのは、必須の検査にしたときに止まったままにならないようにするのと、増えた警告を早く見せるためです。",
+        "tests": [
+          "ci-baseline",
+          "ci-test-fails"
+        ],
+        "primers": [
+          "gha-pull-request",
+          "rust-ci"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "テストはこれまで通り、ファイルを直接用意・確認して書ける",
+        "tests": [
+          "exempt-tests"
+        ]
+      },
+      {
+        "text": "テスト名はこれまで通り日本語の仕様の文で書け、英字の略語が入ってもファイルごとの断り書きは要らない",
+        "tests": [
+          "exempt-test-names"
+        ]
+      },
+      {
+        "text": "本番コードの名前の付け方の検査はこれまで通り効く",
+        "tests": [
+          "exempt-prod-names"
+        ]
+      },
+      {
+        "text": "必須の検査に登録するまでは、赤になってもマージは止まらない"
+      },
+      {
+        "text": "Windows・Mac だけを通る分岐は、引き続き実機でしか確かめられない"
+      },
+      {
+        "text": "アプリの見た目と操作は変わらない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "lint-attrs",
+      "category": "rust · 属性",
+      "label": "lint の `allow` と `expect`",
+      "gist": "[[コンパイラ|compiler]]や [[clippy|clippy]] が出す [[lint|lint]] を、コードのある範囲で黙らせるための[[属性|attribute]]。`allow` は黙らせるだけ、`expect` は「ここで必ず出るはずだ」と宣言して黙らせる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "lint には名前があり(`non_snake_case`、`clippy::disallowed_methods` など)、`allow(名前)` を付けた範囲ではその lint を出さない。`expect(名前)` も同じく黙らせるが、範囲の中でその lint が 1 回も出なければ、代わりに [[`unfulfilled_lint_expectations`|unfulfilled]] という警告を出す。黙らせる理由が無くなったことを知らせる仕組みで、Rust 1.81 から使える。"
+        },
+        {
+          "kind": "declaration",
+          "code": "#[expect(lint_name, ..., reason = \"…\")]"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "lint_name",
+              "type": "lint の名前",
+              "text": "黙らせる [[lint|lint]]。clippy のものは `clippy::` を付ける。カンマで並べて複数書ける"
+            },
+            {
+              "name": "reason",
+              "type": "文字列",
+              "text": "なぜ黙らせるか。lint が出たときや unfulfilled のときの文に添えられる",
+              "note": "省ける。1.81 から"
+            }
+          ]
+        },
+        {
+          "kind": "caution",
+          "text": "`allow` は、範囲の中に lint の出る行が無くなっても何も言わない。許可だけが残り続け、あとで誰かが同じ範囲に違反を書いても黙って通る。"
+        },
+        {
+          "kind": "memo",
+          "text": "`-D warnings` で走らせると、unfulfilled の警告もエラーになって検査が落ちる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "lineRange": {
+            "start": 10,
+            "end": 15
+          },
+          "text": "`file_io` に掛けた `expect` と、`allow` にしなかった理由",
+          "shas": [
+            "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+            "b929f99cded2817d7f2f06484a1f7941450964f8"
+          ]
+        },
+        {
+          "path": "src-tauri/src/lib.rs",
+          "lineRange": {
+            "start": 5,
+            "end": 7
+          },
+          "text": "テストのビルドでだけ効かせる `allow`",
+          "shas": [
+            "6f649caae997aa884f446b01bfad91e7cf455b1f",
+            "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "inner-attr",
+        "cfg-attr",
+        "file-io-receiver"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "inner-attr",
+      "category": "rust · 属性",
+      "label": "外側の `#[…]` と内側の `#![…]`",
+      "gist": "[[属性|attribute]]を、次に書くものに付けるか、自分を囲んでいるものに付けるかの書き分け。`!` の付いた内側の形をファイルの先頭に書くと、そのファイルのモジュール全体(`lib.rs` なら[[クレート|crate]]全体)に効く。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`#[属性]` はすぐ後ろの関数・`mod` の宣言などに付く。`#![属性]` は、それを書いた場所を囲むもの(ファイルの先頭ならそのファイルのモジュール)に付く。モジュールに付けた lint の属性は、その中の子モジュールにも及ぶ。"
+        },
+        {
+          "kind": "rule",
+          "text": "内側の属性は、ファイルの中で `use` や `mod` などの項目より前に書く。コメント(`//` / `//!`)は前に置いてよい。"
+        },
+        {
+          "kind": "memo",
+          "text": "`file_io.rs` の先頭の `#![expect(...)]` は、`mod atomic_write;` で取り込む子モジュールにも効くので、子の fs の呼び出しもまとめて許可される。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src-tauri/src/lib.rs",
+          "lineRange": {
+            "start": 5,
+            "end": 7
+          },
+          "text": "クレートのルートに置いた内側の属性。クレート全体に効く",
+          "shas": [
+            "6f649caae997aa884f446b01bfad91e7cf455b1f",
+            "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c"
+          ]
+        },
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "lineRange": {
+            "start": 11,
+            "end": 17
+          },
+          "text": "`file_io` モジュールと子の `atomic_write` に効く",
+          "shas": [
+            "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "lint-attrs",
+        "cfg-attr"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "cfg-attr",
+      "category": "rust · 属性",
+      "label": "`cfg_attr(test, …)`",
+      "gist": "ある[[条件付きコンパイル|cfg]]の条件が成り立つビルドのときだけ、別の[[属性|attribute]]を付けるための属性。`test` は `cargo test` でテスト用にビルドしているときに成り立つ。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "#[cfg_attr(条件, 属性, ...)]"
+        },
+        {
+          "kind": "text",
+          "text": "`#![cfg_attr(test, allow(non_snake_case))]` は、テストのビルドでは `#![allow(non_snake_case)]` と同じになり、それ以外のビルドでは何も付けない。`#[cfg(test)]` の付いた `mod` がテストのビルドにだけ入るのと同じ条件を使っている。"
+        },
+        {
+          "kind": "spec",
+          "text": "`cargo clippy --all-targets` は同じ lib を「テストのビルド」と「テストでないビルド」の両方で検査する。前者では `cfg_attr(test, …)` が効き、後者では効かないので、本番コードはテストでないビルドの側で禁止付きで検査される。"
+        },
+        {
+          "kind": "caution",
+          "text": "条件を付けずに `#![allow(...)]` と書くと、どのビルドでも黙らせるので本番コードの違反も通る。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src-tauri/src/lib.rs",
+          "lineRange": {
+            "start": 1,
+            "end": 7
+          },
+          "text": "禁止と `non_snake_case` をテストのビルドでだけ外す 2 行と、その理由",
+          "shas": [
+            "6f649caae997aa884f446b01bfad91e7cf455b1f",
+            "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+            "b929f99cded2817d7f2f06484a1f7941450964f8"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "lint-attrs",
+        "all-targets",
+        "test-exemption"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "clippy-disallowed",
+      "category": "rust · clippy",
+      "label": "`disallowed-methods` / `disallowed-types`",
+      "gist": "[[clippy|clippy]] に「この関数・この型を使ったら警告せよ」と、プロジェクトごとの禁止の一覧を渡す仕組み。一覧は[[クレート|crate]]の横に置いた `clippy.toml` に書く。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`disallowed-methods` には関数・メソッドの完全なパスを、`disallowed-types` には型のパスを並べる。それぞれ `{ path = \"…\", reason = \"…\" }` の形で、`reason` は警告の文に添えられる。clippy は名前を解決し終えた後で照合するので、`use std::fs as f;` のような別名や、[[自動参照外し|deref]]で `PathBuf` の値から呼んだ `Path` のメソッドでも当たる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src-tauri/clippy.toml",
+            "start": 1,
+            "end": 37,
+            "emphasis": [
+              {
+                "start": 21,
+                "end": 22
+              },
+              {
+                "start": 33,
+                "end": 37
+              }
+            ],
+            "text": "disallowed-methods = [\n  { path = \"std::fs::canonicalize\", reason = \"file_io を通す\" },\n  { path = \"std::fs::copy\", reason = \"file_io を通す\" },\n  { path = \"std::fs::create_dir\", reason = \"file_io を通す\" },\n  { path = \"std::fs::create_dir_all\", reason = \"file_io を通す\" },\n  { path = \"std::fs::exists\", reason = \"file_io を通す\" },\n  { path = \"std::fs::hard_link\", reason = \"file_io を通す\" },\n  { path = \"std::fs::metadata\", reason = \"file_io を通す\" },\n  { path = \"std::fs::read\", reason = \"file_io を通す\" },\n  { path = \"std::fs::read_dir\", reason = \"file_io を通す\" },\n  { path = \"std::fs::read_link\", reason = \"file_io を通す\" },\n  { path = \"std::fs::read_to_string\", reason = \"file_io を通す\" },\n  { path = \"std::fs::remove_dir\", reason = \"file_io を通す\" },\n  { path = \"std::fs::remove_dir_all\", reason = \"file_io を通す\" },\n  { path = \"std::fs::remove_file\", reason = \"file_io を通す\" },\n  { path = \"std::fs::rename\", reason = \"file_io を通す\" },\n  { path = \"std::fs::set_permissions\", reason = \"file_io を通す\" },\n  { path = \"std::fs::soft_link\", reason = \"file_io を通す\" },\n  { path = \"std::fs::symlink_metadata\", reason = \"file_io を通す\" },\n  { path = \"std::fs::write\", reason = \"file_io を通す\" },\n  # std::fs だけだと Path::exists などで抜けられるので、Path のファイルシステムに触るメソッドも含める。\n  { path = \"std::path::Path::canonicalize\", reason = \"file_io を通す\" },\n  { path = \"std::path::Path::metadata\", reason = \"file_io を通す\" },\n  { path = \"std::path::Path::symlink_metadata\", reason = \"file_io を通す\" },\n  { path = \"std::path::Path::read_link\", reason = \"file_io を通す\" },\n  { path = \"std::path::Path::read_dir\", reason = \"file_io を通す\" },\n  { path = \"std::path::Path::exists\", reason = \"file_io を通す\" },\n  { path = \"std::path::Path::try_exists\", reason = \"file_io を通す\" },\n  { path = \"std::path::Path::is_file\", reason = \"file_io を通す\" },\n  { path = \"std::path::Path::is_dir\", reason = \"file_io を通す\" },\n  { path = \"std::path::Path::is_symlink\", reason = \"file_io を通す\" },\n]\ndisallowed-types = [\n  { path = \"std::fs::File\", reason = \"file_io を通す\" },\n  { path = \"std::fs::OpenOptions\", reason = \"file_io を通す\" },\n  { path = \"std::fs::DirBuilder\", reason = \"file_io を通す\" },\n]"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "一覧に書いたものだけを止める(ブロックリスト)。一覧に無い新しい標準ライブラリの関数や、内部でファイルに触る外部のクレートは素通りする。"
+        },
+        {
+          "kind": "memo",
+          "text": "テストだけを一覧から外す設定項目は無い(`allow-disallowed-methods-in-tests` は unknown field として弾かれる)。除外は [[lint|lint]] の属性で書く。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src-tauri/clippy.toml",
+          "lineRange": {
+            "start": 1,
+            "end": 37
+          },
+          "text": "`std::fs` の関数 19 個・`Path` のメソッド 10 個・型 3 つ",
+          "shas": [
+            "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+            "b929f99cded2817d7f2f06484a1f7941450964f8"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "lint-attrs",
+        "all-targets",
+        "file-io-receiver"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "all-targets",
+      "category": "rust · cargo",
+      "label": "`cargo clippy --all-targets -- -D warnings`",
+      "gist": "[[cargo|cargo]] から [[clippy|clippy]] を呼び、[[クレート|crate]]のすべての[[ターゲット|target]]を検査して、警告が 1 件でもあれば失敗にするコマンド。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`--all-targets` は lib・bin(`main.rs`)・テスト・ベンチ・例をまとめて検査する。lib はテストのビルドとテストでないビルドの両方で見られる。`--` より後ろは clippy に渡す引数で、`-D warnings` はすべての警告をエラーに格上げする。`--locked` は `Cargo.lock` を書き換えなければならないときに失敗させる。"
+        },
+        {
+          "kind": "caution",
+          "text": "clippy は、そのマシンの環境の [[条件付きコンパイル|cfg]] で外れたコードを検査しない。ubuntu で走らせると `#[cfg(windows)]` / `#[cfg(target_os = \"macos\")]` の中は見られず、そこでの禁止の違反は落ちない。"
+        },
+        {
+          "kind": "memo",
+          "text": "build script(`build.rs`)も、ビルドの一部として同じ禁止で検査される。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/workflows/src-tauri.yml",
+          "lineRange": {
+            "start": 48,
+            "end": 54
+          },
+          "text": "CI の clippy と test のステップ",
+          "shas": [
+            "4ade9eb38722ec79ea0ded49a3cb708d3dde13cf"
+          ]
+        },
+        {
+          "path": "src-tauri/src/lib.rs",
+          "lineRange": {
+            "start": 2,
+            "end": 4
+          },
+          "text": "テストでない lib が検査されることと、検出の限界",
+          "shas": [
+            "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+            "b929f99cded2817d7f2f06484a1f7941450964f8"
+          ]
+        },
+        {
+          "path": "TAURI_SETUP.md",
+          "lineRange": {
+            "start": 38,
+            "end": 42
+          },
+          "text": "手元で走らせる同じ 2 コマンド",
+          "shas": [
+            "4ade9eb38722ec79ea0ded49a3cb708d3dde13cf"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "cfg-attr",
+        "gha-pull-request",
+        "rust-ci"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "gha-pull-request",
+      "category": "github actions",
+      "label": "`on: pull_request` と `workflow_run`",
+      "gist": "[[ワークフロー|workflow]]をいつ走らせるかの指定。`pull_request` は PR を開いた・push したとき、`workflow_run` は別のワークフローが終わったときに走る。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`on: pull_request:` だけを書くと、PR の作成・push・reopen のたびに走る。`paths:` を足すと、そのパスに差分がある PR でだけ走るよう絞れる。`workflow_run` の `workflows:` には、待つワークフローの `name:` を書く(ファイル名ではない)。"
+        },
+        {
+          "kind": "caution",
+          "text": "`paths:` で絞ったワークフローを必須の検査に登録すると、絞られて走らなかった PR ではその検査が保留のまま残り、マージできなくなる。"
+        },
+        {
+          "kind": "memo",
+          "text": "必須の検査への登録はリポジトリの設定で、ワークフローのファイルからは変えられない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/workflows/src-tauri.yml",
+          "lineRange": {
+            "start": 1,
+            "end": 6
+          },
+          "text": "`name: src-tauri` と、paths で絞らない `pull_request`",
+          "shas": [
+            "4ade9eb38722ec79ea0ded49a3cb708d3dde13cf",
+            "b929f99cded2817d7f2f06484a1f7941450964f8"
+          ]
+        },
+        {
+          "path": ".github/workflows/ci-trace.yml",
+          "lineRange": {
+            "start": 12,
+            "end": 15
+          },
+          "text": "`workflow_run` の対象に `src-tauri` を足した",
+          "shas": [
+            "4ade9eb38722ec79ea0ded49a3cb708d3dde13cf"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "rust-ci"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "file-io-receiver",
+      "category": "src-tauri · 境界",
+      "label": "`file_io` の受け口",
+      "gist": "本番コードがファイルを読み書きする唯一の場所。禁止一覧の例外はここにだけ `expect` で掛かり、ほかの本番コードは `file_io` の関数を呼んで読み書きする。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`file_io` は `read_bytes` / `write_atomic` / `canonicalize` と `read_optional_text` / `write_text` を公開する。`document/io.rs` などはこれを呼び、`std::fs` を直接は呼ばない。"
+        },
+        {
+          "kind": "rule",
+          "text": "本番コードに新しいファイル操作が要るときは、`file_io` に関数を足して呼ぶ。呼び出し側に `allow` を足さない。"
+        },
+        {
+          "kind": "history",
+          "text": "#553(PR #1365)で呼び出しを `file_io` に集めた。この PR までは、それを守る仕組みが無かった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "lineRange": {
+            "start": 1,
+            "end": 17
+          },
+          "text": "モジュールの doc と、禁止を許可する `expect`",
+          "shas": [
+            "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+            "b929f99cded2817d7f2f06484a1f7941450964f8"
+          ]
+        },
+        {
+          "path": "src-tauri/src/document/io.rs",
+          "lineRange": {
+            "start": 34,
+            "end": 58
+          },
+          "text": "`file_io::read_bytes` と `file_io::write_atomic` を呼ぶ側"
+        }
+      ],
+      "seeAlso": [
+        "lint-attrs",
+        "clippy-disallowed",
+        "test-exemption"
+      ],
+      "tests": [
+        "ban-functions",
+        "receiver-needs-expect",
+        "receiver-unfulfilled"
+      ],
+      "flows": [
+        "prod-io"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "test-exemption",
+      "category": "src-tauri · 境界",
+      "label": "`lib.rs` のテストの除外",
+      "gist": "テストのビルドでだけ、fs の禁止と `non_snake_case` を外す 2 行。[[条件付きコンパイル|cfg]]で本番コードには効かない。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "テストは `file_io` を検証する外部の書き手で、フィクスチャを `std::fs` で直接用意・確認する。準備を検証対象に通すと検証にならないので、テストには禁止を掛けない。テスト名は仕様の文として日本語で書き、`DCMP` などの英字が入るので `non_snake_case` も外す。"
+        },
+        {
+          "kind": "rule",
+          "text": "新しいテストファイルに `#![allow(non_snake_case)]` や fs の `allow` を個別に足さない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src-tauri/src/lib.rs",
+          "lineRange": {
+            "start": 1,
+            "end": 7
+          },
+          "text": "2 つの `cfg_attr` と理由・検出の限界",
+          "shas": [
+            "6f649caae997aa884f446b01bfad91e7cf455b1f",
+            "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+            "b929f99cded2817d7f2f06484a1f7941450964f8"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "cfg-attr",
+        "file-io-receiver"
+      ],
+      "tests": [
+        "exempt-tests",
+        "exempt-not-prod",
+        "exempt-test-names",
+        "exempt-prod-names"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "rust-ci",
+      "category": "harness · CI",
+      "label": "src-tauri の CI と push 前の手順",
+      "gist": "Rust 側の検査は CI(層 1)と push 前の手順(層 4)にだけ置き、pre-push(層 2)には置かない。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`src-tauri.yml` は ubuntu-24.04 に Tauri 用のシステムライブラリと stable の clippy を入れ、clippy と test を走らせる。手元では `TAURI_SETUP.md`「Rust 側の検査」の同じ 2 コマンドを、`implementation-flow` フェーズ 7 が `src-tauri/` に差分があるときに走らせる。"
+        },
+        {
+          "kind": "spec",
+          "text": "pre-push へ置かない理由は `.claude/hooks/README.md`「Rust の検査は層 1 と層 4 にしかない」にだけ書く(初回 166 秒で pre-push 全体の 2 倍超・webkit の無い環境では飛ばすしかない)。"
+        },
+        {
+          "kind": "caution",
+          "text": "ツールチェーンは固定していない stable。版上げで lint が増えると、Rust 側を触らない PR も赤になりうる。必須の検査への登録は未決。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/workflows/src-tauri.yml",
+          "lineRange": {
+            "start": 1,
+            "end": 54
+          },
+          "text": "ワークフロー全体",
+          "shas": [
+            "4ade9eb38722ec79ea0ded49a3cb708d3dde13cf",
+            "b929f99cded2817d7f2f06484a1f7941450964f8"
+          ]
+        },
+        {
+          "path": "TAURI_SETUP.md",
+          "lineRange": {
+            "start": 34,
+            "end": 44
+          },
+          "text": "「Rust 側の検査」の節",
+          "shas": [
+            "4ade9eb38722ec79ea0ded49a3cb708d3dde13cf"
+          ]
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "lineRange": {
+            "start": 301,
+            "end": 305
+          },
+          "text": "フェーズ 7 の段落",
+          "shas": [
+            "e1fa5752b03ca7f8d5d60b69b32c502d429c8c4e"
+          ]
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "lineRange": {
+            "start": 246,
+            "end": 254
+          },
+          "text": "層 2・層 3 へ置かない理由",
+          "shas": [
+            "e1fa5752b03ca7f8d5d60b69b32c502d429c8c4e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "all-targets",
+        "gha-pull-request"
+      ],
+      "tests": [
+        "ci-baseline",
+        "ci-test-fails"
+      ],
+      "flows": [
+        "pr-ci",
+        "before-push"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "lint",
+      "label": "lint",
+      "text": "コードの書き方の問題を見つけて警告する検査の 1 つ 1 つ。Rust では名前の付いた lint ごとに、出す・黙らせる・エラーにするを選べる。"
+    },
+    {
+      "id": "compiler",
+      "label": "コンパイラ",
+      "text": "Rust のソースを実行できる形に変換するプログラム(`rustc`)。変換の途中で組み込みの lint も出す。"
+    },
+    {
+      "id": "clippy",
+      "label": "clippy",
+      "text": "Rust の公式の追加 lint 集。`cargo clippy` で走らせ、コンパイラの lint に加えて数百の lint を出す。"
+    },
+    {
+      "id": "cargo",
+      "label": "cargo",
+      "text": "Rust のビルドと依存の管理をする公式の道具。`cargo test` でテストを、`cargo clippy` で clippy を走らせる。"
+    },
+    {
+      "id": "attribute",
+      "label": "属性",
+      "text": "`#[…]` の形でコードに付ける注記。コンパイラや clippy への指示(lint の扱い・条件付きのビルドなど)を書く。"
+    },
+    {
+      "id": "crate",
+      "label": "クレート",
+      "text": "Rust のコンパイルの単位。ライブラリなら `lib.rs` がルートで、そこから `mod` で取り込んだモジュールがすべて含まれる。"
+    },
+    {
+      "id": "cfg",
+      "label": "条件付きコンパイル",
+      "text": "`#[cfg(条件)]` で、条件が成り立つビルドにだけコードを含める仕組み。条件には `test`・`windows`・`target_os = \"macos\"` などがある。"
+    },
+    {
+      "id": "target",
+      "label": "ターゲット",
+      "text": "cargo がビルドする成果物の種類。ライブラリ(lib)・実行ファイル(bin)・テスト・ベンチ・例がある。"
+    },
+    {
+      "id": "unfulfilled",
+      "label": "unfulfilled_lint_expectations",
+      "text": "`expect` で予告した lint が範囲の中で 1 回も出なかったときに出る警告。"
+    },
+    {
+      "id": "deref",
+      "label": "自動参照外し",
+      "text": "メソッドを呼ぶとき、値の型に無ければ、それが指す先の型(`PathBuf` なら `Path`)のメソッドを自動で探す Rust の振る舞い。"
+    },
+    {
+      "id": "workflow",
+      "label": "ワークフロー",
+      "text": "GitHub Actions で、`.github/workflows/` の YAML 1 ファイルに書く自動処理のまとまり。いつ走るか(`on:`)と、走らせるジョブを書く。"
+    }
+  ]
+}
