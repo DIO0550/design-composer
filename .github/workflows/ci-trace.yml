@@ -12,6 +12,7 @@ on:
   workflow_run:
     workflows:
       - frontend
+      - src-tauri
       - Deploy Storybook (main)
       - Storybook PR Preview
       - Storybook Visual Regression

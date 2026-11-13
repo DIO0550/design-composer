@@ -2,8 +2,9 @@
 // 違えば exit 1。
 //
 // tauri build はこの 2 つの major/minor 一致を要求し、違うとコンパイルへ入る前に落ちる。
-// ところが cargo を走らせる CI が 1 つも無いため、ずれても気づけるのは
-// release-desktop がタグで走るときだけだった(実際に Release がバイナリ無しになったことがある)。
+// 一致を見るのは tauri CLI で、cargo は npm 側を読まない。PR の CI(src-tauri.yml)が走らせるのは
+// cargo だけなので、ここで突き合わせないと気づけるのは release-desktop がタグで走るときになる
+// (実際に Release がバイナリ無しになったことがある)。
 // 突き合わせるのはバージョン文字列だけなので、防ぐのにビルドを回す必要は無い。
 //
 // プラグインの対(tauri-plugin-opener ↔ @tauri-apps/plugin-opener など)は見ない。
