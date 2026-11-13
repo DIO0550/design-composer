@@ -58,7 +58,12 @@ import { Offset } from "@/domains/unit/offset";
 import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Interop } from "@/utils/Interop";
-import type { JsonCursor, JsonDecoded, JsonObject } from "@/utils/Json";
+import {
+  Json,
+  type JsonCursor,
+  type JsonDecoded,
+  type JsonObject,
+} from "@/utils/Json";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import type { DesignDocumentEditError } from "./edit-error";
@@ -1561,6 +1566,26 @@ export const DesignDocument = {
    */
   toJson(document: DesignDocument): JsonObject {
     return DesignDocumentV1.toJson(document);
+  },
+
+  /**
+   * 2 つのドキュメントが同じ中身か。ファイルに書き出す形（`toJson`）どうしで比べる。
+   *
+   * 参照ではなく中身を見る（参照を比べる自動保存や、指す先だけを比べる `NodeTemplate.isSame`
+   * とは違う）。編集の関数は中身が変わらなくても新しい参照を返すことがあるため。
+   *
+   * @param document 比べるドキュメント
+   * @param other 比べるドキュメント
+   * @returns 同じ参照か、`toJson` の結果がキーの並びを除いて等しければ true
+   */
+  isSameContent(document: DesignDocument, other: DesignDocument): boolean {
+    if (document === other) {
+      return true;
+    }
+    return Json.equals(
+      DesignDocument.toJson(document),
+      DesignDocument.toJson(other),
+    );
   },
 
   /**
