@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-51rdv2",
   "baseBranch": "main",
   "mergeBase": "e75559d319c8b8325b282e58258026c2f31b7f23",
-  "head": "1ec1a1609f76b22c4a6fb01af725af0309f3d63c",
+  "head": "659b4519f1f7156ac9c784878f8125bf71d166ef",
   "groups": [
     {
       "label": "src-tauri",
@@ -24,6 +24,15 @@
           "oldPath": null,
           "additions": 16,
           "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/io/atomic_write.rs",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 69,
           "changed": true,
           "target": null
         },
@@ -65,10 +74,19 @@
         },
         {
           "path": "src-tauri/src/file_io/atomic_write.rs",
-          "status": "R",
-          "oldPath": "src-tauri/src/document/io/atomic_write.rs",
-          "additions": 17,
-          "deletions": 27,
+          "status": "A",
+          "oldPath": null,
+          "additions": 76,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/file_io/file_io_edge_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 44,
+          "deletions": 1,
           "changed": true,
           "target": null
         }
@@ -207,6 +225,56 @@
           "deletions": 7,
           "patch": "@@ -4,6 +4,7 @@\n #![allow(non_snake_case)]\n \n use std::fs;\n+use std::path::Path;\n \n use std::sync::Arc;\n \n@@ -64,6 +65,17 @@ fn 保存先がディレクトリのとき保存はIOの失敗を返す() {\n     assert!(matches!(error, DocumentIoError::Io { .. }));\n }\n \n+/// エラーメッセージが保存先のフルパスを含むことを確かめる。\n+fn assert_message_contains_full_path(error: &DocumentIoError, destination: &Path) {\n+    // 一時ファイル名 `.document.dcmp.<pid>.<n>.tmp` もファイル名を含むので、フルパスで照合する\n+    let full_path = destination.display().to_string();\n+    assert!(\n+        error.message().contains(&full_path),\n+        \"エラーメッセージに保存先のパスが含まれていない: {}\",\n+        error.message()\n+    );\n+}\n+\n #[test]\n fn 保存の失敗には保存先のパスが載る() {\n     let dir = TempDir::new(\"edge\");\n@@ -73,13 +85,19 @@ fn 保存の失敗には保存先のパスが載る() {\n \n     let error = io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n \n-    // 一時ファイル名 `.document.dcmp.<pid>.<n>.tmp` もファイル名を含むので、フルパスで照合する\n-    let destination = path.display().to_string();\n-    assert!(\n-        error.message().contains(&destination),\n-        \"エラーメッセージに保存先のパスが含まれていない: {}\",\n-        error.message()\n-    );\n+    assert_message_contains_full_path(&error, &path);\n+}\n+\n+#[test]\n+fn 一時ファイルを作れないときの保存の失敗には保存先のパスが載る() {\n+    let dir = TempDir::new(\"edge\");\n+    let known = KnownContentRegistry::new();\n+    // 親ディレクトリが無いので、rename より前の一時ファイルの作成で失敗する\n+    let path = chosen_file_path(&dir, \"missing/document.dcmp\");\n+\n+    let error = io::save(&known, &path, r#\"{\"a\":1}\"#).expect_err(\"保存に失敗する\");\n+\n+    assert_message_contains_full_path(&error, &path);\n }\n \n #[test]",
           "patchLines": 53,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f52fbc3d1f17e345f4876ec32191ae33c6923f7d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T07:47:06Z",
+      "subject": "🐛 [Bug fix]: #553 write_atomic で単一のファイル名でない file_name を弾く",
+      "body": "- write_atomic の最初で、file_name が通常の要素ちょうど 1 つかを判定する。\n  違えば一時ファイルを作らずに InvalidInput を返す\n- file_io_edge_test にテストを 3 件足した(区切りを含む / 絶対パス /\n  ディレクトリの外を指すときに中にも外にも何も書かない)\n\n背景:\nPR #1365 のレビュー(Copilot)で指摘された。write_atomic は公開関数で、\ndirectory.join(file_name) を前提に「一時ファイルは同一ディレクトリなので\nrename はアトミック」としている。ところが file_name が絶対パスや \"..\" を\n含むと、join が directory を無視する、または外へ出るので、この前提が崩れる。\n今の呼び出し側(document::io::save)は Path::file_name() を渡しているので\n起きないが、公開 API の前提を呼び出し側の規律に頼らないようにする。\n\n採用理由:\nPath::new(file_name).components() が Component::Normal 1 つかで判定する。\n空・\".\"・\"..\"・絶対パス・区切りを含む値をまとめて弾ける。\n失敗の種別は InvalidInput にした。from_io を通ると Io になるが、\n今の呼び出し側からは届かない。\n\n影響とトレードオフ:\n- 今の呼び出し側には影響が無い(Path::file_name() は常に単一の要素)\n- 末尾スラッシュ付きの \"a/\" は Normal 1 つとして通る。その場合も\n  一時ファイルの作成か rename で失敗し、外へは書かれない\n- 3 件目のテストは \"./../escaped.txt\" を渡す。\"../escaped.txt\" だと、\n  判定が無くても一時ファイルの作成が NotFound で失敗して何も書かれず、\n  テストが判定を守れないため。判定を外すと 3 件とも落ちることを確かめた\n\n代替案:\n- file_name をパスの要素の型にする: std に単一要素を表す型が無く、\n  自前の型を足すほどの呼び出し側が無い\n- write_atomic(path) に戻して内側で分ける: 計画で却下済み\n  (分けられないパスをどの失敗とするかを呼び出し側が決められなくなる)\n\n参考:\n- PR #1365 のレビュー: https://github.com/DIO0550/design-composer/pull/1365#discussion_r4560855092\n- cargo test(Linux)148 件通過\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QBq3quGwSyD8tKbbL",
+      "files": [
+        {
+          "path": "src-tauri/src/file_io/atomic_write.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 2,
+          "patch": "@@ -1,7 +1,7 @@\n use std::ffi::OsStr;\n use std::fs::{self, File};\n use std::io::{self, Write};\n-use std::path::{Path, PathBuf};\n+use std::path::{Component, Path, PathBuf};\n use std::sync::atomic::{AtomicU64, Ordering};\n \n /// 一時ファイル名に混ぜる連番。同一プロセス内の同時書き込みが\n@@ -14,8 +14,17 @@ static TEMP_FILE_SEQUENCE: AtomicU64 = AtomicU64::new(0);\n /// 親とファイル名を分けて受けるのは、分けられないパスをどの失敗とするかを呼び出し側が決めるため。\n /// パスで受けて `InvalidInput` を返すと、NUL を含むパスの失敗と見分けられない。\n ///\n-/// @returns 失敗は各手順の `io::Error` のまま返す（一時ファイルのパスは載らない）\n+/// @returns `file_name` が単一のファイル名でない（空・`.`・`..`・絶対パス・区切りで 2 つ以上の\n+///   要素に分かれる）ときは、何も書かずに `InvalidInput` を返す。それ以外の失敗は各手順の\n+///   `io::Error` のまま返す（一時ファイルのパスは載らない）\n pub fn write_atomic(directory: &Path, file_name: &OsStr, content: &str) -> io::Result<()> {\n+    if !is_single_file_name(file_name) {\n+        return Err(io::Error::new(\n+            io::ErrorKind::InvalidInput,\n+            format!(\"ファイル名ではありません: {}\", file_name.to_string_lossy()),\n+        ));\n+    }\n+\n     let path = directory.join(file_name);\n     let temp_path = temp_path_for(directory, file_name);\n \n@@ -30,6 +39,14 @@ pub fn write_atomic(directory: &Path, file_name: &OsStr, content: &str) -> io::R\n     fs::rename(&temp_path, &path).inspect_err(|_| remove_temp_file(&temp_path))\n }\n \n+/// `file_name` を `directory` に join しても `directory` 直下を指すか（通常の要素がちょうど 1 つか）。\n+fn is_single_file_name(file_name: &OsStr) -> bool {\n+    let mut components = Path::new(file_name).components();\n+    let first_is_normal = matches!(components.next(), Some(Component::Normal(_)));\n+    let has_no_more_components = components.next().is_none();\n+    first_is_normal && has_no_more_components\n+}\n+\n fn write_all_synced(temp_path: &Path, content: &str) -> io::Result<()> {\n     let mut file = File::create(temp_path)?;\n     file.write_all(content.as_bytes())?;",
+          "patchLines": 43,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/file_io/file_io_edge_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 44,
+          "deletions": 1,
+          "patch": "@@ -1,6 +1,8 @@\n+use std::ffi::OsStr;\n use std::fs;\n+use std::io;\n \n-use super::read_optional_text;\n+use super::{read_optional_text, write_atomic};\n use crate::test_support::TempDir;\n \n #[test]\n@@ -32,3 +34,44 @@ fn 中身がutf8として読めなければ失敗する() {\n \n     assert!(error.message().contains(\"UTF-8\"));\n }\n+\n+#[test]\n+fn ファイル名に区切りを含むと書き込まずに失敗する() {\n+    let dir = TempDir::new(\"file-io-edge\");\n+\n+    let error = write_atomic(dir.path(), OsStr::new(\"../escaped.txt\"), \"content\")\n+        .expect_err(\"書き込みに失敗する\");\n+\n+    assert_eq!(error.kind(), io::ErrorKind::InvalidInput);\n+}\n+\n+#[test]\n+fn ファイル名が絶対パスだと書き込まずに失敗する() {\n+    let dir = TempDir::new(\"file-io-edge\");\n+    let directory = dir.join(\"documents\");\n+    fs::create_dir(&directory).expect(\"サブディレクトリを作れる\");\n+    let absolute = dir.join(\"escaped.txt\");\n+\n+    let error =\n+        write_atomic(&directory, absolute.as_os_str(), \"content\").expect_err(\"書き込みに失敗する\");\n+\n+    assert_eq!(error.kind(), io::ErrorKind::InvalidInput);\n+}\n+\n+#[test]\n+fn ファイル名がディレクトリの外を指すと中にも外にも何も書かない() {\n+    let dir = TempDir::new(\"file-io-edge\");\n+    let directory = dir.join(\"documents\");\n+    fs::create_dir(&directory).expect(\"サブディレクトリを作れる\");\n+\n+    // 先頭の `./` は、確認が無ければ一時ファイルも外に作れて書き込みまで通ってしまう綴りにするため。\n+    let _ = write_atomic(&directory, OsStr::new(\"./../escaped.txt\"), \"content\");\n+\n+    assert_eq!(dir.file_names(), vec![\"documents\".to_string()]);\n+    assert_eq!(\n+        fs::read_dir(&directory)\n+            .expect(\"サブディレクトリを読める\")\n+            .count(),\n+        0\n+    );\n+}",
+          "patchLines": 55,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "659b4519f1f7156ac9c784878f8125bf71d166ef",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T07:47:06Z",
+      "subject": "📝 [Documentation]: #553 file_io の doc で監視が通らない範囲を明確にする",
+      "body": "- 「ファイル変更の監視(notify)はここを通さない」を、notify の watcher に\n  よる購読は通さず、監視するパスの解決には canonicalize を使う、と書き直した\n\n背景:\nPR #1365 のレビュー(Copilot)で、watchers.rs が file_io::canonicalize を\n呼んでいるので、元の文が事実と食い違って読めると指摘された。\n\n採用理由:\n通らないのは購読そのもので、パスの解決はこのモジュールを通る。\n2 つを分けて書くと、doc と実物が合う。\n\n影響とトレードオフ:\ndoc だけの変更で、挙動は変わらない。\n\n代替案:\n- 一文を消す: 監視が std::fs の集約の例外であることが読み取れなくなる\n\n参考:\n- https://github.com/DIO0550/design-composer/pull/1365#discussion_r4560855132\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QBq3quGwSyD8tKbbL",
+      "files": [
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -5,7 +5,7 @@\n //! `FileIoError` にまとめる。後者は前者と意味が違う（無いことを `None` で表す・UTF-8 として\n //! 解釈する・親ディレクトリを作る）ので残している。\n //!\n-//! ファイル変更の監視（`notify`）はここを通さない。\n+//! ファイル変更の監視（`notify` の watcher による購読）はここを通さない。監視するパスの解決には `canonicalize` を使う。\n \n mod atomic_write;\n ",
+          "patchLines": 9,
           "truncated": false
         }
       ]
