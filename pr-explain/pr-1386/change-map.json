@@ -1,0 +1,516 @@
+{
+  "version": 2,
+  "pr": 1386,
+  "headBranch": "claude/magical-cannon-lq918i",
+  "baseBranch": "main",
+  "mergeBase": "0abadc392b00758cc013d2fa7579aa55649ff4aa",
+  "head": "b682e313144758dd616a74b9d08b4ea47ace1c5b",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/embedded_regions.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/usage.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/storybook-pr-preview.yml",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/storybook-visual-regression.yml",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": "index.html",
+          "changed": false
+        },
+        {
+          "path": "package.json",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "8c7d781a9c7f957f7ebc2c4f63254359dac6452a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T15:11:02Z",
+      "subject": "♻️ [Refactoring]: #1341 使い方を出して exit 2 で終わる usage() を lib に置く",
+      "body": "- .github/scripts/lib/usage.sh を新設し、upsert-sticky-comment.sh と\n  pr-explain-pages.sh に字句まで同じ形で書かれていた usage() を 1 つ置く\n- この時点では誰も source していない(次のコミットで 2 本から読む)\n\n背景:\n#638 で足した upsert-sticky-comment.sh と既存の pr-explain-pages.sh が、\nusage() の本体を字句まで同じ形で持っていた(#638 の duplication-reviewer\nの指摘)。rules/coding.md「同じ処理が2箇所に現れたら共通化する」は\n「規約の適用範囲」で .github/scripts/ にも及ぶ。\n\n採用理由:\n読むのは source した側の $0 なので、lib に移しても出力は各スクリプトの\n冒頭の「使い方:」のまま変わらない。置き方は既存の lib/detector-report.sh\n(ケバブケースのファイルに、その名の関数 1 つ・source して使う)に揃えた。\nusage.sh という名前は grep で既存の衝突が 0 件だった。\n\n代替案:\n- 2 本に残したままにする: 重複の解消が Issue のゴールなので却下\n- 使い方の節を引数で受け取る汎用関数にする: 呼び出し側は $0 を読むだけで\n  足り、差し替え口を増やす理由が無いので却下\n\n影響とトレードオフ:\nlib に置いた分、スクリプト単体を別の場所へ写して走らせると usage が\n読めなくなる。読み込みの失敗をどう扱うかは、読む側のコミットで決める。\n\n参考:\nRefs #1341\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RepJZC3AgLJwXu5oC",
+      "files": [
+        {
+          "path": ".github/scripts/lib/usage.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,13 @@\n+#!/usr/bin/env bash\n+#\n+# 呼んだスクリプトの冒頭にある「使い方:」の節を標準エラーへ出し、exit 2 で終わる。source して使う。\n+#\n+# 読むのは source した側の `$0`(このファイルではなく、走っているスクリプト)。節は `# 使い方:` の\n+# 行から、次の `#` だけの行まで。\n+#\n+# 使う側: `.github/scripts/upsert-sticky-comment.sh` / `.github/scripts/pr-explain-pages.sh`\n+\n+usage() {\n+  sed -n '/^# 使い方:/,/^#$/p' \"$0\" | sed 's/^# \\{0,1\\}//' >&2\n+  exit 2\n+}",
+          "patchLines": 14,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "35dc035ffce77b46cb87e485780a64e3c2217c6c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T15:11:14Z",
+      "subject": "♻️ [Refactoring]: #1341 upsert-sticky-comment.sh の usage() を lib から読む",
+      "body": "- usage() の定義を . \"$(dirname \"$0\")/lib/usage.sh\" || exit 127 に置き換える\n- 冒頭の「終了コード」に、127 = このスクリプトか lib/usage.sh が見つからない\n  を足し、受け流してよいのは 1 だけ・2・3・127 は赤にする、に整える\n\n背景:\nusage() を lib へ寄せる(Issue #1341)。このスクリプトは set -uo pipefail\n(-e なし)で、. の失敗では止まらない。lib が無いと usage が 127 の\ncommand not found になって処理が続き、PR 番号やリポジトリの検査を素通り\nして gh まで進む(計画の検証で plan-reviewer が再現)。\n\n採用理由:\n読み込みに失敗したら即座に 127 で止める。呼び出し側(frontend.yml)は\nexit 1 だけを ::warning:: で受け流すので、1 では lib の欠落が赤にならない。\n冒頭の doc は既に 127 を「スクリプトが見つからない = 配線か環境の誤り」に\n割り当てていて、lib が見つからないのも同じ種類の誤りになる。\n. … || exit N の形は .claude/hooks/record-firings.sh に先例がある。\n\n代替案:\n- 止めずに読む(check-added-*.sh と同じ形): あちらは set -e で止まるが、\n  こちらは止まらず受け流される exit 1 へ落ちうるので却下\n- exit 2 で止める: 「使い方の誤り」と区別できなくなるので却下\n- exit 3 で止める: 「一時ファイルを作れない」と混ざるので却下\n\n影響とトレードオフ:\nlib が揃っている限り、終了コード・出力・待ち時間は変わらない。\n終了コードの種類が 1 つ増える(127 は元から doc に載っていたので、\n呼び出し側の扱いは変わらない)。\n\n参考:\nRefs #1341\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RepJZC3AgLJwXu5oC",
+      "files": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 5,
+          "patch": "@@ -24,7 +24,8 @@\n #       exit 1 を受け流す呼び出し側では、権限の誤りでも赤にならず `::warning::` が残るだけになる\n #   2 = 使い方の誤り(`gh` を呼ぶ前に返す)\n #   3 = 一時ファイルを作れない・書けない(`gh` を呼ぶ前に返す)\n-#   受け流してよいのは 1 だけ。2・3 とスクリプトが見つからない 127 は呼び出し側の配線か環境の誤りなので赤にする\n+#   127 = このスクリプトか、読み込む `lib/usage.sh` が見つからない(`gh` を呼ぶ前に返す)\n+#   受け流してよいのは 1 だけ。2・3・127 は呼び出し側の配線か環境の誤りなので赤にする\n #\n # **「一覧 → 書き込み」を 1 サイクルとして、失敗したらサイクルごとやり直す(最大 3 回)。**\n # やり直すのは、GitHub の API が一時的な 5xx を返すため(`check-pr-closing-issue.sh` の冒頭に実例)。\n@@ -38,10 +39,7 @@ set -uo pipefail\n max_attempts=3\n retry_wait=\"${STICKY_COMMENT_RETRY_WAIT:-2}\"\n \n-usage() {\n-  sed -n '/^# 使い方:/,/^#$/p' \"$0\" | sed 's/^# \\{0,1\\}//' >&2\n-  exit 2\n-}\n+. \"$(dirname \"$0\")/lib/usage.sh\" || exit 127\n \n temp_file_failed() {\n   echo \"marker を付けた本文を一時ファイルへ書けなかった。コメントは触らない\" >&2",
+          "patchLines": 22,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "d09c7950929f357e5a275400985715d21dbe1bfb",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T15:11:21Z",
+      "subject": "♻️ [Refactoring]: #1341 pr-explain-pages.sh の usage() を lib から読む",
+      "body": "- usage() の定義を . \"$scripts_dir/lib/usage.sh\" || exit 127 に置き換える\n- 冒頭の「終了コード」に、127 = lib/usage.sh が見つからない(何も触らずに\n  返す)を足す\n- 判定表が一時リポジトリへ写すファイルに lib/usage.sh を足す\n\n背景:\nusage() を lib へ寄せる(Issue #1341)。このスクリプトも set -uo pipefail\n(-e なし)で、. の失敗では止まらない。試作では、lib が無いと知らない\nモード(put-page)でも引数の検査を素通りして gh-pages へ push し、exit 0\nで終わった。\n\n採用理由:\n読み込みに失敗したら即座に 127 で止める。呼び出し側のうち pr-explain.yml\nは 0 以外をすべて赤にするが、pr-explain スキルは 3 を「run の完了を待って\nやり直す」と読むので 3 は使えない。2 は「引数の誤り」と混ざる。\nupsert-sticky-comment.sh と同じ 127 に揃えた。\n判定表の cp を同じコミットに入れたのは、写さないと一時リポジトリでは全モードが\n127 になり、既存の 20 行が NG になる(このコミット単体で判定表が通るように)。\n\n代替案:\n- 止めずに読む: 上の push して exit 0 の経路が残るので却下\n- exit 1 / 2 / 3: 上の理由で却下\n\n影響とトレードオフ:\nlib が揃っている限り、終了コード・出力・待ち時間は変わらない。\n\n参考:\nRefs #1341\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RepJZC3AgLJwXu5oC",
+      "files": [
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -39,7 +39,7 @@ session=\"$work/session\"\n git init --quiet -b topic \"$session\"\n mkdir -p \"$session/.github/scripts/lib\"\n cp \"$scripts_dir/pr-explain-pages.sh\" \"$scripts_dir/build-pr-explain.py\" \"$scripts_dir/check-pr-explain-template.py\" \"$session/.github/scripts/\"\n-cp \"$scripts_dir/lib/embedded_regions.py\" \"$session/.github/scripts/lib/\"\n+cp \"$scripts_dir/lib/embedded_regions.py\" \"$scripts_dir/lib/usage.sh\" \"$session/.github/scripts/lib/\"\n printf '{\"name\": \"session\"}\\n' > \"$session/package.json\"\n git -C \"$session\" add -A && git -C \"$session\" commit --quiet -m pushed\n git init --quiet --bare \"$work/session-origin.git\"",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 5,
+          "patch": "@@ -30,7 +30,8 @@\n #\n # 終了コード: 0 = 置いた / 変更が無かった、1 = 解説か枠が検査に落ちた・解説の sha を push していない・\n #             push できなかった、2 = 引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が\n-#             無い(`PR Explain` の run が地図を置く前か、PR が閉じて消した後。やり直さない)\n+#             無い(`PR Explain` の run が地図を置く前か、PR が閉じて消した後。やり直さない)、\n+#             127 = 読み込む `lib/usage.sh` が見つからない(何も触らずに返す)\n set -uo pipefail\n \n scripts_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n@@ -38,10 +39,7 @@ branch=\"gh-pages\"\n max_attempts=5\n retry_wait=\"${PR_EXPLAIN_RETRY_WAIT:-2}\"\n \n-usage() {\n-  sed -n '/^# 使い方:/,/^#$/p' \"$0\" | sed 's/^# \\{0,1\\}//' >&2\n-  exit 2\n-}\n+. \"$scripts_dir/lib/usage.sh\" || exit 127\n \n mode=\"${1:-}\"\n pr=\"${2:-}\"",
+          "patchLines": 22,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "4e965cc03459c446dd3a9f8a9c143cd44dfa028a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T15:11:28Z",
+      "subject": "🧪 [Tests]: #1341 pr-explain-pages.sh が lib の欠落で 127 に止まることを判定表で守る",
+      "body": "- lib の無い一時ディレクトリへ pr-explain-pages.sh だけを写し、知らない\n  モード(put-page)で走らせると 127 で終わり、gh-pages の先端が動かない\n  ことを見る行を 1 行足す\n\n背景:\n前のコミットで、lib/usage.sh を読めなければ 127 で止まるようにした。\n止めないと、知らないモードでも gh-pages へ push して exit 0 になる\n(試作で実測)。\n\n採用理由:\n知らないモードで走らせるのは、guard が無いときに usage が 127 の\ncommand not found になり、引数の検査を素通りする経路を確かめるため。\ngh-pages の先端が動かないことも見るので、「127 では終わったが push は\nした」も落とせる。|| exit 127 を外すとこの行だけが NG になることを実測した。\n\n代替案:\n- 正しい引数(put-map)で走らせる: guard の無い経路でも push まで進むが、\n  知らないモードのほうが「引数の誤りへ進まない」まで 1 行で見られるので\n  こちらにした\n\n影響とトレードオフ:\n判定表は ok 27 → 28。\n\n参考:\nRefs #1341\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RepJZC3AgLJwXu5oC",
+      "files": [
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 0,
+          "patch": "@@ -177,6 +177,13 @@ before=\"$(tip)\"\n run_pages put-page 1 index \"$work/explain.json\"; status=$?\n expect \"put-page は知らないモード(引数の誤り)\" '[ \"$status\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ]'\n \n+mkdir -p \"$work/without-lib\"\n+cp \"$pages\" \"$work/without-lib/\"\n+fresh_origin seeded\n+before=\"$(tip)\"\n+bash \"$work/without-lib/pr-explain-pages.sh\" put-page 1 index \"$work/explain.json\" >/dev/null 2>&1; status=$?\n+expect \"読み込む lib が無ければ、知らないモードでも引数の誤りへ進まず 127 で何も push しない\" '[ \"$status\" -eq 127 ] && [ \"$(tip)\" = \"$before\" ]'\n+\n fresh_origin seeded\n run_pages put-map 1 \"$work/map.json\" \"$template\"\n expect \"put-map は index.html を毎回テンプレートで上書きする\" '[ \"$(on_pages pr-explain/pr-1/index.html)\" = \"$(cat \"$template\")\" ]'",
+          "patchLines": 14,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "28bef8280bb8c9b067ecf4c560ad2d235a358c7c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T15:11:36Z",
+      "subject": "🧪 [Tests]: #1341 upsert-sticky-comment.sh の使い方の出力と lib 欠落の 127 を判定表で守る",
+      "body": "- 使い方の誤りで、冒頭の使い方(--marker '<!-- 名前 -->' を含む行)を\n  標準エラーへ出すことを見る行を足す\n- lib の無い一時ディレクトリへスクリプトだけを写し、引数が正しくても\n  gh を呼ばずに exit 127 で終わることを見る行を足す\n\n背景:\nusage() を lib へ移すと、lib の中の $0 が source した側のスクリプトを\n指すことが出力の前提になる。既存の使い方の誤り 13 行は終了コードしか\n見ないので、lib が自分自身(${BASH_SOURCE[0]})を読むように壊れても全部\n緑のままだった。\n\n採用理由:\n使い方の行は標準エラーだけを取って照合するので、$0 を壊す変更も、\n標準出力へ出す変更も落とせる。lib 欠落の行は引数を正しくしてあり、\nguard が無いと usage 以外の経路で止まらず gh まで進む(exit=0 calls=GET POST)\nので、この行が落ちうる形になる。それぞれ壊すとその行だけが NG になる\nことを実測した。\n\n代替案:\n- pr-explain-pages-cases.sh にも使い方の文面を見る行を足す: usage の本体は\n  共有の 1 か所なので、$0 を守るのは 1 行で足りるとして足さない\n\n影響とトレードオフ:\n判定表は ok 30 → 32。\n\n参考:\nRefs #1341\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RepJZC3AgLJwXu5oC",
+      "files": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 0,
+          "patch": "@@ -245,6 +245,19 @@ dir=\"$(new_case \"$no_comments\")\"\n report 'exit=2 calls=' \"$(UNSET=GITHUB_REPOSITORY run_upsert \"$dir\" \"${post[@]}\")\" \\\n   'リポジトリが無ければ、gh を呼ばずに使い方の誤りで終わる'\n \n+usage_errors=\"$(GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 bash \"$script\" --unknown x 2>&1 >/dev/null)\"\n+usage_outcome=missing\n+[[ \"$usage_errors\" == *\"upsert-sticky-comment.sh --marker '<!-- 名前 -->'\"* ]] && usage_outcome=shown\n+report shown \"$usage_outcome\" '使い方の誤りでは、冒頭の使い方を標準エラーへ出す'\n+\n+# --- 読み込む lib が無い(`gh` を呼ぶ前に exit 127) ---\n+\n+mkdir -p \"$work/without-lib\"\n+cp \"$script\" \"$work/without-lib/\"\n+dir=\"$(new_case \"$no_comments\")\"\n+report 'exit=127 calls=' \"$(script=\"$work/without-lib/upsert-sticky-comment.sh\" run_upsert \"$dir\" \"${post[@]}\")\" \\\n+  '読み込む lib が無ければ、引数が正しくても gh を呼ばずに受け流されない失敗で終わる'\n+\n # --- 一時ファイルの失敗(`gh` を呼ぶ前に exit 3) ---\n \n dir=\"$(new_case \"$no_comments\")\"",
+          "patchLines": 20,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "3152ba88a55d7f43540a55997e385d6e1e92805d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T15:17:55Z",
+      "subject": "📝 [Doc]: #1341 終了コード 127 の説明を、スクリプトが返す場合に絞る",
+      "body": "- upsert-sticky-comment.sh: 127 を「読み込む lib/usage.sh を読み込めない\n  (gh を呼ぶ前に返す)」に絞り、スクリプト自体が見つからないときは\n  呼び出し側のシェルが同じ 127 を返す、と分けて書く\n- pr-explain-pages.sh: 127 を「見つからない」から「読み込めない」に揃える\n\n背景:\nフェーズ 6 で 2 件の指摘を受けた。comment-reviewer は「このスクリプトか\nlib が見つからない(gh を呼ぶ前に返す)」のうち、スクリプト自体が無い\nときはスクリプトが走らないので「gh を呼ぶ前に返す」とは書けないと指摘した。\nover-guard-reviewer は、. … || exit 127 は lib が無いときだけでなく構文\nエラーのときも 127 を返すと注記した。\n\n採用理由:\nスクリプトが自分で返す 127 と、シェルが返す 127 を分けて書くと、\n呼び出し側が 127 を見たときにどちらも配線か環境の誤りだと読める。\n「読み込めない」は欠落と構文エラーの両方を覆う(どちらも小さな再現で\n127 になることを確かめた)。\n\n代替案:\n- 127 の項目からスクリプト自体の欠落を消す: 元の doc は「スクリプトが\n  見つからない 127 は赤にする」と書いていて、呼び出し側の約束として\n  残したいので、分けて書くほうにした\n- 構文エラーでは別の終了コードを返す: lib の中身は usage() 1 つで、\n  欠落と構文エラーを分けて扱う呼び出し側が無いので見送った\n\n影響とトレードオフ:\ndoc だけの変更で、振る舞いは変わらない。読む権限が無い場合の 127 は\nこの環境(root)では再現できず、「読み込めない」の言い方に含めている。\n\n参考:\nRefs #1341\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RepJZC3AgLJwXu5oC",
+      "files": [
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -31,7 +31,7 @@\n # 終了コード: 0 = 置いた / 変更が無かった、1 = 解説か枠が検査に落ちた・解説の sha を push していない・\n #             push できなかった、2 = 引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が\n #             無い(`PR Explain` の run が地図を置く前か、PR が閉じて消した後。やり直さない)、\n-#             127 = 読み込む `lib/usage.sh` が見つからない(何も触らずに返す)\n+#             127 = 読み込む `lib/usage.sh` を読み込めない(何も触らずに返す)\n set -uo pipefail\n \n scripts_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -24,7 +24,8 @@\n #       exit 1 を受け流す呼び出し側では、権限の誤りでも赤にならず `::warning::` が残るだけになる\n #   2 = 使い方の誤り(`gh` を呼ぶ前に返す)\n #   3 = 一時ファイルを作れない・書けない(`gh` を呼ぶ前に返す)\n-#   127 = このスクリプトか、読み込む `lib/usage.sh` が見つからない(`gh` を呼ぶ前に返す)\n+#   127 = 読み込む `lib/usage.sh` を読み込めない(`gh` を呼ぶ前に返す)。このスクリプト自体が見つからない\n+#         ときは、スクリプトは走らず呼び出し側のシェルが同じ 127 を返す\n #   受け流してよいのは 1 だけ。2・3・127 は呼び出し側の配線か環境の誤りなので赤にする\n #\n # **「一覧 → 書き込み」を 1 サイクルとして、失敗したらサイクルごとやり直す(最大 3 回)。**",
+          "patchLines": 10,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "faa52d3d304108c518596eb4e6f73a62dabbc3e3",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T15:17:55Z",
+      "subject": "🧪 [Tests]: #1341 使い方の出力を見る行も差し替えた gh の下で走らせる",
+      "body": "- run_upsert が標準エラーを捨てずに、各ケースの置き場の stderr に残す\n- 使い方の出力を見る行を run_upsert 経由にし、使い方が標準エラーに出て\n  いることに加えて exit=2 で gh を呼んでいない(calls が空)ことも見る\n\n背景:\nフェーズ 6 で harness-reviewer が、この行だけが run_upsert を通らず、\n差し替え用の gh(PATH=\"$work/bin:$PATH\")の外でスクリプトを走らせている\nと指摘した。使い方を出しても終わらない退行が起きると、判定表が本物の\ngh で owner/repo を叩きうる。run_upsert が標準エラーを捨てていたため、\n標準エラーを読む行だけが別の組み立てを書いていた。\n\n採用理由:\n標準エラーを置き場に残せば、使い方の行も他の行と同じ組み立てで走る。\n「出力した」と「gh を呼ばずに終わった」の 2 条件を見るのは、使い方を\n出したあとに終わらず gh まで進む退行が、標準エラーだけでは通ってしまう\nため(lib の exit 2 を return 0 に壊すと、この行が NG になることを実測)。\nlib の $0 を ${BASH_SOURCE[0]} に壊したときも引き続き NG になる。\n\n代替案:\n- この行だけ PATH を自前で組み立てる: run_upsert と同じ環境の組み立てが\n  2 か所に割れるので却下\n\n影響とトレードオフ:\n既存の行も標準エラーを置き場のファイルに書くようになるが、読むのは\nこの行だけ。判定表の件数は ok 32 のまま。\n\n参考:\nRefs #1341\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RepJZC3AgLJwXu5oC",
+      "files": [
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 5,
+          "patch": "@@ -81,7 +81,7 @@ new_case() {\n # 置き場 $1 で共通スクリプトを走らせ、`exit=<終了コード> calls=<呼ばれ方>` を返す。\n # $2 以降はスクリプトへの引数。失敗のさせ方は呼び出し側が環境変数で渡す。\n # 投げ先の環境変数を欠いた形は、$UNSET に欠く変数の名前を渡して作る。PR 番号は $CASE_PR_NUMBER で\n-# 差し替える(既定 1)\n+# 差し替える(既定 1)。標準エラーは置き場の `stderr` に残す\n run_upsert() {\n   local dir=\"$1\" status unset_flag=()\n   shift\n@@ -89,7 +89,7 @@ run_upsert() {\n   # 空の配列を `\"${a[@]}\"` で展開すると、bash 4.4 未満では `set -u` が未定義として落ちる\n   STUB_DIR=\"$dir\" PATH=\"$work/bin:$PATH\" STICKY_COMMENT_RETRY_WAIT=0 \\\n     GITHUB_REPOSITORY=owner/repo PR_NUMBER=\"${CASE_PR_NUMBER:-1}\" \\\n-    env ${unset_flag[@]+\"${unset_flag[@]}\"} bash \"$script\" \"$@\" >/dev/null 2>&1\n+    env ${unset_flag[@]+\"${unset_flag[@]}\"} bash \"$script\" \"$@\" >/dev/null 2>\"$dir/stderr\"\n   status=$?\n   printf 'exit=%s calls=%s' \"$status\" \"$(tr '\\n' ' ' <\"$dir/calls\" | sed 's/ $//')\"\n }\n@@ -245,10 +245,14 @@ dir=\"$(new_case \"$no_comments\")\"\n report 'exit=2 calls=' \"$(UNSET=GITHUB_REPOSITORY run_upsert \"$dir\" \"${post[@]}\")\" \\\n   'リポジトリが無ければ、gh を呼ばずに使い方の誤りで終わる'\n \n-usage_errors=\"$(GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 bash \"$script\" --unknown x 2>&1 >/dev/null)\"\n+dir=\"$(new_case \"$no_comments\")\"\n+usage_run=\"$(run_upsert \"$dir\" \"${post[@]}\" --unknown x)\"\n usage_outcome=missing\n-[[ \"$usage_errors\" == *\"upsert-sticky-comment.sh --marker '<!-- 名前 -->'\"* ]] && usage_outcome=shown\n-report shown \"$usage_outcome\" '使い方の誤りでは、冒頭の使い方を標準エラーへ出す'\n+usage_shown=false\n+[[ \"$(cat \"$dir/stderr\")\" == *\"upsert-sticky-comment.sh --marker '<!-- 名前 -->'\"* ]] && usage_shown=true\n+# 使い方を出したあとに終わらず gh まで進む退行は、標準エラーだけ見ても通ってしまう\n+[ \"$usage_shown\" = true ] && [ \"$usage_run\" = 'exit=2 calls=' ] && usage_outcome=shown\n+report shown \"$usage_outcome\" '使い方の誤りでは、冒頭の使い方を標準エラーへ出し、gh を呼ばずに終わる'\n \n # --- 読み込む lib が無い(`gh` を呼ぶ前に exit 127) ---\n ",
+          "patchLines": 36,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "b682e313144758dd616a74b9d08b4ea47ace1c5b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T15:28:26Z",
+      "subject": "🧪 [Tests]: #1341 lib が無いときの pr-explain-pages.sh を正しい引数でも 127 で止まると守る",
+      "body": "- lib を欠いた一時コピーで、消すフォルダのある gh-pages に対して\n  remove 1 を走らせ、127 で終わり gh-pages の tip が動かないことを見る\n  ケースを足す。知らないモード(put-page)のケースは残す\n\n背景:\nフェーズ 6 で test-reviewer が、lib 欠落のケースが知らないモードの\n1 件だけだと指摘した。知らないモードでは usage を呼ぶので、\n. … || exit 127 を || usage() { exit 127; } に壊す(lib が無ければ\n代わりの usage を定義して先へ進む)と、正しい引数なら push まで進むのに\n判定表は全件 ok のままだった(実測)。upsert の判定表は正しい引数で\n確かめていて、pr-explain-pages 側だけ対になる経路が欠けていた。\n\n採用理由:\nremove は gh-pages に既存のフォルダがある状態で走らせると変更が起きる\n形なので、guard が先へ進む壊れ方なら tip が動いて落ちる。上の壊し方で\nこのケースだけが NG になることを実測した。知らないモードのケースは、\n引数の誤りの 2 ではなく 127 になることを見ているので残した。\n\n代替案:\n- put-map で走らせる: 地図とテンプレートの用意が要り、remove のほうが\n  入力が少ないので remove にした\n\n影響とトレードオフ:\n判定表は ok 28 → 29。\n\n参考:\nRefs #1341\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RepJZC3AgLJwXu5oC",
+      "files": [
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "patch": "@@ -184,6 +184,11 @@ before=\"$(tip)\"\n bash \"$work/without-lib/pr-explain-pages.sh\" put-page 1 index \"$work/explain.json\" >/dev/null 2>&1; status=$?\n expect \"読み込む lib が無ければ、知らないモードでも引数の誤りへ進まず 127 で何も push しない\" '[ \"$status\" -eq 127 ] && [ \"$(tip)\" = \"$before\" ]'\n \n+fresh_origin seeded\n+before=\"$(tip)\"\n+bash \"$work/without-lib/pr-explain-pages.sh\" remove 1 >/dev/null 2>&1; status=$?\n+expect \"読み込む lib が無ければ、消すフォルダのある remove でも 127 で何も push しない\" '[ \"$status\" -eq 127 ] && [ \"$(tip)\" = \"$before\" ]'\n+\n fresh_origin seeded\n run_pages put-map 1 \"$work/map.json\" \"$template\"\n expect \"put-map は index.html を毎回テンプレートで上書きする\" '[ \"$(on_pages pr-explain/pr-1/index.html)\" = \"$(cat \"$template\")\" ]'",
+          "patchLines": 12,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/skills/pr-explain/templates/explain.json",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-duplicate-issue-pr.sh",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/lib/embedded_regions.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/lib/usage.sh",
+      "status": "added"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": "index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": "package.json",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/lib/usage.sh",
+      "status": "added"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": "index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/upsert-sticky-comment.sh",
+      "to": ".github/scripts/lib/usage.sh",
+      "status": "added"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/storybook-pr-preview.yml",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/storybook-visual-regression.yml",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    }
+  ]
+}
