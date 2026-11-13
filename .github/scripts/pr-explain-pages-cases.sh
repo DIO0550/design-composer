@@ -39,7 +39,7 @@ session="$work/session"
 git init --quiet -b topic "$session"
 mkdir -p "$session/.github/scripts/lib"
 cp "$scripts_dir/pr-explain-pages.sh" "$scripts_dir/build-pr-explain.py" "$scripts_dir/check-pr-explain-template.py" "$session/.github/scripts/"
-cp "$scripts_dir/lib/embedded_regions.py" "$session/.github/scripts/lib/"
+cp "$scripts_dir/lib/embedded_regions.py" "$scripts_dir/lib/usage.sh" "$session/.github/scripts/lib/"
 printf '{"name": "session"}\n' > "$session/package.json"
 git -C "$session" add -A && git -C "$session" commit --quiet -m pushed
 git init --quiet --bare "$work/session-origin.git"
