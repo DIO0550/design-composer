@@ -15,7 +15,8 @@ import { Option } from "@/utils/Option";
  * まりの続き**に限られる。
  *
  * `past` の後ろに `present` を続けた並びで、同じ中身が隣り合うのは末尾の 1 組（`past` の末尾
- * と `present`）だけ。中身の変わらない編集は積まれたあと、次の `record` / `undo` の入口で落ちる。
+ * と `present`）だけ。これは `record` / `undo` / `amend` が保つ不変条件で、型では強制しない。
+ * 中身の変わらない編集は積まれたあと、次の `record` / `undo` の入口で落ちる。
  */
 export type EditHistory = Readonly<{
   past: readonly DesignDocument[];
@@ -26,9 +27,9 @@ export type EditHistory = Readonly<{
 /**
  * 戻る先の末尾が現在地と同じ中身なら、それを落とした履歴にする。
  *
- * 落とすのは 1 件で足りる。同じ中身が隣り合いうるのは末尾の 1 組だけ（型の不変条件）。
- * `undo` だけで通すと無変化の編集を 2 回続けたときに 1 回目の undo が画面を変えないので、
- * `record` が積む前にも通して不変条件を保つ。
+ * 落とすのが 1 件で足りるのは、`EditHistory` の型 doc に書いた不変条件による。
+ * `record` の入口でも通すのは、`undo` だけだと無変化の編集が 2 件続いたとき 1 回目の undo
+ * が画面を変えないため。
  *
  * @param history 整える履歴
  * @returns 戻る先の末尾が現在地と同じ中身ならそれを落とした履歴。違えば `history` のまま
@@ -69,6 +70,7 @@ export const EditHistory = {
    */
   record(history: EditHistory, document: DesignDocument): EditHistory {
     const normalized = withoutUnchangedLast(history);
+
     return {
       past: [...normalized.past, normalized.present],
       present: document,
@@ -104,6 +106,7 @@ export const EditHistory = {
    */
   undo(history: EditHistory): Option<EditHistory> {
     const normalized = withoutUnchangedLast(history);
+
     return Option.map(ArrayEx.last(normalized.past), (previous) => ({
       past: ArrayEx.dropLast(normalized.past),
       present: previous,
