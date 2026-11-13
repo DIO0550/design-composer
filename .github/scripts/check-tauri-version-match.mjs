@@ -2,8 +2,9 @@
 // 違えば exit 1。
 //
 // tauri build はこの 2 つの major/minor 一致を要求し、違うとコンパイルへ入る前に落ちる。
-// ところが cargo を走らせる CI が 1 つも無いため、ずれても気づけるのは
-// release-desktop がタグで走るときだけだった(実際に Release がバイナリ無しになったことがある)。
+// 一致を見るのは tauri CLI で、cargo は npm 側を読まない。PR の CI(src-tauri.yml)が走らせるのは
+// cargo だけなので、ここで突き合わせないと気づけるのは release-desktop がタグで走るときになる
+// (実際に Release がバイナリ無しになったことがある)。
 // 突き合わせるのはバージョン文字列だけなので、防ぐのにビルドを回す必要は無い。
 //
 // プラグインの対(tauri-plugin-opener ↔ @tauri-apps/plugin-opener など)は見ない。
@@ -43,7 +44,7 @@ const readOrFail = (path, description) => {
 
 /**
  * Cargo.lock から指定したクレートの解決済みバージョンを取り出す。
- * cargo を呼ばずに読めるので、CI に Rust ツールチェーンが要らない。
+ * cargo を呼ばずに読めるので、frontend のジョブに Rust ツールチェーンが要らない。
  * @param lock Cargo.lock の中身
  * @param name 探すクレート名
  * @returns 見つかったバージョン。そのクレートが居なければ null

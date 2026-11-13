@@ -1,3 +1,11 @@
+// テストはフィクスチャを std::fs で直接用意・検査するので、file_io を通す縛りは本番コードにだけ掛ける。
+// cfg(test) でない lib は clippy --all-targets がそのまま検査する。
+// clippy はホストの cfg で外れるコードを見ないので、ubuntu の CI では
+// #[cfg(windows)] / #[cfg(target_os = "macos")] の分岐の fs 呼び出しは落ちない。
+#![cfg_attr(test, allow(clippy::disallowed_methods, clippy::disallowed_types))]
+// テスト名は仕様の文として日本語で書き、DCMP / JSON のようなラテン文字を含むと snake case でなくなる。
+#![cfg_attr(test, allow(non_snake_case))]
+
 pub mod app_state;
 pub mod app_window;
 pub mod document;

@@ -1,8 +1,3 @@
-// テスト名は rules/testing.md に従い仕様の文として書き、このリポジトリの既存のテストに
-// 合わせて日本語で書く。
-// UTF8 のようなラテン文字を含むと snake case ではなくなるため、この lint は無効にする。
-#![allow(non_snake_case)]
-
 use std::fs;
 use std::path::Path;
 

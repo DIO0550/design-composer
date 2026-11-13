@@ -45,7 +45,7 @@ pub fn canonical_form(path: &Path) -> PathBuf {
 /// 揃えた綴りは TS へ返り、最近使ったファイルとして `app-state.json` に残るので、
 /// 接頭辞の無い形にしておく。
 ///
-/// CI は cargo test を走らせない(`.github/workflows/frontend.yml`)ので、Windows / macOS
+/// CI の cargo test は ubuntu でしか走らない(`.github/workflows/src-tauri.yml`)ので、Windows / macOS
 /// だけを通る分岐は実機で確かめていない。
 fn without_verbatim_disk(path: PathBuf) -> PathBuf {
     let mut components = path.components();

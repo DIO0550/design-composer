@@ -1,10 +1,5 @@
 //! ドキュメントのパスとして受け付けるもの。
 
-// テスト名は rules/testing.md に従い仕様の文として書き、このリポジトリの既存のテストに
-// 合わせて日本語で書く。
-// DCMP のようなラテン文字を含むと snake case ではなくなるため、この lint は無効にする。
-#![allow(non_snake_case)]
-
 use std::path::Path;
 
 use super::file_path::DocumentFilePath;

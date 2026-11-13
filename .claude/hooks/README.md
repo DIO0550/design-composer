@@ -243,6 +243,16 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 の doc はこれに加えて「クリップされた中身は数に入らない」と書くが、その前提が崩れていることは
 `harness/records/pr-634.md` 指摘 26 が実測している(#645)。
 
+#### Rust の検査は層 1 と層 4 にしかない
+
+`src-tauri/` の `cargo clippy` と `cargo test`(`TAURI_SETUP.md`「Rust 側の検査」)は、CI(層 1。
+`src-tauri.yml`)と push 前手順(層 4。`implementation-flow` フェーズ 7)にだけあり、**層 2 にも層 3 にも置いていない。**
+
+- **層 2 へ載せない理由は所要時間と環境。** 手元の実測で初回は clippy 74 秒 + test 92 秒と、`pre-push` 全体
+  (73.0 秒)の 2 倍を超え、上の `check-pr-closing-issue-cases.sh` を層 1 だけに置いた物差しに載らない。
+  webkit のシステムライブラリが無い環境では飛ばすしかなく、飛ばす環境が多いほど層 2 に置いても守れない
+- **層 3 へも置かない。** かかる時間は同じで、撮影範囲の検査と同じく最速フィードバック層の位置づけと合わない
+
 ### 発火しているかを確かめる(カナリア)
 
 `hook-canary.sh` は `echo hook-canary` を必ず deny する。push の前にこれを 1 度実行すると、

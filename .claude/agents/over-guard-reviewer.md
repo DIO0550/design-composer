@@ -37,7 +37,7 @@ model: opus
 - **ガードの重複。** 呼び出し側と呼ばれる側の両方で同じ条件を弾いていないか
 - **フラグによる防御。** `useRef` で二重実行・連打を止めていないか。render に出る状態は
   `useState`、ボタンは `disabled`
-- **`src-tauri/` の Rust のネストの深さ。** `max-depth` は `.oxlintrc.json` の TS にしか掛からず、Rust には pre-push・CI の強制が無いので、Rust を触ったときだけ 3 段を超えていないか見る
+- **`src-tauri/` の Rust のネストの深さ。** `max-depth` は `.oxlintrc.json` の TS にしか掛からず、clippy の設定にネストの深さの閾値が無い(`src-tauri/clippy.toml`)ので、Rust を触ったときだけ 3 段を超えていないか見る
 - **範囲を固定の窓(N 行・N 文字)で近似していないか**（`harness/case-law/coding.md`「`over-guard` — 範囲を固定の窓で近似した」）
 
 ## 過剰ではない場合（指摘しない）

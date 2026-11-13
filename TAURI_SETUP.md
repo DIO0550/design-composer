@@ -31,6 +31,18 @@ pnpm install
 pnpm tauri icon path/to/app-icon.png
 ```
 
+### Rust 側の検査
+
+PR の CI（`.github/workflows/src-tauri.yml`）と同じ 2 つを手元で走らせます。
+
+```bash
+cd src-tauri
+cargo clippy --all-targets --locked -- -D warnings
+cargo test --locked
+```
+
+Linux では `.devcontainer/node/Dockerfile` が入れている Tauri 用のシステムライブラリ（`libwebkit2gtk-4.1-dev` など）が要ります。DevContainer の中なら入っています。
+
 ## 3. 開発起動
 
 ```bash
