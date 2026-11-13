@@ -1,0 +1,1997 @@
+{
+  "version": 1,
+  "pr": 1383,
+  "sha": "f979292d08795e24c4da9542e36af711a1941524",
+  "issue": 1027,
+  "overview": {
+    "title": "回ったノードのリサイズで、掴んでいない軸が連れて変わっても反対の角を留める",
+    "lead": "自分が回っている絶対配置のノードの辺を引いたとき、掴んでいない軸が `hug` / `fill` で長さが連れて変わっても、反対の辺・角が親の座標で動かなくなった。書き込む前に、書き込む長さを要素へ一瞬当てて測るので、掴んでいる間も 1 歩遅れない。",
+    "before": [
+      {
+        "text": "置き直しの量は書き込む長さ(掴んだ軸)だけから出していた。高さ `hug` の Text の幅を引くと高さも変わり、反対側が `rotate((0, Δh/2), own) − (0, Δh/2)` だけずれた(Chromium の実測で最大 16.4px)"
+      },
+      {
+        "text": "`NodeResize.trackedAt` の第 3 引数は倍率 `view` だけだった",
+        "message": "track"
+      },
+      {
+        "text": "docs/06-ui.md「リサイズハンドル」は「留まるのは掴んだ軸の長さだけが変わるとき」と範囲を限っていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "ポインタが動くたびに、掴んだ時点の長さと書き込む長さを要素へ当てて 2 回測り、掴んでいない軸の差を位置の置き直しに足す",
+        "message": "measure"
+      },
+      {
+        "text": "`trackedAt` の第 3 引数は `DrawnWhileTracking`(倍率と、長さを当てて測る手段 `layoutSizeFor`)になった",
+        "message": "track"
+      },
+      {
+        "text": "連れて変わる軸では、回る前の始点側の端(上端・左端)を留める。掴んだ軸と同じ `placedPosition` の式に通す"
+      },
+      {
+        "text": "回っていない・位置を書けない・角を掴んだ・前後のどちらかを測れないときは測らずに(または測りを捨てて)、掴んだ軸だけで置き直す今の振る舞いのまま"
+      },
+      {
+        "text": "送る編集は今と同じく pointermove 1 回に 1 件で、undo 1 回ぶんの形も変わらない",
+        "message": "notify"
+      },
+      {
+        "text": "Chromium の Storybook(`RotatedHugText`)で、反対の角のずれは軸ごとに dx=−0.495 / dy=−0.356px、pointermove 1 回あたりの増分の中央値は 0.30〜0.40ms。WebKit は未検証"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "インライン指定を一瞬書き換えて戻す測り方",
+        "text": "このリポジトリに前例の無い DOM 操作。React の管理外の中身で、当てる・読む・戻すを同じ同期処理で終える。WebKit で端数付きの px が返るかは未検証(返らなければ測れない側へ落ちる)",
+        "go": {
+          "kind": "file",
+          "path": "src/libs/canvas-dom/index.ts"
+        }
+      },
+      {
+        "title": "連れて変わる軸を同じ置き直しの式に通す",
+        "text": "連れて変わる軸を「終点側の端が動いた 1 軸」として、掴んだ軸と同じ `placedPosition` の reduce に入れる。式が 1 箇所になったかを見てほしい",
+        "go": {
+          "kind": "message",
+          "id": "track"
+        }
+      },
+      {
+        "title": "前後を同じ DOM で測り直す理由",
+        "text": "掴んだ時点に 1 回だけ測って持つ形との違いは happy-dom のテストでは区別できず、Storybook と Chromium の実測だけが守っている",
+        "go": {
+          "kind": "flow",
+          "id": "drag"
+        }
+      },
+      {
+        "title": "リサイズの層",
+        "text": "置き直しの規則はキャンバスの feature のドメインに、測る手段はフックが差し込む",
+        "go": {
+          "kind": "layer",
+          "layer": "features / editor/features/canvas"
+        }
+      },
+      {
+        "title": "回ったノードのリサイズ",
+        "text": "測る経路(libs → 名前で引く → フック)と置き直す経路(ドメイン)の 2 本",
+        "go": {
+          "kind": "feature",
+          "id": "rotated-resize"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "rotated-resize",
+      "label": "回ったノードのリサイズ",
+      "role": "辺を引いて掴んでいない軸が連れて変わっても、反対の辺・角を親の座標で留める"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "libs",
+      "role": "長さをインラインへ当てて、変形を効かせる前のレイアウトの大きさを測る(`CanvasDom.layoutSizeFor`)。テスト用の計算値のフェイクもここ"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "名前で引いて測る入口・連れて変わる軸の置き直し・ポインタの移動ごとに測る手段を渡す配線"
+    },
+    {
+      "layer": "features / editor",
+      "role": "編集画面を組み立てた通しのテストと、実物で確かめるストーリー `RotatedHugText`"
+    },
+    {
+      "layer": "docs",
+      "role": "「リサイズハンドル」の「掴んだ軸の長さだけが変わるとき」の限定を外し、既知の限界(#1380)と軸ごとの許容を書く"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/libs/canvas-dom/index.ts",
+      "name": "キャンバスの要素",
+      "role": "名前で引いた要素を DOM の上で実測する境界",
+      "feature": "rotated-resize",
+      "change": "`layoutSizeFor` と、px の計算値を読む private の `pxLengthOf` を足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "name": "描かれた大きさ",
+      "role": "ノードの名前で要素を引いて測る",
+      "feature": "rotated-resize",
+      "change": "`measureLayoutSizeFor(name, lengths)` を足した"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "name": "リサイズの操作",
+      "role": "掴む・動かす・離すのポインタイベントを、リサイズの状態と編集の通知へ仲介する",
+      "feature": "rotated-resize",
+      "change": "`trackPointer` で、選択中の名前で測る `layoutSizeFor` を `trackedAt` に渡す"
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "name": "ノードのリサイズ",
+      "role": "掴んだ状態とポインタから、書き込む長さと置き直した位置を出す",
+      "feature": "rotated-resize",
+      "change": "`ResizeGrip.ungrabbedAxis`・`DrawnWhileTracking`・`ShrunkEnd`・private の `ungrabbedEnd` を足し、`placedPosition` が掴んだ軸と連れて変わる軸を同じ形で受け取るようにした"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "name": "キャンバス",
+      "role": "リサイズの操作から届いた編集を、上へ通知する",
+      "feature": "rotated-resize"
+    },
+    {
+      "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "name": "編集画面のストーリー",
+      "role": "30 度回った幅 fixed・高さ hug の Box と折り返す Text(`RotatedHugText`)で、実物の留まり方を確かめる",
+      "change": "`RotatedHugText` を足した",
+      "graph": false
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "「リサイズハンドル」の置き直しの規則",
+      "change": "限定を外し、留める端・遅れないこと・既知の限界・軸ごとの許容を書いた",
+      "graph": false
+    },
+    {
+      "path": "src/libs/__tests__/element-measure.ts",
+      "name": "計算値のフェイク",
+      "role": "名前で引く要素だけ `getComputedStyle` の幅・高さを差し替える(`stubComputedSizeOf`)",
+      "change": "足した。DOM から外れた要素は差し替えない",
+      "graph": false
+    },
+    {
+      "path": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "name": "連れて変わる高さのフェイク",
+      "role": "幅 200 なら高さ 100、それ以外なら 80 として測らせる(`stubHeightFollowingWidth`)",
+      "change": "2 つの通しのテストの重複から畳んだ",
+      "graph": false
+    },
+    {
+      "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "name": "リサイズのテストの準備",
+      "role": "測れない既定の描かれ方(`setupDrawnWhileTracking`)と、測れる描かれ方で編集を出す `resizeEditMeasuredAt`",
+      "change": "足し、既存の `trackedAt` の呼び出し 15 件をこれに替えた",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "track",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "kind": "qry",
+      "name": "ポインタの位置から編集を出す",
+      "code": "NodeResize.trackedAt(resize, pointer, { view, layoutSizeFor })",
+      "via": "call",
+      "payload": "掴んでいる状態・今のポインタ・倍率と長さを当てて測る手段",
+      "returns": "書き込む編集(長さと置き直した位置)・揃った線・距離",
+      "status": "changed"
+    },
+    {
+      "id": "measure",
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "kind": "qry",
+      "name": "長さを当てた大きさを問い合わせる",
+      "code": "layoutSizeFor(grabbedLengths) / layoutSizeFor(lengths)",
+      "via": "call",
+      "payload": "掴んだ時点の長さ、次に書き込む長さ(1 回の移動で 2 回)",
+      "returns": "回る前の幅と高さ。測れなければ `none`",
+      "status": "added"
+    },
+    {
+      "id": "by-name",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "kind": "qry",
+      "name": "名前で引いて測る",
+      "code": "DrawnBounds.measureLayoutSizeFor(name, lengths)",
+      "via": "call",
+      "payload": "選択中の 1 つの名前と、当てる長さ",
+      "returns": "幅と高さ。描かれていない名前なら `none`",
+      "status": "added"
+    },
+    {
+      "id": "apply",
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "kind": "qry",
+      "name": "長さを当てて計算値を読む",
+      "code": "CanvasDom.layoutSizeFor(element, lengths)",
+      "via": "call",
+      "payload": "その時点で名前から引いた要素と、当てる長さ",
+      "returns": "計算値の幅と高さ(端数を持つ)。HTML の要素でない・px で読めなければ `none`",
+      "status": "added"
+    },
+    {
+      "id": "notify",
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "kind": "evt",
+      "name": "リサイズの編集を知らせる",
+      "code": "params.onResize(tracked.value.edit, continuitySequence.next())",
+      "via": "call",
+      "payload": "置き直した位置を含む編集と、続きかどうか"
+    }
+  ],
+  "flows": [
+    {
+      "id": "drag",
+      "label": "回ったノードの辺を動かしたとき",
+      "steps": [
+        "track",
+        "measure",
+        "by-name",
+        "apply",
+        "notify"
+      ]
+    },
+    {
+      "id": "unmeasured",
+      "label": "測らずに置き直すとき",
+      "steps": [
+        "track",
+        "notify"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "f68d31b2ff3c8d8baba0ff04e76e40da3a0f3a31",
+      "phase": "prep",
+      "role": "長さを当てて描いたときの大きさを測る `CanvasDom.layoutSizeFor` を足す",
+      "why": "連れて変わる長さはレイアウトの結果で、答えはブラウザにしか無い。書き込む前に「その長さで描いたらどうなるか」を測る手段を、DOM を触る境界(libs)に先に置いた。",
+      "flows": [
+        "drag"
+      ],
+      "review": [
+        "`style` 属性を控えて属性ごと戻す形にした。1 つずつ `removeProperty` で戻すと属性の文字列が正規化された綴りに書き直されるため(Chromium で確認)",
+        "`offsetWidth` ではなく `getComputedStyle` で読むのは、整数に丸められて前後 2 回の差が 1px ずれうるため"
+      ],
+      "notes": [
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "start": 111,
+          "end": 122,
+          "text": "控える → 当てる → 読む → 戻すを 1 つの同期処理で行う。読むのは戻す前"
+        }
+      ]
+    },
+    {
+      "sha": "408f061e02984201ee61fea221414b3106cd710d",
+      "phase": "prep",
+      "role": "`layoutSizeFor` のテストと、名前で引く計算値のフェイクを足す",
+      "why": "happy-dom にはレイアウトが無く、計算値は書かれた宣言をそのまま返す。連れて変わる高さはフェイクで差し替えないと通せない。要素ではなく名前で引くのは、編集のたびに要素が作り直されるため。",
+      "review": [
+        "フェイクは `globalThis.getComputedStyle` を包むので、使うテストは `afterEach(restoreComputedSize)` で戻す"
+      ],
+      "notes": [
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "start": 87,
+          "end": 100,
+          "text": "名前ごとの決め方を登録し、最初の 1 回だけ `getComputedStyle` を包む"
+        }
+      ]
+    },
+    {
+      "sha": "f8dce91d481f2e9bf407955168779b49d1328752",
+      "phase": "prep",
+      "role": "名前で指して長さを当てて測る `DrawnBounds.measureLayoutSizeFor` を足す",
+      "why": "フックが持っているのは選択中の名前で、要素ではない。名前で引いて測るものは既存の `measure` / `measureRotated` と同じく `DrawnBounds` に集める。",
+      "flows": [
+        "drag"
+      ],
+      "review": [
+        "リサイズの規則(どの長さを当てるか)は持たせず、測るだけにとどめた"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "start": 74,
+          "end": 81,
+          "text": "名前で引けなければ `none`、引けたら `layoutSizeFor` に渡すだけ"
+        }
+      ]
+    },
+    {
+      "sha": "c4fa61f406e362b800a6d52b882c6e9e6b6a444c",
+      "phase": "prep",
+      "role": "`measureLayoutSizeFor` の正常系と、描かれていない名前のテストを足す",
+      "why": "引けない名前で `none` を返すことと、引けた名前で当てた長さが測りに効くことを固定する。happy-dom の計算値は宣言をそのまま返すのでフェイク無しで確かめられる。"
+    },
+    {
+      "sha": "ac234b898844afc79046f56241af7b0de28e3740",
+      "phase": "core",
+      "role": "掴んでいない軸の長さの差を測り、位置の置き直しに足す",
+      "why": "#998 で回ったノードの反対側を留めたが、置き直し量は掴んだ軸だけから出していた。書き込む前に前後 2 回を同じ DOM で測れば、描き直しを待たずに済み(1 歩遅れない)、当てた長さ以外の違い(前の編集の描画が済んでいるか・box-sizing)は差し引きで消える。置き場所を `NodeResize` にしたのは、連れて変わる軸・留める端・位置を書けるか・自分の向きをすべて持つのが `ResizeHold` だけだから。",
+      "flows": [
+        "drag",
+        "unmeasured"
+      ],
+      "review": [
+        "補正済みの編集を返す入口は `trackedAt` 1 つだけ。任意の `ResizeEdit` を受けて直す関数にすると、補正していない入口が公開のまま残る",
+        "掴んだ時点の大きさを `ResizeHold` に持たず毎回測り直す。掴む 2 経路に測りが増え、同じ DOM で前後を測る利点も失うため",
+        "回っていない・位置を書けないときは測る前に外す。測ると強制レイアウトが無駄に走るため"
+      ],
+      "before": [
+        {
+          "text": "`trackedAt(resize, pointer, view)` で、置き直しは掴んだ軸ぶんだけ",
+          "message": "track"
+        }
+      ],
+      "after": [
+        {
+          "text": "`trackedAt(resize, pointer, { view, layoutSizeFor })` で、連れて変わる軸の差の半分 `d` について `rotate(d, own) − d` を足す",
+          "message": "track"
+        },
+        {
+          "text": "フックは選択中の名前で測る手段を渡す",
+          "message": "by-name"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 388,
+          "end": 398,
+          "text": "毎回変わるポインタとは別に、描かれ方(倍率と測る手段)を 1 つの引数にまとめた"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 1278,
+          "end": 1311,
+          "text": "最初の形。連れて変わる軸の置き直しを独自に計算していた(次の修正で `placedPosition` へ一本化)"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "start": 247,
+          "end": 254,
+          "text": "選択が 1 つのときだけ名前が引け、それ以外は測れない(掴んだ軸だけで置き直す)"
+        }
+      ]
+    },
+    {
+      "sha": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "phase": "core",
+      "role": "連れて変わる軸の置き直しを、留まる角と外す条件ごとに確かめるテストを足す",
+      "why": "置き直しの中心は「`d` を自分の向き own で回す」「始点側の端を留める」の 2 つで、どちらを誤っても回ったノードでだけ反対側がずれる。測る手段は前後で違う値を返す入力にした(同じ値だと `d=0` で、外す条件を丸ごと消しても通る)。",
+      "review": [
+        "角が留まるかは、位置ではなく回る前の角が来る親の座標の点(`parentPointAt`)で前後を比べている"
+      ]
+    },
+    {
+      "sha": "4e56d8daf8e47d622f9ab19b7c59ab1074613ae9",
+      "phase": "core",
+      "role": "キャンバスと編集画面の通しのテストを足す",
+      "why": "本番では編集が届くたびに中身が描き直され、要素が作り直される。2 回目の移動の測りはその作り直された要素で行うので、`onResize` がスパイでドキュメントが変わらないキャンバスのテストだけでは通らない。編集 → 再コンパイル → undo の配線まで編集画面で通す。",
+      "flows": [
+        "drag"
+      ],
+      "review": [
+        "編集画面のテストは 2 回に分けて運ぶ。1 回目の描き直しのあとに測る経路を通すため"
+      ]
+    },
+    {
+      "sha": "1a21bd66ce052f8c33f18dd3af7f71fb840affba",
+      "phase": "core",
+      "role": "実物で確かめるストーリー `RotatedHugText` を足す",
+      "why": "連れて変わる高さはレイアウトの結果で happy-dom では再現できない。反対の角が実物で留まるかはブラウザで操作して確かめるしかなく、操作を伴う確認は画面全体を組むストーリーで行う。既存のストーリーの回転は 90 度の固定 Box だけだった。",
+      "review": [
+        "VRT では新しいストーリーとして数えられ、失敗には数えない。角が撮影範囲に入るよう (170, 40) に置いた"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "start": 365,
+          "end": 391,
+          "text": "30 度回った幅 160 fixed・高さ hug の Box の中に、折り返す Text を置く"
+        }
+      ]
+    },
+    {
+      "sha": "6800f463e8b614e5d07125dd4e0ab65d04b61cc3",
+      "phase": "core",
+      "role": "仕様の「掴んだ軸の長さだけが変わるとき」の限定を外す",
+      "why": "#998 で範囲を明記していた限定が外せるようになった。留める端を始点側にしたのは、回っていないときに hug が上・左を起点に伸び縮みするのと同じ向きにそろえるため。位置で折り返しが変わる幅 hug はこの方式で拾えないので、既知の限界として #1380 に切り出した。",
+      "review": [
+        "「連れて変わる」の句は後の行が「(上記)」で参照しているので残した"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 278,
+          "end": 279,
+          "text": "留める端・遅れないこと・既知の限界"
+        }
+      ]
+    },
+    {
+      "sha": "2e517ee706f10965a3a17d8ccfeda70c0e4c3215",
+      "phase": "revise",
+      "role": "連れて変わる軸の置き直しを `placedPosition` の同じ式に通す",
+      "why": "structure / duplication の 2 つのレビューが、`ungrabbedShift` の `rotate(c, own) − c` は `placedPosition` の終点側の置き直しと同じ式だと指摘した。片方だけ直しても型でもテストでも気づけない。連れて変わる軸を「終点側の端で、縮んだ量 = 掴んだ時点の大きさ − 今の大きさ」の 1 軸として表せば同じ reduce に通せる。",
+      "flows": [
+        "drag"
+      ],
+      "review": [
+        "書き込む長さを持つ `ResizedLength` には混ぜず、置き直しに要る 3 つ(軸・端・縮んだ量)だけの `ShrunkEnd` を分けた。混ぜると距離の線と書き込む長さに連れて変わる軸が入るため",
+        "外す条件を「回っていない」「位置を書けない」の 2 つの早期 return に分け、2 つの理由を 1 つに抱えていた名前(`isUnplaceable`)をやめた"
+      ],
+      "before": [
+        {
+          "text": "連れて変わる軸は `ungrabbedShift` が置き直しの量を独自に計算し、第 3 引数で足していた"
+        }
+      ],
+      "after": [
+        {
+          "text": "掴んだ軸と連れて変わる軸の端を名前を付けた変数で並べ、同じ `placedPosition` に通す",
+          "message": "track"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 893,
+          "end": 898,
+          "text": "掴んだ軸の端と連れて変わる軸の端を並べて 1 つの置き直しに通す"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 1211,
+          "end": 1216,
+          "text": "置き直しに要る 3 つだけの型"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "start": 1305,
+          "end": 1335,
+          "text": "終点側の端で縮んだ量 s = −2g なら、置き直しは rotate(g) − g で元の式と一致する"
+        }
+      ]
+    },
+    {
+      "sha": "ea8b6c14222ae0e81d56705378f10dab06636dc1",
+      "phase": "revise",
+      "role": "`layoutSizeFor` の本体を処理の組で区切り、`pxLengthOf` の例を実ブラウザの値に直す",
+      "why": "戻し忘れが起きると当てた長さのまま描かれるので、戻す位置を読み手が一目で追えるようにした。`fit-content` は happy-dom にしか出ない値で、実ブラウザでは `auto` が px でない例になる。",
+      "notes": [
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "start": 121,
+          "end": 125,
+          "text": "戻す組。読む組の直後に来る"
+        }
+      ]
+    },
+    {
+      "sha": "c8525c03891433856095d4d12de0e3cb9cd241c9",
+      "phase": "revise",
+      "role": "連れて変わる軸のテストの重複を共有ヘルパーへ畳む",
+      "why": "duplication のレビューの指摘。軸の鏡像 2 つを `followingLength(applied, …)` 1 つに、片方だけ測れない 2 つを `measuredOnlyOneSide` 1 つに、2 つの通しのテストのフェイクを `stubHeightFollowingWidth` に畳んだ。測る手段の約束を変えるときに 1 箇所だけ古い前提が残る形をなくすため。",
+      "review": [
+        "期待値の行は 1 つも変わっていない(`git diff -U0` で確認済み)"
+      ]
+    },
+    {
+      "sha": "57d13c3af3cb9e0c1f968da725e4d27962638198",
+      "phase": "revise",
+      "role": "留まる許容が軸ごとの 0.5px であることを仕様に書き、既知の限界の書き方を同じ節にそろえる",
+      "why": "実測のずれは dx=−0.495 / dy=−0.356px で、距離にすると 0.61px。丸めは x・y ごとに行うので、許容も軸ごとに書くのが実物と一致する(距離で 0.5px は両軸の丸めの合成で成り立たない)。",
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 279,
+          "end": 280,
+          "text": "既知の限界を文末の括弧にそろえ、許容を軸ごとと書いた"
+        }
+      ]
+    },
+    {
+      "sha": "f979292d08795e24c4da9542e36af711a1941524",
+      "phase": "revise",
+      "role": "外れた要素の測りと、`style` 属性の無い要素の戻し方をテストで守る",
+      "why": "test-reviewer が実装をわざと壊したところ、最初に引いた要素をキャッシュする形に壊しても全テストが通り、`removeAttribute` の分岐はどのテストからも通っていなかった。フェイクが DOM から外れた要素にも値を返していたため。実ブラウザと同じく外れた要素は測れないようにした。",
+      "review": [
+        "キャッシュ版に壊すと編集画面の「2 回に分けて運んで離すと…」が落ち、直す前のフェイクでは通ることを確かめている"
+      ],
+      "notes": [
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "start": 114,
+          "end": 116,
+          "text": "外れた要素は差し替えない。実ブラウザでも px で読めない"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "canvas-dom",
+      "label": "長さを当てて測る",
+      "file": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts"
+    },
+    {
+      "id": "drawn-normal",
+      "label": "名前で引いて測る(正常系)",
+      "file": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts"
+    },
+    {
+      "id": "drawn-edge",
+      "label": "名前で引いて測る(境界)",
+      "file": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts"
+    },
+    {
+      "id": "ungrabbed",
+      "label": "掴んでいない軸の置き直し",
+      "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts"
+    },
+    {
+      "id": "artboard",
+      "label": "キャンバスの回ったノードのリサイズ",
+      "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx"
+    },
+    {
+      "id": "editor",
+      "label": "編集画面の回ったノードのリサイズ",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "cd-apply",
+      "suite": "canvas-dom",
+      "name": "幅 200 の要素に幅 120 を当てると、当てた幅と今の高さで測れる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "当てた長さが計算値に届かなければ、前後の差が 0 になって置き直しが効かない",
+      "given": "インラインで幅 200px・高さ 100px の要素",
+      "when": "幅 120 を当てて測る",
+      "then": "幅 120・高さ 100(並びに無い高さは今のまま)",
+      "commit": "408f061e02984201ee61fea221414b3106cd710d",
+      "excerpt": {
+        "path": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+        "start": 28,
+        "end": 34,
+        "text": "test(\"幅 200 の要素に幅 120 を当てると、当てた幅と今の高さで測れる\", () => {\n  const element = drawnWithStyle(\"width: 200px; height: 100px\");\n\n  expect(\n    CanvasDom.layoutSizeFor(element, [AxisLength.create(\"width\", 120)]),\n  ).toEqual(Option.some({ width: 120, height: 100 }));\n});"
+      },
+      "targets": [
+        "src/libs/canvas-dom/index.ts"
+      ],
+      "covers": [
+        "apply"
+      ]
+    },
+    {
+      "id": "cd-restore",
+      "suite": "canvas-dom",
+      "name": "両軸に当てても、測り終えると style 属性が測る前と同じ文字列に戻る",
+      "techniques": [
+        "state",
+        "idempotence"
+      ],
+      "why": "戻し忘れや綴りの書き換えがあると、当てた長さのまま描かれたり、属性が正規化された綴りに変わる",
+      "given": "空白の揺れと `transform` を含む `style` 属性",
+      "when": "幅と高さを当てて測る",
+      "then": "`style` 属性が 1 文字も違わず元の文字列に戻る",
+      "commit": "408f061e02984201ee61fea221414b3106cd710d",
+      "excerpt": {
+        "path": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+        "start": 36,
+        "end": 46,
+        "emphasis": [
+          {
+            "start": 37,
+            "end": 37
+          }
+        ],
+        "text": "test(\"両軸に当てても、測り終えると style 属性が測る前と同じ文字列に戻る\", () => {\n  const before = \"height:100px;width :200px; transform: rotate(30deg)\";\n  const element = drawnWithStyle(before);\n\n  CanvasDom.layoutSizeFor(element, [\n    AxisLength.create(\"width\", 120),\n    AxisLength.create(\"height\", 80),\n  ]);\n\n  expect(element.getAttribute(\"style\")).toBe(before);\n});"
+      },
+      "targets": [
+        "src/libs/canvas-dom/index.ts"
+      ],
+      "covers": [
+        "apply"
+      ]
+    },
+    {
+      "id": "cd-no-attr",
+      "suite": "canvas-dom",
+      "name": "style 属性の無い要素に長さを当てて測っても、測り終えると style 属性が無いまま",
+      "techniques": [
+        "boundary",
+        "state"
+      ],
+      "why": "属性の無い要素を戻す分岐(`removeAttribute`)は、2 段目のレビューまでどのテストからも通っていなかった",
+      "given": "`style` 属性を持たない要素",
+      "when": "幅 120 を当てて測る",
+      "then": "`hasAttribute(\"style\")` が false のまま",
+      "commit": "f979292d08795e24c4da9542e36af711a1941524",
+      "excerpt": {
+        "path": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+        "start": 48,
+        "end": 55,
+        "text": "test(\"style 属性の無い要素に長さを当てて測っても、測り終えると style 属性が無いまま\", () => {\n  const element = globalThis.document.createElement(\"div\");\n  globalThis.document.body.append(element);\n\n  CanvasDom.layoutSizeFor(element, [AxisLength.create(\"width\", 120)]);\n\n  expect(element.hasAttribute(\"style\")).toBe(false);\n});"
+      },
+      "targets": [
+        "src/libs/canvas-dom/index.ts"
+      ],
+      "covers": [
+        "apply"
+      ]
+    },
+    {
+      "id": "cd-no-inline",
+      "suite": "canvas-dom",
+      "name": "インライン指定の無い高さは、当てて測ったあとも指定が無いまま戻る",
+      "techniques": [
+        "state"
+      ],
+      "why": "hug の軸に当てた高さが残ると、ノードが固定の高さで描かれてしまう",
+      "given": "インラインで幅だけを持つ要素",
+      "when": "幅 120・高さ 80 を当てて測る",
+      "then": "当てた高さで測れたうえで、インラインの高さは空のまま",
+      "commit": "408f061e02984201ee61fea221414b3106cd710d",
+      "excerpt": {
+        "path": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+        "start": 57,
+        "end": 70,
+        "text": "test(\"インライン指定の無い高さは、当てて測ったあとも指定が無いまま戻る\", () => {\n  const element = drawnWithStyle(\"width: 200px\");\n\n  const measured = CanvasDom.layoutSizeFor(element, [\n    AxisLength.create(\"width\", 120),\n    AxisLength.create(\"height\", 80),\n  ]);\n\n  // 当てた高さで測れたうえで（測れていなければ戻すところまで届いたかが分からない）、指定は残らない\n  expect([measured, element.style.height]).toEqual([\n    Option.some({ width: 120, height: 80 }),\n    \"\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/libs/canvas-dom/index.ts"
+      ],
+      "covers": [
+        "apply"
+      ]
+    },
+    {
+      "id": "cd-svg",
+      "suite": "canvas-dom",
+      "name": "HTML の要素でない SVG は測れない",
+      "techniques": [
+        "error"
+      ],
+      "why": "`style` を持たない要素で測ろうとしない",
+      "given": "幅・高さを指定した SVG 要素",
+      "when": "幅を当てて測る",
+      "then": "`none`",
+      "commit": "408f061e02984201ee61fea221414b3106cd710d",
+      "excerpt": {
+        "path": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+        "start": 72,
+        "end": 83,
+        "text": "test(\"HTML の要素でない SVG は測れない\", () => {\n  const svg = globalThis.document.createElementNS(\n    \"http://www.w3.org/2000/svg\",\n    \"svg\",\n  );\n  svg.setAttribute(\"style\", \"width: 200px; height: 100px\");\n  globalThis.document.body.append(svg);\n\n  expect(\n    CanvasDom.layoutSizeFor(svg, [AxisLength.create(\"width\", 120)]),\n  ).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/libs/canvas-dom/index.ts"
+      ],
+      "covers": [
+        "apply"
+      ]
+    },
+    {
+      "id": "cd-not-px",
+      "suite": "canvas-dom",
+      "name": "高さが px で読めない（fit-content の）要素は測れない",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "px で読めない計算値を数として扱うと、置き直しの量が壊れる。測れなければ掴んだ軸だけで置き直す側へ落とす",
+      "given": "高さが `fit-content` の要素(happy-dom は宣言をそのまま返す)",
+      "when": "幅を当てて測る",
+      "then": "`none`",
+      "commit": "408f061e02984201ee61fea221414b3106cd710d",
+      "excerpt": {
+        "path": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+        "start": 85,
+        "end": 91,
+        "text": "test(\"高さが px で読めない（fit-content の）要素は測れない\", () => {\n  const element = drawnWithStyle(\"width: 200px; height: fit-content\");\n\n  expect(\n    CanvasDom.layoutSizeFor(element, [AxisLength.create(\"width\", 120)]),\n  ).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/libs/canvas-dom/index.ts"
+      ],
+      "covers": [
+        "apply"
+      ]
+    },
+    {
+      "id": "db-normal",
+      "suite": "drawn-normal",
+      "name": "名前で指して長さを当てると、当てた幅と今の高さで測れる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "名前で引いた要素に当てた長さが測りに効くこと",
+      "given": "`home` が幅 200・高さ 100 で描かれている",
+      "when": "`home` に幅 120 を当てて測る",
+      "then": "幅 120・高さ 100",
+      "commit": "c4fa61f406e362b800a6d52b882c6e9e6b6a444c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+        "start": 138,
+        "end": 147,
+        "text": "test(\"名前で指して長さを当てると、当てた幅と今の高さで測れる\", () => {\n  drawNamed(\"home\", { left: 0, top: 0, width: 200, height: 100 }).setAttribute(\n    \"style\",\n    \"width: 200px; height: 100px\",\n  );\n\n  expect(\n    DrawnBounds.measureLayoutSizeFor(\"home\", [AxisLength.create(\"width\", 120)]),\n  ).toEqual(Option.some({ width: 120, height: 100 }));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/utils/DrawnBounds.ts"
+      ],
+      "covers": [
+        "apply"
+      ]
+    },
+    {
+      "id": "db-edge",
+      "suite": "drawn-edge",
+      "name": "描かれていない名前は、長さを当てても測れない",
+      "techniques": [
+        "error"
+      ],
+      "why": "まだ画面に出ていない名前では測れず、掴んだ軸だけで置き直す側へ落ちる",
+      "given": "`home` だけが描かれている",
+      "when": "`about` に幅を当てて測る",
+      "then": "`none`",
+      "commit": "c4fa61f406e362b800a6d52b882c6e9e6b6a444c",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+        "start": 122,
+        "end": 133,
+        "text": "test(\"描かれていない名前は、長さを当てても測れない\", () => {\n  drawNamed(\"home\", { left: 0, top: 0, width: 200, height: 100 }).setAttribute(\n    \"style\",\n    \"width: 200px; height: 100px\",\n  );\n\n  expect(\n    DrawnBounds.measureLayoutSizeFor(\"about\", [\n      AxisLength.create(\"width\", 120),\n    ]),\n  ).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/utils/DrawnBounds.ts"
+      ]
+    },
+    {
+      "id": "ua-width",
+      "suite": "ungrabbed",
+      "name": "幅だけを掴んだとき、連れて変わりうるのは高さ",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "連れて変わる軸の選び方を誤ると、測った差を違う軸に足す",
+      "given": "右辺(幅だけ)を掴んだ",
+      "when": "`ResizeGrip.ungrabbedAxis`",
+      "then": "高さ",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 110,
+        "end": 114,
+        "text": "test(\"幅だけを掴んだとき、連れて変わりうるのは高さ\", () => {\n  expect(ResizeGrip.ungrabbedAxis(RightEdgeGrip)).toEqual(\n    Option.some(\"height\"),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    },
+    {
+      "id": "ua-height",
+      "suite": "ungrabbed",
+      "name": "高さだけを掴んだとき、連れて変わりうるのは幅",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "幅と高さの対の片側",
+      "given": "上下の辺(高さだけ)を掴んだ",
+      "when": "`ResizeGrip.ungrabbedAxis`",
+      "then": "幅",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 116,
+        "end": 123,
+        "text": "test(\"高さだけを掴んだとき、連れて変わりうるのは幅\", () => {\n  expect(\n    ResizeGrip.ungrabbedAxis({\n      kind: \"height\",\n      height: { length: AxisLength.create(\"height\", 100), end: \"end\" },\n    }),\n  ).toEqual(Option.some(\"width\"));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    },
+    {
+      "id": "ua-both",
+      "suite": "ungrabbed",
+      "name": "角で 2 軸を掴んだとき、連れて変わる軸は無い",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "角では両軸とも書き込むので、連れて変わる軸を足すと二重に置き直す",
+      "given": "角(2 軸)を掴んだ",
+      "when": "`ResizeGrip.ungrabbedAxis`",
+      "then": "`none`",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 125,
+        "end": 133,
+        "text": "test(\"角で 2 軸を掴んだとき、連れて変わる軸は無い\", () => {\n  expect(\n    ResizeGrip.ungrabbedAxis({\n      kind: \"both\",\n      width: { length: AxisLength.create(\"width\", 200), end: \"end\" },\n      height: { length: AxisLength.create(\"height\", 100), end: \"end\" },\n    }),\n  ).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ]
+    },
+    {
+      "id": "ua-90-right",
+      "suite": "ungrabbed",
+      "name": "90 度回したノードの右辺を引いて高さが連れて縮んでも、回る前の左上の角が親の座標で動かない",
+      "techniques": [
+        "equivalence",
+        "boundary"
+      ],
+      "why": "縮む向き(`d` が負)で符号を誤ると、反対側が逆向きにずれる",
+      "given": "(30, 70) に置いた 200x100 を自分の向き 90 度に回し、幅を当てると高さが 80 になる描かれ方",
+      "when": "右辺を回る前の向きで 50 引く",
+      "then": "回る前の左上の角が来る親の座標の点が、掴む前と同じ(誤差 `toBeCloseTo`)",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 135,
+        "end": 153,
+        "text": "test(\"90 度回したノードの右辺を引いて高さが連れて縮んでも、回る前の左上の角が親の座標で動かない\", () => {\n  const layoutSizeFor = followingLength(\"width\", 80);\n  const edit = turnedEditAt(\n    {\n      rotation: { own: 90, total: 90 },\n      anchor: { x: 1, y: 0.5 },\n      unrotatedMove: { x: 50, y: 0 },\n    },\n    layoutSizeFor,\n  );\n\n  const moved = cornerMoved(edit, {\n    own: 90,\n    anchor: { x: 0, y: 0 },\n    layoutSizeFor,\n  });\n  expect(moved.x).toBeCloseTo(0);\n  expect(moved.y).toBeCloseTo(0);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "track",
+        "measure"
+      ]
+    },
+    {
+      "id": "ua-30-left",
+      "suite": "ungrabbed",
+      "name": "30 度回したノードの左辺を引いて高さが連れて伸びても、回る前の右上の角が親の座標で動かない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "始点側を掴んで、連れて変わる軸が伸びる組み合わせ。90 度の倍数でない向きで回す向き(own)を確かめる",
+      "given": "30 度に回し、幅を当てると高さが 130 になる描かれ方",
+      "when": "左辺を回る前の向きで 40 引く",
+      "then": "回る前の右上の角が動かない",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 155,
+        "end": 173,
+        "text": "test(\"30 度回したノードの左辺を引いて高さが連れて伸びても、回る前の右上の角が親の座標で動かない\", () => {\n  const layoutSizeFor = followingLength(\"width\", 130);\n  const edit = turnedEditAt(\n    {\n      rotation: { own: 30, total: 30 },\n      anchor: { x: 0, y: 0.5 },\n      unrotatedMove: { x: 40, y: 0 },\n    },\n    layoutSizeFor,\n  );\n\n  const moved = cornerMoved(edit, {\n    own: 30,\n    anchor: { x: 1, y: 0 },\n    layoutSizeFor,\n  });\n  expect(moved.x).toBeCloseTo(0);\n  expect(moved.y).toBeCloseTo(0);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "track",
+        "measure"
+      ]
+    },
+    {
+      "id": "ua-30-bottom",
+      "suite": "ungrabbed",
+      "name": "30 度回したノードの下辺を引いて幅が連れて変わっても、回る前の左上の角が親の座標で動かない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "連れて変わる軸が幅のとき、留めるのは回る前の左端",
+      "given": "30 度に回し、高さを当てると幅が 170 になる描かれ方",
+      "when": "下辺を回る前の向きで 40 引く",
+      "then": "回る前の左上の角が動かない",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 175,
+        "end": 193,
+        "text": "test(\"30 度回したノードの下辺を引いて幅が連れて変わっても、回る前の左上の角が親の座標で動かない\", () => {\n  const layoutSizeFor = followingLength(\"height\", 170);\n  const edit = turnedEditAt(\n    {\n      rotation: { own: 30, total: 30 },\n      anchor: { x: 0.5, y: 1 },\n      unrotatedMove: { x: 0, y: 40 },\n    },\n    layoutSizeFor,\n  );\n\n  const moved = cornerMoved(edit, {\n    own: 30,\n    anchor: { x: 0, y: 0 },\n    layoutSizeFor,\n  });\n  expect(moved.x).toBeCloseTo(0);\n  expect(moved.y).toBeCloseTo(0);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "track",
+        "measure"
+      ]
+    },
+    {
+      "id": "ua-30-top",
+      "suite": "ungrabbed",
+      "name": "30 度回したノードの上辺を引いて幅が連れて変わっても、回る前の左下の角が親の座標で動かない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "始点側(上辺)を掴み、幅が連れて変わる組み合わせ",
+      "given": "30 度に回し、高さを当てると幅が 230 になる描かれ方",
+      "when": "上辺を回る前の向きで 30 動かす",
+      "then": "回る前の左下の角が動かない",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 195,
+        "end": 213,
+        "text": "test(\"30 度回したノードの上辺を引いて幅が連れて変わっても、回る前の左下の角が親の座標で動かない\", () => {\n  const layoutSizeFor = followingLength(\"height\", 230);\n  const edit = turnedEditAt(\n    {\n      rotation: { own: 30, total: 30 },\n      anchor: { x: 0.5, y: 0 },\n      unrotatedMove: { x: 0, y: 30 },\n    },\n    layoutSizeFor,\n  );\n\n  const moved = cornerMoved(edit, {\n    own: 30,\n    anchor: { x: 0, y: 1 },\n    layoutSizeFor,\n  });\n  expect(moved.x).toBeCloseTo(0);\n  expect(moved.y).toBeCloseTo(0);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "track",
+        "measure"
+      ]
+    },
+    {
+      "id": "ua-360",
+      "suite": "ungrabbed",
+      "name": "360 度回したノードは、高さが連れて変わっても回っていないものと同じ編集になる",
+      "techniques": [
+        "boundary",
+        "equivalence"
+      ],
+      "why": "向きが一周したノードは回っていないものと同じに扱い、測らずに外す",
+      "given": "自分の向き 360 度と 0 度の 2 つ、同じ描かれ方",
+      "when": "右辺を 50 引く",
+      "then": "2 つの編集が等しい",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 215,
+        "end": 230,
+        "text": "test(\"360 度回したノードは、高さが連れて変わっても回っていないものと同じ編集になる\", () => {\n  const gestureOf = (rotation: ResizeRotation) => ({\n    rotation,\n    anchor: { x: 1, y: 0.5 } as const,\n    unrotatedMove: { x: 50, y: 0 },\n  });\n\n  expect(\n    turnedEditAt(\n      gestureOf({ own: 360, total: 360 }),\n      followingLength(\"width\", 80),\n    ),\n  ).toEqual(\n    turnedEditAt(gestureOf({ own: 0, total: 0 }), followingLength(\"width\", 80)),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "track"
+      ]
+    },
+    {
+      "id": "ua-ancestor",
+      "suite": "ungrabbed",
+      "name": "祖先だけが回っているノードは、高さが連れて変わっても右辺を引いて位置を書き換えない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "置き直しは画面上の向き(total)ではなく自分の向き(own)で決める",
+      "given": "own 0・total 30 のノード",
+      "when": "右辺を 50 引く",
+      "then": "編集に位置が無い",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 232,
+        "end": 243,
+        "text": "test(\"祖先だけが回っているノードは、高さが連れて変わっても右辺を引いて位置を書き換えない\", () => {\n  const edit = turnedEditAt(\n    {\n      rotation: { own: 0, total: 30 },\n      anchor: { x: 1, y: 0.5 },\n      unrotatedMove: { x: 50, y: 0 },\n    },\n    followingLength(\"width\", 80),\n  );\n\n  expect(edit.position).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "track"
+      ]
+    },
+    {
+      "id": "ua-corner",
+      "suite": "ungrabbed",
+      "name": "角を掴んだときは、測る大きさが前後で違っても、測れないときと同じ編集になる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "角では連れて変わる軸が無いので、測った差を足さない",
+      "given": "30 度に回したノードの右下の角、前後で違う大きさを返す描かれ方",
+      "when": "角を引く",
+      "then": "測れない描かれ方で出した編集と等しい",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 245,
+        "end": 256,
+        "text": "test(\"角を掴んだときは、測る大きさが前後で違っても、測れないときと同じ編集になる\", () => {\n  const resize = grabbedAt(\n    placedTurned({ own: 30, total: 30 }),\n    { x: 1, y: 1 },\n    Offset.Origin,\n  );\n  const pointer = Offset.rotate({ x: 20, y: 20 }, 30);\n\n  expect(\n    resizeEditMeasuredAt(resize, pointer, followingLength(\"width\", 80)),\n  ).toEqual(Option.unwrap(resizeEditAt(resize, pointer, setupView())));\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "track"
+      ]
+    },
+    {
+      "id": "ua-unmeasured",
+      "suite": "ungrabbed",
+      "name": "掴んだ時点も今も大きさを測れないときは、掴んだ軸だけで置き直す",
+      "techniques": [
+        "error"
+      ],
+      "why": "測れないときは今までの振る舞いへ落ちる",
+      "given": "90 度に回したノード、測れない描かれ方",
+      "when": "右辺を 50 引く",
+      "then": "位置 (5, 95)(掴んだ軸だけの置き直し)",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 279,
+        "end": 289,
+        "text": "/*\n * 掴んだ軸だけで置き直すと、中心が回る前の右へ 25（親の座標で下へ 25）動き、左上はそこから\n * 25 戻るので (30 - 25, 70 + 25)。前後とも測れて高さが 100 → 30 なら (40, 130) になる。\n */\n\ntest(\"掴んだ時点も今も大きさを測れないときは、掴んだ軸だけで置き直す\", () => {\n  const position = rightEdgePulledPosition(() => Option.none);\n\n  expect(position.x).toBeCloseTo(5);\n  expect(position.y).toBeCloseTo(95);\n});"
+      },
+      "values": {
+        "columns": [
+          "掴んだ時点の測り",
+          "今の測り",
+          "書く位置"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "測れない",
+              "測れない",
+              "(5, 95)"
+            ]
+          },
+          {
+            "cells": [
+              "測れない",
+              "高さ 30",
+              "(5, 95)"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "高さ 100",
+              "測れない",
+              "(5, 95)"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "高さ 100",
+              "高さ 30",
+              "(40, 130)(テストのコメントで示す対照)"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "track",
+        "measure"
+      ]
+    },
+    {
+      "id": "ua-unmeasured-grabbed",
+      "suite": "ungrabbed",
+      "name": "掴んだ時点の大きさだけを測れないときは、掴んだ軸だけで置き直す",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "片方だけ測れたときに、測れた側を 0 とみなした差を足さない",
+      "given": "掴んだ時点の幅(200)を当てたときだけ測れない描かれ方",
+      "when": "右辺を 50 引く",
+      "then": "位置 (5, 95)",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 310,
+        "end": 315,
+        "text": "test(\"掴んだ時点の大きさだけを測れないときは、掴んだ軸だけで置き直す\", () => {\n  const position = rightEdgePulledPosition(measuredOnlyOneSide(\"grabbed\"));\n\n  expect(position.x).toBeCloseTo(5);\n  expect(position.y).toBeCloseTo(95);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "measure"
+      ]
+    },
+    {
+      "id": "ua-unmeasured-current",
+      "suite": "ungrabbed",
+      "name": "今の大きさだけを測れないときは、掴んだ軸だけで置き直す",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "片方だけ測れたときのもう一方",
+      "given": "今の幅を当てたときだけ測れない描かれ方",
+      "when": "右辺を 50 引く",
+      "then": "位置 (5, 95)",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 317,
+        "end": 322,
+        "text": "test(\"今の大きさだけを測れないときは、掴んだ軸だけで置き直す\", () => {\n  const position = rightEdgePulledPosition(measuredOnlyOneSide(\"current\"));\n\n  expect(position.x).toBeCloseTo(5);\n  expect(position.y).toBeCloseTo(95);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "measure"
+      ]
+    },
+    {
+      "id": "ua-flow",
+      "suite": "ungrabbed",
+      "name": "回したフロー配置のノードは、高さが連れて変わっても位置を書かない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "フロー配置は位置をレイアウトが決めるので、位置を書かない",
+      "given": "30 度に回したフロー配置のノード",
+      "when": "右辺を 50 引く",
+      "then": "編集に位置が無い",
+      "commit": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "start": 324,
+        "end": 338,
+        "text": "test(\"回したフロー配置のノードは、高さが連れて変わっても位置を書かない\", () => {\n  const resize = grabbedAt(\n    { ...setupFlowResizable(), rotation: { own: 30, total: 30 } },\n    { x: 1, y: 0.5 },\n    Offset.Origin,\n  );\n\n  const edit = resizeEditMeasuredAt(\n    resize,\n    Offset.rotate({ x: 50, y: 0 }, 30),\n    followingLength(\"width\", 80),\n  );\n\n  expect(edit.position).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "track"
+      ]
+    },
+    {
+      "id": "ab-position",
+      "suite": "artboard",
+      "name": "90 度回したノードの右辺を 50 引いて高さが連れて 80 に縮むと、回る前の左上の角が留まる位置が通知される",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "フックが測る手段を `trackedAt` へ配線していること。配線を外すと掴んだ軸だけの (0, 35) になる",
+      "given": "(25, 10) に置いた 90 度回った幅 200・高さ hug の `turned`。幅 200 なら高さ 100、それ以外なら 80 として測らせる",
+      "when": "右辺のハンドルを掴み、画面の下へ 50 動かす",
+      "then": "通知された位置が (10, 45)",
+      "commit": "4e56d8daf8e47d622f9ab19b7c59ab1074613ae9",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+        "start": 241,
+        "end": 256,
+        "emphasis": [
+          {
+            "start": 242,
+            "end": 245
+          }
+        ],
+        "text": "test(\"90 度回したノードの右辺を 50 引いて高さが連れて 80 に縮むと、回る前の左上の角が留まる位置が通知される\", () => {\n  /*\n   * 掴んだ幅だけなら (25 - 25, 10 + 25)。高さが 100 → 80 で回る前の上端を留めると、中心は\n   * 回る前の上へ 10（画面では右へ 10）動き、左上は中心から 10 戻るので (0 + 10, 35 + 10)。\n   */\n  const onResize = vi.fn();\n  renderCanvas({ selection: setupWrappingTurned(), onResize });\n  const turned = drawnTurned(\"turned\");\n\n  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 150, y: 200 });\n  movePointer(turned, { x: 150, y: 250 });\n\n  const position = Option.unwrap(lastEdit(onResize).position);\n  expect(position.x).toBeCloseTo(10);\n  expect(position.y).toBeCloseTo(45);\n});"
+      },
+      "values": {
+        "columns": [
+          "測り",
+          "通知される位置"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "掴んだ軸だけ(配線が無い)",
+              "(0, 35)"
+            ]
+          },
+          {
+            "cells": [
+              "高さ 100 → 80",
+              "(10, 45)"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "track",
+        "measure",
+        "by-name",
+        "apply",
+        "notify"
+      ]
+    },
+    {
+      "id": "ab-no-extra",
+      "suite": "artboard",
+      "name": "高さが連れて変わっても、通知は動かした回数だけで、離したときに追加の通知は出ない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "離したときに補正の編集を出す形(却下した案 B)だと undo の粒度と通知の回数が変わる",
+      "given": "上と同じ `turned`",
+      "when": "2 回動かして離す",
+      "then": "`onResize` は 2 回だけ",
+      "commit": "4e56d8daf8e47d622f9ab19b7c59ab1074613ae9",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+        "start": 258,
+        "end": 269,
+        "text": "test(\"高さが連れて変わっても、通知は動かした回数だけで、離したときに追加の通知は出ない\", () => {\n  const onResize = vi.fn();\n  renderCanvas({ selection: setupWrappingTurned(), onResize });\n  const turned = drawnTurned(\"turned\");\n\n  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 150, y: 200 });\n  movePointer(turned, { x: 150, y: 225 });\n  movePointer(turned, { x: 150, y: 250 });\n  releasePointer(turned, { x: 150, y: 250 });\n\n  expect(onResize).toHaveBeenCalledTimes(2);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts"
+      ],
+      "covers": [
+        "notify"
+      ]
+    },
+    {
+      "id": "ed-drag",
+      "suite": "editor",
+      "name": "高さが幅につれて変わる回ったノードの右辺を 2 回に分けて運んで離すと、回る前の左上の角が留まる位置で描かれる",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "1 回目の編集で描き直されて作り直された要素を、2 回目の移動で測り直していること。最初に引いた要素をキャッシュする形に壊すと落ちる(2 段目の修正でフェイクを外れた要素に効かなくしてから)",
+      "given": "編集画面で `turned` を選び、名前で引く測りのフェイクを置く",
+      "when": "右辺を画面の下へ 25 ずつ 2 回運んで離す",
+      "then": "幅 250px・left 10px・top 45px で描かれる",
+      "commit": "4e56d8daf8e47d622f9ab19b7c59ab1074613ae9",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+        "start": 66,
+        "end": 91,
+        "text": "function dragWrappingRightEdge(): void {\n  stubHeightFollowingWidth(\"turned\");\n  const turned = drawnTurnedAt(\n    \"turned\",\n    { left: 100, top: 0, width: 100, height: 200 },\n    { width: 200, height: 100 },\n  );\n  pressPointer(turned, { x: 150, y: 195 });\n  movePointer(canvasContent(), { x: 150, y: 220 });\n  movePointer(canvasContent(), { x: 150, y: 245 });\n  releasePointer(canvasContent(), { x: 150, y: 245 });\n}\n\ntest(\"高さが幅につれて変わる回ったノードの右辺を 2 回に分けて運んで離すと、回る前の左上の角が留まる位置で描かれる\", async () => {\n  await renderOpenedDocument(setupDocument());\n  await selectInTree(\"turned\");\n\n  dragWrappingRightEdge();\n\n  const turned = drawn(\"turned\");\n  expect([turned.style.width, turned.style.left, turned.style.top]).toEqual([\n    \"250px\",\n    \"10px\",\n    \"45px\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+        "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+        "src/libs/canvas-dom/index.ts"
+      ],
+      "covers": [
+        "track",
+        "measure",
+        "by-name",
+        "apply",
+        "notify"
+      ]
+    },
+    {
+      "id": "ed-undo",
+      "suite": "editor",
+      "name": "高さが幅につれて変わる回ったノードを運んだあと 1 回戻すと、幅も位置も掴む前に戻る",
+      "techniques": [
+        "state"
+      ],
+      "why": "測りを足しても、掴んでから離すまでが undo 1 回ぶんのまま",
+      "given": "上と同じく 2 回運んで離したあと",
+      "when": "Ctrl+Z を 1 回",
+      "then": "幅 200px・left 25px・top 10px",
+      "commit": "4e56d8daf8e47d622f9ab19b7c59ab1074613ae9",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+        "start": 93,
+        "end": 106,
+        "text": "test(\"高さが幅につれて変わる回ったノードを運んだあと 1 回戻すと、幅も位置も掴む前に戻る\", async () => {\n  await renderOpenedDocument(setupDocument());\n  await selectInTree(\"turned\");\n  dragWrappingRightEdge();\n\n  await userEvent.keyboard(\"{Control>}z{/Control}\");\n\n  const turned = drawn(\"turned\");\n  expect([turned.style.width, turned.style.left, turned.style.top]).toEqual([\n    \"200px\",\n    \"25px\",\n    \"10px\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-node-resize/index.ts"
+      ],
+      "covers": [
+        "notify"
+      ]
+    },
+    {
+      "id": "todo-remeasure",
+      "suite": "editor",
+      "name": "位置で描かれ方が変わるとき、掴んだ時点に 1 回だけ測った値を使い回すと反対側がずれる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "前後を同じ DOM で測り直す形と、却下した「掴んだ時点に 1 回だけ測って持つ」形の違い。happy-dom の差し替えは当てた幅だけで高さを決め、位置で描かれ方が変わらないので区別できない。守っているのは Storybook `RotatedHugText` と Chromium の実測だけ",
+      "given": "位置や前の編集の描画で、同じ長さでも測りが変わるノード",
+      "when": "2 回以上運ぶ",
+      "then": "反対の角が軸ごとに 0.5px 以内で留まる",
+      "todo": true,
+      "targets": [
+        "src/features/editor/features/canvas/domains/node-resize/index.ts"
+      ],
+      "covers": [
+        "measure"
+      ]
+    },
+    {
+      "id": "todo-webkit",
+      "suite": "canvas-dom",
+      "name": "WebKit で計算値の幅・高さが端数付きの px で返る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "Tauri の macOS は WebKit で描く。px で返らなければ測れない側(掴んだ軸だけで置き直す)へ落ちるが、端数が丸められると許容を超えうる。この環境の Playwright は Chromium だけで未検証",
+      "given": "WebKit で回った hug の Text",
+      "when": "長さを当てて測る",
+      "then": "端数付きの px が返る",
+      "todo": true,
+      "targets": [
+        "src/libs/canvas-dom/index.ts"
+      ],
+      "covers": [
+        "apply"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "回ったノードの辺を引くと、中身に合わせて長さが変わる側があっても反対側が留まる",
+    "lead": "自分が回っていて座標で置いたノード(折り返す文字を持つ箱など)の辺を引いたとき、掴んでいない側の長さが中身に合わせて変わっても、反対の辺・角が動かなくなりました。掴んでいる間も、離したあとも留まります。",
+    "changed": {
+      "before": [
+        {
+          "text": "回ったノードの幅を引いて、折り返しで高さも変わると、反対の辺・角がその分ずれていた(大きいと十数 px)"
+        },
+        {
+          "text": "仕様は「留まるのは掴んだ軸の長さだけが変わるとき」と範囲を限っていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "高さが中身に合わせて変わっても、反対の辺・角は動かない。変わった側は、回る前の向きの上端・左端を留めて伸び縮みする(回っていないときと同じ向き)",
+          "message": "track"
+        },
+        {
+          "text": "掴んでいる間も 1 歩遅れずに留まり、離したあとも留まる。ずれは位置の丸めによる各軸 0.5px 以内",
+          "message": "measure"
+        }
+      ],
+      "text": "幅が中身に合わせて決まるノードの高さを掴み、位置が変わったことで折り返しが変わる場合は、まだずれます(既知の限界)。Mac の描画エンジンでの動きは確かめておらず、大きさを数値で読めなかったときは、これまでどおり掴んだ側だけで位置を直します。",
+      "specs": [
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「リサイズハンドル」の位置の置き直しの項",
+          "text": "「留まるのは掴んだ軸の長さだけが変わるとき」の限定を外し、連れて変わる側は回る前の上端・左端を留めること、掴んでいる間も遅れないこと、既知の限界、許容が軸ごとに 0.5px であることを書いた",
+          "shas": [
+            "6800f463e8b614e5d07125dd4e0ab65d04b61cc3",
+            "57d13c3af3cb9e0c1f968da725e4d27962638198"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 998,
+          "text": "回ったノードの反対側を留めるようにした回。連れて変わる側は範囲外として残していた"
+        },
+        {
+          "issue": 1380,
+          "text": "位置で折り返しが変わる場合のずれを切り出した、残っている限界"
+        }
+      ],
+      "primers": [
+        "apply-and-measure",
+        "shared-placement",
+        "get-computed-style"
+      ]
+    },
+    "tables": [
+      {
+        "label": "辺や角を引いたときに反対側が留まるか",
+        "gist": "変わったのは、自分が回っていて座標で置いたノードの辺を引き、もう一方の長さが中身で変わるときだけ。",
+        "text": "列は、掴む場所。辺のときは、掴んでいない側の長さが中身に合わせて変わる場合を見ています。",
+        "rowHeads": [
+          {
+            "id": "unrotated",
+            "label": "回っていないノード",
+            "note": "一周したものを含む"
+          },
+          {
+            "id": "own",
+            "label": "自分が回っている、座標で置いたノード"
+          },
+          {
+            "id": "ancestor",
+            "label": "親だけが回っているノード"
+          },
+          {
+            "id": "flow",
+            "label": "並びで置いた、回っているノード"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "edge",
+            "label": "辺を引く(もう一方の長さが中身で変わる)"
+          },
+          {
+            "id": "corner",
+            "label": "角を引く"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "unrotated",
+            "columnHead": "edge",
+            "result": "上端・左端が留まる(位置は書き換えない)",
+            "tests": [
+              "ua-360"
+            ]
+          },
+          {
+            "rowHead": "unrotated",
+            "columnHead": "corner",
+            "result": "反対の角が留まる"
+          },
+          {
+            "rowHead": "own",
+            "columnHead": "edge",
+            "result": "反対の辺・角が留まる",
+            "was": "変わった長さの分だけ反対側がずれる",
+            "tests": [
+              "ua-90-right",
+              "ua-30-left",
+              "ua-30-bottom",
+              "ua-30-top",
+              "ab-position",
+              "ed-drag"
+            ]
+          },
+          {
+            "rowHead": "own",
+            "columnHead": "corner",
+            "result": "反対の角が留まる",
+            "tests": [
+              "ua-corner"
+            ]
+          },
+          {
+            "rowHead": "ancestor",
+            "columnHead": "edge",
+            "result": "回っていないものと同じく、位置は書き換えない",
+            "tests": [
+              "ua-ancestor"
+            ]
+          },
+          {
+            "rowHead": "ancestor",
+            "columnHead": "corner",
+            "result": "回っていないものと同じ"
+          },
+          {
+            "rowHead": "flow",
+            "columnHead": "edge",
+            "result": "位置はレイアウトが決め、反対側は留まらない",
+            "tests": [
+              "ua-flow"
+            ]
+          },
+          {
+            "rowHead": "flow",
+            "columnHead": "corner",
+            "result": "位置はレイアウトが決め、反対側は留まらない"
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "掴んでから離すまでを 1 回戻すと、幅も位置も掴む前に戻る",
+        "tests": [
+          "ed-undo"
+        ]
+      },
+      {
+        "text": "離したときに、補正のための追加の編集は出ない",
+        "tests": [
+          "ab-no-extra"
+        ]
+      },
+      {
+        "text": "大きさを読めないとき(まだ画面に出ていない・数値で返らない)は、掴んだ側だけで位置を直す",
+        "tests": [
+          "ua-unmeasured",
+          "ua-unmeasured-grabbed",
+          "ua-unmeasured-current",
+          "db-edge",
+          "cd-not-px"
+        ]
+      },
+      {
+        "text": "測るために長さを一瞬当てても、画面に当てた長さのまま描かれることは無く、要素の見た目の指定は元のまま",
+        "tests": [
+          "cd-restore",
+          "cd-no-attr",
+          "cd-no-inline"
+        ]
+      },
+      {
+        "text": "回っていないノード・角を掴んだとき・並びで置いたノードの振る舞い",
+        "tests": [
+          "ua-360",
+          "ua-corner",
+          "ua-flow"
+        ]
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「リサイズハンドル」の「掴んでから離すまでが undo 1 回ぶん」の項",
+        "text": "掴んでいる間の連続を履歴の上で 1 件にまとめる記述は変えていない"
+      },
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「リサイズハンドル」の「フロー配置のノードは位置をレイアウトが決める」の行",
+        "text": "並びで置いたノードの反対側は留まらない、という記述は変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "get-computed-style",
+      "category": "DOM · CSSOM",
+      "label": "`getComputedStyle`",
+      "gist": "要素に今効いている CSS の最終的な値([[計算値|computed]])を、ブラウザに問い合わせて読むための関数。読む瞬間に[[レイアウト|layout]]が古ければ、その場で計算し直してから答える([[強制レイアウト|forced-layout]])。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`window.getComputedStyle(element)` は、その要素のすべての CSS プロパティを持つ読み取り専用のオブジェクトを返す。`.width` / `.height` は、`hug` のように中身で決まる長さでも、レイアウトを済ませた結果を `\"123.45px\"` のような文字列で返す。値は文字列なので、数として使うには末尾の `px` を外して数に直す。"
+        },
+        {
+          "kind": "declaration",
+          "code": "getComputedStyle(elt: Element, pseudoElt?: string | null): CSSStyleDeclaration"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "elt",
+              "type": "Element",
+              "text": "値を読む要素"
+            },
+            {
+              "name": "pseudoElt",
+              "type": "string | null",
+              "text": "`::before` などの疑似要素を読むときだけ渡す",
+              "note": "省けば要素そのもの"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "幅・高さは `transform`(回転・拡大縮小)を効かせる前の大きさで、祖先の変形にも依らない。`offsetWidth` は整数に丸め、`getBoundingClientRect()` は回った要素の外接矩形を返すので、回る前の端数付きの大きさを読むにはこれを使う。"
+        },
+        {
+          "kind": "caution",
+          "text": "直前に[[インラインスタイル|inline-style]]を書き換えていると、読む瞬間に[[強制レイアウト|forced-layout]]が走る。1 回の操作で何度も読むと遅くなるので、読む回数を絞る。"
+        },
+        {
+          "kind": "memo",
+          "text": "`display: none` などで描かれていない要素では、幅・高さが `auto` のように px でない値になりうる。DOM から外れた要素も同じく px で読めない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "lineRange": {
+            "start": 117,
+            "end": 119
+          },
+          "text": "当てた直後に計算値の幅・高さを読む",
+          "shas": [
+            "f68d31b2ff3c8d8baba0ff04e76e40da3a0f3a31"
+          ]
+        },
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "lineRange": {
+            "start": 158,
+            "end": 164
+          },
+          "text": "`pxLengthOf` が `<数>px` の文字列だけを数に直す",
+          "shas": [
+            "f68d31b2ff3c8d8baba0ff04e76e40da3a0f3a31",
+            "ea8b6c14222ae0e81d56705378f10dab06636dc1"
+          ]
+        },
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "lineRange": {
+            "start": 93,
+            "end": 128
+          },
+          "text": "テストでは `getComputedStyle` を包み、名前で引く要素の幅・高さだけを差し替える",
+          "shas": [
+            "408f061e02984201ee61fea221414b3106cd710d",
+            "f979292d08795e24c4da9542e36af711a1941524"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "inline-style-attr",
+        "apply-and-measure"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "inline-style-attr",
+      "category": "DOM · HTML",
+      "label": "`style` 属性と `element.style`",
+      "gist": "要素の `style` 属性に直接書いた CSS([[インラインスタイル|inline-style]])を、文字列としても、プロパティごとの値としても読み書きするための 2 つの入口。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`element.getAttribute(\"style\")` は属性に書かれた文字列をそのまま返し、属性が無ければ `null`。`element.style.setProperty(\"width\", \"120px\")` はプロパティ 1 つを書き、属性の文字列はブラウザが組み立て直す。`setAttribute(\"style\", 文字列)` で属性を丸ごと置き換え、`removeAttribute(\"style\")` で属性ごと消す。"
+        },
+        {
+          "kind": "declaration",
+          "code": "element.style.setProperty(property: string, value: string | null, priority?: string): void"
+        },
+        {
+          "kind": "caution",
+          "text": "`setProperty` / `removeProperty` で 1 つずつ戻すと、属性の文字列はブラウザが正規化した綴り(空白・順序)に書き直される。元の文字列に正確に戻したいなら、書き換える前に `getAttribute` で控え、`setAttribute` で丸ごと戻す。属性が無かったときは `removeAttribute` で消す(空の属性を残さない)。"
+        },
+        {
+          "kind": "memo",
+          "text": "`isConnected` は、その要素が今ドキュメントにつながっているか(描き直しで外されていないか)を返す読み取り専用のプロパティ。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "lineRange": {
+            "start": 112,
+            "end": 125
+          },
+          "text": "控える → `setProperty` で当てる → 属性ごと戻す",
+          "shas": [
+            "f68d31b2ff3c8d8baba0ff04e76e40da3a0f3a31",
+            "ea8b6c14222ae0e81d56705378f10dab06636dc1"
+          ]
+        },
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "lineRange": {
+            "start": 114,
+            "end": 116
+          },
+          "text": "外れた要素(`isConnected` が false)は差し替えない",
+          "shas": [
+            "f979292d08795e24c4da9542e36af711a1941524"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "get-computed-style"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "apply-and-measure",
+      "category": "canvas · 測り",
+      "label": "長さを当てて測る",
+      "gist": "書き込む前に「その長さで描いたらどうなるか」を、キャンバスの要素へ長さを一瞬当てて測る仕組み。当てる・読む・戻すを同じ同期処理で終えるので、当てた長さのまま描かれることは無い。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "キャンバスの中身はコンパイル結果の HTML を流し込んでおり React の管理外なので、[[インラインスタイル|inline-style]]を書き換えても React と衝突しない。測る手段は 3 段に分かれ、`CanvasDom.layoutSizeFor` が要素に当てて [[計算値|computed]] を読み、`DrawnBounds.measureLayoutSizeFor` が名前で要素を引き、フックが選択中の名前で `layoutSizeFor` として `trackedAt` へ渡す。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/libs/canvas-dom/index.ts",
+            "start": 104,
+            "end": 133,
+            "emphasis": [
+              {
+                "start": 112,
+                "end": 112
+              },
+              {
+                "start": 121,
+                "end": 125
+              }
+            ],
+            "text": "  layoutSizeFor(\n    element: Element,\n    lengths: readonly AxisLength[],\n  ): Option<Readonly<{ width: number; height: number }>> {\n    if (!(element instanceof HTMLElement)) {\n      return Option.none;\n    }\n\n    const inlineStyle = Option.fromNullable(element.getAttribute(\"style\"));\n    for (const each of lengths) {\n      element.style.setProperty(each.axis, Px.create(each.length));\n    }\n\n    const computed = globalThis.getComputedStyle(element);\n    const width = pxLengthOf(computed.width);\n    const height = pxLengthOf(computed.height);\n\n    if (Option.isSome(inlineStyle)) {\n      element.setAttribute(\"style\", inlineStyle.value);\n    } else {\n      element.removeAttribute(\"style\");\n    }\n\n    return Option.flatMap(width, (measuredWidth) =>\n      Option.map(height, (measuredHeight) => ({\n        width: measuredWidth,\n        height: measuredHeight,\n      })),\n    );\n  },"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "ドラッグ中は位置が変わって描き直されるので、掴んだ時点に測った値は持たない。毎回、掴んだ時点の長さと今の長さを当てた 2 つを同じ DOM で測り直す。"
+        },
+        {
+          "kind": "spec",
+          "text": "連れて変わった長さは書き込む前に測るので、掴んでいる間も 1 歩遅れない(docs/06-ui.md「リサイズハンドル」)。"
+        },
+        {
+          "kind": "history",
+          "text": "Effect で書いたあとに測る案は Effect の規約に当たり、1 歩前の長さで追って離したときに補正する案は掴んでいる間に遅れるので退けた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "lineRange": {
+            "start": 104,
+            "end": 133
+          },
+          "text": "`CanvasDom.layoutSizeFor`",
+          "shas": [
+            "f68d31b2ff3c8d8baba0ff04e76e40da3a0f3a31",
+            "ea8b6c14222ae0e81d56705378f10dab06636dc1"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "lineRange": {
+            "start": 74,
+            "end": 81
+          },
+          "text": "`DrawnBounds.measureLayoutSizeFor`",
+          "shas": [
+            "f8dce91d481f2e9bf407955168779b49d1328752"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "lineRange": {
+            "start": 247,
+            "end": 254
+          },
+          "text": "フックが選択中の名前で測る手段を渡す",
+          "shas": [
+            "ac234b898844afc79046f56241af7b0de28e3740"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "lineRange": {
+            "start": 381,
+            "end": 399
+          },
+          "text": "`DrawnWhileTracking` の doc が、掴んだ時点の測りを持たない理由を持つ",
+          "shas": [
+            "ac234b898844afc79046f56241af7b0de28e3740",
+            "2e517ee706f10965a3a17d8ccfeda70c0e4c3215"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "get-computed-style",
+        "inline-style-attr",
+        "shared-placement"
+      ],
+      "tests": [
+        "cd-apply",
+        "cd-restore",
+        "cd-no-attr",
+        "cd-no-inline",
+        "cd-svg",
+        "cd-not-px",
+        "db-normal",
+        "db-edge",
+        "ed-drag",
+        "todo-remeasure",
+        "todo-webkit"
+      ],
+      "flows": [
+        "drag"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "shared-placement",
+      "category": "canvas · リサイズ",
+      "label": "連れて変わる軸の置き直し",
+      "gist": "掴んでいない軸の長さの変化を「終点側の端が動いた 1 軸」(`ShrunkEnd`)として表し、掴んだ軸と同じ置き直しの式(`placedPosition`)に通す。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "[[自分の向き|own-rotation]]で中心を軸に回っているノードは、長さだけを変えると中心が動き、反対側も動く。`placedPosition` は軸ごとに、中心の動きを自分の向きで回した量と、縮んだ量の半分を足して左上を置き直す。連れて変わる軸は、掴んだ時点の長さを当てた大きさ − 書き込む長さを当てた大きさを「縮んだ量」とし、終点側の端が動いたものとして同じ並びに入れる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+            "start": 1305,
+            "end": 1335,
+            "text": "function ungrabbedEnd(\n  held: ResizeHold,\n  lengths: AxisLengths,\n  layoutSizeFor: DrawnWhileTracking[\"layoutSizeFor\"],\n): Option<ShrunkEnd> {\n  // 回っていなければ終点側の端が動いても左上は動かない。測ると強制レイアウトが無駄になるので先に外す\n  if (Angle.isWholeTurns(held.rotation.own)) {\n    return Option.none;\n  }\n  // 位置を書けなければ置き直さないので、同じく測る前に外す\n  if (!Option.isSome(held.grabbedAt)) {\n    return Option.none;\n  }\n  const axis = ResizeGrip.ungrabbedAxis(held.grip);\n  if (!Option.isSome(axis)) {\n    return Option.none;\n  }\n\n  const grabbedLengths = ArrayEx.mapNonEmpty(\n    ResizeGrip.grabs(held.grip),\n    (grab) => grab.length,\n  );\n\n  return Option.flatMap(layoutSizeFor(grabbedLengths), (before) =>\n    Option.map(layoutSizeFor(lengths), (after) => ({\n      axis: axis.value,\n      end: AxisEnds.End,\n      shrunk: before[axis.value] - after[axis.value],\n    })),\n  );\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "回っていない・位置を書けない・角を掴んだときは測る前に外す([[強制レイアウト|forced-layout]]を無駄に走らせない)。前後のどちらかを測れなければ足さない。"
+        },
+        {
+          "kind": "spec",
+          "text": "連れて変わる軸では回る前の始点側の端(上端・左端)を留める。回っていないときに `hug` が上・左を起点に伸び縮みするのと同じ向き(docs/06-ui.md「リサイズハンドル」)。"
+        },
+        {
+          "kind": "history",
+          "text": "最初は `ungrabbedShift` が `rotate(c, own) − c` を独自に計算していた。`placedPosition` の終点側の置き直しと同じ式だったので一本化した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "lineRange": {
+            "start": 157,
+            "end": 166
+          },
+          "text": "`ResizeGrip.ungrabbedAxis`(幅→高さ / 高さ→幅 / 角→none)",
+          "shas": [
+            "ac234b898844afc79046f56241af7b0de28e3740"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "lineRange": {
+            "start": 893,
+            "end": 898
+          },
+          "text": "掴んだ軸の端と連れて変わる軸の端を並べて置き直しに通す",
+          "shas": [
+            "2e517ee706f10965a3a17d8ccfeda70c0e4c3215"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "lineRange": {
+            "start": 1211,
+            "end": 1216
+          },
+          "text": "`ShrunkEnd`",
+          "shas": [
+            "2e517ee706f10965a3a17d8ccfeda70c0e4c3215"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "lineRange": {
+            "start": 1267,
+            "end": 1289
+          },
+          "text": "`placedPosition`",
+          "shas": [
+            "2e517ee706f10965a3a17d8ccfeda70c0e4c3215"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "apply-and-measure"
+      ],
+      "tests": [
+        "ua-width",
+        "ua-height",
+        "ua-both",
+        "ua-90-right",
+        "ua-30-left",
+        "ua-30-bottom",
+        "ua-30-top",
+        "ua-360",
+        "ua-ancestor",
+        "ua-corner",
+        "ua-unmeasured",
+        "ua-flow",
+        "ab-position"
+      ],
+      "flows": [
+        "drag",
+        "unmeasured"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "computed-fake",
+      "category": "テスト · フェイク",
+      "label": "名前で引く計算値のフェイク",
+      "gist": "happy-dom にはレイアウトが無いので、名前で引く要素だけ `getComputedStyle` の幅・高さを差し替えて、中身で長さが連れて変わる描かれ方を作る。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "要素ではなく名前で引くのは、編集のたびにキャンバスの要素が作り直され、要素に貼った差し替えは次の描き直しで消えるため。DOM から外れた要素は差し替えず、実ブラウザと同じく測れないものにする。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/libs/__tests__/element-measure.ts",
+            "start": 93,
+            "end": 128,
+            "emphasis": [
+              {
+                "start": 114,
+                "end": 116
+              }
+            ],
+            "text": "export function stubComputedSizeOf(\n  name: string,\n  sizeFor: ComputedSizeFor,\n): void {\n  computedSizeByName.set(name, sizeFor);\n  if (originalGetComputedStyle !== undefined) {\n    return;\n  }\n  const original = globalThis.getComputedStyle;\n  originalGetComputedStyle = original;\n  globalThis.getComputedStyle = (element, pseudoElement) => {\n    const computed = original(element, pseudoElement);\n    const stubbed = computedSizeByName.get(\n      element.getAttribute(ElementNameAttribute) ?? \"\",\n    );\n    if (stubbed === undefined) {\n      return computed;\n    }\n    if (!(element instanceof HTMLElement)) {\n      return computed;\n    }\n    if (!element.isConnected) {\n      return computed;\n    }\n    const size = stubbed(element.style);\n    Object.defineProperty(computed, \"width\", {\n      configurable: true,\n      value: `${size.width}px`,\n    });\n    Object.defineProperty(computed, \"height\", {\n      configurable: true,\n      value: `${size.height}px`,\n    });\n    return computed;\n  };\n}"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "外れた要素にも値を返していた間は、最初に引いた要素をキャッシュする形に壊しても通しのテストが通っていた。前後を同じ DOM で測り直す形と掴んだ時点に 1 回だけ測る形の違いは、このフェイクでは区別できない(位置で描かれ方が変わらないため)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "lineRange": {
+            "start": 93,
+            "end": 128
+          },
+          "text": "`stubComputedSizeOf`",
+          "shas": [
+            "408f061e02984201ee61fea221414b3106cd710d",
+            "f979292d08795e24c4da9542e36af711a1941524"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+          "lineRange": {
+            "start": 58,
+            "end": 63
+          },
+          "text": "`stubHeightFollowingWidth`(幅 200 なら高さ 100、それ以外なら 80)",
+          "shas": [
+            "c8525c03891433856095d4d12de0e3cb9cd241c9"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "get-computed-style",
+        "apply-and-measure"
+      ],
+      "tests": [
+        "ab-position",
+        "ab-no-extra",
+        "ed-drag",
+        "ed-undo",
+        "todo-remeasure"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "computed",
+      "label": "計算値",
+      "text": "カスケード・継承・レイアウトをすべて済ませたあと、要素に実際に効いている CSS の値。`getComputedStyle` で読む。"
+    },
+    {
+      "id": "layout",
+      "label": "レイアウト",
+      "text": "ブラウザが各要素の位置と大きさを決める計算。折り返しで高さが決まるのもここ。"
+    },
+    {
+      "id": "forced-layout",
+      "label": "強制レイアウト",
+      "text": "スタイルを書き換えた直後に大きさを読むと、ブラウザが次の描画を待たずにその場でレイアウトを計算し直すこと。回数が増えると遅くなる。"
+    },
+    {
+      "id": "inline-style",
+      "label": "インラインスタイル",
+      "text": "要素の `style` 属性に直接書いた CSS。スタイルシートの指定より優先して効く。"
+    },
+    {
+      "id": "own-rotation",
+      "label": "自分の向き",
+      "text": "ノード自身の `rotation`(親の座標の中での向き)。祖先の回転を足した画面上の向きとは別に持つ。"
+    }
+  ]
+}
