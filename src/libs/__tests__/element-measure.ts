@@ -81,6 +81,8 @@ const computedSizeByName = new Map<string, ComputedSizeFor>();
  * その名前で描かれた要素の、計算値の幅と高さを決める（`getComputedStyle`）。ほかの要素と
  * ほかのプロパティは差し替える前の `getComputedStyle` が答える。
  *
+ * DOM から外れた要素は差し替えない（実ブラウザでも外れた要素の計算値は px で読めない）。
+ *
  * 要素ではなく名前で引くのは、ドキュメントが変わるたびにキャンバスの要素が作り直され、要素に
  * 差し替えた測り方は次の描き直しで消えるため。差し替えはテストをまたいで残るので、使う側は
  * `afterEach(restoreComputedSize)` を置く。
@@ -107,6 +109,9 @@ export function stubComputedSizeOf(
       return computed;
     }
     if (!(element instanceof HTMLElement)) {
+      return computed;
+    }
+    if (!element.isConnected) {
       return computed;
     }
     const size = stubbed(element.style);

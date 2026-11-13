@@ -45,6 +45,15 @@ test("両軸に当てても、測り終えると style 属性が測る前と同�
   expect(element.getAttribute("style")).toBe(before);
 });
 
+test("style 属性の無い要素に長さを当てて測っても、測り終えると style 属性が無いまま", () => {
+  const element = globalThis.document.createElement("div");
+  globalThis.document.body.append(element);
+
+  CanvasDom.layoutSizeFor(element, [AxisLength.create("width", 120)]);
+
+  expect(element.hasAttribute("style")).toBe(false);
+});
+
 test("インライン指定の無い高さは、当てて測ったあとも指定が無いまま戻る", () => {
   const element = drawnWithStyle("width: 200px");
 
