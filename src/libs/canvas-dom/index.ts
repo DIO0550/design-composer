@@ -108,18 +108,22 @@ export const CanvasDom = {
     if (!(element instanceof HTMLElement)) {
       return Option.none;
     }
+
     const inlineStyle = Option.fromNullable(element.getAttribute("style"));
     for (const each of lengths) {
       element.style.setProperty(each.axis, Px.create(each.length));
     }
+
     const computed = globalThis.getComputedStyle(element);
     const width = pxLengthOf(computed.width);
     const height = pxLengthOf(computed.height);
+
     if (Option.isSome(inlineStyle)) {
       element.setAttribute("style", inlineStyle.value);
     } else {
       element.removeAttribute("style");
     }
+
     return Option.flatMap(width, (measuredWidth) =>
       Option.map(height, (measuredHeight) => ({
         width: measuredWidth,
@@ -148,7 +152,8 @@ export const CanvasDom = {
  * px で綴られた計算値の長さ。
  *
  * @param value `getComputedStyle` が返した値
- * @returns `<数>px` の形ならその数。`auto` / `fit-content` など px でない綴りは `none`
+ * @returns `<数>px` の形ならその数。`auto`（`display: none` で描かれていない要素など）のように
+ *   px でない綴りは `none`
  */
 function pxLengthOf(value: string): Option<number> {
   if (!value.endsWith("px")) {
