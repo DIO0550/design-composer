@@ -105,10 +105,7 @@ export function DraftField({
  * ほかへ移るまでに動かした分を 1 つのまとまりとして送る（docs/06-ui.md「編集操作の一覧」の
  * tokens 編集）。
  *
- * 見出しの下に置く欄では読み取り専用の hex を右に添える。stop の行は hex を打てる欄
- * （docs/06-ui.md「`Tokens` の `gradients`」）を別に並べるので添えない。
- *
- * @returns カラーピッカーと、見出しの下に置く欄では読み取り専用の hex
+ * @returns カラーピッカー
  */
 function ColorPickerField({
   id,
@@ -132,7 +129,7 @@ function ColorPickerField({
    * WebView は未検証。
    */
   const continuitySequence = useFirstThenRest(EditContinuityRun);
-  const picker = (
+  return (
     <input
       id={id}
       type="color"
@@ -145,18 +142,6 @@ function ColorPickerField({
       className={PickerClasses[density]}
     />
   );
-
-  switch (density) {
-    case FieldDensities.Regular:
-      return (
-        <div className="flex items-center gap-2">
-          {picker}
-          <span className="font-mono text-gray-600 text-xs">{value}</span>
-        </div>
-      );
-    case FieldDensities.Compact:
-      return picker;
-  }
 }
 
 /**
