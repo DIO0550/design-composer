@@ -1,0 +1,875 @@
+{
+  "version": 1,
+  "pr": 1382,
+  "sha": "16b1c8332e3efa439c1b9fac7a782996f3813ba7",
+  "issue": 1041,
+  "overview": {
+    "title": "Color のエディタの hex を打てる欄にする(影の色にも並べる)",
+    "lead": "トークンパネルの Color のエディタと影の色で、hex(`#` 付きの 6 桁)を打って色を変えられるようになった。不透明度は保ったまま 6 桁だけを差し替え、確定 1 回で undo 1 件。",
+    "before": [
+      {
+        "text": "Color のエディタの hex はピッカーの右に添えた読み取り専用の文字で、打てなかった"
+      },
+      {
+        "text": "打てる hex の欄を持つのは gradient の stop の行だけだった"
+      }
+    ],
+    "after": [
+      {
+        "text": "colors・影の色・stop の色のどれも、ピッカー → hex → 不透明度の 3 行が並ぶ",
+        "message": "build-fields"
+      },
+      {
+        "text": "hex の欄に `#ff0000` を打って Enter で確定すると、不透明度を残して 6 桁だけが変わる",
+        "message": "commit-hex"
+      },
+      {
+        "text": "`#` 無し・短縮形・8 桁を打っても値は変わらない(打った文字は欄に残る)",
+        "message": "commit-hex"
+      },
+      {
+        "text": "ピッカーで色を変えると hex の欄も追随する",
+        "message": "build-fields"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "影の hex の欄",
+        "text": "UI 案に影のエディタは無い。影にも並べたのはこの PR の判断で、マージ前にオーナーの確認を仰いでいる(Issue #1041)",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts"
+        }
+      },
+      {
+        "title": "書き戻し先を 1 つに畳んだ型",
+        "text": "色の行の組は 6 桁の書き戻し先を 1 つだけ持ち、ピッカーの行と hex の行へ配る",
+        "go": {
+          "kind": "message",
+          "id": "build-fields"
+        }
+      },
+      {
+        "title": "hex を打って確定する流れ",
+        "text": "欄の確定 → 値の解釈 → 編集の記録までを 1 本で見る",
+        "go": {
+          "kind": "flow",
+          "id": "type-hex"
+        }
+      },
+      {
+        "title": "見た目の差分",
+        "text": "色・影のストーリーで hex の行が増え、ピッカー横の文字が消える。VRT に意図した差分が出る",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "token-edit",
+      "label": "トークン編集",
+      "role": "右ペインのトークンエディタで色の hex を打てるようにする"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "features / editor/features/tokens",
+      "role": "色の欄の組み立て(行の並びと書き戻し先)と、欄の描き方を変えた"
+    },
+    {
+      "layer": "features / editor",
+      "role": "トークン編集の通しのテストを足した"
+    },
+    {
+      "layer": "docs",
+      "role": "色の欄の undo の単位を「tokens 編集」の 1 か所にまとめた"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "name": "トークンの編集欄",
+      "role": "選んだトークンから、右ペインに並べる欄(見出し・入力の種類・書き戻し先)を組み立て、打たれた文字列を新しい値に解釈する",
+      "feature": "token-edit",
+      "change": "colors と影の色にも hex の行を並べ、色の行の組が書き戻し先を 1 つだけ持つ形にした"
+    },
+    {
+      "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "name": "値の欄",
+      "role": "欄の種類ごとに入力欄を描き、確定した文字列を送る",
+      "feature": "token-edit",
+      "change": "ピッカーの右に添えていた読み取り専用の hex を外した"
+    },
+    {
+      "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "name": "トークンエディタ",
+      "role": "編集欄を 1 行ずつ並べ、確定した値をエディタの状態へ渡す",
+      "feature": "token-edit"
+    },
+    {
+      "path": "src/domains/dcmp/token/index.ts",
+      "name": "トークン",
+      "role": "色の 6 桁の読み取り(大文字を小文字へ)と、不透明度を保った差し替えを持つ"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI の仕様",
+      "role": "編集操作の一覧と undo の単位",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "build-fields",
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "kind": "qry",
+      "name": "編集欄を組み立てる",
+      "code": "TokenControl.forSelection(selection)",
+      "via": "call",
+      "payload": "選んでいるトークン",
+      "returns": "ピッカー・hex・不透明度の行を含む欄の並び",
+      "status": "changed"
+    },
+    {
+      "id": "commit-hex",
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "kind": "qry",
+      "name": "打った hex を値にする",
+      "code": "TokenControl.valueFrom(field.target, raw)",
+      "via": "call",
+      "payload": "hex の行の書き戻し先と、確定した文字列",
+      "returns": "6 桁を差し替えた新しい値。読めなければ不在",
+      "status": "added"
+    },
+    {
+      "id": "replace-rgb",
+      "from": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "kind": "qry",
+      "name": "6 桁を差し替える",
+      "code": "ColorToken.withRgb(color, rgb)",
+      "via": "call",
+      "payload": "元の色と、読めた 6 桁",
+      "returns": "不透明度を残した色"
+    },
+    {
+      "id": "set-value",
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "kind": "cmd",
+      "name": "トークンの値を変える",
+      "code": "onSetTokenValue(value, EditContinuities.Separate)",
+      "via": "call",
+      "payload": "新しい値と、別のまとまりとして積む印"
+    }
+  ],
+  "flows": [
+    {
+      "id": "type-hex",
+      "label": "hex を打って確定したとき",
+      "steps": [
+        "commit-hex",
+        "replace-rgb",
+        "set-value"
+      ]
+    },
+    {
+      "id": "select-color",
+      "label": "色のトークンを選んだとき",
+      "steps": [
+        "build-fields"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "6c590f1e99954ee2e53c245607696ffd329366dd",
+      "phase": "core",
+      "role": "colors と影の色の編集欄に、打てる hex の行を並べる",
+      "why": "stop の行で既に動いている hex の欄(同じ書き戻し先を共有する文字の行)を、同じ組み立て関数を通る colors と影にもそのまま使う。3 か所すべてが hex を持つので、任意だった hex の行を必須にして届かない枝を消した。",
+      "flows": [
+        "select-color"
+      ],
+      "review": [
+        "影にも hex の行を並べたのは UI 案に無い判断。Issue #1041 の選択肢を見て、残すかを決めてほしい",
+        "影の行の名前を `colorHex` にしたのは、既存の不透明度の行(`colorAlpha`)と同じ語形に揃えるため"
+      ],
+      "before": [
+        {
+          "text": "colors と影の色の欄はピッカーと不透明度の 2 行"
+        }
+      ],
+      "after": [
+        {
+          "text": "ピッカー・hex・不透明度の 3 行",
+          "message": "build-fields"
+        }
+      ]
+    },
+    {
+      "sha": "b3746e1c521479ad14b1db2b1bd57903ab57b9d4",
+      "phase": "core",
+      "role": "ピッカーの右に添えていた読み取り専用の hex を外す",
+      "why": "hex を打てる欄が並んだので、読み取り専用の文字を残すと同じ値が右ペインに 2 回出る。stop の行は元から添えていなかったので、密度ごとの出し分けも要らなくなった。",
+      "review": [
+        "色・影のストーリーで見た目が変わる。VRT の差分は意図したもの"
+      ]
+    },
+    {
+      "sha": "70d15973835724253881aa8b5bd9c5a017c2c0e3",
+      "phase": "core",
+      "role": "hex の欄の出し方と書き戻しを単体テストで固定する",
+      "why": "変更の中心は「6 桁だけを出し、6 桁だけを差し替える」ことで、型だけではそれを守れない。読めない値を弾くケースは既存のテストと重複するので足さなかった。"
+    },
+    {
+      "sha": "ab56609bbdcdaeae23781fb80f91dd126d8c3821",
+      "phase": "core",
+      "role": "hex を打つ通しの操作をテストする",
+      "why": "欄の組み立てと書き戻しの間には、欄の key による追随と確定のまとまり方の配線がある。ドメインのテストだけでは配線の誤りが落ちない。undo のケースは Enter で確定させる(Tab だと次の欄を離れたときに同じ値の確定が積まれる。#1379)。",
+      "flows": [
+        "type-hex"
+      ],
+      "review": [
+        "重ねて出ないことは右ペインに絞って見る。一覧の行に同じ綴りがあるので、画面全体では何も守らない"
+      ]
+    },
+    {
+      "sha": "2b9fd040f3259b9ee5624ed5387f1554145ed077",
+      "phase": "core",
+      "role": "tokens 編集に hex の欄の undo の単位を書き足す",
+      "why": "hex の欄の undo の単位は stop についてだけ書かれていた。colors と影にも欄が付いたので、共通の置き場所に書く。"
+    },
+    {
+      "sha": "90a531b98e694adb1052208041525f82de52ce84",
+      "phase": "revise",
+      "role": "色の欄の書き戻し先を 1 つだけ持たせる",
+      "why": "レビューの指摘。ピッカーの行と hex の行がそれぞれ書き戻し先を持ち、呼び出し元 3 か所で同じ値を 2 回指定していた。食い違っても型で落ちないので、1 つだけ持たせて配る形にした。あわせて「色は 3 行」の説明をコメント 1 か所に寄せ、`#` 付きの 6 桁だけを受け付ける理由を書いた。",
+      "review": [
+        "型が縛るのは呼び出し側だけで、組み立て関数の中では hex の行の書き戻し先を自由に組める。そこは単体テストが守る(最後のコミット)"
+      ]
+    },
+    {
+      "sha": "7fcd4e5b95ed3d218e91c0be9f4d01a6908b2df4",
+      "phase": "revise",
+      "role": "alpha のテストと同じ経路を通る hex の書き戻しテスト 2 件を外す",
+      "why": "書き戻し先を 1 つにしたので、既存のピッカーのテストと入力も期待値も経路も同じになると判断した。colors 側の 1 件はこの判断が誤りで、最後のコミットで戻している。"
+    },
+    {
+      "sha": "f6b0e03f50c8cf0d44faad08d75670f6fe1683fb",
+      "phase": "fin",
+      "role": "区切りの空行を戻す",
+      "why": "読み取り専用の hex を外したとき、宣言と組み立ての間の区切りが消えていた。"
+    },
+    {
+      "sha": "7be9dae9bb6322d8a2e6295b6639b406ab2391eb",
+      "phase": "revise",
+      "role": "色の欄の undo の単位を tokens 編集の 1 か所に寄せる",
+      "why": "stop の hex の畳み方が 2 か所に本文で書かれ、不透明度の欄が抜けていた。片方だけ直せる状態を無くした。"
+    },
+    {
+      "sha": "16b1c8332e3efa439c1b9fac7a782996f3813ba7",
+      "phase": "hard",
+      "role": "alpha 付きの色の hex から打ったときに不透明度が残ることを戻す",
+      "why": "ミューテーションの実測で、colors の hex の行の書き戻し先を不透明度を捨てる形に変えても全テストが通った。書き戻しを見るテストがどれも不透明度 100% の色で、既定と同じ答えになっていた。",
+      "flows": [
+        "type-hex"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "hex",
+      "label": "hex の欄(単体)",
+      "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts"
+    },
+    {
+      "id": "normal",
+      "label": "編集欄の並び",
+      "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts"
+    },
+    {
+      "id": "token-edit",
+      "label": "トークン編集(通し)",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "hex-six-digits",
+      "suite": "hex",
+      "name": "alpha を持つ色の hex の欄には 6 桁だけが出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "8 桁をそのまま出すと、打ち直すときに 6 桁しか受け付けない欄と食い違う",
+      "given": "不透明度 50% の色 `veil`(`#3b82f680`)",
+      "when": "編集欄を組み立てる",
+      "then": "hex の行は文字の欄で、値は `#3b82f6`",
+      "commit": "70d15973835724253881aa8b5bd9c5a017c2c0e3",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 6,
+        "end": 11,
+        "text": "test(\"alpha を持つ色の hex の欄には 6 桁だけが出る\", () => {\n  expect(fieldOf(\"colors\", \"veil\", \"hex\").input).toEqual({\n    kind: \"text\",\n    value: \"#3b82f6\",\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "build-fields"
+      ]
+    },
+    {
+      "id": "hex-lowercase",
+      "suite": "hex",
+      "name": "色の hex に大文字で打った 6 桁は小文字で保存される",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ピッカーは常に小文字を返すので、大文字は打つ経路で初めて現れる入力",
+      "given": "色 `primary` の hex の行",
+      "when": "`#ABCDEF` を値にする",
+      "then": "値は `#abcdef`",
+      "commit": "70d15973835724253881aa8b5bd9c5a017c2c0e3",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 13,
+        "end": 19,
+        "text": "test(\"色の hex に大文字で打った 6 桁は小文字で保存される\", () => {\n  const field = fieldOf(\"colors\", \"primary\", \"hex\");\n\n  expect(TokenControl.valueFrom(field.target, \"#ABCDEF\")).toEqual(\n    Option.some({ kind: \"colors\", value: \"#abcdef\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts",
+        "src/domains/dcmp/token/index.ts"
+      ],
+      "covers": [
+        "commit-hex",
+        "replace-rgb"
+      ]
+    },
+    {
+      "id": "hex-keeps-alpha",
+      "suite": "hex",
+      "name": "色の hex に打った 6 桁で色が変わり、不透明度は残る",
+      "techniques": [
+        "regression",
+        "boundary"
+      ],
+      "why": "hex の行の書き戻し先が不透明度を捨てる形になっても、不透明度 100% の色ではテストが通ってしまう。不透明度を持つ色で確かめる",
+      "given": "不透明度 50% の色 `veil`(`#3b82f680`)の hex の行",
+      "when": "`#00ff00` を値にする",
+      "then": "値は `#00ff0080`(不透明度の `80` が残る)",
+      "commit": "16b1c8332e3efa439c1b9fac7a782996f3813ba7",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 21,
+        "end": 27,
+        "text": "test(\"色の hex に打った 6 桁で色が変わり、不透明度は残る\", () => {\n  const field = fieldOf(\"colors\", \"veil\", \"hex\");\n\n  expect(TokenControl.valueFrom(field.target, \"#00ff00\")).toEqual(\n    Option.some({ kind: \"colors\", value: \"#00ff0080\" }),\n  );\n});"
+      },
+      "values": {
+        "columns": [
+          "元の色",
+          "打った hex",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`#3b82f680`",
+              "`#00ff00`",
+              "`#00ff0080`"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "commit-hex",
+        "replace-rgb"
+      ]
+    },
+    {
+      "id": "shadow-hex-six-digits",
+      "suite": "hex",
+      "name": "影の色の hex の欄には 6 桁だけが出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "影の色も colors と同じ組み立てを通ることを、影の側から確かめる",
+      "given": "影 `sm`(色 `#0000001a`)",
+      "when": "編集欄を組み立てる",
+      "then": "hex の行は文字の欄で、値は `#000000`",
+      "commit": "70d15973835724253881aa8b5bd9c5a017c2c0e3",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 29,
+        "end": 34,
+        "text": "test(\"影の色の hex の欄には 6 桁だけが出る\", () => {\n  expect(fieldOf(\"shadows\", \"sm\", \"hex\").input).toEqual({\n    kind: \"text\",\n    value: \"#000000\",\n  });\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "build-fields"
+      ]
+    },
+    {
+      "id": "colors-rows",
+      "suite": "normal",
+      "name": "色を選ぶとカラーピッカー・hex・不透明度の入力欄が並ぶ",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "colors の欄の並び(見出し・入力の種類・書き戻し先)を固定する",
+      "given": "色 `primary`",
+      "when": "編集欄を組み立てる",
+      "then": "ピッカー → hex(`#3b82f6` の文字の欄)→ 不透明度の 3 行",
+      "commit": "6c590f1e99954ee2e53c245607696ffd329366dd",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+        "start": 105,
+        "end": 126,
+        "text": "test(\"色を選ぶとカラーピッカー・hex・不透明度の入力欄が並ぶ\", () => {\n  expect(fieldsOf(\"colors\", \"primary\")).toEqual([\n    {\n      name: \"value\",\n      label: \"値\",\n      input: { kind: \"color\", value: \"#3b82f6\" },\n      target: { kind: \"colors\", color: \"#3b82f6\" },\n    },\n    {\n      name: \"hex\",\n      label: \"hex\",\n      input: { kind: \"text\", value: \"#3b82f6\" },\n      target: { kind: \"colors\", color: \"#3b82f6\" },\n    },\n    {\n      name: \"alpha\",\n      label: \"不透明度\",\n      input: { kind: \"percent\", value: 100 },\n      target: { kind: \"colorsAlpha\", color: \"#3b82f6\" },\n    },\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "build-fields"
+      ]
+    },
+    {
+      "id": "shadow-rows",
+      "suite": "normal",
+      "name": "影を選ぶとフィールドごとの入力欄が仕様の順で並び、hex と不透明度が色の直後に入る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "影の欄の並びに hex が入る位置を固定する",
+      "given": "影のトークン",
+      "when": "編集欄を組み立てる",
+      "then": "見出しが `…, 色, hex, 不透明度` の順",
+      "commit": "6c590f1e99954ee2e53c245607696ffd329366dd",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+        "start": 146,
+        "end": 156,
+        "text": "test(\"影を選ぶとフィールドごとの入力欄が仕様の順で並び、hex と不透明度が色の直後に入る\", () => {\n  expect(fieldsOf(\"shadows\", \"sm\").map((field) => field.label)).toEqual([\n    \"横のずれ\",\n    \"縦のずれ\",\n    \"ぼかし\",\n    \"広がり\",\n    \"色\",\n    \"hex\",\n    \"不透明度\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "build-fields"
+      ]
+    },
+    {
+      "id": "type-hex-list",
+      "suite": "token-edit",
+      "name": "色の hex を打って確定すると一覧の値が変わる",
+      "techniques": [
+        "state"
+      ],
+      "why": "欄の確定から一覧の表示までの配線を通しで確かめる",
+      "given": "Tokens の一覧で `primary` を選んだ",
+      "when": "hex の欄を消して `#ff0000` を打ち、Enter",
+      "then": "一覧の行が `primary #ff0000`",
+      "commit": "ab56609bbdcdaeae23781fb80f91dd126d8c3821",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "start": 342,
+        "end": 350,
+        "text": "test(\"色の hex を打って確定すると一覧の値が変わる\", async () => {\n  await renderTokensView();\n  await selectRow(\"primary\");\n\n  await userEvent.clear(field(\"hex\"));\n  await userEvent.type(field(\"hex\"), \"#ff0000{Enter}\");\n\n  expect(row(\"primary #ff0000\")).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx"
+      ],
+      "covers": [
+        "commit-hex",
+        "set-value"
+      ]
+    },
+    {
+      "id": "type-hex-undo",
+      "suite": "token-edit",
+      "name": "色の hex を 2 回打って確定すると Ctrl+Z 1 回で 1 回目の色へ戻る",
+      "techniques": [
+        "state"
+      ],
+      "why": "確定 1 回が undo 1 件であること(続きとしてまとめない・2 件積まない)を守る",
+      "given": "`primary` を選んだ",
+      "when": "`#ff0000` と `#00ff00` を Enter で 2 回確定し、Ctrl+Z",
+      "then": "行が `primary #ff0000` に戻る",
+      "commit": "ab56609bbdcdaeae23781fb80f91dd126d8c3821",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "start": 352,
+        "end": 369,
+        "text": "test(\"色の hex を 2 回打って確定すると Ctrl+Z 1 回で 1 回目の色へ戻る\", async () => {\n  await renderTokensView();\n  await selectRow(\"primary\");\n\n  /*\n   * 確定は Enter で行う。Tab だと次の不透明度の欄へ移り、そこを離れたときに同じ値の確定が\n   * 積まれる（#1379）。\n   */\n  await userEvent.clear(field(\"hex\"));\n  await userEvent.type(field(\"hex\"), \"#ff0000{Enter}\");\n  await userEvent.clear(field(\"hex\"));\n  await userEvent.type(field(\"hex\"), \"#00ff00{Enter}\");\n  expect(row(\"primary #00ff00\")).toBeDefined();\n\n  await userEvent.keyboard(\"{Control>}z{/Control}\");\n\n  expect(row(\"primary #ff0000\")).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx"
+      ],
+      "covers": [
+        "set-value"
+      ]
+    },
+    {
+      "id": "picker-follow",
+      "suite": "token-edit",
+      "name": "ピッカーで色を変えると hex の欄も追随する",
+      "techniques": [
+        "state"
+      ],
+      "why": "hex の欄は下書きを持つので、外の値が変わったときに取り直す配線が要る",
+      "given": "`primary` を選んだ",
+      "when": "ピッカーで `#00ff00` を選ぶ",
+      "then": "hex の欄の値が `#00ff00`",
+      "commit": "ab56609bbdcdaeae23781fb80f91dd126d8c3821",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "start": 371,
+        "end": 378,
+        "text": "test(\"ピッカーで色を変えると hex の欄も追随する\", async () => {\n  await renderTokensView();\n  await selectRow(\"primary\");\n\n  fireEvent.change(field(\"値\"), { target: { value: \"#00ff00\" } });\n\n  expect(field(\"hex\")).toHaveProperty(\"value\", \"#00ff00\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx"
+      ],
+      "covers": [
+        "build-fields"
+      ]
+    },
+    {
+      "id": "no-readonly-hex",
+      "suite": "token-edit",
+      "name": "色の hex は打てる欄にだけ出て、右ペインに文字として重ねて出ない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "読み取り専用の hex が戻ると同じ値が 2 回出る。一覧に同じ綴りがあるので右ペインに絞って見る",
+      "given": "`primary` を選んだ",
+      "when": "右ペインを見る",
+      "then": "hex の欄の値は `#3b82f6` で、右ペインに文字の `#3b82f6` は無い",
+      "commit": "ab56609bbdcdaeae23781fb80f91dd126d8c3821",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "start": 380,
+        "end": 387,
+        "text": "test(\"色の hex は打てる欄にだけ出て、右ペインに文字として重ねて出ない\", async () => {\n  await renderTokensView();\n  await selectRow(\"primary\");\n\n  /* 一覧の行にも同じ文字があるので、右ペインに絞って見る。 */\n  expect(field(\"hex\")).toHaveProperty(\"value\", \"#3b82f6\");\n  expect(within(propertyPane()).queryByText(\"#3b82f6\")).toBeNull();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx"
+      ]
+    },
+    {
+      "id": "shadow-type-hex",
+      "suite": "token-edit",
+      "name": "影の色の hex を打って確定すると一覧の影の値が変わり、不透明度は残る",
+      "techniques": [
+        "state",
+        "boundary"
+      ],
+      "why": "影の側は、不透明度を持つ色で書き戻しを通しで確かめる",
+      "given": "影 `sm`(色 `#0000001a`)を選んだ",
+      "when": "hex の欄に `#ff0000` を打って Enter",
+      "then": "一覧の値が `0px 1px 3px 0px #ff00001a`",
+      "commit": "ab56609bbdcdaeae23781fb80f91dd126d8c3821",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "start": 389,
+        "end": 398,
+        "text": "test(\"影の色の hex を打って確定すると一覧の影の値が変わり、不透明度は残る\", async () => {\n  await renderTokensView();\n  await selectToken(\"shadows\", \"sm\");\n\n  await userEvent.clear(field(\"hex\"));\n  await userEvent.type(field(\"hex\"), \"#ff0000{Enter}\");\n\n  expect(\n    within(leftPane()).getByText(\"0px 1px 3px 0px #ff00001a\"),\n  ).toBeDefined();"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+        "src/domains/dcmp/token/index.ts"
+      ],
+      "covers": [
+        "commit-hex",
+        "replace-rgb",
+        "set-value"
+      ]
+    },
+    {
+      "id": "blur-no-op",
+      "suite": "token-edit",
+      "name": "値を変えずに欄から離れても undo の履歴は増えない",
+      "techniques": [
+        "idempotence"
+      ],
+      "why": "今は離れるだけで変化の無い 1 件が積まれる(この PR より前からある挙動)。#1379 で直す",
+      "given": "色を選んだ",
+      "when": "hex の欄にフォーカスして、打たずに離れる",
+      "then": "Ctrl+Z で前の編集が戻る",
+      "todo": true,
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "Color のエディタで hex を打って色を変えられるようになった",
+    "lead": "トークンパネルで色や影を選んだとき、右ペインの hex を打ち直せます。不透明度はそのまま残ります。",
+    "changed": {
+      "before": [
+        {
+          "text": "色を選ぶと、ピッカーの右に hex が文字で出るだけで、打ち直せなかった"
+        },
+        {
+          "text": "影の色も同じく、hex は文字で出るだけだった"
+        }
+      ],
+      "after": [
+        {
+          "text": "色を選ぶと、ピッカーの下に hex の欄が出て、打って Enter か欄を離れると色が変わる",
+          "message": "commit-hex"
+        },
+        {
+          "text": "影の色にも同じ hex の欄が出る",
+          "message": "build-fields"
+        },
+        {
+          "text": "打った 6 桁だけが変わり、不透明度は元のまま残る",
+          "message": "replace-rgb"
+        }
+      ],
+      "text": "グラデーションの各色の行で既に打てた hex の欄と、同じ打ち方になりました。",
+      "specs": [
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「編集操作の一覧」の tokens 編集の行",
+          "text": "hex と不透明度の欄の undo の単位(確定 1 回で 1 件。色・影・グラデーションの各色で共通)を書き足した",
+          "shas": [
+            "2b9fd040f3259b9ee5624ed5387f1554145ed077",
+            "7be9dae9bb6322d8a2e6295b6639b406ab2391eb"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「Tokens の gradients」の undo の単位",
+          "text": "hex・不透明度の欄とピッカーの色は、tokens 編集の行を見るように書き換えた(中身は同じ)",
+          "shas": [
+            "7be9dae9bb6322d8a2e6295b6639b406ab2391eb"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 611,
+          "text": "グラデーションの各色の hex を打てる欄にしたときに、色のエディタとの扱いの違いが見つかった"
+        },
+        {
+          "issue": 1376,
+          "text": "UI 案の箱の形と、# 無し・短縮形を受け付けるかは、こちらで決める"
+        },
+        {
+          "issue": 1379,
+          "text": "値を変えずに欄から離れても undo の履歴が 1 件増える件は、こちらで直す"
+        }
+      ]
+    },
+    "tables": [
+      {
+        "label": "hex の欄に打った文字と結果",
+        "gist": "色が変わるのは # 付きの 6 桁だけ。それ以外は値を変えず、打った文字が欄に残る。",
+        "rowHeads": [
+          {
+            "id": "six",
+            "label": "# 付きの 6 桁",
+            "note": "大文字も可"
+          },
+          {
+            "id": "bare",
+            "label": "# の無い 6 桁"
+          },
+          {
+            "id": "short",
+            "label": "短縮形",
+            "note": "例: #fff"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "opaque",
+            "label": "不透明な色"
+          },
+          {
+            "id": "translucent",
+            "label": "半透明の色"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "six",
+            "columnHead": "opaque",
+            "result": "色が変わる(小文字で保存)",
+            "was": "打てない",
+            "tests": [
+              "type-hex-list",
+              "hex-lowercase"
+            ]
+          },
+          {
+            "rowHead": "six",
+            "columnHead": "translucent",
+            "result": "6 桁だけが変わり、不透明度は残る",
+            "was": "打てない",
+            "tests": [
+              "hex-keeps-alpha",
+              "shadow-type-hex"
+            ]
+          },
+          {
+            "rowHead": "bare",
+            "columnHead": "opaque",
+            "result": "値は変わらない",
+            "was": "打てない"
+          },
+          {
+            "rowHead": "bare",
+            "columnHead": "translucent",
+            "result": "値は変わらない",
+            "was": "打てない"
+          },
+          {
+            "rowHead": "short",
+            "columnHead": "opaque",
+            "result": "値は変わらない",
+            "was": "打てない"
+          },
+          {
+            "rowHead": "short",
+            "columnHead": "translucent",
+            "result": "値は変わらない",
+            "was": "打てない"
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "ピッカーで色を選んだときの undo の単位(開いてから閉じるまでで 1 回)は変わらない"
+      },
+      {
+        "text": "グラデーションの各色の行の並びと打ち方は変わらない"
+      },
+      {
+        "text": "ピッカーで色を変えると、hex の欄も同じ色を出す",
+        "tests": [
+          "picker-follow"
+        ]
+      },
+      {
+        "text": "hex を 2 回打って確定すると、Ctrl+Z 1 回で 1 回目の色へ戻る",
+        "tests": [
+          "type-hex-undo"
+        ]
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "react-key",
+      "category": "react · 描画",
+      "label": "`key` による作り直し",
+      "gist": "React の[[部品|component]]に `key` を付けると、値が変わったときにその部品を捨てて新しく作り直す。下書きを持つ欄が、外で値が変わったときに下書きを取り直すために使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "React は描き直すとき、前と同じ位置・同じ種類の部品なら中の[[状態|state]]を引き継ぐ。`key` が前と違えば別の部品とみなし、状態を捨てて最初から作る。hex の欄は打っている途中の文字を状態として持つので、ピッカーで色が変わったときは `key` に今の値を入れて作り直させ、新しい値を下書きにする。"
+        },
+        {
+          "kind": "caution",
+          "text": "確定した文字列が読めず値が変わらなかったときは `key` も変わらないので、打った文字はそのまま欄に残る(打ち直せる)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "text": "文字の欄を描く枝で、現在値を `key` に入れている"
+        }
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "color-rows",
+      "category": "tokens · 編集欄",
+      "label": "色の行の組",
+      "gist": "1 つの色に並べる行(ピッカー・hex・不透明度)の見出しと書き戻し先の組。6 桁の書き戻し先は 1 つだけ持ち、ピッカーと hex の行へ配る。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "type ColorRows = Readonly<{ colorTarget: TokenFieldTarget; rgb: TokenControlCaption; hex: TokenControlCaption; alpha: TokenControlRow }>"
+        },
+        {
+          "kind": "text",
+          "text": "colors・影の色・グラデーションの各色の 3 か所が、この組を 1 つの組み立て関数へ渡す。色が hex として読めないときは、6 桁の書き戻し先へ戻す文字の欄 1 行だけになる。"
+        },
+        {
+          "kind": "rule",
+          "text": "呼び出し側は書き戻し先を 1 回しか書けない。組み立て関数の中で hex の行の書き戻し先を組み直すと型では落ちないので、不透明度を持つ色の単体テストが守る。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は行ごとに書き戻し先を持ち、hex の行は任意で、グラデーションの各色だけが持っていた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "lineRange": {
+            "start": 122,
+            "end": 138
+          },
+          "text": "組の型",
+          "shas": [
+            "90a531b98e694adb1052208041525f82de52ce84"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "lineRange": {
+            "start": 354,
+            "end": 385
+          },
+          "text": "組から行を組み立てる関数",
+          "shas": [
+            "6c590f1e99954ee2e53c245607696ffd329366dd",
+            "90a531b98e694adb1052208041525f82de52ce84"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "react-key"
+      ],
+      "tests": [
+        "colors-rows",
+        "hex-keeps-alpha"
+      ],
+      "flows": [
+        "select-color"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "component",
+      "label": "部品",
+      "text": "画面の一部を描く React の単位。関数として書き、受け取った値から描くものを返す。"
+    },
+    {
+      "id": "state",
+      "label": "状態",
+      "text": "部品が描き直しをまたいで覚えておく値。打っている途中の文字などを持つ。"
+    }
+  ]
+}
