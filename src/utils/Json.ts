@@ -1,3 +1,4 @@
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { RecordEx } from "@/utils/RecordEx";
 import { Result } from "@/utils/Result";
@@ -122,23 +123,6 @@ function isJsonArray(value: JsonValue): value is readonly JsonValue[] {
 }
 
 /**
- * 2 つの配列が、同じ並びで同じ要素を持つか。
- *
- * @param array 比べる配列
- * @param other 比べる配列
- * @returns 長さが同じで、同じ位置の要素がすべて `Json.equals` で等しければ true
- */
-function arrayEquals(
-  array: readonly JsonValue[],
-  other: readonly JsonValue[],
-): boolean {
-  return (
-    array.length === other.length &&
-    array.every((item, index) => Json.equals(item, other[index]))
-  );
-}
-
-/**
  * 2 つのオブジェクトが、同じキーに同じ値を持つか。キーの並びは見ない。
  *
  * @param object 比べるオブジェクト
@@ -148,11 +132,13 @@ function arrayEquals(
  */
 function objectEquals(object: JsonObject, other: JsonObject): boolean {
   const keys = Object.keys(object);
+
+  // `other[key]` は自身に無いキーでも prototype の値を返す（`__proto__` なら `Object.prototype`）
+  const hasSameValueAt = (key: string): boolean =>
+    RecordEx.has(other, key) && Json.equals(object[key], other[key]);
+
   return (
-    keys.length === Object.keys(other).length &&
-    keys.every(
-      (key) => RecordEx.has(other, key) && Json.equals(object[key], other[key]),
-    )
+    keys.length === Object.keys(other).length && keys.every(hasSameValueAt)
   );
 }
 
@@ -608,14 +594,17 @@ export const Json = {
    */
   equals(value: JsonValue, other: JsonValue): boolean {
     if (isJsonArray(value)) {
-      return isJsonArray(other) && arrayEquals(value, other);
+      return isJsonArray(other) && ArrayEx.equals(value, other, Json.equals);
     }
+
     if (isJsonArray(other)) {
       return false;
     }
+
     if (typeof value === "object") {
       return typeof other === "object" && objectEquals(value, other);
     }
+
     return value === other;
   },
 
