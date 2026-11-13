@@ -339,6 +339,65 @@ test("色のトークンのピッカーを開いて 2 回動かしても Ctrl+Z 
   expect(field("値")).toHaveProperty("value", "#3b82f6");
 });
 
+test("色の hex を打って確定すると一覧の値が変わる", async () => {
+  await renderTokensView();
+  await selectRow("primary");
+
+  await userEvent.clear(field("hex"));
+  await userEvent.type(field("hex"), "#ff0000{Enter}");
+
+  expect(row("primary #ff0000")).toBeDefined();
+});
+
+test("色の hex を 2 回打って確定すると Ctrl+Z 1 回で 1 回目の色へ戻る", async () => {
+  await renderTokensView();
+  await selectRow("primary");
+
+  /*
+   * 確定は Enter で行う。Tab だと次の不透明度の欄へ移り、そこを離れたときに同じ値の確定が
+   * 積まれる（#1379）。
+   */
+  await userEvent.clear(field("hex"));
+  await userEvent.type(field("hex"), "#ff0000{Enter}");
+  await userEvent.clear(field("hex"));
+  await userEvent.type(field("hex"), "#00ff00{Enter}");
+  expect(row("primary #00ff00")).toBeDefined();
+
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  expect(row("primary #ff0000")).toBeDefined();
+});
+
+test("ピッカーで色を変えると hex の欄も追随する", async () => {
+  await renderTokensView();
+  await selectRow("primary");
+
+  fireEvent.change(field("値"), { target: { value: "#00ff00" } });
+
+  expect(field("hex")).toHaveProperty("value", "#00ff00");
+});
+
+test("色の hex は打てる欄にだけ出て、右ペインに文字として重ねて出ない", async () => {
+  await renderTokensView();
+  await selectRow("primary");
+
+  /* 一覧の行にも同じ文字があるので、右ペインに絞って見る。 */
+  expect(field("hex")).toHaveProperty("value", "#3b82f6");
+  expect(within(propertyPane()).queryByText("#3b82f6")).toBeNull();
+});
+
+test("影の色の hex を打って確定すると一覧の影の値が変わり、不透明度は残る", async () => {
+  await renderTokensView();
+  await selectToken("shadows", "sm");
+
+  await userEvent.clear(field("hex"));
+  await userEvent.type(field("hex"), "#ff0000{Enter}");
+
+  expect(
+    within(leftPane()).getByText("0px 1px 3px 0px #ff00001a"),
+  ).toBeDefined();
+});
+
 test("トークンを選んだあとでも Layers へ戻せる", async () => {
   await renderTokensView();
   await selectRow("primary");
