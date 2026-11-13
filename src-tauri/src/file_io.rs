@@ -7,6 +7,12 @@
 //!
 //! ファイル変更の監視（`notify` の watcher による購読）はここを通さない。監視するパスの解決には `canonicalize` を使う。
 
+#![expect(
+    clippy::disallowed_methods,
+    clippy::disallowed_types,
+    reason = "clippy.toml の禁止の受け口"
+)]
+
 mod atomic_write;
 
 use std::fs;
