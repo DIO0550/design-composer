@@ -1,0 +1,402 @@
+{
+  "version": 1,
+  "pr": 1386,
+  "sha": "b682e313144758dd616a74b9d08b4ea47ace1c5b",
+  "issue": 1341,
+  "overview": {
+    "title": "使い方の出力を共通の lib へ寄せ、lib を読み込めなければ 127 で止める",
+    "lead": "`upsert-sticky-comment.sh` と `pr-explain-pages.sh` が字句まで同じ形で持っていた `usage()` を `lib/usage.sh` の 1 か所にした。lib を読み込めないときは、`gh` や gh-pages に触る前に終了コード 127 で止まる。",
+    "before": [
+      {
+        "text": "`usage()` の定義が 2 本のスクリプトに字句まで同じ形で書かれていた"
+      },
+      {
+        "text": "lib を読む形ではないので、lib の欠落という失敗は起こりえなかった"
+      }
+    ],
+    "after": [
+      {
+        "text": "`usage()` の定義は `lib/usage.sh` の 1 か所だけで、2 本は source して使う",
+        "message": "source-usage"
+      },
+      {
+        "text": "使い方の誤りでは、これまでどおり各スクリプト冒頭の使い方を標準エラーへ出して exit 2 で終わる",
+        "message": "call-usage"
+      },
+      {
+        "text": "lib を読み込めなければ、引数が正しくても `gh` や gh-pages の push へ進まず 127 で終わる"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "lib を読み込めないときの止め方",
+        "text": "どちらのスクリプトも `set -uo pipefail`(`-e` なし)なので、`.` の失敗では止まらない。guard が無いと pr-explain-pages は知らないモードでも push して exit 0 になった。127 を選んだ理由(1 は受け流される・2 は使い方の誤りと混ざる・3 は pr-explain スキルが待ってやり直す)が妥当か見てほしい",
+        "go": {
+          "kind": "message",
+          "id": "source-usage"
+        }
+      },
+      {
+        "title": "やり直しの骨組みは寄せていない",
+        "text": "4 本のやり直しは寄せず、理由は #1341 の却下案に残した。残る違いは最後の回の後に待つかで、揃えると所要時間が変わる",
+        "go": {
+          "kind": "layer",
+          "layer": "ハーネス"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "CI とセッションが走らせるシェルスクリプトと、その判定表。この PR は共通の lib を 1 本足し、2 本がそれを読む"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".github/scripts/lib/usage.sh",
+      "name": "使い方の出力",
+      "role": "呼んだスクリプトの冒頭の「使い方:」の節を標準エラーへ出し、exit 2 で終わる",
+      "change": "新設"
+    },
+    {
+      "path": ".github/scripts/upsert-sticky-comment.sh",
+      "name": "固定コメントの貼り替え",
+      "role": "PR に目印で始まるコメントを 1 件だけ置く",
+      "change": "`usage()` の定義を lib の読み込みに置き換え、127 の意味を doc に足した"
+    },
+    {
+      "path": ".github/scripts/pr-explain-pages.sh",
+      "name": "解説ページの置き場",
+      "role": "gh-pages の PR 解説フォルダを書き換える",
+      "change": "`usage()` の定義を lib の読み込みに置き換え、127 の意味を doc に足した"
+    },
+    {
+      "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "name": "固定コメントの判定表",
+      "role": "差し替えた `gh` の下で貼り替えを走らせて結果を見る",
+      "change": "使い方の出力と lib 欠落の行を足し、標準エラーを置き場に残すようにした"
+    },
+    {
+      "path": ".github/scripts/pr-explain-pages-cases.sh",
+      "name": "解説ページの判定表",
+      "role": "一時リポジトリへ写したスクリプトで gh-pages の書き換えを見る",
+      "change": "写すファイルに lib を足し、lib 欠落の行を 2 件足した"
+    }
+  ],
+  "messages": [
+    {
+      "id": "source-usage",
+      "from": ".github/scripts/upsert-sticky-comment.sh",
+      "to": ".github/scripts/lib/usage.sh",
+      "kind": "cmd",
+      "name": "lib を読み込む",
+      "code": ". \"$(dirname \"$0\")/lib/usage.sh\" || exit 127",
+      "via": "exec",
+      "returns": "読み込めなければスクリプトが 127 で終わる",
+      "status": "added"
+    },
+    {
+      "id": "source-usage-pages",
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/lib/usage.sh",
+      "kind": "cmd",
+      "name": "lib を読み込む",
+      "code": ". \"$scripts_dir/lib/usage.sh\" || exit 127",
+      "via": "exec",
+      "returns": "読み込めなければスクリプトが 127 で終わる",
+      "status": "added"
+    },
+    {
+      "id": "call-usage",
+      "from": ".github/scripts/upsert-sticky-comment.sh",
+      "to": ".github/scripts/lib/usage.sh",
+      "kind": "cmd",
+      "name": "使い方を出して終わる",
+      "code": "usage",
+      "via": "call",
+      "returns": "標準エラーへ使い方を出し exit 2",
+      "status": "changed"
+    },
+    {
+      "id": "run-upsert",
+      "from": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "kind": "cmd",
+      "name": "差し替えた gh の下で走らせる",
+      "code": "run_upsert \"$dir\" …",
+      "via": "exec",
+      "returns": "exit=<終了コード> calls=<呼ばれ方>(標準エラーは置き場の stderr)",
+      "status": "changed"
+    },
+    {
+      "id": "run-pages",
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "kind": "cmd",
+      "name": "lib の無い写しで走らせる",
+      "code": "bash \"$work/without-lib/pr-explain-pages.sh\" …",
+      "via": "exec",
+      "returns": "終了コード",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "flow-usage-error",
+      "label": "使い方の誤り",
+      "steps": [
+        "source-usage",
+        "call-usage"
+      ]
+    },
+    {
+      "id": "flow-missing-lib",
+      "label": "lib を読み込めない",
+      "steps": [
+        "run-upsert",
+        "source-usage",
+        "run-pages",
+        "source-usage-pages"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "8c7d781a9c7f957f7ebc2c4f63254359dac6452a",
+      "phase": "prep",
+      "role": "`usage()` を lib に置く(まだ誰も読まない)",
+      "why": "読む側を 1 本ずつ切り替えられるよう、先に置き場だけを作った。本体は 2 本と字句を変えていない",
+      "review": [
+        "lib の `usage()` が、移す前の 2 本の定義と字句まで同じか"
+      ]
+    },
+    {
+      "sha": "35dc035ffce77b46cb87e485780a64e3c2217c6c",
+      "phase": "core",
+      "role": "固定コメントの貼り替えが lib を読む",
+      "why": "`-e` が無いので、guard が無いと lib の欠落で `gh` まで進み、受け流される exit 1 に落ちうる(計画の検証で再現)",
+      "flows": [
+        "flow-missing-lib"
+      ],
+      "review": [
+        "127 が呼び出し側(frontend.yml)で赤になるか"
+      ],
+      "before": [
+        {
+          "text": "`usage()` をスクリプトの中で定義していた"
+        }
+      ],
+      "after": [
+        {
+          "text": "lib を読み、読み込めなければ 127 で終わる",
+          "message": "source-usage"
+        }
+      ]
+    },
+    {
+      "sha": "d09c7950929f357e5a275400985715d21dbe1bfb",
+      "phase": "core",
+      "role": "解説ページの置き場が lib を読み、判定表が lib を写す",
+      "why": "判定表は一時リポジトリへスクリプトを写すので、lib も写さないと全モードが 127 になる。コミット単体で判定表が通るよう同じコミットに入れた",
+      "flows": [
+        "flow-missing-lib"
+      ],
+      "review": [
+        "127 が pr-explain スキルの「3 なら待ってやり直す」とぶつからないか"
+      ]
+    },
+    {
+      "sha": "4e965cc03459c446dd3a9f8a9c143cd44dfa028a",
+      "phase": "core",
+      "role": "解説ページの置き場の lib 欠落を判定表で守る",
+      "why": "guard 無しでは知らないモードでも push して exit 0 になった(試作で実測)"
+    },
+    {
+      "sha": "28bef8280bb8c9b067ecf4c560ad2d235a358c7c",
+      "phase": "core",
+      "role": "固定コメントの使い方の出力と lib 欠落を判定表で守る",
+      "why": "既存の使い方の誤り 13 行は終了コードしか見ず、lib が自分自身を読む壊れ方でも緑のままだった"
+    },
+    {
+      "sha": "3152ba88a55d7f43540a55997e385d6e1e92805d",
+      "phase": "revise",
+      "role": "127 の説明をスクリプトが返す場合に絞る",
+      "why": "comment-reviewer: スクリプト自体が無いときはスクリプトが走らないので「gh を呼ぶ前に返す」とは書けない。over-guard-reviewer: 構文エラーでも 127 になる",
+      "review": [
+        "「読み込めない」が欠落と構文エラーの両方を覆っているか"
+      ]
+    },
+    {
+      "sha": "faa52d3d304108c518596eb4e6f73a62dabbc3e3",
+      "phase": "revise",
+      "role": "使い方の行も差し替えた `gh` の下で走らせる",
+      "why": "harness-reviewer: この行だけが差し替えた `gh` の外で走り、usage が終わらない退行で本物の `gh` を叩きうる",
+      "flows": [
+        "flow-usage-error"
+      ],
+      "review": [
+        "使い方を出しても終わらない退行で、この行が落ちるか"
+      ]
+    },
+    {
+      "sha": "b682e313144758dd616a74b9d08b4ea47ace1c5b",
+      "phase": "revise",
+      "role": "lib 欠落を正しい引数(remove)でも守る",
+      "why": "test-reviewer: guard を「代わりの usage を定義して先へ進む」形に壊すと、知らないモードだけのケースでは落ちなかった"
+    }
+  ],
+  "suites": [
+    {
+      "id": "upsert-cases",
+      "label": "固定コメントの判定表",
+      "file": ".github/scripts/upsert-sticky-comment-cases.sh"
+    },
+    {
+      "id": "pages-cases",
+      "label": "解説ページの判定表",
+      "file": ".github/scripts/pr-explain-pages-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "t-usage-shown",
+      "suite": "upsert-cases",
+      "name": "使い方の誤りでは、冒頭の使い方を標準エラーへ出し、gh を呼ばずに終わる",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "lib の `usage` が source した側の `$0` を読み、出したあとに終わること",
+      "given": "差し替えた `gh` を前に置いた置き場",
+      "when": "未知のオプション `--unknown x` を渡す",
+      "then": "標準エラーに `upsert-sticky-comment.sh --marker '<!-- 名前 -->'` を含み、`exit=2 calls=`",
+      "commit": "faa52d3d304108c518596eb4e6f73a62dabbc3e3",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 248,
+        "end": 255,
+        "text": "dir=\"$(new_case \"$no_comments\")\"\nusage_run=\"$(run_upsert \"$dir\" \"${post[@]}\" --unknown x)\"\nusage_outcome=missing\nusage_shown=false\n[[ \"$(cat \"$dir/stderr\")\" == *\"upsert-sticky-comment.sh --marker '<!-- 名前 -->'\"* ]] && usage_shown=true\n# 使い方を出したあとに終わらず gh まで進む退行は、標準エラーだけ見ても通ってしまう\n[ \"$usage_shown\" = true ] && [ \"$usage_run\" = 'exit=2 calls=' ] && usage_outcome=shown\nreport shown \"$usage_outcome\" '使い方の誤りでは、冒頭の使い方を標準エラーへ出し、gh を呼ばずに終わる'"
+      },
+      "targets": [
+        ".github/scripts/lib/usage.sh"
+      ],
+      "covers": [
+        "call-usage"
+      ]
+    },
+    {
+      "id": "t-upsert-nolib",
+      "suite": "upsert-cases",
+      "name": "読み込む lib が無ければ、引数が正しくても gh を呼ばずに受け流されない失敗で終わる",
+      "techniques": [
+        "error"
+      ],
+      "why": "`|| exit 127` が無いと `gh` まで進んで exit 0 になる",
+      "given": "スクリプトだけを lib の無いディレクトリへ写した",
+      "when": "正しい引数で走らせる",
+      "then": "`exit=127 calls=`",
+      "commit": "28bef8280bb8c9b067ecf4c560ad2d235a358c7c",
+      "excerpt": {
+        "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+        "start": 259,
+        "end": 263,
+        "text": "mkdir -p \"$work/without-lib\"\ncp \"$script\" \"$work/without-lib/\"\ndir=\"$(new_case \"$no_comments\")\"\nreport 'exit=127 calls=' \"$(script=\"$work/without-lib/upsert-sticky-comment.sh\" run_upsert \"$dir\" \"${post[@]}\")\" \\\n  '読み込む lib が無ければ、引数が正しくても gh を呼ばずに受け流されない失敗で終わる'"
+      },
+      "targets": [
+        ".github/scripts/upsert-sticky-comment.sh"
+      ],
+      "covers": [
+        "source-usage",
+        "run-upsert"
+      ]
+    },
+    {
+      "id": "t-pages-nolib-unknown",
+      "suite": "pages-cases",
+      "name": "読み込む lib が無ければ、知らないモードでも引数の誤りへ進まず 127 で何も push しない",
+      "techniques": [
+        "error"
+      ],
+      "why": "guard が無いと、知らないモードでも引数の検査を素通りして push する",
+      "given": "lib の無い写し",
+      "when": "`put-page 1 …` を走らせる",
+      "then": "終了コード 127、gh-pages の tip が変わらない",
+      "commit": "4e965cc03459c446dd3a9f8a9c143cd44dfa028a",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 180,
+        "end": 185,
+        "text": "mkdir -p \"$work/without-lib\"\ncp \"$pages\" \"$work/without-lib/\"\nfresh_origin seeded\nbefore=\"$(tip)\"\nbash \"$work/without-lib/pr-explain-pages.sh\" put-page 1 index \"$work/explain.json\" >/dev/null 2>&1; status=$?\nexpect \"読み込む lib が無ければ、知らないモードでも引数の誤りへ進まず 127 で何も push しない\" '[ \"$status\" -eq 127 ] && [ \"$(tip)\" = \"$before\" ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "source-usage-pages",
+        "run-pages"
+      ]
+    },
+    {
+      "id": "t-pages-nolib-remove",
+      "suite": "pages-cases",
+      "name": "読み込む lib が無ければ、消すフォルダのある remove でも 127 で何も push しない",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "guard を「代わりの usage を定義して先へ進む」形に壊すと、知らないモードのケースだけでは落ちない",
+      "given": "gh-pages に `pr-explain/pr-1/` がある、lib の無い写し",
+      "when": "`remove 1` を走らせる",
+      "then": "終了コード 127、gh-pages の tip が変わらない",
+      "commit": "b682e313144758dd616a74b9d08b4ea47ace1c5b",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 187,
+        "end": 190,
+        "text": "fresh_origin seeded\nbefore=\"$(tip)\"\nbash \"$work/without-lib/pr-explain-pages.sh\" remove 1 >/dev/null 2>&1; status=$?\nexpect \"読み込む lib が無ければ、消すフォルダのある remove でも 127 で何も push しない\" '[ \"$status\" -eq 127 ] && [ \"$(tip)\" = \"$before\" ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "source-usage-pages"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "使い方の出し方は変わらず、部品が欠けたときに何もせず止まる",
+    "lead": "固定コメントの貼り替えと解説ページの置き場は、引数を間違えたときに出す使い方と終わり方が変わらない。共通の部品が欠けたときは、コメントにも解説ページにも触れずに、赤になる失敗で終わるようになった。",
+    "changed": {
+      "before": [],
+      "after": [
+        {
+          "text": "共通の部品を読み込めないと、コメントにも解説ページにも触れずに、受け流されない失敗(127)で終わる",
+          "message": "source-usage"
+        }
+      ],
+      "text": "部品を読み込めないときの扱いはこの変更で初めて生じた。止めないと、解説ページの置き場は知らない指定でも書き換えて成功で終わっていた",
+      "relatedIssues": [
+        {
+          "issue": 1377,
+          "text": "問い合わせのやり直しを共通にする案を候補として申し送った"
+        },
+        {
+          "issue": 1385,
+          "text": "固定コメントの待ち時間の説明のずれを分けた"
+        }
+      ]
+    },
+    "kept": [
+      {
+        "text": "引数を間違えたときは、これまでどおり各スクリプト冒頭の使い方を出して使い方の誤りで終わる",
+        "tests": [
+          "t-usage-shown"
+        ]
+      },
+      {
+        "text": "失敗したときのやり直しの回数・待ち時間・文面は変わらない"
+      }
+    ]
+  }
+}
