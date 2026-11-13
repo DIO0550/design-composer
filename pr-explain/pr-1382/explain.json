@@ -839,7 +839,7 @@
           "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
           "lineRange": {
             "start": 354,
-            "end": 385
+            "end": 388
           },
           "text": "組から行を組み立てる関数",
           "shas": [
