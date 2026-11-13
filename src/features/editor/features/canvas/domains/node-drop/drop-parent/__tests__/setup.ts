@@ -1,3 +1,4 @@
+import { nestedLockPanel } from "@/domains/__tests__/nested-locks";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import type { DraggedNode } from "@/features/editor/features/canvas/domains/node-drop";
 
@@ -84,6 +85,38 @@ export function setupFreeArtboardDocument(): DesignDocument {
         height: 812,
         props: { layout: "free" },
         children: [{ name: "moved", type: "Text" }],
+      },
+    ],
+  });
+}
+
+/**
+ * `home` の下に、`nestedLockPanel` の `panel`（子を縦に並べる）、子を並べないロックした器
+ * `free-lock`、運ぶ Text の `moved` が並ぶドキュメント。
+ *
+ * @returns その並びを持つドキュメント
+ */
+export function setupLockedDocument(): DesignDocument {
+  return DesignDocument.create({
+    artboards: [
+      {
+        name: "home",
+        width: 375,
+        height: 812,
+        children: [
+          {
+            ...nestedLockPanel(),
+            // 子を縦に並べる器。free にすると InsertionParent が外すので、ロックで外れたのか見分けられない
+            props: { layout: "column" },
+          },
+          {
+            name: "free-lock",
+            type: "Box",
+            props: { layout: "free", locking: "locked" },
+            children: [],
+          },
+          { name: "moved", type: "Text" },
+        ],
       },
     ],
   });

@@ -1,12 +1,21 @@
-//! テキストファイルの読み書き。
+//! ファイルシステムへの読み書き。本番コードで `std::fs` を呼ぶのはこのモジュールだけにする。
 //!
-//! 中身が何であるかは知らない。どこへ置くか・何を書くかは呼び出し側が決める。
+//! 口は 2 系統ある。`read_bytes` / `write_atomic` / `canonicalize` は `io::Result` をそのまま返し、
+//! 失敗の種別への詰め替えは呼び出し側が行う。`read_optional_text` / `write_text` は失敗を
+//! `FileIoError` にまとめる。後者は前者と意味が違う（無いことを `None` で表す・UTF-8 として
+//! 解釈する・親ディレクトリを作る）ので残している。
+//!
+//! ファイル変更の監視（`notify` の watcher による購読）はここを通さない。監視するパスの解決には `canonicalize` を使う。
+
+mod atomic_write;
 
 use std::fs;
 use std::io;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use serde::Serialize;
+
+pub use atomic_write::write_atomic;
 
 // テストは対象と同じ階層に `{対象のファイル名}_{カテゴリ}_test.rs` で置く。
 #[cfg(test)]
@@ -44,11 +53,23 @@ impl FileIoError {
     }
 }
 
+/// 中身をバイト列として読む。
+pub fn read_bytes(path: &Path) -> io::Result<Vec<u8>> {
+    fs::read(path)
+}
+
+/// symlink と `.` / `..` を解決した絶対パスを、OS が返した綴りのまま返す（Windows の `\\?\` 接頭辞も残す）。
+///
+/// @returns 解決した絶対パス。パスが存在しないとき、途中の symlink を解決できないときは `Err`。
+pub fn canonicalize(path: &Path) -> io::Result<PathBuf> {
+    fs::canonicalize(path)
+}
+
 /// テキストとして読む。
 ///
 /// まだ置かれていないことは失敗ではないので `None` で表す。
 pub fn read_optional_text(path: &Path) -> Result<Option<String>, FileIoError> {
-    let bytes = match fs::read(path) {
+    let bytes = match read_bytes(path) {
         Ok(bytes) => bytes,
         Err(error) if error.kind() == io::ErrorKind::NotFound => return Ok(None),
         Err(error) => return Err(FileIoError::at(path, &error.to_string())),
@@ -60,7 +81,7 @@ pub fn read_optional_text(path: &Path) -> Result<Option<String>, FileIoError> {
 
 /// 中身を置き換える。親ディレクトリが無ければ作る。
 ///
-/// 一時ファイル + rename（`document::io`）にはしない。書き込みの途中で落ちて壊れても
+/// 一時ファイル + rename（`write_atomic`）にはしない。書き込みの途中で落ちて壊れても
 /// 作り直せるものを置く先で、外部の読み手を待たせる相手もいない。
 pub fn write_text(path: &Path, content: &str) -> Result<(), FileIoError> {
     let parent = path

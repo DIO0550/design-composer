@@ -40,7 +40,7 @@ type ParentSearchContext = Readonly<{
  * 内側から外へ並べた候補のうち、運んでいるものを受け入れられる最も内側のものを選ぶ。
  *
  * どこまでを受け入れるかは `resolve` が答える（座標の置き直しと並びへの挿入で条件が違う）。
- * 走査そのもの（運んでいるものが占めている名前を飛ばし、外側を見に行く）は共通。
+ * 走査そのもの（外す候補を飛ばし、外側を見に行く。外す条件は `DropParent.innermost`）は共通。
  *
  * @param search 引き先のドキュメント・運んでいるもの・内側から根へ向かう順の候補
  * @param resolve 候補を親として読む手続き
@@ -60,7 +60,9 @@ function innermostAccepted<T>(
       continue;
     }
     const parent = resolve(search.document, name);
-    if (Option.isSome(parent)) {
+    const isAccepted =
+      Option.isSome(parent) && !DesignDocument.isLocked(search.document, name);
+    if (isAccepted) {
       return parent;
     }
   }
@@ -107,12 +109,13 @@ function insertionParentOf(
 export const DropParent = {
   /**
    * 内側から外へ並べた候補のうち、運んでいるものを受け入れられる最も内側のものを選ぶ。
-   * 受け入れられないのは次の 3 つで、いずれも候補から外して外側を見に行く。
+   * 受け入れられないのは次の 4 つで、いずれも候補から外して外側を見に行く。
    *
    * - ドキュメントに無い名前（部品インスタンスの中身は定義側のノード名で描かれる）
    * - 子を持てないノード（参照ノードと、スキーマが子を認めていないプリミティブ）
    * - 運んでいるものが占めている名前（入れるとツリーが壊れる。占めている名前は
    *   `DraggedNode` が答える）
+   * - ロック中のノード（docs/03-schema.md「ロック」。祖先から継承したものを含む）
    *
    * **子を並べない親（`layout: free`）はここでは外さない。** 座標の置き直しは原点と向きを
    * 親から取るだけで子が並ぶ向き（`CssDirection`）を必要としない（docs/06-ui.md「キャンバス
@@ -140,7 +143,7 @@ export const InsertionParent = {
   /**
    * 内側から外へ並べた候補のうち、運んでいるものを並びへ挿せる最も内側のものを選ぶ。
    *
-   * `DropParent.innermost` が外す3つに加えて、**子を並べない親（`layout: free`）**も
+   * `DropParent.innermost` が外す4つに加えて、**子を並べない親（`layout: free`）**も
    * 外して外側を見に行く。自由配置の器へ座標で置く操作はドラッグの意味自体が別なので、
    * ここで「並び順のどこへ挿すか」に翻訳しない。
    *

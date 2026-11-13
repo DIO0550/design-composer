@@ -36,3 +36,9 @@ test("親が違えば、取り除く位置が手前でも変わらない", () =>
 
   expect(insertion).toEqual({ parentName: "panel", index: 3 });
 });
+
+test("直後の位置は、同じ親の 1 つ後ろになる", () => {
+  const next = ChildPosition.next({ parentName: "panel", index: 2 });
+
+  expect(next).toEqual({ parentName: "panel", index: 3 });
+});

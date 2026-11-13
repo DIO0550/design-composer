@@ -16,6 +16,7 @@ import { LeftPaneViews } from "@/features/editor/features/sidebar";
 import { Option } from "@/utils/Option";
 import {
   drawn,
+  drawnParentName,
   goTo,
   leftPane,
   propertyPane,
@@ -205,4 +206,40 @@ test("落としても選択は動かない", async () => {
 
   // 挿入は続けて挿せるのが素直な繰り返し（`EditorState.insertNode` と同じ）
   expect(within(propertyPane()).getByText("home-title")).toBeDefined();
+});
+
+test("プリミティブの行をロックの中の Box へ運んで離すと、ロックの外側の Box の子に増える", async () => {
+  await renderOpenedDocument(
+    DesignDocument.create({
+      tokens: DocumentTemplate.Default.tokens,
+      components: DocumentTemplate.Default.components,
+      artboards: [
+        Artboard.create({
+          name: "home",
+          width: 360,
+          height: 240,
+          children: [
+            {
+              name: "home-panel",
+              type: "Box",
+              children: [
+                {
+                  name: "home-sealed",
+                  type: "Box",
+                  props: { locking: "locked" },
+                  children: [{ name: "home-inner", type: "Box", children: [] }],
+                },
+              ],
+            },
+          ],
+        }),
+      ],
+    }),
+  );
+  await goTo(LeftPaneViews.Assets);
+
+  carryTo("Box", drawn("home-inner"));
+  releasePointer(drawn("home-inner"), { x: 300, y: 150 });
+
+  expect(drawnParentName("box")).toBe("home-panel");
 });

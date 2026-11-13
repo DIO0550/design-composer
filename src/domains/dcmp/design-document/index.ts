@@ -2,7 +2,7 @@ import { Artboard } from "@/domains/dcmp/artboard";
 import { AxisLength, AxisResize } from "@/domains/dcmp/axis-length";
 import { BoxAlign } from "@/domains/dcmp/box-align";
 import { ChildPlacement } from "@/domains/dcmp/child-placement";
-import type { ChildPosition } from "@/domains/dcmp/child-position";
+import { ChildPosition } from "@/domains/dcmp/child-position";
 import {
   Component,
   type ComponentAsset,
@@ -912,7 +912,7 @@ function insertCopyAfter(
   const { node, at } = source.value;
   const copy = renamedCopy(document, node);
   return Result.map(
-    DesignDocument.insertNode(document, { ...at, index: at.index + 1 }, copy),
+    DesignDocument.insertNode(document, ChildPosition.next(at), copy),
     (inserted) => ({ document: inserted, copyName: copy.name }),
   );
 }
@@ -1092,6 +1092,69 @@ function holdsForSelfOrAncestor(
     Option.isSome(position) &&
     holdsForSelfOrAncestor(document, position.value.parentName, test)
   );
+}
+
+/**
+ * 自身にロックと書かれているか（docs/03-schema.md「ロック」）。artboard はロックを持たない。
+ * 祖先から継ぐぶんは、これを `holdsForSelfOrAncestor` に渡して見る。
+ */
+const LockedItself: InheritedTest = {
+  /** artboard はロックを持たないので常に偽。 */
+  artboard: () => false,
+  /**
+   * ノード自身にロックと書かれているか。
+   *
+   * @param node 判定するノード
+   * @returns `Locking.fromNode` が `locked` なら真
+   */
+  node: (node) => Locking.fromNode(node) === Lockings.Locked,
+};
+
+/**
+ * 名前で指したもの自身が判定を満たすか（祖先は見ない）。
+ *
+ * @param document 引き先になるドキュメント
+ * @param name 判定する artboard / ノードの名前
+ * @param test 自身について答える判定
+ * @returns 判定を満たせば真。ドキュメントに無い名前は偽
+ */
+function holdsForSelf(
+  document: DesignDocument,
+  name: string,
+  test: InheritedTest,
+): boolean {
+  const artboard = DesignDocument.findArtboard(document, name);
+  if (Option.isSome(artboard)) {
+    return test.artboard(artboard.value);
+  }
+  return Option.contains(
+    Option.map(DesignDocument.findNode(document, name), test.node),
+    true,
+  );
+}
+
+/**
+ * 名前で指したものと、それを包んでいるもののうち、自身にロックと書かれた最も外側のもの
+ * の名前（docs/03-schema.md「ロック」）。
+ *
+ * @param document 引き先になるドキュメント
+ * @param name 起点にするノードの名前
+ * @returns 自身と祖先のどれもロックと書かれていなければ `none`。ドキュメントに無い名前も
+ *   `none`
+ */
+function outermostLockedName(
+  document: DesignDocument,
+  name: string,
+): Option<string> {
+  const selfAndAncestors = [
+    name,
+    ...DesignDocument.collectAncestorNames(document, name),
+  ];
+  const lockedItself = selfAndAncestors.filter((candidate) =>
+    holdsForSelf(document, candidate, LockedItself),
+  );
+
+  return ArrayEx.last(lockedItself);
 }
 
 /**
@@ -1815,6 +1878,35 @@ export const DesignDocument = {
   },
 
   /**
+   * 選んでいるものを起点にノードを足すときの位置（docs/06-ui.md「編集操作の一覧」の挿入・
+   * ペースト、docs/03-schema.md「ロック」）。
+   *
+   * @param document 引き先になるドキュメント
+   * @param name 選んでいる artboard / ノードの名前
+   * @returns 自身も祖先もロックしていない Box と artboard は子の末尾。自身か祖先がロック
+   *   している Box は、自身と祖先のうちロックしている最も外側のノードの直後。子を持てない
+   *   もの（部品インスタンス・子を認めないプリミティブ）はロックに依らず `none`、無い名前も
+   *   `none`
+   */
+  insertPositionOf(
+    document: DesignDocument,
+    name: string,
+  ): Option<ChildPosition> {
+    const append = DesignDocument.appendPositionOf(document, name);
+    if (!Option.isSome(append)) {
+      return Option.none;
+    }
+    const locked = outermostLockedName(document, name);
+    if (!Option.isSome(locked)) {
+      return append;
+    }
+    return Option.map(
+      DesignDocument.findChildPosition(document, locked.value),
+      ChildPosition.next,
+    );
+  },
+
+  /**
    * 名前で指したノードが今いる位置を「どの親の何番目か」で引く。
    * artboard 自身は誰の子でもないため位置を持たない（`none`）。
    *
@@ -2030,13 +2122,7 @@ export const DesignDocument = {
    *   ノード直下の `locking`）で決める。artboard 自身・ドキュメントに無い名前は偽
    */
   isLocked(document: DesignDocument, name: string): boolean {
-    return holdsForSelfOrAncestor(document, name, {
-      artboard: () => false,
-      node: (node) =>
-        Locking.fromProps(
-          Node.isRef(node) ? Node.refOwnPropsOf(node) : Node.propsOf(node),
-        ) === Lockings.Locked,
-    });
+    return holdsForSelfOrAncestor(document, name, LockedItself);
   },
 
   /**
