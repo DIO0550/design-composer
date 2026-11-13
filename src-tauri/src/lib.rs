@@ -1,3 +1,6 @@
+// テスト名は仕様の文として日本語で書き、DCMP / JSON のようなラテン文字を含むと snake case でなくなる。
+#![cfg_attr(test, allow(non_snake_case))]
+
 pub mod app_state;
 pub mod app_window;
 pub mod document;
