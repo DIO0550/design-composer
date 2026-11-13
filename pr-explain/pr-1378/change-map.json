@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1378,
+  "headBranch": "claude/magical-cannon-74c58w",
+  "baseBranch": "main",
+  "mergeBase": "0abadc392b00758cc013d2fa7579aa55649ff4aa",
+  "head": "976fa67e92b634a274356c208421833fdf40852d",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1375.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 164,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "976fa67e92b634a274356c208421833fdf40852d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T11:58:12Z",
+      "subject": "📝 [Documentation]: #1363 PR #1375 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1375.md を追加: 指摘 18 件（plan 8 / duplication 2 / comment 3 / harness 4 / naming 1）、手戻り 2 回、発火は計測対象外（フック不発）\n\n背景:\nPR #1375（src-tauri の cargo clippy / cargo test を CI に載せ、std::fs の直接呼び出しを\ndisallowed-* で禁じる）がマージされた。harness-record スキルの手順で、その回の\nレビュー指摘・手戻り・フックの発火を分類付きで残す。\n\n採用理由:\n人のレビューは get_reviews / get_review_comments / get_comments の 3 つを引き、\nいずれも 0 件だった（コメントは自分のテストケース表と bot の投稿だけ）。\nサブエージェントの指摘は、このセッションの履歴から指摘 1 件 = 1 ブロックで書いた。\n形の名前は、レビュアーが添えていたものだけを写した。\n\n代替案:\n- 発火を記憶から書く: 発火ログ（record-firings.sh）が無く見出しも無いので、\n  スキルの規則どおり「計測対象外(フック不発)」とした。推測では埋めない\n\n影響とトレードオフ:\n差分は harness/records/ の新規 1 ファイルだけ。rules/・フック・スキルには触れていない。\n集計と介入の判断は harness-growth の管轄なので、対策済の行は書いていない。\n\n参考:\nRefs #1363\nRelates to #1375\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NBJ1PwYadrcdFMfss",
+      "files": [
+        {
+          "path": "harness/records/pr-1375.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 164,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,164 @@\n+# PR #1375 src-tauri の cargo clippy / cargo test を CI に載せ、std::fs の直接呼び出しを disallowed-* で禁じる\n+\n+- マージ日: 2026-11-13\n+- 関連 Issue: #1363\n+- 差分規模: 16 ファイル / +144 -25\n+\n+## ゴールと結果\n+\n+ゴールは 2 つ。1 つ目は、PR の CI で `src-tauri` の `cargo test` と `cargo clippy`(`-D warnings`)が走り、失敗すれば PR が赤になること。2 つ目は、本番コードで `std::fs`(とファイルを開く型)を `file_io` の外から呼ぶと、clippy の `disallowed-methods` / `disallowed-types` で落ちること。どちらも達成した。新しい `src-tauri` ワークフロー(ジョブ `clippy / test`)は初回の run で緑になり、所要時間は 3 分 45 秒だった。\n+\n+必須チェックへの登録はリポジトリの設定なので、この PR には含めず、人の判断として PR 本文に残した。Cargo.toml の `rust-version` の見直しは #1373 に分けた。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。コメントは、自分が投稿したテストケース表と bot の投稿(Storybook プレビュー・CI レポート・VRT)だけ。CI は全件緑で、VRT の差分は 0 件(209 件 passed)。\n+\n+## 指摘\n+\n+### 1. 「CI は cargo test を走らせない」を前提にした Why が、計画のファイル表から漏れていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `plan-comment-reference`\n+- 内容: 漏れていたのは `canonical_path.rs:48-49` と `canonical_path_normal_test.rs:3-4`。ファイル表を `.github/` の中の言い方だけで探していた。grep の結果 11 件を計画に載せ、そのうち 4 件を直す対象にした。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 1\n+\n+### 2. `#![expect]` / `reason =`(1.81 で安定化)と Cargo.toml の `rust-version = \"1.77.2\"` の食い違いを計画が扱っていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: ロック済みの依存は既に 1.88 を要求していた。この PR では据え置き、#1373 に分けた。\n+- 既存ルール: なし\n+\n+### 3. テスト名の `TS` を `ts` に改名する案は、隣のファイルが採っている形と割れていた\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 3 ファイルは大文字を残したまま `#![allow(non_snake_case)]` を付けていた。改名をやめ、抑制を lib.rs の `cfg_attr(test, allow(non_snake_case))` 1 箇所にまとめた。却下理由の書き方も、採用する理由に読める形になっていた。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 4. キャッシュを却下する理由が、依存だけをキャッシュする方式を検討していなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 実測で書き直した。キャッシュ無しは 147 秒、依存だけ残すと 17 秒。PR の ref のキャッシュは他の PR から引けず、緑になる時間は frontend と VRT で決まるので、却下のまま。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 6\n+\n+### 5. 「Path メソッドを含めるか」は、未決にせず今決められた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `plan-open-decision`\n+- 内容: 既に clippy.toml とテストケースに含めてあり、file_io の外の本番コードでの使用は 0 件だった。「含める」と決めた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3(未決の判断)\n+\n+### 6. open な PR の重なりと分割しない判断が、計画に記録されていない\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 受け入れなかった。どちらも既に Issue に記録してあり、レビュアーには要約しか渡していなかった。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 9\n+\n+### 7. 「赤になる」を確かめる手段・ci-trace の照合・expect の reason の重複\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `plan-goal-verification`\n+- 内容: 軽微な 3 件。違反コミットを PR の履歴に残さないため、「赤になる」は手元の終了コード 101 で確かめることを計画に明記した。ci-trace は `name:` で照合するので、`name: src-tauri` と一字一句揃えた。reason は `//!` と重ならない文にした。\n+- 既存ルール: なし\n+\n+### 8. 禁止の一覧がブロックリストなので、新しい std API や fs に触るクレートは素通りする\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 方式の結論は「維持」で、これは参考の指摘。いまは該当する依存が無く、ブロックリスト方式に付きものの性質なので、何もしなかった。\n+- 既存ルール: なし\n+\n+### 9. stable を版固定せずに入れているので、clippy の版上げで全 PR が一斉に赤になりうる\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（solution-reviewer）`\n+- 内容: 出荷と検査の版を揃えるために選んだトレードオフなので、方式は保った。必須チェックへの登録を判断する材料として PR 本文に書いた。\n+- 既存ルール: なし\n+\n+### 10. Tauri の版を突き合わせる理由が、frontend.yml と check-tauri-version-match.mjs の 2 箇所にあった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 理由はスクリプトの冒頭にだけ残し、frontend.yml は参照 1 行にした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 11. 「CI の cargo test は ubuntu でしか走らない」が、実装とテストの 2 箇所にあった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 分岐を持っている `without_verbatim_disk` の doc にだけ残し、テスト側はそこを参照する 1 行にした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 12. clippy はホストの cfg で外れるコードを見ないという検出の限界を、コメントに書いていなかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 形の名前: `comment-missing-detection-limit`\n+- 内容: 最小クレートで再現した。`#[cfg(windows)]` / `#[cfg(target_os = \"macos\")]` の中の `std::fs::read` は、Linux の clippy で落ちない。lib.rs に 2 行足した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 13. expect にした理由・Path を含める理由・paths で絞らない理由が Issue にしか無かった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 形の名前: `comment-missing-issue-only`\n+- 内容: file_io.rs / clippy.toml / src-tauri.yml に 1〜2 行ずつ足した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 14. rust-version と expect の食い違い(コメントの前提崩れとして)\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 形の名前: `comment-premise-drift`\n+- 内容: 受け入れなかった。#1373 に分けてあり、PR 本文に書いた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 15. 新しい CI だけのゲートが、implementation-flow フェーズ 7 の手順に配線されていなかった\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 既存の 2 件(`check-pr-closing-issue-cases.sh` と撮影範囲)と同じ形で、フェーズ 7 に段落を、`.claude/hooks/README.md`「カバー範囲と残る穴」に小節を足した。前提崩れを洗う grep を `cargo test` の綴りに絞っていたのが原因。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 7\n+\n+### 16. over-guard-reviewer.md と check-tauri-version-match.mjs:47 が「Rust に CI が無い」と読めた\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: どちらも主語を絞って 1 行で言い換えた。clippy は既定でネストの深さを見ないことを、harness-reviewer が実測した。\n+- 既存ルール: なし\n+\n+### 17. カナリアが deny されずに通った(フック不発)\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: マーカーも発火ログの見出しも無かった。起動は Issue assigned の routine で、作業ディレクトリは `/home/user`。#1032 と同じ形。git add はすべてファイルを指定しており、`npx` は実行していない。親によるリポジトリ内の編集も無かったことを見直した。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+### 18. planner の実測「clippy.toml だけを変えると touch が要る」が、2 回目の実測で再現しなかった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: 1 回目の計画は TAURI_SETUP.md にこの注意を書く予定だった。2 回目の実測(clippy 0.1.97)では、clippy.toml の変更だけで再検査された。書く前に消した。\n+- 既存ルール: rules/coding.md「外部の挙動は動かして確かめる」\n+\n+## 手戻り\n+\n+2 回。\n+\n+1. 計画の検証で 7 件の指摘を受けた(指摘 1〜7)。6 件を採用し、planner に計画を 1 回差し戻した。テスト名の改名をやめ、抑制を 1 箇所にまとめる形に変えたのが一番大きい変更\n+2. 実装の検証(1 段目、8 エージェント)で 9 件を受けた(指摘 8〜16)。採用した 7 件を implementer に 1 回差し戻し、コメント・doc・手順の直しを 2 コミットに分けた。2 段目の test-reviewer はミューテーションをすべて検出し、指摘は無かった\n+\n+test-reviewer は指定のモデルが使えず、Opus 4.8 に切り替わって実行された。\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。集計と介入の判断は `harness-growth` の管轄なので、この記録では行わない。",
+          "patchLines": 165,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
