@@ -179,6 +179,6 @@ pr-846 で `PointerButton` / `CommandKey` / `KeyName` を `src/libs/` 直下に 
 ### domains から libs への import を `__tests__/` だけ許す理由
 
 ファイルに載っている綴りを作るのに外部フォーマットの解釈が要り、そこを差し替えるとテストが
-実物で確かめられなくなるため(`rules/testing.md`「代替してよいのはプロセス外の境界のみ」)。
+実物で確かめられなくなるため(`rules/testing.md`「モックは原則使わない」)。
 production 側が 0 件なのは、外の語彙が要る場面を境界(`libs/`)の詰め替えで閉じているから。
 (`rules/architecture.md`「依存方向のルール」から、規範の 1 文を残して移した。)
