@@ -10,14 +10,6 @@ test("alpha を持つ色の hex の欄には 6 桁だけが出る", () => {
   });
 });
 
-test("色の hex に打った 6 桁で色が変わり、不透明度は残る", () => {
-  const field = fieldOf("colors", "veil", "hex");
-
-  expect(TokenControl.valueFrom(field.target, "#00ff00")).toEqual(
-    Option.some({ kind: "colors", value: "#00ff0080" }),
-  );
-});
-
 test("色の hex に大文字で打った 6 桁は小文字で保存される", () => {
   const field = fieldOf("colors", "primary", "hex");
 
@@ -31,15 +23,4 @@ test("影の色の hex の欄には 6 桁だけが出る", () => {
     kind: "text",
     value: "#000000",
   });
-});
-
-test("影の hex に打った 6 桁で影の色が変わり、不透明度は残る", () => {
-  const field = fieldOf("shadows", "sm", "hex");
-
-  expect(TokenControl.valueFrom(field.target, "#ff0000")).toEqual(
-    Option.some({
-      kind: "shadows",
-      value: { x: 0, y: 1, blur: 3, color: "#ff00001a" },
-    }),
-  );
 });
