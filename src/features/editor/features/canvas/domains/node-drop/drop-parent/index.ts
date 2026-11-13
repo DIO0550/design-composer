@@ -56,14 +56,13 @@ function innermostAccepted<T>(
     return Option.none;
   }
   for (const name of search.names) {
-    const isSkipped =
-      occupied.value.includes(name) ||
-      DesignDocument.isLocked(search.document, name);
-    if (isSkipped) {
+    if (occupied.value.includes(name)) {
       continue;
     }
     const parent = resolve(search.document, name);
-    if (Option.isSome(parent)) {
+    const isAccepted =
+      Option.isSome(parent) && !DesignDocument.isLocked(search.document, name);
+    if (isAccepted) {
       return parent;
     }
   }
