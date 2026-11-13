@@ -177,7 +177,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 | `lib/parent-session-edit-cases.sh` | あり | あり |
 | `lib/cases-report-cases.sh` | あり | あり |
 | `.github/scripts/check-added-cases.sh` | あり(`lint-suppress` ジョブ) | あり(`python3` がある環境だけ) |
-| `.github/scripts/check-pr-closing-issue-cases.sh` | あり | **無し(残る穴)** |
+| `.github/scripts/check-pr-closing-issue-cases.sh` | あり | あり(`jq` がある環境だけ) |
 | `.github/scripts/check-duplicate-issue-pr-cases.sh` | あり | **無し(残る穴)** |
 | `.github/scripts/upsert-sticky-comment-cases.sh` | あり | あり(`jq` がある環境だけ) |
 | `.github/scripts/build-pr-change-map-cases.sh` | あり | あり(`python3` がある環境だけ) |
@@ -199,13 +199,13 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
   `edit-detector-cases.sh` がそれを使うフック 3 本ごと一時ディレクトリへ写して走らせる
 - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。**
   当てる 2 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する
-- **`check-pr-closing-issue-cases.sh` は層 1 だけ。** 再試行と問い合わせ直しの待ち時間を含めて
-  35.7 秒かかる(実測)。`pre-push` 全体は 73.0 秒(実測・`node_modules` のある環境。この判定表と同じ環境で
-  続けて測った)で、載せると 1.5 倍になる。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 5 本は同じ `pre-push` の回の中で合わせて 16.2 秒(地図 3.4・置き場 5.6・解説の検査 4.3・枠の検査 2.8・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒、`lib/edit-detector-cases.sh` は 1.5 秒(実測)。**この穴は残したままなので、
-  `check-pr-closing-issue.sh` を触ったときは手で走らせる**(「動作確認」)
-- **`check-duplicate-issue-pr-cases.sh` も層 1 だけ。** 22.0 秒かかり(実測)、大半が問い合わせの再試行の
-  待ち。物差しは上の `check-pr-closing-issue-cases.sh` と同じで、`check-duplicate-issue-pr.sh` を触ったときは
-  手で走らせる(「動作確認」)。層 2 にも置いた `upsert-sticky-comment-cases.sh` は 0.9 秒(実測。
+- **層 2 に載せるかの物差しは、載せたときに `pre-push` 全体がどれだけ伸びるか。**
+  `check-pr-closing-issue-cases.sh` は待ちを消す前は 35.7 秒かかり(実測)、`pre-push` 全体の 73.0 秒(実測・`node_modules` のある環境。この判定表と同じ環境で
+  続けて測った)の 1.5 倍になるので層 1 だけに置いていた。待ちのほぼ全部は 5xx の再試行と問い合わせ直しの
+  固定の待ちで、差し替え口で 0 にすると 0.8 秒(実測。この判定表だけを単独で走らせた値)になったので層 2 にも置いた(#1034)。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 5 本は同じ `pre-push` の回の中で合わせて 16.2 秒(地図 3.4・置き場 5.6・解説の検査 4.3・枠の検査 2.8・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒、`lib/edit-detector-cases.sh` は 1.5 秒(実測)
+- **`check-duplicate-issue-pr-cases.sh` は層 1 だけ。** 22.0 秒かかり(実測)、大半が問い合わせの再試行の
+  待ち。上の物差し(載せたときに `pre-push` 全体がどれだけ伸びるか)に載らないので、`check-duplicate-issue-pr.sh` を触ったときは
+  手で走らせる(「動作確認」)。待ちを 0 にできるかは #1377 で扱う。層 2 にも置いた `upsert-sticky-comment-cases.sh` は 0.9 秒(実測。
   再試行の待ちを環境変数で 0 にしている)
 - 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない
 
@@ -222,7 +222,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 | 合計 | 3 分 37 秒 |
 
 - **層 2 へ載せない理由は所要時間。** `pre-push` 全体の 6 倍かかり、上の
-  `check-pr-closing-issue-cases.sh` を層 1 だけに置いた物差しに載らない
+  判定表の置き場で書いた物差し(載せたときに `pre-push` 全体がどれだけ伸びるか)に載らない
 - **層 3 へも置かない。** かかる時間は同じで、3 分半の検査は「編集中に走らせる最速
   フィードバック層」という位置づけと合わない
 - **層 4 が止めるのは、はみ出しを入れる側の PR。** `harness/records/pr-634.md` 指摘 25 が
@@ -249,7 +249,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 `src-tauri.yml`)と push 前手順(層 4。`implementation-flow` フェーズ 7)にだけあり、**層 2 にも層 3 にも置いていない。**
 
 - **層 2 へ載せない理由は所要時間と環境。** 手元の実測で初回は clippy 74 秒 + test 92 秒と、`pre-push` 全体
-  (73.0 秒)の 2 倍を超え、上の `check-pr-closing-issue-cases.sh` を層 1 だけに置いた物差しに載らない。
+  (73.0 秒)の 2 倍を超え、上の判定表の置き場で書いた物差し(載せたときに `pre-push` 全体がどれだけ伸びるか)に載らない。
   webkit のシステムライブラリが無い環境では飛ばすしかなく、飛ばす環境が多いほど層 2 に置いても守れない
 - **層 3 へも置かない。** かかる時間は同じで、撮影範囲の検査と同じく最速フィードバック層の位置づけと合わない
 
@@ -497,8 +497,7 @@ bash .github/scripts/check-added-test-helper-duplication.sh origin/main
 # 上の 2 つの判定表(`ok` だけなら期待どおり)。exit 2 = 検査できなかった、も覆う
 bash .github/scripts/check-added-cases.sh; echo "exit=$?"
 
-# PR が閉じる Issue の検査の判定表(`ok` だけなら期待どおり)。CI だけが走らせるので、
-# check-pr-closing-issue.sh を触ったときはここで走らせる(1 分かかる)
+# PR が閉じる Issue の検査の判定表(`ok` だけなら期待どおり)。pre-push と CI も走らせる
 bash .github/scripts/check-pr-closing-issue-cases.sh; echo "exit=$?"
 
 # 同じ Issue を閉じる他の PR の検査の判定表(`ok` だけなら期待どおり)。CI だけが走らせるので、

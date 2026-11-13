@@ -204,10 +204,9 @@ jobs:
         run: bash harness/githooks/lib/check-tally-cases.sh
 
       # pr-closing-issue.yml が呼ぶ検査の判定表。**検査対象と別のワークフローに置く。**
-      # あちらは本文の編集(`edited`)でも再実行するので、1 分かかるこのステップを
-      # 本文の手直しのたびに走らせることになる(`on: pull_request` を既定のまま使う
-      # このワークフローは `edited` を含まない)。同じ 1 分が pre-push に無い理由は
-      # 上と同じ README の段落。
+      # あちらは本文の編集(`edited`)でも再実行するが、判定表は gh を差し替えて走り PR 本文を
+      # 読まないので、本文の手直しのたびに走らせても結果が変わらない(`on: pull_request` を
+      # 既定のまま使うこのワークフローは `edited` を含まない)。
       - name: PR が閉じる Issue の検査の判定表
         run: bash .github/scripts/check-pr-closing-issue-cases.sh
 
