@@ -1,0 +1,790 @@
+{
+  "version": 2,
+  "pr": 1381,
+  "headBranch": "claude/magical-cannon-q47vrf",
+  "baseBranch": "main",
+  "mergeBase": "0abadc392b00758cc013d2fa7579aa55649ff4aa",
+  "head": "3bb29187c939b72b50b95c9b6a37db84b2bfd23c",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 12,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/canary-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/parent-session-edit-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/test-rules-scan.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/verification-agent-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/post-merge-review.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/build-frontend-report.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-lint-suppressions.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-tauri-version-match.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/detector-precondition.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/workflows/pr-closing-issue.yml",
+          "changed": false
+        },
+        {
+          "path": "AGENTS.md",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/lib/check-tally.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/README.md",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": "pnpm-lock.yaml",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "6055fcafe5eb3c579460982ec71a5445659ecbef",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T12:12:46Z",
+      "subject": "♻️ [Refactoring]: #1034 PR が閉じる Issue の検査の 5xx 再試行の待ちを差し替え可能にする",
+      "body": "- check-pr-closing-issue.sh の 5xx 再試行の待ちを PR_CLOSING_ISSUE_RETRY_WAIT(既定 5)で差し替え可能にした\n- 問い合わせ直しの差し替え口 LINK_WAIT_STEP を PR_CLOSING_ISSUE_LINK_WAIT に改名した(既定 10 のまま)\n- 判定表は両方を 0 にして走らせ、所要時間は 35.8 秒から 0.8 秒になった\n\n背景:\n判定表の 35.8 秒は user 0.58 秒で、ほぼ全部が fetch_pull_request の固定の待ち\nsleep $((attempt * 5)) だった(fail / fail fail fail / empty fail fail fail の 3 行で\n5 + 15 + 15 秒)。問い合わせ直しの待ちは既に差し替えていたが、5xx の待ちは\n判定表から 0 にできず、これが pre-push に載せない理由になっていた。\n\n採用理由:\n差し替え口は環境変数にした。前例が STICKY_COMMENT_RETRY_WAIT と\nPR_EXPLAIN_RETRY_WAIT にあり、意味(n 回目の失敗の後に n × 秒待つ)も同じなので、\n名前も「スクリプト名の接頭辞 + _RETRY_WAIT」に揃えた。同じファイルに接頭辞なしの\nLINK_WAIT_STEP が並ぶと語彙が割れるので、こちらも PR_CLOSING_ISSUE_LINK_WAIT に\n改名した(参照は 3 箇所だけで、CI は既定値で動くので振る舞いは変わらない)。\n\n影響とトレードオフ:\nCI の待ちは既定値のままで変わらない。判定表は待った長さを見ていないので、\n待ちを 0 にしても守る範囲は減らない(再試行を 3→2 回に壊すと NG 2 行で落ちる)。\n差し替え口の綴りがずれると 19 行は ok のまま 35 秒に戻る(実測)が、これは\n判定の退行ではなく所要時間の退行で、判定表では捕まえない。\n\n代替案:\n- sleep を PATH のスタブで差し替える: 前例が無く、何の待ちを消したかがスクリプトの\n  doc に残らない\n- LINK_WAIT_STEP を 5xx の再試行にも使う: 既定値(10 と 5)も意味も違い、\n  CI の待ちを片方だけ変えられなくなる\n- 判定表から 5xx のケースを削る: 判定表がいちばん守りたいとする\n  「3 回とも駄目なら赤」が外れる\n- 既定の待ち 5 秒を固定する行を足す: 1 行で 5 秒かかり、時間の assert は環境で揺れる\n\n参考:\n#1034 の計画コメント、harness/records/pr-1024.md(#1022 での測り直し)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SPDy5GGiNNGyp5vqA",
+      "files": [
+        {
+          "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -6,8 +6,8 @@\n # 使い方: bash .github/scripts/check-pr-closing-issue-cases.sh\n # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n #\n-# 配線は CI(`frontend.yml` の `rules-check`)だけで、層 2(`pre-push`)には無い\n-# (理由は `.claude/hooks/README.md`「カバー範囲と残る穴」)。判定は終了コードで見る\n+# 配線は層 2(`pre-push`)と CI(`frontend.yml` の `rules-check`)の両方\n+# (層 2 にも置いた理由は `.claude/hooks/README.md`「カバー範囲と残る穴」)。判定は終了コードで見る\n # (問い合わせの節だけは結果の種別で見る。理由はその節)。\n #\n # **表をここへ置くのは、CI の run が流れると判定の根拠が残らないため。** 覆うのは\n@@ -72,7 +72,7 @@ run_case 1 \"$no_issue\"  1 \"$records_readme\"  'harness/records/ でも pr-<番号\n # `gh` を差し替えて、GitHub の API が 5xx を返したとき・閉じる Issue がまだ反映されて\n # いないときの振る舞いを固定する。スタブは呼び出しごとに `STUB_REPLIES` の語を 1 つずつ\n # 返す(`fail` = 5xx / `empty` = 閉じる Issue が空 / `linked` = 閉じる Issue あり)。\n-# 語が尽きたら `linked`。**待ち時間があるので、この節だけで 30 秒ほど(5xx の再試行の待ち)かかる。**\n+# 語が尽きたら `linked`。待ち時間は `PR_CLOSING_ISSUE_LINK_WAIT=0` と `PR_CLOSING_ISSUE_RETRY_WAIT=0` で消す。\n # いちばん守りたいのは「3 回とも駄目なら赤」。ここが黙って通るようになると、\n # 問い合わせに失敗しただけの PR・閉じ忘れた PR が緑になる。\n #\n@@ -108,7 +108,7 @@ STUB\n \n   output=\"$(\n     PATH=\"$dir/bin:$PATH\" STUB_COUNT_FILE=\"$dir/count\" STUB_REPLIES=\"${STUB_REPLIES:-}\" \\\n-      LINK_WAIT_STEP=0 STUB_DIR=\"$dir\" GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 PR_ACTION=\"$PR_ACTION\" \\\n+      PR_CLOSING_ISSUE_LINK_WAIT=0 PR_CLOSING_ISSUE_RETRY_WAIT=0 STUB_DIR=\"$dir\" GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 PR_ACTION=\"$PR_ACTION\" \\\n       bash \"$script\" 2>/dev/null\n   )\" || status=$?\n   calls=\"$(cat \"$dir/count\" 2>/dev/null || echo 0)\"",
+          "patchLines": 29,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "patch": "@@ -35,6 +35,7 @@ set -euo pipefail\n # 検査そのものが信用されなくなる。3 回とも駄目なら赤にする(握りつぶさない)。\n # 失敗の種類では分けない。権限エラーのように再試行で変わらないものも結局赤になるので、\n # 分けても結果が変わらず、`gh` のエラーは毎回ログに出る。\n+# `PR_CLOSING_ISSUE_RETRY_WAIT`(既定 5)は判定表が待ちを 0 にするための差し替え口。\n fetch_pull_request() {\n   local attempt response\n   for attempt in 1 2 3; do\n@@ -56,7 +57,7 @@ fetch_pull_request() {\n     fi\n     [ \"$attempt\" = 3 ] && break\n     printf '問い合わせに失敗した(%s 回目)。待って再試行する\\n' \"$attempt\" >&2\n-    sleep $((attempt * 5))\n+    sleep $((attempt * ${PR_CLOSING_ISSUE_RETRY_WAIT:-5}))\n   done\n   return 1\n }\n@@ -95,13 +96,13 @@ awaits_closing_issue_link() {\n # 反映された回があったため(`harness/records/pr-919.md` 指摘 13 / `pr-920.md` 指摘 1)。\n # 数分から 1 時間かかる回もあり(`pr-914.md` 指摘 11 / `pr-918.md` 指摘 12)、そこまでは\n # 待たない。ジョブの timeout(5 分)に収め、全部空なら閉じ忘れとして赤にして再実行に任せる。\n-# `LINK_WAIT_STEP` は判定表が待ちを 0 にするための差し替え口。\n+# `PR_CLOSING_ISSUE_LINK_WAIT`(既定 10)は判定表が待ちを 0 にするための差し替え口。\n refetch_while_awaiting_link() {\n   local result=\"$1\" attempt\n   for attempt in 1 2 3 4 5; do\n     awaits_closing_issue_link \"$result\" || break\n     printf '閉じる Issue がまだ反映されていない(%s 回目)。待って問い合わせ直す\\n' \"$attempt\" >&2\n-    sleep $((attempt * ${LINK_WAIT_STEP:-10}))\n+    sleep $((attempt * ${PR_CLOSING_ISSUE_LINK_WAIT:-10}))\n     result=\"$(fetch_pull_request)\" || return 1\n   done\n   printf '%s' \"$result\"",
+          "patchLines": 33,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "467553dc69f229fc9fbcf45d7513f1cdaffb0f76",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T12:12:46Z",
+      "subject": "👷 [CI]: #1034 PR が閉じる Issue の検査の判定表を pre-push にも載せる",
+      "body": "- harness/githooks/pre-push の jq だけが要る区間に check-pr-closing-issue-cases.sh を足した\n- .claude/hooks/README.md の判定表の置き場を「層 1 と層 2」に直し、層 1 だけに置く物差しを\n  「載せたときに pre-push 全体がどれだけ伸びるか」として書き直した。撮影範囲・Rust・\n  duplicate の 3 箇所はその物差しを指すようにした\n- frontend.yml の別ワークフローに置く理由を、所要時間(1 分)から「判定表は PR 本文を読まない」へ\n- implementation-flow の「pre-push に無く CI だけが走らせる検査」の名指しを\n  check-duplicate-issue-pr-cases.sh に変えた\n- harness/githooks/README.md の一覧・本数(19→20)・jq の行に足した\n\n背景:\n層 1 だけに置いていた理由は「載せると pre-push 全体(73.0 秒)の 1.5 倍になる」だった。\n直前のコミットで待ちを 0 にでき、判定表は 0.8 秒になったので、この理由は成り立たない。\n層 1 だけだと「check-pr-closing-issue.sh を触ったら手で走らせる」という規律頼みの穴が残る。\n\n採用理由:\npython3 を使わず jq だけを使うので、sticky の判定表と同じ区間に置いた。\n物差しは数値の閾値ではなく「全体の伸び」として書いた。duplicate は 22.0 / 73.0 ≒ 1.3 倍で\n層 1 だけとされており、1.5 倍を閾値にすると食い違うため、この回の材料では数値を決められない。\n\n影響とトレードオフ:\njq が無い環境では sticky の判定表と一緒に「飛ばします」になる。frontend.yml の CI 上の所要時間も\n35 秒前後から 1 秒前後になる見込み(PR の CI で確かめる)。\n\n代替案:\n- 1.5 倍のまま層 1 だけに置く: 待ちは固定の sleep だけで削れない仕事ではない\n- 待ちを残したまま pre-push に載せる: 待った長さは判定表が見ておらず、35 秒足しても\n  守る範囲は増えない\n\n参考:\n#1034、兄弟の check-duplicate-issue-pr-cases.sh は #1377 へ分離\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SPDy5GGiNNGyp5vqA",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 12,
+          "patch": "@@ -177,7 +177,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | `lib/parent-session-edit-cases.sh` | あり | あり |\n | `lib/cases-report-cases.sh` | あり | あり |\n | `.github/scripts/check-added-cases.sh` | あり(`lint-suppress` ジョブ) | あり(`python3` がある環境だけ) |\n-| `.github/scripts/check-pr-closing-issue-cases.sh` | あり | **無し(残る穴)** |\n+| `.github/scripts/check-pr-closing-issue-cases.sh` | あり | あり(`jq` がある環境だけ) |\n | `.github/scripts/check-duplicate-issue-pr-cases.sh` | あり | **無し(残る穴)** |\n | `.github/scripts/upsert-sticky-comment-cases.sh` | あり | あり(`jq` がある環境だけ) |\n | `.github/scripts/build-pr-change-map-cases.sh` | あり | あり(`python3` がある環境だけ) |\n@@ -199,13 +199,13 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n   `edit-detector-cases.sh` がそれを使うフック 3 本ごと一時ディレクトリへ写して走らせる\n - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。**\n   当てる 2 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する\n-- **`check-pr-closing-issue-cases.sh` は層 1 だけ。** 再試行と問い合わせ直しの待ち時間を含めて\n-  35.7 秒かかる(実測)。`pre-push` 全体は 73.0 秒(実測・`node_modules` のある環境。この判定表と同じ環境で\n-  続けて測った)で、載せると 1.5 倍になる。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 5 本は同じ `pre-push` の回の中で合わせて 16.2 秒(地図 3.4・置き場 5.6・解説の検査 4.3・枠の検査 2.8・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒、`lib/edit-detector-cases.sh` は 1.5 秒(実測)。**この穴は残したままなので、\n-  `check-pr-closing-issue.sh` を触ったときは手で走らせる**(「動作確認」)\n-- **`check-duplicate-issue-pr-cases.sh` も層 1 だけ。** 22.0 秒かかり(実測)、大半が問い合わせの再試行の\n-  待ち。物差しは上の `check-pr-closing-issue-cases.sh` と同じで、`check-duplicate-issue-pr.sh` を触ったときは\n-  手で走らせる(「動作確認」)。層 2 にも置いた `upsert-sticky-comment-cases.sh` は 0.9 秒(実測。\n+- **層 2 に載せるかの物差しは、載せたときに `pre-push` 全体がどれだけ伸びるか。**\n+  `check-pr-closing-issue-cases.sh` は待ちを消す前は 35.7 秒かかり(実測)、`pre-push` 全体の 73.0 秒(実測・`node_modules` のある環境。この判定表と同じ環境で\n+  続けて測った)の 1.5 倍になるので層 1 だけに置いていた。待ちのほぼ全部は 5xx の再試行と問い合わせ直しの\n+  固定の待ちで、差し替え口で 0 にすると 0.8 秒(実測。この判定表だけを単独で走らせた値)になったので層 2 にも置いた(#1034)。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 5 本は同じ `pre-push` の回の中で合わせて 16.2 秒(地図 3.4・置き場 5.6・解説の検査 4.3・枠の検査 2.8・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒、`lib/edit-detector-cases.sh` は 1.5 秒(実測)\n+- **`check-duplicate-issue-pr-cases.sh` は層 1 だけ。** 22.0 秒かかり(実測)、大半が問い合わせの再試行の\n+  待ち。上の物差し(載せたときに `pre-push` 全体がどれだけ伸びるか)に載らないので、`check-duplicate-issue-pr.sh` を触ったときは\n+  手で走らせる(「動作確認」)。待ちを 0 にできるかは #1377 で扱う。層 2 にも置いた `upsert-sticky-comment-cases.sh` は 0.9 秒(実測。\n   再試行の待ちを環境変数で 0 にしている)\n - 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない\n \n@@ -222,7 +222,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | 合計 | 3 分 37 秒 |\n \n - **層 2 へ載せない理由は所要時間。** `pre-push` 全体の 6 倍かかり、上の\n-  `check-pr-closing-issue-cases.sh` を層 1 だけに置いた物差しに載らない\n+  判定表の置き場で書いた物差し(載せたときに `pre-push` 全体がどれだけ伸びるか)に載らない\n - **層 3 へも置かない。** かかる時間は同じで、3 分半の検査は「編集中に走らせる最速\n   フィードバック層」という位置づけと合わない\n - **層 4 が止めるのは、はみ出しを入れる側の PR。** `harness/records/pr-634.md` 指摘 25 が\n@@ -249,7 +249,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n `src-tauri.yml`)と push 前手順(層 4。`implementation-flow` フェーズ 7)にだけあり、**層 2 にも層 3 にも置いていない。**\n \n - **層 2 へ載せない理由は所要時間と環境。** 手元の実測で初回は clippy 74 秒 + test 92 秒と、`pre-push` 全体\n-  (73.0 秒)の 2 倍を超え、上の `check-pr-closing-issue-cases.sh` を層 1 だけに置いた物差しに載らない。\n+  (73.0 秒)の 2 倍を超え、上の判定表の置き場で書いた物差し(載せたときに `pre-push` 全体がどれだけ伸びるか)に載らない。\n   webkit のシステムライブラリが無い環境では飛ばすしかなく、飛ばす環境が多いほど層 2 に置いても守れない\n - **層 3 へも置かない。** かかる時間は同じで、撮影範囲の検査と同じく最速フィードバック層の位置づけと合わない\n \n@@ -497,8 +497,7 @@ bash .github/scripts/check-added-test-helper-duplication.sh origin/main\n # 上の 2 つの判定表(`ok` だけなら期待どおり)。exit 2 = 検査できなかった、も覆う\n bash .github/scripts/check-added-cases.sh; echo \"exit=$?\"\n \n-# PR が閉じる Issue の検査の判定表(`ok` だけなら期待どおり)。CI だけが走らせるので、\n-# check-pr-closing-issue.sh を触ったときはここで走らせる(1 分かかる)\n+# PR が閉じる Issue の検査の判定表(`ok` だけなら期待どおり)。pre-push と CI も走らせる\n bash .github/scripts/check-pr-closing-issue-cases.sh; echo \"exit=$?\"\n \n # 同じ Issue を閉じる他の PR の検査の判定表(`ok` だけなら期待どおり)。CI だけが走らせるので、",
+          "patchLines": 58,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -260,8 +260,8 @@ pnpm run test:run                                       # vitest(pre-push に無\n   `jq`)が無い検査を飛ばしたまま exit 0 になる。飛ばして落ちたら道具を揃えて走らせ直す\n - **検査をここへ一覧として写さない。** 足すのは `pre-push` の側だけ(`分類: harness`)\n - **`pre-push` に無く、CI の `rules-check` だけが走らせる検査が 1 つある。**\n-  `.github/scripts/check-pr-closing-issue-cases.sh` は `pre-push` に無いので、\n-  `check-pr-closing-issue.sh` を触ったときだけ手元でも走らせる\n+  `.github/scripts/check-duplicate-issue-pr-cases.sh` は `pre-push` に無いので、\n+  `check-duplicate-issue-pr.sh` を触ったときだけ手元でも走らせる\n   (層 2 へ置かない理由と所要時間は `.claude/hooks/README.md`「カバー範囲と残る穴」)\n - **カナリアが通っても、それだけでは不発と決まらない。** カナリアは自分の取りこぼしと本当の\n   不発を区別できない。`.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」の表で",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 4,
+          "patch": "@@ -204,10 +204,9 @@ jobs:\n         run: bash harness/githooks/lib/check-tally-cases.sh\n \n       # pr-closing-issue.yml が呼ぶ検査の判定表。**検査対象と別のワークフローに置く。**\n-      # あちらは本文の編集(`edited`)でも再実行するので、1 分かかるこのステップを\n-      # 本文の手直しのたびに走らせることになる(`on: pull_request` を既定のまま使う\n-      # このワークフローは `edited` を含まない)。同じ 1 分が pre-push に無い理由は\n-      # 上と同じ README の段落。\n+      # あちらは本文の編集(`edited`)でも再実行するが、判定表は gh を差し替えて走り PR 本文を\n+      # 読まないので、本文の手直しのたびに走らせても結果が変わらない(`on: pull_request` を\n+      # 既定のまま使うこのワークフローは `edited` を含まない)。\n       - name: PR が閉じる Issue の検査の判定表\n         run: bash .github/scripts/check-pr-closing-issue-cases.sh\n ",
+          "patchLines": 14,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "patch": "@@ -25,7 +25,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の\n \n | フック | 検査 | 呼んでいるもの |\n | --- | --- | --- |\n-| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / story の title / 名指ししたパス / テストヘルパーの重複 / import 規約の判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / テストヘルパーの重複の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図の判定表 / 解説ページの置き場の判定表 / 解説の検査の判定表 / 解説ページの枠の検査の判定表 / 解説ページの核の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 / push 前の検査フックの判定表 / 編集時の検査フックの判定表 / sticky コメントの投稿・差し替えの判定表 / 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表 / 親セッションの編集の判定表 / 判定の読み取りと報告と種別の照合の判定表 / pre-push の結果行の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.github/scripts/upsert-sticky-comment-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/parent-session-edit-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |\n+| `pre-push` | 型 / lint / format / doc コメント / テスト規約 / import 規約 / story の title / 名指ししたパス / テストヘルパーの重複 / import 規約の判定表 / story の title の判定表 / 名指ししたパスの判定表 / doc コメントの判定表 / テストヘルパーの重複の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図の判定表 / 解説ページの置き場の判定表 / 解説の検査の判定表 / 解説ページの枠の検査の判定表 / 解説ページの核の判定表 / 行数のラチェット / 集計の判定表 / カナリアの判定表 / push 前の検査フックの判定表 / 編集時の検査フックの判定表 / sticky コメントの投稿・差し替えの判定表 / PR が閉じる Issue の検査の判定表 / 作業ツリーを書き換えるサブエージェントの実行中フラグの判定表 / 親セッションの編集の判定表 / 判定の読み取りと報告と種別の照合の判定表 / pre-push の結果行の判定表 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh`・`.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh`・`harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.github/scripts/upsert-sticky-comment-cases.sh`・`.github/scripts/check-pr-closing-issue-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/parent-session-edit-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |\n \n | スクリプト | 呼ばれ方 | 内容 |\n | --- | --- | --- |\n@@ -47,7 +47,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の\n PR の解説ページの判定表 5 本(`build-pr-change-map-cases.sh` / `pr-explain-pages-cases.sh` /\n `build-pr-explain-cases.sh` / `check-pr-explain-template-cases.sh` / `pr-explain-core-cases.sh`)も `.github/scripts/` にある。当てる先が `pr-explain.yml` と\n `pr-explain` スキルから呼ばれるスクリプトで、同じ場所にあるため。\n-**行数のラチェットと判定表 19 本**(`harness/records/count.sh --ratchet` /\n+**行数のラチェットと判定表 20 本**(`harness/records/count.sh --ratchet` /\n `harness/records/count-cases.sh` / `.claude/hooks/lib/import-rule-cases.sh` /\n `.claude/hooks/lib/story-title-cases.sh` / `.claude/hooks/lib/named-path-cases.sh` /\n `.claude/hooks/lib/missing-doc-comments-cases.sh` / `.claude/hooks/lib/duplicate-test-helpers-cases.sh` /\n@@ -57,7 +57,8 @@ PR の解説ページの判定表 5 本(`build-pr-change-map-cases.sh` / `pr-exp\n `.claude/hooks/lib/parent-session-edit-cases.sh` /\n `.claude/hooks/lib/cases-report-cases.sh` /\n `harness/githooks/lib/check-tally-cases.sh` /\n-`.github/scripts/upsert-sticky-comment-cases.sh` と上の解説ページの 5 本)も\n+`.github/scripts/upsert-sticky-comment-cases.sh` /\n+`.github/scripts/check-pr-closing-issue-cases.sh` と上の解説ページの 5 本)も\n `.claude/hooks/` 側のフック(`pre-push-*.sh`)に対応物を持たない。判定表をどの層へ置くかと、層 3 へ足さない理由は\n `.claude/hooks/README.md`「カバー範囲と残る穴」。\n \n@@ -69,7 +70,7 @@ PR の解説ページの判定表 5 本(`build-pr-change-map-cases.sh` / `pr-exp\n | `pnpm` または `node_modules` | 型 / lint / format |\n | `python3`（起動できないものが PATH に居る場合を含む） | doc コメント（と判定表） / import 規約（と判定表） / story の title（と判定表） / 名指ししたパス（と判定表） / テストヘルパーの重複（と判定表） / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加された分の検査の判定表 / 変更の地図・解説ページの置き場・解説の検査・解説ページの枠の検査の判定表 |\n | `python3`（同上）または `jq` | カナリアの判定表 / push 前の検査フックの判定表 / 編集時の検査フックの判定表 |\n-| `jq` | sticky コメントの投稿・差し替えの判定表 |\n+| `jq` | sticky コメントの投稿・差し替えの判定表 / PR が閉じる Issue の検査の判定表 |\n | `python3`（同上）または `node`（起動できないもの・Node 20 未満が PATH に居る場合を含む） | 解説ページの核の判定表 |\n \n **飛ばしたことを出力に「飛ばします」と残し、最後の行の件数にも数える。** 通常の成功と綴りが同じだと、",
+          "patchLines": 37,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 2,
+          "patch": "@@ -98,10 +98,12 @@ run_check \"push 前の検査フックの判定表\" bash .claude/hooks/lib/pre-pu\n run_check \"編集時の検査フックの判定表\" bash .claude/hooks/lib/edit-detector-cases.sh\n resume_checks\n \n-# PR へ sticky コメントを貼る・差し替える共通スクリプトの判定表。差し替えた gh が一覧に jq を当てるので、\n-# jq が無い環境では判定が変わっていなくても NG を出す。python3 は使わないので上の区間とは分ける。\n+# gh を差し替えて走る .github/scripts/ の判定表(sticky コメントを貼る・差し替える共通スクリプトと、\n+# PR が閉じる Issue の検査)。どちらも jq を使うので、jq が無い環境では判定が変わっていなくても\n+# NG を出す。python3 は使わないので上の区間とは分ける。\n command -v jq >/dev/null 2>&1 || skip_following_checks \"jq が無い\"\n run_check \"sticky コメントの投稿・差し替えの判定表\" bash .github/scripts/upsert-sticky-comment-cases.sh\n+run_check \"PR が閉じる Issue の検査の判定表\" bash .github/scripts/check-pr-closing-issue-cases.sh\n resume_checks\n \n # 作業ツリーを書き換えるサブエージェントの実行中フラグ(層 3 の部品)の判定表。bash だけで走るので飛ばさない。",
+          "patchLines": 15,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "3bb29187c939b72b50b95c9b6a37db84b2bfd23c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T12:28:40Z",
+      "subject": "📝 [Documentation]: #1034 判定表の置き場の物差しと参照をレビュー指摘に合わせて直す",
+      "body": "- .claude/hooks/README.md の物差しの定義を 1 箇所に寄せ、他の 3 箇所は参照だけにした\n- 同じ箇条から 35.7 秒・1.5 倍の経緯と誤った内訳(問い合わせ直しの待ち)を外し、\n  規範 1 行と今の値(測った回ごと)に絞った。出どころの読めなかった「2 本」を\n  lib/canary-cases.sh に名指しした\n- implementation-flow SKILL.md は件数と名前を写さず、README の表への参照にした\n- frontend.yml の理由を「判定表は実際の PR を問い合わせない」に直し、duplicate 側の\n  「同じ README」を名指しにした\n\n背景:\n観点別レビュー(duplication / comment / harness / solution)の指摘。物差しの全文を\n4 箇所に書くと片方だけ直せる箇所が増え、経緯の数値を規範の箇条に残すと前の判断の\n根拠を今の基準と読み違える。\n\n採用理由:\n経緯は Issue #1034 に書いてあるので README は (#1034) の参照にとどめた。0.8 秒は\npre-push の回の中で測り直し、全体時間の違う回であることを書いた(73.0 秒の回とは\n環境の速さが違うため、同じ回の値として並べない)。\n\n影響とトレードオフ:\n「2 本」の片方 lib/result-option-read-cases.sh は #1013 で消えており、名指しパスの\n検査に掛かるので書いていない。check-tally・import-rule・edit-detector の値の測り方は\n前から書かれておらず、今回も手を入れていない。\n\n代替案:\n- SKILL.md で名指しを付け替えるだけにする: #1377 で同じ書き換えがまた要る\n- 「2 本」をそのまま残す: 直前の文が層 2 に載せた話になり、今回の判定表を含むと読める\n\n参考:\n#1034 の検証コメント、c9477f01c(「2 本」の出どころ)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SPDy5GGiNNGyp5vqA",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 6,
+          "patch": "@@ -200,11 +200,12 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。**\n   当てる 2 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する\n - **層 2 に載せるかの物差しは、載せたときに `pre-push` 全体がどれだけ伸びるか。**\n-  `check-pr-closing-issue-cases.sh` は待ちを消す前は 35.7 秒かかり(実測)、`pre-push` 全体の 73.0 秒(実測・`node_modules` のある環境。この判定表と同じ環境で\n-  続けて測った)の 1.5 倍になるので層 1 だけに置いていた。待ちのほぼ全部は 5xx の再試行と問い合わせ直しの\n-  固定の待ちで、差し替え口で 0 にすると 0.8 秒(実測。この判定表だけを単独で走らせた値)になったので層 2 にも置いた(#1034)。ここへ載せた 2 本は合わせて 2.2 秒、解説ページの 5 本は同じ `pre-push` の回の中で合わせて 16.2 秒(地図 3.4・置き場 5.6・解説の検査 4.3・枠の検査 2.8・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒、`lib/edit-detector-cases.sh` は 1.5 秒(実測)\n+  `pre-push` 全体は 73.0 秒(実測・`node_modules` のある環境)。`check-pr-closing-issue-cases.sh` は\n+  5xx の再試行の待ちを差し替え口で 0 にして層 2 にも置き(#1034)、`lib/canary-cases.sh` と合わせて 1.8 秒\n+  (0.8 秒と 1.0 秒。どちらも全体が 105.8 秒だった別の環境の `pre-push` の回の中で測った値)。\n+  解説ページの 5 本は 73.0 秒の回の中で合わせて 16.2 秒(地図 3.4・置き場 5.6・解説の検査 4.3・枠の検査 2.8・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒、`lib/edit-detector-cases.sh` は 1.5 秒(実測)\n - **`check-duplicate-issue-pr-cases.sh` は層 1 だけ。** 22.0 秒かかり(実測)、大半が問い合わせの再試行の\n-  待ち。上の物差し(載せたときに `pre-push` 全体がどれだけ伸びるか)に載らないので、`check-duplicate-issue-pr.sh` を触ったときは\n+  待ち。上の物差しに載らないので、`check-duplicate-issue-pr.sh` を触ったときは\n   手で走らせる(「動作確認」)。待ちを 0 にできるかは #1377 で扱う。層 2 にも置いた `upsert-sticky-comment-cases.sh` は 0.9 秒(実測。\n   再試行の待ちを環境変数で 0 にしている)\n - 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない\n@@ -222,7 +223,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | 合計 | 3 分 37 秒 |\n \n - **層 2 へ載せない理由は所要時間。** `pre-push` 全体の 6 倍かかり、上の\n-  判定表の置き場で書いた物差し(載せたときに `pre-push` 全体がどれだけ伸びるか)に載らない\n+  判定表の置き場で書いた物差しに載らない\n - **層 3 へも置かない。** かかる時間は同じで、3 分半の検査は「編集中に走らせる最速\n   フィードバック層」という位置づけと合わない\n - **層 4 が止めるのは、はみ出しを入れる側の PR。** `harness/records/pr-634.md` 指摘 25 が\n@@ -249,7 +250,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n `src-tauri.yml`)と push 前手順(層 4。`implementation-flow` フェーズ 7)にだけあり、**層 2 にも層 3 にも置いていない。**\n \n - **層 2 へ載せない理由は所要時間と環境。** 手元の実測で初回は clippy 74 秒 + test 92 秒と、`pre-push` 全体\n-  (73.0 秒)の 2 倍を超え、上の判定表の置き場で書いた物差し(載せたときに `pre-push` 全体がどれだけ伸びるか)に載らない。\n+  (73.0 秒)の 2 倍を超え、上の判定表の置き場で書いた物差しに載らない。\n   webkit のシステムライブラリが無い環境では飛ばすしかなく、飛ばす環境が多いほど層 2 に置いても守れない\n - **層 3 へも置かない。** かかる時間は同じで、撮影範囲の検査と同じく最速フィードバック層の位置づけと合わない\n ",
+          "patchLines": 35,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 4,
+          "patch": "@@ -259,10 +259,8 @@ pnpm run test:run                                       # vitest(pre-push に無\n - **`PRE_PUSH_REQUIRE_ALL=1` を外さない。** 外すと道具(`pnpm` / `node_modules` / `python3` /\n   `jq`)が無い検査を飛ばしたまま exit 0 になる。飛ばして落ちたら道具を揃えて走らせ直す\n - **検査をここへ一覧として写さない。** 足すのは `pre-push` の側だけ(`分類: harness`)\n-- **`pre-push` に無く、CI の `rules-check` だけが走らせる検査が 1 つある。**\n-  `.github/scripts/check-duplicate-issue-pr-cases.sh` は `pre-push` に無いので、\n-  `check-duplicate-issue-pr.sh` を触ったときだけ手元でも走らせる\n-  (層 2 へ置かない理由と所要時間は `.claude/hooks/README.md`「カバー範囲と残る穴」)\n+- **`pre-push` に無く CI だけが走らせる判定表は、`.claude/hooks/README.md`「カバー範囲と残る穴」の\n+  表で層 2 が「無し」の行。** 対応するスクリプトを触ったときは手元でも走らせる\n - **カナリアが通っても、それだけでは不発と決まらない。** カナリアは自分の取りこぼしと本当の\n   不発を区別できない。`.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」の表で\n   PreToolUse の痕跡を見て切り分ける。フック不発(判例 `hook-environment`。分類は `harness`)として記録してよいのは痕跡が無い枝だけ",
+          "patchLines": 13,
+          "truncated": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "patch": "@@ -204,14 +204,15 @@ jobs:\n         run: bash harness/githooks/lib/check-tally-cases.sh\n \n       # pr-closing-issue.yml が呼ぶ検査の判定表。**検査対象と別のワークフローに置く。**\n-      # あちらは本文の編集(`edited`)でも再実行するが、判定表は gh を差し替えて走り PR 本文を\n-      # 読まないので、本文の手直しのたびに走らせても結果が変わらない(`on: pull_request` を\n-      # 既定のまま使うこのワークフローは `edited` を含まない)。\n+      # あちらは本文の編集(`edited`)でも再実行するが、判定表は実際の PR を問い合わせない(JSON を\n+      # 渡すか gh を差し替える)ので本文を読まず、本文の手直しのたびに走らせても結果が変わらない\n+      # (`on: pull_request` を既定のまま使うこのワークフローは `edited` を含まない)。\n       - name: PR が閉じる Issue の検査の判定表\n         run: bash .github/scripts/check-pr-closing-issue-cases.sh\n \n       # pr-closing-issue.yml が呼ぶもう 1 本の検査の判定表。検査対象と別のワークフローに置く理由は\n-      # 上と同じ。pre-push に無い理由は同じ README の `check-duplicate-issue-pr-cases.sh` の箇条。\n+      # 上と同じ(こちらも gh を差し替える)。pre-push に無い理由は `.claude/hooks/README.md`\n+      # 「カバー範囲と残る穴」の `check-duplicate-issue-pr-cases.sh` の箇条。\n       - name: 同じ Issue を閉じる他の PR の検査の判定表\n         run: bash .github/scripts/check-duplicate-issue-pr-cases.sh\n ",
+          "patchLines": 20,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": ".claude/skills/implementation-flow/SKILL.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "to": ".github/scripts/check-pr-closing-issue.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "to": "harness/records/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-closing-issue.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-frontend-report.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-tauri-version-match.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "pnpm-lock.yaml",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/pr-closing-issue.yml",
+      "to": ".github/scripts/check-pr-closing-issue.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": "harness/githooks/pre-push",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "added"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/lib/detector-precondition.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    }
+  ]
+}
