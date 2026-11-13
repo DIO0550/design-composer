@@ -29,7 +29,7 @@ test("中身の変わらない 1 件目に続きが届いても、1 回戻れば
 
   const continued = EditHistory.amend(unchanged, documentOfWidth(768));
 
-  // 1 件目を積まずに弾くと、続きが 414 を上書きして 375 まで戻ってしまう
+  // 中身の変わらない 1 件目を `record` が積まずに弾く実装を落とす（理由は `EditHistory.record` の doc）
   const undone = Option.unwrap(EditHistory.undo(continued));
   expect(undone.present).toEqual(documentOfWidth(414));
 });
