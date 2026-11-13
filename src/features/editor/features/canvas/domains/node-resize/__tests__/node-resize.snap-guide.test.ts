@@ -3,7 +3,12 @@ import type { CanvasBounds } from "@/features/editor/features/canvas/domains/can
 import { SideSnap } from "@/features/editor/features/canvas/domains/side-snap";
 import { Option } from "@/utils/Option";
 import { NodeResize } from "../index";
-import { grabbedAt, grabbedWithSnap, setupResizable, setupView } from "./setup";
+import {
+  grabbedAt,
+  grabbedWithSnap,
+  setupDrawnWhileTracking,
+  setupResizable,
+} from "./setup";
 
 /*
  * 掴んだ辺が揃ったときのガイド線（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。
@@ -18,7 +23,11 @@ test("右辺を掴んで揃え先の右辺の近くまで運ぶと、揃え先�
     RightAt340,
   ]);
 
-  const tracked = NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupView());
+  const tracked = NodeResize.trackedAt(
+    resize,
+    { x: 337, y: 100 },
+    setupDrawnWhileTracking(),
+  );
 
   expect(
     Option.flatMap(tracked, ({ guides }) =>
@@ -42,7 +51,11 @@ test("左辺を掴んで揃え先の左辺の近くまで運ぶと、揃え先�
     leftAt130,
   ]);
 
-  const tracked = NodeResize.trackedAt(resize, { x: 133, y: 100 }, setupView());
+  const tracked = NodeResize.trackedAt(
+    resize,
+    { x: 133, y: 100 },
+    setupDrawnWhileTracking(),
+  );
 
   expect(
     Option.flatMap(tracked, ({ guides }) =>
@@ -60,7 +73,11 @@ test("右辺を掴んだままポインタが縦にもずれても、ガイド�
   ]);
 
   // 縦に 30 ずれても幅しか変わらないので、上辺 50 から揃え先の下辺 420 まで
-  const tracked = NodeResize.trackedAt(resize, { x: 337, y: 130 }, setupView());
+  const tracked = NodeResize.trackedAt(
+    resize,
+    { x: 337, y: 130 },
+    setupDrawnWhileTracking(),
+  );
 
   expect(
     Option.flatMap(tracked, ({ guides }) =>
@@ -85,7 +102,11 @@ test("下辺を掴んだままポインタが横にもずれても、ガイド�
   ]);
 
   // 横に 30 ずれても高さしか変わらないので、左辺 100 から揃え先の右辺 640 まで
-  const tracked = NodeResize.trackedAt(resize, { x: 230, y: 177 }, setupView());
+  const tracked = NodeResize.trackedAt(
+    resize,
+    { x: 230, y: 177 },
+    setupDrawnWhileTracking(),
+  );
 
   expect(
     Option.flatMap(tracked, ({ guides }) =>
@@ -103,7 +124,11 @@ test("揃え先の辺の近くまで運んでいなければ、ガイド線は�
   ]);
 
   // 右辺は 320 で、揃え先の右辺 340 から 20 離れている
-  const tracked = NodeResize.trackedAt(resize, { x: 320, y: 100 }, setupView());
+  const tracked = NodeResize.trackedAt(
+    resize,
+    { x: 320, y: 100 },
+    setupDrawnWhileTracking(),
+  );
 
   expect(Option.map(tracked, ({ guides }) => guides)).toEqual(
     Option.some(SideSnap.NoGuides),
@@ -117,7 +142,11 @@ test("掴んだ時点の実測を載せていない掴みでは、揃え先の�
     { x: 300, y: 100 },
   );
 
-  const tracked = NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupView());
+  const tracked = NodeResize.trackedAt(
+    resize,
+    { x: 337, y: 100 },
+    setupDrawnWhileTracking(),
+  );
 
   expect(Option.map(tracked, ({ guides }) => guides)).toEqual(
     Option.some(SideSnap.NoGuides),
@@ -129,7 +158,11 @@ test("揃え先を外した掴みでは、揃え先の近くまで運んでも�
     grabbedWithSnap({ x: 1, y: 0.5 }, { x: 300, y: 100 }, [RightAt340]),
   );
 
-  const tracked = NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupView());
+  const tracked = NodeResize.trackedAt(
+    resize,
+    { x: 337, y: 100 },
+    setupDrawnWhileTracking(),
+  );
 
   expect(Option.map(tracked, ({ guides }) => guides)).toEqual(
     Option.some(SideSnap.NoGuides),
@@ -149,7 +182,11 @@ test("右下の角を掴んで幅と高さの両方が揃うと、縦と横の�
     bottomAt180,
   ]);
 
-  const tracked = NodeResize.trackedAt(resize, { x: 337, y: 176 }, setupView());
+  const tracked = NodeResize.trackedAt(
+    resize,
+    { x: 337, y: 176 },
+    setupDrawnWhileTracking(),
+  );
 
   expect(
     Option.map(tracked, ({ guides }) => ({
@@ -164,7 +201,7 @@ test("掴んでいる状態に載せた揃った線が、今出すガイド線�
     RightAt340,
   ]);
   const tracked = Option.unwrap(
-    NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupView()),
+    NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupDrawnWhileTracking()),
   );
 
   expect(NodeResize.snapGuides(NodeResize.withLines(resize, tracked))).toEqual(
