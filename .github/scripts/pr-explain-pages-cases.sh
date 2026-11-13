@@ -39,7 +39,7 @@ session="$work/session"
 git init --quiet -b topic "$session"
 mkdir -p "$session/.github/scripts/lib"
 cp "$scripts_dir/pr-explain-pages.sh" "$scripts_dir/build-pr-explain.py" "$scripts_dir/check-pr-explain-template.py" "$session/.github/scripts/"
-cp "$scripts_dir/lib/embedded_regions.py" "$session/.github/scripts/lib/"
+cp "$scripts_dir/lib/embedded_regions.py" "$scripts_dir/lib/usage.sh" "$session/.github/scripts/lib/"
 printf '{"name": "session"}\n' > "$session/package.json"
 git -C "$session" add -A && git -C "$session" commit --quiet -m pushed
 git init --quiet --bare "$work/session-origin.git"
@@ -176,6 +176,18 @@ fresh_origin seeded
 before="$(tip)"
 run_pages put-page 1 index "$work/explain.json"; status=$?
 expect "put-page は知らないモード(引数の誤り)" '[ "$status" -eq 2 ] && [ "$(tip)" = "$before" ]'
+
+mkdir -p "$work/without-lib"
+cp "$pages" "$work/without-lib/"
+fresh_origin seeded
+before="$(tip)"
+bash "$work/without-lib/pr-explain-pages.sh" put-page 1 index "$work/explain.json" >/dev/null 2>&1; status=$?
+expect "読み込む lib が無ければ、知らないモードでも引数の誤りへ進まず 127 で何も push しない" '[ "$status" -eq 127 ] && [ "$(tip)" = "$before" ]'
+
+fresh_origin seeded
+before="$(tip)"
+bash "$work/without-lib/pr-explain-pages.sh" remove 1 >/dev/null 2>&1; status=$?
+expect "読み込む lib が無ければ、消すフォルダのある remove でも 127 で何も push しない" '[ "$status" -eq 127 ] && [ "$(tip)" = "$before" ]'
 
 fresh_origin seeded
 run_pages put-map 1 "$work/map.json" "$template"

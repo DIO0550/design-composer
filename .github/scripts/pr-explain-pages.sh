@@ -30,7 +30,8 @@
 #
 # 終了コード: 0 = 置いた / 変更が無かった、1 = 解説か枠が検査に落ちた・解説の sha を push していない・
 #             push できなかった、2 = 引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が
-#             無い(`PR Explain` の run が地図を置く前か、PR が閉じて消した後。やり直さない)
+#             無い(`PR Explain` の run が地図を置く前か、PR が閉じて消した後。やり直さない)、
+#             127 = 読み込む `lib/usage.sh` を読み込めない(何も触らずに返す)
 set -uo pipefail
 
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -38,10 +39,7 @@ branch="gh-pages"
 max_attempts=5
 retry_wait="${PR_EXPLAIN_RETRY_WAIT:-2}"
 
-usage() {
-  sed -n '/^# 使い方:/,/^#$/p' "$0" | sed 's/^# \{0,1\}//' >&2
-  exit 2
-}
+. "$scripts_dir/lib/usage.sh" || exit 127
 
 mode="${1:-}"
 pr="${2:-}"
