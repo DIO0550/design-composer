@@ -1,0 +1,450 @@
+{
+  "version": 1,
+  "pr": 1381,
+  "sha": "3bb29187c939b72b50b95c9b6a37db84b2bfd23c",
+  "issue": 1034,
+  "overview": {
+    "title": "PR が閉じる Issue の検査の判定表を pre-push にも載せる",
+    "lead": "`check-pr-closing-issue.sh` を触った変更が、CI を待たずに push 前の検査で判定の退行に気づけるようになった。判定表の 35 秒は固定の待ちだったので、それを 0 にして 0.8 秒にした。",
+    "before": [
+      {
+        "text": "判定表は CI だけが走らせ、push 前の検査(`pre-push`)には無かった。触ったら手で走らせる、という規律頼みだった"
+      },
+      {
+        "text": "判定表は 35.8 秒かかり、その 35 秒が 5xx 再試行の固定の待ち(`sleep $((attempt * 5))`。判定表から 0 にできない)だった"
+      }
+    ],
+    "after": [
+      {
+        "text": "判定表は 5xx 再試行と問い合わせ直しの待ちを両方 0 にして走り、0.8 秒で終わる",
+        "message": "cases-runs-check"
+      },
+      {
+        "text": "`pre-push` の jq だけが要る区間で走る。jq が無い環境では「飛ばします」と出る",
+        "message": "prepush-runs-cases"
+      },
+      {
+        "text": "CI(`gh` が本物の GitHub に問い合わせる経路)の待ちは既定値のままで変わらない"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "待ちの差し替え口",
+        "text": "5xx 再試行の待ちを環境変数で差し替えられるようにし、同じファイルの既存の差し替え口も同じ語彙へ改名した。既定値は変えていない",
+        "go": {
+          "kind": "file",
+          "path": ".github/scripts/check-pr-closing-issue.sh"
+        }
+      },
+      {
+        "title": "物差しの書き直し",
+        "text": "層 1 だけに置く理由を「この判定表は 1.5 倍」という実例から「載せたときに `pre-push` 全体がどれだけ伸びるか」という物差しへ書き直し、撮影範囲・Rust・同じ Issue を閉じる他の PR の検査はそれを参照する",
+        "go": {
+          "kind": "file",
+          "path": ".claude/hooks/README.md"
+        }
+      }
+    ]
+  },
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "検査スクリプト・push 前の検査・CI・その説明を変えた。アプリのコードは触っていない"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".github/scripts/check-pr-closing-issue.sh",
+      "name": "閉じる Issue の検査",
+      "role": "PR が閉じる Issue を GitHub に問い合わせ、無ければ赤にする",
+      "change": "5xx 再試行の待ちを差し替え可能にし、問い合わせ直しの差し替え口を改名"
+    },
+    {
+      "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "name": "閉じる Issue の判定表",
+      "role": "検査の判定を問い合わせ結果の組ごとに固定する",
+      "change": "待ちを両方 0 にして走らせる"
+    },
+    {
+      "path": "harness/githooks/pre-push",
+      "name": "push 前の検査",
+      "role": "push の前に型・lint・判定表を順に走らせる",
+      "change": "jq 区間に判定表を 1 本足した"
+    },
+    {
+      "path": ".github/workflows/frontend.yml",
+      "name": "CI の規約検査",
+      "role": "rules-check で判定表を走らせる",
+      "change": "別ワークフローに置く理由のコメントだけ"
+    },
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "判定表の置き場",
+      "role": "どの判定表をどの層に置くかと、その物差し",
+      "change": "表の行・物差し・参照を直した"
+    }
+  ],
+  "messages": [
+    {
+      "id": "prepush-runs-cases",
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "kind": "qry",
+      "name": "判定表を走らせる",
+      "code": "run_check \"PR が閉じる Issue の検査の判定表\" bash .github/scripts/check-pr-closing-issue-cases.sh",
+      "via": "exec",
+      "returns": "終了コード(NG が 1 行でもあれば 1)",
+      "status": "added"
+    },
+    {
+      "id": "cases-runs-check",
+      "from": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "to": ".github/scripts/check-pr-closing-issue.sh",
+      "kind": "qry",
+      "name": "差し替えた gh で検査を走らせる",
+      "code": "PR_CLOSING_ISSUE_LINK_WAIT=0 PR_CLOSING_ISSUE_RETRY_WAIT=0 ... bash \"$script\"",
+      "via": "exec",
+      "payload": "待ち 0・スタブの gh・イベント種別",
+      "returns": "終了コードと出力(通った / 閉じ忘れ / 問い合わせ失敗)",
+      "status": "changed"
+    },
+    {
+      "id": "ci-runs-cases",
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "kind": "qry",
+      "name": "CI で判定表を走らせる",
+      "code": "run: bash .github/scripts/check-pr-closing-issue-cases.sh",
+      "via": "exec",
+      "returns": "終了コード"
+    }
+  ],
+  "flows": [
+    {
+      "id": "push",
+      "label": "push 前の検査",
+      "steps": [
+        "prepush-runs-cases",
+        "cases-runs-check"
+      ]
+    },
+    {
+      "id": "ci",
+      "label": "CI の規約検査",
+      "steps": [
+        "ci-runs-cases",
+        "cases-runs-check"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "6055fcafe5eb3c579460982ec71a5445659ecbef",
+      "phase": "core",
+      "role": "5xx 再試行の待ちを差し替え可能にし、判定表から 0 にする",
+      "why": "pre-push に載せられなかった理由は所要時間で、その中身は削れない仕事ではなく固定の待ちだった。先に待ちを消してから配線する順にした",
+      "flows": [
+        "push",
+        "ci"
+      ],
+      "review": [
+        "既定値(5 と 10)が変わっておらず、CI の待ちが変わらないこと",
+        "`LINK_WAIT_STEP` の改名が 3 箇所で漏れなく揃っていること"
+      ],
+      "before": [
+        {
+          "text": "判定表は 35.8 秒"
+        }
+      ],
+      "after": [
+        {
+          "text": "判定表は 0.8 秒。19 行すべて ok",
+          "message": "cases-runs-check"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/check-pr-closing-issue.sh",
+          "start": 60,
+          "end": 60,
+          "text": "変える前は `sleep $((attempt * 5))`。判定表の 3 行がここで 5・15・15 秒待っていた"
+        }
+      ]
+    },
+    {
+      "sha": "467553dc69f229fc9fbcf45d7513f1cdaffb0f76",
+      "phase": "core",
+      "role": "判定表を pre-push の jq 区間に載せ、層の記述を直す",
+      "why": "判定表は jq を使い python3 を使わないので、sticky の判定表と同じ区間に置いた",
+      "flows": [
+        "push"
+      ],
+      "review": [
+        "jq が無い環境で、判定表が NG ではなく「飛ばします」になる区間に入っていること"
+      ],
+      "before": [
+        {
+          "text": "pre-push に無かった"
+        }
+      ],
+      "after": [
+        {
+          "text": "pre-push の 33 本目として走る",
+          "message": "prepush-runs-cases"
+        }
+      ]
+    },
+    {
+      "sha": "3bb29187c939b72b50b95c9b6a37db84b2bfd23c",
+      "phase": "revise",
+      "role": "レビュー指摘に合わせて物差しと参照を直す",
+      "why": "物差しの全文を 4 箇所に写していた・経緯の数値を規範の箇条に残していた・参照先を失ったコメントがあった、という指摘をまとめて直した",
+      "review": [
+        "README の物差しの定義が 1 箇所だけで、他は参照になっていること"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "cases",
+      "label": "閉じる Issue の判定表",
+      "file": ".github/scripts/check-pr-closing-issue-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "three-failures",
+      "suite": "cases",
+      "name": "3 回とも失敗したら赤にする（握りつぶさない）",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "待ちを 0 にしても、5xx が 3 回続いたら赤になることを守る。判定表がいちばん守りたいとする行",
+      "given": "スタブの gh が 3 回とも 5xx を返す。待ちは 0",
+      "when": "検査を走らせる",
+      "then": "問い合わせ失敗として赤になり、gh は 3 回呼ばれる",
+      "excerpt": {
+        "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+        "start": 136,
+        "end": 137,
+        "text": "PR_ACTION=synchronize STUB_REPLIES='fail fail fail' run_fetch_case fetch-failed 3 \\\n  '3 回とも失敗したら赤にする（握りつぶさない）'"
+      },
+      "targets": [
+        ".github/scripts/check-pr-closing-issue.sh"
+      ],
+      "covers": [
+        "cases-runs-check"
+      ]
+    },
+    {
+      "id": "transient-5xx",
+      "suite": "cases",
+      "name": "一時的な 5xx は再試行して通る",
+      "techniques": [
+        "error"
+      ],
+      "why": "再試行が待ち 0 でも働くことを守る",
+      "given": "スタブの gh が 1 回目だけ 5xx を返す",
+      "when": "検査を走らせる",
+      "then": "通り、gh は 2 回呼ばれる",
+      "excerpt": {
+        "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+        "start": 135,
+        "end": 135,
+        "text": "PR_ACTION=synchronize STUB_REPLIES='fail' run_fetch_case pass 2 '一時的な 5xx は再試行して通る'"
+      },
+      "targets": [
+        ".github/scripts/check-pr-closing-issue.sh"
+      ],
+      "covers": [
+        "cases-runs-check"
+      ]
+    },
+    {
+      "id": "prepush-wiring",
+      "suite": "cases",
+      "name": "pre-push の配線が jq 区間に入っている",
+      "techniques": [
+        "regression"
+      ],
+      "why": "行を消す・jq の門の外へ移す退行を捕まえる判定表は無い(隣の sticky の判定表も同じ)。手で実測しただけ",
+      "given": "pre-push",
+      "when": "判定表の行を消すか門の外へ移す",
+      "then": "どれかの検査が落ちる",
+      "todo": true,
+      "covers": [
+        "prepush-runs-cases"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "push 前に、閉じる Issue の検査の判定の退行に気づける",
+    "lead": "閉じる Issue の検査を直したセッションは、CI を待たずに push 前の検査で判定の退行に気づける。push 前の検査は 1 秒ほどしか伸びない。",
+    "changed": {
+      "before": [
+        {
+          "text": "閉じる Issue の検査の判定表は CI でしか走らず、直したときは手で走らせる約束だった"
+        }
+      ],
+      "after": [
+        {
+          "text": "push 前の検査が判定表も走らせ、判定が変わっていれば push が止まる",
+          "message": "prepush-runs-cases"
+        }
+      ],
+      "specs": [
+        {
+          "path": ".claude/hooks/README.md",
+          "locator": "「カバー範囲と残る穴」の判定表の置き場の表と物差しの箇条",
+          "text": "この判定表の層 2 を「無し(残る穴)」から「あり(jq がある環境だけ)」にし、物差しを全体の伸びとして書き直した",
+          "shas": [
+            "467553dc69f229fc9fbcf45d7513f1cdaffb0f76",
+            "3bb29187c939b72b50b95c9b6a37db84b2bfd23c"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1377,
+          "text": "同じ形の固定の待ちを持つ、同じ Issue を閉じる他の PR の検査の判定表は、ここへ分けた"
+        }
+      ],
+      "primers": [
+        "param-default"
+      ]
+    },
+    "added": [
+      {
+        "label": "jq が無い環境で push する",
+        "before": [],
+        "after": [
+          {
+            "text": "この判定表は「飛ばします」と出て、件数に数えられる。ほかの検査は走る"
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "CI での閉じる Issue の検査は、これまでと同じ間隔で再試行・問い合わせ直しをする"
+      },
+      {
+        "text": "判定表が捕まえる判定の退行は変わらない",
+        "tests": [
+          "three-failures",
+          "transient-5xx"
+        ]
+      }
+    ]
+  },
+  "primers": [
+    {
+      "id": "param-default",
+      "kind": "language",
+      "category": "bash",
+      "label": "`${VAR:-default}` と算術展開",
+      "gist": "環境変数が無いときだけ既定値を使う書き方。テストからは環境変数で値を差し替え、本番は何も渡さずに既定値で動かせる",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`${名前:-既定}` は、変数が未設定か空なら既定を、そうでなければ変数の値を展開する。`set -u`(未設定の変数をエラーにする)の下でも落ちない"
+        },
+        {
+          "kind": "text",
+          "text": "`$(( ... ))` は算術展開で、中の式を整数として計算する。`$((attempt * ${X:-5}))` は「n 回目 × 秒数」になる"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/check-pr-closing-issue.sh",
+            "start": 58,
+            "end": 61,
+            "emphasis": [
+              {
+                "start": 60,
+                "end": 60
+              }
+            ],
+            "text": "    [ \"$attempt\" = 3 ] && break\n    printf '問い合わせに失敗した(%s 回目)。待って再試行する\\n' \"$attempt\" >&2\n    sleep $((attempt * ${PR_CLOSING_ISSUE_RETRY_WAIT:-5}))\n  done"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/check-pr-closing-issue.sh",
+          "lineRange": {
+            "start": 60,
+            "end": 60
+          },
+          "text": "5xx 再試行の待ち",
+          "shas": [
+            "6055fcafe5eb3c579460982ec71a5445659ecbef"
+          ]
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue.sh",
+          "lineRange": {
+            "start": 105,
+            "end": 105
+          },
+          "text": "問い合わせ直しの待ち",
+          "shas": [
+            "6055fcafe5eb3c579460982ec71a5445659ecbef"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "skip-section"
+      ]
+    },
+    {
+      "id": "skip-section",
+      "kind": "codebase",
+      "category": "push 前の検査",
+      "label": "道具が無いときに飛ばす区間",
+      "gist": "`pre-push` は道具(jq など)が無い環境で、その道具を使う検査を NG ではなく「飛ばします」にする。区間の頭で道具を調べ、`resume_checks` で区間を閉じる",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "harness/githooks/pre-push",
+            "start": 101,
+            "end": 107,
+            "emphasis": [
+              {
+                "start": 106,
+                "end": 106
+              }
+            ],
+            "text": "# gh を差し替えて走る .github/scripts/ の判定表(sticky コメントを貼る・差し替える共通スクリプトと、\n# PR が閉じる Issue の検査)。どちらも jq を使うので、jq が無い環境では判定が変わっていなくても\n# NG を出す。python3 は使わないので上の区間とは分ける。\ncommand -v jq >/dev/null 2>&1 || skip_following_checks \"jq が無い\"\nrun_check \"sticky コメントの投稿・差し替えの判定表\" bash .github/scripts/upsert-sticky-comment-cases.sh\nrun_check \"PR が閉じる Issue の検査の判定表\" bash .github/scripts/check-pr-closing-issue-cases.sh\nresume_checks"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "`PRE_PUSH_REQUIRE_ALL=1` を付けると、飛ばす代わりに落ちる。push 前手順はこれを付けて走らせる"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "harness/githooks/pre-push",
+          "lineRange": {
+            "start": 104,
+            "end": 107
+          },
+          "text": "jq だけが要る区間",
+          "shas": [
+            "467553dc69f229fc9fbcf45d7513f1cdaffb0f76"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "param-default"
+      ],
+      "flows": [
+        "push"
+      ]
+    }
+  ]
+}
