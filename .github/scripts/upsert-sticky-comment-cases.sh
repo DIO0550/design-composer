@@ -245,6 +245,19 @@ dir="$(new_case "$no_comments")"
 report 'exit=2 calls=' "$(UNSET=GITHUB_REPOSITORY run_upsert "$dir" "${post[@]}")" \
   'リポジトリが無ければ、gh を呼ばずに使い方の誤りで終わる'
 
+usage_errors="$(GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 bash "$script" --unknown x 2>&1 >/dev/null)"
+usage_outcome=missing
+[[ "$usage_errors" == *"upsert-sticky-comment.sh --marker '<!-- 名前 -->'"* ]] && usage_outcome=shown
+report shown "$usage_outcome" '使い方の誤りでは、冒頭の使い方を標準エラーへ出す'
+
+# --- 読み込む lib が無い(`gh` を呼ぶ前に exit 127) ---
+
+mkdir -p "$work/without-lib"
+cp "$script" "$work/without-lib/"
+dir="$(new_case "$no_comments")"
+report 'exit=127 calls=' "$(script="$work/without-lib/upsert-sticky-comment.sh" run_upsert "$dir" "${post[@]}")" \
+  '読み込む lib が無ければ、引数が正しくても gh を呼ばずに受け流されない失敗で終わる'
+
 # --- 一時ファイルの失敗(`gh` を呼ぶ前に exit 3) ---
 
 dir="$(new_case "$no_comments")"
