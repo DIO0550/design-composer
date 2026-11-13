@@ -43,7 +43,7 @@ export const Locking = {
    *
    * @param node 読み取り元のノード
    * @returns ロック。部品インスタンスは参照ノード直下の `locking` だけを読み、部品の根の
-   *   `locking` は読まない（docs/03-schema.md「ロック」）。未設定・語彙に無い綴りのときは既定
+   *   `locking` は読まない（docs/03-schema.md「ロック」）。未設定・語彙に無い綴りのときは既定（`Default`）
    */
   fromNode(node: Node): Locking {
     return Locking.fromProps(
