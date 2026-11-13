@@ -1,0 +1,2417 @@
+{
+  "version": 2,
+  "pr": 1383,
+  "headBranch": "claude/magical-cannon-jy98he",
+  "baseBranch": "main",
+  "mergeBase": "0abadc392b00758cc013d2fa7579aa55649ff4aa",
+  "head": "f979292d08795e24c4da9542e36af711a1941524",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/axis/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/offset/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/px/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/axis-length/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resize-edit/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / compiled",
+      "files": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/edit-continuity/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/file-paths.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 66,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/clock/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/dom-event/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/operating-system/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/operating-system/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 81,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.beneath.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.bounds.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 91,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/libs/canvas-dom/index.ts"
+        },
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Css.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Range.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/NonEmptyArray.ts",
+          "changed": false
+        },
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/__stories__/sample-editor-state.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard-reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.componentize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.frozen.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.prop-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 106,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/components/opened-document-editor/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection-distance.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.text-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-canvas.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.top-bar.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.zoom-fit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 43,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/arranged-artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-targets/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/facing/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 138,
+          "deletions": 25,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 20,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-resize.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-turned-frame.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/selection-distance-tree.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-placement.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 55,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-artboards.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/__tests__/resize-handle-overlay.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 7,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/domains/node-resize/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.gesture.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.grip-facings.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.orientation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 53,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/domains/node-resize/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 47,
+          "deletions": 10,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/domains/node-resize/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 338,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/domains/node-resize/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 100,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/__tests__/use-artboard-drag.snap.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.fit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/__tests__/use-drawn-bounds.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/use-node-drag.reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/__tests__/use-range-select.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/use-text-edit.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/use-text-edit.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/utils/DrawnBounds.ts"
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/utils/DrawnBounds.ts"
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/__stories__/screen-height-shell.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "hooks",
+      "files": [
+        {
+          "path": "src/hooks/use-first-then-rest/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+        "name": "高さが幅につれて変わる回ったノードの右辺を 2 回に分けて運んで離すと、回る前の左上の角が留まる位置で描かれる"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+        "name": "高さが幅につれて変わる回ったノードを運んだあと 1 回戻すと、幅も位置も掴む前に戻る"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+        "name": "90 度回したノードの右辺を 50 引いて高さが連れて 80 に縮むと、回る前の左上の角が留まる位置が通知される"
+      },
+      {
+        "file": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+        "name": "高さが連れて変わっても、通知は動かした回数だけで、離したときに追加の通知は出ない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "30 度回したノードの上辺を引いて幅が連れて変わっても、回る前の左下の角が親の座標で動かない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "30 度回したノードの下辺を引いて幅が連れて変わっても、回る前の左上の角が親の座標で動かない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "30 度回したノードの左辺を引いて高さが連れて伸びても、回る前の右上の角が親の座標で動かない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "360 度回したノードは、高さが連れて変わっても回っていないものと同じ編集になる"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "90 度回したノードの右辺を引いて高さが連れて縮んでも、回る前の左上の角が親の座標で動かない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "今の大きさだけを測れないときは、掴んだ軸だけで置き直す"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "回したフロー配置のノードは、高さが連れて変わっても位置を書かない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "幅だけを掴んだとき、連れて変わりうるのは高さ"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "掴んだ時点の大きさだけを測れないときは、掴んだ軸だけで置き直す"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "掴んだ時点も今も大きさを測れないときは、掴んだ軸だけで置き直す"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "祖先だけが回っているノードは、高さが連れて変わっても右辺を引いて位置を書き換えない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "角で 2 軸を掴んだとき、連れて変わる軸は無い"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "角を掴んだときは、測る大きさが前後で違っても、測れないときと同じ編集になる"
+      },
+      {
+        "file": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+        "name": "高さだけを掴んだとき、連れて変わりうるのは幅"
+      },
+      {
+        "file": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+        "name": "描かれていない名前は、長さを当てても測れない"
+      },
+      {
+        "file": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+        "name": "名前で指して長さを当てると、当てた幅と今の高さで測れる"
+      },
+      {
+        "file": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+        "name": "HTML の要素でない SVG は測れない"
+      },
+      {
+        "file": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+        "name": "style 属性の無い要素に長さを当てて測っても、測り終えると style 属性が無いまま"
+      },
+      {
+        "file": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+        "name": "インライン指定の無い高さは、当てて測ったあとも指定が無いまま戻る"
+      },
+      {
+        "file": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+        "name": "両軸に当てても、測り終えると style 属性が測る前と同じ文字列に戻る"
+      },
+      {
+        "file": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+        "name": "幅 200 の要素に幅 120 を当てると、当てた幅と今の高さで測れる"
+      },
+      {
+        "file": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+        "name": "高さが px で読めない（fit-content の）要素は測れない"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+      "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+      "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+      "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+      "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+      "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "f68d31b2ff3c8d8baba0ff04e76e40da3a0f3a31",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T12:56:06Z",
+      "subject": "✨ [New Feature]: #1027 長さを当てて描いたときの大きさを測る CanvasDom.layoutSizeFor を追加",
+      "body": "- CanvasDom.layoutSizeFor(element, lengths) を追加\n  - style 属性を控える → インラインへ長さを当てる → getComputedStyle で読む\n    → 属性ごと戻す、を 1 つの同期処理で行う\n  - HTML の要素でないもの・px で読めない計算値は none\n- 冒頭の doc の列挙に layoutSizeFor を追加\n\n背景:\n回ったノードのリサイズで、掴んでいない軸が hug / fill で連れて変わると\n反対の辺がずれる（#1027）。連れて変わる長さはレイアウトの結果で、\nブラウザにしか答えが無いので、書き込む前に「その長さで描いたらどうなるか」\nを測る手段が要る。\n\n採用理由:\nキャンバスの中身は dangerouslySetInnerHTML で流し込んでおり React の管理外\nなので、インライン style を一瞬書き換えても React と衝突しない。当てる・\n測る・戻すを同じ処理の中で終えるので、当てた長さのまま描かれることは無い。\n計算値は自分と祖先の回転・拡大縮小に依らず、端数まで読める\n（Chromium 153 で確認）。\n\n影響とトレードオフ:\n1 回の測りで強制レイアウトが 1 回走る。MutationObserver には属性の書き換えが\n届くが、src に購読者は無い。WebKit（macOS の WKWebView）で計算値が端数付きの\npx で返るかは未検証で、px で返らなければ none になる。\n\n代替案:\n- offsetWidth / offsetHeight: 整数に丸められ、前後 2 回の差で 1px ずれうる\n- getBoundingClientRect: 回った要素では外接矩形になり、祖先の拡大も入る\n- style を軸ごとに getPropertyValue / setProperty / removeProperty で戻す:\n  属性の文字列が正規化された綴りに書き直され、分岐も増える\n- computedStyleMap(): WebKit 系での対応が確かめられていない\n\n参考:\n- Issue #1027 の計画コメント\n- docs/06-ui.md「リサイズハンドル」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 61,
+          "deletions": 2,
+          "patch": "@@ -1,5 +1,7 @@\n import { ElementNameAttribute } from \"@/domains/compiled/compiled-element\";\n+import type { AxisLength } from \"@/domains/dcmp/axis-length\";\n import type { Offset } from \"@/domains/unit/offset\";\n+import { Px } from \"@/domains/unit/px\";\n import { Css } from \"@/utils/Css\";\n import { Option } from \"@/utils/Option\";\n \n@@ -9,8 +11,9 @@ import { Option } from \"@/utils/Option\";\n  * キャンバスの中身はコンパイル結果の HTML を流し込んでおり React の管理下に無いため、\n  * ref では掴めず名前の属性を選択子にして引くしかない。引き方はどこでも同じなので、\n  * 名前で要素を引く選択子の綴りと、DOM を触るところをここへ閉じ込める（要素の実測は\n- * `boundsOf` と `layoutSizeOf`、名前で引いて測るのは `DrawnBounds`、規則の差し込みは `NameStyleRule`、\n- * 重ねた器（overlay）の下を点で引くのは `elementBeneath`）。\n+ * `boundsOf` と `layoutSizeOf`、長さを当てて測るのは `layoutSizeFor`、名前で引いて測るのは\n+ * `DrawnBounds`、規則の差し込みは `NameStyleRule`、重ねた器（overlay）の下を点で引くのは\n+ * `elementBeneath`）。\n  *\n  * 名前で引いて 1 つに定まるのは artboard とその配下のノードだけ。名前はドキュメント上で\n  * 一意（docs/01-file-format.md「ノードの識別（name）」）でも、部品の中のノードは展開で\n@@ -83,6 +86,48 @@ export const CanvasDom = {\n       : Option.none;\n   },\n \n+  /**\n+   * その長さを当てて描いたときの、変形を効かせる前のレイアウトの大きさ。当てた長さは測り終えたら\n+   * 外し、`style` 属性を測る前の文字列へ戻す。\n+   *\n+   * 要素の中身は React の管理外（`CanvasDom` の doc）で、当ててから戻すまでを同じ処理の中で\n+   * 行うので、当てた長さのまま描かれることは無い。`offsetWidth` / `offsetHeight` で読まないのは、\n+   * 整数へ丸められて 2 回測った差が 1px ずれうるため。\n+   *\n+   * 戻り値の型を名前を付けずに書く理由は `boundsOf` と同じ。\n+   *\n+   * @param element 測る要素\n+   * @param lengths 当てる長さ。並びに無い軸は今の描かれ方のまま\n+   * @returns 計算値の幅と高さ（端数を持つ）。HTML の要素でないもの・幅か高さを px で読めない\n+   *   ものは `none`\n+   */\n+  layoutSizeFor(\n+    element: Element,\n+    lengths: readonly AxisLength[],\n+  ): Option<Readonly<{ width: number; height: number }>> {\n+    if (!(element instanceof HTMLElement)) {\n+      return Option.none;\n+    }\n+    const inlineStyle = Option.fromNullable(element.getAttribute(\"style\"));\n+    for (const each of lengths) {\n+      element.style.setProperty(each.axis, Px.create(each.length));\n+    }\n+    const computed = globalThis.getComputedStyle(element);\n+    const width = pxLengthOf(computed.width);\n+    const height = pxLengthOf(computed.height);\n+    if (Option.isSome(inlineStyle)) {\n+      element.setAttribute(\"style\", inlineStyle.value);\n+    } else {\n+      element.removeAttribute(\"style\");\n+    }\n+    return Option.flatMap(width, (measuredWidth) =>\n+      Option.map(height, (measuredHeight) => ({\n+        width: measuredWidth,\n+        height: measuredHeight,\n+      })),\n+    );\n+  },\n+\n   /**\n    * 重ねた器（overlay）を飛ばして、その点に描かれているいちばん手前の要素を引く。\n    *\n@@ -98,3 +143,17 @@ export const CanvasDom = {\n     );\n   },\n } as const;\n+\n+/**\n+ * px で綴られた計算値の長さ。\n+ *\n+ * @param value `getComputedStyle` が返した値\n+ * @returns `<数>px` の形ならその数。`auto` / `fit-content` など px でない綴りは `none`\n+ */\n+function pxLengthOf(value: string): Option<number> {\n+  if (!value.endsWith(\"px\")) {\n+    return Option.none;\n+  }\n+  const length = Number(value.slice(0, -\"px\".length));\n+  return Number.isFinite(length) ? Option.some(length) : Option.none;\n+}",
+          "patchLines": 87,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "408f061e02984201ee61fea221414b3106cd710d",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T12:56:16Z",
+      "subject": "🧪 [Tests]: #1027 CanvasDom.layoutSizeFor のテストと、計算値の大きさのフェイクを追加",
+      "body": "- canvas-dom.layout-size.test.ts を追加\n  - 当てた長さで測れる / 両軸に当てても style 属性が同じ文字列へ戻る /\n    インライン指定の無い軸は無いまま戻る / SVG と fit-content は測れない\n- element-measure.ts に stubComputedSizeOf / restoreComputedSize を追加\n  （名前の属性で引く要素だけ getComputedStyle の幅・高さを差し替える）\n- element-measure.ts 冒頭の doc に getComputedStyle と layoutSizeFor を追記\n\n背景:\nhappy-dom にはレイアウトが無く、計算値は書かれた宣言をそのまま返す。\nhug の高さが幅で連れて変わる経路は、フェイクで差し替えないと通せない。\n\n採用理由:\nフェイクを要素ではなく名前で引くのは、本番では編集が届くたびに中身が\n描き直されて要素が作り直されるため。要素に貼ると 2 回目の移動で外れ、\n「測れない」分岐へ黙って落ちても気づけない。\n\n影響とトレードオフ:\nglobalThis.getComputedStyle を包むので、使うテストは afterEach で\nrestoreComputedSize を呼ぶ。登録していない要素は元の関数へ流すので、\nTesting Library の判定には干渉しない。\n\n代替案:\n- 要素ごとに差し替える形: 描き直しで外れる（上記）\n\n参考:\n- Issue #1027 の計画の検証（plan-reviewer の指摘 2・3）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 74,
+          "deletions": 4,
+          "patch": "@@ -1,11 +1,14 @@\n+import { ElementNameAttribute } from \"@/domains/compiled/compiled-element\";\n import type { CanvasDom } from \"@/libs/canvas-dom\";\n \n /**\n- * 要素の実測（`getBoundingClientRect` / `offsetWidth` / `offsetHeight`）を差し替える。\n- * 測る側は `CanvasDom.boundsOf` / `CanvasDom.layoutSizeOf`。\n+ * 要素の実測（`getBoundingClientRect` / `offsetWidth` / `offsetHeight` / `getComputedStyle` の\n+ * 幅と高さ）を差し替える。測る側は `CanvasDom.boundsOf` / `CanvasDom.layoutSizeOf` /\n+ * `CanvasDom.layoutSizeFor`。\n  *\n- * happy-dom はレイアウトを行わず矩形も大きさもすべて 0 で返すため、**差し替えないと\n- * 実測を使う実装を何に壊しても通る**（rules/testing.md「その assert は落ちうるか」）。\n+ * happy-dom はレイアウトを行わず、矩形も大きさもすべて 0 で返し、計算値の幅と高さはインラインの\n+ * 綴りをそのまま返す（`fit-content` も）ため、**差し替えないと実測を使う実装を何に壊しても通る**\n+ * （rules/testing.md「その assert は落ちうるか」）。\n  * ここで差し替えるのはブラウザが行う測定だけで、そこから何が決まるかは実物が答える。\n  */\n \n@@ -59,3 +62,70 @@ export function stubLayoutSize(\n     value: size.height,\n   });\n }\n+\n+/** 差し替える前の `getComputedStyle`。差し替えていなければ `undefined`。 */\n+let originalGetComputedStyle: typeof globalThis.getComputedStyle | undefined;\n+\n+/** 名前ごとの、計算値の幅と高さの決め方。 */\n+const computedSizeByName = new Map<\n+  string,\n+  (inline: CSSStyleDeclaration) => Readonly<{ width: number; height: number }>\n+>();\n+\n+/**\n+ * その名前で描かれた要素の、計算値の幅と高さを決める（`getComputedStyle`）。ほかの要素と\n+ * ほかのプロパティは差し替える前の `getComputedStyle` が答える。\n+ *\n+ * 要素ではなく名前で引くのは、ドキュメントが変わるたびにキャンバスの要素が作り直され、要素に\n+ * 差し替えた測り方は次の描き直しで消えるため。差し替えはテストをまたいで残るので、使う側は\n+ * `afterEach(restoreComputedSize)` を置く。\n+ *\n+ * @param name 測り方を差し替える要素の名前\n+ * @param sizeFor 測られるたびに、その時点のインラインの `style`（当てた長さを含む）から、\n+ *   返すことにする幅と高さを決める関数\n+ */\n+export function stubComputedSizeOf(\n+  name: string,\n+  sizeFor: (\n+    inline: CSSStyleDeclaration,\n+  ) => Readonly<{ width: number; height: number }>,\n+): void {\n+  computedSizeByName.set(name, sizeFor);\n+  if (originalGetComputedStyle !== undefined) {\n+    return;\n+  }\n+  const original = globalThis.getComputedStyle;\n+  originalGetComputedStyle = original;\n+  globalThis.getComputedStyle = (element, pseudoElement) => {\n+    const computed = original(element, pseudoElement);\n+    const stubbed = computedSizeByName.get(\n+      element.getAttribute(ElementNameAttribute) ?? \"\",\n+    );\n+    if (stubbed === undefined) {\n+      return computed;\n+    }\n+    if (!(element instanceof HTMLElement)) {\n+      return computed;\n+    }\n+    const size = stubbed(element.style);\n+    Object.defineProperty(computed, \"width\", {\n+      configurable: true,\n+      value: `${size.width}px`,\n+    });\n+    Object.defineProperty(computed, \"height\", {\n+      configurable: true,\n+      value: `${size.height}px`,\n+    });\n+    return computed;\n+  };\n+}\n+\n+/** `stubComputedSizeOf` で差し替えた `getComputedStyle` を、差し替える前へ戻す。 */\n+export function restoreComputedSize(): void {\n+  computedSizeByName.clear();\n+  if (originalGetComputedStyle === undefined) {\n+    return;\n+  }\n+  globalThis.getComputedStyle = originalGetComputedStyle;\n+  originalGetComputedStyle = undefined;\n+}",
+          "patchLines": 90,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 82,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,82 @@\n+import { afterEach, expect, test } from \"vitest\";\n+import { AxisLength } from \"@/domains/dcmp/axis-length\";\n+import { Option } from \"@/utils/Option\";\n+import { CanvasDom } from \"../index\";\n+\n+/*\n+ * 長さを当てて測る（`CanvasDom.layoutSizeFor`）。happy-dom の計算値はインラインの綴りを\n+ * そのまま返すので、当てた長さが計算値へ届くか・測り終えたあと元へ戻るかを実物で見る。\n+ */\n+\n+/**\n+ * インラインの `style` を持つ要素を描く。\n+ *\n+ * @param style 要素の `style` 属性の文字列\n+ * @returns 描いた要素\n+ */\n+function drawnWithStyle(style: string): HTMLElement {\n+  const element = globalThis.document.createElement(\"div\");\n+  element.setAttribute(\"style\", style);\n+  globalThis.document.body.append(element);\n+  return element;\n+}\n+\n+afterEach(() => {\n+  globalThis.document.body.innerHTML = \"\";\n+});\n+\n+test(\"幅 200 の要素に幅 120 を当てると、当てた幅と今の高さで測れる\", () => {\n+  const element = drawnWithStyle(\"width: 200px; height: 100px\");\n+\n+  expect(\n+    CanvasDom.layoutSizeFor(element, [AxisLength.create(\"width\", 120)]),\n+  ).toEqual(Option.some({ width: 120, height: 100 }));\n+});\n+\n+test(\"両軸に当てても、測り終えると style 属性が測る前と同じ文字列に戻る\", () => {\n+  const before = \"height:100px;width :200px; transform: rotate(30deg)\";\n+  const element = drawnWithStyle(before);\n+\n+  CanvasDom.layoutSizeFor(element, [\n+    AxisLength.create(\"width\", 120),\n+    AxisLength.create(\"height\", 80),\n+  ]);\n+\n+  expect(element.getAttribute(\"style\")).toBe(before);\n+});\n+\n+test(\"インライン指定の無い高さは、当てて測ったあとも指定が無いまま戻る\", () => {\n+  const element = drawnWithStyle(\"width: 200px\");\n+\n+  const measured = CanvasDom.layoutSizeFor(element, [\n+    AxisLength.create(\"width\", 120),\n+    AxisLength.create(\"height\", 80),\n+  ]);\n+\n+  // 当てた高さで測れたうえで（測れていなければ戻すところまで届いたかが分からない）、指定は残らない\n+  expect([measured, element.style.height]).toEqual([\n+    Option.some({ width: 120, height: 80 }),\n+    \"\",\n+  ]);\n+});\n+\n+test(\"HTML の要素でない SVG は測れない\", () => {\n+  const svg = globalThis.document.createElementNS(\n+    \"http://www.w3.org/2000/svg\",\n+    \"svg\",\n+  );\n+  svg.setAttribute(\"style\", \"width: 200px; height: 100px\");\n+  globalThis.document.body.append(svg);\n+\n+  expect(\n+    CanvasDom.layoutSizeFor(svg, [AxisLength.create(\"width\", 120)]),\n+  ).toEqual(Option.none);\n+});\n+\n+test(\"高さが px で読めない（fit-content の）要素は測れない\", () => {\n+  const element = drawnWithStyle(\"width: 200px; height: fit-content\");\n+\n+  expect(\n+    CanvasDom.layoutSizeFor(element, [AxisLength.create(\"width\", 120)]),\n+  ).toEqual(Option.none);\n+});",
+          "patchLines": 83,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f8dce91d481f2e9bf407955168779b49d1328752",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T12:56:27Z",
+      "subject": "✨ [New Feature]: #1027 名前で指して長さを当てて測る DrawnBounds.measureLayoutSizeFor を追加",
+      "body": "- DrawnBounds.measureLayoutSizeFor(name, lengths) を追加\n  （CanvasDom.elementOf で引いた要素を CanvasDom.layoutSizeFor で測る）\n\n背景:\nリサイズのフックが持っているのは選択中のものの名前で、要素ではない。\nキャンバスの中身は React の管理外なので、ref では掴めず名前で引くしかない。\n\n採用理由:\n名前で引いて測るものは、既存の measure / measureRotated と同じく\nDrawnBounds に集めている。リサイズの規則（どの長さを当てるか）は持たせず、\n測るだけにとどめる。\n\n影響とトレードオフ:\n描かれていない名前・px で読めないときは none。呼び出し側はそのとき\n掴んだ軸だけで置き直す（今の振る舞いのまま）。\n\n代替案:\n- フックの中で CanvasDom を直接呼ぶ: 名前で引いて測る処理が\n  DrawnBounds とフックの 2 箇所に分かれる\n\n参考:\n- Issue #1027 の計画コメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 0,
+          "patch": "@@ -1,3 +1,4 @@\n+import type { AxisLength } from \"@/domains/dcmp/axis-length\";\n import { Angle } from \"@/domains/unit/angle\";\n import { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-bounds\";\n import { CanvasView } from \"@/features/editor/features/canvas/domains/canvas-view\";\n@@ -62,6 +63,23 @@ export const DrawnBounds = {\n     });\n   },\n \n+  /**\n+   * 名前で指した要素に長さを当てて描いたときの、回る前のレイアウトの大きさ（ドキュメント上の\n+   * px。測り方は `CanvasDom.layoutSizeFor`）。\n+   *\n+   * @param name 描かれている artboard / ノードの名前\n+   * @param lengths 当てる長さ。並びに無い軸は今の描かれ方のまま\n+   * @returns 幅と高さ。その名前の要素がまだ画面に出ていない・px で読めないときは `none`\n+   */\n+  measureLayoutSizeFor(\n+    name: string,\n+    lengths: readonly AxisLength[],\n+  ): Option<Readonly<{ width: number; height: number }>> {\n+    return Option.flatMap(CanvasDom.elementOf(name), (element) =>\n+      CanvasDom.layoutSizeFor(element, lengths),\n+    );\n+  },\n+\n   /**\n    * 名前で指した要素の矩形のうち、面積を持つもの（client 座標）。面積で外す理由は\n    * `measureRotatedWithArea` と同じ。",
+          "patchLines": 29,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "c4fa61f406e362b800a6d52b882c6e9e6b6a444c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T12:56:35Z",
+      "subject": "🧪 [Tests]: #1027 DrawnBounds.measureLayoutSizeFor のテストを追加",
+      "body": "- normal: 名前で指して長さを当てると、当てた幅と今の高さで測れる\n- edge: 描かれていない名前は、長さを当てても測れない\n\n背景:\nmeasureLayoutSizeFor は名前で要素を引いてから測る。引けない名前で\nnone を返すことと、引けた名前で当てた長さが測りに効くことを固定する。\n\n採用理由:\nhappy-dom の計算値は書かれた宣言をそのまま返すので、フェイク無しで\n「当てた幅が返る」ことを確かめられる。\n\n影響とトレードオフ:\nレイアウトの結果（折り返し）は happy-dom では再現できないので、\nここでは測る経路だけを見る。連れて変わる長さは上位のテストでフェイクを使う。\n\n代替案:\n- 無し（既存の DrawnBounds のテストと同じ形）\n\n参考:\n- Issue #1027 の計画コメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "patch": "@@ -1,4 +1,5 @@\n import { afterEach, expect, test } from \"vitest\";\n+import { AxisLength } from \"@/domains/dcmp/axis-length\";\n import {\n   clearDrawn,\n   drawNamed,\n@@ -117,3 +118,16 @@ test(\"描かれていない名前は、面積を持つものとしては測れ\n \n   expect(DrawnBounds.measureWithArea(\"about\")).toEqual(Option.none);\n });\n+\n+test(\"描かれていない名前は、長さを当てても測れない\", () => {\n+  drawNamed(\"home\", { left: 0, top: 0, width: 200, height: 100 }).setAttribute(\n+    \"style\",\n+    \"width: 200px; height: 100px\",\n+  );\n+\n+  expect(\n+    DrawnBounds.measureLayoutSizeFor(\"about\", [\n+      AxisLength.create(\"width\", 120),\n+    ]),\n+  ).toEqual(Option.none);\n+});",
+          "patchLines": 23,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "patch": "@@ -1,4 +1,5 @@\n import { afterEach, expect, test } from \"vitest\";\n+import { AxisLength } from \"@/domains/dcmp/axis-length\";\n import {\n   clearDrawn,\n   drawNamed,\n@@ -133,3 +134,14 @@ test(\"面積を持って描かれている名前は、その矩形で測れる\",\n     Option.some({ left: 12, top: 34, width: 200, height: 100 }),\n   );\n });\n+\n+test(\"名前で指して長さを当てると、当てた幅と今の高さで測れる\", () => {\n+  drawNamed(\"home\", { left: 0, top: 0, width: 200, height: 100 }).setAttribute(\n+    \"style\",\n+    \"width: 200px; height: 100px\",\n+  );\n+\n+  expect(\n+    DrawnBounds.measureLayoutSizeFor(\"home\", [AxisLength.create(\"width\", 120)]),\n+  ).toEqual(Option.some({ width: 120, height: 100 }));\n+});",
+          "patchLines": 21,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "ac234b898844afc79046f56241af7b0de28e3740",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T12:56:56Z",
+      "subject": "✨ [New Feature]: #1027 回ったノードのリサイズで、掴んでいない軸が連れて変わっても反対の辺を留める",
+      "body": "- ResizeGrip.ungrabbedAxis を追加（幅→高さ / 高さ→幅 / 角→none）\n- DrawnWhileTracking 型（倍率 view と、長さを当てて測る layoutSizeFor）を追加\n- NodeResize.trackedAt の第 3 引数を view から DrawnWhileTracking に変更\n- private の ungrabbedShift を追加し、placedPosition で掴んだ軸ぶんの\n  置き直しに足す\n  - 掴んだ時点の長さと書き込む長さを当てて 2 回測り、連れて変わる軸の差の\n    半分を d として rotate(d, own) − d を足す\n  - 自分が回っていない・位置を書けない・角・どちらか測れない、なら足さない\n- use-node-resize の trackPointer から DrawnBounds.measureLayoutSizeFor を渡す\n  （224〜225 行の Why も追随）\n- trackedAt の型変更に合わせて、テストの呼び出し 15 件を setup.ts の\n  setupDrawnWhileTracking に替え、rotation.test のヘルパーを setup.ts へ移す\n\n背景:\n#998 で回ったノードの反対の辺・角を留めるようにしたが、置き直し量は\n掴んだ軸の長さだけから出していた。幅 fixed・高さ hug の Text などで\n幅を引くと高さも変わり、中心が回る前の向きで (0, Δh/2) 動くのが式に\n入らず、反対側が rotate((0, Δh/2), own) − (0, Δh/2) だけずれていた。\n\n採用理由:\n書き込む前に、書き込む長さを要素へ当てて測る。描き直しを待たないので\n掴んでいる間も 1 歩遅れず、送る編集は今と同じく pointermove 1 回に 1 件で\nundo 1 回ぶんの形も変わらない。前後 2 回を同じ DOM で測るので、\npointermove（Continuous 優先度）が前の編集の描画より先に来ても、当てた\n長さ以外の違いは差し引きで消え、box-sizing の違いも差には効かない。\n置き直しを NodeResize に置くのは、連れて変わる軸（grip）・留める端・\n位置を書けるか（grabbedAt）・親の座標での向き（rotation.own）をすべて\n持つのが ResizeHold だけだから。\n\n影響とトレードオフ:\n対象のノード（自分が回った絶対配置で、1 軸だけを掴んだもの）では\npointermove 1 回で強制レイアウトが 2 回走る。Chromium の Storybook で\n増分の中央値は 0.30〜0.40ms。連れて変わる軸では回る前の始点側（上・左）\nの端を留める。幅 hug の高さを掴んで位置で折り返しが変わるケースは拾えない\n（#1380）。\n\n代替案:\n- Effect で書いたあとに測って補正: イベント起因の処理を Effect に書かない・\n  Effect チェーン禁止（rules/hooks.md）に当たる\n- 1 歩前の長さで追い pointerup で補正: 掴んでいる間は遅れ、pointerup の\n  時点で最後の書き込みが描かれている保証も無い\n- 任意の ResizeEdit を受けて直す関数: 補正しない trackedAt が公開のまま残り、\n  呼び忘れても回っていないケースのテストは落ちない\n- trackedAt の引数を {pointer, view, layoutSizeFor} にまとめる: 毎回変わる\n  入力と描かれ方が混ざる\n- 掴んだ時点の長さを ResizeHold に持つ: 掴む 2 経路に測りが増え、\n  同じ DOM で前後を測る利点も失う\n\n参考:\n- Issue #1027 の計画コメントと plan-reviewer の指摘\n- docs/06-ui.md「リサイズハンドル」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 7,
+          "patch": "@@ -12,6 +12,7 @@ import {\n   grabbedWithMeasured,\n   grabbedWithTargets,\n   heldAt,\n+  setupDrawnWhileTracking,\n   setupResizable,\n   setupView,\n } from \"./setup\";\n@@ -79,8 +80,9 @@ function distancesAt(\n   pointer: Offset,\n   view: CanvasView = setupView(),\n ): FacingDistances {\n-  return Option.unwrap(NodeResize.trackedAt(resize, pointer, view))\n-    .distanceLines;\n+  return Option.unwrap(\n+    NodeResize.trackedAt(resize, pointer, setupDrawnWhileTracking({ view })),\n+  ).distanceLines;\n }\n \n test(\"右辺だけを掴んで動かすと、左・上・下に相手がいても右の相手までの距離だけが出る\", () => {\n@@ -199,14 +201,14 @@ test(\"距離の相手を外す（Alt / Option なし）と距離は出ず、吸\n     },\n   );\n   const measuring = Option.unwrap(\n-    NodeResize.trackedAt(resize, { x: 197, y: 100 }, setupView()),\n+    NodeResize.trackedAt(resize, { x: 197, y: 100 }, setupDrawnWhileTracking()),\n   );\n \n   expect(\n     NodeResize.trackedAt(\n       NodeResize.withoutDistanceTargets(resize),\n       { x: 197, y: 100 },\n-      setupView(),\n+      setupDrawnWhileTracking(),\n     ),\n   ).toEqual(Option.some({ ...measuring, distanceLines: FacingDistances.None }));\n });\n@@ -274,7 +276,11 @@ test(\"今の親を引けないときは距離が出ないが、兄弟には吸\n   // 右辺は 197 で、上の兄弟の右辺 200 へ吸い付けば幅 100\n   expect(\n     Option.map(\n-      NodeResize.trackedAt(resize, { x: 197, y: 100 }, setupView()),\n+      NodeResize.trackedAt(\n+        resize,\n+        { x: 197, y: 100 },\n+        setupDrawnWhileTracking(),\n+      ),\n       ({ edit, distanceLines }) => ({ edit, distanceLines }),\n     ),\n   ).toEqual(\n@@ -341,7 +347,7 @@ test(\"掴んだ直後と離したあとは、今出す距離が無い\", () => {\n     },\n   );\n   const tracked = Option.unwrap(\n-    NodeResize.trackedAt(resize, { x: 320, y: 100 }, setupView()),\n+    NodeResize.trackedAt(resize, { x: 320, y: 100 }, setupDrawnWhileTracking()),\n   );\n   const released = NodeResize.release(NodeResize.withLines(resize, tracked));\n \n@@ -361,7 +367,7 @@ test(\"掴んでいる状態に載せた距離が、今出す距離として返\n     },\n   );\n   const tracked = Option.unwrap(\n-    NodeResize.trackedAt(resize, { x: 320, y: 100 }, setupView()),\n+    NodeResize.trackedAt(resize, { x: 320, y: 100 }, setupDrawnWhileTracking()),\n   );\n \n   expect(",
+          "patchLines": 68,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 53,
+          "patch": "@@ -3,21 +3,17 @@ import { AxisLength } from \"@/domains/dcmp/axis-length\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n import { ResizeEdit } from \"@/domains/dcmp/resize-edit\";\n import { DocumentSelection } from \"@/domains/session/document-selection\";\n-import type { Offset } from \"@/domains/unit/offset\";\n import { RotatedBounds } from \"@/features/editor/features/canvas/domains/rotated-bounds\";\n import { Option } from \"@/utils/Option\";\n+import { NodeResize, type ResizableSelection } from \"../index\";\n import {\n-  NodeResize,\n-  type ResizableSelection,\n-  type ResizeHandleAnchor,\n-  type ResizeRotation,\n-} from \"../index\";\n-import {\n+  appliedBox,\n   grabbedAt,\n+  parentPointAt,\n+  placedTurned,\n   resizeEditAt,\n   setupBounds,\n   setupFlowResizable,\n-  setupResizable,\n   setupView,\n   targetNamesAt,\n } from \"./setup\";\n@@ -27,51 +23,6 @@ import {\n  * 回っていないものの振る舞いは `node-resize.gesture` が持つ。\n  */\n \n-/** `setupResizable`（(30, 70) に置かれた 200x100 の絶対配置）を、指定した向きに回したもの。 */\n-function placedTurned(rotation: ResizeRotation): ResizableSelection {\n-  return { ...setupResizable(), rotation };\n-}\n-\n-/**\n- * 親の座標で、置かれた矩形の比率の箇所が来る点（自分の向きで中心まわりに回したもの）。\n- *\n- * @param position ノードの左上\n- * @param lengths 幅・高さ\n- * @param box 自分の向きと見る箇所\n- * @returns 親の座標の点\n- */\n-function parentPointAt(\n-  position: Offset,\n-  lengths: Readonly<{ width: number; height: number }>,\n-  box: Readonly<{ own: number; anchor: ResizeHandleAnchor }>,\n-): Offset {\n-  return RotatedBounds.pointAt(\n-    {\n-      unrotated: { left: position.x, top: position.y, ...lengths },\n-      rotation: box.own,\n-    },\n-    box.anchor,\n-  );\n-}\n-\n-/**\n- * 編集を当てたあとの位置と大きさ。\n- *\n- * @param edit 書き込む編集\n- * @returns 置き直したあとの左上と、幅・高さ\n- */\n-function appliedBox(edit: ResizeEdit): Readonly<{\n-  position: Offset;\n-  lengths: Readonly<{ width: number; height: number }>;\n-}> {\n-  const lengthOf = (axis: \"width\" | \"height\"): number =>\n-    Option.unwrap(AxisLength.find(edit.lengths, axis)).length;\n-  return {\n-    position: Option.unwrap(edit.position),\n-    lengths: { width: lengthOf(\"width\"), height: lengthOf(\"height\") },\n-  };\n-}\n-\n test(\"30 度回したノードの右下を (+20, +20) 引くと、移動量をノードの向きへ戻した量だけ伸びる\", () => {\n   const resizable: ResizableSelection = {\n     ...placedTurned({ own: 30, total: 30 }),",
+          "patchLines": 78,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 47,
+          "deletions": 10,
+          "patch": "@@ -3,7 +3,12 @@ import type { CanvasBounds } from \"@/features/editor/features/canvas/domains/can\n import { SideSnap } from \"@/features/editor/features/canvas/domains/side-snap\";\n import { Option } from \"@/utils/Option\";\n import { NodeResize } from \"../index\";\n-import { grabbedAt, grabbedWithSnap, setupResizable, setupView } from \"./setup\";\n+import {\n+  grabbedAt,\n+  grabbedWithSnap,\n+  setupDrawnWhileTracking,\n+  setupResizable,\n+} from \"./setup\";\n \n /*\n  * 掴んだ辺が揃ったときのガイド線（docs/06-ui.md「リサイズハンドル」の辺のスナップ）。\n@@ -18,7 +23,11 @@ test(\"右辺を掴んで揃え先の右辺の近くまで運ぶと、揃え先\n     RightAt340,\n   ]);\n \n-  const tracked = NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupView());\n+  const tracked = NodeResize.trackedAt(\n+    resize,\n+    { x: 337, y: 100 },\n+    setupDrawnWhileTracking(),\n+  );\n \n   expect(\n     Option.flatMap(tracked, ({ guides }) =>\n@@ -42,7 +51,11 @@ test(\"左辺を掴んで揃え先の左辺の近くまで運ぶと、揃え先\n     leftAt130,\n   ]);\n \n-  const tracked = NodeResize.trackedAt(resize, { x: 133, y: 100 }, setupView());\n+  const tracked = NodeResize.trackedAt(\n+    resize,\n+    { x: 133, y: 100 },\n+    setupDrawnWhileTracking(),\n+  );\n \n   expect(\n     Option.flatMap(tracked, ({ guides }) =>\n@@ -60,7 +73,11 @@ test(\"右辺を掴んだままポインタが縦にもずれても、ガイド\n   ]);\n \n   // 縦に 30 ずれても幅しか変わらないので、上辺 50 から揃え先の下辺 420 まで\n-  const tracked = NodeResize.trackedAt(resize, { x: 337, y: 130 }, setupView());\n+  const tracked = NodeResize.trackedAt(\n+    resize,\n+    { x: 337, y: 130 },\n+    setupDrawnWhileTracking(),\n+  );\n \n   expect(\n     Option.flatMap(tracked, ({ guides }) =>\n@@ -85,7 +102,11 @@ test(\"下辺を掴んだままポインタが横にもずれても、ガイド\n   ]);\n \n   // 横に 30 ずれても高さしか変わらないので、左辺 100 から揃え先の右辺 640 まで\n-  const tracked = NodeResize.trackedAt(resize, { x: 230, y: 177 }, setupView());\n+  const tracked = NodeResize.trackedAt(\n+    resize,\n+    { x: 230, y: 177 },\n+    setupDrawnWhileTracking(),\n+  );\n \n   expect(\n     Option.flatMap(tracked, ({ guides }) =>\n@@ -103,7 +124,11 @@ test(\"揃え先の辺の近くまで運んでいなければ、ガイド線は\n   ]);\n \n   // 右辺は 320 で、揃え先の右辺 340 から 20 離れている\n-  const tracked = NodeResize.trackedAt(resize, { x: 320, y: 100 }, setupView());\n+  const tracked = NodeResize.trackedAt(\n+    resize,\n+    { x: 320, y: 100 },\n+    setupDrawnWhileTracking(),\n+  );\n \n   expect(Option.map(tracked, ({ guides }) => guides)).toEqual(\n     Option.some(SideSnap.NoGuides),\n@@ -117,7 +142,11 @@ test(\"掴んだ時点の実測を載せていない掴みでは、揃え先の\n     { x: 300, y: 100 },\n   );\n \n-  const tracked = NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupView());\n+  const tracked = NodeResize.trackedAt(\n+    resize,\n+    { x: 337, y: 100 },\n+    setupDrawnWhileTracking(),\n+  );\n \n   expect(Option.map(tracked, ({ guides }) => guides)).toEqual(\n     Option.some(SideSnap.NoGuides),\n@@ -129,7 +158,11 @@ test(\"揃え先を外した掴みでは、揃え先の近くまで運んでも\n     grabbedWithSnap({ x: 1, y: 0.5 }, { x: 300, y: 100 }, [RightAt340]),\n   );\n \n-  const tracked = NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupView());\n+  const tracked = NodeResize.trackedAt(\n+    resize,\n+    { x: 337, y: 100 },\n+    setupDrawnWhileTracking(),\n+  );\n \n   expect(Option.map(tracked, ({ guides }) => guides)).toEqual(\n     Option.some(SideSnap.NoGuides),\n@@ -149,7 +182,11 @@ test(\"右下の角を掴んで幅と高さの両方が揃うと、縦と横の\n     bottomAt180,\n   ]);\n \n-  const tracked = NodeResize.trackedAt(resize, { x: 337, y: 176 }, setupView());\n+  const tracked = NodeResize.trackedAt(\n+    resize,\n+    { x: 337, y: 176 },\n+    setupDrawnWhileTracking(),\n+  );\n \n   expect(\n     Option.map(tracked, ({ guides }) => ({\n@@ -164,7 +201,7 @@ test(\"掴んでいる状態に載せた揃った線が、今出すガイド線\n     RightAt340,\n   ]);\n   const tracked = Option.unwrap(\n-    NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupView()),\n+    NodeResize.trackedAt(resize, { x: 337, y: 100 }, setupDrawnWhileTracking()),\n   );\n \n   expect(NodeResize.snapGuides(NodeResize.withLines(resize, tracked))).toEqual(",
+          "patchLines": 127,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 85,
+          "deletions": 2,
+          "patch": "@@ -5,14 +5,16 @@ import { Offset } from \"@/domains/unit/offset\";\n import { resizeAnchorAt } from \"@/features/editor/features/canvas/__tests__/canvas-resize\";\n import type { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-bounds\";\n import { CanvasView } from \"@/features/editor/features/canvas/domains/canvas-view\";\n-import type { RotatedBounds } from \"@/features/editor/features/canvas/domains/rotated-bounds\";\n+import { RotatedBounds } from \"@/features/editor/features/canvas/domains/rotated-bounds\";\n import { Option } from \"@/utils/Option\";\n import {\n+  type DrawnWhileTracking,\n   NodeResize,\n   type ResizableSelection,\n   type ResizeGrip,\n   type ResizeHandleAnchor,\n   type ResizeHold,\n+  type ResizeRotation,\n   type ResizeTargetNames,\n } from \"../index\";\n \n@@ -59,6 +61,64 @@ export function setupView(): CanvasView {\n   return CanvasView.create();\n }\n \n+/**\n+ * 掴んでいる間の描かれ方。渡さなかったものは、等倍で見ていて大きさを測れない\n+ * （掴んだ軸だけで置き直す）描かれ方になる。\n+ *\n+ * @param drawn 差し替える倍率・大きさを測る手段\n+ * @returns 掴んでいる間の描かれ方\n+ */\n+export function setupDrawnWhileTracking(\n+  drawn: Partial<DrawnWhileTracking> = {},\n+): DrawnWhileTracking {\n+  return { view: setupView(), layoutSizeFor: () => Option.none, ...drawn };\n+}\n+\n+/** `setupResizable`（(30, 70) に置かれた 200x100 の絶対配置）を、指定した向きに回したもの。 */\n+export function placedTurned(rotation: ResizeRotation): ResizableSelection {\n+  return { ...setupResizable(), rotation };\n+}\n+\n+/**\n+ * 親の座標で、置かれた矩形の比率の箇所が来る点（自分の向きで中心まわりに回したもの）。\n+ *\n+ * @param position ノードの左上\n+ * @param lengths 幅・高さ\n+ * @param box 自分の向きと見る箇所\n+ * @returns 親の座標の点\n+ */\n+export function parentPointAt(\n+  position: Offset,\n+  lengths: Readonly<{ width: number; height: number }>,\n+  box: Readonly<{ own: number; anchor: ResizeHandleAnchor }>,\n+): Offset {\n+  return RotatedBounds.pointAt(\n+    {\n+      unrotated: { left: position.x, top: position.y, ...lengths },\n+      rotation: box.own,\n+    },\n+    box.anchor,\n+  );\n+}\n+\n+/**\n+ * 編集を当てたあとの位置と大きさ。\n+ *\n+ * @param edit 書き込む編集\n+ * @returns 置き直したあとの左上と、幅・高さ\n+ */\n+export function appliedBox(edit: ResizeEdit): Readonly<{\n+  position: Offset;\n+  lengths: Readonly<{ width: number; height: number }>;\n+}> {\n+  const lengthOf = (axis: \"width\" | \"height\"): number =>\n+    Option.unwrap(AxisLength.find(edit.lengths, axis)).length;\n+  return {\n+    position: Option.unwrap(edit.position),\n+    lengths: { width: lengthOf(\"width\"), height: lengthOf(\"height\") },\n+  };\n+}\n+\n /** 幅 200 を右辺（終点側）で掴んだもの。掴める軸を持たない選択にもそのまま渡せる。 */\n export const RightEdgeGrip: ResizeGrip = {\n   kind: \"width\",\n@@ -209,6 +269,7 @@ export function grabbedWithSnap(\n \n /**\n  * 今のポインタ位置で書き込む編集だけ（揃った線を見ないテストが、線を巻き込まないため）。\n+ * 大きさは測れない描かれ方で通す（`setupDrawnWhileTracking`）。\n  *\n  * @param resize 今のリサイズの状態\n  * @param pointer 今のポインタの位置\n@@ -221,7 +282,29 @@ export function resizeEditAt(\n   view: CanvasView,\n ): Option<ResizeEdit> {\n   return Option.map(\n-    NodeResize.trackedAt(resize, pointer, view),\n+    NodeResize.trackedAt(resize, pointer, setupDrawnWhileTracking({ view })),\n     (tracked) => tracked.edit,\n   );\n }\n+\n+/**\n+ * 長さを当てて大きさを測れる描かれ方（等倍）で、今のポインタ位置で書き込む編集。\n+ *\n+ * @param resize 今のリサイズの状態\n+ * @param pointer 今のポインタの位置\n+ * @param layoutSizeFor 長さを当てたときの大きさを返す手段\n+ * @returns 書き込む編集（掴んでいなければテストを落とす）\n+ */\n+export function resizeEditMeasuredAt(\n+  resize: NodeResize,\n+  pointer: Offset,\n+  layoutSizeFor: DrawnWhileTracking[\"layoutSizeFor\"],\n+): ResizeEdit {\n+  return Option.unwrap(\n+    NodeResize.trackedAt(\n+      resize,\n+      pointer,\n+      setupDrawnWhileTracking({ layoutSizeFor }),\n+    ),\n+  ).edit;\n+}",
+          "patchLines": 122,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 100,
+          "deletions": 8,
+          "patch": "@@ -147,6 +147,24 @@ export const ResizeGrip = {\n     }));\n   },\n \n+  /**\n+   * 掴んだものが変えない軸。その軸が `hug` / `fill` なら、掴んだ軸の長さにつれて長さが変わり\n+   * うる（docs/06-ui.md「リサイズハンドル」）。\n+   *\n+   * @param grip 掴んだもの\n+   * @returns 幅だけを掴んだなら高さ、高さだけなら幅。角で 2 軸を掴んだなら `none`\n+   */\n+  ungrabbedAxis(grip: ResizeGrip): Option<Axis> {\n+    switch (grip.kind) {\n+      case \"width\":\n+        return Option.some(Axes.Height);\n+      case \"height\":\n+        return Option.some(Axes.Width);\n+      case \"both\":\n+        return Option.none;\n+    }\n+  },\n+\n   /**\n    * 掴んだものが画面上で伸び縮みする向き（docs/06-ui.md「リサイズハンドル」）。\n    *\n@@ -360,6 +378,24 @@ type DrawnAtGrab = Readonly<{\n   measure: (name: string) => Option<CanvasBounds>;\n }>;\n \n+/**\n+ * ポインタが動くたびに読む描かれ方。画面上の量をドキュメント上の量へ直す倍率と、選択中の\n+ * ものへ長さを当てたときの回る前のレイアウトの大きさ（ドキュメント上の px）を測る手段。\n+ *\n+ * 掴んだ時点に 1 回だけ測って持たず、動くたびに前後の 2 つを同じ DOM の上で測り直す。描き\n+ * 直された DOM の上で測っても、前後の差を取れば掴んだ軸の長さ以外の変化が差し引きで消える。\n+ */\n+export type DrawnWhileTracking = Readonly<{\n+  view: CanvasView;\n+  /**\n+   * 当てた長さで描いたときの幅と高さ。並びに無い軸は今の描かれ方のまま。測れなければ `none`\n+   * （このときは掴んだ軸だけで置き直す）。\n+   */\n+  layoutSizeFor: (\n+    lengths: AxisLengths,\n+  ) => Option<Readonly<{ width: number; height: number }>>;\n+}>;\n+\n /** 最後に動かした位置で出す線（すべて画面上の px）。 */\n export type ResizeLines = Readonly<{\n   /** 掴んだ辺が揃った線 */\n@@ -822,17 +858,18 @@ export const NodeResize = {\n    * 掴んでいなければ決まらない（ボタンを離したあとのマウス移動）。\n    *\n    * 長さはポインタの移動量を掴んだものの画面上の向きの分だけ戻し、その軸へ射影した量だけ\n-   * 変わる（docs/06-ui.md「リサイズハンドル」）。\n+   * 変わる（docs/06-ui.md「リサイズハンドル」）。自分が回っている絶対配置のノードは、掴んで\n+   * いない軸の長さが連れて変わっても反対の辺・角が親の座標で動かないよう位置を置き直す。\n    *\n    * @param resize 今のリサイズの状態\n    * @param pointer 今のポインタの位置\n-   * @param view 画面上の量をドキュメント上の量へ直す倍率\n+   * @param drawn 画面上の量をドキュメント上の量へ直す倍率と、長さを当てて大きさを測る手段\n    * @returns 書き込む編集と揃った線と距離。掴んでいなければ `none`\n    */\n   trackedAt(\n     resize: NodeResize,\n     pointer: Offset,\n-    view: CanvasView,\n+    drawn: DrawnWhileTracking,\n   ): Option<TrackedResize> {\n     if (resize.kind !== \"resizing\") {\n       return Option.none;\n@@ -845,20 +882,24 @@ export const NodeResize = {\n     const moved = Offset.rotate(screenMoved, -resize.rotation.total);\n \n     const resized = ArrayEx.mapNonEmpty(ResizeGrip.grabs(resize.grip), (grab) =>\n-      resizedLength(grab, moved, view),\n+      resizedLength(grab, moved, drawn.view),\n     );\n     const lengths: AxisLengths = ArrayEx.mapNonEmpty(\n       resized,\n       (each) => each.length,\n     );\n-    const position = placedPosition(resize, resized);\n+    const position = placedPosition(\n+      resize,\n+      resized,\n+      ungrabbedShift(resize, lengths, drawn.layoutSizeFor),\n+    );\n \n     return Option.some({\n       edit: Option.isSome(position)\n         ? ResizeEdit.placedAt(lengths, position.value)\n         : ResizeEdit.create(lengths),\n       guides: snapped.guides,\n-      distanceLines: distanceLinesAt(resize, resized, view),\n+      distanceLines: distanceLinesAt(resize, resized, drawn.view),\n     });\n   },\n \n@@ -1192,11 +1233,13 @@ function resizedLength(\n  *\n  * @param held 掴んでいるもの（掴んだ時点の位置と、自分の向き）\n  * @param resized 掴んだ軸ぶんの結果\n+ * @param ungrabbed 掴んでいない軸の長さが連れて変わったぶんの置き直し（`ungrabbedShift`）\n  * @returns 置き直したあとの位置。左上が動かないか、位置を書けない対象なら `none`\n  */\n function placedPosition(\n   held: ResizeHold,\n   resized: readonly ResizedLength[],\n+  ungrabbed: Offset,\n ): Option<Offset> {\n   const centerMoved = resized.reduce<Offset>(\n     (sum, each) => Offset.add(sum, centerShift(each)),\n@@ -1209,8 +1252,8 @@ function placedPosition(\n   );\n   // 左上は中心から長さの半分だけ戻った位置なので、中心の動きに縮んだ量の半分を足す\n   const shift = Offset.add(\n-    Offset.rotate(centerMoved, held.rotation.own),\n-    halfShrunk,\n+    Offset.add(Offset.rotate(centerMoved, held.rotation.own), halfShrunk),\n+    ungrabbed,\n   );\n   if (Offset.isOrigin(shift)) {\n     return Option.none;\n@@ -1218,6 +1261,55 @@ function placedPosition(\n   return Option.map(held.grabbedAt, (from) => Offset.add(from, shift));\n }\n \n+/**\n+ * 掴んでいない軸の長さが `hug` / `fill` で連れて変わったときに、その軸の回る前の始点側の端\n+ * （上端・左端）が親の座標で動かないよう、位置へ足す量。\n+ *\n+ * 留めるのを始点側にするのは、回っていないときに `hug` が上・左を起点に伸び縮みするのと\n+ * 揃えるため。長さの差 `2d`（`d` は回る前の向きの半分）で中心は `d` 動き、それを自分の向きで\n+ * 回したぶんから、左上が中心から戻る `d` を引く。\n+ *\n+ * @param held 掴んでいるもの（掴み方・掴んだ時点の位置・自分の向き）\n+ * @param lengths 書き込む長さ\n+ * @param layoutSizeFor 長さを当てて大きさを測る手段（`DrawnWhileTracking`）\n+ * @returns 位置へ足す量。角を掴んだ・自分が回っていない・位置を書けない・前後のどちらかを\n+ *   測れないときは動かさない（原点）\n+ */\n+function ungrabbedShift(\n+  held: ResizeHold,\n+  lengths: AxisLengths,\n+  layoutSizeFor: DrawnWhileTracking[\"layoutSizeFor\"],\n+): Offset {\n+  // 測る前に外す。回っていない・位置を書けないなら置き直しは 0 で、測ると強制レイアウトが無駄になる\n+  const isUnplaceable =\n+    Angle.isWholeTurns(held.rotation.own) || !Option.isSome(held.grabbedAt);\n+  if (isUnplaceable) {\n+    return Offset.Origin;\n+  }\n+  const axis = ResizeGrip.ungrabbedAxis(held.grip);\n+  if (!Option.isSome(axis)) {\n+    return Offset.Origin;\n+  }\n+  const grabbedLengths = ArrayEx.mapNonEmpty(\n+    ResizeGrip.grabs(held.grip),\n+    (grab) => grab.length,\n+  );\n+  const halfGrown = Option.flatMap(layoutSizeFor(grabbedLengths), (before) =>\n+    Option.map(\n+      layoutSizeFor(lengths),\n+      (after) => (after[axis.value] - before[axis.value]) / 2,\n+    ),\n+  );\n+  if (!Option.isSome(halfGrown)) {\n+    return Offset.Origin;\n+  }\n+  const centerMoved = axisOffset(axis.value, halfGrown.value);\n+  return Offset.delta(\n+    centerMoved,\n+    Offset.rotate(centerMoved, held.rotation.own),\n+  );\n+}\n+\n /**\n  * 反対側の端を留めたまま 1 軸の長さが変わったときに、中心が動く量（回る前の向き）。\n  *",
+          "patchLines": 181,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 2,
+          "patch": "@@ -222,7 +222,8 @@ export function useNodeResize(\n \n   /*\n    * 掴んでいる間はポインタが動くたびにドキュメントへ反映する。長さも位置も常に\n-   * 「掴んだ時点の値 + 掴んでからの移動量」なので、反映が 1 回落ちても値はずれない。\n+   * 「掴んだ時点の値 + 掴んでからの移動量」で、掴んでいない軸が連れて変わるぶんも毎回\n+   * 掴んだ時点と今の長さを当てて測り直すので、反映が 1 回落ちても値はずれない。\n    *\n    * 2 件目以降を続きとして渡すことで、掴んでから離すまでが undo 1 回ぶんになる\n    * （docs/06-ui.md「リサイズハンドル」）。\n@@ -243,7 +244,14 @@ export function useNodeResize(\n         ? snapDecided\n         : NodeResize.withoutDistanceTargets(snapDecided),\n       CanvasPointer.offsetOf(event),\n-      params.view,\n+      {\n+        view: params.view,\n+        layoutSizeFor: (lengths) =>\n+          Option.flatMap(\n+            DocumentSelection.singleName(params.selection),\n+            (name) => DrawnBounds.measureLayoutSizeFor(name, lengths),\n+          ),\n+      },\n     );\n     if (!Option.isSome(tracked)) {\n       return;",
+          "patchLines": 26,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "9a0141d51e7f9d1b670d3b32c5b3b3d77ddb7864",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T12:57:10Z",
+      "subject": "🧪 [Tests]: #1027 掴んでいない軸が連れて変わるときの置き直しのテストを追加",
+      "body": "- node-resize.ungrabbed-axis.test.ts を追加（14 件）\n  - ResizeGrip.ungrabbedAxis: 幅→高さ / 高さ→幅 / 角→無し\n  - 回る前の角が親の座標で留まる: 90 度・右辺で高さが縮む（d が負）/\n    30 度・左辺で高さが伸びる / 30 度・下辺 / 30 度・上辺\n  - 位置を足さない: 360 度 / 祖先だけ回る / 角 / 測れない（前後とも・\n    掴んだ時点だけ・今だけ）/ フロー配置\n\n背景:\n置き直しの中心は「d を自分の向き own で回す」「連れて変わる軸の始点側の\n端を留める」の 2 つで、どちらも誤ると回ったノードでだけ反対側がずれる。\n\n採用理由:\n測る手段は「当てた長さから大きさを答える関数」にし、掴んだ時点と今とで\n違う値を返す入力を選んだ。同じ値を返すと d=0 になり、早期の return を\n丸ごと外しても通るため。角の位置は parentPointAt で前後を比べる。\nungrabbedShift の戻りを原点に潰すと、留まる 4 件が落ちることを確かめた。\n\n影響とトレードオフ:\n既存の trackedAt / resizeEditAt の呼び出しは測れない手段のまま通すので、\n既存の期待値は変わらない。\n\n代替案:\n- 既存の node-resize.rotation.test に足す: 観点（連れて変わる軸）が\n  別なのでカテゴリのファイルを分けた（rules/testing.md）\n\n参考:\n- Issue #1027 の計画の検証（plan-reviewer の指摘 3）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 346,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,346 @@\n+import { expect, test } from \"vitest\";\n+import { AxisLength } from \"@/domains/dcmp/axis-length\";\n+import type { ResizeEdit } from \"@/domains/dcmp/resize-edit\";\n+import { Offset } from \"@/domains/unit/offset\";\n+import { Option } from \"@/utils/Option\";\n+import {\n+  type DrawnWhileTracking,\n+  ResizeGrip,\n+  type ResizeHandleAnchor,\n+  type ResizeRotation,\n+} from \"../index\";\n+import {\n+  grabbedAt,\n+  parentPointAt,\n+  placedTurned,\n+  RightEdgeGrip,\n+  resizeEditAt,\n+  resizeEditMeasuredAt,\n+  setupFlowResizable,\n+  setupView,\n+} from \"./setup\";\n+\n+/*\n+ * 掴んでいない軸の長さが `hug` / `fill` で連れて変わったときの置き直し（docs/06-ui.md\n+ * 「リサイズハンドル」）。掴んだ軸だけの置き直しは `node-resize.rotation` が持つ。\n+ *\n+ * どのテストも、測る手段が掴んだ時点と今とで違う大きさを返す入力にする（同じ大きさなら\n+ * 置き直しを丸ごと外しても通る）。\n+ */\n+\n+/** 掴む前の位置と大きさ（`setupResizable`）。 */\n+const Before = { position: { x: 30, y: 70 }, width: 200, height: 100 };\n+\n+/**\n+ * 幅を当てると高さが連れて変わる描かれ方。幅を当てなければ掴む前の幅のまま。\n+ *\n+ * @param heightElse 掴む前の幅（200）以外を当てたときの高さ\n+ * @returns 掴む前の幅なら高さ 100、それ以外なら `heightElse` を返す測る手段\n+ */\n+function heightFollowingWidth(\n+  heightElse: number,\n+): DrawnWhileTracking[\"layoutSizeFor\"] {\n+  return (lengths) => {\n+    const width = Option.unwrapOr(\n+      Option.map(AxisLength.find(lengths, \"width\"), (each) => each.length),\n+      Before.width,\n+    );\n+    return Option.some({\n+      width,\n+      height: width === Before.width ? Before.height : heightElse,\n+    });\n+  };\n+}\n+\n+/**\n+ * 高さを当てると幅が連れて変わる描かれ方。高さを当てなければ掴む前の高さのまま。\n+ *\n+ * @param widthElse 掴む前の高さ（100）以外を当てたときの幅\n+ * @returns 掴む前の高さなら幅 200、それ以外なら `widthElse` を返す測る手段\n+ */\n+function widthFollowingHeight(\n+  widthElse: number,\n+): DrawnWhileTracking[\"layoutSizeFor\"] {\n+  return (lengths) => {\n+    const height = Option.unwrapOr(\n+      Option.map(AxisLength.find(lengths, \"height\"), (each) => each.length),\n+      Before.height,\n+    );\n+    return Option.some({\n+      width: height === Before.height ? Before.width : widthElse,\n+      height,\n+    });\n+  };\n+}\n+\n+/**\n+ * 自分の向きに回したノードをその箇所で掴み、回る前の向きで `unrotatedMove` だけ引いたときの編集。\n+ *\n+ * @param gesture 自分の向き・掴む箇所・回る前の向きでの移動量\n+ * @param layoutSizeFor 長さを当てたときの大きさを返す手段\n+ * @returns 書き込む編集\n+ */\n+function turnedEditAt(\n+  gesture: Readonly<{\n+    rotation: ResizeRotation;\n+    anchor: ResizeHandleAnchor;\n+    unrotatedMove: Offset;\n+  }>,\n+  layoutSizeFor: DrawnWhileTracking[\"layoutSizeFor\"],\n+): ResizeEdit {\n+  const resize = grabbedAt(\n+    placedTurned(gesture.rotation),\n+    gesture.anchor,\n+    Offset.Origin,\n+  );\n+  return resizeEditMeasuredAt(\n+    resize,\n+    Offset.rotate(gesture.unrotatedMove, gesture.rotation.total),\n+    layoutSizeFor,\n+  );\n+}\n+\n+/**\n+ * 編集を当てたあと、回る前の箇所が親の座標で動いた量。大きさは編集の長さを当てて測ったもの。\n+ *\n+ * @param edit 書き込む編集\n+ * @param box 自分の向き・見る箇所・測る手段\n+ * @returns 掴む前からの、その箇所の動き\n+ */\n+function cornerMoved(\n+  edit: ResizeEdit,\n+  box: Readonly<{\n+    own: number;\n+    anchor: ResizeHandleAnchor;\n+    layoutSizeFor: DrawnWhileTracking[\"layoutSizeFor\"];\n+  }>,\n+): Offset {\n+  const stayed = parentPointAt(Before.position, Before, box);\n+  const after = Option.unwrap(box.layoutSizeFor(edit.lengths));\n+  const moved = parentPointAt(Option.unwrap(edit.position), after, box);\n+  return Offset.delta(stayed, moved);\n+}\n+\n+test(\"幅だけを掴んだとき、連れて変わりうるのは高さ\", () => {\n+  expect(ResizeGrip.ungrabbedAxis(RightEdgeGrip)).toEqual(\n+    Option.some(\"height\"),\n+  );\n+});\n+\n+test(\"高さだけを掴んだとき、連れて変わりうるのは幅\", () => {\n+  expect(\n+    ResizeGrip.ungrabbedAxis({\n+      kind: \"height\",\n+      height: { length: AxisLength.create(\"height\", 100), end: \"end\" },\n+    }),\n+  ).toEqual(Option.some(\"width\"));\n+});\n+\n+test(\"角で 2 軸を掴んだとき、連れて変わる軸は無い\", () => {\n+  expect(\n+    ResizeGrip.ungrabbedAxis({\n+      kind: \"both\",\n+      width: { length: AxisLength.create(\"width\", 200), end: \"end\" },\n+      height: { length: AxisLength.create(\"height\", 100), end: \"end\" },\n+    }),\n+  ).toEqual(Option.none);\n+});\n+\n+test(\"90 度回したノードの右辺を引いて高さが連れて縮んでも、回る前の左上の角が親の座標で動かない\", () => {\n+  const layoutSizeFor = heightFollowingWidth(80);\n+  const edit = turnedEditAt(\n+    {\n+      rotation: { own: 90, total: 90 },\n+      anchor: { x: 1, y: 0.5 },\n+      unrotatedMove: { x: 50, y: 0 },\n+    },\n+    layoutSizeFor,\n+  );\n+\n+  const moved = cornerMoved(edit, {\n+    own: 90,\n+    anchor: { x: 0, y: 0 },\n+    layoutSizeFor,\n+  });\n+  expect(moved.x).toBeCloseTo(0);\n+  expect(moved.y).toBeCloseTo(0);\n+});\n+\n+test(\"30 度回したノードの左辺を引いて高さが連れて伸びても、回る前の右上の角が親の座標で動かない\", () => {\n+  const layoutSizeFor = heightFollowingWidth(130);\n+  const edit = turnedEditAt(\n+    {\n+      rotation: { own: 30, total: 30 },\n+      anchor: { x: 0, y: 0.5 },\n+      unrotatedMove: { x: 40, y: 0 },\n+    },\n+    layoutSizeFor,\n+  );\n+\n+  const moved = cornerMoved(edit, {\n+    own: 30,\n+    anchor: { x: 1, y: 0 },\n+    layoutSizeFor,\n+  });\n+  expect(moved.x).toBeCloseTo(0);\n+  expect(moved.y).toBeCloseTo(0);\n+});\n+\n+test(\"30 度回したノードの下辺を引いて幅が連れて変わっても、回る前の左上の角が親の座標で動かない\", () => {\n+  const layoutSizeFor = widthFollowingHeight(170);\n+  const edit = turnedEditAt(\n+    {\n+      rotation: { own: 30, total: 30 },\n+      anchor: { x: 0.5, y: 1 },\n+      unrotatedMove: { x: 0, y: 40 },\n+    },\n+    layoutSizeFor,\n+  );\n+\n+  const moved = cornerMoved(edit, {\n+    own: 30,\n+    anchor: { x: 0, y: 0 },\n+    layoutSizeFor,\n+  });\n+  expect(moved.x).toBeCloseTo(0);\n+  expect(moved.y).toBeCloseTo(0);\n+});\n+\n+test(\"30 度回したノードの上辺を引いて幅が連れて変わっても、回る前の左下の角が親の座標で動かない\", () => {\n+  const layoutSizeFor = widthFollowingHeight(230);\n+  const edit = turnedEditAt(\n+    {\n+      rotation: { own: 30, total: 30 },\n+      anchor: { x: 0.5, y: 0 },\n+      unrotatedMove: { x: 0, y: 30 },\n+    },\n+    layoutSizeFor,\n+  );\n+\n+  const moved = cornerMoved(edit, {\n+    own: 30,\n+    anchor: { x: 0, y: 1 },\n+    layoutSizeFor,\n+  });\n+  expect(moved.x).toBeCloseTo(0);\n+  expect(moved.y).toBeCloseTo(0);\n+});\n+\n+test(\"360 度回したノードは、高さが連れて変わっても回っていないものと同じ編集になる\", () => {\n+  const gestureOf = (rotation: ResizeRotation) => ({\n+    rotation,\n+    anchor: { x: 1, y: 0.5 } as const,\n+    unrotatedMove: { x: 50, y: 0 },\n+  });\n+\n+  expect(\n+    turnedEditAt(gestureOf({ own: 360, total: 360 }), heightFollowingWidth(80)),\n+  ).toEqual(\n+    turnedEditAt(gestureOf({ own: 0, total: 0 }), heightFollowingWidth(80)),\n+  );\n+});\n+\n+test(\"祖先だけが回っているノードは、高さが連れて変わっても右辺を引いて位置を書き換えない\", () => {\n+  const edit = turnedEditAt(\n+    {\n+      rotation: { own: 0, total: 30 },\n+      anchor: { x: 1, y: 0.5 },\n+      unrotatedMove: { x: 50, y: 0 },\n+    },\n+    heightFollowingWidth(80),\n+  );\n+\n+  expect(edit.position).toEqual(Option.none);\n+});\n+\n+test(\"角を掴んだときは、測る大きさが前後で違っても、測れないときと同じ編集になる\", () => {\n+  const resize = grabbedAt(\n+    placedTurned({ own: 30, total: 30 }),\n+    { x: 1, y: 1 },\n+    Offset.Origin,\n+  );\n+  const pointer = Offset.rotate({ x: 20, y: 20 }, 30);\n+\n+  expect(\n+    resizeEditMeasuredAt(resize, pointer, heightFollowingWidth(80)),\n+  ).toEqual(Option.unwrap(resizeEditAt(resize, pointer, setupView())));\n+});\n+\n+/**\n+ * 90 度回したノードの右辺を回る前の向きで 50 引いたときの位置。\n+ *\n+ * @param layoutSizeFor 長さを当てたときの大きさを返す手段\n+ * @returns 書き込む位置\n+ */\n+function rightEdgePulledPosition(\n+  layoutSizeFor: DrawnWhileTracking[\"layoutSizeFor\"],\n+): Offset {\n+  return Option.unwrap(\n+    turnedEditAt(\n+      {\n+        rotation: { own: 90, total: 90 },\n+        anchor: { x: 1, y: 0.5 },\n+        unrotatedMove: { x: 50, y: 0 },\n+      },\n+      layoutSizeFor,\n+    ).position,\n+  );\n+}\n+\n+/*\n+ * 掴んだ軸だけで置き直すと、中心が回る前の右へ 25（親の座標で下へ 25）動き、左上はそこから\n+ * 25 戻るので (30 - 25, 70 + 25)。前後とも測れて高さが 100 → 30 なら (40, 130) になる。\n+ */\n+\n+test(\"掴んだ時点も今も大きさを測れないときは、掴んだ軸だけで置き直す\", () => {\n+  const position = rightEdgePulledPosition(() => Option.none);\n+\n+  expect(position.x).toBeCloseTo(5);\n+  expect(position.y).toBeCloseTo(95);\n+});\n+\n+test(\"掴んだ時点の大きさだけを測れないときは、掴んだ軸だけで置き直す\", () => {\n+  const measured = heightFollowingWidth(30);\n+  const position = rightEdgePulledPosition((lengths) =>\n+    Option.contains(\n+      Option.map(AxisLength.find(lengths, \"width\"), (each) => each.length),\n+      Before.width,\n+    )\n+      ? Option.none\n+      : measured(lengths),\n+  );\n+\n+  expect(position.x).toBeCloseTo(5);\n+  expect(position.y).toBeCloseTo(95);\n+});\n+\n+test(\"今の大きさだけを測れないときは、掴んだ軸だけで置き直す\", () => {\n+  const measured = heightFollowingWidth(30);\n+  const position = rightEdgePulledPosition((lengths) =>\n+    Option.contains(\n+      Option.map(AxisLength.find(lengths, \"width\"), (each) => each.length),\n+      Before.width,\n+    )\n+      ? measured(lengths)\n+      : Option.none,\n+  );\n+\n+  expect(position.x).toBeCloseTo(5);\n+  expect(position.y).toBeCloseTo(95);\n+});\n+\n+test(\"回したフロー配置のノードは、高さが連れて変わっても位置を書かない\", () => {\n+  const resize = grabbedAt(\n+    { ...setupFlowResizable(), rotation: { own: 30, total: 30 } },\n+    { x: 1, y: 0.5 },\n+    Offset.Origin,\n+  );\n+\n+  const edit = resizeEditMeasuredAt(\n+    resize,\n+    Offset.rotate({ x: 50, y: 0 }, 30),\n+    heightFollowingWidth(80),\n+  );\n+\n+  expect(edit.position).toEqual(Option.none);\n+});",
+          "patchLines": 347,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "4e56d8daf8e47d622f9ab19b7c59ab1074613ae9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T12:57:21Z",
+      "subject": "🧪 [Tests]: #1027 回ったノードで高さが連れて変わるリサイズの通しのテストを追加",
+      "body": "- artboard-canvas.resize-rotation に 2 件を追加\n  - 90 度回したノードの右辺を 50 引き、高さが連れて 80 に縮むと、\n    位置 (10, 45) が通知される（回る前の左上の角が (175, −40) のまま）\n  - 高さが連れて変わっても、通知は動かした回数だけで、離したときに\n    追加の通知は出ない\n- opened-document-editor.resize-rotation.test.tsx を追加（2 件）\n  - 2 回に分けて運んで離すと、幅 250・left 10・top 45 で描かれる\n  - 1 回戻すと、幅も位置も掴む前に戻る（undo 1 回ぶん）\n\n背景:\n本番では編集が届くたびに中身が描き直され、要素が作り直される。\n2 回目の移動の測りはその作り直された要素で行うので、artboard-canvas の\nテスト（onResize がスパイでドキュメントが変わらない）だけでは通らない。\n\n採用理由:\n測りのフェイクは名前で引く stubComputedSizeOf にし、作り直されても効く\nようにした。要素で引く形に壊すと両ファイルのテストが落ちることを\n確かめた。\n\n影響とトレードオフ:\nフェイクは globalThis.getComputedStyle を包むので、afterEach で戻す。\n\n代替案:\n- artboard-canvas の rerenderWith だけで通す: 編集 → 再コンパイル →\n  undo の配線まで含めて見るため、編集画面全体を組み立てるテストにした\n\n参考:\n- Issue #1027 の計画の検証（plan-reviewer の指摘 2）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 109,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,109 @@\n+import userEvent from \"@testing-library/user-event\";\n+import { afterEach, expect, test } from \"vitest\";\n+import { Artboard } from \"@/domains/dcmp/artboard\";\n+import {\n+  DesignDocument,\n+  DocumentTemplate,\n+} from \"@/domains/dcmp/design-document\";\n+import {\n+  canvasContent,\n+  movePointer,\n+  pressPointer,\n+  releasePointer,\n+} from \"@/features/editor/features/canvas/__tests__\";\n+import {\n+  restoreComputedSize,\n+  stubBounds,\n+  stubComputedSizeOf,\n+  stubLayoutSize,\n+} from \"@/libs/__tests__/element-measure\";\n+import { drawn, renderOpenedDocument, selectInTree } from \"./setup\";\n+\n+/*\n+ * 回ったノードの高さが幅につれて変わるリサイズを、編集画面の配線ごと通す（docs/06-ui.md\n+ * 「リサイズハンドル」）。置き直しの値そのものは `node-resize.ungrabbed-axis` が持つ。\n+ *\n+ * ここでしか通らないのは、1 回目の移動で描き直されて要素が作り直されたあとの 2 回目の移動で、\n+ * 作り直された要素へ長さを当てて測るところ。測り方の差し替えを名前で引くのはそのため。\n+ */\n+\n+afterEach(restoreComputedSize);\n+\n+/** `home` に、90 度回した幅 200・高さ `hug` の絶対配置の Box `turned` が (25, 10) に置かれている。 */\n+function setupDocument(): DesignDocument {\n+  return DesignDocument.create({\n+    tokens: DocumentTemplate.Default.tokens,\n+    components: DocumentTemplate.Default.components,\n+    artboards: [\n+      Artboard.create({\n+        name: \"home\",\n+        width: 360,\n+        height: 240,\n+        children: [\n+          {\n+            name: \"turned\",\n+            type: \"Box\",\n+            props: {\n+              widthMode: \"fixed\",\n+              width: 200,\n+              heightMode: \"hug\",\n+              placement: \"absolute\",\n+              x: 25,\n+              y: 10,\n+              rotation: 90,\n+            },\n+            children: [],\n+          },\n+        ],\n+      }),\n+    ],\n+  });\n+}\n+\n+/**\n+ * `turned` の回った右辺の帯を掴み、画面の下へ 2 回に分けて 50 引いてから離す。\n+ *\n+ * 外接矩形は (100, 0) から 100x200、回る前は 200x100 として描き、回る前の幅を当てると高さが\n+ * 連れて変わる（幅 200 なら 100、それ以外なら 80）ものとして測らせる。\n+ */\n+function dragWrappingRightEdge(): void {\n+  stubComputedSizeOf(\"turned\", (inline) => ({\n+    width: Number.parseFloat(inline.width),\n+    height: inline.width === \"200px\" ? 100 : 80,\n+  }));\n+  stubBounds(drawn(\"turned\"), { left: 100, top: 0, width: 100, height: 200 });\n+  stubLayoutSize(drawn(\"turned\"), { width: 200, height: 100 });\n+  pressPointer(drawn(\"turned\"), { x: 150, y: 195 });\n+  movePointer(canvasContent(), { x: 150, y: 220 });\n+  movePointer(canvasContent(), { x: 150, y: 245 });\n+  releasePointer(canvasContent(), { x: 150, y: 245 });\n+}\n+\n+test(\"高さが幅につれて変わる回ったノードの右辺を 2 回に分けて運んで離すと、回る前の左上の角が留まる位置で描かれる\", async () => {\n+  await renderOpenedDocument(setupDocument());\n+  await selectInTree(\"turned\");\n+\n+  dragWrappingRightEdge();\n+\n+  const turned = drawn(\"turned\");\n+  expect([turned.style.width, turned.style.left, turned.style.top]).toEqual([\n+    \"250px\",\n+    \"10px\",\n+    \"45px\",\n+  ]);\n+});\n+\n+test(\"高さが幅につれて変わる回ったノードを運んだあと 1 回戻すと、幅も位置も掴む前に戻る\", async () => {\n+  await renderOpenedDocument(setupDocument());\n+  await selectInTree(\"turned\");\n+  dragWrappingRightEdge();\n+\n+  await userEvent.keyboard(\"{Control>}z{/Control}\");\n+\n+  const turned = drawn(\"turned\");\n+  expect([turned.style.width, turned.style.left, turned.style.top]).toEqual([\n+    \"200px\",\n+    \"25px\",\n+    \"10px\",\n+  ]);\n+});",
+          "patchLines": 110,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 60,
+          "deletions": 1,
+          "patch": "@@ -1,5 +1,5 @@\n import { fireEvent } from \"@testing-library/react\";\n-import { expect, test, vi } from \"vitest\";\n+import { afterEach, expect, test, vi } from \"vitest\";\n import { AxisLength } from \"@/domains/dcmp/axis-length\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n import { PropEdit } from \"@/domains/dcmp/node\";\n@@ -9,7 +9,12 @@ import { canvasContent } from \"@/features/editor/features/canvas/__tests__/canva\n import {\n   movePointer,\n   pressPointer,\n+  releasePointer,\n } from \"@/features/editor/features/canvas/__tests__/canvas-gesture\";\n+import {\n+  restoreComputedSize,\n+  stubComputedSizeOf,\n+} from \"@/libs/__tests__/element-measure\";\n import { Option } from \"@/utils/Option\";\n import { Result } from \"@/utils/Result\";\n import { drawnAt, drawnTurnedAt, renderCanvas, resizeHandleAt } from \"./setup\";\n@@ -213,3 +218,57 @@ test(\"30 度回したノードは、右辺を親の縁の近くまで引いて\n   expect(width.axis).toBe(\"width\");\n   expect(width.length).toBeCloseTo(220);\n });\n+\n+/* 計算値の幅と高さの差し替え（`stubComputedSizeOf`）はテストをまたいで残るので外す。 */\n+afterEach(restoreComputedSize);\n+\n+/**\n+ * `turned` の高さを `hug` にし、回る前の幅を当てると高さが連れて変わるものとして描く。\n+ * 幅 200 なら高さ 100、それ以外なら 80。\n+ *\n+ * @returns ドキュメントと選択の対（`turned` を選んでいる）\n+ */\n+function setupWrappingTurned(): DocumentSelection {\n+  const wrapping = Result.unwrap(\n+    DesignDocument.applyPropEdit(\n+      setupSelection().document,\n+      \"turned\",\n+      PropEdit.set([\"heightMode\"], \"hug\"),\n+    ),\n+  );\n+  stubComputedSizeOf(\"turned\", (inline) => ({\n+    width: Number.parseFloat(inline.width),\n+    height: inline.width === \"200px\" ? 100 : 80,\n+  }));\n+  return DocumentSelection.fromNames(wrapping, [\"turned\"]);\n+}\n+\n+test(\"90 度回したノードの右辺を 50 引いて高さが連れて 80 に縮むと、回る前の左上の角が留まる位置が通知される\", () => {\n+  /*\n+   * 掴んだ幅だけなら (25 - 25, 10 + 25)。高さが 100 → 80 で回る前の上端を留めると、中心は\n+   * 回る前の上へ 10（画面では右へ 10）動き、左上は中心から 10 戻るので (0 + 10, 35 + 10)。\n+   */\n+  const onResize = vi.fn();\n+  renderCanvas({ selection: setupWrappingTurned(), onResize });\n+  const turned = drawnTurned(\"turned\");\n+\n+  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 150, y: 200 });\n+  movePointer(turned, { x: 150, y: 250 });\n+\n+  const position = Option.unwrap(lastEdit(onResize).position);\n+  expect(position.x).toBeCloseTo(10);\n+  expect(position.y).toBeCloseTo(45);\n+});\n+\n+test(\"高さが連れて変わっても、通知は動かした回数だけで、離したときに追加の通知は出ない\", () => {\n+  const onResize = vi.fn();\n+  renderCanvas({ selection: setupWrappingTurned(), onResize });\n+  const turned = drawnTurned(\"turned\");\n+\n+  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 150, y: 200 });\n+  movePointer(turned, { x: 150, y: 225 });\n+  movePointer(turned, { x: 150, y: 250 });\n+  releasePointer(turned, { x: 150, y: 250 });\n+\n+  expect(onResize).toHaveBeenCalledTimes(2);\n+});",
+          "patchLines": 78,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "1a21bd66ce052f8c33f18dd3af7f71fb840affba",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T12:57:29Z",
+      "subject": "✨ [New Feature]: #1027 回った高さ hug の Text を持つ編集画面のストーリー RotatedHugText を追加",
+      "body": "- OpenedDocumentEditor に RotatedHugText を追加\n  （30 度回した、幅 fixed・高さ hug の Box と、折り返す Text）\n\n背景:\n連れて変わる高さはレイアウトの結果で、happy-dom では再現できない。\n反対の角が実物で留まるかは、ブラウザで操作して確かめるしかない。\n\n採用理由:\n操作を伴う確認は画面全体を組み立てるストーリーで行う\n（rules/ui-verification.md）。今ある story の回転は 90 度の固定 Box だけで、\n回った hug は 0 件だった。角が撮影範囲に入るよう (170, 40) に置いた。\n\n影響とトレードオフ:\nVRT では新しい story として new に数えられ、失敗には数えない。\n\n代替案:\n- 確認用のページを別に作る: Storybook と VRT が見ているものと\n  ずれる\n\n参考:\n- Issue #1027 の完了条件（Storybook + playwright での実物確認）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 43,
+          "deletions": 0,
+          "patch": "@@ -358,6 +358,49 @@ export const NodeInRotatedBox: Story = {\n   args: argsOpening(DocumentWithNodeInRotatedBox),\n };\n \n+/**\n+ * `home` の末尾に、30 度回った幅 `fixed`・高さ `hug` の Box `home-note` を足し、その中に\n+ * 折り返す Text を置いたドキュメント。末尾に置く理由は `DocumentWithNodeInRotatedBox` と同じ。\n+ */\n+const DocumentWithRotatedHugText = documentWithHomeChildren((children) => [\n+  ...children,\n+  {\n+    name: \"home-note\",\n+    type: \"Box\",\n+    props: {\n+      placement: \"absolute\",\n+      x: 170,\n+      y: 40,\n+      widthMode: \"fixed\",\n+      width: 160,\n+      heightMode: \"hug\",\n+      rotation: 30,\n+      background: \"gray-100\",\n+    },\n+    children: [\n+      {\n+        name: \"home-note-text\",\n+        type: \"Text\",\n+        props: {\n+          content:\n+            \"回ったノードの幅を変えると、折り返しが変わって高さも連れて変わる。\",\n+        },\n+      },\n+    ],\n+  },\n+]);\n+\n+/**\n+ * 回っていて、幅を変えると高さが連れて変わるノードがある編集画面。\n+ *\n+ * `home-note` を選んで右辺を引くと、折り返しで高さが変わっても回る前の左上の角が親の座標で\n+ * 動かない（docs/06-ui.md「リサイズハンドル」）。掴んでいる間も離したあとも確かめられる。\n+ */\n+export const RotatedHugText: Story = {\n+  name: \"回っていて高さが連れて変わるノードがある編集画面\",\n+  args: argsOpening(DocumentWithRotatedHugText),\n+};\n+\n /*\n  * 居ない部品へ向け直した `home-login`。`RefNode` と注釈した定数にしてから差し込むのは、\n  * `Node` が直和で、注釈なしの literal（`{ ...node, ref }` を含む）だと `type` と `ref` を",
+          "patchLines": 50,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "6800f463e8b614e5d07125dd4e0ab65d04b61cc3",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T12:57:37Z",
+      "subject": "📝 [Documentation]: #1027 回ったノードのリサイズで、連れて変わる軸があっても反対側が留まることを仕様に書く",
+      "body": "- docs/06-ui.md「リサイズハンドル」278 行の「留まるのは掴んだ軸の長さだけが\n  変わるとき」の限定を外す\n  - 連れて変わる軸では回る前の始点側の端（上端・左端）を留める\n  - 書き込む前に測るので、掴んでいる間も 1 歩遅れない\n- 位置で折り返しが変わる幅 hug を、既知の限界として書く（#1380）\n\n背景:\n#998 で範囲を明記していた限定を、#1027 の実装で外せるようになった。\n\n採用理由:\n留める端を始点側にしたのは、回っていないときに hug が上・左を起点に\n伸び縮みするのと同じ向きにそろえるため。「連れて変わる」の句は\n295 / 300 / 309 行が「（上記）」で参照しているので残した。\n\n影響とトレードオフ:\n幅 hug の高さを掴むと、置き直しで空き幅が変わって幅ごと変わることがあり、\nその分はずれる。長さを当てて測る方式では、位置と長さが互いに依るこの\nケースを拾えないので、#1380 に切り出した。\n\n代替案:\n- 限界を書かずに外す: 幅 hug のケースで「留まる」が嘘になる\n\n参考:\n- Issue #1027 / #1380\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -275,7 +275,8 @@ Figma 寄りの直接操作を採用する。\n       - カーソルは、掴んだものが画面上で伸び縮みする向きを 45 度刻みの最も近い向きに丸めた矢印にする。ちょうど中間（22.5 度など）は時計回りの側に寄せる\n       - 長さは**ポインタの移動量を画面上の向きの分だけ戻し、その軸へ射影した量**だけ変わる（ハンドルを外向きに 20px 引けば 20 伸びる。画面の横・縦の移動量そのままではない）\n     - 位置の置き直しは**自分の `rotation`**（親の座標の中での向き）で決める。自分が回っている絶対配置のノードは、始点側・角を引いたときも終点側を引いたときも**反対の辺・角が親の座標で動かない**よう位置も書き換える（`rotation` は中心を軸に回るので、長さだけを変えると中心が動き反対側も動く）。祖先だけが回っているノードは、回っていないものと同じく始点側を掴んだときだけ位置を書き換える\n-      - 留まるのは**掴んだ軸の長さだけが変わるとき**。掴んでいない軸が `hug` / `fill` で長さが連れて変わる（幅を変えると折り返しで高さも変わる）と、その分だけ反対側がずれる\n+      - 掴んでいない軸が `hug` / `fill` で長さが連れて変わる（幅を変えると折り返しで高さも変わる）ときも留まる。連れて変わる軸では**回る前の始点側の端（上端・左端）**を留める（回っていないときに `hug` が上・左を起点に伸び縮みするのと同じ向き）。連れて変わった長さは書き込む前に測るので、掴んでいる間も 1 歩遅れない\n+        - 既知の限界: 幅が `hug` のノードの高さを掴むと、置き直しで位置が変わって空き幅が変わり、折り返しごと幅が変わることがある。長さは今の位置のまま測るので、この分は拾えず反対側がずれる（#1380）\n       - 位置は整数へ丸めるので、留まるのは 0.5px 以内\n       - フロー配置のノードは位置をレイアウトが決めるので反対側は留まらない\n   - **掴んでから離すまでが undo 1 回ぶん**。掴んでいる間はポインタが動くたびに反映するが、その連続は履歴の上では 1 件にまとまる（artboard の移動・座標の置き直しが「離した 1 回だけ書く」ことで同じ粒度になっているのと揃える）",
+          "patchLines": 10,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "2e517ee706f10965a3a17d8ccfeda70c0e4c3215",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T13:15:18Z",
+      "subject": "♻️ [Refactoring]: #1027 連れて変わる軸の置き直しを placedPosition の同じ式に通す",
+      "body": "- ShrunkEnd 型（軸・端・縮んだ量）を足し、ResizedLength は shrunkEndOf で変換する\n- ungrabbedShift をやめて ungrabbedEnd（Option<ShrunkEnd>）にし、連れて\n  変わる軸を「終点側の端で shrunk = 掴んだ時点の大きさ − 今の大きさ」の\n  1 軸として表す\n- placedPosition は第 3 引数をやめ、掴んだ軸の並びと連れて変わる軸の並びを\n  名前を付けた変数で結合して同じ reduce に通す\n- 早期 return を「回っていない」「位置を書けない」の 2 つに分ける\n  （isUnplaceable をやめる）\n- DrawnWhileTracking の doc に、掴んだ時点の測りを持たない理由を書く。\n  フックのコメントはそれを参照する 1 行にする\n- placedPosition の doc に「掴んでいない軸は始点側の端を留める」を 1 文足す\n\n背景:\nフェーズ 6 の structure-reviewer と duplication-reviewer が、ungrabbedShift の\nrotate(c, own) − c が placedPosition の終点側の置き直し（centerShift と\nhalfShrunk）と同じ式だと指摘した。片方だけを直しても、型でもテストでも\n気づけない。\n\n採用理由:\n連れて変わる軸は「始点側の端を留めて伸び縮みした 1 軸」で、置き直しの\n概念は掴んだ軸と同じ。同じ reduce に通せば、式も幾何の説明も 1 箇所に\nなる。書き込む長さを持つ ResizedLength に混ぜると、distanceLinesAt と\n書き込む長さに連れて変わる軸が入るため、置き直しに要る 3 つだけの型を\n分けた。終点側の端で s = −2g なら centerShift = +g、halfShrunk = −g となり、\n置き直しは rotate(g) − g で元の式と一致する。\n\n影響とトレードオフ:\n振る舞いは変わらない。既存テストの期待値の行は 1 つも変わっていない。\n\n代替案:\n- ResizedLength に連れて変わる軸を混ぜる: 距離の線と書き込む長さに\n  入ってしまう\n- isUnplaceable を名前だけ変える: 2 つの理由が 1 つの名前に残る\n\n参考:\n- Issue #1027 フェーズ 6 の採否コメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 77,
+          "deletions": 56,
+          "patch": "@@ -382,8 +382,10 @@ type DrawnAtGrab = Readonly<{\n  * ポインタが動くたびに読む描かれ方。画面上の量をドキュメント上の量へ直す倍率と、選択中の\n  * ものへ長さを当てたときの回る前のレイアウトの大きさ（ドキュメント上の px）を測る手段。\n  *\n- * 掴んだ時点に 1 回だけ測って持たず、動くたびに前後の 2 つを同じ DOM の上で測り直す。描き\n- * 直された DOM の上で測っても、前後の差を取れば掴んだ軸の長さ以外の変化が差し引きで消える。\n+ * 掴んだ時点に測った大きさは持たず、動くたびに掴んだ時点の長さと今の長さを当てた 2 つを同じ\n+ * DOM の上で測り直す。ドラッグ中は位置が変わって描き直されるので、掴んだ時点に測った値は別の\n+ * DOM の上の値になる。前後を同じ DOM で測れば当てた長さ以外の違いが差し引きで消え、反映が\n+ * 1 回落ちても値はずれない。\n  */\n export type DrawnWhileTracking = Readonly<{\n   view: CanvasView;\n@@ -888,11 +890,12 @@ export const NodeResize = {\n       resized,\n       (each) => each.length,\n     );\n-    const position = placedPosition(\n-      resize,\n-      resized,\n-      ungrabbedShift(resize, lengths, drawn.layoutSizeFor),\n+    const grabbedEnds = resized.map(shrunkEndOf);\n+    const ungrabbedEnds = ArrayEx.filterMap(\n+      [ungrabbedEnd(resize, lengths, drawn.layoutSizeFor)],\n+      (end) => end,\n     );\n+    const position = placedPosition(resize, [...grabbedEnds, ...ungrabbedEnds]);\n \n     return Option.some({\n       edit: Option.isSome(position)\n@@ -1201,6 +1204,31 @@ type ResizedLength = Readonly<{\n   shrunk: number;\n }>;\n \n+/**\n+ * 1 軸の長さが変わったときに動いた端と、縮んだ量。反対側の端はその場に留める。位置の置き直し\n+ * （`placedPosition`）が、掴んだ軸と連れて変わった軸を同じ形で受け取るのに使う。\n+ */\n+type ShrunkEnd = Readonly<{\n+  axis: Axis;\n+  end: AxisEnd;\n+  /** 掴んだ時点の長さから縮んだ量（ドキュメント上の px）。伸びたなら負。 */\n+  shrunk: number;\n+}>;\n+\n+/**\n+ * 掴んだ軸ぶんの結果の、動いた端と縮んだ量。\n+ *\n+ * @param resized 掴んだ 1 軸ぶんの結果\n+ * @returns 掴んだ端と縮んだ量\n+ */\n+function shrunkEndOf(resized: ResizedLength): ShrunkEnd {\n+  return {\n+    axis: resized.length.axis,\n+    end: resized.end,\n+    shrunk: resized.shrunk,\n+  };\n+}\n+\n /**\n  * 掴んだ軸を、ポインタの移動量ぶんだけ伸び縮みさせた結果。\n  *\n@@ -1226,34 +1254,33 @@ function resizedLength(\n \n /**\n  * 反対の辺・角が親の座標で動かないよう置き直したあとの位置（docs/06-ui.md「リサイズ\n- * ハンドル」）。掴んだ軸ごとに、反対側の端を留める。\n+ * ハンドル」）。掴んだ軸ごとに反対側の端を留め、掴んでいない軸の長さが連れて変わったなら\n+ * その軸の始点側の端も留める（`ungrabbedEnd`）。\n  *\n- * 回っていなければ、始点側を掴んだ軸は縮んだ量だけ動き、終点側を掴んだ軸は動かない。\n- * 回っていれば、中心を軸に回るので終点側を掴んでも左上が動く。\n+ * 回っていなければ、始点側の端が動いた軸は縮んだ量だけ動き、終点側の端が動いた軸は動かない。\n+ * 回っていれば、中心を軸に回るので終点側の端が動いても左上が動く。\n  *\n  * @param held 掴んでいるもの（掴んだ時点の位置と、自分の向き）\n- * @param resized 掴んだ軸ぶんの結果\n- * @param ungrabbed 掴んでいない軸の長さが連れて変わったぶんの置き直し（`ungrabbedShift`）\n+ * @param ends 長さが変わった軸ごとの、動いた端と縮んだ量\n  * @returns 置き直したあとの位置。左上が動かないか、位置を書けない対象なら `none`\n  */\n function placedPosition(\n   held: ResizeHold,\n-  resized: readonly ResizedLength[],\n-  ungrabbed: Offset,\n+  ends: readonly ShrunkEnd[],\n ): Option<Offset> {\n-  const centerMoved = resized.reduce<Offset>(\n+  const centerMoved = ends.reduce<Offset>(\n     (sum, each) => Offset.add(sum, centerShift(each)),\n     Offset.Origin,\n   );\n-  const halfShrunk = resized.reduce<Offset>(\n-    (sum, each) =>\n-      Offset.add(sum, axisOffset(each.length.axis, each.shrunk / 2)),\n+  const halfShrunk = ends.reduce<Offset>(\n+    (sum, each) => Offset.add(sum, axisOffset(each.axis, each.shrunk / 2)),\n     Offset.Origin,\n   );\n+\n   // 左上は中心から長さの半分だけ戻った位置なので、中心の動きに縮んだ量の半分を足す\n   const shift = Offset.add(\n-    Offset.add(Offset.rotate(centerMoved, held.rotation.own), halfShrunk),\n-    ungrabbed,\n+    Offset.rotate(centerMoved, held.rotation.own),\n+    halfShrunk,\n   );\n   if (Offset.isOrigin(shift)) {\n     return Option.none;\n@@ -1262,74 +1289,68 @@ function placedPosition(\n }\n \n /**\n- * 掴んでいない軸の長さが `hug` / `fill` で連れて変わったときに、その軸の回る前の始点側の端\n- * （上端・左端）が親の座標で動かないよう、位置へ足す量。\n+ * 掴んでいない軸の長さが `hug` / `fill` で連れて変わったぶんを、始点側の端（回る前の上端・\n+ * 左端）を留めて終点側の端が動いた 1 軸として表したもの。置き直しは `placedPosition` が行う。\n  *\n  * 留めるのを始点側にするのは、回っていないときに `hug` が上・左を起点に伸び縮みするのと\n- * 揃えるため。長さの差 `2d`（`d` は回る前の向きの半分）で中心は `d` 動き、それを自分の向きで\n- * 回したぶんから、左上が中心から戻る `d` を引く。\n+ * 揃えるため。\n  *\n  * @param held 掴んでいるもの（掴み方・掴んだ時点の位置・自分の向き）\n  * @param lengths 書き込む長さ\n  * @param layoutSizeFor 長さを当てて大きさを測る手段（`DrawnWhileTracking`）\n- * @returns 位置へ足す量。角を掴んだ・自分が回っていない・位置を書けない・前後のどちらかを\n- *   測れないときは動かさない（原点）\n+ * @returns 連れて変わる軸の終点側の端と、縮んだ量（掴んだ時点の長さを当てた大きさ − 書き込む\n+ *   長さを当てた大きさ）。自分が回っていない・位置を書けない・角を掴んだ・前後のどちらかを\n+ *   測れないときは `none`\n  */\n-function ungrabbedShift(\n+function ungrabbedEnd(\n   held: ResizeHold,\n   lengths: AxisLengths,\n   layoutSizeFor: DrawnWhileTracking[\"layoutSizeFor\"],\n-): Offset {\n-  // 測る前に外す。回っていない・位置を書けないなら置き直しは 0 で、測ると強制レイアウトが無駄になる\n-  const isUnplaceable =\n-    Angle.isWholeTurns(held.rotation.own) || !Option.isSome(held.grabbedAt);\n-  if (isUnplaceable) {\n-    return Offset.Origin;\n+): Option<ShrunkEnd> {\n+  // 回っていなければ終点側の端が動いても左上は動かない。測ると強制レイアウトが無駄になるので先に外す\n+  if (Angle.isWholeTurns(held.rotation.own)) {\n+    return Option.none;\n+  }\n+  // 位置を書けなければ置き直さないので、同じく測る前に外す\n+  if (!Option.isSome(held.grabbedAt)) {\n+    return Option.none;\n   }\n   const axis = ResizeGrip.ungrabbedAxis(held.grip);\n   if (!Option.isSome(axis)) {\n-    return Offset.Origin;\n+    return Option.none;\n   }\n+\n   const grabbedLengths = ArrayEx.mapNonEmpty(\n     ResizeGrip.grabs(held.grip),\n     (grab) => grab.length,\n   );\n-  const halfGrown = Option.flatMap(layoutSizeFor(grabbedLengths), (before) =>\n-    Option.map(\n-      layoutSizeFor(lengths),\n-      (after) => (after[axis.value] - before[axis.value]) / 2,\n-    ),\n-  );\n-  if (!Option.isSome(halfGrown)) {\n-    return Offset.Origin;\n-  }\n-  const centerMoved = axisOffset(axis.value, halfGrown.value);\n-  return Offset.delta(\n-    centerMoved,\n-    Offset.rotate(centerMoved, held.rotation.own),\n+\n+  return Option.flatMap(layoutSizeFor(grabbedLengths), (before) =>\n+    Option.map(layoutSizeFor(lengths), (after) => ({\n+      axis: axis.value,\n+      end: AxisEnds.End,\n+      shrunk: before[axis.value] - after[axis.value],\n+    })),\n   );\n }\n \n /**\n  * 反対側の端を留めたまま 1 軸の長さが変わったときに、中心が動く量（回る前の向き）。\n  *\n- * 中心は縮んだ量の半分だけ、留めている端のほうへ寄る。始点側を掴んだなら留めている\n- * のは終点側（+）、終点側を掴んだなら始点側（-）。\n+ * 中心は縮んだ量の半分だけ、留めている端のほうへ寄る。始点側の端が動いたなら留めている\n+ * のは終点側（+）、終点側の端が動いたなら始点側（-）。\n  *\n- * @param resized 掴んだ 1 軸ぶんの結果\n+ * @param end 1 軸ぶんの、動いた端と縮んだ量\n  * @returns その軸だけが動く差\n  */\n-function centerShift(resized: ResizedLength): Offset {\n-  return axisOffset(\n-    resized.length.axis,\n-    inwardFrom(resized.end, resized.shrunk / 2),\n-  );\n+function centerShift(end: ShrunkEnd): Offset {\n+  return axisOffset(end.axis, inwardFrom(end.end, end.shrunk / 2));\n }\n \n /**\n- * 掴んだ端から内側へ向かう向きを付けた量。始点側の端なら内側は +、終点側の端なら内側は −。\n+ * 端から内側へ向かう向きを付けた量。始点側の端なら内側は +、終点側の端なら内側は −。\n  *\n- * @param end 掴んだ端\n+ * @param end 掴んだ端・動いた端\n  * @param amount 内側へ向かう量\n  * @returns 始点側なら `amount`、終点側なら `-amount`\n  */",
+          "patchLines": 215,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -222,8 +222,8 @@ export function useNodeResize(\n \n   /*\n    * 掴んでいる間はポインタが動くたびにドキュメントへ反映する。長さも位置も常に\n-   * 「掴んだ時点の値 + 掴んでからの移動量」で、掴んでいない軸が連れて変わるぶんも毎回\n-   * 掴んだ時点と今の長さを当てて測り直すので、反映が 1 回落ちても値はずれない。\n+   * 「掴んだ時点の値 + 掴んでからの移動量」なので、反映が 1 回落ちても値はずれない。\n+   * 掴んでいない軸が連れて変わるぶんも同じ（`DrawnWhileTracking`）。\n    *\n    * 2 件目以降を続きとして渡すことで、掴んでから離すまでが undo 1 回ぶんになる\n    * （docs/06-ui.md「リサイズハンドル」）。",
+          "patchLines": 11,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "ea8b6c14222ae0e81d56705378f10dab06636dc1",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T13:15:26Z",
+      "subject": "♻️ [Refactoring]: #1027 CanvasDom.layoutSizeFor の本体を処理の組で区切り、pxLengthOf の例を直す",
+      "body": "- layoutSizeFor の本体を「判定 / 控えて当てる / 読む / 戻す / 組み立て」の\n  組ごとに空行で区切る\n- pxLengthOf の doc の例を、実ブラウザに出る auto（display: none で描かれて\n  いない要素など）にし、fit-content を外す\n\n背景:\nフェーズ 6 の structure-reviewer が、style を戻す処理が読む処理の後に\n必ず来ているかを目で追いにくいと指摘した。comment-reviewer は、\nfit-content が実ブラウザの計算値には出ない（happy-dom の事情）と指摘した。\n\n採用理由:\n戻し忘れが起きると当てた長さのまま描かれるので、戻す位置は読み手が\n一目で分かるようにしておく。doc の例は実際に返る値にそろえる。\n\n影響とトレードオフ:\n振る舞いは変わらない。\n\n代替案:\n- 無し\n\n参考:\n- Issue #1027 フェーズ 6 の採否コメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 1,
+          "patch": "@@ -108,18 +108,22 @@ export const CanvasDom = {\n     if (!(element instanceof HTMLElement)) {\n       return Option.none;\n     }\n+\n     const inlineStyle = Option.fromNullable(element.getAttribute(\"style\"));\n     for (const each of lengths) {\n       element.style.setProperty(each.axis, Px.create(each.length));\n     }\n+\n     const computed = globalThis.getComputedStyle(element);\n     const width = pxLengthOf(computed.width);\n     const height = pxLengthOf(computed.height);\n+\n     if (Option.isSome(inlineStyle)) {\n       element.setAttribute(\"style\", inlineStyle.value);\n     } else {\n       element.removeAttribute(\"style\");\n     }\n+\n     return Option.flatMap(width, (measuredWidth) =>\n       Option.map(height, (measuredHeight) => ({\n         width: measuredWidth,\n@@ -148,7 +152,8 @@ export const CanvasDom = {\n  * px で綴られた計算値の長さ。\n  *\n  * @param value `getComputedStyle` が返した値\n- * @returns `<数>px` の形ならその数。`auto` / `fit-content` など px でない綴りは `none`\n+ * @returns `<数>px` の形ならその数。`auto`（`display: none` で描かれていない要素など）のように\n+ *   px でない綴りは `none`\n  */\n function pxLengthOf(value: string): Option<number> {\n   if (!value.endsWith(\"px\")) {",
+          "patchLines": 33,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "c8525c03891433856095d4d12de0e3cb9cd241c9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T13:15:34Z",
+      "subject": "🧪 [Tests]: #1027 連れて変わる軸のテストの重複を共有ヘルパーへ畳む",
+      "body": "- node-resize.ungrabbed-axis の軸の鏡像 2 つを followingLength(applied, ...)\n  1 つに、「掴んだ時点だけ / 今だけ測れない」の 2 つを\n  measuredOnlyOneSide 1 つに畳む\n- setup.ts に lengthAlong(lengths, axis) を置き、appliedBox からも使う\n- element-measure.ts の測る手段の関数型を ComputedSizeFor にまとめる\n- 「90 度回った 200x100 で、幅につれて高さが変わる」フェイクを\n  canvas-measure.ts の stubHeightFollowingWidth に置き、artboard-canvas と\n  opened-document-editor の両方から呼ぶ\n- opened-document-editor 側の stubBounds + stubLayoutSize を drawnTurnedAt へ\n  寄せる\n\n背景:\nフェーズ 6 の duplication-reviewer が、軸を引数にせず軸ごとに書き足した\n重複を指摘した。入れ子の関数やインラインのラムダなので、\nduplicate-test-helpers.py の検出器には掛からない。\n\n採用理由:\n測る手段の約束（並びに無い軸は今のまま、など）を変えるときに、\n1 箇所だけ古い前提が残る形をなくす。drawnTurnedAt は同じ値で、\nopened-document-editor.reposition.test でも既に使われていて、引き先の要素が\n合うことを確かめた。\n\n影響とトレードオフ:\n期待値の行は 1 つも変わっていない（git diff -U0 で確認）。\n\n代替案:\n- AxisLength のコンパニオンに長さの取り出しを足す: 本体側に使う箇所が\n  無いので、テストの setup.ts に 1 つだけ置いた\n\n参考:\n- Issue #1027 フェーズ 6 の採否コメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 14,
+          "patch": "@@ -7,16 +7,13 @@ import {\n } from \"@/domains/dcmp/design-document\";\n import {\n   canvasContent,\n+  drawnTurnedAt,\n   movePointer,\n   pressPointer,\n   releasePointer,\n+  stubHeightFollowingWidth,\n } from \"@/features/editor/features/canvas/__tests__\";\n-import {\n-  restoreComputedSize,\n-  stubBounds,\n-  stubComputedSizeOf,\n-  stubLayoutSize,\n-} from \"@/libs/__tests__/element-measure\";\n+import { restoreComputedSize } from \"@/libs/__tests__/element-measure\";\n import { drawn, renderOpenedDocument, selectInTree } from \"./setup\";\n \n /*\n@@ -64,16 +61,16 @@ function setupDocument(): DesignDocument {\n  * `turned` の回った右辺の帯を掴み、画面の下へ 2 回に分けて 50 引いてから離す。\n  *\n  * 外接矩形は (100, 0) から 100x200、回る前は 200x100 として描き、回る前の幅を当てると高さが\n- * 連れて変わる（幅 200 なら 100、それ以外なら 80）ものとして測らせる。\n+ * 連れて変わる（`stubHeightFollowingWidth`）ものとして測らせる。\n  */\n function dragWrappingRightEdge(): void {\n-  stubComputedSizeOf(\"turned\", (inline) => ({\n-    width: Number.parseFloat(inline.width),\n-    height: inline.width === \"200px\" ? 100 : 80,\n-  }));\n-  stubBounds(drawn(\"turned\"), { left: 100, top: 0, width: 100, height: 200 });\n-  stubLayoutSize(drawn(\"turned\"), { width: 200, height: 100 });\n-  pressPointer(drawn(\"turned\"), { x: 150, y: 195 });\n+  stubHeightFollowingWidth(\"turned\");\n+  const turned = drawnTurnedAt(\n+    \"turned\",\n+    { left: 100, top: 0, width: 100, height: 200 },\n+    { width: 200, height: 100 },\n+  );\n+  pressPointer(turned, { x: 150, y: 195 });\n   movePointer(canvasContent(), { x: 150, y: 220 });\n   movePointer(canvasContent(), { x: 150, y: 245 });\n   releasePointer(canvasContent(), { x: 150, y: 245 });",
+          "patchLines": 45,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 20,
+          "deletions": 1,
+          "patch": "@@ -1,7 +1,11 @@\n import { ElementNameAttribute } from \"@/domains/compiled/compiled-element\";\n import { drawn } from \"@/features/editor/features/canvas/__tests__/canvas-elements\";\n import type { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-bounds\";\n-import { stubBounds, stubLayoutSize } from \"@/libs/__tests__/element-measure\";\n+import {\n+  stubBounds,\n+  stubComputedSizeOf,\n+  stubLayoutSize,\n+} from \"@/libs/__tests__/element-measure\";\n \n /**\n  * キャンバスに描かれた要素を、測定を差し替えた状態で用意する。\n@@ -43,6 +47,21 @@ export function drawnTurnedAt(\n   return element;\n }\n \n+/**\n+ * 名前で指したノードを、回る前の幅を当てると高さが連れて変わるものとして測らせる\n+ * （`stubComputedSizeOf`）。幅 200 なら高さ 100、それ以外なら 80。\n+ *\n+ * 差し替えはテストをまたいで残るので、使う側は `afterEach(restoreComputedSize)` を置く。\n+ *\n+ * @param name 測り方を差し替えるノードの名前\n+ */\n+export function stubHeightFollowingWidth(name: string): void {\n+  stubComputedSizeOf(name, (inline) => ({\n+    width: Number.parseFloat(inline.width),\n+    height: inline.width === \"200px\" ? 100 : 80,\n+  }));\n+}\n+\n /**\n  * キャンバスに描かれていることにする要素を置く。\n  * 名前で引ける（`CanvasDom.elementOf`）ようにするだけなので、器の外へ置く。",
+          "patchLines": 35,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "patch": "@@ -25,6 +25,10 @@ export {\n   releaseAlt,\n   releasePointer,\n } from \"@/features/editor/features/canvas/__tests__/canvas-gesture\";\n+export {\n+  drawnTurnedAt,\n+  stubHeightFollowingWidth,\n+} from \"@/features/editor/features/canvas/__tests__/canvas-measure\";\n export {\n   drawnTurnedFrame,\n   turnedFrameDocument,",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 10,
+          "patch": "@@ -11,10 +11,8 @@ import {\n   pressPointer,\n   releasePointer,\n } from \"@/features/editor/features/canvas/__tests__/canvas-gesture\";\n-import {\n-  restoreComputedSize,\n-  stubComputedSizeOf,\n-} from \"@/libs/__tests__/element-measure\";\n+import { stubHeightFollowingWidth } from \"@/features/editor/features/canvas/__tests__/canvas-measure\";\n+import { restoreComputedSize } from \"@/libs/__tests__/element-measure\";\n import { Option } from \"@/utils/Option\";\n import { Result } from \"@/utils/Result\";\n import { drawnAt, drawnTurnedAt, renderCanvas, resizeHandleAt } from \"./setup\";\n@@ -223,8 +221,8 @@ test(\"30 度回したノードは、右辺を親の縁の近くまで引いて\n afterEach(restoreComputedSize);\n \n /**\n- * `turned` の高さを `hug` にし、回る前の幅を当てると高さが連れて変わるものとして描く。\n- * 幅 200 なら高さ 100、それ以外なら 80。\n+ * `turned` の高さを `hug` にし、回る前の幅を当てると高さが連れて変わるものとして描く\n+ * （`stubHeightFollowingWidth`）。\n  *\n  * @returns ドキュメントと選択の対（`turned` を選んでいる）\n  */\n@@ -236,10 +234,7 @@ function setupWrappingTurned(): DocumentSelection {\n       PropEdit.set([\"heightMode\"], \"hug\"),\n     ),\n   );\n-  stubComputedSizeOf(\"turned\", (inline) => ({\n-    width: Number.parseFloat(inline.width),\n-    height: inline.width === \"200px\" ? 100 : 80,\n-  }));\n+  stubHeightFollowingWidth(\"turned\");\n   return DocumentSelection.fromNames(wrapping, [\"turned\"]);\n }\n ",
+          "patchLines": 36,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 51,
+          "deletions": 59,
+          "patch": "@@ -1,6 +1,7 @@\n import { expect, test } from \"vitest\";\n import { AxisLength } from \"@/domains/dcmp/axis-length\";\n import type { ResizeEdit } from \"@/domains/dcmp/resize-edit\";\n+import type { Axis } from \"@/domains/unit/axis\";\n import { Offset } from \"@/domains/unit/offset\";\n import { Option } from \"@/utils/Option\";\n import {\n@@ -11,6 +12,7 @@ import {\n } from \"../index\";\n import {\n   grabbedAt,\n+  lengthAlong,\n   parentPointAt,\n   placedTurned,\n   RightEdgeGrip,\n@@ -32,44 +34,28 @@ import {\n const Before = { position: { x: 30, y: 70 }, width: 200, height: 100 };\n \n /**\n- * 幅を当てると高さが連れて変わる描かれ方。幅を当てなければ掴む前の幅のまま。\n+ * 1 軸を当てると、もう一方の軸の長さが連れて変わる描かれ方。当てなければ掴む前の長さのまま。\n  *\n- * @param heightElse 掴む前の幅（200）以外を当てたときの高さ\n- * @returns 掴む前の幅なら高さ 100、それ以外なら `heightElse` を返す測る手段\n+ * @param applied 長さを当てる軸\n+ * @param followedElse 当てる軸に掴む前の長さ以外を当てたときの、もう一方の軸の長さ\n+ * @returns 掴む前の長さを当てたなら掴む前の大きさ、それ以外ならもう一方の軸を\n+ *   `followedElse` にした大きさを返す測る手段\n  */\n-function heightFollowingWidth(\n-  heightElse: number,\n+function followingLength(\n+  applied: Axis,\n+  followedElse: number,\n ): DrawnWhileTracking[\"layoutSizeFor\"] {\n   return (lengths) => {\n-    const width = Option.unwrapOr(\n-      Option.map(AxisLength.find(lengths, \"width\"), (each) => each.length),\n-      Before.width,\n+    const length = Option.unwrapOr(\n+      lengthAlong(lengths, applied),\n+      Before[applied],\n     );\n-    return Option.some({\n-      width,\n-      height: width === Before.width ? Before.height : heightElse,\n-    });\n-  };\n-}\n-\n-/**\n- * 高さを当てると幅が連れて変わる描かれ方。高さを当てなければ掴む前の高さのまま。\n- *\n- * @param widthElse 掴む前の高さ（100）以外を当てたときの幅\n- * @returns 掴む前の高さなら幅 200、それ以外なら `widthElse` を返す測る手段\n- */\n-function widthFollowingHeight(\n-  widthElse: number,\n-): DrawnWhileTracking[\"layoutSizeFor\"] {\n-  return (lengths) => {\n-    const height = Option.unwrapOr(\n-      Option.map(AxisLength.find(lengths, \"height\"), (each) => each.length),\n-      Before.height,\n+    const isBefore = length === Before[applied];\n+    return Option.some(\n+      applied === \"width\"\n+        ? { width: length, height: isBefore ? Before.height : followedElse }\n+        : { width: isBefore ? Before.width : followedElse, height: length },\n     );\n-    return Option.some({\n-      width: height === Before.height ? Before.width : widthElse,\n-      height,\n-    });\n   };\n }\n \n@@ -147,7 +133,7 @@ test(\"角で 2 軸を掴んだとき、連れて変わる軸は無い\", () => {\n });\n \n test(\"90 度回したノードの右辺を引いて高さが連れて縮んでも、回る前の左上の角が親の座標で動かない\", () => {\n-  const layoutSizeFor = heightFollowingWidth(80);\n+  const layoutSizeFor = followingLength(\"width\", 80);\n   const edit = turnedEditAt(\n     {\n       rotation: { own: 90, total: 90 },\n@@ -167,7 +153,7 @@ test(\"90 度回したノードの右辺を引いて高さが連れて縮んで\n });\n \n test(\"30 度回したノードの左辺を引いて高さが連れて伸びても、回る前の右上の角が親の座標で動かない\", () => {\n-  const layoutSizeFor = heightFollowingWidth(130);\n+  const layoutSizeFor = followingLength(\"width\", 130);\n   const edit = turnedEditAt(\n     {\n       rotation: { own: 30, total: 30 },\n@@ -187,7 +173,7 @@ test(\"30 度回したノードの左辺を引いて高さが連れて伸びて\n });\n \n test(\"30 度回したノードの下辺を引いて幅が連れて変わっても、回る前の左上の角が親の座標で動かない\", () => {\n-  const layoutSizeFor = widthFollowingHeight(170);\n+  const layoutSizeFor = followingLength(\"height\", 170);\n   const edit = turnedEditAt(\n     {\n       rotation: { own: 30, total: 30 },\n@@ -207,7 +193,7 @@ test(\"30 度回したノードの下辺を引いて幅が連れて変わって\n });\n \n test(\"30 度回したノードの上辺を引いて幅が連れて変わっても、回る前の左下の角が親の座標で動かない\", () => {\n-  const layoutSizeFor = widthFollowingHeight(230);\n+  const layoutSizeFor = followingLength(\"height\", 230);\n   const edit = turnedEditAt(\n     {\n       rotation: { own: 30, total: 30 },\n@@ -234,9 +220,12 @@ test(\"360 度回したノードは、高さが連れて変わっても回って\n   });\n \n   expect(\n-    turnedEditAt(gestureOf({ own: 360, total: 360 }), heightFollowingWidth(80)),\n+    turnedEditAt(\n+      gestureOf({ own: 360, total: 360 }),\n+      followingLength(\"width\", 80),\n+    ),\n   ).toEqual(\n-    turnedEditAt(gestureOf({ own: 0, total: 0 }), heightFollowingWidth(80)),\n+    turnedEditAt(gestureOf({ own: 0, total: 0 }), followingLength(\"width\", 80)),\n   );\n });\n \n@@ -247,7 +236,7 @@ test(\"祖先だけが回っているノードは、高さが連れて変わっ\n       anchor: { x: 1, y: 0.5 },\n       unrotatedMove: { x: 50, y: 0 },\n     },\n-    heightFollowingWidth(80),\n+    followingLength(\"width\", 80),\n   );\n \n   expect(edit.position).toEqual(Option.none);\n@@ -262,7 +251,7 @@ test(\"角を掴んだときは、測る大きさが前後で違っても、測\n   const pointer = Offset.rotate({ x: 20, y: 20 }, 30);\n \n   expect(\n-    resizeEditMeasuredAt(resize, pointer, heightFollowingWidth(80)),\n+    resizeEditMeasuredAt(resize, pointer, followingLength(\"width\", 80)),\n   ).toEqual(Option.unwrap(resizeEditAt(resize, pointer, setupView())));\n });\n \n@@ -299,31 +288,34 @@ test(\"掴んだ時点も今も大きさを測れないときは、掴んだ軸\n   expect(position.y).toBeCloseTo(95);\n });\n \n+/**\n+ * 掴んだ時点か今のどちらか一方だけを測れない描かれ方。測れる側は幅を当てると高さが 30 になる。\n+ *\n+ * @param unmeasured 測れない側。`grabbed` なら掴んだ時点の幅（200）を当てたとき、`current` なら\n+ *   それ以外の幅を当てたとき\n+ * @returns 長さを当てたときの大きさを返す手段\n+ */\n+function measuredOnlyOneSide(\n+  unmeasured: \"grabbed\" | \"current\",\n+): DrawnWhileTracking[\"layoutSizeFor\"] {\n+  const measured = followingLength(\"width\", 30);\n+  return (lengths) => {\n+    const side = Option.contains(lengthAlong(lengths, \"width\"), Before.width)\n+      ? \"grabbed\"\n+      : \"current\";\n+    return side === unmeasured ? Option.none : measured(lengths);\n+  };\n+}\n+\n test(\"掴んだ時点の大きさだけを測れないときは、掴んだ軸だけで置き直す\", () => {\n-  const measured = heightFollowingWidth(30);\n-  const position = rightEdgePulledPosition((lengths) =>\n-    Option.contains(\n-      Option.map(AxisLength.find(lengths, \"width\"), (each) => each.length),\n-      Before.width,\n-    )\n-      ? Option.none\n-      : measured(lengths),\n-  );\n+  const position = rightEdgePulledPosition(measuredOnlyOneSide(\"grabbed\"));\n \n   expect(position.x).toBeCloseTo(5);\n   expect(position.y).toBeCloseTo(95);\n });\n \n test(\"今の大きさだけを測れないときは、掴んだ軸だけで置き直す\", () => {\n-  const measured = heightFollowingWidth(30);\n-  const position = rightEdgePulledPosition((lengths) =>\n-    Option.contains(\n-      Option.map(AxisLength.find(lengths, \"width\"), (each) => each.length),\n-      Before.width,\n-    )\n-      ? measured(lengths)\n-      : Option.none,\n-  );\n+  const position = rightEdgePulledPosition(measuredOnlyOneSide(\"current\"));\n \n   expect(position.x).toBeCloseTo(5);\n   expect(position.y).toBeCloseTo(95);\n@@ -339,7 +331,7 @@ test(\"回したフロー配置のノードは、高さが連れて変わって\n   const edit = resizeEditMeasuredAt(\n     resize,\n     Offset.rotate({ x: 50, y: 0 }, 30),\n-    heightFollowingWidth(80),\n+    followingLength(\"width\", 80),\n   );\n \n   expect(edit.position).toEqual(Option.none);",
+          "patchLines": 208,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 2,
+          "patch": "@@ -1,6 +1,7 @@\n import { AxisLength } from \"@/domains/dcmp/axis-length\";\n import type { ResizeEdit } from \"@/domains/dcmp/resize-edit\";\n import type { DocumentSelection } from \"@/domains/session/document-selection\";\n+import type { Axis } from \"@/domains/unit/axis\";\n import { Offset } from \"@/domains/unit/offset\";\n import { resizeAnchorAt } from \"@/features/editor/features/canvas/__tests__/canvas-resize\";\n import type { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-bounds\";\n@@ -101,6 +102,20 @@ export function parentPointAt(\n   );\n }\n \n+/**\n+ * 長さの並びのうち、その軸の長さ。\n+ *\n+ * @param lengths 長さの並び\n+ * @param axis 見る軸\n+ * @returns その軸の長さ。並びに無ければ `none`\n+ */\n+export function lengthAlong(\n+  lengths: readonly AxisLength[],\n+  axis: Axis,\n+): Option<number> {\n+  return Option.map(AxisLength.find(lengths, axis), (each) => each.length);\n+}\n+\n /**\n  * 編集を当てたあとの位置と大きさ。\n  *\n@@ -111,8 +126,8 @@ export function appliedBox(edit: ResizeEdit): Readonly<{\n   position: Offset;\n   lengths: Readonly<{ width: number; height: number }>;\n }> {\n-  const lengthOf = (axis: \"width\" | \"height\"): number =>\n-    Option.unwrap(AxisLength.find(edit.lengths, axis)).length;\n+  const lengthOf = (axis: Axis): number =>\n+    Option.unwrap(lengthAlong(edit.lengths, axis));\n   return {\n     position: Option.unwrap(edit.position),\n     lengths: { width: lengthOf(\"width\"), height: lengthOf(\"height\") },",
+          "patchLines": 40,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 9,
+          "patch": "@@ -66,11 +66,16 @@ export function stubLayoutSize(\n /** 差し替える前の `getComputedStyle`。差し替えていなければ `undefined`。 */\n let originalGetComputedStyle: typeof globalThis.getComputedStyle | undefined;\n \n+/**\n+ * 計算値の幅と高さの決め方。測られるたびに、その時点のインラインの `style`（当てた長さを含む）\n+ * から、返すことにする幅と高さを決める。\n+ */\n+type ComputedSizeFor = (\n+  inline: CSSStyleDeclaration,\n+) => Readonly<{ width: number; height: number }>;\n+\n /** 名前ごとの、計算値の幅と高さの決め方。 */\n-const computedSizeByName = new Map<\n-  string,\n-  (inline: CSSStyleDeclaration) => Readonly<{ width: number; height: number }>\n->();\n+const computedSizeByName = new Map<string, ComputedSizeFor>();\n \n /**\n  * その名前で描かれた要素の、計算値の幅と高さを決める（`getComputedStyle`）。ほかの要素と\n@@ -81,14 +86,11 @@ const computedSizeByName = new Map<\n  * `afterEach(restoreComputedSize)` を置く。\n  *\n  * @param name 測り方を差し替える要素の名前\n- * @param sizeFor 測られるたびに、その時点のインラインの `style`（当てた長さを含む）から、\n- *   返すことにする幅と高さを決める関数\n+ * @param sizeFor 返すことにする幅と高さの決め方\n  */\n export function stubComputedSizeOf(\n   name: string,\n-  sizeFor: (\n-    inline: CSSStyleDeclaration,\n-  ) => Readonly<{ width: number; height: number }>,\n+  sizeFor: ComputedSizeFor,\n ): void {\n   computedSizeByName.set(name, sizeFor);\n   if (originalGetComputedStyle !== undefined) {",
+          "patchLines": 38,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "57d13c3af3cb9e0c1f968da725e4d27962638198",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T13:15:42Z",
+      "subject": "📝 [Documentation]: #1027 留まる許容が軸ごとであることを書き、既知の限界の書き方を節の形にそろえる",
+      "body": "- 「位置は整数へ丸めるので、留まるのは 0.5px 以内」を「x・y をそれぞれ\n  整数へ丸めるので、留まるのは軸ごとに 0.5px 以内」にする\n- 「既知の限界: …（#1380）」の行頭ラベルを、同じ節の 296 行の形\n  （文末の括弧「（既知の限界。#1380）」）にそろえる\n\n背景:\n実物確認での反対の角のずれは dx=−0.495 / dy=−0.356px で、2 次元の距離に\nすると 0.61px になる。元の文は距離とも読めて、実測と食い違っていた\n（comment-reviewer と実装者の気づき）。harness-reviewer は、同じ節の\n既知の限界の書き方とそろっていないことを指摘した。\n\n採用理由:\n丸めは Placement.positionPropEdit の Math.round で軸ごとに行っているので、\n許容も軸ごとに書くのが実物と一致する。\n\n影響とトレードオフ:\n仕様の中身は変わらない。\n\n代替案:\n- 距離で 0.5px 以内に収める: 位置を整数で書く以上、両軸の丸めの合成は\n  0.71px まで出うるので成り立たない\n\n参考:\n- Issue #1027 フェーズ 6 の採否コメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -276,8 +276,8 @@ Figma 寄りの直接操作を採用する。\n       - 長さは**ポインタの移動量を画面上の向きの分だけ戻し、その軸へ射影した量**だけ変わる（ハンドルを外向きに 20px 引けば 20 伸びる。画面の横・縦の移動量そのままではない）\n     - 位置の置き直しは**自分の `rotation`**（親の座標の中での向き）で決める。自分が回っている絶対配置のノードは、始点側・角を引いたときも終点側を引いたときも**反対の辺・角が親の座標で動かない**よう位置も書き換える（`rotation` は中心を軸に回るので、長さだけを変えると中心が動き反対側も動く）。祖先だけが回っているノードは、回っていないものと同じく始点側を掴んだときだけ位置を書き換える\n       - 掴んでいない軸が `hug` / `fill` で長さが連れて変わる（幅を変えると折り返しで高さも変わる）ときも留まる。連れて変わる軸では**回る前の始点側の端（上端・左端）**を留める（回っていないときに `hug` が上・左を起点に伸び縮みするのと同じ向き）。連れて変わった長さは書き込む前に測るので、掴んでいる間も 1 歩遅れない\n-        - 既知の限界: 幅が `hug` のノードの高さを掴むと、置き直しで位置が変わって空き幅が変わり、折り返しごと幅が変わることがある。長さは今の位置のまま測るので、この分は拾えず反対側がずれる（#1380）\n-      - 位置は整数へ丸めるので、留まるのは 0.5px 以内\n+        - 幅が `hug` のノードの高さを掴むと、置き直しで位置が変わって空き幅が変わり、折り返しごと幅が変わることがある。長さは今の位置のまま測るので、この分は拾えず反対側がずれる（既知の限界。#1380）\n+      - 位置は x・y をそれぞれ整数へ丸めるので、留まるのは軸ごとに 0.5px 以内\n       - フロー配置のノードは位置をレイアウトが決めるので反対側は留まらない\n   - **掴んでから離すまでが undo 1 回ぶん**。掴んでいる間はポインタが動くたびに反映するが、その連続は履歴の上では 1 件にまとまる（artboard の移動・座標の置き直しが「離した 1 回だけ書く」ことで同じ粒度になっているのと揃える）\n   - **リサイズすると、その中の絶対配置の子が `constraintX` / `constraintY` に従って動く**（03-schema「親のリサイズへの追従」）。プロパティパネルから `width` / `height` を変えたときも同じで、どちらの経路でも結果は変わらない",
+          "patchLines": 11,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f979292d08795e24c4da9542e36af711a1941524",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T13:59:42Z",
+      "subject": "🧪 [Tests]: #1027 外れた要素の測りと、style 属性の無い要素の戻し方をテストで守る",
+      "body": "- stubComputedSizeOf は、DOM から外れた要素（isConnected が false）には\n  差し替えず、元の getComputedStyle の値を返す\n- canvas-dom.layout-size に「style 属性の無い要素に長さを当てて測っても、\n  測り終えると style 属性が無いまま」を足す\n\n背景:\nフェーズ 6 の test-reviewer が実装をわざと壊して確かめたところ、\n次の 2 つが守られていなかった。\n- measureLayoutSizeFor が最初に引いた要素をキャッシュし続ける形に\n  壊しても、全テストが通った。フェイクが DOM から外れた要素にも値を\n  返していたため\n- removeAttribute の分岐は、どのテストからも通っていなかった\n\n採用理由:\n実ブラウザでは、外れた要素の計算値は px で読めない。フェイクをそれに\n合わせると、作り直された要素を引き直していることを通しのテストが\n守れる。キャッシュ版に壊すと「2 回に分けて運んで離すと…」が落ち、\n直す前のフェイクでは通ることを確かめた。戻しの分岐は\nremoveAttribute を外すと新しいテストだけが落ちる。\n\n影響とトレードオフ:\n既存のテストはすべて通る（5981 件）。\n\n代替案:\n- 通しのテストのコメントから、作り直された要素を測るという主張を外す:\n  中心の経路が無防備のまま残る\n\n参考:\n- Issue #1027 フェーズ 6 の 2 段目の採否コメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QrK5WU6GtTzBX8N6T",
+      "files": [
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "patch": "@@ -81,6 +81,8 @@ const computedSizeByName = new Map<string, ComputedSizeFor>();\n  * その名前で描かれた要素の、計算値の幅と高さを決める（`getComputedStyle`）。ほかの要素と\n  * ほかのプロパティは差し替える前の `getComputedStyle` が答える。\n  *\n+ * DOM から外れた要素は差し替えない（実ブラウザでも外れた要素の計算値は px で読めない）。\n+ *\n  * 要素ではなく名前で引くのは、ドキュメントが変わるたびにキャンバスの要素が作り直され、要素に\n  * 差し替えた測り方は次の描き直しで消えるため。差し替えはテストをまたいで残るので、使う側は\n  * `afterEach(restoreComputedSize)` を置く。\n@@ -109,6 +111,9 @@ export function stubComputedSizeOf(\n     if (!(element instanceof HTMLElement)) {\n       return computed;\n     }\n+    if (!element.isConnected) {\n+      return computed;\n+    }\n     const size = stubbed(element.style);\n     Object.defineProperty(computed, \"width\", {\n       configurable: true,",
+          "patchLines": 19,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 0,
+          "patch": "@@ -45,6 +45,15 @@ test(\"両軸に当てても、測り終えると style 属性が測る前と同\n   expect(element.getAttribute(\"style\")).toBe(before);\n });\n \n+test(\"style 属性の無い要素に長さを当てて測っても、測り終えると style 属性が無いまま\", () => {\n+  const element = globalThis.document.createElement(\"div\");\n+  globalThis.document.body.append(element);\n+\n+  CanvasDom.layoutSizeFor(element, [AxisLength.create(\"width\", 120)]);\n+\n+  expect(element.hasAttribute(\"style\")).toBe(false);\n+});\n+\n test(\"インライン指定の無い高さは、当てて測ったあとも指定が無いまま戻る\", () => {\n   const element = drawnWithStyle(\"width: 200px\");\n ",
+          "patchLines": 16,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": "docs/06-ui.md",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard-reposition.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.componentize.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.context-menu.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.frozen.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.multi-selection.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.multi-selection.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.prop-edit.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection-distance.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection-distance.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.text-edit.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-canvas.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.top-bar.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.zoom-fit.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.zoom-fit.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/components/__stories__/screen-height-shell.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/__tests__/file-paths.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/features/editor/__stories__/sample-editor-state.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/features/editor/components/opened-document-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/clock/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/document-ipc/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/operating-system/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/libs/operating-system/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-resize.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-turned-frame.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/index.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/index.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/index.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/index.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-turned-frame.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/selection-distance-tree.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-placement.test.tsx",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-artboards.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/__tests__/resize-handle-overlay.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.facing-distance.test.ts",
+      "to": "src/utils/Range.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.gesture.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.gesture.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.grip-facings.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.grip-facings.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.orientation.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-guide.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.ungrabbed-axis.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-resize.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/setup.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/child-placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/arranged-artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/distance-targets/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/types/NonEmptyArray.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/__tests__/use-artboard-drag.snap.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.fit.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.fit.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/__tests__/use-drawn-bounds.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/__tests__/use-drawn-bounds.normal.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/use-node-drag.reposition.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/facing-distances/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/__tests__/use-range-select.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/use-text-edit.edge.test.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/use-text-edit.normal.test.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/__tests__/element-measure.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/__tests__/element-measure.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/__tests__/canvas-dom.beneath.test.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/__tests__/canvas-dom.bounds.test.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/__tests__/canvas-dom.bounds.test.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/canvas-dom/__tests__/canvas-dom.normal.test.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/utils/Css.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    }
+  ]
+}
