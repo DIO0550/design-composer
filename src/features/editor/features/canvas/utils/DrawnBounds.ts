@@ -1,3 +1,4 @@
+import type { AxisLength } from "@/domains/dcmp/axis-length";
 import { Angle } from "@/domains/unit/angle";
 import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
@@ -60,6 +61,23 @@ export const DrawnBounds = {
         );
       });
     });
+  },
+
+  /**
+   * 名前で指した要素に長さを当てて描いたときの、回る前のレイアウトの大きさ（ドキュメント上の
+   * px。測り方は `CanvasDom.layoutSizeFor`）。
+   *
+   * @param name 描かれている artboard / ノードの名前
+   * @param lengths 当てる長さ。並びに無い軸は今の描かれ方のまま
+   * @returns 幅と高さ。その名前の要素がまだ画面に出ていない・px で読めないときは `none`
+   */
+  measureLayoutSizeFor(
+    name: string,
+    lengths: readonly AxisLength[],
+  ): Option<Readonly<{ width: number; height: number }>> {
+    return Option.flatMap(CanvasDom.elementOf(name), (element) =>
+      CanvasDom.layoutSizeFor(element, lengths),
+    );
   },
 
   /**
