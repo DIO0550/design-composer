@@ -1,4 +1,5 @@
 import { afterEach, expect, test } from "vitest";
+import { AxisLength } from "@/domains/dcmp/axis-length";
 import {
   clearDrawn,
   drawNamed,
@@ -116,4 +117,17 @@ test("描かれていない名前は、面積を持つものとしては測れ�
   drawNamed("home", { left: 12, top: 34, width: 200, height: 100 });
 
   expect(DrawnBounds.measureWithArea("about")).toEqual(Option.none);
+});
+
+test("描かれていない名前は、長さを当てても測れない", () => {
+  drawNamed("home", { left: 0, top: 0, width: 200, height: 100 }).setAttribute(
+    "style",
+    "width: 200px; height: 100px",
+  );
+
+  expect(
+    DrawnBounds.measureLayoutSizeFor("about", [
+      AxisLength.create("width", 120),
+    ]),
+  ).toEqual(Option.none);
 });
