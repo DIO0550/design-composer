@@ -1,6 +1,7 @@
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import type { DocumentSelection } from "@/domains/session/document-selection";
+import type { Axis } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { resizeAnchorAt } from "@/features/editor/features/canvas/__tests__/canvas-resize";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
@@ -102,6 +103,20 @@ export function parentPointAt(
 }
 
 /**
+ * 長さの並びのうち、その軸の長さ。
+ *
+ * @param lengths 長さの並び
+ * @param axis 見る軸
+ * @returns その軸の長さ。並びに無ければ `none`
+ */
+export function lengthAlong(
+  lengths: readonly AxisLength[],
+  axis: Axis,
+): Option<number> {
+  return Option.map(AxisLength.find(lengths, axis), (each) => each.length);
+}
+
+/**
  * 編集を当てたあとの位置と大きさ。
  *
  * @param edit 書き込む編集
@@ -111,8 +126,8 @@ export function appliedBox(edit: ResizeEdit): Readonly<{
   position: Offset;
   lengths: Readonly<{ width: number; height: number }>;
 }> {
-  const lengthOf = (axis: "width" | "height"): number =>
-    Option.unwrap(AxisLength.find(edit.lengths, axis)).length;
+  const lengthOf = (axis: Axis): number =>
+    Option.unwrap(lengthAlong(edit.lengths, axis));
   return {
     position: Option.unwrap(edit.position),
     lengths: { width: lengthOf("width"), height: lengthOf("height") },

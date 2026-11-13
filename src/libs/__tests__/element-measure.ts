@@ -66,11 +66,16 @@ export function stubLayoutSize(
 /** 差し替える前の `getComputedStyle`。差し替えていなければ `undefined`。 */
 let originalGetComputedStyle: typeof globalThis.getComputedStyle | undefined;
 
+/**
+ * 計算値の幅と高さの決め方。測られるたびに、その時点のインラインの `style`（当てた長さを含む）
+ * から、返すことにする幅と高さを決める。
+ */
+type ComputedSizeFor = (
+  inline: CSSStyleDeclaration,
+) => Readonly<{ width: number; height: number }>;
+
 /** 名前ごとの、計算値の幅と高さの決め方。 */
-const computedSizeByName = new Map<
-  string,
-  (inline: CSSStyleDeclaration) => Readonly<{ width: number; height: number }>
->();
+const computedSizeByName = new Map<string, ComputedSizeFor>();
 
 /**
  * その名前で描かれた要素の、計算値の幅と高さを決める（`getComputedStyle`）。ほかの要素と
@@ -81,14 +86,11 @@ const computedSizeByName = new Map<
  * `afterEach(restoreComputedSize)` を置く。
  *
  * @param name 測り方を差し替える要素の名前
- * @param sizeFor 測られるたびに、その時点のインラインの `style`（当てた長さを含む）から、
- *   返すことにする幅と高さを決める関数
+ * @param sizeFor 返すことにする幅と高さの決め方
  */
 export function stubComputedSizeOf(
   name: string,
-  sizeFor: (
-    inline: CSSStyleDeclaration,
-  ) => Readonly<{ width: number; height: number }>,
+  sizeFor: ComputedSizeFor,
 ): void {
   computedSizeByName.set(name, sizeFor);
   if (originalGetComputedStyle !== undefined) {

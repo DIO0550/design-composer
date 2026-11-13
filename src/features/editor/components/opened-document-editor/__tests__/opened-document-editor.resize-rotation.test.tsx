@@ -7,16 +7,13 @@ import {
 } from "@/domains/dcmp/design-document";
 import {
   canvasContent,
+  drawnTurnedAt,
   movePointer,
   pressPointer,
   releasePointer,
+  stubHeightFollowingWidth,
 } from "@/features/editor/features/canvas/__tests__";
-import {
-  restoreComputedSize,
-  stubBounds,
-  stubComputedSizeOf,
-  stubLayoutSize,
-} from "@/libs/__tests__/element-measure";
+import { restoreComputedSize } from "@/libs/__tests__/element-measure";
 import { drawn, renderOpenedDocument, selectInTree } from "./setup";
 
 /*
@@ -64,16 +61,16 @@ function setupDocument(): DesignDocument {
  * `turned` の回った右辺の帯を掴み、画面の下へ 2 回に分けて 50 引いてから離す。
  *
  * 外接矩形は (100, 0) から 100x200、回る前は 200x100 として描き、回る前の幅を当てると高さが
- * 連れて変わる（幅 200 なら 100、それ以外なら 80）ものとして測らせる。
+ * 連れて変わる（`stubHeightFollowingWidth`）ものとして測らせる。
  */
 function dragWrappingRightEdge(): void {
-  stubComputedSizeOf("turned", (inline) => ({
-    width: Number.parseFloat(inline.width),
-    height: inline.width === "200px" ? 100 : 80,
-  }));
-  stubBounds(drawn("turned"), { left: 100, top: 0, width: 100, height: 200 });
-  stubLayoutSize(drawn("turned"), { width: 200, height: 100 });
-  pressPointer(drawn("turned"), { x: 150, y: 195 });
+  stubHeightFollowingWidth("turned");
+  const turned = drawnTurnedAt(
+    "turned",
+    { left: 100, top: 0, width: 100, height: 200 },
+    { width: 200, height: 100 },
+  );
+  pressPointer(turned, { x: 150, y: 195 });
   movePointer(canvasContent(), { x: 150, y: 220 });
   movePointer(canvasContent(), { x: 150, y: 245 });
   releasePointer(canvasContent(), { x: 150, y: 245 });

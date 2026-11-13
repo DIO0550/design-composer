@@ -11,10 +11,8 @@ import {
   pressPointer,
   releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
-import {
-  restoreComputedSize,
-  stubComputedSizeOf,
-} from "@/libs/__tests__/element-measure";
+import { stubHeightFollowingWidth } from "@/features/editor/features/canvas/__tests__/canvas-measure";
+import { restoreComputedSize } from "@/libs/__tests__/element-measure";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { drawnAt, drawnTurnedAt, renderCanvas, resizeHandleAt } from "./setup";
@@ -223,8 +221,8 @@ test("30 度回したノードは、右辺を親の縁の近くまで引いて�
 afterEach(restoreComputedSize);
 
 /**
- * `turned` の高さを `hug` にし、回る前の幅を当てると高さが連れて変わるものとして描く。
- * 幅 200 なら高さ 100、それ以外なら 80。
+ * `turned` の高さを `hug` にし、回る前の幅を当てると高さが連れて変わるものとして描く
+ * （`stubHeightFollowingWidth`）。
  *
  * @returns ドキュメントと選択の対（`turned` を選んでいる）
  */
@@ -236,10 +234,7 @@ function setupWrappingTurned(): DocumentSelection {
       PropEdit.set(["heightMode"], "hug"),
     ),
   );
-  stubComputedSizeOf("turned", (inline) => ({
-    width: Number.parseFloat(inline.width),
-    height: inline.width === "200px" ? 100 : 80,
-  }));
+  stubHeightFollowingWidth("turned");
   return DocumentSelection.fromNames(wrapping, ["turned"]);
 }
 

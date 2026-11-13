@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
+import type { Axis } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { Option } from "@/utils/Option";
 import {
@@ -11,6 +12,7 @@ import {
 } from "../index";
 import {
   grabbedAt,
+  lengthAlong,
   parentPointAt,
   placedTurned,
   RightEdgeGrip,
@@ -32,44 +34,28 @@ import {
 const Before = { position: { x: 30, y: 70 }, width: 200, height: 100 };
 
 /**
- * 幅を当てると高さが連れて変わる描かれ方。幅を当てなければ掴む前の幅のまま。
+ * 1 軸を当てると、もう一方の軸の長さが連れて変わる描かれ方。当てなければ掴む前の長さのまま。
  *
- * @param heightElse 掴む前の幅（200）以外を当てたときの高さ
- * @returns 掴む前の幅なら高さ 100、それ以外なら `heightElse` を返す測る手段
+ * @param applied 長さを当てる軸
+ * @param followedElse 当てる軸に掴む前の長さ以外を当てたときの、もう一方の軸の長さ
+ * @returns 掴む前の長さを当てたなら掴む前の大きさ、それ以外ならもう一方の軸を
+ *   `followedElse` にした大きさを返す測る手段
  */
-function heightFollowingWidth(
-  heightElse: number,
+function followingLength(
+  applied: Axis,
+  followedElse: number,
 ): DrawnWhileTracking["layoutSizeFor"] {
   return (lengths) => {
-    const width = Option.unwrapOr(
-      Option.map(AxisLength.find(lengths, "width"), (each) => each.length),
-      Before.width,
+    const length = Option.unwrapOr(
+      lengthAlong(lengths, applied),
+      Before[applied],
     );
-    return Option.some({
-      width,
-      height: width === Before.width ? Before.height : heightElse,
-    });
-  };
-}
-
-/**
- * 高さを当てると幅が連れて変わる描かれ方。高さを当てなければ掴む前の高さのまま。
- *
- * @param widthElse 掴む前の高さ（100）以外を当てたときの幅
- * @returns 掴む前の高さなら幅 200、それ以外なら `widthElse` を返す測る手段
- */
-function widthFollowingHeight(
-  widthElse: number,
-): DrawnWhileTracking["layoutSizeFor"] {
-  return (lengths) => {
-    const height = Option.unwrapOr(
-      Option.map(AxisLength.find(lengths, "height"), (each) => each.length),
-      Before.height,
+    const isBefore = length === Before[applied];
+    return Option.some(
+      applied === "width"
+        ? { width: length, height: isBefore ? Before.height : followedElse }
+        : { width: isBefore ? Before.width : followedElse, height: length },
     );
-    return Option.some({
-      width: height === Before.height ? Before.width : widthElse,
-      height,
-    });
   };
 }
 
@@ -147,7 +133,7 @@ test("角で 2 軸を掴んだとき、連れて変わる軸は無い", () => {
 });
 
 test("90 度回したノードの右辺を引いて高さが連れて縮んでも、回る前の左上の角が親の座標で動かない", () => {
-  const layoutSizeFor = heightFollowingWidth(80);
+  const layoutSizeFor = followingLength("width", 80);
   const edit = turnedEditAt(
     {
       rotation: { own: 90, total: 90 },
@@ -167,7 +153,7 @@ test("90 度回したノードの右辺を引いて高さが連れて縮んで�
 });
 
 test("30 度回したノードの左辺を引いて高さが連れて伸びても、回る前の右上の角が親の座標で動かない", () => {
-  const layoutSizeFor = heightFollowingWidth(130);
+  const layoutSizeFor = followingLength("width", 130);
   const edit = turnedEditAt(
     {
       rotation: { own: 30, total: 30 },
@@ -187,7 +173,7 @@ test("30 度回したノードの左辺を引いて高さが連れて伸びて�
 });
 
 test("30 度回したノードの下辺を引いて幅が連れて変わっても、回る前の左上の角が親の座標で動かない", () => {
-  const layoutSizeFor = widthFollowingHeight(170);
+  const layoutSizeFor = followingLength("height", 170);
   const edit = turnedEditAt(
     {
       rotation: { own: 30, total: 30 },
@@ -207,7 +193,7 @@ test("30 度回したノードの下辺を引いて幅が連れて変わって�
 });
 
 test("30 度回したノードの上辺を引いて幅が連れて変わっても、回る前の左下の角が親の座標で動かない", () => {
-  const layoutSizeFor = widthFollowingHeight(230);
+  const layoutSizeFor = followingLength("height", 230);
   const edit = turnedEditAt(
     {
       rotation: { own: 30, total: 30 },
@@ -234,9 +220,12 @@ test("360 度回したノードは、高さが連れて変わっても回って�
   });
 
   expect(
-    turnedEditAt(gestureOf({ own: 360, total: 360 }), heightFollowingWidth(80)),
+    turnedEditAt(
+      gestureOf({ own: 360, total: 360 }),
+      followingLength("width", 80),
+    ),
   ).toEqual(
-    turnedEditAt(gestureOf({ own: 0, total: 0 }), heightFollowingWidth(80)),
+    turnedEditAt(gestureOf({ own: 0, total: 0 }), followingLength("width", 80)),
   );
 });
 
@@ -247,7 +236,7 @@ test("祖先だけが回っているノードは、高さが連れて変わっ�
       anchor: { x: 1, y: 0.5 },
       unrotatedMove: { x: 50, y: 0 },
     },
-    heightFollowingWidth(80),
+    followingLength("width", 80),
   );
 
   expect(edit.position).toEqual(Option.none);
@@ -262,7 +251,7 @@ test("角を掴んだときは、測る大きさが前後で違っても、測�
   const pointer = Offset.rotate({ x: 20, y: 20 }, 30);
 
   expect(
-    resizeEditMeasuredAt(resize, pointer, heightFollowingWidth(80)),
+    resizeEditMeasuredAt(resize, pointer, followingLength("width", 80)),
   ).toEqual(Option.unwrap(resizeEditAt(resize, pointer, setupView())));
 });
 
@@ -299,31 +288,34 @@ test("掴んだ時点も今も大きさを測れないときは、掴んだ軸�
   expect(position.y).toBeCloseTo(95);
 });
 
+/**
+ * 掴んだ時点か今のどちらか一方だけを測れない描かれ方。測れる側は幅を当てると高さが 30 になる。
+ *
+ * @param unmeasured 測れない側。`grabbed` なら掴んだ時点の幅（200）を当てたとき、`current` なら
+ *   それ以外の幅を当てたとき
+ * @returns 長さを当てたときの大きさを返す手段
+ */
+function measuredOnlyOneSide(
+  unmeasured: "grabbed" | "current",
+): DrawnWhileTracking["layoutSizeFor"] {
+  const measured = followingLength("width", 30);
+  return (lengths) => {
+    const side = Option.contains(lengthAlong(lengths, "width"), Before.width)
+      ? "grabbed"
+      : "current";
+    return side === unmeasured ? Option.none : measured(lengths);
+  };
+}
+
 test("掴んだ時点の大きさだけを測れないときは、掴んだ軸だけで置き直す", () => {
-  const measured = heightFollowingWidth(30);
-  const position = rightEdgePulledPosition((lengths) =>
-    Option.contains(
-      Option.map(AxisLength.find(lengths, "width"), (each) => each.length),
-      Before.width,
-    )
-      ? Option.none
-      : measured(lengths),
-  );
+  const position = rightEdgePulledPosition(measuredOnlyOneSide("grabbed"));
 
   expect(position.x).toBeCloseTo(5);
   expect(position.y).toBeCloseTo(95);
 });
 
 test("今の大きさだけを測れないときは、掴んだ軸だけで置き直す", () => {
-  const measured = heightFollowingWidth(30);
-  const position = rightEdgePulledPosition((lengths) =>
-    Option.contains(
-      Option.map(AxisLength.find(lengths, "width"), (each) => each.length),
-      Before.width,
-    )
-      ? measured(lengths)
-      : Option.none,
-  );
+  const position = rightEdgePulledPosition(measuredOnlyOneSide("current"));
 
   expect(position.x).toBeCloseTo(5);
   expect(position.y).toBeCloseTo(95);
@@ -339,7 +331,7 @@ test("回したフロー配置のノードは、高さが連れて変わって�
   const edit = resizeEditMeasuredAt(
     resize,
     Offset.rotate({ x: 50, y: 0 }, 30),
-    heightFollowingWidth(80),
+    followingLength("width", 80),
   );
 
   expect(edit.position).toEqual(Option.none);
