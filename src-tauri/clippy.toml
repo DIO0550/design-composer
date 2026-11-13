@@ -18,6 +18,7 @@ disallowed-methods = [
   { path = "std::fs::soft_link", reason = "file_io を通す" },
   { path = "std::fs::symlink_metadata", reason = "file_io を通す" },
   { path = "std::fs::write", reason = "file_io を通す" },
+  # std::fs だけだと Path::exists などで抜けられるので、Path のファイルシステムに触るメソッドも含める。
   { path = "std::path::Path::canonicalize", reason = "file_io を通す" },
   { path = "std::path::Path::metadata", reason = "file_io を通す" },
   { path = "std::path::Path::symlink_metadata", reason = "file_io を通す" },

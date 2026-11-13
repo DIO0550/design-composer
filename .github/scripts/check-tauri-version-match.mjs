@@ -44,7 +44,7 @@ const readOrFail = (path, description) => {
 
 /**
  * Cargo.lock から指定したクレートの解決済みバージョンを取り出す。
- * cargo を呼ばずに読めるので、CI に Rust ツールチェーンが要らない。
+ * cargo を呼ばずに読めるので、frontend のジョブに Rust ツールチェーンが要らない。
  * @param lock Cargo.lock の中身
  * @param name 探すクレート名
  * @returns 見つかったバージョン。そのクレートが居なければ null

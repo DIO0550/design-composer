@@ -1,7 +1,6 @@
 //! 同じファイルを指す別の綴りを、1 つの綴りへ寄せる。
 //!
-//! CI の cargo test は ubuntu でしか走らない(`.github/workflows/src-tauri.yml`)ので、Windows / macOS
-//! だけのテストは実機で確かめていない。
+//! Windows / macOS だけのテストが CI で走らないことは `without_verbatim_disk` の doc にある。
 
 use std::fs;
 

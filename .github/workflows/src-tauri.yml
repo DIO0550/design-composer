@@ -1,5 +1,7 @@
 name: src-tauri
 
+# paths で絞らないのは、必須チェックにしたとき絞られた PR で保留のまま止まるのと、stable の clippy の
+# 版上げで増えた lint を src-tauri を触らない PR でも見せるため。
 on:
   pull_request:
 
