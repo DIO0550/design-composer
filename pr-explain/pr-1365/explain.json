@@ -1,7 +1,7 @@
 {
   "version": 1,
   "pr": 1365,
-  "sha": "1ec1a1609f76b22c4a6fb01af725af0309f3d63c",
+  "sha": "659b4519f1f7156ac9c784878f8125bf71d166ef",
   "issue": 553,
   "overview": {
     "title": "Rust 側のファイルシステム呼び出しを `file_io` の 1 モジュールに集める",
@@ -24,6 +24,10 @@
       },
       {
         "text": "保存は `save` が先に親とファイル名へ分け(分けられなければ `InvalidPath`)、`file_io::write_atomic` の `io::Error` を保存先のパスで詰め替える",
+        "message": "save-write"
+      },
+      {
+        "text": "`write_atomic` は `file_name` が単一のファイル名(`Component::Normal` 1 つ)でなければ、何も書かずに `InvalidInput` を返す。今の呼び出し側(`save`)は `Path::file_name()` を渡すので届かない",
         "message": "save-write"
       },
       {
@@ -71,6 +75,14 @@
           "kind": "message",
           "id": "watch-canon"
         }
+      },
+      {
+        "title": "ファイル名の判定",
+        "text": "`write_atomic` は公開関数なので、`directory` の外へ書く `file_name` を型ではなく冒頭の判定で弾く。`InvalidInput` は `from_io` を通ると `Io` になるが、今の呼び出し側からは届かない",
+        "go": {
+          "kind": "file",
+          "path": "src-tauri/src/file_io/atomic_write.rs"
+        }
       }
     ]
   },
@@ -103,14 +115,14 @@
       "name": "ファイル入出力",
       "role": "本番コードで `std::fs` を呼ぶ唯一のモジュール",
       "feature": "boundary",
-      "change": "`read_bytes` / `canonicalize` を足し、`write_atomic` を再公開した。モジュール doc を 2 系統の口として書き直した"
+      "change": "`read_bytes` / `canonicalize` を足し、`write_atomic` を再公開した。モジュール doc を 2 系統の口として書き直した。監視は `notify` の購読を通さず、パスの解決には `canonicalize` を使う、と doc に書いた"
     },
     {
       "path": "src-tauri/src/file_io/atomic_write.rs",
       "name": "アトミック書き込み",
       "role": "一時ファイルへ書いて `sync_all` し、rename で置き換える",
       "feature": "boundary",
-      "change": "`document/io/` から移し、`DocumentIoError` ではなく `io::Error` をそのまま返す形にした"
+      "change": "`document/io/` から移し、`DocumentIoError` ではなく `io::Error` をそのまま返す形にした。冒頭で `file_name` が単一のファイル名かを判定し、違えば何も書かずに `InvalidInput` を返す"
     },
     {
       "path": "src-tauri/src/document/io.rs",
@@ -164,6 +176,14 @@
       "role": "保存・読み込みの失敗の種別を実物の FS で確かめる",
       "feature": "persist",
       "change": "保存の失敗の種別と、メッセージに載るパスのテストを 2 件足した",
+      "graph": false
+    },
+    {
+      "path": "src-tauri/src/file_io/file_io_edge_test.rs",
+      "name": "ファイル入出力の異常系テスト",
+      "role": "`file_io` の口を直接呼んで、失敗の扱いを実物の FS で確かめる",
+      "feature": "boundary",
+      "change": "単一のファイル名でない `file_name` を弾くテストを 3 件足した",
       "graph": false
     }
   ],
@@ -470,6 +490,68 @@
           "start": 91,
           "end": 101,
           "text": "既存テスト「存在しないディレクトリ配下への保存は失敗する」と同じ入力で、種別ではなくパスを見る"
+        }
+      ]
+    },
+    {
+      "sha": "f52fbc3d1f17e345f4876ec32191ae33c6923f7d",
+      "phase": "revise",
+      "role": "`write_atomic` で単一のファイル名でない `file_name` を弾く",
+      "why": "Copilot のレビューで指摘された。`write_atomic` は公開関数で、一時ファイルが保存先と同じディレクトリにあることを rename のアトミック性の前提にしている。`file_name` が絶対パスや `..` を含むと `join` が `directory` を捨てたり外へ出たりして、この前提が崩れる。今の呼び出し側では起きないが、公開 API の前提を呼び出し側の規律に頼らないようにした。",
+      "flows": [
+        "save"
+      ],
+      "review": [
+        "`Path::new(file_name).components()` が `Component::Normal` ちょうど 1 つかで、空・`.`・`..`・絶対パス・区切りを含む値をまとめて弾く。末尾の区切り付き `a/` は通るが、外へは書かれない",
+        "失敗の種別は `InvalidInput` にした。`save` を通ると `from_io` で `Io` になるが、`Path::file_name()` を渡す今の呼び出し側からは届かない",
+        "3 件目のテストは `./../escaped.txt` を渡す。`../escaped.txt` では判定が無くても一時ファイルの作成で失敗し、判定を守れない。判定を外すと 3 件とも落ちる"
+      ],
+      "before": [
+        {
+          "text": "`file_name` に絶対パスや `..` を渡すと、一時ファイルや書き込み先が `directory` の外になりえた"
+        }
+      ],
+      "after": [
+        {
+          "text": "単一のファイル名でなければ、一時ファイルを作らずに `InvalidInput` を返す",
+          "message": "save-write"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src-tauri/src/file_io/atomic_write.rs",
+          "start": 17,
+          "end": 26,
+          "text": "判定を一時ファイルのパスを組む前に置き、外れたら何も書かない"
+        },
+        {
+          "path": "src-tauri/src/file_io/atomic_write.rs",
+          "start": 42,
+          "end": 48,
+          "text": "要素の 1 つめが `Normal` で、2 つめが無いときだけ真"
+        },
+        {
+          "path": "src-tauri/src/file_io/file_io_edge_test.rs",
+          "start": 67,
+          "end": 68,
+          "text": "先頭の `./` で、判定が無ければ一時ファイルも外に作れる綴りにしている"
+        }
+      ]
+    },
+    {
+      "sha": "659b4519f1f7156ac9c784878f8125bf71d166ef",
+      "phase": "revise",
+      "role": "`file_io` の doc で、監視が通らない範囲を明確にする",
+      "why": "Copilot のレビューで、`watchers.rs` が `file_io::canonicalize` を呼んでいるのに「監視はここを通さない」と読めて事実と食い違う、と指摘された。通らないのは `notify` の購読そのもので、パスの解決はこのモジュールを通るので、2 つを分けて書いた。",
+      "review": [
+        "一文を消さずに書き分けた。消すと、監視が `std::fs` の集約の例外であることが読み取れなくなる"
+      ],
+      "notes": [
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "start": 8,
+          "end": 8,
+          "text": "購読(`notify` の watcher)は通さず、パスの解決(`canonicalize`)は通す"
         }
       ]
     }
@@ -786,8 +868,8 @@
       "then": "失敗し、メッセージにそのパスが載る",
       "excerpt": {
         "path": "src-tauri/src/file_io/file_io_edge_test.rs",
-        "start": 16,
-        "end": 23,
+        "start": 18,
+        "end": 25,
         "text": "#[test]\nfn ディレクトリを指して読み込むと失敗する() {\n    let dir = TempDir::new(\"file-io-edge\");\n\n    let error = read_optional_text(dir.path()).expect_err(\"読み込みに失敗する\");\n\n    assert!(error.message().contains(&dir.path().display().to_string()));\n}"
       },
       "targets": [
@@ -854,6 +936,145 @@
           }
         ]
       }
+    },
+    {
+      "id": "atomic-name-separator",
+      "suite": "file-io-edge",
+      "name": "ファイル名に区切りを含むと書き込まずに失敗する",
+      "techniques": [
+        "error",
+        "equivalence"
+      ],
+      "why": "`file_name` に区切りが入ると `directory.join` の行き先が直下でなくなる。判定が無ければ一時ファイルの作成が `NotFound` で落ちるので、種別 `InvalidInput` で判定を通ったことを見分ける",
+      "given": "一時ディレクトリ",
+      "when": "`file_name` に `../escaped.txt` を渡して `write_atomic` を呼ぶ",
+      "then": "`io::ErrorKind::InvalidInput` が返る",
+      "commit": "f52fbc3d1f17e345f4876ec32191ae33c6923f7d",
+      "excerpt": {
+        "path": "src-tauri/src/file_io/file_io_edge_test.rs",
+        "start": 38,
+        "end": 46,
+        "emphasis": [
+          {
+            "start": 45,
+            "end": 45
+          }
+        ],
+        "text": "#[test]\nfn ファイル名に区切りを含むと書き込まずに失敗する() {\n    let dir = TempDir::new(\"file-io-edge\");\n\n    let error = write_atomic(dir.path(), OsStr::new(\"../escaped.txt\"), \"content\")\n        .expect_err(\"書き込みに失敗する\");\n\n    assert_eq!(error.kind(), io::ErrorKind::InvalidInput);\n}"
+      },
+      "values": {
+        "columns": [
+          "`file_name`",
+          "判定",
+          "返る種別"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`document.dcmp`",
+              "通る",
+              "(書き込む)"
+            ]
+          },
+          {
+            "cells": [
+              "`../escaped.txt`",
+              "弾く",
+              "`InvalidInput`"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src-tauri/src/file_io/atomic_write.rs"
+      ]
+    },
+    {
+      "id": "atomic-name-absolute",
+      "suite": "file-io-edge",
+      "name": "ファイル名が絶対パスだと書き込まずに失敗する",
+      "techniques": [
+        "error",
+        "equivalence"
+      ],
+      "why": "`Path::join` は絶対パスを渡すと `directory` を捨てて置き換えるので、判定が無いと `directory` の外へ書ける",
+      "given": "一時ディレクトリの中の `documents` と、その外を指す絶対パス",
+      "when": "`documents` を `directory` に、絶対パスを `file_name` に渡す",
+      "then": "`io::ErrorKind::InvalidInput` が返る",
+      "commit": "f52fbc3d1f17e345f4876ec32191ae33c6923f7d",
+      "excerpt": {
+        "path": "src-tauri/src/file_io/file_io_edge_test.rs",
+        "start": 48,
+        "end": 59,
+        "emphasis": [
+          {
+            "start": 53,
+            "end": 58
+          }
+        ],
+        "text": "#[test]\nfn ファイル名が絶対パスだと書き込まずに失敗する() {\n    let dir = TempDir::new(\"file-io-edge\");\n    let directory = dir.join(\"documents\");\n    fs::create_dir(&directory).expect(\"サブディレクトリを作れる\");\n    let absolute = dir.join(\"escaped.txt\");\n\n    let error =\n        write_atomic(&directory, absolute.as_os_str(), \"content\").expect_err(\"書き込みに失敗する\");\n\n    assert_eq!(error.kind(), io::ErrorKind::InvalidInput);\n}"
+      },
+      "targets": [
+        "src-tauri/src/file_io/atomic_write.rs"
+      ]
+    },
+    {
+      "id": "atomic-name-escape-nothing-written",
+      "suite": "file-io-edge",
+      "name": "ファイル名がディレクトリの外を指すと中にも外にも何も書かない",
+      "techniques": [
+        "error",
+        "state"
+      ],
+      "why": "判定が「何も書かずに」返すことを、種別ではなく FS の状態で守る。`./../escaped.txt` にしているのは、`../escaped.txt` だと判定が無くても一時ファイルの作成で失敗して何も書かれず、テストが判定を守れないため",
+      "given": "一時ディレクトリの中の空の `documents`",
+      "when": "`file_name` に `./../escaped.txt` を渡して `write_atomic` を呼ぶ",
+      "then": "一時ディレクトリには `documents` だけがあり、`documents` の中も空",
+      "commit": "f52fbc3d1f17e345f4876ec32191ae33c6923f7d",
+      "excerpt": {
+        "path": "src-tauri/src/file_io/file_io_edge_test.rs",
+        "start": 61,
+        "end": 77,
+        "emphasis": [
+          {
+            "start": 67,
+            "end": 68
+          },
+          {
+            "start": 70,
+            "end": 76
+          }
+        ],
+        "text": "#[test]\nfn ファイル名がディレクトリの外を指すと中にも外にも何も書かない() {\n    let dir = TempDir::new(\"file-io-edge\");\n    let directory = dir.join(\"documents\");\n    fs::create_dir(&directory).expect(\"サブディレクトリを作れる\");\n\n    // 先頭の `./` は、確認が無ければ一時ファイルも外に作れて書き込みまで通ってしまう綴りにするため。\n    let _ = write_atomic(&directory, OsStr::new(\"./../escaped.txt\"), \"content\");\n\n    assert_eq!(dir.file_names(), vec![\"documents\".to_string()]);\n    assert_eq!(\n        fs::read_dir(&directory)\n            .expect(\"サブディレクトリを読める\")\n            .count(),\n        0\n    );\n}"
+      },
+      "values": {
+        "columns": [
+          "`file_name`",
+          "判定が無いとき",
+          "判定があるとき"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`../escaped.txt`",
+              "一時ファイルの作成で失敗し、何も書かれない(判定を守れない)",
+              "何も書かない"
+            ]
+          },
+          {
+            "cells": [
+              "`./../escaped.txt`",
+              "一時ファイルも外に作れ、外へ書かれる",
+              "何も書かない"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src-tauri/src/file_io/atomic_write.rs"
+      ]
     },
     {
       "id": "windows-verbatim-watch",
@@ -1068,8 +1289,8 @@
           "kind": "excerpt",
           "excerpt": {
             "path": "src-tauri/src/file_io/atomic_write.rs",
-            "start": 33,
-            "end": 38,
+            "start": 50,
+            "end": 55,
             "text": "fn write_all_synced(temp_path: &Path, content: &str) -> io::Result<()> {\n    let mut file = File::create(temp_path)?;\n    file.write_all(content.as_bytes())?;\n    // rename の後にクラッシュしても中身が確定しているよう、rename の前に同期する。\n    file.sync_all()\n}"
           }
         },
@@ -1093,8 +1314,8 @@
         {
           "path": "src-tauri/src/file_io/atomic_write.rs",
           "lineRange": {
-            "start": 33,
-            "end": 38
+            "start": 50,
+            "end": 55
           },
           "text": "各手順の失敗を `?` で一時ファイルのパスを添えずに返す",
           "shas": [
@@ -1167,12 +1388,25 @@
       "kind": "language",
       "id": "osstr",
       "category": "rust · std::ffi",
-      "label": "`OsStr` と `Path`",
+      "label": "`OsStr` と `Path` / `Component`",
       "gist": "OS が扱うファイル名を、UTF-8 として正しいかどうかに関わらずそのまま持つための[[借用|borrow]]の文字列型。`Path` はその上にパスの操作を足した型。",
       "passages": [
         {
           "kind": "text",
           "text": "Rust の `str` は UTF-8 であることが保証された文字列だが、OS のファイル名はそうとは限らない。`OsStr` は OS の綴りをそのまま持つ。`Path::parent()` は親のパスを、`Path::file_name()` は最後の要素を `OsStr` で返し、どちらも無ければ `None` を返す。`Path::join` は 2 つをつないだ新しい `PathBuf`(所有するパス)を作る。"
+        },
+        {
+          "kind": "text",
+          "text": "`Path::components()` はパスを要素([[`Component`|component]])の並びに分ける。`Component::Normal` は普通の名前で、ほかに `.`(`CurDir`)・`..`(`ParentDir`)・先頭の `/`(`RootDir`)などがある。`matches!(値, パターン)` は値が[[パターン|pattern]]に合うかを `bool` で返す標準のマクロ。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src-tauri/src/file_io/atomic_write.rs",
+            "start": 42,
+            "end": 48,
+            "text": "/// `file_name` を `directory` に join しても `directory` 直下を指すか（通常の要素がちょうど 1 つか）。\nfn is_single_file_name(file_name: &OsStr) -> bool {\n    let mut components = Path::new(file_name).components();\n    let first_is_normal = matches!(components.next(), Some(Component::Normal(_)));\n    let has_no_more_components = components.next().is_none();\n    first_is_normal && has_no_more_components\n}"
+          }
         },
         {
           "kind": "parameters",
@@ -1203,8 +1437,8 @@
         {
           "path": "src-tauri/src/file_io/atomic_write.rs",
           "lineRange": {
-            "start": 18,
-            "end": 20
+            "start": 20,
+            "end": 29
           },
           "text": "`write_atomic` が親とファイル名を分けて受け、内部で保存先と一時ファイルのパスを組む",
           "shas": [
@@ -1214,12 +1448,23 @@
         {
           "path": "src-tauri/src/file_io/atomic_write.rs",
           "lineRange": {
-            "start": 44,
-            "end": 54
+            "start": 61,
+            "end": 71
           },
           "text": "一時ファイル名は `file_name` を `to_string_lossy` で文字列にして組み立てる",
           "shas": [
             "38c852fcef0da8161f5c38ddefa9d520423dc245"
+          ]
+        },
+        {
+          "path": "src-tauri/src/file_io/atomic_write.rs",
+          "lineRange": {
+            "start": 42,
+            "end": 48
+          },
+          "text": "`is_single_file_name` が、`file_name` の要素が `Normal` ちょうど 1 つかを見る",
+          "shas": [
+            "f52fbc3d1f17e345f4876ec32191ae33c6923f7d"
           ]
         }
       ],
@@ -1247,12 +1492,12 @@
           "kind": "excerpt",
           "excerpt": {
             "path": "src-tauri/src/file_io/atomic_write.rs",
-            "start": 27,
-            "end": 30,
+            "start": 36,
+            "end": 39,
             "emphasis": [
               {
-                "start": 30,
-                "end": 30
+                "start": 39,
+                "end": 39
               }
             ],
             "text": "    // 一時ファイルは同一ディレクトリに作るのでファイルシステムをまたがず、rename は\n    // アトミックに完了する。Windows でも `fs::rename` は\n    // MoveFileExW(MOVEFILE_REPLACE_EXISTING) を使うため既存ファイルを置換できる。\n    fs::rename(&temp_path, &path).inspect_err(|_| remove_temp_file(&temp_path))"
@@ -1263,8 +1508,8 @@
         {
           "path": "src-tauri/src/file_io/atomic_write.rs",
           "lineRange": {
-            "start": 30,
-            "end": 30
+            "start": 39,
+            "end": 39
           },
           "text": "rename に失敗したら一時ファイルを消し、rename の `io::Error` をそのまま返す",
           "shas": [
@@ -1343,7 +1588,7 @@
             "path": "src-tauri/src/file_io.rs",
             "start": 1,
             "end": 8,
-            "text": "//! ファイルシステムへの読み書き。本番コードで `std::fs` を呼ぶのはこのモジュールだけにする。\n//!\n//! 口は 2 系統ある。`read_bytes` / `write_atomic` / `canonicalize` は `io::Result` をそのまま返し、\n//! 失敗の種別への詰め替えは呼び出し側が行う。`read_optional_text` / `write_text` は失敗を\n//! `FileIoError` にまとめる。後者は前者と意味が違う（無いことを `None` で表す・UTF-8 として\n//! 解釈する・親ディレクトリを作る）ので残している。\n//!\n//! ファイル変更の監視（`notify`）はここを通さない。"
+            "text": "//! ファイルシステムへの読み書き。本番コードで `std::fs` を呼ぶのはこのモジュールだけにする。\n//!\n//! 口は 2 系統ある。`read_bytes` / `write_atomic` / `canonicalize` は `io::Result` をそのまま返し、\n//! 失敗の種別への詰め替えは呼び出し側が行う。`read_optional_text` / `write_text` は失敗を\n//! `FileIoError` にまとめる。後者は前者と意味が違う（無いことを `None` で表す・UTF-8 として\n//! 解釈する・親ディレクトリを作る）ので残している。\n//!\n//! ファイル変更の監視（`notify` の watcher による購読）はここを通さない。監視するパスの解決には `canonicalize` を使う。"
           }
         },
         {
@@ -1360,7 +1605,7 @@
         },
         {
           "kind": "memo",
-          "text": "ファイル変更の監視(`notify`)は読み書きではないので、ここを通さない。"
+          "text": "ファイル変更の監視は、`notify` の watcher による購読はここを通さない。監視するパスの解決には、ここの `canonicalize` を使う。"
         }
       ],
       "occurrences": [
@@ -1372,7 +1617,8 @@
           },
           "text": "モジュール doc と、`atomic_write` の取り込み・再公開",
           "shas": [
-            "38c852fcef0da8161f5c38ddefa9d520423dc245"
+            "38c852fcef0da8161f5c38ddefa9d520423dc245",
+            "659b4519f1f7156ac9c784878f8125bf71d166ef"
           ]
         },
         {
@@ -1440,7 +1686,7 @@
         },
         {
           "kind": "memo",
-          "text": "親とファイル名に分けられないパスは `io::Error` を経ずに `invalid_path` で `InvalidPath` にする。`write_atomic` が `InvalidInput` を返す形にすると、`from_io` がそれを `Io` に写してしまう。"
+          "text": "保存先を親とファイル名に分けられないパスは、`io::Error` を経ずに `invalid_path` で `InvalidPath` にする。`write_atomic` が `file_name` を弾いたときの `InvalidInput` は、`from_io` を通ると `Io` になる。ただし `save` は `Path::file_name()` を渡すので、この失敗は今は届かない。"
         }
       ],
       "occurrences": [
@@ -1508,12 +1754,16 @@
           "text": "一時ファイル名は `.<ファイル名>.<プロセス ID>.<連番>.tmp` で、同時に走る書き込みどうしが衝突しない。同じディレクトリに作るのでファイルシステムをまたがず、rename はアトミックに終わる。`sync_all` は中身をディスクへ書き出し終えるまで待つ標準の操作で、rename の後に落ちても中身が確定しているよう rename の前に呼ぶ。失敗したら一時ファイルを消し、元の失敗を返す。"
         },
         {
+          "kind": "rule",
+          "text": "`file_name` が単一のファイル名でない(空・`.`・`..`・絶対パス・区切りで 2 つ以上の要素に分かれる)ときは、一時ファイルを作る前に `InvalidInput` を返す。一時ファイルと保存先が同じディレクトリにあることが rename のアトミック性の前提なので、公開関数として呼び出し側の規律に頼らない。"
+        },
+        {
           "kind": "excerpt",
           "excerpt": {
             "path": "src-tauri/src/file_io/atomic_write.rs",
             "start": 11,
-            "end": 38,
-            "text": "/// 一時ファイルへ書いてから rename することで、`directory` の `file_name` を部分書き込み状態に\n/// せず置き換える。外部の読み手（AI・エディタ）からは、置き換え前か置き換え後の一方だけが見える。\n///\n/// 親とファイル名を分けて受けるのは、分けられないパスをどの失敗とするかを呼び出し側が決めるため。\n/// パスで受けて `InvalidInput` を返すと、NUL を含むパスの失敗と見分けられない。\n///\n/// @returns 失敗は各手順の `io::Error` のまま返す（一時ファイルのパスは載らない）\npub fn write_atomic(directory: &Path, file_name: &OsStr, content: &str) -> io::Result<()> {\n    let path = directory.join(file_name);\n    let temp_path = temp_path_for(directory, file_name);\n\n    if let Err(error) = write_all_synced(&temp_path, content) {\n        remove_temp_file(&temp_path);\n        return Err(error);\n    }\n\n    // 一時ファイルは同一ディレクトリに作るのでファイルシステムをまたがず、rename は\n    // アトミックに完了する。Windows でも `fs::rename` は\n    // MoveFileExW(MOVEFILE_REPLACE_EXISTING) を使うため既存ファイルを置換できる。\n    fs::rename(&temp_path, &path).inspect_err(|_| remove_temp_file(&temp_path))\n}\n\nfn write_all_synced(temp_path: &Path, content: &str) -> io::Result<()> {\n    let mut file = File::create(temp_path)?;\n    file.write_all(content.as_bytes())?;\n    // rename の後にクラッシュしても中身が確定しているよう、rename の前に同期する。\n    file.sync_all()\n}"
+            "end": 55,
+            "text": "/// 一時ファイルへ書いてから rename することで、`directory` の `file_name` を部分書き込み状態に\n/// せず置き換える。外部の読み手（AI・エディタ）からは、置き換え前か置き換え後の一方だけが見える。\n///\n/// 親とファイル名を分けて受けるのは、分けられないパスをどの失敗とするかを呼び出し側が決めるため。\n/// パスで受けて `InvalidInput` を返すと、NUL を含むパスの失敗と見分けられない。\n///\n/// @returns `file_name` が単一のファイル名でない（空・`.`・`..`・絶対パス・区切りで 2 つ以上の\n///   要素に分かれる）ときは、何も書かずに `InvalidInput` を返す。それ以外の失敗は各手順の\n///   `io::Error` のまま返す（一時ファイルのパスは載らない）\npub fn write_atomic(directory: &Path, file_name: &OsStr, content: &str) -> io::Result<()> {\n    if !is_single_file_name(file_name) {\n        return Err(io::Error::new(\n            io::ErrorKind::InvalidInput,\n            format!(\"ファイル名ではありません: {}\", file_name.to_string_lossy()),\n        ));\n    }\n\n    let path = directory.join(file_name);\n    let temp_path = temp_path_for(directory, file_name);\n\n    if let Err(error) = write_all_synced(&temp_path, content) {\n        remove_temp_file(&temp_path);\n        return Err(error);\n    }\n\n    // 一時ファイルは同一ディレクトリに作るのでファイルシステムをまたがず、rename は\n    // アトミックに完了する。Windows でも `fs::rename` は\n    // MoveFileExW(MOVEFILE_REPLACE_EXISTING) を使うため既存ファイルを置換できる。\n    fs::rename(&temp_path, &path).inspect_err(|_| remove_temp_file(&temp_path))\n}\n\n/// `file_name` を `directory` に join しても `directory` 直下を指すか（通常の要素がちょうど 1 つか）。\nfn is_single_file_name(file_name: &OsStr) -> bool {\n    let mut components = Path::new(file_name).components();\n    let first_is_normal = matches!(components.next(), Some(Component::Normal(_)));\n    let has_no_more_components = components.next().is_none();\n    first_is_normal && has_no_more_components\n}\n\nfn write_all_synced(temp_path: &Path, content: &str) -> io::Result<()> {\n    let mut file = File::create(temp_path)?;\n    file.write_all(content.as_bytes())?;\n    // rename の後にクラッシュしても中身が確定しているよう、rename の前に同期する。\n    file.sync_all()\n}"
           }
         },
         {
@@ -1523,18 +1773,34 @@
         {
           "kind": "caution",
           "text": "書き込み・同期の失敗は実物の FS では起こせないので、その失敗時の一時ファイル削除や `sync_all` を外しても、どのテストも落ちない。作成の失敗は親ディレクトリが無い入力で起こせる(このとき一時ファイルは作られていない)。test-reviewer が確かめて、理由付きで受け入れている。"
+        },
+        {
+          "kind": "memo",
+          "text": "末尾に区切りが付いた `a/` は要素が `Normal` 1 つなので判定を通る。この場合も一時ファイルの作成か rename で失敗し、`directory` の外へは書かれない。"
         }
       ],
       "occurrences": [
         {
           "path": "src-tauri/src/file_io/atomic_write.rs",
           "lineRange": {
-            "start": 18,
-            "end": 38
+            "start": 20,
+            "end": 55
           },
           "text": "`write_atomic` と `write_all_synced`",
           "shas": [
-            "38c852fcef0da8161f5c38ddefa9d520423dc245"
+            "38c852fcef0da8161f5c38ddefa9d520423dc245",
+            "f52fbc3d1f17e345f4876ec32191ae33c6923f7d"
+          ]
+        },
+        {
+          "path": "src-tauri/src/file_io/atomic_write.rs",
+          "lineRange": {
+            "start": 20,
+            "end": 26
+          },
+          "text": "冒頭の判定",
+          "shas": [
+            "f52fbc3d1f17e345f4876ec32191ae33c6923f7d"
           ]
         }
       ],
@@ -1547,7 +1813,10 @@
         "atomic-read-while-write",
         "save-no-temp-left",
         "save-missing-dir",
-        "missing-dir-dest-path"
+        "missing-dir-dest-path",
+        "atomic-name-separator",
+        "atomic-name-absolute",
+        "atomic-name-escape-nothing-written"
       ],
       "flows": [
         "save"
@@ -1599,6 +1868,11 @@
       "id": "io-result-term",
       "label": "io::Result",
       "text": "`std::io` の `Result<T, io::Error>` の別名。入出力の成功(`Ok`)か失敗(`Err`)を表す。"
+    },
+    {
+      "id": "component",
+      "label": "Component",
+      "text": "`Path::components()` が返す、パスの 1 要素を表す標準の列挙型。普通の名前は `Normal`、`.` は `CurDir`、`..` は `ParentDir` になる。"
     }
   ]
 }
