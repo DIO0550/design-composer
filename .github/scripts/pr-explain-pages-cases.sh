@@ -185,6 +185,11 @@ bash "$work/without-lib/pr-explain-pages.sh" put-page 1 index "$work/explain.jso
 expect "読み込む lib が無ければ、知らないモードでも引数の誤りへ進まず 127 で何も push しない" '[ "$status" -eq 127 ] && [ "$(tip)" = "$before" ]'
 
 fresh_origin seeded
+before="$(tip)"
+bash "$work/without-lib/pr-explain-pages.sh" remove 1 >/dev/null 2>&1; status=$?
+expect "読み込む lib が無ければ、消すフォルダのある remove でも 127 で何も push しない" '[ "$status" -eq 127 ] && [ "$(tip)" = "$before" ]'
+
+fresh_origin seeded
 run_pages put-map 1 "$work/map.json" "$template"
 expect "put-map は index.html を毎回テンプレートで上書きする" '[ "$(on_pages pr-explain/pr-1/index.html)" = "$(cat "$template")" ]'
 expect "put-map は explain.json を残す" '[ "$(on_pages pr-explain/pr-1/explain.json)" = "{\"old\": \"explain\"}" ]'
