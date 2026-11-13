@@ -222,7 +222,8 @@ export function useNodeResize(
 
   /*
    * 掴んでいる間はポインタが動くたびにドキュメントへ反映する。長さも位置も常に
-   * 「掴んだ時点の値 + 掴んでからの移動量」なので、反映が 1 回落ちても値はずれない。
+   * 「掴んだ時点の値 + 掴んでからの移動量」で、掴んでいない軸が連れて変わるぶんも毎回
+   * 掴んだ時点と今の長さを当てて測り直すので、反映が 1 回落ちても値はずれない。
    *
    * 2 件目以降を続きとして渡すことで、掴んでから離すまでが undo 1 回ぶんになる
    * （docs/06-ui.md「リサイズハンドル」）。
@@ -243,7 +244,14 @@ export function useNodeResize(
         ? snapDecided
         : NodeResize.withoutDistanceTargets(snapDecided),
       CanvasPointer.offsetOf(event),
-      params.view,
+      {
+        view: params.view,
+        layoutSizeFor: (lengths) =>
+          Option.flatMap(
+            DocumentSelection.singleName(params.selection),
+            (name) => DrawnBounds.measureLayoutSizeFor(name, lengths),
+          ),
+      },
     );
     if (!Option.isSome(tracked)) {
       return;

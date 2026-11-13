@@ -148,6 +148,24 @@ export const ResizeGrip = {
   },
 
   /**
+   * 掴んだものが変えない軸。その軸が `hug` / `fill` なら、掴んだ軸の長さにつれて長さが変わり
+   * うる（docs/06-ui.md「リサイズハンドル」）。
+   *
+   * @param grip 掴んだもの
+   * @returns 幅だけを掴んだなら高さ、高さだけなら幅。角で 2 軸を掴んだなら `none`
+   */
+  ungrabbedAxis(grip: ResizeGrip): Option<Axis> {
+    switch (grip.kind) {
+      case "width":
+        return Option.some(Axes.Height);
+      case "height":
+        return Option.some(Axes.Width);
+      case "both":
+        return Option.none;
+    }
+  },
+
+  /**
    * 掴んだものが画面上で伸び縮みする向き（docs/06-ui.md「リサイズハンドル」）。
    *
    * @param grip 掴んだもの
@@ -358,6 +376,24 @@ export type ResizeMeasure = Readonly<{
 type DrawnAtGrab = Readonly<{
   grabbed: CanvasBounds;
   measure: (name: string) => Option<CanvasBounds>;
+}>;
+
+/**
+ * ポインタが動くたびに読む描かれ方。画面上の量をドキュメント上の量へ直す倍率と、選択中の
+ * ものへ長さを当てたときの回る前のレイアウトの大きさ（ドキュメント上の px）を測る手段。
+ *
+ * 掴んだ時点に 1 回だけ測って持たず、動くたびに前後の 2 つを同じ DOM の上で測り直す。描き
+ * 直された DOM の上で測っても、前後の差を取れば掴んだ軸の長さ以外の変化が差し引きで消える。
+ */
+export type DrawnWhileTracking = Readonly<{
+  view: CanvasView;
+  /**
+   * 当てた長さで描いたときの幅と高さ。並びに無い軸は今の描かれ方のまま。測れなければ `none`
+   * （このときは掴んだ軸だけで置き直す）。
+   */
+  layoutSizeFor: (
+    lengths: AxisLengths,
+  ) => Option<Readonly<{ width: number; height: number }>>;
 }>;
 
 /** 最後に動かした位置で出す線（すべて画面上の px）。 */
@@ -822,17 +858,18 @@ export const NodeResize = {
    * 掴んでいなければ決まらない（ボタンを離したあとのマウス移動）。
    *
    * 長さはポインタの移動量を掴んだものの画面上の向きの分だけ戻し、その軸へ射影した量だけ
-   * 変わる（docs/06-ui.md「リサイズハンドル」）。
+   * 変わる（docs/06-ui.md「リサイズハンドル」）。自分が回っている絶対配置のノードは、掴んで
+   * いない軸の長さが連れて変わっても反対の辺・角が親の座標で動かないよう位置を置き直す。
    *
    * @param resize 今のリサイズの状態
    * @param pointer 今のポインタの位置
-   * @param view 画面上の量をドキュメント上の量へ直す倍率
+   * @param drawn 画面上の量をドキュメント上の量へ直す倍率と、長さを当てて大きさを測る手段
    * @returns 書き込む編集と揃った線と距離。掴んでいなければ `none`
    */
   trackedAt(
     resize: NodeResize,
     pointer: Offset,
-    view: CanvasView,
+    drawn: DrawnWhileTracking,
   ): Option<TrackedResize> {
     if (resize.kind !== "resizing") {
       return Option.none;
@@ -845,20 +882,24 @@ export const NodeResize = {
     const moved = Offset.rotate(screenMoved, -resize.rotation.total);
 
     const resized = ArrayEx.mapNonEmpty(ResizeGrip.grabs(resize.grip), (grab) =>
-      resizedLength(grab, moved, view),
+      resizedLength(grab, moved, drawn.view),
     );
     const lengths: AxisLengths = ArrayEx.mapNonEmpty(
       resized,
       (each) => each.length,
     );
-    const position = placedPosition(resize, resized);
+    const position = placedPosition(
+      resize,
+      resized,
+      ungrabbedShift(resize, lengths, drawn.layoutSizeFor),
+    );
 
     return Option.some({
       edit: Option.isSome(position)
         ? ResizeEdit.placedAt(lengths, position.value)
         : ResizeEdit.create(lengths),
       guides: snapped.guides,
-      distanceLines: distanceLinesAt(resize, resized, view),
+      distanceLines: distanceLinesAt(resize, resized, drawn.view),
     });
   },
 
@@ -1192,11 +1233,13 @@ function resizedLength(
  *
  * @param held 掴んでいるもの（掴んだ時点の位置と、自分の向き）
  * @param resized 掴んだ軸ぶんの結果
+ * @param ungrabbed 掴んでいない軸の長さが連れて変わったぶんの置き直し（`ungrabbedShift`）
  * @returns 置き直したあとの位置。左上が動かないか、位置を書けない対象なら `none`
  */
 function placedPosition(
   held: ResizeHold,
   resized: readonly ResizedLength[],
+  ungrabbed: Offset,
 ): Option<Offset> {
   const centerMoved = resized.reduce<Offset>(
     (sum, each) => Offset.add(sum, centerShift(each)),
@@ -1209,13 +1252,62 @@ function placedPosition(
   );
   // 左上は中心から長さの半分だけ戻った位置なので、中心の動きに縮んだ量の半分を足す
   const shift = Offset.add(
-    Offset.rotate(centerMoved, held.rotation.own),
-    halfShrunk,
+    Offset.add(Offset.rotate(centerMoved, held.rotation.own), halfShrunk),
+    ungrabbed,
   );
   if (Offset.isOrigin(shift)) {
     return Option.none;
   }
   return Option.map(held.grabbedAt, (from) => Offset.add(from, shift));
+}
+
+/**
+ * 掴んでいない軸の長さが `hug` / `fill` で連れて変わったときに、その軸の回る前の始点側の端
+ * （上端・左端）が親の座標で動かないよう、位置へ足す量。
+ *
+ * 留めるのを始点側にするのは、回っていないときに `hug` が上・左を起点に伸び縮みするのと
+ * 揃えるため。長さの差 `2d`（`d` は回る前の向きの半分）で中心は `d` 動き、それを自分の向きで
+ * 回したぶんから、左上が中心から戻る `d` を引く。
+ *
+ * @param held 掴んでいるもの（掴み方・掴んだ時点の位置・自分の向き）
+ * @param lengths 書き込む長さ
+ * @param layoutSizeFor 長さを当てて大きさを測る手段（`DrawnWhileTracking`）
+ * @returns 位置へ足す量。角を掴んだ・自分が回っていない・位置を書けない・前後のどちらかを
+ *   測れないときは動かさない（原点）
+ */
+function ungrabbedShift(
+  held: ResizeHold,
+  lengths: AxisLengths,
+  layoutSizeFor: DrawnWhileTracking["layoutSizeFor"],
+): Offset {
+  // 測る前に外す。回っていない・位置を書けないなら置き直しは 0 で、測ると強制レイアウトが無駄になる
+  const isUnplaceable =
+    Angle.isWholeTurns(held.rotation.own) || !Option.isSome(held.grabbedAt);
+  if (isUnplaceable) {
+    return Offset.Origin;
+  }
+  const axis = ResizeGrip.ungrabbedAxis(held.grip);
+  if (!Option.isSome(axis)) {
+    return Offset.Origin;
+  }
+  const grabbedLengths = ArrayEx.mapNonEmpty(
+    ResizeGrip.grabs(held.grip),
+    (grab) => grab.length,
+  );
+  const halfGrown = Option.flatMap(layoutSizeFor(grabbedLengths), (before) =>
+    Option.map(
+      layoutSizeFor(lengths),
+      (after) => (after[axis.value] - before[axis.value]) / 2,
+    ),
+  );
+  if (!Option.isSome(halfGrown)) {
+    return Offset.Origin;
+  }
+  const centerMoved = axisOffset(axis.value, halfGrown.value);
+  return Offset.delta(
+    centerMoved,
+    Offset.rotate(centerMoved, held.rotation.own),
+  );
 }
 
 /**
