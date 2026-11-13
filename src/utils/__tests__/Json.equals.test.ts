@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { Json } from "@/utils/Json";
+import { Json, type JsonValue } from "@/utils/Json";
 
 test("キーの並びが違っても、同じキーに同じ値を持つオブジェクトは等しい", () => {
   expect(Json.equals({ a: 1, b: "x" }, { b: "x", a: 1 })).toBe(true);
@@ -29,6 +29,16 @@ test("入れ子の値が違えば等しくない", () => {
 
 test("空の配列と空のオブジェクトは等しくない", () => {
   expect(Json.equals([], {})).toBe(false);
+});
+
+test("空のオブジェクトと空の配列は等しくない", () => {
+  expect(Json.equals({}, [])).toBe(false);
+});
+
+test("キーの数が同じでも、前の値だけが自身のキーとして __proto__ を持つなら等しくない", () => {
+  const ownProto: JsonValue = JSON.parse('{"__proto__":{}}');
+
+  expect(Json.equals(ownProto, { x: {} })).toBe(false);
 });
 
 test("文字列の数字と数値は等しくない", () => {
