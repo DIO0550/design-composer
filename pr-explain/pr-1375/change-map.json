@@ -1,0 +1,830 @@
+{
+  "version": 2,
+  "pr": 1375,
+  "headBranch": "claude/magical-cannon-74c58w",
+  "baseBranch": "main",
+  "mergeBase": "40c8c906dba6485550cbba0fb3879dbcc332d2fe",
+  "head": "e1fa5752b03ca7f8d5d60b69b32c502d429c8c4e",
+  "groups": [
+    {
+      "label": "src-tauri",
+      "files": [
+        {
+          "path": "src-tauri/Cargo.lock",
+          "changed": false
+        },
+        {
+          "path": "src-tauri/Cargo.toml",
+          "changed": false
+        },
+        {
+          "path": "src-tauri/clippy.toml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 37,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path_normal_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/file_path_normal_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/io_atomicity_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/document/io_edge_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src-tauri/src/lib.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/over-guard-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/canary-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/parent-session-edit-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/test-rules-scan.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/verification-agent-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/post-merge-review.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/build-frontend-report.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-lint-suppressions.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-tauri-version-match.mjs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/ci-trace.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/workflows/src-tauri.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 54,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": "TAURI_SETUP.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "package.json",
+          "changed": false
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "6f649caae997aa884f446b01bfad91e7cf455b1f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T09:34:25Z",
+      "subject": "♻️ [Refactoring]: #1363 テスト名の non_snake_case の抑制をクレートのルート 1 箇所にまとめる",
+      "body": "- lib.rs に `#![cfg_attr(test, allow(non_snake_case))]` と理由を 1 箇所だけ置く\n- file_path_normal_test / io_atomicity_test / io_edge_test の `#![allow(non_snake_case)]` と同じ理由のコメントを消す\n\n背景:\n次のコミットで CI に `cargo clippy --all-targets -- -D warnings` を載せる。\nいまの main で出る警告は menu_normal_test.rs の「イベント名はTS側と揃っている」\nの non_snake_case 1 件だけで、これを消さないと CI が初回から赤になる。\n同じ理由（テスト名を日本語の仕様の文で書き、DCMP / JSON / UTF8 などの\nラテン文字を含む）の抑制とコメントは既に 3 ファイルに複製されていた。\n\n採用理由:\ncfg_attr(test) にしたので、テストのビルドでだけ無効になり、本番コードの\n命名は引き続き検査される（本番に非 snake case の関数を足すと lib ターゲットで\n落ちることを確かめた）。理由のコメントが 1 箇所になり、片方だけ直せる状態が無くなる。\n\n代替案:\n- menu のテスト名を TS → ts に改名する: 大文字のラテン文字を含むテスト名は\n  他に 5 件あり、1 件だけ小文字にすると書き方が割れる。仕様の語である TS を\n  小文字にすると名前と実体も合わない（計画の検証で指摘を受けて却下）\n- menu_normal_test.rs に 4 つ目の `#![allow(non_snake_case)]` を足す: 同じ理由の\n  コメントの複製が増える\n- cfg_attr なしでクレート全体に allow する: 本番コードの命名の検査が消える\n\n影響とトレードオフ:\n今後追加するテストファイルは個別の抑制なしで日本語のテスト名を書ける。\n本番コードへの影響は無い。\n\n参考:\nRefs #1363\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NBJ1PwYadrcdFMfss",
+      "files": [
+        {
+          "path": "src-tauri/src/document/file_path_normal_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 5,
+          "patch": "@@ -1,10 +1,5 @@\n //! ドキュメントのパスとして受け付けるもの。\n \n-// テスト名は rules/testing.md に従い仕様の文として書き、このリポジトリの既存のテストに\n-// 合わせて日本語で書く。\n-// DCMP のようなラテン文字を含むと snake case ではなくなるため、この lint は無効にする。\n-#![allow(non_snake_case)]\n-\n use std::path::Path;\n \n use super::file_path::DocumentFilePath;",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/io_atomicity_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 5,
+          "patch": "@@ -1,10 +1,5 @@\n //! 完了条件「書き込み途中のファイルを外部から読んでも不完全な JSON にならない」の検証。\n \n-// テスト名は rules/testing.md に従い仕様の文として書き、このリポジトリの既存のテストに\n-// 合わせて日本語で書く。\n-// JSON のようなラテン文字を含むと snake case ではなくなるため、この lint は無効にする。\n-#![allow(non_snake_case)]\n-\n use std::sync::atomic::{AtomicBool, Ordering};\n use std::sync::Arc;\n use std::thread;",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/io_edge_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 5,
+          "patch": "@@ -1,8 +1,3 @@\n-// テスト名は rules/testing.md に従い仕様の文として書き、このリポジトリの既存のテストに\n-// 合わせて日本語で書く。\n-// UTF8 のようなラテン文字を含むと snake case ではなくなるため、この lint は無効にする。\n-#![allow(non_snake_case)]\n-\n use std::fs;\n use std::path::Path;\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/lib.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -1,3 +1,6 @@\n+// テスト名は仕様の文として日本語で書き、DCMP / JSON のようなラテン文字を含むと snake case でなくなる。\n+#![cfg_attr(test, allow(non_snake_case))]\n+\n pub mod app_state;\n pub mod app_window;\n pub mod document;",
+          "patchLines": 7,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "6f6c68f45f68faa42bc7b7d7f77afaee8e5abf0c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T09:34:39Z",
+      "subject": "✨ [New Feature]: #1363 本番コードで std::fs を file_io の外から呼ぶと clippy で落ちるようにする",
+      "body": "- src-tauri/clippy.toml を追加: disallowed-methods に std::fs の自由関数 19 個と、std::path::Path のうちファイルシステムに触る 10 個（canonicalize / metadata / symlink_metadata / read_link / read_dir / exists / try_exists / is_file / is_dir / is_symlink）、disallowed-types に std::fs::File / OpenOptions / DirBuilder\n- file_io.rs に `#![expect(clippy::disallowed_methods, clippy::disallowed_types)]` を置き、子モジュールの atomic_write ごと許可する\n- lib.rs に `#![cfg_attr(test, allow(clippy::disallowed_methods, clippy::disallowed_types))]` を置き、テストのビルドでは禁止しない\n\n背景:\n#553（PR #1365）で本番コードの std::fs の呼び出しを file_io に集めた。\n完了条件「本番コードで std::fs を呼ぶのは file_io だけ」は grep を 1 回\n走らせて確かめただけで、次に誰かが直接呼んでも止まらない。\n\n採用理由:\nclippy の disallowed-* なら、別名 import（`use std::fs as f`）や PathBuf からの\n自動参照外し（`path_buf.is_file()`）でも型解決後に当たる（実測で落ちた）。\nfile_io の許可を `expect` にしたので、file_io から fs の呼び出しが消えると\n「unfulfilled」で落ち、使われない許可が残らない。\nテストはフィクスチャを std::fs で直接用意・検査する外部の書き手なので\n禁止しない。`--all-targets` には cfg(test) でない lib ターゲットが含まれるので、\n本番コードはこの除外の影響を受けずに検査される（file_io の外の本番コードに\nfs::read / File::open / Path::exists を足すと exit 101 になることを確かめた）。\n\n代替案:\n- clippy.toml だけでテストを除外する: `allow-disallowed-methods-in-tests` は\n  unknown field として弾かれた。disallowed 用の allow-*-in-tests は無い\n- テストモジュールごとに #[allow] を付ける: `#[cfg(test)] mod` の宣言 20 箇所に\n  理由ごと複製される\n- テストも file_io を通す: file_io 自身を検証するテストで、準備を検証対象に\n  通すと検証にならない\n- file_io の許可を allow にする: 不要になっても許可が残る\n- Path のメソッドを含めない: Path::exists などで抜けられる（実測）。file_io の\n  外の本番コードでの使用は 0 件で、含めても既存コードは落ちない\n- std::os::*::fs::symlink* も禁止する: Linux では Windows 側のパスが unreachable\n  の警告になり allow-invalid が要る。本番での使用は 0 件で得るものが無い\n\n影響とトレードオフ:\nこの設定は clippy を走らせたときだけ効く。CI で走らせるのは次のコミット。\n`#![expect]` と lint の `reason =` は Rust 1.81 からで、Cargo.toml の\nrust-version 1.77.2 と食い違う（ロック済み依存が既に 1.88 を要求しており、\n宣言の見直しは #1373 に分けた）。\n\n参考:\nRefs #1363\nRelates to #553, #1373\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NBJ1PwYadrcdFMfss",
+      "files": [
+        {
+          "path": "src-tauri/clippy.toml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 36,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,36 @@\n+disallowed-methods = [\n+  { path = \"std::fs::canonicalize\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::copy\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::create_dir\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::create_dir_all\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::exists\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::hard_link\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::metadata\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::read\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::read_dir\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::read_link\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::read_to_string\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::remove_dir\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::remove_dir_all\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::remove_file\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::rename\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::set_permissions\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::soft_link\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::symlink_metadata\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::write\", reason = \"file_io を通す\" },\n+  { path = \"std::path::Path::canonicalize\", reason = \"file_io を通す\" },\n+  { path = \"std::path::Path::metadata\", reason = \"file_io を通す\" },\n+  { path = \"std::path::Path::symlink_metadata\", reason = \"file_io を通す\" },\n+  { path = \"std::path::Path::read_link\", reason = \"file_io を通す\" },\n+  { path = \"std::path::Path::read_dir\", reason = \"file_io を通す\" },\n+  { path = \"std::path::Path::exists\", reason = \"file_io を通す\" },\n+  { path = \"std::path::Path::try_exists\", reason = \"file_io を通す\" },\n+  { path = \"std::path::Path::is_file\", reason = \"file_io を通す\" },\n+  { path = \"std::path::Path::is_dir\", reason = \"file_io を通す\" },\n+  { path = \"std::path::Path::is_symlink\", reason = \"file_io を通す\" },\n+]\n+disallowed-types = [\n+  { path = \"std::fs::File\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::OpenOptions\", reason = \"file_io を通す\" },\n+  { path = \"std::fs::DirBuilder\", reason = \"file_io を通す\" },\n+]",
+          "patchLines": 37,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 0,
+          "patch": "@@ -7,6 +7,12 @@\n //!\n //! ファイル変更の監視（`notify` の watcher による購読）はここを通さない。監視するパスの解決には `canonicalize` を使う。\n \n+#![expect(\n+    clippy::disallowed_methods,\n+    clippy::disallowed_types,\n+    reason = \"clippy.toml の禁止の受け口\"\n+)]\n+\n mod atomic_write;\n \n use std::fs;",
+          "patchLines": 13,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/lib.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -1,3 +1,6 @@\n+// テストはフィクスチャを std::fs で直接用意・検査するので、file_io を通す縛りは本番コードにだけ掛ける。\n+// cfg(test) でない lib は clippy --all-targets がそのまま検査する。\n+#![cfg_attr(test, allow(clippy::disallowed_methods, clippy::disallowed_types))]\n // テスト名は仕様の文として日本語で書き、DCMP / JSON のようなラテン文字を含むと snake case でなくなる。\n #![cfg_attr(test, allow(non_snake_case))]\n ",
+          "patchLines": 7,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "4ade9eb38722ec79ea0ded49a3cb708d3dde13cf",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T09:34:51Z",
+      "subject": "👷 [CI]: #1363 PR の CI で src-tauri の cargo clippy と cargo test を走らせる",
+      "body": "- .github/workflows/src-tauri.yml を追加: pull_request で ubuntu-24.04 上に Tauri 用のシステムライブラリと stable + clippy を入れ、`cargo clippy --all-targets --locked -- -D warnings` と `cargo test --locked` を走らせる\n- ci-trace.yml の workflow_run の対象に src-tauri を足す（照合は workflow の name: なので綴りを揃えた）\n- 「CI は cargo を走らせない」を前提にしていた Why を書き直す（frontend.yml / check-tauri-version-match.mjs / canonical_path.rs / canonical_path_normal_test.rs）\n- TAURI_SETUP.md に CI と同じ 2 コマンドと、Linux で要るシステムライブラリを書く\n\n背景:\nCI と pre-push は cargo を 1 回も走らせておらず、src-tauri のテスト（148 件）は\nPR で検査されていなかった。前のコミットの clippy.toml の禁止も、誰かが\nclippy を走らせない限り効かない。\n\n採用理由:\n新しい workflow に分けたのは、frontend.yml に足すと名前と中身が食い違うため。\npaths で絞らないのは、必須チェックにしたとき絞られた PR で保留のまま止まるのと、\nstable の clippy が上がって増えた lint が src-tauri を触る PR まで見えないため。\nツールチェーンは release-desktop と同じ stable にし、検査と出荷の版を揃える。\napt の組は .devcontainer/node/Dockerfile の Tauri 用のものを写した\n（Dockerfile のビルドコンテキストは ./node でリポジトリのスクリプトを COPY できず、\n共有できる既存の Linux 手順も release-desktop に無い）。\n\n代替案:\n- pre-push に cargo を載せる: 手元の実測で初回 clippy 74 秒 + test 92 秒と、\n  既存の pre-push 全体（73 秒）の 2 倍を超える。webkit のシステムライブラリが無い\n  環境では飛ばすしかなく、ゲートにならない\n- Swatinem/rust-cache で依存だけキャッシュする: 依存だけ残すと 147 秒が 17 秒に\n  なるが、pull_request だけで走るので PR の ref のキャッシュは他 PR から引けず、\n  初回は必ずキャッシュ無し。緑になる時間は frontend（211〜302 秒）と\n  visual-regression（337〜373 秒）で決まり、147 秒はその内側に収まる見込み。\n  約 1 GB の項目がキャッシュ上限を pnpm 側と取り合う。ci-trace で src-tauri が\n  最長のジョブになったら見直す\n- rust-toolchain.toml で版を固定する: release-desktop は stable で出荷しており、\n  検査と出荷の版がずれる\n\n影響とトレードオフ:\nsrc-tauri を触らない PR でも毎回 apt + コンパイルが走る。必須チェックへの\n登録はリポジトリ設定なのでこの PR では行っておらず、登録するまでは赤になっても\nマージは止まらない。CI の cargo test は ubuntu だけで、Windows / macOS だけを\n通る分岐は引き続き実機で確かめていない。\n\n参考:\nRefs #1363\nRelates to #366\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NBJ1PwYadrcdFMfss",
+      "files": [
+        {
+          "path": ".github/scripts/check-tauri-version-match.mjs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "patch": "@@ -2,8 +2,9 @@\n // 違えば exit 1。\n //\n // tauri build はこの 2 つの major/minor 一致を要求し、違うとコンパイルへ入る前に落ちる。\n-// ところが cargo を走らせる CI が 1 つも無いため、ずれても気づけるのは\n-// release-desktop がタグで走るときだけだった(実際に Release がバイナリ無しになったことがある)。\n+// 一致を見るのは tauri CLI で、cargo は npm 側を読まない。PR の CI(src-tauri.yml)が走らせるのは\n+// cargo だけなので、ここで突き合わせないと気づけるのは release-desktop がタグで走るときになる\n+// (実際に Release がバイナリ無しになったことがある)。\n // 突き合わせるのはバージョン文字列だけなので、防ぐのにビルドを回す必要は無い。\n //\n // プラグインの対(tauri-plugin-opener ↔ @tauri-apps/plugin-opener など)は見ない。",
+          "patchLines": 12,
+          "truncated": false
+        },
+        {
+          "path": ".github/workflows/ci-trace.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -12,6 +12,7 @@ on:\n   workflow_run:\n     workflows:\n       - frontend\n+      - src-tauri\n       - Deploy Storybook (main)\n       - Storybook PR Preview\n       - Storybook Visual Regression",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -37,8 +37,8 @@ jobs:\n         run: pnpm install --frozen-lockfile\n \n       # Rust の tauri クレートと npm の @tauri-apps/api の major/minor 一致。\n-      # tauri build はこの 2 つが揃っていることを要求するが、cargo を走らせる CI が\n-      # 無いため、ずれても気づくのは release-desktop がタグで走るときだった（#366）。\n+      # tauri build はこの 2 つが揃っていることを要求するが、src-tauri.yml の cargo は npm 側を\n+      # 読まないため、ここで突き合わせないと気づくのは release-desktop がタグで走るときになる（#366）。\n       - name: Tauri のバージョン整合\n         run: node .github/scripts/check-tauri-version-match.mjs\n ",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": ".github/workflows/src-tauri.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 52,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,52 @@\n+name: src-tauri\n+\n+on:\n+  pull_request:\n+\n+concurrency:\n+  group: src-tauri-ci-${{ github.event.pull_request.number || github.ref }}\n+  cancel-in-progress: true\n+\n+permissions:\n+  contents: read\n+\n+jobs:\n+  check:\n+    name: clippy / test\n+    runs-on: ubuntu-24.04\n+    timeout-minutes: 20\n+    permissions:\n+      contents: read\n+    steps:\n+      - name: Checkout\n+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2\n+        with:\n+          fetch-depth: 1\n+\n+      # tauri クレートのビルドに要るシステムライブラリ。組は .devcontainer/node/Dockerfile の Tauri 用のものと同じ\n+      - name: Install system libraries\n+        run: |\n+          sudo apt-get update\n+          sudo apt-get install -y --no-install-recommends \\\n+            build-essential \\\n+            pkg-config \\\n+            libssl-dev \\\n+            libwebkit2gtk-4.1-dev \\\n+            libayatana-appindicator3-dev \\\n+            librsvg2-dev \\\n+            libxdo-dev \\\n+            libsoup-3.0-dev \\\n+            libjavascriptcoregtk-4.1-dev\n+\n+      - name: Install Rust with rustup\n+        run: |\n+          rustup toolchain install stable --profile minimal --component clippy\n+          rustup default stable\n+\n+      - name: Clippy\n+        working-directory: src-tauri\n+        run: cargo clippy --all-targets --locked -- -D warnings\n+\n+      - name: Test\n+        working-directory: src-tauri\n+        run: cargo test --locked",
+          "patchLines": 53,
+          "truncated": false
+        },
+        {
+          "path": "TAURI_SETUP.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "patch": "@@ -31,6 +31,18 @@ pnpm install\n pnpm tauri icon path/to/app-icon.png\n ```\n \n+### Rust 側の検査\n+\n+PR の CI（`.github/workflows/src-tauri.yml`）と同じ 2 つを手元で走らせます。\n+\n+```bash\n+cd src-tauri\n+cargo clippy --all-targets --locked -- -D warnings\n+cargo test --locked\n+```\n+\n+Linux では `.devcontainer/node/Dockerfile` が入れている Tauri 用のシステムライブラリ（`libwebkit2gtk-4.1-dev` など）が要ります。DevContainer の中なら入っています。\n+\n ## 3. 開発起動\n \n ```bash",
+          "patchLines": 19,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -45,7 +45,7 @@ pub fn canonical_form(path: &Path) -> PathBuf {\n /// 揃えた綴りは TS へ返り、最近使ったファイルとして `app-state.json` に残るので、\n /// 接頭辞の無い形にしておく。\n ///\n-/// CI は cargo test を走らせない(`.github/workflows/frontend.yml`)ので、Windows / macOS\n+/// CI の cargo test は ubuntu でしか走らない(`.github/workflows/src-tauri.yml`)ので、Windows / macOS\n /// だけを通る分岐は実機で確かめていない。\n fn without_verbatim_disk(path: PathBuf) -> PathBuf {\n     let mut components = path.components();",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path_normal_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -1,6 +1,6 @@\n //! 同じファイルを指す別の綴りを、1 つの綴りへ寄せる。\n //!\n-//! CI は cargo test を走らせない(`.github/workflows/frontend.yml`)ので、Windows / macOS\n+//! CI の cargo test は ubuntu でしか走らない(`.github/workflows/src-tauri.yml`)ので、Windows / macOS\n //! だけのテストは実機で確かめていない。\n \n use std::fs;",
+          "patchLines": 8,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "b929f99cded2817d7f2f06484a1f7941450964f8",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T09:45:28Z",
+      "subject": "📝 [Documentation]: #1363 Rust の CI と clippy の禁止について、重複した理由を 1 箇所へ寄せ、欠けていた Why と検出の限界を足す",
+      "body": "- frontend.yml の Tauri 版一致の理由を消し、check-tauri-version-match.mjs の冒頭を参照する 1 行にする\n- canonical_path_normal_test.rs の「CI の cargo test は ubuntu でしか走らない」を消し、without_verbatim_disk の doc を参照する 1 行にする\n- check-tauri-version-match.mjs の「CI に Rust ツールチェーンが要らない」の主語を「frontend のジョブ」と明記する\n- lib.rs に、clippy はホストの cfg で外れるコードを見ないため ubuntu の CI では windows / macOS の分岐の fs 呼び出しは落ちない、という検出の限界を書く\n- file_io.rs に allow ではなく expect にした理由、clippy.toml に Path のメソッドも禁止する理由、src-tauri.yml に paths で絞らない理由を書く\n\n背景:\n実装の検証（duplication / comment / harness reviewer）で次の指摘を受けた。\n同じ理由が 2 箇所に書かれていて片方だけ直せる状態になっている。\n判断の理由が Issue にしか無い。CI ができた後も「CI に Rust が無い」と\n読めるコメントが残っている。\n\n採用理由:\n理由は、それを実装している側（スクリプトの冒頭、分岐を持つ関数の doc）にだけ置く。\n呼び出し側には参照だけを残し、CI の構成が変わったときに片方だけが古くなるのを防ぐ。\n検出の限界は comment-reviewer が最小クレートで再現した（#[cfg(windows)] /\n#[cfg(target_os = \"macos\")] の中の std::fs::read は Linux の clippy で落ちない）。\n「本番コードは落ちる」とだけ読むと他 OS の分岐を安全と誤認するので書いた。\nWhy を足した 3 箇所は、どれも消すと次の人が allow に戻す・Path を外す・\npaths で絞る恐れがある判断。\n\n代替案:\n- 理由を両方に残し、文面を揃えておく: 片方だけ直せる状態が残る（rules/coding.md「規約の適用範囲」）\n- 検出の限界を埋めるため CI に windows / macOS のマトリクスを足す: ランナーの時間と\n  システムライブラリの準備が増える。いまの本番コードの cfg 分岐（dialog.rs / menu.rs）に\n  fs の呼び出しは無く、限界を書いておくことにとどめた\n\n影響とトレードオフ:\nコードとワークフローの挙動は変わらない（コメントだけ）。\n\n参考:\nRefs #1363\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NBJ1PwYadrcdFMfss",
+      "files": [
+        {
+          "path": ".github/scripts/check-tauri-version-match.mjs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -44,7 +44,7 @@ const readOrFail = (path, description) => {\n \n /**\n  * Cargo.lock から指定したクレートの解決済みバージョンを取り出す。\n- * cargo を呼ばずに読めるので、CI に Rust ツールチェーンが要らない。\n+ * cargo を呼ばずに読めるので、frontend のジョブに Rust ツールチェーンが要らない。\n  * @param lock Cargo.lock の中身\n  * @param name 探すクレート名\n  * @returns 見つかったバージョン。そのクレートが居なければ null",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 3,
+          "patch": "@@ -36,9 +36,8 @@ jobs:\n       - name: Install dependencies\n         run: pnpm install --frozen-lockfile\n \n-      # Rust の tauri クレートと npm の @tauri-apps/api の major/minor 一致。\n-      # tauri build はこの 2 つが揃っていることを要求するが、src-tauri.yml の cargo は npm 側を\n-      # 読まないため、ここで突き合わせないと気づくのは release-desktop がタグで走るときになる（#366）。\n+      # Rust の tauri クレートと npm の @tauri-apps/api の major/minor 一致を見る。\n+      # ここで突き合わせる理由は .github/scripts/check-tauri-version-match.mjs の冒頭。\n       - name: Tauri のバージョン整合\n         run: node .github/scripts/check-tauri-version-match.mjs\n ",
+          "patchLines": 12,
+          "truncated": false
+        },
+        {
+          "path": ".github/workflows/src-tauri.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -1,5 +1,7 @@\n name: src-tauri\n \n+# paths で絞らないのは、必須チェックにしたとき絞られた PR で保留のまま止まるのと、stable の clippy の\n+# 版上げで増えた lint を src-tauri を触らない PR でも見せるため。\n on:\n   pull_request:\n ",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/clippy.toml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -18,6 +18,7 @@ disallowed-methods = [\n   { path = \"std::fs::soft_link\", reason = \"file_io を通す\" },\n   { path = \"std::fs::symlink_metadata\", reason = \"file_io を通す\" },\n   { path = \"std::fs::write\", reason = \"file_io を通す\" },\n+  # std::fs だけだと Path::exists などで抜けられるので、Path のファイルシステムに触るメソッドも含める。\n   { path = \"std::path::Path::canonicalize\", reason = \"file_io を通す\" },\n   { path = \"std::path::Path::metadata\", reason = \"file_io を通す\" },\n   { path = \"std::path::Path::symlink_metadata\", reason = \"file_io を通す\" },",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/document/canonical_path_normal_test.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 2,
+          "patch": "@@ -1,7 +1,6 @@\n //! 同じファイルを指す別の綴りを、1 つの綴りへ寄せる。\n //!\n-//! CI の cargo test は ubuntu でしか走らない(`.github/workflows/src-tauri.yml`)ので、Windows / macOS\n-//! だけのテストは実機で確かめていない。\n+//! Windows / macOS だけのテストが CI で走らないことは `without_verbatim_disk` の doc にある。\n \n use std::fs;\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/file_io.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -7,6 +7,7 @@\n //!\n //! ファイル変更の監視（`notify` の watcher による購読）はここを通さない。監視するパスの解決には `canonicalize` を使う。\n \n+// allow でなく expect にしたのは、fs の呼び出しが無くなったときに unfulfilled で落ちて許可が残らないため。\n #![expect(\n     clippy::disallowed_methods,\n     clippy::disallowed_types,",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "src-tauri/src/lib.rs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -1,5 +1,7 @@\n // テストはフィクスチャを std::fs で直接用意・検査するので、file_io を通す縛りは本番コードにだけ掛ける。\n // cfg(test) でない lib は clippy --all-targets がそのまま検査する。\n+// clippy はホストの cfg で外れるコードを見ないので、ubuntu の CI では\n+// #[cfg(windows)] / #[cfg(target_os = \"macos\")] の分岐の fs 呼び出しは落ちない。\n #![cfg_attr(test, allow(clippy::disallowed_methods, clippy::disallowed_types))]\n // テスト名は仕様の文として日本語で書き、DCMP / JSON のようなラテン文字を含むと snake case でなくなる。\n #![cfg_attr(test, allow(non_snake_case))]",
+          "patchLines": 8,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e1fa5752b03ca7f8d5d60b69b32c502d429c8c4e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-13T09:45:28Z",
+      "subject": "📝 [Documentation]: #1363 Rust の検査を push 前手順とハーネスの層の説明に載せる",
+      "body": "- implementation-flow フェーズ 7 に、`src-tauri/` に差分があるときは TAURI_SETUP.md「Rust 側の検査」の 2 コマンドも走らせる段落を足す（コマンドは写さず参照のみ）\n- .claude/hooks/README.md「カバー範囲と残る穴」に「Rust の検査は層 1 と層 4 にしかない」の小節を足し、層 2・層 3 へ置かない理由を書く\n- over-guard-reviewer.md のネストの深さの観点を「Rust には pre-push・CI の強制が無い」から「clippy の設定にネストの深さの閾値が無い」に言い換える\n\n背景:\nharness-reviewer の指摘。CI だけがゲートを持つ検査のうち、既存の 2 件\n（check-pr-closing-issue-cases.sh と Storybook の撮影範囲）はフェーズ 7 の手順に\n書かれている。今回足した src-tauri.yml だけが手順から辿れず、src-tauri を\n変えた PR は push した後の CI で初めて clippy の禁止に当たる形になっていた。\n\n採用理由:\n既にある撮影範囲の検査の段落と小節と同じ形にそろえた。理由の置き場を README にしておけば、\n次に pre-push へ cargo を足そうとした人が Issue を探さずに済む。\nover-guard-reviewer.md の文は、深さの検査については今も正しい\n（clippy は excessive-nesting-threshold を設定しない限り深さを見ないことを\nharness-reviewer が実測）。ただ CI に clippy が入ったので「CI の強制が無い」が\n全体の否定に読めるため、主語を絞った。\n\n代替案:\n- pre-push（層 2）に cargo を載せる: 初回 clippy 74 秒 + test 92 秒で、pre-push 全体の\n  73 秒の 2 倍を超える。webkit のシステムライブラリが無い環境では飛ばすしかない\n  （計画の段階で却下済み）\n- clippy.toml に excessive-nesting-threshold = 3 を足して深さも強制する: この Issue の\n  ゴールの外。既存コードへの影響を見ていないので、ここでは言い換えにとどめた\n\n影響とトレードオフ:\n常時ロード（AGENTS.md + rules/）には触れていない（count.sh --ratchet は 789 / 789 で通過）。\n\n参考:\nRefs #1363\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NBJ1PwYadrcdFMfss",
+      "files": [
+        {
+          "path": ".claude/agents/over-guard-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -37,7 +37,7 @@ model: opus\n - **ガードの重複。** 呼び出し側と呼ばれる側の両方で同じ条件を弾いていないか\n - **フラグによる防御。** `useRef` で二重実行・連打を止めていないか。render に出る状態は\n   `useState`、ボタンは `disabled`\n-- **`src-tauri/` の Rust のネストの深さ。** `max-depth` は `.oxlintrc.json` の TS にしか掛からず、Rust には pre-push・CI の強制が無いので、Rust を触ったときだけ 3 段を超えていないか見る\n+- **`src-tauri/` の Rust のネストの深さ。** `max-depth` は `.oxlintrc.json` の TS にしか掛からず、clippy の設定にネストの深さの閾値が無い(`src-tauri/clippy.toml`)ので、Rust を触ったときだけ 3 段を超えていないか見る\n - **範囲を固定の窓(N 行・N 文字)で近似していないか**（`harness/case-law/coding.md`「`over-guard` — 範囲を固定の窓で近似した」）\n \n ## 過剰ではない場合（指摘しない）",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "patch": "@@ -243,6 +243,16 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n の doc はこれに加えて「クリップされた中身は数に入らない」と書くが、その前提が崩れていることは\n `harness/records/pr-634.md` 指摘 26 が実測している(#645)。\n \n+#### Rust の検査は層 1 と層 4 にしかない\n+\n+`src-tauri/` の `cargo clippy` と `cargo test`(`TAURI_SETUP.md`「Rust 側の検査」)は、CI(層 1。\n+`src-tauri.yml`)と push 前手順(層 4。`implementation-flow` フェーズ 7)にだけあり、**層 2 にも層 3 にも置いていない。**\n+\n+- **層 2 へ載せない理由は所要時間と環境。** 手元の実測で初回は clippy 74 秒 + test 92 秒と、`pre-push` 全体\n+  (73.0 秒)の 2 倍を超え、上の `check-pr-closing-issue-cases.sh` を層 1 だけに置いた物差しに載らない。\n+  webkit のシステムライブラリが無い環境では飛ばすしかなく、飛ばす環境が多いほど層 2 に置いても守れない\n+- **層 3 へも置かない。** かかる時間は同じで、撮影範囲の検査と同じく最速フィードバック層の位置づけと合わない\n+\n ### 発火しているかを確かめる(カナリア)\n \n `hook-canary.sh` は `echo hook-canary` を必ず deny する。push の前にこれを 1 度実行すると、",
+          "patchLines": 17,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 0,
+          "patch": "@@ -298,6 +298,12 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # \n - 撮影には Chrome が要る。PATH に `google-chrome` / `chromium` が無ければ\n   `CHROME_BIN=<実行ファイル>` を与える。走らせられなかったときは、その旨を PR 本文に書く\n \n+**`src-tauri/` に差分があるときは、`TAURI_SETUP.md`「Rust 側の検査」の 2 コマンドも走らせる。**\n+上の 2 つとは別で、ゲートは CI(`src-tauri.yml`)だけが持つ検査。\n+\n+- 層 2 へ置かない理由は `.claude/hooks/README.md`「カバー範囲と残る穴」。走らせられなかったときは、\n+  その旨を PR 本文に書く\n+\n ## フェーズ 8: マージ後の追記\n \n マージされたら次の 3 つを行う(マージは `.claude/hooks/post-merge-review.sh` が検知して提示する)。",
+          "patchLines": 13,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": ".claude/skills/implementation-flow/SKILL.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": "src-tauri/src/lib.rs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-tauri-version-match.mjs",
+      "to": "package.json",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-tauri-version-match.mjs",
+      "to": "src-tauri/Cargo.lock",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-tauri-version-match.mjs",
+      "to": "src-tauri/Cargo.toml",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-frontend-report.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-tauri-version-match.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "pnpm-lock.yaml",
+      "status": "kept"
+    }
+  ]
+}
