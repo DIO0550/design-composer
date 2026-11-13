@@ -298,6 +298,12 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
 - 撮影には Chrome が要る。PATH に `google-chrome` / `chromium` が無ければ
   `CHROME_BIN=<実行ファイル>` を与える。走らせられなかったときは、その旨を PR 本文に書く
 
+**`src-tauri/` に差分があるときは、`TAURI_SETUP.md`「Rust 側の検査」の 2 コマンドも走らせる。**
+上の 2 つとは別で、ゲートは CI(`src-tauri.yml`)だけが持つ検査。
+
+- 層 2 へ置かない理由は `.claude/hooks/README.md`「カバー範囲と残る穴」。走らせられなかったときは、
+  その旨を PR 本文に書く
+
 ## フェーズ 8: マージ後の追記
 
 マージされたら次の 3 つを行う(マージは `.claude/hooks/post-merge-review.sh` が検知して提示する)。
