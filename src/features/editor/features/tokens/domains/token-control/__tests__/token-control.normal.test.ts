@@ -102,12 +102,18 @@ test("書体の行の見本は太さと解決済みのフォントを持つ", ()
   });
 });
 
-test("色を選ぶとカラーピッカーと不透明度の入力欄が並ぶ", () => {
+test("色を選ぶとカラーピッカー・hex・不透明度の入力欄が並ぶ", () => {
   expect(fieldsOf("colors", "primary")).toEqual([
     {
       name: "value",
       label: "値",
       input: { kind: "color", value: "#3b82f6" },
+      target: { kind: "colors", color: "#3b82f6" },
+    },
+    {
+      name: "hex",
+      label: "hex",
+      input: { kind: "text", value: "#3b82f6" },
       target: { kind: "colors", color: "#3b82f6" },
     },
     {
@@ -137,13 +143,14 @@ test("長さを選ぶと数値の入力欄が1つ出る", () => {
   ]);
 });
 
-test("影を選ぶとフィールドごとの入力欄が仕様の順で並び、不透明度が色の直後に入る", () => {
+test("影を選ぶとフィールドごとの入力欄が仕様の順で並び、hex と不透明度が色の直後に入る", () => {
   expect(fieldsOf("shadows", "sm").map((field) => field.label)).toEqual([
     "横のずれ",
     "縦のずれ",
     "ぼかし",
     "広がり",
     "色",
+    "hex",
     "不透明度",
   ]);
 });
