@@ -1,0 +1,2083 @@
+{
+  "version": 1,
+  "pr": 1387,
+  "sha": "06763650834913cecb1f09445bc1729709d27b08",
+  "issue": 1379,
+  "overview": {
+    "title": "中身の変わらない編集を undo 1 回ぶんに数えない",
+    "lead": "値を変えずに欄を離れた確定や、元の位置へ戻して離したドラッグのように、ドキュメントの中身が変わらない編集は、Ctrl+Z のときに飛ばされるようになった。Ctrl+Z を 1 回押せば、ドキュメントの中身が必ず 1 段戻る。",
+    "before": [
+      {
+        "text": "値を変えずに欄を離れると、その確定が戻る先として 1 件積まれ、次の Ctrl+Z は画面を変えなかった",
+        "message": "record"
+      },
+      {
+        "text": "ピッカー → 不透明度 → 次の欄と Tab で通るだけで、変化の無い確定が 2 件積まれることがあった"
+      },
+      {
+        "text": "掴んで元の位置へ戻して離したドラッグも 1 件に数えられ、Ctrl+Z 1 回目は画面を変えなかった",
+        "message": "amend"
+      },
+      {
+        "text": "開いた直後に欄を通過すると、戻る先が無いはずなのに Ctrl+Z が 1 回ぶん「効いた」扱いになっていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "`EditHistory.record` は中身の変わらない編集もいったん積むが、積む前に「戻る先の末尾が現在地と同じ中身ならそれを落とす」",
+        "message": "record"
+      },
+      {
+        "text": "`EditHistory.undo` も入口で同じ判定を通し、同じ中身の末尾を飛ばして 1 つ前へ戻る",
+        "message": "undo"
+      },
+      {
+        "text": "同じ中身かどうかは `DesignDocument.isSameContent` が、ファイルに書き出す形(`toJson`)どうしを `Json.equals` で比べて決める",
+        "message": "same-content"
+      },
+      {
+        "text": "中身の変わらない 1 件目に打ち込みの続き(`amend`)が届いても、1 回戻ればまとまりの前へ戻る",
+        "message": "amend"
+      },
+      {
+        "text": "開いた直後に中身の変わらない編集を積んでも、Ctrl+Z は戻る先が無いときと同じく何もしない",
+        "message": "undo"
+      },
+      {
+        "text": "進む先(redo)は今までどおり捨てる。残すかは #1384 で未決"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "末尾 1 件だけを落とす判定",
+        "text": "落とすのが 1 件で足りるのは「同じ中身が隣り合うのは末尾の 1 組だけ」という不変条件による。型では強制しておらず、`record` / `undo` / `amend` の 3 つが保っている。`amend` が `past` の途中の版と同じ中身へ戻すことはあるが、隣り合わないので害は無い(planner がランダム模擬で確かめた)",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/domains/edit-history/index.ts"
+        }
+      },
+      {
+        "title": "積む段階で弾かない理由",
+        "text": "`record` で弾くと、続く `amend` が戻る先の無いまま現在地を上書きし、まとまりの前へ戻れなくなる(数値欄の 1 打鍵目・リサイズの掴んだ直後の pointermove で起きる)。積んでから次の入口で落とす形にした",
+        "go": {
+          "kind": "message",
+          "id": "amend"
+        }
+      },
+      {
+        "title": "同じ中身の基準",
+        "text": "参照ではなく、source of truth であるファイルの形(`toJson`)で比べる。オブジェクトのキーの並びは見ない。比較は `record` / `undo` で 1 回ずつで、`amend` では走らない(2000 ノードで約 1.4ms/回)",
+        "go": {
+          "kind": "message",
+          "id": "json-equals"
+        }
+      },
+      {
+        "title": "redo を捨てる件は未決のまま",
+        "text": "中身の変わらない編集でも進む先は捨てる。仕様の行に「残すかは未決(#1384)」と書いた",
+        "go": {
+          "kind": "file",
+          "path": "docs/06-ui.md"
+        }
+      },
+      {
+        "title": "値を変えずに欄を離れたとき",
+        "text": "欄の確定から履歴の比較までを 1 本で見る",
+        "go": {
+          "kind": "flow",
+          "id": "leave-field"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "undo-count",
+      "label": "undo の数え方",
+      "role": "中身の変わらない編集を、戻す 1 回ぶんに数えないようにする"
+    },
+    {
+      "id": "content-compare",
+      "label": "中身の比較",
+      "role": "2 つのドキュメントが同じ中身かを、ファイルに書き出す形で比べる"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "utils",
+      "role": "JSON の値を構造で比べる `Json.equals` と、比べ方を受け取る並びの比較 `ArrayEx.equals` を足した"
+    },
+    {
+      "layer": "domains / dcmp",
+      "role": "ドキュメントが同じ中身かを答える `DesignDocument.isSameContent` を足した。`PropEdit` の doc の理由を書き直した"
+    },
+    {
+      "layer": "features / editor",
+      "role": "編集の履歴が、戻る先の末尾と現在地が同じ中身ならそれを落とす。エディタの状態は変えておらず、doc の理由だけを書き直した"
+    },
+    {
+      "layer": "features / editor/features/tokens",
+      "role": "変えていない。値を変えなくても blur で確定を送る欄がここにあり、この PR が直した症状の出どころ"
+    },
+    {
+      "layer": "docs",
+      "role": "「編集操作の一覧」の undo / redo の行に、中身の変わらない編集を数えないことと、redo を残すかは未決であることを書いた"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "name": "トークンの値の欄",
+      "role": "下書きの欄。blur で、値を変えていなくても確定を送る",
+      "feature": "undo-count"
+    },
+    {
+      "path": "src/features/editor/hooks/use-editor-state/index.ts",
+      "name": "エディタの状態の受け口",
+      "role": "画面の操作をアクションとして受け、エディタの状態の関数へ渡す reducer",
+      "feature": "undo-count"
+    },
+    {
+      "path": "src/features/editor/domains/editor-state/index.ts",
+      "name": "エディタの状態",
+      "role": "編集の結果を、続き方に応じて履歴へ積むか差し替える",
+      "feature": "undo-count",
+      "change": "`removeSelected` の doc の理由を「進む先(redo)が捨てられる」へ書き直した(振る舞いは変えていない)"
+    },
+    {
+      "path": "src/features/editor/domains/edit-history/index.ts",
+      "name": "編集の履歴",
+      "role": "戻る先・現在地・進む先のスナップショットを持ち、積む・差し替える・戻す・進める",
+      "feature": "undo-count",
+      "change": "`record` と `undo` の入口で、戻る先の末尾が現在地と同じ中身ならそれを落とす"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "ドキュメント",
+      "role": "`.dcmp` の中身を表すドメインオブジェクト",
+      "feature": "content-compare",
+      "change": "`isSameContent` を足した"
+    },
+    {
+      "path": "src/utils/Json.ts",
+      "name": "JSON の値",
+      "role": "JSON の値の読み進め・組み立て・比較",
+      "feature": "content-compare",
+      "change": "`equals` を足した"
+    },
+    {
+      "path": "src/utils/ArrayEx.ts",
+      "name": "並びの操作",
+      "role": "組み込みの配列への汎用操作",
+      "feature": "content-compare",
+      "change": "比べ方を受け取る `equals` を足し、`isElementwiseEqual` をそれに寄せた"
+    },
+    {
+      "path": "src/domains/dcmp/node/index.ts",
+      "name": "ノード",
+      "role": "ノードと prop の編集指定",
+      "change": "`PropEdit` の doc の理由を「進む先(redo)を捨てる」へ書き直した",
+      "graph": false
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "画面の振る舞いの仕様",
+      "change": "「編集操作の一覧」の undo / redo の行",
+      "graph": false
+    }
+  ],
+  "messages": [
+    {
+      "id": "commit-draft",
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/features/editor/hooks/use-editor-state/index.ts",
+      "kind": "cmd",
+      "name": "値を確定する",
+      "code": "onBlur={() => onCommit(draft)}",
+      "via": "call",
+      "payload": "欄の下書き(値を変えていなくても送る)と、別のまとまり(`Separate`)という続き方"
+    },
+    {
+      "id": "set-token-value",
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "kind": "cmd",
+      "name": "トークンの値を差し替える",
+      "code": "EditorState.setTokenValue(state, action.value, action.continuity)",
+      "via": "call",
+      "payload": "トークンの値と続き方",
+      "returns": "差し替えた状態(`Option`)"
+    },
+    {
+      "id": "record",
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/edit-history/index.ts",
+      "kind": "cmd",
+      "name": "編集を積む",
+      "code": "EditHistory.record(history, document)",
+      "via": "call",
+      "payload": "新しく現在地にするドキュメント",
+      "returns": "それまでの現在地を戻る先へ積んだ履歴。積む前に、同じ中身の末尾を落とす",
+      "status": "changed"
+    },
+    {
+      "id": "amend",
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/edit-history/index.ts",
+      "kind": "cmd",
+      "name": "続きで差し替える",
+      "code": "EditHistory.amend(history, document)",
+      "via": "call",
+      "payload": "同じまとまりの続きのドキュメント",
+      "returns": "戻る先はそのままで、現在地だけを差し替えた履歴"
+    },
+    {
+      "id": "undo-state",
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/features/editor/domains/editor-state/index.ts",
+      "kind": "cmd",
+      "name": "1 つ前へ戻す",
+      "code": "EditorState.undo(state)",
+      "via": "call",
+      "returns": "戻した状態。戻る先が無ければ `none`"
+    },
+    {
+      "id": "undo",
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/edit-history/index.ts",
+      "kind": "cmd",
+      "name": "履歴を 1 つ戻す",
+      "code": "EditHistory.undo(state.history)",
+      "via": "call",
+      "returns": "同じ中身の末尾を飛ばして 1 つ前を現在地にした履歴。戻る先が無ければ `none`",
+      "status": "changed"
+    },
+    {
+      "id": "same-content",
+      "from": "src/features/editor/domains/edit-history/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "qry",
+      "name": "同じ中身か",
+      "code": "Option.equals(ArrayEx.last(history.past), Option.some(history.present), DesignDocument.isSameContent)",
+      "via": "call",
+      "payload": "戻る先の末尾と現在地",
+      "returns": "同じ参照か、`toJson` が等しければ true",
+      "status": "added"
+    },
+    {
+      "id": "json-equals",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Json.ts",
+      "kind": "qry",
+      "name": "JSON の値を比べる",
+      "code": "Json.equals(DesignDocument.toJson(document), DesignDocument.toJson(other))",
+      "via": "call",
+      "payload": "2 つのドキュメントの `toJson`",
+      "returns": "キーの並びを除いて等しければ true",
+      "status": "added"
+    },
+    {
+      "id": "array-equals",
+      "from": "src/utils/Json.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "kind": "qry",
+      "name": "並びを比べる",
+      "code": "ArrayEx.equals(value, other, Json.equals)",
+      "via": "call",
+      "payload": "2 つの配列と要素の比べ方",
+      "returns": "同じ長さで、すべての位置で比べ方が true なら true",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "leave-field",
+      "label": "値を変えずに欄を離れたとき",
+      "steps": [
+        "commit-draft",
+        "set-token-value",
+        "record",
+        "same-content",
+        "json-equals",
+        "array-equals"
+      ]
+    },
+    {
+      "id": "press-undo",
+      "label": "Ctrl+Z を押したとき",
+      "steps": [
+        "undo-state",
+        "undo",
+        "same-content",
+        "json-equals"
+      ]
+    },
+    {
+      "id": "continued",
+      "label": "打ち込みの続きが届いたとき",
+      "steps": [
+        "record",
+        "amend"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "da4fc6409384a1d915c7fd8cd6d7d066c99629dc",
+      "phase": "prep",
+      "role": "JSON の値を構造で比べる `Json.equals` を足す",
+      "why": "同じ中身の基準をファイルの形(`toJson`)に取るので、JSON の値どうしの構造の比較が先に要る。`DocumentJson.serialize` の文字列で比べる案は domains → libs の import になるので捨てた(却下案 5)。",
+      "flows": [
+        "leave-field"
+      ],
+      "review": [
+        "オブジェクトはキーの並びを見ず、配列は並びまで見る。`toJson` は名前の昇順で書き出すが、比較が書き出し順に依存しないようにした",
+        "`RecordEx.has` で自身のキーかを確かめている。`other[key]` は自身に無いキーでも prototype の値を返すため"
+      ],
+      "after": [
+        {
+          "text": "2 つの JSON の値が同じデータかを答えられる",
+          "message": "json-equals"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/utils/Json.ts",
+          "start": 114,
+          "end": 122,
+          "text": "`Array.isArray` は `arg is any[]` に絞るので、readonly の配列へ絞る型ガードを 1 つ足した(素のままでは TS2345 になることを確認済み)"
+        },
+        {
+          "path": "src/utils/Json.ts",
+          "start": 609,
+          "end": 620,
+          "text": "配列 → 相手だけ配列 → オブジェクト → それ以外(`===`)の順に分ける。2 つ目の枝が無いと `{}` と `[]` を同じ種類として比べてしまう"
+        }
+      ]
+    },
+    {
+      "sha": "220717601a85139bc6c5dc65c29eee3794ff6122",
+      "phase": "prep",
+      "role": "`Json.equals` の等価判定をテストする",
+      "why": "キーの並び・配列の並び・片側だけのキー・入れ子・種類の違いを、等しい側と等しくない側の両方から固定する。plan-reviewer の指摘 5(壊した実装を落とせない)で、入れ子が等しい正のケースと逆側のキーを足した。",
+      "review": [
+        "`\"1\"` と `1` のケースは、比較を文字列化に寄せる実装を落とす"
+      ]
+    },
+    {
+      "sha": "f228ba30d70b0bccb98fb938967af7f24e81f742",
+      "phase": "prep",
+      "role": "ドキュメントが同じ中身かを答える `DesignDocument.isSameContent` を足す",
+      "why": "「同じ中身か」はドキュメントの性質なので、ドキュメントのコンパニオンオブジェクトに置く。参照比較では判定にならない(`replaceToken` / `renameToken` は常に新しい参照を返す。却下案 4)。",
+      "flows": [
+        "leave-field",
+        "press-undo"
+      ],
+      "review": [
+        "同じ参照なら `toJson` を作らずに true を返す。中身の変わる編集でも、書き換えなかった枝は同じ参照のまま残る"
+      ],
+      "after": [
+        {
+          "text": "参照が違っても、ファイルに書き出す形が同じなら同じ中身とみなす",
+          "message": "same-content"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1581,
+          "end": 1589,
+          "text": "基準は `toJson`。ファイルが source of truth で、`DocumentJson.serialize` が書き出すのも `toJson` の結果"
+        }
+      ]
+    },
+    {
+      "sha": "db02ee5f70403acf2d348c949bf28b18e745f652",
+      "phase": "prep",
+      "role": "`DesignDocument.isSameContent` の判定をテストする",
+      "why": "別々に作ったドキュメント(参照が違う)で、中身が同じなら true、トークンの値が 1 つ違えば false になることを固定する。"
+    },
+    {
+      "sha": "8e01800be8510710d09f45825b4ef02da0d3a5ae",
+      "phase": "core",
+      "role": "`record` と `undo` の入口で、同じ中身の末尾を落とす",
+      "why": "判定を欄の側ではなく履歴の側に置いたのは、`historyWith` → `record` を通る全編集(トークンの値・改名・prop の編集・再読み込み)に一度で効くため(却下案 1)。`record` で弾かないのは、続きの `amend` が戻る先の無いまま上書きするため(却下案 2)。`undo` だけで飛ばすと、無変化の編集が `past` に無制限に溜まる(却下案 3)。",
+      "flows": [
+        "leave-field",
+        "press-undo",
+        "continued"
+      ],
+      "review": [
+        "落とすのは末尾の 1 件だけ。2 件以上が同じ中身で並ぶことは `record` 側の正規化が防いでいる",
+        "`amend` / `redo` / `create` は変えていない"
+      ],
+      "before": [
+        {
+          "text": "中身の変わらない編集も戻る先として残り、Ctrl+Z 1 回が画面を変えない回があった",
+          "message": "record"
+        }
+      ],
+      "after": [
+        {
+          "text": "積む前に、戻る先の末尾が現在地と同じ中身ならそれを落とす",
+          "message": "record"
+        },
+        {
+          "text": "戻すときも、同じ中身の末尾を飛ばして 1 つ前へ戻る",
+          "message": "undo"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "start": 36,
+          "end": 46,
+          "text": "比較は `Option.equals` に `DesignDocument.isSameContent` を渡して書く。戻る先が無いときは `none` と `some` で等しくならない"
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "start": 62,
+          "end": 63,
+          "text": "同じ中身でも積む理由。テスト B がこの形を守る"
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "start": 105,
+          "end": 112,
+          "text": "戻る先が飛ばした結果無くなったときも `none`。開いた直後に無変化の編集を積んだ場合がこれ"
+        }
+      ]
+    },
+    {
+      "sha": "53ea52f509f9d96c5ea9d607ee0ff00e35a67f20",
+      "phase": "core",
+      "role": "中身の変わらない編集を飛ばす履歴の振る舞いをテストする",
+      "why": "計画のテスト A〜E・G に、plan-reviewer の指摘 4 で redo 側(H)を足した。中身の変わらない編集は毎回作り直した別の参照で積み、参照比較の実装でも通ってしまわないようにした。",
+      "review": [
+        "B は `record` で弾く実装を、G は `undo` の入口だけで落とす実装を落とす"
+      ]
+    },
+    {
+      "sha": "56a66e06ce52d1c536dd740af4b548595bcdb4b8",
+      "phase": "core",
+      "role": "エディタの状態から、中身の変わらない確定が undo に残らないことをテストする",
+      "why": "履歴の単体テストだけでは、実際の編集の入口(`setTokenValue` / `applyPropEdit`)が `record` を通ることまでは守れないため。",
+      "review": [
+        "prop の「1 打鍵目…」は、`10` → `010` のように 1 打鍵目が値を変えない打ち込みを、幅で写したもの"
+      ]
+    },
+    {
+      "sha": "34513179b8b107ce6d29b83c0a72cedbbc2df05d",
+      "phase": "core",
+      "role": "トークンエディタの欄を変えずに離れても Ctrl+Z 1 回で戻ることをテストする",
+      "why": "Issue の再現手順(ピッカーで色を変え、不透明度の欄を Tab で通る)を画面から通す。#1382 と同じファイルに追記するので、行が重ならないようにファイル末尾に置いた。",
+      "flows": [
+        "leave-field",
+        "press-undo"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+          "start": 519,
+          "end": 522,
+          "text": "不透明度の欄から Tab で次の欄へ移り、その欄も離れる。無変化の確定が続けて届く形で、`record` 側の正規化を外すと落ちる(test-reviewer の実測)"
+        }
+      ]
+    },
+    {
+      "sha": "3880a7b664fad74119c0fdabcf43e094de763322",
+      "phase": "hard",
+      "role": "空の編集を受けない理由を、redo を捨てることへ書き直す",
+      "why": "「何も変わらない編集が戻る先として積まれる」はこの PR で事実でなくなるが、空の編集を受けない分岐は残す。進む先(redo)を捨てる理由はまだ成り立つので、そちらへ書き直した(plan-reviewer の指摘 6)。",
+      "notes": [
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "start": 1034,
+          "end": 1035,
+          "text": "分岐は残し、理由だけを差し替えた"
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "start": 34,
+          "end": 34,
+          "text": "非空のタプルで受ける理由も同じ書き換え"
+        }
+      ]
+    },
+    {
+      "sha": "325c4de6f10c9ba173e7fd5267b0678642d2cfa2",
+      "phase": "core",
+      "role": "中身の変わらない編集を undo 1 回ぶんに数えないことを仕様に書く",
+      "why": "undo の単位は仕様が持つので、例外を仕様の行に足した。畳み方の各行(281 / 336 / 338 / 376)へは写さず、一般則として 1 か所に置いた。",
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 343,
+          "end": 343,
+          "text": "例を 2 つ(欄を離れた確定・元の位置へ戻したドラッグ)添えた"
+        }
+      ]
+    },
+    {
+      "sha": "cc8b4af9ed052b61d490b32aa36e88f5a3ca5457",
+      "phase": "revise",
+      "role": "要素の比べ方を受け取る `ArrayEx.equals` を足し、`isElementwiseEqual` をそれに寄せる",
+      "why": "duplication の指摘で、`Json` の配列比較が `isElementwiseEqual` と同じ走査(違うのは要素の比べ方だけ)だった。`Option.equals` と同じ形の汎用操作として `utils/` に置いた。",
+      "review": [
+        "`isElementwiseEqual` は SameValueZero を渡すだけになり、振る舞いは変えていない"
+      ],
+      "notes": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "start": 381,
+          "end": 390,
+          "text": "長さを先に見る。比べ方が常に true を返しても、長さが違えば等しくない"
+        }
+      ]
+    },
+    {
+      "sha": "1aca5abc170942c415ce96ba17a052be1c525332",
+      "phase": "revise",
+      "role": "`ArrayEx.equals` の比べ方と長さの扱いをテストする",
+      "why": "渡した比べ方が使われること(参照の違う要素を id で等しいとみなす)と、長さの比較を外した実装を落とすことを固定する。"
+    },
+    {
+      "sha": "225c2d2adf385f5d48560e15ea19f140614c1ba3",
+      "phase": "revise",
+      "role": "`Json.equals` の配列比較を `ArrayEx.equals` に寄せ、キーごとの判定に名前を付ける",
+      "why": "naming の指摘(条件を組んだ式に名前が無い)と structure の指摘(値を求めてから return までの空行)を反映した。",
+      "notes": [
+        {
+          "path": "src/utils/Json.ts",
+          "start": 136,
+          "end": 138,
+          "text": "`hasSameValueAt` に名前を付け、`RecordEx.has` が要る理由を 1 行で書いた"
+        },
+        {
+          "path": "src/utils/Json.ts",
+          "start": 597,
+          "end": 597,
+          "text": "要素の比べ方に `Json.equals` 自身を渡して再帰する"
+        }
+      ]
+    },
+    {
+      "sha": "315b1b8e9987387c35daec1cc84073eb2f7d9eba",
+      "phase": "revise",
+      "role": "履歴の不変条件を「型では強制しない」と書き、理由を 1〜2 行に詰める",
+      "why": "comment の指摘で、「型の不変条件」と書くと型で強制されていると読めた。`record` / `undo` / `amend` が保つものだと書き直した。",
+      "notes": [
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "start": 17,
+          "end": 19,
+          "text": "不変条件は「`past` の後ろに `present` を続けた並びで、同じ中身が隣り合うのは末尾の 1 組だけ」。`past` の中で離れて同じ中身が出ることはある"
+        }
+      ]
+    },
+    {
+      "sha": "110ab1d7eb2b5f5860bc091e2025fc0dc75b4179",
+      "phase": "revise",
+      "role": "続きのテストのコメントを、落とす実装と doc への参照に絞る",
+      "why": "duplication の指摘で、`record` が同じ中身でも積む理由がテストのコメントに写されていた。理由の正本は `EditHistory.record` の doc に置き、テストは何を落とすかだけを書く。",
+      "notes": [
+        {
+          "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+          "start": 32,
+          "end": 32,
+          "text": "理由は doc を指すだけにした"
+        }
+      ]
+    },
+    {
+      "sha": "722021d20410ca4c4d59839ef1163e81f7af3354",
+      "phase": "revise",
+      "role": "redo を残すかが未決であることを仕様の文に出す",
+      "why": "comment の指摘で、「(#1384)」と番号だけでは未決であることが読めなかった。",
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 343,
+          "end": 343,
+          "text": "「残すかは未決。#1384」と書いた"
+        }
+      ]
+    },
+    {
+      "sha": "06763650834913cecb1f09445bc1729709d27b08",
+      "phase": "hard",
+      "role": "`Json.equals` のオブジェクトと配列の向き・自身の `__proto__` をテストする",
+      "why": "test-reviewer が 1 か所ずつ壊して確かめたところ、`isJsonArray(other)` の枝と `RecordEx.has` のガードは、外しても既存のテストが落ちなかった。2 件を足して守った。",
+      "review": [
+        "`__proto__` のケースは `JSON.parse` で自身のキーとして持たせている。オブジェクトリテラルで書くと prototype の指定になり、自身のキーにならない"
+      ],
+      "notes": [
+        {
+          "path": "src/utils/__tests__/Json.equals.test.ts",
+          "start": 38,
+          "end": 42,
+          "text": "ガードが無いと、`other[\"__proto__\"]` が `Object.prototype` を返し、空のオブジェクトどうしとして等しくなる"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "json",
+      "label": "JSON の値の比較",
+      "file": "src/utils/__tests__/Json.equals.test.ts"
+    },
+    {
+      "id": "array-normal",
+      "label": "並びの比較",
+      "file": "src/utils/__tests__/ArrayEx.normal.test.ts"
+    },
+    {
+      "id": "array-edge",
+      "label": "並びの比較の境界",
+      "file": "src/utils/__tests__/ArrayEx.edge.test.ts"
+    },
+    {
+      "id": "same-content",
+      "label": "ドキュメントの中身の同一",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.same-content.test.ts"
+    },
+    {
+      "id": "history",
+      "label": "中身の変わらない編集と履歴",
+      "file": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts"
+    },
+    {
+      "id": "token-continuity",
+      "label": "トークンの値の続き方",
+      "file": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts"
+    },
+    {
+      "id": "prop-continuity",
+      "label": "prop の編集の続き方",
+      "file": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts"
+    },
+    {
+      "id": "token-edit",
+      "label": "トークンの編集の画面",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "json-key-order",
+      "suite": "json",
+      "name": "キーの並びが違っても、同じキーに同じ値を持つオブジェクトは等しい",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`toJson` の並びが違うだけのドキュメントを別物と判定しない",
+      "given": "`{ a: 1, b: \"x\" }` と `{ b: \"x\", a: 1 }`",
+      "when": "`Json.equals` で比べる",
+      "then": "true",
+      "commit": "220717601a85139bc6c5dc65c29eee3794ff6122",
+      "excerpt": {
+        "path": "src/utils/__tests__/Json.equals.test.ts",
+        "start": 4,
+        "end": 6,
+        "text": "test(\"キーの並びが違っても、同じキーに同じ値を持つオブジェクトは等しい\", () => {\n  expect(Json.equals({ a: 1, b: \"x\" }, { b: \"x\", a: 1 })).toBe(true);\n});"
+      },
+      "targets": [
+        "src/utils/Json.ts"
+      ],
+      "covers": [
+        "json-equals"
+      ]
+    },
+    {
+      "id": "json-nested-equal",
+      "suite": "json",
+      "name": "入れ子の値まで同じなら等しい",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "比較が入れ子へ再帰していることを、等しい側から守る(常に false を返す再帰を落とす)",
+      "given": "配列とオブジェクトが入れ子になった同じ値 2 つ",
+      "when": "比べる",
+      "then": "true",
+      "commit": "220717601a85139bc6c5dc65c29eee3794ff6122",
+      "excerpt": {
+        "path": "src/utils/__tests__/Json.equals.test.ts",
+        "start": 8,
+        "end": 12,
+        "text": "test(\"入れ子の値まで同じなら等しい\", () => {\n  expect(\n    Json.equals({ list: [1, { c: true }] }, { list: [1, { c: true }] }),\n  ).toBe(true);\n});"
+      },
+      "targets": [
+        "src/utils/Json.ts"
+      ],
+      "covers": [
+        "json-equals",
+        "array-equals"
+      ]
+    },
+    {
+      "id": "json-array-order",
+      "suite": "json",
+      "name": "配列の並びが違えば等しくない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ノードの並び替えは中身の変わる編集なので、配列は並びまで見る",
+      "given": "`[1, 2]` と `[2, 1]`",
+      "when": "比べる",
+      "then": "false",
+      "commit": "220717601a85139bc6c5dc65c29eee3794ff6122",
+      "excerpt": {
+        "path": "src/utils/__tests__/Json.equals.test.ts",
+        "start": 14,
+        "end": 16,
+        "text": "test(\"配列の並びが違えば等しくない\", () => {\n  expect(Json.equals([1, 2], [2, 1])).toBe(false);\n});"
+      },
+      "targets": [
+        "src/utils/Json.ts"
+      ],
+      "covers": [
+        "array-equals"
+      ]
+    },
+    {
+      "id": "json-extra-after",
+      "suite": "json",
+      "name": "後ろの値にしか無いキーがあれば等しくない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "前の値のキーだけを見る実装を落とす",
+      "given": "`{ a: 1 }` と `{ a: 1, b: 2 }`",
+      "when": "比べる",
+      "then": "false",
+      "commit": "220717601a85139bc6c5dc65c29eee3794ff6122",
+      "excerpt": {
+        "path": "src/utils/__tests__/Json.equals.test.ts",
+        "start": 18,
+        "end": 20,
+        "text": "test(\"後ろの値にしか無いキーがあれば等しくない\", () => {\n  expect(Json.equals({ a: 1 }, { a: 1, b: 2 })).toBe(false);\n});"
+      },
+      "targets": [
+        "src/utils/Json.ts"
+      ],
+      "covers": [
+        "json-equals"
+      ]
+    },
+    {
+      "id": "json-extra-before",
+      "suite": "json",
+      "name": "前の値にしか無いキーがあれば等しくない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "後ろの値のキーだけを見る実装を落とす",
+      "given": "`{ a: 1, b: 2 }` と `{ a: 1 }`",
+      "when": "比べる",
+      "then": "false",
+      "commit": "220717601a85139bc6c5dc65c29eee3794ff6122",
+      "excerpt": {
+        "path": "src/utils/__tests__/Json.equals.test.ts",
+        "start": 22,
+        "end": 24,
+        "text": "test(\"前の値にしか無いキーがあれば等しくない\", () => {\n  expect(Json.equals({ a: 1, b: 2 }, { a: 1 })).toBe(false);\n});"
+      },
+      "targets": [
+        "src/utils/Json.ts"
+      ],
+      "covers": [
+        "json-equals"
+      ]
+    },
+    {
+      "id": "json-nested-diff",
+      "suite": "json",
+      "name": "入れ子の値が違えば等しくない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "深い位置の値だけが変わった編集を、同じ中身と判定しない",
+      "given": "`{ a: { b: 1 } }` と `{ a: { b: 2 } }`",
+      "when": "比べる",
+      "then": "false",
+      "commit": "220717601a85139bc6c5dc65c29eee3794ff6122",
+      "excerpt": {
+        "path": "src/utils/__tests__/Json.equals.test.ts",
+        "start": 26,
+        "end": 28,
+        "text": "test(\"入れ子の値が違えば等しくない\", () => {\n  expect(Json.equals({ a: { b: 1 } }, { a: { b: 2 } })).toBe(false);\n});"
+      },
+      "targets": [
+        "src/utils/Json.ts"
+      ],
+      "covers": [
+        "json-equals"
+      ]
+    },
+    {
+      "id": "json-array-object",
+      "suite": "json",
+      "name": "空の配列と空のオブジェクトは等しくない",
+      "techniques": [
+        "boundary",
+        "equivalence"
+      ],
+      "why": "キーの数(0)だけで比べると、配列とオブジェクトを取り違える",
+      "given": "`[]` と `{}`",
+      "when": "比べる",
+      "then": "false",
+      "commit": "220717601a85139bc6c5dc65c29eee3794ff6122",
+      "excerpt": {
+        "path": "src/utils/__tests__/Json.equals.test.ts",
+        "start": 30,
+        "end": 32,
+        "text": "test(\"空の配列と空のオブジェクトは等しくない\", () => {\n  expect(Json.equals([], {})).toBe(false);\n});"
+      },
+      "targets": [
+        "src/utils/Json.ts"
+      ],
+      "covers": [
+        "json-equals"
+      ]
+    },
+    {
+      "id": "json-object-array",
+      "suite": "json",
+      "name": "空のオブジェクトと空の配列は等しくない",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "前の値がオブジェクトで後ろが配列の向き(`isJsonArray(other)` の枝)を守る。test-reviewer が枝を外しても落ちるテストが無かったので足した",
+      "given": "`{}` と `[]`",
+      "when": "比べる",
+      "then": "false",
+      "commit": "06763650834913cecb1f09445bc1729709d27b08",
+      "excerpt": {
+        "path": "src/utils/__tests__/Json.equals.test.ts",
+        "start": 34,
+        "end": 36,
+        "text": "test(\"空のオブジェクトと空の配列は等しくない\", () => {\n  expect(Json.equals({}, [])).toBe(false);\n});"
+      },
+      "values": {
+        "columns": [
+          "前の値",
+          "後ろの値",
+          "通る枝",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`[]`",
+              "`{}`",
+              "1 つ目(前が配列)",
+              "false"
+            ]
+          },
+          {
+            "cells": [
+              "`{}`",
+              "`[]`",
+              "2 つ目(後ろだけ配列)",
+              "false"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/utils/Json.ts"
+      ],
+      "covers": [
+        "json-equals"
+      ]
+    },
+    {
+      "id": "json-own-proto",
+      "suite": "json",
+      "name": "キーの数が同じでも、前の値だけが自身のキーとして __proto__ を持つなら等しくない",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "`RecordEx.has` のガードを守る。ガードが無いと `other[\"__proto__\"]` が `Object.prototype` を返し、等しいと誤る",
+      "given": "`JSON.parse('{\"__proto__\":{}}')` と `{ x: {} }`",
+      "when": "比べる",
+      "then": "false",
+      "commit": "06763650834913cecb1f09445bc1729709d27b08",
+      "excerpt": {
+        "path": "src/utils/__tests__/Json.equals.test.ts",
+        "start": 38,
+        "end": 42,
+        "text": "test(\"キーの数が同じでも、前の値だけが自身のキーとして __proto__ を持つなら等しくない\", () => {\n  const ownProto: JsonValue = JSON.parse('{\"__proto__\":{}}');\n\n  expect(Json.equals(ownProto, { x: {} })).toBe(false);\n});"
+      },
+      "targets": [
+        "src/utils/Json.ts"
+      ],
+      "covers": [
+        "json-equals"
+      ]
+    },
+    {
+      "id": "json-string-number",
+      "suite": "json",
+      "name": "文字列の数字と数値は等しくない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "比較を文字列化に寄せる実装を落とす",
+      "given": "`\"1\"` と `1`",
+      "when": "比べる",
+      "then": "false",
+      "commit": "220717601a85139bc6c5dc65c29eee3794ff6122",
+      "excerpt": {
+        "path": "src/utils/__tests__/Json.equals.test.ts",
+        "start": 44,
+        "end": 46,
+        "text": "test(\"文字列の数字と数値は等しくない\", () => {\n  expect(Json.equals(\"1\", 1)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/utils/Json.ts"
+      ],
+      "covers": [
+        "json-equals"
+      ]
+    },
+    {
+      "id": "array-all-equal",
+      "suite": "array-normal",
+      "name": "渡した比べ方で同じ位置の要素がすべて等しければ、並びは等しい",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "要素の比べ方が呼び出し側から渡したものになっている(参照の違う要素を等しいとみなせる)",
+      "given": "id だけを比べる関数と、参照の違う `{ id: 1 }` の並び 2 つ",
+      "when": "`ArrayEx.equals` で比べる",
+      "then": "true",
+      "commit": "1aca5abc170942c415ce96ba17a052be1c525332",
+      "excerpt": {
+        "path": "src/utils/__tests__/ArrayEx.normal.test.ts",
+        "start": 294,
+        "end": 298,
+        "text": "test(\"渡した比べ方で同じ位置の要素がすべて等しければ、並びは等しい\", () => {\n  const sameId = (a: { id: number }, b: { id: number }) => a.id === b.id;\n\n  expect(ArrayEx.equals([{ id: 1 }], [{ id: 1 }], sameId)).toBe(true);\n});"
+      },
+      "targets": [
+        "src/utils/ArrayEx.ts"
+      ],
+      "covers": [
+        "array-equals"
+      ]
+    },
+    {
+      "id": "array-one-differs",
+      "suite": "array-normal",
+      "name": "渡した比べ方で等しくない位置が 1 つでもあれば、並びは等しくない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "最初の要素だけを見る実装を落とす",
+      "given": "2 番目の id だけが違う並び 2 つ",
+      "when": "比べる",
+      "then": "false",
+      "commit": "1aca5abc170942c415ce96ba17a052be1c525332",
+      "excerpt": {
+        "path": "src/utils/__tests__/ArrayEx.normal.test.ts",
+        "start": 300,
+        "end": 306,
+        "text": "test(\"渡した比べ方で等しくない位置が 1 つでもあれば、並びは等しくない\", () => {\n  const sameId = (a: { id: number }, b: { id: number }) => a.id === b.id;\n\n  expect(\n    ArrayEx.equals([{ id: 1 }, { id: 2 }], [{ id: 1 }, { id: 3 }], sameId),\n  ).toBe(false);\n});"
+      },
+      "targets": [
+        "src/utils/ArrayEx.ts"
+      ],
+      "covers": [
+        "array-equals"
+      ]
+    },
+    {
+      "id": "array-length",
+      "suite": "array-edge",
+      "name": "渡した比べ方がどの要素も等しいとみなしても、長さが違う並びは等しくない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "長さの比較を外した実装を落とす",
+      "given": "常に true を返す比べ方と、`[1]` / `[1, 2]`",
+      "when": "比べる",
+      "then": "false",
+      "commit": "1aca5abc170942c415ce96ba17a052be1c525332",
+      "excerpt": {
+        "path": "src/utils/__tests__/ArrayEx.edge.test.ts",
+        "start": 181,
+        "end": 183,
+        "text": "test(\"渡した比べ方がどの要素も等しいとみなしても、長さが違う並びは等しくない\", () => {\n  expect(ArrayEx.equals([1], [1, 2], () => true)).toBe(false);\n});"
+      },
+      "targets": [
+        "src/utils/ArrayEx.ts"
+      ],
+      "covers": [
+        "array-equals"
+      ]
+    },
+    {
+      "id": "same-content-true",
+      "suite": "same-content",
+      "name": "別々に作った同じ中身のドキュメントは同じとみなす",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "編集の関数は中身が同じでも新しい参照を返すので、参照比較では判定にならない",
+      "given": "`primary` が `#000000` のドキュメントを 2 回作る(参照は違う)",
+      "when": "`DesignDocument.isSameContent` で比べる",
+      "then": "true",
+      "commit": "db02ee5f70403acf2d348c949bf28b18e745f652",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.same-content.test.ts",
+        "start": 17,
+        "end": 24,
+        "text": "test(\"別々に作った同じ中身のドキュメントは同じとみなす\", () => {\n  expect(\n    DesignDocument.isSameContent(\n      documentWithPrimary(\"#000000\"),\n      documentWithPrimary(\"#000000\"),\n    ),\n  ).toBe(true);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "json-equals"
+      ]
+    },
+    {
+      "id": "same-content-false",
+      "suite": "same-content",
+      "name": "トークンの値が 1 つ違えば同じとみなさない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "常に true を返す実装を落とす",
+      "given": "`primary` が `#000000` と `#ffffff` のドキュメント",
+      "when": "比べる",
+      "then": "false",
+      "commit": "db02ee5f70403acf2d348c949bf28b18e745f652",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.same-content.test.ts",
+        "start": 26,
+        "end": 33,
+        "text": "test(\"トークンの値が 1 つ違えば同じとみなさない\", () => {\n  expect(\n    DesignDocument.isSameContent(\n      documentWithPrimary(\"#000000\"),\n      documentWithPrimary(\"#ffffff\"),\n    ),\n  ).toBe(false);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "json-equals"
+      ]
+    },
+    {
+      "id": "hist-a",
+      "suite": "history",
+      "name": "中身の変わらない編集を積んでも、1 回戻れば直前の編集の前へ戻る",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "Issue の症状そのもの(値を変えずに欄を離れたあとの Ctrl+Z が画面を変えない)",
+      "given": "幅 375 → 414 と編集した履歴",
+      "when": "幅 414(別の参照)を積んでから 1 回戻す",
+      "then": "現在地は幅 375",
+      "commit": "53ea52f509f9d96c5ea9d607ee0ff00e35a67f20",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 11,
+        "end": 21,
+        "text": "test(\"中身の変わらない編集を積んでも、1 回戻れば直前の編集の前へ戻る\", () => {\n  const edited = EditHistory.record(\n    EditHistory.create(documentOfWidth(375)),\n    documentOfWidth(414),\n  );\n\n  const unchanged = EditHistory.record(edited, documentOfWidth(414));\n\n  const undone = Option.unwrap(EditHistory.undo(unchanged));\n  expect(undone.present).toEqual(documentOfWidth(375));\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record",
+        "undo",
+        "same-content"
+      ]
+    },
+    {
+      "id": "hist-b",
+      "suite": "history",
+      "name": "中身の変わらない 1 件目に続きが届いても、1 回戻ればまとまりの前へ戻る",
+      "techniques": [
+        "state"
+      ],
+      "why": "`record` で弾かないことを守る。弾くと続きの `amend` が戻る先の無いまま上書きする(test-reviewer の実測で、`record` で弾く実装はこれで落ちる)",
+      "given": "幅 375 → 414 と編集した履歴に、幅 414 を積む",
+      "when": "続きとして幅 768 に差し替え、1 回戻す",
+      "then": "現在地は幅 414(まとまりの前)",
+      "commit": "53ea52f509f9d96c5ea9d607ee0ff00e35a67f20",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 23,
+        "end": 35,
+        "emphasis": [
+          {
+            "start": 30,
+            "end": 34
+          }
+        ],
+        "text": "test(\"中身の変わらない 1 件目に続きが届いても、1 回戻ればまとまりの前へ戻る\", () => {\n  const edited = EditHistory.record(\n    EditHistory.create(documentOfWidth(375)),\n    documentOfWidth(414),\n  );\n  const unchanged = EditHistory.record(edited, documentOfWidth(414));\n\n  const continued = EditHistory.amend(unchanged, documentOfWidth(768));\n\n  // 中身の変わらない 1 件目を `record` が積まずに弾く実装を落とす（理由は `EditHistory.record` の doc）\n  const undone = Option.unwrap(EditHistory.undo(continued));\n  expect(undone.present).toEqual(documentOfWidth(414));\n});"
+      },
+      "values": {
+        "columns": [
+          "実装",
+          "1 回戻したあとの幅"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "積んでから入口で落とす(この PR)",
+              "414"
+            ]
+          },
+          {
+            "cells": [
+              "`record` で弾く",
+              "375(まとまりの前を飛び越す)"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record",
+        "amend",
+        "undo"
+      ]
+    },
+    {
+      "id": "hist-c",
+      "suite": "history",
+      "name": "中身の変わらない編集のあとに別の編集を積んでも、2 回戻れば 2 つ前へ戻る",
+      "techniques": [
+        "state"
+      ],
+      "why": "`record` の入口で落としたあとも、中身の変わる編集は 1 件ずつ残る",
+      "given": "375 → 414 → 414(無変化)",
+      "when": "幅 768 を積んで 2 回戻す",
+      "then": "414、375 の順に戻る",
+      "commit": "53ea52f509f9d96c5ea9d607ee0ff00e35a67f20",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 37,
+        "end": 52,
+        "text": "test(\"中身の変わらない編集のあとに別の編集を積んでも、2 回戻れば 2 つ前へ戻る\", () => {\n  const edited = EditHistory.record(\n    EditHistory.create(documentOfWidth(375)),\n    documentOfWidth(414),\n  );\n  const unchanged = EditHistory.record(edited, documentOfWidth(414));\n\n  const separated = EditHistory.record(unchanged, documentOfWidth(768));\n\n  const undone = Option.unwrap(EditHistory.undo(separated));\n  const twice = Option.unwrap(EditHistory.undo(undone));\n  expect([undone.present, twice.present]).toEqual([\n    documentOfWidth(414),\n    documentOfWidth(375),\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record",
+        "undo"
+      ]
+    },
+    {
+      "id": "hist-d",
+      "suite": "history",
+      "name": "開いた直後に中身の変わらない編集を積んでも、戻る先は無い",
+      "techniques": [
+        "boundary",
+        "state"
+      ],
+      "why": "飛ばした結果、戻る先が無くなったときも `none` を返す",
+      "given": "幅 375 で開いた直後",
+      "when": "幅 375(別の参照)を積んで戻す",
+      "then": "`none`",
+      "commit": "53ea52f509f9d96c5ea9d607ee0ff00e35a67f20",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 54,
+        "end": 60,
+        "text": "test(\"開いた直後に中身の変わらない編集を積んでも、戻る先は無い\", () => {\n  const opened = EditHistory.create(documentOfWidth(375));\n\n  const unchanged = EditHistory.record(opened, documentOfWidth(375));\n\n  expect(Option.isSome(EditHistory.undo(unchanged))).toBe(false);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record",
+        "undo"
+      ]
+    },
+    {
+      "id": "hist-e",
+      "suite": "history",
+      "name": "続きで元の中身へ戻ったまとまりは、戻すときに飛ばされる",
+      "techniques": [
+        "state"
+      ],
+      "why": "掴んで元の位置へ戻して離したドラッグのように、`amend` で始まりと同じ中身へ戻ったまとまりも数えない",
+      "given": "375 → 414 と編集し、768 を積む",
+      "when": "続きで 414 へ差し替えてから 1 回戻す",
+      "then": "現在地は幅 375",
+      "commit": "53ea52f509f9d96c5ea9d607ee0ff00e35a67f20",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 62,
+        "end": 73,
+        "text": "test(\"続きで元の中身へ戻ったまとまりは、戻すときに飛ばされる\", () => {\n  const edited = EditHistory.record(\n    EditHistory.create(documentOfWidth(375)),\n    documentOfWidth(414),\n  );\n  const started = EditHistory.record(edited, documentOfWidth(768));\n\n  const returned = EditHistory.amend(started, documentOfWidth(414));\n\n  const undone = Option.unwrap(EditHistory.undo(returned));\n  expect(undone.present).toEqual(documentOfWidth(375));\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "amend",
+        "undo"
+      ]
+    },
+    {
+      "id": "hist-g",
+      "suite": "history",
+      "name": "中身の変わらない編集を 2 回続けて積んでも、1 回戻れば直前の編集の前へ戻る",
+      "techniques": [
+        "state",
+        "boundary"
+      ],
+      "why": "`record` の入口でも落としていることを守る。`undo` の入口だけで 1 件落とす実装では落ちる(test-reviewer の実測)",
+      "given": "375 → 414 と編集した履歴",
+      "when": "幅 414 を 2 回続けて積み、1 回戻す",
+      "then": "現在地は幅 375",
+      "commit": "53ea52f509f9d96c5ea9d607ee0ff00e35a67f20",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 75,
+        "end": 91,
+        "text": "/*\n * `undo` の入口だけで 1 件落とす実装では落ちる。`record` の入口でも落としていることを守る。\n */\ntest(\"中身の変わらない編集を 2 回続けて積んでも、1 回戻れば直前の編集の前へ戻る\", () => {\n  const edited = EditHistory.record(\n    EditHistory.create(documentOfWidth(375)),\n    documentOfWidth(414),\n  );\n\n  const unchangedTwice = EditHistory.record(\n    EditHistory.record(edited, documentOfWidth(414)),\n    documentOfWidth(414),\n  );\n\n  const undone = Option.unwrap(EditHistory.undo(unchangedTwice));\n  expect(undone.present).toEqual(documentOfWidth(375));\n});"
+      },
+      "values": {
+        "columns": [
+          "無変化の編集の件数",
+          "1 回戻したあとの幅"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "1",
+              "375"
+            ]
+          },
+          {
+            "cells": [
+              "2",
+              "375"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record",
+        "undo"
+      ]
+    },
+    {
+      "id": "hist-h",
+      "suite": "history",
+      "name": "中身の変わらない編集のあと戻してからやり直すと、1 回で戻す前の中身へ進み、それ以上は進めない",
+      "techniques": [
+        "state"
+      ],
+      "why": "飛ばした無変化の編集が進む先に残らない(redo 側に画面の変わらない回が出ない)",
+      "given": "375 → 414 → 414(無変化)を 1 回戻した履歴",
+      "when": "やり直す",
+      "then": "幅 414 へ進み、もう進めない",
+      "commit": "53ea52f509f9d96c5ea9d607ee0ff00e35a67f20",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 93,
+        "end": 107,
+        "text": "test(\"中身の変わらない編集のあと戻してからやり直すと、1 回で戻す前の中身へ進み、それ以上は進めない\", () => {\n  const edited = EditHistory.record(\n    EditHistory.create(documentOfWidth(375)),\n    documentOfWidth(414),\n  );\n  const unchanged = EditHistory.record(edited, documentOfWidth(414));\n  const undone = Option.unwrap(EditHistory.undo(unchanged));\n\n  const redone = Option.unwrap(EditHistory.redo(undone));\n\n  expect([redone.present, Option.isSome(EditHistory.redo(redone))]).toEqual([\n    documentOfWidth(414),\n    false,\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "undo"
+      ]
+    },
+    {
+      "id": "token-separate",
+      "suite": "token-continuity",
+      "name": "別のまとまりとして送った値は 1 回の Undo で直前の値までしか戻らない",
+      "techniques": [
+        "state"
+      ],
+      "why": "中身の変わる確定は今までどおり 1 件ずつ数える(この PR で変えていない既存のテスト)",
+      "given": "`primary` が `#000000` の色を選んだ状態",
+      "when": "別のまとまりとして 2 つの色を送り、1 回戻す",
+      "then": "1 つ目に送った色に戻る",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+        "start": 64,
+        "end": 73,
+        "text": "test(\"別のまとまりとして送った値は 1 回の Undo で直前の値までしか戻らない\", () => {\n  const edited = sendColors(setupSelected(), [\n    { color: \"#ff0000\", continuity: EditContinuities.Separate },\n    { color: \"#00ff00\", continuity: EditContinuities.Separate },\n  ]);\n\n  const undone = Option.unwrap(EditorState.undo(edited));\n\n  expect(primaryOf(undone)).toEqual(Option.some(\"#ff0000\"));\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts"
+      ],
+      "covers": [
+        "set-token-value",
+        "record",
+        "undo"
+      ]
+    },
+    {
+      "id": "token-unchanged",
+      "suite": "token-continuity",
+      "name": "値を変えずに送った確定は、Undo 1 回で直前に変えた値の前まで戻る",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "トークンの値の入口(`setTokenValue`)が、中身の変わらない確定を戻る 1 回ぶんに数えない",
+      "given": "`primary` が `#000000`",
+      "when": "`#ff0000` を別のまとまりとして 2 回送り、1 回戻す",
+      "then": "`#000000` に戻る",
+      "commit": "56a66e06ce52d1c536dd740af4b548595bcdb4b8",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+        "start": 75,
+        "end": 84,
+        "text": "test(\"値を変えずに送った確定は、Undo 1 回で直前に変えた値の前まで戻る\", () => {\n  const edited = sendColors(setupSelected(), [\n    { color: \"#ff0000\", continuity: EditContinuities.Separate },\n    { color: \"#ff0000\", continuity: EditContinuities.Separate },\n  ]);\n\n  const undone = Option.unwrap(EditorState.undo(edited));\n\n  expect(primaryOf(undone)).toEqual(Option.some(\"#000000\"));\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts",
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "set-token-value",
+        "record",
+        "undo"
+      ]
+    },
+    {
+      "id": "prop-first-unchanged",
+      "suite": "prop-continuity",
+      "name": "1 打鍵目が値を変えず 2 打鍵目で変わっても、1 回戻れば打ち始める前の値に戻る",
+      "techniques": [
+        "state"
+      ],
+      "why": "数値欄で `10` → `010` のように 1 打鍵目が値を変えないとき、続きの打鍵が戻る先の無いまま上書きしない(test-reviewer の実測で、`record` で弾く実装はこれで落ちる)",
+      "given": "幅 200 の `panel` を選び、150 と打った状態",
+      "when": "1 打鍵目 150・2 打鍵目 120 と打って 1 回戻す",
+      "then": "幅 150(この打ち込みを始める前)",
+      "commit": "56a66e06ce52d1c536dd740af4b548595bcdb4b8",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+        "start": 104,
+        "end": 111,
+        "text": "test(\"1 打鍵目が値を変えず 2 打鍵目で変わっても、1 回戻れば打ち始める前の値に戻る\", () => {\n  const first = typeWidths(setupSelected(), [150]);\n  const second = typeWidths(first, [150, 120]);\n\n  const undone = Option.unwrap(EditorState.undo(second));\n\n  expect([panelWidth(second), panelWidth(undone)]).toEqual([120, 150]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts",
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record",
+        "amend",
+        "undo"
+      ]
+    },
+    {
+      "id": "prop-same-width",
+      "suite": "prop-continuity",
+      "name": "幅を同じ値で確定しても、Undo 1 回で直前の編集の前へ戻る",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "prop の編集の入口(`applyPropEdit`)でも、中身の変わらない確定を数えない",
+      "given": "幅 200 から 150 と打った状態",
+      "when": "もう一度 150 と打って 1 回戻す",
+      "then": "幅 200",
+      "commit": "56a66e06ce52d1c536dd740af4b548595bcdb4b8",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+        "start": 113,
+        "end": 120,
+        "text": "test(\"幅を同じ値で確定しても、Undo 1 回で直前の編集の前へ戻る\", () => {\n  const first = typeWidths(setupSelected(), [150]);\n  const unchanged = typeWidths(first, [150]);\n\n  const undone = Option.unwrap(EditorState.undo(unchanged));\n\n  expect(panelWidth(undone)).toBe(200);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts",
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record",
+        "undo"
+      ]
+    },
+    {
+      "id": "ui-opacity",
+      "suite": "token-edit",
+      "name": "色を変えたあと不透明度の欄を変えずに離れても、Ctrl+Z 1 回でピッカーで選ぶ前の色に戻る",
+      "techniques": [
+        "regression",
+        "state"
+      ],
+      "why": "Issue の再現手順を画面から通す。無変化の確定が続けて届く形なので、`record` 側の正規化を外すと落ちる(test-reviewer の実測)",
+      "given": "トークンの画面で `primary`(`#3b82f6`)を選ぶ",
+      "when": "値を `#00ff00` に変え、不透明度の欄を押して Tab で離れ、次の欄からも離れて Ctrl+Z",
+      "then": "値の欄は `#3b82f6`",
+      "commit": "34513179b8b107ce6d29b83c0a72cedbbc2df05d",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "start": 513,
+        "end": 525,
+        "text": "test(\"色を変えたあと不透明度の欄を変えずに離れても、Ctrl+Z 1 回でピッカーで選ぶ前の色に戻る\", async () => {\n  await renderTokensView();\n  await selectRow(\"primary\");\n  fireEvent.click(field(\"値\"));\n  fireEvent.change(field(\"値\"), { target: { value: \"#00ff00\" } });\n\n  await userEvent.click(field(\"不透明度\"));\n  await userEvent.tab();\n  blurActive();\n  await userEvent.keyboard(\"{Control>}z{/Control}\");\n\n  expect(field(\"値\")).toHaveProperty(\"value\", \"#3b82f6\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "commit-draft",
+        "set-token-value",
+        "record",
+        "undo-state",
+        "undo"
+      ]
+    },
+    {
+      "id": "ui-name",
+      "suite": "token-edit",
+      "name": "色を変えたあと名前の欄を変えずに離れても、Ctrl+Z 1 回でピッカーで選ぶ前の色に戻る",
+      "techniques": [
+        "regression",
+        "state"
+      ],
+      "why": "改名の入口(`renameToken`)も同じ履歴を通るので、名前の欄でも同じく数えない",
+      "given": "トークンの画面で `primary` を選ぶ",
+      "when": "値を `#00ff00` に変え、名前の欄を押して Tab で離れてから Ctrl+Z",
+      "then": "値の欄は `#3b82f6`",
+      "commit": "34513179b8b107ce6d29b83c0a72cedbbc2df05d",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "start": 527,
+        "end": 539,
+        "text": "test(\"色を変えたあと名前の欄を変えずに離れても、Ctrl+Z 1 回でピッカーで選ぶ前の色に戻る\", async () => {\n  await renderTokensView();\n  await selectRow(\"primary\");\n  fireEvent.click(field(\"値\"));\n  fireEvent.change(field(\"値\"), { target: { value: \"#00ff00\" } });\n\n  await userEvent.click(field(\"名前\"));\n  await userEvent.tab();\n  blurActive();\n  await userEvent.keyboard(\"{Control>}z{/Control}\");\n\n  expect(field(\"値\")).toHaveProperty(\"value\", \"#3b82f6\");\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record",
+        "undo-state",
+        "undo"
+      ]
+    },
+    {
+      "id": "drag-back-ui",
+      "suite": "token-edit",
+      "name": "掴んで元の位置へ戻して離したドラッグは、Ctrl+Z 1 回で直前の編集の前へ戻る",
+      "techniques": [
+        "state"
+      ],
+      "why": "履歴の単体テスト(続きで元の中身へ戻ったまとまり)はあるが、キャンバスのドラッグを画面から通すテストは無い",
+      "given": "ノードを 1 つ編集したあと",
+      "when": "別のノードを掴んで動かし、元の位置へ戻して離してから Ctrl+Z",
+      "then": "直前の編集の前へ戻る",
+      "todo": true,
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "Ctrl+Z を 1 回押せば、必ず 1 段戻るようになった",
+    "lead": "値を変えずに入力欄を離れたときや、掴んだものを元の位置へ戻して離したときのように、何も変わっていない操作は、元に戻すときの 1 回に数えなくなりました。",
+    "changed": {
+      "before": [
+        {
+          "text": "値を変えずに入力欄を離れると、次の Ctrl+Z は画面を何も変えず、もう 1 回押してやっと直前の変更が戻った",
+          "message": "record"
+        },
+        {
+          "text": "色を変えたあと、不透明度などの欄を Tab で通るだけで、画面の変わらない Ctrl+Z が何回か挟まった"
+        }
+      ],
+      "after": [
+        {
+          "text": "何も変わっていない操作は飛ばされ、Ctrl+Z 1 回で直前に変えた内容が戻る",
+          "message": "undo"
+        },
+        {
+          "text": "続けて何度欄を通っても、Ctrl+Z 1 回で直前に変えた内容が戻る",
+          "message": "record"
+        }
+      ],
+      "text": "何が変わっていないかは、ファイルに保存される内容で判断します。見た目が同じでも保存される内容が違えば、1 回に数えます。",
+      "specs": [
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「編集操作の一覧」の undo / redo の行",
+          "text": "ドキュメントの中身が変わらない編集は元に戻す 1 回ぶんに数えない(戻すときに飛ばす)こと、やり直しの先は今までどおり捨て、残すかは未決であることを足した",
+          "shas": [
+            "325c4de6f10c9ba173e7fd5267b0678642d2cfa2",
+            "722021d20410ca4c4d59839ef1163e81f7af3354"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1041,
+          "text": "色の欄に入力欄を 1 つ足す計画の中で、この症状が見つかった(入力欄が増えると起きる場所も増える)"
+        },
+        {
+          "issue": 1384,
+          "text": "何も変わっていない操作でも、やり直しの先が捨てられる件。残すかは未決で、ここで決める"
+        },
+        {
+          "issue": 1382,
+          "text": "同じ症状を前提にした説明を足す変更。後から入る側がその説明を直す"
+        }
+      ],
+      "primers": [
+        "edit-history",
+        "same-content"
+      ]
+    },
+    "tables": [
+      {
+        "label": "何も変わっていない操作のあとに Ctrl+Z を 1 回押したとき",
+        "gist": "結果を決めるのは、何も変わっていない操作の形と、その前に変更があったかの 2 つ。",
+        "rowHeads": [
+          {
+            "id": "once",
+            "label": "値を変えずに欄を 1 回離れた"
+          },
+          {
+            "id": "twice",
+            "label": "値を変えずに欄を続けて 2 回離れた",
+            "note": "Tab で欄を通ったとき"
+          },
+          {
+            "id": "drag-back",
+            "label": "掴んで元の位置へ戻して離した"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "after-edit",
+            "label": "直前に変更がある"
+          },
+          {
+            "id": "just-opened",
+            "label": "開いた直後"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "once",
+            "columnHead": "after-edit",
+            "result": "直前の変更が戻る",
+            "was": "画面が変わらず、2 回目でやっと戻る",
+            "tests": [
+              "hist-a",
+              "token-unchanged",
+              "prop-same-width",
+              "ui-name"
+            ]
+          },
+          {
+            "rowHead": "once",
+            "columnHead": "just-opened",
+            "result": "戻る先が無く、何も起きない",
+            "was": "画面は変わらないが、戻る 1 回ぶんとして使われる",
+            "tests": [
+              "hist-d"
+            ]
+          },
+          {
+            "rowHead": "twice",
+            "columnHead": "after-edit",
+            "result": "直前の変更が戻る",
+            "was": "画面が変わらない回が 2 回続き、3 回目でやっと戻る",
+            "tests": [
+              "hist-g",
+              "ui-opacity"
+            ]
+          },
+          {
+            "rowHead": "twice",
+            "columnHead": "just-opened",
+            "result": "戻る先が無く、何も起きない",
+            "was": "画面の変わらない戻しが 2 回ある"
+          },
+          {
+            "rowHead": "drag-back",
+            "columnHead": "after-edit",
+            "result": "直前の変更が戻る",
+            "was": "画面が変わらず、2 回目でやっと戻る",
+            "tests": [
+              "hist-e",
+              "drag-back-ui"
+            ]
+          },
+          {
+            "rowHead": "drag-back",
+            "columnHead": "just-opened",
+            "result": "戻る先が無く、何も起きない",
+            "was": "画面は変わらないが、戻る 1 回ぶんとして使われる"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "何も変わっていない操作のあと、戻してからやり直したとき",
+        "before": [
+          {
+            "text": "戻しきったあとのやり直しにも、画面の変わらない回が挟まった"
+          }
+        ],
+        "after": [
+          {
+            "text": "1 回のやり直しで戻す前の画面へ進み、それ以上は進まない",
+            "message": "undo"
+          }
+        ],
+        "tests": [
+          "hist-h"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "値を変えた確定は、今までどおり Ctrl+Z 1 回で 1 つずつ戻る",
+        "tests": [
+          "token-separate",
+          "hist-c"
+        ]
+      },
+      {
+        "text": "入力の 1 打鍵目が値を変えず、続けて打った内容で変わったときも、1 回の Ctrl+Z で打ち始める前の値に戻る",
+        "tests": [
+          "hist-b",
+          "prop-first-unchanged"
+        ]
+      },
+      {
+        "text": "何も変わっていない操作のあとでも、やり直しの先は今までどおり捨てられる(残すかは未決)"
+      },
+      {
+        "text": "値を変えずに欄を離れたときも、自動保存の書き込みは今までどおり 1 回走る"
+      },
+      {
+        "text": "並び替えのように、並びの順だけが変わる操作は変更として数える",
+        "tests": [
+          "json-array-order"
+        ]
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「編集操作の一覧」の、連続した操作を 1 件に畳む各行",
+        "text": "どの操作を 1 件に畳むかは変えていない。何も変わらない操作を数えない例外は undo / redo の行の 1 か所にだけ書いた"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "type-predicate",
+      "category": "typescript · 型",
+      "label": "型の述語 `value is T`",
+      "gist": "関数が true を返したとき、引数がどの型かをコンパイラに教えるための書き方。戻り値の型の位置に `引数名 is 型` と書くと、`if` で呼んだ先で引数の型が[[絞り込み|narrowing]]される。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "TypeScript は `typeof x === \"object\"` のような決まった形の判定なら自分で型を絞るが、自分で書いた判定関数の中身までは読まない。戻り値の型を `boolean` ではなく `value is readonly JsonValue[]` と書くと、「true なら `value` はこの型」という約束になり、呼んだ側の `if` の中で `value` がその型として扱われる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "function isJsonArray(value: JsonValue): value is readonly JsonValue[]"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/utils/Json.ts",
+            "start": 115,
+            "end": 123,
+            "text": "/**\n * 配列か。`JsonValue` の配列は readonly なので、素の `Array.isArray` では絞れない。\n *\n * @param value 判定する JSON の値\n * @returns 配列なら true\n */\nfunction isJsonArray(value: JsonValue): value is readonly JsonValue[] {\n  return Array.isArray(value);\n}"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "標準の `Array.isArray` の宣言は `isArray(arg: any): arg is any[]` で、絞った先が書き換えられる配列(`any[]`)になる。[[readonly の配列|readonly-array]]を含む型をこれで絞ると、この PR の実装では型エラー(TS2345)になったので、判定は同じまま述語の型だけを書き直した関数を挟んでいる。"
+        },
+        {
+          "kind": "memo",
+          "text": "述語の約束が実装と合っているかはコンパイラが確かめない。true を返したのに違う型だった、という食い違いは型エラーにならない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/Json.ts",
+          "lineRange": {
+            "start": 115,
+            "end": 123
+          },
+          "text": "`isJsonArray`。`Json.equals` が配列かどうかで枝を分けるのに使う",
+          "shas": [
+            "da4fc6409384a1d915c7fd8cd6d7d066c99629dc"
+          ]
+        },
+        {
+          "path": "src/utils/Json.ts",
+          "lineRange": {
+            "start": 595,
+            "end": 608
+          },
+          "text": "`Json.equals` の 2 つの枝で呼ぶ",
+          "shas": [
+            "da4fc6409384a1d915c7fd8cd6d7d066c99629dc",
+            "225c2d2adf385f5d48560e15ea19f140614c1ba3"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "own-property"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "own-property",
+      "category": "javascript · オブジェクト",
+      "label": "自身のキーと `__proto__`",
+      "gist": "JavaScript のオブジェクトは、自分が持っていないキーを引かれると[[プロトタイプ|prototype]]をたどって値を探す。キーの有無を確かめるときは「自身のキーか」を別に見る必要がある。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`obj[key]` は、`obj` 自身にそのキーが無ければプロトタイプの値を返す。ふつうのオブジェクトのプロトタイプは `Object.prototype` で、`obj[\"__proto__\"]` はキーを書いていなくても `Object.prototype` を返す。一方 `Object.keys(obj)` は自身のキーだけを並べる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/utils/Json.ts",
+            "start": 133,
+            "end": 143,
+            "emphasis": [
+              {
+                "start": 136,
+                "end": 138
+              }
+            ],
+            "text": "function objectEquals(object: JsonObject, other: JsonObject): boolean {\n  const keys = Object.keys(object);\n\n  // `other[key]` は自身に無いキーでも prototype の値を返す（`__proto__` なら `Object.prototype`）\n  const hasSameValueAt = (key: string): boolean =>\n    RecordEx.has(other, key) && Json.equals(object[key], other[key]);\n\n  return (\n    keys.length === Object.keys(other).length && keys.every(hasSameValueAt)\n  );\n}"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "`JSON.parse('{\"__proto__\":{}}')` は `__proto__` を自身のキーとして持つオブジェクトを作るが、オブジェクトリテラル `{ __proto__: {} }` はプロトタイプの指定になり、自身のキーにならない。テストで自身の `__proto__` を作るときは `JSON.parse` を使う。"
+        },
+        {
+          "kind": "rule",
+          "text": "このリポジトリでは自身のキーかを `RecordEx.has` で確かめる(`Object.hasOwn` は tsconfig の lib に型が無い)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/Json.ts",
+          "lineRange": {
+            "start": 133,
+            "end": 143
+          },
+          "text": "`objectEquals` の `hasSameValueAt` が、`RecordEx.has` で自身のキーかを先に見る",
+          "shas": [
+            "da4fc6409384a1d915c7fd8cd6d7d066c99629dc",
+            "225c2d2adf385f5d48560e15ea19f140614c1ba3"
+          ]
+        },
+        {
+          "path": "src/utils/__tests__/Json.equals.test.ts",
+          "lineRange": {
+            "start": 38,
+            "end": 42
+          },
+          "text": "自身の `__proto__` を `JSON.parse` で作って確かめるテスト",
+          "shas": [
+            "06763650834913cecb1f09445bc1729709d27b08"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "type-predicate"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "callback-generic",
+      "category": "typescript · ジェネリクス",
+      "label": "比べ方の関数を受け取る `<T>`",
+      "gist": "要素の型を呼び出し側が決め、その型の要素を比べる関数も一緒に受け取る形。[[型引数|type-parameter]] `T` で、並びの要素と比べ方の引数が同じ型であることをつなぐ。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "equals<T>(array: readonly T[], other: readonly T[], equalsElement: (element: T, otherElement: T) => boolean): boolean"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "array",
+              "type": "readonly T[]",
+              "text": "比べる並び。[[readonly の配列|readonly-array]]として受けるので、書き換えられる配列も渡せる"
+            },
+            {
+              "name": "other",
+              "type": "readonly T[]",
+              "text": "比べる並び"
+            },
+            {
+              "name": "equalsElement",
+              "type": "(element: T, otherElement: T) => boolean",
+              "text": "同じ位置の 2 つの要素を比べる関数。関数も値なので引数として渡せる。`Json.equals` は自分自身を渡して入れ子へ再帰する"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "本体は長さを比べてから、`every` で全位置に `equalsElement` を当てる。`every` は配列の標準のメソッドで、渡した関数が 1 か所でも false を返した時点で false を返す。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/utils/ArrayEx.ts",
+            "start": 381,
+            "end": 390,
+            "text": "  equals<T>(\n    array: readonly T[],\n    other: readonly T[],\n    equalsElement: (element: T, otherElement: T) => boolean,\n  ): boolean {\n    return (\n      array.length === other.length &&\n      array.every((item, index) => equalsElement(item, other[index]))\n    );\n  },"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "lineRange": {
+            "start": 373,
+            "end": 390
+          },
+          "text": "`ArrayEx.equals`。`isElementwiseEqual` も SameValueZero を渡してこれを通る",
+          "shas": [
+            "cc8b4af9ed052b61d490b32aa36e88f5a3ca5457"
+          ]
+        },
+        {
+          "path": "src/utils/Json.ts",
+          "lineRange": {
+            "start": 597,
+            "end": 597
+          },
+          "text": "`ArrayEx.equals(value, other, Json.equals)`",
+          "shas": [
+            "225c2d2adf385f5d48560e15ea19f140614c1ba3"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "type-predicate"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "edit-history",
+      "category": "editor · 履歴",
+      "label": "編集の履歴と、同じ中身の末尾を落とす入口",
+      "gist": "undo / redo は、ドキュメントの[[スナップショット|snapshot]]を戻る先(`past`)・現在地(`present`)・進む先(`future`)の 3 つに並べて持つ。この PR は、積む入口と戻す入口で「戻る先の末尾が現在地と同じ中身なら落とす」を通すようにした。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "編集は続き方で 2 通りに入る。別のまとまりなら `record` が現在地を戻る先へ積み、同じまとまりの続き(打鍵の 2 件目・ドラッグの pointermove)なら `amend` が現在地だけを差し替える。中身の変わらない編集もいったん `record` で積み、次の `record` か `undo` の入口で非公開の `withoutUnchangedLast` が落とす。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/domains/edit-history/index.ts",
+            "start": 37,
+            "end": 47,
+            "text": "function withoutUnchangedLast(history: EditHistory): EditHistory {\n  const unchanged = Option.equals(\n    ArrayEx.last(history.past),\n    Option.some(history.present),\n    DesignDocument.isSameContent,\n  );\n  if (!unchanged) {\n    return history;\n  }\n  return { ...history, past: ArrayEx.dropLast(history.past) };\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "落とすのは末尾の 1 件だけ。「並びの中で同じ中身が隣り合うのは末尾の 1 組だけ」という[[不変条件|invariant]]を、`record` / `undo` / `amend` が保っている(型では強制しない)。"
+        },
+        {
+          "kind": "caution",
+          "text": "`record` で同じ中身を弾いて積まない形にすると、続く `amend` が戻る先の無いまま現在地を上書きし、まとまりの前へ戻れなくなる。積んでから入口で落とすのはそのため。"
+        },
+        {
+          "kind": "spec",
+          "text": "docs/06-ui.md「編集操作の一覧」の undo / redo の行: 中身が変わらない編集は undo 1 回ぶんに数えない。進む先は捨てる(残すかは #1384 で未決)。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は `record` が常に現在地を積み、`undo` は末尾をそのまま現在地にしていた。中身の変わらない編集も 1 件として残っていた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "lineRange": {
+            "start": 17,
+            "end": 19
+          },
+          "text": "型 doc の不変条件",
+          "shas": [
+            "8e01800be8510710d09f45825b4ef02da0d3a5ae",
+            "315b1b8e9987387c35daec1cc84073eb2f7d9eba"
+          ]
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "lineRange": {
+            "start": 71,
+            "end": 79
+          },
+          "text": "`record` の入口",
+          "shas": [
+            "8e01800be8510710d09f45825b4ef02da0d3a5ae"
+          ]
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "lineRange": {
+            "start": 107,
+            "end": 115
+          },
+          "text": "`undo` の入口",
+          "shas": [
+            "8e01800be8510710d09f45825b4ef02da0d3a5ae"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "same-content"
+      ],
+      "tests": [
+        "hist-a",
+        "hist-b",
+        "hist-c",
+        "hist-d",
+        "hist-e",
+        "hist-g",
+        "hist-h",
+        "drag-back-ui"
+      ],
+      "flows": [
+        "leave-field",
+        "press-undo",
+        "continued"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "same-content",
+      "category": "dcmp · 比較",
+      "label": "ドキュメントの同じ中身",
+      "gist": "2 つのドキュメントが同じ中身かを、ファイルに書き出す形(`toJson`)どうしの比較で決める。参照が違っても、保存される内容が同じなら同じとみなす。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`DesignDocument.isSameContent` は、同じ参照なら `toJson` を作らずに true を返し、それ以外は `Json.equals(toJson(a), toJson(b))` で比べる。`Json.equals` はオブジェクトのキーの並びを見ず、配列は並びまで見る。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/dcmp/design-document/index.ts",
+            "start": 1571,
+            "end": 1588,
+            "text": "  /**\n   * 2 つのドキュメントが同じ中身か。ファイルに書き出す形（`toJson`）どうしで比べる。\n   *\n   * 参照ではなく中身を見るのは、編集の関数が中身を変えなくても新しい参照を返すことがあるため。\n   *\n   * @param document 比べるドキュメント\n   * @param other 比べるドキュメント\n   * @returns 同じ参照か、`toJson` の結果がキーの並びを除いて等しければ true\n   */\n  isSameContent(document: DesignDocument, other: DesignDocument): boolean {\n    if (document === other) {\n      return true;\n    }\n    return Json.equals(\n      DesignDocument.toJson(document),\n      DesignDocument.toJson(other),\n    );\n  },"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "比較が走るのは `record` と `undo` で 1 回ずつで、打鍵の続きやドラッグの pointermove(`amend`)では走らない。計画時の計測で 2000 ノードのドキュメントで約 1.4ms/回。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1571,
+            "end": 1588
+          },
+          "text": "`isSameContent`",
+          "shas": [
+            "f228ba30d70b0bccb98fb938967af7f24e81f742",
+            "315b1b8e9987387c35daec1cc84073eb2f7d9eba"
+          ]
+        },
+        {
+          "path": "src/utils/Json.ts",
+          "lineRange": {
+            "start": 586,
+            "end": 608
+          },
+          "text": "`Json.equals`",
+          "shas": [
+            "da4fc6409384a1d915c7fd8cd6d7d066c99629dc",
+            "225c2d2adf385f5d48560e15ea19f140614c1ba3"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "edit-history",
+        "own-property",
+        "callback-generic"
+      ],
+      "tests": [
+        "same-content-true",
+        "same-content-false",
+        "json-key-order",
+        "json-own-proto"
+      ],
+      "flows": [
+        "leave-field"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "narrowing",
+      "label": "絞り込み",
+      "text": "`if` などの判定のあとで、変数の型をより狭い型として扱えるようにする TypeScript の仕組み。"
+    },
+    {
+      "id": "readonly-array",
+      "label": "readonly の配列",
+      "text": "`readonly T[]` と書く、要素を書き換える操作(`push` など)を持たない配列の型。書き換えられる配列はこの型の変数へ入れられるが、逆はできない。"
+    },
+    {
+      "id": "prototype",
+      "label": "プロトタイプ",
+      "text": "JavaScript のオブジェクトが、自分に無いキーを引かれたときに探しにいく別のオブジェクト。ふつうのオブジェクトでは `Object.prototype`。"
+    },
+    {
+      "id": "type-parameter",
+      "label": "型引数",
+      "text": "関数名の後ろの `<T>` のように宣言し、呼ぶたびに具体的な型が入る型の変数。呼び出し側が渡した値から推論される。"
+    },
+    {
+      "id": "snapshot",
+      "label": "スナップショット",
+      "text": "ある時点のドキュメント全体の値。ドキュメントは書き換えられない値なので、編集のたびに新しい値ができ、前の値はそのまま残る。"
+    },
+    {
+      "id": "invariant",
+      "label": "不変条件",
+      "text": "どの操作のあとでも常に成り立っているべき性質。ここでは型ではなく、履歴を書き換える関数が守っている。"
+    }
+  ]
+}
