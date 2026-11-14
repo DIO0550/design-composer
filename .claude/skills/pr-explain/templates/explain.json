@@ -22,7 +22,7 @@
     ]
   },
   "features": [
-    { "id": "publish", "label": "公開", "role": "解説と地図を gh-pages の PR のフォルダへ置く" }
+    { "id": "publish", "label": "公開", "role": "解説と地図を gh-pages の PR のフォルダへ置く", "review": ["検査に落ちた解説を置かずに止まるか(`put-explain` は検査の後で push する)"] }
   ],
   "layerRoles": [
     { "layer": "ハーネス", "role": "解説の検査と置き場の書き換え" }
@@ -54,6 +54,10 @@
       "notes": [
         { "path": ".github/scripts/build-pr-explain.py", "start": 1, "end": 3, "text": "形は宣言的な表で持つ" },
         { "path": ".github/scripts/pr-explain-pages.sh", "side": "old", "start": 58, "end": 60, "text": "ページごとの HTML を組み立てていた呼び出し。解説の検査に置き換えた" }
+      ],
+      "featureRanges": [
+        { "path": ".github/scripts/build-pr-explain.py", "start": 1, "end": 3, "feature": "publish", "text": "置く前に解説を検査する入口を足した" },
+        { "path": ".github/scripts/pr-explain-pages.sh", "side": "old", "start": 58, "end": 60, "feature": "publish", "text": "ページごとの HTML を置くモードを消した" }
       ]
     }
   ],

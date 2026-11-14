@@ -11,14 +11,14 @@
   綴り・一意性・範囲・状況の表のマスの揃い・振る舞いの前後が同じ・振る舞いの仕様の場所と関連 Issue の重複・
   行の無い変わらないことの仕様・用語の印の書き方・強調の範囲)
 - `pr-explain-meta` — `pr` が公開先の PR と違う
-- `pr-explain-ref` — 解説の中の参照が解説の中に無い(message の from / to・flow の steps など)・用語の印が terms に
-  無い・どの印からも指されない用語
+- `pr-explain-ref` — 解説の中の参照が解説の中に無い(message の from / to・flow の steps・featureRanges の feature など)・
+  用語の印が terms に無い・どの印からも指されない用語
 - `pr-explain-code` — 解説時点の `sha` がこのリポジトリに無い・抜粋のパスがその sha に無い・範囲が
   ファイルに収まらない
 
 種別の綴りは、この一覧と報告の行の頭(`[<種別>] `)にだけ書く(照合は `build-pr-explain-cases.sh`)。
 
-**地図を指す参照(commitStory の sha・Note のパスと行・Target の layer / file・LayerRole の layer・
+**地図を指す参照(commitStory の sha・Note と FeatureRange のパスと行・Target の layer / file・LayerRole の layer・
 concept・primers の出てくる場所の `path`・`lineRange`・`shas`・振る舞いの仕様の場所の `path`・`shas` が地図にあるか)は見ない。** 地図は push のたびに
 作り直されるので、解説を書いた時点で合っていても後で外れる。外れたものはページが「地図に無い」と出す。
 
@@ -265,6 +265,14 @@ CitedSpec: dict[str, Field] = {
     "text": need(UserText),
 }
 
+# コミットの差分の行の範囲(注釈と機能の範囲が同じ形で持つ)。行番号はそのコミット時点の `side` の側(既定は変更後)。
+DiffSpan: dict[str, Field] = {
+    "path": need(Text),
+    "side": may(Word(("new", "old"))),
+    "start": need(Count),
+    "end": need(Count),
+}
+
 # 解説の形(`pr-explain` スキルの「explain.json の形」の表を、検査が読む形にしたもの)。
 Shapes: dict[str, dict[str, Field]] = {
     "Explain": {
@@ -340,7 +348,7 @@ Shapes: dict[str, dict[str, Field]] = {
     "KeptSpec": CitedSpec,
     "RelatedIssue": {"issue": need(Count), "text": need(UserText)},
     "Highlight": {"title": need(Heading), "text": need(Text), "go": need(Variant("Target"))},
-    "Feature": {"id": need(Id), "label": need(Heading), "role": need(Text)},
+    "Feature": {"id": need(Id), "label": need(Heading), "role": need(Text), "review": may(Many(Text))},
     "LayerRole": {"layer": need(Text), "role": need(Text)},
     "Concept": {
         "path": need(Text),
@@ -373,14 +381,11 @@ Shapes: dict[str, dict[str, Field]] = {
         "before": may(Many(Shape("Behavior"))),
         "after": may(Many(Shape("Behavior"))),
         "notes": may(Many(Shape("Note"))),
+        "featureRanges": may(Many(Shape("FeatureRange"))),
     },
-    "Note": {
-        "path": need(Text),
-        "side": may(Word(("new", "old"))),
-        "start": need(Count),
-        "end": need(Count),
-        "text": need(Text),
-    },
+    "Note": {**DiffSpan, "text": need(Text)},
+    # 範囲の行を 1 つでも含む hunk(消したファイルは本文)が、その機能になる(ページの `CommitDiff`)。
+    "FeatureRange": {**DiffSpan, "feature": need(Id), "text": need(Text)},
     "Suite": {"id": need(Id), "label": need(Heading), "file": need(Text)},
     "Test": {
         "id": need(Id),
@@ -454,7 +459,7 @@ Variants: dict[str, dict[str, dict[str, Field]]] = {
 
 
 def span_problem(value: dict) -> str | None:
-    """`start` 〜 `end` の範囲が逆向きでないかを見る(Note・Excerpt・LineRange)。"""
+    """`start` 〜 `end` の範囲が逆向きでないかを見る(Note・FeatureRange・Excerpt・LineRange)。"""
     if value["end"] < value["start"]:
         return f"end({value['end']})が start({value['start']})より前"
     return None
@@ -569,6 +574,7 @@ def kept_specs_problem(impact: dict) -> str | None:
 # キーごとの形が合ったオブジェクトに、キーをまたいで当てる規則。
 CrossChecks: dict[str, tuple[Callable[[dict], str | None], ...]] = {
     "Note": (span_problem,),
+    "FeatureRange": (span_problem,),
     "Excerpt": (span_problem, excerpt_length_problem, emphasis_problem),
     "LineRange": (span_problem,),
     "Values": (cells_problem,),
@@ -611,6 +617,7 @@ References = (
     Reference("messages[].to", "concepts", "path"),
     Reference("flows[].steps[]", "messages", "id"),
     Reference("commitStories[].flows[]", "flows", "id"),
+    Reference("commitStories[].featureRanges[].feature", "features", "id"),
     Reference("overview.before[].message", "messages", "id"),
     Reference("overview.after[].message", "messages", "id"),
     Reference("commitStories[].before[].message", "messages", "id"),

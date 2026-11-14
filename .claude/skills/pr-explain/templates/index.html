@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-DSBHhadVlYuOTAWc7Hd5t7YQoYMN4lTielB8RjlGLXM='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-WXFLlEMh79K2zMvYK1mO9zNHg5QKNV4g9wbyS4Kkgyg='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,6 +46,14 @@
   --sans: "IBM Plex Sans JP", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   --shadow-raised: 0 1px 2px rgba(29, 31, 36, .10);
+  --feature-1: var(--accent);
+  --feature-2: var(--add-mark);
+  --feature-3: var(--mod-mark);
+  --feature-4: var(--del-mark);
+  --feature-5: #7A4FD6;
+  --feature-6: #0F8F9A;
+  --feature-7: #C2447E;
+  --feature-8: #6B7A1F;
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
@@ -265,6 +273,57 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .file-more { padding: 8px 16px; font-size: 12px; background: var(--panel); border-top: 1px solid var(--chip); }
 .file-notes { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--chip); background: #FCFBF8; }
 .file-notes-title { font-size: 11px; font-weight: 600; color: var(--ink-3); }
+[data-feature-hue="1"] { --feature: var(--feature-1); }
+[data-feature-hue="2"] { --feature: var(--feature-2); }
+[data-feature-hue="3"] { --feature: var(--feature-3); }
+[data-feature-hue="4"] { --feature: var(--feature-4); }
+[data-feature-hue="5"] { --feature: var(--feature-5); }
+[data-feature-hue="6"] { --feature: var(--feature-6); }
+[data-feature-hue="7"] { --feature: var(--feature-7); }
+[data-feature-hue="8"] { --feature: var(--feature-8); }
+[data-feature-hue="none"] { --feature: var(--ink-4); }
+.story-modes { align-self: flex-start; }
+.story-modes button:disabled { opacity: .45; cursor: default; }
+.feature-dots { display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.feature-dot { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ink-2); }
+.feature-dot::before, .feature-chip::before, .feature-title::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--feature); }
+.row-title .feature-dot { font-size: 13px; font-weight: 600; color: var(--ink); }
+.feature-chip { display: inline-flex; align-items: center; gap: 5px; border: 1px solid var(--line-strong); background: var(--surface); border-radius: 999px; padding: 2px 9px 2px 7px; font-size: 11.5px; color: var(--ink); cursor: pointer; }
+.feature-chip:hover { border-color: var(--accent); color: var(--accent); }
+.hunk-feature { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; padding: 6px 14px; background: var(--hover); border-top: 1px solid var(--chip); }
+.feature-text { font-size: 12px; line-height: 1.6; color: var(--ink-2); }
+.feature-title { display: flex; align-items: center; gap: 10px; }
+.feature-title::before { width: 12px; height: 12px; border-radius: 3px; }
+.feature-review { display: grid; grid-template-columns: minmax(140px, max-content) minmax(0, 1fr); gap: 6px 14px; align-items: baseline; }
+.feature-review-list { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.7; }
+.matrix-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.matrix { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+.matrix th, .matrix td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.matrix tbody tr:last-child td { border-bottom: 0; }
+.matrix thead th { background: var(--sunken); font-size: 11.5px; font-weight: 600; color: var(--ink-2); }
+.matrix-commit { display: block; line-height: 1.5; }
+.matrix-sha { display: block; font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--ink-3); }
+.matrix-row-head { min-width: 220px; }
+.matrix-head { display: flex; flex-direction: column; gap: 3px; }
+.matrix-head .feature-dot { font-size: 12.5px; font-weight: 600; color: var(--ink); }
+.matrix-head:hover .feature-dot { color: var(--accent); }
+.matrix-role { font-size: 11.5px; line-height: 1.5; color: var(--ink-3); }
+.matrix-cell { display: flex; flex-direction: column; gap: 3px; min-width: 120px; padding: 2px 4px; margin: -2px -4px; border-radius: 6px; }
+.matrix-cell:hover { background: var(--hover); }
+.matrix-bar { height: 6px; border-radius: 3px; background: var(--feature); }
+.matrix-lines { display: flex; gap: 6px; font-family: var(--mono); font-size: 11.5px; }
+.matrix-text { font-size: 11.5px; line-height: 1.45; color: var(--ink-2); }
+.matrix-empty { color: var(--ink-4); }
+.feature-commits { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 20px; }
+.feature-commit { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; }
+.feature-commit-rail { position: relative; display: flex; justify-content: center; }
+.feature-commit-rail::before { content: ""; position: absolute; top: 22px; bottom: -22px; border-left: 1.5px solid var(--line-strong); }
+.feature-commits > .feature-commit:last-child .feature-commit-rail::before { display: none; }
+.feature-commit-dot { position: relative; width: 14px; height: 14px; margin-top: 4px; border-radius: 7px; border: 2px solid var(--feature); background: var(--surface); }
+.feature-commit-body { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.feature-commit-subject { font-size: 14.5px; font-weight: 600; line-height: 1.5; overflow-wrap: anywhere; }
+.feature-commit-subject:hover { color: var(--accent); }
+.feature-commit-text { margin: 0; font-size: 13px; line-height: 1.7; color: var(--ink-2); }
 .tok-kw { color: var(--tok-kw); }
 .tok-str { color: var(--tok-str); }
 .tok-com { color: var(--tok-com); }
@@ -1740,7 +1799,8 @@ button.change-item:hover { background: var(--track); }
   /** ページが組み立てに使う解説の形。道筋とその先の値の種類(`Routes`)と、欠けてはいけない道筋(`Required`)で持つ。 */
   const ExplainShape = (() => {
     // 形を見る道筋と、その先の値の種類。`build-pr-explain.py` の Shapes から導いたものと同じ並びで、`pr-explain-core-cases.sh` が
-    // 突き合わせる。primers・terms の下は Shapes から機械的に導くので、文字列をすべて見る(組み立てが落ちるキーを選り分けない)。
+    // 突き合わせる。primers・terms と、features の review・commitStories の featureRanges の下は Shapes から機械的に導くので、
+    // 文字列をすべて見る(組み立てが落ちるキーを選り分けない)。
     // 必須の欠けも kind ごとに見る(`Required`)。`Dom.proseParts` と `TermMarks.piecesOf` は文を文字列として割り、抜粋の段は
     // `excerptBoxesOf` が `excerpt` の中を読むので、文字列でない値も欠けた値も組み立てを落とし、ページ全体を出なくする。impact は
     // 構造と、短くして描く sha の並び(`impact.changed.specs[].shas`。文字列でないと組み立てが落ちる)だけを見る(文は文字として
@@ -1812,6 +1872,11 @@ button.change-item:hover { background: var(--track); }
       ["terms[].id", "id"],
       ["terms[].label", "text"],
       ["terms[].text", "text"],
+      ["features[].review", "texts"],
+      ["commitStories[].featureRanges", "records"],
+      ["commitStories[].featureRanges[].path", "text"],
+      ["commitStories[].featureRanges[].feature", "id"],
+      ["commitStories[].featureRanges[].text", "text"],
       ["tests[].excerpt.emphasis", "records"],
     ]);
     // 欠けていれば崩れとする道筋。primers・terms の下の必須のキーのうち、値が文(text)か 1 つのオブジェクト(record)のもの。
@@ -2119,7 +2184,8 @@ button.change-item:hover { background: var(--track); }
 
     /**
      * ページが組み立てに使う大まかな形だけを見る。細かい形は公開する前に build-pr-explain.py が見ている。
-     * @returns 型が違うか、必須なのに欠けたキー(`impact`・`primers`・`terms`・`tests[].excerpt.emphasis` は道筋)。どちらも無ければ null
+     * @returns 型が違うか、必須なのに欠けたキー(`impact`・`primers`・`terms`・`features[].review`・`commitStories[].featureRanges`・
+     *   `tests[].excerpt.emphasis` は道筋)。どちらも無ければ null
      */
     const shapeProblemOf = (explain) => {
       const overview = explain.overview;
@@ -2386,21 +2452,22 @@ button.change-item:hover { background: var(--track); }
     });
   })();
 
-  /** コミットの差分。patch を hunk の行に分け、行への注釈を hunk に割り当て、行を字句に分け、コードの表示では消した行を畳む。 */
+  /** コミットの差分。patch を hunk の行に分け、行への注釈と機能の範囲を hunk に割り当て、行を字句に分け、コードの表示では消した行を畳む。 */
   const CommitDiff = (() => {
     const HunkHeader = /^@@ -(\d+)(?:,\d+)? \+(\d+)(?:,\d+)? @@/;
     const ChangeSigns = new Set(["+", "-"]);
 
-    const sideOf = (note) => (note.side === "old" ? "old" : "new");
+    const sideOf = (span) => (span.side === "old" ? "old" : "new");
     const numberOn = (line, side) => (side === "old" ? line.oldNo : line.newNo);
 
     /**
-     * 注釈の行の範囲に、その行が入るか。行番号は注釈の `side` の側で見る。
+     * 注釈・機能の範囲の行の範囲に、その行が入るか。行番号は範囲の `side` の側で見る。
+     * @param span 注釈か機能の範囲(`side` / `start` / `end`)
      * @param line hunk の行(`oldNo` / `newNo` は、その側に無い行なら null)
      */
-    const hasLine = (note, line) => {
-      const number = numberOn(line, sideOf(note));
-      return number !== null && isWithin(number, note);
+    const hasLine = (span, line) => {
+      const number = numberOn(line, sideOf(span));
+      return number !== null && isWithin(number, span);
     };
 
     /** hunk の見出しから後の 1 行を、記号と両側の行番号の付いた行にする。 */
@@ -2443,54 +2510,84 @@ button.change-item:hover { background: var(--track); }
       return hunks.map((hunk, index) => ({ ...hunk, openingLines: openingLinesOf(fits ? hunkOpeningLines[index] : null) }));
     };
 
-    /** 注釈に、ファイルの中で通した番号(`from` の次から)を付ける。 */
+    /** 注釈に、コミットの中で通した番号(`from` の次から)を付ける。 */
     const numbered = (notes, from) => notes.map((note, index) => ({ ...note, side: sideOf(note), n: from + index + 1 }));
 
-    const hunkBodyOf = (file, notes) => {
+    /**
+     * まとまり(hunk か消したファイルの本文)の機能。入る範囲のうち最初に書いたものの機能にする。
+     * @param ranges そのファイルへの機能の範囲(書いた順)
+     * @param covers 範囲がそのまとまりに入るか
+     * @returns `{id, texts}`(`texts` はその機能の入った範囲の文を、書いた順に重複なく並べたもの)。どの範囲も入らなければ null
+     */
+    const featureOf = (ranges, covers) => {
+      const covering = ranges.filter(covers);
+      if (covering.length === 0) return null;
+      const id = covering[0].feature;
+      return { id, texts: [...new Set(covering.filter((range) => range.feature === id).map((range) => range.text))] };
+    };
+
+    /** @param from そのファイルの最初の注釈の番号の手前(コミットの中で前のファイルの注釈の数) */
+    const hunkBodyOf = (file, { notes, ranges }, from) => {
       const hunks = hunksOf(file.patch, file.hunkOpeningLines);
       const placedAt = notes.map((note) => hunks.findIndex((hunk) => hunk.lines.some((line) => hasLine(note, line))));
       const placed = hunks.map((hunk, index) => notes.filter((note, noteIndex) => placedAt[noteIndex] === index));
-      const firstNumbers = placed.map((group, index) => placed.slice(0, index).reduce((sum, earlier) => sum + earlier.length, 0));
+      const firstNumbers = placed.map((group, index) => from + placed.slice(0, index).reduce((sum, earlier) => sum + earlier.length, 0));
       const placedCount = placed.reduce((sum, group) => sum + group.length, 0);
       const remaining = file.truncated === true ? file.patchLines - file.patch.split("\n").length : 0;
+      const featureOfHunk = (hunk) => featureOf(ranges, (range) => hunk.lines.some((line) => hasLine(range, line)));
       return {
-        body: { kind: "hunks", hunks: hunks.map((hunk, index) => ({ ...hunk, notes: numbered(placed[index], firstNumbers[index]) })), remaining },
-        unplaced: numbered(notes.filter((note, index) => placedAt[index] < 0), placedCount),
+        body: { kind: "hunks", hunks: hunks.map((hunk, index) => ({ ...hunk, notes: numbered(placed[index], firstNumbers[index]), feature: featureOfHunk(hunk) })), remaining },
+        unplaced: numbered(notes.filter((note, index) => placedAt[index] < 0), from + placedCount),
       };
     };
 
-    /** patch が null のとき。消したファイルなら、変更前の行への注釈をそこに付ける。 */
-    const missingBodyOf = (file, notes) => {
-      if (file.status !== "D") return { body: { kind: "binary" }, unplaced: numbered(notes, 0) };
+    /** patch が null のとき。消したファイルなら、変更前の行への注釈と機能の範囲をそこに付ける。 */
+    const missingBodyOf = (file, { notes, ranges }, from) => {
+      if (file.status !== "D") return { body: { kind: "binary" }, unplaced: numbered(notes, from) };
       const lines = typeof file.deletions === "number" ? file.deletions : null;
-      const isOnDeletedLine = (note) => sideOf(note) === "old" && (lines === null || note.start <= lines);
+      const isOnDeletedLine = (span) => sideOf(span) === "old" && (lines === null || span.start <= lines);
       const onDeleted = notes.filter(isOnDeletedLine);
-      return { body: { kind: "deleted", lines, notes: numbered(onDeleted, 0) }, unplaced: numbered(notes.filter((note) => !isOnDeletedLine(note)), onDeleted.length) };
+      return {
+        body: { kind: "deleted", lines, notes: numbered(onDeleted, from), feature: featureOf(ranges, isOnDeletedLine) },
+        unplaced: numbered(notes.filter((note) => !isOnDeletedLine(note)), from + onDeleted.length),
+      };
     };
 
-    const fileOf = (file, notes) => {
+    /**
+     * @param spans そのファイルへの注釈(`notes`)と機能の範囲(`ranges`)
+     * @param from そのファイルの最初の注釈の番号の手前
+     */
+    const fileOf = (file, spans, from) => {
       const shown = { path: file.path, oldPath: file.oldPath ?? null, status: file.status, additions: file.additions, deletions: file.deletions };
-      if (file.patch === "") return { ...shown, body: { kind: "unchanged" }, unplaced: numbered(notes, 0) };
-      if (file.patch === null) return { ...shown, ...missingBodyOf(file, notes) };
-      return { ...shown, ...hunkBodyOf(file, notes) };
+      if (file.patch === "") return { ...shown, body: { kind: "unchanged" }, unplaced: numbered(spans.notes, from) };
+      if (file.patch === null) return { ...shown, ...missingBodyOf(file, spans, from) };
+      return { ...shown, ...hunkBodyOf(file, spans, from) };
     };
+
+    const storyListOf = (story, key) => (story !== null && Array.isArray(story[key]) ? story[key] : []);
 
     return Object.freeze({
       hasLine,
       /**
-       * コミットのファイルごとに差分を組み、解説の注釈を `side` の行番号が入る最初の hunk に付ける(番号はファイルの
-       * 中で hunk の順に通す)。どの hunk にも入らない注釈は `unplaced` に回す。
+       * コミットのファイルごとに差分を組み、解説の注釈を `side` の行番号が入る最初の hunk に付ける。番号はコミットの中で、
+       * ファイルの順に「hunk(または消したファイルの本文)の注釈 → 差分に出ていない注釈」と通す。どの hunk にも入らない注釈は
+       * `unplaced` に回す。hunk と消したファイルの本文には、行が 1 つでも入る機能の範囲(`featureRanges`)から機能を付ける。
+       *
+       * 番号をファイルの中で通さないのは、機能の表示で同じまとまりだけを抜き出しても番号が変わらないようにするため。
        * @param commit 地図のコミット(マージは files が空)
        * @param story そのコミットの commitStory。無ければ null
        * @returns `files`(本文の `body` は `hunks` / `unchanged`(patch が空)/ `deleted` / `binary`)と、そのコミットに無い
-       *   パスへの注釈 `strayNotes`。`hunks` の hunk は `header` / `lines` / `openingLines`(変更前と変更後の開いた行)/ `notes` を持つ
+       *   パスへの注釈 `strayNotes`(番号なし)。`hunks` の hunk は `header` / `lines` / `openingLines`(変更前と変更後の開いた行)/
+       *   `notes` / `feature` を持ち、`deleted` の本文は `lines` / `notes` / `feature` を持つ。`feature` は `{id, texts}` か null
        */
       create: (commit, story) => {
-        const hasNotes = story !== null && Array.isArray(story.notes);
-        const notes = hasNotes ? story.notes : [];
+        const notes = storyListOf(story, "notes");
+        const ranges = storyListOf(story, "featureRanges");
         const paths = new Set(commit.files.map((file) => file.path));
+        const notesOn = (file) => notes.filter((item) => item.path === file.path);
+        const firstNumbers = commit.files.map((file, index) => commit.files.slice(0, index).reduce((sum, earlier) => sum + notesOn(earlier).length, 0));
         return {
-          files: commit.files.map((file) => fileOf(file, notes.filter((item) => item.path === file.path))),
+          files: commit.files.map((file, index) => fileOf(file, { notes: notesOn(file), ranges: ranges.filter((range) => range.path === file.path) }, firstNumbers[index])),
           strayNotes: notes.filter((item) => !paths.has(item.path)),
         };
       },
@@ -2523,6 +2620,110 @@ button.change-item:hover { background: var(--track); }
         }
         return rows;
       },
+    });
+  })();
+
+  /** 機能 × コミットの表。コミットの差分のまとまり(hunk と消したファイルの本文)を、`CommitDiff` が付けた機能ごとに集める。 */
+  const FeatureMatrix = (() => {
+    // 機能の色は固定の 8 色を features の順に回す。機能の数だけ色を作ると、数が増えたときに隣の色を見分けられない。
+    const HueCount = 8;
+    const NoHue = "none";
+
+    const lineCountOf = (lines, sign) => lines.filter((line) => line.sign === sign).length;
+
+    /** 差分のまとまりを、機能・パス・行数の組にする。切った patch の残りの行は数えない。 */
+    const unitsOf = (diff) => diff.files.flatMap((file) => {
+      const body = file.body;
+      switch (body.kind) {
+        case "hunks":
+          return body.hunks.map((hunk) => ({ path: file.path, feature: hunk.feature, additions: lineCountOf(hunk.lines, "+"), deletions: lineCountOf(hunk.lines, "-") }));
+        case "deleted":
+          return [{ path: file.path, feature: body.feature, additions: 0, deletions: body.lines ?? 0 }];
+        case "unchanged":
+        case "binary":
+          return [];
+      }
+    });
+
+    const sumOf = (units, key) => units.reduce((sum, unit) => sum + unit[key], 0);
+
+    /**
+     * @param features 解説の features
+     * @param id 機能の id。機能なしは null
+     * @returns 色の番号(`"1"`〜`"8"`。features の順に回す)。機能なしと、features に無い id は `"none"`
+     */
+    const hueOf = (features, id) => {
+      const index = features.findIndex((feature) => feature.id === id);
+      return index < 0 ? NoHue : String((index % HueCount) + 1);
+    };
+
+    /** features に無い機能を指す範囲を外した commitStory(外した範囲にしか入らない hunk は、機能なしになる)。 */
+    const storyWithKnownRanges = (story, known) => {
+      if (story === null || !Array.isArray(story.featureRanges)) return story;
+      return { ...story, featureRanges: story.featureRanges.filter((range) => known.has(range.feature)) };
+    };
+
+    /** マスの一言。その機能のまとまりに入った範囲の文を、commitStory に書いた順に重複なく並べる。 */
+    const cellTextsOf = (units, story) => {
+      const texts = new Set(units.flatMap((unit) => unit.feature.texts));
+      const written = story === null || !Array.isArray(story.featureRanges) ? [] : story.featureRanges.map((range) => range.text);
+      return [...new Set(written)].filter((text) => texts.has(text));
+    };
+
+    return Object.freeze({
+      hueOf,
+      /**
+       * 機能 × コミットの表を作る。
+       * @param features 解説の features(書いた順)
+       * @param commits 地図のコミット(古い順。`ExplainedMap` の `commits`)
+       * @returns `isAvailable`(どれかのコミットの commitStory に featureRanges が 1 件以上あるか)・`commits`(列。マージ以外のコミットの
+       *   古い順)・`diffAt`(列のコミットの sha → `CommitDiff.create` の差分。features に無い機能を指す範囲は外す)・`rows`(行)。行は
+       *   features の順に、変更が 1 行以上ある機能だけを並べ、機能なしのまとまりがあれば最後に機能なしの行を足す。行は
+       *   `feature`(機能なしは null)・`hue`・`cells`(列ごとに `{sha, additions, deletions, texts}`、まとまりが無ければ null)・
+       *   `additions` / `deletions`・`commitCount`・`fileCount` を持つ
+       */
+      create: ({ features, commits }) => {
+        const known = new Set(features.map((feature) => feature.id));
+        const columns = commits.filter((commit) => !commit.merge);
+        const diffAt = new Map(columns.map((commit) => [commit.sha, CommitDiff.create(commit, storyWithKnownRanges(commit.story, known))]));
+        const unitsAt = new Map(columns.map((commit) => [commit.sha, unitsOf(diffAt.get(commit.sha))]));
+        const rowOf = (feature) => {
+          const id = feature === null ? null : feature.id;
+          const isMine = (unit) => (unit.feature === null ? null : unit.feature.id) === id;
+          const cells = columns.map((commit) => {
+            const mine = unitsAt.get(commit.sha).filter(isMine);
+            if (mine.length === 0) return null;
+            const texts = id === null ? [] : cellTextsOf(mine, commit.story);
+            return { sha: commit.sha, additions: sumOf(mine, "additions"), deletions: sumOf(mine, "deletions"), texts };
+          });
+          const units = columns.flatMap((commit) => unitsAt.get(commit.sha).filter(isMine));
+          return {
+            feature,
+            hue: hueOf(features, id),
+            cells,
+            additions: sumOf(units, "additions"),
+            deletions: sumOf(units, "deletions"),
+            commitCount: cells.filter((cell) => cell !== null).length,
+            fileCount: new Set(units.map((unit) => unit.path)).size,
+          };
+        };
+        const rows = [...features.map(rowOf), rowOf(null)].filter((row) => row.additions + row.deletions > 0);
+        const hasRanges = commits.some((commit) => commit.story !== null && Array.isArray(commit.story.featureRanges) && commit.story.featureRanges.length > 0);
+        return { isAvailable: hasRanges, commits: columns, diffAt, rows };
+      },
+      /** @returns 機能の一覧の並び。変更行数の多い順(同じなら features の順)で、機能なしは最後 */
+      rankedRowsOf: (matrix) => {
+        const linesOf = (row) => row.additions + row.deletions;
+        const featured = matrix.rows.filter((row) => row.feature !== null).toSorted((a, b) => linesOf(b) - linesOf(a));
+        return [...featured, ...matrix.rows.filter((row) => row.feature === null)];
+      },
+      /** @returns そのコミットにまとまりのある行(表の行の順) */
+      rowsIn: (matrix, sha) => {
+        const column = matrix.commits.findIndex((commit) => commit.sha === sha);
+        return column < 0 ? [] : matrix.rows.filter((row) => row.cells[column] !== null);
+      },
+      /** @returns 「機能ごとに見てほしいところ」に出す行。review を 1 件以上書いた機能の行を、表の行の順(features の順)に */
+      reviewRowsOf: (matrix) => matrix.rows.filter((row) => row.feature !== null && Array.isArray(row.feature.review) && row.feature.review.length > 0),
     });
   })();
 
@@ -2879,7 +3080,7 @@ button.change-item:hover { background: var(--track); }
   })();
 
   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
-  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target });
+  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target });
   if (typeof document === "undefined") {
     globalThis.prExplainCore = core;
     return;
@@ -3093,6 +3294,15 @@ button.change-item:hover { background: var(--track); }
     return node;
   };
 
+  /** 機能の表示で選ぶ行の鍵。機能の鍵は `feature:` を頭に付けるので、`OverviewId` とも機能なしの鍵とも重ならない。 */
+  const NoFeatureKey = "no-feature";
+  const featureKeyOf = (row) => (row.feature === null ? NoFeatureKey : `feature:${row.feature.id}`);
+  const featureNameOf = (row) => (row.feature === null ? "機能なし" : row.feature.label);
+  /** 機能の印(押せない札)。色は `data-feature-hue`(`FeatureMatrix.hueOf` の値)で塗る。 */
+  const featureDotOf = (row) => el("span", { class: "feature-dot", "data-feature-hue": row.hue, text: featureNameOf(row) });
+  /** 機能の札。押すと機能の表示へ移る。 */
+  const featureChipOf = (row, onPress) => pressable("button", { class: "feature-chip", "data-feature-hue": row.hue, title: "機能で見る", text: featureNameOf(row) }, [], onPress);
+
   const commitRowOf = (commit, story) => {
     const isUnexplained = commit.story === null && !commit.merge;
     const concepts = [...new Set(commit.files.map((file) => story.lookup.conceptNames.get(file.path)).filter((name) => name !== undefined))].slice(0, 3);
@@ -3101,12 +3311,15 @@ button.change-item:hover { background: var(--track); }
       isUnexplained ? el("span", { class: "tag is-warn", text: "解説なし" }) : null,
       ...concepts.map((name) => el("span", { class: "tag", text: name })),
     ].filter((tag) => tag !== null);
+    const featureRows = story.matrix.isAvailable ? FeatureMatrix.rowsIn(story.matrix, commit.sha) : [];
+    const features = featureRows.length === 0 ? [] : [el("div", { class: "feature-dots" }, featureRows.map(featureDotOf))];
     return pressable("button", { class: "commit-row plain-button" }, [
       el("div", { class: "commit-rail" }, [el("span", { class: "commit-dot" })]),
       el("div", { class: "commit-body" }, [
         el("span", { class: "row-title", text: commit.subject }),
         el("div", { class: "row-meta" }, [el("span", { class: "sha", text: shortSha(commit.sha) }), el("span", { text: dateLabel(commit.date) }), ...lineCountsOf(commit.additions, commit.deletions)]),
         el("div", { class: "tags" }, tags),
+        ...features,
       ]),
     ], () => story.actions.select(commit.sha));
   };
@@ -3253,7 +3466,58 @@ button.change-item:hover { background: var(--track); }
       ],
       story,
     });
-    return [ledeOf(overview, "ブランチ全体の流れ"), behaviors, orderOf(story, "変更の順番と、それぞれの役割"), ...reviewSectionOf(story), ...strayStoriesOf(explained)];
+    const matrix = story.matrix.isAvailable ? [el("div", { class: "section" }, [el("span", { class: "eyebrow", text: "機能 × コミット" }), featureMatrixOf(story)])] : [];
+    return [ledeOf(overview, "ブランチ全体の流れ"), behaviors, orderOf(story, "変更の順番と、それぞれの役割"), ...matrix, ...reviewSectionOf(story), ...strayStoriesOf(explained)];
+  };
+
+  /** 機能 × コミットの表。行の見出しを押すとその機能の表示へ、マスを押すとその機能の表示のそのコミットへ移る。 */
+  const featureMatrixOf = (story) => {
+    const { matrix } = story;
+    const linesOf = (cell) => cell.additions + cell.deletions;
+    const widest = Math.max(1, ...matrix.rows.flatMap((row) => row.cells.filter((cell) => cell !== null).map(linesOf)));
+    const columnHeads = matrix.commits.map((commit) => {
+      const name = commit.story === null ? [el("span", { text: commit.subject })] : proseParts(commit.story.role);
+      const phase = commit.story === null ? "" : ` · ${Vocabulary.phases[commit.story.phase] ?? commit.story.phase}`;
+      return el("th", {}, [el("span", { class: "matrix-commit" }, [`${story.steps.get(commit.sha)}. `, ...name]), el("span", { class: "matrix-sha", text: `${shortSha(commit.sha)}${phase}` })]);
+    });
+    const cellOf = (row, cell) => {
+      if (cell === null) return el("td", {}, [el("span", { class: "matrix-empty", text: "—" })]);
+      const bar = el("span", { class: "matrix-bar" });
+      bar.style.width = `${Math.max(8, Math.round((linesOf(cell) / widest) * 100))}%`;
+      return el("td", {}, [pressable("button", { class: "matrix-cell plain-button", title: "この機能のこのコミットの変更を見る" }, [
+        bar,
+        el("span", { class: "matrix-lines" }, lineCountsOf(cell.additions, cell.deletions)),
+        ...cell.texts.map((text) => prose("span", { class: "matrix-text" }, text)),
+      ], () => story.actions.selectFeature(featureKeyOf(row), cell.sha))]);
+    };
+    const rows = matrix.rows.map((row) => {
+      const role = row.feature === null ? [] : [prose("span", { class: "matrix-role" }, row.feature.role)];
+      const head = pressable("button", { class: "matrix-head plain-button", title: "この機能の変更をコミットをまたいで見る" }, [featureDotOf(row), ...role], () => story.actions.selectFeature(featureKeyOf(row), null));
+      return el("tr", { "data-feature-hue": row.hue }, [el("td", { class: "matrix-row-head" }, [head]), ...row.cells.map((cell) => cellOf(row, cell))]);
+    });
+    return el("div", { class: "matrix-wrap" }, [el("table", { class: "matrix" }, [
+      el("thead", {}, [el("tr", {}, [el("th", { text: "機能 \\ コミット(古い順)" }), ...columnHeads])]),
+      el("tbody", {}, rows),
+    ])]);
+  };
+
+  /** 機能の全体。表と、機能ごとに見てほしいところ。 */
+  const featureOverviewOf = (story) => {
+    const featured = story.matrix.rows.filter((row) => row.feature !== null).length;
+    const reviewRows = FeatureMatrix.reviewRowsOf(story.matrix);
+    const reviews = reviewRows.length === 0 ? [] : [el("div", { class: "section" }, [
+      el("span", { class: "eyebrow", text: "機能ごとに見てほしいところ" }),
+      ...reviewRows.map((row) => el("div", { class: "feature-review" }, [featureDotOf(row), el("ul", { class: "feature-review-list" }, row.feature.review.map((text) => prose("li", {}, text)))])),
+    ])];
+    return [
+      el("div", { class: "lede" }, [
+        el("span", { class: "eyebrow", text: "機能の全体" }),
+        el("h1", { text: `この PR の変更を ${featured} つの機能に分けると` }),
+        el("p", { text: "行が機能、列がコミット(古い順)。マスは、そのコミットがその機能で変えた行数と、その範囲に書いた一言です。行の見出しを押すと、その機能の変更だけをコミットをまたいで続けて読めます。" }),
+      ]),
+      el("div", { class: "section" }, [el("span", { class: "eyebrow", text: "機能 × コミット" }), featureMatrixOf(story)]),
+      ...reviews,
+    ];
   };
 
   const commitHeadOf = (commit, story) => {
@@ -3399,10 +3663,10 @@ button.change-item:hover { background: var(--track); }
   };
 
   /**
-   * hunk の見出しと、行・注釈。注釈の番号は、その注釈の範囲に入る最初の行に付ける。送った範囲(`sentLineRange`。変更後の
-   * 行番号)に入る行には `is-sent` を付ける(消した行・畳んだ削除には付けない)。
+   * hunk の見出しと、機能の札(`featureLineOf` が返すもの)と、行・注釈。注釈の番号は、その注釈の範囲に入る最初の行に付ける。
+   * 送った範囲(`sentLineRange`。変更後の行番号)に入る行には `is-sent` を付ける(消した行・畳んだ削除には付けない)。
    */
-  const hunkOf = (hunk, { grammar, view, sentLineRange }) => {
+  const hunkOf = (hunk, { grammar, view, sentLineRange, featureLineOf }) => {
     const isCode = view === "code";
     const lineTokens = CommitDiff.lineTokensOf(hunk, grammar);
     const textOf = new Map(hunk.lines.map((line, index) => [line, codeTextOf(lineTokens[index])]));
@@ -3423,7 +3687,7 @@ button.change-item:hover { background: var(--track); }
     const firstNew = hunk.lines.find((line) => line.newNo !== null);
     const header = isCode ? (firstNew === undefined ? "" : `${firstNew.newNo} 行目から`) : hunk.header;
     const notes = hunk.notes.length === 0 ? [] : [el("div", { class: "hunk-notes" }, hunk.notes.map((note) => litNoteOf(note, litTargetsOf(note))))];
-    return [el("div", { class: "hunk-head", text: header }), el("div", { class: "hunk" }, [el("div", { class: isCode ? "hunk-code is-code" : "hunk-code" }, rowNodes), ...notes])];
+    return [el("div", { class: "hunk-head", text: header }), ...featureLineOf(hunk.feature), el("div", { class: "hunk" }, [el("div", { class: isCode ? "hunk-code is-code" : "hunk-code" }, rowNodes), ...notes])];
   };
 
   /** ファイルの中身。patch の値ごとに出し方を変える。 */
@@ -3439,7 +3703,7 @@ button.change-item:hover { background: var(--track); }
       case "deleted": {
         const text = body.lines === null ? "ファイルごと削除" : `ファイルごと削除(${body.lines} 行)`;
         const notes = body.notes.length === 0 ? [] : [el("div", { class: "file-notes" }, body.notes.map((note) => plainNoteOf(note, lineRangeOf(note))))];
-        return [el("div", { class: "file-omit is-deleted", text }), ...notes];
+        return [el("div", { class: "file-omit is-deleted", text }), ...context.featureLineOf(body.feature), ...notes];
       }
       case "binary":
         return [el("div", { class: "file-omit", text: "バイナリのため差分は出しません" })];
@@ -3474,17 +3738,124 @@ button.change-item:hover { background: var(--track); }
     return card;
   };
 
+  const featureIdOf = (feature) => (feature === null ? null : feature.id);
+
+  /**
+   * コミットの表示で、まとまり(hunk・消したファイルの本文)の下に出す機能の札と、その範囲の文。札を押すと、機能の表示のそのコミットへ移る。
+   * @param feature まとまりの機能(`CommitDiff` の `feature`。機能なしは null)
+   * @returns 機能の側を押せない(featureRanges が無い)ときは空
+   */
+  const featureLineOf = (feature, { story, sha }) => {
+    if (!story.matrix.isAvailable) return [];
+    const row = story.matrix.rows.find((candidate) => featureIdOf(candidate.feature) === featureIdOf(feature));
+    if (row === undefined) return [];
+    const texts = feature === null ? [] : feature.texts.map((text) => prose("span", { class: "feature-text" }, text));
+    return [el("div", { class: "hunk-feature" }, [featureChipOf(row, () => story.actions.selectFeature(featureKeyOf(row), sha)), ...texts])];
+  };
+
+  const signCountOf = (hunks, sign) => hunks.reduce((sum, hunk) => sum + hunk.lines.filter((line) => line.sign === sign).length, 0);
+
+  /**
+   * 機能の表示に出すファイル。その機能のまとまりだけを残し、差分に出ていない行への注釈は外す(コミットの表示にだけ出す)。
+   * 行数はファイル全体ではなく、残したまとまりの行を数える。
+   * @returns その機能のまとまりが無ければ null
+   */
+  const fileInFeatureOf = (file, id) => {
+    const body = file.body;
+    switch (body.kind) {
+      case "hunks": {
+        const hunks = body.hunks.filter((hunk) => featureIdOf(hunk.feature) === id);
+        if (hunks.length === 0) return null;
+        return { ...file, additions: signCountOf(hunks, "+"), deletions: signCountOf(hunks, "-"), body: { ...body, hunks, remaining: 0 }, unplaced: [] };
+      }
+      case "deleted":
+        return featureIdOf(body.feature) === id ? { ...file, unplaced: [] } : null;
+      case "unchanged":
+      case "binary":
+        return null;
+    }
+  };
+
+  /** 機能の表示の 1 コミット。件名・sha・日時・phase・範囲の文・同じコミットのほかの機能と、その機能の差分と注釈(番号はコミットの中の番号)。 */
+  const featureCommitOf = ({ row, commit, cell, story }) => {
+    const id = featureIdOf(row.feature);
+    const others = FeatureMatrix.rowsIn(story.matrix, commit.sha).filter((other) => other !== row);
+    const phase = commit.story === null ? [] : [el("span", { "data-phase": commit.story.phase, text: phaseLabelOf(commit.story) })];
+    const otherChips = others.length === 0 ? [] : [el("div", { class: "flow-chips" }, [
+      el("span", { class: "label", text: "同じコミットのほかの機能" }),
+      ...others.map((other) => featureChipOf(other, () => story.actions.selectFeature(featureKeyOf(other), commit.sha))),
+    ])];
+    const context = {
+      view: story.state.view,
+      closed: story.state.closed,
+      sentFile: null,
+      sha: commit.sha,
+      lookup: story.lookup,
+      commitUrl: `https://github.com/${Repo}/commit/${commit.sha}`,
+      setOpen: story.actions.setOpen,
+      featureLineOf: () => [],
+    };
+    const files = story.matrix.diffAt.get(commit.sha).files.map((file) => fileInFeatureOf(file, id)).filter((file) => file !== null);
+    return el("li", { class: "feature-commit", "data-sha": commit.sha, "data-feature-hue": row.hue }, [
+      el("div", { class: "feature-commit-rail" }, [el("span", { class: "feature-commit-dot" })]),
+      el("div", { class: "feature-commit-body" }, [
+        pressable("button", { class: "feature-commit-subject plain-button", title: "コミットの表示で開く", text: commit.subject }, [], () => story.actions.select(commit.sha)),
+        el("div", { class: "row-meta" }, [el("span", { class: "sha", text: shortSha(commit.sha) }), el("span", { text: dateLabel(commit.date) }), ...phase]),
+        ...cell.texts.map((text) => prose("p", { class: "feature-commit-text" }, text)),
+        ...otherChips,
+        ...files.map((file) => fileCardOf(file, { ...context, grammar: Tokenizer.grammarOf(file.path) })),
+      ]),
+    ]);
+  };
+
+  /** 機能の表示。題・この機能でしたこと・レビューで見るところと、その機能の変更をコミットの古い順に。 */
+  const featureViewOf = (row, story) => {
+    const [added, deleted] = lineCountsOf(row.additions, row.deletions);
+    const role = row.feature === null
+      ? [emptyOf("どの機能の範囲(featureRanges)にも入らない変更です。")]
+      : [el("div", { class: "section" }, [el("span", { class: "eyebrow", text: "この機能でしたこと" }), prose("p", { class: "why-text" }, row.feature.role)])];
+    const review = row.feature !== null && Array.isArray(row.feature.review) ? row.feature.review : [];
+    const reviewBlock = review.length === 0 ? [] : [el("div", { class: "section" }, [
+      el("span", { class: "eyebrow", text: "レビューで見るところ" }),
+      el("ul", { class: "feature-review-list" }, review.map((text) => prose("li", {}, text))),
+    ])];
+    const items = story.matrix.commits
+      .map((commit, column) => ({ commit, cell: row.cells[column] }))
+      .filter(({ cell }) => cell !== null)
+      .map(({ commit, cell }) => featureCommitOf({ row, commit, cell, story }));
+    return [
+      el("div", { class: "commit-head" }, [
+        el("div", { class: "commit-facts" }, [
+          el("span", { text: `コミット ${row.commitCount}` }),
+          el("span", { text: `ファイル ${row.fileCount}` }),
+          el("span", { class: "mono" }, [added, " ", deleted]),
+        ]),
+        el("span", { class: "eyebrow", text: "機能" }),
+        el("h1", { class: "feature-title", "data-feature-hue": row.hue, text: featureNameOf(row) }),
+      ]),
+      el("div", { class: "why-grid" }, [...role, ...reviewBlock]),
+      el("div", { class: "section" }, [el("span", { class: "eyebrow", text: "コミットをまたいだ変更(古い順)" }), el("ol", { class: "feature-commits" }, items)]),
+    ];
+  };
+
+  /** 機能の一覧の 1 行。名前・role・コミット数・ファイル数・行数。 */
+  const featureRowOf = (row, story) => pressable("button", { class: "row feature-row plain-button" }, [
+    el("span", { class: "row-title" }, [featureDotOf(row)]),
+    ...(row.feature === null ? [] : [prose("span", { class: "row-sub" }, row.feature.role)]),
+    el("div", { class: "row-meta" }, [el("span", { text: `コミット ${row.commitCount}` }), el("span", { text: `ファイル ${row.fileCount}` }), ...lineCountsOf(row.additions, row.deletions)]),
+  ], () => story.actions.selectFeature(featureKeyOf(row), null));
+
   /** 実際のコード。差分 / コードの切り替え、すべて開閉、ファイルのカードと、そのコミットに無いパスへの注釈。 */
   const codeSectionOf = (commit, story) => {
     const { view, closed, sentFile } = story.state;
     const eyebrow = el("span", { class: "eyebrow", text: "実際のコード" });
-    const diff = CommitDiff.create(commit, commit.story);
+    const diff = story.matrix.diffAt.get(commit.sha) ?? CommitDiff.create(commit, commit.story);
     const strays = diff.strayNotes.length === 0 ? [] : [el("div", { class: "file-notes" }, [
       el("span", { class: "file-notes-title", text: `地図に無いパスへの注釈(${diff.strayNotes.length})` }),
       ...diff.strayNotes.map((note) => plainNoteOf(note, `${note.path} ${lineRangeOf(note)}`)),
     ])];
     if (commit.merge) return el("div", { class: "section" }, [eyebrow, emptyOf("マージコミットなので、差分は出しません。"), ...strays]);
-    const context = { view, closed, sentFile, sha: commit.sha, lookup: story.lookup, commitUrl: `https://github.com/${Repo}/commit/${commit.sha}`, setOpen: story.actions.setOpen };
+    const context = { view, closed, sentFile, sha: commit.sha, lookup: story.lookup, commitUrl: `https://github.com/${Repo}/commit/${commit.sha}`, setOpen: story.actions.setOpen, featureLineOf: (feature) => featureLineOf(feature, { story, sha: commit.sha }) };
     const cards = diff.files.map((file) => fileCardOf(file, { ...context, grammar: Tokenizer.grammarOf(file.path) }));
     const openAll = (isOpen) => () => {
       for (const card of cards) card.open = isOpen;
@@ -3510,24 +3881,57 @@ button.change-item:hover { background: var(--track); }
     codeSectionOf(commit, story),
   ];
 
-  /** 変更の経緯。左にコミットを新しい順に並べ、右に全体の流れか、選んだコミットの説明と差分を出す。 */
+  const StoryModes = {
+    commit: { label: "コミット", title: "コミットごとに、説明と差分を読む", head: "新しい順", hint: "↑ ↓ でコミットを移動" },
+    feature: { label: "機能", title: "機能ごとに、コミットをまたいで差分を読む", head: "変更の多い順", hint: "↑ ↓ で機能を移動" },
+  };
+
+  /**
+   * 変更の経緯。左の「コミット / 機能」の切り替えで、コミットを新しい順に並べるか、機能を変更の多い順に並べる。右には、コミットの
+   * 側は全体の流れか選んだコミットの説明と差分を、機能の側は機能の全体か選んだ機能の変更をコミットの古い順に出す。
+   */
   const StoryScreen = (explained, go) => {
     const commits = explained.commits;
     const checkedKey = `prExplain.${explained.map.pr}.checked`;
-    const fixed = { explained, commits, go, lookup: explained.lookup, steps: new Map(commits.filter((commit) => !commit.merge).map((commit, index) => [commit.sha, index + 1])) };
+    const features = explained.explain === null ? [] : listOf(explained.explain.features);
+    const matrix = FeatureMatrix.create({ features, commits });
+    const fixed = { explained, commits, go, matrix, lookup: explained.lookup, steps: new Map(commits.filter((commit) => !commit.merge).map((commit, index) => [commit.sha, index + 1])) };
     const commitAt = explained.commitAt;
-    const order = [OverviewId, ...commits.toReversed().map((commit) => commit.sha)];
+    const rankedRows = FeatureMatrix.rankedRowsOf(matrix);
+    const featureRowAt = new Map(rankedRows.map((row) => [featureKeyOf(row), row]));
+    const orders = {
+      commit: [OverviewId, ...commits.toReversed().map((commit) => commit.sha)],
+      feature: [OverviewId, ...rankedRows.map(featureKeyOf)],
+    };
     // `sentFile` は他の画面から送ったファイル(`{path, lineRange}`。行の範囲が無ければ null)。読み手が選び直したら外す。
-    let state = { selected: OverviewId, view: "diff", filter: "all", checked: savedChecksOf(BrowserStore.read(checkedKey)), closed: new Set(), sentFile: null };
+    // `selected` はコミットの側、`feature` は機能の側で選んでいるもの(`OverviewId` か `featureKeyOf` の鍵)。
+    let state = { mode: "commit", selected: OverviewId, feature: OverviewId, view: "diff", filter: "all", checked: savedChecksOf(BrowserStore.read(checkedKey)), closed: new Set(), sentFile: null };
     const body = el("div", { class: "stage-body" });
     const main = el("main", { class: "stage" }, [body]);
-    const rows = new Map();
+    const commitRows = new Map();
+    const featureRows = new Map();
+    const listTitle = el("span", { class: "panel-title" });
+    const listSub = el("span", { class: "panel-sub" });
+    const listBody = el("div", { class: "panel-scroll" });
+    const hint = el("span", { class: "hint" });
+
+    const featureMainOf = (story) => {
+      const row = featureRowAt.get(state.feature);
+      return row === undefined ? featureOverviewOf(story) : featureViewOf(row, story);
+    };
+    const commitMainOf = (story) => (state.selected === OverviewId ? storyOverviewOf(story) : commitViewOf(commitAt.get(state.selected), story));
 
     const render = () => {
       const story = { ...fixed, state, actions };
-      const isOverview = state.selected === OverviewId;
-      body.replaceChildren(...(isOverview ? storyOverviewOf(story) : commitViewOf(commitAt.get(state.selected), story)));
-      for (const [id, row] of rows) row.classList.toggle("is-current", id === state.selected);
+      const mode = StoryModes[state.mode];
+      body.replaceChildren(...(state.mode === "feature" ? featureMainOf(story) : commitMainOf(story)));
+      listTitle.textContent = mode.label;
+      listSub.textContent = mode.head;
+      hint.textContent = mode.hint;
+      listBody.replaceChildren(...(state.mode === "feature" ? featureList : commitList));
+      for (const [id, row] of commitRows) row.classList.toggle("is-current", id === state.selected);
+      for (const [key, row] of featureRows) row.classList.toggle("is-current", key === state.feature);
+      for (const [value, button] of modeButtons) button.setAttribute("aria-pressed", String(value === state.mode));
     };
     const update = (change) => {
       state = { ...state, ...change };
@@ -3536,9 +3940,25 @@ button.change-item:hover { background: var(--track); }
     const withToggled = (set, key, isMember) => new Set(isMember ? [...set, key] : [...set].filter((member) => member !== key));
     const actions = {
       select: (id) => {
-        update({ selected: id, sentFile: null });
+        update({ mode: "commit", selected: id, sentFile: null });
         main.scrollTop = 0;
-        rows.get(id).scrollIntoView({ block: "nearest" });
+        commitRows.get(id).scrollIntoView({ block: "nearest" });
+      },
+      /**
+       * 機能の側でその行を選ぶ。
+       * @param key `OverviewId` か `featureKeyOf` の鍵
+       * @param sha 開いたあとに見せるコミット。null なら先頭から
+       */
+      selectFeature: (key, sha) => {
+        update({ mode: "feature", feature: key });
+        featureRows.get(key).scrollIntoView({ block: "nearest" });
+        const item = sha === null ? null : body.querySelector(`.feature-commit[data-sha="${sha}"]`);
+        if (item === null) main.scrollTop = 0;
+        else item.scrollIntoView({ block: "start" });
+      },
+      setMode: (mode) => {
+        update({ mode });
+        main.scrollTop = 0;
       },
       toggleCheck: (key) => {
         const checked = withToggled(state.checked, key, !state.checked.has(key));
@@ -3555,41 +3975,56 @@ button.change-item:hover { background: var(--track); }
     };
 
     const story = { ...fixed, state, actions };
-    rows.set(OverviewId, pressable("button", { class: "row overview-row plain-button" }, [el("span", { class: "row-title", text: "ブランチ全体の流れ" }), el("span", { class: "row-sub", text: "なぜ・何がこの順番で変わったか" })], () => actions.select(OverviewId)));
-    for (const commit of commits.toReversed()) rows.set(commit.sha, commitRowOf(commit, story));
+    commitRows.set(OverviewId, pressable("button", { class: "row overview-row plain-button" }, [el("span", { class: "row-title", text: "ブランチ全体の流れ" }), el("span", { class: "row-sub", text: "なぜ・何がこの順番で変わったか" })], () => actions.select(OverviewId)));
+    for (const commit of commits.toReversed()) commitRows.set(commit.sha, commitRowOf(commit, story));
+    featureRows.set(OverviewId, pressable("button", { class: "row overview-row plain-button" }, [el("span", { class: "row-title", text: "機能の全体" }), el("span", { class: "row-sub", text: "どの機能がどのコミットで変わったか" })], () => actions.selectFeature(OverviewId, null)));
+    for (const row of rankedRows) featureRows.set(featureKeyOf(row), featureRowOf(row, story));
+    const commitList = [commitRows.get(OverviewId), el("div", { class: "commit-list" }, commits.toReversed().map((commit) => commitRows.get(commit.sha)))];
+    const featureList = [...featureRows.values()];
+    // 機能の側は、どれかのコミットに featureRanges があるときだけ押せる(無ければ、どの変更も機能なしになる)。
+    const modeButtons = new Map(Object.entries(StoryModes).map(([value, mode]) => {
+      const button = pressable("button", { title: mode.title, text: mode.label }, [], () => actions.setMode(value));
+      button.disabled = value === "feature" && !matrix.isAvailable;
+      return [value, button];
+    }));
+    if (!matrix.isAvailable) modeButtons.get("feature").title = "解説の commitStories に featureRanges が無いので、機能では分けられません";
     render();
 
-    /** ↑ ↓ / j k で左の並びを 1 つずつ移る。入力欄の中と、修飾キーを押しているときは移らない。 */
+    /** ↑ ↓ / j k で、今の表示の左の並びを 1 つずつ移る。入力欄の中と、修飾キーを押しているときは移らない。 */
     const onKey = (event) => {
       const hasModifier = event.metaKey || event.ctrlKey || event.altKey;
       const step = Object.hasOwn(MoveKeys, event.key) ? MoveKeys[event.key] : 0;
       const isMove = step !== 0 && !isTypingIn(event) && !hasModifier;
       if (!isMove) return;
       event.preventDefault();
-      const next = Math.max(0, Math.min(order.length - 1, order.indexOf(state.selected) + step));
-      actions.select(order[next]);
+      const order = orders[state.mode];
+      const current = state.mode === "feature" ? state.feature : state.selected;
+      const next = order[Math.max(0, Math.min(order.length - 1, order.indexOf(current) + step))];
+      if (state.mode === "feature") actions.selectFeature(next, null);
+      else actions.select(next);
     };
 
-    const overviewRow = rows.get(OverviewId);
-    const commitRows = commits.toReversed().map((commit) => rows.get(commit.sha));
     return {
       summary: [countsOf(`${explained.totals.commits} commits`, explained.totals.commitLines.additions, explained.totals.commitLines.deletions)],
-      controls: [el("span", { class: "hint", text: "↑ ↓ でコミットを移動" })],
+      controls: [hint],
       tablist: null,
-      left: panelOf("left", [panelHead("コミット", "新しい順"), el("div", { class: "panel-scroll" }, [overviewRow, el("div", { class: "commit-list" }, commitRows)])]),
+      left: panelOf("left", [
+        el("div", { class: "list-head" }, [el("div", { class: "panel-head" }, [listTitle, listSub]), el("div", { class: "toggle-group story-modes" }, [...modeButtons.values()])]),
+        listBody,
+      ]),
       main,
       right: null,
       onKey,
-      /** 他の画面から、そのコミットを選んだ状態にする。地図に無い sha なら全体の流れを出す。 */
+      /** 他の画面から、そのコミットを選んだ状態にする(コミットの表示に戻す)。地図に無い sha なら全体の流れを出す。 */
       select: (sha) => actions.select(commitAt.has(sha) ? sha : OverviewId),
       /**
-       * 他の画面から、そのコミットのそのファイルを開いた状態にする。`lineRange` があれば、その行に印を付けて送る。渡すのは
-       * `ExplainedMap` の届く先(技術の手引きの出てくる場所・振る舞いの仕様の場所)が届くと判定したもの(地図にあり、マージでなく、
-       * そのパスのファイルを変えたコミット)だけ。
+       * 他の画面から、そのコミットのそのファイルを開いた状態にする(コミットの表示に戻す)。`lineRange` があれば、その行に印を付けて
+       * 送る。渡すのは `ExplainedMap` の届く先(技術の手引きの出てくる場所・振る舞いの仕様の場所)が届くと判定したもの(地図にあり、
+       * マージでなく、そのパスのファイルを変えたコミット)だけ。
        */
       showFile: ({ sha, path, lineRange }) => {
-        update({ selected: sha, sentFile: { path, lineRange }, closed: withToggled(state.closed, `${sha}:${path}`, false) });
-        rows.get(sha).scrollIntoView({ block: "nearest" });
+        update({ mode: "commit", selected: sha, sentFile: { path, lineRange }, closed: withToggled(state.closed, `${sha}:${path}`, false) });
+        commitRows.get(sha).scrollIntoView({ block: "nearest" });
         const line = body.querySelector(".code-line.is-sent");
         if (line !== null) line.scrollIntoView({ block: "center" });
         else body.querySelector(".file-card.is-sent").scrollIntoView({ block: "start" });

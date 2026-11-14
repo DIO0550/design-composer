@@ -34,7 +34,8 @@ source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
 # 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)と、Target の kind ごとのキー(ページの `Target` と
 # 突き合わせる)と、Shapes から導いた形の道筋と値の種類(ページの `ExplainShape.Routes` と突き合わせる)。impact の下は
-# オブジェクト・その配列・id・id の配列と sha の配列だけ。primers・terms の下は文(text・sha・marked_text の文字列)も出す。Excerpt の中の
+# オブジェクト・その配列・id・id の配列と sha の配列だけ。primers・terms と、features の review・commitStories の featureRanges の
+# 下は文(text・sha・marked_text の文字列)も出す。Excerpt の中の
 # 道筋は、Excerpt を指すすべての道筋の下に出す。primers・terms の下の必須の文と 1 つのオブジェクトの道筋と、それを必須とする
 # kind(Variant の下なら kind の並び、Shape の下なら null。ページの `ExplainShape.Required` と突き合わせる)。ほかに、技術の
 # 手引きの kind・段の kind・用語の印の綴りと、印を読む道筋と、`` ` `` の割り方(ページの `CodeSpans` と突き合わせる)。
@@ -75,7 +76,9 @@ def required_routes_of(rule, route):
     candidates = [{"route": at, "kinds": kinds_at(at)} for at, inner, is_many in found[1:] if kind_of(inner, is_many, text_rules) in ("text", "record")]
     return [candidate for candidate in candidates if candidate["kinds"] != []]
 explain = module.Shapes["Explain"]
-routes = [*shape_routes_of(explain["impact"].value, "impact", (module.Sha,)), *shape_routes_of(explain["primers"].value, "primers", text_rules), *shape_routes_of(explain["terms"].value, "terms", text_rules)]
+feature_reviews = shape_routes_of(module.Shapes["Feature"]["review"].value, "features[].review", text_rules)
+feature_ranges = shape_routes_of(module.Shapes["CommitStory"]["featureRanges"].value, "commitStories[].featureRanges", text_rules)
+routes = [*shape_routes_of(explain["impact"].value, "impact", (module.Sha,)), *shape_routes_of(explain["primers"].value, "primers", text_rules), *shape_routes_of(explain["terms"].value, "terms", text_rules), *feature_reviews, *feature_ranges]
 required_routes = [*required_routes_of(explain["primers"].value, "primers"), *required_routes_of(explain["terms"].value, "terms")]
 known = {route for route, _ in routes}
 inside_excerpts = [found for route in module.routes_with(module.Shape("Excerpt")) for found in shape_routes_of(module.Shape("Excerpt"), route, ())[1:]]
@@ -177,7 +180,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
+const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -214,6 +217,13 @@ const linesOf = (rows) => rows.join("\n");
 // 変更後の 1〜3 行目と 10〜12 行目の 2 つの hunk。4〜9 行目は差分に出ていない。
 const twoHunks = linesOf(["@@ -1,3 +1,3 @@", " a", "-b", "+B", " c", "@@ -10,3 +10,3 @@", " j", "-k", "+K", " l"]);
 const numbersOf = (file) => file.body.hunks.map((hunk) => hunk.notes.map((note) => [note.n, note.text]));
+// 機能 × コミットの表の材料。コミットは `ExplainedMap` の commits と同じく、地図のコミットに commitStory(`story`)を足した形。
+const rangeOn = (path, start, end, feature, extra = {}) => ({ path, start, end, feature, text: `${feature}の範囲`, ...extra });
+const featureNamed = (id, extra = {}) => ({ id, label: `機能 ${id}`, role: `${id}の役割`, ...extra });
+const rangedCommit = (digit, files, featureRanges) => ({ ...commitOf(digit), files, story: { ...commitStory(shaOf(digit)), featureRanges } });
+const featureIdsIn = (rows) => rows.map((row) => (row.feature === null ? null : row.feature.id));
+// 足した行が 1 行の hunk を、変更後の n 行目に 1 つ持つ patch(+1 −0)。
+const addedLineAt = (line) => linesOf([`@@ -${line},0 +${line},1 @@`, "+x"]);
 
 // 色分け。パスの文法で、開いた行(無ければ null)の後から行を読み進めた、行ごとの字句の並び。
 const lineTokensOf = (path, lines, openingLine = null) => {
@@ -639,7 +649,7 @@ const cases = [
     expected: [["b", "c", "a"]],
   },
   {
-    label: "注釈は行の入る最初の hunk に付き、番号は入力の順ではなく hunk の順にファイルの中で通す",
+    label: "注釈は行の入る最初の hunk に付き、番号は入力の順ではなく hunk の順に、コミットの中で通す",
     actual: () => {
       const notes = [noteOn("src/a.ts", 11, 11, "二つ目"), noteOn("src/a.ts", 3, 10, "またぐ")];
       return numbersOf(diffOf([diffFile("src/a.ts", { patch: twoHunks })], notes).files[0]);
@@ -720,8 +730,191 @@ const cases = [
     },
     expected: [
       { onBody: [[1, "行数の中"]], unplaced: [[2, "行数の外"]] },
-      { onBody: [], unplaced: [[1, "画像"]] },
+      { onBody: [], unplaced: [[3, "画像"]] },
     ],
+  },
+  {
+    label: "注釈の番号はコミットの中でファイルの順に通し、2 つ目のファイルの最初の注釈は 1 つ目のファイルの注釈の数の次になる",
+    actual: () => {
+      const notes = [noteOn("src/b.ts", 2, 2, "b の注釈"), noteOn("src/a.ts", 11, 11, "a の二つ目"), noteOn("src/a.ts", 2, 2, "a の一つ目")];
+      return diffOf([diffFile("src/a.ts", { patch: twoHunks }), diffFile("src/b.ts", { patch: twoHunks })], notes).files.map(numbersOf);
+    },
+    expected: [[[[1, "a の一つ目"]], [[2, "a の二つ目"]]], [[[3, "b の注釈"]], []]],
+  },
+  {
+    label: "差分に出ていない行への注釈は、そのファイルの hunk の注釈の後に番号を続け、次のファイルはその後から振る",
+    actual: () => {
+      const notes = [noteOn("src/b.ts", 2, 2, "b の差分の中"), noteOn("src/a.ts", 6, 7, "a のあいだ"), noteOn("src/a.ts", 11, 11, "a の差分の中")];
+      return diffOf([diffFile("src/a.ts", { patch: twoHunks }), diffFile("src/b.ts", { patch: twoHunks })], notes).files.map((file) => ({ placed: numbersOf(file), unplaced: file.unplaced.map((note) => [note.n, note.text]) }));
+    },
+    expected: [
+      { placed: [[], [[1, "a の差分の中"]]], unplaced: [[2, "a のあいだ"]] },
+      { placed: [[[3, "b の差分の中"]], []], unplaced: [] },
+    ],
+  },
+  {
+    label: "hunk は、side の側の行番号で範囲が重なる featureRanges のうち、features の順や行の順ではなく、最初に書いたものの機能になる",
+    actual: () => {
+      const patch = linesOf(["@@ -1,3 +1,3 @@", " a", "-b", "+B", " c"]);
+      const ranges = [rangeOn("src/a.ts", 3, 3, "late"), rangeOn("src/a.ts", 1, 2, "early")];
+      const matrix = FeatureMatrix.create({ features: [featureNamed("early"), featureNamed("late")], commits: [rangedCommit(1, [diffFile("src/a.ts", { patch })], ranges)] });
+      return matrix.diffAt.get(shaOf(1)).files[0].body.hunks[0].feature.id;
+    },
+    expected: "late",
+  },
+  {
+    label: "変更後の行が無い hunk は、side が new の範囲には入らず、old の範囲でだけ機能に入る",
+    actual: () => {
+      const patch = linesOf(["@@ -10,3 +9,0 @@", "-a", "-b", "-c"]);
+      const featureWith = (ranges) => CommitDiff.create({ ...commitOf(1), files: [diffFile("src/a.ts", { patch })] }, { ...commitStory(shaOf(1)), featureRanges: ranges }).files[0].body.hunks[0].feature;
+      return [featureWith([rangeOn("src/a.ts", 8, 12, "new")]), featureWith([rangeOn("src/a.ts", 8, 12, "new"), rangeOn("src/a.ts", 11, 11, "old", { side: "old" })]).id];
+    },
+    expected: [null, "old"],
+  },
+  {
+    label: "どの featureRanges にも入らない hunk は、機能なしになる",
+    actual: () => {
+      const story = { ...commitStory(shaOf(1)), featureRanges: [rangeOn("src/a.ts", 2, 2, "first"), rangeOn("src/b.ts", 11, 11, "other-file")] };
+      return CommitDiff.create({ ...commitOf(1), files: [diffFile("src/a.ts", { patch: twoHunks })] }, story).files[0].body.hunks.map((hunk) => (hunk.feature === null ? null : hunk.feature.id));
+    },
+    expected: ["first", null],
+  },
+  {
+    label: "消したファイルは、変更前の範囲が行数に入れば、1 つのまとまりとしてその機能になる(変更後の範囲と行数の外の範囲は入らない)",
+    actual: () => {
+      const gone = diffFile("src/gone.ts", { status: "D", additions: 0, deletions: 3, patch: null });
+      const ranges = [rangeOn("src/gone.ts", 1, 1, "after-side"), rangeOn("src/gone.ts", 5, 6, "outside", { side: "old" }), rangeOn("src/gone.ts", 2, 2, "inside", { side: "old" })];
+      const body = CommitDiff.create({ ...commitOf(1), files: [gone] }, { ...commitStory(shaOf(1)), featureRanges: ranges }).files[0].body;
+      return [body.kind, body.feature.id];
+    },
+    expected: ["deleted", "inside"],
+  },
+  {
+    label: "hunk の一言は、同じ機能の重なった範囲の文を、書いた順に重複なく並べたもの",
+    actual: () => {
+      const ranges = [
+        rangeOn("src/a.ts", 3, 3, "x", { text: "三行目" }),
+        rangeOn("src/a.ts", 1, 1, "y", { text: "別の機能" }),
+        rangeOn("src/a.ts", 1, 2, "x", { text: "一行目から" }),
+        rangeOn("src/a.ts", 2, 2, "x", { text: "三行目" }),
+        rangeOn("src/a.ts", 12, 12, "x", { text: "次の hunk" }),
+      ];
+      return CommitDiff.create({ ...commitOf(1), files: [diffFile("src/a.ts", { patch: twoHunks })] }, { ...commitStory(shaOf(1)), featureRanges: ranges }).files[0].body.hunks[0].feature;
+    },
+    expected: { id: "x", texts: ["三行目", "一行目から"] },
+  },
+  {
+    label: "機能 × コミットの表の行は features の順で、機能なしは機能なしの hunk があるときだけ最後に出る。列はマージ以外のコミットの古い順",
+    actual: () => {
+      const features = [featureNamed("a"), featureNamed("b")];
+      const commits = [
+        rangedCommit(1, [diffFile("src/a.ts", { patch: twoHunks })], [rangeOn("src/a.ts", 2, 2, "b")]),
+        { ...commitOf(2), merge: true, story: null },
+        rangedCommit(3, [diffFile("src/a.ts", { patch: addedLineAt(5) })], [rangeOn("src/a.ts", 5, 5, "a")]),
+      ];
+      const withNone = FeatureMatrix.create({ features, commits });
+      const allFeatured = FeatureMatrix.create({ features, commits: [commits[2]] });
+      return { rows: featureIdsIn(withNone.rows), columns: withNone.commits.map((commit) => commit.sha), rowsWithoutNone: featureIdsIn(allFeatured.rows) };
+    },
+    expected: { rows: ["a", "b", null], columns: [shaOf(1), shaOf(3)], rowsWithoutNone: ["a"] },
+  },
+  {
+    label: "機能 × コミットのマスの行数は、その機能の hunk の + と − の行を数え、切った patch の残りの行は数えない",
+    actual: () => {
+      const patch = linesOf(["@@ -1,2 +1,3 @@", " a", "-b", "+B", "+C", "@@ -10,1 +11,1 @@", "-k", "+K"]);
+      const file = diffFile("src/a.ts", { patch, patchLines: 40, truncated: true, additions: 30, deletions: 9 });
+      const matrix = FeatureMatrix.create({ features: [featureNamed("a")], commits: [rangedCommit(1, [file], [rangeOn("src/a.ts", 1, 2, "a")])] });
+      const cell = matrix.rows[0].cells[0];
+      return [cell.additions, cell.deletions];
+    },
+    expected: [2, 1],
+  },
+  {
+    label: "その機能を持たないコミットのマスは空になる",
+    actual: () => {
+      const commits = [
+        rangedCommit(1, [diffFile("src/a.ts", { patch: addedLineAt(5) })], [rangeOn("src/a.ts", 5, 5, "a")]),
+        rangedCommit(2, [diffFile("src/a.ts", { patch: addedLineAt(7) })], [rangeOn("src/a.ts", 7, 7, "b")]),
+      ];
+      return FeatureMatrix.create({ features: [featureNamed("a"), featureNamed("b")], commits }).rows.map((row) => row.cells.map((cell) => cell !== null));
+    },
+    expected: [[true, false], [false, true]],
+  },
+  {
+    label: "どの hunk にも重ならない範囲しか無い機能は、表にも機能の一覧にも出ない",
+    actual: () => {
+      const ranges = [rangeOn("src/a.ts", 5, 5, "a"), rangeOn("src/a.ts", 90, 95, "b")];
+      const matrix = FeatureMatrix.create({ features: [featureNamed("a"), featureNamed("b")], commits: [rangedCommit(1, [diffFile("src/a.ts", { patch: addedLineAt(5) })], ranges)] });
+      return { rows: featureIdsIn(matrix.rows), ranked: featureIdsIn(FeatureMatrix.rankedRowsOf(matrix)) };
+    },
+    expected: { rows: ["a"], ranked: ["a"] },
+  },
+  {
+    label: "機能の一覧は変更行数の多い順で、機能なしは行数によらず最後",
+    actual: () => {
+      const patch = linesOf(["@@ -1,0 +1,1 @@", "+a", "@@ -10,0 +11,5 @@", "+b", "+b", "+b", "+b", "+b", "@@ -20,0 +26,3 @@", "+c", "+c", "+c", "@@ -30,0 +39,9 @@", "+n", "+n", "+n", "+n", "+n", "+n", "+n", "+n", "+n"]);
+      const ranges = [rangeOn("src/a.ts", 1, 1, "a"), rangeOn("src/a.ts", 11, 15, "b"), rangeOn("src/a.ts", 26, 28, "c")];
+      const matrix = FeatureMatrix.create({ features: ["a", "b", "c"].map((id) => featureNamed(id)), commits: [rangedCommit(1, [diffFile("src/a.ts", { patch })], ranges)] });
+      return featureIdsIn(FeatureMatrix.rankedRowsOf(matrix));
+    },
+    expected: ["b", "c", "a", null],
+  },
+  {
+    label: "featureRanges がどのコミットにも無ければ機能の側は押せず、1 件あれば押せる",
+    actual: () => {
+      const file = diffFile("src/a.ts", { patch: addedLineAt(5) });
+      const features = [featureNamed("a")];
+      return [
+        FeatureMatrix.create({ features, commits: [rangedCommit(1, [file], [])] }).isAvailable,
+        FeatureMatrix.create({ features, commits: [rangedCommit(1, [file], [rangeOn("src/a.ts", 5, 5, "a")])] }).isAvailable,
+      ];
+    },
+    expected: [false, true],
+  },
+  {
+    label: "機能の色は、1〜8 番目の機能で互いに違い、9 番目の機能は 1 番目と同じになる",
+    actual: () => {
+      const features = Array.from({ length: 9 }, (_, index) => featureNamed(`f${index + 1}`));
+      return features.map((feature) => FeatureMatrix.hueOf(features, feature.id));
+    },
+    expected: ["1", "2", "3", "4", "5", "6", "7", "8", "1"],
+  },
+  {
+    label: "機能なしの色は灰色(none)",
+    actual: () => {
+      const matrix = FeatureMatrix.create({ features: [featureNamed("a")], commits: [rangedCommit(1, [diffFile("src/a.ts", { patch: twoHunks })], [rangeOn("src/a.ts", 2, 2, "a")])] });
+      return [FeatureMatrix.hueOf([featureNamed("a")], null), matrix.rows.map((row) => row.hue)];
+    },
+    expected: ["none", ["1", "none"]],
+  },
+  {
+    label: "機能の色は features の順で決まり、機能の一覧を行数の順に並べても同じ機能の色は変わらない",
+    actual: () => {
+      const patch = linesOf(["@@ -1,0 +1,1 @@", "+a", "@@ -10,0 +11,3 @@", "+b", "+b", "+b"]);
+      const ranges = [rangeOn("src/a.ts", 1, 1, "a"), rangeOn("src/a.ts", 11, 13, "b")];
+      const matrix = FeatureMatrix.create({ features: [featureNamed("a"), featureNamed("b")], commits: [rangedCommit(1, [diffFile("src/a.ts", { patch })], ranges)] });
+      return FeatureMatrix.rankedRowsOf(matrix).map((row) => [row.feature.id, row.hue]);
+    },
+    expected: [["b", "2"], ["a", "1"]],
+  },
+  {
+    label: "機能ごとに見てほしいところは、review のある機能だけを、行数の順ではなく features の順に並べる",
+    actual: () => {
+      const patch = linesOf(["@@ -1,0 +1,1 @@", "+a", "@@ -10,0 +11,1 @@", "+b", "@@ -20,0 +21,4 @@", "+c", "+c", "+c", "+c"]);
+      const ranges = [rangeOn("src/a.ts", 1, 1, "a"), rangeOn("src/a.ts", 11, 11, "b"), rangeOn("src/a.ts", 21, 24, "c")];
+      const features = [featureNamed("a", { review: ["a を見る"] }), featureNamed("b"), featureNamed("c", { review: ["c を見る"] })];
+      return featureIdsIn(FeatureMatrix.reviewRowsOf(FeatureMatrix.create({ features, commits: [rangedCommit(1, [diffFile("src/a.ts", { patch })], ranges)] })));
+    },
+    expected: ["a", "c"],
+  },
+  {
+    label: "変更が 0 行の機能は、review があっても機能ごとに見てほしいところに出さない",
+    actual: () => {
+      const features = [featureNamed("a", { review: ["a を見る"] }), featureNamed("gone", { review: ["範囲が差分に重ならない"] })];
+      const ranges = [rangeOn("src/a.ts", 5, 5, "a"), rangeOn("src/a.ts", 90, 90, "gone")];
+      return featureIdsIn(FeatureMatrix.reviewRowsOf(FeatureMatrix.create({ features, commits: [rangedCommit(1, [diffFile("src/a.ts", { patch: addedLineAt(5) })], ranges)] })));
+    },
+    expected: ["a"],
   },
   {
     label: "コードの表示では、続けて消した行を 1 つに畳み、あいだに残った行で分ける",

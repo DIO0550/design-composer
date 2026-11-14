@@ -117,7 +117,7 @@ verdict() {
 cases="$(cat <<'CASES'
 pass|-|sample|見本(Target の 5 つの kind をすべて使う)は通る|assert sorted(h["go"]["kind"] for h in d["overview"]["highlights"]) == ["feature", "file", "flow", "layer", "message"]
 pass|-|minimal|必須のキーだけの解説は通る|
-pass|-|sample|地図にしか無いもの(commitStory の sha・Note のパスと行・Target の layer / file・LayerRole・concept・仕様の場所の sha)は落とさない|d["impact"]["changed"]["specs"][0]["shas"] = ["d" * 40]; d["commitStories"][0]["sha"] = "e" * 40; d["tests"][0]["commit"] = "e" * 40; d["commitStories"][0]["notes"][0].update(path="no/such.ts", start=900, end=901); d["overview"]["highlights"][1]["go"]["layer"] = "地図に無い層"; d["overview"]["highlights"][2]["go"]["path"] = "no/such"; d["layerRoles"][0]["layer"] = "地図に無い層"; d["concepts"].append({"path": "no/such.ts", "name": "無い", "role": "地図に無い"})
+pass|-|sample|地図にしか無いもの(commitStory の sha・Note と FeatureRange のパスと行・Target の layer / file・LayerRole・concept・仕様の場所の sha)は落とさない|d["impact"]["changed"]["specs"][0]["shas"] = ["d" * 40]; d["commitStories"][0]["sha"] = "e" * 40; d["tests"][0]["commit"] = "e" * 40; d["commitStories"][0]["notes"][0].update(path="no/such.ts", start=900, end=901); d["commitStories"][0]["featureRanges"][0].update(path="no/such.ts", start=900, end=901); d["overview"]["highlights"][1]["go"]["layer"] = "地図に無い層"; d["overview"]["highlights"][2]["go"]["path"] = "no/such"; d["layerRoles"][0]["layer"] = "地図に無い層"; d["concepts"].append({"path": "no/such.ts", "name": "無い", "role": "地図に無い"})
 deny|shape|sample|JSON として読めない|raw = "{"
 deny|shape|sample|version が 1 でない|d["version"] = 2
 deny|shape|sample|必須のキー(overview)が無い|del d["overview"]
@@ -146,6 +146,10 @@ deny|shape|sample|values の行のセルが列より少ない|d["tests"][0]["val
 deny|shape|sample|values の columns が空(rows も空にして、セルの数の規則と切り離す)|d["tests"][0]["values"].update(columns=[], rows=[])
 deny|shape|sample|Note の start が end より後|d["commitStories"][0]["notes"][0].update(start=3, end=2)
 deny|shape|sample|Note の start が 0|d["commitStories"][0]["notes"][0]["start"] = 0
+deny|shape|sample|featureRanges の start が end より後|d["commitStories"][0]["featureRanges"][0].update(start=3, end=2)
+deny|shape|sample|featureRanges の side が語彙の外|d["commitStories"][0]["featureRanges"][1]["side"] = "both"
+deny|shape|sample|featureRanges の text が空|d["commitStories"][0]["featureRanges"][0]["text"] = ""
+deny|shape|sample|features の review に空の文|d["features"][0]["review"] = [""]
 deny|shape|sample|excerpt の start が end より後|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 3, "end": 2}
 deny|shape|sample|excerpt の start が 0|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 0, "end": 2}
 deny|shape|sample|excerpt が 81 行|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 81}
@@ -261,6 +265,7 @@ deny|ref|sample|message の from が concepts に無い|d["messages"][0]["from"]
 deny|ref|sample|message の to が concepts に無い|d["messages"][0]["to"] = "no/such"
 deny|ref|sample|flow の steps が messages に無い|d["flows"][0]["steps"] = ["nope"]
 deny|ref|sample|commitStory の flows が flows に無い|d["commitStories"][0]["flows"] = ["nope"]
+deny|ref|sample|featureRanges の feature が features に無い|d["commitStories"][0]["featureRanges"][0]["feature"] = "nope"
 deny|ref|sample|commitStory の Behavior の message が messages に無い|d["commitStories"][0]["before"][0]["message"] = "nope"
 deny|ref|sample|overview の Behavior の message が messages に無い|d["overview"]["after"][0]["message"] = "nope"
 deny|ref|sample|test の suite が suites に無い|d["tests"][0]["suite"] = "nope"

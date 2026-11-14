@@ -17,13 +17,15 @@ diff と Issue だけでは、長いセッションで何を使い、なぜそ�
 | 画面 | 見るもの | 地図から | 解説から |
 | --- | --- | --- | --- |
 | 構造マップ(`#map`) | 左に変更ファイルと concepts の木。中に、それを層(または機能)ごとの組にまとめた箱の図と、やりとり(または依存)の線。組は抽象度で畳む・開く。右に概要(highlights・組ごとの変更・やりとり一覧)か、選んだ箱・線・やりとりの詳細(要するに・受け取るもの / 送り出すもの・使っている / 使われている)と、やりとりの流れ(シーケンス図) | `groups`・`dependencies` | `overview.highlights`・`features`・`layerRoles`・`concepts`・`messages`・`flows` |
-| 変更の経緯(`#story`) | コミットを新しい順に並べた一覧と、ブランチ全体の流れ(題・要約・これまで / このブランチのあと・変更の順番・レビューポイント)、コミットごとの説明(なぜ・影響する操作・レビューで見るところ・振る舞いの前後)と差分・行への注釈 | `commits`(件名・本文・作者・日時・ファイルごとの差分) | `overview`・`commitStories`(操作の名前は `flows`、ファイルの呼び名は `concepts`) |
+| 変更の経緯(`#story`) | 左の「コミット / 機能」で並べ方を切り替える。コミットの側は、コミットを新しい順に並べた一覧と、ブランチ全体の流れ(題・要約・これまで / このブランチのあと・変更の順番・機能 × コミットの表・レビューポイント)、コミットごとの説明(なぜ・影響する操作・レビューで見るところ・振る舞いの前後)と差分・行への注釈(hunk ごとに機能の札と範囲の一言)。機能の側は、機能を変更行数の多い順に並べた一覧(機能なしは最後)と、機能の全体(機能 × コミットの表・機能ごとに見てほしいところ)、機能ごとの説明(この機能でしたこと・レビューで見るところ)と、その機能の差分・行への注釈をコミットの古い順に(注釈の番号はコミットの表示と同じ) | `commits`(件名・本文・作者・日時・ファイルごとの差分) | `overview`・`commitStories`(操作の名前は `flows`、ファイルの呼び名は `concepts`)・`features`(機能の側は `commitStories[].featureRanges` が要る) |
 | テスト(`#test`) | suite ごとのテストの一覧と、構造マップと同じ組・箱の図の上で、テストが確かめている箱・やりとりと、その抜け。テストごとの前提 / 操作 / 期待・値の表・確かめているやりとり・この状況を確かめている(振る舞いの節)・テストコード・追加したコミット | `tests.added` / `tests.removed`・テスト名を調べたファイル(`tests.files`)・テストファイルの対象(`target`) | `suites`・`tests`(線は `messages`。無ければ依存) |
 | 振る舞い(`#impact`) | 使う人から見て何が変わったかを、コードの名前を出さずに(根拠の仕様の場所のパスと技術の手引きの節の題を除く)1 画面で。左に節の目次(変わった節に印)、中に題・要約と、変わったこと(これまで / これから)・状況の表(行 × 列のマス。変わったマスに印。最初の変わったマスを選んだ状態で始まる)・増えた状況・変わらないこと(テストで守っているか)の節、右に今の節の根拠(仕様の場所(差分で見る)・関連 Issue・確かめているテスト・無いテスト・仕組み(やりとり・技術の手引きの節))。右の欄は本文のスクロールに合わせて今の節に切り替わり、幅が狭いと各節の中に畳んで出る | テストの追加 / 既存の判定(テスト画面と同じ)・やりとりの両端が図の箱か・コミットの変更ファイル(仕様の差分で見るがファイルへ届くか) | `impact`(根拠は `tests`・`messages`・`primers`) |
 | 技術の手引き(`#primer`) | この PR を読むのに要る技術を、出てくる場所と一緒に。上にタブ(言語・フレームワーク / この PR の実装)、左に目次(REFERENCE の後に用語集)、中に節(要するに → 本文の段を書いた順)、右に今の節の出てくる場所(差分で見る。届かないときは、コミットを見る / ブランチ全体の流れを見る)・確かめているテスト / 無いテスト・構造マップで見る・関連・用語。点線の語に乗ると、右の欄の同じ語が光る。幅が狭いと各節に畳み(光るのは畳んだ欄の同じ語)、760px 以下ではタブの並びが上に残る | コミットの変更ファイル(差分で見るがファイル・行へ届くか)・テストの判定 | `primers`・`terms`(根拠は `tests`・`flows`) |
 
 画面をまたいで移れる。変更の経緯の「影響する操作」を押すと構造マップでその流れを選んだ状態に、テストの
-「追加したコミット」を押すと変更の経緯でそのコミットを開いた状態になる。振る舞いの「テストで見る」はテストの
+「追加したコミット」を押すと変更の経緯でそのコミットを開いた状態(機能の側を開いていてもコミットの側に戻る)になる。変更の経緯の
+中では、機能 × コミットの行の見出しが機能の側のその機能に、機能の札(hunk の下・同じコミットのほかの機能)とマスがその機能の
+そのコミットに、機能の側の件名がコミットの側のそのコミットになる。振る舞いの「テストで見る」はテストの
 画面でそのテストを選んだ状態に(観点の絞り込みは解く)、仕組みのやりとりのチップは構造マップでそのやりとりを選んだ状態に
 (表示範囲の絞り込みは外す。両端が図の箱でないやりとりは押せず「図に無い」)、技術の手引きのチップは技術の手引きの
 そのタブのその節に、テストの「この状況を確かめている」
@@ -98,7 +100,7 @@ Files changed にも混ざるため)。
 
 - 文字列は空にしない。説明文(`title`・`lead`・`text`・`why`・`given` / `when` / `then` など。`impact` の中は下の規則)の中の
   `` `…` `` は、ページがコードとして描く。primers の `label`・`gist`・text と注意メモの段の `text`・引数の `text`・
-  出てくる場所の `text`・terms の `text` も同じ。名前(`name`・`label`)と `code` は書いたまま出す(例外は primers の
+  出てくる場所の `text`・terms の `text`・features の `review`・featureRanges の `text` も同じ。名前(`name`・`label`)と `code` は書いたまま出す(例外は primers の
   `label` で、`` `…` `` をコードとして描く。declaration の `code` は書いたまま出す)。HTML は書いても文字のまま出る
 - **用語の印 `[[表示|用語の id]]`** を書けるのは、primers の `gist`・text と注意メモの段の `text`・引数の `text` だけ。
   印の表示には `` `…` `` を書ける。`` `…` `` の中に印の形は書けない。`` `…` `` の外に、印でない `[[` / `]]` は書けない。
@@ -129,7 +131,7 @@ Files changed にも混ざるため)。
 | `sha` | 必須 | 解説を書いた時点の head(`git rev-parse HEAD`。push 済みのもの)。抜粋はここから読む |
 | `issue` | 任意 | 材料の Issue 番号 |
 | `overview` | 必須 | Overview |
-| `features` | 任意 | Feature[]。空ならページは「機能」でまとめられない(層だけ) |
+| `features` | 任意 | Feature[]。空ならページは「機能」でまとめられない(層だけ)。変更の経緯の機能の側には、ほかに `commitStories[].featureRanges` が要る |
 | `layerRoles` / `concepts` / `messages` / `flows` / `commitStories` / `suites` / `tests` | 任意 | 下の型の配列 |
 | `impact` | 任意 | Impact。無ければ振る舞いの画面は「書かれていない」と出す |
 | `primers` | 任意 | Primer[]。無いか空なら、技術の手引きは「書かれていない」と出す |
@@ -143,13 +145,14 @@ Files changed にも混ざるため)。
 | Behavior | `text` `message?`(messages の id) |
 | Highlight | `title` `text` `go: Target`(押したときに移る先) |
 | Target | `{kind: "feature", id}` / `{kind: "layer", layer}`(地図の `groups[].label` と同じ綴り)/ `{kind: "file", path}` / `{kind: "message", id}` / `{kind: "flow", id}`。kind ごとのキーが欠けるのも、他の kind のキーが混ざるのも不可 |
-| Feature | `id` `label` `role` |
+| Feature | `id` `label` `role` `review?: string[]`(機能ごとにレビューで見てほしい点。確認の印は付かない) |
 | LayerRole | `layer`(一意。地図の `groups[].label`)`role` |
 | Concept | `path`(一意)`name` `role` `feature?`(features の id)`change?` `graph?`(既定 true) |
 | Message | `id` `from` `to`(concepts の path)`kind`: `cmd` \| `qry` \| `evt` `name` `code` `via`: `call` \| `http` \| `state` \| `log` \| `exec` \| `file` `payload?` `returns?` `status?`: `added` \| `changed` \| `removed`(省けば前からあって変えていない) |
 | Flow | `id` `label` `steps[]`(messages の id。1 件以上) |
-| CommitStory | `sha`(一意)`phase`: `prep` \| `core` \| `hard` \| `revise` \| `fin` `role` `why` `flows?`(flows の id)`review?: string[]` `before?: Behavior[]` `after?: Behavior[]` `notes?: Note[]` |
+| CommitStory | `sha`(一意)`phase`: `prep` \| `core` \| `hard` \| `revise` \| `fin` `role` `why` `flows?`(flows の id)`review?: string[]` `before?: Behavior[]` `after?: Behavior[]` `notes?: Note[]` `featureRanges?: FeatureRange[]` |
 | Note | `path` `side?`: `new` \| `old`(既定 new)`start`(1 以上)`end`(start 以上)`text`。行番号はそのコミット時点 |
+| FeatureRange | `path` `side?` `start` `end`(Note と同じ)`feature`(features の id)`text`(その範囲でこの機能のためにしたこと。機能 × コミットのマスと hunk の札の横に出る)。範囲の行を 1 つでも含む hunk(消したファイルは変更前の行)が、その機能になる。2 つ以上の範囲が入る hunk は、最初に書いた範囲の機能になる |
 | Suite | `id` `label` `file` |
 | Test | `id` `suite`(suites の id)`name` `techniques[]`: `boundary` \| `equivalence` \| `error` \| `state` \| `regression` \| `idempotence` \| `type`(1 件以上・重複なし)`why` `given` `when` `then` `todo?: true` `commit?`(sha)`excerpt?: Excerpt` `values?: Values` `targets?`(concepts の path)`covers?`(messages の id) |
 | Excerpt | tests と primers の段の抜粋。`path` `start` `end`(80 行まで)`emphasis?: LineRange[]`(強調する行。ファイルの行番号で、start〜end の中)。`text` は検査が足す出力だけのキーで、入力に書くと落ちる。`openingLine` も検査が足す出力だけのキーで、入力に書くと落ちる |
@@ -177,12 +180,13 @@ id・sha・path・layer は一覧の中で一意にする(features / messages / 
 commitStories の sha、concepts の path、layerRoles の layer、primers の id(kind をまたいで)、terms の id と label)。
 todo のテストは commit も excerpt も持たない。
 
-**解説の中の参照**は満たさなければ置けない(message の from / to、flow の steps、commitStory の flows、
+**解説の中の参照**は満たさなければ置けない(message の from / to、flow の steps、commitStory の flows、featureRanges の feature、
 Behavior の message、test の suite / covers / targets、concept の feature、Target の feature / message /
 flow、ImpactLine の message、SituationOutcome・AddedSituation・KeptLine の tests、ImpactChange・AddedSituation の primers、primers の seeAlso / tests / flows、
 用語の印 → terms。terms はどれかの印から指す)。**地図を指す参照**(commitStory の sha・Note のパスと行・Target の
 layer / file・LayerRole の layer・concept のパス・出てくる場所の `path`・`lineRange`・`shas`・仕様の場所の `path`・`shas`)は検査せず、外れたものは
-ページが「地図に無い」と出す(理由は `build-pr-explain.py` の冒頭)。
+ページが「地図に無い」と出す(理由は `build-pr-explain.py` の冒頭)。FeatureRange のパスと行も地図を指す参照で、検査しない
+(地図に無い範囲は、どの hunk の機能にもならない)。
 
 ## 書き方
 
@@ -200,25 +204,26 @@ layer / file・LayerRole の layer・concept のパス・出てくる場所の `
 | `overview` | `title` は PR の題、`lead` は何ができるようになったかの 1〜2 文。`before` / `after` は操作・状況ごとの振る舞いを 1 つ 1 行で(空・エラー・境界の状況も)。関わるやりとりがあれば `message` で指す。読み手はレビュアーで、`` `…` `` で実装の名前を指してよい | 実装の手順 |
 | `impact` | 使う人(アプリを操作する人・ハーネスなら使うセッション)から見て変わったことを、操作と画面の言葉だけで。`changed` は変わったことの前後、`tables` は結果が 2 つの軸(例: タブがあるか × 開く操作の進み具合)で決まるときの行 × 列の表(変わったマスにだけ `was`)、`added` はこの PR で初めて起きうるようになった状況、`kept` は巻き込まれそうで変わらないこと。根拠は `tests` で指す。仕様(docs など)を変えたなら `changed.specs` に、変えていない仕様は `keptSpecs` に、場所(`locator`。見出しの言葉で「「タブ」の ⌘W の行」のように)と、変えた点・変えていない点を 1 文で書く。`changed.relatedIssues` は変更前に先送りしていた件など、経緯に関わる Issue と関わりを 1 文で。仕組みを技術の手引きの節で説明しているなら `changed.primers` / `added[].primers` でその節を指す。`overview` が「何を変えたか」をレビュアーに向けて書くのに対し、ここは「使う人に何が起きるか」を書く | コードの名前(共通の規則) |
 | `overview.highlights` | 特に見てほしい箇所(自信のない判断・未決のまま入れたもの・目で見ないと分からない表示)と、押したときに図のどこへ移るか(`go`) | 「全体を見てください」 |
-| `features` / `layerRoles` | 機能・層がこの PR で担う役割を 1 文。`layerRoles` の `layer` の綴りは地図の `groups[].label` に揃える | |
+| `features` / `layerRoles` | 機能・層がこの PR で担う役割を 1 文。`layerRoles` の `layer` の綴りは地図の `groups[].label` に揃える。features の `review` は、その機能でレビューで見てほしい点を 1 点 1 文(コミットの `review` はどの機能の話かを持たないので、機能ごとの点はここに書く) | |
 | `concepts` | 箱にしたいファイルと、その短い名前(`name`。概念の名前(docs の語彙)で、図の表示名になる)・役割・何を変えたか(`change`)。変更していないファイルも名指しすると箱になる。図に出さず木にだけ出すなら `graph: false` | 変更ファイルの列挙だけ(箱は地図からも出る) |
 | `messages` / `flows` | 箱どうしのやりとり。`kind` は変える(`cmd`)/ 問い合わせる(`qry`)/ 知らせる(`evt`)、`code` は実際の呼び出しの綴り。このブランチで足した・変えた・消したものは `status` を `added` / `changed` / `removed` にする(テストの抜けは `added` と `changed` で数える)。`flows` は操作・イベントごとのやりとりの順で、2〜4 本 | 1 つの関数の中の手順 |
-| `commitStories` | コミットごとに、`role`(何をするコミットか 1 行)・`why`(なぜこの順でこうしたか)・`review`(レビューで見てほしい点を 1 点 1 文)・振る舞いの前後・行への注釈(`notes`)。`phase` は下ごしらえ(`prep`)/ 本体(`core`)/ 安定化(`hard`)/ 指摘の反映(`revise`)/ 仕上げ(`fin`) | 件名・本文の写し(地図から出る) |
+| `commitStories` | コミットごとに、`role`(何をするコミットか 1 行)・`why`(なぜこの順でこうしたか)・`review`(レビューで見てほしい点を 1 点 1 文)・振る舞いの前後・行への注釈(`notes`)・機能の範囲(`featureRanges`。差分のまとまりがどの機能のための変更かを、注釈と同じパスと行で指す。1 つのファイルに機能が混ざるなら範囲を分ける)。`phase` は下ごしらえ(`prep`)/ 本体(`core`)/ 安定化(`hard`)/ 指摘の反映(`revise`)/ 仕上げ(`fin`) | 件名・本文の写し(地図から出る) |
 | `suites` / `tests` | テストごとに、守る振る舞い(`why`)・前提 / 操作 / 期待・使った技法・境界の値の表(`values`)・確かめているやりとり(`covers`)と箱(`targets`)。テストコードは `excerpt` で範囲を指す | テストコードの写し |
 | `primers` | この PR を読むのに要る技術。language は差分に出てくる順、codebase は全体の流れから部品へ。`occurrences` は 1 件以上で、行は解説の `sha` の時点、`shas` はその箇所を足した・変えたコミット。PR ごとに書く(共有の仕組みは無い)。上の読み手に向けて書く。language の節は `gist` に何のための仕組みか、`passages` に書き方(構文・標準の振る舞い)を置く。codebase の節は言語の構文を説明し直さず、印か `seeAlso` で language の節へつなぐ | コード例の写し(`excerpt` で実物の行範囲を指す)。上の読み手が知らないものを既知として説明を省く |
 | `terms` | 1 語 1 回。意味は 1〜2 文で、上の読み手に向けて書く。1〜2 文に収まらない語は、その語に合う kind の primer として立てる。primer は `occurrences` が要るので、差分に出ない語は 1〜2 文に収まる粒度に分けて terms に置く | |
 
 - **説明文でも、識別子を地の文の主語にしない。** 実装の名前とファイル名を指すときは `` `…` `` で囲む
-- **`review` の文は、確認の印の鍵になる。** 読み手のブラウザは「コミットの sha + 文」で確認済みを
-  覚えるので、文を書き直すとその点の印は外れる(別の点へ移らない)
+- **`commitStories[].review` の文は、確認の印の鍵になる。** 読み手のブラウザは「コミットの sha + 文」で確認済みを
+  覚えるので、文を書き直すとその点の印は外れる(別の点へ移らない)。features の `review` は印を持たない
 - **`tests[].name` はテスト名そのままで書く。** ページは、地図がテスト名を調べたファイル(`tests.files`。
   `__tests__/` のテストファイル)なら `suite.file` と `name` を `tests.added` と突き合わせて「追加 / 既存」を
   出す。綴りを変えると既存のテストに見える。それ以外のファイルのテストは、このブランチで足したファイルなら
   「追加」、ほかは「判定なし」
 - 未実装のテスト(守れていない振る舞い)は `todo: true` で書く。ページはテストの画面で破線で、振る舞いの画面の
   根拠で「無いテスト」として出す(本文には件数だけを出す)。技術の手引きの「この PR の実装」の節の右の欄でも「無いテスト」として出す
-- Note の `start` / `end` は、そのコミットで `side` の側(既定は変更後)のファイルの行番号。差分の
-  hunk に入らない行への注釈は「差分に出ていない行への注釈」として別に出る
+- Note と FeatureRange の `start` / `end` は、そのコミットで `side` の側(既定は変更後)のファイルの行番号。差分の
+  hunk に入らない行への注釈は「差分に出ていない行への注釈」として別に出る。注釈の番号はコミットの中で通すので、機能の側で
+  同じ hunk を見ても番号は変わらない
 
 ## 解説が無いとき・古いとき
 
