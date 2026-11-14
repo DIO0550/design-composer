@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-sNlD4fjNnDXVIxAHWkP5BpEBFEB7/PzY+I3CdUoHia4='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-RGk0SiiSo25boSMjDdalM8LqoZFYoLMpn3bmmDOAMbQ='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -87,7 +87,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .band { padding: 7px 14px; font-size: 12px; line-height: 1.6; color: var(--mod); background: var(--warn-tint); border-bottom: 1px solid var(--line); white-space: normal; }
 .screens { min-height: 0; position: relative; }
 .screen { height: 100%; display: grid; min-height: 0; }
-/* 箱の図の欄は自分の −/+(transform)で拡大するので、文字の倍率を掛けると二重になる。
+/* 箱の図の欄は自分の −/+(transform)で拡大するので、文字の倍率を掛けると二重になる。構成の前後と流れ図の図は倍率の中に置き、欄の幅で大きさを決めて倍率を受けない(`.wide-figure`)。
    font-size の書き換えは px 固定の高さや図の箱の幅が崩れ、transform: scale はスクロールの範囲と幅が倍率に合わないので採らない。 */
 .screen > :not(.graph-canvas) { zoom: var(--text-size-ratio, 1); }
 .screen[hidden] { display: none; }
@@ -1688,7 +1688,8 @@ button.change-item:hover { background: var(--track); }
      * @returns 構造マップの `{screen: "map", selection}`(selection は `group`(`grouping` のまとめ方の組の `id`)/ `file`(`id` は
      *   パス)/ `message` / `flow`)か、構成の前後の `{screen: "compare", grain: "calls", id}`(callBox / callEdge)/
      *   `{screen: "compare", grain: "modules", path}`(module)か、流れ図の `{screen: "trace", flow, stepChange}`(stepChange。
-     *   stepChange はその流れの対応の 1 始まりの番号)。指す先が図にあるかは見ない(見るのは行き先の画面の `canShow`)
+     *   stepChange はその流れの対応の 1 始まりの番号)。kind が語彙に無ければ null(ページの形の検査は Target の kind を見ないので、
+     *   届かない行き先として扱う)。指す先が図にあるかは見ない(見るのは行き先の画面の `canShow`)
      */
     destinationOf: (target) => {
       const toMap = (selection) => ({ screen: Screens.Map, selection });
@@ -1711,15 +1712,17 @@ button.change-item:hover { background: var(--track); }
         case "stepChange":
           return { screen: Screens.Trace, flow: target.flow, stepChange: target.stepChange };
       }
+      return null;
     },
     /**
      * Target を指すチップの名前。
      * @param explained `ExplainedMap.create` の戻り値
      * @returns 「〈行き先の画面の名前〉: 〈指す先の名前〉」(stepChange は「〈流れの名前〉の n 行目」)。指す先が見つからなければ、
-     *   名前の代わりに Target に書いた id・層・パスの綴り(パスはファイル名)を出す
+     *   名前の代わりに Target に書いた id・層・パスの綴り(パスはファイル名)を出す。kind が語彙に無ければ、kind の綴りだけ
      */
     captionOf: (target, explained) => {
       const destination = Target.destinationOf(target);
+      if (destination === null) return String(target.kind);
       const features = explained.explain === null ? [] : listOf(explained.explain.features);
       const pathNameOf = (path) => (explained.entryAt.has(path) ? ExplainedMap.nameOf(explained.entryAt.get(path), "concept") : ExplainedMap.fileNameOf(path));
       const nameOf = () => {
@@ -1755,7 +1758,7 @@ button.change-item:hover { background: var(--track); }
   const CompareGrains = Object.freeze({ Calls: "calls", Modules: "modules" });
 
   /**
-   * 箱の図の欄(構造マップとテスト)を除き、どの画面のパネルと本文にも効く文字の大きさ。percent(整数)で持ち、`Steps` から選ぶ。開くたびに `Initial` から始める。
+   * 箱の図の欄(構造マップとテスト)と、構成の前後・流れ図の図(`.wide-figure`。欄の幅で大きさが決まる)を除き、どの画面のパネルと本文にも効く文字の大きさ。percent(整数)で持ち、`Steps` から選ぶ。開くたびに `Initial` から始める。
    *
    * 覚える形にはしない。全 PR で覚えるとブラウザの拡大と同じくほかのページにも効き、PR ごとに覚えても 1 つの PR のページは開く回数が少なく覚える価値が小さい。
    */
@@ -2697,7 +2700,7 @@ button.change-item:hover { background: var(--track); }
     };
 
     /**
-     * 地図と解説を合わせる。解説が無い・使えないときも、地図だけで 5 画面の材料を作る。
+     * 地図と解説を合わせる。解説が無い・使えないときも、地図だけで 8 画面の材料を作る。
      * @param map change-map.json の中身(`isReadableMap` が真のもの)
      * @param source 解説の読み込み結果(`readingOf` の source と同じ)
      * @returns 画面が使う材料。解説の状態は `reading`(`explained` / `missing` と理由)と `freshness` に出る。
@@ -6588,19 +6591,19 @@ button.change-item:hover { background: var(--track); }
       }
     };
 
-    /** 構造マップが行き先の Target の、移る先。行き先がほかの画面の Target や、地図に無いものなら null。 */
+    /** 構造マップが行き先の Target の、移る先。行き先がほかの画面の Target や、地図に無いもの、kind が語彙に無いものなら null。 */
     const mapGoOfTarget = (target) => {
       const destination = Target.destinationOf(target);
-      return destination.screen === Screens.Map ? mapGoOf(destination.selection) : null;
+      return destination?.screen === Screens.Map ? mapGoOf(destination.selection) : null;
     };
 
     /**
      * 概要の「このブランチで起きていること」の 1 件が指す先。
      * @returns 押せるなら `{kind: "reachable", tone, onPress}`。届かなければ `{kind: "unreachable", warning}`(行き先が構造マップなら
-     *   「指している先が地図に無い」、ほかの画面なら「指している先が図に無い」)
+     *   「指している先が地図に無い」、ほかの画面か、kind が語彙に無いなら「指している先が図に無い」)
      */
     const highlightGoOf = (target) => {
-      const isOnMap = Target.destinationOf(target).screen === Screens.Map;
+      const isOnMap = Target.destinationOf(target)?.screen === Screens.Map;
       const onMap = mapGoOfTarget(target);
       if (onMap !== null) return { kind: "reachable", ...onMap };
       if (isOnMap) return { kind: "unreachable", warning: "指している先が地図に無い" };
@@ -8067,7 +8070,7 @@ button.change-item:hover { background: var(--track); }
     /** Target(callBox / callEdge / module)の粒度と、そこで選ぶ id。構成の前後が行き先でなければ null。 */
     const pickOfTarget = (target) => {
       const destination = Target.destinationOf(target);
-      if (destination.screen !== Screens.Compare) return null;
+      if (destination?.screen !== Screens.Compare) return null;
       return { grain: destination.grain, id: destination.grain === CompareGrains.Calls ? destination.id : destination.path };
     };
 
@@ -8372,7 +8375,7 @@ button.change-item:hover { background: var(--track); }
     /** stepChange の Target の流れと番号。流れ図が行き先でなければ null。 */
     const pickOfTarget = (target) => {
       const destination = Target.destinationOf(target);
-      return destination.screen === Screens.Trace ? destination : null;
+      return destination?.screen === Screens.Trace ? destination : null;
     };
 
     return {
@@ -8683,7 +8686,7 @@ button.change-item:hover { background: var(--track); }
     );
   };
 
-  /** ヘッダ・帯・5 画面を組み、画面を切り替える。 */
+  /** ヘッダ・帯・8 画面を組み、画面を切り替える。 */
   const Frame = Object.freeze({
     mount: (root, explained) => {
       const pr = explained.map.pr;
@@ -8731,7 +8734,7 @@ button.change-item:hover { background: var(--track); }
         },
         /** Target の行き先の画面へ移り、指すものを選んだ状態にする。`canShow` が真のものだけを渡す。 */
         toTarget: (target) => {
-          const screen = Target.destinationOf(target).screen;
+          const screen = Target.destinationOf(target)?.screen;
           switch (screen) {
             case Screens.Map:
               navigateTo(Screens.Map);
@@ -8746,8 +8749,11 @@ button.change-item:hover { background: var(--track); }
               return;
           }
         },
-        /** @returns Target の行き先の画面で、指すものを選べるか */
-        canShow: (target) => built[Target.destinationOf(target).screen].canShow(target),
+        /** @returns Target の行き先の画面で、指すものを選べるか。kind が語彙に無ければ偽 */
+        canShow: (target) => {
+          const destination = Target.destinationOf(target);
+          return destination !== null && built[destination.screen].canShow(target);
+        },
       };
       // 構造マップ(highlights)とクイズ(根拠のチップ)は組むときに、Target の行き先の画面で選べるか(`go.canShow`)を聞くので、行き先になる
       // 画面を先に組む。構造マップも構成の前後と流れ図に聞くので、その 2 つの後に組む。

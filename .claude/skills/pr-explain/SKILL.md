@@ -1,17 +1,18 @@
 ---
 name: pr-explain
-description: "PR ごとの解説ページ(構造マップ・変更の経緯・テスト・振る舞い・技術の手引きの 5 画面)の材料になる解説 explain.json を書き、検査して gh-pages の pr-explain/pr-<番号>/ へ置く。implementation-flow のフェーズ 7 で PR を出した直後と、振る舞いが変わる push の後に使用する。「PR の解説を書いて」「解説ページを更新して」といった依頼でも使用する。変更の地図(変更ファイル・依存・テスト名の増減・コミットと差分)とページの枠は Actions が置くので書かない。"
+description: "PR ごとの解説ページ(構造マップ・変更の経緯・テスト・振る舞い・技術の手引き・構成の前後・流れ図・クイズの 8 画面)の材料になる解説 explain.json を書き、検査して gh-pages の pr-explain/pr-<番号>/ へ置く。implementation-flow のフェーズ 7 で PR を出した直後と、振る舞いが変わる push の後に使用する。「PR の解説を書いて」「解説ページを更新して」といった依頼でも使用する。変更の地図(変更ファイル・依存・テスト名の増減・コミットと差分)とページの枠は Actions が置くので書かない。"
 ---
 
 # PR の解説ページ
 
-レビュアー(人間)が PR を開いたときに、**この PR がどこをどうつなぎ替えたか・どの順で何を変えたか・
-テストが何を守っているか・使う人から見て何が変わったか・この PR を読むのに要る技術**を読めるようにする。
+レビュアー(人間)が PR を開いたときに、**この PR がどこをどうつなぎ替えたか・どの順で何を変えたか・機能ごとに何が変わったか・
+操作の流れがどう変わったか・テストが何を守っているか・使う人から見て何が変わったか・この PR を読むのに要る技術**を読めるようにし、
+読んだ理解を確かめられるようにする。
 diff と Issue だけでは、長いセッションで何を使い、なぜその形にしたかが掴みにくいため。
 
-## 5 画面と材料
+## 8 画面と材料
 
-ページは 1 枚で、`#map` / `#story` / `#test` / `#impact` / `#primer` / `#compare` / `#trace` / `#quiz` で画面を切り替える。ハッシュが無ければ構造マップで開く(前に開いた画面は覚えない)。上部バーの文字の大きさ(−/+、90〜150%)は箱の図の欄(構造マップとテスト)を除き、どの画面のパネルと本文にも効き、開くたびに 100% に戻る。どの画面も、Actions が git の差分から
+ページは 1 枚で、`#map` / `#story` / `#test` / `#impact` / `#primer` / `#compare` / `#trace` / `#quiz` で画面を切り替える。ハッシュが無ければ構造マップで開く(前に開いた画面は覚えない)。上部バーの文字の大きさ(−/+、90〜150%)は箱の図の欄(構造マップとテスト)と構成の前後・流れ図の図(欄の幅で大きさが決まる)を除き、どの画面のパネルと本文にも効き、開くたびに 100% に戻る。どの画面も、Actions が git の差分から
 作る**変更の地図**(`change-map.json`)と、セッションが書く**解説**(`explain.json`)を合わせて組む。
 
 | 画面 | 見るもの | 地図から | 解説から |
@@ -77,7 +78,7 @@ Files changed にも混ざるため)。
    - 検証エージェントの指摘: とくに `test-reviewer` の「壊して落ちた / 落ちなかった判断」はテストの材料
    - このセッションの記憶: Issue に書くほどではなかった判断・試して捨てた形
 2. **見本 [`templates/explain.json`](templates/explain.json) をリポジトリの外の作業用ファイルへ写して
-   書く**(`mktemp -d` など)。見本は `excerpt` 以外のすべてのキーと、Target の 5 つの kind・primers の
+   書く**(`mktemp -d` など)。見本は `excerpt` 以外のすべてのキーと、Target の 9 つの kind・Question の 3 つの kind・primers の
    2 つの kind・Passage の excerpt 以外の 8 つの kind を使っている。要らない任意のキーは消す
 3. **下の「explain.json の形」と「書き方」で書く**
 4. **事実の主張を確かめる。** 解説は「この関数は◯◯を返す」「この操作で□□になる」の集まりなので、
@@ -252,14 +253,18 @@ layer / file / module・LayerRole の layer・concept のパス・出てくる�
 
 ## 解説が無いとき・古いとき
 
-ページは地図だけでも 5 画面を出す(振る舞いと技術の手引きは解説が要るので「解説なし」とだけ出す)。解説の状態は上の帯で知らせる。
+ページは地図だけでも 8 画面を出す(振る舞い・技術の手引き・流れ図・クイズは解説が要るので「解説なし」とだけ出す。構成の前後はモジュールの粒度だけを出し、呼び出しの粒度は「解説なし」)。解説の状態は上の帯で知らせる。
 
 | 状態 | ページの出方 |
 | --- | --- |
 | 解説が無い | 地図だけで組む。まとめ方は層、表示名はファイル名、構造マップの線は依存だけ(やりとりの流れは出ない)、テストは地図の追加・削除と対象 |
-| 解説が読めない(JSON でない・`version` が 1 でない・`pr` が違う・形が想定外(型の違い・必須の欠け)) | 「解説なし」とその理由。`impact`・`primers`・`terms`・`tests[].excerpt.emphasis` の型が想定外か、`primers`・`terms` の必須の文かオブジェクト(kind ごとに必須のものを含む。抜粋の段の `excerpt` など)が欠けていれば、崩れた道筋(`impact.tables[].outcomes` など。2 か所以上なら外側)を出す |
+| 解説が読めない(JSON でない・`version` が 1 でない・`pr` が違う・形が想定外(型の違い・必須の欠け)) | 「解説なし」とその理由。`impact`・`primers`・`terms`・`features[].review`・`commitStories[].featureRanges`・`calls`・`actors`・`quiz`・flows の `gist`・`text`・`beforeSteps`・`stepChanges`・`measure`・`tests[].excerpt.emphasis` の型が想定外か、`primers`・`terms` の必須の文かオブジェクト(kind ごとに必須のものを含む。抜粋の段の `excerpt` など)が欠けていれば、崩れた道筋(`impact.tables[].outcomes` など。2 か所以上なら外側)を出す |
 | 解説に `impact` が無い | 振る舞いの画面に「書かれていない」と出す。ほかの画面には影響しない |
 | 解説に `primers` が無い(空も) | 技術の手引きに「書かれていない」と出す。ほかの画面には影響しない |
+| 解説に `calls` が無い / 箱も線も 0 件 | 構成の前後の呼び出しの粒度に「書かれていない」/「呼び出しの変化なし」と出す。モジュールの粒度の図とほかの画面には影響しない |
+| 解説の flows に `stepChanges` が無い(空も) | 流れ図のその流れは変更後だけを出す(比べる・変更前だけは出ない)。`gist`・`text`・`measure` は無ければ出さない |
+| 解説に `quiz` が無い(空も) | クイズに「書かれていない」と出す。ほかの画面には影響しない |
+| 解説の commitStories に `featureRanges` が無い | 変更の経緯の機能の側を押せない(コミットの側だけ)。機能 × コミットの表も出ない |
 | 解説の sha が地図の head より前 | 「解説は ◯ 時点、以降 n コミットは解説なし」。以降のコミットには「解説なし」の札 |
 | 解説の sha が地図のコミットに無い | 「解説の sha が地図に無い」(force push などで履歴が変わったとき) |
 | commitStories の sha が地図に無い | 「地図に無い解説 n 件」。別の一覧に出す |
@@ -270,7 +275,7 @@ layer / file / module・LayerRole の layer・concept のパス・出てくる�
 | ファイル | 内容 |
 | --- | --- |
 | [`templates/index.html`](templates/index.html) | ページの枠(CSS・固定スクリプト・CSP)。固定スクリプトを変えたら CSP の `sha256-` も直す(`check-pr-explain-template.py` が突き合わせる) |
-| [`templates/explain.json`](templates/explain.json) | `excerpt` 以外のすべてのキーと、Target の 5 つの kind・primers の 2 つの kind・Passage の excerpt 以外の 8 つの kind を使う解説の見本 |
+| [`templates/explain.json`](templates/explain.json) | `excerpt` 以外のすべてのキーと、Target の 9 つの kind・Question の 3 つの kind・primers の 2 つの kind・Passage の excerpt 以外の 8 つの kind を使う解説の見本 |
 | `.github/scripts/build-pr-explain.py` | 解説の検査と、抜粋の中身の書き足し |
 | `.github/scripts/lib/embedded_regions.py` | 抜粋・差分の hunk の始まりの行で効いている埋め込み(script / style 要素・ヒアドキュメント)を開いた行。検査と地図が使う |
 | `.github/scripts/check-pr-explain-template.py` | 枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査。`--tracked` では、追跡ファイルの拡張子が色付けの表(`LanguageByExtension`)か `NotHighlighted` のどちらかにあるかも見る |

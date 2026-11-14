@@ -3,9 +3,10 @@
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
 # 叩いて、地図と解説の合流・振る舞いの節の並び・技術の手引きの節・用語の印・抜粋の強調・出てくる場所と仕様の場所の
-# コミットへの届き方・今の節・文字の大きさの段と倍率・倍率を変えたあとの読む線の位置・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、
-# `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・解説の形の道筋(impact・primers・terms・抜粋の
-# 強調)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを
+# コミットへの届き方・今の節・文字の大きさの段と倍率・倍率を変えたあとの読む線の位置・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・
+# 機能 × コミットの表と機能の色・構成の前後の図・流れ図の行とカードの配置・クイズの答えの読み直しと移り変わり・Target の行き先とチップの名前・色分け(`Tokenizer` と、
+# `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・クイズの問いの kind と答えの鍵の元・解説の形の道筋(impact・primers・terms・抜粋の
+# 強調・features の review・commitStories の featureRanges・calls・actors・quiz・flows の gist・text・beforeSteps・stepChanges・measure)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを
 # 1 コマンドで確かめる。
 #
 # 使い方: bash .github/scripts/pr-explain-core-cases.sh
@@ -1278,6 +1279,19 @@ const cases = [
       ].map((target) => Target.captionOf(target, result));
     },
     expected: ["構造マップ: 機能 f", "構造マップ: domains", "構造マップ: 器", "構造マップ: 状態を読む", "構造マップ: 読む流れ", "構成の前後: view()", "構成の前後: view() → memo()", "構成の前後: 状態", "流れ図: 読む流れの 2 行目"],
+  },
+  {
+    label: "kind が語彙に無い Target は行き先が無い(ページの形の検査を通って届いても、どの画面へも振り分けない)",
+    actual: () => [{ kind: "nope", id: "f" }, { kind: "Flow", id: "w" }, { id: "w" }].map((target) => Target.destinationOf(target) === null),
+    expected: [true, true, true],
+  },
+  {
+    label: "kind が語彙に無い Target の根拠のチップの名前は、画面の名前を付けず kind の綴りだけ",
+    actual: () => {
+      const result = callsExplained(callsOf(), { flows: [{ id: "w", label: "読む流れ", steps: [] }] });
+      return [{ kind: "nope", id: "w" }, { kind: "Flow", id: "w" }].map((target) => Target.captionOf(target, result));
+    },
+    expected: ["nope", "Flow"],
   },
   {
     label: "新しいキー(calls・actors・quiz・flows の手順の対応・features の review)の無い version 1 の解説は読め、構成の前後の呼び出しの粒度は「書かれていない」、流れ図は変更後だけ",
@@ -3366,7 +3380,7 @@ const cases = [
     label: "解説の検査が受け付ける Target の kind はどれも、ページが検査の求めるキーを読んで行き先にする(行き先に求めるキーの値がすべて入る)",
     actual: () => Object.entries(checkerTargetKeys).map(([kind, keys]) => {
       const destination = Target.destinationOf({ kind, ...Object.fromEntries(keys.map((key) => [key, `値-${key}`])) });
-      return [kind, destination !== undefined && keys.every((key) => JSON.stringify(destination).includes(`値-${key}`))];
+      return [kind, destination !== null && keys.every((key) => JSON.stringify(destination).includes(`値-${key}`))];
     }),
     expected: Object.keys(checkerTargetKeys).map((kind) => [kind, true]),
   },
