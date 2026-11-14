@@ -171,7 +171,7 @@ deny|shape|sample|techniques に同じ観点を 2 回|d["tests"][0]["techniques"
 deny|shape|sample|techniques が空|d["tests"][0]["techniques"] = []
 deny|shape|sample|flow の steps が空|d["flows"][1]["steps"] = []
 deny|shape|sample|calls が無い|del d["calls"]
-pass|-|sample|calls の boxes と edges が空でも通る(箱と線を指す Target も外す)|d["calls"] = {"boxes": [], "edges": []}; d["overview"]["highlights"] = [h for h in d["overview"]["highlights"] if h["go"]["kind"] not in ("callBox", "callEdge")]
+pass|-|sample|calls の boxes と edges が空でも通る(箱と線を指す Target も外す)|d["calls"] = {"boxes": [], "edges": []}; d["overview"]["highlights"] = [h for h in d["overview"]["highlights"] if h["go"]["kind"] not in ("callBox", "callEdge")]; d["quiz"] = [q for q in d["quiz"] if all(g["kind"] not in ("callBox", "callEdge") for g in q["go"])]
 pass|-|sample|calls の gist・text・review をどれも書かなくても通る|[d["calls"].pop(key) for key in ("gist", "text", "review")]
 deny|shape|sample|増えた箱に was がある|d["calls"]["boxes"][2]["was"] = "前"
 deny|shape|sample|増えた箱に now が無い|del d["calls"]["boxes"][2]["now"]
@@ -236,6 +236,20 @@ pass|-|sample|measure の before と after は同じでも通る|m = d["flows"][
 deny|shape|sample|beforeSteps に増えたやりとりがある|f = d["flows"][0]; f["beforeSteps"] = ["publish"]; f["stepChanges"].append({"status": "removed", "beforeStep": 1})
 deny|shape|sample|steps に消えたやりとりがある|f = d["flows"][0]; f["steps"].append("put-page"); f["stepChanges"].append({"status": "added", "afterStep": 2})
 deny|shape|sample|そのままの対応に増えたやりとりを置く(beforeSteps に増えたやりとりが入る)|f = d["flows"][0]; f["beforeSteps"] = ["put-explain"]; f["stepChanges"] = [{"beforeStep": 1, "afterStep": 1}]
+deny|shape|sample|4 択の options が 3 つ|q = d["quiz"][0]; assert q["kind"] == "choice" and q["answer"] <= 3; q["options"] = q["options"][:3]
+deny|shape|sample|4 択の options が 5 つ|d["quiz"][0]["options"].append("5 つ目の選択肢")
+deny|shape|sample|4 択の options に同じ文がある|o = d["quiz"][0]["options"]; o[3] = o[0]
+deny|shape|sample|4 択の answer が options の数を超える|d["quiz"][0]["answer"] = 5
+deny|shape|sample|YES / NO の問いに answer を書く|q = d["quiz"][1]; assert q["kind"] == "yesno"; q["answer"] = 1
+pass|-|sample|YES / NO の holds が false でも通る|assert d["quiz"][1]["holds"] is False
+deny|shape|sample|並べ替えの items が 1 つ|q = d["quiz"][2]; assert q["kind"] == "order"; q["items"] = q["items"][:1]
+deny|shape|sample|並べ替えの items に同じ文がある|i = d["quiz"][2]["items"]; i[1] = i[0]
+deny|shape|sample|quiz に題(title)が無い|del d["quiz"][0]["title"]
+deny|shape|sample|quiz の題(title)が識別子|d["quiz"][0]["title"] = "EditorState に導出が残っているか"
+deny|shape|sample|同じ問いの文の YES / NO が 2 問ある(題・why・go・holds を違えても落ちる)|q = dict(d["quiz"][1]); q.update(id="again", title="別の題", why="別の理由", go=[{"kind": "flow", "id": "push"}], holds=True); d["quiz"].append(q)
+pass|-|sample|同じ問いの文でも、選択肢が違う 4 択は 2 問書ける|q = dict(d["quiz"][0]); q.update(id="again", options=["一つ目", "二つ目", "三つ目", "四つ目"]); d["quiz"].append(q)
+deny|shape|sample|quiz の go が空|d["quiz"][0]["go"] = []
+deny|shape|sample|quiz の id が重複(問いの文は違える)|q = dict(d["quiz"][0]); q["prompt"] = "別の問いの文"; d["quiz"].append(q)
 deny|shape|sample|Behavior に知らないキー|d["overview"]["after"][0]["k"] = "x"
 deny|shape|sample|LayerRole に知らないキー|d["layerRoles"][0]["x"] = "y"
 deny|shape|sample|Excerpt に知らないキー|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 2, "lang": "py"}
@@ -349,6 +363,8 @@ deny|ref|sample|callEdge の Target が calls の線に無い|d["overview"]["hig
 deny|ref|sample|flow の beforeSteps が messages に無い(消えた手順だけを崩す)|d["flows"][1]["beforeSteps"][1] = "nope"
 deny|ref|sample|stepChange の Target の flow が flows に無い|d["overview"]["highlights"][8]["go"]["flow"] = "nope"
 deny|ref|sample|stepChange の Target の stepChange が対応の数を超える|d["overview"]["highlights"][8]["go"]["stepChange"] = 4
+deny|ref|sample|quiz の go の stepChange の flow が flows に無い(例外ではなく参照の違反)|d["quiz"][1]["go"][0]["flow"] = "nope"
+deny|ref|sample|quiz の go の callBox が calls の箱に無い|d["quiz"][0]["go"][0]["id"] = "nope"
 deny|ref|sample|todo のテストが commit を持つ|d["tests"][1]["commit"] = d["sha"]
 deny|ref|sample|todo のテストが excerpt を持つ|d["tests"][1]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 1}
 deny|ref|sample|変わったことのこれまでの message が messages に無い|d["impact"]["changed"]["before"][0]["message"] = "nope"

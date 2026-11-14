@@ -35,11 +35,12 @@ source "$repo_root/.claude/hooks/lib/cases-report.sh"
 # 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)と、Target の kind ごとのキー(ページの `Target` と
 # 突き合わせる)と、Shapes から導いた形の道筋と値の種類(ページの `ExplainShape.Routes` と突き合わせる)。impact の下は
 # オブジェクト・その配列・id・id の配列と sha の配列だけ。primers・terms と、features の review・commitStories の featureRanges・
-# calls・actors と、flows の gist・text・beforeSteps・stepChanges・measure の下は文(text・sha・marked_text の文字列)も出す。語彙には、
+# calls・actors・quiz と、flows の gist・text・beforeSteps・stepChanges・measure の下は文(text・sha・marked_text の文字列)も出す。語彙には、
 # 手順の重さ(stepCosts)と流れ図のカードの絵(cardIcons)も入る。Excerpt の中の
 # 道筋は、Excerpt を指すすべての道筋の下に出す。primers・terms の下の必須の文と 1 つのオブジェクトの道筋と、それを必須とする
 # kind(Variant の下なら kind の並び、Shape の下なら null。ページの `ExplainShape.Required` と突き合わせる)。ほかに、技術の
-# 手引きの kind・段の kind・用語の印の綴りと、印を読む道筋と、`` ` `` の割り方(ページの `CodeSpans` と突き合わせる)。
+# 手引きの kind・段の kind・クイズの問いの kind・クイズの答えの鍵の元にするキー(ページの `Quiz` と突き合わせる)・用語の印の綴りと、
+# 印を読む道筋と、`` ` `` の割り方(ページの `CodeSpans` と突き合わせる)。
 checker="$(python3 - "$scripts_dir/build-pr-explain.py" <<'PY'
 import importlib.util, json, sys
 spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
@@ -83,8 +84,9 @@ feature_reviews = shape_routes_of(module.Shapes["Feature"]["review"].value, "fea
 feature_ranges = shape_routes_of(module.Shapes["CommitStory"]["featureRanges"].value, "commitStories[].featureRanges", text_rules)
 calls = shape_routes_of(explain["calls"].value, "calls", text_rules)
 actors = shape_routes_of(explain["actors"].value, "actors", text_rules)
+quiz = shape_routes_of(explain["quiz"].value, "quiz", text_rules)
 flow_keys = [found for key in ("gist", "text", "beforeSteps", "stepChanges", "measure") for found in shape_routes_of(module.Shapes["Flow"][key].value, f"flows[].{key}", text_rules)]
-routes = [*shape_routes_of(explain["impact"].value, "impact", (module.Sha,)), *shape_routes_of(explain["primers"].value, "primers", text_rules), *shape_routes_of(explain["terms"].value, "terms", text_rules), *feature_reviews, *feature_ranges, *calls, *actors, *flow_keys]
+routes = [*shape_routes_of(explain["impact"].value, "impact", (module.Sha,)), *shape_routes_of(explain["primers"].value, "primers", text_rules), *shape_routes_of(explain["terms"].value, "terms", text_rules), *feature_reviews, *feature_ranges, *calls, *actors, *flow_keys, *quiz]
 required_routes = [*required_routes_of(explain["primers"].value, "primers"), *required_routes_of(explain["terms"].value, "terms")]
 known = {route for route, _ in routes}
 inside_excerpts = [found for route in module.routes_with(module.Shape("Excerpt")) for found in shape_routes_of(module.Shape("Excerpt"), route, ())[1:]]
@@ -96,6 +98,8 @@ print(json.dumps({
     "requiredRoutes": required_routes,
     "primerKinds": list(module.Variants["Primer"]),
     "passageKinds": list(module.Variants["Passage"]),
+    "questionKinds": list(module.Variants["Question"]),
+    "quizKeyParts": list(module.QuizKeyParts),
     "termMarkPattern": module.TermMarkPattern.pattern,
     "markedRoutes": module.routes_with(module.MarkedText),
     "codeSpans": {text: module.code_spans_of(text) for text in ("前 `a` 中 `b", "``a`` `b`")},
@@ -170,6 +174,8 @@ const {
   requiredRoutes: checkerRequiredRoutes,
   primerKinds: checkerPrimerKinds,
   passageKinds: checkerPassageKinds,
+  questionKinds: checkerQuestionKinds,
+  quizKeyParts: checkerQuizKeyParts,
   termMarkPattern: checkerTermMarkPattern,
   markedRoutes: checkerMarkedRoutes,
   codeSpans: checkerCodeSpans,
@@ -186,7 +192,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target, CompareDiagram, TraceRows, TraceLayout } = core;
+const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target, CompareDiagram, TraceRows, TraceLayout, Quiz } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -305,6 +311,20 @@ const tracedFlow = (extra = {}) => ({
   ...extra,
 });
 const traceRowsOf = (era, flow = tracedFlow()) => TraceRows.rowsOf(flow, era, traceMessages);
+// クイズの問い。4 択と YES / NO の答えは、既定(最初の選択肢・YES)と違うものにする。
+const quizGo = [{ kind: "flow", id: "w" }];
+const choiceQuestion = (extra = {}) => ({ id: "c", kind: "choice", title: "選ぶ問い", prompt: "どれですか", options: ["一", "二", "三", "四"], answer: 3, why: "理由", go: quizGo, ...extra });
+const yesNoQuestion = (extra = {}) => ({ id: "y", kind: "yesno", title: "真偽の問い", prompt: "そうですか", holds: false, why: "理由", go: quizGo, ...extra });
+const orderQuestion = (extra = {}) => ({ id: "o", kind: "order", title: "並べる問い", prompt: "並べてください", items: ["甲", "乙", "丙", "丁", "戊"], why: "理由", go: quizGo, ...extra });
+// 覚えた値を、鍵の代わりに問いの id で読む(鍵は JSON なので、期待値に綴りを写さない)。今の問いに無い鍵は「?」。
+const quizIdsOf = (questions) => {
+  const idAt = new Map(questions.map((question) => [Quiz.keyOf(question), question.id]));
+  return {
+    current: (progress) => idAt.get(progress.current) ?? "?",
+    entries: (record) => Object.entries(record).map(([key, value]) => [idAt.get(key) ?? "?", value]),
+    keyOf: (id) => Quiz.keyOf(questions.find((question) => question.id === id)),
+  };
+};
 // カードの配置の材料。手順を [送り手, 受け手] の組で書き、組ごとのやりとりを作る。
 const tracedLayoutOf = (flows) => {
   const idOf = ([from, to]) => `${from}>${to}`;
@@ -1260,7 +1280,7 @@ const cases = [
     expected: ["構造マップ: 機能 f", "構造マップ: domains", "構造マップ: 器", "構造マップ: 状態を読む", "構造マップ: 読む流れ", "構成の前後: view()", "構成の前後: view() → memo()", "構成の前後: 状態", "流れ図: 読む流れの 2 行目"],
   },
   {
-    label: "新しいキー(calls・actors・flows の手順の対応・features の review)の無い version 1 の解説は読め、構成の前後の呼び出しの粒度は「書かれていない」、流れ図は変更後だけ",
+    label: "新しいキー(calls・actors・quiz・flows の手順の対応・features の review)の無い version 1 の解説は読め、構成の前後の呼び出しの粒度は「書かれていない」、流れ図は変更後だけ",
     actual: () => {
       const result = explained(callsMap, explainOf({ concepts: callsConcepts, features: [featureNamed("f")], flows: [{ id: "w", label: "流れ", steps: [] }] }));
       return [result.reading.kind, CompareDiagram.fromCalls(result).kind, TraceRows.erasOf(result.lookup.flows.get("w"))];
@@ -1504,6 +1524,203 @@ const cases = [
     expected: false,
   },
   {
+    label: "クイズの答えの鍵は、問いの文・選択肢・並べる項目のどれか 1 つが変われば別になる",
+    actual: () => [
+      [choiceQuestion(), choiceQuestion({ prompt: "どれでしょう" })],
+      [choiceQuestion(), choiceQuestion({ options: ["一", "二", "三", "五"] })],
+      [orderQuestion(), orderQuestion({ items: ["甲", "乙", "丙", "丁", "己"] })],
+    ].map(([written, rewritten]) => Quiz.keyOf(written) === Quiz.keyOf(rewritten)),
+    expected: [false, false, false],
+  },
+  {
+    label: "クイズの題だけを書き直しても、答えの鍵は変わらない",
+    actual: () => Quiz.keyOf(choiceQuestion()) === Quiz.keyOf(choiceQuestion({ title: "書き直した題" })),
+    expected: true,
+  },
+  {
+    label: "題・why・go・答え(holds / answer)だけが違う 2 問は、同じ答えの鍵になる(解説の検査がこの 2 問を落とす理由)",
+    actual: () => [
+      [yesNoQuestion(), yesNoQuestion({ id: "y2", title: "別の題", why: "別の理由", go: [{ kind: "message", id: "m" }], holds: true })],
+      [choiceQuestion(), choiceQuestion({ id: "c2", title: "別の題", why: "別の理由", go: [{ kind: "message", id: "m" }], answer: 1 })],
+    ].map(([first, second]) => Quiz.keyOf(first) === Quiz.keyOf(second)),
+    expected: [true, true],
+  },
+  {
+    label: "クイズの答えの鍵の元にするキーは、解説の検査が重なりを落とすキーと同じ",
+    actual: () => Quiz.KeyParts,
+    expected: checkerQuizKeyParts,
+  },
+  {
+    label: "クイズの問いの kind は、解説の検査の Question の kind と同じ",
+    actual: () => Object.values(Quiz.Kinds),
+    expected: checkerQuestionKinds,
+  },
+  {
+    label: "並べ替えの始めの並びは、正しい順(書いた順)と違い、同じ問いなら毎回同じ",
+    actual: () => {
+      const start = Quiz.startOf(orderQuestion());
+      return [start.toSorted(), start.every((position, index) => position === index), JSON.stringify(Quiz.startOf(orderQuestion())) === JSON.stringify(start)];
+    },
+    expected: [[0, 1, 2, 3, 4], false, true],
+  },
+  {
+    label: "並べ替えの項目が 2 つなら、始めの並びは逆順",
+    actual: () => [Quiz.startOf(orderQuestion({ items: ["甲", "乙"] })), Quiz.startOf(orderQuestion({ items: ["前", "後"], prompt: "別の問い" }))],
+    expected: [[1, 0], [1, 0]],
+  },
+  {
+    label: "4 択は、answer と同じ番号を選べば正解、違う番号なら不正解",
+    actual: () => [Quiz.isCorrect(choiceQuestion(), 3), Quiz.isCorrect(choiceQuestion(), 1)],
+    expected: [true, false],
+  },
+  {
+    label: "YES / NO は、holds が true なら YES が正解で NO が不正解、false なら NO が正解で YES が不正解",
+    actual: () => [true, false].flatMap((holds) => [true, false].map((answer) => Quiz.isCorrect(yesNoQuestion({ holds }), answer))),
+    expected: [true, false, false, true],
+  },
+  {
+    label: "並べ替えは、書いた順と同じ並びなら正解、隣の 2 つを入れ替えた並びなら不正解",
+    actual: () => [Quiz.isCorrect(orderQuestion(), [0, 1, 2, 3, 4]), Quiz.isCorrect(orderQuestion(), [0, 2, 1, 3, 4])],
+    expected: [true, false],
+  },
+  {
+    label: "覚えた答えのうち、kind に合わない形・選択肢の範囲の外・今の問いに無い鍵のものは読まない",
+    actual: () => {
+      const questions = [choiceQuestion(), choiceQuestion({ id: "c2", prompt: "範囲の外" }), yesNoQuestion(), yesNoQuestion({ id: "y2", prompt: "読める真偽" }), orderQuestion(), orderQuestion({ id: "o2", prompt: "長さの違う並び" })];
+      const ids = quizIdsOf(questions);
+      const answers = {
+        [ids.keyOf("c")]: 2,
+        [ids.keyOf("c2")]: 5,
+        [ids.keyOf("y")]: 1,
+        [ids.keyOf("y2")]: false,
+        [ids.keyOf("o")]: [4, 3, 2, 1, 0],
+        [ids.keyOf("o2")]: [0, 1, 2],
+        [Quiz.keyOf(choiceQuestion({ prompt: "消えた問い" }))]: 1,
+      };
+      return ids.entries(Quiz.progressOf({ answers }, questions).answers);
+    },
+    expected: [["c", 2], ["y2", false], ["o", [4, 3, 2, 1, 0]]],
+  },
+  {
+    label: "今の問いは鍵で覚えるので、問いの並びを入れ替えても同じ問いから開く",
+    actual: () => {
+      const ids = quizIdsOf([choiceQuestion(), yesNoQuestion(), orderQuestion()]);
+      const saved = { current: ids.keyOf("y") };
+      return [ids.current(Quiz.progressOf(saved, [choiceQuestion(), yesNoQuestion(), orderQuestion()])), ids.current(Quiz.progressOf(saved, [orderQuestion(), choiceQuestion(), yesNoQuestion()]))];
+    },
+    expected: ["y", "y"],
+  },
+  {
+    label: "覚えた今の問いの鍵が今の問いに無ければ、最初の問いから開く",
+    actual: () => {
+      const questions = [orderQuestion(), yesNoQuestion(), choiceQuestion()];
+      const ids = quizIdsOf(questions);
+      return [ids.current(Quiz.progressOf({ current: Quiz.keyOf(yesNoQuestion({ prompt: "消えた問い" })) }, questions)), ids.current(Quiz.progressOf({ current: 1 }, questions))];
+    },
+    expected: ["o", "o"],
+  },
+  {
+    label: "並べ替えの途中は、項目の位置をちょうど 1 回ずつ使う並びだけを読み、長さが違う・同じ位置が重なる・範囲の外の並びは読まない",
+    actual: () => {
+      const questions = ["o", "o2", "o3", "o4"].map((id) => orderQuestion({ id, prompt: `並べてください ${id}` }));
+      const ids = quizIdsOf(questions);
+      const arrangements = { [ids.keyOf("o")]: [2, 0, 1, 4, 3], [ids.keyOf("o2")]: [0, 1], [ids.keyOf("o3")]: [0, 0, 1, 2, 3], [ids.keyOf("o4")]: [0, 1, 2, 3, 5] };
+      return ids.entries(Quiz.progressOf({ arrangements }, questions).arrangements);
+    },
+    expected: [["o", [2, 0, 1, 4, 3]]],
+  },
+  {
+    label: "並べ替えでない問いの鍵に付いた途中の並びは読まない",
+    actual: () => {
+      const questions = [choiceQuestion(), orderQuestion()];
+      const ids = quizIdsOf(questions);
+      // 4 択は items を持たないので、空の並びは項目の位置をちょうど 1 回ずつ使う並びになる。kind を見ないと読んでしまう。
+      return ids.entries(Quiz.progressOf({ arrangements: { [ids.keyOf("c")]: [], [ids.keyOf("o")]: [1, 0, 2, 3, 4] } }, questions).arrangements);
+    },
+    expected: [["o", [1, 0, 2, 3, 4]]],
+  },
+  {
+    label: "答えのある問いの途中の並びは読まない(答えは読む)",
+    actual: () => {
+      const questions = [orderQuestion(), orderQuestion({ id: "o2", prompt: "まだ答えていない問い" })];
+      const ids = quizIdsOf(questions);
+      const progress = Quiz.progressOf({ answers: { [ids.keyOf("o")]: [0, 1, 2, 3, 4] }, arrangements: { [ids.keyOf("o")]: [1, 0, 2, 3, 4], [ids.keyOf("o2")]: [1, 0, 2, 3, 4] } }, questions);
+      return [ids.entries(progress.answers), ids.entries(progress.arrangements)];
+    },
+    expected: [[["o", [0, 1, 2, 3, 4]]], [["o2", [1, 0, 2, 3, 4]]]],
+  },
+  {
+    label: "並べ替えを送ると、その問いの途中の並びだけが変わり、答えは無いまま",
+    actual: () => {
+      const questions = [orderQuestion(), orderQuestion({ id: "o2", prompt: "別の並べ替え" })];
+      const ids = quizIdsOf(questions);
+      const progress = Quiz.progressOf({ arrangements: { [ids.keyOf("o2")]: [4, 3, 2, 1, 0] } }, questions);
+      const next = Quiz.withArrangement(progress, ids.keyOf("o"), [1, 0, 2, 3, 4]);
+      return [ids.entries(next.answers), ids.entries(next.arrangements)];
+    },
+    expected: [[], [["o2", [4, 3, 2, 1, 0]], ["o", [1, 0, 2, 3, 4]]]],
+  },
+  {
+    label: "答えのある問いに並べ替えを送っても、覚えた値は変わらない",
+    actual: () => {
+      const questions = [orderQuestion()];
+      const ids = quizIdsOf(questions);
+      const progress = Quiz.progressOf({ answers: { [ids.keyOf("o")]: [0, 2, 1, 3, 4] } }, questions);
+      return JSON.stringify(Quiz.withArrangement(progress, ids.keyOf("o"), [1, 0, 2, 3, 4])) === JSON.stringify(progress);
+    },
+    expected: true,
+  },
+  {
+    label: "次の問題へで、今の問いは問いの並び(鍵の並びではない)で次の問いになり、最後の問いでは変わらない",
+    actual: () => {
+      const questions = [orderQuestion(), choiceQuestion(), yesNoQuestion()];
+      const ids = quizIdsOf(questions);
+      const first = Quiz.progressOf(null, questions);
+      const second = Quiz.withNext(first, questions);
+      const third = Quiz.withNext(second, questions);
+      const keys = questions.map((question) => Quiz.keyOf(question));
+      return [JSON.stringify(keys.toSorted()) === JSON.stringify(keys), [first, second, third, Quiz.withNext(third, questions)].map(ids.current)];
+    },
+    expected: [false, ["o", "c", "y", "y"]],
+  },
+  {
+    label: "答え合わせをすると、その問いの途中の並びは消え、答えだけが残る",
+    actual: () => {
+      const questions = [orderQuestion(), choiceQuestion()];
+      const ids = quizIdsOf(questions);
+      const progress = Quiz.progressOf({ arrangements: { [ids.keyOf("o")]: [1, 0, 2, 3, 4] } }, questions);
+      const next = Quiz.withAnswer(progress, ids.keyOf("o"), [1, 0, 2, 3, 4]);
+      return [ids.entries(next.answers), ids.entries(next.arrangements)];
+    },
+    expected: [[["o", [1, 0, 2, 3, 4]]], []],
+  },
+  {
+    label: "この問題をやり直すと、その問いの答えと途中の並びだけが消え、ほかの問いの答えと途中の並びは残る",
+    actual: () => {
+      const questions = [orderQuestion(), orderQuestion({ id: "o2", prompt: "別の並べ替え" }), choiceQuestion()];
+      const ids = quizIdsOf(questions);
+      const progress = {
+        current: ids.keyOf("o"),
+        answers: { [ids.keyOf("o")]: [0, 1, 2, 3, 4], [ids.keyOf("c")]: 2 },
+        arrangements: { [ids.keyOf("o")]: [1, 0, 2, 3, 4], [ids.keyOf("o2")]: [4, 3, 2, 1, 0] },
+      };
+      const next = Quiz.withoutAnswer(progress, ids.keyOf("o"));
+      return [ids.current(next), ids.entries(next.answers), ids.entries(next.arrangements)];
+    },
+    expected: ["o", [["c", 2]], [["o2", [4, 3, 2, 1, 0]]]],
+  },
+  {
+    label: "答えを消す(覚えた値を読まずに作り直す)と、答え・途中の並び・今の問いがすべて初めに戻る",
+    actual: () => {
+      const questions = [orderQuestion(), choiceQuestion()];
+      const ids = quizIdsOf(questions);
+      const answered = Quiz.withAnswer(Quiz.withArrangement(Quiz.withCurrent(Quiz.progressOf(null, questions), ids.keyOf("c")), ids.keyOf("o"), [1, 0, 2, 3, 4]), ids.keyOf("c"), 2);
+      const cleared = Quiz.progressOf(null, questions);
+      return [[ids.current(answered), ids.entries(answered.answers).length, ids.entries(answered.arrangements).length], [ids.current(cleared), cleared.answers, cleared.arrangements]];
+    },
+    expected: [["c", 1, 1], ["o", {}, {}]],
+  },
+  {
     label: "確認の印の鍵は、sha が変われば別",
     actual: () => ReviewCheck.keyOf(shaOf(1), "見るところ") === ReviewCheck.keyOf(shaOf(2), "見るところ"),
     expected: false,
@@ -1517,9 +1734,10 @@ const cases = [
       ScreenChoice.choose("#primer"),
       ScreenChoice.choose("#compare"),
       ScreenChoice.choose("#trace"),
+      ScreenChoice.choose("#quiz"),
       ScreenChoice.choose("story"),
     ],
-    expected: ["story", "test", "impact", "primer", "compare", "trace", "story"],
+    expected: ["story", "test", "impact", "primer", "compare", "trace", "quiz", "story"],
   },
   {
     label: "ハッシュが無いか画面を指していなければ構造マップ",

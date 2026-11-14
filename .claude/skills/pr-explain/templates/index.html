@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-8ZAHcndl2M5h317vDyNpoUGCYE6te4jZUBgTIePBTdQ='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-sNlD4fjNnDXVIxAHWkP5BpEBFEB7/PzY+I3CdUoHia4='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -961,6 +961,58 @@ button.change-item:hover { background: var(--track); }
 .trace-row-was { flex-basis: 100%; font-size: 11.5px; color: var(--ink-3); }
 .trace-row-flag { flex-basis: 100%; font-size: 11px; color: var(--mod); }
 @media (max-width: 760px) { .trace-summary, .trace-columns { grid-template-columns: minmax(0, 1fr); } }
+.quiz-questions { padding: 0 10px 24px; gap: 4px; }
+.quiz-score { display: flex; flex-direction: column; gap: 4px; padding: 0 6px 10px; }
+.quiz-score-line { display: flex; align-items: baseline; gap: 6px; }
+.quiz-score-line b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.quiz-score-line span { font-size: 12px; color: var(--ink-3); }
+.quiz-item { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; align-items: start; width: 100%; padding: 8px 9px; border: 1px solid transparent; border-radius: 8px; }
+.quiz-item:hover { background: var(--hover); }
+.quiz-item.is-picked { background: var(--surface); border-color: var(--accent); }
+.quiz-mark { display: grid; place-items: center; width: 20px; height: 20px; border: 1.5px solid var(--line-strong); border-radius: 50%; font-size: 11px; font-weight: 700; color: var(--ink-3); }
+.quiz-mark.is-right { background: var(--add-mark); border-color: var(--add-mark); color: #FFFFFF; }
+.quiz-mark.is-wrong { background: var(--del-mark); border-color: var(--del-mark); color: #FFFFFF; }
+.quiz-item-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.quiz-item-kind { font-size: 11px; color: var(--ink-3); }
+.quiz-item-title { font-size: 12.5px; line-height: 1.5; overflow-wrap: anywhere; }
+.quiz-reset { display: flex; padding: 12px 6px 0; }
+.quiz-card { display: flex; flex-direction: column; gap: 14px; max-width: 720px; }
+.quiz-head { display: flex; align-items: center; gap: 8px; }
+.quiz-kind { font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-tint); padding: 2px 7px; border-radius: 4px; }
+.quiz-number { font-size: 12px; color: var(--ink-3); }
+.quiz-prompt { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.6; text-wrap: pretty; }
+.quiz-options { display: grid; gap: 8px; }
+.quiz-options.is-yesno { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.quiz-option { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; align-items: start; padding: 11px 12px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--surface); font-size: 13.5px; line-height: 1.6; color: var(--ink); text-align: left; cursor: pointer; }
+.quiz-options.is-yesno .quiz-option { grid-template-columns: minmax(0, 1fr); padding: 16px; font-size: 15px; font-weight: 600; text-align: center; }
+.quiz-option:hover:not(:disabled) { border-color: var(--accent); }
+.quiz-option:disabled { cursor: default; }
+.quiz-option-key { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: var(--chip); font-family: var(--mono); font-size: 11.5px; font-weight: 600; color: var(--ink-2); }
+.quiz-option.is-right, .quiz-order-item.is-right { border-color: var(--add-mark); background: rgba(46, 157, 91, .12); }
+.quiz-option.is-wrong, .quiz-order-item.is-wrong { border-color: var(--del-mark); background: rgba(210, 69, 58, .12); }
+.quiz-option.is-right .quiz-option-key { background: var(--add-mark); color: #FFFFFF; }
+.quiz-option.is-wrong .quiz-option-key { background: var(--del-mark); color: #FFFFFF; }
+.quiz-order { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.quiz-order-item { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 9px 10px; border: 1px solid var(--line-strong); border-radius: 9px; background: var(--surface); font-size: 13.5px; line-height: 1.5; }
+/* つかむのは項目のどこでもよい(↑ ↓ のボタンを除く)。touch-action を切らないと、触ってつかむとスクロールに取られる。 */
+.quiz-order-item.is-movable { cursor: grab; touch-action: none; user-select: none; transition: transform .15s; }
+.quiz-order-item.is-dragging { position: relative; z-index: 2; cursor: grabbing; transition: none; border-color: var(--accent); box-shadow: 0 6px 18px rgba(29, 31, 36, .18); }
+.quiz-order-position { font-family: var(--mono); font-size: 12px; color: var(--ink-3); text-align: center; }
+.quiz-order-text { overflow-wrap: anywhere; }
+.quiz-order-moves { display: flex; gap: 4px; }
+.quiz-move { width: 28px; height: 28px; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); font-size: 12px; cursor: pointer; }
+.quiz-move:disabled { opacity: .35; cursor: default; }
+.quiz-order-should { grid-column: 2 / 4; font-size: 11.5px; color: var(--del); }
+.quiz-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.quiz-primary { padding: 6px 12px; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent); font-size: 12px; font-weight: 500; color: #FFFFFF; cursor: pointer; }
+.quiz-primary:hover { background: var(--accent-hover); }
+.quiz-verdict { padding: 12px 14px; border: 1px solid; border-radius: 10px; }
+.quiz-verdict.is-right { border-color: var(--add-mark); background: rgba(46, 157, 91, .12); }
+.quiz-verdict.is-wrong { border-color: var(--del-mark); background: rgba(210, 69, 58, .12); }
+.quiz-verdict-head { margin-bottom: 4px; font-weight: 700; }
+.quiz-verdict.is-right .quiz-verdict-head { color: var(--add); }
+.quiz-verdict.is-wrong .quiz-verdict-head { color: var(--del); }
+.quiz-verdict p { margin: 0; font-size: 13px; line-height: 1.75; }
 /* 振る舞いと技術の手引きの画面だけ、狭い幅で右の欄を隠して根拠を各節に畳み(1180px 以下)、さらに目次も隠してページ全体をスクロールする(760px 以下)。
    この 2 つの @media は判定表を通らず、表示確認でしか守られていない。 */
 @media (max-width: 1180px) {
@@ -1695,10 +1747,10 @@ button.change-item:hover { background: var(--track); }
     },
   });
 
-  const Screens = Object.freeze({ Map: "map", Story: "story", Test: "test", Impact: "impact", Primer: "primer", Compare: "compare", Trace: "trace" });
+  const Screens = Object.freeze({ Map: "map", Story: "story", Test: "test", Impact: "impact", Primer: "primer", Compare: "compare", Trace: "trace", Quiz: "quiz" });
   const isScreen = (value) => Object.values(Screens).includes(value);
   /** 画面の名前(タブと、画面をまたぐチップの名前)。 */
-  const ScreenLabels = Object.freeze({ map: "構造マップ", story: "変更の経緯", test: "テスト", impact: "振る舞い", primer: "技術の手引き", compare: "構成の前後", trace: "流れ図" });
+  const ScreenLabels = Object.freeze({ map: "構造マップ", story: "変更の経緯", test: "テスト", impact: "振る舞い", primer: "技術の手引き", compare: "構成の前後", trace: "流れ図", quiz: "クイズ" });
   /** 構成の前後の粒度。呼び出し(解説の `calls`)とモジュール(地図の変更ファイルと依存)。 */
   const CompareGrains = Object.freeze({ Calls: "calls", Modules: "modules" });
 
@@ -2003,7 +2055,7 @@ button.change-item:hover { background: var(--track); }
   /** ページが組み立てに使う解説の形。道筋とその先の値の種類(`Routes`)と、欠けてはいけない道筋(`Required`)で持つ。 */
   const ExplainShape = (() => {
     // 形を見る道筋と、その先の値の種類。`build-pr-explain.py` の Shapes から導いたものと同じ並びで、`pr-explain-core-cases.sh` が
-    // 突き合わせる。primers・terms と、features の review・commitStories の featureRanges・calls・actors と、flows の gist・text・
+    // 突き合わせる。primers・terms と、features の review・commitStories の featureRanges・calls・actors・quiz と、flows の gist・text・
     // beforeSteps・stepChanges・measure の下は Shapes から機械的に導くので、文字列をすべて見る(組み立てが落ちるキーを選り分けない)。
     // 必須の欠けも kind ごとに見る(`Required`)。`Dom.proseParts` と `TermMarks.piecesOf` は文を文字列として割り、抜粋の段は
     // `excerptBoxesOf` が `excerpt` の中を読むので、文字列でない値も欠けた値も組み立てを落とし、ページ全体を出なくする。impact は
@@ -2114,6 +2166,18 @@ button.change-item:hover { background: var(--track); }
       ["flows[].measure.what", "text"],
       ["flows[].measure.before", "text"],
       ["flows[].measure.after", "text"],
+      ["quiz", "records"],
+      ["quiz[].id", "id"],
+      ["quiz[].title", "text"],
+      ["quiz[].prompt", "text"],
+      ["quiz[].why", "text"],
+      ["quiz[].go", "records"],
+      ["quiz[].go[].id", "id"],
+      ["quiz[].go[].layer", "text"],
+      ["quiz[].go[].path", "text"],
+      ["quiz[].go[].flow", "id"],
+      ["quiz[].options", "texts"],
+      ["quiz[].items", "texts"],
       ["tests[].excerpt.emphasis", "records"],
     ]);
     // 欠けていれば崩れとする道筋。primers・terms の下の必須のキーのうち、値が文(text)か 1 つのオブジェクト(record)のもの。
@@ -2422,7 +2486,7 @@ button.change-item:hover { background: var(--track); }
     /**
      * ページが組み立てに使う大まかな形だけを見る。細かい形は公開する前に build-pr-explain.py が見ている。
      * @returns 型が違うか、必須なのに欠けたキー(`impact`・`primers`・`terms`・`features[].review`・`commitStories[].featureRanges`・
-     *   `calls`・`actors`・flows の gist・text・beforeSteps・stepChanges・measure・`tests[].excerpt.emphasis` は道筋)。どちらも無ければ null
+     *   `calls`・`actors`・`quiz`・flows の gist・text・beforeSteps・stepChanges・measure・`tests[].excerpt.emphasis` は道筋)。どちらも無ければ null
      */
     const shapeProblemOf = (explain) => {
       const overview = explain.overview;
@@ -3866,8 +3930,117 @@ button.change-item:hover { background: var(--track); }
     });
   })();
 
+  /**
+   * クイズ(解説の `quiz`)の正誤と、読み手のブラウザに覚える進み具合。進み具合は `{current, answers, arrangements}` で、current は
+   * 今の問いの鍵(問いが無ければ null)、answers は鍵 → 答え(choice は選んだ選択肢の 1 始まりの番号、yesno は真偽、order は項目の
+   * 位置(書いた順の 0 始まり)の並び)、arrangements は鍵 → 答える前の並べ替えの途中(項目の位置の並び)。
+   */
+  const Quiz = (() => {
+    // 問いの kind。綴りは `build-pr-explain.py` の Variants の Question と同じで、`pr-explain-core-cases.sh` が突き合わせる。
+    const Kinds = Object.freeze({ Choice: "choice", YesNo: "yesno", Order: "order" });
+    // 答えの鍵の元にするキー。解説の検査の `QuizKeyParts`(この組が同じ問いを落とす)と同じで、`pr-explain-core-cases.sh` が突き合わせる。
+    const KeyParts = Object.freeze(["prompt", "options", "items"]);
+
+    /**
+     * 問いの鍵。番号や id で覚えると、問いを書き直したり並べ替えたりしたときに前の答えが別の問いへ移る。だから問いそのもので作る
+     * (`ReviewCheck.keyOf` と同じ)。
+     * @returns `KeyParts` の値(無いキーは空の配列)の並びの JSON。題・why・go・答えは入れないので、題を書き直しても変わらない
+     */
+    const keyOf = (question) => JSON.stringify(KeyParts.map((part) => question[part] ?? []));
+    const itemsOf = (question) => listOf(question.items);
+    /** 0〜count − 1 の位置をちょうど 1 回ずつ使う並びか。 */
+    const isArrangement = (value, count) => {
+      const isPositionList = Array.isArray(value) && value.every((position) => Number.isInteger(position) && position >= 0 && position < count);
+      return isPositionList && value.length === count && new Set(value).size === count;
+    };
+    /** その問いの答えとして読める形か(choice は選択肢の数の中の番号、yesno は真偽、order は項目の位置の並び)。kind は語彙にあるもの。 */
+    const isAnswerOf = (question, answer) => {
+      switch (question.kind) {
+        case Kinds.Choice:
+          return Number.isInteger(answer) && answer >= 1 && answer <= listOf(question.options).length;
+        case Kinds.YesNo:
+          return typeof answer === "boolean";
+        case Kinds.Order:
+          return isArrangement(answer, itemsOf(question).length);
+      }
+    };
+    /** 文字列から 32 ビットの数を作る(FNV-1a を、バイトではなく文字の符号位置に当てたもの)。 */
+    const hashOf = (text) => [...text].reduce((hash, char) => Math.imul(hash ^ char.codePointAt(0), 16777619) >>> 0, 2166136261);
+    const withoutKey = (record, key) => Object.fromEntries(Object.entries(record).filter(([candidate]) => candidate !== key));
+    const entriesOf = (value) => (isRecord(value) ? Object.entries(value) : []);
+
+    return Object.freeze({
+      Kinds,
+      KeyParts,
+      keyOf,
+      /**
+       * 並べ替えの、答える前の始めの並び。項目の位置を問いの鍵から作った数の順に並べるので、同じ問いなら毎回同じ並びになる。
+       * @returns 項目の位置の並び。書いた順(正しい順)と同じになったときは逆順(項目が 2 つなら、いつも逆順)
+       */
+      startOf: (question) => {
+        const key = keyOf(question);
+        const positions = itemsOf(question).map((_, index) => index);
+        const mixed = positions.toSorted((a, b) => hashOf(`${key}#${a}`) - hashOf(`${key}#${b}`));
+        const isInOrder = mixed.every((position, index) => position === index);
+        return isInOrder ? positions.toReversed() : mixed;
+      },
+      /**
+       * 答えが正しいか。kind は語彙にあるもの。
+       * @param answer その問いの答え(`progressOf` が読めるものとして残した形)
+       */
+      isCorrect: (question, answer) => {
+        switch (question.kind) {
+          case Kinds.Choice:
+            return answer === question.answer;
+          case Kinds.YesNo:
+            return answer === question.holds;
+          case Kinds.Order:
+            return answer.every((position, index) => position === index);
+        }
+      },
+      /**
+       * ブラウザに覚えた値を、今の問いの進み具合として読む。読めないものは捨てる(`savedChecksOf` と同じ考え方)。
+       * @param saved 覚えた値(無ければ null)
+       * @param questions 今の解説の問い(kind が語彙にあるもの)
+       * @returns 進み具合。答えは kind に合わない形・範囲の外・今の問いに無い鍵のもの、途中の並びは並べ替えでない問い・今の問いに無い
+       *   鍵・位置をちょうど 1 回ずつ使っていない並び・答えのある問いのものを読まない。今の問いの鍵が今の問いに無ければ、最初の問い
+       */
+      progressOf: (saved, questions) => {
+        const questionAt = new Map(questions.map((question) => [keyOf(question), question]));
+        const record = isRecord(saved) ? saved : {};
+        const answers = Object.fromEntries(entriesOf(record.answers).filter(([key, answer]) => questionAt.has(key) && isAnswerOf(questionAt.get(key), answer)));
+        const isHalfway = ([key, arrangement]) => {
+          const question = questionAt.get(key);
+          const isOrderQuestion = question !== undefined && question.kind === Kinds.Order;
+          return isOrderQuestion && !Object.hasOwn(answers, key) && isArrangement(arrangement, itemsOf(question).length);
+        };
+        const arrangements = Object.fromEntries(entriesOf(record.arrangements).filter(isHalfway));
+        const isKnownCurrent = isString(record.current) && questionAt.has(record.current);
+        const first = questions.length === 0 ? null : keyOf(questions[0]);
+        return { current: isKnownCurrent ? record.current : first, answers, arrangements };
+      },
+      /** 今の問いを、その鍵の問いにする。 */
+      withCurrent: (progress, key) => ({ ...progress, current: key }),
+      /** 今の問いを、問いの並びで次の問いにする。今の問いが最後(か問いに無い)なら変えない。 */
+      withNext: (progress, questions) => {
+        const index = questions.findIndex((question) => keyOf(question) === progress.current);
+        const next = index < 0 ? undefined : questions[index + 1];
+        return next === undefined ? progress : { ...progress, current: keyOf(next) };
+      },
+      /** 並べ替えの途中を、その並びにする。答えのある問いは変えない。 */
+      withArrangement: (progress, key, arrangement) => {
+        if (Object.hasOwn(progress.answers, key)) return progress;
+        return { ...progress, arrangements: { ...progress.arrangements, [key]: arrangement } };
+      },
+      /** 答える。その問いの途中の並びは消す。 */
+      withAnswer: (progress, key, answer) => ({ ...progress, answers: { ...progress.answers, [key]: answer }, arrangements: withoutKey(progress.arrangements, key) }),
+      /** その問いをやり直す。その問いの答えと途中の並びを消す。 */
+      withoutAnswer: (progress, key) => ({ ...progress, answers: withoutKey(progress.answers, key), arrangements: withoutKey(progress.arrangements, key) }),
+    });
+  })();
+
   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
-  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target, CompareDiagram, TraceRows, TraceLayout });
+  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target, CompareDiagram, TraceRows, TraceLayout, Quiz });
   if (typeof document === "undefined") {
     globalThis.prExplainCore = core;
     return;
@@ -3962,6 +4135,7 @@ button.change-item:hover { background: var(--track); }
     primer: { left: "clamp(220px, 18vw, 260px)", right: "clamp(300px, 26vw, 360px)" },
     compare: { left: "clamp(220px, 18vw, 260px)", right: "clamp(300px, 26vw, 360px)" },
     trace: { left: "clamp(230px, 20vw, 280px)", right: "clamp(280px, 24vw, 340px)" },
+    quiz: { left: "clamp(240px, 20vw, 290px)", right: "clamp(280px, 24vw, 340px)" },
   };
 
   /** パネルの幅をドラッグで変え、画面ごとに残す。ダブルクリックで既定の幅へ戻す。 */
@@ -8226,7 +8400,233 @@ button.change-item:hover { background: var(--track); }
     };
   };
 
-  const ScreenBuilders = { map: MapScreen, story: StoryScreen, test: TestScreen, impact: ImpactScreen, primer: PrimerScreen, compare: CompareScreen, trace: TraceScreen };
+  const QuizKindLabels = { choice: "4 択", yesno: "YES / NO", order: "並べ替え" };
+  const QuizOptionKeys = ["A", "B", "C", "D"];
+  const QuizYesNoChoices = [{ value: true, label: "YES" }, { value: false, label: "NO" }];
+
+  /** 並べ替えの並びの、from 番目の項目を to 番目へ移した並び。 */
+  const movedOf = (arrangement, from, to) => {
+    const rest = arrangement.filter((_, index) => index !== from);
+    return [...rest.slice(0, to), arrangement[from], ...rest.slice(to)];
+  };
+
+  /**
+   * 並べ替えの項目をポインタでつかんで動かせるようにする。つかんだ項目はポインタに付いてきて、ほかの項目は空く場所へずれる。
+   * @param rows 項目の要素(並びの順)
+   * @param onDrop 離したときに、つかんだ項目の位置と、移す先の位置を受け取る(動かさずに離したら同じ位置)
+   */
+  const attachOrderDrag = (rows, onDrop) => rows.forEach((row, from) => {
+    row.addEventListener("pointerdown", (event) => {
+      const isGrab = event.button === 0 && event.target.closest("button") === null;
+      if (!isGrab) return;
+      event.preventDefault();
+      row.setPointerCapture(event.pointerId);
+      const rects = rows.map((candidate) => candidate.getBoundingClientRect());
+      // 欄には文字の大きさの倍率(zoom)が掛かっているので、ポインタの動き(画面の px)を倍率で割ってから transform に使う。
+      const scale = rects[from].height / row.offsetHeight;
+      const pitch = rows.length > 1 ? rects[1].top - rects[0].top : 0;
+      const middleOf = (rect) => rect.top + rect.height / 2;
+      let to = from;
+      row.classList.add("is-dragging");
+      const move = (moveEvent) => {
+        const shift = moveEvent.clientY - event.clientY;
+        const middle = middleOf(rects[from]) + shift;
+        to = rects.filter((rect, index) => index !== from && middleOf(rect) < middle).length;
+        row.style.transform = `translateY(${shift / scale}px)`;
+        rows.forEach((other, index) => {
+          if (index === from) return;
+          const isPassed = from < to ? index > from && index <= to : index >= to && index < from;
+          other.style.transform = isPassed ? `translateY(${(from < to ? -pitch : pitch) / scale}px)` : "";
+        });
+      };
+      const finish = (isDropped) => {
+        row.removeEventListener("pointermove", move);
+        row.removeEventListener("pointerup", drop);
+        row.removeEventListener("pointercancel", cancel);
+        onDrop(from, isDropped ? to : from);
+      };
+      const drop = () => finish(true);
+      const cancel = () => finish(false);
+      row.addEventListener("pointermove", move);
+      row.addEventListener("pointerup", drop);
+      row.addEventListener("pointercancel", cancel);
+    });
+  });
+
+  /**
+   * クイズの画面。左に正解数と問いの一覧、中に今の問いと答え合わせ、右に答えの根拠の画面へ移るチップを出す。答え・今の問い・
+   * 並べ替えの途中は、このブラウザだけに PR ごとに覚える(`Quiz`)。
+   */
+  const QuizScreen = (explained, go) => {
+    const kinds = Object.values(Quiz.Kinds);
+    const questions = explained.explain === null ? [] : listOf(explained.explain.quiz).filter((question) => isRecord(question) && kinds.includes(question.kind));
+    const storeKey = `prExplain.${explained.map.pr}.quiz`;
+    let progress = Quiz.progressOf(BrowserStore.read(storeKey), questions);
+    /** 進み具合を変えて覚え、描き直す。 */
+    const save = (next) => {
+      progress = next;
+      BrowserStore.write(storeKey, progress);
+      render();
+    };
+    const answerOf = (key) => (Object.hasOwn(progress.answers, key) ? { kind: "answered", answer: progress.answers[key] } : { kind: "unanswered" });
+
+    const leftSub = el("span", { class: "panel-sub", text: `${questions.length} 問` });
+    const leftBody = el("div", { class: "panel-scroll quiz-questions" });
+    const card = el("div", { class: "quiz-card" });
+    const body = el("div", { class: "stage-body quiz-body" }, [card]);
+    const main = el("main", { class: "stage" }, [body]);
+    const side = el("div", { class: "side" });
+
+    const renderLeft = () => {
+      const verdicts = questions.map((question) => {
+        const answered = answerOf(Quiz.keyOf(question));
+        return answered.kind === "answered" ? Quiz.isCorrect(question, answered.answer) : null;
+      });
+      const correctCount = verdicts.filter((verdict) => verdict === true).length;
+      const answeredCount = verdicts.filter((verdict) => verdict !== null).length;
+      const items = questions.map((question, index) => {
+        const key = Quiz.keyOf(question);
+        const verdict = verdicts[index];
+        const markText = verdict === null ? String(index + 1) : verdict ? "✓" : "✕";
+        return pressable("button", { class: classesOf("quiz-item plain-button", { "is-picked": key === progress.current }) }, [
+          el("span", { class: classesOf("quiz-mark", { "is-right": verdict === true, "is-wrong": verdict === false }), text: markText }),
+          el("span", { class: "quiz-item-body" }, [el("span", { class: "quiz-item-kind", text: QuizKindLabels[question.kind] }), el("span", { class: "quiz-item-title", text: optionalText(question.title) ?? "" })]),
+        ], () => save(Quiz.withCurrent(progress, key)));
+      });
+      const reset = pressable("button", { class: "outline-button", text: "答えを消す" }, [], () => save(Quiz.progressOf(null, questions)));
+      leftBody.replaceChildren(
+        el("div", { class: "quiz-score" }, [el("span", { class: "eyebrow", text: "理解の確認" }), el("span", { class: "quiz-score-line" }, [el("b", { text: String(correctCount) }), el("span", { text: `/ ${questions.length} 正解 · 回答 ${answeredCount}` })])]),
+        ...items,
+        el("div", { class: "quiz-reset" }, [reset]),
+      );
+    };
+
+    /** 4 択と YES / NO の答えのボタン。答えた後は押せず、正しい答えと、選んだ違う答えに印を付ける。 */
+    const answerButtonOf = ({ question, answered, value }, children) => {
+      const isAnswered = answered.kind === "answered";
+      const isRight = isAnswered && Quiz.isCorrect(question, value);
+      const isWrong = isAnswered && value === answered.answer && !isRight;
+      const button = pressable("button", { class: classesOf("quiz-option", { "is-right": isRight, "is-wrong": isWrong }) }, children, () => save(Quiz.withAnswer(progress, Quiz.keyOf(question), value)));
+      button.disabled = isAnswered;
+      return button;
+    };
+
+    const choiceOptionsOf = (question, answered) => el("div", { class: "quiz-options" }, listOf(question.options).map((option, index) => answerButtonOf({ question, answered, value: index + 1 }, [
+      el("span", { class: "quiz-option-key", text: QuizOptionKeys[index] ?? String(index + 1) }),
+      prose("span", { class: "quiz-option-text" }, option),
+    ])));
+
+    const yesNoOptionsOf = (question, answered) => el("div", { class: "quiz-options is-yesno" }, QuizYesNoChoices.map(({ value, label }) => answerButtonOf({ question, answered, value }, [label])));
+
+    /** 並べ替えの項目。答える前は ↑ ↓ とドラッグで動かし、答えた後は位置ごとの正誤と、違う位置には正しい位置を添える。 */
+    const orderListOf = (question, answered) => {
+      const key = Quiz.keyOf(question);
+      const items = listOf(question.items);
+      const isAnswered = answered.kind === "answered";
+      const arrangement = isAnswered ? answered.answer : progress.arrangements[key] ?? Quiz.startOf(question);
+      const arrange = (from, to) => (from === to ? render() : save(Quiz.withArrangement(progress, key, movedOf(arrangement, from, to))));
+      const rows = arrangement.map((position, at) => {
+        const isRight = isAnswered && position === at;
+        const isWrong = isAnswered && position !== at;
+        const moveButtonOf = (label, text, to) => {
+          const button = pressable("button", { class: "quiz-move", "aria-label": label, text }, [], () => arrange(at, to));
+          button.disabled = to < 0 || to >= arrangement.length;
+          return button;
+        };
+        const tail = isAnswered
+          ? [...(isWrong ? [el("span", { class: "quiz-order-should", text: `正しくは ${position + 1} 番目` })] : [])]
+          : [el("span", { class: "quiz-order-moves" }, [moveButtonOf("上へ", "↑", at - 1), moveButtonOf("下へ", "↓", at + 1)])];
+        return el("li", { class: classesOf("quiz-order-item", { "is-right": isRight, "is-wrong": isWrong, "is-movable": !isAnswered }) }, [
+          el("span", { class: "quiz-order-position", text: String(at + 1) }),
+          el("span", { class: "quiz-order-text", text: items[position] }),
+          ...tail,
+        ]);
+      });
+      if (!isAnswered) attachOrderDrag(rows, arrange);
+      const check = isAnswered ? [] : [el("div", { class: "quiz-actions" }, [pressable("button", { class: "quiz-primary", text: "答え合わせ" }, [], () => save(Quiz.withAnswer(progress, key, arrangement)))])];
+      return [el("ol", { class: "quiz-order" }, rows), ...check];
+    };
+
+    const answerAreaOf = (question, answered) => {
+      switch (question.kind) {
+        case Quiz.Kinds.Choice:
+          return [choiceOptionsOf(question, answered)];
+        case Quiz.Kinds.YesNo:
+          return [yesNoOptionsOf(question, answered)];
+        case Quiz.Kinds.Order:
+          return orderListOf(question, answered);
+      }
+    };
+
+    /** 答えた後の正誤と why、次の問題へ(最後の問いでは出さない)とやり直し。 */
+    const verdictOf = (question, answered, index) => {
+      const key = Quiz.keyOf(question);
+      const isRight = Quiz.isCorrect(question, answered.answer);
+      const isLast = index === questions.length - 1;
+      const next = isLast ? [] : [pressable("button", { class: "quiz-primary", text: "次の問題へ" }, [], () => save(Quiz.withNext(progress, questions)))];
+      const retry = pressable("button", { class: "outline-button", text: "この問題をやり直す" }, [], () => save(Quiz.withoutAnswer(progress, key)));
+      return [
+        el("div", { class: classesOf("quiz-verdict", { "is-right": isRight, "is-wrong": !isRight }) }, [
+          el("div", { class: "quiz-verdict-head", text: isRight ? "正解" : "不正解" }),
+          ...(isString(question.why) ? [prose("p", {}, question.why)] : []),
+        ]),
+        el("div", { class: "quiz-actions" }, [...next, retry]),
+      ];
+    };
+
+    /** 根拠のチップ。答えるまでは押せず、行き先の画面で選べない Target は答えた後も押せずに「図に無い」と添える。 */
+    const renderSide = (question, answered) => {
+      const isAnswered = answered.kind === "answered";
+      const chips = listOf(question.go).filter(isRecord).map((target) => {
+        const canShow = go.canShow(target);
+        const title = canShow ? (isAnswered ? "根拠の画面へ移る" : "答えると押せます") : "指している先が図に無いので移れません";
+        const chip = pressable("button", { class: "flow-chip", title }, [Target.captionOf(target, explained), el("span", { class: "arrow", text: canShow ? "↗" : "図に無い" })], () => go.toTarget(target));
+        chip.disabled = !(isAnswered && canShow);
+        return chip;
+      });
+      side.replaceChildren(el("div", { class: "side-block" }, [
+        el("p", { class: "side-note", text: isAnswered ? "答えの根拠を、ほかの画面で確かめられます。" : "答えると、根拠の画面へ移るチップが押せるようになります。" }),
+        el("div", { class: "flow-chips" }, chips),
+      ]));
+    };
+
+    let shownKey = null;
+    const render = () => {
+      renderLeft();
+      const index = questions.findIndex((question) => Quiz.keyOf(question) === progress.current);
+      const question = questions[index];
+      const answered = answerOf(progress.current);
+      card.replaceChildren(
+        el("div", { class: "quiz-head" }, [el("span", { class: "quiz-kind", text: QuizKindLabels[question.kind] }), el("span", { class: "quiz-number", text: `問 ${index + 1} / ${questions.length}` })]),
+        prose("p", { class: "quiz-prompt" }, isString(question.prompt) ? question.prompt : ""),
+        ...answerAreaOf(question, answered),
+        ...(answered.kind === "answered" ? verdictOf(question, answered, index) : []),
+      );
+      renderSide(question, answered);
+      // 問いを替えたときだけ、中の欄を上へ戻す(答えや並べ替えでは読んでいる位置を動かさない)。
+      if (shownKey !== progress.current) main.scrollTop = 0;
+      shownKey = progress.current;
+    };
+
+    const emptyText = explained.explain === null ? "解説なし" : "書かれていない";
+    if (questions.length === 0) {
+      card.replaceChildren(el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: "クイズ" }), emptyOf(emptyText)]));
+      leftBody.replaceChildren(emptyOf(emptyText));
+    } else {
+      render();
+    }
+
+    return {
+      summary: [],
+      controls: [],
+      tablist: null,
+      left: panelOf("left", [panelHead("問題", "", [leftSub]), leftBody]),
+      main,
+      right: panelOf("right", [panelHead("根拠", "ほかの画面で確かめる"), side]),
+    };
+  };
+
+  const ScreenBuilders = { map: MapScreen, story: StoryScreen, test: TestScreen, impact: ImpactScreen, primer: PrimerScreen, compare: CompareScreen, trace: TraceScreen, quiz: QuizScreen };
 
   /** 解説が使えない理由を帯の 1 行にする。 */
   const missingTextOf = (reason) => {
@@ -8349,8 +8749,9 @@ button.change-item:hover { background: var(--track); }
         /** @returns Target の行き先の画面で、指すものを選べるか */
         canShow: (target) => built[Target.destinationOf(target).screen].canShow(target),
       };
-      // 構造マップは組むときに、highlights の行き先がほかの画面で選べるか(`go.canShow`)を聞くので、行き先になる構成の前後と流れ図を先に組む。
-      const Destinations = [Screens.Compare, Screens.Trace];
+      // 構造マップ(highlights)とクイズ(根拠のチップ)は組むときに、Target の行き先の画面で選べるか(`go.canShow`)を聞くので、行き先になる
+      // 画面を先に組む。構造マップも構成の前後と流れ図に聞くので、その 2 つの後に組む。
+      const Destinations = [Screens.Compare, Screens.Trace, Screens.Map];
       const BuildOrder = [...Destinations, ...Object.values(Screens).filter((screen) => !Destinations.includes(screen))];
       const built = {};
       for (const screen of BuildOrder) built[screen] = ScreenBuilders[screen](explained, go);

@@ -10,7 +10,7 @@
 - `pr-explain-shape` — 読めない・形が表と違う(必須の欠け・知らないキー・重複したキー・型・語彙・
   綴り・一意性・範囲・状況の表のマスの揃い・振る舞いの前後が同じ・振る舞いの仕様の場所と関連 Issue の重複・
   行の無い変わらないことの仕様・用語の印の書き方・強調の範囲・呼び出しの前後と線の端・手順の対応・手順の説明と注記の位置・
-  アクターと concepts の綴り・やりとりの状態と手順の位置と対応の状態)
+  アクターと concepts の綴り・やりとりの状態と手順の位置と対応の状態・選択肢の数と答えの範囲・クイズの答えの鍵の重なり)
 - `pr-explain-meta` — `pr` が公開先の PR と違う
 - `pr-explain-ref` — 解説の中の参照が解説の中に無い(message の from / to(concepts か actors)・flow の steps と beforeSteps・
   featureRanges の feature・calls の箱の module と線の from / to・Target(置いたすべての道筋)など)・用語の印が terms に無い・どの印からも指されない用語
@@ -297,6 +297,7 @@ Shapes: dict[str, dict[str, Field]] = {
         "impact": may(Shape("Impact")),
         "primers": may(Many(Variant("Primer"))),
         "terms": may(Many(Shape("Term"))),
+        "quiz": may(Many(Variant("Question"))),
     },
     "Overview": {
         "title": need(Text),
@@ -474,6 +475,15 @@ Shapes: dict[str, dict[str, Field]] = {
     "Term": {"id": need(Id), "label": need(Text), "text": need(Text)},
 }
 
+# クイズの問い(Question)の、kind をまたいで同じキー。題(`title`)は一覧に出す短い題で、highlights の `title` と同じく見出し。
+QuestionFields: dict[str, Field] = {
+    "id": need(Id),
+    "title": need(Heading),
+    "prompt": need(Text),
+    "why": need(Text),
+    "go": need(Many(Variant("Target"), least=1)),
+}
+
 # 技術の節(Primer)の、kind をまたいで同じキー。
 PrimerFields: dict[str, Field] = {
     "id": need(Id),
@@ -510,6 +520,12 @@ Variants: dict[str, dict[str, dict[str, Field]]] = {
             "tests": may(Many(Id, distinct=True)),
             "flows": may(Many(Id, distinct=True)),
         },
+    },
+    # choice の `answer` は 1 始まりの番号。order の `items` は正しい順に書く。
+    "Question": {
+        "choice": {**QuestionFields, "options": need(Many(Text, least=4, distinct=True)), "answer": need(Count)},
+        "yesno": {**QuestionFields, "holds": need(Scalar("flag"))},
+        "order": {**QuestionFields, "items": need(Many(Text, least=2, distinct=True))},
     },
     "Passage": {
         "text": {"text": need(MarkedText)},
@@ -738,7 +754,17 @@ def step_changes_problem(flow: dict) -> str | None:
     return None
 
 
-# キーごとの形が合ったオブジェクトに、キーをまたいで当てる規則。
+def choice_problem(question: dict) -> str | None:
+    """4 択の選択肢が 4 つまでで、答えの番号が選択肢の数を超えていないかを見る(4 つ以上は配列の規則が見る)。"""
+    count = len(question["options"])
+    if count > 4:
+        return f"options は 4 つ(今は {count} つ)"
+    if question["answer"] > count:
+        return f"answer({question['answer']})が options の数({count})を超える"
+    return None
+
+
+# キーごとの形が合ったオブジェクトに、キーをまたいで当てる規則。Variant は `<名前>.<kind>` のキーで当てる。
 CrossChecks: dict[str, tuple[Callable[[dict], str | None], ...]] = {
     "Note": (span_problem,),
     "FeatureRange": (span_problem,),
@@ -755,6 +781,7 @@ CrossChecks: dict[str, tuple[Callable[[dict], str | None], ...]] = {
     "CallEdge": (call_sides_problem,),
     "StepChange": (step_change_problem,),
     "Flow": (step_changes_problem,),
+    "Question.choice": (choice_problem,),
 }
 
 # 一意でなければならない値(トップの一覧と、その中のキー)。
@@ -771,7 +798,12 @@ UniqueKeys = (
     ("primers", "id"),
     ("terms", "id"),
     ("terms", "label"),
+    ("quiz", "id"),
 )
+
+# クイズの答えの鍵の元にする問いのキー(無いキーは空の配列)。ページの `Quiz.KeyParts` と同じで、`pr-explain-core-cases.sh` が突き合わせる。
+# ページは答え・今の問い・途中の並びをこの組の鍵で覚えるので、重なると 2 問が答えを共有する。
+QuizKeyParts = ("prompt", "options", "items")
 
 
 class Reference(NamedTuple):
@@ -862,7 +894,7 @@ def value_problems(value: object, rule: object, where: str) -> list[str]:
     if isinstance(rule, Many):
         return list_problems(value, rule, where)
     if isinstance(rule, Variant):
-        return variant_problems(value, Variants[rule.name], where)
+        return variant_problems(value, rule.name, where)
     return object_problems(value, rule.name, where)
 
 
@@ -890,21 +922,28 @@ def object_problems(value: object, name: str, where: str) -> list[str]:
     if not isinstance(value, dict):
         return [f"{where}: オブジェクト({name})で書く"]
     problems = fields_problems(value, Shapes[name], where)
-    if problems:
-        return problems
+    return problems if problems else crossed_problems(value, name, where)
+
+
+def crossed_problems(value: dict, name: str, where: str) -> list[str]:
+    """キーごとの形が合ったオブジェクトに、キーをまたぐ規則(`CrossChecks` の `name`)を当てた違反を集める。"""
     crossed = [check(value) for check in CrossChecks.get(name, ())]
     return [f"{where}: {problem}" for problem in crossed if problem]
 
 
-def variant_problems(value: object, variants: dict[str, dict[str, Field]], where: str) -> list[str]:
-    """`kind` で形が決まるオブジェクトに合わない理由を集める。"""
+def variant_problems(value: object, name: str, where: str) -> list[str]:
+    """`Variants` の名前の、`kind` で形が決まるオブジェクトに合わない理由を集める。kind ごとのキーが合っていれば、キーをまたぐ規則
+    (`CrossChecks` の `<名前>.<kind>`)も当てる。
+    """
     if not isinstance(value, dict):
         return [f"{where}: オブジェクトで書く"]
+    variants = Variants[name]
     kind = value.get("kind")
     if kind not in variants:
         return [f"{where}.kind: {' / '.join(variants)} のどれか(今は {json.dumps(kind, ensure_ascii=False)})"]
     fields = {"kind": need(Word(tuple(variants))), **variants[kind]}
-    return fields_problems(value, fields, where)
+    problems = fields_problems(value, fields, where)
+    return problems if problems else crossed_problems(value, f"{name}.{kind}", where)
 
 
 def cross_collection_problems(explain: dict) -> list[str]:
@@ -949,7 +988,17 @@ def uniqueness_problems(explain: dict) -> list[str]:
     for collection, key in UniqueKeys:
         twice = repeated([item[key] for item in explain.get(collection, [])])
         problems += [f"{collection}[].{key}: {value} が 2 回以上ある" for value in twice]
-    return problems
+    return problems + quiz_key_problems(explain.get("quiz", []))
+
+
+def quiz_key_problems(questions: list[dict]) -> list[str]:
+    """答えの鍵の元の組(`QuizKeyParts`)が同じ問いを集める。"""
+    key_of = lambda question: json.dumps([question.get(part, []) for part in QuizKeyParts], ensure_ascii=False)
+    keys = [key_of(question) for question in questions]
+    return [
+        f"quiz[]: 問いの文・選択肢・並べる項目が同じ問いが 2 回以上ある({', '.join(question['id'] for question in questions if key_of(question) == key)})"
+        for key in repeated(keys)
+    ]
 
 
 def shape_problems(explain: object) -> list[str]:

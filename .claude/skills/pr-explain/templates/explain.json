@@ -280,5 +280,35 @@
     { "id": "dict", "label": "dict", "text": "Python の組み込みの型で、キーから値を引く表(辞書)。1 つのキーには 1 つの値しか持てず、同じキーに入れ直すと前の値は消える。" },
     { "id": "duplicated", "label": "Duplicated", "text": "同じキーを 2 回以上書いたオブジェクトの代わりに置く値。形の検査が報告する。" },
     { "id": "route", "label": "道筋", "text": "トップから値までのキーの並び。配列の中へ進む段には `[]` を付ける。" }
+  ],
+  "quiz": [
+    {
+      "id": "entry",
+      "kind": "choice",
+      "title": "解説を置く入口",
+      "prompt": "変更後、セッションが解説を gh-pages へ置くときに呼ぶのはどれですか。",
+      "options": ["`pr-explain-pages.sh put-map`", "`pr-explain-pages.sh put-explain`", "`pr-explain-pages.sh put-pages`", "`git push origin gh-pages` を直接"],
+      "answer": 2,
+      "why": "解説を置く入口は `put-explain` だけになった。`put-map` は Actions が枠と地図を置くためのもので、`put-pages` はこの PR で消えた。",
+      "go": [{ "kind": "callBox", "id": "put-explain" }]
+    },
+    {
+      "id": "page-html",
+      "kind": "yesno",
+      "title": "ページごとの断片",
+      "prompt": "変更後も、push のたびにページごとの HTML の断片が置き場に置かれる。",
+      "holds": false,
+      "why": "ページの HTML を置く手順は消えた。push のたびに置くのは枠と地図だけで、ページは固定スクリプトが地図と解説から組む。",
+      "go": [{ "kind": "stepChange", "flow": "push", "stepChange": 3 }]
+    },
+    {
+      "id": "put-order",
+      "kind": "order",
+      "title": "解説を置くまでの順",
+      "prompt": "セッションが解説を書いてから、gh-pages に置かれるまでの順に並べてください。",
+      "items": ["解説を書く", "置き場のスクリプトに解説を渡す", "解説の検査が形と参照を見る", "検査に通った解説を gh-pages へ push する"],
+      "why": "`put-explain` は push の前に検査を呼び、落ちたら push しない。検査は抜粋の中身を足した解説を書き出し、それを置く。",
+      "go": [{ "kind": "module", "path": ".github/scripts/build-pr-explain.py" }, { "kind": "stepChange", "flow": "explain", "stepChange": 1 }]
+    }
   ]
 }
