@@ -21,7 +21,8 @@
       { "title": "解説を置く流れ", "text": "検査から push までを 1 本で見る", "go": { "kind": "flow", "id": "explain" } },
       { "title": "解説を置く入口", "text": "置き場の書き換えのうち、セッションが呼ぶのはここだけ", "go": { "kind": "callBox", "id": "put-explain" } },
       { "title": "置く前の検査", "text": "検査に落ちたら、ここで止まる", "go": { "kind": "callEdge", "id": "put-explain-check" } },
-      { "title": "解説の検査のファイル", "text": "形と参照の規則はこのファイルの表にある", "go": { "kind": "module", "path": ".github/scripts/build-pr-explain.py" } }
+      { "title": "解説の検査のファイル", "text": "形と参照の規則はこのファイルの表にある", "go": { "kind": "module", "path": ".github/scripts/build-pr-explain.py" } },
+      { "title": "push で置くもの", "text": "ページの HTML を置く手順が消えた", "go": { "kind": "stepChange", "flow": "push", "stepChange": 3 } }
     ]
   },
   "features": [
@@ -33,16 +34,43 @@
   "concepts": [
     { "path": ".github/workflows/pr-explain.yml", "name": "地図の配置", "role": "PR のイベントで地図を作って置く", "feature": "publish" },
     { "path": ".github/scripts/pr-explain-pages.sh", "name": "置き場", "role": "gh-pages の PR のフォルダを書き換える", "feature": "publish", "change": "`put-explain` を足し、ページごとの HTML を置くモードを消した" },
-    { "path": ".github/scripts/build-pr-explain.py", "name": "解説の検査", "role": "`explain.json` の形と参照を見て、抜粋の中身を足す", "feature": "publish", "change": "新しく作った" },
+    { "path": ".github/scripts/build-pr-explain.py", "name": "解説の検査", "role": "`explain.json` の形と参照を見て、抜粋の中身を足す", "feature": "publish", "change": "新しく作った", "icon": "scan" },
     { "path": ".claude/skills/pr-explain/templates/explain.json", "name": "見本", "role": "`excerpt` 以外のすべてのキーと、primers・Passage の kind を使う解説", "graph": false }
+  ],
+  "actors": [
+    { "id": "pages", "label": "GitHub Pages", "role": "gh-pages の中身を配信する", "icon": "store" }
   ],
   "messages": [
     { "id": "put-map", "from": ".github/workflows/pr-explain.yml", "to": ".github/scripts/pr-explain-pages.sh", "kind": "cmd", "name": "地図を置く", "code": "pr-explain-pages.sh put-map", "via": "exec", "payload": "`change-map.json` とテンプレート" },
-    { "id": "put-explain", "from": ".github/scripts/pr-explain-pages.sh", "to": ".github/scripts/build-pr-explain.py", "kind": "qry", "name": "解説を検査する", "code": "build-pr-explain.py --pr --out", "via": "exec", "payload": "`explain.json`", "returns": "抜粋の中身を足した `explain.json`", "status": "added" }
+    { "id": "put-explain", "from": ".github/scripts/pr-explain-pages.sh", "to": ".github/scripts/build-pr-explain.py", "kind": "qry", "name": "解説を検査する", "code": "build-pr-explain.py --pr --out", "via": "exec", "payload": "`explain.json`", "returns": "抜粋の中身を足した `explain.json`", "status": "added" },
+    { "id": "publish", "from": ".github/scripts/pr-explain-pages.sh", "to": "pages", "kind": "cmd", "name": "gh-pages へ置く", "code": "git push origin gh-pages", "via": "http", "payload": "`pr-explain/pr-<番号>/` の 3 ファイル", "status": "added" },
+    { "id": "put-page", "from": ".github/workflows/pr-explain.yml", "to": ".github/scripts/pr-explain-pages.sh", "kind": "cmd", "name": "ページの HTML を置く", "code": "pr-explain-pages.sh put-pages", "via": "exec", "payload": "ページごとの HTML の断片", "status": "removed" }
   ],
   "flows": [
-    { "id": "explain", "label": "解説を置いたとき", "steps": ["put-explain"] },
-    { "id": "push", "label": "push したとき", "steps": ["put-map"] }
+    {
+      "id": "explain",
+      "label": "解説を置いたとき",
+      "gist": "置く前に解説を検査するようになった",
+      "steps": ["put-explain"],
+      "beforeSteps": [],
+      "stepChanges": [
+        { "status": "added", "afterStep": 1, "afterText": "検査に通った解説だけが書き出される", "change": "この PR で足した手順。変更前は解説を検査せずに置いていた" }
+      ]
+    },
+    {
+      "id": "push",
+      "label": "push したとき",
+      "gist": "push のたびに置くものが、枠と地図だけになった",
+      "text": "PR に push すると、Actions が地図を作って置き場へ渡す。",
+      "steps": ["put-map", "publish"],
+      "beforeSteps": ["put-map", "put-page"],
+      "stepChanges": [
+        { "beforeStep": 1, "afterStep": 1, "beforeText": "地図を置かせたあと、続けてページの HTML も置かせていた", "afterText": "枠と地図だけを置かせる" },
+        { "status": "added", "afterStep": 2, "afterText": "置いたフォルダを gh-pages へ push する", "change": "push を `pr-explain-pages.sh` の中にまとめた", "afterCost": "heavy" },
+        { "status": "removed", "beforeStep": 2, "change": "ページごとの HTML を置くモードを消した", "beforeCost": "skipped" }
+      ],
+      "measure": { "what": "push ごとに置くもの", "before": "枠・地図・ページごとの HTML", "after": "枠と地図" }
+    }
   ],
   "calls": {
     "gist": "解説を置く入口を `put-explain` 1 つにまとめた",

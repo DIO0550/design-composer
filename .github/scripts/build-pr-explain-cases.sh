@@ -115,7 +115,7 @@ verdict() {
 }
 
 cases="$(cat <<'CASES'
-pass|-|sample|見本(Target の 8 つの kind をすべて使う)は通る|assert sorted(h["go"]["kind"] for h in d["overview"]["highlights"]) == ["callBox", "callEdge", "feature", "file", "flow", "layer", "message", "module"]
+pass|-|sample|見本(Target の 9 つの kind をすべて使う)は通る|assert sorted(h["go"]["kind"] for h in d["overview"]["highlights"]) == ["callBox", "callEdge", "feature", "file", "flow", "layer", "message", "module", "stepChange"]
 pass|-|minimal|必須のキーだけの解説は通る|
 pass|-|sample|地図にしか無いもの(commitStory の sha・Note と FeatureRange のパスと行・Target の layer / file / module・LayerRole・concept・仕様の場所の sha)は落とさない|d["impact"]["changed"]["specs"][0]["shas"] = ["d" * 40]; d["commitStories"][0]["sha"] = "e" * 40; d["tests"][0]["commit"] = "e" * 40; d["commitStories"][0]["notes"][0].update(path="no/such.ts", start=900, end=901); d["commitStories"][0]["featureRanges"][0].update(path="no/such.ts", start=900, end=901); d["overview"]["highlights"][1]["go"]["layer"] = "地図に無い層"; d["overview"]["highlights"][2]["go"]["path"] = "no/such"; d["overview"]["highlights"][7]["go"]["path"] = "no/such"; d["layerRoles"][0]["layer"] = "地図に無い層"; d["concepts"].append({"path": "no/such.ts", "name": "無い", "role": "地図に無い"})
 deny|shape|sample|JSON として読めない|raw = "{"
@@ -196,6 +196,46 @@ deny|shape|sample|箱と線に同じ id がある|d["calls"]["edges"][0]["id"] =
 deny|shape|sample|callBox の Target に id が無い|del d["overview"]["highlights"][5]["go"]["id"]
 deny|shape|sample|module の Target に path が無い|del d["overview"]["highlights"][7]["go"]["path"]
 deny|shape|sample|module の Target に callBox の id が混ざる|d["overview"]["highlights"][7]["go"]["id"] = "put-explain"
+deny|shape|sample|actors の id が重複|d["actors"].append(dict(d["actors"][0]))
+deny|shape|sample|actors の id が concepts の path と同じ|d["concepts"].append({"path": d["actors"][0]["id"], "name": "置き場の名前", "role": "役割"})
+deny|shape|sample|actors の名前(label)が識別子|d["actors"][0]["label"] = "GitHubPages"
+deny|shape|sample|actors の icon が語彙の外|d["actors"][0]["icon"] = "robot"
+deny|shape|sample|concepts の icon が語彙の外|d["concepts"][2]["icon"] = "box"
+pass|-|sample|message の from に actors の id を書ける|d["messages"][0]["from"] = d["actors"][0]["id"]
+deny|shape|sample|flow に stepChanges が無い|del d["flows"][1]["stepChanges"]
+deny|shape|sample|flow に gist が無い|del d["flows"][1]["gist"]
+pass|-|sample|flow の text は無くても通る|assert "text" not in d["flows"][0]
+deny|shape|sample|対応の無い変更後の手順がある|d["flows"][1]["steps"].append("put-map")
+deny|shape|sample|対応の無い変更前の手順がある|d["flows"][1]["beforeSteps"].append("put-map")
+deny|shape|sample|同じ変更前の手順を 2 回対応させる|d["flows"][1]["stepChanges"][2]["beforeStep"] = 1
+deny|shape|sample|同じ変更後の手順を 2 回対応させる|d["flows"][1]["stepChanges"][1]["afterStep"] = 1
+deny|shape|sample|beforeStep が beforeSteps の数を超える|d["flows"][1]["stepChanges"][2]["beforeStep"] = 3
+deny|shape|sample|added の対応に beforeStep がある(番号はちょうど 1 回ずつ埋まる)|c = d["flows"][1]["stepChanges"]; c[1]["beforeStep"] = 2; del c[2]
+deny|shape|sample|removed の対応に afterStep がある(番号はちょうど 1 回ずつ埋まる)|c = d["flows"][1]["stepChanges"]; c[2]["afterStep"] = 2; del c[1]
+deny|shape|sample|added の対応に afterStep が無い(番号はちょうど 1 回ずつ埋まる)|d["flows"][1].update(steps=["put-map"], beforeSteps=["put-map"], stepChanges=[{"status": "added"}, {"beforeStep": 1, "afterStep": 1}])
+deny|shape|sample|removed の対応に beforeStep が無い(番号はちょうど 1 回ずつ埋まる)|d["flows"][1].update(steps=["put-map"], beforeSteps=["put-map"], stepChanges=[{"status": "removed"}, {"beforeStep": 1, "afterStep": 1}])
+deny|shape|sample|そのままの対応に afterStep が無い(番号はちょうど 1 回ずつ埋まる)|d["flows"][1].update(steps=["publish"], beforeSteps=["put-map"], stepChanges=[{"beforeStep": 1}, {"status": "added", "afterStep": 1}])
+deny|shape|sample|changed の対応に beforeStep が無い(番号はちょうど 1 回ずつ埋まる)|d["flows"][1].update(steps=["publish"], beforeSteps=["put-map"], stepChanges=[{"status": "changed", "afterStep": 1}, {"status": "removed", "beforeStep": 1}])
+deny|shape|sample|対応の afterStep が書いた順に戻る(前後の違う対応は changed にして、そのままの規則と切り離す)|c = d["flows"][1]["stepChanges"]; c[0].update(status="changed", afterStep=2); c[1]["afterStep"] = 1
+deny|shape|sample|対応の beforeStep が書いた順に戻る|c = d["flows"][1]["stepChanges"]; d["flows"][1]["stepChanges"] = [c[2], c[0], c[1]]
+deny|shape|sample|そのままの対応で前後の message が違う|d["flows"][1]["beforeSteps"] = ["put-page", "put-map"]
+pass|-|sample|前後が違う message の対応を changed にすれば通る|d["flows"][1]["beforeSteps"] = ["put-page", "put-map"]; d["flows"][1]["stepChanges"][0]["status"] = "changed"
+pass|-|sample|前後が同じ message で、そのやりとりが changed なら、対応を changed にして通る|d["messages"][0]["status"] = "changed"; d["flows"][1]["stepChanges"][0]["status"] = "changed"
+deny|shape|sample|前後が同じ message で、そのやりとりが changed なのに、対応を省く(そのまま)|d["messages"][0]["status"] = "changed"
+deny|shape|sample|前後が同じ message で、そのやりとりが changed でないのに、対応を changed にする|d["flows"][1]["stepChanges"][0]["status"] = "changed"
+deny|shape|sample|added の対応に beforeText がある|d["flows"][1]["stepChanges"][1]["beforeText"] = "前"
+deny|shape|sample|removed の対応に afterText がある|d["flows"][1]["stepChanges"][2]["afterText"] = "後"
+deny|shape|sample|そのままの対応に change がある|d["flows"][1]["stepChanges"][0]["change"] = "変えた"
+pass|-|sample|changed の対応に change が無くても通る|d["flows"][1]["beforeSteps"] = ["put-page", "put-map"]; c = d["flows"][1]["stepChanges"][0]; c["status"] = "changed"; assert "change" not in c
+pass|-|sample|そのままの対応に、beforeText と違う afterText を書ける|c = d["flows"][1]["stepChanges"][0]; assert "status" not in c and c["beforeText"] != c["afterText"]
+deny|shape|sample|afterStep の無い対応(removed)に afterCost がある|d["flows"][1]["stepChanges"][2]["afterCost"] = "heavy"
+deny|shape|sample|beforeStep の無い対応(added)に beforeCost がある|d["flows"][1]["stepChanges"][1]["beforeCost"] = "heavy"
+deny|shape|sample|beforeCost が語彙の外|d["flows"][1]["stepChanges"][2]["beforeCost"] = "slow"
+deny|shape|sample|measure に what が無い|del d["flows"][1]["measure"]["what"]
+pass|-|sample|measure の before と after は同じでも通る|m = d["flows"][1]["measure"]; m["before"] = m["after"]
+deny|shape|sample|beforeSteps に増えたやりとりがある|f = d["flows"][0]; f["beforeSteps"] = ["publish"]; f["stepChanges"].append({"status": "removed", "beforeStep": 1})
+deny|shape|sample|steps に消えたやりとりがある|f = d["flows"][0]; f["steps"].append("put-page"); f["stepChanges"].append({"status": "added", "afterStep": 2})
+deny|shape|sample|そのままの対応に増えたやりとりを置く(beforeSteps に増えたやりとりが入る)|f = d["flows"][0]; f["beforeSteps"] = ["put-explain"]; f["stepChanges"] = [{"beforeStep": 1, "afterStep": 1}]
 deny|shape|sample|Behavior に知らないキー|d["overview"]["after"][0]["k"] = "x"
 deny|shape|sample|LayerRole に知らないキー|d["layerRoles"][0]["x"] = "y"
 deny|shape|sample|Excerpt に知らないキー|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 2, "lang": "py"}
@@ -287,8 +327,8 @@ deny|shape|sample|変わらないことの仕様の場所で、同じパスと�
 deny|shape|sample|変わらないことの行(kept)を書かずに、変わらないことの仕様の場所を書く|del d["impact"]["kept"]
 deny|shape|sample|変わらないことの行(kept)が空なのに、変わらないことの仕様の場所を書く|d["impact"]["kept"] = []
 deny|meta|sample|pr が公開先と違う|d["pr"] = d["pr"] + 1
-deny|ref|sample|message の from が concepts に無い|d["messages"][0]["from"] = "no/such"
-deny|ref|sample|message の to が concepts に無い|d["messages"][0]["to"] = "no/such"
+deny|ref|sample|message の from が concepts にも actors にも無い|d["messages"][0]["from"] = "no/such"
+deny|ref|sample|message の to が concepts にも actors にも無い|d["messages"][0]["to"] = "no/such"
 deny|ref|sample|flow の steps が messages に無い|d["flows"][0]["steps"] = ["nope"]
 deny|ref|sample|commitStory の flows が flows に無い|d["commitStories"][0]["flows"] = ["nope"]
 deny|ref|sample|featureRanges の feature が features に無い|d["commitStories"][0]["featureRanges"][0]["feature"] = "nope"
@@ -306,6 +346,9 @@ deny|ref|sample|calls の箱の module が concepts に無い|d["calls"]["boxes"
 deny|ref|sample|callBox の Target が calls の箱に無い|d["overview"]["highlights"][5]["go"]["id"] = "nope"
 deny|ref|sample|callBox の Target に線の id を書く|d["overview"]["highlights"][5]["go"]["id"] = d["calls"]["edges"][0]["id"]
 deny|ref|sample|callEdge の Target が calls の線に無い|d["overview"]["highlights"][6]["go"]["id"] = "nope"
+deny|ref|sample|flow の beforeSteps が messages に無い(消えた手順だけを崩す)|d["flows"][1]["beforeSteps"][1] = "nope"
+deny|ref|sample|stepChange の Target の flow が flows に無い|d["overview"]["highlights"][8]["go"]["flow"] = "nope"
+deny|ref|sample|stepChange の Target の stepChange が対応の数を超える|d["overview"]["highlights"][8]["go"]["stepChange"] = 4
 deny|ref|sample|todo のテストが commit を持つ|d["tests"][1]["commit"] = d["sha"]
 deny|ref|sample|todo のテストが excerpt を持つ|d["tests"][1]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 1}
 deny|ref|sample|変わったことのこれまでの message が messages に無い|d["impact"]["changed"]["before"][0]["message"] = "nope"

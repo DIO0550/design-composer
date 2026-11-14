@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-lUaYgT6dgG2B/NClc3P95HVcO02VxmK9GkGkWPp0Vx0='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-8ZAHcndl2M5h317vDyNpoUGCYE6te4jZUBgTIePBTdQ='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -881,6 +881,86 @@ button.change-item:hover { background: var(--track); }
 .compare-dependency { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; }
 .compare-dependency-direction { flex: none; font-size: 11px; color: var(--ink-3); }
 .compare-dependency-name { font-family: var(--mono); overflow-wrap: anywhere; }
+.trace-body { gap: 16px; }
+.trace-flows { padding: 0 8px 24px; gap: 4px; }
+.trace-flow { display: flex; flex-direction: column; gap: 4px; padding: 9px 10px; border: 1px solid transparent; border-radius: 9px; width: 100%; }
+.trace-flow:hover { background: var(--hover); }
+.trace-flow.is-picked { background: var(--surface); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.trace-flow-meta { font-size: 11px; font-weight: 600; color: var(--ink-3); }
+.trace-flow-label { font-size: 13px; font-weight: 600; line-height: 1.5; }
+.trace-flow-gist { font-size: 12px; line-height: 1.6; color: var(--ink-2); }
+.trace-flow-measure { align-self: flex-start; font-size: 11px; font-weight: 600; color: var(--mod); background: var(--warn-tint); border-radius: 4px; padding: 1px 6px; }
+.trace-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.trace-summary-item { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.trace-summary-item.is-head { grid-column: 1 / -1; border-left: 3px solid var(--mod-mark); }
+.trace-summary-item.is-head .trace-summary-value { font-weight: 600; }
+.trace-summary-key { font-size: 11px; font-weight: 600; color: var(--ink-3); }
+.trace-summary-value { font-size: 13px; line-height: 1.6; }
+.trace-summary .mod { color: var(--mod); }
+.trace-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.trace-stage { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.trace-stage > .trace-figure { margin: 0 auto; }
+.trace-card-bg { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.4; }
+.trace-card.is-actor .trace-card-bg { fill: var(--accent-tint); stroke: var(--accent-ring); }
+.trace-card-icon { fill: none; stroke: var(--ink-2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.trace-card-name { fill: var(--ink); font-size: 12.5px; font-weight: 600; text-anchor: middle; }
+.trace-card-note { font-size: 10.5px; font-weight: 600; text-anchor: middle; fill: var(--ink-3); }
+.trace-card[data-presence="idle"] { opacity: .4; }
+.trace-card[data-presence="idle"] .trace-card-bg { fill: none; stroke-dasharray: 5 4; }
+.trace-card:is([data-presence="missingBefore"], [data-presence="missingAfter"]) { opacity: .5; }
+.trace-card:is([data-presence="missingBefore"], [data-presence="missingAfter"]) .trace-card-bg { fill: none; stroke-dasharray: 3 4; }
+.trace-card:is([data-presence="missingBefore"], [data-presence="missingAfter"], [data-presence="removed"]) .trace-card-note { fill: var(--del); }
+.trace-card[data-presence="added"] .trace-card-bg { fill: #E8F4EC; stroke: var(--add-mark); stroke-width: 2; stroke-dasharray: 6 4; }
+.trace-card[data-presence="added"] .trace-card-note { fill: var(--add); }
+.trace-card[data-presence="removed"] .trace-card-bg { fill: #F9E8E6; stroke: var(--del-mark); stroke-width: 2; stroke-dasharray: 6 4; }
+.trace-card.is-involved .trace-card-bg { stroke: var(--accent); stroke-width: 2.4; stroke-dasharray: none; }
+.trace-arrow, .trace-swatch, .trace-dot { --trace-ink: var(--kind-mark, var(--ink-4)); }
+.trace-arrow { cursor: pointer; outline: none; opacity: .45; transition: opacity .15s; }
+.trace-arrow:hover, .trace-arrow:focus-visible, .trace-arrow.is-current { opacity: 1; }
+.trace-arrow-line { fill: none; stroke: var(--trace-ink); stroke-width: 1.8; }
+.trace-arrow.is-current .trace-arrow-line { stroke-width: 3; }
+.trace-arrow[data-kind="evt"] .trace-arrow-line { stroke-dasharray: 7 4; }
+.trace-arrow-head { fill: var(--trace-ink); }
+.trace-arrow-hit { fill: none; stroke: transparent; stroke-width: 16; pointer-events: stroke; }
+:is(.trace-arrow, .trace-swatch, .trace-dot)[data-step-tone="heavy"] { --trace-ink: var(--del-mark); }
+:is(.trace-arrow, .trace-swatch, .trace-dot)[data-step-tone="skipped"] { --trace-ink: var(--add-mark); }
+:is(.trace-arrow, .trace-swatch, .trace-dot)[data-step-tone="added"] { --trace-ink: var(--add-mark); }
+:is(.trace-arrow, .trace-swatch, .trace-dot)[data-step-tone="removed"] { --trace-ink: var(--del-mark); }
+.trace-arrow[data-step-tone="removed"] .trace-arrow-line { stroke-dasharray: 6 5; }
+.trace-badge circle { fill: var(--trace-ink); stroke: var(--surface); stroke-width: 2; }
+.trace-arrow.is-changed .trace-badge circle { stroke: var(--mod-mark); stroke-width: 3.5; }
+.trace-badge text { fill: #FFFFFF; font-size: 11px; font-weight: 700; text-anchor: middle; dominant-baseline: central; }
+.trace-player { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.trace-player .outline-button:disabled { opacity: .45; cursor: default; }
+.trace-player-pos { font-family: var(--mono); font-size: 12px; color: var(--ink-3); }
+.trace-step { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.trace-step-head { display: flex; align-items: center; gap: 8px; }
+.trace-step-pos { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); }
+.trace-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.trace-col { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.trace-columns > .trace-col { padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.trace-columns > .trace-col.is-none { border-style: dashed; }
+.trace-col-head { font-size: 11px; font-weight: 600; color: var(--ink-3); }
+.trace-col-name { display: flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; }
+.trace-col-text { margin: 0; font-size: 13px; line-height: 1.7; color: var(--ink-2); }
+.trace-code { margin: 0; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--sunken); font-family: var(--mono); font-size: 12px; overflow-x: auto; white-space: pre; }
+.trace-spelling { margin: 0; font-size: 11.5px; font-weight: 600; color: var(--mod); }
+.trace-change { padding: 4px 0 4px 10px; border-left: 3px solid var(--mod-mark); font-size: 12.5px; line-height: 1.6; color: var(--ink-2); }
+.trace-legend { align-self: flex-start; }
+.trace-swatch { width: 18px; border-top: 2.5px solid var(--trace-ink); }
+.trace-swatch[data-kind="evt"] { border-top-style: dashed; }
+.trace-swatch.is-changed { width: 12px; height: 12px; border: 2.5px solid var(--mod-mark); border-radius: 50%; }
+.trace-rows { display: flex; flex-direction: column; gap: 2px; }
+.trace-row { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 8px; align-items: start; padding: 6px 8px; border-radius: 7px; width: 100%; }
+.trace-row:hover { background: var(--hover); }
+.trace-row.is-current { background: var(--surface); box-shadow: inset 0 0 0 1px var(--accent); }
+.trace-dot { display: grid; place-items: center; min-width: 22px; height: 22px; padding: 0 3px; border-radius: 11px; background: var(--trace-ink); color: #FFFFFF; font-size: 10.5px; font-weight: 700; }
+.trace-row-body { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; min-width: 0; font-size: 12.5px; line-height: 1.5; }
+.trace-row-name { overflow-wrap: anywhere; }
+.trace-row.is-removed .trace-row-name { text-decoration: line-through; color: var(--ink-3); }
+.trace-row-was { flex-basis: 100%; font-size: 11.5px; color: var(--ink-3); }
+.trace-row-flag { flex-basis: 100%; font-size: 11px; color: var(--mod); }
+@media (max-width: 760px) { .trace-summary, .trace-columns { grid-template-columns: minmax(0, 1fr); } }
 /* 振る舞いと技術の手引きの画面だけ、狭い幅で右の欄を隠して根拠を各節に畳み(1180px 以下)、さらに目次も隠してページ全体をスクロールする(760px 以下)。
    この 2 つの @media は判定表を通らず、表示確認でしか守られていない。 */
 @media (max-width: 1180px) {
@@ -1518,6 +1598,19 @@ button.change-item:hover { background: var(--track); }
       spec: { label: "仕様" },
       history: { label: "経緯" },
     },
+    // 流れ図の手順の重さ(手順の対応の beforeCost / afterCost)と、その矢印の名前。
+    stepCosts: {
+      heavy: { label: "重い処理" },
+      skipped: { label: "省いた処理" },
+    },
+    // 流れ図のカードの絵。書かなければ、actor は person、concept は箱の絵になる(語彙に無い綴りも箱の絵)。
+    cardIcons: {
+      person: { label: "人" },
+      widget: { label: "画面の部品" },
+      store: { label: "状態" },
+      cache: { label: "覚え書き" },
+      scan: { label: "走査" },
+    },
   });
   const MessageKindOrder = Object.keys(Vocabulary.messageKinds);
   /** やりとりを種類の順(コマンド → クエリ → イベント)に並べる比較。 */
@@ -1542,7 +1635,8 @@ button.change-item:hover { background: var(--track); }
      * `pr-explain-core-cases.sh` が突き合わせる。
      * @returns 構造マップの `{screen: "map", selection}`(selection は `group`(`grouping` のまとめ方の組の `id`)/ `file`(`id` は
      *   パス)/ `message` / `flow`)か、構成の前後の `{screen: "compare", grain: "calls", id}`(callBox / callEdge)/
-     *   `{screen: "compare", grain: "modules", path}`(module)。指す先が図にあるかは見ない(見るのは行き先の画面の `canShow`)
+     *   `{screen: "compare", grain: "modules", path}`(module)か、流れ図の `{screen: "trace", flow, stepChange}`(stepChange。
+     *   stepChange はその流れの対応の 1 始まりの番号)。指す先が図にあるかは見ない(見るのは行き先の画面の `canShow`)
      */
     destinationOf: (target) => {
       const toMap = (selection) => ({ screen: Screens.Map, selection });
@@ -1562,13 +1656,15 @@ button.change-item:hover { background: var(--track); }
           return { screen: Screens.Compare, grain: CompareGrains.Calls, id: target.id };
         case "module":
           return { screen: Screens.Compare, grain: CompareGrains.Modules, path: target.path };
+        case "stepChange":
+          return { screen: Screens.Trace, flow: target.flow, stepChange: target.stepChange };
       }
     },
     /**
      * Target を指すチップの名前。
      * @param explained `ExplainedMap.create` の戻り値
-     * @returns 「〈行き先の画面の名前〉: 〈指す先の名前〉」。指す先が見つからなければ、名前の代わりに Target に書いた id・層・パスの
-     *   綴り(パスはファイル名)を出す
+     * @returns 「〈行き先の画面の名前〉: 〈指す先の名前〉」(stepChange は「〈流れの名前〉の n 行目」)。指す先が見つからなければ、
+     *   名前の代わりに Target に書いた id・層・パスの綴り(パスはファイル名)を出す
      */
     captionOf: (target, explained) => {
       const destination = Target.destinationOf(target);
@@ -1591,16 +1687,18 @@ button.change-item:hover { background: var(--track); }
             return CompareDiagram.nameOf(CompareDiagram.fromCalls(explained), target.id) ?? target.id;
           case "module":
             return CompareDiagram.nameOf(CompareDiagram.fromModules(explained), target.path) ?? pathNameOf(target.path);
+          case "stepChange":
+            return `${explained.lookup.flows.get(target.flow)?.label ?? target.flow}の ${target.stepChange} 行目`;
         }
       };
       return `${ScreenLabels[destination.screen]}: ${nameOf()}`;
     },
   });
 
-  const Screens = Object.freeze({ Map: "map", Story: "story", Test: "test", Impact: "impact", Primer: "primer", Compare: "compare" });
+  const Screens = Object.freeze({ Map: "map", Story: "story", Test: "test", Impact: "impact", Primer: "primer", Compare: "compare", Trace: "trace" });
   const isScreen = (value) => Object.values(Screens).includes(value);
   /** 画面の名前(タブと、画面をまたぐチップの名前)。 */
-  const ScreenLabels = Object.freeze({ map: "構造マップ", story: "変更の経緯", test: "テスト", impact: "振る舞い", primer: "技術の手引き", compare: "構成の前後" });
+  const ScreenLabels = Object.freeze({ map: "構造マップ", story: "変更の経緯", test: "テスト", impact: "振る舞い", primer: "技術の手引き", compare: "構成の前後", trace: "流れ図" });
   /** 構成の前後の粒度。呼び出し(解説の `calls`)とモジュール(地図の変更ファイルと依存)。 */
   const CompareGrains = Object.freeze({ Calls: "calls", Modules: "modules" });
 
@@ -1905,8 +2003,8 @@ button.change-item:hover { background: var(--track); }
   /** ページが組み立てに使う解説の形。道筋とその先の値の種類(`Routes`)と、欠けてはいけない道筋(`Required`)で持つ。 */
   const ExplainShape = (() => {
     // 形を見る道筋と、その先の値の種類。`build-pr-explain.py` の Shapes から導いたものと同じ並びで、`pr-explain-core-cases.sh` が
-    // 突き合わせる。primers・terms と、features の review・commitStories の featureRanges・calls の下は Shapes から機械的に導くので、
-    // 文字列をすべて見る(組み立てが落ちるキーを選り分けない)。
+    // 突き合わせる。primers・terms と、features の review・commitStories の featureRanges・calls・actors と、flows の gist・text・
+    // beforeSteps・stepChanges・measure の下は Shapes から機械的に導くので、文字列をすべて見る(組み立てが落ちるキーを選り分けない)。
     // 必須の欠けも kind ごとに見る(`Required`)。`Dom.proseParts` と `TermMarks.piecesOf` は文を文字列として割り、抜粋の段は
     // `excerptBoxesOf` が `excerpt` の中を読むので、文字列でない値も欠けた値も組み立てを落とし、ページ全体を出なくする。impact は
     // 構造と、短くして描く sha の並び(`impact.changed.specs[].shas`。文字列でないと組み立てが落ちる)だけを見る(文は文字として
@@ -2001,6 +2099,21 @@ button.change-item:hover { background: var(--track); }
       ["calls.gist", "text"],
       ["calls.text", "text"],
       ["calls.review", "texts"],
+      ["actors", "records"],
+      ["actors[].id", "id"],
+      ["actors[].label", "text"],
+      ["actors[].role", "text"],
+      ["flows[].gist", "text"],
+      ["flows[].text", "text"],
+      ["flows[].beforeSteps", "ids"],
+      ["flows[].stepChanges", "records"],
+      ["flows[].stepChanges[].beforeText", "text"],
+      ["flows[].stepChanges[].afterText", "text"],
+      ["flows[].stepChanges[].change", "text"],
+      ["flows[].measure", "record"],
+      ["flows[].measure.what", "text"],
+      ["flows[].measure.before", "text"],
+      ["flows[].measure.after", "text"],
       ["tests[].excerpt.emphasis", "records"],
     ]);
     // 欠けていれば崩れとする道筋。primers・terms の下の必須のキーのうち、値が文(text)か 1 つのオブジェクト(record)のもの。
@@ -2309,7 +2422,7 @@ button.change-item:hover { background: var(--track); }
     /**
      * ページが組み立てに使う大まかな形だけを見る。細かい形は公開する前に build-pr-explain.py が見ている。
      * @returns 型が違うか、必須なのに欠けたキー(`impact`・`primers`・`terms`・`features[].review`・`commitStories[].featureRanges`・
-     *   `calls`・`tests[].excerpt.emphasis` は道筋)。どちらも無ければ null
+     *   `calls`・`actors`・flows の gist・text・beforeSteps・stepChanges・measure・`tests[].excerpt.emphasis` は道筋)。どちらも無ければ null
      */
     const shapeProblemOf = (explain) => {
       const overview = explain.overview;
@@ -2495,12 +2608,29 @@ button.change-item:hover { background: var(--track); }
       return [...explained, ...unexplained, ...removed];
     };
 
-    /** 解説から、ページが名前で引く一覧。 */
-    const lookupOf = (explain) => ({
-      conceptNames: new Map(explainListOf(explain, "concepts").map((concept) => [concept.path, concept.name])),
-      flows: new Map(explainListOf(explain, "flows").map((flow) => [flow.id, flow])),
-      messages: new Map(explainListOf(explain, "messages").map((message) => [message.id, message])),
-    });
+    /** 流れ図のカードの絵。語彙(`Vocabulary.cardIcons`)に無い綴りと書いていないものは null(箱の絵)。 */
+    const cardIconOf = (icon) => (isString(icon) && Object.hasOwn(Vocabulary.cardIcons, icon) ? icon : null);
+
+    /**
+     * 解説から、ページが名前で引く一覧。`endNames` と `endIcons` は、やりとりの端(concepts の path か actors の id)の名前と
+     * 流れ図のカードの絵。名前は concept の name、無ければ actor の label。絵は書いた icon で、書かなければ actor は person、
+     * concept は null(箱の絵)。
+     */
+    const lookupOf = (explain) => {
+      const concepts = explainListOf(explain, "concepts");
+      const actors = explainListOf(explain, "actors");
+      return {
+        conceptNames: new Map(concepts.map((concept) => [concept.path, concept.name])),
+        flows: new Map(explainListOf(explain, "flows").map((flow) => [flow.id, flow])),
+        messages: new Map(explainListOf(explain, "messages").map((message) => [message.id, message])),
+        actors: new Map(actors.map((actor) => [actor.id, actor])),
+        endNames: new Map([...actors.map((actor) => [actor.id, actor.label]), ...concepts.map((concept) => [concept.path, concept.name])]),
+        endIcons: new Map([
+          ...actors.map((actor) => [actor.id, actor.icon === undefined ? "person" : cardIconOf(actor.icon)]),
+          ...concepts.map((concept) => [concept.path, cardIconOf(concept.icon)]),
+        ]),
+      };
+    };
 
     /**
      * 地図と解説を合わせる。解説が無い・使えないときも、地図だけで 5 画面の材料を作る。
@@ -3434,8 +3564,310 @@ button.change-item:hover { background: var(--track); }
     });
   })();
 
+  /** 流れ図の表示。比べる(変更前と変更後の手順を対応の行で重ねる)/ 変更後だけ / 変更前だけ。 */
+  const TraceEras = Object.freeze({ Compare: "compare", After: "after", Before: "before" });
+
+  /**
+   * 流れ図の手順の行。解説の流れの変更後の手順(`steps`)・変更前の手順(`beforeSteps`)・その対応(`stepChanges`)を、表示ごとの
+   * 行にする。行は `{status, badge, before, after, change}` で、status は対応の状態(`added` / `removed` / `changed`、そのままなら
+   * null)、badge は矢印と一覧の番号、change は対応の注記(無ければ null)。before / after はその側の手順
+   * `{n, messageId, message, text, cost, showsAfterSpelling}`(無い側は null。message は messages に無ければ null、cost は
+   * 語彙 `stepCosts` のキーか null。showsAfterSpelling は、前後が同じやりとりの changed の変更前の手順で、やりとりの綴りが
+   * 変更後のものであること)。
+   */
+  const TraceRows = (() => {
+    const Statuses = ["added", "removed", "changed"];
+
+    const statusOf = (value) => (Statuses.includes(value) ? value : null);
+    const costOf = (value) => (isString(value) && Object.hasOwn(Vocabulary.stepCosts, value) ? value : null);
+    const changesOf = (flow) => listOf(flow.stepChanges).filter(isRecord);
+    const hasChanges = (flow) => changesOf(flow).length > 0;
+    /** 手順の n 番目(1 始まり)のやりとりの id。番号が手順に無ければ null。 */
+    const idAt = (ids, n) => {
+      const steps = listOf(ids);
+      return Number.isInteger(n) && n >= 1 && n <= steps.length ? steps[n - 1] : null;
+    };
+    /** 手順の 1 つを、その側の説明・重さを添えた行の側にする。id が無ければ null。 */
+    const sideOf = ({ id, n, messages }, written) => (id === null ? null : {
+      n,
+      messageId: id,
+      message: messages.get(id) ?? null,
+      text: optionalText(written.text),
+      cost: costOf(written.cost),
+      showsAfterSpelling: written.showsAfterSpelling === true,
+    });
+    /** 比べるときの番号。増えた手順は「+n」、消えた手順は「×」、ほかは変更後の番号。 */
+    const badgeOf = (status, after) => {
+      if (after === null) return "×";
+      return status === "added" ? `+${after.n}` : String(after.n);
+    };
+
+    const comparedRowsOf = (flow, messages) => changesOf(flow).map((change) => {
+      const status = statusOf(change.status);
+      const beforeId = idAt(flow.beforeSteps, change.beforeStep);
+      const afterId = idAt(flow.steps, change.afterStep);
+      const isSameMessage = beforeId !== null && beforeId === afterId;
+      const before = sideOf({ id: beforeId, n: change.beforeStep, messages }, { text: change.beforeText, cost: change.beforeCost, showsAfterSpelling: status === "changed" && isSameMessage });
+      const after = sideOf({ id: afterId, n: change.afterStep, messages }, { text: change.afterText, cost: change.afterCost });
+      return { status, badge: badgeOf(status, after), before, after, change: optionalText(change.change) };
+    });
+
+    /** 変更後だけ / 変更前だけの行。手順の順に 1 から番号を振り、その手順を指す対応の状態・説明・重さ・注記を添える。 */
+    const sideRowsOf = (flow, { era, messages }) => {
+      const isAfter = era === TraceEras.After;
+      const changes = changesOf(flow);
+      return listOf(isAfter ? flow.steps : flow.beforeSteps).map((id, index) => {
+        const n = index + 1;
+        const change = changes.find((candidate) => (isAfter ? candidate.afterStep : candidate.beforeStep) === n) ?? null;
+        const status = change === null ? null : statusOf(change.status);
+        const isAfterSpelling = !isAfter && status === "changed" && idAt(flow.steps, change.afterStep) === id;
+        const written = change === null ? {} : { text: isAfter ? change.afterText : change.beforeText, cost: isAfter ? change.afterCost : change.beforeCost, showsAfterSpelling: isAfterSpelling };
+        const side = sideOf({ id, n, messages }, written);
+        return { status, badge: String(n), before: isAfter ? null : side, after: isAfter ? side : null, change: change === null ? null : optionalText(change.change) };
+      });
+    };
+
+    const drawnSideOf = (row) => row.after ?? row.before;
+
+    return Object.freeze({
+      /** @returns 流れで選べる表示(既定が先頭)。対応(`stepChanges`)の無い流れ(この形より前に書いた解説)は変更後だけ */
+      erasOf: (flow) => (hasChanges(flow) ? [TraceEras.Compare, TraceEras.After, TraceEras.Before] : [TraceEras.After]),
+      /**
+       * 表示ごとの行。比べるときは対応の順、変更後だけ / 変更前だけは、その側の手順の順。
+       * @param messages やりとりの id から解説のやりとりを引く表(`ExplainedMap` の `lookup.messages`)
+       */
+      rowsOf: (flow, era, messages) => (era === TraceEras.Compare ? comparedRowsOf(flow, messages) : sideRowsOf(flow, { era, messages })),
+      /** @returns 行の矢印として描く側。比べるときは変更後の手順があればそれ、無ければ変更前の手順 */
+      drawnSideOf,
+      /**
+       * 手順のカードの列。比べるときのそのままの行と、変更後だけ / 変更前だけの行は 1 列、比べるときのほかの行は変更前と変更後の 2 列。
+       * @returns `{side, step}` の並び。side は `only`(1 列)/ `before` / `after`、step はその側の手順(無い側は null)
+       */
+      cardColumnsOf: (row, era) => {
+        if (era !== TraceEras.Compare) return [{ side: "only", step: drawnSideOf(row) }];
+        if (row.status === null && row.after !== null) return [{ side: "only", step: row.after }];
+        return [{ side: "before", step: row.before }, { side: "after", step: row.after }];
+      },
+      /**
+       * 比べるときの要約。
+       * @returns `{steps: {before, after}, counts: {added, removed, changed}, measure}`。steps は手順の数、counts は対応の状態ごとの
+       *   件数、measure は量の前後 `{what, before, after}`(書いていなければ null)
+       */
+      summaryOf: (flow) => {
+        const statuses = changesOf(flow).map((change) => statusOf(change.status));
+        const measure = isRecord(flow.measure) ? flow.measure : null;
+        const isMeasured = measure !== null && [measure.what, measure.before, measure.after].every(isString);
+        return {
+          steps: { before: listOf(flow.beforeSteps).length, after: listOf(flow.steps).length },
+          counts: Object.fromEntries(Statuses.map((status) => [status, statuses.filter((candidate) => candidate === status).length])),
+          measure: isMeasured ? { what: measure.what, before: measure.before, after: measure.after } : null,
+        };
+      },
+      /** @returns 流れに対応があり、番号(1 始まり)がその数の中か(流れ図の「比べる」でその行を選べるか) */
+      isSelectable: (flow, stepChange) => Number.isInteger(stepChange) && stepChange >= 1 && stepChange <= changesOf(flow).length,
+    });
+  })();
+
+  /**
+   * 流れ図のカード(やりとりの端)の配置と、矢印の道筋。カードは全部の流れの手順(変更後 → 変更前)の端を 1 回だけ置くので、流れや
+   * 表示を替えても位置は動かない。
+   *
+   * 列は、最初の流れの最初の手順の送り手を 0 とし、手順を向きを問わずにたどった最短の数にする。たどり着けない端が残れば、その端を
+   * 含む最初の流れの最初の送り手から、列 0 で数え直す。列の中は、1 つ前の列で
+   * つながる端の位置の平均の小さい順に並べ、同じなら先に出た端(流れの順、流れの中は変更後 → 変更前)を上にする。列 0 は先に出た順。
+   */
+  const TraceLayout = (() => {
+    const Card = Object.freeze({ width: 150, height: 92 });
+    const Gap = Object.freeze({ column: 130, row: 64 });
+    // 同じ 2 者のあいだの矢印をずらす幅と、番号の丸を線から離す幅。
+    const Spread = 16;
+    const BadgeOffset = 14;
+    // 同じ列のあいだの弧が、カードの右の辺からふくらむ幅と、弧を重ねるときに足す幅。
+    const Bow = Object.freeze({ base: 46, step: 20 });
+    // 送り手と受け手が同じ手順の輪の大きさ。
+    const Loop = 34;
+
+    /** 流れごとの、手順の端の組(`[from, to]`)。変更後の手順 → 変更前の手順の順で、messages に無いやりとりは飛ばす。 */
+    const endPairsOf = (flows, messages) => flows.map((flow) => [...listOf(flow.steps), ...listOf(flow.beforeSteps)]
+      .map((id) => messages.get(id))
+      .filter((message) => message !== undefined && isString(message.from) && isString(message.to))
+      .map((message) => [message.from, message.to]));
+
+    const neighborsOf = (pairs) => {
+      const table = new Map();
+      const link = (end, other) => table.set(end, new Set([...(table.get(end) ?? []), ...(end === other ? [] : [other])]));
+      pairs.forEach(([from, to]) => {
+        link(from, to);
+        link(to, from);
+      });
+      return table;
+    };
+
+    /** start からたどれる、まだ置いていない端を、たどった数ごとの並びにする(0 番目は start だけ)。 */
+    const layersFrom = (start, { neighbors, placed }) => {
+      const visit = (frontier, seen, layers) => {
+        if (frontier.length === 0) return layers;
+        const next = [...new Set(frontier.flatMap((end) => [...neighbors.get(end)]))].filter((end) => !seen.has(end));
+        return visit(next, new Set([...seen, ...next]), [...layers, frontier]);
+      };
+      return visit([start], new Set([...placed, start]), []);
+    };
+
+    /**
+     * 端ごとの列。起点は、先に出た順で最初の、まだ置いていない端。流れの端は送り手から先に出るので、これは最初の流れの最初の送り手と、
+     * 数え直すときの「その端を含む最初の流れの最初の送り手」に当たる。その送り手が置いてある(流れの中に、送り手からたどり着けない
+     * 手順がある)ときは、その端から数える。
+     */
+    const endColumnsOf = ({ order, neighbors }, columnAt) => {
+      const start = order.find((end) => !columnAt.has(end));
+      if (start === undefined) return columnAt;
+      const layers = layersFrom(start, { neighbors, placed: new Set(columnAt.keys()) });
+      const placedNow = layers.flatMap((layer, column) => layer.map((end) => [end, column]));
+      return endColumnsOf({ order, neighbors }, new Map([...columnAt, ...placedNow]));
+    };
+
+    /** 列ごとの端の並び。列 0 は先に出た順、ほかは 1 つ前の列でつながる端の位置の平均(同じなら先に出た順)。 */
+    const orderedColumnsOf = ({ columnAt, order, neighbors }) => {
+      const count = columnAt.size === 0 ? 0 : Math.max(...columnAt.values()) + 1;
+      const columns = Array.from({ length: count }, (_, column) => order.filter((end) => columnAt.get(end) === column));
+      return columns.reduce((placed, ends, column) => {
+        if (column === 0) return [ends];
+        const previous = placed[column - 1];
+        const meanOf = (end) => {
+          const positions = [...neighbors.get(end)].filter((other) => columnAt.get(other) === column - 1).map((other) => previous.indexOf(other));
+          return positions.length === 0 ? Infinity : positions.reduce((sum, position) => sum + position, 0) / positions.length;
+        };
+        const byMean = (a, b) => meanOf(a) - meanOf(b) || order.indexOf(a) - order.indexOf(b);
+        return [...placed, ends.toSorted(byMean)];
+      }, []);
+    };
+
+    const centerOf = (card) => [card.x + card.width / 2, card.y + card.height / 2];
+    /** カードの中心から toward へ向かう線が、カードの縁(pad だけ外)と交わる点。 */
+    const rimPointOf = (card, toward, pad) => {
+      const [cx, cy] = centerOf(card);
+      const dx = toward[0] - cx;
+      const dy = toward[1] - cy;
+      const t = Math.min((card.width / 2 + pad) / Math.abs(dx || 1e-6), (card.height / 2 + pad) / Math.abs(dy || 1e-6));
+      return [cx + dx * t, cy + dy * t];
+    };
+    const unitOf = (from, to) => {
+      const length = Math.hypot(to[0] - from[0], to[1] - from[1]) || 1;
+      return [(to[0] - from[0]) / length, (to[1] - from[1]) / length];
+    };
+
+    /** 列の違う 2 者のあいだの直線。同じ 2 者のあいだに複数あれば、向きを問わずに横へずらして並べる。 */
+    const straightOf = ({ from, to, lane, lanes, isForward }) => {
+      const [ca, cb] = [centerOf(from), centerOf(to)];
+      const [ux, uy] = unitOf(ca, cb);
+      const offset = lanes > 1 ? (lane - (lanes - 1) / 2) * Spread * (isForward ? 1 : -1) : 0;
+      const [a, b] = [rimPointOf(from, cb, 8), rimPointOf(to, ca, 8)].map(([x, y]) => [x - uy * offset, y + ux * offset]);
+      const side = offset < 0 ? -1 : 1;
+      const badge = [(a[0] + b[0]) / 2 - uy * BadgeOffset * side, (a[1] + b[1]) / 2 + ux * BadgeOffset * side];
+      return { path: `M${a[0]},${a[1]} L${b[0]},${b[1]}`, tip: b, direction: [ux, uy], badge };
+    };
+
+    /**
+     * 同じ列の 2 者のあいだの弧。カードの右の辺の、相手の側の端から出て、右へふくらむ。番号の丸は、重なる弧ごとに弧の上の位置を
+     * ずらす(ふくらみの差だけでは丸どうしが重なる)。
+     */
+    const arcOf = ({ from, to, lane, lanes }) => {
+      const isDownward = to.y > from.y;
+      const rimY = (card, towardBelow) => card.y + card.height * (towardBelow ? 0.82 : 0.18) + (towardBelow ? -1 : 1) * lane * 6;
+      const a = [from.x + from.width + 4, rimY(from, isDownward)];
+      const b = [to.x + to.width + 4, rimY(to, !isDownward)];
+      const control = [from.x + from.width + Bow.base + lane * Bow.step, (a[1] + b[1]) / 2];
+      // 弧の上の位置は、上のカードから測る(向きの違う弧どうしでも、丸が上下に分かれる)。
+      const fromTop = Math.min(Math.max(0.5 + (lane - (lanes - 1) / 2) * 0.3, 0.2), 0.8);
+      const t = isDownward ? fromTop : 1 - fromTop;
+      const along = (index) => (1 - t) ** 2 * a[index] + 2 * (1 - t) * t * control[index] + t ** 2 * b[index];
+      return { path: `M${a[0]},${a[1]} Q${control[0]},${control[1]} ${b[0]},${b[1]}`, tip: b, direction: unitOf(control, b), badge: [along(0), along(1)] };
+    };
+
+    /** 送り手と受け手が同じ手順の輪。カードの右上の角から出て、右の辺へ戻る。 */
+    const loopOf = ({ from, lane }) => {
+      const reach = Loop + lane * 12;
+      const start = [from.x + from.width - 24, from.y];
+      const end = [from.x + from.width, from.y + 24];
+      const [c1, c2] = [[start[0], start[1] - reach], [end[0] + reach, end[1]]];
+      const badge = [(start[0] + 3 * c1[0] + 3 * c2[0] + end[0]) / 8, (start[1] + 3 * c1[1] + 3 * c2[1] + end[1]) / 8];
+      return { path: `M${start[0]},${start[1]} C${c1[0]},${c1[1]} ${c2[0]},${c2[1]} ${end[0]},${end[1]}`, tip: end, direction: unitOf(c2, end), badge };
+    };
+
+    return Object.freeze({
+      Card,
+      /**
+       * カードを置く。
+       * @param flows 解説の流れ(全部)
+       * @param messages やりとりの id から解説のやりとりを引く表(`ExplainedMap` の `lookup.messages`)
+       * @returns `{width, height, cards}`。cards は `{end, column, row, x, y, width, height}`(end は concepts の path か actors の id)で、
+       *   列の順、列の中は上から。列ごとに縦の中ほどへ寄せる
+       */
+      create: (flows, messages) => {
+        const flowPairs = endPairsOf(flows, messages);
+        const order = [...new Set(flowPairs.flat(2))];
+        const neighbors = neighborsOf(flowPairs.flat());
+        const columnAt = endColumnsOf({ order, neighbors }, new Map());
+        const columns = orderedColumnsOf({ columnAt, order, neighbors });
+        const heightOf = (count) => count * Card.height + Math.max(count - 1, 0) * Gap.row;
+        const height = heightOf(Math.max(0, ...columns.map((ends) => ends.length)));
+        const cards = columns.flatMap((ends, column) => {
+          const top = (height - heightOf(ends.length)) / 2;
+          return ends.map((end, row) => ({ end, column, row, x: column * (Card.width + Gap.column), y: top + row * (Card.height + Gap.row), width: Card.width, height: Card.height }));
+        });
+        return { width: columns.length === 0 ? 0 : columns.length * Card.width + (columns.length - 1) * Gap.column, height, cards };
+      },
+      /**
+       * 今の表示でのカードの出方。
+       * @param rows `TraceRows.rowsOf` の行
+       * @param entryAt パスから木の項目を引く表(`ExplainedMap` の `entryAt`)。端のファイルを足した(A)・消した(D)かを読む
+       * @returns カードに `presence` を足したもの。presence は、足したファイルの変更前だけ / 消したファイルの変更後だけなら
+       *   `missingBefore` / `missingAfter`(その側には無い)、そうでなく今の行の矢印に出ない端は `idle`(この操作では使わない)、比べるときの
+       *   足した / 消したファイルは `added` / `removed`、ほかは `used`
+       */
+      cardsIn: (layout, rows, { era, entryAt }) => {
+        const drawn = rows.map(TraceRows.drawnSideOf).filter((side) => side !== null && side.message !== null);
+        const used = new Set(drawn.flatMap((side) => [side.message.from, side.message.to]));
+        const fileStatusOf = (end) => (entryAt.has(end) && entryAt.get(end).changed ? entryAt.get(end).status : null);
+        const presenceOf = (end) => {
+          const status = fileStatusOf(end);
+          if (era === TraceEras.Before && status === "A") return "missingBefore";
+          if (era === TraceEras.After && status === "D") return "missingAfter";
+          if (!used.has(end)) return "idle";
+          if (era === TraceEras.Compare && status === "A") return "added";
+          if (era === TraceEras.Compare && status === "D") return "removed";
+          return "used";
+        };
+        return layout.cards.map((card) => ({ ...card, presence: presenceOf(card.end) }));
+      },
+      /**
+       * 行ごとの矢印の道筋。列の違う 2 者は直線、同じ列の 2 者は右へふくらむ弧、送り手と受け手が同じなら輪にする。同じ 2 者の
+       * あいだに複数あれば、ずらして並べる。
+       * @param rows `TraceRows.rowsOf` の行
+       * @returns 行と同じ並びの `{path, tip, direction, badge}`(tip は矢じりの先、direction はその向きの単位ベクトル、badge は
+       *   番号の丸の中心)。やりとりが messages に無いか、端のカードが無い行は null
+       */
+      arrowsOf: (layout, rows) => {
+        const cardAt = new Map(layout.cards.map((card) => [card.end, card]));
+        const pairKeyOf = (message) => JSON.stringify([message.from, message.to].toSorted());
+        const messages = rows.map((row) => TraceRows.drawnSideOf(row)?.message ?? null);
+        const isDrawable = (message) => message !== null && cardAt.has(message.from) && cardAt.has(message.to);
+        const keys = messages.map((message) => (isDrawable(message) ? pairKeyOf(message) : null));
+        return messages.map((message, index) => {
+          if (!isDrawable(message)) return null;
+          const lane = keys.slice(0, index).filter((key) => key === keys[index]).length;
+          const lanes = keys.filter((key) => key === keys[index]).length;
+          const [from, to] = [cardAt.get(message.from), cardAt.get(message.to)];
+          if (from === to) return loopOf({ from, lane });
+          if (from.column === to.column) return arcOf({ from, to, lane, lanes });
+          return straightOf({ from, to, lane, lanes, isForward: message.from < message.to });
+        });
+      },
+    });
+  })();
+
   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
-  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target, CompareDiagram });
+  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target, CompareDiagram, TraceRows, TraceLayout });
   if (typeof document === "undefined") {
     globalThis.prExplainCore = core;
     return;
@@ -3529,6 +3961,7 @@ button.change-item:hover { background: var(--track); }
     impact: { left: "clamp(220px, 18vw, 260px)", right: "clamp(300px, 26vw, 360px)" },
     primer: { left: "clamp(220px, 18vw, 260px)", right: "clamp(300px, 26vw, 360px)" },
     compare: { left: "clamp(220px, 18vw, 260px)", right: "clamp(300px, 26vw, 360px)" },
+    trace: { left: "clamp(230px, 20vw, 280px)", right: "clamp(280px, 24vw, 340px)" },
   };
 
   /** パネルの幅をドラッグで変え、画面ごとに残す。ダブルクリックで既定の幅へ戻す。 */
@@ -3681,7 +4114,7 @@ button.change-item:hover { background: var(--track); }
   /** 振る舞いの 1 行。やりとりを指していれば、種類・名前・送り手 → 受け手のチップを添える。`mark` は行頭の印(無ければ null)。 */
   const behaviorItemOf = (behavior, { story, mark }) => {
     const message = typeof behavior.message === "string" ? story.lookup.messages.get(behavior.message) : undefined;
-    const nameOf = (path) => story.lookup.conceptNames.get(path) ?? path;
+    const nameOf = (end) => story.lookup.endNames.get(end) ?? end;
     const chip = message === undefined ? [] : [el("span", { class: "message-chip" }, [
       kindChipOf(message.kind),
       el("span", { class: "message-name", text: message.name }),
@@ -4928,11 +5361,11 @@ button.change-item:hover { background: var(--track); }
       if (place.kind !== "box") return groupLabels.get(place.group);
       return ExplainedMap.nameOf(entryAt.get(place.path), state.naming);
     };
-    /** やりとりの端の名前。そのパスを含む箱(畳んだ組なら組)の名前で、図に無ければ concept 名かパス。 */
+    /** やりとりの端の名前。そのパスを含む箱(畳んだ組なら組)の名前で、図に無ければ concept 名か actor の名前か、端の綴りそのまま。 */
     const endNameOf = (model, path) => {
       const unit = model.places.get(model.layout.unitOf.get(path));
       if (unit !== undefined) return placeNameOf(unit);
-      return lookup.conceptNames.get(path) ?? path;
+      return lookup.endNames.get(path) ?? path;
     };
     const messageNameOf = (message) => messageTextOf(message, state.naming);
     const edgeKeyBetween = (model, message) => {
@@ -5616,7 +6049,7 @@ button.change-item:hover { background: var(--track); }
       return { grouping, scope: grouping === state.grouping ? state.scope : null, selected: isGroupBound ? null : state.selected };
     };
     const selectPlace = (place) => select(place.kind === "box" ? { kind: "box", id: place.path } : { kind: "group", id: place.group });
-    const nameOfPath = (path) => (entryAt.has(path) ? ExplainedMap.nameOf(entryAt.get(path), state.naming) : (lookup.conceptNames.get(path) ?? path));
+    const nameOfPath = (path) => (entryAt.has(path) ? ExplainedMap.nameOf(entryAt.get(path), state.naming) : (lookup.endNames.get(path) ?? path));
     const placeNameOf = (place) => (place.kind === "box" ? ExplainedMap.nameOf(entryAt.get(place.path), state.naming) : groupLabels.get(place.group));
     const isFileNamed = (entry) => state.naming === "file" || entry.conceptName === null;
     const entriesOfPlace = (place) => place.paths.map((path) => entryAt.get(path));
@@ -6085,7 +6518,7 @@ button.change-item:hover { background: var(--track); }
         ...(message.payload === undefined ? [] : [["渡すもの", message.payload, false]]),
         ...(message.returns === undefined ? [] : [["返すもの", message.returns, false]]),
         ["方式", Vocabulary.vias[message.via] ?? message.via, false],
-        ["コード", `${baseNameOf(message.from)} → ${message.code}`, true],
+        ["コード", `${lookup.actors.has(message.from) ? lookup.actors.get(message.from).label : baseNameOf(message.from)} → ${message.code}`, true],
       ];
       const status = messageStatusOf(message);
       return pressable("button", { class: classesOf("message-card plain-button", { "is-removed": message.status === "removed", "is-active": isStepRow }) }, [
@@ -7429,6 +7862,14 @@ button.change-item:hover { background: var(--track); }
       return el("div", { class: "side-block" }, [eyebrowOf("どこで変わったか", `${links.length} コミット`), ...links, ...empty]);
     };
 
+    /** 右の欄の「ほかの画面で見る」。押すと流れ図のその流れへ。 */
+    const flowsBlockOf = (diagram) => {
+      const flows = CompareDiagram.flowsThrough(diagram, state.selected, explained);
+      const chips = flows.map((flow) => pressable("button", { class: "flow-chip", title: "流れ図でこの流れを見る" }, [`${ScreenLabels[Screens.Trace]}: ${flow.label}`, el("span", { class: "arrow", text: "↗" })], () => go.toTrace(flow.id)));
+      const empty = chips.length === 0 ? [el("p", { class: "side-note", text: "このファイルを端に持つやりとりを手順に含む流れはありません" })] : [];
+      return el("div", { class: "side-block" }, [eyebrowOf("ほかの画面で見る", `${chips.length} 件`), ...(chips.length === 0 ? [] : [el("div", { class: "flow-chips" }, chips)]), ...empty]);
+    };
+
     const renderSide = (diagram) => {
       const picked = state.selected === null ? null : CompareDiagram.pickedOf(diagram, state.selected);
       if (picked === null) {
@@ -7436,7 +7877,7 @@ button.change-item:hover { background: var(--track); }
         return;
       }
       const clear = pressable("button", { class: "outline-button", text: "選択を外す" }, [], () => update({ selected: null }));
-      side.replaceChildren(...pickedBlocksOf(diagram, picked), changingCommitsBlockOf(diagram), el("div", { class: "side-block" }, [clear]));
+      side.replaceChildren(...pickedBlocksOf(diagram, picked), changingCommitsBlockOf(diagram), flowsBlockOf(diagram), el("div", { class: "side-block" }, [clear]));
       side.scrollTop = 0;
     };
 
@@ -7477,7 +7918,315 @@ button.change-item:hover { background: var(--track); }
     };
   };
 
-  const ScreenBuilders = { map: MapScreen, story: StoryScreen, test: TestScreen, impact: ImpactScreen, primer: PrimerScreen, compare: CompareScreen };
+  const TraceEraChoices = [{ value: TraceEras.Compare, label: "比べる" }, { value: TraceEras.After, label: "変更後だけ" }, { value: TraceEras.Before, label: "変更前だけ" }];
+  // 手順の対応の状態の名前と色の区分。そのまま(状態なし)はここに無い(札は「そのまま」)。
+  const TraceStatuses = { added: { tone: "A", label: "増えた" }, removed: { tone: "D", label: "消えた" }, changed: { tone: "M", label: "変わった" } };
+  // カードの下に添える文(`TraceLayout.cardsIn` の presence)。使う端(used)には添えない。
+  const TracePresenceNotes = { idle: "この操作では使わない", missingBefore: "変更前には無い", missingAfter: "変更後には無い", added: "この PR で増えた", removed: "この PR で消えた" };
+  const TraceSpellingNote = "綴り(code / payload / returns)は変更後のもの";
+  // 手順のカードが 2 列のときの列の見出しと、その側の手順が無いときの文。
+  const TraceColumnTexts = { before: { label: "変更前", missing: "この手順は無かった" }, after: { label: "変更後", missing: "この手順は無くなった" } };
+  // 図の余白。右は同じ列の弧と輪のふくらみ、下はカードの下に添える文の分を足す。
+  const TraceFigurePad = Object.freeze({ top: 52, right: 96, bottom: 34, left: 16 });
+  const TraceMinScale = 0.7;
+  const TraceHeadSize = { base: 9, current: 12 };
+
+  /** 流れ図のカードの絵(語彙 `cardIcons` のキーごと)。`(x, y)` は絵の中心。 */
+  const TraceIcons = {
+    person: (x, y) => [Dom.svg("circle", { cx: x, cy: y - 6, r: 6 }), Dom.svg("path", { d: `M${x - 10},${y + 12} q10,-14 20,0` })],
+    widget: (x, y) => [Dom.svg("rect", { x: x - 11, y: y - 9, width: 22, height: 18, rx: 2 }), Dom.svg("path", { d: `M${x - 11},${y + 3} h22` })],
+    store: (x, y) => [Dom.svg("path", { d: `M${x},${y - 10} l11,5 -11,5 -11,-5 z M${x - 11},${y} l11,5 11,-5 M${x - 11},${y + 5} l11,5 11,-5` })],
+    cache: (x, y) => [Dom.svg("rect", { x: x - 9, y: y - 11, width: 18, height: 22, rx: 2 }), Dom.svg("path", { d: `M${x - 5},${y - 4} h10 M${x - 5},${y + 1} h10 M${x - 5},${y + 6} h6` })],
+    scan: (x, y) => [Dom.svg("circle", { cx: x - 2, cy: y - 2, r: 7 }), Dom.svg("path", { d: `M${x + 3},${y + 3} l7,7` })],
+  };
+  /** icon を書いていない concept と、語彙に無い icon の絵(箱)。 */
+  const traceBoxIconOf = (x, y) => [Dom.svg("path", { d: `M${x - 10},${y - 5} l10,-5 10,5 v11 l-10,5 -10,-5 z M${x - 10},${y - 5} l10,5 10,-5 M${x},${y} v11` })];
+
+  /** 矢じり。tip が先、direction が向きの単位ベクトル。 */
+  const traceHeadOf = ([x, y], [ux, uy], size) => `M${x},${y} L${x - ux * size - uy * size * 0.5},${y - uy * size + ux * size * 0.5} L${x - ux * size + uy * size * 0.5},${y - uy * size - ux * size * 0.5} z`;
+
+  /** 流れ図の画面。左に操作(流れ)の一覧、中に人とモジュールのカードと番号付きの矢印、右に手順の一覧を出す。 */
+  const TraceScreen = (explained) => {
+    const flows = explained.explain === null ? [] : listOf(explained.explain.flows);
+    const flowAt = explained.lookup.flows;
+    const messages = explained.lookup.messages;
+    const layout = TraceLayout.create(flows, messages);
+    const endNameOf = (end) => explained.lookup.endNames.get(end) ?? end;
+
+    let state = { flowId: flows.length === 0 ? null : flows[0].id, era: flows.length === 0 ? TraceEras.After : TraceRows.erasOf(flows[0])[0], index: 0 };
+    const flowOf = () => flowAt.get(state.flowId) ?? null;
+    const update = (patch) => {
+      state = { ...state, ...patch };
+      render();
+    };
+    /** 流れを選ぶ。今の表示がその流れで選べなければ、その流れの既定の表示にする。 */
+    const pickFlow = (id) => {
+      const eras = TraceRows.erasOf(flowAt.get(id));
+      update({ flowId: id, era: eras.includes(state.era) ? state.era : eras[0], index: 0 });
+    };
+
+    const leftSub = el("span", { class: "panel-sub", text: `${flows.length} 件` });
+    const leftBody = el("div", { class: "panel-scroll trace-flows" });
+    const body = el("div", { class: "stage-body trace-body" });
+    const main = el("main", { class: "stage" }, [body]);
+    const sideSub = el("span", { class: "panel-sub" });
+    const side = el("div", { class: "side" });
+
+    const stepsTextOf = (flow) => {
+      const summary = TraceRows.summaryOf(flow);
+      return TraceRows.erasOf(flow).includes(TraceEras.Before) ? `手順 ${summary.steps.before} → ${summary.steps.after}` : `手順 ${summary.steps.after}`;
+    };
+    const measureNodesOf = (measure) => [prose("span", {}, measure.what), " ", prose("span", {}, measure.before), " → ", prose("span", {}, measure.after)];
+
+    const renderLeft = () => leftBody.replaceChildren(...flows.map((flow, index) => {
+      const gist = optionalText(flow.gist);
+      const { measure } = TraceRows.summaryOf(flow);
+      return pressable("button", { class: classesOf("trace-flow plain-button", { "is-picked": flow.id === state.flowId }) }, [
+        el("span", { class: "trace-flow-meta", text: `操作 ${index + 1} · ${stepsTextOf(flow)}` }),
+        el("span", { class: "trace-flow-label", text: flow.label }),
+        ...(gist === null ? [] : [prose("span", { class: "trace-flow-gist" }, gist)]),
+        ...(measure === null ? [] : [el("span", { class: "trace-flow-measure" }, measureNodesOf(measure))]),
+      ], () => pickFlow(flow.id));
+    }));
+
+    const summaryOf = (flow) => {
+      const { steps, counts, measure } = TraceRows.summaryOf(flow);
+      const gist = optionalText(flow.gist);
+      const itemOf = (key, children, extra = {}) => el("div", { class: classesOf("trace-summary-item", extra) }, [el("span", { class: "trace-summary-key", text: key }), el("span", { class: "trace-summary-value" }, children)]);
+      return el("div", { class: "trace-summary" }, [
+        ...(gist === null ? [] : [itemOf("この PR で変わったこと", Dom.proseParts(gist), { "is-head": true })]),
+        itemOf("手順の数", [el("span", { class: "mono", text: `${steps.before} → ${steps.after}` })]),
+        itemOf("増えた / 消えた / 変わった", [
+          el("span", { class: "add mono", text: plus(counts.added) }), " / ", el("span", { class: "del mono", text: minus(counts.removed) }), " / ", el("span", { class: "mod mono", text: `~${counts.changed}` }),
+        ]),
+        ...(measure === null ? [] : [itemOf(measure.what, [prose("span", {}, measure.before), " → ", prose("span", {}, measure.after)])]),
+      ]);
+    };
+
+    /** 矢印の色の区分。比べるときは増えた / 消えた を、そうでなければ手順の重さを使い、どちらも無ければやりとりの種類の色。 */
+    const arrowToneOf = (row, side) => {
+      const isMoved = state.era === TraceEras.Compare && (row.status === "added" || row.status === "removed");
+      if (isMoved) return row.status;
+      return side.cost ?? "";
+    };
+
+    const arrowNodeOf = ({ row, arrow, index }) => {
+      const sideOfRow = TraceRows.drawnSideOf(row);
+      const isCurrent = index === state.index;
+      const isChanged = state.era === TraceEras.Compare && row.status === "changed";
+      const node = Dom.svg("g", {
+        class: classesOf("trace-arrow", { "is-current": isCurrent, "is-changed": isChanged }),
+        "data-kind": sideOfRow.message.kind,
+        "data-step-tone": arrowToneOf(row, sideOfRow),
+        tabindex: "0",
+        role: "button",
+        "aria-label": `${row.badge}. ${sideOfRow.message.name}`,
+      }, [
+        Dom.svg("title", {}, [`${row.badge}. ${sideOfRow.message.name}`]),
+        Dom.svg("path", { class: "trace-arrow-line", d: arrow.path }),
+        Dom.svg("path", { class: "trace-arrow-hit", d: arrow.path }),
+        Dom.svg("path", { class: "trace-arrow-head", d: traceHeadOf(arrow.tip, arrow.direction, isCurrent ? TraceHeadSize.current : TraceHeadSize.base) }),
+        Dom.svg("g", { class: "trace-badge" }, [
+          Dom.svg("circle", { cx: arrow.badge[0], cy: arrow.badge[1], r: isCurrent ? 12 : 10 }),
+          Dom.svg("text", { x: arrow.badge[0], y: arrow.badge[1] }, [row.badge]),
+        ]),
+      ]);
+      node.addEventListener("click", () => update({ index }));
+      node.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        update({ index });
+      });
+      return node;
+    };
+
+    const cardNodeOf = (card, isInvolved) => {
+      const name = endNameOf(card.end);
+      const icon = explained.lookup.endIcons.get(card.end) ?? null;
+      const centerX = card.x + card.width / 2;
+      const iconNodes = (icon === null ? traceBoxIconOf : TraceIcons[icon])(centerX, card.y + 30);
+      const note = TracePresenceNotes[card.presence];
+      const tooltip = [name, card.end].join("\n");
+      return Dom.svg("g", { class: classesOf("trace-card", { "is-involved": isInvolved, "is-actor": explained.lookup.actors.has(card.end) }), "data-presence": card.presence }, [
+        Dom.svg("title", {}, [tooltip]),
+        Dom.svg("rect", { class: "trace-card-bg", x: card.x, y: card.y, width: card.width, height: card.height, rx: 12 }),
+        Dom.svg("g", { class: "trace-card-icon" }, iconNodes),
+        Dom.svg("text", { class: "trace-card-name", x: centerX, y: card.y + 66 }, [fittedTextOf(name, card.width - 16)]),
+        ...(note === undefined ? [] : [Dom.svg("text", { class: "trace-card-note", x: centerX, y: card.y + card.height + 17 }, [note])]),
+      ]);
+    };
+
+    const figureOf = (rows) => {
+      const cards = TraceLayout.cardsIn(layout, rows, { era: state.era, entryAt: explained.entryAt });
+      const arrows = TraceLayout.arrowsOf(layout, rows);
+      const current = rows[state.index] === undefined ? null : TraceRows.drawnSideOf(rows[state.index]);
+      const involved = new Set(current === null || current.message === null ? [] : [current.message.from, current.message.to]);
+      const drawn = rows.map((row, index) => ({ row, arrow: arrows[index], index })).filter(({ arrow }) => arrow !== null);
+      // 今の矢印はほかの矢印に隠れないよう、最後に描く。
+      const ordered = [...drawn.filter(({ index }) => index !== state.index), ...drawn.filter(({ index }) => index === state.index)];
+      const pad = TraceFigurePad;
+      const naturalWidth = layout.width + pad.left + pad.right;
+      const viewBox = [-pad.left, -pad.top, naturalWidth, layout.height + pad.top + pad.bottom].join(" ");
+      const svg = Dom.svg("svg", { class: "wide-figure trace-figure", viewBox, role: "img", "aria-label": "操作の流れ図" }, [
+        ...cards.map((card) => cardNodeOf(card, involved.has(card.end))),
+        ...ordered.map(arrowNodeOf),
+      ]);
+      // 幅は欄に合わせるが、図の大きさより大きくせず、下限より縮めない。倍率で割って、文字の大きさの倍率では変えない(構成の前後と同じ)。
+      svg.style.maxWidth = `calc(${naturalWidth}px / var(--text-size-ratio, 1))`;
+      svg.style.minWidth = `calc(${Math.round(naturalWidth * TraceMinScale)}px / var(--text-size-ratio, 1))`;
+      return el("div", { class: "trace-stage" }, [svg]);
+    };
+
+    /** 手順のカードの 1 列。その側の送り手 → 受け手・やりとりの名前・説明・渡すもの / 返すもの・コード。 */
+    const columnFactsOf = (stepSide, label) => {
+      const heading = (route) => (label === null ? route : `${label} · ${route}`);
+      if (stepSide.message === null) return [el("div", { class: "trace-col-head", text: heading(stepSide.messageId) }), el("p", { class: "side-note", text: "このやりとりは解説の messages にありません" })];
+      const { message } = stepSide;
+      const values = [
+        ...(isString(message.payload) ? [["渡すもの", message.payload]] : []),
+        ...(isString(message.returns) ? [["返すもの", message.returns]] : []),
+      ];
+      return [
+        el("div", { class: "trace-col-head", text: heading(`${endNameOf(message.from)} → ${endNameOf(message.to)}`) }),
+        el("div", { class: "trace-col-name" }, [kindChipOf(message.kind), el("span", { text: message.name })]),
+        ...(stepSide.text === null ? [] : [prose("p", { class: "trace-col-text" }, stepSide.text)]),
+        ...(values.length === 0 ? [] : [el("span", { class: "kv" }, values.flatMap(([key, value]) => [el("span", { class: "kv-key", text: key }), prose("span", { class: "kv-value" }, value)]))]),
+        el("pre", { class: "trace-code", text: message.code }),
+        ...(stepSide.showsAfterSpelling ? [el("p", { class: "trace-spelling", text: TraceSpellingNote })] : []),
+      ];
+    };
+
+    const statusChipOf = (status) => (status === null ? el("span", { class: "chip", text: "そのまま" }) : el("span", { class: "chip", "data-tone": TraceStatuses[status].tone, text: TraceStatuses[status].label }));
+
+    const stepCardOf = (row) => {
+      const columns = TraceRows.cardColumnsOf(row, state.era);
+      const changeNote = row.change === null ? [] : [prose("div", { class: "trace-change" }, row.change)];
+      const head = state.era === TraceEras.Compare ? [el("div", { class: "trace-step-head" }, [statusChipOf(row.status), el("span", { class: "trace-step-pos", text: `番号 ${row.badge}` })])] : [];
+      const columnOf = ({ side: which, step }) => {
+        if (which === "only") return el("div", { class: "trace-col" }, columnFactsOf(step, null));
+        const texts = TraceColumnTexts[which];
+        if (step === null) return el("div", { class: "trace-col is-none" }, [el("div", { class: "trace-col-head", text: texts.label }), el("p", { class: "side-note", text: texts.missing })]);
+        return el("div", { class: "trace-col" }, columnFactsOf(step, texts.label));
+      };
+      const body = columns.length === 1 ? columnOf(columns[0]) : el("div", { class: "trace-columns" }, columns.map(columnOf));
+      return el("div", { class: "trace-step" }, [...head, body, ...changeNote]);
+    };
+
+    const playerOf = (rows) => {
+      const previous = pressable("button", { class: "outline-button", text: "◀ 前へ" }, [], () => update({ index: state.index - 1 }));
+      const next = pressable("button", { class: "outline-button", text: "次へ ▶" }, [], () => update({ index: state.index + 1 }));
+      previous.disabled = state.index <= 0;
+      next.disabled = state.index >= rows.length - 1;
+      const unit = state.era === TraceEras.Compare ? "行" : "手順";
+      return el("div", { class: "trace-player" }, [previous, next, el("span", { class: "trace-player-pos", text: `${unit} ${Math.min(state.index + 1, rows.length)} / ${rows.length}` })]);
+    };
+
+    const legendOf = () => el("div", { class: "legend trace-legend" }, [
+      ...MessageKindOrder.map((kind) => el("span", {}, [el("span", { class: "trace-swatch", "data-kind": kind }), `${Vocabulary.messageKinds[kind].label}${kind === "evt" ? "(破線)" : ""}`])),
+      ...Object.entries(Vocabulary.stepCosts).map(([cost, names]) => el("span", {}, [el("span", { class: "trace-swatch", "data-step-tone": cost }), names.label])),
+      ...(state.era === TraceEras.Compare
+        ? [
+          el("span", {}, [el("span", { class: "trace-swatch", "data-step-tone": "added" }), "+n 増えた手順"]),
+          el("span", {}, [el("span", { class: "trace-swatch", "data-step-tone": "removed" }), "× 消えた手順"]),
+          el("span", {}, [el("span", { class: "trace-swatch is-changed" }), "輪 中身が変わった手順"]),
+        ]
+        : []),
+    ]);
+
+    const renderMain = (flow, rows) => {
+      const text = optionalText(flow.text);
+      const eras = TraceRows.erasOf(flow);
+      const toolbar = el("div", { class: "trace-toolbar" }, labeledToggleOf("見る流れ", { options: TraceEraChoices.filter((choice) => eras.includes(choice.value)), current: state.era, onPick: (era) => update({ era, index: 0 }) }));
+      const current = rows[state.index];
+      body.replaceChildren(
+        el("div", { class: "lede" }, [
+          el("span", { class: "eyebrow", text: "流れ図" }),
+          el("h1", { text: flow.label }),
+          ...(text === null ? [] : [prose("p", {}, text)]),
+        ]),
+        ...(state.era === TraceEras.Compare ? [summaryOf(flow)] : []),
+        toolbar,
+        figureOf(rows),
+        playerOf(rows),
+        ...(current === undefined ? [emptyOf("この表示には手順がありません")] : [stepCardOf(current)]),
+        legendOf(),
+      );
+    };
+
+    const renderSide = (rows) => {
+      const isComparing = state.era === TraceEras.Compare;
+      sideSub.textContent = `${rows.length} ${isComparing ? "行" : "手順"}`;
+      const itemOf = (row, index) => {
+        const stepSide = TraceRows.drawnSideOf(row);
+        const name = stepSide.message === null ? stepSide.messageId : stepSide.message.name;
+        const wasName = row.before !== null && row.before.message !== null ? row.before.message.name : null;
+        const marks = isComparing
+          ? [
+            ...(row.status === null ? [] : [statusChipOf(row.status)]),
+            ...(row.status === "changed" && wasName !== null ? [el("span", { class: "trace-row-was", text: `前: ${wasName}` })] : []),
+          ]
+          : (row.status === null ? [] : [el("span", { class: "trace-row-flag", text: "この PR で変わった" })]);
+        const tone = isComparing && (row.status === "added" || row.status === "removed") ? row.status : (stepSide.cost ?? "");
+        return pressable("button", { class: classesOf("trace-row plain-button", { "is-current": index === state.index, "is-removed": isComparing && row.status === "removed" }) }, [
+          el("span", { class: "trace-dot", "data-kind": stepSide.message === null ? "" : stepSide.message.kind, "data-step-tone": tone, text: row.badge }),
+          el("span", { class: "trace-row-body" }, [el("span", { class: "trace-row-name", text: name }), ...marks]),
+        ], () => update({ index }));
+      };
+      side.replaceChildren(el("div", { class: "side-block" }, [
+        el("span", { class: "eyebrow", text: isComparing ? "変更前と変更後の手順" : "この操作の手順" }),
+        el("div", { class: "trace-rows" }, rows.map(itemOf)),
+      ]));
+    };
+
+    const render = () => {
+      renderLeft();
+      const flow = flowOf();
+      if (flow === null) return;
+      const rows = TraceRows.rowsOf(flow, state.era, messages);
+      renderMain(flow, rows);
+      renderSide(rows);
+    };
+
+    const emptyText = explained.explain === null ? "解説なし" : "書かれていない";
+    if (flows.length === 0) {
+      body.replaceChildren(el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: "流れ図" }), emptyOf(emptyText)]));
+      leftBody.replaceChildren(emptyOf(emptyText));
+    } else {
+      render();
+    }
+
+    /** stepChange の Target の流れと番号。流れ図が行き先でなければ null。 */
+    const pickOfTarget = (target) => {
+      const destination = Target.destinationOf(target);
+      return destination.screen === Screens.Trace ? destination : null;
+    };
+
+    return {
+      summary: [],
+      controls: [],
+      tablist: null,
+      left: panelOf("left", [panelHead("操作", "", [leftSub]), leftBody]),
+      main,
+      right: panelOf("right", [panelHead("手順", "", [sideSub]), side]),
+      /** @returns 流れ図が行き先の Target で、その流れの「比べる」にその行があるか */
+      canShow: (target) => {
+        const found = pickOfTarget(target);
+        return found !== null && flowAt.has(found.flow) && TraceRows.isSelectable(flowAt.get(found.flow), found.stepChange);
+      },
+      /** その Target の流れを「比べる」で開き、指す行を選んだ状態にする。`canShow` が真のものだけを渡す。 */
+      showTarget: (target) => {
+        const found = pickOfTarget(target);
+        update({ flowId: found.flow, era: TraceEras.Compare, index: found.stepChange - 1 });
+      },
+      /** その流れを、その流れの既定の表示の最初の手順で開く。flows に無い流れは開かない。 */
+      showFlow: (id) => {
+        if (!flowAt.has(id)) return;
+        update({ flowId: id, era: TraceRows.erasOf(flowAt.get(id))[0], index: 0 });
+      },
+    };
+  };
+
+  const ScreenBuilders = { map: MapScreen, story: StoryScreen, test: TestScreen, impact: ImpactScreen, primer: PrimerScreen, compare: CompareScreen, trace: TraceScreen };
 
   /** 解説が使えない理由を帯の 1 行にする。 */
   const missingTextOf = (reason) => {
@@ -7576,6 +8325,10 @@ button.change-item:hover { background: var(--track); }
           navigateTo(Screens.Compare);
           built.compare.showTarget(target);
         },
+        toTrace: (flowId) => {
+          navigateTo(Screens.Trace);
+          built.trace.showFlow(flowId);
+        },
         /** Target の行き先の画面へ移り、指すものを選んだ状態にする。`canShow` が真のものだけを渡す。 */
         toTarget: (target) => {
           const screen = Target.destinationOf(target).screen;
@@ -7587,13 +8340,18 @@ button.change-item:hover { background: var(--track); }
             case Screens.Compare:
               go.toCompare(target);
               return;
+            case Screens.Trace:
+              navigateTo(Screens.Trace);
+              built.trace.showTarget(target);
+              return;
           }
         },
         /** @returns Target の行き先の画面で、指すものを選べるか */
         canShow: (target) => built[Target.destinationOf(target).screen].canShow(target),
       };
-      // 構造マップは組むときに、highlights の行き先がほかの画面で選べるか(`go.canShow`)を聞くので、行き先になる構成の前後を先に組む。
-      const BuildOrder = [Screens.Compare, ...Object.values(Screens).filter((screen) => screen !== Screens.Compare)];
+      // 構造マップは組むときに、highlights の行き先がほかの画面で選べるか(`go.canShow`)を聞くので、行き先になる構成の前後と流れ図を先に組む。
+      const Destinations = [Screens.Compare, Screens.Trace];
+      const BuildOrder = [...Destinations, ...Object.values(Screens).filter((screen) => !Destinations.includes(screen))];
       const built = {};
       for (const screen of BuildOrder) built[screen] = ScreenBuilders[screen](explained, go);
       const tabs = Object.values(Screens).map((screen) => el("a", { href: `#${screen}`, "data-screen": screen, text: ScreenLabels[screen] }));

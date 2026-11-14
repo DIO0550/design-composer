@@ -11,7 +11,7 @@ diff と Issue だけでは、長いセッションで何を使い、なぜそ�
 
 ## 5 画面と材料
 
-ページは 1 枚で、`#map` / `#story` / `#test` / `#impact` / `#primer` / `#compare` で画面を切り替える。ハッシュが無ければ構造マップで開く(前に開いた画面は覚えない)。上部バーの文字の大きさ(−/+、90〜150%)は箱の図の欄(構造マップとテスト)を除き、どの画面のパネルと本文にも効き、開くたびに 100% に戻る。どの画面も、Actions が git の差分から
+ページは 1 枚で、`#map` / `#story` / `#test` / `#impact` / `#primer` / `#compare` / `#trace` で画面を切り替える。ハッシュが無ければ構造マップで開く(前に開いた画面は覚えない)。上部バーの文字の大きさ(−/+、90〜150%)は箱の図の欄(構造マップとテスト)を除き、どの画面のパネルと本文にも効き、開くたびに 100% に戻る。どの画面も、Actions が git の差分から
 作る**変更の地図**(`change-map.json`)と、セッションが書く**解説**(`explain.json`)を合わせて組む。
 
 | 画面 | 見るもの | 地図から | 解説から |
@@ -22,6 +22,7 @@ diff と Issue だけでは、長いセッションで何を使い、なぜそ�
 | 振る舞い(`#impact`) | 使う人から見て何が変わったかを、コードの名前を出さずに(根拠の仕様の場所のパスと技術の手引きの節の題を除く)1 画面で。左に節の目次(変わった節に印)、中に題・要約と、変わったこと(これまで / これから)・状況の表(行 × 列のマス。変わったマスに印。最初の変わったマスを選んだ状態で始まる)・増えた状況・変わらないこと(テストで守っているか)の節、右に今の節の根拠(仕様の場所(差分で見る)・関連 Issue・確かめているテスト・無いテスト・仕組み(やりとり・技術の手引きの節))。右の欄は本文のスクロールに合わせて今の節に切り替わり、幅が狭いと各節の中に畳んで出る | テストの追加 / 既存の判定(テスト画面と同じ)・やりとりの両端が図の箱か・コミットの変更ファイル(仕様の差分で見るがファイルへ届くか) | `impact`(根拠は `tests`・`messages`・`primers`) |
 | 技術の手引き(`#primer`) | この PR を読むのに要る技術を、出てくる場所と一緒に。上にタブ(言語・フレームワーク / この PR の実装)、左に目次(REFERENCE の後に用語集)、中に節(要するに → 本文の段を書いた順)、右に今の節の出てくる場所(差分で見る。届かないときは、コミットを見る / ブランチ全体の流れを見る)・確かめているテスト / 無いテスト・構造マップで見る・関連・用語。点線の語に乗ると、右の欄の同じ語が光る。幅が狭いと各節に畳み(光るのは畳んだ欄の同じ語)、760px 以下ではタブの並びが上に残る | コミットの変更ファイル(差分で見るがファイル・行へ届くか)・テストの判定 | `primers`・`terms`(根拠は `tests`・`flows`) |
 | 構成の前後(`#compare`) | 変更前(マージベース)と変更後(このブランチ)の箱と線を、同じ配置の 2 枚の図で(左右 / 上下)。片方にしか無い箱はもう片方に点線の枠で残し、変わっていない箱は薄くできる。粒度は呼び出し(解説の `calls`)とモジュール(変更ファイルと依存)。左に箱と線の増えた / 消えた / 変えたの件数と変わったところの一覧、右に選んだ箱・線の前後(呼び出しは変更前 / 変更後の一言、モジュールは箱なら増えた / 消えた / 残った依存、線なら両端)と、どこで変わったか(そのファイルを変えたコミット)。何も選んでいないときは、どちらの粒度でも calls の題・説明・見てほしいところ(どれも書いていなければ件数)。選べる箱・線が無ければ理由(解説なし / 書かれていない / 呼び出しの変化なし / モジュールの変化なし) | 変更ファイルの状態・`dependencies`(増えた / 消えた / 残った)・`commits` | `calls`(箱の組の名前は `concepts`) |
+| 流れ図(`#trace`) | 人とモジュールのあいだの 1 操作の手順を、カードと番号付きの矢印で。左に操作(流れ)の一覧(手順の数の前後・この PR で変わったこと・量の前後)、中に題・操作の説明と、比べる(既定。変更前と変更後の手順を対応の行で重ね、増えた手順は +n、消えた手順は ×、中身が変わった手順は番号に輪)/ 変更後だけ / 変更前だけ の図、前へ / 次へ、今の手順のカード(比べるときは変更前 / 変更後の 2 列と注記)。カードは全部の流れの端を 1 回だけ自動で置くので、流れを替えても位置は動かない。今の表示で使わない端は薄く、足した / 消したファイルの concept は「変更前には無い」「この PR で増えた」などと添える。右に手順の一覧。対応(`stepChanges`)の無い流れは変更後だけ | 変更ファイルの状態(足した / 消した) | `flows`(手順の端は `messages` の from / to で、名前は `concepts` と `actors`) |
 
 画面をまたいで移れる。変更の経緯の「影響する操作」を押すと構造マップでその流れを選んだ状態に、テストの
 「追加したコミット」を押すと変更の経緯でそのコミットを開いた状態(機能の側を開いていてもコミットの側に戻る)になる。変更の経緯の
@@ -31,8 +32,9 @@ diff と Issue だけでは、長いセッションで何を使い、なぜそ�
 (表示範囲の絞り込みは外す。両端が図の箱でないやりとりは押せず「図に無い」)、技術の手引きのチップは技術の手引きの
 そのタブのその節に、テストの「この状況を確かめている」
 は振る舞いのその節(表ならそのマスを選んだ状態)になる。構造マップの見てほしい点(highlights)は、Target が callBox / callEdge なら構成の前後の
-呼び出しの粒度でその箱・線を、module ならモジュールの粒度でそのファイルを選んだ状態になる(その粒度の図に無いものは押せず「指している先が図に無い」)。
-構成の前後の「どこで変わったか」は、変更の経緯のそのコミットのそのファイルになる。振る舞いの仕様の「差分で見る」は、変更の経緯のそのコミットの
+呼び出しの粒度でその箱・線を、module ならモジュールの粒度でそのファイルを選んだ状態に、stepChange なら流れ図の「比べる」でその流れのその行を選んだ状態になる
+(その粒度の図に無いもの・対応の無い流れや番号は押せず「指している先が図に無い」)。
+構成の前後の「どこで変わったか」は、変更の経緯のそのコミットのそのファイルに、「ほかの画面で見る」は流れ図のその流れ(選んだ箱・線のファイルを端に持つやりとりを手順に含むもの)になる。振る舞いの仕様の「差分で見る」は、変更の経緯のそのコミットの
 そのファイル(行までは光らない。届かないときは技術の手引きと同じ)になる。技術の手引きでは、出てくる場所の「差分で見る」が変更の経緯の
 そのコミットのそのファイル(カードを開いて送る)に、テストがテストの画面に、構造マップで見るが流れに、関連がもう一方の
 タブの節になる。
@@ -103,7 +105,8 @@ Files changed にも混ざるため)。
 
 - 文字列は空にしない。説明文(`title`・`lead`・`text`・`why`・`given` / `when` / `then` など。`impact` の中は下の規則)の中の
   `` `…` `` は、ページがコードとして描く。primers の `label`・`gist`・text と注意メモの段の `text`・引数の `text`・
-  出てくる場所の `text`・terms の `text`・features の `review`・featureRanges の `text`・calls の `gist`・`text`・`review` と箱の `role`・`was`・`now`、線の `was`・`now` も同じ。名前(`name`・`label`)と `code` は書いたまま出す(例外は primers の
+  出てくる場所の `text`・terms の `text`・features の `review`・featureRanges の `text`・calls の `gist`・`text`・`review` と箱の `role`・`was`・`now`、線の `was`・`now`・
+  flows の `gist`・`text` と stepChanges の `beforeText`・`afterText`・`change`・measure の `what`・`before`・`after`・actors の `role` も同じ。名前(`name`・`label`)と `code` は書いたまま出す(例外は primers の
   `label` で、`` `…` `` をコードとして描く。declaration の `code` は書いたまま出す)。HTML は書いても文字のまま出る
 - **用語の印 `[[表示|用語の id]]`** を書けるのは、primers の `gist`・text と注意メモの段の `text`・引数の `text` だけ。
   印の表示には `` `…` `` を書ける。`` `…` `` の中に印の形は書けない。`` `…` `` の外に、印でない `[[` / `]]` は書けない。
@@ -136,6 +139,7 @@ Files changed にも混ざるため)。
 | `overview` | 必須 | Overview |
 | `features` | 任意 | Feature[]。空ならページは「機能」でまとめられない(層だけ)。変更の経緯の機能の側には、ほかに `commitStories[].featureRanges` が要る |
 | `layerRoles` / `concepts` / `messages` / `flows` / `commitStories` / `suites` / `tests` | 任意 | 下の型の配列 |
+| `actors` | 任意 | Actor[]。やりとりの端になる、concepts のファイルでないもの(操作する人・外のサービス) |
 | `calls` | 必須 | Calls。構成の前後の呼び出しの粒度の材料。箱も線も 0 件なら「呼び出しの変化なし」と出す。無い解説(この形より前に書いたもの)は、呼び出しの粒度を「書かれていない」と出す |
 | `impact` | 任意 | Impact。無ければ振る舞いの画面は「書かれていない」と出す |
 | `primers` | 任意 | Primer[]。無いか空なら、技術の手引きは「書かれていない」と出す |
@@ -148,12 +152,16 @@ Files changed にも混ざるため)。
 | Overview | `title` `lead` `before: Behavior[]`(0 件でよい)`after: Behavior[]`(1 件以上)`highlights?: Highlight[]` |
 | Behavior | `text` `message?`(messages の id) |
 | Highlight | `title` `text` `go: Target`(押したときに移る先) |
-| Target | `{kind: "feature", id}` / `{kind: "layer", layer}`(地図の `groups[].label` と同じ綴り)/ `{kind: "file", path}` / `{kind: "message", id}` / `{kind: "flow", id}` / `{kind: "callBox", id}`(calls の箱の id)/ `{kind: "callEdge", id}`(calls の線の id)/ `{kind: "module", path}`(構成の前後のモジュールの粒度のファイル)。kind ごとのキーが欠けるのも、他の kind のキーが混ざるのも不可 |
+| Target | `{kind: "feature", id}` / `{kind: "layer", layer}`(地図の `groups[].label` と同じ綴り)/ `{kind: "file", path}` / `{kind: "message", id}` / `{kind: "flow", id}` / `{kind: "callBox", id}`(calls の箱の id)/ `{kind: "callEdge", id}`(calls の線の id)/ `{kind: "module", path}`(構成の前後のモジュールの粒度のファイル)/ `{kind: "stepChange", flow, stepChange}`(flows の id と、その流れの stepChanges の 1 始まりの番号)。kind ごとのキーが欠けるのも、他の kind のキーが混ざるのも不可 |
 | Feature | `id` `label` `role` `review?: string[]`(機能ごとにレビューで見てほしい点。確認の印は付かない) |
 | LayerRole | `layer`(一意。地図の `groups[].label`)`role` |
-| Concept | `path`(一意)`name` `role` `feature?`(features の id)`change?` `graph?`(既定 true) |
-| Message | `id` `from` `to`(concepts の path)`kind`: `cmd` \| `qry` \| `evt` `name` `code` `via`: `call` \| `http` \| `state` \| `log` \| `exec` \| `file` `payload?` `returns?` `status?`: `added` \| `changed` \| `removed`(省けば前からあって変えていない) |
-| Flow | `id` `label` `steps[]`(messages の id。1 件以上) |
+| Concept | `path`(一意)`name` `role` `feature?`(features の id)`change?` `graph?`(既定 true)`icon?: CardIcon`(流れ図のカードの絵。省けば箱の絵) |
+| Actor | `id`(一意。concepts の path と同じ綴りは不可)`label`(名前)`role` `icon?: CardIcon`(省けば `person`) |
+| CardIcon | `person`(人)\| `widget`(画面の部品)\| `store`(状態)\| `cache`(覚え書き)\| `scan`(走査) |
+| Message | `id` `from` `to`(concepts の path か actors の id)`kind`: `cmd` \| `qry` \| `evt` `name` `code` `via`: `call` \| `http` \| `state` \| `log` \| `exec` \| `file` `payload?` `returns?` `status?`: `added` \| `changed` \| `removed`(省けば前からあって変えていない) |
+| Flow | `id` `label` `steps[]`(変更後の手順。messages の id。1 件以上)`gist`(この PR でこの操作の何が変わったか)`beforeSteps[]`(変更前の手順。messages の id。0 件でよい)`stepChanges: StepChange[]`(1 件以上)`text?`(操作そのものの説明)`measure?: Measure`。どの手順も、ちょうど 1 つの対応に属する。beforeSteps に増えた(added)やりとりを、steps に消えた(removed)やりとりを書かない |
+| StepChange | 変更前の手順と変更後の手順の対応。`status?`: `added` \| `changed` \| `removed`(省けばそのまま)`beforeStep?` `afterStep?`(1 始まりの番号)`beforeText?` / `afterText?`(その流れでの変更前 / 変更後の手順の説明)`change?`(この PR でその手順の何が変わったか。status のあるものだけ)`beforeCost?` / `afterCost?`: `heavy`(重い処理)\| `skipped`(省いた処理)。added は afterStep だけ、removed は beforeStep だけ、changed とそのままは両方を持つ。`beforeText` / `beforeCost` は beforeStep があるとき、`afterText` / `afterCost` は afterStep があるときだけ書ける。書いた順に並べたとき、beforeStep と afterStep はそれぞれ増えていく。そのままの対応は前後で同じやりとりを指す。前後が同じやりとりの対応は、そのやりとりが changed なら changed、そうでなければ省く |
+| Measure | `what`(何を数えるか)`before` `after`(変更前 / 変更後の量。同じでもよい) |
 | CommitStory | `sha`(一意)`phase`: `prep` \| `core` \| `hard` \| `revise` \| `fin` `role` `why` `flows?`(flows の id)`review?: string[]` `before?: Behavior[]` `after?: Behavior[]` `notes?: Note[]` `featureRanges?: FeatureRange[]` |
 | Note | `path` `side?`: `new` \| `old`(既定 new)`start`(1 以上)`end`(start 以上)`text`。行番号はそのコミット時点 |
 | FeatureRange | `path` `side?` `start` `end`(Note と同じ)`feature`(features の id)`text`(その範囲でこの機能のためにしたこと。機能 × コミットのマスと hunk の札の横に出る)。範囲の行を 1 つでも含む hunk(消したファイルは変更前の行)が、その機能になる。2 つ以上の範囲が入る hunk は、最初に書いた範囲の機能になる |
@@ -184,12 +192,12 @@ Files changed にも混ざるため)。
 | Term | `id` `label`(一意)`text`。どれかの印から指す |
 
 id・sha・path・layer は一覧の中で一意にする(features / messages / flows / suites / tests の id、
-commitStories の sha、concepts の path、layerRoles の layer、primers の id(kind をまたいで)、terms の id と label、calls の箱と線の id(箱と線をまたいで))。
+commitStories の sha、concepts の path、layerRoles の layer、actors の id、primers の id(kind をまたいで)、terms の id と label、calls の箱と線の id(箱と線をまたいで))。
 todo のテストは commit も excerpt も持たない。
 
-**解説の中の参照**は満たさなければ置けない(message の from / to、flow の steps、commitStory の flows、featureRanges の feature、
+**解説の中の参照**は満たさなければ置けない(message の from / to(concepts か actors)、flow の steps / beforeSteps、commitStory の flows、featureRanges の feature、
 calls の箱の module と線の from / to、Behavior の message、test の suite / covers / targets、concept の feature、Target(highlights の `go`)の feature / message /
-flow / callBox / callEdge、ImpactLine の message、SituationOutcome・AddedSituation・KeptLine の tests、ImpactChange・AddedSituation の primers、primers の seeAlso / tests / flows、
+flow / callBox / callEdge / stepChange(flow と、その流れの対応の数を超えない番号)、ImpactLine の message、SituationOutcome・AddedSituation・KeptLine の tests、ImpactChange・AddedSituation の primers、primers の seeAlso / tests / flows、
 用語の印 → terms。terms はどれかの印から指す)。**地図を指す参照**(commitStory の sha・Note のパスと行・Target の
 layer / file / module・LayerRole の layer・concept のパス・出てくる場所の `path`・`lineRange`・`shas`・仕様の場所の `path`・`shas`)は検査せず、外れたものは
 ページが「地図に無い」と出す(理由は `build-pr-explain.py` の冒頭)。FeatureRange のパスと行も地図を指す参照で、検査しない
@@ -212,8 +220,9 @@ layer / file / module・LayerRole の layer・concept のパス・出てくる�
 | `impact` | 使う人(アプリを操作する人・ハーネスなら使うセッション)から見て変わったことを、操作と画面の言葉だけで。`changed` は変わったことの前後、`tables` は結果が 2 つの軸(例: タブがあるか × 開く操作の進み具合)で決まるときの行 × 列の表(変わったマスにだけ `was`)、`added` はこの PR で初めて起きうるようになった状況、`kept` は巻き込まれそうで変わらないこと。根拠は `tests` で指す。仕様(docs など)を変えたなら `changed.specs` に、変えていない仕様は `keptSpecs` に、場所(`locator`。見出しの言葉で「「タブ」の ⌘W の行」のように)と、変えた点・変えていない点を 1 文で書く。`changed.relatedIssues` は変更前に先送りしていた件など、経緯に関わる Issue と関わりを 1 文で。仕組みを技術の手引きの節で説明しているなら `changed.primers` / `added[].primers` でその節を指す。`overview` が「何を変えたか」をレビュアーに向けて書くのに対し、ここは「使う人に何が起きるか」を書く | コードの名前(共通の規則) |
 | `overview.highlights` | 特に見てほしい箇所(自信のない判断・未決のまま入れたもの・目で見ないと分からない表示)と、押したときに図のどこへ移るか(`go`) | 「全体を見てください」 |
 | `features` / `layerRoles` | 機能・層がこの PR で担う役割を 1 文。`layerRoles` の `layer` の綴りは地図の `groups[].label` に揃える。features の `review` は、その機能でレビューで見てほしい点を 1 点 1 文(コミットの `review` はどの機能の話かを持たないので、機能ごとの点はここに書く) | |
-| `concepts` | 箱にしたいファイルと、その短い名前(`name`。概念の名前(docs の語彙)で、図の表示名になる)・役割・何を変えたか(`change`)。変更していないファイルも名指しすると箱になる。図に出さず木にだけ出すなら `graph: false` | 変更ファイルの列挙だけ(箱は地図からも出る) |
-| `messages` / `flows` | 箱どうしのやりとり。`kind` は変える(`cmd`)/ 問い合わせる(`qry`)/ 知らせる(`evt`)、`code` は実際の呼び出しの綴り。このブランチで足した・変えた・消したものは `status` を `added` / `changed` / `removed` にする(テストの抜けは `added` と `changed` で数える)。`flows` は操作・イベントごとのやりとりの順で、2〜4 本 | 1 つの関数の中の手順 |
+| `concepts` | 箱にしたいファイルと、その短い名前(`name`。概念の名前(docs の語彙)で、図の表示名になる)・役割・何を変えたか(`change`)。変更していないファイルも名指しすると箱になる。図に出さず木にだけ出すなら `graph: false`。`icon` は流れ図のカードの絵で、ほかの画面には出ない | 変更ファイルの列挙だけ(箱は地図からも出る) |
+| `actors` | 流れ図でやりとりの端になる、ファイルでないもの(操作する人・外のエディタ・外のサービス)。`label` は概念の名前、`role` は 1 文 | concepts に書けるファイル |
+| `messages` / `flows` | 箱どうしのやりとり。`kind` は変える(`cmd`)/ 問い合わせる(`qry`)/ 知らせる(`evt`)、`code` は実際の呼び出しの綴り。このブランチで足した・変えた・消したものは `status` を `added` / `changed` / `removed` にする(テストの抜けは `added` と `changed` で数える)。`flows` は操作・イベントごとのやりとりの順で、2〜4 本。`steps` が変更後、`beforeSteps` が変更前の手順で、`stepChanges` で前後の手順を対応させる。`gist` はこの PR でその操作の何が変わったかの 1 行、`text` は操作そのものの説明。stepChanges の `beforeText` / `afterText` はその流れでの手順の説明(同じやりとりでも流れごとに違ってよい)、`change` はこの PR でその手順の何が変わったか。既存の呼び出しの引数だけを変えたなど、やりとりを 1 件のまま `changed` にしたときは、前後に同じ id を置き、その対応も `changed` にする。古い綴りは残らない(変更前のカードは変更後の綴りで出る)ので、違いは `beforeText` / `change` に書く | 1 つの関数の中の手順 |
 | `calls` | 構成の前後の呼び出しの粒度。この PR で増えた・消えた・変えた呼び出し(関数・フック・コマンドの呼び出し)を箱(`name` は呼び出しの名前、`module` はそれを持つファイルの concept)にし、呼び出しの関係を線(`code` は呼び出しの綴り)にする。変えていない箱・線も、前後の関係を読むのに要るなら置く(`now` に今の役目、前と違うなら `was` に前の役目)。`gist` / `text` / `review` は何も選んでいないときの右の欄に、どちらの粒度でも出る。呼び出しの変化が無い PR(ドキュメントだけなど)は箱も線も 0 件にする | ファイル単位の依存の写し(モジュールの粒度は地図から出る) |
 | `commitStories` | コミットごとに、`role`(何をするコミットか 1 行)・`why`(なぜこの順でこうしたか)・`review`(レビューで見てほしい点を 1 点 1 文)・振る舞いの前後・行への注釈(`notes`)・機能の範囲(`featureRanges`。差分のまとまりがどの機能のための変更かを、注釈と同じパスと行で指す。1 つのファイルに機能が混ざるなら範囲を分ける)。`phase` は下ごしらえ(`prep`)/ 本体(`core`)/ 安定化(`hard`)/ 指摘の反映(`revise`)/ 仕上げ(`fin`) | 件名・本文の写し(地図から出る) |
 | `suites` / `tests` | テストごとに、守る振る舞い(`why`)・前提 / 操作 / 期待・使った技法・境界の値の表(`values`)・確かめているやりとり(`covers`)と箱(`targets`)。テストコードは `excerpt` で範囲を指す | テストコードの写し |
