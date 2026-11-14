@@ -1,3 +1,4 @@
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 import { RecordEx } from "@/utils/RecordEx";
 import { Result } from "@/utils/Result";
@@ -111,7 +112,37 @@ function isEmpty(value: JsonValue): boolean {
   return typeof value === "object" && Object.keys(value).length === 0;
 }
 
-/** JSON の値を位置つきで読み進めるためのカーソル操作。 */
+/**
+ * 配列か。`JsonValue` の配列は readonly なので、素の `Array.isArray` では絞れない。
+ *
+ * @param value 判定する JSON の値
+ * @returns 配列なら true
+ */
+function isJsonArray(value: JsonValue): value is readonly JsonValue[] {
+  return Array.isArray(value);
+}
+
+/**
+ * 2 つのオブジェクトが、同じキーに同じ値を持つか。キーの並びは見ない。
+ *
+ * @param object 比べるオブジェクト
+ * @param other 比べるオブジェクト
+ * @returns キーの数が同じで、`object` のキーがすべて `other` 自身にあり、値が `Json.equals` で
+ *   等しければ true
+ */
+function objectEquals(object: JsonObject, other: JsonObject): boolean {
+  const keys = Object.keys(object);
+
+  // `other[key]` は自身に無いキーでも prototype の値を返す（`__proto__` なら `Object.prototype`）
+  const hasSameValueAt = (key: string): boolean =>
+    RecordEx.has(other, key) && Json.equals(object[key], other[key]);
+
+  return (
+    keys.length === Object.keys(other).length && keys.every(hasSameValueAt)
+  );
+}
+
+/** JSON の値を位置つきで読み進めるためのカーソル操作と、JSON の値の組み立て・比較。 */
 export const Json = {
   /**
    * テキストから読み込んだ値を、位置つきのカーソルにする。
@@ -550,6 +581,31 @@ export const Json = {
       ...Json.errorsOf(e),
       ...Json.errorsOf(f),
     ]);
+  },
+
+  /**
+   * 2 つの JSON の値が同じデータを表しているか。オブジェクトはキーの並びを見ず、配列は並び
+   * まで比べる。
+   *
+   * @param value 比べる値
+   * @param other 比べる値
+   * @returns 同じ種類の値で、文字列・数値・真偽値なら `===` で等しく、配列なら同じ位置の要素が、
+   *   オブジェクトなら同じキーの値がすべて等しければ true
+   */
+  equals(value: JsonValue, other: JsonValue): boolean {
+    if (isJsonArray(value)) {
+      return isJsonArray(other) && ArrayEx.equals(value, other, Json.equals);
+    }
+
+    if (isJsonArray(other)) {
+      return false;
+    }
+
+    if (typeof value === "object") {
+      return typeof other === "object" && objectEquals(value, other);
+    }
+
+    return value === other;
   },
 
   /**

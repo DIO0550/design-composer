@@ -509,3 +509,31 @@ test("グラデーションを Delete token で消すと一覧から消える", 
 
   expect(row(/^gradients 0$/)).toBeDefined();
 });
+
+test("色を変えたあと不透明度の欄を変えずに離れても、Ctrl+Z 1 回でピッカーで選ぶ前の色に戻る", async () => {
+  await renderTokensView();
+  await selectRow("primary");
+  fireEvent.click(field("値"));
+  fireEvent.change(field("値"), { target: { value: "#00ff00" } });
+
+  await userEvent.click(field("不透明度"));
+  await userEvent.tab();
+  blurActive();
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  expect(field("値")).toHaveProperty("value", "#3b82f6");
+});
+
+test("色を変えたあと名前の欄を変えずに離れても、Ctrl+Z 1 回でピッカーで選ぶ前の色に戻る", async () => {
+  await renderTokensView();
+  await selectRow("primary");
+  fireEvent.click(field("値"));
+  fireEvent.change(field("値"), { target: { value: "#00ff00" } });
+
+  await userEvent.click(field("名前"));
+  await userEvent.tab();
+  blurActive();
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  expect(field("値")).toHaveProperty("value", "#3b82f6");
+});
