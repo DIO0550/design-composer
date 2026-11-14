@@ -18,7 +18,10 @@
       { "title": "ハーネスの層", "text": "検査はすべてハーネスの層にある", "go": { "kind": "layer", "layer": "ハーネス" } },
       { "title": "置き場の書き換え", "text": "3 ファイル以外を消すのはここだけ", "go": { "kind": "file", "path": ".github/scripts/pr-explain-pages.sh" } },
       { "title": "地図の配置", "text": "枠は毎回上書きする", "go": { "kind": "message", "id": "put-map" } },
-      { "title": "解説を置く流れ", "text": "検査から push までを 1 本で見る", "go": { "kind": "flow", "id": "explain" } }
+      { "title": "解説を置く流れ", "text": "検査から push までを 1 本で見る", "go": { "kind": "flow", "id": "explain" } },
+      { "title": "解説を置く入口", "text": "置き場の書き換えのうち、セッションが呼ぶのはここだけ", "go": { "kind": "callBox", "id": "put-explain" } },
+      { "title": "置く前の検査", "text": "検査に落ちたら、ここで止まる", "go": { "kind": "callEdge", "id": "put-explain-check" } },
+      { "title": "解説の検査のファイル", "text": "形と参照の規則はこのファイルの表にある", "go": { "kind": "module", "path": ".github/scripts/build-pr-explain.py" } }
     ]
   },
   "features": [
@@ -41,6 +44,23 @@
     { "id": "explain", "label": "解説を置いたとき", "steps": ["put-explain"] },
     { "id": "push", "label": "push したとき", "steps": ["put-map"] }
   ],
+  "calls": {
+    "gist": "解説を置く入口を `put-explain` 1 つにまとめた",
+    "text": "変更前は、Actions の `change-map` ジョブが地図と一緒にページごとの HTML も置かせていた。変更後は、ジョブは枠と地図だけを置かせ、解説はセッションが `put-explain` で検査してから置く。",
+    "review": ["`put-pages` を消したあと、ジョブから呼ぶ線が残っていないか"],
+    "boxes": [
+      { "id": "change-map-job", "name": "change-map ジョブ", "role": "PR のイベントで地図を作り、置き場へ渡す", "module": ".github/workflows/pr-explain.yml", "was": "地図を作り、ページごとの HTML も置かせていた", "now": "地図を作り、枠と地図だけを置かせる" },
+      { "id": "put-map", "name": "put-map", "role": "枠と地図を置く", "module": ".github/scripts/pr-explain-pages.sh", "status": "changed", "was": "枠・地図と、ページごとの HTML を置いていた", "now": "枠と地図だけを置く" },
+      { "id": "put-explain", "name": "put-explain", "role": "解説を検査して置く", "module": ".github/scripts/pr-explain-pages.sh", "status": "added", "now": "`build-pr-explain.py` の検査に通った解説だけを置く" },
+      { "id": "check-explain", "name": "build-pr-explain.py", "role": "`explain.json` の形と参照を見る", "module": ".github/scripts/build-pr-explain.py", "status": "added", "now": "形と参照を見て、抜粋の中身を足して書き出す" },
+      { "id": "put-pages", "name": "put-pages", "role": "ページごとの HTML を置く", "module": ".github/scripts/pr-explain-pages.sh", "status": "removed", "was": "セッションが書いた HTML の断片をそのまま置いていた" }
+    ],
+    "edges": [
+      { "id": "job-put-map", "from": "change-map-job", "to": "put-map", "code": "pr-explain-pages.sh put-map", "now": "push のたびに枠と地図を置き直す" },
+      { "id": "put-explain-check", "from": "put-explain", "to": "check-explain", "code": "build-pr-explain.py --pr --out", "status": "added", "now": "置く前に検査し、落ちたら push しない" },
+      { "id": "job-put-pages", "from": "change-map-job", "to": "put-pages", "code": "pr-explain-pages.sh put-pages", "status": "removed", "was": "地図と一緒にページの HTML も置かせていた" }
+    ]
+  },
   "commitStories": [
     {
       "sha": "89abcdef0123456789abcdef0123456789abcdef",

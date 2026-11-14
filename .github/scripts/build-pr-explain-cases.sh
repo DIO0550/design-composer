@@ -77,7 +77,7 @@ python3 - "$sample" "$sha" "$work" <<'PY'
 import json, sys
 sample, sha, work = sys.argv[1:4]
 explain = {**json.load(open(sample, encoding="utf-8")), "sha": sha}
-minimal = {"version": 1, "pr": explain["pr"], "sha": sha, "overview": {"title": "題", "lead": "要約", "before": [], "after": [{"text": "後"}]}}
+minimal = {"version": 1, "pr": explain["pr"], "sha": sha, "overview": {"title": "題", "lead": "要約", "before": [], "after": [{"text": "後"}]}, "calls": {"boxes": [], "edges": []}}
 for name, value in (("sample", explain), ("minimal", minimal)):
     open(f"{work}/{name}.json", "w", encoding="utf-8").write(json.dumps(value, ensure_ascii=False))
 PY
@@ -115,9 +115,9 @@ verdict() {
 }
 
 cases="$(cat <<'CASES'
-pass|-|sample|見本(Target の 5 つの kind をすべて使う)は通る|assert sorted(h["go"]["kind"] for h in d["overview"]["highlights"]) == ["feature", "file", "flow", "layer", "message"]
+pass|-|sample|見本(Target の 8 つの kind をすべて使う)は通る|assert sorted(h["go"]["kind"] for h in d["overview"]["highlights"]) == ["callBox", "callEdge", "feature", "file", "flow", "layer", "message", "module"]
 pass|-|minimal|必須のキーだけの解説は通る|
-pass|-|sample|地図にしか無いもの(commitStory の sha・Note と FeatureRange のパスと行・Target の layer / file・LayerRole・concept・仕様の場所の sha)は落とさない|d["impact"]["changed"]["specs"][0]["shas"] = ["d" * 40]; d["commitStories"][0]["sha"] = "e" * 40; d["tests"][0]["commit"] = "e" * 40; d["commitStories"][0]["notes"][0].update(path="no/such.ts", start=900, end=901); d["commitStories"][0]["featureRanges"][0].update(path="no/such.ts", start=900, end=901); d["overview"]["highlights"][1]["go"]["layer"] = "地図に無い層"; d["overview"]["highlights"][2]["go"]["path"] = "no/such"; d["layerRoles"][0]["layer"] = "地図に無い層"; d["concepts"].append({"path": "no/such.ts", "name": "無い", "role": "地図に無い"})
+pass|-|sample|地図にしか無いもの(commitStory の sha・Note と FeatureRange のパスと行・Target の layer / file / module・LayerRole・concept・仕様の場所の sha)は落とさない|d["impact"]["changed"]["specs"][0]["shas"] = ["d" * 40]; d["commitStories"][0]["sha"] = "e" * 40; d["tests"][0]["commit"] = "e" * 40; d["commitStories"][0]["notes"][0].update(path="no/such.ts", start=900, end=901); d["commitStories"][0]["featureRanges"][0].update(path="no/such.ts", start=900, end=901); d["overview"]["highlights"][1]["go"]["layer"] = "地図に無い層"; d["overview"]["highlights"][2]["go"]["path"] = "no/such"; d["overview"]["highlights"][7]["go"]["path"] = "no/such"; d["layerRoles"][0]["layer"] = "地図に無い層"; d["concepts"].append({"path": "no/such.ts", "name": "無い", "role": "地図に無い"})
 deny|shape|sample|JSON として読めない|raw = "{"
 deny|shape|sample|version が 1 でない|d["version"] = 2
 deny|shape|sample|必須のキー(overview)が無い|del d["overview"]
@@ -165,11 +165,37 @@ deny|shape|sample|layer の Target に feature の id が混ざる|d["overview"]
 deny|shape|sample|file の Target に layer の layer が混ざる|d["overview"]["highlights"][2]["go"]["layer"] = "ハーネス"
 deny|shape|sample|message の Target に file の path が混ざる|d["overview"]["highlights"][3]["go"]["path"] = "x"
 deny|shape|sample|flow の Target に layer の layer が混ざる|d["overview"]["highlights"][4]["go"]["layer"] = "ハーネス"
-deny|shape|sample|語彙の外の Target の kind|d["overview"]["highlights"][0]["go"]["kind"] = "module"
+deny|shape|sample|語彙の外の Target の kind|d["overview"]["highlights"][0]["go"]["kind"] = "nope"
 deny|shape|sample|todo が true でない(false)|d["tests"][1]["todo"] = False
 deny|shape|sample|techniques に同じ観点を 2 回|d["tests"][0]["techniques"] = ["error", "error"]
 deny|shape|sample|techniques が空|d["tests"][0]["techniques"] = []
 deny|shape|sample|flow の steps が空|d["flows"][1]["steps"] = []
+deny|shape|sample|calls が無い|del d["calls"]
+pass|-|sample|calls の boxes と edges が空でも通る(箱と線を指す Target も外す)|d["calls"] = {"boxes": [], "edges": []}; d["overview"]["highlights"] = [h for h in d["overview"]["highlights"] if h["go"]["kind"] not in ("callBox", "callEdge")]
+pass|-|sample|calls の gist・text・review をどれも書かなくても通る|[d["calls"].pop(key) for key in ("gist", "text", "review")]
+deny|shape|sample|増えた箱に was がある|d["calls"]["boxes"][2]["was"] = "前"
+deny|shape|sample|増えた箱に now が無い|del d["calls"]["boxes"][2]["now"]
+deny|shape|sample|消えた箱に now がある|d["calls"]["boxes"][4]["now"] = "後"
+deny|shape|sample|消えた箱に was が無い|del d["calls"]["boxes"][4]["was"]
+deny|shape|sample|変えた箱に was が無い|del d["calls"]["boxes"][1]["was"]
+deny|shape|sample|変えた箱の was と now が同じ|b = d["calls"]["boxes"][1]; b["was"] = b["now"]
+deny|shape|sample|変えていない箱に now が無い|del d["calls"]["boxes"][0]["now"]
+deny|shape|sample|変えていない箱の was と now が同じ|b = d["calls"]["boxes"][0]; b["was"] = b["now"]
+pass|-|sample|変えていない箱に、now と違う was を書ける|b = d["calls"]["boxes"][0]; assert "status" not in b and b["was"] != b["now"]
+deny|shape|sample|増えた線に was がある|d["calls"]["edges"][1]["was"] = "前"
+deny|shape|sample|消えた線に now がある|d["calls"]["edges"][2]["now"] = "後"
+deny|shape|sample|変えた線に was が無い|d["calls"]["edges"][0]["status"] = "changed"
+deny|shape|sample|変えていない線に now が無い|del d["calls"]["edges"][0]["now"]
+deny|shape|sample|増えた線の端が消えた箱|d["calls"]["edges"][1]["to"] = "put-pages"
+deny|shape|sample|消えた線の端が増えた箱|d["calls"]["edges"][2]["to"] = "check-explain"
+deny|shape|sample|変えた線の端が増えた箱(変更前の側で当たる)|d["calls"]["edges"][0].update(status="changed", was="前", to="put-explain")
+deny|shape|sample|変えた線の端が消えた箱(変更後の側で当たる)|d["calls"]["edges"][0].update(status="changed", was="前", to="put-pages")
+deny|shape|sample|変えていない線の端が増えた箱|d["calls"]["edges"][0]["to"] = "put-explain"
+deny|shape|sample|変えていない線の端が消えた箱|d["calls"]["edges"][0]["to"] = "put-pages"
+deny|shape|sample|箱と線に同じ id がある|d["calls"]["edges"][0]["id"] = d["calls"]["boxes"][0]["id"]
+deny|shape|sample|callBox の Target に id が無い|del d["overview"]["highlights"][5]["go"]["id"]
+deny|shape|sample|module の Target に path が無い|del d["overview"]["highlights"][7]["go"]["path"]
+deny|shape|sample|module の Target に callBox の id が混ざる|d["overview"]["highlights"][7]["go"]["id"] = "put-explain"
 deny|shape|sample|Behavior に知らないキー|d["overview"]["after"][0]["k"] = "x"
 deny|shape|sample|LayerRole に知らないキー|d["layerRoles"][0]["x"] = "y"
 deny|shape|sample|Excerpt に知らないキー|d["tests"][0]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 2, "lang": "py"}
@@ -275,6 +301,11 @@ deny|ref|sample|concept の feature が features に無い|d["concepts"][0]["fea
 deny|ref|sample|feature の Target が features に無い|d["overview"]["highlights"][0]["go"]["id"] = "nope"
 deny|ref|sample|message の Target が messages に無い|d["overview"]["highlights"][3]["go"]["id"] = "nope"
 deny|ref|sample|flow の Target が flows に無い|d["overview"]["highlights"][4]["go"]["id"] = "nope"
+deny|ref|sample|calls の線の from が calls の箱に無い|d["calls"]["edges"][0]["from"] = "nope"
+deny|ref|sample|calls の箱の module が concepts に無い|d["calls"]["boxes"][0]["module"] = "no/such"
+deny|ref|sample|callBox の Target が calls の箱に無い|d["overview"]["highlights"][5]["go"]["id"] = "nope"
+deny|ref|sample|callBox の Target に線の id を書く|d["overview"]["highlights"][5]["go"]["id"] = d["calls"]["edges"][0]["id"]
+deny|ref|sample|callEdge の Target が calls の線に無い|d["overview"]["highlights"][6]["go"]["id"] = "nope"
 deny|ref|sample|todo のテストが commit を持つ|d["tests"][1]["commit"] = d["sha"]
 deny|ref|sample|todo のテストが excerpt を持つ|d["tests"][1]["excerpt"] = {"path": "kept.txt", "start": 1, "end": 1}
 deny|ref|sample|変わったことのこれまでの message が messages に無い|d["impact"]["changed"]["before"][0]["message"] = "nope"

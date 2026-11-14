@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-WXFLlEMh79K2zMvYK1mO9zNHg5QKNV4g9wbyS4Kkgyg='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-lUaYgT6dgG2B/NClc3P95HVcO02VxmK9GkGkWPp0Vx0='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -69,6 +69,8 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .segmented a { padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--ink-2); text-decoration: none; }
 .segmented a:hover { color: var(--ink); background: rgba(255, 255, 255, .6); }
 .segmented a[aria-current="page"] { font-weight: 600; color: var(--ink); background: var(--surface); box-shadow: var(--shadow-raised); }
+/* タブの並びが画面の幅に収まらないときは、並びだけを横にスクロールする(ヘッダのほかの部品は折り返す)。 */
+.tabs-scroll { overflow-x: auto; max-width: 100%; flex: none; }
 /* 折り返すかどうかは基準の 240px で決め、足りない分はブランチ名を省いて詰める。auto だと、240px を超えるブランチ名の長さで段の数が変わる。 */
 .top-main { display: flex; align-items: center; gap: 10px; min-width: min(240px, 100%); flex: 1 1 240px; overflow: hidden; }
 .branch { display: block; font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--ink-2); background: var(--chip); border-radius: 6px; padding: 4px 8px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -817,6 +819,68 @@ button.change-item:hover { background: var(--track); }
 .primer-term.is-lit { background: var(--accent-tint); box-shadow: inset 0 0 0 1px var(--accent-ring); }
 .primer-mark { border-bottom: 1px dotted var(--ink-3); cursor: help; }
 .primer-mark:hover, .primer-mark:focus-visible { background: var(--accent-tint); border-bottom-color: var(--accent); }
+.compare-body { gap: 18px; }
+.compare-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.compare-toolbar .toggle-group { margin-right: 6px; }
+.compare-figures { display: flex; flex-direction: column; gap: 10px; }
+.compare-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.compare-pair.is-stacked { grid-template-columns: minmax(0, 1fr); }
+.compare-side { min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
+.compare-side-head { display: flex; align-items: baseline; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--sunken); }
+.compare-side-title { flex: none; font-size: 13px; font-weight: 600; }
+.compare-side-body { overflow-x: auto; }
+.compare-side-body > .compare-figure { margin: 0 auto; }
+.compare-side-ref { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+/* 高さを px で決めない。図は zoom の掛かる欄の中にあり、px の高さは倍率で伸びて図の文字まで大きくなる(viewBox と幅 100% なら欄の幅で大きさが決まる)。 */
+.wide-figure { display: block; width: 100%; height: auto; }
+.compare-group rect { fill: var(--sunken); stroke: var(--line); }
+.compare-group text { fill: var(--ink-3); font-size: 11px; font-weight: 600; }
+.compare-box { cursor: pointer; outline: none; }
+.compare-box rect { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.2; }
+.compare-box text { fill: var(--ink); font-family: var(--mono); font-size: 11.5px; }
+.compare-box .compare-box-note { fill: var(--ink-3); font-family: var(--sans); font-size: 9.5px; }
+/* 地は透かさない。線は箱の後ろに描くので、透かすと、ほかの箱をまたいで伸びる線が箱の上を横切って見える。 */
+.compare-box[data-status="added"] rect { stroke: var(--add-mark); fill: #E8F4EC; stroke-width: 1.6; }
+.compare-box[data-status="changed"] rect { stroke: var(--mod-mark); fill: #F8F0E0; stroke-width: 1.6; }
+.compare-box[data-status="removed"] rect { stroke: var(--del-mark); fill: #F9E8E6; stroke-width: 1.6; stroke-dasharray: 5 3; }
+.compare-box.is-absent rect { fill: var(--surface); stroke: var(--line-strong); stroke-dasharray: 3 4; }
+.compare-box.is-absent text { fill: var(--ink-4); }
+.compare-box.is-picked rect, .compare-box:focus-visible rect { stroke: var(--accent); stroke-width: 2.4; }
+.compare-box.is-dim { opacity: .45; }
+.compare-edge { cursor: pointer; }
+.compare-edge-line { fill: none; stroke: var(--ink-4); stroke-width: 1.4; }
+.compare-edge-head { fill: var(--ink-4); }
+.compare-edge-hit { fill: none; stroke: transparent; stroke-width: 12; pointer-events: stroke; }
+.compare-edge[data-status="added"] .compare-edge-line { stroke: var(--add-mark); stroke-width: 2; }
+.compare-edge[data-status="added"] .compare-edge-head { fill: var(--add-mark); }
+.compare-edge[data-status="changed"] .compare-edge-line { stroke: var(--mod-mark); stroke-width: 2; }
+.compare-edge[data-status="changed"] .compare-edge-head { fill: var(--mod-mark); }
+.compare-edge[data-status="removed"] .compare-edge-line { stroke: var(--del-mark); stroke-width: 2; stroke-dasharray: 5 4; }
+.compare-edge[data-status="removed"] .compare-edge-head { fill: var(--del-mark); }
+.compare-edge.is-picked .compare-edge-line { stroke: var(--accent); stroke-width: 2.6; }
+.compare-edge.is-picked .compare-edge-head { fill: var(--accent); }
+.compare-edge.is-dim { opacity: .3; }
+.compare-edge-label rect { fill: var(--surface); stroke: var(--accent); }
+.compare-edge-label text { fill: var(--accent); font-family: var(--mono); font-size: 10.5px; }
+.compare-legend { align-self: flex-start; }
+.compare-legend-absent { width: 14px; height: 10px; border: 1px dashed var(--line-strong); border-radius: 3px; }
+.compare-changes { padding: 0 8px 24px; gap: 4px; }
+.compare-counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.compare-changes > .compare-counts { margin: 0 4px 8px; }
+.compare-count { display: flex; align-items: baseline; gap: 6px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-family: var(--mono); font-size: 12px; }
+.compare-count-what { font-family: var(--sans); color: var(--ink-2); }
+.compare-count .mod { color: var(--mod); }
+.compare-change { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border: 1px solid transparent; border-radius: 8px; width: 100%; }
+.compare-change:hover { background: var(--hover); }
+.compare-change.is-picked { background: var(--surface); border-color: var(--accent); }
+.compare-change-head { display: flex; align-items: center; gap: 6px; }
+.compare-change-kind { font-size: 11px; color: var(--ink-3); }
+.compare-change-name { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+.compare-code { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; color: var(--ink); }
+.compare-review { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.7; }
+.compare-dependency { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; }
+.compare-dependency-direction { flex: none; font-size: 11px; color: var(--ink-3); }
+.compare-dependency-name { font-family: var(--mono); overflow-wrap: anywhere; }
 /* 振る舞いと技術の手引きの画面だけ、狭い幅で右の欄を隠して根拠を各節に畳み(1180px 以下)、さらに目次も隠してページ全体をスクロールする(760px 以下)。
    この 2 つの @media は判定表を通らず、表示確認でしか守られていない。 */
 @media (max-width: 1180px) {
@@ -1474,29 +1538,71 @@ button.change-item:hover { background: var(--track); }
   /** 解説の Target(概要の「このブランチで起きていること」の 1 件が指す先)。 */
   const Target = Object.freeze({
     /**
-     * Target を、ページで選ぶ先にする。kind ごとに読むキーは `build-pr-explain.py` の `Variants` と同じで、
+     * Target を、移る先の画面とそこで選ぶものにする。kind ごとに読むキーは `build-pr-explain.py` の `Variants` と同じで、
      * `pr-explain-core-cases.sh` が突き合わせる。
-     * @returns `group`(`grouping` のまとめ方の組の `id`)/ `file`(`id` はパス)/ `message` / `flow`。指す先が地図に
-     *   あるかは見ない
+     * @returns 構造マップの `{screen: "map", selection}`(selection は `group`(`grouping` のまとめ方の組の `id`)/ `file`(`id` は
+     *   パス)/ `message` / `flow`)か、構成の前後の `{screen: "compare", grain: "calls", id}`(callBox / callEdge)/
+     *   `{screen: "compare", grain: "modules", path}`(module)。指す先が図にあるかは見ない(見るのは行き先の画面の `canShow`)
      */
-    selectionOf: (go) => {
-      switch (go.kind) {
+    destinationOf: (target) => {
+      const toMap = (selection) => ({ screen: Screens.Map, selection });
+      switch (target.kind) {
         case "feature":
-          return { kind: "group", id: `feature:${go.id}`, grouping: "feature" };
+          return toMap({ kind: "group", id: `feature:${target.id}`, grouping: "feature" });
         case "layer":
-          return { kind: "group", id: `layer:${go.layer}`, grouping: "layer" };
+          return toMap({ kind: "group", id: `layer:${target.layer}`, grouping: "layer" });
         case "file":
-          return { kind: "file", id: go.path };
+          return toMap({ kind: "file", id: target.path });
         case "message":
-          return { kind: "message", id: go.id };
+          return toMap({ kind: "message", id: target.id });
         case "flow":
-          return { kind: "flow", id: go.id };
+          return toMap({ kind: "flow", id: target.id });
+        case "callBox":
+        case "callEdge":
+          return { screen: Screens.Compare, grain: CompareGrains.Calls, id: target.id };
+        case "module":
+          return { screen: Screens.Compare, grain: CompareGrains.Modules, path: target.path };
       }
+    },
+    /**
+     * Target を指すチップの名前。
+     * @param explained `ExplainedMap.create` の戻り値
+     * @returns 「〈行き先の画面の名前〉: 〈指す先の名前〉」。指す先が見つからなければ、名前の代わりに Target に書いた id・層・パスの
+     *   綴り(パスはファイル名)を出す
+     */
+    captionOf: (target, explained) => {
+      const destination = Target.destinationOf(target);
+      const features = explained.explain === null ? [] : listOf(explained.explain.features);
+      const pathNameOf = (path) => (explained.entryAt.has(path) ? ExplainedMap.nameOf(explained.entryAt.get(path), "concept") : ExplainedMap.fileNameOf(path));
+      const nameOf = () => {
+        switch (target.kind) {
+          case "feature":
+            return features.find((feature) => feature.id === target.id)?.label ?? target.id;
+          case "layer":
+            return target.layer;
+          case "file":
+            return pathNameOf(target.path);
+          case "message":
+            return explained.lookup.messages.get(target.id)?.name ?? target.id;
+          case "flow":
+            return explained.lookup.flows.get(target.id)?.label ?? target.id;
+          case "callBox":
+          case "callEdge":
+            return CompareDiagram.nameOf(CompareDiagram.fromCalls(explained), target.id) ?? target.id;
+          case "module":
+            return CompareDiagram.nameOf(CompareDiagram.fromModules(explained), target.path) ?? pathNameOf(target.path);
+        }
+      };
+      return `${ScreenLabels[destination.screen]}: ${nameOf()}`;
     },
   });
 
-  const Screens = Object.freeze({ Map: "map", Story: "story", Test: "test", Impact: "impact", Primer: "primer" });
+  const Screens = Object.freeze({ Map: "map", Story: "story", Test: "test", Impact: "impact", Primer: "primer", Compare: "compare" });
   const isScreen = (value) => Object.values(Screens).includes(value);
+  /** 画面の名前(タブと、画面をまたぐチップの名前)。 */
+  const ScreenLabels = Object.freeze({ map: "構造マップ", story: "変更の経緯", test: "テスト", impact: "振る舞い", primer: "技術の手引き", compare: "構成の前後" });
+  /** 構成の前後の粒度。呼び出し(解説の `calls`)とモジュール(地図の変更ファイルと依存)。 */
+  const CompareGrains = Object.freeze({ Calls: "calls", Modules: "modules" });
 
   /**
    * 箱の図の欄(構造マップとテスト)を除き、どの画面のパネルと本文にも効く文字の大きさ。percent(整数)で持ち、`Steps` から選ぶ。開くたびに `Initial` から始める。
@@ -1799,7 +1905,7 @@ button.change-item:hover { background: var(--track); }
   /** ページが組み立てに使う解説の形。道筋とその先の値の種類(`Routes`)と、欠けてはいけない道筋(`Required`)で持つ。 */
   const ExplainShape = (() => {
     // 形を見る道筋と、その先の値の種類。`build-pr-explain.py` の Shapes から導いたものと同じ並びで、`pr-explain-core-cases.sh` が
-    // 突き合わせる。primers・terms と、features の review・commitStories の featureRanges の下は Shapes から機械的に導くので、
+    // 突き合わせる。primers・terms と、features の review・commitStories の featureRanges・calls の下は Shapes から機械的に導くので、
     // 文字列をすべて見る(組み立てが落ちるキーを選り分けない)。
     // 必須の欠けも kind ごとに見る(`Required`)。`Dom.proseParts` と `TermMarks.piecesOf` は文を文字列として割り、抜粋の段は
     // `excerptBoxesOf` が `excerpt` の中を読むので、文字列でない値も欠けた値も組み立てを落とし、ページ全体を出なくする。impact は
@@ -1877,6 +1983,24 @@ button.change-item:hover { background: var(--track); }
       ["commitStories[].featureRanges[].path", "text"],
       ["commitStories[].featureRanges[].feature", "id"],
       ["commitStories[].featureRanges[].text", "text"],
+      ["calls", "record"],
+      ["calls.boxes", "records"],
+      ["calls.boxes[].id", "id"],
+      ["calls.boxes[].name", "text"],
+      ["calls.boxes[].role", "text"],
+      ["calls.boxes[].module", "text"],
+      ["calls.boxes[].was", "text"],
+      ["calls.boxes[].now", "text"],
+      ["calls.edges", "records"],
+      ["calls.edges[].id", "id"],
+      ["calls.edges[].from", "id"],
+      ["calls.edges[].to", "id"],
+      ["calls.edges[].code", "text"],
+      ["calls.edges[].was", "text"],
+      ["calls.edges[].now", "text"],
+      ["calls.gist", "text"],
+      ["calls.text", "text"],
+      ["calls.review", "texts"],
       ["tests[].excerpt.emphasis", "records"],
     ]);
     // 欠けていれば崩れとする道筋。primers・terms の下の必須のキーのうち、値が文(text)か 1 つのオブジェクト(record)のもの。
@@ -2185,7 +2309,7 @@ button.change-item:hover { background: var(--track); }
     /**
      * ページが組み立てに使う大まかな形だけを見る。細かい形は公開する前に build-pr-explain.py が見ている。
      * @returns 型が違うか、必須なのに欠けたキー(`impact`・`primers`・`terms`・`features[].review`・`commitStories[].featureRanges`・
-     *   `tests[].excerpt.emphasis` は道筋)。どちらも無ければ null
+     *   `calls`・`tests[].excerpt.emphasis` は道筋)。どちらも無ければ null
      */
     const shapeProblemOf = (explain) => {
       const overview = explain.overview;
@@ -2442,6 +2566,7 @@ button.change-item:hover { background: var(--track); }
 
     return Object.freeze({
       create,
+      fileNameOf,
       /** @returns このページが読める版(2)の地図か。違えば画面を組まず、版を添えて案内を出す */
       isReadableMap: (map) => isRecord(map) && map.version === MapVersion,
       /**
@@ -3079,8 +3204,238 @@ button.change-item:hover { background: var(--track); }
     });
   })();
 
+  /**
+   * 構成の前後の図。呼び出しの粒度(解説の `calls`)とモジュールの粒度(地図の変更ファイルと依存)の箱と線を、変更前と変更後の
+   * 2 枚に同じ配置で描く材料にする。箱と線の `status` は `added` / `removed` / `changed` か、変えていなければ null。
+   */
+  const CompareDiagram = (() => {
+    const Statuses = ["added", "removed", "changed"];
+    // 1 枚の図の幅の目安。組を 1 段に並べる数を、この幅に最も大きく収まるものにする(`GraphLayout.create` の room)。
+    const RoomWidth = 640;
+    const UnmappedGroupId = "";
+    const FileStatuses = { A: "added", D: "removed" };
+
+    const statusOf = (value) => (Statuses.includes(value) ? value : null);
+    const isDrawn = (diagram) => diagram.kind === "drawn";
+    const boxIn = (diagram, id) => diagram.boxes.find((box) => box.id === id);
+    const edgeIn = (diagram, id) => diagram.edges.find((edge) => edge.id === id);
+
+    /** 呼び出しの箱の組。箱の module の concept ごとに組を作り、地図の順(`entries` の順)に並べる。地図に無い module の箱は最後の組に入れる。 */
+    const callGroupsOf = (boxes, entries) => {
+      const order = new Map(entries.map((entry, index) => [entry.path, index]));
+      const entryAt = new Map(entries.map((entry) => [entry.path, entry]));
+      const mapped = [...new Set(boxes.map((box) => box.module))].filter((path) => order.has(path)).toSorted((a, b) => order.get(a) - order.get(b));
+      const groupOf = (path) => ({ id: path, label: ExplainedMap.nameOf(entryAt.get(path), "concept"), boxes: boxes.filter((box) => box.module === path).map((box) => box.id) });
+      const unmapped = boxes.filter((box) => !order.has(box.module)).map((box) => box.id);
+      const strays = unmapped.length === 0 ? [] : [{ id: UnmappedGroupId, label: "地図に無い", boxes: unmapped }];
+      return [...mapped.map(groupOf), ...strays];
+    };
+
+    /** 地図のどのファイルにも層を引く表。層の組の木の項目(`treePaths`)と、木に出さないファイル(`others`)の両方から引く。 */
+    const layerAtOf = (layerGroups) => new Map(layerGroups.flatMap((group) => [...group.treePaths, ...group.others].map((path) => [path, group.layer])));
+
+    /** 箱を端に持つ依存を、増えた / 消えた / 残ったに分ける。依存の相手は、その箱が使う側なら `uses`、使われる側なら `usedBy`。 */
+    const dependenciesOf = (path, { dependencies, nameOfPath }) => {
+      const touching = dependencies.filter((link) => link.from === path || link.to === path);
+      const itemOf = (link) => {
+        const other = link.from === path ? link.to : link.from;
+        return { path: other, name: nameOfPath(other), direction: link.from === path ? "uses" : "usedBy" };
+      };
+      const withStatus = (status) => touching.filter((link) => link.status === status).map(itemOf);
+      return { added: withStatus("added"), removed: withStatus("removed"), kept: withStatus("kept") };
+    };
+
+    /** 箱と線の状態ごとの件数。 */
+    const statusCountsOf = (items) => Object.fromEntries(Statuses.map((status) => [status, items.filter((item) => item.status === status).length]));
+
+    /** 選んだ箱・線のファイル。箱は自分のファイル(呼び出しの粒度は module。移動したファイルは前のパスも)、線は両端の箱のファイル。 */
+    const filesOf = (diagram, id) => {
+      const filesOfBox = (box) => (diagram.grain === CompareGrains.Calls ? [box.module] : [box.path, ...(box.oldPath === null ? [] : [box.oldPath])]);
+      const box = boxIn(diagram, id);
+      if (box !== undefined) return filesOfBox(box);
+      const edge = edgeIn(diagram, id);
+      if (edge === undefined) return [];
+      return [...new Set([edge.from, edge.to].map((end) => boxIn(diagram, end)).filter((end) => end !== undefined).flatMap(filesOfBox))];
+    };
+
+    /** 解説の calls に書いた、選んでいないときの文。gist・text・review のどれも書いていなければ null。 */
+    const writtenOf = (calls) => {
+      if (!isRecord(calls)) return null;
+      const gist = optionalText(calls.gist);
+      const text = optionalText(calls.text);
+      const review = listOf(calls.review).filter(isString);
+      const isWritten = gist !== null || text !== null || review.length > 0;
+      return isWritten ? { gist, text, review } : null;
+    };
+
+    return Object.freeze({
+      /**
+       * 呼び出しの粒度の図。
+       * @param explained `ExplainedMap.create` の戻り値
+       * @returns 解説が無ければ `{kind: "unexplained"}`、calls が無ければ `{kind: "unwritten"}`。あれば `{kind: "drawn", grain: "calls",
+       *   boxes, edges, groups}`。groups は箱の module ごとの組(`{id, label, boxes}`。boxes は箱の id)で、地図の順に並び、地図に無い
+       *   module の箱は最後の組「地図に無い」に入る
+       */
+      fromCalls: (explained) => {
+        if (explained.explain === null) return { kind: "unexplained" };
+        const calls = explained.explain.calls;
+        if (!isRecord(calls)) return { kind: "unwritten" };
+        const sidesOf = (item) => ({ status: statusOf(item.status), was: optionalText(item.was), now: optionalText(item.now) });
+        const boxes = listOf(calls.boxes).map((box) => ({ id: box.id, name: box.name, role: optionalText(box.role), module: box.module, ...sidesOf(box) }));
+        const edges = listOf(calls.edges).map((edge) => ({ id: edge.id, from: edge.from, to: edge.to, code: optionalText(edge.code), ...sidesOf(edge) }));
+        return { kind: "drawn", grain: CompareGrains.Calls, boxes, edges, groups: callGroupsOf(boxes, explained.entries) };
+      },
+      /**
+       * モジュールの粒度の図。箱は、図に出す(`inGraph`)変更ファイルと、増えた・消えた依存の端のファイル(図に出さない concept の
+       * ファイルを除く)。箱の状態は地図の status が A なら added、D なら removed、ほかの変更は changed で、端にしか出ない
+       * 変えていないファイルは null。線は両端が箱の依存で、増えた(added)・消えた(removed)・残った(null)のどれか。
+       * @param explained `ExplainedMap.create` の戻り値
+       * @returns `{kind: "drawn", grain: "modules", boxes, edges, groups}`。箱は `{id(パス), path, oldPath, name, beforeName, layer, status,
+       *   dependencies}`(beforeName は変更前の側の名前で、移動したファイルは前のパスのファイル名。dependencies はその箱を端に持つ依存
+       *   `{added, removed, kept}`)。線の id は両端のパスの組。groups は層ごとの組で、地図の層の順
+       */
+      fromModules: (explained) => {
+        const { entryAt, dependencies } = explained;
+        const isHidden = (path) => entryAt.has(path) && !entryAt.get(path).inGraph;
+        const changed = explained.entries.filter((entry) => entry.changed && entry.inGraph).map((entry) => entry.path);
+        const ends = dependencies.filter((link) => link.status !== "kept").flatMap((link) => [link.from, link.to]).filter((path) => !isHidden(path));
+        const paths = [...new Set([...changed, ...ends])];
+        const nameOfPath = (path) => (entryAt.has(path) ? ExplainedMap.nameOf(entryAt.get(path), "concept") : ExplainedMap.fileNameOf(path));
+        const layerAt = layerAtOf(explained.groupings.layer);
+        const boxOf = (path) => {
+          const entry = entryAt.get(path);
+          const isChanged = entry !== undefined && entry.changed;
+          const oldPath = entry === undefined ? null : entry.oldPath;
+          const name = nameOfPath(path);
+          return {
+            id: path,
+            path,
+            oldPath,
+            name,
+            beforeName: oldPath === null ? name : ExplainedMap.fileNameOf(oldPath),
+            layer: layerAt.get(path) ?? null,
+            status: isChanged ? FileStatuses[entry.status] ?? "changed" : null,
+            dependencies: dependenciesOf(path, { dependencies, nameOfPath }),
+          };
+        };
+        const boxes = paths.map(boxOf);
+        const isBox = new Set(paths);
+        const edges = dependencies
+          .filter((link) => isBox.has(link.from) && isBox.has(link.to))
+          .map((link) => ({ id: JSON.stringify([link.from, link.to]), from: link.from, to: link.to, status: statusOf(link.status) }));
+        const groups = explained.groupings.layer
+          .map((group) => ({ id: group.layer, label: group.layer, boxes: boxes.filter((box) => box.layer === group.layer).map((box) => box.id) }))
+          .filter((group) => group.boxes.length > 0);
+        return { kind: "drawn", grain: CompareGrains.Modules, boxes, edges, groups };
+      },
+      /** @returns 図が描けていて、その id の箱か線があるか(構成の前後で選べるか) */
+      isSelectable: (diagram, id) => isDrawn(diagram) && (boxIn(diagram, id) !== undefined || edgeIn(diagram, id) !== undefined),
+      /** @returns 箱の名前か、線の「〈端の箱の名前〉 → 〈端の箱の名前〉」。図が描けていないか、その id が無ければ null */
+      nameOf: (diagram, id) => {
+        if (!isDrawn(diagram)) return null;
+        const box = boxIn(diagram, id);
+        if (box !== undefined) return box.name;
+        const edge = edgeIn(diagram, id);
+        if (edge === undefined) return null;
+        const endNameOf = (end) => boxIn(diagram, end)?.name ?? end;
+        return `${endNameOf(edge.from)} → ${endNameOf(edge.to)}`;
+      },
+      /**
+       * 何も選んでいないときの右の欄。
+       * @param calls 解説の calls(解説が無いか calls が無ければ null)。gist・text・review はどちらの粒度でも出す
+       * @returns 選べる箱・線が無ければ `{kind: "unselectable", reason, written}`(reason は図の kind の `unexplained` / `unwritten` か、
+       *   箱も線も 0 件の `unchanged`)。あれば、calls の gist・text・review のどれかを書いたとき `{kind: "written", written}`、
+       *   どれも書いていなければ `{kind: "counts", counts}`。written は `{gist, text, review}`(gist / text は無ければ null、review は
+       *   無ければ [])で、unselectable では書いていなければ null。counts は `{boxes, edges}` の状態ごとの件数(`{added, removed, changed}`)
+       */
+      unselectedOf: (diagram, calls) => {
+        const written = writtenOf(calls);
+        if (!isDrawn(diagram)) return { kind: "unselectable", reason: diagram.kind, written };
+        const isEmpty = diagram.boxes.length === 0 && diagram.edges.length === 0;
+        if (isEmpty) return { kind: "unselectable", reason: "unchanged", written };
+        if (written !== null) return { kind: "written", written };
+        return { kind: "counts", counts: { boxes: statusCountsOf(diagram.boxes), edges: statusCountsOf(diagram.edges) } };
+      },
+      /**
+       * 左の欄の、変わったところ。図が描けていなければ件数は 0 で、一覧は空。
+       * @returns `counts`(`unselectedOf` と同じ形)と、状態のある箱 → 線の順の `items`(`{kind: "box" | "edge", id, status, name}`)
+       */
+      changeListOf: (diagram) => {
+        if (!isDrawn(diagram)) return { counts: { boxes: statusCountsOf([]), edges: statusCountsOf([]) }, items: [] };
+        const itemsOf = (kind, list) => list.filter((item) => item.status !== null).map((item) => ({ kind, id: item.id, status: item.status, name: CompareDiagram.nameOf(diagram, item.id) }));
+        return { counts: { boxes: statusCountsOf(diagram.boxes), edges: statusCountsOf(diagram.edges) }, items: [...itemsOf("box", diagram.boxes), ...itemsOf("edge", diagram.edges)] };
+      },
+      /**
+       * 選んだ箱・線。
+       * @returns 箱は `{kind: "box", box}`、線は `{kind: "edge", edge, from, to}`(端の箱)。無ければ null
+       */
+      pickedOf: (diagram, id) => {
+        if (!isDrawn(diagram)) return null;
+        const box = boxIn(diagram, id);
+        if (box !== undefined) return { kind: "box", box };
+        const edge = edgeIn(diagram, id);
+        if (edge === undefined) return null;
+        return { kind: "edge", edge, from: boxIn(diagram, edge.from) ?? null, to: boxIn(diagram, edge.to) ?? null };
+      },
+      /**
+       * 右の欄の「どこで変わったか」。選んだ箱・線のファイル(呼び出しの粒度は箱の module)を変えた、マージ以外のコミット。
+       * @param explained `ExplainedMap.create` の戻り値
+       * @returns 古い順の `{sha, path}`(path はそのコミットが変えた、選んだもののファイルの最初のもの)
+       */
+      changingCommitsOf: (diagram, id, explained) => {
+        const files = filesOf(diagram, id);
+        return explained.commits.filter((commit) => !commit.merge).flatMap((commit) => {
+          const touched = files.find((path) => commit.files.some((file) => file.path === path || file.oldPath === path));
+          return touched === undefined ? [] : [{ sha: commit.sha, path: touched }];
+        });
+      },
+      /**
+       * 右の欄の「ほかの画面で見る」。選んだ箱・線のファイルを端に持つやりとりを、変更後の手順(`steps`)か変更前の手順
+       * (`beforeSteps`)に含む流れ。
+       * @param explained `ExplainedMap.create` の戻り値
+       * @returns 解説の flows の順の流れ
+       */
+      flowsThrough: (diagram, id, explained) => {
+        const files = new Set(filesOf(diagram, id));
+        const touches = (messageId) => {
+          const message = explained.lookup.messages.get(messageId);
+          return message !== undefined && (files.has(message.from) || files.has(message.to));
+        };
+        return [...explained.lookup.flows.values()].filter((flow) => [...listOf(flow.steps), ...listOf(flow.beforeSteps)].some(touches));
+      },
+      /**
+       * 変更前と変更後の 2 枚の図。前後の箱と線を合わせたものを `GraphLayout.create` で 1 回だけ並べる(線はどれも残った依存として
+       * 渡す)ので、2 枚の箱は同じ位置にあり、片方にしか無い箱も、もう片方に位置を持つ。
+       * @returns `{width, height, groups, before, after}`。groups は組の枠(`{id, label, x, y, width, height}`)。before / after は
+       *   `boxes`(`{box, x, y, width, height, isPresent, isUnchanged}`。isPresent はその側にあるか、isUnchanged は状態の無い箱か)と
+       *   `edges`(その側にある線の `{edge, route}`。route は `GraphLayout.edgesOf` の道筋)
+       */
+      figuresOf: (diagram) => {
+        const groups = diagram.groups.map((group) => ({ id: group.id, boxes: group.boxes.map((id) => ({ path: id, lines: 0 })) }));
+        const links = diagram.edges.map((edge) => ({ from: edge.from, to: edge.to, status: "kept" }));
+        const layout = GraphLayout.create({ groups, links, expanded: groups.map((group) => group.id), room: { width: RoomWidth, height: Infinity } });
+        const unitAt = new Map(layout.units.map((unit) => [unit.path, unit]));
+        const labelOfGroup = new Map(diagram.groups.map((group) => [group.id, group.label]));
+        const sideOf = (absent) => ({
+          boxes: diagram.boxes.filter((box) => unitAt.has(box.id)).map((box) => {
+            const { x, y, width, height } = unitAt.get(box.id);
+            return { box, x, y, width, height, isPresent: box.status !== absent, isUnchanged: box.status === null };
+          }),
+          edges: diagram.edges.filter((edge) => edge.status !== absent).flatMap((edge) => GraphLayout.edgesOf(layout, [{ from: edge.from, to: edge.to, item: edge, leads: true }]).map((drawn) => ({ edge, route: drawn.route }))),
+        });
+        return {
+          width: layout.width,
+          height: layout.height,
+          groups: layout.containers.map((container) => ({ id: container.group, label: labelOfGroup.get(container.group), x: container.x, y: container.y, width: container.width, height: container.height })),
+          before: sideOf("added"),
+          after: sideOf("removed"),
+        };
+      },
+    });
+  })();
+
   /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
-  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target });
+  const core = Object.freeze({ ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ScreenChoice, ReviewCheck, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target, CompareDiagram });
   if (typeof document === "undefined") {
     globalThis.prExplainCore = core;
     return;
@@ -3166,15 +3521,14 @@ button.change-item:hover { background: var(--track); }
     },
   });
 
-  const ScreenLabels = { map: "構造マップ", story: "変更の経緯", test: "テスト", impact: "振る舞い", primer: "技術の手引き" };
-
-  /** 画面ごとのパネルの既定の幅。左はどの画面にもあり、右は構造マップ・テスト・振る舞い・技術の手引きにある(変更の経緯には無い)。 */
+  /** 画面ごとのパネルの既定の幅。左はどの画面にもあり、右は変更の経緯のほかのどの画面にもある。 */
   const PanelLayouts = {
     map: { left: "clamp(224px, 18vw, 264px)", right: "clamp(320px, 28vw, 404px)" },
     story: { left: "clamp(250px, 24vw, 330px)", right: null },
     test: { left: "clamp(260px, 22vw, 320px)", right: "clamp(330px, 30vw, 430px)" },
     impact: { left: "clamp(220px, 18vw, 260px)", right: "clamp(300px, 26vw, 360px)" },
     primer: { left: "clamp(220px, 18vw, 260px)", right: "clamp(300px, 26vw, 360px)" },
+    compare: { left: "clamp(220px, 18vw, 260px)", right: "clamp(300px, 26vw, 360px)" },
   };
 
   /** パネルの幅をドラッグで変え、画面ごとに残す。ダブルクリックで既定の幅へ戻す。 */
@@ -5061,7 +5415,7 @@ button.change-item:hover { background: var(--track); }
   };
 
   /** 構造マップ。左にファイルの木、中に箱の図、右に概要か選んだものの詳しいところと、やりとりの流れを出す。 */
-  const MapScreen = (explained) => {
+  const MapScreen = (explained, go) => {
     const { explain, lookup } = explained;
     const materials = graphMaterialsOf(explained);
     const { entryAt, graphGroups, groupLabels, groupings, messages } = materials;
@@ -5608,9 +5962,8 @@ button.change-item:hover { background: var(--track); }
       return { tone: toneOfAll(entries), onPress: () => pick({ kind: "group", id }, groupingChange(grouping)) };
     };
 
-    /** 概要の「このブランチで起きていること」の 1 件が指す先。地図に無ければ null。 */
-    const highlightGoOf = (go) => {
-      const selection = Target.selectionOf(go);
+    /** 構造マップの中の行き先(`Target.destinationOf` の selection)へ移る先。地図に無ければ null。 */
+    const mapGoOf = (selection) => {
       switch (selection.kind) {
         case "group":
           return groupGoOf(selection.id, selection.grouping);
@@ -5628,10 +5981,32 @@ button.change-item:hover { background: var(--track); }
       }
     };
 
+    /** 構造マップが行き先の Target の、移る先。行き先がほかの画面の Target や、地図に無いものなら null。 */
+    const mapGoOfTarget = (target) => {
+      const destination = Target.destinationOf(target);
+      return destination.screen === Screens.Map ? mapGoOf(destination.selection) : null;
+    };
+
+    /**
+     * 概要の「このブランチで起きていること」の 1 件が指す先。
+     * @returns 押せるなら `{kind: "reachable", tone, onPress}`。届かなければ `{kind: "unreachable", warning}`(行き先が構造マップなら
+     *   「指している先が地図に無い」、ほかの画面なら「指している先が図に無い」)
+     */
+    const highlightGoOf = (target) => {
+      const isOnMap = Target.destinationOf(target).screen === Screens.Map;
+      const onMap = mapGoOfTarget(target);
+      if (onMap !== null) return { kind: "reachable", ...onMap };
+      if (isOnMap) return { kind: "unreachable", warning: "指している先が地図に無い" };
+      if (go.canShow(target)) return { kind: "reachable", tone: "", onPress: () => go.toTarget(target) };
+      return { kind: "unreachable", warning: "指している先が図に無い" };
+    };
+
     const highlightCardOf = (highlight) => {
       const destination = highlightGoOf(highlight.go);
-      const body = [el("span", { class: "status-dot" }), el("span", { class: "highlight-body" }, [prose("span", { class: "highlight-title" }, highlight.title), prose("span", { class: "highlight-text" }, highlight.text), ...(destination === null ? [el("span", { class: "warn-text", text: "指している先が地図に無い" })] : [])])];
-      if (destination === null) return el("div", { class: "highlight-card is-missing" }, body);
+      const isReachable = destination.kind === "reachable";
+      const warning = isReachable ? [] : [el("span", { class: "warn-text", text: destination.warning })];
+      const body = [el("span", { class: "status-dot" }), el("span", { class: "highlight-body" }, [prose("span", { class: "highlight-title" }, highlight.title), prose("span", { class: "highlight-text" }, highlight.text), ...warning])];
+      if (!isReachable) return el("div", { class: "highlight-card is-missing" }, body);
       return pressable("button", { class: "highlight-card plain-button", "data-tone": destination.tone }, body, destination.onPress);
     };
 
@@ -6063,6 +6438,10 @@ button.change-item:hover { background: var(--track); }
       onKey,
       showFlow,
       showMessage,
+      /** @returns 構造マップが行き先の Target で、指す先が地図にあり選べるか */
+      canShow: (target) => mapGoOfTarget(target) !== null,
+      /** その Target が指すものを選んだ状態にする。`canShow` が真のものだけを渡す。 */
+      showTarget: (target) => mapGoOfTarget(target).onPress(),
     };
   };
 
@@ -6747,7 +7126,358 @@ button.change-item:hover { background: var(--track); }
     };
   };
 
-  const ScreenBuilders = { map: MapScreen, story: StoryScreen, test: TestScreen, impact: ImpactScreen, primer: PrimerScreen };
+  // 構成の前後の箱と線の状態の名前と色の区分。状態の無いもの(変えていない)はここに無い。
+  const CompareStatuses = { added: { tone: "A", label: "増えた" }, removed: { tone: "D", label: "消えた" }, changed: { tone: "M", label: "変えた" } };
+  const CompareGrainChoices = [{ value: CompareGrains.Calls, label: "呼び出し" }, { value: CompareGrains.Modules, label: "モジュール" }];
+  const CompareArrangements = Object.freeze({ Side: "side", Stack: "stack" });
+  const CompareArrangementChoices = [{ value: CompareArrangements.Side, label: "左右" }, { value: CompareArrangements.Stack, label: "上下" }];
+  const CompareDimChoices = [{ value: false, label: "そのまま" }, { value: true, label: "薄く" }];
+  // 選べる箱・線が無い理由(`CompareDiagram.unselectedOf` の reason)の文。変化なしは粒度ごとに言い分ける。
+  const CompareReasonTexts = { unexplained: "解説なし", unwritten: "書かれていない" };
+  const CompareUnchangedTexts = { calls: "呼び出しの変化なし", modules: "モジュールの変化なし" };
+  const CompareFigurePad = 12;
+  const CompareLabelLimit = 40;
+  // 図を縮めてよい下限(図の大きさに対する割合)。これより狭い欄では、図の欄を横にスクロールする。
+  const CompareMinScale = 0.8;
+
+  /** 選べる箱・線が無い理由の文。 */
+  const compareReasonTextOf = (reason, grain) => (reason === "unchanged" ? CompareUnchangedTexts[grain] : CompareReasonTexts[reason]);
+
+  /** 箱の幅に収まるように、名前を後ろから詰めて「…」を付ける。幅の見積もりは `GraphLayout.textWidthOf`。 */
+  const fittedTextOf = (text, width) => {
+    if (GraphLayout.textWidthOf(text) <= width) return text;
+    const chars = [...text];
+    const fits = (count) => GraphLayout.textWidthOf(`${chars.slice(0, count).join("")}…`) <= width;
+    const count = chars.findLastIndex((_, index) => fits(index + 1)) + 1;
+    return `${chars.slice(0, count).join("")}…`;
+  };
+
+  /** 構成の前後の状態の札。状態の無いもの(変えていない)は「そのまま」。 */
+  const compareStatusChipOf = (status) => (status === null ? el("span", { class: "chip", text: "そのまま" }) : el("span", { class: "chip", "data-tone": CompareStatuses[status].tone, text: CompareStatuses[status].label }));
+
+  /** 前後の一言の行。増えたものの変更前と消えたものの変更後は、書かれていないので「無かった / 無くなった」と出す。 */
+  const compareSidesOf = (item) => {
+    switch (item.status) {
+      case "added":
+        return [["変更前", null, "(無かった)"], ["変更後", item.now, null]];
+      case "removed":
+        return [["変更前", item.was, null], ["変更後", null, "(無くなった)"]];
+      case "changed":
+        return [["変更前", item.was, null], ["変更後", item.now, null]];
+      case null:
+        return item.was === null ? [["前後とも", item.now, null]] : [["変更前", item.was, null], ["変更後", item.now, null]];
+    }
+  };
+
+  /** 構成の前後の画面。左に変わったところ、中に変更前と変更後の 2 枚の図、右に選んだ箱・線の前後か、選んでいないときの全体を出す。 */
+  const CompareScreen = (explained, go) => {
+    const diagrams = { calls: CompareDiagram.fromCalls(explained), modules: CompareDiagram.fromModules(explained) };
+    const figures = Object.fromEntries(Object.entries(diagrams).filter(([, diagram]) => diagram.kind === "drawn").map(([grain, diagram]) => [grain, CompareDiagram.figuresOf(diagram)]));
+    const calls = explained.explain !== null && isRecord(explained.explain.calls) ? explained.explain.calls : null;
+    const sides = [
+      { key: "before", title: "変更前", ref: `${explained.map.baseBranch} · ${shortSha(explained.map.mergeBase)}`, absent: "変更前には無い" },
+      { key: "after", title: "変更後", ref: `${explained.map.headBranch} · ${shortSha(explained.map.head)}`, absent: "変更後には無い" },
+    ];
+
+    let state = { grain: CompareGrains.Calls, arrangement: CompareArrangements.Side, isDimmed: false, selected: null };
+    const update = (patch) => {
+      state = { ...state, ...patch };
+      render();
+    };
+    const pick = (id) => update({ selected: state.selected === id ? null : id });
+
+    const toolbar = el("div", { class: "compare-toolbar" });
+    const figureArea = el("div", { class: "compare-figures" });
+    const body = el("div", { class: "stage-body compare-body" }, [
+      el("div", { class: "lede" }, [
+        el("span", { class: "eyebrow", text: "構成の前後" }),
+        el("h1", { text: "変更前と変更後の箱と線" }),
+        el("p", { text: "変更前(マージベース)と変更後(このブランチ)の箱と線を、同じ位置に並べています。片方にしか無い箱は、もう片方に点線の枠だけを残します。" }),
+      ]),
+      toolbar,
+      figureArea,
+    ]);
+    const main = el("main", { class: "stage" }, [body]);
+    const leftSub = el("span", { class: "panel-sub" });
+    const leftBody = el("div", { class: "panel-scroll compare-changes" });
+    const side = el("div", { class: "side" });
+
+    const isPickedEdgeEnd = (diagram, boxId) => {
+      const picked = CompareDiagram.pickedOf(diagram, state.selected);
+      return picked !== null && picked.kind === "edge" && (picked.edge.from === boxId || picked.edge.to === boxId);
+    };
+    const isPickedBoxEnd = (edge) => edge.from === state.selected || edge.to === state.selected;
+
+    const boxNodeOf = ({ placed, diagram, side: drawnSide }) => {
+      const { box } = placed;
+      const isPicked = state.selected === box.id;
+      const isRelated = isPickedEdgeEnd(diagram, box.id);
+      // 選んだものがあればそれと線の端のほかを、無ければ「薄く」のとき変えていない箱を薄くする。
+      const isOutOfPick = state.selected !== null && !isPicked && !isRelated;
+      const isDimmedUnchanged = state.isDimmed && placed.isUnchanged && !isPicked;
+      const name = drawnSide.key === "before" && box.beforeName !== undefined ? box.beforeName : box.name;
+      const textWidth = placed.width - 16;
+      const labels = placed.isPresent
+        ? [Dom.svg("text", { x: placed.x + 8, y: placed.y + placed.height / 2 + 4 }, [fittedTextOf(name, textWidth)])]
+        : [
+          Dom.svg("text", { x: placed.x + 8, y: placed.y + 13 }, [fittedTextOf(name, textWidth)]),
+          Dom.svg("text", { class: "compare-box-note", x: placed.x + 8, y: placed.y + 25 }, [drawnSide.absent]),
+        ];
+      const tooltip = [name, ...(box.role === undefined || box.role === null ? [] : [box.role])].join("\n");
+      const node = Dom.svg("g", {
+        class: classesOf("compare-box", { "is-absent": !placed.isPresent, "is-picked": isPicked, "is-dim": isOutOfPick || isDimmedUnchanged }),
+        "data-status": placed.isPresent && box.status !== null ? box.status : "",
+        tabindex: "0",
+        role: "button",
+        "aria-label": `${name}(${placed.isPresent ? (box.status === null ? "そのまま" : CompareStatuses[box.status].label) : drawnSide.absent})`,
+      }, [Dom.svg("title", {}, [tooltip]), Dom.svg("rect", { x: placed.x, y: placed.y, width: placed.width, height: placed.height, rx: 7 }), ...labels]);
+      node.addEventListener("click", () => pick(box.id));
+      node.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        pick(box.id);
+      });
+      return node;
+    };
+
+    const edgeNodeOf = ({ drawn, diagram }) => {
+      const { edge, route } = drawn;
+      const isPicked = state.selected === edge.id;
+      const isOutOfPick = state.selected !== null && !isPicked && !isPickedBoxEnd(edge);
+      const title = edge.code === undefined || edge.code === null ? CompareDiagram.nameOf(diagram, edge.id) : edge.code;
+      const node = Dom.svg("g", { class: classesOf("compare-edge", { "is-picked": isPicked, "is-dim": isOutOfPick }), "data-status": edge.status ?? "" }, [
+        Dom.svg("title", {}, [title]),
+        Dom.svg("path", { class: "compare-edge-line", d: route.path }),
+        Dom.svg("path", { class: "compare-edge-head", d: route.head }),
+        Dom.svg("path", { class: "compare-edge-hit", d: route.path }),
+      ]);
+      node.addEventListener("click", () => pick(edge.id));
+      return node;
+    };
+
+    /** 選んだ線の呼び出しの綴り(`code`)を、線の中ほどに出す。 */
+    const edgeLabelsOf = (edges, figure) => edges.filter(({ edge }) => edge.id === state.selected && typeof edge.code === "string").map(({ edge, route }) => {
+      const [x0, y0, c1x, c1y, c2x, c2y, x1, y1] = route.bezier;
+      const room = figure.width + CompareFigurePad * 2;
+      const text = fittedTextOf(edge.code, Math.min(GraphLayout.textWidthOf("x") * CompareLabelLimit, room - 18));
+      const width = GraphLayout.textWidthOf(text) + 14;
+      const centerX = Math.min(Math.max((x0 + 3 * c1x + 3 * c2x + x1) / 8, width / 2 - CompareFigurePad + 2), figure.width + CompareFigurePad - width / 2 - 2);
+      const centerY = (y0 + 3 * c1y + 3 * c2y + y1) / 8;
+      return Dom.svg("g", { class: "compare-edge-label" }, [
+        Dom.svg("rect", { x: centerX - width / 2, y: centerY - 10, width, height: 20, rx: 5 }),
+        Dom.svg("text", { x: centerX - width / 2 + 7, y: centerY + 4 }, [text]),
+      ]);
+    });
+
+    const figureOf = (figure, diagram, drawnSide) => {
+      const sideFigure = figure[drawnSide.key];
+      const groups = figure.groups.map((group) => Dom.svg("g", { class: "compare-group" }, [
+        Dom.svg("rect", { x: group.x, y: group.y, width: group.width, height: group.height, rx: 10 }),
+        Dom.svg("text", { x: group.x + 12, y: group.y + 22 }, [fittedTextOf(group.label, group.width - 24)]),
+      ]));
+      const viewBox = [-CompareFigurePad, -CompareFigurePad, figure.width + CompareFigurePad * 2, figure.height + CompareFigurePad * 2].join(" ");
+      const svg = Dom.svg("svg", { class: "wide-figure compare-figure", viewBox, "aria-label": `${drawnSide.title}の構成` }, [
+        ...groups,
+        ...sideFigure.edges.map((drawn) => edgeNodeOf({ drawn, diagram })),
+        ...sideFigure.boxes.map((placed) => boxNodeOf({ placed, diagram, side: drawnSide })),
+        ...edgeLabelsOf(sideFigure.edges, figure),
+      ]);
+      // 幅は欄に合わせるが、図の大きさより大きくせず(狭い図を引き伸ばさない)、下限より縮めない。倍率で割って、文字の大きさの倍率では変えない。
+      const naturalWidth = figure.width + CompareFigurePad * 2;
+      svg.style.maxWidth = `calc(${naturalWidth}px / var(--text-size-ratio, 1))`;
+      svg.style.minWidth = `calc(${Math.round(naturalWidth * CompareMinScale)}px / var(--text-size-ratio, 1))`;
+      return el("div", { class: "compare-side" }, [
+        el("div", { class: "compare-side-head" }, [el("span", { class: "compare-side-title", text: drawnSide.title }), el("span", { class: "compare-side-ref", text: drawnSide.ref })]),
+        el("div", { class: "compare-side-body" }, [svg]),
+      ]);
+    };
+
+    const legendOf = () => el("div", { class: "legend compare-legend" }, [
+      ...Object.values(CompareStatuses).map((status) => el("span", { "data-tone": status.tone }, [el("span", { class: "status-dot" }), status.label])),
+      el("span", {}, [el("span", { class: "legend-line" }), state.grain === CompareGrains.Calls ? "呼び出し" : "依存"]),
+      el("span", {}, [el("span", { class: "legend-line is-removed" }), "変更後に無い線"]),
+      el("span", {}, [el("span", { class: "compare-legend-absent" }), "片方にしか無い箱"]),
+    ]);
+
+    const renderToolbar = () => toolbar.replaceChildren(
+      ...labeledToggleOf("粒度", { options: CompareGrainChoices, current: state.grain, onPick: (grain) => update({ grain, selected: null }) }),
+      ...labeledToggleOf("並べ方", { options: CompareArrangementChoices, current: state.arrangement, onPick: (arrangement) => update({ arrangement }) }),
+      ...labeledToggleOf("変わっていない箱", { options: CompareDimChoices, current: state.isDimmed, onPick: (isDimmed) => update({ isDimmed }) }),
+    );
+
+    const renderFigures = (diagram) => {
+      const unselected = CompareDiagram.unselectedOf(diagram, calls);
+      if (unselected.kind === "unselectable") {
+        figureArea.replaceChildren(emptyOf(compareReasonTextOf(unselected.reason, state.grain)));
+        return;
+      }
+      const figure = figures[state.grain];
+      figureArea.replaceChildren(
+        el("div", { class: classesOf("compare-pair", { "is-stacked": state.arrangement === CompareArrangements.Stack }) }, sides.map((drawnSide) => figureOf(figure, diagram, drawnSide))),
+        legendOf(),
+      );
+    };
+
+    const countLinesOf = (counts) => [["箱", counts.boxes], ["線", counts.edges]].map(([what, count]) => el("div", { class: "compare-count" }, [
+      el("span", { class: "compare-count-what", text: what }),
+      el("span", { class: "add", text: plus(count.added) }),
+      el("span", { class: "del", text: minus(count.removed) }),
+      el("span", { class: "mod", text: `~${count.changed}` }),
+    ]));
+
+    const renderLeft = (diagram) => {
+      const changes = CompareDiagram.changeListOf(diagram);
+      const unselected = CompareDiagram.unselectedOf(diagram, calls);
+      leftSub.textContent = `${changes.items.length} 件`;
+      if (unselected.kind === "unselectable") {
+        leftBody.replaceChildren(emptyOf(compareReasonTextOf(unselected.reason, state.grain)));
+        return;
+      }
+      const rows = changes.items.map((item) => pressable("button", { class: classesOf("compare-change plain-button", { "is-picked": state.selected === item.id }) }, [
+        el("span", { class: "compare-change-head" }, [compareStatusChipOf(item.status), el("span", { class: "compare-change-kind", text: item.kind === "box" ? "箱" : "線" })]),
+        el("span", { class: "compare-change-name", text: item.name }),
+      ], () => pick(item.id)));
+      const list = rows.length === 0 ? [emptyOf("状態の付いた箱・線はありません")] : rows;
+      leftBody.replaceChildren(el("div", { class: "compare-counts" }, countLinesOf(changes.counts)), ...list);
+    };
+
+    const writtenBlocksOf = (written) => {
+      const review = written.review.length === 0 ? [] : [el("div", { class: "side-block" }, [
+        el("span", { class: "eyebrow", text: "見てほしいところ" }),
+        el("ul", { class: "compare-review" }, written.review.map((text) => prose("li", {}, text))),
+      ])];
+      return [
+        el("div", { class: "side-block" }, [
+          el("span", { class: "eyebrow", text: "この PR の構成の変化" }),
+          ...(written.gist === null ? [] : [prose("h2", {}, written.gist)]),
+          ...(written.text === null ? [] : [prose("p", { class: "side-sub" }, written.text)]),
+        ]),
+        ...review,
+      ];
+    };
+
+    const unselectedBlocksOf = (diagram) => {
+      const unselected = CompareDiagram.unselectedOf(diagram, calls);
+      switch (unselected.kind) {
+        case "unselectable":
+          return [
+            el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "選べる箱・線がありません" }), el("p", { class: "side-sub", text: compareReasonTextOf(unselected.reason, state.grain) })]),
+            ...(unselected.written === null ? [] : writtenBlocksOf(unselected.written)),
+          ];
+        case "written":
+          return writtenBlocksOf(unselected.written);
+        case "counts":
+          return [el("div", { class: "side-block" }, [
+            el("span", { class: "eyebrow", text: "変わったところ" }),
+            el("div", { class: "compare-counts" }, countLinesOf(unselected.counts)),
+            el("p", { class: "side-note", text: "左の一覧か図から選ぶと前後が出ます" }),
+          ])];
+      }
+    };
+
+    /** 前後の一言の表(呼び出しの粒度)。 */
+    const sidesTableOf = (item) => el("div", { class: "gwt" }, compareSidesOf(item).flatMap(([key, text, missing]) => [
+      el("span", { class: "gwt-key", text: key }),
+      text === null ? el("span", { class: "gwt-value muted", text: missing }) : prose("span", { class: "gwt-value" }, text),
+    ]));
+
+    /** その箱を端に持つ依存の一覧(モジュールの粒度)。 */
+    const dependencyBlocksOf = (dependencies) => [["増えた依存", dependencies.added], ["消えた依存", dependencies.removed], ["残った依存", dependencies.kept]].map(([title, items]) => el("div", { class: "side-block" }, [
+      eyebrowOf(title, `${items.length} 件`),
+      ...items.map((item) => el("div", { class: "compare-dependency", title: item.path }, [
+        el("span", { class: "compare-dependency-direction", text: item.direction === "uses" ? "使う →" : "使われる ←" }),
+        el("span", { class: "compare-dependency-name", text: item.name }),
+      ])),
+    ]));
+
+    const pickedBlocksOf = (diagram, picked) => {
+      switch (picked.kind) {
+        case "box": {
+          const { box } = picked;
+          const path = diagram.grain === CompareGrains.Calls ? box.module : box.path;
+          const facts = diagram.grain === CompareGrains.Calls
+            ? [...(box.role === null ? [] : [prose("p", { class: "detail-role" }, box.role)]), sidesTableOf(box)]
+            : dependencyBlocksOf(box.dependencies);
+          return [
+            el("div", { class: "side-block" }, [el("div", { class: "side-head" }, [el("span", { class: "chip", text: "箱" }), compareStatusChipOf(box.status)]), el("h2", { text: box.name }), el("span", { class: "side-path", text: path })]),
+            ...facts,
+          ];
+        }
+        case "edge": {
+          const { edge } = picked;
+          const endOf = (end, fallback) => (end === null ? fallback : end.name);
+          const facts = diagram.grain === CompareGrains.Calls
+            ? [...(edge.code === null ? [] : [el("code", { class: "compare-code", text: edge.code })]), sidesTableOf(edge)]
+            : [el("div", { class: "side-block" }, [
+              eyebrowOf("両端"),
+              el("div", { class: "compare-dependency", title: edge.from }, [el("span", { class: "compare-dependency-direction", text: "使う側" }), el("span", { class: "compare-dependency-name", text: endOf(picked.from, edge.from) })]),
+              el("div", { class: "compare-dependency", title: edge.to }, [el("span", { class: "compare-dependency-direction", text: "使われる側" }), el("span", { class: "compare-dependency-name", text: endOf(picked.to, edge.to) })]),
+            ])];
+          return [
+            el("div", { class: "side-block" }, [el("div", { class: "side-head" }, [el("span", { class: "chip", text: "線" }), compareStatusChipOf(edge.status)]), el("h2", { text: CompareDiagram.nameOf(diagram, edge.id) })]),
+            ...facts,
+          ];
+        }
+      }
+    };
+
+    /** 右の欄の「どこで変わったか」。押すと変更の経緯の、そのコミットのそのファイルへ。 */
+    const changingCommitsBlockOf = (diagram) => {
+      const changes = CompareDiagram.changingCommitsOf(diagram, state.selected, explained);
+      const links = changes.map(({ sha, path }) => commitLinkOf({ sha, label: ExplainedMap.fileNameOf(path), commitAt: explained.commitAt, onPress: () => go.toCommitFile({ sha, path, lineRange: null }) }));
+      const empty = links.length === 0 ? [el("p", { class: "side-note", text: "このファイルを変えたコミットは、このブランチにありません" })] : [];
+      return el("div", { class: "side-block" }, [eyebrowOf("どこで変わったか", `${links.length} コミット`), ...links, ...empty]);
+    };
+
+    const renderSide = (diagram) => {
+      const picked = state.selected === null ? null : CompareDiagram.pickedOf(diagram, state.selected);
+      if (picked === null) {
+        side.replaceChildren(...unselectedBlocksOf(diagram));
+        return;
+      }
+      const clear = pressable("button", { class: "outline-button", text: "選択を外す" }, [], () => update({ selected: null }));
+      side.replaceChildren(...pickedBlocksOf(diagram, picked), changingCommitsBlockOf(diagram), el("div", { class: "side-block" }, [clear]));
+      side.scrollTop = 0;
+    };
+
+    const render = () => {
+      const diagram = diagrams[state.grain];
+      renderToolbar();
+      renderLeft(diagram);
+      renderFigures(diagram);
+      renderSide(diagram);
+    };
+    render();
+
+    /** Target(callBox / callEdge / module)の粒度と、そこで選ぶ id。構成の前後が行き先でなければ null。 */
+    const pickOfTarget = (target) => {
+      const destination = Target.destinationOf(target);
+      if (destination.screen !== Screens.Compare) return null;
+      return { grain: destination.grain, id: destination.grain === CompareGrains.Calls ? destination.id : destination.path };
+    };
+
+    return {
+      summary: [],
+      controls: [],
+      tablist: null,
+      left: panelOf("left", [panelHead("変わったところ", "", [leftSub]), leftBody]),
+      main,
+      right: panelOf("right", [panelHead("詳しいところ", "選んだ箱・線の前後"), side]),
+      /** @returns 構成の前後が行き先の Target で、その粒度の図に指す箱・線があるか */
+      canShow: (target) => {
+        const found = pickOfTarget(target);
+        return found !== null && CompareDiagram.isSelectable(diagrams[found.grain], found.id);
+      },
+      /** その Target の粒度に切り替え、指す箱・線を選んだ状態にする。`canShow` が真のものだけを渡す。 */
+      showTarget: (target) => {
+        const found = pickOfTarget(target);
+        update({ grain: found.grain, selected: found.id });
+        figureArea.querySelector(".compare-side:last-child :is(.compare-box, .compare-edge).is-picked")?.scrollIntoView({ block: "center" });
+      },
+    };
+  };
+
+  const ScreenBuilders = { map: MapScreen, story: StoryScreen, test: TestScreen, impact: ImpactScreen, primer: PrimerScreen, compare: CompareScreen };
 
   /** 解説が使えない理由を帯の 1 行にする。 */
   const missingTextOf = (reason) => {
@@ -6842,8 +7572,30 @@ button.change-item:hover { background: var(--track); }
           navigateTo(Screens.Primer);
           built.primer.showTopic(position);
         },
+        toCompare: (target) => {
+          navigateTo(Screens.Compare);
+          built.compare.showTarget(target);
+        },
+        /** Target の行き先の画面へ移り、指すものを選んだ状態にする。`canShow` が真のものだけを渡す。 */
+        toTarget: (target) => {
+          const screen = Target.destinationOf(target).screen;
+          switch (screen) {
+            case Screens.Map:
+              navigateTo(Screens.Map);
+              built.map.showTarget(target);
+              return;
+            case Screens.Compare:
+              go.toCompare(target);
+              return;
+          }
+        },
+        /** @returns Target の行き先の画面で、指すものを選べるか */
+        canShow: (target) => built[Target.destinationOf(target).screen].canShow(target),
       };
-      const built = Object.fromEntries(Object.values(Screens).map((screen) => [screen, ScreenBuilders[screen](explained, go)]));
+      // 構造マップは組むときに、highlights の行き先がほかの画面で選べるか(`go.canShow`)を聞くので、行き先になる構成の前後を先に組む。
+      const BuildOrder = [Screens.Compare, ...Object.values(Screens).filter((screen) => screen !== Screens.Compare)];
+      const built = {};
+      for (const screen of BuildOrder) built[screen] = ScreenBuilders[screen](explained, go);
       const tabs = Object.values(Screens).map((screen) => el("a", { href: `#${screen}`, "data-screen": screen, text: ScreenLabels[screen] }));
       const controls = el("div", { class: "screen-controls" });
       const summary = el("span", { class: "screen-summary" });
@@ -6879,7 +7631,7 @@ button.change-item:hover { background: var(--track); }
       applyTextSize(TextSize.Initial);
       const textSizeControls = el("div", { class: "text-size-controls", role: "group", "aria-label": "文字の大きさ" }, [smallerButton, textSizePercent, largerButton]);
       root.replaceChildren(
-        el("header", { class: "top" }, [el("span", { class: "repo", text: RepoName }), el("nav", { class: "segmented", "aria-label": "画面" }, tabs), el("div", { class: "top-main" }, [branch, summary]), controls, textSizeControls, linksOf(pr, issue)]),
+        el("header", { class: "top" }, [el("span", { class: "repo", text: RepoName }), el("div", { class: "tabs-scroll" }, [el("nav", { class: "segmented", "aria-label": "画面" }, tabs)]), el("div", { class: "top-main" }, [branch, summary]), controls, textSizeControls, linksOf(pr, issue)]),
         el("div", { class: "bands" }, bandTextsOf(explained).map((text) => el("div", { class: "band", role: "status", text }))),
         screens,
       );

@@ -34,8 +34,8 @@ source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
 # 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)と、Target の kind ごとのキー(ページの `Target` と
 # 突き合わせる)と、Shapes から導いた形の道筋と値の種類(ページの `ExplainShape.Routes` と突き合わせる)。impact の下は
-# オブジェクト・その配列・id・id の配列と sha の配列だけ。primers・terms と、features の review・commitStories の featureRanges の
-# 下は文(text・sha・marked_text の文字列)も出す。Excerpt の中の
+# オブジェクト・その配列・id・id の配列と sha の配列だけ。primers・terms と、features の review・commitStories の featureRanges・
+# calls の下は文(text・sha・marked_text の文字列)も出す。Excerpt の中の
 # 道筋は、Excerpt を指すすべての道筋の下に出す。primers・terms の下の必須の文と 1 つのオブジェクトの道筋と、それを必須とする
 # kind(Variant の下なら kind の並び、Shape の下なら null。ページの `ExplainShape.Required` と突き合わせる)。ほかに、技術の
 # 手引きの kind・段の kind・用語の印の綴りと、印を読む道筋と、`` ` `` の割り方(ページの `CodeSpans` と突き合わせる)。
@@ -78,7 +78,8 @@ def required_routes_of(rule, route):
 explain = module.Shapes["Explain"]
 feature_reviews = shape_routes_of(module.Shapes["Feature"]["review"].value, "features[].review", text_rules)
 feature_ranges = shape_routes_of(module.Shapes["CommitStory"]["featureRanges"].value, "commitStories[].featureRanges", text_rules)
-routes = [*shape_routes_of(explain["impact"].value, "impact", (module.Sha,)), *shape_routes_of(explain["primers"].value, "primers", text_rules), *shape_routes_of(explain["terms"].value, "terms", text_rules), *feature_reviews, *feature_ranges]
+calls = shape_routes_of(explain["calls"].value, "calls", text_rules)
+routes = [*shape_routes_of(explain["impact"].value, "impact", (module.Sha,)), *shape_routes_of(explain["primers"].value, "primers", text_rules), *shape_routes_of(explain["terms"].value, "terms", text_rules), *feature_reviews, *feature_ranges, *calls]
 required_routes = [*required_routes_of(explain["primers"].value, "primers"), *required_routes_of(explain["terms"].value, "terms")]
 known = {route for route, _ in routes}
 inside_excerpts = [found for route in module.routes_with(module.Shape("Excerpt")) for found in shape_routes_of(module.Shape("Excerpt"), route, ())[1:]]
@@ -180,7 +181,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
+const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target, CompareDiagram } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -224,6 +225,52 @@ const rangedCommit = (digit, files, featureRanges) => ({ ...commitOf(digit), fil
 const featureIdsIn = (rows) => rows.map((row) => (row.feature === null ? null : row.feature.id));
 // 足した行が 1 行の hunk を、変更後の n 行目に 1 つ持つ patch(+1 −0)。
 const addedLineAt = (line) => linesOf([`@@ -${line},0 +${line},1 @@`, "+x"]);
+// 構成の前後の材料。モジュールの粒度は、足した a・変えた b・消した gone・図に出さない hidden(graph が偽の concept)と、変えていない
+// kept(増えた・消えた依存の端)・untouched(残った依存の端だけ)。依存は残った 2・増えた 2・消えた 1。
+const moduleDependency = (from, to, status) => ({ from: `src/${from}.ts`, to: `src/${to}.ts`, status });
+const modulesMap = mapOf({
+  groups: [
+    { label: "domains", files: [changedFile("src/domains/a.ts", { status: "A" }), contextFile("src/domains/kept.ts"), changedFile("src/domains/hidden.ts")] },
+    { label: "features", files: [changedFile("src/features/b.ts"), changedFile("src/features/gone.ts", { status: "D" }), contextFile("src/features/untouched.ts")] },
+  ],
+  dependencies: [
+    moduleDependency("features/b", "features/untouched", "kept"),
+    moduleDependency("features/b", "domains/kept", "kept"),
+    moduleDependency("features/b", "domains/a", "added"),
+    moduleDependency("domains/a", "domains/kept", "added"),
+    moduleDependency("features/gone", "domains/kept", "removed"),
+  ],
+});
+const modulesExplained = () => explained(modulesMap, explainOf({ concepts: [concept("src/domains/hidden.ts", "隠す", { graph: false })] }));
+// 呼び出しの粒度は、地図の層の順(features → domains)と箱を書いた順を逆にし、地図に無い module(src/gone.ts)の箱を 1 つ持つ。
+const callBox = (id, module, extra = {}) => ({ id, name: `${id}()`, role: `${id}の役割`, module, ...extra });
+const callEdge = (id, from, to, extra = {}) => ({ id, from, to, code: `${to}()`, ...extra });
+const callsMap = mapOf({
+  groups: [
+    { label: "features", files: [changedFile("src/features/view.ts")] },
+    { label: "domains", files: [changedFile("src/domains/state.ts"), contextFile("src/domains/doc.ts")] },
+  ],
+});
+const callsOf = (extra = {}) => ({
+  boxes: [
+    callBox("errors", "src/domains/state.ts", { status: "removed", was: "前" }),
+    callBox("view", "src/features/view.ts", { status: "changed", was: "前", now: "後" }),
+    callBox("memo", "src/gone.ts", { status: "added", now: "後" }),
+    callBox("document", "src/domains/doc.ts", { now: "後" }),
+    callBox("collect", "src/domains/state.ts", { now: "後" }),
+  ],
+  edges: [
+    callEdge("view-errors", "view", "errors", { status: "removed", was: "前" }),
+    callEdge("view-memo", "view", "memo", { status: "added", now: "後" }),
+    callEdge("view-document", "view", "document", { now: "後" }),
+  ],
+  ...extra,
+});
+const callsConcepts = [concept("src/features/view.ts", "器"), concept("src/domains/state.ts", "状態"), concept("src/domains/doc.ts", "文書"), concept("src/gone.ts", "地図に無い器")];
+const callsExplained = (calls = callsOf(), extra = {}) => explained(callsMap, explainOf({ concepts: callsConcepts, calls, ...extra }));
+const unchangedCalls = (extra = {}) => ({ boxes: [], edges: [], ...extra });
+const boxIdsOf = (boxes, isWanted) => boxes.filter(isWanted).map((placed) => placed.box.id);
+const edgeEndsOf = (edges) => edges.map(({ edge }) => [edge.from, edge.to]);
 
 // 色分け。パスの文法で、開いた行(無ければ null)の後から行を読み進めた、行ごとの字句の並び。
 const lineTokensOf = (path, lines, openingLine = null) => {
@@ -917,6 +964,265 @@ const cases = [
     expected: ["a"],
   },
   {
+    label: "モジュールの粒度の箱は、図に出す変更ファイルと、増えた・消えた依存の端のファイル(状態は A が増えた・D が消えた・ほかの変更が変えた、端だけのファイルは無し)",
+    actual: () => CompareDiagram.fromModules(modulesExplained()).boxes.map((box) => [box.id, box.status]),
+    expected: [["src/domains/a.ts", "added"], ["src/features/b.ts", "changed"], ["src/features/gone.ts", "removed"], ["src/domains/kept.ts", null]],
+  },
+  {
+    label: "モジュールの粒度で、足したファイルは変更前の図に無く、消したファイルは変更後の図に無い",
+    actual: () => {
+      const figures = CompareDiagram.figuresOf(CompareDiagram.fromModules(modulesExplained()));
+      return { before: boxIdsOf(figures.before.boxes, (placed) => !placed.isPresent), after: boxIdsOf(figures.after.boxes, (placed) => !placed.isPresent) };
+    },
+    expected: { before: ["src/domains/a.ts"], after: ["src/features/gone.ts"] },
+  },
+  {
+    label: "モジュールの粒度で、変更前の線は残った依存と消えた依存、変更後の線は残った依存と増えた依存(端が箱でない依存は描かない)",
+    actual: () => {
+      const figures = CompareDiagram.figuresOf(CompareDiagram.fromModules(modulesExplained()));
+      return { before: edgeEndsOf(figures.before.edges), after: edgeEndsOf(figures.after.edges) };
+    },
+    expected: {
+      before: [["src/features/b.ts", "src/domains/kept.ts"], ["src/features/gone.ts", "src/domains/kept.ts"]],
+      after: [["src/features/b.ts", "src/domains/kept.ts"], ["src/features/b.ts", "src/domains/a.ts"], ["src/domains/a.ts", "src/domains/kept.ts"]],
+    },
+  },
+  {
+    label: "モジュールの粒度で、移動したファイルは変更前の側で前のパスの名前を出す",
+    actual: () => {
+      const map = mapOf({ groups: [{ label: "features", files: [changedFile("src/features/moved/index.ts", { status: "R", oldPath: "src/features/old/index.ts" })] }] });
+      const box = CompareDiagram.fromModules(explained(map, explainOf())).boxes[0];
+      return { name: box.name, beforeName: box.beforeName };
+    },
+    expected: { name: "moved/index.ts", beforeName: "old/index.ts" },
+  },
+  {
+    label: "モジュールの粒度で箱を選ぶと、その箱を端に持つ依存を、増えた / 消えた / 残ったに分けて返す",
+    actual: () => CompareDiagram.pickedOf(CompareDiagram.fromModules(modulesExplained()), "src/domains/kept.ts").box.dependencies,
+    expected: {
+      added: [{ path: "src/domains/a.ts", name: "a.ts", direction: "usedBy" }],
+      removed: [{ path: "src/features/gone.ts", name: "gone.ts", direction: "usedBy" }],
+      kept: [{ path: "src/features/b.ts", name: "b.ts", direction: "usedBy" }],
+    },
+  },
+  {
+    label: "モジュールの粒度で線を選ぶと、状態と両端の箱を返す",
+    actual: () => {
+      const picked = CompareDiagram.pickedOf(CompareDiagram.fromModules(modulesExplained()), JSON.stringify(["src/features/gone.ts", "src/domains/kept.ts"]));
+      return { status: picked.edge.status, from: picked.from.name, to: picked.to.name };
+    },
+    expected: { status: "removed", from: "gone.ts", to: "kept.ts" },
+  },
+  {
+    label: "構成の前後の 2 枚の図は同じ配置で、片方にしか無い箱も、もう片方に位置を持つ",
+    actual: () => {
+      const figures = CompareDiagram.figuresOf(CompareDiagram.fromModules(modulesExplained()));
+      const placesOf = (boxes) => boxes.map((placed) => [placed.box.id, placed.x, placed.y]);
+      return { isSame: JSON.stringify(placesOf(figures.before.boxes)) === JSON.stringify(placesOf(figures.after.boxes)), counts: [figures.before.boxes.length, figures.after.boxes.length] };
+    },
+    expected: { isSame: true, counts: [4, 4] },
+  },
+  {
+    label: "「変わっていない箱」は、呼び出しの粒度では状態の無い箱、モジュールの粒度では線の端にしか出てこない箱",
+    actual: () => {
+      const unchangedIn = (diagram) => boxIdsOf(CompareDiagram.figuresOf(diagram).after.boxes, (placed) => placed.isUnchanged);
+      return { calls: unchangedIn(CompareDiagram.fromCalls(callsExplained())), modules: unchangedIn(CompareDiagram.fromModules(modulesExplained())) };
+    },
+    expected: { calls: ["document", "collect"], modules: ["src/domains/kept.ts"] },
+  },
+  {
+    label: "呼び出しの粒度で、増えた箱は変更前の図に無く、消えた箱は変更後の図に無い",
+    actual: () => {
+      const figures = CompareDiagram.figuresOf(CompareDiagram.fromCalls(callsExplained()));
+      return { before: boxIdsOf(figures.before.boxes, (placed) => !placed.isPresent), after: boxIdsOf(figures.after.boxes, (placed) => !placed.isPresent) };
+    },
+    expected: { before: ["memo"], after: ["errors"] },
+  },
+  {
+    label: "呼び出しの粒度の箱は module の concept ごとの組に入り、組は箱を書いた順ではなく地図の groups の順に並ぶ",
+    actual: () => CompareDiagram.fromCalls(callsExplained()).groups.slice(0, 3).map((group) => [group.label, group.boxes]),
+    expected: [["器", ["view"]], ["状態", ["errors", "collect"]], ["文書", ["document"]]],
+  },
+  {
+    label: "呼び出しの粒度で、module が地図に無い箱は最後の組「地図に無い」に入る",
+    actual: () => {
+      const last = CompareDiagram.fromCalls(callsExplained()).groups.at(-1);
+      return [last.label, last.boxes];
+    },
+    expected: ["地図に無い", ["memo"]],
+  },
+  {
+    label: "解説が無ければ、呼び出しの粒度は「解説なし」(unexplained)",
+    actual: () => CompareDiagram.fromCalls(ExplainedMap.create(callsMap, absent)),
+    expected: { kind: "unexplained" },
+  },
+  {
+    label: "calls が無ければ、呼び出しの粒度は「書かれていない」(unwritten)",
+    actual: () => CompareDiagram.fromCalls(explained(callsMap, explainOf({ concepts: callsConcepts }))),
+    expected: { kind: "unwritten" },
+  },
+  {
+    label: "calls の箱も線も 0 件なら、呼び出しの粒度は描けるが「呼び出しの変化なし」(unchanged)で選べるものが無い",
+    actual: () => {
+      const diagram = CompareDiagram.fromCalls(callsExplained(unchangedCalls()));
+      return [diagram.kind, CompareDiagram.unselectedOf(diagram, unchangedCalls()).reason];
+    },
+    expected: ["drawn", "unchanged"],
+  },
+  {
+    label: "呼び出しの粒度で calls に gist・text・review のどれも無ければ、右の欄は件数で、件数は箱と線の状態ごとの数",
+    actual: () => CompareDiagram.unselectedOf(CompareDiagram.fromCalls(callsExplained()), callsOf()),
+    expected: { kind: "counts", counts: { boxes: { added: 1, removed: 1, changed: 1 }, edges: { added: 1, removed: 1, changed: 0 } } },
+  },
+  {
+    label: "calls に review だけを書けば、右の欄は書いた文で、gist と text は null",
+    actual: () => {
+      const calls = callsOf({ review: ["線の向きを見る"] });
+      return CompareDiagram.unselectedOf(CompareDiagram.fromCalls(callsExplained(calls)), calls);
+    },
+    expected: { kind: "written", written: { gist: null, text: null, review: ["線の向きを見る"] } },
+  },
+  {
+    label: "calls の review が空の配列で gist も text も無ければ、右の欄は件数",
+    actual: () => {
+      const calls = callsOf({ review: [] });
+      return CompareDiagram.unselectedOf(CompareDiagram.fromCalls(callsExplained(calls)), calls).kind;
+    },
+    expected: "counts",
+  },
+  {
+    label: "モジュールの粒度の件数は、地図の増えた / 消えた依存と、図に出す変更ファイルの状態から数える(変えていない依存の端と、図に出さない変更ファイルは数えない)",
+    actual: () => CompareDiagram.unselectedOf(CompareDiagram.fromModules(modulesExplained()), null),
+    expected: { kind: "counts", counts: { boxes: { added: 1, removed: 1, changed: 1 }, edges: { added: 2, removed: 1, changed: 0 } } },
+  },
+  {
+    label: "解説が無いとき、呼び出しの粒度の右の欄は選べるものが無く(解説なし)、同じ地図のモジュールの粒度は件数",
+    actual: () => {
+      const unexplained = ExplainedMap.create(modulesMap, absent);
+      return [CompareDiagram.unselectedOf(CompareDiagram.fromCalls(unexplained), null), CompareDiagram.unselectedOf(CompareDiagram.fromModules(unexplained), null).kind];
+    },
+    expected: [{ kind: "unselectable", reason: "unexplained", written: null }, "counts"],
+  },
+  {
+    label: "calls が無いとき、呼び出しの粒度の右の欄は選べるものが無く(書かれていない)、書いた文は null",
+    actual: () => CompareDiagram.unselectedOf(CompareDiagram.fromCalls(explained(callsMap, explainOf({ concepts: callsConcepts }))), null),
+    expected: { kind: "unselectable", reason: "unwritten", written: null },
+  },
+  {
+    label: "箱も線も 0 件の calls に gist を書いたとき、呼び出しの粒度の右の欄は選べるものが無く(変化なし)、書いた gist を持つ",
+    actual: () => {
+      const calls = unchangedCalls({ gist: "構成は変えていない" });
+      return CompareDiagram.unselectedOf(CompareDiagram.fromCalls(callsExplained(calls)), calls);
+    },
+    expected: { kind: "unselectable", reason: "unchanged", written: { gist: "構成は変えていない", text: null, review: [] } },
+  },
+  {
+    label: "図に出す変更ファイルも依存の変化も無い地図では、モジュールの粒度は選べるものが無い(変化なし)",
+    actual: () => {
+      const map = mapOf({ groups: [{ label: "docs", files: [contextFile("src/x.ts"), contextFile("src/y.ts")] }], dependencies: [moduleDependency("x", "y", "kept")] });
+      return CompareDiagram.unselectedOf(CompareDiagram.fromModules(ExplainedMap.create(map, absent)), null);
+    },
+    expected: { kind: "unselectable", reason: "unchanged", written: null },
+  },
+  {
+    label: "module の行き先は、図に出す変更ファイルなら届く",
+    actual: () => CompareDiagram.isSelectable(CompareDiagram.fromModules(modulesExplained()), "src/features/b.ts"),
+    expected: true,
+  },
+  {
+    label: "module の行き先は、変えていない(増えた・消えた依存の端でもない)ファイルなら、残った依存の端でも届かない",
+    actual: () => CompareDiagram.isSelectable(CompareDiagram.fromModules(modulesExplained()), "src/features/untouched.ts"),
+    expected: false,
+  },
+  {
+    label: "module の行き先は、graph が偽の concept のファイルなら、変えていても届かない",
+    actual: () => CompareDiagram.isSelectable(CompareDiagram.fromModules(modulesExplained()), "src/domains/hidden.ts"),
+    expected: false,
+  },
+  {
+    label: "module の行き先は、地図に無いパスなら届かない",
+    actual: () => CompareDiagram.isSelectable(CompareDiagram.fromModules(modulesExplained()), "src/no/such.ts"),
+    expected: false,
+  },
+  {
+    label: "callBox / callEdge の行き先は、calls に書いた id なら届き、calls の無い解説では届かない",
+    actual: () => [
+      CompareDiagram.isSelectable(CompareDiagram.fromCalls(callsExplained()), "view"),
+      CompareDiagram.isSelectable(CompareDiagram.fromCalls(callsExplained()), "view-memo"),
+      CompareDiagram.isSelectable(CompareDiagram.fromCalls(explained(callsMap, explainOf({ concepts: callsConcepts }))), "view"),
+    ],
+    expected: [true, true, false],
+  },
+  {
+    label: "「どこで変わったか」は、選んだ箱のファイル(呼び出しの粒度は module)を変えた、マージ以外のコミットを古い順に返す",
+    actual: () => {
+      const commitTouching = (digit, path, extra = {}) => ({ ...commitOf(digit), files: [diffFile(path)], ...extra });
+      const map = { ...callsMap, commits: [commitTouching(1, "src/domains/state.ts"), commitTouching(2, "src/domains/state.ts", { merge: true }), commitTouching(3, "src/features/view.ts"), commitTouching(4, "src/domains/state.ts")] };
+      const result = explained(map, explainOf({ concepts: callsConcepts, calls: callsOf() }));
+      return CompareDiagram.changingCommitsOf(CompareDiagram.fromCalls(result), "errors", result);
+    },
+    expected: [{ sha: shaOf(1), path: "src/domains/state.ts" }, { sha: shaOf(4), path: "src/domains/state.ts" }],
+  },
+  {
+    label: "「ほかの画面で見る」は、選んだ箱のファイルを端に持つやりとりを、変更後か変更前のどちらかの手順に含む流れ",
+    actual: () => {
+      const message = (id, from, to) => ({ id, from, to, kind: "qry", name: id, code: `${id}()`, via: "call" });
+      const result = callsExplained(callsOf(), {
+        messages: [message("read-state", "src/features/view.ts", "src/domains/state.ts"), message("read-doc", "src/features/view.ts", "src/domains/doc.ts")],
+        flows: [
+          { id: "before-only", label: "変更前だけ", steps: ["read-doc"], beforeSteps: ["read-state"] },
+          { id: "unrelated", label: "関わらない", steps: ["read-doc"] },
+          { id: "after", label: "変更後", steps: ["read-state"] },
+        ],
+      });
+      return CompareDiagram.flowsThrough(CompareDiagram.fromCalls(result), "errors", result).map((flow) => flow.id);
+    },
+    expected: ["before-only", "after"],
+  },
+  {
+    label: "Target の行き先は、feature / layer / file / message / flow が構造マップ、callBox / callEdge が構成の前後の呼び出しの粒度、module がモジュールの粒度",
+    actual: () => [
+      { kind: "feature", id: "f" },
+      { kind: "layer", layer: "l" },
+      { kind: "file", path: "p" },
+      { kind: "message", id: "m" },
+      { kind: "flow", id: "w" },
+      { kind: "callBox", id: "b" },
+      { kind: "callEdge", id: "e" },
+      { kind: "module", path: "q" },
+    ].map((target) => {
+      const destination = Target.destinationOf(target);
+      return destination.screen === "compare" ? [destination.screen, destination.grain] : [destination.screen];
+    }),
+    expected: [["map"], ["map"], ["map"], ["map"], ["map"], ["compare", "calls"], ["compare", "calls"], ["compare", "modules"]],
+  },
+  {
+    label: "根拠のチップの名前は、kind ごとに行き先の画面の名前と、指す先の名前(機能・やりとりの名前・流れ・箱の名前・線の両端・concept)",
+    actual: () => {
+      const message = { id: "m", from: "src/features/view.ts", to: "src/domains/state.ts", kind: "qry", name: "状態を読む", code: "read()", via: "call" };
+      const result = callsExplained(callsOf(), { features: [featureNamed("f")], messages: [message], flows: [{ id: "w", label: "読む流れ", steps: ["m"] }] });
+      return [
+        { kind: "feature", id: "f" },
+        { kind: "layer", layer: "domains" },
+        { kind: "file", path: "src/features/view.ts" },
+        { kind: "message", id: "m" },
+        { kind: "flow", id: "w" },
+        { kind: "callBox", id: "view" },
+        { kind: "callEdge", id: "view-memo" },
+        { kind: "module", path: "src/domains/state.ts" },
+      ].map((target) => Target.captionOf(target, result));
+    },
+    expected: ["構造マップ: 機能 f", "構造マップ: domains", "構造マップ: 器", "構造マップ: 状態を読む", "構造マップ: 読む流れ", "構成の前後: view()", "構成の前後: view() → memo()", "構成の前後: 状態"],
+  },
+  {
+    label: "新しいキー(calls・flows の手順の対応・features の review)の無い version 1 の解説は読め、構成の前後の呼び出しの粒度は「書かれていない」",
+    actual: () => {
+      const result = explained(callsMap, explainOf({ concepts: callsConcepts, features: [featureNamed("f")], flows: [{ id: "w", label: "流れ", steps: [] }] }));
+      return [result.reading.kind, CompareDiagram.fromCalls(result).kind];
+    },
+    expected: ["explained", "unwritten"],
+  },
+  {
     label: "コードの表示では、続けて消した行を 1 つに畳み、あいだに残った行で分ける",
     actual: () => {
       const patch = linesOf(["@@ -1,5 +1,3 @@", " a", "-b", "-c", "+d", "-e", " f"]);
@@ -984,9 +1290,10 @@ const cases = [
       ScreenChoice.choose("#test"),
       ScreenChoice.choose("#impact"),
       ScreenChoice.choose("#primer"),
+      ScreenChoice.choose("#compare"),
       ScreenChoice.choose("story"),
     ],
-    expected: ["story", "test", "impact", "primer", "story"],
+    expected: ["story", "test", "impact", "primer", "compare", "story"],
   },
   {
     label: "ハッシュが無いか画面を指していなければ構造マップ",
@@ -2612,10 +2919,10 @@ const cases = [
     expected: [...checkerVocabulary[name]].sort(),
   })),
   {
-    label: "解説の検査が受け付ける Target の kind はどれも、ページが検査の求めるキーを読んで移る先にする",
+    label: "解説の検査が受け付ける Target の kind はどれも、ページが検査の求めるキーを読んで行き先にする(行き先に求めるキーの値がすべて入る)",
     actual: () => Object.entries(checkerTargetKeys).map(([kind, keys]) => {
-      const selection = Target.selectionOf({ kind, ...Object.fromEntries(keys.map((key) => [key, `値-${key}`])) });
-      return [kind, selection !== undefined && keys.some((key) => selection.id.endsWith(`値-${key}`))];
+      const destination = Target.destinationOf({ kind, ...Object.fromEntries(keys.map((key) => [key, `値-${key}`])) });
+      return [kind, destination !== undefined && keys.every((key) => JSON.stringify(destination).includes(`値-${key}`))];
     }),
     expected: Object.keys(checkerTargetKeys).map((kind) => [kind, true]),
   },
