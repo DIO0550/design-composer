@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "pr": 1389,
+  "headBranch": "claude/affectionate-hypatia-bdws3k",
+  "baseBranch": "main",
+  "mergeBase": "0abadc392b00758cc013d2fa7579aa55649ff4aa",
+  "head": "e9e7734fc338c510de73e29839125f412ee1472c",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/performance-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1370.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "e9e7734fc338c510de73e29839125f412ee1472c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-14T00:03:01Z",
+      "subject": "ハーネス棚卸し: なし の再発(重い判定を安い除外より先に呼ぶ)を performance-reviewer の観点へ足す",
+      "body": "Refs #1388\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QdBoATF4SdeSrbbPV",
+      "files": [
+        {
+          "path": ".claude/agents/performance-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -50,6 +50,9 @@ model: opus\n - **ループの中で `find` / `filter` / `indexOf` を呼び、ノード数の 2 乗になっていないか。**\n   索引(`Map`)を 1 度作れば済まないか\n - **ツリーを親から辿るたびに、同じ部分木を何度も走査していないか**\n+- **安い除外(名前の解決・種別の判定)より先に、祖先を辿るような重い判定を候補ごとに呼んでいないか。**\n+  順を入れ替えても結果が変わらないなら、次数・計測を問わず直す対象として挙げる(判例\n+  `pointer-path-recompute` の採否の分かれ目は、直すのに構造の変更が要る指摘に当てる)\n - **並べ替え・複製(スプレッド・`structuredClone`)を、必要な範囲より広くかけていないか**\n \n ## I/O と資源の観点",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/pr-1370.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -172,3 +172,4 @@ GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_\n ## 規約への反映\n \n 無し。集計と介入の判断は `harness-growth` の管轄なので、この記録では行わない。\n+- 対策済: `なし` 層=観点 at pr-1389",
+          "patchLines": 5,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
