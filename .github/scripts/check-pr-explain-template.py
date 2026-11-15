@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""解説ページの枠(`.claude/skills/pr-explain/templates/index.html`)の CSP と固定スクリプトを検査する。
+"""解説ページの枠(`.claude/skills/pr-explain/templates/index.html`)と一覧の枠(`templates/list.html`)の
+CSP と固定スクリプトを検査する。
 
-ページは変更の地図(`change-map.json`)と解説(`explain.json`)を読み、固定スクリプトが
-`createElement` と `textContent` で組む。JSON の中身は差分のコードや PR の本文をそのまま含むので、
+解説ページは変更の地図(`change-map.json`)と解説(`explain.json`)を、一覧は `list.json` を読み、固定スクリプトが
+`createElement` と `textContent` で組む。JSON の中身は差分のコードや PR の本文・題をそのまま含むので、
 **固定スクリプトが HTML として解釈させる API を 1 か所でも使えば、そこから中身が要素になる。**
 それを語の有無で止める。CSP は、すり抜けた要素があっても、固定スクリプト以外のスクリプトの実行・
 外からの読み込み(書体とその CSS を除く)・フォームの送信を止める。インラインの style は止めない
@@ -24,10 +25,15 @@
 `script-src 'self'` が要り、同じ origin(gh-pages の Storybook・PR のプレビュー)にあるどの `.js` も
 動かせるようになる。
 
+2 つの枠で同じもの(CSS 変数・書体・`.top` `.repo`・JSON の読み込み)は、共有の `.js` / `.css` に切り出さず
+それぞれが写しを持つ。`.css` にしても `style-src 'self'` が要るのと、共有ファイルは main が置くが、各 PR の
+`index.html` は PR の版のまま残るので、食い違うため。
+
 使い方:
     check-pr-explain-template.py <テンプレート> [--tracked]
 
-`--tracked` を付けると、標準入力のパス(1 行 1 件。`git ls-files` の出力)の拡張子も見る。
+`--tracked` を付けると、標準入力のパス(1 行 1 件。`git ls-files` の出力)の拡張子も見る。解説ページの枠に
+付ける(一覧の枠は色分けの表を持たない)。
 
 違反が無ければ終了コード 0。違反があれば標準出力へ報告して 1。引数の誤りは 2。
 """
@@ -64,7 +70,7 @@ Policy = {
     "script-src": None,
     "style-src": frozenset({"'unsafe-inline'", "https://fonts.googleapis.com"}),
     "font-src": frozenset({"https://fonts.gstatic.com"}),
-    # 2 つの JSON を同じフォルダから読む。
+    # 同じフォルダの JSON を読む(解説ページは 2 つ、一覧は 1 つ)。
     "connect-src": frozenset({"'self'"}),
     "img-src": frozenset({"'self'", "data:"}),
     "base-uri": frozenset({"'none'"}),

@@ -6,15 +6,16 @@
 # 使い方: bash .github/scripts/pr-explain-pages-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
-# **他の PR のフォルダ・`pr-preview/` に触らないことを、どのモードでも見る。** gh-pages は
+# **他の PR のフォルダ・`pr-preview/` に触らないことを、どのモード(`put-list` を含む)でも見る。** gh-pages は
 # Storybook と VRT の配信と同じブランチで、ここを壊すとこの機能の外まで消える。
 # `put-map 1` が `pr-12` に触らない仕組みは 3 つある。作業コピーに展開するのが `pr-explain/pr-1/`
 # だけ(sparse-checkout)・`remove_others`(フォルダ内の 3 つ以外を消す処理)が消すのは
-# `git ls-files -- "$folder"` の範囲だけ・`commit_and_push` が `git add -A` するのは `$folder` だけ。
+# `git ls-files -- "$folder"` の範囲だけ・`commit_and_push` が `git add -A` するのは `paths` だけ。
 # どれか 1 つが保たれていれば通り、3 つすべてを壊さない限りこのケースは落ちない。見ているのは 3 つが組み合わさった結果。
 #
 # 競合の再試行は、bare リポジトリの pre-receive フックで 1 回目の push だけを拒否して作る。
-# 待ち時間は `PR_EXPLAIN_RETRY_WAIT=0` で消す。
+# 待ち時間は `PR_EXPLAIN_RETRY_WAIT=0` で消す。取り直しの間に gh-pages へ増えたフォルダは、拒否するのと同時に
+# フックの中から別の clone でフォルダを足して push して作る。
 #
 # 解説の sha と抜粋は、スクリプトが置かれたリポジトリ(セッションの作業コピー)から読む。外側の
 # リポジトリの HEAD は push 前の検査のときにまだリモートに無いので、スクリプトを一時リポジトリへ写し、
@@ -24,6 +25,7 @@ set -uo pipefail
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
 repo_root="$(cd "$scripts_dir/../.." && pwd)"
 template="$repo_root/.claude/skills/pr-explain/templates/index.html"
+list_template="$repo_root/.claude/skills/pr-explain/templates/list.html"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
@@ -75,16 +77,57 @@ write("map.json", {"version": 2, "head": "new"})
 PY
 broken_template="$work/broken-template.html"
 sed 's/<script>/<script> /' "$template" > "$broken_template"
+broken_list_template="$work/broken-list-template.html"
+sed 's/<script>/<script> /' "$list_template" > "$broken_list_template"
+
+# 題の応答の見本(`gh api graphql --paginate --slurp` の形 = ページの配列)。通る応答は 2 ページで、PR 12 は
+# 2 ページ目にだけあり、PR 40 と 7 は gh-pages にフォルダが無い。壊れた応答は通る応答を 1 か所ずつ崩す。
+python3 - "$work" <<'PY'
+import copy, json, sys
+work = sys.argv[1]
+page = lambda nodes, has_next: {"data": {"repository": {"pullRequests": {"nodes": nodes, "pageInfo": {"hasNextPage": has_next, "endCursor": "c"}}}}}
+node = lambda number, title: {"number": number, "title": title}
+titles = [page([node(1, "一"), node(2, "<b>二</b>")], True), page([node(12, "十二"), node(40, "四十"), node(7, "七")], False)]
+def broken(change):
+    pages = copy.deepcopy(titles)
+    change(pages)
+    return pages
+connection = lambda pages, index: pages[index]["data"]["repository"]["pullRequests"]
+write = lambda name, text: open(f"{work}/{name}", "w", encoding="utf-8").write(text)
+dumped = lambda value: json.dumps(value, ensure_ascii=False)
+write("titles.json", dumped(titles))
+write("titles-none.json", dumped([page([], False)]))
+write("titles-empty.json", "")
+write("titles-concatenated.json", "".join(dumped(each) for each in titles))
+write("titles-no-pages.json", "[]")
+write("titles-errors.json", dumped(broken(lambda pages: pages[1].update({"errors": [{"message": "x"}]}))))
+write("titles-no-title.json", dumped(broken(lambda pages: connection(pages, 1)["nodes"][0].pop("title"))))
+write("titles-string-number.json", dumped(broken(lambda pages: connection(pages, 1)["nodes"][0].update({"number": "12"}))))
+write("titles-no-repository.json", dumped(broken(lambda pages: pages[1]["data"].pop("repository"))))
+write("titles-cut.json", dumped(broken(lambda pages: connection(pages, 1)["pageInfo"].update({"hasNextPage": True}))))
+write("titles-no-page-info.json", dumped(broken(lambda pages: connection(pages, 0).pop("pageInfo"))))
+PY
 
 # gh-pages を持つ bare リポジトリを作り直す。
-# $1 `seeded` なら既存の PR のフォルダと pr-preview を置く。`empty` なら gh-pages を作らない
+# $1 `seeded` なら既存の PR のフォルダ・前の一覧・`pr-<番号>` の形でないフォルダと pr-preview を置く。
+#    `pages-only` なら `.nojekyll` と pr-preview だけ(`pr-explain/` が無い)。`empty` なら gh-pages を作らない
 fresh_origin() {
-  rm -rf "$work/origin.git" "$work/seed" "$work/pushes"
+  rm -rf "$work/origin.git" "$work/seed" "$work/pushes" "$work/racer"
   git init --quiet --bare "$work/origin.git"
   git -C "$work/origin.git" config uploadpack.allowFilter true
-  [ "$1" = "seeded" ] || return 0
+  [ "$1" = "empty" ] && return 0
   git init --quiet -b gh-pages "$work/seed"
-  mkdir -p "$work/seed/pr-explain/pr-1" "$work/seed/pr-explain/pr-12" "$work/seed/pr-preview/pr-1"
+  mkdir -p "$work/seed/pr-preview/pr-1"
+  echo storybook > "$work/seed/pr-preview/pr-1/index.html"
+  touch "$work/seed/.nojekyll"
+  [ "$1" = "seeded" ] && seed_pr_explain
+  git -C "$work/seed" add -A && git -C "$work/seed" commit --quiet -m seed
+  git -C "$work/seed" push --quiet "$work/origin.git" gh-pages 2>/dev/null
+}
+
+# 置き場の種に `pr-explain/` を足す(PR のフォルダ・前の一覧・`pr-<番号>` の形でないフォルダ)。
+seed_pr_explain() {
+  mkdir -p "$work/seed/pr-explain/pr-1" "$work/seed/pr-explain/pr-12"
   echo old > "$work/seed/pr-explain/pr-1/index.html"
   printf '{"version": 2, "head": "%s"}\n' "$head" > "$work/seed/pr-explain/pr-1/change-map.json"
   echo '{"old": "explain"}' > "$work/seed/pr-explain/pr-1/explain.json"
@@ -95,19 +138,32 @@ fresh_origin() {
   echo '{"version": 2, "head": "0000000"}' > "$work/seed/pr-explain/pr-2/change-map.json"
   echo twelve > "$work/seed/pr-explain/pr-12/index.html"
   echo '{"head": "twelve"}' > "$work/seed/pr-explain/pr-12/change-map.json"
-  echo storybook > "$work/seed/pr-preview/pr-1/index.html"
-  touch "$work/seed/.nojekyll"
-  git -C "$work/seed" add -A && git -C "$work/seed" commit --quiet -m seed
-  git -C "$work/seed" push --quiet "$work/origin.git" gh-pages 2>/dev/null
+  mkdir -p "$work/seed/pr-explain/pr-01" "$work/seed/pr-explain/notes"
+  echo x > "$work/seed/pr-explain/pr-01/x"
+  echo x > "$work/seed/pr-explain/notes/x"
+  echo old-list > "$work/seed/pr-explain/index.html"
+  echo '{' > "$work/seed/pr-explain/list.json"
 }
 
 # 1 回目の push だけを拒否する pre-receive フックを置く。
+# $1 (省略可)拒否するときに、別の clone から gh-pages へ足すフォルダ(取り直しの間に増えた分)。フックの中の
+#    git は受け取り中のリポジトリを指す環境変数を持つので、外してから clone する(外さないと not a git repository で落ちる)
 reject_first_push() {
+  local racer="$work/racer" added="${1:-}"
   cat > "$work/origin.git/hooks/pre-receive" <<HOOK
 #!/usr/bin/env bash
 count=\$(( \$(cat "$work/pushes" 2>/dev/null || echo 0) + 1 ))
 echo "\$count" > "$work/pushes"
-[ "\$count" -gt 1 ]
+[ "\$count" -gt 1 ] && exit 0
+[ -n "$added" ] || exit 1
+(
+  unset GIT_DIR GIT_QUARANTINE_PATH GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES
+  git clone --quiet --branch gh-pages "file://$work/origin.git" "$racer" &&
+    mkdir -p "$racer/$added" && echo racer > "$racer/$added/index.html" &&
+    git -C "$racer" add -A && git -C "$racer" commit --quiet -m racer &&
+    git -C "$racer" push --quiet origin gh-pages
+) >/dev/null 2>&1
+exit 1
 HOOK
   chmod +x "$work/origin.git/hooks/pre-receive"
 }
@@ -125,6 +181,26 @@ page_has() {
 
 tip() {
   git --git-dir="$work/origin.git" rev-parse --verify --quiet gh-pages || echo "<none>"
+}
+
+# gh-pages の一覧(list.json)から引いたもの。読めなければ `<broken>`。
+# $1 `numbers`(行の番号の並び)/ `count`(行の数)/ `version` / `rows`(行の番号と題の並び)/
+#    `title`(`$2` の番号の行の題。行が無ければ `<none>`)
+listed() {
+  on_pages pr-explain/list.json | python3 -c '
+import json, sys
+listing = json.load(sys.stdin)
+rows = listing["pages"]
+titles = {str(row["pr"]): row["title"] for row in rows}
+answers = {
+    "numbers": lambda: json.dumps([row["pr"] for row in rows]),
+    "count": lambda: str(len(rows)),
+    "version": lambda: json.dumps(listing["version"]),
+    "rows": lambda: json.dumps([[row["pr"], row["title"]] for row in rows], ensure_ascii=False),
+    "title": lambda: json.dumps(titles[sys.argv[2]], ensure_ascii=False) if sys.argv[2] in titles else "<none>",
+}
+print(answers[sys.argv[1]]())
+' "$@" 2>/dev/null || echo "<broken>"
 }
 
 # 表明が成り立つかを 1 行で報告する。
@@ -149,6 +225,7 @@ expect "put-explain は explain.json を置き、index.html と change-map.json 
 expect "put-explain が置くのは、検査が抜粋の中身を足して書き出したもの" 'placed_by_builder'
 expect "put-explain は他の PR のフォルダに触らない" '[ "$(on_pages pr-explain/pr-12/index.html)" = twelve ]'
 expect "put-explain は pr-preview に触らない" '[ "$(on_pages pr-preview/pr-1/index.html)" = storybook ]'
+expect "put-explain は一覧(pr-explain/index.html と list.json)に触らない" '[ "$(on_pages pr-explain/index.html)" = old-list ] && [ "$(on_pages pr-explain/list.json)" = "{" ]'
 
 fresh_origin seeded
 stale_errors="$(bash "$pages" put-explain 2 "$work/explain-2.json" 2>&1 >/dev/null)"; stale_status=$?
@@ -194,6 +271,7 @@ expect "put-map は 3 ファイル以外(ほかのファイル・サブフォル
 expect "put-map は change-map.json を更新する" '[ "$(on_pages pr-explain/pr-1/change-map.json)" = "$(cat "$work/map.json")" ]'
 expect "put-map は他の PR のフォルダに触らない" '[ "$(on_pages pr-explain/pr-12/index.html)" = twelve ]'
 expect "put-map は pr-preview に触らない" '[ "$(on_pages pr-preview/pr-1/index.html)" = storybook ]'
+expect "put-map は一覧(pr-explain/index.html と list.json)に触らない" '[ "$(on_pages pr-explain/index.html)" = old-list ] && [ "$(on_pages pr-explain/list.json)" = "{" ]'
 
 fresh_origin seeded
 run_pages put-map 5 "$work/map.json" "$template"
@@ -223,5 +301,78 @@ expect "1 回目の push が拒否されても取り直して通る" '[ "$status
 fresh_origin empty
 run_pages put-map 3 "$work/map.json" "$template"; status=$?
 expect "gh-pages が無ければ orphan で作る" '[ "$status" -eq 0 ] && [ "$(on_pages pr-explain/pr-3/change-map.json)" = "$(cat "$work/map.json")" ] && [ "$(on_pages .nojekyll)" = "" ]'
+
+fresh_origin seeded
+run_pages put-list "$work/titles.json" "$list_template"; status=$?
+expect "put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる" '[ "$status" -eq 0 ] && [ "$(listed numbers)" = "[12, 2, 1]" ]'
+expect "put-list は pr-<番号> の形でないフォルダ(notes・pr-01)を載せない" '[ "$(listed count)" = 3 ]'
+expect "put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)" '[ "$(listed title 1)" = "\"一\"" ] && [ "$(listed title 2)" = "\"<b>二</b>\"" ]'
+expect "put-list は 2 ページ目にしか無い PR も題付きで載せる" '[ "$(listed title 12)" = "\"十二\"" ]'
+expect "put-list は応答にあってもフォルダの無い PR を載せない" '[ "$(listed title 7)" = "<none>" ] && [ "$(listed title 40)" = "<none>" ]'
+expect "put-list は前の list.json が壊れていても、読まずに作り直す" '[ "$(listed version)" = 1 ]'
+expect "put-list は一覧の枠をテンプレートのまま pr-explain/index.html に置く" '[ "$(on_pages pr-explain/index.html)" = "$(cat "$list_template")" ]'
+expect "put-list は PR のフォルダ(pr-1 の 3 ファイル・pr-12)と pr-preview に触らない" '[ "$(on_pages pr-explain/pr-1/index.html)" = old ] && [ "$(on_pages pr-explain/pr-1/change-map.json)" = "{\"version\": 2, \"head\": \"$head\"}" ] && [ "$(on_pages pr-explain/pr-1/explain.json)" = "{\"old\": \"explain\"}" ] && [ "$(on_pages pr-explain/pr-12/index.html)" = twelve ] && [ "$(on_pages pr-preview/pr-1/index.html)" = storybook ]'
+before="$(tip)"
+run_pages put-list "$work/titles.json" "$list_template"; status=$?
+expect "put-list は一覧も枠も変わらなければ push しない" '[ "$status" -eq 0 ] && [ "$(tip)" = "$before" ]'
+
+fresh_origin seeded
+run_pages put-list "$work/titles.json" "$list_template"
+run_pages put-map 5 "$work/map.json" "$template"
+run_pages put-list "$work/titles.json" "$list_template"; status=$?
+expect "応答に無い PR(put-map で増やしたフォルダ)は、次の put-list に題なし(null)で載る" '[ "$status" -eq 0 ] && [ "$(listed title 5)" = null ]'
+
+fresh_origin seeded
+run_pages put-list "$work/titles-none.json" "$list_template"; status=$?
+expect "PR の一覧が 0 件の応答では、フォルダはすべて題なしで載る" '[ "$status" -eq 0 ] && [ "$(listed rows)" = "[[12, null], [2, null], [1, null]]" ]'
+
+fresh_origin seeded
+reject_first_push pr-explain/pr-40
+run_pages put-list "$work/titles.json" "$list_template"; status=$?
+expect "取り直しの間に gh-pages へ増えたフォルダも、題付きで一覧に載る" '[ "$status" -eq 0 ] && [ "$(on_pages pr-explain/pr-40/index.html)" = racer ] && [ "$(listed title 40)" = "\"四十\"" ]'
+
+fresh_origin seeded
+before="$(tip)"
+output="$(bash "$pages" put-list "$work/titles.json" "$broken_list_template" 2>&1)"; status=$?
+expect "CSP の合わない一覧の枠の put-list は 1 で、push しない" '[ "$status" -eq 1 ] && [ "$(tip)" = "$before" ] && [[ "$output" == *"[pr-explain-csp]"* ]]'
+
+# 題の応答が読めない・全件そろっていない見本と、その形。
+broken_titles="$(cat <<'TITLES'
+empty|空
+concatenated|2 ページを --slurp なしで連結したもの
+no-pages|空の配列
+errors|2 ページ目に errors がある
+no-title|2 ページ目の PR に title が無い
+string-number|PR の number が文字列
+no-repository|data に repository が無い
+cut|最後のページの hasNextPage が true(応答が途中で切れている)
+no-page-info|pageInfo の無いページがある
+TITLES
+)"
+cases_before=$cases_reported
+while IFS='|' read -r name shape; do
+  [ -n "$name" ] || continue
+  fresh_origin seeded
+  before="$(tip)"
+  output="$(bash "$pages" put-list "$work/titles-$name.json" "$list_template" 2>&1)"; status=$?
+  expect "題の応答が「$shape」なら、clone へ進まず 1 で終わり push しない" '[ "$status" -eq 1 ] && [ "$(tip)" = "$before" ] && [[ "$output" == *"題の応答"* ]] && [[ "$output" != *"反映に失敗"* ]]'
+done <<<"$broken_titles"
+report_cases_ran broken_titles "$cases_before"
+
+fresh_origin seeded
+before="$(tip)"
+run_pages put-list "$work/missing.json" "$list_template"; missing_titles=$?
+run_pages put-list "$work/titles.json" "$work/missing.html"; missing_template=$?
+run_pages put-list "$work/titles.json"; too_few=$?
+run_pages put-list "$work/titles.json" "$list_template" extra; too_many=$?
+expect "put-list に題の応答か枠が無い、または引数が 3 つでなければ引数の誤り" '[ "$missing_titles" -eq 2 ] && [ "$missing_template" -eq 2 ] && [ "$too_few" -eq 2 ] && [ "$too_many" -eq 2 ] && [ "$(tip)" = "$before" ]'
+
+fresh_origin empty
+run_pages put-list "$work/titles.json" "$list_template"; status=$?
+expect "gh-pages が無ければ、put-list は 0 で終わり何も作らない" '[ "$status" -eq 0 ] && [ "$(tip)" = "<none>" ]'
+
+fresh_origin pages-only
+run_pages put-list "$work/titles.json" "$list_template"; status=$?
+expect "gh-pages はあるが pr-explain/ が無ければ、0 件の一覧と枠を置く" '[ "$status" -eq 0 ] && [ "$(listed rows)" = "[]" ] && [ "$(on_pages pr-explain/index.html)" = "$(cat "$list_template")" ]'
 
 exit "$cases_failed"

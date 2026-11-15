@@ -45,7 +45,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の
 層 3 の `.claude/hooks/lib/pre-push-detector.sh` と `.claude/hooks/lib/edit-detector.sh` も自分の位置から辿って source する
 (層ごとに見方を割らないため)。
 PR の解説ページの判定表 5 本(`build-pr-change-map-cases.sh` / `pr-explain-pages-cases.sh` /
-`build-pr-explain-cases.sh` / `check-pr-explain-template-cases.sh` / `pr-explain-core-cases.sh`)も `.github/scripts/` にある。当てる先が `pr-explain.yml` と
+`build-pr-explain-cases.sh` / `check-pr-explain-template-cases.sh` / `pr-explain-core-cases.sh`)も `.github/scripts/` にある。当てる先が `pr-explain.yml`・`pr-explain-list.yml` と
 `pr-explain` スキルから呼ばれるスクリプトで、同じ場所にあるため。
 **行数のラチェットと判定表 20 本**(`harness/records/count.sh --ratchet` /
 `harness/records/count-cases.sh` / `.claude/hooks/lib/import-rule-cases.sh` /

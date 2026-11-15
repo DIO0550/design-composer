@@ -1,0 +1,63 @@
+# gh-pages の PR 解説ページの一覧(pr-explain/index.html と list.json)を作り直す。
+# URL は https://dio0550.github.io/design-composer/pr-explain/。
+#
+# `PR Explain` の完了(PR のフォルダが増える)と main への push(一覧の枠と put-list が変わる)のたびに走る。
+# `workflow_run` にしたのは、どちらの起点でも定義とコードが main のものになり、PR ごとの版の行き来が
+# 起きないため。対価は `PR Explain` と名前の文字列でつながることと、PR の中では確かめられないこと。
+#
+# `conclusion` で絞らない。毎回 gh-pages の木と全件の題から作り直すので、失敗・取り消しの後に走っても
+# 害が無い。絞ると取り消された run の分を取りこぼす。
+# `github.event.workflow_run.*` は読まない。fork の PR が起点でも、この run は書き込める権限で走るので、
+# PR の側が決める値を使わない。
+name: PR Explain List
+
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: [PR Explain]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+# 毎回、木と全件の題から作り直すので、後の run が取り消された run の代わりになる。
+concurrency:
+  group: pr-explain-list
+  cancel-in-progress: true
+
+jobs:
+  list:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # `persist-credentials` の理由は `lib/git-token-auth.sh`。
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      # `--slurp` を付けないと各ページが区切りなしで連結され、1 つの JSON にならない。
+      # 問い合わせの文をここに書くのは、判定表(pr-explain-pages-cases.sh)が応答の見本を渡すので、文の置き場所に
+      # よらず問い合わせの本体は通らないため。本体はマージ後の run で確かめる。ページ送りの抜けは put-list の
+      # 検査(最後のページの `hasNextPage`)が捕まえる。
+      # gh は応答に errors があるときや HTTP の失敗で 1 を返し、このステップで止まる(put-list は走らない)。
+      # 再試行はしない。次の run が木から作り直すので 1 回の取りこぼしは後で揃い、失敗した run は赤く残る。
+      - name: Fetch pull request titles
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api graphql --paginate --slurp \
+            -f owner="${GITHUB_REPOSITORY%%/*}" \
+            -f name="${GITHUB_REPOSITORY##*/}" \
+            -f query='query($owner: String!, $name: String!, $endCursor: String) { repository(owner: $owner, name: $name) { pullRequests(first: 100, after: $endCursor) { nodes { number title } pageInfo { hasNextPage endCursor } } } }' \
+            > "$RUNNER_TEMP/pull-requests.json"
+
+      - name: Publish list to gh-pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          . .github/scripts/lib/git-token-auth.sh
+          export_git_token_header
+          bash .github/scripts/pr-explain-pages.sh put-list "$RUNNER_TEMP/pull-requests.json" .claude/skills/pr-explain/templates/list.html

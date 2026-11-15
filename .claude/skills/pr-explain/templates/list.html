@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-D3rcq9nMGMjaCGcmemdcXs/8yQ5rdTCGqLjoFZbCsEU='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PR 解説の一覧</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+JP:wght@400;500;600;700&display=swap">
+<style>
+/* 値は `index.html` の写し。共有ファイルにしない理由は `check-pr-explain-template.py` の docstring。 */
+:root {
+  --bg: #F6F5F1;
+  --panel: #FBFAF7;
+  --surface: #FFFFFF;
+  --hover: #F4F2ED;
+  --line: #E2DFD8;
+  --ink: #1D1F24;
+  --ink-2: #5A5E66;
+  --ink-3: #8B8F96;
+  --accent: #2F5BEA;
+  --accent-hover: #1F45C4;
+  --sans: "IBM Plex Sans JP", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+.mono { font-family: var(--mono); }
+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 14px; min-height: 52px; min-width: 0; border-bottom: 1px solid var(--line); background: var(--panel); position: relative; z-index: 20; white-space: nowrap; }
+.repo { font-family: var(--mono); font-weight: 600; font-size: 14px; flex: none; }
+.hint { font-size: 11px; color: var(--ink-3); }
+.list { max-width: 880px; margin: 0 auto; padding: 28px 24px 48px; display: flex; flex-direction: column; gap: 12px; }
+.list h1 { margin: 0; font-size: 20px; font-weight: 600; }
+.count { margin: 0; font-size: 12px; color: var(--ink-3); }
+.pages { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.pages li + li { border-top: 1px solid var(--line); }
+.pages a { display: flex; align-items: baseline; gap: 14px; padding: 10px 16px; color: var(--ink); }
+.pages a:hover { background: var(--hover); color: var(--ink); text-decoration: none; }
+.pages a:hover .title { color: var(--accent-hover); text-decoration: underline; }
+.number { flex: none; min-width: 4.5em; font-size: 13px; font-weight: 500; color: var(--ink-2); }
+.title { font-size: 14px; line-height: 1.6; min-width: 0; overflow-wrap: anywhere; }
+.untitled { color: var(--ink-3); }
+.note { margin: 0; padding: 28px 32px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; gap: 12px; }
+.note h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.note p { margin: 0; font-size: 14px; line-height: 1.8; color: var(--ink-2); }
+</style>
+</head>
+<body>
+<header class="top"><span class="repo">design-composer</span><span class="hint">読み込み中…</span></header>
+<main class="list" id="list"></main>
+<script>
+(() => {
+  "use strict";
+
+  /** 一覧(`list.json`)の読み方。DOM に触らない。 */
+  const ListPage = (() => {
+    const ListVersion = 1;
+    const isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
+    const isPrNumber = (value) => Number.isInteger(value) && value > 0;
+    const isTitle = (value) => typeof value === "string" || value === null;
+    const missing = (reason) => ({ kind: "missing", reason });
+
+    const parsedJson = (text) => {
+      try {
+        return { isParsed: true, value: JSON.parse(text) };
+      } catch (error) {
+        return { isParsed: false, detail: error.message };
+      }
+    };
+
+    /**
+     * 行の並びのうち、最初に形の違う行のキー。
+     * @returns 行がオブジェクトでなければ `pages`、番号が正の整数でなければ `pr`、題が文字列でも null でもなければ `title`。どの行も合っていれば null
+     */
+    const rowProblemOf = (pages) => {
+      for (const row of pages) {
+        if (!isRecord(row)) return "pages";
+        if (!isPrNumber(row.pr)) return "pr";
+        if (!isTitle(row.title)) return "title";
+      }
+      return null;
+    };
+
+    return Object.freeze({
+      /**
+       * 読み込んだ一覧を、行の並び・0 件・読めない理由のどれかにする。行は並べ替えない(並びは置く側が決める)。
+       * @param source `{kind: "text", text}`(読めた中身)/ `{kind: "absent"}`(置かれていない)/ `{kind: "failed", detail}`(読み込みの失敗)
+       * @returns `{kind: "listed", rows}`(行は番号・題・リンク先)/ `{kind: "empty"}` / `{kind: "missing", reason}`(reason の kind は
+       *   absent・unreadable・shape(形の違うキー。トップなら null)・version)
+       */
+      readingOf: (source) => {
+        if (source.kind === "absent") return missing({ kind: "absent" });
+        if (source.kind === "failed") return missing({ kind: "unreadable", detail: source.detail });
+        const json = parsedJson(source.text);
+        if (!json.isParsed) return missing({ kind: "unreadable", detail: json.detail });
+        const list = json.value;
+        if (!isRecord(list)) return missing({ kind: "shape", key: null });
+        if (list.version !== ListVersion) return missing({ kind: "version", actual: list.version ?? null });
+        if (!Array.isArray(list.pages)) return missing({ kind: "shape", key: "pages" });
+        const problem = rowProblemOf(list.pages);
+        if (problem !== null) return missing({ kind: "shape", key: problem });
+        if (list.pages.length === 0) return { kind: "empty" };
+        return { kind: "listed", rows: list.pages.map((row) => ({ pr: row.pr, title: row.title, href: `pr-${row.pr}/` })) };
+      },
+    });
+  })();
+
+  /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */
+  const core = Object.freeze({ ListPage });
+  if (typeof document === "undefined") {
+    globalThis.prExplainListCore = core;
+    return;
+  }
+
+  /**
+   * 要素を作る。文字は textContent で入れる。
+   * @param attributes `class` / `href` など、そのまま setAttribute する属性と、中の文字(`text`)
+   */
+  const el = (tag, attributes = {}, children = []) => {
+    const node = document.createElement(tag);
+    for (const [name, value] of Object.entries(attributes)) {
+      if (name === "text") node.textContent = value;
+      else node.setAttribute(name, value);
+    }
+    node.append(...children);
+    return node;
+  };
+
+  /** 一覧を読めない理由の 1 文。 */
+  const missingTextOf = (reason) => {
+    switch (reason.kind) {
+      case "absent":
+        return "list.json がまだ置かれていません。Actions が次に一覧を作り直すと出ます。";
+      case "unreadable":
+        return `list.json を読めませんでした(${reason.detail})。`;
+      case "shape":
+        return `list.json の ${reason.key ?? "トップ"} の形が想定と違います。`;
+      case "version":
+        return `list.json の version が ${JSON.stringify(reason.actual)} で、このページが読めるのは 1 です。`;
+    }
+  };
+
+  const rowOf = (row) => {
+    const title = row.title === null ? el("span", { class: "title untitled", text: "題を取得できませんでした" }) : el("span", { class: "title", text: row.title });
+    return el("li", {}, [el("a", { href: row.href }, [el("span", { class: "number mono", text: `#${row.pr}` }), title])]);
+  };
+
+  /** 読んだ一覧の本文。 */
+  const contentOf = (reading) => {
+    switch (reading.kind) {
+      case "listed":
+        return [el("p", { class: "count", text: `${reading.rows.length} 件(番号の大きい順)` }), el("ul", { class: "pages" }, reading.rows.map(rowOf))];
+      case "empty":
+        return [el("div", { class: "note" }, [el("p", { text: "残っている解説ページはありません" })])];
+      case "missing":
+        return [el("div", { class: "note", role: "status" }, [el("h2", { text: "一覧を読めません" }), el("p", { text: missingTextOf(reading.reason) })])];
+    }
+  };
+
+  const listRequest = fetch(`list.json?t=${Date.now()}`, { cache: "no-store" })
+    .then((response) => {
+      if (response.status === 404) return { kind: "absent" };
+      if (!response.ok) return { kind: "failed", detail: `HTTP ${response.status}` };
+      return response.text().then((text) => ({ kind: "text", text }));
+    })
+    .catch((error) => ({ kind: "failed", detail: error.message }));
+
+  listRequest.then((source) => {
+    document.querySelector(".top .hint").remove();
+    document.getElementById("list").replaceChildren(el("h1", { text: "PR 解説の一覧" }), ...contentOf(ListPage.readingOf(source)));
+  });
+})();
+</script>
+</body>
+</html>
