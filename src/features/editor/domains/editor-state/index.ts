@@ -1031,9 +1031,6 @@ export const EditorState = {
    *
    * 消したものは新しいドキュメントに無いので、選択は `withHistory` で外れる。
    *
-   * 何も選んでいないときは `DesignDocument.removeAll` に空を渡さず `none` にする。空でも
-   * 渡すと、何も変わらない編集で進む先（redo）が捨てられる。
-   *
    * @param state 消す前の状態
    * @returns 消したあとの状態。何も選んでいないときと、ファイルが不正な間は `none`
    *   （`DesignDocument.removeAll` の失敗は、選択が残っている名前だけを持つので起こらない）

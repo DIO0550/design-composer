@@ -583,6 +583,22 @@ test("色を変えたあと不透明度の欄を変えずに離れても、Ctrl+
   expect(field("値")).toHaveProperty("value", "#3b82f6");
 });
 
+test("色を変えて Ctrl+Z で戻したあと、不透明度の欄を変えずに離れても、Ctrl+Shift+Z で変えた色へ進む", async () => {
+  await renderTokensView();
+  await selectRow("primary");
+  fireEvent.click(field("値"));
+  fireEvent.change(field("値"), { target: { value: "#00ff00" } });
+  blurActive();
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  await userEvent.click(field("不透明度"));
+  await userEvent.tab();
+  blurActive();
+  await userEvent.keyboard("{Control>}{Shift>}z{/Shift}{/Control}");
+
+  expect(field("値")).toHaveProperty("value", "#00ff00");
+});
+
 test("色を変えたあと名前の欄を変えずに離れても、Ctrl+Z 1 回でピッカーで選ぶ前の色に戻る", async () => {
   await renderTokensView();
   await selectRow("primary");
