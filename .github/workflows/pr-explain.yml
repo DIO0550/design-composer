@@ -1,4 +1,6 @@
-# PR ごとの解説ページ(gh-pages/pr-explain/pr-{番号}/)の「変更の地図」を置き、PR が閉じたら消す。
+# PR ごとの解説ページ(gh-pages/pr-explain/pr-{番号}/)の「変更の地図」を置く。PR が閉じてもフォルダは消さない。
+# 閉じても消さないのは、マージ後に PR を辿った人が同じ URL で解説を読めるようにするため(#1394)。
+# #1394 時点で 1 PR 約 0.6MB(大半は枠の index.html)。gh-pages の容量上限が近づいたら、消すのではなく枠の共有を別 Issue で検討する。
 #
 # 解説(explain.json)はセッションが `pr-explain` スキルで書いて同じフォルダへ置く。ここが置くのは
 # git の差分だけで決まる地図(change-map.json)と、ページの枠(index.html。push のたびに置き直す)。
@@ -10,12 +12,12 @@ name: PR Explain
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, closed]
+    types: [opened, reopened, synchronize]
 
 permissions:
   contents: write
 
-# PR ごとに独立したグループにする(理由は storybook-pr-preview.yml の concurrency)。
+# PR ごとに独立したグループにする(共有グループだと待機中の run が別 PR の run に置き換えられ、その PR の地図の更新が抜ける)。
 concurrency:
   group: pr-explain-${{ github.event.pull_request.number }}
   cancel-in-progress: true
@@ -38,7 +40,6 @@ jobs:
           persist-credentials: false
 
       - name: Build change map
-        if: github.event.action != 'closed'
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -54,15 +55,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.number }}
-          ACTION: ${{ github.event.action }}
         run: |
           credential="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
           echo "::add-mask::$credential"
           export GIT_CONFIG_COUNT=1
           export GIT_CONFIG_KEY_0="http.https://github.com/.extraheader"
           export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $credential"
-          if [ "$ACTION" = "closed" ]; then
-            bash .github/scripts/pr-explain-pages.sh remove "$PR"
-          else
-            bash .github/scripts/pr-explain-pages.sh put-map "$PR" "$RUNNER_TEMP/change-map.json" .claude/skills/pr-explain/templates/index.html
-          fi
+          bash .github/scripts/pr-explain-pages.sh put-map "$PR" "$RUNNER_TEMP/change-map.json" .claude/skills/pr-explain/templates/index.html

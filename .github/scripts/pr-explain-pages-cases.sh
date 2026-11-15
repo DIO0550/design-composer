@@ -8,9 +8,10 @@
 #
 # **他の PR のフォルダ・`pr-preview/` に触らないことを、どのモードでも見る。** gh-pages は
 # Storybook と VRT の配信と同じブランチで、ここを壊すとこの機能の外まで消える。
-# `remove 1` が `pr-12` を消さないのは、作業コピーに展開するのが `pr-explain/pr-1/` だけ
-# (sparse-checkout)だから。消す側を `pr-1*` の前方一致に取り違えても、展開の範囲を
-# `pr-explain/` 全体へ広げない限りこのケースは通る。見ているのは 2 つが組み合わさった結果。
+# `put-map 1` が `pr-12` に触らない仕組みは 3 つある。作業コピーに展開するのが `pr-explain/pr-1/`
+# だけ(sparse-checkout)・`remove_others`(フォルダ内の 3 つ以外を消す処理)が消すのは
+# `git ls-files -- "$folder"` の範囲だけ・`commit_and_push` が `git add -A` するのは `$folder` だけ。
+# どれか 1 つが保たれていれば通り、3 つすべてを壊さない限りこのケースは落ちない。見ているのは 3 つが組み合わさった結果。
 #
 # 競合の再試行は、bare リポジトリの pre-receive フックで 1 回目の push だけを拒否して作る。
 # 待ち時間は `PR_EXPLAIN_RETRY_WAIT=0` で消す。
@@ -186,11 +187,6 @@ bash "$work/without-lib/pr-explain-pages.sh" put-page 1 index "$work/explain.jso
 expect "読み込む lib が無ければ、知らないモードでも引数の誤りへ進まず 127 で何も push しない" '[ "$status" -eq 127 ] && [ "$(tip)" = "$before" ]'
 
 fresh_origin seeded
-before="$(tip)"
-bash "$work/without-lib/pr-explain-pages.sh" remove 1 >/dev/null 2>&1; status=$?
-expect "読み込む lib が無ければ、消すフォルダのある remove でも 127 で何も push しない" '[ "$status" -eq 127 ] && [ "$(tip)" = "$before" ]'
-
-fresh_origin seeded
 run_pages put-map 1 "$work/map.json" "$template"
 expect "put-map は index.html を毎回テンプレートで上書きする" '[ "$(on_pages pr-explain/pr-1/index.html)" = "$(cat "$template")" ]'
 expect "put-map は explain.json を残す" '[ "$(on_pages pr-explain/pr-1/explain.json)" = "{\"old\": \"explain\"}" ]'
@@ -210,19 +206,13 @@ output="$(bash "$pages" put-map 1 "$work/map.json" "$broken_template" 2>&1)"; st
 expect "CSP の合わないテンプレートの put-map は 1 で、push しない" '[ "$status" -eq 1 ] && [ "$(tip)" = "$before" ] && [[ "$output" == *"[pr-explain-csp]"* ]]'
 
 fresh_origin seeded
-run_pages remove 1
-expect "remove はその PR のフォルダを消す" '[ "$(on_pages pr-explain/pr-1/index.html)" = "<none>" ]'
-expect "remove 1 は pr-12 を消さない" '[ "$(on_pages pr-explain/pr-12/index.html)" = twelve ]'
-expect "remove は pr-preview に触らない" '[ "$(on_pages pr-preview/pr-1/index.html)" = storybook ]'
+before="$(tip)"
+run_pages remove 1; status=$?
+expect "remove は知らないモードとして 2 で終わり、PR のフォルダを消さない" '[ "$status" -eq 2 ] && [ "$(tip)" = "$before" ] && [ "$(on_pages pr-explain/pr-1/index.html)" = old ]'
 
 fresh_origin seeded
 before="$(tip)"
-run_pages remove 99; status=$?
-expect "消すフォルダが無い remove は変更なしで終わる" '[ "$status" -eq 0 ] && [ "$(tip)" = "$before" ]'
-
-fresh_origin seeded
-before="$(tip)"
-run_pages remove '1 ../..'; status=$?
+run_pages put-map '1 ../..' "$work/map.json" "$template"; status=$?
 expect "数字でない PR 番号は拒否する" '[ "$status" -eq 2 ] && [ "$(tip)" = "$before" ]'
 
 fresh_origin seeded
@@ -233,9 +223,5 @@ expect "1 回目の push が拒否されても取り直して通る" '[ "$status
 fresh_origin empty
 run_pages put-map 3 "$work/map.json" "$template"; status=$?
 expect "gh-pages が無ければ orphan で作る" '[ "$status" -eq 0 ] && [ "$(on_pages pr-explain/pr-3/change-map.json)" = "$(cat "$work/map.json")" ] && [ "$(on_pages .nojekyll)" = "" ]'
-
-fresh_origin empty
-run_pages remove 3; status=$?
-expect "gh-pages が無いときの remove は何も作らない" '[ "$status" -eq 0 ] && [ "$(tip)" = "<none>" ]'
 
 exit "$cases_failed"
