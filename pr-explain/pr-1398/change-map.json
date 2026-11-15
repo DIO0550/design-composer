@@ -1,0 +1,404 @@
+{
+  "version": 2,
+  "pr": 1398,
+  "headBranch": "claude/magical-cannon-15uyl2",
+  "baseBranch": "main",
+  "mergeBase": "a98ade2545d9ec34296c407ae55c03f80c2b3746",
+  "head": "872be2f762361a7e042ddb63d98fb33f46cfe21c",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/embedded_regions.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/usage.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 21,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 19,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 10,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": "index.html",
+          "changed": false
+        },
+        {
+          "path": "package.json",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "0cbb45247984fee2e3cf4f3927940b0264c51510",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-15T08:44:26Z",
+      "subject": "✨ [New Feature]: #1394 PR が閉じても解説ページを gh-pages から消さない",
+      "body": "- pr-explain.yml のトリガーから closed を外し、閉じたときの remove 呼び出しを消す\n- pr-explain-pages.sh から remove サブコマンドと、その前提の分岐・説明を消す\n- 判定表の remove 6 件を消し、remove を知らないモードとして 2 で拒む 1 件を足す\n- 数字でない PR 番号のケースの当て先を put-map に替える\n- pr-explain スキルに「閉じても同じ URL で開ける」ことを書き、reopen の項を\n  #1394 より前に閉じた PR に限る\n\n背景:\npr-explain.yml が closed で gh-pages の pr-explain/pr-<番号>/ をフォルダごと\n消しており、マージ後に PR を辿っても解説ページが 404 になっていた\n(2026-11-15 時点で gh-pages の pr-explain/ は開いている PR の分しか無い)。\n\n採用理由:\n残す場所は gh-pages のまま、閉じても消さないだけにした。Pages が配信して\nいるのは gh-pages だけで、deploy-storybook-main.yml は pr-explain/ を除外して\nいるので、削除をやめればそのまま残る。remove は呼び出し元が closed の 1 件\nだけだったので、呼び出しの無い削除経路を残さず消した。\n\n代替案:\n- 閉じたときに枠(index.html)を内容のハッシュで共有し json だけ残す: 1 PR\n  数十 KB に収まるが、枠が他フォルダの json を読む改修が要る。容量に余裕が\n  あるので見送り(上限が近づいたら別 Issue で検討)\n- 直近 N 件だけ残す: 「いつでも見られる」を満たさない\n- remove を手作業の掃除用に残す: 呼び出しが 0 件になり、closed での削除を\n  戻す入口になる\n- closed を残して put-map を走らせる / 何もしない: 閉じても head は進まず、\n  全履歴の checkout か空のジョブだけが残る\n- マージされた PR だけ残す: 「マージ・クローズされた後も」を満たさない\n\n影響とトレードオフ:\ngh-pages は閉じた PR の分だけ 1 PR 約 0.6MB ずつ増える(現在 341MB / 上限\n1GB)。この変更より前に閉じた PR のフォルダは既に消えており、戻さない。\n閉じた PR への put-explain はスクリプトでは止まらなくなり、スキルの方針\n(閉じた PR には置かない)だけが残る。pr-preview / visual-regression は従来\nどおり閉じたときに消えるので、固定コメントの Storybook の URL は 404 になる。\n\n参考:\n- Issue #1394(計画・plan-reviewer の指摘と採否)\n- 一覧ページは #1395\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RCGcutHoePxGpHAfu",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 4,
+          "patch": "@@ -58,12 +58,14 @@ URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`。St\n コメントに載るので、別にコメントしない。**解説は PR ブランチにも main にも入れない**(main に溜まり、\n Files changed にも混ざるため)。\n \n+PR がマージ・クローズされた後も同じ URL で開ける(閉じてもフォルダを消さない)。\n+\n ## いつ書くか\n \n - **PR を出した直後**(`implementation-flow` フェーズ 7)\n - **振る舞いが変わる push をした後**。format・コメントだけの push では書き直さない(ページが\n   「解説は ◯ 時点、以降 n コミットは解説なし」と出すので、読み手が判断できる)\n-- **PR を reopen した後**(閉じたときに Actions がフォルダごと消している)\n+- **#1394 より前に閉じた PR を reopen した後**(そのときの Actions がフォルダごと消している)\n \n ## 手順\n \n@@ -95,7 +97,7 @@ Files changed にも混ざるため)。\n      `.github/scripts/lib/embedded_regions.py`)。落ちたら報告を読んで直す(報告の分類は `build-pr-explain.py` の冒頭)\n    - 解説の `sha` は push してから置く。リモートの追跡ブランチに無い sha の解説は置かない\n    - 終了コードの意味は `pr-explain-pages.sh` の冒頭。**3** なら `PR Explain` の run の完了を待って\n-     からやり直す。閉じた PR には置かない\n+     からやり直す。閉じた PR には置かない(閉じてもフォルダは消えないので、スクリプトは止めない)\n    - 解説の `sha` が地図の head と違えば、置いたうえで標準エラーに知らせる。push の直後で run が\n      終わっていないだけなら置き直さなくてよい(run が終われば地図の head と揃う)\n    - **gh-pages へ push してよいのは、このスクリプトで `pr-explain/pr-<番号>/` へ置くときだけ。**\n@@ -279,6 +281,6 @@ layer / file / module・LayerRole の layer・concept のパス・出てくる\n | `.github/scripts/build-pr-explain.py` | 解説の検査と、抜粋の中身の書き足し |\n | `.github/scripts/lib/embedded_regions.py` | 抜粋・差分の hunk の始まりの行で効いている埋め込み(script / style 要素・ヒアドキュメント)を開いた行。検査と地図が使う |\n | `.github/scripts/check-pr-explain-template.py` | 枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査。`--tracked` では、追跡ファイルの拡張子が色付けの表(`LanguageByExtension`)か `NotHighlighted` のどちらかにあるかも見る |\n-| `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-explain` / `put-map` / `remove`) |\n+| `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-explain` / `put-map`) |\n | `.github/scripts/build-pr-change-map.py` | 変更の地図(Actions が呼ぶ) |\n-| `.github/workflows/pr-explain.yml` | 枠と地図の配置と、PR が閉じたときの削除 |\n+| `.github/workflows/pr-explain.yml` | 枠と地図の配置 |",
+          "patchLines": 34,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 20,
+          "patch": "@@ -8,8 +8,8 @@\n #\n # **他の PR のフォルダ・`pr-preview/` に触らないことを、どのモードでも見る。** gh-pages は\n # Storybook と VRT の配信と同じブランチで、ここを壊すとこの機能の外まで消える。\n-# `remove 1` が `pr-12` を消さないのは、作業コピーに展開するのが `pr-explain/pr-1/` だけ\n-# (sparse-checkout)だから。消す側を `pr-1*` の前方一致に取り違えても、展開の範囲を\n+# `put-map 1` が `pr-12` に触らないのは、作業コピーに展開するのが `pr-explain/pr-1/` だけ\n+# (sparse-checkout)だから。3 つ以外を消す側を `pr-1*` の前方一致に取り違えても、展開の範囲を\n # `pr-explain/` 全体へ広げない限りこのケースは通る。見ているのは 2 つが組み合わさった結果。\n #\n # 競合の再試行は、bare リポジトリの pre-receive フックで 1 回目の push だけを拒否して作る。\n@@ -185,11 +185,6 @@ before=\"$(tip)\"\n bash \"$work/without-lib/pr-explain-pages.sh\" put-page 1 index \"$work/explain.json\" >/dev/null 2>&1; status=$?\n expect \"読み込む lib が無ければ、知らないモードでも引数の誤りへ進まず 127 で何も push しない\" '[ \"$status\" -eq 127 ] && [ \"$(tip)\" = \"$before\" ]'\n \n-fresh_origin seeded\n-before=\"$(tip)\"\n-bash \"$work/without-lib/pr-explain-pages.sh\" remove 1 >/dev/null 2>&1; status=$?\n-expect \"読み込む lib が無ければ、消すフォルダのある remove でも 127 で何も push しない\" '[ \"$status\" -eq 127 ] && [ \"$(tip)\" = \"$before\" ]'\n-\n fresh_origin seeded\n run_pages put-map 1 \"$work/map.json\" \"$template\"\n expect \"put-map は index.html を毎回テンプレートで上書きする\" '[ \"$(on_pages pr-explain/pr-1/index.html)\" = \"$(cat \"$template\")\" ]'\n@@ -209,20 +204,14 @@ before=\"$(tip)\"\n output=\"$(bash \"$pages\" put-map 1 \"$work/map.json\" \"$broken_template\" 2>&1)\"; status=$?\n expect \"CSP の合わないテンプレートの put-map は 1 で、push しない\" '[ \"$status\" -eq 1 ] && [ \"$(tip)\" = \"$before\" ] && [[ \"$output\" == *\"[pr-explain-csp]\"* ]]'\n \n-fresh_origin seeded\n-run_pages remove 1\n-expect \"remove はその PR のフォルダを消す\" '[ \"$(on_pages pr-explain/pr-1/index.html)\" = \"<none>\" ]'\n-expect \"remove 1 は pr-12 を消さない\" '[ \"$(on_pages pr-explain/pr-12/index.html)\" = twelve ]'\n-expect \"remove は pr-preview に触らない\" '[ \"$(on_pages pr-preview/pr-1/index.html)\" = storybook ]'\n-\n fresh_origin seeded\n before=\"$(tip)\"\n-run_pages remove 99; status=$?\n-expect \"消すフォルダが無い remove は変更なしで終わる\" '[ \"$status\" -eq 0 ] && [ \"$(tip)\" = \"$before\" ]'\n+run_pages remove 1; status=$?\n+expect \"remove は知らないモードとして 2 で終わり、PR のフォルダを消さない\" '[ \"$status\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ] && [ \"$(on_pages pr-explain/pr-1/index.html)\" = old ]'\n \n fresh_origin seeded\n before=\"$(tip)\"\n-run_pages remove '1 ../..'; status=$?\n+run_pages put-map '1 ../..' \"$work/map.json\" \"$template\"; status=$?\n expect \"数字でない PR 番号は拒否する\" '[ \"$status\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ]'\n \n fresh_origin seeded\n@@ -234,8 +223,4 @@ fresh_origin empty\n run_pages put-map 3 \"$work/map.json\" \"$template\"; status=$?\n expect \"gh-pages が無ければ orphan で作る\" '[ \"$status\" -eq 0 ] && [ \"$(on_pages pr-explain/pr-3/change-map.json)\" = \"$(cat \"$work/map.json\")\" ] && [ \"$(on_pages .nojekyll)\" = \"\" ]'\n \n-fresh_origin empty\n-run_pages remove 3; status=$?\n-expect \"gh-pages が無いときの remove は何も作らない\" '[ \"$status\" -eq 0 ] && [ \"$(tip)\" = \"<none>\" ]'\n-\n exit \"$cases_failed\"",
+          "patchLines": 56,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 19,
+          "patch": "@@ -5,7 +5,6 @@\n # 使い方:\n #   pr-explain-pages.sh put-explain <PR 番号> <explain.json>                 … 解説を検査して置く(セッションが呼ぶ)\n #   pr-explain-pages.sh put-map     <PR 番号> <change-map.json> <テンプレート>  … 枠と変更の地図を置く(Actions が呼ぶ)\n-#   pr-explain-pages.sh remove      <PR 番号>                                … フォルダごと消す(PR が閉じたとき)\n #\n # フォルダに置くのは `index.html`(枠)・`change-map.json`(地図)・`explain.json`(解説)の 3 つだけ。\n #\n@@ -13,9 +12,10 @@\n #   `explain.json` として置く。違反があれば push しない。触るのはこの 1 ファイルだけ\n # - `put-explain` は、解説の sha がリモートの追跡ブランチ(`git branch -r --contains`)に無ければ置かない。\n #   抜粋はその sha の中身から読むので、push していないコミットの中身を公開しないため\n-# - `put-explain` は `change-map.json` が無いフォルダへは置かない。Actions が作る前と、PR が閉じて\n-#   消した後に、セッションがフォルダを復活させないため。解説の sha が地図の head と違えば、置いた\n-#   うえで標準エラーに知らせる(古い解説も、ページが解説の時点を帯で出すので読める)\n+# - `put-explain` は `change-map.json` が無いフォルダへは置かない。地図と枠の無いフォルダに解説だけを\n+#   置いても開けるページにならないため(Actions が地図を置く前と、#1394 より前に閉じてフォルダが消えた PR)。\n+#   解説の sha が地図の head と違えば、置いたうえで標準エラーに知らせる(古い解説も、ページが解説の\n+#   時点を帯で出すので読める)\n # - `put-map` は clone の前に `check-pr-explain-template.py` で枠を検査し、`index.html` を毎回\n #   上書きする。枠の変わったコミット(main の取り込みを含む)が、次の push でそのままページに効くように。\n #   フォルダには 3 つだけを置く、という形を保つため、それ以外のファイルは消す\n@@ -30,7 +30,7 @@\n #\n # 終了コード: 0 = 置いた / 変更が無かった、1 = 解説か枠が検査に落ちた・解説の sha を push していない・\n #             push できなかった、2 = 引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が\n-#             無い(`PR Explain` の run が地図を置く前か、PR が閉じて消した後。やり直さない)、\n+#             無い(`PR Explain` の run が地図を置く前か、#1394 より前に閉じてフォルダが消えた PR。やり直さない)、\n #             127 = 読み込む `lib/usage.sh` を読み込めない(何も触らずに返す)\n set -uo pipefail\n \n@@ -47,7 +47,6 @@ pr=\"${2:-}\"\n case \"$mode\" in\n   put-explain) args_ok=$([ $# -eq 3 ] && [ -f \"$3\" ] && echo yes) ;;\n   put-map) args_ok=$([ $# -eq 4 ] && [ -f \"$3\" ] && [ -f \"$4\" ] && echo yes) ;;\n-  remove) args_ok=$([ $# -eq 2 ] && echo yes) ;;\n   *) args_ok=\"\" ;;\n esac\n [ \"$args_ok\" = yes ] || usage\n@@ -131,19 +130,13 @@ apply_change() {\n       cp \"$4\" \"$site/$folder/index.html\"\n       remove_others \"$site\"\n       ;;\n-    remove)\n-      git -C \"$site\" rm -r --quiet --ignore-unmatch -- \"$folder\"\n-      ;;\n   esac\n }\n \n # 変更をコミットして push し、結果を 1 行出す。変更が無ければ push しない。\n commit_and_push() {\n   local site=\"$work/site\"\n-  # `remove` は `git rm` で index まで反映済みで、消したフォルダを add すると pathspec が当たらず落ちる。\n-  if [ -e \"$site/$folder\" ]; then\n-    git -C \"$site\" add -A -- \"$folder\" || return 1\n-  fi\n+  git -C \"$site\" add -A -- \"$folder\" || return 1\n   if git -C \"$site\" diff --cached --quiet; then\n     echo \"$folder: 変更なし\"\n     return 0\n@@ -168,12 +161,6 @@ PY\n   return 0\n }\n \n-# 消すものが無い。gh-pages を作ってまで空のコミットを置かない。\n-if [ \"$mode\" = \"remove\" ]; then\n-  pages_branch_state\n-  [ $? -eq 2 ] && { echo \"$folder: gh-pages が無いので変更なし\"; exit 0; }\n-fi\n-\n for attempt in $(seq 1 \"$max_attempts\"); do\n   if checkout_site; then\n     apply_change \"$@\"",
+          "patchLines": 73,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 10,
+          "patch": "@@ -1,4 +1,6 @@\n-# PR ごとの解説ページ(gh-pages/pr-explain/pr-{番号}/)の「変更の地図」を置き、PR が閉じたら消す。\n+# PR ごとの解説ページ(gh-pages/pr-explain/pr-{番号}/)の「変更の地図」を置く。PR が閉じてもフォルダは消さない。\n+# 閉じても消さないのは、マージ後に PR を辿った人が同じ URL で解説を読めるようにするため(#1394)。\n+# 1 PR 約 0.6MB(大半は枠の index.html)。gh-pages の容量上限が近づいたら、消すのではなく枠の共有を別 Issue で検討する。\n #\n # 解説(explain.json)はセッションが `pr-explain` スキルで書いて同じフォルダへ置く。ここが置くのは\n # git の差分だけで決まる地図(change-map.json)と、ページの枠(index.html。push のたびに置き直す)。\n@@ -10,12 +12,12 @@ name: PR Explain\n \n on:\n   pull_request:\n-    types: [opened, reopened, synchronize, closed]\n+    types: [opened, reopened, synchronize]\n \n permissions:\n   contents: write\n \n-# PR ごとに独立したグループにする(理由は storybook-pr-preview.yml の concurrency)。\n+# PR ごとに独立したグループにする(共有グループだと待機中の run が別 PR の run に置き換えられ、その PR の地図の更新が抜ける)。\n concurrency:\n   group: pr-explain-${{ github.event.pull_request.number }}\n   cancel-in-progress: true\n@@ -38,7 +40,6 @@ jobs:\n           persist-credentials: false\n \n       - name: Build change map\n-        if: github.event.action != 'closed'\n         env:\n           BASE_SHA: ${{ github.event.pull_request.base.sha }}\n           HEAD_SHA: ${{ github.event.pull_request.head.sha }}\n@@ -54,15 +55,10 @@ jobs:\n         env:\n           GH_TOKEN: ${{ github.token }}\n           PR: ${{ github.event.number }}\n-          ACTION: ${{ github.event.action }}\n         run: |\n           credential=\"$(printf 'x-access-token:%s' \"$GH_TOKEN\" | base64 -w0)\"\n           echo \"::add-mask::$credential\"\n           export GIT_CONFIG_COUNT=1\n           export GIT_CONFIG_KEY_0=\"http.https://github.com/.extraheader\"\n           export GIT_CONFIG_VALUE_0=\"AUTHORIZATION: basic $credential\"\n-          if [ \"$ACTION\" = \"closed\" ]; then\n-            bash .github/scripts/pr-explain-pages.sh remove \"$PR\"\n-          else\n-            bash .github/scripts/pr-explain-pages.sh put-map \"$PR\" \"$RUNNER_TEMP/change-map.json\" .claude/skills/pr-explain/templates/index.html\n-          fi\n+          bash .github/scripts/pr-explain-pages.sh put-map \"$PR\" \"$RUNNER_TEMP/change-map.json\" .claude/skills/pr-explain/templates/index.html",
+          "patchLines": 48,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "975c2f7194887bae763630b232c15f829247b4a9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-15T08:52:52Z",
+      "subject": "📝 [Documentation]: #1394 閉じても消さない範囲と、地図が無い理由の説明を揃える",
+      "body": "- SKILL.md の「閉じても同じ URL で開ける」に、この変更のマージ以後に閉じた\n  PR という境界を付け、reopen の項と同じ言い方にする\n- pr-explain-pages.sh の地図が無い理由を put-explain の項の 1 箇所に置き、\n  終了コード 3 はそこを参照する\n- 「#1394 より前に閉じた PR」を、以前の PR Explain が消したという事実で書く\n- 判定表冒頭の消す側を remove_others と名指しする\n- ワークフローの容量の目安に時点を添え、SKILL.md の重複した括弧を縮める\n\n背景:\n実装の検証(comment / duplication / harness の各レビュー)で、適用範囲の\n書き漏れと、同じ理由の列挙が 2 箇所にある点を指摘された。\n\n採用理由:\n理由を 1 箇所に置き、他は参照にすると、地図が無くなる理由が増減したときに\n片方だけ直る形を避けられる。容量の数字は枠の成長で動くので時点を添えた。\n\n代替案:\n- 「閉じた PR には置かない」の規則を外す、または理由を書く(harness\n  レビューの指摘): 閉じた後に書く運用を認めるかはこの Issue のゴールに\n  要らない運用判断で、規則が入った意図も辿れていないため変えない\n\n影響とトレードオフ:\nコメントと doc だけの変更で、挙動・判定表の件数(24 件)は変わらない。\n\n参考:\n- Issue #1394 のフェーズ 6 のコメント(指摘と採否)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RCGcutHoePxGpHAfu",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -58,14 +58,14 @@ URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`。St\n コメントに載るので、別にコメントしない。**解説は PR ブランチにも main にも入れない**(main に溜まり、\n Files changed にも混ざるため)。\n \n-PR がマージ・クローズされた後も同じ URL で開ける(閉じてもフォルダを消さない)。\n+この変更(#1394)のマージ以後に閉じた PR は、マージ・クローズの後も同じ URL で開ける(閉じてもフォルダを消さない)。\n \n ## いつ書くか\n \n - **PR を出した直後**(`implementation-flow` フェーズ 7)\n - **振る舞いが変わる push をした後**。format・コメントだけの push では書き直さない(ページが\n   「解説は ◯ 時点、以降 n コミットは解説なし」と出すので、読み手が判断できる)\n-- **#1394 より前に閉じた PR を reopen した後**(そのときの Actions がフォルダごと消している)\n+- **閉じたときに以前の `PR Explain` がフォルダごと消した PR(#1394 で消すのをやめる前)を reopen した後**\n \n ## 手順\n \n@@ -97,7 +97,7 @@ PR がマージ・クローズされた後も同じ URL で開ける(閉じて\n      `.github/scripts/lib/embedded_regions.py`)。落ちたら報告を読んで直す(報告の分類は `build-pr-explain.py` の冒頭)\n    - 解説の `sha` は push してから置く。リモートの追跡ブランチに無い sha の解説は置かない\n    - 終了コードの意味は `pr-explain-pages.sh` の冒頭。**3** なら `PR Explain` の run の完了を待って\n-     からやり直す。閉じた PR には置かない(閉じてもフォルダは消えないので、スクリプトは止めない)\n+     からやり直す。閉じた PR には置かない(スクリプトでは止めない)\n    - 解説の `sha` が地図の head と違えば、置いたうえで標準エラーに知らせる。push の直後で run が\n      終わっていないだけなら置き直さなくてよい(run が終われば地図の head と揃う)\n    - **gh-pages へ push してよいのは、このスクリプトで `pr-explain/pr-<番号>/` へ置くときだけ。**",
+          "patchLines": 26,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -9,8 +9,8 @@\n # **他の PR のフォルダ・`pr-preview/` に触らないことを、どのモードでも見る。** gh-pages は\n # Storybook と VRT の配信と同じブランチで、ここを壊すとこの機能の外まで消える。\n # `put-map 1` が `pr-12` に触らないのは、作業コピーに展開するのが `pr-explain/pr-1/` だけ\n-# (sparse-checkout)だから。3 つ以外を消す側を `pr-1*` の前方一致に取り違えても、展開の範囲を\n-# `pr-explain/` 全体へ広げない限りこのケースは通る。見ているのは 2 つが組み合わさった結果。\n+# (sparse-checkout)だから。`remove_others`(フォルダ内の 3 つ以外を消す処理)を `pr-1*` の\n+# 前方一致に取り違えても、展開の範囲を `pr-explain/` 全体へ広げない限りこのケースは通る。見ているのは 2 つが組み合わさった結果。\n #\n # 競合の再試行は、bare リポジトリの pre-receive フックで 1 回目の push だけを拒否して作る。\n # 待ち時間は `PR_EXPLAIN_RETRY_WAIT=0` で消す。",
+          "patchLines": 11,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "patch": "@@ -13,7 +13,8 @@\n # - `put-explain` は、解説の sha がリモートの追跡ブランチ(`git branch -r --contains`)に無ければ置かない。\n #   抜粋はその sha の中身から読むので、push していないコミットの中身を公開しないため\n # - `put-explain` は `change-map.json` が無いフォルダへは置かない。地図と枠の無いフォルダに解説だけを\n-#   置いても開けるページにならないため(Actions が地図を置く前と、#1394 より前に閉じてフォルダが消えた PR)。\n+#   置いても開けるページにならないため。地図が無いのは、Actions が地図を置く前と、閉じたときに以前の\n+#   `PR Explain` がフォルダごと消した PR(#1394 で消すのをやめる前)。\n #   解説の sha が地図の head と違えば、置いたうえで標準エラーに知らせる(古い解説も、ページが解説の\n #   時点を帯で出すので読める)\n # - `put-map` は clone の前に `check-pr-explain-template.py` で枠を検査し、`index.html` を毎回\n@@ -30,7 +31,7 @@\n #\n # 終了コード: 0 = 置いた / 変更が無かった、1 = 解説か枠が検査に落ちた・解説の sha を push していない・\n #             push できなかった、2 = 引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が\n-#             無い(`PR Explain` の run が地図を置く前か、#1394 より前に閉じてフォルダが消えた PR。やり直さない)、\n+#             無い(理由は上の `put-explain` の項。やり直さない)、\n #             127 = 読み込む `lib/usage.sh` を読み込めない(何も触らずに返す)\n set -uo pipefail\n ",
+          "patchLines": 19,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -1,6 +1,6 @@\n # PR ごとの解説ページ(gh-pages/pr-explain/pr-{番号}/)の「変更の地図」を置く。PR が閉じてもフォルダは消さない。\n # 閉じても消さないのは、マージ後に PR を辿った人が同じ URL で解説を読めるようにするため(#1394)。\n-# 1 PR 約 0.6MB(大半は枠の index.html)。gh-pages の容量上限が近づいたら、消すのではなく枠の共有を別 Issue で検討する。\n+# #1394 時点で 1 PR 約 0.6MB(大半は枠の index.html)。gh-pages の容量上限が近づいたら、消すのではなく枠の共有を別 Issue で検討する。\n #\n # 解説(explain.json)はセッションが `pr-explain` スキルで書いて同じフォルダへ置く。ここが置くのは\n # git の差分だけで決まる地図(change-map.json)と、ページの枠(index.html。push のたびに置き直す)。",
+          "patchLines": 8,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "872be2f762361a7e042ddb63d98fb33f46cfe21c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-15T08:59:15Z",
+      "subject": "📝 [Documentation]: #1394 判定表の冒頭に、pr-12 を守る仕組みを 3 つとも書く",
+      "body": "- put-map が他の PR のフォルダに触らない仕組みとして、sparse-checkout・\n  remove_others の ls-files の範囲・commit_and_push の add の pathspec の\n  3 つを挙げる\n- 「3 つすべてを壊さない限りこのケースは落ちない」と書き直す\n\n背景:\ntest-reviewer のミューテーション実測で、前方一致と展開の拡大の 2 つを\n壊してもケースが通り、add の pathspec まで広げたときだけ落ちると分かった。\n旧コメントは remove(git rm)向けで、主語を put-map に替えたときに経路を\n辿り直していなかった。\n\n採用理由:\n守り手を取り違えて読むと、展開の範囲や add の pathspec を広げる変更を\nこのケースが捕まえると誤解する。実測どおり 3 つを挙げた。\n\n代替案:\n- 仕組みの説明を消し「どのモードでも他の PR に触らない結果を見ている」\n  とだけ書く: 前方一致の取り違えでは落ちないという検出の限界が読めなく\n  なるため採らない\n\n影響とトレードオフ:\nコメントだけの変更で、判定表は 24 件 ok のまま。\n\n参考:\n- Issue #1394 のフェーズ 6 のコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RCGcutHoePxGpHAfu",
+      "files": [
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "patch": "@@ -8,9 +8,10 @@\n #\n # **他の PR のフォルダ・`pr-preview/` に触らないことを、どのモードでも見る。** gh-pages は\n # Storybook と VRT の配信と同じブランチで、ここを壊すとこの機能の外まで消える。\n-# `put-map 1` が `pr-12` に触らないのは、作業コピーに展開するのが `pr-explain/pr-1/` だけ\n-# (sparse-checkout)だから。`remove_others`(フォルダ内の 3 つ以外を消す処理)を `pr-1*` の\n-# 前方一致に取り違えても、展開の範囲を `pr-explain/` 全体へ広げない限りこのケースは通る。見ているのは 2 つが組み合わさった結果。\n+# `put-map 1` が `pr-12` に触らない仕組みは 3 つある。作業コピーに展開するのが `pr-explain/pr-1/`\n+# だけ(sparse-checkout)・`remove_others`(フォルダ内の 3 つ以外を消す処理)が消すのは\n+# `git ls-files -- \"$folder\"` の範囲だけ・`commit_and_push` が `git add -A` するのは `$folder` だけ。\n+# どれか 1 つが保たれていれば通り、3 つすべてを壊さない限りこのケースは落ちない。見ているのは 3 つが組み合わさった結果。\n #\n # 競合の再試行は、bare リポジトリの pre-receive フックで 1 回目の push だけを拒否して作る。\n # 待ち時間は `PR_EXPLAIN_RETRY_WAIT=0` で消す。",
+          "patchLines": 14,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/skills/pr-explain/templates/explain.json",
+      "to": ".claude/skills/pr-explain/SKILL.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/skills/pr-explain/templates/explain.json",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/skills/pr-explain/templates/explain.json",
+      "to": ".github/workflows/pr-explain.yml",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/lib/embedded_regions.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/lib/usage.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": "index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": "package.json",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/lib/usage.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": "index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/build-pr-change-map.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    }
+  ]
+}
