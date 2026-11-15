@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1400,
+  "headBranch": "claude/magical-cannon-15uyl2",
+  "baseBranch": "main",
+  "mergeBase": "75ab6451ece9c65c02c5cda145264c4a6eca3f0c",
+  "head": "bd3b9940903478dbd44bb436b6afcec8386b9393",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1398.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 174,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "bd3b9940903478dbd44bb436b6afcec8386b9393",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-15T11:46:34Z",
+      "subject": "📝 [Documentation]: #1394 PR #1398 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1398.md を足す(指摘 19 件、発火は計測対象外)\n\n背景:\nPR #1398(閉じた PR の解説ページを消さない)がマージされたので、\nharness-record の手順でその回の指摘・手戻り・フックの状態を残す。\n\n採用理由:\n指摘は 1 件 1 ブロックで、分類と出どころは語彙から選んだ。人・bot の\nレビューは 0 件で、指摘はすべてサブエージェントのものと自己修正。\nフックが発火しない環境だったので、発火は計測対象外と書いた。\n\n代替案:\n- 差分範囲の取り違え(古い origin/main)を手戻りだけに書く: 5 本の\n  レビュアーが同じ報告をしており、レビューの指摘として 1 件に残した\n\n影響とトレードオフ:\nharness/records/ の新規 1 ファイルだけで、規約・フック・スキルには\n触れない。集計と介入は harness-growth の管轄。\n\n参考:\n- PR #1398、Issue #1394\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RCGcutHoePxGpHAfu",
+      "files": [
+        {
+          "path": "harness/records/pr-1398.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 174,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,174 @@\n+# PR #1398 PR が閉じても解説ページを gh-pages から消さない\n+\n+- マージ日: 2026-11-15\n+- 関連 Issue: #1394\n+- 差分規模: 4 ファイル / +26 -54\n+\n+## ゴールと結果\n+\n+ゴールは「PR がマージ・クローズされた後も、その PR の解説ページ(`pr-explain/pr-<番号>/`)をいつでも開ける」。方式は「閉じても消さない」だけ(ユーザー判断)。\n+\n+達成した。`pr-explain.yml` から `closed` トリガーを外し、`pr-explain-pages.sh` の `remove` サブコマンドを消した。完了条件は計画の検証で「この変更のマージ以後に閉じた PR」に絞っている(それ以前に消えたフォルダは戻さない)。マージ直後の時点で gh-pages に `pr-explain/pr-1398/` が残り、Pages の URL が 200 を返すことを確かめた。閉じたときに走ったのは Storybook のプレビューと VRT の 2 つで、`PR Explain` は走っていない。一覧ページは #1395 に分けてある。判断待ちで止めた回は無い。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。`get_comments` の DIO0550 の 1 件は、自分が貼ったテスト表。ほかは github-actions[bot] の Storybook プレビュー・CI レポート・VRT の固定コメントで、指摘は無い。bot のレビューは 0 件。CI は全件緑で、VRT の差分は 0 件(210 件 passed)。\n+\n+## 指摘\n+\n+### 1. ゴールの及ぶ範囲が書かれておらず、以前に閉じた PR まで含んで読めた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `plan-goal-verification`\n+- 内容: この変更より前に閉じた PR のフォルダは既に消えていて、計画のままではゴールを満たさない。完了条件を「この変更のマージ以後に閉じた PR」に絞り、復元は対象外と Issue に書いた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 1\n+\n+### 2. ゴールを確かめる手段が計画に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `plan-goal-verification`\n+- 内容: 判定表はスクリプトに `remove` が無いことしか見ず、ワークフローの `closed` を戻しても通る。PR 時点の grep と、マージ後に自身のフォルダが残り 200 を返すことを確かめる手順を計画に足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 1\n+\n+### 3. 「閉じた PR には置かない」が仕組みで守られなくなるのに、未決と決定が混ざっていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 閉じるとフォルダが消えて `put-explain` が 3 で止まる、という裏付けがこの変更で消える。計画は未決に挙げつつ「残す」と書いていた。方針は残し、スクリプトでは止めないと書き添える形に決めた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3「未決の判断」\n+\n+### 4. 残すとした concurrency の Why が、closed 前提の参照先を指していた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `plan-comment-reference`\n+- 内容: 参照先 `storybook-pr-preview.yml` の理由は「closed 時の削除が消失する」で、closed を外すと pr-explain には当てはまらない。pr-explain 自身の理由を直接書いた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 5. 判定表冒頭の pr-12 の段落を消すと、種を置く理由がどこにも残らなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画は `remove` を主語にした段落を消すとしていたが、同じ理由が `put-map` の他の PR に触らないケースにも当てはまる。`put-map` を主語に書き直して残した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 6. 却下案「remove を残す」の根拠にした後続 Issue の番号が無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「枠の共有は別 Issue で検討」の受け皿が実在するか、を問われた。Issue 本文の決定は「容量が近づいたら起票する」だったので起票はせず、閉じても消さない理由と容量の目安をワークフロー冒頭に書くところだけ採用した。\n+- 既存ルール: AGENTS.md「タスクの分割」\n+\n+### 7. 計画手順 5〜7・9 の確認の記録が計画に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: open PR の重なり(#1396 / #1397、重なり 0 件)、「閉じたら消す」を前提にした記述の grep、却下理由の裏取りを、確認したコマンドと件数つきで Issue に書き足した。planner の返答には書かれていたが、親が Issue へ写すときに落としていた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3「計画を渡す前に踏む 9 つの手順」\n+\n+### 8. SKILL.md の reopen の項を丸ごと消すと、以前に閉じた PR の扱いが落ちた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 変更前に閉じてフォルダが消えた PR を reopen すると、枠と地図だけが置かれて解説が無い。項は消さず、以前に閉じた PR に限る書き方に変えた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 7\n+\n+### 9. 「閉じても同じ URL で開ける」に適用範囲が無かった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 形の名前: `comment-premise-drift`\n+- 内容: SKILL.md の新しい文が、#1394 より前に閉じた PR まで含んで読めた。「この変更のマージ以後に閉じた PR は」と境界を付け、reopen の項と言い方を揃えた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 10. 「#1394 より前に閉じた PR」が番号だけで、何が起きたか読めなかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 形の名前: `comment-missing-issue-only`\n+- 内容: 「閉じたときに以前の `PR Explain` がフォルダごと消した PR」と事実で書き、番号は括弧で補った。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 11. 判定表冒頭の「3 つ以外を消す側」がどの処理か読みにくかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 形の名前: `comment-structure-claim`\n+- 内容: `remove_others` と名指しした。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 12. 地図が無い理由の列挙が、put-explain の項と終了コード 3 の 2 箇所にあった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 形の名前: 同じ判断根拠・説明を doc・comment 側で独立に複数箇所へ書いていないか\n+- 内容: 今回 2 箇所を揃えて書き換えており、次に理由が増減すると片方だけ直る形だった。列挙は put-explain の項に置き、終了コード 3 は参照にした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 13. 「閉じてもフォルダを消さない」が SKILL.md の 2 箇所にあった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 形の名前: 同じ判断根拠・説明を doc・comment 側で独立に複数箇所へ書いていないか\n+- 内容: 「閉じた PR には置かない」の括弧を「スクリプトでは止めない」だけに縮めた。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 14. 「閉じた PR には置かない」の理由が消え、規律だけが残った\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 形の名前: `rules-consistency`\n+- 内容: 理由を書くか規則ごと外す、という指摘。閉じた後に書く運用を認めるかはゴールに要らない判断で、規則が入った意図も浅い履歴で辿れなかったため不採用にした(Issue に理由を記載)。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 15. 容量の目安「1 PR 約 0.6MB」が、枠の成長で古くなる実測値だった\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 形の名前: `rules-consistency`\n+- 内容: Why not の根拠に一時的な事実を置いていた。「#1394 時点で」と時点を添えた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 16. 判定表冒頭が pr-12 を守る仕組みを 2 つと書いていたが、実測では 3 つだった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: ミューテーション実測で、sparse-checkout・`remove_others` の ls-files の範囲・`commit_and_push` の add の pathspec の 3 つすべてを壊したときだけ落ちた。旧コメントは `remove`(`git rm`)向けで、主語を替えたときに経路を辿り直していなかった。3 つを挙げて書き直した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 17. ワークフローの closed トリガーを外したことは、どの判定表からも壊せない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: YAML を見る検査は無い。ゴールを守っているのはスクリプトが `remove` を受け付けないこと(実測で落ちる)で、トリガーだけを戻しても無駄な run が走るだけで消えない。検査は足さず、PR 本文に検出の範囲を書いた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 18. レビュアーへ渡した差分の範囲が、古い origin/main を基点にしていた\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 渡した説明に `git diff origin/main..HEAD` と書いたが、ローカルの `origin/main` が古く、151 ファイルの無関係な差分が混ざった。solution / over-guard / comment / harness の各レビュアーも同じことを報告し、全員が `git show 0cbb452` に絞って検証した。2 段目からは `a98ade2..HEAD` を渡した。\n+- 既存ルール: なし\n+\n+### 19. push 前のカナリアが通り、フックが発火していなかった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 形の名前: `hook-environment`\n+- 内容: `echo hook-canary` が通り、実行中フラグのマーカーも発火ログの見出しも無かったので、本当に不発と判断した。代わりに手で確かめた。親の Edit / Write の先は scratchpad だけ、`npx` は不使用、コミットはどれもサブエージェントが返った後。PR 本文に記録した。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- フェーズ 4: plan-reviewer の指摘 8 件のうち 7 件を採用し、1 件を一部採用した。planner へ 1 回差し戻した。\n+- フェーズ 6: 1 段目の指摘 7 件のうち 6 件を採用し、1 件を不採用にした。2 段目の指摘 2 件は 2 件とも採用した。implementer へ 2 回差し戻した(どちらもコメント・doc だけで、挙動は変えていない)。\n+- implementer の最初の `pre-push` は、`node_modules` が無いため 3 検査を飛ばして exit 1 になった。`pnpm install` の後に exit 0 になった。\n+- planner が書いた容量の目安「1 PR 数十 KB」は誤りだった(枠だけで約 616KB)。implementer へ渡す前に親が Issue 本文の値に直した。\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録だけを残す回で、集計と介入は harness-growth の管轄のため。",
+          "patchLines": 175,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
