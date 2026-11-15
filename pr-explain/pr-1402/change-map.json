@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1402,
+  "headBranch": "claude/magical-cannon-z2qnjn",
+  "baseBranch": "main",
+  "mergeBase": "5ee4bbd31c8351b3c8429c99b93f1c96756d9c1e",
+  "head": "8988d7a8e724b3dd78a3488db05488dd63e42e68",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1399.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 145,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "8988d7a8e724b3dd78a3488db05488dd63e42e68",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-15T13:24:57Z",
+      "subject": "📝 [Documentation]: PR #1399 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1399.md を足す(#1384: 中身の変わらない編集では\n  進む先を捨てない)\n- 指摘 16 件: plan 4 / comment 2 / naming 2 / duplication 2 /\n  harness 2 / test 1 / ui 1 / なし 2。人・bot・CI からの指摘は 0 件\n\n背景:\nPR #1399 がマージされたので、その回のレビュー指摘・手戻り・フック不発を\n分類タグ付きで残す。\n\n採用理由:\n記録だけを足し、集計・介入は harness-growth の管轄に残す。発火ログが\n無かったので「計測対象外(フック不発)」と書いた。\n\n影響とトレードオフ:\n差分は harness/records/ の新規 1 ファイルだけ。対策済の行は書かない。\n\n代替案:\n- docs/06 の文面に関する 3 件(comment / ui / harness)を 1 件に束ねる:\n  記録は元の指摘ごとに書く(implementation-flow フェーズ 6)\n\n参考:\n- PR #1399 / Issue #1384\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2Q62J9d4RTXD1z6AQ7",
+      "files": [
+        {
+          "path": "harness/records/pr-1399.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 145,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,145 @@\n+# PR #1399 中身の変わらない編集では進む先（redo）を捨てない\n+\n+- マージ日: 2026-11-15\n+- 関連 Issue: #1384\n+- 差分規模: 7 ファイル / +181 -18\n+\n+## ゴールと結果\n+\n+ゴールは次のとおり。中身の変わらない編集（値を変えずに欄を離れた確定など）では進む先（redo）を捨てず、undo したあと欄を Tab で通るだけでも redo できる。中身の変わらない 1 件目に続き（`amend`）が届いて中身が変わったら、そのとき進む先を捨てる。`docs/06-ui.md` の undo / redo の行を揃える。\n+\n+達成した。Issue は「残すかを決める」から始まる形だったので、フェーズ 1 で「残す」を選び、理由（#1379 で undo に数えないことにしたのと対称）を Issue に書いた。判断待ちで止めた回は無い。判定は `EditHistory` の非公開関数 `futureAfter`（新しい現在地を今の現在地と比べる）に置き、`record` / `amend` から使う。`redo` の入口でも `withoutUnchangedLast` を通した（見える挙動は変えず、型 doc の不変条件を保つため）。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。`get_reviews` の 1 件は Copilot の概要（open issue 0 件）。`get_comments` の DIO0550 の 1 件は、自分が貼ったテスト表。残りは github-actions の Storybook プレビュー・CI レポート・VRT。CI は全件緑で、VRT の差分は 0 件（210 件 passed）。\n+\n+## 指摘\n+\n+### 1. U6 は redo 入口の正規化を守れない\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 正規化を外しても、undo 側の正規化が重複を片付けるので見える挙動は変わらない。U6 を「redo のあと undo できる回数」のテストとして残し、正規化を守るテストは書かない（内部構造のテストになる）と計画に明記した。実装後に外して 404 件が緑のままであることを記録した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 2. docs/06 の置き換え文面を一字一句書いておらず、リサイズの扱いが読めなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `plan-comment-reference`\n+- 内容: 計画が「趣旨」だけを書いていた。置き換え後の文面を Issue に書き、捨てる側の例（リサイズ・欄・ピッカー）を挙げた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 1\n+\n+### 3. 同じ中身の外部取り込みで redo が残る経路に、テストも記述も無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `applyReload` → `record` も変更で新しく開く経路だった。意図した挙動として editor-state のテストを 1 件足した。docs/06 は「編集操作の一覧」なので取り込みは書かなかった。\n+- 既存ルール: なし\n+\n+### 4. `remainingFuture` の Why / Why not と、書き換える doc の行を計画に挙げていなかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 比べる相手を現在地にする理由（続きだけが届く形）を doc に書くこと、空なら比べないのはコストだけなので Why を書かないこと、追随する doc の行を計画に足した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 5. ゴールに挙げたドラッグを通しで確かめていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: ノードの移動は離したとき `record` 1 件（同じ位置なら何も送らない）なので U1 で足りる、と範囲を明記して通しのテストは足さなかった。\n+- 既存ルール: なし\n+\n+### 6. 新しい名前を grep した記録が計画に無かった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: reviewer 側の grep で衝突無し（`remaining` はローカル変数 1 件のみ）。記録として Issue に残した。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 7. 同じシンボルを変える open Issue を確かめた記録が無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 検索語に #238 が当たった。題がキーボードでのインスタンス挿入で無関係と Issue に書いた。\n+- 既存ルール: なし\n+\n+### 8. docs/06 の例「欄に打ってから消して離れた」が、離れたときだけ確定する欄で成り立たない\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 形の名前: `comment-behavior-claim`\n+- 内容: tokens の `DraftField` は離れたとき 1 回だけ確定するので、打って消しても中身は一度も変わらず redo は残る。例を「プロパティパネルの数値・文言の欄」に限定した。フェーズ 4 で決めた文面そのものの誤り。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 9. 同じ docs/06 の例が、プロパティパネルの欄でしか成り立たない\n+\n+- 分類: `ui`\n+- 出どころ: `レビュー（ui-reviewer）`\n+- 内容: 8 と同じ根本原因。`LiteralInput` は打鍵ごとに送り、`DraftField` は確定時だけ送る。例の対象を限定して直した。\n+- 既存ルール: rules/ui-verification.md「UIの拠り所は `docs/Design Composer.html`」\n+\n+### 10. docs/06 の同じ行に、ドラッグの規則が 2 つ当たって見える\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: 前半の例「掴んだ位置へ戻して離したドラッグ」と後半の例「リサイズを動かしてから戻した」が同じ形に見え、ノードの移動が残る側だと読めなかった。離したときにだけ書く操作（ノード・artboard の移動）は進む先が残ると書き添えた。\n+- 既存ルール: なし\n+\n+### 11. `remainingFuture` が「残り（先頭を除いた分）」と読めた\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: 捨てる場合があることが名前に出ず、`redo` の `dropFirst` と同じ操作に見えた。`futureAfter` に改名した。\n+- 既存ルール: rules/naming.md「名前と実体を一致させる」\n+\n+### 12. `remainingFuture` の早期 return が空行で区切られていなかった\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: 理由の違う 2 つの早期 return と最後の return が続いていた。空行で区切った。\n+- 既存ルール: なし\n+\n+### 13. 同じ中身を落とす入口・進む先を残す規則が doc の 3 箇所に書かれている（不採用）\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 型 doc は誰が不変条件を保つかの仕様、`@returns` は各メソッドの仕様、ヘルパーの doc は Why で役割が違う。参照だけにすると各メソッドの doc が単独で読めなくなるので変えなかった。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 14. `undoneOnce` と同じ組み立てが他のテストファイルに手書きで残る（不採用）\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 手書きの側は前からあり、揃えると差分がゴールの外へ広がるので見送った。\n+- 既存ルール: rules/testing.md「テスト用ヘルパーの置き場所」\n+\n+### 15. 進む先が残っている間は、ポインタ移動ごとに全体の JSON 化が 2 回走る（不採用）\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（performance-reviewer）`\n+- 内容: 払うのは undo 直後かつ最初に中身が変わるまでだけ（変わると進む先が空になり比較しない）。プロファイルで見えたら別 Issue にする。\n+- 既存ルール: なし\n+\n+### 16. PreToolUse のフックが発火していなかった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が deny されずに通った。実行中フラグのマーカーも発火ログも無かった。セッションがリポジトリの親（`/home/user`）を作業ディレクトリにして起動したためと見ている（未検証）。禁止操作が無かったことは手で確かめ、PR 本文と Issue に書いた。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- フェーズ 4 で、plan-reviewer の指摘 7 件のうち 6 件を計画へ反映した（1 件は (a) を選んで記録だけ）。planner は起動し直さず、親が Issue へ対応を書いて implementer へ渡した\n+- フェーズ 4 で決めた docs/06 の文面が、フェーズ 6 で comment / ui / harness の 3 reviewer に同じ根本原因で指摘され、修正のコミットを 1 件足した（指摘 8〜10）\n+- フェーズ 6 の 1 段目では 9 観点を起動し、採用 3 件・不採用 3 件。implementer で 1 回直した\n+- フェーズ 6 の 2 段目の test-reviewer は指摘無し（7 通りの壊し方すべてで落ち、落ちないのは挙動の変わらない 2 通りだけ）\n+- Stop フックの「未コミット・未 push」の催促が、サブエージェントの実行中に何度も出た。どれも完了を待ってから commit / push した\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録だけを残す(集計と介入は harness-growth の管轄)。",
+          "patchLines": 146,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
