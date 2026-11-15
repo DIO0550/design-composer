@@ -5,7 +5,6 @@
 # 使い方:
 #   pr-explain-pages.sh put-explain <PR 番号> <explain.json>                 … 解説を検査して置く(セッションが呼ぶ)
 #   pr-explain-pages.sh put-map     <PR 番号> <change-map.json> <テンプレート>  … 枠と変更の地図を置く(Actions が呼ぶ)
-#   pr-explain-pages.sh remove      <PR 番号>                                … フォルダごと消す(PR が閉じたとき)
 #
 # フォルダに置くのは `index.html`(枠)・`change-map.json`(地図)・`explain.json`(解説)の 3 つだけ。
 #
@@ -13,9 +12,10 @@
 #   `explain.json` として置く。違反があれば push しない。触るのはこの 1 ファイルだけ
 # - `put-explain` は、解説の sha がリモートの追跡ブランチ(`git branch -r --contains`)に無ければ置かない。
 #   抜粋はその sha の中身から読むので、push していないコミットの中身を公開しないため
-# - `put-explain` は `change-map.json` が無いフォルダへは置かない。Actions が作る前と、PR が閉じて
-#   消した後に、セッションがフォルダを復活させないため。解説の sha が地図の head と違えば、置いた
-#   うえで標準エラーに知らせる(古い解説も、ページが解説の時点を帯で出すので読める)
+# - `put-explain` は `change-map.json` が無いフォルダへは置かない。地図と枠の無いフォルダに解説だけを
+#   置いても開けるページにならないため(Actions が地図を置く前と、#1394 より前に閉じてフォルダが消えた PR)。
+#   解説の sha が地図の head と違えば、置いたうえで標準エラーに知らせる(古い解説も、ページが解説の
+#   時点を帯で出すので読める)
 # - `put-map` は clone の前に `check-pr-explain-template.py` で枠を検査し、`index.html` を毎回
 #   上書きする。枠の変わったコミット(main の取り込みを含む)が、次の push でそのままページに効くように。
 #   フォルダには 3 つだけを置く、という形を保つため、それ以外のファイルは消す
@@ -30,7 +30,7 @@
 #
 # 終了コード: 0 = 置いた / 変更が無かった、1 = 解説か枠が検査に落ちた・解説の sha を push していない・
 #             push できなかった、2 = 引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が
-#             無い(`PR Explain` の run が地図を置く前か、PR が閉じて消した後。やり直さない)、
+#             無い(`PR Explain` の run が地図を置く前か、#1394 より前に閉じてフォルダが消えた PR。やり直さない)、
 #             127 = 読み込む `lib/usage.sh` を読み込めない(何も触らずに返す)
 set -uo pipefail
 
@@ -47,7 +47,6 @@ pr="${2:-}"
 case "$mode" in
   put-explain) args_ok=$([ $# -eq 3 ] && [ -f "$3" ] && echo yes) ;;
   put-map) args_ok=$([ $# -eq 4 ] && [ -f "$3" ] && [ -f "$4" ] && echo yes) ;;
-  remove) args_ok=$([ $# -eq 2 ] && echo yes) ;;
   *) args_ok="" ;;
 esac
 [ "$args_ok" = yes ] || usage
@@ -131,19 +130,13 @@ apply_change() {
       cp "$4" "$site/$folder/index.html"
       remove_others "$site"
       ;;
-    remove)
-      git -C "$site" rm -r --quiet --ignore-unmatch -- "$folder"
-      ;;
   esac
 }
 
 # 変更をコミットして push し、結果を 1 行出す。変更が無ければ push しない。
 commit_and_push() {
   local site="$work/site"
-  # `remove` は `git rm` で index まで反映済みで、消したフォルダを add すると pathspec が当たらず落ちる。
-  if [ -e "$site/$folder" ]; then
-    git -C "$site" add -A -- "$folder" || return 1
-  fi
+  git -C "$site" add -A -- "$folder" || return 1
   if git -C "$site" diff --cached --quiet; then
     echo "$folder: 変更なし"
     return 0
@@ -167,12 +160,6 @@ if explained != head:
 PY
   return 0
 }
-
-# 消すものが無い。gh-pages を作ってまで空のコミットを置かない。
-if [ "$mode" = "remove" ]; then
-  pages_branch_state
-  [ $? -eq 2 ] && { echo "$folder: gh-pages が無いので変更なし"; exit 0; }
-fi
 
 for attempt in $(seq 1 "$max_attempts"); do
   if checkout_site; then

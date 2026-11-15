@@ -58,12 +58,14 @@ URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`。St
 コメントに載るので、別にコメントしない。**解説は PR ブランチにも main にも入れない**(main に溜まり、
 Files changed にも混ざるため)。
 
+PR がマージ・クローズされた後も同じ URL で開ける(閉じてもフォルダを消さない)。
+
 ## いつ書くか
 
 - **PR を出した直後**(`implementation-flow` フェーズ 7)
 - **振る舞いが変わる push をした後**。format・コメントだけの push では書き直さない(ページが
   「解説は ◯ 時点、以降 n コミットは解説なし」と出すので、読み手が判断できる)
-- **PR を reopen した後**(閉じたときに Actions がフォルダごと消している)
+- **#1394 より前に閉じた PR を reopen した後**(そのときの Actions がフォルダごと消している)
 
 ## 手順
 
@@ -95,7 +97,7 @@ Files changed にも混ざるため)。
      `.github/scripts/lib/embedded_regions.py`)。落ちたら報告を読んで直す(報告の分類は `build-pr-explain.py` の冒頭)
    - 解説の `sha` は push してから置く。リモートの追跡ブランチに無い sha の解説は置かない
    - 終了コードの意味は `pr-explain-pages.sh` の冒頭。**3** なら `PR Explain` の run の完了を待って
-     からやり直す。閉じた PR には置かない
+     からやり直す。閉じた PR には置かない(閉じてもフォルダは消えないので、スクリプトは止めない)
    - 解説の `sha` が地図の head と違えば、置いたうえで標準エラーに知らせる。push の直後で run が
      終わっていないだけなら置き直さなくてよい(run が終われば地図の head と揃う)
    - **gh-pages へ push してよいのは、このスクリプトで `pr-explain/pr-<番号>/` へ置くときだけ。**
@@ -279,6 +281,6 @@ layer / file / module・LayerRole の layer・concept のパス・出てくる�
 | `.github/scripts/build-pr-explain.py` | 解説の検査と、抜粋の中身の書き足し |
 | `.github/scripts/lib/embedded_regions.py` | 抜粋・差分の hunk の始まりの行で効いている埋め込み(script / style 要素・ヒアドキュメント)を開いた行。検査と地図が使う |
 | `.github/scripts/check-pr-explain-template.py` | 枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査。`--tracked` では、追跡ファイルの拡張子が色付けの表(`LanguageByExtension`)か `NotHighlighted` のどちらかにあるかも見る |
-| `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-explain` / `put-map` / `remove`) |
+| `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-explain` / `put-map`) |
 | `.github/scripts/build-pr-change-map.py` | 変更の地図(Actions が呼ぶ) |
-| `.github/workflows/pr-explain.yml` | 枠と地図の配置と、PR が閉じたときの削除 |
+| `.github/workflows/pr-explain.yml` | 枠と地図の配置 |
