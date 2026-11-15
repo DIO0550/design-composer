@@ -38,7 +38,7 @@
     { "path": ".claude/skills/pr-explain/templates/explain.json", "name": "見本", "role": "`excerpt` 以外のすべてのキーと、primers・Passage の kind を使う解説", "graph": false }
   ],
   "actors": [
-    { "id": "pages", "label": "GitHub Pages", "role": "gh-pages の中身を配信する", "icon": "store" }
+    { "id": "pages", "label": "GitHub Pages", "role": "gh-pages の中身を配信する", "icon": "store", "status": "added" }
   ],
   "messages": [
     { "id": "put-map", "from": ".github/workflows/pr-explain.yml", "to": ".github/scripts/pr-explain-pages.sh", "kind": "cmd", "name": "地図を置く", "code": "pr-explain-pages.sh put-map", "via": "exec", "payload": "`change-map.json` とテンプレート" },

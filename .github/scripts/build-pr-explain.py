@@ -252,6 +252,9 @@ PrimerStatuses = ("added", "changed")
 RemarkKinds = ("caution", "memo", "rule", "spec", "history")
 StepCosts = ("heavy", "skipped")
 CardIcons = ("person", "widget", "store", "cache", "scan")
+# アクターの状態(この PR で増えた・消えた人や外のサービス)。やりとりの状態の語のうち changed を除いたもの(アクターは中身を
+# 持たないので、変えたという状態が無い)。ページの語彙には置かず、`changeStatusOf` で読む。
+ActorStatuses = ("added", "removed")
 
 # 前後の組(振る舞いの変わったこと・増えた状況が同じ形で持つ)。これまでは 0 件でよく、これからは 1 件以上。
 ImpactSides: dict[str, Field] = {
@@ -367,7 +370,7 @@ Shapes: dict[str, dict[str, Field]] = {
     },
     # やりとりの端になる、concepts のファイルでないもの(人・外のサービス)。id は concepts の path と同じ綴りにしない
     # (`cross_collection_problems`)。
-    "Actor": {"id": need(Id), "label": need(Heading), "role": need(Text), "icon": may(Word(CardIcons))},
+    "Actor": {"id": need(Id), "label": need(Heading), "role": need(Text), "icon": may(Word(CardIcons)), "status": may(Word(ActorStatuses))},
     "Message": {
         "id": need(Id),
         "from": need(Text),
@@ -658,13 +661,16 @@ def call_sides_problem(value: dict) -> str | None:
     status = value.get("status")
     has_was = "was" in value
     has_now = "now" in value
+    has_now_only = has_now and not has_was
+    has_was_only = has_was and not has_now
     if status == "added":
-        return None if has_now and not has_was else "増えたもの(added)は now だけを書く"
+        return None if has_now_only else "増えたもの(added)は now だけを書く"
     if status == "removed":
-        return None if has_was and not has_now else "消えたもの(removed)は was だけを書く"
+        return None if has_was_only else "消えたもの(removed)は was だけを書く"
     if not has_now:
         return "変えたもの(changed)と変えていないものは now を書く"
-    if status == "changed" and not has_was:
+    lacks_was = status == "changed" and not has_was
+    if lacks_was:
         return "変えたもの(changed)は was も書く"
     if value.get("was") == value["now"]:
         return "was が now と同じ(前後で同じ一言なら was を書かない)"
@@ -686,15 +692,16 @@ def call_ends_problem(calls: dict) -> str | None:
     """
     status_of = {box["id"]: box.get("status") for box in calls["boxes"]}
     ends_of = lambda edge: [end for end in (edge["from"], edge["to"]) if end in status_of]
-    stray_ends_of = lambda absent, gone: [
+    # その側に無い状態(変更後は removed、変更前は added)の箱を端に持つ、その側にある線の端。
+    stray_ends_of = lambda absent: [
         f"{edge['id']} の {end}"
         for edge in calls["edges"]
-        if edge.get("status") != gone
+        if edge.get("status") != absent
         for end in ends_of(edge)
         if status_of[end] == absent
     ]
-    after = stray_ends_of("removed", "removed")
-    before = stray_ends_of("added", "added")
+    after = stray_ends_of("removed")
+    before = stray_ends_of("added")
     problems = [
         *([f"変更後にある線の端が消えた箱({', '.join(after)})"] if after else []),
         *([f"変更前にある線の端が増えた箱({', '.join(before)})"] if before else []),
@@ -715,11 +722,12 @@ def step_change_problem(value: dict) -> str | None:
     has_before, has_after = StepSides[status]
     if ("beforeStep" in value, "afterStep" in value) != (has_before, has_after):
         return "added は afterStep だけ、removed は beforeStep だけ、changed と省いたもの(そのまま)は両方を書く"
-    stray_before = [key for key in ("beforeText", "beforeCost") if key in value and not has_before]
-    stray_after = [key for key in ("afterText", "afterCost") if key in value and not has_after]
+    stray_before = [] if has_before else [key for key in ("beforeText", "beforeCost") if key in value]
+    stray_after = [] if has_after else [key for key in ("afterText", "afterCost") if key in value]
     if stray_before or stray_after:
         return f"{', '.join(stray_before + stray_after)} は、その側の手順の番号(beforeStep / afterStep)があるときだけ書く"
-    if "change" in value and status is None:
+    is_change_on_kept = "change" in value and status is None
+    if is_change_on_kept:
         return "change は status のある対応(この PR で増えた・消えた・変わった手順)にだけ書く"
     return None
 
@@ -731,6 +739,31 @@ def numbering_problem(numbers: list[int], count: int, side: str) -> str | None:
     if numbers != sorted(numbers):
         return f"{side} は書いた順に増えていく(今は {numbers})"
     return None
+
+
+class StepPair(NamedTuple):
+    """手順の対応 1 件の前後。`before` / `after` はその側の手順のやりとりの id で、無い側は None。ページの `TraceRows` の
+    `pairOf` と同じ読み方。
+    """
+
+    status: str | None
+    before: str | None
+    after: str | None
+
+    @property
+    def is_same_message(self) -> bool:
+        """前後が同じやりとりか。"""
+        return self.before is not None and self.before == self.after
+
+
+def step_pair_of(flow: dict, change: dict) -> StepPair:
+    """対応 1 件を前後のやりとりにする。
+
+    @param flow 対応の番号が手順の数に収まっている流れ(`step_changes_problem` の番号の規則を通ったもの)
+    """
+    before = flow["beforeSteps"][change["beforeStep"] - 1] if "beforeStep" in change else None
+    after = flow["steps"][change["afterStep"] - 1] if "afterStep" in change else None
+    return StepPair(change.get("status"), before, after)
 
 
 def step_changes_problem(flow: dict) -> str | None:
@@ -747,8 +780,8 @@ def step_changes_problem(flow: dict) -> str | None:
     ]
     if problems:
         return " / ".join(problems)
-    is_moved = lambda change: flow["beforeSteps"][change["beforeStep"] - 1] != flow["steps"][change["afterStep"] - 1]
-    moved = [index for index, change in enumerate(changes) if "status" not in change and is_moved(change)]
+    is_moved = lambda pair: pair.status is None and not pair.is_same_message
+    moved = [index for index, change in enumerate(changes) if is_moved(step_pair_of(flow, change))]
     if moved:
         return f"stepChanges{moved} はそのまま(status なし)なのに、前後のやりとりが違う(違うなら changed にする)"
     return None
@@ -802,7 +835,7 @@ UniqueKeys = (
 )
 
 # クイズの答えの鍵の元にする問いのキー(無いキーは空の配列)。ページの `Quiz.KeyParts` と同じで、`pr-explain-core-cases.sh` が突き合わせる。
-# ページは答え・今の問い・途中の並びをこの組の鍵で覚えるので、重なると 2 問が答えを共有する。
+# この組が同じ問いを落とす理由は、ページの `Quiz.keyOf`。
 QuizKeyParts = ("prompt", "options", "items")
 
 
@@ -956,7 +989,7 @@ def cross_collection_problems(explain: dict) -> list[str]:
     paths = {concept["path"] for concept in explain.get("concepts", [])}
     actors = [f"actors[{index}].id: {actor['id']} が concepts の path と同じ" for index, actor in enumerate(explain.get("actors", [])) if actor["id"] in paths]
     status_of = {message["id"]: message.get("status") for message in explain.get("messages", [])}
-    placed = lambda ids, status: [step for step in ids if step in status_of and status_of[step] == status]
+    placed = lambda ids, status: [step for step in ids if status_of.get(step) == status]
     problems = []
     for index, flow in enumerate(explain.get("flows", [])):
         added = placed(flow["beforeSteps"], "added")
@@ -968,14 +1001,14 @@ def cross_collection_problems(explain: dict) -> list[str]:
 
 
 def same_message_problems(flow: dict, status_of: dict, where: str) -> list[str]:
-    """前後が同じやりとりの対応の状態が、そのやりとりの状態に合わないものを集める。"""
-    message_of = lambda change: flow["steps"][change["afterStep"] - 1]
-    is_same = lambda change: "beforeStep" in change and "afterStep" in change and flow["beforeSteps"][change["beforeStep"] - 1] == message_of(change)
-    expected_of = lambda change: "changed" if status_of[message_of(change)] == "changed" else None
+    """前後が同じやりとりの対応の状態が、そのやりとりの状態に合わないものを集める。messages に無いやりとりは参照の検査に任せる。"""
+    expected_of = lambda pair: "changed" if status_of[pair.after] == "changed" else None
+    is_mismatched = lambda pair: pair.is_same_message and pair.after in status_of and pair.status != expected_of(pair)
+    pairs = [step_pair_of(flow, change) for change in flow["stepChanges"]]
     return [
-        f"{where}.stepChanges[{index}]: 前後が同じやりとり({message_of(change)})の対応は、やりとりの status に合わせる(changed なら changed、そうでなければ省く)"
-        for index, change in enumerate(flow["stepChanges"])
-        if is_same(change) and message_of(change) in status_of and change.get("status") != expected_of(change)
+        f"{where}.stepChanges[{index}]: 前後が同じやりとり({pair.after})の対応は、やりとりの status に合わせる(changed なら changed、そうでなければ省く)"
+        for index, pair in enumerate(pairs)
+        if is_mismatched(pair)
     ]
 
 
@@ -1094,9 +1127,8 @@ def target_problems(where: str, go: dict, explain: dict) -> list[str]:
     if go["kind"] == "stepChange":
         return step_change_target_problems(where, go, explain)
     collection = TargetCollections.get(go["kind"])
-    if collection is None or go["id"] in known_values(explain, collection, "id"):
-        return []
-    return [f"{where}.id: {go['id']} が {collection} に無い"]
+    is_dangling = collection is not None and go["id"] not in known_values(explain, collection, "id")
+    return [f"{where}.id: {go['id']} が {collection} に無い"] if is_dangling else []
 
 
 def step_change_target_problems(where: str, go: dict, explain: dict) -> list[str]:

@@ -201,6 +201,8 @@ deny|shape|sample|actors の id が concepts の path と同じ|d["concepts"].ap
 deny|shape|sample|actors の名前(label)が識別子|d["actors"][0]["label"] = "GitHubPages"
 deny|shape|sample|actors の icon が語彙の外|d["actors"][0]["icon"] = "robot"
 deny|shape|sample|concepts の icon が語彙の外|d["concepts"][2]["icon"] = "box"
+pass|-|sample|actors の status に removed を書ける|d["actors"][0]["status"] = "removed"
+deny|shape|sample|actors の status が語彙の外(changed はアクターに書けない)|d["actors"][0]["status"] = "changed"
 pass|-|sample|message の from に actors の id を書ける|d["messages"][0]["from"] = d["actors"][0]["id"]
 deny|shape|sample|flow に stepChanges が無い|del d["flows"][1]["stepChanges"]
 deny|shape|sample|flow に gist が無い|del d["flows"][1]["gist"]

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-RGk0SiiSo25boSMjDdalM8LqoZFYoLMpn3bmmDOAMbQ='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'sha256-51s+cNOV8/zjSB1uCFXvbuHZRECx1N0wDxfLVafrwB4='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PR 解説</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -46,10 +46,12 @@
   --sans: "IBM Plex Sans JP", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   --shadow-raised: 0 1px 2px rgba(29, 31, 36, .10);
+  --person: #0E7C86;
+  --person-bg: #DDF1F2;
   --feature-1: var(--accent);
-  --feature-2: var(--add-mark);
-  --feature-3: var(--mod-mark);
-  --feature-4: var(--del-mark);
+  --feature-2: var(--mod-mark);
+  --feature-3: var(--del-mark);
+  --feature-4: var(--add-mark);
   --feature-5: #7A4FD6;
   --feature-6: #0F8F9A;
   --feature-7: #C2447E;
@@ -65,7 +67,6 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 14px; min-height: 52px; min-width: 0; border-bottom: 1px solid var(--line); background: var(--panel); position: relative; z-index: 20; white-space: nowrap; }
 .repo { font-family: var(--mono); font-weight: 600; font-size: 14px; flex: none; }
 .segmented { display: flex; gap: 2px; padding: 2px; background: var(--track); border-radius: 8px; flex: none; }
-/* タブの横の余白は 10px。12px だと、1280px でテストの画面の操作が 2 段目に落ちる。 */
 .segmented a { padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--ink-2); text-decoration: none; }
 .segmented a:hover { color: var(--ink); background: rgba(255, 255, 255, .6); }
 .segmented a[aria-current="page"] { font-weight: 600; color: var(--ink); background: var(--surface); box-shadow: var(--shadow-raised); }
@@ -80,6 +81,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .counts .total { color: var(--ink-2); }
 .add { color: var(--add); }
 .del { color: var(--del); }
+.mod { color: var(--mod); }
 .screen-controls { display: flex; align-items: center; gap: 12px; flex: none; }
 .hint { font-size: 11px; color: var(--ink-3); }
 .links { display: flex; gap: 12px; font-size: 12px; flex: none; }
@@ -87,7 +89,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .band { padding: 7px 14px; font-size: 12px; line-height: 1.6; color: var(--mod); background: var(--warn-tint); border-bottom: 1px solid var(--line); white-space: normal; }
 .screens { min-height: 0; position: relative; }
 .screen { height: 100%; display: grid; min-height: 0; }
-/* 箱の図の欄は自分の −/+(transform)で拡大するので、文字の倍率を掛けると二重になる。構成の前後と流れ図の図は倍率の中に置き、欄の幅で大きさを決めて倍率を受けない(`.wide-figure`)。
+/* 箱の図の欄は自分の −/+(transform)で拡大するので、文字の倍率を掛けると二重になる。構成の前後と流れ図の図は倍率の中に置き、倍率を受けない(`.wide-figure`)。
    font-size の書き換えは px 固定の高さや図の箱の幅が崩れ、transform: scale はスクロールの範囲と幅が倍率に合わないので採らない。 */
 .screen > :not(.graph-canvas) { zoom: var(--text-size-ratio, 1); }
 .screen[hidden] { display: none; }
@@ -297,7 +299,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .feature-title { display: flex; align-items: center; gap: 10px; }
 .feature-title::before { width: 12px; height: 12px; border-radius: 3px; }
 .feature-review { display: grid; grid-template-columns: minmax(140px, max-content) minmax(0, 1fr); gap: 6px 14px; align-items: baseline; }
-.feature-review-list { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.7; }
+.review-list { margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.7; }
 .matrix-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
 .matrix { border-collapse: collapse; width: 100%; font-size: 12.5px; }
 .matrix th, .matrix td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
@@ -306,6 +308,8 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }
 .matrix-commit { display: block; line-height: 1.5; }
 .matrix-sha { display: block; font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--ink-3); }
 .matrix-row-head { min-width: 220px; }
+.matrix-column-head { display: block; font-weight: inherit; color: inherit; }
+.matrix-column-head:hover .matrix-commit { color: var(--accent); }
 .matrix-head { display: flex; flex-direction: column; gap: 3px; }
 .matrix-head .feature-dot { font-size: 12.5px; font-weight: 600; color: var(--ink); }
 .matrix-head:hover .feature-dot { color: var(--accent); }
@@ -824,14 +828,15 @@ button.change-item:hover { background: var(--track); }
 .compare-toolbar .toggle-group { margin-right: 6px; }
 .compare-figures { display: flex; flex-direction: column; gap: 10px; }
 .compare-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-.compare-pair.is-stacked { grid-template-columns: minmax(0, 1fr); }
+.compare-pair.is-vertical { grid-template-columns: minmax(0, 1fr); }
 .compare-side { min-width: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); overflow: hidden; }
 .compare-side-head { display: flex; align-items: baseline; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--sunken); }
 .compare-side-title { flex: none; font-size: 13px; font-weight: 600; }
 .compare-side-body { overflow-x: auto; }
 .compare-side-body > .compare-figure { margin: 0 auto; }
 .compare-side-ref { font-family: var(--mono); font-size: 11.5px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-/* 高さを px で決めない。図は zoom の掛かる欄の中にあり、px の高さは倍率で伸びて図の文字まで大きくなる(viewBox と幅 100% なら欄の幅で大きさが決まる)。 */
+/* 欄の幅で大きさが決まる図。zoom の掛かる欄の中にあり、px で決めた大きさは倍率で伸びて図の文字まで大きくなるので、高さは決めず
+   (viewBox と幅 100%)、幅の上限と下限は倍率で割る(`sizedWideFigure`)。 */
 .wide-figure { display: block; width: 100%; height: auto; }
 .compare-group rect { fill: var(--sunken); stroke: var(--line); }
 .compare-group text { fill: var(--ink-3); font-size: 11px; font-weight: 600; }
@@ -867,9 +872,8 @@ button.change-item:hover { background: var(--track); }
 .compare-changes { padding: 0 8px 24px; gap: 4px; }
 .compare-counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
 .compare-changes > .compare-counts { margin: 0 4px 8px; }
-.compare-count { display: flex; align-items: baseline; gap: 6px; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-family: var(--mono); font-size: 12px; }
+.compare-count { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 6px; min-width: 0; padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); font-family: var(--mono); font-size: 12px; }
 .compare-count-what { font-family: var(--sans); color: var(--ink-2); }
-.compare-count .mod { color: var(--mod); }
 .compare-change { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border: 1px solid transparent; border-radius: 8px; width: 100%; }
 .compare-change:hover { background: var(--hover); }
 .compare-change.is-picked { background: var(--surface); border-color: var(--accent); }
@@ -877,7 +881,6 @@ button.change-item:hover { background: var(--track); }
 .compare-change-kind { font-size: 11px; color: var(--ink-3); }
 .compare-change-name { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
 .compare-code { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; color: var(--ink); }
-.compare-review { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.7; }
 .compare-dependency { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; }
 .compare-dependency-direction { flex: none; font-size: 11px; color: var(--ink-3); }
 .compare-dependency-name { font-family: var(--mono); overflow-wrap: anywhere; }
@@ -896,14 +899,15 @@ button.change-item:hover { background: var(--track); }
 .trace-summary-item.is-head .trace-summary-value { font-weight: 600; }
 .trace-summary-key { font-size: 11px; font-weight: 600; color: var(--ink-3); }
 .trace-summary-value { font-size: 13px; line-height: 1.6; }
-.trace-summary .mod { color: var(--mod); }
 .trace-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.trace-stage { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.trace-stage > .trace-figure { margin: 0 auto; }
+.trace-figure-frame { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+.trace-figure-frame > .trace-figure { margin: 0 auto; }
 .trace-card-bg { fill: var(--surface); stroke: var(--line-strong); stroke-width: 1.4; }
-.trace-card.is-actor .trace-card-bg { fill: var(--accent-tint); stroke: var(--accent-ring); }
+.trace-card.is-person .trace-card-bg { fill: var(--person-bg); stroke: var(--person); }
+.trace-card.is-person .trace-card-icon { stroke: var(--person); }
 .trace-card-icon { fill: none; stroke: var(--ink-2); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .trace-card-name { fill: var(--ink); font-size: 12.5px; font-weight: 600; text-anchor: middle; }
+.trace-card-code { fill: var(--ink-3); font-family: var(--mono); font-size: 10.5px; text-anchor: middle; }
 .trace-card-note { font-size: 10.5px; font-weight: 600; text-anchor: middle; fill: var(--ink-3); }
 .trace-card[data-presence="idle"] { opacity: .4; }
 .trace-card[data-presence="idle"] .trace-card-bg { fill: none; stroke-dasharray: 5 4; }
@@ -958,7 +962,7 @@ button.change-item:hover { background: var(--track); }
 .trace-row-body { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; min-width: 0; font-size: 12.5px; line-height: 1.5; }
 .trace-row-name { overflow-wrap: anywhere; }
 .trace-row.is-removed .trace-row-name { text-decoration: line-through; color: var(--ink-3); }
-.trace-row-was { flex-basis: 100%; font-size: 11.5px; color: var(--ink-3); }
+.trace-row-was { flex-basis: 100%; font-size: 11.5px; color: var(--ink-3); text-decoration: line-through; }
 .trace-row-flag { flex-basis: 100%; font-size: 11px; color: var(--mod); }
 @media (max-width: 760px) { .trace-summary, .trace-columns { grid-template-columns: minmax(0, 1fr); } }
 .quiz-questions { padding: 0 10px 24px; gap: 4px; }
@@ -1680,75 +1684,110 @@ button.change-item:hover { background: var(--track); }
     keyOf: (sha, text) => JSON.stringify([sha, text]),
   });
 
-  /** 解説の Target(概要の「このブランチで起きていること」の 1 件が指す先)。 */
-  const Target = Object.freeze({
+  /** まとめ方の組の id。図の組の id と、Target(feature / layer)の行き先に使う。 */
+  const groupKeyOf = (group) => {
+    switch (group.kind) {
+      case "layer":
+        return `layer:${group.layer}`;
+      case "feature":
+        return `feature:${group.feature.id}`;
+      case "unassigned":
+        return "unassigned";
+    }
+  };
+
+  /** 解説の Target(概要の「このブランチで起きていること」の 1 件と、クイズの根拠のチップが指す先)。 */
+  const Target = (() => {
+    /** 構造マップで、その選ぶものが地図にあり選べるか。やりとりは、両端が図の箱のものだけを選べる。 */
+    const isOnMap = (selection, { groupings, entryAt, lookup }) => {
+      switch (selection.kind) {
+        case "group":
+          return Object.values(groupings).flat().some((group) => groupKeyOf(group) === selection.id);
+        case "file":
+          return entryAt.has(selection.id);
+        case "message":
+          return lookup.messages.has(selection.id) && isDrawnMessage(lookup.messages.get(selection.id), entryAt);
+        case "flow":
+          return lookup.flows.has(selection.id);
+      }
+    };
+    const onMap = (selection, explained) => ({ screen: Screens.Map, selection, isReachable: isOnMap(selection, explained) });
+    /** 構成の前後で、その粒度の図にその箱か線があるか。 */
+    const onCompare = (selection, explained) => {
+      const diagram = selection.grain === CompareGrains.Calls ? CompareDiagram.fromCalls(explained) : CompareDiagram.fromModules(explained);
+      return { screen: Screens.Compare, selection, isReachable: CompareDiagram.isSelectable(diagram, selection.id) };
+    };
+    /** 流れ図で、その流れの対応にその番号があるか。 */
+    const onTrace = (selection, { lookup }) => {
+      const flow = lookup.flows.get(selection.flow);
+      return { screen: Screens.Trace, selection, isReachable: flow !== undefined && TraceRows.isSelectable(flow, selection.stepChange) };
+    };
+
     /**
-     * Target を、移る先の画面とそこで選ぶものにする。kind ごとに読むキーは `build-pr-explain.py` の `Variants` と同じで、
-     * `pr-explain-core-cases.sh` が突き合わせる。
-     * @returns 構造マップの `{screen: "map", selection}`(selection は `group`(`grouping` のまとめ方の組の `id`)/ `file`(`id` は
-     *   パス)/ `message` / `flow`)か、構成の前後の `{screen: "compare", grain: "calls", id}`(callBox / callEdge)/
-     *   `{screen: "compare", grain: "modules", path}`(module)か、流れ図の `{screen: "trace", flow, stepChange}`(stepChange。
-     *   stepChange はその流れの対応の 1 始まりの番号)。kind が語彙に無ければ null(ページの形の検査は Target の kind を見ないので、
-     *   届かない行き先として扱う)。指す先が図にあるかは見ない(見るのは行き先の画面の `canShow`)
+     * Target が届く先。kind ごとに読むキーは `build-pr-explain.py` の `Variants` と同じで、`pr-explain-core-cases.sh` が突き合わせる。
+     * @param explained `ExplainedMap.create` の戻り値
+     * @returns `{screen, selection, isReachable}`。screen は行き先の画面。selection はそこで選ぶもので、構造マップは
+     *   `{kind: "group", id, grouping}`(id は `groupKeyOf` の形)/ `{kind: "file", id}`(id はパス)/ `{kind: "message", id}` /
+     *   `{kind: "flow", id}`、構成の前後は `{grain, id}`(module の id はパス)、流れ図は `{flow, stepChange}`。isReachable は、
+     *   指す先がその画面にあって選べるか(構造マップは地図の組・木の項目・両端が図の箱のやりとり・flows の流れ、構成の前後は
+     *   その粒度の図の箱か線、流れ図は対応のある流れのその番号)
      */
-    destinationOf: (target) => {
-      const toMap = (selection) => ({ screen: Screens.Map, selection });
+    const landingOf = (target, explained) => {
       switch (target.kind) {
         case "feature":
-          return toMap({ kind: "group", id: `feature:${target.id}`, grouping: "feature" });
+          return onMap({ kind: "group", id: `feature:${target.id}`, grouping: "feature" }, explained);
         case "layer":
-          return toMap({ kind: "group", id: `layer:${target.layer}`, grouping: "layer" });
+          return onMap({ kind: "group", id: `layer:${target.layer}`, grouping: "layer" }, explained);
         case "file":
-          return toMap({ kind: "file", id: target.path });
+          return onMap({ kind: "file", id: target.path }, explained);
         case "message":
-          return toMap({ kind: "message", id: target.id });
+          return onMap({ kind: "message", id: target.id }, explained);
         case "flow":
-          return toMap({ kind: "flow", id: target.id });
+          return onMap({ kind: "flow", id: target.id }, explained);
         case "callBox":
         case "callEdge":
-          return { screen: Screens.Compare, grain: CompareGrains.Calls, id: target.id };
+          return onCompare({ grain: CompareGrains.Calls, id: target.id }, explained);
         case "module":
-          return { screen: Screens.Compare, grain: CompareGrains.Modules, path: target.path };
+          return onCompare({ grain: CompareGrains.Modules, id: target.path }, explained);
         case "stepChange":
-          return { screen: Screens.Trace, flow: target.flow, stepChange: target.stepChange };
+          return onTrace({ flow: target.flow, stepChange: target.stepChange }, explained);
       }
-      return null;
-    },
-    /**
-     * Target を指すチップの名前。
-     * @param explained `ExplainedMap.create` の戻り値
-     * @returns 「〈行き先の画面の名前〉: 〈指す先の名前〉」(stepChange は「〈流れの名前〉の n 行目」)。指す先が見つからなければ、
-     *   名前の代わりに Target に書いた id・層・パスの綴り(パスはファイル名)を出す。kind が語彙に無ければ、kind の綴りだけ
-     */
-    captionOf: (target, explained) => {
-      const destination = Target.destinationOf(target);
-      if (destination === null) return String(target.kind);
-      const features = explained.explain === null ? [] : listOf(explained.explain.features);
-      const pathNameOf = (path) => (explained.entryAt.has(path) ? ExplainedMap.nameOf(explained.entryAt.get(path), "concept") : ExplainedMap.fileNameOf(path));
-      const nameOf = () => {
-        switch (target.kind) {
-          case "feature":
-            return features.find((feature) => feature.id === target.id)?.label ?? target.id;
-          case "layer":
-            return target.layer;
-          case "file":
-            return pathNameOf(target.path);
-          case "message":
-            return explained.lookup.messages.get(target.id)?.name ?? target.id;
-          case "flow":
-            return explained.lookup.flows.get(target.id)?.label ?? target.id;
-          case "callBox":
-          case "callEdge":
-            return CompareDiagram.nameOf(CompareDiagram.fromCalls(explained), target.id) ?? target.id;
-          case "module":
-            return CompareDiagram.nameOf(CompareDiagram.fromModules(explained), target.path) ?? pathNameOf(target.path);
-          case "stepChange":
-            return `${explained.lookup.flows.get(target.flow)?.label ?? target.flow}の ${target.stepChange} 行目`;
-        }
-      };
-      return `${ScreenLabels[destination.screen]}: ${nameOf()}`;
-    },
-  });
+    };
+
+    return Object.freeze({
+      landingOf,
+      /**
+       * Target を指すチップの名前。
+       * @param explained `ExplainedMap.create` の戻り値
+       * @returns 「〈行き先の画面の名前〉: 〈指す先の名前〉」(stepChange は「〈流れの名前〉の n 行目」)。指す先が見つからなければ、
+       *   名前の代わりに Target に書いた id・層・パスの綴り(パスはファイル名)を出す
+       */
+      captionOf: (target, explained) => {
+        const features = explained.explain === null ? [] : listOf(explained.explain.features);
+        const nameOf = () => {
+          switch (target.kind) {
+            case "feature":
+              return features.find((feature) => feature.id === target.id)?.label ?? target.id;
+            case "layer":
+              return target.layer;
+            case "file":
+            case "module":
+              return ExplainedMap.pathNameOf(explained.entryAt, target.path);
+            case "message":
+              return explained.lookup.messages.get(target.id)?.name ?? target.id;
+            case "flow":
+              return explained.lookup.flows.get(target.id)?.label ?? target.id;
+            case "callBox":
+            case "callEdge":
+              return CompareDiagram.nameOf(CompareDiagram.fromCalls(explained), target.id) ?? target.id;
+            case "stepChange":
+              return `${explained.lookup.flows.get(target.flow)?.label ?? target.flow}の ${target.stepChange} 行目`;
+          }
+        };
+        return `${ScreenLabels[landingOf(target, explained).screen]}: ${nameOf()}`;
+      },
+    });
+  })();
 
   const Screens = Object.freeze({ Map: "map", Story: "story", Test: "test", Impact: "impact", Primer: "primer", Compare: "compare", Trace: "trace", Quiz: "quiz" });
   const isScreen = (value) => Object.values(Screens).includes(value);
@@ -1815,6 +1854,19 @@ button.change-item:hover { background: var(--track); }
   const isStringList = (value) => Array.isArray(value) && value.every(isString);
   /** 配列ならそのまま、それ以外(書いていない・型が違う)なら空の配列にする。 */
   const listOf = (value) => (Array.isArray(value) ? value : []);
+  /** 1 始まりの番号が、count 個の並びの中にあるか。 */
+  const isOrdinalIn = (n, count) => Number.isInteger(n) && n >= 1 && n <= count;
+  /** 語彙(`Vocabulary` の表)のキーなら、そのキー。語彙に無い綴りと書いていないものは null。 */
+  const vocabularyKeyOf = (table, value) => {
+    const isKey = isString(value) && Object.hasOwn(table, value);
+    return isKey ? value : null;
+  };
+  /** やりとり・手順の対応・呼び出しの箱と線の状態(`added` / `changed` / `removed`)。省いたもの(変えていない)は null。 */
+  const changeStatusOf = (value) => vocabularyKeyOf(Vocabulary.messageStatuses, value);
+  /** commitStory の配列のキーの値。commitStory が無い(null)か、配列でなければ空の配列。 */
+  const storyListOf = (story, key) => (story === null ? [] : listOf(story[key]));
+  /** 流れの手順の、変更後(`steps`)→ 変更前(`beforeSteps`)の並び。 */
+  const everyStepOf = (flow) => [...listOf(flow.steps), ...listOf(flow.beforeSteps)];
   /** id の並びのうち表に有るものを、表の値にして id の順に並べる。表に無い id は外す。 */
   const valuesIn = (table, ids) => listOf(ids).filter((id) => table.has(id)).map((id) => table.get(id));
   const optionalText = (value) => (isString(value) ? value : null);
@@ -2055,16 +2107,17 @@ button.change-item:hover { background: var(--track); }
     });
   })();
 
-  /** ページが組み立てに使う解説の形。道筋とその先の値の種類(`Routes`)と、欠けてはいけない道筋(`Required`)で持つ。 */
+  /**
+   * ページが組み立てに使う解説の形。道筋とその先の値の種類(`Routes`)と、欠けてはいけない道筋(`Required`)と、kind が語彙に
+   * なければいけない道筋(`Kinds`)で持つ。どれも `build-pr-explain.py` の Shapes・Variants から導いたものと同じ並びで、
+   * `pr-explain-core-cases.sh` が突き合わせる。
+   */
   const ExplainShape = (() => {
-    // 形を見る道筋と、その先の値の種類。`build-pr-explain.py` の Shapes から導いたものと同じ並びで、`pr-explain-core-cases.sh` が
-    // 突き合わせる。primers・terms と、features の review・commitStories の featureRanges・calls・actors・quiz と、flows の gist・text・
-    // beforeSteps・stepChanges・measure の下は Shapes から機械的に導くので、文字列をすべて見る(組み立てが落ちるキーを選り分けない)。
-    // 必須の欠けも kind ごとに見る(`Required`)。`Dom.proseParts` と `TermMarks.piecesOf` は文を文字列として割り、抜粋の段は
-    // `excerptBoxesOf` が `excerpt` の中を読むので、文字列でない値も欠けた値も組み立てを落とし、ページ全体を出なくする。impact は
-    // 構造と、短くして描く sha の並び(`impact.changed.specs[].shas`。文字列でないと組み立てが落ちる)だけを見る(文は文字として
-    // 入れるだけなので、表示できている解説を「解説なし」に変えない)。tests の下は Excerpt の中だけ
-    // 見る(`ExcerptRows` が強調の要素を読む)。
+    // 型を見る道筋: impact は構造と、短くして描く sha の並び(`impact.changed.specs[].shas`)だけ。primers・terms・features の
+    // review・commitStories の featureRanges・calls・actors・quiz・flows の gist・text・beforeSteps・stepChanges・measure の下は
+    // 文字列もすべて。overview の highlights はオブジェクトの形だけ。tests の下は Excerpt の中だけ(`ExcerptRows` が強調の要素を読む)。
+    // impact の文を見ないのは、文字として入れるだけで、表示できている解説を「解説なし」に変えないため。
+    // 文字列もすべて見るのは、文を割る `Dom.proseParts`・`TermMarks.piecesOf` と `excerptBoxesOf` が、型の違う値でページ全体を落とすため。
     const ShapeKinds = Object.freeze({
       record: isRecord,
       records: isListOfRecords,
@@ -2181,12 +2234,14 @@ button.change-item:hover { background: var(--track); }
       ["quiz[].go[].flow", "id"],
       ["quiz[].options", "texts"],
       ["quiz[].items", "texts"],
+      ["overview.highlights", "records"],
+      ["overview.highlights[].go", "record"],
       ["tests[].excerpt.emphasis", "records"],
     ]);
-    // 欠けていれば崩れとする道筋。primers・terms の下の必須のキーのうち、値が文(text)か 1 つのオブジェクト(record)のもの。
-    // `kinds` は、手前のオブジェクトが kind で持つキーの決まるもの(Variant)なら、そのキーを必須とする kind の並びで、それ以外の
-    // kind のオブジェクトには求めない。kind に依らないオブジェクト(Shape)なら null で、どれにも求める。Shapes と Variants から
-    // 導いたものと同じ並びで、`pr-explain-core-cases.sh` が突き合わせる。配列は欠けても `listOf` が空として読むので入れない。
+    // 欠けていれば崩れとする道筋。primers・terms の下の必須のキーのうち値が文(text)か 1 つのオブジェクト(record)のものと、quiz の
+    // 下の必須のキーすべて。`kinds` は、手前のオブジェクトが kind で持つキーの決まるもの(Variant)なら、そのキーを必須とする kind の
+    // 並びで、それ以外の kind のオブジェクトには求めない。kind に依らないオブジェクト(Shape)なら null で、どれにも求める。
+    // primers・terms の下の配列は、欠けても `listOf` が空として読むので入れない。
     const Required = Object.freeze([
       { route: "primers[].category", kinds: ["language", "codebase"] },
       { route: "primers[].label", kinds: ["language", "codebase"] },
@@ -2202,6 +2257,27 @@ button.change-item:hover { background: var(--track); }
       { route: "primers[].occurrences[].text", kinds: null },
       { route: "terms[].label", kinds: null },
       { route: "terms[].text", kinds: null },
+      { route: "quiz[].id", kinds: ["choice", "yesno", "order"] },
+      { route: "quiz[].title", kinds: ["choice", "yesno", "order"] },
+      { route: "quiz[].prompt", kinds: ["choice", "yesno", "order"] },
+      { route: "quiz[].why", kinds: ["choice", "yesno", "order"] },
+      { route: "quiz[].go", kinds: ["choice", "yesno", "order"] },
+      { route: "quiz[].go[].id", kinds: ["feature", "message", "flow", "callBox", "callEdge"] },
+      { route: "quiz[].go[].layer", kinds: ["layer"] },
+      { route: "quiz[].go[].path", kinds: ["file", "module"] },
+      { route: "quiz[].go[].flow", kinds: ["stepChange"] },
+      { route: "quiz[].go[].stepChange", kinds: ["stepChange"] },
+      { route: "quiz[].options", kinds: ["choice"] },
+      { route: "quiz[].answer", kinds: ["choice"] },
+      { route: "quiz[].holds", kinds: ["yesno"] },
+      { route: "quiz[].items", kinds: ["order"] },
+    ]);
+    // kind が語彙(`kinds`)に無ければ崩れとする道筋。overview の highlights と quiz の下で、kind で形が決まるオブジェクトの `kind`。
+    // 使う側(`Target.landingOf`・`Quiz`・クイズの画面)は、kind ごとの switch で語彙の外を受けない。
+    const Kinds = Object.freeze([
+      { route: "overview.highlights[].go.kind", kinds: ["feature", "layer", "file", "message", "flow", "callBox", "callEdge", "module", "stepChange"] },
+      { route: "quiz[].kind", kinds: ["choice", "yesno", "order"] },
+      { route: "quiz[].go[].kind", kinds: ["feature", "layer", "file", "message", "flow", "callBox", "callEdge", "module", "stepChange"] },
     ]);
 
     /** 道筋の先の値を集める。途中が欠けていれば集めない(必須の欠けは `lacks` が見る)。 */
@@ -2214,27 +2290,33 @@ button.change-item:hover { background: var(--track); }
       if (!isEach) return valuesAt(inner, rest);
       return Array.isArray(inner) ? inner.flatMap((item) => valuesAt(item, rest)) : [];
     };
+    /** 道筋の最後の段のキーを持つ(はずの)オブジェクト。 */
+    const ownersOf = (explain, route) => valuesAt(explain, route.split(".").slice(0, -1)).filter(isRecord);
+    const lastKeyOf = (route) => route.split(".").at(-1);
     /** `Required` の 1 件の道筋の最後の段のキーが、その手前のオブジェクトのうち、そのキーを求めるもの(`kinds`)のどれかに無いか。 */
     const lacks = (explain, { route, kinds }) => {
-      const steps = route.split(".");
-      const key = steps[steps.length - 1];
-      const isAsked = (owner) => isRecord(owner) && (kinds === null || kinds.includes(owner.kind));
-      return valuesAt(explain, steps.slice(0, -1)).some((owner) => isAsked(owner) && owner[key] === undefined);
+      const isAsked = (owner) => kinds === null || kinds.includes(owner.kind);
+      const isLacking = (owner) => isAsked(owner) && owner[lastKeyOf(route)] === undefined;
+      return ownersOf(explain, route).some(isLacking);
     };
+    /** `Kinds` の 1 件の道筋の kind が、語彙(`kinds`)に無いオブジェクトがあるか。 */
+    const hasUnknownKind = (explain, { route, kinds }) => ownersOf(explain, route).some((owner) => !kinds.includes(owner[lastKeyOf(route)]));
     const depthOf = (route) => route.split(".").length;
 
     return Object.freeze({
       Routes,
       Required,
+      Kinds,
       /**
        * ページが組み立てに使う形を見る。
-       * @returns 型の違う道筋か、必須のキー(`Required`)が欠けた道筋(`impact.tables[].outcomes` の形)。崩れが 2 か所以上なら最も外側のもの。
-       *   崩れていなければ null
+       * @returns 型の違う道筋か、必須のキー(`Required`)が欠けた道筋(`impact.tables[].outcomes` の形)か、kind が語彙に無い道筋
+       *   (`quiz[].kind` の形)。崩れが 2 か所以上なら最も外側のもの。崩れていなければ null
        */
       problemOf: (explain) => {
         const mistyped = Routes.filter(([route, kind]) => valuesAt(explain, route.split(".")).some((value) => !ShapeKinds[kind](value))).map(([route]) => route);
         const lacking = Required.filter((required) => lacks(explain, required)).map(({ route }) => route);
-        const broken = [...mistyped, ...lacking];
+        const unknown = Kinds.filter((known) => hasUnknownKind(explain, known)).map(({ route }) => route);
+        const broken = [...mistyped, ...lacking, ...unknown];
         if (broken.length === 0) return null;
         return broken.reduce((outer, candidate) => (depthOf(candidate) < depthOf(outer) ? candidate : outer));
       },
@@ -2488,8 +2570,9 @@ button.change-item:hover { background: var(--track); }
 
     /**
      * ページが組み立てに使う大まかな形だけを見る。細かい形は公開する前に build-pr-explain.py が見ている。
-     * @returns 型が違うか、必須なのに欠けたキー(`impact`・`primers`・`terms`・`features[].review`・`commitStories[].featureRanges`・
-     *   `calls`・`actors`・`quiz`・flows の gist・text・beforeSteps・stepChanges・measure・`tests[].excerpt.emphasis` は道筋)。どちらも無ければ null
+     * @returns 型が違うか、必須なのに欠けたか、kind が語彙に無いキー(`impact`・`primers`・`terms`・`features[].review`・
+     *   `commitStories[].featureRanges`・`calls`・`actors`・`quiz`・`overview.highlights`・flows の gist・text・beforeSteps・stepChanges・
+     *   measure・`tests[].excerpt.emphasis` は道筋)。どれも無ければ null
      */
     const shapeProblemOf = (explain) => {
       const overview = explain.overview;
@@ -2676,22 +2759,23 @@ button.change-item:hover { background: var(--track); }
     };
 
     /** 流れ図のカードの絵。語彙(`Vocabulary.cardIcons`)に無い綴りと書いていないものは null(箱の絵)。 */
-    const cardIconOf = (icon) => (isString(icon) && Object.hasOwn(Vocabulary.cardIcons, icon) ? icon : null);
+    const cardIconOf = (icon) => vocabularyKeyOf(Vocabulary.cardIcons, icon);
 
     /**
-     * 解説から、ページが名前で引く一覧。`endNames` と `endIcons` は、やりとりの端(concepts の path か actors の id)の名前と
-     * 流れ図のカードの絵。名前は concept の name、無ければ actor の label。絵は書いた icon で、書かなければ actor は person、
-     * concept は null(箱の絵)。
+     * 解説から、ページが名前で引く一覧。`endNameOf` と `endIcons` は、やりとりの端(concepts の path か actors の id)の名前と
+     * 流れ図のカードの絵。名前は concept の name、無ければ actor の label で、どちらにも無い端は端の綴りのまま。絵は書いた icon で、
+     * 書かなければ actor は person、concept は null(箱の絵)。
      */
     const lookupOf = (explain) => {
       const concepts = explainListOf(explain, "concepts");
       const actors = explainListOf(explain, "actors");
+      const endNames = new Map([...actors.map((actor) => [actor.id, actor.label]), ...concepts.map((concept) => [concept.path, concept.name])]);
       return {
         conceptNames: new Map(concepts.map((concept) => [concept.path, concept.name])),
         flows: new Map(explainListOf(explain, "flows").map((flow) => [flow.id, flow])),
         messages: new Map(explainListOf(explain, "messages").map((message) => [message.id, message])),
         actors: new Map(actors.map((actor) => [actor.id, actor])),
-        endNames: new Map([...actors.map((actor) => [actor.id, actor.label]), ...concepts.map((concept) => [concept.path, concept.name])]),
+        endNameOf: (end) => endNames.get(end) ?? end,
         endIcons: new Map([
           ...actors.map((actor) => [actor.id, actor.icon === undefined ? "person" : cardIconOf(actor.icon)]),
           ...concepts.map((concept) => [concept.path, cardIconOf(concept.icon)]),
@@ -2699,12 +2783,29 @@ button.change-item:hover { background: var(--track); }
       };
     };
 
+    // 地図の変更ファイルの status のうち、状態(`changeOf`)の changed でないもの。R(移動)と M は changed。
+    const FileChanges = Object.freeze({ A: "added", D: "removed" });
+    /** 木の項目の、この PR での状態。足したファイルは added、消したファイルは removed、ほかの変更は changed、変えていなければ null。 */
+    const changeOf = (entry) => (entry.changed ? FileChanges[entry.status] ?? "changed" : null);
+
+    /**
+     * やりとりの端のうち、この PR で増えた・消えたもの。concept の端は足した・消したファイル(`changeOf`)、actor の端は書いた status。
+     * @returns 端 → `added` / `removed` の表(どちらでもない端は無い)
+     */
+    const endStatusesOf = (entries, explain) => {
+      const isComingOrGoing = (status) => status === "added" || status === "removed";
+      const files = entries.map((entry) => [entry.path, changeOf(entry)]);
+      const actors = explainListOf(explain, "actors").map((actor) => [actor.id, changeStatusOf(actor.status)]);
+      return new Map([...files, ...actors].filter(([, status]) => isComingOrGoing(status)));
+    };
+
     /**
      * 地図と解説を合わせる。解説が無い・使えないときも、地図だけで 8 画面の材料を作る。
      * @param map change-map.json の中身(`isReadableMap` が真のもの)
      * @param source 解説の読み込み結果(`readingOf` の source と同じ)
      * @returns 画面が使う材料。解説の状態は `reading`(`explained` / `missing` と理由)と `freshness` に出る。
-     *   `explain` は使える解説(無ければ null)、`lookup` はそこから名前で引く一覧、`entryAt` はパスから木の項目を、
+     *   `explain` は使える解説(無ければ null)、`lookup` はそこから名前で引く一覧、`entryAt` はパスから木の項目を、`endStatuses` は
+     *   やりとりの端のうちこの PR で増えた・消えたものを(`endStatusesOf`)、
      *   `testAt` は解説のテストの id から `tests` の 1 件を引く表、`commitAt` は地図のコミットを sha で引く表、`impactTopics` は
      *   振る舞いの節の並び(`ImpactTopics`。振る舞いとテストの 2 画面が読む。指した技術の手引きの節は、解説の `primers` から引いた位置で持つ)、`primerTopics` は技術の手引きの節の並び(`PrimerTopics`)
      */
@@ -2736,6 +2837,7 @@ button.change-item:hover { background: var(--track); }
         freshness: freshnessOf({ explain, head: map.head, commits: map.commits, explainedAt }),
         entries,
         entryAt,
+        endStatuses: endStatusesOf(entries, explain),
         dependencies: map.dependencies,
         groupings: groupingsOf({ groups: map.groups, entries, explain }),
         unmappedConcepts: concepts.filter((concept) => !mapPaths.has(concept.path)),
@@ -2761,16 +2863,24 @@ button.change-item:hover { background: var(--track); }
       });
     };
 
+    /**
+     * 箱と木に出す名前。
+     * @param naming `concept`(concept 名。無ければファイル名)/ `file`(ファイル名)
+     */
+    const nameOf = (entry, naming) => (naming === "concept" && entry.conceptName !== null ? entry.conceptName : entry.fileName);
+
     return Object.freeze({
       create,
       fileNameOf,
+      nameOf,
+      changeOf,
+      /**
+       * パスの名前。木の項目なら concept 名(無ければファイル名)、木に無いパスはファイル名。
+       * @param entryAt パスから木の項目を引く表(`create` の `entryAt`)
+       */
+      pathNameOf: (entryAt, path) => (entryAt.has(path) ? nameOf(entryAt.get(path), "concept") : fileNameOf(path)),
       /** @returns このページが読める版(2)の地図か。違えば画面を組まず、版を添えて案内を出す */
       isReadableMap: (map) => isRecord(map) && map.version === MapVersion,
-      /**
-       * 箱と木に出す名前。
-       * @param naming `concept`(concept 名。無ければファイル名)/ `file`(ファイル名)
-       */
-      nameOf: (entry, naming) => (naming === "concept" && entry.conceptName !== null ? entry.conceptName : entry.fileName),
     });
   })();
 
@@ -2836,16 +2946,16 @@ button.change-item:hover { background: var(--track); }
     const numbered = (notes, from) => notes.map((note, index) => ({ ...note, side: sideOf(note), n: from + index + 1 }));
 
     /**
-     * まとまり(hunk か消したファイルの本文)の機能。入る範囲のうち最初に書いたものの機能にする。
+     * まとまり(hunk か消したファイルの本文)の機能。入る範囲の機能すべて。
      * @param ranges そのファイルへの機能の範囲(書いた順)
      * @param covers 範囲がそのまとまりに入るか
-     * @returns `{id, texts}`(`texts` はその機能の入った範囲の文を、書いた順に重複なく並べたもの)。どの範囲も入らなければ null
+     * @returns `{id, texts}` の並び(機能は入った範囲を書いた順に重複なく。`texts` はその機能の入った範囲の文を、書いた順に重複なく)。
+     *   どの範囲も入らなければ空(機能なし)
      */
-    const featureOf = (ranges, covers) => {
+    const featuresOf = (ranges, covers) => {
       const covering = ranges.filter(covers);
-      if (covering.length === 0) return null;
-      const id = covering[0].feature;
-      return { id, texts: [...new Set(covering.filter((range) => range.feature === id).map((range) => range.text))] };
+      const ids = [...new Set(covering.map((range) => range.feature))];
+      return ids.map((id) => ({ id, texts: [...new Set(covering.filter((range) => range.feature === id).map((range) => range.text))] }));
     };
 
     /** @param from そのファイルの最初の注釈の番号の手前(コミットの中で前のファイルの注釈の数) */
@@ -2856,9 +2966,9 @@ button.change-item:hover { background: var(--track); }
       const firstNumbers = placed.map((group, index) => from + placed.slice(0, index).reduce((sum, earlier) => sum + earlier.length, 0));
       const placedCount = placed.reduce((sum, group) => sum + group.length, 0);
       const remaining = file.truncated === true ? file.patchLines - file.patch.split("\n").length : 0;
-      const featureOfHunk = (hunk) => featureOf(ranges, (range) => hunk.lines.some((line) => hasLine(range, line)));
+      const featuresOfHunk = (hunk) => featuresOf(ranges, (range) => hunk.lines.some((line) => hasLine(range, line)));
       return {
-        body: { kind: "hunks", hunks: hunks.map((hunk, index) => ({ ...hunk, notes: numbered(placed[index], firstNumbers[index]), feature: featureOfHunk(hunk) })), remaining },
+        body: { kind: "hunks", hunks: hunks.map((hunk, index) => ({ ...hunk, notes: numbered(placed[index], firstNumbers[index]), features: featuresOfHunk(hunk) })), remaining },
         unplaced: numbered(notes.filter((note, index) => placedAt[index] < 0), from + placedCount),
       };
     };
@@ -2870,7 +2980,7 @@ button.change-item:hover { background: var(--track); }
       const isOnDeletedLine = (span) => sideOf(span) === "old" && (lines === null || span.start <= lines);
       const onDeleted = notes.filter(isOnDeletedLine);
       return {
-        body: { kind: "deleted", lines, notes: numbered(onDeleted, from), feature: featureOf(ranges, isOnDeletedLine) },
+        body: { kind: "deleted", lines, notes: numbered(onDeleted, from), features: featuresOf(ranges, isOnDeletedLine) },
         unplaced: numbered(notes.filter((note) => !isOnDeletedLine(note)), from + onDeleted.length),
       };
     };
@@ -2886,8 +2996,6 @@ button.change-item:hover { background: var(--track); }
       return { ...shown, ...hunkBodyOf(file, spans, from) };
     };
 
-    const storyListOf = (story, key) => (story !== null && Array.isArray(story[key]) ? story[key] : []);
-
     return Object.freeze({
       hasLine,
       /**
@@ -2895,12 +3003,13 @@ button.change-item:hover { background: var(--track); }
        * ファイルの順に「hunk(または消したファイルの本文)の注釈 → 差分に出ていない注釈」と通す。どの hunk にも入らない注釈は
        * `unplaced` に回す。hunk と消したファイルの本文には、行が 1 つでも入る機能の範囲(`featureRanges`)から機能を付ける。
        *
-       * 番号をファイルの中で通さないのは、機能の表示で同じまとまりだけを抜き出しても番号が変わらないようにするため。
+       * 番号はここでコミット全体に 1 回だけ振り、機能の表示で抜き出したまとまりの中では振り直さない。そうすると、同じ注釈は
+       * コミットの表示でも機能の表示でも同じ番号になる。
        * @param commit 地図のコミット(マージは files が空)
        * @param story そのコミットの commitStory。無ければ null
        * @returns `files`(本文の `body` は `hunks` / `unchanged`(patch が空)/ `deleted` / `binary`)と、そのコミットに無い
        *   パスへの注釈 `strayNotes`(番号なし)。`hunks` の hunk は `header` / `lines` / `openingLines`(変更前と変更後の開いた行)/
-       *   `notes` / `feature` を持ち、`deleted` の本文は `lines` / `notes` / `feature` を持つ。`feature` は `{id, texts}` か null
+       *   `notes` / `features` を持ち、`deleted` の本文は `lines` / `notes` / `features` を持つ。`features` は `featuresOf` の並び
        */
       create: (commit, story) => {
         const notes = storyListOf(story, "notes");
@@ -2945,22 +3054,28 @@ button.change-item:hover { background: var(--track); }
     });
   })();
 
-  /** 機能 × コミットの表。コミットの差分のまとまり(hunk と消したファイルの本文)を、`CommitDiff` が付けた機能ごとに集める。 */
+  /**
+   * 機能 × コミットの表。コミットの差分のまとまり(hunk と消したファイルの本文)を、`CommitDiff` が付けた機能ごとに集める。
+   * 2 つ以上の機能が入るまとまりは、入る機能それぞれに数える。
+   */
   const FeatureMatrix = (() => {
     // 機能の色は固定の 8 色を features の順に回す。機能の数だけ色を作ると、数が増えたときに隣の色を見分けられない。
     const HueCount = 8;
     const NoHue = "none";
 
     const lineCountOf = (lines, sign) => lines.filter((line) => line.sign === sign).length;
+    const idOf = (feature) => (feature === null ? null : feature.id);
+    /** まとまりの機能(`CommitDiff` の `features`)が、その機能の id(機能なしは null)を持つか。機能なしは、どの機能も入らないまとまり。 */
+    const isIn = (features, id) => (id === null ? features.length === 0 : features.some((feature) => feature.id === id));
 
     /** 差分のまとまりを、機能・パス・行数の組にする。切った patch の残りの行は数えない。 */
     const unitsOf = (diff) => diff.files.flatMap((file) => {
       const body = file.body;
       switch (body.kind) {
         case "hunks":
-          return body.hunks.map((hunk) => ({ path: file.path, feature: hunk.feature, additions: lineCountOf(hunk.lines, "+"), deletions: lineCountOf(hunk.lines, "-") }));
+          return body.hunks.map((hunk) => ({ path: file.path, features: hunk.features, additions: lineCountOf(hunk.lines, "+"), deletions: lineCountOf(hunk.lines, "-") }));
         case "deleted":
-          return [{ path: file.path, feature: body.feature, additions: 0, deletions: body.lines ?? 0 }];
+          return [{ path: file.path, features: body.features, additions: 0, deletions: body.lines ?? 0 }];
         case "unchanged":
         case "binary":
           return [];
@@ -2981,15 +3096,36 @@ button.change-item:hover { background: var(--track); }
 
     /** features に無い機能を指す範囲を外した commitStory(外した範囲にしか入らない hunk は、機能なしになる)。 */
     const storyWithKnownRanges = (story, known) => {
-      if (story === null || !Array.isArray(story.featureRanges)) return story;
-      return { ...story, featureRanges: story.featureRanges.filter((range) => known.has(range.feature)) };
+      if (story === null) return story;
+      return { ...story, featureRanges: storyListOf(story, "featureRanges").filter((range) => known.has(range.feature)) };
     };
 
     /** マスの一言。その機能のまとまりに入った範囲の文を、commitStory に書いた順に重複なく並べる。 */
-    const cellTextsOf = (units, story) => {
-      const texts = new Set(units.flatMap((unit) => unit.feature.texts));
-      const written = story === null || !Array.isArray(story.featureRanges) ? [] : story.featureRanges.map((range) => range.text);
-      return [...new Set(written)].filter((text) => texts.has(text));
+    const cellTextsOf = (units, { story, id }) => {
+      const texts = new Set(units.flatMap((unit) => unit.features.filter((feature) => feature.id === id).flatMap((feature) => feature.texts)));
+      return [...new Set(storyListOf(story, "featureRanges").map((range) => range.text))].filter((text) => texts.has(text));
+    };
+
+    /**
+     * ファイルのうち、その機能のまとまりだけを残したもの。差分に出ていない行への注釈は外す(コミットの表示にだけ出す)。
+     * 行数はファイル全体ではなく、残したまとまりの行を数える。
+     * @returns その機能のまとまりが無ければ null
+     */
+    const fileInFeatureOf = (file, id) => {
+      const body = file.body;
+      switch (body.kind) {
+        case "hunks": {
+          const hunks = body.hunks.filter((hunk) => isIn(hunk.features, id));
+          if (hunks.length === 0) return null;
+          const countOf = (sign) => hunks.reduce((sum, hunk) => sum + lineCountOf(hunk.lines, sign), 0);
+          return { ...file, additions: countOf("+"), deletions: countOf("-"), body: { ...body, hunks, remaining: 0 }, unplaced: [] };
+        }
+        case "deleted":
+          return isIn(body.features, id) ? { ...file, unplaced: [] } : null;
+        case "unchanged":
+        case "binary":
+          return null;
+      }
     };
 
     return Object.freeze({
@@ -3002,7 +3138,7 @@ button.change-item:hover { background: var(--track); }
        *   古い順)・`diffAt`(列のコミットの sha → `CommitDiff.create` の差分。features に無い機能を指す範囲は外す)・`rows`(行)。行は
        *   features の順に、変更が 1 行以上ある機能だけを並べ、機能なしのまとまりがあれば最後に機能なしの行を足す。行は
        *   `feature`(機能なしは null)・`hue`・`cells`(列ごとに `{sha, additions, deletions, texts}`、まとまりが無ければ null)・
-       *   `additions` / `deletions`・`commitCount`・`fileCount` を持つ
+       *   `additions` / `deletions`・`commitCount`・`fileCount` を持つ。2 つ以上の機能が入るまとまりの行は、入る機能それぞれの行に数える
        */
       create: ({ features, commits }) => {
         const known = new Set(features.map((feature) => feature.id));
@@ -3010,12 +3146,12 @@ button.change-item:hover { background: var(--track); }
         const diffAt = new Map(columns.map((commit) => [commit.sha, CommitDiff.create(commit, storyWithKnownRanges(commit.story, known))]));
         const unitsAt = new Map(columns.map((commit) => [commit.sha, unitsOf(diffAt.get(commit.sha))]));
         const rowOf = (feature) => {
-          const id = feature === null ? null : feature.id;
-          const isMine = (unit) => (unit.feature === null ? null : unit.feature.id) === id;
+          const id = idOf(feature);
+          const isMine = (unit) => isIn(unit.features, id);
           const cells = columns.map((commit) => {
             const mine = unitsAt.get(commit.sha).filter(isMine);
             if (mine.length === 0) return null;
-            const texts = id === null ? [] : cellTextsOf(mine, commit.story);
+            const texts = id === null ? [] : cellTextsOf(mine, { story: commit.story, id });
             return { sha: commit.sha, additions: sumOf(mine, "additions"), deletions: sumOf(mine, "deletions"), texts };
           });
           const units = columns.flatMap((commit) => unitsAt.get(commit.sha).filter(isMine));
@@ -3030,7 +3166,7 @@ button.change-item:hover { background: var(--track); }
           };
         };
         const rows = [...features.map(rowOf), rowOf(null)].filter((row) => row.additions + row.deletions > 0);
-        const hasRanges = commits.some((commit) => commit.story !== null && Array.isArray(commit.story.featureRanges) && commit.story.featureRanges.length > 0);
+        const hasRanges = commits.some((commit) => storyListOf(commit.story, "featureRanges").length > 0);
         return { isAvailable: hasRanges, commits: columns, diffAt, rows };
       },
       /** @returns 機能の一覧の並び。変更行数の多い順(同じなら features の順)で、機能なしは最後 */
@@ -3044,8 +3180,23 @@ button.change-item:hover { background: var(--track); }
         const column = matrix.commits.findIndex((commit) => commit.sha === sha);
         return column < 0 ? [] : matrix.rows.filter((row) => row.cells[column] !== null);
       },
+      /**
+       * 行の機能のまとまり(`CommitDiff` の `features`)から、その行を引く。機能なし(空)は機能なしの行。
+       * @returns まとまりの機能の順の行。表に無い機能(変更が 0 行)は外す
+       */
+      rowsOfFeatures: (matrix, features) => {
+        const ids = features.length === 0 ? [null] : features.map((feature) => feature.id);
+        return ids.flatMap((id) => matrix.rows.filter((row) => idOf(row.feature) === id));
+      },
+      /**
+       * そのコミットの、その行の機能のファイル(`fileInFeatureOf`)。機能の表示が 1 コミットぶん描くもの。
+       * @returns 差分のファイルの順。その機能のまとまりが無いファイルは外す
+       */
+      filesIn: (matrix, { sha, row }) => matrix.diffAt.get(sha).files.map((file) => fileInFeatureOf(file, idOf(row.feature))).filter((file) => file !== null),
+      /** @returns その行の機能の review(機能なしと、review を書いていない機能は空) */
+      reviewOf: (row) => (row.feature === null ? [] : listOf(row.feature.review)),
       /** @returns 「機能ごとに見てほしいところ」に出す行。review を 1 件以上書いた機能の行を、表の行の順(features の順)に */
-      reviewRowsOf: (matrix) => matrix.rows.filter((row) => row.feature !== null && Array.isArray(row.feature.review) && row.feature.review.length > 0),
+      reviewRowsOf: (matrix) => matrix.rows.filter((row) => FeatureMatrix.reviewOf(row).length > 0),
     });
   })();
 
@@ -3223,32 +3374,65 @@ button.change-item:hover { background: var(--track); }
       }
     };
 
-    /** 線の両端と制御点。上下に離れていれば上下の辺から、重なっていれば左右の辺から出す。 */
-    const endsOf = (source, target) => {
-      const sourceCenter = { x: source.x + source.width / 2, y: source.y + source.height / 2 };
-      const targetCenter = { x: target.x + target.width / 2, y: target.y + target.height / 2 };
-      if (target.y >= source.y + source.height + 2) {
-        const from = [sourceCenter.x, source.y + source.height];
-        const to = [targetCenter.x, target.y - 1];
-        const bend = Math.max(24, (to[1] - from[1]) / 2);
-        return { from, to, controls: [from[0], from[1] + bend, to[0], to[1] - bend], direction: "d", back: "u" };
+    const Centered = Object.freeze({ from: 0.5, to: 0.5 });
+    const centerOf = (unit) => ({ x: unit.x + unit.width / 2, y: unit.y + unit.height / 2 });
+    /** 線が出る辺と入る辺。上下に離れていれば上下の辺、重なっていれば左右の辺。 */
+    const sidesOf = (source, target) => {
+      if (target.y >= source.y + source.height + 2) return { from: "bottom", to: "top" };
+      if (target.y + target.height <= source.y - 2) return { from: "top", to: "bottom" };
+      return centerOf(target).x > centerOf(source).x ? { from: "right", to: "left" } : { from: "left", to: "right" };
+    };
+    /** 単位の辺の上の点。share は辺の上の位置(左 / 上の端が 0、右 / 下の端が 1)、gap は辺から外へ離す幅。 */
+    const pointOnSide = (unit, side, { share, gap }) => {
+      switch (side) {
+        case "top":
+          return [unit.x + unit.width * share, unit.y - gap];
+        case "bottom":
+          return [unit.x + unit.width * share, unit.y + unit.height + gap];
+        case "left":
+          return [unit.x - gap, unit.y + unit.height * share];
+        case "right":
+          return [unit.x + unit.width + gap, unit.y + unit.height * share];
       }
-      if (target.y + target.height <= source.y - 2) {
-        const from = [sourceCenter.x, source.y];
-        const to = [targetCenter.x, target.y + target.height + 1];
-        const bend = Math.max(40, (from[1] - to[1]) / 2);
-        return { from, to, controls: [from[0], from[1] - bend, to[0], to[1] + bend], direction: "u", back: "d" };
+    };
+    // 入る辺ごとの線の進む向き(終わりの矢じり)と、出る辺ごとの始まりの矢じりの向き(d / u / r / l)。
+    const ArrivingDirections = Object.freeze({ top: "d", bottom: "u", left: "r", right: "l" });
+    const LeavingBacks = Object.freeze({ bottom: "u", top: "d", right: "l", left: "r" });
+
+    /**
+     * 線の両端と制御点。上下に離れていれば上下の辺から、重なっていれば左右の辺から出す。
+     * @param shares 出る辺と入る辺の上の位置(`pointOnSide` の share)。省けばどちらも辺の中ほど
+     */
+    const endsOf = (source, target, shares = Centered) => {
+      const sides = sidesOf(source, target);
+      const from = pointOnSide(source, sides.from, { share: shares.from, gap: 0 });
+      const to = pointOnSide(target, sides.to, { share: shares.to, gap: 1 });
+      const direction = ArrivingDirections[sides.to];
+      const back = LeavingBacks[sides.from];
+      switch (direction) {
+        case "d": {
+          const bend = Math.max(24, (to[1] - from[1]) / 2);
+          return { from, to, controls: [from[0], from[1] + bend, to[0], to[1] - bend], direction, back };
+        }
+        case "u": {
+          const bend = Math.max(40, (from[1] - to[1]) / 2);
+          return { from, to, controls: [from[0], from[1] - bend, to[0], to[1] + bend], direction, back };
+        }
+        case "r": {
+          const bend = Math.max(16, (to[0] - from[0]) / 2);
+          return { from, to, controls: [from[0] + bend, from[1], to[0] - bend, to[1]], direction, back };
+        }
+        case "l": {
+          const bend = Math.max(16, (from[0] - to[0]) / 2);
+          return { from, to, controls: [from[0] - bend, from[1], to[0] + bend, to[1]], direction, back };
+        }
       }
-      if (targetCenter.x > sourceCenter.x) {
-        const from = [source.x + source.width, sourceCenter.y];
-        const to = [target.x - 1, targetCenter.y];
-        const bend = Math.max(16, (to[0] - from[0]) / 2);
-        return { from, to, controls: [from[0] + bend, from[1], to[0] - bend, to[1]], direction: "r", back: "l" };
-      }
-      const from = [source.x, sourceCenter.y];
-      const to = [target.x + target.width + 1, targetCenter.y];
-      const bend = Math.max(16, (from[0] - to[0]) / 2);
-      return { from, to, controls: [from[0] - bend, from[1], to[0] + bend, to[1]], direction: "l", back: "r" };
+    };
+
+    /** 両端と制御点を、SVG の道筋と矢じりと、ラベルを置くためのベジェ曲線の 4 点にする。 */
+    const drawnRouteOf = ({ from, to, controls, direction, back }) => {
+      const [x1, y1, c1x, c1y, c2x, c2y, x2, y2] = [...from, ...controls, ...to].map(rounded);
+      return { path: `M${x1} ${y1} C${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}`, head: headAt(x2, y2, direction), tail: headAt(x1, y1, back), bezier: [...from, ...controls, ...to] };
     };
 
     /**
@@ -3256,11 +3440,81 @@ button.change-item:hover { background: var(--track); }
      * @returns SVG の `d`(`path`)、終わりの矢じり(`head`)、始まりの矢じり(`tail`、両向きの線に使う)、
      *   ラベルを置くためのベジェ曲線の 4 点(`bezier`)
      */
-    const routeOf = (source, target) => {
-      const { from, to, controls, direction, back } = endsOf(source, target);
-      const points = [...from, ...controls, ...to].map(rounded);
-      const [x1, y1, c1x, c1y, c2x, c2y, x2, y2] = points;
-      return { path: `M${x1} ${y1} C${c1x} ${c1y} ${c2x} ${c2y} ${x2} ${y2}`, head: headAt(x2, y2, direction), tail: headAt(x1, y1, back), bezier: [...from, ...controls, ...to] };
+    const routeOf = (source, target) => drawnRouteOf(endsOf(source, target));
+
+    // 箱を避けて右へふくらむ線の、ふくらみの幅(最も内側の線)と、外側へ重ねるごとに足す幅。
+    const Bow = Object.freeze({ base: 30, step: 14 });
+
+    /** 上下に離れた 2 つの単位をまっすぐ結ぶ線が、あいだにある別の単位に重なるか。 */
+    const isBlocked = ({ source, target, units }) => {
+      const [upper, lower] = source.y < target.y ? [source, target] : [target, source];
+      const left = Math.min(centerOf(source).x, centerOf(target).x) - ObstaclePad;
+      const right = Math.max(centerOf(source).x, centerOf(target).x) + ObstaclePad;
+      const isBetween = (unit) => unit.y >= upper.y + upper.height && unit.y + unit.height <= lower.y;
+      const isAcross = (unit) => unit.x < right && unit.x + unit.width > left;
+      const isInTheWay = (unit) => unit !== source && unit !== target && isBetween(unit) && isAcross(unit);
+      return units.some(isInTheWay);
+    };
+
+    /**
+     * 同じ単位の同じ辺に出入りする線の、辺の上の位置。相手の位置の順に等間隔に置く。上下の辺は相手の左から、左右の辺は相手の
+     * 下から並べる(右へふくらむ線は、遠い相手ほど外側を回るので、辺の上でも外側の端寄りになる)。
+     * @param ports `{unit, side, other}` の並び(other は線の相手の単位)。同じ辺の口どうしで並べる
+     * @returns port → 辺の上の位置(`pointOnSide` の share)の表
+     */
+    const sharesOf = (ports) => {
+      const keyOf = (port) => `${port.unit.id}|${port.side}`;
+      const isAcross = (side) => side === "top" || side === "bottom";
+      const orderOf = (port) => (isAcross(port.side) ? centerOf(port.other).x : -centerOf(port.other).y);
+      const shareAt = new Map();
+      for (const key of new Set(ports.map(keyOf))) {
+        const same = ports.filter((port) => keyOf(port) === key).toSorted((a, b) => orderOf(a) - orderOf(b));
+        same.forEach((port, rank) => shareAt.set(port, (rank + 1) / (same.length + 1)));
+      }
+      return shareAt;
+    };
+
+    /**
+     * 1 本ずつ描く線の道筋(まとめない)。同じ単位の同じ辺に出入りする線は、辺の上でずらす(`sharesOf`)。上下に離れた 2 つの
+     * 単位をまっすぐ結ぶと、あいだの単位に重なる線は、両端の右の辺から出入りして右へふくらませる。ふくらみは、またぐ高さの
+     * 小さい線ほど内側にする。
+     * @param links `{from, to}`(パスどうし)
+     * @returns `routes`(links と同じ並びの道筋。`routeOf` と同じ形で、端が単位に無いか両端が同じ単位なら null)と、`overflow`
+     *   (ふくらみが図の右端からはみ出す幅。はみ出さなければ 0)
+     */
+    const routesAroundOf = (layout, links) => {
+      const unitAt = new Map(layout.units.map((unit) => [unit.id, unit]));
+      const ends = links.map((link) => ({ source: unitAt.get(layout.unitOf.get(link.from)), target: unitAt.get(layout.unitOf.get(link.to)) }));
+      const isDrawable = ({ source, target }) => source !== undefined && target !== undefined && source !== target;
+      const isVertical = (end) => ["top", "bottom"].includes(sidesOf(end.source, end.target).from);
+      const bowsOf = (end) => isVertical(end) && isBlocked({ ...end, units: layout.units });
+      const drawn = ends.map((end) => (isDrawable(end) ? { ...end, bows: bowsOf(end) } : null));
+      const sidesOfDrawn = (end) => (end.bows ? { from: "right", to: "right" } : sidesOf(end.source, end.target));
+      const sidesAt = drawn.map((end) => (end === null ? null : sidesOfDrawn(end)));
+      // 線ごとの、出る辺と入る辺の口(描かない線は null)。
+      const portsAt = drawn.map((end, index) => (end === null ? null : {
+        from: { unit: end.source, side: sidesAt[index].from, other: end.target },
+        to: { unit: end.target, side: sidesAt[index].to, other: end.source },
+      }));
+      const shareAt = sharesOf(portsAt.filter((ports) => ports !== null).flatMap((ports) => [ports.from, ports.to]));
+      const sharesAt = (index) => ({ from: shareAt.get(portsAt[index].from), to: shareAt.get(portsAt[index].to) });
+      const spanOf = (end) => Math.abs(centerOf(end.target).y - centerOf(end.source).y);
+      const isBowed = ({ end }) => end !== null && end.bows;
+      const bowed = drawn.map((end, index) => ({ end, index })).filter(isBowed).toSorted((a, b) => spanOf(a.end) - spanOf(b.end));
+      const laneOf = new Map(bowed.map(({ index }, lane) => [index, lane]));
+      const bowedEndsOf = (end, index) => {
+        const shares = sharesAt(index);
+        const from = pointOnSide(end.source, "right", { share: shares.from, gap: 0 });
+        const to = pointOnSide(end.target, "right", { share: shares.to, gap: 1 });
+        const reach = Math.max(from[0], to[0]) + Bow.base + laneOf.get(index) * Bow.step;
+        return { from, to, controls: [reach, from[1], reach, to[1]], direction: "l", back: "l" };
+      };
+      const endsAt = drawn.map((end, index) => {
+        if (end === null) return null;
+        return end.bows ? bowedEndsOf(end, index) : endsOf(end.source, end.target, sharesAt(index));
+      });
+      const rightmost = Math.max(layout.width, ...endsAt.filter((found) => found !== null).map((found) => Math.max(found.controls[0], found.controls[2])));
+      return { routes: endsAt.map((found) => (found === null ? null : drawnRouteOf(found))), overflow: rightmost - layout.width };
     };
 
     const pointOn = (bezier, t) => {
@@ -3289,6 +3543,9 @@ button.change-item:hover { background: var(--track); }
     return Object.freeze({
       Levels,
       create,
+      /** @returns ベジェ曲線の 4 点(`bezier`)の、媒介変数 t の点 `{x, y}` */
+      pointOn,
+      routesAroundOf,
       /**
        * 抽象度ごとに開く組。高はすべて畳み、低はすべて開き、中は変更行数の多い上位 ⌈n/3⌉ を開く。
        * @param groups `create` と同じ組(箱の無い組は数えない)
@@ -3403,16 +3660,14 @@ button.change-item:hover { background: var(--track); }
 
   /**
    * 構成の前後の図。呼び出しの粒度(解説の `calls`)とモジュールの粒度(地図の変更ファイルと依存)の箱と線を、変更前と変更後の
-   * 2 枚に同じ配置で描く材料にする。箱と線の `status` は `added` / `removed` / `changed` か、変えていなければ null。
+   * 2 枚に同じ配置で描く材料にする。箱と線の `status` は `added` / `changed` / `removed`(`changeStatusOf`)か、変えていなければ null。
    */
   const CompareDiagram = (() => {
-    const Statuses = ["added", "removed", "changed"];
+    const Statuses = Object.keys(Vocabulary.messageStatuses);
     // 1 枚の図の幅の目安。組を 1 段に並べる数を、この幅に最も大きく収まるものにする(`GraphLayout.create` の room)。
     const RoomWidth = 640;
     const UnmappedGroupId = "";
-    const FileStatuses = { A: "added", D: "removed" };
 
-    const statusOf = (value) => (Statuses.includes(value) ? value : null);
     const isDrawn = (diagram) => diagram.kind === "drawn";
     const boxIn = (diagram, id) => diagram.boxes.find((box) => box.id === id);
     const edgeIn = (diagram, id) => diagram.edges.find((edge) => edge.id === id);
@@ -3432,11 +3687,12 @@ button.change-item:hover { background: var(--track); }
     const layerAtOf = (layerGroups) => new Map(layerGroups.flatMap((group) => [...group.treePaths, ...group.others].map((path) => [path, group.layer])));
 
     /** 箱を端に持つ依存を、増えた / 消えた / 残ったに分ける。依存の相手は、その箱が使う側なら `uses`、使われる側なら `usedBy`。 */
-    const dependenciesOf = (path, { dependencies, nameOfPath }) => {
-      const touching = dependencies.filter((link) => link.from === path || link.to === path);
+    const dependenciesOf = (path, { dependencies, entryAt }) => {
+      const touchesPath = (link) => link.from === path || link.to === path;
+      const touching = dependencies.filter(touchesPath);
       const itemOf = (link) => {
         const other = link.from === path ? link.to : link.from;
-        return { path: other, name: nameOfPath(other), direction: link.from === path ? "uses" : "usedBy" };
+        return { path: other, name: ExplainedMap.pathNameOf(entryAt, other), direction: link.from === path ? "uses" : "usedBy" };
       };
       const withStatus = (status) => touching.filter((link) => link.status === status).map(itemOf);
       return { added: withStatus("added"), removed: withStatus("removed"), kept: withStatus("kept") };
@@ -3460,7 +3716,7 @@ button.change-item:hover { background: var(--track); }
       if (!isRecord(calls)) return null;
       const gist = optionalText(calls.gist);
       const text = optionalText(calls.text);
-      const review = listOf(calls.review).filter(isString);
+      const review = listOf(calls.review);
       const isWritten = gist !== null || text !== null || review.length > 0;
       return isWritten ? { gist, text, review } : null;
     };
@@ -3477,7 +3733,7 @@ button.change-item:hover { background: var(--track); }
         if (explained.explain === null) return { kind: "unexplained" };
         const calls = explained.explain.calls;
         if (!isRecord(calls)) return { kind: "unwritten" };
-        const sidesOf = (item) => ({ status: statusOf(item.status), was: optionalText(item.was), now: optionalText(item.now) });
+        const sidesOf = (item) => ({ status: changeStatusOf(item.status), was: optionalText(item.was), now: optionalText(item.now) });
         const boxes = listOf(calls.boxes).map((box) => ({ id: box.id, name: box.name, role: optionalText(box.role), module: box.module, ...sidesOf(box) }));
         const edges = listOf(calls.edges).map((edge) => ({ id: edge.id, from: edge.from, to: edge.to, code: optionalText(edge.code), ...sidesOf(edge) }));
         return { kind: "drawn", grain: CompareGrains.Calls, boxes, edges, groups: callGroupsOf(boxes, explained.entries) };
@@ -3494,16 +3750,15 @@ button.change-item:hover { background: var(--track); }
       fromModules: (explained) => {
         const { entryAt, dependencies } = explained;
         const isHidden = (path) => entryAt.has(path) && !entryAt.get(path).inGraph;
-        const changed = explained.entries.filter((entry) => entry.changed && entry.inGraph).map((entry) => entry.path);
+        const isDrawnChange = (entry) => entry.changed && entry.inGraph;
+        const changed = explained.entries.filter(isDrawnChange).map((entry) => entry.path);
         const ends = dependencies.filter((link) => link.status !== "kept").flatMap((link) => [link.from, link.to]).filter((path) => !isHidden(path));
         const paths = [...new Set([...changed, ...ends])];
-        const nameOfPath = (path) => (entryAt.has(path) ? ExplainedMap.nameOf(entryAt.get(path), "concept") : ExplainedMap.fileNameOf(path));
         const layerAt = layerAtOf(explained.groupings.layer);
         const boxOf = (path) => {
           const entry = entryAt.get(path);
-          const isChanged = entry !== undefined && entry.changed;
           const oldPath = entry === undefined ? null : entry.oldPath;
-          const name = nameOfPath(path);
+          const name = ExplainedMap.pathNameOf(entryAt, path);
           return {
             id: path,
             path,
@@ -3511,15 +3766,16 @@ button.change-item:hover { background: var(--track); }
             name,
             beforeName: oldPath === null ? name : ExplainedMap.fileNameOf(oldPath),
             layer: layerAt.get(path) ?? null,
-            status: isChanged ? FileStatuses[entry.status] ?? "changed" : null,
-            dependencies: dependenciesOf(path, { dependencies, nameOfPath }),
+            status: entry === undefined ? null : ExplainedMap.changeOf(entry),
+            dependencies: dependenciesOf(path, { dependencies, entryAt }),
           };
         };
         const boxes = paths.map(boxOf);
         const isBox = new Set(paths);
+        const connectsBoxes = (link) => isBox.has(link.from) && isBox.has(link.to);
         const edges = dependencies
-          .filter((link) => isBox.has(link.from) && isBox.has(link.to))
-          .map((link) => ({ id: JSON.stringify([link.from, link.to]), from: link.from, to: link.to, status: statusOf(link.status) }));
+          .filter(connectsBoxes)
+          .map((link) => ({ id: JSON.stringify([link.from, link.to]), from: link.from, to: link.to, status: changeStatusOf(link.status) }));
         const groups = explained.groupings.layer
           .map((group) => ({ id: group.layer, label: group.layer, boxes: boxes.filter((box) => box.layer === group.layer).map((box) => box.id) }))
           .filter((group) => group.boxes.length > 0);
@@ -3564,9 +3820,10 @@ button.change-item:hover { background: var(--track); }
       },
       /**
        * 選んだ箱・線。
-       * @returns 箱は `{kind: "box", box}`、線は `{kind: "edge", edge, from, to}`(端の箱)。無ければ null
+       * @returns 箱は `{kind: "box", box}`、線は `{kind: "edge", edge, from, to}`(端の箱。呼び出しの粒度で boxes に無い端は null)。
+       *   無ければ null
        */
-      pickedOf: (diagram, id) => {
+      selectedOf: (diagram, id) => {
         if (!isDrawn(diagram)) return null;
         const box = boxIn(diagram, id);
         if (box !== undefined) return { kind: "box", box };
@@ -3582,7 +3839,8 @@ button.change-item:hover { background: var(--track); }
       changingCommitsOf: (diagram, id, explained) => {
         const files = filesOf(diagram, id);
         return explained.commits.filter((commit) => !commit.merge).flatMap((commit) => {
-          const touched = files.find((path) => commit.files.some((file) => file.path === path || file.oldPath === path));
+          const isTouching = (path) => commit.files.some((file) => file.path === path || file.oldPath === path);
+          const touched = files.find(isTouching);
           return touched === undefined ? [] : [{ sha: commit.sha, path: touched }];
         });
       },
@@ -3598,30 +3856,35 @@ button.change-item:hover { background: var(--track); }
           const message = explained.lookup.messages.get(messageId);
           return message !== undefined && (files.has(message.from) || files.has(message.to));
         };
-        return [...explained.lookup.flows.values()].filter((flow) => [...listOf(flow.steps), ...listOf(flow.beforeSteps)].some(touches));
+        return [...explained.lookup.flows.values()].filter((flow) => everyStepOf(flow).some(touches));
       },
       /**
-       * 変更前と変更後の 2 枚の図。前後の箱と線を合わせたものを `GraphLayout.create` で 1 回だけ並べる(線はどれも残った依存として
-       * 渡す)ので、2 枚の箱は同じ位置にあり、片方にしか無い箱も、もう片方に位置を持つ。
-       * @returns `{width, height, groups, before, after}`。groups は組の枠(`{id, label, x, y, width, height}`)。before / after は
-       *   `boxes`(`{box, x, y, width, height, isPresent, isUnchanged}`。isPresent はその側にあるか、isUnchanged は状態の無い箱か)と
-       *   `edges`(その側にある線の `{edge, route}`。route は `GraphLayout.edgesOf` の道筋)
+       * 変更前と変更後の 2 枚の図。前後の箱と線を合わせたものを `GraphLayout.create` で 1 回だけ並べ(線はどれも残った依存として
+       * 渡す)、線の道筋も前後を合わせて 1 回だけ引く(`GraphLayout.routesAroundOf`)。そのため 2 枚の箱と線は同じ位置にあり、
+       * 片方にしか無い箱も、もう片方に位置を持つ。
+       * @returns `{width, height, groups, before, after}`。width は箱を避けてふくらむ線の分を含む。groups は組の枠
+       *   (`{id, label, x, y, width, height}`)。before / after は `boxes`(`{box, x, y, width, height, isPresent, isUnchanged}`。
+       *   isPresent はその側にあるか、isUnchanged は状態の無い箱か)と `edges`(その側にある線の `{edge, route}`)
        */
       figuresOf: (diagram) => {
         const groups = diagram.groups.map((group) => ({ id: group.id, boxes: group.boxes.map((id) => ({ path: id, lines: 0 })) }));
         const links = diagram.edges.map((edge) => ({ from: edge.from, to: edge.to, status: "kept" }));
         const layout = GraphLayout.create({ groups, links, expanded: groups.map((group) => group.id), room: { width: RoomWidth, height: Infinity } });
+        const { routes, overflow } = GraphLayout.routesAroundOf(layout, links);
+        const routeAt = new Map(diagram.edges.map((edge, index) => [edge, routes[index]]));
         const unitAt = new Map(layout.units.map((unit) => [unit.path, unit]));
         const labelOfGroup = new Map(diagram.groups.map((group) => [group.id, group.label]));
+        /** その側にあり(状態がその側に無いもの(absent)でなく)、道筋を引けた線か。 */
+        const isDrawnOn = (edge, absent) => edge.status !== absent && routeAt.get(edge) !== null;
         const sideOf = (absent) => ({
           boxes: diagram.boxes.filter((box) => unitAt.has(box.id)).map((box) => {
             const { x, y, width, height } = unitAt.get(box.id);
             return { box, x, y, width, height, isPresent: box.status !== absent, isUnchanged: box.status === null };
           }),
-          edges: diagram.edges.filter((edge) => edge.status !== absent).flatMap((edge) => GraphLayout.edgesOf(layout, [{ from: edge.from, to: edge.to, item: edge, leads: true }]).map((drawn) => ({ edge, route: drawn.route }))),
+          edges: diagram.edges.filter((edge) => isDrawnOn(edge, absent)).map((edge) => ({ edge, route: routeAt.get(edge) })),
         });
         return {
-          width: layout.width,
+          width: layout.width + overflow,
           height: layout.height,
           groups: layout.containers.map((container) => ({ id: container.group, label: labelOfGroup.get(container.group), x: container.x, y: container.y, width: container.width, height: container.height })),
           before: sideOf("added"),
@@ -3631,36 +3894,44 @@ button.change-item:hover { background: var(--track); }
     });
   })();
 
-  /** 流れ図の表示。比べる(変更前と変更後の手順を対応の行で重ねる)/ 変更後だけ / 変更前だけ。 */
-  const TraceEras = Object.freeze({ Compare: "compare", After: "after", Before: "before" });
+  /** 流れ図の表示。比べる(`Aligned`。変更前と変更後の手順を対応の行でそろえて重ねる)/ 変更後だけ / 変更前だけ。 */
+  const TraceEras = Object.freeze({ Aligned: "aligned", After: "after", Before: "before" });
 
   /**
    * 流れ図の手順の行。解説の流れの変更後の手順(`steps`)・変更前の手順(`beforeSteps`)・その対応(`stepChanges`)を、表示ごとの
-   * 行にする。行は `{status, badge, before, after, change}` で、status は対応の状態(`added` / `removed` / `changed`、そのままなら
-   * null)、badge は矢印と一覧の番号、change は対応の注記(無ければ null)。before / after はその側の手順
-   * `{n, messageId, message, text, cost, showsAfterSpelling}`(無い側は null。message は messages に無ければ null、cost は
-   * 語彙 `stepCosts` のキーか null。showsAfterSpelling は、前後が同じやりとりの changed の変更前の手順で、やりとりの綴りが
-   * 変更後のものであること)。
+   * 行にする。行は `{status, badge, before, after, change}` で、status は対応の状態(`changeStatusOf`)、badge は矢印と一覧の番号、
+   * change は対応の注記(無ければ null)。before / after はその側の手順 `{n, messageId, message, text, cost, showsAfterSpelling}`
+   * (無い側は null。message は messages に無ければ null、cost は語彙 `stepCosts` のキーか null。showsAfterSpelling は、前後が
+   * 同じやりとりの changed の変更前の手順で、やりとりの綴りが変更後のものであること)。
    */
   const TraceRows = (() => {
-    const Statuses = ["added", "removed", "changed"];
+    const Statuses = Object.keys(Vocabulary.messageStatuses);
 
-    const statusOf = (value) => (Statuses.includes(value) ? value : null);
-    const costOf = (value) => (isString(value) && Object.hasOwn(Vocabulary.stepCosts, value) ? value : null);
-    const changesOf = (flow) => listOf(flow.stepChanges).filter(isRecord);
-    const hasChanges = (flow) => changesOf(flow).length > 0;
     /** 手順の n 番目(1 始まり)のやりとりの id。番号が手順に無ければ null。 */
     const idAt = (ids, n) => {
       const steps = listOf(ids);
-      return Number.isInteger(n) && n >= 1 && n <= steps.length ? steps[n - 1] : null;
+      return isOrdinalIn(n, steps.length) ? steps[n - 1] : null;
     };
+    /**
+     * 対応 1 件の前後。`build-pr-explain.py` の `step_pair_of` と同じ読み方。
+     * @returns `{status, beforeId, afterId, isSameMessage}`(id はその側の手順のやりとりで、無い側は null。isSameMessage は前後が同じやりとりか)
+     */
+    const pairOf = (flow, change) => {
+      const beforeId = idAt(flow.beforeSteps, change.beforeStep);
+      const afterId = idAt(flow.steps, change.afterStep);
+      return { status: changeStatusOf(change.status), beforeId, afterId, isSameMessage: beforeId !== null && beforeId === afterId };
+    };
+    /** 対応に書いた、その側の手順の説明と重さ。 */
+    const writtenOn = (change, era) => (era === TraceEras.Before
+      ? { text: change.beforeText, cost: change.beforeCost }
+      : { text: change.afterText, cost: change.afterCost });
     /** 手順の 1 つを、その側の説明・重さを添えた行の側にする。id が無ければ null。 */
     const sideOf = ({ id, n, messages }, written) => (id === null ? null : {
       n,
       messageId: id,
       message: messages.get(id) ?? null,
       text: optionalText(written.text),
-      cost: costOf(written.cost),
+      cost: vocabularyKeyOf(Vocabulary.stepCosts, written.cost),
       showsAfterSpelling: written.showsAfterSpelling === true,
     });
     /** 比べるときの番号。増えた手順は「+n」、消えた手順は「×」、ほかは変更後の番号。 */
@@ -3668,60 +3939,63 @@ button.change-item:hover { background: var(--track); }
       if (after === null) return "×";
       return status === "added" ? `+${after.n}` : String(after.n);
     };
+    /** 前後が同じやりとりの changed の、変更前の手順か(綴りは変更後のもの)。 */
+    const showsAfterSpellingOf = (pair) => pair.status === "changed" && pair.isSameMessage;
 
-    const comparedRowsOf = (flow, messages) => changesOf(flow).map((change) => {
-      const status = statusOf(change.status);
-      const beforeId = idAt(flow.beforeSteps, change.beforeStep);
-      const afterId = idAt(flow.steps, change.afterStep);
-      const isSameMessage = beforeId !== null && beforeId === afterId;
-      const before = sideOf({ id: beforeId, n: change.beforeStep, messages }, { text: change.beforeText, cost: change.beforeCost, showsAfterSpelling: status === "changed" && isSameMessage });
-      const after = sideOf({ id: afterId, n: change.afterStep, messages }, { text: change.afterText, cost: change.afterCost });
-      return { status, badge: badgeOf(status, after), before, after, change: optionalText(change.change) };
+    const alignedRowsOf = (flow, messages) => listOf(flow.stepChanges).map((change) => {
+      const pair = pairOf(flow, change);
+      const before = sideOf({ id: pair.beforeId, n: change.beforeStep, messages }, { ...writtenOn(change, TraceEras.Before), showsAfterSpelling: showsAfterSpellingOf(pair) });
+      const after = sideOf({ id: pair.afterId, n: change.afterStep, messages }, writtenOn(change, TraceEras.After));
+      return { status: pair.status, badge: badgeOf(pair.status, after), before, after, change: optionalText(change.change) };
     });
 
     /** 変更後だけ / 変更前だけの行。手順の順に 1 から番号を振り、その手順を指す対応の状態・説明・重さ・注記を添える。 */
     const sideRowsOf = (flow, { era, messages }) => {
       const isAfter = era === TraceEras.After;
-      const changes = changesOf(flow);
+      const changes = listOf(flow.stepChanges);
       return listOf(isAfter ? flow.steps : flow.beforeSteps).map((id, index) => {
         const n = index + 1;
         const change = changes.find((candidate) => (isAfter ? candidate.afterStep : candidate.beforeStep) === n) ?? null;
-        const status = change === null ? null : statusOf(change.status);
-        const isAfterSpelling = !isAfter && status === "changed" && idAt(flow.steps, change.afterStep) === id;
-        const written = change === null ? {} : { text: isAfter ? change.afterText : change.beforeText, cost: isAfter ? change.afterCost : change.beforeCost, showsAfterSpelling: isAfterSpelling };
+        const pair = change === null ? null : pairOf(flow, change);
+        const written = change === null ? {} : { ...writtenOn(change, era), showsAfterSpelling: !isAfter && showsAfterSpellingOf(pair) };
         const side = sideOf({ id, n, messages }, written);
-        return { status, badge: String(n), before: isAfter ? null : side, after: isAfter ? side : null, change: change === null ? null : optionalText(change.change) };
+        return { status: pair === null ? null : pair.status, badge: String(n), before: isAfter ? null : side, after: isAfter ? side : null, change: change === null ? null : optionalText(change.change) };
       });
     };
 
     const drawnSideOf = (row) => row.after ?? row.before;
+    const countOf = (flow) => listOf(flow.stepChanges).length;
 
     return Object.freeze({
       /** @returns 流れで選べる表示(既定が先頭)。対応(`stepChanges`)の無い流れ(この形より前に書いた解説)は変更後だけ */
-      erasOf: (flow) => (hasChanges(flow) ? [TraceEras.Compare, TraceEras.After, TraceEras.Before] : [TraceEras.After]),
+      erasOf: (flow) => (countOf(flow) > 0 ? [TraceEras.Aligned, TraceEras.After, TraceEras.Before] : [TraceEras.After]),
       /**
        * 表示ごとの行。比べるときは対応の順、変更後だけ / 変更前だけは、その側の手順の順。
        * @param messages やりとりの id から解説のやりとりを引く表(`ExplainedMap` の `lookup.messages`)
        */
-      rowsOf: (flow, era, messages) => (era === TraceEras.Compare ? comparedRowsOf(flow, messages) : sideRowsOf(flow, { era, messages })),
+      rowsOf: (flow, era, messages) => (era === TraceEras.Aligned ? alignedRowsOf(flow, messages) : sideRowsOf(flow, { era, messages })),
       /** @returns 行の矢印として描く側。比べるときは変更後の手順があればそれ、無ければ変更前の手順 */
       drawnSideOf,
       /**
-       * 手順のカードの列。比べるときのそのままの行と、変更後だけ / 変更前だけの行は 1 列、比べるときのほかの行は変更前と変更後の 2 列。
+       * 手順のカードの列。比べるときのそのままの行と、変更後だけ / 変更前だけの行は 1 列、比べるときのほかの行は変更前と
+       * 変更後の 2 列。
        * @returns `{side, step}` の並び。side は `only`(1 列)/ `before` / `after`、step はその側の手順(無い側は null)
        */
       cardColumnsOf: (row, era) => {
-        if (era !== TraceEras.Compare) return [{ side: "only", step: drawnSideOf(row) }];
-        if (row.status === null && row.after !== null) return [{ side: "only", step: row.after }];
+        // そのままの行は前後が同じやりとりなので 1 列で足りる。番号がその側の手順に無い(変更後の手順が引けない)行は、ページが
+        // 番号を検査していないので起こりうるため、2 列にして欠けた側を見せる。
+        const isKeptStep = row.status === null && row.after !== null;
+        if (era !== TraceEras.Aligned) return [{ side: "only", step: drawnSideOf(row) }];
+        if (isKeptStep) return [{ side: "only", step: row.after }];
         return [{ side: "before", step: row.before }, { side: "after", step: row.after }];
       },
       /**
        * 比べるときの要約。
-       * @returns `{steps: {before, after}, counts: {added, removed, changed}, measure}`。steps は手順の数、counts は対応の状態ごとの
+       * @returns `{steps: {before, after}, counts: {added, changed, removed}, measure}`。steps は手順の数、counts は対応の状態ごとの
        *   件数、measure は量の前後 `{what, before, after}`(書いていなければ null)
        */
       summaryOf: (flow) => {
-        const statuses = changesOf(flow).map((change) => statusOf(change.status));
+        const statuses = listOf(flow.stepChanges).map((change) => changeStatusOf(change.status));
         const measure = isRecord(flow.measure) ? flow.measure : null;
         const isMeasured = measure !== null && [measure.what, measure.before, measure.after].every(isString);
         return {
@@ -3730,8 +4004,19 @@ button.change-item:hover { background: var(--track); }
           measure: isMeasured ? { what: measure.what, before: measure.before, after: measure.after } : null,
         };
       },
-      /** @returns 流れに対応があり、番号(1 始まり)がその数の中か(流れ図の「比べる」でその行を選べるか) */
-      isSelectable: (flow, stepChange) => Number.isInteger(stepChange) && stepChange >= 1 && stepChange <= changesOf(flow).length,
+      /** @returns 流れに対応があり、番号(1 始まり)がその数の中か(流れ図でその対応の行を開けるか) */
+      isSelectable: (flow, stepChange) => isOrdinalIn(stepChange, countOf(flow)),
+      /**
+       * stepChange の Target で流れ図を開くときの表示と行。その対応に変更後の手順があれば「変更後だけ」のその手順、無ければ
+       * (消えた手順)「比べる」のその対応の行。
+       * @param stepChange `isSelectable` が真の番号
+       * @returns `{era, index}`(index は表示の行の 0 始まりの位置)
+       */
+      openingOf: (flow, stepChange) => {
+        const change = listOf(flow.stepChanges)[stepChange - 1];
+        const hasAfter = Number.isInteger(change.afterStep);
+        return hasAfter ? { era: TraceEras.After, index: change.afterStep - 1 } : { era: TraceEras.Aligned, index: stepChange - 1 };
+      },
     });
   })();
 
@@ -3753,11 +4038,18 @@ button.change-item:hover { background: var(--track); }
     const Bow = Object.freeze({ base: 46, step: 20 });
     // 送り手と受け手が同じ手順の輪の大きさ。
     const Loop = 34;
+    // 変更後だけ / 変更前だけの表示で、その表示の側に無い端の状態と、そのカードの出方。比べる表示には無い。
+    const MissingIn = Object.freeze({
+      [TraceEras.Before]: { status: "added", presence: "missingBefore" },
+      [TraceEras.After]: { status: "removed", presence: "missingAfter" },
+    });
 
+    /** messages にあり、送り手と受け手が文字列のやりとりか。 */
+    const hasEnds = (message) => message !== undefined && isString(message.from) && isString(message.to);
     /** 流れごとの、手順の端の組(`[from, to]`)。変更後の手順 → 変更前の手順の順で、messages に無いやりとりは飛ばす。 */
-    const endPairsOf = (flows, messages) => flows.map((flow) => [...listOf(flow.steps), ...listOf(flow.beforeSteps)]
+    const endPairsOf = (flows, messages) => flows.map((flow) => everyStepOf(flow)
       .map((id) => messages.get(id))
-      .filter((message) => message !== undefined && isString(message.from) && isString(message.to))
+      .filter(hasEnds)
       .map((message) => [message.from, message.to]));
 
     const neighborsOf = (pairs) => {
@@ -3857,7 +4149,8 @@ button.change-item:hover { background: var(--track); }
       const start = [from.x + from.width - 24, from.y];
       const end = [from.x + from.width, from.y + 24];
       const [c1, c2] = [[start[0], start[1] - reach], [end[0] + reach, end[1]]];
-      const badge = [(start[0] + 3 * c1[0] + 3 * c2[0] + end[0]) / 8, (start[1] + 3 * c1[1] + 3 * c2[1] + end[1]) / 8];
+      const middle = GraphLayout.pointOn([...start, ...c1, ...c2, ...end], 0.5);
+      const badge = [middle.x, middle.y];
       return { path: `M${start[0]},${start[1]} C${c1[0]},${c1[1]} ${c2[0]},${c2[1]} ${end[0]},${end[1]}`, tip: end, direction: unitOf(c2, end), badge };
     };
 
@@ -3887,22 +4180,24 @@ button.change-item:hover { background: var(--track); }
       /**
        * 今の表示でのカードの出方。
        * @param rows `TraceRows.rowsOf` の行
-       * @param entryAt パスから木の項目を引く表(`ExplainedMap` の `entryAt`)。端のファイルを足した(A)・消した(D)かを読む
-       * @returns カードに `presence` を足したもの。presence は、足したファイルの変更前だけ / 消したファイルの変更後だけなら
+       * @param endStatuses やりとりの端のうち、この PR で増えた・消えたもの(`ExplainedMap` の `endStatuses`。足した・消したファイルの
+       *   concept と、status を書いた actor)
+       * @returns カードに `presence` を足したもの。presence は、増えた端の変更前だけ / 消えた端の変更後だけなら
        *   `missingBefore` / `missingAfter`(その側には無い)、そうでなく今の行の矢印に出ない端は `idle`(この操作では使わない)、比べるときの
-       *   足した / 消したファイルは `added` / `removed`、ほかは `used`
+       *   増えた / 消えた端は `added` / `removed`、ほかは `used`
        */
-      cardsIn: (layout, rows, { era, entryAt }) => {
-        const drawn = rows.map(TraceRows.drawnSideOf).filter((side) => side !== null && side.message !== null);
+      cardsIn: (layout, rows, { era, endStatuses }) => {
+        const hasMessage = (side) => side !== null && side.message !== null;
+        const drawn = rows.map(TraceRows.drawnSideOf).filter(hasMessage);
         const used = new Set(drawn.flatMap((side) => [side.message.from, side.message.to]));
-        const fileStatusOf = (end) => (entryAt.has(end) && entryAt.get(end).changed ? entryAt.get(end).status : null);
         const presenceOf = (end) => {
-          const status = fileStatusOf(end);
-          if (era === TraceEras.Before && status === "A") return "missingBefore";
-          if (era === TraceEras.After && status === "D") return "missingAfter";
+          const status = endStatuses.get(end) ?? null;
+          const missing = MissingIn[era];
+          const isMissing = missing !== undefined && status === missing.status;
+          const isComingOrGoing = era === TraceEras.Aligned && status !== null;
+          if (isMissing) return missing.presence;
           if (!used.has(end)) return "idle";
-          if (era === TraceEras.Compare && status === "A") return "added";
-          if (era === TraceEras.Compare && status === "D") return "removed";
+          if (isComingOrGoing) return status;
           return "used";
         };
         return layout.cards.map((card) => ({ ...card, presence: presenceOf(card.end) }));
@@ -3941,12 +4236,14 @@ button.change-item:hover { background: var(--track); }
   const Quiz = (() => {
     // 問いの kind。綴りは `build-pr-explain.py` の Variants の Question と同じで、`pr-explain-core-cases.sh` が突き合わせる。
     const Kinds = Object.freeze({ Choice: "choice", YesNo: "yesno", Order: "order" });
-    // 答えの鍵の元にするキー。解説の検査の `QuizKeyParts`(この組が同じ問いを落とす)と同じで、`pr-explain-core-cases.sh` が突き合わせる。
+    // 答えの鍵の元にするキー。解説の検査の `QuizKeyParts` と同じで、`pr-explain-core-cases.sh` が突き合わせる。
     const KeyParts = Object.freeze(["prompt", "options", "items"]);
 
     /**
-     * 問いの鍵。番号や id で覚えると、問いを書き直したり並べ替えたりしたときに前の答えが別の問いへ移る。だから問いそのもので作る
-     * (`ReviewCheck.keyOf` と同じ)。
+     * 問いの鍵。答え・今の問い・並べ替えの途中を、この鍵で覚える。
+     *
+     * 番号や id で覚えると、問いを書き直したり並べ替えたりしたときに前の答えが別の問いへ移るので、問いそのもので作る
+     * (`ReviewCheck.keyOf` と同じ)。鍵が同じ 2 問は答えを共有するので、解説の検査が落とす(`QuizKeyParts`)。
      * @returns `KeyParts` の値(無いキーは空の配列)の並びの JSON。題・why・go・答えは入れないので、題を書き直しても変わらない
      */
     const keyOf = (question) => JSON.stringify(KeyParts.map((part) => question[part] ?? []));
@@ -3960,7 +4257,7 @@ button.change-item:hover { background: var(--track); }
     const isAnswerOf = (question, answer) => {
       switch (question.kind) {
         case Kinds.Choice:
-          return Number.isInteger(answer) && answer >= 1 && answer <= listOf(question.options).length;
+          return isOrdinalIn(answer, listOf(question.options).length);
         case Kinds.YesNo:
           return typeof answer === "boolean";
         case Kinds.Order:
@@ -4011,7 +4308,8 @@ button.change-item:hover { background: var(--track); }
       progressOf: (saved, questions) => {
         const questionAt = new Map(questions.map((question) => [keyOf(question), question]));
         const record = isRecord(saved) ? saved : {};
-        const answers = Object.fromEntries(entriesOf(record.answers).filter(([key, answer]) => questionAt.has(key) && isAnswerOf(questionAt.get(key), answer)));
+        const isReadableAnswer = ([key, answer]) => questionAt.has(key) && isAnswerOf(questionAt.get(key), answer);
+        const answers = Object.fromEntries(entriesOf(record.answers).filter(isReadableAnswer));
         const isHalfway = ([key, arrangement]) => {
           const question = questionAt.get(key);
           const isOrderQuestion = question !== undefined && question.kind === Kinds.Order;
@@ -4257,6 +4555,53 @@ button.change-item:hover { background: var(--track); }
     node.addEventListener("click", onPress);
     return node;
   };
+  /** ボタンでない押せる要素(`role` を付けた要素)を押すキーか。 */
+  const isActivationKey = (event) => event.key === " " || event.key === "Enter";
+  /** ボタンでない押せる要素で、押すキーを受けたら `onPress` を呼ぶ(スクロールなどの既定の動きは止める)。 */
+  const pressOnActivationKey = (node, onPress) => node.addEventListener("keydown", (event) => {
+    if (!isActivationKey(event)) return;
+    event.preventDefault();
+    onPress();
+  });
+
+  /** 材料が無い画面の文(解説が無い / 解説にその画面のキーが無い)。構成の前後の、選べるものが無い理由の文も同じ。 */
+  const AbsenceTexts = Object.freeze({ unexplained: "解説なし", unwritten: "書かれていない" });
+  /** 解説が無ければ unexplained、あれば(その画面のキーが無いので)unwritten。 */
+  const absenceOf = (explained) => (explained.explain === null ? "unexplained" : "unwritten");
+  /**
+   * 材料が無い画面(流れ図・クイズ)の、中の欄の見出しと左の欄。
+   * @returns `{main, left}`。main は見出しと文、left は文
+   */
+  const absentPartsOf = (eyebrow, explained) => {
+    const text = AbsenceTexts[absenceOf(explained)];
+    return { main: el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: eyebrow }), emptyOf(text)]), left: emptyOf(text) };
+  };
+
+  /**
+   * 状態(`changeStatusOf`)の札。色の区分はやりとりの状態と同じ(`Vocabulary.messageStatuses` の tone)で、呼び名は画面ごと。
+   * @param labels 状態 → 呼び名(構成の前後は「変えた」、流れ図は「変わった」)
+   * @returns 状態の無いもの(変えていない)は「そのまま」の札
+   */
+  const statusChipOf = (status, labels) => (status === null
+    ? el("span", { class: "chip", text: "そのまま" })
+    : el("span", { class: "chip", "data-tone": Vocabulary.messageStatuses[status].tone, text: labels[status] }));
+  /** 状態ごとの件数(`{added, changed, removed}`)の「+増えた −消えた ~変わった」。 */
+  const statusCountNodesOf = (counts) => [
+    el("span", { class: "add", text: plus(counts.added) }),
+    el("span", { class: "del", text: minus(counts.removed) }),
+    el("span", { class: "mod", text: `~${counts.changed}` }),
+  ];
+
+  /**
+   * 欄の幅で大きさが決まる図(`.wide-figure`)の幅の上限と下限を付ける。上限は図の大きさ(狭い図を引き伸ばさない)、下限は
+   * 図の大きさの `minScale` 倍で、それより狭い欄では欄を横にスクロールする。どちらも文字の倍率で割る(理由は CSS の `.wide-figure`)。
+   * @param naturalWidth 図の大きさ(viewBox の幅)
+   */
+  const sizedWideFigure = (svg, { naturalWidth, minScale }) => {
+    svg.style.maxWidth = `calc(${naturalWidth}px / var(--text-size-ratio, 1))`;
+    svg.style.minWidth = `calc(${Math.round(naturalWidth * minScale)}px / var(--text-size-ratio, 1))`;
+    return svg;
+  };
 
   /** 機能の表示で選ぶ行の鍵。機能の鍵は `feature:` を頭に付けるので、`OverviewId` とも機能なしの鍵とも重ならない。 */
   const NoFeatureKey = "no-feature";
@@ -4264,6 +4609,8 @@ button.change-item:hover { background: var(--track); }
   const featureNameOf = (row) => (row.feature === null ? "機能なし" : row.feature.label);
   /** 機能の印(押せない札)。色は `data-feature-hue`(`FeatureMatrix.hueOf` の値)で塗る。 */
   const featureDotOf = (row) => el("span", { class: "feature-dot", "data-feature-hue": row.hue, text: featureNameOf(row) });
+  /** レビューで見てほしい点の箇条(確認の印は付かない)。機能の review と、構成の前後の calls の review が使う。 */
+  const reviewListOf = (texts) => el("ul", { class: "review-list" }, texts.map((text) => prose("li", {}, text)));
   /** 機能の札。押すと機能の表示へ移る。 */
   const featureChipOf = (row, onPress) => pressable("button", { class: "feature-chip", "data-feature-hue": row.hue, title: "機能で見る", text: featureNameOf(row) }, [], onPress);
 
@@ -4291,7 +4638,7 @@ button.change-item:hover { background: var(--track); }
   /** 振る舞いの 1 行。やりとりを指していれば、種類・名前・送り手 → 受け手のチップを添える。`mark` は行頭の印(無ければ null)。 */
   const behaviorItemOf = (behavior, { story, mark }) => {
     const message = typeof behavior.message === "string" ? story.lookup.messages.get(behavior.message) : undefined;
-    const nameOf = (end) => story.lookup.endNames.get(end) ?? end;
+    const nameOf = story.lookup.endNameOf;
     const chip = message === undefined ? [] : [el("span", { class: "message-chip" }, [
       kindChipOf(message.kind),
       el("span", { class: "message-name", text: message.name }),
@@ -4352,12 +4699,7 @@ button.change-item:hover { background: var(--track); }
       el("div", { class: "review-body" }, [prose("span", { class: "review-text" }, text), ...goButton]),
     ]);
     card.addEventListener("click", onToggle);
-    card.addEventListener("keydown", (event) => {
-      const isActivationKey = event.key === " " || event.key === "Enter";
-      if (!isActivationKey) return;
-      event.preventDefault();
-      onToggle();
-    });
+    pressOnActivationKey(card, onToggle);
     return card;
   };
 
@@ -4434,7 +4776,7 @@ button.change-item:hover { background: var(--track); }
     return [ledeOf(overview, "ブランチ全体の流れ"), behaviors, orderOf(story, "変更の順番と、それぞれの役割"), ...matrix, ...reviewSectionOf(story), ...strayStoriesOf(explained)];
   };
 
-  /** 機能 × コミットの表。行の見出しを押すとその機能の表示へ、マスを押すとその機能の表示のそのコミットへ移る。 */
+  /** 機能 × コミットの表。行の見出しを押すとその機能の表示へ、マスを押すとその機能の表示のそのコミットへ、列の見出しを押すとそのコミットの表示へ移る。 */
   const featureMatrixOf = (story) => {
     const { matrix } = story;
     const linesOf = (cell) => cell.additions + cell.deletions;
@@ -4442,7 +4784,10 @@ button.change-item:hover { background: var(--track); }
     const columnHeads = matrix.commits.map((commit) => {
       const name = commit.story === null ? [el("span", { text: commit.subject })] : proseParts(commit.story.role);
       const phase = commit.story === null ? "" : ` · ${Vocabulary.phases[commit.story.phase] ?? commit.story.phase}`;
-      return el("th", {}, [el("span", { class: "matrix-commit" }, [`${story.steps.get(commit.sha)}. `, ...name]), el("span", { class: "matrix-sha", text: `${shortSha(commit.sha)}${phase}` })]);
+      return el("th", {}, [pressable("button", { class: "matrix-column-head plain-button", title: "このコミットを開く" }, [
+        el("span", { class: "matrix-commit" }, [`${story.steps.get(commit.sha)}. `, ...name]),
+        el("span", { class: "matrix-sha", text: `${shortSha(commit.sha)}${phase}` }),
+      ], () => story.actions.select(commit.sha))]);
     });
     const cellOf = (row, cell) => {
       if (cell === null) return el("td", {}, [el("span", { class: "matrix-empty", text: "—" })]);
@@ -4471,7 +4816,7 @@ button.change-item:hover { background: var(--track); }
     const reviewRows = FeatureMatrix.reviewRowsOf(story.matrix);
     const reviews = reviewRows.length === 0 ? [] : [el("div", { class: "section" }, [
       el("span", { class: "eyebrow", text: "機能ごとに見てほしいところ" }),
-      ...reviewRows.map((row) => el("div", { class: "feature-review" }, [featureDotOf(row), el("ul", { class: "feature-review-list" }, row.feature.review.map((text) => prose("li", {}, text)))])),
+      ...reviewRows.map((row) => el("div", { class: "feature-review" }, [featureDotOf(row), reviewListOf(FeatureMatrix.reviewOf(row))])),
     ])];
     return [
       el("div", { class: "lede" }, [
@@ -4525,8 +4870,15 @@ button.change-item:hover { background: var(--track); }
     })];
   };
 
-  /** 構造マップでその流れを選んだ状態にするチップ。変更の経緯の「影響する操作」と、技術の手引きの「構造マップで見る」が使う。 */
-  const flowChipOf = (flow, go) => pressable("button", { class: "flow-chip", title: "構造マップでこの流れを見る" }, [flow.label, el("span", { class: "arrow", text: "↗" })], () => go.toFlow(flow.id));
+  /**
+   * 流れを指すチップ。押すと `screen` の画面でその流れを開く。構造マップへは変更の経緯の「影響する操作」と技術の手引きの
+   * 「構造マップで見る」、流れ図へは構成の前後の「ほかの画面で見る」が使う。
+   * @param screen 行き先の画面。構造マップでないときは、名前の前に画面の名前を付ける
+   */
+  const flowChipOf = (flow, { screen, onPress }) => {
+    const label = screen === Screens.Map ? flow.label : `${ScreenLabels[screen]}: ${flow.label}`;
+    return pressable("button", { class: "flow-chip", title: `${ScreenLabels[screen]}でこの流れを見る` }, [label, el("span", { class: "arrow", text: "↗" })], onPress);
+  };
 
   /**
    * 技術の手引きの節へ移るチップ。節の題に、移る先のタブの短い名前を添える。振る舞いの「仕組みを知りたいとき」と、技術の手引きの「関連」が使う。
@@ -4545,7 +4897,7 @@ button.change-item:hover { background: var(--track); }
     const flows = valuesIn(story.lookup.flows, commitStory.flows);
     const flowChips = flows.length === 0 ? [] : [el("div", { class: "flow-chips" }, [
       el("span", { class: "label", text: "影響する操作" }),
-      ...flows.map((flow) => flowChipOf(flow, story.go)),
+      ...flows.map((flow) => flowChipOf(flow, { screen: Screens.Map, onPress: () => story.go.toFlow(flow.id) })),
     ])];
     const review = Array.isArray(commitStory.review) ? commitStory.review : [];
     const reviewBlock = review.length === 0 ? [] : [el("div", { class: "section" }, [
@@ -4627,10 +4979,10 @@ button.change-item:hover { background: var(--track); }
   };
 
   /**
-   * hunk の見出しと、機能の札(`featureLineOf` が返すもの)と、行・注釈。注釈の番号は、その注釈の範囲に入る最初の行に付ける。
+   * hunk の見出しと、機能の札(`featureLinesOf` が返すもの)と、行・注釈。注釈の番号は、その注釈の範囲に入る最初の行に付ける。
    * 送った範囲(`sentLineRange`。変更後の行番号)に入る行には `is-sent` を付ける(消した行・畳んだ削除には付けない)。
    */
-  const hunkOf = (hunk, { grammar, view, sentLineRange, featureLineOf }) => {
+  const hunkOf = (hunk, { grammar, view, sentLineRange, featureLinesOf }) => {
     const isCode = view === "code";
     const lineTokens = CommitDiff.lineTokensOf(hunk, grammar);
     const textOf = new Map(hunk.lines.map((line, index) => [line, codeTextOf(lineTokens[index])]));
@@ -4651,7 +5003,7 @@ button.change-item:hover { background: var(--track); }
     const firstNew = hunk.lines.find((line) => line.newNo !== null);
     const header = isCode ? (firstNew === undefined ? "" : `${firstNew.newNo} 行目から`) : hunk.header;
     const notes = hunk.notes.length === 0 ? [] : [el("div", { class: "hunk-notes" }, hunk.notes.map((note) => litNoteOf(note, litTargetsOf(note))))];
-    return [el("div", { class: "hunk-head", text: header }), ...featureLineOf(hunk.feature), el("div", { class: "hunk" }, [el("div", { class: isCode ? "hunk-code is-code" : "hunk-code" }, rowNodes), ...notes])];
+    return [el("div", { class: "hunk-head", text: header }), ...featureLinesOf(hunk.features), el("div", { class: "hunk" }, [el("div", { class: isCode ? "hunk-code is-code" : "hunk-code" }, rowNodes), ...notes])];
   };
 
   /** ファイルの中身。patch の値ごとに出し方を変える。 */
@@ -4667,7 +5019,7 @@ button.change-item:hover { background: var(--track); }
       case "deleted": {
         const text = body.lines === null ? "ファイルごと削除" : `ファイルごと削除(${body.lines} 行)`;
         const notes = body.notes.length === 0 ? [] : [el("div", { class: "file-notes" }, body.notes.map((note) => plainNoteOf(note, lineRangeOf(note))))];
-        return [el("div", { class: "file-omit is-deleted", text }), ...context.featureLineOf(body.feature), ...notes];
+        return [el("div", { class: "file-omit is-deleted", text }), ...context.featureLinesOf(body.features), ...notes];
       }
       case "binary":
         return [el("div", { class: "file-omit", text: "バイナリのため差分は出しません" })];
@@ -4702,47 +5054,23 @@ button.change-item:hover { background: var(--track); }
     return card;
   };
 
-  const featureIdOf = (feature) => (feature === null ? null : feature.id);
-
   /**
-   * コミットの表示で、まとまり(hunk・消したファイルの本文)の下に出す機能の札と、その範囲の文。札を押すと、機能の表示のそのコミットへ移る。
-   * @param feature まとまりの機能(`CommitDiff` の `feature`。機能なしは null)
+   * コミットの表示で、まとまり(hunk・消したファイルの本文)の下に出す機能の札と、その範囲の文。機能ごとに 1 行で、機能なしは札だけ。
+   * 札を押すと、機能の表示のそのコミットへ移る。
+   * @param features まとまりの機能(`CommitDiff` の `features`。機能なしは空)
    * @returns 機能の側を押せない(featureRanges が無い)ときは空
    */
-  const featureLineOf = (feature, { story, sha }) => {
+  const featureLinesOf = (features, { story, sha }) => {
     if (!story.matrix.isAvailable) return [];
-    const row = story.matrix.rows.find((candidate) => featureIdOf(candidate.feature) === featureIdOf(feature));
-    if (row === undefined) return [];
-    const texts = feature === null ? [] : feature.texts.map((text) => prose("span", { class: "feature-text" }, text));
-    return [el("div", { class: "hunk-feature" }, [featureChipOf(row, () => story.actions.selectFeature(featureKeyOf(row), sha)), ...texts])];
-  };
-
-  const signCountOf = (hunks, sign) => hunks.reduce((sum, hunk) => sum + hunk.lines.filter((line) => line.sign === sign).length, 0);
-
-  /**
-   * 機能の表示に出すファイル。その機能のまとまりだけを残し、差分に出ていない行への注釈は外す(コミットの表示にだけ出す)。
-   * 行数はファイル全体ではなく、残したまとまりの行を数える。
-   * @returns その機能のまとまりが無ければ null
-   */
-  const fileInFeatureOf = (file, id) => {
-    const body = file.body;
-    switch (body.kind) {
-      case "hunks": {
-        const hunks = body.hunks.filter((hunk) => featureIdOf(hunk.feature) === id);
-        if (hunks.length === 0) return null;
-        return { ...file, additions: signCountOf(hunks, "+"), deletions: signCountOf(hunks, "-"), body: { ...body, hunks, remaining: 0 }, unplaced: [] };
-      }
-      case "deleted":
-        return featureIdOf(body.feature) === id ? { ...file, unplaced: [] } : null;
-      case "unchanged":
-      case "binary":
-        return null;
-    }
+    const textsOf = new Map(features.map((feature) => [feature.id, feature.texts]));
+    return FeatureMatrix.rowsOfFeatures(story.matrix, features).map((row) => {
+      const texts = row.feature === null ? [] : textsOf.get(row.feature.id).map((text) => prose("span", { class: "feature-text" }, text));
+      return el("div", { class: "hunk-feature" }, [featureChipOf(row, () => story.actions.selectFeature(featureKeyOf(row), sha)), ...texts]);
+    });
   };
 
   /** 機能の表示の 1 コミット。件名・sha・日時・phase・範囲の文・同じコミットのほかの機能と、その機能の差分と注釈(番号はコミットの中の番号)。 */
   const featureCommitOf = ({ row, commit, cell, story }) => {
-    const id = featureIdOf(row.feature);
     const others = FeatureMatrix.rowsIn(story.matrix, commit.sha).filter((other) => other !== row);
     const phase = commit.story === null ? [] : [el("span", { "data-phase": commit.story.phase, text: phaseLabelOf(commit.story) })];
     const otherChips = others.length === 0 ? [] : [el("div", { class: "flow-chips" }, [
@@ -4757,9 +5085,9 @@ button.change-item:hover { background: var(--track); }
       lookup: story.lookup,
       commitUrl: `https://github.com/${Repo}/commit/${commit.sha}`,
       setOpen: story.actions.setOpen,
-      featureLineOf: () => [],
+      featureLinesOf: () => [],
     };
-    const files = story.matrix.diffAt.get(commit.sha).files.map((file) => fileInFeatureOf(file, id)).filter((file) => file !== null);
+    const files = FeatureMatrix.filesIn(story.matrix, { sha: commit.sha, row });
     return el("li", { class: "feature-commit", "data-sha": commit.sha, "data-feature-hue": row.hue }, [
       el("div", { class: "feature-commit-rail" }, [el("span", { class: "feature-commit-dot" })]),
       el("div", { class: "feature-commit-body" }, [
@@ -4778,11 +5106,8 @@ button.change-item:hover { background: var(--track); }
     const role = row.feature === null
       ? [emptyOf("どの機能の範囲(featureRanges)にも入らない変更です。")]
       : [el("div", { class: "section" }, [el("span", { class: "eyebrow", text: "この機能でしたこと" }), prose("p", { class: "why-text" }, row.feature.role)])];
-    const review = row.feature !== null && Array.isArray(row.feature.review) ? row.feature.review : [];
-    const reviewBlock = review.length === 0 ? [] : [el("div", { class: "section" }, [
-      el("span", { class: "eyebrow", text: "レビューで見るところ" }),
-      el("ul", { class: "feature-review-list" }, review.map((text) => prose("li", {}, text))),
-    ])];
+    const review = FeatureMatrix.reviewOf(row);
+    const reviewBlock = review.length === 0 ? [] : [el("div", { class: "section" }, [el("span", { class: "eyebrow", text: "レビューで見るところ" }), reviewListOf(review)])];
     const items = story.matrix.commits
       .map((commit, column) => ({ commit, cell: row.cells[column] }))
       .filter(({ cell }) => cell !== null)
@@ -4819,7 +5144,7 @@ button.change-item:hover { background: var(--track); }
       ...diff.strayNotes.map((note) => plainNoteOf(note, `${note.path} ${lineRangeOf(note)}`)),
     ])];
     if (commit.merge) return el("div", { class: "section" }, [eyebrow, emptyOf("マージコミットなので、差分は出しません。"), ...strays]);
-    const context = { view, closed, sentFile, sha: commit.sha, lookup: story.lookup, commitUrl: `https://github.com/${Repo}/commit/${commit.sha}`, setOpen: story.actions.setOpen, featureLineOf: (feature) => featureLineOf(feature, { story, sha: commit.sha }) };
+    const context = { view, closed, sentFile, sha: commit.sha, lookup: story.lookup, commitUrl: `https://github.com/${Repo}/commit/${commit.sha}`, setOpen: story.actions.setOpen, featureLinesOf: (features) => featureLinesOf(features, { story, sha: commit.sha }) };
     const cards = diff.files.map((file) => fileCardOf(file, { ...context, grammar: Tokenizer.grammarOf(file.path) }));
     const openAll = (isOpen) => () => {
       for (const card of cards) card.open = isOpen;
@@ -4948,7 +5273,8 @@ button.change-item:hover { background: var(--track); }
     // 機能の側は、どれかのコミットに featureRanges があるときだけ押せる(無ければ、どの変更も機能なしになる)。
     const modeButtons = new Map(Object.entries(StoryModes).map(([value, mode]) => {
       const button = pressable("button", { title: mode.title, text: mode.label }, [], () => actions.setMode(value));
-      button.disabled = value === "feature" && !matrix.isAvailable;
+      const isUnavailable = value === "feature" && !matrix.isAvailable;
+      button.disabled = isUnavailable;
       return [value, button];
     }));
     if (!matrix.isAvailable) modeButtons.get("feature").title = "解説の commitStories に featureRanges が無いので、機能では分けられません";
@@ -5217,18 +5543,6 @@ button.change-item:hover { background: var(--track); }
   const signatureOf = (grouping, layout) => `${grouping}|${layout.units.map((unit) => unit.id).join(",")}|${layout.width}x${layout.height}`;
   // 初めて収めたときにこれより小さくしか入らないなら、箱の字が読めないので組をすべて畳む。
   const isTooSmall = (scale) => scale < 0.5;
-
-  /** まとめ方の組の id。図の組の id に使う。 */
-  const groupKeyOf = (group) => {
-    switch (group.kind) {
-      case "layer":
-        return `layer:${group.layer}`;
-      case "feature":
-        return `feature:${group.feature.id}`;
-      case "unassigned":
-        return "unassigned";
-    }
-  };
 
   /** まとめ方の組の見出し。 */
   const groupLabelOf = (group) => {
@@ -5542,7 +5856,7 @@ button.change-item:hover { background: var(--track); }
     const endNameOf = (model, path) => {
       const unit = model.places.get(model.layout.unitOf.get(path));
       if (unit !== undefined) return placeNameOf(unit);
-      return lookup.endNames.get(path) ?? path;
+      return lookup.endNameOf(path);
     };
     const messageNameOf = (message) => messageTextOf(message, state.naming);
     const edgeKeyBetween = (model, message) => {
@@ -6226,7 +6540,7 @@ button.change-item:hover { background: var(--track); }
       return { grouping, scope: grouping === state.grouping ? state.scope : null, selected: isGroupBound ? null : state.selected };
     };
     const selectPlace = (place) => select(place.kind === "box" ? { kind: "box", id: place.path } : { kind: "group", id: place.group });
-    const nameOfPath = (path) => (entryAt.has(path) ? ExplainedMap.nameOf(entryAt.get(path), state.naming) : (lookup.endNames.get(path) ?? path));
+    const nameOfPath = (path) => (entryAt.has(path) ? ExplainedMap.nameOf(entryAt.get(path), state.naming) : lookup.endNameOf(path));
     const placeNameOf = (place) => (place.kind === "box" ? ExplainedMap.nameOf(entryAt.get(place.path), state.naming) : groupLabels.get(place.group));
     const isFileNamed = (entry) => state.naming === "file" || entry.conceptName === null;
     const entriesOfPlace = (place) => place.paths.map((path) => entryAt.get(path));
@@ -6565,59 +6879,42 @@ button.change-item:hover { background: var(--track); }
       sideBar.replaceChildren(backButton, el("span", { class: "side-bar-hint", text: hint }), el("span", { class: "spacer" }), ...home);
     };
 
-    /** まとめ方の組へ移る先。地図に無い組なら null。 */
-    const groupGoOf = (id, grouping) => {
-      if (!groupAt.has(id)) return null;
-      const entries = groupAt.get(id).paths.map((path) => entryAt.get(path));
-      return { tone: toneOfAll(entries), onPress: () => pick({ kind: "group", id }, groupingChange(grouping)) };
-    };
-
-    /** 構造マップの中の行き先(`Target.destinationOf` の selection)へ移る先。地図に無ければ null。 */
-    const mapGoOf = (selection) => {
+    /**
+     * 構造マップで選ぶもの(`Target.landingOf` の selection)の色の区分。組はそのファイルをまとめた色、ファイルはその状態の色、
+     * やりとりはその状態の色、流れは無し。届くもの(地図にあるもの)だけを渡す。
+     */
+    const landingToneOf = (selection) => {
       switch (selection.kind) {
         case "group":
-          return groupGoOf(selection.id, selection.grouping);
-        case "file": {
-          const entry = entryAt.get(selection.id);
-          return entry === undefined ? null : { tone: toneOf(entry.status), onPress: () => pick({ kind: entry.inGraph ? "box" : "file", id: entry.path }) };
-        }
-        case "message": {
-          const message = lookup.messages.get(selection.id);
-          const isReachable = message !== undefined && isDrawnMessage(message, entryAt);
-          return isReachable ? { tone: messageToneOf(message), onPress: () => showMessage(message.id) } : null;
-        }
+          return toneOfAll(groupAt.get(selection.id).paths.map((path) => entryAt.get(path)));
+        case "file":
+          return toneOf(entryAt.get(selection.id).status);
+        case "message":
+          return messageToneOf(lookup.messages.get(selection.id));
         case "flow":
-          return lookup.flows.has(selection.id) ? { tone: "", onPress: () => showFlow(selection.id) } : null;
+          return "";
       }
-    };
-
-    /** 構造マップが行き先の Target の、移る先。行き先がほかの画面の Target や、地図に無いもの、kind が語彙に無いものなら null。 */
-    const mapGoOfTarget = (target) => {
-      const destination = Target.destinationOf(target);
-      return destination?.screen === Screens.Map ? mapGoOf(destination.selection) : null;
     };
 
     /**
      * 概要の「このブランチで起きていること」の 1 件が指す先。
      * @returns 押せるなら `{kind: "reachable", tone, onPress}`。届かなければ `{kind: "unreachable", warning}`(行き先が構造マップなら
-     *   「指している先が地図に無い」、ほかの画面か、kind が語彙に無いなら「指している先が図に無い」)
+     *   「指している先が地図に無い」、ほかの画面なら「指している先が図に無い」)
      */
     const highlightGoOf = (target) => {
-      const isOnMap = Target.destinationOf(target)?.screen === Screens.Map;
-      const onMap = mapGoOfTarget(target);
-      if (onMap !== null) return { kind: "reachable", ...onMap };
-      if (isOnMap) return { kind: "unreachable", warning: "指している先が地図に無い" };
-      if (go.canShow(target)) return { kind: "reachable", tone: "", onPress: () => go.toTarget(target) };
-      return { kind: "unreachable", warning: "指している先が図に無い" };
+      const landing = Target.landingOf(target, explained);
+      const isOnMap = landing.screen === Screens.Map;
+      if (!landing.isReachable) return { kind: "unreachable", warning: isOnMap ? "指している先が地図に無い" : "指している先が図に無い" };
+      return { kind: "reachable", tone: isOnMap ? landingToneOf(landing.selection) : "", onPress: () => go.toLanding(landing) };
     };
 
     const highlightCardOf = (highlight) => {
-      const destination = highlightGoOf(highlight.go);
-      const isReachable = destination.kind === "reachable";
-      const warning = isReachable ? [] : [el("span", { class: "warn-text", text: destination.warning })];
+      const reach = highlightGoOf(highlight.go);
+      const isReachable = reach.kind === "reachable";
+      const warning = isReachable ? [] : [el("span", { class: "warn-text", text: reach.warning })];
       const body = [el("span", { class: "status-dot" }), el("span", { class: "highlight-body" }, [prose("span", { class: "highlight-title" }, highlight.title), prose("span", { class: "highlight-text" }, highlight.text), ...warning])];
       if (!isReachable) return el("div", { class: "highlight-card is-missing" }, body);
-      return pressable("button", { class: "highlight-card plain-button", "data-tone": destination.tone }, body, destination.onPress);
+      return pressable("button", { class: "highlight-card plain-button", "data-tone": reach.tone }, body, reach.onPress);
     };
 
     const groupBarsOf = () => {
@@ -7048,10 +7345,28 @@ button.change-item:hover { background: var(--track); }
       onKey,
       showFlow,
       showMessage,
-      /** @returns 構造マップが行き先の Target で、指す先が地図にあり選べるか */
-      canShow: (target) => mapGoOfTarget(target) !== null,
-      /** その Target が指すものを選んだ状態にする。`canShow` が真のものだけを渡す。 */
-      showTarget: (target) => mapGoOfTarget(target).onPress(),
+      /**
+       * Target が指すものを選んだ状態にする。
+       * @param selection `Target.landingOf` の selection で、届くもの(isReachable)だけ
+       */
+      showTarget: (selection) => {
+        switch (selection.kind) {
+          case "group":
+            pick({ kind: "group", id: selection.id }, groupingChange(selection.grouping));
+            return;
+          case "file": {
+            const entry = entryAt.get(selection.id);
+            pick({ kind: entry.inGraph ? "box" : "file", id: entry.path });
+            return;
+          }
+          case "message":
+            showMessage(selection.id);
+            return;
+          case "flow":
+            showFlow(selection.id);
+            return;
+        }
+      },
     };
   };
 
@@ -7564,7 +7879,7 @@ button.change-item:hover { background: var(--track); }
       const showsTests = isCodebase && topic.tests.verifying.length + topic.tests.missing.length > 0;
       const tests = showsTests ? testsBlocksOf(topic.tests, go) : [];
       const showsFlows = isCodebase && topic.flows.length > 0;
-      const flows = showsFlows ? [el("div", { class: "side-block" }, [eyebrowOf("構造マップで見る"), el("div", { class: "flow-chips" }, topic.flows.map((flow) => flowChipOf(flow, go)))])] : [];
+      const flows = showsFlows ? [el("div", { class: "side-block" }, [eyebrowOf("構造マップで見る"), el("div", { class: "flow-chips" }, topic.flows.map((flow) => flowChipOf(flow, { screen: Screens.Map, onPress: () => go.toFlow(flow.id) })))])] : [];
       const seeAlsoChips = topic.seeAlso.map((position) => primerTopicChipOf(position, `「${PrimerTabTexts[position.tab].label}」のこの節を見る`, showSeeAlso));
       const seeAlso = seeAlsoChips.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("関連"), el("div", { class: "flow-chips" }, seeAlsoChips)])];
       const terms = topic.terms.length === 0 ? [] : [el("div", { class: "side-block" }, [eyebrowOf("用語"), termListOf(topic.terms)])];
@@ -7736,22 +8051,24 @@ button.change-item:hover { background: var(--track); }
     };
   };
 
-  // 構成の前後の箱と線の状態の名前と色の区分。状態の無いもの(変えていない)はここに無い。
-  const CompareStatuses = { added: { tone: "A", label: "増えた" }, removed: { tone: "D", label: "消えた" }, changed: { tone: "M", label: "変えた" } };
+  // 構成の前後の箱と線の状態の呼び名。色の区分は `statusChipOf` が引く。状態の無いもの(変えていない)はここに無い。
+  const CompareStatusLabels = Object.freeze({ added: "増えた", changed: "変えた", removed: "消えた" });
   const CompareGrainChoices = [{ value: CompareGrains.Calls, label: "呼び出し" }, { value: CompareGrains.Modules, label: "モジュール" }];
-  const CompareArrangements = Object.freeze({ Side: "side", Stack: "stack" });
-  const CompareArrangementChoices = [{ value: CompareArrangements.Side, label: "左右" }, { value: CompareArrangements.Stack, label: "上下" }];
+  // 変更前と変更後の 2 枚の図の並べ方。horizontal は左右、vertical は上下。
+  const CompareOrientations = Object.freeze({ Horizontal: "horizontal", Vertical: "vertical" });
+  const CompareOrientationChoices = [{ value: CompareOrientations.Horizontal, label: "左右" }, { value: CompareOrientations.Vertical, label: "上下" }];
   const CompareDimChoices = [{ value: false, label: "そのまま" }, { value: true, label: "薄く" }];
-  // 選べる箱・線が無い理由(`CompareDiagram.unselectedOf` の reason)の文。変化なしは粒度ごとに言い分ける。
-  const CompareReasonTexts = { unexplained: "解説なし", unwritten: "書かれていない" };
+  // 箱も線も 0 件で選べるものが無いときの文(`CompareDiagram.unselectedOf` の reason が unchanged)。粒度ごとに言い分ける。
   const CompareUnchangedTexts = { calls: "呼び出しの変化なし", modules: "モジュールの変化なし" };
   const CompareFigurePad = 12;
   const CompareLabelLimit = 40;
-  // 図を縮めてよい下限(図の大きさに対する割合)。これより狭い欄では、図の欄を横にスクロールする。
+  // 図を縮めてよい下限(図の大きさに対する割合)。
   const CompareMinScale = 0.8;
+  // 箱の 2 行目(役目・片方に無いこと)は 9.5px の字なので、名前(11.5px)の幅の見積もりの 1.2 倍まで入る。
+  const CompareNoteRoom = 1.2;
 
-  /** 選べる箱・線が無い理由の文。 */
-  const compareReasonTextOf = (reason, grain) => (reason === "unchanged" ? CompareUnchangedTexts[grain] : CompareReasonTexts[reason]);
+  /** 選べる箱・線が無い理由(`CompareDiagram.unselectedOf` の reason)の文。 */
+  const compareReasonTextOf = (reason, grain) => (reason === "unchanged" ? CompareUnchangedTexts[grain] : AbsenceTexts[reason]);
 
   /** 箱の幅に収まるように、名前を後ろから詰めて「…」を付ける。幅の見積もりは `GraphLayout.textWidthOf`。 */
   const fittedTextOf = (text, width) => {
@@ -7761,9 +8078,8 @@ button.change-item:hover { background: var(--track); }
     const count = chars.findLastIndex((_, index) => fits(index + 1)) + 1;
     return `${chars.slice(0, count).join("")}…`;
   };
-
-  /** 構成の前後の状態の札。状態の無いもの(変えていない)は「そのまま」。 */
-  const compareStatusChipOf = (status) => (status === null ? el("span", { class: "chip", text: "そのまま" }) : el("span", { class: "chip", "data-tone": CompareStatuses[status].tone, text: CompareStatuses[status].label }));
+  /** 解説の文を、図の中の 1 行の文字にする(`` `…` `` の囲みを外す。図の文字はコードの書体を混ぜられない)。 */
+  const plainTextOf = (text) => CodeSpans.create(text).map((span) => span.text).join("");
 
   /** 前後の一言の行。増えたものの変更前と消えたものの変更後は、書かれていないので「無かった / 無くなった」と出す。 */
   const compareSidesOf = (item) => {
@@ -7783,13 +8099,14 @@ button.change-item:hover { background: var(--track); }
   const CompareScreen = (explained, go) => {
     const diagrams = { calls: CompareDiagram.fromCalls(explained), modules: CompareDiagram.fromModules(explained) };
     const figures = Object.fromEntries(Object.entries(diagrams).filter(([, diagram]) => diagram.kind === "drawn").map(([grain, diagram]) => [grain, CompareDiagram.figuresOf(diagram)]));
-    const calls = explained.explain !== null && isRecord(explained.explain.calls) ? explained.explain.calls : null;
+    const hasCalls = explained.explain !== null && isRecord(explained.explain.calls);
+    const calls = hasCalls ? explained.explain.calls : null;
     const sides = [
       { key: "before", title: "変更前", ref: `${explained.map.baseBranch} · ${shortSha(explained.map.mergeBase)}`, absent: "変更前には無い" },
       { key: "after", title: "変更後", ref: `${explained.map.headBranch} · ${shortSha(explained.map.head)}`, absent: "変更後には無い" },
     ];
 
-    let state = { grain: CompareGrains.Calls, arrangement: CompareArrangements.Side, isDimmed: false, selected: null };
+    let state = { grain: CompareGrains.Calls, orientation: CompareOrientations.Horizontal, isDimmed: false, selected: null };
     const update = (patch) => {
       state = { ...state, ...patch };
       render();
@@ -7812,49 +8129,55 @@ button.change-item:hover { background: var(--track); }
     const leftBody = el("div", { class: "panel-scroll compare-changes" });
     const side = el("div", { class: "side" });
 
-    const isPickedEdgeEnd = (diagram, boxId) => {
-      const picked = CompareDiagram.pickedOf(diagram, state.selected);
-      return picked !== null && picked.kind === "edge" && (picked.edge.from === boxId || picked.edge.to === boxId);
+    /** 選んでいるものが線で、その端がこの箱か。 */
+    const isSelectedEdgeEnd = (diagram, boxId) => {
+      const selected = CompareDiagram.selectedOf(diagram, state.selected);
+      const isEdge = selected !== null && selected.kind === "edge";
+      return isEdge && (selected.edge.from === boxId || selected.edge.to === boxId);
     };
-    const isPickedBoxEnd = (edge) => edge.from === state.selected || edge.to === state.selected;
+    /** 線の端が、選んでいる箱か。 */
+    const endsAtPicked = (edge) => edge.from === state.selected || edge.to === state.selected;
 
     const boxNodeOf = ({ placed, diagram, side: drawnSide }) => {
       const { box } = placed;
       const isPicked = state.selected === box.id;
-      const isRelated = isPickedEdgeEnd(diagram, box.id);
+      const isRelated = isSelectedEdgeEnd(diagram, box.id);
       // 選んだものがあればそれと線の端のほかを、無ければ「薄く」のとき変えていない箱を薄くする。
       const isOutOfPick = state.selected !== null && !isPicked && !isRelated;
       const isDimmedUnchanged = state.isDimmed && placed.isUnchanged && !isPicked;
-      const name = drawnSide.key === "before" && box.beforeName !== undefined ? box.beforeName : box.name;
+      const isDim = isOutOfPick || isDimmedUnchanged;
+      // 変更前の側の名前(`beforeName`)はモジュールの粒度の箱だけが持つ。
+      const showsBeforeName = drawnSide.key === "before" && box.beforeName !== undefined;
+      const name = showsBeforeName ? box.beforeName : box.name;
+      const role = isString(box.role) ? plainTextOf(box.role) : null;
+      const note = placed.isPresent ? role : drawnSide.absent;
       const textWidth = placed.width - 16;
-      const labels = placed.isPresent
+      const labels = note === null
         ? [Dom.svg("text", { x: placed.x + 8, y: placed.y + placed.height / 2 + 4 }, [fittedTextOf(name, textWidth)])]
         : [
           Dom.svg("text", { x: placed.x + 8, y: placed.y + 13 }, [fittedTextOf(name, textWidth)]),
-          Dom.svg("text", { class: "compare-box-note", x: placed.x + 8, y: placed.y + 25 }, [drawnSide.absent]),
+          Dom.svg("text", { class: "compare-box-note", x: placed.x + 8, y: placed.y + 25 }, [fittedTextOf(note, textWidth * CompareNoteRoom)]),
         ];
-      const tooltip = [name, ...(box.role === undefined || box.role === null ? [] : [box.role])].join("\n");
+      const tooltip = [name, ...(role === null ? [] : [role])].join("\n");
+      const statusLabel = box.status === null ? "そのまま" : CompareStatusLabels[box.status];
+      const hasShownStatus = placed.isPresent && box.status !== null;
       const node = Dom.svg("g", {
-        class: classesOf("compare-box", { "is-absent": !placed.isPresent, "is-picked": isPicked, "is-dim": isOutOfPick || isDimmedUnchanged }),
-        "data-status": placed.isPresent && box.status !== null ? box.status : "",
+        class: classesOf("compare-box", { "is-absent": !placed.isPresent, "is-picked": isPicked, "is-dim": isDim }),
+        "data-status": hasShownStatus ? box.status : "",
         tabindex: "0",
         role: "button",
-        "aria-label": `${name}(${placed.isPresent ? (box.status === null ? "そのまま" : CompareStatuses[box.status].label) : drawnSide.absent})`,
+        "aria-label": `${name}(${placed.isPresent ? statusLabel : drawnSide.absent})`,
       }, [Dom.svg("title", {}, [tooltip]), Dom.svg("rect", { x: placed.x, y: placed.y, width: placed.width, height: placed.height, rx: 7 }), ...labels]);
       node.addEventListener("click", () => pick(box.id));
-      node.addEventListener("keydown", (event) => {
-        if (event.key !== "Enter" && event.key !== " ") return;
-        event.preventDefault();
-        pick(box.id);
-      });
+      pressOnActivationKey(node, () => pick(box.id));
       return node;
     };
 
     const edgeNodeOf = ({ drawn, diagram }) => {
       const { edge, route } = drawn;
       const isPicked = state.selected === edge.id;
-      const isOutOfPick = state.selected !== null && !isPicked && !isPickedBoxEnd(edge);
-      const title = edge.code === undefined || edge.code === null ? CompareDiagram.nameOf(diagram, edge.id) : edge.code;
+      const isOutOfPick = state.selected !== null && !isPicked && !endsAtPicked(edge);
+      const title = isString(edge.code) ? edge.code : CompareDiagram.nameOf(diagram, edge.id);
       const node = Dom.svg("g", { class: classesOf("compare-edge", { "is-picked": isPicked, "is-dim": isOutOfPick }), "data-status": edge.status ?? "" }, [
         Dom.svg("title", {}, [title]),
         Dom.svg("path", { class: "compare-edge-line", d: route.path }),
@@ -7865,17 +8188,24 @@ button.change-item:hover { background: var(--track); }
       return node;
     };
 
-    /** 選んだ線の呼び出しの綴り(`code`)を、線の中ほどに出す。 */
-    const edgeLabelsOf = (edges, figure) => edges.filter(({ edge }) => edge.id === state.selected && typeof edge.code === "string").map(({ edge, route }) => {
-      const [x0, y0, c1x, c1y, c2x, c2y, x1, y1] = route.bezier;
+    /** ラベルを出す線か。選んでいて、呼び出しの綴りを持つ(呼び出しの粒度の)線。 */
+    const isLabeled = (edge) => edge.id === state.selected && isString(edge.code);
+    /**
+     * 選んだ線のラベルを、線の中ほどに出す。変更後の図は呼び出しの綴り(`code`)、変更前の図は変更前の一言(`was`。無い線は
+     * 前後で変わっていないので `code`)。
+     */
+    const edgeLabelsOf = ({ edges, figure, drawnSide }) => edges.filter(({ edge }) => isLabeled(edge)).map(({ edge, route }) => {
+      // 呼び出しの粒度の線だけが was を持つ。
+      const showsWas = drawnSide.key === "before" && edge.was !== null;
+      const written = showsWas ? plainTextOf(edge.was) : edge.code;
       const room = figure.width + CompareFigurePad * 2;
-      const text = fittedTextOf(edge.code, Math.min(GraphLayout.textWidthOf("x") * CompareLabelLimit, room - 18));
+      const text = fittedTextOf(written, Math.min(GraphLayout.textWidthOf("x") * CompareLabelLimit, room - 18));
       const width = GraphLayout.textWidthOf(text) + 14;
-      const centerX = Math.min(Math.max((x0 + 3 * c1x + 3 * c2x + x1) / 8, width / 2 - CompareFigurePad + 2), figure.width + CompareFigurePad - width / 2 - 2);
-      const centerY = (y0 + 3 * c1y + 3 * c2y + y1) / 8;
+      const middle = GraphLayout.pointOn(route.bezier, 0.5);
+      const centerX = Math.min(Math.max(middle.x, width / 2 - CompareFigurePad + 2), figure.width + CompareFigurePad - width / 2 - 2);
       return Dom.svg("g", { class: "compare-edge-label" }, [
-        Dom.svg("rect", { x: centerX - width / 2, y: centerY - 10, width, height: 20, rx: 5 }),
-        Dom.svg("text", { x: centerX - width / 2 + 7, y: centerY + 4 }, [text]),
+        Dom.svg("rect", { x: centerX - width / 2, y: middle.y - 10, width, height: 20, rx: 5 }),
+        Dom.svg("text", { x: centerX - width / 2 + 7, y: middle.y + 4 }, [text]),
       ]);
     });
 
@@ -7885,17 +8215,14 @@ button.change-item:hover { background: var(--track); }
         Dom.svg("rect", { x: group.x, y: group.y, width: group.width, height: group.height, rx: 10 }),
         Dom.svg("text", { x: group.x + 12, y: group.y + 22 }, [fittedTextOf(group.label, group.width - 24)]),
       ]));
-      const viewBox = [-CompareFigurePad, -CompareFigurePad, figure.width + CompareFigurePad * 2, figure.height + CompareFigurePad * 2].join(" ");
-      const svg = Dom.svg("svg", { class: "wide-figure compare-figure", viewBox, "aria-label": `${drawnSide.title}の構成` }, [
+      const naturalWidth = figure.width + CompareFigurePad * 2;
+      const viewBox = [-CompareFigurePad, -CompareFigurePad, naturalWidth, figure.height + CompareFigurePad * 2].join(" ");
+      const svg = sizedWideFigure(Dom.svg("svg", { class: "wide-figure compare-figure", viewBox, "aria-label": `${drawnSide.title}の構成` }, [
         ...groups,
         ...sideFigure.edges.map((drawn) => edgeNodeOf({ drawn, diagram })),
         ...sideFigure.boxes.map((placed) => boxNodeOf({ placed, diagram, side: drawnSide })),
-        ...edgeLabelsOf(sideFigure.edges, figure),
-      ]);
-      // 幅は欄に合わせるが、図の大きさより大きくせず(狭い図を引き伸ばさない)、下限より縮めない。倍率で割って、文字の大きさの倍率では変えない。
-      const naturalWidth = figure.width + CompareFigurePad * 2;
-      svg.style.maxWidth = `calc(${naturalWidth}px / var(--text-size-ratio, 1))`;
-      svg.style.minWidth = `calc(${Math.round(naturalWidth * CompareMinScale)}px / var(--text-size-ratio, 1))`;
+        ...edgeLabelsOf({ edges: sideFigure.edges, figure, drawnSide }),
+      ]), { naturalWidth, minScale: CompareMinScale });
       return el("div", { class: "compare-side" }, [
         el("div", { class: "compare-side-head" }, [el("span", { class: "compare-side-title", text: drawnSide.title }), el("span", { class: "compare-side-ref", text: drawnSide.ref })]),
         el("div", { class: "compare-side-body" }, [svg]),
@@ -7903,7 +8230,7 @@ button.change-item:hover { background: var(--track); }
     };
 
     const legendOf = () => el("div", { class: "legend compare-legend" }, [
-      ...Object.values(CompareStatuses).map((status) => el("span", { "data-tone": status.tone }, [el("span", { class: "status-dot" }), status.label])),
+      ...Object.entries(CompareStatusLabels).map(([status, label]) => el("span", { "data-tone": Vocabulary.messageStatuses[status].tone }, [el("span", { class: "status-dot" }), label])),
       el("span", {}, [el("span", { class: "legend-line" }), state.grain === CompareGrains.Calls ? "呼び出し" : "依存"]),
       el("span", {}, [el("span", { class: "legend-line is-removed" }), "変更後に無い線"]),
       el("span", {}, [el("span", { class: "compare-legend-absent" }), "片方にしか無い箱"]),
@@ -7911,40 +8238,36 @@ button.change-item:hover { background: var(--track); }
 
     const renderToolbar = () => toolbar.replaceChildren(
       ...labeledToggleOf("粒度", { options: CompareGrainChoices, current: state.grain, onPick: (grain) => update({ grain, selected: null }) }),
-      ...labeledToggleOf("並べ方", { options: CompareArrangementChoices, current: state.arrangement, onPick: (arrangement) => update({ arrangement }) }),
+      ...labeledToggleOf("並べ方", { options: CompareOrientationChoices, current: state.orientation, onPick: (orientation) => update({ orientation }) }),
       ...labeledToggleOf("変わっていない箱", { options: CompareDimChoices, current: state.isDimmed, onPick: (isDimmed) => update({ isDimmed }) }),
     );
 
-    const renderFigures = (diagram) => {
-      const unselected = CompareDiagram.unselectedOf(diagram, calls);
+    const renderFigures = (diagram, unselected) => {
       if (unselected.kind === "unselectable") {
         figureArea.replaceChildren(emptyOf(compareReasonTextOf(unselected.reason, state.grain)));
         return;
       }
       const figure = figures[state.grain];
       figureArea.replaceChildren(
-        el("div", { class: classesOf("compare-pair", { "is-stacked": state.arrangement === CompareArrangements.Stack }) }, sides.map((drawnSide) => figureOf(figure, diagram, drawnSide))),
+        el("div", { class: classesOf("compare-pair", { "is-vertical": state.orientation === CompareOrientations.Vertical }) }, sides.map((drawnSide) => figureOf(figure, diagram, drawnSide))),
         legendOf(),
       );
     };
 
     const countLinesOf = (counts) => [["箱", counts.boxes], ["線", counts.edges]].map(([what, count]) => el("div", { class: "compare-count" }, [
       el("span", { class: "compare-count-what", text: what }),
-      el("span", { class: "add", text: plus(count.added) }),
-      el("span", { class: "del", text: minus(count.removed) }),
-      el("span", { class: "mod", text: `~${count.changed}` }),
+      ...statusCountNodesOf(count),
     ]));
 
-    const renderLeft = (diagram) => {
+    const renderLeft = (diagram, unselected) => {
       const changes = CompareDiagram.changeListOf(diagram);
-      const unselected = CompareDiagram.unselectedOf(diagram, calls);
       leftSub.textContent = `${changes.items.length} 件`;
       if (unselected.kind === "unselectable") {
         leftBody.replaceChildren(emptyOf(compareReasonTextOf(unselected.reason, state.grain)));
         return;
       }
       const rows = changes.items.map((item) => pressable("button", { class: classesOf("compare-change plain-button", { "is-picked": state.selected === item.id }) }, [
-        el("span", { class: "compare-change-head" }, [compareStatusChipOf(item.status), el("span", { class: "compare-change-kind", text: item.kind === "box" ? "箱" : "線" })]),
+        el("span", { class: "compare-change-head" }, [statusChipOf(item.status, CompareStatusLabels), el("span", { class: "compare-change-kind", text: item.kind === "box" ? "箱" : "線" })]),
         el("span", { class: "compare-change-name", text: item.name }),
       ], () => pick(item.id)));
       const list = rows.length === 0 ? [emptyOf("状態の付いた箱・線はありません")] : rows;
@@ -7952,10 +8275,7 @@ button.change-item:hover { background: var(--track); }
     };
 
     const writtenBlocksOf = (written) => {
-      const review = written.review.length === 0 ? [] : [el("div", { class: "side-block" }, [
-        el("span", { class: "eyebrow", text: "見てほしいところ" }),
-        el("ul", { class: "compare-review" }, written.review.map((text) => prose("li", {}, text))),
-      ])];
+      const review = written.review.length === 0 ? [] : [el("div", { class: "side-block" }, [el("span", { class: "eyebrow", text: "見てほしいところ" }), reviewListOf(written.review)])];
       return [
         el("div", { class: "side-block" }, [
           el("span", { class: "eyebrow", text: "この PR の構成の変化" }),
@@ -7966,8 +8286,7 @@ button.change-item:hover { background: var(--track); }
       ];
     };
 
-    const unselectedBlocksOf = (diagram) => {
-      const unselected = CompareDiagram.unselectedOf(diagram, calls);
+    const unselectedBlocksOf = (unselected) => {
       switch (unselected.kind) {
         case "unselectable":
           return [
@@ -8000,31 +8319,31 @@ button.change-item:hover { background: var(--track); }
       ])),
     ]));
 
-    const pickedBlocksOf = (diagram, picked) => {
-      switch (picked.kind) {
+    const selectedBlocksOf = (diagram, selected) => {
+      switch (selected.kind) {
         case "box": {
-          const { box } = picked;
+          const { box } = selected;
           const path = diagram.grain === CompareGrains.Calls ? box.module : box.path;
           const facts = diagram.grain === CompareGrains.Calls
             ? [...(box.role === null ? [] : [prose("p", { class: "detail-role" }, box.role)]), sidesTableOf(box)]
             : dependencyBlocksOf(box.dependencies);
           return [
-            el("div", { class: "side-block" }, [el("div", { class: "side-head" }, [el("span", { class: "chip", text: "箱" }), compareStatusChipOf(box.status)]), el("h2", { text: box.name }), el("span", { class: "side-path", text: path })]),
+            el("div", { class: "side-block" }, [el("div", { class: "side-head" }, [el("span", { class: "chip", text: "箱" }), statusChipOf(box.status, CompareStatusLabels)]), el("h2", { text: box.name }), el("span", { class: "side-path", text: path })]),
             ...facts,
           ];
         }
         case "edge": {
-          const { edge } = picked;
-          const endOf = (end, fallback) => (end === null ? fallback : end.name);
+          const { edge } = selected;
+          // モジュールの粒度の線は、両端が箱の依存だけなので、端の箱は必ずある。
           const facts = diagram.grain === CompareGrains.Calls
             ? [...(edge.code === null ? [] : [el("code", { class: "compare-code", text: edge.code })]), sidesTableOf(edge)]
             : [el("div", { class: "side-block" }, [
               eyebrowOf("両端"),
-              el("div", { class: "compare-dependency", title: edge.from }, [el("span", { class: "compare-dependency-direction", text: "使う側" }), el("span", { class: "compare-dependency-name", text: endOf(picked.from, edge.from) })]),
-              el("div", { class: "compare-dependency", title: edge.to }, [el("span", { class: "compare-dependency-direction", text: "使われる側" }), el("span", { class: "compare-dependency-name", text: endOf(picked.to, edge.to) })]),
+              el("div", { class: "compare-dependency", title: edge.from }, [el("span", { class: "compare-dependency-direction", text: "使う側" }), el("span", { class: "compare-dependency-name", text: selected.from.name })]),
+              el("div", { class: "compare-dependency", title: edge.to }, [el("span", { class: "compare-dependency-direction", text: "使われる側" }), el("span", { class: "compare-dependency-name", text: selected.to.name })]),
             ])];
           return [
-            el("div", { class: "side-block" }, [el("div", { class: "side-head" }, [el("span", { class: "chip", text: "線" }), compareStatusChipOf(edge.status)]), el("h2", { text: CompareDiagram.nameOf(diagram, edge.id) })]),
+            el("div", { class: "side-block" }, [el("div", { class: "side-head" }, [el("span", { class: "chip", text: "線" }), statusChipOf(edge.status, CompareStatusLabels)]), el("h2", { text: CompareDiagram.nameOf(diagram, edge.id) })]),
             ...facts,
           ];
         }
@@ -8042,37 +8361,31 @@ button.change-item:hover { background: var(--track); }
     /** 右の欄の「ほかの画面で見る」。押すと流れ図のその流れへ。 */
     const flowsBlockOf = (diagram) => {
       const flows = CompareDiagram.flowsThrough(diagram, state.selected, explained);
-      const chips = flows.map((flow) => pressable("button", { class: "flow-chip", title: "流れ図でこの流れを見る" }, [`${ScreenLabels[Screens.Trace]}: ${flow.label}`, el("span", { class: "arrow", text: "↗" })], () => go.toTrace(flow.id)));
+      const chips = flows.map((flow) => flowChipOf(flow, { screen: Screens.Trace, onPress: () => go.toTrace(flow.id) }));
       const empty = chips.length === 0 ? [el("p", { class: "side-note", text: "このファイルを端に持つやりとりを手順に含む流れはありません" })] : [];
       return el("div", { class: "side-block" }, [eyebrowOf("ほかの画面で見る", `${chips.length} 件`), ...(chips.length === 0 ? [] : [el("div", { class: "flow-chips" }, chips)]), ...empty]);
     };
 
-    const renderSide = (diagram) => {
-      const picked = state.selected === null ? null : CompareDiagram.pickedOf(diagram, state.selected);
-      if (picked === null) {
-        side.replaceChildren(...unselectedBlocksOf(diagram));
+    const renderSide = (diagram, unselected) => {
+      const selected = state.selected === null ? null : CompareDiagram.selectedOf(diagram, state.selected);
+      if (selected === null) {
+        side.replaceChildren(...unselectedBlocksOf(unselected));
         return;
       }
       const clear = pressable("button", { class: "outline-button", text: "選択を外す" }, [], () => update({ selected: null }));
-      side.replaceChildren(...pickedBlocksOf(diagram, picked), changingCommitsBlockOf(diagram), flowsBlockOf(diagram), el("div", { class: "side-block" }, [clear]));
+      side.replaceChildren(...selectedBlocksOf(diagram, selected), changingCommitsBlockOf(diagram), flowsBlockOf(diagram), el("div", { class: "side-block" }, [clear]));
       side.scrollTop = 0;
     };
 
     const render = () => {
       const diagram = diagrams[state.grain];
+      const unselected = CompareDiagram.unselectedOf(diagram, calls);
       renderToolbar();
-      renderLeft(diagram);
-      renderFigures(diagram);
-      renderSide(diagram);
+      renderLeft(diagram, unselected);
+      renderFigures(diagram, unselected);
+      renderSide(diagram, unselected);
     };
     render();
-
-    /** Target(callBox / callEdge / module)の粒度と、そこで選ぶ id。構成の前後が行き先でなければ null。 */
-    const pickOfTarget = (target) => {
-      const destination = Target.destinationOf(target);
-      if (destination?.screen !== Screens.Compare) return null;
-      return { grain: destination.grain, id: destination.grain === CompareGrains.Calls ? destination.id : destination.path };
-    };
 
     return {
       summary: [],
@@ -8081,23 +8394,20 @@ button.change-item:hover { background: var(--track); }
       left: panelOf("left", [panelHead("変わったところ", "", [leftSub]), leftBody]),
       main,
       right: panelOf("right", [panelHead("詳しいところ", "選んだ箱・線の前後"), side]),
-      /** @returns 構成の前後が行き先の Target で、その粒度の図に指す箱・線があるか */
-      canShow: (target) => {
-        const found = pickOfTarget(target);
-        return found !== null && CompareDiagram.isSelectable(diagrams[found.grain], found.id);
-      },
-      /** その Target の粒度に切り替え、指す箱・線を選んだ状態にする。`canShow` が真のものだけを渡す。 */
-      showTarget: (target) => {
-        const found = pickOfTarget(target);
-        update({ grain: found.grain, selected: found.id });
+      /**
+       * Target の粒度に切り替え、指す箱・線を選んだ状態にする。
+       * @param selection `Target.landingOf` の selection(`{grain, id}`)で、届くもの(isReachable)だけ
+       */
+      showTarget: (selection) => {
+        update({ grain: selection.grain, selected: selection.id });
         figureArea.querySelector(".compare-side:last-child :is(.compare-box, .compare-edge).is-picked")?.scrollIntoView({ block: "center" });
       },
     };
   };
 
-  const TraceEraChoices = [{ value: TraceEras.Compare, label: "比べる" }, { value: TraceEras.After, label: "変更後だけ" }, { value: TraceEras.Before, label: "変更前だけ" }];
-  // 手順の対応の状態の名前と色の区分。そのまま(状態なし)はここに無い(札は「そのまま」)。
-  const TraceStatuses = { added: { tone: "A", label: "増えた" }, removed: { tone: "D", label: "消えた" }, changed: { tone: "M", label: "変わった" } };
+  const TraceEraChoices = [{ value: TraceEras.Aligned, label: "比べる" }, { value: TraceEras.After, label: "変更後だけ" }, { value: TraceEras.Before, label: "変更前だけ" }];
+  // 手順の対応の状態の呼び名。色の区分は `statusChipOf` が引く。そのまま(状態なし)はここに無い(札は「そのまま」)。
+  const TraceStatusLabels = Object.freeze({ added: "増えた", changed: "変わった", removed: "消えた" });
   // カードの下に添える文(`TraceLayout.cardsIn` の presence)。使う端(used)には添えない。
   const TracePresenceNotes = { idle: "この操作では使わない", missingBefore: "変更前には無い", missingAfter: "変更後には無い", added: "この PR で増えた", removed: "この PR で消えた" };
   const TraceSpellingNote = "綴り(code / payload / returns)は変更後のもの";
@@ -8122,13 +8432,24 @@ button.change-item:hover { background: var(--track); }
   /** 矢じり。tip が先、direction が向きの単位ベクトル。 */
   const traceHeadOf = ([x, y], [ux, uy], size) => `M${x},${y} L${x - ux * size - uy * size * 0.5},${y - uy * size + ux * size * 0.5} L${x - ux * size + uy * size * 0.5},${y - uy * size - ux * size * 0.5} z`;
 
+  /**
+   * 矢印と、手順の一覧の点の色の区分。比べるときは増えた / 消えた を、そうでなければ手順の重さを使い、どちらも無ければ空
+   * (やりとりの種類の色)。
+   * @param step 行の矢印として描く側(`TraceRows.drawnSideOf`)
+   */
+  const traceStepToneOf = (row, { step, era }) => {
+    const isComingOrGoing = era === TraceEras.Aligned && (row.status === "added" || row.status === "removed");
+    if (isComingOrGoing) return row.status;
+    return step.cost ?? "";
+  };
+
   /** 流れ図の画面。左に操作(流れ)の一覧、中に人とモジュールのカードと番号付きの矢印、右に手順の一覧を出す。 */
   const TraceScreen = (explained) => {
     const flows = explained.explain === null ? [] : listOf(explained.explain.flows);
     const flowAt = explained.lookup.flows;
     const messages = explained.lookup.messages;
     const layout = TraceLayout.create(flows, messages);
-    const endNameOf = (end) => explained.lookup.endNames.get(end) ?? end;
+    const endNameOf = explained.lookup.endNameOf;
 
     let state = { flowId: flows.length === 0 ? null : flows[0].id, era: flows.length === 0 ? TraceEras.After : TraceRows.erasOf(flows[0])[0], index: 0 };
     const flowOf = () => flowAt.get(state.flowId) ?? null;
@@ -8173,28 +8494,19 @@ button.change-item:hover { background: var(--track); }
       return el("div", { class: "trace-summary" }, [
         ...(gist === null ? [] : [itemOf("この PR で変わったこと", Dom.proseParts(gist), { "is-head": true })]),
         itemOf("手順の数", [el("span", { class: "mono", text: `${steps.before} → ${steps.after}` })]),
-        itemOf("増えた / 消えた / 変わった", [
-          el("span", { class: "add mono", text: plus(counts.added) }), " / ", el("span", { class: "del mono", text: minus(counts.removed) }), " / ", el("span", { class: "mod mono", text: `~${counts.changed}` }),
-        ]),
+        itemOf("増えた / 消えた / 変わった", [el("span", { class: "mono" }, statusCountNodesOf(counts).flatMap((node, index) => (index === 0 ? [node] : [" / ", node])))]),
         ...(measure === null ? [] : [itemOf(measure.what, [prose("span", {}, measure.before), " → ", prose("span", {}, measure.after)])]),
       ]);
-    };
-
-    /** 矢印の色の区分。比べるときは増えた / 消えた を、そうでなければ手順の重さを使い、どちらも無ければやりとりの種類の色。 */
-    const arrowToneOf = (row, side) => {
-      const isMoved = state.era === TraceEras.Compare && (row.status === "added" || row.status === "removed");
-      if (isMoved) return row.status;
-      return side.cost ?? "";
     };
 
     const arrowNodeOf = ({ row, arrow, index }) => {
       const sideOfRow = TraceRows.drawnSideOf(row);
       const isCurrent = index === state.index;
-      const isChanged = state.era === TraceEras.Compare && row.status === "changed";
+      const isChanged = state.era === TraceEras.Aligned && row.status === "changed";
       const node = Dom.svg("g", {
         class: classesOf("trace-arrow", { "is-current": isCurrent, "is-changed": isChanged }),
         "data-kind": sideOfRow.message.kind,
-        "data-step-tone": arrowToneOf(row, sideOfRow),
+        "data-step-tone": traceStepToneOf(row, { step: sideOfRow, era: state.era }),
         tabindex: "0",
         role: "button",
         "aria-label": `${row.badge}. ${sideOfRow.message.name}`,
@@ -8209,49 +8521,52 @@ button.change-item:hover { background: var(--track); }
         ]),
       ]);
       node.addEventListener("click", () => update({ index }));
-      node.addEventListener("keydown", (event) => {
-        if (event.key !== "Enter" && event.key !== " ") return;
-        event.preventDefault();
-        update({ index });
-      });
+      pressOnActivationKey(node, () => update({ index }));
       return node;
     };
 
+    /**
+     * カードの名前の下の識別子の行。concept の端はファイル名(`ExplainedMap.fileNameOf`)。actor の端と、concepts にも actors にも
+     * 無い端は出さない(actor は名前のほかに識別子を持たず、無い端は名前の行が端の綴りそのもの)。
+     * @returns 出さなければ null
+     */
+    const cardCodeOf = (end) => (explained.lookup.conceptNames.has(end) ? ExplainedMap.fileNameOf(end) : null);
+
     const cardNodeOf = (card, isInvolved) => {
       const name = endNameOf(card.end);
+      const code = cardCodeOf(card.end);
       const icon = explained.lookup.endIcons.get(card.end) ?? null;
       const centerX = card.x + card.width / 2;
       const iconNodes = (icon === null ? traceBoxIconOf : TraceIcons[icon])(centerX, card.y + 30);
       const note = TracePresenceNotes[card.presence];
       const tooltip = [name, card.end].join("\n");
-      return Dom.svg("g", { class: classesOf("trace-card", { "is-involved": isInvolved, "is-actor": explained.lookup.actors.has(card.end) }), "data-presence": card.presence }, [
+      return Dom.svg("g", { class: classesOf("trace-card", { "is-involved": isInvolved, "is-person": icon === "person" }), "data-presence": card.presence }, [
         Dom.svg("title", {}, [tooltip]),
         Dom.svg("rect", { class: "trace-card-bg", x: card.x, y: card.y, width: card.width, height: card.height, rx: 12 }),
         Dom.svg("g", { class: "trace-card-icon" }, iconNodes),
-        Dom.svg("text", { class: "trace-card-name", x: centerX, y: card.y + 66 }, [fittedTextOf(name, card.width - 16)]),
+        Dom.svg("text", { class: "trace-card-name", x: centerX, y: card.y + 64 }, [fittedTextOf(name, card.width - 16)]),
+        ...(code === null ? [] : [Dom.svg("text", { class: "trace-card-code", x: centerX, y: card.y + 81 }, [fittedTextOf(code, card.width - 16)])]),
         ...(note === undefined ? [] : [Dom.svg("text", { class: "trace-card-note", x: centerX, y: card.y + card.height + 17 }, [note])]),
       ]);
     };
 
     const figureOf = (rows) => {
-      const cards = TraceLayout.cardsIn(layout, rows, { era: state.era, entryAt: explained.entryAt });
+      const cards = TraceLayout.cardsIn(layout, rows, { era: state.era, endStatuses: explained.endStatuses });
       const arrows = TraceLayout.arrowsOf(layout, rows);
       const current = rows[state.index] === undefined ? null : TraceRows.drawnSideOf(rows[state.index]);
-      const involved = new Set(current === null || current.message === null ? [] : [current.message.from, current.message.to]);
+      const hasCurrentMessage = current !== null && current.message !== null;
+      const involved = new Set(hasCurrentMessage ? [current.message.from, current.message.to] : []);
       const drawn = rows.map((row, index) => ({ row, arrow: arrows[index], index })).filter(({ arrow }) => arrow !== null);
       // 今の矢印はほかの矢印に隠れないよう、最後に描く。
       const ordered = [...drawn.filter(({ index }) => index !== state.index), ...drawn.filter(({ index }) => index === state.index)];
       const pad = TraceFigurePad;
       const naturalWidth = layout.width + pad.left + pad.right;
       const viewBox = [-pad.left, -pad.top, naturalWidth, layout.height + pad.top + pad.bottom].join(" ");
-      const svg = Dom.svg("svg", { class: "wide-figure trace-figure", viewBox, role: "img", "aria-label": "操作の流れ図" }, [
+      const svg = sizedWideFigure(Dom.svg("svg", { class: "wide-figure trace-figure", viewBox, role: "img", "aria-label": "操作の流れ図" }, [
         ...cards.map((card) => cardNodeOf(card, involved.has(card.end))),
         ...ordered.map(arrowNodeOf),
-      ]);
-      // 幅は欄に合わせるが、図の大きさより大きくせず、下限より縮めない。倍率で割って、文字の大きさの倍率では変えない(構成の前後と同じ)。
-      svg.style.maxWidth = `calc(${naturalWidth}px / var(--text-size-ratio, 1))`;
-      svg.style.minWidth = `calc(${Math.round(naturalWidth * TraceMinScale)}px / var(--text-size-ratio, 1))`;
-      return el("div", { class: "trace-stage" }, [svg]);
+      ]), { naturalWidth, minScale: TraceMinScale });
+      return el("div", { class: "trace-figure-frame" }, [svg]);
     };
 
     /** 手順のカードの 1 列。その側の送り手 → 受け手・やりとりの名前・説明・渡すもの / 返すもの・コード。 */
@@ -8273,12 +8588,10 @@ button.change-item:hover { background: var(--track); }
       ];
     };
 
-    const statusChipOf = (status) => (status === null ? el("span", { class: "chip", text: "そのまま" }) : el("span", { class: "chip", "data-tone": TraceStatuses[status].tone, text: TraceStatuses[status].label }));
-
     const stepCardOf = (row) => {
       const columns = TraceRows.cardColumnsOf(row, state.era);
       const changeNote = row.change === null ? [] : [prose("div", { class: "trace-change" }, row.change)];
-      const head = state.era === TraceEras.Compare ? [el("div", { class: "trace-step-head" }, [statusChipOf(row.status), el("span", { class: "trace-step-pos", text: `番号 ${row.badge}` })])] : [];
+      const head = state.era === TraceEras.Aligned ? [el("div", { class: "trace-step-head" }, [statusChipOf(row.status, TraceStatusLabels), el("span", { class: "trace-step-pos", text: `番号 ${row.badge}` })])] : [];
       const columnOf = ({ side: which, step }) => {
         if (which === "only") return el("div", { class: "trace-col" }, columnFactsOf(step, null));
         const texts = TraceColumnTexts[which];
@@ -8294,14 +8607,14 @@ button.change-item:hover { background: var(--track); }
       const next = pressable("button", { class: "outline-button", text: "次へ ▶" }, [], () => update({ index: state.index + 1 }));
       previous.disabled = state.index <= 0;
       next.disabled = state.index >= rows.length - 1;
-      const unit = state.era === TraceEras.Compare ? "行" : "手順";
+      const unit = state.era === TraceEras.Aligned ? "行" : "手順";
       return el("div", { class: "trace-player" }, [previous, next, el("span", { class: "trace-player-pos", text: `${unit} ${Math.min(state.index + 1, rows.length)} / ${rows.length}` })]);
     };
 
     const legendOf = () => el("div", { class: "legend trace-legend" }, [
       ...MessageKindOrder.map((kind) => el("span", {}, [el("span", { class: "trace-swatch", "data-kind": kind }), `${Vocabulary.messageKinds[kind].label}${kind === "evt" ? "(破線)" : ""}`])),
       ...Object.entries(Vocabulary.stepCosts).map(([cost, names]) => el("span", {}, [el("span", { class: "trace-swatch", "data-step-tone": cost }), names.label])),
-      ...(state.era === TraceEras.Compare
+      ...(state.era === TraceEras.Aligned
         ? [
           el("span", {}, [el("span", { class: "trace-swatch", "data-step-tone": "added" }), "+n 増えた手順"]),
           el("span", {}, [el("span", { class: "trace-swatch", "data-step-tone": "removed" }), "× 消えた手順"]),
@@ -8321,7 +8634,7 @@ button.change-item:hover { background: var(--track); }
           el("h1", { text: flow.label }),
           ...(text === null ? [] : [prose("p", {}, text)]),
         ]),
-        ...(state.era === TraceEras.Compare ? [summaryOf(flow)] : []),
+        ...(state.era === TraceEras.Aligned ? [summaryOf(flow)] : []),
         toolbar,
         figureOf(rows),
         playerOf(rows),
@@ -8331,20 +8644,23 @@ button.change-item:hover { background: var(--track); }
     };
 
     const renderSide = (rows) => {
-      const isComparing = state.era === TraceEras.Compare;
+      const isComparing = state.era === TraceEras.Aligned;
       sideSub.textContent = `${rows.length} ${isComparing ? "行" : "手順"}`;
       const itemOf = (row, index) => {
         const stepSide = TraceRows.drawnSideOf(row);
         const name = stepSide.message === null ? stepSide.messageId : stepSide.message.name;
-        const wasName = row.before !== null && row.before.message !== null ? row.before.message.name : null;
+        const hasBeforeMessage = row.before !== null && row.before.message !== null;
+        const wasName = hasBeforeMessage ? row.before.message.name : null;
+        const showsWas = row.status === "changed" && wasName !== null;
         const marks = isComparing
           ? [
-            ...(row.status === null ? [] : [statusChipOf(row.status)]),
-            ...(row.status === "changed" && wasName !== null ? [el("span", { class: "trace-row-was", text: `前: ${wasName}` })] : []),
+            ...(row.status === null ? [] : [statusChipOf(row.status, TraceStatusLabels)]),
+            ...(showsWas ? [el("span", { class: "trace-row-was", text: `前: ${wasName}` })] : []),
           ]
-          : (row.status === null ? [] : [el("span", { class: "trace-row-flag", text: "この PR で変わった" })]);
-        const tone = isComparing && (row.status === "added" || row.status === "removed") ? row.status : (stepSide.cost ?? "");
-        return pressable("button", { class: classesOf("trace-row plain-button", { "is-current": index === state.index, "is-removed": isComparing && row.status === "removed" }) }, [
+          : (row.status === null ? [] : [el("span", { class: "trace-row-flag", text: "● この PR で変わった" })]);
+        const tone = traceStepToneOf(row, { step: stepSide, era: state.era });
+        const isRemovedRow = isComparing && row.status === "removed";
+        return pressable("button", { class: classesOf("trace-row plain-button", { "is-current": index === state.index, "is-removed": isRemovedRow }) }, [
           el("span", { class: "trace-dot", "data-kind": stepSide.message === null ? "" : stepSide.message.kind, "data-step-tone": tone, text: row.badge }),
           el("span", { class: "trace-row-body" }, [el("span", { class: "trace-row-name", text: name }), ...marks]),
         ], () => update({ index }));
@@ -8364,19 +8680,13 @@ button.change-item:hover { background: var(--track); }
       renderSide(rows);
     };
 
-    const emptyText = explained.explain === null ? "解説なし" : "書かれていない";
     if (flows.length === 0) {
-      body.replaceChildren(el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: "流れ図" }), emptyOf(emptyText)]));
-      leftBody.replaceChildren(emptyOf(emptyText));
+      const absent = absentPartsOf("流れ図", explained);
+      body.replaceChildren(absent.main);
+      leftBody.replaceChildren(absent.left);
     } else {
       render();
     }
-
-    /** stepChange の Target の流れと番号。流れ図が行き先でなければ null。 */
-    const pickOfTarget = (target) => {
-      const destination = Target.destinationOf(target);
-      return destination?.screen === Screens.Trace ? destination : null;
-    };
 
     return {
       summary: [],
@@ -8385,16 +8695,12 @@ button.change-item:hover { background: var(--track); }
       left: panelOf("left", [panelHead("操作", "", [leftSub]), leftBody]),
       main,
       right: panelOf("right", [panelHead("手順", "", [sideSub]), side]),
-      /** @returns 流れ図が行き先の Target で、その流れの「比べる」にその行があるか */
-      canShow: (target) => {
-        const found = pickOfTarget(target);
-        return found !== null && flowAt.has(found.flow) && TraceRows.isSelectable(flowAt.get(found.flow), found.stepChange);
-      },
-      /** その Target の流れを「比べる」で開き、指す行を選んだ状態にする。`canShow` が真のものだけを渡す。 */
-      showTarget: (target) => {
-        const found = pickOfTarget(target);
-        update({ flowId: found.flow, era: TraceEras.Compare, index: found.stepChange - 1 });
-      },
+      /**
+       * Target の流れを開き、指す行を選んだ状態にする。表示と行は `TraceRows.openingOf`(変更後の手順があれば「変更後だけ」、
+       * 無ければ「比べる」)。
+       * @param selection `Target.landingOf` の selection(`{flow, stepChange}`)で、届くもの(isReachable)だけ
+       */
+      showTarget: (selection) => update({ flowId: selection.flow, ...TraceRows.openingOf(flowAt.get(selection.flow), selection.stepChange) }),
       /** その流れを、その流れの既定の表示の最初の手順で開く。flows に無い流れは開かない。 */
       showFlow: (id) => {
         if (!flowAt.has(id)) return;
@@ -8434,7 +8740,8 @@ button.change-item:hover { background: var(--track); }
       const move = (moveEvent) => {
         const shift = moveEvent.clientY - event.clientY;
         const middle = middleOf(rects[from]) + shift;
-        to = rects.filter((rect, index) => index !== from && middleOf(rect) < middle).length;
+        const isAboveMiddle = (rect, index) => index !== from && middleOf(rect) < middle;
+        to = rects.filter(isAboveMiddle).length;
         row.style.transform = `translateY(${shift / scale}px)`;
         rows.forEach((other, index) => {
           if (index === from) return;
@@ -8461,8 +8768,7 @@ button.change-item:hover { background: var(--track); }
    * 並べ替えの途中は、このブラウザだけに PR ごとに覚える(`Quiz`)。
    */
   const QuizScreen = (explained, go) => {
-    const kinds = Object.values(Quiz.Kinds);
-    const questions = explained.explain === null ? [] : listOf(explained.explain.quiz).filter((question) => isRecord(question) && kinds.includes(question.kind));
+    const questions = explained.explain === null ? [] : listOf(explained.explain.quiz);
     const storeKey = `prExplain.${explained.map.pr}.quiz`;
     let progress = Quiz.progressOf(BrowserStore.read(storeKey), questions);
     /** 進み具合を変えて覚え、描き直す。 */
@@ -8493,7 +8799,7 @@ button.change-item:hover { background: var(--track); }
         const markText = verdict === null ? String(index + 1) : verdict ? "✓" : "✕";
         return pressable("button", { class: classesOf("quiz-item plain-button", { "is-picked": key === progress.current }) }, [
           el("span", { class: classesOf("quiz-mark", { "is-right": verdict === true, "is-wrong": verdict === false }), text: markText }),
-          el("span", { class: "quiz-item-body" }, [el("span", { class: "quiz-item-kind", text: QuizKindLabels[question.kind] }), el("span", { class: "quiz-item-title", text: optionalText(question.title) ?? "" })]),
+          el("span", { class: "quiz-item-body" }, [el("span", { class: "quiz-item-kind", text: QuizKindLabels[question.kind] }), el("span", { class: "quiz-item-title", text: question.title })]),
         ], () => save(Quiz.withCurrent(progress, key)));
       });
       const reset = pressable("button", { class: "outline-button", text: "答えを消す" }, [], () => save(Quiz.progressOf(null, questions)));
@@ -8533,7 +8839,8 @@ button.change-item:hover { background: var(--track); }
         const isWrong = isAnswered && position !== at;
         const moveButtonOf = (label, text, to) => {
           const button = pressable("button", { class: "quiz-move", "aria-label": label, text }, [], () => arrange(at, to));
-          button.disabled = to < 0 || to >= arrangement.length;
+          const isOutside = to < 0 || to >= arrangement.length;
+          button.disabled = isOutside;
           return button;
         };
         const tail = isAnswered
@@ -8571,7 +8878,7 @@ button.change-item:hover { background: var(--track); }
       return [
         el("div", { class: classesOf("quiz-verdict", { "is-right": isRight, "is-wrong": !isRight }) }, [
           el("div", { class: "quiz-verdict-head", text: isRight ? "正解" : "不正解" }),
-          ...(isString(question.why) ? [prose("p", {}, question.why)] : []),
+          prose("p", {}, question.why),
         ]),
         el("div", { class: "quiz-actions" }, [...next, retry]),
       ];
@@ -8580,11 +8887,13 @@ button.change-item:hover { background: var(--track); }
     /** 根拠のチップ。答えるまでは押せず、行き先の画面で選べない Target は答えた後も押せずに「図に無い」と添える。 */
     const renderSide = (question, answered) => {
       const isAnswered = answered.kind === "answered";
-      const chips = listOf(question.go).filter(isRecord).map((target) => {
-        const canShow = go.canShow(target);
-        const title = canShow ? (isAnswered ? "根拠の画面へ移る" : "答えると押せます") : "指している先が図に無いので移れません";
-        const chip = pressable("button", { class: "flow-chip", title }, [Target.captionOf(target, explained), el("span", { class: "arrow", text: canShow ? "↗" : "図に無い" })], () => go.toTarget(target));
-        chip.disabled = !(isAnswered && canShow);
+      const chips = question.go.map((target) => {
+        const landing = Target.landingOf(target, explained);
+        const pressHint = isAnswered ? "根拠の画面へ移る" : "答えると押せます";
+        const title = landing.isReachable ? pressHint : "指している先が図に無いので移れません";
+        const chip = pressable("button", { class: "flow-chip", title }, [Target.captionOf(target, explained), el("span", { class: "arrow", text: landing.isReachable ? "↗" : "図に無い" })], () => go.toLanding(landing));
+        const canPress = isAnswered && landing.isReachable;
+        chip.disabled = !canPress;
         return chip;
       });
       side.replaceChildren(el("div", { class: "side-block" }, [
@@ -8601,7 +8910,7 @@ button.change-item:hover { background: var(--track); }
       const answered = answerOf(progress.current);
       card.replaceChildren(
         el("div", { class: "quiz-head" }, [el("span", { class: "quiz-kind", text: QuizKindLabels[question.kind] }), el("span", { class: "quiz-number", text: `問 ${index + 1} / ${questions.length}` })]),
-        prose("p", { class: "quiz-prompt" }, isString(question.prompt) ? question.prompt : ""),
+        prose("p", { class: "quiz-prompt" }, question.prompt),
         ...answerAreaOf(question, answered),
         ...(answered.kind === "answered" ? verdictOf(question, answered, index) : []),
       );
@@ -8611,10 +8920,10 @@ button.change-item:hover { background: var(--track); }
       shownKey = progress.current;
     };
 
-    const emptyText = explained.explain === null ? "解説なし" : "書かれていない";
     if (questions.length === 0) {
-      card.replaceChildren(el("div", { class: "lede" }, [el("span", { class: "eyebrow", text: "クイズ" }), emptyOf(emptyText)]));
-      leftBody.replaceChildren(emptyOf(emptyText));
+      const absent = absentPartsOf("クイズ", explained);
+      card.replaceChildren(absent.main);
+      leftBody.replaceChildren(absent.left);
     } else {
       render();
     }
@@ -8724,43 +9033,20 @@ button.change-item:hover { background: var(--track); }
           navigateTo(Screens.Primer);
           built.primer.showTopic(position);
         },
-        toCompare: (target) => {
-          navigateTo(Screens.Compare);
-          built.compare.showTarget(target);
-        },
         toTrace: (flowId) => {
           navigateTo(Screens.Trace);
           built.trace.showFlow(flowId);
         },
-        /** Target の行き先の画面へ移り、指すものを選んだ状態にする。`canShow` が真のものだけを渡す。 */
-        toTarget: (target) => {
-          const screen = Target.destinationOf(target)?.screen;
-          switch (screen) {
-            case Screens.Map:
-              navigateTo(Screens.Map);
-              built.map.showTarget(target);
-              return;
-            case Screens.Compare:
-              go.toCompare(target);
-              return;
-            case Screens.Trace:
-              navigateTo(Screens.Trace);
-              built.trace.showTarget(target);
-              return;
-          }
-        },
-        /** @returns Target の行き先の画面で、指すものを選べるか。kind が語彙に無ければ偽 */
-        canShow: (target) => {
-          const destination = Target.destinationOf(target);
-          return destination !== null && built[destination.screen].canShow(target);
+        /**
+         * Target の届く先の画面へ移り、そこで選ぶものを選んだ状態にする。
+         * @param landing `Target.landingOf` の戻り値で、届くもの(isReachable)だけ
+         */
+        toLanding: (landing) => {
+          navigateTo(landing.screen);
+          built[landing.screen].showTarget(landing.selection);
         },
       };
-      // 構造マップ(highlights)とクイズ(根拠のチップ)は組むときに、Target の行き先の画面で選べるか(`go.canShow`)を聞くので、行き先になる
-      // 画面を先に組む。構造マップも構成の前後と流れ図に聞くので、その 2 つの後に組む。
-      const Destinations = [Screens.Compare, Screens.Trace, Screens.Map];
-      const BuildOrder = [...Destinations, ...Object.values(Screens).filter((screen) => !Destinations.includes(screen))];
-      const built = {};
-      for (const screen of BuildOrder) built[screen] = ScreenBuilders[screen](explained, go);
+      const built = Object.fromEntries(Object.values(Screens).map((screen) => [screen, ScreenBuilders[screen](explained, go)]));
       const tabs = Object.values(Screens).map((screen) => el("a", { href: `#${screen}`, "data-screen": screen, text: ScreenLabels[screen] }));
       const controls = el("div", { class: "screen-controls" });
       const summary = el("span", { class: "screen-summary" });
