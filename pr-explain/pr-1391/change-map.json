@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1391,
+  "headBranch": "claude/magical-cannon-lq918i",
+  "baseBranch": "main",
+  "mergeBase": "cd79066814ffdd217261c28c0d02d36cd437e1d5",
+  "head": "8d8f10e961a2ad8b73d82c8956de2c4179872756",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1386.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 119,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "8d8f10e961a2ad8b73d82c8956de2c4179872756",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-15T00:06:33Z",
+      "subject": "📝 [Doc]: #1341 PR #1386 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1386.md を追加する。指摘 12 件(plan 3・naming 2・\n  comment 3・harness 1・test 2・なし 1)、手戻り、発火(計測対象外)を記録\n\n背景:\nPR #1386(Issue #1341)がマージされた。harness-record スキルはマージの\nたびに記録を 1 ファイル残すことを求めている。\n\n採用理由:\n指摘は 1 件 = 1 ブロックで、出どころを語彙から 1 つずつ選んだ。bot の\n指摘(Devin Review)は不採用だったがオーナーへ届いた指摘なので残した。\n人のコメントはその判断の 1 件だけで指摘ではないので数えていない。\n発火ログはフック不発で存在しないため「計測対象外」とした。\n\n影響とトレードオフ:\n記録のみで、集計・規約やフックの変更はしない(harness-growth の管轄)。\n対策済の行も書いていない。\n\n参考:\nRefs #1341\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RepJZC3AgLJwXu5oC",
+      "files": [
+        {
+          "path": "harness/records/pr-1386.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 119,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,119 @@\n+# PR #1386 usage() を .github/scripts/lib/usage.sh へ寄せ、lib を読み込めなければ 127 で止める\n+\n+- マージ日: 2026-11-15\n+- 関連 Issue: #1341\n+- 差分規模: 5 ファイル / +52 -13\n+\n+## ゴールと結果\n+\n+ゴールは「`.github/scripts/` の重なり(`usage()` の本体、n 回まで・n × 待ちのやり直しの骨組み)について、寄せる部分は `.github/scripts/lib/` の 1 か所から読まれ、寄せない部分はその理由がコードか Issue から辿れる。振る舞いは変えない」。達成した。`usage()` は `lib/usage.sh` の 1 か所になり、2 本は `. … || exit 127` で読む。やり直しの骨組み(4 本)は寄せず、理由を #1341 の却下案 A〜F に残した。`check-*` 2 本の問い合わせを寄せる案は #1377 に申し送り、doc と実装のずれは #1385 に分けた。\n+\n+lib を読む形にしたことで「lib を読み込めない」という新しい失敗の経路ができた。`set -uo pipefail`(`-e` なし)なので、guard が無いと pr-explain-pages は知らないモードでも gh-pages へ push して exit 0 になった(試作で実測)。これを 127 で止め、判定表で守ることがゴールに加わった(計画の検証で見つかった)。\n+\n+GitHub 上のレビューは `get_reviews`・`get_review_comments`・`get_comments` の 3 つとも確認した。bot の指摘が 1 件(Devin Review)あった。人のコメントは、その指摘への判断(「このままでいい」)が 1 件だけで、指摘ではない。`get_comments` は自分が投稿したテストケース表と bot の投稿(Storybook プレビュー・CI レポート・VRT)だけだった。CI は全件緑で、VRT の差分は 0 件(209 件 passed)。\n+\n+## 指摘\n+\n+### 1. lib が無いとき、引数の検査を素通りして gh / push まで進む\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: `-e` なしなので `.` の失敗で止まらず、`usage` が 127 の command not found で続行する。計画は判定表への lib の写し忘れしか見ていなかった。`|| exit 127` で即座に止め、終了コードの doc と判定表の行を計画に足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 3\n+\n+### 2. 却下案 A の理由が、近い代替案(3 引数の retry)に当てて確かめられていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「差し替え口が 4〜5 個要る」と書いたが、`retry <回数> <待ち> <関数>` で 3 点は吸収でき、残る違いは最後の回の後に待つかだけだった。理由を「揃えると所要時間が変わる・得るものが小さい」に差し替え、待ち時間の doc を寄せない理由も足した。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 5・6\n+\n+### 3. ゴールを確かめる手段が計画に無かった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `plan-goal-verification`\n+- 内容: 「1 か所から読まれる」を確かめるコマンドが無かった。`grep -rn '使い方:/'` と `grep -rn '^usage()'` が lib の 1 件だけになることを完了条件に足した。\n+- 既存ルール: なし\n+\n+### 4. 新しい名前 `usage.sh` を grep した記録が無かった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `naming-precedent`\n+- 内容: 衝突 0 件と、`lib/detector-report.sh` の先例に揃えたことを計画に 1 行残した。\n+- 既存ルール: rules/naming.md「その名前が既に別の意味を持っていないか確認する」\n+\n+### 5. 127 の説明に、スクリプト自身が返せない場合が混ざっていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 「このスクリプトか lib が見つからない(gh を呼ぶ前に返す)」は、スクリプト自体が無いときはスクリプトが走らないので成り立たない。over-guard-reviewer の注記(構文エラーでも 127)と束ね、「lib を読み込めない」に絞り、シェルが返す 127 と分けて書いた。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 6. `gh` の終了コードの説明が `gh help exit-codes` より粗い(不採用・範囲外)\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 差分が触っていない既存の行。同じ冒頭 doc を扱う #1385 に候補として書き残した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 7. 待ち時間の doc が、最後の回の後に待たない実装と食い違う(既存・追跡済み)\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 計画中に見つけて #1385 に分けていたもの。差分は該当行を変えていない。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 8. 使い方を見る判定表の行だけが、差し替えた gh の外で走っていた\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（harness-reviewer）`\n+- 内容: `run_upsert` が標準エラーを捨てていたので、標準エラーを読む行だけが別の組み立てで本物の `bash` を走らせていた。usage が終わらない退行で本物の `gh` を叩きうる。`run_upsert` が標準エラーを置き場に残すようにし、その行も経由させて `exit=2 calls=` も見るようにした。\n+- 既存ルール: rules/testing.md「モックは原則使わない」(プロセス外の境界はフェイクで代替する)\n+\n+### 9. lib 欠落のケースが知らないモードだけで、guard を「代わりの usage を定義して先へ進む」形に壊すと落ちなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 形の名前: `test-coverage-gap`\n+- 内容: pr-explain-pages 側は知らないモードの 1 件だけで、正しい引数で push する経路が守られていなかった(upsert 側は正しい引数で見ていた)。消すフォルダのある `remove 1` で 127・tip 不変を見るケースを足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 10. 使い方の節の終わり(`^#$`)を壊しても判定表が落ちない(不採用・既存)\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 参考・低。この差分より前からある穴で、差分で悪化していないので見送った。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 11. upsert の使い方の節は 8 行目で切れ、オプションの説明は出ない(不採用・既存)\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 担当外の注記。`usage()` の本体は変更前と字句が同じで、振る舞いは変わっていないので見送った。\n+- 既存ルール: なし\n+\n+### 12. `lib/usage.sh` のファイル名が関数名そのもの(不採用・オーナー判断)\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（bot）`\n+- 内容: Devin Review の 🟡(任意)。計画と naming-reviewer は先例 `lib/detector-report.sh` に揃えたとして通していた。オーナーの判断は「実装に対するものではないので、このままでよい」で、変更していない。\n+- 既存ルール: rules/naming.md「ファイル名」\n+\n+## 手戻り\n+\n+- 計画を 2 回立てた(`plan-reviewer` の 4 件をすべて採用。指摘 1〜4)。2 回目の計画で lib 欠落の経路と 127 が加わり、ファイル表は 5 本のまま、テストは 1 行から 3 行に増えた\n+- 実装の検証で `implementer` を 2 回起動し直した。1 回目は comment-reviewer #3 と harness-reviewer #1(指摘 5・8)、2 回目は test-reviewer #1(指摘 9)\n+- `run_in_background: false` を指定した `implementer` / `test-reviewer` も背景で起動された。完了通知を受け取るまで git 操作はしていない\n+- 計画の未決(upsert の待ち時間の doc のずれ)は #1385 に分離した\n+- push 前の検査は 1 つずつ実行した。`PRE_PUSH_REQUIRE_ALL=1 bash harness/githooks/pre-push` は exit 0(失敗 0 / 通過 32 / 飛ばした 0)、`pnpm run typecheck` / `pnpm run lint` / `pnpm exec biome check` / `pnpm run test:run` はいずれも exit 0\n+- フック不発: push 前の `echo hook-canary` が通り、実行中フラグのマーカーも発火ログも無かった(`.claude/hooks/README.md` の表で本当に不発)。代替不能なフックの肩代わり確認(親の編集・`npx`・`git add -A`・検証エージェント実行中の git 操作)はいずれも該当なし\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録のみ(集計と介入は `harness-growth` の管轄)。",
+          "patchLines": 120,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
