@@ -101,7 +101,7 @@ export type TokenFieldTarget =
     }>;
 
 /**
- * 編集欄の1行。色は2行（RGB と不透明度）、複合の種別はフィールドの数だけ並ぶ。
+ * 編集欄の1行。複合の種別はフィールドの数だけ並び、色の行の並びは `colorFields` が決める。
  *
  * `name` は行の識別子で、1つのトークンの中で一意（複合の種別はフィールド名）。
  */
@@ -118,15 +118,22 @@ export type TokenControlField = Readonly<{
  */
 type TokenControlRow = Omit<TokenControlField, "input">;
 
+/** 書き戻し先を別に渡す行の、識別子と見出し。 */
+type TokenControlCaption = Pick<TokenControlRow, "name" | "label">;
+
 /**
- * 1 つの色に並べる行の綴りと書き戻し先。
+ * 1 つの色に並べる行の綴りと書き戻し先。ピッカーと hex の行は同じ 6 桁を差し替えるので、
+ * 書き戻し先は `colorTarget` 1 つだけを持つ。
  *
- * `hex` は 6 桁を打てるテキスト欄で、stop の行だけが持つ（docs/06-ui.md「`Tokens` の `gradients`」）。
+ * `hex` は 6 桁を打てるテキスト欄。Color のエディタと stop の色が持つのは docs/06-ui.md
+ * 「`Tokens` の `gradients`」の「hex の欄は Color のエディタと同じ」による。影の色は、UI 案に
+ * 影のエディタが無く colors と同じ `colorFields` で組み立てるので同じ欄を並べる（#1041）。
  */
 type ColorRows = Readonly<{
-  rgb: TokenControlRow;
+  colorTarget: TokenFieldTarget;
+  rgb: TokenControlCaption;
+  hex: TokenControlCaption;
   alpha: TokenControlRow;
-  hex: Option<TokenControlRow>;
 }>;
 
 /** 見出しの先頭に出す見本の塗り。単色か階調か。 */
@@ -195,6 +202,17 @@ const ScalarLabel = "値";
 const ColorsAlphaFieldName = "alpha";
 const ShadowAlphaFieldName = "colorAlpha";
 const AlphaLabel = "不透明度";
+
+/**
+ * 色に添える hex の行。見出しは UI 案の Color のエディタ（`hex`）と、stop の行の見出し
+ * （`stop n の hex`）に合わせる。
+ *
+ * UI 案は `#` を箱の外の記号として分けるが、打てる綴りは stop と同じく `#` 付きの 6 桁だけ
+ * （`Rgb.create`）。`#` 無しと短縮形の扱いは #1376 で決める。
+ */
+const ColorsHexFieldName = "hex";
+const ShadowHexFieldName = "colorHex";
+const HexLabel = "hex";
 
 /** 影のフィールドの見出し。既存の編集欄に合わせて日本語で書く。 */
 const ShadowLabels = {
@@ -299,7 +317,7 @@ export const TokenSection = {
 
 /**
  * 影の数値のフィールドを、対応する入力欄の形にする。
- * 色は入力欄が2つに分かれるので `colorFields` の担当。
+ * 色は `colorFields` の担当。
  *
  * @param shadow 編集対象の影
  * @param field 入力欄にするフィールド
@@ -324,14 +342,14 @@ function shadowInput(
 /**
  * 1 つの色に並べる編集欄。
  *
- * hex として読めない値はピッカーにも不透明度の欄にも載せられないので、
+ * hex として読めない値はピッカーにも hex・不透明度の欄にも載せられないので、
  * 打ち直せるようにテキスト欄1本にする。ピッカーへ渡すとブラウザが黒へ落として
  * しまい、値が壊れていることが画面から分からなくなる。
  *
  * @param color 編集する色
  * @param rows 色そのもの・hex・不透明度の行の綴りと書き戻し先
- * @returns hex として読めればピッカー・（`rows.hex` があれば）hex・不透明度の行、読めなければ
- *   テキスト欄1行
+ * @returns hex として読めればピッカー・hex・不透明度の3行（ピッカーと hex は `rows.colorTarget`
+ *   へ書き戻す）、読めなければ `rows.colorTarget` へ書き戻すテキスト欄1行
  */
 function colorFields(
   color: ColorToken,
@@ -339,14 +357,26 @@ function colorFields(
 ): readonly TokenControlField[] {
   const rgb = ColorToken.rgbOf(color);
   if (!Option.isSome(rgb)) {
-    return [{ ...rows.rgb, input: { kind: "text", value: color } }];
+    return [
+      {
+        ...rows.rgb,
+        input: { kind: "text", value: color },
+        target: rows.colorTarget,
+      },
+    ];
   }
-  const hexFields: readonly TokenControlField[] = Option.isSome(rows.hex)
-    ? [{ ...rows.hex.value, input: { kind: "text", value: rgb.value } }]
-    : [];
+
   return [
-    { ...rows.rgb, input: { kind: "color", value: rgb.value } },
-    ...hexFields,
+    {
+      ...rows.rgb,
+      input: { kind: "color", value: rgb.value },
+      target: rows.colorTarget,
+    },
+    {
+      ...rows.hex,
+      input: { kind: "text", value: rgb.value },
+      target: rows.colorTarget,
+    },
     {
       ...rows.alpha,
       input: {
@@ -396,17 +426,14 @@ function fieldsOf(
   switch (token.kind) {
     case "colors":
       return colorFields(token.value, {
-        rgb: {
-          name: ScalarFieldName,
-          label: ScalarLabel,
-          target: { kind: "colors", color: token.value },
-        },
+        colorTarget: { kind: "colors", color: token.value },
+        rgb: { name: ScalarFieldName, label: ScalarLabel },
+        hex: { name: ColorsHexFieldName, label: HexLabel },
         alpha: {
           name: ColorsAlphaFieldName,
           label: AlphaLabel,
           target: { kind: "colorsAlpha", color: token.value },
         },
-        hex: Option.none,
       });
     case "spacing":
     case "radius":
@@ -419,24 +446,21 @@ function fieldsOf(
         },
       ];
     /*
-     * 色だけ行が2本になるので `flatMap` で広げる。不透明度の行を色の直後に
-     * 置くのは、両方が同じ1つの色を差し替えるため（仕様のフィールド順は保つ）。
+     * 色だけ行が複数になる（`colorFields`）ので `flatMap` で広げる。色の行を色のフィールドの
+     * 位置に置くのは、仕様のフィールド順を保つため。
      */
     case "shadows":
       return ShadowToken.fields().flatMap((field) =>
         field === "color"
           ? colorFields(token.value.color, {
-              rgb: {
-                name: field,
-                label: ShadowLabels[field],
-                target: { kind: "shadows", shadow: token.value, field },
-              },
+              colorTarget: { kind: "shadows", shadow: token.value, field },
+              rgb: { name: field, label: ShadowLabels[field] },
+              hex: { name: ShadowHexFieldName, label: HexLabel },
               alpha: {
                 name: ShadowAlphaFieldName,
                 label: AlphaLabel,
                 target: { kind: "shadowsAlpha", shadow: token.value },
               },
-              hex: Option.none,
             })
           : [
               {
@@ -489,22 +513,10 @@ function gradientStopRowOf(
     input: { kind: "percent", value: GradientStop.ratioPercentOf(stop) },
     target: { kind: "gradientsStopRatio", gradient, stopIndex },
   };
-  const colorTarget: TokenFieldTarget = {
-    kind: "gradientsStopColor",
-    gradient,
-    stopIndex,
-  };
   const colorRows = colorFields(stop.color, {
-    rgb: {
-      name: `${name}-color`,
-      label: `stop ${n} の色`,
-      target: colorTarget,
-    },
-    hex: Option.some({
-      name: `${name}-hex`,
-      label: `stop ${n} の hex`,
-      target: colorTarget,
-    }),
+    colorTarget: { kind: "gradientsStopColor", gradient, stopIndex },
+    rgb: { name: `${name}-color`, label: `stop ${n} の色` },
+    hex: { name: `${name}-hex`, label: `stop ${n} の hex` },
     alpha: {
       name: `${name}-alpha`,
       label: `stop ${n} の不透明度`,
