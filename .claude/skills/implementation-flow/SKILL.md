@@ -259,10 +259,8 @@ pnpm run test:run                                       # vitest(pre-push に無
 - **`PRE_PUSH_REQUIRE_ALL=1` を外さない。** 外すと道具(`pnpm` / `node_modules` / `python3` /
   `jq`)が無い検査を飛ばしたまま exit 0 になる。飛ばして落ちたら道具を揃えて走らせ直す
 - **検査をここへ一覧として写さない。** 足すのは `pre-push` の側だけ(`分類: harness`)
-- **`pre-push` に無く、CI の `rules-check` だけが走らせる検査が 1 つある。**
-  `.github/scripts/check-pr-closing-issue-cases.sh` は `pre-push` に無いので、
-  `check-pr-closing-issue.sh` を触ったときだけ手元でも走らせる
-  (層 2 へ置かない理由と所要時間は `.claude/hooks/README.md`「カバー範囲と残る穴」)
+- **`pre-push` に無く CI だけが走らせる判定表は、`.claude/hooks/README.md`「カバー範囲と残る穴」の
+  表で層 2 が「無し」の行。** 対応するスクリプトを触ったときは手元でも走らせる
 - **カナリアが通っても、それだけでは不発と決まらない。** カナリアは自分の取りこぼしと本当の
   不発を区別できない。`.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」の表で
   PreToolUse の痕跡を見て切り分ける。フック不発(判例 `hook-environment`。分類は `harness`)として記録してよいのは痕跡が無い枝だけ

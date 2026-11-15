@@ -6,8 +6,8 @@
 # 使い方: bash .github/scripts/check-pr-closing-issue-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
-# 配線は CI(`frontend.yml` の `rules-check`)だけで、層 2(`pre-push`)には無い
-# (理由は `.claude/hooks/README.md`「カバー範囲と残る穴」)。判定は終了コードで見る
+# 配線は層 2(`pre-push`)と CI(`frontend.yml` の `rules-check`)の両方
+# (層 2 にも置いた理由は `.claude/hooks/README.md`「カバー範囲と残る穴」)。判定は終了コードで見る
 # (問い合わせの節だけは結果の種別で見る。理由はその節)。
 #
 # **表をここへ置くのは、CI の run が流れると判定の根拠が残らないため。** 覆うのは
@@ -72,7 +72,7 @@ run_case 1 "$no_issue"  1 "$records_readme"  'harness/records/ でも pr-<番号
 # `gh` を差し替えて、GitHub の API が 5xx を返したとき・閉じる Issue がまだ反映されて
 # いないときの振る舞いを固定する。スタブは呼び出しごとに `STUB_REPLIES` の語を 1 つずつ
 # 返す(`fail` = 5xx / `empty` = 閉じる Issue が空 / `linked` = 閉じる Issue あり)。
-# 語が尽きたら `linked`。**待ち時間があるので、この節だけで 30 秒ほど(5xx の再試行の待ち)かかる。**
+# 語が尽きたら `linked`。待ち時間は `PR_CLOSING_ISSUE_LINK_WAIT=0` と `PR_CLOSING_ISSUE_RETRY_WAIT=0` で消す。
 # いちばん守りたいのは「3 回とも駄目なら赤」。ここが黙って通るようになると、
 # 問い合わせに失敗しただけの PR・閉じ忘れた PR が緑になる。
 #
@@ -108,7 +108,7 @@ STUB
 
   output="$(
     PATH="$dir/bin:$PATH" STUB_COUNT_FILE="$dir/count" STUB_REPLIES="${STUB_REPLIES:-}" \
-      LINK_WAIT_STEP=0 STUB_DIR="$dir" GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 PR_ACTION="$PR_ACTION" \
+      PR_CLOSING_ISSUE_LINK_WAIT=0 PR_CLOSING_ISSUE_RETRY_WAIT=0 STUB_DIR="$dir" GITHUB_REPOSITORY=owner/repo PR_NUMBER=1 PR_ACTION="$PR_ACTION" \
       bash "$script" 2>/dev/null
   )" || status=$?
   calls="$(cat "$dir/count" 2>/dev/null || echo 0)"

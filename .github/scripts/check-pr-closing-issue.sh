@@ -35,6 +35,7 @@ set -euo pipefail
 # 検査そのものが信用されなくなる。3 回とも駄目なら赤にする(握りつぶさない)。
 # 失敗の種類では分けない。権限エラーのように再試行で変わらないものも結局赤になるので、
 # 分けても結果が変わらず、`gh` のエラーは毎回ログに出る。
+# `PR_CLOSING_ISSUE_RETRY_WAIT`(既定 5)は判定表が待ちを 0 にするための差し替え口。
 fetch_pull_request() {
   local attempt response
   for attempt in 1 2 3; do
@@ -56,7 +57,7 @@ fetch_pull_request() {
     fi
     [ "$attempt" = 3 ] && break
     printf '問い合わせに失敗した(%s 回目)。待って再試行する\n' "$attempt" >&2
-    sleep $((attempt * 5))
+    sleep $((attempt * ${PR_CLOSING_ISSUE_RETRY_WAIT:-5}))
   done
   return 1
 }
@@ -95,13 +96,13 @@ awaits_closing_issue_link() {
 # 反映された回があったため(`harness/records/pr-919.md` 指摘 13 / `pr-920.md` 指摘 1)。
 # 数分から 1 時間かかる回もあり(`pr-914.md` 指摘 11 / `pr-918.md` 指摘 12)、そこまでは
 # 待たない。ジョブの timeout(5 分)に収め、全部空なら閉じ忘れとして赤にして再実行に任せる。
-# `LINK_WAIT_STEP` は判定表が待ちを 0 にするための差し替え口。
+# `PR_CLOSING_ISSUE_LINK_WAIT`(既定 10)は判定表が待ちを 0 にするための差し替え口。
 refetch_while_awaiting_link() {
   local result="$1" attempt
   for attempt in 1 2 3 4 5; do
     awaits_closing_issue_link "$result" || break
     printf '閉じる Issue がまだ反映されていない(%s 回目)。待って問い合わせ直す\n' "$attempt" >&2
-    sleep $((attempt * ${LINK_WAIT_STEP:-10}))
+    sleep $((attempt * ${PR_CLOSING_ISSUE_LINK_WAIT:-10}))
     result="$(fetch_pull_request)" || return 1
   done
   printf '%s' "$result"
