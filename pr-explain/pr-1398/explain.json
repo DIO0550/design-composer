@@ -1,0 +1,1451 @@
+{
+  "version": 1,
+  "pr": 1398,
+  "sha": "872be2f762361a7e042ddb63d98fb33f46cfe21c",
+  "issue": 1394,
+  "overview": {
+    "title": "PR が閉じても解説ページを gh-pages から消さない",
+    "lead": "PR がマージ・クローズされた後も、その PR の解説ページを同じ URL で開けるようにした。方式は「閉じても消さない」だけで、`closed` のトリガーと `remove` サブコマンドを消した。",
+    "before": [
+      {
+        "text": "PR が閉じると `PR Explain` が `pr-explain-pages.sh remove` を呼び、`pr-explain/pr-<番号>/` をフォルダごと消していた",
+        "message": "remove"
+      },
+      {
+        "text": "マージ後に PR から解説ページを辿ると 404 になった",
+        "message": "open-page"
+      },
+      {
+        "text": "閉じた PR へ `put-explain` すると、地図が無いので終了コード 3 で止まった",
+        "message": "put-explain"
+      }
+    ],
+    "after": [
+      {
+        "text": "`PR Explain` は `closed` では起きず、フォルダはそのまま残る"
+      },
+      {
+        "text": "この変更のマージ以後に閉じた PR は、閉じた後も同じ URL で解説ページを開ける",
+        "message": "open-page"
+      },
+      {
+        "text": "`pr-explain-pages.sh remove` は知らないモードとして終了コード 2 で拒まれ、何も消さない"
+      },
+      {
+        "text": "閉じた PR へ `put-explain` すると置けてしまう。「閉じた PR には置かない」はスキルの方針として残り、スクリプトでは止めない",
+        "message": "put-explain"
+      },
+      {
+        "text": "この変更より前に閉じて消えた PR のフォルダは戻さない"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "閉じたときの呼び出し",
+        "text": "ジョブから `remove` を呼ぶ線が消え、いつも `put-map` だけを呼ぶ",
+        "go": {
+          "kind": "callEdge",
+          "id": "job-remove"
+        }
+      },
+      {
+        "title": "削除の入口",
+        "text": "呼び出し元が `closed` の 1 件だけだったので、手作業用にも残さず消した。削除を戻す入口を作らないため",
+        "go": {
+          "kind": "callBox",
+          "id": "remove"
+        }
+      },
+      {
+        "title": "閉じた後に開く流れ",
+        "text": "削除とその push の手順が消え、開く手順だけが残る",
+        "go": {
+          "kind": "stepChange",
+          "flow": "close",
+          "stepChange": 4
+        }
+      },
+      {
+        "title": "他の PR を守る仕組み",
+        "text": "判定表の冒頭は、守り手が 3 つあり、3 つとも壊さないと落ちないと書き直した(実測による)",
+        "go": {
+          "kind": "file",
+          "path": ".github/scripts/pr-explain-pages-cases.sh"
+        }
+      },
+      {
+        "title": "閉じた PR への解説",
+        "text": "閉じた PR へ置かない方針はスキルにだけ残り、スクリプトでは止めない。これでよいか",
+        "go": {
+          "kind": "flow",
+          "id": "explain-closed"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "keep",
+      "label": "閉じても残す",
+      "role": "PR が閉じても `pr-explain/pr-<番号>/` を消さず、同じ URL で開けるようにする",
+      "review": [
+        "`closed` を外したことで、閉じたときに走るはずの別の処理が抜けていないか(このワークフローが `closed` でしていたのは削除だけ)",
+        "`commit_and_push` の存在ガードを外しても、`put-explain` / `put-map` ではフォルダが必ずあるので等価か"
+      ]
+    },
+    {
+      "id": "cases",
+      "label": "判定表",
+      "role": "`remove` の 6 件を消し、`remove` を知らないモードとして拒む 1 件を足し、PR 番号の検査の当て先を `put-map` に替える",
+      "review": [
+        "消した `remove` のケースが守っていた「他の PR・`pr-preview/` に触らない」は、`put-map` / `put-explain` の同名のケースが引き継いでいるか"
+      ]
+    },
+    {
+      "id": "docs",
+      "label": "範囲と理由の説明",
+      "role": "閉じても残るのはこの変更のマージ以後に閉じた PR だけ、という範囲と、地図が無い理由を 1 箇所に揃える",
+      "review": [
+        "「この変更より前に閉じた PR」の書き方が、SKILL.md と `pr-explain-pages.sh` で揃っているか"
+      ]
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "解説ページの置き場の書き換えと、それを起こすワークフロー・判定表・手順書"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".github/workflows/pr-explain.yml",
+      "name": "地図の配置",
+      "role": "PR のイベントで地図を作り、置き場へ渡す",
+      "feature": "keep",
+      "change": "トリガーから `closed` を外し、閉じたときに `remove` を呼ぶ分岐を消した",
+      "icon": "widget"
+    },
+    {
+      "path": ".github/scripts/pr-explain-pages.sh",
+      "name": "置き場",
+      "role": "gh-pages の `pr-explain/pr-<番号>/` を書き換える",
+      "feature": "keep",
+      "change": "`remove` サブコマンドと、その前提の分岐・説明を消した",
+      "icon": "store"
+    },
+    {
+      "path": ".github/scripts/pr-explain-pages-cases.sh",
+      "name": "置き場の判定表",
+      "role": "ローカルの bare リポジトリを置き場にして、置き場の書き換えの結果を確かめる",
+      "feature": "cases",
+      "change": "判定表を 29 件から 24 件にした",
+      "icon": "scan"
+    },
+    {
+      "path": ".claude/skills/pr-explain/SKILL.md",
+      "name": "解説の手順",
+      "role": "解説を書いて置くセッションの手順",
+      "feature": "docs",
+      "change": "閉じても同じ URL で開けることと、その範囲を書いた",
+      "graph": false
+    }
+  ],
+  "actors": [
+    {
+      "id": "github",
+      "label": "PR のイベント",
+      "role": "PR を開く・push する・閉じると、ワークフローを起こす",
+      "icon": "widget"
+    },
+    {
+      "id": "session",
+      "label": "解説を書くセッション",
+      "role": "`put-explain` で解説を置く"
+    },
+    {
+      "id": "pages",
+      "label": "GitHub Pages",
+      "role": "gh-pages の中身を配信する",
+      "icon": "store"
+    },
+    {
+      "id": "reader",
+      "label": "レビュアー",
+      "role": "PR やマージ後の履歴から解説ページを開く"
+    }
+  ],
+  "messages": [
+    {
+      "id": "pr-event",
+      "from": "github",
+      "to": ".github/workflows/pr-explain.yml",
+      "kind": "evt",
+      "name": "開いた・開き直した・push した",
+      "code": "pull_request: types: [opened, reopened, synchronize]",
+      "via": "http"
+    },
+    {
+      "id": "pr-closed",
+      "from": "github",
+      "to": ".github/workflows/pr-explain.yml",
+      "kind": "evt",
+      "name": "閉じた",
+      "code": "pull_request: types: [closed]",
+      "via": "http",
+      "status": "removed"
+    },
+    {
+      "id": "put-map",
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "kind": "cmd",
+      "name": "地図を置く",
+      "code": "pr-explain-pages.sh put-map \"$PR\" change-map.json index.html",
+      "via": "exec",
+      "payload": "`change-map.json` と枠"
+    },
+    {
+      "id": "remove",
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "kind": "cmd",
+      "name": "フォルダを消す",
+      "code": "pr-explain-pages.sh remove \"$PR\"",
+      "via": "exec",
+      "payload": "PR 番号",
+      "status": "removed"
+    },
+    {
+      "id": "put-explain",
+      "from": "session",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "kind": "cmd",
+      "name": "解説を置く",
+      "code": "pr-explain-pages.sh put-explain <PR 番号> <explain.json>",
+      "via": "exec",
+      "payload": "`explain.json`",
+      "returns": "終了コード(地図の無いフォルダなら 3)"
+    },
+    {
+      "id": "push-pages",
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": "pages",
+      "kind": "cmd",
+      "name": "gh-pages へ push する",
+      "code": "git push origin gh-pages",
+      "via": "http",
+      "payload": "`pr-explain/pr-<番号>/` の変更"
+    },
+    {
+      "id": "open-page",
+      "from": "reader",
+      "to": "pages",
+      "kind": "qry",
+      "name": "解説ページを開く",
+      "code": "GET /design-composer/pr-explain/pr-<番号>/",
+      "via": "http",
+      "returns": "解説ページ(フォルダが無ければ 404)"
+    }
+  ],
+  "flows": [
+    {
+      "id": "close",
+      "label": "閉じた後に解説ページを開く",
+      "gist": "閉じてもフォルダを消す手順が走らなくなり、閉じた後も同じ URL で開ける",
+      "text": "PR をマージかクローズしたあと、レビュアーが PR やマージコミットから解説ページの URL を開く。",
+      "steps": [
+        "open-page"
+      ],
+      "beforeSteps": [
+        "pr-closed",
+        "remove",
+        "push-pages",
+        "open-page"
+      ],
+      "stepChanges": [
+        {
+          "status": "removed",
+          "beforeStep": 1,
+          "beforeText": "閉じたイベントで `PR Explain` が起きる",
+          "change": "トリガーから `closed` を外した"
+        },
+        {
+          "status": "removed",
+          "beforeStep": 2,
+          "beforeText": "ジョブが `remove` を呼び、フォルダを `git rm` する",
+          "change": "`remove` サブコマンドごと消した"
+        },
+        {
+          "status": "removed",
+          "beforeStep": 3,
+          "beforeText": "消したフォルダを gh-pages へ push する",
+          "change": "消すものが無くなったので、閉じたときの push も無くなった"
+        },
+        {
+          "beforeStep": 4,
+          "afterStep": 1,
+          "beforeText": "フォルダが消えているので 404",
+          "afterText": "フォルダが残っているので、閉じる前と同じページが開く"
+        }
+      ],
+      "measure": {
+        "what": "閉じたときに gh-pages へ入るコミット",
+        "before": "1 件(フォルダの削除)",
+        "after": "0 件"
+      }
+    },
+    {
+      "id": "push",
+      "label": "PR に push したとき",
+      "gist": "手順は変わらない。ジョブの分岐が消え、いつも `put-map` を呼ぶ",
+      "text": "PR を開く・開き直す・push すると、ジョブが地図を作って置き場へ渡し、置き場が gh-pages へ push する。",
+      "steps": [
+        "pr-event",
+        "put-map",
+        "push-pages"
+      ],
+      "beforeSteps": [
+        "pr-event",
+        "put-map",
+        "push-pages"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "`closed` と同じジョブで起き、イベントの種類で分岐していた",
+          "afterText": "起きるのは開く・開き直す・push のときだけ"
+        },
+        {
+          "beforeStep": 2,
+          "afterStep": 2,
+          "beforeText": "`closed` でなければ `put-map` を呼ぶ",
+          "afterText": "分岐なしで `put-map` を呼ぶ"
+        },
+        {
+          "beforeStep": 3,
+          "afterStep": 3,
+          "beforeText": "枠と地図の変更を push する",
+          "afterText": "枠と地図の変更を push する"
+        }
+      ]
+    },
+    {
+      "id": "explain-closed",
+      "label": "閉じた PR へ解説を置こうとしたとき",
+      "gist": "閉じてもフォルダと地図が残るので、閉じた PR にも置けるようになった",
+      "text": "セッションが閉じた PR の番号で `put-explain` を呼ぶ。スキルの方針では閉じた PR には置かない。",
+      "steps": [
+        "put-explain",
+        "push-pages"
+      ],
+      "beforeSteps": [
+        "put-explain"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "地図の無いフォルダなので終了コード 3 で止まる",
+          "afterText": "地図が残っているので検査に進み、通れば置く"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "解説を gh-pages へ push する",
+          "change": "フォルダが残るので、閉じた PR でも push まで進む。スクリプトでは止めない"
+        }
+      ]
+    }
+  ],
+  "calls": {
+    "gist": "閉じたときの削除の経路を、トリガーからサブコマンドまで丸ごと消した",
+    "text": "変更前は `pull_request` の `closed` でジョブが起き、`Publish to gh-pages` のステップが `ACTION` で分岐して `remove` を呼び、`apply_change` の `remove` 枝が `git rm` していた。変更後はジョブが `closed` で起きず、ステップはいつも `put-map` を呼ぶ。`apply_change` は `put-explain` と `put-map` の 2 枝になり、`commit_and_push` の存在ガードと、`remove` 用に gh-pages の有無を先に見る分岐も消えた。",
+    "review": [
+      "`remove` を呼ぶ線がワークフローにもスクリプトにも残っていないか",
+      "`commit_and_push` がいつも `git add -A -- \"$folder\"` しても、`put-explain` / `put-map` ではフォルダが必ずあるので落ちないか"
+    ],
+    "boxes": [
+      {
+        "id": "trigger",
+        "name": "on.pull_request.types",
+        "role": "どの PR イベントでジョブを起こすか",
+        "module": ".github/workflows/pr-explain.yml",
+        "status": "changed",
+        "was": "`opened` / `reopened` / `synchronize` / `closed`",
+        "now": "`opened` / `reopened` / `synchronize`"
+      },
+      {
+        "id": "publish-step",
+        "name": "Publish to gh-pages",
+        "role": "置き場のスクリプトを呼ぶステップ",
+        "module": ".github/workflows/pr-explain.yml",
+        "status": "changed",
+        "was": "`closed` なら `remove`、それ以外は `put-map` を呼ぶ",
+        "now": "いつも `put-map` を呼ぶ"
+      },
+      {
+        "id": "put-map",
+        "name": "put-map",
+        "role": "枠と地図を置く",
+        "module": ".github/scripts/pr-explain-pages.sh",
+        "now": "枠と地図を置き、フォルダ内の 3 つ以外を消す"
+      },
+      {
+        "id": "remove",
+        "name": "remove",
+        "role": "PR のフォルダを消す",
+        "module": ".github/scripts/pr-explain-pages.sh",
+        "status": "removed",
+        "was": "gh-pages が無ければ何もせず、あればフォルダを `git rm` して push する"
+      },
+      {
+        "id": "apply-change",
+        "name": "apply_change",
+        "role": "モードごとにフォルダを書き換える",
+        "module": ".github/scripts/pr-explain-pages.sh",
+        "status": "changed",
+        "was": "`put-explain` / `put-map` / `remove` の 3 枝",
+        "now": "`put-explain` / `put-map` の 2 枝"
+      },
+      {
+        "id": "commit-and-push",
+        "name": "commit_and_push",
+        "role": "変更をコミットして push する",
+        "module": ".github/scripts/pr-explain-pages.sh",
+        "status": "changed",
+        "was": "フォルダが残っているときだけ `git add` する(`remove` の後は飛ばす)",
+        "now": "いつもフォルダを `git add` する"
+      },
+      {
+        "id": "pages-branch-state",
+        "name": "pages_branch_state",
+        "role": "gh-pages があるかを問い合わせる",
+        "module": ".github/scripts/pr-explain-pages.sh",
+        "was": "`checkout_site` と、`remove` の前の確認から呼ばれていた",
+        "now": "`checkout_site` からだけ呼ばれる"
+      }
+    ],
+    "edges": [
+      {
+        "id": "trigger-step",
+        "from": "trigger",
+        "to": "publish-step",
+        "code": "on: pull_request",
+        "status": "changed",
+        "was": "閉じたときもステップを走らせていた",
+        "now": "開く・開き直す・push のときだけステップを走らせる"
+      },
+      {
+        "id": "job-put-map",
+        "from": "publish-step",
+        "to": "put-map",
+        "code": "bash .github/scripts/pr-explain-pages.sh put-map \"$PR\" …",
+        "status": "changed",
+        "was": "`if [ \"$ACTION\" = \"closed\" ]` の `else` の枝で呼んでいた",
+        "now": "分岐なしで呼ぶ"
+      },
+      {
+        "id": "job-remove",
+        "from": "publish-step",
+        "to": "remove",
+        "code": "bash .github/scripts/pr-explain-pages.sh remove \"$PR\"",
+        "status": "removed",
+        "was": "閉じたときにフォルダを消させていた"
+      },
+      {
+        "id": "put-map-apply",
+        "from": "put-map",
+        "to": "apply-change",
+        "code": "apply_change \"$@\"",
+        "now": "`put-map` の枝で枠と地図を置く"
+      },
+      {
+        "id": "remove-apply",
+        "from": "remove",
+        "to": "apply-change",
+        "code": "apply_change \"$@\"",
+        "status": "removed",
+        "was": "`remove` の枝で `git rm -r -- \"$folder\"` していた"
+      },
+      {
+        "id": "remove-state",
+        "from": "remove",
+        "to": "pages-branch-state",
+        "code": "pages_branch_state",
+        "status": "removed",
+        "was": "gh-pages が無ければ、作らずに「変更なし」で終えていた"
+      },
+      {
+        "id": "put-map-commit",
+        "from": "put-map",
+        "to": "commit-and-push",
+        "code": "commit_and_push",
+        "status": "changed",
+        "was": "フォルダの有無を見てから `git add` していた",
+        "now": "存在ガードなしで `git add -A -- \"$folder\"` する"
+      }
+    ]
+  },
+  "commitStories": [
+    {
+      "sha": "0cbb45247984fee2e3cf4f3927940b0264c51510",
+      "phase": "core",
+      "role": "`closed` トリガーと `remove` サブコマンドを消す",
+      "why": "Pages が配信するのは gh-pages だけで、Storybook の main 配信は `pr-explain/` を除外しているので、削除をやめればそのまま残る。`remove` は呼び出し元が `closed` の 1 件だけだったので、呼び出しの無い削除経路として残さず消した。却下した案(枠の共有・直近 N 件・手作業用に残す・closed で put-map・マージ PR だけ)は Issue #1394 にある。",
+      "flows": [
+        "close",
+        "push",
+        "explain-closed"
+      ],
+      "review": [
+        "トリガーから `closed` を外しただけでなく、`Build change map` の `if:` とステップの分岐も消えているか",
+        "`commit_and_push` の存在ガードを外しても、残るモードではフォルダが必ずあるか",
+        "判定表の `remove` 6 件を消したことで、他の PR・`pr-preview/` を守る観点が失われていないか"
+      ],
+      "before": [
+        {
+          "text": "閉じると `remove` でフォルダを消していた",
+          "message": "remove"
+        }
+      ],
+      "after": [
+        {
+          "text": "閉じても何も起きず、フォルダが残る",
+          "message": "open-page"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "start": 15,
+          "end": 15,
+          "text": "`closed` を外した。閉じたときはジョブ自体が起きない"
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "side": "old",
+          "start": 64,
+          "end": 68,
+          "text": "閉じたときに `remove` を呼ぶ分岐。消した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "side": "old",
+          "start": 134,
+          "end": 136,
+          "text": "`apply_change` の `remove` 枝。フォルダを `git rm` していた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "side": "old",
+          "start": 171,
+          "end": 175,
+          "text": "gh-pages が無いときに空のコミットを作らないための `remove` 専用の確認"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 140,
+          "end": 140,
+          "text": "存在ガードを外した。`git rm` 済みのフォルダを add して落ちるのを避けるためのものだった"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 208,
+          "end": 211,
+          "text": "`remove` を知らないモードとして 2 で拒み、フォルダを消さないことを見る"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 213,
+          "end": 216,
+          "text": "PR 番号の検査の当て先を `remove` から `put-map` に替えた"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "start": 1,
+          "end": 3,
+          "feature": "keep",
+          "text": "閉じても消さないことと、その理由・容量の目安を書いた"
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "start": 15,
+          "end": 15,
+          "feature": "keep",
+          "text": "トリガーから `closed` を外した"
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "side": "old",
+          "start": 41,
+          "end": 41,
+          "feature": "keep",
+          "text": "`closed` のときに地図を作らない条件を消した"
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "side": "old",
+          "start": 57,
+          "end": 68,
+          "feature": "keep",
+          "text": "`ACTION` と、`remove` を呼ぶ分岐を消した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "side": "old",
+          "start": 8,
+          "end": 8,
+          "feature": "keep",
+          "text": "使い方から `remove` を消した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "side": "old",
+          "start": 50,
+          "end": 50,
+          "feature": "keep",
+          "text": "`remove` の引数の検査を消し、知らないモードにした"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "side": "old",
+          "start": 134,
+          "end": 136,
+          "feature": "keep",
+          "text": "`apply_change` の `remove` 枝を消した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "side": "old",
+          "start": 143,
+          "end": 146,
+          "feature": "keep",
+          "text": "`commit_and_push` の存在ガードを外した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "side": "old",
+          "start": 171,
+          "end": 175,
+          "feature": "keep",
+          "text": "`remove` 専用の gh-pages の確認を消した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 15,
+          "end": 18,
+          "feature": "docs",
+          "text": "地図が無いフォルダの理由を、閉じたときの削除から書き直した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 11,
+          "end": 12,
+          "feature": "cases",
+          "text": "冒頭の説明の主語を `remove 1` から `put-map 1` に替えた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "side": "old",
+          "start": 188,
+          "end": 191,
+          "feature": "cases",
+          "text": "lib が無いときの `remove` のケースを消した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 208,
+          "end": 216,
+          "feature": "cases",
+          "text": "`remove` を拒むケースを足し、PR 番号の検査を `put-map` に当てた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "side": "old",
+          "start": 236,
+          "end": 239,
+          "feature": "cases",
+          "text": "gh-pages が無いときの `remove` のケースを消した"
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 61,
+          "end": 68,
+          "feature": "docs",
+          "text": "閉じても同じ URL で開けることと、reopen の項の範囲を書いた"
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 100,
+          "end": 100,
+          "feature": "docs",
+          "text": "閉じた PR に置かない方針を、スクリプトでは止めないと添えた"
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 284,
+          "end": 286,
+          "feature": "docs",
+          "text": "参照ファイルの表から `remove` と削除を消した"
+        }
+      ]
+    },
+    {
+      "sha": "975c2f7194887bae763630b232c15f829247b4a9",
+      "phase": "revise",
+      "role": "閉じても消さない範囲と、地図が無い理由の説明を揃える",
+      "why": "comment / duplication / harness のレビューで、「閉じても開ける」に範囲(この変更のマージ以後に閉じた PR)が書かれていない点と、地図が無い理由が 2 箇所に重複している点を指摘された。理由は `put-explain` の項の 1 箇所に置き、終了コード 3 はそこを参照する。",
+      "review": [
+        "「この変更より前に閉じた PR」を、以前の `PR Explain` が消したという事実で書いているか",
+        "終了コード 3 の説明が、`put-explain` の項を参照するだけになっているか"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 61,
+          "end": 61,
+          "text": "範囲を「この変更(#1394)のマージ以後に閉じた PR」に限った"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 15,
+          "end": 17,
+          "text": "地図が無い理由はここ 1 箇所に置く"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 34,
+          "end": 34,
+          "text": "終了コード 3 は上の項を参照する"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 61,
+          "end": 68,
+          "feature": "docs",
+          "text": "閉じても開ける範囲と、reopen の項の言い方を揃えた"
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 100,
+          "end": 100,
+          "feature": "docs",
+          "text": "重複した括弧を縮めた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 15,
+          "end": 17,
+          "feature": "docs",
+          "text": "地図が無い理由を 1 箇所に置いた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 34,
+          "end": 34,
+          "feature": "docs",
+          "text": "終了コード 3 の理由を参照にした"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 11,
+          "end": 13,
+          "feature": "cases",
+          "text": "消す側を `remove_others` と名指しした"
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "start": 3,
+          "end": 3,
+          "feature": "keep",
+          "text": "容量の目安に時点を添えた"
+        }
+      ]
+    },
+    {
+      "sha": "872be2f762361a7e042ddb63d98fb33f46cfe21c",
+      "phase": "revise",
+      "role": "判定表の冒頭に、`pr-12` を守る仕組みを 3 つとも書く",
+      "why": "test-reviewer の実測で、sparse-checkout と `remove_others` の範囲の 2 つを壊してもケースが通り、`commit_and_push` の add の pathspec まで広げたときだけ落ちると分かった。旧コメントは `remove`(`git rm`)向けの説明で、主語を `put-map` に替えたときに経路を辿り直していなかった。",
+      "review": [
+        "3 つの守り手(sparse-checkout・`ls-files` の範囲・add の pathspec)が、実装の該当行と一致しているか"
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 11,
+          "end": 14,
+          "text": "どれか 1 つが保たれていれば通る。3 つとも壊したときだけ落ちる"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 11,
+          "end": 14,
+          "feature": "cases",
+          "text": "守り手を実測どおり 3 つ挙げた"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "pages",
+      "label": "置き場の判定表",
+      "file": ".github/scripts/pr-explain-pages-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "remove-rejected",
+      "suite": "pages",
+      "name": "remove は知らないモードとして 2 で終わり、PR のフォルダを消さない",
+      "techniques": [
+        "regression",
+        "error"
+      ],
+      "why": "`remove` が戻ると、閉じたときの削除がまた入口を持つ。丸ごと・引数の検査だけ・フォルダを消す枝だけ、のどれで戻しても落ちることを実測した",
+      "given": "`pr-explain/pr-1/` に古い枠がある gh-pages",
+      "when": "`pr-explain-pages.sh remove 1` を呼ぶ",
+      "then": "終了コード 2 で、gh-pages の先頭は動かず、`pr-1/index.html` は残る",
+      "commit": "0cbb45247984fee2e3cf4f3927940b0264c51510",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 208,
+        "end": 211,
+        "emphasis": [
+          {
+            "start": 210,
+            "end": 211
+          }
+        ],
+        "text": "fresh_origin seeded\nbefore=\"$(tip)\"\nrun_pages remove 1; status=$?\nexpect \"remove は知らないモードとして 2 で終わり、PR のフォルダを消さない\" '[ \"$status\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ] && [ \"$(on_pages pr-explain/pr-1/index.html)\" = old ]'"
+      },
+      "values": {
+        "columns": [
+          "戻したもの",
+          "このケース"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`remove` を丸ごと",
+              "落ちる"
+            ]
+          },
+          {
+            "cells": [
+              "引数の検査だけ",
+              "落ちる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "フォルダを消す処理",
+              "落ちる"
+            ]
+          },
+          {
+            "cells": [
+              "(戻さない)",
+              "通る"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ]
+    },
+    {
+      "id": "pr-number",
+      "suite": "pages",
+      "name": "数字でない PR 番号は拒否する",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "PR 番号はフォルダ名になるので、`../..` のような値で別の場所を書き換えさせない。当て先だった `remove` が消えたので `put-map` に替えた",
+      "given": "種を入れた gh-pages",
+      "when": "`put-map '1 ../..'` を呼ぶ",
+      "then": "終了コード 2 で、何も push しない",
+      "commit": "0cbb45247984fee2e3cf4f3927940b0264c51510",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 213,
+        "end": 216,
+        "emphasis": [
+          {
+            "start": 215,
+            "end": 215
+          }
+        ],
+        "text": "fresh_origin seeded\nbefore=\"$(tip)\"\nrun_pages put-map '1 ../..' \"$work/map.json\" \"$template\"; status=$?\nexpect \"数字でない PR 番号は拒否する\" '[ \"$status\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-map"
+      ]
+    },
+    {
+      "id": "no-map",
+      "suite": "pages",
+      "name": "地図の無いフォルダへは put-explain しない",
+      "techniques": [
+        "state"
+      ],
+      "why": "地図と枠の無いフォルダに解説だけを置いても、開けるページにならない。この変更より前に閉じて消えた PR はこの状態のまま残る",
+      "given": "`pr-explain/pr-7/` が無い gh-pages",
+      "when": "PR 7 の解説を `put-explain` する",
+      "then": "終了コード 3 で、`pr-7/explain.json` は作られない",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 167,
+        "end": 170,
+        "text": "fresh_origin seeded\nbefore=\"$(tip)\"\nrun_pages put-explain 7 \"$work/explain-7.json\"; status=$?\nexpect \"地図の無いフォルダへは put-explain しない\" '[ \"$status\" -eq 3 ] && [ \"$(tip)\" = \"$before\" ] && [ \"$(on_pages pr-explain/pr-7/explain.json)\" = \"<none>\" ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-explain"
+      ]
+    },
+    {
+      "id": "put-map-others",
+      "suite": "pages",
+      "name": "put-map は他の PR のフォルダに触らない",
+      "techniques": [
+        "state"
+      ],
+      "why": "gh-pages は Storybook と VRT の配信と同じブランチで、他の PR のフォルダを壊すとこの機能の外まで消える。`remove` 側の同じ観点のケースを消したので、ここが引き継ぐ",
+      "given": "`pr-explain/pr-1/` と `pr-explain/pr-12/` がある gh-pages",
+      "when": "`put-map 1` を呼ぶ",
+      "then": "`pr-12/index.html` は元のまま",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 189,
+        "end": 196,
+        "emphasis": [
+          {
+            "start": 195,
+            "end": 195
+          }
+        ],
+        "text": "fresh_origin seeded\nrun_pages put-map 1 \"$work/map.json\" \"$template\"\nexpect \"put-map は index.html を毎回テンプレートで上書きする\" '[ \"$(on_pages pr-explain/pr-1/index.html)\" = \"$(cat \"$template\")\" ]'\nexpect \"put-map は explain.json を残す\" '[ \"$(on_pages pr-explain/pr-1/explain.json)\" = \"{\\\"old\\\": \\\"explain\\\"}\" ]'\nexpect \"put-map は 3 ファイル以外(ほかのファイル・サブフォルダ)を消す\" '[ \"$(on_pages pr-explain/pr-1/behavior.html)\" = \"<none>\" ] && [ \"$(on_pages pr-explain/pr-1/assets/x.css)\" = \"<none>\" ]'\nexpect \"put-map は change-map.json を更新する\" '[ \"$(on_pages pr-explain/pr-1/change-map.json)\" = \"$(cat \"$work/map.json\")\" ]'\nexpect \"put-map は他の PR のフォルダに触らない\" '[ \"$(on_pages pr-explain/pr-12/index.html)\" = twelve ]'\nexpect \"put-map は pr-preview に触らない\" '[ \"$(on_pages pr-preview/pr-1/index.html)\" = storybook ]'"
+      },
+      "values": {
+        "columns": [
+          "壊した守り手",
+          "このケース"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "sparse-checkout の範囲だけ",
+              "通る"
+            ]
+          },
+          {
+            "cells": [
+              "sparse-checkout と `ls-files` の範囲",
+              "通る"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "3 つすべて(add の pathspec も)",
+              "落ちる"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-map",
+        "push-pages"
+      ]
+    },
+    {
+      "id": "no-closed-trigger",
+      "suite": "pages",
+      "name": "PR を閉じてもワークフローが走らない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "トリガーに `closed` を戻しても、`remove` が無いので消えはしないが、無駄な run が走る。ワークフローのトリガーを見る検査は無い",
+      "given": "`pr-explain.yml`",
+      "when": "PR を閉じる",
+      "then": "`PR Explain` の run が起きない",
+      "todo": true,
+      "targets": [
+        ".github/workflows/pr-explain.yml"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "PR を閉じても、解説ページを同じ URL で開ける",
+    "lead": "使う人(解説ページを読むレビュアーと、解説を書くセッション)から見て変わったのは、PR を閉じた後のページの残り方です。",
+    "changed": {
+      "before": [
+        {
+          "text": "PR をマージかクローズすると、その PR の解説ページは消え、URL を開くとページが見つからなかった",
+          "message": "remove"
+        }
+      ],
+      "after": [
+        {
+          "text": "この変更が入った後に閉じた PR は、閉じた後も同じ URL で解説ページを開ける",
+          "message": "open-page"
+        },
+        {
+          "text": "閉じたときに何かが消えることはない"
+        }
+      ],
+      "text": "マージ後に履歴から PR を辿った人も、レビューのときと同じ解説を読めます。",
+      "specs": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "locator": "「8 画面と材料」の、置く 3 つの表の後",
+          "text": "この変更のマージ以後に閉じた PR は、閉じた後も同じ URL で開けると書き足した",
+          "shas": [
+            "0cbb45247984fee2e3cf4f3927940b0264c51510",
+            "975c2f7194887bae763630b232c15f829247b4a9"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "locator": "「いつ書くか」の、開き直した後の項",
+          "text": "書き直しが要るのを、以前の仕組みでフォルダが消えた PR を開き直した後に限った",
+          "shas": [
+            "0cbb45247984fee2e3cf4f3927940b0264c51510",
+            "975c2f7194887bae763630b232c15f829247b4a9"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "locator": "「手順」の「置く」の、閉じた PR には置かないの項",
+          "text": "閉じた PR には置かない方針は残し、仕組みでは止めないと添えた",
+          "shas": [
+            "0cbb45247984fee2e3cf4f3927940b0264c51510",
+            "975c2f7194887bae763630b232c15f829247b4a9"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1394,
+          "text": "閉じた後も解説ページを開けるようにする件。却下した案と理由はここにある"
+        },
+        {
+          "issue": 1395,
+          "text": "閉じた PR を含めた解説ページの一覧を作る件。残るようになったページの入口になる"
+        }
+      ],
+      "primers": [
+        "pull-request-types",
+        "pages-folder"
+      ]
+    },
+    "tables": [
+      {
+        "label": "閉じた後に開けるか",
+        "gist": "開けるかを決めるのは、いつ閉じたかと、どのページかの 2 つ。",
+        "text": "残るのは解説ページだけで、部品のカタログのプレビューは今までどおり閉じると消えます。",
+        "rowHeads": [
+          {
+            "id": "open",
+            "label": "まだ開いている"
+          },
+          {
+            "id": "after",
+            "label": "この変更が入った後に閉じた"
+          },
+          {
+            "id": "before",
+            "label": "この変更が入る前に閉じた",
+            "note": "すでに消えている"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "explain",
+            "label": "解説ページ"
+          },
+          {
+            "id": "preview",
+            "label": "部品のカタログのプレビュー"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "open",
+            "columnHead": "explain",
+            "result": "開ける",
+            "tests": [
+              "put-map-others"
+            ]
+          },
+          {
+            "rowHead": "open",
+            "columnHead": "preview",
+            "result": "開ける"
+          },
+          {
+            "rowHead": "after",
+            "columnHead": "explain",
+            "result": "同じ URL で開ける",
+            "was": "ページが見つからない",
+            "tests": [
+              "remove-rejected"
+            ]
+          },
+          {
+            "rowHead": "after",
+            "columnHead": "preview",
+            "result": "ページが見つからない",
+            "note": "今回は変えていない"
+          },
+          {
+            "rowHead": "before",
+            "columnHead": "explain",
+            "result": "ページが見つからない(戻さない)"
+          },
+          {
+            "rowHead": "before",
+            "columnHead": "preview",
+            "result": "ページが見つからない"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "閉じた PR へ解説を置こうとしたとき",
+        "before": [
+          {
+            "text": "ページの置き場が消えているので、置けずに止まった",
+            "message": "put-explain"
+          }
+        ],
+        "after": [
+          {
+            "text": "置き場が残っているので、そのまま置けてしまう",
+            "message": "put-explain"
+          }
+        ],
+        "text": "閉じた PR には置かないという方針は手順書に残りますが、仕組みでは止めません。",
+        "primers": [
+          "pages-folder"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "解説ページを置くとき、他の PR のページには触らない",
+        "tests": [
+          "put-map-others"
+        ]
+      },
+      {
+        "text": "ページの置き場がまだできていない PR には、解説を置けない",
+        "tests": [
+          "no-map"
+        ]
+      },
+      {
+        "text": "おかしな PR 番号では何も書き換えない",
+        "tests": [
+          "pr-number"
+        ]
+      },
+      {
+        "text": "部品のカタログのプレビューは、閉じると今までどおり消える"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": ".claude/skills/pr-explain/SKILL.md",
+        "locator": "「手順」の「置く」の、gh-pages へ push してよいときの項",
+        "text": "解説を置いてよいのはその PR のフォルダだけ、という決まりは変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "pull-request-types",
+      "category": "GitHub Actions · ワークフロー",
+      "label": "`pull_request` の `types`",
+      "gist": "[[ワークフロー|workflow]]を、PR に起きたどの出来事([[イベント|event]])で走らせるかを絞るための設定。書いた種類のときだけジョブが起きる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`on.pull_request.types` に出来事の名前を並べる。`opened` は PR を作ったとき、`reopened` は開き直したとき、`synchronize` は PR のブランチに push したとき、`closed` はマージかクローズしたとき。`types` を省くと `opened` / `reopened` / `synchronize` の 3 つになる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "on:\n  pull_request:\n    types: [opened, reopened, synchronize]"
+        },
+        {
+          "kind": "caution",
+          "text": "マージもクローズも同じ `closed` で届く。どちらかを見分けるには、ジョブの中で `github.event.pull_request.merged` を見る。"
+        },
+        {
+          "kind": "memo",
+          "text": "このワークフローは `closed` を外したので、閉じたときはジョブそのものが起きない。ジョブの中で `github.event.action` を見て分岐する必要も無くなった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "lineRange": {
+            "start": 13,
+            "end": 15
+          },
+          "text": "`closed` を外したトリガー",
+          "shas": [
+            "0cbb45247984fee2e3cf4f3927940b0264c51510"
+          ]
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "lineRange": {
+            "start": 64,
+            "end": 64
+          },
+          "text": "分岐が消え、いつも `put-map` を呼ぶ",
+          "shas": [
+            "0cbb45247984fee2e3cf4f3927940b0264c51510"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "pages-folder"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "sparse-checkout",
+      "category": "git",
+      "label": "`git sparse-checkout`",
+      "gist": "[[リポジトリ|repository]]の一部のフォルダだけを作業コピーに展開するための git のコマンド。大きなブランチのうち、触る場所だけを取り出せる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`git sparse-checkout set --no-cone <パターン>` で展開する範囲を決めてから `checkout` すると、パターンに合うファイルだけが作業コピーに出てくる。展開されていないファイルは、ブランチには残ったまま作業コピーに現れない。"
+        },
+        {
+          "kind": "declaration",
+          "code": "git sparse-checkout set --no-cone \"/$folder/\""
+        },
+        {
+          "kind": "caution",
+          "text": "展開の範囲は「作業コピーに見えるもの」を決めるだけで、`git add` や削除の範囲を決めるものではない。範囲の外へ書き込まない保証は、add の pathspec など別の仕組みでも持つ。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "lineRange": {
+            "start": 103,
+            "end": 103
+          },
+          "text": "その PR のフォルダだけを展開する"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "lineRange": {
+            "start": 11,
+            "end": 14
+          },
+          "text": "他の PR のフォルダを守る 3 つの仕組みの 1 つとして挙げる",
+          "shas": [
+            "872be2f762361a7e042ddb63d98fb33f46cfe21c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "pages-folder"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "pages-folder",
+      "category": "harness · 置き場",
+      "label": "解説ページの置き場",
+      "gist": "解説ページは [[gh-pages|gh-pages]] ブランチの `pr-explain/pr-<番号>/` に置く。書き換えるのは `pr-explain-pages.sh` だけで、モードは `put-explain` と `put-map` の 2 つになった。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`put-map` は[[ワークフロー|workflow]]が push のたびに呼び、枠と地図を置く。`put-explain` はセッションが呼び、解説を検査して置く。どちらもその PR のフォルダだけを展開し、そこだけを書き換えて push する。"
+        },
+        {
+          "kind": "rule",
+          "text": "フォルダを消すモードは持たない。閉じた PR のフォルダも残す。"
+        },
+        {
+          "kind": "spec",
+          "text": "終了コードは 0 = 置いた / 変更なし、1 = 検査に落ちた・push できなかった、2 = 引数の誤り(知らないモードを含む)、3 = 置き先に地図が無い、127 = lib を読み込めない(`pr-explain-pages.sh` の冒頭)。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は `remove` モードがあり、PR が閉じたイベントでフォルダごと消していた。#1394 で消すのをやめた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "lineRange": {
+            "start": 121,
+            "end": 135
+          },
+          "text": "`apply_change` は 2 枝になった",
+          "shas": [
+            "0cbb45247984fee2e3cf4f3927940b0264c51510"
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "lineRange": {
+            "start": 13,
+            "end": 19
+          },
+          "text": "地図が無いフォルダへ置かない理由",
+          "shas": [
+            "0cbb45247984fee2e3cf4f3927940b0264c51510",
+            "975c2f7194887bae763630b232c15f829247b4a9"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "pull-request-types",
+        "sparse-checkout"
+      ],
+      "tests": [
+        "remove-rejected",
+        "no-map",
+        "put-map-others"
+      ],
+      "flows": [
+        "close",
+        "explain-closed"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "workflow",
+      "label": "ワークフロー",
+      "text": "GitHub Actions で、決まった出来事が起きたときに走らせる処理の定義。`.github/workflows/` の YAML ファイルに書く。"
+    },
+    {
+      "id": "event",
+      "label": "イベント",
+      "text": "ワークフローを起こすきっかけになる出来事。PR を作った・push した・閉じた、など。"
+    },
+    {
+      "id": "repository",
+      "label": "リポジトリ",
+      "text": "git が管理するファイルと履歴のまとまり。ブランチごとに別の中身を持てる。"
+    },
+    {
+      "id": "gh-pages",
+      "label": "gh-pages",
+      "text": "GitHub Pages が中身を Web に配信するブランチ。このリポジトリでは解説ページ・Storybook のプレビュー・VRT のレポートを同じブランチに置いている。"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "on-close",
+      "kind": "choice",
+      "title": "閉じたときの動き",
+      "prompt": "変更後、PR をマージしたときに `PR Explain` は何をしますか。",
+      "options": [
+        "`remove` を呼んでフォルダを消す",
+        "`put-map` を呼んで地図を置き直す",
+        "何もしない(ジョブが起きない)",
+        "フォルダを別の場所へ移す"
+      ],
+      "answer": 3,
+      "why": "トリガーの `types` から `closed` を外したので、閉じたときはジョブそのものが起きない。closed を残して `put-map` を走らせる案は、head が進まず空のジョブになるので却下した。",
+      "go": [
+        {
+          "kind": "callEdge",
+          "id": "trigger-step"
+        },
+        {
+          "kind": "stepChange",
+          "flow": "close",
+          "stepChange": 1
+        }
+      ]
+    },
+    {
+      "id": "old-closed",
+      "kind": "yesno",
+      "title": "前に閉じた PR",
+      "prompt": "この変更がマージされると、それより前に閉じて消えた PR の解説ページも開けるようになる。",
+      "holds": false,
+      "why": "完了条件は「この変更のマージ以後に閉じた PR」で、それより前に消えたフォルダは戻さない。そうした PR を開き直したときは、解説を書き直す。",
+      "go": [
+        {
+          "kind": "file",
+          "path": ".claude/skills/pr-explain/SKILL.md"
+        }
+      ]
+    },
+    {
+      "id": "remove-mode",
+      "kind": "yesno",
+      "title": "削除のモード",
+      "prompt": "変更後に `pr-explain-pages.sh remove 1` を呼ぶと、終了コード 2 で終わり、何も消さない。",
+      "holds": true,
+      "why": "`remove` はモードの一覧から消えたので、知らないモード(引数の誤り)として 2 で終わる。判定表の新しいケースがこれを確かめている。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "remove"
+        },
+        {
+          "kind": "module",
+          "path": ".github/scripts/pr-explain-pages-cases.sh"
+        }
+      ]
+    },
+    {
+      "id": "old-close-order",
+      "kind": "order",
+      "title": "変更前の閉じたときの順",
+      "prompt": "変更前、PR を閉じてから解説ページが見つからなくなるまでの順に並べてください。",
+      "items": [
+        "PR を閉じる",
+        "`PR Explain` が `closed` で起きる",
+        "ステップが `remove` を呼ぶ",
+        "フォルダを `git rm` して gh-pages へ push する",
+        "解説ページの URL が 404 になる"
+      ],
+      "why": "この PR で消えたのは、2〜4 番目の手順。閉じても何も起きず、URL はそのまま開ける。",
+      "go": [
+        {
+          "kind": "flow",
+          "id": "close"
+        }
+      ]
+    }
+  ]
+}
