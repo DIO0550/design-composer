@@ -15,8 +15,8 @@ import { Option } from "@/utils/Option";
  * まりの続き**に限られる。
  *
  * `past` の後ろに `present` を続けた並びで、同じ中身が隣り合うのは末尾の 1 組（`past` の末尾
- * と `present`）だけ。これは `record` / `undo` / `amend` が保つ不変条件で、型では強制しない。
- * 中身の変わらない編集は積まれたあと、次の `record` / `undo` の入口で落ちる。
+ * と `present`）だけ。これは `record` / `undo` / `amend` / `redo` が保つ不変条件で、型では強制し
+ * ない。中身の変わらない編集は積まれたあと、次の `record` / `undo` / `redo` の入口で落ちる。
  */
 export type EditHistory = Readonly<{
   past: readonly DesignDocument[];
@@ -29,7 +29,8 @@ export type EditHistory = Readonly<{
  *
  * 落とすのが 1 件で足りるのは、`EditHistory` の型 doc に書いた不変条件による。
  * `record` の入口でも通すのは、`undo` だけだと無変化の編集が 2 件続いたとき 1 回目の undo
- * が画面を変えないため。
+ * が画面を変えないため。`redo` の入口でも通すのは、中身の変わらない編集が進む先を残したまま
+ * 積まれるので、通さずに進むと末尾以外に同じ中身の組が残るため。
  *
  * @param history 整える履歴
  * @returns 戻る先の末尾が現在地と同じ中身ならそれを落とした履歴。違えば `history` のまま
@@ -44,6 +45,30 @@ function withoutUnchangedLast(history: EditHistory): EditHistory {
     return history;
   }
   return { ...history, past: ArrayEx.dropLast(history.past) };
+}
+
+/**
+ * 新しいドキュメントを現在地にしたあとに残す進む先。
+ *
+ * 比べる相手を戻る先の末尾ではなく現在地にするのは、1 件目の `record` が上流で落ちて続きだけ
+ * が届く形でも、変わらない続きで進む先を捨てないため。
+ *
+ * @param history 新しいドキュメントを受け取る前の履歴
+ * @param document 新しく現在地にするドキュメント
+ * @returns `document` が今の現在地と同じ中身なら `history.future`。違えば、または進む先が無
+ *   ければ空
+ */
+function remainingFuture(
+  history: EditHistory,
+  document: DesignDocument,
+): readonly DesignDocument[] {
+  if (history.future.length === 0) {
+    return [];
+  }
+  if (!DesignDocument.isSameContent(history.present, document)) {
+    return [];
+  }
+  return history.future;
 }
 
 export const EditHistory = {
@@ -65,8 +90,8 @@ export const EditHistory = {
    *
    * @param history 積む先の履歴
    * @param document 新しく現在地にするドキュメント
-   * @returns それまでの現在地を戻る先の末尾へ積み、進む先を捨てた履歴。積む前に、戻る先の末尾
-   *   が現在地と同じ中身ならそれを落とす
+   * @returns それまでの現在地を戻る先の末尾へ積んだ履歴。`document` が現在地と同じ中身なら進む
+   *   先を残し、違えば捨てる。積む前に、戻る先の末尾が現在地と同じ中身ならそれを落とす
    */
   record(history: EditHistory, document: DesignDocument): EditHistory {
     const normalized = withoutUnchangedLast(history);
@@ -74,7 +99,7 @@ export const EditHistory = {
     return {
       past: [...normalized.past, normalized.present],
       present: document,
-      future: [],
+      future: remainingFuture(normalized, document),
     };
   },
 
@@ -90,10 +115,15 @@ export const EditHistory = {
    *
    * @param history 差し替える先の履歴
    * @param document 新しく現在地にするドキュメント
-   * @returns 戻る先はそのままで、進む先を捨てた履歴
+   * @returns 戻る先はそのままで現在地を差し替えた履歴。`document` が今の現在地と同じ中身なら
+   *   進む先を残し、違えば捨てる。一度捨てたあとに元の中身へ戻っても、進む先は戻らない
    */
   amend(history: EditHistory, document: DesignDocument): EditHistory {
-    return { past: history.past, present: document, future: [] };
+    return {
+      past: history.past,
+      present: document,
+      future: remainingFuture(history, document),
+    };
   },
 
   /**
@@ -118,13 +148,16 @@ export const EditHistory = {
    * 戻る前の位置へ進む。
    *
    * @param history 進める履歴
-   * @returns 今の現在地を戻る先の末尾へ積んだ履歴。進む先が無ければ `none`
+   * @returns 今の現在地を戻る先の末尾へ積み、進む先の先頭を現在地にした履歴。積む前に、戻る
+   *   先の末尾が今の現在地と同じ中身ならそれを落とす。進む先が無ければ `none`
    */
   redo(history: EditHistory): Option<EditHistory> {
-    return Option.map(ArrayEx.first(history.future), (next) => ({
-      past: [...history.past, history.present],
+    const normalized = withoutUnchangedLast(history);
+
+    return Option.map(ArrayEx.first(normalized.future), (next) => ({
+      past: [...normalized.past, normalized.present],
       present: next,
-      future: ArrayEx.dropFirst(history.future),
+      future: ArrayEx.dropFirst(normalized.future),
     }));
   },
 } as const;
