@@ -81,7 +81,7 @@ new_case() {
 # 置き場 $1 で共通スクリプトを走らせ、`exit=<終了コード> calls=<呼ばれ方>` を返す。
 # $2 以降はスクリプトへの引数。失敗のさせ方は呼び出し側が環境変数で渡す。
 # 投げ先の環境変数を欠いた形は、$UNSET に欠く変数の名前を渡して作る。PR 番号は $CASE_PR_NUMBER で
-# 差し替える(既定 1)
+# 差し替える(既定 1)。標準エラーは置き場の `stderr` に残す
 run_upsert() {
   local dir="$1" status unset_flag=()
   shift
@@ -89,7 +89,7 @@ run_upsert() {
   # 空の配列を `"${a[@]}"` で展開すると、bash 4.4 未満では `set -u` が未定義として落ちる
   STUB_DIR="$dir" PATH="$work/bin:$PATH" STICKY_COMMENT_RETRY_WAIT=0 \
     GITHUB_REPOSITORY=owner/repo PR_NUMBER="${CASE_PR_NUMBER:-1}" \
-    env ${unset_flag[@]+"${unset_flag[@]}"} bash "$script" "$@" >/dev/null 2>&1
+    env ${unset_flag[@]+"${unset_flag[@]}"} bash "$script" "$@" >/dev/null 2>"$dir/stderr"
   status=$?
   printf 'exit=%s calls=%s' "$status" "$(tr '\n' ' ' <"$dir/calls" | sed 's/ $//')"
 }
@@ -244,6 +244,23 @@ report 'exit=2 calls=' "$(CASE_PR_NUMBER=abc run_upsert "$dir" "${post[@]}")" \
 dir="$(new_case "$no_comments")"
 report 'exit=2 calls=' "$(UNSET=GITHUB_REPOSITORY run_upsert "$dir" "${post[@]}")" \
   'リポジトリが無ければ、gh を呼ばずに使い方の誤りで終わる'
+
+dir="$(new_case "$no_comments")"
+usage_run="$(run_upsert "$dir" "${post[@]}" --unknown x)"
+usage_outcome=missing
+usage_shown=false
+[[ "$(cat "$dir/stderr")" == *"upsert-sticky-comment.sh --marker '<!-- 名前 -->'"* ]] && usage_shown=true
+# 使い方を出したあとに終わらず gh まで進む退行は、標準エラーだけ見ても通ってしまう
+[ "$usage_shown" = true ] && [ "$usage_run" = 'exit=2 calls=' ] && usage_outcome=shown
+report shown "$usage_outcome" '使い方の誤りでは、冒頭の使い方を標準エラーへ出し、gh を呼ばずに終わる'
+
+# --- 読み込む lib が無い(`gh` を呼ぶ前に exit 127) ---
+
+mkdir -p "$work/without-lib"
+cp "$script" "$work/without-lib/"
+dir="$(new_case "$no_comments")"
+report 'exit=127 calls=' "$(script="$work/without-lib/upsert-sticky-comment.sh" run_upsert "$dir" "${post[@]}")" \
+  '読み込む lib が無ければ、引数が正しくても gh を呼ばずに受け流されない失敗で終わる'
 
 # --- 一時ファイルの失敗(`gh` を呼ぶ前に exit 3) ---
 
