@@ -1,0 +1,1388 @@
+{
+  "version": 2,
+  "pr": 1401,
+  "headBranch": "claude/ecstatic-dijkstra-mjhwgh",
+  "baseBranch": "main",
+  "mergeBase": "75ab6451ece9c65c02c5cda145264c4a6eca3f0c",
+  "head": "9f23d20720cd006b935dc585d47b31bb1583fe99",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/px/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/canary-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/parent-session-edit-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/test-rules-scan.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/verification-agent-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/explain.json",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/index.html",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/list.html",
+          "status": "A",
+          "oldPath": null,
+          "additions": 180,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/build-frontend-report.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-lint-suppressions.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/check-tauri-version-match.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/detector-precondition.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/embedded_regions.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/git-token-auth.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/lib/usage.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 97,
+          "deletions": 16,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 217,
+          "deletions": 24,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 163,
+          "deletions": 19,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 71,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 10,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/lib/check-tally.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": "index.html",
+          "changed": false
+        },
+        {
+          "path": "package.json",
+          "changed": false
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-15T12:07:42Z",
+      "subject": "✨ [New Feature]: #1395 残っている PR 解説ページの一覧を gh-pages の pr-explain/ に置く",
+      "body": "- 一覧の枠 templates/list.html を足す。同じフォルダの list.json を読み、\n  createElement / textContent で行を組む。核 ListPage.readingOf は\n  解説ページの readingOf と同じ入力を取り、並べ替えない\n- pr-explain-list.yml を足す。main への push と PR Explain の完了\n  (workflow_run)で、GraphQL の pullRequests を --paginate --slurp で\n  全件引き、put-list に渡す\n- pr-explain-pages.sh に put-list を足す。clone した gh-pages の\n  pr-explain/pr-<番号> を番号の大きい順に毎回作り直し、一覧の 2 ファイル\n  だけを置き換える。題の応答が読めない・全件そろっていないなら clone の前に 1\n- 認証ヘッダの組み立てを lib/git-token-auth.sh に移し、2 つのワークフロー\n  から使う\n- 判定表に put-list・一覧の枠・一覧の核のケースを足し、配線と SKILL.md を追随する\n\n背景:\n#1394 で閉じた PR の解説ページも gh-pages に残るようになったが、どの PR の\nページがあるかを辿る入口が無かった。\n\n採用理由:\n前の list.json は読み戻さず、木と題の応答から毎回導出する。書いた一覧を\n入力に戻すと、壊れた一覧や外の編集が次の入力になる。共有の一覧を書くのは\nmain の定義とコードだけにするため workflow_run にした。\n\n代替案:\n- 静的 HTML を生成: 外から来る題のエスケープが検査の外にできる\n- ブラウザから GitHub API: connect-src 'self' が固定\n- PR 側の put-map で追記: 古い main から切った PR が古い版で書き戻す\n- 番号を先に引いて別名で題を引く: 番号と gh-pages の有無を 2 か所で導く\n- 問い合わせを .graphql に置く: 判定表は応答の見本を渡すので守りが増えない\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PQGspjY8qVMCf7tM9",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 2,
+          "patch": "@@ -58,6 +58,10 @@ URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`。St\n コメントに載るので、別にコメントしない。**解説は PR ブランチにも main にも入れない**(main に溜まり、\n Files changed にも混ざるため)。\n \n+gh-pages に残っている解説ページの一覧は `https://dio0550.github.io/design-composer/pr-explain/`(PR 番号と題から\n+各ページへ飛ぶ)。Actions(`pr-explain-list.yml`)が `PR Explain` の完了と main への push のたびに作り直すので、\n+セッションは触らない(`put-list` は呼ばない)。題は次に一覧を作り直す run で変わる(題の編集だけでは走らない)。\n+\n この変更(#1394)のマージ以後に閉じた PR は、マージ・クローズの後も同じ URL で開ける(閉じてもフォルダを消さない)。\n \n ## いつ書くか\n@@ -277,10 +281,13 @@ layer / file / module・LayerRole の layer・concept のパス・出てくる\n | ファイル | 内容 |\n | --- | --- |\n | [`templates/index.html`](templates/index.html) | ページの枠(CSS・固定スクリプト・CSP)。固定スクリプトを変えたら CSP の `sha256-` も直す(`check-pr-explain-template.py` が突き合わせる) |\n+| [`templates/list.html`](templates/list.html) | 一覧の枠(CSS・固定スクリプト・CSP)。`list.json` を読んで行を組む。固定スクリプトを変えたら CSP の `sha256-` も直す |\n | [`templates/explain.json`](templates/explain.json) | `excerpt` 以外のすべてのキーと、Target の 9 つの kind・Question の 3 つの kind・primers の 2 つの kind・Passage の excerpt 以外の 8 つの kind を使う解説の見本 |\n | `.github/scripts/build-pr-explain.py` | 解説の検査と、抜粋の中身の書き足し |\n | `.github/scripts/lib/embedded_regions.py` | 抜粋・差分の hunk の始まりの行で効いている埋め込み(script / style 要素・ヒアドキュメント)を開いた行。検査と地図が使う |\n-| `.github/scripts/check-pr-explain-template.py` | 枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査。`--tracked` では、追跡ファイルの拡張子が色付けの表(`LanguageByExtension`)か `NotHighlighted` のどちらかにあるかも見る |\n-| `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-explain` / `put-map`) |\n+| `.github/scripts/check-pr-explain-template.py` | 2 つの枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査。`--tracked` では、追跡ファイルの拡張子が色付けの表(`LanguageByExtension`)か `NotHighlighted` のどちらかにあるかも見る |\n+| `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` と一覧の書き換え(`put-explain` / `put-map` / `put-list`) |\n | `.github/scripts/build-pr-change-map.py` | 変更の地図(Actions が呼ぶ) |\n | `.github/workflows/pr-explain.yml` | 枠と地図の配置 |\n+| `.github/workflows/pr-explain-list.yml` | 一覧の配置(PR の題を GraphQL で引いて `put-list` に渡す) |\n+| `.github/scripts/lib/git-token-auth.sh` | 2 つのワークフローが gh-pages へ push するときの認証ヘッダ |",
+          "patchLines": 27,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/list.html",
+          "status": "A",
+          "oldPath": null,
+          "additions": 178,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,178 @@\n+<!doctype html>\n+<html lang=\"ja\">\n+<head>\n+<meta charset=\"utf-8\">\n+<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-D3rcq9nMGMjaCGcmemdcXs/8yQ5rdTCGqLjoFZbCsEU='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'\">\n+<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n+<title>PR 解説の一覧</title>\n+<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n+<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n+<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+JP:wght@400;500;600;700&display=swap\">\n+<style>\n+/* 値は `index.html` の写し。共有ファイルにしない理由は `check-pr-explain-template.py` の docstring。 */\n+:root {\n+  --bg: #F6F5F1;\n+  --panel: #FBFAF7;\n+  --surface: #FFFFFF;\n+  --hover: #F4F2ED;\n+  --line: #E2DFD8;\n+  --ink: #1D1F24;\n+  --ink-2: #5A5E66;\n+  --ink-3: #8B8F96;\n+  --accent: #2F5BEA;\n+  --accent-hover: #1F45C4;\n+  --sans: \"IBM Plex Sans JP\", system-ui, sans-serif;\n+  --mono: \"IBM Plex Mono\", ui-monospace, monospace;\n+}\n+* { box-sizing: border-box; }\n+html, body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased; }\n+a { color: var(--accent); text-decoration: none; }\n+a:hover { color: var(--accent-hover); text-decoration: underline; }\n+.mono { font-family: var(--mono); }\n+.top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 14px; min-height: 52px; min-width: 0; border-bottom: 1px solid var(--line); background: var(--panel); position: relative; z-index: 20; white-space: nowrap; }\n+.repo { font-family: var(--mono); font-weight: 600; font-size: 14px; flex: none; }\n+.hint { font-size: 11px; color: var(--ink-3); }\n+.list { max-width: 880px; margin: 0 auto; padding: 28px 24px 48px; display: flex; flex-direction: column; gap: 12px; }\n+.list h1 { margin: 0; font-size: 20px; font-weight: 600; }\n+.count { margin: 0; font-size: 12px; color: var(--ink-3); }\n+.pages { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); overflow: hidden; }\n+.pages li + li { border-top: 1px solid var(--line); }\n+.pages a { display: flex; align-items: baseline; gap: 14px; padding: 10px 16px; color: var(--ink); }\n+.pages a:hover { background: var(--hover); color: var(--ink); text-decoration: none; }\n+.pages a:hover .title { color: var(--accent-hover); text-decoration: underline; }\n+.number { flex: none; min-width: 4.5em; font-size: 13px; font-weight: 500; color: var(--ink-2); }\n+.title { font-size: 14px; line-height: 1.6; min-width: 0; overflow-wrap: anywhere; }\n+.untitled { color: var(--ink-3); }\n+.note { margin: 0; padding: 28px 32px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; gap: 12px; }\n+.note h2 { margin: 0; font-size: 16px; font-weight: 600; }\n+.note p { margin: 0; font-size: 14px; line-height: 1.8; color: var(--ink-2); }\n+</style>\n+</head>\n+<body>\n+<header class=\"top\"><span class=\"repo\">design-composer</span><span class=\"hint\">読み込み中…</span></header>\n+<main class=\"list\" id=\"list\"></main>\n+<script>\n+(() => {\n+  \"use strict\";\n+\n+  /** 一覧(`list.json`)の読み方。DOM に触らない。 */\n+  const ListPage = (() => {\n+    const ListVersion = 1;\n+    const isRecord = (value) => typeof value === \"object\" && value !== null && !Array.isArray(value);\n+    const isPrNumber = (value) => Number.isInteger(value) && value > 0;\n+    const isTitle = (value) => typeof value === \"string\" || value === null;\n+    const missing = (reason) => ({ kind: \"missing\", reason });\n+\n+    const parsedJson = (text) => {\n+      try {\n+        return { isParsed: true, value: JSON.parse(text) };\n+      } catch (error) {\n+        return { isParsed: false, detail: error.message };\n+      }\n+    };\n+\n+    /**\n+     * 行の並びのうち、最初に形の違う行のキー。\n+     * @returns 行がオブジェクトでなければ `pages`、番号が正の整数でなければ `pr`、題が文字列でも null でもなければ `title`。どの行も合っていれば null\n+     */\n+    const rowProblemOf = (pages) => {\n+      for (const row of pages) {\n+        if (!isRecord(row)) return \"pages\";\n+        if (!isPrNumber(row.pr)) return \"pr\";\n+        if (!isTitle(row.title)) return \"title\";\n+      }\n+      return null;\n+    };\n+\n+    return Object.freeze({\n+      /**\n+       * 読み込んだ一覧を、行の並び・0 件・読めない理由のどれかにする。行は並べ替えない(並びは置く側が決める)。\n+       * @param source `{kind: \"text\", text}`(読めた中身)/ `{kind: \"absent\"}`(置かれていない)/ `{kind: \"failed\", detail}`(読み込みの失敗)\n+       * @returns `{kind: \"listed\", rows}`(行は番号・題・リンク先)/ `{kind: \"empty\"}` / `{kind: \"missing\", reason}`(reason の kind は\n+       *   absent・unreadable・shape(形の違うキー。トップなら null)・version)\n+       */\n+      readingOf: (source) => {\n+        if (source.kind === \"absent\") return missing({ kind: \"absent\" });\n+        if (source.kind === \"failed\") return missing({ kind: \"unreadable\", detail: source.detail });\n+        const json = parsedJson(source.text);\n+        if (!json.isParsed) return missing({ kind: \"unreadable\", detail: json.detail });\n+        const list = json.value;\n+        if (!isRecord(list)) return missing({ kind: \"shape\", key: null });\n+        if (list.version !== ListVersion) return missing({ kind: \"version\", actual: list.version ?? null });\n+        if (!Array.isArray(list.pages)) return missing({ kind: \"shape\", key: \"pages\" });\n+        const problem = rowProblemOf(list.pages);\n+        if (problem !== null) return missing({ kind: \"shape\", key: problem });\n+        if (list.pages.length === 0) return { kind: \"empty\" };\n+        return { kind: \"listed\", rows: list.pages.map((row) => ({ pr: row.pr, title: row.title, href: `pr-${row.pr}/` })) };\n+      },\n+    });\n+  })();\n+\n+  /** DOM に触らない部分(核)。判定表が node の vm で評価して叩く。 */\n+  const core = Object.freeze({ ListPage });\n+  if (typeof document === \"undefined\") {\n+    globalThis.prExplainListCore = core;\n+    return;\n+  }\n+\n+  /**\n+   * 要素を作る。文字は textContent で入れる。\n+   * @param attributes `class` / `href` など、そのまま setAttribute する属性と、中の文字(`text`)\n+   */\n+  const el = (tag, attributes = {}, children = []) => {\n+    const node = document.createElement(tag);\n+    for (const [name, value] of Object.entries(attributes)) {\n+      if (name === \"text\") node.textContent = value;\n+      else node.setAttribute(name, value);\n+    }\n+    node.append(...children);\n+    return node;\n+  };\n+\n+  /** 一覧を読めない理由の 1 文。 */\n+  const missingTextOf = (reason) => {\n+    switch (reason.kind) {\n+      case \"absent\":\n+        return \"list.json がまだ置かれていません。Actions が次に一覧を作り直すと出ます。\";\n+      case \"unreadable\":\n+        return `list.json を読めませんでした(${reason.detail})。`;\n+      case \"shape\":\n+        return `list.json の ${reason.key ?? \"トップ\"} の形が想定と違います。`;\n+      case \"version\":\n+        return `list.json の version が ${JSON.stringify(reason.actual)} で、このページが読めるのは 1 です。`;\n+    }\n+  };\n+\n+  const rowOf = (row) => {\n+    const title = row.title === null ? el(\"span\", { class: \"title untitled\", text: \"題を取得できませんでした\" }) : el(\"span\", { class: \"title\", text: row.title });\n+    return el(\"li\", {}, [el(\"a\", { href: row.href }, [el(\"span\", { class: \"number mono\", text: `#${row.pr}` }), title])]);\n+  };\n+\n+  /** 読んだ一覧の本文。 */\n+  const contentOf = (reading) => {\n+    switch (reading.kind) {\n+      case \"listed\":\n+        return [el(\"p\", { class: \"count\", text: `${reading.rows.length} 件(番号の大きい順)` }), el(\"ul\", { class: \"pages\" }, reading.rows.map(rowOf))];\n+      case \"empty\":\n+        return [el(\"div\", { class: \"note\" }, [el(\"p\", { text: \"残っている解説ページはありません\" })])];\n+      case \"missing\":\n+        return [el(\"div\", { class: \"note\", role: \"status\" }, [el(\"h2\", { text: \"一覧を読めません\" }), el(\"p\", { text: missingTextOf(reading.reason) })])];\n+    }\n+  };\n+\n+  const listRequest = fetch(`list.json?t=${Date.now()}`, { cache: \"no-store\" })\n+    .then((response) => {\n+      if (response.status === 404) return { kind: \"absent\" };\n+      if (!response.ok) return { kind: \"failed\", detail: `HTTP ${response.status}` };\n+      return response.text().then((text) => ({ kind: \"text\", text }));\n+    })\n+    .catch((error) => ({ kind: \"failed\", detail: error.message }));\n+\n+  listRequest.then((source) => {\n+    document.querySelector(\".top .hint\").remove();\n+    document.getElementById(\"list\").replaceChildren(el(\"h1\", { text: \"PR 解説の一覧\" }), ...contentOf(ListPage.readingOf(source)));\n+  });\n+})();\n+</script>\n+</body>\n+</html>",
+          "patchLines": 179,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 0,
+          "patch": "@@ -2,6 +2,7 @@\n #\n # 解説ページの枠の検査の判定表。リポジトリのテンプレートを 1 か所ずつ崩して\n # `check-pr-explain-template.py` へ流し、落ちる分類が期待どおりかを 1 コマンドで確かめる。\n+# 一覧の枠(`templates/list.html`)は、リポジトリのものが通ることだけを表の外で見る。\n #\n # 使い方: bash .github/scripts/check-pr-explain-template-cases.sh\n # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n@@ -20,6 +21,7 @@ scripts_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n repo_root=\"$(cd \"$scripts_dir/../..\" && pwd)\"\n checker=\"$scripts_dir/check-pr-explain-template.py\"\n template=\"$repo_root/.claude/skills/pr-explain/templates/index.html\"\n+list_template=\"$repo_root/.claude/skills/pr-explain/templates/list.html\"\n work=\"$(mktemp -d)\" || exit 1\n trap 'rm -rf \"$work\"' EXIT\n \n@@ -101,6 +103,10 @@ while IFS='|' read -r expected category label change; do\n done <<<\"$cases\"\n report_cases_ran cases \"$cases_before\"\n \n+# 一覧の枠は色分けの表を持たないので `--tracked` を付けずに流す(`verdict` は常に付ける)。\n+python3 \"$checker\" \"$list_template\" >/dev/null 2>&1; list_status=$?\n+report pass \"$([ \"$list_status\" -eq 0 ] && echo pass || echo \"exit-$list_status\")\" \"リポジトリの一覧の枠は通る\"\n+\n report_documented_kinds \"$checker\"\n report_covered_kinds \"$checker\" \"$(kinds_in_categories \"$cases\" pr-explain-)\"\n ",
+          "patchLines": 27,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 5,
+          "patch": "@@ -1,8 +1,9 @@\n #!/usr/bin/env python3\n-\"\"\"解説ページの枠(`.claude/skills/pr-explain/templates/index.html`)の CSP と固定スクリプトを検査する。\n+\"\"\"解説ページの枠(`.claude/skills/pr-explain/templates/index.html`)と一覧の枠(`templates/list.html`)の\n+CSP と固定スクリプトを検査する。\n \n-ページは変更の地図(`change-map.json`)と解説(`explain.json`)を読み、固定スクリプトが\n-`createElement` と `textContent` で組む。JSON の中身は差分のコードや PR の本文をそのまま含むので、\n+解説ページは変更の地図(`change-map.json`)と解説(`explain.json`)を、一覧は `list.json` を読み、固定スクリプトが\n+`createElement` と `textContent` で組む。JSON の中身は差分のコードや PR の本文・題をそのまま含むので、\n **固定スクリプトが HTML として解釈させる API を 1 か所でも使えば、そこから中身が要素になる。**\n それを語の有無で止める。CSP は、すり抜けた要素があっても、固定スクリプト以外のスクリプトの実行・\n 外からの読み込み(書体とその CSS を除く)・フォームの送信を止める。インラインの style は止めない\n@@ -24,10 +25,15 @@\n `script-src 'self'` が要り、同じ origin(gh-pages の Storybook・PR のプレビュー)にあるどの `.js` も\n 動かせるようになる。\n \n+2 つの枠で同じもの(CSS 変数・書体・`.top` `.repo`・JSON の読み込み)は、共有の `.js` / `.css` に切り出さず\n+それぞれが写しを持つ。`.css` にしても `style-src 'self'` が要るのと、共有ファイルは main が置くが、各 PR の\n+`index.html` は PR の版のまま残るので、食い違うため。\n+\n 使い方:\n     check-pr-explain-template.py <テンプレート> [--tracked]\n \n-`--tracked` を付けると、標準入力のパス(1 行 1 件。`git ls-files` の出力)の拡張子も見る。\n+`--tracked` を付けると、標準入力のパス(1 行 1 件。`git ls-files` の出力)の拡張子も見る。解説ページの枠に\n+付ける(一覧の枠は色分けの表を持たない)。\n \n 違反が無ければ終了コード 0。違反があれば標準出力へ報告して 1。引数の誤りは 2。\n \"\"\"\n@@ -64,7 +70,7 @@ Policy = {\n     \"script-src\": None,\n     \"style-src\": frozenset({\"'unsafe-inline'\", \"https://fonts.googleapis.com\"}),\n     \"font-src\": frozenset({\"https://fonts.gstatic.com\"}),\n-    # 2 つの JSON を同じフォルダから読む。\n+    # 同じフォルダの JSON を読む(解説ページは 2 つ、一覧は 1 つ)。\n     \"connect-src\": frozenset({\"'self'\"}),\n     \"img-src\": frozenset({\"'self'\", \"data:\"}),\n     \"base-uri\": frozenset({\"'none'\"}),",
+          "patchLines": 39,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/lib/git-token-auth.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,21 @@\n+#!/usr/bin/env bash\n+#\n+# Actions のトークン(`GH_TOKEN`)で github.com へ git を通す認証ヘッダを、環境変数の git 設定として\n+# export する。source して `export_git_token_header` を呼ぶ。\n+#\n+# 環境変数の git 設定(`GIT_CONFIG_COUNT` / `GIT_CONFIG_KEY_0` / `GIT_CONFIG_VALUE_0`)にするのは、\n+# `pr-explain-pages.sh` が gh-pages を作業用の別フォルダへ clone するので、どのフォルダで走る git にも\n+# 同じ設定が効く形にするため。base64 にした値は Actions が自動では伏せないので、ログに出ないよう登録する。\n+#\n+# 使う側の checkout は `persist-credentials: false` にする。残すと git が Authorization を 2 本送る。\n+#\n+# 使う側: `.github/workflows/pr-explain.yml` / `.github/workflows/pr-explain-list.yml`\n+\n+export_git_token_header() {\n+  local credential\n+  credential=\"$(printf 'x-access-token:%s' \"$GH_TOKEN\" | base64 -w0)\"\n+  echo \"::add-mask::$credential\"\n+  export GIT_CONFIG_COUNT=1\n+  export GIT_CONFIG_KEY_0=\"http.https://github.com/.extraheader\"\n+  export GIT_CONFIG_VALUE_0=\"AUTHORIZATION: basic $credential\"\n+}",
+          "patchLines": 22,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 87,
+          "deletions": 16,
+          "patch": "@@ -7,7 +7,8 @@\n # 機能 × コミットの表と機能の色・構成の前後の図・流れ図の行とカードの配置・クイズの答えの読み直しと移り変わり・Target の行き先とチップの名前・色分け(`Tokenizer` と、\n # `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・クイズの問いの kind と答えの鍵の元・解説の形の道筋(impact・primers・terms・抜粋の\n # 強調・features の review・commitStories の featureRanges・calls・actors・quiz・flows の gist・text・beforeSteps・stepChanges・measure)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを\n-# 1 コマンドで確かめる。\n+# 1 コマンドで確かめる。一覧の枠(`templates/list.html`)も同じように評価し、`document` が無いときに置かれる\n+# `prExplainListCore` の `list.json` の読み方を確かめる。\n #\n # 使い方: bash .github/scripts/pr-explain-core-cases.sh\n # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n@@ -15,7 +16,7 @@\n # **どのケースも、既定値や素朴な実装と答えが違う入力を選ぶ。** 入力の順と答えの順を変えておき、件数・\n # 添字・先頭だけを見る実装や、打ち切り・既定値で済ませる実装でも同じ答えにならないようにする。\n #\n-# 組み立て(DOM を触る側)はここでは通らない。画面の配線は表示確認で見る。\n+# 組み立て(DOM を触る側)は、どちらの枠もここでは通らない。画面の配線は表示確認で見る。\n #\n # **判定表 3 本(これと `build-pr-explain-cases.sh`・`build-pr-change-map-cases.sh`)は、区切りの語の付いた `<<` を PY / JS の\n # ヒアドキュメントの外の行に書かない**(見本は Python の文字列で 1 行 1 要素に書く)。判定表も解説ページで色分けされ、外の行に\n@@ -28,6 +29,7 @@ set -uo pipefail\n scripts_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n repo_root=\"$(cd \"$scripts_dir/../..\" && pwd)\"\n template=\"$repo_root/.claude/skills/pr-explain/templates/index.html\"\n+list_template=\"$repo_root/.claude/skills/pr-explain/templates/list.html\"\n work=\"$(mktemp -d)\" || exit 1\n trap 'rm -rf \"$work\"' EXIT\n \n@@ -172,11 +174,10 @@ json.dump({\n PY\n [ \"$?\" -eq 0 ] || { echo \"NG   検査の埋め込みの開いた行を読めない\"; exit 1; }\n \n-results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'\n+results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'\n const fs = require(\"fs\");\n const vm = require(\"vm\");\n \n-const template = fs.readFileSync(process.argv[2], \"utf8\");\n const {\n   vocabulary: checkerVocabulary,\n   targetKeys: checkerTargetKeys,\n@@ -191,18 +192,23 @@ const {\n   markedRoutes: checkerMarkedRoutes,\n   codeSpans: checkerCodeSpans,\n } = JSON.parse(process.argv[3]);\n-const script = (template.match(/<script>([\\s\\S]*?)<\\/script>/) || [])[1];\n-if (script === undefined) {\n-  console.error(\"固定スクリプトが見つからない\");\n-  process.exit(2);\n-}\n-const context = vm.createContext({});\n-vm.runInContext(script, context);\n-const core = context.prExplainCore;\n-if (core === undefined) {\n-  console.error(\"document の無い評価で prExplainCore が置かれていない\");\n-  process.exit(2);\n-}\n+// 枠の固定スクリプトを document の無い文脈で評価し、置かれた核を返す。見つからなければ理由を出して 2 で終える。\n+const coreOf = (path, name) => {\n+  const script = (fs.readFileSync(path, \"utf8\").match(/<script>([\\s\\S]*?)<\\/script>/) || [])[1];\n+  if (script === undefined) {\n+    console.error(`${path} の固定スクリプトが見つからない`);\n+    process.exit(2);\n+  }\n+  const context = vm.createContext({});\n+  vm.runInContext(script, context);\n+  if (context[name] === undefined) {\n+    console.error(`document の無い評価で ${name} が置かれていない`);\n+    process.exit(2);\n+  }\n+  return context[name];\n+};\n+const core = coreOf(process.argv[2], \"prExplainCore\");\n+const { ListPage } = coreOf(process.argv[5], \"prExplainListCore\");\n const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target, CompareDiagram, TraceRows, TraceLayout, Quiz } = core;\n \n const Pr = 7;\n@@ -556,6 +562,11 @@ const specOf = (path, locator, shas) => ({ path, locator, text: `${locator}を\n // c1 が docs/b.md、c2 が docs/a.md、c3 が両方を変えた地図。\n const specCommits = [commitTouching(1, [diffFile(\"docs/b.md\")]), commitTouching(2, [diffFile(\"docs/a.md\")]), commitTouching(3, [diffFile(\"docs/a.md\"), diffFile(\"docs/b.md\")])];\n \n+// 一覧(list.json)の見本。読めた中身として一覧の核に渡す。\n+const listRow = (pr, title) => ({ pr, title });\n+const listReadingOf = (list) => ListPage.readingOf({ kind: \"text\", text: JSON.stringify(list) });\n+const listOf = (pages, extra = {}) => ({ version: 1, pages, ...extra });\n+\n const cases = [\n   {\n     label: \"解説の sha が地図の head なら最新\",\n@@ -3785,6 +3796,66 @@ const cases = [\n     actual: () => casesTables.map((path) => [...new Set(checkerOpenings[path].filter((opening) => opening !== null))].filter((opening) => !EndsWithHeredocStart.test(opening))),\n     expected: [[], [], []],\n   },\n+  {\n+    label: \"一覧の読めた行は、並びを変えずに番号・題・リンク先 pr-<番号>/ を持つ\",\n+    actual: () => listReadingOf(listOf([listRow(2, \"二\"), listRow(12, \"十二\"), listRow(1, \"一\")])),\n+    expected: { kind: \"listed\", rows: [{ pr: 2, title: \"二\", href: \"pr-2/\" }, { pr: 12, title: \"十二\", href: \"pr-12/\" }, { pr: 1, title: \"一\", href: \"pr-1/\" }] },\n+  },\n+  {\n+    label: \"一覧の題が null の行は、題なしの行になる\",\n+    actual: () => listReadingOf(listOf([listRow(12, \"十二\"), listRow(5, null)])).rows.map((row) => row.title),\n+    expected: [\"十二\", null],\n+  },\n+  {\n+    label: \"一覧の pages が空なら 0 件\",\n+    actual: () => listReadingOf(listOf([])),\n+    expected: { kind: \"empty\" },\n+  },\n+  {\n+    label: \"一覧が置かれていなければ読めず、理由は absent\",\n+    actual: () => ListPage.readingOf({ kind: \"absent\" }),\n+    expected: { kind: \"missing\", reason: { kind: \"absent\" } },\n+  },\n+  {\n+    label: \"一覧の読み込みに失敗したら読めず、理由は unreadable で失敗の中身を持つ\",\n+    actual: () => ListPage.readingOf({ kind: \"failed\", detail: \"HTTP 500\" }),\n+    expected: { kind: \"missing\", reason: { kind: \"unreadable\", detail: \"HTTP 500\" } },\n+  },\n+  {\n+    label: \"一覧が JSON でなければ、理由は unreadable\",\n+    actual: () => ListPage.readingOf({ kind: \"text\", text: \"{\" }).reason.kind,\n+    expected: \"unreadable\",\n+  },\n+  {\n+    label: \"一覧の最上位が null なら、理由は shape でキーは null\",\n+    actual: () => listReadingOf(null),\n+    expected: { kind: \"missing\", reason: { kind: \"shape\", key: null } },\n+  },\n+  {\n+    label: \"一覧の最上位が配列なら、理由は shape でキーは null\",\n+    actual: () => listReadingOf([listOf([listRow(1, \"一\")])]),\n+    expected: { kind: \"missing\", reason: { kind: \"shape\", key: null } },\n+  },\n+  {\n+    label: \"一覧の version が 1 でなければ、理由は version で中身を持つ\",\n+    actual: () => listReadingOf(listOf([listRow(1, \"一\")], { version: 2 })),\n+    expected: { kind: \"missing\", reason: { kind: \"version\", actual: 2 } },\n+  },\n+  {\n+    label: \"一覧の pages が配列でなければ、理由は shape でキーは pages\",\n+    actual: () => listReadingOf(listOf({ 1: listRow(1, \"一\") })),\n+    expected: { kind: \"missing\", reason: { kind: \"shape\", key: \"pages\" } },\n+  },\n+  {\n+    label: \"一覧の pr が正の整数でない行(0・1.5・\\\"12\\\")が 2 行目以降にあれば、理由は shape でキーは pr\",\n+    actual: () => [0, 1.5, \"12\"].map((pr) => listReadingOf(listOf([listRow(12, \"十二\"), listRow(pr, \"題\")])).reason),\n+    expected: [0, 1.5, \"12\"].map(() => ({ kind: \"shape\", key: \"pr\" })),\n+  },\n+  {\n+    label: \"一覧の title が文字列でも null でもない行(数値・欠け)があれば、理由は shape でキーは title\",\n+    actual: () => [{ pr: 2, title: 2 }, { pr: 2 }].map((row) => listReadingOf(listOf([listRow(12, \"十二\"), row])).reason),\n+    expected: [{ kind: \"shape\", key: \"title\" }, { kind: \"shape\", key: \"title\" }],\n+  },\n ];\n \n // 1 件が例外で止まっても、残りのケースは走らせて、そのケースだけを食い違いとして出す。",
+          "patchLines": 155,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "python3 - \"$scripts_dir/lib\" \"$work\" \"$template\" \"$scripts_dir/pr-explain-core-cases.sh\" \"$scripts_dir/build-pr-explain-cases.sh\" \"$scripts_dir/build-pr-change-map-cases.sh\" <<'PY'",
+              "new": "python3 - \"$scripts_dir/lib\" \"$work\" \"$template\" \"$scripts_dir/pr-explain-core-cases.sh\" \"$scripts_dir/build-pr-explain-cases.sh\" \"$scripts_dir/build-pr-change-map-cases.sh\" <<'PY'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 163,
+          "deletions": 12,
+          "patch": "@@ -6,15 +6,16 @@\n # 使い方: bash .github/scripts/pr-explain-pages-cases.sh\n # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n #\n-# **他の PR のフォルダ・`pr-preview/` に触らないことを、どのモードでも見る。** gh-pages は\n+# **他の PR のフォルダ・`pr-preview/` に触らないことを、どのモード(`put-list` を含む)でも見る。** gh-pages は\n # Storybook と VRT の配信と同じブランチで、ここを壊すとこの機能の外まで消える。\n # `put-map 1` が `pr-12` に触らない仕組みは 3 つある。作業コピーに展開するのが `pr-explain/pr-1/`\n # だけ(sparse-checkout)・`remove_others`(フォルダ内の 3 つ以外を消す処理)が消すのは\n-# `git ls-files -- \"$folder\"` の範囲だけ・`commit_and_push` が `git add -A` するのは `$folder` だけ。\n+# `git ls-files -- \"$folder\"` の範囲だけ・`commit_and_push` が `git add -A` するのは `paths` だけ。\n # どれか 1 つが保たれていれば通り、3 つすべてを壊さない限りこのケースは落ちない。見ているのは 3 つが組み合わさった結果。\n #\n # 競合の再試行は、bare リポジトリの pre-receive フックで 1 回目の push だけを拒否して作る。\n-# 待ち時間は `PR_EXPLAIN_RETRY_WAIT=0` で消す。\n+# 待ち時間は `PR_EXPLAIN_RETRY_WAIT=0` で消す。取り直しの間に gh-pages へ増えたフォルダは、拒否するのと同時に\n+# フックの中から別の clone でフォルダを足して push して作る。\n #\n # 解説の sha と抜粋は、スクリプトが置かれたリポジトリ(セッションの作業コピー)から読む。外側の\n # リポジトリの HEAD は push 前の検査のときにまだリモートに無いので、スクリプトを一時リポジトリへ写し、\n@@ -24,6 +25,7 @@ set -uo pipefail\n scripts_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n repo_root=\"$(cd \"$scripts_dir/../..\" && pwd)\"\n template=\"$repo_root/.claude/skills/pr-explain/templates/index.html\"\n+list_template=\"$repo_root/.claude/skills/pr-explain/templates/list.html\"\n work=\"$(mktemp -d)\"\n trap 'rm -rf \"$work\"' EXIT\n \n@@ -75,16 +77,57 @@ write(\"map.json\", {\"version\": 2, \"head\": \"new\"})\n PY\n broken_template=\"$work/broken-template.html\"\n sed 's/<script>/<script> /' \"$template\" > \"$broken_template\"\n+broken_list_template=\"$work/broken-list-template.html\"\n+sed 's/<script>/<script> /' \"$list_template\" > \"$broken_list_template\"\n+\n+# 題の応答の見本(`gh api graphql --paginate --slurp` の形 = ページの配列)。通る応答は 2 ページで、PR 12 は\n+# 2 ページ目にだけあり、PR 40 と 7 は gh-pages にフォルダが無い。壊れた応答は通る応答を 1 か所ずつ崩す。\n+python3 - \"$work\" <<'PY'\n+import copy, json, sys\n+work = sys.argv[1]\n+page = lambda nodes, has_next: {\"data\": {\"repository\": {\"pullRequests\": {\"nodes\": nodes, \"pageInfo\": {\"hasNextPage\": has_next, \"endCursor\": \"c\"}}}}}\n+node = lambda number, title: {\"number\": number, \"title\": title}\n+titles = [page([node(1, \"一\"), node(2, \"<b>二</b>\")], True), page([node(12, \"十二\"), node(40, \"四十\"), node(7, \"七\")], False)]\n+def broken(change):\n+    pages = copy.deepcopy(titles)\n+    change(pages)\n+    return pages\n+connection = lambda pages, index: pages[index][\"data\"][\"repository\"][\"pullRequests\"]\n+write = lambda name, text: open(f\"{work}/{name}\", \"w\", encoding=\"utf-8\").write(text)\n+dumped = lambda value: json.dumps(value, ensure_ascii=False)\n+write(\"titles.json\", dumped(titles))\n+write(\"titles-none.json\", dumped([page([], False)]))\n+write(\"titles-empty.json\", \"\")\n+write(\"titles-concatenated.json\", \"\".join(dumped(each) for each in titles))\n+write(\"titles-no-pages.json\", \"[]\")\n+write(\"titles-errors.json\", dumped(broken(lambda pages: pages[1].update({\"errors\": [{\"message\": \"x\"}]}))))\n+write(\"titles-no-title.json\", dumped(broken(lambda pages: connection(pages, 1)[\"nodes\"][0].pop(\"title\"))))\n+write(\"titles-string-number.json\", dumped(broken(lambda pages: connection(pages, 1)[\"nodes\"][0].update({\"number\": \"12\"}))))\n+write(\"titles-no-repository.json\", dumped(broken(lambda pages: pages[1][\"data\"].pop(\"repository\"))))\n+write(\"titles-cut.json\", dumped(broken(lambda pages: connection(pages, 1)[\"pageInfo\"].update({\"hasNextPage\": True}))))\n+write(\"titles-no-page-info.json\", dumped(broken(lambda pages: connection(pages, 0).pop(\"pageInfo\"))))\n+PY\n \n # gh-pages を持つ bare リポジトリを作り直す。\n-# $1 `seeded` なら既存の PR のフォルダと pr-preview を置く。`empty` なら gh-pages を作らない\n+# $1 `seeded` なら既存の PR のフォルダ・前の一覧・`pr-<番号>` の形でないフォルダと pr-preview を置く。\n+#    `pages-only` なら `.nojekyll` と pr-preview だけ(`pr-explain/` が無い)。`empty` なら gh-pages を作らない\n fresh_origin() {\n-  rm -rf \"$work/origin.git\" \"$work/seed\" \"$work/pushes\"\n+  rm -rf \"$work/origin.git\" \"$work/seed\" \"$work/pushes\" \"$work/racer\"\n   git init --quiet --bare \"$work/origin.git\"\n   git -C \"$work/origin.git\" config uploadpack.allowFilter true\n-  [ \"$1\" = \"seeded\" ] || return 0\n+  [ \"$1\" = \"empty\" ] && return 0\n   git init --quiet -b gh-pages \"$work/seed\"\n-  mkdir -p \"$work/seed/pr-explain/pr-1\" \"$work/seed/pr-explain/pr-12\" \"$work/seed/pr-preview/pr-1\"\n+  mkdir -p \"$work/seed/pr-preview/pr-1\"\n+  echo storybook > \"$work/seed/pr-preview/pr-1/index.html\"\n+  touch \"$work/seed/.nojekyll\"\n+  [ \"$1\" = \"seeded\" ] && seed_pr_explain\n+  git -C \"$work/seed\" add -A && git -C \"$work/seed\" commit --quiet -m seed\n+  git -C \"$work/seed\" push --quiet \"$work/origin.git\" gh-pages 2>/dev/null\n+}\n+\n+# 置き場の種に `pr-explain/` を足す(PR のフォルダ・前の一覧・`pr-<番号>` の形でないフォルダ)。\n+seed_pr_explain() {\n+  mkdir -p \"$work/seed/pr-explain/pr-1\" \"$work/seed/pr-explain/pr-12\"\n   echo old > \"$work/seed/pr-explain/pr-1/index.html\"\n   printf '{\"version\": 2, \"head\": \"%s\"}\\n' \"$head\" > \"$work/seed/pr-explain/pr-1/change-map.json\"\n   echo '{\"old\": \"explain\"}' > \"$work/seed/pr-explain/pr-1/explain.json\"\n@@ -95,19 +138,32 @@ fresh_origin() {\n   echo '{\"version\": 2, \"head\": \"0000000\"}' > \"$work/seed/pr-explain/pr-2/change-map.json\"\n   echo twelve > \"$work/seed/pr-explain/pr-12/index.html\"\n   echo '{\"head\": \"twelve\"}' > \"$work/seed/pr-explain/pr-12/change-map.json\"\n-  echo storybook > \"$work/seed/pr-preview/pr-1/index.html\"\n-  touch \"$work/seed/.nojekyll\"\n-  git -C \"$work/seed\" add -A && git -C \"$work/seed\" commit --quiet -m seed\n-  git -C \"$work/seed\" push --quiet \"$work/origin.git\" gh-pages 2>/dev/null\n+  mkdir -p \"$work/seed/pr-explain/pr-01\" \"$work/seed/pr-explain/notes\"\n+  echo x > \"$work/seed/pr-explain/pr-01/x\"\n+  echo x > \"$work/seed/pr-explain/notes/x\"\n+  echo old-list > \"$work/seed/pr-explain/index.html\"\n+  echo '{' > \"$work/seed/pr-explain/list.json\"\n }\n \n # 1 回目の push だけを拒否する pre-receive フックを置く。\n+# $1 (省略可)拒否するときに、別の clone から gh-pages へ足すフォルダ(取り直しの間に増えた分)。フックの中の\n+#    git は受け取り中のリポジトリを指す環境変数を持つので、外してから clone する(外さないと not a git repository で落ちる)\n reject_first_push() {\n+  local racer=\"$work/racer\" added=\"${1:-}\"\n   cat > \"$work/origin.git/hooks/pre-receive\" <<HOOK\n #!/usr/bin/env bash\n count=\\$(( \\$(cat \"$work/pushes\" 2>/dev/null || echo 0) + 1 ))\n echo \"\\$count\" > \"$work/pushes\"\n-[ \"\\$count\" -gt 1 ]\n+[ \"\\$count\" -gt 1 ] && exit 0\n+[ -n \"$added\" ] || exit 1\n+(\n+  unset GIT_DIR GIT_QUARANTINE_PATH GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES\n+  git clone --quiet --branch gh-pages \"file://$work/origin.git\" \"$racer\" &&\n+    mkdir -p \"$racer/$added\" && echo racer > \"$racer/$added/index.html\" &&\n+    git -C \"$racer\" add -A && git -C \"$racer\" commit --quiet -m racer &&\n+    git -C \"$racer\" push --quiet origin gh-pages\n+) >/dev/null 2>&1\n+exit 1\n HOOK\n   chmod +x \"$work/origin.git/hooks/pre-receive\"\n }\n@@ -127,6 +183,26 @@ tip() {\n   git --git-dir=\"$work/origin.git\" rev-parse --verify --quiet gh-pages || echo \"<none>\"\n }\n \n+# gh-pages の一覧(list.json)から引いたもの。読めなければ `<broken>`。\n+# $1 `numbers`(行の番号の並び)/ `count`(行の数)/ `version` / `rows`(行の番号と題の並び)/\n+#    `title`(`$2` の番号の行の題。行が無ければ `<none>`)\n+listed() {\n+  on_pages pr-explain/list.json | python3 -c '\n+import json, sys\n+listing = json.load(sys.stdin)\n+rows = listing[\"pages\"]\n+titles = {str(row[\"pr\"]): row[\"title\"] for row in rows}\n+answers = {\n+    \"numbers\": lambda: json.dumps([row[\"pr\"] for row in rows]),\n+    \"count\": lambda: str(len(rows)),\n+    \"version\": lambda: json.dumps(listing[\"version\"]),\n+    \"rows\": lambda: json.dumps([[row[\"pr\"], row[\"title\"]] for row in rows], ensure_ascii=False),\n+    \"title\": lambda: json.dumps(titles[sys.argv[2]], ensure_ascii=False) if sys.argv[2] in titles else \"<none>\",\n+}\n+print(answers[sys.argv[1]]())\n+' \"$@\" 2>/dev/null || echo \"<broken>\"\n+}\n+\n # 表明が成り立つかを 1 行で報告する。\n # $1 ケース名, $2 表明(bash の条件。成り立てば holds)\n expect() {\n@@ -149,6 +225,7 @@ expect \"put-explain は explain.json を置き、index.html と change-map.json\n expect \"put-explain が置くのは、検査が抜粋の中身を足して書き出したもの\" 'placed_by_builder'\n expect \"put-explain は他の PR のフォルダに触らない\" '[ \"$(on_pages pr-explain/pr-12/index.html)\" = twelve ]'\n expect \"put-explain は pr-preview に触らない\" '[ \"$(on_pages pr-preview/pr-1/index.html)\" = storybook ]'\n+expect \"put-explain は一覧(pr-explain/index.html と list.json)に触らない\" '[ \"$(on_pages pr-explain/index.html)\" = old-list ] && [ \"$(on_pages pr-explain/list.json)\" = \"{\" ]'\n \n fresh_origin seeded\n stale_errors=\"$(bash \"$pages\" put-explain 2 \"$work/explain-2.json\" 2>&1 >/dev/null)\"; stale_status=$?\n@@ -194,6 +271,7 @@ expect \"put-map は 3 ファイル以外(ほかのファイル・サブフォル\n expect \"put-map は change-map.json を更新する\" '[ \"$(on_pages pr-explain/pr-1/change-map.json)\" = \"$(cat \"$work/map.json\")\" ]'\n expect \"put-map は他の PR のフォルダに触らない\" '[ \"$(on_pages pr-explain/pr-12/index.html)\" = twelve ]'\n expect \"put-map は pr-preview に触らない\" '[ \"$(on_pages pr-preview/pr-1/index.html)\" = storybook ]'\n+expect \"put-map は一覧(pr-explain/index.html と list.json)に触らない\" '[ \"$(on_pages pr-explain/index.html)\" = old-list ] && [ \"$(on_pages pr-explain/list.json)\" = \"{\" ]'\n \n fresh_origin seeded\n run_pages put-map 5 \"$work/map.json\" \"$template\"\n@@ -224,4 +302,77 @@ fresh_origin empty\n run_pages put-map 3 \"$work/map.json\" \"$template\"; status=$?\n expect \"gh-pages が無ければ orphan で作る\" '[ \"$status\" -eq 0 ] && [ \"$(on_pages pr-explain/pr-3/change-map.json)\" = \"$(cat \"$work/map.json\")\" ] && [ \"$(on_pages .nojekyll)\" = \"\" ]'\n \n+fresh_origin seeded\n+run_pages put-list \"$work/titles.json\" \"$list_template\"; status=$?\n+expect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 2, 1]\" ]'\n+expect \"put-list は pr-<番号> の形でないフォルダ(notes・pr-01)を載せない\" '[ \"$(listed count)\" = 3 ]'\n+expect \"put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)\" '[ \"$(listed title 1)\" = \"\\\"一\\\"\" ] && [ \"$(listed title 2)\" = \"\\\"<b>二</b>\\\"\" ]'\n+expect \"put-list は 2 ページ目にしか無い PR も題付きで載せる\" '[ \"$(listed title 12)\" = \"\\\"十二\\\"\" ]'\n+expect \"put-list は応答にあってもフォルダの無い PR を載せない\" '[ \"$(listed title 7)\" = \"<none>\" ] && [ \"$(listed title 40)\" = \"<none>\" ]'\n+expect \"put-list は前の list.json が壊れていても、読まずに作り直す\" '[ \"$(listed version)\" = 1 ]'\n+expect \"put-list は一覧の枠をテンプレートのまま pr-explain/index.html に置く\" '[ \"$(on_pages pr-explain/index.html)\" = \"$(cat \"$list_template\")\" ]'\n+expect \"put-list は PR のフォルダ(pr-1 の 3 ファイル・pr-12)と pr-preview に触らない\" '[ \"$(on_pages pr-explain/pr-1/index.html)\" = old ] && [ \"$(on_pages pr-explain/pr-1/change-map.json)\" = \"{\\\"version\\\": 2, \\\"head\\\": \\\"$head\\\"}\" ] && [ \"$(on_pages pr-explain/pr-1/explain.json)\" = \"{\\\"old\\\": \\\"explain\\\"}\" ] && [ \"$(on_pages pr-explain/pr-12/index.html)\" = twelve ] && [ \"$(on_pages pr-preview/pr-1/index.html)\" = storybook ]'\n+before=\"$(tip)\"\n+run_pages put-list \"$work/titles.json\" \"$list_template\"; status=$?\n+expect \"put-list は一覧も枠も変わらなければ push しない\" '[ \"$status\" -eq 0 ] && [ \"$(tip)\" = \"$before\" ]'\n+\n+fresh_origin seeded\n+run_pages put-list \"$work/titles.json\" \"$list_template\"\n+run_pages put-map 5 \"$work/map.json\" \"$template\"\n+run_pages put-list \"$work/titles.json\" \"$list_template\"; status=$?\n+expect \"応答に無い PR(put-map で増やしたフォルダ)は、次の put-list に題なし(null)で載る\" '[ \"$status\" -eq 0 ] && [ \"$(listed title 5)\" = null ]'\n+\n+fresh_origin seeded\n+run_pages put-list \"$work/titles-none.json\" \"$list_template\"; status=$?\n+expect \"PR の一覧が 0 件の応答では、フォルダはすべて題なしで載る\" '[ \"$status\" -eq 0 ] && [ \"$(listed rows)\" = \"[[12, null], [2, null], [1, null]]\" ]'\n+\n+fresh_origin seeded\n+reject_first_push pr-explain/pr-40\n+run_pages put-list \"$work/titles.json\" \"$list_template\"; status=$?\n+expect \"取り直しの間に gh-pages へ増えたフォルダも、題付きで一覧に載る\" '[ \"$status\" -eq 0 ] && [ \"$(on_pages pr-explain/pr-40/index.html)\" = racer ] && [ \"$(listed title 40)\" = \"\\\"四十\\\"\" ]'\n+\n+fresh_origin seeded\n+before=\"$(tip)\"\n+output=\"$(bash \"$pages\" put-list \"$work/titles.json\" \"$broken_list_template\" 2>&1)\"; status=$?\n+expect \"CSP の合わない一覧の枠の put-list は 1 で、push しない\" '[ \"$status\" -eq 1 ] && [ \"$(tip)\" = \"$before\" ] && [[ \"$output\" == *\"[pr-explain-csp]\"* ]]'\n+\n+# 題の応答が読めない・全件そろっていない見本と、その形。\n+broken_titles=\"$(cat <<'TITLES'\n+empty|空\n+concatenated|2 ページを --slurp なしで連結したもの\n+no-pages|空の配列\n+errors|2 ページ目に errors がある\n+no-title|2 ページ目の PR に title が無い\n+string-number|PR の number が文字列\n+no-repository|data に repository が無い\n+cut|最後のページの hasNextPage が true(応答が途中で切れている)\n+no-page-info|pageInfo の無いページがある\n+TITLES\n+)\"\n+cases_before=$cases_reported\n+while IFS='|' read -r name shape; do\n+  [ -n \"$name\" ] || continue\n+  fresh_origin seeded\n+  before=\"$(tip)\"\n+  output=\"$(bash \"$pages\" put-list \"$work/titles-$name.json\" \"$list_template\" 2>&1)\"; status=$?\n+  expect \"題の応答が「$shape」なら、clone へ進まず 1 で終わり push しない\" '[ \"$status\" -eq 1 ] && [ \"$(tip)\" = \"$before\" ] && [[ \"$output\" == *\"題の応答\"* ]] && [[ \"$output\" != *\"反映に失敗\"* ]]'\n+done <<<\"$broken_titles\"\n+report_cases_ran broken_titles \"$cases_before\"\n+\n+fresh_origin seeded\n+before=\"$(tip)\"\n+run_pages put-list \"$work/missing.json\" \"$list_template\"; missing_titles=$?\n+run_pages put-list \"$work/titles.json\" \"$work/missing.html\"; missing_template=$?\n+run_pages put-list \"$work/titles.json\"; too_few=$?\n+run_pages put-list \"$work/titles.json\" \"$list_template\" extra; too_many=$?\n+expect \"put-list に題の応答か枠が無い、または引数が 3 つでなければ引数の誤り\" '[ \"$missing_titles\" -eq 2 ] && [ \"$missing_template\" -eq 2 ] && [ \"$too_few\" -eq 2 ] && [ \"$too_many\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ]'\n+\n+fresh_origin empty\n+run_pages put-list \"$work/titles.json\" \"$list_template\"; status=$?\n+expect \"gh-pages が無ければ、put-list は 0 で終わり何も作らない\" '[ \"$status\" -eq 0 ] && [ \"$(tip)\" = \"<none>\" ]'\n+\n+fresh_origin pages-only\n+run_pages put-list \"$work/titles.json\" \"$list_template\"; status=$?\n+expect \"gh-pages はあるが pr-explain/ が無ければ、0 件の一覧と枠を置く\" '[ \"$status\" -eq 0 ] && [ \"$(listed rows)\" = \"[]\" ] && [ \"$(on_pages pr-explain/index.html)\" = \"$(cat \"$list_template\")\" ]'\n+\n exit \"$cases_failed\"",
+          "patchLines": 249,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "python3 - \"$work\" \"$head\" \"$unpushed\" <<'PY'",
+              "new": "python3 - \"$work\" \"$head\" \"$unpushed\" <<'PY'"
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 153,
+          "deletions": 20,
+          "patch": "@@ -1,12 +1,14 @@\n #!/usr/bin/env bash\n #\n-# gh-pages の `pr-explain/pr-<番号>/`(PR の解説ページ)を書き換える。\n+# gh-pages の `pr-explain/pr-<番号>/`(PR の解説ページ)と、その一覧(`pr-explain/index.html` と\n+# `pr-explain/list.json`)を書き換える。\n #\n # 使い方:\n #   pr-explain-pages.sh put-explain <PR 番号> <explain.json>                 … 解説を検査して置く(セッションが呼ぶ)\n #   pr-explain-pages.sh put-map     <PR 番号> <change-map.json> <テンプレート>  … 枠と変更の地図を置く(Actions が呼ぶ)\n+#   pr-explain-pages.sh put-list    <題の応答> <一覧の枠>                    … 一覧を作り直す(Actions が呼ぶ)\n #\n-# フォルダに置くのは `index.html`(枠)・`change-map.json`(地図)・`explain.json`(解説)の 3 つだけ。\n+# PR のフォルダに置くのは `index.html`(枠)・`change-map.json`(地図)・`explain.json`(解説)の 3 つだけ。\n #\n # - `put-explain` は `build-pr-explain.py` が検査して書き出したもの(抜粋の中身を足したもの)を\n #   `explain.json` として置く。違反があれば push しない。触るのはこの 1 ファイルだけ\n@@ -20,17 +22,27 @@\n # - `put-map` は clone の前に `check-pr-explain-template.py` で枠を検査し、`index.html` を毎回\n #   上書きする。枠の変わったコミット(main の取り込みを含む)が、次の push でそのままページに効くように。\n #   フォルダには 3 つだけを置く、という形を保つため、それ以外のファイルは消す\n+# - `put-list` は `pr-explain/index.html`(一覧の枠)と `pr-explain/list.json`(一覧)の 2 つだけを置き換える。\n+#   一覧は、取り直した gh-pages にある `pr-explain/pr-<番号>/` のフォルダを番号の大きい順に並べ、題を題の応答\n+#   (`gh api graphql --paginate --slurp` の出力。ページの配列)から引く。前の `list.json` は読まない(導出できる\n+#   値を読み戻すと、外の編集や壊れた一覧が入力になる)\n+# - `put-list` で題が `null` になるのは、応答に無い番号のフォルダ(問い合わせの後に開いた PR と、PR でない番号)だけ\n+# - `put-list` は clone の前に、題の応答が全件そろっていること(どのページにも `errors` が無く、最後のページの\n+#   `hasNextPage` が false)を確かめる。欠けた応答から作ると、題の無い行が黙って増えるため\n+# - `put-list` は gh-pages が無ければ作らない。0 件の一覧のためだけにブランチを作らず、次の `put-map` が作った\n+#   後に走る run が一覧を置く\n #\n # gh-pages は Storybook 本体・PR プレビュー・VRT の撮影結果で数百 MB あるので、blob を取らない\n-# 浅い clone から `pr-explain/pr-<番号>/` だけを展開する。他のワークフローとの push の競合は、\n-# 取り直しからやり直して吸収する(最大 5 回)。\n+# 浅い clone から `pr-explain/pr-<番号>/` だけ(`put-list` は一覧の 2 ファイルだけ)を展開する。他のワークフロー\n+# との push の競合は、取り直しからやり直して吸収する(最大 5 回)。\n #\n # 環境変数:\n #   PR_EXPLAIN_REMOTE      push 先(既定はこのリポジトリの origin)\n #   PR_EXPLAIN_RETRY_WAIT  n 回目の失敗の後に n × この秒数だけ待つ(既定 2)\n #\n-# 終了コード: 0 = 置いた / 変更が無かった、1 = 解説か枠が検査に落ちた・解説の sha を push していない・\n-#             push できなかった、2 = 引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が\n+# 終了コード: 0 = 置いた / 変更が無かった / `put-list` で gh-pages が無い、1 = 解説か枠が検査に落ちた・\n+#             解説の sha を push していない・`put-list` の題の応答が読めないか全件そろっていない・\n+#             push できなかった、2 =引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が\n #             無い(理由は上の `put-explain` の項。やり直さない)、\n #             127 = 読み込む `lib/usage.sh` を読み込めない(何も触らずに返す)\n set -uo pipefail\n@@ -42,18 +54,37 @@ retry_wait=\"${PR_EXPLAIN_RETRY_WAIT:-2}\"\n \n . \"$scripts_dir/lib/usage.sh\" || exit 127\n \n+is_pr_number() {\n+  [[ \"$1\" =~ ^[1-9][0-9]*$ ]]\n+}\n+\n mode=\"${1:-}\"\n-pr=\"${2:-}\"\n-[[ \"$pr\" =~ ^[1-9][0-9]*$ ]] || usage\n case \"$mode\" in\n-  put-explain) args_ok=$([ $# -eq 3 ] && [ -f \"$3\" ] && echo yes) ;;\n-  put-map) args_ok=$([ $# -eq 4 ] && [ -f \"$3\" ] && [ -f \"$4\" ] && echo yes) ;;\n+  put-explain) args_ok=$([ $# -eq 3 ] && is_pr_number \"$2\" && [ -f \"$3\" ] && echo yes) ;;\n+  put-map) args_ok=$([ $# -eq 4 ] && is_pr_number \"$2\" && [ -f \"$3\" ] && [ -f \"$4\" ] && echo yes) ;;\n+  put-list) args_ok=$([ $# -eq 3 ] && [ -f \"$2\" ] && [ -f \"$3\" ] && echo yes) ;;\n   *) args_ok=\"\" ;;\n esac\n [ \"$args_ok\" = yes ] || usage\n \n remote=\"${PR_EXPLAIN_REMOTE:-$(git -C \"$scripts_dir\" remote get-url origin)}\"\n-folder=\"pr-explain/pr-$pr\"\n+# paths は書き換えて `git add` する対象、sparse は展開するパターン、label は結果の行に出す名前。\n+case \"$mode\" in\n+  put-list)\n+    paths=(pr-explain/index.html pr-explain/list.json)\n+    sparse=(/pr-explain/index.html /pr-explain/list.json)\n+    label=\"pr-explain の一覧\"\n+    message=\"PR explain list\"\n+    ;;\n+  *)\n+    pr=\"$2\"\n+    folder=\"pr-explain/pr-$pr\"\n+    paths=(\"$folder\")\n+    sparse=(\"/$folder/\")\n+    label=\"$folder\"\n+    message=\"PR explain #$pr ($mode)\"\n+    ;;\n+esac\n work=\"$(mktemp -d)\"\n trap 'rm -rf \"$work\"' EXIT\n \n@@ -65,6 +96,79 @@ is_pushed_explain() {\n   [ -n \"$(git -C \"$scripts_dir\" branch -r --contains \"$sha\" 2>/dev/null)\" ]\n }\n \n+# 題の応答(`gh api graphql --paginate --slurp` の出力。ページの配列)を `{\"番号\": 題}` にして書き出す。\n+# 応答が空・JSON でない・空でないページの配列でない・どれかのページに `errors` がある・`pullRequests` の\n+# `nodes` か `pageInfo.hasNextPage` の形が違う・最後のページの `hasNextPage` が false でない・PR の番号か題の形が\n+# 違う、のどれかなら、理由を標準エラーに出して 1 を返す。\n+# $1 題の応答, $2 書き出す先\n+collect_titles() {\n+  python3 - \"$1\" \"$2\" <<'PY'\n+import json, sys\n+\n+source, out = sys.argv[1:3]\n+\n+\n+def at(value, keys):\n+    \"\"\"辞書を keys の順にたどった先。途中が辞書でなければ None。\"\"\"\n+    for key in keys:\n+        value = value.get(key) if isinstance(value, dict) else None\n+    return value\n+\n+\n+def is_pr_number(value):\n+    return isinstance(value, int) and not isinstance(value, bool) and value > 0\n+\n+\n+def first_problem(problems):\n+    \"\"\"並びのうち最初の None でないもの。無ければ None。\"\"\"\n+    return next((problem for problem in problems if problem is not None), None)\n+\n+\n+def node_problem(node):\n+    \"\"\"PR 1 件の形の違い。合っていれば None。\"\"\"\n+    if not is_pr_number(at(node, [\"number\"])):\n+        return f\"number が正の整数でない PR がある({json.dumps(node, ensure_ascii=False)})\"\n+    if not isinstance(at(node, [\"title\"]), str):\n+        return f\"title が文字列でない PR がある({json.dumps(node, ensure_ascii=False)})\"\n+    return None\n+\n+\n+def page_problem(page, index):\n+    \"\"\"1 ページの形の違い。合っていれば None。\"\"\"\n+    connection = at(page, [\"data\", \"repository\", \"pullRequests\"])\n+    if isinstance(page, dict) and \"errors\" in page:\n+        return f\"{index} ページ目に errors がある({json.dumps(page['errors'], ensure_ascii=False)})\"\n+    if not isinstance(at(connection, [\"nodes\"]), list):\n+        return f\"{index} ページ目の data.repository.pullRequests.nodes が配列でない\"\n+    if not isinstance(at(connection, [\"pageInfo\", \"hasNextPage\"]), bool):\n+        return f\"{index} ページ目に pageInfo.hasNextPage が無い\"\n+    return first_problem(map(node_problem, connection[\"nodes\"]))\n+\n+\n+def problem_of(pages):\n+    \"\"\"応答全体の形の違い。全件そろっていれば None。\"\"\"\n+    if not isinstance(pages, list) or len(pages) == 0:\n+        return \"空でないページの配列でない(--slurp を付けた出力を渡す)\"\n+    found = first_problem(page_problem(page, index) for index, page in enumerate(pages, 1))\n+    if found is not None:\n+        return found\n+    if at(pages[-1], [\"data\", \"repository\", \"pullRequests\", \"pageInfo\", \"hasNextPage\"]) is not False:\n+        return \"最後のページの hasNextPage が false でない(応答が途中で切れている)\"\n+    return None\n+\n+\n+try:\n+    pages = json.loads(open(source, encoding=\"utf-8\").read())\n+except ValueError as error:\n+    sys.exit(f\"題の応答を JSON として読めません({error})\")\n+problem = problem_of(pages)\n+if problem is not None:\n+    sys.exit(f\"題の応答が全件そろっていません: {problem}\")\n+titles = {str(node[\"number\"]): node[\"title\"] for page in pages for node in page[\"data\"][\"repository\"][\"pullRequests\"][\"nodes\"]}\n+open(out, \"w\", encoding=\"utf-8\").write(json.dumps(titles, ensure_ascii=False))\n+PY\n+}\n+\n # 検査は clone の前に済ませる。落ちたものを置かないのと、取り直しのたびに同じ検査を繰り返さないため。\n # 解説の sha と抜粋は、このスクリプトがあるリポジトリ(セッションの作業コピー)から読む。\n case \"$mode\" in\n@@ -73,6 +177,10 @@ case \"$mode\" in\n     is_pushed_explain \"$work/explain.json\" || { echo \"解説の sha がリモートの追跡ブランチにありません(push・fetch してから置きます)\" >&2; exit 1; }\n     ;;\n   put-map) python3 \"$scripts_dir/check-pr-explain-template.py\" \"$4\" || exit $? ;;\n+  put-list)\n+    python3 \"$scripts_dir/check-pr-explain-template.py\" \"$3\" || exit $?\n+    collect_titles \"$2\" \"$work/titles.json\" || exit 1\n+    ;;\n esac\n \n # gh-pages の有無。0 = ある、2 = 無い、それ以外 = 問い合わせに失敗した。\n@@ -81,14 +189,16 @@ pages_branch_state() {\n   git ls-remote --exit-code --heads \"$remote\" \"$branch\" >/dev/null\n }\n \n-# gh-pages を取り、`$folder` だけを展開した作業コピーを `$work/site` に作る。\n-# gh-pages がまだ無ければ空の orphan を作る(既存のワークフローと同じ扱い)。\n+# gh-pages を取り、`sparse` のパターンだけを展開した作業コピーを `$work/site` に作る。\n+# gh-pages がまだ無ければ空の orphan を作る(既存のワークフローと同じ扱い)。`put-list` では作らず 4 を返す\n+# (理由は冒頭の `put-list` の項)。\n checkout_site() {\n   rm -rf \"$work/site\"\n   pages_branch_state\n   case $? in\n     0) ;;\n     2)\n+      [ \"$mode\" = put-list ] && return 4\n       git init --quiet \"$work/site\" &&\n         git -C \"$work/site\" checkout --quiet --orphan \"$branch\" &&\n         git -C \"$work/site\" remote add origin \"$remote\" &&\n@@ -100,7 +210,7 @@ checkout_site() {\n   esac\n   git clone --quiet --filter=blob:none --no-checkout --depth 1 --branch \"$branch\" --single-branch \\\n     \"$remote\" \"$work/site\" &&\n-    git -C \"$work/site\" sparse-checkout set --no-cone \"/$folder/\" &&\n+    git -C \"$work/site\" sparse-checkout set --no-cone \"${sparse[@]}\" &&\n     git -C \"$work/site\" checkout --quiet \"$branch\"\n }\n \n@@ -117,7 +227,26 @@ remove_others() {\n   done\n }\n \n-# モードごとに `$folder` を書き換える。返す 3 は先頭の終了コードの 3 と同じ。\n+# gh-pages の PR のフォルダから一覧を作り、一覧の枠と一緒に `pr-explain/` へ置く。\n+# $1 作業コピー, $2 一覧の枠\n+write_list() {\n+  git -C \"$1\" ls-tree -d --name-only HEAD pr-explain/ >\"$work/folders\" || return 1\n+  mkdir -p \"$1/pr-explain\"\n+  python3 - \"$work/folders\" \"$work/titles.json\" \"$1/pr-explain/list.json\" <<'PY' || return 1\n+import json, re, sys\n+\n+folders, titles_path, out = sys.argv[1:4]\n+titles = json.load(open(titles_path, encoding=\"utf-8\"))\n+found = [re.fullmatch(r\"pr-explain/pr-([1-9][0-9]*)\", line) for line in open(folders, encoding=\"utf-8\").read().splitlines()]\n+numbers = sorted((int(match.group(1)) for match in found if match is not None), reverse=True)\n+# 題の応答は clone より前に引くので、その後に開いた PR のフォルダは応答に無い。次の run で題が付く。\n+pages = [{\"pr\": number, \"title\": titles.get(str(number))} for number in numbers]\n+open(out, \"w\", encoding=\"utf-8\").write(json.dumps({\"version\": 1, \"pages\": pages}, ensure_ascii=False, indent=2) + \"\\n\")\n+PY\n+  cp \"$2\" \"$1/pr-explain/index.html\"\n+}\n+\n+# モードごとに `paths` を書き換える。返す 3 は先頭の終了コードの 3 と同じ。\n apply_change() {\n   local site=\"$work/site\"\n   case \"$mode\" in\n@@ -131,22 +260,23 @@ apply_change() {\n       cp \"$4\" \"$site/$folder/index.html\"\n       remove_others \"$site\"\n       ;;\n+    put-list) write_list \"$site\" \"$3\" ;;\n   esac\n }\n \n # 変更をコミットして push し、結果を 1 行出す。変更が無ければ push しない。\n commit_and_push() {\n   local site=\"$work/site\"\n-  git -C \"$site\" add -A -- \"$folder\" || return 1\n+  git -C \"$site\" add -A -- \"${paths[@]}\" || return 1\n   if git -C \"$site\" diff --cached --quiet; then\n-    echo \"$folder: 変更なし\"\n+    echo \"$label: 変更なし\"\n     return 0\n   fi\n   git -C \"$site\" config user.name >/dev/null || git -C \"$site\" config user.name \"github-actions[bot]\"\n   git -C \"$site\" config user.email >/dev/null || git -C \"$site\" config user.email \"github-actions[bot]@users.noreply.github.com\"\n-  git -C \"$site\" commit --quiet -m \"PR explain #$pr ($mode)\" &&\n+  git -C \"$site\" commit --quiet -m \"$message\" &&\n     git -C \"$site\" push --quiet origin \"HEAD:$branch\" &&\n-    echo \"$folder: $mode を反映しました\"\n+    echo \"$label: $mode を反映しました\"\n }\n \n # `put-explain` で置いた解説の sha が地図の head と違えば、標準エラーに知らせる。置くのは止めない。\n@@ -163,7 +293,10 @@ PY\n }\n \n for attempt in $(seq 1 \"$max_attempts\"); do\n-  if checkout_site; then\n+  checkout_site\n+  checked_out=$?\n+  [ \"$checked_out\" -eq 4 ] && { echo \"gh-pages がありません(一覧は作りません)\"; exit 0; }\n+  if [ \"$checked_out\" -eq 0 ]; then\n     apply_change \"$@\"\n     applied=$?\n     [ \"$applied\" -eq 3 ] && { echo \"$folder/change-map.json がありません\" >&2; exit 3; }",
+          "patchLines": 279,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -219,7 +219,7 @@ jobs:\n       - name: sticky コメントの投稿・差し替えの判定表\n         run: bash .github/scripts/upsert-sticky-comment-cases.sh\n \n-      # PR の解説ページ(pr-explain.yml とセッションの pr-explain スキル)が使う 5 本の判定表。\n+      # PR の解説ページ(pr-explain.yml・pr-explain-list.yml とセッションの pr-explain スキル)が使う 5 本の判定表。\n       - name: 変更の地図の判定表\n         run: bash .github/scripts/build-pr-change-map-cases.sh\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 63,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,63 @@\n+# gh-pages の PR 解説ページの一覧(pr-explain/index.html と list.json)を作り直す。\n+# URL は https://dio0550.github.io/design-composer/pr-explain/。\n+#\n+# `PR Explain` の完了(PR のフォルダが増える)と main への push(一覧の枠と put-list が変わる)のたびに走る。\n+# `workflow_run` にしたのは、どちらの起点でも定義とコードが main のものになり、PR ごとの版の行き来が\n+# 起きないため。対価は `PR Explain` と名前の文字列でつながることと、PR の中では確かめられないこと。\n+#\n+# `conclusion` で絞らない。毎回 gh-pages の木と全件の題から作り直すので、失敗・取り消しの後に走っても\n+# 害が無い。絞ると取り消された run の分を取りこぼす。\n+# `github.event.workflow_run.*` は読まない。fork の PR が起点でも、この run は書き込める権限で走るので、\n+# PR の側が決める値を使わない。\n+name: PR Explain List\n+\n+on:\n+  push:\n+    branches: [main]\n+  workflow_run:\n+    workflows: [PR Explain]\n+    types: [completed]\n+\n+permissions:\n+  contents: write\n+  pull-requests: read\n+\n+# 毎回、木と全件の題から作り直すので、後の run が取り消された run の代わりになる。\n+concurrency:\n+  group: pr-explain-list\n+  cancel-in-progress: true\n+\n+jobs:\n+  list:\n+    runs-on: ubuntu-24.04\n+    timeout-minutes: 5\n+    steps:\n+      # `persist-credentials` の理由は `lib/git-token-auth.sh`。\n+      - name: Checkout\n+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2\n+        with:\n+          persist-credentials: false\n+\n+      # `--slurp` を付けないと各ページが区切りなしで連結され、1 つの JSON にならない。\n+      # 問い合わせの文をここに書くのは、判定表(pr-explain-pages-cases.sh)が応答の見本を渡すので、文の置き場所に\n+      # よらず問い合わせの本体は通らないため。本体はマージ後の run で確かめる。ページ送りの抜けは put-list の\n+      # 検査(最後のページの `hasNextPage`)が捕まえる。\n+      # gh は応答に errors があるときや HTTP の失敗で 1 を返し、このステップで止まる(put-list は走らない)。\n+      # 再試行はしない。次の run が木から作り直すので 1 回の取りこぼしは後で揃い、失敗した run は赤く残る。\n+      - name: Fetch pull request titles\n+        env:\n+          GH_TOKEN: ${{ github.token }}\n+        run: |\n+          gh api graphql --paginate --slurp \\\n+            -f owner=\"${GITHUB_REPOSITORY%%/*}\" \\\n+            -f name=\"${GITHUB_REPOSITORY##*/}\" \\\n+            -f query='query($owner: String!, $name: String!, $endCursor: String) { repository(owner: $owner, name: $name) { pullRequests(first: 100, after: $endCursor) { nodes { number title } pageInfo { hasNextPage endCursor } } } }' \\\n+            > \"$RUNNER_TEMP/pull-requests.json\"\n+\n+      - name: Publish list to gh-pages\n+        env:\n+          GH_TOKEN: ${{ github.token }}\n+        run: |\n+          . .github/scripts/lib/git-token-auth.sh\n+          export_git_token_header\n+          bash .github/scripts/pr-explain-pages.sh put-list \"$RUNNER_TEMP/pull-requests.json\" .claude/skills/pr-explain/templates/list.html",
+          "patchLines": 64,
+          "truncated": false
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 10,
+          "patch": "@@ -8,6 +8,8 @@\n #\n # storybook-pr-preview.yml とは別のワークフローにしてあるのは、あちらが Storybook のビルドを\n # 待つため(数分)。地図は差分だけで作れるので、ビルドを待たずに出す。\n+#\n+# pr-explain-list.yml の `workflow_run` がこの名前を文字列で参照する(変えたら向こうも直す)。\n name: PR Explain\n \n on:\n@@ -31,8 +33,7 @@ jobs:\n     runs-on: ubuntu-24.04\n     timeout-minutes: 5\n     steps:\n-      # merge-base を求めるので履歴をすべて取る。認証は下の公開ステップで 1 本だけ渡すので、\n-      # checkout には残させない(残すと git が Authorization を 2 本送る)。\n+      # merge-base を求めるので履歴をすべて取る。`persist-credentials` の理由は `lib/git-token-auth.sh`。\n       - name: Checkout\n         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2\n         with:\n@@ -48,17 +49,11 @@ jobs:\n           PR: ${{ github.event.number }}\n         run: python3 .github/scripts/build-pr-change-map.py --base \"$BASE_SHA\" --head \"$HEAD_SHA\" --pr \"$PR\" --head-branch \"$HEAD_BRANCH\" --base-branch \"$BASE_BRANCH\" > \"$RUNNER_TEMP/change-map.json\"\n \n-      # 環境変数の git 設定で認証ヘッダを渡す。pr-explain-pages.sh は gh-pages を作業用の別フォルダへ\n-      # clone するので、どのフォルダで走る git にも同じ設定が効く形にする。base64 にした値は\n-      # Actions が自動では伏せないので、ログに出ないよう登録する。\n       - name: Publish to gh-pages\n         env:\n           GH_TOKEN: ${{ github.token }}\n           PR: ${{ github.event.number }}\n         run: |\n-          credential=\"$(printf 'x-access-token:%s' \"$GH_TOKEN\" | base64 -w0)\"\n-          echo \"::add-mask::$credential\"\n-          export GIT_CONFIG_COUNT=1\n-          export GIT_CONFIG_KEY_0=\"http.https://github.com/.extraheader\"\n-          export GIT_CONFIG_VALUE_0=\"AUTHORIZATION: basic $credential\"\n+          . .github/scripts/lib/git-token-auth.sh\n+          export_git_token_header\n           bash .github/scripts/pr-explain-pages.sh put-map \"$PR\" \"$RUNNER_TEMP/change-map.json\" .claude/skills/pr-explain/templates/index.html",
+          "patchLines": 39,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -45,7 +45,7 @@ DevContainer の `postCreateCommand` も走らない。そこは Claude Code の\n 層 3 の `.claude/hooks/lib/pre-push-detector.sh` と `.claude/hooks/lib/edit-detector.sh` も自分の位置から辿って source する\n (層ごとに見方を割らないため)。\n PR の解説ページの判定表 5 本(`build-pr-change-map-cases.sh` / `pr-explain-pages-cases.sh` /\n-`build-pr-explain-cases.sh` / `check-pr-explain-template-cases.sh` / `pr-explain-core-cases.sh`)も `.github/scripts/` にある。当てる先が `pr-explain.yml` と\n+`build-pr-explain-cases.sh` / `check-pr-explain-template-cases.sh` / `pr-explain-core-cases.sh`)も `.github/scripts/` にある。当てる先が `pr-explain.yml`・`pr-explain-list.yml` と\n `pr-explain` スキルから呼ばれるスクリプトで、同じ場所にあるため。\n **行数のラチェットと判定表 20 本**(`harness/records/count.sh --ratchet` /\n `harness/records/count-cases.sh` / `.claude/hooks/lib/import-rule-cases.sh` /",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -64,7 +64,7 @@ run_check \"解説の検査の判定表\" bash .github/scripts/build-pr-explain-ca\n run_check \"解説ページの枠の検査の判定表\" bash .github/scripts/check-pr-explain-template-cases.sh\n resume_checks\n \n-# 解説ページの核(テンプレートの固定スクリプトのうち DOM に触らない部分)を node で評価する判定表。\n+# 解説ページと一覧の枠の核(2 つのテンプレートの固定スクリプトのうち DOM に触らない部分)を node で評価する判定表。\n # `command -v` ではなく 1 回起動して見る理由は、上の python3_usable と同じ。核が使う配列のメソッド\n # (`toSorted` など。Node 20 から)が無い node でも、核の判定ではなく node の版で落ちるので飛ばす。\n # 解説の検査(python3)と語彙を突き合わせるケースがあるので、python3 も要る。",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-15T12:23:14Z",
+      "subject": "♻️ [Refactoring]: #1395 一覧の実装の検証の指摘を反映する",
+      "body": "- fork の PR が起点の workflow_run では一覧を作り直さない(ジョブの if)\n- 2 つの枠の写しの範囲を docstring と JS の印に書き、一致を見る検査が\n  無いことを明記する。読めないときの箱を写し元と同じ .guide にする\n- ワークフローと put-list の Why を理由ごとに分け、前提は 1 回だけ書く\n- 応答の道筋を connection_of に、PR 番号の形を pr_number_pattern に寄せる\n- 組んだ条件に名前を付け、語を揃える(rows / pull-requests / site-only /\n  other_clone / listJsonOf / response_problem)\n- 判定表の種の値を seed_files に 1 か所にし、kept_as_seeded で表明する\n- list.json に version が無いときは shape(version)として読めないと出す\n\n背景:\n#1395 の実装の検証(フェーズ 6)の 1 段目の指摘のうち、採用したもの。\n採否は Issue #1395 のコメントに残した。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PQGspjY8qVMCf7tM9",
+      "files": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -58,12 +58,12 @@ URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`。St\n コメントに載るので、別にコメントしない。**解説は PR ブランチにも main にも入れない**(main に溜まり、\n Files changed にも混ざるため)。\n \n+この変更(#1394)のマージ以後に閉じた PR は、マージ・クローズの後も同じ URL で開ける(閉じてもフォルダを消さない)。\n+\n gh-pages に残っている解説ページの一覧は `https://dio0550.github.io/design-composer/pr-explain/`(PR 番号と題から\n 各ページへ飛ぶ)。Actions(`pr-explain-list.yml`)が `PR Explain` の完了と main への push のたびに作り直すので、\n セッションは触らない(`put-list` は呼ばない)。題は次に一覧を作り直す run で変わる(題の編集だけでは走らない)。\n \n-この変更(#1394)のマージ以後に閉じた PR は、マージ・クローズの後も同じ URL で開ける(閉じてもフォルダを消さない)。\n-\n ## いつ書くか\n \n - **PR を出した直後**(`implementation-flow` フェーズ 7)",
+          "patchLines": 15,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/list.html",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 9,
+          "patch": "@@ -2,7 +2,7 @@\n <html lang=\"ja\">\n <head>\n <meta charset=\"utf-8\">\n-<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-D3rcq9nMGMjaCGcmemdcXs/8yQ5rdTCGqLjoFZbCsEU='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'\">\n+<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-mNyN0W3AuuBCb9ppgpTEJAIfpuXo0vfkXHWXC50Qkk4='; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'\">\n <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n <title>PR 解説の一覧</title>\n <link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n@@ -43,9 +43,9 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }\n .number { flex: none; min-width: 4.5em; font-size: 13px; font-weight: 500; color: var(--ink-2); }\n .title { font-size: 14px; line-height: 1.6; min-width: 0; overflow-wrap: anywhere; }\n .untitled { color: var(--ink-3); }\n-.note { margin: 0; padding: 28px 32px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; gap: 12px; }\n-.note h2 { margin: 0; font-size: 16px; font-weight: 600; }\n-.note p { margin: 0; font-size: 14px; line-height: 1.8; color: var(--ink-2); }\n+.guide { margin: 0; padding: 28px 32px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; gap: 12px; }\n+.guide h2 { margin: 0; font-size: 16px; font-weight: 600; }\n+.guide p { margin: 0; font-size: 14px; line-height: 1.8; color: var(--ink-2); }\n </style>\n </head>\n <body>\n@@ -54,6 +54,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }\n <script>\n (() => {\n   \"use strict\";\n+  // `isRecord`・`missing`・`parsedJson`・`readingOf` の読み方・`el`・`list.json` の読み込みは `index.html` の写し。共有ファイルにしない理由は `check-pr-explain-template.py` の docstring。\n \n   /** 一覧(`list.json`)の読み方。DOM に触らない。 */\n   const ListPage = (() => {\n@@ -89,7 +90,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }\n        * 読み込んだ一覧を、行の並び・0 件・読めない理由のどれかにする。行は並べ替えない(並びは置く側が決める)。\n        * @param source `{kind: \"text\", text}`(読めた中身)/ `{kind: \"absent\"}`(置かれていない)/ `{kind: \"failed\", detail}`(読み込みの失敗)\n        * @returns `{kind: \"listed\", rows}`(行は番号・題・リンク先)/ `{kind: \"empty\"}` / `{kind: \"missing\", reason}`(reason の kind は\n-       *   absent・unreadable・shape(形の違うキー。トップなら null)・version)\n+       *   absent・unreadable・shape(形の違うか欠けたキー。トップなら null)・version(version が 1 でない))\n        */\n       readingOf: (source) => {\n         if (source.kind === \"absent\") return missing({ kind: \"absent\" });\n@@ -98,7 +99,8 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }\n         if (!json.isParsed) return missing({ kind: \"unreadable\", detail: json.detail });\n         const list = json.value;\n         if (!isRecord(list)) return missing({ kind: \"shape\", key: null });\n-        if (list.version !== ListVersion) return missing({ kind: \"version\", actual: list.version ?? null });\n+        if (list.version === undefined) return missing({ kind: \"shape\", key: \"version\" });\n+        if (list.version !== ListVersion) return missing({ kind: \"version\", actual: list.version });\n         if (!Array.isArray(list.pages)) return missing({ kind: \"shape\", key: \"pages\" });\n         const problem = rowProblemOf(list.pages);\n         if (problem !== null) return missing({ kind: \"shape\", key: problem });\n@@ -137,7 +139,7 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }\n       case \"unreadable\":\n         return `list.json を読めませんでした(${reason.detail})。`;\n       case \"shape\":\n-        return `list.json の ${reason.key ?? \"トップ\"} の形が想定と違います。`;\n+        return reason.key === \"version\" ? \"list.json に version がありません。\" : `list.json の ${reason.key ?? \"トップ\"} の形が想定と違います。`;\n       case \"version\":\n         return `list.json の version が ${JSON.stringify(reason.actual)} で、このページが読めるのは 1 です。`;\n     }\n@@ -154,9 +156,9 @@ a:hover { color: var(--accent-hover); text-decoration: underline; }\n       case \"listed\":\n         return [el(\"p\", { class: \"count\", text: `${reading.rows.length} 件(番号の大きい順)` }), el(\"ul\", { class: \"pages\" }, reading.rows.map(rowOf))];\n       case \"empty\":\n-        return [el(\"div\", { class: \"note\" }, [el(\"p\", { text: \"残っている解説ページはありません\" })])];\n+        return [el(\"div\", { class: \"guide\" }, [el(\"p\", { text: \"残っている解説ページはありません\" })])];\n       case \"missing\":\n-        return [el(\"div\", { class: \"note\", role: \"status\" }, [el(\"h2\", { text: \"一覧を読めません\" }), el(\"p\", { text: missingTextOf(reading.reason) })])];\n+        return [el(\"div\", { class: \"guide\", role: \"status\" }, [el(\"h2\", { text: \"一覧を読めません\" }), el(\"p\", { text: missingTextOf(reading.reason) })])];\n     }\n   };\n ",
+          "patchLines": 70,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "<style>",
+              "new": "<style>"
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            },
+            {
+              "old": "<script>",
+              "new": "<script>"
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 2,
+          "patch": "@@ -25,9 +25,11 @@ CSP と固定スクリプトを検査する。\n `script-src 'self'` が要り、同じ origin(gh-pages の Storybook・PR のプレビュー)にあるどの `.js` も\n 動かせるようになる。\n \n-2 つの枠で同じもの(CSS 変数・書体・`.top` `.repo`・JSON の読み込み)は、共有の `.js` / `.css` に切り出さず\n+2 つの枠で同じもの(CSS 変数・書体・`.top` `.repo` `.hint`・読めないときの箱 `.guide`・`el`・`isRecord` /\n+`missing` / `parsedJson` / `readingOf` の読み方・`list.json` の読み込み)は、共有の `.js` / `.css` に切り出さず\n それぞれが写しを持つ。`.css` にしても `style-src 'self'` が要るのと、共有ファイルは main が置くが、各 PR の\n-`index.html` は PR の版のまま残るので、食い違うため。\n+`index.html` は PR の版のまま残るので、食い違うため。2 つの枠の写しが一致しているかはどの検査も見ない。\n+変えるときは両方を直す。\n \n 使い方:\n     check-pr-explain-template.py <テンプレート> [--tracked]",
+          "patchLines": 14,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 9,
+          "patch": "@@ -565,7 +565,7 @@ const specCommits = [commitTouching(1, [diffFile(\"docs/b.md\")]), commitTouching(\n // 一覧(list.json)の見本。読めた中身として一覧の核に渡す。\n const listRow = (pr, title) => ({ pr, title });\n const listReadingOf = (list) => ListPage.readingOf({ kind: \"text\", text: JSON.stringify(list) });\n-const listOf = (pages, extra = {}) => ({ version: 1, pages, ...extra });\n+const listJsonOf = (pages, extra = {}) => ({ version: 1, pages, ...extra });\n \n const cases = [\n   {\n@@ -3798,17 +3798,17 @@ const cases = [\n   },\n   {\n     label: \"一覧の読めた行は、並びを変えずに番号・題・リンク先 pr-<番号>/ を持つ\",\n-    actual: () => listReadingOf(listOf([listRow(2, \"二\"), listRow(12, \"十二\"), listRow(1, \"一\")])),\n+    actual: () => listReadingOf(listJsonOf([listRow(2, \"二\"), listRow(12, \"十二\"), listRow(1, \"一\")])),\n     expected: { kind: \"listed\", rows: [{ pr: 2, title: \"二\", href: \"pr-2/\" }, { pr: 12, title: \"十二\", href: \"pr-12/\" }, { pr: 1, title: \"一\", href: \"pr-1/\" }] },\n   },\n   {\n     label: \"一覧の題が null の行は、題なしの行になる\",\n-    actual: () => listReadingOf(listOf([listRow(12, \"十二\"), listRow(5, null)])).rows.map((row) => row.title),\n+    actual: () => listReadingOf(listJsonOf([listRow(12, \"十二\"), listRow(5, null)])).rows.map((row) => row.title),\n     expected: [\"十二\", null],\n   },\n   {\n     label: \"一覧の pages が空なら 0 件\",\n-    actual: () => listReadingOf(listOf([])),\n+    actual: () => listReadingOf(listJsonOf([])),\n     expected: { kind: \"empty\" },\n   },\n   {\n@@ -3833,27 +3833,32 @@ const cases = [\n   },\n   {\n     label: \"一覧の最上位が配列なら、理由は shape でキーは null\",\n-    actual: () => listReadingOf([listOf([listRow(1, \"一\")])]),\n+    actual: () => listReadingOf([listJsonOf([listRow(1, \"一\")])]),\n     expected: { kind: \"missing\", reason: { kind: \"shape\", key: null } },\n   },\n   {\n     label: \"一覧の version が 1 でなければ、理由は version で中身を持つ\",\n-    actual: () => listReadingOf(listOf([listRow(1, \"一\")], { version: 2 })),\n+    actual: () => listReadingOf(listJsonOf([listRow(1, \"一\")], { version: 2 })),\n     expected: { kind: \"missing\", reason: { kind: \"version\", actual: 2 } },\n   },\n+  {\n+    label: \"一覧に version が無ければ、理由は shape でキーは version\",\n+    actual: () => listReadingOf({ pages: [listRow(1, \"一\")] }),\n+    expected: { kind: \"missing\", reason: { kind: \"shape\", key: \"version\" } },\n+  },\n   {\n     label: \"一覧の pages が配列でなければ、理由は shape でキーは pages\",\n-    actual: () => listReadingOf(listOf({ 1: listRow(1, \"一\") })),\n+    actual: () => listReadingOf(listJsonOf({ 1: listRow(1, \"一\") })),\n     expected: { kind: \"missing\", reason: { kind: \"shape\", key: \"pages\" } },\n   },\n   {\n     label: \"一覧の pr が正の整数でない行(0・1.5・\\\"12\\\")が 2 行目以降にあれば、理由は shape でキーは pr\",\n-    actual: () => [0, 1.5, \"12\"].map((pr) => listReadingOf(listOf([listRow(12, \"十二\"), listRow(pr, \"題\")])).reason),\n+    actual: () => [0, 1.5, \"12\"].map((pr) => listReadingOf(listJsonOf([listRow(12, \"十二\"), listRow(pr, \"題\")])).reason),\n     expected: [0, 1.5, \"12\"].map(() => ({ kind: \"shape\", key: \"pr\" })),\n   },\n   {\n     label: \"一覧の title が文字列でも null でもない行(数値・欠け)があれば、理由は shape でキーは title\",\n-    actual: () => [{ pr: 2, title: 2 }, { pr: 2 }].map((row) => listReadingOf(listOf([listRow(12, \"十二\"), row])).reason),\n+    actual: () => [{ pr: 2, title: 2 }, { pr: 2 }].map((row) => listReadingOf(listJsonOf([listRow(12, \"十二\"), row])).reason),\n     expected: [{ kind: \"shape\", key: \"title\" }, { kind: \"shape\", key: \"title\" }],\n   },\n ];",
+          "patchLines": 68,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+            },
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 84,
+          "deletions": 60,
+          "patch": "@@ -54,6 +54,17 @@ git -C \"$session\" add -A && git -C \"$session\" commit --quiet -m unpushed\n unpushed=\"$(git -C \"$session\" rev-parse HEAD)\"\n pages=\"$session/.github/scripts/pr-explain-pages.sh\"\n \n+# 置き場の種に置くファイルのうち、触っていないことを表明するものと、その中身。種を書くのも表明するのもここを引く。\n+declare -A seed_files=(\n+  [pr-preview/pr-1/index.html]=storybook\n+  [pr-explain/pr-1/index.html]=old\n+  [pr-explain/pr-1/change-map.json]=\"{\\\"version\\\": 2, \\\"head\\\": \\\"$head\\\"}\"\n+  [pr-explain/pr-1/explain.json]='{\"old\": \"explain\"}'\n+  [pr-explain/pr-12/index.html]=twelve\n+  [pr-explain/index.html]=old-list\n+  [pr-explain/list.json]='{'\n+)\n+\n # 解説として通るもの(PR #1 宛て・push 済みのコミット時点)と、検査に落ちるもの。抜粋は\n # 検査が中身を足すので、置かれたものが検査の書き出しかどうかが `text` の有無で分かる。\n python3 - \"$work\" \"$head\" \"$unpushed\" <<'PY'\n@@ -87,38 +98,43 @@ import copy, json, sys\n work = sys.argv[1]\n page = lambda nodes, has_next: {\"data\": {\"repository\": {\"pullRequests\": {\"nodes\": nodes, \"pageInfo\": {\"hasNextPage\": has_next, \"endCursor\": \"c\"}}}}}\n node = lambda number, title: {\"number\": number, \"title\": title}\n-titles = [page([node(1, \"一\"), node(2, \"<b>二</b>\")], True), page([node(12, \"十二\"), node(40, \"四十\"), node(7, \"七\")], False)]\n+pull_requests = [page([node(1, \"一\"), node(2, \"<b>二</b>\")], True), page([node(12, \"十二\"), node(40, \"四十\"), node(7, \"七\")], False)]\n def broken(change):\n-    pages = copy.deepcopy(titles)\n+    pages = copy.deepcopy(pull_requests)\n     change(pages)\n     return pages\n connection = lambda pages, index: pages[index][\"data\"][\"repository\"][\"pullRequests\"]\n write = lambda name, text: open(f\"{work}/{name}\", \"w\", encoding=\"utf-8\").write(text)\n dumped = lambda value: json.dumps(value, ensure_ascii=False)\n-write(\"titles.json\", dumped(titles))\n-write(\"titles-none.json\", dumped([page([], False)]))\n-write(\"titles-empty.json\", \"\")\n-write(\"titles-concatenated.json\", \"\".join(dumped(each) for each in titles))\n-write(\"titles-no-pages.json\", \"[]\")\n-write(\"titles-errors.json\", dumped(broken(lambda pages: pages[1].update({\"errors\": [{\"message\": \"x\"}]}))))\n-write(\"titles-no-title.json\", dumped(broken(lambda pages: connection(pages, 1)[\"nodes\"][0].pop(\"title\"))))\n-write(\"titles-string-number.json\", dumped(broken(lambda pages: connection(pages, 1)[\"nodes\"][0].update({\"number\": \"12\"}))))\n-write(\"titles-no-repository.json\", dumped(broken(lambda pages: pages[1][\"data\"].pop(\"repository\"))))\n-write(\"titles-cut.json\", dumped(broken(lambda pages: connection(pages, 1)[\"pageInfo\"].update({\"hasNextPage\": True}))))\n-write(\"titles-no-page-info.json\", dumped(broken(lambda pages: connection(pages, 0).pop(\"pageInfo\"))))\n+write(\"pull-requests.json\", dumped(pull_requests))\n+write(\"pull-requests-none.json\", dumped([page([], False)]))\n+write(\"pull-requests-empty.json\", \"\")\n+write(\"pull-requests-concatenated.json\", \"\".join(dumped(each) for each in pull_requests))\n+write(\"pull-requests-no-pages.json\", \"[]\")\n+write(\"pull-requests-errors.json\", dumped(broken(lambda pages: pages[1].update({\"errors\": [{\"message\": \"x\"}]}))))\n+write(\"pull-requests-no-title.json\", dumped(broken(lambda pages: connection(pages, 1)[\"nodes\"][0].pop(\"title\"))))\n+write(\"pull-requests-string-number.json\", dumped(broken(lambda pages: connection(pages, 1)[\"nodes\"][0].update({\"number\": \"12\"}))))\n+write(\"pull-requests-no-repository.json\", dumped(broken(lambda pages: pages[1][\"data\"].pop(\"repository\"))))\n+write(\"pull-requests-cut.json\", dumped(broken(lambda pages: connection(pages, 1)[\"pageInfo\"].update({\"hasNextPage\": True}))))\n+write(\"pull-requests-no-page-info.json\", dumped(broken(lambda pages: connection(pages, 0).pop(\"pageInfo\"))))\n PY\n \n+# `seed_files` の 1 ファイルを種(`$work/seed`)に書く。\n+# $1 `seed_files` のパス\n+write_seed() {\n+  mkdir -p \"$(dirname \"$work/seed/$1\")\" && printf '%s\\n' \"${seed_files[$1]}\" > \"$work/seed/$1\"\n+}\n+\n # gh-pages を持つ bare リポジトリを作り直す。\n # $1 `seeded` なら既存の PR のフォルダ・前の一覧・`pr-<番号>` の形でないフォルダと pr-preview を置く。\n-#    `pages-only` なら `.nojekyll` と pr-preview だけ(`pr-explain/` が無い)。`empty` なら gh-pages を作らない\n+#    `site-only` なら `.nojekyll` と pr-preview だけ(`pr-explain/` が無い)。`empty` なら gh-pages を作らない\n fresh_origin() {\n-  rm -rf \"$work/origin.git\" \"$work/seed\" \"$work/pushes\" \"$work/racer\"\n+  rm -rf \"$work/origin.git\" \"$work/seed\" \"$work/pushes\" \"$work/other-clone\"\n   git init --quiet --bare \"$work/origin.git\"\n   git -C \"$work/origin.git\" config uploadpack.allowFilter true\n   [ \"$1\" = \"empty\" ] && return 0\n   git init --quiet -b gh-pages \"$work/seed\"\n-  mkdir -p \"$work/seed/pr-preview/pr-1\"\n-  echo storybook > \"$work/seed/pr-preview/pr-1/index.html\"\n+  write_seed pr-preview/pr-1/index.html\n   touch \"$work/seed/.nojekyll\"\n   [ \"$1\" = \"seeded\" ] && seed_pr_explain\n   git -C \"$work/seed\" add -A && git -C \"$work/seed\" commit --quiet -m seed\n@@ -127,29 +143,28 @@ fresh_origin() {\n \n # 置き場の種に `pr-explain/` を足す(PR のフォルダ・前の一覧・`pr-<番号>` の形でないフォルダ)。\n seed_pr_explain() {\n-  mkdir -p \"$work/seed/pr-explain/pr-1\" \"$work/seed/pr-explain/pr-12\"\n-  echo old > \"$work/seed/pr-explain/pr-1/index.html\"\n-  printf '{\"version\": 2, \"head\": \"%s\"}\\n' \"$head\" > \"$work/seed/pr-explain/pr-1/change-map.json\"\n-  echo '{\"old\": \"explain\"}' > \"$work/seed/pr-explain/pr-1/explain.json\"\n+  write_seed pr-explain/pr-1/index.html\n+  write_seed pr-explain/pr-1/change-map.json\n+  write_seed pr-explain/pr-1/explain.json\n   echo behavior > \"$work/seed/pr-explain/pr-1/behavior.html\"\n   mkdir -p \"$work/seed/pr-explain/pr-1/assets\"\n   echo asset > \"$work/seed/pr-explain/pr-1/assets/x.css\"\n   mkdir -p \"$work/seed/pr-explain/pr-2\"\n   echo '{\"version\": 2, \"head\": \"0000000\"}' > \"$work/seed/pr-explain/pr-2/change-map.json\"\n-  echo twelve > \"$work/seed/pr-explain/pr-12/index.html\"\n+  write_seed pr-explain/pr-12/index.html\n   echo '{\"head\": \"twelve\"}' > \"$work/seed/pr-explain/pr-12/change-map.json\"\n   mkdir -p \"$work/seed/pr-explain/pr-01\" \"$work/seed/pr-explain/notes\"\n   echo x > \"$work/seed/pr-explain/pr-01/x\"\n   echo x > \"$work/seed/pr-explain/notes/x\"\n-  echo old-list > \"$work/seed/pr-explain/index.html\"\n-  echo '{' > \"$work/seed/pr-explain/list.json\"\n+  write_seed pr-explain/index.html\n+  write_seed pr-explain/list.json\n }\n \n # 1 回目の push だけを拒否する pre-receive フックを置く。\n # $1 (省略可)拒否するときに、別の clone から gh-pages へ足すフォルダ(取り直しの間に増えた分)。フックの中の\n #    git は受け取り中のリポジトリを指す環境変数を持つので、外してから clone する(外さないと not a git repository で落ちる)\n reject_first_push() {\n-  local racer=\"$work/racer\" added=\"${1:-}\"\n+  local other_clone=\"$work/other-clone\" added=\"${1:-}\"\n   cat > \"$work/origin.git/hooks/pre-receive\" <<HOOK\n #!/usr/bin/env bash\n count=\\$(( \\$(cat \"$work/pushes\" 2>/dev/null || echo 0) + 1 ))\n@@ -158,10 +173,10 @@ echo \"\\$count\" > \"$work/pushes\"\n [ -n \"$added\" ] || exit 1\n (\n   unset GIT_DIR GIT_QUARANTINE_PATH GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES\n-  git clone --quiet --branch gh-pages \"file://$work/origin.git\" \"$racer\" &&\n-    mkdir -p \"$racer/$added\" && echo racer > \"$racer/$added/index.html\" &&\n-    git -C \"$racer\" add -A && git -C \"$racer\" commit --quiet -m racer &&\n-    git -C \"$racer\" push --quiet origin gh-pages\n+  git clone --quiet --branch gh-pages \"file://$work/origin.git\" \"$other_clone\" &&\n+    mkdir -p \"$other_clone/$added\" && echo other-clone > \"$other_clone/$added/index.html\" &&\n+    git -C \"$other_clone\" add -A && git -C \"$other_clone\" commit --quiet -m other-clone &&\n+    git -C \"$other_clone\" push --quiet origin gh-pages\n ) >/dev/null 2>&1\n exit 1\n HOOK\n@@ -219,13 +234,22 @@ placed_by_builder() {\n   on_pages pr-explain/pr-1/explain.json | python3 -c 'import json, sys; e = json.load(sys.stdin); sys.exit(0 if e[\"overview\"][\"title\"] == \"書いた解説\" and \"text\" in e[\"tests\"][0][\"excerpt\"] else 1)'\n }\n \n+# gh-pages 上のファイルが、どれも種(`seed_files`)のまま残っているか。\n+# $@ `seed_files` のパス\n+kept_as_seeded() {\n+  local path\n+  for path in \"$@\"; do\n+    [ \"$(on_pages \"$path\")\" = \"${seed_files[$path]}\" ] || return 1\n+  done\n+}\n+\n fresh_origin seeded\n errors=\"$(bash \"$pages\" put-explain 1 \"$work/explain.json\" 2>&1 >/dev/null)\"; status=$?\n-expect \"put-explain は explain.json を置き、index.html と change-map.json に触らない\" '[ \"$status\" -eq 0 ] && placed_by_builder && [ \"$(on_pages pr-explain/pr-1/index.html)\" = old ] && [ \"$(on_pages pr-explain/pr-1/change-map.json)\" = \"{\\\"version\\\": 2, \\\"head\\\": \\\"$head\\\"}\" ]'\n+expect \"put-explain は explain.json を置き、index.html と change-map.json に触らない\" '[ \"$status\" -eq 0 ] && placed_by_builder && kept_as_seeded pr-explain/pr-1/index.html pr-explain/pr-1/change-map.json'\n expect \"put-explain が置くのは、検査が抜粋の中身を足して書き出したもの\" 'placed_by_builder'\n-expect \"put-explain は他の PR のフォルダに触らない\" '[ \"$(on_pages pr-explain/pr-12/index.html)\" = twelve ]'\n-expect \"put-explain は pr-preview に触らない\" '[ \"$(on_pages pr-preview/pr-1/index.html)\" = storybook ]'\n-expect \"put-explain は一覧(pr-explain/index.html と list.json)に触らない\" '[ \"$(on_pages pr-explain/index.html)\" = old-list ] && [ \"$(on_pages pr-explain/list.json)\" = \"{\" ]'\n+expect \"put-explain は他の PR のフォルダに触らない\" 'kept_as_seeded pr-explain/pr-12/index.html'\n+expect \"put-explain は pr-preview に触らない\" 'kept_as_seeded pr-preview/pr-1/index.html'\n+expect \"put-explain は一覧(pr-explain/index.html と list.json)に触らない\" 'kept_as_seeded pr-explain/index.html pr-explain/list.json'\n \n fresh_origin seeded\n stale_errors=\"$(bash \"$pages\" put-explain 2 \"$work/explain-2.json\" 2>&1 >/dev/null)\"; stale_status=$?\n@@ -266,12 +290,12 @@ expect \"読み込む lib が無ければ、知らないモードでも引数の\n fresh_origin seeded\n run_pages put-map 1 \"$work/map.json\" \"$template\"\n expect \"put-map は index.html を毎回テンプレートで上書きする\" '[ \"$(on_pages pr-explain/pr-1/index.html)\" = \"$(cat \"$template\")\" ]'\n-expect \"put-map は explain.json を残す\" '[ \"$(on_pages pr-explain/pr-1/explain.json)\" = \"{\\\"old\\\": \\\"explain\\\"}\" ]'\n+expect \"put-map は explain.json を残す\" 'kept_as_seeded pr-explain/pr-1/explain.json'\n expect \"put-map は 3 ファイル以外(ほかのファイル・サブフォルダ)を消す\" '[ \"$(on_pages pr-explain/pr-1/behavior.html)\" = \"<none>\" ] && [ \"$(on_pages pr-explain/pr-1/assets/x.css)\" = \"<none>\" ]'\n expect \"put-map は change-map.json を更新する\" '[ \"$(on_pages pr-explain/pr-1/change-map.json)\" = \"$(cat \"$work/map.json\")\" ]'\n-expect \"put-map は他の PR のフォルダに触らない\" '[ \"$(on_pages pr-explain/pr-12/index.html)\" = twelve ]'\n-expect \"put-map は pr-preview に触らない\" '[ \"$(on_pages pr-preview/pr-1/index.html)\" = storybook ]'\n-expect \"put-map は一覧(pr-explain/index.html と list.json)に触らない\" '[ \"$(on_pages pr-explain/index.html)\" = old-list ] && [ \"$(on_pages pr-explain/list.json)\" = \"{\" ]'\n+expect \"put-map は他の PR のフォルダに触らない\" 'kept_as_seeded pr-explain/pr-12/index.html'\n+expect \"put-map は pr-preview に触らない\" 'kept_as_seeded pr-preview/pr-1/index.html'\n+expect \"put-map は一覧(pr-explain/index.html と list.json)に触らない\" 'kept_as_seeded pr-explain/index.html pr-explain/list.json'\n \n fresh_origin seeded\n run_pages put-map 5 \"$work/map.json\" \"$template\"\n@@ -286,7 +310,7 @@ expect \"CSP の合わないテンプレートの put-map は 1 で、push しな\n fresh_origin seeded\n before=\"$(tip)\"\n run_pages remove 1; status=$?\n-expect \"remove は知らないモードとして 2 で終わり、PR のフォルダを消さない\" '[ \"$status\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ] && [ \"$(on_pages pr-explain/pr-1/index.html)\" = old ]'\n+expect \"remove は知らないモードとして 2 で終わり、PR のフォルダを消さない\" '[ \"$status\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ] && kept_as_seeded pr-explain/pr-1/index.html'\n \n fresh_origin seeded\n before=\"$(tip)\"\n@@ -303,7 +327,7 @@ run_pages put-map 3 \"$work/map.json\" \"$template\"; status=$?\n expect \"gh-pages が無ければ orphan で作る\" '[ \"$status\" -eq 0 ] && [ \"$(on_pages pr-explain/pr-3/change-map.json)\" = \"$(cat \"$work/map.json\")\" ] && [ \"$(on_pages .nojekyll)\" = \"\" ]'\n \n fresh_origin seeded\n-run_pages put-list \"$work/titles.json\" \"$list_template\"; status=$?\n+run_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\n expect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 2, 1]\" ]'\n expect \"put-list は pr-<番号> の形でないフォルダ(notes・pr-01)を載せない\" '[ \"$(listed count)\" = 3 ]'\n expect \"put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)\" '[ \"$(listed title 1)\" = \"\\\"一\\\"\" ] && [ \"$(listed title 2)\" = \"\\\"<b>二</b>\\\"\" ]'\n@@ -311,33 +335,33 @@ expect \"put-list は 2 ページ目にしか無い PR も題付きで載せる\"\n expect \"put-list は応答にあってもフォルダの無い PR を載せない\" '[ \"$(listed title 7)\" = \"<none>\" ] && [ \"$(listed title 40)\" = \"<none>\" ]'\n expect \"put-list は前の list.json が壊れていても、読まずに作り直す\" '[ \"$(listed version)\" = 1 ]'\n expect \"put-list は一覧の枠をテンプレートのまま pr-explain/index.html に置く\" '[ \"$(on_pages pr-explain/index.html)\" = \"$(cat \"$list_template\")\" ]'\n-expect \"put-list は PR のフォルダ(pr-1 の 3 ファイル・pr-12)と pr-preview に触らない\" '[ \"$(on_pages pr-explain/pr-1/index.html)\" = old ] && [ \"$(on_pages pr-explain/pr-1/change-map.json)\" = \"{\\\"version\\\": 2, \\\"head\\\": \\\"$head\\\"}\" ] && [ \"$(on_pages pr-explain/pr-1/explain.json)\" = \"{\\\"old\\\": \\\"explain\\\"}\" ] && [ \"$(on_pages pr-explain/pr-12/index.html)\" = twelve ] && [ \"$(on_pages pr-preview/pr-1/index.html)\" = storybook ]'\n+expect \"put-list は PR のフォルダ(pr-1 の 3 ファイル・pr-12)と pr-preview に触らない\" 'kept_as_seeded pr-explain/pr-1/index.html pr-explain/pr-1/change-map.json pr-explain/pr-1/explain.json pr-explain/pr-12/index.html pr-preview/pr-1/index.html'\n before=\"$(tip)\"\n-run_pages put-list \"$work/titles.json\" \"$list_template\"; status=$?\n+run_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\n expect \"put-list は一覧も枠も変わらなければ push しない\" '[ \"$status\" -eq 0 ] && [ \"$(tip)\" = \"$before\" ]'\n \n fresh_origin seeded\n-run_pages put-list \"$work/titles.json\" \"$list_template\"\n+run_pages put-list \"$work/pull-requests.json\" \"$list_template\"\n run_pages put-map 5 \"$work/map.json\" \"$template\"\n-run_pages put-list \"$work/titles.json\" \"$list_template\"; status=$?\n+run_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\n expect \"応答に無い PR(put-map で増やしたフォルダ)は、次の put-list に題なし(null)で載る\" '[ \"$status\" -eq 0 ] && [ \"$(listed title 5)\" = null ]'\n \n fresh_origin seeded\n-run_pages put-list \"$work/titles-none.json\" \"$list_template\"; status=$?\n+run_pages put-list \"$work/pull-requests-none.json\" \"$list_template\"; status=$?\n expect \"PR の一覧が 0 件の応答では、フォルダはすべて題なしで載る\" '[ \"$status\" -eq 0 ] && [ \"$(listed rows)\" = \"[[12, null], [2, null], [1, null]]\" ]'\n \n fresh_origin seeded\n reject_first_push pr-explain/pr-40\n-run_pages put-list \"$work/titles.json\" \"$list_template\"; status=$?\n-expect \"取り直しの間に gh-pages へ増えたフォルダも、題付きで一覧に載る\" '[ \"$status\" -eq 0 ] && [ \"$(on_pages pr-explain/pr-40/index.html)\" = racer ] && [ \"$(listed title 40)\" = \"\\\"四十\\\"\" ]'\n+run_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\n+expect \"取り直しの間に gh-pages へ増えたフォルダも、題付きで一覧に載る\" '[ \"$status\" -eq 0 ] && [ \"$(on_pages pr-explain/pr-40/index.html)\" = other-clone ] && [ \"$(listed title 40)\" = \"\\\"四十\\\"\" ]'\n \n fresh_origin seeded\n before=\"$(tip)\"\n-output=\"$(bash \"$pages\" put-list \"$work/titles.json\" \"$broken_list_template\" 2>&1)\"; status=$?\n+output=\"$(bash \"$pages\" put-list \"$work/pull-requests.json\" \"$broken_list_template\" 2>&1)\"; status=$?\n expect \"CSP の合わない一覧の枠の put-list は 1 で、push しない\" '[ \"$status\" -eq 1 ] && [ \"$(tip)\" = \"$before\" ] && [[ \"$output\" == *\"[pr-explain-csp]\"* ]]'\n \n # 題の応答が読めない・全件そろっていない見本と、その形。\n-broken_titles=\"$(cat <<'TITLES'\n+broken_responses=\"$(cat <<'RESPONSES'\n empty|空\n concatenated|2 ページを --slurp なしで連結したもの\n no-pages|空の配列\n@@ -347,32 +371,32 @@ string-number|PR の number が文字列\n no-repository|data に repository が無い\n cut|最後のページの hasNextPage が true(応答が途中で切れている)\n no-page-info|pageInfo の無いページがある\n-TITLES\n+RESPONSES\n )\"\n cases_before=$cases_reported\n while IFS='|' read -r name shape; do\n   [ -n \"$name\" ] || continue\n   fresh_origin seeded\n   before=\"$(tip)\"\n-  output=\"$(bash \"$pages\" put-list \"$work/titles-$name.json\" \"$list_template\" 2>&1)\"; status=$?\n+  output=\"$(bash \"$pages\" put-list \"$work/pull-requests-$name.json\" \"$list_template\" 2>&1)\"; status=$?\n   expect \"題の応答が「$shape」なら、clone へ進まず 1 で終わり push しない\" '[ \"$status\" -eq 1 ] && [ \"$(tip)\" = \"$before\" ] && [[ \"$output\" == *\"題の応答\"* ]] && [[ \"$output\" != *\"反映に失敗\"* ]]'\n-done <<<\"$broken_titles\"\n-report_cases_ran broken_titles \"$cases_before\"\n+done <<<\"$broken_responses\"\n+report_cases_ran broken_responses \"$cases_before\"\n \n fresh_origin seeded\n before=\"$(tip)\"\n-run_pages put-list \"$work/missing.json\" \"$list_template\"; missing_titles=$?\n-run_pages put-list \"$work/titles.json\" \"$work/missing.html\"; missing_template=$?\n-run_pages put-list \"$work/titles.json\"; too_few=$?\n-run_pages put-list \"$work/titles.json\" \"$list_template\" extra; too_many=$?\n-expect \"put-list に題の応答か枠が無い、または引数が 3 つでなければ引数の誤り\" '[ \"$missing_titles\" -eq 2 ] && [ \"$missing_template\" -eq 2 ] && [ \"$too_few\" -eq 2 ] && [ \"$too_many\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ]'\n+run_pages put-list \"$work/missing.json\" \"$list_template\"; missing_response=$?\n+run_pages put-list \"$work/pull-requests.json\" \"$work/missing.html\"; missing_template=$?\n+run_pages put-list \"$work/pull-requests.json\"; too_few=$?\n+run_pages put-list \"$work/pull-requests.json\" \"$list_template\" extra; too_many=$?\n+expect \"put-list に題の応答か枠が無い、または引数が 3 つでなければ引数の誤り\" '[ \"$missing_response\" -eq 2 ] && [ \"$missing_template\" -eq 2 ] && [ \"$too_few\" -eq 2 ] && [ \"$too_many\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ]'\n \n fresh_origin empty\n-run_pages put-list \"$work/titles.json\" \"$list_template\"; status=$?\n+run_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\n expect \"gh-pages が無ければ、put-list は 0 で終わり何も作らない\" '[ \"$status\" -eq 0 ] && [ \"$(tip)\" = \"<none>\" ]'\n \n-fresh_origin pages-only\n-run_pages put-list \"$work/titles.json\" \"$list_template\"; status=$?\n+fresh_origin site-only\n+run_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\n expect \"gh-pages はあるが pr-explain/ が無ければ、0 件の一覧と枠を置く\" '[ \"$status\" -eq 0 ] && [ \"$(listed rows)\" = \"[]\" ] && [ \"$(on_pages pr-explain/index.html)\" = \"$(cat \"$list_template\")\" ]'\n \n exit \"$cases_failed\"",
+          "patchLines": 281,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "python3 - \"$work\" <<'PY'",
+              "new": "python3 - \"$work\" <<'PY'"
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 29,
+          "deletions": 18,
+          "patch": "@@ -26,9 +26,8 @@\n #   一覧は、取り直した gh-pages にある `pr-explain/pr-<番号>/` のフォルダを番号の大きい順に並べ、題を題の応答\n #   (`gh api graphql --paginate --slurp` の出力。ページの配列)から引く。前の `list.json` は読まない(導出できる\n #   値を読み戻すと、外の編集や壊れた一覧が入力になる)\n-# - `put-list` で題が `null` になるのは、応答に無い番号のフォルダ(問い合わせの後に開いた PR と、PR でない番号)だけ\n-# - `put-list` は clone の前に、題の応答が全件そろっていること(どのページにも `errors` が無く、最後のページの\n-#   `hasNextPage` が false)を確かめる。欠けた応答から作ると、題の無い行が黙って増えるため\n+# - `put-list` は clone の前に題の応答を確かめ(確かめる条件は `collect_titles`)、全件そろっていなければ置かない。\n+#   欠けた応答から作ると、題の無い行が黙って増えるため\n # - `put-list` は gh-pages が無ければ作らない。0 件の一覧のためだけにブランチを作らず、次の `put-map` が作った\n #   後に走る run が一覧を置く\n #\n@@ -42,7 +41,7 @@\n #\n # 終了コード: 0 = 置いた / 変更が無かった / `put-list` で gh-pages が無い、1 = 解説か枠が検査に落ちた・\n #             解説の sha を push していない・`put-list` の題の応答が読めないか全件そろっていない・\n-#             push できなかった、2 =引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が\n+#             push できなかった、2 = 引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が\n #             無い(理由は上の `put-explain` の項。やり直さない)、\n #             127 = 読み込む `lib/usage.sh` を読み込めない(何も触らずに返す)\n set -uo pipefail\n@@ -54,8 +53,11 @@ retry_wait=\"${PR_EXPLAIN_RETRY_WAIT:-2}\"\n \n . \"$scripts_dir/lib/usage.sh\" || exit 127\n \n+# PR 番号の形。引数の検査と、`put-list` が gh-pages のフォルダから番号を拾う正規表現(`write_list`)が使う。\n+pr_number_pattern='[1-9][0-9]*'\n+\n is_pr_number() {\n-  [[ \"$1\" =~ ^[1-9][0-9]*$ ]]\n+  [[ \"$1\" =~ ^${pr_number_pattern}$ ]]\n }\n \n mode=\"${1:-}\"\n@@ -115,6 +117,11 @@ def at(value, keys):\n     return value\n \n \n+def connection_of(page):\n+    \"\"\"1 ページの `data.repository.pullRequests`。途中が辞書でなければ None。\"\"\"\n+    return at(page, [\"data\", \"repository\", \"pullRequests\"])\n+\n+\n def is_pr_number(value):\n     return isinstance(value, int) and not isinstance(value, bool) and value > 0\n \n@@ -135,8 +142,10 @@ def node_problem(node):\n \n def page_problem(page, index):\n     \"\"\"1 ページの形の違い。合っていれば None。\"\"\"\n-    connection = at(page, [\"data\", \"repository\", \"pullRequests\"])\n-    if isinstance(page, dict) and \"errors\" in page:\n+    connection = connection_of(page)\n+    # 辞書かを先に見る。文字列だと `in` が部分文字列の、配列だと要素の判定になって真になりえ、`page['errors']` で落ちる。\n+    has_errors = isinstance(page, dict) and \"errors\" in page\n+    if has_errors:\n         return f\"{index} ページ目に errors がある({json.dumps(page['errors'], ensure_ascii=False)})\"\n     if not isinstance(at(connection, [\"nodes\"]), list):\n         return f\"{index} ページ目の data.repository.pullRequests.nodes が配列でない\"\n@@ -145,14 +154,15 @@ def page_problem(page, index):\n     return first_problem(map(node_problem, connection[\"nodes\"]))\n \n \n-def problem_of(pages):\n+def response_problem(pages):\n     \"\"\"応答全体の形の違い。全件そろっていれば None。\"\"\"\n-    if not isinstance(pages, list) or len(pages) == 0:\n+    is_page_list = isinstance(pages, list) and len(pages) > 0\n+    if not is_page_list:\n         return \"空でないページの配列でない(--slurp を付けた出力を渡す)\"\n     found = first_problem(page_problem(page, index) for index, page in enumerate(pages, 1))\n     if found is not None:\n         return found\n-    if at(pages[-1], [\"data\", \"repository\", \"pullRequests\", \"pageInfo\", \"hasNextPage\"]) is not False:\n+    if at(connection_of(pages[-1]), [\"pageInfo\", \"hasNextPage\"]) is not False:\n         return \"最後のページの hasNextPage が false でない(応答が途中で切れている)\"\n     return None\n \n@@ -161,10 +171,10 @@ try:\n     pages = json.loads(open(source, encoding=\"utf-8\").read())\n except ValueError as error:\n     sys.exit(f\"題の応答を JSON として読めません({error})\")\n-problem = problem_of(pages)\n+problem = response_problem(pages)\n if problem is not None:\n     sys.exit(f\"題の応答が全件そろっていません: {problem}\")\n-titles = {str(node[\"number\"]): node[\"title\"] for page in pages for node in page[\"data\"][\"repository\"][\"pullRequests\"][\"nodes\"]}\n+titles = {str(node[\"number\"]): node[\"title\"] for page in pages for node in connection_of(page)[\"nodes\"]}\n open(out, \"w\", encoding=\"utf-8\").write(json.dumps(titles, ensure_ascii=False))\n PY\n }\n@@ -232,16 +242,17 @@ remove_others() {\n write_list() {\n   git -C \"$1\" ls-tree -d --name-only HEAD pr-explain/ >\"$work/folders\" || return 1\n   mkdir -p \"$1/pr-explain\"\n-  python3 - \"$work/folders\" \"$work/titles.json\" \"$1/pr-explain/list.json\" <<'PY' || return 1\n+  python3 - \"$work/folders\" \"$work/titles.json\" \"$1/pr-explain/list.json\" \"$pr_number_pattern\" <<'PY' || return 1\n import json, re, sys\n \n-folders, titles_path, out = sys.argv[1:4]\n+folders, titles_path, out, pr_number_pattern = sys.argv[1:5]\n titles = json.load(open(titles_path, encoding=\"utf-8\"))\n-found = [re.fullmatch(r\"pr-explain/pr-([1-9][0-9]*)\", line) for line in open(folders, encoding=\"utf-8\").read().splitlines()]\n+found = [re.fullmatch(f\"pr-explain/pr-({pr_number_pattern})\", line) for line in open(folders, encoding=\"utf-8\").read().splitlines()]\n numbers = sorted((int(match.group(1)) for match in found if match is not None), reverse=True)\n-# 題の応答は clone より前に引くので、その後に開いた PR のフォルダは応答に無い。次の run で題が付く。\n-pages = [{\"pr\": number, \"title\": titles.get(str(number))} for number in numbers]\n-open(out, \"w\", encoding=\"utf-8\").write(json.dumps({\"version\": 1, \"pages\": pages}, ensure_ascii=False, indent=2) + \"\\n\")\n+# 題が null になるのは、応答に無い番号のフォルダだけ。題の応答は clone より前に引くので、その後に開いた PR の\n+# フォルダは応答に無く(次の run で題が付く)、PR でない番号のフォルダはいつまでも無い。\n+rows = [{\"pr\": number, \"title\": titles.get(str(number))} for number in numbers]\n+open(out, \"w\", encoding=\"utf-8\").write(json.dumps({\"version\": 1, \"pages\": rows}, ensure_ascii=False, indent=2) + \"\\n\")\n PY\n   cp \"$2\" \"$1/pr-explain/index.html\"\n }",
+          "patchLines": 115,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "  python3 - \"$1\" \"$2\" <<'PY'",
+              "new": "  python3 - \"$1\" \"$2\" <<'PY'"
+            },
+            {
+              "old": "  python3 - \"$1\" \"$2\" <<'PY'",
+              "new": "  python3 - \"$1\" \"$2\" <<'PY'"
+            },
+            {
+              "old": "  python3 - \"$1\" \"$2\" <<'PY'",
+              "new": "  python3 - \"$1\" \"$2\" <<'PY'"
+            },
+            {
+              "old": "  python3 - \"$1\" \"$2\" <<'PY'",
+              "new": "  python3 - \"$1\" \"$2\" <<'PY'"
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 9,
+          "patch": "@@ -1,14 +1,14 @@\n # gh-pages の PR 解説ページの一覧(pr-explain/index.html と list.json)を作り直す。\n # URL は https://dio0550.github.io/design-composer/pr-explain/。\n #\n+# 一覧は毎回、gh-pages の木と全件の題から作り直す(前の一覧を読まない)。下の `conclusion`・`cancel-in-progress`・\n+# 再試行の判断は、どれもこの前提の帰結。\n+#\n # `PR Explain` の完了(PR のフォルダが増える)と main への push(一覧の枠と put-list が変わる)のたびに走る。\n # `workflow_run` にしたのは、どちらの起点でも定義とコードが main のものになり、PR ごとの版の行き来が\n # 起きないため。対価は `PR Explain` と名前の文字列でつながることと、PR の中では確かめられないこと。\n #\n-# `conclusion` で絞らない。毎回 gh-pages の木と全件の題から作り直すので、失敗・取り消しの後に走っても\n-# 害が無い。絞ると取り消された run の分を取りこぼす。\n-# `github.event.workflow_run.*` は読まない。fork の PR が起点でも、この run は書き込める権限で走るので、\n-# PR の側が決める値を使わない。\n+# `conclusion` で絞らない。失敗・取り消しの後に走っても害が無く、絞ると取り消された run の分を取りこぼす。\n name: PR Explain List\n \n on:\n@@ -22,13 +22,19 @@ permissions:\n   contents: write\n   pull-requests: read\n \n-# 毎回、木と全件の題から作り直すので、後の run が取り消された run の代わりになる。\n+# 後の run が、取り消された run の代わりになる。\n concurrency:\n   group: pr-explain-list\n   cancel-in-progress: true\n \n jobs:\n   list:\n+    # fork の PR では `PR Explain` が gh-pages に何も置かないので作り直さない(GraphQL の枠を共有する他の検査に残す)。\n+    # fork の PR が起点でも、この run は書き込める権限で走る。`github.event.workflow_run.*` のうち使うのは、GitHub が\n+    # 決めるリポジトリ名をここで比べることだけで、PR の側が決める値(ブランチ名・題など)は `run:` へ流さない。\n+    if: >-\n+      github.event_name == 'push' ||\n+      github.event.workflow_run.head_repository.full_name == github.repository\n     runs-on: ubuntu-24.04\n     timeout-minutes: 5\n     steps:\n@@ -39,11 +45,13 @@ jobs:\n           persist-credentials: false\n \n       # `--slurp` を付けないと各ページが区切りなしで連結され、1 つの JSON にならない。\n-      # 問い合わせの文をここに書くのは、判定表(pr-explain-pages-cases.sh)が応答の見本を渡すので、文の置き場所に\n-      # よらず問い合わせの本体は通らないため。本体はマージ後の run で確かめる。ページ送りの抜けは put-list の\n-      # 検査(最後のページの `hasNextPage`)が捕まえる。\n+      #\n+      # 問い合わせの文はこのステップに直に書く。判定表(pr-explain-pages-cases.sh)は gh を呼ばず応答の見本を\n+      # put-list に渡すので、文を別のファイルに置いても判定表はこの本体を見ない。本体が合っているかを確かめるのは\n+      # マージ後の run。ページ送りの抜けは put-list の検査(最後のページの `hasNextPage`)が捕まえる。\n+      #\n       # gh は応答に errors があるときや HTTP の失敗で 1 を返し、このステップで止まる(put-list は走らない)。\n-      # 再試行はしない。次の run が木から作り直すので 1 回の取りこぼしは後で揃い、失敗した run は赤く残る。\n+      # 再試行はしない。1 回の取りこぼしは次の run で揃い、失敗した run は赤く残る。\n       - name: Fetch pull request titles\n         env:\n           GH_TOKEN: ${{ github.token }}",
+          "patchLines": 58,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "9f23d20720cd006b935dc585d47b31bb1583fe99",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-15T12:47:33Z",
+      "subject": "🧪 [Test]: #1395 一覧の判断を、実装を壊して落ちなかった箇所まで判定表で守る",
+      "body": "- 種の list.json を読める形にし、前の一覧の行(99)と題(pr-3 の古い題)を\n  使わないことを表明する。壊れた list.json の版も別のケースとして残す\n- 題の応答に「pageInfo はあるが nodes が配列でない」を足す\n- 一覧の核に「行がオブジェクトでなければ shape(pages)」を足す\n- gh-pages が無くても、題の応答が読めなければ clone へ進まず 1 で終わる\n- 種に pr-12-old を足し、番号の形の後ろ端を守る\n- 数字でない PR 番号の拒否に put-explain の 1 行を足す\n\n背景:\n#1395 の実装の検証の 2 段目(test-reviewer)で、壊しても 0 件 NG だった判断。\nput-explain の 1 行は build-pr-explain.py が同じ 2 で先に弾くので、番号の\n検査を外しても落ちない(振る舞いとしては正しいので残す)。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PQGspjY8qVMCf7tM9",
+      "files": [
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "patch": "@@ -3861,6 +3861,11 @@ const cases = [\n     actual: () => [{ pr: 2, title: 2 }, { pr: 2 }].map((row) => listReadingOf(listJsonOf([listRow(12, \"十二\"), row])).reason),\n     expected: [{ kind: \"shape\", key: \"title\" }, { kind: \"shape\", key: \"title\" }],\n   },\n+  {\n+    label: \"一覧の行がオブジェクトでない(null・数値)なら読めず、理由は shape でキーは pages\",\n+    actual: () => [null, 5].map((row) => listReadingOf(listJsonOf([listRow(12, \"十二\"), row]))),\n+    expected: [null, 5].map(() => ({ kind: \"missing\", reason: { kind: \"shape\", key: \"pages\" } })),\n+  },\n ];\n \n // 1 件が例外で止まっても、残りのケースは走らせて、そのケースだけを食い違いとして出す。",
+          "patchLines": 12,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'",
+              "new": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+            }
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 8,
+          "patch": "@@ -62,7 +62,7 @@ declare -A seed_files=(\n   [pr-explain/pr-1/explain.json]='{\"old\": \"explain\"}'\n   [pr-explain/pr-12/index.html]=twelve\n   [pr-explain/index.html]=old-list\n-  [pr-explain/list.json]='{'\n+  [pr-explain/list.json]='{\"version\": 1, \"pages\": [{\"pr\": 99, \"title\": \"九十九\"}, {\"pr\": 3, \"title\": \"古い題\"}]}'\n )\n \n # 解説として通るもの(PR #1 宛て・push 済みのコミット時点)と、検査に落ちるもの。抜粋は\n@@ -117,6 +117,7 @@ write(\"pull-requests-string-number.json\", dumped(broken(lambda pages: connection\n write(\"pull-requests-no-repository.json\", dumped(broken(lambda pages: pages[1][\"data\"].pop(\"repository\"))))\n write(\"pull-requests-cut.json\", dumped(broken(lambda pages: connection(pages, 1)[\"pageInfo\"].update({\"hasNextPage\": True}))))\n write(\"pull-requests-no-page-info.json\", dumped(broken(lambda pages: connection(pages, 0).pop(\"pageInfo\"))))\n+write(\"pull-requests-nodes-not-list.json\", dumped(broken(lambda pages: connection(pages, 1).update({\"nodes\": {}}))))\n PY\n \n # `seed_files` の 1 ファイルを種(`$work/seed`)に書く。\n@@ -141,7 +142,8 @@ fresh_origin() {\n   git -C \"$work/seed\" push --quiet \"$work/origin.git\" gh-pages 2>/dev/null\n }\n \n-# 置き場の種に `pr-explain/` を足す(PR のフォルダ・前の一覧・`pr-<番号>` の形でないフォルダ)。\n+# 置き場の種に `pr-explain/` を足す(PR のフォルダ・前の一覧・`pr-<番号>` の形でないフォルダ)。PR 3 は題の応答に無く、\n+# 前の一覧には PR 3 の題と gh-pages に無い PR 99 の行がある。\n seed_pr_explain() {\n   write_seed pr-explain/pr-1/index.html\n   write_seed pr-explain/pr-1/change-map.json\n@@ -153,9 +155,12 @@ seed_pr_explain() {\n   echo '{\"version\": 2, \"head\": \"0000000\"}' > \"$work/seed/pr-explain/pr-2/change-map.json\"\n   write_seed pr-explain/pr-12/index.html\n   echo '{\"head\": \"twelve\"}' > \"$work/seed/pr-explain/pr-12/change-map.json\"\n-  mkdir -p \"$work/seed/pr-explain/pr-01\" \"$work/seed/pr-explain/notes\"\n+  mkdir -p \"$work/seed/pr-explain/pr-3\"\n+  echo '{\"head\": \"three\"}' > \"$work/seed/pr-explain/pr-3/change-map.json\"\n+  mkdir -p \"$work/seed/pr-explain/pr-01\" \"$work/seed/pr-explain/notes\" \"$work/seed/pr-explain/pr-12-old\"\n   echo x > \"$work/seed/pr-explain/pr-01/x\"\n   echo x > \"$work/seed/pr-explain/notes/x\"\n+  echo x > \"$work/seed/pr-explain/pr-12-old/x\"\n   write_seed pr-explain/index.html\n   write_seed pr-explain/list.json\n }\n@@ -315,7 +320,8 @@ expect \"remove は知らないモードとして 2 で終わり、PR のフォ\n fresh_origin seeded\n before=\"$(tip)\"\n run_pages put-map '1 ../..' \"$work/map.json\" \"$template\"; status=$?\n-expect \"数字でない PR 番号は拒否する\" '[ \"$status\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ]'\n+run_pages put-explain '1 ../..' \"$work/explain.json\"; explain_status=$?\n+expect \"数字でない PR 番号は拒否する\" '[ \"$status\" -eq 2 ] && [ \"$explain_status\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ]'\n \n fresh_origin seeded\n reject_first_push\n@@ -328,18 +334,25 @@ expect \"gh-pages が無ければ orphan で作る\" '[ \"$status\" -eq 0 ] && [ \"$(\n \n fresh_origin seeded\n run_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\n-expect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 2, 1]\" ]'\n-expect \"put-list は pr-<番号> の形でないフォルダ(notes・pr-01)を載せない\" '[ \"$(listed count)\" = 3 ]'\n+expect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 3, 2, 1]\" ]'\n+expect \"put-list は pr-<番号> の形でないフォルダ(notes・pr-01・pr-12-old)を載せない\" '[ \"$(listed count)\" = 4 ]'\n expect \"put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)\" '[ \"$(listed title 1)\" = \"\\\"一\\\"\" ] && [ \"$(listed title 2)\" = \"\\\"<b>二</b>\\\"\" ]'\n expect \"put-list は 2 ページ目にしか無い PR も題付きで載せる\" '[ \"$(listed title 12)\" = \"\\\"十二\\\"\" ]'\n expect \"put-list は応答にあってもフォルダの無い PR を載せない\" '[ \"$(listed title 7)\" = \"<none>\" ] && [ \"$(listed title 40)\" = \"<none>\" ]'\n-expect \"put-list は前の list.json が壊れていても、読まずに作り直す\" '[ \"$(listed version)\" = 1 ]'\n+expect \"put-list は前の list.json にある、gh-pages に無い PR(99)の行を一覧に出さない\" '[ \"$(listed title 99)\" = \"<none>\" ]'\n+expect \"put-list は応答に無い PR の題に前の list.json の題を使わず、null のままにする\" '[ \"$(listed title 3)\" = null ]'\n expect \"put-list は一覧の枠をテンプレートのまま pr-explain/index.html に置く\" '[ \"$(on_pages pr-explain/index.html)\" = \"$(cat \"$list_template\")\" ]'\n expect \"put-list は PR のフォルダ(pr-1 の 3 ファイル・pr-12)と pr-preview に触らない\" 'kept_as_seeded pr-explain/pr-1/index.html pr-explain/pr-1/change-map.json pr-explain/pr-1/explain.json pr-explain/pr-12/index.html pr-preview/pr-1/index.html'\n before=\"$(tip)\"\n run_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\n expect \"put-list は一覧も枠も変わらなければ push しない\" '[ \"$status\" -eq 0 ] && [ \"$(tip)\" = \"$before\" ]'\n \n+fresh_origin seeded\n+printf '{\\n' > \"$work/seed/pr-explain/list.json\"\n+git -C \"$work/seed\" commit --quiet -am broken-list && git -C \"$work/seed\" push --quiet \"$work/origin.git\" gh-pages 2>/dev/null\n+run_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\n+expect \"put-list は前の list.json が壊れていても、読まずに作り直す\" '[ \"$status\" -eq 0 ] && [ \"$(listed version)\" = 1 ]'\n+\n fresh_origin seeded\n run_pages put-list \"$work/pull-requests.json\" \"$list_template\"\n run_pages put-map 5 \"$work/map.json\" \"$template\"\n@@ -348,7 +361,7 @@ expect \"応答に無い PR(put-map で増やしたフォルダ)は、次の put-\n \n fresh_origin seeded\n run_pages put-list \"$work/pull-requests-none.json\" \"$list_template\"; status=$?\n-expect \"PR の一覧が 0 件の応答では、フォルダはすべて題なしで載る\" '[ \"$status\" -eq 0 ] && [ \"$(listed rows)\" = \"[[12, null], [2, null], [1, null]]\" ]'\n+expect \"PR の一覧が 0 件の応答では、フォルダはすべて題なしで載る\" '[ \"$status\" -eq 0 ] && [ \"$(listed rows)\" = \"[[12, null], [3, null], [2, null], [1, null]]\" ]'\n \n fresh_origin seeded\n reject_first_push pr-explain/pr-40\n@@ -371,6 +384,7 @@ string-number|PR の number が文字列\n no-repository|data に repository が無い\n cut|最後のページの hasNextPage が true(応答が途中で切れている)\n no-page-info|pageInfo の無いページがある\n+nodes-not-list|pageInfo はあるが nodes が配列でない\n RESPONSES\n )\"\n cases_before=$cases_reported\n@@ -383,6 +397,10 @@ while IFS='|' read -r name shape; do\n done <<<\"$broken_responses\"\n report_cases_ran broken_responses \"$cases_before\"\n \n+fresh_origin empty\n+output=\"$(bash \"$pages\" put-list \"$work/pull-requests-errors.json\" \"$list_template\" 2>&1)\"; status=$?\n+expect \"gh-pages が無くても、題の応答が読めなければ clone へ進まず 1 で終わる\" '[ \"$status\" -eq 1 ] && [ \"$(tip)\" = \"<none>\" ] && [[ \"$output\" == *\"題の応答\"* ]]'\n+\n fresh_origin seeded\n before=\"$(tip)\"\n run_pages put-list \"$work/missing.json\" \"$list_template\"; missing_response=$?",
+          "patchLines": 108,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "python3 - \"$work\" <<'PY'",
+              "new": "python3 - \"$work\" <<'PY'"
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/skills/pr-explain/templates/explain.json",
+      "to": ".claude/skills/pr-explain/SKILL.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/skills/pr-explain/templates/explain.json",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/skills/pr-explain/templates/explain.json",
+      "to": ".github/workflows/pr-explain.yml",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/list.html",
+      "status": "added"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/list.html",
+      "status": "added"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/skills/pr-explain/templates/list.html",
+      "status": "added"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/lib/embedded_regions.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/lib/usage.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": "index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": "package.json",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/build-pr-explain.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/lib/usage.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": "index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-frontend-report.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-tauri-version-match.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "pnpm-lock.yaml",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/pr-explain-list.yml",
+      "to": ".claude/skills/pr-explain/templates/list.html",
+      "status": "added"
+    },
+    {
+      "from": ".github/workflows/pr-explain-list.yml",
+      "to": ".github/scripts/lib/git-token-auth.sh",
+      "status": "added"
+    },
+    {
+      "from": ".github/workflows/pr-explain-list.yml",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "status": "added"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".claude/skills/pr-explain/templates/index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/build-pr-change-map.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/lib/git-token-auth.sh",
+      "status": "added"
+    },
+    {
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": "harness/githooks/pre-push",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/lib/detector-precondition.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    }
+  ]
+}
