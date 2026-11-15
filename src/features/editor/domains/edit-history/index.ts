@@ -48,7 +48,7 @@ function withoutUnchangedLast(history: EditHistory): EditHistory {
 }
 
 /**
- * 新しいドキュメントを現在地にしたあとに残す進む先。
+ * 新しいドキュメントを現在地にしたあとの進む先。
  *
  * 比べる相手を戻る先の末尾ではなく現在地にするのは、1 件目の `record` が上流で落ちて続きだけ
  * が届く形でも、変わらない続きで進む先を捨てないため。
@@ -58,16 +58,18 @@ function withoutUnchangedLast(history: EditHistory): EditHistory {
  * @returns `document` が今の現在地と同じ中身なら `history.future`。違えば、または進む先が無
  *   ければ空
  */
-function remainingFuture(
+function futureAfter(
   history: EditHistory,
   document: DesignDocument,
 ): readonly DesignDocument[] {
   if (history.future.length === 0) {
     return [];
   }
+
   if (!DesignDocument.isSameContent(history.present, document)) {
     return [];
   }
+
   return history.future;
 }
 
@@ -99,7 +101,7 @@ export const EditHistory = {
     return {
       past: [...normalized.past, normalized.present],
       present: document,
-      future: remainingFuture(normalized, document),
+      future: futureAfter(normalized, document),
     };
   },
 
@@ -122,7 +124,7 @@ export const EditHistory = {
     return {
       past: history.past,
       present: document,
-      future: remainingFuture(history, document),
+      future: futureAfter(history, document),
     };
   },
 
