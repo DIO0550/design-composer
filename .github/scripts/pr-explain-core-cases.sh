@@ -3,9 +3,10 @@
 # 解説ページの核の判定表。テンプレート(`.claude/skills/pr-explain/templates/index.html`)から固定
 # スクリプトを抜き出して node の `vm` で評価し、`document` が無いときに置かれる `prExplainCore` を
 # 叩いて、地図と解説の合流・振る舞いの節の並び・技術の手引きの節・用語の印・抜粋の強調・出てくる場所と仕様の場所の
-# コミットへの届き方・今の節・文字の大きさの段と倍率・倍率を変えたあとの読む線の位置・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・色分け(`Tokenizer` と、
-# `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・解説の形の道筋(impact・primers・terms・抜粋の
-# 強調)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを
+# コミットへの届き方・今の節・文字の大きさの段と倍率・倍率を変えたあとの読む線の位置・箱の図の配置・コミットの差分・つながりの要約・戻るの履歴・確認の印の鍵・開く画面・
+# 機能 × コミットの表と機能の色・構成の前後の図・流れ図の行とカードの配置・クイズの答えの読み直しと移り変わり・Target の行き先とチップの名前・色分け(`Tokenizer` と、
+# `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・クイズの問いの kind と答えの鍵の元・解説の形の道筋(impact・primers・terms・抜粋の
+# 強調・features の review・commitStories の featureRanges・calls・actors・quiz・flows の gist・text・beforeSteps・stepChanges・measure)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを
 # 1 コマンドで確かめる。
 #
 # 使い方: bash .github/scripts/pr-explain-core-cases.sh
@@ -34,10 +35,15 @@ source "$repo_root/.claude/hooks/lib/cases-report.sh"
 
 # 解説の検査が持つ語彙(ページの `Vocabulary` と突き合わせる)と、Target の kind ごとのキー(ページの `Target` と
 # 突き合わせる)と、Shapes から導いた形の道筋と値の種類(ページの `ExplainShape.Routes` と突き合わせる)。impact の下は
-# オブジェクト・その配列・id・id の配列と sha の配列だけ。primers・terms の下は文(text・sha・marked_text の文字列)も出す。Excerpt の中の
-# 道筋は、Excerpt を指すすべての道筋の下に出す。primers・terms の下の必須の文と 1 つのオブジェクトの道筋と、それを必須とする
-# kind(Variant の下なら kind の並び、Shape の下なら null。ページの `ExplainShape.Required` と突き合わせる)。ほかに、技術の
-# 手引きの kind・段の kind・用語の印の綴りと、印を読む道筋と、`` ` `` の割り方(ページの `CodeSpans` と突き合わせる)。
+# オブジェクト・その配列・id・id の配列と sha の配列だけ。primers・terms と、features の review・commitStories の featureRanges・
+# calls・actors・quiz と、flows の gist・text・beforeSteps・stepChanges・measure の下は文(text・sha・marked_text の文字列)も出す。
+# overview の highlights の下はオブジェクトとその配列だけ。語彙には、手順の重さ(stepCosts)と流れ図のカードの絵(cardIcons)も入る。Excerpt の中の
+# 道筋は、Excerpt を指すすべての道筋の下に出す。primers・terms の下の必須の文と 1 つのオブジェクトの道筋と、quiz の下の必須の
+# すべての道筋と、それを必須とする kind(Variant の下なら kind の並び、Shape の下なら null。ページの `ExplainShape.Required` と
+# 突き合わせる)。overview の highlights と quiz の下で kind で形が決まるオブジェクトの kind の道筋と、その語彙(ページの
+# `ExplainShape.Kinds` と突き合わせる)。ほかに、技術の
+# 手引きの kind・段の kind・クイズの問いの kind・クイズの答えの鍵の元にするキー(ページの `Quiz` と突き合わせる)・用語の印の綴りと、
+# 印を読む道筋と、`` ` `` の割り方(ページの `CodeSpans` と突き合わせる)。
 checker="$(python3 - "$scripts_dir/build-pr-explain.py" <<'PY'
 import importlib.util, json, sys
 spec = importlib.util.spec_from_file_location("build_pr_explain", sys.argv[1])
@@ -51,6 +57,8 @@ vocabulary = {
     "messageStatuses": module.MessageStatuses,
     "primerStatuses": module.PrimerStatuses,
     "remarkKinds": module.RemarkKinds,
+    "stepCosts": module.StepCosts,
+    "cardIcons": module.CardIcons,
 }
 target_keys = {kind: list(fields) for kind, fields in module.Variants["Target"].items()}
 text_rules = (module.Text, module.Heading, module.UserText, module.Sha, module.MarkedText)
@@ -68,15 +76,27 @@ def required_kinds_of(owner, key):
     if isinstance(owner, module.Shape):
         return None if module.Shapes[owner.name][key].required else []
     return [kind for kind, fields in module.Variants[owner.name].items() if key in fields and fields[key].required]
-def required_routes_of(rule, route):
+def required_routes_of(rule, route, is_every_value):
     found = module.routes_under(rule, route)
     owners = {at: inner for at, inner, _ in found}
     kinds_at = lambda at: required_kinds_of(owners[at.rpartition(".")[0].removesuffix("[]")], at.rpartition(".")[2])
-    candidates = [{"route": at, "kinds": kinds_at(at)} for at, inner, is_many in found[1:] if kind_of(inner, is_many, text_rules) in ("text", "record")]
+    is_asked = lambda inner, is_many: is_every_value or kind_of(inner, is_many, text_rules) in ("text", "record")
+    candidates = [{"route": at, "kinds": kinds_at(at)} for at, inner, is_many in found[1:] if is_asked(inner, is_many)]
     return [candidate for candidate in candidates if candidate["kinds"] != []]
+def kind_routes_of(rule, route):
+    return [{"route": f"{at}[].kind" if is_many else f"{at}.kind", "kinds": list(module.Variants[inner.name])} for at, inner, is_many in module.routes_under(rule, route) if isinstance(inner, module.Variant)]
 explain = module.Shapes["Explain"]
-routes = [*shape_routes_of(explain["impact"].value, "impact", (module.Sha,)), *shape_routes_of(explain["primers"].value, "primers", text_rules), *shape_routes_of(explain["terms"].value, "terms", text_rules)]
-required_routes = [*required_routes_of(explain["primers"].value, "primers"), *required_routes_of(explain["terms"].value, "terms")]
+feature_reviews = shape_routes_of(module.Shapes["Feature"]["review"].value, "features[].review", text_rules)
+feature_ranges = shape_routes_of(module.Shapes["CommitStory"]["featureRanges"].value, "commitStories[].featureRanges", text_rules)
+calls = shape_routes_of(explain["calls"].value, "calls", text_rules)
+actors = shape_routes_of(explain["actors"].value, "actors", text_rules)
+quiz = shape_routes_of(explain["quiz"].value, "quiz", text_rules)
+flow_keys = [found for key in ("gist", "text", "beforeSteps", "stepChanges", "measure") for found in shape_routes_of(module.Shapes["Flow"][key].value, f"flows[].{key}", text_rules)]
+highlights_rule = module.Shapes["Overview"]["highlights"].value
+highlights = [found for found in shape_routes_of(highlights_rule, "overview.highlights", ()) if found[1] in ("records", "record")]
+routes = [*shape_routes_of(explain["impact"].value, "impact", (module.Sha,)), *shape_routes_of(explain["primers"].value, "primers", text_rules), *shape_routes_of(explain["terms"].value, "terms", text_rules), *feature_reviews, *feature_ranges, *calls, *actors, *flow_keys, *quiz, *highlights]
+required_routes = [*required_routes_of(explain["primers"].value, "primers", False), *required_routes_of(explain["terms"].value, "terms", False), *required_routes_of(explain["quiz"].value, "quiz", True)]
+kind_routes = [*kind_routes_of(highlights_rule, "overview.highlights"), *kind_routes_of(explain["quiz"].value, "quiz")]
 known = {route for route, _ in routes}
 inside_excerpts = [found for route in module.routes_with(module.Shape("Excerpt")) for found in shape_routes_of(module.Shape("Excerpt"), route, ())[1:]]
 shape_routes = routes + [found for found in inside_excerpts if found[0] not in known]
@@ -85,8 +105,11 @@ print(json.dumps({
     "targetKeys": target_keys,
     "shapeRoutes": shape_routes,
     "requiredRoutes": required_routes,
+    "kindRoutes": kind_routes,
     "primerKinds": list(module.Variants["Primer"]),
     "passageKinds": list(module.Variants["Passage"]),
+    "questionKinds": list(module.Variants["Question"]),
+    "quizKeyParts": list(module.QuizKeyParts),
     "termMarkPattern": module.TermMarkPattern.pattern,
     "markedRoutes": module.routes_with(module.MarkedText),
     "codeSpans": {text: module.code_spans_of(text) for text in ("前 `a` 中 `b", "``a`` `b`")},
@@ -159,8 +182,11 @@ const {
   targetKeys: checkerTargetKeys,
   shapeRoutes: checkerShapeRoutes,
   requiredRoutes: checkerRequiredRoutes,
+  kindRoutes: checkerKindRoutes,
   primerKinds: checkerPrimerKinds,
   passageKinds: checkerPassageKinds,
+  questionKinds: checkerQuestionKinds,
+  quizKeyParts: checkerQuizKeyParts,
   termMarkPattern: checkerTermMarkPattern,
   markedRoutes: checkerMarkedRoutes,
   codeSpans: checkerCodeSpans,
@@ -177,7 +203,7 @@ if (core === undefined) {
   console.error("document の無い評価で prExplainCore が置かれていない");
   process.exit(2);
 }
-const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target } = core;
+const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target, CompareDiagram, TraceRows, TraceLayout, Quiz } = core;
 
 const Pr = 7;
 const shaOf = (digit) => String(digit).repeat(40);
@@ -214,6 +240,168 @@ const linesOf = (rows) => rows.join("\n");
 // 変更後の 1〜3 行目と 10〜12 行目の 2 つの hunk。4〜9 行目は差分に出ていない。
 const twoHunks = linesOf(["@@ -1,3 +1,3 @@", " a", "-b", "+B", " c", "@@ -10,3 +10,3 @@", " j", "-k", "+K", " l"]);
 const numbersOf = (file) => file.body.hunks.map((hunk) => hunk.notes.map((note) => [note.n, note.text]));
+// 機能 × コミットの表の材料。コミットは `ExplainedMap` の commits と同じく、地図のコミットに commitStory(`story`)を足した形。
+const rangeOn = (path, start, end, feature, extra = {}) => ({ path, start, end, feature, text: `${feature}の範囲`, ...extra });
+const featureNamed = (id, extra = {}) => ({ id, label: `機能 ${id}`, role: `${id}の役割`, ...extra });
+const rangedCommit = (digit, files, featureRanges) => ({ ...commitOf(digit), files, story: { ...commitStory(shaOf(digit)), featureRanges } });
+const featureIdsIn = (rows) => rows.map((row) => (row.feature === null ? null : row.feature.id));
+// hunk か消したファイルの本文に付いた機能の id(書いた順)。
+const featureIdsOfUnit = (unit) => unit.features.map((feature) => feature.id);
+// 足した行が 1 行の hunk を、変更後の n 行目に 1 つ持つ patch(+1 −0)。
+const addedLineAt = (line) => linesOf([`@@ -${line},0 +${line},1 @@`, "+x"]);
+// 2 コミットの表。x はコミット 1 の 2 ファイル(a.ts の 2 つの hunk と b.ts)にだけあり、一言を 2 つ(a.ts の 2 つの範囲は同じ文)書く。
+// y は両方のコミットの a.ts にある。範囲は、ファイルの順と違う順に書く。
+const twoCommitMatrix = () => FeatureMatrix.create({
+  features: [featureNamed("x"), featureNamed("y")],
+  commits: [
+    rangedCommit(1, [diffFile("src/a.ts", { patch: twoHunks }), diffFile("src/b.ts", { patch: addedLineAt(2) })], [
+      rangeOn("src/b.ts", 2, 2, "x", { text: "b の一言" }),
+      rangeOn("src/a.ts", 1, 1, "y", { text: "y の一言" }),
+      rangeOn("src/a.ts", 11, 11, "x", { text: "a の一言" }),
+      rangeOn("src/a.ts", 2, 2, "x", { text: "a の一言" }),
+    ]),
+    rangedCommit(2, [diffFile("src/a.ts", { patch: addedLineAt(5) })], [rangeOn("src/a.ts", 5, 5, "y", { text: "y の二つ目" })]),
+  ],
+});
+// 消したファイル(3 行)にだけ入る機能 x と、ほかのファイルにだけ入る機能 y の表。消したファイルには、変更後の側への(差分に出ていない
+// 行への)注釈が 1 件ある。
+const deletedFileMatrix = () => {
+  const files = [diffFile("src/gone.ts", { status: "D", additions: 0, deletions: 3, patch: null }), diffFile("src/a.ts", { patch: addedLineAt(5) })];
+  const story = { ...commitStory(shaOf(1)), notes: [noteOn("src/gone.ts", 1, 1, "変更後の側")], featureRanges: [rangeOn("src/gone.ts", 2, 2, "x", { side: "old" }), rangeOn("src/a.ts", 5, 5, "y")] };
+  return FeatureMatrix.create({ features: [featureNamed("x"), featureNamed("y")], commits: [{ ...commitOf(1), files, story }] });
+};
+// 構成の前後の材料。モジュールの粒度は、足した a・変えた b・消した gone・図に出さない hidden(graph が偽の concept)と、変えていない
+// kept(増えた・消えた依存の端)・untouched(残った依存の端だけ)。依存は残った 2・増えた 2・消えた 1。
+const moduleDependency = (from, to, status) => ({ from: `src/${from}.ts`, to: `src/${to}.ts`, status });
+const modulesMap = mapOf({
+  groups: [
+    { label: "domains", files: [changedFile("src/domains/a.ts", { status: "A" }), contextFile("src/domains/kept.ts"), changedFile("src/domains/hidden.ts")] },
+    { label: "features", files: [changedFile("src/features/b.ts"), changedFile("src/features/gone.ts", { status: "D" }), contextFile("src/features/untouched.ts")] },
+  ],
+  dependencies: [
+    moduleDependency("features/b", "features/untouched", "kept"),
+    moduleDependency("features/b", "domains/kept", "kept"),
+    moduleDependency("features/b", "domains/a", "added"),
+    moduleDependency("domains/a", "domains/kept", "added"),
+    moduleDependency("features/gone", "domains/kept", "removed"),
+  ],
+});
+const modulesExplained = () => explained(modulesMap, explainOf({ concepts: [concept("src/domains/hidden.ts", "隠す", { graph: false })] }));
+// 呼び出しの粒度は、地図の層の順(features → domains)と箱を書いた順を逆にし、地図に無い module(src/gone.ts)の箱を 1 つ持つ。
+const callBox = (id, module, extra = {}) => ({ id, name: `${id}()`, role: `${id}の役割`, module, ...extra });
+const callEdge = (id, from, to, extra = {}) => ({ id, from, to, code: `${to}()`, ...extra });
+const callsMap = mapOf({
+  groups: [
+    { label: "features", files: [changedFile("src/features/view.ts")] },
+    { label: "domains", files: [changedFile("src/domains/state.ts"), contextFile("src/domains/doc.ts")] },
+  ],
+});
+const callsOf = (extra = {}) => ({
+  boxes: [
+    callBox("errors", "src/domains/state.ts", { status: "removed", was: "前" }),
+    callBox("view", "src/features/view.ts", { status: "changed", was: "前", now: "後" }),
+    callBox("memo", "src/gone.ts", { status: "added", now: "後" }),
+    callBox("document", "src/domains/doc.ts", { now: "後" }),
+    callBox("collect", "src/domains/state.ts", { now: "後" }),
+  ],
+  edges: [
+    callEdge("view-errors", "view", "errors", { status: "removed", was: "前" }),
+    callEdge("view-memo", "view", "memo", { status: "added", now: "後" }),
+    callEdge("view-document", "view", "document", { now: "後" }),
+  ],
+  ...extra,
+});
+const callsConcepts = [concept("src/features/view.ts", "器"), concept("src/domains/state.ts", "状態"), concept("src/domains/doc.ts", "文書"), concept("src/gone.ts", "地図に無い器")];
+const callsExplained = (calls = callsOf(), extra = {}) => explained(callsMap, explainOf({ concepts: callsConcepts, calls, ...extra }));
+const unchangedCalls = (extra = {}) => ({ boxes: [], edges: [], ...extra });
+const boxIdsOf = (boxes, isWanted) => boxes.filter(isWanted).map((placed) => placed.box.id);
+const edgeEndsOf = (edges) => edges.map(({ edge }) => [edge.from, edge.to]);
+// 流れ図の材料。手順の対応は、そのまま・消えた・増えた・前後が同じやりとりの変わった・前後が違うやりとりの変わった・消えた の 6 行。
+// 変更前の手順は 5 つ、変更後の手順は 4 つ。
+const traceMessage = (id, from, to, extra = {}) => ({ id, from, to, kind: "qry", name: `${id}の名前`, code: `${id}()`, via: "call", ...extra });
+const traceMessages = new Map([
+  traceMessage("keep", "p", "q"),
+  traceMessage("gone", "p", "r", { status: "removed" }),
+  traceMessage("added", "p", "s", { status: "added" }),
+  traceMessage("same", "q", "p", { status: "changed" }),
+  traceMessage("moved-before", "q", "r"),
+  traceMessage("moved-after", "q", "s"),
+  traceMessage("gone-last", "r", "p", { status: "removed" }),
+].map((message) => [message.id, message]));
+const tracedFlow = (extra = {}) => ({
+  id: "w",
+  label: "流れ",
+  gist: "変わったこと",
+  steps: ["keep", "added", "same", "moved-after"],
+  beforeSteps: ["keep", "gone", "same", "moved-before", "gone-last"],
+  stepChanges: [
+    { beforeStep: 1, afterStep: 1, beforeText: "前の keep", afterText: "後の keep" },
+    { status: "removed", beforeStep: 2, beforeText: "前の gone", change: "消えた注記", beforeCost: "skipped" },
+    { status: "added", afterStep: 2, afterText: "後の added", change: "増えた注記", afterCost: "heavy" },
+    { status: "changed", beforeStep: 3, afterStep: 3, beforeText: "前の same", afterText: "後の same", beforeCost: "heavy", afterCost: "skipped" },
+    { status: "changed", beforeStep: 4, afterStep: 4, change: "変わった注記" },
+    { status: "removed", beforeStep: 5 },
+  ],
+  ...extra,
+});
+const traceRowsOf = (era, flow = tracedFlow()) => TraceRows.rowsOf(flow, era, traceMessages);
+// カードの出方の材料。変えたファイル(kept)の concept から、足したファイル・消したファイルの concept と、status が added / removed の
+// actor(helper / retired)と、status の無い actor(person)へのやりとり。
+const presenceFlow = {
+  id: "w",
+  label: "流れ",
+  gist: "g",
+  steps: ["to-new", "to-helper", "to-person"],
+  beforeSteps: ["to-gone", "to-retired", "to-person"],
+  stepChanges: [
+    { status: "removed", beforeStep: 1 },
+    { status: "removed", beforeStep: 2 },
+    { status: "added", afterStep: 1 },
+    { status: "added", afterStep: 2 },
+    { beforeStep: 3, afterStep: 3 },
+  ],
+};
+const presenceExplained = () => explained(mapOf({ groups: [{ label: "src", files: [changedFile("src/kept.ts"), changedFile("src/new.ts", { status: "A" }), changedFile("src/gone.ts", { status: "D" })] }] }), explainOf({
+  concepts: [concept("src/kept.ts", "残る"), concept("src/new.ts", "足した"), concept("src/gone.ts", "消した")],
+  actors: [{ id: "helper", label: "手伝う人", role: "r", status: "added" }, { id: "retired", label: "退いた人", role: "r", status: "removed" }, { id: "person", label: "人", role: "r" }],
+  messages: [
+    traceMessage("to-new", "src/kept.ts", "src/new.ts", { status: "added" }),
+    traceMessage("to-gone", "src/kept.ts", "src/gone.ts", { status: "removed" }),
+    traceMessage("to-helper", "src/kept.ts", "helper", { status: "added" }),
+    traceMessage("to-retired", "src/kept.ts", "retired", { status: "removed" }),
+    traceMessage("to-person", "src/kept.ts", "person"),
+  ],
+  flows: [presenceFlow],
+}));
+/** その端のカードの出方を、表示ごとに引く。 */
+const endPresenceIn = (end) => (era) => {
+  const result = presenceExplained();
+  const layout = TraceLayout.create([presenceFlow], result.lookup.messages);
+  return TraceLayout.cardsIn(layout, TraceRows.rowsOf(presenceFlow, era, result.lookup.messages), { era, endStatuses: result.endStatuses }).find((card) => card.end === end).presence;
+};
+// クイズの問い。4 択と YES / NO の答えは、既定(最初の選択肢・YES)と違うものにする。
+const quizGo = [{ kind: "flow", id: "w" }];
+const choiceQuestion = (extra = {}) => ({ id: "c", kind: "choice", title: "選ぶ問い", prompt: "どれですか", options: ["一", "二", "三", "四"], answer: 3, why: "理由", go: quizGo, ...extra });
+const yesNoQuestion = (extra = {}) => ({ id: "y", kind: "yesno", title: "真偽の問い", prompt: "そうですか", holds: false, why: "理由", go: quizGo, ...extra });
+const orderQuestion = (extra = {}) => ({ id: "o", kind: "order", title: "並べる問い", prompt: "並べてください", items: ["甲", "乙", "丙", "丁", "戊"], why: "理由", go: quizGo, ...extra });
+// 覚えた値を、鍵の代わりに問いの id で読む(鍵は JSON なので、期待値に綴りを写さない)。今の問いに無い鍵は「?」。
+const quizIdsOf = (questions) => {
+  const idAt = new Map(questions.map((question) => [Quiz.keyOf(question), question.id]));
+  return {
+    current: (progress) => idAt.get(progress.current) ?? "?",
+    entries: (record) => Object.entries(record).map(([key, value]) => [idAt.get(key) ?? "?", value]),
+    keyOf: (id) => Quiz.keyOf(questions.find((question) => question.id === id)),
+  };
+};
+// カードの配置の材料。手順を [送り手, 受け手] の組で書き、組ごとのやりとりを作る。
+const tracedLayoutOf = (flows) => {
+  const idOf = ([from, to]) => `${from}>${to}`;
+  const pairs = flows.flatMap((flow) => [...flow.steps, ...flow.beforeSteps]);
+  const messages = new Map(pairs.map((pair) => [idOf(pair), traceMessage(idOf(pair), pair[0], pair[1])]));
+  const written = flows.map((flow, index) => ({ id: `f${index}`, label: `流れ ${index}`, steps: flow.steps.map(idOf), beforeSteps: flow.beforeSteps.map(idOf), stepChanges: [] }));
+  return { flows: written, messages, layout: TraceLayout.create(written, messages) };
+};
+const columnsIn = (layout) => layout.cards.map((card) => [card.end, card.column]);
 
 // 色分け。パスの文法で、開いた行(無ければ null)の後から行を読み進めた、行ごとの字句の並び。
 const lineTokensOf = (path, lines, openingLine = null) => {
@@ -639,7 +827,7 @@ const cases = [
     expected: [["b", "c", "a"]],
   },
   {
-    label: "注釈は行の入る最初の hunk に付き、番号は入力の順ではなく hunk の順にファイルの中で通す",
+    label: "注釈は行の入る最初の hunk に付き、番号は入力の順ではなく hunk の順に、コミットの中で通す",
     actual: () => {
       const notes = [noteOn("src/a.ts", 11, 11, "二つ目"), noteOn("src/a.ts", 3, 10, "またぐ")];
       return numbersOf(diffOf([diffFile("src/a.ts", { patch: twoHunks })], notes).files[0]);
@@ -720,8 +908,901 @@ const cases = [
     },
     expected: [
       { onBody: [[1, "行数の中"]], unplaced: [[2, "行数の外"]] },
-      { onBody: [], unplaced: [[1, "画像"]] },
+      { onBody: [], unplaced: [[3, "画像"]] },
     ],
+  },
+  {
+    label: "注釈の番号はコミットの中でファイルの順に通し、2 つ目のファイルの最初の注釈は 1 つ目のファイルの注釈の数の次になる",
+    actual: () => {
+      const notes = [noteOn("src/b.ts", 2, 2, "b の注釈"), noteOn("src/a.ts", 11, 11, "a の二つ目"), noteOn("src/a.ts", 2, 2, "a の一つ目")];
+      return diffOf([diffFile("src/a.ts", { patch: twoHunks }), diffFile("src/b.ts", { patch: twoHunks })], notes).files.map(numbersOf);
+    },
+    expected: [[[[1, "a の一つ目"]], [[2, "a の二つ目"]]], [[[3, "b の注釈"]], []]],
+  },
+  {
+    label: "差分に出ていない行への注釈は、そのファイルの hunk の注釈の後に番号を続け、次のファイルはその後から振る",
+    actual: () => {
+      const notes = [noteOn("src/b.ts", 2, 2, "b の差分の中"), noteOn("src/a.ts", 6, 7, "a のあいだ"), noteOn("src/a.ts", 11, 11, "a の差分の中")];
+      return diffOf([diffFile("src/a.ts", { patch: twoHunks }), diffFile("src/b.ts", { patch: twoHunks })], notes).files.map((file) => ({ placed: numbersOf(file), unplaced: file.unplaced.map((note) => [note.n, note.text]) }));
+    },
+    expected: [
+      { placed: [[], [[1, "a の差分の中"]]], unplaced: [[2, "a のあいだ"]] },
+      { placed: [[[3, "b の差分の中"]], []], unplaced: [] },
+    ],
+  },
+  {
+    label: "hunk は、side の側の行番号で範囲が重なる featureRanges の機能すべてを、features の順や行の順ではなく、範囲を書いた順に持つ",
+    actual: () => {
+      const patch = linesOf(["@@ -1,3 +1,3 @@", " a", "-b", "+B", " c"]);
+      const ranges = [rangeOn("src/a.ts", 3, 3, "late"), rangeOn("src/a.ts", 1, 2, "early")];
+      const matrix = FeatureMatrix.create({ features: [featureNamed("early"), featureNamed("late")], commits: [rangedCommit(1, [diffFile("src/a.ts", { patch })], ranges)] });
+      return featureIdsOfUnit(matrix.diffAt.get(shaOf(1)).files[0].body.hunks[0]);
+    },
+    expected: ["late", "early"],
+  },
+  {
+    label: "変更後の行が無い hunk は、side が new の範囲には入らず、old の範囲でだけ機能に入る",
+    actual: () => {
+      const patch = linesOf(["@@ -10,3 +9,0 @@", "-a", "-b", "-c"]);
+      const hunkWith = (ranges) => CommitDiff.create({ ...commitOf(1), files: [diffFile("src/a.ts", { patch })] }, { ...commitStory(shaOf(1)), featureRanges: ranges }).files[0].body.hunks[0];
+      return [featureIdsOfUnit(hunkWith([rangeOn("src/a.ts", 8, 12, "new")])), featureIdsOfUnit(hunkWith([rangeOn("src/a.ts", 8, 12, "new"), rangeOn("src/a.ts", 11, 11, "old", { side: "old" })]))];
+    },
+    expected: [[], ["old"]],
+  },
+  {
+    label: "どの featureRanges にも入らない hunk は、機能なし(機能が空)になる",
+    actual: () => {
+      const story = { ...commitStory(shaOf(1)), featureRanges: [rangeOn("src/a.ts", 2, 2, "first"), rangeOn("src/b.ts", 11, 11, "other-file")] };
+      return CommitDiff.create({ ...commitOf(1), files: [diffFile("src/a.ts", { patch: twoHunks })] }, story).files[0].body.hunks.map(featureIdsOfUnit);
+    },
+    expected: [["first"], []],
+  },
+  {
+    label: "消したファイルは、変更前の範囲が行数に入れば、1 つのまとまりとしてその機能になる(変更後の範囲と行数の外の範囲は入らない)",
+    actual: () => {
+      const gone = diffFile("src/gone.ts", { status: "D", additions: 0, deletions: 3, patch: null });
+      const ranges = [rangeOn("src/gone.ts", 1, 1, "after-side"), rangeOn("src/gone.ts", 5, 6, "outside", { side: "old" }), rangeOn("src/gone.ts", 2, 2, "inside", { side: "old" })];
+      const body = CommitDiff.create({ ...commitOf(1), files: [gone] }, { ...commitStory(shaOf(1)), featureRanges: ranges }).files[0].body;
+      return [body.kind, featureIdsOfUnit(body)];
+    },
+    expected: ["deleted", ["inside"]],
+  },
+  {
+    label: "hunk の機能ごとの一言は、その機能の重なった範囲の文を、書いた順に重複なく並べたもの",
+    actual: () => {
+      const ranges = [
+        rangeOn("src/a.ts", 3, 3, "x", { text: "三行目" }),
+        rangeOn("src/a.ts", 1, 1, "y", { text: "別の機能" }),
+        rangeOn("src/a.ts", 1, 2, "x", { text: "一行目から" }),
+        rangeOn("src/a.ts", 2, 2, "x", { text: "三行目" }),
+        rangeOn("src/a.ts", 12, 12, "x", { text: "次の hunk" }),
+      ];
+      return CommitDiff.create({ ...commitOf(1), files: [diffFile("src/a.ts", { patch: twoHunks })] }, { ...commitStory(shaOf(1)), featureRanges: ranges }).files[0].body.hunks[0].features;
+    },
+    expected: [{ id: "x", texts: ["三行目", "一行目から"] }, { id: "y", texts: ["別の機能"] }],
+  },
+  {
+    label: "2 つの機能の範囲が入る hunk は、両方の機能のマスにその hunk の + / − の行を数え、後に書いた機能も表から消えない",
+    actual: () => {
+      const patch = linesOf(["@@ -1,2 +1,3 @@", " a", "-b", "+B", "+C", "@@ -20,0 +21,1 @@", "+z"]);
+      const ranges = [rangeOn("src/a.ts", 1, 1, "first"), rangeOn("src/a.ts", 3, 3, "second"), rangeOn("src/a.ts", 21, 21, "first")];
+      const matrix = FeatureMatrix.create({ features: [featureNamed("first"), featureNamed("second")], commits: [rangedCommit(1, [diffFile("src/a.ts", { patch })], ranges)] });
+      return matrix.rows.map((row) => [row.feature.id, row.cells[0].additions, row.cells[0].deletions]);
+    },
+    expected: [["first", 3, 1], ["second", 2, 1]],
+  },
+  {
+    label: "2 つの機能の範囲が入る hunk は、機能の一覧のどちらの機能にも出て、どちらの機能の表示のファイルにも入る",
+    actual: () => {
+      const patch = linesOf(["@@ -1,2 +1,3 @@", " a", "-b", "+B", "+C", "@@ -20,0 +21,1 @@", "+z"]);
+      const ranges = [rangeOn("src/a.ts", 1, 1, "first"), rangeOn("src/a.ts", 3, 3, "second"), rangeOn("src/a.ts", 21, 21, "first")];
+      const matrix = FeatureMatrix.create({ features: [featureNamed("first"), featureNamed("second")], commits: [rangedCommit(1, [diffFile("src/a.ts", { patch })], ranges)] });
+      const hunkHeadsIn = (row) => FeatureMatrix.filesIn(matrix, { sha: shaOf(1), row }).flatMap((file) => file.body.hunks.map((hunk) => hunk.header));
+      return { ranked: featureIdsIn(FeatureMatrix.rankedRowsOf(matrix)), hunks: matrix.rows.map(hunkHeadsIn) };
+    },
+    expected: { ranked: ["first", "second"], hunks: [["@@ -1,2 +1,3 @@", "@@ -20,0 +21,1 @@"], ["@@ -1,2 +1,3 @@"]] },
+  },
+  {
+    label: "機能の表示のファイルは、その機能のまとまりだけを残し、行数は残したまとまりの + / − の行を数え、差分に出ていない行への注釈と切った patch の残りは外す",
+    actual: () => {
+      const file = diffFile("src/a.ts", { patch: twoHunks, additions: 9, deletions: 9, patchLines: 40, truncated: true });
+      const story = { ...commitStory(shaOf(1)), notes: [noteOn("src/a.ts", 5, 5, "あいだ")], featureRanges: [rangeOn("src/a.ts", 11, 11, "x")] };
+      const matrix = FeatureMatrix.create({ features: [featureNamed("x")], commits: [{ ...commitOf(1), files: [file], story }] });
+      const [shown] = FeatureMatrix.filesIn(matrix, { sha: shaOf(1), row: matrix.rows[0] });
+      return { lines: [shown.additions, shown.deletions], hunks: shown.body.hunks.map((hunk) => hunk.header), remaining: shown.body.remaining, unplaced: shown.unplaced };
+    },
+    expected: { lines: [1, 1], hunks: ["@@ -10,3 +10,3 @@"], remaining: 0, unplaced: [] },
+  },
+  {
+    label: "まとまりの機能から引く行は、まとまりの機能の順の行で、機能なし(空)は機能なしの行",
+    actual: () => {
+      const patch = linesOf(["@@ -1,0 +1,2 @@", "+a", "+b", "@@ -10,0 +12,1 @@", "+n"]);
+      const ranges = [rangeOn("src/a.ts", 2, 2, "b"), rangeOn("src/a.ts", 1, 1, "a")];
+      const matrix = FeatureMatrix.create({ features: [featureNamed("a"), featureNamed("b")], commits: [rangedCommit(1, [diffFile("src/a.ts", { patch })], ranges)] });
+      const [first, second] = matrix.diffAt.get(shaOf(1)).files[0].body.hunks;
+      return [featureIdsIn(FeatureMatrix.rowsOfFeatures(matrix, first.features)), featureIdsIn(FeatureMatrix.rowsOfFeatures(matrix, second.features))];
+    },
+    expected: [["b", "a"], [null]],
+  },
+  {
+    label: "機能 × コミットの表の行は features の順で、機能なしは機能なしの hunk があるときだけ最後に出る。列はマージ以外のコミットの古い順",
+    actual: () => {
+      const features = [featureNamed("a"), featureNamed("b")];
+      const commits = [
+        rangedCommit(1, [diffFile("src/a.ts", { patch: twoHunks })], [rangeOn("src/a.ts", 2, 2, "b")]),
+        { ...commitOf(2), merge: true, story: null },
+        rangedCommit(3, [diffFile("src/a.ts", { patch: addedLineAt(5) })], [rangeOn("src/a.ts", 5, 5, "a")]),
+      ];
+      const withNone = FeatureMatrix.create({ features, commits });
+      const allFeatured = FeatureMatrix.create({ features, commits: [commits[2]] });
+      return { rows: featureIdsIn(withNone.rows), columns: withNone.commits.map((commit) => commit.sha), rowsWithoutNone: featureIdsIn(allFeatured.rows) };
+    },
+    expected: { rows: ["a", "b", null], columns: [shaOf(1), shaOf(3)], rowsWithoutNone: ["a"] },
+  },
+  {
+    label: "機能 × コミットのマスの行数は、その機能の hunk の + と − の行を数え、切った patch の残りの行は数えない",
+    actual: () => {
+      const patch = linesOf(["@@ -1,2 +1,3 @@", " a", "-b", "+B", "+C", "@@ -10,1 +11,1 @@", "-k", "+K"]);
+      const file = diffFile("src/a.ts", { patch, patchLines: 40, truncated: true, additions: 30, deletions: 9 });
+      const matrix = FeatureMatrix.create({ features: [featureNamed("a")], commits: [rangedCommit(1, [file], [rangeOn("src/a.ts", 1, 2, "a")])] });
+      const cell = matrix.rows[0].cells[0];
+      return [cell.additions, cell.deletions];
+    },
+    expected: [2, 1],
+  },
+  {
+    label: "その機能を持たないコミットのマスは空になる",
+    actual: () => {
+      const commits = [
+        rangedCommit(1, [diffFile("src/a.ts", { patch: addedLineAt(5) })], [rangeOn("src/a.ts", 5, 5, "a")]),
+        rangedCommit(2, [diffFile("src/a.ts", { patch: addedLineAt(7) })], [rangeOn("src/a.ts", 7, 7, "b")]),
+      ];
+      return FeatureMatrix.create({ features: [featureNamed("a"), featureNamed("b")], commits }).rows.map((row) => row.cells.map((cell) => cell !== null));
+    },
+    expected: [[true, false], [false, true]],
+  },
+  {
+    label: "機能の行のコミットの数はその機能のまとまりがあるコミットの数で、ファイルの数は hunk の数ではなく、まとまりのあるファイルの数",
+    actual: () => twoCommitMatrix().rows.map((row) => [row.feature.id, row.commitCount, row.fileCount]),
+    expected: [["x", 1, 2], ["y", 2, 1]],
+  },
+  {
+    label: "マスの一言は、その機能の範囲の文だけを、ファイルの順ではなく commitStory に書いた順に重複なく並べる",
+    actual: () => twoCommitMatrix().rows.map((row) => [row.feature.id, row.cells.map((cell) => (cell === null ? null : cell.texts))]),
+    expected: [["x", [["b の一言", "a の一言"], null]], ["y", [["y の一言"], ["y の二つ目"]]]],
+  },
+  {
+    label: "コミットごとの機能の行は、そのコミットのマスが空でない行だけ",
+    actual: () => {
+      const matrix = twoCommitMatrix();
+      return [shaOf(1), shaOf(2)].map((sha) => featureIdsIn(FeatureMatrix.rowsIn(matrix, sha)));
+    },
+    expected: [["x", "y"], ["y"]],
+  },
+  {
+    label: "消したファイルにだけ入る機能も、消した行を数えて表に出る",
+    actual: () => deletedFileMatrix().rows.map((row) => [row.feature.id, row.additions, row.deletions]),
+    expected: [["x", 0, 3], ["y", 1, 0]],
+  },
+  {
+    label: "機能の表示のファイルに、消したファイルはその機能に入るときだけ出て、差分に出ていない行への注釈は外す",
+    actual: () => {
+      const matrix = deletedFileMatrix();
+      return matrix.rows.map((row) => FeatureMatrix.filesIn(matrix, { sha: shaOf(1), row }).map((file) => [file.path, file.unplaced.length]));
+    },
+    expected: [[["src/gone.ts", 0]], [["src/a.ts", 0]]],
+  },
+  {
+    label: "どの hunk にも重ならない範囲しか無い機能は、表にも機能の一覧にも出ない",
+    actual: () => {
+      const ranges = [rangeOn("src/a.ts", 5, 5, "a"), rangeOn("src/a.ts", 90, 95, "b")];
+      const matrix = FeatureMatrix.create({ features: [featureNamed("a"), featureNamed("b")], commits: [rangedCommit(1, [diffFile("src/a.ts", { patch: addedLineAt(5) })], ranges)] });
+      return { rows: featureIdsIn(matrix.rows), ranked: featureIdsIn(FeatureMatrix.rankedRowsOf(matrix)) };
+    },
+    expected: { rows: ["a"], ranked: ["a"] },
+  },
+  {
+    label: "機能の一覧は変更行数の多い順で、機能なしは行数によらず最後",
+    actual: () => {
+      const patch = linesOf(["@@ -1,0 +1,1 @@", "+a", "@@ -10,0 +11,5 @@", "+b", "+b", "+b", "+b", "+b", "@@ -20,0 +26,3 @@", "+c", "+c", "+c", "@@ -30,0 +39,9 @@", "+n", "+n", "+n", "+n", "+n", "+n", "+n", "+n", "+n"]);
+      const ranges = [rangeOn("src/a.ts", 1, 1, "a"), rangeOn("src/a.ts", 11, 15, "b"), rangeOn("src/a.ts", 26, 28, "c")];
+      const matrix = FeatureMatrix.create({ features: ["a", "b", "c"].map((id) => featureNamed(id)), commits: [rangedCommit(1, [diffFile("src/a.ts", { patch })], ranges)] });
+      return featureIdsIn(FeatureMatrix.rankedRowsOf(matrix));
+    },
+    expected: ["b", "c", "a", null],
+  },
+  {
+    label: "featureRanges がどのコミットにも無ければ機能の側は押せず、1 件あれば押せる",
+    actual: () => {
+      const file = diffFile("src/a.ts", { patch: addedLineAt(5) });
+      const features = [featureNamed("a")];
+      return [
+        FeatureMatrix.create({ features, commits: [rangedCommit(1, [file], [])] }).isAvailable,
+        FeatureMatrix.create({ features, commits: [rangedCommit(1, [file], [rangeOn("src/a.ts", 5, 5, "a")])] }).isAvailable,
+      ];
+    },
+    expected: [false, true],
+  },
+  {
+    label: "機能の色は、1〜8 番目の機能で互いに違い、9 番目の機能は 1 番目と同じになる",
+    actual: () => {
+      const features = Array.from({ length: 9 }, (_, index) => featureNamed(`f${index + 1}`));
+      return features.map((feature) => FeatureMatrix.hueOf(features, feature.id));
+    },
+    expected: ["1", "2", "3", "4", "5", "6", "7", "8", "1"],
+  },
+  {
+    label: "機能なしの色は灰色(none)",
+    actual: () => {
+      const matrix = FeatureMatrix.create({ features: [featureNamed("a")], commits: [rangedCommit(1, [diffFile("src/a.ts", { patch: twoHunks })], [rangeOn("src/a.ts", 2, 2, "a")])] });
+      return [FeatureMatrix.hueOf([featureNamed("a")], null), matrix.rows.map((row) => row.hue)];
+    },
+    expected: ["none", ["1", "none"]],
+  },
+  {
+    label: "機能の色は features の順で決まり、機能の一覧を行数の順に並べても同じ機能の色は変わらない",
+    actual: () => {
+      const patch = linesOf(["@@ -1,0 +1,1 @@", "+a", "@@ -10,0 +11,3 @@", "+b", "+b", "+b"]);
+      const ranges = [rangeOn("src/a.ts", 1, 1, "a"), rangeOn("src/a.ts", 11, 13, "b")];
+      const matrix = FeatureMatrix.create({ features: [featureNamed("a"), featureNamed("b")], commits: [rangedCommit(1, [diffFile("src/a.ts", { patch })], ranges)] });
+      return FeatureMatrix.rankedRowsOf(matrix).map((row) => [row.feature.id, row.hue]);
+    },
+    expected: [["b", "2"], ["a", "1"]],
+  },
+  {
+    label: "機能ごとに見てほしいところは、review のある機能だけを、行数の順ではなく features の順に並べる",
+    actual: () => {
+      const patch = linesOf(["@@ -1,0 +1,1 @@", "+a", "@@ -10,0 +11,1 @@", "+b", "@@ -20,0 +21,4 @@", "+c", "+c", "+c", "+c"]);
+      const ranges = [rangeOn("src/a.ts", 1, 1, "a"), rangeOn("src/a.ts", 11, 11, "b"), rangeOn("src/a.ts", 21, 24, "c")];
+      const features = [featureNamed("a", { review: ["a を見る"] }), featureNamed("b"), featureNamed("c", { review: ["c を見る"] })];
+      return featureIdsIn(FeatureMatrix.reviewRowsOf(FeatureMatrix.create({ features, commits: [rangedCommit(1, [diffFile("src/a.ts", { patch })], ranges)] })));
+    },
+    expected: ["a", "c"],
+  },
+  {
+    label: "変更が 0 行の機能は、review があっても機能ごとに見てほしいところに出さない",
+    actual: () => {
+      const features = [featureNamed("a", { review: ["a を見る"] }), featureNamed("gone", { review: ["範囲が差分に重ならない"] })];
+      const ranges = [rangeOn("src/a.ts", 5, 5, "a"), rangeOn("src/a.ts", 90, 90, "gone")];
+      return featureIdsIn(FeatureMatrix.reviewRowsOf(FeatureMatrix.create({ features, commits: [rangedCommit(1, [diffFile("src/a.ts", { patch: addedLineAt(5) })], ranges)] })));
+    },
+    expected: ["a"],
+  },
+  {
+    label: "モジュールの粒度の箱は、図に出す変更ファイルと、増えた・消えた依存の端のファイル(状態は A が増えた・D が消えた・ほかの変更が変えた、端だけのファイルは無し)",
+    actual: () => CompareDiagram.fromModules(modulesExplained()).boxes.map((box) => [box.id, box.status]),
+    expected: [["src/domains/a.ts", "added"], ["src/features/b.ts", "changed"], ["src/features/gone.ts", "removed"], ["src/domains/kept.ts", null]],
+  },
+  {
+    label: "図に出さない concept のファイルは、増えた・消えた依存の端になっても、モジュールの粒度の箱にならない",
+    actual: () => {
+      const map = mapOf({
+        groups: [{ label: "domains", files: [changedFile("src/domains/a.ts"), contextFile("src/domains/hidden.ts"), contextFile("src/domains/shown.ts")] }],
+        dependencies: [moduleDependency("domains/a", "domains/hidden", "added"), moduleDependency("domains/a", "domains/shown", "removed")],
+      });
+      const result = explained(map, explainOf({ concepts: [concept("src/domains/hidden.ts", "隠す", { graph: false })] }));
+      return CompareDiagram.fromModules(result).boxes.map((box) => box.id);
+    },
+    expected: ["src/domains/a.ts", "src/domains/shown.ts"],
+  },
+  {
+    label: "構成の前後の左の欄の一覧は、状態のある箱 → 線の順で、変えていない箱と残った線は出さない",
+    actual: () => CompareDiagram.changeListOf(CompareDiagram.fromModules(modulesExplained())).items.map((item) => [item.kind, item.status, item.name]),
+    expected: [
+      ["box", "added", "a.ts"],
+      ["box", "changed", "b.ts"],
+      ["box", "removed", "gone.ts"],
+      ["edge", "added", "b.ts → a.ts"],
+      ["edge", "added", "a.ts → kept.ts"],
+      ["edge", "removed", "gone.ts → kept.ts"],
+    ],
+  },
+  {
+    label: "モジュールの粒度で、足したファイルは変更前の図に無く、消したファイルは変更後の図に無い",
+    actual: () => {
+      const figures = CompareDiagram.figuresOf(CompareDiagram.fromModules(modulesExplained()));
+      return { before: boxIdsOf(figures.before.boxes, (placed) => !placed.isPresent), after: boxIdsOf(figures.after.boxes, (placed) => !placed.isPresent) };
+    },
+    expected: { before: ["src/domains/a.ts"], after: ["src/features/gone.ts"] },
+  },
+  {
+    label: "モジュールの粒度で、変更前の線は残った依存と消えた依存、変更後の線は残った依存と増えた依存(端が箱でない依存は描かない)",
+    actual: () => {
+      const figures = CompareDiagram.figuresOf(CompareDiagram.fromModules(modulesExplained()));
+      return { before: edgeEndsOf(figures.before.edges), after: edgeEndsOf(figures.after.edges) };
+    },
+    expected: {
+      before: [["src/features/b.ts", "src/domains/kept.ts"], ["src/features/gone.ts", "src/domains/kept.ts"]],
+      after: [["src/features/b.ts", "src/domains/kept.ts"], ["src/features/b.ts", "src/domains/a.ts"], ["src/domains/a.ts", "src/domains/kept.ts"]],
+    },
+  },
+  {
+    label: "モジュールの粒度で、移動したファイルは変更前の側で前のパスの名前を出す",
+    actual: () => {
+      const map = mapOf({ groups: [{ label: "features", files: [changedFile("src/features/moved/index.ts", { status: "R", oldPath: "src/features/old/index.ts" })] }] });
+      const box = CompareDiagram.fromModules(explained(map, explainOf())).boxes[0];
+      return { name: box.name, beforeName: box.beforeName };
+    },
+    expected: { name: "moved/index.ts", beforeName: "old/index.ts" },
+  },
+  {
+    label: "モジュールの粒度で箱を選ぶと、その箱を端に持つ依存を、増えた / 消えた / 残ったに分けて返す",
+    actual: () => CompareDiagram.selectedOf(CompareDiagram.fromModules(modulesExplained()), "src/domains/kept.ts").box.dependencies,
+    expected: {
+      added: [{ path: "src/domains/a.ts", name: "a.ts", direction: "usedBy" }],
+      removed: [{ path: "src/features/gone.ts", name: "gone.ts", direction: "usedBy" }],
+      kept: [{ path: "src/features/b.ts", name: "b.ts", direction: "usedBy" }],
+    },
+  },
+  {
+    label: "モジュールの粒度で線を選ぶと、状態と両端の箱を返す",
+    actual: () => {
+      const selected = CompareDiagram.selectedOf(CompareDiagram.fromModules(modulesExplained()), JSON.stringify(["src/features/gone.ts", "src/domains/kept.ts"]));
+      return { status: selected.edge.status, from: selected.from.name, to: selected.to.name };
+    },
+    expected: { status: "removed", from: "gone.ts", to: "kept.ts" },
+  },
+  {
+    label: "構成の前後の 2 枚の図は同じ配置で、片方にしか無い箱も、もう片方に位置を持つ",
+    actual: () => {
+      const figures = CompareDiagram.figuresOf(CompareDiagram.fromModules(modulesExplained()));
+      const placesOf = (boxes) => boxes.map((placed) => [placed.box.id, placed.x, placed.y]);
+      return { isSame: JSON.stringify(placesOf(figures.before.boxes)) === JSON.stringify(placesOf(figures.after.boxes)), counts: [figures.before.boxes.length, figures.after.boxes.length] };
+    },
+    expected: { isSame: true, counts: [4, 4] },
+  },
+  {
+    label: "「変わっていない箱」は、呼び出しの粒度では状態の無い箱、モジュールの粒度では線の端にしか出てこない箱",
+    actual: () => {
+      const unchangedIn = (diagram) => boxIdsOf(CompareDiagram.figuresOf(diagram).after.boxes, (placed) => placed.isUnchanged);
+      return { calls: unchangedIn(CompareDiagram.fromCalls(callsExplained())), modules: unchangedIn(CompareDiagram.fromModules(modulesExplained())) };
+    },
+    expected: { calls: ["document", "collect"], modules: ["src/domains/kept.ts"] },
+  },
+  {
+    label: "構成の前後の線は、同じ箱の同じ辺から出る線を辺の上でずらし、縦に並んだ箱をまたぐ線は右の辺から出入りして右へふくらみ、あいだの箱に重ならない",
+    actual: () => {
+      const chain = { boxes: ["a", "b", "c"].map((id) => callBox(id, "src/features/view.ts", { now: "後" })), edges: [callEdge("a-b", "a", "b", { now: "後" }), callEdge("a-b2", "a", "b", { now: "後" }), callEdge("b-c", "b", "c", { now: "後" }), callEdge("a-c", "a", "c", { now: "後" })] };
+      const figure = CompareDiagram.figuresOf(CompareDiagram.fromCalls(callsExplained(chain)));
+      const placedAt = new Map(figure.after.boxes.map((placed) => [placed.box.id, placed]));
+      const bezierOf = (id) => figure.after.edges.find(({ edge }) => edge.id === id).route.bezier;
+      const rightOf = (id) => placedAt.get(id).x + placedAt.get(id).width;
+      const [fromX, , control1X, , control2X] = bezierOf("a-c");
+      return {
+        isSpread: bezierOf("a-b")[0] !== bezierOf("a-b2")[0],
+        bowsFromRight: fromX === rightOf("a"),
+        bowsBeyondBox: Math.min(control1X, control2X) > rightOf("b"),
+        fitsInFigure: Math.max(control1X, control2X) <= figure.width,
+      };
+    },
+    expected: { isSpread: true, bowsFromRight: true, bowsBeyondBox: true, fitsInFigure: true },
+  },
+  {
+    label: "呼び出しの粒度で、増えた箱は変更前の図に無く、消えた箱は変更後の図に無い",
+    actual: () => {
+      const figures = CompareDiagram.figuresOf(CompareDiagram.fromCalls(callsExplained()));
+      return { before: boxIdsOf(figures.before.boxes, (placed) => !placed.isPresent), after: boxIdsOf(figures.after.boxes, (placed) => !placed.isPresent) };
+    },
+    expected: { before: ["memo"], after: ["errors"] },
+  },
+  {
+    label: "呼び出しの粒度の箱は module の concept ごとの組に入り、組は箱を書いた順ではなく地図の groups の順に並ぶ",
+    actual: () => CompareDiagram.fromCalls(callsExplained()).groups.slice(0, 3).map((group) => [group.label, group.boxes]),
+    expected: [["器", ["view"]], ["状態", ["errors", "collect"]], ["文書", ["document"]]],
+  },
+  {
+    label: "呼び出しの粒度で、module が地図に無い箱は最後の組「地図に無い」に入る",
+    actual: () => {
+      const last = CompareDiagram.fromCalls(callsExplained()).groups.at(-1);
+      return [last.label, last.boxes];
+    },
+    expected: ["地図に無い", ["memo"]],
+  },
+  {
+    label: "解説が無ければ、呼び出しの粒度は「解説なし」(unexplained)",
+    actual: () => CompareDiagram.fromCalls(ExplainedMap.create(callsMap, absent)),
+    expected: { kind: "unexplained" },
+  },
+  {
+    label: "calls が無ければ、呼び出しの粒度は「書かれていない」(unwritten)",
+    actual: () => CompareDiagram.fromCalls(explained(callsMap, explainOf({ concepts: callsConcepts }))),
+    expected: { kind: "unwritten" },
+  },
+  {
+    label: "calls の箱も線も 0 件なら、呼び出しの粒度は描けるが「呼び出しの変化なし」(unchanged)で選べるものが無い",
+    actual: () => {
+      const diagram = CompareDiagram.fromCalls(callsExplained(unchangedCalls()));
+      return [diagram.kind, CompareDiagram.unselectedOf(diagram, unchangedCalls()).reason];
+    },
+    expected: ["drawn", "unchanged"],
+  },
+  {
+    label: "呼び出しの粒度で calls に gist・text・review のどれも無ければ、右の欄は件数で、件数は箱と線の状態ごとの数",
+    actual: () => CompareDiagram.unselectedOf(CompareDiagram.fromCalls(callsExplained()), callsOf()),
+    expected: { kind: "counts", counts: { boxes: { added: 1, changed: 1, removed: 1 }, edges: { added: 1, changed: 0, removed: 1 } } },
+  },
+  {
+    label: "calls に review だけを書けば、右の欄は書いた文で、gist と text は null",
+    actual: () => {
+      const calls = callsOf({ review: ["線の向きを見る"] });
+      return CompareDiagram.unselectedOf(CompareDiagram.fromCalls(callsExplained(calls)), calls);
+    },
+    expected: { kind: "written", written: { gist: null, text: null, review: ["線の向きを見る"] } },
+  },
+  {
+    label: "calls の review が空の配列で gist も text も無ければ、右の欄は件数",
+    actual: () => {
+      const calls = callsOf({ review: [] });
+      return CompareDiagram.unselectedOf(CompareDiagram.fromCalls(callsExplained(calls)), calls).kind;
+    },
+    expected: "counts",
+  },
+  {
+    label: "モジュールの粒度の件数は、地図の増えた / 消えた依存と、図に出す変更ファイルの状態から数える(変えていない依存の端と、図に出さない変更ファイルは数えない)",
+    actual: () => CompareDiagram.unselectedOf(CompareDiagram.fromModules(modulesExplained()), null),
+    expected: { kind: "counts", counts: { boxes: { added: 1, changed: 1, removed: 1 }, edges: { added: 2, changed: 0, removed: 1 } } },
+  },
+  {
+    label: "解説が無いとき、呼び出しの粒度の右の欄は選べるものが無く(解説なし)、同じ地図のモジュールの粒度は件数",
+    actual: () => {
+      const unexplained = ExplainedMap.create(modulesMap, absent);
+      return [CompareDiagram.unselectedOf(CompareDiagram.fromCalls(unexplained), null), CompareDiagram.unselectedOf(CompareDiagram.fromModules(unexplained), null).kind];
+    },
+    expected: [{ kind: "unselectable", reason: "unexplained", written: null }, "counts"],
+  },
+  {
+    label: "calls が無いとき、呼び出しの粒度の右の欄は選べるものが無く(書かれていない)、書いた文は null",
+    actual: () => CompareDiagram.unselectedOf(CompareDiagram.fromCalls(explained(callsMap, explainOf({ concepts: callsConcepts }))), null),
+    expected: { kind: "unselectable", reason: "unwritten", written: null },
+  },
+  {
+    label: "箱も線も 0 件の calls に gist を書いたとき、呼び出しの粒度の右の欄は選べるものが無く(変化なし)、書いた gist を持つ",
+    actual: () => {
+      const calls = unchangedCalls({ gist: "構成は変えていない" });
+      return CompareDiagram.unselectedOf(CompareDiagram.fromCalls(callsExplained(calls)), calls);
+    },
+    expected: { kind: "unselectable", reason: "unchanged", written: { gist: "構成は変えていない", text: null, review: [] } },
+  },
+  {
+    label: "図に出す変更ファイルも依存の変化も無い地図では、モジュールの粒度は選べるものが無い(変化なし)",
+    actual: () => {
+      const map = mapOf({ groups: [{ label: "docs", files: [contextFile("src/x.ts"), contextFile("src/y.ts")] }], dependencies: [moduleDependency("x", "y", "kept")] });
+      return CompareDiagram.unselectedOf(CompareDiagram.fromModules(ExplainedMap.create(map, absent)), null);
+    },
+    expected: { kind: "unselectable", reason: "unchanged", written: null },
+  },
+  {
+    label: "module の行き先は、図に出す変更ファイルなら届く",
+    actual: () => CompareDiagram.isSelectable(CompareDiagram.fromModules(modulesExplained()), "src/features/b.ts"),
+    expected: true,
+  },
+  {
+    label: "module の行き先は、変えていない(増えた・消えた依存の端でもない)ファイルなら、残った依存の端でも届かない",
+    actual: () => CompareDiagram.isSelectable(CompareDiagram.fromModules(modulesExplained()), "src/features/untouched.ts"),
+    expected: false,
+  },
+  {
+    label: "module の行き先は、graph が偽の concept のファイルなら、変えていても届かない",
+    actual: () => CompareDiagram.isSelectable(CompareDiagram.fromModules(modulesExplained()), "src/domains/hidden.ts"),
+    expected: false,
+  },
+  {
+    label: "module の行き先は、地図に無いパスなら届かない",
+    actual: () => CompareDiagram.isSelectable(CompareDiagram.fromModules(modulesExplained()), "src/no/such.ts"),
+    expected: false,
+  },
+  {
+    label: "callBox / callEdge の行き先は、calls に書いた id なら届き、calls の無い解説では届かない",
+    actual: () => [
+      CompareDiagram.isSelectable(CompareDiagram.fromCalls(callsExplained()), "view"),
+      CompareDiagram.isSelectable(CompareDiagram.fromCalls(callsExplained()), "view-memo"),
+      CompareDiagram.isSelectable(CompareDiagram.fromCalls(explained(callsMap, explainOf({ concepts: callsConcepts }))), "view"),
+    ],
+    expected: [true, true, false],
+  },
+  {
+    label: "「どこで変わったか」は、選んだ箱のファイル(呼び出しの粒度は module)を変えた、マージ以外のコミットを古い順に返す",
+    actual: () => {
+      const map = { ...callsMap, commits: [commitTouching(1, [diffFile("src/domains/state.ts")]), commitTouching(2, [diffFile("src/domains/state.ts")], { merge: true }), commitTouching(3, [diffFile("src/features/view.ts")]), commitTouching(4, [diffFile("src/domains/state.ts")])] };
+      const result = explained(map, explainOf({ concepts: callsConcepts, calls: callsOf() }));
+      return CompareDiagram.changingCommitsOf(CompareDiagram.fromCalls(result), "errors", result);
+    },
+    expected: [{ sha: shaOf(1), path: "src/domains/state.ts" }, { sha: shaOf(4), path: "src/domains/state.ts" }],
+  },
+  {
+    label: "移動したファイルの箱の「どこで変わったか」には、前のパスを変えたコミットと、前のパスから別の場所へ移したコミットも入る",
+    actual: () => {
+      const [before, between, after] = ["src/features/old/index.ts", "src/features/tmp/index.ts", "src/features/moved/index.ts"];
+      const map = mapOf({
+        groups: [{ label: "features", files: [changedFile(after, { status: "R", oldPath: before })] }],
+        commits: [
+          commitTouching(1, [diffFile(before)]),
+          commitTouching(2, [diffFile(between, { status: "R", oldPath: before })]),
+          commitTouching(3, [diffFile(after, { status: "R", oldPath: between })]),
+          commitTouching(4, [diffFile("src/features/other.ts")]),
+        ],
+      });
+      const result = explained(map, explainOf());
+      return CompareDiagram.changingCommitsOf(CompareDiagram.fromModules(result), after, result);
+    },
+    expected: [{ sha: shaOf(1), path: "src/features/old/index.ts" }, { sha: shaOf(2), path: "src/features/old/index.ts" }, { sha: shaOf(3), path: "src/features/moved/index.ts" }],
+  },
+  {
+    label: "「ほかの画面で見る」は、選んだ箱のファイルを端に持つやりとりを、変更後か変更前のどちらかの手順に含む流れ",
+    actual: () => {
+      const result = callsExplained(callsOf(), {
+        messages: [traceMessage("read-state", "src/features/view.ts", "src/domains/state.ts"), traceMessage("read-doc", "src/features/view.ts", "src/domains/doc.ts")],
+        flows: [
+          { id: "before-only", label: "変更前だけ", steps: ["read-doc"], beforeSteps: ["read-state"] },
+          { id: "unrelated", label: "関わらない", steps: ["read-doc"] },
+          { id: "after", label: "変更後", steps: ["read-state"] },
+        ],
+      });
+      return CompareDiagram.flowsThrough(CompareDiagram.fromCalls(result), "errors", result).map((flow) => flow.id);
+    },
+    expected: ["before-only", "after"],
+  },
+  {
+    label: "Target の行き先の画面は、feature / layer / file / message / flow が構造マップ、callBox / callEdge が構成の前後の呼び出しの粒度、module がモジュールの粒度、stepChange が流れ図",
+    actual: () => [
+      { kind: "feature", id: "f" },
+      { kind: "layer", layer: "l" },
+      { kind: "file", path: "p" },
+      { kind: "message", id: "m" },
+      { kind: "flow", id: "w" },
+      { kind: "callBox", id: "b" },
+      { kind: "callEdge", id: "e" },
+      { kind: "module", path: "q" },
+      { kind: "stepChange", flow: "w", stepChange: 2 },
+    ].map((target) => {
+      const landing = Target.landingOf(target, explained(mapOf(), explainOf()));
+      return landing.screen === "compare" ? [landing.screen, landing.selection.grain] : [landing.screen];
+    }),
+    expected: [["map"], ["map"], ["map"], ["map"], ["map"], ["compare", "calls"], ["compare", "calls"], ["compare", "modules"], ["trace"]],
+  },
+  {
+    label: "feature の Target は構造マップを機能のまとめ方にしてその組を選び、layer の Target は層のまとめ方にしてその組を選ぶ",
+    actual: () => {
+      const result = explained(mapOf(), explainOf({ features: [featureNamed("f")], concepts: [concept("src/utils/Hub.ts", "ハブ", { feature: "f" })] }));
+      return [{ kind: "feature", id: "f" }, { kind: "layer", layer: "utils" }].map((target) => Target.landingOf(target, result).selection);
+    },
+    expected: [{ kind: "group", id: "feature:f", grouping: "feature" }, { kind: "group", id: "layer:utils", grouping: "layer" }],
+  },
+  {
+    label: "構造マップが行き先の Target は、地図にある機能・層の組、木の項目のファイル、両端が図の箱のやりとり、flows の流れなら届き、無ければ届かない",
+    actual: () => {
+      const map = mapOf({ groups: [{ label: "utils", files: [changedFile("src/utils/Hub.ts"), changedFile("src/utils/Ctx.ts")] }] });
+      const result = explained(map, explainOf({
+        features: [featureNamed("f")],
+        concepts: [concept("src/utils/Hub.ts", "ハブ", { feature: "f" })],
+        actors: [{ id: "person", label: "人", role: "r" }],
+        messages: [traceMessage("drawn", "src/utils/Hub.ts", "src/utils/Ctx.ts"), traceMessage("to-person", "src/utils/Hub.ts", "person")],
+        flows: [{ id: "w", label: "流れ", steps: ["drawn"] }],
+      }));
+      return [
+        { kind: "feature", id: "f" },
+        { kind: "feature", id: "nope" },
+        { kind: "layer", layer: "utils" },
+        { kind: "layer", layer: "nope" },
+        { kind: "file", path: "src/utils/Ctx.ts" },
+        { kind: "file", path: "src/no/such.ts" },
+        { kind: "message", id: "drawn" },
+        { kind: "message", id: "to-person" },
+        { kind: "flow", id: "w" },
+        { kind: "flow", id: "nope" },
+      ].map((target) => Target.landingOf(target, result).isReachable);
+    },
+    expected: [true, false, true, false, true, false, true, false, true, false],
+  },
+  {
+    label: "構成の前後が行き先の Target は、その粒度の図にある箱・線なら届き、calls に無い id と、図に出ない(変えていない)ファイルは届かない",
+    actual: () => [
+      { kind: "callBox", id: "view" },
+      { kind: "callBox", id: "nope" },
+      { kind: "callEdge", id: "view-memo" },
+      { kind: "module", path: "src/features/view.ts" },
+      { kind: "module", path: "src/domains/doc.ts" },
+    ].map((target) => Target.landingOf(target, callsExplained()).isReachable),
+    expected: [true, false, true, true, false],
+  },
+  {
+    label: "流れ図が行き先の Target は、対応のある流れで番号が 1〜その数なら届き、数を超える番号・flows に無い流れ・対応の無い流れは届かない",
+    actual: () => {
+      const result = explained(mapOf(), explainOf({ messages: [...traceMessages.values()], flows: [tracedFlow(), { id: "old", label: "前の形", steps: ["keep"] }] }));
+      return [
+        { kind: "stepChange", flow: "w", stepChange: 6 },
+        { kind: "stepChange", flow: "w", stepChange: 7 },
+        { kind: "stepChange", flow: "nope", stepChange: 1 },
+        { kind: "stepChange", flow: "old", stepChange: 1 },
+      ].map((target) => Target.landingOf(target, result).isReachable);
+    },
+    expected: [true, false, false, false],
+  },
+  {
+    label: "stepChange の Target で流れ図を開くときは、変更後の手順がある対応なら「変更後だけ」のその手順、消えた手順の対応なら「比べる」のその行",
+    actual: () => [3, 5, 2].map((stepChange) => TraceRows.openingOf(tracedFlow(), stepChange)),
+    expected: [{ era: "after", index: 1 }, { era: "after", index: 3 }, { era: "aligned", index: 1 }],
+  },
+  {
+    label: "根拠のチップの名前は、kind ごとに行き先の画面の名前と、指す先の名前(機能・やりとりの名前・流れ・箱の名前・線の両端・concept・流れの n 行目)",
+    actual: () => {
+      const result = callsExplained(callsOf(), { features: [featureNamed("f")], messages: [traceMessage("m", "src/features/view.ts", "src/domains/state.ts", { name: "状態を読む" })], flows: [{ id: "w", label: "読む流れ", steps: ["m"] }] });
+      return [
+        { kind: "feature", id: "f" },
+        { kind: "layer", layer: "domains" },
+        { kind: "file", path: "src/features/view.ts" },
+        { kind: "message", id: "m" },
+        { kind: "flow", id: "w" },
+        { kind: "callBox", id: "view" },
+        { kind: "callEdge", id: "view-memo" },
+        { kind: "module", path: "src/domains/state.ts" },
+        { kind: "stepChange", flow: "w", stepChange: 2 },
+      ].map((target) => Target.captionOf(target, result));
+    },
+    expected: ["構造マップ: 機能 f", "構造マップ: domains", "構造マップ: 器", "構造マップ: 状態を読む", "構造マップ: 読む流れ", "構成の前後: view()", "構成の前後: view() → memo()", "構成の前後: 状態", "流れ図: 読む流れの 2 行目"],
+  },
+  {
+    label: "語彙に無い kind・kind の無い Target を持つ解説は、highlights でも quiz の根拠でも解説なし(形)になり、理由はその kind の道筋",
+    actual: () => {
+      const highlightsGoing = (go) => explainOf({ overview: { title: "題", lead: "要約", before: [], after: [{ text: "後" }], highlights: [{ title: "見る", text: "文", go }] } });
+      return [
+        highlightsGoing({ kind: "nope", id: "f" }),
+        highlightsGoing({ id: "f" }),
+        explainOf({ quiz: [yesNoQuestion({ go: [{ kind: "flow", id: "w" }, { kind: "Flow", id: "w" }] })] }),
+      ].map((explain) => explained(mapOf(), explain).reading.reason);
+    },
+    expected: [{ kind: "shape", key: "overview.highlights[].go.kind" }, { kind: "shape", key: "overview.highlights[].go.kind" }, { kind: "shape", key: "quiz[].go[].kind" }],
+  },
+  {
+    label: "語彙に無い kind・kind の無い問いを持つ解説は、解説なし(形)になる",
+    actual: () => {
+      const withoutKind = Object.fromEntries(Object.entries(yesNoQuestion()).filter(([key]) => key !== "kind"));
+      return [yesNoQuestion({ kind: "truefalse" }), withoutKind].map((question) => explained(mapOf(), explainOf({ quiz: [choiceQuestion(), question] })).reading.reason);
+    },
+    expected: [{ kind: "shape", key: "quiz[].kind" }, { kind: "shape", key: "quiz[].kind" }],
+  },
+  {
+    label: "問いに kind ごとの必須のキー(共通の題・根拠と、4 択の選択肢・根拠の Target のキー)が欠けた解説は、解説なし(形)になる",
+    actual: () => {
+      const without = (question, key) => Object.fromEntries(Object.entries(question).filter(([candidate]) => candidate !== key));
+      return [
+        [without(yesNoQuestion(), "title")],
+        [orderQuestion({ go: undefined })],
+        [without(choiceQuestion(), "options")],
+        [yesNoQuestion({ go: [{ kind: "file" }] })],
+      ].map((quiz) => explained(mapOf(), explainOf({ quiz })).reading.reason);
+    },
+    expected: [{ kind: "shape", key: "quiz[].title" }, { kind: "shape", key: "quiz[].go" }, { kind: "shape", key: "quiz[].options" }, { kind: "shape", key: "quiz[].go[].path" }],
+  },
+  {
+    label: "4 択にしか要らないキー(answer)が YES / NO に無くても、解説なしにならない",
+    actual: () => explained(mapOf(), explainOf({ quiz: [yesNoQuestion()] })).reading.kind,
+    expected: "explained",
+  },
+  {
+    label: "overview の highlights がオブジェクトの配列でないか、highlights の go がオブジェクトでない解説は、解説なし(形)になる",
+    actual: () => [
+      { title: "題", lead: "要約", before: [], after: [{ text: "後" }], highlights: "見る" },
+      { title: "題", lead: "要約", before: [], after: [{ text: "後" }], highlights: [{ title: "見る", text: "文", go: "w" }] },
+    ].map((overview) => explained(mapOf(), explainOf({ overview })).reading.reason),
+    expected: [{ kind: "shape", key: "overview.highlights" }, { kind: "shape", key: "overview.highlights[].go" }],
+  },
+  {
+    label: "新しいキー(calls・actors・quiz・flows の手順の対応・features の review)の無い version 1 の解説は読め、構成の前後の呼び出しの粒度は「書かれていない」、流れ図は変更後だけ",
+    actual: () => {
+      const result = explained(callsMap, explainOf({ concepts: callsConcepts, features: [featureNamed("f")], flows: [{ id: "w", label: "流れ", steps: [] }] }));
+      return [result.reading.kind, CompareDiagram.fromCalls(result).kind, TraceRows.erasOf(result.lookup.flows.get("w"))];
+    },
+    expected: ["explained", "unwritten", ["after"]],
+  },
+  {
+    label: "やりとりの端の名前は concept の名前、無ければ actor の名前で、どちらにも無い端は端の綴りのまま",
+    actual: () => {
+      const result = explained(mapOf(), explainOf({
+        concepts: [concept("src/a.ts", "箱 A"), concept("shared", "概念の名前")],
+        actors: [{ id: "person", label: "編集する人", role: "役割" }, { id: "shared", label: "人の名前", role: "役割" }],
+      }));
+      return ["src/a.ts", "person", "shared", "nope"].map((end) => result.lookup.endNameOf(end));
+    },
+    expected: ["箱 A", "編集する人", "概念の名前", "nope"],
+  },
+  {
+    label: "やりとりの端の絵は書いた icon で、書かなければ actor は人(person)、concept は箱(null)",
+    actual: () => {
+      const result = explained(mapOf(), explainOf({
+        concepts: [concept("src/written.ts", "書いた", { icon: "scan" }), concept("src/plain.ts", "書かない")],
+        actors: [{ id: "service", label: "外の置き場", role: "役割", icon: "store" }, { id: "person", label: "人", role: "役割" }],
+      }));
+      return ["src/written.ts", "src/plain.ts", "service", "person"].map((end) => result.lookup.endIcons.get(end));
+    },
+    expected: ["scan", null, "store", "person"],
+  },
+  {
+    label: "比べるときの行は対応の順で、増えた手順は変更後の番号に +、消えた手順は × になる",
+    actual: () => traceRowsOf("aligned").map((row) => row.badge),
+    expected: ["1", "×", "+2", "3", "4", "×"],
+  },
+  {
+    label: "手順の重さは、その手順の側の行にだけ付く(比べるときの変更前 / 変更後、変更後だけ、変更前だけ)",
+    actual: () => [traceRowsOf("aligned")[3].before.cost, traceRowsOf("aligned")[3].after.cost, traceRowsOf("after")[2].after.cost, traceRowsOf("before")[2].before.cost],
+    expected: ["heavy", "skipped", "skipped", "heavy"],
+  },
+  {
+    label: "比べるとき、そのままの行は変更後の説明の 1 列だけで、ほかの行は変更前の列に変更前の説明、変更後の列に変更後の説明を出す",
+    actual: () => {
+      const rows = traceRowsOf("aligned");
+      const textsOf = (row) => TraceRows.cardColumnsOf(row, "aligned").map((column) => [column.side, column.step === null ? null : column.step.text]);
+      return [textsOf(rows[0]), textsOf(rows[3]), textsOf(rows[2])];
+    },
+    expected: [[["only", "後の keep"]], [["before", "前の same"], ["after", "後の same"]], [["before", null], ["after", "後の added"]]],
+  },
+  {
+    label: "同じそのままの手順でも、変更前だけの表示では変更前の説明、変更後だけの表示では変更後の説明を出す",
+    actual: () => [TraceRows.cardColumnsOf(traceRowsOf("before")[0], "before")[0].step.text, TraceRows.cardColumnsOf(traceRowsOf("after")[0], "after")[0].step.text],
+    expected: ["前の keep", "後の keep"],
+  },
+  {
+    label: "比べるとき、そのままの対応でも変更後の番号が手順に無い行は、変更前の列と空の変更後の列の 2 列になる",
+    actual: () => {
+      const flow = tracedFlow({ stepChanges: [{ beforeStep: 1, afterStep: 9, beforeText: "前の keep", afterText: "後の keep" }] });
+      return TraceRows.cardColumnsOf(traceRowsOf("aligned", flow)[0], "aligned").map((column) => [column.side, column.step === null ? null : column.step.text]);
+    },
+    expected: [["before", "前の keep"], ["after", null]],
+  },
+  {
+    label: "変更前だけ / 変更後だけの表示では、どの行もその側の手順の 1 列だけになる",
+    actual: () => ["before", "after"].map((era) => traceRowsOf(era).map((row) => TraceRows.cardColumnsOf(row, era).map((column) => [column.side, column.step === null ? null : column.step.text]))),
+    expected: [
+      [[["only", "前の keep"]], [["only", "前の gone"]], [["only", "前の same"]], [["only", null]], [["only", null]]],
+      [[["only", "後の keep"]], [["only", "後の added"]], [["only", "後の same"]], [["only", null]]],
+    ],
+  },
+  {
+    label: "注記は、比べるときはその対応の行に出る",
+    actual: () => traceRowsOf("aligned").map((row) => row.change),
+    expected: [null, "消えた注記", "増えた注記", null, "変わった注記", null],
+  },
+  {
+    label: "注記は、変更後だけ / 変更前だけでは、その対応に属する手順に出る",
+    actual: () => [traceRowsOf("after")[1].change, traceRowsOf("after")[3].change, traceRowsOf("before")[1].change, traceRowsOf("before")[3].change],
+    expected: ["増えた注記", "変わった注記", "消えた注記", "変わった注記"],
+  },
+  {
+    label: "変更後だけの表示では、消えた手順の注記は出ない",
+    actual: () => traceRowsOf("after").some((row) => row.change === "消えた注記"),
+    expected: false,
+  },
+  {
+    label: "変更前だけの表示では、増えた手順の注記は出ない",
+    actual: () => traceRowsOf("before").some((row) => row.change === "増えた注記"),
+    expected: false,
+  },
+  {
+    label: "変更前だけの表示で、前後が同じやりとりの changed の手順にだけ「綴りは変更後のもの」が付き、前後が違うやりとりの changed の手順には付かない",
+    actual: () => traceRowsOf("before").map((row) => row.before.showsAfterSpelling),
+    expected: [false, false, true, false, false],
+  },
+  {
+    label: "変更後だけの表示では、前後が同じやりとりの changed の手順にも「綴りは変更後のもの」は付かない",
+    actual: () => traceRowsOf("after").map((row) => row.after.showsAfterSpelling),
+    expected: [false, false, false, false],
+  },
+  {
+    label: "比べるときの、前後が同じやりとりの changed の行では、変更前の列にだけ「綴りは変更後のもの」が付く",
+    actual: () => traceRowsOf("aligned").filter((row) => row.status === "changed").map((row) => [row.before.showsAfterSpelling, row.after.showsAfterSpelling]),
+    expected: [[true, false], [false, false]],
+  },
+  {
+    label: "変更後だけ / 変更前だけは、変更後の手順 / 変更前の手順の順に 1 から番号を振る",
+    actual: () => ({ after: traceRowsOf("after").map((row) => [row.badge, row.after.messageId]), before: traceRowsOf("before").map((row) => [row.badge, row.before.messageId]) }),
+    expected: {
+      after: [["1", "keep"], ["2", "added"], ["3", "same"], ["4", "moved-after"]],
+      before: [["1", "keep"], ["2", "gone"], ["3", "same"], ["4", "moved-before"], ["5", "gone-last"]],
+    },
+  },
+  {
+    label: "変更後だけでは、対応の状態が付いた手順にだけ「この PR で変わった」が付く",
+    actual: () => traceRowsOf("after").map((row) => row.status !== null),
+    expected: [false, true, true, true],
+  },
+  {
+    label: "要約は、手順の数の前後と、増えた / 消えた / 変わった対応の件数を数える",
+    actual: () => {
+      const { steps, counts } = TraceRows.summaryOf(tracedFlow());
+      return { steps, counts };
+    },
+    expected: { steps: { before: 5, after: 4 }, counts: { added: 1, changed: 2, removed: 2 } },
+  },
+  {
+    label: "要約の量の前後は、measure を書いた流れでだけ出す",
+    actual: () => [TraceRows.summaryOf(tracedFlow({ measure: { what: "走査", before: "毎回", after: "0 回" } })).measure, TraceRows.summaryOf(tracedFlow()).measure],
+    expected: [{ what: "走査", before: "毎回", after: "0 回" }, null],
+  },
+  {
+    label: "対応(stepChanges)の無い流れは、比べると変更前だけを出さず、変更後だけになる",
+    actual: () => [TraceRows.erasOf(tracedFlow()), TraceRows.erasOf(tracedFlow({ stepChanges: undefined, beforeSteps: undefined }))],
+    expected: [["aligned", "after", "before"], ["after"]],
+  },
+  {
+    label: "流れ図の行き先は、対応のある流れで番号が 1〜その数なら届く",
+    actual: () => [TraceRows.isSelectable(tracedFlow(), 1), TraceRows.isSelectable(tracedFlow(), 6)],
+    expected: [true, true],
+  },
+  {
+    label: "流れ図の行き先は、番号が対応の数を超えれば届かない",
+    actual: () => TraceRows.isSelectable(tracedFlow(), 7),
+    expected: false,
+  },
+  {
+    label: "流れ図の行き先は、対応(stepChanges)の無い流れでは届かない",
+    actual: () => TraceRows.isSelectable(tracedFlow({ stepChanges: undefined }), 1),
+    expected: false,
+  },
+  {
+    label: "カードは全部の流れの端を 1 回だけ置き、流れを替えても同じ位置にある",
+    actual: () => {
+      const { flows, messages, layout } = tracedLayoutOf([{ steps: [["a", "b"]], beforeSteps: [] }, { steps: [["b", "c"]], beforeSteps: [["c", "d"]] }]);
+      const positionsIn = (flow) => TraceLayout.cardsIn(layout, TraceRows.rowsOf(flow, "after", messages), { era: "after", endStatuses: new Map() }).map((card) => [card.end, card.x, card.y]);
+      return { ends: layout.cards.map((card) => card.end).toSorted(), isSame: JSON.stringify(positionsIn(flows[0])) === JSON.stringify(positionsIn(flows[1])) };
+    },
+    expected: { ends: ["a", "b", "c", "d"], isSame: true },
+  },
+  {
+    label: "列は、最初の流れの最初の手順の送り手を 0 とし、変更前の手順も含めて向きを問わずにたどった最短の数になる",
+    actual: () => columnsIn(tracedLayoutOf([{ steps: [["x", "y"], ["y", "z"]], beforeSteps: [["x", "z"]] }, { steps: [["w", "z"]], beforeSteps: [] }]).layout),
+    expected: [["x", 0], ["y", 1], ["z", 1], ["w", 2]],
+  },
+  {
+    label: "列の中は、1 つ前の列でつながる端の位置の平均の小さい順に並ぶ(#1335 の 3 つの操作。先に出たのは覚え書き、平均が小さいのはドキュメントのエラー)",
+    actual: () => {
+      const flows = [
+        { steps: [["person", "state"], ["state", "dock"], ["dock", "state"], ["dock", "memo"], ["memo", "errors"], ["dock", "person"]], beforeSteps: [["person", "state"], ["state", "dock"], ["dock", "state"], ["state", "errors"], ["dock", "person"]] },
+        { steps: [["person", "dock"], ["dock", "state"], ["dock", "memo"], ["dock", "person"]], beforeSteps: [["person", "dock"], ["dock", "state"], ["state", "errors"], ["dock", "person"]] },
+        { steps: [["person", "state"], ["state", "dock"], ["dock", "memo"], ["dock", "person"]], beforeSteps: [["person", "state"], ["state", "dock"], ["dock", "person"]] },
+      ];
+      return tracedLayoutOf(flows).layout.cards.map((card) => [card.end, card.column, card.row]);
+    },
+    expected: [["person", 0, 0], ["state", 1, 0], ["dock", 1, 1], ["errors", 2, 0], ["memo", 2, 1]],
+  },
+  {
+    label: "列の中の並びは、出た順ではなく 1 つ前の列を並べ替えた後の位置の平均で決まる(列 1 で後に出た x が y より前に並ぶと、列 2 も x の先の z1 が前)",
+    actual: () => {
+      // a と c は別々にたどる 2 つの起点で列 0 に並ぶ。列 1 は出た順が w・y・x、平均の順が w・x・y で、列 2 は出た順が z2・z1。
+      const flows = [{ steps: [["a", "w"], ["c", "y"], ["a", "x"], ["y", "z2"], ["x", "z1"]], beforeSteps: [] }];
+      return tracedLayoutOf(flows).layout.cards.map((card) => [card.end, card.column, card.row]);
+    },
+    expected: [["a", 0, 0], ["c", 0, 1], ["w", 1, 0], ["x", 1, 1], ["y", 1, 2], ["z1", 2, 0], ["z2", 2, 1]],
+  },
+  {
+    label: "最初の送り手からたどり着けない端は、その端を含む流れの最初の送り手を起点に、列 0 から数え直す",
+    actual: () => columnsIn(tracedLayoutOf([{ steps: [["a", "b"]], beforeSteps: [] }, { steps: [["c", "d"], ["d", "e"]], beforeSteps: [] }]).layout),
+    expected: [["a", 0], ["c", 0], ["b", 1], ["d", 1], ["e", 2]],
+  },
+  {
+    label: "今の表示の手順の端でないカードは「この操作では使わない」(idle)になり、使う端はならない",
+    actual: () => {
+      const { flows, messages, layout } = tracedLayoutOf([{ steps: [["a", "b"]], beforeSteps: [] }, { steps: [["b", "c"]], beforeSteps: [] }]);
+      return TraceLayout.cardsIn(layout, TraceRows.rowsOf(flows[0], "after", messages), { era: "after", endStatuses: new Map() }).map((card) => [card.end, card.presence]);
+    },
+    expected: [["a", "used"], ["b", "used"], ["c", "idle"]],
+  },
+  ...[
+    { label: "足したファイルの concept は、変更前だけでは「変更前には無い」、比べるときは「この PR で増えた」になる", end: "src/new.ts", expected: { before: "missingBefore", aligned: "added", after: "used" } },
+    { label: "消したファイルの concept は、変更後だけでは「変更後には無い」、比べるときは「この PR で消えた」になる", end: "src/gone.ts", expected: { before: "used", aligned: "removed", after: "missingAfter" } },
+    { label: "status が added の actor は、足したファイルの concept と同じく、変更前だけでは「変更前には無い」、比べるときは「この PR で増えた」になる", end: "helper", expected: { before: "missingBefore", aligned: "added", after: "used" } },
+    { label: "status が removed の actor は、消したファイルの concept と同じく、変更後だけでは「変更後には無い」、比べるときは「この PR で消えた」になる", end: "retired", expected: { before: "used", aligned: "removed", after: "missingAfter" } },
+  ].map(({ label, end, expected }) => ({
+    label,
+    actual: () => {
+      const presenceIn = endPresenceIn(end);
+      return { before: presenceIn("before"), aligned: presenceIn("aligned"), after: presenceIn("after") };
+    },
+    expected,
+  })),
+  {
+    label: "この PR で増えた・消えた端は、足した・消したファイルと status を書いた actor で、変えたファイル・status の無い actor・地図に無い端は入らない",
+    actual: () => [...presenceExplained().endStatuses.entries()].toSorted(),
+    expected: [["helper", "added"], ["retired", "removed"], ["src/gone.ts", "removed"], ["src/new.ts", "added"]],
   },
   {
     label: "コードの表示では、続けて消した行を 1 つに畳み、あいだに残った行で分ける",
@@ -780,6 +1861,223 @@ const cases = [
     expected: false,
   },
   {
+    label: "クイズの答えの鍵は、問いの文・選択肢・並べる項目のどれか 1 つが変われば別になる",
+    actual: () => [
+      [choiceQuestion(), choiceQuestion({ prompt: "どれでしょう" })],
+      [choiceQuestion(), choiceQuestion({ options: ["一", "二", "三", "五"] })],
+      [orderQuestion(), orderQuestion({ items: ["甲", "乙", "丙", "丁", "己"] })],
+    ].map(([written, rewritten]) => Quiz.keyOf(written) === Quiz.keyOf(rewritten)),
+    expected: [false, false, false],
+  },
+  {
+    label: "クイズの題だけを書き直しても、答えの鍵は変わらない",
+    actual: () => Quiz.keyOf(choiceQuestion()) === Quiz.keyOf(choiceQuestion({ title: "書き直した題" })),
+    expected: true,
+  },
+  {
+    label: "題・why・go・答え(holds / answer)だけが違う 2 問は、同じ答えの鍵になる(解説の検査がこの 2 問を落とす理由)",
+    actual: () => [
+      [yesNoQuestion(), yesNoQuestion({ id: "y2", title: "別の題", why: "別の理由", go: [{ kind: "message", id: "m" }], holds: true })],
+      [choiceQuestion(), choiceQuestion({ id: "c2", title: "別の題", why: "別の理由", go: [{ kind: "message", id: "m" }], answer: 1 })],
+    ].map(([first, second]) => Quiz.keyOf(first) === Quiz.keyOf(second)),
+    expected: [true, true],
+  },
+  {
+    label: "クイズの答えの鍵の元にするキーは、解説の検査が重なりを落とすキーと同じ",
+    actual: () => Quiz.KeyParts,
+    expected: checkerQuizKeyParts,
+  },
+  {
+    label: "クイズの問いの kind は、解説の検査の Question の kind と同じ",
+    actual: () => Object.values(Quiz.Kinds),
+    expected: checkerQuestionKinds,
+  },
+  {
+    label: "並べ替えの始めの並びは、正しい順(書いた順)と違い、同じ問いなら毎回同じ",
+    actual: () => {
+      const start = Quiz.startOf(orderQuestion());
+      return [start.toSorted(), start.every((position, index) => position === index), JSON.stringify(Quiz.startOf(orderQuestion())) === JSON.stringify(start)];
+    },
+    expected: [[0, 1, 2, 3, 4], false, true],
+  },
+  {
+    label: "並べ替えの項目が 2 つなら、始めの並びは逆順",
+    actual: () => [Quiz.startOf(orderQuestion({ items: ["甲", "乙"] })), Quiz.startOf(orderQuestion({ items: ["前", "後"], prompt: "別の問い" }))],
+    expected: [[1, 0], [1, 0]],
+  },
+  {
+    label: "4 択は、answer と同じ番号を選べば正解、違う番号なら不正解",
+    actual: () => [Quiz.isCorrect(choiceQuestion(), 3), Quiz.isCorrect(choiceQuestion(), 1)],
+    expected: [true, false],
+  },
+  {
+    label: "YES / NO は、holds が true なら YES が正解で NO が不正解、false なら NO が正解で YES が不正解",
+    actual: () => [true, false].flatMap((holds) => [true, false].map((answer) => Quiz.isCorrect(yesNoQuestion({ holds }), answer))),
+    expected: [true, false, false, true],
+  },
+  {
+    label: "並べ替えは、書いた順と同じ並びなら正解、隣の 2 つを入れ替えた並びなら不正解",
+    actual: () => [Quiz.isCorrect(orderQuestion(), [0, 1, 2, 3, 4]), Quiz.isCorrect(orderQuestion(), [0, 2, 1, 3, 4])],
+    expected: [true, false],
+  },
+  {
+    label: "覚えた答えのうち、kind に合わない形・選択肢の範囲の外・今の問いに無い鍵のものは読まない",
+    actual: () => {
+      const questions = [choiceQuestion(), choiceQuestion({ id: "c2", prompt: "範囲の外" }), choiceQuestion({ id: "c3", prompt: "範囲の下" }), yesNoQuestion(), yesNoQuestion({ id: "y2", prompt: "読める真偽" }), orderQuestion(), orderQuestion({ id: "o2", prompt: "長さの違う並び" })];
+      const ids = quizIdsOf(questions);
+      const answers = {
+        [ids.keyOf("c")]: 2,
+        [ids.keyOf("c2")]: 5,
+        [ids.keyOf("c3")]: 0,
+        [ids.keyOf("y")]: 1,
+        [ids.keyOf("y2")]: false,
+        [ids.keyOf("o")]: [4, 3, 2, 1, 0],
+        [ids.keyOf("o2")]: [0, 1, 2],
+        [Quiz.keyOf(choiceQuestion({ prompt: "消えた問い" }))]: 1,
+      };
+      return ids.entries(Quiz.progressOf({ answers }, questions).answers);
+    },
+    expected: [["c", 2], ["y2", false], ["o", [4, 3, 2, 1, 0]]],
+  },
+  {
+    label: "今の問いは鍵で覚えるので、問いの並びを入れ替えても同じ問いから開く",
+    actual: () => {
+      const ids = quizIdsOf([choiceQuestion(), yesNoQuestion(), orderQuestion()]);
+      const saved = { current: ids.keyOf("y") };
+      return [ids.current(Quiz.progressOf(saved, [choiceQuestion(), yesNoQuestion(), orderQuestion()])), ids.current(Quiz.progressOf(saved, [orderQuestion(), choiceQuestion(), yesNoQuestion()]))];
+    },
+    expected: ["y", "y"],
+  },
+  {
+    label: "覚えた今の問いの鍵が今の問いに無ければ、最初の問いから開く",
+    actual: () => {
+      const questions = [orderQuestion(), yesNoQuestion(), choiceQuestion()];
+      const ids = quizIdsOf(questions);
+      return [ids.current(Quiz.progressOf({ current: Quiz.keyOf(yesNoQuestion({ prompt: "消えた問い" })) }, questions)), ids.current(Quiz.progressOf({ current: 1 }, questions))];
+    },
+    expected: ["o", "o"],
+  },
+  {
+    label: "並べ替えの途中は、項目の位置をちょうど 1 回ずつ使う並びだけを読み、長さが違う・同じ位置が重なる・範囲の外の並びは読まない",
+    actual: () => {
+      const questions = ["o", "o2", "o3", "o4", "o5"].map((id) => orderQuestion({ id, prompt: `並べてください ${id}` }));
+      const ids = quizIdsOf(questions);
+      // o5 は位置をすべて使ったうえで 1 つ重ねた、項目より長い並び。
+      const arrangements = { [ids.keyOf("o")]: [2, 0, 1, 4, 3], [ids.keyOf("o2")]: [0, 1], [ids.keyOf("o3")]: [0, 0, 1, 2, 3], [ids.keyOf("o4")]: [0, 1, 2, 3, 5], [ids.keyOf("o5")]: [0, 1, 2, 3, 4, 4] };
+      return ids.entries(Quiz.progressOf({ arrangements }, questions).arrangements);
+    },
+    expected: [["o", [2, 0, 1, 4, 3]]],
+  },
+  {
+    label: "並べ替えでない問いの鍵に付いた途中の並びは読まない",
+    actual: () => {
+      const questions = [choiceQuestion(), orderQuestion()];
+      const ids = quizIdsOf(questions);
+      // 4 択は items を持たないので、空の並びは項目の位置をちょうど 1 回ずつ使う並びになる。kind を見ないと読んでしまう。
+      return ids.entries(Quiz.progressOf({ arrangements: { [ids.keyOf("c")]: [], [ids.keyOf("o")]: [1, 0, 2, 3, 4] } }, questions).arrangements);
+    },
+    expected: [["o", [1, 0, 2, 3, 4]]],
+  },
+  {
+    label: "今の問いに無い鍵に付いた途中の並びは読まない",
+    actual: () => {
+      const questions = [orderQuestion()];
+      const ids = quizIdsOf(questions);
+      return ids.entries(Quiz.progressOf({ arrangements: { [Quiz.keyOf(orderQuestion({ prompt: "消えた問い" }))]: [1, 0, 2, 3, 4], [ids.keyOf("o")]: [4, 3, 2, 1, 0] } }, questions).arrangements);
+    },
+    expected: [["o", [4, 3, 2, 1, 0]]],
+  },
+  {
+    label: "答えのある問いの途中の並びは読まない(答えは読む)",
+    actual: () => {
+      const questions = [orderQuestion(), orderQuestion({ id: "o2", prompt: "まだ答えていない問い" })];
+      const ids = quizIdsOf(questions);
+      const progress = Quiz.progressOf({ answers: { [ids.keyOf("o")]: [0, 1, 2, 3, 4] }, arrangements: { [ids.keyOf("o")]: [1, 0, 2, 3, 4], [ids.keyOf("o2")]: [1, 0, 2, 3, 4] } }, questions);
+      return [ids.entries(progress.answers), ids.entries(progress.arrangements)];
+    },
+    expected: [[["o", [0, 1, 2, 3, 4]]], [["o2", [1, 0, 2, 3, 4]]]],
+  },
+  {
+    label: "並べ替えを送ると、その問いの途中の並びだけが変わり、答えは無いまま",
+    actual: () => {
+      const questions = [orderQuestion(), orderQuestion({ id: "o2", prompt: "別の並べ替え" })];
+      const ids = quizIdsOf(questions);
+      const progress = Quiz.progressOf({ arrangements: { [ids.keyOf("o2")]: [4, 3, 2, 1, 0] } }, questions);
+      const next = Quiz.withArrangement(progress, ids.keyOf("o"), [1, 0, 2, 3, 4]);
+      return [ids.entries(next.answers), ids.entries(next.arrangements)];
+    },
+    expected: [[], [["o2", [4, 3, 2, 1, 0]], ["o", [1, 0, 2, 3, 4]]]],
+  },
+  {
+    label: "答えのある問いに並べ替えを送っても、覚えた値は変わらない",
+    actual: () => {
+      const questions = [orderQuestion()];
+      const ids = quizIdsOf(questions);
+      const progress = Quiz.progressOf({ answers: { [ids.keyOf("o")]: [0, 2, 1, 3, 4] } }, questions);
+      return JSON.stringify(Quiz.withArrangement(progress, ids.keyOf("o"), [1, 0, 2, 3, 4])) === JSON.stringify(progress);
+    },
+    expected: true,
+  },
+  {
+    label: "次の問題へで、今の問いは問いの並び(鍵の並びではない)で次の問いになり、最後の問いでは変わらない",
+    actual: () => {
+      const questions = [orderQuestion(), choiceQuestion(), yesNoQuestion()];
+      const ids = quizIdsOf(questions);
+      const first = Quiz.progressOf(null, questions);
+      const second = Quiz.withNext(first, questions);
+      const third = Quiz.withNext(second, questions);
+      const keys = questions.map((question) => Quiz.keyOf(question));
+      return [JSON.stringify(keys.toSorted()) === JSON.stringify(keys), [first, second, third, Quiz.withNext(third, questions)].map(ids.current)];
+    },
+    expected: [false, ["o", "c", "y", "y"]],
+  },
+  {
+    label: "次の問題へで、今の問いが問いに無ければ、今の問いは変わらない(最初の問いへ進まない)",
+    actual: () => {
+      const questions = [orderQuestion(), choiceQuestion()];
+      const gone = Quiz.keyOf(yesNoQuestion({ prompt: "消えた問い" }));
+      return Quiz.withNext(Quiz.withCurrent(Quiz.progressOf(null, questions), gone), questions).current === gone;
+    },
+    expected: true,
+  },
+  {
+    label: "答え合わせをすると、その問いの途中の並びは消え、答えだけが残る",
+    actual: () => {
+      const questions = [orderQuestion(), choiceQuestion()];
+      const ids = quizIdsOf(questions);
+      const progress = Quiz.progressOf({ arrangements: { [ids.keyOf("o")]: [1, 0, 2, 3, 4] } }, questions);
+      const next = Quiz.withAnswer(progress, ids.keyOf("o"), [1, 0, 2, 3, 4]);
+      return [ids.entries(next.answers), ids.entries(next.arrangements)];
+    },
+    expected: [[["o", [1, 0, 2, 3, 4]]], []],
+  },
+  {
+    label: "この問題をやり直すと、その問いの答えと途中の並びだけが消え、ほかの問いの答えと途中の並びは残る",
+    actual: () => {
+      const questions = [orderQuestion(), orderQuestion({ id: "o2", prompt: "別の並べ替え" }), choiceQuestion()];
+      const ids = quizIdsOf(questions);
+      const progress = {
+        current: ids.keyOf("o"),
+        answers: { [ids.keyOf("o")]: [0, 1, 2, 3, 4], [ids.keyOf("c")]: 2 },
+        arrangements: { [ids.keyOf("o")]: [1, 0, 2, 3, 4], [ids.keyOf("o2")]: [4, 3, 2, 1, 0] },
+      };
+      const next = Quiz.withoutAnswer(progress, ids.keyOf("o"));
+      return [ids.current(next), ids.entries(next.answers), ids.entries(next.arrangements)];
+    },
+    expected: ["o", [["c", 2]], [["o2", [4, 3, 2, 1, 0]]]],
+  },
+  {
+    label: "答えを消す(覚えた値を読まずに作り直す)と、答え・途中の並び・今の問いがすべて初めに戻る",
+    actual: () => {
+      const questions = [orderQuestion(), choiceQuestion()];
+      const ids = quizIdsOf(questions);
+      const answered = Quiz.withAnswer(Quiz.withArrangement(Quiz.withCurrent(Quiz.progressOf(null, questions), ids.keyOf("c")), ids.keyOf("o"), [1, 0, 2, 3, 4]), ids.keyOf("c"), 2);
+      const cleared = Quiz.progressOf(null, questions);
+      return [[ids.current(answered), ids.entries(answered.answers).length, ids.entries(answered.arrangements).length], [ids.current(cleared), cleared.answers, cleared.arrangements]];
+    },
+    expected: [["c", 1, 1], ["o", {}, {}]],
+  },
+  {
     label: "確認の印の鍵は、sha が変われば別",
     actual: () => ReviewCheck.keyOf(shaOf(1), "見るところ") === ReviewCheck.keyOf(shaOf(2), "見るところ"),
     expected: false,
@@ -791,9 +2089,12 @@ const cases = [
       ScreenChoice.choose("#test"),
       ScreenChoice.choose("#impact"),
       ScreenChoice.choose("#primer"),
+      ScreenChoice.choose("#compare"),
+      ScreenChoice.choose("#trace"),
+      ScreenChoice.choose("#quiz"),
       ScreenChoice.choose("story"),
     ],
-    expected: ["story", "test", "impact", "primer", "story"],
+    expected: ["story", "test", "impact", "primer", "compare", "trace", "quiz", "story"],
   },
   {
     label: "ハッシュが無いか画面を指していなければ構造マップ",
@@ -851,9 +2152,14 @@ const cases = [
     expected: checkerShapeRoutes,
   },
   {
-    label: "ページが欠けを見る道筋とそれを必須とする kind は、解説の検査の形(Shapes・Variants)の primers・terms の下の必須の文と 1 つのオブジェクトと同じ",
+    label: "ページが欠けを見る道筋とそれを必須とする kind は、解説の検査の形(Shapes・Variants)の primers・terms の下の必須の文と 1 つのオブジェクトと、quiz の下の必須のすべてのキーと同じ",
     actual: () => ExplainShape.Required,
     expected: checkerRequiredRoutes,
+  },
+  {
+    label: "ページが kind を見る道筋と語彙は、解説の検査の形(Variants)の overview の highlights と quiz の下の、kind で形が決まるオブジェクトと同じ",
+    actual: () => ExplainShape.Kinds,
+    expected: checkerKindRoutes,
   },
   {
     label: "解説が無いとき、振る舞いの節は「解説なし」",
@@ -2419,10 +3725,10 @@ const cases = [
     expected: [...checkerVocabulary[name]].sort(),
   })),
   {
-    label: "解説の検査が受け付ける Target の kind はどれも、ページが検査の求めるキーを読んで移る先にする",
+    label: "解説の検査が受け付ける Target の kind はどれも、ページが検査の求めるキーを読んで行き先にする(行き先で選ぶものに、求めるキーの値がすべて入る)",
     actual: () => Object.entries(checkerTargetKeys).map(([kind, keys]) => {
-      const selection = Target.selectionOf({ kind, ...Object.fromEntries(keys.map((key) => [key, `値-${key}`])) });
-      return [kind, selection !== undefined && keys.some((key) => selection.id.endsWith(`値-${key}`))];
+      const landing = Target.landingOf({ kind, ...Object.fromEntries(keys.map((key) => [key, `値-${key}`])) }, explained(mapOf(), explainOf()));
+      return [kind, keys.every((key) => JSON.stringify(landing.selection).includes(`値-${key}`))];
     }),
     expected: Object.keys(checkerTargetKeys).map((kind) => [kind, true]),
   },

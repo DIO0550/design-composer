@@ -59,6 +59,7 @@ work, head, unpushed = sys.argv[1:4]
 explain = {
     "version": 1, "pr": 1, "sha": head,
     "overview": {"title": "書いた解説", "lead": "要約", "before": [], "after": [{"text": "後"}]},
+    "calls": {"boxes": [], "edges": []},
     "suites": [{"id": "s", "label": "置き場", "file": "package.json"}],
     "tests": [{"id": "t", "suite": "s", "name": "n", "techniques": ["state"], "why": "w", "given": "g", "when": "w", "then": "t",
                "excerpt": {"path": "package.json", "start": 1, "end": 1}}],

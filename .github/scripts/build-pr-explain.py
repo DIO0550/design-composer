@@ -2,23 +2,24 @@
 """PR の解説(`explain.json`、version 1)を検査し、コード抜粋の中身を足して書き出す。
 
 解説はセッションが `pr-explain` スキルで書き、ページの固定スクリプトが変更の地図(`change-map.json`)と
-合わせて 5 画面に組む。ここが防ぐのはスクリプトの注入ではなく(それは `check-pr-explain-template.py` の
+合わせて 8 画面に組む。ここが防ぐのはスクリプトの注入ではなく(それは `check-pr-explain-template.py` の
 管轄)、**形の崩れと解説の中の参照切れ**(ページが黙って空欄を出す)。
 
 報告する違反は次のとおり(並びが報告の順)。
 
 - `pr-explain-shape` — 読めない・形が表と違う(必須の欠け・知らないキー・重複したキー・型・語彙・
   綴り・一意性・範囲・状況の表のマスの揃い・振る舞いの前後が同じ・振る舞いの仕様の場所と関連 Issue の重複・
-  行の無い変わらないことの仕様・用語の印の書き方・強調の範囲)
+  行の無い変わらないことの仕様・用語の印の書き方・強調の範囲・呼び出しの前後と線の端・手順の対応・手順の説明と注記の位置・
+  アクターと concepts の綴り・やりとりの状態と手順の位置と対応の状態・選択肢の数と答えの範囲・クイズの答えの鍵の重なり)
 - `pr-explain-meta` — `pr` が公開先の PR と違う
-- `pr-explain-ref` — 解説の中の参照が解説の中に無い(message の from / to・flow の steps など)・用語の印が terms に
-  無い・どの印からも指されない用語
+- `pr-explain-ref` — 解説の中の参照が解説の中に無い(message の from / to(concepts か actors)・flow の steps と beforeSteps・
+  featureRanges の feature・calls の箱の module と線の from / to・Target(置いたすべての道筋)など)・用語の印が terms に無い・どの印からも指されない用語
 - `pr-explain-code` — 解説時点の `sha` がこのリポジトリに無い・抜粋のパスがその sha に無い・範囲が
   ファイルに収まらない
 
 種別の綴りは、この一覧と報告の行の頭(`[<種別>] `)にだけ書く(照合は `build-pr-explain-cases.sh`)。
 
-**地図を指す参照(commitStory の sha・Note のパスと行・Target の layer / file・LayerRole の layer・
+**地図を指す参照(commitStory の sha・Note と FeatureRange のパスと行・Target の layer / file / module・LayerRole の layer・
 concept・primers の出てくる場所の `path`・`lineRange`・`shas`・振る舞いの仕様の場所の `path`・`shas` が地図にあるか)は見ない。** 地図は push のたびに
 作り直されるので、解説を書いた時点で合っていても後で外れる。外れたものはページが「地図に無い」と出す。
 
@@ -239,7 +240,7 @@ Sha = Scalar("sha")
 Count = Scalar("count")
 MarkedText = Scalar("marked_text")
 
-# 技法・phase・やりとりの種類・方式・やりとりの状態・技術の節の状態・注意メモの種類の語彙。ページの表(固定スクリプトの
+# 技法・phase・やりとりの種類・方式・やりとりの状態・技術の節の状態・注意メモの種類・手順の重さ・流れ図のカードの絵の語彙。ページの表(固定スクリプトの
 # 核の `Vocabulary`)と同じキーの集合で、`pr-explain-core-cases.sh` が突き合わせる。やりとりの状態と技術の節の状態は、
 # 省けば前からあって変えていないもの。
 Techniques = ("boundary", "equivalence", "error", "state", "regression", "idempotence", "type")
@@ -249,6 +250,11 @@ Vias = ("call", "http", "state", "log", "exec", "file")
 MessageStatuses = ("added", "changed", "removed")
 PrimerStatuses = ("added", "changed")
 RemarkKinds = ("caution", "memo", "rule", "spec", "history")
+StepCosts = ("heavy", "skipped")
+CardIcons = ("person", "widget", "store", "cache", "scan")
+# アクターの状態(この PR で増えた・消えた人や外のサービス)。やりとりの状態の語のうち changed を除いたもの(アクターは中身を
+# 持たないので、変えたという状態が無い)。ページの語彙には置かず、`changeStatusOf` で読む。
+ActorStatuses = ("added", "removed")
 
 # 前後の組(振る舞いの変わったこと・増えた状況が同じ形で持つ)。これまでは 0 件でよく、これからは 1 件以上。
 ImpactSides: dict[str, Field] = {
@@ -265,6 +271,14 @@ CitedSpec: dict[str, Field] = {
     "text": need(UserText),
 }
 
+# コミットの差分の行の範囲(注釈と機能の範囲が同じ形で持つ)。行番号はそのコミット時点の `side` の側(既定は変更後)。
+DiffSpan: dict[str, Field] = {
+    "path": need(Text),
+    "side": may(Word(("new", "old"))),
+    "start": need(Count),
+    "end": need(Count),
+}
+
 # 解説の形(`pr-explain` スキルの「explain.json の形」の表を、検査が読む形にしたもの)。
 Shapes: dict[str, dict[str, Field]] = {
     "Explain": {
@@ -278,12 +292,15 @@ Shapes: dict[str, dict[str, Field]] = {
         "concepts": may(Many(Shape("Concept"))),
         "messages": may(Many(Shape("Message"))),
         "flows": may(Many(Shape("Flow"))),
+        "actors": may(Many(Shape("Actor"))),
+        "calls": need(Shape("Calls")),
         "commitStories": may(Many(Shape("CommitStory"))),
         "suites": may(Many(Shape("Suite"))),
         "tests": may(Many(Shape("Test"))),
         "impact": may(Shape("Impact")),
         "primers": may(Many(Variant("Primer"))),
         "terms": may(Many(Shape("Term"))),
+        "quiz": may(Many(Variant("Question"))),
     },
     "Overview": {
         "title": need(Text),
@@ -340,7 +357,7 @@ Shapes: dict[str, dict[str, Field]] = {
     "KeptSpec": CitedSpec,
     "RelatedIssue": {"issue": need(Count), "text": need(UserText)},
     "Highlight": {"title": need(Heading), "text": need(Text), "go": need(Variant("Target"))},
-    "Feature": {"id": need(Id), "label": need(Heading), "role": need(Text)},
+    "Feature": {"id": need(Id), "label": need(Heading), "role": need(Text), "review": may(Many(Text))},
     "LayerRole": {"layer": need(Text), "role": need(Text)},
     "Concept": {
         "path": need(Text),
@@ -349,7 +366,11 @@ Shapes: dict[str, dict[str, Field]] = {
         "feature": may(Id),
         "change": may(Text),
         "graph": may(Scalar("flag")),
+        "icon": may(Word(CardIcons)),
     },
+    # やりとりの端になる、concepts のファイルでないもの(人・外のサービス)。id は concepts の path と同じ綴りにしない
+    # (`cross_collection_problems`)。
+    "Actor": {"id": need(Id), "label": need(Heading), "role": need(Text), "icon": may(Word(CardIcons)), "status": may(Word(ActorStatuses))},
     "Message": {
         "id": need(Id),
         "from": need(Text),
@@ -362,7 +383,57 @@ Shapes: dict[str, dict[str, Field]] = {
         "returns": may(Text),
         "status": may(Word(MessageStatuses)),
     },
-    "Flow": {"id": need(Id), "label": need(Heading), "steps": need(Many(Id, least=1))},
+    # `steps` は変更後の手順、`beforeSteps` は変更前の手順。どの手順も、ちょうど 1 つの対応(`stepChanges`)に属する
+    # (`step_changes_problem`)。
+    "Flow": {
+        "id": need(Id),
+        "label": need(Heading),
+        "steps": need(Many(Id, least=1)),
+        "gist": need(Text),
+        "text": may(Text),
+        "beforeSteps": need(Many(Id)),
+        "stepChanges": need(Many(Shape("StepChange"), least=1)),
+        "measure": may(Shape("Measure")),
+    },
+    # 変更前の手順と変更後の手順の対応。番号は 1 始まりで、status ごとに持つ側が決まる(`step_change_problem`)。
+    "StepChange": {
+        "status": may(Word(MessageStatuses)),
+        "beforeStep": may(Count),
+        "afterStep": may(Count),
+        "beforeText": may(Text),
+        "afterText": may(Text),
+        "change": may(Text),
+        "beforeCost": may(Word(StepCosts)),
+        "afterCost": may(Word(StepCosts)),
+    },
+    "Measure": {"what": need(Text), "before": need(Text), "after": need(Text)},
+    # 構成の前後の呼び出しの粒度の箱と線。箱と線をまたいで id は一意(`call_ids_problem`)。
+    "Calls": {
+        "boxes": need(Many(Shape("CallBox"))),
+        "edges": need(Many(Shape("CallEdge"))),
+        "gist": may(Text),
+        "text": may(Text),
+        "review": may(Many(Text)),
+    },
+    # 箱の名前は呼び出しの名前(識別子)なので、見出し(Heading)にしない。
+    "CallBox": {
+        "id": need(Id),
+        "name": need(Text),
+        "role": need(Text),
+        "module": need(Text),
+        "status": may(Word(MessageStatuses)),
+        "was": may(Text),
+        "now": may(Text),
+    },
+    "CallEdge": {
+        "id": need(Id),
+        "from": need(Id),
+        "to": need(Id),
+        "code": need(Text),
+        "status": may(Word(MessageStatuses)),
+        "was": may(Text),
+        "now": may(Text),
+    },
     "CommitStory": {
         "sha": need(Sha),
         "phase": need(Word(Phases)),
@@ -373,14 +444,11 @@ Shapes: dict[str, dict[str, Field]] = {
         "before": may(Many(Shape("Behavior"))),
         "after": may(Many(Shape("Behavior"))),
         "notes": may(Many(Shape("Note"))),
+        "featureRanges": may(Many(Shape("FeatureRange"))),
     },
-    "Note": {
-        "path": need(Text),
-        "side": may(Word(("new", "old"))),
-        "start": need(Count),
-        "end": need(Count),
-        "text": need(Text),
-    },
+    "Note": {**DiffSpan, "text": need(Text)},
+    # 範囲の行を 1 つでも含む hunk(消したファイルは本文)が、その機能になる(ページの `CommitDiff`)。
+    "FeatureRange": {**DiffSpan, "feature": need(Id), "text": need(Text)},
     "Suite": {"id": need(Id), "label": need(Heading), "file": need(Text)},
     "Test": {
         "id": need(Id),
@@ -410,6 +478,15 @@ Shapes: dict[str, dict[str, Field]] = {
     "Term": {"id": need(Id), "label": need(Text), "text": need(Text)},
 }
 
+# クイズの問い(Question)の、kind をまたいで同じキー。題(`title`)は一覧に出す短い題で、highlights の `title` と同じく見出し。
+QuestionFields: dict[str, Field] = {
+    "id": need(Id),
+    "title": need(Heading),
+    "prompt": need(Text),
+    "why": need(Text),
+    "go": need(Many(Variant("Target"), least=1)),
+}
+
 # 技術の節(Primer)の、kind をまたいで同じキー。
 PrimerFields: dict[str, Field] = {
     "id": need(Id),
@@ -433,6 +510,10 @@ Variants: dict[str, dict[str, dict[str, Field]]] = {
         "file": {"path": need(Text)},
         "message": {"id": need(Id)},
         "flow": {"id": need(Id)},
+        "callBox": {"id": need(Id)},
+        "callEdge": {"id": need(Id)},
+        "module": {"path": need(Text)},
+        "stepChange": {"flow": need(Id), "stepChange": need(Count)},
     },
     "Primer": {
         "language": PrimerFields,
@@ -442,6 +523,12 @@ Variants: dict[str, dict[str, dict[str, Field]]] = {
             "tests": may(Many(Id, distinct=True)),
             "flows": may(Many(Id, distinct=True)),
         },
+    },
+    # choice の `answer` は 1 始まりの番号。order の `items` は正しい順に書く。
+    "Question": {
+        "choice": {**QuestionFields, "options": need(Many(Text, least=4, distinct=True)), "answer": need(Count)},
+        "yesno": {**QuestionFields, "holds": need(Scalar("flag"))},
+        "order": {**QuestionFields, "items": need(Many(Text, least=2, distinct=True))},
     },
     "Passage": {
         "text": {"text": need(MarkedText)},
@@ -454,7 +541,7 @@ Variants: dict[str, dict[str, dict[str, Field]]] = {
 
 
 def span_problem(value: dict) -> str | None:
-    """`start` 〜 `end` の範囲が逆向きでないかを見る(Note・Excerpt・LineRange)。"""
+    """`start` 〜 `end` の範囲が逆向きでないかを見る(Note・FeatureRange・Excerpt・LineRange)。"""
     if value["end"] < value["start"]:
         return f"end({value['end']})が start({value['start']})より前"
     return None
@@ -566,9 +653,154 @@ def kept_specs_problem(impact: dict) -> str | None:
     return repeated_specs_problem_in(impact, "keptSpecs")
 
 
-# キーごとの形が合ったオブジェクトに、キーをまたいで当てる規則。
+def call_sides_problem(value: dict) -> str | None:
+    """呼び出しの箱・線の前後の一言(`was` / `now`)が状態に合っているかを見る。増えたもの(added)は now だけ、消えたもの
+    (removed)は was だけを持つ。変えたもの(changed)は違う 2 つを持つ。変えていないもの(status なし)は now を持ち、was は
+    書くなら now と違う。
+    """
+    status = value.get("status")
+    has_was = "was" in value
+    has_now = "now" in value
+    has_now_only = has_now and not has_was
+    has_was_only = has_was and not has_now
+    if status == "added":
+        return None if has_now_only else "増えたもの(added)は now だけを書く"
+    if status == "removed":
+        return None if has_was_only else "消えたもの(removed)は was だけを書く"
+    if not has_now:
+        return "変えたもの(changed)と変えていないものは now を書く"
+    lacks_was = status == "changed" and not has_was
+    if lacks_was:
+        return "変えたもの(changed)は was も書く"
+    if value.get("was") == value["now"]:
+        return "was が now と同じ(前後で同じ一言なら was を書かない)"
+    return None
+
+
+def call_ids_problem(calls: dict) -> str | None:
+    """箱と線の id が、箱と線をまたいで一意かを見る。構成の前後は、箱と線を id 1 つで選ぶ(選択と左の一覧)ため。"""
+    boxes_and_edges = calls["boxes"] + calls["edges"]
+    twice = repeated([item["id"] for item in boxes_and_edges])
+    if twice:
+        return f"箱と線の id {', '.join(twice)} が 2 回以上ある(箱と線をまたいで一意にする)"
+    return None
+
+
+def call_ends_problem(calls: dict) -> str | None:
+    """線の端が、その線のある側の箱かを見る。変更後にある線(added・changed・status なし)の端は消えた箱(removed)でなく、
+    変更前にある線(removed・changed・status なし)の端は増えた箱(added)でない。端が boxes に無い線は参照の検査に任せる。
+    """
+    status_of = {box["id"]: box.get("status") for box in calls["boxes"]}
+    ends_of = lambda edge: [end for end in (edge["from"], edge["to"]) if end in status_of]
+    # その側に無い状態(変更後は removed、変更前は added)の箱を端に持つ、その側にある線の端。
+    stray_ends_of = lambda absent: [
+        f"{edge['id']} の {end}"
+        for edge in calls["edges"]
+        if edge.get("status") != absent
+        for end in ends_of(edge)
+        if status_of[end] == absent
+    ]
+    after = stray_ends_of("removed")
+    before = stray_ends_of("added")
+    problems = [
+        *([f"変更後にある線の端が消えた箱({', '.join(after)})"] if after else []),
+        *([f"変更前にある線の端が増えた箱({', '.join(before)})"] if before else []),
+    ]
+    return " / ".join(problems) if problems else None
+
+
+# 対応の status ごとに持つ番号(変更前の手順の番号・変更後の手順の番号)。省いたもの(そのまま)は changed と同じく両方。
+StepSides = {"added": (False, True), "removed": (True, False), "changed": (True, True), None: (True, True)}
+
+
+def step_change_problem(value: dict) -> str | None:
+    """手順の対応 1 つが、status に合った番号と説明を持つかを見る。added は afterStep だけ、removed は beforeStep だけ、changed と
+    省いたものは両方を持つ。`beforeText` / `beforeCost` は beforeStep があるとき、`afterText` / `afterCost` は afterStep が
+    あるときだけ書ける。`change` は status があるときだけ書ける。
+    """
+    status = value.get("status")
+    has_before, has_after = StepSides[status]
+    if ("beforeStep" in value, "afterStep" in value) != (has_before, has_after):
+        return "added は afterStep だけ、removed は beforeStep だけ、changed と省いたもの(そのまま)は両方を書く"
+    stray_before = [] if has_before else [key for key in ("beforeText", "beforeCost") if key in value]
+    stray_after = [] if has_after else [key for key in ("afterText", "afterCost") if key in value]
+    if stray_before or stray_after:
+        return f"{', '.join(stray_before + stray_after)} は、その側の手順の番号(beforeStep / afterStep)があるときだけ書く"
+    is_change_on_kept = "change" in value and status is None
+    if is_change_on_kept:
+        return "change は status のある対応(この PR で増えた・消えた・変わった手順)にだけ書く"
+    return None
+
+
+def numbering_problem(numbers: list[int], count: int, side: str) -> str | None:
+    """対応に書いた一方の側の番号が、1〜count をちょうど 1 回ずつ、書いた順に増えるように使っているかを見る。"""
+    if sorted(numbers) != list(range(1, count + 1)):
+        return f"{side} は 1〜{count} をちょうど 1 回ずつ使う(今は {numbers})"
+    if numbers != sorted(numbers):
+        return f"{side} は書いた順に増えていく(今は {numbers})"
+    return None
+
+
+class StepPair(NamedTuple):
+    """手順の対応 1 件の前後。`before` / `after` はその側の手順のやりとりの id で、無い側は None。ページの `TraceRows` の
+    `pairOf` と同じ読み方。
+    """
+
+    status: str | None
+    before: str | None
+    after: str | None
+
+    @property
+    def is_same_message(self) -> bool:
+        """前後が同じやりとりか。"""
+        return self.before is not None and self.before == self.after
+
+
+def step_pair_of(flow: dict, change: dict) -> StepPair:
+    """対応 1 件を前後のやりとりにする。
+
+    @param flow 対応の番号が手順の数に収まっている流れ(`step_changes_problem` の番号の規則を通ったもの)
+    """
+    before = flow["beforeSteps"][change["beforeStep"] - 1] if "beforeStep" in change else None
+    after = flow["steps"][change["afterStep"] - 1] if "afterStep" in change else None
+    return StepPair(change.get("status"), before, after)
+
+
+def step_changes_problem(flow: dict) -> str | None:
+    """流れの対応が、変更前と変更後の手順をちょうど 1 回ずつ、手順の順に指しているかを見る。そのまま(status なし)の対応は、
+    前後で同じやりとりを指す。
+    """
+    changes = flow["stepChanges"]
+    before = [change["beforeStep"] for change in changes if "beforeStep" in change]
+    after = [change["afterStep"] for change in changes if "afterStep" in change]
+    problems = [
+        problem
+        for problem in (numbering_problem(before, len(flow["beforeSteps"]), "beforeStep"), numbering_problem(after, len(flow["steps"]), "afterStep"))
+        if problem
+    ]
+    if problems:
+        return " / ".join(problems)
+    is_moved = lambda pair: pair.status is None and not pair.is_same_message
+    moved = [index for index, change in enumerate(changes) if is_moved(step_pair_of(flow, change))]
+    if moved:
+        return f"stepChanges{moved} はそのまま(status なし)なのに、前後のやりとりが違う(違うなら changed にする)"
+    return None
+
+
+def choice_problem(question: dict) -> str | None:
+    """4 択の選択肢が 4 つまでで、答えの番号が選択肢の数を超えていないかを見る(4 つ以上は配列の規則が見る)。"""
+    count = len(question["options"])
+    if count > 4:
+        return f"options は 4 つ(今は {count} つ)"
+    if question["answer"] > count:
+        return f"answer({question['answer']})が options の数({count})を超える"
+    return None
+
+
+# キーごとの形が合ったオブジェクトに、キーをまたいで当てる規則。Variant は `<名前>.<kind>` のキーで当てる。
 CrossChecks: dict[str, tuple[Callable[[dict], str | None], ...]] = {
     "Note": (span_problem,),
+    "FeatureRange": (span_problem,),
     "Excerpt": (span_problem, excerpt_length_problem, emphasis_problem),
     "LineRange": (span_problem,),
     "Values": (cells_problem,),
@@ -577,6 +809,12 @@ CrossChecks: dict[str, tuple[Callable[[dict], str | None], ...]] = {
     "Impact": (kept_specs_problem,),
     "ImpactChange": (same_sides_problem, repeated_specs_problem, repeated_issue_numbers_problem),
     "AddedSituation": (same_sides_problem,),
+    "Calls": (call_ids_problem, call_ends_problem),
+    "CallBox": (call_sides_problem,),
+    "CallEdge": (call_sides_problem,),
+    "StepChange": (step_change_problem,),
+    "Flow": (step_changes_problem,),
+    "Question.choice": (choice_problem,),
 }
 
 # 一意でなければならない値(トップの一覧と、その中のキー)。
@@ -586,31 +824,44 @@ UniqueKeys = (
     ("concepts", "path"),
     ("messages", "id"),
     ("flows", "id"),
+    ("actors", "id"),
     ("commitStories", "sha"),
     ("suites", "id"),
     ("tests", "id"),
     ("primers", "id"),
     ("terms", "id"),
     ("terms", "label"),
+    ("quiz", "id"),
 )
+
+# クイズの答えの鍵の元にする問いのキー(無いキーは空の配列)。ページの `Quiz.KeyParts` と同じで、`pr-explain-core-cases.sh` が突き合わせる。
+# この組が同じ問いを落とす理由は、ページの `Quiz.keyOf`。
+QuizKeyParts = ("prompt", "options", "items")
 
 
 class Reference(NamedTuple):
-    """解説の中の参照。`source` の値が、トップの一覧 `collection` のどれかの `key` と一致する。
+    """解説の中の参照。`source` の値が、一覧 `collection` のどれかの `key`(`also` があれば、その一覧のどれかのキーでもよい)と一致する。
 
-    `source` はトップからの道筋で、`[]` は配列の各要素を指す。
+    `source` はトップからの道筋で、`[]` は配列の各要素を指す。`collection` もトップからの一覧の道筋(`calls.boxes`)で、
+    `[]` は付けない。`also` は、ほかに照合する一覧とキーの組(道筋の書き方は `collection` と同じ)。
     """
 
     source: str
     collection: str
     key: str
+    also: tuple[tuple[str, str], ...] = ()
 
 
 References = (
-    Reference("messages[].from", "concepts", "path"),
-    Reference("messages[].to", "concepts", "path"),
+    Reference("messages[].from", "concepts", "path", (("actors", "id"),)),
+    Reference("messages[].to", "concepts", "path", (("actors", "id"),)),
     Reference("flows[].steps[]", "messages", "id"),
+    Reference("flows[].beforeSteps[]", "messages", "id"),
     Reference("commitStories[].flows[]", "flows", "id"),
+    Reference("commitStories[].featureRanges[].feature", "features", "id"),
+    Reference("calls.boxes[].module", "concepts", "path"),
+    Reference("calls.edges[].from", "calls.boxes", "id"),
+    Reference("calls.edges[].to", "calls.boxes", "id"),
     Reference("overview.before[].message", "messages", "id"),
     Reference("overview.after[].message", "messages", "id"),
     Reference("commitStories[].before[].message", "messages", "id"),
@@ -633,8 +884,9 @@ References = (
     Reference("primers[].flows[]", "flows", "id"),
 )
 
-# Target の kind のうち、解説の中の一覧を指すもの(layer / file は地図を指す参照)。
-TargetCollections = {"feature": "features", "message": "messages", "flow": "flows"}
+# Target の kind のうち、解説の中の一覧を指すものと、その一覧の道筋(layer / file / module は地図を指す参照。stepChange は
+# 流れの中の番号なので `target_problems` が見る)。
+TargetCollections = {"feature": "features", "message": "messages", "flow": "flows", "callBox": "calls.boxes", "callEdge": "calls.edges"}
 
 
 def keep_first_or_mark(pairs: list[tuple[str, object]]) -> dict | Duplicated:
@@ -675,7 +927,7 @@ def value_problems(value: object, rule: object, where: str) -> list[str]:
     if isinstance(rule, Many):
         return list_problems(value, rule, where)
     if isinstance(rule, Variant):
-        return variant_problems(value, Variants[rule.name], where)
+        return variant_problems(value, rule.name, where)
     return object_problems(value, rule.name, where)
 
 
@@ -703,21 +955,61 @@ def object_problems(value: object, name: str, where: str) -> list[str]:
     if not isinstance(value, dict):
         return [f"{where}: オブジェクト({name})で書く"]
     problems = fields_problems(value, Shapes[name], where)
-    if problems:
-        return problems
+    return problems if problems else crossed_problems(value, name, where)
+
+
+def crossed_problems(value: dict, name: str, where: str) -> list[str]:
+    """キーごとの形が合ったオブジェクトに、キーをまたぐ規則(`CrossChecks` の `name`)を当てた違反を集める。"""
     crossed = [check(value) for check in CrossChecks.get(name, ())]
     return [f"{where}: {problem}" for problem in crossed if problem]
 
 
-def variant_problems(value: object, variants: dict[str, dict[str, Field]], where: str) -> list[str]:
-    """`kind` で形が決まるオブジェクトに合わない理由を集める。"""
+def variant_problems(value: object, name: str, where: str) -> list[str]:
+    """`Variants` の名前の、`kind` で形が決まるオブジェクトに合わない理由を集める。kind ごとのキーが合っていれば、キーをまたぐ規則
+    (`CrossChecks` の `<名前>.<kind>`)も当てる。
+    """
     if not isinstance(value, dict):
         return [f"{where}: オブジェクトで書く"]
+    variants = Variants[name]
     kind = value.get("kind")
     if kind not in variants:
         return [f"{where}.kind: {' / '.join(variants)} のどれか(今は {json.dumps(kind, ensure_ascii=False)})"]
     fields = {"kind": need(Word(tuple(variants))), **variants[kind]}
-    return fields_problems(value, fields, where)
+    problems = fields_problems(value, fields, where)
+    return problems if problems else crossed_problems(value, f"{name}.{kind}", where)
+
+
+def cross_collection_problems(explain: dict) -> list[str]:
+    """一覧をまたぐ形の違反を集める。アクターの id が concepts の path と同じ綴りか、流れの変更前の手順に増えた(added)やりとり・
+    変更後の手順に消えた(removed)やりとりがあるか、前後が同じやりとりの対応の状態がやりとりの状態と合わないか(changed のやりとり
+    なら changed、そうでなければ省く)を見る。messages に無いやりとりは参照の検査に任せる。
+
+    @param explain キーごとの形が合った解説(手順の番号は範囲に収まっている)
+    """
+    paths = {concept["path"] for concept in explain.get("concepts", [])}
+    actors = [f"actors[{index}].id: {actor['id']} が concepts の path と同じ" for index, actor in enumerate(explain.get("actors", [])) if actor["id"] in paths]
+    status_of = {message["id"]: message.get("status") for message in explain.get("messages", [])}
+    placed = lambda ids, status: [step for step in ids if status_of.get(step) == status]
+    problems = []
+    for index, flow in enumerate(explain.get("flows", [])):
+        added = placed(flow["beforeSteps"], "added")
+        removed = placed(flow["steps"], "removed")
+        problems += [f"flows[{index}].beforeSteps: 増えたやりとり({', '.join(added)})は変更前の手順に書かない"] if added else []
+        problems += [f"flows[{index}].steps: 消えたやりとり({', '.join(removed)})は変更後の手順に書かない"] if removed else []
+        problems += same_message_problems(flow, status_of, f"flows[{index}]")
+    return actors + problems
+
+
+def same_message_problems(flow: dict, status_of: dict, where: str) -> list[str]:
+    """前後が同じやりとりの対応の状態が、そのやりとりの状態に合わないものを集める。messages に無いやりとりは参照の検査に任せる。"""
+    expected_of = lambda pair: "changed" if status_of[pair.after] == "changed" else None
+    is_mismatched = lambda pair: pair.is_same_message and pair.after in status_of and pair.status != expected_of(pair)
+    pairs = [step_pair_of(flow, change) for change in flow["stepChanges"]]
+    return [
+        f"{where}.stepChanges[{index}]: 前後が同じやりとり({pair.after})の対応は、やりとりの status に合わせる(changed なら changed、そうでなければ省く)"
+        for index, pair in enumerate(pairs)
+        if is_mismatched(pair)
+    ]
 
 
 def uniqueness_problems(explain: dict) -> list[str]:
@@ -729,13 +1021,23 @@ def uniqueness_problems(explain: dict) -> list[str]:
     for collection, key in UniqueKeys:
         twice = repeated([item[key] for item in explain.get(collection, [])])
         problems += [f"{collection}[].{key}: {value} が 2 回以上ある" for value in twice]
-    return problems
+    return problems + quiz_key_problems(explain.get("quiz", []))
+
+
+def quiz_key_problems(questions: list[dict]) -> list[str]:
+    """答えの鍵の元の組(`QuizKeyParts`)が同じ問いを集める。"""
+    key_of = lambda question: json.dumps([question.get(part, []) for part in QuizKeyParts], ensure_ascii=False)
+    keys = [key_of(question) for question in questions]
+    return [
+        f"quiz[]: 問いの文・選択肢・並べる項目が同じ問いが 2 回以上ある({', '.join(question['id'] for question in questions if key_of(question) == key)})"
+        for key in repeated(keys)
+    ]
 
 
 def shape_problems(explain: object) -> list[str]:
     """解説の形の違反を集める。"""
     problems = value_problems(explain, Shape("Explain"), "explain")
-    return problems if problems else uniqueness_problems(explain)
+    return problems if problems else uniqueness_problems(explain) + cross_collection_problems(explain)
 
 
 def fields_of(rule: Shape | Variant) -> dict[str, Field]:
@@ -746,8 +1048,8 @@ def fields_of(rule: Shape | Variant) -> dict[str, Field]:
 
 
 def routes_under(rule: object, route: str) -> list[tuple[str, object, bool]]:
-    """規則の下にある道筋を、外側から書いた順に集める(`Shapes` と `Variants` を辿る)。判定表と、印・抜粋の道筋を導く検査
-    (`term_mark_problems`・`with_read_excerpts`)が使う。
+    """規則の下にある道筋を、外側から書いた順に集める(`Shapes` と `Variants` を辿る)。判定表と、印・抜粋・Target の道筋を導く
+    検査(`term_mark_problems`・`with_read_excerpts`・`reference_problems`)が使う。
 
     @param rule `Field` の `value` に書く規則
     @param route その規則の道筋(`impact` など)。配列の中へ進む段には `[]` を付ける
@@ -806,28 +1108,81 @@ def values_at(value: object, route: list[str], where: str) -> list[tuple[str, ob
     return [found for index, item in enumerate(inner) for found in values_at(item, route[1:], step.item_where(index))]
 
 
+def target_routes() -> list[str]:
+    """解説(Explain)の下で Target を置く道筋。配列の Target は `[]` を付けて、各要素を指す道筋にする。"""
+    return [
+        f"{route}[]" if is_many else route
+        for key, field in Shapes["Explain"].items()
+        for route, inner, is_many in routes_under(field.value, key)
+        if inner == Variant("Target")
+    ]
+
+
+def target_problems(where: str, go: dict, explain: dict) -> list[str]:
+    """Target 1 つの参照切れを集める。解説の中の一覧を指す kind(`TargetCollections`)と、流れの中の対応を指す stepChange だけを見る。
+
+    @param where Target までの道筋の綴り
+    @param explain 形の検査を通った解説
+    """
+    if go["kind"] == "stepChange":
+        return step_change_target_problems(where, go, explain)
+    collection = TargetCollections.get(go["kind"])
+    is_dangling = collection is not None and go["id"] not in known_values(explain, collection, "id")
+    return [f"{where}.id: {go['id']} が {collection} に無い"] if is_dangling else []
+
+
+def step_change_target_problems(where: str, go: dict, explain: dict) -> list[str]:
+    """stepChange の Target の流れが flows にあり、番号がその流れの対応の数を超えていないかを見る。"""
+    flows = {flow["id"]: flow for flow in explain.get("flows", [])}
+    if go["flow"] not in flows:
+        return [f"{where}.flow: {go['flow']} が flows に無い"]
+    count = len(flows[go["flow"]]["stepChanges"])
+    if go["stepChange"] > count:
+        return [f"{where}.stepChange: {go['stepChange']} が流れ {go['flow']} の stepChanges の数({count})を超える"]
+    return []
+
+
+def lists_of(reference: Reference) -> list[tuple[str, str]]:
+    """参照を照合する一覧とキーの組(`collection` と `also`)。"""
+    return [(reference.collection, reference.key), *reference.also]
+
+
+def missing_place_of(reference: Reference) -> str:
+    """参照切れの報告の「〜に無い」(一覧が 2 つ以上なら「a にも b にも無い」)。"""
+    collections = [collection for collection, _ in lists_of(reference)]
+    if len(collections) == 1:
+        return f"{collections[0]} に無い"
+    return f"{' にも '.join(collections)} にも無い"
+
+
+def known_values(explain: dict, collection: str, key: str) -> set:
+    """一覧の道筋(`calls.boxes`)の各要素の、そのキーの値の集合。"""
+    return {item[key] for _, item in values_at(explain, f"{collection}[]".split("."), "")}
+
+
 def reference_problems(explain: dict) -> list[str]:
-    """解説の中の参照切れと、未実装のテストが持てないキーを集める。
+    """解説の中の参照切れ(Target は置いたすべての道筋)と、未実装のテストが持てないキーを集める。
 
     @param explain 形の検査を通った解説
     """
-    known = lambda collection, key: {item[key] for item in explain.get(collection, [])}
     problems = [
-        f"{where}: {value} が {reference.collection} に無い"
+        f"{where}: {value} が {missing_place_of(reference)}"
         for reference in References
         for where, value in values_at(explain, reference.source.split("."), "")
-        if value not in known(reference.collection, reference.key)
+        if not any(value in known_values(explain, collection, key) for collection, key in lists_of(reference))
     ]
-    for where, go in values_at(explain, ["overview", "highlights[]", "go"], ""):
-        collection = TargetCollections.get(go["kind"])
-        is_dangling = collection is not None and go["id"] not in known(collection, "id")
-        problems += [f"{where}.id: {go['id']} が {collection} に無い"] if is_dangling else []
+    targets = [
+        problem
+        for route in target_routes()
+        for where, go in values_at(explain, route.split("."), "")
+        for problem in target_problems(where, go, explain)
+    ]
     todo_with_code = [
         f"tests[{index}]: todo のテストは commit も excerpt も持たない"
         for index, test in enumerate(explain.get("tests", []))
         if is_todo_with_code(test)
     ]
-    return problems + todo_with_code + term_mark_problems(explain)
+    return problems + targets + todo_with_code + term_mark_problems(explain)
 
 
 def term_mark_problems(explain: dict) -> list[str]:

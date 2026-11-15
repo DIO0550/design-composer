@@ -5,7 +5,7 @@
   "issue": 1022,
   "overview": {
     "title": "PR の解説を `explain.json` で書き、検査して置く",
-    "lead": "解説は HTML の断片ではなく JSON で書く。ページの固定スクリプトが地図と合わせて 5 画面に組む。",
+    "lead": "解説は HTML の断片ではなく JSON で書く。ページの固定スクリプトが地図と合わせて 8 画面に組む。",
     "before": [
       { "text": "セッションが HTML の断片をページごとに書き、1 ページずつ置いていた" }
     ],
@@ -18,11 +18,15 @@
       { "title": "ハーネスの層", "text": "検査はすべてハーネスの層にある", "go": { "kind": "layer", "layer": "ハーネス" } },
       { "title": "置き場の書き換え", "text": "3 ファイル以外を消すのはここだけ", "go": { "kind": "file", "path": ".github/scripts/pr-explain-pages.sh" } },
       { "title": "地図の配置", "text": "枠は毎回上書きする", "go": { "kind": "message", "id": "put-map" } },
-      { "title": "解説を置く流れ", "text": "検査から push までを 1 本で見る", "go": { "kind": "flow", "id": "explain" } }
+      { "title": "解説を置く流れ", "text": "検査から push までを 1 本で見る", "go": { "kind": "flow", "id": "explain" } },
+      { "title": "解説を置く入口", "text": "置き場の書き換えのうち、セッションが呼ぶのはここだけ", "go": { "kind": "callBox", "id": "put-explain" } },
+      { "title": "置く前の検査", "text": "検査に落ちたら、ここで止まる", "go": { "kind": "callEdge", "id": "put-explain-check" } },
+      { "title": "解説の検査のファイル", "text": "形と参照の規則はこのファイルの表にある", "go": { "kind": "module", "path": ".github/scripts/build-pr-explain.py" } },
+      { "title": "push で置くもの", "text": "ページの HTML を置く手順が消えた", "go": { "kind": "stepChange", "flow": "push", "stepChange": 3 } }
     ]
   },
   "features": [
-    { "id": "publish", "label": "公開", "role": "解説と地図を gh-pages の PR のフォルダへ置く" }
+    { "id": "publish", "label": "公開", "role": "解説と地図を gh-pages の PR のフォルダへ置く", "review": ["検査に落ちた解説を置かずに止まるか(`put-explain` は検査の後で push する)"] }
   ],
   "layerRoles": [
     { "layer": "ハーネス", "role": "解説の検査と置き場の書き換え" }
@@ -30,17 +34,61 @@
   "concepts": [
     { "path": ".github/workflows/pr-explain.yml", "name": "地図の配置", "role": "PR のイベントで地図を作って置く", "feature": "publish" },
     { "path": ".github/scripts/pr-explain-pages.sh", "name": "置き場", "role": "gh-pages の PR のフォルダを書き換える", "feature": "publish", "change": "`put-explain` を足し、ページごとの HTML を置くモードを消した" },
-    { "path": ".github/scripts/build-pr-explain.py", "name": "解説の検査", "role": "`explain.json` の形と参照を見て、抜粋の中身を足す", "feature": "publish", "change": "新しく作った" },
+    { "path": ".github/scripts/build-pr-explain.py", "name": "解説の検査", "role": "`explain.json` の形と参照を見て、抜粋の中身を足す", "feature": "publish", "change": "新しく作った", "icon": "scan" },
     { "path": ".claude/skills/pr-explain/templates/explain.json", "name": "見本", "role": "`excerpt` 以外のすべてのキーと、primers・Passage の kind を使う解説", "graph": false }
+  ],
+  "actors": [
+    { "id": "pages", "label": "GitHub Pages", "role": "gh-pages の中身を配信する", "icon": "store", "status": "added" }
   ],
   "messages": [
     { "id": "put-map", "from": ".github/workflows/pr-explain.yml", "to": ".github/scripts/pr-explain-pages.sh", "kind": "cmd", "name": "地図を置く", "code": "pr-explain-pages.sh put-map", "via": "exec", "payload": "`change-map.json` とテンプレート" },
-    { "id": "put-explain", "from": ".github/scripts/pr-explain-pages.sh", "to": ".github/scripts/build-pr-explain.py", "kind": "qry", "name": "解説を検査する", "code": "build-pr-explain.py --pr --out", "via": "exec", "payload": "`explain.json`", "returns": "抜粋の中身を足した `explain.json`", "status": "added" }
+    { "id": "put-explain", "from": ".github/scripts/pr-explain-pages.sh", "to": ".github/scripts/build-pr-explain.py", "kind": "qry", "name": "解説を検査する", "code": "build-pr-explain.py --pr --out", "via": "exec", "payload": "`explain.json`", "returns": "抜粋の中身を足した `explain.json`", "status": "added" },
+    { "id": "publish", "from": ".github/scripts/pr-explain-pages.sh", "to": "pages", "kind": "cmd", "name": "gh-pages へ置く", "code": "git push origin gh-pages", "via": "http", "payload": "`pr-explain/pr-<番号>/` の 3 ファイル", "status": "added" },
+    { "id": "put-page", "from": ".github/workflows/pr-explain.yml", "to": ".github/scripts/pr-explain-pages.sh", "kind": "cmd", "name": "ページの HTML を置く", "code": "pr-explain-pages.sh put-pages", "via": "exec", "payload": "ページごとの HTML の断片", "status": "removed" }
   ],
   "flows": [
-    { "id": "explain", "label": "解説を置いたとき", "steps": ["put-explain"] },
-    { "id": "push", "label": "push したとき", "steps": ["put-map"] }
+    {
+      "id": "explain",
+      "label": "解説を置いたとき",
+      "gist": "置く前に解説を検査するようになった",
+      "steps": ["put-explain"],
+      "beforeSteps": [],
+      "stepChanges": [
+        { "status": "added", "afterStep": 1, "afterText": "検査に通った解説だけが書き出される", "change": "この PR で足した手順。変更前は解説を検査せずに置いていた" }
+      ]
+    },
+    {
+      "id": "push",
+      "label": "push したとき",
+      "gist": "push のたびに置くものが、枠と地図だけになった",
+      "text": "PR に push すると、Actions が地図を作って置き場へ渡す。",
+      "steps": ["put-map", "publish"],
+      "beforeSteps": ["put-map", "put-page"],
+      "stepChanges": [
+        { "beforeStep": 1, "afterStep": 1, "beforeText": "地図を置かせたあと、続けてページの HTML も置かせていた", "afterText": "枠と地図だけを置かせる" },
+        { "status": "added", "afterStep": 2, "afterText": "置いたフォルダを gh-pages へ push する", "change": "push を `pr-explain-pages.sh` の中にまとめた", "afterCost": "heavy" },
+        { "status": "removed", "beforeStep": 2, "change": "ページごとの HTML を置くモードを消した", "beforeCost": "skipped" }
+      ],
+      "measure": { "what": "push ごとに置くもの", "before": "枠・地図・ページごとの HTML", "after": "枠と地図" }
+    }
   ],
+  "calls": {
+    "gist": "解説を置く入口を `put-explain` 1 つにまとめた",
+    "text": "変更前は、Actions の `change-map` ジョブが地図と一緒にページごとの HTML も置かせていた。変更後は、ジョブは枠と地図だけを置かせ、解説はセッションが `put-explain` で検査してから置く。",
+    "review": ["`put-pages` を消したあと、ジョブから呼ぶ線が残っていないか"],
+    "boxes": [
+      { "id": "change-map-job", "name": "change-map ジョブ", "role": "PR のイベントで地図を作り、置き場へ渡す", "module": ".github/workflows/pr-explain.yml", "was": "地図を作り、ページごとの HTML も置かせていた", "now": "地図を作り、枠と地図だけを置かせる" },
+      { "id": "put-map", "name": "put-map", "role": "枠と地図を置く", "module": ".github/scripts/pr-explain-pages.sh", "status": "changed", "was": "枠・地図と、ページごとの HTML を置いていた", "now": "枠と地図だけを置く" },
+      { "id": "put-explain", "name": "put-explain", "role": "解説を検査して置く", "module": ".github/scripts/pr-explain-pages.sh", "status": "added", "now": "`build-pr-explain.py` の検査に通った解説だけを置く" },
+      { "id": "check-explain", "name": "build-pr-explain.py", "role": "`explain.json` の形と参照を見る", "module": ".github/scripts/build-pr-explain.py", "status": "added", "now": "形と参照を見て、抜粋の中身を足して書き出す" },
+      { "id": "put-pages", "name": "put-pages", "role": "ページごとの HTML を置く", "module": ".github/scripts/pr-explain-pages.sh", "status": "removed", "was": "セッションが書いた HTML の断片をそのまま置いていた" }
+    ],
+    "edges": [
+      { "id": "job-put-map", "from": "change-map-job", "to": "put-map", "code": "pr-explain-pages.sh put-map", "now": "push のたびに枠と地図を置き直す" },
+      { "id": "put-explain-check", "from": "put-explain", "to": "check-explain", "code": "build-pr-explain.py --pr --out", "status": "added", "now": "置く前に検査し、落ちたら push しない" },
+      { "id": "job-put-pages", "from": "change-map-job", "to": "put-pages", "code": "pr-explain-pages.sh put-pages", "status": "removed", "was": "地図と一緒にページの HTML も置かせていた" }
+    ]
+  },
   "commitStories": [
     {
       "sha": "89abcdef0123456789abcdef0123456789abcdef",
@@ -54,6 +102,10 @@
       "notes": [
         { "path": ".github/scripts/build-pr-explain.py", "start": 1, "end": 3, "text": "形は宣言的な表で持つ" },
         { "path": ".github/scripts/pr-explain-pages.sh", "side": "old", "start": 58, "end": 60, "text": "ページごとの HTML を組み立てていた呼び出し。解説の検査に置き換えた" }
+      ],
+      "featureRanges": [
+        { "path": ".github/scripts/build-pr-explain.py", "start": 1, "end": 3, "feature": "publish", "text": "置く前に解説を検査する入口を足した" },
+        { "path": ".github/scripts/pr-explain-pages.sh", "side": "old", "start": 58, "end": 60, "feature": "publish", "text": "ページごとの HTML を置くモードを消した" }
       ]
     }
   ],
@@ -109,7 +161,7 @@
       "specs": [
         {
           "path": ".claude/skills/pr-explain/SKILL.md",
-          "locator": "「5 画面と材料」の振る舞いの行",
+          "locator": "「8 画面と材料」の振る舞いの行",
           "text": "解説はページごとに書くとしていたのを、1 つにまとめて書き、検査に通ったものだけを置くと書き換えた",
           "shas": ["89abcdef0123456789abcdef0123456789abcdef"]
         }
@@ -228,5 +280,35 @@
     { "id": "dict", "label": "dict", "text": "Python の組み込みの型で、キーから値を引く表(辞書)。1 つのキーには 1 つの値しか持てず、同じキーに入れ直すと前の値は消える。" },
     { "id": "duplicated", "label": "Duplicated", "text": "同じキーを 2 回以上書いたオブジェクトの代わりに置く値。形の検査が報告する。" },
     { "id": "route", "label": "道筋", "text": "トップから値までのキーの並び。配列の中へ進む段には `[]` を付ける。" }
+  ],
+  "quiz": [
+    {
+      "id": "entry",
+      "kind": "choice",
+      "title": "解説を置く入口",
+      "prompt": "変更後、セッションが解説を gh-pages へ置くときに呼ぶのはどれですか。",
+      "options": ["`pr-explain-pages.sh put-map`", "`pr-explain-pages.sh put-explain`", "`pr-explain-pages.sh put-pages`", "`git push origin gh-pages` を直接"],
+      "answer": 2,
+      "why": "解説を置く入口は `put-explain` だけになった。`put-map` は Actions が枠と地図を置くためのもので、`put-pages` はこの PR で消えた。",
+      "go": [{ "kind": "callBox", "id": "put-explain" }]
+    },
+    {
+      "id": "page-html",
+      "kind": "yesno",
+      "title": "ページごとの断片",
+      "prompt": "変更後も、push のたびにページごとの HTML の断片が置き場に置かれる。",
+      "holds": false,
+      "why": "ページの HTML を置く手順は消えた。push のたびに置くのは枠と地図だけで、ページは固定スクリプトが地図と解説から組む。",
+      "go": [{ "kind": "stepChange", "flow": "push", "stepChange": 3 }]
+    },
+    {
+      "id": "put-order",
+      "kind": "order",
+      "title": "解説を置くまでの順",
+      "prompt": "セッションが解説を書いてから、gh-pages に置かれるまでの順に並べてください。",
+      "items": ["解説を書く", "置き場のスクリプトに解説を渡す", "解説の検査が形と参照を見る", "検査に通った解説を gh-pages へ push する"],
+      "why": "`put-explain` は push の前に検査を呼び、落ちたら push しない。検査は抜粋の中身を足した解説を書き出し、それを置く。",
+      "go": [{ "kind": "module", "path": ".github/scripts/build-pr-explain.py" }, { "kind": "stepChange", "flow": "explain", "stepChange": 1 }]
+    }
   ]
 }
