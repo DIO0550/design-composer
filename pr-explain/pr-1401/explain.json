@@ -1,0 +1,3486 @@
+{
+  "version": 1,
+  "pr": 1401,
+  "sha": "9f23d20720cd006b935dc585d47b31bb1583fe99",
+  "issue": 1395,
+  "overview": {
+    "title": "残っている PR 解説ページの一覧を gh-pages の pr-explain/ に置く",
+    "lead": "`https://dio0550.github.io/design-composer/pr-explain/` を開くと、gh-pages に残っている解説ページが PR 番号・題とリンクで並ぶようになった。一覧は `pr-explain-list.yml` が run のたびに gh-pages の木と全件の題から作り直し、前の一覧は読まない。",
+    "before": [
+      {
+        "text": "`…/pr-explain/` を開くと 404 だった",
+        "message": "open-list"
+      },
+      {
+        "text": "残っている解説ページは、PR の固定コメントから 1 件ずつ辿るしかなかった"
+      },
+      {
+        "text": "`pr-explain-pages.sh` のモードは `put-explain` / `put-map` の 2 つで、どちらも `pr-explain/pr-<番号>/` だけを書き換えていた",
+        "message": "put-map"
+      }
+    ],
+    "after": [
+      {
+        "text": "`…/pr-explain/` を開くと、一覧の枠が同じフォルダの `list.json` を読み、`pr-<番号>/` を番号の大きい順に題とリンクで並べる",
+        "message": "open-list"
+      },
+      {
+        "text": "行を押すと、その PR の解説ページが開く",
+        "message": "open-page"
+      },
+      {
+        "text": "一覧は `PR Explain` の完了(`workflow_run`)と main への push のたびに `pr-explain-list.yml` が作り直す",
+        "message": "explain-done"
+      },
+      {
+        "text": "題は run のたびに `gh api graphql --paginate --slurp` で全件引き、加工せずに `put-list` へ渡す",
+        "message": "fetch-titles"
+      },
+      {
+        "text": "`put-list` は前の `list.json` を読まず、取り直した gh-pages の `pr-explain/pr-<番号>` から一覧を作り、`pr-explain/index.html` と `list.json` の 2 つだけを置き換える",
+        "message": "put-list"
+      },
+      {
+        "text": "題の応答が読めない・最後のページの `hasNextPage` が false でないなど全件そろっていなければ、clone の前に 1 で終わり、前の一覧が残る",
+        "message": "put-list"
+      },
+      {
+        "text": "gh-pages が無ければ `put-list` は何も作らずに 0、`pr-explain/` が無ければ 0 件の一覧と枠を置く"
+      },
+      {
+        "text": "応答に無い番号のフォルダ(問い合わせの後に開いた PR・PR でない番号)は題 `null` で載り、画面には「題を取得できませんでした」と出る"
+      },
+      {
+        "text": "フォークの PR が起点の `workflow_run` では一覧のジョブが動かない",
+        "message": "explain-done"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "題の応答の全件検査",
+        "text": "問い合わせの本体は判定表を通らない。ページ送りの抜けを捕まえるのは `collect_titles` の「最後のページの `hasNextPage` が false」の検査だけで、問い合わせそのものはマージ後の run で確かめる",
+        "go": {
+          "kind": "callBox",
+          "id": "collect-titles"
+        }
+      },
+      {
+        "title": "名前でつながる起点",
+        "text": "一覧の run は `PR Explain` という名前の文字列で起きる。名前を変えると黙って走らなくなり、PR の中では確かめられない",
+        "go": {
+          "kind": "message",
+          "id": "explain-done"
+        }
+      },
+      {
+        "title": "2 つの枠の写し",
+        "text": "一覧の枠は解説ページの枠から CSS 変数・書体・読み方を写して持つ。写しの一致はどの検査も見ない",
+        "go": {
+          "kind": "module",
+          "path": ".claude/skills/pr-explain/templates/list.html"
+        }
+      },
+      {
+        "title": "公開用ブランチが無いとき",
+        "text": "`put-list` だけは orphan を作らず 0 で終わる。`put-map` は今までどおり作る",
+        "go": {
+          "kind": "callBox",
+          "id": "checkout-site"
+        }
+      },
+      {
+        "title": "PR の push の後の流れ",
+        "text": "`PR Explain` の完了から一覧の run が始まる。手順が増えたのはここから後だけ",
+        "go": {
+          "kind": "stepChange",
+          "flow": "push",
+          "stepChange": 4
+        }
+      },
+      {
+        "title": "一覧を作り直す",
+        "text": "取り直しのたびに木を読み直して作る。push が拒まれた間に増えたフォルダも入る",
+        "go": {
+          "kind": "feature",
+          "id": "list-build"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "list-page",
+      "label": "一覧の枠",
+      "role": "gh-pages の `pr-explain/index.html` に置く一覧の画面。`list.json` を読んで行を組む",
+      "review": [
+        "`ListPage.readingOf` が行を並べ替えず、`pr` が正の整数・`title` が文字列か null の行だけを通すか",
+        "CSS 変数・書体・`.guide` などの写しが、解説ページの枠の値と食い違っていないか(一致を見る検査は無い)"
+      ]
+    },
+    {
+      "id": "list-build",
+      "label": "一覧を作り直す",
+      "role": "`pr-explain-pages.sh put-list` が題の応答を確かめ、gh-pages の木から一覧を作って一覧の 2 ファイルだけを置き換える",
+      "review": [
+        "`collect_titles` が clone の前に走り、応答が欠けていれば取り直しへ進まずに 1 で終わるか",
+        "`write_list` が前の `list.json` を読まず、`paths` の 2 ファイル以外を `git add` しないか"
+      ]
+    },
+    {
+      "id": "list-workflow",
+      "label": "一覧の配置",
+      "role": "`pr-explain-list.yml` が main への push と `PR Explain` の完了で題を全件引き、`put-list` を呼ぶ。認証ヘッダは `lib/git-token-auth.sh` で共有する",
+      "review": [
+        "`if:` が比べているのは GitHub が決めるリポジトリ名だけで、PR の側が決める値を `run:` へ流していないか",
+        "問い合わせに `$endCursor` と `pageInfo { hasNextPage endCursor }` があり、`--paginate --slurp` で全ページが 1 つの配列になるか(マージ後の run で確かめる)"
+      ]
+    },
+    {
+      "id": "cases",
+      "label": "判定表",
+      "role": "`put-list`・一覧の核・一覧の枠のケースを判定表に足し、配線(`frontend.yml`・`pre-push`・README)を追随する",
+      "review": [
+        "種の `list.json` が読める形になり、「読めたら使う」実装と区別できるか"
+      ]
+    },
+    {
+      "id": "docs",
+      "label": "手順書",
+      "role": "一覧の URL と、一覧は Actions が作り直すのでセッションは触らないことを SKILL.md に書く",
+      "review": [
+        "一覧の段落が「閉じても同じ URL で開ける」の後ろにあり、「同じ URL」が一覧を指して読めないか"
+      ]
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "一覧の枠・一覧を作り直すスクリプト・それを呼ぶワークフローと判定表。アプリのソースには触らない"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/skills/pr-explain/templates/list.html",
+      "name": "一覧の枠",
+      "role": "gh-pages の `pr-explain/index.html` に置く画面。`list.json` を読み、`createElement` / `textContent` で行を組む",
+      "feature": "list-page",
+      "change": "新しく作った",
+      "icon": "widget"
+    },
+    {
+      "path": ".github/scripts/check-pr-explain-template.py",
+      "name": "枠の検査",
+      "role": "枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかを見る",
+      "feature": "list-page",
+      "change": "対象に一覧の枠を足し、2 つの枠が写しを持つ理由を docstring に書いた",
+      "icon": "scan"
+    },
+    {
+      "path": ".github/scripts/pr-explain-pages.sh",
+      "name": "置き場",
+      "role": "gh-pages の `pr-explain/` を書き換える",
+      "feature": "list-build",
+      "change": "`put-list` を足した。モードごとに `paths` / `sparse` / `label` を分け、PR 番号の検査を PR のモードの枝へ移した",
+      "icon": "store"
+    },
+    {
+      "path": ".github/workflows/pr-explain-list.yml",
+      "name": "一覧の配置",
+      "role": "main への push と `PR Explain` の完了で、題を全件引いて `put-list` を呼ぶ",
+      "feature": "list-workflow",
+      "change": "新しく作った"
+    },
+    {
+      "path": ".github/workflows/pr-explain.yml",
+      "name": "地図の配置",
+      "role": "PR のイベントで地図を作り、`put-map` で置く",
+      "feature": "list-workflow",
+      "change": "認証ヘッダの組み立てを lib に移し、名前が文字列で参照されていることを書いた"
+    },
+    {
+      "path": ".github/scripts/lib/git-token-auth.sh",
+      "name": "認証ヘッダ",
+      "role": "Actions のトークンで gh-pages へ push するための git の設定を export する",
+      "feature": "list-workflow",
+      "change": "`pr-explain.yml` から移して新しく作った"
+    },
+    {
+      "path": ".github/scripts/pr-explain-pages-cases.sh",
+      "name": "置き場の判定表",
+      "role": "ローカルの bare リポジトリを置き場にして、書き換えた後の gh-pages を確かめる",
+      "feature": "cases",
+      "change": "`put-list` のケースと、`put-map` / `put-explain` が一覧に触らないケースを足した",
+      "icon": "scan"
+    },
+    {
+      "path": ".github/scripts/pr-explain-core-cases.sh",
+      "name": "核の判定表",
+      "role": "枠の固定スクリプトを node の vm で評価し、DOM に触らない核を叩く",
+      "feature": "cases",
+      "change": "一覧の枠の核 `ListPage.readingOf` のケースを足した",
+      "icon": "scan"
+    },
+    {
+      "path": ".github/scripts/check-pr-explain-template-cases.sh",
+      "name": "枠の検査の判定表",
+      "role": "枠の検査の判定が期待どおりかを見る",
+      "feature": "cases",
+      "change": "リポジトリの一覧の枠が通ることを 1 件足した",
+      "graph": false
+    },
+    {
+      "path": ".claude/skills/pr-explain/SKILL.md",
+      "name": "解説の手順",
+      "role": "解説を書いて置くセッションの手順",
+      "feature": "docs",
+      "change": "一覧の URL と、一覧はセッションが触らないことを書いた",
+      "graph": false
+    }
+  ],
+  "actors": [
+    {
+      "id": "github",
+      "label": "GitHub の出来事",
+      "role": "PR への push・main への push・ワークフローの完了で、ワークフローを起こす",
+      "icon": "widget"
+    },
+    {
+      "id": "api",
+      "label": "GitHub の API",
+      "role": "リポジトリの PR の番号と題を、100 件ずつのページで返す",
+      "icon": "store"
+    },
+    {
+      "id": "pages",
+      "label": "GitHub Pages",
+      "role": "gh-pages の中身を配信する",
+      "icon": "store"
+    },
+    {
+      "id": "reader",
+      "label": "レビュアー",
+      "role": "一覧と解説ページを開く"
+    }
+  ],
+  "messages": [
+    {
+      "id": "pr-event",
+      "from": "github",
+      "to": ".github/workflows/pr-explain.yml",
+      "kind": "evt",
+      "name": "PR に push した",
+      "code": "pull_request: types: [opened, reopened, synchronize]",
+      "via": "http"
+    },
+    {
+      "id": "put-map",
+      "from": ".github/workflows/pr-explain.yml",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "kind": "cmd",
+      "name": "地図を置く",
+      "code": "pr-explain-pages.sh put-map \"$PR\" \"$RUNNER_TEMP/change-map.json\" .claude/skills/pr-explain/templates/index.html",
+      "via": "exec",
+      "payload": "`change-map.json` と解説ページの枠"
+    },
+    {
+      "id": "push-pages",
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": "pages",
+      "kind": "cmd",
+      "name": "PR のフォルダを push する",
+      "code": "git push --quiet origin \"HEAD:$branch\"",
+      "via": "http",
+      "payload": "`pr-explain/pr-<番号>/` の変更"
+    },
+    {
+      "id": "explain-done",
+      "from": "github",
+      "to": ".github/workflows/pr-explain-list.yml",
+      "kind": "evt",
+      "name": "PR Explain が終わった",
+      "code": "workflow_run: workflows: [PR Explain], types: [completed]",
+      "via": "http",
+      "status": "added"
+    },
+    {
+      "id": "main-push",
+      "from": "github",
+      "to": ".github/workflows/pr-explain-list.yml",
+      "kind": "evt",
+      "name": "main へ push した",
+      "code": "push: branches: [main]",
+      "via": "http",
+      "status": "added"
+    },
+    {
+      "id": "fetch-titles",
+      "from": ".github/workflows/pr-explain-list.yml",
+      "to": "api",
+      "kind": "qry",
+      "name": "PR の題を全件引く",
+      "code": "gh api graphql --paginate --slurp -f owner=… -f name=… -f query='…' > \"$RUNNER_TEMP/pull-requests.json\"",
+      "via": "http",
+      "payload": "`pullRequests(first: 100, after: $endCursor) { nodes { number title } pageInfo { hasNextPage endCursor } }`",
+      "returns": "ページの配列(各ページに `nodes` と `pageInfo`)",
+      "status": "added"
+    },
+    {
+      "id": "token-header",
+      "from": ".github/workflows/pr-explain-list.yml",
+      "to": ".github/scripts/lib/git-token-auth.sh",
+      "kind": "cmd",
+      "name": "認証ヘッダを組み立てる",
+      "code": ". .github/scripts/lib/git-token-auth.sh && export_git_token_header",
+      "via": "call",
+      "payload": "`GH_TOKEN`",
+      "status": "added"
+    },
+    {
+      "id": "put-list",
+      "from": ".github/workflows/pr-explain-list.yml",
+      "to": ".github/scripts/pr-explain-pages.sh",
+      "kind": "cmd",
+      "name": "一覧を作り直す",
+      "code": "pr-explain-pages.sh put-list \"$RUNNER_TEMP/pull-requests.json\" .claude/skills/pr-explain/templates/list.html",
+      "via": "exec",
+      "payload": "題の応答と一覧の枠",
+      "returns": "終了コード(応答が欠けていれば 1、gh-pages が無ければ 0)",
+      "status": "added"
+    },
+    {
+      "id": "check-list-template",
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": ".github/scripts/check-pr-explain-template.py",
+      "kind": "qry",
+      "name": "一覧の枠を検査する",
+      "code": "check-pr-explain-template.py \"$3\"",
+      "via": "exec",
+      "payload": "一覧の枠",
+      "returns": "違反が無ければ 0、あれば 1",
+      "status": "added"
+    },
+    {
+      "id": "push-list",
+      "from": ".github/scripts/pr-explain-pages.sh",
+      "to": "pages",
+      "kind": "cmd",
+      "name": "一覧を push する",
+      "code": "git push --quiet origin \"HEAD:$branch\"",
+      "via": "http",
+      "payload": "`pr-explain/index.html` と `pr-explain/list.json`(変わったときだけ)",
+      "status": "added"
+    },
+    {
+      "id": "open-list",
+      "from": "reader",
+      "to": "pages",
+      "kind": "qry",
+      "name": "一覧を開く",
+      "code": "GET /design-composer/pr-explain/",
+      "via": "http",
+      "returns": "一覧の枠(前は 404)",
+      "status": "changed"
+    },
+    {
+      "id": "read-list",
+      "from": ".claude/skills/pr-explain/templates/list.html",
+      "to": "pages",
+      "kind": "qry",
+      "name": "一覧のファイルを読む",
+      "code": "fetch(`list.json?t=${Date.now()}`, { cache: \"no-store\" })",
+      "via": "http",
+      "returns": "`list.json` の中身(404 なら absent、失敗なら failed に詰め替える)",
+      "status": "added"
+    },
+    {
+      "id": "open-page",
+      "from": "reader",
+      "to": "pages",
+      "kind": "qry",
+      "name": "解説ページを開く",
+      "code": "GET /design-composer/pr-explain/pr-<番号>/",
+      "via": "http",
+      "returns": "解説ページ"
+    }
+  ],
+  "flows": [
+    {
+      "id": "open",
+      "label": "一覧を開いたとき",
+      "gist": "404 だった入口が一覧になり、行から各 PR の解説ページへ飛べるようになった",
+      "text": "レビュアーが `https://dio0550.github.io/design-composer/pr-explain/` を開き、一覧から解説ページを選ぶ。",
+      "steps": [
+        "open-list",
+        "read-list",
+        "open-page"
+      ],
+      "beforeSteps": [
+        "open-list"
+      ],
+      "stepChanges": [
+        {
+          "status": "changed",
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "`pr-explain/index.html` が無く 404",
+          "afterText": "一覧の枠が返る",
+          "change": "`put-list` が一覧の枠を `pr-explain/index.html` に置くようになった"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "枠が `list.json` を `no-store` で読み、`ListPage.readingOf` で行・0 件・読めない理由のどれかにする",
+          "change": "この PR で足した手順"
+        },
+        {
+          "status": "added",
+          "afterStep": 3,
+          "afterText": "行を押すと `pr-<番号>/` の解説ページが開く",
+          "change": "変更前は一覧が無いので、ここへは PR の固定コメントからしか来られなかった"
+        }
+      ],
+      "measure": {
+        "what": "残っている解説ページを探す入口",
+        "before": "PR ごとの固定コメント",
+        "after": "一覧の 1 ページ"
+      }
+    },
+    {
+      "id": "push",
+      "label": "PR に push したとき",
+      "gist": "地図を置いた後に `PR Explain List` が続き、一覧を作り直すようになった",
+      "text": "PR に push すると `PR Explain` が地図を置く。その完了で `PR Explain List` が題を全件引き、`put-list` が一覧を作り直す。",
+      "steps": [
+        "pr-event",
+        "put-map",
+        "push-pages",
+        "explain-done",
+        "fetch-titles",
+        "token-header",
+        "put-list",
+        "push-list"
+      ],
+      "beforeSteps": [
+        "pr-event",
+        "put-map",
+        "push-pages"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "`PR Explain` が起きる",
+          "afterText": "`PR Explain` が起きる"
+        },
+        {
+          "beforeStep": 2,
+          "afterStep": 2,
+          "beforeText": "認証ヘッダをステップの中で組み立て、`put-map` を呼ぶ",
+          "afterText": "`export_git_token_header` で認証ヘッダを組み立て、`put-map` を呼ぶ"
+        },
+        {
+          "beforeStep": 3,
+          "afterStep": 3,
+          "beforeText": "PR のフォルダを push する",
+          "afterText": "PR のフォルダを push する(一覧の 2 ファイルには触らない)"
+        },
+        {
+          "status": "added",
+          "afterStep": 4,
+          "afterText": "`PR Explain` の完了で `PR Explain List` が起きる。フォークが起点ならジョブは動かない",
+          "change": "この PR で足した起点"
+        },
+        {
+          "status": "added",
+          "afterStep": 5,
+          "afterText": "PR の題を 100 件ずつ全ページ引き、ページの配列で書き出す",
+          "change": "題は保存せず、run のたびに引く",
+          "afterCost": "heavy"
+        },
+        {
+          "status": "added",
+          "afterStep": 6,
+          "afterText": "push に使う認証ヘッダを組み立てる",
+          "change": "`pr-explain.yml` と同じ lib を使う"
+        },
+        {
+          "status": "added",
+          "afterStep": 7,
+          "afterText": "題の応答を確かめ、取り直した gh-pages の木から一覧を作る",
+          "change": "前の `list.json` は読まない"
+        },
+        {
+          "status": "added",
+          "afterStep": 8,
+          "afterText": "一覧が変わったときだけ push する",
+          "change": "同じ入力なら push しない"
+        }
+      ],
+      "measure": {
+        "what": "PR の push 1 回で gh-pages に入るコミット",
+        "before": "1 件(PR のフォルダ)",
+        "after": "1〜2 件(PR のフォルダと、一覧が変わったときの一覧)"
+      }
+    },
+    {
+      "id": "main",
+      "label": "main へ push したとき",
+      "gist": "main への push でも一覧を作り直すようになった(一覧の枠と `put-list` の変更をすぐ効かせるため)",
+      "text": "main へ push すると `PR Explain List` が走り、その時点の main の一覧の枠と `put-list` で一覧を作り直す。",
+      "steps": [
+        "main-push",
+        "fetch-titles",
+        "token-header",
+        "put-list",
+        "check-list-template",
+        "push-list"
+      ],
+      "beforeSteps": [],
+      "stepChanges": [
+        {
+          "status": "added",
+          "afterStep": 1,
+          "afterText": "main への push で `PR Explain List` が起きる",
+          "change": "この PR で足した起点"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "PR の題を全件引く。gh が 1 を返せばステップで止まり、`put-list` は走らない",
+          "change": "再試行はしない。次の run が作り直す",
+          "afterCost": "heavy"
+        },
+        {
+          "status": "added",
+          "afterStep": 3,
+          "afterText": "push に使う認証ヘッダを組み立てる",
+          "change": "この PR で足した手順"
+        },
+        {
+          "status": "added",
+          "afterStep": 4,
+          "afterText": "`put-list` を呼ぶ",
+          "change": "この PR で足したモード"
+        },
+        {
+          "status": "added",
+          "afterStep": 5,
+          "afterText": "clone の前に一覧の枠を検査し、合わなければ 1 で終わる",
+          "change": "解説ページの枠と同じ検査を通す"
+        },
+        {
+          "status": "added",
+          "afterStep": 6,
+          "afterText": "一覧の 2 ファイルだけを push する",
+          "change": "`paths` を一覧の 2 ファイルに絞った"
+        }
+      ]
+    }
+  ],
+  "calls": {
+    "gist": "一覧を作り直す入口 `put-list` と、それを呼ぶ `list` ジョブを足した",
+    "text": "変更前は `change-map` ジョブが `put-map` で PR のフォルダを置くだけだった。変更後は `PR Explain List` の `list` ジョブが題を全件引いて `put-list` を呼び、`put-list` が枠の検査・題の応答の検査・gh-pages の取得・一覧の書き出しを順に呼ぶ。認証ヘッダの組み立ては両方のジョブから `export_git_token_header` を呼ぶ形にした。",
+    "review": [
+      "`put-list` の線が `collect_titles` を `checkout_site` より先に呼んでいるか(clone の前に止まる)",
+      "`put-map` から `checkout_site` への線の振る舞いが変わっていないか(gh-pages が無ければ orphan を作るのは `put-map` だけ)"
+    ],
+    "boxes": [
+      {
+        "id": "list-job",
+        "name": "list ジョブ",
+        "role": "題を全件引き、`put-list` に渡す",
+        "module": ".github/workflows/pr-explain-list.yml",
+        "status": "added",
+        "now": "main への push と `PR Explain` の完了で走り、フォークが起点なら動かない"
+      },
+      {
+        "id": "gh-graphql",
+        "name": "gh api graphql --paginate --slurp",
+        "role": "PR の番号と題を全ページ引く",
+        "module": ".github/workflows/pr-explain-list.yml",
+        "status": "added",
+        "now": "ページの配列を `$RUNNER_TEMP/pull-requests.json` に書き出す"
+      },
+      {
+        "id": "change-map-job",
+        "name": "change-map ジョブ",
+        "role": "PR のイベントで地図を作り、置き場へ渡す",
+        "module": ".github/workflows/pr-explain.yml",
+        "status": "changed",
+        "was": "認証ヘッダを Publish ステップの中で組み立てていた",
+        "now": "認証ヘッダは `export_git_token_header` で組み立てる"
+      },
+      {
+        "id": "export-header",
+        "name": "export_git_token_header",
+        "role": "Actions のトークンから git の認証ヘッダを作る",
+        "module": ".github/scripts/lib/git-token-auth.sh",
+        "status": "added",
+        "now": "`GIT_CONFIG_*` を export し、base64 の値をログで伏せる"
+      },
+      {
+        "id": "put-map",
+        "name": "put-map",
+        "role": "枠と地図を PR のフォルダに置く",
+        "module": ".github/scripts/pr-explain-pages.sh",
+        "now": "PR のフォルダだけを書き換え、一覧には触らない"
+      },
+      {
+        "id": "put-list",
+        "name": "put-list",
+        "role": "一覧を作り直す",
+        "module": ".github/scripts/pr-explain-pages.sh",
+        "status": "added",
+        "now": "題の応答を確かめ、gh-pages の木から一覧を作って一覧の 2 ファイルだけを置き換える"
+      },
+      {
+        "id": "collect-titles",
+        "name": "collect_titles",
+        "role": "題の応答を確かめて `{番号: 題}` にする",
+        "module": ".github/scripts/pr-explain-pages.sh",
+        "status": "added",
+        "now": "全件そろっていなければ理由を出して 1 を返す"
+      },
+      {
+        "id": "checkout-site",
+        "name": "checkout_site",
+        "role": "gh-pages を取り、必要なパスだけを展開する",
+        "module": ".github/scripts/pr-explain-pages.sh",
+        "status": "changed",
+        "was": "gh-pages が無ければどのモードでも orphan を作っていた",
+        "now": "`put-list` では gh-pages が無ければ作らず 4 を返す。展開するパスは `sparse` で決める"
+      },
+      {
+        "id": "write-list",
+        "name": "write_list",
+        "role": "PR のフォルダから一覧を作る",
+        "module": ".github/scripts/pr-explain-pages.sh",
+        "status": "added",
+        "now": "`pr-<番号>` を番号の大きい順に並べ、`list.json` と枠を置く"
+      },
+      {
+        "id": "check-template",
+        "name": "check-pr-explain-template.py",
+        "role": "枠の CSP と固定スクリプトを検査する",
+        "module": ".github/scripts/check-pr-explain-template.py",
+        "now": "解説ページの枠と一覧の枠の両方を検査する"
+      },
+      {
+        "id": "list-request",
+        "name": "listRequest",
+        "role": "`list.json` を読む",
+        "module": ".claude/skills/pr-explain/templates/list.html",
+        "status": "added",
+        "now": "`no-store` で読み、404 を absent、HTTP と fetch の失敗を failed に詰め替える"
+      },
+      {
+        "id": "reading-of",
+        "name": "ListPage.readingOf",
+        "role": "読んだ一覧を画面の材料にする",
+        "module": ".claude/skills/pr-explain/templates/list.html",
+        "status": "added",
+        "now": "行の並び(並べ替えない)・0 件・読めない理由のどれかを返す"
+      }
+    ],
+    "edges": [
+      {
+        "id": "job-graphql",
+        "from": "list-job",
+        "to": "gh-graphql",
+        "code": "gh api graphql --paginate --slurp -f query='…'",
+        "status": "added",
+        "now": "失敗すればステップで止まり、`put-list` は走らない"
+      },
+      {
+        "id": "job-header",
+        "from": "list-job",
+        "to": "export-header",
+        "code": ". .github/scripts/lib/git-token-auth.sh && export_git_token_header",
+        "status": "added",
+        "now": "push の前に認証ヘッダを渡す"
+      },
+      {
+        "id": "job-put-list",
+        "from": "list-job",
+        "to": "put-list",
+        "code": "pr-explain-pages.sh put-list \"$RUNNER_TEMP/pull-requests.json\" …/list.html",
+        "status": "added",
+        "now": "題の応答を加工せずに渡す"
+      },
+      {
+        "id": "map-job-header",
+        "from": "change-map-job",
+        "to": "export-header",
+        "code": ". .github/scripts/lib/git-token-auth.sh && export_git_token_header",
+        "status": "added",
+        "now": "ステップの中の組み立てを置き換えた"
+      },
+      {
+        "id": "map-job-put-map",
+        "from": "change-map-job",
+        "to": "put-map",
+        "code": "pr-explain-pages.sh put-map \"$PR\" …",
+        "now": "push のたびに枠と地図を置く"
+      },
+      {
+        "id": "put-list-check",
+        "from": "put-list",
+        "to": "check-template",
+        "code": "check-pr-explain-template.py \"$3\"",
+        "status": "added",
+        "now": "clone の前に一覧の枠を検査する(`--tracked` なし)"
+      },
+      {
+        "id": "put-list-titles",
+        "from": "put-list",
+        "to": "collect-titles",
+        "code": "collect_titles \"$2\" \"$work/titles.json\" || exit 1",
+        "status": "added",
+        "now": "clone の前に応答を確かめ、欠けていれば 1 で終わる"
+      },
+      {
+        "id": "put-list-checkout",
+        "from": "put-list",
+        "to": "checkout-site",
+        "code": "checkout_site",
+        "status": "added",
+        "now": "取り直しのたびに gh-pages を取る。4 なら一覧を作らず 0"
+      },
+      {
+        "id": "put-list-write",
+        "from": "put-list",
+        "to": "write-list",
+        "code": "write_list \"$site\" \"$3\"",
+        "status": "added",
+        "now": "取り直した木から一覧を作る"
+      },
+      {
+        "id": "put-map-check",
+        "from": "put-map",
+        "to": "check-template",
+        "code": "check-pr-explain-template.py \"$4\"",
+        "now": "clone の前に解説ページの枠を検査する"
+      },
+      {
+        "id": "put-map-checkout",
+        "from": "put-map",
+        "to": "checkout-site",
+        "code": "checkout_site",
+        "now": "gh-pages が無ければ orphan を作る"
+      },
+      {
+        "id": "request-reading",
+        "from": "list-request",
+        "to": "reading-of",
+        "code": "ListPage.readingOf(source)",
+        "status": "added",
+        "now": "読み込みの結果を核に渡す"
+      }
+    ]
+  },
+  "commitStories": [
+    {
+      "sha": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "phase": "core",
+      "role": "一覧の枠・`put-list`・`pr-explain-list.yml` を足し、判定表と配線を追随する",
+      "why": "計画は 3 回の検証で 2 度方式を変えた。最初は閉じた PR の題を前の `list.json` から引き継いでいたが、導出できる値を読み戻す形(`rules/consistency.md`)なので毎回導出に変え、次に番号を先に引いて別名で題を引く案も、番号と gh-pages の有無を 2 か所で導くので全件を `--paginate --slurp` で引く形にした。共有の一覧を書くのが main の定義とコードだけになるよう、起点は `workflow_run` にした。却下した 18 案は Issue #1395 にある。",
+      "flows": [
+        "open",
+        "push",
+        "main"
+      ],
+      "review": [
+        "`put-list` の検査(枠と題の応答)が clone の前にあり、応答が欠けていれば取り直しのループへ入らないか",
+        "`write_list` が前の `list.json` を読まず、`git ls-tree` の結果と題だけから作っているか",
+        "`paths` / `sparse` の分け方で、PR のモードの `git add` の範囲が前の `$folder` と同じままか",
+        "gh-pages が無いときに `put-list` だけが 4 を返し、ループが 0 で抜けるか",
+        "`pr-explain-list.yml` の問い合わせに `$endCursor` と `pageInfo { hasNextPage endCursor }` があるか"
+      ],
+      "before": [
+        {
+          "text": "`…/pr-explain/` は 404 で、一覧は無かった",
+          "message": "open-list"
+        }
+      ],
+      "after": [
+        {
+          "text": "`PR Explain` の完了と main への push で一覧が作り直される",
+          "message": "explain-done"
+        },
+        {
+          "text": "`…/pr-explain/` を開くと一覧が出る",
+          "message": "open-list"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 25,
+          "end": 33,
+          "text": "`put-list` の約束。2 ファイルだけを置き換え、前の `list.json` を読まず、gh-pages が無ければ作らない"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 65,
+          "end": 65,
+          "text": "`put-list` は PR 番号を取らず、題の応答と枠の 2 つのファイルを取る"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 72,
+          "end": 87,
+          "text": "モードで `paths`(`git add` の対象)・`sparse`(展開するパターン)・`label` を分ける。PR のモードは前の `$folder` と同じ値"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 155,
+          "end": 156,
+          "text": "最後のページの `hasNextPage` が false でなければ、応答が途中で切れているとして止める"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 180,
+          "end": 183,
+          "text": "枠の検査と題の応答の検査を clone の前に済ませる。落ちたら取り直しへ進まない"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 201,
+          "end": 201,
+          "text": "`put-list` では gh-pages が無くても orphan を作らず 4 を返す"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 232,
+          "end": 247,
+          "text": "`write_list`。取り直した木の `pr-explain/pr-<番号>` を番号の大きい順に並べ、題を引く"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 298,
+          "end": 298,
+          "text": "4 なら「gh-pages がありません」と出して 0 で終わる"
+        },
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "start": 14,
+          "end": 19,
+          "text": "main への push と `PR Explain` の完了で走る"
+        },
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "start": 51,
+          "end": 55,
+          "text": "問い合わせはステップに直に書く。本体はマージ後の run で確かめる"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/list.html",
+          "start": 94,
+          "end": 107,
+          "text": "核 `ListPage.readingOf`。見る順は JSON → 最上位 → version → pages → 各行で、並べ替えない"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/list.html",
+          "start": 163,
+          "end": 169,
+          "text": "404 を absent に、HTTP と fetch の失敗を failed に詰め替えるだけ"
+        },
+        {
+          "path": ".github/scripts/lib/git-token-auth.sh",
+          "start": 14,
+          "end": 21,
+          "text": "`pr-explain.yml` の Publish ステップにあった組み立てを関数にした"
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "side": "old",
+          "start": 59,
+          "end": 63,
+          "text": "ステップの中の認証ヘッダの組み立て。lib へ移した"
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "start": 12,
+          "end": 12,
+          "text": "`pr-explain-list.yml` が名前を文字列で参照していることを書いた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 151,
+          "end": 151,
+          "text": "`reject_first_push` は、拒否するのと同時に別の clone からフォルダを足せるようにした"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".claude/skills/pr-explain/templates/list.html",
+          "start": 1,
+          "end": 178,
+          "feature": "list-page",
+          "text": "一覧の枠を新しく作った"
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "start": 1,
+          "end": 187,
+          "feature": "list-page",
+          "text": "docstring に一覧の枠と、写しを共有ファイルにしない理由を書いた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 1,
+          "end": 309,
+          "feature": "list-build",
+          "text": "`put-list` を足し、モードごとに書き換えの範囲を分けた"
+        },
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "start": 1,
+          "end": 63,
+          "feature": "list-workflow",
+          "text": "一覧を作り直すワークフローを新しく作った"
+        },
+        {
+          "path": ".github/scripts/lib/git-token-auth.sh",
+          "start": 1,
+          "end": 21,
+          "feature": "list-workflow",
+          "text": "認証ヘッダの組み立てを 2 つのワークフローで共有する"
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "start": 1,
+          "end": 59,
+          "feature": "list-workflow",
+          "text": "認証ヘッダを lib に寄せ、名前の参照を書いた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 1,
+          "end": 378,
+          "feature": "cases",
+          "text": "`put-list` のケースと、一覧に触らないケースを足した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "start": 1,
+          "end": 3888,
+          "feature": "cases",
+          "text": "一覧の核を別の vm で評価し、ケースを足した"
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "start": 1,
+          "end": 113,
+          "feature": "cases",
+          "text": "リポジトリの一覧の枠が通ることを足した"
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "start": 1,
+          "end": 283,
+          "feature": "cases",
+          "text": "判定表の当てる先に `pr-explain-list.yml` を足した"
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "start": 1,
+          "end": 123,
+          "feature": "cases",
+          "text": "核の判定表が 2 つの枠を見ることを書いた"
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "start": 1,
+          "end": 151,
+          "feature": "cases",
+          "text": "判定表の当てる先に `pr-explain-list.yml` を足した"
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 1,
+          "end": 293,
+          "feature": "docs",
+          "text": "一覧の URL と、セッションは一覧に触らないことを書いた"
+        }
+      ]
+    },
+    {
+      "sha": "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7",
+      "phase": "revise",
+      "role": "実装の検証の 1 段目(security・comment・naming・duplication・harness・over-guard)の指摘を反映する",
+      "why": "方式は維持し、採用した指摘だけを行単位で直した。フォークの PR の push のたびに書き込み権限の run が動いて GraphQL の枠を使うので、ジョブの `if:` で外した。ほかは語の衝突(「ページ」が 3 通り・`.note` が写し元で別の意味)と、同じ道筋・同じ正規表現の重複を 1 か所に寄せたもの。採否は Issue #1395 にある。",
+      "flows": [
+        "push"
+      ],
+      "review": [
+        "ジョブの `if:` が比べるのは GitHub が決めるリポジトリ名だけで、その値を `run:` へ流していないか",
+        "`pr_number_pattern` を bash と Python の両方が使い、引数の検査とフォルダの拾い方が同じ形になったか",
+        "`version` が無い一覧を、version の違いではなく形の違い(key `version`)として出すか"
+      ],
+      "before": [
+        {
+          "text": "フォークの PR の `PR Explain` が終わっても一覧の run が動いていた",
+          "message": "explain-done"
+        }
+      ],
+      "after": [
+        {
+          "text": "フォークの PR が起点なら一覧のジョブは動かない",
+          "message": "explain-done"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "start": 32,
+          "end": 37,
+          "text": "フォークが起点の `workflow_run` ではジョブを動かさない。比べるのはリポジトリ名だけ"
+        },
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "start": 4,
+          "end": 5,
+          "text": "前提(木と全件の題から作り直す)を冒頭で 1 回だけ書き、下の判断はその帰結として書き分けた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 56,
+          "end": 61,
+          "text": "PR 番号の形を 1 か所に置き、引数の検査と `write_list` の両方へ渡す"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 120,
+          "end": 122,
+          "text": "応答の `data.repository.pullRequests` の道筋を `connection_of` に寄せた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 146,
+          "end": 148,
+          "text": "組んだ条件に名前を付け、辞書かを先に見る理由を 1 行書いた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 252,
+          "end": 254,
+          "text": "題が null になる場合の理由を、冒頭から 1 か所にまとめた"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/list.html",
+          "start": 46,
+          "end": 48,
+          "text": "写し元 `index.html` と同じ `.guide` にした(`.note` は写し元で行への注釈の意味)"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/list.html",
+          "start": 102,
+          "end": 102,
+          "text": "`version` が無いときは shape(key `version`)として返す"
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "start": 28,
+          "end": 32,
+          "text": "写している範囲を実際に合わせ、一致はどの検査も見ないと書いた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 58,
+          "end": 58,
+          "text": "種の値を `seed_files` の 1 か所に置き、種を書くのも表明するのもここを引く"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 239,
+          "end": 243,
+          "text": "「触っていない」の表明を `kept_as_seeded` に寄せた"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "start": 1,
+          "end": 293,
+          "feature": "docs",
+          "text": "一覧の段落を「閉じても同じ URL で開ける」の後ろへ移した"
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/list.html",
+          "start": 1,
+          "end": 180,
+          "feature": "list-page",
+          "text": "`.guide` に揃え、version が無いときの理由を分けた"
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "start": 1,
+          "end": 189,
+          "feature": "list-page",
+          "text": "写しの範囲と、一致を見る検査が無いことを書いた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "start": 1,
+          "end": 320,
+          "feature": "list-build",
+          "text": "道筋と番号の形を 1 か所に寄せ、Why を理由ごとに分けた"
+        },
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "start": 1,
+          "end": 71,
+          "feature": "list-workflow",
+          "text": "フォークが起点ならジョブを動かさない"
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "start": 1,
+          "end": 3893,
+          "feature": "cases",
+          "text": "version が無い一覧のケースを足し、語を揃えた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 1,
+          "end": 402,
+          "feature": "cases",
+          "text": "種の値と表明を 1 か所に寄せ、語を揃えた"
+        }
+      ]
+    },
+    {
+      "sha": "9f23d20720cd006b935dc585d47b31bb1583fe99",
+      "phase": "revise",
+      "role": "test-reviewer が実装を壊しても落ちなかった判断に、判定表のケースを足す",
+      "why": "約 45 件のミューテーションのうち、並び・clone 前の応答の検査・2 ファイル以外に触らない・gh-pages が無いとき・取り直しで木を読み直す・同じ入力なら push しない・一覧の核の形の検査は壊すと落ちた。落ちなかった「前の `list.json` を読まない」「`nodes` が配列でない」「行がオブジェクトでない」「clone へ進まない」「`pr-12-old`」を、それぞれ落ちる入力で守る。",
+      "review": [
+        "種の `list.json` を読める形にしたことで、「読めたら使う」実装(99 の行が残る・PR 3 に古い題が付く)で落ちるか",
+        "「clone へ進まない」を gh-pages の無い置き場で見ているか(clone の後に検査すると 0 で抜ける)",
+        "put-explain の 1 行は `build-pr-explain.py` が同じ 2 で先に弾くので、番号の検査を外しても落ちない。それでも残してよいか"
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 65,
+          "end": 65,
+          "text": "前の `list.json` を読める形にし、gh-pages に無い PR 99 の行と PR 3 の古い題を持たせた"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 158,
+          "end": 163,
+          "text": "応答に無い `pr-3` と、番号の後ろに続きのある `pr-12-old` を種に足した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 342,
+          "end": 343,
+          "text": "前の一覧の行も題も使わないことを見る"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 350,
+          "end": 354,
+          "text": "壊れた `list.json` の版は別のケースとして残した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 387,
+          "end": 387,
+          "text": "`pageInfo` はあるが `nodes` が配列でない応答"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 400,
+          "end": 402,
+          "text": "gh-pages が無い置き場で壊れた応答を渡し、1 になる(clone へ進めば 0 で抜ける)ことを見る"
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 323,
+          "end": 324,
+          "text": "put-explain の行。`build-pr-explain.py` が先に 2 で弾くので、番号の検査を外しても落ちない"
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "start": 3864,
+          "end": 3868,
+          "text": "行が null・数値なら key は pages。この判定を消すと例外で画面が「読み込み中…」のまま止まる"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "start": 1,
+          "end": 420,
+          "feature": "cases",
+          "text": "壊しても落ちなかった判断に、落ちる入力を足した"
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "start": 1,
+          "end": 3898,
+          "feature": "cases",
+          "text": "行がオブジェクトでない一覧のケースを足した"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "pages",
+      "label": "置き場の判定表",
+      "file": ".github/scripts/pr-explain-pages-cases.sh"
+    },
+    {
+      "id": "core",
+      "label": "核の判定表",
+      "file": ".github/scripts/pr-explain-core-cases.sh"
+    },
+    {
+      "id": "template",
+      "label": "枠の検査の判定表",
+      "file": ".github/scripts/check-pr-explain-template-cases.sh"
+    },
+    {
+      "id": "after-merge",
+      "label": "マージ後の確認",
+      "file": ".github/workflows/pr-explain-list.yml"
+    }
+  ],
+  "tests": [
+    {
+      "id": "order",
+      "suite": "pages",
+      "name": "put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる",
+      "techniques": [
+        "equivalence",
+        "boundary"
+      ],
+      "why": "一覧の枠は並べ替えないので、並びはここで決まる。昇順にしても、番号を文字列として並べても落ちることを実測した",
+      "given": "gh-pages に `pr-1` `pr-2` `pr-3` `pr-12` と、番号の形でないフォルダがある",
+      "when": "通る題の応答で `put-list` を走らせる",
+      "then": "`list.json` の行の番号が `[12, 3, 2, 1]`",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 335,
+        "end": 337,
+        "emphasis": [
+          {
+            "start": 337,
+            "end": 337
+          }
+        ],
+        "text": "fresh_origin seeded\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 3, 2, 1]\" ]'"
+      },
+      "values": {
+        "columns": [
+          "並べ方",
+          "行の番号",
+          "このケース"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "番号の大きい順",
+              "12, 3, 2, 1",
+              "通る"
+            ]
+          },
+          {
+            "cells": [
+              "文字列の大きい順",
+              "3, 2, 12, 1",
+              "落ちる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "番号の小さい順",
+              "1, 2, 3, 12",
+              "落ちる"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-list"
+      ]
+    },
+    {
+      "id": "shape-folders",
+      "suite": "pages",
+      "name": "put-list は pr-<番号> の形でないフォルダ(notes・pr-01・pr-12-old)を載せない",
+      "techniques": [
+        "boundary",
+        "equivalence"
+      ],
+      "why": "番号は `pr_number_pattern` と `re.fullmatch` で拾う。先頭の 0 や後ろの続きを許すと、PR でないフォルダが一覧の行になる",
+      "given": "種に `notes`・`pr-01`・`pr-12-old` のフォルダがある",
+      "when": "`put-list` を走らせる",
+      "then": "行は `pr-12` `pr-3` `pr-2` `pr-1` の 4 件だけ",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 335,
+        "end": 338,
+        "emphasis": [
+          {
+            "start": 338,
+            "end": 338
+          }
+        ],
+        "text": "fresh_origin seeded\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 3, 2, 1]\" ]'\nexpect \"put-list は pr-<番号> の形でないフォルダ(notes・pr-01・pr-12-old)を載せない\" '[ \"$(listed count)\" = 4 ]'"
+      },
+      "values": {
+        "columns": [
+          "フォルダ",
+          "載るか"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`pr-12`",
+              "載る"
+            ]
+          },
+          {
+            "cells": [
+              "`pr-01`",
+              "載らない(先頭が 0)"
+            ]
+          },
+          {
+            "cells": [
+              "`pr-12-old`",
+              "載らない(番号の後ろに続きがある)"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`notes`",
+              "載らない"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-list"
+      ]
+    },
+    {
+      "id": "title-page1",
+      "suite": "pages",
+      "name": "put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "題はエスケープせずに書き、一覧の枠が `textContent` で文字のまま出す。`put-list` の側でエスケープすると画面に `&lt;b&gt;` と出る",
+      "given": "応答の 1 ページ目に PR 1「一」と PR 2「`<b>二</b>`」がある",
+      "when": "`put-list` を走らせる",
+      "then": "PR 1 と PR 2 の題が応答の綴りのまま",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 335,
+        "end": 339,
+        "emphasis": [
+          {
+            "start": 339,
+            "end": 339
+          }
+        ],
+        "text": "fresh_origin seeded\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 3, 2, 1]\" ]'\nexpect \"put-list は pr-<番号> の形でないフォルダ(notes・pr-01・pr-12-old)を載せない\" '[ \"$(listed count)\" = 4 ]'\nexpect \"put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)\" '[ \"$(listed title 1)\" = \"\\\"一\\\"\" ] && [ \"$(listed title 2)\" = \"\\\"<b>二</b>\\\"\" ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-list"
+      ]
+    },
+    {
+      "id": "title-page2",
+      "suite": "pages",
+      "name": "put-list は 2 ページ目にしか無い PR も題付きで載せる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "1 ページ目だけを読む実装だと、101 件目より後の PR が題なしになる",
+      "given": "PR 12 は応答の 2 ページ目にだけある",
+      "when": "`put-list` を走らせる",
+      "then": "PR 12 の題が「十二」",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 335,
+        "end": 340,
+        "emphasis": [
+          {
+            "start": 340,
+            "end": 340
+          }
+        ],
+        "text": "fresh_origin seeded\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 3, 2, 1]\" ]'\nexpect \"put-list は pr-<番号> の形でないフォルダ(notes・pr-01・pr-12-old)を載せない\" '[ \"$(listed count)\" = 4 ]'\nexpect \"put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)\" '[ \"$(listed title 1)\" = \"\\\"一\\\"\" ] && [ \"$(listed title 2)\" = \"\\\"<b>二</b>\\\"\" ]'\nexpect \"put-list は 2 ページ目にしか無い PR も題付きで載せる\" '[ \"$(listed title 12)\" = \"\\\"十二\\\"\" ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-list",
+        "fetch-titles"
+      ]
+    },
+    {
+      "id": "no-folder",
+      "suite": "pages",
+      "name": "put-list は応答にあってもフォルダの無い PR を載せない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "一覧に載せるのは gh-pages に残っているページだけ。応答から行を作ると、開けないリンクが並ぶ",
+      "given": "応答に PR 40 と PR 7 があり、gh-pages にそのフォルダは無い",
+      "when": "`put-list` を走らせる",
+      "then": "40 と 7 の行が無い",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 335,
+        "end": 341,
+        "emphasis": [
+          {
+            "start": 341,
+            "end": 341
+          }
+        ],
+        "text": "fresh_origin seeded\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 3, 2, 1]\" ]'\nexpect \"put-list は pr-<番号> の形でないフォルダ(notes・pr-01・pr-12-old)を載せない\" '[ \"$(listed count)\" = 4 ]'\nexpect \"put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)\" '[ \"$(listed title 1)\" = \"\\\"一\\\"\" ] && [ \"$(listed title 2)\" = \"\\\"<b>二</b>\\\"\" ]'\nexpect \"put-list は 2 ページ目にしか無い PR も題付きで載せる\" '[ \"$(listed title 12)\" = \"\\\"十二\\\"\" ]'\nexpect \"put-list は応答にあってもフォルダの無い PR を載せない\" '[ \"$(listed title 7)\" = \"<none>\" ] && [ \"$(listed title 40)\" = \"<none>\" ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-list"
+      ]
+    },
+    {
+      "id": "old-row",
+      "suite": "pages",
+      "name": "put-list は前の list.json にある、gh-pages に無い PR(99)の行を一覧に出さない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "前の一覧を読み戻すと、消えたフォルダの行が残り続ける。種の `list.json` が壊れた JSON だけだったときは、「読めたら使う」実装でもすべて通っていた",
+      "given": "前の `list.json` は読める形で、gh-pages に無い PR 99 の行がある",
+      "when": "`put-list` を走らせる",
+      "then": "99 の行が無い",
+      "commit": "9f23d20720cd006b935dc585d47b31bb1583fe99",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 335,
+        "end": 342,
+        "emphasis": [
+          {
+            "start": 342,
+            "end": 342
+          }
+        ],
+        "text": "fresh_origin seeded\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 3, 2, 1]\" ]'\nexpect \"put-list は pr-<番号> の形でないフォルダ(notes・pr-01・pr-12-old)を載せない\" '[ \"$(listed count)\" = 4 ]'\nexpect \"put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)\" '[ \"$(listed title 1)\" = \"\\\"一\\\"\" ] && [ \"$(listed title 2)\" = \"\\\"<b>二</b>\\\"\" ]'\nexpect \"put-list は 2 ページ目にしか無い PR も題付きで載せる\" '[ \"$(listed title 12)\" = \"\\\"十二\\\"\" ]'\nexpect \"put-list は応答にあってもフォルダの無い PR を載せない\" '[ \"$(listed title 7)\" = \"<none>\" ] && [ \"$(listed title 40)\" = \"<none>\" ]'\nexpect \"put-list は前の list.json にある、gh-pages に無い PR(99)の行を一覧に出さない\" '[ \"$(listed title 99)\" = \"<none>\" ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-list"
+      ]
+    },
+    {
+      "id": "old-title",
+      "suite": "pages",
+      "name": "put-list は応答に無い PR の題に前の list.json の題を使わず、null のままにする",
+      "techniques": [
+        "regression"
+      ],
+      "why": "前の一覧の題で埋めると、導出できる値を読み戻す形(計画の検証で退けた形)に戻る",
+      "given": "PR 3 はフォルダがあり、応答に無く、前の `list.json` に「古い題」がある",
+      "when": "`put-list` を走らせる",
+      "then": "PR 3 の題が `null`",
+      "commit": "9f23d20720cd006b935dc585d47b31bb1583fe99",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 335,
+        "end": 343,
+        "emphasis": [
+          {
+            "start": 343,
+            "end": 343
+          }
+        ],
+        "text": "fresh_origin seeded\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 3, 2, 1]\" ]'\nexpect \"put-list は pr-<番号> の形でないフォルダ(notes・pr-01・pr-12-old)を載せない\" '[ \"$(listed count)\" = 4 ]'\nexpect \"put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)\" '[ \"$(listed title 1)\" = \"\\\"一\\\"\" ] && [ \"$(listed title 2)\" = \"\\\"<b>二</b>\\\"\" ]'\nexpect \"put-list は 2 ページ目にしか無い PR も題付きで載せる\" '[ \"$(listed title 12)\" = \"\\\"十二\\\"\" ]'\nexpect \"put-list は応答にあってもフォルダの無い PR を載せない\" '[ \"$(listed title 7)\" = \"<none>\" ] && [ \"$(listed title 40)\" = \"<none>\" ]'\nexpect \"put-list は前の list.json にある、gh-pages に無い PR(99)の行を一覧に出さない\" '[ \"$(listed title 99)\" = \"<none>\" ]'\nexpect \"put-list は応答に無い PR の題に前の list.json の題を使わず、null のままにする\" '[ \"$(listed title 3)\" = null ]'"
+      },
+      "values": {
+        "columns": [
+          "題の出どころ",
+          "PR 3 の題"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "応答だけ(この実装)",
+              "`null`"
+            ]
+          },
+          {
+            "cells": [
+              "応答に無ければ前の `list.json`",
+              "「古い題」(落ちる)"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-list"
+      ]
+    },
+    {
+      "id": "untouched",
+      "suite": "pages",
+      "name": "put-list は PR のフォルダ(pr-1 の 3 ファイル・pr-12)と pr-preview に触らない",
+      "techniques": [
+        "state"
+      ],
+      "why": "gh-pages は Storybook と VRT の配信と同じブランチで、ここを壊すと一覧の外まで消える",
+      "given": "種に PR のフォルダと `pr-preview/pr-1` がある",
+      "when": "`put-list` を走らせる",
+      "then": "それらのファイルが種のまま残る",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 335,
+        "end": 345,
+        "emphasis": [
+          {
+            "start": 345,
+            "end": 345
+          }
+        ],
+        "text": "fresh_origin seeded\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 3, 2, 1]\" ]'\nexpect \"put-list は pr-<番号> の形でないフォルダ(notes・pr-01・pr-12-old)を載せない\" '[ \"$(listed count)\" = 4 ]'\nexpect \"put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)\" '[ \"$(listed title 1)\" = \"\\\"一\\\"\" ] && [ \"$(listed title 2)\" = \"\\\"<b>二</b>\\\"\" ]'\nexpect \"put-list は 2 ページ目にしか無い PR も題付きで載せる\" '[ \"$(listed title 12)\" = \"\\\"十二\\\"\" ]'\nexpect \"put-list は応答にあってもフォルダの無い PR を載せない\" '[ \"$(listed title 7)\" = \"<none>\" ] && [ \"$(listed title 40)\" = \"<none>\" ]'\nexpect \"put-list は前の list.json にある、gh-pages に無い PR(99)の行を一覧に出さない\" '[ \"$(listed title 99)\" = \"<none>\" ]'\nexpect \"put-list は応答に無い PR の題に前の list.json の題を使わず、null のままにする\" '[ \"$(listed title 3)\" = null ]'\nexpect \"put-list は一覧の枠をテンプレートのまま pr-explain/index.html に置く\" '[ \"$(on_pages pr-explain/index.html)\" = \"$(cat \"$list_template\")\" ]'\nexpect \"put-list は PR のフォルダ(pr-1 の 3 ファイル・pr-12)と pr-preview に触らない\" 'kept_as_seeded pr-explain/pr-1/index.html pr-explain/pr-1/change-map.json pr-explain/pr-1/explain.json pr-explain/pr-12/index.html pr-preview/pr-1/index.html'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "push-list"
+      ]
+    },
+    {
+      "id": "idempotent",
+      "suite": "pages",
+      "name": "put-list は一覧も枠も変わらなければ push しない",
+      "techniques": [
+        "idempotence"
+      ],
+      "why": "PR の push のたびに一覧の run が走るので、同じ入力で毎回コミットすると gh-pages の履歴が増え続ける",
+      "given": "一度 `put-list` した gh-pages",
+      "when": "同じ応答と枠でもう一度 `put-list` を走らせる",
+      "then": "終了コード 0 で、gh-pages の先頭が動かない",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 335,
+        "end": 348,
+        "emphasis": [
+          {
+            "start": 346,
+            "end": 348
+          }
+        ],
+        "text": "fresh_origin seeded\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる\" '[ \"$status\" -eq 0 ] && [ \"$(listed numbers)\" = \"[12, 3, 2, 1]\" ]'\nexpect \"put-list は pr-<番号> の形でないフォルダ(notes・pr-01・pr-12-old)を載せない\" '[ \"$(listed count)\" = 4 ]'\nexpect \"put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)\" '[ \"$(listed title 1)\" = \"\\\"一\\\"\" ] && [ \"$(listed title 2)\" = \"\\\"<b>二</b>\\\"\" ]'\nexpect \"put-list は 2 ページ目にしか無い PR も題付きで載せる\" '[ \"$(listed title 12)\" = \"\\\"十二\\\"\" ]'\nexpect \"put-list は応答にあってもフォルダの無い PR を載せない\" '[ \"$(listed title 7)\" = \"<none>\" ] && [ \"$(listed title 40)\" = \"<none>\" ]'\nexpect \"put-list は前の list.json にある、gh-pages に無い PR(99)の行を一覧に出さない\" '[ \"$(listed title 99)\" = \"<none>\" ]'\nexpect \"put-list は応答に無い PR の題に前の list.json の題を使わず、null のままにする\" '[ \"$(listed title 3)\" = null ]'\nexpect \"put-list は一覧の枠をテンプレートのまま pr-explain/index.html に置く\" '[ \"$(on_pages pr-explain/index.html)\" = \"$(cat \"$list_template\")\" ]'\nexpect \"put-list は PR のフォルダ(pr-1 の 3 ファイル・pr-12)と pr-preview に触らない\" 'kept_as_seeded pr-explain/pr-1/index.html pr-explain/pr-1/change-map.json pr-explain/pr-1/explain.json pr-explain/pr-12/index.html pr-preview/pr-1/index.html'\nbefore=\"$(tip)\"\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"put-list は一覧も枠も変わらなければ push しない\" '[ \"$status\" -eq 0 ] && [ \"$(tip)\" = \"$before\" ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "push-list"
+      ]
+    },
+    {
+      "id": "broken-old",
+      "suite": "pages",
+      "name": "put-list は前の list.json が壊れていても、読まずに作り直す",
+      "techniques": [
+        "error"
+      ],
+      "why": "壊れた一覧が次の入力になると、一度壊れたら直らなくなる",
+      "given": "gh-pages の `pr-explain/list.json` が `{` だけ",
+      "when": "`put-list` を走らせる",
+      "then": "終了コード 0 で、version 1 の一覧が置かれる",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 350,
+        "end": 354,
+        "emphasis": [
+          {
+            "start": 351,
+            "end": 351
+          }
+        ],
+        "text": "fresh_origin seeded\nprintf '{\\n' > \"$work/seed/pr-explain/list.json\"\ngit -C \"$work/seed\" commit --quiet -am broken-list && git -C \"$work/seed\" push --quiet \"$work/origin.git\" gh-pages 2>/dev/null\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"put-list は前の list.json が壊れていても、読まずに作り直す\" '[ \"$status\" -eq 0 ] && [ \"$(listed version)\" = 1 ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-list"
+      ]
+    },
+    {
+      "id": "new-folder",
+      "suite": "pages",
+      "name": "応答に無い PR(put-map で増やしたフォルダ)は、次の put-list に題なし(null)で載る",
+      "techniques": [
+        "state"
+      ],
+      "why": "題を引いた後に開いた PR は、次の run まで題が無い。それでも行は出す",
+      "given": "`put-list` の後に `put-map 5` で `pr-5` が増えた",
+      "when": "同じ応答でもう一度 `put-list` を走らせる",
+      "then": "PR 5 が題 `null` で載る",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 356,
+        "end": 360,
+        "emphasis": [
+          {
+            "start": 358,
+            "end": 360
+          }
+        ],
+        "text": "fresh_origin seeded\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"\nrun_pages put-map 5 \"$work/map.json\" \"$template\"\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"応答に無い PR(put-map で増やしたフォルダ)は、次の put-list に題なし(null)で載る\" '[ \"$status\" -eq 0 ] && [ \"$(listed title 5)\" = null ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-map",
+        "put-list"
+      ]
+    },
+    {
+      "id": "retry",
+      "suite": "pages",
+      "name": "取り直しの間に gh-pages へ増えたフォルダも、題付きで一覧に載る",
+      "techniques": [
+        "state"
+      ],
+      "why": "push が拒まれたら木を読み直して作り直す。最初の木で作った一覧を使い回すと、他の run が足したフォルダが抜ける",
+      "given": "1 回目の push を拒み、同時に別の clone から `pr-explain/pr-40` を足す置き場",
+      "when": "`put-list` を走らせる",
+      "then": "終了コード 0 で、PR 40 が題「四十」付きで載る",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 366,
+        "end": 369,
+        "emphasis": [
+          {
+            "start": 367,
+            "end": 367
+          },
+          {
+            "start": 369,
+            "end": 369
+          }
+        ],
+        "text": "fresh_origin seeded\nreject_first_push pr-explain/pr-40\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"取り直しの間に gh-pages へ増えたフォルダも、題付きで一覧に載る\" '[ \"$status\" -eq 0 ] && [ \"$(on_pages pr-explain/pr-40/index.html)\" = other-clone ] && [ \"$(listed title 40)\" = \"\\\"四十\\\"\" ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "push-list"
+      ]
+    },
+    {
+      "id": "csp-list",
+      "suite": "pages",
+      "name": "CSP の合わない一覧の枠の put-list は 1 で、push しない",
+      "techniques": [
+        "error"
+      ],
+      "why": "固定スクリプトのハッシュが合わない枠を置くと、一覧が「読み込み中…」のまま動かない",
+      "given": "`<script>` の後ろに空白を足した一覧の枠",
+      "when": "`put-list` を走らせる",
+      "then": "終了コード 1 で、gh-pages の先頭が動かず、`[pr-explain-csp]` が出る",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 371,
+        "end": 374,
+        "emphasis": [
+          {
+            "start": 374,
+            "end": 374
+          }
+        ],
+        "text": "fresh_origin seeded\nbefore=\"$(tip)\"\noutput=\"$(bash \"$pages\" put-list \"$work/pull-requests.json\" \"$broken_list_template\" 2>&1)\"; status=$?\nexpect \"CSP の合わない一覧の枠の put-list は 1 で、push しない\" '[ \"$status\" -eq 1 ] && [ \"$(tip)\" = \"$before\" ] && [[ \"$output\" == *\"[pr-explain-csp]\"* ]]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh",
+        ".github/scripts/check-pr-explain-template.py"
+      ],
+      "covers": [
+        "check-list-template"
+      ]
+    },
+    {
+      "id": "broken-cut",
+      "suite": "pages",
+      "name": "題の応答が「最後のページの hasNextPage が true(応答が途中で切れている)」なら、clone へ進まず 1 で終わり push しない",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "問い合わせの本体は判定表を通らないので、`--paginate` や `$endCursor` が抜けて 1 ページで止まった応答はここでしか捕まらない",
+      "given": "2 ページ目の `hasNextPage` を true にした応答",
+      "when": "`put-list` を走らせる",
+      "then": "終了コード 1 で、gh-pages の先頭が動かず、取り直し(「反映に失敗」)へ進まない",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 376,
+        "end": 398,
+        "emphasis": [
+          {
+            "start": 385,
+            "end": 386
+          },
+          {
+            "start": 396,
+            "end": 396
+          }
+        ],
+        "text": "# 題の応答が読めない・全件そろっていない見本と、その形。\nbroken_responses=\"$(cat <<'RESPONSES'\nempty|空\nconcatenated|2 ページを --slurp なしで連結したもの\nno-pages|空の配列\nerrors|2 ページ目に errors がある\nno-title|2 ページ目の PR に title が無い\nstring-number|PR の number が文字列\nno-repository|data に repository が無い\ncut|最後のページの hasNextPage が true(応答が途中で切れている)\nno-page-info|pageInfo の無いページがある\nnodes-not-list|pageInfo はあるが nodes が配列でない\nRESPONSES\n)\"\ncases_before=$cases_reported\nwhile IFS='|' read -r name shape; do\n  [ -n \"$name\" ] || continue\n  fresh_origin seeded\n  before=\"$(tip)\"\n  output=\"$(bash \"$pages\" put-list \"$work/pull-requests-$name.json\" \"$list_template\" 2>&1)\"; status=$?\n  expect \"題の応答が「$shape」なら、clone へ進まず 1 で終わり push しない\" '[ \"$status\" -eq 1 ] && [ \"$(tip)\" = \"$before\" ] && [[ \"$output\" == *\"題の応答\"* ]] && [[ \"$output\" != *\"反映に失敗\"* ]]'\ndone <<<\"$broken_responses\"\nreport_cases_ran broken_responses \"$cases_before\""
+      },
+      "values": {
+        "columns": [
+          "応答の形",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "最後のページの `hasNextPage` が false",
+              "一覧を作り直す"
+            ]
+          },
+          {
+            "cells": [
+              "最後のページの `hasNextPage` が true",
+              "1 で終わる"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`pageInfo` の無いページがある",
+              "1 で終わる"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-list"
+      ]
+    },
+    {
+      "id": "broken-nodes",
+      "suite": "pages",
+      "name": "題の応答が「pageInfo はあるが nodes が配列でない」なら、clone へ進まず 1 で終わり push しない",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "`nodes` が配列かを見る枝を消すと、空のオブジェクトの `nodes` は回しても何も出ず、題の無い一覧が黙って置かれる。この入力が足されるまでは、枝を消しても落ちなかった",
+      "given": "2 ページ目の `nodes` を `{}` にした応答",
+      "when": "`put-list` を走らせる",
+      "then": "終了コード 1 で、gh-pages の先頭が動かず、取り直しへ進まない",
+      "commit": "9f23d20720cd006b935dc585d47b31bb1583fe99",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 376,
+        "end": 398,
+        "emphasis": [
+          {
+            "start": 387,
+            "end": 387
+          },
+          {
+            "start": 396,
+            "end": 396
+          }
+        ],
+        "text": "# 題の応答が読めない・全件そろっていない見本と、その形。\nbroken_responses=\"$(cat <<'RESPONSES'\nempty|空\nconcatenated|2 ページを --slurp なしで連結したもの\nno-pages|空の配列\nerrors|2 ページ目に errors がある\nno-title|2 ページ目の PR に title が無い\nstring-number|PR の number が文字列\nno-repository|data に repository が無い\ncut|最後のページの hasNextPage が true(応答が途中で切れている)\nno-page-info|pageInfo の無いページがある\nnodes-not-list|pageInfo はあるが nodes が配列でない\nRESPONSES\n)\"\ncases_before=$cases_reported\nwhile IFS='|' read -r name shape; do\n  [ -n \"$name\" ] || continue\n  fresh_origin seeded\n  before=\"$(tip)\"\n  output=\"$(bash \"$pages\" put-list \"$work/pull-requests-$name.json\" \"$list_template\" 2>&1)\"; status=$?\n  expect \"題の応答が「$shape」なら、clone へ進まず 1 で終わり push しない\" '[ \"$status\" -eq 1 ] && [ \"$(tip)\" = \"$before\" ] && [[ \"$output\" == *\"題の応答\"* ]] && [[ \"$output\" != *\"反映に失敗\"* ]]'\ndone <<<\"$broken_responses\"\nreport_cases_ran broken_responses \"$cases_before\""
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-list"
+      ]
+    },
+    {
+      "id": "no-pages-broken",
+      "suite": "pages",
+      "name": "gh-pages が無くても、題の応答が読めなければ clone へ進まず 1 で終わる",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "応答の検査が clone の前にあることを見る。clone の後に検査する実装だと、gh-pages が無いときは 0 で抜けてしまい、壊れた応答に気づけない",
+      "given": "gh-pages の無い置き場と、2 ページ目に `errors` がある応答",
+      "when": "`put-list` を走らせる",
+      "then": "終了コード 1 で、gh-pages は作られない",
+      "commit": "9f23d20720cd006b935dc585d47b31bb1583fe99",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 400,
+        "end": 402,
+        "emphasis": [
+          {
+            "start": 402,
+            "end": 402
+          }
+        ],
+        "text": "fresh_origin empty\noutput=\"$(bash \"$pages\" put-list \"$work/pull-requests-errors.json\" \"$list_template\" 2>&1)\"; status=$?\nexpect \"gh-pages が無くても、題の応答が読めなければ clone へ進まず 1 で終わる\" '[ \"$status\" -eq 1 ] && [ \"$(tip)\" = \"<none>\" ] && [[ \"$output\" == *\"題の応答\"* ]]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-list"
+      ]
+    },
+    {
+      "id": "no-pages",
+      "suite": "pages",
+      "name": "gh-pages が無ければ、put-list は 0 で終わり何も作らない",
+      "techniques": [
+        "boundary",
+        "state"
+      ],
+      "why": "0 件の一覧のためだけにブランチを作らない。次の `put-map` が作り、その後の run が一覧を置く",
+      "given": "gh-pages の無い置き場",
+      "when": "通る応答で `put-list` を走らせる",
+      "then": "終了コード 0 で、gh-pages は作られない",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 412,
+        "end": 414,
+        "emphasis": [
+          {
+            "start": 414,
+            "end": 414
+          }
+        ],
+        "text": "fresh_origin empty\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"gh-pages が無ければ、put-list は 0 で終わり何も作らない\" '[ \"$status\" -eq 0 ] && [ \"$(tip)\" = \"<none>\" ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-list"
+      ]
+    },
+    {
+      "id": "site-only",
+      "suite": "pages",
+      "name": "gh-pages はあるが pr-explain/ が無ければ、0 件の一覧と枠を置く",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "ブランチがあれば一覧の入口は置く。0 件なら画面は「残っている解説ページはありません」になる",
+      "given": "`.nojekyll` と `pr-preview/pr-1` だけの gh-pages",
+      "when": "`put-list` を走らせる",
+      "then": "行が 0 件の `list.json` と、テンプレートのままの枠が置かれる",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 416,
+        "end": 418,
+        "emphasis": [
+          {
+            "start": 418,
+            "end": 418
+          }
+        ],
+        "text": "fresh_origin site-only\nrun_pages put-list \"$work/pull-requests.json\" \"$list_template\"; status=$?\nexpect \"gh-pages はあるが pr-explain/ が無ければ、0 件の一覧と枠を置く\" '[ \"$status\" -eq 0 ] && [ \"$(listed rows)\" = \"[]\" ] && [ \"$(on_pages pr-explain/index.html)\" = \"$(cat \"$list_template\")\" ]'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "push-list"
+      ]
+    },
+    {
+      "id": "explain-untouched",
+      "suite": "pages",
+      "name": "put-explain は一覧(pr-explain/index.html と list.json)に触らない",
+      "techniques": [
+        "state"
+      ],
+      "why": "一覧を書くのは main の `put-list` だけ。PR の版の `put-explain` が一覧に触ると、版の行き来が起きる",
+      "given": "種に一覧の枠と `list.json` がある",
+      "when": "`put-explain 1` を走らせる",
+      "then": "一覧の 2 ファイルが種のまま残る",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 251,
+        "end": 257,
+        "emphasis": [
+          {
+            "start": 257,
+            "end": 257
+          }
+        ],
+        "text": "fresh_origin seeded\nerrors=\"$(bash \"$pages\" put-explain 1 \"$work/explain.json\" 2>&1 >/dev/null)\"; status=$?\nexpect \"put-explain は explain.json を置き、index.html と change-map.json に触らない\" '[ \"$status\" -eq 0 ] && placed_by_builder && kept_as_seeded pr-explain/pr-1/index.html pr-explain/pr-1/change-map.json'\nexpect \"put-explain が置くのは、検査が抜粋の中身を足して書き出したもの\" 'placed_by_builder'\nexpect \"put-explain は他の PR のフォルダに触らない\" 'kept_as_seeded pr-explain/pr-12/index.html'\nexpect \"put-explain は pr-preview に触らない\" 'kept_as_seeded pr-preview/pr-1/index.html'\nexpect \"put-explain は一覧(pr-explain/index.html と list.json)に触らない\" 'kept_as_seeded pr-explain/index.html pr-explain/list.json'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ]
+    },
+    {
+      "id": "map-untouched",
+      "suite": "pages",
+      "name": "put-map は一覧(pr-explain/index.html と list.json)に触らない",
+      "techniques": [
+        "state"
+      ],
+      "why": "`put-map` は PR の版のコードで走る。一覧に触ると、古い main から切った PR が古い枠で一覧を書き戻す",
+      "given": "種に一覧の枠と `list.json` がある",
+      "when": "`put-map 1` を走らせる",
+      "then": "一覧の 2 ファイルが種のまま残る",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 295,
+        "end": 303,
+        "emphasis": [
+          {
+            "start": 303,
+            "end": 303
+          }
+        ],
+        "text": "fresh_origin seeded\nrun_pages put-map 1 \"$work/map.json\" \"$template\"\nexpect \"put-map は index.html を毎回テンプレートで上書きする\" '[ \"$(on_pages pr-explain/pr-1/index.html)\" = \"$(cat \"$template\")\" ]'\nexpect \"put-map は explain.json を残す\" 'kept_as_seeded pr-explain/pr-1/explain.json'\nexpect \"put-map は 3 ファイル以外(ほかのファイル・サブフォルダ)を消す\" '[ \"$(on_pages pr-explain/pr-1/behavior.html)\" = \"<none>\" ] && [ \"$(on_pages pr-explain/pr-1/assets/x.css)\" = \"<none>\" ]'\nexpect \"put-map は change-map.json を更新する\" '[ \"$(on_pages pr-explain/pr-1/change-map.json)\" = \"$(cat \"$work/map.json\")\" ]'\nexpect \"put-map は他の PR のフォルダに触らない\" 'kept_as_seeded pr-explain/pr-12/index.html'\nexpect \"put-map は pr-preview に触らない\" 'kept_as_seeded pr-preview/pr-1/index.html'\nexpect \"put-map は一覧(pr-explain/index.html と list.json)に触らない\" 'kept_as_seeded pr-explain/index.html pr-explain/list.json'"
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ],
+      "covers": [
+        "put-map"
+      ]
+    },
+    {
+      "id": "pr-number",
+      "suite": "pages",
+      "name": "数字でない PR 番号は拒否する",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "PR 番号の検査を PR のモードの枝へ移した。put-explain の行は `build-pr-explain.py` が同じ 2 で先に弾くので、番号の検査を外しても落ちないが、振る舞いとしては正しいので残した",
+      "given": "PR 番号に `1 ../..` を渡す",
+      "when": "`put-map` と `put-explain` を走らせる",
+      "then": "どちらも終了コード 2 で、gh-pages の先頭が動かない",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-pages-cases.sh",
+        "start": 320,
+        "end": 324,
+        "emphasis": [
+          {
+            "start": 322,
+            "end": 324
+          }
+        ],
+        "text": "fresh_origin seeded\nbefore=\"$(tip)\"\nrun_pages put-map '1 ../..' \"$work/map.json\" \"$template\"; status=$?\nrun_pages put-explain '1 ../..' \"$work/explain.json\"; explain_status=$?\nexpect \"数字でない PR 番号は拒否する\" '[ \"$status\" -eq 2 ] && [ \"$explain_status\" -eq 2 ] && [ \"$(tip)\" = \"$before\" ]'"
+      },
+      "values": {
+        "columns": [
+          "モード",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`put-map`",
+              "2(番号の検査)"
+            ]
+          },
+          {
+            "cells": [
+              "`put-explain`",
+              "2(`build-pr-explain.py` が先に弾く)"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".github/scripts/pr-explain-pages.sh"
+      ]
+    },
+    {
+      "id": "core-order",
+      "suite": "core",
+      "name": "一覧の読めた行は、並びを変えずに番号・題・リンク先 pr-<番号>/ を持つ",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "並びは `put-list` が決める。枠が並べ替えると、置く側と画面で順が食い違う",
+      "given": "行が 2, 12, 1 の順の一覧",
+      "when": "`ListPage.readingOf` に読ませる",
+      "then": "行が同じ順で、リンク先が `pr-2/` `pr-12/` `pr-1/`",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 3799,
+        "end": 3803,
+        "text": "  {\n    label: \"一覧の読めた行は、並びを変えずに番号・題・リンク先 pr-<番号>/ を持つ\",\n    actual: () => listReadingOf(listJsonOf([listRow(2, \"二\"), listRow(12, \"十二\"), listRow(1, \"一\")])),\n    expected: { kind: \"listed\", rows: [{ pr: 2, title: \"二\", href: \"pr-2/\" }, { pr: 12, title: \"十二\", href: \"pr-12/\" }, { pr: 1, title: \"一\", href: \"pr-1/\" }] },\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/list.html"
+      ],
+      "covers": [
+        "read-list"
+      ]
+    },
+    {
+      "id": "core-null",
+      "suite": "core",
+      "name": "一覧の題が null の行は、題なしの行になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "題の無い行も読めない一覧ではなく 1 行として出し、画面で「題を取得できませんでした」にする",
+      "given": "2 行目の題が `null` の一覧",
+      "when": "`ListPage.readingOf` に読ませる",
+      "then": "行の題が `[\"十二\", null]`",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 3804,
+        "end": 3808,
+        "text": "  {\n    label: \"一覧の題が null の行は、題なしの行になる\",\n    actual: () => listReadingOf(listJsonOf([listRow(12, \"十二\"), listRow(5, null)])).rows.map((row) => row.title),\n    expected: [\"十二\", null],\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/list.html"
+      ],
+      "covers": [
+        "read-list"
+      ]
+    },
+    {
+      "id": "core-empty",
+      "suite": "core",
+      "name": "一覧の pages が空なら 0 件",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "0 件は読めない一覧と分けて「残っている解説ページはありません」と出す",
+      "given": "`pages` が `[]` の一覧",
+      "when": "`ListPage.readingOf` に読ませる",
+      "then": "`{kind: \"empty\"}`",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 3809,
+        "end": 3813,
+        "text": "  {\n    label: \"一覧の pages が空なら 0 件\",\n    actual: () => listReadingOf(listJsonOf([])),\n    expected: { kind: \"empty\" },\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/list.html"
+      ],
+      "covers": [
+        "read-list"
+      ]
+    },
+    {
+      "id": "core-version",
+      "suite": "core",
+      "name": "一覧の version が 1 でなければ、理由は version で中身を持つ",
+      "techniques": [
+        "error"
+      ],
+      "why": "版の違う一覧を黙って読むと、行の形の違いが空欄になって出る",
+      "given": "version が 2 の一覧",
+      "when": "`ListPage.readingOf` に読ませる",
+      "then": "理由が `{kind: \"version\", actual: 2}`",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 3839,
+        "end": 3843,
+        "text": "  {\n    label: \"一覧の version が 1 でなければ、理由は version で中身を持つ\",\n    actual: () => listReadingOf(listJsonOf([listRow(1, \"一\")], { version: 2 })),\n    expected: { kind: \"missing\", reason: { kind: \"version\", actual: 2 } },\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/list.html"
+      ],
+      "covers": [
+        "read-list"
+      ]
+    },
+    {
+      "id": "core-no-version",
+      "suite": "core",
+      "name": "一覧に version が無ければ、理由は shape でキーは version",
+      "techniques": [
+        "error"
+      ],
+      "why": "version の無い一覧を「version が null」と出していたのを、形の違いとして出すようにした(over-guard の指摘)",
+      "given": "`version` の無い一覧",
+      "when": "`ListPage.readingOf` に読ませる",
+      "then": "理由が `{kind: \"shape\", key: \"version\"}`",
+      "commit": "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 3844,
+        "end": 3848,
+        "text": "  {\n    label: \"一覧に version が無ければ、理由は shape でキーは version\",\n    actual: () => listReadingOf({ pages: [listRow(1, \"一\")] }),\n    expected: { kind: \"missing\", reason: { kind: \"shape\", key: \"version\" } },\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/list.html"
+      ],
+      "covers": [
+        "read-list"
+      ]
+    },
+    {
+      "id": "core-pr",
+      "suite": "core",
+      "name": "一覧の pr が正の整数でない行(0・1.5・\"12\")が 2 行目以降にあれば、理由は shape でキーは pr",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "1 行目だけを見る実装でも通らないよう、2 行目に置く。リンク先は番号から作るので、整数でない番号は行にしない",
+      "given": "1 行目が正しく、2 行目の `pr` が 0・1.5・`\"12\"` の一覧",
+      "when": "`ListPage.readingOf` に読ませる",
+      "then": "どれも理由が `{kind: \"shape\", key: \"pr\"}`",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 3854,
+        "end": 3858,
+        "text": "  {\n    label: \"一覧の pr が正の整数でない行(0・1.5・\\\"12\\\")が 2 行目以降にあれば、理由は shape でキーは pr\",\n    actual: () => [0, 1.5, \"12\"].map((pr) => listReadingOf(listJsonOf([listRow(12, \"十二\"), listRow(pr, \"題\")])).reason),\n    expected: [0, 1.5, \"12\"].map(() => ({ kind: \"shape\", key: \"pr\" })),\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+      },
+      "values": {
+        "columns": [
+          "2 行目の pr",
+          "理由"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "0",
+              "shape(pr)"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "1.5",
+              "shape(pr)"
+            ]
+          },
+          {
+            "cells": [
+              "\"12\"(文字列)",
+              "shape(pr)"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/list.html"
+      ],
+      "covers": [
+        "read-list"
+      ]
+    },
+    {
+      "id": "core-row",
+      "suite": "core",
+      "name": "一覧の行がオブジェクトでない(null・数値)なら読めず、理由は shape でキーは pages",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "この判定を消すと `null` の行の `pr` を読むところで例外になり、画面は「読み込み中…」のまま止まる。この入力が足されるまでは、判定を消しても落ちなかった",
+      "given": "2 行目が `null` か `5` の一覧",
+      "when": "`ListPage.readingOf` に読ませる",
+      "then": "どちらも読めず、理由が `{kind: \"shape\", key: \"pages\"}`",
+      "commit": "9f23d20720cd006b935dc585d47b31bb1583fe99",
+      "excerpt": {
+        "path": ".github/scripts/pr-explain-core-cases.sh",
+        "start": 3864,
+        "end": 3868,
+        "text": "  {\n    label: \"一覧の行がオブジェクトでない(null・数値)なら読めず、理由は shape でキーは pages\",\n    actual: () => [null, 5].map((row) => listReadingOf(listJsonOf([listRow(12, \"十二\"), row]))),\n    expected: [null, 5].map(() => ({ kind: \"missing\", reason: { kind: \"shape\", key: \"pages\" } })),\n  },",
+        "openingLine": "results=\"$(node - \"$template\" \"$checker\" \"$work/embeddings.json\" \"$list_template\" <<'JS'"
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/list.html"
+      ],
+      "covers": [
+        "read-list"
+      ]
+    },
+    {
+      "id": "template-list",
+      "suite": "template",
+      "name": "リポジトリの一覧の枠は通る",
+      "techniques": [
+        "regression"
+      ],
+      "why": "一覧の枠も、解説ページの枠と同じ CSP と、HTML として解釈させる API の検査を通す。題は外から来る文字列なので、固定スクリプトが 1 か所でも HTML として解釈させれば要素になる",
+      "given": "リポジトリの `templates/list.html`",
+      "when": "`check-pr-explain-template.py` を `--tracked` なしで走らせる",
+      "then": "終了コード 0",
+      "commit": "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+      "excerpt": {
+        "path": ".github/scripts/check-pr-explain-template-cases.sh",
+        "start": 106,
+        "end": 108,
+        "text": "# 一覧の枠は色分けの表を持たないので `--tracked` を付けずに流す(`verdict` は常に付ける)。\npython3 \"$checker\" \"$list_template\" >/dev/null 2>&1; list_status=$?\nreport pass \"$([ \"$list_status\" -eq 0 ] && echo pass || echo \"exit-$list_status\")\" \"リポジトリの一覧の枠は通る\""
+      },
+      "targets": [
+        ".claude/skills/pr-explain/templates/list.html",
+        ".github/scripts/check-pr-explain-template.py"
+      ],
+      "covers": [
+        "check-list-template"
+      ]
+    },
+    {
+      "id": "todo-dom",
+      "suite": "core",
+      "name": "一覧の枠が、行・題なし・0 件・読めないを画面に出す",
+      "techniques": [
+        "state"
+      ],
+      "why": "DOM の組み立ては判定表を通らない。8 状態(行あり・題なし・0 件・404・JSON でない・最上位が配列・version 2・version 無し)をローカルで配って Chromium で開き、CSP の違反が出ないことを表示確認した",
+      "given": "状態ごとの `list.json` と一覧の枠",
+      "when": "ブラウザで開く",
+      "then": "行・「題を取得できませんでした」・「残っている解説ページはありません」・「一覧を読めません」と理由が出る",
+      "todo": true,
+      "targets": [
+        ".claude/skills/pr-explain/templates/list.html"
+      ],
+      "covers": [
+        "open-list"
+      ]
+    },
+    {
+      "id": "todo-query",
+      "suite": "after-merge",
+      "name": "pr-explain-list.yml の問い合わせが、全ページの PR をページの配列で書き出す",
+      "techniques": [
+        "state"
+      ],
+      "why": "判定表は応答の見本を渡すので、問い合わせの本体とランナーの `gh` の `--slurp` は通らない。マージ後の run で確かめる",
+      "given": "マージ後の main",
+      "when": "`PR Explain List` が走る",
+      "then": "公開の `list.json` の番号が gh-pages の `pr-<番号>` と一致し、題が `null` の行が無い",
+      "todo": true,
+      "targets": [
+        ".github/workflows/pr-explain-list.yml"
+      ],
+      "covers": [
+        "fetch-titles"
+      ]
+    },
+    {
+      "id": "todo-wiring",
+      "suite": "after-merge",
+      "name": "main への push と PR Explain の完了で PR Explain List が走り、一覧が作り直される",
+      "techniques": [
+        "state"
+      ],
+      "why": "`workflow_run` は PR の中では走らず、名前の文字列でつながるだけなので、配線と認証はマージ後にしか確かめられない",
+      "given": "マージ後に次の PR が push される",
+      "when": "`PR Explain` が終わる",
+      "then": "`PR Explain List` が走り、その PR の番号が一覧に載る",
+      "todo": true,
+      "targets": [
+        ".github/workflows/pr-explain-list.yml",
+        ".github/scripts/lib/git-token-auth.sh"
+      ],
+      "covers": [
+        "explain-done",
+        "main-push",
+        "token-header"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "残っている解説ページを、一覧の 1 ページから開けるようになった",
+    "lead": "使う人(解説ページを読むレビュアーと、ページを置くセッション)から見て変わったのは、解説ページの入口が 1 つできたことです。",
+    "changed": {
+      "before": [
+        {
+          "text": "解説ページの置き場の入口(PR 番号の部分を外したアドレス)を開くと、ページが見つからなかった",
+          "message": "open-list"
+        },
+        {
+          "text": "どの PR の解説ページが残っているかは、PR のコメントから 1 件ずつ辿るしかなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "入口を開くと、残っている解説ページの一覧が PR 番号の大きい順に、番号と題で並ぶ",
+          "message": "open-list"
+        },
+        {
+          "text": "行を押すと、その PR の解説ページが開く",
+          "message": "open-page"
+        },
+        {
+          "text": "一覧は、PR に新しく変更を送ったあとと、本流に取り込んだあとに自動で作り直される",
+          "message": "explain-done"
+        }
+      ],
+      "text": "セッションは一覧に何もしなくてよく、解説を置く手順は変わりません。",
+      "specs": [
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "locator": "「8 画面と材料」の、閉じても同じ URL で開けるの段落の後",
+          "text": "一覧の場所と、一覧は自動で作り直されるのでセッションは触らないこと、題が変わる時点を書き足した",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+            "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/SKILL.md",
+          "locator": "「参照ファイル」の表",
+          "text": "一覧の枠・一覧の配置・認証の共有の行を足した",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1394,
+          "text": "閉じても解説ページを残すようにした件。残ったページへの入口が無かったのが、この変更の出発点"
+        },
+        {
+          "issue": 63,
+          "text": "公開用ブランチへの配置を共通の部品にまとめる件。この部品はまだ無く、一覧は取り直すたびに作り直す必要があるので、今回は寄せなかった"
+        }
+      ],
+      "primers": [
+        "rebuild-from-tree",
+        "workflow-run"
+      ]
+    },
+    "tables": [
+      {
+        "label": "一覧のページを開いたときの出方",
+        "gist": "出方を決めるのは、一覧のファイルがどんな状態かの 1 つ。",
+        "text": "これまでは、どの状態でもページそのものが見つかりませんでした。",
+        "rowHeads": [
+          {
+            "id": "listed",
+            "label": "残っている解説ページがある"
+          },
+          {
+            "id": "empty",
+            "label": "残っている解説ページが無い"
+          },
+          {
+            "id": "absent",
+            "label": "一覧のファイルがまだ無い"
+          },
+          {
+            "id": "broken",
+            "label": "一覧のファイルが壊れている",
+            "note": "形や版が違う"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "screen",
+            "label": "画面に出るもの"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "listed",
+            "columnHead": "screen",
+            "result": "番号と題の行が番号の大きい順に並び、行を押すとその解説ページが開く",
+            "was": "ページが見つからない",
+            "tests": [
+              "core-order",
+              "core-null"
+            ]
+          },
+          {
+            "rowHead": "empty",
+            "columnHead": "screen",
+            "result": "「残っている解説ページはありません」と出る",
+            "was": "ページが見つからない",
+            "tests": [
+              "core-empty"
+            ]
+          },
+          {
+            "rowHead": "absent",
+            "columnHead": "screen",
+            "result": "「一覧を読めません」と、まだ置かれていないことが出る",
+            "was": "ページが見つからない"
+          },
+          {
+            "rowHead": "broken",
+            "columnHead": "screen",
+            "result": "「一覧を読めません」と、読めない理由が 1 文で出る",
+            "was": "ページが見つからない",
+            "tests": [
+              "core-version",
+              "core-no-version",
+              "core-pr",
+              "core-row"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "一覧に載る行",
+        "gist": "載るかを決めるのはページが残っているか、題が付くかを決めるのは題を引いた時点で PR があったか。",
+        "text": "PR 番号の形でないフォルダは、どちらの列でも載りません。",
+        "rowHeads": [
+          {
+            "id": "kept",
+            "label": "解説ページが残っている PR"
+          },
+          {
+            "id": "gone",
+            "label": "解説ページが残っていない PR",
+            "note": "前の一覧には載っていた"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "titled",
+            "label": "題を引く前からある PR"
+          },
+          {
+            "id": "later",
+            "label": "題を引いた後に開いた PR"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "kept",
+            "columnHead": "titled",
+            "result": "番号の大きい順に、題付きで載る",
+            "tests": [
+              "order",
+              "title-page1",
+              "title-page2",
+              "retry"
+            ]
+          },
+          {
+            "rowHead": "kept",
+            "columnHead": "later",
+            "result": "題なしで載り、次に一覧を作り直すと題が付く",
+            "tests": [
+              "new-folder",
+              "old-title"
+            ]
+          },
+          {
+            "rowHead": "gone",
+            "columnHead": "titled",
+            "result": "載らない",
+            "tests": [
+              "no-folder",
+              "old-row"
+            ]
+          },
+          {
+            "rowHead": "gone",
+            "columnHead": "later",
+            "result": "載らない"
+          }
+        ]
+      },
+      {
+        "label": "一覧を作り直すときの結果",
+        "gist": "結果を決めるのは、PR の題をすべて取れたかと、公開用のブランチがどこまでできているかの 2 つ。",
+        "text": "題を取れなかった回は何も書き換えないので、前の一覧がそのまま出ます。",
+        "rowHeads": [
+          {
+            "id": "complete",
+            "label": "PR の題をすべて取れた"
+          },
+          {
+            "id": "cut",
+            "label": "題の取得が途中で切れた・読めない"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "has",
+            "label": "解説ページの置き場がある"
+          },
+          {
+            "id": "no-folder",
+            "label": "ブランチはあるが置き場が無い"
+          },
+          {
+            "id": "no-branch",
+            "label": "公開用のブランチがまだ無い"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "complete",
+            "columnHead": "has",
+            "result": "一覧を作り直し、前と変わったときだけ書き込む",
+            "tests": [
+              "order",
+              "idempotent",
+              "broken-old"
+            ]
+          },
+          {
+            "rowHead": "complete",
+            "columnHead": "no-folder",
+            "result": "0 件の一覧を置く",
+            "tests": [
+              "site-only"
+            ]
+          },
+          {
+            "rowHead": "complete",
+            "columnHead": "no-branch",
+            "result": "何も作らずに成功で終わる",
+            "note": "次に解説ページが置かれた後の回で一覧ができる",
+            "tests": [
+              "no-pages"
+            ]
+          },
+          {
+            "rowHead": "cut",
+            "columnHead": "has",
+            "result": "何も書き込まずに失敗で終わり、前の一覧がそのまま出る",
+            "tests": [
+              "broken-cut",
+              "broken-nodes"
+            ]
+          },
+          {
+            "rowHead": "cut",
+            "columnHead": "no-folder",
+            "result": "何も書き込まずに失敗で終わる"
+          },
+          {
+            "rowHead": "cut",
+            "columnHead": "no-branch",
+            "result": "何も書き込まずに失敗で終わる",
+            "tests": [
+              "no-pages-broken"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "題を引いた後に開いた PR のページ",
+        "before": [],
+        "after": [
+          {
+            "text": "一覧には「題を取得できませんでした」と出る行で載る"
+          },
+          {
+            "text": "次に一覧が作り直されると題が付く"
+          }
+        ],
+        "text": "題は一覧を作り直すたびに引き直すので、題の欠けはその次の回で埋まります。",
+        "tests": [
+          "new-folder"
+        ],
+        "primers": [
+          "rebuild-from-tree"
+        ]
+      },
+      {
+        "label": "PR の題を最後まで取れなかったとき",
+        "before": [],
+        "after": [
+          {
+            "text": "一覧は書き換えられず、前の一覧がそのまま出る"
+          },
+          {
+            "text": "その回の自動処理は失敗として残る"
+          }
+        ],
+        "text": "欠けた題のまま一覧を作ると題の無い行が黙って増えるので、その回は何もしません。次の回で揃います。",
+        "tests": [
+          "broken-cut",
+          "broken-nodes",
+          "no-pages-broken"
+        ],
+        "primers": [
+          "titles-complete",
+          "gh-graphql"
+        ]
+      },
+      {
+        "label": "フォークから出された PR",
+        "before": [],
+        "after": [
+          {
+            "text": "その PR の処理が終わっても、一覧は作り直されない"
+          }
+        ],
+        "text": "フォークの PR の解説ページはもともと置かれないので、一覧も変わりません。",
+        "primers": [
+          "workflow-run"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "解説を置く手順と置き先は変わらず、解説を置いても一覧には触らない",
+        "tests": [
+          "explain-untouched",
+          "map-untouched"
+        ]
+      },
+      {
+        "text": "一覧を作り直しても、PR ごとの解説ページと部品のカタログのプレビューには触らない",
+        "tests": [
+          "untouched"
+        ]
+      },
+      {
+        "text": "おかしな PR 番号では何も書き換えない",
+        "tests": [
+          "pr-number"
+        ]
+      },
+      {
+        "text": "PR の題を書き換えただけでは一覧は変わらず、次に一覧が作り直されたときに変わる"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": ".claude/skills/pr-explain/SKILL.md",
+        "locator": "「手順」の「置く」の、書き込んでよいのは自分の PR のフォルダへ置くときだけの項",
+        "text": "セッションが書き込んでよいのは、解説を置く自分の PR のフォルダだけという決まりは変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "workflow-run",
+      "category": "GitHub Actions · ワークフロー",
+      "label": "`workflow_run`",
+      "gist": "別の[[ワークフロー|workflow]]が終わったことを[[イベント|event]]にして、このワークフローを走らせるための仕組み。相手のワークフローはファイル名ではなく、`name:` に書いた名前で指す。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`on.workflow_run.workflows` に相手の名前を並べ、`types: [completed]` で「終わったとき」を選ぶ。`workflow_run` で走るときは、起点が PR でも、[[デフォルトブランチ|default-branch]]にあるこのワークフローの定義とコードで走る。そのため PR の側の版で、このジョブの中身や呼ぶスクリプトが書き換わることは無い。"
+        },
+        {
+          "kind": "declaration",
+          "code": "on:\n  push:\n    branches: [main]\n  workflow_run:\n    workflows: [PR Explain]\n    types: [completed]"
+        },
+        {
+          "kind": "caution",
+          "text": "相手とは名前の文字列でつながるだけなので、`pr-explain.yml` の `name: PR Explain` を変えると、こちらは何も言わずに走らなくなる。`name:` の上にその旨を 1 行書いてある。"
+        },
+        {
+          "kind": "memo",
+          "text": "[[フォーク|fork]]の PR が起点でも、この run は書き込める権限で走る。ジョブの `if:` で `github.event.workflow_run.head_repository.full_name` を `github.repository` と比べ、フォークが起点ならジョブを動かさない。PR の側が決める値(ブランチ名・題)は `run:` へ流さない。"
+        },
+        {
+          "kind": "memo",
+          "text": "`concurrency` の `cancel-in-progress: true` で、後から来た run が前の run を取り消す。一覧は毎回作り直すので、後の run が前の run の代わりになる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "lineRange": {
+            "start": 14,
+            "end": 19
+          },
+          "text": "main への push と `PR Explain` の完了で走る",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        },
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "lineRange": {
+            "start": 32,
+            "end": 37
+          },
+          "text": "フォークが起点ならジョブを動かさない",
+          "shas": [
+            "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7"
+          ]
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "lineRange": {
+            "start": 12,
+            "end": 13
+          },
+          "text": "名前が文字列で参照されていることを書いた",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "rebuild-from-tree"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "gh-graphql",
+      "category": "GitHub CLI · API",
+      "label": "`gh api graphql --paginate --slurp`",
+      "gist": "[[GraphQL|graphql]] の問い合わせを GitHub に送り、100 件ずつに分かれた結果を最後のページまで続けて取らせるための `gh` のコマンド。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`gh api graphql` は `-f query='…'` の問い合わせを送り、応答の [[JSON|json]] を標準出力に出す。`--paginate` を付けると、応答の `pageInfo.hasNextPage` が true の間、`endCursor` を変数 `$endCursor` に入れて次のページを取る([[カーソル|cursor]])。そのため問い合わせは `$endCursor` を受け取り、`pageInfo { hasNextPage endCursor }` を返す形で書く。"
+        },
+        {
+          "kind": "declaration",
+          "code": "gh api graphql --paginate --slurp \\\n  -f owner=\"${GITHUB_REPOSITORY%%/*}\" \\\n  -f name=\"${GITHUB_REPOSITORY##*/}\" \\\n  -f query='query($owner: String!, $name: String!, $endCursor: String) { repository(owner: $owner, name: $name) { pullRequests(first: 100, after: $endCursor) { nodes { number title } pageInfo { hasNextPage endCursor } } } }'"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "--paginate",
+              "type": "フラグ",
+              "text": "最後のページまで続けて取る。問い合わせに `$endCursor` と `pageInfo` が無いと 1 ページで止まる"
+            },
+            {
+              "name": "--slurp",
+              "type": "フラグ",
+              "text": "全ページの [[JSON|json]] を 1 つの配列にまとめて出す",
+              "note": "付けないと連結"
+            },
+            {
+              "name": "-f",
+              "type": "キー=値",
+              "text": "問い合わせの変数(`owner`・`name`)と、問い合わせの文そのもの(`query`)を文字列で渡す"
+            }
+          ]
+        },
+        {
+          "kind": "caution",
+          "text": "`--slurp` を付けないと、各ページの [[JSON|json]] が区切りなしで続けて出て、全体は 1 つの JSON にならない。`put-list` はページの配列を前提に読み、連結されたものは読めないとして 1 で終わる。"
+        },
+        {
+          "kind": "memo",
+          "text": "応答に `errors` があるときや HTTP の失敗では、本文を出したうえで終了コード 1 を返す。ワークフローのステップはそこで止まり、`put-list` は走らない。再試行はしない(次の run が作り直す)。"
+        },
+        {
+          "kind": "spec",
+          "text": "問い合わせの本体と、ランナーの `gh` で `--slurp` が効くことは、判定表を通らない(判定表は応答の見本を渡す)。`--slurp` の形はセッションの中で `gh` 2.89.0 を偽のサーバーに当てて確かめ、本物の応答はマージ後の run で確かめる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "lineRange": {
+            "start": 55,
+            "end": 63
+          },
+          "text": "題を全件引いて `$RUNNER_TEMP/pull-requests.json` に書き出すステップ",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        },
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "lineRange": {
+            "start": 47,
+            "end": 54
+          },
+          "text": "`--slurp` と、問い合わせを直に書く理由・再試行しない理由",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+            "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "titles-complete"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "bash-array",
+      "category": "bash · 配列",
+      "label": "配列と `\"${paths[@]}\"`",
+      "gist": "いくつかのパスを 1 つの変数にまとめ、コマンドへ 1 つずつ別の引数として渡すための bash の書き方。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`paths=(a b)` で配列を作り、`\"${paths[@]}\"` と書くと要素がそれぞれ 1 つの引数に展開される。引用符で囲まない `${paths[@]}` や `${paths[*]}` では、空白を含む要素が[[単語分割|word-splitting]]で割れる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "paths=(pr-explain/index.html pr-explain/list.json)\ngit -C \"$site\" add -A -- \"${paths[@]}\""
+        },
+        {
+          "kind": "memo",
+          "text": "PR のモードでは `paths=(\"$folder\")` の 1 要素なので、前の `git add -A -- \"$folder\"` と同じ引数になる。`put-list` だけが 2 要素になり、一覧の 2 ファイル以外は `git add` されない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "lineRange": {
+            "start": 73,
+            "end": 89
+          },
+          "text": "モードごとに `paths` / `sparse` / `label` を決める",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "lineRange": {
+            "start": 281,
+            "end": 281
+          },
+          "text": "`git add` するのは `paths` の要素だけ",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "lineRange": {
+            "start": 223,
+            "end": 223
+          },
+          "text": "展開するパターンも配列で渡す",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "rebuild-from-tree"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "re-fullmatch",
+      "category": "Python · re",
+      "label": "`re.fullmatch`",
+      "gist": "文字列の全体が[[正規表現|regex]]の形に合うかを調べる、Python の標準の `re` モジュールの関数。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`re.fullmatch(pattern, s)` は、`s` の先頭から末尾までが `pattern` に合えば一致を表す値を、合わなければ `None` を返す。一致の値の `group(1)` で、1 つ目の `( … )` に合った部分を取り出せる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "re.fullmatch(pattern, string, flags=0)"
+        },
+        {
+          "kind": "caution",
+          "text": "`re.match` は先頭から合うところまでしか見ないので、`pr-explain/pr-12-old` も `pr-explain/pr-12` までで一致し、12 として拾ってしまう。判定表の種に `pr-12-old` を置いて、この取り違えを落とす。"
+        },
+        {
+          "kind": "memo",
+          "text": "番号の形 `[1-9][0-9]*` は bash の変数 `pr_number_pattern` に 1 つだけ置き、引数の検査と、ヒアドキュメントの Python の両方に渡す。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "lineRange": {
+            "start": 250,
+            "end": 251
+          },
+          "text": "`pr-explain/pr-<番号>` だけを拾い、番号の大きい順に並べる",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+            "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7"
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "lineRange": {
+            "start": 56,
+            "end": 61
+          },
+          "text": "番号の形を 1 か所に置く",
+          "shas": [
+            "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "rebuild-from-tree"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "csp-hash",
+      "category": "HTML · セキュリティ",
+      "label": "CSP の `script-src 'sha256-…'`",
+      "gist": "ページで動いてよいスクリプトを、中身の[[ハッシュ|hash]]で 1 本だけに絞るための [[CSP|csp]] の書き方。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`<meta http-equiv=\"Content-Security-Policy\">` に `script-src 'sha256-<base64>'` と書くと、ブラウザは[[インラインスクリプト|inline-script]]の中身のハッシュを計算し、一致するものだけを動かす。中身を 1 文字でも変えるとハッシュが変わり、そのスクリプトは止まる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src 'none'; script-src 'sha256-…'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self'; base-uri 'none'; form-action 'none'\">"
+        },
+        {
+          "kind": "caution",
+          "text": "固定スクリプトを変えたら、`sha256-` の値も直す。`check-pr-explain-template.py` が中身と突き合わせ、合わなければ `[pr-explain-csp]` で落とす。"
+        },
+        {
+          "kind": "memo",
+          "text": "`connect-src 'self'` なので、一覧の枠が読めるのは同じ配信元の `list.json` だけ。ブラウザから GitHub の API を直に叩く案は、これと認証なしの回数の上限で退けた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/list.html",
+          "lineRange": {
+            "start": 5,
+            "end": 5
+          },
+          "text": "一覧の枠の CSP",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+            "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "two-frames"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "rebuild-from-tree",
+      "category": "harness · 一覧",
+      "label": "一覧は木から作り直す",
+      "gist": "`put-list` は前の一覧を読まず、取り直した gh-pages の[[木|git-tree]]にある `pr-<番号>` のフォルダと、引いたばかりの題だけから一覧を作る。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`write_list` は `git ls-tree -d --name-only HEAD pr-explain/` でフォルダを並べ、`pr-explain/pr-<番号>` に合うものを番号の大きい順にして、題を `{番号: 題}` から引く。無ければ `null`。書くのは `pr-explain/index.html` と `list.json` の 2 つだけ。"
+        },
+        {
+          "kind": "rule",
+          "text": "前の `list.json` は読まない。導出できる値を読み戻すと、外の編集や壊れた一覧が次の入力になる(`rules/consistency.md`)。"
+        },
+        {
+          "kind": "memo",
+          "text": "push が拒まれたら取り直しから始めるので、取り直しの間に増えたフォルダも次の試行の一覧に入る。同じ入力なら同じバイト列になり、変わらなければ push しない。"
+        },
+        {
+          "kind": "history",
+          "text": "最初の計画は、閉じた PR の題を前の `list.json` から引き継いでいた。計画の検証で、読み戻しが失敗の形と題の優先順を増やしていると指摘され、毎回全件の題を引く形に変えた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "lineRange": {
+            "start": 240,
+            "end": 258
+          },
+          "text": "`write_list`",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+            "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7"
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "lineRange": {
+            "start": 25,
+            "end": 28
+          },
+          "text": "前の `list.json` を読まない理由",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "re-fullmatch",
+        "bash-array",
+        "titles-complete"
+      ],
+      "tests": [
+        "order",
+        "shape-folders",
+        "old-row",
+        "old-title",
+        "broken-old",
+        "retry",
+        "idempotent"
+      ],
+      "flows": [
+        "push",
+        "main"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "titles-complete",
+      "category": "harness · 一覧",
+      "label": "題の応答の全件検査",
+      "gist": "`put-list` は clone の前に、題の応答が最後のページまでそろっているかを確かめ、欠けていれば 1 で終わる。[[GraphQL|graphql]] の問い合わせの抜けを捕まえるのはここだけ。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`collect_titles` は応答を `response_problem` に通す。空でないページの配列か、どのページにも `errors` が無いか、`nodes` が配列で `pageInfo.hasNextPage` が bool か、最後のページの `hasNextPage` が false か、各 PR の `number` が正の整数で `title` が文字列か、を見る。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/pr-explain-pages.sh",
+            "start": 157,
+            "end": 167,
+            "emphasis": [
+              {
+                "start": 165,
+                "end": 166
+              }
+            ],
+            "text": "def response_problem(pages):\n    \"\"\"応答全体の形の違い。全件そろっていれば None。\"\"\"\n    is_page_list = isinstance(pages, list) and len(pages) > 0\n    if not is_page_list:\n        return \"空でないページの配列でない(--slurp を付けた出力を渡す)\"\n    found = first_problem(page_problem(page, index) for index, page in enumerate(pages, 1))\n    if found is not None:\n        return found\n    if at(connection_of(pages[-1]), [\"pageInfo\", \"hasNextPage\"]) is not False:\n        return \"最後のページの hasNextPage が false でない(応答が途中で切れている)\"\n    return None",
+            "openingLine": "  python3 - \"$1\" \"$2\" <<'PY'"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "最後のページの `hasNextPage` を見ないと、`--paginate` や `$endCursor` が抜けて 1 ページで止まった応答でも通り、題の無い行が黙って増える。"
+        },
+        {
+          "kind": "memo",
+          "text": "検査は clone の前にあるので、落ちたら取り直しのループへ入らない。gh-pages が無いときも、先に 1 で終わる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "lineRange": {
+            "start": 101,
+            "end": 180
+          },
+          "text": "`collect_titles`",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+            "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7"
+          ]
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages.sh",
+          "lineRange": {
+            "start": 190,
+            "end": 193
+          },
+          "text": "clone の前に枠と題の応答を確かめる",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "gh-graphql"
+      ],
+      "tests": [
+        "broken-cut",
+        "broken-nodes",
+        "no-pages-broken"
+      ],
+      "flows": [
+        "push",
+        "main"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "two-frames",
+      "category": "harness · 枠",
+      "label": "2 つの枠の写し",
+      "gist": "一覧の枠 `list.html` は、解説ページの枠 `index.html` から色・書体・読み方を写して持つ。共有ファイルにはせず、DOM に触らない核は判定表が [[node|node]] で評価する。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "固定スクリプトは `typeof document === \"undefined\"` のとき、核 `ListPage` を `globalThis.prExplainListCore` に置いて抜ける。`pr-explain-core-cases.sh` は枠から `<script>` を抜き出して node の [[vm|vm]] で評価し、`ListPage.readingOf` を叩く。"
+        },
+        {
+          "kind": "rule",
+          "text": "写しの一致はどの検査も見ない。変えるときは両方を直す(`check-pr-explain-template.py` の docstring)。"
+        },
+        {
+          "kind": "memo",
+          "text": "共有の `.js` / `.css` にしないのは、`script-src 'self'` / `style-src 'self'` が要るのと、共有ファイルは main が置くが各 PR の `index.html` は PR の版のまま残り、食い違うため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/pr-explain/templates/list.html",
+          "lineRange": {
+            "start": 113,
+            "end": 118
+          },
+          "text": "`document` が無いときに核を置いて抜ける",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        },
+        {
+          "path": ".claude/skills/pr-explain/templates/list.html",
+          "lineRange": {
+            "start": 57,
+            "end": 57
+          },
+          "text": "写している範囲の印",
+          "shas": [
+            "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7"
+          ]
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template.py",
+          "lineRange": {
+            "start": 28,
+            "end": 32
+          },
+          "text": "共有ファイルにしない理由",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3",
+            "98ec82dc5c23f6664d11ab4a8482734fbbfa98b7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "csp-hash"
+      ],
+      "tests": [
+        "core-order",
+        "core-null",
+        "core-empty",
+        "core-version",
+        "core-no-version",
+        "core-pr",
+        "core-row",
+        "todo-dom"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "token-header",
+      "category": "harness · 認証",
+      "label": "認証ヘッダの共有",
+      "gist": "2 つの[[ワークフロー|workflow]]が gh-pages へ push するための認証ヘッダを、`lib/git-token-auth.sh` の `export_git_token_header` 1 か所で組み立てる。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "トークンを base64 にして `GIT_CONFIG_COUNT` / `GIT_CONFIG_KEY_0` / `GIT_CONFIG_VALUE_0` に export する。環境変数の git 設定なので、`pr-explain-pages.sh` が別のフォルダへ clone しても同じヘッダが効く。base64 の値は Actions が自動では伏せないので `::add-mask::` で登録する。"
+        },
+        {
+          "kind": "caution",
+          "text": "使う側の checkout は `persist-credentials: false` にする。残すと git が Authorization を 2 本送る。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/lib/git-token-auth.sh",
+          "lineRange": {
+            "start": 14,
+            "end": 21
+          },
+          "text": "`export_git_token_header`",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        },
+        {
+          "path": ".github/workflows/pr-explain.yml",
+          "lineRange": {
+            "start": 57,
+            "end": 58
+          },
+          "text": "地図の配置から使う",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        },
+        {
+          "path": ".github/workflows/pr-explain-list.yml",
+          "lineRange": {
+            "start": 69,
+            "end": 70
+          },
+          "text": "一覧の配置から使う",
+          "shas": [
+            "a985eea0ed61ba7441285472cd52f9d4681db7e3"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "workflow-run"
+      ],
+      "tests": [
+        "todo-wiring"
+      ],
+      "flows": [
+        "push",
+        "main"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "workflow",
+      "label": "ワークフロー",
+      "text": "GitHub Actions で、どの出来事のときにどのジョブを走らせるかを書いた YAML のファイル。`.github/workflows/` に置く。"
+    },
+    {
+      "id": "event",
+      "label": "イベント",
+      "text": "ワークフローを起こすきっかけになる出来事。push・PR の更新・別のワークフローの完了など。"
+    },
+    {
+      "id": "default-branch",
+      "label": "デフォルトブランチ",
+      "text": "リポジトリで基準になるブランチ。このリポジトリでは `main`。"
+    },
+    {
+      "id": "fork",
+      "label": "フォーク",
+      "text": "他人のリポジトリを自分のアカウントへ写したもの。そこから元のリポジトリへ PR を出せる。"
+    },
+    {
+      "id": "graphql",
+      "label": "GraphQL",
+      "text": "欲しい項目を問い合わせの文で指定して取り出す API の形式。GitHub は `https://api.github.com/graphql` で受ける。"
+    },
+    {
+      "id": "json",
+      "label": "JSON",
+      "text": "データを文字で書き表す形式。`{…}` のオブジェクト・`[…]` の配列・文字列・数値などを組み合わせて書く。"
+    },
+    {
+      "id": "cursor",
+      "label": "カーソル",
+      "text": "ページに分けた結果の「ここまで読んだ」を表す文字列。次の問い合わせに渡すと、その続きのページが返る。"
+    },
+    {
+      "id": "word-splitting",
+      "label": "単語分割",
+      "text": "bash が、引用符で囲まれていない変数の展開結果を空白で割り、別々の引数にすること。"
+    },
+    {
+      "id": "regex",
+      "label": "正規表現",
+      "text": "文字列の形を記号で書いたもの。`[1-9][0-9]*` は「1〜9 の後に 0〜9 が 0 個以上」を表す。"
+    },
+    {
+      "id": "hash",
+      "label": "ハッシュ",
+      "text": "中身から計算する決まった長さの値。中身が 1 文字でも違えば、まったく違う値になる。"
+    },
+    {
+      "id": "csp",
+      "label": "CSP",
+      "text": "Content Security Policy。ページが読み込んだり動かしたりしてよいものを、ページ側から宣言してブラウザに守らせる仕組み。"
+    },
+    {
+      "id": "inline-script",
+      "label": "インラインスクリプト",
+      "text": "別の `.js` ファイルではなく、HTML の `<script>…</script>` の中に直に書いたスクリプト。"
+    },
+    {
+      "id": "git-tree",
+      "label": "木",
+      "text": "git がコミットごとに持つフォルダの構造。`git ls-tree` で、ファイルを取り出さずにフォルダの名前だけを並べられる。"
+    },
+    {
+      "id": "node",
+      "label": "node",
+      "text": "ブラウザの外で JavaScript を動かす実行環境。"
+    },
+    {
+      "id": "vm",
+      "label": "vm",
+      "text": "node の標準のモジュールで、別の空の環境を作ってその中でスクリプトを評価する。ブラウザの `document` が無い状態でスクリプトを動かせる。"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "title-source",
+      "kind": "choice",
+      "title": "一覧の題の出どころ",
+      "prompt": "変更後、一覧の各行の題はどこから来ますか。",
+      "options": [
+        "前の `list.json` に書いてあった題",
+        "`change-map.json` に載せた PR の題",
+        "run のたびに GraphQL で全件引いた PR の題",
+        "ブラウザが GitHub の API から引いた題"
+      ],
+      "answer": 3,
+      "why": "`pr-explain-list.yml` が run のたびに `gh api graphql --paginate --slurp` で全件引き、`put-list` に渡す。前の `list.json` は読まず、地図に題は無く、ブラウザからは `connect-src 'self'` で API を叩けない。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "gh-graphql"
+        },
+        {
+          "kind": "message",
+          "id": "fetch-titles"
+        }
+      ]
+    },
+    {
+      "id": "read-back",
+      "kind": "yesno",
+      "title": "前の一覧の読み戻し",
+      "prompt": "`put-list` は、応答に無い PR の題として、前の `list.json` に書いてあった題を使う。",
+      "holds": false,
+      "why": "前の `list.json` は読まない。応答に無い PR は題 `null` で載り、次の run で題が付く。判定表は前の一覧に「古い題」を持たせて、使わないことを見ている。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "write-list"
+        }
+      ]
+    },
+    {
+      "id": "push-order",
+      "kind": "order",
+      "title": "PR の push から一覧に載るまで",
+      "prompt": "PR に push してから、その PR が一覧に載るまでの順に並べてください。",
+      "items": [
+        "PR に push する",
+        "`PR Explain` が地図を置く",
+        "`PR Explain List` が題を全件引く",
+        "`put-list` が gh-pages の木から一覧を作り直して push する"
+      ],
+      "why": "一覧の run は `PR Explain` の完了(`workflow_run`)で起きる。題を引いた後に `put-list` が clone し、その時点の木から一覧を作る。",
+      "go": [
+        {
+          "kind": "stepChange",
+          "flow": "push",
+          "stepChange": 4
+        },
+        {
+          "kind": "flow",
+          "id": "push"
+        }
+      ]
+    },
+    {
+      "id": "cut-response",
+      "kind": "choice",
+      "title": "題の応答が欠けたとき",
+      "prompt": "題の応答の最後のページで `hasNextPage` が true だったとき、`put-list` はどうしますか。",
+      "options": [
+        "題の無い行を含めたまま一覧を置く",
+        "clone の前に 1 で終わり、前の一覧が残る",
+        "前の一覧の題で埋めて置く",
+        "取り直しを 5 回繰り返してから置く"
+      ],
+      "answer": 2,
+      "why": "`collect_titles` が clone の前に応答を確かめ、全件そろっていなければ 1 で終わる。取り直しのループには入らず、gh-pages は書き換えない。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "collect-titles"
+        },
+        {
+          "kind": "callEdge",
+          "id": "put-list-titles"
+        }
+      ]
+    },
+    {
+      "id": "no-branch",
+      "kind": "yesno",
+      "title": "公開用ブランチが無いとき",
+      "prompt": "gh-pages がまだ無いと、`put-list` は orphan ブランチを作って 0 件の一覧を置く。",
+      "holds": false,
+      "why": "orphan を作るのは `put-map` だけ。`put-list` は `checkout_site` から 4 を受け取り、何も作らずに 0 で終わる。次の `put-map` がブランチを作った後の run で一覧が置かれる。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "checkout-site"
+        }
+      ]
+    },
+    {
+      "id": "fork",
+      "kind": "yesno",
+      "title": "フォークの PR",
+      "prompt": "フォークの PR の `PR Explain` が終わっても、一覧を作り直すジョブは動かない。",
+      "holds": true,
+      "why": "ジョブの `if:` が `github.event.workflow_run.head_repository.full_name` と `github.repository` を比べ、フォークが起点なら外す。フォークの PR では `PR Explain` が gh-pages に何も置かないので、作り直す必要が無い。",
+      "go": [
+        {
+          "kind": "module",
+          "path": ".github/workflows/pr-explain-list.yml"
+        }
+      ]
+    }
+  ]
+}
