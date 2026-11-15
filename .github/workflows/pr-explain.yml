@@ -1,6 +1,6 @@
 # PR ごとの解説ページ(gh-pages/pr-explain/pr-{番号}/)の「変更の地図」を置く。PR が閉じてもフォルダは消さない。
 # 閉じても消さないのは、マージ後に PR を辿った人が同じ URL で解説を読めるようにするため(#1394)。
-# 1 PR 約 0.6MB(大半は枠の index.html)。gh-pages の容量上限が近づいたら、消すのではなく枠の共有を別 Issue で検討する。
+# #1394 時点で 1 PR 約 0.6MB(大半は枠の index.html)。gh-pages の容量上限が近づいたら、消すのではなく枠の共有を別 Issue で検討する。
 #
 # 解説(explain.json)はセッションが `pr-explain` スキルで書いて同じフォルダへ置く。ここが置くのは
 # git の差分だけで決まる地図(change-map.json)と、ページの枠(index.html。push のたびに置き直す)。
