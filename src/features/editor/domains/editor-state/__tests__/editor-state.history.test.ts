@@ -178,3 +178,23 @@ test("戻したあとに別の編集をするとやり直せなくなる", () =>
 
   expect(Option.isSome(EditorState.redo(branched))).toBe(false);
 });
+
+test("戻したあと同じ中身が外から取り込まれても、やり直せる", () => {
+  const removed = Option.unwrap(
+    EditorState.removeSelected(
+      EditorState.select(stateWithNestedBox(), "title"),
+    ),
+  );
+  const undone = Option.unwrap(EditorState.undo(removed));
+
+  const reloaded = EditorState.applyReload(
+    undone,
+    { kind: "reloaded", document: EditorState.document(stateWithNestedBox()) },
+    ReceivedAt,
+  );
+
+  const redone = Option.unwrap(EditorState.redo(reloaded));
+  expect(
+    DesignDocument.findNode(EditorState.document(redone), "title"),
+  ).toEqual(Option.none);
+});
