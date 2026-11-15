@@ -26,9 +26,8 @@
 #   一覧は、取り直した gh-pages にある `pr-explain/pr-<番号>/` のフォルダを番号の大きい順に並べ、題を題の応答
 #   (`gh api graphql --paginate --slurp` の出力。ページの配列)から引く。前の `list.json` は読まない(導出できる
 #   値を読み戻すと、外の編集や壊れた一覧が入力になる)
-# - `put-list` で題が `null` になるのは、応答に無い番号のフォルダ(問い合わせの後に開いた PR と、PR でない番号)だけ
-# - `put-list` は clone の前に、題の応答が全件そろっていること(どのページにも `errors` が無く、最後のページの
-#   `hasNextPage` が false)を確かめる。欠けた応答から作ると、題の無い行が黙って増えるため
+# - `put-list` は clone の前に題の応答を確かめ(確かめる条件は `collect_titles`)、全件そろっていなければ置かない。
+#   欠けた応答から作ると、題の無い行が黙って増えるため
 # - `put-list` は gh-pages が無ければ作らない。0 件の一覧のためだけにブランチを作らず、次の `put-map` が作った
 #   後に走る run が一覧を置く
 #
@@ -42,7 +41,7 @@
 #
 # 終了コード: 0 = 置いた / 変更が無かった / `put-list` で gh-pages が無い、1 = 解説か枠が検査に落ちた・
 #             解説の sha を push していない・`put-list` の題の応答が読めないか全件そろっていない・
-#             push できなかった、2 =引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が
+#             push できなかった、2 = 引数の誤り(知らないモードを含む)、3 = `put-explain` の置き先に地図が
 #             無い(理由は上の `put-explain` の項。やり直さない)、
 #             127 = 読み込む `lib/usage.sh` を読み込めない(何も触らずに返す)
 set -uo pipefail
@@ -54,8 +53,11 @@ retry_wait="${PR_EXPLAIN_RETRY_WAIT:-2}"
 
 . "$scripts_dir/lib/usage.sh" || exit 127
 
+# PR 番号の形。引数の検査と、`put-list` が gh-pages のフォルダから番号を拾う正規表現(`write_list`)が使う。
+pr_number_pattern='[1-9][0-9]*'
+
 is_pr_number() {
-  [[ "$1" =~ ^[1-9][0-9]*$ ]]
+  [[ "$1" =~ ^${pr_number_pattern}$ ]]
 }
 
 mode="${1:-}"
@@ -115,6 +117,11 @@ def at(value, keys):
     return value
 
 
+def connection_of(page):
+    """1 ページの `data.repository.pullRequests`。途中が辞書でなければ None。"""
+    return at(page, ["data", "repository", "pullRequests"])
+
+
 def is_pr_number(value):
     return isinstance(value, int) and not isinstance(value, bool) and value > 0
 
@@ -135,8 +142,10 @@ def node_problem(node):
 
 def page_problem(page, index):
     """1 ページの形の違い。合っていれば None。"""
-    connection = at(page, ["data", "repository", "pullRequests"])
-    if isinstance(page, dict) and "errors" in page:
+    connection = connection_of(page)
+    # 辞書かを先に見る。文字列だと `in` が部分文字列の、配列だと要素の判定になって真になりえ、`page['errors']` で落ちる。
+    has_errors = isinstance(page, dict) and "errors" in page
+    if has_errors:
         return f"{index} ページ目に errors がある({json.dumps(page['errors'], ensure_ascii=False)})"
     if not isinstance(at(connection, ["nodes"]), list):
         return f"{index} ページ目の data.repository.pullRequests.nodes が配列でない"
@@ -145,14 +154,15 @@ def page_problem(page, index):
     return first_problem(map(node_problem, connection["nodes"]))
 
 
-def problem_of(pages):
+def response_problem(pages):
     """応答全体の形の違い。全件そろっていれば None。"""
-    if not isinstance(pages, list) or len(pages) == 0:
+    is_page_list = isinstance(pages, list) and len(pages) > 0
+    if not is_page_list:
         return "空でないページの配列でない(--slurp を付けた出力を渡す)"
     found = first_problem(page_problem(page, index) for index, page in enumerate(pages, 1))
     if found is not None:
         return found
-    if at(pages[-1], ["data", "repository", "pullRequests", "pageInfo", "hasNextPage"]) is not False:
+    if at(connection_of(pages[-1]), ["pageInfo", "hasNextPage"]) is not False:
         return "最後のページの hasNextPage が false でない(応答が途中で切れている)"
     return None
 
@@ -161,10 +171,10 @@ try:
     pages = json.loads(open(source, encoding="utf-8").read())
 except ValueError as error:
     sys.exit(f"題の応答を JSON として読めません({error})")
-problem = problem_of(pages)
+problem = response_problem(pages)
 if problem is not None:
     sys.exit(f"題の応答が全件そろっていません: {problem}")
-titles = {str(node["number"]): node["title"] for page in pages for node in page["data"]["repository"]["pullRequests"]["nodes"]}
+titles = {str(node["number"]): node["title"] for page in pages for node in connection_of(page)["nodes"]}
 open(out, "w", encoding="utf-8").write(json.dumps(titles, ensure_ascii=False))
 PY
 }
@@ -232,16 +242,17 @@ remove_others() {
 write_list() {
   git -C "$1" ls-tree -d --name-only HEAD pr-explain/ >"$work/folders" || return 1
   mkdir -p "$1/pr-explain"
-  python3 - "$work/folders" "$work/titles.json" "$1/pr-explain/list.json" <<'PY' || return 1
+  python3 - "$work/folders" "$work/titles.json" "$1/pr-explain/list.json" "$pr_number_pattern" <<'PY' || return 1
 import json, re, sys
 
-folders, titles_path, out = sys.argv[1:4]
+folders, titles_path, out, pr_number_pattern = sys.argv[1:5]
 titles = json.load(open(titles_path, encoding="utf-8"))
-found = [re.fullmatch(r"pr-explain/pr-([1-9][0-9]*)", line) for line in open(folders, encoding="utf-8").read().splitlines()]
+found = [re.fullmatch(f"pr-explain/pr-({pr_number_pattern})", line) for line in open(folders, encoding="utf-8").read().splitlines()]
 numbers = sorted((int(match.group(1)) for match in found if match is not None), reverse=True)
-# 題の応答は clone より前に引くので、その後に開いた PR のフォルダは応答に無い。次の run で題が付く。
-pages = [{"pr": number, "title": titles.get(str(number))} for number in numbers]
-open(out, "w", encoding="utf-8").write(json.dumps({"version": 1, "pages": pages}, ensure_ascii=False, indent=2) + "\n")
+# 題が null になるのは、応答に無い番号のフォルダだけ。題の応答は clone より前に引くので、その後に開いた PR の
+# フォルダは応答に無く(次の run で題が付く)、PR でない番号のフォルダはいつまでも無い。
+rows = [{"pr": number, "title": titles.get(str(number))} for number in numbers]
+open(out, "w", encoding="utf-8").write(json.dumps({"version": 1, "pages": rows}, ensure_ascii=False, indent=2) + "\n")
 PY
   cp "$2" "$1/pr-explain/index.html"
 }

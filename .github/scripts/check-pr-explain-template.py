@@ -25,9 +25,11 @@ CSP と固定スクリプトを検査する。
 `script-src 'self'` が要り、同じ origin(gh-pages の Storybook・PR のプレビュー)にあるどの `.js` も
 動かせるようになる。
 
-2 つの枠で同じもの(CSS 変数・書体・`.top` `.repo`・JSON の読み込み)は、共有の `.js` / `.css` に切り出さず
+2 つの枠で同じもの(CSS 変数・書体・`.top` `.repo` `.hint`・読めないときの箱 `.guide`・`el`・`isRecord` /
+`missing` / `parsedJson` / `readingOf` の読み方・`list.json` の読み込み)は、共有の `.js` / `.css` に切り出さず
 それぞれが写しを持つ。`.css` にしても `style-src 'self'` が要るのと、共有ファイルは main が置くが、各 PR の
-`index.html` は PR の版のまま残るので、食い違うため。
+`index.html` は PR の版のまま残るので、食い違うため。2 つの枠の写しが一致しているかはどの検査も見ない。
+変えるときは両方を直す。
 
 使い方:
     check-pr-explain-template.py <テンプレート> [--tracked]

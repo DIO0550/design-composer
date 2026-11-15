@@ -58,11 +58,11 @@ URL は `https://dio0550.github.io/design-composer/pr-explain/pr-<番号>/`。St
 コメントに載るので、別にコメントしない。**解説は PR ブランチにも main にも入れない**(main に溜まり、
 Files changed にも混ざるため)。
 
+この変更(#1394)のマージ以後に閉じた PR は、マージ・クローズの後も同じ URL で開ける(閉じてもフォルダを消さない)。
+
 gh-pages に残っている解説ページの一覧は `https://dio0550.github.io/design-composer/pr-explain/`(PR 番号と題から
 各ページへ飛ぶ)。Actions(`pr-explain-list.yml`)が `PR Explain` の完了と main への push のたびに作り直すので、
 セッションは触らない(`put-list` は呼ばない)。題は次に一覧を作り直す run で変わる(題の編集だけでは走らない)。
-
-この変更(#1394)のマージ以後に閉じた PR は、マージ・クローズの後も同じ URL で開ける(閉じてもフォルダを消さない)。
 
 ## いつ書くか
 

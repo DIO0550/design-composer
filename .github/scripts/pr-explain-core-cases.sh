@@ -565,7 +565,7 @@ const specCommits = [commitTouching(1, [diffFile("docs/b.md")]), commitTouching(
 // 一覧(list.json)の見本。読めた中身として一覧の核に渡す。
 const listRow = (pr, title) => ({ pr, title });
 const listReadingOf = (list) => ListPage.readingOf({ kind: "text", text: JSON.stringify(list) });
-const listOf = (pages, extra = {}) => ({ version: 1, pages, ...extra });
+const listJsonOf = (pages, extra = {}) => ({ version: 1, pages, ...extra });
 
 const cases = [
   {
@@ -3798,17 +3798,17 @@ const cases = [
   },
   {
     label: "一覧の読めた行は、並びを変えずに番号・題・リンク先 pr-<番号>/ を持つ",
-    actual: () => listReadingOf(listOf([listRow(2, "二"), listRow(12, "十二"), listRow(1, "一")])),
+    actual: () => listReadingOf(listJsonOf([listRow(2, "二"), listRow(12, "十二"), listRow(1, "一")])),
     expected: { kind: "listed", rows: [{ pr: 2, title: "二", href: "pr-2/" }, { pr: 12, title: "十二", href: "pr-12/" }, { pr: 1, title: "一", href: "pr-1/" }] },
   },
   {
     label: "一覧の題が null の行は、題なしの行になる",
-    actual: () => listReadingOf(listOf([listRow(12, "十二"), listRow(5, null)])).rows.map((row) => row.title),
+    actual: () => listReadingOf(listJsonOf([listRow(12, "十二"), listRow(5, null)])).rows.map((row) => row.title),
     expected: ["十二", null],
   },
   {
     label: "一覧の pages が空なら 0 件",
-    actual: () => listReadingOf(listOf([])),
+    actual: () => listReadingOf(listJsonOf([])),
     expected: { kind: "empty" },
   },
   {
@@ -3833,27 +3833,32 @@ const cases = [
   },
   {
     label: "一覧の最上位が配列なら、理由は shape でキーは null",
-    actual: () => listReadingOf([listOf([listRow(1, "一")])]),
+    actual: () => listReadingOf([listJsonOf([listRow(1, "一")])]),
     expected: { kind: "missing", reason: { kind: "shape", key: null } },
   },
   {
     label: "一覧の version が 1 でなければ、理由は version で中身を持つ",
-    actual: () => listReadingOf(listOf([listRow(1, "一")], { version: 2 })),
+    actual: () => listReadingOf(listJsonOf([listRow(1, "一")], { version: 2 })),
     expected: { kind: "missing", reason: { kind: "version", actual: 2 } },
   },
   {
+    label: "一覧に version が無ければ、理由は shape でキーは version",
+    actual: () => listReadingOf({ pages: [listRow(1, "一")] }),
+    expected: { kind: "missing", reason: { kind: "shape", key: "version" } },
+  },
+  {
     label: "一覧の pages が配列でなければ、理由は shape でキーは pages",
-    actual: () => listReadingOf(listOf({ 1: listRow(1, "一") })),
+    actual: () => listReadingOf(listJsonOf({ 1: listRow(1, "一") })),
     expected: { kind: "missing", reason: { kind: "shape", key: "pages" } },
   },
   {
     label: "一覧の pr が正の整数でない行(0・1.5・\"12\")が 2 行目以降にあれば、理由は shape でキーは pr",
-    actual: () => [0, 1.5, "12"].map((pr) => listReadingOf(listOf([listRow(12, "十二"), listRow(pr, "題")])).reason),
+    actual: () => [0, 1.5, "12"].map((pr) => listReadingOf(listJsonOf([listRow(12, "十二"), listRow(pr, "題")])).reason),
     expected: [0, 1.5, "12"].map(() => ({ kind: "shape", key: "pr" })),
   },
   {
     label: "一覧の title が文字列でも null でもない行(数値・欠け)があれば、理由は shape でキーは title",
-    actual: () => [{ pr: 2, title: 2 }, { pr: 2 }].map((row) => listReadingOf(listOf([listRow(12, "十二"), row])).reason),
+    actual: () => [{ pr: 2, title: 2 }, { pr: 2 }].map((row) => listReadingOf(listJsonOf([listRow(12, "十二"), row])).reason),
     expected: [{ kind: "shape", key: "title" }, { kind: "shape", key: "title" }],
   },
 ];
