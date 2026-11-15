@@ -1,0 +1,495 @@
+{
+  "version": 1,
+  "pr": 1399,
+  "sha": "bfa83aa5369828a1d089a68e0e1f78b46b41542d",
+  "issue": 1384,
+  "overview": {
+    "title": "中身の変わらない編集では進む先(redo)を捨てない",
+    "lead": "undo したあと値を変えずに欄を Tab で通っても、redo できるようになる。1 回の操作の途中で中身が一度でも変わったら、これまでどおり進む先を捨てる。",
+    "before": [
+      {
+        "text": "中身の変わらない編集でも `record` / `amend` が進む先を空にしていた",
+        "message": "record"
+      }
+    ],
+    "after": [
+      {
+        "text": "`record` / `amend` は新しい現在地が今の現在地と同じ中身なら進む先を残す",
+        "message": "record"
+      },
+      {
+        "text": "続きで中身が変わったら進む先を捨て、元の中身へ戻っても戻らない",
+        "message": "amend"
+      },
+      {
+        "text": "`redo` の入口でも末尾の同じ中身を落とし、型の不変条件を保つ(見える挙動は変えない)",
+        "message": "redo"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "進む先を残す判定",
+        "text": "比べる相手を戻る先の末尾ではなく現在地にした。1 件目の `record` が上流で落ちて続きだけ届く形を守るため",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/domains/edit-history/index.ts"
+        }
+      },
+      {
+        "title": "redo の入口の正規化",
+        "text": "外しても見える挙動は変わらず、守るテストも無い。型 doc の不変条件のためだけに入れた判断",
+        "go": {
+          "kind": "message",
+          "id": "redo"
+        }
+      }
+    ]
+  },
+  "concepts": [
+    {
+      "path": "src/features/editor/domains/edit-history/index.ts",
+      "name": "編集の履歴",
+      "role": "戻る先・現在地・進む先を持つ",
+      "change": "進む先を残す判定を足した"
+    },
+    {
+      "path": "src/features/editor/domains/editor-state/index.ts",
+      "name": "エディタの状態",
+      "role": "編集を続き方に応じて履歴へ入れる",
+      "change": "doc の Why を 1 つ消した"
+    }
+  ],
+  "messages": [
+    {
+      "id": "record",
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/edit-history/index.ts",
+      "kind": "cmd",
+      "name": "別の編集を積む",
+      "code": "EditHistory.record(history, document)",
+      "via": "call",
+      "status": "changed"
+    },
+    {
+      "id": "amend",
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/edit-history/index.ts",
+      "kind": "cmd",
+      "name": "続きで差し替える",
+      "code": "EditHistory.amend(history, document)",
+      "via": "call",
+      "status": "changed"
+    },
+    {
+      "id": "redo",
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/features/editor/domains/edit-history/index.ts",
+      "kind": "cmd",
+      "name": "やり直す",
+      "code": "EditHistory.redo(history)",
+      "via": "call",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "tab",
+      "label": "戻したあと欄を通ってやり直す",
+      "steps": [
+        "record",
+        "redo"
+      ]
+    },
+    {
+      "id": "resize",
+      "label": "戻したあとリサイズして戻す",
+      "steps": [
+        "record",
+        "amend"
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "668c5a18f1b5522b3cb973b49f626e5684961d34",
+      "phase": "core",
+      "role": "`record` / `amend` が同じ中身なら進む先を残す",
+      "why": "判定を履歴の入口 1 か所に置くと、欄・ドラッグ・取り込みのどの経路にも効く(#1379 と同じ置き方)",
+      "flows": [
+        "tab",
+        "resize"
+      ],
+      "review": [
+        "比べる相手が現在地であることが、続きだけが届く形で正しいか",
+        "`redo` の入口の正規化が不変条件の記述と合っているか"
+      ]
+    },
+    {
+      "sha": "97cf97a84e2e94ec90e8f3005043b57fa14a5326",
+      "phase": "core",
+      "role": "残す側・捨てる側・続きの扱いをテストで固定する",
+      "why": "`record` と `amend` それぞれで残す / 捨てるの両側を壊して落ちることを確かめた",
+      "review": [
+        "戻す前の版と既定値が違う値になっているか"
+      ]
+    },
+    {
+      "sha": "b1433ce6b66d8211116f4ecc0cab06a7040d4493",
+      "phase": "core",
+      "role": "前提が崩れた Why を 2 つ消す",
+      "why": "中身の変わらない編集が進む先を捨てなくなったので、`removeSelected` と `PropEdit` の理由が成り立たない"
+    },
+    {
+      "sha": "7b993cffa12a043d5c9a97d892e171f0900a8442",
+      "phase": "core",
+      "role": "仕様書の undo / redo の行を挙動に揃える",
+      "why": "未決にしていた「残すか」を決めたため"
+    },
+    {
+      "sha": "11dc8e3faf9bc9fd262312f547cbc7993cefc440",
+      "phase": "revise",
+      "role": "`remainingFuture` を `futureAfter` に改名する",
+      "why": "「残り(先頭を除いた分)」と読め、捨てる場合が名前に出ないとの指摘"
+    },
+    {
+      "sha": "bfa83aa5369828a1d089a68e0e1f78b46b41542d",
+      "phase": "revise",
+      "role": "仕様書の例を送り方の違いに合わせる",
+      "why": "打鍵ごとに送る欄と離れたときだけ確定する欄で結果が違い、例が後者で成り立たなかった"
+    }
+  ],
+  "suites": [
+    {
+      "id": "unchanged",
+      "label": "中身の変わらない編集",
+      "file": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts"
+    },
+    {
+      "id": "history",
+      "label": "エディタの状態の履歴",
+      "file": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts"
+    },
+    {
+      "id": "token",
+      "label": "トークン編集の通し",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "u1",
+      "suite": "unchanged",
+      "name": "戻したあとに中身の変わらない編集を積んでも、やり直せば戻す前の中身へ進む",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "中身の変わらない編集・続きで進む先を残すか捨てるかの規則を守る",
+      "given": "1 回編集して戻した履歴",
+      "when": "中身の変わらない編集を積んでやり直す",
+      "then": "戻す前の中身へ進む",
+      "commit": "97cf97a84e2e94ec90e8f3005043b57fa14a5326",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 122,
+        "end": 127,
+        "text": "test(\"戻したあとに中身の変わらない編集を積んでも、やり直せば戻す前の中身へ進む\", () => {\n  const unchanged = EditHistory.record(undoneOnce(), documentOfWidth(375));\n\n  const redone = Option.unwrap(EditHistory.redo(unchanged));\n  expect(redone.present).toEqual(documentOfWidth(414));\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record"
+      ]
+    },
+    {
+      "id": "u2",
+      "suite": "unchanged",
+      "name": "戻したあとに中身の変わらない編集を 2 回続けて積んでも、やり直せば戻す前の中身へ進む",
+      "techniques": [
+        "state"
+      ],
+      "why": "中身の変わらない編集・続きで進む先を残すか捨てるかの規則を守る",
+      "given": "1 回編集して戻した履歴",
+      "when": "中身の変わらない編集を 2 回積んでやり直す",
+      "then": "戻す前の中身へ進む",
+      "commit": "97cf97a84e2e94ec90e8f3005043b57fa14a5326",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 129,
+        "end": 137,
+        "text": "test(\"戻したあとに中身の変わらない編集を 2 回続けて積んでも、やり直せば戻す前の中身へ進む\", () => {\n  const unchangedTwice = EditHistory.record(\n    EditHistory.record(undoneOnce(), documentOfWidth(375)),\n    documentOfWidth(375),\n  );\n\n  const redone = Option.unwrap(EditHistory.redo(unchangedTwice));\n  expect(redone.present).toEqual(documentOfWidth(414));\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record"
+      ]
+    },
+    {
+      "id": "u3",
+      "suite": "unchanged",
+      "name": "戻したあと、中身の変わらない 1 件目に中身の変わる続きが届くと、やり直せない",
+      "techniques": [
+        "state",
+        "boundary"
+      ],
+      "why": "中身の変わらない編集・続きで進む先を残すか捨てるかの規則を守る",
+      "given": "1 回編集して戻した履歴",
+      "when": "変わらない 1 件目のあと中身の変わる続きを差し替える",
+      "then": "進む先が無い",
+      "commit": "97cf97a84e2e94ec90e8f3005043b57fa14a5326",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 139,
+        "end": 145,
+        "text": "test(\"戻したあと、中身の変わらない 1 件目に中身の変わる続きが届くと、やり直せない\", () => {\n  const unchanged = EditHistory.record(undoneOnce(), documentOfWidth(375));\n\n  const continued = EditHistory.amend(unchanged, documentOfWidth(768));\n\n  expect(Option.isSome(EditHistory.redo(continued))).toBe(false);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record",
+        "amend"
+      ]
+    },
+    {
+      "id": "u4",
+      "suite": "unchanged",
+      "name": "戻したあと、中身の変わらない 1 件目に中身の変わらない続きが届いても、やり直せる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "中身の変わらない編集・続きで進む先を残すか捨てるかの規則を守る",
+      "given": "1 回編集して戻した履歴",
+      "when": "変わらない 1 件目のあと変わらない続きを差し替える",
+      "then": "やり直せる",
+      "commit": "97cf97a84e2e94ec90e8f3005043b57fa14a5326",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 147,
+        "end": 154,
+        "text": "test(\"戻したあと、中身の変わらない 1 件目に中身の変わらない続きが届いても、やり直せる\", () => {\n  const unchanged = EditHistory.record(undoneOnce(), documentOfWidth(375));\n\n  const continued = EditHistory.amend(unchanged, documentOfWidth(375));\n\n  const redone = Option.unwrap(EditHistory.redo(continued));\n  expect(redone.present).toEqual(documentOfWidth(414));\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record",
+        "amend"
+      ]
+    },
+    {
+      "id": "u5",
+      "suite": "unchanged",
+      "name": "戻したあと、続きで一度中身が変わってから元の中身へ戻っても、やり直せない",
+      "techniques": [
+        "state",
+        "boundary"
+      ],
+      "why": "中身の変わらない編集・続きで進む先を残すか捨てるかの規則を守る",
+      "given": "1 回編集して戻した履歴",
+      "when": "続きで一度中身を変え、元の中身へ戻す",
+      "then": "進む先は捨てたまま",
+      "commit": "97cf97a84e2e94ec90e8f3005043b57fa14a5326",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 156,
+        "end": 163,
+        "text": "test(\"戻したあと、続きで一度中身が変わってから元の中身へ戻っても、やり直せない\", () => {\n  const unchanged = EditHistory.record(undoneOnce(), documentOfWidth(375));\n  const changed = EditHistory.amend(unchanged, documentOfWidth(768));\n\n  const returned = EditHistory.amend(changed, documentOfWidth(375));\n\n  expect(Option.isSome(EditHistory.redo(returned))).toBe(false);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record",
+        "amend"
+      ]
+    },
+    {
+      "id": "u6",
+      "suite": "unchanged",
+      "name": "戻したあと中身の変わらない編集を積み、やり直してから戻すと、1 回で戻す前の版へ戻り、それ以上は戻れない",
+      "techniques": [
+        "state"
+      ],
+      "why": "中身の変わらない編集・続きで進む先を残すか捨てるかの規則を守る",
+      "given": "1 回編集して戻した履歴",
+      "when": "変わらない編集を積み、やり直してから戻す",
+      "then": "1 回で戻す前の版へ戻り、次は戻れない",
+      "commit": "97cf97a84e2e94ec90e8f3005043b57fa14a5326",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 165,
+        "end": 175,
+        "text": "test(\"戻したあと中身の変わらない編集を積み、やり直してから戻すと、1 回で戻す前の版へ戻り、それ以上は戻れない\", () => {\n  const unchanged = EditHistory.record(undoneOnce(), documentOfWidth(375));\n  const redone = Option.unwrap(EditHistory.redo(unchanged));\n\n  const undone = Option.unwrap(EditHistory.undo(redone));\n\n  expect([undone.present, Option.isSome(EditHistory.undo(undone))]).toEqual([\n    documentOfWidth(375),\n    false,\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record"
+      ]
+    },
+    {
+      "id": "u7",
+      "suite": "unchanged",
+      "name": "2 回編集して 1 回戻し、中身の変わらない編集を積んでから戻すと、2 回のやり直しで元の 2 つの編集を順に辿れ、それ以上は進めない",
+      "techniques": [
+        "state"
+      ],
+      "why": "中身の変わらない編集・続きで進む先を残すか捨てるかの規則を守る",
+      "given": "2 回編集して 1 回戻した履歴",
+      "when": "変わらない編集を積み、戻してから 3 回やり直す",
+      "then": "2 つの編集を順に辿れ、3 回目は進めない",
+      "commit": "97cf97a84e2e94ec90e8f3005043b57fa14a5326",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 177,
+        "end": 197,
+        "text": "test(\"2 回編集して 1 回戻し、中身の変わらない編集を積んでから戻すと、2 回のやり直しで元の 2 つの編集を順に辿れ、それ以上は進めない\", () => {\n  const editedTwice = EditHistory.record(\n    EditHistory.record(\n      EditHistory.create(documentOfWidth(375)),\n      documentOfWidth(414),\n    ),\n    documentOfWidth(768),\n  );\n  const undone = Option.unwrap(EditHistory.undo(editedTwice));\n  const unchanged = EditHistory.record(undone, documentOfWidth(414));\n  const undoneAgain = Option.unwrap(EditHistory.undo(unchanged));\n\n  const redone = Option.unwrap(EditHistory.redo(undoneAgain));\n  const redoneTwice = Option.unwrap(EditHistory.redo(redone));\n\n  expect([\n    redone.present,\n    redoneTwice.present,\n    Option.isSome(EditHistory.redo(redoneTwice)),\n  ]).toEqual([documentOfWidth(414), documentOfWidth(768), false]);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record"
+      ]
+    },
+    {
+      "id": "u8",
+      "suite": "unchanged",
+      "name": "戻したあと、中身の変わらない続きだけが届いても（1 件目の `record` 無し）、やり直せる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "中身の変わらない編集・続きで進む先を残すか捨てるかの規則を守る",
+      "given": "1 回編集して戻した履歴",
+      "when": "1 件目を積まずに変わらない続きだけを差し替える",
+      "then": "やり直せる",
+      "commit": "97cf97a84e2e94ec90e8f3005043b57fa14a5326",
+      "excerpt": {
+        "path": "src/features/editor/domains/edit-history/__tests__/edit-history.unchanged.test.ts",
+        "start": 199,
+        "end": 204,
+        "text": "test(\"戻したあと、中身の変わらない続きだけが届いても（1 件目の `record` 無し）、やり直せる\", () => {\n  const continued = EditHistory.amend(undoneOnce(), documentOfWidth(375));\n\n  const redone = Option.unwrap(EditHistory.redo(continued));\n  expect(redone.present).toEqual(documentOfWidth(414));\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record",
+        "amend"
+      ]
+    },
+    {
+      "id": "e1",
+      "suite": "history",
+      "name": "戻したあと同じ中身が外から取り込まれても、やり直せる",
+      "techniques": [
+        "state"
+      ],
+      "why": "外部取り込みも `record` を通るので、同じ中身なら進む先が残ることを守る",
+      "given": "1 回編集して戻した状態",
+      "when": "同じ中身のファイルを取り込む",
+      "then": "やり直せる",
+      "commit": "97cf97a84e2e94ec90e8f3005043b57fa14a5326",
+      "excerpt": {
+        "path": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+        "start": 182,
+        "end": 200,
+        "text": "test(\"戻したあと同じ中身が外から取り込まれても、やり直せる\", () => {\n  const removed = Option.unwrap(\n    EditorState.removeSelected(\n      EditorState.select(stateWithNestedBox(), \"title\"),\n    ),\n  );\n  const undone = Option.unwrap(EditorState.undo(removed));\n\n  const reloaded = EditorState.applyReload(\n    undone,\n    { kind: \"reloaded\", document: EditorState.document(stateWithNestedBox()) },\n    ReceivedAt,\n  );\n\n  const redone = Option.unwrap(EditorState.redo(reloaded));\n  expect(\n    DesignDocument.findNode(EditorState.document(redone), \"title\"),\n  ).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/editor-state/index.ts",
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record"
+      ]
+    },
+    {
+      "id": "i1",
+      "suite": "token",
+      "name": "色を変えて Ctrl+Z で戻したあと、不透明度の欄を変えずに離れても、Ctrl+Shift+Z で変えた色へ進む",
+      "techniques": [
+        "regression"
+      ],
+      "why": "Issue の再現手順(undo 後に欄を Tab で通るだけで redo が消える)を画面全体で守る",
+      "given": "トークン画面で色を変えて Ctrl+Z で戻した",
+      "when": "不透明度の欄を変えずに離れ、Ctrl+Shift+Z を押す",
+      "then": "変えた色へ進む",
+      "commit": "97cf97a84e2e94ec90e8f3005043b57fa14a5326",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "start": 586,
+        "end": 600,
+        "text": "test(\"色を変えて Ctrl+Z で戻したあと、不透明度の欄を変えずに離れても、Ctrl+Shift+Z で変えた色へ進む\", async () => {\n  await renderTokensView();\n  await selectRow(\"primary\");\n  fireEvent.click(field(\"値\"));\n  fireEvent.change(field(\"値\"), { target: { value: \"#00ff00\" } });\n  blurActive();\n  await userEvent.keyboard(\"{Control>}z{/Control}\");\n\n  await userEvent.click(field(\"不透明度\"));\n  await userEvent.tab();\n  blurActive();\n  await userEvent.keyboard(\"{Control>}{Shift>}z{/Shift}{/Control}\");\n\n  expect(field(\"値\")).toHaveProperty(\"value\", \"#00ff00\");\n});"
+      },
+      "targets": [
+        "src/features/editor/domains/edit-history/index.ts"
+      ],
+      "covers": [
+        "record"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "戻したあと欄を通っても、やり直せる",
+    "lead": "取り消したあと、値を変えずに入力欄を通っただけでやり直しが消えることがなくなった。",
+    "changed": {
+      "before": [
+        {
+          "text": "取り消したあと、値を変えずに欄を離れると、やり直しができなくなっていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "取り消したあと、値を変えずに欄を離れても、やり直しができる",
+          "message": "record"
+        }
+      ],
+      "specs": [
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「編集操作の一覧」の undo / redo の行",
+          "text": "進む先を捨てない挙動と、操作の途中で中身が変わった場合は捨てることを書いた",
+          "shas": [
+            "7b993cffa12a043d5c9a97d892e171f0900a8442",
+            "bfa83aa5369828a1d089a68e0e1f78b46b41542d"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1379,
+          "text": "中身の変わらない編集を取り消し 1 回ぶんに数えないようにした元の件。やり直し側はここへ先送りしていた"
+        }
+      ]
+    },
+    "added": [
+      {
+        "label": "操作の途中で一度変わってから元へ戻した",
+        "before": [],
+        "after": [
+          {
+            "text": "リサイズを動かしてから掴んだ位置へ戻して離すと、やり直しは消える",
+            "message": "amend"
+          }
+        ],
+        "tests": [
+          "u5"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "中身が変わる編集をすれば、これまでどおりやり直しは消える",
+        "tests": [
+          "u3"
+        ]
+      }
+    ]
+  }
+}
