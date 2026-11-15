@@ -1,5 +1,7 @@
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
+import type { AxisLength } from "@/domains/dcmp/axis-length";
 import type { Offset } from "@/domains/unit/offset";
+import { Px } from "@/domains/unit/px";
 import { Css } from "@/utils/Css";
 import { Option } from "@/utils/Option";
 
@@ -9,8 +11,9 @@ import { Option } from "@/utils/Option";
  * キャンバスの中身はコンパイル結果の HTML を流し込んでおり React の管理下に無いため、
  * ref では掴めず名前の属性を選択子にして引くしかない。引き方はどこでも同じなので、
  * 名前で要素を引く選択子の綴りと、DOM を触るところをここへ閉じ込める（要素の実測は
- * `boundsOf` と `layoutSizeOf`、名前で引いて測るのは `DrawnBounds`、規則の差し込みは `NameStyleRule`、
- * 重ねた器（overlay）の下を点で引くのは `elementBeneath`）。
+ * `boundsOf` と `layoutSizeOf`、長さを当てて測るのは `layoutSizeFor`、名前で引いて測るのは
+ * `DrawnBounds`、規則の差し込みは `NameStyleRule`、重ねた器（overlay）の下を点で引くのは
+ * `elementBeneath`）。
  *
  * 名前で引いて 1 つに定まるのは artboard とその配下のノードだけ。名前はドキュメント上で
  * 一意（docs/01-file-format.md「ノードの識別（name）」）でも、部品の中のノードは展開で
@@ -84,6 +87,52 @@ export const CanvasDom = {
   },
 
   /**
+   * その長さを当てて描いたときの、変形を効かせる前のレイアウトの大きさ。当てた長さは測り終えたら
+   * 外し、`style` 属性を測る前の文字列へ戻す。
+   *
+   * 要素の中身は React の管理外（`CanvasDom` の doc）で、当ててから戻すまでを同じ処理の中で
+   * 行うので、当てた長さのまま描かれることは無い。`offsetWidth` / `offsetHeight` で読まないのは、
+   * 整数へ丸められて 2 回測った差が 1px ずれうるため。
+   *
+   * 戻り値の型を名前を付けずに書く理由は `boundsOf` と同じ。
+   *
+   * @param element 測る要素
+   * @param lengths 当てる長さ。並びに無い軸は今の描かれ方のまま
+   * @returns 計算値の幅と高さ（端数を持つ）。HTML の要素でないもの・幅か高さを px で読めない
+   *   ものは `none`
+   */
+  layoutSizeFor(
+    element: Element,
+    lengths: readonly AxisLength[],
+  ): Option<Readonly<{ width: number; height: number }>> {
+    if (!(element instanceof HTMLElement)) {
+      return Option.none;
+    }
+
+    const inlineStyle = Option.fromNullable(element.getAttribute("style"));
+    for (const each of lengths) {
+      element.style.setProperty(each.axis, Px.create(each.length));
+    }
+
+    const computed = globalThis.getComputedStyle(element);
+    const width = pxLengthOf(computed.width);
+    const height = pxLengthOf(computed.height);
+
+    if (Option.isSome(inlineStyle)) {
+      element.setAttribute("style", inlineStyle.value);
+    } else {
+      element.removeAttribute("style");
+    }
+
+    return Option.flatMap(width, (measuredWidth) =>
+      Option.map(height, (measuredHeight) => ({
+        width: measuredWidth,
+        height: measuredHeight,
+      })),
+    );
+  },
+
+  /**
    * 重ねた器（overlay）を飛ばして、その点に描かれているいちばん手前の要素を引く。
    *
    * @param overlay 飛ばしたい器（この要素と、その中にあるものを飛ばす）
@@ -98,3 +147,18 @@ export const CanvasDom = {
     );
   },
 } as const;
+
+/**
+ * px で綴られた計算値の長さ。
+ *
+ * @param value `getComputedStyle` が返した値
+ * @returns `<数>px` の形ならその数。`auto`（`display: none` で描かれていない要素など）のように
+ *   px でない綴りは `none`
+ */
+function pxLengthOf(value: string): Option<number> {
+  if (!value.endsWith("px")) {
+    return Option.none;
+  }
+  const length = Number(value.slice(0, -"px".length));
+  return Number.isFinite(length) ? Option.some(length) : Option.none;
+}

@@ -148,6 +148,24 @@ export const ResizeGrip = {
   },
 
   /**
+   * 掴んだものが変えない軸。その軸が `hug` / `fill` なら、掴んだ軸の長さにつれて長さが変わり
+   * うる（docs/06-ui.md「リサイズハンドル」）。
+   *
+   * @param grip 掴んだもの
+   * @returns 幅だけを掴んだなら高さ、高さだけなら幅。角で 2 軸を掴んだなら `none`
+   */
+  ungrabbedAxis(grip: ResizeGrip): Option<Axis> {
+    switch (grip.kind) {
+      case "width":
+        return Option.some(Axes.Height);
+      case "height":
+        return Option.some(Axes.Width);
+      case "both":
+        return Option.none;
+    }
+  },
+
+  /**
    * 掴んだものが画面上で伸び縮みする向き（docs/06-ui.md「リサイズハンドル」）。
    *
    * @param grip 掴んだもの
@@ -358,6 +376,26 @@ export type ResizeMeasure = Readonly<{
 type DrawnAtGrab = Readonly<{
   grabbed: CanvasBounds;
   measure: (name: string) => Option<CanvasBounds>;
+}>;
+
+/**
+ * ポインタが動くたびに読む描かれ方。画面上の量をドキュメント上の量へ直す倍率と、選択中の
+ * ものへ長さを当てたときの回る前のレイアウトの大きさ（ドキュメント上の px）を測る手段。
+ *
+ * 掴んだ時点に測った大きさは持たず、動くたびに掴んだ時点の長さと今の長さを当てた 2 つを同じ
+ * DOM の上で測り直す。ドラッグ中は位置が変わって描き直されるので、掴んだ時点に測った値は別の
+ * DOM の上の値になる。前後を同じ DOM で測れば当てた長さ以外の違いが差し引きで消え、反映が
+ * 1 回落ちても値はずれない。
+ */
+export type DrawnWhileTracking = Readonly<{
+  view: CanvasView;
+  /**
+   * 当てた長さで描いたときの幅と高さ。並びに無い軸は今の描かれ方のまま。測れなければ `none`
+   * （このときは掴んだ軸だけで置き直す）。
+   */
+  layoutSizeFor: (
+    lengths: AxisLengths,
+  ) => Option<Readonly<{ width: number; height: number }>>;
 }>;
 
 /** 最後に動かした位置で出す線（すべて画面上の px）。 */
@@ -822,17 +860,18 @@ export const NodeResize = {
    * 掴んでいなければ決まらない（ボタンを離したあとのマウス移動）。
    *
    * 長さはポインタの移動量を掴んだものの画面上の向きの分だけ戻し、その軸へ射影した量だけ
-   * 変わる（docs/06-ui.md「リサイズハンドル」）。
+   * 変わる（docs/06-ui.md「リサイズハンドル」）。自分が回っている絶対配置のノードは、掴んで
+   * いない軸の長さが連れて変わっても反対の辺・角が親の座標で動かないよう位置を置き直す。
    *
    * @param resize 今のリサイズの状態
    * @param pointer 今のポインタの位置
-   * @param view 画面上の量をドキュメント上の量へ直す倍率
+   * @param drawn 画面上の量をドキュメント上の量へ直す倍率と、長さを当てて大きさを測る手段
    * @returns 書き込む編集と揃った線と距離。掴んでいなければ `none`
    */
   trackedAt(
     resize: NodeResize,
     pointer: Offset,
-    view: CanvasView,
+    drawn: DrawnWhileTracking,
   ): Option<TrackedResize> {
     if (resize.kind !== "resizing") {
       return Option.none;
@@ -845,20 +884,25 @@ export const NodeResize = {
     const moved = Offset.rotate(screenMoved, -resize.rotation.total);
 
     const resized = ArrayEx.mapNonEmpty(ResizeGrip.grabs(resize.grip), (grab) =>
-      resizedLength(grab, moved, view),
+      resizedLength(grab, moved, drawn.view),
     );
     const lengths: AxisLengths = ArrayEx.mapNonEmpty(
       resized,
       (each) => each.length,
     );
-    const position = placedPosition(resize, resized);
+    const grabbedEnds = resized.map(shrunkEndOf);
+    const ungrabbedEnds = ArrayEx.filterMap(
+      [ungrabbedEnd(resize, lengths, drawn.layoutSizeFor)],
+      (end) => end,
+    );
+    const position = placedPosition(resize, [...grabbedEnds, ...ungrabbedEnds]);
 
     return Option.some({
       edit: Option.isSome(position)
         ? ResizeEdit.placedAt(lengths, position.value)
         : ResizeEdit.create(lengths),
       guides: snapped.guides,
-      distanceLines: distanceLinesAt(resize, resized, view),
+      distanceLines: distanceLinesAt(resize, resized, drawn.view),
     });
   },
 
@@ -1161,6 +1205,31 @@ type ResizedLength = Readonly<{
 }>;
 
 /**
+ * 1 軸の長さが変わったときに動いた端と、縮んだ量。反対側の端はその場に留める。位置の置き直し
+ * （`placedPosition`）が、掴んだ軸と連れて変わった軸を同じ形で受け取るのに使う。
+ */
+type ShrunkEnd = Readonly<{
+  axis: Axis;
+  end: AxisEnd;
+  /** 掴んだ時点の長さから縮んだ量（ドキュメント上の px）。伸びたなら負。 */
+  shrunk: number;
+}>;
+
+/**
+ * 掴んだ軸ぶんの結果の、動いた端と縮んだ量。
+ *
+ * @param resized 掴んだ 1 軸ぶんの結果
+ * @returns 掴んだ端と縮んだ量
+ */
+function shrunkEndOf(resized: ResizedLength): ShrunkEnd {
+  return {
+    axis: resized.length.axis,
+    end: resized.end,
+    shrunk: resized.shrunk,
+  };
+}
+
+/**
  * 掴んだ軸を、ポインタの移動量ぶんだけ伸び縮みさせた結果。
  *
  * 縮んだ量は**丸めたあとの長さから**逆算する。長さが 0 で止まると辺もそこで止まり、
@@ -1185,28 +1254,29 @@ function resizedLength(
 
 /**
  * 反対の辺・角が親の座標で動かないよう置き直したあとの位置（docs/06-ui.md「リサイズ
- * ハンドル」）。掴んだ軸ごとに、反対側の端を留める。
+ * ハンドル」）。掴んだ軸ごとに反対側の端を留め、掴んでいない軸の長さが連れて変わったなら
+ * その軸の始点側の端も留める（`ungrabbedEnd`）。
  *
- * 回っていなければ、始点側を掴んだ軸は縮んだ量だけ動き、終点側を掴んだ軸は動かない。
- * 回っていれば、中心を軸に回るので終点側を掴んでも左上が動く。
+ * 回っていなければ、始点側の端が動いた軸は縮んだ量だけ動き、終点側の端が動いた軸は動かない。
+ * 回っていれば、中心を軸に回るので終点側の端が動いても左上が動く。
  *
  * @param held 掴んでいるもの（掴んだ時点の位置と、自分の向き）
- * @param resized 掴んだ軸ぶんの結果
+ * @param ends 長さが変わった軸ごとの、動いた端と縮んだ量
  * @returns 置き直したあとの位置。左上が動かないか、位置を書けない対象なら `none`
  */
 function placedPosition(
   held: ResizeHold,
-  resized: readonly ResizedLength[],
+  ends: readonly ShrunkEnd[],
 ): Option<Offset> {
-  const centerMoved = resized.reduce<Offset>(
+  const centerMoved = ends.reduce<Offset>(
     (sum, each) => Offset.add(sum, centerShift(each)),
     Offset.Origin,
   );
-  const halfShrunk = resized.reduce<Offset>(
-    (sum, each) =>
-      Offset.add(sum, axisOffset(each.length.axis, each.shrunk / 2)),
+  const halfShrunk = ends.reduce<Offset>(
+    (sum, each) => Offset.add(sum, axisOffset(each.axis, each.shrunk / 2)),
     Offset.Origin,
   );
+
   // 左上は中心から長さの半分だけ戻った位置なので、中心の動きに縮んだ量の半分を足す
   const shift = Offset.add(
     Offset.rotate(centerMoved, held.rotation.own),
@@ -1219,25 +1289,68 @@ function placedPosition(
 }
 
 /**
- * 反対側の端を留めたまま 1 軸の長さが変わったときに、中心が動く量（回る前の向き）。
+ * 掴んでいない軸の長さが `hug` / `fill` で連れて変わったぶんを、始点側の端（回る前の上端・
+ * 左端）を留めて終点側の端が動いた 1 軸として表したもの。置き直しは `placedPosition` が行う。
  *
- * 中心は縮んだ量の半分だけ、留めている端のほうへ寄る。始点側を掴んだなら留めている
- * のは終点側（+）、終点側を掴んだなら始点側（-）。
+ * 留めるのを始点側にするのは、回っていないときに `hug` が上・左を起点に伸び縮みするのと
+ * 揃えるため。
  *
- * @param resized 掴んだ 1 軸ぶんの結果
- * @returns その軸だけが動く差
+ * @param held 掴んでいるもの（掴み方・掴んだ時点の位置・自分の向き）
+ * @param lengths 書き込む長さ
+ * @param layoutSizeFor 長さを当てて大きさを測る手段（`DrawnWhileTracking`）
+ * @returns 連れて変わる軸の終点側の端と、縮んだ量（掴んだ時点の長さを当てた大きさ − 書き込む
+ *   長さを当てた大きさ）。自分が回っていない・位置を書けない・角を掴んだ・前後のどちらかを
+ *   測れないときは `none`
  */
-function centerShift(resized: ResizedLength): Offset {
-  return axisOffset(
-    resized.length.axis,
-    inwardFrom(resized.end, resized.shrunk / 2),
+function ungrabbedEnd(
+  held: ResizeHold,
+  lengths: AxisLengths,
+  layoutSizeFor: DrawnWhileTracking["layoutSizeFor"],
+): Option<ShrunkEnd> {
+  // 回っていなければ終点側の端が動いても左上は動かない。測ると強制レイアウトが無駄になるので先に外す
+  if (Angle.isWholeTurns(held.rotation.own)) {
+    return Option.none;
+  }
+  // 位置を書けなければ置き直さないので、同じく測る前に外す
+  if (!Option.isSome(held.grabbedAt)) {
+    return Option.none;
+  }
+  const axis = ResizeGrip.ungrabbedAxis(held.grip);
+  if (!Option.isSome(axis)) {
+    return Option.none;
+  }
+
+  const grabbedLengths = ArrayEx.mapNonEmpty(
+    ResizeGrip.grabs(held.grip),
+    (grab) => grab.length,
+  );
+
+  return Option.flatMap(layoutSizeFor(grabbedLengths), (before) =>
+    Option.map(layoutSizeFor(lengths), (after) => ({
+      axis: axis.value,
+      end: AxisEnds.End,
+      shrunk: before[axis.value] - after[axis.value],
+    })),
   );
 }
 
 /**
- * 掴んだ端から内側へ向かう向きを付けた量。始点側の端なら内側は +、終点側の端なら内側は −。
+ * 反対側の端を留めたまま 1 軸の長さが変わったときに、中心が動く量（回る前の向き）。
  *
- * @param end 掴んだ端
+ * 中心は縮んだ量の半分だけ、留めている端のほうへ寄る。始点側の端が動いたなら留めている
+ * のは終点側（+）、終点側の端が動いたなら始点側（-）。
+ *
+ * @param end 1 軸ぶんの、動いた端と縮んだ量
+ * @returns その軸だけが動く差
+ */
+function centerShift(end: ShrunkEnd): Offset {
+  return axisOffset(end.axis, inwardFrom(end.end, end.shrunk / 2));
+}
+
+/**
+ * 端から内側へ向かう向きを付けた量。始点側の端なら内側は +、終点側の端なら内側は −。
+ *
+ * @param end 掴んだ端・動いた端
  * @param amount 内側へ向かう量
  * @returns 始点側なら `amount`、終点側なら `-amount`
  */

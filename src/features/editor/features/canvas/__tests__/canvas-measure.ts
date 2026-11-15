@@ -1,7 +1,11 @@
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
 import { drawn } from "@/features/editor/features/canvas/__tests__/canvas-elements";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
-import { stubBounds, stubLayoutSize } from "@/libs/__tests__/element-measure";
+import {
+  stubBounds,
+  stubComputedSizeOf,
+  stubLayoutSize,
+} from "@/libs/__tests__/element-measure";
 
 /**
  * キャンバスに描かれた要素を、測定を差し替えた状態で用意する。
@@ -41,6 +45,21 @@ export function drawnTurnedAt(
   const element = drawnAt(name, enclosing);
   stubLayoutSize(element, unrotatedSize);
   return element;
+}
+
+/**
+ * 名前で指したノードを、回る前の幅を当てると高さが連れて変わるものとして測らせる
+ * （`stubComputedSizeOf`）。幅 200 なら高さ 100、それ以外なら 80。
+ *
+ * 差し替えはテストをまたいで残るので、使う側は `afterEach(restoreComputedSize)` を置く。
+ *
+ * @param name 測り方を差し替えるノードの名前
+ */
+export function stubHeightFollowingWidth(name: string): void {
+  stubComputedSizeOf(name, (inline) => ({
+    width: Number.parseFloat(inline.width),
+    height: inline.width === "200px" ? 100 : 80,
+  }));
 }
 
 /**

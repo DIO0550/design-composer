@@ -1,18 +1,21 @@
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import type { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import type { DocumentSelection } from "@/domains/session/document-selection";
+import type { Axis } from "@/domains/unit/axis";
 import { Offset } from "@/domains/unit/offset";
 import { resizeAnchorAt } from "@/features/editor/features/canvas/__tests__/canvas-resize";
 import type { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-bounds";
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
-import type { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
+import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { Option } from "@/utils/Option";
 import {
+  type DrawnWhileTracking,
   NodeResize,
   type ResizableSelection,
   type ResizeGrip,
   type ResizeHandleAnchor,
   type ResizeHold,
+  type ResizeRotation,
   type ResizeTargetNames,
 } from "../index";
 
@@ -57,6 +60,78 @@ export function setupHeightOnlyResizable(): ResizableSelection {
 /** 等倍で見ているキャンバス。 */
 export function setupView(): CanvasView {
   return CanvasView.create();
+}
+
+/**
+ * 掴んでいる間の描かれ方。渡さなかったものは、等倍で見ていて大きさを測れない
+ * （掴んだ軸だけで置き直す）描かれ方になる。
+ *
+ * @param drawn 差し替える倍率・大きさを測る手段
+ * @returns 掴んでいる間の描かれ方
+ */
+export function setupDrawnWhileTracking(
+  drawn: Partial<DrawnWhileTracking> = {},
+): DrawnWhileTracking {
+  return { view: setupView(), layoutSizeFor: () => Option.none, ...drawn };
+}
+
+/** `setupResizable`（(30, 70) に置かれた 200x100 の絶対配置）を、指定した向きに回したもの。 */
+export function placedTurned(rotation: ResizeRotation): ResizableSelection {
+  return { ...setupResizable(), rotation };
+}
+
+/**
+ * 親の座標で、置かれた矩形の比率の箇所が来る点（自分の向きで中心まわりに回したもの）。
+ *
+ * @param position ノードの左上
+ * @param lengths 幅・高さ
+ * @param box 自分の向きと見る箇所
+ * @returns 親の座標の点
+ */
+export function parentPointAt(
+  position: Offset,
+  lengths: Readonly<{ width: number; height: number }>,
+  box: Readonly<{ own: number; anchor: ResizeHandleAnchor }>,
+): Offset {
+  return RotatedBounds.pointAt(
+    {
+      unrotated: { left: position.x, top: position.y, ...lengths },
+      rotation: box.own,
+    },
+    box.anchor,
+  );
+}
+
+/**
+ * 長さの並びのうち、その軸の長さ。
+ *
+ * @param lengths 長さの並び
+ * @param axis 見る軸
+ * @returns その軸の長さ。並びに無ければ `none`
+ */
+export function lengthAlong(
+  lengths: readonly AxisLength[],
+  axis: Axis,
+): Option<number> {
+  return Option.map(AxisLength.find(lengths, axis), (each) => each.length);
+}
+
+/**
+ * 編集を当てたあとの位置と大きさ。
+ *
+ * @param edit 書き込む編集
+ * @returns 置き直したあとの左上と、幅・高さ
+ */
+export function appliedBox(edit: ResizeEdit): Readonly<{
+  position: Offset;
+  lengths: Readonly<{ width: number; height: number }>;
+}> {
+  const lengthOf = (axis: Axis): number =>
+    Option.unwrap(lengthAlong(edit.lengths, axis));
+  return {
+    position: Option.unwrap(edit.position),
+    lengths: { width: lengthOf("width"), height: lengthOf("height") },
+  };
 }
 
 /** 幅 200 を右辺（終点側）で掴んだもの。掴める軸を持たない選択にもそのまま渡せる。 */
@@ -209,6 +284,7 @@ export function grabbedWithSnap(
 
 /**
  * 今のポインタ位置で書き込む編集だけ（揃った線を見ないテストが、線を巻き込まないため）。
+ * 大きさは測れない描かれ方で通す（`setupDrawnWhileTracking`）。
  *
  * @param resize 今のリサイズの状態
  * @param pointer 今のポインタの位置
@@ -221,7 +297,29 @@ export function resizeEditAt(
   view: CanvasView,
 ): Option<ResizeEdit> {
   return Option.map(
-    NodeResize.trackedAt(resize, pointer, view),
+    NodeResize.trackedAt(resize, pointer, setupDrawnWhileTracking({ view })),
     (tracked) => tracked.edit,
   );
+}
+
+/**
+ * 長さを当てて大きさを測れる描かれ方（等倍）で、今のポインタ位置で書き込む編集。
+ *
+ * @param resize 今のリサイズの状態
+ * @param pointer 今のポインタの位置
+ * @param layoutSizeFor 長さを当てたときの大きさを返す手段
+ * @returns 書き込む編集（掴んでいなければテストを落とす）
+ */
+export function resizeEditMeasuredAt(
+  resize: NodeResize,
+  pointer: Offset,
+  layoutSizeFor: DrawnWhileTracking["layoutSizeFor"],
+): ResizeEdit {
+  return Option.unwrap(
+    NodeResize.trackedAt(
+      resize,
+      pointer,
+      setupDrawnWhileTracking({ layoutSizeFor }),
+    ),
+  ).edit;
 }

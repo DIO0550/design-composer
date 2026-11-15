@@ -3,21 +3,17 @@ import { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { ResizeEdit } from "@/domains/dcmp/resize-edit";
 import { DocumentSelection } from "@/domains/session/document-selection";
-import type { Offset } from "@/domains/unit/offset";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { Option } from "@/utils/Option";
+import { NodeResize, type ResizableSelection } from "../index";
 import {
-  NodeResize,
-  type ResizableSelection,
-  type ResizeHandleAnchor,
-  type ResizeRotation,
-} from "../index";
-import {
+  appliedBox,
   grabbedAt,
+  parentPointAt,
+  placedTurned,
   resizeEditAt,
   setupBounds,
   setupFlowResizable,
-  setupResizable,
   setupView,
   targetNamesAt,
 } from "./setup";
@@ -26,51 +22,6 @@ import {
  * 回って描かれているもののリサイズ（docs/06-ui.md「リサイズハンドル」）。
  * 回っていないものの振る舞いは `node-resize.gesture` が持つ。
  */
-
-/** `setupResizable`（(30, 70) に置かれた 200x100 の絶対配置）を、指定した向きに回したもの。 */
-function placedTurned(rotation: ResizeRotation): ResizableSelection {
-  return { ...setupResizable(), rotation };
-}
-
-/**
- * 親の座標で、置かれた矩形の比率の箇所が来る点（自分の向きで中心まわりに回したもの）。
- *
- * @param position ノードの左上
- * @param lengths 幅・高さ
- * @param box 自分の向きと見る箇所
- * @returns 親の座標の点
- */
-function parentPointAt(
-  position: Offset,
-  lengths: Readonly<{ width: number; height: number }>,
-  box: Readonly<{ own: number; anchor: ResizeHandleAnchor }>,
-): Offset {
-  return RotatedBounds.pointAt(
-    {
-      unrotated: { left: position.x, top: position.y, ...lengths },
-      rotation: box.own,
-    },
-    box.anchor,
-  );
-}
-
-/**
- * 編集を当てたあとの位置と大きさ。
- *
- * @param edit 書き込む編集
- * @returns 置き直したあとの左上と、幅・高さ
- */
-function appliedBox(edit: ResizeEdit): Readonly<{
-  position: Offset;
-  lengths: Readonly<{ width: number; height: number }>;
-}> {
-  const lengthOf = (axis: "width" | "height"): number =>
-    Option.unwrap(AxisLength.find(edit.lengths, axis)).length;
-  return {
-    position: Option.unwrap(edit.position),
-    lengths: { width: lengthOf("width"), height: lengthOf("height") },
-  };
-}
 
 test("30 度回したノードの右下を (+20, +20) 引くと、移動量をノードの向きへ戻した量だけ伸びる", () => {
   const resizable: ResizableSelection = {

@@ -1,5 +1,5 @@
 import { fireEvent } from "@testing-library/react";
-import { expect, test, vi } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import { AxisLength } from "@/domains/dcmp/axis-length";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { PropEdit } from "@/domains/dcmp/node";
@@ -9,7 +9,10 @@ import { canvasContent } from "@/features/editor/features/canvas/__tests__/canva
 import {
   movePointer,
   pressPointer,
+  releasePointer,
 } from "@/features/editor/features/canvas/__tests__/canvas-gesture";
+import { stubHeightFollowingWidth } from "@/features/editor/features/canvas/__tests__/canvas-measure";
+import { restoreComputedSize } from "@/libs/__tests__/element-measure";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 import { drawnAt, drawnTurnedAt, renderCanvas, resizeHandleAt } from "./setup";
@@ -212,4 +215,55 @@ test("30 度回したノードは、右辺を親の縁の近くまで引いて�
   const [width] = lastEdit(onResize).lengths;
   expect(width.axis).toBe("width");
   expect(width.length).toBeCloseTo(220);
+});
+
+/* 計算値の幅と高さの差し替え（`stubComputedSizeOf`）はテストをまたいで残るので外す。 */
+afterEach(restoreComputedSize);
+
+/**
+ * `turned` の高さを `hug` にし、回る前の幅を当てると高さが連れて変わるものとして描く
+ * （`stubHeightFollowingWidth`）。
+ *
+ * @returns ドキュメントと選択の対（`turned` を選んでいる）
+ */
+function setupWrappingTurned(): DocumentSelection {
+  const wrapping = Result.unwrap(
+    DesignDocument.applyPropEdit(
+      setupSelection().document,
+      "turned",
+      PropEdit.set(["heightMode"], "hug"),
+    ),
+  );
+  stubHeightFollowingWidth("turned");
+  return DocumentSelection.fromNames(wrapping, ["turned"]);
+}
+
+test("90 度回したノードの右辺を 50 引いて高さが連れて 80 に縮むと、回る前の左上の角が留まる位置が通知される", () => {
+  /*
+   * 掴んだ幅だけなら (25 - 25, 10 + 25)。高さが 100 → 80 で回る前の上端を留めると、中心は
+   * 回る前の上へ 10（画面では右へ 10）動き、左上は中心から 10 戻るので (0 + 10, 35 + 10)。
+   */
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupWrappingTurned(), onResize });
+  const turned = drawnTurned("turned");
+
+  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 150, y: 200 });
+  movePointer(turned, { x: 150, y: 250 });
+
+  const position = Option.unwrap(lastEdit(onResize).position);
+  expect(position.x).toBeCloseTo(10);
+  expect(position.y).toBeCloseTo(45);
+});
+
+test("高さが連れて変わっても、通知は動かした回数だけで、離したときに追加の通知は出ない", () => {
+  const onResize = vi.fn();
+  renderCanvas({ selection: setupWrappingTurned(), onResize });
+  const turned = drawnTurned("turned");
+
+  pressPointer(resizeHandleAt({ x: 1, y: 0.5 }), { x: 150, y: 200 });
+  movePointer(turned, { x: 150, y: 225 });
+  movePointer(turned, { x: 150, y: 250 });
+  releasePointer(turned, { x: 150, y: 250 });
+
+  expect(onResize).toHaveBeenCalledTimes(2);
 });

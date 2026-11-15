@@ -12,6 +12,7 @@ import {
   grabbedWithMeasured,
   grabbedWithTargets,
   heldAt,
+  setupDrawnWhileTracking,
   setupResizable,
   setupView,
 } from "./setup";
@@ -79,8 +80,9 @@ function distancesAt(
   pointer: Offset,
   view: CanvasView = setupView(),
 ): FacingDistances {
-  return Option.unwrap(NodeResize.trackedAt(resize, pointer, view))
-    .distanceLines;
+  return Option.unwrap(
+    NodeResize.trackedAt(resize, pointer, setupDrawnWhileTracking({ view })),
+  ).distanceLines;
 }
 
 test("右辺だけを掴んで動かすと、左・上・下に相手がいても右の相手までの距離だけが出る", () => {
@@ -199,14 +201,14 @@ test("距離の相手を外す（Alt / Option なし）と距離は出ず、吸�
     },
   );
   const measuring = Option.unwrap(
-    NodeResize.trackedAt(resize, { x: 197, y: 100 }, setupView()),
+    NodeResize.trackedAt(resize, { x: 197, y: 100 }, setupDrawnWhileTracking()),
   );
 
   expect(
     NodeResize.trackedAt(
       NodeResize.withoutDistanceTargets(resize),
       { x: 197, y: 100 },
-      setupView(),
+      setupDrawnWhileTracking(),
     ),
   ).toEqual(Option.some({ ...measuring, distanceLines: FacingDistances.None }));
 });
@@ -274,7 +276,11 @@ test("今の親を引けないときは距離が出ないが、兄弟には吸�
   // 右辺は 197 で、上の兄弟の右辺 200 へ吸い付けば幅 100
   expect(
     Option.map(
-      NodeResize.trackedAt(resize, { x: 197, y: 100 }, setupView()),
+      NodeResize.trackedAt(
+        resize,
+        { x: 197, y: 100 },
+        setupDrawnWhileTracking(),
+      ),
       ({ edit, distanceLines }) => ({ edit, distanceLines }),
     ),
   ).toEqual(
@@ -341,7 +347,7 @@ test("掴んだ直後と離したあとは、今出す距離が無い", () => {
     },
   );
   const tracked = Option.unwrap(
-    NodeResize.trackedAt(resize, { x: 320, y: 100 }, setupView()),
+    NodeResize.trackedAt(resize, { x: 320, y: 100 }, setupDrawnWhileTracking()),
   );
   const released = NodeResize.release(NodeResize.withLines(resize, tracked));
 
@@ -361,7 +367,7 @@ test("掴んでいる状態に載せた距離が、今出す距離として返�
     },
   );
   const tracked = Option.unwrap(
-    NodeResize.trackedAt(resize, { x: 320, y: 100 }, setupView()),
+    NodeResize.trackedAt(resize, { x: 320, y: 100 }, setupDrawnWhileTracking()),
   );
 
   expect(
