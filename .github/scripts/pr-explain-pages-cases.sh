@@ -8,9 +8,10 @@
 #
 # **他の PR のフォルダ・`pr-preview/` に触らないことを、どのモードでも見る。** gh-pages は
 # Storybook と VRT の配信と同じブランチで、ここを壊すとこの機能の外まで消える。
-# `put-map 1` が `pr-12` に触らないのは、作業コピーに展開するのが `pr-explain/pr-1/` だけ
-# (sparse-checkout)だから。`remove_others`(フォルダ内の 3 つ以外を消す処理)を `pr-1*` の
-# 前方一致に取り違えても、展開の範囲を `pr-explain/` 全体へ広げない限りこのケースは通る。見ているのは 2 つが組み合わさった結果。
+# `put-map 1` が `pr-12` に触らない仕組みは 3 つある。作業コピーに展開するのが `pr-explain/pr-1/`
+# だけ(sparse-checkout)・`remove_others`(フォルダ内の 3 つ以外を消す処理)が消すのは
+# `git ls-files -- "$folder"` の範囲だけ・`commit_and_push` が `git add -A` するのは `$folder` だけ。
+# どれか 1 つが保たれていれば通り、3 つすべてを壊さない限りこのケースは落ちない。見ているのは 3 つが組み合わさった結果。
 #
 # 競合の再試行は、bare リポジトリの pre-receive フックで 1 回目の push だけを拒否して作る。
 # 待ち時間は `PR_EXPLAIN_RETRY_WAIT=0` で消す。
