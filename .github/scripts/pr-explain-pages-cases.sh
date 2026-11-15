@@ -62,7 +62,7 @@ declare -A seed_files=(
   [pr-explain/pr-1/explain.json]='{"old": "explain"}'
   [pr-explain/pr-12/index.html]=twelve
   [pr-explain/index.html]=old-list
-  [pr-explain/list.json]='{'
+  [pr-explain/list.json]='{"version": 1, "pages": [{"pr": 99, "title": "九十九"}, {"pr": 3, "title": "古い題"}]}'
 )
 
 # 解説として通るもの(PR #1 宛て・push 済みのコミット時点)と、検査に落ちるもの。抜粋は
@@ -117,6 +117,7 @@ write("pull-requests-string-number.json", dumped(broken(lambda pages: connection
 write("pull-requests-no-repository.json", dumped(broken(lambda pages: pages[1]["data"].pop("repository"))))
 write("pull-requests-cut.json", dumped(broken(lambda pages: connection(pages, 1)["pageInfo"].update({"hasNextPage": True}))))
 write("pull-requests-no-page-info.json", dumped(broken(lambda pages: connection(pages, 0).pop("pageInfo"))))
+write("pull-requests-nodes-not-list.json", dumped(broken(lambda pages: connection(pages, 1).update({"nodes": {}}))))
 PY
 
 # `seed_files` の 1 ファイルを種(`$work/seed`)に書く。
@@ -141,7 +142,8 @@ fresh_origin() {
   git -C "$work/seed" push --quiet "$work/origin.git" gh-pages 2>/dev/null
 }
 
-# 置き場の種に `pr-explain/` を足す(PR のフォルダ・前の一覧・`pr-<番号>` の形でないフォルダ)。
+# 置き場の種に `pr-explain/` を足す(PR のフォルダ・前の一覧・`pr-<番号>` の形でないフォルダ)。PR 3 は題の応答に無く、
+# 前の一覧には PR 3 の題と gh-pages に無い PR 99 の行がある。
 seed_pr_explain() {
   write_seed pr-explain/pr-1/index.html
   write_seed pr-explain/pr-1/change-map.json
@@ -153,9 +155,12 @@ seed_pr_explain() {
   echo '{"version": 2, "head": "0000000"}' > "$work/seed/pr-explain/pr-2/change-map.json"
   write_seed pr-explain/pr-12/index.html
   echo '{"head": "twelve"}' > "$work/seed/pr-explain/pr-12/change-map.json"
-  mkdir -p "$work/seed/pr-explain/pr-01" "$work/seed/pr-explain/notes"
+  mkdir -p "$work/seed/pr-explain/pr-3"
+  echo '{"head": "three"}' > "$work/seed/pr-explain/pr-3/change-map.json"
+  mkdir -p "$work/seed/pr-explain/pr-01" "$work/seed/pr-explain/notes" "$work/seed/pr-explain/pr-12-old"
   echo x > "$work/seed/pr-explain/pr-01/x"
   echo x > "$work/seed/pr-explain/notes/x"
+  echo x > "$work/seed/pr-explain/pr-12-old/x"
   write_seed pr-explain/index.html
   write_seed pr-explain/list.json
 }
@@ -315,7 +320,8 @@ expect "remove は知らないモードとして 2 で終わり、PR のフォ�
 fresh_origin seeded
 before="$(tip)"
 run_pages put-map '1 ../..' "$work/map.json" "$template"; status=$?
-expect "数字でない PR 番号は拒否する" '[ "$status" -eq 2 ] && [ "$(tip)" = "$before" ]'
+run_pages put-explain '1 ../..' "$work/explain.json"; explain_status=$?
+expect "数字でない PR 番号は拒否する" '[ "$status" -eq 2 ] && [ "$explain_status" -eq 2 ] && [ "$(tip)" = "$before" ]'
 
 fresh_origin seeded
 reject_first_push
@@ -328,17 +334,24 @@ expect "gh-pages が無ければ orphan で作る" '[ "$status" -eq 0 ] && [ "$(
 
 fresh_origin seeded
 run_pages put-list "$work/pull-requests.json" "$list_template"; status=$?
-expect "put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる" '[ "$status" -eq 0 ] && [ "$(listed numbers)" = "[12, 2, 1]" ]'
-expect "put-list は pr-<番号> の形でないフォルダ(notes・pr-01)を載せない" '[ "$(listed count)" = 3 ]'
+expect "put-list は gh-pages の PR のフォルダを、番号の大きい順にすべて載せる" '[ "$status" -eq 0 ] && [ "$(listed numbers)" = "[12, 3, 2, 1]" ]'
+expect "put-list は pr-<番号> の形でないフォルダ(notes・pr-01・pr-12-old)を載せない" '[ "$(listed count)" = 4 ]'
 expect "put-list は 1 ページ目にある PR を、その題のまま載せる(<b> を含む綴りも変えない)" '[ "$(listed title 1)" = "\"一\"" ] && [ "$(listed title 2)" = "\"<b>二</b>\"" ]'
 expect "put-list は 2 ページ目にしか無い PR も題付きで載せる" '[ "$(listed title 12)" = "\"十二\"" ]'
 expect "put-list は応答にあってもフォルダの無い PR を載せない" '[ "$(listed title 7)" = "<none>" ] && [ "$(listed title 40)" = "<none>" ]'
-expect "put-list は前の list.json が壊れていても、読まずに作り直す" '[ "$(listed version)" = 1 ]'
+expect "put-list は前の list.json にある、gh-pages に無い PR(99)の行を一覧に出さない" '[ "$(listed title 99)" = "<none>" ]'
+expect "put-list は応答に無い PR の題に前の list.json の題を使わず、null のままにする" '[ "$(listed title 3)" = null ]'
 expect "put-list は一覧の枠をテンプレートのまま pr-explain/index.html に置く" '[ "$(on_pages pr-explain/index.html)" = "$(cat "$list_template")" ]'
 expect "put-list は PR のフォルダ(pr-1 の 3 ファイル・pr-12)と pr-preview に触らない" 'kept_as_seeded pr-explain/pr-1/index.html pr-explain/pr-1/change-map.json pr-explain/pr-1/explain.json pr-explain/pr-12/index.html pr-preview/pr-1/index.html'
 before="$(tip)"
 run_pages put-list "$work/pull-requests.json" "$list_template"; status=$?
 expect "put-list は一覧も枠も変わらなければ push しない" '[ "$status" -eq 0 ] && [ "$(tip)" = "$before" ]'
+
+fresh_origin seeded
+printf '{\n' > "$work/seed/pr-explain/list.json"
+git -C "$work/seed" commit --quiet -am broken-list && git -C "$work/seed" push --quiet "$work/origin.git" gh-pages 2>/dev/null
+run_pages put-list "$work/pull-requests.json" "$list_template"; status=$?
+expect "put-list は前の list.json が壊れていても、読まずに作り直す" '[ "$status" -eq 0 ] && [ "$(listed version)" = 1 ]'
 
 fresh_origin seeded
 run_pages put-list "$work/pull-requests.json" "$list_template"
@@ -348,7 +361,7 @@ expect "応答に無い PR(put-map で増やしたフォルダ)は、次の put-
 
 fresh_origin seeded
 run_pages put-list "$work/pull-requests-none.json" "$list_template"; status=$?
-expect "PR の一覧が 0 件の応答では、フォルダはすべて題なしで載る" '[ "$status" -eq 0 ] && [ "$(listed rows)" = "[[12, null], [2, null], [1, null]]" ]'
+expect "PR の一覧が 0 件の応答では、フォルダはすべて題なしで載る" '[ "$status" -eq 0 ] && [ "$(listed rows)" = "[[12, null], [3, null], [2, null], [1, null]]" ]'
 
 fresh_origin seeded
 reject_first_push pr-explain/pr-40
@@ -371,6 +384,7 @@ string-number|PR の number が文字列
 no-repository|data に repository が無い
 cut|最後のページの hasNextPage が true(応答が途中で切れている)
 no-page-info|pageInfo の無いページがある
+nodes-not-list|pageInfo はあるが nodes が配列でない
 RESPONSES
 )"
 cases_before=$cases_reported
@@ -382,6 +396,10 @@ while IFS='|' read -r name shape; do
   expect "題の応答が「$shape」なら、clone へ進まず 1 で終わり push しない" '[ "$status" -eq 1 ] && [ "$(tip)" = "$before" ] && [[ "$output" == *"題の応答"* ]] && [[ "$output" != *"反映に失敗"* ]]'
 done <<<"$broken_responses"
 report_cases_ran broken_responses "$cases_before"
+
+fresh_origin empty
+output="$(bash "$pages" put-list "$work/pull-requests-errors.json" "$list_template" 2>&1)"; status=$?
+expect "gh-pages が無くても、題の応答が読めなければ clone へ進まず 1 で終わる" '[ "$status" -eq 1 ] && [ "$(tip)" = "<none>" ] && [[ "$output" == *"題の応答"* ]]'
 
 fresh_origin seeded
 before="$(tip)"

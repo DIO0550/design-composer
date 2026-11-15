@@ -3861,6 +3861,11 @@ const cases = [
     actual: () => [{ pr: 2, title: 2 }, { pr: 2 }].map((row) => listReadingOf(listJsonOf([listRow(12, "十二"), row])).reason),
     expected: [{ kind: "shape", key: "title" }, { kind: "shape", key: "title" }],
   },
+  {
+    label: "一覧の行がオブジェクトでない(null・数値)なら読めず、理由は shape でキーは pages",
+    actual: () => [null, 5].map((row) => listReadingOf(listJsonOf([listRow(12, "十二"), row]))),
+    expected: [null, 5].map(() => ({ kind: "missing", reason: { kind: "shape", key: "pages" } })),
+  },
 ];
 
 // 1 件が例外で止まっても、残りのケースは走らせて、そのケースだけを食い違いとして出す。
