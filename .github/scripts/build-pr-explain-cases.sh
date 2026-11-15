@@ -211,6 +211,7 @@ deny|shape|sample|対応の無い変更後の手順がある|d["flows"][1]["step
 deny|shape|sample|対応の無い変更前の手順がある|d["flows"][1]["beforeSteps"].append("put-map")
 deny|shape|sample|同じ変更前の手順を 2 回対応させる|d["flows"][1]["stepChanges"][2]["beforeStep"] = 1
 deny|shape|sample|同じ変更後の手順を 2 回対応させる|d["flows"][1]["stepChanges"][1]["afterStep"] = 1
+deny|shape|sample|変更後の手順の番号をすべて埋めたうえで、同じ手順を指す対応をもう 1 件足す|c = d["flows"][1]["stepChanges"]; c.insert(2, dict(c[1]))
 deny|shape|sample|beforeStep が beforeSteps の数を超える|d["flows"][1]["stepChanges"][2]["beforeStep"] = 3
 deny|shape|sample|added の対応に beforeStep がある(番号はちょうど 1 回ずつ埋まる)|c = d["flows"][1]["stepChanges"]; c[1]["beforeStep"] = 2; del c[2]
 deny|shape|sample|removed の対応に afterStep がある(番号はちょうど 1 回ずつ埋まる)|c = d["flows"][1]["stepChanges"]; c[2]["afterStep"] = 2; del c[1]
@@ -358,6 +359,7 @@ deny|ref|sample|feature の Target が features に無い|d["overview"]["highlig
 deny|ref|sample|message の Target が messages に無い|d["overview"]["highlights"][3]["go"]["id"] = "nope"
 deny|ref|sample|flow の Target が flows に無い|d["overview"]["highlights"][4]["go"]["id"] = "nope"
 deny|ref|sample|calls の線の from が calls の箱に無い|d["calls"]["edges"][0]["from"] = "nope"
+deny|ref|sample|calls の線の to が calls の箱に無い|d["calls"]["edges"][0]["to"] = "nope"
 deny|ref|sample|calls の箱の module が concepts に無い|d["calls"]["boxes"][0]["module"] = "no/such"
 deny|ref|sample|callBox の Target が calls の箱に無い|d["overview"]["highlights"][5]["go"]["id"] = "nope"
 deny|ref|sample|callBox の Target に線の id を書く|d["overview"]["highlights"][5]["go"]["id"] = d["calls"]["edges"][0]["id"]
