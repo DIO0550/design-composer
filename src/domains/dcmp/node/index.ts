@@ -30,8 +30,6 @@ export type PropAssignment = Readonly<{
  * 設定と消去で別の型に分けない(どちらも「その prop を今どうするか」を表す)。
  *
  * 編集を分けて 2 回適用すると履歴も 2 段になり、1 回の undo で片側しか戻らない。
- *
- * 空の並びは何も書かないのに進む先（redo）を捨てる編集になるので、非空のタプルで受ける。
  */
 export type PropEdit = Readonly<{
   names: NonEmptyArray<string>;
