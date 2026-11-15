@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1392,
+  "headBranch": "claude/magical-cannon-t2grzb",
+  "baseBranch": "main",
+  "mergeBase": "6b54f42993259c7b8efaf084da1b98ed7c7b6268",
+  "head": "11c0a861c37fbe2eb4ff8ab1a85ddc4481ede9bc",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1387.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 198,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "11c0a861c37fbe2eb4ff8ab1a85ddc4481ede9bc",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-15T00:37:52Z",
+      "subject": "📝 [Documentation]: PR #1387 の振り返りを harness/records に記録する",
+      "body": "- harness/records/pr-1387.md を追加した(#1379 の PR #1387)\n- 指摘 22 件を分類ごとに記録した\n  - plan 5 / test 4 / comment 4 / duplication 3 / naming 2 / なし 3 / type 1 / harness 1\n- 人のレビューは 0 件。bot は Devin の 2 件(どちらも不採用)\n- 発火は計測対象外とした(PreToolUse のフックが不発だったため)\n\n背景:\nマージ後に harness-record で、その回の指摘・手戻り・フックの発火を残す。\n\n採用理由:\n指摘 1 件を 1 ブロックとし、出どころは語彙から 1 つだけ選んだ。形の名前は、\nレビューエージェントが添えたものだけを写した。\n\n影響とトレードオフ:\n記録の追加のみ。集計と介入はしていない(harness-growth の管轄)。\n\n代替案:\n発火を「無し」と書く案は、ログ自体が無く起動の有無を区別できないので採らなかった。\n\n参考:\n- https://github.com/DIO0550/design-composer/pull/1387\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QcX7aqbgoMGnq2Co3",
+      "files": [
+        {
+          "path": "harness/records/pr-1387.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 198,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,198 @@\n+# PR #1387 中身の変わらない編集を undo 1 回ぶんに数えない\n+\n+- マージ日: 2026-11-15\n+- 関連 Issue: #1379\n+- 差分規模: 15 ファイル / +407 -14\n+\n+## ゴールと結果\n+\n+ゴールは次のとおり。値を変えずに入力欄から離れても、変化の無い編集が undo の履歴に積まれない。Ctrl+Z を 1 回押せば必ずドキュメントの中身が 1 段変わる。\n+\n+達成した。判定は履歴の側(`EditHistory` の `record` / `undo` の入口)に置き、中身の比較は `DesignDocument.isSameContent`(`toJson` どうしを `Json.equals`)にした。中身の変わらない編集で redo が捨てられる点は #1384 に切り出した。判断待ちで止めた回は無い。\n+\n+GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_comments` / `get_comments` の 3 つとも確認した。`get_reviews` の DIO0550 の 2 件は、Devin のスレッドへ自分が返した返信が載ったもの。`get_comments` の DIO0550 の 1 件は、自分が貼ったテスト表。bot のレビューは Devin の 1 件(指摘 2 件)と Copilot の概要 1 件(open issue 0 件)。CI は全件緑で、VRT の差分は 0 件(209 件 passed)。\n+\n+## 指摘\n+\n+### 1. 却下案「undo の側だけで飛ばす」の理由が、採用案にも当てはまっていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `ownership-reasoning`\n+- 内容: 「無変化の編集が past に溜まり続ける」は、次の record / undo まで 1 件残す採用案にも言える。理由を「件数が無制限に育つ」「無変化を 2 回続けると 1 回目の undo が画面を変えない」に書き換えた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 5\n+\n+### 2. `Json.isEqual` が既存の等価判定の語形 `equals` と揃っていなかった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `naming-precedent`\n+- 内容: `Option.equals` ほか 8 件が `equals` で、`isEqual` は 0 件だった。計画の grep が `equals` を引いていなかった。`Json.equals` に変えた。\n+- 既存ルール: rules/naming.md「メソッド名を既存のドメインに揃える」\n+\n+### 3. redo が捨てられる件の後続 Issue が無く、docs に足す文とも食い違っていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `plan-open-decision`\n+- 内容: 未決を「別 Issue を推奨」で止めていた。#1384 を起票した。docs の文は「undo 1 回ぶんに数えない」に範囲を絞った。\n+- 既存ルール: AGENTS.md「タスクの分割」\n+\n+### 4. undo / redo の対のうち、redo 側のテストが無かった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 飛ばした重複を future に残す実装を落とすテストが無かった。「戻してからやり直すと、1 回で戻す前の中身へ進み、それ以上は進めない」を足した。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 5. `Json.equals` のテストでは、壊した実装を落とせなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 次の 3 種類の入力が無かった。足した。\n+  - 入れ子が等しい正のケース\n+  - キーが多いのが逆側のケース\n+  - 型が違うケース(`[]` と `{}`、`\"1\"` と `1`)\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 6. `PropEdit` の doc の書き換え先から、空を受けない理由が抜けていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 形の名前: `comment-missing`\n+- 内容: 「履歴だけ積む」が成り立たなくなる。そこを消すだけだと、非空タプルで受ける理由が残らない。`removeSelected` と同じく「進む先(redo)を捨てる」を理由にした。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 7. #1382 との取り決めを #1379 の中にしか書いていなかった\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: #1382 が足すコメントは、この PR で事実でなくなる。その対応を、PR 本文にマージ順ごとに書く方針にした。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 9\n+\n+### 8. 却下案 6 の理由に「実例は未探索」が残っていた\n+\n+- 分類: `plan`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 「source of truth はファイルで、形は `toJson` が決める」と言い切る形にした。`DocumentJson.serialize` が `toJson` を書き出すことは確かめた。\n+- 既存ルール: `.claude/skills/implementation-flow/SKILL.md` フェーズ 3 手順 5\n+\n+### 9. 実装に使う既存の部品が計画に書かれていなかった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: 計画に `RecordEx.has` / `isJsonRecord` / `ObjectEx.isObject` が出ていなかった。確かめた結果、キーの有無は `RecordEx.has` を使う。配列の判定は、readonly 配列用の型ガードを 1 つ足す。\n+- 既存ルール: rules/architecture.md「utils の形式」\n+\n+### 10. 比較のコストを計画が述べていなかった\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（plan-reviewer）`\n+- 内容: record / undo のたびに `toJson` を 2 回作る。比較は離散的な操作 1 回につき 1 回で、2000 ノードで約 1.4ms/回であることを計画に書いた。\n+- 既存ルール: なし\n+\n+### 11. `objectEquals` で 2 つの条件を組んだ式に名前が無かった\n+\n+- 分類: `naming`\n+- 出どころ: `レビュー（naming-reviewer）`\n+- 内容: `RecordEx.has(...) && Json.equals(...)` が `every` の中に裸で入っていた。ローカル関数 `hasSameValueAt` にし、`RecordEx.has` が要る理由を 1 行添えた。\n+- 既存ルール: rules/naming.md「条件を組んだ式に名前を付ける」\n+\n+### 12. 値を求める行と return の間の空行が、同じ差分の中で揃っていなかった\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（structure-reviewer）`\n+- 内容: `record` / `undo` / `objectEquals` / `Json.equals` に空行が無かった。同じ差分の `isSameContent` と揃えた。\n+- 既存ルール: なし\n+\n+### 13. `Json` の配列比較が `ArrayEx.isElementwiseEqual` と同じ走査だった\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: 違うのは要素の比べ方だけだった。比べ方を引数で受け取る `ArrayEx.equals` を足し、両方がそれを通るようにした。\n+- 既存ルール: rules/architecture.md「utils の形式」\n+\n+### 14. `record` が同じ中身でも積む理由を、doc とテストのコメントの 2 箇所に書いていた\n+\n+- 分類: `duplication`\n+- 出どころ: `レビュー（duplication-reviewer）`\n+- 内容: テストのコメントは「落とす実装」と doc への参照の 1 行にした。関数の doc は、不変条件を言い直さず型の doc を指すだけにした。\n+- 既存ルール: rules/coding.md「規約の適用範囲」\n+\n+### 15. 「型の不変条件」と書くと、型で強制されていると読めた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: `EditHistory` は公開の Readonly 型で、どこからでも組み立てられる。「`record` / `undo` / `amend` が保つ不変条件で、型では強制しない」に直した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 16. `isSameContent` と `withoutUnchangedLast` の理由が 3 行を超えていた\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 内容: 1 理由を 1〜2 行に詰めた。`isSameContent` の doc から、自動保存・`NodeTemplate.isSame` との対比を外した。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 17. docs の「(#1384)」が番号だけで、未決であることが読めなかった\n+\n+- 分類: `comment`\n+- 出どころ: `レビュー（comment-reviewer）`\n+- 形の名前: `comment-missing-issue-only`\n+- 内容: 「進む先(redo)は中身が変わる編集と同じく捨てる(残すかは未決。#1384)」にした。\n+- 既存ルール: rules/coding.md「コメントは doc と Why / Why not に絞る」\n+\n+### 18. `Json.equals` の `isJsonArray(other)` の分岐を外しても、どのテストも落ちなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: 既存の `([], {})` は、最初の `isJsonArray(value)` の分岐で弾かれていた。逆向きの `({}, [])` を足し、この分岐を外すとそのテストだけが落ちることを確かめた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 19. `RecordEx.has` のガードを外しても落ちるテストが無く、コメントの理由が守られていなかった\n+\n+- 分類: `test`\n+- 出どころ: `レビュー（test-reviewer）`\n+- 内容: キー数が同じで、片方だけが自身のキーとして `__proto__` を持つ入力を足した。ガードを外すと、そのテストだけが落ちることを確かめた。\n+- 既存ルール: rules/testing.md「assert は「落ちうるか」と「1つの仕様か」で見る」\n+\n+### 20. 編集ごとの全量比較の負荷を測る余地がある(不採用)\n+\n+- 分類: `なし`\n+- 出どころ: `レビュー（bot）`\n+- 内容: Devin の analysis。比較は record / undo の 1 回ずつで、2000 ノードで約 1.4ms/回と既に測っていた。スレッドで返信し、コードは変えなかった。Copilot の概要も同じ点を「Needs a closer look」に挙げていた(open issue 0 件)。\n+- 既存ルール: なし\n+\n+### 21. 対称な比較の同型の位置引数を、オブジェクト引数にせよ(不採用)\n+\n+- 分類: `type`\n+- 出どころ: `レビュー（bot）`\n+- 内容: Devin の 🟡。対称な比較は取り違えても結果が変わらない。既存の等価判定 8 件もすべて位置引数なので、スレッドで理由を返して変えなかった。規約の判定文が対称な比較にも及ぶと読める点は、判例の候補。\n+- 既存ルール: rules/coding.md「関数のシグネチャ」\n+\n+### 22. PreToolUse のフックが発火していなかった\n+\n+- 分類: `harness`\n+- 出どころ: `自己修正`\n+- 内容: `echo hook-canary` が deny されずに通った。実行中フラグのマーカーも発火ログも無かった。禁止操作が無かったことは手で確かめ、PR 本文に書いた。\n+- 既存ルール: `.claude/hooks/README.md`「発火しているかを確かめる(カナリア)」\n+\n+## 手戻り\n+\n+- フェーズ 4 で、plan-reviewer の指摘 10 件をすべて採用し、planner で計画を 1 回やり直した\n+  - 指摘 1 の不変条件「past 末尾だけが present と同じ中身でありうる」は、`amend` で崩れる\n+  - planner がランダム模擬(20 万本中 99041 回)で見つけ、「同じ中身が隣り合うのは末尾の 1 組だけ」に訂正した\n+- フェーズ 6 の 1 段目では、9 観点の指摘のうち 7 件を採用し、implementer で 1 回直した\n+  - 不採用は 2 件。1 つは comment-reviewer の「`isJsonArray` の理由が未検証」で、TS2345 を確認済みのため。もう 1 つは harness-reviewer の任意提案「06-ui.md 336 行への相互参照」\n+- フェーズ 6 の 2 段目では、test-reviewer の指摘で `Json.equals` のテストを 2 件足した\n+- implementer が計画外の作業を 1 件した\n+  - `src/utils/` に追跡外の `Json.js` / `Option.js` / `RecordEx.js` / `Result.js` があった。tsc を素で実行した出力の残りに見える\n+  - vitest がこれを `.ts` より先に読み、47 件が落ちた。scratchpad へ退避した。出どころは不明\n+- Stop フックの「未コミット・未 push」の催促が、サブエージェントの実行中に何度も出た。どれも完了を待ってから commit した\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し。記録だけを残す(集計と介入は harness-growth の管轄)。",
+          "patchLines": 199,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
