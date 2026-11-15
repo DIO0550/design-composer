@@ -177,3 +177,7 @@ test("空の並びどうしは、要素ごとに等しい", () => {
 test("要素ごとの比較は NaN どうしを等しいとみなす", () => {
   expect(ArrayEx.isElementwiseEqual([Number.NaN], [Number.NaN])).toBe(true);
 });
+
+test("渡した比べ方がどの要素も等しいとみなしても、長さが違う並びは等しくない", () => {
+  expect(ArrayEx.equals([1], [1, 2], () => true)).toBe(false);
+});

@@ -31,7 +31,7 @@ export type PropAssignment = Readonly<{
  *
  * 編集を分けて 2 回適用すると履歴も 2 段になり、1 回の undo で片側しか戻らない。
  *
- * 空の並びは「何も書かないのに履歴だけ積む」編集になるので、非空のタプルで受ける。
+ * 空の並びは何も書かないのに進む先（redo）を捨てる編集になるので、非空のタプルで受ける。
  */
 export type PropEdit = Readonly<{
   names: NonEmptyArray<string>;

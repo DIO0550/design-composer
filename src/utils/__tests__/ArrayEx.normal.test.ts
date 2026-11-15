@@ -290,3 +290,17 @@ test("同じ長さで同じ位置に同じ要素を持つ並びは、要素ご�
 test("同じ要素でも並びの順が違えば、要素ごとに等しくない", () => {
   expect(ArrayEx.isElementwiseEqual(["a", "b"], ["b", "a"])).toBe(false);
 });
+
+test("渡した比べ方で同じ位置の要素がすべて等しければ、並びは等しい", () => {
+  const sameId = (a: { id: number }, b: { id: number }) => a.id === b.id;
+
+  expect(ArrayEx.equals([{ id: 1 }], [{ id: 1 }], sameId)).toBe(true);
+});
+
+test("渡した比べ方で等しくない位置が 1 つでもあれば、並びは等しくない", () => {
+  const sameId = (a: { id: number }, b: { id: number }) => a.id === b.id;
+
+  expect(
+    ArrayEx.equals([{ id: 1 }, { id: 2 }], [{ id: 1 }, { id: 3 }], sameId),
+  ).toBe(false);
+});

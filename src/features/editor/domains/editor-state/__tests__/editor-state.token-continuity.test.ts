@@ -71,3 +71,14 @@ test("別のまとまりとして送った値は 1 回の Undo で直前の値�
 
   expect(primaryOf(undone)).toEqual(Option.some("#ff0000"));
 });
+
+test("値を変えずに送った確定は、Undo 1 回で直前に変えた値の前まで戻る", () => {
+  const edited = sendColors(setupSelected(), [
+    { color: "#ff0000", continuity: EditContinuities.Separate },
+    { color: "#ff0000", continuity: EditContinuities.Separate },
+  ]);
+
+  const undone = Option.unwrap(EditorState.undo(edited));
+
+  expect(primaryOf(undone)).toEqual(Option.some("#000000"));
+});

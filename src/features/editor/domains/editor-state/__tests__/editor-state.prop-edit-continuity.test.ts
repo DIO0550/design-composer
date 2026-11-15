@@ -100,3 +100,21 @@ test("続けて 2 回打ち込んだら、1 回戻るのは直前の打ち込み
   // 2 回の打ち込みが 1 件に畳まれるなら 200 まで戻ってしまう
   expect([panelWidth(second), panelWidth(undone)]).toEqual([34, 12]);
 });
+
+test("1 打鍵目が値を変えず 2 打鍵目で変わっても、1 回戻れば打ち始める前の値に戻る", () => {
+  const first = typeWidths(setupSelected(), [150]);
+  const second = typeWidths(first, [150, 120]);
+
+  const undone = Option.unwrap(EditorState.undo(second));
+
+  expect([panelWidth(second), panelWidth(undone)]).toEqual([120, 150]);
+});
+
+test("幅を同じ値で確定しても、Undo 1 回で直前の編集の前へ戻る", () => {
+  const first = typeWidths(setupSelected(), [150]);
+  const unchanged = typeWidths(first, [150]);
+
+  const undone = Option.unwrap(EditorState.undo(unchanged));
+
+  expect(panelWidth(undone)).toBe(200);
+});
