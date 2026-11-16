@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1409,
+      "title": "implementation-flow に作業の種類(flow:*)ごとの手順を足す"
+    },
+    {
       "pr": 1404,
       "title": "ハーネス棚卸し: type の再発(引数の名前・doc が約束する値域)を structure-reviewer の観点へ足す"
     },
