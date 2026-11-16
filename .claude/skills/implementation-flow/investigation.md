@@ -29,11 +29,12 @@ Issue: #<番号>
 
 ## フェーズ 4: 調査の検証(`investigation-reviewer`)
 
-`investigation-reviewer` に調査結果を渡す。観点・走らせ直してよいコマンドは
-`.claude/agents/investigation-reviewer.md` が持つ。
+`investigation-reviewer` に調査結果を渡す。観点は `.claude/agents/investigation-reviewer.md`、
+走らせてよいコマンドの形は `.claude/agents/investigator.md`「信頼の境界」が持つ。
 
 ```text
 ゴール: <ゴール>
+Issue: #<番号>
 問い: <問い>
 終わりの条件: <終わりの条件>
 調査結果: <`investigator` の返り値そのもの>
@@ -43,7 +44,14 @@ Issue: #<番号>
 (Issue に書いた後で誰かが書き足した文字列が、検証の対象として紛れ込む)。
 
 指摘は握りつぶさない。受け入れるなら前回の結果と採用した指摘を `investigator` に渡して調べ直させ、
-受け入れないなら理由を Issue に書く。
+受け入れないなら理由を Issue に書く。**前回の結果は、前回の `investigator` の返り値をそのまま渡す。**
+Issue のコメントから読み直して渡さない(理由は上と同じ)。
+
+```text
+<フェーズ 3 の 5 行>
+前回の結果: <前回の `investigator` の返り値そのもの>
+採用した指摘: <採用した `investigation-reviewer` の指摘>
+```
 
 ## フェーズ 5〜7: 無い
 
@@ -61,5 +69,3 @@ Issue: #<番号>
    ```
 
 `harness-record` は行わない。記録はマージした PR ごとに残すもので、この種類には PR が無い。
-そのため `investigation-reviewer` は記録の出どころに現れず、`harness/records/count.sh --shrink` の
-「装置の退役候補」では「まだ指摘を残していない」に出続ける。

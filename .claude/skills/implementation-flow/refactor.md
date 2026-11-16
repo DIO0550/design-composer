@@ -13,11 +13,11 @@
 テストを書き換えずに走らなくできる。どちらもフェーズ 5 で親が走らせる。
 
 ```bash
-git diff <1 段目のコミット> HEAD -- \
+git diff <第 1 工程のコミット> HEAD -- \
   ':(glob)**/__tests__/**' ':(glob)**/*_test.rs' ':(glob)**/test_support.rs' \
   ':(glob)**/*-cases.sh' ':(glob)**/cases-fixtures.sh' ':(glob)**/cases-report.sh' \
   src/test-setup.ts ':(glob)**/*.stories.tsx' ':(glob)**/__stories__/**'
-git diff -U0 <1 段目のコミット> HEAD -- src-tauri .github/workflows vite.config.ts harness/githooks/pre-push \
+git diff -U0 <第 1 工程のコミット> HEAD -- src-tauri .github/workflows vite.config.ts harness/githooks/pre-push \
   | grep -E '^-.*(mod [a-z0-9_]+_test;|mod test_support;|-cases\.sh|setupFiles)'
 ```
 
@@ -31,6 +31,7 @@ git diff -U0 <1 段目のコミット> HEAD -- src-tauri .github/workflows vite.
 書き換えない範囲で**してよいこと**(これ以外はしない):
 
 - テストを足す
+- 計画の移動表にあるファイルを移動する。移動に伴う中身の変更は、下の 2 つに当たるものに限る
 - 参照先(import のパス・`mod` の位置)を、計画の移動表にある移動先へ書き換える。同じものを
   指したまま場所が変わる書き換えに限る
 - 計画の改名表(旧名 → 新名)にある名前を、本文の中でも書き換える。表に無い名前を変えると、
@@ -40,7 +41,7 @@ git diff -U0 <1 段目のコミット> HEAD -- src-tauri .github/workflows vite.
 
 - **守っている既存テスト。** 触るコードを守っているテストのファイルと、走らせるコマンドと件数
 - **現状を固定するテスト。** 守っている既存テストが無い範囲には、今のコードで通るテストを
-  先に足す計画にする。足すものが無いなら「無し」と書く(フェーズ 5 の 1 段目を省く)
+  先に足す計画にする。足すものが無いなら「無し」と書く(フェーズ 5 の第 1 工程を省く)
 - **移動表**(ファイル・モジュールの移動元 → 移動先)と**改名表**(旧名 → 新名)。
   無いなら「無し」と書く
 - **移動表に `*.stories.tsx` が入るなら、** story の id が変わることを予告し、改名表に旧 `title` →
@@ -49,13 +50,13 @@ git diff -U0 <1 段目のコミット> HEAD -- src-tauri .github/workflows vite.
 - 仕様の変更や既存テストの書き換えが要ると分かったら、`flow:refactor` に合わない作業なので
   計画せずに止め、`SKILL.md` フェーズ 1「種類の確定」の 6 に従う
 
-## フェーズ 5: 段ごとに書かせるものと確かめること
+## フェーズ 5: 工程ごとに書かせるものと確かめること
 
-2 段に分ける仕組み(段の渡し方・1 段目のコミット・1 段目を省くとき)は `SKILL.md` フェーズ 5。
+2 つの工程に分ける仕組み(工程の渡し方・第 1 工程のコミット・第 1 工程を省くとき)は `SKILL.md` フェーズ 5。
 
-1. **1 段目(`段: 現状の固定`): 現状を固定するテストだけを足させる。** 今のコードのまま、
+1. **第 1 工程(`工程: 現状の固定`): 現状を固定するテストだけを足させる。** 今のコードのまま、
    足したテストを走らせる検査が通ることを返させる。計画の現状を固定するテストが「無し」なら省く
-2. **2 段目(`段: リファクタ`): リファクタさせる。** commit したら、親が「書き換えない範囲」の
+2. **第 2 工程(`工程: リファクタ`): リファクタさせる。** commit したら、親が「書き換えない範囲」の
    2 つのコマンドの出力を読む
    - 1 つ目に出てよいのは、足したテストと、「してよいこと」に当たる書き換えだけ
    - 2 つ目に出た行は、移動表にある移動の片割れかを確かめる
@@ -76,9 +77,9 @@ git diff -U0 <1 段目のコミット> HEAD -- src-tauri .github/workflows vite.
 
 - **`Storybook Visual Regression` の差分は `visual-approved` で通さない。** 振る舞いを変えない
   変更で見た目が変わったなら、それは直す対象(`rules/ui-verification.md`「Storybook の視覚差分(VRT)」)
-- **story の `title` と export 名を変えない。** 変えると story の id が変わり、VRT は差分ではなく
+- **改名表に無い story の `title` / export 名を変えない。** 変えると story の id が変わり、VRT は差分ではなく
   new と deleted の組として出す。new は落ちないので、見た目がずれても緑のまま通る
   (`harness/case-law/process.md`「`vrt-blind-spot`」)。**ストーリーのファイルを動かす、または
-  `title` / export 名を変えるなら、** 計画で id が変わることを予告し(フェーズ 3)、1 段目のコミットと
+  `title` / export 名を変えるなら、** 計画で id が変わることを予告し(フェーズ 3)、第 1 工程のコミットと
   HEAD をそれぞれ playwright-cli で撮って目視で比べる(`rules/ui-verification.md`「表示確認」)
 - **story の `args` を変えない。** 写る中身が変わり、差分が出ても出なくても比べたことにならない

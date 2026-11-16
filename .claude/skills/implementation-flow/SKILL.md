@@ -217,20 +217,20 @@ Issue: #<番号>
 ゴール: <ゴール>
 Issue: #<番号>
 種類: <`flow:*` のラベル>
-段: <`flow:bugfix` は 再現テスト / 修正、`flow:refactor` は 現状の固定 / リファクタ。この 2 つのときだけ>
+工程: <`flow:bugfix` は 再現テスト / 修正、`flow:refactor` は 現状の固定 / リファクタ。この 2 つのときだけ>
 計画: <plan-reviewer を通した計画と却下案>
 ```
 
 - 実装の手順は `.claude/agents/implementer.md` が持つ
-- **`flow:bugfix` / `flow:refactor` では `implementer` を 2 段に分けて起動する。** `implementer` は
-  commit しないので、1 回で書かせると「テストだけが先に入ったコミット」が作れない。段ごとに何を
+- **`flow:bugfix` / `flow:refactor` では `implementer` を 2 つの工程に分けて起動する。** `implementer` は
+  commit しないので、1 回で書かせると「テストだけが先に入ったコミット」が作れない。工程ごとに何を
   書かせ、何を確かめるかは種類のファイルのフェーズ 5 が持つ
-  - **1 段目はテストだけを書かせる。** 返ってきたら「サブエージェントの使い方」の `git status --porcelain`
-    の突き合わせを、計画の 1 段目のテストのファイルだけに狭める。種類のファイルの確かめ方で
-    合格したら commit する。これが **1 段目のコミット**で、2 段目以降はこれと比べる
-  - **1 段目に書くものが無いなら、1 段目を省く。** 2 段目を起動する前の HEAD を 1 段目のコミットの
+  - **第 1 工程はテストだけを書かせる。** 返ってきたら「サブエージェントの使い方」の `git status --porcelain`
+    の突き合わせを、計画の第 1 工程のテストのファイルだけに狭める。種類のファイルの確かめ方で
+    合格したら commit する。これが **第 1 工程のコミット**で、第 2 工程以降はこれと比べる
+  - **第 1 工程に書くものが無いなら、第 1 工程を省く。** 第 2 工程を起動する前の HEAD を第 1 工程のコミットの
     代わりとして Issue に書く(どの場合に無いかは種類のファイル)
-  - **2 段目で実装を変えさせる。** フェーズ 6・7 の直しも 2 段目の段で渡す
+  - **第 2 工程で実装を変えさせる。** フェーズ 6・7 の直しも第 2 工程の値で渡す
 - **`implementer` が計画から外れて止めて返ってきたら、** 親が外れた理由を Issue に追記してから、
   続けるかを決めて起動し直す。後でまとめて書くと理由が思い出せなくなる
 - **Issue・PR 本文に事実の主張を書いたら、書き終えるたびに親が `claim-verification` スキルで
@@ -245,7 +245,7 @@ Issue: #<番号>
 
 1. 下の表で「呼ぶ条件」に当たるエージェントのうち `test-reviewer` 以外を、1 つのメッセージで
    並列に起動する
-2. 返ってきた指摘の採否を決め、採用したものを種類(と段)と一緒に `implementer` に渡して直させてから、
+2. 返ってきた指摘の採否を決め、採用したものを種類(と工程)と一緒に `implementer` に渡して直させてから、
    **`test-reviewer` を単独で、前面で起動する**(同じメッセージに
    他のツール呼び出しを並べない)。実装を壊して確かめるので、並べると他のエージェントが壊れた
    状態を実装として読む。背景になると(前面で起動して約 120 秒で移された場合を含む)git 操作の
@@ -298,7 +298,7 @@ diff_text | grep -ciE 'UI 案|Design Composer\.html'   # ui-reviewer の語
 - **本文に `Closes #<Issue 番号>` を書く**(`AGENTS.md`「着手した Issue は、その回で閉じる」)。
   `.github/workflows/pr-closing-issue.yml` が、閉じる Issue を持たない PR を落とす
 - CI(lint / typecheck / test / 視覚差分)を通す。push 前の検査や CI が落ちたら、直しは
-  種類(と段)と一緒に `implementer` に渡す(判断を伴わない自動修正コマンドだけは親が走らせてよい →「役割の分担」)
+  種類(と工程)と一緒に `implementer` に渡す(判断を伴わない自動修正コマンドだけは親が走らせてよい →「役割の分担」)
 - **PR を出したら `pr-explain` スキルで解説(`explain.json`)を書く**(ページの画面は `pr-explain` スキルの表)。
   振る舞いが変わる push をしたら書き直す(`.claude/skills/pr-explain/`)
 
@@ -386,7 +386,7 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
   直すのは `implementer` で、検証エージェントとは別に起動する
 - **`implementer` から返ったら、`git status --porcelain` を「計画のファイル表と、渡した指摘の対象」と
   突き合わせる。** 一致したら commit して、それを作業ツリーの基準にする(push はフェーズ 7)。
-  2 段に分ける種類の 1 段目は、フェーズ 5 が突き合わせる範囲を狭める
+  2 つの工程に分ける種類の第 1 工程は、フェーズ 5 が突き合わせる範囲を狭める
 - **それ以外のエージェントから返ったら、指摘を読む前に作業ツリーが基準のまま
   (`git status --porcelain` が空)かを見る。** エージェント定義に「変更するな」と書いても
   書き換えることがある。戻さずに指摘へ対応すると、`implementer` の変更とエージェントの書き換えが
@@ -424,7 +424,7 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
 | [`bugfix.md`](bugfix.md) | `flow:bugfix` で足す手順 | `flow:bugfix` で、「作業の種類」の表のフェーズ |
 | [`refactor.md`](refactor.md) | `flow:refactor` で足す手順 | `flow:refactor` で、「作業の種類」の表のフェーズ |
 | [`investigation.md`](investigation.md) | `flow:investigation` で足す・置き換える手順 | `flow:investigation` で、「作業の種類」の表のフェーズ |
-| `.claude/agents/investigator.md` | 調査するエージェントの受け取るもの・返すもの(調査結果の項目) | `flow:investigation` の調査 |
+| `.claude/agents/investigator.md` | 調査するエージェントの受け取るもの・返すもの(調査結果の項目)・信頼の境界(走らせてよいコマンドの形) | `flow:investigation` の調査 |
 | `.claude/agents/investigation-reviewer.md` | 調査結果の検証観点(エージェントが読む) | `flow:investigation` の調査の検証 |
 | `.claude/skills/claim-verification/SKILL.md` | コメント・doc・PR/Issue 本文の事実主張を書く前に確かめる手順 | フェーズ 3 / 5 |
 | `.claude/skills/pr-explain/SKILL.md` | PR の解説ページの書き方と公開手順 | フェーズ 7 |
