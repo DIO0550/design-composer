@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "pages": [
+    {
+      "pr": 1404,
+      "title": "ハーネス棚卸し: type の再発(引数の名前・doc が約束する値域)を structure-reviewer の観点へ足す"
+    },
+    {
+      "pr": 1402,
+      "title": "PR #1399 の振り返りを harness/records に記録する"
+    },
+    {
+      "pr": 1401,
+      "title": "残っている PR 解説ページの一覧を gh-pages の pr-explain/ に置く"
+    },
+    {
+      "pr": 1400,
+      "title": "PR #1398 の振り返りを記録する"
+    },
+    {
+      "pr": 1399,
+      "title": "中身の変わらない編集では進む先（redo）を捨てない"
+    },
+    {
+      "pr": 1398,
+      "title": "PR が閉じても解説ページを gh-pages から消さない"
+    }
+  ]
+}
