@@ -2,6 +2,7 @@
 #
 # 解説ページの枠の検査の判定表。リポジトリのテンプレートを 1 か所ずつ崩して
 # `check-pr-explain-template.py` へ流し、落ちる分類が期待どおりかを 1 コマンドで確かめる。
+# 一覧の枠(`templates/list.html`)は、リポジトリのものが通ることだけを表の外で見る。
 #
 # 使い方: bash .github/scripts/check-pr-explain-template-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -20,6 +21,7 @@ scripts_dir="$(cd "$(dirname "$0")" && pwd)"
 repo_root="$(cd "$scripts_dir/../.." && pwd)"
 checker="$scripts_dir/check-pr-explain-template.py"
 template="$repo_root/.claude/skills/pr-explain/templates/index.html"
+list_template="$repo_root/.claude/skills/pr-explain/templates/list.html"
 work="$(mktemp -d)" || exit 1
 trap 'rm -rf "$work"' EXIT
 
@@ -100,6 +102,10 @@ while IFS='|' read -r expected category label change; do
   report "$expected" "$(verdict "$category")" "$label"
 done <<<"$cases"
 report_cases_ran cases "$cases_before"
+
+# 一覧の枠は色分けの表を持たないので `--tracked` を付けずに流す(`verdict` は常に付ける)。
+python3 "$checker" "$list_template" >/dev/null 2>&1; list_status=$?
+report pass "$([ "$list_status" -eq 0 ] && echo pass || echo "exit-$list_status")" "リポジトリの一覧の枠は通る"
 
 report_documented_kinds "$checker"
 report_covered_kinds "$checker" "$(kinds_in_categories "$cases" pr-explain-)"

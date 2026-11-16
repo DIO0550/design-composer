@@ -219,7 +219,7 @@ jobs:
       - name: sticky コメントの投稿・差し替えの判定表
         run: bash .github/scripts/upsert-sticky-comment-cases.sh
 
-      # PR の解説ページ(pr-explain.yml とセッションの pr-explain スキル)が使う 5 本の判定表。
+      # PR の解説ページ(pr-explain.yml・pr-explain-list.yml とセッションの pr-explain スキル)が使う 5 本の判定表。
       - name: 変更の地図の判定表
         run: bash .github/scripts/build-pr-change-map-cases.sh
 

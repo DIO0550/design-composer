@@ -8,6 +8,8 @@
 #
 # storybook-pr-preview.yml とは別のワークフローにしてあるのは、あちらが Storybook のビルドを
 # 待つため(数分)。地図は差分だけで作れるので、ビルドを待たずに出す。
+#
+# pr-explain-list.yml の `workflow_run` がこの名前を文字列で参照する(変えたら向こうも直す)。
 name: PR Explain
 
 on:
@@ -31,8 +33,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      # merge-base を求めるので履歴をすべて取る。認証は下の公開ステップで 1 本だけ渡すので、
-      # checkout には残させない(残すと git が Authorization を 2 本送る)。
+      # merge-base を求めるので履歴をすべて取る。`persist-credentials` の理由は `lib/git-token-auth.sh`。
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
@@ -48,17 +49,11 @@ jobs:
           PR: ${{ github.event.number }}
         run: python3 .github/scripts/build-pr-change-map.py --base "$BASE_SHA" --head "$HEAD_SHA" --pr "$PR" --head-branch "$HEAD_BRANCH" --base-branch "$BASE_BRANCH" > "$RUNNER_TEMP/change-map.json"
 
-      # 環境変数の git 設定で認証ヘッダを渡す。pr-explain-pages.sh は gh-pages を作業用の別フォルダへ
-      # clone するので、どのフォルダで走る git にも同じ設定が効く形にする。base64 にした値は
-      # Actions が自動では伏せないので、ログに出ないよう登録する。
       - name: Publish to gh-pages
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.number }}
         run: |
-          credential="$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 -w0)"
-          echo "::add-mask::$credential"
-          export GIT_CONFIG_COUNT=1
-          export GIT_CONFIG_KEY_0="http.https://github.com/.extraheader"
-          export GIT_CONFIG_VALUE_0="AUTHORIZATION: basic $credential"
+          . .github/scripts/lib/git-token-auth.sh
+          export_git_token_header
           bash .github/scripts/pr-explain-pages.sh put-map "$PR" "$RUNNER_TEMP/change-map.json" .claude/skills/pr-explain/templates/index.html

@@ -60,6 +60,10 @@ Files changed にも混ざるため)。
 
 この変更(#1394)のマージ以後に閉じた PR は、マージ・クローズの後も同じ URL で開ける(閉じてもフォルダを消さない)。
 
+gh-pages に残っている解説ページの一覧は `https://dio0550.github.io/design-composer/pr-explain/`(PR 番号と題から
+各ページへ飛ぶ)。Actions(`pr-explain-list.yml`)が `PR Explain` の完了と main への push のたびに作り直すので、
+セッションは触らない(`put-list` は呼ばない)。題は次に一覧を作り直す run で変わる(題の編集だけでは走らない)。
+
 ## いつ書くか
 
 - **PR を出した直後**(`implementation-flow` フェーズ 7)
@@ -277,10 +281,13 @@ layer / file / module・LayerRole の layer・concept のパス・出てくる�
 | ファイル | 内容 |
 | --- | --- |
 | [`templates/index.html`](templates/index.html) | ページの枠(CSS・固定スクリプト・CSP)。固定スクリプトを変えたら CSP の `sha256-` も直す(`check-pr-explain-template.py` が突き合わせる) |
+| [`templates/list.html`](templates/list.html) | 一覧の枠(CSS・固定スクリプト・CSP)。`list.json` を読んで行を組む。固定スクリプトを変えたら CSP の `sha256-` も直す |
 | [`templates/explain.json`](templates/explain.json) | `excerpt` 以外のすべてのキーと、Target の 9 つの kind・Question の 3 つの kind・primers の 2 つの kind・Passage の excerpt 以外の 8 つの kind を使う解説の見本 |
 | `.github/scripts/build-pr-explain.py` | 解説の検査と、抜粋の中身の書き足し |
 | `.github/scripts/lib/embedded_regions.py` | 抜粋・差分の hunk の始まりの行で効いている埋め込み(script / style 要素・ヒアドキュメント)を開いた行。検査と地図が使う |
-| `.github/scripts/check-pr-explain-template.py` | 枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査。`--tracked` では、追跡ファイルの拡張子が色付けの表(`LanguageByExtension`)か `NotHighlighted` のどちらかにあるかも見る |
-| `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` の書き換え(`put-explain` / `put-map`) |
+| `.github/scripts/check-pr-explain-template.py` | 2 つの枠の CSP と、固定スクリプトが HTML として解釈させる API を使っていないかの検査。`--tracked` では、追跡ファイルの拡張子が色付けの表(`LanguageByExtension`)か `NotHighlighted` のどちらかにあるかも見る |
+| `.github/scripts/pr-explain-pages.sh` | gh-pages の `pr-explain/pr-<番号>/` と一覧の書き換え(`put-explain` / `put-map` / `put-list`) |
 | `.github/scripts/build-pr-change-map.py` | 変更の地図(Actions が呼ぶ) |
 | `.github/workflows/pr-explain.yml` | 枠と地図の配置 |
+| `.github/workflows/pr-explain-list.yml` | 一覧の配置(PR の題を GraphQL で引いて `put-list` に渡す) |
+| `.github/scripts/lib/git-token-auth.sh` | 2 つのワークフローが gh-pages へ push するときの認証ヘッダ |

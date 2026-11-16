@@ -7,7 +7,8 @@
 # 機能 × コミットの表と機能の色・構成の前後の図・流れ図の行とカードの配置・クイズの答えの読み直しと移り変わり・Target の行き先とチップの名前・色分け(`Tokenizer` と、
 # `CommitDiff` / `ExcerptRows` の行をまたぐ読み進め)と、語彙・Target の kind・クイズの問いの kind と答えの鍵の元・解説の形の道筋(impact・primers・terms・抜粋の
 # 強調・features の review・commitStories の featureRanges・calls・actors・quiz・flows の gist・text・beforeSteps・stepChanges・measure)・色分けの埋め込みが解説の検査(`build-pr-explain.py`・`lib/embedded_regions.py`)と揃っていることが期待どおりかを
-# 1 コマンドで確かめる。
+# 1 コマンドで確かめる。一覧の枠(`templates/list.html`)も同じように評価し、`document` が無いときに置かれる
+# `prExplainListCore` の `list.json` の読み方を確かめる。
 #
 # 使い方: bash .github/scripts/pr-explain-core-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
@@ -15,7 +16,7 @@
 # **どのケースも、既定値や素朴な実装と答えが違う入力を選ぶ。** 入力の順と答えの順を変えておき、件数・
 # 添字・先頭だけを見る実装や、打ち切り・既定値で済ませる実装でも同じ答えにならないようにする。
 #
-# 組み立て(DOM を触る側)はここでは通らない。画面の配線は表示確認で見る。
+# 組み立て(DOM を触る側)は、どちらの枠もここでは通らない。画面の配線は表示確認で見る。
 #
 # **判定表 3 本(これと `build-pr-explain-cases.sh`・`build-pr-change-map-cases.sh`)は、区切りの語の付いた `<<` を PY / JS の
 # ヒアドキュメントの外の行に書かない**(見本は Python の文字列で 1 行 1 要素に書く)。判定表も解説ページで色分けされ、外の行に
@@ -28,6 +29,7 @@ set -uo pipefail
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
 repo_root="$(cd "$scripts_dir/../.." && pwd)"
 template="$repo_root/.claude/skills/pr-explain/templates/index.html"
+list_template="$repo_root/.claude/skills/pr-explain/templates/list.html"
 work="$(mktemp -d)" || exit 1
 trap 'rm -rf "$work"' EXIT
 
@@ -172,11 +174,10 @@ json.dump({
 PY
 [ "$?" -eq 0 ] || { echo "NG   検査の埋め込みの開いた行を読めない"; exit 1; }
 
-results="$(node - "$template" "$checker" "$work/embeddings.json" <<'JS'
+results="$(node - "$template" "$checker" "$work/embeddings.json" "$list_template" <<'JS'
 const fs = require("fs");
 const vm = require("vm");
 
-const template = fs.readFileSync(process.argv[2], "utf8");
 const {
   vocabulary: checkerVocabulary,
   targetKeys: checkerTargetKeys,
@@ -191,18 +192,23 @@ const {
   markedRoutes: checkerMarkedRoutes,
   codeSpans: checkerCodeSpans,
 } = JSON.parse(process.argv[3]);
-const script = (template.match(/<script>([\s\S]*?)<\/script>/) || [])[1];
-if (script === undefined) {
-  console.error("固定スクリプトが見つからない");
-  process.exit(2);
-}
-const context = vm.createContext({});
-vm.runInContext(script, context);
-const core = context.prExplainCore;
-if (core === undefined) {
-  console.error("document の無い評価で prExplainCore が置かれていない");
-  process.exit(2);
-}
+// 枠の固定スクリプトを document の無い文脈で評価し、置かれた核を返す。見つからなければ理由を出して 2 で終える。
+const coreOf = (path, name) => {
+  const script = (fs.readFileSync(path, "utf8").match(/<script>([\s\S]*?)<\/script>/) || [])[1];
+  if (script === undefined) {
+    console.error(`${path} の固定スクリプトが見つからない`);
+    process.exit(2);
+  }
+  const context = vm.createContext({});
+  vm.runInContext(script, context);
+  if (context[name] === undefined) {
+    console.error(`document の無い評価で ${name} が置かれていない`);
+    process.exit(2);
+  }
+  return context[name];
+};
+const core = coreOf(process.argv[2], "prExplainCore");
+const { ListPage } = coreOf(process.argv[5], "prExplainListCore");
 const { ExplainedMap, ExplainShape, ImpactTopics, PrimerTopics, CodeSpans, TermMarks, ExcerptRows, TopicScroll, TextSize, ReviewCheck, ScreenChoice, Tokenizer, CommitDiff, FeatureMatrix, GraphLayout, ConnectionSentences, SelectionHistory, Vocabulary, Target, CompareDiagram, TraceRows, TraceLayout, Quiz } = core;
 
 const Pr = 7;
@@ -555,6 +561,11 @@ const changedSpecTopicOf = ({ commits, explainedSha, extra }) => {
 const specOf = (path, locator, shas) => ({ path, locator, text: `${locator}を変えた`, shas });
 // c1 が docs/b.md、c2 が docs/a.md、c3 が両方を変えた地図。
 const specCommits = [commitTouching(1, [diffFile("docs/b.md")]), commitTouching(2, [diffFile("docs/a.md")]), commitTouching(3, [diffFile("docs/a.md"), diffFile("docs/b.md")])];
+
+// 一覧(list.json)の見本。読めた中身として一覧の核に渡す。
+const listRow = (pr, title) => ({ pr, title });
+const listReadingOf = (list) => ListPage.readingOf({ kind: "text", text: JSON.stringify(list) });
+const listJsonOf = (pages, extra = {}) => ({ version: 1, pages, ...extra });
 
 const cases = [
   {
@@ -3784,6 +3795,76 @@ const cases = [
     label: "判定表 3 本で、解説の検査が開いた行として返す行は、どれも行の終わりが区切りの語の付いた << で終わる",
     actual: () => casesTables.map((path) => [...new Set(checkerOpenings[path].filter((opening) => opening !== null))].filter((opening) => !EndsWithHeredocStart.test(opening))),
     expected: [[], [], []],
+  },
+  {
+    label: "一覧の読めた行は、並びを変えずに番号・題・リンク先 pr-<番号>/ を持つ",
+    actual: () => listReadingOf(listJsonOf([listRow(2, "二"), listRow(12, "十二"), listRow(1, "一")])),
+    expected: { kind: "listed", rows: [{ pr: 2, title: "二", href: "pr-2/" }, { pr: 12, title: "十二", href: "pr-12/" }, { pr: 1, title: "一", href: "pr-1/" }] },
+  },
+  {
+    label: "一覧の題が null の行は、題なしの行になる",
+    actual: () => listReadingOf(listJsonOf([listRow(12, "十二"), listRow(5, null)])).rows.map((row) => row.title),
+    expected: ["十二", null],
+  },
+  {
+    label: "一覧の pages が空なら 0 件",
+    actual: () => listReadingOf(listJsonOf([])),
+    expected: { kind: "empty" },
+  },
+  {
+    label: "一覧が置かれていなければ読めず、理由は absent",
+    actual: () => ListPage.readingOf({ kind: "absent" }),
+    expected: { kind: "missing", reason: { kind: "absent" } },
+  },
+  {
+    label: "一覧の読み込みに失敗したら読めず、理由は unreadable で失敗の中身を持つ",
+    actual: () => ListPage.readingOf({ kind: "failed", detail: "HTTP 500" }),
+    expected: { kind: "missing", reason: { kind: "unreadable", detail: "HTTP 500" } },
+  },
+  {
+    label: "一覧が JSON でなければ、理由は unreadable",
+    actual: () => ListPage.readingOf({ kind: "text", text: "{" }).reason.kind,
+    expected: "unreadable",
+  },
+  {
+    label: "一覧の最上位が null なら、理由は shape でキーは null",
+    actual: () => listReadingOf(null),
+    expected: { kind: "missing", reason: { kind: "shape", key: null } },
+  },
+  {
+    label: "一覧の最上位が配列なら、理由は shape でキーは null",
+    actual: () => listReadingOf([listJsonOf([listRow(1, "一")])]),
+    expected: { kind: "missing", reason: { kind: "shape", key: null } },
+  },
+  {
+    label: "一覧の version が 1 でなければ、理由は version で中身を持つ",
+    actual: () => listReadingOf(listJsonOf([listRow(1, "一")], { version: 2 })),
+    expected: { kind: "missing", reason: { kind: "version", actual: 2 } },
+  },
+  {
+    label: "一覧に version が無ければ、理由は shape でキーは version",
+    actual: () => listReadingOf({ pages: [listRow(1, "一")] }),
+    expected: { kind: "missing", reason: { kind: "shape", key: "version" } },
+  },
+  {
+    label: "一覧の pages が配列でなければ、理由は shape でキーは pages",
+    actual: () => listReadingOf(listJsonOf({ 1: listRow(1, "一") })),
+    expected: { kind: "missing", reason: { kind: "shape", key: "pages" } },
+  },
+  {
+    label: "一覧の pr が正の整数でない行(0・1.5・\"12\")が 2 行目以降にあれば、理由は shape でキーは pr",
+    actual: () => [0, 1.5, "12"].map((pr) => listReadingOf(listJsonOf([listRow(12, "十二"), listRow(pr, "題")])).reason),
+    expected: [0, 1.5, "12"].map(() => ({ kind: "shape", key: "pr" })),
+  },
+  {
+    label: "一覧の title が文字列でも null でもない行(数値・欠け)があれば、理由は shape でキーは title",
+    actual: () => [{ pr: 2, title: 2 }, { pr: 2 }].map((row) => listReadingOf(listJsonOf([listRow(12, "十二"), row])).reason),
+    expected: [{ kind: "shape", key: "title" }, { kind: "shape", key: "title" }],
+  },
+  {
+    label: "一覧の行がオブジェクトでない(null・数値)なら読めず、理由は shape でキーは pages",
+    actual: () => [null, 5].map((row) => listReadingOf(listJsonOf([listRow(12, "十二"), row]))),
+    expected: [null, 5].map(() => ({ kind: "missing", reason: { kind: "shape", key: "pages" } })),
   },
 ];
 

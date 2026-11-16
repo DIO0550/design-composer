@@ -1,0 +1,71 @@
+# gh-pages の PR 解説ページの一覧(pr-explain/index.html と list.json)を作り直す。
+# URL は https://dio0550.github.io/design-composer/pr-explain/。
+#
+# 一覧は毎回、gh-pages の木と全件の題から作り直す(前の一覧を読まない)。下の `conclusion`・`cancel-in-progress`・
+# 再試行の判断は、どれもこの前提の帰結。
+#
+# `PR Explain` の完了(PR のフォルダが増える)と main への push(一覧の枠と put-list が変わる)のたびに走る。
+# `workflow_run` にしたのは、どちらの起点でも定義とコードが main のものになり、PR ごとの版の行き来が
+# 起きないため。対価は `PR Explain` と名前の文字列でつながることと、PR の中では確かめられないこと。
+#
+# `conclusion` で絞らない。失敗・取り消しの後に走っても害が無く、絞ると取り消された run の分を取りこぼす。
+name: PR Explain List
+
+on:
+  push:
+    branches: [main]
+  workflow_run:
+    workflows: [PR Explain]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: read
+
+# 後の run が、取り消された run の代わりになる。
+concurrency:
+  group: pr-explain-list
+  cancel-in-progress: true
+
+jobs:
+  list:
+    # fork の PR では `PR Explain` が gh-pages に何も置かないので作り直さない(GraphQL の枠を共有する他の検査に残す)。
+    # fork の PR が起点でも、この run は書き込める権限で走る。`github.event.workflow_run.*` のうち使うのは、GitHub が
+    # 決めるリポジトリ名をここで比べることだけで、PR の側が決める値(ブランチ名・題など)は `run:` へ流さない。
+    if: >-
+      github.event_name == 'push' ||
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      # `persist-credentials` の理由は `lib/git-token-auth.sh`。
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+
+      # `--slurp` を付けないと各ページが区切りなしで連結され、1 つの JSON にならない。
+      #
+      # 問い合わせの文はこのステップに直に書く。判定表(pr-explain-pages-cases.sh)は gh を呼ばず応答の見本を
+      # put-list に渡すので、文を別のファイルに置いても判定表はこの本体を見ない。本体が合っているかを確かめるのは
+      # マージ後の run。ページ送りの抜けは put-list の検査(最後のページの `hasNextPage`)が捕まえる。
+      #
+      # gh は応答に errors があるときや HTTP の失敗で 1 を返し、このステップで止まる(put-list は走らない)。
+      # 再試行はしない。1 回の取りこぼしは次の run で揃い、失敗した run は赤く残る。
+      - name: Fetch pull request titles
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api graphql --paginate --slurp \
+            -f owner="${GITHUB_REPOSITORY%%/*}" \
+            -f name="${GITHUB_REPOSITORY##*/}" \
+            -f query='query($owner: String!, $name: String!, $endCursor: String) { repository(owner: $owner, name: $name) { pullRequests(first: 100, after: $endCursor) { nodes { number title } pageInfo { hasNextPage endCursor } } } }' \
+            > "$RUNNER_TEMP/pull-requests.json"
+
+      - name: Publish list to gh-pages
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          . .github/scripts/lib/git-token-auth.sh
+          export_git_token_header
+          bash .github/scripts/pr-explain-pages.sh put-list "$RUNNER_TEMP/pull-requests.json" .claude/skills/pr-explain/templates/list.html
