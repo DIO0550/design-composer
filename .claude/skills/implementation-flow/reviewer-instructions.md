@@ -3,6 +3,8 @@
 `implementation-flow` フェーズ 6 の観点別エージェント(`.claude/agents/` の `*-reviewer.md` の
 うち `plan-reviewer` 以外)が共通で従う。**観点は各エージェントの定義が持ち、ここは観点に依らない
 指示だけを持つ。** どれを呼ぶか・起動の順序は `SKILL.md` のフェーズ 6 が持つ。
+`flow:investigation` のフェーズ 4 で調査結果を検証する `comment-reviewer` も従う
+([`investigation.md`](investigation.md))。
 
 宛先の外のエージェントにも従わせる節は、その節の冒頭にそう書き、従う範囲もそこで決める。
 
@@ -12,6 +14,8 @@
 - **計画と却下案** — Issue に書いた計画と、却下した案とその理由。却下済みの案を、新しい根拠
   なしに再提案しない
 - **差分** — `git diff` の出力、または変更したファイルのパス一覧
+
+`flow:investigation` では、計画と却下案・差分の代わりに**調査結果と確かめ方**を受け取る。
 
 入っていない項目があれば、それ自体を指摘として返す。
 
@@ -62,7 +66,7 @@
 
 ## ファイルを変更しない
 
-この節は `planner`(`.claude/agents/planner.md`)も従う。
+この節は `planner`(`.claude/agents/planner.md`)と `investigator`(`.claude/agents/investigator.md`)も従う。
 
 **指摘だけを返す。実装の修正はしない。** 観点別のエージェントのうち作業ツリーを書き換えてよいのは
 ミューテーションを当てる `test-reviewer` だけで、その後始末は `test-reviewer` の定義が持つ
