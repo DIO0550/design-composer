@@ -1,8 +1,8 @@
 # 実装の検証: 観点別のレビューエージェントへの共通の指示
 
 `implementation-flow` フェーズ 6 の観点別エージェント(`.claude/agents/` の `*-reviewer.md` の
-うち `plan-reviewer` 以外)が共通で従う。**観点は各エージェントの定義が持ち、ここは観点に依らない
-指示だけを持つ。** どれを呼ぶか・起動の順序は `SKILL.md` のフェーズ 6 が持つ。
+うち `plan-reviewer`・`investigation-reviewer` 以外)が共通で従う。**観点は各エージェントの定義が持ち、
+ここは観点に依らない指示だけを持つ。** どれを呼ぶか・起動の順序は `SKILL.md` のフェーズ 6 が持つ。
 
 宛先の外のエージェントにも従わせる節は、その節の冒頭にそう書き、従う範囲もそこで決める。
 
@@ -19,6 +19,7 @@
 
 この節のうち、表の「分類」の行と「指摘には形の名前を添える」の箇条は `plan-reviewer`
 (`.claude/agents/plan-reviewer.md`)も従う。ほかの項目・箇条は実装の検証向けで、従わない。
+`investigation-reviewer`(`.claude/agents/investigation-reviewer.md`)はこの節のすべてに従う。
 
 1 件ごとに次の項目を持たせる。
 
@@ -62,7 +63,8 @@
 
 ## ファイルを変更しない
 
-この節は `planner`(`.claude/agents/planner.md`)も従う。
+この節は `planner`(`.claude/agents/planner.md`)・`investigator`(`.claude/agents/investigator.md`)・
+`investigation-reviewer`(`.claude/agents/investigation-reviewer.md`)も従う。
 
 **指摘だけを返す。実装の修正はしない。** 観点別のエージェントのうち作業ツリーを書き換えてよいのは
 ミューテーションを当てる `test-reviewer` だけで、その後始末は `test-reviewer` の定義が持つ

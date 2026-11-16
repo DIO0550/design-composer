@@ -1,12 +1,13 @@
 ---
 name: implementation-flow
-description: "design-composer の実装を ゴールの確定 → タスクの分割 → 計画 → サブエージェント(plan-reviewer)による計画検証 → 実装 → 観点別のサブエージェント(*-reviewer)による実装検証 → PR → マージ後の追記 の順で進める。計画は planner、実装は implementer のサブエージェントが担い、親セッションは振り分けと採否と記録を行う指示役になる。計画と却下案は Issue に追記する。機能追加・バグ修正・リファクタリングなど、このリポジトリのソースへ手を入れる依頼を受けたら最初に使用する。「実装して」「直して」「対応して」「Issue #N をやって」「計画を立てて」といった依頼では積極的に使用すること。"
+description: "design-composer の実装を ゴールの確定 → タスクの分割 → 計画 → サブエージェント(plan-reviewer)による計画検証 → 実装 → 観点別のサブエージェント(*-reviewer)による実装検証 → PR → マージ後の追記 の順で進める。計画は planner、実装は implementer のサブエージェントが担い、親セッションは振り分けと採否と記録を行う指示役になる。計画と却下案は Issue に追記する。作業の種類は Issue の `flow:*` ラベル(`flow:feature` / `flow:bugfix` / `flow:refactor` / `flow:investigation`)で決まり、種類のファイルがフェーズに手順を足す・置き換える。機能追加・バグ修正・リファクタリングなど、このリポジトリのソースへ手を入れる依頼を受けたら最初に使用する。ソースを変えずに調べて Issue に答えを書く調査の依頼(`flow:investigation`)でも使用する。「実装して」「直して」「対応して」「調べて」「Issue #N をやって」「計画を立てて」といった依頼では積極的に使用すること。"
 ---
 
 # 実装フロー
 
 実装は次の 8 フェーズを順に通る。**フェーズを飛ばさない。** 飛ばすと決めたなら、
-飛ばした理由を Issue に書く。
+飛ばした理由を Issue に書く。種類のファイル(「作業の種類」)がフェーズを置き換える・
+無くすのは、飛ばすことに当たらない(理由はそのファイルが持つ)。
 
 | # | フェーズ | 出力 |
 | --- | --- | --- |
@@ -21,6 +22,22 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 
 **検証の観点はこのファイルに書かない。** `.claude/agents/` の `plan-reviewer.md` と
 観点別の `*-reviewer.md` が持つ。観点を親のコンテキストへ通さないための分割。
+
+## 作業の種類
+
+**作業の種類は Issue の `flow:*` ラベルで決まる。** 種類ごとの手順は**種類のファイル**が持ち、
+このファイルの各フェーズに足す・置き換える。決め方はフェーズ 1「種類の確定」。
+
+| ラベル | 種類のファイル | 変わるフェーズ |
+| --- | --- | --- |
+| `flow:feature` | 無し(このファイルのまま) | 無し |
+| `flow:bugfix` | [`bugfix.md`](bugfix.md) | 1 / 3 / 5 / 6 / 7 に足す |
+| `flow:refactor` | [`refactor.md`](refactor.md) | 3 / 5 / 6 / 7 に足す |
+| `flow:investigation` | [`investigation.md`](investigation.md) | 1 に足し、3 / 4 / 8 を置き換え、5〜7 は無い |
+
+**検証を軽くする種類は作らない。** どの種類も計画(investigation では調査)の検証を省かない。
+小さな作業向けに検証を省く種類を作ると、「役割の分担」が捨てた「修正の小ささ」の線引きが
+種類の選び方に入り込む。
 
 ## 役割の分担
 
@@ -44,7 +61,7 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
   - 自動修正コマンド(`pnpm exec biome check --write` 等)をフェーズ 7 で走らせる
   - 検証エージェントの書き換えを、基準のコミットへ `git restore` / `git clean` で戻す
     (「サブエージェントの使い方」)
-- Issue・PR 本文を書くのは親。`planner` / `implementer` は返すだけ
+- Issue・PR 本文を書くのは親。`planner` / `implementer` / `investigator` は返すだけ
 - この分担は `implementation-flow` の中だけで、`harness-record` / `harness-growth` には及ばない
 
 ---
@@ -61,6 +78,34 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 - 対応する Issue が無ければ**先に作る**。Issue 無しで実装を始めない(判断の置き場所が無くなる)
 - 仕様の拠り所は `docs/`、UI の拠り所は `docs/Design Composer.html`(`rules/ui-verification.md`)
 
+### 種類の確定
+
+ゴールと一緒に作業の種類(「作業の種類」)を決める。**ラベルは人が決める。** 既存のラベル
+`bug` / `enhancement` / `feature` / `refactor` は分類用で、種類を決めない。
+
+1. Issue の `flow:*` ラベルを読む
+
+   ```bash
+   gh api 'repos/{owner}/{repo}/issues/<番号>' --jq '[.labels[].name | select(startswith("flow:"))]'
+   ```
+
+2. 表にある値が 1 つなら、それが種類。着手のコメントに種類を書く
+3. 0 個 / 2 つ以上 / 表に無い値なら、親が提案する種類と根拠を添えて人に尋ねる
+   - 対話中なら AskUserQuestion で尋ね、**人が答えた種類のラベル**を親が付ける
+     (`gh api -X POST 'repos/{owner}/{repo}/issues/<番号>/labels' -f 'labels[]=<人が答えたラベル>'`。
+     `<人が答えたラベル>` は `flow:bugfix` のようにラベル全体)。
+     2 つ以上・表に無い値を外すのも、人が答えたときだけ
+   - 人がいない起動(Issue の assign から起動した等)なら、提案と根拠をセッションの URL と一緒に
+     Issue に書いて止める
+4. Issue を作るときも、その場で種類を尋ねてラベルを付ける(3 と同じ)
+5. **親が自分で選んだラベルは付けない・外さない。** 親は種類を提案するまでで、決めるのは人。
+   選ぶ側と手順が軽くなって得をする側が同じだと軽い側へ倒れる(`implementation-flow` を通さず
+   検証エージェントだけを呼んだ実例が `harness/case-law/process.md`「単発（まだ語彙にしていない）」の
+   pr-473 にある)。「無ければ `flow:feature`」のような既定値も同じ理由で置かない(ラベルの無い
+   Issue でバグ修正の再現テストが抜ける)
+6. 途中で種類が変わったら、ここへ戻って確定し直し、フェーズ 3 から計画し直す。古い種類のまま
+   検証した計画は使わない。種類に合わない作業だと分かったときも、3 の手順で人に尋ねる
+
 ## フェーズ 2: タスクの分割
 
 `AGENTS.md`「タスクの分割」に従う。判断軸は「**独立してマージできるか**」。
@@ -75,6 +120,7 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 ```text
 ゴール: <ゴール>
 Issue: #<番号>
+種類: <`flow:*` のラベル>
 分割の判断: <分けた / 分けなかった理由と、スコープ外にしたもの>
 ```
 
@@ -154,10 +200,11 @@ Issue: #<番号>
 
 ```text
 ゴール: <ゴール>
+種類: <`flow:*` のラベル>
 計画: <変更するファイルと置くもの / テストケースの一覧 / 却下した案とその理由 / 未決の判断>
 ```
 
-指摘は握りつぶさない。**受け入れるなら前回の計画と採用した指摘を `planner` に渡して直させ、
+指摘は握りつぶさない。**受け入れるなら前回の計画・採用した指摘・種類を `planner` に渡して直させ、
 受け入れないなら理由を Issue に書く。**
 どちらも書かずに実装へ進まない。指摘が計画の前提(ゴール)を揺らしているならフェーズ 1 へ戻る。
 
@@ -169,10 +216,21 @@ Issue: #<番号>
 ```text
 ゴール: <ゴール>
 Issue: #<番号>
+種類: <`flow:*` のラベル>
+工程: <`flow:bugfix` は 再現テスト / 修正、`flow:refactor` は 現状の固定 / リファクタ。この 2 つのときだけ>
 計画: <plan-reviewer を通した計画と却下案>
 ```
 
 - 実装の手順は `.claude/agents/implementer.md` が持つ
+- **`flow:bugfix` / `flow:refactor` では `implementer` を 2 つの工程に分けて起動する。** `implementer` は
+  commit しないので、1 回で書かせると「テストだけが先に入ったコミット」が作れない。工程ごとに何を
+  書かせ、何を確かめるかは種類のファイルのフェーズ 5 が持つ
+  - **第 1 工程はテストだけを書かせる。** 返ってきたら「サブエージェントの使い方」の `git status --porcelain`
+    の突き合わせを、計画の第 1 工程のテストのファイルだけに狭める。種類のファイルの確かめ方で
+    合格したら commit する。これが **第 1 工程のコミット**で、第 2 工程以降はこれと比べる
+  - **第 1 工程に書くものが無いなら、第 1 工程を省く。** 第 2 工程を起動する前の HEAD を第 1 工程のコミットの
+    代わりとして Issue に書く(どの場合に無いかは種類のファイル)
+  - **第 2 工程で実装を変えさせる。** フェーズ 6・7 の直しも第 2 工程の値で渡す
 - **`implementer` が計画から外れて止めて返ってきたら、** 親が外れた理由を Issue に追記してから、
   続けるかを決めて起動し直す。後でまとめて書くと理由が思い出せなくなる
 - **Issue・PR 本文に事実の主張を書いたら、書き終えるたびに親が `claim-verification` スキルで
@@ -187,7 +245,7 @@ Issue: #<番号>
 
 1. 下の表で「呼ぶ条件」に当たるエージェントのうち `test-reviewer` 以外を、1 つのメッセージで
    並列に起動する
-2. 返ってきた指摘の採否を決め、採用したものを `implementer` に渡して直させてから、
+2. 返ってきた指摘の採否を決め、採用したものを種類(と工程)と一緒に `implementer` に渡して直させてから、
    **`test-reviewer` を単独で、前面で起動する**(同じメッセージに
    他のツール呼び出しを並べない)。実装を壊して確かめるので、並べると他のエージェントが壊れた
    状態を実装として読む。背景になると(前面で起動して約 120 秒で移された場合を含む)git 操作の
@@ -234,11 +292,13 @@ diff_text | grep -ciE 'UI 案|Design Composer\.html'   # ui-reviewer の語
 
 ## フェーズ 7: PR
 
+- **PR を出す前に、フェーズ 1「種類の確定」の 1 のコマンドでラベルを読み直す。** 変わっていたら
+  フェーズ 1 へ戻る(同じ節の 6)
 - **PR 本文は差分の説明に絞る。** 判断の履歴は Issue 側にある
 - **本文に `Closes #<Issue 番号>` を書く**(`AGENTS.md`「着手した Issue は、その回で閉じる」)。
   `.github/workflows/pr-closing-issue.yml` が、閉じる Issue を持たない PR を落とす
 - CI(lint / typecheck / test / 視覚差分)を通す。push 前の検査や CI が落ちたら、直しは
-  `implementer` に渡す(判断を伴わない自動修正コマンドだけは親が走らせてよい →「役割の分担」)
+  種類(と工程)と一緒に `implementer` に渡す(判断を伴わない自動修正コマンドだけは親が走らせてよい →「役割の分担」)
 - **PR を出したら `pr-explain` スキルで解説(`explain.json`)を書く**(ページの画面は `pr-explain` スキルの表)。
   振る舞いが変わる push をしたら書き直す(`.claude/skills/pr-explain/`)
 
@@ -325,7 +385,8 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
 - 検証エージェントに実装させない。指摘だけを返させ、直すかどうかはこちらで判断する。
   直すのは `implementer` で、検証エージェントとは別に起動する
 - **`implementer` から返ったら、`git status --porcelain` を「計画のファイル表と、渡した指摘の対象」と
-  突き合わせる。** 一致したら commit して、それを作業ツリーの基準にする(push はフェーズ 7)
+  突き合わせる。** 一致したら commit して、それを作業ツリーの基準にする(push はフェーズ 7)。
+  2 つの工程に分ける種類の第 1 工程は、フェーズ 5 が突き合わせる範囲を狭める
 - **それ以外のエージェントから返ったら、指摘を読む前に作業ツリーが基準のまま
   (`git status --porcelain` が空)かを見る。** エージェント定義に「変更するな」と書いても
   書き換えることがある。戻さずに指摘へ対応すると、`implementer` の変更とエージェントの書き換えが
@@ -358,8 +419,13 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
 | `.claude/agents/planner.md` | 計画を立てるエージェントの受け取るもの・返すもの | フェーズ 3 |
 | `.claude/agents/plan-reviewer.md` | 計画の検証観点(エージェントが読む) | フェーズ 4 |
 | `.claude/agents/implementer.md` | 実装するエージェントの受け取るもの・返すもの | フェーズ 5 / 6 / 7 |
-| `.claude/agents/` の `plan-reviewer.md` 以外の `*-reviewer.md` | 実装の検証観点(エージェントが読む) | フェーズ 6 |
+| `.claude/agents/` の `plan-reviewer.md`・`investigation-reviewer.md` 以外の `*-reviewer.md` | 実装の検証観点(エージェントが読む) | フェーズ 6 |
 | [`reviewer-instructions.md`](reviewer-instructions.md) | 実装の検証の観点別エージェントへの共通の指示(エージェントが読む) | フェーズ 6 |
+| [`bugfix.md`](bugfix.md) | `flow:bugfix` で足す手順 | `flow:bugfix` で、「作業の種類」の表のフェーズ |
+| [`refactor.md`](refactor.md) | `flow:refactor` で足す手順 | `flow:refactor` で、「作業の種類」の表のフェーズ |
+| [`investigation.md`](investigation.md) | `flow:investigation` で足す・置き換える手順 | `flow:investigation` で、「作業の種類」の表のフェーズ |
+| `.claude/agents/investigator.md` | 調査するエージェントの受け取るもの・返すもの(調査結果の項目)・信頼の境界(走らせてよいコマンドの形) | `flow:investigation` の調査 |
+| `.claude/agents/investigation-reviewer.md` | 調査結果の検証観点(エージェントが読む) | `flow:investigation` の調査の検証 |
 | `.claude/skills/claim-verification/SKILL.md` | コメント・doc・PR/Issue 本文の事実主張を書く前に確かめる手順 | フェーズ 3 / 5 |
 | `.claude/skills/pr-explain/SKILL.md` | PR の解説ページの書き方と公開手順 | フェーズ 7 |
 | [`harness/case-law/planning.md`](../../../harness/case-law/planning.md) | 計画で過去に踏んだ実例 | フェーズ 3 |

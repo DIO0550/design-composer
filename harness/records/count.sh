@@ -318,7 +318,9 @@ if [ "${1:-}" = "--shrink" ]; then
   printf '%s\n' "3. 装置の退役候補"
 
   # 段 1 で数えるのは指摘を返す装置(`*-reviewer`)だけ。`planner` / `implementer` /
-  # `harness-counter` は指摘を返さないので出どころに現れない。
+  # `investigator` / `harness-counter` は指摘を返さないので出どころに現れない。
+  # `investigation-reviewer` は指摘を返すが、`flow:investigation` は PR を出さず記録が残らないので
+  # 出どころに現れず、「まだ指摘を残していない」に出続ける。
   # 候補は最後に指摘を残した記録から retire_after 本以上経った装置。記録の総数がそれ未満なら
   # どの装置も以降が届かないので、表ごと出さない
   retire_after=10
