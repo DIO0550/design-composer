@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "pr": 1404,
+  "headBranch": "claude/affectionate-hypatia-ays8kt",
+  "baseBranch": "main",
+  "mergeBase": "5ee4bbd31c8351b3c8429c99b93f1c96756d9c1e",
+  "head": "6d7215ed63370a133e913bece2d1b0a69cd831bb",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/structure-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1387.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "6d7215ed63370a133e913bece2d1b0a69cd831bb",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-16T00:02:37Z",
+      "subject": "ハーネス棚卸し: type の再発(引数の名前・doc が約束する値域を型・入口が受けていない)を structure-reviewer の観点へ足す",
+      "body": "Refs #1403\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbKgD7Xj4wu6Hr12u",
+      "files": [
+        {
+          "path": ".claude/agents/structure-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -51,6 +51,9 @@ model: inherit\n - **boolean や `Option` の組み合わせで矛盾した状態が作れないか。** 作れるなら直和で列挙する\n - **狭い型への `as` が、実行時にその事実を成立させる処理の戻り値以外に現れていないか**\n - **失敗が `throw`、不在が `undefined` / `null` で表されていないか**\n+- **公開関数の引数の名前・doc が約束する値域(「`undefined` になりうる」「単一のファイル名」等)を、\n+  引数の型か入口の検証が受けているか。** doc と型を突き合わせ、受けていなければ担当外にせず挙げる。\n+  `src-tauri/` の公開関数も同じく見る\n \n ## 状態管理の観点\n ",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/pr-1387.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -196,3 +196,4 @@ GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_\n ## 規約への反映\n \n 無し。記録だけを残す(集計と介入は harness-growth の管轄)。\n+- 対策済: `type` 層=観点 at pr-1404",
+          "patchLines": 5,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
