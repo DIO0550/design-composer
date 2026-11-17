@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1411,
+      "title": "棚卸し: comment-reviewer に差分の外の同じモジュールの doc との突き合わせを足す"
+    },
+    {
       "pr": 1409,
       "title": "implementation-flow に作業の種類(flow:*)ごとの手順を足す"
     },
