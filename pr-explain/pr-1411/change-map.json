@@ -1,0 +1,81 @@
+{
+  "version": 2,
+  "pr": 1411,
+  "headBranch": "claude/affectionate-hypatia-g2b9q9",
+  "baseBranch": "main",
+  "mergeBase": "044b16f20f64534442482fa9ad68b58904be89bd",
+  "head": "a880fbdb40e5aea0f8781a04b3f969e2639847a7",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/comment-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1399.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "77b3f1c1480085a2ca450113a2d72bba5e3cebac",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-17T00:02:38Z",
+      "subject": "comment-reviewer: 差分の外にある同じモジュールの doc との突き合わせを観点に足す",
+      "body": "Refs #1410\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SG66FBRp6YzSbWXzK",
+      "files": [
+        {
+          "path": ".claude/agents/comment-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -56,6 +56,7 @@ model: haiku\n   | コメント / doc が名指ししているシンボル名・型名・引数名・パスが、同じ差分内の改名・型変更・層移動の対象である | **改名・移動前の名前をコメント / doc の中に `grep` する**（typecheck も lint も落ちない） | `comment-referent-drift` |\n   | コメント / doc が挙げる列挙・件数（「この◯つ」「◯個」等）が、同じ差分内で項目が増減している | **列挙・件数が指す実体を今の差分で数え直し、書かれた数と付き合わせる** | `comment-enumeration-drift` |\n   | Why / Why not が前提にしている構造（条件・仕組み・置き場所）が、同じ差分内の別の変更で崩れている／同じ挙動を説明する記述が複数箇所にある | **差分の最終形を読み、Why / Why not の前提がまだ成立しているか付き合わせる。複数箇所にある記述は同じタイミングで両方を開く** | `comment-premise-drift` |\n+  | 差分で書いた・直した doc と同じ事実を、**差分の外にある**同じモジュールの doc(モジュール冒頭の doc・同じコンパニオンオブジェクトの兄弟メソッドの `@returns` 等)も書いている | **差分の doc を開いたら、同じファイルの冒頭 doc と兄弟メソッドの doc も開き、同じ事実(対象・経路・既定値)の書きぶりが食い違っていないか・兄弟より粗くないかを付き合わせる**(差分だけを読むと見えない) | `comment-module-sibling-drift` |\n   | 隣接する `/** */` ブロックの付着先・行幅が、周囲の宣言・書式に対してずれている | **ブロックがどの宣言の直前にあるか、同じブロック内の行幅が揃っているかを目視で確認する**（`missing-doc-comments.py` は doc の無いメソッドは拾うが、ブロックが重なって付いていることは拾わない。直前の行が `*/` なら doc ありと読むため） | `comment-block-placement` |\n \n - **書くべき Why / Why not がそもそもコードに無いことがある。** 次の形は読み手が「なぜこれ",
+          "patchLines": 8,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "a880fbdb40e5aea0f8781a04b3f969e2639847a7",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-17T00:02:56Z",
+      "subject": "記録: comment の対策済行を pr-1399 に追記",
+      "body": "Refs #1410\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2SG66FBRp6YzSbWXzK",
+      "files": [
+        {
+          "path": "harness/records/pr-1399.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -143,3 +143,5 @@ GitHub 上の人のレビューは 0 件だった。`get_reviews` / `get_review_\n ## 規約への反映\n \n 無し。記録だけを残す(集計と介入は harness-growth の管轄)。\n+\n+- 対策済: `comment` 層=観点 at pr-1411",
+          "patchLines": 6,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
