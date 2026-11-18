@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1417,
+      "title": "[dcmp] ぼかし（layerBlur / backdropBlur）をスキーマと CSS 出力に入れる"
+    },
+    {
       "pr": 1414,
       "title": "ハーネス棚卸し: harness の実例を rules/coding.md から判例へ移す"
     },
