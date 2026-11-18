@@ -90,14 +90,20 @@ export type TokenPropDefinition = PropDefinitionBase &
   }>;
 
 /**
+ * 生の数値の prop が取りうる範囲。境界の値を含む。上端は省いてよく、省くと上限を持たない
+ * （docs/03「prop 定義のフィールド」の「下端だけの `{ min: 0 }`」）。
+ */
+type LiteralRange = Readonly<{ min: number; max?: number }>;
+
+/**
  * 生の数値をそのまま持つ prop。取りうる値が範囲で決まっているものは `range` で宣言する
- * （宣言しなければ範囲では弾かれない）。
+ * （宣言しなければ範囲では弾かれない）。範囲は下端だけでもよい。
  */
 type NumberLiteralPropDefinition = PropDefinitionBase &
   Readonly<{
     domain: "literal";
     literalType: "number";
-    range?: Range;
+    range?: LiteralRange;
   }>;
 
 /** 生の文字列をそのまま持つ prop。 */
@@ -165,6 +171,9 @@ function literalTypeMismatch(
 /**
  * 範囲を宣言した prop に、その外の値を設定しているときの報告。
  *
+ * 下端だけの範囲では上端を `+Infinity` と読むので、`+Infinity`（JSON の `1e400`）も範囲内に
+ * なる。`NaN` と `-Infinity` は下端との比較で落ちる。
+ *
  * @param name 報告する prop 名
  * @param value その prop に設定されている数値
  * @param range その prop が取りうる範囲。宣言していない prop では `undefined`
@@ -173,21 +182,20 @@ function literalTypeMismatch(
 function collectRangeErrors(
   name: string,
   value: number,
-  range: Range | undefined,
+  range: LiteralRange | undefined,
 ): readonly PropValidationError[] {
   if (range === undefined) {
     return [];
   }
-  if (Range.contains(range, value)) {
+  const max = range.max ?? Number.POSITIVE_INFINITY;
+  if (Range.contains({ min: range.min, max }, value)) {
     return [];
   }
-  return [
-    {
-      kind: "range-violation",
-      prop: name,
-      message: `prop "${name}" must be between ${range.min} and ${range.max}`,
-    },
-  ];
+  const message =
+    range.max === undefined
+      ? `prop "${name}" must be at least ${range.min}`
+      : `prop "${name}" must be between ${range.min} and ${range.max}`;
+  return [{ kind: "range-violation", prop: name, message }];
 }
 
 /**
