@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-t17xaj",
   "baseBranch": "main",
   "mergeBase": "459e6840663548f573d9121fec6fab515e6d0019",
-  "head": "e465438d6768a6505bc6277f3978e806f098b4c7",
+  "head": "6c124e1df1cc3f1e7fee8216a5f67281372f6ab3",
   "groups": [
     {
       "label": "domains / unit",
@@ -137,7 +137,7 @@
           "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
           "status": "M",
           "oldPath": null,
-          "additions": 28,
+          "additions": 52,
           "deletions": 16,
           "changed": true,
           "target": "src/features/editor/components/opened-document-editor/index.tsx"
@@ -159,7 +159,7 @@
           "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
           "status": "A",
           "oldPath": null,
-          "additions": 190,
+          "additions": 194,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -311,8 +311,21 @@
           "changed": false
         },
         {
+          "path": "src/components/action-card/index.tsx",
+          "changed": false
+        },
+        {
           "path": "src/components/button/index.tsx",
           "changed": false
+        },
+        {
+          "path": "src/components/focus-outline/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 0,
+          "changed": true,
+          "target": null
         },
         {
           "path": "src/components/pane-body/index.tsx",
@@ -374,6 +387,14 @@
       {
         "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
         "name": "ピッカーで色を変えると、hex の欄が `#` 無しで追随する"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "name": "色の hex を 3 桁で打って確定したあと Ctrl+Z 1 回で元の色へ戻る"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "name": "色の hex を 3 桁で打って確定すると、一覧の値と hex の欄が 6 桁に広がる"
       },
       {
         "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
@@ -1063,12 +1084,72 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "e4207316636fbaa7f242794f2cbf57c77b2137af",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T17:47:52Z",
+      "subject": "🐛 [Bug Fix]: #1376 色の箱にキーボードフォーカスの枠を描く",
+      "body": "- focus-outline に FocusWithinOutlineClass を足した(FocusOutlineClass と同じ\n  青・2px・offset 2 の枠を、中の要素がフォーカスを持つ間だけ外側に描く)\n- 色の箱の根に付け、見本・6 桁・不透明度のどこへ Tab で移っても箱全体が\n  枠で囲まれるようにした\n\n背景:\nPR #1418 のレビュー(Devin, P2)で、箱の中の 6 桁と不透明度の欄が\noutline-none で、箱にも代わりの表示が無いため、色・影・stop の hex の欄へ\nTab で移ると現在位置がキャレット以外で分からないと指摘された。実物を\n読んで再現できることを確かめた。\n\n採用理由:\n箱の根に focus-within で描いた。UI 案では箱全体が 1 つの入力に見える形で、\n欄ごとに FocusOutlineClass を付けると箱の枠の内側に枠が入れ子で出る。\n単独の入力欄がブラウザ既定の輪を欄の外側に出すのと揃う。青を既定から\n離した理由(#1062)を 1 か所で持つため、同じモジュールに並べた。\n\n代替案:\n- 6 桁と不透明度の欄から outline-none を外す: 箱の枠の内側に既定の輪が\n  出て、箱の形が崩れる\n- 欄ごとに FocusOutlineClass を付ける: 同じく入れ子の枠になる\n\n影響とトレードオフ:\nUI 案にフォーカス時の表示は無い(展開したマークアップで focus は 0 件)。\nStorybook でColor / 影 / stop の箱に Tab で移った 9 通りを撮り、箱の\noutline が solid rgb(10,116,201) になることを確かめた。静止画の視覚差分\nには写らない。\n\n参考:\n- PR #1418 の Devin のレビューコメント(P2)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "src/components/focus-outline/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 0,
+          "patch": "@@ -5,3 +5,10 @@\n  */\n export const FocusOutlineClass =\n   \"focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2\";\n+\n+/**\n+ * 枠の無い入力欄を並べて 1 つの入力に見せる箱へ、中の欄にフォーカスがある間だけ `FocusOutlineClass` と同じ枠を描く\n+ * Tailwind のクラス。\n+ */\n+export const FocusWithinOutlineClass =\n+  \"focus-within:outline-2 focus-within:outline-[#0a74c9] focus-within:outline-offset-2\";",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 1,
+          "patch": "@@ -1,4 +1,5 @@\n import { type ReactElement, useState } from \"react\";\n+import { FocusWithinOutlineClass } from \"@/components/focus-outline\";\n import type { Rgb } from \"@/domains/dcmp/token\";\n import {\n   EditContinuities,\n@@ -107,8 +108,11 @@ function HexColorInput({\n     /*\n      * 根を `relative` にするのは、`sr-only` の見出しが `position: absolute` で、基準が無いと右ペインのスクロール枠を\n      * 抜けて文書を伸ばすため（`shorthand-row` と同じ形）。happy-dom では落ちず、気づく手段は Storybook の視覚差分だけ。\n+     * フォーカスの枠を箱に描くのは、6 桁と不透明度の欄が枠を持たず（`outline-none`）、欄ごとに描くと箱の中に枠が入れ子で出るため。\n      */\n-    <div className=\"relative flex h-7 items-center gap-1 rounded-[5px] border border-[#e6e6e6] px-2 font-mono text-[11px]\">\n+    <div\n+      className={`relative flex h-7 items-center gap-1 rounded-[5px] border border-[#e6e6e6] px-2 font-mono text-[11px] ${FocusWithinOutlineClass}`}\n+    >\n       <label htmlFor={pickerId} className=\"sr-only\">\n         {color.picker.label}\n       </label>",
+          "patchLines": 19,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "6c124e1df1cc3f1e7fee8216a5f67281372f6ab3",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T17:48:00Z",
+      "subject": "🧪 [Tests]: #1376 3 桁の hex の確定を画面全体の通しで確かめる",
+      "body": "- 色の hex を 3 桁で打って確定すると、一覧の値と hex の欄が 6 桁に広がる\n- 色の hex を 3 桁で打って確定したあと Ctrl+Z 1 回で元の色へ戻る\n\n背景:\nPR #1418 のレビュー(Devin, P3)で、3 桁の確定を確かめるテストが\nコンポーネントのコールバックの引数だけを見ており、実エディタで色と欄が\n更新されない回帰を検出できないと指摘された。\n\n採用理由:\n既存の通しのテスト(# 無しの 6 桁で一覧が変わる / hex を 2 回打って undo)\nと同じ形で、一覧の行・欄の値・undo 後の色を観測する。表示が広がることと\nundo で戻ることは別の振る舞いなので 2 件に分けた。3 桁の展開を外す壊し方で\n2 件とも落ちることを確かめた。\n\n代替案:\n- コンポーネントのテストを通しに置き換える: コンポーネントのテストは\n  確定のまとまり(Separate)を見る役目があるので残した\n\n影響とトレードオフ:\nテストの追加だけ。\n\n参考:\n- PR #1418 の Devin のレビューコメント(P3)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 0,
+          "patch": "@@ -368,6 +368,30 @@ test(\"色の hex を 2 回打って確定すると Ctrl+Z 1 回で 1 回目の\n   expect(row(\"primary #ff0000\")).toBeDefined();\n });\n \n+test(\"色の hex を 3 桁で打って確定すると、一覧の値と hex の欄が 6 桁に広がる\", async () => {\n+  await renderTokensView();\n+  await selectRow(\"primary\");\n+\n+  await userEvent.clear(field(\"hex\"));\n+  await userEvent.type(field(\"hex\"), \"abc{Enter}\");\n+\n+  expect(row(\"primary #aabbcc\")).toBeDefined();\n+  expect(field(\"hex\")).toHaveProperty(\"value\", \"aabbcc\");\n+});\n+\n+test(\"色の hex を 3 桁で打って確定したあと Ctrl+Z 1 回で元の色へ戻る\", async () => {\n+  await renderTokensView();\n+  await selectRow(\"primary\");\n+\n+  await userEvent.clear(field(\"hex\"));\n+  await userEvent.type(field(\"hex\"), \"abc{Enter}\");\n+  expect(row(\"primary #aabbcc\")).toBeDefined();\n+\n+  await userEvent.keyboard(\"{Control>}z{/Control}\");\n+\n+  expect(row(\"primary #3b82f6\")).toBeDefined();\n+});\n+\n test(\"ピッカーで色を変えると、hex の欄が `#` 無しで追随する\", async () => {\n   await renderTokensView();\n   await selectRow(\"primary\");",
+          "patchLines": 31,
+          "truncated": false
+        }
+      ]
     }
   ],
   "dependencies": [
     {
       "from": ".github/scripts/build-pr-explain-cases.sh",
       "to": "docs/06-ui.md",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/action-card/index.tsx",
+      "to": "src/components/focus-outline/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/button/index.tsx",
+      "to": "src/components/focus-outline/index.ts",
       "status": "kept"
     },
     {
@@ -1220,6 +1301,11 @@
       "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.title.test.tsx",
       "to": "src/features/editor/features/tokens/components/token-editor/index.tsx",
       "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "to": "src/components/focus-outline/index.ts",
+      "status": "added"
     },
     {
       "from": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
