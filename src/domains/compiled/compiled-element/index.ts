@@ -16,7 +16,7 @@ import type { Props, PropValue } from "@/domains/dcmp/node";
 import { Padding } from "@/domains/dcmp/padding";
 import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
 import {
-  type BoxSchema,
+  type PrimitiveSchemas,
   TokenPropKinds,
   type TokenPropName,
 } from "@/domains/dcmp/primitive-schema";
@@ -226,26 +226,27 @@ function opacityDeclarations(
     : [CssDeclaration.create("opacity", String(opacity))];
 }
 
+/** ぼかしを持つ primitive (Box / Ellipse) の両方が宣言している prop 名。 */
+type BlurFilterPropName = keyof (typeof PrimitiveSchemas)["Box"]["props"] &
+  keyof (typeof PrimitiveSchemas)["Ellipse"]["props"];
+
 /**
  * ぼかしの prop → その prop が決める CSS プロパティ (docs/03「HTML/CSS へのコンパイル規則」
  * の表)。並びが宣言の出力順になる。
+ *
+ * `-webkit-backdrop-filter` を出さないのは、WebKit 系 webview で接頭辞が要るかを確かめて
+ * いないため。docs/03 の表どおり接頭辞なしだけを出す。
  */
 const BlurFilterProperties = {
   layerBlur: "filter",
   backdropBlur: "backdrop-filter",
-} as const satisfies Readonly<
-  Partial<Record<keyof (typeof BoxSchema)["props"], CssProperty>>
->;
+} as const satisfies Readonly<Partial<Record<BlurFilterPropName, CssProperty>>>;
 
 /** ぼかさない強さ。 */
 const NoBlur = 0;
 
 /**
- * ぼかしの props を `blur()` の宣言にする (docs/03 の表)。
- *
- * 0 を出さないのは、`blur(0px)` でもプロパティが `none` でなくなり、そのノードが新しい
- * stacking context になるため (docs/03 の表「`rotation` の行と同じ理由」)。取りうる範囲（0 以上）の外を丸めないのは、範囲の判定を
- * `DesignDocument.collectErrors` と 2 箇所に持たないため。負の `blur()` は CSS が宣言ごと捨てる。
+ * ぼかしの props を `blur()` の宣言にする (docs/03 の表の `layerBlur` / `backdropBlur` の行)。
  *
  * @param props ノードに設定されている props
  * @returns 0 でない数値を持つ prop ごとに宣言 1 件。0 と数値でない値（ファイル由来の不正な
@@ -256,6 +257,7 @@ function blurFilterDeclarations(props: Props): readonly CssDeclarationType[] {
     ([prop, property]): readonly CssDeclarationType[] => {
       const blur = props[prop];
       const blurs = typeof blur === "number" && blur !== NoBlur;
+
       return blurs
         ? [CssDeclaration.create(property, `blur(${Px.create(blur)})`)]
         : [];
