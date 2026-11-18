@@ -155,6 +155,72 @@ test("範囲を宣言していない prop は、範囲では弾かれない", ()
   ).toEqual([]);
 });
 
+/** 下端だけを宣言した生リテラルの prop 定義（Box の `layerBlur` と同じ形）。 */
+function definitionWithLowerBound() {
+  return {
+    domain: "literal",
+    literalType: "number",
+    range: { min: 0 },
+    group: "appearance",
+  } as const;
+}
+
+test("下端だけを宣言した prop に下端そのものの値を設定するとエラーにならない", () => {
+  expect(
+    PropDefinition.collectErrors(
+      definitionWithLowerBound(),
+      { name: "layerBlur", value: 0 },
+      TokenSet.empty(),
+    ),
+  ).toEqual([]);
+});
+
+test("下端だけを宣言した prop に大きな値を設定してもエラーにならない", () => {
+  expect(
+    PropDefinition.collectErrors(
+      definitionWithLowerBound(),
+      { name: "layerBlur", value: 1e9 },
+      TokenSet.empty(),
+    ),
+  ).toEqual([]);
+});
+
+test("下端だけを宣言した prop に Infinity を設定してもエラーにならない", () => {
+  expect(
+    PropDefinition.collectErrors(
+      definitionWithLowerBound(),
+      { name: "layerBlur", value: Number.POSITIVE_INFINITY },
+      TokenSet.empty(),
+    ),
+  ).toEqual([]);
+});
+
+test("下端だけを宣言した prop に下端を下回る値を設定すると range-violation になる", () => {
+  expect(
+    PropDefinition.collectErrors(
+      definitionWithLowerBound(),
+      { name: "layerBlur", value: -1 },
+      TokenSet.empty(),
+    ),
+  ).toEqual([
+    expect.objectContaining({ kind: "range-violation", prop: "layerBlur" }),
+  ]);
+});
+
+test("下端だけを宣言した prop の範囲違反は、下端以上であることを求める文で報告される", () => {
+  expect(
+    PropDefinition.collectErrors(
+      definitionWithLowerBound(),
+      { name: "layerBlur", value: -1 },
+      TokenSet.empty(),
+    ),
+  ).toEqual([
+    expect.objectContaining({
+      message: 'prop "layerBlur" must be at least 0',
+    }),
+  ]);
+});
+
 test("トークン参照の prop にトークンセットに存在する名前を設定するとエラーにならない", () => {
   const definition = {
     domain: "token",
