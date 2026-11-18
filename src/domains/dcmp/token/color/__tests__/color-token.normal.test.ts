@@ -70,3 +70,7 @@ test("alpha を持たない色の RGB を差し替えると alpha は付かな�
 test("大文字で書かれていた alpha も小文字で引き継がれる", () => {
   expect(ColorToken.withRgb("#0000001A", rgb("#AABBCC"))).toBe("#aabbcc1a");
 });
+
+test("3 桁の hex は、各桁を重ねた 6 桁の RGB になる", () => {
+  expect(Rgb.create("#ABC")).toEqual(Option.some("#aabbcc"));
+});
