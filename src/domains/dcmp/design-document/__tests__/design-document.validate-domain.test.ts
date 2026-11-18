@@ -1,5 +1,5 @@
 import { expect, test } from "vitest";
-import { DesignDocument } from "../index";
+import { DesignDocument, DocumentTemplate } from "../index";
 
 test("enum 外の値を指定すると enum-violation エラーになる", () => {
   const document = DesignDocument.create({
@@ -74,6 +74,52 @@ test("宣言された範囲を外れた値を指定すると range-violation エ
       kind: "range-violation",
       nodeName: "box-1",
       prop: "opacity",
+    }),
+  ]);
+});
+
+test("Box に負の layerBlur を指定すると range-violation エラーになる", () => {
+  const document = DesignDocument.create({
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [{ name: "box-1", type: "Box", props: { layerBlur: -1 } }],
+      },
+    ],
+  });
+
+  expect(DesignDocument.collectErrors(document)).toEqual([
+    expect.objectContaining({
+      kind: "range-violation",
+      nodeName: "box-1",
+      prop: "layerBlur",
+    }),
+  ]);
+});
+
+test("Ellipse に負の backdropBlur を指定すると range-violation エラーになる", () => {
+  // Ellipse の既定の塗りが指すトークンを置き、範囲違反だけが報告される状態にする
+  const document = DesignDocument.create({
+    tokens: DocumentTemplate.Default.tokens,
+    artboards: [
+      {
+        name: "screen",
+        width: 375,
+        height: 812,
+        children: [
+          { name: "dot", type: "Ellipse", props: { backdropBlur: -1 } },
+        ],
+      },
+    ],
+  });
+
+  expect(DesignDocument.collectErrors(document)).toEqual([
+    expect.objectContaining({
+      kind: "range-violation",
+      nodeName: "dot",
+      prop: "backdropBlur",
     }),
   ]);
 });

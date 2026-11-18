@@ -133,3 +133,29 @@ test("props でロックを指定しても artboard はロックしていない�
 
   expect(props.locking).toBe("unlocked");
 });
+
+test("props で背後のぼかしを指定しても artboard の背後はぼかさない", () => {
+  const props = Artboard.boxProps(
+    Artboard.create({
+      name: "login-screen",
+      width: 375,
+      height: 812,
+      props: { backdropBlur: 8 },
+    }),
+  );
+
+  expect(props.backdropBlur).toBe(0);
+});
+
+test("props でノード自身のぼかしを指定すると artboard はその値で解決される", () => {
+  const props = Artboard.boxProps(
+    Artboard.create({
+      name: "login-screen",
+      width: 375,
+      height: 812,
+      props: { layerBlur: 8 },
+    }),
+  );
+
+  expect(props.layerBlur).toBe(8);
+});

@@ -66,3 +66,11 @@ test("最小 / 最大のサイズは artboard では読み捨てるので、パ�
 test("ロックは artboard では読み捨てるので、パネルに出さない", () => {
   expect(Object.keys(Artboard.propDefinitions())).not.toContain("locking");
 });
+
+test("ノード自身のぼかしは artboard でも受け付ける", () => {
+  expect(Object.keys(Artboard.propDefinitions())).toContain("layerBlur");
+});
+
+test("背後のぼかしは artboard では読み捨てるので、パネルに出さない", () => {
+  expect(Object.keys(Artboard.propDefinitions())).not.toContain("backdropBlur");
+});

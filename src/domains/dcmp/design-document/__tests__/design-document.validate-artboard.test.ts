@@ -124,6 +124,12 @@ test("artboard の props に書いた回転は読み捨てられ、未知の pro
   expect(errors).toEqual(UnknownPropErrorOnly);
 });
 
+test("artboard の props に書いた背後のぼかしは読み捨てられ、未知の prop のエラーにならない", () => {
+  const errors = collectErrorsBesideUnknownProp({ backdropBlur: 8 });
+
+  expect(errors).toEqual(UnknownPropErrorOnly);
+});
+
 test("artboard の props に書いたサイズのモードと長さは読み捨てられ、未知の prop のエラーにならない", () => {
   const errors = collectErrorsBesideUnknownProp({
     widthMode: "hug",
@@ -154,6 +160,18 @@ test("読み捨てる prop でも、artboard の props に数値でない回転�
       kind: "literal-type-mismatch",
       nodeName: "screen",
       prop: "rotation",
+    }),
+  ]);
+});
+
+test("読み捨てる prop でも、artboard の props に負の背後のぼかしを書くと範囲違反のエラーになる", () => {
+  const errors = collectSingleArtboardErrors({ backdropBlur: -1 });
+
+  expect(errors).toEqual([
+    expect.objectContaining({
+      kind: "range-violation",
+      nodeName: "screen",
+      prop: "backdropBlur",
     }),
   ]);
 });
