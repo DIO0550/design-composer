@@ -12,11 +12,13 @@ import { Option } from "@/utils/Option";
 import { ColorField } from "./color-field";
 import { GradientFields } from "./gradient-fields";
 import {
+  changeRawOfTarget,
   DraftField,
   DraftFieldLooks,
-  FieldRow,
+  FieldDensities,
   LabeledRow,
   type SetTokenValue,
+  ValueField,
 } from "./value-field";
 
 /** トークンが選ばれていないときに本文へ出す知らせ。 */
@@ -121,12 +123,12 @@ function TokenEditorTitle({
 }
 
 /**
- * 値の欄の 1 行。数値・文言の欄か、色の箱（読めない色はテキスト欄）に見出しを左に添える。
+ * 値の欄の 1 行の入力欄。数値・文言の欄か、色の箱（読めない色はテキスト欄）。
  *
- * @param id 行の欄の id。色の箱では 6 桁の欄（読めない色はテキスト欄）の id
- * @returns 見出しを左に置いた 1 行
+ * @param id 欄の id。色の箱では 6 桁の欄（読めない色はテキスト欄）の id
+ * @returns 見出しを除いた入力欄
  */
-function ValueRow({
+function ValueRowControl({
   id,
   row,
   onSetTokenValue,
@@ -138,33 +140,21 @@ function ValueRow({
   switch (row.kind) {
     case "field":
       return (
-        <FieldRow id={id} field={row.field} onSetTokenValue={onSetTokenValue} />
+        <ValueField
+          id={id}
+          input={row.field.input}
+          density={FieldDensities.Regular}
+          onChangeRaw={changeRawOfTarget(row.field.target, onSetTokenValue)}
+        />
       );
     case "color":
       return (
-        <LabeledRow htmlFor={id} label={row.color.caption.label}>
-          <ColorField
-            id={id}
-            color={row.color}
-            onSetTokenValue={onSetTokenValue}
-          />
-        </LabeledRow>
+        <ColorField
+          id={id}
+          color={row.color}
+          onSetTokenValue={onSetTokenValue}
+        />
       );
-  }
-}
-
-/**
- * 行の識別子。1 つのトークンの中で一意。
- *
- * @param row 値の欄の 1 行
- * @returns 数値・文言の欄はその名前、色は 6 桁の欄（読めない色はテキスト欄）の名前
- */
-function rowNameOf(row: TokenControlRow): string {
-  switch (row.kind) {
-    case "field":
-      return row.field.name;
-    case "color":
-      return row.color.caption.name;
   }
 }
 
@@ -177,8 +167,8 @@ function rowNameOf(row: TokenControlRow): string {
  * だけで、種別名では分岐しない。複合オブジェクトの種別（shadows / typography）はフィールドの
  * 数だけ行が並ぶ。
  *
- * @returns 名前の欄・値の入力欄（グラデーションならプレビュー・角度・stop の行）・削除の
- *   ボタンと、参照元の一覧。トークンを選んでいなければ、選ばれていないことの知らせ
+ * @returns 値の入力欄（グラデーションならプレビュー・角度・stop の行）・名前の欄・参照元の
+ *   一覧・削除のボタン。トークンを選んでいなければ、選ばれていないことの知らせ
  */
 function TokenEditorBody({
   selection,
@@ -206,20 +196,30 @@ function TokenEditorBody({
   return (
     <section aria-label="トークン編集" className="flex flex-col gap-3 text-sm">
       {valueFields.kind === "rows" ? (
-        valueFields.rows.map((row) => (
+        valueFields.rows.map((row) => {
+          const caption = TokenControl.captionOf(row);
+          const id = `${valueId}-${caption.name}`;
+
           /*
            * 下書きの取り直しの単位。行は `name` で一意に指す。
            *
            * 値の追随は下書きの欄が key に現在値を入れて行う。行の key に値を
            * 入れるとピッカーが動かすたびに作り直され、undo を 1 件にまとめられない。
            */
-          <ValueRow
-            key={`${tokenKey}/${rowNameOf(row)}`}
-            id={`${valueId}-${rowNameOf(row)}`}
-            row={row}
-            onSetTokenValue={onSetTokenValue}
-          />
-        ))
+          return (
+            <LabeledRow
+              key={`${tokenKey}/${caption.name}`}
+              htmlFor={id}
+              label={caption.label}
+            >
+              <ValueRowControl
+                id={id}
+                row={row}
+                onSetTokenValue={onSetTokenValue}
+              />
+            </LabeledRow>
+          );
+        })
       ) : (
         <GradientFields
           gradient={valueFields.gradient}

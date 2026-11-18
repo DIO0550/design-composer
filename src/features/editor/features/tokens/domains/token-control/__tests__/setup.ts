@@ -13,6 +13,7 @@ import {
   type TokenControlFieldOf,
   type TokenControlRow,
 } from "@/features/editor/features/tokens/domains/token-control";
+import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
 /**
@@ -100,11 +101,21 @@ export function fieldOf(
   name: string,
   label: string,
 ): TokenControlFieldOf<"number" | "text"> {
-  const fields = rowsOf(kind, name).flatMap((row) =>
-    row.kind === "field" ? [row.field] : [],
+  const fields = ArrayEx.filterMap(rowsOf(kind, name), (row) =>
+    row.kind === "field" ? Option.some(row.field) : Option.none,
   );
   return Option.unwrap(
     Option.fromNullable(fields.find((field) => field.label === label)),
+  );
+}
+
+/** 選択したトークンの値の欄に並ぶ、色の欄（箱か、読めない色のテキスト欄）。 */
+export function colorControlsIn(
+  kind: TokenKind,
+  name: string,
+): readonly TokenColorControl[] {
+  return ArrayEx.filterMap(rowsOf(kind, name), (row) =>
+    row.kind === "color" ? Option.some(row.color) : Option.none,
   );
 }
 
@@ -113,11 +124,11 @@ export function fieldOf(
  *
  * @throws 色の行を持たないとき。テストを落とすため
  */
-export function colorRowOf(kind: TokenKind, name: string): TokenColorControl {
-  const colors = rowsOf(kind, name).flatMap((row) =>
-    row.kind === "color" ? [row.color] : [],
-  );
-  return Option.unwrap(Option.fromNullable(colors[0]));
+export function selectedColorControl(
+  kind: TokenKind,
+  name: string,
+): TokenColorControl {
+  return Option.unwrap(ArrayEx.first(colorControlsIn(kind, name)));
 }
 
 /**
@@ -125,7 +136,7 @@ export function colorRowOf(kind: TokenKind, name: string): TokenColorControl {
  *
  * @throws 色が読めずテキスト欄になっているとき。テストを落とすため
  */
-export function hexOf(color: TokenColorControl): HexColorControl {
+export function hexControlOf(color: TokenColorControl): HexColorControl {
   if (color.kind !== "hex") {
     throw new Error(`色の欄は ${color.kind} で、箱ではない`);
   }
@@ -133,6 +144,9 @@ export function hexOf(color: TokenColorControl): HexColorControl {
 }
 
 /** 選択したトークンの、hex として読めた色の箱。 */
-export function hexColorOf(kind: TokenKind, name: string): HexColorControl {
-  return hexOf(colorRowOf(kind, name));
+export function selectedHexControl(
+  kind: TokenKind,
+  name: string,
+): HexColorControl {
+  return hexControlOf(selectedColorControl(kind, name));
 }

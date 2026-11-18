@@ -14,6 +14,7 @@ import { Option } from "@/utils/Option";
 import {
   type ChangeRaw,
   changeRawOf,
+  changeRawOfTarget,
   DraftField,
   DraftFieldLooks,
   type SetTokenValue,
@@ -63,8 +64,9 @@ function ColorPickerField({
 }
 
 /**
- * 見本・`#`・6 桁・不透明度を 1 つに入れた箱（UI 案 docs/Design Composer.html の Color の
- * エディタの `hex`）。6 桁の欄の見出しは呼び出し側が置く。
+ * `#`・6 桁・右端の不透明度を 1 つに入れた箱（UI 案 docs/Design Composer.html の Color の
+ * エディタの `hex`）に、左端の見本を足したもの。見本は UI 案に無く、#1376 で足した。
+ * 6 桁の欄の見出しは呼び出し側が置く。
  *
  * @returns 見本（ピッカー）・灰色の `#`・6 桁の欄・右端の不透明度の欄と `%`
  */
@@ -78,10 +80,9 @@ function HexColorInput({
   onSetTokenValue: SetTokenValue;
 }>): ReactElement {
   /*
-   * 文書の持ち主は親（undo の履歴ごと）で、世代はこの欄の表示だけが使うので、1 つの reducer に
-   * まとめる連動 state ではない。世代を進めるのは、`ABC` のように通っても値が変わらない確定では
-   * key が動かず下書きが残るため。`changeRawOf` に成否を返させる案は、成否を使わない他の呼び出し
-   * 側まで戻り値を受けることになるので採らない。
+   * 確定の回数を key に混ぜるのは、`ABC` のように通っても値が変わらない確定では key が動かず下書きが残るため。
+   * 回数はこの欄の表示だけが使い、文書（undo の履歴ごと親が持つ）と連動しないので reducer にまとめない。
+   * `changeRawOf` に成否を返させないのは、成否を使わない他の呼び出し側まで戻り値を受けることになるため。
    */
   const [hexCommits, setHexCommits] = useState(0);
   const commitHex = (raw: string) => {
@@ -89,9 +90,11 @@ function HexColorInput({
     if (!Option.isSome(value)) {
       return;
     }
+
     onSetTokenValue(value.value, EditContinuities.Separate);
     setHexCommits((count) => count + 1);
   };
+
   const changeAlpha = changeRawOf(
     (raw) => TokenControl.valueFromAlpha(color.target, raw),
     onSetTokenValue,
@@ -108,10 +111,7 @@ function HexColorInput({
       <ColorPickerField
         id={pickerId}
         value={color.rgb}
-        onChangeRaw={changeRawOf(
-          (raw) => TokenControl.valueFrom(color.target, raw),
-          onSetTokenValue,
-        )}
+        onChangeRaw={changeRawOfTarget(color.target, onSetTokenValue)}
       />
       <span aria-hidden="true" className="text-[#b3b3b3]">
         #
@@ -127,7 +127,7 @@ function HexColorInput({
       <label htmlFor={alphaId} className="sr-only">
         {color.alpha.label}
       </label>
-      {/* 灰色に沈めた不透明度を、打っている間だけ他の字と同じ色に戻す */}
+      {/* `UnitField` に寄せないのは、UI 案の実測で箱の中の `%` は 10px・灰色で、打つ間だけ字色を戻すため */}
       <span className="ml-auto flex shrink-0 items-center text-[#b3b3b3] text-[10px] focus-within:text-[#1e1e1e]">
         <DraftField
           key={color.alphaPercent}
@@ -159,10 +159,6 @@ export function ColorField({
   color: TokenColorControl;
   onSetTokenValue: SetTokenValue;
 }>): ReactElement {
-  const changeColorText = changeRawOf(
-    (raw) => TokenControl.valueFrom(color.target, raw),
-    onSetTokenValue,
-  );
   switch (color.kind) {
     case "hex":
       return (
@@ -172,7 +168,9 @@ export function ColorField({
           onSetTokenValue={onSetTokenValue}
         />
       );
-    case "text":
+    case "text": {
+      const changeColorText = changeRawOfTarget(color.target, onSetTokenValue);
+
       return (
         <DraftField
           key={color.value}
@@ -183,5 +181,6 @@ export function ColorField({
           onCommit={(raw) => changeColorText(raw, EditContinuities.Separate)}
         />
       );
+    }
   }
 }

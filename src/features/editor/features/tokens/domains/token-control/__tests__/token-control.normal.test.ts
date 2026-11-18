@@ -5,11 +5,18 @@ import { TokenSelection } from "@/domains/session/token-selection";
 import { Font } from "@/utils/Font";
 import { Option } from "@/utils/Option";
 import { TokenControl, type TokenControlRow, TokenSection } from "../index";
-import { fieldOf, hexColorOf, rowsOf, setupDocument } from "./setup";
+import {
+  colorControlsIn,
+  fieldOf,
+  hexControlOf,
+  rowsOf,
+  selectedHexControl,
+  setupDocument,
+} from "./setup";
 
 /** 行の見出し。色の箱は 6 桁の欄の見出し。 */
 function rowLabelOf(row: TokenControlRow): string {
-  return row.kind === "field" ? row.field.label : row.color.caption.label;
+  return TokenControl.captionOf(row).label;
 }
 
 function sectionOf(document: DesignDocument, kind: TokenKind): TokenSection {
@@ -125,7 +132,7 @@ test("色を選ぶと、見本・hex・不透明度が 1 行の色の欄にま�
 });
 
 test("alpha を持つ色でもカラーピッカーに渡るのは6桁だけになる", () => {
-  expect(hexColorOf("colors", "veil").rgb).toBe("#3b82f6");
+  expect(selectedHexControl("colors", "veil").rgb).toBe("#3b82f6");
 });
 
 test("長さを選ぶと数値の入力欄が1つ出る", () => {
@@ -162,10 +169,8 @@ test("影を選ぶとフィールドごとの欄が仕様の順で並び、色�
 });
 
 test("影の色だけが見本・hex・不透明度の箱になり、見本の読み上げ名は `色` になる", () => {
-  const pickerLabels = rowsOf("shadows", "sm").flatMap((row) =>
-    row.kind === "color" && row.color.kind === "hex"
-      ? [row.color.picker.label]
-      : [],
+  const pickerLabels = colorControlsIn("shadows", "sm").map(
+    (color) => hexControlOf(color).picker.label,
   );
 
   expect(pickerLabels).toEqual(["色"]);
@@ -216,7 +221,7 @@ test("数値として読めない入力では値を変えない", () => {
 });
 
 test("カラーピッカーが返した hex はそのまま色の値になる", () => {
-  const color = hexColorOf("colors", "primary");
+  const color = selectedHexControl("colors", "primary");
 
   expect(TokenControl.valueFrom(color.target, "#00ff00")).toEqual(
     Option.some({ kind: "colors", value: "#00ff00" }),
@@ -279,7 +284,7 @@ test("書体のフォントを空欄にすると指定が外れる", () => {
 });
 
 test("ピッカーの口では `#` の無い 6 桁も 8 桁も色を変えない", () => {
-  const color = hexColorOf("colors", "primary");
+  const color = selectedHexControl("colors", "primary");
 
   expect(TokenControl.valueFrom(color.target, "3b82f6")).toEqual(Option.none);
   expect(TokenControl.valueFrom(color.target, "#00ff0080")).toEqual(
@@ -288,7 +293,7 @@ test("ピッカーの口では `#` の無い 6 桁も 8 桁も色を変えない
 });
 
 test("影の色をピッカーで選び直しても元の alpha は残る", () => {
-  const color = hexColorOf("shadows", "sm");
+  const color = selectedHexControl("shadows", "sm");
 
   expect(TokenControl.valueFrom(color.target, "#ff0000")).toEqual(
     Option.some({

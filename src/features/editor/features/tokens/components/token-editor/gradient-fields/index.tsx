@@ -1,14 +1,11 @@
 import type { ReactElement } from "react";
 import { Button, ButtonKinds } from "@/components/button";
 import { EditContinuities } from "@/domains/session/edit-continuity";
-import {
-  type GradientControl,
-  TokenControl,
-} from "@/features/editor/features/tokens/domains/token-control";
+import type { GradientControl } from "@/features/editor/features/tokens/domains/token-control";
 import { Option } from "@/utils/Option";
 import { ColorField } from "../color-field";
 import {
-  changeRawOf,
+  changeRawOfTarget,
   FieldDensities,
   FieldRow,
   type SetTokenValue,
@@ -110,10 +107,7 @@ export function GradientFields({
               id={fieldIdOf(row.ratio)}
               input={row.ratio.input}
               density={FieldDensities.Compact}
-              onChangeRaw={changeRawOf(
-                (raw) => TokenControl.valueFrom(row.ratio.target, raw),
-                onSetTokenValue,
-              )}
+              onChangeRaw={changeRawOfTarget(row.ratio.target, onSetTokenValue)}
             />
           </div>
           <div className="relative min-w-0 flex-1">

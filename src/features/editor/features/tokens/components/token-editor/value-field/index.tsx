@@ -8,6 +8,7 @@ import {
   TokenControl,
   type TokenControlField,
   type TokenControlInput,
+  type TokenFieldTarget,
 } from "@/features/editor/features/tokens/domains/token-control";
 import type { ValueOf } from "@/types/ValueOf";
 import { Option } from "@/utils/Option";
@@ -44,7 +45,7 @@ export const DraftFieldLooks = {
 } as const;
 
 /** 下書きの欄の見た目。 */
-export type DraftFieldLook = ValueOf<typeof DraftFieldLooks>;
+type DraftFieldLook = ValueOf<typeof DraftFieldLooks>;
 
 /**
  * 下書きの欄の綴り。1 行に比率・色の欄・− の 3 つを並べる stop の行は、右ペインの幅に収めるため
@@ -64,7 +65,10 @@ const UnitGapClasses = {
   compact: "gap-1",
 } as const satisfies Readonly<Record<FieldDensity, string>>;
 
-/** 左に置く見出しの綴り。字はプロパティパネルのラベル欄と同じで、幅は UI 案の 52px。 */
+/**
+ * 左に置く見出しの綴り。字はプロパティパネルのラベル欄と同じで、幅は UI 案の 52px。
+ * 幅ごと `LabelClass` を借りないのは、あちらは `Width Mode` を収めるため 5.25rem に広げてあるから。
+ */
 const RowLabelClass = "w-[52px] shrink-0 truncate text-[11px] text-gray-500";
 
 /**
@@ -238,6 +242,23 @@ export function changeRawOf(
 }
 
 /**
+ * その書き戻し先の欄に打たれた文字列を、`TokenControl.valueFrom` で読んで送る手続き。
+ *
+ * @param target 欄が書き戻す先
+ * @param onSetTokenValue 読めた値と続き方を受け取る先
+ * @returns 欄の文字列と続き方を受け取る手続き
+ */
+export function changeRawOfTarget(
+  target: TokenFieldTarget,
+  onSetTokenValue: SetTokenValue,
+): ChangeRaw {
+  return changeRawOf(
+    (raw) => TokenControl.valueFrom(target, raw),
+    onSetTokenValue,
+  );
+}
+
+/**
  * 見出しを左に置いた 1 行（UI 案 docs/Design Composer.html の Color のエディタの `hex` / `name`）。
  *
  * @returns 52px の見出しと、残りを占める欄
@@ -281,10 +302,7 @@ export function FieldRow({
         id={id}
         input={field.input}
         density={FieldDensities.Regular}
-        onChangeRaw={changeRawOf(
-          (raw) => TokenControl.valueFrom(field.target, raw),
-          onSetTokenValue,
-        )}
+        onChangeRaw={changeRawOfTarget(field.target, onSetTokenValue)}
       />
     </LabeledRow>
   );

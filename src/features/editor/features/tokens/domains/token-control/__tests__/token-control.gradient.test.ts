@@ -6,7 +6,7 @@ import {
 } from "@/features/editor/features/tokens/__tests__/gradient-documents";
 import { Option } from "@/utils/Option";
 import { TokenControl, TokenSection } from "../index";
-import { gradientOf, gradientSelectionOf, hexOf } from "./setup";
+import { gradientOf, gradientSelectionOf, hexControlOf } from "./setup";
 
 test("グラデーションの行の見本は階調で、値は角度と stop の件数で出る", () => {
   const document = gradientDocumentOf({ stops: ThreeStops });
@@ -43,7 +43,7 @@ test("グラデーションを選ぶと角度の欄と stop の件数ぶんの�
 
 test("stop の行は比率の欄と、見本・hex・不透明度の箱を持つ", () => {
   const [row] = gradientOf(gradientSelectionOf({ stops: TwoStops })).stops;
-  const color = hexOf(row.color);
+  const color = hexControlOf(row.color);
 
   expect(row.ratio.label).toBe("stop 1 の比率");
   expect([color.picker.label, color.caption.label, color.alpha.label]).toEqual([
@@ -149,7 +149,7 @@ test("比率の欄に打った値で stop が比率の順に並び直る", () =>
 });
 
 test("stop の不透明度はその stop の色だけに効く", () => {
-  const field = hexOf(
+  const field = hexControlOf(
     gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1].color,
   );
 
@@ -170,7 +170,7 @@ test("stop の不透明度はその stop の色だけに効く", () => {
 });
 
 test("stop の色をピッカーで選び直しても元の不透明度は残る", () => {
-  const field = hexOf(
+  const field = hexControlOf(
     gradientOf(
       gradientSelectionOf({
         stops: [
@@ -197,7 +197,7 @@ test("stop の色をピッカーで選び直しても元の不透明度は残る
 });
 
 test("stop の hex に `#` 無しで打った 6 桁でその stop の色だけが変わり、不透明度は残る", () => {
-  const field = hexOf(
+  const field = hexControlOf(
     gradientOf(
       gradientSelectionOf({
         stops: [
@@ -224,7 +224,7 @@ test("stop の hex に `#` 無しで打った 6 桁でその stop の色だけ�
 });
 
 test("stop の hex に 6 桁・3 桁として読めない値を打っても値を変えない", () => {
-  const field = hexOf(
+  const field = hexControlOf(
     gradientOf(gradientSelectionOf({ stops: TwoStops })).stops[0].color,
   );
 
@@ -297,7 +297,7 @@ test("stop の + は最も広い隙間の中央に stop を足した値になる
 });
 
 test("2 件目の stop の色をピッカーで選ぶとその stop の色だけが変わる", () => {
-  const field = hexOf(
+  const field = hexControlOf(
     gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1].color,
   );
 
@@ -318,7 +318,7 @@ test("2 件目の stop の色をピッカーで選ぶとその stop の色だけ
 });
 
 test("2 件目の stop の hex に `#` 無しで打った 6 桁でその stop の色だけが変わる", () => {
-  const field = hexOf(
+  const field = hexControlOf(
     gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1].color,
   );
 
