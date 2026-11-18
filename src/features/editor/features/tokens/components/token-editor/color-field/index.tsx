@@ -104,6 +104,10 @@ function HexColorInput({
   const hexDigits = TokenControl.hexDigitsOf(color);
 
   return (
+    /*
+     * 根を `relative` にするのは、`sr-only` の見出しが `position: absolute` で、基準が無いと右ペインのスクロール枠を
+     * 抜けて文書を伸ばすため（`shorthand-row` と同じ形）。happy-dom では落ちず、気づく手段は Storybook の視覚差分だけ。
+     */
     <div className="relative flex h-7 items-center gap-1 rounded-[5px] border border-[#e6e6e6] px-2 font-mono text-[11px]">
       <label htmlFor={pickerId} className="sr-only">
         {color.picker.label}

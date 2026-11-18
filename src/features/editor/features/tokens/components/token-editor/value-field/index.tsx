@@ -261,6 +261,8 @@ export function changeRawOfTarget(
 /**
  * 見出しを左に置いた 1 行（UI 案 docs/Design Composer.html の Color のエディタの `hex` / `name`）。
  *
+ * 見出しが左に並ぶことは happy-dom では確かめられず、気づく手段は Storybook の視覚差分だけ。
+ *
  * @returns 52px の見出しと、残りを占める欄
  */
 export function LabeledRow({
