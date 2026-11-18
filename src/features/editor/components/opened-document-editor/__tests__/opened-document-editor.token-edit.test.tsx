@@ -368,6 +368,30 @@ test("色の hex を 2 回打って確定すると Ctrl+Z 1 回で 1 回目の�
   expect(row("primary #ff0000")).toBeDefined();
 });
 
+test("色の hex を 3 桁で打って確定すると、一覧の値と hex の欄が 6 桁に広がる", async () => {
+  await renderTokensView();
+  await selectRow("primary");
+
+  await userEvent.clear(field("hex"));
+  await userEvent.type(field("hex"), "abc{Enter}");
+
+  expect(row("primary #aabbcc")).toBeDefined();
+  expect(field("hex")).toHaveProperty("value", "aabbcc");
+});
+
+test("色の hex を 3 桁で打って確定したあと Ctrl+Z 1 回で元の色へ戻る", async () => {
+  await renderTokensView();
+  await selectRow("primary");
+
+  await userEvent.clear(field("hex"));
+  await userEvent.type(field("hex"), "abc{Enter}");
+  expect(row("primary #aabbcc")).toBeDefined();
+
+  await userEvent.keyboard("{Control>}z{/Control}");
+
+  expect(row("primary #3b82f6")).toBeDefined();
+});
+
 test("ピッカーで色を変えると、hex の欄が `#` 無しで追随する", async () => {
   await renderTokensView();
   await selectRow("primary");
