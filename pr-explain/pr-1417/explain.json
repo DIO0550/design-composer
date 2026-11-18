@@ -1,0 +1,2922 @@
+{
+  "version": 1,
+  "pr": 1417,
+  "sha": "13c860376034f09493cb003fcc7f9922d42b604b",
+  "issue": 1306,
+  "overview": {
+    "title": "Box と Ellipse にぼかし(`layerBlur` / `backdropBlur`)を足す",
+    "lead": "Box と Ellipse に、ノード自身をぼかす `layerBlur` と背後をぼかす `backdropBlur` を足した。パネルの Appearance 節に 2 行が並び、0 以外の値は `filter` / `backdrop-filter` の `blur()` として CSS に出る。artboard は `layerBlur` だけを受け付け、`backdropBlur` は読み捨てる。",
+    "before": [
+      {
+        "text": "Box / Ellipse にはぼかしの prop が無く、ファイルに `layerBlur` を書くと未知の prop のエラーになっていた"
+      },
+      {
+        "text": "生リテラルの数値 prop の `range` は両端が必須(`Range`)で、違反の文は `must be between <min> and <max>` だけだった",
+        "message": "m-range"
+      }
+    ],
+    "after": [
+      {
+        "text": "Box / Ellipse の Appearance 節で、shadow の直後に `layerBlur` → `backdropBlur` の 2 行が数値の欄として並ぶ",
+        "message": "m-panel-schema"
+      },
+      {
+        "text": "`layerBlur: 4` は `filter: blur(4px)`、`backdropBlur: 8` は `backdrop-filter: blur(8px)` として CSS に出る",
+        "message": "m-blur-create"
+      },
+      {
+        "text": "既定の 0 と数値でない値では宣言を出さない。負の値は丸めずに `blur(-4px)` のまま出す(CSS が宣言ごと捨てる)",
+        "message": "m-blur-create"
+      },
+      {
+        "text": "0 未満の値は `range-violation` になり、`must be at least 0` で報告される。`+Infinity` は範囲内、`-Infinity` は違反",
+        "message": "m-range"
+      },
+      {
+        "text": "artboard のパネルには Layer Blur だけが出て、`backdropBlur` は書いても 0 に固定され CSS に出ない",
+        "message": "m-boxprops"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "上端を省ける範囲",
+        "text": "`Range` を変えず、prop 定義の側に非公開の `LiteralRange` を置いて上端を `+Infinity` と読む。`+Infinity` を範囲内とした判断を見てほしい",
+        "go": {
+          "kind": "callBox",
+          "id": "collect-range-errors"
+        }
+      },
+      {
+        "title": "ぼかしの対応表",
+        "text": "prop と CSS プロパティの組を表で閉じ、キーは Box と Ellipse の両方が持つ prop 名に絞った",
+        "go": {
+          "kind": "callBox",
+          "id": "blur-filter-declarations"
+        }
+      },
+      {
+        "title": "artboard の背後のぼかし",
+        "text": "パネルから外すだけでは CSS に出るので、`boxProps` で 0 に固定した",
+        "go": {
+          "kind": "stepChange",
+          "flow": "artboard-blur",
+          "stepChange": 2
+        }
+      },
+      {
+        "title": "ぼかしの CSS 出力",
+        "text": "`-webkit-backdrop-filter` は出さない(WebKit での確認は #1412)。これを守るテストは無い",
+        "go": {
+          "kind": "module",
+          "path": "src/domains/compiled/compiled-element/index.ts"
+        }
+      },
+      {
+        "title": "ドラッグ中の見え方",
+        "text": "ぼかしを持つ祖先から運ぶと、運んでいる間もぼけたまま見える。不透明度と同じ形として許容した(コメントだけの変更)",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx"
+        }
+      },
+      {
+        "title": "検証の範囲違反",
+        "text": "負のぼかしはドキュメントの検証で範囲違反になる。artboard の読み捨てる背後のぼかしも値は検証する",
+        "go": {
+          "kind": "flow",
+          "id": "load-validate"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "range",
+      "label": "下端だけの範囲",
+      "role": "生リテラルの数値 prop が `range: { min: 0 }` のように下端だけを宣言でき、上限なしで判定する",
+      "review": [
+        "`+Infinity` を範囲内にした理由(範囲を宣言しない数値 prop と同じ扱い)が doc に残っているか",
+        "`Range` そのものに手を入れていないか(上端を必須にしている canvas 側への波及が無いか)"
+      ]
+    },
+    {
+      "id": "blur-schema",
+      "label": "ぼかしの prop",
+      "role": "Box と Ellipse のスキーマに 2 prop を足し、パネルの欄と検証を揃える",
+      "review": [
+        "差し込み位置が docs/03 の表の並び(shadow の直後)と一致しているか"
+      ]
+    },
+    {
+      "id": "blur-css",
+      "label": "ぼかしの CSS 出力",
+      "role": "0 でない数値のぼかしを `filter` / `backdrop-filter` の `blur()` 宣言にする",
+      "review": [
+        "0 を出さない理由(stacking context)と範囲外を丸めない理由が docs/03 への参照で足りているか"
+      ]
+    },
+    {
+      "id": "artboard-blur",
+      "label": "artboard の背後のぼかし",
+      "role": "artboard では `backdropBlur` を読み捨て、`layerBlur` は受け付ける",
+      "review": [
+        "固定の書き方が `rotation` / `locking` と揃っているか(名前の一覧・型・`boxProps` の 3 か所)"
+      ]
+    },
+    {
+      "id": "wording",
+      "label": "仕様と注記",
+      "role": "formatVersion 1.1 の行への追記と、運ぶプレビューのコメントの列挙を実物に合わせる"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / dcmp",
+      "role": "範囲の宣言・スキーマ・artboard の固定値と、それらを使うドキュメントの検証"
+    },
+    {
+      "layer": "domains / compiled",
+      "role": "ぼかしを CSS の宣言にする。artboard も Box の出力を通る"
+    },
+    {
+      "layer": "domains / session",
+      "role": "パネルの欄はスキーマから生成されるので、コードは変えずテストだけを足した"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "運ぶプレビューのコメントで、stacking context を作る祖先にぼかしを加えた"
+    },
+    {
+      "layer": "docs",
+      "role": "formatVersion 1.1 の行にぼかしを足した(版は上げない)"
+    },
+    {
+      "layer": "utils",
+      "role": "`Range.contains` を変えずにそのまま使う"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "name": "prop 定義",
+      "role": "prop の値が型・範囲・トークン参照の規則を満たすかを検証する",
+      "feature": "range",
+      "change": "非公開の `LiteralRange` を足し、上端が無ければ `+Infinity` と読んで判定する",
+      "icon": "scan"
+    },
+    {
+      "path": "src/utils/Range.ts",
+      "name": "範囲",
+      "role": "両端のある範囲と、値が入るかの判定",
+      "feature": "range"
+    },
+    {
+      "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "name": "プリミティブのスキーマ",
+      "role": "Box / Ellipse などが持つ prop の定義の一覧",
+      "feature": "blur-schema",
+      "change": "非公開の `BlurFilterProps` を足し、Box と Ellipse の shadow の直後に差し込んだ"
+    },
+    {
+      "path": "src/domains/session/prop-control/index.ts",
+      "name": "パネルの欄",
+      "role": "選んだノードのスキーマからパネルの節と欄を組む",
+      "feature": "blur-schema",
+      "icon": "widget"
+    },
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "ドキュメントの検証",
+      "role": "ドキュメント全体を走査して prop の違反を集める",
+      "feature": "blur-schema",
+      "icon": "scan"
+    },
+    {
+      "path": "src/domains/compiled/compiled-element/index.ts",
+      "name": "要素の CSS 出力",
+      "role": "Box / Ellipse の props を CSS の宣言にする",
+      "feature": "blur-css",
+      "change": "対応表 `BlurFilterProperties` と `blurFilterDeclarations` を足し、shadow の直後に出す"
+    },
+    {
+      "path": "src/domains/dcmp/css-declaration/index.ts",
+      "name": "CSS 宣言",
+      "role": "出してよい CSS プロパティの語彙と宣言の組み立て",
+      "feature": "blur-css",
+      "change": "`filter` / `backdrop-filter` を語彙に足した"
+    },
+    {
+      "path": "src/domains/dcmp/artboard/index.ts",
+      "name": "artboard",
+      "role": "artboard を Box として読むときの固定値と、パネルに出す prop の一覧",
+      "feature": "artboard-blur",
+      "change": "`backdropBlur` を変えられない prop に足し、`boxProps` で 0 に固定した",
+      "icon": "store"
+    },
+    {
+      "path": "src/domains/compiled/compiled-artboard/index.ts",
+      "name": "artboard の CSS 出力",
+      "role": "artboard を Box の出力に通して描く",
+      "feature": "artboard-blur"
+    },
+    {
+      "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "name": "運ぶプレビュー",
+      "role": "ドラッグ中のノードを artboard ごと前に出すスタイル",
+      "feature": "wording",
+      "change": "コメントの祖先の列挙にぼかしを足した",
+      "graph": false
+    },
+    {
+      "path": "docs/01-file-format.md",
+      "name": "ファイル形式の仕様",
+      "role": "版ごとに加わった prop の表",
+      "feature": "wording",
+      "change": "1.1 の行にぼかしを足した",
+      "graph": false
+    }
+  ],
+  "actors": [
+    {
+      "id": "user",
+      "label": "編集する人",
+      "role": "パネルで値を入れ、キャンバスで結果を見る"
+    },
+    {
+      "id": "webview",
+      "label": "webview",
+      "role": "出力された CSS を描く",
+      "icon": "widget"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m-panel-schema",
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "kind": "qry",
+      "name": "欄を組むためにスキーマを引く",
+      "code": "PrimitiveSchema.forTypeName(node.type)",
+      "via": "call",
+      "returns": "Appearance 節に `layerBlur` / `backdropBlur` を含む prop 定義",
+      "status": "changed"
+    },
+    {
+      "id": "m-edit",
+      "from": "user",
+      "to": "src/domains/session/prop-control/index.ts",
+      "kind": "cmd",
+      "name": "欄に値を入れる",
+      "code": "Layer Blur の欄に 4 を入れる",
+      "via": "state",
+      "payload": "prop 名と数値"
+    },
+    {
+      "id": "m-validate",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "kind": "qry",
+      "name": "prop の違反を集める",
+      "code": "PropDefinitionRecord.collectErrors(...)",
+      "via": "call",
+      "payload": "スキーマとノードの props",
+      "returns": "違反の一覧(下端を下回るぼかしは `range-violation`)",
+      "status": "changed"
+    },
+    {
+      "id": "m-range",
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/utils/Range.ts",
+      "kind": "qry",
+      "name": "範囲に入るかを問う",
+      "code": "Range.contains(bound.range, value)",
+      "via": "call",
+      "payload": "上端を省いたときは `{ min, max: +Infinity }`",
+      "returns": "真偽値",
+      "status": "changed"
+    },
+    {
+      "id": "m-artboard-defs",
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "kind": "qry",
+      "name": "artboard の欄の一覧を引く",
+      "code": "Artboard.propDefinitions()",
+      "via": "call",
+      "returns": "変えられない prop を除いた定義(`backdropBlur` も除く)",
+      "status": "changed"
+    },
+    {
+      "id": "m-boxprops",
+      "from": "src/domains/compiled/compiled-artboard/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "kind": "qry",
+      "name": "artboard を Box として読む",
+      "code": "Artboard.boxProps(artboard)",
+      "via": "call",
+      "returns": "固定値を重ねた props(`backdropBlur: 0`)",
+      "status": "changed"
+    },
+    {
+      "id": "m-box-decl",
+      "from": "src/domains/compiled/compiled-artboard/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "kind": "qry",
+      "name": "Box の宣言を作る",
+      "code": "BoxElement.declarations(props, Option.none, tokens)",
+      "via": "call",
+      "returns": "CSS 宣言の列"
+    },
+    {
+      "id": "m-blur-create",
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "kind": "cmd",
+      "name": "ぼかしの宣言を作る",
+      "code": "CssDeclaration.create(property, `blur(${Px.create(blur)})`)",
+      "via": "call",
+      "payload": "`filter` か `backdrop-filter` と `blur(<n>px)`",
+      "returns": "CSS 宣言",
+      "status": "added"
+    },
+    {
+      "id": "m-render",
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "webview",
+      "kind": "evt",
+      "name": "スタイルを描く",
+      "code": "element.style",
+      "via": "state",
+      "payload": "宣言を並べたスタイル"
+    }
+  ],
+  "flows": [
+    {
+      "id": "edit-blur",
+      "label": "Box にぼかしを入れたとき",
+      "gist": "パネルにぼかしの 2 行が出て、入れた値が検証を通って `blur()` の宣言になる",
+      "text": "Box を選ぶとパネルがスキーマから欄を組み、Layer Blur に値を入れるとドキュメントが検証され、CSS 出力を経てキャンバスに描かれる。",
+      "steps": [
+        "m-panel-schema",
+        "m-edit",
+        "m-validate",
+        "m-blur-create",
+        "m-render"
+      ],
+      "beforeSteps": [
+        "m-panel-schema",
+        "m-edit",
+        "m-validate",
+        "m-render"
+      ],
+      "stepChanges": [
+        {
+          "status": "changed",
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "Appearance 節は background・radius・shadow・overflow…で、ぼかしの欄は無かった",
+          "afterText": "shadow の直後に Layer Blur → Backdrop Blur の 2 行が数値の欄として並ぶ",
+          "change": "スキーマに `BlurFilterProps` を差し込んだので、パネルのコードを変えずに欄が増えた"
+        },
+        {
+          "beforeStep": 2,
+          "afterStep": 2,
+          "beforeText": "ぼかしの欄が無いので、入れられるのは既存の prop だけ",
+          "afterText": "Layer Blur に 4 を入れる"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 3,
+          "afterStep": 3,
+          "beforeText": "ファイルに書かれた `layerBlur` は未知の prop として報告された",
+          "afterText": "0 以上なら通り、負なら `must be at least 0` の範囲違反になる",
+          "change": "下端だけの範囲で判定するようになった"
+        },
+        {
+          "status": "added",
+          "afterStep": 4,
+          "afterText": "0 でない数値のぼかしを `filter: blur(4px)` の宣言にする",
+          "change": "この PR で足した呼び出し。0 と数値でない値では呼ばない"
+        },
+        {
+          "beforeStep": 4,
+          "afterStep": 5,
+          "beforeText": "ぼかしの無いスタイルを描く",
+          "afterText": "Box と子孫がぼけて描かれる。選択の枠は変わらない"
+        }
+      ],
+      "measure": {
+        "what": "Box の Appearance 節の行",
+        "before": "background・radius・shadow・overflow・opacity・visibility・locking",
+        "after": "background・radius・shadow・layerBlur・backdropBlur・overflow・opacity・visibility・locking"
+      }
+    },
+    {
+      "id": "artboard-blur",
+      "label": "artboard を選んで描くとき",
+      "gist": "artboard は Layer Blur だけを出し、背後のぼかしは 0 に固定して CSS に出さない",
+      "text": "artboard を選ぶとパネルは artboard 用の欄の一覧を引き、描くときは artboard を Box として読んで Box の出力に通す。",
+      "steps": [
+        "m-artboard-defs",
+        "m-boxprops",
+        "m-box-decl",
+        "m-blur-create",
+        "m-render"
+      ],
+      "beforeSteps": [
+        "m-artboard-defs",
+        "m-boxprops",
+        "m-box-decl",
+        "m-render"
+      ],
+      "stepChanges": [
+        {
+          "status": "changed",
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "変えられない prop(配置・ロック・回転など)を除いた一覧",
+          "afterText": "`layerBlur` は含み、`backdropBlur` は除いた一覧",
+          "change": "`ArtboardFixedBackdropBlurProps` を変えられない prop に足した"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 2,
+          "beforeText": "`placement`・`locking`・`rotation` を固定した props",
+          "afterText": "加えて `backdropBlur` を 0 に固定した props",
+          "change": "ファイルに `backdropBlur: 4` と書いてあっても 0 で読む"
+        },
+        {
+          "beforeStep": 3,
+          "afterStep": 3,
+          "beforeText": "Box と同じ宣言を作る",
+          "afterText": "Box と同じ宣言を作る。ぼかしの宣言もここで足される"
+        },
+        {
+          "status": "added",
+          "afterStep": 4,
+          "afterText": "`layerBlur` が 0 でなければ `filter: blur()` を作る。`backdropBlur` は 0 なので作らない",
+          "change": "Box の出力にぼかしが入ったので、artboard も同じ経路で `filter` を出す"
+        },
+        {
+          "beforeStep": 4,
+          "afterStep": 5,
+          "beforeText": "artboard のスタイルを描く",
+          "afterText": "Layer Blur を入れた artboard は全体がぼける"
+        }
+      ]
+    },
+    {
+      "id": "load-validate",
+      "label": "下端だけの範囲を検証するとき",
+      "gist": "上端を宣言しない範囲を `+Infinity` と読み、違反の文を `must be at least` にした",
+      "text": "ファイルを読んだときや編集のたびに、ドキュメントの検証が prop ごとに範囲を確かめる。",
+      "steps": [
+        "m-validate",
+        "m-range"
+      ],
+      "beforeSteps": [
+        "m-validate",
+        "m-range"
+      ],
+      "stepChanges": [
+        {
+          "status": "changed",
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "`range` は両端が必須で、違反は `must be between <min> and <max>`",
+          "afterText": "上端を省いた範囲の違反は `must be at least <min>`",
+          "change": "範囲と文を、上端の有無の 1 回の分岐で一緒に決める"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 2,
+          "beforeText": "宣言した範囲をそのまま渡す",
+          "afterText": "上端が無ければ `{ min, max: +Infinity }` を渡す",
+          "change": "`Range.contains` は変えず、渡す範囲を読み替えた"
+        }
+      ]
+    }
+  ],
+  "calls": {
+    "gist": "ぼかしの宣言を作る関数を足し、範囲の判定と artboard の固定値を広げた",
+    "text": "Box / Ellipse の宣言を作る 2 つの入口が、shadow の直後で `blurFilterDeclarations` を呼ぶようになった。範囲の判定は `Range.contains` を変えずに、渡す範囲を `collectRangeErrors` の側で読み替える。artboard は `boxProps` で `backdropBlur` を 0 に固定するので、Box の出力を通っても背後のぼかしは出ない。",
+    "review": [
+      "`blurFilterDeclarations` を Box と Ellipse の両方から呼んでいるか(片方だけだと Ellipse がぼけない)",
+      "artboard の固定が `boxProps` 1 か所で CSS まで効いているか"
+    ],
+    "boxes": [
+      {
+        "id": "collect-range-errors",
+        "name": "collectRangeErrors",
+        "role": "範囲を宣言した prop の違反を報告する",
+        "module": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+        "status": "changed",
+        "was": "両端必須の `Range` で判定し、`must be between` で報告する",
+        "now": "上端が無ければ `+Infinity` と読んで判定し、`must be at least` で報告する"
+      },
+      {
+        "id": "range-contains",
+        "name": "Range.contains",
+        "role": "値が範囲に入るか(境界を含む)",
+        "module": "src/utils/Range.ts",
+        "now": "変えずに使う。上端が `+Infinity` でも比較だけで答える"
+      },
+      {
+        "id": "box-declarations",
+        "name": "BoxElement.declarations",
+        "role": "Box の props を CSS 宣言の列にする",
+        "module": "src/domains/compiled/compiled-element/index.ts",
+        "status": "changed",
+        "was": "shadow の次に overflow を並べる",
+        "now": "shadow の次にぼかしの宣言を挟む"
+      },
+      {
+        "id": "ellipse-declarations",
+        "name": "EllipseElement.declarations",
+        "role": "Ellipse の props を CSS 宣言の列にする",
+        "module": "src/domains/compiled/compiled-element/index.ts",
+        "status": "changed",
+        "was": "shadow の次に opacity を並べる",
+        "now": "shadow の次にぼかしの宣言を挟む"
+      },
+      {
+        "id": "blur-filter-declarations",
+        "name": "blurFilterDeclarations",
+        "role": "ぼかしの props を `blur()` の宣言にする",
+        "module": "src/domains/compiled/compiled-element/index.ts",
+        "status": "added",
+        "now": "対応表の並びで、0 でない数値の prop ごとに宣言を 1 件返す"
+      },
+      {
+        "id": "css-create",
+        "name": "CssDeclaration.create",
+        "role": "CSS プロパティと値から宣言を作る",
+        "module": "src/domains/dcmp/css-declaration/index.ts",
+        "now": "語彙に `filter` / `backdrop-filter` が加わった"
+      },
+      {
+        "id": "artboard-box-props",
+        "name": "Artboard.boxProps",
+        "role": "artboard を Box として読むときの props",
+        "module": "src/domains/dcmp/artboard/index.ts",
+        "status": "changed",
+        "was": "配置・ロック・回転を固定する",
+        "now": "加えて `backdropBlur` を 0 に固定する"
+      },
+      {
+        "id": "artboard-prop-definitions",
+        "name": "Artboard.propDefinitions",
+        "role": "artboard のパネルに出す prop の定義",
+        "module": "src/domains/dcmp/artboard/index.ts",
+        "status": "changed",
+        "was": "変えられない prop(配置・ロック・回転など)を除く",
+        "now": "加えて `backdropBlur` も除く"
+      },
+      {
+        "id": "from-artboard",
+        "name": "CompiledArtboard.fromArtboard",
+        "role": "artboard をコンパイルする",
+        "module": "src/domains/compiled/compiled-artboard/index.ts",
+        "now": "`boxProps` の結果を Box の出力に渡す"
+      }
+    ],
+    "edges": [
+      {
+        "id": "e-range",
+        "from": "collect-range-errors",
+        "to": "range-contains",
+        "code": "Range.contains(bound.range, value)",
+        "status": "changed",
+        "was": "宣言した範囲をそのまま渡していた",
+        "now": "上端が無ければ `+Infinity` を補った範囲を渡す"
+      },
+      {
+        "id": "e-box-blur",
+        "from": "box-declarations",
+        "to": "blur-filter-declarations",
+        "code": "...blurFilterDeclarations(props)",
+        "status": "added",
+        "now": "shadow の直後に展開する"
+      },
+      {
+        "id": "e-ellipse-blur",
+        "from": "ellipse-declarations",
+        "to": "blur-filter-declarations",
+        "code": "...blurFilterDeclarations(props)",
+        "status": "added",
+        "now": "shadow の直後に展開する"
+      },
+      {
+        "id": "e-blur-create",
+        "from": "blur-filter-declarations",
+        "to": "css-create",
+        "code": "CssDeclaration.create(property, `blur(${Px.create(blur)})`)",
+        "status": "added",
+        "now": "`filter` / `backdrop-filter` の宣言を作る"
+      },
+      {
+        "id": "e-artboard-props",
+        "from": "from-artboard",
+        "to": "artboard-box-props",
+        "code": "Artboard.boxProps(artboard)",
+        "now": "`backdropBlur: 0` を含む props を受け取る"
+      },
+      {
+        "id": "e-artboard-box",
+        "from": "from-artboard",
+        "to": "box-declarations",
+        "code": "BoxElement.declarations(props, Option.none, tokens)",
+        "now": "artboard も Box と同じ宣言を作る"
+      }
+    ]
+  },
+  "commitStories": [
+    {
+      "sha": "2080ea7538c5e363a689e6eacc219f6521d94fa6",
+      "phase": "prep",
+      "role": "生リテラルの数値 prop の `range` を下端だけでも宣言できるようにする",
+      "why": "ぼかしは「0 以上」だけが決まっていて上限の根拠が無い。docs/03 は `{ min: 0 }` を書けると定めているが、`range` は両端必須の `Range` だった。`Range` を `max?` にすると canvas 側の上端前提が崩れるので、prop 定義の側に非公開の型を置いた。",
+      "flows": [
+        "load-validate"
+      ],
+      "review": [
+        "`LiteralRange` が `index.ts` から export されていないこと(prop 定義の性質として閉じる)",
+        "上端が無いとき `+Infinity` と読むので、`+Infinity` は範囲内になる"
+      ],
+      "before": [
+        {
+          "text": "`range` は `{ min, max }` の両端が必須で、違反の文は `between` だけ",
+          "message": "m-range"
+        }
+      ],
+      "after": [
+        {
+          "text": "`range: { min: 0 }` を宣言でき、下回ると `must be at least 0`",
+          "message": "m-range"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "start": 92,
+          "end": 96,
+          "text": "上端を省ける範囲。`Range` は変えない"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "start": 190,
+          "end": 191,
+          "text": "上端が無いときは `+Infinity` と読んで既存の `Range.contains` に渡す"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "start": 92,
+          "end": 106,
+          "feature": "range",
+          "text": "`LiteralRange` を足し、数値 prop の `range` をこの型にした"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "start": 170,
+          "end": 199,
+          "feature": "range",
+          "text": "上端の無い範囲を判定し、`must be at least` で報告する"
+        }
+      ]
+    },
+    {
+      "sha": "be271297f0e85f04667606e8568bc223558101bf",
+      "phase": "core",
+      "role": "Box と Ellipse のスキーマに `layerBlur` / `backdropBlur` を足す",
+      "why": "パネルの行と検証はスキーマから生成されるので、スキーマに足せば両方が揃う。差し込み位置は docs/03 の表の並び(shadow の直後)に合わせた。素の `blur` は影トークンの `blur` と同じ語なので、語幹を `BlurFilter` にした。",
+      "flows": [
+        "edit-blur"
+      ],
+      "review": [
+        "Box は `ShadowProps` と `overflow` の間、Ellipse は `ShadowProps` と `OpacityProps` の間に入っているか"
+      ],
+      "before": [
+        {
+          "text": "Box / Ellipse にぼかしの prop が無い"
+        }
+      ],
+      "after": [
+        {
+          "text": "どちらも生リテラルの number・`{ min: 0 }`・既定 0・appearance 節の 2 prop を持つ",
+          "message": "m-panel-schema"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "start": 180,
+          "end": 185,
+          "text": "生リテラルにする理由は `OpacityProps` と同じ(対応するトークン種別が無い)"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "start": 400,
+          "end": 400,
+          "text": "Box は shadow の直後"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "start": 180,
+          "end": 200,
+          "feature": "blur-schema",
+          "text": "2 prop の定義 `BlurFilterProps` を足した"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "start": 400,
+          "end": 400,
+          "feature": "blur-schema",
+          "text": "Box に差し込んだ"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "start": 498,
+          "end": 498,
+          "feature": "blur-schema",
+          "text": "Ellipse に差し込んだ"
+        }
+      ]
+    },
+    {
+      "sha": "d3bd180deab93272161a3c77683e1edf3a083f43",
+      "phase": "core",
+      "role": "ぼかしを `filter` / `backdrop-filter` の `blur()` として CSS に出す",
+      "why": "docs/03 の CSS 対応表どおりに出す。prop と CSS プロパティの組を引数で渡すと取り違えても型で弾けないので、`TokenPropProperties` に倣って表で閉じた。0 を出さないのは `blur(0px)` でも stacking context ができるため、範囲外を丸めないのは範囲の判定を検証と 2 か所に持たないため。",
+      "flows": [
+        "edit-blur",
+        "artboard-blur"
+      ],
+      "review": [
+        "数値でない値(ファイル由来の不正な綴り)で宣言を出さないこと",
+        "`-webkit-backdrop-filter` を出さない判断(オーナー判断、#1412)"
+      ],
+      "before": [
+        {
+          "text": "ぼかしの宣言は出ない"
+        }
+      ],
+      "after": [
+        {
+          "text": "0 でない数値ごとに `blur(<n>px)` の宣言を出す",
+          "message": "m-blur-create"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/css-declaration/index.ts",
+          "start": 39,
+          "end": 40,
+          "text": "出してよい CSS プロパティに 2 つを足した"
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "start": 254,
+          "end": 264,
+          "text": "表の並びが宣言の出力順。0 と数値でない値は空配列"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/css-declaration/index.ts",
+          "start": 39,
+          "end": 40,
+          "feature": "blur-css",
+          "text": "`filter` / `backdrop-filter` を語彙に足した"
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "start": 228,
+          "end": 264,
+          "feature": "blur-css",
+          "text": "対応表と `blurFilterDeclarations` を足した"
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "start": 424,
+          "end": 424,
+          "feature": "blur-css",
+          "text": "Box の shadow の直後で呼ぶ"
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "start": 559,
+          "end": 559,
+          "feature": "blur-css",
+          "text": "Ellipse の shadow の直後で呼ぶ"
+        }
+      ]
+    },
+    {
+      "sha": "ce0d211ef621a6d02150585ba87a0eaa6d5a04bf",
+      "phase": "core",
+      "role": "artboard では `backdropBlur` を読み捨て 0 に固定する",
+      "why": "artboard の背後に何が描かれるかをドキュメントが定めていないので、docs/03 は artboard の `backdropBlur` を読み捨てると定めている。`CompiledArtboard` は `boxProps` を Box の出力に渡すので、パネルから外すだけでは `backdrop-filter` が出てしまう。前例の `rotation` / `locking` / `placement` と同じく `boxProps` で固定した。",
+      "flows": [
+        "artboard-blur"
+      ],
+      "review": [
+        "`layerBlur` には触っていないこと(artboard も受け付ける)"
+      ],
+      "before": [
+        {
+          "text": "artboard のパネルにも Backdrop Blur が出て、CSS にも `backdrop-filter` が出うる"
+        }
+      ],
+      "after": [
+        {
+          "text": "artboard のパネルに Backdrop Blur は出ず、書いても 0 で読む",
+          "message": "m-boxprops"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "start": 110,
+          "end": 113,
+          "text": "変えられない prop の一覧に足す(パネルから外れる)"
+        },
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "start": 339,
+          "end": 339,
+          "text": "CSS に出さないための固定"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "start": 110,
+          "end": 124,
+          "feature": "artboard-blur",
+          "text": "変えられない prop に `backdropBlur` を足した"
+        },
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "start": 191,
+          "end": 191,
+          "feature": "artboard-blur",
+          "text": "型でも 0 に絞った"
+        },
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "start": 320,
+          "end": 339,
+          "feature": "artboard-blur",
+          "text": "`boxProps` で 0 に固定した"
+        }
+      ]
+    },
+    {
+      "sha": "d7387ea078f514df3412c2a33ce595877bc7238a",
+      "phase": "fin",
+      "role": "運ぶプレビューのコメントで、stacking context を作る祖先にぼかしを加える",
+      "why": "`filter` / `backdrop-filter` を持つノードも stacking context になる。コードは祖先が何で作っていても越えられる形なので、列挙だけを実物に合わせた。",
+      "review": [
+        "振る舞いの変更が無いこと(ドラッグ中もノードは映り、祖先のぼかしでぼけたまま見えるのは許容)"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+          "start": 89,
+          "end": 91,
+          "text": "回転・不透明度に、ぼかしを加えた"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+          "start": 89,
+          "end": 89,
+          "feature": "wording",
+          "text": "祖先の列挙にぼかしを足した"
+        }
+      ]
+    },
+    {
+      "sha": "ce0ef38bc3c0a7bb982865cdc6232c690e269891",
+      "phase": "fin",
+      "role": "formatVersion 1.1 の行に `layerBlur` / `backdropBlur` を足す",
+      "why": "版の表は読み書きできるようになった時点で加わったものを足す運用。同じファイルが動作確認していない間は追加のたびに版を上げ直さないと定めているので、1.2 にはしない。",
+      "review": [
+        "版を上げていないこと(`FormatVersion.Current` は 1.1 のまま)"
+      ],
+      "notes": [
+        {
+          "path": "docs/01-file-format.md",
+          "start": 85,
+          "end": 85,
+          "text": "行の末尾にぼかしを足した"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "docs/01-file-format.md",
+          "start": 85,
+          "end": 85,
+          "feature": "wording",
+          "text": "1.1 の行にぼかしを足した"
+        }
+      ]
+    },
+    {
+      "sha": "82e92333e39fb63e2bee6042185302abf236a7f2",
+      "phase": "hard",
+      "role": "下端だけを宣言した range の判定と型をテストで固定する",
+      "why": "下端そのもの(0)とずっと大きい値(1e9)を両方置き、`<` への取り違えと上端 `undefined` との比較の両方で落ちるようにした。`Infinity` のケースは上端を有限の値で代用する実装を落とす。",
+      "flows": [
+        "load-validate"
+      ],
+      "review": [
+        "違反の文の綴りを 1 件だけ固定した(両端前提の `between` が出ないこと自体が変更点のため)"
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+          "start": 157,
+          "end": 221,
+          "feature": "range",
+          "text": "下端だけの範囲の判定と違反の文"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.type.test.ts",
+          "start": 18,
+          "end": 38,
+          "feature": "range",
+          "text": "下端だけ宣言できて、下端の無い範囲は宣言できない型"
+        }
+      ]
+    },
+    {
+      "sha": "1c98f7b7cef79d89b985b966fce1ee8afa31bd12",
+      "phase": "hard",
+      "role": "ぼかしのスキーマ定義とパネルの並びをテストで固定する",
+      "why": "範囲は `toMatchObject` ではなく `toEqual` で見る。`toMatchObject` では `{ min: 0, max: 1 }` でも通り、上限を持たないことを守れない。artboard の Backdrop Blur が出ないことは、同じ選択で Layer Blur が出るケースを対照に置いた。",
+      "flows": [
+        "edit-blur",
+        "artboard-blur"
+      ],
+      "review": [
+        "shorthand の既存 2 件は並びを丸ごと固定しているので更新が要った(落ちたのはこの 2 件だけ)"
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+          "start": 255,
+          "end": 279,
+          "feature": "blur-schema",
+          "text": "Box の 2 prop の定義"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ellipse.test.ts",
+          "start": 55,
+          "end": 69,
+          "feature": "blur-schema",
+          "text": "Ellipse も Box と同じ定義を持つ"
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+          "start": 468,
+          "end": 482,
+          "feature": "blur-schema",
+          "text": "Appearance 節の並びと数値の欄"
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+          "start": 484,
+          "end": 494,
+          "feature": "artboard-blur",
+          "text": "artboard のパネルの欄"
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+          "start": 99,
+          "end": 100,
+          "feature": "blur-schema",
+          "text": "既存の並びにぼかしを足した"
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+          "start": 138,
+          "end": 139,
+          "feature": "blur-schema",
+          "text": "既存の並びにぼかしを足した"
+        }
+      ]
+    },
+    {
+      "sha": "aed1576df29344fa70813a0c25c89f40137ca9db",
+      "phase": "hard",
+      "role": "ぼかしの CSS 出力を Box / Ellipse / artboard でテストする",
+      "why": "既定(未記入)と 0 の両方で「出さない」を見る。0 を出さない判定を外すとこの 2 件と artboard の 1 件が落ちることを確かめた。artboard の `backdropBlur` は 4 を書いて出ないことを見るので、`boxProps` の固定を外すと落ちる。",
+      "flows": [
+        "edit-blur",
+        "artboard-blur"
+      ],
+      "review": [
+        "宣言の出力順は docs/03 が定めていないので固定していない"
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+          "start": 1,
+          "end": 51,
+          "feature": "blur-css",
+          "text": "Box / Ellipse のぼかしの宣言"
+        },
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.blur.test.ts",
+          "start": 1,
+          "end": 38,
+          "feature": "artboard-blur",
+          "text": "artboard は `filter` を出し `backdrop-filter` を出さない"
+        }
+      ]
+    },
+    {
+      "sha": "d4505f3db7b57cf9196f96621e94f6fbcec0be74",
+      "phase": "hard",
+      "role": "artboard の読み捨てとドキュメント検証の範囲違反をテストする",
+      "why": "docs/03「前提」は、読み捨てる prop をエラーにしないが値は Box のスキーマで検証すると定めている。Ellipse のケースはトークンが無いと既定の塗りが引けず dangling-token も出るので、既定テンプレートのトークンを渡した。",
+      "flows": [
+        "artboard-blur",
+        "load-validate"
+      ],
+      "review": [
+        "artboard に負の `backdropBlur` を書くと範囲違反になる(書いても効かないことはエラーの理由にしない)"
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.box-props.test.ts",
+          "start": 136,
+          "end": 161,
+          "feature": "artboard-blur",
+          "text": "`boxProps` の固定"
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.prop-definitions.test.ts",
+          "start": 69,
+          "end": 76,
+          "feature": "artboard-blur",
+          "text": "パネルに出す prop"
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.type.test.ts",
+          "start": 32,
+          "end": 35,
+          "feature": "artboard-blur",
+          "text": "型で 0 に絞る"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+          "start": 127,
+          "end": 132,
+          "feature": "artboard-blur",
+          "text": "読み捨てる prop は未知の prop にならない"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+          "start": 167,
+          "end": 178,
+          "feature": "artboard-blur",
+          "text": "読み捨てる prop でも範囲は検証する"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+          "start": 81,
+          "end": 126,
+          "feature": "range",
+          "text": "Box と Ellipse の負のぼかしは範囲違反"
+        }
+      ]
+    },
+    {
+      "sha": "f700e3cdf13d3cf4edc56a2cbd265d0e845e57d9",
+      "phase": "revise",
+      "role": "ぼかしの対応表を Box と Ellipse の両方の prop で閉じ、doc を参照に縮める",
+      "why": "表のキーを Box のスキーマとしか突き合わせておらず、Ellipse から prop が外れても型エラーにならなかった。`EllipseSchema` の export を足すより、公開済みの `PrimitiveSchemas` から 2 つのキーの共通部分を取るほうが変更が小さい。doc の理由の書き写しは docs/03 への参照に縮めた。",
+      "review": [
+        "Box にしか無い `overflow` を表に足すと型エラー(TS2353)で落ちる",
+        "`-webkit-backdrop-filter` を出さない理由が doc にある(抜けと読まれて足されないため)"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "start": 229,
+          "end": 231,
+          "text": "Box と Ellipse の prop 名の共通部分"
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "start": 237,
+          "end": 238,
+          "text": "接頭辞を出さない理由を doc に残した"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "start": 229,
+          "end": 266,
+          "feature": "blur-css",
+          "text": "表のキーの閉じ方と doc を直した"
+        }
+      ]
+    },
+    {
+      "sha": "f1e759787caab2039001298bcd302e370d29eb70",
+      "phase": "revise",
+      "role": "`collectRangeErrors` で上端の有無の判定を 1 回にまとめる",
+      "why": "`max ?? +Infinity` と `max === undefined` の 2 か所で同じ判定をしていて、判定と文の選び方が食い違いうる。範囲と文は常に同じ分岐で決まる対なので、1 つの分岐で一緒に作る。",
+      "flows": [
+        "load-validate"
+      ],
+      "review": [
+        "振る舞いが変わっていないこと(既存のテストがそのまま通る)"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "start": 192,
+          "end": 202,
+          "text": "範囲と違反の文を 1 つの分岐で一緒に決める"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "start": 176,
+          "end": 177,
+          "text": "`+Infinity` を受け入れる理由"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "start": 172,
+          "end": 208,
+          "feature": "range",
+          "text": "上端の有無の判定を 1 回にした"
+        }
+      ]
+    },
+    {
+      "sha": "12b04606951c5bea73a754cdcf0bbec8d5461ba0",
+      "phase": "revise",
+      "role": "artboard をコンパイルするテストの組み立てを共有のセットアップへ移す",
+      "why": "artboard の props を変えてコンパイル結果を見るテストが 2 ファイル目になり、同じヘルパーを 2 つのテストファイルに書いたら共通化する規約に当たった。`element-style-setup.ts` と同じ形・命名にした。",
+      "review": [
+        "テストケースの増減が無いこと(visibility 4 件・blur 2 件)"
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard-setup.ts",
+          "start": 1,
+          "end": 18,
+          "feature": "artboard-blur",
+          "text": "`setupCompiledArtboard` を置いた"
+        },
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.blur.test.ts",
+          "start": 1,
+          "end": 14,
+          "feature": "artboard-blur",
+          "text": "インラインの組み立てを置き換えた"
+        }
+      ]
+    },
+    {
+      "sha": "e8305c7fed2cea365ba06494e66f93f174be4b6e",
+      "phase": "revise",
+      "role": "`collectRangeErrors` の doc を JSON から届く `-Infinity` の主張に絞る",
+      "why": "判定を `!(value < min)` に壊すと NaN が通るようになるが、全テストが通った。JSON から NaN は作れないので、ファイル経由で届く値(`-1e400` = `-Infinity`)だけを書く。",
+      "review": [
+        "NaN の扱いを仕様のように固定していないこと"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "start": 174,
+          "end": 175,
+          "text": "NaN を外し、`-Infinity` だけを主張する"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "start": 174,
+          "end": 175,
+          "feature": "range",
+          "text": "doc の主張を絞った"
+        }
+      ]
+    },
+    {
+      "sha": "13c860376034f09493cb003fcc7f9922d42b604b",
+      "phase": "revise",
+      "role": "下端だけの範囲に `-Infinity` を書くと `range-violation` になることを固定する",
+      "why": "直前のコミットの doc の主張を守るテストが無かった。`Range.contains` から下端の比較を外すとこのテストが落ちることを確かめた。",
+      "flows": [
+        "load-validate"
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+          "start": 210,
+          "end": 220,
+          "feature": "range",
+          "text": "`-Infinity` は範囲違反"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "s-validation",
+      "label": "prop 定義の検証",
+      "file": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts"
+    },
+    {
+      "id": "s-prop-type",
+      "label": "prop 定義の型",
+      "file": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.type.test.ts"
+    },
+    {
+      "id": "s-schema-box",
+      "label": "Box のスキーマ",
+      "file": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts"
+    },
+    {
+      "id": "s-schema-ellipse",
+      "label": "Ellipse のスキーマ",
+      "file": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ellipse.test.ts"
+    },
+    {
+      "id": "s-panel",
+      "label": "パネルの欄",
+      "file": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts"
+    },
+    {
+      "id": "s-element-blur",
+      "label": "要素のぼかしの出力",
+      "file": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts"
+    },
+    {
+      "id": "s-artboard-blur",
+      "label": "artboard のぼかしの出力",
+      "file": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.blur.test.ts"
+    },
+    {
+      "id": "s-box-props",
+      "label": "artboard を Box として読む",
+      "file": "src/domains/dcmp/artboard/__tests__/artboard.box-props.test.ts"
+    },
+    {
+      "id": "s-artboard-defs",
+      "label": "artboard のパネルの一覧",
+      "file": "src/domains/dcmp/artboard/__tests__/artboard.prop-definitions.test.ts"
+    },
+    {
+      "id": "s-artboard-type",
+      "label": "artboard の型",
+      "file": "src/domains/dcmp/artboard/__tests__/artboard.type.test.ts"
+    },
+    {
+      "id": "s-validate-artboard",
+      "label": "artboard の検証",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts"
+    },
+    {
+      "id": "s-validate-domain",
+      "label": "ドメインの検証",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "t-lower-at-min",
+      "suite": "s-validation",
+      "name": "下端だけを宣言した prop に下端そのものの値を設定するとエラーにならない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "下端は範囲に含む。`<=` を `<` に取り違えると 0 が落ちる",
+      "given": "`range: { min: 0 }` の数値 prop",
+      "when": "0 を設定して検証する",
+      "then": "エラーが無い",
+      "commit": "82e92333e39fb63e2bee6042185302abf236a7f2",
+      "excerpt": {
+        "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+        "start": 158,
+        "end": 176,
+        "emphasis": [
+          {
+            "start": 172,
+            "end": 172
+          }
+        ],
+        "text": "/** 下端だけを宣言した生リテラルの prop 定義（Box の `layerBlur` と同じ形）。 */\nfunction definitionWithLowerBound() {\n  return {\n    domain: \"literal\",\n    literalType: \"number\",\n    range: { min: 0 },\n    group: \"appearance\",\n  } as const;\n}\n\ntest(\"下端だけを宣言した prop に下端そのものの値を設定するとエラーにならない\", () => {\n  expect(\n    PropDefinition.collectErrors(\n      definitionWithLowerBound(),\n      { name: \"layerBlur\", value: 0 },\n      TokenSet.empty(),\n    ),\n  ).toEqual([]);\n});"
+      },
+      "values": {
+        "columns": [
+          "値",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "-1",
+              "range-violation"
+            ]
+          },
+          {
+            "cells": [
+              "0",
+              "通る"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "1e9",
+              "通る"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/primitive-schema/prop-definition/index.ts"
+      ],
+      "covers": [
+        "m-range"
+      ]
+    },
+    {
+      "id": "t-lower-large",
+      "suite": "s-validation",
+      "name": "下端だけを宣言した prop に大きな値を設定してもエラーにならない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "上限を持たない。上端 `undefined` と比べる実装だと落ちる",
+      "given": "`range: { min: 0 }` の数値 prop",
+      "when": "1e9 を設定して検証する",
+      "then": "エラーが無い",
+      "commit": "82e92333e39fb63e2bee6042185302abf236a7f2",
+      "targets": [
+        "src/domains/dcmp/primitive-schema/prop-definition/index.ts"
+      ],
+      "covers": [
+        "m-range"
+      ]
+    },
+    {
+      "id": "t-lower-infinity",
+      "suite": "s-validation",
+      "name": "下端だけを宣言した prop に Infinity を設定してもエラーにならない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "範囲を宣言しない数値 prop と同じく `+Infinity` を通す。上端を有限の値で代用する実装を落とす",
+      "given": "`range: { min: 0 }` の数値 prop",
+      "when": "`Number.POSITIVE_INFINITY` を設定して検証する",
+      "then": "エラーが無い",
+      "commit": "82e92333e39fb63e2bee6042185302abf236a7f2",
+      "targets": [
+        "src/domains/dcmp/primitive-schema/prop-definition/index.ts"
+      ],
+      "covers": [
+        "m-range"
+      ]
+    },
+    {
+      "id": "t-lower-below",
+      "suite": "s-validation",
+      "name": "下端だけを宣言した prop に下端を下回る値を設定すると range-violation になる",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "下端を下回る値は範囲違反",
+      "given": "`range: { min: 0 }` の数値 prop",
+      "when": "-1 を設定して検証する",
+      "then": "`range-violation` が 1 件",
+      "commit": "82e92333e39fb63e2bee6042185302abf236a7f2",
+      "targets": [
+        "src/domains/dcmp/primitive-schema/prop-definition/index.ts"
+      ],
+      "covers": [
+        "m-range",
+        "m-validate"
+      ]
+    },
+    {
+      "id": "t-lower-neg-infinity",
+      "suite": "s-validation",
+      "name": "下端だけを宣言した prop に -Infinity を設定すると range-violation になる",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "JSON の `-1e400` で届く `-Infinity` は下端との比較で落ちる(doc の主張)",
+      "given": "`range: { min: 0 }` の数値 prop",
+      "when": "`Number.NEGATIVE_INFINITY` を設定して検証する",
+      "then": "`range-violation` が 1 件",
+      "commit": "13c860376034f09493cb003fcc7f9922d42b604b",
+      "excerpt": {
+        "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+        "start": 210,
+        "end": 220,
+        "text": "test(\"下端だけを宣言した prop に -Infinity を設定すると range-violation になる\", () => {\n  expect(\n    PropDefinition.collectErrors(\n      definitionWithLowerBound(),\n      { name: \"layerBlur\", value: Number.NEGATIVE_INFINITY },\n      TokenSet.empty(),\n    ),\n  ).toEqual([\n    expect.objectContaining({ kind: \"range-violation\", prop: \"layerBlur\" }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/primitive-schema/prop-definition/index.ts"
+      ],
+      "covers": [
+        "m-range"
+      ]
+    },
+    {
+      "id": "t-lower-message",
+      "suite": "s-validation",
+      "name": "下端だけを宣言した prop の範囲違反は、下端以上であることを求める文で報告される",
+      "techniques": [
+        "error"
+      ],
+      "why": "両端前提の `between 0 and undefined` を出さない",
+      "given": "`range: { min: 0 }` の数値 prop",
+      "when": "-1 を設定して検証する",
+      "then": "文が `prop \"layerBlur\" must be at least 0`",
+      "commit": "82e92333e39fb63e2bee6042185302abf236a7f2",
+      "targets": [
+        "src/domains/dcmp/primitive-schema/prop-definition/index.ts"
+      ]
+    },
+    {
+      "id": "t-type-lower-only",
+      "suite": "s-prop-type",
+      "name": "数値の生リテラル prop には下端だけの値域を宣言できる",
+      "techniques": [
+        "type"
+      ],
+      "why": "`{ min: 0 }` を `satisfies` で受け付ける型であること",
+      "given": "`range: { min: 0 }` の定義",
+      "when": "`satisfies LiteralPropDefinition` で型を確かめる",
+      "then": "範囲の型が `{ readonly min: 0 }`",
+      "commit": "82e92333e39fb63e2bee6042185302abf236a7f2",
+      "excerpt": {
+        "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.type.test.ts",
+        "start": 18,
+        "end": 38,
+        "emphasis": [
+          {
+            "start": 33,
+            "end": 33
+          }
+        ],
+        "text": "test(\"数値の生リテラル prop には下端だけの値域を宣言できる\", () => {\n  const definition = {\n    domain: \"literal\",\n    literalType: \"number\",\n    range: { min: 0 },\n    group: \"appearance\",\n  } as const satisfies LiteralPropDefinition;\n\n  expectTypeOf(definition.range).toEqualTypeOf<{ readonly min: 0 }>();\n});\n\ntest(\"数値の生リテラル prop には下端の無い値域を宣言できない\", () => {\n  const definition = {\n    domain: \"literal\",\n    literalType: \"number\",\n    // @ts-expect-error 値域は下端を必ず持つ\n    range: { max: 1 },\n    group: \"appearance\",\n  } as const satisfies LiteralPropDefinition;\n\n  expectTypeOf(definition.literalType).toEqualTypeOf<\"number\">();"
+      },
+      "targets": [
+        "src/domains/dcmp/primitive-schema/prop-definition/index.ts"
+      ]
+    },
+    {
+      "id": "t-type-no-min",
+      "suite": "s-prop-type",
+      "name": "数値の生リテラル prop には下端の無い値域を宣言できない",
+      "techniques": [
+        "type",
+        "error"
+      ],
+      "why": "下端は必須。上端だけの範囲は型で弾く",
+      "given": "`range: { max: 1 }` の定義",
+      "when": "型を確かめる",
+      "then": "`@ts-expect-error` の行で型エラーになる",
+      "commit": "82e92333e39fb63e2bee6042185302abf236a7f2",
+      "targets": [
+        "src/domains/dcmp/primitive-schema/prop-definition/index.ts"
+      ]
+    },
+    {
+      "id": "t-schema-layer",
+      "suite": "s-schema-box",
+      "name": "Box の layerBlur は 0 の下端だけを範囲に宣言する",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`toEqual` で見るので、上端を足した `{ min: 0, max: 1 }` では落ちる",
+      "given": "Box のスキーマ",
+      "when": "`layerBlur` の範囲を見る",
+      "then": "`{ min: 0 }` と等しい",
+      "commit": "1c98f7b7cef79d89b985b966fce1ee8afa31bd12",
+      "excerpt": {
+        "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+        "start": 255,
+        "end": 279,
+        "text": "test(\"Box の layerBlur は appearance 節の生リテラルの number でデフォルトが 0\", () => {\n  expect(BoxSchema.props.layerBlur).toMatchObject({\n    domain: \"literal\",\n    literalType: \"number\",\n    default: 0,\n    group: \"appearance\",\n  });\n});\n\ntest(\"Box の layerBlur は 0 の下端だけを範囲に宣言する\", () => {\n  expect(BoxSchema.props.layerBlur.range).toEqual({ min: 0 });\n});\n\ntest(\"Box の backdropBlur は appearance 節の生リテラルの number でデフォルトが 0\", () => {\n  expect(BoxSchema.props.backdropBlur).toMatchObject({\n    domain: \"literal\",\n    literalType: \"number\",\n    default: 0,\n    group: \"appearance\",\n  });\n});\n\ntest(\"Box の backdropBlur は 0 の下端だけを範囲に宣言する\", () => {\n  expect(BoxSchema.props.backdropBlur.range).toEqual({ min: 0 });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/primitive-schema/schema/index.ts"
+      ]
+    },
+    {
+      "id": "t-schema-backdrop",
+      "suite": "s-schema-box",
+      "name": "Box の backdropBlur は appearance 節の生リテラルの number でデフォルトが 0",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "パネルの欄の種類・節・既定はこの定義から生成される",
+      "given": "Box のスキーマ",
+      "when": "`backdropBlur` の定義を見る",
+      "then": "literal・number・既定 0・appearance",
+      "commit": "1c98f7b7cef79d89b985b966fce1ee8afa31bd12",
+      "targets": [
+        "src/domains/dcmp/primitive-schema/schema/index.ts"
+      ]
+    },
+    {
+      "id": "t-schema-ellipse",
+      "suite": "s-schema-ellipse",
+      "name": "Ellipse の配置・回転・最小/最大の大きさ・影・ぼかし・不透明度・表示・ロックは Box と同じ定義を持つ",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "Ellipse も Box と同じぼかしの定義を持つ",
+      "given": "Box と Ellipse のスキーマ",
+      "when": "共通の prop の定義を比べる",
+      "then": "`layerBlur` / `backdropBlur` を含めて同じ",
+      "commit": "1c98f7b7cef79d89b985b966fce1ee8afa31bd12",
+      "targets": [
+        "src/domains/dcmp/primitive-schema/schema/index.ts"
+      ]
+    },
+    {
+      "id": "t-panel-order",
+      "suite": "s-panel",
+      "name": "Ellipse の Appearance 節は、影の直後に layerBlur・backdropBlur の順で並べる",
+      "techniques": [
+        "state"
+      ],
+      "why": "パネルの並びが docs/03 の表と一致する",
+      "given": "Ellipse を選んだ状態",
+      "when": "Appearance 節の prop 名を並べる",
+      "then": "shadow の次の 2 つが `layerBlur`・`backdropBlur`",
+      "commit": "1c98f7b7cef79d89b985b966fce1ee8afa31bd12",
+      "excerpt": {
+        "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+        "start": 468,
+        "end": 494,
+        "text": "test(\"Ellipse の Appearance 節は、影の直後に layerBlur・backdropBlur の順で並べる\", () => {\n  const names = propNamesInSection(ellipseSelection({}), \"appearance\");\n  const afterShadow = names.indexOf(\"shadow\") + 1;\n\n  expect(names.slice(afterShadow, afterShadow + 2)).toEqual([\n    \"layerBlur\",\n    \"backdropBlur\",\n  ]);\n});\n\ntest(\"Box の layerBlur は数値の欄として出る\", () => {\n  const selection = setupSelection([{ name: \"box\", type: \"Box\" }], \"box\");\n\n  expect(controlOf(selection, \"layerBlur\")?.input.kind).toBe(\"number\");\n});\n\ntest(\"artboard を選ぶと layerBlur の欄は出る\", () => {\n  const selection = setupSelection([], \"home\");\n\n  expect(controlOf(selection, \"layerBlur\")?.input.kind).toBe(\"number\");\n});\n\ntest(\"artboard の backdropBlur は読み捨てるのでコントロールが出ない\", () => {\n  const selection = setupSelection([], \"home\");\n\n  expect(controlOf(selection, \"backdropBlur\")).toBeUndefined();\n});"
+      },
+      "targets": [
+        "src/domains/session/prop-control/index.ts",
+        "src/domains/dcmp/primitive-schema/schema/index.ts"
+      ],
+      "covers": [
+        "m-panel-schema"
+      ]
+    },
+    {
+      "id": "t-panel-number",
+      "suite": "s-panel",
+      "name": "Box の layerBlur は数値の欄として出る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "生リテラルの数値は数値の欄になる",
+      "given": "Box を選んだ状態",
+      "when": "`layerBlur` の欄を引く",
+      "then": "欄の種類が number",
+      "commit": "1c98f7b7cef79d89b985b966fce1ee8afa31bd12",
+      "targets": [
+        "src/domains/session/prop-control/index.ts"
+      ],
+      "covers": [
+        "m-panel-schema"
+      ]
+    },
+    {
+      "id": "t-panel-artboard-layer",
+      "suite": "s-panel",
+      "name": "artboard を選ぶと layerBlur の欄は出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "下の「出ない」のテストの対照。欄がそもそも無い状態では通らない",
+      "given": "artboard を選んだ状態",
+      "when": "`layerBlur` の欄を引く",
+      "then": "数値の欄がある",
+      "commit": "1c98f7b7cef79d89b985b966fce1ee8afa31bd12",
+      "targets": [
+        "src/domains/session/prop-control/index.ts",
+        "src/domains/dcmp/artboard/index.ts"
+      ],
+      "covers": [
+        "m-artboard-defs"
+      ]
+    },
+    {
+      "id": "t-panel-artboard-backdrop",
+      "suite": "s-panel",
+      "name": "artboard の backdropBlur は読み捨てるのでコントロールが出ない",
+      "techniques": [
+        "state"
+      ],
+      "why": "読み捨てる prop はパネルに出さない(docs/06「ぼかしの欄」)",
+      "given": "artboard を選んだ状態",
+      "when": "`backdropBlur` の欄を引く",
+      "then": "欄が無い",
+      "commit": "1c98f7b7cef79d89b985b966fce1ee8afa31bd12",
+      "targets": [
+        "src/domains/session/prop-control/index.ts",
+        "src/domains/dcmp/artboard/index.ts"
+      ],
+      "covers": [
+        "m-artboard-defs"
+      ]
+    },
+    {
+      "id": "t-css-layer",
+      "suite": "s-element-blur",
+      "name": "layerBlur を書いた Box は filter の blur を出力する",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "docs/03 の CSS 対応表の `layerBlur` の行",
+      "given": "`layerBlur: 4` の Box",
+      "when": "スタイルを作る",
+      "then": "`filter` が `blur(4px)`",
+      "commit": "aed1576df29344fa70813a0c25c89f40137ca9db",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+        "start": 1,
+        "end": 21,
+        "text": "import { expect, test } from \"vitest\";\nimport { setupBoxStyle, setupEllipseStyle } from \"./element-style-setup\";\n\ntest(\"layerBlur を書いた Box は filter の blur を出力する\", () => {\n  expect(setupBoxStyle({ layerBlur: 4 }).filter).toBe(\"blur(4px)\");\n});\n\ntest(\"backdropBlur を書いた Box は backdrop-filter の blur を出力する\", () => {\n  expect(setupBoxStyle({ backdropBlur: 4 })[\"backdrop-filter\"]).toBe(\n    \"blur(4px)\",\n  );\n});\n\ntest(\"layerBlur と backdropBlur を両方書いた Box は、それぞれの宣言を出力する\", () => {\n  const style = setupBoxStyle({ layerBlur: 2, backdropBlur: 8 });\n\n  expect([style.filter, style[\"backdrop-filter\"]]).toEqual([\n    \"blur(2px)\",\n    \"blur(8px)\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-blur-create"
+      ]
+    },
+    {
+      "id": "t-css-backdrop",
+      "suite": "s-element-blur",
+      "name": "backdropBlur を書いた Box は backdrop-filter の blur を出力する",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "docs/03 の CSS 対応表の `backdropBlur` の行。prop と CSS プロパティの組の取り違えを落とす",
+      "given": "`backdropBlur: 4` の Box",
+      "when": "スタイルを作る",
+      "then": "`backdrop-filter` が `blur(4px)`",
+      "commit": "aed1576df29344fa70813a0c25c89f40137ca9db",
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-blur-create"
+      ]
+    },
+    {
+      "id": "t-css-zero",
+      "suite": "s-element-blur",
+      "name": "ぼかしに 0 を書いた Box はぼかしの宣言を出力しない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "`blur(0px)` でも stacking context ができるので、既定の 0 は出さない",
+      "given": "`layerBlur: 0`・`backdropBlur: 0` の Box",
+      "when": "スタイルを作る",
+      "then": "`filter` も `backdrop-filter` も無い",
+      "commit": "aed1576df29344fa70813a0c25c89f40137ca9db",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+        "start": 23,
+        "end": 41,
+        "emphasis": [
+          {
+            "start": 29,
+            "end": 33
+          }
+        ],
+        "text": "test(\"ぼかしが既定のままの Box はぼかしの宣言を出力しない\", () => {\n  const style = setupBoxStyle({});\n\n  expect([\"filter\", \"backdrop-filter\"].filter((p) => p in style)).toEqual([]);\n});\n\ntest(\"ぼかしに 0 を書いた Box はぼかしの宣言を出力しない\", () => {\n  const style = setupBoxStyle({ layerBlur: 0, backdropBlur: 0 });\n\n  expect([\"filter\", \"backdrop-filter\"].filter((p) => p in style)).toEqual([]);\n});\n\ntest(\"取りうる範囲を外れた負の layerBlur は丸めずそのまま出力する\", () => {\n  expect(setupBoxStyle({ layerBlur: -4 }).filter).toBe(\"blur(-4px)\");\n});\n\ntest(\"数値でない layerBlur は宣言を出力しない\", () => {\n  expect(\"filter\" in setupBoxStyle({ layerBlur: \"4\" })).toBe(false);\n});"
+      },
+      "values": {
+        "columns": [
+          "layerBlur",
+          "filter"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "(書かない)",
+              "出ない"
+            ]
+          },
+          {
+            "cells": [
+              "0",
+              "出ない"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "4",
+              "blur(4px)"
+            ]
+          },
+          {
+            "cells": [
+              "-4",
+              "blur(-4px)"
+            ]
+          },
+          {
+            "cells": [
+              "\"4\"",
+              "出ない"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-blur-create"
+      ]
+    },
+    {
+      "id": "t-css-negative",
+      "suite": "s-element-blur",
+      "name": "取りうる範囲を外れた負の layerBlur は丸めずそのまま出力する",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "範囲の判定は検証の 1 か所に持つ。負の `blur()` は CSS が宣言ごと捨てる",
+      "given": "`layerBlur: -4` の Box",
+      "when": "スタイルを作る",
+      "then": "`filter` が `blur(-4px)`",
+      "commit": "aed1576df29344fa70813a0c25c89f40137ca9db",
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-blur-create"
+      ]
+    },
+    {
+      "id": "t-css-not-number",
+      "suite": "s-element-blur",
+      "name": "数値でない layerBlur は宣言を出力しない",
+      "techniques": [
+        "error"
+      ],
+      "why": "ファイル由来の不正な綴りを CSS に流さない",
+      "given": "`layerBlur: \"4\"` の Box",
+      "when": "スタイルを作る",
+      "then": "`filter` が無い",
+      "commit": "aed1576df29344fa70813a0c25c89f40137ca9db",
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ]
+    },
+    {
+      "id": "t-css-ellipse",
+      "suite": "s-element-blur",
+      "name": "backdropBlur を書いた Ellipse は backdrop-filter の blur を出力する",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "Ellipse の宣言の入口からもぼかしを呼んでいること",
+      "given": "`backdropBlur: 3` の Ellipse",
+      "when": "スタイルを作る",
+      "then": "`backdrop-filter` が `blur(3px)`",
+      "commit": "aed1576df29344fa70813a0c25c89f40137ca9db",
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ],
+      "covers": [
+        "m-blur-create"
+      ]
+    },
+    {
+      "id": "t-webkit",
+      "suite": "s-element-blur",
+      "name": "背後のぼかしに WebKit の接頭辞付きの宣言を並べない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "`-webkit-backdrop-filter` を出さない判断を守るテストは意図的に書いていない(#1412 で判断が変わりうるため。理由は doc にある)",
+      "given": "`backdropBlur: 4` の Box",
+      "when": "スタイルを作る",
+      "then": "`-webkit-backdrop-filter` が無い",
+      "todo": true,
+      "targets": [
+        "src/domains/compiled/compiled-element/index.ts"
+      ]
+    },
+    {
+      "id": "t-artboard-filter",
+      "suite": "s-artboard-blur",
+      "name": "layerBlur を書いた artboard は filter の blur を出力する",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "artboard も `layerBlur` は受け付ける(docs/03「ぼかし」)",
+      "given": "`layerBlur: 4` の artboard",
+      "when": "コンパイルする",
+      "then": "`filter` が `blur(4px)`",
+      "commit": "aed1576df29344fa70813a0c25c89f40137ca9db",
+      "excerpt": {
+        "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.blur.test.ts",
+        "start": 1,
+        "end": 14,
+        "text": "import { expect, test } from \"vitest\";\nimport { setupCompiledArtboard } from \"./compiled-artboard-setup\";\n\ntest(\"layerBlur を書いた artboard は filter の blur を出力する\", () => {\n  const compiled = setupCompiledArtboard({ layerBlur: 4 });\n\n  expect(compiled.element.style.filter).toBe(\"blur(4px)\");\n});\n\ntest(\"backdropBlur を書いた artboard は backdrop-filter を出力しない\", () => {\n  const compiled = setupCompiledArtboard({ backdropBlur: 4 });\n\n  expect(\"backdrop-filter\" in compiled.element.style).toBe(false);\n});"
+      },
+      "targets": [
+        "src/domains/compiled/compiled-artboard/index.ts"
+      ],
+      "covers": [
+        "m-box-decl",
+        "m-blur-create"
+      ]
+    },
+    {
+      "id": "t-artboard-no-backdrop",
+      "suite": "s-artboard-blur",
+      "name": "backdropBlur を書いた artboard は backdrop-filter を出力しない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "0 以外(4)を書いて出ないことを見るので、`boxProps` の固定を外すと落ちる",
+      "given": "`backdropBlur: 4` の artboard",
+      "when": "コンパイルする",
+      "then": "`backdrop-filter` が無い",
+      "commit": "aed1576df29344fa70813a0c25c89f40137ca9db",
+      "targets": [
+        "src/domains/compiled/compiled-artboard/index.ts",
+        "src/domains/dcmp/artboard/index.ts"
+      ],
+      "covers": [
+        "m-boxprops"
+      ]
+    },
+    {
+      "id": "t-box-props-backdrop",
+      "suite": "s-box-props",
+      "name": "props で背後のぼかしを指定しても artboard の背後はぼかさない",
+      "techniques": [
+        "state"
+      ],
+      "why": "artboard を Box として読むときに背後のぼかしを 0 に固定する",
+      "given": "`backdropBlur: 8` を書いた artboard",
+      "when": "Box として読む",
+      "then": "`backdropBlur` が 0",
+      "commit": "d4505f3db7b57cf9196f96621e94f6fbcec0be74",
+      "excerpt": {
+        "path": "src/domains/dcmp/artboard/__tests__/artboard.box-props.test.ts",
+        "start": 137,
+        "end": 161,
+        "text": "test(\"props で背後のぼかしを指定しても artboard の背後はぼかさない\", () => {\n  const props = Artboard.boxProps(\n    Artboard.create({\n      name: \"login-screen\",\n      width: 375,\n      height: 812,\n      props: { backdropBlur: 8 },\n    }),\n  );\n\n  expect(props.backdropBlur).toBe(0);\n});\n\ntest(\"props でノード自身のぼかしを指定すると artboard はその値で解決される\", () => {\n  const props = Artboard.boxProps(\n    Artboard.create({\n      name: \"login-screen\",\n      width: 375,\n      height: 812,\n      props: { layerBlur: 8 },\n    }),\n  );\n\n  expect(props.layerBlur).toBe(8);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/artboard/index.ts"
+      ],
+      "covers": [
+        "m-boxprops"
+      ]
+    },
+    {
+      "id": "t-box-props-layer",
+      "suite": "s-box-props",
+      "name": "props でノード自身のぼかしを指定すると artboard はその値で解決される",
+      "techniques": [
+        "state"
+      ],
+      "why": "`layerBlur` には触っていない",
+      "given": "`layerBlur: 8` を書いた artboard",
+      "when": "Box として読む",
+      "then": "`layerBlur` が 8",
+      "commit": "d4505f3db7b57cf9196f96621e94f6fbcec0be74",
+      "targets": [
+        "src/domains/dcmp/artboard/index.ts"
+      ],
+      "covers": [
+        "m-boxprops"
+      ]
+    },
+    {
+      "id": "t-artboard-defs",
+      "suite": "s-artboard-defs",
+      "name": "背後のぼかしは artboard では読み捨てるので、パネルに出さない",
+      "techniques": [
+        "state"
+      ],
+      "why": "変えられない prop の一覧に入っている",
+      "given": "artboard の prop 定義",
+      "when": "キーを並べる",
+      "then": "`backdropBlur` を含まない",
+      "commit": "d4505f3db7b57cf9196f96621e94f6fbcec0be74",
+      "targets": [
+        "src/domains/dcmp/artboard/index.ts"
+      ],
+      "covers": [
+        "m-artboard-defs"
+      ]
+    },
+    {
+      "id": "t-artboard-type",
+      "suite": "s-artboard-type",
+      "name": "artboard の背後のぼかしは型でも 0 に絞られている",
+      "techniques": [
+        "type"
+      ],
+      "why": "固定値が型にも表れていて、0 以外を返す実装は型で弾かれる",
+      "given": "`ArtboardBoxProps` の型",
+      "when": "`backdropBlur` の型を見る",
+      "then": "リテラル型の 0",
+      "commit": "d4505f3db7b57cf9196f96621e94f6fbcec0be74",
+      "targets": [
+        "src/domains/dcmp/artboard/index.ts"
+      ]
+    },
+    {
+      "id": "t-validate-artboard-unknown",
+      "suite": "s-validate-artboard",
+      "name": "artboard の props に書いた背後のぼかしは読み捨てられ、未知の prop のエラーにならない",
+      "techniques": [
+        "state"
+      ],
+      "why": "読み捨てる prop はエラーにしない(docs/03「前提」)",
+      "given": "`backdropBlur: 8` を書いた artboard",
+      "when": "ドキュメントを検証する",
+      "then": "未知の prop のエラー以外は出ない",
+      "commit": "d4505f3db7b57cf9196f96621e94f6fbcec0be74",
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "m-validate"
+      ]
+    },
+    {
+      "id": "t-validate-artboard-range",
+      "suite": "s-validate-artboard",
+      "name": "読み捨てる prop でも、artboard の props に負の背後のぼかしを書くと範囲違反のエラーになる",
+      "techniques": [
+        "error"
+      ],
+      "why": "値は Box のスキーマで検証する。書いても効かないことはエラーの理由にしない",
+      "given": "`backdropBlur: -1` を書いた artboard",
+      "when": "ドキュメントを検証する",
+      "then": "`range-violation` が 1 件",
+      "commit": "d4505f3db7b57cf9196f96621e94f6fbcec0be74",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+        "start": 167,
+        "end": 177,
+        "text": "test(\"読み捨てる prop でも、artboard の props に負の背後のぼかしを書くと範囲違反のエラーになる\", () => {\n  const errors = collectSingleArtboardErrors({ backdropBlur: -1 });\n\n  expect(errors).toEqual([\n    expect.objectContaining({\n      kind: \"range-violation\",\n      nodeName: \"screen\",\n      prop: \"backdropBlur\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "m-validate"
+      ]
+    },
+    {
+      "id": "t-validate-box",
+      "suite": "s-validate-domain",
+      "name": "Box に負の layerBlur を指定すると range-violation エラーになる",
+      "techniques": [
+        "error"
+      ],
+      "why": "スキーマの下端がドキュメントの検証まで届く",
+      "given": "`layerBlur: -1` の Box",
+      "when": "ドキュメントを検証する",
+      "then": "`range-violation` が 1 件",
+      "commit": "d4505f3db7b57cf9196f96621e94f6fbcec0be74",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+        "start": 81,
+        "end": 100,
+        "text": "test(\"Box に負の layerBlur を指定すると range-violation エラーになる\", () => {\n  const document = DesignDocument.create({\n    artboards: [\n      {\n        name: \"screen\",\n        width: 375,\n        height: 812,\n        children: [{ name: \"box-1\", type: \"Box\", props: { layerBlur: -1 } }],\n      },\n    ],\n  });\n\n  expect(DesignDocument.collectErrors(document)).toEqual([\n    expect.objectContaining({\n      kind: \"range-violation\",\n      nodeName: \"box-1\",\n      prop: \"layerBlur\",\n    }),\n  ]);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "m-validate"
+      ]
+    },
+    {
+      "id": "t-validate-ellipse",
+      "suite": "s-validate-domain",
+      "name": "Ellipse に負の backdropBlur を指定すると range-violation エラーになる",
+      "techniques": [
+        "error"
+      ],
+      "why": "Ellipse にも同じ下端が効く",
+      "given": "既定テンプレートのトークンと `backdropBlur: -1` の Ellipse",
+      "when": "ドキュメントを検証する",
+      "then": "`range-violation` が 1 件",
+      "commit": "d4505f3db7b57cf9196f96621e94f6fbcec0be74",
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "m-validate"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "四角と楕円をぼかせるようになった",
+    "lead": "パネルの見た目の節に、図形そのものをぼかす行と背後をぼかす行が加わり、入れた強さでキャンバスの図形がぼけるようになりました。artboard は自分自身のぼかしだけを使えます。",
+    "changed": {
+      "before": [
+        {
+          "text": "図形をぼかす手段が無く、ファイルにぼかしを書くと知らない設定としてエラーになった"
+        }
+      ],
+      "after": [
+        {
+          "text": "四角と楕円の見た目の節で、影のすぐ下に Layer Blur と Backdrop Blur の 2 行が並ぶ",
+          "message": "m-panel-schema"
+        },
+        {
+          "text": "Layer Blur に強さを入れると、その図形と中身がぼけて描かれる",
+          "message": "m-blur-create"
+        },
+        {
+          "text": "Backdrop Blur に強さを入れると、図形の塗りが透けているところから見える背後がぼける",
+          "message": "m-blur-create"
+        },
+        {
+          "text": "0 より小さい強さを書くとエラーになり、0 以上を求める文で知らされる",
+          "message": "m-range"
+        }
+      ],
+      "text": "ぼかしても図形の箱は変わらないので、選択の枠・ハンドル・クリックで選べる範囲はぼかす前のままです。",
+      "specs": [
+        {
+          "path": "docs/01-file-format.md",
+          "locator": "「formatVersion」の版の表の 1.1 の行",
+          "text": "1.1 で加わったものに、四角と楕円の 2 つのぼかし(artboard の背後のぼかしは読み捨てる)を足した。版は上げていない",
+          "shas": [
+            "ce0ef38bc3c0a7bb982865cdc6232c690e269891"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1305,
+          "text": "ぼかしの仕様を決めた回。パネルの並びと artboard の扱いの確かめ方をこの PR へ引き継いだ"
+        },
+        {
+          "issue": 1412,
+          "text": "Apple 製の古い画面部品で背後のぼかしが効くかの確認を、この PR から分けた"
+        }
+      ],
+      "primers": [
+        "css-filter",
+        "blur-filter-table",
+        "literal-range"
+      ]
+    },
+    "tables": [
+      {
+        "label": "どの図形でどのぼかしが効くか",
+        "gist": "四角と楕円は 2 つとも効き、artboard は自分自身のぼかしだけが効く。",
+        "text": "artboard の後ろに何が描かれるかを仕様が決めていないので、artboard の背後のぼかしは書いても効きません。",
+        "rowHeads": [
+          {
+            "id": "rect",
+            "label": "四角"
+          },
+          {
+            "id": "ellipse",
+            "label": "楕円"
+          },
+          {
+            "id": "artboard",
+            "label": "artboard",
+            "note": "背後のぼかしは読み捨てる"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "layer",
+            "label": "自分自身のぼかし"
+          },
+          {
+            "id": "backdrop",
+            "label": "背後のぼかし"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "rect",
+            "columnHead": "layer",
+            "result": "パネルに行が出て、図形と中身がぼける",
+            "was": "行が無く、ぼかせない",
+            "tests": [
+              "t-css-layer",
+              "t-panel-number"
+            ]
+          },
+          {
+            "rowHead": "rect",
+            "columnHead": "backdrop",
+            "result": "パネルに行が出て、透けて見える背後がぼける",
+            "was": "行が無く、ぼかせない",
+            "tests": [
+              "t-css-backdrop",
+              "t-schema-backdrop"
+            ]
+          },
+          {
+            "rowHead": "ellipse",
+            "columnHead": "layer",
+            "result": "パネルに行が出て、楕円がぼける",
+            "was": "行が無く、ぼかせない",
+            "tests": [
+              "t-panel-order",
+              "t-schema-ellipse"
+            ]
+          },
+          {
+            "rowHead": "ellipse",
+            "columnHead": "backdrop",
+            "result": "パネルに行が出て、透けて見える背後がぼける",
+            "was": "行が無く、ぼかせない",
+            "tests": [
+              "t-css-ellipse"
+            ]
+          },
+          {
+            "rowHead": "artboard",
+            "columnHead": "layer",
+            "result": "パネルに行が出て、artboard 全体がぼける",
+            "was": "行が無く、ぼかせない",
+            "tests": [
+              "t-panel-artboard-layer",
+              "t-artboard-filter",
+              "t-box-props-layer"
+            ]
+          },
+          {
+            "rowHead": "artboard",
+            "columnHead": "backdrop",
+            "result": "パネルに行が出ず、ファイルに書いてもぼけない",
+            "note": "書いてもエラーにはならない",
+            "tests": [
+              "t-panel-artboard-backdrop",
+              "t-artboard-no-backdrop",
+              "t-box-props-backdrop",
+              "t-validate-artboard-unknown"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "ぼかしに 0 より小さい強さを書いたとき",
+        "before": [],
+        "after": [
+          {
+            "text": "エラーとして 0 以上を求める文が出る",
+            "message": "m-range"
+          },
+          {
+            "text": "キャンバスではぼけない(描く側が不正な強さを捨てる)",
+            "message": "m-blur-create"
+          }
+        ],
+        "text": "artboard の背後のぼかしのように効かない設定でも、強さが不正ならエラーになります。",
+        "tests": [
+          "t-validate-box",
+          "t-validate-ellipse",
+          "t-validate-artboard-range",
+          "t-lower-message",
+          "t-css-negative"
+        ],
+        "primers": [
+          "literal-range"
+        ]
+      },
+      {
+        "label": "ぼかした図形の中のものを運ぶとき",
+        "before": [],
+        "after": [
+          {
+            "text": "運んでいる間も、運ぶものは画面に映ったまま前に出る"
+          },
+          {
+            "text": "ぼかした図形の中から運ぶと、運んでいる間もぼけたまま見える"
+          }
+        ],
+        "text": "透明度を下げた図形の中から運ぶときと同じ見え方で、許容しています。",
+        "primers": [
+          "stacking-context"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "強さが 0 のぼかしは、何も書いていないのと同じ見え方になる",
+        "tests": [
+          "t-css-zero"
+        ]
+      },
+      {
+        "text": "ぼかしても選択の枠とハンドルの位置・大きさは変わらない"
+      },
+      {
+        "text": "ぼかしの欄は他の数値の欄と同じ形で、単位を添えない"
+      },
+      {
+        "text": "ファイル形式の版は 1.1 のまま"
+      },
+      {
+        "text": "強さの上限は無く、どれだけ大きくしてもエラーにならない",
+        "tests": [
+          "t-lower-large",
+          "t-lower-infinity"
+        ]
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/03-schema.md",
+        "locator": "「ぼかし」の節",
+        "text": "2 つのぼかしの意味・既定値・artboard で背後のぼかしを読み捨てることは、前の回で決めたまま変えていない"
+      },
+      {
+        "path": "docs/03-schema.md",
+        "locator": "「HTML/CSS へのコンパイル規則」の表のぼかしの 2 行",
+        "text": "既定では出さず、範囲外も丸めずに出す規則は変えていない"
+      },
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「ぼかしの欄」の段落",
+        "text": "見せ方を足さずスキーマから生成した形で出すことは変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "css-filter",
+      "category": "css",
+      "label": "`filter` と `backdrop-filter`",
+      "gist": "要素の描画にぼかしなどの効果を掛ける CSS のプロパティ。`filter` は要素自身(子孫を含む)の描画を、`backdrop-filter` は要素の後ろに既に描かれているものを加工する。値には[[フィルター関数|filter-function]]を書く。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`blur(4px)` は半径 4px でぼかす[[フィルター関数|filter-function]]。`filter: blur(4px)` なら要素とその中身がまとめてぼけ、`backdrop-filter: blur(8px)` なら要素の箱の内側から透けて見える背後だけがぼける。`backdrop-filter` の効果は、要素自身の塗りが不透明だと隠れて見えない。"
+        },
+        {
+          "kind": "declaration",
+          "code": "filter: blur(4px);\nbackdrop-filter: blur(8px);"
+        },
+        {
+          "kind": "caution",
+          "text": "`blur()` に負の長さを書くと、その宣言は[[不正な宣言|invalid-declaration]]としてまるごと捨てられる。この PR は範囲外の値を丸めずにそのまま出すので、負の強さは「ぼかさない」と同じ見た目になる。"
+        },
+        {
+          "kind": "caution",
+          "text": "`filter` / `backdrop-filter` は、値が `blur(0px)` でも要素に新しい [[stacking context|stacking-context-term]] を作る。だから既定の 0 では宣言そのものを出さない。"
+        },
+        {
+          "kind": "memo",
+          "text": "古い WebKit 系のブラウザでは `backdrop-filter` に `-webkit-` の接頭辞が要ることがある。この PR は接頭辞なしだけを出し、効くかの確認は #1412 に分けた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "lineRange": {
+            "start": 240,
+            "end": 243
+          },
+          "text": "`layerBlur` を `filter`、`backdropBlur` を `backdrop-filter` に対応させる表",
+          "shas": [
+            "d3bd180deab93272161a3c77683e1edf3a083f43",
+            "f700e3cdf13d3cf4edc56a2cbd265d0e845e57d9"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/css-declaration/index.ts",
+          "lineRange": {
+            "start": 39,
+            "end": 40
+          },
+          "text": "出してよい CSS プロパティに 2 つを足した",
+          "shas": [
+            "d3bd180deab93272161a3c77683e1edf3a083f43"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "stacking-context",
+        "blur-filter-table"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "stacking-context",
+      "category": "css",
+      "label": "stacking context",
+      "gist": "重なった要素のどれを手前に描くかを決める単位。ある要素が [[stacking context|stacking-context-term]] を作ると、その中身の `z-index` はその中でしか比べられず、外の要素より手前に出られなくなる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`z-index` は同じ stacking context の中の要素どうしの手前・奥を決める。`transform`(回転)・1 未満の `opacity`・`filter`・`backdrop-filter` を持つ要素は、それぞれ新しい stacking context を作る。その子がどれだけ大きな `z-index` を持っても、親の stacking context の外にある隣の要素の手前には出ない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+            "start": 88,
+            "end": 93,
+            "emphasis": [
+              {
+                "start": 89,
+                "end": 89
+              }
+            ],
+            "text": "      {/*\n        運んでいるノード自身の z-index だけでは、回転・不透明度・ぼかしを持つ祖先（新しい stacking\n        context）の外へ効かず、隣の artboard の白い面の裏へ回る（実測）。artboard ごと前に出せば、\n        祖先が何で stacking context を作っていても越えられる。artboard の枠（`ArtboardFrame` の\n        `li`）が stacking context を作ると効かなくなるが、happy-dom は重なりを解かないのでテスト\n        は落ちない（気づく手段は視覚での確認だけ）。"
+          }
+        },
+        {
+          "kind": "spec",
+          "text": "運ぶプレビューは、運んでいるノードではなく artboard ごと前に出す。祖先が何で stacking context を作っていても越えられるので、ぼかしが増えてもコードは変わらない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+          "lineRange": {
+            "start": 89,
+            "end": 91
+          },
+          "text": "stacking context を作る祖先の列挙にぼかしを足した",
+          "shas": [
+            "d7387ea078f514df3412c2a33ce595877bc7238a"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "css-filter"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "as-const-satisfies",
+      "category": "typescript",
+      "label": "`as const satisfies`",
+      "gist": "オブジェクトを書いたままの[[リテラル型|literal-type]]で残しつつ、決まった形に合っているかをコンパイル時に確かめる書き方。`as const` が値の型を狭め、`satisfies` が形を検査する。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`as const` を付けると、`\"filter\"` は `string` ではなく `\"filter\"` という[[リテラル型|literal-type]]のまま、オブジェクトは[[読み取り専用|readonly]]になる。`satisfies T` は、値が `T` に代入できるかだけを確かめ、値の型を `T` に広げない。両方を付けると、型は書いたままで、形の誤り(知らないキー・違う値)はコンパイルエラーになる。"
+        },
+        {
+          "kind": "declaration",
+          "code": "const BlurFilterProperties = {\n  layerBlur: \"filter\",\n  backdropBlur: \"backdrop-filter\",\n} as const satisfies Readonly<Partial<Record<BlurFilterPropName, CssProperty>>>;"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "Record<K, V>",
+              "type": "組み込みの型",
+              "text": "キーが `K`、値が `V` のオブジェクトの型"
+            },
+            {
+              "name": "Partial<T>",
+              "type": "組み込みの型",
+              "text": "`T` のどのキーも省いてよい形にした型",
+              "note": "表は 2 つの prop だけを持つので要る"
+            },
+            {
+              "name": "Readonly<T>",
+              "type": "組み込みの型",
+              "text": "`T` のキーを[[読み取り専用|readonly]]にした型"
+            }
+          ]
+        },
+        {
+          "kind": "caution",
+          "text": "`satisfies` の代わりに `const x: T = …` と型を付けると、値の型が `T` に広がり、`\"filter\"` が `CssProperty` という union 型になって表から元の綴りが読めなくなる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "lineRange": {
+            "start": 240,
+            "end": 243
+          },
+          "text": "prop と CSS プロパティの対応表",
+          "shas": [
+            "d3bd180deab93272161a3c77683e1edf3a083f43",
+            "f700e3cdf13d3cf4edc56a2cbd265d0e845e57d9"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "lineRange": {
+            "start": 185,
+            "end": 200
+          },
+          "text": "ぼかしの 2 prop の定義",
+          "shas": [
+            "be271297f0e85f04667606e8568bc223558101bf"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "keyof-intersection",
+        "blur-filter-table"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "keyof-intersection",
+      "category": "typescript",
+      "label": "`keyof A & keyof B`",
+      "gist": "2 つのオブジェクトの型が両方とも持っているキーだけを、文字列の[[リテラル型|literal-type]]の集まりとして取り出す書き方。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`keyof T` は `T` のキーの名前を union 型(`\"a\" | \"b\"` のような「どれか 1 つ」の型)で返す。`&` は 2 つの型の両方を満たす型で、キーの union どうしに使うと共通のキーだけが残る。`typeof X` は値 `X` の型を取り出し、`[\"Box\"]` はその型の `Box` キーの型を引く。"
+        },
+        {
+          "kind": "declaration",
+          "code": "type BlurFilterPropName = keyof (typeof PrimitiveSchemas)[\"Box\"][\"props\"] &\n  keyof (typeof PrimitiveSchemas)[\"Ellipse\"][\"props\"];"
+        },
+        {
+          "kind": "rule",
+          "text": "対応表のキーをこの型で閉じるので、Box にしか無い `overflow` を表に足すと型エラー(TS2353)になる。Ellipse から prop が外れたときも表が型エラーで知らせる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "lineRange": {
+            "start": 229,
+            "end": 231
+          },
+          "text": "Box と Ellipse の両方が宣言しているぼかしの prop 名",
+          "shas": [
+            "f700e3cdf13d3cf4edc56a2cbd265d0e845e57d9"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "as-const-satisfies"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "infinity-json",
+      "category": "javascript · json",
+      "label": "`Infinity` と JSON の `1e400`",
+      "gist": "JavaScript の数は[[倍精度浮動小数点数|double]]で、表せる上限を超えると `Infinity` になる。JSON には `Infinity` の綴りが無いが、`1e400` のような大きすぎる数を読むと `Infinity` が届く。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`Number.POSITIVE_INFINITY`(`Infinity`)はどの有限の数より大きく、`Number.NEGATIVE_INFINITY` はどれより小さい。`JSON.parse(\"1e400\")` は `Infinity`、`\"-1e400\"` は `-Infinity` を返す。`NaN` は JSON から作れない。"
+        },
+        {
+          "kind": "caution",
+          "text": "`JSON.stringify` は `Infinity` を `null` と書く。上限の無い数値 prop に `1e400` を書いて開き、保存すると次に開いたときは型の不一致になる。範囲を宣言しない数値 prop すべてに既にある挙動で、この PR では変えていない。"
+        },
+        {
+          "kind": "history",
+          "text": "doc は最初「`NaN` と `-Infinity` は下端との比較で落ちる」と書いていたが、ファイルから届かない `NaN` の主張を外し、`-Infinity` だけを書いてテストで固定した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "lineRange": {
+            "start": 174,
+            "end": 177
+          },
+          "text": "`+Infinity` を範囲内にし、`-Infinity` は落ちると書いた doc",
+          "shas": [
+            "2080ea7538c5e363a689e6eacc219f6521d94fa6",
+            "f1e759787caab2039001298bcd302e370d29eb70",
+            "e8305c7fed2cea365ba06494e66f93f174be4b6e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "literal-range"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "literal-range",
+      "category": "dcmp · prop 定義",
+      "label": "下端だけの範囲",
+      "gist": "生リテラルの数値 prop の `range` を、上端を省ける非公開の型 `LiteralRange` にした。上端が無いときは `+Infinity` と読んで既存の `Range.contains` で判定する([[`Infinity`|infinity-term]] の扱いは language の節)。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "type LiteralRange = Readonly<{ min: number; max?: number }>;"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+            "start": 184,
+            "end": 208,
+            "emphasis": [
+              {
+                "start": 192,
+                "end": 202
+              }
+            ],
+            "text": "function collectRangeErrors(\n  name: string,\n  value: number,\n  range: LiteralRange | undefined,\n): readonly PropValidationError[] {\n  if (range === undefined) {\n    return [];\n  }\n  const { min, max } = range;\n  const bound =\n    max === undefined\n      ? {\n          range: { min, max: Number.POSITIVE_INFINITY },\n          message: `prop \"${name}\" must be at least ${min}`,\n        }\n      : {\n          range: { min, max },\n          message: `prop \"${name}\" must be between ${min} and ${max}`,\n        };\n  if (Range.contains(bound.range, value)) {\n    return [];\n  }\n\n  return [{ kind: \"range-violation\", prop: name, message: bound.message }];\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "範囲と違反の文は常に同じ分岐で決まる対なので、上端の有無の 1 回の分岐で一緒に作る。"
+        },
+        {
+          "kind": "spec",
+          "text": "docs/03「prop 定義のフィールド」は `range` を `{ min: 0 }` のように下端だけでも書けて、そのとき上限を持たないと定めている。"
+        },
+        {
+          "kind": "history",
+          "text": "`Range` を `max?` にする案は、canvas 側が長さ・中心・交差で上端を必須にしているので捨てた。スキーマに `{ min: 0, max: Infinity }` と書く案も、docs/03 の書き方と違い文も `between 0 and Infinity` になるので捨てた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "lineRange": {
+            "start": 92,
+            "end": 106
+          },
+          "text": "`LiteralRange` と、数値 prop の `range` の型",
+          "shas": [
+            "2080ea7538c5e363a689e6eacc219f6521d94fa6"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "lineRange": {
+            "start": 184,
+            "end": 208
+          },
+          "text": "`collectRangeErrors` の判定と違反の文",
+          "shas": [
+            "2080ea7538c5e363a689e6eacc219f6521d94fa6",
+            "f1e759787caab2039001298bcd302e370d29eb70"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "infinity-json"
+      ],
+      "tests": [
+        "t-lower-at-min",
+        "t-lower-infinity",
+        "t-lower-neg-infinity",
+        "t-lower-message",
+        "t-type-lower-only",
+        "t-type-no-min"
+      ],
+      "flows": [
+        "load-validate"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "blur-filter-table",
+      "category": "compiled · CSS 出力",
+      "label": "ぼかしの対応表",
+      "gist": "prop 名と CSS プロパティの組を表 `BlurFilterProperties` で閉じ、`blurFilterDeclarations` は props だけを受け取って表を走査する。表の書き方は [[`as const satisfies`|as-const-satisfies-term]] の節。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/compiled/compiled-element/index.ts",
+            "start": 229,
+            "end": 266,
+            "text": "/** ぼかしを持つ primitive (Box / Ellipse) の両方が宣言している prop 名。 */\ntype BlurFilterPropName = keyof (typeof PrimitiveSchemas)[\"Box\"][\"props\"] &\n  keyof (typeof PrimitiveSchemas)[\"Ellipse\"][\"props\"];\n\n/**\n * ぼかしの prop → その prop が決める CSS プロパティ (docs/03「HTML/CSS へのコンパイル規則」\n * の表)。並びが宣言の出力順になる。\n *\n * `-webkit-backdrop-filter` を出さないのは、WebKit 系 webview で接頭辞が要るかを確かめて\n * いないため。docs/03 の表どおり接頭辞なしだけを出す。\n */\nconst BlurFilterProperties = {\n  layerBlur: \"filter\",\n  backdropBlur: \"backdrop-filter\",\n} as const satisfies Readonly<Partial<Record<BlurFilterPropName, CssProperty>>>;\n\n/** ぼかさない強さ。 */\nconst NoBlur = 0;\n\n/**\n * ぼかしの props を `blur()` の宣言にする (docs/03 の表の `layerBlur` / `backdropBlur` の行)。\n *\n * @param props ノードに設定されている props\n * @returns 0 でない数値を持つ prop ごとに宣言 1 件。0 と数値でない値（ファイル由来の不正な\n *   綴り）の prop では出さない\n */\nfunction blurFilterDeclarations(props: Props): readonly CssDeclarationType[] {\n  return Object.entries(BlurFilterProperties).flatMap(\n    ([prop, property]): readonly CssDeclarationType[] => {\n      const blur = props[prop];\n      const blurs = typeof blur === \"number\" && blur !== NoBlur;\n\n      return blurs\n        ? [CssDeclaration.create(property, `blur(${Px.create(blur)})`)]\n        : [];\n    },\n  );\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "組を引数で渡す形(`blurDeclarations(property, blur)`)にしない。`filter` と `backdropBlur` を取り違えても型で弾けないため。`TokenPropProperties` と同じ形にした。"
+        },
+        {
+          "kind": "spec",
+          "text": "docs/03「HTML/CSS へのコンパイル規則」の表: 既定の 0 は出さず(`rotation` の行と同じ理由)、範囲外の値も丸めずに出す(`opacity` の行と同じ)。"
+        },
+        {
+          "kind": "history",
+          "text": "最初は表のキーを Box のスキーマとしか突き合わせていなかった。レビューの指摘で Box と Ellipse の共通部分に絞った。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "lineRange": {
+            "start": 229,
+            "end": 266
+          },
+          "text": "対応表と宣言を作る関数",
+          "shas": [
+            "d3bd180deab93272161a3c77683e1edf3a083f43",
+            "f700e3cdf13d3cf4edc56a2cbd265d0e845e57d9"
+          ]
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "lineRange": {
+            "start": 426,
+            "end": 426
+          },
+          "text": "Box の shadow の直後で展開する",
+          "shas": [
+            "d3bd180deab93272161a3c77683e1edf3a083f43"
+          ]
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "lineRange": {
+            "start": 561,
+            "end": 561
+          },
+          "text": "Ellipse の shadow の直後で展開する",
+          "shas": [
+            "d3bd180deab93272161a3c77683e1edf3a083f43"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "as-const-satisfies",
+        "keyof-intersection",
+        "css-filter"
+      ],
+      "tests": [
+        "t-css-layer",
+        "t-css-backdrop",
+        "t-css-zero",
+        "t-css-negative",
+        "t-css-not-number",
+        "t-css-ellipse",
+        "t-webkit"
+      ],
+      "flows": [
+        "edit-blur"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "artboard-fixed",
+      "category": "dcmp · artboard",
+      "label": "artboard の固定値",
+      "gist": "artboard は Box のスキーマを流用し、変えられない prop を名前の一覧・型・`boxProps` の 3 か所で固定する。この PR で `backdropBlur` を 0 に固定する列に加えた。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "名前の一覧(`ArtboardUneditableProps`)に入れるとパネルから外れ、`boxProps` で値を重ねると CSS 出力にも効く。`CompiledArtboard` は `boxProps` の結果を Box の出力に渡すので、パネルから外すだけでは `backdrop-filter` が出てしまう。"
+        },
+        {
+          "kind": "rule",
+          "text": "artboard を Box として読む規則は `boxProps` 1 か所に集める。`CompiledArtboard` 側で宣言を落とさない。"
+        },
+        {
+          "kind": "spec",
+          "text": "docs/03「前提」: 読み捨てる prop はパネルに出さず、書かれていても効かせず、未知の prop のエラーにもしない。ただし値は Box のスキーマで検証する。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "lineRange": {
+            "start": 110,
+            "end": 125
+          },
+          "text": "変えられない prop の一覧に `backdropBlur` を足した",
+          "shas": [
+            "ce0d211ef621a6d02150585ba87a0eaa6d5a04bf"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "lineRange": {
+            "start": 326,
+            "end": 341
+          },
+          "text": "`boxProps` で `backdropBlur: 0` を重ねる",
+          "shas": [
+            "ce0d211ef621a6d02150585ba87a0eaa6d5a04bf"
+          ]
+        }
+      ],
+      "tests": [
+        "t-box-props-backdrop",
+        "t-box-props-layer",
+        "t-artboard-defs",
+        "t-artboard-type",
+        "t-artboard-no-backdrop",
+        "t-validate-artboard-range"
+      ],
+      "flows": [
+        "artboard-blur"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "filter-function",
+      "label": "フィルター関数",
+      "text": "`blur()`・`brightness()` のように、CSS の `filter` / `backdrop-filter` の値として書く効果の指定。複数を空白で並べると順に掛かる。"
+    },
+    {
+      "id": "invalid-declaration",
+      "label": "不正な宣言",
+      "text": "CSS の値の文法に合わない宣言。ブラウザはその 1 行を読まなかったことにして、ほかの宣言はそのまま使う。"
+    },
+    {
+      "id": "stacking-context-term",
+      "label": "stacking context",
+      "text": "重なった要素の手前・奥を比べる単位。中の要素は、その単位の外の要素とは単位ごとにしか比べられない。"
+    },
+    {
+      "id": "literal-type",
+      "label": "リテラル型",
+      "text": "`\"filter\"` や `0` のように、ある 1 つの値だけを許す型。`string` や `number` より狭い。"
+    },
+    {
+      "id": "readonly",
+      "label": "読み取り専用",
+      "text": "TypeScript で、作ったあとにプロパティへ代入できないようにした型。代入するコードはコンパイルエラーになる。"
+    },
+    {
+      "id": "double",
+      "label": "倍精度浮動小数点数",
+      "text": "JavaScript の `number` が使う数の表し方。およそ 1.8e308 を超える数は表せず `Infinity` になる。"
+    },
+    {
+      "id": "infinity-term",
+      "label": "Infinity",
+      "text": "JavaScript の特別な数で、どの有限の数より大きい。負の向きの `-Infinity` もある。"
+    },
+    {
+      "id": "as-const-satisfies-term",
+      "label": "as const satisfies",
+      "text": "値の型を書いたままに保ちつつ、形が決まった型に合うかを確かめる TypeScript の書き方。"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-backdrop-artboard",
+      "kind": "choice",
+      "title": "artboard の背後のぼかし",
+      "prompt": "artboard の props に `backdropBlur: 4` と書いたとき、何が起きますか。",
+      "options": [
+        "`backdrop-filter: blur(4px)` が出る",
+        "未知の prop のエラーになる",
+        "パネルにも CSS にも出ず、エラーにもならない",
+        "範囲違反のエラーになる"
+      ],
+      "answer": 3,
+      "why": "artboard は `backdropBlur` を読み捨てる。変えられない prop の一覧に入っているのでパネルに出ず、`boxProps` で 0 に固定するので CSS にも出ない。読み捨てる prop はエラーにしない。負の値なら範囲違反になる。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "artboard-box-props"
+        },
+        {
+          "kind": "flow",
+          "id": "artboard-blur"
+        }
+      ]
+    },
+    {
+      "id": "q-zero",
+      "kind": "yesno",
+      "title": "0 のぼかしの出力",
+      "prompt": "`layerBlur: 0` の Box は `filter: blur(0px)` を出力する。",
+      "holds": false,
+      "why": "`blur(0px)` でも stacking context ができるので、既定の 0 では宣言を出さない(docs/03 の表の `rotation` の行と同じ理由)。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "blur-filter-declarations"
+        }
+      ]
+    },
+    {
+      "id": "q-infinity",
+      "kind": "yesno",
+      "title": "上限の無い範囲",
+      "prompt": "`range: { min: 0 }` の prop に `+Infinity`(JSON の `1e400`)を書くと、範囲違反にならない。",
+      "holds": true,
+      "why": "上端が無いときは `+Infinity` と読むので、`+Infinity` は範囲内になる。範囲を宣言しない数値 prop と同じ扱いで、有限でない値を弾くかはすべての数値 prop に掛かる判断として見送った。",
+      "go": [
+        {
+          "kind": "callEdge",
+          "id": "e-range"
+        },
+        {
+          "kind": "stepChange",
+          "flow": "load-validate",
+          "stepChange": 2
+        }
+      ]
+    },
+    {
+      "id": "q-why-table",
+      "kind": "choice",
+      "title": "ぼかしの対応表",
+      "prompt": "ぼかしの宣言を作る関数が、prop と CSS プロパティの組を引数で受け取らず表で持つのはなぜですか。",
+      "options": [
+        "実行が速いから",
+        "組を取り違えても型で弾けるようにするため",
+        "Ellipse では使わないから",
+        "`-webkit-` の接頭辞を自動で足すため"
+      ],
+      "answer": 2,
+      "why": "引数で `(property, blur)` を渡す形だと、`filter` と `backdropBlur` を取り違えても型エラーにならない。表のキーを Box と Ellipse の共通の prop 名で閉じれば、綴り違いも型エラーになる。",
+      "go": [
+        {
+          "kind": "module",
+          "path": "src/domains/compiled/compiled-element/index.ts"
+        }
+      ]
+    },
+    {
+      "id": "q-order",
+      "kind": "order",
+      "title": "Box の見た目の節の並び",
+      "prompt": "Box のパネルの Appearance 節で、次の行を上から並ぶ順に並べてください。",
+      "items": [
+        "shadow",
+        "layerBlur",
+        "backdropBlur",
+        "overflow",
+        "opacity"
+      ],
+      "why": "スキーマで `ShadowProps` と `overflow` の間に `BlurFilterProps` を差し込んだので、docs/03 の表どおり shadow の直後に 2 行が並ぶ。",
+      "go": [
+        {
+          "kind": "stepChange",
+          "flow": "edit-blur",
+          "stepChange": 1
+        },
+        {
+          "kind": "feature",
+          "id": "blur-schema"
+        }
+      ]
+    },
+    {
+      "id": "q-artboard-fix-place",
+      "kind": "yesno",
+      "title": "artboard の固定の置き場",
+      "prompt": "artboard の `backdropBlur` は、パネルの一覧から外すだけで CSS にも出なくなる。",
+      "holds": false,
+      "why": "`CompiledArtboard` は `Artboard.boxProps` の結果を Box の出力に渡すので、パネルから外すだけでは `backdrop-filter` が出る。だから `boxProps` で 0 に固定した。",
+      "go": [
+        {
+          "kind": "message",
+          "id": "m-boxprops"
+        },
+        {
+          "kind": "layer",
+          "layer": "domains / dcmp"
+        }
+      ]
+    }
+  ]
+}
