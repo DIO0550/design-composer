@@ -1,4 +1,5 @@
 import { type ReactElement, useState } from "react";
+import { FocusWithinOutlineClass } from "@/components/focus-outline";
 import type { Rgb } from "@/domains/dcmp/token";
 import {
   EditContinuities,
@@ -107,8 +108,11 @@ function HexColorInput({
     /*
      * 根を `relative` にするのは、`sr-only` の見出しが `position: absolute` で、基準が無いと右ペインのスクロール枠を
      * 抜けて文書を伸ばすため（`shorthand-row` と同じ形）。happy-dom では落ちず、気づく手段は Storybook の視覚差分だけ。
+     * フォーカスの枠を箱に描くのは、6 桁と不透明度の欄が枠を持たず（`outline-none`）、欄ごとに描くと箱の中に枠が入れ子で出るため。
      */
-    <div className="relative flex h-7 items-center gap-1 rounded-[5px] border border-[#e6e6e6] px-2 font-mono text-[11px]">
+    <div
+      className={`relative flex h-7 items-center gap-1 rounded-[5px] border border-[#e6e6e6] px-2 font-mono text-[11px] ${FocusWithinOutlineClass}`}
+    >
       <label htmlFor={pickerId} className="sr-only">
         {color.picker.label}
       </label>
