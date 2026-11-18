@@ -207,6 +207,18 @@ test("下端だけを宣言した prop に下端を下回る値を設定する�
   ]);
 });
 
+test("下端だけを宣言した prop に -Infinity を設定すると range-violation になる", () => {
+  expect(
+    PropDefinition.collectErrors(
+      definitionWithLowerBound(),
+      { name: "layerBlur", value: Number.NEGATIVE_INFINITY },
+      TokenSet.empty(),
+    ),
+  ).toEqual([
+    expect.objectContaining({ kind: "range-violation", prop: "layerBlur" }),
+  ]);
+});
+
 test("下端だけを宣言した prop の範囲違反は、下端以上であることを求める文で報告される", () => {
   expect(
     PropDefinition.collectErrors(
