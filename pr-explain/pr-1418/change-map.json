@@ -1,0 +1,1570 @@
+{
+  "version": 2,
+  "pr": 1418,
+  "headBranch": "claude/magical-cannon-t17xaj",
+  "baseBranch": "main",
+  "mergeBase": "459e6840663548f573d9121fec6fab515e6d0019",
+  "head": "e465438d6768a6505bc6277f3978e806f098b4c7",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/px/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/color/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/token/gradient/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/shadow/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/color/__tests__/color-token.alpha.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 3,
+          "changed": true,
+          "target": "src/domains/dcmp/token/color/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/token/color/__tests__/color-token.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/token/color/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/token/color/__tests__/color-token.type.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/edit-continuity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Font.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Json.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/NumberEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Range.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/__tests__/right-pane-heading.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 16,
+          "changed": true,
+          "target": "src/features/editor/components/opened-document-editor/index.tsx"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/tokens",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/__stories__/sample-token-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 190,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 27,
+          "deletions": 33,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 75,
+          "deletions": 26,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 90,
+          "deletions": 88,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 286,
+          "deletions": 196,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/tokens/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/__tests__/gradient-documents.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 20,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/tokens/components/token-editor/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 116,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/tokens/components/token-editor/index.tsx"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.title.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 58,
+          "deletions": 17,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.alpha.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 37,
+          "changed": true,
+          "target": "src/features/editor/features/tokens/domains/token-control/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 58,
+          "deletions": 63,
+          "changed": true,
+          "target": "src/features/editor/features/tokens/domains/token-control/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 102,
+          "deletions": 16,
+          "changed": true,
+          "target": "src/features/editor/features/tokens/domains/token-control/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 60,
+          "deletions": 47,
+          "changed": true,
+          "target": "src/features/editor/features/tokens/domains/token-control/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 51,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/tokens/domains/token-control/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 45,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/__stories__/right-pane-shell.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/button/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/pane-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/pane-heading/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "hooks",
+      "files": [
+        {
+          "path": "src/hooks/use-first-then-rest/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts",
+        "name": "6 桁の hex にも 3 桁の短縮形にも当たらない値 %s は RGB にできない"
+      },
+      {
+        "file": "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts",
+        "name": "6 桁・8 桁の hex でない値 %s からは6桁を取り出せない"
+      },
+      {
+        "file": "src/domains/dcmp/token/color/__tests__/color-token.normal.test.ts",
+        "name": "3 桁の hex は、各桁を重ねた 6 桁の RGB になる"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "name": "ピッカーで色を変えると、hex の欄が `#` 無しで追随する"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "name": "色の hex を `#` 無しで打って確定すると一覧の値が変わる"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "name": "追加した stop の hex を `#` 無しで打つと、その stop のピッカーも変わる"
+      },
+      {
+        "file": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+        "name": "stop の hex を `#` 無しで確定すると、その stop だけが変わった値が届く"
+      },
+      {
+        "file": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+        "name": "3 桁で確定すると、広げた 6 桁の色が別のまとまりで届く"
+      },
+      {
+        "file": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+        "name": "hex の欄の前には `#` が添えられ、欄には `#` を除いた 6 桁が出る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+        "name": "値を変えない綴りで確定しても、欄は小文字の 6 桁へ取り直される"
+      },
+      {
+        "file": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+        "name": "弾かれた hex は打った文字列が欄に残り、値は届かない"
+      },
+      {
+        "file": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+        "name": "見本は、読み上げ名 `値` を持つ色の入力欄"
+      },
+      {
+        "file": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+        "name": "読めない色が外から別の読めない綴りに変わると、`値` の欄もその綴りになる"
+      },
+      {
+        "file": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+        "name": "読めない色は `値` のテキスト欄に元の綴りで出て、不透明度の欄は無い"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.alpha.test.ts",
+        "name": "hex として読めない色は、見出し `値` で元の綴りのテキスト欄になる"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+        "name": "2 件目の stop の hex に `#` 無しで打った 6 桁でその stop の色だけが変わる"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+        "name": "hex として読めない色の stop は `stop n の色` のテキスト欄 1 本になり、不透明度の欄が無い"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+        "name": "stop の hex に 6 桁・3 桁として読めない値を打っても値を変えない"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+        "name": "stop の hex に `#` 無しで打った 6 桁でその stop の色だけが変わり、不透明度は残る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+        "name": "stop の行は比率の欄と、見本・hex・不透明度の箱を持つ"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "alpha を持つ色の hex の欄には、`#` を除いた 6 桁だけが出る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "影の色の hex に `#` 無しで打った 6 桁で影の色が変わり、不透明度は残る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "影の色の hex の欄には、`#` を除いた 6 桁だけが出る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "影の色のピッカーから `#` 無しの 6 桁が届いても色を変えない"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "色の hex に `#` 付きで打った 6 桁でも色が変わる"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "色の hex に `#` 無しで打った 6 桁で色が変わり、不透明度は残る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "色の hex に打った %j は色を変えない"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "色の hex に打った 3 桁 %s は広げた 6 桁になり、不透明度は残る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "色の hex に打った 4 桁・8 桁 %s は alpha が不透明でも色を変えない"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "読めない色の stop のテキスト欄に `#` 無しの 6 桁を打っても色を変えない"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "読めない色のテキスト欄に `#` 付きの 3 桁を打つと広げた 6 桁の色になる"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "読めない色のテキスト欄に `#` 無しの 3 桁を打っても色を変えない"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+        "name": "ピッカーの口では `#` の無い 6 桁も 8 桁も色を変えない"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+        "name": "影の色だけが見本・hex・不透明度の箱になり、見本の読み上げ名は `色` になる"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+        "name": "影を選ぶとフィールドごとの欄が仕様の順で並び、色の欄が最後の 1 行に入る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+        "name": "色を選ぶと、見本・hex・不透明度が 1 行の色の欄にまとまる"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+        "name": "field の行は色も階調も書き戻さず、影は数値のフィールドだけを指す。stop の比率の欄は比率、角度の欄は角度だけを書き戻す"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+        "name": "stop の比率の欄は % の欄、角度の欄は度の欄"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+        "name": "値の欄の field の行の入力欄は数値か文言で、不透明度・比率・角度の欄は入らない"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+        "name": "箱の書き戻し先は色トークン・影の色・stop の色の 3 つで、影は色のフィールドだけを指す"
+      }
+    ],
+    "removed": [
+      {
+        "file": "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts",
+        "name": "6桁の hex でない値 %s は RGB にできない"
+      },
+      {
+        "file": "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts",
+        "name": "hex として読めない値 %s からは6桁を取り出せない"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "name": "ピッカーで色を変えると hex の欄も追随する"
+      },
+      {
+        "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "name": "色の hex を打って確定すると一覧の値が変わる"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.alpha.test.ts",
+        "name": "hex として読めない色は打ち直せるテキスト欄1本になる"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.alpha.test.ts",
+        "name": "不透明度の欄は色と影のそれぞれに1本ずつしか出ない"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+        "name": "2 件目の stop の hex に打った 6 桁でその stop の色だけが変わる"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+        "name": "hex として読めない色の stop は色のテキスト欄 1 本になり、不透明度の欄が無い"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+        "name": "stop の hex に 6 桁として読めない値を打っても値を変えない"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+        "name": "stop の hex に打った 6 桁でその stop の色だけが変わり、不透明度は残る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "alpha を持つ色の hex の欄には 6 桁だけが出る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "影の色の hex の欄には 6 桁だけが出る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "name": "色の hex に打った 6 桁で色が変わり、不透明度は残る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+        "name": "6桁の hex として読めない入力では色を変えない"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+        "name": "影の色だけがカラーピッカーの入力欄になる"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+        "name": "影を選ぶとフィールドごとの入力欄が仕様の順で並び、hex と不透明度が色の直後に入る"
+      },
+      {
+        "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+        "name": "色を選ぶとカラーピッカー・hex・不透明度の入力欄が並ぶ"
+      }
+    ],
+    "files": [
+      "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts",
+      "src/domains/dcmp/token/color/__tests__/color-token.normal.test.ts",
+      "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+      "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+      "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+      "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.alpha.test.ts",
+      "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+      "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+      "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+      "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "265f196faf992dea5bd72e894294e4a04e33edc2",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T16:20:24Z",
+      "subject": "✨ [New Feature]: #1376 Rgb.create が 3 桁の短縮形を広げて受け付けるようにする",
+      "body": "- Rgb.create を、3 桁の短縮形を各桁を重ねた 6 桁へ広げてから判定する形にした\n- 4 桁・8 桁(alpha を持つ綴り)は 6 桁の判定で落ちるので従来どおり none\n- rgbOf は 3・4 桁を読まないまま残し、その理由を doc に書いた\n\n背景:\nTokens の hex の欄で 3 桁の短縮形(#fff)を打てるようにすると #1376 で\n決めた。docs/04-tokens.md「値の形式」は #rgb を各桁を重ねれば同じ色に\n決まる綴りとして定めているが、Rgb.create は 6 桁だけを受けていたので、\n欄に 3 桁を打つと黙って弾かれていた。\n\n採用理由:\n展開を Rgb(alpha を持たない色)の生成に置いた。alpha を持たない短縮形は\n3 桁だけで、「3 桁は通し 4 桁は弾く」は Rgb にだけ成り立つ規則のため。\n既存の非公開関数 expandShortHex をそのまま通し、展開を二重に書かない。\n\n代替案:\n- ColorToken.normalize を通してから rgbOf で読む: normalize は 4 桁も\n  広げ、rgbOf は 8 桁の alpha を黙って落とすので #aabbccff が通ってしまう\n- 展開を入力欄(token-control)側に書く: expandShortHex と重複する。展開は\n  ファイル形式が定める綴りの性質で、入力欄の約束事ではない\n- rgbOf も 3・4 桁を読むようにして非対称を消す: 文書に入る色は読み込み\n  (ColorToken.fromJson)でも書き込み(Token.normalized)でも normalize を\n  通って 6・8 桁になっており、rgbOf に短縮形が届く経路が無い\n\n影響とトレードオフ:\nRgb.create の呼び出し元は token-control の colorWithRgbFrom だけなので、\n受け付ける綴りが広がるのは tokens の色の欄に限られる。# の省略はここでは\n受けない(ファイル形式は # 必須。省略は入力欄側で扱う)。\n\n参考:\n- Issue #1376 の論点 5 と計画 第 3 版のコメント\n- docs/04-tokens.md 49 行目\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "src/domains/dcmp/token/color/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 5,
+          "patch": "@@ -31,17 +31,19 @@ export type Rgb = `#${string}`;\n \n export const Rgb = {\n   /**\n-   * 6桁の hex として読める文字列だけを RGB にする。\n+   * 6 桁、または各桁を重ねて 6 桁になる 3 桁の hex として読める文字列だけを RGB にする。\n    *\n    * 「生成された = 6桁の小文字 hex である」を成立させるための唯一の入口。\n    *\n    * @param value RGB として読みたい色の綴り\n-   * @returns 小文字へ倒した RGB。`AnyCaseRgbPattern` に合わなければ `none`\n+   * @returns 小文字へ倒した 6 桁の RGB。4 桁・8 桁は alpha を持つので `none`。`#` で始まる 6 桁・3 桁の\n+   *   hex でなければ `none`\n    */\n   create(value: string): Option<Rgb> {\n-    return AnyCaseRgbPattern.test(value)\n+    const expanded = expandShortHex(value);\n+    return AnyCaseRgbPattern.test(expanded)\n       ? // 実行時に6桁 hex であることを確かめた戻り値なので、ここだけ as を許す\n-        Option.some(value.toLowerCase() as Rgb)\n+        Option.some(expanded.toLowerCase() as Rgb)\n       : Option.none;\n   },\n } as const;\n@@ -140,7 +142,10 @@ export const ColorToken = {\n    * 落として黙って黒い見本を出すため、載せる前にここで分ける。\n    *\n    * @param color 6 桁の部分を取り出したい色\n-   * @returns hex として読めた場合だけ `some`。読めない値は取り出しようがないので `none`\n+   * @returns 6 桁か 8 桁の hex（大文字も可）のときだけ `some`。3・4 桁の短縮形は `none`\n+   *\n+   * 短縮形を読まないのは、文書に入る色は読み込みでも書き込みでも `normalize` で 6・8 桁へ広げて\n+   * あり（docs/04-tokens.md「値の形式」）、3・4 桁がここへ届かないため。\n    */\n   rgbOf(color: ColorToken): Option<Rgb> {\n     return AnyCaseHexColorPattern.test(color)",
+          "patchLines": 36,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "3034c27e90d9ddaa10859c1ca91de8dfb30148b3",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T16:20:34Z",
+      "subject": "🧪 [Tests]: #1376 Rgb.create の 3 桁の受け付けと 4 桁・8 桁の拒否をテストで固定する",
+      "body": "- 3 桁の hex(#ABC)が各桁を重ねた 6 桁(#aabbcc)の RGB になるケースを足した\n- RGB にできない値の each から #fff を外し、#ffff #abcf #aabbccff を足した\n- テスト名を「6 桁の hex にも 3 桁の短縮形にも当たらない値」に直した\n- rgbOf の each は値を変えず(#fff は none のまま)、名前だけ実体に合わせた\n\n背景:\n直前のコミットで Rgb.create が 3 桁を受けるようになり、#fff を「RGB に\nできない値」として固定していたケースが仕様と逆になった。\n\n採用理由:\n4 桁・8 桁の入力は alpha が f / ff のものを選んだ。normalize で 6 桁に\n落ちる値なので、「normalize を通してから 6 桁を判定する」誤った実装では\n通ってしまい、このテストが落ちる。alpha が ff 以外の入力だけでは、その\n壊し方でも none になるため見分けられない。\n\n代替案:\n- rgbOf の each から #fff を外す: rgbOf は 3・4 桁を読まないまま残すと\n  決めたので、#fff が none であること自体を固定し続ける\n\n影響とトレードオフ:\nテストの変更は color ドメインの 2 ファイルだけ。\n\n参考:\n- Issue #1376 の計画 第 3 版(plan-reviewer の指摘 7 と 1)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 3,
+          "patch": "@@ -24,11 +24,13 @@ test(\"5桁の hex は短縮形として展開されずそのまま返る\", () =>\n });\n \n test.each([\n-  \"#fff\",\n+  \"#ffff\",\n+  \"#abcf\",\n+  \"#aabbccff\",\n   \"#3b82f6ff\",\n   \"3b82f6\",\n   \"rgb(59, 130, 246)\",\n-])(\"6桁の hex でない値 %s は RGB にできない\", (value) => {\n+])(\"6 桁の hex にも 3 桁の短縮形にも当たらない値 %s は RGB にできない\", (value) => {\n   expect(Rgb.create(value)).toEqual(Option.none);\n });\n \n@@ -41,7 +43,7 @@ test.each([\n   \"3b82f6\",\n   \"rgb(59, 130, 246)\",\n   \"blue\",\n-])(\"hex として読めない値 %s からは6桁を取り出せない\", (value) => {\n+])(\"6 桁・8 桁の hex でない値 %s からは6桁を取り出せない\", (value) => {\n   expect(ColorToken.rgbOf(value)).toEqual(Option.none);\n });\n ",
+          "patchLines": 25,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/token/color/__tests__/color-token.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "patch": "@@ -70,3 +70,7 @@ test(\"alpha を持たない色の RGB を差し替えると alpha は付かな\n test(\"大文字で書かれていた alpha も小文字で引き継がれる\", () => {\n   expect(ColorToken.withRgb(\"#0000001A\", rgb(\"#AABBCC\"))).toBe(\"#aabbcc1a\");\n });\n+\n+test(\"3 桁の hex は、各桁を重ねた 6 桁の RGB になる\", () => {\n+  expect(Rgb.create(\"#ABC\")).toEqual(Option.some(\"#aabbcc\"));\n+});",
+          "patchLines": 8,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T16:21:02Z",
+      "subject": "✨ [New Feature]: #1376 tokens の色の欄を、見本・#・6 桁・不透明度の 1 つの箱にし、見出しを左に置く",
+      "body": "- token-control: 色の位置に入る欄を TokenColorControl(hex の箱 | 読めない色の\n  テキスト欄)の直和にし、値の欄を TokenControlRow(field | color)の行で並べる\n- 箱(HexColorControl)は書き戻し先を 1 つだけ持ち、ピッカー(valueFrom)・\n  6 桁の欄(valueFromHex)・不透明度(valueFromAlpha)の 3 つの口から引く\n- # の補完は valueFromHex だけが持ち、表示で # を外すのは hexDigitsOf だけ\n- colorsAlpha / shadowsAlpha / gradientsStopAlpha の書き戻し先と、入力欄の\n  color の種類を消した\n- 新しいサブフォルダ token-editor/color-field に、箱(HexColorInput)と\n  ピッカーを置く。通った hex の確定のたびに下書きを小文字 6 桁へ取り直す\n- value-field: 左見出し 52px の LabeledRow を足し、FieldRow をそれで組む。\n  DraftField の density を look(HexDigits / AlphaPercent を含む)にした\n- gradient-fields: stop の行を「比率・色の箱(見出し無し)・−」の 3 つにした\n- token-editor: 行を field / color で出し分け、名前の欄の見出しを name にした\n- 既存テストを新しい形(rowsOf / hexColorOf / valueFromHex / valueFromAlpha)\n  へ移し、hex の期待値を # 無しに、名前の欄の読み上げ名を name に直した\n\n背景:\nUI 案(docs/Design Composer.html の Tokens 画面)の Color のエディタは、\nhex を「左に 52px の見出し、枠の中に灰色の #・6 桁・右端の 100%」の箱で\n描いている。今の実装は見出しを上に置き、ピッカー・hex(# 付き)・不透明度を\n別々の行に並べていた。#1376 で、不透明度を箱の中の打てる欄にする、全欄を\n左見出しにする、箱の左端の見本をピッカーにする、stop の行は見出し無しの箱に\nする、hex は # の有無を問わず 6 桁と 3 桁を受ける、と決めた。\n\n採用理由:\n- 箱の 3 つの欄を 1 つの型にまとめ、書き戻し先を 1 つにした。3 欄がそれぞれ\n  target を持つと、ピッカーと不透明度が別々の色を指す値が型の上で作れる\n- # の省略は箱が # を外に描いているからできる入力欄の約束事なので、\n  ドメイン(Rgb)ではなく token-control の valueFromHex だけに置いた。\n  ピッカーと読めない色のテキスト欄は # を補わない口(valueFrom)を通る\n- 下書きの取り直しは、HexColorInput が valueFromHex を直に呼び、成功した\n  ときだけ「確定の世代」を進めて key に混ぜる。#3B82F6 や同じ色の abc の\n  ように通っても値が変わらない確定で、打った綴りが # の隣に残らないため。\n  文書(親が持つ。undo の履歴ごと)と世代(この欄の表示だけが使う)は持ち主が\n  別で、1 つの reducer にまとめる連動した state ではない\n- 名前の欄の見出しは UI 案どおり name にした。UI 案が描いていない他の種別の\n  見出し(横のずれ等)は今の日本語のまま\n- 影のエディタは UI 案に描かれていないが、docs/06-ui.md 339 行目が hex・\n  不透明度の欄を colors / shadows / stop で共通と定め、#1041 でも同じ欄を\n  並べたので同じ箱を使う。見える見出しを hex にしたのは、色 にすると\n  ピッカーの読み上げ名と重なるため\n\n代替案:\n- 不透明度の書き戻しを色の入力に入れて欄を減らす: 不透明度の読み上げ名が\n  消え、見出しで欄を引く既存のテスト(色の欄で 68 か所)を書き直すことになる\n- 欄の平たい配列のまま、コンポーネントが連続する 3 欄を箱にまとめる:\n  何をまとめるかが型に出ず、並び順の約束に頼る\n- 子孫セレクタや className で DraftField の見た目を上書きする: pr-1042 で\n  マークアップを変えても落ちないと指摘された形。列挙(look)に寄せた\n- changeRawOf に成否を返させて世代を進める: 成否を使わない他の欄の呼び出し\n  側まで戻り値を受けることになる\n- 箱を value-field に同居させる: 下書きの欄のモジュールにピッカーと箱の\n  都合が入る\n- 名前に Box / FieldSet / linesOf を使う: それぞれプリミティブの名前、\n  <fieldset>、side-snap のテストで別の意味を持つ\n\n影響とトレードオフ:\n- TokenEditor の選択中の表示はすべての種別で見出しが左に移るので、\n  Storybook の視覚差分が出る\n- 読めない色のテキスト欄は stop の行でも Regular の見た目になった(前は\n  Compact)。ColorField の props を 3 つに保つため\n- 264px(UI 案の右ペイン幅)でも stop の行が収まることを Storybook で\n  実測した(箱の右端 222px、− の左端 226px)\n- open の #1040(確定で並びが変わった直後の取り違え)の再現手順は変わらない。\n  stop の行の key は位置のままで、箱の確定は並べ替えを起こさない。#1037\n  (つまみのドラッグ)は触っていない\n\n参考:\n- Issue #1376 の論点 1〜5、計画 第 3 版のコメント\n- docs/06-ui.md 339・369 行目、UI 案の 3a · TOKENS の右ペイン\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 16,
+          "patch": "@@ -104,7 +104,7 @@ test(\"色の行を選ぶとカラーピッカーと名前が出る\", async () =>\n   await selectRow(\"primary\");\n \n   expect(field(\"値\")).toHaveProperty(\"value\", \"#3b82f6\");\n-  expect(field(\"名前\")).toHaveProperty(\"value\", \"primary\");\n+  expect(field(\"name\")).toHaveProperty(\"value\", \"primary\");\n });\n \n test(\"カラーピッカーで色を変えると一覧の値も変わる\", async () => {\n@@ -135,8 +135,8 @@ test(\"名前を打って確定すると一覧の名前が変わり、選択は\n   await renderTokensView();\n   await selectRow(\"primary\");\n \n-  await userEvent.clear(field(\"名前\"));\n-  await userEvent.type(field(\"名前\"), \"brand-color\");\n+  await userEvent.clear(field(\"name\"));\n+  await userEvent.type(field(\"name\"), \"brand-color\");\n   await userEvent.tab();\n \n   expect(row(/brand-color/).getAttribute(\"aria-current\")).toBe(\"true\");\n@@ -146,19 +146,19 @@ test(\"ハイフンを含む名前へ改名できる\", async () => {\n   await renderTokensView();\n   await selectRow(\"primary\");\n \n-  await userEvent.clear(field(\"名前\"));\n-  await userEvent.type(field(\"名前\"), \"brand-primary-strong\");\n+  await userEvent.clear(field(\"name\"));\n+  await userEvent.type(field(\"name\"), \"brand-primary-strong\");\n   await userEvent.tab();\n \n-  expect(field(\"名前\")).toHaveProperty(\"value\", \"brand-primary-strong\");\n+  expect(field(\"name\")).toHaveProperty(\"value\", \"brand-primary-strong\");\n });\n \n test(\"同じ種別に既にある名前へは改名されない\", async () => {\n   await renderTokensView();\n   await selectRow(\"primary\");\n \n-  await userEvent.clear(field(\"名前\"));\n-  await userEvent.type(field(\"名前\"), \"danger\");\n+  await userEvent.clear(field(\"name\"));\n+  await userEvent.type(field(\"name\"), \"danger\");\n   await userEvent.tab();\n \n   expect(row(/^primary/).getAttribute(\"aria-current\")).toBe(\"true\");\n@@ -170,7 +170,7 @@ test(\"追加ボタンを押すとトークンが増えてそのまま編集で\n   await userEvent.click(row(\"colors にトークンを追加\"));\n \n   expect(row(/^colors 3$/)).toBeDefined();\n-  expect(field(\"名前\")).toHaveProperty(\"value\", \"color\");\n+  expect(field(\"name\")).toHaveProperty(\"value\", \"color\");\n });\n \n test(\"削除すると一覧から消えて編集欄も閉じる\", async () => {\n@@ -339,12 +339,12 @@ test(\"色のトークンのピッカーを開いて 2 回動かしても Ctrl+Z\n   expect(field(\"値\")).toHaveProperty(\"value\", \"#3b82f6\");\n });\n \n-test(\"色の hex を打って確定すると一覧の値が変わる\", async () => {\n+test(\"色の hex を `#` 無しで打って確定すると一覧の値が変わる\", async () => {\n   await renderTokensView();\n   await selectRow(\"primary\");\n \n   await userEvent.clear(field(\"hex\"));\n-  await userEvent.type(field(\"hex\"), \"#ff0000{Enter}\");\n+  await userEvent.type(field(\"hex\"), \"ff0000{Enter}\");\n \n   expect(row(\"primary #ff0000\")).toBeDefined();\n });\n@@ -368,13 +368,13 @@ test(\"色の hex を 2 回打って確定すると Ctrl+Z 1 回で 1 回目の\n   expect(row(\"primary #ff0000\")).toBeDefined();\n });\n \n-test(\"ピッカーで色を変えると hex の欄も追随する\", async () => {\n+test(\"ピッカーで色を変えると、hex の欄が `#` 無しで追随する\", async () => {\n   await renderTokensView();\n   await selectRow(\"primary\");\n \n   fireEvent.change(field(\"値\"), { target: { value: \"#00ff00\" } });\n \n-  expect(field(\"hex\")).toHaveProperty(\"value\", \"#00ff00\");\n+  expect(field(\"hex\")).toHaveProperty(\"value\", \"00ff00\");\n });\n \n test(\"色の hex は打てる欄にだけ出て、右ペインに文字として重ねて出ない\", async () => {\n@@ -382,8 +382,8 @@ test(\"色の hex は打てる欄にだけ出て、右ペインに文字として\n   await selectRow(\"primary\");\n \n   /* 一覧の行にも同じ文字があるので、右ペインに絞って見る。 */\n-  expect(field(\"hex\")).toHaveProperty(\"value\", \"#3b82f6\");\n-  expect(within(propertyPane()).queryByText(\"#3b82f6\")).toBeNull();\n+  expect(field(\"hex\")).toHaveProperty(\"value\", \"3b82f6\");\n+  expect(within(propertyPane()).queryByText(\"3b82f6\")).toBeNull();\n });\n \n test(\"影の色の hex を打って確定すると一覧の影の値が変わり、不透明度は残る\", async () => {\n@@ -533,6 +533,18 @@ test(\"ピッカーを 2 回開いて動かすと Ctrl+Z 1 回では 1 回目の\n   expect(field(\"stop 1 の色\")).toHaveProperty(\"value\", \"#ff0000\");\n });\n \n+test(\"追加した stop の hex を `#` 無しで打つと、その stop のピッカーも変わる\", async () => {\n+  await addGradient();\n+  await userEvent.click(\n+    within(propertyPane()).getByRole(\"button\", { name: \"stop を追加\" }),\n+  );\n+\n+  await userEvent.clear(field(\"stop 2 の hex\"));\n+  await userEvent.type(field(\"stop 2 の hex\"), \"ff0000{Enter}\");\n+\n+  expect(field(\"stop 2 の色\")).toHaveProperty(\"value\", \"#ff0000\");\n+});\n+\n test(\"作ったグラデーションは Background の欄の gradients の節から選べ、Used by に出る\", async () => {\n   await addGradient();\n   await userEvent.click(\n@@ -605,7 +617,7 @@ test(\"色を変えたあと名前の欄を変えずに離れても、Ctrl+Z 1 \n   fireEvent.click(field(\"値\"));\n   fireEvent.change(field(\"値\"), { target: { value: \"#00ff00\" } });\n \n-  await userEvent.click(field(\"名前\"));\n+  await userEvent.click(field(\"name\"));\n   await userEvent.tab();\n   blurActive();\n   await userEvent.keyboard(\"{Control>}z{/Control}\");",
+          "patchLines": 124,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 20,
+          "deletions": 0,
+          "patch": "@@ -137,3 +137,23 @@ test(\"角度の欄には ° が、比率と不透明度の欄には % が添え\n   expect(unitOf(\"stop 1 の比率\")).toBe(\"%\");\n   expect(unitOf(\"stop 1 の不透明度\")).toBe(\"%\");\n });\n+\n+test(\"stop の hex を `#` 無しで確定すると、その stop だけが変わった値が届く\", async () => {\n+  const user = userEvent.setup();\n+  const onSetTokenValue = renderGradient(TwoStops);\n+\n+  await user.clear(screen.getByLabelText(\"stop 2 の hex\"));\n+  await user.type(screen.getByLabelText(\"stop 2 の hex\"), \"ff0000{Enter}\");\n+\n+  expect(onSetTokenValue).toHaveBeenCalledWith(\n+    {\n+      kind: \"gradients\",\n+      value: {\n+        shape: \"linear\",\n+        angle: 90,\n+        stops: [TwoStops[0], { color: \"#ff0000\", ratio: 1 }],\n+      },\n+    },\n+    EditContinuities.Separate,\n+  );\n+});",
+          "patchLines": 24,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 187,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,187 @@\n+import { type ReactElement, useState } from \"react\";\n+import type { Rgb } from \"@/domains/dcmp/token\";\n+import {\n+  EditContinuities,\n+  EditContinuityRun,\n+} from \"@/domains/session/edit-continuity\";\n+import {\n+  type HexColorControl,\n+  type TokenColorControl,\n+  TokenControl,\n+} from \"@/features/editor/features/tokens/domains/token-control\";\n+import { useFirstThenRest } from \"@/hooks/use-first-then-rest\";\n+import { Option } from \"@/utils/Option\";\n+import {\n+  type ChangeRaw,\n+  changeRawOf,\n+  DraftField,\n+  DraftFieldLooks,\n+  type SetTokenValue,\n+} from \"../value-field\";\n+\n+/**\n+ * カラーピッカー。保存時に hex（小文字）へ正規化する。ピッカーを開いてから、開き直すか閉じて\n+ * ほかへ移るまでに動かした分を 1 つのまとまりとして送る（docs/06-ui.md「編集操作の一覧」の\n+ * tokens 編集）。\n+ *\n+ * @returns 箱の左端に置く、見本の形のカラーピッカー\n+ */\n+function ColorPickerField({\n+  id,\n+  value,\n+  onChangeRaw,\n+}: Readonly<{\n+  id: string;\n+  value: Rgb;\n+  onChangeRaw: ChangeRaw;\n+}>): ReactElement {\n+  /*\n+   * ピッカーは常に #rrggbb を返し `TokenControl.valueFrom` の `none` に届かないので、1 件目が\n+   * 落ちて続きが先に届くことは無い。\n+   *\n+   * 始め直すのは開いたとき（click）と離れたとき（blur）。フォーカスを得たときにしないのは、\n+   * ピッカーを閉じてもフォーカスが入力欄に残り、開き直しでは focus が発火しないため。blur でも\n+   * 始め直すのは、色のパネルがモーダルでなく、別の欄を編集して戻ったときに続きとして送らないため。\n+   * Chromium ではキーボード（Enter / Space）で開いても click が届くことを実測した。Tauri の\n+   * WebView は未検証。\n+   */\n+  const continuitySequence = useFirstThenRest(EditContinuityRun);\n+\n+  return (\n+    <input\n+      id={id}\n+      type=\"color\"\n+      value={value}\n+      onClick={continuitySequence.restart}\n+      onBlur={continuitySequence.restart}\n+      onChange={(event) => {\n+        onChangeRaw(event.target.value, continuitySequence.next());\n+      }}\n+      className=\"size-3.5 shrink-0 cursor-pointer rounded-sm border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-sm [&::-webkit-color-swatch]:border-none\"\n+    />\n+  );\n+}\n+\n+/**\n+ * 見本・`#`・6 桁・不透明度を 1 つに入れた箱（UI 案 docs/Design Composer.html の Color の\n+ * エディタの `hex`）。6 桁の欄の見出しは呼び出し側が置く。\n+ *\n+ * @returns 見本（ピッカー）・灰色の `#`・6 桁の欄・右端の不透明度の欄と `%`\n+ */\n+function HexColorInput({\n+  id,\n+  color,\n+  onSetTokenValue,\n+}: Readonly<{\n+  id: string;\n+  color: HexColorControl;\n+  onSetTokenValue: SetTokenValue;\n+}>): ReactElement {\n+  /*\n+   * 文書の持ち主は親（undo の履歴ごと）で、世代はこの欄の表示だけが使うので、1 つの reducer に\n+   * まとめる連動 state ではない。世代を進めるのは、`ABC` のように通っても値が変わらない確定では\n+   * key が動かず下書きが残るため。`changeRawOf` に成否を返させる案は、成否を使わない他の呼び出し\n+   * 側まで戻り値を受けることになるので採らない。\n+   */\n+  const [hexCommits, setHexCommits] = useState(0);\n+  const commitHex = (raw: string) => {\n+    const value = TokenControl.valueFromHex(color.target, raw);\n+    if (!Option.isSome(value)) {\n+      return;\n+    }\n+    onSetTokenValue(value.value, EditContinuities.Separate);\n+    setHexCommits((count) => count + 1);\n+  };\n+  const changeAlpha = changeRawOf(\n+    (raw) => TokenControl.valueFromAlpha(color.target, raw),\n+    onSetTokenValue,\n+  );\n+  const pickerId = `${id}-${color.picker.name}`;\n+  const alphaId = `${id}-${color.alpha.name}`;\n+  const hexDigits = TokenControl.hexDigitsOf(color);\n+\n+  return (\n+    <div className=\"relative flex h-7 items-center gap-1 rounded-[5px] border border-[#e6e6e6] px-2 font-mono text-[11px]\">\n+      <label htmlFor={pickerId} className=\"sr-only\">\n+        {color.picker.label}\n+      </label>\n+      <ColorPickerField\n+        id={pickerId}\n+        value={color.rgb}\n+        onChangeRaw={changeRawOf(\n+          (raw) => TokenControl.valueFrom(color.target, raw),\n+          onSetTokenValue,\n+        )}\n+      />\n+      <span aria-hidden=\"true\" className=\"text-[#b3b3b3]\">\n+        #\n+      </span>\n+      <DraftField\n+        key={`${hexDigits}/${hexCommits}`}\n+        id={id}\n+        type=\"text\"\n+        value={hexDigits}\n+        look={DraftFieldLooks.HexDigits}\n+        onCommit={commitHex}\n+      />\n+      <label htmlFor={alphaId} className=\"sr-only\">\n+        {color.alpha.label}\n+      </label>\n+      {/* 灰色に沈めた不透明度を、打っている間だけ他の字と同じ色に戻す */}\n+      <span className=\"ml-auto flex shrink-0 items-center text-[#b3b3b3] text-[10px] focus-within:text-[#1e1e1e]\">\n+        <DraftField\n+          key={color.alphaPercent}\n+          id={alphaId}\n+          type=\"number\"\n+          value={String(color.alphaPercent)}\n+          look={DraftFieldLooks.AlphaPercent}\n+          onCommit={(raw) => changeAlpha(raw, EditContinuities.Separate)}\n+        />\n+        %\n+      </span>\n+    </div>\n+  );\n+}\n+\n+/**\n+ * 色の位置に入る欄。hex として読めれば見本・hex・不透明度の箱、読めなければ元の綴りを打ち直す\n+ * テキスト欄。\n+ *\n+ * @param id 6 桁の欄（読めない色ではテキスト欄）の id。見本と不透明度の欄は識別子を添えた id\n+ * @returns 箱か、テキスト欄\n+ */\n+export function ColorField({\n+  id,\n+  color,\n+  onSetTokenValue,\n+}: Readonly<{\n+  id: string;\n+  color: TokenColorControl;\n+  onSetTokenValue: SetTokenValue;\n+}>): ReactElement {\n+  const changeColorText = changeRawOf(\n+    (raw) => TokenControl.valueFrom(color.target, raw),\n+    onSetTokenValue,\n+  );\n+  switch (color.kind) {\n+    case \"hex\":\n+      return (\n+        <HexColorInput\n+          id={id}\n+          color={color}\n+          onSetTokenValue={onSetTokenValue}\n+        />\n+      );\n+    case \"text\":\n+      return (\n+        <DraftField\n+          key={color.value}\n+          id={id}\n+          type=\"text\"\n+          value={color.value}\n+          look={DraftFieldLooks.Regular}\n+          onCommit={(raw) => changeColorText(raw, EditContinuities.Separate)}\n+        />\n+      );\n+  }\n+}",
+          "patchLines": 188,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 31,
+          "deletions": 31,
+          "patch": "@@ -1,12 +1,12 @@\n import type { ReactElement } from \"react\";\n import { Button, ButtonKinds } from \"@/components/button\";\n import { EditContinuities } from \"@/domains/session/edit-continuity\";\n-import type {\n-  GradientControl,\n-  TokenControlField,\n-  TokenControlInput,\n+import {\n+  type GradientControl,\n+  TokenControl,\n } from \"@/features/editor/features/tokens/domains/token-control\";\n import { Option } from \"@/utils/Option\";\n+import { ColorField } from \"../color-field\";\n import {\n   changeRawOf,\n   FieldDensities,\n@@ -15,21 +15,9 @@ import {\n   ValueField,\n } from \"../value-field\";\n \n-/** stop の行の数値の欄の幅。 */\n+/** stop の行の比率の欄の幅。色の欄が余りを占める。 */\n const StopNumberCellClass = \"w-[60px] shrink-0\";\n \n-/**\n- * stop の行の 1 欄ぶんの幅。数値の欄は幅を決めて両端に置き、ピッカーは見本の大きさのまま、\n- * hex（読めない色はそのテキスト欄）が余りを占める。\n- */\n-const StopCellClasses = {\n-  percent: StopNumberCellClass,\n-  degree: StopNumberCellClass,\n-  number: StopNumberCellClass,\n-  color: \"shrink-0\",\n-  text: \"min-w-0 flex-1\",\n-} as const satisfies Readonly<Record<TokenControlInput[\"kind\"], string>>;\n-\n /**\n  * 階調のバーと、stop ごとのつまみ。\n  *\n@@ -79,7 +67,8 @@ export function GradientFields({\n   tokenKey: string;\n   onSetTokenValue: SetTokenValue;\n }>): ReactElement {\n-  const fieldIdOf = (field: TokenControlField) => `${idPrefix}-${field.name}`;\n+  const fieldIdOf = (field: Readonly<{ name: string }>) =>\n+    `${idPrefix}-${field.name}`;\n \n   return (\n     <div className=\"flex flex-col gap-3\">\n@@ -113,19 +102,30 @@ export function GradientFields({\n           key={`${tokenKey}/${row.name}`}\n           className=\"flex items-center gap-1\"\n         >\n-          {row.fields.map((field) => (\n-            <div key={field.name} className={StopCellClasses[field.input.kind]}>\n-              <label htmlFor={fieldIdOf(field)} className=\"sr-only\">\n-                {field.label}\n-              </label>\n-              <ValueField\n-                id={fieldIdOf(field)}\n-                input={field.input}\n-                density={FieldDensities.Compact}\n-                onChangeRaw={changeRawOf(field, onSetTokenValue)}\n-              />\n-            </div>\n-          ))}\n+          <div className={StopNumberCellClass}>\n+            <label htmlFor={fieldIdOf(row.ratio)} className=\"sr-only\">\n+              {row.ratio.label}\n+            </label>\n+            <ValueField\n+              id={fieldIdOf(row.ratio)}\n+              input={row.ratio.input}\n+              density={FieldDensities.Compact}\n+              onChangeRaw={changeRawOf(\n+                (raw) => TokenControl.valueFrom(row.ratio.target, raw),\n+                onSetTokenValue,\n+              )}\n+            />\n+          </div>\n+          <div className=\"relative min-w-0 flex-1\">\n+            <label htmlFor={fieldIdOf(row.color.caption)} className=\"sr-only\">\n+              {row.color.caption.label}\n+            </label>\n+            <ColorField\n+              id={fieldIdOf(row.color.caption)}\n+              color={row.color}\n+              onSetTokenValue={onSetTokenValue}\n+            />\n+          </div>\n           {/* 2 件以下で消さずに押せない状態で並べるのは docs/06-ui.md「`Tokens` の `gradients`」 */}\n           <Button\n             kind={ButtonKinds.Icon}",
+          "patchLines": 94,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 70,
+          "deletions": 21,
+          "patch": "@@ -5,14 +5,17 @@ import type { TokenSelection } from \"@/domains/session/token-selection\";\n import { TokenUsedBy } from \"@/features/editor/features/tokens/components/token-used-by\";\n import {\n   TokenControl,\n+  type TokenControlRow,\n   type TokenPaint,\n } from \"@/features/editor/features/tokens/domains/token-control\";\n import { Option } from \"@/utils/Option\";\n+import { ColorField } from \"./color-field\";\n import { GradientFields } from \"./gradient-fields\";\n import {\n   DraftField,\n-  FieldDensities,\n+  DraftFieldLooks,\n   FieldRow,\n+  LabeledRow,\n   type SetTokenValue,\n } from \"./value-field\";\n \n@@ -117,13 +120,62 @@ function TokenEditorTitle({\n   );\n }\n \n+/**\n+ * 値の欄の 1 行。数値・文言の欄か、色の箱（読めない色はテキスト欄）に見出しを左に添える。\n+ *\n+ * @param id 行の欄の id。色の箱では 6 桁の欄（読めない色はテキスト欄）の id\n+ * @returns 見出しを左に置いた 1 行\n+ */\n+function ValueRow({\n+  id,\n+  row,\n+  onSetTokenValue,\n+}: Readonly<{\n+  id: string;\n+  row: TokenControlRow;\n+  onSetTokenValue: SetTokenValue;\n+}>): ReactElement {\n+  switch (row.kind) {\n+    case \"field\":\n+      return (\n+        <FieldRow id={id} field={row.field} onSetTokenValue={onSetTokenValue} />\n+      );\n+    case \"color\":\n+      return (\n+        <LabeledRow htmlFor={id} label={row.color.caption.label}>\n+          <ColorField\n+            id={id}\n+            color={row.color}\n+            onSetTokenValue={onSetTokenValue}\n+          />\n+        </LabeledRow>\n+      );\n+  }\n+}\n+\n+/**\n+ * 行の識別子。1 つのトークンの中で一意。\n+ *\n+ * @param row 値の欄の 1 行\n+ * @returns 数値・文言の欄はその名前、色は 6 桁の欄（読めない色はテキスト欄）の名前\n+ */\n+function rowNameOf(row: TokenControlRow): string {\n+  switch (row.kind) {\n+    case \"field\":\n+      return row.field.name;\n+    case \"color\":\n+      return row.color.caption.name;\n+  }\n+}\n+\n /**\n  * 選択中のトークンの編集欄の本文（docs/06-ui.md「編集操作の一覧」の tokens 編集 /\n  * UI 案 docs/Design Composer.html の右ペイン）。\n  *\n  * 何の入力欄を何行出すかは `TokenControl.forSelection` が決めるため、ここには種別名で分岐\n- * するコードを置かない。分岐するのは編集欄の形（fields / gradient）だけで、種別名では\n- * 分岐しない。複合オブジェクトの種別（shadows / typography）はフィールドの数だけ行が並ぶ。\n+ * するコードを置かない。分岐するのは値の欄の形（rows / gradient）と行の形（field / color）\n+ * だけで、種別名では分岐しない。複合オブジェクトの種別（shadows / typography）はフィールドの\n+ * 数だけ行が並ぶ。\n  *\n  * @returns 名前の欄・値の入力欄（グラデーションならプレビュー・角度・stop の行）・削除の\n  *   ボタンと、参照元の一覧。トークンを選んでいなければ、選ばれていないことの知らせ\n@@ -153,18 +205,18 @@ function TokenEditorBody({\n \n   return (\n     <section aria-label=\"トークン編集\" className=\"flex flex-col gap-3 text-sm\">\n-      {valueFields.kind === \"fields\" ? (\n-        valueFields.fields.map((field) => (\n+      {valueFields.kind === \"rows\" ? (\n+        valueFields.rows.map((row) => (\n           /*\n            * 下書きの取り直しの単位。行は `name` で一意に指す。\n            *\n-           * 値の追随は `ValueField` が下書きの欄の key に現在値を入れて行う。行の key に値を\n+           * 値の追随は下書きの欄が key に現在値を入れて行う。行の key に値を\n            * 入れるとピッカーが動かすたびに作り直され、undo を 1 件にまとめられない。\n            */\n-          <FieldRow\n-            key={`${tokenKey}/${field.name}`}\n-            id={`${valueId}-${field.name}`}\n-            field={field}\n+          <ValueRow\n+            key={`${tokenKey}/${rowNameOf(row)}`}\n+            id={`${valueId}-${rowNameOf(row)}`}\n+            row={row}\n             onSetTokenValue={onSetTokenValue}\n           />\n         ))\n@@ -176,24 +228,21 @@ function TokenEditorBody({\n           onSetTokenValue={onSetTokenValue}\n         />\n       )}\n-      <div className=\"flex flex-col gap-1\">\n-        <label htmlFor={nameId} className=\"text-gray-600 text-xs\">\n-          名前\n-        </label>\n-        {/*\n-          `TokenSet.rename` が弾く名前では改名しない\n-          （EditorState.renameToken の `none`）。通らなかったときは打った文字列が\n-          入力欄に残るので、そのまま直せる。\n-        */}\n+      {/*\n+        `TokenSet.rename` が弾く名前では改名しない\n+        （EditorState.renameToken の `none`）。通らなかったときは打った文字列が\n+        入力欄に残るので、そのまま直せる。\n+      */}\n+      <LabeledRow htmlFor={nameId} label=\"name\">\n         <DraftField\n           key={`${tokenKey}/name`}\n           id={nameId}\n           type=\"text\"\n           value={token.name}\n-          density={FieldDensities.Regular}\n+          look={DraftFieldLooks.Regular}\n           onCommit={onRenameToken}\n         />\n-      </div>\n+      </LabeledRow>\n       {/* 並びは UI 案（docs/Design Composer.html）どおり、名前欄の下・削除の上 */}\n       <TokenUsedBy selection={selection} />\n       <Button",
+          "patchLines": 143,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 70,
+          "deletions": 88,
+          "patch": "@@ -1,16 +1,14 @@\n import { type ReactElement, useState } from \"react\";\n-import type { Rgb, TokenValue } from \"@/domains/dcmp/token\";\n+import type { TokenValue } from \"@/domains/dcmp/token\";\n import {\n   EditContinuities,\n   type EditContinuity,\n-  EditContinuityRun,\n } from \"@/domains/session/edit-continuity\";\n import {\n   TokenControl,\n   type TokenControlField,\n   type TokenControlInput,\n } from \"@/features/editor/features/tokens/domains/token-control\";\n-import { useFirstThenRest } from \"@/hooks/use-first-then-rest\";\n import type { ValueOf } from \"@/types/ValueOf\";\n import { Option } from \"@/utils/Option\";\n \n@@ -24,8 +22,8 @@ export type SetTokenValue = (\n export type ChangeRaw = (raw: string, continuity: EditContinuity) => void;\n \n /**\n- * 欄の詰め具合。`Regular` は見出しの下に 1 欄ずつ置く欄、`Compact` は stop の行のように\n- * 1 行へ横に並べる欄。\n+ * 欄の詰め具合。`Regular` は左に見出しを添えて 1 行に 1 欄ずつ置く欄、`Compact` は stop の行の\n+ * ように 1 行へ横に並べる欄。\n  */\n export const FieldDensities = {\n   Regular: \"regular\",\n@@ -36,12 +34,29 @@ export const FieldDensities = {\n export type FieldDensity = ValueOf<typeof FieldDensities>;\n \n /**\n- * 下書きの欄の見た目。1 行に 5 つ並べる stop の行は、右ペインの幅に収めるため字と余白を詰める。\n+ * 下書きの欄の見た目。詰め具合の 2 つに、色の箱の中に置く 6 桁と不透明度の欄を足したもの。\n+ * 箱の中の 2 つは枠を箱に任せ、字は箱から継ぐ。\n+ */\n+export const DraftFieldLooks = {\n+  ...FieldDensities,\n+  HexDigits: \"hex-digits\",\n+  AlphaPercent: \"alpha-percent\",\n+} as const;\n+\n+/** 下書きの欄の見た目。 */\n+export type DraftFieldLook = ValueOf<typeof DraftFieldLooks>;\n+\n+/**\n+ * 下書きの欄の綴り。1 行に比率・色の欄・− の 3 つを並べる stop の行は、右ペインの幅に収めるため\n+ * 字と余白を詰める。\n  */\n const DraftFieldClasses = {\n   regular: \"w-full rounded border border-gray-300 px-2 py-1\",\n   compact: \"w-full rounded border border-gray-300 px-1 py-1 text-xs\",\n-} as const satisfies Readonly<Record<FieldDensity, string>>;\n+  \"hex-digits\": \"min-w-0 flex-1 bg-transparent outline-none\",\n+  \"alpha-percent\":\n+    \"w-[4ch] bg-transparent text-right outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none\",\n+} as const satisfies Readonly<Record<DraftFieldLook, string>>;\n \n /** 単位を添えた欄の、欄と単位の間。 */\n const UnitGapClasses = {\n@@ -49,11 +64,8 @@ const UnitGapClasses = {\n   compact: \"gap-1\",\n } as const satisfies Readonly<Record<FieldDensity, string>>;\n \n-/** ピッカーの大きさ。stop の行では見本と同じ 24px 角へ縮める。 */\n-const PickerClasses = {\n-  regular: \"h-8 w-16 shrink-0 rounded border border-gray-300\",\n-  compact: \"size-6 shrink-0 rounded border border-gray-300\",\n-} as const satisfies Readonly<Record<FieldDensity, string>>;\n+/** 左に置く見出しの綴り。字はプロパティパネルのラベル欄と同じで、幅は UI 案の 52px。 */\n+const RowLabelClass = \"w-[52px] shrink-0 truncate text-[11px] text-gray-500\";\n \n /**\n  * 打っている途中の文字列を持ち、確定したときだけ外へ渡す入力欄。確定は入力欄を離れたと\n@@ -63,7 +75,8 @@ const PickerClasses = {\n  * 列が弾かれて打ち続けられない（`primary-` が弾かれると `-` の次を打てない）。\n  *\n  * 外の値が変わったときの取り直しは `key` で行う（`ValueField` が現在値を key にする。\n- * 名前の欄は呼び出し側がトークンを key にする）。\n+ * 名前の欄は呼び出し側がトークンを key にする。hex の欄は `HexColorInput` が確定の回数も key に\n+ * 混ぜる）。\n  * 確定が通らなかった入力では外の値も key も変わらないので下書きが残るが、\n  * `type=\"number\"` の欄は数値として読めない間ブラウザが表示を空にするので、画面に文字列\n  * として残るのは `type=\"text\"` の欄だけ。\n@@ -72,13 +85,13 @@ export function DraftField({\n   id,\n   type,\n   value,\n-  density,\n+  look,\n   onCommit,\n }: Readonly<{\n   id: string;\n   type: \"text\" | \"number\";\n   value: string;\n-  density: FieldDensity;\n+  look: DraftFieldLook;\n   onCommit: (raw: string) => void;\n }>) {\n   const [draft, setDraft] = useState(value);\n@@ -95,52 +108,7 @@ export function DraftField({\n           event.currentTarget.blur();\n         }\n       }}\n-      className={DraftFieldClasses[density]}\n-    />\n-  );\n-}\n-\n-/**\n- * カラーピッカー。保存時に hex（小文字）へ正規化する。ピッカーを開いてから、開き直すか閉じて\n- * ほかへ移るまでに動かした分を 1 つのまとまりとして送る（docs/06-ui.md「編集操作の一覧」の\n- * tokens 編集）。\n- *\n- * @returns カラーピッカー\n- */\n-function ColorPickerField({\n-  id,\n-  value,\n-  density,\n-  onChangeRaw,\n-}: Readonly<{\n-  id: string;\n-  value: Rgb;\n-  density: FieldDensity;\n-  onChangeRaw: ChangeRaw;\n-}>): ReactElement {\n-  /*\n-   * ピッカーは常に #rrggbb を返し `TokenControl.valueFrom` の `none` に届かないので、1 件目が\n-   * 落ちて続きが先に届くことは無い。\n-   *\n-   * 始め直すのは開いたとき（click）と離れたとき（blur）。フォーカスを得たときにしないのは、\n-   * ピッカーを閉じてもフォーカスが入力欄に残り、開き直しでは focus が発火しないため。blur でも\n-   * 始め直すのは、色のパネルがモーダルでなく、別の欄を編集して戻ったときに続きとして送らないため。\n-   * Chromium ではキーボード（Enter / Space）で開いても click が届くことを実測した。Tauri の\n-   * WebView は未検証。\n-   */\n-  const continuitySequence = useFirstThenRest(EditContinuityRun);\n-\n-  return (\n-    <input\n-      id={id}\n-      type=\"color\"\n-      value={value}\n-      onClick={continuitySequence.restart}\n-      onBlur={continuitySequence.restart}\n-      onChange={(event) => {\n-        onChangeRaw(event.target.value, continuitySequence.next());\n-      }}\n-      className={PickerClasses[density]}\n+      className={DraftFieldClasses[look]}\n     />\n   );\n }\n@@ -173,7 +141,7 @@ function UnitField({\n         id={id}\n         type=\"number\"\n         value={String(value)}\n-        density={density}\n+        look={density}\n         onCommit={onCommit}\n       />\n       <span className=\"text-gray-600 text-xs\">{unit}</span>\n@@ -187,8 +155,7 @@ function UnitField({\n  * 下書きを持つ欄は、現在値を key にして外の値（undo / redo・打った値の正規化・並べ直し）に\n  * 追随する。確定は 1 回ごとに別のまとまりとして送る。\n  *\n- * @returns 色ならカラーピッカー、不透明度と比率なら % を、角度なら ° を添えた数値欄、\n- *   数値なら数値欄、それ以外はテキスト欄\n+ * @returns 比率なら % を、角度なら ° を添えた数値欄、数値なら数値欄、それ以外はテキスト欄\n  */\n export function ValueField({\n   id,\n@@ -210,7 +177,7 @@ export function ValueField({\n           id={id}\n           type=\"number\"\n           value={String(input.value)}\n-          density={density}\n+          look={density}\n           onCommit={onCommit}\n         />\n       );\n@@ -221,7 +188,7 @@ export function ValueField({\n           id={id}\n           type=\"text\"\n           value={input.value}\n-          density={density}\n+          look={density}\n           onCommit={onCommit}\n         />\n       );\n@@ -245,42 +212,57 @@ export function ValueField({\n           onCommit={onCommit}\n         />\n       );\n-    case \"color\":\n-      return (\n-        <ColorPickerField\n-          id={id}\n-          value={input.value}\n-          density={density}\n-          onChangeRaw={onChangeRaw}\n-        />\n-      );\n   }\n }\n \n /**\n  * その欄に打たれた文字列を、トークンの新しい値にして送る手続き（`ValueField` の `onChangeRaw`）。\n  *\n- * 数値として読めない入力と、値域を外れた入力では値を変えない（`TokenControl.valueFrom` の\n- * `none`）。名前欄と同じで、通らなかったことは画面に出さず打ち直しに任せる。仕様に無い\n- * 中間状態のエラー表示を発明しないため。\n+ * 数値として読めない入力と、値域を外れた入力では値を変えない（`tokenValueOf` の `none`）。名前欄と\n+ * 同じで、通らなかったことは画面に出さず打ち直しに任せる。仕様に無い中間状態のエラー表示を\n+ * 発明しないため。\n  *\n- * @param field 打たれた欄\n+ * @param tokenValueOf 欄の文字列をトークンの新しい値へ読む手続き（`TokenControl.valueFrom` など）\n  * @param onSetTokenValue 読めた値と続き方を受け取る先\n  * @returns 欄の文字列と続き方を受け取る手続き\n  */\n export function changeRawOf(\n-  field: TokenControlField,\n+  tokenValueOf: (raw: string) => Option<TokenValue>,\n   onSetTokenValue: SetTokenValue,\n ): ChangeRaw {\n   return (raw, continuity) => {\n-    Option.map(TokenControl.valueFrom(field.target, raw), (value) =>\n+    Option.map(tokenValueOf(raw), (value) =>\n       onSetTokenValue(value, continuity),\n     );\n   };\n }\n \n /**\n- * 見出しを上に置いた 1 フィールドの欄。\n+ * 見出しを左に置いた 1 行（UI 案 docs/Design Composer.html の Color のエディタの `hex` / `name`）。\n+ *\n+ * @returns 52px の見出しと、残りを占める欄\n+ */\n+export function LabeledRow({\n+  htmlFor,\n+  label,\n+  children,\n+}: Readonly<{\n+  htmlFor: string;\n+  label: string;\n+  children: ReactElement;\n+}>): ReactElement {\n+  return (\n+    <div className=\"flex items-center gap-2\">\n+      <label htmlFor={htmlFor} className={RowLabelClass}>\n+        {label}\n+      </label>\n+      <div className=\"min-w-0 flex-1\">{children}</div>\n+    </div>\n+  );\n+}\n+\n+/**\n+ * 見出しを左に置いた 1 フィールドの欄。\n  *\n  * @returns 見出しと入力欄\n  */\n@@ -294,16 +276,16 @@ export function FieldRow({\n   onSetTokenValue: SetTokenValue;\n }>): ReactElement {\n   return (\n-    <div className=\"flex flex-col gap-1\">\n-      <label htmlFor={id} className=\"text-gray-600 text-xs\">\n-        {field.label}\n-      </label>\n+    <LabeledRow htmlFor={id} label={field.label}>\n       <ValueField\n         id={id}\n         input={field.input}\n         density={FieldDensities.Regular}\n-        onChangeRaw={changeRawOf(field, onSetTokenValue)}\n+        onChangeRaw={changeRawOf(\n+          (raw) => TokenControl.valueFrom(field.target, raw),\n+          onSetTokenValue,\n+        )}\n       />\n-    </div>\n+    </LabeledRow>\n   );\n }",
+          "patchLines": 289,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 46,
+          "deletions": 19,
+          "patch": "@@ -7,8 +7,11 @@ import {\n } from \"@/features/editor/features/tokens/__tests__/gradient-documents\";\n import {\n   type GradientControl,\n+  type HexColorControl,\n+  type TokenColorControl,\n   TokenControl,\n-  type TokenControlField,\n+  type TokenControlFieldOf,\n+  type TokenControlRow,\n } from \"@/features/editor/features/tokens/domains/token-control\";\n import { Option } from \"@/utils/Option\";\n \n@@ -49,23 +52,23 @@ export function selectionOf(kind: TokenKind, name: string): TokenSelection {\n }\n \n /**\n- * 選択したトークンの編集欄の並び。\n+ * 選択したトークンの値の欄に並ぶ行。\n  *\n- * @throws 値の欄が上から並べる編集欄でない（グラデーション）とき。テストを落とすため\n+ * @throws 値の欄が上から並べる行でない（グラデーション）とき。テストを落とすため\n  */\n-export function fieldsOf(\n+export function rowsOf(\n   kind: TokenKind,\n   name: string,\n-): readonly TokenControlField[] {\n+): readonly TokenControlRow[] {\n   const { valueFields } = Option.unwrap(\n     TokenControl.forSelection(selectionOf(kind, name)),\n   );\n-  if (valueFields.kind !== \"fields\") {\n+  if (valueFields.kind !== \"rows\") {\n     throw new Error(\n-      `${kind}/${name} の値の欄は ${valueFields.kind} で、並べる欄ではない`,\n+      `${kind}/${name} の値の欄は ${valueFields.kind} で、並べる行ではない`,\n     );\n   }\n-  return valueFields.fields;\n+  return valueFields.rows;\n }\n \n /** グラデーション `brand` を選んでいる状態。 */\n@@ -91,21 +94,45 @@ export function gradientOf(selection: TokenSelection): GradientControl {\n   return valueFields.gradient;\n }\n \n-/** 並んだ欄から見出しで 1 行を引く。 */\n-export function fieldLabeled(\n-  fields: readonly TokenControlField[],\n+/** 数値・文言の欄の行から、見出しで 1 つを引く。 */\n+export function fieldOf(\n+  kind: TokenKind,\n+  name: string,\n   label: string,\n-): TokenControlField {\n+): TokenControlFieldOf<\"number\" | \"text\"> {\n+  const fields = rowsOf(kind, name).flatMap((row) =>\n+    row.kind === \"field\" ? [row.field] : [],\n+  );\n   return Option.unwrap(\n     Option.fromNullable(fields.find((field) => field.label === label)),\n   );\n }\n \n-/** 見出しで編集欄の1行を引く。 */\n-export function fieldOf(\n-  kind: TokenKind,\n-  name: string,\n-  label: string,\n-): TokenControlField {\n-  return fieldLabeled(fieldsOf(kind, name), label);\n+/**\n+ * 選択したトークンの色の欄。\n+ *\n+ * @throws 色の行を持たないとき。テストを落とすため\n+ */\n+export function colorRowOf(kind: TokenKind, name: string): TokenColorControl {\n+  const colors = rowsOf(kind, name).flatMap((row) =>\n+    row.kind === \"color\" ? [row.color] : [],\n+  );\n+  return Option.unwrap(Option.fromNullable(colors[0]));\n+}\n+\n+/**\n+ * hex として読めた色の箱。\n+ *\n+ * @throws 色が読めずテキスト欄になっているとき。テストを落とすため\n+ */\n+export function hexOf(color: TokenColorControl): HexColorControl {\n+  if (color.kind !== \"hex\") {\n+    throw new Error(`色の欄は ${color.kind} で、箱ではない`);\n+  }\n+  return color;\n+}\n+\n+/** 選択したトークンの、hex として読めた色の箱。 */\n+export function hexColorOf(kind: TokenKind, name: string): HexColorControl {\n+  return hexOf(colorRowOf(kind, name));\n }",
+          "patchLines": 101,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.alpha.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 37,
+          "patch": "@@ -1,35 +1,32 @@\n import { expect, test } from \"vitest\";\n import { Option } from \"@/utils/Option\";\n import { TokenControl } from \"../index\";\n-import { fieldOf, fieldsOf } from \"./setup\";\n+import { hexColorOf, rowsOf } from \"./setup\";\n \n test(\"色の不透明度の欄には % で読んだ値が出る\", () => {\n-  expect(fieldOf(\"colors\", \"veil\", \"不透明度\").input).toEqual({\n-    kind: \"percent\",\n-    value: 50.2,\n-  });\n+  expect(hexColorOf(\"colors\", \"veil\").alphaPercent).toBe(50.2);\n });\n \n test(\"不透明度に打った値は色の alpha になる\", () => {\n-  const field = fieldOf(\"colors\", \"primary\", \"不透明度\");\n+  const color = hexColorOf(\"colors\", \"primary\");\n \n-  expect(TokenControl.valueFrom(field.target, \"50\")).toEqual(\n+  expect(TokenControl.valueFromAlpha(color.target, \"50\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#3b82f680\" }),\n   );\n });\n \n test(\"不透明度を 100 にすると色の alpha の桁が落ちる\", () => {\n-  const field = fieldOf(\"colors\", \"veil\", \"不透明度\");\n+  const color = hexColorOf(\"colors\", \"veil\");\n \n-  expect(TokenControl.valueFrom(field.target, \"100\")).toEqual(\n+  expect(TokenControl.valueFromAlpha(color.target, \"100\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#3b82f6\" }),\n   );\n });\n \n test(\"色をピッカーで選び直しても不透明度は残る\", () => {\n-  const field = fieldOf(\"colors\", \"veil\", \"値\");\n+  const color = hexColorOf(\"colors\", \"veil\");\n \n-  expect(TokenControl.valueFrom(field.target, \"#00ff00\")).toEqual(\n+  expect(TokenControl.valueFrom(color.target, \"#00ff00\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#00ff0080\" }),\n   );\n });\n@@ -38,28 +35,25 @@ test.each([\n   \"-1\",\n   \"101\",\n ])(\"0–100 の外の不透明度 %s を打っても色を変えない\", (raw) => {\n-  const field = fieldOf(\"colors\", \"primary\", \"不透明度\");\n+  const color = hexColorOf(\"colors\", \"primary\");\n \n-  expect(TokenControl.valueFrom(field.target, raw)).toEqual(Option.none);\n+  expect(TokenControl.valueFromAlpha(color.target, raw)).toEqual(Option.none);\n });\n \n test(\"数値として読めない不透明度では色を変えない\", () => {\n-  const field = fieldOf(\"colors\", \"primary\", \"不透明度\");\n+  const color = hexColorOf(\"colors\", \"primary\");\n \n-  expect(TokenControl.valueFrom(field.target, \"\")).toEqual(Option.none);\n+  expect(TokenControl.valueFromAlpha(color.target, \"\")).toEqual(Option.none);\n });\n \n test(\"影の色にも不透明度の欄が出る\", () => {\n-  expect(fieldOf(\"shadows\", \"sm\", \"不透明度\").input).toEqual({\n-    kind: \"percent\",\n-    value: 10.2,\n-  });\n+  expect(hexColorOf(\"shadows\", \"sm\").alphaPercent).toBe(10.2);\n });\n \n test(\"影の不透明度に打った値は影の色の alpha になる\", () => {\n-  const field = fieldOf(\"shadows\", \"sm\", \"不透明度\");\n+  const color = hexColorOf(\"shadows\", \"sm\");\n \n-  expect(TokenControl.valueFrom(field.target, \"50\")).toEqual(\n+  expect(TokenControl.valueFromAlpha(color.target, \"50\")).toEqual(\n     Option.some({\n       kind: \"shadows\",\n       value: { x: 0, y: 1, blur: 3, color: \"#00000080\" },\n@@ -68,9 +62,9 @@ test(\"影の不透明度に打った値は影の色の alpha になる\", () => {\n });\n \n test(\"影の色をピッカーで選び直しても不透明度は残る\", () => {\n-  const field = fieldOf(\"shadows\", \"sm\", \"色\");\n+  const color = hexColorOf(\"shadows\", \"sm\");\n \n-  expect(TokenControl.valueFrom(field.target, \"#ff0000\")).toEqual(\n+  expect(TokenControl.valueFrom(color.target, \"#ff0000\")).toEqual(\n     Option.some({\n       kind: \"shadows\",\n       value: { x: 0, y: 1, blur: 3, color: \"#ff00001a\" },\n@@ -78,21 +72,16 @@ test(\"影の色をピッカーで選び直しても不透明度は残る\", () =>\n   );\n });\n \n-test(\"hex として読めない色は打ち直せるテキスト欄1本になる\", () => {\n-  expect(fieldsOf(\"colors\", \"broken\")).toEqual([\n+test(\"hex として読めない色は、見出し `値` で元の綴りのテキスト欄になる\", () => {\n+  expect(rowsOf(\"colors\", \"broken\")).toEqual([\n     {\n-      name: \"value\",\n-      label: \"値\",\n-      input: { kind: \"text\", value: \"RED\" },\n-      target: { kind: \"colors\", color: \"RED\" },\n+      kind: \"color\",\n+      color: {\n+        kind: \"text\",\n+        target: { kind: \"colors\", color: \"RED\" },\n+        caption: { name: \"value\", label: \"値\" },\n+        value: \"RED\",\n+      },\n     },\n   ]);\n });\n-\n-test(\"不透明度の欄は色と影のそれぞれに1本ずつしか出ない\", () => {\n-  const alphaRows = fieldsOf(\"shadows\", \"sm\").filter(\n-    (field) => field.input.kind === \"percent\",\n-  );\n-\n-  expect(alphaRows.map((field) => field.name)).toEqual([\"colorAlpha\"]);\n-});",
+          "patchLines": 123,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 58,
+          "deletions": 63,
+          "patch": "@@ -5,24 +5,8 @@ import {\n   TwoStops,\n } from \"@/features/editor/features/tokens/__tests__/gradient-documents\";\n import { Option } from \"@/utils/Option\";\n-import {\n-  type GradientControl,\n-  TokenControl,\n-  type TokenControlField,\n-  TokenSection,\n-} from \"../index\";\n-import { fieldLabeled, gradientOf, gradientSelectionOf } from \"./setup\";\n-\n-/** 見出しで stop の欄を引く。 */\n-function stopFieldOf(\n-  gradient: GradientControl,\n-  label: string,\n-): TokenControlField {\n-  return fieldLabeled(\n-    gradient.stops.flatMap((row) => row.fields),\n-    label,\n-  );\n-}\n+import { TokenControl, TokenSection } from \"../index\";\n+import { gradientOf, gradientSelectionOf, hexOf } from \"./setup\";\n \n test(\"グラデーションの行の見本は階調で、値は角度と stop の件数で出る\", () => {\n   const document = gradientDocumentOf({ stops: ThreeStops });\n@@ -57,6 +41,18 @@ test(\"グラデーションを選ぶと角度の欄と stop の件数ぶんの\n   ]);\n });\n \n+test(\"stop の行は比率の欄と、見本・hex・不透明度の箱を持つ\", () => {\n+  const [row] = gradientOf(gradientSelectionOf({ stops: TwoStops })).stops;\n+  const color = hexOf(row.color);\n+\n+  expect(row.ratio.label).toBe(\"stop 1 の比率\");\n+  expect([color.picker.label, color.caption.label, color.alpha.label]).toEqual([\n+    \"stop 1 の色\",\n+    \"stop 1 の hex\",\n+    \"stop 1 の不透明度\",\n+  ]);\n+});\n+\n test(\"グラデーションを選ぶと見出しの見本は階調になる\", () => {\n   const control = Option.unwrap(\n     TokenControl.forSelection(gradientSelectionOf({ stops: TwoStops })),\n@@ -80,7 +76,7 @@ test(\"範囲外の比率は欄にそのまま出し、つまみはバーの端\n     }),\n   );\n \n-  expect(stopFieldOf(gradient, \"stop 2 の比率\").input).toEqual({\n+  expect(gradient.stops[1].ratio.input).toEqual({\n     kind: \"percent\",\n     value: 150,\n   });\n@@ -126,19 +122,15 @@ test(\"stop が 3 件なら − でその行の stop を除いた値になる\", (\n });\n \n test(\"比率の欄に 0〜100 の外を打っても値を変えない\", () => {\n-  const field = stopFieldOf(\n-    gradientOf(gradientSelectionOf({ stops: ThreeStops })),\n-    \"stop 1 の比率\",\n-  );\n+  const field = gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[0]\n+    .ratio;\n \n   expect(TokenControl.valueFrom(field.target, \"150\")).toEqual(Option.none);\n });\n \n test(\"比率の欄に打った値で stop が比率の順に並び直る\", () => {\n-  const field = stopFieldOf(\n-    gradientOf(gradientSelectionOf({ stops: ThreeStops })),\n-    \"stop 1 の比率\",\n-  );\n+  const field = gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[0]\n+    .ratio;\n \n   expect(TokenControl.valueFrom(field.target, \"90\")).toEqual(\n     Option.some({\n@@ -157,12 +149,11 @@ test(\"比率の欄に打った値で stop が比率の順に並び直る\", () =>\n });\n \n test(\"stop の不透明度はその stop の色だけに効く\", () => {\n-  const field = stopFieldOf(\n-    gradientOf(gradientSelectionOf({ stops: ThreeStops })),\n-    \"stop 2 の不透明度\",\n+  const field = hexOf(\n+    gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1].color,\n   );\n \n-  expect(TokenControl.valueFrom(field.target, \"50\")).toEqual(\n+  expect(TokenControl.valueFromAlpha(field.target, \"50\")).toEqual(\n     Option.some({\n       kind: \"gradients\",\n       value: {\n@@ -179,7 +170,7 @@ test(\"stop の不透明度はその stop の色だけに効く\", () => {\n });\n \n test(\"stop の色をピッカーで選び直しても元の不透明度は残る\", () => {\n-  const field = stopFieldOf(\n+  const field = hexOf(\n     gradientOf(\n       gradientSelectionOf({\n         stops: [\n@@ -187,8 +178,7 @@ test(\"stop の色をピッカーで選び直しても元の不透明度は残る\n           { color: \"#ffffff\", ratio: 1 },\n         ],\n       }),\n-    ),\n-    \"stop 1 の色\",\n+    ).stops[0].color,\n   );\n \n   expect(TokenControl.valueFrom(field.target, \"#ff0000\")).toEqual(\n@@ -206,8 +196,8 @@ test(\"stop の色をピッカーで選び直しても元の不透明度は残る\n   );\n });\n \n-test(\"stop の hex に打った 6 桁でその stop の色だけが変わり、不透明度は残る\", () => {\n-  const field = stopFieldOf(\n+test(\"stop の hex に `#` 無しで打った 6 桁でその stop の色だけが変わり、不透明度は残る\", () => {\n+  const field = hexOf(\n     gradientOf(\n       gradientSelectionOf({\n         stops: [\n@@ -215,11 +205,10 @@ test(\"stop の hex に打った 6 桁でその stop の色だけが変わり、\n           { color: \"#ffffff\", ratio: 1 },\n         ],\n       }),\n-    ),\n-    \"stop 1 の hex\",\n+    ).stops[0].color,\n   );\n \n-  expect(TokenControl.valueFrom(field.target, \"#FF0000\")).toEqual(\n+  expect(TokenControl.valueFromHex(field.target, \"FF0000\")).toEqual(\n     Option.some({\n       kind: \"gradients\",\n       value: {\n@@ -234,16 +223,15 @@ test(\"stop の hex に打った 6 桁でその stop の色だけが変わり、\n   );\n });\n \n-test(\"stop の hex に 6 桁として読めない値を打っても値を変えない\", () => {\n-  const field = stopFieldOf(\n-    gradientOf(gradientSelectionOf({ stops: TwoStops })),\n-    \"stop 1 の hex\",\n+test(\"stop の hex に 6 桁・3 桁として読めない値を打っても値を変えない\", () => {\n+  const field = hexOf(\n+    gradientOf(gradientSelectionOf({ stops: TwoStops })).stops[0].color,\n   );\n \n-  expect(TokenControl.valueFrom(field.target, \"#ff00\")).toEqual(Option.none);\n+  expect(TokenControl.valueFromHex(field.target, \"#ff00\")).toEqual(Option.none);\n });\n \n-test(\"hex として読めない色の stop は色のテキスト欄 1 本になり、不透明度の欄が無い\", () => {\n+test(\"hex として読めない色の stop は `stop n の色` のテキスト欄 1 本になり、不透明度の欄が無い\", () => {\n   const gradient = gradientOf(\n     gradientSelectionOf({\n       stops: [\n@@ -253,12 +241,23 @@ test(\"hex として読めない色の stop は色のテキスト欄 1 本にな\n     }),\n   );\n \n-  expect(\n-    gradient.stops[0].fields.map((field) => [field.label, field.input.kind]),\n-  ).toEqual([\n-    [\"stop 1 の比率\", \"percent\"],\n-    [\"stop 1 の色\", \"text\"],\n-  ]);\n+  expect(gradient.stops[0].color).toEqual({\n+    kind: \"text\",\n+    target: {\n+      kind: \"gradientsStopColor\",\n+      gradient: {\n+        shape: \"linear\",\n+        angle: 90,\n+        stops: [\n+          { color: \"RED\", ratio: 0 },\n+          { color: \"#ffffff\", ratio: 1 },\n+        ],\n+      },\n+      stopIndex: 0,\n+    },\n+    caption: { name: \"stop-1-color\", label: \"stop 1 の色\" },\n+    value: \"RED\",\n+  });\n });\n \n test(\"角度の欄に数値として読めない文字列を打っても値を変えない\", () => {\n@@ -298,9 +297,8 @@ test(\"stop の + は最も広い隙間の中央に stop を足した値になる\n });\n \n test(\"2 件目の stop の色をピッカーで選ぶとその stop の色だけが変わる\", () => {\n-  const field = stopFieldOf(\n-    gradientOf(gradientSelectionOf({ stops: ThreeStops })),\n-    \"stop 2 の色\",\n+  const field = hexOf(\n+    gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1].color,\n   );\n \n   expect(TokenControl.valueFrom(field.target, \"#ff0000\")).toEqual(\n@@ -319,13 +317,12 @@ test(\"2 件目の stop の色をピッカーで選ぶとその stop の色だけ\n   );\n });\n \n-test(\"2 件目の stop の hex に打った 6 桁でその stop の色だけが変わる\", () => {\n-  const field = stopFieldOf(\n-    gradientOf(gradientSelectionOf({ stops: ThreeStops })),\n-    \"stop 2 の hex\",\n+test(\"2 件目の stop の hex に `#` 無しで打った 6 桁でその stop の色だけが変わる\", () => {\n+  const field = hexOf(\n+    gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1].color,\n   );\n \n-  expect(TokenControl.valueFrom(field.target, \"#00FF00\")).toEqual(\n+  expect(TokenControl.valueFromHex(field.target, \"00FF00\")).toEqual(\n     Option.some({\n       kind: \"gradients\",\n       value: {\n@@ -342,10 +339,8 @@ test(\"2 件目の stop の hex に打った 6 桁でその stop の色だけが\n });\n \n test(\"2 件目の stop の比率の欄に打った値はその stop の比率になる\", () => {\n-  const field = stopFieldOf(\n-    gradientOf(gradientSelectionOf({ stops: ThreeStops })),\n-    \"stop 2 の比率\",\n-  );\n+  const field = gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1]\n+    .ratio;\n \n   expect(TokenControl.valueFrom(field.target, \"25\")).toEqual(\n     Option.some({",
+          "patchLines": 234,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 61,
+          "deletions": 16,
+          "patch": "@@ -1,34 +1,79 @@\n import { expect, test } from \"vitest\";\n import { Option } from \"@/utils/Option\";\n import { TokenControl } from \"../index\";\n-import { fieldOf } from \"./setup\";\n+import { colorRowOf, hexColorOf } from \"./setup\";\n \n-test(\"alpha を持つ色の hex の欄には 6 桁だけが出る\", () => {\n-  expect(fieldOf(\"colors\", \"veil\", \"hex\").input).toEqual({\n-    kind: \"text\",\n-    value: \"#3b82f6\",\n-  });\n+test(\"alpha を持つ色の hex の欄には、`#` を除いた 6 桁だけが出る\", () => {\n+  expect(TokenControl.hexDigitsOf(hexColorOf(\"colors\", \"veil\"))).toBe(\"3b82f6\");\n+});\n+\n+test(\"影の色の hex の欄には、`#` を除いた 6 桁だけが出る\", () => {\n+  expect(TokenControl.hexDigitsOf(hexColorOf(\"shadows\", \"sm\"))).toBe(\"000000\");\n });\n \n test(\"色の hex に大文字で打った 6 桁は小文字で保存される\", () => {\n-  const field = fieldOf(\"colors\", \"primary\", \"hex\");\n+  const color = hexColorOf(\"colors\", \"primary\");\n \n-  expect(TokenControl.valueFrom(field.target, \"#ABCDEF\")).toEqual(\n+  expect(TokenControl.valueFromHex(color.target, \"ABCDEF\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#abcdef\" }),\n   );\n });\n \n-test(\"色の hex に打った 6 桁で色が変わり、不透明度は残る\", () => {\n-  const field = fieldOf(\"colors\", \"veil\", \"hex\");\n+test(\"色の hex に `#` 無しで打った 6 桁で色が変わり、不透明度は残る\", () => {\n+  const color = hexColorOf(\"colors\", \"veil\");\n \n-  expect(TokenControl.valueFrom(field.target, \"#00ff00\")).toEqual(\n+  expect(TokenControl.valueFromHex(color.target, \"00ff00\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#00ff0080\" }),\n   );\n });\n \n-test(\"影の色の hex の欄には 6 桁だけが出る\", () => {\n-  expect(fieldOf(\"shadows\", \"sm\", \"hex\").input).toEqual({\n-    kind: \"text\",\n-    value: \"#000000\",\n-  });\n+test(\"色の hex に `#` 付きで打った 6 桁でも色が変わる\", () => {\n+  const color = hexColorOf(\"colors\", \"primary\");\n+\n+  expect(TokenControl.valueFromHex(color.target, \"#00ff00\")).toEqual(\n+    Option.some({ kind: \"colors\", value: \"#00ff00\" }),\n+  );\n+});\n+\n+test.each([\n+  \"abc\",\n+  \"#ABC\",\n+])(\"色の hex に打った 3 桁 %s は広げた 6 桁になり、不透明度は残る\", (raw) => {\n+  const color = hexColorOf(\"colors\", \"veil\");\n+\n+  expect(TokenControl.valueFromHex(color.target, raw)).toEqual(\n+    Option.some({ kind: \"colors\", value: \"#aabbcc80\" }),\n+  );\n+});\n+\n+test.each([\n+  \"abcf\",\n+  \"#abcf\",\n+  \"aabbccff\",\n+  \"#aabbccff\",\n+  \"abcd\",\n+])(\"色の hex に打った 4 桁・8 桁 %s は alpha が不透明でも色を変えない\", (raw) => {\n+  const color = hexColorOf(\"colors\", \"primary\");\n+\n+  expect(TokenControl.valueFromHex(color.target, raw)).toEqual(Option.none);\n+});\n+\n+test.each([\"\", \"#\", \"##abc\"])(\"色の hex に打った %j は色を変えない\", (raw) => {\n+  const color = hexColorOf(\"colors\", \"primary\");\n+\n+  expect(TokenControl.valueFromHex(color.target, raw)).toEqual(Option.none);\n+});\n+\n+test(\"読めない色のテキスト欄に `#` 無しの 3 桁を打っても色を変えない\", () => {\n+  const color = colorRowOf(\"colors\", \"broken\");\n+\n+  expect(TokenControl.valueFrom(color.target, \"abc\")).toEqual(Option.none);\n+});\n+\n+test(\"読めない色のテキスト欄に `#` 付きの 3 桁を打つと広げた 6 桁の色になる\", () => {\n+  const color = colorRowOf(\"colors\", \"broken\");\n+\n+  expect(TokenControl.valueFrom(color.target, \"#abc\")).toEqual(\n+    Option.some({ kind: \"colors\", value: \"#aabbcc\" }),\n+  );\n });",
+          "patchLines": 96,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 55,
+          "deletions": 47,
+          "patch": "@@ -4,8 +4,13 @@ import type { TokenKind } from \"@/domains/dcmp/token\";\n import { TokenSelection } from \"@/domains/session/token-selection\";\n import { Font } from \"@/utils/Font\";\n import { Option } from \"@/utils/Option\";\n-import { TokenControl, TokenSection } from \"../index\";\n-import { fieldOf, fieldsOf, setupDocument } from \"./setup\";\n+import { TokenControl, type TokenControlRow, TokenSection } from \"../index\";\n+import { fieldOf, hexColorOf, rowsOf, setupDocument } from \"./setup\";\n+\n+/** 行の見出し。色の箱は 6 桁の欄の見出し。 */\n+function rowLabelOf(row: TokenControlRow): string {\n+  return row.kind === \"field\" ? row.field.label : row.color.caption.label;\n+}\n \n function sectionOf(document: DesignDocument, kind: TokenKind): TokenSection {\n   return Option.unwrap(\n@@ -102,65 +107,68 @@ test(\"書体の行の見本は太さと解決済みのフォントを持つ\", ()\n   });\n });\n \n-test(\"色を選ぶとカラーピッカー・hex・不透明度の入力欄が並ぶ\", () => {\n-  expect(fieldsOf(\"colors\", \"primary\")).toEqual([\n-    {\n-      name: \"value\",\n-      label: \"値\",\n-      input: { kind: \"color\", value: \"#3b82f6\" },\n-      target: { kind: \"colors\", color: \"#3b82f6\" },\n-    },\n-    {\n-      name: \"hex\",\n-      label: \"hex\",\n-      input: { kind: \"text\", value: \"#3b82f6\" },\n-      target: { kind: \"colors\", color: \"#3b82f6\" },\n-    },\n+test(\"色を選ぶと、見本・hex・不透明度が 1 行の色の欄にまとまる\", () => {\n+  expect(rowsOf(\"colors\", \"primary\")).toEqual([\n     {\n-      name: \"alpha\",\n-      label: \"不透明度\",\n-      input: { kind: \"percent\", value: 100 },\n-      target: { kind: \"colorsAlpha\", color: \"#3b82f6\" },\n+      kind: \"color\",\n+      color: {\n+        kind: \"hex\",\n+        target: { kind: \"colors\", color: \"#3b82f6\" },\n+        caption: { name: \"hex\", label: \"hex\" },\n+        rgb: \"#3b82f6\",\n+        alphaPercent: 100,\n+        picker: { name: \"value\", label: \"値\" },\n+        alpha: { name: \"alpha\", label: \"不透明度\" },\n+      },\n     },\n   ]);\n });\n \n test(\"alpha を持つ色でもカラーピッカーに渡るのは6桁だけになる\", () => {\n-  expect(fieldOf(\"colors\", \"veil\", \"値\").input).toEqual({\n-    kind: \"color\",\n-    value: \"#3b82f6\",\n-  });\n+  expect(hexColorOf(\"colors\", \"veil\").rgb).toBe(\"#3b82f6\");\n });\n \n test(\"長さを選ぶと数値の入力欄が1つ出る\", () => {\n-  expect(fieldsOf(\"radius\", \"md\")).toEqual([\n+  expect(rowsOf(\"radius\", \"md\")).toEqual([\n     {\n-      name: \"value\",\n-      label: \"値\",\n-      input: { kind: \"number\", value: 8 },\n-      target: { kind: \"radius\" },\n+      kind: \"field\",\n+      field: {\n+        name: \"value\",\n+        label: \"値\",\n+        input: { kind: \"number\", value: 8 },\n+        target: { kind: \"radius\" },\n+      },\n     },\n   ]);\n });\n \n-test(\"影を選ぶとフィールドごとの入力欄が仕様の順で並び、hex と不透明度が色の直後に入る\", () => {\n-  expect(fieldsOf(\"shadows\", \"sm\").map((field) => field.label)).toEqual([\n+test(\"影を選ぶとフィールドごとの欄が仕様の順で並び、色の欄が最後の 1 行に入る\", () => {\n+  const rows = rowsOf(\"shadows\", \"sm\");\n+\n+  expect(rows.map(rowLabelOf)).toEqual([\n     \"横のずれ\",\n     \"縦のずれ\",\n     \"ぼかし\",\n     \"広がり\",\n-    \"色\",\n     \"hex\",\n-    \"不透明度\",\n+  ]);\n+  expect(rows.map((row) => row.kind)).toEqual([\n+    \"field\",\n+    \"field\",\n+    \"field\",\n+    \"field\",\n+    \"color\",\n   ]);\n });\n \n-test(\"影の色だけがカラーピッカーの入力欄になる\", () => {\n-  const colorInputs = fieldsOf(\"shadows\", \"sm\")\n-    .filter((field) => field.input.kind === \"color\")\n-    .map((field) => field.label);\n+test(\"影の色だけが見本・hex・不透明度の箱になり、見本の読み上げ名は `色` になる\", () => {\n+  const pickerLabels = rowsOf(\"shadows\", \"sm\").flatMap((row) =>\n+    row.kind === \"color\" && row.color.kind === \"hex\"\n+      ? [row.color.picker.label]\n+      : [],\n+  );\n \n-  expect(colorInputs).toEqual([\"色\"]);\n+  expect(pickerLabels).toEqual([\"色\"]);\n });\n \n test(\"省略された影の広がりの欄には 0 が出る\", () => {\n@@ -171,7 +179,7 @@ test(\"省略された影の広がりの欄には 0 が出る\", () => {\n });\n \n test(\"書体を選ぶとフィールドごとの入力欄が仕様の順で並ぶ\", () => {\n-  expect(fieldsOf(\"typography\", \"body\").map((field) => field.label)).toEqual([\n+  expect(rowsOf(\"typography\", \"body\").map(rowLabelOf)).toEqual([\n     \"サイズ\",\n     \"行間\",\n     \"太さ\",\n@@ -208,9 +216,9 @@ test(\"数値として読めない入力では値を変えない\", () => {\n });\n \n test(\"カラーピッカーが返した hex はそのまま色の値になる\", () => {\n-  const field = fieldOf(\"colors\", \"primary\", \"値\");\n+  const color = hexColorOf(\"colors\", \"primary\");\n \n-  expect(TokenControl.valueFrom(field.target, \"#00ff00\")).toEqual(\n+  expect(TokenControl.valueFrom(color.target, \"#00ff00\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#00ff00\" }),\n   );\n });\n@@ -270,19 +278,19 @@ test(\"書体のフォントを空欄にすると指定が外れる\", () => {\n   );\n });\n \n-test(\"6桁の hex として読めない入力では色を変えない\", () => {\n-  const field = fieldOf(\"colors\", \"primary\", \"値\");\n+test(\"ピッカーの口では `#` の無い 6 桁も 8 桁も色を変えない\", () => {\n+  const color = hexColorOf(\"colors\", \"primary\");\n \n-  expect(TokenControl.valueFrom(field.target, \"3b82f6\")).toEqual(Option.none);\n-  expect(TokenControl.valueFrom(field.target, \"#00ff0080\")).toEqual(\n+  expect(TokenControl.valueFrom(color.target, \"3b82f6\")).toEqual(Option.none);\n+  expect(TokenControl.valueFrom(color.target, \"#00ff0080\")).toEqual(\n     Option.none,\n   );\n });\n \n test(\"影の色をピッカーで選び直しても元の alpha は残る\", () => {\n-  const field = fieldOf(\"shadows\", \"sm\", \"色\");\n+  const color = hexColorOf(\"shadows\", \"sm\");\n \n-  expect(TokenControl.valueFrom(field.target, \"#ff0000\")).toEqual(\n+  expect(TokenControl.valueFrom(color.target, \"#ff0000\")).toEqual(\n     Option.some({\n       kind: \"shadows\",\n       value: { x: 0, y: 1, blur: 3, color: \"#ff00001a\" },",
+          "patchLines": 168,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 257,
+          "deletions": 196,
+          "patch": "@@ -51,13 +51,12 @@ export type TokenSection = Readonly<{\n \n /**\n  * 1行分の入力欄。値の形式（docs/04-tokens.md「値の形式」）から入力欄の種類が決まる。\n- * `number` / `text` は `PropControlInput` と同じ語。`percent` / `degree` / `color` は単位を持つ\n+ * `number` / `text` は `PropControlInput` と同じ語。`percent` / `degree` は単位を持つ\n  * トークン固有の語。\n  *\n- * 不透明度と stop の比率は `percent`、角度は `degree` の欄が持つ。\n+ * stop の比率は `percent`、角度は `degree` の欄が持つ。\n  */\n export type TokenControlInput =\n-  | Readonly<{ kind: \"color\"; value: Rgb }>\n   | Readonly<{ kind: \"percent\"; value: number }>\n   | Readonly<{ kind: \"degree\"; value: number }>\n   | Readonly<{ kind: \"number\"; value: number }>\n@@ -66,18 +65,16 @@ export type TokenControlInput =\n /**\n  * その行が書き戻す先。\n  *\n- * `kind` は `TokenKind` と1対1ではない。不透明度の行は色の一部を差し替えるだけなので、\n- * `colorsAlpha` が書き戻すのは `colors` の値になる。`gradientsAngle` / `gradientsStopRatio` /\n- * `gradientsStopColor` / `gradientsStopAlpha` の 4 つも、1 つのグラデーションの角度・stop の\n- * 比率・色・不透明度を差し替えるだけなので、書き戻すのは `gradients` の値になる。\n+ * `kind` は `TokenKind` と1対1ではない。`gradientsAngle` / `gradientsStopRatio` /\n+ * `gradientsStopColor` の 3 つは、1 つのグラデーションの角度・stop の比率・色を差し替えるだけ\n+ * なので、書き戻すのは `gradients` の値になる。不透明度は書き戻し先を持たず、箱の `target` から\n+ * `valueFromAlpha` で引く。\n  */\n export type TokenFieldTarget =\n   | Readonly<{ kind: \"colors\"; color: ColorToken }>\n-  | Readonly<{ kind: \"colorsAlpha\"; color: ColorToken }>\n   | Readonly<{ kind: \"spacing\" }>\n   | Readonly<{ kind: \"radius\" }>\n   | Readonly<{ kind: \"shadows\"; shadow: ShadowToken; field: ShadowField }>\n-  | Readonly<{ kind: \"shadowsAlpha\"; shadow: ShadowToken }>\n   | Readonly<{\n       kind: \"typography\";\n       typography: TypographyToken;\n@@ -93,47 +90,69 @@ export type TokenFieldTarget =\n       kind: \"gradientsStopColor\";\n       gradient: GradientToken;\n       stopIndex: number;\n-    }>\n-  | Readonly<{\n-      kind: \"gradientsStopAlpha\";\n-      gradient: GradientToken;\n-      stopIndex: number;\n     }>;\n \n+/** 欄の識別子（1 つのトークンの中で一意。複合の種別はフィールド名）と見出し。 */\n+type TokenControlCaption = Readonly<{ name: string; label: string }>;\n+\n+/** 入力欄の種類を `K` に絞った編集欄の1つ。 */\n+export type TokenControlFieldOf<K extends TokenControlInput[\"kind\"]> =\n+  TokenControlCaption &\n+    Readonly<{\n+      input: Extract<TokenControlInput, { kind: K }>;\n+      target: TokenFieldTarget;\n+    }>;\n+\n+/** 編集欄の1つ。入力欄の種類を絞らない。 */\n+export type TokenControlField = TokenControlFieldOf<TokenControlInput[\"kind\"]>;\n+\n+/** 見本・hex・不透明度の箱が書き戻す色 1 つ。影は色のフィールドだけを指す。 */\n+export type HexColorTarget =\n+  | Extract<TokenFieldTarget, { kind: \"colors\" }>\n+  | (Extract<TokenFieldTarget, { kind: \"shadows\" }> &\n+      Readonly<{ field: \"color\" }>)\n+  | Extract<TokenFieldTarget, { kind: \"gradientsStopColor\" }>;\n+\n /**\n- * 編集欄の1行。複合の種別はフィールドの数だけ並び、色の行の並びは `colorFields` が決める。\n+ * hex として読める色を、見本・`#`・6 桁・不透明度の 1 つの箱で打つ欄。\n  *\n- * `name` は行の識別子で、1つのトークンの中で一意（複合の種別はフィールド名）。\n+ * Color のエディタと stop の色が持つのは docs/06-ui.md「`Tokens` の `gradients`」の「hex の欄は\n+ * Color のエディタと同じ」による。影の色は、UI 案に影のエディタが無く colors と同じ\n+ * `colorControlOf` で組み立てるので同じ箱にする（#1041）。\n  */\n-export type TokenControlField = Readonly<{\n-  name: string;\n-  label: string;\n-  input: TokenControlInput;\n-  target: TokenFieldTarget;\n+export type HexColorControl = Readonly<{\n+  kind: \"hex\";\n+  target: HexColorTarget;\n+  /** 6 桁の欄 */\n+  caption: TokenControlCaption;\n+  rgb: Rgb;\n+  alphaPercent: number;\n+  /** 箱の左端の見本（ピッカー） */\n+  picker: TokenControlCaption;\n+  /** 箱の右端の不透明度の欄 */\n+  alpha: TokenControlCaption;\n }>;\n \n-/**\n- * 入力欄が決まる前の行。何の値を載せるかで入力欄が変わる色のために、\n- * 綴りと書き戻し先だけを先に決めて渡す。\n- */\n-type TokenControlRow = Omit<TokenControlField, \"input\">;\n+/** 色の位置に入る欄。hex として読めなければ、元の綴りを打ち直すテキスト欄。 */\n+export type TokenColorControl =\n+  | HexColorControl\n+  | Readonly<{\n+      kind: \"text\";\n+      target: HexColorTarget;\n+      caption: TokenControlCaption;\n+      value: ColorToken;\n+    }>;\n \n-/** 書き戻し先を別に渡す行の、識別子と見出し。 */\n-type TokenControlCaption = Pick<TokenControlRow, \"name\" | \"label\">;\n+/** 値の欄に上から並ぶ 1 行（`PropControlRow` と同じ形）。 */\n+export type TokenControlRow =\n+  | Readonly<{ kind: \"field\"; field: TokenControlFieldOf<\"number\" | \"text\"> }>\n+  | Readonly<{ kind: \"color\"; color: TokenColorControl }>;\n \n-/**\n- * 1 つの色に並べる行の綴りと書き戻し先。ピッカーと hex の行は同じ 6 桁を差し替えるので、\n- * 書き戻し先は `colorTarget` 1 つだけを持つ。\n- *\n- * `hex` は 6 桁を打てるテキスト欄。Color のエディタと stop の色が持つのは docs/06-ui.md\n- * 「`Tokens` の `gradients`」の「hex の欄は Color のエディタと同じ」による。影の色は、UI 案に\n- * 影のエディタが無く colors と同じ `colorFields` で組み立てるので同じ欄を並べる（#1041）。\n- */\n-type ColorRows = Readonly<{\n-  colorTarget: TokenFieldTarget;\n-  rgb: TokenControlCaption;\n+/** 1 つの色の箱に付ける識別子と見出し。 */\n+type ColorCaptions = Readonly<{\n+  picker: TokenControlCaption;\n   hex: TokenControlCaption;\n-  alpha: TokenControlRow;\n+  alpha: TokenControlCaption;\n }>;\n \n /** 見出しの先頭に出す見本の塗り。単色か階調か。 */\n@@ -154,8 +173,10 @@ export type GradientKnob = Readonly<{\n export type GradientStopRow = Readonly<{\n   /** 行の識別子。1 つのトークンの中で一意 */\n   name: string;\n-  /** 比率・見本・hex・不透明度の欄。色が hex として読めなければ比率と色のテキスト欄 */\n-  fields: readonly TokenControlField[];\n+  /** 比率の欄 */\n+  ratio: TokenControlFieldOf<\"percent\">;\n+  /** 見本・hex・不透明度の箱。色が hex として読めなければ色のテキスト欄 */\n+  color: TokenColorControl;\n   /** − を押した後の値。除くと 2 件を下回るなら `none`（押せない状態で並べる） */\n   afterRemove: Option<TokenValue>;\n   /** − のボタンの読み上げ名 */\n@@ -169,7 +190,7 @@ export type GradientControl = Readonly<{\n   /** つまみを並べるバーを塗る階調。角度に依らず左から右へ */\n   barImage: LinearGradientValue;\n   knobs: readonly GradientKnob[];\n-  angle: TokenControlField;\n+  angle: TokenControlFieldOf<\"degree\">;\n   stops: readonly GradientStopRow[];\n   /** stop の + を押した後の値 */\n   afterAdd: TokenValue;\n@@ -177,7 +198,7 @@ export type GradientControl = Readonly<{\n \n /** 値の欄（docs/06-ui.md「値の欄」）の形。グラデーションだけが stop の行と +・− を持つ。 */\n export type TokenValueFields =\n-  | Readonly<{ kind: \"fields\"; fields: readonly TokenControlField[] }>\n+  | Readonly<{ kind: \"rows\"; rows: readonly TokenControlRow[] }>\n   | Readonly<{ kind: \"gradient\"; gradient: GradientControl }>;\n \n /** 1 つのトークンを編集する画面の中身。並べる欄は種別で決まる。 */\n@@ -198,17 +219,16 @@ const PreviewMaxWidthPx = 20;\n const ScalarFieldName = \"value\";\n const ScalarLabel = \"値\";\n \n-/** 色に添える不透明度の行。見出しは既存の編集欄に合わせて日本語で書く。 */\n+/** 色の箱の不透明度の欄。見出しは既存の編集欄に合わせて日本語で書く。 */\n const ColorsAlphaFieldName = \"alpha\";\n const ShadowAlphaFieldName = \"colorAlpha\";\n const AlphaLabel = \"不透明度\";\n \n /**\n- * 色に添える hex の行。見出しは UI 案の Color のエディタ（`hex`）と、stop の行の見出し\n- * （`stop n の hex`）に合わせる。\n+ * 色の箱の hex の欄。見出しは UI 案の Color のエディタ（`hex`）と、stop の行の見出し\n+ * （`stop n の hex`）に合わせる。打てる綴りは `#` の有無を問わない 6 桁と 3 桁（`valueFromHex`）。\n  *\n- * UI 案は `#` を箱の外の記号として分けるが、打てる綴りは stop と同じく `#` 付きの 6 桁だけ\n- * （`Rgb.create`）。`#` 無しと短縮形の扱いは #1376 で決める。\n+ * 影の箱も `hex` にするのは、`色` にするとピッカーの読み上げ名 `色` と重なるため。\n  */\n const ColorsHexFieldName = \"hex\";\n const ShadowHexFieldName = \"colorHex\";\n@@ -317,7 +337,7 @@ export const TokenSection = {\n \n /**\n  * 影の数値のフィールドを、対応する入力欄の形にする。\n- * 色は `colorFields` の担当。\n+ * 色は `colorControlOf` の担当。\n  *\n  * @param shadow 編集対象の影\n  * @param field 入力欄にするフィールド\n@@ -326,7 +346,7 @@ export const TokenSection = {\n function shadowInput(\n   shadow: ShadowToken,\n   field: ShadowNumberField,\n-): TokenControlInput {\n+): Extract<TokenControlInput, { kind: \"number\" }> {\n   switch (field) {\n     case \"x\":\n       return { kind: \"number\", value: shadow.x };\n@@ -340,51 +360,36 @@ function shadowInput(\n }\n \n /**\n- * 1 つの色に並べる編集欄。\n+ * 1 つの色の欄。\n  *\n  * hex として読めない値はピッカーにも hex・不透明度の欄にも載せられないので、\n  * 打ち直せるようにテキスト欄1本にする。ピッカーへ渡すとブラウザが黒へ落として\n  * しまい、値が壊れていることが画面から分からなくなる。\n  *\n  * @param color 編集する色\n- * @param rows 色そのもの・hex・不透明度の行の綴りと書き戻し先\n- * @returns hex として読めればピッカー・hex・不透明度の3行（ピッカーと hex は `rows.colorTarget`\n- *   へ書き戻す）、読めなければ `rows.colorTarget` へ書き戻すテキスト欄1行\n+ * @param target 箱が書き戻す色\n+ * @param captions 見本（読めない色ではテキスト欄）・hex・不透明度の識別子と見出し\n+ * @returns hex として読めれば見本・hex・不透明度の 1 つの箱、読めなければ見本の見出しで\n+ *   元の綴りを出すテキスト欄 1 本\n  */\n-function colorFields(\n+function colorControlOf(\n   color: ColorToken,\n-  rows: ColorRows,\n-): readonly TokenControlField[] {\n+  target: HexColorTarget,\n+  captions: ColorCaptions,\n+): TokenColorControl {\n   const rgb = ColorToken.rgbOf(color);\n   if (!Option.isSome(rgb)) {\n-    return [\n-      {\n-        ...rows.rgb,\n-        input: { kind: \"text\", value: color },\n-        target: rows.colorTarget,\n-      },\n-    ];\n+    return { kind: \"text\", target, caption: captions.picker, value: color };\n   }\n-\n-  return [\n-    {\n-      ...rows.rgb,\n-      input: { kind: \"color\", value: rgb.value },\n-      target: rows.colorTarget,\n-    },\n-    {\n-      ...rows.hex,\n-      input: { kind: \"text\", value: rgb.value },\n-      target: rows.colorTarget,\n-    },\n-    {\n-      ...rows.alpha,\n-      input: {\n-        kind: \"percent\",\n-        value: ColorToken.alphaPercentOf(color),\n-      },\n-    },\n-  ];\n+  return {\n+    kind: \"hex\",\n+    target,\n+    caption: captions.hex,\n+    rgb: rgb.value,\n+    alphaPercent: ColorToken.alphaPercentOf(color),\n+    picker: captions.picker,\n+    alpha: captions.alpha,\n+  };\n }\n \n /**\n@@ -397,7 +402,7 @@ function colorFields(\n function typographyInput(\n   token: TypographyToken,\n   field: TypographyField,\n-): TokenControlInput {\n+): Extract<TokenControlInput, { kind: \"number\" | \"text\" }> {\n   switch (field) {\n     case \"fontSize\":\n       return { kind: \"number\", value: token.fontSize };\n@@ -415,68 +420,79 @@ function typographyInput(\n }\n \n /**\n- * その種別の編集欄の並び。複合の種別はフィールドの定義順を保つ。\n+ * その種別の値の欄に並べる行。複合の種別はフィールドの定義順を保つ。\n  *\n  * @param token 編集したいトークン\n- * @returns 上から並べる編集欄。単一値の種別は 1 件\n+ * @returns 上から並べる行。単一値の種別は 1 件\n  */\n-function fieldsOf(\n+function rowsOf(\n   token: Exclude<Token, { kind: \"gradients\" }>,\n-): readonly TokenControlField[] {\n+): readonly TokenControlRow[] {\n   switch (token.kind) {\n     case \"colors\":\n-      return colorFields(token.value, {\n-        colorTarget: { kind: \"colors\", color: token.value },\n-        rgb: { name: ScalarFieldName, label: ScalarLabel },\n-        hex: { name: ColorsHexFieldName, label: HexLabel },\n-        alpha: {\n-          name: ColorsAlphaFieldName,\n-          label: AlphaLabel,\n-          target: { kind: \"colorsAlpha\", color: token.value },\n+      return [\n+        {\n+          kind: \"color\",\n+          color: colorControlOf(\n+            token.value,\n+            { kind: \"colors\", color: token.value },\n+            {\n+              picker: { name: ScalarFieldName, label: ScalarLabel },\n+              hex: { name: ColorsHexFieldName, label: HexLabel },\n+              alpha: { name: ColorsAlphaFieldName, label: AlphaLabel },\n+            },\n+          ),\n         },\n-      });\n+      ];\n     case \"spacing\":\n     case \"radius\":\n       return [\n         {\n-          name: ScalarFieldName,\n-          label: ScalarLabel,\n-          input: { kind: \"number\", value: token.value },\n-          target: { kind: token.kind },\n+          kind: \"field\",\n+          field: {\n+            name: ScalarFieldName,\n+            label: ScalarLabel,\n+            input: { kind: \"number\", value: token.value },\n+            target: { kind: token.kind },\n+          },\n         },\n       ];\n-    /*\n-     * 色だけ行が複数になる（`colorFields`）ので `flatMap` で広げる。色の行を色のフィールドの\n-     * 位置に置くのは、仕様のフィールド順を保つため。\n-     */\n+    /* 色の箱を色のフィールドの位置に置くのは、仕様のフィールド順を保つため */\n     case \"shadows\":\n-      return ShadowToken.fields().flatMap((field) =>\n-        field === \"color\"\n-          ? colorFields(token.value.color, {\n-              colorTarget: { kind: \"shadows\", shadow: token.value, field },\n-              rgb: { name: field, label: ShadowLabels[field] },\n-              hex: { name: ShadowHexFieldName, label: HexLabel },\n-              alpha: {\n-                name: ShadowAlphaFieldName,\n-                label: AlphaLabel,\n-                target: { kind: \"shadowsAlpha\", shadow: token.value },\n-              },\n-            })\n-          : [\n-              {\n-                name: field,\n-                label: ShadowLabels[field],\n-                input: shadowInput(token.value, field),\n-                target: { kind: \"shadows\", shadow: token.value, field },\n+      return ShadowToken.fields().map(\n+        (field): TokenControlRow =>\n+          field === \"color\"\n+            ? {\n+                kind: \"color\",\n+                color: colorControlOf(\n+                  token.value.color,\n+                  { kind: \"shadows\", shadow: token.value, field },\n+                  {\n+                    picker: { name: field, label: ShadowLabels[field] },\n+                    hex: { name: ShadowHexFieldName, label: HexLabel },\n+                    alpha: { name: ShadowAlphaFieldName, label: AlphaLabel },\n+                  },\n+                ),\n+              }\n+            : {\n+                kind: \"field\",\n+                field: {\n+                  name: field,\n+                  label: ShadowLabels[field],\n+                  input: shadowInput(token.value, field),\n+                  target: { kind: \"shadows\", shadow: token.value, field },\n+                },\n               },\n-            ],\n       );\n     case \"typography\":\n       return TypographyToken.fields().map((field) => ({\n-        name: field,\n-        label: TypographyLabels[field],\n-        input: typographyInput(token.value, field),\n-        target: { kind: \"typography\", typography: token.value, field },\n+        kind: \"field\",\n+        field: {\n+          name: field,\n+          label: TypographyLabels[field],\n+          input: typographyInput(token.value, field),\n+          target: { kind: \"typography\", typography: token.value, field },\n+        },\n       }));\n   }\n }\n@@ -492,13 +508,13 @@ function stopRowNameOf(stopIndex: number): string {\n }\n \n /**\n- * stop 1 件ぶんの行。比率の欄を先頭に置き、見本・hex・不透明度を続ける（docs/06-ui.md「`Tokens` の\n- * `gradients`」の「stop の行は `ratio`・見本・hex・`−` の順」）。\n+ * stop 1 件ぶんの行。比率の欄を先頭に置き、見本・hex・不透明度の箱を続ける（docs/06-ui.md「`Tokens`\n+ * の `gradients`」の「stop の行は `ratio`・色の欄・`−` の順」）。\n  *\n  * @param gradient stop を持つグラデーション\n  * @param stop 行にする stop\n  * @param stopIndex その stop の位置（0 始まり）\n- * @returns 比率・見本・hex・不透明度の欄と −。欄の見出しと行の名前は 1 始まりの配列順で数える\n+ * @returns 比率の欄・色の欄と −。欄の見出しと行の名前は 1 始まりの配列順で数える\n  */\n function gradientStopRowOf(\n   gradient: GradientToken,\n@@ -507,25 +523,23 @@ function gradientStopRowOf(\n ): GradientStopRow {\n   const n = stopIndex + 1;\n   const name = stopRowNameOf(stopIndex);\n-  const ratioField: TokenControlField = {\n-    name: `${name}-ratio`,\n-    label: `stop ${n} の比率`,\n-    input: { kind: \"percent\", value: GradientStop.ratioPercentOf(stop) },\n-    target: { kind: \"gradientsStopRatio\", gradient, stopIndex },\n-  };\n-  const colorRows = colorFields(stop.color, {\n-    colorTarget: { kind: \"gradientsStopColor\", gradient, stopIndex },\n-    rgb: { name: `${name}-color`, label: `stop ${n} の色` },\n-    hex: { name: `${name}-hex`, label: `stop ${n} の hex` },\n-    alpha: {\n-      name: `${name}-alpha`,\n-      label: `stop ${n} の不透明度`,\n-      target: { kind: \"gradientsStopAlpha\", gradient, stopIndex },\n-    },\n-  });\n   return {\n     name,\n-    fields: [ratioField, ...colorRows],\n+    ratio: {\n+      name: `${name}-ratio`,\n+      label: `stop ${n} の比率`,\n+      input: { kind: \"percent\", value: GradientStop.ratioPercentOf(stop) },\n+      target: { kind: \"gradientsStopRatio\", gradient, stopIndex },\n+    },\n+    color: colorControlOf(\n+      stop.color,\n+      { kind: \"gradientsStopColor\", gradient, stopIndex },\n+      {\n+        picker: { name: `${name}-color`, label: `stop ${n} の色` },\n+        hex: { name: `${name}-hex`, label: `stop ${n} の hex` },\n+        alpha: { name: `${name}-alpha`, label: `stop ${n} の不透明度` },\n+      },\n+    ),\n     afterRemove: Option.map(\n       GradientToken.removeStop(gradient, stopIndex),\n       (value) => ({ kind: \"gradients\", value }),\n@@ -574,7 +588,7 @@ function gradientControlOf(\n  *\n  * @param token 編集したいトークン\n  * @returns 見出しの見本と値の欄。グラデーションなら stop の行を持つ欄、それ以外は上から並べる\n- *   編集欄で、見本は色だけが持つ\n+ *   行で、見本は色だけが持つ\n  */\n function tokenControlOf(token: Token): TokenControl {\n   if (token.kind === \"gradients\") {\n@@ -594,7 +608,7 @@ function tokenControlOf(token: Token): TokenControl {\n       token.kind === \"colors\"\n         ? Option.some({ kind: \"color\", color: token.value })\n         : Option.none,\n-    valueFields: { kind: \"fields\", fields: fieldsOf(token) },\n+    valueFields: { kind: \"rows\", rows: rowsOf(token) },\n   };\n }\n \n@@ -606,7 +620,7 @@ function tokenControlOf(token: Token): TokenControl {\n  *\n  * @param color 差し替える前の色\n  * @param raw 入力欄に入っている文字列\n- * @returns 6 桁を差し替えた色。`#rrggbb` として読めなければ `none`\n+ * @returns 6 桁を差し替えた色。`#` 付きの 6 桁か 3 桁として読めなければ `none`\n  */\n function colorWithRgbFrom(color: ColorToken, raw: string): Option<ColorToken> {\n   return Option.map(Rgb.create(raw), (rgb) => ColorToken.withRgb(color, rgb));\n@@ -629,15 +643,19 @@ function colorWithAlphaFrom(\n }\n \n /**\n- * グラデーションの入力欄へ打たれた文字列を、書き換え後のグラデーションにする。\n+ * グラデーションの角度・stop の比率の入力欄へ打たれた文字列を、書き換え後のグラデーションにする。\n+ * stop の色は `hexColorValueFrom` の担当。\n  *\n- * @param target 書き換えるグラデーションと、角度・どの stop の何か\n+ * @param target 書き換えるグラデーションと、角度か、どの stop の比率か\n  * @param raw 入力欄に入っている文字列\n- * @returns 書き換え後のグラデーション。数値 / 6桁の色として読めないとき、比率・不透明度が\n- *   0–100 の外のとき（`GradientToken` / `ColorToken` の `none`）は `none`\n+ * @returns 書き換え後のグラデーション。数値として読めないとき、比率が 0–100 の外のとき\n+ *   （`GradientToken` の `none`）は `none`\n  */\n function gradientFrom(\n-  target: Extract<TokenFieldTarget, { kind: `gradients${string}` }>,\n+  target: Extract<\n+    TokenFieldTarget,\n+    { kind: \"gradientsAngle\" | \"gradientsStopRatio\" }\n+  >,\n   raw: string,\n ): Option<GradientToken> {\n   switch (target.kind) {\n@@ -652,16 +670,39 @@ function gradientFrom(\n           percent,\n         }),\n       );\n+  }\n+}\n+\n+/**\n+ * 箱が指す色 1 つを差し替えて、書き換え後のトークンの値にする。\n+ *\n+ * @param target 差し替える色（色トークン・影の色・stop の色）\n+ * @param nextColorOf 差し替える前の色から、差し替えた後の色を作る\n+ * @returns 書き換え後のトークンの値。`nextColorOf` が `none` を返したら `none`\n+ */\n+function hexColorValueFrom(\n+  target: HexColorTarget,\n+  nextColorOf: (color: ColorToken) => Option<ColorToken>,\n+): Option<TokenValue> {\n+  switch (target.kind) {\n+    case \"colors\":\n+      return Option.map(nextColorOf(target.color), (value) => ({\n+        kind: \"colors\",\n+        value,\n+      }));\n+    case \"shadows\":\n+      return Option.map(nextColorOf(target.shadow.color), (value) => ({\n+        kind: \"shadows\",\n+        value: ShadowToken.withField(target.shadow, { field: \"color\", value }),\n+      }));\n     case \"gradientsStopColor\":\n-      return GradientToken.withStopColor(target.gradient, {\n-        stopIndex: target.stopIndex,\n-        nextColorOf: (color) => colorWithRgbFrom(color, raw),\n-      });\n-    case \"gradientsStopAlpha\":\n-      return GradientToken.withStopColor(target.gradient, {\n-        stopIndex: target.stopIndex,\n-        nextColorOf: (color) => colorWithAlphaFrom(color, raw),\n-      });\n+      return Option.map(\n+        GradientToken.withStopColor(target.gradient, {\n+          stopIndex: target.stopIndex,\n+          nextColorOf,\n+        }),\n+        (value) => ({ kind: \"gradients\", value }),\n+      );\n   }\n }\n \n@@ -686,7 +727,7 @@ function numberFromRaw(raw: string): Option<number> {\n  *\n  * @param target 書き換える影と、そのどのフィールドか\n  * @param raw 入力欄に入っている文字列\n- * @returns 書き換え後のトークンの値。数値 / 6桁の色として読めないとき、\n+ * @returns 書き換え後のトークンの値。数値 / `#` 付きの 6 桁・3 桁の色として読めないとき、\n  *   および値域（ぼかしは 0 以上）を外れるときは `none`\n  */\n function shadowValueFrom(\n@@ -695,10 +736,9 @@ function shadowValueFrom(\n ): Option<TokenValue> {\n   const { shadow, field } = target;\n   if (field === \"color\") {\n-    return Option.map(colorWithRgbFrom(shadow.color, raw), (value) => ({\n-      kind: \"shadows\",\n-      value: ShadowToken.withField(shadow, { field, value }),\n-    }));\n+    return hexColorValueFrom({ kind: \"shadows\", shadow, field }, (color) =>\n+      colorWithRgbFrom(color, raw),\n+    );\n   }\n   return Option.flatMap(numberFromRaw(raw), (value) =>\n     Option.map(ShadowFieldEdit.createNumeric(field, value), (edit) => ({\n@@ -758,35 +798,20 @@ export const TokenControl = {\n   /**\n    * 入力欄に入った文字列を、そのトークンの新しい値にする。\n    *\n-   * 書き戻し先は行が持つ `target` から決める。\n+   * 書き戻し先は行が持つ `target` から決める。色の位置（ピッカー・読めない色のテキスト欄）では\n+   * `#` を補わない。\n    *\n    * @param target 書き戻し先の種別と、複合の種別ではどのフィールドか\n    * @param raw 入力欄に入っている文字列\n-   * @returns 書き換え後のトークンの値。数値 / 6桁の色として読めないとき、および\n-   *   値域（docs/04-tokens.md「値の形式」・不透明度と stop の比率は 0–100）を外れるときは `none`\n+   * @returns 書き換え後のトークンの値。数値 / `#` 付きの 6 桁・3 桁の色として読めないとき、\n+   *   および値域（docs/04-tokens.md「値の形式」・stop の比率は 0–100）を外れるときは `none`\n    */\n   valueFrom(target: TokenFieldTarget, raw: string): Option<TokenValue> {\n     switch (target.kind) {\n       case \"colors\":\n-        return Option.map(colorWithRgbFrom(target.color, raw), (value) => ({\n-          kind: \"colors\",\n-          value,\n-        }));\n-      case \"colorsAlpha\":\n-        return Option.map(colorWithAlphaFrom(target.color, raw), (value) => ({\n-          kind: \"colors\",\n-          value,\n-        }));\n-      case \"shadowsAlpha\":\n-        return Option.map(\n-          colorWithAlphaFrom(target.shadow.color, raw),\n-          (value) => ({\n-            kind: \"shadows\",\n-            value: ShadowToken.withField(target.shadow, {\n-              field: \"color\",\n-              value,\n-            }),\n-          }),\n+      case \"gradientsStopColor\":\n+        return hexColorValueFrom(target, (color) =>\n+          colorWithRgbFrom(color, raw),\n         );\n       /*\n        * 長さの 2 種別は値域も書き戻し方も同じなので枝を分けない。分けると、\n@@ -803,12 +828,48 @@ export const TokenControl = {\n         return typographyValueFrom(target, raw);\n       case \"gradientsAngle\":\n       case \"gradientsStopRatio\":\n-      case \"gradientsStopColor\":\n-      case \"gradientsStopAlpha\":\n         return Option.map(gradientFrom(target, raw), (value) => ({\n           kind: \"gradients\",\n           value,\n         }));\n     }\n   },\n+\n+  /**\n+   * 箱の hex の欄へ打たれた文字列で、色の 6 桁を差し替える。不透明度は残す。\n+   *\n+   * `#` を省いてよいのは入力欄の約束事なので、`Rgb` ではなく入力欄を知っているここで補う。\n+   *\n+   * @param target 箱が書き戻す色\n+   * @param raw 入力欄に入っている文字列\n+   * @returns 書き換え後のトークンの値。`#` の有無を問わず 6 桁か 3 桁の hex として読めなければ\n+   *   `none`（4 桁・8 桁も `none`）\n+   */\n+  valueFromHex(target: HexColorTarget, raw: string): Option<TokenValue> {\n+    const spelled = raw.startsWith(\"#\") ? raw : `#${raw}`;\n+    return hexColorValueFrom(target, (color) =>\n+      colorWithRgbFrom(color, spelled),\n+    );\n+  },\n+\n+  /**\n+   * 箱の不透明度の欄へ打たれた文字列で、色の不透明度を差し替える。\n+   *\n+   * @param target 箱が書き戻す色\n+   * @param raw 入力欄に入っている文字列（%）\n+   * @returns 書き換え後のトークンの値。数値として読めないとき、0–100 の外のときは `none`\n+   */\n+  valueFromAlpha(target: HexColorTarget, raw: string): Option<TokenValue> {\n+    return hexColorValueFrom(target, (color) => colorWithAlphaFrom(color, raw));\n+  },\n+\n+  /**\n+   * 箱の hex の欄に出す綴り。`#` は欄の外に添えるので除く。\n+   *\n+   * @param control hex として読めた色の箱\n+   * @returns 小文字の 6 桁（`#` 無し）\n+   */\n+  hexDigitsOf(control: HexColorControl): string {\n+    return control.rgb.slice(1);\n+  },\n } as const;",
+          "patchLines": 691,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d9ff93f74fd8241a02c48eaa4aafb6c685301285",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T16:21:13Z",
+      "subject": "🧪 [Tests]: #1376 hex の箱の下書きの取り直しと、行・書き戻し先の型をテストで固定する",
+      "body": "- token-editor.hex.test.tsx を新設: # の添え、値を変えない綴りでの確定後の\n  取り直し、弾かれた綴りが残ること、3 桁の展開、見本の読み上げ名、読めない\n  色のテキスト欄\n- token-control.type.test.ts を新設: 値の欄の field の行の入力は数値か文言、\n  箱の書き戻し先は色トークン・影の色・stop の色の 3 つ、stop の比率は % の欄・\n  角度は度の欄、を expectTypeOf で固定\n\n背景:\n箱の取り直し(確定の世代を key に混ぜる)は、通っても値が変わらない確定\nでだけ効くので、ドメインのテストでは守れない。旧 alpha テストの「不透明度\nの欄は色と影に 1 本ずつ」は、不透明度が独立した欄でなくなったので、型が\n言える形に移した。\n\n採用理由:\n取り直しのテストは、値を変えない大文字の 6 桁(3B82F6)で確定する。key に\n世代を混ぜない実装では下書きが残って落ちることを、実装を一時的に壊して\n確かめた。型のテストの名前は、型が保証する範囲(行の並び順ではなく、field\nの行に入る入力の種類)に限った。\n\n代替案:\n- クラス名を見て左見出しや字色をテストする: マークアップの書き換えで壊れ、\n  仕様を守らない。Storybook の撮影と視覚差分で確かめる\n\n影響とトレードオフ:\n新しいテストファイル 2 つの追加だけ。\n\n参考:\n- Issue #1376 の計画 第 3 版(plan-reviewer の指摘 2・8)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 94,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,94 @@\n+import { render, screen } from \"@testing-library/react\";\n+import userEvent from \"@testing-library/user-event\";\n+import { expect, test, vi } from \"vitest\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { TokenSet } from \"@/domains/dcmp/token\";\n+import { EditContinuities } from \"@/domains/session/edit-continuity\";\n+import { TokenSelection } from \"@/domains/session/token-selection\";\n+import { Option } from \"@/utils/Option\";\n+import { TokenEditor } from \"../index\";\n+\n+/**\n+ * 色トークン `primary` を選んだエディタの本文を描く。値を受け取っても描き直さないので、欄に\n+ * 残った下書きを見られる。\n+ *\n+ * @param color `primary` の値\n+ * @returns 値を受け取る関数。送られた値と続き方を見るために使う\n+ */\n+function renderColor(color: string) {\n+  const onSetTokenValue = vi.fn();\n+  render(\n+    <TokenEditor.Body\n+      selection={TokenSelection.create(\n+        DesignDocument.create({\n+          tokens: { ...TokenSet.empty(), colors: { primary: color } },\n+        }),\n+        Option.some({ kind: \"colors\", name: \"primary\" }),\n+      )}\n+      onSetTokenValue={onSetTokenValue}\n+      onRenameToken={() => {}}\n+      onRemoveToken={() => {}}\n+    />,\n+  );\n+  return onSetTokenValue;\n+}\n+\n+/** hex の欄。 */\n+function hexField(): HTMLInputElement {\n+  return screen.getByLabelText<HTMLInputElement>(\"hex\");\n+}\n+\n+test(\"hex の欄の前には `#` が添えられ、欄には `#` を除いた 6 桁が出る\", () => {\n+  renderColor(\"#3b82f680\");\n+\n+  expect(hexField().value).toBe(\"3b82f6\");\n+  expect(hexField().previousElementSibling?.textContent).toBe(\"#\");\n+});\n+\n+test(\"値を変えない綴りで確定しても、欄は小文字の 6 桁へ取り直される\", async () => {\n+  const user = userEvent.setup();\n+  renderColor(\"#3b82f6\");\n+\n+  await user.clear(hexField());\n+  await user.type(hexField(), \"3B82F6{Enter}\");\n+\n+  expect(hexField().value).toBe(\"3b82f6\");\n+});\n+\n+test(\"弾かれた hex は打った文字列が欄に残り、値は届かない\", async () => {\n+  const user = userEvent.setup();\n+  const onSetTokenValue = renderColor(\"#3b82f6\");\n+\n+  await user.clear(hexField());\n+  await user.type(hexField(), \"abcd{Enter}\");\n+\n+  expect(hexField().value).toBe(\"abcd\");\n+  expect(onSetTokenValue).not.toHaveBeenCalled();\n+});\n+\n+test(\"3 桁で確定すると、広げた 6 桁の色が別のまとまりで届く\", async () => {\n+  const user = userEvent.setup();\n+  const onSetTokenValue = renderColor(\"#3b82f6\");\n+\n+  await user.clear(hexField());\n+  await user.type(hexField(), \"abc{Enter}\");\n+\n+  expect(onSetTokenValue).toHaveBeenCalledWith(\n+    { kind: \"colors\", value: \"#aabbcc\" },\n+    EditContinuities.Separate,\n+  );\n+});\n+\n+test(\"見本は、読み上げ名 `値` を持つ色の入力欄\", () => {\n+  renderColor(\"#3b82f6\");\n+\n+  expect(screen.getByLabelText<HTMLInputElement>(\"値\").type).toBe(\"color\");\n+});\n+\n+test(\"読めない色は `値` のテキスト欄に元の綴りで出て、不透明度の欄は無い\", () => {\n+  renderColor(\"RED\");\n+\n+  const text = screen.getByLabelText<HTMLInputElement>(\"値\");\n+  expect([text.type, text.value]).toEqual([\"text\", \"RED\"]);\n+  expect(screen.queryByLabelText(\"不透明度\")).toBeNull();\n+});",
+          "patchLines": 95,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 31,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,31 @@\n+import { expectTypeOf, test } from \"vitest\";\n+import type {\n+  GradientControl,\n+  GradientStopRow,\n+  HexColorTarget,\n+  TokenControlRow,\n+} from \"../index\";\n+\n+test(\"値の欄の field の行の入力欄は数値か文言で、不透明度・比率・角度の欄は入らない\", () => {\n+  expectTypeOf<\n+    Extract<TokenControlRow, { kind: \"field\" }>[\"field\"][\"input\"][\"kind\"]\n+  >().toEqualTypeOf<\"number\" | \"text\">();\n+});\n+\n+test(\"箱の書き戻し先は色トークン・影の色・stop の色の 3 つで、影は色のフィールドだけを指す\", () => {\n+  expectTypeOf<HexColorTarget[\"kind\"]>().toEqualTypeOf<\n+    \"colors\" | \"shadows\" | \"gradientsStopColor\"\n+  >();\n+  expectTypeOf<\n+    Extract<HexColorTarget, { kind: \"shadows\" }>[\"field\"]\n+  >().toEqualTypeOf<\"color\">();\n+});\n+\n+test(\"stop の比率の欄は % の欄、角度の欄は度の欄\", () => {\n+  expectTypeOf<\n+    GradientStopRow[\"ratio\"][\"input\"][\"kind\"]\n+  >().toEqualTypeOf<\"percent\">();\n+  expectTypeOf<\n+    GradientControl[\"angle\"][\"input\"][\"kind\"]\n+  >().toEqualTypeOf<\"degree\">();\n+});",
+          "patchLines": 32,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "07e22a64eaff1d2911c3a18e1aa99ff8a7d7e712",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T16:21:21Z",
+      "subject": "✨ [New Feature]: #1376 hex として読めない色・stop のストーリーを足す",
+      "body": "- BrokenColorSelected(colors に RED)と BrokenStopSelected(1 件目の stop が\n  RED)を TokenEditor のストーリーに足した\n- ドキュメントはこのファイルの中で DesignDocument.create から組む\n\n背景:\n読めない色は箱ではなく打ち直しのテキスト欄になる。既存のストーリーは\nDocumentTemplate.Default の値だけを使うので、この形が Storybook にも視覚\n差分にも写っていなかった。\n\n採用理由:\nストーリーのファイルの中で組んだ。共有の sample-token-document.ts に足すと、\n同じサンプルを使う TokenList・TokenUsedBy・TokenDashedNodes のストーリーに\nまで視覚差分が広がるため。\n\n代替案:\n- tokens/__tests__/gradient-documents.ts を使う: __tests__ の中はテスト専用で、\n  ストーリーからは使わない\n\n影響とトレードオフ:\n視覚差分では新規の 2 件が new として出る(ベースラインが無いので落ちない)。\n\n参考:\n- Issue #1376 の計画 第 3 版(plan-reviewer の指摘 3)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 45,
+          "deletions": 0,
+          "patch": "@@ -4,10 +4,14 @@ import { fn } from \"storybook/test\";\n import { RightPaneShell } from \"@/components/__stories__/right-pane-shell\";\n import { PaneBody } from \"@/components/pane-body\";\n import { PaneHeading } from \"@/components/pane-heading\";\n+import { DesignDocument } from \"@/domains/dcmp/design-document\";\n+import { TokenSet } from \"@/domains/dcmp/token\";\n+import { TokenSelection } from \"@/domains/session/token-selection\";\n import {\n   NoTokenSelection,\n   sampleTokenSelection,\n } from \"@/features/editor/features/tokens/__stories__/sample-token-document\";\n+import { Option } from \"@/utils/Option\";\n import { TokenEditor } from \"./index\";\n \n /**\n@@ -93,3 +97,44 @@ export const GradientSelected: Story = {\n     selection: sampleTokenSelection({ kind: \"gradients\", name: \"brand\" }),\n   },\n };\n+\n+/*\n+ * 壊れた色はこのファイルの中で組む。共有のサンプルへ足すと、一覧・Used by などほかのストーリーの\n+ * 視覚差分まで広がる。\n+ */\n+\n+export const BrokenColorSelected: Story = {\n+  name: \"hex として読めない色トークンを選択中\",\n+  args: {\n+    selection: TokenSelection.create(\n+      DesignDocument.create({\n+        tokens: { ...TokenSet.empty(), colors: { broken: \"RED\" } },\n+      }),\n+      Option.some({ kind: \"colors\", name: \"broken\" }),\n+    ),\n+  },\n+};\n+\n+export const BrokenStopSelected: Story = {\n+  name: \"1 件目の stop の色が hex として読めないグラデーションを選択中\",\n+  args: {\n+    selection: TokenSelection.create(\n+      DesignDocument.create({\n+        tokens: {\n+          ...TokenSet.empty(),\n+          gradients: {\n+            brand: {\n+              shape: \"linear\",\n+              angle: 90,\n+              stops: [\n+                { color: \"RED\", ratio: 0 },\n+                { color: \"#1d4ed8\", ratio: 1 },\n+              ],\n+            },\n+          },\n+        },\n+      }),\n+      Option.some({ kind: \"gradients\", name: \"brand\" }),\n+    ),\n+  },\n+};",
+          "patchLines": 60,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "41214306f3af2619fa365d52dd9169512ed72d55",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T16:21:30Z",
+      "subject": "📝 [Doc]: #1376 06-ui に hex の欄が受け付ける綴りと、stop の行の色の箱を書く",
+      "body": "- 「tokens 編集」の行に、hex の欄は # の有無を問わず 6 桁と 3 桁(各桁を\n  重ねる)を受け、4 桁・8 桁は受けないこと、見本を押すとピッカーが開くことを\n  足した\n- 「Tokens の gradients」の stop の行の並びを「ratio・色の欄(見本・#・hex・\n  不透明度の % を 1 つの箱に入れたもの)・−」に直した\n\n背景:\n#1376 で hex の欄を UI 案の箱の形にし、受け付ける綴りを広げた。仕様書は\n綴りの範囲を書いておらず、stop の行は「ratio・見本・hex・−」と別々の欄で\n並べる書き方のままだった。\n\n採用理由:\nテストが固定した受け付ける綴りの根拠を仕様書に置くため。「2 つの % を行の\n両端に離して読み分ける」は箱の右端の % でも成り立つので残した。\n\n代替案:\n- 344・377 行目(undo の畳み方)の「hex・不透明度の欄」も書き換える:\n  箱の中でも欄はそれぞれ残っており、記述はそのまま正しい\n\n影響とトレードオフ:\n文書の変更だけ。\n\n参考:\n- Issue #1376 の論点 3・5\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -336,7 +336,7 @@ Figma 寄りの直接操作を採用する。\n | 並べ替え | 同一親内の子順序の変更（ドラッグ・ツリービュー・キーボード・コンテキストメニュー）。キーボードは選択中のノードを 1 つ前面（⌘] / Ctrl+]）／背面（⌘[ / Ctrl+[）へ動かす。隣がいない向きへは動かない。複数選んでいるときのキーボードとメニューは上記「複数選択」。ツリーの行のドラッグは、複数選んでいても掴んだ 1 行だけを動かす。絞り込んでいる間にドラッグが使えないことは上記「絞り込み」 |\n | props 編集 | プロパティパネル経由。トークン参照 prop はトークン一覧からの選択式。**数値・文言の欄は、フォーカスを得てから離すまでが undo 1 回ぶん**（打鍵ごとには積まない。リサイズハンドルの「掴んでから離すまで」と同じ畳み方。上記「キャンバス直接操作」）。選択式の欄は畳まず、1 回の選び直しがそのまま 1 件。欄にフォーカスがある間に undo が効かないことは下記「キーボードの割り当て」 |\n | artboard 操作 | 追加・削除・配列順の並べ替え・キャンバス上の移動（見出しのドラッグ。上記「キャンバス直接操作」）。並べ替えが動かすのは自動配置される artboard だけで、座標を持つ artboard の位置は配列順に依らない。**キャンバス上の移動と、左辺・上辺からのリサイズは座標を書く**ので、その artboard は以後 並べ替えでは動かなくなる |\n-| tokens 編集 | 種別ごとの一覧・追加・変更・削除の UI を持つ。gradients の見せ方は下記「`Tokens` の `gradients`」。ピッカーで選ぶ色は、ピッカーを開いてから、開き直すか閉じてほかへ移るまでに動かした分が undo 1 回ぶん（動かすたびには積まない）、hex・不透明度の欄は上記「props 編集」の数値・文言の欄と同じ畳み方（どちらも colors / shadows / gradients の stop で共通） |\n+| tokens 編集 | 種別ごとの一覧・追加・変更・削除の UI を持つ。gradients の見せ方は下記「`Tokens` の `gradients`」。ピッカーで選ぶ色は、ピッカーを開いてから、開き直すか閉じてほかへ移るまでに動かした分が undo 1 回ぶん（動かすたびには積まない）、hex・不透明度の欄は上記「props 編集」の数値・文言の欄と同じ畳み方（どちらも colors / shadows / gradients の stop で共通）。hex の欄は `#` の有無を問わず 6 桁と 3 桁（各桁を重ねて 6 桁にする）を受け、4 桁・8 桁は受けない。色の見本を押すとピッカーが開く |\n | 複製 | 選んでいるノードをサブツリーごと複製し、**同じ親の中の直後**へ入れる（⌘D / Ctrl+D）。名前はコピー & ペーストと同じ自動リネームで付け替え、複製が選ばれる（続けて押したときに作った順で並ぶようにするため）。クリップボードは経由しない。artboard は複製できない。複数選んでいるときは上記「複数選択」 |\n | コピー & ペースト | サブツリー単位。**自動リネームで名前の一意性を保つ**（01-file-format）。複数選んでいるときは上記「複数選択」 |\n | 名前を変更 | 選んでいるノード / artboard の `name` を打ち替える（⌘R / Ctrl+R）。入口と確定の規則は下記「名前の変更」 |\n@@ -366,7 +366,7 @@ Figma 寄りの直接操作を採用する。\n   - 見出しの種別は `Gradient`。見出しの見本と 96px のプレビューは階調で塗る\n   - プレビューの直下に階調のバーを置き、stop ごとのつまみを並べる\n   - 値の欄は `angle`（度。値域を丸めず、打った値をそのまま持つ）と、`Stops` の見出し（右端に `+`）、stop 1 件ごとの行\n-  - **stop の行は `ratio`・見本・hex・`−` の順**（Figma の並び）。`ratio` の欄は `%` で出す。hex の欄は Color のエディタと同じで、不透明度の `%` も同じく添える。`ratio` の欄を行の先頭に置き、2 つの `%` を行の両端に離して読み分ける\n+  - **stop の行は `ratio`・色の欄（見本・`#`・hex・不透明度の `%` を 1 つの箱に入れたもの。Color のエディタと同じ）・`−` の順**（Figma の並び）。`ratio` の欄は `%` で出す。hex の欄は Color のエディタと同じで、不透明度の `%` も同じく添える。`ratio` の欄を行の先頭に置き、2 つの `%` を行の両端に離して読み分ける\n - **`ratio` の欄は小数も受け付け、受け取った値は `%` で小数 4 桁に丸めて持つ**（CSS へ出すときの丸めと同じ桁。04-tokens「gradients」）。つまみのドラッグで決まる値も同じく丸める\n - **stop の `+`** は、配列で隣り合う 2 件の stop の間を隙間とし、`ratio` の差の絶対値（小数 6 桁に丸めた値）が最も大きい隙間の中央（2 件の平均を小数 6 桁に丸めた値）に、その隙間の配列で左側の stop と同じ色で 1 件足す。同じ広さの隙間が 2 つ以上あるときは配列で左の隙間を選ぶ。足した後も並べ替えない。両端の空き（0 から最初の stop まで / 最後の stop から 1 まで）は隙間に数えない。stop が 2 件に満たないファイルでは、0 件なら `angle` を保ったまま節見出しの `+` と同じ 2 件にし、1 件ならその stop と同じ色を、`ratio` が 0.5 未満なら `ratio` 1 で末尾に、0.5 以上なら `ratio` 0 で先頭に足す。0〜1 の外の `ratio` は寄せず、そこから求めた中央もそのまま持つ（04-tokens が 0〜1 に保つのは編集で受け取る値のことで、`+` は値を受け取らない）\n - **stop が 2 件以下のときは `−` を押せない状態で並べる**（04-tokens が編集で 2 件以上を保つため）。消さずに並べるのは、上記「複数選択」の `Select all N instances` が N が 1 以下のときに押せないボタンとして残るのと同じ流儀",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "9fc5769eb36b634d78860f57c3306f76a1d7a6c1",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T16:42:07Z",
+      "subject": "♻️ [Refactoring]: #1376 色の欄の命名・行の見出しの引き方・書き戻し先の型を、検証の指摘に合わせて直す",
+      "body": "- HexColorTarget を TokenColorTarget に、hexColorValueFrom を colorValueFrom に\n  改名した(読めない色のテキスト欄も同じ書き戻し先を持つため)\n- 行の識別子と見出しを TokenControl.captionOf(row) で 1 か所から引くようにし、\n  token-editor の rowNameOf とテストの rowLabelOf の分岐を畳んだ\n- field の行の書き戻し先を TokenFieldRowTarget(色・階調を指さない、影は数値の\n  フィールドだけ)に、stop の比率・角度の書き戻し先をそれぞれの kind に狭め、\n  型テストで固定した\n- 「target から valueFrom で読む」作り口 changeRawOfTarget を足し、4 か所の\n  同じ閉包を置き換えた。ColorField はテキスト欄の手続きを text の枝でだけ作る\n- DraftFieldLook の export を外した\n- テストヘルパーを返すものの名前に改名し(selectedColorControl /\n  hexControlOf / selectedHexControl)、kind の絞り込みを ArrayEx に寄せた\n- doc: 見本は UI 案に無く #1376 で足したこと、影の箱の根拠を仕様書の引用に、\n  RowLabelClass が LabelClass を使わない理由、rgbOf の理由の段落の位置、\n  HexColorInput の Why を 1 理由 1 行に、TokenEditorBody の並び、を直した\n\n背景:\n実装の検証(命名・構造・重複・コメント・UI の各観点)で中・低の指摘が出た。\nどれも挙動は変えず、名前と実体のずれ、同じ分岐の重複、型で閉じられる範囲の\n取りこぼし、doc の根拠の書き方に関するもの。\n\n採用理由:\n- TokenColorTarget: 箱だけでなくテキスト欄も持つので、hex を名前から外した。\n  HexColorControl / valueFromHex は hex 専用なので残した\n- captionOf: 行の見出しは 1 つの事実で、表示側とテスト側が同じ分岐を写して\n  いると、片方だけ変えても食い違いに気づけない\n- field の行の target は Exclude<TokenFieldTarget, TokenColorTarget> では\n  影の枝(field が ShadowField 全体)が外れないので、許す kind を列挙した\n  型にした。広い target を入れると tsc が落ちることを確かめてから型テストに\n  した\n\n代替案:\n- DraftFieldLooks を密度と箱の中の欄の 2 つの軸に分ける(naming の指摘):\n  採らない。どちらも DraftField の input 自身の枠と幅の見た目で、分けると\n  className を渡す形(計画の却下案 7)に戻る\n- 確定しても値が変わらないときの取り直しを DraftField 全体に入れる(方式の\n  指摘): 見た目が大きく変わるのは hex だけなので、今回は局所の世代のまま\n\n影響とトレードオフ:\nDOM・クラス・id・読み上げ名は変えていないので、表示は前のコミットと同じ。\nValueRow を入力欄だけの ValueRowControl にし、見出しは行の map で\nLabeledRow に入れる形になった。\n\n参考:\n- Issue #1376 のフェーズ 6 の採否コメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "src/domains/dcmp/token/color/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -141,11 +141,11 @@ export const ColorToken = {\n    * `input[type=color]` は6桁しか扱えず、8桁を渡すとブラウザが `#000000` へ\n    * 落として黙って黒い見本を出すため、載せる前にここで分ける。\n    *\n-   * @param color 6 桁の部分を取り出したい色\n-   * @returns 6 桁か 8 桁の hex（大文字も可）のときだけ `some`。3・4 桁の短縮形は `none`\n-   *\n    * 短縮形を読まないのは、文書に入る色は読み込みでも書き込みでも `normalize` で 6・8 桁へ広げて\n    * あり（docs/04-tokens.md「値の形式」）、3・4 桁がここへ届かないため。\n+   *\n+   * @param color 6 桁の部分を取り出したい色\n+   * @returns 6 桁か 8 桁の hex（大文字も可）のときだけ `some`。3・4 桁の短縮形は `none`\n    */\n   rgbOf(color: ColorToken): Option<Rgb> {\n     return AnyCaseHexColorPattern.test(color)",
+          "patchLines": 15,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 16,
+          "patch": "@@ -14,6 +14,7 @@ import { Option } from \"@/utils/Option\";\n import {\n   type ChangeRaw,\n   changeRawOf,\n+  changeRawOfTarget,\n   DraftField,\n   DraftFieldLooks,\n   type SetTokenValue,\n@@ -63,8 +64,9 @@ function ColorPickerField({\n }\n \n /**\n- * 見本・`#`・6 桁・不透明度を 1 つに入れた箱（UI 案 docs/Design Composer.html の Color の\n- * エディタの `hex`）。6 桁の欄の見出しは呼び出し側が置く。\n+ * `#`・6 桁・右端の不透明度を 1 つに入れた箱（UI 案 docs/Design Composer.html の Color の\n+ * エディタの `hex`）に、左端の見本を足したもの。見本は UI 案に無く、#1376 で足した。\n+ * 6 桁の欄の見出しは呼び出し側が置く。\n  *\n  * @returns 見本（ピッカー）・灰色の `#`・6 桁の欄・右端の不透明度の欄と `%`\n  */\n@@ -78,10 +80,9 @@ function HexColorInput({\n   onSetTokenValue: SetTokenValue;\n }>): ReactElement {\n   /*\n-   * 文書の持ち主は親（undo の履歴ごと）で、世代はこの欄の表示だけが使うので、1 つの reducer に\n-   * まとめる連動 state ではない。世代を進めるのは、`ABC` のように通っても値が変わらない確定では\n-   * key が動かず下書きが残るため。`changeRawOf` に成否を返させる案は、成否を使わない他の呼び出し\n-   * 側まで戻り値を受けることになるので採らない。\n+   * 確定の回数を key に混ぜるのは、`ABC` のように通っても値が変わらない確定では key が動かず下書きが残るため。\n+   * 回数はこの欄の表示だけが使い、文書（undo の履歴ごと親が持つ）と連動しないので reducer にまとめない。\n+   * `changeRawOf` に成否を返させないのは、成否を使わない他の呼び出し側まで戻り値を受けることになるため。\n    */\n   const [hexCommits, setHexCommits] = useState(0);\n   const commitHex = (raw: string) => {\n@@ -89,9 +90,11 @@ function HexColorInput({\n     if (!Option.isSome(value)) {\n       return;\n     }\n+\n     onSetTokenValue(value.value, EditContinuities.Separate);\n     setHexCommits((count) => count + 1);\n   };\n+\n   const changeAlpha = changeRawOf(\n     (raw) => TokenControl.valueFromAlpha(color.target, raw),\n     onSetTokenValue,\n@@ -108,10 +111,7 @@ function HexColorInput({\n       <ColorPickerField\n         id={pickerId}\n         value={color.rgb}\n-        onChangeRaw={changeRawOf(\n-          (raw) => TokenControl.valueFrom(color.target, raw),\n-          onSetTokenValue,\n-        )}\n+        onChangeRaw={changeRawOfTarget(color.target, onSetTokenValue)}\n       />\n       <span aria-hidden=\"true\" className=\"text-[#b3b3b3]\">\n         #\n@@ -127,7 +127,7 @@ function HexColorInput({\n       <label htmlFor={alphaId} className=\"sr-only\">\n         {color.alpha.label}\n       </label>\n-      {/* 灰色に沈めた不透明度を、打っている間だけ他の字と同じ色に戻す */}\n+      {/* `UnitField` に寄せないのは、UI 案の実測で箱の中の `%` は 10px・灰色で、打つ間だけ字色を戻すため */}\n       <span className=\"ml-auto flex shrink-0 items-center text-[#b3b3b3] text-[10px] focus-within:text-[#1e1e1e]\">\n         <DraftField\n           key={color.alphaPercent}\n@@ -159,10 +159,6 @@ export function ColorField({\n   color: TokenColorControl;\n   onSetTokenValue: SetTokenValue;\n }>): ReactElement {\n-  const changeColorText = changeRawOf(\n-    (raw) => TokenControl.valueFrom(color.target, raw),\n-    onSetTokenValue,\n-  );\n   switch (color.kind) {\n     case \"hex\":\n       return (\n@@ -172,7 +168,9 @@ export function ColorField({\n           onSetTokenValue={onSetTokenValue}\n         />\n       );\n-    case \"text\":\n+    case \"text\": {\n+      const changeColorText = changeRawOfTarget(color.target, onSetTokenValue);\n+\n       return (\n         <DraftField\n           key={color.value}\n@@ -183,5 +181,6 @@ export function ColorField({\n           onCommit={(raw) => changeColorText(raw, EditContinuities.Separate)}\n         />\n       );\n+    }\n   }\n }",
+          "patchLines": 96,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 9,
+          "patch": "@@ -1,14 +1,11 @@\n import type { ReactElement } from \"react\";\n import { Button, ButtonKinds } from \"@/components/button\";\n import { EditContinuities } from \"@/domains/session/edit-continuity\";\n-import {\n-  type GradientControl,\n-  TokenControl,\n-} from \"@/features/editor/features/tokens/domains/token-control\";\n+import type { GradientControl } from \"@/features/editor/features/tokens/domains/token-control\";\n import { Option } from \"@/utils/Option\";\n import { ColorField } from \"../color-field\";\n import {\n-  changeRawOf,\n+  changeRawOfTarget,\n   FieldDensities,\n   FieldRow,\n   type SetTokenValue,\n@@ -110,10 +107,7 @@ export function GradientFields({\n               id={fieldIdOf(row.ratio)}\n               input={row.ratio.input}\n               density={FieldDensities.Compact}\n-              onChangeRaw={changeRawOf(\n-                (raw) => TokenControl.valueFrom(row.ratio.target, raw),\n-                onSetTokenValue,\n-              )}\n+              onChangeRaw={changeRawOfTarget(row.ratio.target, onSetTokenValue)}\n             />\n           </div>\n           <div className=\"relative min-w-0 flex-1\">",
+          "patchLines": 29,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 38,
+          "deletions": 38,
+          "patch": "@@ -12,11 +12,13 @@ import { Option } from \"@/utils/Option\";\n import { ColorField } from \"./color-field\";\n import { GradientFields } from \"./gradient-fields\";\n import {\n+  changeRawOfTarget,\n   DraftField,\n   DraftFieldLooks,\n-  FieldRow,\n+  FieldDensities,\n   LabeledRow,\n   type SetTokenValue,\n+  ValueField,\n } from \"./value-field\";\n \n /** トークンが選ばれていないときに本文へ出す知らせ。 */\n@@ -121,12 +123,12 @@ function TokenEditorTitle({\n }\n \n /**\n- * 値の欄の 1 行。数値・文言の欄か、色の箱（読めない色はテキスト欄）に見出しを左に添える。\n+ * 値の欄の 1 行の入力欄。数値・文言の欄か、色の箱（読めない色はテキスト欄）。\n  *\n- * @param id 行の欄の id。色の箱では 6 桁の欄（読めない色はテキスト欄）の id\n- * @returns 見出しを左に置いた 1 行\n+ * @param id 欄の id。色の箱では 6 桁の欄（読めない色はテキスト欄）の id\n+ * @returns 見出しを除いた入力欄\n  */\n-function ValueRow({\n+function ValueRowControl({\n   id,\n   row,\n   onSetTokenValue,\n@@ -138,36 +140,24 @@ function ValueRow({\n   switch (row.kind) {\n     case \"field\":\n       return (\n-        <FieldRow id={id} field={row.field} onSetTokenValue={onSetTokenValue} />\n+        <ValueField\n+          id={id}\n+          input={row.field.input}\n+          density={FieldDensities.Regular}\n+          onChangeRaw={changeRawOfTarget(row.field.target, onSetTokenValue)}\n+        />\n       );\n     case \"color\":\n       return (\n-        <LabeledRow htmlFor={id} label={row.color.caption.label}>\n-          <ColorField\n-            id={id}\n-            color={row.color}\n-            onSetTokenValue={onSetTokenValue}\n-          />\n-        </LabeledRow>\n+        <ColorField\n+          id={id}\n+          color={row.color}\n+          onSetTokenValue={onSetTokenValue}\n+        />\n       );\n   }\n }\n \n-/**\n- * 行の識別子。1 つのトークンの中で一意。\n- *\n- * @param row 値の欄の 1 行\n- * @returns 数値・文言の欄はその名前、色は 6 桁の欄（読めない色はテキスト欄）の名前\n- */\n-function rowNameOf(row: TokenControlRow): string {\n-  switch (row.kind) {\n-    case \"field\":\n-      return row.field.name;\n-    case \"color\":\n-      return row.color.caption.name;\n-  }\n-}\n-\n /**\n  * 選択中のトークンの編集欄の本文（docs/06-ui.md「編集操作の一覧」の tokens 編集 /\n  * UI 案 docs/Design Composer.html の右ペイン）。\n@@ -177,8 +167,8 @@ function rowNameOf(row: TokenControlRow): string {\n  * だけで、種別名では分岐しない。複合オブジェクトの種別（shadows / typography）はフィールドの\n  * 数だけ行が並ぶ。\n  *\n- * @returns 名前の欄・値の入力欄（グラデーションならプレビュー・角度・stop の行）・削除の\n- *   ボタンと、参照元の一覧。トークンを選んでいなければ、選ばれていないことの知らせ\n+ * @returns 値の入力欄（グラデーションならプレビュー・角度・stop の行）・名前の欄・参照元の\n+ *   一覧・削除のボタン。トークンを選んでいなければ、選ばれていないことの知らせ\n  */\n function TokenEditorBody({\n   selection,\n@@ -206,20 +196,30 @@ function TokenEditorBody({\n   return (\n     <section aria-label=\"トークン編集\" className=\"flex flex-col gap-3 text-sm\">\n       {valueFields.kind === \"rows\" ? (\n-        valueFields.rows.map((row) => (\n+        valueFields.rows.map((row) => {\n+          const caption = TokenControl.captionOf(row);\n+          const id = `${valueId}-${caption.name}`;\n+\n           /*\n            * 下書きの取り直しの単位。行は `name` で一意に指す。\n            *\n            * 値の追随は下書きの欄が key に現在値を入れて行う。行の key に値を\n            * 入れるとピッカーが動かすたびに作り直され、undo を 1 件にまとめられない。\n            */\n-          <ValueRow\n-            key={`${tokenKey}/${rowNameOf(row)}`}\n-            id={`${valueId}-${rowNameOf(row)}`}\n-            row={row}\n-            onSetTokenValue={onSetTokenValue}\n-          />\n-        ))\n+          return (\n+            <LabeledRow\n+              key={`${tokenKey}/${caption.name}`}\n+              htmlFor={id}\n+              label={caption.label}\n+            >\n+              <ValueRowControl\n+                id={id}\n+                row={row}\n+                onSetTokenValue={onSetTokenValue}\n+              />\n+            </LabeledRow>\n+          );\n+        })\n       ) : (\n         <GradientFields\n           gradient={valueFields.gradient}",
+          "patchLines": 130,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 6,
+          "patch": "@@ -8,6 +8,7 @@ import {\n   TokenControl,\n   type TokenControlField,\n   type TokenControlInput,\n+  type TokenFieldTarget,\n } from \"@/features/editor/features/tokens/domains/token-control\";\n import type { ValueOf } from \"@/types/ValueOf\";\n import { Option } from \"@/utils/Option\";\n@@ -44,7 +45,7 @@ export const DraftFieldLooks = {\n } as const;\n \n /** 下書きの欄の見た目。 */\n-export type DraftFieldLook = ValueOf<typeof DraftFieldLooks>;\n+type DraftFieldLook = ValueOf<typeof DraftFieldLooks>;\n \n /**\n  * 下書きの欄の綴り。1 行に比率・色の欄・− の 3 つを並べる stop の行は、右ペインの幅に収めるため\n@@ -64,7 +65,10 @@ const UnitGapClasses = {\n   compact: \"gap-1\",\n } as const satisfies Readonly<Record<FieldDensity, string>>;\n \n-/** 左に置く見出しの綴り。字はプロパティパネルのラベル欄と同じで、幅は UI 案の 52px。 */\n+/**\n+ * 左に置く見出しの綴り。字はプロパティパネルのラベル欄と同じで、幅は UI 案の 52px。\n+ * 幅ごと `LabelClass` を借りないのは、あちらは `Width Mode` を収めるため 5.25rem に広げてあるから。\n+ */\n const RowLabelClass = \"w-[52px] shrink-0 truncate text-[11px] text-gray-500\";\n \n /**\n@@ -237,6 +241,23 @@ export function changeRawOf(\n   };\n }\n \n+/**\n+ * その書き戻し先の欄に打たれた文字列を、`TokenControl.valueFrom` で読んで送る手続き。\n+ *\n+ * @param target 欄が書き戻す先\n+ * @param onSetTokenValue 読めた値と続き方を受け取る先\n+ * @returns 欄の文字列と続き方を受け取る手続き\n+ */\n+export function changeRawOfTarget(\n+  target: TokenFieldTarget,\n+  onSetTokenValue: SetTokenValue,\n+): ChangeRaw {\n+  return changeRawOf(\n+    (raw) => TokenControl.valueFrom(target, raw),\n+    onSetTokenValue,\n+  );\n+}\n+\n /**\n  * 見出しを左に置いた 1 行（UI 案 docs/Design Composer.html の Color のエディタの `hex` / `name`）。\n  *\n@@ -281,10 +302,7 @@ export function FieldRow({\n         id={id}\n         input={field.input}\n         density={FieldDensities.Regular}\n-        onChangeRaw={changeRawOf(\n-          (raw) => TokenControl.valueFrom(field.target, raw),\n-          onSetTokenValue,\n-        )}\n+        onChangeRaw={changeRawOfTarget(field.target, onSetTokenValue)}\n       />\n     </LabeledRow>\n   );",
+          "patchLines": 65,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 10,
+          "patch": "@@ -13,6 +13,7 @@ import {\n   type TokenControlFieldOf,\n   type TokenControlRow,\n } from \"@/features/editor/features/tokens/domains/token-control\";\n+import { ArrayEx } from \"@/utils/ArrayEx\";\n import { Option } from \"@/utils/Option\";\n \n /**\n@@ -100,24 +101,34 @@ export function fieldOf(\n   name: string,\n   label: string,\n ): TokenControlFieldOf<\"number\" | \"text\"> {\n-  const fields = rowsOf(kind, name).flatMap((row) =>\n-    row.kind === \"field\" ? [row.field] : [],\n+  const fields = ArrayEx.filterMap(rowsOf(kind, name), (row) =>\n+    row.kind === \"field\" ? Option.some(row.field) : Option.none,\n   );\n   return Option.unwrap(\n     Option.fromNullable(fields.find((field) => field.label === label)),\n   );\n }\n \n+/** 選択したトークンの値の欄に並ぶ、色の欄（箱か、読めない色のテキスト欄）。 */\n+export function colorControlsIn(\n+  kind: TokenKind,\n+  name: string,\n+): readonly TokenColorControl[] {\n+  return ArrayEx.filterMap(rowsOf(kind, name), (row) =>\n+    row.kind === \"color\" ? Option.some(row.color) : Option.none,\n+  );\n+}\n+\n /**\n  * 選択したトークンの色の欄。\n  *\n  * @throws 色の行を持たないとき。テストを落とすため\n  */\n-export function colorRowOf(kind: TokenKind, name: string): TokenColorControl {\n-  const colors = rowsOf(kind, name).flatMap((row) =>\n-    row.kind === \"color\" ? [row.color] : [],\n-  );\n-  return Option.unwrap(Option.fromNullable(colors[0]));\n+export function selectedColorControl(\n+  kind: TokenKind,\n+  name: string,\n+): TokenColorControl {\n+  return Option.unwrap(ArrayEx.first(colorControlsIn(kind, name)));\n }\n \n /**\n@@ -125,7 +136,7 @@ export function colorRowOf(kind: TokenKind, name: string): TokenColorControl {\n  *\n  * @throws 色が読めずテキスト欄になっているとき。テストを落とすため\n  */\n-export function hexOf(color: TokenColorControl): HexColorControl {\n+export function hexControlOf(color: TokenColorControl): HexColorControl {\n   if (color.kind !== \"hex\") {\n     throw new Error(`色の欄は ${color.kind} で、箱ではない`);\n   }\n@@ -133,6 +144,9 @@ export function hexOf(color: TokenColorControl): HexColorControl {\n }\n \n /** 選択したトークンの、hex として読めた色の箱。 */\n-export function hexColorOf(kind: TokenKind, name: string): HexColorControl {\n-  return hexOf(colorRowOf(kind, name));\n+export function selectedHexControl(\n+  kind: TokenKind,\n+  name: string,\n+): HexColorControl {\n+  return hexControlOf(selectedColorControl(kind, name));\n }",
+          "patchLines": 71,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.alpha.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 10,
+          "patch": "@@ -1,14 +1,14 @@\n import { expect, test } from \"vitest\";\n import { Option } from \"@/utils/Option\";\n import { TokenControl } from \"../index\";\n-import { hexColorOf, rowsOf } from \"./setup\";\n+import { rowsOf, selectedHexControl } from \"./setup\";\n \n test(\"色の不透明度の欄には % で読んだ値が出る\", () => {\n-  expect(hexColorOf(\"colors\", \"veil\").alphaPercent).toBe(50.2);\n+  expect(selectedHexControl(\"colors\", \"veil\").alphaPercent).toBe(50.2);\n });\n \n test(\"不透明度に打った値は色の alpha になる\", () => {\n-  const color = hexColorOf(\"colors\", \"primary\");\n+  const color = selectedHexControl(\"colors\", \"primary\");\n \n   expect(TokenControl.valueFromAlpha(color.target, \"50\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#3b82f680\" }),\n@@ -16,7 +16,7 @@ test(\"不透明度に打った値は色の alpha になる\", () => {\n });\n \n test(\"不透明度を 100 にすると色の alpha の桁が落ちる\", () => {\n-  const color = hexColorOf(\"colors\", \"veil\");\n+  const color = selectedHexControl(\"colors\", \"veil\");\n \n   expect(TokenControl.valueFromAlpha(color.target, \"100\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#3b82f6\" }),\n@@ -24,7 +24,7 @@ test(\"不透明度を 100 にすると色の alpha の桁が落ちる\", () => {\n });\n \n test(\"色をピッカーで選び直しても不透明度は残る\", () => {\n-  const color = hexColorOf(\"colors\", \"veil\");\n+  const color = selectedHexControl(\"colors\", \"veil\");\n \n   expect(TokenControl.valueFrom(color.target, \"#00ff00\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#00ff0080\" }),\n@@ -35,23 +35,23 @@ test.each([\n   \"-1\",\n   \"101\",\n ])(\"0–100 の外の不透明度 %s を打っても色を変えない\", (raw) => {\n-  const color = hexColorOf(\"colors\", \"primary\");\n+  const color = selectedHexControl(\"colors\", \"primary\");\n \n   expect(TokenControl.valueFromAlpha(color.target, raw)).toEqual(Option.none);\n });\n \n test(\"数値として読めない不透明度では色を変えない\", () => {\n-  const color = hexColorOf(\"colors\", \"primary\");\n+  const color = selectedHexControl(\"colors\", \"primary\");\n \n   expect(TokenControl.valueFromAlpha(color.target, \"\")).toEqual(Option.none);\n });\n \n test(\"影の色にも不透明度の欄が出る\", () => {\n-  expect(hexColorOf(\"shadows\", \"sm\").alphaPercent).toBe(10.2);\n+  expect(selectedHexControl(\"shadows\", \"sm\").alphaPercent).toBe(10.2);\n });\n \n test(\"影の不透明度に打った値は影の色の alpha になる\", () => {\n-  const color = hexColorOf(\"shadows\", \"sm\");\n+  const color = selectedHexControl(\"shadows\", \"sm\");\n \n   expect(TokenControl.valueFromAlpha(color.target, \"50\")).toEqual(\n     Option.some({\n@@ -62,7 +62,7 @@ test(\"影の不透明度に打った値は影の色の alpha になる\", () => {\n });\n \n test(\"影の色をピッカーで選び直しても不透明度は残る\", () => {\n-  const color = hexColorOf(\"shadows\", \"sm\");\n+  const color = selectedHexControl(\"shadows\", \"sm\");\n \n   expect(TokenControl.valueFrom(color.target, \"#ff0000\")).toEqual(\n     Option.some({",
+          "patchLines": 73,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 8,
+          "patch": "@@ -6,7 +6,7 @@ import {\n } from \"@/features/editor/features/tokens/__tests__/gradient-documents\";\n import { Option } from \"@/utils/Option\";\n import { TokenControl, TokenSection } from \"../index\";\n-import { gradientOf, gradientSelectionOf, hexOf } from \"./setup\";\n+import { gradientOf, gradientSelectionOf, hexControlOf } from \"./setup\";\n \n test(\"グラデーションの行の見本は階調で、値は角度と stop の件数で出る\", () => {\n   const document = gradientDocumentOf({ stops: ThreeStops });\n@@ -43,7 +43,7 @@ test(\"グラデーションを選ぶと角度の欄と stop の件数ぶんの\n \n test(\"stop の行は比率の欄と、見本・hex・不透明度の箱を持つ\", () => {\n   const [row] = gradientOf(gradientSelectionOf({ stops: TwoStops })).stops;\n-  const color = hexOf(row.color);\n+  const color = hexControlOf(row.color);\n \n   expect(row.ratio.label).toBe(\"stop 1 の比率\");\n   expect([color.picker.label, color.caption.label, color.alpha.label]).toEqual([\n@@ -149,7 +149,7 @@ test(\"比率の欄に打った値で stop が比率の順に並び直る\", () =>\n });\n \n test(\"stop の不透明度はその stop の色だけに効く\", () => {\n-  const field = hexOf(\n+  const field = hexControlOf(\n     gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1].color,\n   );\n \n@@ -170,7 +170,7 @@ test(\"stop の不透明度はその stop の色だけに効く\", () => {\n });\n \n test(\"stop の色をピッカーで選び直しても元の不透明度は残る\", () => {\n-  const field = hexOf(\n+  const field = hexControlOf(\n     gradientOf(\n       gradientSelectionOf({\n         stops: [\n@@ -197,7 +197,7 @@ test(\"stop の色をピッカーで選び直しても元の不透明度は残る\n });\n \n test(\"stop の hex に `#` 無しで打った 6 桁でその stop の色だけが変わり、不透明度は残る\", () => {\n-  const field = hexOf(\n+  const field = hexControlOf(\n     gradientOf(\n       gradientSelectionOf({\n         stops: [\n@@ -224,7 +224,7 @@ test(\"stop の hex に `#` 無しで打った 6 桁でその stop の色だけ\n });\n \n test(\"stop の hex に 6 桁・3 桁として読めない値を打っても値を変えない\", () => {\n-  const field = hexOf(\n+  const field = hexControlOf(\n     gradientOf(gradientSelectionOf({ stops: TwoStops })).stops[0].color,\n   );\n \n@@ -297,7 +297,7 @@ test(\"stop の + は最も広い隙間の中央に stop を足した値になる\n });\n \n test(\"2 件目の stop の色をピッカーで選ぶとその stop の色だけが変わる\", () => {\n-  const field = hexOf(\n+  const field = hexControlOf(\n     gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1].color,\n   );\n \n@@ -318,7 +318,7 @@ test(\"2 件目の stop の色をピッカーで選ぶとその stop の色だけ\n });\n \n test(\"2 件目の stop の hex に `#` 無しで打った 6 桁でその stop の色だけが変わる\", () => {\n-  const field = hexOf(\n+  const field = hexControlOf(\n     gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1].color,\n   );\n ",
+          "patchLines": 72,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 11,
+          "patch": "@@ -1,18 +1,22 @@\n import { expect, test } from \"vitest\";\n import { Option } from \"@/utils/Option\";\n import { TokenControl } from \"../index\";\n-import { colorRowOf, hexColorOf } from \"./setup\";\n+import { selectedColorControl, selectedHexControl } from \"./setup\";\n \n test(\"alpha を持つ色の hex の欄には、`#` を除いた 6 桁だけが出る\", () => {\n-  expect(TokenControl.hexDigitsOf(hexColorOf(\"colors\", \"veil\"))).toBe(\"3b82f6\");\n+  expect(TokenControl.hexDigitsOf(selectedHexControl(\"colors\", \"veil\"))).toBe(\n+    \"3b82f6\",\n+  );\n });\n \n test(\"影の色の hex の欄には、`#` を除いた 6 桁だけが出る\", () => {\n-  expect(TokenControl.hexDigitsOf(hexColorOf(\"shadows\", \"sm\"))).toBe(\"000000\");\n+  expect(TokenControl.hexDigitsOf(selectedHexControl(\"shadows\", \"sm\"))).toBe(\n+    \"000000\",\n+  );\n });\n \n test(\"色の hex に大文字で打った 6 桁は小文字で保存される\", () => {\n-  const color = hexColorOf(\"colors\", \"primary\");\n+  const color = selectedHexControl(\"colors\", \"primary\");\n \n   expect(TokenControl.valueFromHex(color.target, \"ABCDEF\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#abcdef\" }),\n@@ -20,7 +24,7 @@ test(\"色の hex に大文字で打った 6 桁は小文字で保存される\",\n });\n \n test(\"色の hex に `#` 無しで打った 6 桁で色が変わり、不透明度は残る\", () => {\n-  const color = hexColorOf(\"colors\", \"veil\");\n+  const color = selectedHexControl(\"colors\", \"veil\");\n \n   expect(TokenControl.valueFromHex(color.target, \"00ff00\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#00ff0080\" }),\n@@ -28,7 +32,7 @@ test(\"色の hex に `#` 無しで打った 6 桁で色が変わり、不透明\n });\n \n test(\"色の hex に `#` 付きで打った 6 桁でも色が変わる\", () => {\n-  const color = hexColorOf(\"colors\", \"primary\");\n+  const color = selectedHexControl(\"colors\", \"primary\");\n \n   expect(TokenControl.valueFromHex(color.target, \"#00ff00\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#00ff00\" }),\n@@ -39,7 +43,7 @@ test.each([\n   \"abc\",\n   \"#ABC\",\n ])(\"色の hex に打った 3 桁 %s は広げた 6 桁になり、不透明度は残る\", (raw) => {\n-  const color = hexColorOf(\"colors\", \"veil\");\n+  const color = selectedHexControl(\"colors\", \"veil\");\n \n   expect(TokenControl.valueFromHex(color.target, raw)).toEqual(\n     Option.some({ kind: \"colors\", value: \"#aabbcc80\" }),\n@@ -53,25 +57,25 @@ test.each([\n   \"#aabbccff\",\n   \"abcd\",\n ])(\"色の hex に打った 4 桁・8 桁 %s は alpha が不透明でも色を変えない\", (raw) => {\n-  const color = hexColorOf(\"colors\", \"primary\");\n+  const color = selectedHexControl(\"colors\", \"primary\");\n \n   expect(TokenControl.valueFromHex(color.target, raw)).toEqual(Option.none);\n });\n \n test.each([\"\", \"#\", \"##abc\"])(\"色の hex に打った %j は色を変えない\", (raw) => {\n-  const color = hexColorOf(\"colors\", \"primary\");\n+  const color = selectedHexControl(\"colors\", \"primary\");\n \n   expect(TokenControl.valueFromHex(color.target, raw)).toEqual(Option.none);\n });\n \n test(\"読めない色のテキスト欄に `#` 無しの 3 桁を打っても色を変えない\", () => {\n-  const color = colorRowOf(\"colors\", \"broken\");\n+  const color = selectedColorControl(\"colors\", \"broken\");\n \n   expect(TokenControl.valueFrom(color.target, \"abc\")).toEqual(Option.none);\n });\n \n test(\"読めない色のテキスト欄に `#` 付きの 3 桁を打つと広げた 6 桁の色になる\", () => {\n-  const color = colorRowOf(\"colors\", \"broken\");\n+  const color = selectedColorControl(\"colors\", \"broken\");\n \n   expect(TokenControl.valueFrom(color.target, \"#abc\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#aabbcc\" }),",
+          "patchLines": 84,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 10,
+          "patch": "@@ -5,11 +5,18 @@ import { TokenSelection } from \"@/domains/session/token-selection\";\n import { Font } from \"@/utils/Font\";\n import { Option } from \"@/utils/Option\";\n import { TokenControl, type TokenControlRow, TokenSection } from \"../index\";\n-import { fieldOf, hexColorOf, rowsOf, setupDocument } from \"./setup\";\n+import {\n+  colorControlsIn,\n+  fieldOf,\n+  hexControlOf,\n+  rowsOf,\n+  selectedHexControl,\n+  setupDocument,\n+} from \"./setup\";\n \n /** 行の見出し。色の箱は 6 桁の欄の見出し。 */\n function rowLabelOf(row: TokenControlRow): string {\n-  return row.kind === \"field\" ? row.field.label : row.color.caption.label;\n+  return TokenControl.captionOf(row).label;\n }\n \n function sectionOf(document: DesignDocument, kind: TokenKind): TokenSection {\n@@ -125,7 +132,7 @@ test(\"色を選ぶと、見本・hex・不透明度が 1 行の色の欄にま\n });\n \n test(\"alpha を持つ色でもカラーピッカーに渡るのは6桁だけになる\", () => {\n-  expect(hexColorOf(\"colors\", \"veil\").rgb).toBe(\"#3b82f6\");\n+  expect(selectedHexControl(\"colors\", \"veil\").rgb).toBe(\"#3b82f6\");\n });\n \n test(\"長さを選ぶと数値の入力欄が1つ出る\", () => {\n@@ -162,10 +169,8 @@ test(\"影を選ぶとフィールドごとの欄が仕様の順で並び、色\n });\n \n test(\"影の色だけが見本・hex・不透明度の箱になり、見本の読み上げ名は `色` になる\", () => {\n-  const pickerLabels = rowsOf(\"shadows\", \"sm\").flatMap((row) =>\n-    row.kind === \"color\" && row.color.kind === \"hex\"\n-      ? [row.color.picker.label]\n-      : [],\n+  const pickerLabels = colorControlsIn(\"shadows\", \"sm\").map(\n+    (color) => hexControlOf(color).picker.label,\n   );\n \n   expect(pickerLabels).toEqual([\"色\"]);\n@@ -216,7 +221,7 @@ test(\"数値として読めない入力では値を変えない\", () => {\n });\n \n test(\"カラーピッカーが返した hex はそのまま色の値になる\", () => {\n-  const color = hexColorOf(\"colors\", \"primary\");\n+  const color = selectedHexControl(\"colors\", \"primary\");\n \n   expect(TokenControl.valueFrom(color.target, \"#00ff00\")).toEqual(\n     Option.some({ kind: \"colors\", value: \"#00ff00\" }),\n@@ -279,7 +284,7 @@ test(\"書体のフォントを空欄にすると指定が外れる\", () => {\n });\n \n test(\"ピッカーの口では `#` の無い 6 桁も 8 桁も色を変えない\", () => {\n-  const color = hexColorOf(\"colors\", \"primary\");\n+  const color = selectedHexControl(\"colors\", \"primary\");\n \n   expect(TokenControl.valueFrom(color.target, \"3b82f6\")).toEqual(Option.none);\n   expect(TokenControl.valueFrom(color.target, \"#00ff0080\")).toEqual(\n@@ -288,7 +293,7 @@ test(\"ピッカーの口では `#` の無い 6 桁も 8 桁も色を変えない\n });\n \n test(\"影の色をピッカーで選び直しても元の alpha は残る\", () => {\n-  const color = hexColorOf(\"shadows\", \"sm\");\n+  const color = selectedHexControl(\"shadows\", \"sm\");\n \n   expect(TokenControl.valueFrom(color.target, \"#ff0000\")).toEqual(\n     Option.some({",
+          "patchLines": 70,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 3,
+          "patch": "@@ -1,8 +1,9 @@\n import { expectTypeOf, test } from \"vitest\";\n+import type { ShadowNumberField } from \"@/domains/dcmp/token\";\n import type {\n   GradientControl,\n   GradientStopRow,\n-  HexColorTarget,\n+  TokenColorTarget,\n   TokenControlRow,\n } from \"../index\";\n \n@@ -13,11 +14,11 @@ test(\"値の欄の field の行の入力欄は数値か文言で、不透明度\n });\n \n test(\"箱の書き戻し先は色トークン・影の色・stop の色の 3 つで、影は色のフィールドだけを指す\", () => {\n-  expectTypeOf<HexColorTarget[\"kind\"]>().toEqualTypeOf<\n+  expectTypeOf<TokenColorTarget[\"kind\"]>().toEqualTypeOf<\n     \"colors\" | \"shadows\" | \"gradientsStopColor\"\n   >();\n   expectTypeOf<\n-    Extract<HexColorTarget, { kind: \"shadows\" }>[\"field\"]\n+    Extract<TokenColorTarget, { kind: \"shadows\" }>[\"field\"]\n   >().toEqualTypeOf<\"color\">();\n });\n \n@@ -29,3 +30,22 @@ test(\"stop の比率の欄は % の欄、角度の欄は度の欄\", () => {\n     GradientControl[\"angle\"][\"input\"][\"kind\"]\n   >().toEqualTypeOf<\"degree\">();\n });\n+\n+test(\"field の行は色も階調も書き戻さず、影は数値のフィールドだけを指す。stop の比率の欄は比率、角度の欄は角度だけを書き戻す\", () => {\n+  type FieldRowTarget = Extract<\n+    TokenControlRow,\n+    { kind: \"field\" }\n+  >[\"field\"][\"target\"];\n+  expectTypeOf<FieldRowTarget[\"kind\"]>().toEqualTypeOf<\n+    \"spacing\" | \"radius\" | \"shadows\" | \"typography\"\n+  >();\n+  expectTypeOf<\n+    Extract<FieldRowTarget, { kind: \"shadows\" }>[\"field\"]\n+  >().toEqualTypeOf<ShadowNumberField>();\n+  expectTypeOf<\n+    GradientStopRow[\"ratio\"][\"target\"][\"kind\"]\n+  >().toEqualTypeOf<\"gradientsStopRatio\">();\n+  expectTypeOf<\n+    GradientControl[\"angle\"][\"target\"][\"kind\"]\n+  >().toEqualTypeOf<\"gradientsAngle\">();\n+});",
+          "patchLines": 48,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 62,
+          "deletions": 33,
+          "patch": "@@ -93,21 +93,23 @@ export type TokenFieldTarget =\n     }>;\n \n /** 欄の識別子（1 つのトークンの中で一意。複合の種別はフィールド名）と見出し。 */\n-type TokenControlCaption = Readonly<{ name: string; label: string }>;\n-\n-/** 入力欄の種類を `K` に絞った編集欄の1つ。 */\n-export type TokenControlFieldOf<K extends TokenControlInput[\"kind\"]> =\n-  TokenControlCaption &\n-    Readonly<{\n-      input: Extract<TokenControlInput, { kind: K }>;\n-      target: TokenFieldTarget;\n-    }>;\n+export type TokenControlCaption = Readonly<{ name: string; label: string }>;\n+\n+/** 入力欄の種類を `K` に、書き戻し先を `T` に絞った編集欄の1つ。 */\n+export type TokenControlFieldOf<\n+  K extends TokenControlInput[\"kind\"],\n+  T extends TokenFieldTarget = TokenFieldTarget,\n+> = TokenControlCaption &\n+  Readonly<{\n+    input: Extract<TokenControlInput, { kind: K }>;\n+    target: T;\n+  }>;\n \n /** 編集欄の1つ。入力欄の種類を絞らない。 */\n export type TokenControlField = TokenControlFieldOf<TokenControlInput[\"kind\"]>;\n \n /** 見本・hex・不透明度の箱が書き戻す色 1 つ。影は色のフィールドだけを指す。 */\n-export type HexColorTarget =\n+export type TokenColorTarget =\n   | Extract<TokenFieldTarget, { kind: \"colors\" }>\n   | (Extract<TokenFieldTarget, { kind: \"shadows\" }> &\n       Readonly<{ field: \"color\" }>)\n@@ -116,13 +118,12 @@ export type HexColorTarget =\n /**\n  * hex として読める色を、見本・`#`・6 桁・不透明度の 1 つの箱で打つ欄。\n  *\n- * Color のエディタと stop の色が持つのは docs/06-ui.md「`Tokens` の `gradients`」の「hex の欄は\n- * Color のエディタと同じ」による。影の色は、UI 案に影のエディタが無く colors と同じ\n- * `colorControlOf` で組み立てるので同じ箱にする（#1041）。\n+ * UI 案に影のエディタは無いが、影の色も同じ箱にするのは docs/06-ui.md「編集操作の一覧」の\n+ * tokens 編集が hex・不透明度の欄を「colors / shadows / gradients の stop で共通」とするため。\n  */\n export type HexColorControl = Readonly<{\n   kind: \"hex\";\n-  target: HexColorTarget;\n+  target: TokenColorTarget;\n   /** 6 桁の欄 */\n   caption: TokenControlCaption;\n   rgb: Rgb;\n@@ -138,14 +139,23 @@ export type TokenColorControl =\n   | HexColorControl\n   | Readonly<{\n       kind: \"text\";\n-      target: HexColorTarget;\n+      target: TokenColorTarget;\n       caption: TokenControlCaption;\n       value: ColorToken;\n     }>;\n \n+/** 値の欄の数値・文言の行が書き戻す先。色は箱の `TokenColorTarget`、階調はグラデーションの欄が持つ。 */\n+type TokenFieldRowTarget =\n+  | Extract<TokenFieldTarget, { kind: \"spacing\" | \"radius\" | \"typography\" }>\n+  | (Extract<TokenFieldTarget, { kind: \"shadows\" }> &\n+      Readonly<{ field: ShadowNumberField }>);\n+\n /** 値の欄に上から並ぶ 1 行（`PropControlRow` と同じ形）。 */\n export type TokenControlRow =\n-  | Readonly<{ kind: \"field\"; field: TokenControlFieldOf<\"number\" | \"text\"> }>\n+  | Readonly<{\n+      kind: \"field\";\n+      field: TokenControlFieldOf<\"number\" | \"text\", TokenFieldRowTarget>;\n+    }>\n   | Readonly<{ kind: \"color\"; color: TokenColorControl }>;\n \n /** 1 つの色の箱に付ける識別子と見出し。 */\n@@ -174,7 +184,10 @@ export type GradientStopRow = Readonly<{\n   /** 行の識別子。1 つのトークンの中で一意 */\n   name: string;\n   /** 比率の欄 */\n-  ratio: TokenControlFieldOf<\"percent\">;\n+  ratio: TokenControlFieldOf<\n+    \"percent\",\n+    Extract<TokenFieldTarget, { kind: \"gradientsStopRatio\" }>\n+  >;\n   /** 見本・hex・不透明度の箱。色が hex として読めなければ色のテキスト欄 */\n   color: TokenColorControl;\n   /** − を押した後の値。除くと 2 件を下回るなら `none`（押せない状態で並べる） */\n@@ -190,7 +203,10 @@ export type GradientControl = Readonly<{\n   /** つまみを並べるバーを塗る階調。角度に依らず左から右へ */\n   barImage: LinearGradientValue;\n   knobs: readonly GradientKnob[];\n-  angle: TokenControlFieldOf<\"degree\">;\n+  angle: TokenControlFieldOf<\n+    \"degree\",\n+    Extract<TokenFieldTarget, { kind: \"gradientsAngle\" }>\n+  >;\n   stops: readonly GradientStopRow[];\n   /** stop の + を押した後の値 */\n   afterAdd: TokenValue;\n@@ -226,7 +242,7 @@ const AlphaLabel = \"不透明度\";\n \n /**\n  * 色の箱の hex の欄。見出しは UI 案の Color のエディタ（`hex`）と、stop の行の見出し\n- * （`stop n の hex`）に合わせる。打てる綴りは `#` の有無を問わない 6 桁と 3 桁（`valueFromHex`）。\n+ * （`stop n の hex`）に合わせる。打てる綴りは `valueFromHex`。\n  *\n  * 影の箱も `hex` にするのは、`色` にするとピッカーの読み上げ名 `色` と重なるため。\n  */\n@@ -374,13 +390,14 @@ function shadowInput(\n  */\n function colorControlOf(\n   color: ColorToken,\n-  target: HexColorTarget,\n+  target: TokenColorTarget,\n   captions: ColorCaptions,\n ): TokenColorControl {\n   const rgb = ColorToken.rgbOf(color);\n   if (!Option.isSome(rgb)) {\n     return { kind: \"text\", target, caption: captions.picker, value: color };\n   }\n+\n   return {\n     kind: \"hex\",\n     target,\n@@ -644,7 +661,7 @@ function colorWithAlphaFrom(\n \n /**\n  * グラデーションの角度・stop の比率の入力欄へ打たれた文字列を、書き換え後のグラデーションにする。\n- * stop の色は `hexColorValueFrom` の担当。\n+ * stop の色は `colorValueFrom` の担当。\n  *\n  * @param target 書き換えるグラデーションと、角度か、どの stop の比率か\n  * @param raw 入力欄に入っている文字列\n@@ -680,8 +697,8 @@ function gradientFrom(\n  * @param nextColorOf 差し替える前の色から、差し替えた後の色を作る\n  * @returns 書き換え後のトークンの値。`nextColorOf` が `none` を返したら `none`\n  */\n-function hexColorValueFrom(\n-  target: HexColorTarget,\n+function colorValueFrom(\n+  target: TokenColorTarget,\n   nextColorOf: (color: ColorToken) => Option<ColorToken>,\n ): Option<TokenValue> {\n   switch (target.kind) {\n@@ -736,7 +753,7 @@ function shadowValueFrom(\n ): Option<TokenValue> {\n   const { shadow, field } = target;\n   if (field === \"color\") {\n-    return hexColorValueFrom({ kind: \"shadows\", shadow, field }, (color) =>\n+    return colorValueFrom({ kind: \"shadows\", shadow, field }, (color) =>\n       colorWithRgbFrom(color, raw),\n     );\n   }\n@@ -810,9 +827,7 @@ export const TokenControl = {\n     switch (target.kind) {\n       case \"colors\":\n       case \"gradientsStopColor\":\n-        return hexColorValueFrom(target, (color) =>\n-          colorWithRgbFrom(color, raw),\n-        );\n+        return colorValueFrom(target, (color) => colorWithRgbFrom(color, raw));\n       /*\n        * 長さの 2 種別は値域も書き戻し方も同じなので枝を分けない。分けると、\n        * 一方だけ検証を通し忘れても型もテストも通ってしまう。\n@@ -845,11 +860,10 @@ export const TokenControl = {\n    * @returns 書き換え後のトークンの値。`#` の有無を問わず 6 桁か 3 桁の hex として読めなければ\n    *   `none`（4 桁・8 桁も `none`）\n    */\n-  valueFromHex(target: HexColorTarget, raw: string): Option<TokenValue> {\n+  valueFromHex(target: TokenColorTarget, raw: string): Option<TokenValue> {\n     const spelled = raw.startsWith(\"#\") ? raw : `#${raw}`;\n-    return hexColorValueFrom(target, (color) =>\n-      colorWithRgbFrom(color, spelled),\n-    );\n+\n+    return colorValueFrom(target, (color) => colorWithRgbFrom(color, spelled));\n   },\n \n   /**\n@@ -859,8 +873,23 @@ export const TokenControl = {\n    * @param raw 入力欄に入っている文字列（%）\n    * @returns 書き換え後のトークンの値。数値として読めないとき、0–100 の外のときは `none`\n    */\n-  valueFromAlpha(target: HexColorTarget, raw: string): Option<TokenValue> {\n-    return hexColorValueFrom(target, (color) => colorWithAlphaFrom(color, raw));\n+  valueFromAlpha(target: TokenColorTarget, raw: string): Option<TokenValue> {\n+    return colorValueFrom(target, (color) => colorWithAlphaFrom(color, raw));\n+  },\n+\n+  /**\n+   * 値の欄の 1 行の識別子と見出し。\n+   *\n+   * @param row 値の欄の 1 行\n+   * @returns 数値・文言の行はその欄の、色の行は 6 桁の欄（読めない色はテキスト欄）の識別子と見出し\n+   */\n+  captionOf(row: TokenControlRow): TokenControlCaption {\n+    switch (row.kind) {\n+      case \"field\":\n+        return { name: row.field.name, label: row.field.label };\n+      case \"color\":\n+        return row.color.caption;\n+    }\n   },\n \n   /**",
+          "patchLines": 207,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "2c2685a2ffbbda62d08690ccb5543033bb6361c7",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T16:42:15Z",
+      "subject": "📝 [Doc]: #1376 06-ui の stop の行の重複した文を 1 本にし、4・8 桁を受けない理由を書く",
+      "body": "- 369 行目: 新しい括弧書きと既存の文「hex の欄は Color のエディタと同じで、\n  不透明度の % も同じく添える」の重複を、括弧書きに 1 本化した。箱の左端の\n  見本は UI 案に無く #1376 で決めたことも書き分けた\n- 339 行目: 4 桁・8 桁を受けない理由(alpha は不透明度の欄が受け持つ)と、\n  受けない綴りでは値を変えないことを足した\n\n背景:\n仕様書の検証で、1 つの箇条に同じ説明が 2 回あり片方だけ直せる形になって\nいること、04-tokens はファイルで 4・8 桁を受けるのに 06-ui の欄では受けない\n理由が書かれていないことを指摘された。UI の検証でも、箱全体を UI 案の要素と\nして引くと見本まで UI 案にあるように読めると指摘された。\n\n採用理由:\nUI 案にある部分(#・6 桁・右端の %)と人の決定(左端の見本)を分けて書けば、\n見本の位置を見直すときに誤った根拠を引かずに済む。\n\n代替案:\n- 既存の文を残して括弧書きを消す: 既存の文は見本も UI 案由来とは書いて\n  いないが、箱の中身を列挙していないので、並びの説明として足りない\n\n影響とトレードオフ:\n文書の変更だけ。\n\n参考:\n- Issue #1376 のフェーズ 6 の採否コメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -336,7 +336,7 @@ Figma 寄りの直接操作を採用する。\n | 並べ替え | 同一親内の子順序の変更（ドラッグ・ツリービュー・キーボード・コンテキストメニュー）。キーボードは選択中のノードを 1 つ前面（⌘] / Ctrl+]）／背面（⌘[ / Ctrl+[）へ動かす。隣がいない向きへは動かない。複数選んでいるときのキーボードとメニューは上記「複数選択」。ツリーの行のドラッグは、複数選んでいても掴んだ 1 行だけを動かす。絞り込んでいる間にドラッグが使えないことは上記「絞り込み」 |\n | props 編集 | プロパティパネル経由。トークン参照 prop はトークン一覧からの選択式。**数値・文言の欄は、フォーカスを得てから離すまでが undo 1 回ぶん**（打鍵ごとには積まない。リサイズハンドルの「掴んでから離すまで」と同じ畳み方。上記「キャンバス直接操作」）。選択式の欄は畳まず、1 回の選び直しがそのまま 1 件。欄にフォーカスがある間に undo が効かないことは下記「キーボードの割り当て」 |\n | artboard 操作 | 追加・削除・配列順の並べ替え・キャンバス上の移動（見出しのドラッグ。上記「キャンバス直接操作」）。並べ替えが動かすのは自動配置される artboard だけで、座標を持つ artboard の位置は配列順に依らない。**キャンバス上の移動と、左辺・上辺からのリサイズは座標を書く**ので、その artboard は以後 並べ替えでは動かなくなる |\n-| tokens 編集 | 種別ごとの一覧・追加・変更・削除の UI を持つ。gradients の見せ方は下記「`Tokens` の `gradients`」。ピッカーで選ぶ色は、ピッカーを開いてから、開き直すか閉じてほかへ移るまでに動かした分が undo 1 回ぶん（動かすたびには積まない）、hex・不透明度の欄は上記「props 編集」の数値・文言の欄と同じ畳み方（どちらも colors / shadows / gradients の stop で共通）。hex の欄は `#` の有無を問わず 6 桁と 3 桁（各桁を重ねて 6 桁にする）を受け、4 桁・8 桁は受けない。色の見本を押すとピッカーが開く |\n+| tokens 編集 | 種別ごとの一覧・追加・変更・削除の UI を持つ。gradients の見せ方は下記「`Tokens` の `gradients`」。ピッカーで選ぶ色は、ピッカーを開いてから、開き直すか閉じてほかへ移るまでに動かした分が undo 1 回ぶん（動かすたびには積まない）、hex・不透明度の欄は上記「props 編集」の数値・文言の欄と同じ畳み方（どちらも colors / shadows / gradients の stop で共通）。hex の欄は `#` の有無を問わず 6 桁と 3 桁（各桁を重ねて 6 桁にする）を受け、4 桁・8 桁は受けない（alpha は不透明度の欄が受け持つため。受けない綴りでは値を変えない）。色の見本を押すとピッカーが開く |\n | 複製 | 選んでいるノードをサブツリーごと複製し、**同じ親の中の直後**へ入れる（⌘D / Ctrl+D）。名前はコピー & ペーストと同じ自動リネームで付け替え、複製が選ばれる（続けて押したときに作った順で並ぶようにするため）。クリップボードは経由しない。artboard は複製できない。複数選んでいるときは上記「複数選択」 |\n | コピー & ペースト | サブツリー単位。**自動リネームで名前の一意性を保つ**（01-file-format）。複数選んでいるときは上記「複数選択」 |\n | 名前を変更 | 選んでいるノード / artboard の `name` を打ち替える（⌘R / Ctrl+R）。入口と確定の規則は下記「名前の変更」 |\n@@ -366,7 +366,7 @@ Figma 寄りの直接操作を採用する。\n   - 見出しの種別は `Gradient`。見出しの見本と 96px のプレビューは階調で塗る\n   - プレビューの直下に階調のバーを置き、stop ごとのつまみを並べる\n   - 値の欄は `angle`（度。値域を丸めず、打った値をそのまま持つ）と、`Stops` の見出し（右端に `+`）、stop 1 件ごとの行\n-  - **stop の行は `ratio`・色の欄（見本・`#`・hex・不透明度の `%` を 1 つの箱に入れたもの。Color のエディタと同じ）・`−` の順**（Figma の並び）。`ratio` の欄は `%` で出す。hex の欄は Color のエディタと同じで、不透明度の `%` も同じく添える。`ratio` の欄を行の先頭に置き、2 つの `%` を行の両端に離して読み分ける\n+  - **stop の行は `ratio`・色の欄（`#`・hex・右端の不透明度の `%` を 1 つの箱に入れた、UI 案の Color のエディタの hex の欄と同じもの。箱の左端に色の見本を置くのは UI 案に無く、#1376 で決めた）・`−` の順**（Figma の並び）。`ratio` の欄は `%` で出す。`ratio` の欄を行の先頭に置き、2 つの `%` を行の両端に離して読み分ける\n - **`ratio` の欄は小数も受け付け、受け取った値は `%` で小数 4 桁に丸めて持つ**（CSS へ出すときの丸めと同じ桁。04-tokens「gradients」）。つまみのドラッグで決まる値も同じく丸める\n - **stop の `+`** は、配列で隣り合う 2 件の stop の間を隙間とし、`ratio` の差の絶対値（小数 6 桁に丸めた値）が最も大きい隙間の中央（2 件の平均を小数 6 桁に丸めた値）に、その隙間の配列で左側の stop と同じ色で 1 件足す。同じ広さの隙間が 2 つ以上あるときは配列で左の隙間を選ぶ。足した後も並べ替えない。両端の空き（0 から最初の stop まで / 最後の stop から 1 まで）は隙間に数えない。stop が 2 件に満たないファイルでは、0 件なら `angle` を保ったまま節見出しの `+` と同じ 2 件にし、1 件ならその stop と同じ色を、`ratio` が 0.5 未満なら `ratio` 1 で末尾に、0.5 以上なら `ratio` 0 で先頭に足す。0〜1 の外の `ratio` は寄せず、そこから求めた中央もそのまま持つ（04-tokens が 0〜1 に保つのは編集で受け取る値のことで、`+` は値を受け取らない）\n - **stop が 2 件以下のときは `−` を押せない状態で並べる**（04-tokens が編集で 2 件以上を保つため）。消さずに並べるのは、上記「複数選択」の `Select all N instances` が N が 1 以下のときに押せないボタンとして残るのと同じ流儀",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f280d0deef25990236ac086c1a245ced42e3d4f5",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T17:19:26Z",
+      "subject": "🧪 [Tests]: #1376 # を補うのが hex の欄だけであることを stop・影の経路でも固定し、読めない色の欄の追随を確かめる",
+      "body": "- 読めない色の stop のテキスト欄に # 無しの 6 桁を打っても色を変えないケース\n- 影の色のピッカーの口(valueFrom)に # 無しの 6 桁が届いても色を変えないケース\n- 影の色の hex に # 無しで打った 6 桁で影の色が変わり、不透明度は残るケース\n- 読めない色が外から別の読めない綴りに変わると、値 の欄もその綴りになるケース\n  (rerender のため要素の組み立てを colorBody に切り出した)\n\n背景:\nミューテーションで実装を壊して確かめたところ、次の壊し方でテストが落ち\nなかった。gradientsStopColor の枝だけで # を補う / 影の色の valueFrom で\n# を補う / 影のときだけ valueFromHex が # を補わない / 読めない色の\nテキスト欄の key を固定する。# を補わないことを見るテストが色トークンの\n書き戻し先 1 種だけにあり、影の箱の通しのテストは # 付きで打っていた。\n\n採用理由:\n# の補完を hex の欄だけに置いたのはこの差分の中心の判断なので、書き戻し\n先 3 種(色トークン・影の色・stop の色)のすべてで対になる経路を見る。\n読めない色の欄は、外部の編集で別の綴りに変わったときに揃う経路\n(rules/consistency.md)を守る。足した 4 件は、それぞれ対応する壊し方を\n入れると 1 件だけが落ち、戻すと通ることを確かめた。\n\n代替案:\n- 影の通しのテストの入力を ff0000 に替えるだけにする: 通しは # 付きも\n  受けることを残す役目があるので、ドメインのテストに足した\n\n影響とトレードオフ:\nテストの追加だけ。\n\n参考:\n- Issue #1376 のフェーズ 6(test-reviewer)の指摘 1〜3\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 29,
+          "deletions": 7,
+          "patch": "@@ -1,5 +1,6 @@\n import { render, screen } from \"@testing-library/react\";\n import userEvent from \"@testing-library/user-event\";\n+import type { ReactElement } from \"react\";\n import { expect, test, vi } from \"vitest\";\n import { DesignDocument } from \"@/domains/dcmp/design-document\";\n import { TokenSet } from \"@/domains/dcmp/token\";\n@@ -9,15 +10,16 @@ import { Option } from \"@/utils/Option\";\n import { TokenEditor } from \"../index\";\n \n /**\n- * 色トークン `primary` を選んだエディタの本文を描く。値を受け取っても描き直さないので、欄に\n- * 残った下書きを見られる。\n+ * 色トークン `primary` を選んだエディタの本文。\n  *\n  * @param color `primary` の値\n- * @returns 値を受け取る関数。送られた値と続き方を見るために使う\n+ * @param onSetTokenValue 値を受け取る関数\n  */\n-function renderColor(color: string) {\n-  const onSetTokenValue = vi.fn();\n-  render(\n+function colorBody(\n+  color: string,\n+  onSetTokenValue: (...args: unknown[]) => void,\n+): ReactElement {\n+  return (\n     <TokenEditor.Body\n       selection={TokenSelection.create(\n         DesignDocument.create({\n@@ -28,8 +30,20 @@ function renderColor(color: string) {\n       onSetTokenValue={onSetTokenValue}\n       onRenameToken={() => {}}\n       onRemoveToken={() => {}}\n-    />,\n+    />\n   );\n+}\n+\n+/**\n+ * 色トークン `primary` を選んだエディタの本文を描く。値を受け取っても描き直さないので、欄に\n+ * 残った下書きを見られる。\n+ *\n+ * @param color `primary` の値\n+ * @returns 値を受け取る関数。送られた値と続き方を見るために使う\n+ */\n+function renderColor(color: string) {\n+  const onSetTokenValue = vi.fn();\n+  render(colorBody(color, onSetTokenValue));\n   return onSetTokenValue;\n }\n \n@@ -92,3 +106,11 @@ test(\"読めない色は `値` のテキスト欄に元の綴りで出て、不\n   expect([text.type, text.value]).toEqual([\"text\", \"RED\"]);\n   expect(screen.queryByLabelText(\"不透明度\")).toBeNull();\n });\n+\n+test(\"読めない色が外から別の読めない綴りに変わると、`値` の欄もその綴りになる\", () => {\n+  const { rerender } = render(colorBody(\"RED\", () => {}));\n+\n+  rerender(colorBody(\"BLUE\", () => {}));\n+\n+  expect(screen.getByLabelText<HTMLInputElement>(\"値\").value).toBe(\"BLUE\");\n+});",
+          "patchLines": 64,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 38,
+          "deletions": 1,
+          "patch": "@@ -1,7 +1,12 @@\n import { expect, test } from \"vitest\";\n import { Option } from \"@/utils/Option\";\n import { TokenControl } from \"../index\";\n-import { selectedColorControl, selectedHexControl } from \"./setup\";\n+import {\n+  gradientOf,\n+  gradientSelectionOf,\n+  selectedColorControl,\n+  selectedHexControl,\n+} from \"./setup\";\n \n test(\"alpha を持つ色の hex の欄には、`#` を除いた 6 桁だけが出る\", () => {\n   expect(TokenControl.hexDigitsOf(selectedHexControl(\"colors\", \"veil\"))).toBe(\n@@ -31,6 +36,17 @@ test(\"色の hex に `#` 無しで打った 6 桁で色が変わり、不透明\n   );\n });\n \n+test(\"影の色の hex に `#` 無しで打った 6 桁で影の色が変わり、不透明度は残る\", () => {\n+  const color = selectedHexControl(\"shadows\", \"sm\");\n+\n+  expect(TokenControl.valueFromHex(color.target, \"ff0000\")).toEqual(\n+    Option.some({\n+      kind: \"shadows\",\n+      value: { x: 0, y: 1, blur: 3, color: \"#ff00001a\" },\n+    }),\n+  );\n+});\n+\n test(\"色の hex に `#` 付きで打った 6 桁でも色が変わる\", () => {\n   const color = selectedHexControl(\"colors\", \"primary\");\n \n@@ -81,3 +97,24 @@ test(\"読めない色のテキスト欄に `#` 付きの 3 桁を打つと広げ\n     Option.some({ kind: \"colors\", value: \"#aabbcc\" }),\n   );\n });\n+\n+test(\"読めない色の stop のテキスト欄に `#` 無しの 6 桁を打っても色を変えない\", () => {\n+  const [stop] = gradientOf(\n+    gradientSelectionOf({\n+      stops: [\n+        { color: \"RED\", ratio: 0 },\n+        { color: \"#ffffff\", ratio: 1 },\n+      ],\n+    }),\n+  ).stops;\n+\n+  expect(TokenControl.valueFrom(stop.color.target, \"ff0000\")).toEqual(\n+    Option.none,\n+  );\n+});\n+\n+test(\"影の色のピッカーから `#` 無しの 6 桁が届いても色を変えない\", () => {\n+  const color = selectedHexControl(\"shadows\", \"sm\");\n+\n+  expect(TokenControl.valueFrom(color.target, \"ff0000\")).toEqual(Option.none);\n+});",
+          "patchLines": 57,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e465438d6768a6505bc6277f3978e806f098b4c7",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T17:19:33Z",
+      "subject": "📝 [Doc]: #1376 左見出しと箱の relative を守れるのが Storybook の視覚差分だけだと書く",
+      "body": "- LabeledRow の doc に、見出しが左に並ぶことは happy-dom では確かめられず、\n  気づく手段は Storybook の視覚差分だけだと 1 行足した\n- HexColorInput の根の relative に、sr-only の見出し(position: absolute)が\n  右ペインのスクロール枠を抜けて文書を伸ばさないための基準だと書いた\n\n背景:\nミューテーションの検証で、LabeledRow の並びと箱の relative を壊しても\nvitest は落ちず、守っているのは視覚差分だけだと指摘された。\n\n採用理由:\ngradient-fields の既存のコメントと同じ書き方で、外すと壊れるのに気づく手段が\n限られることを残す。relative の目的は、Tailwind の sr-only が absolute で\nあること、PaneBody が overflow-auto で位置の基準を持たないこと、同じ理由の\n先例(shorthand-row / prop-row)を読んで確かめた。\n\n代替案:\n- クラス名を見るテストを足す: マークアップの書き換えで壊れ、仕様を守らない\n\n影響とトレードオフ:\nコメントの追加だけ。\n\n参考:\n- Issue #1376 のフェーズ 6(test-reviewer)の指摘 4\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "patch": "@@ -104,6 +104,10 @@ function HexColorInput({\n   const hexDigits = TokenControl.hexDigitsOf(color);\n \n   return (\n+    /*\n+     * 根を `relative` にするのは、`sr-only` の見出しが `position: absolute` で、基準が無いと右ペインのスクロール枠を\n+     * 抜けて文書を伸ばすため（`shorthand-row` と同じ形）。happy-dom では落ちず、気づく手段は Storybook の視覚差分だけ。\n+     */\n     <div className=\"relative flex h-7 items-center gap-1 rounded-[5px] border border-[#e6e6e6] px-2 font-mono text-[11px]\">\n       <label htmlFor={pickerId} className=\"sr-only\">\n         {color.picker.label}",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -261,6 +261,8 @@ export function changeRawOfTarget(\n /**\n  * 見出しを左に置いた 1 行（UI 案 docs/Design Composer.html の Color のエディタの `hex` / `name`）。\n  *\n+ * 見出しが左に並ぶことは happy-dom では確かめられず、気づく手段は Storybook の視覚差分だけ。\n+ *\n  * @returns 52px の見出しと、残りを占める欄\n  */\n export function LabeledRow({",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": "docs/06-ui.md",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/__tests__/color-token.alpha.test.ts",
+      "to": "src/domains/dcmp/token/color/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts",
+      "to": "src/domains/dcmp/token/color/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/__tests__/color-token.normal.test.ts",
+      "to": "src/domains/dcmp/token/color/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/__tests__/color-token.normal.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/__tests__/color-token.type.test.ts",
+      "to": "src/domains/dcmp/token/color/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/index.ts",
+      "to": "src/utils/NumberEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/index.ts",
+      "to": "src/utils/Range.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/color/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/gradient/index.ts",
+      "to": "src/domains/dcmp/token/color/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/index.ts",
+      "to": "src/domains/dcmp/token/color/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/token/shadow/index.ts",
+      "to": "src/domains/dcmp/token/color/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+      "to": "src/features/editor/__tests__/right-pane-heading.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+      "to": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+      "to": "src/features/editor/features/tokens/__tests__/gradient-documents.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.title.test.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+      "to": "src/components/__stories__/right-pane-shell.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+      "to": "src/components/pane-body/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+      "to": "src/components/pane-heading/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+      "to": "src/features/editor/features/tokens/__stories__/sample-token-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/components/button/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-used-by/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/domains/session/edit-continuity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/hooks/use-first-then-rest/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-list/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "to": "src/features/editor/features/tokens/__tests__/gradient-documents.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.alpha.test.ts",
+      "to": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.alpha.test.ts",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.alpha.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+      "to": "src/features/editor/features/tokens/__tests__/gradient-documents.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+      "to": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+      "to": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+      "to": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+      "to": "src/utils/Font.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "to": "src/domains/session/token-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/index.ts",
+      "to": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "status": "kept"
+    }
+  ]
+}
