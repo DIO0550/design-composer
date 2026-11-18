@@ -1,0 +1,3256 @@
+{
+  "version": 1,
+  "pr": 1418,
+  "sha": "e465438d6768a6505bc6277f3978e806f098b4c7",
+  "issue": 1376,
+  "overview": {
+    "title": "tokens の色の欄を、見本・#・6 桁・不透明度の 1 つの箱にし、見出しを左に置く",
+    "lead": "Tokens の右ペインで、色の欄が UI 案どおりの 1 つの箱(左端の見本・灰色の `#`・6 桁・右端の不透明度)になり、すべての欄の見出しが 52px の幅で左に並ぶ。hex の欄は `#` の有無を問わず 6 桁と 3 桁を受け、4 桁・8 桁は弾く。",
+    "before": [
+      {
+        "text": "色を選ぶと、ピッカー・`#` 付きの hex・不透明度が別々の行に、見出しを上にして並んでいた"
+      },
+      {
+        "text": "hex の欄は `#` 付きの 6 桁だけを受け、`#` を省いた綴りや 3 桁は黙って弾かれていた",
+        "message": "vf-value-from"
+      },
+      {
+        "text": "stop の行は比率・見本・hex・不透明度・− の 5 つの欄を 1 行に並べていた"
+      }
+    ],
+    "after": [
+      {
+        "text": "色を選ぶと、見出し `hex` の左に 52px の見出しを置いた 1 行に、見本・`#`・6 桁・不透明度の箱が入る",
+        "message": "te-color-field"
+      },
+      {
+        "text": "hex の欄は `#` の有無を問わず 6 桁と 3 桁を受け、3 桁は各桁を重ねた 6 桁になる",
+        "message": "cf-value-from-hex"
+      },
+      {
+        "text": "4 桁・8 桁(alpha を持つ綴り)は弾かれ、打った文字が欄に残る",
+        "message": "tc-rgb-create"
+      },
+      {
+        "text": "通っても値が変わらない綴り(`3B82F6` など)で確定しても、欄は小文字の 6 桁に取り直される",
+        "message": "cf-set"
+      },
+      {
+        "text": "ピッカーと読めない色の打ち直しの欄は、今までどおり `#` を補わない",
+        "message": "cf-picker-value-from"
+      },
+      {
+        "text": "stop の行は比率・色の箱(見出し無し)・− の 3 つになり、264px の右ペインに収まる",
+        "message": "gf-color-field"
+      },
+      {
+        "text": "名前の欄の見出しが UI 案どおり `name` になる",
+        "message": "te-labeled-row"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "UI 案に無い見本",
+        "text": "箱の左端の見本(押すとピッカーが開く)は UI 案に描かれておらず、Issue で人が決めた。見本の位置を見直すときの根拠はここだけ",
+        "go": {
+          "kind": "file",
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx"
+        }
+      },
+      {
+        "title": "井桁を補う口",
+        "text": "`#` を補うのは hex の欄の口だけ。ピッカーと読めない色の欄は補わない。3 つの書き戻し先すべてで対の経路をテストした",
+        "go": {
+          "kind": "callBox",
+          "id": "value-from-hex"
+        }
+      },
+      {
+        "title": "左見出しを守るもの",
+        "text": "見出しが左に並ぶことと箱の位置の基準は、vitest では落ちず、Storybook の視覚差分だけが守る",
+        "go": {
+          "kind": "feature",
+          "id": "left-label"
+        }
+      },
+      {
+        "title": "確定の流れ",
+        "text": "hex の欄の確定が専用の口を通り、通ったときだけ欄を作り直す",
+        "go": {
+          "kind": "stepChange",
+          "flow": "type-hex",
+          "stepChange": 4
+        }
+      },
+      {
+        "title": "読み替えの層",
+        "text": "編集欄の型(行の直和・書き戻し先の型)の作り替えはこの層に集まっている",
+        "go": {
+          "kind": "layer",
+          "layer": "features / editor/features/tokens"
+        }
+      },
+      {
+        "title": "見出しを引く入口",
+        "text": "行の識別子と見出しは 1 か所から引く。表示とテストが同じ分岐を写さないため",
+        "go": {
+          "kind": "callEdge",
+          "id": "body-caption-of"
+        }
+      },
+      {
+        "title": "色の値の規則",
+        "text": "3 桁の展開はファイル形式の綴りの性質なので、色の値の側に置いた",
+        "go": {
+          "kind": "module",
+          "path": "src/domains/dcmp/token/color/index.ts"
+        }
+      },
+      {
+        "title": "書き戻しの口",
+        "text": "数値・文言の欄とピッカーが使う読み方の口",
+        "go": {
+          "kind": "message",
+          "id": "cf-picker-value-from"
+        }
+      },
+      {
+        "title": "ピッカーの流れ",
+        "text": "ピッカーは値の欄から色の欄のモジュールへ移ったが、読み方は変えていない",
+        "go": {
+          "kind": "flow",
+          "id": "pick"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "hex-input",
+      "label": "hex の欄の綴り",
+      "role": "hex の欄が受ける綴りを、`#` の有無を問わない 6 桁と 3 桁に広げ、4 桁・8 桁は弾く",
+      "review": [
+        "3 桁の展開を色の値の側、`#` の補完を入力欄の側に分けた置き場所が、規約の「逆向きも見る」に合っているか",
+        "4 桁・8 桁を受けない理由(alpha は不透明度の欄が受け持つ)が仕様書と食い違っていないか"
+      ]
+    },
+    {
+      "id": "color-box",
+      "label": "色の箱",
+      "role": "見本・`#`・6 桁・不透明度を 1 つの箱にし、書き戻し先を 1 つにする",
+      "review": [
+        "箱の 3 つの欄が別々の色を指せない形になっているか(書き戻し先は箱に 1 つ)",
+        "確定の回数を欄の作り直しに混ぜる形が、hooks の規約の「複数の setter」に当たらないか"
+      ]
+    },
+    {
+      "id": "left-label",
+      "label": "左の見出し",
+      "role": "すべての欄の見出しを 52px の幅で左に置き、名前の欄の見出しを `name` にする",
+      "review": [
+        "日本語の見出し(横のずれ・ぼかしなど)が 52px で折り返さないことは撮影でしか確かめていない"
+      ]
+    },
+    {
+      "id": "row-types",
+      "label": "行と書き戻し先の型",
+      "role": "値の欄を「数値・文言の行 / 色の行」の直和にし、各行の書き戻し先を型で狭める",
+      "review": [
+        "数値・文言の行の書き戻し先を、除外ではなく許す種類の列挙で書いた理由(影の枝が外れない)に納得できるか"
+      ]
+    },
+    {
+      "id": "spec",
+      "label": "仕様書",
+      "role": "hex の欄が受ける綴りと、stop の行の色の箱を docs/06-ui.md に書く"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / dcmp",
+      "role": "色の値(RGB)の生成が 3 桁の短縮形を広げて受けるようになる"
+    },
+    {
+      "layer": "features / editor/features/tokens",
+      "role": "編集欄の型を行の直和に作り替え、色の箱と左見出しの部品を足す"
+    },
+    {
+      "layer": "features / editor",
+      "role": "画面全体の通しのテストを、`#` 無しの綴りと `name` の見出しに合わせる"
+    },
+    {
+      "layer": "docs",
+      "role": "hex の欄が受ける綴りと、stop の行の並びを仕様書に書く"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/dcmp/token/color/index.ts",
+      "name": "色の値",
+      "role": "色トークンの綴りと、alpha を持たない色(RGB)の生成",
+      "feature": "hex-input",
+      "change": "RGB の生成が 3 桁を各桁を重ねた 6 桁へ広げて受けるようにした",
+      "icon": "store"
+    },
+    {
+      "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "name": "トークンの編集欄",
+      "role": "選択中のトークンから編集欄を組み、打たれた文字列をトークンの値へ読み替える",
+      "feature": "row-types",
+      "change": "値の欄を行の直和にし、色の箱の型と、hex・不透明度の口・見出しを引く入口を足した",
+      "icon": "scan"
+    },
+    {
+      "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "name": "色の欄",
+      "role": "色の位置に入る欄。見本・`#`・6 桁・不透明度の箱か、読めない色の打ち直しの欄",
+      "feature": "color-box",
+      "change": "新しく作った。ピッカーを値の欄から移した",
+      "icon": "widget"
+    },
+    {
+      "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "name": "値の欄",
+      "role": "下書きの欄・数値の欄と、見出しを左に置いた 1 行",
+      "feature": "left-label",
+      "change": "52px の左見出しの行を足し、ピッカーを色の欄へ出した",
+      "icon": "widget"
+    },
+    {
+      "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "name": "トークンのエディタ",
+      "role": "選択中のトークンの編集欄を並べる右ペインの本文",
+      "feature": "row-types",
+      "change": "行を数値・文言 / 色で出し分け、見出しを左に置いた",
+      "icon": "widget"
+    },
+    {
+      "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+      "name": "グラデーションの欄",
+      "role": "角度・stop の行・+ を並べる",
+      "feature": "color-box",
+      "change": "stop の行を比率・色の箱・− の 3 つにした",
+      "icon": "widget"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "画面の操作と見せ方の仕様",
+      "feature": "spec",
+      "change": "hex の欄が受ける綴りと、stop の行の色の箱を書いた",
+      "graph": false
+    },
+    {
+      "path": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+      "name": "エディタのストーリー",
+      "role": "視覚差分が撮るトークンのエディタの見本",
+      "feature": "color-box",
+      "change": "読めない色・読めない stop の 2 件を足した",
+      "graph": false
+    }
+  ],
+  "actors": [
+    {
+      "id": "person",
+      "label": "操作する人",
+      "role": "右ペインの欄に打ち、見本を押して色を選ぶ",
+      "icon": "person"
+    },
+    {
+      "id": "editor-state",
+      "label": "編集中の文書",
+      "role": "送られたトークンの値を受け取り、undo の履歴ごと持つ親",
+      "icon": "store"
+    }
+  ],
+  "messages": [
+    {
+      "id": "u-type-hex-old",
+      "from": "person",
+      "to": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "kind": "cmd",
+      "name": "hex のテキスト欄に打って確定する",
+      "code": "<ValueField input={{ kind: \"text\", value: \"#3b82f6\" }} />",
+      "via": "call",
+      "payload": "`#` 付きの 6 桁",
+      "status": "removed"
+    },
+    {
+      "id": "u-type-hex",
+      "from": "person",
+      "to": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "kind": "cmd",
+      "name": "箱の 6 桁の欄に打って確定する",
+      "code": "<DraftField onCommit={commitHex} />",
+      "via": "call",
+      "payload": "`#` の有無を問わない 6 桁か 3 桁",
+      "status": "added"
+    },
+    {
+      "id": "u-pick-old",
+      "from": "person",
+      "to": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "kind": "cmd",
+      "name": "ピッカーの行で色を選ぶ",
+      "code": "<ColorPickerField onChangeRaw={onChangeRaw} />",
+      "via": "call",
+      "payload": "`#rrggbb`",
+      "status": "removed"
+    },
+    {
+      "id": "u-pick",
+      "from": "person",
+      "to": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "kind": "cmd",
+      "name": "箱の左端の見本で色を選ぶ",
+      "code": "<ColorPickerField onChangeRaw={changeRawOfTarget(color.target, onSetTokenValue)} />",
+      "via": "call",
+      "payload": "`#rrggbb`",
+      "status": "added"
+    },
+    {
+      "id": "vf-value-from",
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "kind": "qry",
+      "name": "欄の文字列を値に読む",
+      "code": "TokenControl.valueFrom(target, raw)",
+      "via": "call",
+      "payload": "書き戻し先と、欄の文字列",
+      "returns": "書き換え後のトークンの値か `none`",
+      "status": "changed"
+    },
+    {
+      "id": "cf-value-from-hex",
+      "from": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "kind": "qry",
+      "name": "hex の欄の文字列を値に読む",
+      "code": "TokenControl.valueFromHex(color.target, raw)",
+      "via": "call",
+      "payload": "箱の書き戻し先と、6 桁の欄の文字列",
+      "returns": "6 桁を差し替えた値か `none`",
+      "status": "added"
+    },
+    {
+      "id": "cf-picker-value-from",
+      "from": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "kind": "qry",
+      "name": "見本と打ち直しの欄の文字列を値に読む",
+      "code": "changeRawOfTarget(color.target, onSetTokenValue)",
+      "via": "call",
+      "payload": "箱の書き戻し先と、ピッカー(または読めない色の欄)の文字列",
+      "returns": "書き換え後の値か `none`(`#` は補わない)",
+      "status": "added"
+    },
+    {
+      "id": "cf-value-from-alpha",
+      "from": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "kind": "qry",
+      "name": "不透明度の欄の文字列を値に読む",
+      "code": "TokenControl.valueFromAlpha(color.target, raw)",
+      "via": "call",
+      "payload": "箱の書き戻し先と、% の文字列",
+      "returns": "不透明度を差し替えた値か `none`",
+      "status": "added"
+    },
+    {
+      "id": "tc-rgb-create",
+      "from": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "to": "src/domains/dcmp/token/color/index.ts",
+      "kind": "qry",
+      "name": "綴りから RGB を作る",
+      "code": "Rgb.create(raw)",
+      "via": "call",
+      "payload": "`#` から始まる綴り",
+      "returns": "小文字の 6 桁の RGB か `none`",
+      "status": "changed"
+    },
+    {
+      "id": "vf-set",
+      "from": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "to": "editor-state",
+      "kind": "cmd",
+      "name": "値の欄から値を送る",
+      "code": "onSetTokenValue(value, continuity)",
+      "via": "call",
+      "payload": "トークンの値と続き方"
+    },
+    {
+      "id": "cf-set",
+      "from": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "to": "editor-state",
+      "kind": "cmd",
+      "name": "色の欄から値を送る",
+      "code": "onSetTokenValue(value.value, EditContinuities.Separate)",
+      "via": "call",
+      "payload": "トークンの値と続き方",
+      "status": "added"
+    },
+    {
+      "id": "te-for-selection",
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "kind": "qry",
+      "name": "選択中のトークンの編集欄を引く",
+      "code": "TokenControl.forSelection(selection)",
+      "via": "call",
+      "payload": "ドキュメントと選択",
+      "returns": "値の欄(行の並びか、グラデーションの欄)",
+      "status": "changed"
+    },
+    {
+      "id": "te-caption-of",
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "kind": "qry",
+      "name": "行の見出しを引く",
+      "code": "TokenControl.captionOf(row)",
+      "via": "call",
+      "payload": "値の欄の 1 行",
+      "returns": "行の識別子と見出し",
+      "status": "added"
+    },
+    {
+      "id": "te-field-row",
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "kind": "cmd",
+      "name": "見出しを上に置いた欄を出す",
+      "code": "<FieldRow field={field} />",
+      "via": "call",
+      "payload": "編集欄 1 つ(色ならピッカー・hex・不透明度の 3 つ)",
+      "status": "removed"
+    },
+    {
+      "id": "te-labeled-row",
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+      "kind": "cmd",
+      "name": "見出しを左に置いた行を出す",
+      "code": "<LabeledRow htmlFor={id} label={caption.label}>",
+      "via": "call",
+      "payload": "見出しと、行の入力欄",
+      "status": "added"
+    },
+    {
+      "id": "te-color-field",
+      "from": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "kind": "cmd",
+      "name": "色の行に色の欄を出す",
+      "code": "<ColorField id={id} color={row.color} />",
+      "via": "call",
+      "payload": "色の箱か、読めない色の欄",
+      "status": "added"
+    },
+    {
+      "id": "gf-color-field",
+      "from": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+      "to": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+      "kind": "cmd",
+      "name": "stop の行に色の欄を出す",
+      "code": "<ColorField id={fieldIdOf(row.color.caption)} color={row.color} />",
+      "via": "call",
+      "payload": "stop の色の箱(見出し無し)",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "type-hex",
+      "label": "hex の欄に打って確定する",
+      "gist": "hex の欄専用の口を通り、`#` を補い 3 桁を広げ、通ったときだけ欄を取り直すようになった",
+      "text": "色トークン・影の色・stop の色の hex の欄に綴りを打ち、Enter か欄を離れて確定する。",
+      "steps": [
+        "u-type-hex",
+        "cf-value-from-hex",
+        "tc-rgb-create",
+        "cf-set"
+      ],
+      "beforeSteps": [
+        "u-type-hex-old",
+        "vf-value-from",
+        "tc-rgb-create",
+        "vf-set"
+      ],
+      "stepChanges": [
+        {
+          "status": "changed",
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "見出しの下の hex のテキスト欄に、`#` 付きの 6 桁を打つ",
+          "afterText": "箱の中の 6 桁の欄に、`#` の有無を問わず 6 桁か 3 桁を打つ",
+          "change": "欄が箱の中に移り、`#` は欄の外に灰色で添えるようになった"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 2,
+          "beforeText": "ほかの欄と同じ口で、書き戻し先から文字列を値に読む",
+          "afterText": "hex の欄専用の口に渡し、`#` で始まらなければ前に補う",
+          "change": "`#` の補完をこの口だけに置いた"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 3,
+          "afterStep": 3,
+          "beforeText": "6 桁だけを RGB にする",
+          "afterText": "3 桁は各桁を重ねて 6 桁に広げてから RGB にする。4 桁・8 桁は弾く",
+          "change": "3 桁を受けるようになった",
+          "afterCost": "heavy"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 4,
+          "afterStep": 4,
+          "beforeText": "読めた値を送る。値が変わらなければ欄は作り直されず、打った綴りが残る",
+          "afterText": "読めた値を別のまとまりで送り、確定の回数を 1 つ進めて欄を作り直す",
+          "change": "回数を進めるので、値の変わらない確定でも欄が小文字の 6 桁に戻る"
+        }
+      ],
+      "measure": {
+        "what": "受け付ける綴り",
+        "before": "`#` 付きの 6 桁",
+        "after": "`#` の有無を問わない 6 桁と 3 桁"
+      }
+    },
+    {
+      "id": "pick",
+      "label": "見本で色を選ぶ",
+      "gist": "ピッカーが箱の左端の見本に移った。読む口は今までどおりで、`#` を補わない",
+      "text": "見本を押すとブラウザの色のパネルが開き、動かすたびに色が送られる。",
+      "steps": [
+        "u-pick",
+        "cf-picker-value-from",
+        "tc-rgb-create",
+        "cf-set"
+      ],
+      "beforeSteps": [
+        "u-pick-old",
+        "vf-value-from",
+        "tc-rgb-create",
+        "vf-set"
+      ],
+      "stepChanges": [
+        {
+          "status": "changed",
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "ピッカーだけの行で色を選ぶ",
+          "afterText": "箱の左端の見本を押して色を選ぶ",
+          "change": "ピッカーが見本の形になり、箱の中へ入った"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 2,
+          "beforeText": "値の欄が書き戻し先から読む",
+          "afterText": "色の欄が箱の書き戻し先から、同じ口で読む",
+          "change": "呼ぶ側が色の欄のモジュールに移った。読み方は変えていない"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 3,
+          "afterStep": 3,
+          "beforeText": "6 桁を RGB にする",
+          "afterText": "6 桁を RGB にする",
+          "change": "3 桁も受けるようになったが、ピッカーは常に 6 桁を返すのでこの流れでは答えが変わらない"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 4,
+          "afterStep": 4,
+          "beforeText": "値の欄から、続き方を添えて送る",
+          "afterText": "色の欄から、続き方を添えて送る",
+          "change": "送る側が色の欄に移った"
+        }
+      ]
+    },
+    {
+      "id": "select",
+      "label": "トークンを選んで欄を出す",
+      "gist": "欄を行ごとに出し分け、見出しを 1 か所から引いて左に置くようになった",
+      "text": "左の一覧でトークンを選ぶと、右ペインに値の欄と名前の欄が並ぶ。",
+      "steps": [
+        "te-for-selection",
+        "te-caption-of",
+        "te-labeled-row",
+        "te-color-field"
+      ],
+      "beforeSteps": [
+        "te-for-selection",
+        "te-field-row"
+      ],
+      "stepChanges": [
+        {
+          "status": "changed",
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "欄の平たい並びを引く(色は 3 つの欄)",
+          "afterText": "数値・文言の行と色の行の並びを引く",
+          "change": "色の 3 つの欄が 1 つの行にまとまった"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "行ごとに識別子と見出しを引く",
+          "change": "表示とテストが同じ分岐を写さないよう、見出しを 1 か所から引く"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 3,
+          "beforeText": "欄ごとに、見出しを上に置いた欄を出す",
+          "afterText": "行ごとに、52px の見出しを左に置いた行を出す",
+          "change": "見出しが上から左へ移った"
+        },
+        {
+          "status": "added",
+          "afterStep": 4,
+          "afterText": "色の行には、箱か読めない色の欄を入れる",
+          "change": "色の行の中身を色の欄のモジュールが出す"
+        }
+      ],
+      "measure": {
+        "what": "色トークンを選んだときの行の数",
+        "before": "3 行(ピッカー・hex・不透明度)",
+        "after": "1 行(箱)"
+      }
+    }
+  ],
+  "calls": {
+    "gist": "色の欄を 1 つの箱にし、`#` の補完を hex の欄の口だけに置いた",
+    "text": "変更前は、色を 3 つの欄の平たい並びとして組み、どの欄も同じ口(`TokenControl.valueFrom`)で読んでいた。変更後は、値の欄を行の直和にし、色の行は箱(`HexColorControl`)1 つで書き戻し先を 1 つだけ持つ。箱の 3 つの欄は、6 桁は `valueFromHex`、不透明度は `valueFromAlpha`、見本は今までどおり `valueFrom` で読む。",
+    "review": [
+      "`valueFrom` の色の枝が `#` を補っていないこと(ピッカーと読めない色の欄が通る)",
+      "`ColorPickerField` が値の欄から色の欄へ移ったあと、値の欄に色の分岐が残っていないか"
+    ],
+    "boxes": [
+      {
+        "id": "rgb-create",
+        "name": "Rgb.create",
+        "role": "綴りから alpha を持たない色を作る",
+        "module": "src/domains/dcmp/token/color/index.ts",
+        "status": "changed",
+        "was": "`#` 付きの 6 桁だけを受ける",
+        "now": "3 桁を各桁を重ねて 6 桁に広げてから受ける。4 桁・8 桁は `none`"
+      },
+      {
+        "id": "value-from",
+        "name": "TokenControl.valueFrom",
+        "role": "欄の文字列を、書き戻し先に応じてトークンの値にする",
+        "module": "src/features/editor/features/tokens/domains/token-control/index.ts",
+        "status": "changed",
+        "was": "ピッカー・hex・不透明度を含むすべての欄を読む",
+        "now": "ピッカー・読めない色の欄・数値・文言の欄を読む。不透明度は持たず、`#` は補わない"
+      },
+      {
+        "id": "value-from-hex",
+        "name": "TokenControl.valueFromHex",
+        "role": "hex の欄の文字列で 6 桁を差し替える",
+        "module": "src/features/editor/features/tokens/domains/token-control/index.ts",
+        "status": "added",
+        "now": "`#` で始まらなければ補い、6 桁か 3 桁として読む"
+      },
+      {
+        "id": "value-from-alpha",
+        "name": "TokenControl.valueFromAlpha",
+        "role": "不透明度の欄の文字列で alpha を差し替える",
+        "module": "src/features/editor/features/tokens/domains/token-control/index.ts",
+        "status": "added",
+        "now": "箱の書き戻し先から不透明度を差し替える"
+      },
+      {
+        "id": "hex-digits-of",
+        "name": "TokenControl.hexDigitsOf",
+        "role": "6 桁の欄に出す綴り",
+        "module": "src/features/editor/features/tokens/domains/token-control/index.ts",
+        "status": "added",
+        "now": "`#` を除いた小文字の 6 桁を返す"
+      },
+      {
+        "id": "caption-of",
+        "name": "TokenControl.captionOf",
+        "role": "値の欄の 1 行の識別子と見出し",
+        "module": "src/features/editor/features/tokens/domains/token-control/index.ts",
+        "status": "added",
+        "now": "数値・文言の行はその欄の、色の行は 6 桁の欄の見出しを返す"
+      },
+      {
+        "id": "color-fields",
+        "name": "colorFields",
+        "role": "色 1 つの欄を組む",
+        "module": "src/features/editor/features/tokens/domains/token-control/index.ts",
+        "status": "removed",
+        "was": "ピッカー・hex・不透明度の 3 つの欄を平たく並べる"
+      },
+      {
+        "id": "color-control-of",
+        "name": "colorControlOf",
+        "role": "色 1 つの欄を組む",
+        "module": "src/features/editor/features/tokens/domains/token-control/index.ts",
+        "status": "added",
+        "now": "hex として読めれば箱、読めなければ打ち直しの欄 1 本を返す"
+      },
+      {
+        "id": "fields-of",
+        "name": "fieldsOf",
+        "role": "種別ごとの値の欄を組む",
+        "module": "src/features/editor/features/tokens/domains/token-control/index.ts",
+        "status": "removed",
+        "was": "欄の平たい並びを返す。色は 3 つに広がる"
+      },
+      {
+        "id": "rows-of",
+        "name": "rowsOf",
+        "role": "種別ごとの値の欄を組む",
+        "module": "src/features/editor/features/tokens/domains/token-control/index.ts",
+        "status": "added",
+        "now": "数値・文言の行と色の行の並びを返す"
+      },
+      {
+        "id": "color-field",
+        "name": "ColorField",
+        "role": "色の位置に入る欄",
+        "module": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+        "status": "added",
+        "now": "箱か、読めない色の打ち直しの欄を出し分ける"
+      },
+      {
+        "id": "hex-color-input",
+        "name": "HexColorInput",
+        "role": "見本・`#`・6 桁・不透明度の箱",
+        "module": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+        "status": "added",
+        "now": "通った確定のたびに回数を進めて 6 桁の欄を作り直す"
+      },
+      {
+        "id": "picker-old",
+        "name": "ColorPickerField(値の欄)",
+        "role": "カラーピッカー",
+        "module": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+        "status": "removed",
+        "was": "見出しを上に置いた 1 行のピッカー"
+      },
+      {
+        "id": "picker",
+        "name": "ColorPickerField",
+        "role": "カラーピッカー",
+        "module": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+        "status": "added",
+        "now": "箱の左端に置く見本の形のピッカー"
+      },
+      {
+        "id": "value-field",
+        "name": "ValueField",
+        "role": "入力欄の種類ごとの欄",
+        "module": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+        "status": "changed",
+        "was": "数値・文言・単位付きの欄と、色ならピッカー",
+        "now": "数値・文言・単位付きの欄だけ"
+      },
+      {
+        "id": "change-raw-of",
+        "name": "changeRawOf",
+        "role": "欄の文字列を読んで送る手続きを作る",
+        "module": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+        "status": "changed",
+        "was": "欄を受け取り、その書き戻し先を `valueFrom` で読む",
+        "now": "読み方の手続きを受け取る"
+      },
+      {
+        "id": "change-raw-of-target",
+        "name": "changeRawOfTarget",
+        "role": "書き戻し先から `valueFrom` で読む手続きを作る",
+        "module": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+        "status": "added",
+        "now": "4 か所に同じ形で書いていた閉包をまとめた"
+      },
+      {
+        "id": "labeled-row",
+        "name": "LabeledRow",
+        "role": "見出しを左に置いた 1 行",
+        "module": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+        "status": "added",
+        "now": "52px の見出しと、残りを占める欄"
+      },
+      {
+        "id": "field-row",
+        "name": "FieldRow",
+        "role": "見出し付きの 1 フィールドの欄",
+        "module": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+        "status": "changed",
+        "was": "見出しを上に置く",
+        "now": "見出しを左に置く(グラデーションの角度の欄が使う)"
+      },
+      {
+        "id": "value-row-control",
+        "name": "ValueRowControl",
+        "role": "値の欄の 1 行の入力欄",
+        "module": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+        "status": "added",
+        "now": "数値・文言の行は数値・文言の欄、色の行は色の欄"
+      },
+      {
+        "id": "token-editor-body",
+        "name": "TokenEditorBody",
+        "role": "選択中のトークンの編集欄の本文",
+        "module": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+        "status": "changed",
+        "was": "欄ごとに見出しを上に置いた欄を並べる",
+        "now": "行ごとに見出しを引き、左見出しの行に入力欄を入れる"
+      },
+      {
+        "id": "gradient-fields",
+        "name": "GradientFields",
+        "role": "グラデーションの値の欄",
+        "module": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+        "status": "changed",
+        "was": "stop の行に比率・見本・hex・不透明度・− の 5 つを並べる",
+        "now": "stop の行に比率・色の欄・− の 3 つを並べる"
+      }
+    ],
+    "edges": [
+      {
+        "id": "body-caption-of",
+        "from": "token-editor-body",
+        "to": "caption-of",
+        "code": "TokenControl.captionOf(row)",
+        "status": "added",
+        "now": "行の識別子と見出しを 1 か所から引く"
+      },
+      {
+        "id": "body-labeled-row",
+        "from": "token-editor-body",
+        "to": "labeled-row",
+        "code": "<LabeledRow htmlFor={id} label={caption.label}>",
+        "status": "added",
+        "now": "どの行も左見出しで並べる"
+      },
+      {
+        "id": "body-value-row-control",
+        "from": "token-editor-body",
+        "to": "value-row-control",
+        "code": "<ValueRowControl id={id} row={row} />",
+        "status": "added",
+        "now": "行の中身を出し分ける"
+      },
+      {
+        "id": "body-field-row",
+        "from": "token-editor-body",
+        "to": "field-row",
+        "code": "<FieldRow field={field} />",
+        "status": "removed",
+        "was": "欄ごとに見出しを上に置いた欄を出していた"
+      },
+      {
+        "id": "row-control-color-field",
+        "from": "value-row-control",
+        "to": "color-field",
+        "code": "<ColorField id={id} color={row.color} />",
+        "status": "added",
+        "now": "色の行に色の欄を入れる"
+      },
+      {
+        "id": "color-field-hex-input",
+        "from": "color-field",
+        "to": "hex-color-input",
+        "code": "<HexColorInput id={id} color={color} />",
+        "status": "added",
+        "now": "hex として読める色は箱にする"
+      },
+      {
+        "id": "hex-input-value-from-hex",
+        "from": "hex-color-input",
+        "to": "value-from-hex",
+        "code": "TokenControl.valueFromHex(color.target, raw)",
+        "status": "added",
+        "now": "6 桁の欄の確定を読み、通ったときだけ回数を進める"
+      },
+      {
+        "id": "hex-input-value-from-alpha",
+        "from": "hex-color-input",
+        "to": "value-from-alpha",
+        "code": "changeRawOf((raw) => TokenControl.valueFromAlpha(color.target, raw), onSetTokenValue)",
+        "status": "added",
+        "now": "不透明度の欄の確定を読む"
+      },
+      {
+        "id": "hex-input-hex-digits",
+        "from": "hex-color-input",
+        "to": "hex-digits-of",
+        "code": "TokenControl.hexDigitsOf(color)",
+        "status": "added",
+        "now": "6 桁の欄の値と key に使う"
+      },
+      {
+        "id": "hex-input-picker",
+        "from": "hex-color-input",
+        "to": "picker",
+        "code": "<ColorPickerField id={pickerId} value={color.rgb} />",
+        "status": "added",
+        "now": "箱の左端に見本を置く"
+      },
+      {
+        "id": "hex-input-change-raw-of-target",
+        "from": "hex-color-input",
+        "to": "change-raw-of-target",
+        "code": "changeRawOfTarget(color.target, onSetTokenValue)",
+        "status": "added",
+        "now": "見本の色を `valueFrom` で読む(`#` は補わない)"
+      },
+      {
+        "id": "target-value-from",
+        "from": "change-raw-of-target",
+        "to": "value-from",
+        "code": "TokenControl.valueFrom(target, raw)",
+        "status": "added",
+        "now": "書き戻し先から読む"
+      },
+      {
+        "id": "target-change-raw-of",
+        "from": "change-raw-of-target",
+        "to": "change-raw-of",
+        "code": "changeRawOf((raw) => TokenControl.valueFrom(target, raw), onSetTokenValue)",
+        "status": "added",
+        "now": "読み方を渡して手続きを作る"
+      },
+      {
+        "id": "change-raw-of-value-from",
+        "from": "change-raw-of",
+        "to": "value-from",
+        "code": "TokenControl.valueFrom(field.target, raw)",
+        "status": "removed",
+        "was": "欄の書き戻し先を直に読んでいた"
+      },
+      {
+        "id": "field-row-change-raw-of",
+        "from": "field-row",
+        "to": "change-raw-of",
+        "code": "changeRawOf(field, onSetTokenValue)",
+        "status": "removed",
+        "was": "欄を渡して手続きを作っていた"
+      },
+      {
+        "id": "field-row-change-raw-of-target",
+        "from": "field-row",
+        "to": "change-raw-of-target",
+        "code": "changeRawOfTarget(field.target, onSetTokenValue)",
+        "status": "added",
+        "now": "書き戻し先を渡して手続きを作る"
+      },
+      {
+        "id": "field-row-labeled-row",
+        "from": "field-row",
+        "to": "labeled-row",
+        "code": "<LabeledRow htmlFor={id} label={field.label}>",
+        "status": "added",
+        "now": "見出しを左に置く"
+      },
+      {
+        "id": "value-field-picker-old",
+        "from": "value-field",
+        "to": "picker-old",
+        "code": "<ColorPickerField value={input.value} />",
+        "status": "removed",
+        "was": "色の入力欄ならピッカーを出していた"
+      },
+      {
+        "id": "value-from-hex-rgb",
+        "from": "value-from-hex",
+        "to": "rgb-create",
+        "code": "colorWithRgbFrom(color, spelled)",
+        "status": "added",
+        "now": "`#` を補った綴りから RGB を作る"
+      },
+      {
+        "id": "value-from-rgb",
+        "from": "value-from",
+        "to": "rgb-create",
+        "code": "colorWithRgbFrom(color, raw)",
+        "was": "`#` 付きの 6 桁だけが通った",
+        "now": "`#` 付きの 3 桁も通る(読めない色の欄で `#abc` を打てる)"
+      },
+      {
+        "id": "rows-of-color-control",
+        "from": "rows-of",
+        "to": "color-control-of",
+        "code": "colorControlOf(token.value, { kind: \"colors\", color: token.value }, captions)",
+        "status": "added",
+        "now": "色の行に箱か打ち直しの欄を入れる"
+      },
+      {
+        "id": "fields-of-color-fields",
+        "from": "fields-of",
+        "to": "color-fields",
+        "code": "colorFields(token.value, rows)",
+        "status": "removed",
+        "was": "色を 3 つの欄に広げていた"
+      },
+      {
+        "id": "gradient-color-field",
+        "from": "gradient-fields",
+        "to": "color-field",
+        "code": "<ColorField id={fieldIdOf(row.color.caption)} color={row.color} />",
+        "status": "added",
+        "now": "stop の行に見出し無しの箱を入れる"
+      }
+    ]
+  },
+  "commitStories": [
+    {
+      "sha": "265f196faf992dea5bd72e894294e4a04e33edc2",
+      "phase": "prep",
+      "role": "RGB の生成が 3 桁の短縮形を広げて受け付けるようにする",
+      "why": "hex の欄で 3 桁を打てるようにすると Issue で決めた。docs/04-tokens.md「値の形式」は `#rgb` を各桁を重ねる綴りと定めているので、展開は入力欄ではなく色の値の側の性質として先に入れた。alpha を持たない短縮形は 3 桁だけなので、「3 桁は通し 4 桁は弾く」は `Rgb` にだけ成り立つ。",
+      "flows": [
+        "type-hex"
+      ],
+      "review": [
+        "既存の非公開の展開(`expandShortHex`)をそのまま通し、展開を二重に書いていないか",
+        "`rgbOf` が短縮形を読まないまま残る非対称の理由(文書に入る色は正規化済み)に納得できるか"
+      ],
+      "before": [
+        {
+          "text": "`Rgb.create(\"#fff\")` は `none`"
+        }
+      ],
+      "after": [
+        {
+          "text": "`Rgb.create(\"#ABC\")` は `#aabbcc`、`#abcf` は 8 桁に広がって `none`",
+          "message": "tc-rgb-create"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/token/color/index.ts",
+          "start": 42,
+          "end": 48,
+          "text": "広げてから 6 桁の正規表現で判定する。4 桁は 8 桁に広がるので、6 桁の判定で落ちる"
+        },
+        {
+          "path": "src/domains/dcmp/token/color/index.ts",
+          "start": 145,
+          "end": 148,
+          "text": "`rgbOf` は 3・4 桁を読まない。文書に入る色は読み込みでも書き込みでも `normalize` を通っており、短縮形が届かない"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/token/color/index.ts",
+          "start": 34,
+          "end": 48,
+          "feature": "hex-input",
+          "text": "RGB の生成で 3 桁を広げてから判定する"
+        },
+        {
+          "path": "src/domains/dcmp/token/color/index.ts",
+          "start": 145,
+          "end": 148,
+          "feature": "hex-input",
+          "text": "短縮形を読まない理由を doc に書いた"
+        }
+      ]
+    },
+    {
+      "sha": "3034c27e90d9ddaa10859c1ca91de8dfb30148b3",
+      "phase": "prep",
+      "role": "3 桁の受け付けと 4 桁・8 桁の拒否をテストで固定する",
+      "why": "直前のコミットで `#fff` を「RGB にできない値」として固定していたケースが仕様と逆になった。拒否の側の入力は alpha が `f` / `ff` のもの(`normalize` で 6 桁に落ちる値)を選び、「正規化してから 6 桁を判定する」誤った実装を見分けられるようにした。",
+      "review": [
+        "4 桁・8 桁の入力が、不透明な alpha(`f` / `ff`)を含んでいるか"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts",
+          "start": 27,
+          "end": 29,
+          "text": "alpha が不透明な 4・8 桁。alpha が `ff` 以外だけでは、正規化を通す誤実装でも `none` になり見分けられない"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts",
+          "start": 26,
+          "end": 48,
+          "feature": "hex-input",
+          "text": "RGB にできない値から `#fff` を外し、4・8 桁を足した"
+        },
+        {
+          "path": "src/domains/dcmp/token/color/__tests__/color-token.normal.test.ts",
+          "start": 73,
+          "end": 76,
+          "feature": "hex-input",
+          "text": "3 桁が 6 桁へ広がるケースを足した"
+        }
+      ]
+    },
+    {
+      "sha": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+      "phase": "core",
+      "role": "色の欄を見本・#・6 桁・不透明度の 1 つの箱にし、見出しを左に置く",
+      "why": "UI 案の Tokens 画面は hex を「左に 52px の見出し、枠の中に灰色の `#`・6 桁・右端の 100%」の箱で描いている。箱の 3 つの欄を 1 つの型にまとめて書き戻し先を 1 つにしたのは、3 欄がそれぞれ書き戻し先を持つとピッカーと不透明度が別々の色を指す値が型の上で作れるため。`#` の省略は箱が `#` を外に描いているからできる入力欄の約束事なので、`Rgb` ではなく `valueFromHex` だけに置いた。",
+      "flows": [
+        "type-hex",
+        "pick",
+        "select"
+      ],
+      "review": [
+        "箱(`HexColorControl`)が書き戻し先を 1 つしか持たず、不透明度の書き戻し先の 3 種類が消えているか",
+        "`valueFromHex` だけが `#` を補い、ピッカーと読めない色の欄は `valueFrom` を通るか",
+        "確定の回数(`hexCommits`)を key に混ぜる理由がコメントと合っているか",
+        "読めない色の打ち直しの欄が stop の行でも Regular の見た目になったこと(前は Compact)を受け入れられるか"
+      ],
+      "before": [
+        {
+          "text": "色の値の欄は、ピッカー・hex・不透明度の 3 行で、見出しが上"
+        },
+        {
+          "text": "hex の欄は `#3b82f6` の形で出て、`#` 付きでしか打てない",
+          "message": "vf-value-from"
+        }
+      ],
+      "after": [
+        {
+          "text": "色の値の欄は、見出し `hex` を左に置いた 1 行の箱",
+          "message": "te-color-field"
+        },
+        {
+          "text": "6 桁の欄は `3b82f6` の形で出て、`#` 無しでも 3 桁でも打てる",
+          "message": "cf-value-from-hex"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 110,
+          "end": 114,
+          "text": "箱が書き戻す色は 3 つ。影は色のフィールドだけを指すよう交差型で狭める"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 848,
+          "end": 853,
+          "text": "`#` を補うのはここだけ。ピッカーと読めない色の欄はこの口を通らない"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "start": 86,
+          "end": 94,
+          "text": "通ったときだけ確定の回数を進める。弾かれたときは key が動かず、打った綴りが残る"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "start": 120,
+          "end": 120,
+          "text": "6 桁と回数の両方を key に混ぜる。`3B82F6` のように値が変わらない確定でも作り直す"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "start": 68,
+          "end": 68,
+          "text": "52px の左見出し。字はプロパティパネルのラベルと同じ綴り"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 95,
+          "end": 108,
+          "feature": "row-types",
+          "text": "見出しの型と、入力欄の種類で絞る編集欄の型を足した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 110,
+          "end": 144,
+          "feature": "color-box",
+          "text": "箱の書き戻し先・箱・色の位置に入る欄の型を足した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 147,
+          "end": 149,
+          "feature": "row-types",
+          "text": "値の欄の行を数値・文言 / 色の直和にした"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 375,
+          "end": 400,
+          "feature": "color-box",
+          "text": "色 1 つを箱か打ち直しの欄にする組み立てを足した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 428,
+          "end": 500,
+          "feature": "row-types",
+          "text": "種別ごとの欄を行の並びで組むようにした"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 846,
+          "end": 853,
+          "feature": "hex-input",
+          "text": "`#` を補って 6 桁・3 桁を読む口を足した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 855,
+          "end": 874,
+          "feature": "color-box",
+          "text": "不透明度の口と、6 桁の欄に出す綴りを足した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "start": 1,
+          "end": 187,
+          "feature": "color-box",
+          "text": "見本・`#`・6 桁・不透明度の箱と、読めない色の欄を作った"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "start": 37,
+          "end": 51,
+          "feature": "color-box",
+          "text": "下書きの欄の見た目に、箱の中の 6 桁と不透明度を足した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "start": 67,
+          "end": 68,
+          "feature": "left-label",
+          "text": "52px の見出しの綴りを足した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "start": 241,
+          "end": 289,
+          "feature": "left-label",
+          "text": "見出しを左に置いた行を足し、1 フィールドの欄をそれで組んだ"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+          "start": 105,
+          "end": 128,
+          "feature": "color-box",
+          "text": "stop の行を比率・色の箱・− の 3 つにした"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+          "start": 123,
+          "end": 170,
+          "feature": "row-types",
+          "text": "行を数値・文言 / 色で出し分ける"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+          "start": 231,
+          "end": 245,
+          "feature": "left-label",
+          "text": "名前の欄を左見出しにし、見出しを `name` にした"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+          "start": 30,
+          "end": 78,
+          "feature": "hex-input",
+          "text": "`#` 無し・3 桁・4/8 桁のケースを足した"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+          "start": 536,
+          "end": 547,
+          "feature": "color-box",
+          "text": "追加した stop の hex を `#` 無しで打つ通しのケースを足した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+          "start": 140,
+          "end": 159,
+          "feature": "color-box",
+          "text": "stop の hex の確定がその stop だけを変えるケースを足した"
+        }
+      ]
+    },
+    {
+      "sha": "d9ff93f74fd8241a02c48eaa4aafb6c685301285",
+      "phase": "core",
+      "role": "箱の下書きの取り直しと、行・書き戻し先の型をテストで固定する",
+      "why": "確定の回数を key に混ぜる取り直しは、通っても値が変わらない確定でだけ効くので、ドメインのテストでは守れない。描画のテストで、値を変えない大文字の 6 桁で確定して確かめた。旧来の「不透明度の欄は色と影に 1 本ずつ」は、不透明度が独立した欄でなくなったので型が言える形に移した。",
+      "review": [
+        "取り直しのテストが、回数を key に混ぜない実装で落ちる入力(`3B82F6`)を使っているか",
+        "型のテストの名前が、型が保証する範囲(行の並び順ではなく入力の種類)に限られているか"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+          "start": 48,
+          "end": 56,
+          "text": "値を変えない綴りで確定する。回数を key に混ぜない実装では下書きが残って落ちる"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+          "start": 1,
+          "end": 94,
+          "feature": "color-box",
+          "text": "`#` の添え・取り直し・弾かれた綴り・3 桁・見本・読めない色のケース"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+          "start": 1,
+          "end": 31,
+          "feature": "row-types",
+          "text": "行の入力の種類と箱の書き戻し先を型で固定した"
+        }
+      ]
+    },
+    {
+      "sha": "07e22a64eaff1d2911c3a18e1aa99ff8a7d7e712",
+      "phase": "core",
+      "role": "hex として読めない色・stop のストーリーを足す",
+      "why": "読めない色は箱ではなく打ち直しの欄になるが、既存のストーリーは既定の値だけを使うので、この形が Storybook にも視覚差分にも写っていなかった。共有のサンプルに足すと一覧や参照元のストーリーまで差分が広がるので、このファイルの中で組んだ。",
+      "review": [
+        "新しい 2 件の視覚差分が new として出て、既存のストーリーに差分を広げていないか"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+          "start": 106,
+          "end": 117,
+          "text": "colors に読めない値 `RED` を持つ文書をこのファイルの中で組む"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+          "start": 100,
+          "end": 140,
+          "feature": "color-box",
+          "text": "読めない色・読めない stop のストーリーを足した"
+        }
+      ]
+    },
+    {
+      "sha": "41214306f3af2619fa365d52dd9169512ed72d55",
+      "phase": "core",
+      "role": "仕様書に hex の欄が受け付ける綴りと、stop の行の色の箱を書く",
+      "why": "テストが固定した受け付ける綴りの根拠を仕様書に置くため。stop の行は「ratio・見本・hex・−」と別々の欄で並べる書き方のままだった。",
+      "review": [
+        "「2 つの `%` を行の両端に離して読み分ける」が箱の右端の `%` でも成り立つか"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 339,
+          "end": 339,
+          "text": "hex の欄は `#` の有無を問わず 6 桁と 3 桁を受け、4・8 桁は受けない"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 339,
+          "end": 339,
+          "feature": "spec",
+          "text": "hex の欄が受ける綴りと、見本でピッカーが開くことを書いた"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 369,
+          "end": 369,
+          "feature": "spec",
+          "text": "stop の行の並びを比率・色の欄・− にした"
+        }
+      ]
+    },
+    {
+      "sha": "9fc5769eb36b634d78860f57c3306f76a1d7a6c1",
+      "phase": "revise",
+      "role": "色の欄の命名・行の見出しの引き方・書き戻し先の型を、検証の指摘に合わせて直す",
+      "why": "実装の検証で、名前と実体のずれ・同じ分岐の重複・型で閉じられる範囲の取りこぼしが指摘された。挙動は変えていない。書き戻し先の型は、読めない色の打ち直しの欄も同じ先を持つので hex を名前から外した。見出しは 1 つの事実なので、表示とテストが同じ分岐を写さないよう 1 か所から引く。見た目の列挙を密度と箱の中の 2 軸に分ける指摘は、分けると className を渡す形(計画の却下案)に戻るので採らなかった。",
+      "flows": [
+        "select"
+      ],
+      "review": [
+        "数値・文言の行の書き戻し先を、除外ではなく許す種類の列挙で書いた理由(除外では影の枝が外れない)に納得できるか",
+        "`captionOf` に寄せたあと、表示側とテスト側に行の見出しの分岐が残っていないか"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 148,
+          "end": 151,
+          "text": "除外の形では影の枝(フィールドが影の全フィールド)が外れないので、許す種類を列挙した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 886,
+          "end": 891,
+          "text": "行の識別子と見出しを 1 か所から引く入口"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 112,
+          "end": 116,
+          "feature": "row-types",
+          "text": "箱の書き戻し先の型を、色の位置全体の名前に改めた"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 147,
+          "end": 158,
+          "feature": "row-types",
+          "text": "数値・文言の行の書き戻し先を狭めた"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "start": 876,
+          "end": 892,
+          "feature": "row-types",
+          "text": "行の見出しを引く入口を足した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "start": 244,
+          "end": 260,
+          "feature": "row-types",
+          "text": "書き戻し先から読む手続きの作り口を足した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+          "start": 199,
+          "end": 222,
+          "feature": "row-types",
+          "text": "行の見出しを入口から引くようにした"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+          "start": 33,
+          "end": 51,
+          "feature": "row-types",
+          "text": "数値・文言の行と比率・角度の書き戻し先を型で固定した"
+        }
+      ]
+    },
+    {
+      "sha": "2c2685a2ffbbda62d08690ccb5543033bb6361c7",
+      "phase": "revise",
+      "role": "仕様書の stop の行の重複した文を 1 本にし、4・8 桁を受けない理由を書く",
+      "why": "1 つの箇条に同じ説明が 2 回あり、片方だけ直せる形になっていた。docs/04-tokens.md はファイルで 4・8 桁を受けるのに、欄で受けない理由が無かった。UI 案にある部分(`#`・6 桁・右端の `%`)と人が決めた部分(左端の見本)を書き分け、見本の位置を見直すときに誤った根拠を引かないようにした。",
+      "review": [
+        "見本が UI 案に無く Issue で決めたものだと、仕様書から読めるか"
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 369,
+          "end": 369,
+          "text": "箱の左端の見本は UI 案に無く、#1376 で決めたと書き分けた"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 339,
+          "end": 339,
+          "feature": "spec",
+          "text": "4・8 桁を受けない理由を足した"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 369,
+          "end": 369,
+          "feature": "spec",
+          "text": "stop の行の説明を 1 本にした"
+        }
+      ]
+    },
+    {
+      "sha": "f280d0deef25990236ac086c1a245ced42e3d4f5",
+      "phase": "hard",
+      "role": "`#` を補うのが hex の欄だけであることを stop・影の経路でも固定し、読めない色の欄の追随を確かめる",
+      "why": "ミューテーションで実装を壊して確かめたところ、stop と影の経路で `#` を補う・影だけ補わない・読めない色の欄の key を固定する、の 4 つの壊し方でテストが落ちなかった。`#` を補わないことを見るテストが色トークンの書き戻し先 1 種だけにあったため、3 種すべてで対の経路を見る。足した 4 件は、対応する壊し方で 1 件だけが落ちることを確かめた。",
+      "review": [
+        "足した 4 件が、それぞれ落ちなかった壊し方に 1 対 1 で対応しているか"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+          "start": 101,
+          "end": 120,
+          "text": "読めない色の stop の欄と影のピッカーは、`#` 無しの 6 桁を受けない"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+          "start": 110,
+          "end": 116,
+          "text": "外の編集で別の読めない綴りに変わったとき、欄が揃う経路"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+          "start": 39,
+          "end": 49,
+          "feature": "hex-input",
+          "text": "影の hex に `#` 無しで打つケース"
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+          "start": 100,
+          "end": 120,
+          "feature": "hex-input",
+          "text": "stop の打ち直しの欄と影のピッカーで `#` を補わないケース"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+          "start": 109,
+          "end": 116,
+          "feature": "color-box",
+          "text": "読めない色の欄の追随を確かめた"
+        }
+      ]
+    },
+    {
+      "sha": "e465438d6768a6505bc6277f3978e806f098b4c7",
+      "phase": "fin",
+      "role": "左見出しと箱の位置の基準を守れるのが Storybook の視覚差分だけだと書く",
+      "why": "ミューテーションの検証で、見出しの並びと箱の `relative` を壊しても vitest は落ちず、守っているのは視覚差分だけだと指摘された。クラス名を見るテストはマークアップの書き換えで壊れて仕様を守らないので、外すと壊れるのに気づく手段が限られることをコメントに残した。",
+      "review": [
+        "`relative` の理由(読み上げ用の見出しが右ペインのスクロール枠を抜けて文書を伸ばす)が実物と合っているか"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "start": 107,
+          "end": 110,
+          "text": "読み上げ用の見出しは位置が absolute なので、箱の根を位置の基準にする"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "start": 107,
+          "end": 110,
+          "feature": "color-box",
+          "text": "箱の根を位置の基準にする理由"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "start": 264,
+          "end": 265,
+          "feature": "left-label",
+          "text": "左見出しを守るのが視覚差分だけだと書いた"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "color-normal",
+      "label": "色の値(正常系)",
+      "file": "src/domains/dcmp/token/color/__tests__/color-token.normal.test.ts"
+    },
+    {
+      "id": "color-edge",
+      "label": "色の値(境界)",
+      "file": "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts"
+    },
+    {
+      "id": "tc-hex",
+      "label": "編集欄の hex",
+      "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts"
+    },
+    {
+      "id": "tc-normal",
+      "label": "編集欄(正常系)",
+      "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts"
+    },
+    {
+      "id": "tc-gradient",
+      "label": "編集欄のグラデーション",
+      "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts"
+    },
+    {
+      "id": "tc-type",
+      "label": "編集欄の型",
+      "file": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts"
+    },
+    {
+      "id": "te-hex",
+      "label": "エディタの hex の箱",
+      "file": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx"
+    },
+    {
+      "id": "te-gradient",
+      "label": "エディタのグラデーション",
+      "file": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx"
+    },
+    {
+      "id": "token-edit",
+      "label": "トークン編集の通し",
+      "file": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx"
+    },
+    {
+      "id": "stories",
+      "label": "視覚差分の撮影",
+      "file": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "t-three-rgb",
+      "suite": "color-normal",
+      "name": "3 桁の hex は、各桁を重ねた 6 桁の RGB になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ファイル形式が定める 3 桁の短縮形を、RGB の生成が広げて受けること",
+      "given": "大文字の 3 桁 `#ABC`",
+      "when": "RGB を作る",
+      "then": "小文字の `#aabbcc` になる",
+      "commit": "3034c27e90d9ddaa10859c1ca91de8dfb30148b3",
+      "excerpt": {
+        "path": "src/domains/dcmp/token/color/__tests__/color-token.normal.test.ts",
+        "start": 74,
+        "end": 76,
+        "text": "test(\"3 桁の hex は、各桁を重ねた 6 桁の RGB になる\", () => {\n  expect(Rgb.create(\"#ABC\")).toEqual(Option.some(\"#aabbcc\"));\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/token/color/index.ts"
+      ],
+      "covers": [
+        "tc-rgb-create"
+      ]
+    },
+    {
+      "id": "t-not-rgb",
+      "suite": "color-edge",
+      "name": "6 桁の hex にも 3 桁の短縮形にも当たらない値 %s は RGB にできない",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "alpha を持つ 4 桁・8 桁を RGB として通さないこと。正規化してから判定する誤実装を見分ける",
+      "given": "4 桁・8 桁(alpha が不透明なものを含む)・`#` 無し・関数の綴り",
+      "when": "RGB を作る",
+      "then": "どれも `none`",
+      "commit": "3034c27e90d9ddaa10859c1ca91de8dfb30148b3",
+      "excerpt": {
+        "path": "src/domains/dcmp/token/color/__tests__/color-token.edge.test.ts",
+        "start": 26,
+        "end": 35,
+        "emphasis": [
+          {
+            "start": 27,
+            "end": 29
+          }
+        ],
+        "text": "test.each([\n  \"#ffff\",\n  \"#abcf\",\n  \"#aabbccff\",\n  \"#3b82f6ff\",\n  \"3b82f6\",\n  \"rgb(59, 130, 246)\",\n])(\"6 桁の hex にも 3 桁の短縮形にも当たらない値 %s は RGB にできない\", (value) => {\n  expect(Rgb.create(value)).toEqual(Option.none);\n});"
+      },
+      "values": {
+        "columns": [
+          "綴り",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`#ffff`",
+              "`none`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`#abcf`",
+              "`none`"
+            ]
+          },
+          {
+            "cells": [
+              "`#aabbccff`",
+              "`none`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`3b82f6`",
+              "`none`"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/token/color/index.ts"
+      ],
+      "covers": [
+        "tc-rgb-create"
+      ]
+    },
+    {
+      "id": "t-no-hash",
+      "suite": "tc-hex",
+      "name": "色の hex に `#` 無しで打った 6 桁で色が変わり、不透明度は残る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "hex の欄の口が `#` を補い、6 桁だけを差し替えて alpha を残すこと",
+      "given": "alpha が `80` の色 veil",
+      "when": "hex の欄の口に `00ff00` を渡す",
+      "then": "`#00ff0080` になる",
+      "commit": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 31,
+        "end": 37,
+        "text": "test(\"色の hex に `#` 無しで打った 6 桁で色が変わり、不透明度は残る\", () => {\n  const color = selectedHexControl(\"colors\", \"veil\");\n\n  expect(TokenControl.valueFromHex(color.target, \"00ff00\")).toEqual(\n    Option.some({ kind: \"colors\", value: \"#00ff0080\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "cf-value-from-hex"
+      ]
+    },
+    {
+      "id": "t-with-hash",
+      "suite": "tc-hex",
+      "name": "色の hex に `#` 付きで打った 6 桁でも色が変わる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`#` を補う口でも、`#` 付きの綴りを二重にせず受けること",
+      "given": "色 primary",
+      "when": "hex の欄の口に `#00ff00` を渡す",
+      "then": "`#00ff00` になる",
+      "commit": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 50,
+        "end": 56,
+        "text": "test(\"色の hex に `#` 付きで打った 6 桁でも色が変わる\", () => {\n  const color = selectedHexControl(\"colors\", \"primary\");\n\n  expect(TokenControl.valueFromHex(color.target, \"#00ff00\")).toEqual(\n    Option.some({ kind: \"colors\", value: \"#00ff00\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "cf-value-from-hex"
+      ]
+    },
+    {
+      "id": "t-uppercase",
+      "suite": "tc-hex",
+      "name": "色の hex に大文字で打った 6 桁は小文字で保存される",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "ファイルに書く綴りが小文字の正規形のままであること",
+      "given": "色 primary",
+      "when": "hex の欄の口に `ABCDEF` を渡す",
+      "then": "`#abcdef` になる",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 23,
+        "end": 29,
+        "text": "test(\"色の hex に大文字で打った 6 桁は小文字で保存される\", () => {\n  const color = selectedHexControl(\"colors\", \"primary\");\n\n  expect(TokenControl.valueFromHex(color.target, \"ABCDEF\")).toEqual(\n    Option.some({ kind: \"colors\", value: \"#abcdef\" }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "cf-value-from-hex"
+      ]
+    },
+    {
+      "id": "t-three",
+      "suite": "tc-hex",
+      "name": "色の hex に打った 3 桁 %s は広げた 6 桁になり、不透明度は残る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`#` の有無を問わず 3 桁を受け、alpha を残すこと",
+      "given": "alpha が `80` の色 veil",
+      "when": "`abc` か `#ABC` を渡す",
+      "then": "`#aabbcc80` になる",
+      "commit": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 58,
+        "end": 67,
+        "text": "test.each([\n  \"abc\",\n  \"#ABC\",\n])(\"色の hex に打った 3 桁 %s は広げた 6 桁になり、不透明度は残る\", (raw) => {\n  const color = selectedHexControl(\"colors\", \"veil\");\n\n  expect(TokenControl.valueFromHex(color.target, raw)).toEqual(\n    Option.some({ kind: \"colors\", value: \"#aabbcc80\" }),\n  );\n});"
+      },
+      "values": {
+        "columns": [
+          "打った綴り",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`abc`",
+              "`#aabbcc80`"
+            ]
+          },
+          {
+            "cells": [
+              "`#ABC`",
+              "`#aabbcc80`"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts",
+        "src/domains/dcmp/token/color/index.ts"
+      ],
+      "covers": [
+        "cf-value-from-hex",
+        "tc-rgb-create"
+      ]
+    },
+    {
+      "id": "t-four-eight",
+      "suite": "tc-hex",
+      "name": "色の hex に打った 4 桁・8 桁 %s は alpha が不透明でも色を変えない",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "alpha は不透明度の欄が受け持つので、hex の欄では alpha を持つ綴りを受けないこと",
+      "given": "色 primary",
+      "when": "4 桁・8 桁を `#` の有無で渡す",
+      "then": "どれも `none`",
+      "commit": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 69,
+        "end": 79,
+        "text": "test.each([\n  \"abcf\",\n  \"#abcf\",\n  \"aabbccff\",\n  \"#aabbccff\",\n  \"abcd\",\n])(\"色の hex に打った 4 桁・8 桁 %s は alpha が不透明でも色を変えない\", (raw) => {\n  const color = selectedHexControl(\"colors\", \"primary\");\n\n  expect(TokenControl.valueFromHex(color.target, raw)).toEqual(Option.none);\n});"
+      },
+      "values": {
+        "columns": [
+          "打った綴り",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`abcf`",
+              "`none`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`#abcf`",
+              "`none`"
+            ]
+          },
+          {
+            "cells": [
+              "`aabbccff`",
+              "`none`"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`#aabbccff`",
+              "`none`"
+            ]
+          },
+          {
+            "cells": [
+              "`abcd`",
+              "`none`"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "cf-value-from-hex",
+        "tc-rgb-create"
+      ]
+    },
+    {
+      "id": "t-broken-abc",
+      "suite": "tc-hex",
+      "name": "読めない色のテキスト欄に `#` 無しの 3 桁を打っても色を変えない",
+      "techniques": [
+        "error"
+      ],
+      "why": "`#` の補完は hex の欄だけで、読めない色の打ち直しの欄には効かないこと",
+      "given": "読めない色 `RED`",
+      "when": "打ち直しの欄の口に `abc` を渡す",
+      "then": "`none`",
+      "commit": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 87,
+        "end": 91,
+        "text": "test(\"読めない色のテキスト欄に `#` 無しの 3 桁を打っても色を変えない\", () => {\n  const color = selectedColorControl(\"colors\", \"broken\");\n\n  expect(TokenControl.valueFrom(color.target, \"abc\")).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "cf-picker-value-from"
+      ]
+    },
+    {
+      "id": "t-shadow-hex",
+      "suite": "tc-hex",
+      "name": "影の色の hex に `#` 無しで打った 6 桁で影の色が変わり、不透明度は残る",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "影の色の書き戻し先でも hex の欄の口が `#` を補うこと(影のときだけ補わない壊し方を落とす)",
+      "given": "影 sm(色 `#0000001a`)",
+      "when": "hex の欄の口に `ff0000` を渡す",
+      "then": "影の色が `#ff00001a` になる",
+      "commit": "f280d0deef25990236ac086c1a245ced42e3d4f5",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 39,
+        "end": 48,
+        "text": "test(\"影の色の hex に `#` 無しで打った 6 桁で影の色が変わり、不透明度は残る\", () => {\n  const color = selectedHexControl(\"shadows\", \"sm\");\n\n  expect(TokenControl.valueFromHex(color.target, \"ff0000\")).toEqual(\n    Option.some({\n      kind: \"shadows\",\n      value: { x: 0, y: 1, blur: 3, color: \"#ff00001a\" },\n    }),\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "cf-value-from-hex"
+      ]
+    },
+    {
+      "id": "t-broken-stop",
+      "suite": "tc-hex",
+      "name": "読めない色の stop のテキスト欄に `#` 無しの 6 桁を打っても色を変えない",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "stop の色の経路で `#` を補う壊し方を落とす",
+      "given": "1 件目の stop が `RED` のグラデーション",
+      "when": "その stop の打ち直しの欄の口に `ff0000` を渡す",
+      "then": "`none`",
+      "commit": "f280d0deef25990236ac086c1a245ced42e3d4f5",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 101,
+        "end": 114,
+        "text": "test(\"読めない色の stop のテキスト欄に `#` 無しの 6 桁を打っても色を変えない\", () => {\n  const [stop] = gradientOf(\n    gradientSelectionOf({\n      stops: [\n        { color: \"RED\", ratio: 0 },\n        { color: \"#ffffff\", ratio: 1 },\n      ],\n    }),\n  ).stops;\n\n  expect(TokenControl.valueFrom(stop.color.target, \"ff0000\")).toEqual(\n    Option.none,\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "cf-picker-value-from"
+      ]
+    },
+    {
+      "id": "t-shadow-picker",
+      "suite": "tc-hex",
+      "name": "影の色のピッカーから `#` 無しの 6 桁が届いても色を変えない",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "影の色のピッカーの口で `#` を補う壊し方を落とす",
+      "given": "影 sm",
+      "when": "ピッカーの口に `ff0000` を渡す",
+      "then": "`none`",
+      "commit": "f280d0deef25990236ac086c1a245ced42e3d4f5",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.hex.test.ts",
+        "start": 116,
+        "end": 120,
+        "text": "test(\"影の色のピッカーから `#` 無しの 6 桁が届いても色を変えない\", () => {\n  const color = selectedHexControl(\"shadows\", \"sm\");\n\n  expect(TokenControl.valueFrom(color.target, \"ff0000\")).toEqual(Option.none);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "cf-picker-value-from"
+      ]
+    },
+    {
+      "id": "t-color-row",
+      "suite": "tc-normal",
+      "name": "色を選ぶと、見本・hex・不透明度が 1 行の色の欄にまとまる",
+      "techniques": [
+        "state"
+      ],
+      "why": "色トークンの値の欄が箱 1 つの行になり、見出しと読み上げ名が決まっていること",
+      "given": "色 primary を選ぶ",
+      "when": "値の欄の行を引く",
+      "then": "色の行 1 件で、見出し `hex`・見本 `値`・不透明度 `不透明度`、RGB `#3b82f6`、不透明度 100",
+      "commit": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+        "start": 117,
+        "end": 132,
+        "text": "test(\"色を選ぶと、見本・hex・不透明度が 1 行の色の欄にまとまる\", () => {\n  expect(rowsOf(\"colors\", \"primary\")).toEqual([\n    {\n      kind: \"color\",\n      color: {\n        kind: \"hex\",\n        target: { kind: \"colors\", color: \"#3b82f6\" },\n        caption: { name: \"hex\", label: \"hex\" },\n        rgb: \"#3b82f6\",\n        alphaPercent: 100,\n        picker: { name: \"value\", label: \"値\" },\n        alpha: { name: \"alpha\", label: \"不透明度\" },\n      },\n    },\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ],
+      "covers": [
+        "te-for-selection"
+      ]
+    },
+    {
+      "id": "t-stop-row",
+      "suite": "tc-gradient",
+      "name": "stop の行は比率の欄と、見本・hex・不透明度の箱を持つ",
+      "techniques": [
+        "state"
+      ],
+      "why": "stop の行が比率と箱の 2 つになり、読み上げ名が stop の番号を持つこと",
+      "given": "2 件の stop を持つグラデーション",
+      "when": "1 件目の stop の行を引く",
+      "then": "比率 `stop 1 の比率`、箱の見本・6 桁・不透明度が `stop 1 の色` / `stop 1 の hex` / `stop 1 の不透明度`",
+      "commit": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.gradient.test.ts",
+        "start": 44,
+        "end": 54,
+        "text": "test(\"stop の行は比率の欄と、見本・hex・不透明度の箱を持つ\", () => {\n  const [row] = gradientOf(gradientSelectionOf({ stops: TwoStops })).stops;\n  const color = hexControlOf(row.color);\n\n  expect(row.ratio.label).toBe(\"stop 1 の比率\");\n  expect([color.picker.label, color.caption.label, color.alpha.label]).toEqual([\n    \"stop 1 の色\",\n    \"stop 1 の hex\",\n    \"stop 1 の不透明度\",\n  ]);\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ]
+    },
+    {
+      "id": "t-type-target",
+      "suite": "tc-type",
+      "name": "箱の書き戻し先は色トークン・影の色・stop の色の 3 つで、影は色のフィールドだけを指す",
+      "techniques": [
+        "type"
+      ],
+      "why": "箱が影の数値のフィールドを書き戻し先に取れないこと",
+      "given": "箱の書き戻し先の型",
+      "when": "種類と、影の枝のフィールドを型で見る",
+      "then": "3 種類で、影のフィールドは `color` だけ",
+      "commit": "d9ff93f74fd8241a02c48eaa4aafb6c685301285",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+        "start": 16,
+        "end": 23,
+        "text": "test(\"箱の書き戻し先は色トークン・影の色・stop の色の 3 つで、影は色のフィールドだけを指す\", () => {\n  expectTypeOf<TokenColorTarget[\"kind\"]>().toEqualTypeOf<\n    \"colors\" | \"shadows\" | \"gradientsStopColor\"\n  >();\n  expectTypeOf<\n    Extract<TokenColorTarget, { kind: \"shadows\" }>[\"field\"]\n  >().toEqualTypeOf<\"color\">();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ]
+    },
+    {
+      "id": "t-type-field-row",
+      "suite": "tc-type",
+      "name": "field の行は色も階調も書き戻さず、影は数値のフィールドだけを指す。stop の比率の欄は比率、角度の欄は角度だけを書き戻す",
+      "techniques": [
+        "type"
+      ],
+      "why": "数値・文言の行と比率・角度の欄が、広い書き戻し先を受け付けないこと",
+      "given": "数値・文言の行・比率・角度の書き戻し先の型",
+      "when": "種類を型で見る",
+      "then": "数値・文言の行は 4 種類で影は数値のフィールドだけ、比率と角度はそれぞれ 1 種類",
+      "commit": "9fc5769eb36b634d78860f57c3306f76a1d7a6c1",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.type.test.ts",
+        "start": 34,
+        "end": 51,
+        "text": "test(\"field の行は色も階調も書き戻さず、影は数値のフィールドだけを指す。stop の比率の欄は比率、角度の欄は角度だけを書き戻す\", () => {\n  type FieldRowTarget = Extract<\n    TokenControlRow,\n    { kind: \"field\" }\n  >[\"field\"][\"target\"];\n  expectTypeOf<FieldRowTarget[\"kind\"]>().toEqualTypeOf<\n    \"spacing\" | \"radius\" | \"shadows\" | \"typography\"\n  >();\n  expectTypeOf<\n    Extract<FieldRowTarget, { kind: \"shadows\" }>[\"field\"]\n  >().toEqualTypeOf<ShadowNumberField>();\n  expectTypeOf<\n    GradientStopRow[\"ratio\"][\"target\"][\"kind\"]\n  >().toEqualTypeOf<\"gradientsStopRatio\">();\n  expectTypeOf<\n    GradientControl[\"angle\"][\"target\"][\"kind\"]\n  >().toEqualTypeOf<\"gradientsAngle\">();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/domains/token-control/index.ts"
+      ]
+    },
+    {
+      "id": "t-redraft",
+      "suite": "te-hex",
+      "name": "値を変えない綴りで確定しても、欄は小文字の 6 桁へ取り直される",
+      "techniques": [
+        "state",
+        "idempotence"
+      ],
+      "why": "通っても値が変わらない確定で、打った綴りが `#` の隣に残らないこと",
+      "given": "色 `#3b82f6` の箱",
+      "when": "6 桁の欄に `3B82F6` を打って Enter",
+      "then": "欄が `3b82f6` になる",
+      "commit": "d9ff93f74fd8241a02c48eaa4aafb6c685301285",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+        "start": 62,
+        "end": 70,
+        "text": "test(\"値を変えない綴りで確定しても、欄は小文字の 6 桁へ取り直される\", async () => {\n  const user = userEvent.setup();\n  renderColor(\"#3b82f6\");\n\n  await user.clear(hexField());\n  await user.type(hexField(), \"3B82F6{Enter}\");\n\n  expect(hexField().value).toBe(\"3b82f6\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx"
+      ],
+      "covers": [
+        "cf-set"
+      ]
+    },
+    {
+      "id": "t-rejected",
+      "suite": "te-hex",
+      "name": "弾かれた hex は打った文字列が欄に残り、値は届かない",
+      "techniques": [
+        "error",
+        "state"
+      ],
+      "why": "弾かれた綴りを消さずに打ち直せること(エラー表示を発明しない)",
+      "given": "色 `#3b82f6` の箱",
+      "when": "6 桁の欄に `abcd` を打って Enter",
+      "then": "欄に `abcd` が残り、値は送られない",
+      "commit": "d9ff93f74fd8241a02c48eaa4aafb6c685301285",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+        "start": 72,
+        "end": 81,
+        "text": "test(\"弾かれた hex は打った文字列が欄に残り、値は届かない\", async () => {\n  const user = userEvent.setup();\n  const onSetTokenValue = renderColor(\"#3b82f6\");\n\n  await user.clear(hexField());\n  await user.type(hexField(), \"abcd{Enter}\");\n\n  expect(hexField().value).toBe(\"abcd\");\n  expect(onSetTokenValue).not.toHaveBeenCalled();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx"
+      ],
+      "covers": [
+        "cf-value-from-hex"
+      ]
+    },
+    {
+      "id": "t-broken-follow",
+      "suite": "te-hex",
+      "name": "読めない色が外から別の読めない綴りに変わると、`値` の欄もその綴りになる",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "外の編集で別の綴りに変わったときに欄が揃う経路(読めない色の欄の key を固定する壊し方を落とす)",
+      "given": "読めない色 `RED` を出した欄",
+      "when": "外から `BLUE` に変えて描き直す",
+      "then": "`値` の欄が `BLUE` になる",
+      "commit": "f280d0deef25990236ac086c1a245ced42e3d4f5",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+        "start": 110,
+        "end": 116,
+        "text": "test(\"読めない色が外から別の読めない綴りに変わると、`値` の欄もその綴りになる\", () => {\n  const { rerender } = render(colorBody(\"RED\", () => {}));\n\n  rerender(colorBody(\"BLUE\", () => {}));\n\n  expect(screen.getByLabelText<HTMLInputElement>(\"値\").value).toBe(\"BLUE\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx"
+      ]
+    },
+    {
+      "id": "t-stop-hex",
+      "suite": "te-gradient",
+      "name": "stop の hex を `#` 無しで確定すると、その stop だけが変わった値が届く",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "stop の行の箱でも `#` 無しで打て、ほかの stop を巻き込まないこと",
+      "given": "2 件の stop を持つグラデーション",
+      "when": "`stop 2 の hex` に `ff0000` を打って Enter",
+      "then": "2 件目だけが `#ff0000` の値が別のまとまりで届く",
+      "commit": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+      "excerpt": {
+        "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.gradient.test.tsx",
+        "start": 141,
+        "end": 159,
+        "text": "test(\"stop の hex を `#` 無しで確定すると、その stop だけが変わった値が届く\", async () => {\n  const user = userEvent.setup();\n  const onSetTokenValue = renderGradient(TwoStops);\n\n  await user.clear(screen.getByLabelText(\"stop 2 の hex\"));\n  await user.type(screen.getByLabelText(\"stop 2 の hex\"), \"ff0000{Enter}\");\n\n  expect(onSetTokenValue).toHaveBeenCalledWith(\n    {\n      kind: \"gradients\",\n      value: {\n        shape: \"linear\",\n        angle: 90,\n        stops: [TwoStops[0], { color: \"#ff0000\", ratio: 1 }],\n      },\n    },\n    EditContinuities.Separate,\n  );\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+        "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx"
+      ],
+      "covers": [
+        "gf-color-field",
+        "cf-value-from-hex",
+        "cf-set"
+      ]
+    },
+    {
+      "id": "t-e2e-no-hash",
+      "suite": "token-edit",
+      "name": "色の hex を `#` 無しで打って確定すると一覧の値が変わる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "画面全体を通して、`#` 無しの確定が文書と一覧に届くこと",
+      "given": "色 primary を選んだ Tokens の画面",
+      "when": "`hex` の欄に `ff0000` を打って Enter",
+      "then": "一覧に `primary #ff0000` が出る",
+      "commit": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "start": 342,
+        "end": 350,
+        "text": "test(\"色の hex を `#` 無しで打って確定すると一覧の値が変わる\", async () => {\n  await renderTokensView();\n  await selectRow(\"primary\");\n\n  await userEvent.clear(field(\"hex\"));\n  await userEvent.type(field(\"hex\"), \"ff0000{Enter}\");\n\n  expect(row(\"primary #ff0000\")).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx"
+      ],
+      "covers": [
+        "u-type-hex",
+        "cf-value-from-hex",
+        "cf-set"
+      ]
+    },
+    {
+      "id": "t-e2e-picker",
+      "suite": "token-edit",
+      "name": "ピッカーで色を変えると、hex の欄が `#` 無しで追随する",
+      "techniques": [
+        "state"
+      ],
+      "why": "見本で選んだ色が、`#` を外した綴りで 6 桁の欄に出ること",
+      "given": "色 primary を選んだ Tokens の画面",
+      "when": "見本(`値`)の値を `#00ff00` に変える",
+      "then": "`hex` の欄が `00ff00` になる",
+      "commit": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "start": 371,
+        "end": 378,
+        "text": "test(\"ピッカーで色を変えると、hex の欄が `#` 無しで追随する\", async () => {\n  await renderTokensView();\n  await selectRow(\"primary\");\n\n  fireEvent.change(field(\"値\"), { target: { value: \"#00ff00\" } });\n\n  expect(field(\"hex\")).toHaveProperty(\"value\", \"00ff00\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx"
+      ],
+      "covers": [
+        "u-pick",
+        "cf-picker-value-from"
+      ]
+    },
+    {
+      "id": "t-todo-left-label",
+      "suite": "stories",
+      "name": "見出しは 52px で左に並び、日本語の見出しも折り返さない",
+      "techniques": [
+        "state"
+      ],
+      "why": "左見出しの並びは happy-dom では確かめられず、Storybook の視覚差分だけが守る",
+      "given": "影・書体を選んだエディタ",
+      "when": "撮影する",
+      "then": "見出しが 52px で左に並び、折り返さない",
+      "todo": true,
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx"
+      ],
+      "covers": [
+        "te-labeled-row"
+      ]
+    },
+    {
+      "id": "t-todo-264",
+      "suite": "stories",
+      "name": "264px の右ペインで stop の行が − と重ならずに収まる",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "UI 案の右ペイン幅で stop の行がはみ出さないこと。表示確認で一度測っただけ",
+      "given": "幅 264px のグラデーションのエディタ",
+      "when": "stop の行を測る",
+      "then": "箱の右端が − の左端より左にある",
+      "todo": true,
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx"
+      ],
+      "covers": [
+        "gf-color-field"
+      ]
+    },
+    {
+      "id": "t-todo-relative",
+      "suite": "stories",
+      "name": "箱の根が位置の基準になり、読み上げ用の見出しが文書を伸ばさない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "箱の `relative` を外しても vitest は落ちない",
+      "given": "色を選んだエディタ",
+      "when": "撮影する",
+      "then": "右ペインのスクロール枠の外に見出しがはみ出さない",
+      "todo": true,
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "色の欄が 1 つの箱になり、hex は # を省いても 3 桁でも打てるようになった",
+    "lead": "Tokens の右ペインで色・影・グラデーションを編集する人から見て、欄の並びと hex の欄に打てる綴りが変わりました。",
+    "changed": {
+      "before": [
+        {
+          "text": "色を選ぶと、ピッカー・hex・不透明度が別々の行に、見出しを上にして並んでいた"
+        },
+        {
+          "text": "hex の欄には # 付きの綴りが出て、# 付きの 6 桁しか受け付けなかった",
+          "message": "vf-value-from"
+        }
+      ],
+      "after": [
+        {
+          "text": "色を選ぶと、左端の見本・灰色の #・6 桁・右端の不透明度が 1 つの箱に入り、見出し hex が左に並ぶ",
+          "message": "te-color-field"
+        },
+        {
+          "text": "hex の欄には # を除いた 6 桁が出て、# の有無を問わず 6 桁と 3 桁を受け付ける",
+          "message": "cf-value-from-hex"
+        },
+        {
+          "text": "見本を押すと色のパネルが開く",
+          "message": "u-pick"
+        },
+        {
+          "text": "不透明度の字は灰色で、打っている間だけ濃い色になる"
+        },
+        {
+          "text": "どの欄も見出しが左に 52px の幅で並び、名前の欄の見出しは name になる",
+          "message": "te-labeled-row"
+        }
+      ],
+      "text": "見本は UI 案には描かれておらず、Issue で人が決めて足しました。",
+      "specs": [
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「編集操作の一覧」の tokens 編集の行",
+          "text": "hex の欄が # の有無を問わず 6 桁と 3 桁を受け、4 桁・8 桁は受けないこと、見本を押すとピッカーが開くことを足した",
+          "shas": [
+            "41214306f3af2619fa365d52dd9169512ed72d55",
+            "2c2685a2ffbbda62d08690ccb5543033bb6361c7"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「Tokens の gradients」の stop の行の並び",
+          "text": "stop の行を比率・色の欄(# と hex と右端の不透明度を 1 つに入れた箱)・削除の順に直し、左端の見本は UI 案に無いと書き分けた",
+          "shas": [
+            "41214306f3af2619fa365d52dd9169512ed72d55",
+            "2c2685a2ffbbda62d08690ccb5543033bb6361c7"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1416,
+          "text": "色のエディタの上に置く UI 案の 96px の色見本は、この Issue から分けた"
+        },
+        {
+          "issue": 1040,
+          "text": "確定で stop の並びが変わった直後の取り違え。stop の行の識別は今までどおり位置で、再現手順は変わらない"
+        },
+        {
+          "issue": 1041,
+          "text": "影にも色と同じ欄を並べると決めた件。影の色も同じ箱にする根拠"
+        }
+      ],
+      "primers": [
+        "hex-mouths",
+        "rgb-expand",
+        "left-label-row"
+      ]
+    },
+    "tables": [
+      {
+        "label": "hex の欄に打った綴りと結果",
+        "gist": "結果を決めるのは、桁の数と、# を付けたかの 2 つ。",
+        "text": "弾かれた綴りは欄に残るので、そのまま打ち直せます。色の値は変わりません。",
+        "rowHeads": [
+          {
+            "id": "six",
+            "label": "6 桁"
+          },
+          {
+            "id": "three",
+            "label": "3 桁"
+          },
+          {
+            "id": "four",
+            "label": "4 桁",
+            "note": "alpha を持つ綴り"
+          },
+          {
+            "id": "eight",
+            "label": "8 桁",
+            "note": "alpha を持つ綴り"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "hash",
+            "label": "# を付けた"
+          },
+          {
+            "id": "bare",
+            "label": "# を省いた"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "six",
+            "columnHead": "hash",
+            "result": "色が変わり、不透明度は残る",
+            "tests": [
+              "t-with-hash"
+            ]
+          },
+          {
+            "rowHead": "six",
+            "columnHead": "bare",
+            "result": "色が変わり、不透明度は残る",
+            "was": "弾かれ、色は変わらない",
+            "tests": [
+              "t-no-hash",
+              "t-e2e-no-hash",
+              "t-stop-hex",
+              "t-shadow-hex"
+            ]
+          },
+          {
+            "rowHead": "three",
+            "columnHead": "hash",
+            "result": "各桁を重ねた 6 桁の色になる",
+            "was": "弾かれ、色は変わらない",
+            "tests": [
+              "t-three",
+              "t-three-rgb"
+            ]
+          },
+          {
+            "rowHead": "three",
+            "columnHead": "bare",
+            "result": "各桁を重ねた 6 桁の色になる",
+            "was": "弾かれ、色は変わらない",
+            "tests": [
+              "t-three"
+            ]
+          },
+          {
+            "rowHead": "four",
+            "columnHead": "hash",
+            "result": "弾かれ、打った文字が欄に残る",
+            "tests": [
+              "t-four-eight",
+              "t-not-rgb"
+            ]
+          },
+          {
+            "rowHead": "four",
+            "columnHead": "bare",
+            "result": "弾かれ、打った文字が欄に残る",
+            "tests": [
+              "t-four-eight",
+              "t-rejected"
+            ]
+          },
+          {
+            "rowHead": "eight",
+            "columnHead": "hash",
+            "result": "弾かれ、打った文字が欄に残る",
+            "tests": [
+              "t-four-eight",
+              "t-not-rgb"
+            ]
+          },
+          {
+            "rowHead": "eight",
+            "columnHead": "bare",
+            "result": "弾かれ、打った文字が欄に残る",
+            "tests": [
+              "t-four-eight"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "通っても色が変わらない綴りで確定したとき",
+        "before": [],
+        "after": [
+          {
+            "text": "大文字の 6 桁や、今と同じ色の 3 桁で確定しても、欄は小文字の 6 桁に取り直され、打った綴りは残らない",
+            "message": "cf-set"
+          }
+        ],
+        "text": "3 桁を受けるようになったことで、同じ色を別の綴りで打てる場面が増えました。",
+        "tests": [
+          "t-redraft"
+        ],
+        "primers": [
+          "hex-commits"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "見本の色のパネルと、読めない色を打ち直す欄では、# を省いた綴りは今までどおり受け付けない",
+        "tests": [
+          "t-broken-abc",
+          "t-broken-stop",
+          "t-shadow-picker"
+        ]
+      },
+      {
+        "text": "ファイルに書かれる色は、今までどおり # 付きの小文字",
+        "tests": [
+          "t-uppercase"
+        ]
+      },
+      {
+        "text": "読めない色は箱にならず、元の綴りのまま打ち直す欄に出て、外の編集で綴りが変わると欄も揃う",
+        "tests": [
+          "t-broken-follow"
+        ]
+      },
+      {
+        "text": "見出しの並びと 264px の右ペインに収まることは、撮影でしか確かめていない",
+        "tests": [
+          "t-todo-left-label",
+          "t-todo-264"
+        ]
+      },
+      {
+        "text": "stop の並べ替えの直後に別の stop を指してしまう既知の不具合の再現手順は変わらない"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「Tokens の gradients」の、2 つの % を行の両端に離して読み分ける文",
+        "text": "比率の % と、箱の右端の不透明度の % を両端で読み分ける記述は変えていない"
+      },
+      {
+        "path": "docs/04-tokens.md",
+        "locator": "「値の形式」の色の綴り",
+        "text": "ファイルが 3 桁・4 桁・8 桁を受けて正規化する規則は変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "input-color",
+      "category": "html",
+      "label": "`<input type=\"color\">`",
+      "gist": "ブラウザが用意する、色を選ぶための入力欄。押すと色のパネルが開き、選んだ色を文字列で返す。この PR では箱の左端の見本として使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "値は常に `#rrggbb` の形の、小文字の 6 桁の文字列。パネルで色を動かすたびに `change` の[[イベント|event]]が届き、`event.target.value` で今の色を読める。"
+        },
+        {
+          "kind": "declaration",
+          "code": "<input type=\"color\" value=\"#3b82f6\" />"
+        },
+        {
+          "kind": "caution",
+          "text": "alpha を持つ 8 桁の綴りは扱えない。8 桁を渡すとブラウザは `#000000` に落とし、黙って黒い見本を出す。だから見本には alpha を除いた 6 桁だけを渡す。"
+        },
+        {
+          "kind": "memo",
+          "text": "見た目は `::-webkit-color-swatch` などの疑似要素で整える(Chromium 系)。この PR では枠を外して小さな角丸の四角にしている。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "lineRange": {
+            "start": 51,
+            "end": 63
+          },
+          "text": "見本の形のカラーピッカー",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "hex-mouths"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "use-state",
+      "category": "react",
+      "label": "`useState`",
+      "gist": "[[コンポーネント|component]]が描き直しをまたいで覚えておく値([[状態|state]])を持つための関数。値と、値を変える関数の 2 つを返す。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "const [state, setState] = useState(initialState)"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "initialState",
+              "type": "T",
+              "text": "最初に描くときの値。2 回目以降の描き直しでは使われない"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "値を変える関数に、前の値から次の値を作る関数を渡すこともできる(`setCount((count) => count + 1)`)。前の値を確実に元にしたいときに使う。値を変えると React がそのコンポーネントを描き直す。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "lineRange": {
+            "start": 87,
+            "end": 96
+          },
+          "text": "確定の回数を持ち、通ったときだけ 1 つ進める",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "react-key",
+        "hex-commits"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "react-key",
+      "category": "react",
+      "label": "React の `key`",
+      "gist": "React が[[コンポーネント|component]]を前の描画と同じものとして扱うかを決める目印。`key` が変わると前のものを捨てて作り直すので、中で持っていた[[状態|state]]も初期値に戻る。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`key` は普通は並びの中で要素を見分けるために付けるが、1 つの要素に付けて「この値が変わったら作り直す」合図にも使える。打っている途中の文字列を持つ欄は、外の値が変わったときに `key` を変えて取り直す。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+            "start": 123,
+            "end": 130,
+            "emphasis": [
+              {
+                "start": 124,
+                "end": 124
+              }
+            ],
+            "text": "      <DraftField\n        key={`${hexDigits}/${hexCommits}`}\n        id={id}\n        type=\"text\"\n        value={hexDigits}\n        look={DraftFieldLooks.HexDigits}\n        onCommit={commitHex}\n      />"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "`key` に値だけを入れると、確定しても値が変わらないとき(大文字で打った同じ色など)は作り直されず、打った綴りが残る。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "lineRange": {
+            "start": 124,
+            "end": 124
+          },
+          "text": "6 桁の欄の `key` に 6 桁と確定の回数を混ぜる",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "lineRange": {
+            "start": 180,
+            "end": 180
+          },
+          "text": "読めない色の欄は元の綴りを `key` にする",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "use-state",
+        "hex-commits"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "extract-intersection",
+      "category": "typescript",
+      "label": "`Extract` と `&`",
+      "gist": "[[ユニオン型|union]]から条件に合う枝だけを取り出す `Extract` と、2 つの型を両方満たす型を作る `&`([[交差型|intersection]])。組み合わせると、既にある型の一部の枝を、さらに狭めて使える。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "type Extract<T, U> = T extends U ? T : never"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "T",
+              "type": "type",
+              "text": "枝を取り出す元の[[ユニオン型|union]]"
+            },
+            {
+              "name": "U",
+              "type": "type",
+              "text": "残したい枝が満たす形。`{ kind: \"colors\" }` のように判別のキーで書くことが多い"
+            }
+          ]
+        },
+        {
+          "kind": "text",
+          "text": "`A & B` は A と B の両方のキーを持つ型。同じキーがあれば値の型も両方を満たすものに狭まる。影の枝の `field` は影のすべてのフィールドだが、`& Readonly<{ field: \"color\" }>` で色だけに狭まる。"
+        },
+        {
+          "kind": "caution",
+          "text": "反対の `Exclude<T, U>` は、枝の丸ごとを外すだけ。影の枝のように 1 つの枝の中のフィールドだけを外したいときは効かないので、許す形を列挙する。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "lineRange": {
+            "start": 112,
+            "end": 116
+          },
+          "text": "箱が書き戻す色を 3 つの枝に絞り、影は色のフィールドだけにする",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+            "9fc5769eb36b634d78860f57c3306f76a1d7a6c1"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "lineRange": {
+            "start": 148,
+            "end": 151
+          },
+          "text": "数値・文言の行の書き戻し先。影は数値のフィールドだけ",
+          "shas": [
+            "9fc5769eb36b634d78860f57c3306f76a1d7a6c1"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "rows-caption"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "tailwind-states",
+      "category": "tailwind css",
+      "label": "`focus-within` と `sr-only`",
+      "gist": "[[Tailwind CSS|tailwind]] のクラス名で、`focus-within:` は中のどれかの要素にフォーカスがあるときだけ効く書き方、`sr-only` は画面には見せず読み上げにだけ出す書き方。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`focus-within:text-[#1e1e1e]` は、その要素の子孫のどれかにフォーカスがある間だけ字の色を変える。不透明度の欄を包む要素に付け、打っている間だけ灰色の字を濃くする。"
+        },
+        {
+          "kind": "text",
+          "text": "`sr-only` は要素を 1px に縮め、`position: absolute` で流れから外す。見本・不透明度の欄の見出しは目に見せず、読み上げとテストの `getByLabelText` にだけ出す。"
+        },
+        {
+          "kind": "caution",
+          "text": "`position: absolute` は、位置の基準(`relative` など)を持つ最も近い祖先を基準にする。基準が無いと右ペインのスクロール枠を抜けて文書を伸ばすので、箱の根に `relative` を付ける。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "lineRange": {
+            "start": 107,
+            "end": 114
+          },
+          "text": "箱の根の `relative` と、見本の読み上げ用の見出し",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+            "e465438d6768a6505bc6277f3978e806f098b4c7"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "lineRange": {
+            "start": 135,
+            "end": 145
+          },
+          "text": "不透明度の欄と `%` を包み、フォーカスの間だけ字を濃くする",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "left-label-row"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "hex-mouths",
+      "category": "tokens · 編集欄",
+      "label": "色の箱の 3 つの口",
+      "gist": "箱は書き戻し先を 1 つだけ持ち、6 桁・不透明度・見本の 3 つの欄は、それぞれ別の口で文字列をトークンの値に読む。`#` を補うのは 6 桁の口だけ。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "6 桁の欄は `valueFromHex`、不透明度の欄は `valueFromAlpha`、見本(ピッカー)と読めない色の打ち直しの欄は `valueFrom` を通る。どの口も、箱の書き戻し先(色トークン・影の色・stop の色)の 1 つの色を差し替えた値を返す。"
+        },
+        {
+          "kind": "rule",
+          "text": "`#` の省略は、箱が `#` を欄の外に描いているからできる入力欄の約束事。色の値の生成(`Rgb`)にも共通の口(`valueFrom`)にも入れない。"
+        },
+        {
+          "kind": "spec",
+          "text": "hex の欄は `#` の有無を問わず 6 桁と 3 桁を受け、4 桁・8 桁は受けない(docs/06-ui.md「編集操作の一覧」の tokens 編集)。"
+        },
+        {
+          "kind": "history",
+          "text": "前は色をピッカー・hex・不透明度の 3 つの欄に広げ、不透明度にも別の書き戻し先(3 種類)があった。3 つの欄が別々の色を指す値が型の上で作れた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "lineRange": {
+            "start": 826,
+            "end": 878
+          },
+          "text": "`valueFrom` / `valueFromHex` / `valueFromAlpha`",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "lineRange": {
+            "start": 124,
+            "end": 135
+          },
+          "text": "箱の型。書き戻し先は 1 つ",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "extract-intersection",
+        "rgb-expand",
+        "input-color"
+      ],
+      "tests": [
+        "t-no-hash",
+        "t-shadow-hex",
+        "t-broken-abc",
+        "t-broken-stop",
+        "t-shadow-picker"
+      ],
+      "flows": [
+        "type-hex",
+        "pick"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "rgb-expand",
+      "category": "domains · 色",
+      "label": "3 桁の展開",
+      "gist": "RGB の生成(`Rgb.create`)は、3 桁を各桁を重ねた 6 桁に広げてから判定する。4 桁は 8 桁に広がり、6 桁の判定で落ちる。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "広げるのは既にある非公開の `expandShortHex` で、ファイルの正規化と同じ展開を使う。`#` は補わないので、`abc` はここでは `none`。"
+        },
+        {
+          "kind": "spec",
+          "text": "docs/04-tokens.md「値の形式」が `#rgb` を各桁を重ねれば同じ色に決まる綴りと定める。"
+        },
+        {
+          "kind": "memo",
+          "text": "`rgbOf`(文書の色から 6 桁を取り出す)は 3・4 桁を読まないまま残した。文書に入る色は読み込みでも書き込みでも正規化を通って 6・8 桁になっており、短縮形が届かない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/token/color/index.ts",
+          "lineRange": {
+            "start": 42,
+            "end": 48
+          },
+          "text": "広げてから判定する",
+          "shas": [
+            "265f196faf992dea5bd72e894294e4a04e33edc2"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "hex-mouths"
+      ],
+      "tests": [
+        "t-three-rgb",
+        "t-not-rgb",
+        "t-three",
+        "t-four-eight"
+      ],
+      "flows": [
+        "type-hex"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "rows-caption",
+      "category": "tokens · 編集欄",
+      "label": "値の欄の行と見出し",
+      "gist": "値の欄は「数値・文言の行」と「色の行」の直和で上から並ぶ。行の識別子と見出しは `captionOf` の 1 か所から引く。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "数値・文言の行は入力欄の種類を数値と文言に、書き戻し先を色と階調を除いたものに型で狭めている。色の行は箱か、読めない色の打ち直しの欄を 1 つ持つ。"
+        },
+        {
+          "kind": "rule",
+          "text": "行の見出しを表示とテストで別々に分岐して引かない。片方だけ変えても食い違いに気づけない。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "lineRange": {
+            "start": 147,
+            "end": 158
+          },
+          "text": "行の直和と、数値・文言の行の書き戻し先",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+            "9fc5769eb36b634d78860f57c3306f76a1d7a6c1"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "lineRange": {
+            "start": 886,
+            "end": 893
+          },
+          "text": "`captionOf`",
+          "shas": [
+            "9fc5769eb36b634d78860f57c3306f76a1d7a6c1"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+          "lineRange": {
+            "start": 199,
+            "end": 221
+          },
+          "text": "行ごとに見出しを引き、左見出しの行に入れる",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+            "9fc5769eb36b634d78860f57c3306f76a1d7a6c1"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "extract-intersection",
+        "left-label-row"
+      ],
+      "tests": [
+        "t-color-row",
+        "t-type-target",
+        "t-type-field-row"
+      ],
+      "flows": [
+        "select"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "left-label-row",
+      "category": "tokens · 表示",
+      "label": "左見出しの行",
+      "gist": "見出しを 52px の幅で左に置き、残りを欄が占める 1 行(`LabeledRow`)。値の欄のどの行も、名前の欄も、これで並ぶ。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "字の綴りはプロパティパネルのラベルと同じで、幅だけ UI 案の 52px にした。stop の行の箱は見出しを持たず、読み上げ用の見出しだけを置く。"
+        },
+        {
+          "kind": "caution",
+          "text": "見出しが左に並ぶことは happy-dom では確かめられず、気づく手段は Storybook の視覚差分だけ。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "lineRange": {
+            "start": 261,
+            "end": 285
+          },
+          "text": "`LabeledRow`",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
+            "e465438d6768a6505bc6277f3978e806f098b4c7"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "lineRange": {
+            "start": 72,
+            "end": 72
+          },
+          "text": "52px の見出しの綴り",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "tailwind-states",
+        "rows-caption"
+      ],
+      "tests": [
+        "t-todo-left-label"
+      ],
+      "flows": [
+        "select"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "hex-commits",
+      "category": "tokens · 表示",
+      "label": "確定の回数で欄を取り直す",
+      "gist": "6 桁の欄は、通った確定のたびに回数を 1 つ進め、6 桁と回数を[[`key`|react-key-term]]に混ぜて作り直す。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+            "start": 82,
+            "end": 96,
+            "emphasis": [
+              {
+                "start": 95,
+                "end": 95
+              }
+            ],
+            "text": "  /*\n   * 確定の回数を key に混ぜるのは、`ABC` のように通っても値が変わらない確定では key が動かず下書きが残るため。\n   * 回数はこの欄の表示だけが使い、文書（undo の履歴ごと親が持つ）と連動しないので reducer にまとめない。\n   * `changeRawOf` に成否を返させないのは、成否を使わない他の呼び出し側まで戻り値を受けることになるため。\n   */\n  const [hexCommits, setHexCommits] = useState(0);\n  const commitHex = (raw: string) => {\n    const value = TokenControl.valueFromHex(color.target, raw);\n    if (!Option.isSome(value)) {\n      return;\n    }\n\n    onSetTokenValue(value.value, EditContinuities.Separate);\n    setHexCommits((count) => count + 1);\n  };"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "回数はこの欄の表示だけが使い、文書(undo の履歴ごと親が持つ)と連動しないので、1 つの reducer にまとめない。"
+        },
+        {
+          "kind": "memo",
+          "text": "下書きの欄の作り口に成否を返させて回数を進める形は採らなかった。成否を使わないほかの呼び出し側まで戻り値を受けることになるため。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "lineRange": {
+            "start": 82,
+            "end": 96
+          },
+          "text": "`hexCommits` と `commitHex`",
+          "shas": [
+            "ccd529cdf9c9b6faaad694ccbc29563984acb8d1"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "react-key",
+        "use-state"
+      ],
+      "tests": [
+        "t-redraft",
+        "t-rejected"
+      ],
+      "flows": [
+        "type-hex"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "event",
+      "label": "イベント",
+      "text": "ブラウザが「押された」「値が変わった」などを知らせる合図。React では `onChange` のような属性に関数を渡して受け取る。"
+    },
+    {
+      "id": "component",
+      "label": "コンポーネント",
+      "text": "React で画面の部品を表す関数。受け取った値(props)から、出す要素を返す。"
+    },
+    {
+      "id": "state",
+      "label": "状態",
+      "text": "コンポーネントが描き直しをまたいで覚えておく値。変えると React がそのコンポーネントを描き直す。"
+    },
+    {
+      "id": "union",
+      "label": "ユニオン型",
+      "text": "`A | B` のように、いくつかの型のどれか 1 つであることを表す型。`kind` のような共通のキーで枝を見分ける。"
+    },
+    {
+      "id": "intersection",
+      "label": "交差型",
+      "text": "`A & B` のように、2 つの型の両方を満たすことを表す型。両方のキーを持ち、同じキーは両方に合う型へ狭まる。"
+    },
+    {
+      "id": "tailwind",
+      "label": "Tailwind CSS",
+      "text": "CSS を、`flex` や `text-[11px]` のような短いクラス名を要素に並べて書く仕組み。"
+    },
+    {
+      "id": "react-key-term",
+      "label": "key",
+      "text": "React が要素を前の描画と同じものとして扱うかを決める目印。変わると作り直され、中の状態は初期値に戻る。"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "who-adds-hash",
+      "kind": "choice",
+      "title": "井桁を補う場所",
+      "prompt": "hex の欄に `00ff00` と打って確定したとき、前に `#` を補っているのはどこですか。",
+      "options": [
+        "`Rgb.create`",
+        "`TokenControl.valueFrom`",
+        "`TokenControl.valueFromHex`",
+        "`ColorPickerField`"
+      ],
+      "answer": 3,
+      "why": "`#` の省略は箱が `#` を外に描いているからできる入力欄の約束事なので、hex の欄の口(`valueFromHex`)だけが補う。`Rgb.create` はファイル形式どおり `#` 必須で、`valueFrom` はピッカーと読めない色の欄も通るので補わない。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "value-from-hex"
+        },
+        {
+          "kind": "stepChange",
+          "flow": "type-hex",
+          "stepChange": 2
+        }
+      ]
+    },
+    {
+      "id": "four-digits",
+      "kind": "yesno",
+      "title": "4 桁の綴り",
+      "prompt": "hex の欄に `abcf`(alpha が不透明な 4 桁)を打つと、`#aabbcc` として受け付けられる。",
+      "holds": false,
+      "why": "4 桁は展開すると 8 桁になり、6 桁の判定で落ちる。alpha は不透明度の欄が受け持つので、hex の欄は alpha を持つ綴りを受けない。正規化してから判定する誤った実装を見分けるため、テストはわざと不透明な alpha の入力を使っている。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "rgb-create"
+        }
+      ]
+    },
+    {
+      "id": "broken-text",
+      "kind": "yesno",
+      "title": "読めない色の打ち直し",
+      "prompt": "hex として読めない色(`RED`)の打ち直しの欄に `ff0000` と打つと、色が `#ff0000` に変わる。",
+      "holds": false,
+      "why": "打ち直しの欄はピッカーと同じ `valueFrom` を通り、`#` を補わない。`#ff0000` と打てば変わる。`#` を補うのは箱の 6 桁の欄だけ。",
+      "go": [
+        {
+          "kind": "message",
+          "id": "cf-picker-value-from"
+        }
+      ]
+    },
+    {
+      "id": "commit-order",
+      "kind": "order",
+      "title": "3 桁を確定してからの順",
+      "prompt": "色 `#3b82f6` の箱の 6 桁の欄に `abc` と打って Enter を押してから、欄が描き直されるまでの順に並べてください。",
+      "items": [
+        "打った綴りの前に `#` を補う",
+        "3 桁を各桁を重ねた 6 桁に広げ、小文字にする",
+        "色の 6 桁を差し替えた値を、別のまとまりとして文書へ送る",
+        "確定の回数を 1 つ進める",
+        "6 桁と回数を混ぜた key が変わり、欄が `aabbcc` で作り直される"
+      ],
+      "why": "`commitHex` は `valueFromHex`(`#` の補完 → `Rgb.create` の展開)で読み、通ったときだけ値を送ってから回数を進める。key に回数が入っているので、値が変わらない確定でも欄が作り直される。",
+      "go": [
+        {
+          "kind": "flow",
+          "id": "type-hex"
+        },
+        {
+          "kind": "callEdge",
+          "id": "hex-input-value-from-hex"
+        }
+      ]
+    },
+    {
+      "id": "guard-left-label",
+      "kind": "choice",
+      "title": "左見出しを守るもの",
+      "prompt": "値の欄の見出しが 52px の幅で左に並ぶことを、壊したときに気づけるのはどれですか。",
+      "options": [
+        "vitest の描画のテスト",
+        "型のテスト",
+        "Storybook の視覚差分",
+        "lint"
+      ],
+      "answer": 3,
+      "why": "happy-dom は Tailwind のクラスを解決しないので、並びを壊しても vitest は落ちない。クラス名を見るテストはマークアップの書き換えで壊れて仕様を守らないので足さず、視覚差分だけが守るとコメントに残した。",
+      "go": [
+        {
+          "kind": "feature",
+          "id": "left-label"
+        },
+        {
+          "kind": "module",
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx"
+        }
+      ]
+    },
+    {
+      "id": "one-target",
+      "kind": "choice",
+      "title": "箱の書き戻し先",
+      "prompt": "色の箱(見本・6 桁・不透明度)が書き戻し先を 1 つだけ持つ形にしたのは、何を防ぐためですか。",
+      "options": [
+        "見本と不透明度が別々の色を指す値が作れること",
+        "6 桁の欄が `#` 付きで表示されること",
+        "stop の並べ替えで別の stop を指すこと",
+        "読めない色が箱になること"
+      ],
+      "answer": 1,
+      "why": "3 つの欄がそれぞれ書き戻し先を持つと、ピッカーと不透明度が別々の色を指す値が型の上で作れる。書き戻し先を箱に 1 つにし、欄ごとの口で読む形にした。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "hex-color-input"
+        }
+      ]
+    }
+  ]
+}
