@@ -5,14 +5,17 @@ import type { TokenSelection } from "@/domains/session/token-selection";
 import { TokenUsedBy } from "@/features/editor/features/tokens/components/token-used-by";
 import {
   TokenControl,
+  type TokenControlRow,
   type TokenPaint,
 } from "@/features/editor/features/tokens/domains/token-control";
 import { Option } from "@/utils/Option";
+import { ColorField } from "./color-field";
 import { GradientFields } from "./gradient-fields";
 import {
   DraftField,
-  FieldDensities,
+  DraftFieldLooks,
   FieldRow,
+  LabeledRow,
   type SetTokenValue,
 } from "./value-field";
 
@@ -118,12 +121,61 @@ function TokenEditorTitle({
 }
 
 /**
+ * 値の欄の 1 行。数値・文言の欄か、色の箱（読めない色はテキスト欄）に見出しを左に添える。
+ *
+ * @param id 行の欄の id。色の箱では 6 桁の欄（読めない色はテキスト欄）の id
+ * @returns 見出しを左に置いた 1 行
+ */
+function ValueRow({
+  id,
+  row,
+  onSetTokenValue,
+}: Readonly<{
+  id: string;
+  row: TokenControlRow;
+  onSetTokenValue: SetTokenValue;
+}>): ReactElement {
+  switch (row.kind) {
+    case "field":
+      return (
+        <FieldRow id={id} field={row.field} onSetTokenValue={onSetTokenValue} />
+      );
+    case "color":
+      return (
+        <LabeledRow htmlFor={id} label={row.color.caption.label}>
+          <ColorField
+            id={id}
+            color={row.color}
+            onSetTokenValue={onSetTokenValue}
+          />
+        </LabeledRow>
+      );
+  }
+}
+
+/**
+ * 行の識別子。1 つのトークンの中で一意。
+ *
+ * @param row 値の欄の 1 行
+ * @returns 数値・文言の欄はその名前、色は 6 桁の欄（読めない色はテキスト欄）の名前
+ */
+function rowNameOf(row: TokenControlRow): string {
+  switch (row.kind) {
+    case "field":
+      return row.field.name;
+    case "color":
+      return row.color.caption.name;
+  }
+}
+
+/**
  * 選択中のトークンの編集欄の本文（docs/06-ui.md「編集操作の一覧」の tokens 編集 /
  * UI 案 docs/Design Composer.html の右ペイン）。
  *
  * 何の入力欄を何行出すかは `TokenControl.forSelection` が決めるため、ここには種別名で分岐
- * するコードを置かない。分岐するのは編集欄の形（fields / gradient）だけで、種別名では
- * 分岐しない。複合オブジェクトの種別（shadows / typography）はフィールドの数だけ行が並ぶ。
+ * するコードを置かない。分岐するのは値の欄の形（rows / gradient）と行の形（field / color）
+ * だけで、種別名では分岐しない。複合オブジェクトの種別（shadows / typography）はフィールドの
+ * 数だけ行が並ぶ。
  *
  * @returns 名前の欄・値の入力欄（グラデーションならプレビュー・角度・stop の行）・削除の
  *   ボタンと、参照元の一覧。トークンを選んでいなければ、選ばれていないことの知らせ
@@ -153,18 +205,18 @@ function TokenEditorBody({
 
   return (
     <section aria-label="トークン編集" className="flex flex-col gap-3 text-sm">
-      {valueFields.kind === "fields" ? (
-        valueFields.fields.map((field) => (
+      {valueFields.kind === "rows" ? (
+        valueFields.rows.map((row) => (
           /*
            * 下書きの取り直しの単位。行は `name` で一意に指す。
            *
-           * 値の追随は `ValueField` が下書きの欄の key に現在値を入れて行う。行の key に値を
+           * 値の追随は下書きの欄が key に現在値を入れて行う。行の key に値を
            * 入れるとピッカーが動かすたびに作り直され、undo を 1 件にまとめられない。
            */
-          <FieldRow
-            key={`${tokenKey}/${field.name}`}
-            id={`${valueId}-${field.name}`}
-            field={field}
+          <ValueRow
+            key={`${tokenKey}/${rowNameOf(row)}`}
+            id={`${valueId}-${rowNameOf(row)}`}
+            row={row}
             onSetTokenValue={onSetTokenValue}
           />
         ))
@@ -176,24 +228,21 @@ function TokenEditorBody({
           onSetTokenValue={onSetTokenValue}
         />
       )}
-      <div className="flex flex-col gap-1">
-        <label htmlFor={nameId} className="text-gray-600 text-xs">
-          名前
-        </label>
-        {/*
-          `TokenSet.rename` が弾く名前では改名しない
-          （EditorState.renameToken の `none`）。通らなかったときは打った文字列が
-          入力欄に残るので、そのまま直せる。
-        */}
+      {/*
+        `TokenSet.rename` が弾く名前では改名しない
+        （EditorState.renameToken の `none`）。通らなかったときは打った文字列が
+        入力欄に残るので、そのまま直せる。
+      */}
+      <LabeledRow htmlFor={nameId} label="name">
         <DraftField
           key={`${tokenKey}/name`}
           id={nameId}
           type="text"
           value={token.name}
-          density={FieldDensities.Regular}
+          look={DraftFieldLooks.Regular}
           onCommit={onRenameToken}
         />
-      </div>
+      </LabeledRow>
       {/* 並びは UI 案（docs/Design Composer.html）どおり、名前欄の下・削除の上 */}
       <TokenUsedBy selection={selection} />
       <Button

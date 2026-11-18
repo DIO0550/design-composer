@@ -51,13 +51,12 @@ export type TokenSection = Readonly<{
 
 /**
  * 1行分の入力欄。値の形式（docs/04-tokens.md「値の形式」）から入力欄の種類が決まる。
- * `number` / `text` は `PropControlInput` と同じ語。`percent` / `degree` / `color` は単位を持つ
+ * `number` / `text` は `PropControlInput` と同じ語。`percent` / `degree` は単位を持つ
  * トークン固有の語。
  *
- * 不透明度と stop の比率は `percent`、角度は `degree` の欄が持つ。
+ * stop の比率は `percent`、角度は `degree` の欄が持つ。
  */
 export type TokenControlInput =
-  | Readonly<{ kind: "color"; value: Rgb }>
   | Readonly<{ kind: "percent"; value: number }>
   | Readonly<{ kind: "degree"; value: number }>
   | Readonly<{ kind: "number"; value: number }>
@@ -66,18 +65,16 @@ export type TokenControlInput =
 /**
  * その行が書き戻す先。
  *
- * `kind` は `TokenKind` と1対1ではない。不透明度の行は色の一部を差し替えるだけなので、
- * `colorsAlpha` が書き戻すのは `colors` の値になる。`gradientsAngle` / `gradientsStopRatio` /
- * `gradientsStopColor` / `gradientsStopAlpha` の 4 つも、1 つのグラデーションの角度・stop の
- * 比率・色・不透明度を差し替えるだけなので、書き戻すのは `gradients` の値になる。
+ * `kind` は `TokenKind` と1対1ではない。`gradientsAngle` / `gradientsStopRatio` /
+ * `gradientsStopColor` の 3 つは、1 つのグラデーションの角度・stop の比率・色を差し替えるだけ
+ * なので、書き戻すのは `gradients` の値になる。不透明度は書き戻し先を持たず、箱の `target` から
+ * `valueFromAlpha` で引く。
  */
 export type TokenFieldTarget =
   | Readonly<{ kind: "colors"; color: ColorToken }>
-  | Readonly<{ kind: "colorsAlpha"; color: ColorToken }>
   | Readonly<{ kind: "spacing" }>
   | Readonly<{ kind: "radius" }>
   | Readonly<{ kind: "shadows"; shadow: ShadowToken; field: ShadowField }>
-  | Readonly<{ kind: "shadowsAlpha"; shadow: ShadowToken }>
   | Readonly<{
       kind: "typography";
       typography: TypographyToken;
@@ -93,47 +90,69 @@ export type TokenFieldTarget =
       kind: "gradientsStopColor";
       gradient: GradientToken;
       stopIndex: number;
-    }>
-  | Readonly<{
-      kind: "gradientsStopAlpha";
-      gradient: GradientToken;
-      stopIndex: number;
     }>;
 
+/** 欄の識別子（1 つのトークンの中で一意。複合の種別はフィールド名）と見出し。 */
+type TokenControlCaption = Readonly<{ name: string; label: string }>;
+
+/** 入力欄の種類を `K` に絞った編集欄の1つ。 */
+export type TokenControlFieldOf<K extends TokenControlInput["kind"]> =
+  TokenControlCaption &
+    Readonly<{
+      input: Extract<TokenControlInput, { kind: K }>;
+      target: TokenFieldTarget;
+    }>;
+
+/** 編集欄の1つ。入力欄の種類を絞らない。 */
+export type TokenControlField = TokenControlFieldOf<TokenControlInput["kind"]>;
+
+/** 見本・hex・不透明度の箱が書き戻す色 1 つ。影は色のフィールドだけを指す。 */
+export type HexColorTarget =
+  | Extract<TokenFieldTarget, { kind: "colors" }>
+  | (Extract<TokenFieldTarget, { kind: "shadows" }> &
+      Readonly<{ field: "color" }>)
+  | Extract<TokenFieldTarget, { kind: "gradientsStopColor" }>;
+
 /**
- * 編集欄の1行。複合の種別はフィールドの数だけ並び、色の行の並びは `colorFields` が決める。
+ * hex として読める色を、見本・`#`・6 桁・不透明度の 1 つの箱で打つ欄。
  *
- * `name` は行の識別子で、1つのトークンの中で一意（複合の種別はフィールド名）。
+ * Color のエディタと stop の色が持つのは docs/06-ui.md「`Tokens` の `gradients`」の「hex の欄は
+ * Color のエディタと同じ」による。影の色は、UI 案に影のエディタが無く colors と同じ
+ * `colorControlOf` で組み立てるので同じ箱にする（#1041）。
  */
-export type TokenControlField = Readonly<{
-  name: string;
-  label: string;
-  input: TokenControlInput;
-  target: TokenFieldTarget;
+export type HexColorControl = Readonly<{
+  kind: "hex";
+  target: HexColorTarget;
+  /** 6 桁の欄 */
+  caption: TokenControlCaption;
+  rgb: Rgb;
+  alphaPercent: number;
+  /** 箱の左端の見本（ピッカー） */
+  picker: TokenControlCaption;
+  /** 箱の右端の不透明度の欄 */
+  alpha: TokenControlCaption;
 }>;
 
-/**
- * 入力欄が決まる前の行。何の値を載せるかで入力欄が変わる色のために、
- * 綴りと書き戻し先だけを先に決めて渡す。
- */
-type TokenControlRow = Omit<TokenControlField, "input">;
+/** 色の位置に入る欄。hex として読めなければ、元の綴りを打ち直すテキスト欄。 */
+export type TokenColorControl =
+  | HexColorControl
+  | Readonly<{
+      kind: "text";
+      target: HexColorTarget;
+      caption: TokenControlCaption;
+      value: ColorToken;
+    }>;
 
-/** 書き戻し先を別に渡す行の、識別子と見出し。 */
-type TokenControlCaption = Pick<TokenControlRow, "name" | "label">;
+/** 値の欄に上から並ぶ 1 行（`PropControlRow` と同じ形）。 */
+export type TokenControlRow =
+  | Readonly<{ kind: "field"; field: TokenControlFieldOf<"number" | "text"> }>
+  | Readonly<{ kind: "color"; color: TokenColorControl }>;
 
-/**
- * 1 つの色に並べる行の綴りと書き戻し先。ピッカーと hex の行は同じ 6 桁を差し替えるので、
- * 書き戻し先は `colorTarget` 1 つだけを持つ。
- *
- * `hex` は 6 桁を打てるテキスト欄。Color のエディタと stop の色が持つのは docs/06-ui.md
- * 「`Tokens` の `gradients`」の「hex の欄は Color のエディタと同じ」による。影の色は、UI 案に
- * 影のエディタが無く colors と同じ `colorFields` で組み立てるので同じ欄を並べる（#1041）。
- */
-type ColorRows = Readonly<{
-  colorTarget: TokenFieldTarget;
-  rgb: TokenControlCaption;
+/** 1 つの色の箱に付ける識別子と見出し。 */
+type ColorCaptions = Readonly<{
+  picker: TokenControlCaption;
   hex: TokenControlCaption;
-  alpha: TokenControlRow;
+  alpha: TokenControlCaption;
 }>;
 
 /** 見出しの先頭に出す見本の塗り。単色か階調か。 */
@@ -154,8 +173,10 @@ export type GradientKnob = Readonly<{
 export type GradientStopRow = Readonly<{
   /** 行の識別子。1 つのトークンの中で一意 */
   name: string;
-  /** 比率・見本・hex・不透明度の欄。色が hex として読めなければ比率と色のテキスト欄 */
-  fields: readonly TokenControlField[];
+  /** 比率の欄 */
+  ratio: TokenControlFieldOf<"percent">;
+  /** 見本・hex・不透明度の箱。色が hex として読めなければ色のテキスト欄 */
+  color: TokenColorControl;
   /** − を押した後の値。除くと 2 件を下回るなら `none`（押せない状態で並べる） */
   afterRemove: Option<TokenValue>;
   /** − のボタンの読み上げ名 */
@@ -169,7 +190,7 @@ export type GradientControl = Readonly<{
   /** つまみを並べるバーを塗る階調。角度に依らず左から右へ */
   barImage: LinearGradientValue;
   knobs: readonly GradientKnob[];
-  angle: TokenControlField;
+  angle: TokenControlFieldOf<"degree">;
   stops: readonly GradientStopRow[];
   /** stop の + を押した後の値 */
   afterAdd: TokenValue;
@@ -177,7 +198,7 @@ export type GradientControl = Readonly<{
 
 /** 値の欄（docs/06-ui.md「値の欄」）の形。グラデーションだけが stop の行と +・− を持つ。 */
 export type TokenValueFields =
-  | Readonly<{ kind: "fields"; fields: readonly TokenControlField[] }>
+  | Readonly<{ kind: "rows"; rows: readonly TokenControlRow[] }>
   | Readonly<{ kind: "gradient"; gradient: GradientControl }>;
 
 /** 1 つのトークンを編集する画面の中身。並べる欄は種別で決まる。 */
@@ -198,17 +219,16 @@ const PreviewMaxWidthPx = 20;
 const ScalarFieldName = "value";
 const ScalarLabel = "値";
 
-/** 色に添える不透明度の行。見出しは既存の編集欄に合わせて日本語で書く。 */
+/** 色の箱の不透明度の欄。見出しは既存の編集欄に合わせて日本語で書く。 */
 const ColorsAlphaFieldName = "alpha";
 const ShadowAlphaFieldName = "colorAlpha";
 const AlphaLabel = "不透明度";
 
 /**
- * 色に添える hex の行。見出しは UI 案の Color のエディタ（`hex`）と、stop の行の見出し
- * （`stop n の hex`）に合わせる。
+ * 色の箱の hex の欄。見出しは UI 案の Color のエディタ（`hex`）と、stop の行の見出し
+ * （`stop n の hex`）に合わせる。打てる綴りは `#` の有無を問わない 6 桁と 3 桁（`valueFromHex`）。
  *
- * UI 案は `#` を箱の外の記号として分けるが、打てる綴りは stop と同じく `#` 付きの 6 桁だけ
- * （`Rgb.create`）。`#` 無しと短縮形の扱いは #1376 で決める。
+ * 影の箱も `hex` にするのは、`色` にするとピッカーの読み上げ名 `色` と重なるため。
  */
 const ColorsHexFieldName = "hex";
 const ShadowHexFieldName = "colorHex";
@@ -317,7 +337,7 @@ export const TokenSection = {
 
 /**
  * 影の数値のフィールドを、対応する入力欄の形にする。
- * 色は `colorFields` の担当。
+ * 色は `colorControlOf` の担当。
  *
  * @param shadow 編集対象の影
  * @param field 入力欄にするフィールド
@@ -326,7 +346,7 @@ export const TokenSection = {
 function shadowInput(
   shadow: ShadowToken,
   field: ShadowNumberField,
-): TokenControlInput {
+): Extract<TokenControlInput, { kind: "number" }> {
   switch (field) {
     case "x":
       return { kind: "number", value: shadow.x };
@@ -340,51 +360,36 @@ function shadowInput(
 }
 
 /**
- * 1 つの色に並べる編集欄。
+ * 1 つの色の欄。
  *
  * hex として読めない値はピッカーにも hex・不透明度の欄にも載せられないので、
  * 打ち直せるようにテキスト欄1本にする。ピッカーへ渡すとブラウザが黒へ落として
  * しまい、値が壊れていることが画面から分からなくなる。
  *
  * @param color 編集する色
- * @param rows 色そのもの・hex・不透明度の行の綴りと書き戻し先
- * @returns hex として読めればピッカー・hex・不透明度の3行（ピッカーと hex は `rows.colorTarget`
- *   へ書き戻す）、読めなければ `rows.colorTarget` へ書き戻すテキスト欄1行
+ * @param target 箱が書き戻す色
+ * @param captions 見本（読めない色ではテキスト欄）・hex・不透明度の識別子と見出し
+ * @returns hex として読めれば見本・hex・不透明度の 1 つの箱、読めなければ見本の見出しで
+ *   元の綴りを出すテキスト欄 1 本
  */
-function colorFields(
+function colorControlOf(
   color: ColorToken,
-  rows: ColorRows,
-): readonly TokenControlField[] {
+  target: HexColorTarget,
+  captions: ColorCaptions,
+): TokenColorControl {
   const rgb = ColorToken.rgbOf(color);
   if (!Option.isSome(rgb)) {
-    return [
-      {
-        ...rows.rgb,
-        input: { kind: "text", value: color },
-        target: rows.colorTarget,
-      },
-    ];
+    return { kind: "text", target, caption: captions.picker, value: color };
   }
-
-  return [
-    {
-      ...rows.rgb,
-      input: { kind: "color", value: rgb.value },
-      target: rows.colorTarget,
-    },
-    {
-      ...rows.hex,
-      input: { kind: "text", value: rgb.value },
-      target: rows.colorTarget,
-    },
-    {
-      ...rows.alpha,
-      input: {
-        kind: "percent",
-        value: ColorToken.alphaPercentOf(color),
-      },
-    },
-  ];
+  return {
+    kind: "hex",
+    target,
+    caption: captions.hex,
+    rgb: rgb.value,
+    alphaPercent: ColorToken.alphaPercentOf(color),
+    picker: captions.picker,
+    alpha: captions.alpha,
+  };
 }
 
 /**
@@ -397,7 +402,7 @@ function colorFields(
 function typographyInput(
   token: TypographyToken,
   field: TypographyField,
-): TokenControlInput {
+): Extract<TokenControlInput, { kind: "number" | "text" }> {
   switch (field) {
     case "fontSize":
       return { kind: "number", value: token.fontSize };
@@ -415,68 +420,79 @@ function typographyInput(
 }
 
 /**
- * その種別の編集欄の並び。複合の種別はフィールドの定義順を保つ。
+ * その種別の値の欄に並べる行。複合の種別はフィールドの定義順を保つ。
  *
  * @param token 編集したいトークン
- * @returns 上から並べる編集欄。単一値の種別は 1 件
+ * @returns 上から並べる行。単一値の種別は 1 件
  */
-function fieldsOf(
+function rowsOf(
   token: Exclude<Token, { kind: "gradients" }>,
-): readonly TokenControlField[] {
+): readonly TokenControlRow[] {
   switch (token.kind) {
     case "colors":
-      return colorFields(token.value, {
-        colorTarget: { kind: "colors", color: token.value },
-        rgb: { name: ScalarFieldName, label: ScalarLabel },
-        hex: { name: ColorsHexFieldName, label: HexLabel },
-        alpha: {
-          name: ColorsAlphaFieldName,
-          label: AlphaLabel,
-          target: { kind: "colorsAlpha", color: token.value },
+      return [
+        {
+          kind: "color",
+          color: colorControlOf(
+            token.value,
+            { kind: "colors", color: token.value },
+            {
+              picker: { name: ScalarFieldName, label: ScalarLabel },
+              hex: { name: ColorsHexFieldName, label: HexLabel },
+              alpha: { name: ColorsAlphaFieldName, label: AlphaLabel },
+            },
+          ),
         },
-      });
+      ];
     case "spacing":
     case "radius":
       return [
         {
-          name: ScalarFieldName,
-          label: ScalarLabel,
-          input: { kind: "number", value: token.value },
-          target: { kind: token.kind },
+          kind: "field",
+          field: {
+            name: ScalarFieldName,
+            label: ScalarLabel,
+            input: { kind: "number", value: token.value },
+            target: { kind: token.kind },
+          },
         },
       ];
-    /*
-     * 色だけ行が複数になる（`colorFields`）ので `flatMap` で広げる。色の行を色のフィールドの
-     * 位置に置くのは、仕様のフィールド順を保つため。
-     */
+    /* 色の箱を色のフィールドの位置に置くのは、仕様のフィールド順を保つため */
     case "shadows":
-      return ShadowToken.fields().flatMap((field) =>
-        field === "color"
-          ? colorFields(token.value.color, {
-              colorTarget: { kind: "shadows", shadow: token.value, field },
-              rgb: { name: field, label: ShadowLabels[field] },
-              hex: { name: ShadowHexFieldName, label: HexLabel },
-              alpha: {
-                name: ShadowAlphaFieldName,
-                label: AlphaLabel,
-                target: { kind: "shadowsAlpha", shadow: token.value },
+      return ShadowToken.fields().map(
+        (field): TokenControlRow =>
+          field === "color"
+            ? {
+                kind: "color",
+                color: colorControlOf(
+                  token.value.color,
+                  { kind: "shadows", shadow: token.value, field },
+                  {
+                    picker: { name: field, label: ShadowLabels[field] },
+                    hex: { name: ShadowHexFieldName, label: HexLabel },
+                    alpha: { name: ShadowAlphaFieldName, label: AlphaLabel },
+                  },
+                ),
+              }
+            : {
+                kind: "field",
+                field: {
+                  name: field,
+                  label: ShadowLabels[field],
+                  input: shadowInput(token.value, field),
+                  target: { kind: "shadows", shadow: token.value, field },
+                },
               },
-            })
-          : [
-              {
-                name: field,
-                label: ShadowLabels[field],
-                input: shadowInput(token.value, field),
-                target: { kind: "shadows", shadow: token.value, field },
-              },
-            ],
       );
     case "typography":
       return TypographyToken.fields().map((field) => ({
-        name: field,
-        label: TypographyLabels[field],
-        input: typographyInput(token.value, field),
-        target: { kind: "typography", typography: token.value, field },
+        kind: "field",
+        field: {
+          name: field,
+          label: TypographyLabels[field],
+          input: typographyInput(token.value, field),
+          target: { kind: "typography", typography: token.value, field },
+        },
       }));
   }
 }
@@ -492,13 +508,13 @@ function stopRowNameOf(stopIndex: number): string {
 }
 
 /**
- * stop 1 件ぶんの行。比率の欄を先頭に置き、見本・hex・不透明度を続ける（docs/06-ui.md「`Tokens` の
- * `gradients`」の「stop の行は `ratio`・見本・hex・`−` の順」）。
+ * stop 1 件ぶんの行。比率の欄を先頭に置き、見本・hex・不透明度の箱を続ける（docs/06-ui.md「`Tokens`
+ * の `gradients`」の「stop の行は `ratio`・色の欄・`−` の順」）。
  *
  * @param gradient stop を持つグラデーション
  * @param stop 行にする stop
  * @param stopIndex その stop の位置（0 始まり）
- * @returns 比率・見本・hex・不透明度の欄と −。欄の見出しと行の名前は 1 始まりの配列順で数える
+ * @returns 比率の欄・色の欄と −。欄の見出しと行の名前は 1 始まりの配列順で数える
  */
 function gradientStopRowOf(
   gradient: GradientToken,
@@ -507,25 +523,23 @@ function gradientStopRowOf(
 ): GradientStopRow {
   const n = stopIndex + 1;
   const name = stopRowNameOf(stopIndex);
-  const ratioField: TokenControlField = {
-    name: `${name}-ratio`,
-    label: `stop ${n} の比率`,
-    input: { kind: "percent", value: GradientStop.ratioPercentOf(stop) },
-    target: { kind: "gradientsStopRatio", gradient, stopIndex },
-  };
-  const colorRows = colorFields(stop.color, {
-    colorTarget: { kind: "gradientsStopColor", gradient, stopIndex },
-    rgb: { name: `${name}-color`, label: `stop ${n} の色` },
-    hex: { name: `${name}-hex`, label: `stop ${n} の hex` },
-    alpha: {
-      name: `${name}-alpha`,
-      label: `stop ${n} の不透明度`,
-      target: { kind: "gradientsStopAlpha", gradient, stopIndex },
-    },
-  });
   return {
     name,
-    fields: [ratioField, ...colorRows],
+    ratio: {
+      name: `${name}-ratio`,
+      label: `stop ${n} の比率`,
+      input: { kind: "percent", value: GradientStop.ratioPercentOf(stop) },
+      target: { kind: "gradientsStopRatio", gradient, stopIndex },
+    },
+    color: colorControlOf(
+      stop.color,
+      { kind: "gradientsStopColor", gradient, stopIndex },
+      {
+        picker: { name: `${name}-color`, label: `stop ${n} の色` },
+        hex: { name: `${name}-hex`, label: `stop ${n} の hex` },
+        alpha: { name: `${name}-alpha`, label: `stop ${n} の不透明度` },
+      },
+    ),
     afterRemove: Option.map(
       GradientToken.removeStop(gradient, stopIndex),
       (value) => ({ kind: "gradients", value }),
@@ -574,7 +588,7 @@ function gradientControlOf(
  *
  * @param token 編集したいトークン
  * @returns 見出しの見本と値の欄。グラデーションなら stop の行を持つ欄、それ以外は上から並べる
- *   編集欄で、見本は色だけが持つ
+ *   行で、見本は色だけが持つ
  */
 function tokenControlOf(token: Token): TokenControl {
   if (token.kind === "gradients") {
@@ -594,7 +608,7 @@ function tokenControlOf(token: Token): TokenControl {
       token.kind === "colors"
         ? Option.some({ kind: "color", color: token.value })
         : Option.none,
-    valueFields: { kind: "fields", fields: fieldsOf(token) },
+    valueFields: { kind: "rows", rows: rowsOf(token) },
   };
 }
 
@@ -606,7 +620,7 @@ function tokenControlOf(token: Token): TokenControl {
  *
  * @param color 差し替える前の色
  * @param raw 入力欄に入っている文字列
- * @returns 6 桁を差し替えた色。`#rrggbb` として読めなければ `none`
+ * @returns 6 桁を差し替えた色。`#` 付きの 6 桁か 3 桁として読めなければ `none`
  */
 function colorWithRgbFrom(color: ColorToken, raw: string): Option<ColorToken> {
   return Option.map(Rgb.create(raw), (rgb) => ColorToken.withRgb(color, rgb));
@@ -629,15 +643,19 @@ function colorWithAlphaFrom(
 }
 
 /**
- * グラデーションの入力欄へ打たれた文字列を、書き換え後のグラデーションにする。
+ * グラデーションの角度・stop の比率の入力欄へ打たれた文字列を、書き換え後のグラデーションにする。
+ * stop の色は `hexColorValueFrom` の担当。
  *
- * @param target 書き換えるグラデーションと、角度・どの stop の何か
+ * @param target 書き換えるグラデーションと、角度か、どの stop の比率か
  * @param raw 入力欄に入っている文字列
- * @returns 書き換え後のグラデーション。数値 / 6桁の色として読めないとき、比率・不透明度が
- *   0–100 の外のとき（`GradientToken` / `ColorToken` の `none`）は `none`
+ * @returns 書き換え後のグラデーション。数値として読めないとき、比率が 0–100 の外のとき
+ *   （`GradientToken` の `none`）は `none`
  */
 function gradientFrom(
-  target: Extract<TokenFieldTarget, { kind: `gradients${string}` }>,
+  target: Extract<
+    TokenFieldTarget,
+    { kind: "gradientsAngle" | "gradientsStopRatio" }
+  >,
   raw: string,
 ): Option<GradientToken> {
   switch (target.kind) {
@@ -652,16 +670,39 @@ function gradientFrom(
           percent,
         }),
       );
+  }
+}
+
+/**
+ * 箱が指す色 1 つを差し替えて、書き換え後のトークンの値にする。
+ *
+ * @param target 差し替える色（色トークン・影の色・stop の色）
+ * @param nextColorOf 差し替える前の色から、差し替えた後の色を作る
+ * @returns 書き換え後のトークンの値。`nextColorOf` が `none` を返したら `none`
+ */
+function hexColorValueFrom(
+  target: HexColorTarget,
+  nextColorOf: (color: ColorToken) => Option<ColorToken>,
+): Option<TokenValue> {
+  switch (target.kind) {
+    case "colors":
+      return Option.map(nextColorOf(target.color), (value) => ({
+        kind: "colors",
+        value,
+      }));
+    case "shadows":
+      return Option.map(nextColorOf(target.shadow.color), (value) => ({
+        kind: "shadows",
+        value: ShadowToken.withField(target.shadow, { field: "color", value }),
+      }));
     case "gradientsStopColor":
-      return GradientToken.withStopColor(target.gradient, {
-        stopIndex: target.stopIndex,
-        nextColorOf: (color) => colorWithRgbFrom(color, raw),
-      });
-    case "gradientsStopAlpha":
-      return GradientToken.withStopColor(target.gradient, {
-        stopIndex: target.stopIndex,
-        nextColorOf: (color) => colorWithAlphaFrom(color, raw),
-      });
+      return Option.map(
+        GradientToken.withStopColor(target.gradient, {
+          stopIndex: target.stopIndex,
+          nextColorOf,
+        }),
+        (value) => ({ kind: "gradients", value }),
+      );
   }
 }
 
@@ -686,7 +727,7 @@ function numberFromRaw(raw: string): Option<number> {
  *
  * @param target 書き換える影と、そのどのフィールドか
  * @param raw 入力欄に入っている文字列
- * @returns 書き換え後のトークンの値。数値 / 6桁の色として読めないとき、
+ * @returns 書き換え後のトークンの値。数値 / `#` 付きの 6 桁・3 桁の色として読めないとき、
  *   および値域（ぼかしは 0 以上）を外れるときは `none`
  */
 function shadowValueFrom(
@@ -695,10 +736,9 @@ function shadowValueFrom(
 ): Option<TokenValue> {
   const { shadow, field } = target;
   if (field === "color") {
-    return Option.map(colorWithRgbFrom(shadow.color, raw), (value) => ({
-      kind: "shadows",
-      value: ShadowToken.withField(shadow, { field, value }),
-    }));
+    return hexColorValueFrom({ kind: "shadows", shadow, field }, (color) =>
+      colorWithRgbFrom(color, raw),
+    );
   }
   return Option.flatMap(numberFromRaw(raw), (value) =>
     Option.map(ShadowFieldEdit.createNumeric(field, value), (edit) => ({
@@ -758,35 +798,20 @@ export const TokenControl = {
   /**
    * 入力欄に入った文字列を、そのトークンの新しい値にする。
    *
-   * 書き戻し先は行が持つ `target` から決める。
+   * 書き戻し先は行が持つ `target` から決める。色の位置（ピッカー・読めない色のテキスト欄）では
+   * `#` を補わない。
    *
    * @param target 書き戻し先の種別と、複合の種別ではどのフィールドか
    * @param raw 入力欄に入っている文字列
-   * @returns 書き換え後のトークンの値。数値 / 6桁の色として読めないとき、および
-   *   値域（docs/04-tokens.md「値の形式」・不透明度と stop の比率は 0–100）を外れるときは `none`
+   * @returns 書き換え後のトークンの値。数値 / `#` 付きの 6 桁・3 桁の色として読めないとき、
+   *   および値域（docs/04-tokens.md「値の形式」・stop の比率は 0–100）を外れるときは `none`
    */
   valueFrom(target: TokenFieldTarget, raw: string): Option<TokenValue> {
     switch (target.kind) {
       case "colors":
-        return Option.map(colorWithRgbFrom(target.color, raw), (value) => ({
-          kind: "colors",
-          value,
-        }));
-      case "colorsAlpha":
-        return Option.map(colorWithAlphaFrom(target.color, raw), (value) => ({
-          kind: "colors",
-          value,
-        }));
-      case "shadowsAlpha":
-        return Option.map(
-          colorWithAlphaFrom(target.shadow.color, raw),
-          (value) => ({
-            kind: "shadows",
-            value: ShadowToken.withField(target.shadow, {
-              field: "color",
-              value,
-            }),
-          }),
+      case "gradientsStopColor":
+        return hexColorValueFrom(target, (color) =>
+          colorWithRgbFrom(color, raw),
         );
       /*
        * 長さの 2 種別は値域も書き戻し方も同じなので枝を分けない。分けると、
@@ -803,12 +828,48 @@ export const TokenControl = {
         return typographyValueFrom(target, raw);
       case "gradientsAngle":
       case "gradientsStopRatio":
-      case "gradientsStopColor":
-      case "gradientsStopAlpha":
         return Option.map(gradientFrom(target, raw), (value) => ({
           kind: "gradients",
           value,
         }));
     }
+  },
+
+  /**
+   * 箱の hex の欄へ打たれた文字列で、色の 6 桁を差し替える。不透明度は残す。
+   *
+   * `#` を省いてよいのは入力欄の約束事なので、`Rgb` ではなく入力欄を知っているここで補う。
+   *
+   * @param target 箱が書き戻す色
+   * @param raw 入力欄に入っている文字列
+   * @returns 書き換え後のトークンの値。`#` の有無を問わず 6 桁か 3 桁の hex として読めなければ
+   *   `none`（4 桁・8 桁も `none`）
+   */
+  valueFromHex(target: HexColorTarget, raw: string): Option<TokenValue> {
+    const spelled = raw.startsWith("#") ? raw : `#${raw}`;
+    return hexColorValueFrom(target, (color) =>
+      colorWithRgbFrom(color, spelled),
+    );
+  },
+
+  /**
+   * 箱の不透明度の欄へ打たれた文字列で、色の不透明度を差し替える。
+   *
+   * @param target 箱が書き戻す色
+   * @param raw 入力欄に入っている文字列（%）
+   * @returns 書き換え後のトークンの値。数値として読めないとき、0–100 の外のときは `none`
+   */
+  valueFromAlpha(target: HexColorTarget, raw: string): Option<TokenValue> {
+    return hexColorValueFrom(target, (color) => colorWithAlphaFrom(color, raw));
+  },
+
+  /**
+   * 箱の hex の欄に出す綴り。`#` は欄の外に添えるので除く。
+   *
+   * @param control hex として読めた色の箱
+   * @returns 小文字の 6 桁（`#` 無し）
+   */
+  hexDigitsOf(control: HexColorControl): string {
+    return control.rgb.slice(1);
   },
 } as const;

@@ -104,7 +104,7 @@ test("色の行を選ぶとカラーピッカーと名前が出る", async () =>
   await selectRow("primary");
 
   expect(field("値")).toHaveProperty("value", "#3b82f6");
-  expect(field("名前")).toHaveProperty("value", "primary");
+  expect(field("name")).toHaveProperty("value", "primary");
 });
 
 test("カラーピッカーで色を変えると一覧の値も変わる", async () => {
@@ -135,8 +135,8 @@ test("名前を打って確定すると一覧の名前が変わり、選択は�
   await renderTokensView();
   await selectRow("primary");
 
-  await userEvent.clear(field("名前"));
-  await userEvent.type(field("名前"), "brand-color");
+  await userEvent.clear(field("name"));
+  await userEvent.type(field("name"), "brand-color");
   await userEvent.tab();
 
   expect(row(/brand-color/).getAttribute("aria-current")).toBe("true");
@@ -146,19 +146,19 @@ test("ハイフンを含む名前へ改名できる", async () => {
   await renderTokensView();
   await selectRow("primary");
 
-  await userEvent.clear(field("名前"));
-  await userEvent.type(field("名前"), "brand-primary-strong");
+  await userEvent.clear(field("name"));
+  await userEvent.type(field("name"), "brand-primary-strong");
   await userEvent.tab();
 
-  expect(field("名前")).toHaveProperty("value", "brand-primary-strong");
+  expect(field("name")).toHaveProperty("value", "brand-primary-strong");
 });
 
 test("同じ種別に既にある名前へは改名されない", async () => {
   await renderTokensView();
   await selectRow("primary");
 
-  await userEvent.clear(field("名前"));
-  await userEvent.type(field("名前"), "danger");
+  await userEvent.clear(field("name"));
+  await userEvent.type(field("name"), "danger");
   await userEvent.tab();
 
   expect(row(/^primary/).getAttribute("aria-current")).toBe("true");
@@ -170,7 +170,7 @@ test("追加ボタンを押すとトークンが増えてそのまま編集で�
   await userEvent.click(row("colors にトークンを追加"));
 
   expect(row(/^colors 3$/)).toBeDefined();
-  expect(field("名前")).toHaveProperty("value", "color");
+  expect(field("name")).toHaveProperty("value", "color");
 });
 
 test("削除すると一覧から消えて編集欄も閉じる", async () => {
@@ -339,12 +339,12 @@ test("色のトークンのピッカーを開いて 2 回動かしても Ctrl+Z 
   expect(field("値")).toHaveProperty("value", "#3b82f6");
 });
 
-test("色の hex を打って確定すると一覧の値が変わる", async () => {
+test("色の hex を `#` 無しで打って確定すると一覧の値が変わる", async () => {
   await renderTokensView();
   await selectRow("primary");
 
   await userEvent.clear(field("hex"));
-  await userEvent.type(field("hex"), "#ff0000{Enter}");
+  await userEvent.type(field("hex"), "ff0000{Enter}");
 
   expect(row("primary #ff0000")).toBeDefined();
 });
@@ -368,13 +368,13 @@ test("色の hex を 2 回打って確定すると Ctrl+Z 1 回で 1 回目の�
   expect(row("primary #ff0000")).toBeDefined();
 });
 
-test("ピッカーで色を変えると hex の欄も追随する", async () => {
+test("ピッカーで色を変えると、hex の欄が `#` 無しで追随する", async () => {
   await renderTokensView();
   await selectRow("primary");
 
   fireEvent.change(field("値"), { target: { value: "#00ff00" } });
 
-  expect(field("hex")).toHaveProperty("value", "#00ff00");
+  expect(field("hex")).toHaveProperty("value", "00ff00");
 });
 
 test("色の hex は打てる欄にだけ出て、右ペインに文字として重ねて出ない", async () => {
@@ -382,8 +382,8 @@ test("色の hex は打てる欄にだけ出て、右ペインに文字として
   await selectRow("primary");
 
   /* 一覧の行にも同じ文字があるので、右ペインに絞って見る。 */
-  expect(field("hex")).toHaveProperty("value", "#3b82f6");
-  expect(within(propertyPane()).queryByText("#3b82f6")).toBeNull();
+  expect(field("hex")).toHaveProperty("value", "3b82f6");
+  expect(within(propertyPane()).queryByText("3b82f6")).toBeNull();
 });
 
 test("影の色の hex を打って確定すると一覧の影の値が変わり、不透明度は残る", async () => {
@@ -533,6 +533,18 @@ test("ピッカーを 2 回開いて動かすと Ctrl+Z 1 回では 1 回目の�
   expect(field("stop 1 の色")).toHaveProperty("value", "#ff0000");
 });
 
+test("追加した stop の hex を `#` 無しで打つと、その stop のピッカーも変わる", async () => {
+  await addGradient();
+  await userEvent.click(
+    within(propertyPane()).getByRole("button", { name: "stop を追加" }),
+  );
+
+  await userEvent.clear(field("stop 2 の hex"));
+  await userEvent.type(field("stop 2 の hex"), "ff0000{Enter}");
+
+  expect(field("stop 2 の色")).toHaveProperty("value", "#ff0000");
+});
+
 test("作ったグラデーションは Background の欄の gradients の節から選べ、Used by に出る", async () => {
   await addGradient();
   await userEvent.click(
@@ -605,7 +617,7 @@ test("色を変えたあと名前の欄を変えずに離れても、Ctrl+Z 1 �
   fireEvent.click(field("値"));
   fireEvent.change(field("値"), { target: { value: "#00ff00" } });
 
-  await userEvent.click(field("名前"));
+  await userEvent.click(field("name"));
   await userEvent.tab();
   blurActive();
   await userEvent.keyboard("{Control>}z{/Control}");

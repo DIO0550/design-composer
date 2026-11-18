@@ -7,8 +7,11 @@ import {
 } from "@/features/editor/features/tokens/__tests__/gradient-documents";
 import {
   type GradientControl,
+  type HexColorControl,
+  type TokenColorControl,
   TokenControl,
-  type TokenControlField,
+  type TokenControlFieldOf,
+  type TokenControlRow,
 } from "@/features/editor/features/tokens/domains/token-control";
 import { Option } from "@/utils/Option";
 
@@ -49,23 +52,23 @@ export function selectionOf(kind: TokenKind, name: string): TokenSelection {
 }
 
 /**
- * 選択したトークンの編集欄の並び。
+ * 選択したトークンの値の欄に並ぶ行。
  *
- * @throws 値の欄が上から並べる編集欄でない（グラデーション）とき。テストを落とすため
+ * @throws 値の欄が上から並べる行でない（グラデーション）とき。テストを落とすため
  */
-export function fieldsOf(
+export function rowsOf(
   kind: TokenKind,
   name: string,
-): readonly TokenControlField[] {
+): readonly TokenControlRow[] {
   const { valueFields } = Option.unwrap(
     TokenControl.forSelection(selectionOf(kind, name)),
   );
-  if (valueFields.kind !== "fields") {
+  if (valueFields.kind !== "rows") {
     throw new Error(
-      `${kind}/${name} の値の欄は ${valueFields.kind} で、並べる欄ではない`,
+      `${kind}/${name} の値の欄は ${valueFields.kind} で、並べる行ではない`,
     );
   }
-  return valueFields.fields;
+  return valueFields.rows;
 }
 
 /** グラデーション `brand` を選んでいる状態。 */
@@ -91,21 +94,45 @@ export function gradientOf(selection: TokenSelection): GradientControl {
   return valueFields.gradient;
 }
 
-/** 並んだ欄から見出しで 1 行を引く。 */
-export function fieldLabeled(
-  fields: readonly TokenControlField[],
+/** 数値・文言の欄の行から、見出しで 1 つを引く。 */
+export function fieldOf(
+  kind: TokenKind,
+  name: string,
   label: string,
-): TokenControlField {
+): TokenControlFieldOf<"number" | "text"> {
+  const fields = rowsOf(kind, name).flatMap((row) =>
+    row.kind === "field" ? [row.field] : [],
+  );
   return Option.unwrap(
     Option.fromNullable(fields.find((field) => field.label === label)),
   );
 }
 
-/** 見出しで編集欄の1行を引く。 */
-export function fieldOf(
-  kind: TokenKind,
-  name: string,
-  label: string,
-): TokenControlField {
-  return fieldLabeled(fieldsOf(kind, name), label);
+/**
+ * 選択したトークンの色の欄。
+ *
+ * @throws 色の行を持たないとき。テストを落とすため
+ */
+export function colorRowOf(kind: TokenKind, name: string): TokenColorControl {
+  const colors = rowsOf(kind, name).flatMap((row) =>
+    row.kind === "color" ? [row.color] : [],
+  );
+  return Option.unwrap(Option.fromNullable(colors[0]));
+}
+
+/**
+ * hex として読めた色の箱。
+ *
+ * @throws 色が読めずテキスト欄になっているとき。テストを落とすため
+ */
+export function hexOf(color: TokenColorControl): HexColorControl {
+  if (color.kind !== "hex") {
+    throw new Error(`色の欄は ${color.kind} で、箱ではない`);
+  }
+  return color;
+}
+
+/** 選択したトークンの、hex として読めた色の箱。 */
+export function hexColorOf(kind: TokenKind, name: string): HexColorControl {
+  return hexOf(colorRowOf(kind, name));
 }
