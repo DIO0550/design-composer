@@ -1,0 +1,99 @@
+{
+  "version": 2,
+  "pr": 1414,
+  "headBranch": "claude/affectionate-hypatia-6pae78",
+  "baseBranch": "main",
+  "mergeBase": "91a6934f1bbf5145b39a0583160bc77764df443d",
+  "head": "564d3f3a16ba003dc794e9621a092c49ef9ce20e",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-doc-comments.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/case-law/process.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "rules/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "564d3f3a16ba003dc794e9621a092c49ef9ce20e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T00:02:43Z",
+      "subject": "ハーネス棚卸し: harness の実例を rules/coding.md から判例へ移す",
+      "body": "#1413\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2MyrAXhE4Djx18VgY3",
+      "files": [
+        {
+          "path": "harness/case-law/process.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "patch": "@@ -405,6 +405,16 @@ pr-508（2026-09-13）から `#620`（同 09-19）までに `rules/` を触っ\n フックにしない理由: pr-1319 は会話での発言で差分に現れない。pr-1255 の「未確認」の文は書いてあり、そこへ\n 確かめ方が添えてあるかは文字列では白黒が付かない(前回の介入 pr-1179 は層=hook で、同じ層は候補から外した)。\n \n+## `harness` — 外部の挙動を小さく再現して確かめる形\n+\n+規範は `rules/coding.md`「外部の挙動は動かして確かめる」。依存する挙動を、使う前に小さく再現した形の実例。\n+\n+- コミット手順: 1 コマンド 1 コミットにして、直後に `git log` で対応を見る\n+- 抽出条件: 実際にファイルを加工して、条件が狙った行に当たるかを見る\n+- シェル: 実行モードを確認してから前提にする\n+\n+(`rules/coding.md`「外部の挙動は動かして確かめる」から、規範の 1 文を残して移した。)\n+\n ## 単発（まだ語彙にしていない）\n \n 2 件目が出たら語彙へ昇格する候補。",
+          "patchLines": 17,
+          "truncated": false
+        },
+        {
+          "path": "rules/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -122,7 +122,7 @@ boolean や `Option` の組み合わせで矛盾した状態が作れてしま\n \n ## 外部の挙動は動かして確かめる\n \n-シェル・CLI・パーサ・外部フォーマット(JSON 等)の挙動を前提にしたコード(コミット手順・CI スクリプト・lint 設定を含む)は、**正しく動くはずという想定だけで書かない。** 依存する挙動を小さく再現して確かめてから使う(1 コマンド 1 コミットにして直後に `git log` で対応を見る、実際にファイルを加工して抽出条件を当てる、シェルの実行モードを確認する 等)。\n+シェル・CLI・パーサ・外部フォーマット(JSON 等)の挙動を前提にしたコード(コミット手順・CI スクリプト・lint 設定を含む)は、**正しく動くはずという想定だけで書かない。** 依存する挙動を小さく再現して確かめてから使う(確かめ方の実例は判例 `harness`)。\n \n ## 規約の適用範囲\n ",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/missing-doc-comments.py",
+      "to": "rules/coding.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": "rules/coding.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-doc-comments.sh",
+      "to": "rules/coding.md",
+      "status": "kept"
+    }
+  ]
+}
