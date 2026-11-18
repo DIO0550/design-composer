@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ReactElement } from "react";
 import { expect, test, vi } from "vitest";
 import { DesignDocument } from "@/domains/dcmp/design-document";
 import { TokenSet } from "@/domains/dcmp/token";
@@ -9,15 +10,16 @@ import { Option } from "@/utils/Option";
 import { TokenEditor } from "../index";
 
 /**
- * 色トークン `primary` を選んだエディタの本文を描く。値を受け取っても描き直さないので、欄に
- * 残った下書きを見られる。
+ * 色トークン `primary` を選んだエディタの本文。
  *
  * @param color `primary` の値
- * @returns 値を受け取る関数。送られた値と続き方を見るために使う
+ * @param onSetTokenValue 値を受け取る関数
  */
-function renderColor(color: string) {
-  const onSetTokenValue = vi.fn();
-  render(
+function colorBody(
+  color: string,
+  onSetTokenValue: (...args: unknown[]) => void,
+): ReactElement {
+  return (
     <TokenEditor.Body
       selection={TokenSelection.create(
         DesignDocument.create({
@@ -28,8 +30,20 @@ function renderColor(color: string) {
       onSetTokenValue={onSetTokenValue}
       onRenameToken={() => {}}
       onRemoveToken={() => {}}
-    />,
+    />
   );
+}
+
+/**
+ * 色トークン `primary` を選んだエディタの本文を描く。値を受け取っても描き直さないので、欄に
+ * 残った下書きを見られる。
+ *
+ * @param color `primary` の値
+ * @returns 値を受け取る関数。送られた値と続き方を見るために使う
+ */
+function renderColor(color: string) {
+  const onSetTokenValue = vi.fn();
+  render(colorBody(color, onSetTokenValue));
   return onSetTokenValue;
 }
 
@@ -91,4 +105,12 @@ test("読めない色は `値` のテキスト欄に元の綴りで出て、不�
   const text = screen.getByLabelText<HTMLInputElement>("値");
   expect([text.type, text.value]).toEqual(["text", "RED"]);
   expect(screen.queryByLabelText("不透明度")).toBeNull();
+});
+
+test("読めない色が外から別の読めない綴りに変わると、`値` の欄もその綴りになる", () => {
+  const { rerender } = render(colorBody("RED", () => {}));
+
+  rerender(colorBody("BLUE", () => {}));
+
+  expect(screen.getByLabelText<HTMLInputElement>("値").value).toBe("BLUE");
 });
