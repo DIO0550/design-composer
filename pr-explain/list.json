@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1418,
+      "title": "✨ [New Feature]: #1376 tokens の hex の欄を UI 案の箱(#・6 桁・右端の %)にし、見出しを左に置く"
+    },
+    {
       "pr": 1417,
       "title": "[dcmp] ぼかし（layerBlur / backdropBlur）をスキーマと CSS 出力に入れる"
     },
