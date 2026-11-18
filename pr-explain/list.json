@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1414,
+      "title": "ハーネス棚卸し: harness の実例を rules/coding.md から判例へ移す"
+    },
+    {
       "pr": 1411,
       "title": "棚卸し: comment-reviewer に差分の外の同じモジュールの doc との突き合わせを足す"
     },
