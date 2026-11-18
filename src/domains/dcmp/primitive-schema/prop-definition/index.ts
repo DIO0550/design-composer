@@ -173,6 +173,8 @@ function literalTypeMismatch(
  *
  * 下端だけの範囲では上端を `+Infinity` と読むので、`+Infinity`（JSON の `1e400`）も範囲内に
  * なる。`NaN` と `-Infinity` は下端との比較で落ちる。
+ * `+Infinity` を受け入れるのは、範囲を宣言しない数値の prop と同じ扱いにするため。有限でない
+ * 値を弾くかは全ての数値の prop に掛かる判断で、ぼかしだけでは決められない。
  *
  * @param name 報告する prop 名
  * @param value その prop に設定されている数値
@@ -187,15 +189,22 @@ function collectRangeErrors(
   if (range === undefined) {
     return [];
   }
-  const max = range.max ?? Number.POSITIVE_INFINITY;
-  if (Range.contains({ min: range.min, max }, value)) {
+  const { min, max } = range;
+  const bound =
+    max === undefined
+      ? {
+          range: { min, max: Number.POSITIVE_INFINITY },
+          message: `prop "${name}" must be at least ${min}`,
+        }
+      : {
+          range: { min, max },
+          message: `prop "${name}" must be between ${min} and ${max}`,
+        };
+  if (Range.contains(bound.range, value)) {
     return [];
   }
-  const message =
-    range.max === undefined
-      ? `prop "${name}" must be at least ${range.min}`
-      : `prop "${name}" must be between ${range.min} and ${range.max}`;
-  return [{ kind: "range-violation", prop: name, message }];
+
+  return [{ kind: "range-violation", prop: name, message: bound.message }];
 }
 
 /**
