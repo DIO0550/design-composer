@@ -1,7 +1,7 @@
 {
   "version": 1,
   "pr": 1418,
-  "sha": "e465438d6768a6505bc6277f3978e806f098b4c7",
+  "sha": "6c124e1df1cc3f1e7fee8216a5f67281372f6ab3",
   "issue": 1376,
   "overview": {
     "title": "tokens の色の欄を、見本・#・6 桁・不透明度の 1 つの箱にし、見出しを左に置く",
@@ -46,6 +46,9 @@
       {
         "text": "名前の欄の見出しが UI 案どおり `name` になる",
         "message": "te-labeled-row"
+      },
+      {
+        "text": "色・影・stop の箱の中の欄へ Tab で移ると、箱全体が青い枠で囲まれる"
       }
     ],
     "highlights": [
@@ -71,6 +74,14 @@
         "go": {
           "kind": "feature",
           "id": "left-label"
+        }
+      },
+      {
+        "title": "箱のフォーカスの枠",
+        "text": "キーボードで箱の欄へ移ったときの枠は、欄ごとではなく箱の根に描く。テストでは守れず、Storybook で Tab を送って撮った 9 通りでだけ確かめた",
+        "go": {
+          "kind": "module",
+          "path": "src/components/focus-outline/index.ts"
         }
       },
       {
@@ -137,10 +148,11 @@
     {
       "id": "color-box",
       "label": "色の箱",
-      "role": "見本・`#`・6 桁・不透明度を 1 つの箱にし、書き戻し先を 1 つにする",
+      "role": "見本・`#`・6 桁・不透明度を 1 つの箱にし、書き戻し先を 1 つにする。中の欄にフォーカスがある間は箱全体を枠で囲む",
       "review": [
         "箱の 3 つの欄が別々の色を指せない形になっているか(書き戻し先は箱に 1 つ)",
-        "確定の回数を欄の作り直しに混ぜる形が、hooks の規約の「複数の setter」に当たらないか"
+        "確定の回数を欄の作り直しに混ぜる形が、hooks の規約の「複数の setter」に当たらないか",
+        "フォーカスの枠を欄ごとではなく箱の根に描いた形が、単独の入力欄の枠の出方と揃って見えるか"
       ]
     },
     {
@@ -181,6 +193,10 @@
     {
       "layer": "docs",
       "role": "hex の欄が受ける綴りと、stop の行の並びを仕様書に書く"
+    },
+    {
+      "layer": "components",
+      "role": "中の欄にフォーカスがある間だけ箱を囲む枠のクラスを、既存のフォーカスの枠の隣に足す"
     }
   ],
   "concepts": [
@@ -205,7 +221,7 @@
       "name": "色の欄",
       "role": "色の位置に入る欄。見本・`#`・6 桁・不透明度の箱か、読めない色の打ち直しの欄",
       "feature": "color-box",
-      "change": "新しく作った。ピッカーを値の欄から移した",
+      "change": "新しく作った。ピッカーを値の欄から移し、箱の根にフォーカスの枠を付けた",
       "icon": "widget"
     },
     {
@@ -246,6 +262,14 @@
       "role": "視覚差分が撮るトークンのエディタの見本",
       "feature": "color-box",
       "change": "読めない色・読めない stop の 2 件を足した",
+      "graph": false
+    },
+    {
+      "path": "src/components/focus-outline/index.ts",
+      "name": "フォーカスの枠",
+      "role": "キーボードで移ったときに出す青い枠の Tailwind のクラス",
+      "feature": "color-box",
+      "change": "中の欄にフォーカスがある間だけ箱を囲む枠のクラスを足した",
       "graph": false
     }
   ],
@@ -1552,6 +1576,103 @@
           "text": "左見出しを守るのが視覚差分だけだと書いた"
         }
       ]
+    },
+    {
+      "sha": "e4207316636fbaa7f242794f2cbf57c77b2137af",
+      "phase": "revise",
+      "role": "色の箱に、中の欄へキーボードで移ったときの枠を描く",
+      "why": "レビュー(Devin)で、箱の中の 6 桁と不透明度の欄が枠を消している(`outline-none`)うえに箱にも代わりの表示が無く、Tab で移ると現在位置がキャレットでしか分からないと指摘された。欄ごとに枠を付けると箱の枠の内側に枠が入れ子で出るので、箱の根に `focus-within` で描いた。青を既定から離した理由(#1062)を 1 か所に保つため、既存の `FocusOutlineClass` と同じモジュールに並べた。",
+      "review": [
+        "`FocusWithinOutlineClass` の色・太さ・間隔が `FocusOutlineClass` と揃っているか",
+        "枠を箱の根に描いた理由(欄ごとだと入れ子の枠になる)が、コメントと実物で合っているか",
+        "テストが無く、Storybook で Tab を送って撮った確認だけで足りるか"
+      ],
+      "before": [
+        {
+          "text": "箱の中の欄へ Tab で移っても枠が出ず、現在位置はキャレットでしか分からなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "見本・6 桁・不透明度のどれへ Tab で移っても、箱全体が青い枠で囲まれる"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/components/focus-outline/index.ts",
+          "start": 9,
+          "end": 14,
+          "text": "`FocusOutlineClass` と同じ青・2px・間隔 2 の枠を、中の要素にフォーカスがある間だけ描く"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "start": 111,
+          "end": 111,
+          "text": "欄ごとに描くと箱の中に枠が入れ子で出るので、箱に描く理由を残した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "start": 113,
+          "end": 115,
+          "text": "箱の根のクラスに枠を足した"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/components/focus-outline/index.ts",
+          "start": 9,
+          "end": 14,
+          "feature": "color-box",
+          "text": "中の欄にフォーカスがある間だけ箱を囲む枠のクラスを足した"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "start": 2,
+          "end": 2,
+          "feature": "color-box",
+          "text": "枠のクラスを読み込む"
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "start": 111,
+          "end": 115,
+          "feature": "color-box",
+          "text": "箱の根に枠を付け、理由を書いた"
+        }
+      ]
+    },
+    {
+      "sha": "6c124e1df1cc3f1e7fee8216a5f67281372f6ab3",
+      "phase": "revise",
+      "role": "3 桁の hex の確定を画面全体の通しで確かめる",
+      "why": "レビュー(Devin)で、3 桁の確定を確かめるテストがコンポーネントに届く引数だけを見ていて、実際のエディタで色と欄が更新されない退行を捕まえられないと指摘された。既存の通しのテスト(`#` 無しの 6 桁 / 2 回打って undo)と同じ形で、一覧の行・欄の値・undo 後の色を見る。広がることと undo で戻ることは別の振る舞いなので 2 件に分け、3 桁の展開を外す壊し方で 2 件とも落ちることを確かめた。",
+      "review": [
+        "3 桁の展開を外したとき、足した 2 件がどちらも落ちる形になっているか",
+        "コンポーネントのテストを残した理由(確定が別のまとまりで届くことを見る役目)に納得できるか"
+      ],
+      "notes": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+          "start": 371,
+          "end": 380,
+          "text": "一覧の行と、作り直された hex の欄の両方が 6 桁になる"
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+          "start": 382,
+          "end": 393,
+          "text": "3 桁の確定が 1 回の undo で元の色(`#3b82f6`)へ戻る"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+          "start": 371,
+          "end": 393,
+          "feature": "hex-input",
+          "text": "3 桁の確定を画面全体の通しで確かめる 2 件"
+        }
+      ]
     }
   ],
   "suites": [
@@ -2211,6 +2332,75 @@
       ]
     },
     {
+      "id": "t-e2e-three",
+      "suite": "token-edit",
+      "name": "色の hex を 3 桁で打って確定すると、一覧の値と hex の欄が 6 桁に広がる",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "画面全体を通して、3 桁の確定が広げた 6 桁として文書と一覧に届き、欄もその 6 桁で作り直されること",
+      "given": "色 primary(`#3b82f6`)を選んだ Tokens の画面",
+      "when": "`hex` の欄を消して `abc` を打って Enter",
+      "then": "一覧に `primary #aabbcc` が出て、`hex` の欄が `aabbcc` になる",
+      "commit": "6c124e1df1cc3f1e7fee8216a5f67281372f6ab3",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "start": 371,
+        "end": 380,
+        "emphasis": [
+          {
+            "start": 378,
+            "end": 379
+          }
+        ],
+        "text": "test(\"色の hex を 3 桁で打って確定すると、一覧の値と hex の欄が 6 桁に広がる\", async () => {\n  await renderTokensView();\n  await selectRow(\"primary\");\n\n  await userEvent.clear(field(\"hex\"));\n  await userEvent.type(field(\"hex\"), \"abc{Enter}\");\n\n  expect(row(\"primary #aabbcc\")).toBeDefined();\n  expect(field(\"hex\")).toHaveProperty(\"value\", \"aabbcc\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx"
+      ],
+      "covers": [
+        "u-type-hex",
+        "cf-value-from-hex",
+        "tc-rgb-create",
+        "cf-set"
+      ]
+    },
+    {
+      "id": "t-e2e-three-undo",
+      "suite": "token-edit",
+      "name": "色の hex を 3 桁で打って確定したあと Ctrl+Z 1 回で元の色へ戻る",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "3 桁の確定が 1 つの編集として履歴に積まれ、1 回の undo で確定前の色へ戻ること",
+      "given": "色 primary(`#3b82f6`)を選んだ Tokens の画面",
+      "when": "`hex` の欄に `abc` を打って Enter し、Ctrl+Z を 1 回押す",
+      "then": "一覧が `primary #aabbcc` から `primary #3b82f6` に戻る",
+      "commit": "6c124e1df1cc3f1e7fee8216a5f67281372f6ab3",
+      "excerpt": {
+        "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+        "start": 382,
+        "end": 393,
+        "emphasis": [
+          {
+            "start": 390,
+            "end": 392
+          }
+        ],
+        "text": "test(\"色の hex を 3 桁で打って確定したあと Ctrl+Z 1 回で元の色へ戻る\", async () => {\n  await renderTokensView();\n  await selectRow(\"primary\");\n\n  await userEvent.clear(field(\"hex\"));\n  await userEvent.type(field(\"hex\"), \"abc{Enter}\");\n  expect(row(\"primary #aabbcc\")).toBeDefined();\n\n  await userEvent.keyboard(\"{Control>}z{/Control}\");\n\n  expect(row(\"primary #3b82f6\")).toBeDefined();\n});"
+      },
+      "targets": [
+        "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx"
+      ],
+      "covers": [
+        "u-type-hex",
+        "cf-value-from-hex",
+        "cf-set"
+      ]
+    },
+    {
       "id": "t-e2e-picker",
       "suite": "token-edit",
       "name": "ピッカーで色を変えると、hex の欄が `#` 無しで追随する",
@@ -2224,8 +2414,8 @@
       "commit": "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
       "excerpt": {
         "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
-        "start": 371,
-        "end": 378,
+        "start": 395,
+        "end": 402,
         "text": "test(\"ピッカーで色を変えると、hex の欄が `#` 無しで追随する\", async () => {\n  await renderTokensView();\n  await selectRow(\"primary\");\n\n  fireEvent.change(field(\"値\"), { target: { value: \"#00ff00\" } });\n\n  expect(field(\"hex\")).toHaveProperty(\"value\", \"00ff00\");\n});"
       },
       "targets": [
@@ -2323,6 +2513,9 @@
         {
           "text": "どの欄も見出しが左に 52px の幅で並び、名前の欄の見出しは name になる",
           "message": "te-labeled-row"
+        },
+        {
+          "text": "キーボードで箱の欄へ移ると、箱全体が青い枠で囲まれる"
         }
       ],
       "text": "見本は UI 案には描かれておらず、Issue で人が決めて足しました。",
@@ -2429,7 +2622,8 @@
             "was": "弾かれ、色は変わらない",
             "tests": [
               "t-three",
-              "t-three-rgb"
+              "t-three-rgb",
+              "t-e2e-three"
             ]
           },
           {
@@ -2438,7 +2632,8 @@
             "result": "各桁を重ねた 6 桁の色になる",
             "was": "弾かれ、色は変わらない",
             "tests": [
-              "t-three"
+              "t-three",
+              "t-e2e-three"
             ]
           },
           {
@@ -2528,6 +2723,15 @@
       },
       {
         "text": "stop の並べ替えの直後に別の stop を指してしまう既知の不具合の再現手順は変わらない"
+      },
+      {
+        "text": "3 桁で確定したあとも、元に戻す 1 回で確定前の色へ戻る",
+        "tests": [
+          "t-e2e-three-undo"
+        ]
+      },
+      {
+        "text": "キーボードで箱の欄へ移ったときの枠は、テストでは確かめておらず、画面で見て確かめた"
       }
     ],
     "keptSpecs": [
@@ -2572,8 +2776,8 @@
         {
           "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
           "lineRange": {
-            "start": 51,
-            "end": 63
+            "start": 52,
+            "end": 64
           },
           "text": "見本の形のカラーピッカー",
           "shas": [
@@ -2615,8 +2819,8 @@
         {
           "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
           "lineRange": {
-            "start": 87,
-            "end": 96
+            "start": 88,
+            "end": 97
           },
           "text": "確定の回数を持ち、通ったときだけ 1 つ進める",
           "shas": [
@@ -2644,12 +2848,12 @@
           "kind": "excerpt",
           "excerpt": {
             "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
-            "start": 123,
-            "end": 130,
+            "start": 127,
+            "end": 134,
             "emphasis": [
               {
-                "start": 124,
-                "end": 124
+                "start": 128,
+                "end": 128
               }
             ],
             "text": "      <DraftField\n        key={`${hexDigits}/${hexCommits}`}\n        id={id}\n        type=\"text\"\n        value={hexDigits}\n        look={DraftFieldLooks.HexDigits}\n        onCommit={commitHex}\n      />"
@@ -2664,8 +2868,8 @@
         {
           "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
           "lineRange": {
-            "start": 124,
-            "end": 124
+            "start": 128,
+            "end": 128
           },
           "text": "6 桁の欄の `key` に 6 桁と確定の回数を混ぜる",
           "shas": [
@@ -2675,8 +2879,8 @@
         {
           "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
           "lineRange": {
-            "start": 180,
-            "end": 180
+            "start": 184,
+            "end": 184
           },
           "text": "読めない色の欄は元の綴りを `key` にする",
           "shas": [
@@ -2766,6 +2970,10 @@
         },
         {
           "kind": "text",
+          "text": "箱の根にも `focus-within:outline-2` などを付け、見本・6 桁・不透明度のどれにフォーカスがあっても箱全体を青い枠で囲む。中の欄は枠を消している(`outline-none`)ので、欄ごとではなく箱に描く。"
+        },
+        {
+          "kind": "text",
           "text": "`sr-only` は要素を 1px に縮め、`position: absolute` で流れから外す。見本・不透明度の欄の見出しは目に見せず、読み上げとテストの `getByLabelText` にだけ出す。"
         },
         {
@@ -2777,24 +2985,36 @@
         {
           "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
           "lineRange": {
-            "start": 107,
-            "end": 114
+            "start": 108,
+            "end": 118
           },
-          "text": "箱の根の `relative` と、見本の読み上げ用の見出し",
+          "text": "箱の根の `relative` とフォーカスの枠、見本の読み上げ用の見出し",
           "shas": [
             "ccd529cdf9c9b6faaad694ccbc29563984acb8d1",
-            "e465438d6768a6505bc6277f3978e806f098b4c7"
+            "e465438d6768a6505bc6277f3978e806f098b4c7",
+            "e4207316636fbaa7f242794f2cbf57c77b2137af"
           ]
         },
         {
           "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
           "lineRange": {
-            "start": 135,
-            "end": 145
+            "start": 139,
+            "end": 149
           },
           "text": "不透明度の欄と `%` を包み、フォーカスの間だけ字を濃くする",
           "shas": [
             "ccd529cdf9c9b6faaad694ccbc29563984acb8d1"
+          ]
+        },
+        {
+          "path": "src/components/focus-outline/index.ts",
+          "lineRange": {
+            "start": 9,
+            "end": 14
+          },
+          "text": "中の欄にフォーカスがある間だけ箱を囲む枠のクラス",
+          "shas": [
+            "e4207316636fbaa7f242794f2cbf57c77b2137af"
           ]
         }
       ],
@@ -3047,12 +3267,12 @@
           "kind": "excerpt",
           "excerpt": {
             "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
-            "start": 82,
-            "end": 96,
+            "start": 83,
+            "end": 97,
             "emphasis": [
               {
-                "start": 95,
-                "end": 95
+                "start": 96,
+                "end": 96
               }
             ],
             "text": "  /*\n   * 確定の回数を key に混ぜるのは、`ABC` のように通っても値が変わらない確定では key が動かず下書きが残るため。\n   * 回数はこの欄の表示だけが使い、文書（undo の履歴ごと親が持つ）と連動しないので reducer にまとめない。\n   * `changeRawOf` に成否を返させないのは、成否を使わない他の呼び出し側まで戻り値を受けることになるため。\n   */\n  const [hexCommits, setHexCommits] = useState(0);\n  const commitHex = (raw: string) => {\n    const value = TokenControl.valueFromHex(color.target, raw);\n    if (!Option.isSome(value)) {\n      return;\n    }\n\n    onSetTokenValue(value.value, EditContinuities.Separate);\n    setHexCommits((count) => count + 1);\n  };"
@@ -3071,8 +3291,8 @@
         {
           "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
           "lineRange": {
-            "start": 82,
-            "end": 96
+            "start": 83,
+            "end": 97
           },
           "text": "`hexCommits` と `commitHex`",
           "shas": [
@@ -3249,6 +3469,30 @@
         {
           "kind": "callBox",
           "id": "hex-color-input"
+        }
+      ]
+    },
+    {
+      "id": "focus-ring",
+      "kind": "choice",
+      "title": "箱のフォーカスの枠",
+      "prompt": "色の箱の 6 桁の欄へ Tab で移ったとき、青い枠はどこに出ますか。",
+      "options": [
+        "6 桁の欄だけを囲む",
+        "箱全体を囲む",
+        "6 桁の欄と箱の両方を入れ子で囲む",
+        "どこにも出ない"
+      ],
+      "answer": 2,
+      "why": "中の欄は枠を消している(`outline-none`)ので、箱の根に `focus-within` で枠を描く。欄ごとに描くと箱の枠の内側に入れ子で出るため、箱 1 つにした。",
+      "go": [
+        {
+          "kind": "module",
+          "path": "src/components/focus-outline/index.ts"
+        },
+        {
+          "kind": "feature",
+          "id": "color-box"
         }
       ]
     }
