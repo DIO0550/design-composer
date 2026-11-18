@@ -16,6 +16,7 @@ import type { Props, PropValue } from "@/domains/dcmp/node";
 import { Padding } from "@/domains/dcmp/padding";
 import { type AbsolutePlacement, Placement } from "@/domains/dcmp/placement";
 import {
+  type BoxSchema,
   TokenPropKinds,
   type TokenPropName,
 } from "@/domains/dcmp/primitive-schema";
@@ -31,6 +32,7 @@ import {
 import { Visibility } from "@/domains/dcmp/visibility";
 import { Wrap } from "@/domains/dcmp/wrap";
 import type { Axis } from "@/domains/unit/axis";
+import { Px } from "@/domains/unit/px";
 import { Html } from "@/utils/Html";
 import { Option } from "@/utils/Option";
 
@@ -225,6 +227,43 @@ function opacityDeclarations(
 }
 
 /**
+ * ぼかしの prop → その prop が決める CSS プロパティ (docs/03「HTML/CSS へのコンパイル規則」
+ * の表)。並びが宣言の出力順になる。
+ */
+const BlurFilterProperties = {
+  layerBlur: "filter",
+  backdropBlur: "backdrop-filter",
+} as const satisfies Readonly<
+  Partial<Record<keyof (typeof BoxSchema)["props"], CssProperty>>
+>;
+
+/** ぼかさない強さ。 */
+const NoBlur = 0;
+
+/**
+ * ぼかしの props を `blur()` の宣言にする (docs/03 の表)。
+ *
+ * 0 を出さないのは、`blur(0px)` でもプロパティが `none` でなくなり、そのノードが新しい
+ * stacking context になるため (docs/03 の表「`rotation` の行と同じ理由」)。取りうる範囲（0 以上）の外を丸めないのは、範囲の判定を
+ * `DesignDocument.collectErrors` と 2 箇所に持たないため。負の `blur()` は CSS が宣言ごと捨てる。
+ *
+ * @param props ノードに設定されている props
+ * @returns 0 でない数値を持つ prop ごとに宣言 1 件。0 と数値でない値（ファイル由来の不正な
+ *   綴り）の prop では出さない
+ */
+function blurFilterDeclarations(props: Props): readonly CssDeclarationType[] {
+  return Object.entries(BlurFilterProperties).flatMap(
+    ([prop, property]): readonly CssDeclarationType[] => {
+      const blur = props[prop];
+      const blurs = typeof blur === "number" && blur !== NoBlur;
+      return blurs
+        ? [CssDeclaration.create(property, `blur(${Px.create(blur)})`)]
+        : [];
+    },
+  );
+}
+
+/**
  * typography は複合トークンなので、フィールドごとの CSS プロパティへ展開する。走査対象は
  * `TypographyToken.fields` に従うため、トークンのフィールドが増えても追従漏れが出ない。
  *
@@ -382,6 +421,7 @@ export const BoxElement = {
       ...tokenDeclarations("background", props.background, tokens),
       ...cornerRadius,
       ...tokenDeclarations("shadow", props.shadow, tokens),
+      ...blurFilterDeclarations(props),
       ...overflowDeclarations(props.overflow),
       ...opacityDeclarations(props.opacity),
       ...Visibility.declarations(Visibility.fromProps(props)),
@@ -516,6 +556,7 @@ export const EllipseElement = {
       ...tokenDeclarations("background", props.background, tokens),
       CssDeclaration.create("border-radius", EllipseBorderRadius),
       ...tokenDeclarations("shadow", props.shadow, tokens),
+      ...blurFilterDeclarations(props),
       ...opacityDeclarations(props.opacity),
       ...Visibility.declarations(Visibility.fromProps(props)),
     ];
