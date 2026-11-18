@@ -1,0 +1,2373 @@
+{
+  "version": 2,
+  "pr": 1417,
+  "headBranch": "claude/magical-cannon-avab0v",
+  "baseBranch": "main",
+  "mergeBase": "459e6840663548f573d9121fec6fab515e6d0019",
+  "head": "13c860376034f09493cb003fcc7f9922d42b604b",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/axis/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/corner/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/offset/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/px/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/side/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/axis-length/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/box-align/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/constraint/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/corner-radius/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/css-declaration/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/css-direction/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/token-referrer/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/v1/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/document-names/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/layout/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/length-shorthand/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/locking/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/padding/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 11,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/token-props/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resolved-props/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/rotation/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/visibility/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/wrap/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.box-props.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/artboard/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.canvas-position.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.canvas-reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.json.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.name-match.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.prop-definitions.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/artboard/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.type.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/artboard/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/css-declaration/__tests__/css-declaration.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/artboard-edit-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.name-uniqueness.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/design-document/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 47,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/domains/dcmp/design-document/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/document-names/__tests__/document-names.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.prototype-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.ref-props.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.token-kind-list.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.type.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/primitive-schema/prop-definition/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 78,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/primitive-schema/prop-definition/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/dcmp/primitive-schema/schema/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ellipse.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/domains/dcmp/primitive-schema/schema/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.lookup.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ref-node.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.text.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.type.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/visibility/__tests__/visibility.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/wrap/__tests__/wrap.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / compiled",
+      "files": [
+        {
+          "path": "src/domains/compiled/compiled-artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 43,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard-setup.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.blur.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/compiled/compiled-artboard/index.ts"
+        },
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.canvas-position.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.visibility.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 17,
+          "changed": true,
+          "target": "src/domains/compiled/compiled-artboard/index.ts"
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 51,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/compiled/compiled-element/index.ts"
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.html.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.layout.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/__tests__/element-style-setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/__tests__/document-reload.invalid.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/session/prop-control/index.ts"
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/domains/session/prop-control/index.ts"
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/selection/__tests__/selection.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/token-refs.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "services",
+      "files": [
+        {
+          "path": "src/services/document-html/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/node-html/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/token-css/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/node-html/__tests__/node-html.box.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/Html.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Json.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Range.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/RecordEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard-reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/assets",
+      "files": [
+        {
+          "path": "src/features/editor/features/assets/components/assets-panel/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/component-list/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-placement.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-label/__tests__/artboard-label.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/__tests__/name-style-rule.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/arranged-artboard/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-label/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-sync",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/sidebar",
+      "files": [
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/layers-panel/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/01-file-format.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.blur.test.ts",
+        "name": "backdropBlur を書いた artboard は backdrop-filter を出力しない"
+      },
+      {
+        "file": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.blur.test.ts",
+        "name": "layerBlur を書いた artboard は filter の blur を出力する"
+      },
+      {
+        "file": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+        "name": "backdropBlur を書いた Box は backdrop-filter の blur を出力する"
+      },
+      {
+        "file": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+        "name": "backdropBlur を書いた Ellipse は backdrop-filter の blur を出力する"
+      },
+      {
+        "file": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+        "name": "layerBlur と backdropBlur を両方書いた Box は、それぞれの宣言を出力する"
+      },
+      {
+        "file": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+        "name": "layerBlur を書いた Box は filter の blur を出力する"
+      },
+      {
+        "file": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+        "name": "layerBlur を書いた Ellipse は filter の blur を出力する"
+      },
+      {
+        "file": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+        "name": "ぼかしが既定のままの Box はぼかしの宣言を出力しない"
+      },
+      {
+        "file": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+        "name": "ぼかしに 0 を書いた Box はぼかしの宣言を出力しない"
+      },
+      {
+        "file": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+        "name": "取りうる範囲を外れた負の layerBlur は丸めずそのまま出力する"
+      },
+      {
+        "file": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+        "name": "数値でない layerBlur は宣言を出力しない"
+      },
+      {
+        "file": "src/domains/dcmp/artboard/__tests__/artboard.box-props.test.ts",
+        "name": "props でノード自身のぼかしを指定すると artboard はその値で解決される"
+      },
+      {
+        "file": "src/domains/dcmp/artboard/__tests__/artboard.box-props.test.ts",
+        "name": "props で背後のぼかしを指定しても artboard の背後はぼかさない"
+      },
+      {
+        "file": "src/domains/dcmp/artboard/__tests__/artboard.prop-definitions.test.ts",
+        "name": "ノード自身のぼかしは artboard でも受け付ける"
+      },
+      {
+        "file": "src/domains/dcmp/artboard/__tests__/artboard.prop-definitions.test.ts",
+        "name": "背後のぼかしは artboard では読み捨てるので、パネルに出さない"
+      },
+      {
+        "file": "src/domains/dcmp/artboard/__tests__/artboard.type.test.ts",
+        "name": "artboard の背後のぼかしは型でも 0 に絞られている"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+        "name": "artboard の props に書いた背後のぼかしは読み捨てられ、未知の prop のエラーにならない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+        "name": "読み捨てる prop でも、artboard の props に負の背後のぼかしを書くと範囲違反のエラーになる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+        "name": "Box に負の layerBlur を指定すると range-violation エラーになる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+        "name": "Ellipse に負の backdropBlur を指定すると range-violation エラーになる"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.type.test.ts",
+        "name": "数値の生リテラル prop には下端だけの値域を宣言できる"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.type.test.ts",
+        "name": "数値の生リテラル prop には下端の無い値域を宣言できない"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+        "name": "下端だけを宣言した prop に -Infinity を設定すると range-violation になる"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+        "name": "下端だけを宣言した prop に Infinity を設定してもエラーにならない"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+        "name": "下端だけを宣言した prop に下端そのものの値を設定するとエラーにならない"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+        "name": "下端だけを宣言した prop に下端を下回る値を設定すると range-violation になる"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+        "name": "下端だけを宣言した prop に大きな値を設定してもエラーにならない"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+        "name": "下端だけを宣言した prop の範囲違反は、下端以上であることを求める文で報告される"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+        "name": "Box の backdropBlur は 0 の下端だけを範囲に宣言する"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+        "name": "Box の backdropBlur は appearance 節の生リテラルの number でデフォルトが 0"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+        "name": "Box の layerBlur は 0 の下端だけを範囲に宣言する"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+        "name": "Box の layerBlur は appearance 節の生リテラルの number でデフォルトが 0"
+      },
+      {
+        "file": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ellipse.test.ts",
+        "name": "Ellipse の配置・回転・最小/最大の大きさ・影・ぼかし・不透明度・表示・ロックは Box と同じ定義を持つ"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+        "name": "Box の layerBlur は数値の欄として出る"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+        "name": "Ellipse の Appearance 節は、影の直後に layerBlur・backdropBlur の順で並べる"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+        "name": "artboard の backdropBlur は読み捨てるのでコントロールが出ない"
+      },
+      {
+        "file": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+        "name": "artboard を選ぶと layerBlur の欄は出る"
+      }
+    ],
+    "removed": [
+      {
+        "file": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ellipse.test.ts",
+        "name": "Ellipse の配置・回転・最小/最大の大きさ・影・不透明度・表示・ロックは Box と同じ定義を持つ"
+      }
+    ],
+    "files": [
+      "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.blur.test.ts",
+      "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.visibility.test.ts",
+      "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+      "src/domains/dcmp/artboard/__tests__/artboard.box-props.test.ts",
+      "src/domains/dcmp/artboard/__tests__/artboard.prop-definitions.test.ts",
+      "src/domains/dcmp/artboard/__tests__/artboard.type.test.ts",
+      "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+      "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+      "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.type.test.ts",
+      "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+      "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+      "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ellipse.test.ts",
+      "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "2080ea7538c5e363a689e6eacc219f6521d94fa6",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:33:12Z",
+      "subject": "✨ [New Feature]: #1306 生リテラルの数値 prop の range を下端だけでも宣言できるようにする",
+      "body": "- prop 定義に非公開の型 LiteralRange（上端を省ける範囲）を足し、\n  NumberLiteralPropDefinition の range をこの型にする\n- collectRangeErrors は上端が無いとき +Infinity と読んで既存の\n  Range.contains で判定し、違反の報告は must be at least <min> にする\n\n背景:\nぼかし（layerBlur / backdropBlur）は「0 以上」だけが決まっていて上限の\n根拠になる値が無い。docs/03「prop 定義のフィールド」は range を\n{ min: 0 } のように下端だけでも書けると定めているが、今の range は\nsrc/utils/Range.ts の Range（両端必須）で、違反の文も両端前提だった。\n\n採用理由:\n範囲の型を prop 定義の側に置き、判定は上端を +Infinity に読み替えて\n既存の Range.contains に渡す。Range そのものと判定の実装を変えずに済み、\n下端だけの範囲は prop 定義の性質として閉じる。\n\n影響とトレードオフ:\n下端だけの範囲では +Infinity（JSON の 1e400）も範囲内になる。範囲を\n宣言しない数値の prop（width 等）と同じ扱いで、保存で null になる挙動も\nそれらと同じ。NaN と -Infinity は下端との比較で落ちる。\n\n代替案:\n- Range を max? にする: 本番コードの import 元が 9 ファイルあり、canvas\n  側は length / center / intersection で上端を必須にしている。型の doc\n  「下端と上端は常に対でしか意味を持たない」も崩れる\n- スキーマに { min: 0, max: Infinity } と書く: docs/03 の書き方と違い、\n  違反の文も between 0 and Infinity になる\n- 下端だけを扱う utils モジュール（LowerBound 等）を立てる: 上端を\n  +Infinity と読めば Range.contains で済み、汎用の操作が 2 つに割れる。\n  呼び出しも 1 か所だけ\n- 有限でない値を弾く: 仕様は「上限を持たない」だけで、範囲を宣言しない\n  数値の prop も通している。弾くならすべての数値 prop に関わる判断になる\n\n参考:\n- docs/03-schema.md「prop 定義のフィールド」「ぼかし」\n- Issue #1306 の計画コメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 11,
+          "patch": "@@ -89,15 +89,21 @@ export type TokenPropDefinition = PropDefinitionBase &\n     tokenKind: TokenKindList;\n   }>;\n \n+/**\n+ * 生の数値の prop が取りうる範囲。境界の値を含む。上端は省いてよく、省くと上限を持たない\n+ * （docs/03「prop 定義のフィールド」の「下端だけの `{ min: 0 }`」）。\n+ */\n+type LiteralRange = Readonly<{ min: number; max?: number }>;\n+\n /**\n  * 生の数値をそのまま持つ prop。取りうる値が範囲で決まっているものは `range` で宣言する\n- * （宣言しなければ範囲では弾かれない）。\n+ * （宣言しなければ範囲では弾かれない）。範囲は下端だけでもよい。\n  */\n type NumberLiteralPropDefinition = PropDefinitionBase &\n   Readonly<{\n     domain: \"literal\";\n     literalType: \"number\";\n-    range?: Range;\n+    range?: LiteralRange;\n   }>;\n \n /** 生の文字列をそのまま持つ prop。 */\n@@ -165,6 +171,9 @@ function literalTypeMismatch(\n /**\n  * 範囲を宣言した prop に、その外の値を設定しているときの報告。\n  *\n+ * 下端だけの範囲では上端を `+Infinity` と読むので、`+Infinity`（JSON の `1e400`）も範囲内に\n+ * なる。`NaN` と `-Infinity` は下端との比較で落ちる。\n+ *\n  * @param name 報告する prop 名\n  * @param value その prop に設定されている数値\n  * @param range その prop が取りうる範囲。宣言していない prop では `undefined`\n@@ -173,21 +182,20 @@ function literalTypeMismatch(\n function collectRangeErrors(\n   name: string,\n   value: number,\n-  range: Range | undefined,\n+  range: LiteralRange | undefined,\n ): readonly PropValidationError[] {\n   if (range === undefined) {\n     return [];\n   }\n-  if (Range.contains(range, value)) {\n+  const max = range.max ?? Number.POSITIVE_INFINITY;\n+  if (Range.contains({ min: range.min, max }, value)) {\n     return [];\n   }\n-  return [\n-    {\n-      kind: \"range-violation\",\n-      prop: name,\n-      message: `prop \"${name}\" must be between ${range.min} and ${range.max}`,\n-    },\n-  ];\n+  const message =\n+    range.max === undefined\n+      ? `prop \"${name}\" must be at least ${range.min}`\n+      : `prop \"${name}\" must be between ${range.min} and ${range.max}`;\n+  return [{ kind: \"range-violation\", prop: name, message }];\n }\n \n /**",
+          "patchLines": 64,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "be271297f0e85f04667606e8568bc223558101bf",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:33:21Z",
+      "subject": "✨ [New Feature]: #1306 Box と Ellipse のスキーマに layerBlur / backdropBlur を足す",
+      "body": "- 非公開の定数 BlurFilterProps（layerBlur / backdropBlur。どちらも\n  number の生リテラル・range { min: 0 }・既定 0・appearance 節）を足す\n- Box は ShadowProps と overflow の間、Ellipse は ShadowProps と\n  OpacityProps の間に差し込む\n\n背景:\ndocs/03「ぼかし」が Box と Ellipse の 2 prop を定めた。パネルの行は\nスキーマから生成されるので、スキーマに足せばパネル（docs/06「ぼかしの欄」\nの Appearance 節・1 prop 1 行・生リテラルの数値の欄）と検証が揃う。\n\n採用理由:\n差し込む位置は docs/03 の Box / Ellipse の表の並び（shadow の直後）に\n合わせた。パネルの並びがそのまま表と一致する。生リテラルにするのは\nOpacityProps と同じく対応するトークン種別が無いため。\n\n影響とトレードオフ:\nartboard は Box スキーマを流用するので、この時点では artboard のパネルにも\nbackdropBlur が出る。読み捨てる扱いは artboard のコミットで入れる。\n\n代替案:\n- 定数名を素の BlurProps にする: blur は影トークンのフィールド\n  （ShadowToken.blur）と同じ語で、docs/03 も prop 名に layer / backdrop を\n  付ける理由をこの衝突に置いている。CSS の blur() を filter 系で出すものと\n  分かる BlurFilter を語幹にした\n\n参考:\n- docs/03-schema.md「ぼかし」「Box」「Ellipse」\n- docs/06-ui.md「ぼかしの欄」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 0,
+          "patch": "@@ -177,6 +177,28 @@ const OpacityProps = {\n   },\n } as const satisfies PropDefinitionRecord;\n \n+/**\n+ * ぼかしの props（docs/03「ぼかし」）。Box と Ellipse が同じ 2 prop を持つ。\n+ *\n+ * 生リテラルにする理由は `OpacityProps` と同じ（対応するトークン種別が無い）。\n+ */\n+const BlurFilterProps = {\n+  layerBlur: {\n+    domain: \"literal\",\n+    literalType: \"number\",\n+    range: { min: 0 },\n+    default: 0,\n+    group: \"appearance\",\n+  },\n+  backdropBlur: {\n+    domain: \"literal\",\n+    literalType: \"number\",\n+    range: { min: 0 },\n+    default: 0,\n+    group: \"appearance\",\n+  },\n+} as const satisfies PropDefinitionRecord;\n+\n /**\n  * 幅の下限と上限の props（docs/03「サイズ指定の原則」）。Box と Ellipse が同じ 2 prop を持つ。\n  *\n@@ -375,6 +397,7 @@ export const BoxSchema = {\n       shorthand: { name: ShorthandNames.Radius, corner: \"bottomLeft\" },\n     },\n     ...ShadowProps,\n+    ...BlurFilterProps,\n     overflow: {\n       domain: \"enum\",\n       values: [\"visible\", \"clip\"],\n@@ -472,6 +495,7 @@ export const EllipseSchema = {\n       group: \"appearance\",\n     },\n     ...ShadowProps,\n+    ...BlurFilterProps,\n     ...OpacityProps,\n     ...VisibilityProps,\n     ...LockingProps,",
+          "patchLines": 45,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d3bd180deab93272161a3c77683e1edf3a083f43",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:33:32Z",
+      "subject": "✨ [New Feature]: #1306 ぼかしを filter / backdrop-filter の blur() として CSS に出す",
+      "body": "- CssProperty に filter / backdrop-filter を足す\n- compiled-element に対応表 BlurFilterProperties\n  （layerBlur → filter、backdropBlur → backdrop-filter）と\n  blurFilterDeclarations を足し、Box / Ellipse の shadow の直後に出す\n- 0 と数値でない値では出さない。範囲外（負）の値も丸めずに出す\n\n背景:\ndocs/03 の CSS 対応表が layerBlur を filter: blur({n}px)、backdropBlur を\nbackdrop-filter: blur({n}px) と定めている。既定の 0 は出さず（rotation の\n行と同じ理由）、範囲外も丸めずに出す（opacity の行と同じ）。\n\n採用理由:\nprop と CSS プロパティの組を as const satisfies の表で閉じ、関数は props\nだけを受け取る。TokenPropProperties と同じ形で、組を引数で渡す形だと\nfilter と backdropBlur を取り違えても型で弾けない。表のキーはスキーマの\nprop 名で閉じているので、綴り違いもコンパイルエラーになる。\n0 を出さないのは blur(0px) でも stacking context ができるため（Chromium\n153 で実測）。範囲外を丸めないのは範囲の判定を検証と 2 か所に持たない\nためで、負の blur() は CSS が宣言ごと捨てる（同じく実測）。\n\n影響とトレードオフ:\n-webkit-backdrop-filter は出さない（オーナー判断。docs/03 の表どおり）。\n古い WebKit 系 webview では背後のぼかしが効かない可能性があり、確認は\n#1412 に分けた。\n\n代替案:\n- rotationDeclarations とまとめる: 既定を出さない理由は同じだが、\n  Rotation.fromProps は有限でない値を既定へ落とす読み方で、出力も\n  1 宣言。ぼかしは 2 prop の表引き\n- opacityDeclarations とまとめる: 既定を出さない理由そのものが違う\n  （あちらは初期値と同じで効果が無いため）\n- src/domains/dcmp/blur/ モジュールを作る: rotation がモジュールを持つのは\n  幾何の計算と編集でも読み書きされるため。ぼかしは「箱は変えない」ので\n  読むのは CSS 出力だけ\n- -webkit-backdrop-filter も並べて出す: オーナー判断で却下（#1412）\n\n参考:\n- docs/03-schema.md「HTML/CSS へのコンパイル規則」の layerBlur /\n  backdropBlur の行\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 41,
+          "deletions": 0,
+          "patch": "@@ -16,6 +16,7 @@ import type { Props, PropValue } from \"@/domains/dcmp/node\";\n import { Padding } from \"@/domains/dcmp/padding\";\n import { type AbsolutePlacement, Placement } from \"@/domains/dcmp/placement\";\n import {\n+  type BoxSchema,\n   TokenPropKinds,\n   type TokenPropName,\n } from \"@/domains/dcmp/primitive-schema\";\n@@ -31,6 +32,7 @@ import {\n import { Visibility } from \"@/domains/dcmp/visibility\";\n import { Wrap } from \"@/domains/dcmp/wrap\";\n import type { Axis } from \"@/domains/unit/axis\";\n+import { Px } from \"@/domains/unit/px\";\n import { Html } from \"@/utils/Html\";\n import { Option } from \"@/utils/Option\";\n \n@@ -224,6 +226,43 @@ function opacityDeclarations(\n     : [CssDeclaration.create(\"opacity\", String(opacity))];\n }\n \n+/**\n+ * ぼかしの prop → その prop が決める CSS プロパティ (docs/03「HTML/CSS へのコンパイル規則」\n+ * の表)。並びが宣言の出力順になる。\n+ */\n+const BlurFilterProperties = {\n+  layerBlur: \"filter\",\n+  backdropBlur: \"backdrop-filter\",\n+} as const satisfies Readonly<\n+  Partial<Record<keyof (typeof BoxSchema)[\"props\"], CssProperty>>\n+>;\n+\n+/** ぼかさない強さ。 */\n+const NoBlur = 0;\n+\n+/**\n+ * ぼかしの props を `blur()` の宣言にする (docs/03 の表)。\n+ *\n+ * 0 を出さないのは、`blur(0px)` でもプロパティが `none` でなくなり、そのノードが新しい\n+ * stacking context になるため (docs/03 の表「`rotation` の行と同じ理由」)。取りうる範囲（0 以上）の外を丸めないのは、範囲の判定を\n+ * `DesignDocument.collectErrors` と 2 箇所に持たないため。負の `blur()` は CSS が宣言ごと捨てる。\n+ *\n+ * @param props ノードに設定されている props\n+ * @returns 0 でない数値を持つ prop ごとに宣言 1 件。0 と数値でない値（ファイル由来の不正な\n+ *   綴り）の prop では出さない\n+ */\n+function blurFilterDeclarations(props: Props): readonly CssDeclarationType[] {\n+  return Object.entries(BlurFilterProperties).flatMap(\n+    ([prop, property]): readonly CssDeclarationType[] => {\n+      const blur = props[prop];\n+      const blurs = typeof blur === \"number\" && blur !== NoBlur;\n+      return blurs\n+        ? [CssDeclaration.create(property, `blur(${Px.create(blur)})`)]\n+        : [];\n+    },\n+  );\n+}\n+\n /**\n  * typography は複合トークンなので、フィールドごとの CSS プロパティへ展開する。走査対象は\n  * `TypographyToken.fields` に従うため、トークンのフィールドが増えても追従漏れが出ない。\n@@ -382,6 +421,7 @@ export const BoxElement = {\n       ...tokenDeclarations(\"background\", props.background, tokens),\n       ...cornerRadius,\n       ...tokenDeclarations(\"shadow\", props.shadow, tokens),\n+      ...blurFilterDeclarations(props),\n       ...overflowDeclarations(props.overflow),\n       ...opacityDeclarations(props.opacity),\n       ...Visibility.declarations(Visibility.fromProps(props)),\n@@ -516,6 +556,7 @@ export const EllipseElement = {\n       ...tokenDeclarations(\"background\", props.background, tokens),\n       CssDeclaration.create(\"border-radius\", EllipseBorderRadius),\n       ...tokenDeclarations(\"shadow\", props.shadow, tokens),\n+      ...blurFilterDeclarations(props),\n       ...opacityDeclarations(props.opacity),\n       ...Visibility.declarations(Visibility.fromProps(props)),\n     ];",
+          "patchLines": 76,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/css-declaration/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -36,6 +36,8 @@ export type CssProperty =\n   | \"box-shadow\"\n   | \"overflow\"\n   | \"opacity\"\n+  | \"filter\"\n+  | \"backdrop-filter\"\n   | \"transform\"\n   | \"color\"\n   | \"text-align\"",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "ce0d211ef621a6d02150585ba87a0eaa6d5a04bf",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:33:40Z",
+      "subject": "✨ [New Feature]: #1306 artboard では backdropBlur を読み捨て 0 に固定する",
+      "body": "- ArtboardFixedBackdropBlurProps を足し、ArtboardUneditableProps に含める\n  （artboard のパネルに backdropBlur の欄を出さない）\n- ArtboardBoxProps と boxProps で backdropBlur を 0 に固定する\n  （artboard の CSS に backdrop-filter を出さない）\n- layerBlur には触らない（artboard も受け付ける）\n\n背景:\ndocs/03「ぼかし」は、artboard の背後に何が描かれるか（キャンバスの下地や\n重なった他の artboard の描き順）をドキュメントが定めていないので、artboard\nでは backdropBlur を読み捨てると定めている。読み捨てる prop はパネルに\n出さず、書かれていても効かせず、未知の prop のエラーにもしない\n（docs/03「前提」、docs/06「ぼかしの欄」）。\n\n採用理由:\nrotation / locking / placement と同じく boxProps で固定する。\nCompiledArtboard は Artboard.boxProps を BoxElement.declarations に渡す\nので、パネルから外すだけでは backdrop-filter が出力されてしまう。\nartboard を Box として読む規則が boxProps 1 か所に集まる。\n\n影響とトレードオフ:\n値の検証は Box スキーマのままなので、artboard に負の backdropBlur を\n書くと range-violation になる（書いても効かないことはエラーの理由に\nしない、という docs/03 の原則どおり）。\n\n代替案:\n- パネルの一覧から外すだけにする: 上記のとおり CSS に出てしまう\n- CompiledArtboard 側で backdrop-filter を落とす: 前例が boxProps で\n  固定しており、規則が 2 か所に割れる\n\n参考:\n- docs/03-schema.md「前提」「ぼかし」\n- Issue #1306 の #1305 からの引き継ぎコメント\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "patch": "@@ -107,6 +107,11 @@ const ArtboardFixedLockingProps: readonly string[] = [\"locking\"];\n  */\n const ArtboardFixedRotationProps: readonly string[] = [\"rotation\"];\n \n+/**\n+ * artboard の props では変えられない背後のぼかしの prop（読み捨てる理由は docs/03「ぼかし」）。\n+ */\n+const ArtboardFixedBackdropBlurProps: readonly string[] = [\"backdropBlur\"];\n+\n /**\n  * artboard の props では変えられない prop の全体。\n  */\n@@ -116,6 +121,7 @@ const ArtboardUneditableProps: readonly string[] = [\n   ...ArtboardFixedPlacementProps,\n   ...ArtboardFixedLockingProps,\n   ...ArtboardFixedRotationProps,\n+  ...ArtboardFixedBackdropBlurProps,\n ];\n \n /**\n@@ -182,6 +188,7 @@ export type ArtboardBoxProps = ResolvedProps<\"Box\"> &\n     placement: \"flow\";\n     locking: \"unlocked\";\n     rotation: 0;\n+    backdropBlur: 0;\n   }>;\n \n /**\n@@ -310,6 +317,8 @@ export const Artboard = {\n    * - ロックは `unlocked` **固定**（docs/03「ロック」）\n    * - 回転は**固定**で回らない。artboard は子の座標の原点になる器なので、回ると中身の位置が\n    *   全部変わり、枠の外側に描かれる見出しとリサイズハンドルもずれる（docs/03「回転」）\n+   * - 背後のぼかしは 0 **固定**。artboard の背後に何が描かれるかをドキュメントが定めていない\n+   *   （docs/03「ぼかし」）\n    *\n    * @param artboard 解決する artboard\n    * @returns Box スキーマのデフォルトを補った props に、上の固定値を重ねたもの\n@@ -327,6 +336,7 @@ export const Artboard = {\n       placement: \"flow\",\n       locking: Lockings.Unlocked,\n       rotation: 0,\n+      backdropBlur: 0,\n     };\n   },\n ",
+          "patchLines": 45,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d7387ea078f514df3412c2a33ce595877bc7238a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:33:47Z",
+      "subject": "💡 [Comments]: #1306 運ぶプレビューの stacking context を作る祖先にぼかしを加える",
+      "body": "- reposition-preview-style の JSX コメント「回転・不透明度を持つ祖先」を\n  「回転・不透明度・ぼかしを持つ祖先」にする\n\n背景:\nfilter / backdrop-filter（0 以外）を持つノードも新しい stacking context に\nなる（Chromium 153 で、blur(0px) でもなることを実測）。artboard ごと前に\n出す理由を説明しているコメントが、祖先の列挙を回転・不透明度だけで\n書いていた。\n\n採用理由:\nコードは「祖先が何で stacking context を作っていても越えられる」形で、\nぼかしが増えても振る舞いは変わらない。列挙だけを実物に合わせる。\n\n影響とトレードオフ:\n振る舞いの変更は無い。filter を持つ祖先から運ぶと、運んでいる間も\nぼけたまま見えるが、opacity < 1 の祖先と同じ形として許容した\n（Issue #1306 の計画）。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -86,7 +86,7 @@ export function RepositionPreviewStyle({\n         />\n       ))}\n       {/*\n-        運んでいるノード自身の z-index だけでは、回転・不透明度を持つ祖先（新しい stacking\n+        運んでいるノード自身の z-index だけでは、回転・不透明度・ぼかしを持つ祖先（新しい stacking\n         context）の外へ効かず、隣の artboard の白い面の裏へ回る（実測）。artboard ごと前に出せば、\n         祖先が何で stacking context を作っていても越えられる。artboard の枠（`ArtboardFrame` の\n         `li`）が stacking context を作ると効かなくなるが、happy-dom は重なりを解かないのでテスト",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "ce0ef38bc3c0a7bb982865cdc6232c690e269891",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:33:53Z",
+      "subject": "📝 [Doc]: #1306 formatVersion 1.1 の行に layerBlur / backdropBlur を足す",
+      "body": "- docs/01-file-format.md の版の表で、1.1 の行の末尾に Box と Ellipse の\n  layerBlur / backdropBlur（artboard に書いた backdropBlur は読み捨てる）\n  を足す\n\n背景:\n版の表は、読み書きできるようになった時点で加わったものを足す運用\n（PR #612）。このブランチでスキーマと CSS 出力に入った。\n\n採用理由:\n版は上げず 1.1 の行に足す。同じファイルの 80 行目が「動作確認していない\n間は追加のたびに上げ直さない」と定めており、#978 も 1.1 の行へ足している。\n\n影響とトレードオフ:\nFormatVersion.Current は 1.1 のまま。\n\n代替案:\n- 1.2 に上げる: 上記の運用に反する\n\n参考:\n- docs/01-file-format.md「formatVersion」\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "docs/01-file-format.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -82,7 +82,7 @@ major・minor はそれぞれ 0 以上の整数を 10 進で書き、`0` 以外\n | 版 | 加わったもの |\n |---|---|\n | 1.0 | 初期 |\n-| 1.1 | ノードの `placement` / `x` / `y`（03-schema「配置の指定」。**親からの相対**）／ artboard の `x` / `y`（下記「artboards」。**キャンバス上の絶対位置**）／ ノードの `constraintX` / `constraintY`（03-schema「親のリサイズへの追従」）／ Box の `layout`（03-schema「Box」。`direction` を吸収して置き換えた）／ Box の `opacity`（03-schema「不透明度」。0〜1 の生リテラル）／ ノードと artboard の `visibility`（03-schema「表示 / 非表示」）／ ノードと参照ノードの `locking`（03-schema「ロック」。artboard に書いたものは読み捨てる。artboard のロックの意味は未定）／ Box の `radiusTopLeft` / `radiusTopRight` / `radiusBottomRight` / `radiusBottomLeft`（03-schema「Box」。`radius` を 4 隅へ割って置き換えた）／ ノードの `rotation`（03-schema「回転」。度の生リテラル。artboard に書いたものは読み捨てる）／ Box の `wrap`（03-schema「Box」。`layout` が `free` 以外のときの子の折り返し）／ Box と Ellipse の `minWidth` / `maxWidth` / `minHeight` / `maxHeight`（03-schema「サイズ指定の原則」。`fixed` 以外のモードでの長さの下限・上限）／ トークンの `gradients`（04-tokens「gradients」。直線グラデーションの種別）／ Ellipse プリミティブ（03-schema「Ellipse」） |\n+| 1.1 | ノードの `placement` / `x` / `y`（03-schema「配置の指定」。**親からの相対**）／ artboard の `x` / `y`（下記「artboards」。**キャンバス上の絶対位置**）／ ノードの `constraintX` / `constraintY`（03-schema「親のリサイズへの追従」）／ Box の `layout`（03-schema「Box」。`direction` を吸収して置き換えた）／ Box の `opacity`（03-schema「不透明度」。0〜1 の生リテラル）／ ノードと artboard の `visibility`（03-schema「表示 / 非表示」）／ ノードと参照ノードの `locking`（03-schema「ロック」。artboard に書いたものは読み捨てる。artboard のロックの意味は未定）／ Box の `radiusTopLeft` / `radiusTopRight` / `radiusBottomRight` / `radiusBottomLeft`（03-schema「Box」。`radius` を 4 隅へ割って置き換えた）／ ノードの `rotation`（03-schema「回転」。度の生リテラル。artboard に書いたものは読み捨てる）／ Box の `wrap`（03-schema「Box」。`layout` が `free` 以外のときの子の折り返し）／ Box と Ellipse の `minWidth` / `maxWidth` / `minHeight` / `maxHeight`（03-schema「サイズ指定の原則」。`fixed` 以外のモードでの長さの下限・上限）／ トークンの `gradients`（04-tokens「gradients」。直線グラデーションの種別）／ Ellipse プリミティブ（03-schema「Ellipse」）／ Box と Ellipse の `layerBlur` / `backdropBlur`（03-schema「ぼかし」。0 以上の px の生リテラル。artboard に書いた `backdropBlur` は読み捨てる） |\n \n | 状況 | 挙動 |\n |---|---|",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "82e92333e39fb63e2bee6042185302abf236a7f2",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:34:00Z",
+      "subject": "🧪 [Tests]: #1306 下端だけを宣言した range の判定と型をテストで固定する",
+      "body": "- 下端だけの prop に 0 / 1e9 / Infinity を書いてもエラーにならない\n- 下回ると range-violation になり、must be at least 0 で報告する\n- 型: 下端だけの値域を宣言できる / 下端の無い値域は宣言できない\n\n背景:\nrange の上端を省けるようにした（同じ Issue の直前のコミット）。上限を\n持たないことと、下端の比較が境界を含むことが仕様（docs/03「prop 定義の\nフィールド」）。\n\n採用理由:\n下端そのもの（0）と下端よりずっと大きい値（1e9）を両方置き、< への\n取り違えと上端 undefined との比較の両方で落ちるようにした。Infinity の\nケースは、上端を有限の値で代用する実装を落とす（1e6 に変えて 2 件\n落ちることを実装を壊して確かめた）。\n\n影響とトレードオフ:\n違反の文の綴りは仕様が定めていないが、両端前提の between が出ないこと\n自体が今回の変更点なので 1 件だけ固定した。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.type.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 0,
+          "patch": "@@ -15,6 +15,29 @@ test(\"数値の生リテラル prop には値域を宣言できる\", () => {\n   }>();\n });\n \n+test(\"数値の生リテラル prop には下端だけの値域を宣言できる\", () => {\n+  const definition = {\n+    domain: \"literal\",\n+    literalType: \"number\",\n+    range: { min: 0 },\n+    group: \"appearance\",\n+  } as const satisfies LiteralPropDefinition;\n+\n+  expectTypeOf(definition.range).toEqualTypeOf<{ readonly min: 0 }>();\n+});\n+\n+test(\"数値の生リテラル prop には下端の無い値域を宣言できない\", () => {\n+  const definition = {\n+    domain: \"literal\",\n+    literalType: \"number\",\n+    // @ts-expect-error 値域は下端を必ず持つ\n+    range: { max: 1 },\n+    group: \"appearance\",\n+  } as const satisfies LiteralPropDefinition;\n+\n+  expectTypeOf(definition.literalType).toEqualTypeOf<\"number\">();\n+});\n+\n test(\"文字列の生リテラル prop には値域を宣言できない\", () => {\n   const definition = {\n     domain: \"literal\",",
+          "patchLines": 30,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 66,
+          "deletions": 0,
+          "patch": "@@ -155,6 +155,72 @@ test(\"範囲を宣言していない prop は、範囲では弾かれない\", ()\n   ).toEqual([]);\n });\n \n+/** 下端だけを宣言した生リテラルの prop 定義（Box の `layerBlur` と同じ形）。 */\n+function definitionWithLowerBound() {\n+  return {\n+    domain: \"literal\",\n+    literalType: \"number\",\n+    range: { min: 0 },\n+    group: \"appearance\",\n+  } as const;\n+}\n+\n+test(\"下端だけを宣言した prop に下端そのものの値を設定するとエラーにならない\", () => {\n+  expect(\n+    PropDefinition.collectErrors(\n+      definitionWithLowerBound(),\n+      { name: \"layerBlur\", value: 0 },\n+      TokenSet.empty(),\n+    ),\n+  ).toEqual([]);\n+});\n+\n+test(\"下端だけを宣言した prop に大きな値を設定してもエラーにならない\", () => {\n+  expect(\n+    PropDefinition.collectErrors(\n+      definitionWithLowerBound(),\n+      { name: \"layerBlur\", value: 1e9 },\n+      TokenSet.empty(),\n+    ),\n+  ).toEqual([]);\n+});\n+\n+test(\"下端だけを宣言した prop に Infinity を設定してもエラーにならない\", () => {\n+  expect(\n+    PropDefinition.collectErrors(\n+      definitionWithLowerBound(),\n+      { name: \"layerBlur\", value: Number.POSITIVE_INFINITY },\n+      TokenSet.empty(),\n+    ),\n+  ).toEqual([]);\n+});\n+\n+test(\"下端だけを宣言した prop に下端を下回る値を設定すると range-violation になる\", () => {\n+  expect(\n+    PropDefinition.collectErrors(\n+      definitionWithLowerBound(),\n+      { name: \"layerBlur\", value: -1 },\n+      TokenSet.empty(),\n+    ),\n+  ).toEqual([\n+    expect.objectContaining({ kind: \"range-violation\", prop: \"layerBlur\" }),\n+  ]);\n+});\n+\n+test(\"下端だけを宣言した prop の範囲違反は、下端以上であることを求める文で報告される\", () => {\n+  expect(\n+    PropDefinition.collectErrors(\n+      definitionWithLowerBound(),\n+      { name: \"layerBlur\", value: -1 },\n+      TokenSet.empty(),\n+    ),\n+  ).toEqual([\n+    expect.objectContaining({\n+      message: 'prop \"layerBlur\" must be at least 0',\n+    }),\n+  ]);\n+});\n+\n test(\"トークン参照の prop にトークンセットに存在する名前を設定するとエラーにならない\", () => {\n   const definition = {\n     domain: \"token\",",
+          "patchLines": 73,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "1c98f7b7cef79d89b985b966fce1ee8afa31bd12",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:34:09Z",
+      "subject": "🧪 [Tests]: #1306 ぼかしのスキーマ定義とパネルの並びをテストで固定する",
+      "body": "- schema.box: layerBlur / backdropBlur は number の生リテラル・既定 0・\n  appearance 節で、範囲は下端 0 だけ（toEqual({ min: 0 })）\n- schema.ellipse: 既存の並びのテストに 2 prop を足す\n- prop-control.shorthand: 既存 2 件の appearance の並びで shadow と\n  overflow の間に layerBlur → backdropBlur を入れる\n- prop-control.normal: Ellipse の Appearance 節の並び / Box の layerBlur は\n  数値の欄 / artboard を選ぶと layerBlur の欄は出て backdropBlur の欄は\n  出ない\n\n背景:\n#1305 から回した生成規則の検査（Appearance 節の shadow の後に 2 行が並ぶ /\nartboard のパネルに backdropBlur が出ない）と、docs/06「ぼかしの欄」。\n\n採用理由:\n範囲は toMatchObject ではなく toEqual で見る。toMatchObject では\n{ min: 0, max: 1 } でも通ってしまい、「上限を持たない」を守れない。\nartboard の backdropBlur が出ないことは、同じ選択で layerBlur が出る\nケースを対照に置き、欄がそもそも無い状態では通らないようにした。\n\n影響とトレードオフ:\nshorthand の既存 2 件は並びを丸ごと固定しているので、スキーマに prop を\n足したこのブランチで更新が要った（落ちたのはこの 2 件だけ）。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 0,
+          "patch": "@@ -252,6 +252,32 @@ test(\"Box の opacity は 0〜1 の生リテラルでデフォルトが 1\", () =\n   });\n });\n \n+test(\"Box の layerBlur は appearance 節の生リテラルの number でデフォルトが 0\", () => {\n+  expect(BoxSchema.props.layerBlur).toMatchObject({\n+    domain: \"literal\",\n+    literalType: \"number\",\n+    default: 0,\n+    group: \"appearance\",\n+  });\n+});\n+\n+test(\"Box の layerBlur は 0 の下端だけを範囲に宣言する\", () => {\n+  expect(BoxSchema.props.layerBlur.range).toEqual({ min: 0 });\n+});\n+\n+test(\"Box の backdropBlur は appearance 節の生リテラルの number でデフォルトが 0\", () => {\n+  expect(BoxSchema.props.backdropBlur).toMatchObject({\n+    domain: \"literal\",\n+    literalType: \"number\",\n+    default: 0,\n+    group: \"appearance\",\n+  });\n+});\n+\n+test(\"Box の backdropBlur は 0 の下端だけを範囲に宣言する\", () => {\n+  expect(BoxSchema.props.backdropBlur.range).toEqual({ min: 0 });\n+});\n+\n test(\"Box を指定するとその仕様が得られる\", () => {\n   expect(PrimitiveSchema.forType(\"Box\")).toBe(BoxSchema);\n });",
+          "patchLines": 33,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ellipse.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "patch": "@@ -52,7 +52,7 @@ test(\"Ellipse は角丸・並べ方・余白・はみ出しの prop を持たな\n   ).toEqual([]);\n });\n \n-test(\"Ellipse の配置・回転・最小/最大の大きさ・影・不透明度・表示・ロックは Box と同じ定義を持つ\", () => {\n+test(\"Ellipse の配置・回転・最小/最大の大きさ・影・ぼかし・不透明度・表示・ロックは Box と同じ定義を持つ\", () => {\n   const names = [\n     \"placement\",\n     \"x\",\n@@ -65,6 +65,8 @@ test(\"Ellipse の配置・回転・最小/最大の大きさ・影・不透明\n     \"minHeight\",\n     \"maxHeight\",\n     \"shadow\",\n+    \"layerBlur\",\n+    \"backdropBlur\",\n     \"opacity\",\n     \"visibility\",\n     \"locking\",",
+          "patchLines": 18,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 0,
+          "patch": "@@ -464,3 +464,31 @@ test(\"artboard のサイズは props で変えられないのでコントロー\n   expect(controlOf(selection, \"widthMode\")).toBeUndefined();\n   expect(controlOf(selection, \"width\")).toBeUndefined();\n });\n+\n+test(\"Ellipse の Appearance 節は、影の直後に layerBlur・backdropBlur の順で並べる\", () => {\n+  const names = propNamesInSection(ellipseSelection({}), \"appearance\");\n+  const afterShadow = names.indexOf(\"shadow\") + 1;\n+\n+  expect(names.slice(afterShadow, afterShadow + 2)).toEqual([\n+    \"layerBlur\",\n+    \"backdropBlur\",\n+  ]);\n+});\n+\n+test(\"Box の layerBlur は数値の欄として出る\", () => {\n+  const selection = setupSelection([{ name: \"box\", type: \"Box\" }], \"box\");\n+\n+  expect(controlOf(selection, \"layerBlur\")?.input.kind).toBe(\"number\");\n+});\n+\n+test(\"artboard を選ぶと layerBlur の欄は出る\", () => {\n+  const selection = setupSelection([], \"home\");\n+\n+  expect(controlOf(selection, \"layerBlur\")?.input.kind).toBe(\"number\");\n+});\n+\n+test(\"artboard の backdropBlur は読み捨てるのでコントロールが出ない\", () => {\n+  const selection = setupSelection([], \"home\");\n+\n+  expect(controlOf(selection, \"backdropBlur\")).toBeUndefined();\n+});",
+          "patchLines": 32,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "patch": "@@ -96,6 +96,8 @@ test(\"隅を宣言した prop は束ねた行にまとまり、隅ごとの行\n   ).toEqual([\n     \"background\",\n     \"shadow\",\n+    \"layerBlur\",\n+    \"backdropBlur\",\n     \"overflow\",\n     \"opacity\",\n     \"visibility\",\n@@ -133,6 +135,8 @@ test(\"束ねた行はセクション内で最初の隅の位置に出る\", () =>\n     \"background\",\n     \"radius\",\n     \"shadow\",\n+    \"layerBlur\",\n+    \"backdropBlur\",\n     \"overflow\",\n     \"opacity\",\n     \"visibility\",",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "aed1576df29344fa70813a0c25c89f40137ca9db",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:34:18Z",
+      "subject": "🧪 [Tests]: #1306 ぼかしの CSS 出力を Box / Ellipse / artboard でテストする",
+      "body": "- compiled-element.blur（新規）: Box の layerBlur 4 → filter: blur(4px) /\n  backdropBlur 4 → backdrop-filter: blur(4px) / 両方同時 / 既定のままと 0 は\n  出さない / 負は blur(-4px) のまま出す / 数値でない値は出さない /\n  Ellipse の 2 prop\n- compiled-artboard.blur（新規）: layerBlur を書いた artboard は filter を\n  出し、backdropBlur を書いた artboard は backdrop-filter を出さない\n\n背景:\ndocs/03 の CSS 対応表の layerBlur / backdropBlur の行と、artboard では\nbackdropBlur を読み捨てる規則（docs/03「ぼかし」）。\n\n採用理由:\n既定（未記入）と 0 の両方で「出さない」を見る。0 を出さない判定を外すと\nこの 2 件と artboard の 1 件が落ちることを、実装を壊して確かめた。\nartboard の backdropBlur は 0 以外（4）を書いて出ないことを見るので、\nboxProps の固定を外すと落ちる。\ncompiled-artboard.blur はファイル内にヘルパーを置かず、各テストで\nCompiledArtboard.fromArtboard を呼ぶ。visibility のテストと同じ compile\nヘルパーを書くと pre-push のヘルパー重複検査に掛かるため。同じフォルダの\nnormal / canvas-position もこの形。\n\n影響とトレードオフ:\n宣言の出力順は docs/03 が定めていないので固定しない。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.blur.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 38,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,38 @@\n+import { expect, test } from \"vitest\";\n+import { DefaultTokenRefs } from \"@/domains/__tests__/token-refs\";\n+import { Artboard } from \"@/domains/dcmp/artboard\";\n+import { CompiledArtboard } from \"../index\";\n+\n+test(\"layerBlur を書いた artboard は filter の blur を出力する\", () => {\n+  const artboard = Artboard.create({\n+    name: \"home\",\n+    width: 360,\n+    height: 240,\n+    props: { layerBlur: 4 },\n+  });\n+\n+  const compiled = CompiledArtboard.fromArtboard(\n+    artboard,\n+    [],\n+    DefaultTokenRefs,\n+  );\n+\n+  expect(compiled.element.style.filter).toBe(\"blur(4px)\");\n+});\n+\n+test(\"backdropBlur を書いた artboard は backdrop-filter を出力しない\", () => {\n+  const artboard = Artboard.create({\n+    name: \"home\",\n+    width: 360,\n+    height: 240,\n+    props: { backdropBlur: 4 },\n+  });\n+\n+  const compiled = CompiledArtboard.fromArtboard(\n+    artboard,\n+    [],\n+    DefaultTokenRefs,\n+  );\n+\n+  expect(\"backdrop-filter\" in compiled.element.style).toBe(false);\n+});",
+          "patchLines": 39,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 51,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,51 @@\n+import { expect, test } from \"vitest\";\n+import { setupBoxStyle, setupEllipseStyle } from \"./element-style-setup\";\n+\n+test(\"layerBlur を書いた Box は filter の blur を出力する\", () => {\n+  expect(setupBoxStyle({ layerBlur: 4 }).filter).toBe(\"blur(4px)\");\n+});\n+\n+test(\"backdropBlur を書いた Box は backdrop-filter の blur を出力する\", () => {\n+  expect(setupBoxStyle({ backdropBlur: 4 })[\"backdrop-filter\"]).toBe(\n+    \"blur(4px)\",\n+  );\n+});\n+\n+test(\"layerBlur と backdropBlur を両方書いた Box は、それぞれの宣言を出力する\", () => {\n+  const style = setupBoxStyle({ layerBlur: 2, backdropBlur: 8 });\n+\n+  expect([style.filter, style[\"backdrop-filter\"]]).toEqual([\n+    \"blur(2px)\",\n+    \"blur(8px)\",\n+  ]);\n+});\n+\n+test(\"ぼかしが既定のままの Box はぼかしの宣言を出力しない\", () => {\n+  const style = setupBoxStyle({});\n+\n+  expect([\"filter\", \"backdrop-filter\"].filter((p) => p in style)).toEqual([]);\n+});\n+\n+test(\"ぼかしに 0 を書いた Box はぼかしの宣言を出力しない\", () => {\n+  const style = setupBoxStyle({ layerBlur: 0, backdropBlur: 0 });\n+\n+  expect([\"filter\", \"backdrop-filter\"].filter((p) => p in style)).toEqual([]);\n+});\n+\n+test(\"取りうる範囲を外れた負の layerBlur は丸めずそのまま出力する\", () => {\n+  expect(setupBoxStyle({ layerBlur: -4 }).filter).toBe(\"blur(-4px)\");\n+});\n+\n+test(\"数値でない layerBlur は宣言を出力しない\", () => {\n+  expect(\"filter\" in setupBoxStyle({ layerBlur: \"4\" })).toBe(false);\n+});\n+\n+test(\"layerBlur を書いた Ellipse は filter の blur を出力する\", () => {\n+  expect(setupEllipseStyle({ layerBlur: 3 }).filter).toBe(\"blur(3px)\");\n+});\n+\n+test(\"backdropBlur を書いた Ellipse は backdrop-filter の blur を出力する\", () => {\n+  expect(setupEllipseStyle({ backdropBlur: 3 })[\"backdrop-filter\"]).toBe(\n+    \"blur(3px)\",\n+  );\n+});",
+          "patchLines": 52,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d4505f3db7b57cf9196f96621e94f6fbcec0be74",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:34:25Z",
+      "subject": "🧪 [Tests]: #1306 artboard の読み捨てとドキュメント検証の範囲違反をテストする",
+      "body": "- artboard.prop-definitions: layerBlur を受け付け、backdropBlur は\n  パネルに出さない\n- artboard.box-props: backdropBlur を書いても 0、layerBlur は書いた値のまま\n- artboard.type: ArtboardBoxProps[\"backdropBlur\"] は 0\n- design-document.validate-artboard: artboard に書いた backdropBlur は\n  未知の prop のエラーにならないが、負の値は range-violation\n- design-document.validate-domain: Box の負の layerBlur と Ellipse の負の\n  backdropBlur は range-violation\n\n背景:\ndocs/03「前提」は、読み捨てる prop をエラーにしないが、値は Box の\nスキーマで検証するのでドメイン違反はエラーにすると定めている。\n\n採用理由:\nrotation の読み捨て（同じファイルの既存テスト）と同じ形で並べた。\nEllipse のケースはドキュメントに DocumentTemplate.Default.tokens を渡す。\nトークンが無いと Ellipse の既定の塗り gray-300 が引けず、範囲違反に\n加えて dangling-token も報告されるため（validate-normal の Ellipse の\nテストと同じ渡し方）。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.box-props.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 0,
+          "patch": "@@ -133,3 +133,29 @@ test(\"props でロックを指定しても artboard はロックしていない\n \n   expect(props.locking).toBe(\"unlocked\");\n });\n+\n+test(\"props で背後のぼかしを指定しても artboard の背後はぼかさない\", () => {\n+  const props = Artboard.boxProps(\n+    Artboard.create({\n+      name: \"login-screen\",\n+      width: 375,\n+      height: 812,\n+      props: { backdropBlur: 8 },\n+    }),\n+  );\n+\n+  expect(props.backdropBlur).toBe(0);\n+});\n+\n+test(\"props でノード自身のぼかしを指定すると artboard はその値で解決される\", () => {\n+  const props = Artboard.boxProps(\n+    Artboard.create({\n+      name: \"login-screen\",\n+      width: 375,\n+      height: 812,\n+      props: { layerBlur: 8 },\n+    }),\n+  );\n+\n+  expect(props.layerBlur).toBe(8);\n+});",
+          "patchLines": 30,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.prop-definitions.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "patch": "@@ -66,3 +66,11 @@ test(\"最小 / 最大のサイズは artboard では読み捨てるので、パ\n test(\"ロックは artboard では読み捨てるので、パネルに出さない\", () => {\n   expect(Object.keys(Artboard.propDefinitions())).not.toContain(\"locking\");\n });\n+\n+test(\"ノード自身のぼかしは artboard でも受け付ける\", () => {\n+  expect(Object.keys(Artboard.propDefinitions())).toContain(\"layerBlur\");\n+});\n+\n+test(\"背後のぼかしは artboard では読み捨てるので、パネルに出さない\", () => {\n+  expect(Object.keys(Artboard.propDefinitions())).not.toContain(\"backdropBlur\");\n+});",
+          "patchLines": 12,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/artboard/__tests__/artboard.type.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "patch": "@@ -29,3 +29,7 @@ test(\"artboard の回転は型でも回らない値に絞られている\", () =>\n test(\"artboard のロックは型でも unlocked に絞られている\", () => {\n   expectTypeOf<ArtboardBoxProps[\"locking\"]>().toEqualTypeOf<\"unlocked\">();\n });\n+\n+test(\"artboard の背後のぼかしは型でも 0 に絞られている\", () => {\n+  expectTypeOf<ArtboardBoxProps[\"backdropBlur\"]>().toEqualTypeOf<0>();\n+});",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 0,
+          "patch": "@@ -124,6 +124,12 @@ test(\"artboard の props に書いた回転は読み捨てられ、未知の pro\n   expect(errors).toEqual(UnknownPropErrorOnly);\n });\n \n+test(\"artboard の props に書いた背後のぼかしは読み捨てられ、未知の prop のエラーにならない\", () => {\n+  const errors = collectErrorsBesideUnknownProp({ backdropBlur: 8 });\n+\n+  expect(errors).toEqual(UnknownPropErrorOnly);\n+});\n+\n test(\"artboard の props に書いたサイズのモードと長さは読み捨てられ、未知の prop のエラーにならない\", () => {\n   const errors = collectErrorsBesideUnknownProp({\n     widthMode: \"hug\",\n@@ -158,6 +164,18 @@ test(\"読み捨てる prop でも、artboard の props に数値でない回転\n   ]);\n });\n \n+test(\"読み捨てる prop でも、artboard の props に負の背後のぼかしを書くと範囲違反のエラーになる\", () => {\n+  const errors = collectSingleArtboardErrors({ backdropBlur: -1 });\n+\n+  expect(errors).toEqual([\n+    expect.objectContaining({\n+      kind: \"range-violation\",\n+      nodeName: \"screen\",\n+      prop: \"backdropBlur\",\n+    }),\n+  ]);\n+});\n+\n test(\"読み捨てる prop でも、artboard の props に枠外のロックを書くと値域違反のエラーになる\", () => {\n   const errors = collectSingleArtboardErrors({ locking: \"bogus\" });\n ",
+          "patchLines": 32,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 47,
+          "deletions": 1,
+          "patch": "@@ -1,5 +1,5 @@\n import { expect, test } from \"vitest\";\n-import { DesignDocument } from \"../index\";\n+import { DesignDocument, DocumentTemplate } from \"../index\";\n \n test(\"enum 外の値を指定すると enum-violation エラーになる\", () => {\n   const document = DesignDocument.create({\n@@ -78,6 +78,52 @@ test(\"宣言された範囲を外れた値を指定すると range-violation エ\n   ]);\n });\n \n+test(\"Box に負の layerBlur を指定すると range-violation エラーになる\", () => {\n+  const document = DesignDocument.create({\n+    artboards: [\n+      {\n+        name: \"screen\",\n+        width: 375,\n+        height: 812,\n+        children: [{ name: \"box-1\", type: \"Box\", props: { layerBlur: -1 } }],\n+      },\n+    ],\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"range-violation\",\n+      nodeName: \"box-1\",\n+      prop: \"layerBlur\",\n+    }),\n+  ]);\n+});\n+\n+test(\"Ellipse に負の backdropBlur を指定すると range-violation エラーになる\", () => {\n+  // Ellipse の既定の塗りが指すトークンを置き、範囲違反だけが報告される状態にする\n+  const document = DesignDocument.create({\n+    tokens: DocumentTemplate.Default.tokens,\n+    artboards: [\n+      {\n+        name: \"screen\",\n+        width: 375,\n+        height: 812,\n+        children: [\n+          { name: \"dot\", type: \"Ellipse\", props: { backdropBlur: -1 } },\n+        ],\n+      },\n+    ],\n+  });\n+\n+  expect(DesignDocument.collectErrors(document)).toEqual([\n+    expect.objectContaining({\n+      kind: \"range-violation\",\n+      nodeName: \"dot\",\n+      prop: \"backdropBlur\",\n+    }),\n+  ]);\n+});\n+\n test(\"存在しないトークン名を参照すると dangling-token エラーになる\", () => {\n   const document = DesignDocument.create({\n     artboards: [",
+          "patchLines": 60,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f700e3cdf13d3cf4edc56a2cbd265d0e845e57d9",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:45:26Z",
+      "subject": "♻️ [Refactoring]: #1306 ぼかしの対応表を Box と Ellipse の両方の prop で閉じ、doc を参照に縮める",
+      "body": "- BlurFilterProperties の satisfies のキーを、Box と Ellipse の両方が\n  宣言している prop 名（BlurFilterPropName）にする\n- blurFilterDeclarations の doc から、0 を出さない理由と範囲外を丸めない\n  理由の書き写しを外し、docs/03 の表の行への参照にする\n- BlurFilterProperties の doc に -webkit-backdrop-filter を出さない理由を\n  1 行足す\n- コールバックの組み立てと return の間に空行を入れる\n\n背景:\nフェーズ 6 の観点別レビューの指摘（Issue #1306）。\n- 構造: 表のキーを Box のスキーマとしか突き合わせておらず、Ellipse から\n  prop が外れても型エラーにならない\n- 重複: 理由を docs/03 と opacityDeclarations の doc から書き写していて、\n  片方だけ直せる状態だった\n- コメント: -webkit- を出さない判断が Issue にしか無く、WebKit で効かない\n  ように見えたとき「抜け」と読まれて接頭辞を足される\n\n採用理由:\nキーは PrimitiveSchemas から Box と Ellipse の props のキーの共通部分を\n取る。EllipseSchema は primitive-schema の公開 API に無く、export を足す\nより既に公開されている PrimitiveSchemas を引くほうが変更が小さい。Box に\nしか無い overflow を表に足すと TS2353 で落ちることを確かめた。\ndoc は rotationDeclarations と同じく docs/03 の表への参照だけにした。\n\n影響とトレードオフ:\n振る舞いは変わらない。\n\n代替案:\n- primitive-schema の index.ts に EllipseSchema の export を足す: 公開\n  API を広げることになり、型の判定には PrimitiveSchemas で足りる\n- 理由を doc に残して文だけ揃える: 3 か所に同じ説明が残る\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 9,
+          "patch": "@@ -16,7 +16,7 @@ import type { Props, PropValue } from \"@/domains/dcmp/node\";\n import { Padding } from \"@/domains/dcmp/padding\";\n import { type AbsolutePlacement, Placement } from \"@/domains/dcmp/placement\";\n import {\n-  type BoxSchema,\n+  type PrimitiveSchemas,\n   TokenPropKinds,\n   type TokenPropName,\n } from \"@/domains/dcmp/primitive-schema\";\n@@ -226,26 +226,27 @@ function opacityDeclarations(\n     : [CssDeclaration.create(\"opacity\", String(opacity))];\n }\n \n+/** ぼかしを持つ primitive (Box / Ellipse) の両方が宣言している prop 名。 */\n+type BlurFilterPropName = keyof (typeof PrimitiveSchemas)[\"Box\"][\"props\"] &\n+  keyof (typeof PrimitiveSchemas)[\"Ellipse\"][\"props\"];\n+\n /**\n  * ぼかしの prop → その prop が決める CSS プロパティ (docs/03「HTML/CSS へのコンパイル規則」\n  * の表)。並びが宣言の出力順になる。\n+ *\n+ * `-webkit-backdrop-filter` を出さないのは、WebKit 系 webview で接頭辞が要るかを確かめて\n+ * いないため。docs/03 の表どおり接頭辞なしだけを出す。\n  */\n const BlurFilterProperties = {\n   layerBlur: \"filter\",\n   backdropBlur: \"backdrop-filter\",\n-} as const satisfies Readonly<\n-  Partial<Record<keyof (typeof BoxSchema)[\"props\"], CssProperty>>\n->;\n+} as const satisfies Readonly<Partial<Record<BlurFilterPropName, CssProperty>>>;\n \n /** ぼかさない強さ。 */\n const NoBlur = 0;\n \n /**\n- * ぼかしの props を `blur()` の宣言にする (docs/03 の表)。\n- *\n- * 0 を出さないのは、`blur(0px)` でもプロパティが `none` でなくなり、そのノードが新しい\n- * stacking context になるため (docs/03 の表「`rotation` の行と同じ理由」)。取りうる範囲（0 以上）の外を丸めないのは、範囲の判定を\n- * `DesignDocument.collectErrors` と 2 箇所に持たないため。負の `blur()` は CSS が宣言ごと捨てる。\n+ * ぼかしの props を `blur()` の宣言にする (docs/03 の表の `layerBlur` / `backdropBlur` の行)。\n  *\n  * @param props ノードに設定されている props\n  * @returns 0 でない数値を持つ prop ごとに宣言 1 件。0 と数値でない値（ファイル由来の不正な\n@@ -256,6 +257,7 @@ function blurFilterDeclarations(props: Props): readonly CssDeclarationType[] {\n     ([prop, property]): readonly CssDeclarationType[] => {\n       const blur = props[prop];\n       const blurs = typeof blur === \"number\" && blur !== NoBlur;\n+\n       return blurs\n         ? [CssDeclaration.create(property, `blur(${Px.create(blur)})`)]\n         : [];",
+          "patchLines": 53,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f1e759787caab2039001298bcd302e370d29eb70",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:45:33Z",
+      "subject": "♻️ [Refactoring]: #1306 collectRangeErrors で上端の有無の判定を 1 回にまとめる",
+      "body": "- 上端の有無で 1 回だけ分岐し、その中で判定に使う範囲と違反の文を一緒に\n  決める（max ?? +Infinity と max === undefined の 2 回判定をやめる）\n- doc に +Infinity を受け入れる理由を足す\n- 組み立てと return の間に空行を入れる\n\n背景:\nフェーズ 6 の観点別レビューの指摘（Issue #1306）。\n- 重複: 同じ「上端を宣言していないか」を 2 か所で判定していて、判定と文の\n  選び方が食い違いうる\n- コメント: +Infinity を受け入れる理由が Issue の却下案にしか無く、読み手が\n  同じ検討をやり直す\n\n採用理由:\n範囲と文は常に同じ分岐で決まる対なので、1 つの分岐で一緒に作る。\n+Infinity を受け入れる理由は、範囲を宣言しない数値の prop と同じ扱いに\nするためで、有限でない値を弾くかはすべての数値 prop に掛かる判断になる。\n\n影響とトレードオフ:\n振る舞いは変わらない（上端が無いときの範囲は +Infinity、文も同じ）。\n既存のテストがそのまま通る。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 7,
+          "patch": "@@ -173,6 +173,8 @@ function literalTypeMismatch(\n  *\n  * 下端だけの範囲では上端を `+Infinity` と読むので、`+Infinity`（JSON の `1e400`）も範囲内に\n  * なる。`NaN` と `-Infinity` は下端との比較で落ちる。\n+ * `+Infinity` を受け入れるのは、範囲を宣言しない数値の prop と同じ扱いにするため。有限でない\n+ * 値を弾くかは全ての数値の prop に掛かる判断で、ぼかしだけでは決められない。\n  *\n  * @param name 報告する prop 名\n  * @param value その prop に設定されている数値\n@@ -187,15 +189,22 @@ function collectRangeErrors(\n   if (range === undefined) {\n     return [];\n   }\n-  const max = range.max ?? Number.POSITIVE_INFINITY;\n-  if (Range.contains({ min: range.min, max }, value)) {\n+  const { min, max } = range;\n+  const bound =\n+    max === undefined\n+      ? {\n+          range: { min, max: Number.POSITIVE_INFINITY },\n+          message: `prop \"${name}\" must be at least ${min}`,\n+        }\n+      : {\n+          range: { min, max },\n+          message: `prop \"${name}\" must be between ${min} and ${max}`,\n+        };\n+  if (Range.contains(bound.range, value)) {\n     return [];\n   }\n-  const message =\n-    range.max === undefined\n-      ? `prop \"${name}\" must be at least ${range.min}`\n-      : `prop \"${name}\" must be between ${range.min} and ${range.max}`;\n-  return [{ kind: \"range-violation\", prop: name, message }];\n+\n+  return [{ kind: \"range-violation\", prop: name, message: bound.message }];\n }\n \n /**",
+          "patchLines": 39,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "12b04606951c5bea73a754cdcf0bbec8d5461ba0",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T14:45:41Z",
+      "subject": "🧪 [Tests]: #1306 artboard をコンパイルするテストの組み立てを共有のセットアップへ移す",
+      "body": "- compiled-artboard/__tests__/compiled-artboard-setup.ts を新しく作り、\n  setupCompiledArtboard(props) を置く（name home・360x240・子なし・\n  DefaultTokenRefs）\n- compiled-artboard.visibility のローカルヘルパー compile と、\n  compiled-artboard.blur でインラインに書いた組み立てを、この関数の呼び出しに\n  置き換える\n\n背景:\nフェーズ 6 の重複の観点のレビュー指摘（Issue #1306）。artboard の props を\n変えてコンパイル結果を見るテストが 2 ファイル目になり、rules/testing.md\n「同じヘルパーを 2 つ以上のテストファイルに書いたら、その時点で共通化する」\nに当たった。blur 側はインラインで書いていたので、ヘルパー重複の検査にも\n掛からなかった。\n\n採用理由:\ncompiled-element/__tests__/element-style-setup.ts（setupBoxStyle）と同じ\n形・同じ命名にした。\n\n影響とトレードオフ:\nテストケースの増減は無い（visibility 4 件・blur 2 件）。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard-setup.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,18 @@\n+import { DefaultTokenRefs } from \"@/domains/__tests__/token-refs\";\n+import { Artboard } from \"@/domains/dcmp/artboard\";\n+import type { Props } from \"@/domains/dcmp/node\";\n+import { CompiledArtboard } from \"../index\";\n+\n+/**\n+ * props から子を持たない artboard 1 つを既定テンプレートのトークンでコンパイルする。\n+ *\n+ * @param props artboard に設定されている props（デフォルト解決前）\n+ * @returns コンパイルした artboard\n+ */\n+export function setupCompiledArtboard(props: Props): CompiledArtboard {\n+  return CompiledArtboard.fromArtboard(\n+    Artboard.create({ name: \"home\", width: 360, height: 240, props }),\n+    [],\n+    DefaultTokenRefs,\n+  );\n+}",
+          "patchLines": 19,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.blur.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 27,
+          "patch": "@@ -1,38 +1,14 @@\n import { expect, test } from \"vitest\";\n-import { DefaultTokenRefs } from \"@/domains/__tests__/token-refs\";\n-import { Artboard } from \"@/domains/dcmp/artboard\";\n-import { CompiledArtboard } from \"../index\";\n+import { setupCompiledArtboard } from \"./compiled-artboard-setup\";\n \n test(\"layerBlur を書いた artboard は filter の blur を出力する\", () => {\n-  const artboard = Artboard.create({\n-    name: \"home\",\n-    width: 360,\n-    height: 240,\n-    props: { layerBlur: 4 },\n-  });\n-\n-  const compiled = CompiledArtboard.fromArtboard(\n-    artboard,\n-    [],\n-    DefaultTokenRefs,\n-  );\n+  const compiled = setupCompiledArtboard({ layerBlur: 4 });\n \n   expect(compiled.element.style.filter).toBe(\"blur(4px)\");\n });\n \n test(\"backdropBlur を書いた artboard は backdrop-filter を出力しない\", () => {\n-  const artboard = Artboard.create({\n-    name: \"home\",\n-    width: 360,\n-    height: 240,\n-    props: { backdropBlur: 4 },\n-  });\n-\n-  const compiled = CompiledArtboard.fromArtboard(\n-    artboard,\n-    [],\n-    DefaultTokenRefs,\n-  );\n+  const compiled = setupCompiledArtboard({ backdropBlur: 4 });\n \n   expect(\"backdrop-filter\" in compiled.element.style).toBe(false);\n });",
+          "patchLines": 42,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.visibility.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 17,
+          "patch": "@@ -1,32 +1,24 @@\n import { expect, test } from \"vitest\";\n-import { DefaultTokenRefs } from \"@/domains/__tests__/token-refs\";\n-import { Artboard } from \"@/domains/dcmp/artboard\";\n-import type { Props } from \"@/domains/dcmp/node\";\n import { CompiledArtboard } from \"../index\";\n-\n-function compile(props: Props): CompiledArtboard {\n-  return CompiledArtboard.fromArtboard(\n-    Artboard.create({ name: \"home\", width: 360, height: 240, props }),\n-    [],\n-    DefaultTokenRefs,\n-  );\n-}\n+import { setupCompiledArtboard } from \"./compiled-artboard-setup\";\n \n test(\"非表示を書いた artboard は、キャンバスに描かない artboard になる\", () => {\n-  expect(CompiledArtboard.isVisible(compile({ visibility: \"hidden\" }))).toBe(\n-    false,\n-  );\n+  expect(\n+    CompiledArtboard.isVisible(setupCompiledArtboard({ visibility: \"hidden\" })),\n+  ).toBe(false);\n });\n \n test(\"表示 / 非表示を書いていない artboard は、キャンバスに描く artboard になる\", () => {\n-  expect(CompiledArtboard.isVisible(compile({}))).toBe(true);\n+  expect(CompiledArtboard.isVisible(setupCompiledArtboard({}))).toBe(true);\n });\n \n test(\"非表示を書いた artboard の中身は、出力でも描かれない\", () => {\n-  expect(compile({ visibility: \"hidden\" }).element.style.display).toBe(\"none\");\n+  expect(\n+    setupCompiledArtboard({ visibility: \"hidden\" }).element.style.display,\n+  ).toBe(\"none\");\n });\n \n test(\"表示 / 非表示を書いていない artboard の中身は、出力で隠されない\", () => {\n   // 既定の layout は column なので flex コンテナになる（none 以外の答えになる入力）\n-  expect(compile({}).element.style.display).toBe(\"flex\");\n+  expect(setupCompiledArtboard({}).element.style.display).toBe(\"flex\");\n });",
+          "patchLines": 42,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e8305c7fed2cea365ba06494e66f93f174be4b6e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T15:26:39Z",
+      "subject": "💡 [Comments]: #1306 collectRangeErrors の doc を JSON から届く -Infinity の主張に絞る",
+      "body": "- 「NaN と -Infinity は下端との比較で落ちる」を「-Infinity（JSON の\n  -1e400）は下端との比較で落ちる」にする\n\n背景:\ntest-reviewer の指摘（Issue #1306）。判定を !(value < min) に壊すと NaN が\n通るようになるが、全テストが通った。doc の主張がテストで守られていなかった。\n\n採用理由:\nJSON から NaN は作れない（1e400 は Infinity、-1e400 は -Infinity）ので、\nファイル経由で届く値だけを書く。-Infinity の主張は次のコミットのテストで\n固定する。\n\n影響とトレードオフ:\n振る舞いは変わらない。\n\n代替案:\n- NaN のテストも足して主張を残す: ファイル経由で届かない値の扱いを\n  仕様のように固定することになる\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -172,7 +172,7 @@ function literalTypeMismatch(\n  * 範囲を宣言した prop に、その外の値を設定しているときの報告。\n  *\n  * 下端だけの範囲では上端を `+Infinity` と読むので、`+Infinity`（JSON の `1e400`）も範囲内に\n- * なる。`NaN` と `-Infinity` は下端との比較で落ちる。\n+ * なる。`-Infinity`（JSON の `-1e400`）は下端との比較で落ちる。\n  * `+Infinity` を受け入れるのは、範囲を宣言しない数値の prop と同じ扱いにするため。有限でない\n  * 値を弾くかは全ての数値の prop に掛かる判断で、ぼかしだけでは決められない。\n  *",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "13c860376034f09493cb003fcc7f9922d42b604b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-18T15:26:44Z",
+      "subject": "🧪 [Tests]: #1306 下端だけの範囲に -Infinity を書くと range-violation になることを固定する",
+      "body": "- 下端だけを宣言した prop に Number.NEGATIVE_INFINITY を設定すると\n  range-violation になるテストを 1 件足す\n\n背景:\ncollectRangeErrors の doc が「-Infinity（JSON の -1e400）は下端との比較で\n落ちる」と主張している（直前のコミット）。test-reviewer の実測で、この\n主張を守るテストが無かった。\n\n採用理由:\n既存の下端だけのテストと同じファクトリ definitionWithLowerBound を使い、\n下端を下回る値のテストのすぐ後ろに置いた。Range.contains から下端の比較を\n外すとこのテストが落ちることを確かめた。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2STRxf8r89sof4QQcT",
+      "files": [
+        {
+          "path": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "patch": "@@ -207,6 +207,18 @@ test(\"下端だけを宣言した prop に下端を下回る値を設定する\n   ]);\n });\n \n+test(\"下端だけを宣言した prop に -Infinity を設定すると range-violation になる\", () => {\n+  expect(\n+    PropDefinition.collectErrors(\n+      definitionWithLowerBound(),\n+      { name: \"layerBlur\", value: Number.NEGATIVE_INFINITY },\n+      TokenSet.empty(),\n+    ),\n+  ).toEqual([\n+    expect.objectContaining({ kind: \"range-violation\", prop: \"layerBlur\" }),\n+  ]);\n+});\n+\n test(\"下端だけを宣言した prop の範囲違反は、下端以上であることを求める文で報告される\", () => {\n   expect(\n     PropDefinition.collectErrors(",
+          "patchLines": 19,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": "docs/01-file-format.md",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/__tests__/sample-document.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/__tests__/token-refs.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard-setup.ts",
+      "to": "src/domains/__tests__/token-refs.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard-setup.ts",
+      "to": "src/domains/compiled/compiled-artboard/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard-setup.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard-setup.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.blur.test.ts",
+      "to": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard-setup.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.canvas-position.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.normal.test.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.normal.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.visibility.test.ts",
+      "to": "src/domains/__tests__/token-refs.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.visibility.test.ts",
+      "to": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard-setup.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.visibility.test.ts",
+      "to": "src/domains/compiled/compiled-artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.visibility.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/__tests__/compiled-artboard.visibility.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-artboard/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/compiled-element.blur.test.ts",
+      "to": "src/domains/compiled/compiled-element/__tests__/element-style-setup.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/compiled-element.html.test.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/compiled-element.html.test.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/compiled-element.layout.test.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/compiled-element.normal.test.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/compiled-element.normal.test.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/compiled-element.still-axis.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/element-style-setup.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/__tests__/element-style-setup.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/box-align/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/corner-radius/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/css-direction/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/layout/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/length-shorthand/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/padding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/rotation/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/visibility/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/dcmp/wrap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/utils/Html.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/compiled/compiled-element/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.box-props.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.canvas-position.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.canvas-reposition.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.json.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.name-match.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.normal.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.prop-definitions.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.resize.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.type.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/__tests__/artboard.type.test.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/domains/dcmp/locking/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/domains/dcmp/node-tree/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/domains/dcmp/placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/artboard/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/css-declaration/__tests__/css-declaration.normal.test.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/css-declaration/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/css-direction/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/artboard-edit-setup.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.name-uniqueness.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/v1/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/document-names/__tests__/document-names.normal.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/document-names/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/layout/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/length-shorthand/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/placement/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.edge.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.normal.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.prototype-name.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.ref-props.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.token-kind-list.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.type.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/__tests__/prop-definition.validation.test.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/domains/unit/corner/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/domains/unit/side/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/utils/Range.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "to": "src/utils/RecordEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.box.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.edge.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ellipse.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ellipse.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.lookup.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.ref-node.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.text.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.text.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/__tests__/schema.type.test.ts",
+      "to": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/domains/dcmp/box-align/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/domains/dcmp/constraint/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/domains/dcmp/layout/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/domains/dcmp/locking/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/domains/dcmp/visibility/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/domains/dcmp/wrap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "to": "src/utils/RecordEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/token-props/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/prop-definition/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/primitive-schema/token-props/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/size/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/visibility/__tests__/visibility.normal.test.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/visibility/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/wrap/__tests__/wrap.normal.test.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/wrap/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-reload/__tests__/document-reload.invalid.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/domains/session/prop-control/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+      "to": "src/domains/session/prop-control/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+      "to": "src/domains/session/prop-control/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+      "to": "src/domains/unit/corner/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+      "to": "src/domains/unit/side/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.shorthand.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/selection/__tests__/selection.normal.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/selection/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/sample-document.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard-reposition.test.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/assets-panel/index.stories.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/component-list/index.stories.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-placement.test.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection.test.tsx",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-label/__tests__/artboard-label.normal.test.tsx",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-label/index.stories.tsx",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/__tests__/name-style-rule.normal.test.tsx",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.stories.tsx",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "to": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/arranged-artboard/__tests__/setup.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/index.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/layers-panel/index.tsx",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/__tests__/element-measure.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/__tests__/node-html.box.test.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/token-css/index.ts",
+      "to": "src/domains/dcmp/css-declaration/index.ts",
+      "status": "kept"
+    }
+  ]
+}
