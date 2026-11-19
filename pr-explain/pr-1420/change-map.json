@@ -1,0 +1,80 @@
+{
+  "version": 2,
+  "pr": 1420,
+  "headBranch": "claude/affectionate-hypatia-4ji7v7",
+  "baseBranch": "main",
+  "mergeBase": "459e6840663548f573d9121fec6fab515e6d0019",
+  "head": "5731133522b0c42d3a8ee31a7888ddb3c4a1656a",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-doc-comments.sh",
+          "changed": false
+        },
+        {
+          "path": "rules/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "5731133522b0c42d3a8ee31a7888ddb3c4a1656a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-19T00:02:37Z",
+      "subject": "ハーネス棚卸し: over-guard の理由の重複を rules/coding.md から外す",
+      "body": "#1419\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QWELsr24xxyzwYXS5",
+      "files": [
+        {
+          "path": "rules/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -28,7 +28,7 @@\n \n ### 例外: Context のアクセサフック\n \n-`useContext` を包むアクセサフックが Provider の外で呼ばれた場合の `throw` は使ってよい(配置ミスであり、呼び出し側が回復する失敗ではない)。**既定値を返して埋めるのは禁止**(付け忘れが画面に出ないまま残る)。理由の詳細は判例。\n+`useContext` を包むアクセサフックが Provider の外で呼ばれた場合の `throw` は使ってよい。**既定値を返して埋めるのは禁止**(理由は判例 `over-guard`)。\n \n ## 関数のシグネチャ\n ",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/missing-doc-comments.py",
+      "to": "rules/coding.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": "rules/coding.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-doc-comments.sh",
+      "to": "rules/coding.md",
+      "status": "kept"
+    }
+  ]
+}
