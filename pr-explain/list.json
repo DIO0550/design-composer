@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1420,
+      "title": "ハーネス棚卸し: over-guard の理由の重複を rules/coding.md から外す"
+    },
+    {
       "pr": 1418,
       "title": "✨ [New Feature]: #1376 tokens の hex の欄を UI 案の箱(#・6 桁・右端の %)にし、見出しを左に置く"
     },
