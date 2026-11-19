@@ -39,8 +39,8 @@ cd "$(dirname "$0")"
 
 # 常時ロード(AGENTS.md + rules/)と harness-growth スキルの行数の予算。
 # ラチェット: 足すなら同量削り、縮めたら実測に合わせて下げる。上げない。
-always_loaded_cap=789
-growth_skill_cap=100
+always_loaded_cap=757
+growth_skill_cap=88
 
 # 記録を読む awk が共有する関数。
 awk_common='

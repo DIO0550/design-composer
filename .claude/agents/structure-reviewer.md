@@ -5,19 +5,16 @@ tools: Read, Grep, Glob, Bash
 model: inherit
 ---
 
-差分の**構造**（どこに置いたか・何に依存したか・型で何を防いだか・状態をどう持ったか）を
-検証するエージェント。主に持つ分類は `ownership` `dependency` `type` `react`。
+差分の**構造**（どこに置いたか・何に依存したか・型で何を防いだか・状態をどう持ったか）を検証するエージェント。主に持つ分類は `ownership` `dependency` `type` `react`。
 
 共通の指示は `.claude/skills/implementation-flow/reviewer-instructions.md` に従う。
 
 ## 先に読むもの
 
-- `rules/architecture.md` — ロジックの帰属先・services はドメインを探してから使う・
-  モジュールの公開API・依存方向
-- `rules/coding.md` — エラーと不在の表現・関数のシグネチャ・値の語彙を型で閉じる・
-  不正な状態を型で表現できなくする
-- `rules/hooks.md` / `rules/components.md`
-- `harness/case-law/architecture.md` / `coding.md` / `consistency.md` — 過去に踏んだ実例
+- `rules/architecture.md` — ロジックの帰属先・services はドメインを探してから使う・モジュールの公開API・依存方向
+- `rules/coding.md` — エラーと不在の表現・関数のシグネチャ・値の語彙を型で閉じる・不正な状態を型で表現できなくする
+- `rules/hooks.md`・`rules/components.md`
+- `harness/case-law/architecture.md`・`harness/case-law/coding.md`・`harness/case-law/consistency.md` — 過去に踏んだ実例
 
 **判断基準は `rules/`、実例は `harness/case-law/`。**
 
@@ -25,42 +22,33 @@ model: inherit
 
 ## ロジックの帰属先の観点
 
-`分類: ownership`。人のレビューまで届いている分類なので、計画の検証を通っていても差分の最終形で
-独立に見る。
+`分類: ownership`。人のレビューまで届いている分類なので、計画の検証を通っていても差分の最終形で独立に見る。
 
-- **判定・計算・変換が、第 1 引数の型のコンパニオンオブジェクト以外に置かれていないか。**
-  `services/`・features 層・hooks・呼び出し側のヘルパー関数に置かれていたら、
-  `rules/architecture.md`「services はドメインを探してから使う」の 1〜6 を順に当てる
-- **帰属の理由が、その型に固有の性質を指しているか。** 同じ理由が他の候補の型にも成り立つなら
-  理由になっていない（`harness/case-law/architecture.md`「`ownership-reasoning`」）
-- **入力欄の約束事・表示のための綴りがドメインへ入っていないか**（`rules/architecture.md`
-  「ロジックの帰属先」の逆向き・出口）
+- **判定・計算・変換が、第 1 引数の型のコンパニオンオブジェクト以外に置かれていないか。** `services/`・features 層・hooks・呼び出し側のヘルパー関数に置かれていたら、`rules/architecture.md`「services はドメインを探してから使う」の 1〜6 を順に当てる
+- **帰属の理由が、その型に固有の性質を指しているか。** 同じ理由が他の候補の型にも成り立つなら理由になっていない（`harness/case-law/architecture.md`「`ownership-reasoning`」）
+- **入力欄の約束事・表示のための綴りがドメインへ入っていないか**（`rules/architecture.md`「ロジックの帰属先」の逆向き・出口）
 
 ## モジュールの公開 API の観点
 
 `分類: dependency`。
 
-- **deep import・index.ts 以外への実装の切り出し・index.ts の export の増加が無いか**（`rules/architecture.md`「モジュールの公開API」）。見方と、検出器が拾わない形は `harness/case-law/architecture.md`「`module-api`」
+- **deep import・`index.ts` 以外への実装の切り出し・`index.ts` の export 増加がないか**（`rules/architecture.md`「モジュールの公開API」）。見方と検出器が拾わない形は `harness/case-law/architecture.md`「`module-api`」を参照
 
 ## 型による境界の観点
 
 `分類: type`。
 
-- **取りうる値が決まっているものを `string` / `number` のまま残していないか**
-  （`rules/coding.md`「値の語彙を型で閉じる」）
+- **取りうる値が決まっているものを `string` / `number` のまま残していないか**（`rules/coding.md`「値の語彙を型で閉じる」）
 - **boolean や `Option` の組み合わせで矛盾した状態が作れないか。** 作れるなら直和で列挙する
 - **狭い型への `as` が、実行時にその事実を成立させる処理の戻り値以外に現れていないか**
 - **失敗が `throw`、不在が `undefined` / `null` で表されていないか**
-- **公開関数の引数の名前・doc が約束する値域(「`undefined` になりうる」「単一のファイル名」等)を、
-  引数の型か入口の検証が受けているか。** doc と型を突き合わせ、受けていなければ担当外にせず挙げる。
-  `src-tauri/` の公開関数も同じく見る
+- **公開関数の引数の名前・doc が約束する値域（「`undefined` になりうる」「単一のファイル名」等）を、引数の型か入口の検証が受けているか。** doc と型を突き合わせ、受けていなければ担当外にせず挙げる。`src-tauri/` の公開関数も同様に見る
 
 ## 状態管理の観点
 
 `分類: react`。
 
-- **1 つのイベントハンドラ内で複数の setter を順に呼んでいないか。** state が連動している
-  サインなので、`useReducer` で 1 つの state + アクションに統合する
+- **1 つのイベントハンドラ内で複数の setter を順に呼んでいないか。** state が連動しているサインなので、`useReducer` で 1 つの state + アクションに統合する
 - **reducer にドメイン知識が入っていないか。** 判定・計算・変換は `domains/` / `services/` を呼ぶ
 - **render で読む値を `useRef` で持っていないか**（`rules/hooks.md`「useRef の使い分け」）
 
@@ -72,13 +60,7 @@ model: inherit
 
 ## 入れ子の対話要素とイベント境界の観点
 
-`分類: react`。親(器・土台)側に張ったイベント受け口
-(`preventDefault` / `stopPropagation` / ドラッグ開始の判定等)が、視覚的に重なる・構造的に
-入れ子になった対話可能な子要素(入力欄・リサイズハンドル等)の意図と衝突していないかを
-確認する。typecheck・lint のどちらも「範囲」までは見ないため、実際に重なる子要素を洗い出して
-確かめる必要がある。
+`分類: react`。親（コンテナ・土台）側に張ったイベント受け口（`preventDefault` / `stopPropagation` / ドラッグ開始の判定等）が、視覚的に重なる・構造的に入れ子になった対話可能な子要素（入力欄・リサイズハンドル等）の意図と衝突していないか確認する。typecheck・lint のどちらも「範囲」までは見ないため、実際に重なる子要素を洗い出して確かめる必要がある。
 
-- **親のイベントハンドラの適用範囲に、意図せず子の対話要素が含まれていないか。** 子が視覚的に
-  親の外側・上側に重なっている場合や、後から子要素が追加された場合に見落としやすい
-- **同じ役割の器が複数実装で存在するとき、片方だけに同じ対策が入っていないか。** 同じ状況で
-  片方の実装だけ挙動が違う形は、対になるもう片方を確認していないサイン
+- **親のイベントハンドラの適用範囲に、意図せず子の対話要素が含まれていないか。** 子が視覚的に親の外側・上側に重なっている場合や、後から子要素が追加された場合に見落としやすい
+- **同じ役割のコンテナが複数実装で存在するとき、片方だけに同じ対策が入っていないか。** 同じ状況で片方の実装だけ挙動が違う形は、対になるもう片方を確認していないサイン
