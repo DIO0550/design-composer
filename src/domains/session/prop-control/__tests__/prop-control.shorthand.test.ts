@@ -96,6 +96,8 @@ test("隅を宣言した prop は束ねた行にまとまり、隅ごとの行�
   ).toEqual([
     "background",
     "shadow",
+    "layerBlur",
+    "backdropBlur",
     "overflow",
     "opacity",
     "visibility",
@@ -133,6 +135,8 @@ test("束ねた行はセクション内で最初の隅の位置に出る", () =>
     "background",
     "radius",
     "shadow",
+    "layerBlur",
+    "backdropBlur",
     "overflow",
     "opacity",
     "visibility",

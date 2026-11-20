@@ -86,7 +86,7 @@ export function RepositionPreviewStyle({
         />
       ))}
       {/*
-        運んでいるノード自身の z-index だけでは、回転・不透明度を持つ祖先（新しい stacking
+        運んでいるノード自身の z-index だけでは、回転・不透明度・ぼかしを持つ祖先（新しい stacking
         context）の外へ効かず、隣の artboard の白い面の裏へ回る（実測）。artboard ごと前に出せば、
         祖先が何で stacking context を作っていても越えられる。artboard の枠（`ArtboardFrame` の
         `li`）が stacking context を作ると効かなくなるが、happy-dom は重なりを解かないのでテスト

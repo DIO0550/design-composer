@@ -1,34 +1,32 @@
 # .claude/hooks — 実装規約の強制フック
 
-Claude Code で `rules/` 配下の実装規約を**強制**するためのフックスクリプト置き場。
-[d-market-typescript の typescript-rules-plugin](https://github.com/DIO0550/d-market) の hooks から、
-このリポジトリの規約に合致するものを移植・適応したもの。
+Claude Code で `rules/` 配下の実装規約を**強制**するためのフックスクリプト置き場。[d-market-typescript の typescript-rules-plugin](https://github.com/DIO0550/d-market) の hooks から、このリポジトリの規約に合致するものを移植・適応した。
 
 ## 強制している規約
 
-| スクリプト               | イベント                  | 内容                                                                                     |
-| ------------------------ | ------------------------- | ---------------------------------------------------------------------------------------- |
-| `block-npx.sh`           | `PreToolUse` (Bash)       | **npx / pnpm dlx 禁止**。パッケージは `pnpm add` でインストールしてから使用する           |
-| `block-lint-suppress.sh` | `PreToolUse` (Edit/Write) | **lint 抑制コメント禁止**。`biome-ignore` / `eslint-disable` の追加を拒否する。検出器が異常終了したら止めずに「検査できていません」を伝える |
-| `post-edit-lint.sh`      | `PostToolUse` (Edit/Write) | **編集後の自動リント**。oxlint / Biome を `--fix` 付きで実行し、残った診断をフィードバック |
-| `check-test-rules.sh`    | `PostToolUse` (Edit/Write) | **テスト規約検証**(rules/testing.md)。describe 禁止・テストケース内の条件分岐禁止・命名規則・置き場所(`__tests__/` 直下)をチェック |
-| `pre-push-typecheck.sh`  | `PreToolUse` (Bash)       | **push 前の型チェック**。`pnpm run typecheck`(tsc -b)でエラーがあれば push をブロック    |
-| `pre-push-lint.sh`       | `PreToolUse` (Bash)       | **push 前の全体 lint**。oxlint / Biome のエラーがあれば push をブロック                   |
-| `pre-push-test-rules.sh` | `PreToolUse` (Bash)       | **push 前の全体テスト規約検査**。全 `*.test.ts(x)` を検査し違反があれば push をブロック   |
-| `check-test-helper-duplication.sh` | `PostToolUse` (Edit/Write) | **テストヘルパーの重複検出**(rules/testing.md「テスト用ヘルパーの置き場所」)。プロジェクト全体の `__tests__/` を横断し、本体が一字一句同じヘルパーが 2 つ以上あれば知らせる。検出器が異常終了したら止めずに「検査できていません」を伝える |
-| `check-doc-comments.sh`  | `PostToolUse` (Edit/Write) | **doc コメントの検証**(rules/coding.md「コメントは doc と Why / Why not に絞る」)。doc の無い宣言と、`@param` / `@returns` / `@throws` が欠けた doc を知らせる。検出器が異常終了したら止めずに「検査できていません」を伝える |
-| `pre-push-doc-comments.sh` | `PreToolUse` (Bash)     | **push 前の doc コメント検査**。`src/` に doc の無い宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロック |
-| `pre-push-import-rules.sh` | `PreToolUse` (Bash)     | **push 前の import 規約検査**(rules/architecture.md「モジュールの公開API」「依存方向のルール」)。import 規約の違反(種別は `lib/import-rule-violations.py` の docstring)があれば push をブロック |
-| `pre-push-story-titles.sh` | `PreToolUse` (Bash)     | **push 前の story の title 検査**(対応する規範は `rules/` に無く、フックだけが持つ)。story の `title` の違反(種別は `lib/story-title-violations.py` の docstring)があれば push をブロック |
-| `pre-push-named-paths.sh` | `PreToolUse` (Bash)    | **push 前の名指ししたパスの検査**(対応する規範は `rules/` に無く、フックだけが持つ)。コメント・doc が名指ししたパスの違反(種別は `lib/named-path-violations.py` の docstring)があれば push をブロック |
-| `pre-push-test-helper-duplication.sh` | `PreToolUse` (Bash) | **push 前のテストヘルパーの重複検査**(rules/testing.md「テスト用ヘルパーの置き場所」)。`src/` の `__tests__/` を横断し、本体が一字一句同じヘルパーが 2 つ以上あれば push をブロック |
-| `post-merge-review.sh`   | `PostToolUse` (Bash/MCP)  | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記・続きの Issue・評価の記録を促す       |
-| `hook-canary.sh`         | `PreToolUse` (Bash)       | **カナリア**。`echo hook-canary` を必ず deny する。連ねたコマンドの中にあっても切り出して見る。通ってしまったときの読み方は後述（**通った = 不発、ではない**） |
-| `session-url-notice.sh`  | `SessionStart`            | **セッション URL の提示**（AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡す。ブランチが `claude/issue-<N>-...` なら対象の番号も添える。コメントする前に、他セッションの URL コメント・自分以外の assignee が無いかを確認するよう促す（`parallel-issue-work`） |
-| `record-firings.sh`      | `SessionStart` + `PostToolUse` (Skill/Task/Agent) | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` が記録を書くときに読む。`block-parent-session-edit.sh` も implementation-flow の中かどうかを決めるために読む。SessionStart のセッション見出しで「起動しなかった」と「フック不発」を切り分ける |
-| `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse` (Task/Agent) | **作業ツリーを書き換えるサブエージェントの実行中フラグ**。`plan-reviewer` / `test-reviewer` / `implementer` の開始・終了をセッション別・種類別のマーカーで数える。`block-git-during-verification-agent.sh` が読む。この 3 つの起動のうち、**`run_in_background: true` を明示したものは拒否する**(塞いでいない形はフックの冒頭) |
-| `block-git-during-verification-agent.sh` | `PreToolUse` (Bash)   | **作業ツリーを書き換えるサブエージェントの実行中の git 操作を拒否**。マーカーが立っている間は `git add` / `commit` / `push` を deny する。ミューテーション実測や実装の途中の書き換えをコミットへ取り込む事故を防ぐ。古いマーカーは無視する(種類ごとに有効期間が違う。値と理由はフックの本文)。拒否文に印のディレクトリを出す |
-| `block-parent-session-edit.sh` | `PreToolUse` (Edit/Write) | **implementation-flow の中の親セッションの編集を拒否**(`implementation-flow`「役割の分担」)。入力に `agent_id` の無い(親の)Edit / Write で、リポジトリの中のファイルを指し、発火ログの最後の区切りが flow の中なら deny する。区切りになる起動と通す入力はフックの冒頭 |
+| スクリプト | イベント | 内容 |
+| --- | --- | --- |
+| `block-npx.sh` | `PreToolUse`（Bash） | **npx / pnpm dlx 禁止**。パッケージは `pnpm add` でインストールしてから使用する |
+| `block-lint-suppress.sh` | `PreToolUse`（Edit/Write） | **lint 抑制コメント禁止**。`biome-ignore` / `eslint-disable` / `oxlint-disable` の追加を拒否する。検出器が異常終了した場合は止めずに「検査できていません」を伝える |
+| `post-edit-lint.sh` | `PostToolUse`（Edit/Write） | **編集後の自動リント**。oxlint / Biome を `--fix` 付きで実行し、残った診断をフィードバックする |
+| `check-test-rules.sh` | `PostToolUse`（Edit/Write） | **テスト規約検証**（`rules/testing.md`）。`describe` 禁止・テストケース内の条件分岐禁止・命名規則・置き場所（`__tests__/` 直下）をチェックする |
+| `pre-push-typecheck.sh` | `PreToolUse`（Bash） | **push 前の型チェック**。`pnpm run typecheck`（`tsc -b`）でエラーがあれば push をブロックする |
+| `pre-push-lint.sh` | `PreToolUse`（Bash） | **push 前の全体 lint**。oxlint / Biome のエラーがあれば push をブロックする |
+| `pre-push-test-rules.sh` | `PreToolUse`（Bash） | **push 前の全体テスト規約検査**。全 `*.test.ts(x)` を検査し、違反があれば push をブロックする |
+| `check-test-helper-duplication.sh` | `PostToolUse`（Edit/Write） | **テストヘルパーの重複検出**（`rules/testing.md`「テスト用ヘルパーの置き場所」）。プロジェクト全体の `__tests__/` を横断し、本体が一字一句同じヘルパーが 2 つ以上あれば通知する。検出器が異常終了した場合は止めずに「検査できていません」を伝える |
+| `check-doc-comments.sh` | `PostToolUse`（Edit/Write） | **doc コメントの検証**（`rules/coding.md`「コメントは doc と Why / Why not に絞る」）。doc のない宣言と、`@param` / `@returns` / `@throws` が欠けた doc を通知する。検出器が異常終了した場合は止めずに「検査できていません」を伝える |
+| `pre-push-doc-comments.sh` | `PreToolUse`（Bash） | **push 前の doc コメント検査**。`src/` に doc のない宣言、または `@param` / `@returns` / `@throws` の欠けた doc があれば push をブロックする |
+| `pre-push-import-rules.sh` | `PreToolUse`（Bash） | **push 前の import 規約検査**（`rules/architecture.md`「モジュールの公開API」「依存方向のルール」）。import 規約の違反（種別は `lib/import-rule-violations.py` の docstring）があれば push をブロックする |
+| `pre-push-story-titles.sh` | `PreToolUse`（Bash） | **push 前の story の title 検査**（対応する規範は `rules/` になく、フックだけが持つ）。story の `title` の違反（種別は `lib/story-title-violations.py` の docstring）があれば push をブロックする |
+| `pre-push-named-paths.sh` | `PreToolUse`（Bash） | **push 前の名指ししたパスの検査**（対応する規範は `rules/` になく、フックだけが持つ）。コメント・doc が名指ししたパスの違反（種別は `lib/named-path-violations.py` の docstring）があれば push をブロックする |
+| `pre-push-test-helper-duplication.sh` | `PreToolUse`（Bash） | **push 前のテストヘルパーの重複検査**（`rules/testing.md`「テスト用ヘルパーの置き場所」）。`src/` の `__tests__/` を横断し、本体が一字一句同じヘルパーが 2 つ以上あれば push をブロックする |
+| `post-merge-review.sh` | `PostToolUse`（Bash/MCP） | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記・続きの Issue・評価の記録を促す |
+| `hook-canary.sh` | `PreToolUse`（Bash） | **カナリア**。`echo hook-canary` を必ず deny する（連ねたコマンドの中にあっても切り出して判定する）。通ってしまったときの読み方は後述（**通った = 不発、ではない**） |
+| `session-url-notice.sh` | `SessionStart` | **セッション URL の提示**（`AGENTS.md`「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡し、ブランチが `claude/issue-<N>-...` なら対象番号も添える。コメント前に他セッションの URL コメントや自分以外の assignee がないか確認するよう促す（`parallel-issue-work`） |
+| `record-firings.sh` | `SessionStart` + `PostToolUse`（Skill/Task/Agent） | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` の記録作成と `block-parent-session-edit.sh` の flow 判定に使う。SessionStart の見出し行で「起動しなかった」と「フック不発」を切り分ける |
+| `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse`（Task/Agent） | **作業ツリーを書き換えるサブエージェントの実行中フラグ**。`plan-reviewer` / `test-reviewer` / `implementer` の開始・終了をセッション別・種類別のマーカーで数え、`block-git-during-verification-agent.sh` が読む。この 3 つの起動のうち **`run_in_background: true` を明示したものは拒否する**（塞いでいない形はフック冒頭を参照） |
+| `block-git-during-verification-agent.sh` | `PreToolUse`（Bash） | **作業ツリーを書き換えるサブエージェント実行中の git 操作を拒否**。マーカーがある間は `git add` / `commit` / `push` を deny し、ミューテーション実測や実装途中の書き換えがコミットへ混入する事故を防ぐ。古いマーカーは無視する（種類ごとの有効期間と理由はフック本文。拒否文にマーカーのディレクトリを出す） |
+| `block-parent-session-edit.sh` | `PreToolUse`（Edit/Write） | **`implementation-flow` 中の親セッションによる編集を拒否**（`implementation-flow`「役割の分担」）。入力に `agent_id` がない（親の）Edit / Write で、リポジトリ内のファイルを指し、発火ログの最後の区切りが flow 内なら deny する（区切りになる起動と通す入力はフック冒頭を参照） |
 
 ## 移植元から見送ったもの
 
@@ -36,59 +34,50 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 
 ### 見送りを取り消したもの
 
-- `check-jsdoc-rules.sh` / `pre-push-jsdoc.sh` — 「JSDoc 必須ルールはこのリポジトリの規約に存在しない」を理由に見送っていたが、**その前提は PR #152 で `rules/coding.md`「コメントは doc と Why / Why not に絞る」が入った時点で消えていた**。見送りの判断が更新されないまま残り、PR #157 で doc の無い関数がレビューまで残った(#157 のレビュー / `harness/records/pr-157.md`)。移植元をそのまま戻すのではなく、このリポジトリの形(型とコンパニオンオブジェクトが doc を共有する)に合わせた `check-doc-comments.sh` を書いた
-- `record-skill-fired.sh` — 「plugin 固有のスキルに依存する」を理由に見送っていたが、その理由は**特定スキルへのゲート**にしか当てはまらず、発火を記録すること自体は汎用だった。`harness-record` の材料のうち発火だけが記憶(自己申告)からしか取れない穴が残っていたため、汎用版を `record-firings.sh` として書いた
-- **規約が増えたら、それを理由に見送ったフックを見直す。** 見送りの理由は「今の規約に無いから」であることが多く、規約が変わると理由ごと消える
+- `check-jsdoc-rules.sh` / `pre-push-jsdoc.sh` — 「JSDoc 必須ルールはこのリポジトリの規約に存在しない」という理由で見送っていたが、**その前提は PR #152 で `rules/coding.md`「コメントは doc と Why / Why not に絞る」が入った時点で消えていた**。判断が更新されないまま残り、PR #157 で doc のない関数がレビューまで残った（#157 のレビュー / `harness/records/pr-157.md`）。移植元をそのまま戻すのではなく、このリポジトリの形（型とコンパニオンオブジェクトが doc を共有する）に合わせた `check-doc-comments.sh` を書いた
+- `record-skill-fired.sh` — 「plugin 固有のスキルに依存する」という理由で見送っていたが、その理由は**特定スキルへのゲート**にしか当てはまらず、発火の記録自体は汎用だった。`harness-record` の材料のうち発火だけが記憶（自己申告）頼みになっていたため、汎用版を `record-firings.sh` として書いた
+- **規約が増えたら、それを理由に見送ったフックを見直す。** 見送りの理由は「今の規約にないから」であることが多く、規約が変わると理由ごと消える
 
 ## 配線
 
-[`.claude/settings.json`](../settings.json) の `hooks.PreToolUse` / `hooks.PostToolUse` から参照。
-パスは `${CLAUDE_PROJECT_DIR:-.}` 基準。
+[`.claude/settings.json`](../settings.json) の `hooks.PreToolUse` / `hooks.PostToolUse` から参照する。パスは `${CLAUDE_PROJECT_DIR:-.}` 基準。
 
-`lib/` はフック本体から読む共有部品と、フックの判定を固定する判定表(`*-cases.sh`)の置き場。
-`settings.json` からは参照しない。
+`lib/` はフック本体から読む共有部品と、フックの判定を固定する判定表（`*-cases.sh`）の置き場であり、`settings.json` からは参照しない。
 
 | ファイル | 使う側 | 内容 |
 | --- | --- | --- |
 | `lib/test-conditionals.awk` | `check-test-rules.sh` / `pre-push-test-rules.sh` | `test()` / `it()` ブロック内の `if` / `else` / `switch` を行番号付きで出力する |
-| `lib/duplicate-test-helpers.py` | `check-test-helper-duplication.sh` / `pre-push-test-helper-duplication.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` / `.github/scripts/check-added-test-helper-duplication.sh`(CI と `harness/githooks/pre-push`) | プロジェクト全体の `__tests__/` を横断して本体が完全に一致するヘルパーを探す。`--all` で全体、`--lines` で 1 ファイルの重複行を `<行番号>:<名前>` で機械可読に出力できる(`--base-root` を足すと、本体の数が base より増えた重複だけ) |
-| `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `src/` のファイル直下の宣言とコンパニオンオブジェクトの直下のメソッドのうち、doc コメントの無いもの・項目の欠けたものを探す。`--all` で全体を見る |
-| `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定したルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
-| `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh`(CI と `harness/githooks/pre-push`) | 許可されていない lint 抑制コメントの行を報告する。例外の判定もここが持つ |
-| `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | import 規約の違反を報告する。種別の一覧と意味は検出器の docstring が持つ |
-| `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/story-title-violations.py` / `lib/named-path-violations.py`（報告の形だけ） | `src/` の走査対象の集め方・報告の形・コマンドラインの受け方と、feature の連なりの辿り方（`feature_of()`）。ファイル名だけアンダースコアなのは、ハイフンを含む名前が Python の import 名にならないため |
-| `lib/named-path-violations.py` | `pre-push-named-paths.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | コメント（`.ts` / `.tsx`）と Markdown の全文が名指ししているパスのうち、実体を持たないものを報告する。種別の一覧と意味は検出器の docstring が持つ |
-| `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査の名前> <直し方の一文>` は**走査ルートを渡さず**(検出器が自分の既定で決める)、`[種別]` で始まる行で違反を読む(`[種別]` の行を出さずに 1 で終わった・0 と 1 以外で終わったなら、検出器が落ちたとして「検査できなかった」の deny。判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有する)。`deny_on_all_src_failure`(引数は同じ)は `--all src` で呼び、終了コードで違反を読む(報告の綴りが `[` で始まらない検出器向け。CI・`harness/githooks/pre-push` と同じ呼び方) |
-| `lib/edit-detector.sh` | `block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh` | 編集時の検査フックの共通部分。検出器を `.github/scripts/lib/detector-report.sh` の `detector_report` で走らせ、異常終了したら `print_edit_unchecked_context <イベント名> <検査の名前> <検出器>` が `permissionDecision` の無い `additionalContext` で「検査できていません」を返す(編集は止めない)。PostToolUse の 2 本の違反の報告も同じ形(`print_additional_context <イベント名> <文>`)で書く。python3 の疎通は `detector-precondition.sh` の `python3_usable` で見る |
-| `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring が持つ |
-| `lib/cases-report.sh` | `lib/missing-doc-comments-cases.sh` / `lib/duplicate-test-helpers-cases.sh`(`decide`・`normalize_miss`・`report`) / `lib/story-title-cases.sh` / `lib/named-path-cases.sh`(それに `report_documented_kinds`) / `lib/import-rule-cases.sh`(`decide`・`report`・`report_documented_kinds`・`report_covered_kinds`) / `lib/cases-report-cases.sh`(`decide`・`decide_by_permission`・`hook_verdict_by_permission`・`normalize_miss`・`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`report_exits_with_cases_failed`) / `.github/scripts/build-pr-explain-cases.sh` / `.github/scripts/check-pr-explain-template-cases.sh`(`all_in_category`・`report`・`report_documented_kinds`・`report_covered_kinds`・`kinds_in_categories`) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`hook_verdict_by_permission`・`report`) / `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `.github/scripts/build-pr-change-map-cases.sh` / `.github/scripts/pr-explain-core-cases.sh` / `.github/scripts/pr-explain-pages-cases.sh` / `harness/records/count-cases.sh` / `harness/githooks/lib/check-tally-cases.sh`(`report`・`last_statement`・`report_exits_with_cases_failed`) / `.github/scripts/upsert-sticky-comment-cases.sh`(`report`) | 判定表が共有する、判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category`。PreToolUse フックを流すところからなら `hook_verdict_by_permission`）と報告（`report` / `cases_failed`）と、検出器の種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）と、判定表の最後の文の照合（`last_statement` / `report_exits_with_cases_failed`）と、表のケースが 1 件以上走ったかの照合（`report` が数える `cases_reported` と `report_cases_ran`。表をループで回す判定表が使う）。ケースの並べ方と検出器の呼び方は判定表ごとに違うので、そこは各判定表が持つ |
-| `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | 一時ディレクトリに置いた小さな検出器で `report_documented_kinds` / `report_covered_kinds` を呼ぶ照合と、`report` 自身を呼ぶ表では、`cases_failed` の立ち方と出力の行が期待どおりかを報告する。表に書いた出力と終了コードで `decide` / `decide_by_permission` / `normalize_miss` を直に呼ぶ表と、それを返すフックのスタブを `hook_verdict_by_permission` で流す表では、返る判定(pass / deny / broken / miss)が期待どおりかを報告する。一時ディレクトリに置いた判定表の木と本物のリポジトリのルートでは、`cases-report.sh` を source する判定表の最後の文が `exit "$cases_failed"` かを報告する。`report_cases_ran` を呼ぶ表では、表の中で `report` を 1 回も呼ばない・回す前の件数が数値でないときに NG を出すかと、表の中の NG も走った 1 件に数えるかを報告する。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |
-| `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh`(`place_failing_detector` だけ) / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh`(`subagent_call_fields` だけ) | フックの判定表が共有する、ケースの前提の置き方。落ちる検出器のスタブ(`place_failing_detector`)・起動できない python3(`python3_path_prefix`)・本体が同じテストヘルパー(`place_duplicate_helpers`)を、渡されたパスへ置く。サブエージェントの中の呼び出しの入力のフィールド(`subagent_call_fields`)を組む |
-| `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `import-rule-violations.py` へ判定表を流し、報告された種別と件数が期待どおりかを報告する。検出器が報告する種別のうち、表の期待に 1 度も出ないものがあっても NG。`scan()` の種別の並びが docstring の一覧と食い違っても NG。検出器をスタブへ差し替えた表では、見出しを出したまま exit 0・exit 0・1 以外で終わる検出器を broken と読むかを報告する。食い違いがあれば exit 1 |
-| `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `named-path-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードと報告の見出しで報告する。検出器の種別の並びが docstring の一覧と食い違っても NG。食い違いがあれば exit 1 |
-| `lib/pre-push-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `pre-push-test-helper-duplication.sh` へ `CLAUDE_PROJECT_DIR` を一時ディレクトリに向けた JSON を流して `deny_on_all_src_failure` を、スタブの検出器を渡して `deny_on_violations` を判定し、deny(違反 / 検査できなかった)/ pass が期待どおりかを報告する。食い違いがあれば exit 1 |
-| `lib/edit-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `lib/edit-detector.sh` を使うフック 3 本を一時ディレクトリへ写し、写しの `lib/` に同じ名前で置いたスタブか実物の検出器で、拒否 / 検査できていない / 違反の報告 / 素通りが期待どおりかを報告する。食い違いがあれば exit 1 |
-| `lib/canary-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `hook-canary.sh` へ判定表を流し、deny / pass / miss が期待どおりかを報告する。食い違いがあれば exit 1 |
-| `lib/story-title-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `story-title-violations.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードと報告の見出しで報告する。検出器の種別の並びが docstring の一覧と食い違っても NG。食い違いがあれば exit 1 |
-| `lib/missing-doc-comments-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `missing-doc-comments.py` へ判定表を流し、deny / pass / miss が期待どおりかを終了コードと報告の見出しで報告する。食い違いがあれば exit 1 |
-| `lib/duplicate-test-helpers-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `duplicate-test-helpers.py` へ判定表を流し、ファイル 1 つを渡す形と `--lines` の両方で deny / pass / miss が期待どおりかを終了コードと報告の見出しで報告する。食い違いがあれば exit 1 |
-| `lib/verification-agent-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` へ Task/Agent と git の呼び出しを順に流し、起動の拒否と git 操作の拒否が期待どおりかを報告する。リポジトリルートから相対パスで 2 本を呼んだときと、リポジトリの外を cwd にして絶対パスで呼んだときの拒否も見る。確かめる項目は判定表の冒頭コメントと各ケースの名前が持つ。食い違いがあれば exit 1 |
-| `lib/hook-input.sh` | `record-firings.sh` / `track-verification-agent-activity.sh` / `block-git-during-verification-agent.sh` / `block-parent-session-edit.sh` | 標準入力の JSON から文字列の値を取り出す `extract`。jq を使わず bash の組み込みだけで読む |
+| `lib/duplicate-test-helpers.py` | `check-test-helper-duplication.sh` / `pre-push-test-helper-duplication.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` / `.github/scripts/check-added-test-helper-duplication.sh`（CI と `pre-push`） | プロジェクト全体の `__tests__/` を横断して本体が完全一致するヘルパーを探す。`--all` で全体、`--lines` で 1 ファイルの重複行を `<行番号>:<名前>` 形式で出力し、`--base-root` を足すと base より本体の数が増えた重複だけを出す |
+| `lib/missing-doc-comments.py` | `check-doc-comments.sh` / `pre-push-doc-comments.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `src/` のファイル直下の宣言とコンパニオンオブジェクト直下のメソッドのうち、doc コメントのないもの・項目の欠けたものを探す。`--all` で全体を見る |
+| `lib/test-rules-scan.sh` | `pre-push-test-rules.sh` / `harness/githooks/pre-push` | 指定ルート配下の `*.test.ts(x)` をすべて検査する。違反があれば exit 1 |
+| `lib/lint-suppressions.py` | `block-lint-suppress.sh` / `.github/scripts/check-added-lint-suppressions.sh`（CI と `pre-push`） | 許可されていない lint 抑制コメントの行を報告する。例外判定もここで持つ |
+| `lib/import-rule-violations.py` | `pre-push-import-rules.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | import 規約の違反を報告する。種別の一覧と意味は検出器の docstring を参照 |
+| `lib/ts_sources.py` | `lib/import-rule-violations.py` / `lib/story-title-violations.py` / `lib/named-path-violations.py`（報告の形のみ） | `src/` の走査対象の集め方・報告形式・CLI 引数受け取り・feature 階層の辿り方（`feature_of()`）。Python の import 名にするため、このファイルだけアンダースコア区切り |
+| `lib/named-path-violations.py` | `pre-push-named-paths.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | コメント（`.ts` / `.tsx`）と Markdown 全文が名指ししているパスのうち、実体のないものを報告する。種別の一覧と意味は検出器の docstring を参照 |
+| `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査名> <直し方>` は走査ルートを渡さず（検出器の既定を使用）、`[種別]` 行で違反を読み、異常終了時は「検査できなかった」の deny を返す（判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有）。`deny_on_all_src_failure`（引数同じ）は `--all src` で呼び終了コードで判定する（報告が `[` で始まらない検出器向け） |
+| `lib/edit-detector.sh` | `block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh` | 編集時検査フックの共通処理。`.github/scripts/lib/detector-report.sh` の `detector_report` で検出器を走らせ、異常終了時は `print_edit_unchecked_context <イベント名> <検査名> <検出器>` で `permissionDecision` なしの `additionalContext`（「検査できていません」）を返し編集は止めない。PostToolUse の違反報告も `print_additional_context` で共通化し、python3 の疎通は `detector-precondition.sh` の `python3_usable` で確認する |
+| `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring を参照 |
+| `lib/cases-report.sh` | `lib/*-cases.sh`・`.github/scripts/*-cases.sh`・`harness/records/count-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` の各判定表（18 本） | 判定表が共有する 5 機能を提供する: (1) 判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category` / `hook_verdict_by_permission`）、(2) 結果報告（`report` / `cases_failed`）、(3) 検出器種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）、(4) 判定表末尾文の照合（`last_statement` / `report_exits_with_cases_failed`）、(5) 1 件以上走ったかの照合（`cases_reported` / `report_cases_ran`）。ケースの並べ方と検出器の呼び方は各判定表が持つ |
+| `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `lib/cases-report.sh` 自身の判定表。種別照合・`report` の出力と `cases_failed`・`decide*` / `hook_verdict_by_permission` の判定（pass / deny / broken / miss）・各判定表の末尾が `exit "$cases_failed"` であること・`report_cases_ran` の挙動を検証する（詳細は冒頭コメントとケース名）。食い違いがあれば exit 1 |
+| `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh` / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh` | 判定表が共有する前提の組み立て関数。落ちる検出器スタブ（`place_failing_detector`）・起動不能な python3（`python3_path_prefix`）・同一本体のテストヘルパー（`place_duplicate_helpers`）・サブエージェント呼び出し入力フィールド（`subagent_call_fields`）を提供する |
+| `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `import-rule-violations.py` の判定表。種別・件数・全種別の網羅・`scan()` と docstring の並び一致・スタブ検出器の broken 判定を検証する。食い違いがあれば exit 1 |
+| `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `named-path-violations.py` の判定表。deny / pass / miss と、検出器種別の並びと docstring の一致を検証する。食い違いがあれば exit 1 |
+| `lib/pre-push-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `lib/pre-push-detector.sh` の判定表。`deny_on_all_src_failure`（一時ディレクトリの `pre-push-test-helper-duplication.sh`）と `deny_on_violations`（スタブ検出器）で、deny（違反 / 検査できなかった）と pass を検証する。食い違いがあれば exit 1 |
+| `lib/edit-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `lib/edit-detector.sh` を使うフック 3 本を一時ディレクトリへ複製し、スタブまたは実物検出器で拒否 / 検査できていない / 違反報告 / 素通りを検証する。食い違いがあれば exit 1 |
+| `lib/canary-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `hook-canary.sh` の判定表。deny / pass / miss を検証する。食い違いがあれば exit 1 |
+| `lib/story-title-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `story-title-violations.py` の判定表。deny / pass / miss と、検出器種別の並びと docstring の一致を検証する。食い違いがあれば exit 1 |
+| `lib/missing-doc-comments-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `missing-doc-comments.py` の判定表。deny / pass / miss を終了コードと報告見出しで検証する。食い違いがあれば exit 1 |
+| `lib/duplicate-test-helpers-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `duplicate-test-helpers.py` の判定表。単一ファイル指定と `--lines` の両方で deny / pass / miss を検証する。食い違いがあれば exit 1 |
+| `lib/verification-agent-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` の判定表。Task / Agent と git の呼び出し、相対パス実行・リポジトリ外 cwd からの絶対パス実行での拒否を検証する（詳細は冒頭コメントとケース名）。食い違いがあれば exit 1 |
+| `lib/hook-input.sh` | `record-firings.sh` / `track-verification-agent-activity.sh` / `block-git-during-verification-agent.sh` / `block-parent-session-edit.sh` | 標準入力の JSON から文字列値を取り出す `extract`。jq を使わず bash の組み込みだけで読む |
 | `lib/firings-log.sh` | `record-firings.sh` / `block-parent-session-edit.sh` | 発火ログのパスを組み立てる `firings_log_path <session_id>` |
-| `lib/parent-session-edit-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手で走らせる） | 本物の `record-firings.sh` に発火ログを書かせてから `block-parent-session-edit.sh` へ Edit / Write の呼び出しを流し、親の編集の拒否と素通りが期待どおりかを報告する。確かめる項目は各ケースの名前が持つ。食い違いがあれば exit 1 |
+| `lib/parent-session-edit-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | 実物の `record-firings.sh` に発火ログを書かせたうえで `block-parent-session-edit.sh` へ Edit / Write を流し、親セッション編集の拒否と素通りを検証する（詳細は各ケース名）。食い違いがあれば exit 1 |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
-biome の format 差分を含む状態で push が通り、CI で落ちた回がある。
-**`pre-push-lint.sh` 単体は正しく動く**(一時ファイルを置いてフックへ直接 JSON を流し、
-`&&` で連結した push コマンドにマッチすること・format 差分を検出して deny を返すことを実測)。
-それでも push は通り、同じセッションでは `post-edit-lint.sh` による編集後の自動整形も
-一度も働いていなかった。リモート実行環境(Claude Code on the web など)では
-`.claude/settings.json` の配線が読み込まれないことがある。
+Biome の format 差分を含む状態で push が通り CI で落ちた回がある。**`pre-push-lint.sh` 単体は正しく動く**（一時ファイルを置いてフックへ直接 JSON を流し、`&&` で連結した push コマンドへのマッチと format 差分での deny 返却を実測済み）。それでも push が通り、同じセッションでは `post-edit-lint.sh` の自動整形も一度も動いていなかった。リモート実行環境（Claude Code on the web など）では `.claude/settings.json` の配線が読み込まれないことがある。
 
-**フェイルオープンかつサイレント**なので、通ったのか検査されなかったのかを区別できない。
-したがって **Claude Code のフックを enforcement の最上位として数えることはできない**。
-序列は次のとおり。
+**フェイルオープンかつサイレント**なため、通ったのか検査されなかったのかを区別できない。したがって **Claude Code のフックを強制力の最上位として数えることはできない**。序列は次のとおり。
 
 | # | 層 | 効く範囲 | タイミング | 置き場所 |
 | --- | --- | --- | --- | --- |
@@ -97,317 +86,244 @@ biome の format 差分を含む状態で push が通り、CI で落ちた回が
 | 3 | Claude Code hooks | CLI 起動セッションのみ | 編集・コマンドの直前 | ここ |
 | 4 | skill / rules | お願いベース | 読まれたとき | `.claude/skills/` / `rules/` |
 
-**push 前検査の enforcement は git hooks が担う。** ここにある `pre-push-*` は、同じ
-スクリプト(`lib/`)を編集中に走らせる**最速フィードバック層**という位置づけになる。
-`harness-growth` が「層 1(`hook`)に置く」と判断したときは、`harness/githooks/` か CI の
-どちらかに置き、Claude Code 側はその共有版として足す。
+**push 前検査の強制は git hooks が担う。** ここにある `pre-push-*` は、同じスクリプト（`lib/`）を編集中に走らせる**最速フィードバック層**の位置づけになる。`harness-growth` が「層 1（`hook`）に置く」と判断したときは、`harness/githooks/` か CI のどちらかに置き、Claude Code 側はその共有版として足す。
 
 ### カバー範囲と残る穴
 
-git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の表で CI の代替が「**無し**」の行は、
-発火しない環境では効かず、git のイベントに対応物が無いので移設もできない。
+git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の表で CI の代替が「**無し**」の行は、フックが発火しない環境では効かず、git イベントに対応物もないため移設できない。
 
 | 効かなくなるもの | CI の代替 |
 | --- | --- |
-| `block-lint-suppress.sh`(編集時のブロック) | **あり**。抑制コメントは diff に残るので、`.github/scripts/check-added-lint-suppressions.sh` が**追加行の分だけ**同じ判定で落とす(許可される例外も `lib/lint-suppressions.py` で共有)。CI と push 前(git hooks)の両方が走らせる。**push 前は `python3` が使える環境だけ**(無ければ「飛ばします」と出して飛ぶ。CI は落とす → `.github/scripts/lib/detector-precondition.sh`)。検出器が途中で落ちたときは push 前も CI も落とす(`.github/scripts/lib/detector-report.sh`) |
-| `block-npx.sh`(セッション中の行為の禁止) | **無し**。push の時点で痕跡が残らないため代替不能 |
-| `block-git-during-verification-agent.sh`(セッション中の行為の禁止) | **無し**。この競合はセッションの実行タイミングだけが原因で、コミット後のリポジトリの状態には痕跡が残らない |
-| `session-url-notice.sh`(セッション URL の提示) | **無し**。宛先の Issue とそのコメントは CI から読めるが、CI が走るのは規約の起点(着手時)より後で、赤にしても事後に貼らせる以外に直せない(`harness/case-law/process.md`)。落ちても穴は開かない(規約が AGENTS.md に残り、失っても情報が 1 つ足りないだけでガードは破れない) |
-| `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh`(即時フィードバック) | 結果は push 前の検査(git hooks)と CI が拾う。**即時性だけが失われる** |
-| `check-test-helper-duplication.sh`(即時フィードバック) | 結果は push 前の検査(git hooks の `duplicate-test-helpers.py --all src`。`python3` が使える環境だけ)と CI(`rules-check`)が `src/` 全体で拾う。**即時性だけが失われる** |
-| `record-firings.sh`(発火ログ) | **無し**。`harness-record` の計測は失敗しても穴は開かない(セッション見出しが無いログは `harness-record` が「計測対象外」と書く設計で、フック不発が誤ったゼロにはならない。ただしスキルは、Skill ツールを通らない起動だと見出しがあっても発火行が書かれない → 下の「区切りがログに残らない起動」)。一方、同じログを読む `block-parent-session-edit.sh` は、ログに implementation-flow の区切りが無ければ素通りするので、こちらが落ちると親の編集の拒否も効かなくなる |
-| `block-parent-session-edit.sh`(セッション中の行為の禁止) | **無し**。誰が編集したか(親かサブエージェントか)はコミットに残らない。発火する環境でも残る穴は下 |
+| `block-lint-suppress.sh`（編集時のブロック） | **あり**。抑制コメントは diff に残るため、`.github/scripts/check-added-lint-suppressions.sh` が**追加行の分だけ**同じ判定（例外も `lib/lint-suppressions.py` で共有）で落とす。CI と push 前（git hooks）の両方で実行する。push 前は `python3` がある環境だけ（「飛ばします」を出してスキップ。CI は落とす → `.github/scripts/lib/detector-precondition.sh`）。検出器が途中で落ちた場合は push 前も CI も落とす（`.github/scripts/lib/detector-report.sh`） |
+| `block-npx.sh`（セッション中の行為の禁止） | **無し**。push 時点で痕跡が残らないため代替不能 |
+| `block-git-during-verification-agent.sh`（セッション中の行為の禁止） | **無し**。競合はセッション実行タイミングだけが原因で、コミット後の状態に痕跡が残らない |
+| `session-url-notice.sh`（セッション URL の提示） | **無し**。Issue コメントは CI から読めるが、CI が走るのは規約の起点（着手時）より後で事後に貼らせるしか直せない（`harness/case-law/process.md`）。不発でも情報が 1 つ欠けるだけでガードは破れない |
+| `post-edit-lint.sh` / `check-test-rules.sh` / `check-doc-comments.sh`（即時フィードバック） | 結果は push 前検査（git hooks）と CI が拾う。**即時性だけが失われる** |
+| `check-test-helper-duplication.sh`（即時フィードバック） | 結果は push 前検査（git hooks の `duplicate-test-helpers.py --all src`。`python3` がある環境のみ）と CI（`rules-check`）が `src/` 全体で拾う。**即時性だけが失われる** |
+| `record-firings.sh`（発火ログ） | **無し**。`harness-record` の計測は、セッション見出しのないログを「計測対象外」と扱う設計のため誤ったゼロにはならない（ただし Skill ツールを通らない起動では見出しがあっても発火行が書かれない → 下表「区切りがログに残らない起動」）。一方、同じログを読む `block-parent-session-edit.sh` は区切りがないと素通りするため、こちらが不発だと親の編集拒否も効かなくなる |
+| `block-parent-session-edit.sh`（セッション中の行為の禁止） | **無し**。親とサブエージェントのどちらが編集したかはコミットに残らない。発火する環境でも残る穴は下表 |
 
-`block-parent-session-edit.sh` が発火する環境でも残る穴は 5 つ。
+`block-parent-session-edit.sh` が発火する環境でも残る穴は 5 つある。
 
 | 残る穴 | 内容 |
 | --- | --- |
-| 区切りがログに残らない起動 | Skill ツールを通らない起動は、スキルの起動がログに残らない(`skill` の行が書かれない)。利用者が打ったスラッシュコマンドと、手順を読んで implementation-flow を進める回がこれに当たる。**実測は `/implementation-flow` を打った回だけ**で、`skill` の行が書かれず、`planner` を起動する前の親の Write は通り、起動した後は deny された([#1277 の実測](https://github.com/DIO0550/design-composer/issues/1277#issuecomment-6708032746))。測ったのはこの結果だけで、仕組み(本文がプロンプトへ直接展開され、Skill の PostToolUse が起きない)・他のスラッシュコマンド・手順を読んで進める回(#1046 のセッションはフックが発火しない形だった)は**推論**。その推論では、同じセッションで implementation-flow の区切りの後に `/harness-record` / `/harness-growth` を打った回は、前の区切りが残ったまま拒否が続く(抜け方は「例外」)。対策は #1309 |
-| matcher の外の道具 | `NotebookEdit` / `MultiEdit` は matcher(`Edit\|Write`)に入っていないので見ない。入力のキーが違い(`NotebookEdit` は `notebook_path`)、#1046 のゴールが Edit / Write に限られる |
-| Bash 経由の書き換え | `sed -i` やリダイレクトでの書き換えは見ない。コマンド文字列から書き換え先のパスを確定できず、このフックでは判定できない |
-| 正規化しないパス | `..` を挟んだ絶対パスや symlink 越しのパスは、綴りがルートと前方一致しないとリポジトリの外として通る(正規化はしない) |
-| 発火しない起動の形 | フックが発火しない起動の形(「発火しているかを確かめる」の実測)では効かない |
+| 区切りがログに残らない起動 | Skill ツールを通らない起動（利用者のスラッシュコマンド入力、手順を直接読んで `implementation-flow` を進める回）は `skill` 行がログに書かれない。**実測は `/implementation-flow` を打った回のみ**で、`skill` 行が書かれず `planner` 起動前の親の Write は通り、起動後は deny された（[#1277 の実測](https://github.com/DIO0550/design-composer/issues/1277#issuecomment-6708032746)）。仕組み（プロンプト直接展開により Skill の PostToolUse が発火しない点）や他のスラッシュコマンド、手順直読みの回（#1046 はフック不発環境だった）は**推論**。この推論では、`implementation-flow` 後に `/harness-record` / `/harness-growth` を打っても前の区切りが残り拒否が続く（回避策は「例外（エスケープハッチ）」、対策は #1309） |
+| matcher の外の道具 | `NotebookEdit` / `MultiEdit` は matcher（`Edit\|Write`）外のため見ない。入力キーが異なり（`NotebookEdit` は `notebook_path`）、#1046 のゴールも Edit / Write に限定されている |
+| Bash 経由の書き換え | `sed -i` やリダイレクトでの書き換えは見ない。コマンド文字列から書き換え先パスを確定できないため |
+| 正規化しないパス | `..` を挟んだ絶対パスや symlink 越しのパスは、綴りがルートと前方一致しないとリポジトリ外として通る（パス正規化はしない） |
+| 発火しない起動の形 | フック自体が発火しない起動形態（「発火しているかを確かめる（カナリア）」の実測）では効かない |
 
 ### 「代替不能」が実際に不発だったとき、手動で肩代わりする
 
-`block-npx.sh` / `block-git-during-verification-agent.sh` / `block-parent-session-edit.sh` は上の表のとおり CI の代替が
-**無し**。カナリア(次項)で不発が確定したら、「記録のみ」で終わらせず、そのフックが
-止めるはずだった操作を手動で確認する(不発のままミューテーションがコミットへ混入した回と、
-任意の `npx` 実行が素通りした回がある)。
+`block-npx.sh` / `block-git-during-verification-agent.sh` / `block-parent-session-edit.sh` は上表のとおり CI の代替が**無し**。カナリア（次項）で不発が確定したら「記録のみ」で終わらせず、そのフックが止めるはずだった操作を手動で確認する（不発のままミューテーションがコミットへ混入した回と、任意の `npx` 実行が素通りした回がある）。
 
 | 不発したフック | 手動で確認すること |
 | --- | --- |
 | `block-npx.sh` | 実行した `npx` コマンドがリポジトリへ何か書き込んでいないか `git status` で確認する |
-| `block-git-during-verification-agent.sh` | 作業ツリーを書き換えるサブエージェントの実行中に作られたコミットの diff を、そのエージェントが返したはずの内容とだけ照合する(意図しない変更が紛れていないか) |
-| `block-parent-session-edit.sh` | このセッションの親の Edit / Write の履歴を見直し、implementation-flow の中でリポジトリの中のファイルを編集していないか確認する |
+| `block-git-during-verification-agent.sh` | 作業ツリーを書き換えるサブエージェントの実行中に作られたコミットの diff を、そのエージェントが返したはずの内容と照合する（意図しない変更の混入がないか） |
+| `block-parent-session-edit.sh` | このセッションの親の Edit / Write 履歴を見直し、`implementation-flow` 中にリポジトリ内のファイルを編集していないか確認する |
 
-`session-url-notice.sh` の不発は対応不要(上の表のとおり、失っても情報が 1 つ
-足りないだけでガードは破れない)。
+`session-url-notice.sh` の不発は対応不要（上表のとおり、情報が 1 つ欠けるだけでガードは破れない）。
 
-**`frontend.yml` の `rules-check` は、git hooks(層 2)にしか無かった検査を CI(層 1)へ上げるために作った**(いま何を持っているかは下の「判定表をどの層へ置くか」と `harness/githooks/README.md`)。
-**doc コメントとテスト規約の 2 つ**は層 2・層 3 にしか無かったが、**層 2 と層 3 は同じ環境で同時に抜ける**。
-リモート実行環境はクローンからやり直すので `core.hooksPath` が未設定のまま
-(`postCreateCommand` は DevContainer でしか走らない)で、そこは `.claude/settings.json` の
-配線が読まれないことがある環境と同じだった。実際に doc の無い宣言が main へ入っている
-(`src/domains/unit/elapsed`)。層 2 の配線は `pnpm install` の `prepare` が
-自動でやるようにしたが、**同じ層で再発したら層を 1 つ上げる**に従い、検査そのものも
-無条件に効く層へ置いた。
+**`frontend.yml` の `rules-check` は、git hooks（層 2）にしかなかった検査を CI（層 1）へ上げるために作った**（内容は下の「判定表をどの層へ置くか」と `harness/githooks/README.md` を参照）。**doc コメントとテスト規約の 2 つ**は層 2・層 3 にしかなかったが、**層 2 と層 3 は同じ環境で同時に抜ける**。リモート実行環境は毎回クローンから始まるため `core.hooksPath` が未設定のまま（`postCreateCommand` は DevContainer でしか走らない）であり、`.claude/settings.json` が読まれない環境と重なっていた。実際に doc のない宣言が main へ入っている（`src/domains/unit/elapsed`）。層 2 の配線は `pnpm install` の `prepare` で自動化する一方、**同じ層で再発したら層を 1 つ上げる**方針に従い、検査自体も無条件に効く層 1 へ置いた。
 
-**行数のラチェット**(`harness/records/count.sh --ratchet`)は、上げたのではなく
-**新設時から層 1 と層 2 に置いた**(同じ `rules-check` ジョブと `harness/githooks/pre-push`)。
+**行数のラチェット**（`harness/records/count.sh --ratchet`）は、上げたのではなく**新設時から層 1 と層 2 に置いた**（同じ `rules-check` ジョブと `harness/githooks/pre-push`）。
 
 #### 判定表をどの層へ置くか
 
-**判定表(`*-cases.sh`)の置き場は、ここが持つ。** 検出器そのものをゲートが呼んで
-いても、そちらは `src` や記録に違反が無い限り緑のままなので、**取りこぼす向きの退行**
-(意図した取りこぼしの広がり・走査対象の抜け・報告の切り詰め)は判定表でしか捕まらない。
+**判定表（`*-cases.sh`）の配置判断はここで管理する。** 検出器本体をゲートで呼んでいても、`src` や記録に違反がない限り緑のままになるため、**取りこぼす向きの退行**（意図した取りこぼしの広がり・走査対象の抜け・報告の切り詰め）は判定表でしか捕まえられない。
 
-| 判定表 | 層 1(CI) | 層 2(`pre-push`) |
+| 判定表 | 層 1（CI） | 層 2（`pre-push`） |
 | --- | --- | --- |
 | `harness/records/count-cases.sh` | あり | あり |
-| `lib/import-rule-cases.sh` | あり | あり(`python3` がある環境だけ) |
-| `lib/story-title-cases.sh` | あり | あり(`python3` がある環境だけ) |
-| `lib/named-path-cases.sh` | あり | あり(`python3` がある環境だけ) |
-| `lib/missing-doc-comments-cases.sh` | あり | あり(`python3` がある環境だけ) |
-| `lib/duplicate-test-helpers-cases.sh` | あり | あり(`python3` がある環境だけ) |
-| `lib/canary-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |
-| `lib/pre-push-detector-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |
-| `lib/edit-detector-cases.sh` | あり | あり(`python3` と `jq` が揃う環境だけ) |
+| `lib/import-rule-cases.sh` | あり | あり（`python3` がある環境のみ） |
+| `lib/story-title-cases.sh` | あり | あり（`python3` がある環境のみ） |
+| `lib/named-path-cases.sh` | あり | あり（`python3` がある環境のみ） |
+| `lib/missing-doc-comments-cases.sh` | あり | あり（`python3` がある環境のみ） |
+| `lib/duplicate-test-helpers-cases.sh` | あり | あり（`python3` がある環境のみ） |
+| `lib/canary-cases.sh` | あり | あり（`python3` と `jq` が揃う環境のみ） |
+| `lib/pre-push-detector-cases.sh` | あり | あり（`python3` と `jq` が揃う環境のみ） |
+| `lib/edit-detector-cases.sh` | あり | あり（`python3` と `jq` が揃う環境のみ） |
 | `lib/verification-agent-cases.sh` | あり | あり |
 | `lib/parent-session-edit-cases.sh` | あり | あり |
 | `lib/cases-report-cases.sh` | あり | あり |
-| `.github/scripts/check-added-cases.sh` | あり(`lint-suppress` ジョブ) | あり(`python3` がある環境だけ) |
-| `.github/scripts/check-pr-closing-issue-cases.sh` | あり | あり(`jq` がある環境だけ) |
-| `.github/scripts/check-duplicate-issue-pr-cases.sh` | あり | **無し(残る穴)** |
-| `.github/scripts/upsert-sticky-comment-cases.sh` | あり | あり(`jq` がある環境だけ) |
-| `.github/scripts/build-pr-change-map-cases.sh` | あり | あり(`python3` がある環境だけ) |
-| `.github/scripts/pr-explain-pages-cases.sh` | あり | あり(`python3` がある環境だけ) |
-| `.github/scripts/build-pr-explain-cases.sh` | あり | あり(`python3` がある環境だけ) |
-| `.github/scripts/check-pr-explain-template-cases.sh` | あり | あり(`python3` がある環境だけ) |
-| `.github/scripts/pr-explain-core-cases.sh` | あり | あり(`python3` と Node 20 以上がある環境だけ) |
+| `.github/scripts/check-added-cases.sh` | あり（`lint-suppress` ジョブ） | あり（`python3` がある環境のみ） |
+| `.github/scripts/check-pr-closing-issue-cases.sh` | あり | あり（`jq` がある環境のみ） |
+| `.github/scripts/check-duplicate-issue-pr-cases.sh` | あり | **無し（残る穴）** |
+| `.github/scripts/upsert-sticky-comment-cases.sh` | あり | あり（`jq` がある環境のみ） |
+| `.github/scripts/build-pr-change-map-cases.sh` | あり | あり（`python3` がある環境のみ） |
+| `.github/scripts/pr-explain-pages-cases.sh` | あり | あり（`python3` がある環境のみ） |
+| `.github/scripts/build-pr-explain-cases.sh` | あり | あり（`python3` がある環境のみ） |
+| `.github/scripts/check-pr-explain-template-cases.sh` | あり | あり（`python3` がある環境のみ） |
+| `.github/scripts/pr-explain-core-cases.sh` | あり | あり（`python3` と Node 20 以上がある環境のみ） |
 | `harness/githooks/lib/check-tally-cases.sh` | あり | あり |
 
-- **`canary-cases.sh` と `verification-agent-cases.sh` と `parent-session-edit-cases.sh` と `pre-push-detector-cases.sh` と `edit-detector-cases.sh` の 5 本は、層 3 の部品
-  (`hook-canary.sh` / `track-verification-agent-activity.sh` と `block-git-during-verification-agent.sh` /
-  `block-parent-session-edit.sh` と `record-firings.sh` / `lib/pre-push-detector.sh` の `deny_on_all_src_failure` / `deny_on_violations` /
-  `lib/edit-detector.sh` とそれを使うフック 3 本)を層 2・層 1 で検査する。** ゲートが見ているのは
-  「リポジトリに入っているスクリプトの判定が変わっていないか」で、その部品がどの層で使われるかとは別。
-  push 前手順(`implementation-flow` フェーズ 7)はカナリアの出力を読んで不発かどうかを決め、
-  フェーズ 5・6 は作業ツリーを書き換えるサブエージェントの実行中に git 操作が止まる前提で並べているので、判定が黙って変わると
-  手順の読みが嘘になる。`deny_on_all_src_failure` / `deny_on_violations` と `lib/edit-detector.sh` は壊れると層 3 が黙って素通りするだけで、
-  git hooks と CI は検出器を直接呼ぶので緑のまま残る。受け皿は push 時の判定表で、`lib/edit-detector.sh` は
-  `edit-detector-cases.sh` がそれを使うフック 3 本ごと一時ディレクトリへ写して走らせる
-- **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。**
-  当てる 2 本(`check-added-*`)と同じジョブに置き、`python3` と git だけで完結する
-- **層 2 に載せるかの物差しは、載せたときに `pre-push` 全体がどれだけ伸びるか。**
-  `pre-push` 全体は 73.0 秒(実測・`node_modules` のある環境)。`check-pr-closing-issue-cases.sh` は
-  5xx の再試行の待ちを差し替え口で 0 にして層 2 にも置き(#1034)、`lib/canary-cases.sh` と合わせて 1.8 秒
-  (0.8 秒と 1.0 秒。どちらも全体が 105.8 秒だった別の環境の `pre-push` の回の中で測った値)。
-  解説ページの 5 本は 73.0 秒の回の中で合わせて 16.2 秒(地図 3.4・置き場 5.6・解説の検査 4.3・枠の検査 2.8・核 0.1。置き場は再試行の待ちを環境変数で 0 にしている)、`harness/githooks/lib/check-tally-cases.sh` は 0.1 秒未満、`lib/import-rule-cases.sh` は 2.2 秒、`lib/edit-detector-cases.sh` は 1.5 秒(実測)
-- **`check-duplicate-issue-pr-cases.sh` は層 1 だけ。** 22.0 秒かかり(実測)、大半が問い合わせの再試行の
-  待ち。上の物差しに載らないので、`check-duplicate-issue-pr.sh` を触ったときは
-  手で走らせる(「動作確認」)。待ちを 0 にできるかは #1377 で扱う。層 2 にも置いた `upsert-sticky-comment-cases.sh` は 0.9 秒(実測。
-  再試行の待ちを環境変数で 0 にしている)
-- 層 3(`pre-push-*.sh`)には足さない。層 1 と層 2 の両方に置く以上、守る範囲が増えない
+- **層 3 の部品を検査する 5 本（`canary-cases.sh` / `verification-agent-cases.sh` / `parent-session-edit-cases.sh` / `pre-push-detector-cases.sh` / `edit-detector-cases.sh`）も層 2・層 1 で走らせる。** ゲートが見ているのは「リポジトリ内のスクリプト判定が変わっていないか」であり、使用層とは独立している。フェーズ 7 はカナリア出力で不発を判定し、フェーズ 5・6 は検証エージェント実行中の git ブロックを前提にしているため、判定が黙って変わると手順が破綻する。また `lib/pre-push-detector.sh` と `lib/edit-detector.sh` は壊れても git hooks や CI が検出器を直接呼ぶため緑のまま残る。`edit-detector-cases.sh` は対象フック 3 本ごと一時ディレクトリへ複製して検証する
+- **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。** 対象の `check-added-*` と同じジョブに置き、`python3` と git だけで完結させる
+- **層 2 に載せる判断基準は、`pre-push` 全体の所要時間への影響。** `pre-push` 全体は 73.0 秒（実測・`node_modules` あり）。各判定表の実測時間は次のとおり: `check-pr-closing-issue-cases.sh` 0.8 秒（5xx 再試行待ちを差し替え口で 0 化、#1034）・`lib/canary-cases.sh` 1.0 秒（ともに全体 105.8 秒の別環境実測）、解説ページ 5 本合計 16.2 秒（地図 3.4・置き場 5.6［再試行待ち 0 化］・解説の検査 4.3・枠の検査 2.8・核 0.1）、`check-tally-cases.sh` 0.1 秒未満、`lib/import-rule-cases.sh` 2.2 秒、`lib/edit-detector-cases.sh` 1.5 秒、`upsert-sticky-comment-cases.sh` 0.9 秒（再試行待ち 0 化）
+- **`check-duplicate-issue-pr-cases.sh` は層 1 のみ。** 問い合わせの再試行待ちで 22.0 秒（実測）かかり基準に収まらないため、`check-duplicate-issue-pr.sh` を触ったときは手動で走らせる（「動作確認」）。待ちを 0 にできるかは #1377 で扱う
+- 層 3（`pre-push-*.sh`）には足さない。層 1・層 2 に置く以上、守る範囲が増えないため
 
 #### 撮影範囲の検査は層 1 と層 4 にしかない
 
-`Storybook Visual Regression` は、視覚差分を取る前に**ストーリーが撮影のビューポートに
-収まっているか**を見る。この検査は CI(層 1)と push 前手順(層 4。`implementation-flow`
-フェーズ 7)にだけあり、**層 2 にも層 3 にも置いていない。**
+`Storybook Visual Regression` は視覚差分を取る前に、**ストーリーが撮影ビューポートに収まっているか**を検査する。この検査は CI（層 1）と push 前手順（層 4、`implementation-flow` フェーズ 7）にだけあり、**層 2・層 3 には置いていない。**
 
-| 計測したもの | 実測(ストーリー 179 本・`node_modules` のある環境) |
+| 計測対象 | 実測（ストーリー 179 本・`node_modules` あり） |
 | --- | --- |
 | `pnpm build-storybook` | 10.7 秒 |
 | `pnpm visual:capture` | 3 分 26.7 秒 |
 | 合計 | 3 分 37 秒 |
 
-- **層 2 へ載せない理由は所要時間。** `pre-push` 全体の 6 倍かかり、上の
-  判定表の置き場で書いた物差しに載らない
-- **層 3 へも置かない。** かかる時間は同じで、3 分半の検査は「編集中に走らせる最速
-  フィードバック層」という位置づけと合わない
-- **層 4 が止めるのは、はみ出しを入れる側の PR。** `harness/records/pr-634.md` 指摘 25 が
-  その形で、PropertyPanel の 6 ストーリーが枠の外へ出たまま main へ入った
+- **層 2 へ載せない理由は所要時間。** `pre-push` 全体の約 3 倍（合計 3 分 37 秒）かかり、上の基準に収まらない
+- **層 3 へも置かない。** 3 分半の検査は「編集中に走らせる最速フィードバック層」という位置づけと合わない
+- **層 4 が止めるのは、はみ出しを入れる側の PR。** `harness/records/pr-634.md` 指摘 25 では PropertyPanel の 6 ストーリーが枠外へ出たまま main へ入った
 
-**層 4 に残る穴は 5 つ。** ゲートは層 1 が持つので、どれも踏んだ先で CI が落とす。
+**層 4 に残る穴は 5 つある。** ゲートは層 1 が持つため、いずれも踏んだ先で CI が落とす。
 
 | 残る穴 | 内容 |
 | --- | --- |
 | 走らせ忘れ | 層 4 は指示ベースなので飛ばせる |
-| フォントの差 | **手元で通っても CI と等価ではない。** CI は `fonts-noto-cjk` を入れてから撮るので、書体が違う環境では折り返しが変わって高さが出ない(`harness/records/pr-651.md` 指摘 20。手元で 180 本すべて撮れたのに CI では 6 本が枠外)。撮影前のフォント検査は日本語が豆腐になっていないかしか見ないので、**書体違いは素通りして偽の成功になる** |
-| Chrome | PATH に無ければ走らない(devDependencies に無く、`CHROME_BIN` で与える) |
-| 踏む側は止まらない | main が壊れている間は、自分の差分と無関係な PR が赤を踏む(`pr-639.md` 指摘 19 / `pr-654.md` 指摘 21 はどちらも `src/` を 1 行も触っていない)。手順の条件にも当たらない |
-| 比較は含まない | 手順が走らせるのは撮影まで。`visual:compare` は baseline を gh-pages から取る手間があるので入れていない。**撮影が通っても視覚差分が緑とは限らない** |
+| フォントの差 | **手元で通っても CI と等価ではない。** CI は `fonts-noto-cjk` を入れて撮影するため、書体が違う環境では折り返しが変わって高さが再現しない（`harness/records/pr-651.md` 指摘 20: 手元で 180 本すべて通ったのに CI で 6 本が枠外）。撮影前のフォント検査は日本語の豆腐化しか見ないため、**書体違いは素通りして偽の成功になる** |
+| Chrome | PATH になければ走らない（devDependencies になく、`CHROME_BIN` で指定する） |
+| 踏む側は止まらない | main が壊れている間は、自分の差分と無関係な PR が赤を踏む（`pr-639.md` 指摘 19 / `pr-654.md` 指摘 21 はどちらも `src/` を 1 行も触っていない）。手順の条件にも当たらない |
+| 比較は含まない | 手順が走らせるのは撮影まで。`visual:compare` は baseline を gh-pages から取る手間があるため入れていない。**撮影が通っても視覚差分が緑とは限らない** |
 
-検査が読むのは `documentElement` の実寸(`scrollWidth` / `scrollHeight`)だけ。
-[`.github/scripts/storybook-visual-regression.mjs`](../../.github/scripts/storybook-visual-regression.mjs)
-の doc はこれに加えて「クリップされた中身は数に入らない」と書くが、その前提が崩れていることは
-`harness/records/pr-634.md` 指摘 26 が実測している(#645)。
+検査が読むのは `documentElement` の実寸（`scrollWidth` / `scrollHeight`）のみ。[`.github/scripts/storybook-visual-regression.mjs`](../../.github/scripts/storybook-visual-regression.mjs) の doc には「クリップされた中身は数に入らない」とあるが、その前提が崩れていることは `harness/records/pr-634.md` 指摘 26 で実測されている（#645）。
 
 #### Rust の検査は層 1 と層 4 にしかない
 
-`src-tauri/` の `cargo clippy` と `cargo test`(`TAURI_SETUP.md`「Rust 側の検査」)は、CI(層 1。
-`src-tauri.yml`)と push 前手順(層 4。`implementation-flow` フェーズ 7)にだけあり、**層 2 にも層 3 にも置いていない。**
+`src-tauri/` の `cargo clippy` と `cargo test`（`TAURI_SETUP.md`「Rust 側の検査」）は、CI（層 1、`src-tauri.yml`）と push 前手順（層 4、`implementation-flow` フェーズ 7）にだけあり、**層 2・層 3 には置いていない。**
 
-- **層 2 へ載せない理由は所要時間と環境。** 手元の実測で初回は clippy 74 秒 + test 92 秒と、`pre-push` 全体
-  (73.0 秒)の 2 倍を超え、上の判定表の置き場で書いた物差しに載らない。
-  webkit のシステムライブラリが無い環境では飛ばすしかなく、飛ばす環境が多いほど層 2 に置いても守れない
-- **層 3 へも置かない。** かかる時間は同じで、撮影範囲の検査と同じく最速フィードバック層の位置づけと合わない
+- **層 2 へ載せない理由は所要時間と環境。** 初回実測で clippy 74 秒 + test 92 秒と `pre-push` 全体（73.0 秒）の 2 倍を超え、基準に収まらない。また WebKit のシステムライブラリがない環境では飛ばすしかなく、スキップ環境が多いほど層 2 で守れない
+- **層 3 へも置かない。** 最速フィードバック層の位置づけと合わないため
 
-### 発火しているかを確かめる(カナリア)
+### 発火しているかを確かめる（カナリア）
 
-`hook-canary.sh` は `echo hook-canary` を必ず deny する。push の前にこれを 1 度実行すると、
-silent だったフックの不発が detected に変わる。
+`hook-canary.sh` は `echo hook-canary` を必ず deny する。push 前にこれを 1 度実行すると、サイレントだったフック不発を検知できる。
 
-**通った = 不発、ではない。** カナリアは自分の取りこぼしと本当の不発を区別できないので、
-通ったときは PreToolUse の痕跡を見て決める。
+**通った = 不発、ではない。** カナリアは自分の取りこぼしと本当の不発を区別できないため、通ったときは PreToolUse の痕跡を見て判定する。
 
 | カナリア | 実行中フラグのマーカー | 発火ログの見出し | 読み方 |
 | --- | --- | --- | --- |
 | deny された | — | — | **発火している** |
-| 通った | ある | — | **カナリアの取りこぼし**。Task/Agent のフックは発火している(不発と書かない) |
-| 通った | 無い | ある | SessionStart は発火している。PreToolUse は不明 |
-| 通った | 無い | 無い | **本当に不発**(`分類: hook-environment`) |
+| 通った | ある | — | **カナリアの取りこぼし**。Task / Agent のフックは発火している（不発と書かない） |
+| 通った | ない | ある | SessionStart は発火している。PreToolUse は不明 |
+| 通った | ない | ない | **本当に不発**（`分類: hook-environment`） |
 
-発火ログのパスの組み立ては `lib/firings-log.sh` が持つ。
+発火ログのパス組み立ては `lib/firings-log.sh` が担う。
 
 ```bash
 ls -d "${TMPDIR:-/tmp}/design-composer-verification-agents-${CLAUDE_CODE_SESSION_ID:-}"
 grep -c $'\tsession\t' "${TMPDIR:-/tmp}/design-composer-firings-${CLAUDE_CODE_SESSION_ID:-}.log"
 ```
 
-**マーカーは作業ツリーを書き換えるサブエージェントを 1 度でも通した後にしか現れない。**
-`track-verification-agent-activity.sh` がその Task/Agent でしか作らないため、着手直後に
-カナリアを実行した回は 2 行目に当たらず、マーカー無しの枝へ落ちる。2 行目で読めるのは
-`implementation-flow` フェーズ 7(`plan-reviewer` を通した後)以降。
+**マーカーは作業ツリーを書き換えるサブエージェントを 1 度でも通した後にしか現れない。** `track-verification-agent-activity.sh` がその Task / Agent でしか作らないため、着手直後にカナリアを実行した回は 2 行目に当たらずマーカーなしの枝へ落ちる。2 行目で判定できるのは `implementation-flow` フェーズ 7（`plan-reviewer` を通した後）以降。
 
-マーカーが言えるのは **`Task|Agent` の PreToolUse か PostToolUse のどちらかが発火した**まで。
-`mkdir -p` が `hook_event_name` の分岐より手前にあるので、PostToolUse だけでも作られる
-(実測)。それでも見出し(SessionStart)より近いので枝を分けてある。
+マーカーが証明できるのは **`Task|Agent` の PreToolUse か PostToolUse のどちらかが発火した**ことまで。`mkdir -p` が `hook_event_name` の分岐より前にあるため PostToolUse だけでも作られる（実測）。それでも見出し（SessionStart）より PreToolUse に近いため枝を分けている。
 
-見出しのほうは `record-firings.sh` が **SessionStart** で書く。ログファイル自体は PostToolUse の
-追記でも作られるので、**ファイルの有無ではなく見出し行を数える**(見出しの無いログは
-`harness-record` が計測対象外として扱う)。
+見出しは `record-firings.sh` が **SessionStart** で書く。ログファイル自体は PostToolUse の追記でも作られるため、**ファイルの有無ではなく見出し行を数える**（見出しのないログは `harness-record` が計測対象外として扱う）。
 
-`CLAUDE_CODE_SESSION_ID` が無い環境では、`…-*` の glob で出たものが**別セッションの残骸**で
-ないかを見出しの時刻で確かめる(tmp はコンテナに残る)。
+`CLAUDE_CODE_SESSION_ID` がない環境では、`…-*` の glob で出たものが**別セッションの残骸**でないかを見出しの時刻で確かめる（tmp はコンテナに残るため）。
 
-実測は割れている。**同じ「リモート実行環境」でも発火する場合としない場合がある**ので、
-不発を前提に設計しつつ、発火する側を捨てない(層 3 に置く価値はある)。
+実測は割れている。**同じ「リモート実行環境」でも発火する場合としない場合がある**ため、不発を前提に設計しつつ発火する側も活かしている（層 3 に置く価値がある）。
 
 | 実測 | 起動元 | 結果 |
 | --- | --- | --- |
-| PR #192(2026-08-11) | webhook 起動 | **通ってしまった** = 不発 |
+| PR #192（2026-08-11） | webhook 起動 | **通ってしまった** = 不発 |
 | 2026-08-14 | claude.ai/code から起動 | **deny された** = 発火 |
 | 2026-09-12 | claude.ai/code から起動 | `echo hook-canary` は **deny され**、同じセッションの `echo hook-canary && echo done` は**通った** = カナリアの取りこぼし |
-| 2026-10-10(#1032) | Issue の assigned で起動した routine(3 リポジトリを並べ、作業ディレクトリ `/home/user`) | **通った** = 不発(マーカーも見出しも無い) |
-| 2026-10-10(#1032) | 前のセッションが `create_session` で起動(design-composer だけ、作業ディレクトリはリポジトリルート) | **deny された** = 発火 |
-| 2026-11-07(#1277) | 前のセッションが `create_session` で起動(design-composer だけ、作業ディレクトリはリポジトリルート) | **deny された** = 発火。スラッシュコマンドで再開すると、同じログに SessionStart の見出しが 2 行目として書かれ、ログが続いた |
+| 2026-10-10（#1032） | Issue の assigned で起動した routine（3 リポジトリを並べ、作業ディレクトリ `/home/user`） | **通った** = 不発（マーカーも見出しもない） |
+| 2026-10-10（#1032） | 前のセッションが `create_session` で起動（design-composer のみ、作業ディレクトリはリポジトリルート） | **deny された** = 発火 |
+| 2026-11-07（#1277） | 前のセッションが `create_session` で起動（design-composer のみ、作業ディレクトリはリポジトリルート） | **deny された** = 発火。スラッシュコマンドで再開すると、同じログに SessionStart の見出しが 2 行目として書かれ、ログが続いた |
 
-#1032 の 2 行の読み方は `harness/case-law/process.md`「起動の形で発火が割れた対照」。
+#1032 の 2 行の読み方は `harness/case-law/process.md`「起動の形で発火が割れた対照」を参照。
 
-**2026-09-12 の行が、この表の読み方を変えた実測。** ただし**連ねて実行した回に限る**。
-素の `echo hook-canary` は修正前の実装でも deny されるので(旧実装で実測)、素で実行して
-通った回の結論は今も有効。#192 はその形で、不発のまま。
+**2026-09-12 の行が、この表の読み方を変えた実測。** ただし**連ねて実行した回に限る**。素の `echo hook-canary` は修正前の実装でも deny されるため（旧実装で実測）、素で実行して通った回の結論は今も有効であり、#192 は不発のまま。
 
-**カナリアだけは外部コマンドに依存しない。** PreToolUse は exit 2 以外の異常終了を
-「非ブロックのエラー」として素通りさせるので、`jq` の無い環境では他のフックと同様に
-カナリアも exit 127 で終わり、**配線が読まれていない場合とまったく同じ見え方**になる
-(実測: `jq` を PATH から外すと deny が出ずに exit 127)。それでは「フックは動いていたのに
-不発と報告する」ことになり、検出そのものが信用できない。判定も出力も bash の組み込みだけで
-行い、`jq` は在れば使う程度に留めている。
+**カナリアだけは外部コマンドに依存しない。** PreToolUse は exit 2 以外の異常終了を「非ブロックのエラー」として素通りさせるため、`jq` がない環境では他フックと同様にカナリアも exit 127 で終わり、**配線が読まれていない場合とまったく同じ見え方**になる（実測: `jq` を PATH から外すと deny が出ず exit 127）。それでは「フックは動いていたのに不発と報告する」ことになり検出自体が信用できない。そのため判定も出力も bash の組み込みだけで行い、`jq` はあれば使う程度に留めている。
 
-deny のメッセージは、`jq` / `python3` が欠けていればその名前も併せて出す。**カナリアが
-通っても、これらを使う他のフックは同じフェイルオープンで黙って素通りする**ため。
+deny メッセージには `jq` / `python3` が欠けていればその名前も併せて出す。**カナリアが通っても、これらを使う他のフックは同じフェイルオープンで黙って素通りする**ため。
 
-検出そのものは指示ベースだが、**失敗しても穴は開かない**。ゲートは git hooks と CI にあり、
-カナリアはそれが効いているかを知るためだけのもの。指示ベースに置いてよいのは、
-失敗してもガードが破れない検出系だけ。
+検出自体は指示ベースだが、**失敗しても穴は開かない**。ゲートは git hooks と CI にあり、カナリアはそれが効いているかを知るためだけのもの。指示ベースに置いてよいのは、失敗してもガードが破れない検出系に限る。
 
-## 例外(エスケープハッチ)
+## 例外（エスケープハッチ）
 
-- `block-parent-session-edit.sh` が implementation-flow の外の作業でも拒否したら、その Edit / Write を
-  `implementer` / `general-purpose` に渡す。正規の抜け方はこれだけ(残る穴は「カバー範囲と残る穴」)。
-  拒否を外すためだけに `harness-record` / `harness-growth` を起動しない
-- `block-git-during-verification-agent.sh` が拒否したのに、該当するサブエージェントが動いていないなら、
-  中断で PostToolUse が来ずに残った印。拒否文に出るディレクトリの `active.<種類>.*` がそれで、種類ごとの
-  有効期間(フックの本文)を過ぎれば無視される。**待たずに消すかは利用者に確認してから**、そのファイルを
-  `rm` で消す。本当に実行中の印を消すと、そのサブエージェントが終わる前に git 操作が通る
+- `block-parent-session-edit.sh` が `implementation-flow` 外の作業でも拒否した場合は、その Edit / Write を `implementer` / `general-purpose` に渡す。正規の抜け方はこれだけとする（残る穴は「カバー範囲と残る穴」）。拒否を外すためだけに `harness-record` / `harness-growth` を起動しない
+- `block-git-during-verification-agent.sh` が拒否したのに該当サブエージェントが動いていない場合は、中断で PostToolUse が来ずに残ったマーカーである。拒否文に出るディレクトリの `active.<種類>.*` が該当し、種類ごとの有効期間（フック本文）を過ぎれば無視される。**待たずに消すかは利用者に確認してから** `rm` で消す（本当に実行中のマーカーを消すと終了前に git 操作が通る）
 - `block-lint-suppress.sh` は以下を許可する:
-  - `useExhaustiveDependencies` / `react-hooks/exhaustive-deps`(useEffect マウント時)
-  - `noUnusedVariables` / `no-unused-vars`(ブランド型 `declare const ... unique symbol` の直前行のみ)
-  - 対象ファイルに `// @lint-suppress-ok` を記載した場合(本当に必要なときのみ)
-- 編集時の検査フック 3 本(`block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh`)は、**検出器が異常終了しても編集を止めない**(`lib/edit-detector.sh` が「検査できていません」を `additionalContext` で伝えるだけ)
-  - 層 3 は即時フィードバックの層で、`block-lint-suppress.sh` が deny すると検出器が壊れている間 JS/TS を編集できなくなる(PostToolUse の 2 本は止めても編集が戻らない)。止める役は層 1・2 が持つ
-  - ただし層 1・2 は検出器を編集時と違う呼び方(ファイルのパス / `--lines` / `--all src`)で呼ぶので、編集時の呼び方(標準入力 / 編集した 1 ファイル)でだけ落ちる場合は層 1・2 も拾わない
-  - 起動できない python3 は、`lib/pre-push-detector.sh` と同じく python3 が無いものと扱って何も伝えない。ここで扱うのは検出器の異常終了で、python3 の有無は環境の前提(層 1 の `check-added-*` は `require_runnable_detector` で落とす)
-  - 報告の行を出したあとに落ちた検出器は、違反として読む(`.github/scripts/lib/detector-report.sh` の既知の制限)
-- テスト規約チェックの「条件分岐禁止」が見るのは **`test()` / `it()` のブロック内だけ**(`lib/test-conditionals.awk`)。セットアップやファクトリなどヘルパー関数内の分岐は対象外
-  - `rules/testing.md` が禁じているのは「テストケースが入力によって形を変える」ことであって、セットアップの分岐ではないため
-  - ファイル全体を見ていた頃は、テストが1件も分岐していないファイルでもヘルパーの1行で push が止まっていた。誤検知で止まるフックは、エスケープハッチを足す運用を招いて全体が信用されなくなる
-- テスト規約チェック(`check-test-rules.sh` / `pre-push-test-rules.sh`)は以下で個別に無効化できる:
-  - ファイル単位: `// @test-rules-disable [no-describe|no-conditional|file-naming|test-location ...]`(引数なしで全ルール無効化)
+  - `useExhaustiveDependencies` / `react-hooks/exhaustive-deps`（`useEffect` マウント時）
+  - `noUnusedVariables` / `no-unused-vars`（ブランド型 `declare const ... unique symbol` の直前行のみ）
+  - 対象ファイルに `// @lint-suppress-ok` を記載した場合（本当に必要なときのみ）
+- 編集時の検査フック 3 本（`block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh`）は、**検出器が異常終了しても編集を止めない**（`lib/edit-detector.sh` が「検査できていません」を `additionalContext` で伝えるだけ）
+  - 層 3 は即時フィードバック層であり、`block-lint-suppress.sh` が deny すると検出器故障中に JS / TS を編集できなくなる（PostToolUse の 2 本は止めても編集が戻らない）。止める役は層 1・2 が担う
+  - ただし層 1・2 は検出器を編集時と異なる呼び方（ファイルパス / `--lines` / `--all src`）で呼ぶため、編集時の呼び方（標準入力 / 編集した 1 ファイル）でのみ落ちる場合は層 1・2 でも拾えない
+  - 起動できない python3 は `lib/pre-push-detector.sh` と同じく python3 がないものとみなして何も伝えない（ここで扱うのは検出器の異常終了であり、python3 の有無は環境の前提。層 1 の `check-added-*` は `require_runnable_detector` で落とす）
+  - 報告行を出したあとに落ちた検出器は違反として読む（`.github/scripts/lib/detector-report.sh` の既知の制限）
+- テスト規約チェックの「条件分岐禁止」が見るのは **`test()` / `it()` のブロック内だけ**（`lib/test-conditionals.awk`）。セットアップやファクトリなどヘルパー関数内の分岐は対象外
+  - `rules/testing.md` が禁じているのは「テストケースが入力によって形を変える」ことであり、セットアップの分岐ではないため
+  - ファイル全体を見ていた頃は、テストが 1 件も分岐していないファイルでもヘルパーの 1 行で push が止まっていた。誤検知で止まるフックはエスケープハッチ乱用を招き全体の信用を落とす
+- テスト規約チェック（`check-test-rules.sh` / `pre-push-test-rules.sh`）は以下で個別に無効化できる:
+  - ファイル単位: `// @test-rules-disable [no-describe|no-conditional|file-naming|test-location ...]`（引数なしで全ルール無効化）
   - プロジェクト単位: 最寄りの `.test-rules.yml` に `<ルール名>: false` を記載
-- テスト規約チェックの `test-location`(テストは対象モジュールの `__tests__/` 直下に置く)は、`分類: test-placement` が未介入のまま 5 回出たため #233 で足した
-  - 判定は「親フォルダ名が `__tests__` か」だけ。`rules/testing.md`「配置と命名」のうち機械判定できるのはここまでで、「実装を `index.ts` に直接書く」「分割はサブフォルダで」は判定できない
-  - 導入時点で `src/` の 321 件すべてが既に `__tests__/` 直下にあり、偽陽性 0 件で入れられた(絞る理由が無い)
-- `check-test-helper-duplication.sh`(層 3・PostToolUse)は**ブロックしない**(`additionalContext` を返すだけ)。見るのは**編集したファイルが絡む重複だけ**だが、探す範囲はプロジェクト全体の `__tests__/`(同じフォルダに限らない)
-  - ブロックしないのは、PostToolUse は編集が済んだ後に走るので止めても編集は戻らず、止める役は push 前の層(下の `pre-push-test-helper-duplication.sh`・`harness/githooks/pre-push`・`rules-check`)が持つため。触っていないファイルの重複まで並べないのは、今書いた分が読めなくなるため(検出器の `groups_for_file`)
-  - 判定は「本体が一字一句同じ」に限る。似ているだけのものは見ない(偽陽性で止めない)
-  - 導入時点でリポジトリに既存の重複が 13 組あり、#153 で一旦 0 組にした。**ただしそれは検出器が見える範囲での 0 組**で、フォルダをまたぐ重複(#179)は検出器自体が見ておらず数に入っていなかった。探索範囲をプロジェクト全体へ広げたところ、フォルダをまたぐ重複が新たに 11 組見つかった(#866 の着手時点では 8 組・18 箇所。#866 で 0 組にした。`--all src` が exit 0)
-  - 本体の切り出し方(引数・戻り値の型注釈を読み飛ばす・式本体のアロー関数)と意図した取りこぼしは検出器の docstring、判定表は `lib/duplicate-test-helpers-cases.sh`。型注釈の `{}` を本体と読む偽陽性(#179・#406)と、既定引数 `f(props: T = {})` の `{}` を本体と読んで短すぎると捨てる見逃しは、これで解消している
-  - **エスケープハッチは置かない。** `// @duplicate-helpers-ok` で無効化できたが、`src` での使用が導入以来 0 件で、`--all`(push 前と `rules-check`)が読まないため層によって効き方が割れる。`check-doc-comments.sh` と同じ理由で撤去した(#309)
-- `.github/scripts/check-added-test-helper-duplication.sh`(層 1・CI、`frontend.yml` の `lint-suppress` ジョブ。同じスクリプトを `harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す。**検出器を走らせられない・途中で落ちたなら exit 2** → `.github/scripts/lib/detector-precondition.sh` / `detector-report.sh`)は、`--all` の格上げ(#309。下の `pre-push-test-helper-duplication.sh`)より前から置いている追加行だけの検査で、いまは `--all` が落とすものの一部を二重に落とす。撤去するかは #954 で判断する。`duplicate-test-helpers.py --lines` で対象ファイルの重複行を機械可読に出し、**このブランチで新しく追加された行に載っていて、かつ同じ本体の数が base(merge-base)より増えたものだけ**を違反にする
-  - ファイル分割や rename と組めないほど書き換えた移動では、移った側が全行「追加行」になる(pr-240 で lint 抑制コメントが踏んだのと同じ形)。そこで追加行に候補が出たときだけ merge-base の `src` を展開し、`--base-root` で本体の数を比べる。`check-added-lint-suppressions.sh` のような有無ではなく数で比べる理由と、それで生じる取りこぼしは検出器の `grown_since` と docstring「意図した取りこぼし」
-- `check-doc-comments.sh` は**ブロックしない**(`additionalContext` を返すだけ)。また、見るのは**編集したファイルの分だけ**
-  - 対象は `src/` の実装ファイルのみ(`__tests__/` / `*.stories.*` / `__stories__/` は見ない)
-  - 見るのは**ファイル直下の宣言とコンパニオンオブジェクトの直下のメソッド**だけ(入れ子の関数・それより深いオブジェクトのメソッドは対象外)
-  - メソッドと読むのは `const` で始まるオブジェクトの直下にあって、引数の括弧の後ろに本体(`{` か `=>`)が続くものだけ。判定の仕組みと意図した取りこぼし(入れ子のオブジェクトのメソッド)は検出器の docstring、判定表は `lib/missing-doc-comments-cases.sh`
-  - **同じファイルに同名の宣言があってそちらに doc があれば対象外**。型とコンパニオンオブジェクトが doc を共有する形(`export type Size` の下に `export const Size = {`)を偽陽性にしないため
-  - **エスケープハッチは置かない。** `src` での使用が導入以来 0 件で、`--all`(`rules-check`・`harness/githooks/pre-push`)が読まなかったため層によって効き方が割れていた(#756)
-- `pre-push-doc-comments.sh` は **push をブロックする**。見るのは `src/` 全体
-  - 導入時点では既存の抜けが 149 件あったため「このブランチで追加した行」だけに絞っていたが、#159 でその 149 件を埋めて 0 件にしたので絞る理由が無くなった(触っていない分で止まることがなく、「止まる理由が自分の変更ではない」状態にならない)
-  - **doc の有無と項目(`@param` / `@returns` / `@throws`)の両方を見る**。導入時点では項目を満たさない doc が 190 件あったため `--missing-only` で有無だけに絞っていたが、#159 でその 190 件を埋めて 0 件にしたので絞る理由が無くなった
-  - **コンパニオンオブジェクトのメソッドも見る**(`frontend.yml` の `rules-check` と `harness/githooks/pre-push` の `--all` も同じ)。導入時点ではメソッドの抜けが doc の無いもの 110 件・項目の欠けたもの 260 件あったため「このブランチで追加した行」だけを見る別の検査に分けていたが、#720 でそれを 0 件にしたので絞る理由が無くなった
-  - エスケープハッチは置かない(PostToolUse 版と同じ)
-  - 検出器は `--all src` で 1 回呼ぶ(`rules-check`・`harness/githooks/pre-push` と同じ)。ファイルごとに呼ぶ走査を別に持つと、片方にだけ除外が載って層ごとに判定が割れる
-- `pre-push-test-helper-duplication.sh` は **push をブロックする**。見るのは `src/` の `__tests__/` 全体(`rules-check`・`harness/githooks/pre-push` と同じ `--all src`)
-  - 既存の重複が残っていた間は PostToolUse の報告だけに留めていたが、#866 で 0 組にしたので絞る理由が無くなった(触っていない分で止まることがなく、「止まる理由が自分の変更ではない」状態にならない)
-  - エスケープハッチは置かない(PostToolUse 版と同じ)
-- `pre-push-typecheck.sh` / `pre-push-lint.sh` は node_modules 未インストール時(ツールが実行不能な場合)は黙ってスキップする
-- `post-merge-review.sh` はマージを**ブロックしない**(`additionalContext` を返すだけ)。マージは人の判断で行われるので、記録が無いことを理由に止めても記録の質は上がらないため
-  - 検知対象は `mcp__github__merge_pull_request` と `gh pr merge` のみ。素の `git merge` は見ない(ベースブランチの取り込みで日常的に走るため、拾うと誤発火のほうが多くなる)
-- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「依存方向のルール」の強制)は、`domains/` → `libs/` の辺だけ `warn`(**ブロックしない**)。導入時点で `@/libs/document-ipc`(型のみ)・`@/libs/document-json` への import が計 5 件既に存在しており(`document-save-state` は申し送りと決めた既知の債務、残り 3 件はテストの `DocumentJson` fixture 利用)、どちらもドメインの型・モジュール再配置を伴う判断(CLAUDE.md「設計判断の確認」)のため、この回では移動を行わない。`services/` → `features/` `libs/` `components/` `hooks/`・`components/` `hooks/` `utils/` `types/` → `domains/` `services/` `features/`・`libs/` → `services/` `features/` `components/` `hooks/` の 3 方向は既存違反 0 件だったため `error` でそのまま導入した
+- テスト規約チェックの `test-location`（テストは対象モジュールの `__tests__/` 直下に置く）は、`分類: test-placement` が未介入のまま 5 回出たため #233 で追加した
+  - 判定は「親フォルダ名が `__tests__` か」だけ。`rules/testing.md`「配置と命名」のうち機械判定できるのはここまでであり、「実装を `index.ts` に直接書く」「分割はサブフォルダで」は判定できない
+  - 導入時点で `src/` の 321 件すべてが既に `__tests__/` 直下にあり、偽陽性 0 件で導入できた（絞る理由がない）
+- `check-test-helper-duplication.sh`（層 3・PostToolUse）は**ブロックしない**（`additionalContext` を返すだけ）。対象は**編集したファイルが絡む重複だけ**だが、探索範囲はプロジェクト全体の `__tests__/`（同じフォルダに限らない）
+  - ブロックしないのは、PostToolUse は編集後に走るため止めても編集が戻らず、止める役は push 前と CI（`pre-push-test-helper-duplication.sh`・`harness/githooks/pre-push`・`rules-check`）が担うため。触っていないファイルの重複を並べないのは、今書いた分が埋もれるのを防ぐため（検出器の `groups_for_file`）
+  - 判定は「本体が一字一句同じ」に限る。似ているだけのものは見ない（偽陽性で止めないため）
+  - 導入時点の既存重複 13 組を #153 で一旦 0 組にしたが、当時は検出器がフォルダをまたぐ重複（#179）を見ていなかった。探索範囲をプロジェクト全体へ広げると新たに 11 組見つかり（#866 着手時点で 8 組・18 箇所）、#866 で 0 組にした（`--all src` が exit 0）
+  - 本体の切り出し方（引数・戻り値の型注釈の読み飛ばし、式本体アロー関数）と意図した取りこぼしは検出器の docstring、判定表は `lib/duplicate-test-helpers-cases.sh` を参照。型注釈の `{}` を本体と誤認する偽陽性（#179・#406）や既定引数 `f(props: T = {})` の見逃しは解消済み
+  - **エスケープハッチは置かない。** 以前は `// @duplicate-helpers-ok` で無効化できたが `src` での使用が導入以来 0 件であり、`--all`（push 前と `rules-check`）が読まないため層によって効き方が割れることから、`check-doc-comments.sh` と同じ理由で撤去した（#309）
+- `.github/scripts/check-added-test-helper-duplication.sh`（層 1・CI の `lint-suppress` ジョブ。`harness/githooks/pre-push` も引数なしで呼び、base を `origin/main` として push 前にも通す。検出器を走らせられない・途中で落ちた場合は exit 2 → `.github/scripts/lib/detector-precondition.sh` / `detector-report.sh`）は、`--all` 格上げ（#309）より前から置いている追加行限定の検査であり、現在は `--all` と一部重複している（撤去するかは #954 で判断）。`duplicate-test-helpers.py --lines` を使い、**このブランチで追加された行に載り、かつ同じ本体の数が base（merge-base）より増えたものだけ**を違反にする
+  - ファイル分割や rename 検出されない大幅書き換えを伴う移動では移先が全行「追加行」になるため（pr-240 と同じ形）、追加行に候補が出たときだけ merge-base の `src` を展開して `--base-root` で本体の数を比べる。有無ではなく数で比べる理由と取りこぼしは検出器の `grown_since` と docstring「意図した取りこぼし」を参照
+- `check-doc-comments.sh` は**ブロックしない**（`additionalContext` を返すだけ）。対象は**編集したファイルの分だけ**
+  - 対象は `src/` の実装ファイルのみ（`__tests__/` / `*.stories.*` / `__stories__/` は除外）
+  - 対象箇所は**ファイル直下の宣言とコンパニオンオブジェクト直下のメソッド**だけ（入れ子の関数・さらに深いオブジェクトのメソッドは対象外）
+  - メソッドとみなすのは `const` で始まるオブジェクト直下にあり、引数括弧の後ろに本体（`{` か `=>`）が続くものだけ。判定の仕組みと意図した取りこぼし（入れ子オブジェクトのメソッド）は検出器の docstring、判定表は `lib/missing-doc-comments-cases.sh` を参照
+  - **同じファイルに同名の宣言がありそちらに doc があれば対象外**とする。型とコンパニオンオブジェクトが doc を共有する形（`export type Size` の下に `export const Size = {`）を偽陽性にしないため
+  - **エスケープハッチは置かない。** `src` での使用が導入以来 0 件で、`--all`（`rules-check`・`harness/githooks/pre-push`）が読まないため層によって効き方が割れていた（#756）
+- `pre-push-doc-comments.sh` は **push をブロックする**。対象は `src/` 全体
+  - 導入時点では既存の抜け 149 件と項目不足 190 件があったため追加行・`--missing-only` に絞っていたが、#159 で両方 0 件にしたため絞る理由がなくなった
+  - **コンパニオンオブジェクトのメソッドも検査する**（`frontend.yml` の `rules-check` と `harness/githooks/pre-push` の `--all` も同じ）。導入時点の抜け（doc なし 110 件・項目欠け 260 件）を #720 で 0 件にしたため追加行限定を解除した
+  - エスケープハッチは置かない（PostToolUse 版と同じ）
+  - 検出器は `--all src` で 1 回呼ぶ（`rules-check`・`harness/githooks/pre-push` と同じ）。ファイルごとに別走査を持つと除外条件が片方だけずれ層ごとに判定が割れる
+- `pre-push-test-helper-duplication.sh` は **push をブロックする**。対象は `src/` の `__tests__/` 全体（`rules-check`・`harness/githooks/pre-push` と同じ `--all src`）
+  - 既存重複があった間は PostToolUse 報告のみに留めていたが、#866 で 0 組にしたため絞る理由がなくなった
+  - エスケープハッチは置かない（PostToolUse 版と同じ）
+- `pre-push-typecheck.sh` / `pre-push-lint.sh` は `node_modules` 未インストール時（ツール実行不能時）は黙ってスキップする
+- `post-merge-review.sh` はマージを**ブロックしない**（`additionalContext` を返すだけ）。マージは人の判断であり、記録がないことを理由に止めても記録の質は上がらないため
+  - 検知対象は `mcp__github__merge_pull_request` と `gh pr merge` のみ。素の `git merge` はベースブランチ取り込みで日常的に走るため対象外とする
+- `.oxlintrc.json` の `overrides`（`rules/architecture.md`「依存方向のルール」の強制）は、`domains/` → `libs/` の辺だけ `warn`（**ブロックしない**）。導入時点で `@/libs/document-ipc`（型のみ）・`@/libs/document-json` への import が計 5 件存在し（`document-save-state` は申し送りの既知債務、残り 3 件はテストの `DocumentJson` fixture 利用）、ドメインの型・モジュール再配置を伴う判断（`AGENTS.md`「設計判断の確認」）のため導入回では移動していない。`services/` → `features/` `libs/` `components/` `hooks/`・`components/` `hooks/` `utils/` `types/` → `domains/` `services/` `features/`・`libs/` → `services/` `features/` `components/` `hooks/` の 3 方向は既存違反 0 件だったため `error` で導入した
   - `features/<x>/domains/` への同種の適用は未実装
-- `.oxlintrc.json` の `overrides`(`rules/architecture.md`「モジュールの公開API」の「複数ファイルへの分割が必要になったら」の閾値)は、`src/**/*.tsx` に `max-lines: 600` を `error` で置く。捕まえたいのは 1 ファイルに 11 コンポーネント・716 行が同居した形
-  - **数えるのは空行とコメントを除いた行**(`skipBlankLines` / `skipComments` を `true` にしている。既定はどちらも false で、素の `wc -l` と同じ数え方になる)。この 2 つがあるため `__tests__/` を対象から外さずに導入時点の違反 0 件が成立している。生の行数では 620 行ある `use-editor-state.actions.test.tsx` が、空行 96 行を引いて閾値の内側に収まる
-  - **対象は `src/` の `.tsx` すべて**で、`__tests__/` も `.stories.tsx` も `__stories__/` の共有の器も入る(実測: 実行行 601 行のファイルは `__tests__/` 配下でも発火する)。`.ts` は対象外で、`design-document/index.ts` が 1449 行、`editor-state/index.ts` が 1273 行あり違反 0 件では入れられない
-  - **`.ts` が対象外なので、中身を兄弟の `.ts` へ逃がす経路は開いたまま。** 止めているのは `rules/architecture.md`「実装は `index.ts` に直接書く」という観点だけで、`import-rule-violations.py` が見るのは「外から非 index ファイルを読む」形なので、`index.tsx` からだけ読む兄弟 `.ts` は検出しない(probe を置いて実測。該当する兄弟実装ファイルは現状 0 件)
-  - エスケープハッチは他の oxlint ルールと共通で、ファイルに `// @lint-suppress-ok` を書くと `block-lint-suppress.sh` / `check-added-lint-suppressions.sh` の抑制コメント禁止が**そのファイル全体で**外れる。分割の判断を迂回する使い方はしない
-  - **導入時点では、上の一文は事実ではなかった。** `lib/lint-suppressions.py` の検出は `biome-ignore` / `eslint-disable` の 2 綴りしか見ておらず、oxlint が同じく読む `oxlint-disable` の綴りは素通りしていた(実測: `// oxlint-disable eslint/max-lines` の 1 行で、`@lint-suppress-ok` 無しにこのルールを無効化できた)。検出側へ `oxlint-disable` を足して塞いである。既存の抑制は `biome-ignore` の 3 件だけなので、追加による新しい違反は 0 件
-- `.oxlintrc.json` の `overrides`(#1066)は、`src/**/*.tsx` に `react/forbid-elements` を `error` で置き、生の `<button>` を禁じる(対応する規範は `rules/` に無く、lint だけが持つ)。押せるものは `src/components/button` の `Button` で描く。外すのは `src/components/**`(部品の実装)・`src/**/__tests__/**`・基本ボタンに当たらない行やレールを描くファイル(一覧は `.oxlintrc.json`)で、**どれを外したかと理由は `.oxlintrc.json` のコメントが持つ**(ここに写さない)。導入時点の違反 0 件
-  - **`"plugins": ["react"]` は `error` の override にも `off` の override にも要る。** `error` 側に無いとルールが発火せず、`off` 側に無いと `off` が効かず許可したファイルも落ちる(どちらも probe を置いて実測)。`off` の override は `error` より後ろに置く(前に置くと後ろの `error` が上書きして許可したファイルも落ちる。実測)
-  - `react` プラグインを入れたことで、`src/**/*.tsx` には `react` の correctness の規則が `warn` で入る(導入時点で 0 件)。そのうち `jsx-props-no-spread-multi` は自動修正を持つので、`post-edit-lint.sh` の `oxlint --fix` が同じ props の二重 spread を黙って 1 つにまとめる(実測)
-  - **穴は恒久の判断として受け入れる(#1066)。** 許可したファイルの中の生 `<button>` は落ちない(`artboard-list` / `token-list` の見出しの `+` を生の `<button>` へ戻しても通る)。`role="button"` を付けた生の要素も見ない(既存例 `artboard-frame/index.tsx`)。`// @lint-suppress-ok` でファイル単位に抑制もできる(上の `max-lines` と同じ逃げ道)。`error` の override そのもの(`plugins` を含む)を消しても、違反が 0 件なので落ちる検査は無い(判定表は置かず、他の oxlint 規則と同じ扱い。消して `pnpm run lint` が 0 件で通ることを実測)
-  - 許可を要素単位まで狭めない。`overrides.files` の glob はファイル単位でしか書けず、要素単位にするには Python の検出器が要って配線先が増え、編集時点(`post-edit-lint.sh`)では効かなくなる
-- **feature 間の deep import・循環参照・モジュール内部への deep import**(#257 のゴール 1・2・6)は `lib/import-rule-violations.py` が見る。oxlint に置かなかったのは、3 つとも**リポジトリの構造を読まないと判定できない**ため(「自分の feature を除く」は呼び出し元のパスに依存し、循環はグラフ、deep import は「そのフォルダが `index.ts` を持つか」を要する)。`overrides.files` の静的な glob では書けない(#284 の実測では同一 feature 内のドメイン間 import まで巻き込んで 38 件の偽陽性。数値の出どころは #257 のコメント)
-  - **判定の根拠はスクリプトの docstring に書いてある**(入れ子モジュールの扱い・`__tests__/` の扱い・feature だけ狭い理由)。ここに写すと片方だけ古くなるので繰り返さない。判定表は `lib/import-rule-cases.sh`
-  - **ゴール 6 の実効範囲は現状ほぼ fixture 専用。** 入れ子モジュールの index を許すため、`module-public-api` に当たるのは「モジュールフォルダ配下の非 index ファイルを外から読む」形だけで、実測するとテスト・ストーリーを除いた該当ファイルは 4 件しか無い(このリポジトリが「実装は `index.ts` に直接書く」を守っているため)。**将来の退行を止める枠であって、いま何かを剥がす検査ではない**
-  - **エスケープハッチは置かない。** 他の push ブロック系(`@test-rules-disable` / `@lint-suppress-ok`)と違い、この検査は「その import を書いてよいか」の判定で、**ファイル単位で例外にできる性質のものではない**(例外にした瞬間そのファイルからは何でも読める)。偽陽性を避ける側で手当てしてある — コメント行は数えない・入れ子の index は通す
-  - 導入時点の既存違反は 8 件(feature をまたぐ fixture の直接 import)で、テスト用の公開口を置いて 0 件にしてから `error` 相当(exit 1)で入れた
-- **story の title**(`lib/story-title-violations.py`)は **push をブロックする**。見るのは `src/` 全体。**対応する規範は `rules/` に無い**(機械で判定できるのでフックだけが持つ → `AGENTS.md`「規約の更新」の「ルールに書くくらいならフックにする」)
-  - **エスケープハッチは置かない。** 免除は既に規則の側にある(葉 = ツリーに出る表示名は見ない)ので、`title` の綴りが実装の都合で必要になる余地はそこで吸収される。導入時点の違反 0 件・偽陽性 0 件で、呼び出しの無い逃げ道を先回りで足さない
-  - 導入時点の違反は 0 件・49 本。綴りを揃えたのは PR #679 で、この検査はその状態が剥がれないようにするもの
-  - **`title` は story の id でもある。** この検査に合わせてフォルダを動かすと、VRT のベースラインと `iframe.html?id=` の参照が**全部**変わる(同じ形の実例は `harness/case-law/process.md`)。揃えるための移動は、その入れ替わりを織り込んで計画する
-  - 判定の仕組み(導出の手順・葉を見ない意図した取りこぼし)はスクリプトの docstring が持つ。判定表は `lib/story-title-cases.sh`
-- **名指ししたパス**(`lib/named-path-violations.py`)は **push をブロックする**。見るのはリポジトリ全体の `.ts` / `.tsx`(コメントの中だけ)と `.md`(全文)。**対応する規範は `rules/` に無い**(story の title と同じ扱い)
-  - **エスケープハッチは置かない。** 免除は既に規則の側にある(拡張子の無い PascalCase の名前・`-` で終わる切れたプレースホルダ・相対の綴り・走査しないフォルダ・このファイルのフェンスの中の probe)。導入時点の違反 0 件・偽陽性 0 件で、呼び出しの無い逃げ道を先回りで足さない
-  - 導入時点の違反は **15 件**(`src/` の 6 件と `harness/case-law/` の 9 件)で、同じ PR で 0 件にしてから入れた。#690 のマージ前の木へ当てると、#690 が直した **14 箇所を 14/14** 報告する(`harness-growth`「採用前の再生」)
-  - **`.claude/hooks/README.md`(このファイル)も走査する。免除するのはフェンスの中の probe だけ**(下の動作確認のレシピは、これから作るファイルを意図して名指しする)。probe と見る条件とファイルを丸ごと外さない理由は検出器の docstring が持つ
-  - **このファイルにレシピを書くときは、probe を docstring の条件に合わせる。** 合わない綴り(`canvas/features/deep` のような作るフォルダの途中・実在しない綴りの見本)は違反として報告される。層を並べるときは `/` で繋がず、1 語ずつコードにする(`components/` `hooks/`)
-  - **`harness/records/` も走査しない**(`harness/records/README.md`「過去の記録は書き換えない」。この検出器を当てると 206 件出るが、どれも当時の綴りとして正しい)。`harness/case-law/` は走査する — あちらが禁じているのは**判断**の書き換えで、実体を指さなくなった綴りは直す側(判例自身が `pr-330`「判例が古いパスを指したまま残る」で指摘を受けている)
-  - **走査対象は git が追跡しているファイル**。フォルダを歩くと `.gitignore` 済みの生成物(`storybook-static/` 等)まで対象になり、手元に成果物が残っている環境だけで push が止まる。コミット前の新しいファイルは見えないが、push の時点では差分がコミットされているのでゲートに穴は開かない
-  - 判定の仕組み(実在の判定の手順・意図した取りこぼし)はスクリプトの docstring が持つ。判定表は `lib/named-path-cases.sh`
+- `.oxlintrc.json` の `overrides`（`rules/architecture.md`「モジュールの公開API」の「複数ファイルへの分割が必要になったら」の閾値）は、`src/**/*.tsx` に `max-lines: 600` を `error` で置く。防ぎたいのは 1 ファイルに 11 コンポーネント・716 行が同居したような肥大化
+  - **数えるのは空行とコメントを除いた行**（`skipBlankLines` / `skipComments` を `true` に設定。既定は両方 false で `wc -l` 相当）。これにより `__tests__/` を除外せずに導入時点の違反 0 件が成立している（生 620 行の `use-editor-state.actions.test.tsx` が空行 96 行を引いて 600 行以内に収まる）
+  - **対象は `src/` の `.tsx` すべて**であり、`__tests__/`・`.stories.tsx`・`__stories__/` の共有コンテナも含む（実測: 実行行 601 行なら `__tests__/` 配下でも発火）。`.ts` は対象外（`design-document/index.ts` が 1449 行、`editor-state/index.ts` が 1273 行あり違反 0 件で入れられないため）
+  - **`.ts` が対象外なため、中身を兄弟 `.ts` へ逃がす経路は開いたまま。** 抑止しているのは `rules/architecture.md`「実装は `index.ts` に直接書く」だけであり、`import-rule-violations.py` は「外から非 index ファイルを読む」形を見るため `index.tsx` のみから読む兄弟 `.ts` は検出しない（probe で実測。該当ファイルは現状 0 件）
+  - エスケープハッチは他の oxlint ルールと共通で、`// @lint-suppress-ok` を書くと抑制コメント禁止が**そのファイル全体で**外れる。分割の判断を迂回する用途には使わない
+  - 導入時点では `lib/lint-suppressions.py` が `biome-ignore` / `eslint-disable` しか見ておらず `oxlint-disable` が素通りしていた（実測: `// oxlint-disable eslint/max-lines` で `@lint-suppress-ok` なしに無効化できた）。検出側へ `oxlint-disable` を追加して塞ぎ済み（既存抑制は `biome-ignore` の 3 件のみで新違反 0 件）
+- `.oxlintrc.json` の `overrides`（#1066）は、`src/**/*.tsx` に `react/forbid-elements` を `error` で置き、生の `<button>` を禁じる（対応する規範は `rules/` になく lint のみが持つ）。押せるものは `src/components/button` の `Button` で描く。除外対象（`src/components/**`・`src/**/__tests__/**`・基本ボタンに当たらない行やレールを描くファイル）の一覧と理由は `.oxlintrc.json` のコメントで管理する（ここに写さない）。導入時点の違反 0 件
+  - **`"plugins": ["react"]` は `error` 側・`off` 側の両方の override に必要。** 欠けると発火しない／`off` が効かない（probe で実測）。また `off` の override は `error` より後ろに置く（前に置くと `error` で上書きされる。実測）
+  - `react` プラグイン有効化により `src/**/*.tsx` へ `react` の correctness 規則が `warn` で入る（導入時 0 件）。そのうち `jsx-props-no-spread-multi` は自動修正を持つため、`post-edit-lint.sh` の `oxlint --fix` が同一 props の二重 spread を黙って 1 つにまとめる（実測）
+  - **残る穴は恒久の判断として受け入れる（#1066）。** 除外ファイル内の生 `<button>`（`artboard-list` / `token-list` の見出し `+` 等）や `role="button"` の生要素（既存例 `artboard-frame/index.tsx`）は見ず、`// @lint-suppress-ok` でファイル単位の抑制もできる。また違反 0 件のため `error` override 自体を消しても落ちる検査はない（他の oxlint 規則と同じく判定表は置かず、削除時に `pnpm run lint` が 0 件で通ることを実測済み）
+  - 許可を要素単位まで狭めない。`overrides.files` の glob はファイル単位しか書けず、要素単位にするには Python 検出器が必要になり配線先が増えて編集時（`post-edit-lint.sh`）に効かなくなるため
+- **feature 間の deep import・循環参照・モジュール内部への deep import**（#257 のゴール 1・2・6）は `lib/import-rule-violations.py` が検査する。oxlint に置かなかったのは 3 つとも**リポジトリ構造を読まないと判定できない**ためであり、`overrides.files` の静的 glob では書けない（#284 実測で同一 feature 内ドメイン間 import まで巻き込み 38 件の偽陽性。数値出典は #257 コメント）
+  - **判定根拠はスクリプトの docstring に記載している**（入れ子モジュール・`__tests__/` の扱い・feature だけ狭い理由）。二重管理を避けるためここには写さない。判定表は `lib/import-rule-cases.sh`
+  - **ゴール 6 の実効範囲は現状ほぼ fixture 専用。** 入れ子モジュールの index を許すため `module-public-api` に該当するのは「モジュールフォルダ配下の非 index ファイルを外から読む」形だけで、テスト・ストーリーを除いた該当ファイルは実測 4 件のみ（`index.ts` 直書き規約が守られているため）。**将来の退行を止める枠**としての位置づけ
+  - **エスケープハッチは置かない。** ファイル単位で例外にするとそのファイルから何でも読めてしまうため。代わりにコメント行の無視・入れ子 index の許可で偽陽性を避けている
+  - 導入時の既存違反 8 件（feature をまたぐ fixture の直接 import）はテスト用公開口を設けて 0 件にしてから `error` 相当（exit 1）で導入した
+- **story の title**（`lib/story-title-violations.py`）は **push をブロックする**。対象は `src/` 全体。**対応する規範は `rules/` にない**（機械判定できるためフックのみで持つ → `AGENTS.md`「規約の更新」）
+  - **エスケープハッチは置かない。** 葉（ツリー表示名）を検査外とすることで実装都合を吸収済みであり、導入時の違反 0 件・偽陽性 0 件のため不要な逃げ道を足さない
+  - 導入時は違反 0 件・49 本（PR #679 で揃えた状態を維持する検査）
+  - **`title` は story の id でもある。** この検査に合わせてフォルダを動かすと VRT のベースラインと `iframe.html?id=` の参照が**すべて**変わる（実例は `harness/case-law/process.md`）。移動時はその入れ替わりを織り込んで計画する
+  - 判定の仕組み（導出手順・葉を見ない意図した取りこぼし）はスクリプトの docstring、判定表は `lib/story-title-cases.sh` を参照
+- **名指ししたパス**（`lib/named-path-violations.py`）は **push をブロックする**。対象はリポジトリ全体の `.ts` / `.tsx`（コメント内のみ）と `.md`（全文）。**対応する規範は `rules/` にない**（story の title と同じ扱い）
+  - **エスケープハッチは置かない。** 免除条件は規則側で定義済み（拡張子のない PascalCase 名・`-` 終わりのプレースホルダ・相対表記・除外フォルダ・このファイルのフェンス内 probe）であり、導入時の違反 0 件・偽陽性 0 件のため不要な逃げ道を足さない
+  - 導入時の違反 **15 件**（`src/` 6 件、`harness/case-law/` 9 件）を同じ PR で 0 件にして導入した。#690 マージ前の木へ当てると #690 が直した **14 箇所を 14/14** 検出する（`harness-growth`「採用前の再生」）
+  - **`.claude/hooks/README.md`（このファイル）も走査し、免除するのはフェンス内の probe だけ**（動作確認レシピがこれから作るファイルを名指しするため）。probe の判定条件とファイル丸ごと除外しない理由は検出器の docstring を参照
+  - **このファイルにレシピを書くときは、probe を docstring の条件に合わせる。** 条件外の綴り（`canvas/features/deep` のような作成途中のフォルダ名・非実在パス例）は違反になる。層を並べるときは `/` で繋がず 1 語ずつコードにする（`components/` `hooks/`）
+  - **`harness/records/` は走査しない**（`harness/records/README.md`「過去の記録は書き換えない」。当てると 206 件出るが当時の綴りとして正しい）。一方 `harness/case-law/` は走査する（あちらが禁じるのは**判断**の書き換えであり、実体を指さなくなったパスは直す対象。`pr-330` で指摘実績あり）
+  - **走査対象は git が追跡しているファイルのみ。** フォルダを歩くと `.gitignore` 済みの生成物（`storybook-static/` 等）で環境依存に止まるため。コミット前の新規ファイルは見えないが、push 時点ではコミット済みなのでゲートに穴は開かない
+  - 判定の仕組み（実在判定手順・意図した取りこぼし）はスクリプトの docstring、判定表は `lib/named-path-cases.sh` を参照
 
 ## 動作確認
 
@@ -470,7 +386,7 @@ echo '{"session_id":"probe","tool_input":{"command":"git add -A"}}' \
   | bash .claude/hooks/block-git-during-verification-agent.sh; echo "exit=$?"
 rm -rf "${TMPDIR}/design-composer-verification-agents-probe"
 
-# 背景起動の拒否を含む判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる
+# バックグラウンド起動の拒否を含む判定表（`ok` だけなら期待どおり・`NG` が出たら判定が変わっている）。pre-push と CI も走らせる
 bash .claude/hooks/lib/verification-agent-cases.sh; echo "exit=$?"
 ```
 
@@ -524,20 +440,13 @@ rm "${TMPDIR:-/tmp}/design-composer-firings-probe.log"
 echo '{"session_id":"probe","tool_name":"Bash","tool_input":{"command":"ls"}}' | bash .claude/hooks/record-firings.sh; echo "exit=$?"
 ```
 
-**終了コードまで見る。** 層 1(CI の `run:`)と層 2(`pre-push` の `run_check`)は**終了コードだけが配線**なので、
-標準出力の文字列しか確かめないと「無条件に落ちる」というゴールの本体が守られない。
-`; echo "exit=$?"` を必ず付ける。
+**終了コードまで見る。** 層 1（CI の `run:`）と層 2（`pre-push` の `run_check`）は**終了コードだけが配線**なので、標準出力の文字列しか確かめないと「無条件に落ちる」というゴールの本体が守られない。`; echo "exit=$?"` を必ず付ける。
 
-**カナリアだけは例外で、判定は標準出力に出る。** PreToolUse の deny は JSON を返して
-`exit 0` で終わるので、終了コードでは deny と pass が区別できない。`canary-cases.sh` が
-見ているのも出力の有無で、そちらの終了コードは「ケース表と食い違ったか」を表す。
+**カナリアだけは例外で、判定は標準出力に出る。** PreToolUse の deny は JSON を返して `exit 0` で終わるため、終了コードでは deny と pass が区別できない。`canary-cases.sh` が見ているのも出力の有無で、そちらの終了コードは「ケース表と食い違ったか」を表す。
 
-**カナリアのケースはコマンドへ直接書かずファイルに置く。** `cd /tmp && echo hook-canary` の
-ような行は本物の呼び出しとして切り出されるので、表を書いたコマンド自体が deny される(実測)。
+**カナリアのケースはコマンドへ直接書かずファイルに置く。** `cd /tmp && echo hook-canary` のような行は本物の呼び出しとして切り出されるため、表を書いたコマンド自体が deny される（実測）。
 
-**probe は `.tsx` でも置く。** 解消した既存違反 8 件はすべて `.test.tsx` / `.stories.tsx` で、
-`src` には `index.tsx` を持つモジュールが 40 個ある。`.ts` だけで確かめると、
-拡張子の取りこぼし(`SOURCE_SUFFIXES` / `INDEX_NAMES` から `.tsx` が落ちる形)を素通りさせる。
+**probe は `.tsx` でも置く。** 解消した既存違反 8 件はすべて `.test.tsx` / `.stories.tsx` で、`src` には `index.tsx` を持つモジュールが 40 個ある。`.ts` だけで確かめると、拡張子の取りこぼし（`SOURCE_SUFFIXES` / `INDEX_NAMES` から `.tsx` が落ちる形）を素通りさせる。
 
 ```bash
 # import 規約の判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる
@@ -626,9 +535,9 @@ echo '{"tool_input":{"command":"git push"}}' \
 ```
 
 ```bash
-# 層 2(git hooks)が落ちた検査のあとも最後まで走り、結果の行が失敗を言うこと。
-# **probe は doc 付き・整形済みにして、typecheck が見る `src/` の中に置く。** 層 2 は biome /
-# doc コメントも同じ回に走らせるので、doc の無い・整形していない 1 行を置くとそれらも落ち、
+# 層 2（git hooks）が落ちた検査のあとも最後まで走り、結果の行が失敗を言うこと。
+# **probe は doc 付き・整形済みにして、typecheck が見る `src/` の中に置く。** 層 2 は Biome /
+# doc コメントも同じ回に走らせるため、doc のない・整形していない 1 行を置くとそれらも落ち、
 # exit 1 が型から来たのかを「失敗した検査」の行で切り分けることになる
 printf '/**\n * 型で落ちる検査の probe。\n *\n * @param count 数\n * @returns 表示\n */\nexport const Probe = (count: number): string => count;\n' \
   > src/features/editor/probe.ts
@@ -710,10 +619,10 @@ echo '{"tool_name":"Bash","tool_input":{"command":"git merge origin/main"},"tool
 
 ## 関連するスキル
 
-| スキル                                | 内容                                                                   |
-| ------------------------------------- | ---------------------------------------------------------------------- |
-| `.claude/skills/implementation-flow/` | 実装の手順(計画・サブエージェントによる検証・Issue への記録・マージ後の追記) |
-| `.claude/skills/harness-record/`      | マージ後の評価記録(`harness/records/` へ 1 ファイル)            |
-| `.claude/skills/harness-growth/`      | 記録の集計と、規約 / フックの改善                               |
+| スキル | 内容 |
+| --- | --- |
+| `.claude/skills/implementation-flow/` | 実装の手順（計画・サブエージェントによる検証・Issue への記録・マージ後の追記） |
+| `.claude/skills/harness-record/` | マージ後の評価記録（`harness/records/` へ 1 ファイル） |
+| `.claude/skills/harness-growth/` | 記録の集計と、規約 / フックの改善 |
 
-`post-merge-review.sh` はこの2つのスキルへの入口として働く。
+`post-merge-review.sh` は後ろ 2 つ（`harness-record`・`harness-growth`）のスキルへの入口として働く。

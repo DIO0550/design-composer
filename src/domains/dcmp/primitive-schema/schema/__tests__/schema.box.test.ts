@@ -252,6 +252,32 @@ test("Box の opacity は 0〜1 の生リテラルでデフォルトが 1", () =
   });
 });
 
+test("Box の layerBlur は appearance 節の生リテラルの number でデフォルトが 0", () => {
+  expect(BoxSchema.props.layerBlur).toMatchObject({
+    domain: "literal",
+    literalType: "number",
+    default: 0,
+    group: "appearance",
+  });
+});
+
+test("Box の layerBlur は 0 の下端だけを範囲に宣言する", () => {
+  expect(BoxSchema.props.layerBlur.range).toEqual({ min: 0 });
+});
+
+test("Box の backdropBlur は appearance 節の生リテラルの number でデフォルトが 0", () => {
+  expect(BoxSchema.props.backdropBlur).toMatchObject({
+    domain: "literal",
+    literalType: "number",
+    default: 0,
+    group: "appearance",
+  });
+});
+
+test("Box の backdropBlur は 0 の下端だけを範囲に宣言する", () => {
+  expect(BoxSchema.props.backdropBlur.range).toEqual({ min: 0 });
+});
+
 test("Box を指定するとその仕様が得られる", () => {
   expect(PrimitiveSchema.forType("Box")).toBe(BoxSchema);
 });

@@ -15,6 +15,29 @@ test("数値の生リテラル prop には値域を宣言できる", () => {
   }>();
 });
 
+test("数値の生リテラル prop には下端だけの値域を宣言できる", () => {
+  const definition = {
+    domain: "literal",
+    literalType: "number",
+    range: { min: 0 },
+    group: "appearance",
+  } as const satisfies LiteralPropDefinition;
+
+  expectTypeOf(definition.range).toEqualTypeOf<{ readonly min: 0 }>();
+});
+
+test("数値の生リテラル prop には下端の無い値域を宣言できない", () => {
+  const definition = {
+    domain: "literal",
+    literalType: "number",
+    // @ts-expect-error 値域は下端を必ず持つ
+    range: { max: 1 },
+    group: "appearance",
+  } as const satisfies LiteralPropDefinition;
+
+  expectTypeOf(definition.literalType).toEqualTypeOf<"number">();
+});
+
 test("文字列の生リテラル prop には値域を宣言できない", () => {
   const definition = {
     domain: "literal",
