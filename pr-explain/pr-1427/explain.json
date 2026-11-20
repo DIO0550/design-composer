@@ -1,0 +1,551 @@
+{
+  "version": 1,
+  "pr": 1427,
+  "sha": "695ebcabfe905045f6da599a12c64d8a66e4328f",
+  "issue": 1425,
+  "overview": {
+    "title": "機能追加でもテストを先にコミットし、落ちることを確かめてから実装する",
+    "lead": "`flow:feature` の実装を 2 工程に分けた。親セッションは第 1 工程の後に自分でテストの出力を取り、assert で落ちていることを確かめてからコミットする。",
+    "before": [
+      {
+        "text": "`implementer` がテストと実装を 1 回で同時に書いていた",
+        "message": "write-all"
+      },
+      {
+        "text": "テストが落ちうるかは、フェーズ 6 の `test-reviewer`（ミューテーション）が事後に確かめるだけだった"
+      }
+    ],
+    "after": [
+      {
+        "text": "第 1 工程（`仕様の固定`）で、テストと公開 API の骨組みだけを書かせる",
+        "message": "write-spec"
+      },
+      {
+        "text": "親が vitest の JSON 出力を自分で取り、落ちたテストの集合と失敗の 1 行目を計画の RED 表と突き合わせる",
+        "message": "take-red"
+      },
+      {
+        "text": "合格したら親がコミットし、これを第 2 工程以降の比較基準にする",
+        "message": "commit-spec"
+      },
+      {
+        "text": "第 2 工程（`仕様の実現`）で、`implementer` が 1 件ずつ RED→GREEN を回し、サイクルごとの失敗の 1 行目を返す",
+        "message": "run-one"
+      },
+      {
+        "text": "親は第 1 工程のテストに差分がないことを `git diff --exit-code` で確かめる",
+        "message": "check-unchanged"
+      },
+      {
+        "text": "自動テストで落とせない変更（doc・設定だけ等）は第 1 工程を省き、理由と代わりの確かめ方を書く"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "認める失敗の形",
+        "text": "assert まで届いた失敗だけを RED と認める表。予告した unwrap の失敗を認めた理由もここにある",
+        "go": {
+          "kind": "file",
+          "path": ".claude/skills/implementation-flow/feature.md"
+        }
+      },
+      {
+        "title": "1 件だけ走らせる手順",
+        "text": "`-t` は正規表現扱いで、当たらないと 0 件のまま exit 0 になる。件数で弾く手順が意図どおりか見てほしい",
+        "go": {
+          "kind": "message",
+          "id": "run-one"
+        }
+      },
+      {
+        "title": "機能追加の流れ",
+        "text": "1 回の起動が、2 回の起動と親の確認 3 つに変わった",
+        "go": {
+          "kind": "flow",
+          "id": "feature-flow"
+        }
+      },
+      {
+        "title": "同時に書く手順が消えた",
+        "text": "テストと実装を 1 回で書かせる起動はなくなった",
+        "go": {
+          "kind": "stepChange",
+          "flow": "feature-flow",
+          "stepChange": 1
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "red-first",
+      "label": "RED を先に確かめる",
+      "role": "機能追加の実装で、テストが実装より先に assert で落ちることを親が確かめる",
+      "review": [
+        "認める失敗の形の表が、vitest・cargo・判定表の実際の出力と合っているか",
+        "第 1 工程を省く条件が広すぎて、テストを書ける変更まで省けてしまわないか"
+      ]
+    },
+    {
+      "id": "shared-check",
+      "label": "2 工程の共通確認",
+      "role": "第 2 工程の後のテスト無変更の確認を、bugfix と feature で 1 か所にまとめる",
+      "review": [
+        "`bugfix.md` の振る舞いが変わっていないか（参照に置き換えただけか）"
+      ]
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "実装の手順書（スキル）とサブエージェントの定義"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/skills/implementation-flow/feature.md",
+      "name": "機能追加の手順",
+      "role": "`flow:feature` のフェーズ 3 / 5 / 6 / 7 に足す手順",
+      "feature": "red-first",
+      "change": "新しく作った",
+      "icon": "scan"
+    },
+    {
+      "path": ".claude/skills/implementation-flow/SKILL.md",
+      "name": "実装フロー",
+      "role": "8 フェーズの手順と、作業の種類ごとの手順ファイルの振り分け",
+      "feature": "shared-check",
+      "change": "作業の種類の表に `feature.md` を足し、第 2 工程後の `git diff --exit-code` を共通の確認として置いた"
+    },
+    {
+      "path": ".claude/skills/implementation-flow/bugfix.md",
+      "name": "バグ修正の手順",
+      "role": "`flow:bugfix` の再現テストを先にコミットする手順",
+      "feature": "shared-check",
+      "change": "`git diff --exit-code` の本文を `SKILL.md` への参照に置き換えた"
+    },
+    {
+      "path": ".claude/agents/implementer.md",
+      "name": "実装担当",
+      "role": "計画どおりにコードとテストを書いて返すサブエージェント",
+      "feature": "red-first",
+      "change": "工程を受け取る種類に `flow:feature` を足し、返すものにサイクルの記録を足した",
+      "icon": "widget"
+    }
+  ],
+  "actors": [
+    {
+      "id": "parent",
+      "label": "親セッション",
+      "role": "計画と採否を決め、工程の境目で出力を自分で取って確かめる",
+      "icon": "person"
+    },
+    {
+      "id": "runner",
+      "label": "テストランナー",
+      "role": "vitest・cargo test・判定表",
+      "icon": "scan"
+    },
+    {
+      "id": "git",
+      "label": "作業ブランチ",
+      "role": "工程ごとのコミットを持つ",
+      "icon": "store"
+    }
+  ],
+  "messages": [
+    {
+      "id": "write-all",
+      "from": "parent",
+      "to": ".claude/agents/implementer.md",
+      "kind": "cmd",
+      "name": "テストと実装を書かせる",
+      "code": "Agent(implementer, 計画)",
+      "via": "call",
+      "status": "removed"
+    },
+    {
+      "id": "write-spec",
+      "from": "parent",
+      "to": ".claude/agents/implementer.md",
+      "kind": "cmd",
+      "name": "仕様の固定を書かせる",
+      "code": "Agent(implementer, 工程: 仕様の固定)",
+      "via": "call",
+      "payload": "計画と RED 表",
+      "returns": "テストと骨組み",
+      "status": "added"
+    },
+    {
+      "id": "take-red",
+      "from": "parent",
+      "to": "runner",
+      "kind": "qry",
+      "name": "落ち方を取る",
+      "code": "pnpm exec vitest run --reporter=json --outputFile=\"$out\"",
+      "via": "exec",
+      "returns": "落ちたテストと失敗の 1 行目",
+      "status": "added"
+    },
+    {
+      "id": "commit-spec",
+      "from": "parent",
+      "to": "git",
+      "kind": "cmd",
+      "name": "第 1 工程のコミット",
+      "code": "git commit",
+      "via": "exec",
+      "status": "added"
+    },
+    {
+      "id": "write-impl",
+      "from": "parent",
+      "to": ".claude/agents/implementer.md",
+      "kind": "cmd",
+      "name": "仕様の実現を書かせる",
+      "code": "Agent(implementer, 工程: 仕様の実現)",
+      "via": "call",
+      "returns": "実装とサイクルの記録",
+      "status": "added"
+    },
+    {
+      "id": "run-one",
+      "from": ".claude/agents/implementer.md",
+      "to": "runner",
+      "kind": "qry",
+      "name": "1 件だけ走らせる",
+      "code": "pnpm exec vitest run <ファイル> -t \"^${t}\\$\"",
+      "via": "exec",
+      "returns": "そのテストだけの結果（走った件数が 1 であること）",
+      "status": "added"
+    },
+    {
+      "id": "check-unchanged",
+      "from": "parent",
+      "to": "git",
+      "kind": "qry",
+      "name": "テストに差分がないか",
+      "code": "git diff --exit-code <第 1 工程のコミット> -- <第 1 工程のテストのファイル>",
+      "via": "exec",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "feature-flow",
+      "label": "機能追加を実装するとき",
+      "gist": "1 回の起動が、仕様の固定と仕様の実現の 2 回に分かれ、境目で親が RED を確かめるようになった",
+      "text": "フェーズ 5 で親が `implementer` を起動してから、実装が揃うまで。",
+      "steps": [
+        "write-spec",
+        "take-red",
+        "commit-spec",
+        "write-impl",
+        "run-one",
+        "check-unchanged"
+      ],
+      "beforeSteps": [
+        "write-all"
+      ],
+      "stepChanges": [
+        {
+          "status": "removed",
+          "beforeStep": 1,
+          "beforeText": "テストと実装を同時に書かせていた",
+          "change": "テストが実装に合わせて書かれていないかを確かめられなかった"
+        },
+        {
+          "status": "added",
+          "afterStep": 1,
+          "afterText": "テストと骨組みだけを書かせる",
+          "change": "骨組みがないと新しい API を呼ぶテストは TypeError や import 失敗で落ち、assert に届かない"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "親が自分で出力を取り、RED 表と目で突き合わせる",
+          "change": "`implementer` の自己申告に頼らないため"
+        },
+        {
+          "status": "added",
+          "afterStep": 3,
+          "afterText": "合格したらコミットし、比較基準にする"
+        },
+        {
+          "status": "added",
+          "afterStep": 4,
+          "afterText": "RED 表の順に 1 件ずつ通させる"
+        },
+        {
+          "status": "added",
+          "afterStep": 5,
+          "afterText": "サイクルごとに、走ったのがちょうど 1 件であることを確かめる",
+          "afterCost": "heavy"
+        },
+        {
+          "status": "added",
+          "afterStep": 6,
+          "afterText": "第 1 工程のテストが書き換えられていないことを終了コードで確かめる"
+        }
+      ],
+      "measure": {
+        "what": "`implementer` の起動回数",
+        "before": "1 回",
+        "after": "2 回（第 1 工程を省いたときは 1 回）"
+      }
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "7eaf821b19eb734a1b0798ed427beb5ef6f6193f",
+      "phase": "core",
+      "role": "`feature.md` を新設し、`flow:feature` を 2 工程にした",
+      "why": "Issue #1425 で合意した案 A（2 工程化）と案 B（`implementer` 内のサイクル）を併用するため。計画は `plan-reviewer` の指摘 10 件を反映した v2。",
+      "flows": [
+        "feature-flow"
+      ],
+      "review": [
+        "SKILL.md の作業の種類の表と、フェーズ 5 の 2 工程起動の文に flow:feature が揃って入っているか",
+        "bugfix.md は参照に置き換えただけで、フェーズ 6 の再実行の決まりは残っているか"
+      ],
+      "before": [
+        {
+          "text": "`flow:feature` は種類別手順ファイルを持たず、1 工程だった"
+        }
+      ],
+      "after": [
+        {
+          "text": "`flow:feature` も `feature.md` を持ち、2 工程で起動する",
+          "message": "write-spec"
+        }
+      ]
+    },
+    {
+      "sha": "695ebcabfe905045f6da599a12c64d8a66e4328f",
+      "phase": "revise",
+      "role": "実装の検証で採用した指摘を反映した",
+      "why": "`harness-reviewer` が手順書のコマンドを一時ディレクトリで走らせ、cargo の確認が RED のたびに外れることと、`-t` が 0 件のまま exit 0 で通ることを実測で示したため。",
+      "flows": [
+        "feature-flow"
+      ],
+      "review": [
+        "1 件だけ走らせる手順で、記号を含むテスト名が正しくエスケープされるか",
+        "cargo の確認がコンパイルエラーだけを不可にしているか"
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/implementation-flow/feature.md",
+          "start": 66,
+          "end": 71,
+          "text": "当たらないと 0 件のまま exit 0 になるため、名前の工夫ではなく走った件数で弾く"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/feature.md",
+          "start": 58,
+          "end": 58,
+          "text": "RED があると必ず出る `error: test failed` は拾わない"
+        }
+      ]
+    }
+  ],
+  "calls": {
+    "boxes": [],
+    "edges": [],
+    "gist": "手順書とエージェント定義だけの変更で、関数の呼び出しは変わらない"
+  },
+  "impact": {
+    "title": "機能追加を実装するセッションの進め方",
+    "lead": "機能追加の作業で、テストを先に書いて落ちることを確かめてから実装するようになる。",
+    "changed": {
+      "before": [
+        {
+          "text": "実装担当がテストと実装を一度に書いて返していた",
+          "message": "write-all"
+        }
+      ],
+      "after": [
+        {
+          "text": "実装担当はまずテストと仮の入口だけを書いて返す",
+          "message": "write-spec"
+        },
+        {
+          "text": "親は自分でテストを走らせ、計画どおりのテストだけが期待外れの値で落ちていることを確かめてから記録する",
+          "message": "take-red"
+        },
+        {
+          "text": "実装担当は落ちているテストを 1 件ずつ通し、それぞれの通す前の失敗を返す",
+          "message": "run-one"
+        }
+      ],
+      "text": "テストを書けない変更（説明文だけ・設定だけ・見た目だけ）は、理由と代わりの確かめ方を書いて最初の工程を省く。",
+      "specs": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "locator": "「作業の種類」の表の機能追加の行",
+          "text": "機能追加にも種類別の手順ファイルを付け、フェーズ 3 / 5 / 6 / 7 に手順を足した",
+          "shas": [
+            "7eaf821b19eb734a1b0798ed427beb5ef6f6193f"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1406,
+          "text": "落ち方の判定を機械で行う検査の候補として申し送った"
+        },
+        {
+          "issue": 1426,
+          "text": "バグ修正と機能追加で重複した基準をまとめる続きの作業"
+        }
+      ],
+      "primers": [
+        "two-steps"
+      ]
+    },
+    "kept": [
+      {
+        "text": "バグ修正の作業の進め方と判定は変わらない"
+      },
+      {
+        "text": "リファクタリングの作業は今までどおり、振る舞いを変えないことを確かめる手順のまま"
+      },
+      {
+        "text": "実装後の検証で、テストが判断ごとに落ちうるかを確かめる手順はそのまま残る"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": ".claude/skills/implementation-flow/refactor.md",
+        "locator": "「書き換えない範囲」",
+        "text": "機能追加の第 2 工程でも参照して使うが、中身は変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "id": "jq-filter",
+      "kind": "language",
+      "category": "jq",
+      "label": "jq のフィルタ",
+      "gist": "JSON を読んで必要な値だけを取り出し、行に並べる小さな言語。vitest の [[JSON レポート|json-report]] から落ちたテストだけを抜き出すのに使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`.testResults[]` は配列の要素を 1 つずつ流し、`select(条件)` は条件に合う要素だけを通す。`a // b` は `a` が `null` か `false` のとき `b` を使う。"
+        },
+        {
+          "kind": "caution",
+          "text": "この手順の jq は落ちた行を並べるだけで、assert の失敗かどうかを判定しない。判定は親が目で行う。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/implementation-flow/feature.md",
+          "lineRange": {
+            "start": 47,
+            "end": 49
+          },
+          "text": "第 1 工程の後に親が落ち方を並べるコマンド"
+        }
+      ]
+    },
+    {
+      "id": "two-steps",
+      "kind": "codebase",
+      "category": "implementation-flow",
+      "label": "2 工程の起動",
+      "gist": "`implementer` は commit しないので、テストだけが先に入ったコミットを作るには起動を 2 回に分け、間で親が確かめてコミットする。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "rule",
+          "text": "第 1 工程では種類別手順ファイルが第 1 工程に書かせるとしたものだけを書かせる。`flow:feature` ではテストと骨組み、`flow:bugfix` では再現テスト、`flow:refactor` では現状を固定するテスト。"
+        },
+        {
+          "kind": "history",
+          "text": "これまで 2 工程に分けていたのは `flow:bugfix` と `flow:refactor` だけだった。この PR で `flow:feature` が加わった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "lineRange": {
+            "start": 153,
+            "end": 162
+          },
+          "text": "2 工程の起動と、第 2 工程後の共通の確認",
+          "shas": [
+            "7eaf821b19eb734a1b0798ed427beb5ef6f6193f"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "jq-filter"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "json-report",
+      "label": "JSON レポート",
+      "text": "vitest が `--reporter=json` で出す、ファイルごと・テストごとの結果をまとめた JSON。落ちたテストは `failureMessages` に失敗の文を持つ。"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q-skeleton",
+      "kind": "choice",
+      "title": "骨組みが要る理由",
+      "prompt": "第 1 工程でテストだけでなく骨組み（シグネチャと仮の戻り値）も書くのはなぜか",
+      "options": [
+        "新しい API を呼ぶテストが TypeError や import 失敗で落ち、assert に届かないから",
+        "テストの行数を減らすため",
+        "test-reviewer がミューテーションを当てる先が必要だから",
+        "Storybook の撮影を通すため"
+      ],
+      "answer": 1,
+      "why": "vitest は型を検査しないので、存在しない関数を呼ぶと TypeError、存在しないモジュールは import 失敗になる。どちらも assert の失敗ではない。",
+      "go": [
+        {
+          "kind": "stepChange",
+          "flow": "feature-flow",
+          "stepChange": 2
+        }
+      ]
+    },
+    {
+      "id": "q-zero",
+      "kind": "yesno",
+      "title": "1 件だけ走らせる手順",
+      "prompt": "vitest の -t にテスト名をそのまま渡せば、当たらなかったときは必ず失敗の終了コードになる",
+      "holds": false,
+      "why": "-t は正規表現として扱われ、1 件も当たらないと全件 skipped のまま exit 0 になる。そのため走った件数が 1 であることを確かめる。",
+      "go": [
+        {
+          "kind": "message",
+          "id": "run-one"
+        }
+      ]
+    },
+    {
+      "id": "q-order",
+      "kind": "order",
+      "title": "機能追加の工程の順",
+      "prompt": "機能追加を実装するときの手順を順に並べよ",
+      "items": [
+        "テストと骨組みを書かせる",
+        "親が落ち方を取り RED 表と突き合わせる",
+        "第 1 工程をコミットする",
+        "1 件ずつ RED→GREEN を回させる",
+        "第 1 工程のテストに差分がないか確かめる"
+      ],
+      "why": "第 1 工程のコミットが比較基準になるので、確認とコミットは実装より前に来る。",
+      "go": [
+        {
+          "kind": "flow",
+          "id": "feature-flow"
+        }
+      ]
+    }
+  ]
+}
