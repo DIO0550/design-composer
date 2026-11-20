@@ -4,7 +4,7 @@
 # 本体が同じテストヘルパーを渡されたパスへ置くものと、サブエージェントの中の呼び出しの入力を組むもの。
 #
 # 使う側: lib/pre-push-detector-cases.sh / lib/edit-detector-cases.sh / lib/import-rule-cases.sh /
-# lib/verification-agent-cases.sh / lib/parent-session-edit-cases.sh
+# lib/verification-agent-cases.sh / lib/parent-session-edit-cases.sh / lib/issue-flow-kind-cases.sh
 #
 # 終了コードと出力の組を実物の検出器から決まった形で作れないので、判定表は検出器をスタブで作る
 # (ここに置くのは判定表どうしが共有する落ちる側。報告の行を出すスタブは報告の綴りが違うので各判定表が持つ)。

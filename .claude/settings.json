@@ -172,6 +172,15 @@
         ]
       },
       {
+        "matcher": "Bash|mcp__github__issue_write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-issue-without-flow-kind.sh\""
+          }
+        ]
+      },
+      {
         "matcher": "Task|Agent",
         "hooks": [
           {

@@ -20,6 +20,11 @@
 #   (`edit-detector-cases.sh` と同じ理由で、本番のフックに差し替え口を残さない)
 # - 拒否文の表は `期待|ケース名|含むはずの文`。拒否文の並びと文面を見る
 #
+# **検出器の表と origin の表は、python3 を 1 回だけ起動して検出器を import し、ケースごとに判定の関数を
+# 呼ぶ。** ケースごとに起動すると判定表全体で 8.0 秒かかり、pre-push に載せるには重い(載せる判断基準は
+# README「判定表をどの層へ置くか」)。CLI の経路(`--origin-url` と標準入力の JSON)は、フックの表が検出器を
+# CLI として走らせて見る。
+#
 # | 期待 | 意味 |
 # | --- | --- |
 # | `deny` | 違反として報告してほしい(フックなら deny) |
@@ -29,7 +34,7 @@
 # **止めすぎも deny で固定する**(`export GH_REPO` を先に実行する形など)。直したときに表を書き換えることになり、
 # 黙って広がることがない。
 #
-# 検出器と JSON の組み立てに python3 を使う(jq は使わない)。python3 が無いと pass 以外のケースが NG になる。
+# 検出器と JSON の組み立てに python3 を使う(jq は使わない)。python3 が無いと表が 1 件も走らず NG になる。
 set -uo pipefail
 
 lib_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -54,16 +59,6 @@ json_string() {
   text="${text//$'\n'/\\n}"
   text="${text//$'\t'/\\t}"
   printf '"%s"' "$text"
-}
-
-# 表の入力の `⏎` `⇥` `@W` を置き換える。
-#
-# $1 表に書いた入力
-expand_input() {
-  local text="$1"
-  text="${text//⏎/$'\n'}"
-  text="${text//⇥/$'\t'}"
-  printf '%s' "${text//@W/$work}"
 }
 
 # 形と入力から、PreToolUse の JSON を組む。
@@ -91,23 +86,52 @@ place_files() {
   printf 'title: x\n' >"$work/bad.json"
 }
 
-# 検出器を走らせ、pass / deny / broken を返す。deny の報告に分類と違う種別が混じれば `deny-other` にする。
+# 検出器を 1 回だけ import し、標準入力の 1 行 1 ケース(`表|期待|分類|形|origin の URL|ケース名|入力`)を
+# 判定して `表|期待|判定|ケース名` を出す。判定は pass / deny / broken(判定の関数が例外で落ちた)で、
+# deny の報告に分類と違う種別が混じれば `deny-other` にする。
 #
-# $1 PreToolUse の JSON
-# $2 origin の URL
-# $3 走らせるディレクトリ
-# $4 期待する分類(`-` なら見ない)
-detector_verdict() {
-  local input="$1" origin="$2" run_dir="$3" category="$4"
-  local output status=0 decision
-  output="$(cd "$run_dir" && printf '%s' "$input" | python3 "$detector" --origin-url "$origin")" || status=$?
-  decision="$(decide "$output" "$status" '^\[issue-flow-kind-')"
-  if [ "$decision" = "deny" ] && [ "$category" != "-" ] \
-    && ! all_in_category "$(grep '^\[' <<<"$output")" "^\[issue-flow-kind-$category\]"; then
-    decision="deny-other"
-  fi
-  echo "$decision"
-}
+# 引数は検出器のパスと作業ディレクトリ。
+detector_runner="$(cat <<'PY'
+import importlib.util
+import json
+import os
+import sys
+import traceback
+
+sys.dont_write_bytecode = True
+detector_path, work = sys.argv[1], sys.argv[2]
+spec = importlib.util.spec_from_file_location("issue_flow_kind_violations", detector_path)
+detector = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(detector)
+
+
+def hook_input(form, text):
+    if form == "mcp":
+        return {"tool_name": "mcp__github__issue_write", "tool_input": json.loads(text)}
+    command = {"tool_name": "Bash", "tool_input": {"command": text}}
+    return {**command, "cwd": work} if form == "bash" else command
+
+
+def verdict(form, origin, category, text):
+    os.chdir(work if form == "bash-nocwd" else os.path.join(work, "elsewhere"))
+    expanded = text.replace("⏎", "\n").replace("⇥", "\t").replace("@W", work)
+    try:
+        data = hook_input(form, expanded)
+        findings = detector.findings_for(data, detector.context_for(data, origin))
+    except Exception:
+        traceback.print_exc()
+        return "broken"
+    if not findings:
+        return "pass"
+    other = [f for f in findings if category != "-" and f.kind != f"issue-flow-kind-{category}"]
+    return "deny-other" if other else "deny"
+
+
+for line in sys.stdin:
+    table, expected, category, form, origin, label, text = line.rstrip("\n").split("|", 6)
+    print(f"{table}|{expected}|{verdict(form, origin, category, text)}|{label}")
+PY
+)"
 
 place_files
 
@@ -247,18 +271,9 @@ deny|unreadable|bash|137 <<EOF の提案の行に $R を含むなら止める|gh
 pass|-|bash|138 <<EOF の提案の行の \$5 は通す|gh issue create -t x --body-file - <<EOF⏎種類の提案: \`flow:feature\`（根拠 \$5）⏎EOF
 deny|unreadable|bash|139 残る穴を固定: $'a\'b…' は止める|gh issue create -t x --body $'a\'b⏎種類の提案: `flow:feature`（根拠）'
 pass|-|bash|141 URL=$(gh issue create --body-file - <<'EOF' …) で通す|URL=$(gh issue create --body-file - <<'EOF'⏎種類の提案: `flow:feature`（根拠）⏎EOF⏎)
+pass|-|bash|142 gh を含まず字句に分けられないコマンドは通す|echo 'issue の話
 CASES
 )"
-
-cases_before=$cases_reported
-while IFS='|' read -r expected category form label input; do
-  [ -n "$label" ] || continue
-  run_dir="$work/elsewhere"
-  [ "$form" = "bash-nocwd" ] && run_dir="$work"
-  decision="$(detector_verdict "$(payload "$form" "$(expand_input "$input")")" "$own_origin" "$run_dir" "$category")"
-  report "$expected" "$(normalize_miss "$expected" "$decision")" "$label"
-done <<<"$cases"
-report_cases_ran cases "$cases_before"
 
 # 82 は、自リポジトリを `-R` で明示したものを止め、他のリポジトリを通すことの対で見る(片方だけだと、
 # 読めずに空とみなした場合か、読み違えた場合のどちらかを通してしまう)。
@@ -275,11 +290,36 @@ deny||83 origin の URL が空なら -R other も止める|gh issue create -t x 
 CASES
 )"
 
+# 2 つの表を、検出器に渡す 1 行 1 ケースの形にそろえる(origin の表は分類 missing・形 bash)。
+detector_rows() {
+  local expected category form label input origin
+  while IFS='|' read -r expected category form label input; do
+    [ -n "$label" ] && printf 'cases|%s|%s|%s|%s|%s|%s\n' "$expected" "$category" "$form" "$own_origin" "$label" "$input"
+  done <<<"$cases"
+  while IFS='|' read -r expected origin label input; do
+    [ -n "$label" ] && printf 'origin_cases|%s|missing|bash|%s|%s|%s\n' "$expected" "$origin" "$label" "$input"
+  done <<<"$origin_cases"
+}
+
+verdicts="$(detector_rows | python3 -c "$detector_runner" "$detector" "$work")"
+
+# 判定を表ごとに報告する。
+#
+# $1 表の名前
+report_verdicts() {
+  local table expected decision label
+  while IFS='|' read -r table expected decision label; do
+    [ "$table" = "$1" ] || continue
+    report "$expected" "$(normalize_miss "$expected" "$decision")" "$label"
+  done <<<"$verdicts"
+}
+
 cases_before=$cases_reported
-while IFS='|' read -r expected origin label input; do
-  [ -n "$label" ] || continue
-  report "$expected" "$(detector_verdict "$(payload bash "$input")" "$origin" "$work/elsewhere" missing)" "$label"
-done <<<"$origin_cases"
+report_verdicts cases
+report_cases_ran cases "$cases_before"
+
+cases_before=$cases_reported
+report_verdicts origin_cases
 report_cases_ran origin_cases "$cases_before"
 
 hook_copy="$work/hook-copy"

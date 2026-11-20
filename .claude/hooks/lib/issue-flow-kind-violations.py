@@ -976,6 +976,17 @@ def findings_for(hook_input: dict, context: Context) -> list[Finding]:
     return []
 
 
+def context_for(hook_input: dict, origin_url: str) -> Context:
+    """フックの入力と origin の URL から、判定の周りの事実を組む。
+
+    @param hook_input PreToolUse の入力
+    @param origin_url `git remote get-url origin` の出力（空なら、どのリポジトリも自分とみなす）
+    @returns 相対パスの起点を入力の `cwd`（無ければカレントディレクトリ）にした事実
+    """
+    cwd = hook_input.get("cwd")
+    return Context(cwd if isinstance(cwd, str) and cwd else os.getcwd(), origin_repo(origin_url), {})
+
+
 def main() -> int:
     """標準入力の PreToolUse の JSON を判定し、違反を報告する。
 
@@ -991,9 +1002,9 @@ def main() -> int:
     except json.JSONDecodeError:
         print(USAGE)
         return 2
-    cwd = hook_input.get("cwd") if isinstance(hook_input, dict) else None
-    context = Context(cwd if isinstance(cwd, str) and cwd else os.getcwd(), origin_repo(arguments[1]), {})
-    findings = findings_for(hook_input, context) if isinstance(hook_input, dict) else []
+    if not isinstance(hook_input, dict):
+        return 0
+    findings = findings_for(hook_input, context_for(hook_input, arguments[1]))
     if not findings:
         return 0
     for finding in findings:
