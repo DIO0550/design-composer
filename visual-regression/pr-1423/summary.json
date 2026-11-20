@@ -1,11 +1,11 @@
 {
   "reportVersion": "ce21626fed4c2b223015bd0f97629b17a313120a",
   "maxDiffRatio": 0.002,
-  "changed": 1,
+  "changed": 0,
   "new": 0,
   "deleted": 0,
-  "passed": 209,
-  "failed": 1,
+  "passed": 210,
+  "failed": 0,
   "results": [
     {
       "story": "components-actioncard--disabled",
@@ -676,12 +676,12 @@
       "title": "features/editor/features/assets/CreateComponent",
       "name": "ファイルが不正な間に部品名を打っている",
       "status": "passed",
-      "reason": "match",
-      "diffPixels": 0,
+      "reason": "within-threshold",
+      "diffPixels": 5,
       "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": false
+      "hasDiff": true
     },
     {
       "story": "features-editor-features-assets-createcomponent--instance-selected",
@@ -1495,12 +1495,12 @@
       "title": "features/editor/features/inspector/PropertyPanel",
       "name": "Box ノードを選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 84,
-      "diffRatio": 0.0001,
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-features-inspector-propertypanel--default",
@@ -1547,12 +1547,12 @@
       "title": "features/editor/features/inspector/PropertyPanel",
       "name": "名前が長いノードを選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 75,
-      "diffRatio": 0.0001,
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-features-inspector-propertypanel--padding-mixed",
@@ -1560,12 +1560,12 @@
       "title": "features/editor/features/inspector/PropertyPanel",
       "name": "padding が不揃いな Box を選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 66,
-      "diffRatio": 0.0001,
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-features-inspector-propertypanel--padding-per-edge",
@@ -1573,12 +1573,12 @@
       "title": "features/editor/features/inspector/PropertyPanel",
       "name": "padding を辺ごとに出した Box を選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 66,
-      "diffRatio": 0.0001,
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-features-inspector-propertypanel--padding-uniform",
@@ -1586,25 +1586,25 @@
       "title": "features/editor/features/inspector/PropertyPanel",
       "name": "padding が揃っている Box を選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 66,
-      "diffRatio": 0.0001,
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-features-inspector-propertypanel--radius-per-corner",
       "id": "features-editor-features-inspector-propertypanel--radius-per-corner",
       "title": "features/editor/features/inspector/PropertyPanel",
       "name": "radius を隅ごとに出した Box を選択中",
-      "status": "changed",
-      "reason": "pixel-diff",
-      "diffPixels": 2582,
-      "diffRatio": 0.0028000000000000004,
+      "status": "passed",
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-features-inspector-propertypanel--selected",
@@ -1612,12 +1612,12 @@
       "title": "features/editor/features/inspector/PropertyPanel",
       "name": "artboard を選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 93,
-      "diffRatio": 0.0001,
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-features-inspector-propertypanel--text-selected",
@@ -1638,12 +1638,12 @@
       "title": "features/editor/features/inspector/PropertyPanel",
       "name": "未指定の prop だけの Box を選択中",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 75,
-      "diffRatio": 0.0001,
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "features-editor-features-inspector-propertypanel-groupsbody--default",
