@@ -1,0 +1,159 @@
+{
+  "version": 2,
+  "pr": 1427,
+  "headBranch": "claude/magical-cannon-ma2ooo",
+  "baseBranch": "main",
+  "mergeBase": "a6653bbdf22fbc703a8533dc393668e525895ee2",
+  "head": "695ebcabfe905045f6da599a12c64d8a66e4328f",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/implementer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/post-merge-review.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/implementation-flow/bugfix.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 7,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/implementation-flow/feature.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 102,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "7eaf821b19eb734a1b0798ed427beb5ef6f6193f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-20T15:23:31Z",
+      "subject": "✨ [New Feature]: #1425 flow:feature でもテストと骨組みを先にコミットし RED を確かめてから実装する",
+      "body": "- implementation-flow に feature.md を新設し、flow:feature のフェーズ\n  3 / 5 / 6 / 7 に 2 工程（仕様の固定 / 仕様の実現）の手順を足した\n- 第 1 工程はテストと公開 API の骨組み（シグネチャと仮の戻り値）を書き、\n  親が vitest の JSON・cargo test・判定表の出力を自分で取って RED 表と\n  突き合わせる。認める失敗の形（assert 系と予告した unwrap）を表にした\n- 第 2 工程は implementer が RED 表の順に 1 件ずつ RED→GREEN を回し、\n  サイクルごとの失敗の 1 行目を返す。親はテスト名の集合の一致と\n  refactor.md「書き換えない範囲」を確かめる\n- フェーズ 6 ではテストの追加だけを認め、第 1 工程のテストの書き換えを\n  numstat の削除列で検出する\n- bugfix.md にあった第 2 工程後の git diff --exit-code を SKILL.md\n  フェーズ 5 の共通確認へ移し、bugfix.md からは参照にした\n- implementer.md の「落ちる状態が正しい工程」と返すものを\n  feature にも当てはまる形に一般化した\n\n背景:\nflow:feature は implementer がテストと実装を 1 回で同時に書くため、\nテストが仕様から先に書かれたか（実装に合わせて書かれていないか）を\n確かめる手段がなかった。test-reviewer のミューテーションは事後に\n「落ちうるか」を見るだけで、順序は分からない。\n\n採用理由:\nIssue で合意した案 A（2 工程化）と案 B（implementer 内のサイクル）を\n併用した。案 A で親が工程の境目で RED を自分の目で確かめ、案 B で\n実装中の痕跡を残す。第 1 工程にテストだけでなく骨組みを含めたのは、\n新しい API を呼ぶテストがテストだけだと TypeError や import 失敗で\n落ち assert まで届かないため（vitest 4.1.4 で実測）。\n骨組みの仮の戻り値が Err / None になる場合に unwrap の失敗を\n予告付きで認めたのは、テストの 946 行が Result/Option.unwrap を使い、\nこれを一律に弾くと骨組みが書けなくなるため。\nRED の分類は jq やスクリプトに埋めず、出力を並べて親が目で突き合わせる\n形にした。refactor.md の「判定表のないコードをこの文書に埋めない」に\n合わせ、機械検査は #1406 に申し送った。\n共通の git diff --exit-code はフェーズ 5 の第 2 工程に限った。\nフェーズ 6 では bugfix は従来どおり完全固定、feature はテストの追加を\n認めるため、確認を種類別手順ファイルに分けた。\n\n代替案:\n- SKILL.md 本体に書く: 他の種類の手順はすべて種類別手順ファイルにあり、\n  毎回読む本体が太る\n- 案 B だけ: RED の証拠が implementer の自己申告になる\n- ミューテーションだけ（現状維持）: テストが先に書かれたかは分からない\n- 骨組みで throw / todo!(): throw は rules/coding.md が禁止し、todo!() は\n  not yet implemented の panic で assert の失敗と区別できない\n- pre-push を一律 exit 0 にする: 判定表を RED にした回は必ず落ちるため、\n  その表だけが落ちることを合格条件にした\n- 第 2 工程で失敗の 1 行目の値まで一致を見る: 前のサイクルで値が変わる\n- 工程名「実装」: フェーズ 5 の名前と同じ語になる。「仕様の固定」と\n  対になる「仕様の実現」にした\n\n影響とトレードオフ:\nflow:feature の implementer 起動が 2 回になり、親の確認も増える。\n自動テストで落とせないもの（doc のみ・判定表のないスクリプト・見た目\nだけ）は第 1 工程を省き、理由と代わりの確かめ方を書く。\nこの変更自身も Markdown のみなので第 1 工程を省いた。\nAGENTS.md と rules/ は触らないため常時ロードの行数は 757/757 のまま。\n\n参考:\n- Issue #1425（計画 v1 / v2、plan-reviewer の指摘 10 件と採否）\n- Issue #1406（RED の機械検査の申し送り先）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2Rvqx1Ma9S8E6brgrt",
+      "files": [
+        {
+          "path": ".claude/agents/implementer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "patch": "@@ -14,7 +14,7 @@ model: inherit\n - **ゴール**\n - **計画と却下案** — `plan-reviewer` を通した計画。却下済みの案を新しい根拠なしに採らない\n - **Issue 番号**\n-- **種類** — Issue の `flow:*` ラベル。`flow:bugfix` / `flow:refactor` では**工程**も渡される（値は `.claude/skills/implementation-flow/SKILL.md` フェーズ 5 の渡すもの）\n+- **種類** — Issue の `flow:*` ラベル。`flow:feature` / `flow:bugfix` / `flow:refactor` では**工程**も渡される（値は `.claude/skills/implementation-flow/SKILL.md` フェーズ 5 の渡すもの）\n - （直しのときだけ）**直す指摘** — 呼び出し側が採用したものだけ。採らなかった指摘には手を出さない\n \n ## 先に読むもの\n@@ -30,7 +30,7 @@ model: inherit\n 2. **計画と渡された指摘のどちらにもない作業が必要になったら、その時点で止めて返す。** ファイル表にも指摘の対象にもないファイルを触る、計画にも指摘にもないテストケースを足す／外す、却下案を採る、のいずれかに当たるなら計画外（渡された指摘を直すためにテストを足す・表にないファイルを直すのは計画外ではない）。続けるかどうかは呼び出し側が Issue に理由を書いてから決める\n 3. **コメント・doc に事実の主張を書いたら、書き終えるたびに `claim-verification` の手順で照合する。** Skill ツールは持たないため、上の `SKILL.md` を読んでその手順に従う（Issue・PR 本文は呼び出し側が担当する）\n 4. UI を触ったなら `rules/ui-verification.md` の表示確認まで行う\n-5. `.claude/skills/implementation-flow/SKILL.md` フェーズ 7 の `PRE_PUSH_REQUIRE_ALL=1 bash harness/githooks/pre-push` と `pnpm run test:run` を走らせ、**終了コードで**判定する（検査の一覧はここへ写さない）。`flow:bugfix` の `工程: 再現テスト` だけは、再現テストが落ちる状態が正しい。`.claude/skills/implementation-flow/bugfix.md` フェーズ 5 の第 1 工程で親が確かめる条件に照らし、満たすなら再現テストの検査出力を返し、満たさないならその時点で止めて返す\n+5. `.claude/skills/implementation-flow/SKILL.md` フェーズ 7 の `PRE_PUSH_REQUIRE_ALL=1 bash harness/githooks/pre-push` と `pnpm run test:run` を走らせ、**終了コードで**判定する（検査の一覧はここへ写さない）。`flow:bugfix` の `工程: 再現テスト` と `flow:feature` の `工程: 仕様の固定` では、計画で落ちると書いたテストが落ちる状態が正しい。種類別手順ファイル（`.claude/skills/implementation-flow/bugfix.md` / `.claude/skills/implementation-flow/feature.md`）のフェーズ 5 の第 1 工程で親が確かめる条件に照らし、満たすならそのテストの検査出力を返し、満たさないならその時点で止めて返す\n \n ## 返すもの\n \n@@ -38,6 +38,7 @@ model: inherit\n 2. **走らせた検査と終了コード** — 落ちたものは出力の末尾も添える\n 3. **計画との差分** — 計画外で止めたなら、どこで何が理由で外れたか。外れていないなら「無し」\n 4. **表示確認の結果** — UI を触ったときだけ。取得コマンドと確認結果\n+5. **種類別手順ファイルのフェーズ 5 が返させるとしたもの** — `flow:feature` の `工程: 仕様の実現` では各サイクルの記録\n \n ## してはいけないこと\n ",
+          "patchLines": 26,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 4,
+          "patch": "@@ -26,7 +26,7 @@ description: \"design-composer の実装を ゴールの確定 → タスクの\n \n | ラベル | 種類別手順ファイル | 変わるフェーズ |\n | --- | --- | --- |\n-| `flow:feature` | なし（このファイルのまま） | なし |\n+| `flow:feature` | [`feature.md`](feature.md) | 3 / 5 / 6 / 7 に追加 |\n | `flow:bugfix` | [`bugfix.md`](bugfix.md) | 1 / 3 / 5 / 6 / 7 に追加 |\n | `flow:refactor` | [`refactor.md`](refactor.md) | 3 / 5 / 6 / 7 に追加 |\n | `flow:investigation` | [`investigation.md`](investigation.md) | 1 に追加、3 / 4 / 8 を置換、5〜7 はなし |\n@@ -145,15 +145,21 @@ Issue: #<番号>\n ゴール: <ゴール>\n Issue: #<番号>\n 種類: <`flow:*` のラベル>\n-工程: <`flow:bugfix` は 再現テスト / 修正、`flow:refactor` は 現状の固定 / リファクタ。この 2 つのときだけ>\n+工程: <`flow:feature` は 仕様の固定 / 仕様の実現、`flow:bugfix` は 再現テスト / 修正、`flow:refactor` は 現状の固定 / リファクタ。この 3 つのときだけ>\n 計画: <plan-reviewer を通した計画と却下案>\n ```\n \n - 実装の手順は `.claude/agents/implementer.md` を参照\n-- **`flow:bugfix` / `flow:refactor` では `implementer` を 2 工程に分けて起動する。** `implementer` は commit しないため、1 回で書かせると「テストだけが先に入ったコミット」が作れない。各工程で書かせる範囲と確認方法は種類別手順ファイルのフェーズ 5 に従う\n-  - **第 1 工程ではテストだけを書かせる。** 返ってきたら「サブエージェントの使い方」の `git status --porcelain` の突き合わせ対象を第 1 工程のテストファイルだけに絞る。種類別手順ファイルの確認に合格したら commit し、これを**第 1 工程のコミット**として第 2 工程以降の比較基準にする\n+- **`flow:feature` / `flow:bugfix` / `flow:refactor` では `implementer` を 2 工程に分けて起動する。** `implementer` は commit しないため、1 回で書かせるとテスト（`flow:feature` では骨組みも）だけが先に入ったコミットが作れない。各工程で書かせる範囲と確認方法は種類別手順ファイルのフェーズ 5 に従う\n+  - **第 1 工程では、種類別手順ファイルのフェーズ 5 が第 1 工程に書かせるとしたものだけを書かせる**（`flow:feature` はテストと骨組み、ほかはテストだけ）。返ってきたら「サブエージェントの使い方」の `git status --porcelain` の突き合わせ対象を、計画のファイル表で第 1 工程に挙げたファイルだけに絞る。種類別手順ファイルの確認に合格したら commit し、これを**第 1 工程のコミット**として第 2 工程以降の比較基準にする\n   - **第 1 工程に書くものがなければ省く。** 第 2 工程を起動する前の HEAD を第 1 工程のコミットの代わりとして Issue に記載する（省く条件は種類別手順ファイルを参照）\n   - **第 2 工程で実装を変えさせる。** フェーズ 6・7 の修正でも第 2 工程の値を渡す\n+  - **第 2 工程から返ったら（`flow:bugfix` / `flow:feature`）、親が次のコマンドを走らせ、終了コード 0 を確かめる。** この確認はフェーズ 5 の第 2 工程に限り、フェーズ 6・7 の直しのたびに何を確かめるかは各種類別手順ファイルのフェーズ 6 に従う\n+\n+    ```bash\n+    git diff --exit-code <第 1 工程のコミット> -- <第 1 工程のテストのファイル>\n+    ```\n+\n - **`implementer` が計画から外れて止めて返ってきたら、** 親が外れた理由を Issue に追記したうえで続行を判断して起動し直す（後回しにすると理由を思い出しにくくなるため）\n - **Issue・PR 本文に事実の主張を書いたら、書き終えるたびに親が `claim-verification` スキルで確かめる**（フェーズ 6 まで持ち越さない → `.claude/skills/claim-verification/`）\n \n@@ -267,6 +273,7 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # \n | `.claude/agents/implementer.md` | 実装するエージェントの入力・出力 | フェーズ 5 / 6 / 7 |\n | `.claude/agents/` の `plan-reviewer.md`・`investigation-reviewer.md` 以外の `*-reviewer.md` | 実装の検証観点（エージェントが読む） | フェーズ 6 |\n | [`reviewer-instructions.md`](reviewer-instructions.md) | 実装の検証の観点別エージェントへの共通指示（エージェントが読む） | フェーズ 6 |\n+| [`feature.md`](feature.md) | `flow:feature` の追加手順 | `flow:feature` で「作業の種類」の表にあるフェーズ |\n | [`bugfix.md`](bugfix.md) | `flow:bugfix` の追加手順 | `flow:bugfix` で「作業の種類」の表にあるフェーズ |\n | [`refactor.md`](refactor.md) | `flow:refactor` の追加手順 | `flow:refactor` で「作業の種類」の表にあるフェーズ |\n | [`investigation.md`](investigation.md) | `flow:investigation` の追加・置換手順 | `flow:investigation` で「作業の種類」の表にあるフェーズ |",
+          "patchLines": 42,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/bugfix.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 7,
+          "patch": "@@ -22,7 +22,7 @@\n - 再現テストを走らせる検査コマンド（対象別の対応は `.claude/agents/test-reviewer.md` 冒頭を参照）\n - 修正前のコードで、**どの assert がどの値で落ちるか**（期待値と実際の値。判定表なら該当ケースの期待と実際）\n - **今ある公開 API だけで書く。** 修正で追加する API を呼ぶと、修正前コードでは実行時の `TypeError` や import 失敗で落ちて assert まで届かない（vitest は型を検査しない）\n-- **第 2 工程（修正）で書き換える既存テストと同じファイルに置かない。** 同じファイルだとフェーズ 5 の `git diff --exit-code` が再現テストの書き換えと既存テストの書き換えを見分けられない\n+- **第 2 工程（修正）で書き換える既存テストと同じファイルに置かない。** 同じファイルだと `SKILL.md` フェーズ 5 の `git diff --exit-code` が再現テストの書き換えと既存テストの書き換えを見分けられない\n - **自動テストで再現できない場合は、その理由と代替の確認方法**（playwright-cli で撮影する等）を書く。このときは再現テストを置かず第 1 工程を省く\n - 期待する結果の拠り所が `docs/` にも既存テストにもないと分かったら、それは仕様変更であり `flow:bugfix` に合わない作業なので、計画せずに止めて `SKILL.md` フェーズ 1「種類の確定」の 6 に従う\n \n@@ -33,11 +33,7 @@\n 1. **第 1 工程（`工程: 再現テスト`）: 再現テストだけを書かせる。** 修正はさせない\n    - 返ってきた検査出力で、**再現テストだけが計画どおりの assert で失敗している**ことと、それ以外の検査（`pre-push` および `pnpm run test:run` の残り）が通っていることを親が確かめる。再現テストが通った、assert 以外（`TypeError` や import 失敗等）で落ちた、他のテストも落ちた、のいずれかなら再現になっていないため計画へ戻す\n 2. **第 2 工程（`工程: 修正`）: 修正させる。** 再現テストは書き換えさせない\n-   - 返ってきたら、親が次のコマンドを実行して終了コード 0（再現テストのファイルに変更がない）であることを確かめる\n-\n-     ```bash\n-     git diff --exit-code <第 1 工程のコミット> -- <再現テストのファイル>\n-     ```\n+   - 返ってきたら、親が `SKILL.md` フェーズ 5 の `git diff --exit-code` を走らせる（第 1 工程のテストのファイル＝再現テストのファイル）\n \n    - 同じ再現テストが通っていることを、返ってきた検査結果で確かめる\n \n@@ -45,7 +41,7 @@\n \n ## フェーズ 6: 直しのたびに同じコマンド\n \n-採用した指摘を `implementer` に直させたら、そのたびにフェーズ 5 の `git diff --exit-code` を再実行する。修正対応でも再現テストは書き換えさせない。\n+採用した指摘を `implementer` に直させたら、そのたびに `SKILL.md` フェーズ 5 の `git diff --exit-code` を再実行する。修正対応でも再現テストは書き換えさせない。\n \n ## フェーズ 7: PR 本文に 2 つの工程のコミット\n ",
+          "patchLines": 31,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/feature.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 91,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,91 @@\n+# `flow:feature`: 仕様を落ちるテストで固定してから実現する\n+\n+`flow:feature` の Issue で、`SKILL.md` の各フェーズに**追加する**手順。記載のないフェーズは `SKILL.md` のままとする。\n+\n+**実装より先に、assert で落ちるテストと骨組みを書いてコミットする。** 実装と同時に書いたテストは、実装に合わせて書かれていないかを確かめられない。`test-reviewer` が示すのは判断ごとに落ちるかであり、テストが仕様から先に書かれたかではない。\n+\n+## フェーズ 3: 計画に足すもの\n+\n+- **ファイル表に工程の列**（`仕様の固定` / `仕様の実現`）を付ける。第 1 工程に置くのは次のもの\n+  - テスト: `__tests__/`、`*_test.rs`、判定表のケースとその共有物\n+  - 骨組み: 第 1 工程で足す公開 API のシグネチャと仮の戻り値。新しい関数・コンポーネント、直和に足す枝（reducer の case は state をそのまま返す）、型に足すフィールドを含む\n+  - 型を通すために要る呼び出し側の機械的な書き換え: 既存の `*.stories.tsx` と既存テスト（`SKILL.md` フェーズ 3 の手順 1 で数えたもの）\n+  - 判定表を新設するなら、その配線（`harness/githooks/pre-push` の `run_check` 等）\n+- 既存テストの期待値を変えるときは、第 1 工程で書き換えて RED に数える\n+- 第 2 工程に置くのは実装と新しいストーリー\n+- **RED 表。** テストケース一覧の各行に、テスト名 / 骨組みの仮の戻り値 / 期待値 / 第 1 工程での結果（RED か、骨組みで通るか）/ 予想する失敗の 1 行目 を書く。行は第 2 工程で通す順（単純なものから）に並べる。三角測量のテストもここに載せる\n+- **予想する失敗の 1 行目として書ける形**（これ以外は assert に届いていない）\n+\n+  | 対象 | 認める形 |\n+  | --- | --- |\n+  | vitest | `AssertionError: …` / `TestingLibraryElementError: …` / 予告した `Error: cannot unwrap an Err result: …` / 予告した `Error: cannot unwrap a None option` |\n+  | `cargo test` | ``assertion `left == right` failed`` / `assertion failed: …` / 予告した ``called `Result::unwrap()` on an `Err` value: …`` / 予告した ``called `Option::unwrap()` on a `None` value`` |\n+  | 判定表 | `NG   expected=<期待> got=<実際>  <ラベル>`（`got=broken` は除く） |\n+\n+  認めない形: `TypeError:`、`Cannot find module`（ファイル単位の失敗）、`error[E0425]` などのコンパイルエラー、`not yet implemented`（`todo!()`）、`got=broken`\n+- **仮の戻り値の作り方**\n+  - 期待値と違う値を選ぶ（`rules/testing.md`、判例 `test-default-input`）\n+  - `Ok` / `Some` で期待値と違う値を作れるならそちらにする（assert まで届くため）\n+  - ドメインの値は既存の `create`（Smart Constructor）やフィクスチャで作る。`as` では作らない（`rules/coding.md`）\n+  - 作れないときだけ `Result.err` / `Option.none` を返し、RED 表に unwrap の失敗を予告して、どの呼び出しの unwrap かを書く。ドメインのエラーはオブジェクトなので 1 行目が `[object Object]` になり、セットアップの unwrap の失敗と見分けられないため\n+  - `throw` / `todo!()` は使わない\n+  - 使わない引数は頭に `_` を付ける（TS は `noUnusedParameters`、Rust は clippy の `-D warnings`）。doc を付ける（pre-push の doc コメント検査が骨組みにも掛かる）\n+- 骨組みのままで通るテストは理由を付けて RED 表に載せる。同じ公開 API に RED のテストが 1 件以上あるときだけ認める\n+- 型テスト（`expectTypeOf`）は RED の対象外とする（シグネチャ自体が骨組みであり、第 1 工程の typecheck で通る）\n+- 判定表を持つスクリプトの骨組みは「何も出さず exit 0」にする（`NG expected=deny got=pass` で落ちる。スクリプトがないと `got=broken`）\n+- **第 1 工程を省く条件:** 自動テストで落とせるものがない場合（doc・設定だけ、判定表を持たないスクリプト、位置・大きさ・class だけの見た目）。省くときは理由と代わりの確かめ方を書く。一部だけ当たるなら、その部分を第 1 工程に置かず理由を書く\n+- 既存の振る舞いの誤りを直す作業（拠り所が既存の `docs/` やテストにある）は `flow:bugfix`、振る舞いを変えない作業は `flow:refactor` であり、`flow:feature` に合わない作業なので、計画せずに止めて `SKILL.md` フェーズ 1「種類の確定」の 6 に従う\n+\n+## フェーズ 5: 工程ごとに書かせるものと確かめること\n+\n+2 工程に分ける仕組み（工程の渡し方・第 1 工程のコミット・第 1 工程を省く場合）は `SKILL.md` フェーズ 5 を参照。\n+\n+1. **第 1 工程（`工程: 仕様の固定`）: ファイル表で第 1 工程にしたものだけを書かせる。** 返ってきたら、親が commit の前に自分で次のコマンドを走らせ、出力を RED 表と目で突き合わせる。jq は vitest の status で絞って 1 行目を並べるだけで、assert かどうかの分類は持たない（分類のコードをこの文書に埋めない理由は `refactor.md` フェーズ 5 の末尾と同じ。機械検査は #1406）\n+   - vitest\n+\n+     ```bash\n+     out=$(mktemp)\n+     pnpm exec vitest run --reporter=json --outputFile=\"$out\"\n+     jq -r '.testResults[] | select(.status != \"passed\") | (.name + \"\\t\" + ((.message // \"\") | split(\"\\n\")[0] // \"\")), (.assertionResults[] | select(.status != \"passed\") | \"  \" + .status + \"\\t\" + .title + \"\\t\" + ((.failureMessages[0] // \"\") | split(\"\\n\")[0] // \"\"))' \"$out\"\n+     ```\n+\n+     - 字下げした行の集合が、RED 表で RED としたテストの集合と一致すること\n+     - 各行の 1 行目が「認める形」に入ること\n+     - ファイル行のタブの後にメッセージが出たら、import の失敗にあたる\n+     - unwrap を予告した行は `jq -r --arg t \"<テスト名>\" '.testResults[].assertionResults[] | select(.title == $t) | .failureMessages[0]' \"$out\" | head -3` で引く。3 行目が RED 表に書いた呼び出しのテストファイルの行であること\n+   - `src-tauri/`（`TAURI_SETUP.md`「Rust 側の検査」）: `cd src-tauri` してから\n+     - `cargo clippy --all-targets --locked -- -D warnings`: exit 0\n+     - `cargo test --locked 2>&1 | grep -E -A1 'panicked at|^error'`: 並ぶ panic が RED 表の RED だけで、`error` 行がないこと\n+   - 判定表: `bash <表> | grep '^NG'` が予告した行だけを出し、`got=broken` がないこと\n+   - pre-push: `PRE_PUSH_REQUIRE_ALL=1 bash harness/githooks/pre-push`\n+     - pre-push の `run_check` が走らせる判定表のケースを RED にしていない回は exit 0\n+     - RED にした回（新設した表を配線した、既存の表へケースを足した）は exit が 0 以外で、`pre-push: 失敗した検査:` 行に並ぶのがその表の検査名だけ、`pre-push: 飛ばした検査:` 行がないこと\n+   - 外れたら計画へ戻す。合格したら commit し、これを第 1 工程のコミットにする\n+2. **第 2 工程（`工程: 仕様の実現`）: RED 表の順に 1 件ずつ通させる。** `implementer` は各テストで次を回す\n+   1. そのテストだけを走らせて落ちることを確かめ、失敗の 1 行目を控える（vitest は `pnpm exec vitest run <ファイル> -t \"<テスト名>\"`、Rust は `cd src-tauri` して `cargo test --locked <テスト名>`、判定表は `bash <表>` の該当行）\n+   2. 通る最小の実装を書き、同じコマンドで通ることを確かめて次へ進む\n+   3. サイクルの前に既に通っていたら「先に通った」と控える\n+\n+   - 返させるもの: サイクルごとのテスト名・コマンド・実装前の失敗の 1 行目（または「先に通った」）・触ったファイル・通ったこと。最後に `SKILL.md` フェーズ 7 の 2 つの検査の終了コード\n+   - 第 1 工程のテストと骨組みのシグネチャは変えさせない。変える必要が出たら止めて返させる。テストを足すのも計画外とする。`_` を外す引数名の変更は、シグネチャの変更として止める対象に含めない\n+   - 返ってきたら、親が次を確かめる\n+     - (a) `SKILL.md` フェーズ 5 の `git diff --exit-code`\n+     - (b) commit した後に `refactor.md`「書き換えない範囲」の 2 つのコマンド。1 つ目の出力に出てよいのは、ファイル表で第 2 工程に挙げたストーリーだけ。2 つ目は空。`refactor.md` の「してよいこと」（移動・改名）は `flow:feature` には当てはめない\n+     - (c) テスト名の集合が一致すること: 「サイクルで RED→GREEN にしたもの」∪「先に通ったと申告したもの」＝ RED 表の RED 集合で、過不足も重複もない\n+     - (d) 各サイクルの実装前の 1 行目が「認める形」に入ること。値は見ない（前のサイクルで変わるため）\n+     - (e) 返ってきた pre-push と `test:run` が exit 0\n+   - 外れたら、その行を指摘として `implementer` に戻す。先に通ったテストがあれば Issue に書く\n+\n+**第 1 工程を省いた場合**（フェーズ 3 で自動テストで落とせるものがないと判断した場合）は、サイクルの記録は要らない。計画に書いた代わりの確かめ方を第 2 工程の前後で行い、結果を Issue に書く。\n+\n+## フェーズ 6: 直しでは第 1 工程のテストを変えない\n+\n+- 指摘に応えてテストを足すのはよい（同じファイルでもよい）。第 1 工程のテストを書き換える・消す・skip するのはしない\n+- 直させるたびに、親が次を確かめる\n+  - `git diff --numstat <第 1 工程のコミット> HEAD -- <第 1 工程のテストのファイル>` の削除列がすべて 0\n+  - `refactor.md`「書き換えない範囲」の 2 つのコマンド。1 つ目は、テストへの追加行がまるごと新しいテスト（とその import）であり、既存テストの本文の中への追加ではないことを目で確かめる。2 つ目は空\n+- **`test-reviewer` はそのまま呼ぶ。**\n+\n+## フェーズ 7: PR 本文に 2 つの工程のコミット\n+\n+PR 本文に、**第 1 工程のコミット**と第 2 工程以降のコミットを並べて書く。第 1 工程を省いた場合は、その理由と代わりの確かめ方の結果を書く。",
+          "patchLines": 92,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "695ebcabfe905045f6da599a12c64d8a66e4328f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-20T15:36:20Z",
+      "subject": "🐛 [Bug fix]: #1425 feature.md の確認コマンドが実際の出力で成り立たない箇所と定義の抜けを直す",
+      "body": "- cargo の確認で不可にする行をコンパイルエラー（error[E… / error: could\n  not compile）に絞った。RED があると必ず出る error: test failed を拾って\n  いたため\n- 第 2 工程の 1 件だけ走らせるコマンドを、vitest は記号をエスケープして\n  ^…$ で挟みシングルクォートで渡す形、cargo は --exact とフルパスにし、\n  走ったのがちょうど 1 件であることを確かめる手順を足した\n- 第 1 工程に置く呼び出し側の書き換えに本番コードを含めた\n- フェーズ 6 の numstat に「commit した後に」を明記した\n- 判定表の認める形に、予告した種別照合の NG（cases-report.sh の 2 形）を\n  足した\n- 第 1 工程を省いた場合に渡す工程と返させるものを定め、implementer.md の\n  返すもの 5 に条件を付けた\n- unwrap の失敗の 1 行目の記述を実物に合わせ、ヘルパー経由で呼んだときの\n  スタック 3 行目の扱いを添えた\n- 第 2 工程の確認に、申告しか見られない限界と、骨組みのシグネチャの差分を\n  読む (f) を足した\n- RED / GREEN / 三角測量の意味と、RED 表がテストケースの一覧そのもので\n  あることを定めた\n- フェーズ 7 で第 1 工程に親が取った出力を PR 本文に添えるようにした\n- SKILL.md フェーズ 5 の括弧書き（feature の第 1 工程の範囲の言い直し）\n  を消し、種類別手順ファイルへの参照だけにした\n\n背景:\n実装の検証（solution / duplication / comment / naming / harness /\nsecurity）の指摘を採用した。harness-reviewer が手順書のコマンドを\n一時ディレクトリで走らせ、cargo の確認が RED のたびに外れること、\nvitest の -t が正規表現扱いで当たらないと 0 件・exit 0 になり\n「先に通った」と偽って記録できることを実測で示した。\n\n採用理由:\n1 件だけ走らせるコマンドは、名前の照合に頼らず「走った件数が 1」を\n確認条件にした。名前の書き方を工夫しても、打ち間違いや部分一致で\n0 件や複数件になる経路は残るため、件数で弾くほうが確実。\n^…$ で挟めるのは、このリポジトリのテストに describe が 0 件で、\nテスト名がそのまま照合対象になるため。\n第 2 工程のサイクル記録は implementer の申告であり、親が再現する\n仕組みにはしなかった。機械的な拠り所は親が自分で出力を取る第 1 工程の\nコミットに置き、その限界を文書に書いて読み手が過信しないようにした。\n\n代替案:\n- 認める形の表を bugfix.md と共通化する: bugfix の判定（予告した unwrap\n  を認めるか）が変わり #1425 の範囲外。#1426 に切り出した\n- git diff --exit-code の参照 1 行を各ファイルから消す: 本文は\n  SKILL.md の 1 か所だけで、ほかは参照なので写しには当たらない\n- RED 表を別の名前に改める: 出現箇所が多く、一覧そのものだと明記する\n  ほうが変更が小さい\n\n影響とトレードオフ:\n第 2 工程の 1 件ずつのコマンドが長くなり、sed でのエスケープが要る。\ndescribe を使うテストが入ると ^ で挟む照合が外れるので、そのときは\nこの手順を見直す必要がある。\n\n参考:\n- Issue #1425（フェーズ 6 の指摘と採否の表）\n- Issue #1426（bugfix / feature の重複の続き）\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2Rvqx1Ma9S8E6brgrt",
+      "files": [
+        {
+          "path": ".claude/agents/implementer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -38,7 +38,7 @@ model: inherit\n 2. **走らせた検査と終了コード** — 落ちたものは出力の末尾も添える\n 3. **計画との差分** — 計画外で止めたなら、どこで何が理由で外れたか。外れていないなら「無し」\n 4. **表示確認の結果** — UI を触ったときだけ。取得コマンドと確認結果\n-5. **種類別手順ファイルのフェーズ 5 が返させるとしたもの** — `flow:feature` の `工程: 仕様の実現` では各サイクルの記録\n+5. **種類別手順ファイルのフェーズ 5 が返させるとしたもの** — `flow:feature` の `工程: 仕様の実現` では、第 1 工程を省いていなければ各サイクルの記録、省いていれば計画に書いた代わりの確かめ方の結果\n \n ## してはいけないこと\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -150,8 +150,8 @@ Issue: #<番号>\n ```\n \n - 実装の手順は `.claude/agents/implementer.md` を参照\n-- **`flow:feature` / `flow:bugfix` / `flow:refactor` では `implementer` を 2 工程に分けて起動する。** `implementer` は commit しないため、1 回で書かせるとテスト（`flow:feature` では骨組みも）だけが先に入ったコミットが作れない。各工程で書かせる範囲と確認方法は種類別手順ファイルのフェーズ 5 に従う\n-  - **第 1 工程では、種類別手順ファイルのフェーズ 5 が第 1 工程に書かせるとしたものだけを書かせる**（`flow:feature` はテストと骨組み、ほかはテストだけ）。返ってきたら「サブエージェントの使い方」の `git status --porcelain` の突き合わせ対象を、計画のファイル表で第 1 工程に挙げたファイルだけに絞る。種類別手順ファイルの確認に合格したら commit し、これを**第 1 工程のコミット**として第 2 工程以降の比較基準にする\n+- **`flow:feature` / `flow:bugfix` / `flow:refactor` では `implementer` を 2 工程に分けて起動する。** `implementer` は commit しないため、1 回で書かせると第 1 工程の分だけが先に入ったコミットが作れない。各工程で書かせる範囲と確認方法は種類別手順ファイルのフェーズ 5 に従う\n+  - **第 1 工程では、種類別手順ファイルのフェーズ 5 が第 1 工程に書かせるとしたものだけを書かせる。** 返ってきたら「サブエージェントの使い方」の `git status --porcelain` の突き合わせ対象を、計画のファイル表で第 1 工程に挙げたファイルだけに絞る。種類別手順ファイルの確認に合格したら commit し、これを**第 1 工程のコミット**として第 2 工程以降の比較基準にする\n   - **第 1 工程に書くものがなければ省く。** 第 2 工程を起動する前の HEAD を第 1 工程のコミットの代わりとして Issue に記載する（省く条件は種類別手順ファイルを参照）\n   - **第 2 工程で実装を変えさせる。** フェーズ 6・7 の修正でも第 2 工程の値を渡す\n   - **第 2 工程から返ったら（`flow:bugfix` / `flow:feature`）、親が次のコマンドを走らせ、終了コード 0 を確かめる。** この確認はフェーズ 5 の第 2 工程に限り、フェーズ 6・7 の直しのたびに何を確かめるかは各種類別手順ファイルのフェーズ 6 に従う",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/feature.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 13,
+          "patch": "@@ -9,25 +9,25 @@\n - **ファイル表に工程の列**（`仕様の固定` / `仕様の実現`）を付ける。第 1 工程に置くのは次のもの\n   - テスト: `__tests__/`、`*_test.rs`、判定表のケースとその共有物\n   - 骨組み: 第 1 工程で足す公開 API のシグネチャと仮の戻り値。新しい関数・コンポーネント、直和に足す枝（reducer の case は state をそのまま返す）、型に足すフィールドを含む\n-  - 型を通すために要る呼び出し側の機械的な書き換え: 既存の `*.stories.tsx` と既存テスト（`SKILL.md` フェーズ 3 の手順 1 で数えたもの）\n+  - 型を通すために要る呼び出し側の機械的な書き換え: 本番コード・既存テスト・既存の `*.stories.tsx` の呼び出し側（`SKILL.md` フェーズ 3 の手順 1 で数えたもの）\n   - 判定表を新設するなら、その配線（`harness/githooks/pre-push` の `run_check` 等）\n-- 既存テストの期待値を変えるときは、第 1 工程で書き換えて RED に数える\n+- 既存テストの期待値を変えるときは、第 1 工程で書き換えて RED（失敗の 1 行目が下の「認める形」に入る落ち方）に数える\n - 第 2 工程に置くのは実装と新しいストーリー\n-- **RED 表。** テストケース一覧の各行に、テスト名 / 骨組みの仮の戻り値 / 期待値 / 第 1 工程での結果（RED か、骨組みで通るか）/ 予想する失敗の 1 行目 を書く。行は第 2 工程で通す順（単純なものから）に並べる。三角測量のテストもここに載せる\n+- **RED 表。** 別の表ではなく、計画の「テストケースの一覧」に列を足したものを指す。各行に、テスト名 / 骨組みの仮の戻り値 / 期待値 / 第 1 工程での結果（RED か、骨組みで通るか）/ 予想する失敗の 1 行目 を書く。行は第 2 工程で通す順（単純なものから）に並べる。三角測量（同じ公開 API に別の入力で足すテスト）もここに載せる\n - **予想する失敗の 1 行目として書ける形**（これ以外は assert に届いていない）\n \n   | 対象 | 認める形 |\n   | --- | --- |\n   | vitest | `AssertionError: …` / `TestingLibraryElementError: …` / 予告した `Error: cannot unwrap an Err result: …` / 予告した `Error: cannot unwrap a None option` |\n   | `cargo test` | ``assertion `left == right` failed`` / `assertion failed: …` / 予告した ``called `Result::unwrap()` on an `Err` value: …`` / 予告した ``called `Option::unwrap()` on a `None` value`` |\n-  | 判定表 | `NG   expected=<期待> got=<実際>  <ラベル>`（`got=broken` は除く） |\n+  | 判定表 | `NG   expected=<期待> got=<実際>  <ラベル>`（`got=broken` は除く） / 予告した `NG   検出器の種別が docstring の一覧と食い違う（実装: … / docstring: …）` / 予告した `NG   <種別> を期待するケースが表に無い`（後の 2 つは `.claude/hooks/lib/cases-report.sh` の種別照合で、骨組みの検出器と docstring・表の種別が揃っていないと出る） |\n \n   認めない形: `TypeError:`、`Cannot find module`（ファイル単位の失敗）、`error[E0425]` などのコンパイルエラー、`not yet implemented`（`todo!()`）、`got=broken`\n - **仮の戻り値の作り方**\n   - 期待値と違う値を選ぶ（`rules/testing.md`、判例 `test-default-input`）\n   - `Ok` / `Some` で期待値と違う値を作れるならそちらにする（assert まで届くため）\n   - ドメインの値は既存の `create`（Smart Constructor）やフィクスチャで作る。`as` では作らない（`rules/coding.md`）\n-  - 作れないときだけ `Result.err` / `Option.none` を返し、RED 表に unwrap の失敗を予告して、どの呼び出しの unwrap かを書く。ドメインのエラーはオブジェクトなので 1 行目が `[object Object]` になり、セットアップの unwrap の失敗と見分けられないため\n+  - 作れないときだけ `Result.err` / `Option.none` を返し、RED 表に unwrap の失敗を予告して、どの呼び出しの unwrap かを書く。ドメインのエラーはオブジェクトなので 1 行目が `Error: cannot unwrap an Err result: [object Object]` で終わり、セットアップの unwrap の失敗と見分けられないため\n   - `throw` / `todo!()` は使わない\n   - 使わない引数は頭に `_` を付ける（TS は `noUnusedParameters`、Rust は clippy の `-D warnings`）。doc を付ける（pre-push の doc コメント検査が骨組みにも掛かる）\n - 骨組みのままで通るテストは理由を付けて RED 表に載せる。同じ公開 API に RED のテストが 1 件以上あるときだけ認める\n@@ -52,17 +52,26 @@\n      - 字下げした行の集合が、RED 表で RED としたテストの集合と一致すること\n      - 各行の 1 行目が「認める形」に入ること\n      - ファイル行のタブの後にメッセージが出たら、import の失敗にあたる\n-     - unwrap を予告した行は `jq -r --arg t \"<テスト名>\" '.testResults[].assertionResults[] | select(.title == $t) | .failureMessages[0]' \"$out\" | head -3` で引く。3 行目が RED 表に書いた呼び出しのテストファイルの行であること\n+     - unwrap を予告した行は `jq -r --arg t \"<テスト名>\" '.testResults[].assertionResults[] | select(.title == $t) | .failureMessages[0]' \"$out\" | head -3` で引く。3 行目が RED 表に書いた呼び出しの行であること（3 行目は unwrap を呼んだ関数の行なので、`setup()` などのヘルパーの中で呼んだ場合はそのヘルパーの行になる）\n    - `src-tauri/`（`TAURI_SETUP.md`「Rust 側の検査」）: `cd src-tauri` してから\n      - `cargo clippy --all-targets --locked -- -D warnings`: exit 0\n-     - `cargo test --locked 2>&1 | grep -E -A1 'panicked at|^error'`: 並ぶ panic が RED 表の RED だけで、`error` 行がないこと\n+     - `cargo test --locked 2>&1 | grep -E -A1 'panicked at|^error\\[E|^error: could not compile'`: 並ぶ panic が RED 表の RED だけで、コンパイルエラーの行（`error[E…]` / `error: could not compile`）がないこと。RED があると必ず出る `error: test failed, to rerun pass …` は拾わない\n    - 判定表: `bash <表> | grep '^NG'` が予告した行だけを出し、`got=broken` がないこと\n    - pre-push: `PRE_PUSH_REQUIRE_ALL=1 bash harness/githooks/pre-push`\n      - pre-push の `run_check` が走らせる判定表のケースを RED にしていない回は exit 0\n      - RED にした回（新設した表を配線した、既存の表へケースを足した）は exit が 0 以外で、`pre-push: 失敗した検査:` 行に並ぶのがその表の検査名だけ、`pre-push: 飛ばした検査:` 行がないこと\n    - 外れたら計画へ戻す。合格したら commit し、これを第 1 工程のコミットにする\n 2. **第 2 工程（`工程: 仕様の実現`）: RED 表の順に 1 件ずつ通させる。** `implementer` は各テストで次を回す\n-   1. そのテストだけを走らせて落ちることを確かめ、失敗の 1 行目を控える（vitest は `pnpm exec vitest run <ファイル> -t \"<テスト名>\"`、Rust は `cd src-tauri` して `cargo test --locked <テスト名>`、判定表は `bash <表>` の該当行）\n+   1. そのテストだけを走らせて落ちることを確かめ、失敗の 1 行目を控える。走ったのがちょうど 1 件であることも確かめる（名前が当たらないと 0 件のまま exit 0 になり、「先に通った」と取り違えるため）\n+      - vitest: `-t` は正規表現として照合されるので、記号をエスケープして `^` と `$` で挟む。テスト名はシングルクォートで囲む（名前に `'` があれば `'\\''` にする）。出力の `Tests` 行で skipped 以外が 1 件であること\n+\n+        ```bash\n+        t=$(printf '%s' '<テスト名>' | sed 's/[][\\\\.^$*+?(){}|]/\\\\&/g')\n+        pnpm exec vitest run <ファイル> -t \"^${t}\\$\"\n+        ```\n+\n+      - Rust: `cd src-tauri` して `cargo test --locked -- --exact '<テストのフルパス>'`（フルパスは `cargo test --locked -- --list` に出る名前）。出力を `grep -E '^running [1-9]'` で絞ると `running 1 test` の 1 行だけになること\n+      - 判定表: `bash <表>` の該当行\n    2. 通る最小の実装を書き、同じコマンドで通ることを確かめて次へ進む\n    3. サイクルの前に既に通っていたら「先に通った」と控える\n \n@@ -71,21 +80,23 @@\n    - 返ってきたら、親が次を確かめる\n      - (a) `SKILL.md` フェーズ 5 の `git diff --exit-code`\n      - (b) commit した後に `refactor.md`「書き換えない範囲」の 2 つのコマンド。1 つ目の出力に出てよいのは、ファイル表で第 2 工程に挙げたストーリーだけ。2 つ目は空。`refactor.md` の「してよいこと」（移動・改名）は `flow:feature` には当てはめない\n-     - (c) テスト名の集合が一致すること: 「サイクルで RED→GREEN にしたもの」∪「先に通ったと申告したもの」＝ RED 表の RED 集合で、過不足も重複もない\n+     - (c) テスト名の集合が一致すること: 「サイクルで RED→GREEN（GREEN は通ること）にしたもの」∪「先に通ったと申告したもの」＝ RED 表の RED 集合で、過不足も重複もない\n      - (d) 各サイクルの実装前の 1 行目が「認める形」に入ること。値は見ない（前のサイクルで変わるため）\n      - (e) 返ってきた pre-push と `test:run` が exit 0\n+     - (f) `git diff <第 1 工程のコミット> -- <骨組みのファイル>` を読み、骨組みのシグネチャが変わっていないこと（`_` を外す改名は除く）\n+   - (c)(d) は `implementer` の申告を見るだけで、RED→GREEN を実際に回したかまでは確かめられない。機械的な拠り所は、親が自分で出力を取った第 1 工程のコミットである\n    - 外れたら、その行を指摘として `implementer` に戻す。先に通ったテストがあれば Issue に書く\n \n-**第 1 工程を省いた場合**（フェーズ 3 で自動テストで落とせるものがないと判断した場合）は、サイクルの記録は要らない。計画に書いた代わりの確かめ方を第 2 工程の前後で行い、結果を Issue に書く。\n+**第 1 工程を省いた場合**（フェーズ 3 で自動テストで落とせるものがないと判断した場合）は、`implementer` に `工程: 仕様の実現` を渡し、サイクルの記録は求めない。代わりに、計画に書いた代わりの確かめ方を行わせてその結果を返させ、親が Issue に書く。\n \n ## フェーズ 6: 直しでは第 1 工程のテストを変えない\n \n - 指摘に応えてテストを足すのはよい（同じファイルでもよい）。第 1 工程のテストを書き換える・消す・skip するのはしない\n - 直させるたびに、親が次を確かめる\n-  - `git diff --numstat <第 1 工程のコミット> HEAD -- <第 1 工程のテストのファイル>` の削除列がすべて 0\n+  - commit した後に `git diff --numstat <第 1 工程のコミット> HEAD -- <第 1 工程のテストのファイル>` の削除列がすべて 0（commit 前に走らせると HEAD との比較なので直しが入らない）\n   - `refactor.md`「書き換えない範囲」の 2 つのコマンド。1 つ目は、テストへの追加行がまるごと新しいテスト（とその import）であり、既存テストの本文の中への追加ではないことを目で確かめる。2 つ目は空\n - **`test-reviewer` はそのまま呼ぶ。**\n \n-## フェーズ 7: PR 本文に 2 つの工程のコミット\n+## フェーズ 7: PR 本文に 2 つの工程のコミットと RED の出力\n \n-PR 本文に、**第 1 工程のコミット**と第 2 工程以降のコミットを並べて書く。第 1 工程を省いた場合は、その理由と代わりの確かめ方の結果を書く。\n+PR 本文に、**第 1 工程のコミット**と第 2 工程以降のコミットを並べて書く。あわせて、第 1 工程で親が取った出力（jq、`src-tauri/` があれば cargo、判定表があれば `grep '^NG'`）を添え、マージ後も RED を辿れるようにする。第 1 工程を省いた場合は、その理由と代わりの確かめ方の結果を書く。",
+          "patchLines": 90,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": ".claude/skills/implementation-flow/SKILL.md",
+      "status": "kept"
+    }
+  ]
+}
