@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1427,
+      "title": "[harness] flow:feature でもテストと骨組みを先にコミットし、RED を確かめてから実装する"
+    },
+    {
       "pr": 1423,
       "title": "[harness] PR #1417（ぼかし）の記録を足す"
     },
