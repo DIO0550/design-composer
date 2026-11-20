@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1423,
+      "title": "[harness] PR #1417（ぼかし）の記録を足す"
+    },
+    {
       "pr": 1422,
       "title": "ハーネス指示書・SKILL・エージェント定義・README の冗長表現と日本語を整理"
     },
