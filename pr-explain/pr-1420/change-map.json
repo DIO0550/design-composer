@@ -3,36 +3,9 @@
   "pr": 1420,
   "headBranch": "claude/affectionate-hypatia-4ji7v7",
   "baseBranch": "main",
-  "mergeBase": "459e6840663548f573d9121fec6fab515e6d0019",
-  "head": "5731133522b0c42d3a8ee31a7888ddb3c4a1656a",
-  "groups": [
-    {
-      "label": "ハーネス",
-      "files": [
-        {
-          "path": ".claude/hooks/lib/missing-doc-comments.py",
-          "changed": false
-        },
-        {
-          "path": ".claude/hooks/lib/named-path-cases.sh",
-          "changed": false
-        },
-        {
-          "path": ".claude/hooks/pre-push-doc-comments.sh",
-          "changed": false
-        },
-        {
-          "path": "rules/coding.md",
-          "status": "M",
-          "oldPath": null,
-          "additions": 1,
-          "deletions": 1,
-          "changed": true,
-          "target": null
-        }
-      ]
-    }
-  ],
+  "mergeBase": "a6653bbdf22fbc703a8533dc393668e525895ee2",
+  "head": "ef96007912e24a85573438571e5bb904eaeaa561",
+  "groups": [],
   "tests": {
     "added": [],
     "removed": [],
@@ -58,23 +31,16 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "ef96007912e24a85573438571e5bb904eaeaa561",
+      "merge": true,
+      "author": "Claude",
+      "date": "2026-11-20T11:21:52Z",
+      "subject": "Merge remote-tracking branch 'origin/main' into claude/affectionate-hypatia-4ji7v7",
+      "body": "# Conflicts:\n#\trules/coding.md",
+      "files": []
     }
   ],
-  "dependencies": [
-    {
-      "from": ".claude/hooks/lib/missing-doc-comments.py",
-      "to": "rules/coding.md",
-      "status": "kept"
-    },
-    {
-      "from": ".claude/hooks/lib/named-path-cases.sh",
-      "to": "rules/coding.md",
-      "status": "kept"
-    },
-    {
-      "from": ".claude/hooks/pre-push-doc-comments.sh",
-      "to": "rules/coding.md",
-      "status": "kept"
-    }
-  ]
+  "dependencies": []
 }
