@@ -5,7 +5,6 @@ import type { GradientControl } from "@/features/editor/features/tokens/domains/
 import { Option } from "@/utils/Option";
 import { ColorField } from "../color-field";
 import {
-  changeRawOfTarget,
   FieldDensities,
   FieldRow,
   type SetTokenValue,
@@ -107,7 +106,8 @@ export function GradientFields({
               id={fieldIdOf(row.ratio)}
               input={row.ratio.input}
               density={FieldDensities.Compact}
-              onChangeRaw={changeRawOfTarget(row.ratio.target, onSetTokenValue)}
+              target={row.ratio.target}
+              onSetTokenValue={onSetTokenValue}
             />
           </div>
           <div className="relative min-w-0 flex-1">

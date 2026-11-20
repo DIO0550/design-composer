@@ -19,9 +19,6 @@ export type SetTokenValue = (
   continuity: EditContinuity,
 ) => void;
 
-/** 欄に入った文字列と、そのまとまり方を受け取る手続き。 */
-export type ChangeRaw = (raw: string, continuity: EditContinuity) => void;
-
 /**
  * 欄の詰め具合。`Regular` は左に見出しを添えて 1 行に 1 欄ずつ置く欄、`Compact` は stop の行の
  * ように 1 行へ横に並べる欄。
@@ -157,7 +154,10 @@ function UnitField({
  * トークンの 1 フィールドの入力欄。形は値の種別で決まる。
  *
  * 下書きを持つ欄は、現在値を key にして外の値（undo / redo・打った値の正規化・並べ直し）に
- * 追随する。確定は 1 回ごとに別のまとまりとして送る。
+ * 追随する。確定は `TokenControl.valueFrom` で書き戻し先の新しい値に読み、1 回ごとに別のまとまりとして送る。
+ *
+ * 数値として読めない入力と、値域を外れた入力では値を変えない。名前欄と同じで、通らなかったことは
+ * 画面に出さず打ち直しに任せる。仕様に無い中間状態のエラー表示を発明しないため。
  *
  * @returns 比率なら % を、角度なら ° を添えた数値欄、数値なら数値欄、それ以外はテキスト欄
  */
@@ -165,14 +165,20 @@ export function ValueField({
   id,
   input,
   density,
-  onChangeRaw,
+  target,
+  onSetTokenValue,
 }: Readonly<{
   id: string;
   input: TokenControlInput;
   density: FieldDensity;
-  onChangeRaw: ChangeRaw;
+  target: TokenFieldTarget;
+  onSetTokenValue: SetTokenValue;
 }>): ReactElement {
-  const onCommit = (raw: string) => onChangeRaw(raw, EditContinuities.Separate);
+  const onCommit = (raw: string) => {
+    Option.map(TokenControl.valueFrom(target, raw), (value) =>
+      onSetTokenValue(value, EditContinuities.Separate),
+    );
+  };
   switch (input.kind) {
     case "number":
       return (
@@ -217,45 +223,6 @@ export function ValueField({
         />
       );
   }
-}
-
-/**
- * その欄に打たれた文字列を、トークンの新しい値にして送る手続き（`ValueField` の `onChangeRaw`）。
- *
- * 数値として読めない入力と、値域を外れた入力では値を変えない（`tokenValueOf` の `none`）。名前欄と
- * 同じで、通らなかったことは画面に出さず打ち直しに任せる。仕様に無い中間状態のエラー表示を
- * 発明しないため。
- *
- * @param tokenValueOf 欄の文字列をトークンの新しい値へ読む手続き（`TokenControl.valueFrom` など）
- * @param onSetTokenValue 読めた値と続き方を受け取る先
- * @returns 欄の文字列と続き方を受け取る手続き
- */
-export function changeRawOf(
-  tokenValueOf: (raw: string) => Option<TokenValue>,
-  onSetTokenValue: SetTokenValue,
-): ChangeRaw {
-  return (raw, continuity) => {
-    Option.map(tokenValueOf(raw), (value) =>
-      onSetTokenValue(value, continuity),
-    );
-  };
-}
-
-/**
- * その書き戻し先の欄に打たれた文字列を、`TokenControl.valueFrom` で読んで送る手続き。
- *
- * @param target 欄が書き戻す先
- * @param onSetTokenValue 読めた値と続き方を受け取る先
- * @returns 欄の文字列と続き方を受け取る手続き
- */
-export function changeRawOfTarget(
-  target: TokenFieldTarget,
-  onSetTokenValue: SetTokenValue,
-): ChangeRaw {
-  return changeRawOf(
-    (raw) => TokenControl.valueFrom(target, raw),
-    onSetTokenValue,
-  );
 }
 
 /**
@@ -304,7 +271,8 @@ export function FieldRow({
         id={id}
         input={field.input}
         density={FieldDensities.Regular}
-        onChangeRaw={changeRawOfTarget(field.target, onSetTokenValue)}
+        target={field.target}
+        onSetTokenValue={onSetTokenValue}
       />
     </LabeledRow>
   );

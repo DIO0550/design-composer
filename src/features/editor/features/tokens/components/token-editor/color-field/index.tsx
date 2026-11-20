@@ -8,17 +8,17 @@ import {
 import {
   type HexColorControl,
   type TokenColorControl,
+  type TokenColorTarget,
   TokenControl,
 } from "@/features/editor/features/tokens/domains/token-control";
 import { useFirstThenRest } from "@/hooks/use-first-then-rest";
 import { Option } from "@/utils/Option";
 import {
-  type ChangeRaw,
-  changeRawOf,
-  changeRawOfTarget,
   DraftField,
   DraftFieldLooks,
+  FieldDensities,
   type SetTokenValue,
+  ValueField,
 } from "../value-field";
 
 /**
@@ -31,11 +31,13 @@ import {
 function ColorPickerField({
   id,
   value,
-  onChangeRaw,
+  target,
+  onSetTokenValue,
 }: Readonly<{
   id: string;
   value: Rgb;
-  onChangeRaw: ChangeRaw;
+  target: TokenColorTarget;
+  onSetTokenValue: SetTokenValue;
 }>): ReactElement {
   /*
    * ピッカーは常に #rrggbb を返し `TokenControl.valueFrom` の `none` に届かないので、1 件目が
@@ -57,7 +59,11 @@ function ColorPickerField({
       onClick={continuitySequence.restart}
       onBlur={continuitySequence.restart}
       onChange={(event) => {
-        onChangeRaw(event.target.value, continuitySequence.next());
+        Option.map(
+          TokenControl.valueFrom(target, event.target.value),
+          (tokenValue) =>
+            onSetTokenValue(tokenValue, continuitySequence.next()),
+        );
       }}
       className="size-3.5 shrink-0 cursor-pointer rounded-sm border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-sm [&::-webkit-color-swatch]:border-none"
     />
@@ -83,7 +89,6 @@ function HexColorInput({
   /*
    * 確定の回数を key に混ぜるのは、`ABC` のように通っても値が変わらない確定では key が動かず下書きが残るため。
    * 回数はこの欄の表示だけが使い、文書（undo の履歴ごと親が持つ）と連動しないので reducer にまとめない。
-   * `changeRawOf` に成否を返させないのは、成否を使わない他の呼び出し側まで戻り値を受けることになるため。
    */
   const [hexCommits, setHexCommits] = useState(0);
   const commitHex = (raw: string) => {
@@ -96,10 +101,11 @@ function HexColorInput({
     setHexCommits((count) => count + 1);
   };
 
-  const changeAlpha = changeRawOf(
-    (raw) => TokenControl.valueFromAlpha(color.target, raw),
-    onSetTokenValue,
-  );
+  const commitAlpha = (raw: string) => {
+    Option.map(TokenControl.valueFromAlpha(color.target, raw), (value) =>
+      onSetTokenValue(value, EditContinuities.Separate),
+    );
+  };
   const pickerId = `${id}-${color.picker.name}`;
   const alphaId = `${id}-${color.alpha.name}`;
   const hexDigits = TokenControl.hexDigitsOf(color);
@@ -119,7 +125,8 @@ function HexColorInput({
       <ColorPickerField
         id={pickerId}
         value={color.rgb}
-        onChangeRaw={changeRawOfTarget(color.target, onSetTokenValue)}
+        target={color.target}
+        onSetTokenValue={onSetTokenValue}
       />
       <span aria-hidden="true" className="text-[#b3b3b3]">
         #
@@ -143,7 +150,7 @@ function HexColorInput({
           type="number"
           value={String(color.alphaPercent)}
           look={DraftFieldLooks.AlphaPercent}
-          onCommit={(raw) => changeAlpha(raw, EditContinuities.Separate)}
+          onCommit={commitAlpha}
         />
         %
       </span>
@@ -176,19 +183,15 @@ export function ColorField({
           onSetTokenValue={onSetTokenValue}
         />
       );
-    case "text": {
-      const changeColorText = changeRawOfTarget(color.target, onSetTokenValue);
-
+    case "text":
       return (
-        <DraftField
-          key={color.value}
+        <ValueField
           id={id}
-          type="text"
-          value={color.value}
-          look={DraftFieldLooks.Regular}
-          onCommit={(raw) => changeColorText(raw, EditContinuities.Separate)}
+          input={{ kind: "text", value: color.value }}
+          density={FieldDensities.Regular}
+          target={color.target}
+          onSetTokenValue={onSetTokenValue}
         />
       );
-    }
   }
 }

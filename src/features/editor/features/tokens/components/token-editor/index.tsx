@@ -12,7 +12,6 @@ import { Option } from "@/utils/Option";
 import { ColorField } from "./color-field";
 import { GradientFields } from "./gradient-fields";
 import {
-  changeRawOfTarget,
   DraftField,
   DraftFieldLooks,
   FieldDensities,
@@ -144,7 +143,8 @@ function ValueRowControl({
           id={id}
           input={row.field.input}
           density={FieldDensities.Regular}
-          onChangeRaw={changeRawOfTarget(row.field.target, onSetTokenValue)}
+          target={row.field.target}
+          onSetTokenValue={onSetTokenValue}
         />
       );
     case "color":
