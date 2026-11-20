@@ -464,3 +464,31 @@ test("artboard のサイズは props で変えられないのでコントロー�
   expect(controlOf(selection, "widthMode")).toBeUndefined();
   expect(controlOf(selection, "width")).toBeUndefined();
 });
+
+test("Ellipse の Appearance 節は、影の直後に layerBlur・backdropBlur の順で並べる", () => {
+  const names = propNamesInSection(ellipseSelection({}), "appearance");
+  const afterShadow = names.indexOf("shadow") + 1;
+
+  expect(names.slice(afterShadow, afterShadow + 2)).toEqual([
+    "layerBlur",
+    "backdropBlur",
+  ]);
+});
+
+test("Box の layerBlur は数値の欄として出る", () => {
+  const selection = setupSelection([{ name: "box", type: "Box" }], "box");
+
+  expect(controlOf(selection, "layerBlur")?.input.kind).toBe("number");
+});
+
+test("artboard を選ぶと layerBlur の欄は出る", () => {
+  const selection = setupSelection([], "home");
+
+  expect(controlOf(selection, "layerBlur")?.input.kind).toBe("number");
+});
+
+test("artboard の backdropBlur は読み捨てるのでコントロールが出ない", () => {
+  const selection = setupSelection([], "home");
+
+  expect(controlOf(selection, "backdropBlur")).toBeUndefined();
+});

@@ -29,3 +29,7 @@ test("artboard の回転は型でも回らない値に絞られている", () =>
 test("artboard のロックは型でも unlocked に絞られている", () => {
   expectTypeOf<ArtboardBoxProps["locking"]>().toEqualTypeOf<"unlocked">();
 });
+
+test("artboard の背後のぼかしは型でも 0 に絞られている", () => {
+  expectTypeOf<ArtboardBoxProps["backdropBlur"]>().toEqualTypeOf<0>();
+});

@@ -36,6 +36,8 @@ export type CssProperty =
   | "box-shadow"
   | "overflow"
   | "opacity"
+  | "filter"
+  | "backdrop-filter"
   | "transform"
   | "color"
   | "text-align"

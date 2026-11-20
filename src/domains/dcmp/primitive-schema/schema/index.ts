@@ -178,6 +178,28 @@ const OpacityProps = {
 } as const satisfies PropDefinitionRecord;
 
 /**
+ * ぼかしの props（docs/03「ぼかし」）。Box と Ellipse が同じ 2 prop を持つ。
+ *
+ * 生リテラルにする理由は `OpacityProps` と同じ（対応するトークン種別が無い）。
+ */
+const BlurFilterProps = {
+  layerBlur: {
+    domain: "literal",
+    literalType: "number",
+    range: { min: 0 },
+    default: 0,
+    group: "appearance",
+  },
+  backdropBlur: {
+    domain: "literal",
+    literalType: "number",
+    range: { min: 0 },
+    default: 0,
+    group: "appearance",
+  },
+} as const satisfies PropDefinitionRecord;
+
+/**
  * 幅の下限と上限の props（docs/03「サイズ指定の原則」）。Box と Ellipse が同じ 2 prop を持つ。
  *
  * 最小 / 最大が効くのは `fixed` 以外のモードのときなので、`width` の `enabledWhen` と
@@ -375,6 +397,7 @@ export const BoxSchema = {
       shorthand: { name: ShorthandNames.Radius, corner: "bottomLeft" },
     },
     ...ShadowProps,
+    ...BlurFilterProps,
     overflow: {
       domain: "enum",
       values: ["visible", "clip"],
@@ -472,6 +495,7 @@ export const EllipseSchema = {
       group: "appearance",
     },
     ...ShadowProps,
+    ...BlurFilterProps,
     ...OpacityProps,
     ...VisibilityProps,
     ...LockingProps,

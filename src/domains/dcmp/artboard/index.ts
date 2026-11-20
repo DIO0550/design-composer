@@ -108,6 +108,11 @@ const ArtboardFixedLockingProps: readonly string[] = ["locking"];
 const ArtboardFixedRotationProps: readonly string[] = ["rotation"];
 
 /**
+ * artboard の props では変えられない背後のぼかしの prop（読み捨てる理由は docs/03「ぼかし」）。
+ */
+const ArtboardFixedBackdropBlurProps: readonly string[] = ["backdropBlur"];
+
+/**
  * artboard の props では変えられない prop の全体。
  */
 const ArtboardUneditableProps: readonly string[] = [
@@ -116,6 +121,7 @@ const ArtboardUneditableProps: readonly string[] = [
   ...ArtboardFixedPlacementProps,
   ...ArtboardFixedLockingProps,
   ...ArtboardFixedRotationProps,
+  ...ArtboardFixedBackdropBlurProps,
 ];
 
 /**
@@ -182,6 +188,7 @@ export type ArtboardBoxProps = ResolvedProps<"Box"> &
     placement: "flow";
     locking: "unlocked";
     rotation: 0;
+    backdropBlur: 0;
   }>;
 
 /**
@@ -310,6 +317,8 @@ export const Artboard = {
    * - ロックは `unlocked` **固定**（docs/03「ロック」）
    * - 回転は**固定**で回らない。artboard は子の座標の原点になる器なので、回ると中身の位置が
    *   全部変わり、枠の外側に描かれる見出しとリサイズハンドルもずれる（docs/03「回転」）
+   * - 背後のぼかしは 0 **固定**。artboard の背後に何が描かれるかをドキュメントが定めていない
+   *   （docs/03「ぼかし」）
    *
    * @param artboard 解決する artboard
    * @returns Box スキーマのデフォルトを補った props に、上の固定値を重ねたもの
@@ -327,6 +336,7 @@ export const Artboard = {
       placement: "flow",
       locking: Lockings.Unlocked,
       rotation: 0,
+      backdropBlur: 0,
     };
   },
 
